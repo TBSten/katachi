@@ -173,8 +173,10 @@ private fun ArchitectureScope.buildRoles() {
             example("settings.gradle.kts", "モジュール構成と catalog の宣言")
             layout { }
         }
+        // No `title` here on purpose: an undocumented role has no display name to show, so
+        // this is the one place in this sample that exercises the default — the role name
+        // itself. `ProjectArchitectureSpec` asserts it.
         "Git" {
-            title = "Git の設定"
             summary = ".gitignore など"
             documented = false
             example(".gitignore", "生成物を Git の管理から外す")

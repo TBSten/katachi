@@ -18,6 +18,7 @@ android {
 }
 
 dependencies {
-    // Fakes implement the real `:data` interfaces, so other modules' tests can swap them in.
-    implementation(project(":data"))
+    // `api`, not `implementation`: the fakes implement `:data` interfaces, and the
+    // modules that consume them need those interfaces on their compile classpath.
+    api(project(":data"))
 }

@@ -95,14 +95,23 @@ val checkSamples = tasks.register("checkSamples") {
         "or write sdk.dir into sample/<name>/local.properties."
 }
 
-var previousSample: TaskProvider<Exec>? = null
+/**
+ * Every `checkSample*` task registered so far.
+ *
+ * Each new task is ordered after *all* of them, not just the one before it:
+ * `mustRunAfter` does not chain transitively, so a pairwise chain falls apart as
+ * soon as a sample is missing from the task graph (`./gradlew checkSampleJvm
+ * checkSampleKmp`, or `./gradlew checkSamples -x checkSampleAndroid`).
+ */
+val registeredSamples = mutableListOf<TaskProvider<Exec>>()
+
 sampleBuilds.forEach { sample ->
     val suffix = sample.name.replaceFirstChar { it.uppercaseChar() }
     val sampleTask = sampleTaskOf(sample)
     val sampleDir = layout.projectDirectory.dir("sample/${sample.name}").asFile
     // Captured eagerly: by the time the configuration block below runs,
-    // `previousSample` would already point at this very task.
-    val predecessor = previousSample
+    // `registeredSamples` would already contain this very task.
+    val predecessors = registeredSamples.toList()
 
     val task = tasks.register<Exec>("checkSample$suffix") {
         group = LifecycleBasePlugin.VERIFICATION_GROUP
@@ -132,9 +141,20 @@ sampleBuilds.forEach { sample ->
 
         // All three samples include the same katachi build and therefore share
         // katachi's build/ directory. Running two of them concurrently corrupts
-        // it, so they are kept strictly sequential.
-        predecessor?.let { mustRunAfter(it) }
+        // it, so they are kept strictly sequential -- whichever subset of the
+        // sample tasks ends up in the task graph.
+        mustRunAfter(predecessors)
+
+        // The nested build compiles `:katachi` through `includeBuild("../..")`
+        // and writes to that same katachi/build/. The outer build's own katachi
+        // tasks are therefore just as much a conflict as another sample, and
+        // nothing stops `./gradlew check checkSamples` from running both at
+        // once (the two builds use different project caches, so Gradle's own
+        // locking does not apply). These paths are resolved lazily and are
+        // simply ignored when the task is not in the graph, so running a
+        // `checkSample*` task on its own is unaffected.
+        mustRunAfter(":katachi:check", ":katachi:build", ":katachi:jar", ":katachi:test")
     }
-    previousSample = task
+    registeredSamples += task
     checkSamples.configure { dependsOn(task) }
 }

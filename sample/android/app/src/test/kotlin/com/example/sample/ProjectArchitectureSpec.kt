@@ -3,6 +3,8 @@ package com.example.sample
 import io.kotest.core.spec.style.FreeSpec
 import io.kotest.matchers.collections.shouldContainExactly
 import io.kotest.matchers.shouldBe
+import io.kotest.matchers.string.shouldContain
+import java.io.File
 
 /**
  * Checks that [projectArchitecture] builds into the model we meant to declare.
@@ -55,6 +57,24 @@ class ProjectArchitectureSpec : FreeSpec({
         screen.layouts.single().declaredAt.fileName shouldBe "ProjectArchitecture.kt"
     }
 
+    "捕捉した行番号の行に、その宣言が実際に書かれている" {
+        // The tests above only prove the file is the user's and the line is positive: every
+        // declaration lives in the same file, so they stay green even if the frame filter
+        // picks the frame one level out. This one reads the source back, so a one-frame
+        // shift lands on `"ui".group {` or on the `uiRoles()` call and fails. No line
+        // number is hard-coded, so editing ProjectArchitecture.kt does not break it.
+        val source = projectArchitectureSourceLines()
+
+        projectArchitecture.allGroups.forEach { group ->
+            group.declaredAt.fileName shouldBe "ProjectArchitecture.kt"
+            source[group.declaredAt.lineNumber - 1] shouldContain "\"${group.name}\""
+        }
+        projectArchitecture.allRoles.forEach { role ->
+            role.declaredAt.fileName shouldBe "ProjectArchitecture.kt"
+            source[role.declaredAt.lineNumber - 1] shouldContain "\"${role.name}\""
+        }
+    }
+
     "build group だけが documented = false になっている" {
         val documentedByGroup = projectArchitecture.allGroups.associate { it.name to it.documented }
         documentedByGroup shouldBe mapOf(
@@ -94,3 +114,22 @@ class ProjectArchitectureSpec : FreeSpec({
             listOf("UserRepository", "UserRepositoryImpl")
     }
 })
+
+/**
+ * The lines of `ProjectArchitecture.kt`, so a captured line number can be compared against
+ * what is actually written there.
+ *
+ * A test task's working directory is its module directory, but that is a default a build
+ * file can change, so the file is looked up by walking up from wherever the tests run.
+ */
+private fun projectArchitectureSourceLines(): List<String> {
+    val relativePath = "src/test/kotlin/com/example/sample/ProjectArchitecture.kt"
+    // `getProperty` is a platform type, and AGP compiles unit tests in strict mode; the JVM
+    // always defines `user.dir`.
+    val workingDir = File(requireNotNull(System.getProperty("user.dir"))).absoluteFile
+    val source = generateSequence(workingDir) { it.parentFile }
+        .map { File(it, relativePath) }
+        .firstOrNull { it.isFile }
+    return requireNotNull(source) { "$relativePath が $workingDir とその親に見つからない" }
+        .readLines()
+}

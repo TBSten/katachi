@@ -5,6 +5,8 @@ import io.kotest.inspectors.forAll
 import io.kotest.matchers.collections.shouldContainExactly
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
+import io.kotest.matchers.string.shouldContain
+import java.io.File
 
 /**
  * Checks the definition in `ProjectArchitecture.kt` against the model katachi builds from
@@ -57,6 +59,24 @@ class ProjectArchitectureSpec : FreeSpec({
         screen.layouts.single().declaredAt.fileName shouldBe "ProjectArchitecture.kt"
     }
 
+    "捕捉した行番号の行に、その宣言が実際に書かれている" {
+        // The test above only proves the file is the user's and the line is positive: every
+        // declaration lives in the same file, so it stays green even if the frame filter
+        // picks the frame one level out. This one reads the source back, so a one-frame
+        // shift lands on `"ui".group {` or on the `uiRoles()` call and fails. No line
+        // number is hard-coded, so editing ProjectArchitecture.kt does not break it.
+        val source = projectArchitectureSourceLines()
+
+        projectArchitecture.allGroups.forEach { group ->
+            group.declaredAt.fileName shouldBe "ProjectArchitecture.kt"
+            source[group.declaredAt.lineNumber - 1] shouldContain "\"${group.name}\""
+        }
+        projectArchitecture.allRoles.forEach { role ->
+            role.declaredAt.fileName shouldBe "ProjectArchitecture.kt"
+            source[role.declaredAt.lineNumber - 1] shouldContain "\"${role.name}\""
+        }
+    }
+
     "ビルド関連の group と役割は documented = false" {
         projectArchitecture.allGroups.single { it.name == "build" }.documented shouldBe false
         projectArchitecture.allRoles
@@ -71,12 +91,18 @@ class ProjectArchitectureSpec : FreeSpec({
             .documented shouldBe true
     }
 
-    "title を書いた役割は表示名がそれになり、書かなければ役割名がそのまま使われる" {
+    "title を書いた役割・group は表示名がそれになる" {
         projectArchitecture.allRoles.single { it.qualifiedName == "ui/Screen" }
             .title shouldBe "画面"
-        // `"ViewModel"` sets `title` to the same text as its name, which is also what the
-        // default would be; `Navigation` proves the default is the name itself.
+        // The group is named `ui` but titled `UI`, so this fails if the declared title is
+        // dropped in favour of the default.
         projectArchitecture.allGroups.single { it.name == "ui" }.title shouldBe "UI"
+    }
+
+    "title を省略した役割は役割名がそのまま表示名になる" {
+        // `build/Git` is the only declaration in this sample without a `title`.
+        projectArchitecture.allRoles.single { it.qualifiedName == "build/Git" }
+            .title shouldBe "Git"
     }
 
     "example は呼んだ順にすべて保持される" {
@@ -97,3 +123,23 @@ class ProjectArchitectureSpec : FreeSpec({
         projectArchitecture.allRoles.forAll { it.layouts.isNotEmpty() shouldBe true }
     }
 })
+
+/**
+ * The lines of `ProjectArchitecture.kt`, so a captured line number can be compared against
+ * what is actually written there.
+ *
+ * A test task's working directory is its module directory — here `app/android`, two levels
+ * below the sample root — but that is a default a build file can change, so the file is
+ * looked up by walking up from wherever the tests run.
+ */
+private fun projectArchitectureSourceLines(): List<String> {
+    val relativePath = "src/test/kotlin/com/example/kmp/app/ProjectArchitecture.kt"
+    // `getProperty` is a platform type, and AGP compiles unit tests in strict mode; the JVM
+    // always defines `user.dir`.
+    val workingDir = File(requireNotNull(System.getProperty("user.dir"))).absoluteFile
+    val source = generateSequence(workingDir) { it.parentFile }
+        .map { File(it, relativePath) }
+        .firstOrNull { it.isFile }
+    return requireNotNull(source) { "$relativePath が $workingDir とその親に見つからない" }
+        .readLines()
+}

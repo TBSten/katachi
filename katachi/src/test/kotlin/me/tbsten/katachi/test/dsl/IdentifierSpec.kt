@@ -62,6 +62,14 @@ class IdentifierSpec : FreeSpec({
         }.shouldBeInstanceOf<InvalidIdentifierException>()
     }
 
+    "KatachiDeclarationException は IllegalArgumentException として捕捉できる" {
+        // 基底が IllegalArgumentException であることは公開契約（D14）。利用者の catch 文に
+        // 直結するので、KatachiDeclarationException の基底を変えたらここが落ちる。
+        shouldThrow<IllegalArgumentException> {
+            architecture { "1domain".group { } }
+        }.shouldBeInstanceOf<InvalidIdentifierException>()
+    }
+
     "エラーメッセージに不正な名前・宣言位置・許される文字集合が含まれる" {
         val thrown = shouldThrow<InvalidIdentifierException> {
             architecture { "use case".group { } }
