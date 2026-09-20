@@ -21,13 +21,16 @@ internal class GroupScopeImpl(private val path: List<String>) : GroupScope {
     val groups = mutableListOf<Group>()
     val roles = mutableListOf<Role>()
 
+    private val declaredGroupNames = DeclaredNames()
+    private val declaredRoleNames = DeclaredNames()
+
     override fun String.group(documented: Boolean, block: GroupScope.() -> Unit) {
         groups += declareGroup(
             name = this,
             parentPath = path,
             documented = documented,
             declaredAt = captureDeclarationSite(),
-            siblings = groups,
+            declaredNames = declaredGroupNames,
             block = block,
         )
     }
@@ -37,26 +40,30 @@ internal class GroupScopeImpl(private val path: List<String>) : GroupScope {
             name = this,
             groupPath = path,
             declaredAt = captureDeclarationSite(),
-            siblings = roles,
+            declaredNames = declaredRoleNames,
             block = block,
         )
     }
 }
 
 /**
- * Validates the name, rejects a duplicate among [siblings], then evaluates [block] to
- * collect the nested groups and roles.
+ * Validates the name, takes it in [declaredNames], then evaluates [block] to collect the
+ * nested groups and roles.
+ *
+ * The name is reserved before [block] runs so that a block which reaches back into this
+ * same scope cannot slip a second declaration of the same name past the check.
  */
 internal fun declareGroup(
     name: String,
     parentPath: List<String>,
     documented: Boolean,
     declaredAt: DeclarationSite,
-    siblings: List<Group>,
+    declaredNames: DeclaredNames,
     block: GroupScope.() -> Unit,
 ): Group {
     requireValidIdentifier(name, IdentifierKind.Group, declaredAt)
-    requireNoDuplicateGroup(siblings, name, parentPath, declaredAt)
+    requireNoDuplicateGroup(declaredNames, name, parentPath, declaredAt)
+    declaredNames.reserve(name, declaredAt)
     val path = parentPath + name
     val scope = GroupScopeImpl(path)
     scope.block()

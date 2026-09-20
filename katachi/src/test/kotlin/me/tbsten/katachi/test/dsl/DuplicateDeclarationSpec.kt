@@ -11,6 +11,34 @@ import me.tbsten.katachi.dsl.KatachiDeclarationException
 import me.tbsten.katachi.dsl.architecture
 
 class DuplicateDeclarationSpec : FreeSpec({
+    // 名前の予約がブロック評価より後だと、まだ評価中の自分自身の外側スコープへ
+    // 2件目を差し込めてしまい、重複検出が素通りする。下の2件はその抜け道を塞いでいる。
+    "外側のスコープを掴んで、評価中の group と同名の group を差し込んでもエラーになる" {
+        val thrown = shouldThrow<DuplicateDeclarationException> {
+            architecture {
+                val root = this
+                "domain".group {
+                    with(root) { "domain".group { } }
+                }
+            }
+        }
+        thrown.name shouldBe "domain"
+    }
+
+    "外側のスコープを掴んで、評価中の役割と同名の役割を差し込んでもエラーになる" {
+        val thrown = shouldThrow<DuplicateDeclarationException> {
+            architecture {
+                "domain".group {
+                    val group = this
+                    "UseCase" {
+                        with(group) { "UseCase" { } }
+                    }
+                }
+            }
+        }
+        thrown.name shouldBe "UseCase"
+    }
+
     "ルート直下に同名の group を2回宣言するとエラーになる" {
         val thrown = shouldThrow<DuplicateDeclarationException> {
             architecture {

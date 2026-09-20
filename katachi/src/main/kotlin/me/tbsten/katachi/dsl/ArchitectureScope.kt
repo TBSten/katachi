@@ -34,6 +34,7 @@ public sealed interface ArchitectureScope : GroupContainerScope
 
 internal class ArchitectureScopeImpl : ArchitectureScope {
     private val groups = mutableListOf<Group>()
+    private val declaredGroupNames = DeclaredNames()
 
     override fun String.group(documented: Boolean, block: GroupScope.() -> Unit) {
         groups += declareGroup(
@@ -41,7 +42,7 @@ internal class ArchitectureScopeImpl : ArchitectureScope {
             parentPath = emptyList(),
             documented = documented,
             declaredAt = captureDeclarationSite(),
-            siblings = groups,
+            declaredNames = declaredGroupNames,
             block = block,
         )
     }

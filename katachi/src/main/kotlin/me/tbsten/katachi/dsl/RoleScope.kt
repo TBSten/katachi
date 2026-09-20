@@ -47,18 +47,21 @@ internal class RoleScopeImpl(name: String) : RoleScope {
 }
 
 /**
- * Validates the name, rejects a duplicate among [siblings], then evaluates [block] to
- * collect the role's properties.
+ * Validates the name, takes it in [declaredNames], then evaluates [block] to collect the
+ * role's properties.
+ *
+ * The name is reserved before [block] runs, for the same reason as in `declareGroup`.
  */
 internal fun declareRole(
     name: String,
     groupPath: List<String>,
     declaredAt: DeclarationSite,
-    siblings: List<Role>,
+    declaredNames: DeclaredNames,
     block: RoleScope.() -> Unit,
 ): Role {
     requireValidIdentifier(name, IdentifierKind.Role, declaredAt)
-    requireNoDuplicateRole(siblings, name, groupPath, declaredAt)
+    requireNoDuplicateRole(declaredNames, name, groupPath, declaredAt)
+    declaredNames.reserve(name, declaredAt)
     val scope = RoleScopeImpl(name)
     scope.block()
     return Role(

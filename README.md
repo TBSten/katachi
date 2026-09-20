@@ -32,6 +32,8 @@ val projectArchitecture = architecture {
 - Gradle plugin は要らない。`testImplementation` を足すだけ
 - JUnit4 / JUnit5 / kotest のどれでも使える（将来の `assert()` は `AssertionError` を投げるだけ）
 - 定義が大きくなったら `ArchitectureScope` の拡張関数に切り出してファイル分割できる
+  （分割に使う関数を `inline` にしないこと。`inline` にすると、違反メッセージが示す宣言位置が
+  呼び出し元ファイルの末尾より後ろの、存在しない行を指す）
 
 ## モジュール構成
 
