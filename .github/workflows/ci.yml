@@ -1,0 +1,83 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  # One in-flight run per pull request, and one per branch otherwise. Runs on
+  # main are not cancelled: commits land there directly, so each one has to be
+  # verified on its own.
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    name: check
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      # setup-gradle validates every gradle-wrapper.jar in the repository
+      # (`validate-wrappers` defaults to true), which covers the wrappers of
+      # sample/jvm, sample/android and sample/kmp as well, so a separate
+      # gradle/actions/wrapper-validation step would be redundant.
+      #
+      # Gradle's dependency cache is reused between runs. To reuse the
+      # configuration cache too, add a repository secret and pass it as
+      # `cache-encryption-key`.
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v6
+
+      # Insurance against the AGP built-in Kotlin problem: AGP ships its own
+      # Kotlin Gradle Plugin, and if a sample ever compiles with that one instead
+      # of the version katachi is built with, its tests fail with "Module was
+      # compiled with an incompatible version of Kotlin". The script compares
+      # what each sample actually resolves with the root catalog.
+      - name: Kotlin versions agree across the samples
+        run: .github/scripts/check-kotlin-versions.sh
+
+      - name: Check katachi
+        run: ./gradlew check --stacktrace
+
+      # sample/* are standalone Gradle builds; each checkSample* task shells out
+      # to that sample's own wrapper (see the root build.gradle.kts for why).
+      # One step per sample, so a red run says immediately which one broke.
+      #
+      # ubuntu-latest ships the Android SDK at ANDROID_HOME
+      # (/usr/local/lib/android/sdk) with the platforms sample/android and
+      # sample/kmp ask for, so no android-actions/setup-android step is needed
+      # and no local.properties has to be written.
+      - name: Check sample/jvm
+        run: ./gradlew checkSampleJvm --stacktrace
+
+      - name: Check sample/android
+        run: ./gradlew checkSampleAndroid --stacktrace
+
+      # Runs :app:android:testDebugUnitTest, not `check`: the KMP modules declare
+      # Apple targets that a Linux runner cannot build.
+      - name: Check sample/kmp
+        run: ./gradlew checkSampleKmp --stacktrace
+
+      - name: Upload reports
+        if: ${{ failure() }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: reports
+          path: |
+            **/build/reports/
+            **/build/test-results/
+          retention-days: 7
+          if-no-files-found: ignore

@@ -1,0 +1,7 @@
+build/
+.gradle/
+.kotlin/
+local.properties
+.cxx/
+# Project cache directories used when several agents build this sample in parallel.
+.gradle-agent-*/

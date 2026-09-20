@@ -17,3 +17,5 @@ plugins {
 }
 
 rootProject.name = "katachi"
+
+include(":katachi")

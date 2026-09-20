@@ -1,0 +1,12 @@
+# Catalog for the dependencies that only sample/android needs; read as `sampleLibs`.
+#
+# Kotlin, katachi and kotest are NOT declared here. They come from the repository root
+# catalog (`../../gradle/libs.versions.toml`, read as `libs`) so that the sample can
+# never disagree with the library it is testing.
+
+[versions]
+agp = "9.4.1"
+
+[plugins]
+androidApplication = { id = "com.android.application", version.ref = "agp" }
+androidLibrary = { id = "com.android.library", version.ref = "agp" }

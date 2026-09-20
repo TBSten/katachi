@@ -1,0 +1,11 @@
+build/
+.gradle/
+.kotlin/
+.gradle-agent-*/
+local.properties
+.cxx/
+
+# iOS / Xcode
+app/ios/**/xcuserdata/
+app/ios/**/DerivedData/
+.DS_Store

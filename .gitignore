@@ -41,7 +41,19 @@ bin/
 ### Mac OS ###
 .DS_Store
 
+### Android ###
+# Points at the Android SDK of this machine. Set ANDROID_HOME instead when you can.
+local.properties
+# Native build output of the Android Gradle Plugin.
+.cxx/
+
+### Gradle (per-agent project caches) ###
+# Created by `--project-cache-dir .gradle-agent-<name>`, used when several agents
+# build the same tree in parallel. Matches at every level, samples included.
+.gradle-agent-*/
+
 ### AI Agent ###
 CLAUDE.local.md
 .claude/*.local.*
 .local/
+.playwright-mcp/

@@ -1,0 +1,140 @@
+// =============================================================================
+// This file exists for ONE purpose: aggregating the sample builds under sample/.
+//
+// The katachi library itself is `:katachi`. Do not add plugins, dependencies or
+// sources to this root project. `./gradlew check` has to keep working on a
+// machine that has neither an Android SDK nor a Kotlin/Native toolchain, and the
+// only thing that guarantees that is an empty root project.
+// =============================================================================
+//
+// Why each sample is driven through its own wrapper instead of being part of
+// this build:
+//
+//   * `includeBuild("sample/<name>")` in settings.gradle.kts would make every
+//     root invocation configure every sample, so `./gradlew :katachi:check`
+//     would start requiring the Android SDK and the Kotlin/Native distribution.
+//   * It would also stop the samples from exercising the code path a real user
+//     takes: a separate build that resolves `me.tbsten.katachi:katachi` as an
+//     external module and gets it substituted by `includeBuild("../..")`.
+//   * A `GradleBuild` task runs the nested build inside the same build tree, and
+//     Gradle then rejects the sample's own `includeBuild("../..")` with
+//     "Cannot include build 'katachi' in build ':jvm'. This is not supported yet."
+//
+// An `Exec` task per sample has none of those problems and stays compatible with
+// the configuration cache.
+
+/**
+ * One standalone Gradle build under `sample/`.
+ *
+ * @property name directory name under `sample/`, also the task name suffix.
+ * @property defaultTask task invoked through that sample's own wrapper.
+ * @property needsAndroidSdk whether the build fails without an Android SDK location.
+ */
+data class SampleBuild(
+    val name: String,
+    val defaultTask: String,
+    val needsAndroidSdk: Boolean,
+)
+
+val sampleBuilds = listOf(
+    SampleBuild("jvm", "check", needsAndroidSdk = false),
+    // `check` here includes Android Lint over nine modules. Measured on this
+    // sample: 14 s warm, 21 s with `clean --no-build-cache`, so there is no
+    // reason to narrow it down to the unit tests. Revisit if the sample grows.
+    SampleBuild("android", "check", needsAndroidSdk = true),
+    // Deliberately NOT `check` / `build` / `assemble`, and there is no `jvmTest`
+    // in this sample. Its modules declare iosArm64 / iosSimulatorArm64, so the
+    // lifecycle tasks drag `compileKotlinIosArm64` and the Kotlin/Native
+    // distribution download into the task graph, neither of which works on a
+    // Linux runner. `:app:android:testDebugUnitTest` never reaches an Apple task.
+    SampleBuild("kmp", ":app:android:testDebugUnitTest", needsAndroidSdk = true),
+)
+
+/**
+ * Task to run inside `sample/[sample]`.
+ *
+ * Override for one sample with `-Pkatachi.sample.<name>.task=...`, or for all of
+ * them with `-Pkatachi.sample.task=...`.
+ */
+fun sampleTaskOf(sample: SampleBuild): String =
+    providers.gradleProperty("katachi.sample.${sample.name}.task")
+        .orElse(providers.gradleProperty("katachi.sample.task"))
+        .getOrElse(sample.defaultTask)
+
+private val gradlewCommand: List<String> =
+    if (providers.systemProperty("os.name").get().lowercase().startsWith("windows")) {
+        listOf("cmd", "/c", "gradlew.bat")
+    } else {
+        listOf("./gradlew")
+    }
+
+/**
+ * Android SDK location taken from the environment, which is how CI provides it
+ * (`ANDROID_HOME` is preset on the GitHub-hosted runners). `null` when neither
+ * variable is set.
+ */
+private val androidSdkFromEnvironment: String? =
+    providers.environmentVariable("ANDROID_HOME")
+        .orElse(providers.environmentVariable("ANDROID_SDK_ROOT"))
+        .orNull
+        ?.takeIf { it.isNotBlank() }
+
+/** Default install locations of the Android SDK, used only as a last resort. */
+private val wellKnownAndroidSdkDirs: List<File> =
+    providers.systemProperty("user.home").get().let { home ->
+        listOf(
+            File(home, "Library/Android/sdk"), // macOS / Android Studio
+            File(home, "Android/Sdk"), // Linux / Android Studio
+        )
+    }
+
+val checkSamples = tasks.register("checkSamples") {
+    group = LifecycleBasePlugin.VERIFICATION_GROUP
+    description = "Runs every standalone sample build under sample/ through its own wrapper. " +
+        "sample/android and sample/kmp need an Android SDK: set ANDROID_HOME (or ANDROID_SDK_ROOT), " +
+        "or write sdk.dir into sample/<name>/local.properties."
+}
+
+var previousSample: TaskProvider<Exec>? = null
+sampleBuilds.forEach { sample ->
+    val suffix = sample.name.replaceFirstChar { it.uppercaseChar() }
+    val sampleTask = sampleTaskOf(sample)
+    val sampleDir = layout.projectDirectory.dir("sample/${sample.name}").asFile
+    // Captured eagerly: by the time the configuration block below runs,
+    // `previousSample` would already point at this very task.
+    val predecessor = previousSample
+
+    val task = tasks.register<Exec>("checkSample$suffix") {
+        group = LifecycleBasePlugin.VERIFICATION_GROUP
+        description = buildString {
+            append("Runs `$sampleTask` in the standalone sample build sample/${sample.name}.")
+            if (sample.needsAndroidSdk) {
+                append(" Needs an Android SDK: set ANDROID_HOME (or ANDROID_SDK_ROOT),")
+                append(" or write sdk.dir into sample/${sample.name}/local.properties.")
+            }
+        }
+        workingDir = sampleDir
+        commandLine(gradlewCommand + listOf(sampleTask, "--console=plain"))
+
+        // The nested build inherits this process's environment, so ANDROID_HOME
+        // set by the developer or by CI already reaches it. This only covers the
+        // remaining case: a developer machine with a standard Android Studio SDK
+        // but no environment variable and no local.properties. The existence
+        // check is not a tracked configuration-cache input, so after creating
+        // local.properties run once with `--no-configuration-cache`.
+        if (sample.needsAndroidSdk &&
+            androidSdkFromEnvironment == null &&
+            !File(sampleDir, "local.properties").exists()
+        ) {
+            wellKnownAndroidSdkDirs.firstOrNull { it.isDirectory }
+                ?.let { environment("ANDROID_HOME", it.absolutePath) }
+        }
+
+        // All three samples include the same katachi build and therefore share
+        // katachi's build/ directory. Running two of them concurrently corrupts
+        // it, so they are kept strictly sequential.
+        predecessor?.let { mustRunAfter(it) }
+    }
+    previousSample = task
+    checkSamples.configure { dependsOn(task) }
+}

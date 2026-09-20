@@ -1,0 +1,13 @@
+# Catalog of the dependencies that only this sample needs.
+# Read as `sampleLibs` (see settings.gradle.kts). The Kotlin / katachi / kotest versions
+# come from the repository root catalog, read as `libs`.
+
+[versions]
+agp = "9.4.1"
+
+[plugins]
+androidApplication = { id = "com.android.application", version.ref = "agp" }
+# AGP 9's plugin for a Kotlin Multiplatform library with an Android target. It replaces the
+# old `com.android.library` + `androidTarget()` pairing: namespace / compileSdk / minSdk are
+# configured in `kotlin { androidLibrary { } }`, not in `android { }`.
+androidKotlinMultiplatformLibrary = { id = "com.android.kotlin.multiplatform.library", version.ref = "agp" }

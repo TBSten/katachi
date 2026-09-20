@@ -1,22 +1,29 @@
 # Version catalog is a central place for you to declare and version dependencies
 # https://docs.gradle.org/current/userguide/platforms.html#sub:version-catalog
 # https://docs.gradle.org/current/userguide/platforms.html#sub::toml-dependencies-format
+#
+# This catalog is the single source of truth for the Kotlin, katachi and kotest versions.
+# Each sample under `sample/` reads it as `libs` and keeps its own catalog (`sampleLibs`)
+# for the dependencies that only that sample needs (Ktor, AGP, ...).
 
 [versions]
+katachi = "0.1.0-SNAPSHOT"
 kotlin = "2.4.10"
-kotlinxDatetime = "0.8.0"
-kotlinxSerializationJSON = "1.11.0"
-kotlinxCoroutines = "1.10.2"
+kotest = "6.2.5"
 
 [libraries]
+# katachi itself. Samples depend on it as `testImplementation(libs.katachi)`; the
+# `includeBuild("../..")` in their settings substitutes this module with the local build.
+katachi = { module = "me.tbsten.katachi:katachi", version.ref = "katachi" }
 kotlinGradlePlugin = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
-kotlinxDatetime = { module = "org.jetbrains.kotlinx:kotlinx-datetime", version.ref = "kotlinxDatetime" }
-kotlinxSerialization = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinxSerializationJSON" }
-kotlinxCoroutines = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "kotlinxCoroutines" }
-
-# Libraries can be bundled together for easier import
-[bundles]
-kotlinxEcosystem = ["kotlinxDatetime", "kotlinxSerialization", "kotlinxCoroutines"]
+kotestRunnerJunit5 = { module = "io.kotest:kotest-runner-junit5", version.ref = "kotest" }
+kotestAssertionsCore = { module = "io.kotest:kotest-assertions-core", version.ref = "kotest" }
+# Not needed on the JVM (the JUnit 5 runner pulls the engine in). Kept for non-JVM
+# targets, where the engine has to be declared explicitly.
+kotestFrameworkEngine = { module = "io.kotest:kotest-framework-engine", version.ref = "kotest" }
 
 [plugins]
+kotlinJvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
+kotlinAndroid = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
+kotlinMultiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
 kotlinPluginSerialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }

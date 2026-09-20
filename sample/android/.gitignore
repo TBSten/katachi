@@ -1,0 +1,13 @@
+build/
+.gradle/
+.kotlin/
+.cxx/
+# Points at the local Android SDK, so it is per-machine. See README.md.
+local.properties
+# Per-agent Gradle project caches (`--project-cache-dir .gradle-agent-<name>`).
+.gradle-agent-*/
+*.iml
+.idea/
+.DS_Store
+captures/
+.externalNativeBuild/
