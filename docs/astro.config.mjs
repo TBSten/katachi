@@ -28,7 +28,7 @@ export default defineConfig({
 			],
 			// CodeComparison のレイアウト。scoped style だとドット記法のコンポーネントに
 			// スタイルが伝播しないため、ここでグローバルに読ませている。
-			customCss: ['./src/styles/code-comparison.css'],
+			customCss: ['./src/styles/code-comparison.css', './src/styles/splash.css'],
 			locales: {
 				root: { label: '日本語', lang: 'ja' },
 			},
