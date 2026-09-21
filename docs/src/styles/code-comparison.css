@@ -31,16 +31,13 @@
 }
 
 /*
- * パネルの見出し。Expressive Code が枠に出せる文字は `title` の 1 つだけで、
- * そこはファイル名に使うので、「入力なのか生成物なのか」はここで出す。
- * Starlight の色とサイズのトークンに乗せて、テーマを変えても浮かないようにする。
+ * パネルのバッジを置く行。見た目は Starlight の `Badge` が持っているので、
+ * ここは余白だけを決める。`p` の既定マージンを消して、コードブロックとの
+ * 間隔を左右のカラムで揃える。
  */
 .code-comparison-label {
 	margin: 0 0 0.4rem;
-	font-size: var(--sl-text-xs);
-	font-weight: 600;
-	line-height: 1.4;
-	color: var(--sl-color-gray-2);
+	line-height: 1;
 }
 
 /*

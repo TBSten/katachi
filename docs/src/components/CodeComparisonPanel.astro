@@ -1,5 +1,5 @@
 ---
-import { Code } from '@astrojs/starlight/components';
+import { Badge, Code } from '@astrojs/starlight/components';
 
 /**
  * `<CodeComparison>` の 1 カラム。
@@ -13,11 +13,13 @@ import { Code } from '@astrojs/starlight/components';
  *
  * `label` と `title` は役割が違う。Expressive Code が枠に出せる文字は `title` の
  * 1 つだけで、そこは「どのファイルか」に使いたい。「それが何であるか」
- * （入力なのか生成物なのか）は別の情報なので、パネル側の見出しとして出す。
+ * （入力なのか生成物なのか）は別の情報なので、Starlight の `Badge` として出す。
  */
 interface Props {
-	/** パネルの見出し。「アーキテクチャ定義」「生成された Markdown」など。 */
+	/** パネルのバッジ。「アーキテクチャ定義」「生成された Markdown」など。 */
 	label?: string;
+	/** バッジの色。入力と出力を塗り分けたいときに使う。 */
+	labelVariant?: 'default' | 'note' | 'danger' | 'success' | 'caution' | 'tip';
 	/** コード枠に出すファイル名。`code` を渡すときだけ効く。 */
 	title?: string;
 	/** Expressive Code に渡す言語。`code` を渡すときだけ効く。 */
@@ -26,10 +28,16 @@ interface Props {
 	code?: string;
 }
 
-const { label, title, lang, code } = Astro.props;
+const { label, labelVariant = 'default', title, lang, code } = Astro.props;
 ---
 
 <div class="code-comparison-panel">
-	{label && <p class="code-comparison-label">{label}</p>}
+	{
+		label && (
+			<p class="code-comparison-label">
+				<Badge text={label} variant={labelVariant} />
+			</p>
+		)
+	}
 	{code === undefined ? <slot /> : <Code code={code} lang={lang} title={title} />}
 </div>
