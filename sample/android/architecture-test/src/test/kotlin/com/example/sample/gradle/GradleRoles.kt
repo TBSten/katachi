@@ -1,6 +1,8 @@
 package com.example.sample.gradle
 
 import me.tbsten.katachi.dsl.ArchitectureScope
+import me.tbsten.katachi.dsl.gradle.*
+import me.tbsten.katachi.dsl.ktsFile
 
 /**
  * Roles of the build setup: the Gradle scripts that describe how this project is assembled.

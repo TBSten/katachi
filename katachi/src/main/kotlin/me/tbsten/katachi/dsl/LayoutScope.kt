@@ -14,12 +14,36 @@ package me.tbsten.katachi.dsl
  * }
  * ```
  *
- * A key is read one way only: `"..." { }` is a directory, `"...".module { }` is a Gradle
- * module, and a file is always written with one of the file functions. A key may itself spell
- * out several levels (`"app/ios" { }`), which is the same as nesting one block per level.
+ * A key is read one way only: `"..." { }` is a directory, and a file is always written with
+ * one of the file functions. A key may itself spell out several levels (`"app/ios" { }`),
+ * which is the same as nesting one block per level.
  *
  * [LayoutDirectoryScope] adds the three things that only make sense inside a directory:
  * `description`, `anyFile()` and `ignore()`.
+ *
+ * ## The vocabulary this interface does not hold
+ *
+ * What is declared here is the whole of the core: a directory, a file, `/`, and stopping the
+ * check. Everything else katachi offers — `"...".ktFile()`, and the Gradle vocabulary
+ * (`"...".module { }`, `mainSourceSet`, `kotlin`, `modulePackage`, `wildcards`) — is written
+ * *on top of* it, as functions that take this scope as a context parameter:
+ *
+ * ```kotlin
+ * context(layoutScope: LayoutScope)
+ * public fun String.ktFile(): LayoutFile {
+ *   val name = this
+ *   return with(layoutScope) { "$name.kt".file() }
+ * }
+ * ```
+ *
+ * A member extension cannot be added to an interface from the outside, so anything declared
+ * here would be katachi's to write and nobody else's. Declared as above, katachi's own
+ * utilities and a project's are the same kind of thing and read the same way at the call
+ * site. A project that wants `"...".protoFile()` or `featureSources()` writes it exactly
+ * like the function above, in its own package.
+ *
+ * The Gradle vocabulary lives in `me.tbsten.katachi.dsl.gradle` and is imported as
+ * `import me.tbsten.katachi.dsl.gradle.*`.
  */
 @KatachiDsl
 public sealed interface LayoutScope {
@@ -37,12 +61,6 @@ public sealed interface LayoutScope {
     /** Declares a file, named exactly as written: `"libs.versions.toml".file()`. */
     public fun String.file(): LayoutFile
 
-    /** Declares a file with `.kt` appended: `"*UseCase".ktFile()` is `*UseCase.kt`. */
-    public fun String.ktFile(): LayoutFile
-
-    /** Declares a file with `.kts` appended: `"build.gradle".ktsFile()` is `build.gradle.kts`. */
-    public fun String.ktsFile(): LayoutFile
-
     /**
      * Declares a directory and stops the check below it, at any depth.
      *
@@ -50,91 +68,6 @@ public sealed interface LayoutScope {
      * same declaration.
      */
     public fun String.ignore(): LayoutDirectory
-
-    /**
-     * Declares a Gradle module, by its module path.
-     *
-     * This is sugar and nothing else. The two blocks below produce exactly the same
-     * declarations, and a violation cannot tell which one was written:
-     *
-     * ```kotlin
-     * ":core:domain:common".module {
-     *   mainSourceSet / kotlin / "model" / "*".ktFile()
-     * }
-     *
-     * "core/domain/common" {
-     *   "build".ignore()
-     *   "build.gradle".ktsFile()
-     *   mainSourceSet / kotlin / "model" / "*".ktFile()
-     * }
-     * ```
-     *
-     * Only those two lines are added. `src/`, `proguard-rules.pro` and the module's own
-     * `.gitignore` are not: where sources live is what the role's own layout says, and the
-     * other two are neither universal nor required.
-     *
-     * The module path may hold wildcards, and then the block is evaluated once per module
-     * that matches, with [wildcards] holding what that match captured:
-     *
-     * ```kotlin
-     * ":feature:*".module {
-     *   mainSourceSet / kotlin / "${wildcards[0].pascalCase}Screen".ktFile()
-     * }
-     * ```
-     *
-     * A key with a wildcard stands for the modules that exist, so a key that matches none
-     * declares nothing at all and is never reported as missing. A key without one stands for
-     * the module it names whether or not it is there, so a module that was deleted shows up
-     * as its missing build file rather than silently disappearing from the check.
-     *
-     * Where a module path lands is [me.tbsten.katachi.check.ModuleResolver]'s answer, which
-     * by default replaces `:` with `/`.
-     *
-     * @throws me.tbsten.katachi.check.GlobSyntaxException when the module path cannot be
-     *   read, `":core::data"` or a `**` written anywhere but last.
-     * @throws KatachiDeclarationException when written anywhere but directly inside
-     *   `layout { }`.
-     */
-    public fun String.module(block: LayoutDirectoryScope.() -> Unit): LayoutModule
-
-    /**
-     * What the module path's wildcards captured, for the module being evaluated.
-     *
-     * One element per `*`, and one per level for a trailing `**`, so `":feature:**"` against
-     * `:feature:hoge:fuga` reads as `["hoge", "fuga"]` and against `:feature` itself as an
-     * empty list — take the innermost name with `lastOrNull()`, not `last()`.
-     *
-     * @throws KatachiDeclarationException when read outside a `module { }` block, where
-     *   there is no module path to have captured anything.
-     */
-    public val wildcards: List<String>
-
-    /**
-     * The source set directory `src/<this>`, and nothing more than that.
-     *
-     * `"commonMain".sourceSet` is `src/commonMain`. `kotlin/` is not implied — write
-     * [kotlin] for it — and neither `main` nor `commonMain` is chosen for you, because that
-     * would mean guessing at the kind of project this is.
-     *
-     * ```kotlin
-     * val commonMain = "commonMain".sourceSet   // if writing it every time grates
-     * ```
-     */
-    public val String.sourceSet: LayoutDirectory
-
-    /** `src/main`, the same as `"main".sourceSet`. */
-    public val mainSourceSet: LayoutDirectory
-
-    /** `src/test`, the same as `"test".sourceSet`. */
-    public val testSourceSet: LayoutDirectory
-
-    /**
-     * The `kotlin` directory, the same as `"kotlin" { }`.
-     *
-     * A source set does not imply it, so it is written out on both spellings of a path:
-     * `mainSourceSet / kotlin / ...` and `mainSourceSet { kotlin { ... } }`.
-     */
-    public val kotlin: LayoutDirectory
 
     /** `"src" / "main"` is the same as `"src" { "main" { } }`. */
     public operator fun String.div(child: String): LayoutDirectory
@@ -145,9 +78,6 @@ public sealed interface LayoutScope {
     /** `"gradle" / "libs.versions.toml".file()` is `"gradle" { "libs.versions.toml".file() }`. */
     public operator fun String.div(child: LayoutFile): LayoutFile
 
-    /** Continues a `/` chain with the package directory of the module being evaluated. */
-    public operator fun String.div(child: ModulePackage): LayoutDirectory
-
     /** Continues a `/` chain with one more directory level. */
     public operator fun LayoutDirectory.div(child: String): LayoutDirectory
 
@@ -157,9 +87,6 @@ public sealed interface LayoutScope {
     /** Closes a `/` chain with the file it leads to. */
     public operator fun LayoutDirectory.div(child: LayoutFile): LayoutFile
 
-    /** `mainSourceSet / kotlin / modulePackage` continues below the module's package. */
-    public operator fun LayoutDirectory.div(child: ModulePackage): LayoutDirectory
-
     /**
      * Opens a block below a directory a `/` chain or a source set just declared.
      *
@@ -167,21 +94,6 @@ public sealed interface LayoutScope {
      * each means the same as writing the directory's name as a key.
      */
     public operator fun LayoutDirectory.invoke(block: LayoutDirectoryScope.() -> Unit): LayoutDirectory
-
-    /** Starts a `/` chain at the module's package directory. */
-    public operator fun ModulePackage.div(child: String): LayoutDirectory
-
-    /** Continues below the module's package directory with a directory block. */
-    public operator fun ModulePackage.div(child: LayoutDirectory): LayoutDirectory
-
-    /** `modulePackage / "*UseCase".ktFile()` puts the file in the module's package. */
-    public operator fun ModulePackage.div(child: LayoutFile): LayoutFile
-
-    /**
-     * Opens a block at the module's package directory: `modulePackage { }` is the nested
-     * spelling of `modulePackage / ...`.
-     */
-    public operator fun ModulePackage.invoke(block: LayoutDirectoryScope.() -> Unit): LayoutDirectory
 }
 
 /**

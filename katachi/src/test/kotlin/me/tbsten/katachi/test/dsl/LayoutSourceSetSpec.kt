@@ -3,6 +3,8 @@ package me.tbsten.katachi.test.dsl
 import io.kotest.core.spec.style.FreeSpec
 import io.kotest.matchers.shouldBe
 import me.tbsten.katachi.dsl.InternalKatachiApi
+import me.tbsten.katachi.dsl.gradle.*
+import me.tbsten.katachi.dsl.ktFile
 
 @OptIn(InternalKatachiApi::class)
 class LayoutSourceSetSpec : FreeSpec({

@@ -1,6 +1,8 @@
 package com.example.kmp.gradle
 
 import me.tbsten.katachi.dsl.ArchitectureScope
+import me.tbsten.katachi.dsl.gradle.*
+import me.tbsten.katachi.dsl.ktsFile
 
 /**
  * Build scripts. Not documented: they are part of the repository's shape but not part of the

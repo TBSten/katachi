@@ -8,9 +8,9 @@ import com.example.kmp.gradle.gradleRoles
 import com.example.kmp.testing.testingRoles
 import com.example.kmp.tool.toolRoles
 import me.tbsten.katachi.dsl.Architecture
-import me.tbsten.katachi.dsl.ModulePackage
+import me.tbsten.katachi.dsl.gradle.ModulePackage
 import me.tbsten.katachi.dsl.architecture
-import me.tbsten.katachi.dsl.capitalizedModuleNamePackage
+import me.tbsten.katachi.dsl.gradle.capitalizedModuleNamePackage
 
 /**
  * Where a module keeps its Kotlin package, as a derivation rather than as a path.

@@ -10,6 +10,8 @@ import me.tbsten.katachi.dsl.InternalKatachiApi
 import me.tbsten.katachi.dsl.LayoutEntryKind
 import me.tbsten.katachi.dsl.architecture
 import me.tbsten.katachi.dsl.flattenLayout
+import me.tbsten.katachi.dsl.ktFile
+import me.tbsten.katachi.dsl.ktsFile
 
 @OptIn(InternalKatachiApi::class)
 class LayoutFlatteningSpec : FreeSpec({

@@ -1,6 +1,8 @@
 package com.example.gradle
 
 import me.tbsten.katachi.dsl.ArchitectureScope
+import me.tbsten.katachi.dsl.gradle.*
+import me.tbsten.katachi.dsl.ktsFile
 
 /**
  * Roles of the build definition.

@@ -2,6 +2,8 @@ package com.example.sample.application
 
 import com.example.sample.modulePackage
 import me.tbsten.katachi.dsl.ArchitectureScope
+import me.tbsten.katachi.dsl.gradle.*
+import me.tbsten.katachi.dsl.ktFile
 
 /**
  * Roles of the data layer: what `:data` holds.

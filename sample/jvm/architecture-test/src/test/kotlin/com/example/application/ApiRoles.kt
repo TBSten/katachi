@@ -2,6 +2,8 @@ package com.example.application
 
 import com.example.modulePackage
 import me.tbsten.katachi.dsl.ArchitectureScope
+import me.tbsten.katachi.dsl.gradle.*
+import me.tbsten.katachi.dsl.ktFile
 
 /**
  * Roles of the API layer: everything that faces HTTP.

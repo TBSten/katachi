@@ -4,13 +4,15 @@ import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.FreeSpec
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
-import me.tbsten.katachi.dsl.HyphenFolding
+import me.tbsten.katachi.dsl.gradle.HyphenFolding
 import me.tbsten.katachi.dsl.InternalKatachiApi
-import me.tbsten.katachi.dsl.ModulePackage
-import me.tbsten.katachi.dsl.ModulePackageException
+import me.tbsten.katachi.dsl.gradle.ModulePackage
+import me.tbsten.katachi.dsl.gradle.ModulePackageException
 import me.tbsten.katachi.dsl.architecture
-import me.tbsten.katachi.dsl.capitalizedModuleNamePackage
-import me.tbsten.katachi.dsl.moduleNamePackage
+import me.tbsten.katachi.dsl.gradle.capitalizedModuleNamePackage
+import me.tbsten.katachi.dsl.gradle.*
+import me.tbsten.katachi.dsl.ktFile
+import me.tbsten.katachi.dsl.gradle.moduleNamePackage
 
 /** Declared the way a user declares it: one top level `val`, next to the architecture. */
 private val modulePackage = capitalizedModuleNamePackage("com.example")

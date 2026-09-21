@@ -3,6 +3,7 @@ package me.tbsten.katachi.test.dsl
 import io.kotest.core.spec.style.FreeSpec
 import io.kotest.matchers.shouldBe
 import me.tbsten.katachi.dsl.InternalKatachiApi
+import me.tbsten.katachi.dsl.ktFile
 
 /**
  * `/` is sugar for nesting, so every pair below writes the same layout twice and asks for

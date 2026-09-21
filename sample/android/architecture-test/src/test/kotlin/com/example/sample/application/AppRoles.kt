@@ -1,6 +1,8 @@
 package com.example.sample.application
 
 import me.tbsten.katachi.dsl.ArchitectureScope
+import me.tbsten.katachi.dsl.gradle.*
+import me.tbsten.katachi.dsl.ktFile
 
 /**
  * Roles of the application module itself: what `:app` holds beyond wiring the features

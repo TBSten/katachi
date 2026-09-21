@@ -8,9 +8,9 @@ import com.example.gradle.gradleRoles
 import com.example.testing.testingRoles
 import com.example.tool.toolRoles
 import me.tbsten.katachi.dsl.Architecture
-import me.tbsten.katachi.dsl.ModulePackage
+import me.tbsten.katachi.dsl.gradle.ModulePackage
 import me.tbsten.katachi.dsl.architecture
-import me.tbsten.katachi.dsl.capitalizedModuleNamePackage
+import me.tbsten.katachi.dsl.gradle.capitalizedModuleNamePackage
 
 /**
  * Where a module keeps its sources, below its own source set.

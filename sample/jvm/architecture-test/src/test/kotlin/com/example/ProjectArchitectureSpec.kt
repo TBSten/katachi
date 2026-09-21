@@ -17,8 +17,11 @@ import me.tbsten.katachi.dsl.Architecture
 import me.tbsten.katachi.dsl.InternalKatachiApi
 import me.tbsten.katachi.dsl.LayoutEntry
 import me.tbsten.katachi.dsl.architecture
-import me.tbsten.katachi.dsl.capitalizedModuleNamePackage
+import me.tbsten.katachi.dsl.gradle.capitalizedModuleNamePackage
 import me.tbsten.katachi.dsl.flattenLayout
+import me.tbsten.katachi.dsl.gradle.*
+import me.tbsten.katachi.dsl.ktFile
+import me.tbsten.katachi.dsl.ktsFile
 
 /**
  * Checks that [projectArchitecture] builds into the model we expect, and that the check it

@@ -5,14 +5,14 @@ import io.kotest.core.spec.style.FreeSpec
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
 import io.kotest.matchers.types.shouldBeInstanceOf
-import me.tbsten.katachi.dsl.HyphenFolding
+import me.tbsten.katachi.dsl.gradle.HyphenFolding
 import me.tbsten.katachi.dsl.InternalKatachiApi
 import me.tbsten.katachi.dsl.KatachiDeclarationException
-import me.tbsten.katachi.dsl.ModulePackage
-import me.tbsten.katachi.dsl.ModulePackageException
-import me.tbsten.katachi.dsl.capitalizedModuleNamePackage
-import me.tbsten.katachi.dsl.moduleNamePackage
-import me.tbsten.katachi.dsl.resolveFor
+import me.tbsten.katachi.dsl.gradle.ModulePackage
+import me.tbsten.katachi.dsl.gradle.ModulePackageException
+import me.tbsten.katachi.dsl.gradle.capitalizedModuleNamePackage
+import me.tbsten.katachi.dsl.gradle.moduleNamePackage
+import me.tbsten.katachi.dsl.gradle.resolveFor
 
 /** モジュールパス -> 既定の変換結果。module-package.md の変換規則の表。 */
 private val capitalized = listOf(

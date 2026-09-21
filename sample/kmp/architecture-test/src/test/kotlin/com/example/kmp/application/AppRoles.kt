@@ -1,6 +1,8 @@
 package com.example.kmp.application
 
 import me.tbsten.katachi.dsl.ArchitectureScope
+import me.tbsten.katachi.dsl.gradle.*
+import me.tbsten.katachi.dsl.ktFile
 
 /**
  * The two applications: the Android one Gradle builds, and the iOS one Xcode builds.

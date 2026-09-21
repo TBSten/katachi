@@ -6,6 +6,7 @@ import me.tbsten.katachi.check.FsPath
 import me.tbsten.katachi.check.GitTrackedFileSystem
 import me.tbsten.katachi.check.validate
 import me.tbsten.katachi.dsl.InternalKatachiApi
+import me.tbsten.katachi.dsl.ktFile
 
 @OptIn(InternalKatachiApi::class)
 class ScanSpec : FreeSpec({

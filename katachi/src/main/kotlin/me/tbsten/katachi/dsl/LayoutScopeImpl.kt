@@ -25,15 +25,17 @@ internal class ModuleContext(
  * left side created. Moving the *outermost* node of the right side is what makes a
  * multi-level key such as `"x" / "app/ios" { }` land as `x/app/ios`.
  *
- * A source set, `kotlin` and a module package are the same thing seen from another angle:
- * each declares a directory in this scope the moment it is read, and hands back the
- * [LayoutDirectory] that `/` and `{ }` continue from. That is why `mainSourceSet / kotlin`
- * and `mainSourceSet { kotlin { } }` cannot come apart — they run the same code.
+ * Only the core vocabulary is implemented here. `"...".ktFile()` and the Gradle vocabulary
+ * are ordinary functions taking a [LayoutScope] as a context parameter, written on top of
+ * what this class provides — see [ktFile] and the `me.tbsten.katachi.dsl.gradle` package.
+ * A source set is `"src/<name>" { }` and a module package is a directory key, so
+ * neither needs anything of its own here: that is why `mainSourceSet / kotlin` and
+ * `mainSourceSet { kotlin { } }` cannot come apart — they run the same code.
  */
 internal class LayoutScopeImpl(
     private val container: LayoutNode,
     private val moduleIndex: ModuleIndex,
-    private val moduleContext: ModuleContext?,
+    val moduleContext: ModuleContext?,
 ) : LayoutDirectoryScope {
     override var description: String?
         get() = container.description
@@ -49,14 +51,6 @@ internal class LayoutScopeImpl(
         container.ignored = true
     }
 
-    override val wildcards: List<String>
-        get() = moduleContext?.wildcards ?: throw KatachiDeclarationException(
-            "`wildcards` can only be read inside a `module { }` block. It holds what the " +
-                "module path's `*` and `**` captured for the module being evaluated, and " +
-                "directly under `layout { }`, or inside a plain directory block, there is no " +
-                "module path to have captured anything.",
-        )
-
     override operator fun String.invoke(block: LayoutDirectoryScope.() -> Unit): LayoutDirectory {
         val chain = chainUnder(container, this, isFile = false, declaredAt = captureDeclarationSite())
         scopeAt(chain.leaf).block()
@@ -65,20 +59,56 @@ internal class LayoutScopeImpl(
 
     override fun String.file(): LayoutFile = declareFile(this)
 
-    override fun String.ktFile(): LayoutFile = declareFile("$this.kt")
-
-    override fun String.ktsFile(): LayoutFile = declareFile("$this.kts")
-
     override fun String.ignore(): LayoutDirectory {
         val chain = chainUnder(container, this, isFile = false, declaredAt = captureDeclarationSite())
         chain.leaf.ignored = true
         return LayoutDirectory(top = chain.top, leaf = chain.leaf)
     }
 
-    override fun String.module(block: LayoutDirectoryScope.() -> Unit): LayoutModule {
+    override operator fun String.div(child: String): LayoutDirectory {
         val declaredAt = captureDeclarationSite()
-        requireLayoutRoot(this, declaredAt)
-        val pattern = compileModulePath(this, declaredAt)
+        val left = chainUnder(container, this, isFile = false, declaredAt = declaredAt)
+        val right = chainUnder(left.leaf, child, isFile = false, declaredAt = declaredAt)
+        return LayoutDirectory(top = left.top, leaf = right.leaf)
+    }
+
+    override operator fun String.div(child: LayoutDirectory): LayoutDirectory {
+        val left = chainUnder(container, this, isFile = false, declaredAt = captureDeclarationSite())
+        left.leaf.add(child.top)
+        return LayoutDirectory(top = left.top, leaf = child.leaf)
+    }
+
+    override operator fun String.div(child: LayoutFile): LayoutFile {
+        val left = chainUnder(container, this, isFile = false, declaredAt = captureDeclarationSite())
+        left.leaf.add(child.top)
+        return LayoutFile(top = left.top, leaf = child.leaf)
+    }
+
+    override operator fun LayoutDirectory.div(child: String): LayoutDirectory {
+        val right = chainUnder(leaf, child, isFile = false, declaredAt = captureDeclarationSite())
+        return LayoutDirectory(top = this.top, leaf = right.leaf)
+    }
+
+    override operator fun LayoutDirectory.div(child: LayoutDirectory): LayoutDirectory {
+        leaf.add(child.top)
+        return LayoutDirectory(top = this.top, leaf = child.leaf)
+    }
+
+    override operator fun LayoutDirectory.div(child: LayoutFile): LayoutFile {
+        leaf.add(child.top)
+        return LayoutFile(top = this.top, leaf = child.leaf)
+    }
+
+    override operator fun LayoutDirectory.invoke(block: LayoutDirectoryScope.() -> Unit): LayoutDirectory {
+        scopeAt(leaf).block()
+        return this
+    }
+
+    /** See [expandModulePath], the opt-in API this backs. */
+    fun expandModulePath(key: String, block: LayoutDirectoryScope.() -> Unit): LayoutModule {
+        val declaredAt = captureDeclarationSite()
+        requireLayoutRoot(key, declaredAt)
+        val pattern = compileModulePath(key, declaredAt)
         val declared = moduleIndex.expand(pattern).flatMap { module ->
             // The root project resolves to the project root itself, which is this scope's
             // own container: an empty directory name would otherwise become an empty level.
@@ -101,93 +131,10 @@ internal class LayoutScopeImpl(
         return LayoutModule(declared)
     }
 
-    override val String.sourceSet: LayoutDirectory get() = declareDirectory("src/$this")
-
-    override val mainSourceSet: LayoutDirectory get() = declareDirectory("src/main")
-
-    override val testSourceSet: LayoutDirectory get() = declareDirectory("src/test")
-
-    override val kotlin: LayoutDirectory get() = declareDirectory("kotlin")
-
-    override operator fun String.div(child: String): LayoutDirectory {
-        val declaredAt = captureDeclarationSite()
-        val left = chainUnder(container, this, isFile = false, declaredAt = declaredAt)
-        val right = chainUnder(left.leaf, child, isFile = false, declaredAt = declaredAt)
-        return LayoutDirectory(top = left.top, leaf = right.leaf)
-    }
-
-    override operator fun String.div(child: LayoutDirectory): LayoutDirectory {
-        val left = chainUnder(container, this, isFile = false, declaredAt = captureDeclarationSite())
-        left.leaf.add(child.top)
-        return LayoutDirectory(top = left.top, leaf = child.leaf)
-    }
-
-    override operator fun String.div(child: LayoutFile): LayoutFile {
-        val left = chainUnder(container, this, isFile = false, declaredAt = captureDeclarationSite())
-        left.leaf.add(child.top)
-        return LayoutFile(top = left.top, leaf = child.leaf)
-    }
-
-    override operator fun String.div(child: ModulePackage): LayoutDirectory {
-        val declaredAt = captureDeclarationSite()
-        val left = chainUnder(container, this, isFile = false, declaredAt = declaredAt)
-        val right = chainUnder(left.leaf, child.directory(), isFile = false, declaredAt = declaredAt)
-        return LayoutDirectory(top = left.top, leaf = right.leaf)
-    }
-
-    override operator fun LayoutDirectory.div(child: String): LayoutDirectory {
-        val right = chainUnder(leaf, child, isFile = false, declaredAt = captureDeclarationSite())
-        return LayoutDirectory(top = this.top, leaf = right.leaf)
-    }
-
-    override operator fun LayoutDirectory.div(child: LayoutDirectory): LayoutDirectory {
-        leaf.add(child.top)
-        return LayoutDirectory(top = this.top, leaf = child.leaf)
-    }
-
-    override operator fun LayoutDirectory.div(child: LayoutFile): LayoutFile {
-        leaf.add(child.top)
-        return LayoutFile(top = this.top, leaf = child.leaf)
-    }
-
-    override operator fun LayoutDirectory.div(child: ModulePackage): LayoutDirectory {
-        val right = chainUnder(leaf, child.directory(), isFile = false, declaredAt = captureDeclarationSite())
-        return LayoutDirectory(top = this.top, leaf = right.leaf)
-    }
-
-    override operator fun LayoutDirectory.invoke(block: LayoutDirectoryScope.() -> Unit): LayoutDirectory {
-        scopeAt(leaf).block()
-        return this
-    }
-
-    override operator fun ModulePackage.div(child: String): LayoutDirectory {
-        val declaredAt = captureDeclarationSite()
-        val left = chainUnder(container, directory(), isFile = false, declaredAt = declaredAt)
-        val right = chainUnder(left.leaf, child, isFile = false, declaredAt = declaredAt)
-        return LayoutDirectory(top = left.top, leaf = right.leaf)
-    }
-
-    override operator fun ModulePackage.div(child: LayoutDirectory): LayoutDirectory {
-        val left = chainUnder(container, directory(), isFile = false, declaredAt = captureDeclarationSite())
-        left.leaf.add(child.top)
-        return LayoutDirectory(top = left.top, leaf = child.leaf)
-    }
-
-    override operator fun ModulePackage.div(child: LayoutFile): LayoutFile {
-        val left = chainUnder(container, directory(), isFile = false, declaredAt = captureDeclarationSite())
-        left.leaf.add(child.top)
-        return LayoutFile(top = left.top, leaf = child.leaf)
-    }
-
-    override operator fun ModulePackage.invoke(block: LayoutDirectoryScope.() -> Unit): LayoutDirectory {
-        val chain = chainUnder(container, directory(), isFile = false, declaredAt = captureDeclarationSite())
-        scopeAt(chain.leaf).block()
-        return LayoutDirectory(top = chain.top, leaf = chain.leaf)
-    }
-
     /**
-     * The two lines every Gradle module has. Written through this scope's own functions, so
-     * that what `module { }` adds is the same declaration a hand written block would make.
+     * The two lines every Gradle module has. Written through the same vocabulary a user
+     * writes, so that what a module block adds is the same declaration a hand written block
+     * would make.
      */
     private fun expandModuleDefaults() {
         "build".ignore()
@@ -201,14 +148,6 @@ internal class LayoutScopeImpl(
         val chain = chainUnder(container, name, isFile = true, declaredAt = captureDeclarationSite())
         return LayoutFile(top = chain.top, leaf = chain.leaf)
     }
-
-    private fun declareDirectory(key: String): LayoutDirectory {
-        val chain = chainUnder(container, key, isFile = false, declaredAt = captureDeclarationSite())
-        return LayoutDirectory(top = chain.top, leaf = chain.leaf)
-    }
-
-    /** The package directory of the module being evaluated. */
-    private fun ModulePackage.directory(): String = resolveFor(moduleContext?.modulePath)
 
     /**
      * A module path is relative to nothing: it is resolved to a directory below the project
