@@ -111,7 +111,7 @@ Katachi check failed: 1 violation (Unexpected: 1)
 
 ## ドキュメントを生成する
 
-katachi で定義したプロジェクト構造の定義をもとに markdown のドキュメントを生成させることができます。
+katachi で定義したプロジェクト構造の定義をもとに markdown (もしくは mdx) のドキュメントを生成させることができます。
 
 ```shell
 $ ./gradlew generateKatachiDocs
@@ -129,11 +129,9 @@ val projectArchitecture = architecture {
     example("UpdateUserUseCase", "ユーザーを更新する")
 
     layout {
-      ":core:domain".module {
-        mainSourceSet / kotlin / modulePackage / "useCase" {
-          description = "複数の画面から使われるもの"
-          "*UseCase".ktFile()
-        }
+      "src/main/kotlin/com/example/project/useCase" {
+        description = "複数の画面から使われるもの"
+        "*UseCase".ktFile()
       }
     }
   }
@@ -141,7 +139,6 @@ val projectArchitecture = architecture {
   // ...
 }
 ```
-
 
 </CodeComparison.Panel>
 
@@ -153,9 +150,9 @@ val projectArchitecture = architecture {
 
 ## 配置場所
 
-| モジュール | パス | 使い分け |
-|---|---|---|
-| `:core:domain` | `src/main/kotlin/**/useCase/*UseCase.kt` | 複数の画面から使われるもの |
+| パス | 使い分け |
+|---|---|
+| `src/main/kotlin/com/example/project/useCase/*UseCase.kt` | 複数の画面から使われるもの |
 
 ## 例
 
@@ -163,11 +160,10 @@ val projectArchitecture = architecture {
 - `UpdateUserUseCase` ... ユーザーを更新する
 ```
 
-
 </CodeComparison.Panel>
 </CodeComparison>
 
-
+katachi で定義したプロジェクト構造を SSoT として 人間も
 
 ## katachi と Konsist
 
@@ -178,9 +174,7 @@ val projectArchitecture = architecture {
   "UseCase" {
     // どこに置いてよいか
     layout {
-      ":core:domain".module {
-        mainSourceSet / kotlin / modulePackage / "useCase" / "*UseCase".ktFile()
-      }
+      "src/main/kotlin/com/example/project/useCase" / "*UseCase".ktFile()
     }
 
     // 中身がどうあるべきか
