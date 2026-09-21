@@ -18,7 +18,14 @@ fun ArchitectureScope.dataRoles() {
                 "インターフェースと実装の2つの置き方を持つ"
             example("UserRepository", "ユーザーを取得するインターフェース")
             example("UserRepositoryImpl", "UserRepository の実装")
-            layout { }
+            // Two file patterns, not one: `*Repository.kt` does not match
+            // `UserRepositoryImpl.kt`, because `*` never crosses what follows it.
+            layout {
+                "data" / "src" / "commonMain" / "kotlin" {
+                    "com/example/kmp/data/user" / "*Repository".ktFile()
+                    "com/example/kmp/data/user" / "*RepositoryImpl".ktFile()
+                }
+            }
         }
         // The role that only exists because this is a KMP project: `commonMain` declares
         // `expect`, and `androidMain` / `iosMain` supply the `actual`. The three files have
@@ -30,7 +37,19 @@ fun ArchitectureScope.dataRoles() {
             example("PlatformInfo.kt", "commonMain の expect 宣言")
             example("PlatformInfo.android.kt", "Android 向けの actual")
             example("PlatformInfo.ios.kt", "iOS 向けの actual")
-            layout { }
+            // The same package under three source sets. Written out as three directory
+            // chains here; from step 3 the source set name is the only part that varies.
+            layout {
+                "data" / "src" / "commonMain" / "kotlin" {
+                    "com/example/kmp/data/platform" / "*".ktFile()
+                }
+                "data" / "src" / "androidMain" / "kotlin" {
+                    "com/example/kmp/data/platform" / "*.android".ktFile()
+                }
+                "data" / "src" / "iosMain" / "kotlin" {
+                    "com/example/kmp/data/platform" / "*.ios".ktFile()
+                }
+            }
         }
     }
 }

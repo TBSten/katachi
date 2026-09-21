@@ -18,9 +18,23 @@ fun ArchitectureScope.dataRoles() {
             example("UserRepository", "ユーザーの取得と保存のインターフェース")
             example("UserRepositoryImpl", "UserRepository の実装")
             // Two layouts: a role may live in more than one place. Here the interface
-            // (`*Repository.kt`) and the implementation (`*RepositoryImpl.kt`).
-            layout { }
-            layout { }
+            // (`*Repository.kt`) and the implementation (`*RepositoryImpl.kt`). Both sit in
+            // the same package, so `description` is what tells the two apart — which is the
+            // question it exists to answer.
+            layout {
+                "data/src/main/kotlin/com/example/sample/data" {
+                    description = "インターフェース。呼び出し側が依存する型"
+                    "user" { "*Repository".ktFile() }
+                    "settings" { "*Repository".ktFile() }
+                }
+            }
+            layout {
+                "data/src/main/kotlin/com/example/sample/data" {
+                    description = "実装。インターフェースと同じ package に並べる"
+                    "user" { "*RepositoryImpl".ktFile() }
+                    "settings" { "*RepositoryImpl".ktFile() }
+                }
+            }
         }
     }
 }

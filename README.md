@@ -8,8 +8,10 @@ v0.1 は **Deny by default のアーキテクチャテスト**として出す。
 ドキュメント生成は v0.3 の予定。
 
 > [!WARNING]
-> **まだ実装中。** 現時点で動くのは v0.1 のステップ1（`architecture { }` / group / 役割 / `layout { }` の保持）まで。
-> `layout { }` の中身の評価も `Architecture.assert()` もまだ無い。公開もしていない（`0.1.0-SNAPSHOT`）。
+> **まだ実装中。** 現時点で動くのは v0.1 のステップ2（`architecture { }` / group / 役割 /
+> `layout { }` のディレクトリとファイル / 実ファイルツリーとの突き合わせ / `assert()`）まで。
+> `"...".module { }`・sourceSet・`konsist { }`・Warning はまだ無い（ステップ3以降）。
+> 公開もしていない（`0.1.0-SNAPSHOT`）。
 > 詳細な計画は `.local/features-by-version/v0.1/`（リポジトリには含めていない作業メモ）にある。
 
 ## 導入
@@ -35,8 +37,21 @@ tasks.test { useJUnitPlatform() }
 
 dependencies {
     testImplementation("me.tbsten.katachi:katachi:0.1.0")
+
+    // JUnit Platform に実行エンジンを1つ載せる。katachi は AssertionError を投げるだけで
+    // テストフレームワークに依存しないので、エンジンは利用者が選ぶ。
+    testImplementation(platform("org.junit:junit-bom:5.13.4"))
+    testImplementation("org.junit.jupiter:junit-jupiter")
 }
 ```
+
+> [!IMPORTANT]
+> **エンジンを載せ忘れると、テストは「成功」するのではなく1度も実行されない。**
+> `useJUnitPlatform()` だけでは `@Test` を拾う実装が classpath に無く、`BUILD SUCCESSFUL` に
+> なるのにアーキテクチャ検査が空振りする。kotest で書く場合は `kotest-runner-junit5` が
+> 自前のエンジンを持つのでこれで足りるが、**`kotest-runner-junit5` は
+> `junit-jupiter-api` しか連れてこない**ので、素の `@Test` を混ぜるなら上の `junit-jupiter`
+> （engine 込み）が別途要る。`build/test-results/**/*.xml` の `tests=` が 0 でないことで確かめられる。
 
 ```kotlin
 // architecture-test/src/test/kotlin/com/example/ProjectArchitectureTest.kt
@@ -52,10 +67,6 @@ KMP プロジェクトではそもそも間借り先が無い（katachi は JVM 
 代償はこのモジュール自身も allow list に載ることだが、
 「役割を持たないファイルは存在しない」という katachi の原則からすればむしろ載るべきもの。
 
-> [!NOTE]
-> `assert()` はまだ実装されていない（v0.1 ステップ2以降）。現時点で動くのは定義の記述までで、
-> サンプルは組み上がったモデルを検証するテストを書いている。
-
 ## 書き味
 
 ```kotlin
@@ -67,7 +78,9 @@ val projectArchitecture = architecture {
             title = "ユースケース"
             summary = "各画面で発生するアプリ固有の1つの振る舞い"
             example("GetUserUseCase", "ユーザーを取得する")
-            layout { /* ステップ2 で実装 */ }
+            layout {
+                "domain" / "src" / "main" / "kotlin" / "com" / "example" / "useCase" / "*UseCase".ktFile()
+            }
         }
     }
 }
@@ -80,6 +93,83 @@ val projectArchitecture = architecture {
   （3サンプルがこの形で書かれていて、テストで実証している）
   （分割に使う関数を `inline` にしないこと。`inline` にすると、宣言位置が
   呼び出し元ファイルの末尾より後ろの、存在しない行を指す）
+
+## layout の書き方
+
+`layout { }` の直下はリポジトリルート。文字列にブロックを付けるとディレクトリ、
+`.file()` / `.ktFile()`（`.kt` を付ける）/ `.ktsFile()`（`.kts` を付ける）を付けるとファイルになる。
+入れ子ブロックと `/` 連結は同じ意味で、キーに `"src/main/kotlin"` のような多階層を書いてもよい。
+
+```kotlin
+layout {
+    ".gitignore".file()                  // リポジトリルート直下のファイル
+    "app" {                              // ディレクトリ
+        description = "アプリの入口"      // 同じ package に複数の役割が並ぶときの使い分け
+        "src/main/kotlin/com/example" {
+            "MainActivity".ktFile()      // MainActivity.kt
+            "*ViewModel".ktFile()        // ワイルドカード
+        }
+        "res" { ignore() }               // 配下を何階層下でも検査しない
+        "generated" { anyFile() }        // 直下の任意のファイルを許可（サブディレクトリは不可）
+    }
+    "build".ignore()                     // "build" { ignore() } と同じ
+}
+```
+
+- **空のディレクトリブロックは「何も置けない」**。`"di" { }` の配下にファイルがあれば `Unexpected`
+- **宣言したのに実体が無いファイルは `Missing`**。`.optional()` を付けると消える
+- **ワイルドカードを含む宣言は自動で optional**。0件マッチでも `Missing` にならない
+- `anyFile()` は**直下だけ**。サブディレクトリの中のファイルは `Unexpected` のまま
+- `ignore()` は `layout { }` の中にしか無い。「検査しない」と決めた理由が役割の `summary` として
+  ドキュメントに残るようにするため（グローバルな除外設定は用意しない）
+
+### glob
+
+katachi の glob は **`*` と `**` の2つだけ**。`{a,b}` / `?` / `[abc]` は
+ワイルドカードとして働かず、書くとエラーになる（リテラルとして書きたければ `\*` のように
+バックスラッシュでエスケープする）。
+
+| 書き方 | 意味 |
+|---|---|
+| `*` | ちょうど1階層。`:feature:*` は `:feature:home` にマッチし、`:feature` にも `:feature:home:impl` にもマッチしない |
+| `**` | 0階層以上。`:feature:**` は `:feature` / `:feature:home` / `:feature:home:impl` のすべてにマッチする |
+| ファイル名の中の `*` | 名前の一部にマッチし、**ディレクトリの境界を越えない**。`*UseCase.kt` は `GetUserUseCase.kt` にマッチし、サブディレクトリの中の同名ファイルにはマッチしない |
+
+- `*` は**0文字にはマッチしない**（`*UseCase.kt` は `UseCase.kt` にマッチしない）
+- 照合は**常に大文字小文字を区別する**
+- ディレクトリのパスでもモジュールパス（`:feature:home`）でも `*` / `**` の意味は同じ
+- **ファイルの位置に `**` だけを書かない。** `"src/test/kotlin/**".file()` は
+  `src/test/kotlin` までしか「既知のディレクトリ」にならず、`src/test/kotlin/com` が
+  `[UnexpectedDirectory]` になる。`"src/test/kotlin" / "**" / "*".ktFile()` と書く
+- **パスの先頭に `**` を置かない。** `"**/build".ignore()` は `**`（= 任意のパス）自体を
+  既知のディレクトリとして登録してしまい、`[UnexpectedDirectory]` が一切出なくなる
+
+## 検査対象のファイル集合
+
+既定では **git が「このプロジェクトのファイル」と答えたものだけ**を検査する
+（`git ls-files --cached --others --exclude-standard` の結果。追跡中 + 未追跡だが無視されていないもの）。
+`build/` や `.DS_Store`、`local.properties` に役割を与える必要はない。
+
+```kotlin
+architecture {
+    files = gitTracked()      // 既定。書かなくてもこれ
+    // files = wholeTree()    // git を見ず、ファイルツリーをそのまま走査する
+}
+```
+
+- ライブラリ依存はゼロだが、**既定では `git` コマンドをプロジェクトルートで起動する**
+  （`rev-parse --is-inside-work-tree` で可否を判定し、`ls-files` を1回）
+- プロジェクトルートは Konsist と同じ方式で特定する。作業ディレクトリから上へ辿り、
+  `gradlew` / `mvnw` / `.git` の**どれか1つでも**最初に見つかったディレクトリで止まる
+- **`gitTracked()` が効くかどうかは git に訊く**（`git rev-parse --is-inside-work-tree`）。
+  ルート直下に `.git` があるかでは判定しない。**リポジトリのサブディレクトリにある Gradle プロジェクト**
+  （モノレポの `repo/.git` と `repo/app/gradlew`、submodule、このリポジトリの `sample/` など）でも
+  git フィルタは正しく効く。`git ls-files` をルートで実行すれば、そのサブツリーのファイルが
+  ルートからの相対パスで返るため
+- git が「work tree の中だ」と答えた後に `git ls-files` が失敗する場合はエラーにする
+  （黙って全走査に落ちると手元と CI で結果が変わるため）。
+  そもそも git 管理下でない / `git` コマンドが無い場合は `wholeTree()` として走査する
+- `.git/` `.gradle/` `.idea/` は `files` の指定によらず、どの階層にあっても検査されない
 
 ## モジュール構成
 

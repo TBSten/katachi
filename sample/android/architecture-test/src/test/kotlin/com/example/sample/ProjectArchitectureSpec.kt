@@ -1,24 +1,42 @@
 package com.example.sample
 
+import com.example.sample.application.appRoles
+import com.example.sample.application.dataRoles
+import com.example.sample.application.featureRoles
+import com.example.sample.application.uiRoles
+import com.example.sample.gradle.gradleRoles
+import com.example.sample.testing.testingRoles
 import io.kotest.core.spec.style.FreeSpec
 import io.kotest.matchers.collections.shouldContainExactly
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
 import java.io.File
+import me.tbsten.katachi.check.validate
+import me.tbsten.katachi.dsl.Architecture
+import me.tbsten.katachi.dsl.InternalKatachiApi
+import me.tbsten.katachi.dsl.architecture
 
 /**
- * Checks that [projectArchitecture] builds into the model we meant to declare.
+ * Checks that [projectArchitecture] builds into the model we meant to declare, and that the
+ * check it drives really looks at this repository.
  *
- * This is an integration test of the DSL, run from a real Android unit test task rather
- * than from katachi's own JVM tests. What it really guards is that nothing in the AGP
- * toolchain (its bundled Kotlin compiler, its unit test runtime) quietly breaks the DSL —
- * above all the declaration site capture, which reads the JVM stack trace.
+ * **katachi's own integration test. A project adopting katachi does not write this** — it
+ * writes [ProjectArchitectureTest] and nothing else. This one is run from a real Gradle test
+ * task of a sample project rather than from katachi's own JVM tests, and what it guards is
+ * that nothing in the surrounding toolchain quietly breaks the DSL — above all the
+ * declaration site capture, which reads the JVM stack trace.
  *
  * Since the definition is split across `ArchitectureScope` extension functions in sibling
  * packages, the declaration site tests below are also the proof that the split is free:
  * a declaration written in `FeatureRoles.kt` must report `FeatureRoles.kt`, not the
  * `ProjectArchitecture.kt` that called into it.
+ *
+ * The last test is the one that keeps the rest honest: `assert()` passing proves nothing on
+ * its own, because a traversal that reached no file at all would also pass. Removing one
+ * group from an otherwise identical definition has to turn exactly that group's files into
+ * violations.
  */
+@OptIn(InternalKatachiApi::class)
 class ProjectArchitectureSpec : FreeSpec({
     "宣言した group がすべて宣言順にモデルに含まれる" {
         projectArchitecture.allGroups.map { it.qualifiedName } shouldContainExactly
@@ -45,6 +63,7 @@ class ProjectArchitectureSpec : FreeSpec({
             "build/GradleModule",
             "build/GradleRoot",
             "tool/Git",
+            "tool/Documentation",
         )
     }
 
@@ -162,7 +181,41 @@ class ProjectArchitectureSpec : FreeSpec({
         repository.examples.map { it.name } shouldContainExactly
             listOf("UserRepository", "UserRepositoryImpl")
     }
+
+    "役割を1つの group ぶん欠いた定義では、その group が覆っていたファイルだけが違反になる" {
+        // The counterpart of ProjectArchitectureTest: that one proves the definition
+        // accepts the repository, this one proves the traversal actually reached it. An
+        // empty result here would mean the check walked nothing and passed for free.
+        //
+        // `tool` is the group to drop because it owns exactly two files, both at the root,
+        // so the expectation can be written out in full rather than as a count. The order
+        // is katachi's: violations are grouped by kind, and within a kind the traversal
+        // order survives — the root listed by name, where `.gitignore` precedes `README.md`.
+        val violations = architectureWithoutToolRoles.validate()
+
+        violations.map { "[${it.label}] ${it.path}" } shouldContainExactly listOf(
+            "[UnexpectedFile] .gitignore",
+            "[UnexpectedFile] README.md",
+        )
+    }
 })
+
+/**
+ * [projectArchitecture] with `toolRoles()` left out, used by the last test above.
+ *
+ * Deliberately broken, and deliberately kept out of `ProjectArchitecture.kt`: that file is
+ * what a user reads as the worked example of a definition, and a definition that is meant to
+ * fail has no place in it.
+ */
+private val architectureWithoutToolRoles: Architecture = architecture {
+    featureRoles()
+    uiRoles()
+    dataRoles()
+    appRoles()
+    testingRoles()
+    gradleRoles()
+    // toolRoles() — omitted on purpose. `.gitignore` and `README.md` lose their role.
+}
 
 /**
  * Every Kotlin source of this test source set, keyed by file name, so a captured line

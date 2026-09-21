@@ -11,7 +11,11 @@ fun ArchitectureScope.testingRoles() {
             title = "フェイク"
             summary = ":testing の commonMain に置く偽の実装。他モジュールのテストから使う"
             example("FakeUserRepository", "UserRepository の偽実装")
-            layout { }
+            layout {
+                "testing" / "src" / "commonMain" / "kotlin" {
+                    "com/example/kmp/testing" / "Fake*".ktFile()
+                }
+            }
         }
         // Android puts its tests in `src/test`; a KMP module puts them in `commonTest`.
         // Both shapes are one role here.
@@ -20,7 +24,16 @@ fun ArchitectureScope.testingRoles() {
             summary = "各モジュールのテスト。KMP モジュールは commonTest、" +
                 "純 Android / 純 JVM モジュールは src/test"
             example("ProjectArchitectureSpec", "この定義そのものを検証するテスト")
-            layout { }
+            // Only `:app:android` has test code of its own today, and it is an Android
+            // module, so `src/test` is the one place declared. A KMP module would add
+            // `src/commonTest/kotlin`; no module in this sample has one yet, and a path
+            // declared for a directory that does not exist would claim a shape the sample
+            // does not have.
+            layout {
+                "app" / "android" / "src" / "test" / "kotlin" {
+                    "com/example/kmp/app" / "*Spec".ktFile()
+                }
+            }
         }
         // The definition this very file is part of. It is not test code and belongs to no
         // layer of the app, so it gets a role of its own instead of hiding inside `Test`:
@@ -31,7 +44,15 @@ fun ArchitectureScope.testingRoles() {
                 "このプロジェクトの定義。どのレイヤーにも属さないので専用モジュールに置く"
             example("ProjectArchitecture.kt", "定義の入口。役割ごとの拡張関数を呼ぶだけ")
             example("UiRoles.kt", "ui group の役割を宣言する ArchitectureScope 拡張関数")
-            layout { }
+            // Two patterns: the entry point sits in `com/example/kmp` itself, and each
+            // concern gets one package below it (`application`, `gradle`, `testing`,
+            // `tool`). The `*` in the middle is that package.
+            layout {
+                "architecture-test" / "src" / "test" / "kotlin" {
+                    "com/example/kmp" / "*".ktFile()
+                    "com/example/kmp" / "*" / "*".ktFile()
+                }
+            }
         }
     }
 }

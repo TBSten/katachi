@@ -17,7 +17,12 @@ fun ArchitectureScope.apiRoles() {
             title = "コントローラ"
             summary = "HTTP のリクエストを1つ受け取り、対応する Service を呼んで結果を返す"
             example("HealthController", "ヘルスチェックの結果を返す")
-            layout { }
+            layout {
+                // Step 2 spells every level out as a plain directory. `src/main` is not yet
+                // `mainSourceSet` and `com/example` is not yet `modulePackage`: those arrive in
+                // step 3, and the check has to give the same answer afterwards.
+                "src" / "main" / "kotlin" / "com" / "example" / "controller" / "*Controller".ktFile()
+            }
         }
 
         "KtorPlugin" {
@@ -25,7 +30,11 @@ fun ArchitectureScope.apiRoles() {
             summary = "Ktor の Application に対する横断的な設定を1つ行う"
             example("Routing", "コントローラを routing ツリーに接続する")
             example("Serialization", "JSON の content negotiation を設定する")
-            layout { }
+            layout {
+                // No suffix to key on: a plugin file is named after the Ktor feature it
+                // installs, so the package itself is what says "this is a plugin".
+                "src" / "main" / "kotlin" / "com" / "example" / "plugin" / "*".ktFile()
+            }
         }
     }
 }

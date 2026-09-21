@@ -7,8 +7,16 @@
 [versions]
 ktor = "3.6.0"
 logback = "1.6.3"
+# Matches the junit-platform 1.13.4 that kotest-runner-junit5 6.2.5 brings in, so the two
+# engines agree on the platform they register with.
+junitJupiter = "5.13.4"
 
 [libraries]
+# kotest-runner-junit5 puts junit-jupiter-API on the compile classpath but registers only
+# kotest's own engine. `ProjectArchitectureTest` is a plain JUnit test - the form a user
+# writes - so the Jupiter engine has to be on the test runtime classpath as well, or the
+# test is discovered by nothing and silently never runs.
+junitJupiterEngine = { module = "org.junit.jupiter:junit-jupiter-engine", version.ref = "junitJupiter" }
 ktorServerCore = { module = "io.ktor:ktor-server-core", version.ref = "ktor" }
 ktorServerNetty = { module = "io.ktor:ktor-server-netty", version.ref = "ktor" }
 ktorServerContentNegotiation = { module = "io.ktor:ktor-server-content-negotiation", version.ref = "ktor" }

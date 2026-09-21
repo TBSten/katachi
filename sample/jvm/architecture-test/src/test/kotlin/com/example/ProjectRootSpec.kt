@@ -6,10 +6,11 @@ import io.kotest.matchers.shouldBe
 import java.io.File
 
 /**
- * Sentinel for the project-root detection that lands in step 2.
+ * Sentinel for katachi's project-root detection.
  *
- * katachi will locate the project root by walking up from the working directory to the
- * first `gradlew`. The tests now run from `sample/jvm/architecture-test`, one level deeper
+ * katachi locates the project root by walking up from the working directory to the first
+ * `gradlew`, and every path in the layout is relative to what it finds. The tests run from
+ * `sample/jvm/architecture-test`, one level deeper
  * than before, so the walk passes through a module directory first - which is exactly the
  * normal case for a multi-module project, and must still land on `sample/jvm`.
  *

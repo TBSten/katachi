@@ -25,4 +25,11 @@ dependencies {
     testImplementation(libs.katachi)
     testImplementation(libs.kotestRunnerJunit5)
     testImplementation(libs.kotestAssertionsCore)
+    // `ProjectArchitectureTest` — the one test a user writes — is a plain JUnit 5 test, so
+    // the sample shows the adoption step in the shape a project is most likely to already
+    // have. kotest-runner-junit5 brings `junit-jupiter-api` along transitively but not the
+    // Jupiter *engine*, and without the engine a `@Test` method is silently never run, so
+    // the aggregate artifact is declared here on purpose. kotest's own engine keeps
+    // running the `*Spec` classes next to it.
+    testImplementation(sampleLibs.junitJupiter)
 }

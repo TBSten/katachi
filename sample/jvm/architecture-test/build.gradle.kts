@@ -25,4 +25,9 @@ dependencies {
     testImplementation(libs.katachi)
     testImplementation(libs.kotestRunnerJunit5)
     testImplementation(libs.kotestAssertionsCore)
+
+    // The user-facing test (`ProjectArchitectureTest`) is a plain JUnit test. kotest's
+    // runner only registers kotest's engine, so without this one the test compiles, is
+    // discovered by no engine, and reports as passing without ever calling `assert()`.
+    testRuntimeOnly(sampleLibs.junitJupiterEngine)
 }

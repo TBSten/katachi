@@ -11,7 +11,9 @@ fun ArchitectureScope.dataRoles() {
             title = "リポジトリ"
             summary = "データの取得・保存を担い、取得元の詳細をドメインから隠す"
             example("HealthRepository", "稼働状態を読み出す")
-            layout { }
+            layout {
+                "src" / "main" / "kotlin" / "com" / "example" / "repository" / "*Repository".ktFile()
+            }
         }
     }
 }

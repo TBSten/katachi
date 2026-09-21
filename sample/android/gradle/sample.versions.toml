@@ -18,6 +18,9 @@ androidxLifecycle = "2.10.0"
 androidxNavigation = "2.9.8"
 # Compose 1.11.4 / Material3 1.4.0.
 composeBom = "2026.06.01"
+# Matches the JUnit Platform 1.13.4 that kotest 6.2.5 already puts on the test classpath.
+# Only `:architecture-test` uses it, for the single plain JUnit test a user would write.
+junitJupiter = "5.13.4"
 
 [libraries]
 androidxActivityCompose = { module = "androidx.activity:activity-compose", version.ref = "androidxActivity" }
@@ -36,6 +39,9 @@ composeUi = { module = "androidx.compose.ui:ui" }
 # is a normal `implementation`.
 composeUiTooling = { module = "androidx.compose.ui:ui-tooling" }
 composeUiToolingPreview = { module = "androidx.compose.ui:ui-tooling-preview" }
+# The aggregate artifact: `junit-jupiter-api` to compile against plus the engine that runs
+# it. Declaring only the API would compile and then run nothing.
+junitJupiter = { module = "org.junit.jupiter:junit-jupiter", version.ref = "junitJupiter" }
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }

@@ -74,7 +74,10 @@ Compose / AndroidX の実依存を入れてあり、`assembleDebug` は実際に
 katachi の推奨導入形そのもので、3サンプルとも同じ形になっている。
 
 - `ProjectArchitecture.kt` — `architecture { }` 本体。下の拡張関数を呼ぶだけ
-- `ProjectArchitectureSpec.kt` — 組み上がった `Architecture` の検証
+- `ProjectArchitectureTest.kt` — **利用者が書くのはこれだけ。** `projectArchitecture.assert()` を
+  呼ぶ JUnit のテスト1個。違反は1つの失敗メッセージに全件まとまって出る
+- `ProjectArchitectureSpec.kt` — 組み上がった `Architecture` の検証と、**わざと役割を欠いた定義**で
+  期待どおりの違反が出ることの確認。katachi リポジトリ固有の自己検証で、導入するプロジェクトには要らない
 - `ProjectRootSpec.kt` — プロジェクトルート特定の前提条件を守る番兵
 
 group と役割の定義は、関心ごとに package を分けて `ArchitectureScope` の拡張関数にしてある。
@@ -84,14 +87,48 @@ katachi が推奨する分割の形そのもので、サンプルがその実例
 - `testing/` — テスト関連（`TestingRoles.kt`）
 - `gradle/` — ビルド設定（`GradleRoles.kt`）。`.gitignore` が `build/` を無視するので
   package 名は `build` ではなく `gradle`
-- `tool/` — そのほかのツール（`ToolRoles.kt`）。いまは git だけ
+- `application/` には `FeatureRoles.kt` も含む（`:feature:*` の `Screen` / `ViewModel` / `Route`）
+- `tool/` — そのほかのツール（`ToolRoles.kt`）。いまは `.gitignore` と `README.md`
 
 拡張関数は **`inline` にしない**。宣言位置はスタックトレースから取るので、inline すると
 呼び出し元ファイルの存在しない行を指すようになる。`ProjectArchitectureSpec` は各宣言の
 `declaredAt` がそれを書いたファイル（`UiRoles.kt` など）を指すことを検証していて、
 これが分割しても宣言位置が壊れないことの証明になっている。
 
-`layout { }` の中身は実装ステップ2以降で書き足す。
+### `layout { }` の書き方（実装ステップ2 の状態）
+
+いまの `layout { }` は**ディレクトリとファイルだけ**で書いてある。モジュールも sourceSet も
+package も、素のディレクトリとして全部書き下す。
+
+```kotlin
+// ui/Theme
+"ui" / "src" / "main" / "kotlin" / "com" / "example" / "sample" / "ui" / "theme" / "AppTheme".ktFile()
+```
+
+冗長なのは意図的で、実装ステップ3 で同じ内容を `":ui".module { }` ・ `mainSourceSet` ・
+`modulePackage` ・ `wildcards` に書き直したときに**検査結果が変わらないこと**が、
+糖衣が正しく展開されている証拠になる。
+
+ステップ2 で使っていない機能: `"...".module { }`、sourceSet、`modulePackage`、`wildcards`、
+`konsist { }`、Warning。
+
+#### 生成物をどう扱っているか
+
+**どの役割にも書いていない。** 既定の `files = gitTracked()` が
+`git ls-files --cached --others --exclude-standard` の結果だけを検査対象にするので、
+`.gitignore` が無視するものは最初から検査に上がってこない。
+
+このサンプルの**プロジェクトルートは `sample/android`** で、そこに `.git` は無い
+（リポジトリの `.git` は2階層上）。それでも git のフィルタは効く。katachi は
+「ルート直下に `.git` があるか」ではなく `git rev-parse --is-inside-work-tree` で判定し、
+`git ls-files` をルートで実行すると**そのサブツリーのファイルがルートからの相対パスで**返るため。
+
+- 各モジュールの `build/`、ルートの `build/` と `.kotlin/` — `.gitignore` 済み
+- `local.properties` — `.gitignore` 済み
+- `.gradle/` — `.gitignore` 済み。加えて katachi の固定除外（`.git` / `.gradle` / `.idea`）にも入る
+
+逆に `files = wholeTree()` に切り替えると、これらが軒並み `Unexpected` として出る。
+それがフィルタの効きの確認方法でもある。
 
 ### なぜ `:app` ではなく専用モジュールなのか
 

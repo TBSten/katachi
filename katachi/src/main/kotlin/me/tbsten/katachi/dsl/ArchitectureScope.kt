@@ -1,5 +1,7 @@
 package me.tbsten.katachi.dsl
 
+import me.tbsten.katachi.check.FileSelection
+
 /**
  * Anything that can hold groups: the root of the DSL and a group itself.
  *
@@ -30,11 +32,31 @@ public sealed interface GroupContainerScope {
  * is what decides the role's documentation output directory.
  */
 @KatachiDsl
-public sealed interface ArchitectureScope : GroupContainerScope
+public sealed interface ArchitectureScope : GroupContainerScope {
+    /**
+     * Which files of the project the check looks at. Defaults to [gitTracked].
+     *
+     * ```kotlin
+     * val projectArchitecture = architecture {
+     *   files = wholeTree()
+     *   domainRoles()
+     * }
+     * ```
+     */
+    public var files: FileSelection
+
+    /** Only the files git reports for this project. See [FileSelection.GitTracked]. */
+    public fun gitTracked(): FileSelection = FileSelection.GitTracked
+
+    /** Every file below the project root, whatever git thinks of it. See [FileSelection.WholeTree]. */
+    public fun wholeTree(): FileSelection = FileSelection.WholeTree
+}
 
 internal class ArchitectureScopeImpl : ArchitectureScope {
     private val groups = mutableListOf<Group>()
     private val declaredGroupNames = DeclaredNames()
+
+    override var files: FileSelection = FileSelection.GitTracked
 
     override fun String.group(documented: Boolean, block: GroupScope.() -> Unit) {
         groups += declareGroup(
@@ -47,5 +69,5 @@ internal class ArchitectureScopeImpl : ArchitectureScope {
         )
     }
 
-    fun build(): Architecture = Architecture(groups.toList())
+    fun build(): Architecture = Architecture(groups = groups.toList(), files = files)
 }

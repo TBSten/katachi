@@ -19,10 +19,14 @@ import me.tbsten.katachi.dsl.architecture
  * project grows. katachi captures the declaration site of every group and role, so a
  * violation still points at the file the user actually wrote, not at this one.
  *
- * Step 1 declares groups and roles only. Every `layout { }` is still an empty block: the
- * path DSL that says *where* each role's files live arrives in step 2, and the blocks are
- * stored unevaluated until then. An empty block is kept on each role on purpose, so that
- * step 2 only has to fill them in.
+ * Every role now carries a `layout { }` saying where its files may live, written with plain
+ * directories and files. A module is spelled `"architecture-test" { ... }` and a source set
+ * `"src" / "main"`, because step 2 deliberately brings no Gradle knowledge: `.module { }`,
+ * `mainSourceSet` and `modulePackage` arrive in step 3, and the check has to give the same
+ * answer once it is rewritten with them.
+ *
+ * katachi denies by default, so this is an allow list: every file in the project has to be
+ * covered by some role, and anything else fails `ProjectArchitectureTest`.
  */
 val projectArchitecture: Architecture = architecture {
     apiRoles()

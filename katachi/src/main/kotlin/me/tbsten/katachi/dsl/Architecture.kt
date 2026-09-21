@@ -1,5 +1,7 @@
 package me.tbsten.katachi.dsl
 
+import me.tbsten.katachi.check.FileSelection
+
 /**
  * The whole architecture definition: the groups declared in `architecture { }` and,
  * through them, every role.
@@ -11,6 +13,8 @@ package me.tbsten.katachi.dsl
 public class Architecture internal constructor(
     /** Top level groups, in declaration order. */
     public val groups: List<Group>,
+    /** Which files of the project the check looks at. */
+    public val files: FileSelection = FileSelection.GitTracked,
 ) {
     /** Every group, parents before their children, in declaration order. */
     public val allGroups: List<Group> = groups.flatMap { it.selfAndDescendants() }

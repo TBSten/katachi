@@ -1,23 +1,39 @@
 package com.example
 
+import com.example.application.apiRoles
+import com.example.application.dataRoles
+import com.example.application.domainRoles
+import com.example.gradle.gradleRoles
+import com.example.testing.testingRoles
+import com.example.tool.toolRoles
 import io.kotest.core.spec.style.FreeSpec
 import io.kotest.matchers.collections.shouldContainExactly
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
 import java.io.File
+import me.tbsten.katachi.check.validate
+import me.tbsten.katachi.dsl.Architecture
+import me.tbsten.katachi.dsl.InternalKatachiApi
+import me.tbsten.katachi.dsl.architecture
 
 /**
- * Checks that [projectArchitecture] builds into the model we expect.
+ * Checks that [projectArchitecture] builds into the model we expect, and that the check it
+ * drives actually looks at this project.
  *
- * This is the sample's half of the step 1 acceptance criteria: katachi's own unit tests
- * prove the DSL works in isolation, and this proves it still works when the definition is
+ * katachi's own integration test, not part of adopting katachi: a project that uses katachi
+ * writes `ProjectArchitectureTest` and nothing else. katachi's unit tests prove the DSL and
+ * the traversal work in isolation; this proves they still work when the definition is
  * written by a user, in a user's build, against a katachi resolved through a composite
  * build.
  *
  * Since the definition was split into `ArchitectureScope` extension functions, it also
  * proves the harder half: declaration sites still point at the file the user wrote, even
  * though `ProjectArchitecture.kt` no longer contains a single `group` call.
+ *
+ * `validate()` is `@InternalKatachiApi` on purpose - a user asserts, and does not read the
+ * violations - so this file opts in where a user would not have to.
  */
+@OptIn(InternalKatachiApi::class)
 class ProjectArchitectureSpec : FreeSpec({
     "宣言した group がすべてモデルに含まれる" {
         projectArchitecture.allGroups.map { it.qualifiedName }.toSet() shouldBe setOf(
@@ -124,10 +140,53 @@ class ProjectArchitectureSpec : FreeSpec({
         model.examples.map { it.name } shouldBe listOf("Health")
     }
 
-    "すべての役割が layout を1つ持つ。ステップ2 で中身を埋める場所になる" {
+    "すべての役割が layout を1つ持つ" {
         projectArchitecture.allRoles.filter { it.layouts.size != 1 } shouldBe emptyList()
     }
+
+    "役割を1つ欠いた定義では、その役割が覆っていたファイルが Unexpected になる" {
+        // "assert() が通る" alone cannot tell a working check from one that walks nothing:
+        // an empty traversal passes just as happily. Dropping `app/Entrypoint` leaves
+        // `Application.kt` in a directory other roles still claim, so the file itself has to
+        // be reached and matched for this to fail - which is the part being proven here.
+        architectureWithoutEntrypointRole.validate().map { "[${it.label}] ${it.path}" } shouldBe listOf(
+            "[UnexpectedFile] src/main/kotlin/com/example/Application.kt",
+        )
+    }
+
+    "正しい定義では違反が1件も出ない" {
+        // The same run ProjectArchitectureTest makes, read as a list rather than as a thrown
+        // error, so a failure here names the violations instead of only the message.
+        projectArchitecture.validate() shouldBe emptyList()
+    }
 })
+
+/**
+ * [projectArchitecture] with `app/Entrypoint` removed, and nothing else changed.
+ *
+ * Deliberately broken, and deliberately kept out of `ProjectArchitecture.kt`: a reader
+ * looking for the definition to copy should never meet it. The rest of the `app` group is
+ * repeated here rather than reused, because `appRoles()` declares both roles at once and a
+ * group name may only be declared once.
+ */
+private val architectureWithoutEntrypointRole: Architecture = architecture {
+    apiRoles()
+    domainRoles()
+    dataRoles()
+    "app".group {
+        "ServerConfig" {
+            layout {
+                "src" / "main" / "resources" {
+                    "application.conf".file()
+                    "logback.xml".file()
+                }
+            }
+        }
+    }
+    testingRoles()
+    gradleRoles()
+    toolRoles()
+}
 
 /** Which file each group - and therefore each of its roles - is declared in. */
 private val DECLARING_FILES: Map<String, String> = mapOf(

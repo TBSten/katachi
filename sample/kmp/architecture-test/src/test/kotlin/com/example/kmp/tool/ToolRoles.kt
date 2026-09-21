@@ -21,7 +21,9 @@ fun ArchitectureScope.toolRoles() {
             summary = ".gitignore など"
             documented = false
             example(".gitignore", "生成物を Git の管理から外す")
-            layout { }
+            layout {
+                ".gitignore".file()
+            }
         }
     }
 }

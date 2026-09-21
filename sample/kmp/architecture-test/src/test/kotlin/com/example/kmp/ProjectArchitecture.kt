@@ -13,9 +13,18 @@ import me.tbsten.katachi.dsl.architecture
 /**
  * The architecture of this sample, described with katachi.
  *
- * Step 1 only declares groups and roles; every `layout { }` is still empty. The paths each
- * role may occupy arrive in step 2, which is also when the definition starts to be checked
- * against the file system.
+ * Every role declares the paths it may occupy in its own `layout { }`, written as plain
+ * directories and files: a module is a directory, a source set is a directory, a package is
+ * a chain of directories. That is deliberately the most long-winded way to say it — step 3
+ * replaces the repetition with `.module { }`, source sets and `modulePackage`, and the check
+ * has to keep producing the same answer.
+ *
+ * `files` is not set, so the default `gitTracked()` applies, and it does the work: `build/`,
+ * `.kotlin/` and `local.properties` are never offered to the check, so no role has to claim
+ * them. This sample is a directory of the katachi repository rather than a repository of its
+ * own — its project root is the directory holding its own `gradlew`, and the `.git` is two
+ * levels above — but that changes nothing, because katachi asks git whether the root is
+ * inside a work tree rather than looking for a `.git` beside it.
  *
  * Kept in a top level `val`: building it reads nothing and runs no check, so the same value
  * can be shared by every test and, later, by documentation generation.

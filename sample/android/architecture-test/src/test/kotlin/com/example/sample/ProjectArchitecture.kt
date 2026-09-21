@@ -26,13 +26,19 @@ import me.tbsten.katachi.dsl.architecture
  * the sample is also the worked example of it. Note that an extension function cannot be
  * called by its fully qualified name, which is why the imports above are needed.
  *
- * Step 1 only declares groups and roles: every `layout { }` is still empty, and filling
- * them in is what step 2 is for. Building this value reads nothing from disk, so it is
- * safe to hold in a top level `val`.
+ * Step 2 fills in every `layout { }` with directories and files only: modules, source sets
+ * and base packages are all written out as plain directories, which is verbose on purpose.
+ * Step 3 rewrites the same declarations with `".module { }"`, source sets and
+ * `modulePackage`, and the check result has to come out identical.
  *
- * [ProjectArchitectureSpec] asserts that every declaration's `declaredAt` points at the
- * file it is actually written in — not at this one — which is how the sample notices if
- * capturing the declaration site ever breaks in a real Android unit test run.
+ * Building this value reads nothing from disk — the `layout { }` blocks are deferred until
+ * a check runs — so it is safe to hold in a top level `val`.
+ *
+ * [ProjectArchitectureTest] is the whole of what a user writes. [ProjectArchitectureSpec]
+ * is katachi's own integration test on top of it, and asserts among other things that every
+ * declaration's `declaredAt` points at the file it is actually written in — not at this one
+ * — which is how the sample notices if capturing the declaration site ever breaks in a real
+ * Android unit test run.
  */
 val projectArchitecture: Architecture = architecture {
     featureRoles()

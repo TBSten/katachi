@@ -11,7 +11,10 @@ import java.io.File
 
 /**
  * Checks the definition under `src/test/kotlin/com/example/kmp` against the model katachi
- * builds from it. Step 1 has no `assert()` yet, so the model is inspected directly.
+ * builds from it: names, titles, summaries and declaration sites.
+ *
+ * Whether the repository matches that definition is a different question, asked by
+ * [ProjectLayoutSpec] with one `assert()`.
  */
 class ProjectArchitectureSpec : FreeSpec({
     "宣言した group がすべてモデルに含まれる" {

@@ -1,0 +1,174 @@
+package me.tbsten.katachi.check
+
+import java.io.File
+import java.io.IOException
+import java.util.concurrent.TimeUnit
+import me.tbsten.katachi.dsl.InternalKatachiApi
+
+/** git could not answer which files belong to the project. */
+@InternalKatachiApi
+public class GitUnavailableException internal constructor(
+    message: String,
+    cause: Throwable? = null,
+) : IllegalStateException(message, cause)
+
+/**
+ * A view of [delegate] that only shows the files git considers part of the project.
+ *
+ * A directory is visible when at least one visible file sits somewhere below it, so an
+ * entirely ignored directory such as `build/` disappears rather than showing up empty.
+ *
+ * Paths outside [root] are passed through untouched: the filter is about what belongs to the
+ * project, and nothing outside the project is part of that question.
+ *
+ * @param trackedPaths paths relative to [root], `/` separated, as `git ls-files` prints them.
+ */
+@InternalKatachiApi
+public class GitTrackedFileSystem(
+    private val delegate: KatachiFileSystem,
+    private val root: FsPath,
+    trackedPaths: Collection<String>,
+) : KatachiFileSystem {
+    private val visibleFiles: Set<FsPath>
+    private val visibleDirectories: Set<FsPath>
+
+    init {
+        val files = mutableSetOf<FsPath>()
+        val directories = mutableSetOf(root)
+        for (relative in trackedPaths) {
+            val path = root / relative
+            if (path == root) continue
+            files += path
+            var parent = path.parent
+            while (parent != null && parent.startsWith(root)) {
+                directories += parent
+                parent = parent.parent
+            }
+        }
+        visibleFiles = files
+        visibleDirectories = directories
+    }
+
+    override val workingDirectory: FsPath get() = delegate.workingDirectory
+
+    override fun exists(path: FsPath): Boolean =
+        (!isFiltered(path) || isVisible(path)) && delegate.exists(path)
+
+    override fun isDirectory(path: FsPath): Boolean =
+        (!isFiltered(path) || path in visibleDirectories) && delegate.isDirectory(path)
+
+    override fun list(directory: FsPath): List<FsPath> =
+        delegate.list(directory).filter { !isFiltered(it) || isVisible(it) }
+
+    override fun toString(): String =
+        "GitTrackedFileSystem($root, files=${visibleFiles.size})"
+
+    private fun isFiltered(path: FsPath): Boolean = path != root && path.startsWith(root)
+
+    private fun isVisible(path: FsPath): Boolean =
+        path in visibleFiles || path in visibleDirectories
+}
+
+/** How long to wait for `git ls-files` before giving up. */
+private const val GIT_TIMEOUT_SECONDS: Long = 60L
+
+private val GIT_LS_FILES: List<String> = listOf(
+    "git",
+    "ls-files",
+    "--cached",
+    "--others",
+    "--exclude-standard",
+    "-z",
+)
+
+private val GIT_INSIDE_WORK_TREE: List<String> = listOf("git", "rev-parse", "--is-inside-work-tree")
+
+/**
+ * Asks git whether [root] is inside a work tree.
+ *
+ * This is the question that decides whether [FileSelection.GitTracked] applies, and it is
+ * deliberately asked of git rather than answered by looking for a `.git` entry at [root].
+ * A Gradle project frequently sits below the repository root — katachi's own samples do,
+ * and so does any build inside a monorepo — and there `.git` is further up while
+ * `git ls-files` run at [root] still reports exactly that subtree.
+ *
+ * Returns `false` when git is missing or says no, which makes the check fall back to
+ * walking the whole tree. A failure *after* git has claimed the root is a different matter
+ * and is reported: see [gitLsFiles].
+ */
+@OptIn(InternalKatachiApi::class)
+internal fun isInsideGitWorkTree(root: FsPath): Boolean {
+    val process = try {
+        ProcessBuilder(GIT_INSIDE_WORK_TREE)
+            .directory(File(root.value))
+            .redirectErrorStream(true)
+            .start()
+    } catch (_: IOException) {
+        return false
+    }
+    val output = process.inputStream.use { it.readBytes() }.toString(Charsets.UTF_8)
+    if (!process.waitFor(GIT_TIMEOUT_SECONDS, TimeUnit.SECONDS)) {
+        process.destroyForcibly()
+        return false
+    }
+    return process.exitValue() == 0 && output.trim() == "true"
+}
+
+/**
+ * Wraps [delegate] so that only the files git reports for [root] are visible.
+ *
+ * git is run **once**, at the root, and the answer is kept as a set. The traversal above
+ * this never spawns a process.
+ *
+ * @throws GitUnavailableException when git cannot be run or fails.
+ */
+@InternalKatachiApi
+public fun gitTrackedFileSystem(delegate: KatachiFileSystem, root: FsPath): KatachiFileSystem =
+    GitTrackedFileSystem(delegate, root, gitLsFiles(root))
+
+/**
+ * Runs `git ls-files --cached --others --exclude-standard -z` in [root].
+ *
+ * `--cached` is what git tracks, `--others --exclude-standard` adds files that are not
+ * tracked yet but are not ignored either — a file gets checked the moment it is written,
+ * without waiting for a `git add`. `-z` keeps names with spaces or non-ASCII characters
+ * intact, which git would otherwise quote.
+ */
+@OptIn(InternalKatachiApi::class)
+internal fun gitLsFiles(root: FsPath): List<String> {
+    val commandLine = GIT_LS_FILES.joinToString(" ")
+    val process = try {
+        ProcessBuilder(GIT_LS_FILES).directory(File(root.value)).start()
+    } catch (e: IOException) {
+        throw GitUnavailableException(
+            "Cannot run `$commandLine` in $root. katachi checks the files git reports for " +
+                "this project; set `files = wholeTree()` in `architecture { }` to walk the " +
+                "whole directory tree instead.",
+            e,
+        )
+    }
+
+    // stderr is drained on its own thread: a process that fills the error pipe while we are
+    // still reading stdout would otherwise block forever.
+    val errorOutput = StringBuilder()
+    val errorDrain = Thread {
+        runCatching { process.errorStream.use { errorOutput.append(it.readBytes().toString(Charsets.UTF_8)) } }
+    }
+    errorDrain.isDaemon = true
+    errorDrain.start()
+
+    val output = process.inputStream.use { it.readBytes() }.toString(Charsets.UTF_8)
+    if (!process.waitFor(GIT_TIMEOUT_SECONDS, TimeUnit.SECONDS)) {
+        process.destroyForcibly()
+        throw GitUnavailableException("`$commandLine` in $root did not finish within $GIT_TIMEOUT_SECONDS seconds.")
+    }
+    errorDrain.join(TimeUnit.SECONDS.toMillis(1))
+
+    val exitCode = process.exitValue()
+    if (exitCode != 0) {
+        throw GitUnavailableException(
+            "`$commandLine` in $root exited with $exitCode: ${errorOutput.toString().trim()}",
+        )
+    }
+    return output.split('\u0000').filter { it.isNotEmpty() }
+}
