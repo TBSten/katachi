@@ -56,7 +56,7 @@ internal class ArchitectureScopeImpl : ArchitectureScope {
     private val roles = mutableListOf<Role>()
 
     /**
-     * One namespace for groups and roles alike, unlike a group block, which keeps two.
+     * One namespace for groups and roles alike, exactly as a group block keeps one.
      *
      * A top level group's `qualifiedName` is its bare name, and so is a root role's, so
      * `"domain".group { }` and `"domain" { }` would both answer to `"domain"` and nothing

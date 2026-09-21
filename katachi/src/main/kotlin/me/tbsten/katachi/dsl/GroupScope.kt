@@ -61,15 +61,10 @@ internal class GroupScopeImpl(private val path: List<String>) : GroupScope {
     val groups = mutableListOf<Group>()
     val roles = mutableListOf<Role>()
 
-    // Two namespaces rather than the root's one: inside a group, a group and a role may still
-    // share a name.
-    //
-    // TODO: decide whether they should share one namespace here too. `"x".group { "domain"
-    //  .group { }; "domain" { } }` gives both the qualified name "x/domain", which is the
-    //  ambiguity the root now rejects. Closing it would reject definitions that are accepted
-    //  today, so it is a decision of its own rather than part of allowing root roles.
-    private val declaredGroupNames = DeclaredNames()
-    private val declaredRoleNames = DeclaredNames()
+    // One namespace for groups and roles alike, the same as the root of `architecture { }`.
+    // `"x".group { "domain".group { }; "domain" { } }` gives both the qualified name
+    // "x/domain", so a reference to it could not say which one it means.
+    private val declaredNames = DeclaredNames()
 
     override var title: String
         get() = metadata[Title] ?: path.last()
@@ -88,7 +83,7 @@ internal class GroupScopeImpl(private val path: List<String>) : GroupScope {
             name = this,
             parentPath = path,
             declaredAt = captureDeclarationSite(),
-            declaredNames = declaredGroupNames,
+            declaredNames = declaredNames,
             block = block,
         )
     }
@@ -98,7 +93,7 @@ internal class GroupScopeImpl(private val path: List<String>) : GroupScope {
             name = this,
             groupPath = path,
             declaredAt = captureDeclarationSite(),
-            declaredNames = declaredRoleNames,
+            declaredNames = declaredNames,
             block = block,
         )
     }

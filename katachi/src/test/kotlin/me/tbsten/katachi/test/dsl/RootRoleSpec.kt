@@ -185,18 +185,22 @@ class RootRoleSpec : FreeSpec({
             thrown.name shouldBe "domain"
         }
 
-        // ルートだけが group と役割で名前空間を共有する。group の中は従来どおり別々で、
-        // ここが落ちたら ArchitectureScopeImpl / GroupScopeImpl の非対称が崩れている。
-        "group の中では同名の group と役割を宣言できる" {
-            val arch = architecture {
-                "x".group {
-                    "domain".group { }
-                    "domain" { }
+        // ルートと group の中で規則が同じであることの証拠。かつては group の中だけ
+        // group 名と役割名が別々の名前空間で、この定義は通っていた。
+        "group の中でも同名の group と役割を宣言するとエラーになる" {
+            val thrown = shouldThrow<KatachiDuplicateDeclarationException> {
+                architecture {
+                    "x".group {
+                        "domain".group { }
+                        "domain" { }
+                    }
                 }
             }
 
-            arch.allGroups.map { it.qualifiedName } shouldContainExactly listOf("x", "x/domain")
-            arch.allRoles.map { it.qualifiedName } shouldContainExactly listOf("x/domain")
+            thrown.name shouldBe "domain"
+            thrown.kind shouldBe DeclarationKind.Role
+            thrown.firstKind shouldBe DeclarationKind.Group
+            thrown.scope shouldBe "group \"x\""
         }
 
         "ルート直下の役割と、group の中の同名の役割は衝突しない" {

@@ -33,9 +33,9 @@ internal class NameReservation(
  * against finished siblings would see an empty list at that moment and let the duplicate
  * through.
  *
- * Which declarations share one instance is the scope's decision, and the two scopes decide
- * differently: `architecture { }` reserves groups and roles in a single instance, a group
- * block keeps one for each. See `ArchitectureScopeImpl` for why the root shares.
+ * Every container keeps one instance and reserves its groups and its roles in it, so a group
+ * and a role declared side by side cannot share a name. See `ArchitectureScopeImpl` for why
+ * they share: both would answer to the same qualified name.
  */
 internal class DeclaredNames {
     private val reservations = mutableMapOf<String, NameReservation>()

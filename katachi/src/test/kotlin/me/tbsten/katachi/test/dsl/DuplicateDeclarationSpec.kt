@@ -94,6 +94,69 @@ class DuplicateDeclarationSpec : FreeSpec({
             listOf("domain/Repository", "data/Repository")
     }
 
+    // group と役割は同じ名前空間を共有する。ルート直下だけの規則ではなく、どの深さの
+    // group の中でも同じ。両方の qualifiedName が同一になり、参照が指す先を言えなくなる。
+    "ネストした group の中でも同名の group と役割は衝突する" {
+        val thrown = shouldThrow<KatachiDuplicateDeclarationException> {
+            architecture {
+                "x".group {
+                    "y".group {
+                        "domain".group { }
+                        "domain" { }
+                    }
+                }
+            }
+        }
+
+        thrown.name shouldBe "domain"
+        thrown.kind shouldBe DeclarationKind.Role
+        thrown.firstKind shouldBe DeclarationKind.Group
+        thrown.scope shouldBe "group \"x/y\""
+    }
+
+    "group の中の group と役割の衝突も、ルート直下と同じ形の文面になる" {
+        val thrown = shouldThrow<KatachiDuplicateDeclarationException> {
+            architecture {
+                "x".group {
+                    "domain".group { }
+                    "domain" { }
+                }
+            }
+        }
+
+        thrown.message shouldBe listOf(
+            "Duplicate role \"domain\" declared at ${thrown.declaredAt}.",
+            "A group of that name was already declared at ${thrown.firstDeclaredAt}, in group \"x\".",
+            "A group and a role in group \"x\" would both be referred to as \"domain\". " +
+                "Rename one of them, or move the role into a group.",
+        ).joinToString("\n")
+    }
+
+    "group の中で役割と同名の group を宣言してもエラーになる" {
+        val thrown = shouldThrow<KatachiDuplicateDeclarationException> {
+            architecture {
+                "x".group {
+                    "domain" { }
+                    "domain".group { }
+                }
+            }
+        }
+
+        thrown.kind shouldBe DeclarationKind.Group
+        thrown.firstKind shouldBe DeclarationKind.Role
+    }
+
+    // 衝突するのは同じ親の下だけ、という線引き。ここが落ちたら共有の範囲が広がりすぎている。
+    "別々の group でなら、group 名と役割名に同じ名前を使える" {
+        val arch = architecture {
+            "a".group { "domain".group { } }
+            "b".group { "domain" { } }
+        }
+
+        arch.allGroups.map { it.qualifiedName } shouldContainExactly listOf("a", "a/domain", "b")
+        arch.allRoles.map { it.qualifiedName } shouldContainExactly listOf("b/domain")
+    }
+
     "親子の group が同名でも衝突しない" {
         val arch = architecture {
             "model".group { "model".group { } }

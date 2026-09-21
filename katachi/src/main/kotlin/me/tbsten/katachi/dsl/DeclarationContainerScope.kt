@@ -64,8 +64,9 @@ public sealed interface DeclarationContainerScope {
      *
      * A role declared directly in `architecture { }` carries an empty
      * [group path][Role.groupPath], so its [qualified name][Role.qualifiedName] is the role
-     * name alone. Inside `architecture { }` a group and a role therefore cannot share a name:
-     * both would answer to it, and a reference could not say which was meant.
+     * name alone. A group and a role declared in the same container cannot share a name:
+     * both would answer to the same qualified name, and a reference could not say which was
+     * meant.
      *
      * ## Example 1: declare a role inside a group
      * ```kt
