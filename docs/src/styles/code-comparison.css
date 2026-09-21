@@ -52,8 +52,12 @@
 	margin-block-start: 0.5rem;
 }
 
-/* Starlight のコンテンツ幅が狭くなるあたりで縦積みに切り替える。 */
-@media (max-width: 50rem) {
+/*
+ * 2 カラムに意味が出るだけの幅が無いときは縦積みにする。
+ * 本文の桁が狭い状態で 2 カラムにすると 1 カラムが 300px 台になり、
+ * 両方のパネルが横スクロールに逃げて「並べて比べる」意味が消える。
+ */
+@media (max-width: 70rem) {
 	.code-comparison {
 		grid-template-columns: minmax(0, 1fr);
 	}

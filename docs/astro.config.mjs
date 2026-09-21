@@ -1,7 +1,7 @@
 // @ts-check
 import { defineConfig } from 'astro/config';
 import starlight from '@astrojs/starlight';
-import lucode from 'lucode-starlight';
+import starlightThemeNova from 'starlight-theme-nova';
 
 // https://astro.build/config
 export default defineConfig({
@@ -16,19 +16,11 @@ export default defineConfig({
 			description:
 				'Android / KMP プロジェクトのアーキテクチャを Kotlin DSL で書き、同じ定義から「テスト」と「ドキュメント」の両方を出すライブラリ。',
 			defaultLocale: 'ja',
-			// デザインシステムは lucode テーマに任せる。コンポーネントの差し替え、
-			// CSS レイヤー、テーマトークン、Expressive Code の設定まで持ってくる。
-			plugins: [
-				lucode({
-					navLinks: [
-						{ label: 'ドキュメント', link: '/get-started/motivation/' },
-						{ label: 'ロードマップ', link: '/roadmap/' },
-					],
-				}),
-			],
+			// デザインシステムは starlight-theme-nova に任せる。
+			plugins: [starlightThemeNova()],
 			// CodeComparison のレイアウト。scoped style だとドット記法のコンポーネントに
 			// スタイルが伝播しないため、ここでグローバルに読ませている。
-			customCss: ['./src/styles/code-comparison.css', './src/styles/splash.css'],
+			customCss: ['./src/styles/code-comparison.css'],
 			locales: {
 				root: { label: '日本語', lang: 'ja' },
 			},
@@ -42,8 +34,8 @@ export default defineConfig({
 				{
 					label: 'はじめる',
 					items: [
-						{ label: 'モチベーションと katachi の立ち位置', slug: 'get-started/motivation' },
-						{ label: '初めてのアーキテクチャ定義', slug: 'get-started/first-architecture' },
+						{ label: 'モチベーション', slug: 'get-started/motivation' },
+						{ label: '初めての定義', slug: 'get-started/first-architecture' },
 						{ label: 'FAQ', slug: 'get-started/faq' },
 					],
 				},
@@ -61,17 +53,17 @@ export default defineConfig({
 					items: [
 						{ label: 'Role 定義を分割する', slug: 'guides/split-roles' },
 						{ label: 'Konsist Integration', slug: 'guides/konsist-integration' },
-						{ label: 'Processor とそのカスタマイズ', slug: 'guides/processor' },
+						{ label: 'Processor のカスタマイズ', slug: 'guides/processor' },
 					],
 				},
 				{
 					label: 'レシピ',
 					items: [
-						{ label: 'Android architecture guide に従った3層アーキテクチャ', slug: 'recipes/android-three-layer' },
+						{ label: 'Android の3層', slug: 'recipes/android-three-layer' },
 						{ label: 'feature モジュール分割', slug: 'recipes/feature-module-split' },
-						{ label: 'KMP の sourceSet と expect/actual', slug: 'recipes/kmp-source-set' },
-						{ label: 'Gradle 周辺（buildSrc / convention plugin / version catalog）', slug: 'recipes/gradle' },
-						{ label: 'Ktor のサーバサイドプロジェクト', slug: 'recipes/ktor-server' },
+						{ label: 'KMP の sourceSet', slug: 'recipes/kmp-source-set' },
+						{ label: 'Gradle 周辺', slug: 'recipes/gradle' },
+						{ label: 'Ktor サーバサイド', slug: 'recipes/ktor-server' },
 						{ label: 'KSP プロセッサ', slug: 'recipes/ksp-processor' },
 						{ label: 'Kotlin コンパイラプラグイン', slug: 'recipes/kotlin-compiler-plugin' },
 						{ label: 'IntelliJ プラグイン', slug: 'recipes/intellij-plugin' },

@@ -108,18 +108,27 @@ skill の `scaffold.sh` が雛形を作り、**katachi がその形を崩れな�
 
 ## テーマ
 
-**lucode starlight theme** を使っている。
+**starlight-theme-nova**（`starlight-theme-nova`、ocavue）を使っている。
 
-- https://lucas-labs.github.io/lucode-starlight-theme/guides/getting-started/
-- パッケージ: `lucode-starlight`
+```js
+// astro.config.mjs
+import starlightThemeNova from 'starlight-theme-nova';
+starlight({ plugins: [starlightThemeNova()] })
+```
 
-入れ方は2箇所。`astro.config.mjs` の `starlight({ plugins: [lucode({ navLinks })] })` と、
-`src/content.config.ts` の `docsSchema({ extend: ExtendDocsSchema })`。**後者を忘れると
-テーマが frontmatter に足すフィールドを受け付けられない。**
+設定はこれだけ。`content.config.ts` は素の `docsSchema()` のままでよい。
 
-テーマはコンポーネントの差し替え・CSS レイヤー・テーマトークン・Expressive Code の設定まで
-持ってくるが、**自前の `customCss`（`code-comparison.css`）とは共存できている**。
-Starlight のトークン（`--sl-text-xs` / `--sl-color-gray-2`）に乗せて書いてあるため。
+**一度 lucode-starlight を入れて戻した。** 実際に使ってみて、次が分かったため。
+
+- **splash テンプレート（トップページ）の本文を箱で包まない。** 本文が viewport の
+  全幅に伸び、テキストが左右の端に張り付く。当て物の CSS が要った
+- **本文の桁が 640px と狭い。** `CodeComparison` を 2 カラムにすると 1 カラム 312px で、
+  コードがまったく読めない
+- **サイドバーの長いラベルが折り返して隣の項目と重なる**
+
+nova ではどれも起きない（本文は 792px、splash も素直に出る）。**乗り換えたときに
+当て物の CSS を残さないこと。** `splash.css` と `code-comparison.css` の breakout は
+どちらも lucode の欠陥に対するもので、削除済み。
 
 ## Documentation
 
