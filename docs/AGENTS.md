@@ -26,6 +26,14 @@ Manage the background server with `astro dev stop`, `astro dev status`, and `ast
     - Konsist Integration
     - Processor とそのカスタマイズ
 - レシピ
+    - Android architecture guide に従った3層アーキテクチャ
+    - feature モジュール分割
+    - KMP の sourceSet と expect/actual
+    - Gradle 周辺（buildSrc / convention plugin / version catalog）
+    - Ktor のサーバサイドプロジェクト
+    - KSP プロセッサ
+    - Kotlin コンパイラプラグイン
+    - IntelliJ プラグイン
 - API リファレンス（/api-docs/）
 - ロードマップ
 ```
