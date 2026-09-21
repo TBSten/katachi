@@ -168,12 +168,19 @@ class ProjectModelSpec : FreeSpec({
 
     "ワイルドカードの module キー" - {
         // declaredEntries は宣言だけを読む（ファイルシステムに触らない）ので、
-        // ":feature:*" が何モジュールに化けるかを知りようがない。filesOf は実際に
+        // ":feature:*" が何モジュールに化けるかを知りようがない。知りようがないことと
+        // 「1つも無い」ことは別なので、展開せずパターン1件として残す。filesOf は実際に
         // 歩くので展開後が見える。この食い違いは仕様であって、KDoc の1段落だけに
         // 任せておくと次の誰かが黙って壊す。
         val definition = architectureOf {
             "feature".group { "Module" { layout { ":feature:*".module { } } } }
         }
+        val patternEntries = listOf(
+            "feature",
+            "feature/*",
+            "feature/*/build",
+            "feature/*/build.gradle.kts",
+        )
         val tree = repositoryOf {
             "feature" {
                 "home" { "build.gradle.kts"() }
@@ -181,22 +188,43 @@ class ProjectModelSpec : FreeSpec({
             }
         }
 
-        "同じモデルの declaredEntries には現れず、filesOf には現れる" {
+        "同じモデルの declaredEntries にはパターン1件として現れ、filesOf には展開されて現れる" {
             // 1つの ProjectModel から両方を読む。別々に process すると「モデルが2つある
             // から答えが違う」と読めてしまう。
             val (declared, walked) = definition.process(tree) { model ->
                 model.declaredEntries.map { it.path } to model.filesOf(model.roles.single())
             }
 
-            declared shouldBe emptyList()
+            declared shouldBe patternEntries
             walked shouldBe listOf(
                 "feature/home/build.gradle.kts",
                 "feature/settings/build.gradle.kts",
             )
         }
 
+        "実在するモジュールが何個あっても declaredEntries は変わらない" {
+            // 実在数だけ展開してしまう実装との差はここに出る。パターンのままなら、
+            // モジュールを増やしても減らしても宣言の見え方は1件のまま動かない。
+            fun declaredPathsWith(vararg modules: String): List<String> = definition.process(
+                repositoryOf { modules.forEach { name -> "feature/$name/build.gradle.kts"() } },
+            ) { model -> model.declaredEntries.map { it.path } }
+
+            declaredPathsWith("home") shouldBe patternEntries
+            declaredPathsWith("home", "settings", "search") shouldBe patternEntries
+            declaredPathsWith() shouldBe patternEntries
+        }
+
+        "ワイルドカードの module キーを読んでもファイルシステムには触らない" {
+            // パターンのまま残すのにモジュール一覧は要らない、が守りたい性質。実在
+            // モジュールを数えに行く実装に戻したらここで落ちる。
+            definition.process(ForbiddenFileSystem) { model ->
+                model.declaredEntries.map { it.path }
+            } shouldBe patternEntries
+        }
+
         "ワイルドカードを含まない module キーなら declaredEntries にも現れる" {
-            // 食い違うのはワイルドカードのときだけ、という線引きの固定。
+            // パターンのまま残るのはワイルドカードのときだけ、という線引きの固定。
+            // モジュールを名指しするキーは、どこに置かれるかを resolver だけで答えられる。
             val literal = architectureOf {
                 "feature".group { "Module" { layout { ":feature:home".module { } } } }
             }

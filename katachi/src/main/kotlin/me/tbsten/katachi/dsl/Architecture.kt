@@ -4,8 +4,8 @@ import me.tbsten.katachi.check.FileSelection
 import me.tbsten.katachi.check.ModuleResolver
 
 /**
- * The whole architecture definition: the groups declared in `architecture { }` and,
- * through them, every role.
+ * The whole architecture definition: what was declared in `architecture { }` — the groups,
+ * the roles written straight into the root, and through the groups every other role.
  *
  * Building this value runs no check and reads nothing from the file system. The same
  * value is meant to be held in a top level `val` and read both by tests and (from v0.3)
@@ -36,6 +36,23 @@ public class Architecture internal constructor(
      * ```
      */
     public val groups: List<Group>,
+    /**
+     * Roles declared straight into `architecture { }`, outside any group, in declaration
+     * order.
+     *
+     * Their [group path][Role.groupPath] is empty, so their qualified name is the role name
+     * alone. The root is a container like a group, and this is what it holds of its own.
+     *
+     * ## Example 1: read the roles declared at the root
+     * ```kt
+     * val arch = architecture {
+     *     "Readme" { }
+     *     "domain".group { "UseCase" { } }
+     * }
+     * arch.roles.map { it.qualifiedName } shouldContainExactly listOf("Readme")
+     * ```
+     */
+    public val roles: List<Role> = emptyList(),
     /**
      * Which files of the project the check looks at.
      *
@@ -86,7 +103,10 @@ public class Architecture internal constructor(
     public val allGroups: List<Group> = groups.flatMap { it.selfAndDescendants() }
 
     /**
-     * Every role of every group, in declaration order.
+     * Every role: the root's own first, then those of every group, in declaration order.
+     *
+     * A container's own roles come before the roles of the containers inside it, which is the
+     * order [allGroups] already puts groups in.
      *
      * ## Example 1: read every role across every group
      * ```kt
@@ -97,16 +117,26 @@ public class Architecture internal constructor(
      * arch.allRoles.map { it.qualifiedName } shouldContainExactly
      *     listOf("domain/Repository", "data/Repository")
      * ```
+     *
+     * ## Example 2: a role declared at the root is one of them
+     * ```kt
+     * val arch = architecture {
+     *     "Readme" { }
+     *     "domain".group { "UseCase" { } }
+     * }
+     * arch.allRoles.map { it.qualifiedName } shouldContainExactly
+     *     listOf("Readme", "domain/UseCase")
+     * ```
      */
-    public val allRoles: List<Role> = allGroups.flatMap { it.roles }
+    public val allRoles: List<Role> = roles + allGroups.flatMap { it.roles }
 
     override fun toString(): String =
         "Architecture(groups=${groups.map { it.name }}, roles=${allRoles.size})"
 }
 
 /**
- * Entry point of the DSL. Declaring a group inside the block registers it; there is no
- * separate "add it to a list" step.
+ * Entry point of the DSL. Declaring a group or a role inside the block registers it; there
+ * is no separate "add it to a list" step.
  *
  * Split a large definition across files with extension functions on [ArchitectureScope]
  * and call them from the block. Note that an extension function cannot be called by its

@@ -18,69 +18,59 @@ internal fun requireValidIdentifier(
     throw KatachiInvalidIdentifierException(kind = kind, name = name, declaredAt = declaredAt)
 }
 
+/** What took a name: which kind of declaration it was, and where it was written. */
+internal class NameReservation(
+    val kind: DeclarationKind,
+    val declaredAt: DeclarationSite,
+)
+
 /**
- * The names already taken in one scope, and where each was declared.
+ * The names already taken in one namespace, and what took each of them.
  *
  * A name is reserved *before* its own block runs, not after. A block can reach the scope
  * that encloses it — by capturing that receiver into a local `val`, for instance — and
  * declare into it again while the first declaration is still being built. Comparing
  * against finished siblings would see an empty list at that moment and let the duplicate
  * through.
+ *
+ * Which declarations share one instance is the scope's decision, and the two scopes decide
+ * differently: `architecture { }` reserves groups and roles in a single instance, a group
+ * block keeps one for each. See `ArchitectureScopeImpl` for why the root shares.
  */
 internal class DeclaredNames {
-    private val sites = mutableMapOf<String, DeclarationSite>()
+    private val reservations = mutableMapOf<String, NameReservation>()
 
-    /** Where [name] was first declared, or `null` if it is still free. */
-    fun firstSiteOf(name: String): DeclarationSite? = sites[name]
+    /** What took [name] the first time, or `null` if it is still free. */
+    fun firstReservationOf(name: String): NameReservation? = reservations[name]
 
     /** Takes [name]. Call this before evaluating the declaration's block. */
-    fun reserve(name: String, declaredAt: DeclarationSite) {
-        sites[name] = declaredAt
+    fun reserve(name: String, kind: DeclarationKind, declaredAt: DeclarationSite) {
+        reservations[name] = NameReservation(kind = kind, declaredAt = declaredAt)
     }
 }
 
 /**
- * Throws [KatachiDuplicateDeclarationException] when a group named [name] is already taken
- * directly under [parentPath].
+ * Throws [KatachiDuplicateDeclarationException] when [name] is already taken in
+ * [declaredNames], which holds the names of the scope at [path].
  *
- * Only direct siblings are compared: the same group name may appear under two different
- * parents, because the pair (parent, name) is what identifies a group.
+ * Only one scope is compared, never a parent or a child: the same group name may appear
+ * under two different parents, and the same role name in two different groups, because in
+ * both cases the qualified name — and with it the generated documentation page — differs.
  */
-internal fun requireNoDuplicateGroup(
+internal fun requireNameIsFree(
     declaredNames: DeclaredNames,
+    kind: DeclarationKind,
     name: String,
-    parentPath: List<String>,
+    path: List<String>,
     declaredAt: DeclarationSite,
 ) {
-    val firstSite = declaredNames.firstSiteOf(name) ?: return
+    val first = declaredNames.firstReservationOf(name) ?: return
     throw KatachiDuplicateDeclarationException(
-        kind = DeclarationKind.Group,
+        kind = kind,
+        firstKind = first.kind,
         name = name,
-        scope = scopeOf(parentPath),
-        firstDeclaredAt = firstSite,
-        declaredAt = declaredAt,
-    )
-}
-
-/**
- * Throws [KatachiDuplicateDeclarationException] when a role named [name] is already taken in
- * the group at [groupPath].
- *
- * Uniqueness is scoped to one group: the same role name in a different group is fine,
- * since the generated documentation pages do not collide.
- */
-internal fun requireNoDuplicateRole(
-    declaredNames: DeclaredNames,
-    name: String,
-    groupPath: List<String>,
-    declaredAt: DeclarationSite,
-) {
-    val firstSite = declaredNames.firstSiteOf(name) ?: return
-    throw KatachiDuplicateDeclarationException(
-        kind = DeclarationKind.Role,
-        name = name,
-        scope = scopeOf(groupPath),
-        firstDeclaredAt = firstSite,
+        scope = scopeOf(path),
+        firstDeclaredAt = first.declaredAt,
         declaredAt = declaredAt,
     )
 }

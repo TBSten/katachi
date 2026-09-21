@@ -4,55 +4,16 @@ import me.tbsten.katachi.check.FileSelection
 import me.tbsten.katachi.check.ModuleResolver
 
 /**
- * Anything that can hold groups: the root of the DSL and a group itself.
- *
- * ## Example 1: collect groups in an ArchitectureScope extension function
- * ```kt
- * fun ArchitectureScope.domainRoles() {
- *   "domain".group { "UseCase" { } }
- * }
- * ```
- */
-@KatachiDsl
-public sealed interface GroupContainerScope {
-    /**
-     * Declares a group. Nest `group` calls to nest groups.
-     *
-     * Everything a group carries is written inside the block, metadata included. The
-     * signature stays a name and a block, so that a processor bringing a new word does not
-     * mean a new parameter here.
-     *
-     * ## Example 1: declare a group
-     * ```kt
-     * val arch = architecture {
-     *     "domain".group {
-     *         "UseCase" { }
-     *     }
-     * }
-     * ```
-     *
-     * ## Example 2: keep a group out of the generated documentation
-     * ```kt
-     * val arch = architecture {
-     *     "build".group {
-     *         documented = false
-     *         "VersionCatalog" { documented = false }
-     *     }
-     * }
-     * ```
-     */
-    public fun String.group(block: GroupScope.() -> Unit)
-}
-
-/**
  * Receiver of `architecture { }`.
  *
- * It intentionally has no `String.invoke`: a role has to sit in a group, because a group
- * is what decides the role's documentation output directory.
+ * It holds groups and roles, exactly as a group block does — see [DeclarationContainerScope].
+ * The root is a container like any other, so a small definition, or the first example anyone
+ * reads, does not have to invent a group before it can name a role.
  *
- * ## Example 1: declare groups inside architecture { }
+ * ## Example 1: declare groups and roles inside architecture { }
  * ```kt
  * val arch = architecture {
+ *     "Readme" { layout { "README.md".file() } }
  *     "domain".group {
  *         "UseCase" { }
  *     }
@@ -60,7 +21,7 @@ public sealed interface GroupContainerScope {
  * ```
  */
 @KatachiDsl
-public sealed interface ArchitectureScope : GroupContainerScope {
+public sealed interface ArchitectureScope : DeclarationContainerScope {
     /**
      * Which files of the project the check looks at. Defaults to [gitTracked].
      *
@@ -93,7 +54,16 @@ public sealed interface ArchitectureScope : GroupContainerScope {
 
 internal class ArchitectureScopeImpl : ArchitectureScope {
     private val groups = mutableListOf<Group>()
-    private val declaredGroupNames = DeclaredNames()
+    private val roles = mutableListOf<Role>()
+
+    /**
+     * One namespace for groups and roles alike, unlike a group block, which keeps two.
+     *
+     * A top level group's `qualifiedName` is its bare name, and so is a root role's, so
+     * `"domain".group { }` and `"domain" { }` would both answer to `"domain"` and nothing
+     * could say which one a reference means. Sharing the reservations is how that is said.
+     */
+    private val declaredNames = DeclaredNames()
 
     override var files: FileSelection = FileSelection.GitTracked
 
@@ -104,11 +74,25 @@ internal class ArchitectureScopeImpl : ArchitectureScope {
             name = this,
             parentPath = emptyList(),
             declaredAt = captureDeclarationSite(),
-            declaredNames = declaredGroupNames,
+            declaredNames = declaredNames,
             block = block,
         )
     }
 
-    fun build(): Architecture =
-        Architecture(groups = groups.toList(), files = files, moduleResolver = moduleResolver)
+    override operator fun String.invoke(block: RoleScope.() -> Unit) {
+        roles += declareRole(
+            name = this,
+            groupPath = emptyList(),
+            declaredAt = captureDeclarationSite(),
+            declaredNames = declaredNames,
+            block = block,
+        )
+    }
+
+    fun build(): Architecture = Architecture(
+        groups = groups.toList(),
+        roles = roles.toList(),
+        files = files,
+        moduleResolver = moduleResolver,
+    )
 }

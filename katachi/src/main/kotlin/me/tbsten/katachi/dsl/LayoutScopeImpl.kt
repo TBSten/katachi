@@ -120,10 +120,12 @@ internal class LayoutScopeImpl(
         val declaredAt = captureDeclarationSite()
         requireLayoutRoot(modulePath, declaredAt)
         val pattern = compileModulePath(modulePath, declaredAt)
-        val declared = moduleIndex.expand(pattern).flatMap { module ->
+        // Not `expand`: a wildcard key against an index that has not listed the project stands
+        // for itself rather than for nothing. See `ModuleIndex.targetsOf`.
+        val declared = moduleIndex.targetsOf(pattern).flatMap { target ->
             // The root project resolves to the project root itself, which is this scope's
             // own container: an empty directory name would otherwise become an empty level.
-            val directory = module.directory
+            val directory = target.directory
             val moduleDirectory = if (directory.isEmpty()) {
                 container
             } else {
@@ -133,7 +135,7 @@ internal class LayoutScopeImpl(
             val scope = LayoutScopeImpl(
                 container = moduleDirectory,
                 moduleIndex = moduleIndex,
-                moduleContext = ModuleContext(module.path.value, module.wildcards),
+                moduleContext = ModuleContext(target.modulePath, target.wildcards),
             )
             scope.expandModuleDefaults()
             scope.block()

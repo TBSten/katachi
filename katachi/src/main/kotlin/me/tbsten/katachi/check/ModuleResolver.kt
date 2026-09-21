@@ -107,18 +107,57 @@ public class ResolvedModule internal constructor(
 }
 
 /**
+ * One evaluation of a `module { }` block: the key it stands for, where its declarations hang,
+ * and what `wildcards` reads as while the block runs.
+ *
+ * A [ResolvedModule] as the layout DSL needs it, plus the one case that is not a module at
+ * all — a wildcard key an unresolved [ModuleIndex] kept as itself. See [ModuleIndex.targetsOf].
+ */
+internal class ModuleTarget(
+    /** `":feature:home"`, or `":feature:*"` for a key that was left as a pattern. */
+    val modulePath: String,
+    /** Relative to the project root, `/` separated. Empty for the root project. */
+    val directory: String,
+    /** What `wildcards` reads as inside the block. */
+    val wildcards: List<String>,
+)
+
+/**
  * The modules of a project, found once, so that every layout key is expanded against the
  * same list rather than walking the tree again.
  *
- * Built by [moduleIndex].
+ * Built by [moduleIndex] — or by [unresolved] when no file system is at hand, which says
+ * something different and which [targetsOf] answers differently.
  */
 @InternalKatachiApi
 public class ModuleIndex internal constructor(
     /** How a module path becomes a directory. */
     public val resolver: ModuleResolver,
-    /** Every module found below the project root, outermost first and siblings by name. */
-    public val modules: List<ModulePath>,
+    /**
+     * The modules found below the project root, or `null` when nobody has looked.
+     *
+     * The two are not the same answer, and keeping them apart is the whole reason this is
+     * nullable. An empty list says the project holds no module; `null` says the question was
+     * never asked. Branching on emptiness instead would make a reader that never walked the
+     * tree agree with a real project that happens to have no feature module, and the wildcard
+     * keys of the definition would vanish either way.
+     */
+    private val discovered: List<ModulePath>?,
 ) {
+    /**
+     * Every module found below the project root, outermost first and siblings by name. Empty
+     * for an [unresolved] index, where [isResolved] is what tells the two apart.
+     */
+    public val modules: List<ModulePath> get() = discovered.orEmpty()
+
+    /**
+     * Whether the project has been listed.
+     *
+     * `false` only for an [unresolved] index. One built by [moduleIndex] is resolved even
+     * when the project turned out to hold no module at all: that emptiness is an answer.
+     */
+    public val isResolved: Boolean get() = discovered != null
+
     /**
      * Where [module] lives, whether or not it exists.
      *
@@ -154,16 +193,80 @@ public class ModuleIndex internal constructor(
             listOf(resolve(literalPath))
         }
 
-    override fun toString(): String = "ModuleIndex(${modules.size} modules, $resolver)"
+    /**
+     * Where a layout key's `module { }` block is evaluated, and with what.
+     *
+     * [expand] answers this for a project that has been listed. It cannot answer it for a
+     * wildcard key against an [unresolved] index: "no module matches `:feature:*`" and "nobody
+     * has looked" would both come out as an empty list, and a caller that reads only the
+     * declarations — documentation generation,
+     * [me.tbsten.katachi.processor.ProjectModel.declaredEntries] — would quietly lose every
+     * declaration such a key makes. So an unresolved index keeps the key as itself: one
+     * target whose directory is [ModulePattern.conventionalDirectory], the pattern with its
+     * wildcards still in it, and whose wildcards are [ModulePattern.wildcardPlaceholders].
+     *
+     * The two are deliberately spelled differently. The directory keeps the real `*`, because
+     * it names levels that exist and because a path holding a wildcard is what keeps every
+     * declaration below it from being [me.tbsten.katachi.dsl.LayoutEntry.required]. A name a
+     * block *builds* out of a capture has nothing to match against, so it gets a placeholder
+     * instead — one that no amount of string building can turn into a broken glob.
+     *
+     * The check never takes that branch. It builds its index by walking the project, so a
+     * wildcard key expands to the modules that exist, down to none of them.
+     */
+    internal fun targetsOf(pattern: ModulePattern): List<ModuleTarget> =
+        if (pattern.hasWildcard && discovered == null) {
+            listOf(
+                ModuleTarget(
+                    modulePath = pattern.pattern,
+                    directory = pattern.conventionalDirectory,
+                    wildcards = pattern.wildcardPlaceholders,
+                ),
+            )
+        } else {
+            expand(pattern).map { module ->
+                ModuleTarget(
+                    modulePath = module.path.value,
+                    directory = module.directory,
+                    wildcards = module.wildcards,
+                )
+            }
+        }
+
+    override fun toString(): String = when (discovered) {
+        null -> "ModuleIndex(unresolved, $resolver)"
+        else -> "ModuleIndex(${discovered.size} modules, $resolver)"
+    }
+
+    public companion object {
+        /**
+         * An index for a project nobody has listed, which is what a layout read without a
+         * file system is flattened against.
+         *
+         * It still resolves a key naming one module — where `:core:data` lives is [resolver]'s
+         * answer and needs no tree — while a key with a wildcard is kept as the pattern it was
+         * written as. See [targetsOf].
+         */
+        public fun unresolved(resolver: ModuleResolver): ModuleIndex =
+            ModuleIndex(resolver = resolver, discovered = null)
+    }
 }
 
-/** Finds the project's modules and pairs them with [resolver]. */
+/**
+ * Finds the project's modules and pairs them with [resolver].
+ *
+ * The index this returns is resolved even when the project holds no module: the tree was
+ * walked, and what it holds is the answer. [ModuleIndex.unresolved] is the other case.
+ */
 @InternalKatachiApi
 public fun moduleIndex(
     fileSystem: KatachiFileSystem,
     projectRoot: FsPath,
     resolver: ModuleResolver = ModuleResolver.Conventional,
-): ModuleIndex = ModuleIndex(resolver, discoverModules(fileSystem, projectRoot))
+): ModuleIndex = ModuleIndex(
+    resolver = resolver,
+    discovered = discoverModules(fileSystem, projectRoot),
+)
 
 /**
  * Every module below [projectRoot], found by looking for build files.

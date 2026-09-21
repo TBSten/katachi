@@ -1,7 +1,6 @@
 package com.example.kmp
 
 import io.kotest.core.spec.style.FreeSpec
-import io.kotest.matchers.collections.shouldBeEmpty
 import io.kotest.matchers.collections.shouldContain
 import io.kotest.matchers.collections.shouldNotBeEmpty
 import io.kotest.matchers.shouldBe
@@ -33,7 +32,7 @@ class DeclaredEntriesSpec : FreeSpec({
         paths shouldContain "settings.gradle.kts"
     }
 
-    "ワイルドカードの module キーは declaredEntries には現れず、filesOf には現れる" {
+    "ワイルドカードの module キーは declaredEntries にはパターンのまま、filesOf には展開されて現れる" {
         // 1つの ProjectModel から両方を読む。別々に process すると「モデルが2つあるから
         // 答えが違う」と読めてしまい、固定したいこと（同じモデルの2つのメンバが違う答えを
         // 返す）がぼやける。
@@ -45,10 +44,13 @@ class DeclaredEntriesSpec : FreeSpec({
 
         // `:feature:*` stands for the feature modules that exist, and which modules exist is a
         // question only the file system can answer -- so the declared view, which reads nothing,
-        // has no feature path at all.
-        declaredFeaturePaths.shouldBeEmpty()
-        // The walk does answer it, so the same model hands back the files under those modules.
+        // keeps the key as the pattern it was written as instead of naming any module.
+        declaredFeaturePaths.shouldNotBeEmpty()
+        declaredFeaturePaths.all { it.startsWith("feature/*") } shouldBe true
+        // The walk does answer it, so the same model hands back the files under those modules --
+        // real directories, with no wildcard left in them.
         walkedFeatureFiles.shouldNotBeEmpty()
         walkedFeatureFiles.all { it.startsWith("feature/") } shouldBe true
+        walkedFeatureFiles.none { '*' in it } shouldBe true
     }
 })

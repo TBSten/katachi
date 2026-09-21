@@ -2,6 +2,7 @@ package me.tbsten.katachi.test.dsl
 
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.FreeSpec
+import io.kotest.matchers.collections.shouldContainAll
 import io.kotest.matchers.ints.shouldBeGreaterThan
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
@@ -10,10 +11,15 @@ import me.tbsten.katachi.check.KatachiGlobSyntaxException
 import me.tbsten.katachi.check.ModuleResolver
 import me.tbsten.katachi.dsl.KatachiDeclarationException
 import me.tbsten.katachi.dsl.KatachiModuleOutsideLayoutRootException
+import me.tbsten.katachi.dsl.camelCase
+import me.tbsten.katachi.dsl.flatCase
 import me.tbsten.katachi.dsl.gradle.*
+import me.tbsten.katachi.dsl.kebabCase
 import me.tbsten.katachi.dsl.kotlin.ktFile
 import me.tbsten.katachi.dsl.kotlin.ktsFile
 import me.tbsten.katachi.dsl.pascalCase
+import me.tbsten.katachi.dsl.screamingSnakeCase
+import me.tbsten.katachi.dsl.snakeCase
 
 class LayoutModuleSpec : FreeSpec({
     "module は純粋な糖衣" - {
@@ -184,6 +190,110 @@ class LayoutModuleSpec : FreeSpec({
 
         "マッチが0件なら何も宣言されず Missing も生まれない" {
             layoutOf(moduleIndexOf("core/data")) { ":feature:*".module { } } shouldBe emptyList()
+        }
+
+        "モジュールが1つも無いプロジェクトでも、歩いた結果なら0件のまま" {
+            // 「インデックスが空か」で分岐すると、ここが次のテストの「まだ誰も見ていない」と
+            // 同じ答えになってしまう。歩いた上で0件なのは答えであって、無回答ではない。
+            layoutOf(moduleIndexOf()) { ":feature:*".module { } } shouldBe emptyList()
+        }
+
+        // プロジェクトを一度も見ていないインデックス（= flattenLayout() を引数なしで呼んだとき
+        // の既定）では、「マッチが0件」と「まだ誰も見ていない」を同じ空リストにできない。
+        // 前者は 1つ上のテストのとおり0件が正しく、後者は宣言そのものを黙って失う。
+        "プロジェクトを見ていないインデックスではパターン1件として残る" {
+            layoutOf {
+                ":feature:*".module { "${wildcards[0].pascalCase}Screen".ktFile() }
+            }.shape() shouldBe listOf(
+                "feature [Directory]",
+                "feature/* [Directory]",
+                "feature/*/build [Ignore]",
+                // パスにワイルドカードが残るので、どちらのファイルも required にならない。
+                "feature/*/build.gradle.kts [File]",
+                "feature/*/<name>Screen.kt [File]",
+            )
+        }
+
+        "プロジェクトを見ていないインデックスでの捕捉値はワイルドカード1つにつき1つの <name>" {
+            val captured = mutableListOf<List<String>>()
+
+            layoutOf { ":feature:*".module { captured += wildcards } }
+            layoutOf { ":core:*:*".module { captured += wildcards } }
+            // "**" は実際には階層ごとに1要素だが、何階層になるかこそ調べていない部分なので1つ。
+            layoutOf { ":feature:**".module { captured += wildcards } }
+
+            captured shouldBe listOf(listOf("<name>"), listOf("<name>", "<name>"), listOf("<name>"))
+        }
+
+        // 捕捉値は利用者の文字列補間にそのまま入る。glob のメタ文字を置くと、隣に書かれた
+        // ワイルドカードと融合して壊れた glob になる。`*` を使っていたときは sample/kmp の
+        // ui/Preview（"${wildcards[0].pascalCase}*Preview"）が "**Preview.kt" になって落ちた。
+        "捕捉値をワイルドカードの隣に補間しても壊れた glob にならない" {
+            layoutOf {
+                ":feature:*".module { "${wildcards[0].pascalCase}*Preview".ktFile() }
+            }.map { it.path } shouldContainAll listOf("feature/*/<name>*Preview.kt")
+        }
+
+        "捕捉値の前後にワイルドカードを書いても壊れた glob にならない" {
+            layoutOf {
+                ":feature:*".module {
+                    "*${wildcards[0]}".ktFile()
+                    "${wildcards[0]}*".ktFile()
+                    "*${wildcards[0]}*".ktFile()
+                }
+            }.map { it.path } shouldContainAll listOf(
+                "feature/*/*<name>.kt",
+                "feature/*/<name>*.kt",
+                "feature/*/*<name>*.kt",
+            )
+        }
+
+        "捕捉値は命名変換を通しても placeholder のまま残る" {
+            // ドキュメント生成が出力側で placeholder を見つけ直せることの固定。大文字小文字を
+            // 持たない文字だけで出来ているので、SCREAMING_SNAKE_CASE 以外は素通りする。
+            val converted = mutableListOf<String>()
+
+            layoutOf {
+                ":feature:*".module {
+                    converted += listOf(
+                        wildcards[0],
+                        wildcards[0].pascalCase,
+                        wildcards[0].camelCase,
+                        wildcards[0].kebabCase,
+                        wildcards[0].snakeCase,
+                        wildcards[0].flatCase,
+                        wildcards[0].screamingSnakeCase,
+                    )
+                }
+            }
+
+            converted shouldBe listOf(
+                "<name>",
+                "<name>",
+                "<name>",
+                "<name>",
+                "<name>",
+                "<name>",
+                "<NAME>",
+            )
+        }
+
+        "実インデックスを渡せば従来どおり実在モジュールの数だけ展開される" {
+            // 検査の経路が変わっていないことの固定。上の2つと同じ宣言を、実在モジュールを
+            // 知っているインデックスに対して平坦化する。
+            layoutOf(features) {
+                ":feature:*".module { "${wildcards[0].pascalCase}Screen".ktFile() }
+            }.map { it.path } shouldBe listOf(
+                "feature",
+                "feature/debug-menu",
+                "feature/debug-menu/build",
+                "feature/debug-menu/build.gradle.kts",
+                "feature/debug-menu/DebugMenuScreen.kt",
+                "feature/home",
+                "feature/home/build",
+                "feature/home/build.gradle.kts",
+                "feature/home/HomeScreen.kt",
+            )
         }
 
         "\"**\" を末尾以外に置くと評価時にエラーになる" {

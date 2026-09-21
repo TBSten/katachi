@@ -67,6 +67,12 @@ public class Role internal constructor(
      * }
      * arch.allRoles.single().groupPath shouldContainExactly listOf("domain", "model")
      * ```
+     *
+     * ## Example 2: a role declared at the root of architecture { } is in no group
+     * ```kt
+     * val arch = architecture { "Readme" { } }
+     * arch.allRoles.single().groupPath shouldBe emptyList()
+     * ```
      */
     public val groupPath: List<String>,
     /**
@@ -97,6 +103,12 @@ public class Role internal constructor(
      *     }
      * }
      * arch.allRoles.single().qualifiedName shouldBe "domain/model/Entity"
+     * ```
+     *
+     * ## Example 2: a role declared at the root is qualified by its name alone
+     * ```kt
+     * val arch = architecture { "Readme" { } }
+     * arch.allRoles.single().qualifiedName shouldBe "Readme"
      * ```
      */
     public val qualifiedName: String = (groupPath + name).joinToString("/")

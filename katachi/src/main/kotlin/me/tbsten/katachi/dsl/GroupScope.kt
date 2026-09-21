@@ -18,7 +18,7 @@ package me.tbsten.katachi.dsl
  * ```
  */
 @KatachiDsl
-public sealed interface GroupScope : GroupContainerScope, MetadataScope {
+public sealed interface GroupScope : DeclarationContainerScope, MetadataScope {
     /**
      * Display name of this group. Defaults to the group name.
      *
@@ -53,26 +53,6 @@ public sealed interface GroupScope : GroupContainerScope, MetadataScope {
      * ```
      */
     public var documented: Boolean
-
-    /**
-     * Declares a role: `"UseCase" { title = "ユースケース" }`.
-     *
-     * This is `String.invoke`, so the role name is written as a plain string literal
-     * followed by its block.
-     *
-     * ## Example 1: declare a role inside a group
-     * ```kt
-     * val arch = architecture {
-     *     "domain".group {
-     *         "UseCase" {
-     *             title = "ユースケース"
-     *             summary = "各画面で発生するアプリ固有の1つの振る舞い"
-     *         }
-     *     }
-     * }
-     * ```
-     */
-    public operator fun String.invoke(block: RoleScope.() -> Unit)
 }
 
 internal class GroupScopeImpl(private val path: List<String>) : GroupScope {
@@ -81,6 +61,13 @@ internal class GroupScopeImpl(private val path: List<String>) : GroupScope {
     val groups = mutableListOf<Group>()
     val roles = mutableListOf<Role>()
 
+    // Two namespaces rather than the root's one: inside a group, a group and a role may still
+    // share a name.
+    //
+    // TODO: decide whether they should share one namespace here too. `"x".group { "domain"
+    //  .group { }; "domain" { } }` gives both the qualified name "x/domain", which is the
+    //  ambiguity the root now rejects. Closing it would reject definitions that are accepted
+    //  today, so it is a decision of its own rather than part of allowing root roles.
     private val declaredGroupNames = DeclaredNames()
     private val declaredRoleNames = DeclaredNames()
 
@@ -132,8 +119,8 @@ internal fun declareGroup(
     block: GroupScope.() -> Unit,
 ): Group {
     requireValidIdentifier(name, DeclarationKind.Group, declaredAt)
-    requireNoDuplicateGroup(declaredNames, name, parentPath, declaredAt)
-    declaredNames.reserve(name, declaredAt)
+    requireNameIsFree(declaredNames, DeclarationKind.Group, name, parentPath, declaredAt)
+    declaredNames.reserve(name, DeclarationKind.Group, declaredAt)
     val path = parentPath + name
     val scope = GroupScopeImpl(path)
     scope.block()

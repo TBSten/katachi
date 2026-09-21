@@ -78,7 +78,14 @@ public class Glob private constructor(
     public val separator: Char,
     private val segments: List<String>,
     private val regex: Regex,
-    private val groupKinds: List<GlobGroupKind>,
+    /**
+     * One entry per capturing wildcard, in the order the wildcards were written.
+     *
+     * Read back so that a pattern can count its own wildcards without a second parser — see
+     * [ModulePattern.wildcardPlaceholders], which needs to know how many a match *would* have
+     * captured before any match has happened.
+     */
+    internal val groupKinds: List<GlobGroupKind>,
 ) {
     /** Whether the pattern contains a `*` or a `**`. Such a declaration is optional by nature. */
     public val hasWildcard: Boolean get() = groupKinds.isNotEmpty()

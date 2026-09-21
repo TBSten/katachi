@@ -66,7 +66,12 @@ public class ProjectModel internal constructor(
     public val groups: List<Group> get() = architecture.allGroups
 
     /**
-     * Every role of every group, in declaration order.
+     * Every role, those declared at the root of `architecture { }` included, in declaration
+     * order.
+     *
+     * A role that sits in no group carries an empty [Role.groupPath], and its
+     * [Role.qualifiedName] is its own name. A processor that turns the path into a directory
+     * therefore writes such a role at the top of its output rather than below a group.
      *
      * ## Example 1: pick the roles a processor cares about
      * ```kt
@@ -76,6 +81,16 @@ public class ProjectModel internal constructor(
      * }
      * arch.process { model -> model.roles.map { it.qualifiedName } } shouldContainExactly
      *     listOf("domain/UseCase", "data/Repository")
+     * ```
+     *
+     * ## Example 2: a role declared at the root is one of them
+     * ```kt
+     * val arch = architecture {
+     *     "Readme" { }
+     *     "domain".group { "UseCase" { } }
+     * }
+     * arch.process { model -> model.roles.map { it.qualifiedName } } shouldContainExactly
+     *     listOf("Readme", "domain/UseCase")
      * ```
      */
     public val roles: List<Role> get() = architecture.allRoles
@@ -90,10 +105,16 @@ public class ProjectModel internal constructor(
      *
      * A layout key naming modules with a wildcard (`":feature:*"`) is where the two readings
      * come apart. It stands for the modules that exist, and which modules exist is a question
-     * only the file system can answer, so such a key contributes **nothing** here while
-     * [filesOf] — which does walk the project — sees it expanded. A processor that has to
-     * reason about wildcard module keys works from [filesOf]; one that is describing what the
-     * definition says, such as documentation generation, works from here and says so.
+     * only the file system can answer — so here, where nothing is read, such a key stays
+     * **one pattern**: it contributes one module's worth of entries whose paths still hold
+     * the wildcard, never as many as the project happens to have feature modules. `wildcards`
+     * reads as `"<name>"` inside such a block — a placeholder rather than a glob, so that a
+     * name a definition builds out of it (`"${wildcards[0].pascalCase}Screen"`) comes out
+     * readable as `<name>Screen.kt` and cannot collide with the glob syntax around it. Nothing
+     * declared through the key is silently dropped. [filesOf] — which does walk the project —
+     * sees that same key once per module that exists. A processor describing what the
+     * definition says, such as documentation generation, wants the pattern; one that has to
+     * name real directories works from [filesOf].
      *
      * ## Example 1: read the declared paths
      * ```kt
@@ -104,12 +125,21 @@ public class ProjectModel internal constructor(
      *     listOf("useCase", "useCase/GetUserUseCase.kt")
      * ```
      *
-     * ## Example 2: a wildcard module key is declared here as nothing at all
+     * ## Example 2: a wildcard module key is declared here as one pattern
      * ```kt
      * val arch = architecture {
      *     "feature".group { "Module" { layout { ":feature:*".module { } } } }
      * }
-     * arch.process { model -> model.declaredEntries } shouldBe emptyList()
+     * // Four entries however many feature modules the project holds, with the wildcard still
+     * // standing where a module name would be. Split into levels only so that this example
+     * // can be written inside a KDoc comment at all.
+     * arch.process { model -> model.declaredEntries.map { it.path.split('/') } } shouldContainExactly
+     *     listOf(
+     *         listOf("feature"),
+     *         listOf("feature", "*"),
+     *         listOf("feature", "*", "build"),
+     *         listOf("feature", "*", "build.gradle.kts"),
+     *     )
      * ```
      */
     public val declaredEntries: List<LayoutEntry> by lazy { architecture.flattenLayout() }

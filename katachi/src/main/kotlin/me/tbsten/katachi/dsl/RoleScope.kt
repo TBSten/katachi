@@ -155,8 +155,8 @@ internal fun declareRole(
     block: RoleScope.() -> Unit,
 ): Role {
     requireValidIdentifier(name, DeclarationKind.Role, declaredAt)
-    requireNoDuplicateRole(declaredNames, name, groupPath, declaredAt)
-    declaredNames.reserve(name, declaredAt)
+    requireNameIsFree(declaredNames, DeclarationKind.Role, name, groupPath, declaredAt)
+    declaredNames.reserve(name, DeclarationKind.Role, declaredAt)
     val scope = RoleScopeImpl(name)
     scope.block()
     return Role(

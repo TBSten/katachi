@@ -87,10 +87,14 @@ public class KatachiInvalidIdentifierException internal constructor(
 )
 
 /**
- * The same group name was declared twice directly under the same parent, or the same role
- * name twice inside the same group.
+ * A name was taken twice in one scope: the same group name directly under the same parent,
+ * the same role name inside the same group, or — at the root of `architecture { }`, where
+ * groups and roles share one namespace — a group and a role of the same name.
  *
- * @property kind whether the duplicated name was a group's or a role's.
+ * @property kind whether the rejected declaration was a group's or a role's.
+ * @property firstKind whether the declaration that took the name first was a group's or a
+ *   role's. It differs from [kind] only at the root of `architecture { }`, and telling the
+ *   two cases apart is what the last line of the message does.
  * @property name the duplicated name.
  * @property scope where the two declarations collided, such as `the root of architecture { }`
  *   or `group "domain/user"`. It is a value the message is built from, not the message.
@@ -106,9 +110,22 @@ public class KatachiInvalidIdentifierException internal constructor(
  *     }
  * }.name shouldBe "domain"
  * ```
+ *
+ * ## Example 2: tell a group/role collision at the root from a plain duplicate
+ * ```kt
+ * val thrown = shouldThrow<KatachiDuplicateDeclarationException> {
+ *     architecture {
+ *         "domain".group { }
+ *         "domain" { }
+ *     }
+ * }
+ * thrown.kind shouldBe DeclarationKind.Role
+ * thrown.firstKind shouldBe DeclarationKind.Group
+ * ```
  */
 public class KatachiDuplicateDeclarationException internal constructor(
     public val kind: DeclarationKind,
+    public val firstKind: DeclarationKind,
     public val name: String,
     public val scope: String,
     public val firstDeclaredAt: DeclarationSite,
@@ -116,8 +133,19 @@ public class KatachiDuplicateDeclarationException internal constructor(
 ) : KatachiDeclarationException(
     message = buildString {
         appendLine("Duplicate ${kind.label} \"$name\" declared at $declaredAt.")
-        appendLine("It was already declared at $firstDeclaredAt, in $scope.")
-        append(kind.uniquenessRule)
+        if (kind == firstKind) {
+            appendLine("It was already declared at $firstDeclaredAt, in $scope.")
+            append(kind.uniquenessRule)
+        } else {
+            appendLine(
+                "A ${firstKind.label} of that name was already declared at $firstDeclaredAt, " +
+                    "in $scope.",
+            )
+            append(
+                "A group and a role in $scope would both be referred to as \"$name\". " +
+                    "Rename one of them, or move the role into a group.",
+            )
+        }
     },
 )
 

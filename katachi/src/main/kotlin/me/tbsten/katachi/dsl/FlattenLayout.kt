@@ -20,20 +20,24 @@ import me.tbsten.katachi.check.ModuleResolver
  * documentation.
  *
  * @param moduleIndex the project's modules, which `"...".module { }` keys are expanded
- *   against. The default index holds no module at all: a key naming one module still
- *   resolves through [Architecture.moduleResolver], while a key with a wildcard expands to
- *   nothing, so pass the real index whenever the file system is at hand.
+ *   against. The default index has not listed the project at all: a key naming one module
+ *   still resolves through [Architecture.moduleResolver], because where `:core:data` lives
+ *   needs no tree, while a key with a wildcard is kept as the pattern it was written as —
+ *   `":feature:*"` contributes one module's worth of entries whose paths still hold the
+ *   wildcard, not one module's worth per feature module that happens to exist. Pass the real
+ *   index whenever the file system is at hand: expanding a wildcard key to the modules it
+ *   matches is what the check needs, and nothing else can do it.
  * @throws KatachiGlobSyntaxException when a layout key cannot be read as a path pattern.
  */
 @InternalKatachiApi
 public fun Architecture.flattenLayout(
-    moduleIndex: ModuleIndex = ModuleIndex(moduleResolver, emptyList()),
+    moduleIndex: ModuleIndex = ModuleIndex.unresolved(moduleResolver),
 ): List<LayoutEntry> = allRoles.flatMap { it.flattenLayout(moduleIndex) }
 
 /** Evaluates this role's `layout { }` blocks. See [Architecture.flattenLayout]. */
 @InternalKatachiApi
 public fun Role.flattenLayout(
-    moduleIndex: ModuleIndex = ModuleIndex(ModuleResolver.Conventional, emptyList()),
+    moduleIndex: ModuleIndex = ModuleIndex.unresolved(ModuleResolver.Conventional),
 ): List<LayoutEntry> {
     val entries = LinkedHashMap<EntryKey, LayoutEntry>()
     for (declaration in layouts) {

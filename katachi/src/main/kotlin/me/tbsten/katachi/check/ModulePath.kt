@@ -155,6 +155,37 @@ public class ModulePattern private constructor(
     public val literalPath: ModulePath?
         get() = if (hasWildcard) null else ModulePath.of(unescape(pattern))
 
+    /**
+     * One [WILDCARD_PLACEHOLDER] per wildcard, in pattern order, so `":feature:*"` reads as
+     * `["<name>"]`.
+     *
+     * [match] answers the same shape filled in with a module's own names. This is what stands
+     * in their place when there is no module to have matched, which is the case for a layout
+     * read without a file system: see [ModuleIndex.targetsOf].
+     *
+     * A `**` contributes one entry rather than one per level, because how many levels it
+     * would have matched is exactly what has not been looked up.
+     */
+    internal val wildcardPlaceholders: List<String>
+        get() = glob?.groupKinds.orEmpty().map { WILDCARD_PLACEHOLDER }
+
+    /**
+     * The pattern as a directory, by the same convention [ModuleResolver.Conventional] maps a
+     * module with: every `:` becomes a path separator, so `":core:data"` reads as `core/data`
+     * and `":feature:*"` reads as a `feature` directory with a `*` level below it.
+     *
+     * The [ModuleResolver] is deliberately not asked. It answers where one module lives, and a
+     * pattern is not a module — there is nothing for a replaced resolver to look up until the
+     * project has been listed and the pattern has become the modules it stands for.
+     *
+     * Escapes are carried over as written. `\*` means a literal `*` on both sides of the
+     * translation, and `:` is not escapable, so splitting on it cannot cut an escape in half.
+     */
+    internal val conventionalDirectory: String
+        get() = pattern
+            .removePrefix(Glob.MODULE_SEPARATOR.toString())
+            .replace(Glob.MODULE_SEPARATOR, Glob.PATH_SEPARATOR)
+
     /** Whether [module] is one of the modules this pattern names. */
     public fun matches(module: ModulePath): Boolean = match(module) != null
 
@@ -177,6 +208,29 @@ public class ModulePattern private constructor(
     override fun toString(): String = "ModulePattern($pattern)"
 
     public companion object {
+        /**
+         * What `wildcards` reads as when there is no module to have matched.
+         *
+         * Deliberately **not** a glob metacharacter. A placeholder goes straight into whatever
+         * the layout block builds out of it, and the result has to survive [Glob.compile]:
+         * `"${wildcards[0]}*Preview"` — a real declaration in `sample/kmp` — would come out as
+         * `**Preview` if the placeholder were `*`, and `**` inside a segment is rejected. Any
+         * of `* \ { } ? [ ] ,` would fuse with its neighbours the same way, so the placeholder
+         * is built from characters katachi's glob has no meaning for at all.
+         *
+         * It also survives the naming conversions unchanged: [me.tbsten.katachi.dsl.nameWords]
+         * treats `<`, `n`, `a`, `m`, `e` and `>` alike, and neither `<` nor `>` has a case, so
+         * `.pascalCase`, `.camelCase`, `.kebabCase`, `.snakeCase` and `.flatCase` all hand back
+         * `<name>` (`.screamingSnakeCase` upper-cases the letters, to `<NAME>`). That is what
+         * lets documentation generation find the placeholder again in a name a definition built
+         * out of it.
+         *
+         * `<name>` rather than `<featureName>`: what a `*` captures is the name of the module
+         * at that level, and nothing here knows what kind of module that is. Deriving a better
+         * word from the pattern's literal segments is v0.3's question, not this one's.
+         */
+        internal const val WILDCARD_PLACEHOLDER: String = "<name>"
+
         /**
          * Translates [raw] into a pattern, filling in the leading `:` when it was left out.
          *
