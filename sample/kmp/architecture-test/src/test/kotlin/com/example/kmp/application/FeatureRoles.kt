@@ -32,7 +32,7 @@ fun ArchitectureScope.featureRoles() {
             example("HomeScreen", "ホーム画面")
             example("SettingsScreen", "設定画面")
             layout {
-                "feature" / "*" / "src" / "commonMain" / "kotlin" {
+                "feature" / "*" / "src/commonMain/kotlin" {
                     "com/example/kmp/feature" / "*" / "*Screen".ktFile()
                 }
             }
@@ -43,7 +43,7 @@ fun ArchitectureScope.featureRoles() {
                 "Repository から取得した値を UiState に変換し、StateFlow で公開する"
             example("HomeViewModel", "ホーム画面の状態")
             layout {
-                "feature" / "*" / "src" / "commonMain" / "kotlin" {
+                "feature" / "*" / "src/commonMain/kotlin" {
                     "com/example/kmp/feature" / "*" / "*ViewModel".ktFile()
                 }
             }
@@ -53,7 +53,7 @@ fun ArchitectureScope.featureRoles() {
             summary = "画面を navigation の Destination に結びつけ、ViewModel の生成も引き受ける"
             example("HomeRoute", "ホーム画面の遷移先")
             layout {
-                "feature" / "*" / "src" / "commonMain" / "kotlin" {
+                "feature" / "*" / "src/commonMain/kotlin" {
                     "com/example/kmp/feature" / "*" / "*Route".ktFile()
                 }
             }

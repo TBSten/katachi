@@ -37,7 +37,7 @@ fun ArchitectureScope.gradleRoles() {
                         "gradle-wrapper.properties".file()
                     }
                 }
-                "architecture-test" / "build.gradle".ktsFile()
+                "architecture-test/build.gradle".ktsFile()
             }
         }
     }

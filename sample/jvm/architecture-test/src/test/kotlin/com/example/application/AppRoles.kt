@@ -14,7 +14,7 @@ fun ArchitectureScope.appRoles() {
             layout {
                 // No wildcard, so this one is required: delete `Application.kt` and the check
                 // reports `[MissingFile]` instead of silently passing.
-                "src" / "main" / "kotlin" / "com" / "example" / "Application".ktFile()
+                "src/main/kotlin/com/example/Application".ktFile()
             }
         }
 
@@ -26,7 +26,7 @@ fun ArchitectureScope.appRoles() {
             layout {
                 // Listed one by one rather than with `anyFile()`: there are exactly two of
                 // them, and a third one appearing is something to be told about.
-                "src" / "main" / "resources" {
+                "src/main/resources" {
                     "application.conf".file()
                     "logback.xml".file()
                 }

@@ -176,7 +176,7 @@ private val architectureWithoutEntrypointRole: Architecture = architecture {
     "app".group {
         "ServerConfig" {
             layout {
-                "src" / "main" / "resources" {
+                "src/main/resources" {
                     "application.conf".file()
                     "logback.xml".file()
                 }

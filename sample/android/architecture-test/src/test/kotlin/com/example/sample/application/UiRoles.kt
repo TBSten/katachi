@@ -84,7 +84,7 @@ fun ArchitectureScope.uiRoles() {
             summary = ":navigation に置く、画面間の移動"
             example("AppNavigator", "画面遷移の窓口")
             layout {
-                "navigation" / "src" / "main" / "kotlin" / "com" / "example" / "sample" /
+                "navigation/src/main/kotlin/com/example/sample" /
                     "navigation" / "*".ktFile()
             }
         }
@@ -99,4 +99,4 @@ fun ArchitectureScope.uiRoles() {
  * `mainSourceSet / kotlin / modulePackage / packageName`.
  */
 private fun LayoutScope.uiSources(packageName: String): LayoutDirectory =
-    "ui" / "src" / "main" / "kotlin" / "com" / "example" / "sample" / "ui" / packageName
+    "ui/src/main/kotlin/com/example/sample/ui" / packageName

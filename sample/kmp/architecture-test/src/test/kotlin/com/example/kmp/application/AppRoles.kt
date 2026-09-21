@@ -13,7 +13,7 @@ fun ArchitectureScope.appRoles() {
             example("MainActivity", "起動時に表示される Activity")
             example("AppRoot", "テーマとナビゲーションを組み立てる Composable")
             layout {
-                "app" / "android" / "src" / "main" / "kotlin" {
+                "app/android/src/main/kotlin" {
                     "com/example/kmp/app" / "*".ktFile()
                 }
             }
@@ -27,7 +27,7 @@ fun ArchitectureScope.appRoles() {
             // `mipmap-hdpi`, ...). Android decides those names, so the layout names the
             // level rather than each directory.
             layout {
-                "app" / "android" / "src" / "main" {
+                "app/android/src/main" {
                     "AndroidManifest.xml".file()
                     "res" / "*" / "*.xml".file()
                 }

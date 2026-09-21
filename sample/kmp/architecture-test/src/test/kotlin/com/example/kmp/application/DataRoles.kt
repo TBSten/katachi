@@ -21,7 +21,7 @@ fun ArchitectureScope.dataRoles() {
             // Two file patterns, not one: `*Repository.kt` does not match
             // `UserRepositoryImpl.kt`, because `*` never crosses what follows it.
             layout {
-                "data" / "src" / "commonMain" / "kotlin" {
+                "data/src/commonMain/kotlin" {
                     "com/example/kmp/data/user" / "*Repository".ktFile()
                     "com/example/kmp/data/user" / "*RepositoryImpl".ktFile()
                 }
@@ -40,13 +40,13 @@ fun ArchitectureScope.dataRoles() {
             // The same package under three source sets. Written out as three directory
             // chains here; from step 3 the source set name is the only part that varies.
             layout {
-                "data" / "src" / "commonMain" / "kotlin" {
+                "data/src/commonMain/kotlin" {
                     "com/example/kmp/data/platform" / "*".ktFile()
                 }
-                "data" / "src" / "androidMain" / "kotlin" {
+                "data/src/androidMain/kotlin" {
                     "com/example/kmp/data/platform" / "*.android".ktFile()
                 }
-                "data" / "src" / "iosMain" / "kotlin" {
+                "data/src/iosMain/kotlin" {
                     "com/example/kmp/data/platform" / "*.ios".ktFile()
                 }
             }

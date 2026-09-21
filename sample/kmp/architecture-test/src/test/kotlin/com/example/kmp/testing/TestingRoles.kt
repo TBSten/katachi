@@ -12,7 +12,7 @@ fun ArchitectureScope.testingRoles() {
             summary = ":testing の commonMain に置く偽の実装。他モジュールのテストから使う"
             example("FakeUserRepository", "UserRepository の偽実装")
             layout {
-                "testing" / "src" / "commonMain" / "kotlin" {
+                "testing/src/commonMain/kotlin" {
                     "com/example/kmp/testing" / "Fake*".ktFile()
                 }
             }
@@ -30,7 +30,7 @@ fun ArchitectureScope.testingRoles() {
             // declared for a directory that does not exist would claim a shape the sample
             // does not have.
             layout {
-                "app" / "android" / "src" / "test" / "kotlin" {
+                "app/android/src/test/kotlin" {
                     "com/example/kmp/app" / "*Spec".ktFile()
                 }
             }
@@ -48,7 +48,7 @@ fun ArchitectureScope.testingRoles() {
             // concern gets one package below it (`application`, `gradle`, `testing`,
             // `tool`). The `*` in the middle is that package.
             layout {
-                "architecture-test" / "src" / "test" / "kotlin" {
+                "architecture-test/src/test/kotlin" {
                     "com/example/kmp" / "*".ktFile()
                     "com/example/kmp" / "*" / "*".ktFile()
                 }

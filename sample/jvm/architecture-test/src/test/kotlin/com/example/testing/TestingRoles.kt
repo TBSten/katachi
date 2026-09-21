@@ -23,7 +23,7 @@ fun ArchitectureScope.testingRoles() {
                 // `**` stands for the package levels, which mirror the main source set and are
                 // not worth writing twice. The `*` after it is one file name, so a directory
                 // holding no `.kt` at all is still reported.
-                "src" / "test" / "kotlin" / "**" / "*".ktFile()
+                "src/test/kotlin" / "**" / "*".ktFile()
             }
         }
 
@@ -35,7 +35,7 @@ fun ArchitectureScope.testingRoles() {
             layout {
                 // The price of the recommended setup: `:architecture-test` checks itself, so
                 // the definition has to give itself a role like everything else.
-                "architecture-test" / "src" / "test" / "kotlin" / "**" / "*".ktFile()
+                "architecture-test/src/test/kotlin" / "**" / "*".ktFile()
             }
         }
     }

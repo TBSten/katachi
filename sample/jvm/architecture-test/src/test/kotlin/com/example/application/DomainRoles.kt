@@ -12,7 +12,7 @@ fun ArchitectureScope.domainRoles() {
             summary = "アプリ固有の振る舞いを1つ持ち、Repository を組み合わせて実現する"
             example("HealthService", "サーバの稼働状態を取得する")
             layout {
-                "src" / "main" / "kotlin" / "com" / "example" / "service" / "*Service".ktFile()
+                "src/main/kotlin/com/example/service" / "*Service".ktFile()
             }
         }
 
@@ -23,7 +23,7 @@ fun ArchitectureScope.domainRoles() {
             layout {
                 // A model is named after the thing it models, so the package is the only
                 // marker. Any `.kt` directly in it counts; a subdirectory does not.
-                "src" / "main" / "kotlin" / "com" / "example" / "model" / "*".ktFile()
+                "src/main/kotlin/com/example/model" / "*".ktFile()
             }
         }
     }

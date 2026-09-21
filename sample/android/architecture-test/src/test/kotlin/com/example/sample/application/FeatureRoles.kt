@@ -74,4 +74,4 @@ fun ArchitectureScope.featureRoles() {
  * first frame outside its own packages, which is the line below, in this file.
  */
 private fun LayoutScope.featureSources(name: String): LayoutDirectory =
-    "feature" / name / "src" / "main" / "kotlin" / "com" / "example" / "sample" / "feature" / name
+    "feature" / name / "src/main/kotlin/com/example/sample/feature" / name

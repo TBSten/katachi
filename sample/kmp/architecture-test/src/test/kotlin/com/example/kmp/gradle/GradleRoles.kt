@@ -35,13 +35,13 @@ fun ArchitectureScope.gradleRoles() {
             // optional, so the seven spelled-out scripts are the ones a deletion would
             // report as `[MissingFile]`.
             layout {
-                "app" / "android" / "build.gradle".ktsFile()
-                "architecture-test" / "build.gradle".ktsFile()
-                "data" / "build.gradle".ktsFile()
+                "app/android/build.gradle".ktsFile()
+                "architecture-test/build.gradle".ktsFile()
+                "data/build.gradle".ktsFile()
                 "feature" / "*" / "build.gradle".ktsFile()
-                "navigation" / "build.gradle".ktsFile()
-                "testing" / "build.gradle".ktsFile()
-                "ui" / "build.gradle".ktsFile()
+                "navigation/build.gradle".ktsFile()
+                "testing/build.gradle".ktsFile()
+                "ui/build.gradle".ktsFile()
             }
         }
         "GradleRoot" {
