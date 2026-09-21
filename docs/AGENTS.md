@@ -8,7 +8,7 @@ astro dev --background
 
 Manage the background server with `astro dev stop`, `astro dev status`, and `astro dev logs`.
 
-## サイドバーの構成（決定済み・未実装）
+## サイドバーの構成
 
 `index`（トップページ）は**サイドバーに出さない**。サイトタイトル / ロゴから辿れるので十分。
 
@@ -106,19 +106,20 @@ skill の `scaffold.sh` が雛形を作り、**katachi がその形を崩れな�
 ステップ4 の `konsist { }` の担当になる。つまりこのレシピは
 **「layout で配置を固定し、konsist で依存の向きを固定する」を組み合わせる初めての例**になる。
 
-## テーマ（未着手・予定）
+## テーマ
 
-デザインを刷新するときは **lucode starlight theme** を使う。
+**lucode starlight theme** を使っている。
 
 - https://lucas-labs.github.io/lucode-starlight-theme/guides/getting-started/
-- リポジトリ: `lucas-labs/lucode-starlight-theme`
+- パッケージ: `lucode-starlight`
 
-**いまは素の Starlight のまま。** 着手するのは status board の「ドキュメントサイト」の
-**デザインシステムの刷新**のタイミング。その前に各ページの中身を揃える
-（`reference/dsl.md` がステップ2・3 の実装に追いついていない）。
+入れ方は2箇所。`astro.config.mjs` の `starlight({ plugins: [lucode({ navLinks })] })` と、
+`src/content.config.ts` の `docsSchema({ extend: ExtendDocsSchema })`。**後者を忘れると
+テーマが frontmatter に足すフィールドを受け付けられない。**
 
-導入手順とパッケージ名は着手時に上の URL で確認すること。ここには写さない
-（先に写すと、古くなったときに間違いだけが残る）。
+テーマはコンポーネントの差し替え・CSS レイヤー・テーマトークン・Expressive Code の設定まで
+持ってくるが、**自前の `customCss`（`code-comparison.css`）とは共存できている**。
+Starlight のトークン（`--sl-text-xs` / `--sl-color-gray-2`）に乗せて書いてあるため。
 
 ## Documentation
 

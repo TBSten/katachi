@@ -1,6 +1,7 @@
 // @ts-check
 import { defineConfig } from 'astro/config';
 import starlight from '@astrojs/starlight';
+import lucode from 'lucode-starlight';
 
 // https://astro.build/config
 export default defineConfig({
@@ -15,6 +16,16 @@ export default defineConfig({
 			description:
 				'Android / KMP プロジェクトのアーキテクチャを Kotlin DSL で書き、同じ定義から「テスト」と「ドキュメント」の両方を出すライブラリ。',
 			defaultLocale: 'ja',
+			// デザインシステムは lucode テーマに任せる。コンポーネントの差し替え、
+			// CSS レイヤー、テーマトークン、Expressive Code の設定まで持ってくる。
+			plugins: [
+				lucode({
+					navLinks: [
+						{ label: 'ドキュメント', link: '/get-started/motivation/' },
+						{ label: 'ロードマップ', link: '/roadmap/' },
+					],
+				}),
+			],
 			// CodeComparison のレイアウト。scoped style だとドット記法のコンポーネントに
 			// スタイルが伝播しないため、ここでグローバルに読ませている。
 			customCss: ['./src/styles/code-comparison.css'],
