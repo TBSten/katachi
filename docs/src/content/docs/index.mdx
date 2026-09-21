@@ -31,8 +31,6 @@ katachi は v0.1 を実装している途中です。現時点で動くのは
 katachi は**同じ定義から両方を出します**。
 
 ```kotlin
-val modulePackage = capitalizedModuleNamePackage("com.example")
-
 val projectArchitecture = architecture {
     "domain".group {
         "UseCase" {
@@ -42,7 +40,7 @@ val projectArchitecture = architecture {
 
             layout {
                 ":core:domain".module {
-                    mainSourceSet / kotlin / modulePackage / "useCase" / "*UseCase".ktFile()
+                    mainSourceSet / kotlin / "com/example/useCase" / "*UseCase".ktFile()
                 }
             }
         }
