@@ -3,18 +3,23 @@ package me.tbsten.katachi.test.dsl
 import io.kotest.core.spec.style.FreeSpec
 import io.kotest.matchers.collections.shouldContainExactly
 import io.kotest.matchers.shouldBe
+import me.tbsten.katachi.dsl.Examples
 import me.tbsten.katachi.dsl.RoleExample
+import me.tbsten.katachi.dsl.Summary
+import me.tbsten.katachi.dsl.Title
 import me.tbsten.katachi.dsl.architecture
 
 class RoleSpec : FreeSpec({
-    "title を省略した役割は、表示名として役割名がそのまま使われる" {
-        val arch = architecture { "domain".group { "UseCase" { } } }
-        arch.allRoles.single().title shouldBe "UseCase"
+    "title を省略した役割には Title が入らず、読む側が役割名にフォールバックする" {
+        val role = architecture { "domain".group { "UseCase" { } } }.allRoles.single()
+        role[Title] shouldBe null
+        (role[Title] ?: role.name) shouldBe "UseCase"
     }
 
-    "title を省略した group は、表示名として group 名がそのまま使われる" {
-        val arch = architecture { "domain".group { } }
-        arch.groups.single().title shouldBe "domain"
+    "title を省略した group には Title が入らず、読む側が group 名にフォールバックする" {
+        val group = architecture { "domain".group { } }.groups.single()
+        group[Title] shouldBe null
+        (group[Title] ?: group.name) shouldBe "domain"
     }
 
     "title を指定すると識別子と表示名が分離される" {
@@ -27,16 +32,16 @@ class RoleSpec : FreeSpec({
 
         val group = arch.groups.single()
         group.name shouldBe "domain"
-        group.title shouldBe "ドメイン"
+        group[Title] shouldBe "ドメイン"
 
         val role = arch.allRoles.single()
         role.name shouldBe "UseCase"
-        role.title shouldBe "ユースケース"
+        role[Title] shouldBe "ユースケース"
     }
 
-    "summary を省略した役割の summary は null になる" {
+    "summary を省略した役割の Summary は null になる" {
         val arch = architecture { "domain".group { "UseCase" { } } }
-        arch.allRoles.single().summary shouldBe null
+        arch.allRoles.single()[Summary] shouldBe null
     }
 
     "summary を指定すると保持される" {
@@ -45,7 +50,7 @@ class RoleSpec : FreeSpec({
                 "UseCase" { summary = "各画面で発生するアプリ固有の1つの振る舞い" }
             }
         }
-        arch.allRoles.single().summary shouldBe "各画面で発生するアプリ固有の1つの振る舞い"
+        arch.allRoles.single()[Summary] shouldBe "各画面で発生するアプリ固有の1つの振る舞い"
     }
 
     "example を複数回呼ぶと、呼んだ順にすべて保持される" {
@@ -59,7 +64,7 @@ class RoleSpec : FreeSpec({
             }
         }
 
-        arch.allRoles.single().examples shouldContainExactly listOf(
+        arch.allRoles.single()[Examples].orEmpty() shouldContainExactly listOf(
             RoleExample("GetRecommendedProductListUseCase", "おすすめの商品リストを取得する"),
             RoleExample("ToggleProductFavorite", "商品のいいね状態を切り替える"),
             RoleExample("SignOutUseCase", "サインアウトする"),
@@ -75,14 +80,14 @@ class RoleSpec : FreeSpec({
             }
         }
 
-        val example = arch.allRoles.single().examples.single()
+        val example = arch.allRoles.single()[Examples].orEmpty().single()
         example.name shouldBe "ToggleProductFavorite"
         example.description shouldBe "商品のいいね状態 ... を切り替える"
     }
 
-    "example を1つも呼ばなければ examples は空になる" {
+    "example を1つも呼ばなければ Examples は書き込まれない" {
         val arch = architecture { "domain".group { "UseCase" { } } }
-        arch.allRoles.single().examples shouldBe emptyList()
+        arch.allRoles.single()[Examples] shouldBe null
     }
 
     "役割は自分が属する group のパスを保持する" {

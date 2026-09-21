@@ -3,6 +3,9 @@ package me.tbsten.katachi.dsl
 /**
  * Receiver of `"name".group { }`. Holds nested groups and roles.
  *
+ * [title] and [documented] are sugar over the [Title] and [Documented] metadata keys, the
+ * same way the role block's properties are.
+ *
  * ## Example 1: declare nested groups and roles
  * ```kt
  * val arch = architecture {
@@ -15,7 +18,7 @@ package me.tbsten.katachi.dsl
  * ```
  */
 @KatachiDsl
-public sealed interface GroupScope : GroupContainerScope {
+public sealed interface GroupScope : GroupContainerScope, MetadataScope {
     /**
      * Display name of this group. Defaults to the group name.
      *
@@ -26,10 +29,30 @@ public sealed interface GroupScope : GroupContainerScope {
      *         title = "ドメイン"
      *     }
      * }
-     * arch.groups.single().title shouldBe "ドメイン"
+     * arch.groups.single()[Title] shouldBe "ドメイン"
      * ```
      */
     public var title: String
+
+    /**
+     * Set to `false` to keep this group out of the generated documentation. It still takes
+     * part in the check.
+     *
+     * The value is not inherited: a role inside a group that opted out has to say so for
+     * itself, and so does a nested group.
+     *
+     * ## Example 1: keep a group out of the generated documentation
+     * ```kt
+     * val arch = architecture {
+     *     "build".group {
+     *         documented = false
+     *         "VersionCatalog" { documented = false }
+     *     }
+     * }
+     * arch.groups.single()[Documented] shouldBe false
+     * ```
+     */
+    public var documented: Boolean
 
     /**
      * Declares a role: `"UseCase" { title = "ユースケース" }`.
@@ -53,7 +76,7 @@ public sealed interface GroupScope : GroupContainerScope {
 }
 
 internal class GroupScopeImpl(private val path: List<String>) : GroupScope {
-    override var title: String = path.last()
+    val metadata = MetadataBuilder()
 
     val groups = mutableListOf<Group>()
     val roles = mutableListOf<Role>()
@@ -61,11 +84,22 @@ internal class GroupScopeImpl(private val path: List<String>) : GroupScope {
     private val declaredGroupNames = DeclaredNames()
     private val declaredRoleNames = DeclaredNames()
 
-    override fun String.group(documented: Boolean, block: GroupScope.() -> Unit) {
+    override var title: String
+        get() = metadata[Title] ?: path.last()
+        set(value) {
+            metadata[Title] = value
+        }
+
+    override var documented: Boolean
+        get() = metadata[Documented] ?: true
+        set(value) {
+            metadata[Documented] = value
+        }
+
+    override fun String.group(block: GroupScope.() -> Unit) {
         groups += declareGroup(
             name = this,
             parentPath = path,
-            documented = documented,
             declaredAt = captureDeclarationSite(),
             declaredNames = declaredGroupNames,
             block = block,
@@ -85,7 +119,7 @@ internal class GroupScopeImpl(private val path: List<String>) : GroupScope {
 
 /**
  * Validates the name, takes it in [declaredNames], then evaluates [block] to collect the
- * nested groups and roles.
+ * nested groups, the roles and the metadata.
  *
  * The name is reserved before [block] runs so that a block which reaches back into this
  * same scope cannot slip a second declaration of the same name past the check.
@@ -93,7 +127,6 @@ internal class GroupScopeImpl(private val path: List<String>) : GroupScope {
 internal fun declareGroup(
     name: String,
     parentPath: List<String>,
-    documented: Boolean,
     declaredAt: DeclarationSite,
     declaredNames: DeclaredNames,
     block: GroupScope.() -> Unit,
@@ -106,8 +139,7 @@ internal fun declareGroup(
     scope.block()
     return Group(
         name = name,
-        title = scope.title,
-        documented = documented,
+        metadata = scope.metadata.build(),
         path = path,
         groups = scope.groups.toList(),
         roles = scope.roles.toList(),

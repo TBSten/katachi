@@ -13,7 +13,11 @@ import io.kotest.matchers.string.shouldContain
 import java.io.File
 import me.tbsten.katachi.check.validate
 import me.tbsten.katachi.dsl.Architecture
+import me.tbsten.katachi.dsl.Documented
+import me.tbsten.katachi.dsl.Examples
+import me.tbsten.katachi.dsl.ExperimentalKatachiApi
 import me.tbsten.katachi.dsl.InternalKatachiApi
+import me.tbsten.katachi.dsl.Title
 import me.tbsten.katachi.dsl.architecture
 
 /**
@@ -36,7 +40,7 @@ import me.tbsten.katachi.dsl.architecture
  * group from an otherwise identical definition has to turn exactly that group's files into
  * violations.
  */
-@OptIn(InternalKatachiApi::class)
+@OptIn(InternalKatachiApi::class, ExperimentalKatachiApi::class)
 class ProjectArchitectureSpec : FreeSpec({
     "宣言した group がすべて宣言順にモデルに含まれる" {
         projectArchitecture.allGroups.map { it.qualifiedName } shouldContainExactly
@@ -141,7 +145,9 @@ class ProjectArchitectureSpec : FreeSpec({
     }
 
     "build group と tool group だけが documented = false になっている" {
-        val documentedByGroup = projectArchitecture.allGroups.associate { it.name to it.documented }
+        // 書かなかった宣言には Documented が入らない。省略を true と読むのはここ（読む側）。
+        val documentedByGroup =
+            projectArchitecture.allGroups.associate { it.name to (it[Documented] ?: true) }
         documentedByGroup shouldBe mapOf(
             "feature" to true,
             "ui" to true,
@@ -157,18 +163,19 @@ class ProjectArchitectureSpec : FreeSpec({
         val undocumentedGroupPaths = listOf(listOf("build"), listOf("tool"))
         val (undocumentedRoles, otherRoles) =
             projectArchitecture.allRoles.partition { it.groupPath in undocumentedGroupPaths }
-        undocumentedRoles.map { it.documented }.toSet() shouldBe setOf(false)
-        otherRoles.map { it.documented }.toSet() shouldBe setOf(true)
+        undocumentedRoles.map { it[Documented] ?: true }.toSet() shouldBe setOf(false)
+        otherRoles.map { it[Documented] ?: true }.toSet() shouldBe setOf(true)
     }
 
-    "title を省略した役割は役割名がそのまま表示名になる" {
+    "title を省略した役割は Title を持たず、役割名がそのまま表示名になる" {
         val git = projectArchitecture.allRoles.single { it.qualifiedName == "tool/Git" }
-        git.title shouldBe "Git"
+        git[Title] shouldBe null
+        (git[Title] ?: git.name) shouldBe "Git"
     }
 
     "title を書いた役割はその表示名になる" {
         val screen = projectArchitecture.allRoles.single { it.qualifiedName == "feature/Screen" }
-        screen.title shouldBe "画面"
+        screen[Title] shouldBe "画面"
     }
 
     "1つの役割が複数の置き場所を layout として持てる" {
@@ -178,7 +185,7 @@ class ProjectArchitectureSpec : FreeSpec({
 
     "example は呼んだ順に保持される" {
         val repository = projectArchitecture.allRoles.single { it.qualifiedName == "data/Repository" }
-        repository.examples.map { it.name } shouldContainExactly
+        repository[Examples].orEmpty().map { it.name } shouldContainExactly
             listOf("UserRepository", "UserRepositoryImpl")
     }
 

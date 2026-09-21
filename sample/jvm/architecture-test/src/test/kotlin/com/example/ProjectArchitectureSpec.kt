@@ -19,8 +19,12 @@ import me.tbsten.katachi.check.ModuleResolver
 import me.tbsten.katachi.check.ProjectRoot
 import me.tbsten.katachi.check.validate
 import me.tbsten.katachi.dsl.Architecture
+import me.tbsten.katachi.dsl.Documented
+import me.tbsten.katachi.dsl.Examples
+import me.tbsten.katachi.dsl.ExperimentalKatachiApi
 import me.tbsten.katachi.dsl.InternalKatachiApi
 import me.tbsten.katachi.dsl.LayoutEntry
+import me.tbsten.katachi.dsl.Title
 import me.tbsten.katachi.dsl.architecture
 import me.tbsten.katachi.dsl.conventionalModuleResolver
 import me.tbsten.katachi.dsl.gitTracked
@@ -46,9 +50,11 @@ import me.tbsten.katachi.dsl.kotlin.ktsFile
  * though `ProjectArchitecture.kt` no longer contains a single `group` call.
  *
  * `validate()` is `@InternalKatachiApi` on purpose - a user asserts, and does not read the
- * violations - so this file opts in where a user would not have to.
+ * violations - so this file opts in where a user would not have to. Reading metadata off a
+ * declaration (`role[Title]`) is `@ExperimentalKatachiApi` for a different reason: the shape
+ * is still moving. Writing it in the definition - `title = "..."` - needs neither.
  */
-@OptIn(InternalKatachiApi::class)
+@OptIn(InternalKatachiApi::class, ExperimentalKatachiApi::class)
 class ProjectArchitectureSpec : FreeSpec({
     "宣言した group がすべてモデルに含まれる" {
         projectArchitecture.allGroups.map { it.qualifiedName }.toSet() shouldBe setOf(
@@ -140,19 +146,20 @@ class ProjectArchitectureSpec : FreeSpec({
     }
 
     "documented = false を付けた group だけが documented = false になる" {
+        // 書かなかった宣言には Documented が入らない。省略を true と読むのはここ（読む側）。
         projectArchitecture.allGroups
-            .filterNot { it.documented }
+            .filterNot { it[Documented] ?: true }
             .map { it.qualifiedName } shouldBe listOf("build", "tool")
     }
 
     "documented を省略した役割はすべて documented = true になる" {
-        projectArchitecture.allRoles.filterNot { it.documented } shouldBe emptyList()
+        projectArchitecture.allRoles.filterNot { it[Documented] ?: true } shouldBe emptyList()
     }
 
     "title を省略しなかった役割は指定した表示名を持つ" {
         val model = projectArchitecture.allRoles.single { it.qualifiedName == "domain/Model" }
-        model.title shouldBe "モデル"
-        model.examples.map { it.name } shouldBe listOf("Health")
+        model[Title] shouldBe "モデル"
+        model[Examples].orEmpty().map { it.name } shouldBe listOf("Health")
     }
 
     "すべての役割が layout を1つ持つ" {
@@ -271,7 +278,7 @@ private object SelectsNothing : FileSelection {
 }
 
 /** A flattened entry without the role that declared it, for comparing two definitions. */
-@OptIn(InternalKatachiApi::class)
+@OptIn(InternalKatachiApi::class, ExperimentalKatachiApi::class)
 private fun shapeOf(entry: LayoutEntry): String =
     "${entry.path}\t${entry.kind}\t${if (entry.required) "required" else "optional"}"
 

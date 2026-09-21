@@ -8,7 +8,8 @@ import me.tbsten.katachi.dsl.ArchitectureScope
  * Like the build group, these are checked but kept out of the generated documentation.
  */
 fun ArchitectureScope.toolRoles() {
-    "tool".group(documented = false) {
+    "tool".group {
+        documented = false
         title = "ツール設定"
 
         "Git" {

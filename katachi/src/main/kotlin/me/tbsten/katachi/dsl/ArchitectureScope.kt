@@ -18,8 +18,9 @@ public sealed interface GroupContainerScope {
     /**
      * Declares a group. Nest `group` calls to nest groups.
      *
-     * @param documented pass `false` to keep the group out of the generated
-     *   documentation. It still takes part in the check.
+     * Everything a group carries is written inside the block, metadata included. The
+     * signature stays a name and a block, so that a processor bringing a new word does not
+     * mean a new parameter here.
      *
      * ## Example 1: declare a group
      * ```kt
@@ -33,16 +34,14 @@ public sealed interface GroupContainerScope {
      * ## Example 2: keep a group out of the generated documentation
      * ```kt
      * val arch = architecture {
-     *     "Gradle".group(documented = false) {
-     *         "VersionCatalog" { }
+     *     "build".group {
+     *         documented = false
+     *         "VersionCatalog" { documented = false }
      *     }
      * }
      * ```
      */
-    public fun String.group(
-        documented: Boolean = true,
-        block: GroupScope.() -> Unit,
-    )
+    public fun String.group(block: GroupScope.() -> Unit)
 }
 
 /**
@@ -100,11 +99,10 @@ internal class ArchitectureScopeImpl : ArchitectureScope {
 
     override var moduleResolver: ModuleResolver = ModuleResolver.Conventional
 
-    override fun String.group(documented: Boolean, block: GroupScope.() -> Unit) {
+    override fun String.group(block: GroupScope.() -> Unit) {
         groups += declareGroup(
             name = this,
             parentPath = emptyList(),
-            documented = documented,
             declaredAt = captureDeclarationSite(),
             declaredNames = declaredGroupNames,
             block = block,

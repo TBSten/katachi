@@ -1,5 +1,6 @@
 package com.example.kmp.gradle
 
+import com.example.kmp.owner
 import me.tbsten.katachi.dsl.ArchitectureScope
 import me.tbsten.katachi.dsl.gradle.*
 import me.tbsten.katachi.dsl.kotlin.ktsFile
@@ -14,9 +15,15 @@ import me.tbsten.katachi.dsl.kotlin.ktsFile
  * The package is `gradle` and not `build` on purpose: the repository's `.gitignore` has a
  * bare `build/` entry, which matches at every depth and would swallow the sources here. The
  * group keeps its original name.
+ *
+ * Both roles also carry `owner = "platform"`, this sample's own metadata key (see
+ * [com.example.kmp.Owner]). It is not part of katachi -- it exists only to give
+ * `com.example.kmp.PlatformOwnedFilesProcessor` something to read, and to demonstrate that a
+ * user of katachi can bring their own vocabulary the same way `documented` and `summary` do.
  */
 fun ArchitectureScope.gradleRoles() {
-    "build".group(documented = false) {
+    "build".group {
+        documented = false
         title = "ビルド"
 
         "GradleModule" {
@@ -26,6 +33,7 @@ fun ArchitectureScope.gradleRoles() {
             // build script shows up here.
             summary = "各モジュールの build.gradle.kts"
             documented = false
+            owner = "platform"
             example("data/build.gradle.kts", ":data のビルドスクリプト")
             example("architecture-test/build.gradle.kts", ":architecture-test のビルドスクリプト")
             // One line per module, written the way `settings.gradle.kts` writes it. An empty
@@ -51,6 +59,7 @@ fun ArchitectureScope.gradleRoles() {
             title = "ルートのビルドファイル"
             summary = "settings.gradle.kts、ルートの build.gradle.kts、gradle.properties、wrapper"
             documented = false
+            owner = "platform"
             example("settings.gradle.kts", "モジュール構成と catalog の宣言")
             // Directly under `layout { }` the paths are relative to the project root, which
             // for this sample is `sample/kmp` -- the first directory above the test's working

@@ -8,8 +8,9 @@ import me.tbsten.katachi.dsl.kotlin.ktsFile
  * Roles of the build definition.
  *
  * Build files are checked like everything else, but they are noise in the generated
- * documentation, so the whole group opts out (D4: `documented` is an argument on a group,
- * a property inside a role block).
+ * documentation, so the whole group opts out. `documented` is a property written inside the
+ * block, the same on a group as on a role; it is metadata like anything else a processor
+ * reads, which is why it is not a parameter of `group()`.
  *
  * What the build *writes* needs no role at all: `build/` and `.kotlin/` are listed in
  * `.gitignore`, and the default `files = gitTracked()` never offers them to the check. Every
@@ -17,7 +18,8 @@ import me.tbsten.katachi.dsl.kotlin.ktsFile
  * `files = wholeTree()` has no git to lean on and the reason has to be readable either way.
  */
 fun ArchitectureScope.gradleRoles() {
-    "build".group(documented = false) {
+    "build".group {
+        documented = false
         title = "ビルド"
 
         "Gradle" {

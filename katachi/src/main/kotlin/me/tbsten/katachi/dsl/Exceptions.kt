@@ -1,11 +1,18 @@
 package me.tbsten.katachi.dsl
 
 /**
- * Base of every error raised while `architecture { }` is being evaluated, long before any
- * file is read. Catch this to treat "the definition itself is wrong" as one case.
+ * Base of every error whose fix is in the definition. Catch this to treat "the definition
+ * itself is wrong" as one case.
+ *
+ * Most are raised while `architecture { }` is being evaluated, long before any file is read.
+ * The rest come later for a reason that has nothing to do with the project: a `layout { }`
+ * block is deferred, so a key katachi cannot read is only noticed when the check flattens it,
+ * and a declaration handed back to katachi later can turn out to belong to another definition
+ * entirely. Both are the same mistake — a bad value written into a definition — seen at the
+ * first moment katachi could look at it.
  *
  * It extends [IllegalArgumentException] because the offending value is always something
- * the caller passed to the DSL.
+ * the caller passed to katachi.
  *
  * ## Example 1: catch every declaration-time error the same way
  * ```kt

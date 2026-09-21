@@ -18,7 +18,8 @@ import me.tbsten.katachi.dsl.ArchitectureScope
  * inlined frame reports a line number remapped past the end of the caller's file.
  */
 fun ArchitectureScope.toolRoles() {
-    "tool".group(documented = false) {
+    "tool".group {
+        documented = false
         title = "ツール"
 
         // No `title` here on purpose: an undocumented role has no display name to show,

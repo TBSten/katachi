@@ -28,7 +28,8 @@ import me.tbsten.katachi.dsl.kotlin.ktsFile
  * inlined frame reports a line number remapped past the end of the caller's file.
  */
 fun ArchitectureScope.gradleRoles() {
-    "build".group(documented = false) {
+    "build".group {
+        documented = false
         title = "ビルド"
 
         "GradleModule" {

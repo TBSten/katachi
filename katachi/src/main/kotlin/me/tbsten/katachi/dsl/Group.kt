@@ -5,6 +5,10 @@ package me.tbsten.katachi.dsl
  * about where the files physically live, so the roles of one group may be spread over
  * several modules. Groups can nest.
  *
+ * What a group *is* — its name, its path, what it holds — is here. What some processor
+ * wants to say *about* it is metadata, read with [get]: [Title] and [Documented] are the
+ * ones katachi ships for groups, and a processor adds its own with [metadata].
+ *
  * ## Example 1: declare nested groups
  * ```kt
  * val arch = architecture {
@@ -28,37 +32,8 @@ public class Group internal constructor(
      * ```
      */
     public val name: String,
-    /**
-     * Display name. Defaults to [name].
-     *
-     * ## Example 1: separate the identifier from the display name
-     * ```kt
-     * val arch = architecture {
-     *     "domain".group {
-     *         title = "ドメイン"
-     *         "UseCase" { title = "ユースケース" }
-     *     }
-     * }
-     * arch.groups.single().title shouldBe "ドメイン"
-     * ```
-     */
-    public val title: String,
-    /**
-     * Whether this group is rendered into the generated documentation.
-     *
-     * The declared value is kept as written: it is not merged with the parent's value.
-     *
-     * ## Example 1: keep a group out of the generated documentation
-     * ```kt
-     * val arch = architecture {
-     *     "Gradle".group(documented = false) {
-     *         "VersionCatalog" { }
-     *     }
-     * }
-     * arch.groups.single().documented shouldBe false
-     * ```
-     */
-    public val documented: Boolean,
+    /** What was written on this group beyond its identity. Read through [get]. */
+    internal val metadata: MetadataValues,
     /**
      * Names from the outermost group down to this one.
      *
@@ -135,6 +110,34 @@ public class Group internal constructor(
      * ```
      */
     public val qualifiedName: String = path.joinToString("/")
+
+    /**
+     * The value written under [key], or `null` when this group does not carry that key.
+     *
+     * The declared value, as written: a nested group does not pick anything up from the one
+     * around it, and neither do the roles inside it.
+     *
+     * ## Example 1: read a processor's own key off a group
+     * ```kt
+     * val Owner: MetadataKey<String> = metadata()
+     * var GroupScope.owner: String? by Owner
+     *
+     * val arch = architecture {
+     *     "domain".group { owner = "platform" }
+     * }
+     * arch.groups.single()[Owner] shouldBe "platform"
+     * ```
+     *
+     * ## Example 2: read one of the keys katachi ships
+     * ```kt
+     * val arch = architecture {
+     *     "build".group { documented = false }
+     * }
+     * arch.groups.single()[Documented] shouldBe false
+     * ```
+     */
+    @ExperimentalKatachiApi
+    public operator fun <T : Any> get(key: MetadataKey<T>): T? = metadata[key]
 
     internal fun selfAndDescendants(): List<Group> =
         listOf(this) + groups.flatMap { it.selfAndDescendants() }

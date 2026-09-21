@@ -2,6 +2,7 @@ package me.tbsten.katachi.check
 
 import me.tbsten.katachi.dsl.LayoutEntry
 import me.tbsten.katachi.dsl.LayoutEntryKind
+import me.tbsten.katachi.dsl.Role
 
 /** How many locations an `[UnexpectedFile]` block offers. */
 private const val NEARBY_LIMIT: Int = 3
@@ -9,9 +10,11 @@ private const val NEARBY_LIMIT: Int = 3
 /**
  * The flattened layout of every role, turned into the four questions the traversal asks.
  *
- * The roles are gone by this point on purpose — except where a violation has to name one.
  * Whether a file is allowed is decided by the union of every role's claims, and a file two
- * roles both allow is not a problem (from v0.3 the generated documentation lists both).
+ * roles both allow is not a problem (from v0.3 the generated documentation lists both). The
+ * roles are kept alongside the patterns rather than dropped, because the answer the traversal
+ * needs is not only "is this allowed" but "by whom": a processor asking `filesOf(role)` is
+ * asking that same question from the other side.
  */
 internal class LayoutIndex(entries: List<LayoutEntry>) {
     /**
@@ -21,12 +24,12 @@ internal class LayoutIndex(entries: List<LayoutEntry>) {
     private val knownDirectories: List<Glob> =
         entries.flatMapTo(linkedSetOf<String>()) { it.directoryPatterns() }.map { Glob.compile(it) }
 
-    private val allowedFiles: List<Glob> =
-        entries.filter { it.kind == LayoutEntryKind.File }.map { it.glob }
+    private val allowedFiles: List<LayoutEntry> =
+        entries.filter { it.kind == LayoutEntryKind.File }
 
     /** Directories whose direct children are all allowed, from `anyFile()`. */
-    private val openDirectories: List<Glob> =
-        entries.filter { it.kind == LayoutEntryKind.AnyFile }.map { it.glob }
+    private val openDirectories: List<LayoutEntry> =
+        entries.filter { it.kind == LayoutEntryKind.AnyFile }
 
     /** Directories nothing below is looked at in, from `ignore()`. */
     private val ignoredDirectories: List<Glob> =
@@ -43,13 +46,29 @@ internal class LayoutIndex(entries: List<LayoutEntry>) {
     /** Whether any role declared [directory] itself, or something below it. */
     fun isKnown(directory: String): Boolean = knownDirectories.any { it.matches(directory) }
 
-    /** Whether any role allows a file to sit at [file]. */
-    fun allowsFile(file: String): Boolean {
-        if (allowedFiles.any { it.matches(file) }) return true
+    /**
+     * Every role that allows a file to sit at [file], in declaration order, or empty when the
+     * file is allowed by nobody — which is exactly when it is an `[UnexpectedFile]`.
+     *
+     * All of them, not the first one: the check lets two roles claim overlapping patterns, so
+     * stopping at the first match would make `filesOf(role)` disagree with the very rule that
+     * allowed the file. A role claiming the same path twice still shows up once, which is what
+     * the set is for.
+     */
+    fun rolesOf(file: String): List<Role> {
+        val roles = LinkedHashSet<Role>()
+        for (entry in allowedFiles) {
+            if (entry.glob.matches(file)) roles += entry.role
+        }
         val directory = file.parentPath()
         // `anyFile()` covers the files directly inside a directory and nothing deeper, and
         // the root itself is not a directory any role can declare.
-        return directory.isNotEmpty() && openDirectories.any { it.matches(directory) }
+        if (directory.isNotEmpty()) {
+            for (entry in openDirectories) {
+                if (entry.glob.matches(directory)) roles += entry.role
+            }
+        }
+        return roles.toList()
     }
 
     /**

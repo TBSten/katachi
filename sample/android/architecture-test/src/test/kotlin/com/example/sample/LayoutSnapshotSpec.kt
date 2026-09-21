@@ -6,6 +6,7 @@ import java.io.File
 import me.tbsten.katachi.check.RealFileSystem
 import me.tbsten.katachi.check.findProjectRoot
 import me.tbsten.katachi.check.moduleIndex
+import me.tbsten.katachi.dsl.ExperimentalKatachiApi
 import me.tbsten.katachi.dsl.InternalKatachiApi
 import me.tbsten.katachi.dsl.LayoutEntry
 import me.tbsten.katachi.dsl.flattenLayout
@@ -20,10 +21,11 @@ import me.tbsten.katachi.dsl.flattenLayout
  * recorded as text and compared on every run: rewriting a role with sugar keeps this green,
  * rewriting it into something that checks a different tree does not.
  *
- * `flattenLayout()` is `@InternalKatachiApi` — a user asserts and never reads the entries —
- * so this file opts in where a user would not have to.
+ * `flattenLayout()` is `@InternalKatachiApi` and the [LayoutEntry] it returns is
+ * `@ExperimentalKatachiApi` — a user asserts and never reads the entries — so this file opts
+ * in to both where a user would not have to.
  */
-@OptIn(InternalKatachiApi::class)
+@OptIn(InternalKatachiApi::class, ExperimentalKatachiApi::class)
 class LayoutSnapshotSpec : FreeSpec({
     "平坦化したレイアウトが記録済みのスナップショットと一致する" {
         val actual = renderSnapshot(flattenCurrentLayout())
@@ -92,7 +94,7 @@ private fun File.write(text: String) {
  * nothing, and once step 3 rewrites the keys as `":app".module { }` it is what resolves
  * them. Recording the snapshot without it would compare two different questions.
  */
-@OptIn(InternalKatachiApi::class)
+@OptIn(InternalKatachiApi::class, ExperimentalKatachiApi::class)
 private fun flattenCurrentLayout(): List<LayoutEntry> {
     val fileSystem = RealFileSystem()
     val projectRoot = findProjectRoot(fileSystem)
@@ -106,7 +108,7 @@ private fun flattenCurrentLayout(): List<LayoutEntry> {
  * Declaration order is deliberately dropped: reordering the roles changes nothing about
  * what the check accepts, and step 3 may well move a declaration from one place to another.
  */
-@OptIn(InternalKatachiApi::class)
+@OptIn(InternalKatachiApi::class, ExperimentalKatachiApi::class)
 private fun renderSnapshot(entries: List<LayoutEntry>): String {
     val lines = entries
         .map { entry ->
@@ -123,7 +125,7 @@ private fun renderSnapshot(entries: List<LayoutEntry>): String {
  * Reusing [findProjectRoot] rather than counting `..` from the working directory means the
  * lookup is guarded by [ProjectRootSpec] like everything else that depends on the root.
  */
-@OptIn(InternalKatachiApi::class)
+@OptIn(InternalKatachiApi::class, ExperimentalKatachiApi::class)
 private fun snapshotFile(): File {
     val projectRoot = File(findProjectRoot(RealFileSystem()).path.value)
     val samplesDirectory = requireNotNull(projectRoot.parentFile) {

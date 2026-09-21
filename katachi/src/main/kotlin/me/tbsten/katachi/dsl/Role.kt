@@ -1,31 +1,13 @@
 package me.tbsten.katachi.dsl
 
 /**
- * One concrete example of a role, as `example("GetUserUseCase", "ユーザーを取得する")`.
- *
- * Name and description are separate arguments so that a description may contain anything,
- * `...` included.
- *
- * ## Example 1: attach one concrete example to a role
- * ```kt
- * val arch = architecture {
- *     "domain".group {
- *         "UseCase" {
- *             example("GetUserUseCase", "ユーザーを取得する")
- *         }
- *     }
- * }
- * arch.allRoles.single().examples shouldContainExactly
- *     listOf(RoleExample("GetUserUseCase", "ユーザーを取得する"))
- * ```
- */
-public data class RoleExample(
-    public val name: String,
-    public val description: String,
-)
-
-/**
  * A role: what a file is for, and where it may live.
+ *
+ * What a role *is* — its name, where it was declared, where its files live — is here. What
+ * some processor wants to say *about* it is metadata, read with [get]: [Title], [Summary],
+ * [Documented] and [Examples] are the ones katachi ships, and a processor adds its own with
+ * [metadata]. Keeping them apart is what lets a new processor bring a new word without this
+ * class growing a field for it.
  *
  * ## Example 1: declare a role and read it back
  * ```kt
@@ -38,6 +20,7 @@ public data class RoleExample(
  *     }
  * }
  * arch.allRoles.single().name shouldBe "UseCase"
+ * arch.allRoles.single()[Title] shouldBe "ユースケース"
  * ```
  */
 public class Role internal constructor(
@@ -51,72 +34,8 @@ public class Role internal constructor(
      * ```
      */
     public val name: String,
-    /**
-     * Display name. Defaults to [name].
-     *
-     * ## Example 1: separate the identifier from the display name
-     * ```kt
-     * val arch = architecture {
-     *     "domain".group {
-     *         "UseCase" { title = "ユースケース" }
-     *     }
-     * }
-     * arch.allRoles.single().title shouldBe "ユースケース"
-     * ```
-     */
-    public val title: String,
-    /**
-     * One paragraph describing the role.
-     *
-     * ## Example 1: set a summary
-     * ```kt
-     * val arch = architecture {
-     *     "domain".group {
-     *         "UseCase" { summary = "各画面で発生するアプリ固有の1つの振る舞い" }
-     *     }
-     * }
-     * arch.allRoles.single().summary shouldBe "各画面で発生するアプリ固有の1つの振る舞い"
-     * ```
-     */
-    public val summary: String?,
-    /**
-     * Examples, in the order `example()` was called.
-     *
-     * ## Example 1: read the examples added in declaration order
-     * ```kt
-     * val arch = architecture {
-     *     "domain".group {
-     *         "UseCase" {
-     *             example("GetRecommendedProductListUseCase", "おすすめの商品リストを取得する")
-     *             example("SignOutUseCase", "サインアウトする")
-     *         }
-     *     }
-     * }
-     * arch.allRoles.single().examples shouldContainExactly listOf(
-     *     RoleExample("GetRecommendedProductListUseCase", "おすすめの商品リストを取得する"),
-     *     RoleExample("SignOutUseCase", "サインアウトする"),
-     * )
-     * ```
-     */
-    public val examples: List<RoleExample>,
-    /**
-     * Whether this role is rendered into the generated documentation.
-     *
-     * The declared value is kept as written: it is not merged with the group's value.
-     *
-     * ## Example 1: keep a role out of the generated documentation
-     * ```kt
-     * val arch = architecture {
-     *     "domain".group {
-     *         "UseCase" { documented = false }
-     *         "Repository" { }
-     *     }
-     * }
-     * arch.allRoles.map { it.name to it.documented } shouldBe
-     *     listOf("UseCase" to false, "Repository" to true)
-     * ```
-     */
-    public val documented: Boolean,
+    /** What was written on this role beyond its identity. Read through [get]. */
+    internal val metadata: MetadataValues,
     /**
      * The `layout { }` blocks of this role, in declaration order. They have not been
      * evaluated. A role may declare several, one per place its files may live.
@@ -179,6 +98,35 @@ public class Role internal constructor(
      * ```
      */
     public val qualifiedName: String = (groupPath + name).joinToString("/")
+
+    /**
+     * The value written under [key], or `null` when this role does not carry that key.
+     *
+     * The declared value, as written: nothing is inherited from the groups around it. A
+     * processor that wants inheritance walks [groupPath] itself, where it can say what
+     * combining two values means for its own word.
+     *
+     * ## Example 1: read a processor's own key off a role
+     * ```kt
+     * val Owner: MetadataKey<String> = metadata()
+     * var RoleScope.owner: String? by Owner
+     *
+     * val arch = architecture {
+     *     "domain".group { "UseCase" { owner = "platform" } }
+     * }
+     * arch.allRoles.single()[Owner] shouldBe "platform"
+     * ```
+     *
+     * ## Example 2: read one of the keys katachi ships
+     * ```kt
+     * val arch = architecture {
+     *     "domain".group { "UseCase" { title = "ユースケース" } }
+     * }
+     * arch.allRoles.single()[Title] shouldBe "ユースケース"
+     * ```
+     */
+    @ExperimentalKatachiApi
+    public operator fun <T : Any> get(key: MetadataKey<T>): T? = metadata[key]
 
     override fun toString(): String = "Role($qualifiedName)"
 }

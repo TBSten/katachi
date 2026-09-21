@@ -1,5 +1,6 @@
 package com.example.kmp.tool
 
+import com.example.kmp.owner
 import me.tbsten.katachi.dsl.ArchitectureScope
 
 /**
@@ -11,7 +12,8 @@ import me.tbsten.katachi.dsl.ArchitectureScope
  * architecture a reader of the generated docs is looking for.
  */
 fun ArchitectureScope.toolRoles() {
-    "tool".group(documented = false) {
+    "tool".group {
+        documented = false
         title = "ツール"
 
         // No `title` here on purpose: an undocumented role has no display name to show, so
@@ -20,6 +22,10 @@ fun ArchitectureScope.toolRoles() {
         "Git" {
             summary = ".gitignore など"
             documented = false
+            // Also `owner = "platform"` (see com.example.kmp.Owner), this sample's own
+            // metadata key -- not katachi's. `PlatformOwnedFilesSpec` builds a variant of
+            // this exact role with the tag left out to prove its processor really reads it.
+            owner = "platform"
             example(".gitignore", "生成物を Git の管理から外す")
             layout {
                 ".gitignore".file()

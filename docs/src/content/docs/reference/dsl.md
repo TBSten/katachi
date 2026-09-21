@@ -34,7 +34,8 @@ val projectArchitecture = architecture {
 }
 
 // ドキュメントに出さない
-"build".group(documented = false) {
+"build".group {
+    documented = false
     "GradleModule" { /* ... */ }
 }
 ```

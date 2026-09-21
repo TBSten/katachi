@@ -1,30 +1,74 @@
 package me.tbsten.katachi.dsl
 
 import me.tbsten.katachi.check.Glob
-import me.tbsten.katachi.check.GlobContext
-import me.tbsten.katachi.check.KatachiGlobSyntaxException
-import me.tbsten.katachi.check.ModuleIndex
-import me.tbsten.katachi.check.ModuleResolver
 
-/** What a flattened layout entry declares about the path it names. */
-@InternalKatachiApi
+/**
+ * What a flattened layout entry declares about the path it names.
+ *
+ * ## Example 1: tell the declared directories from the declared files
+ * ```kt
+ * val arch = architecture {
+ *     "domain".group { "UseCase" { layout { "useCase" / "GetUserUseCase".ktFile() } } }
+ * }
+ * arch.process { model -> model.declaredEntries.map { it.kind } } shouldContainExactly
+ *     listOf(LayoutEntryKind.Directory, LayoutEntryKind.File)
+ * ```
+ */
+@ExperimentalKatachiApi
 public enum class LayoutEntryKind {
     /**
      * A directory, `"..." { }`. Its contents are whatever the entries below it declare, so
      * an empty block means nothing may live there.
+     *
+     * ## Example 1: read back a directory a layout declared
+     * ```kt
+     * val arch = architecture { "domain".group { "UseCase" { layout { "useCase" { } } } } }
+     * arch.process { model -> model.declaredEntries.single().kind } shouldBe
+     *     LayoutEntryKind.Directory
+     * ```
      */
     Directory,
 
-    /** A file, `"...".file()`. [LayoutEntry.path] may hold `*` or `**`. */
+    /**
+     * A file, `"...".file()`. [LayoutEntry.path] may hold `*` or `**`.
+     *
+     * ## Example 1: collect every path a definition declares as a file
+     * ```kt
+     * val arch = architecture {
+     *     "domain".group { "UseCase" { layout { "useCase" / "GetUserUseCase".ktFile() } } }
+     * }
+     * arch.process { model ->
+     *     model.declaredEntries.filter { it.kind == LayoutEntryKind.File }.map { it.path }
+     * } shouldContainExactly listOf("useCase/GetUserUseCase.kt")
+     * ```
+     */
     File,
 
     /**
      * A directory that also allows any file directly inside it, `anyFile()`. A file one
      * level further down is not covered.
+     *
+     * ## Example 1: find the directories a definition left open
+     * ```kt
+     * val arch = architecture { "build".group { "Generated" { layout { "generated" { anyFile() } } } } }
+     * arch.process { model ->
+     *     model.declaredEntries.filter { it.kind == LayoutEntryKind.AnyFile }.map { it.path }
+     * } shouldContainExactly listOf("generated")
+     * ```
      */
     AnyFile,
 
-    /** A directory nothing below is checked in, at any depth, `ignore()`. */
+    /**
+     * A directory nothing below is checked in, at any depth, `ignore()`.
+     *
+     * ## Example 1: list what a definition stops looking at
+     * ```kt
+     * val arch = architecture { "build".group { "Output" { layout { "build".ignore() } } } }
+     * arch.process { model ->
+     *     model.declaredEntries.filter { it.kind == LayoutEntryKind.Ignore }.map { it.path }
+     * } shouldContainExactly listOf("build")
+     * ```
+     */
     Ignore,
 }
 
@@ -33,15 +77,56 @@ public enum class LayoutEntryKind {
  *
  * Roles declare where their own files may live and nothing else, so no single place in the
  * DSL holds the whole tree. The check builds that view by flattening every role's
- * `layout { }` into these entries and walking the real tree against them.
+ * `layout { }` into these entries and walking the real tree against them, and a processor
+ * reads the same view through [me.tbsten.katachi.processor.ProjectModel.declaredEntries].
+ *
+ * It says what was *declared*, not what exists: an entry is here whether or not a file sits
+ * at its path. What exists is
+ * [me.tbsten.katachi.processor.ProjectModel.filesOf]'s answer instead.
+ *
+ * ## Example 1: render the declared layout as text
+ * ```kt
+ * val arch = architecture {
+ *     "domain".group { "UseCase" { layout { "useCase" / "GetUserUseCase".ktFile() } } }
+ * }
+ * arch.process { model ->
+ *     model.declaredEntries.map { "${it.role.qualifiedName} ${it.path} ${it.kind}" }
+ * } shouldContainExactly listOf(
+ *     "domain/UseCase useCase Directory",
+ *     "domain/UseCase useCase/GetUserUseCase.kt File",
+ * )
+ * ```
  */
-@InternalKatachiApi
+@ExperimentalKatachiApi
 public class LayoutEntry internal constructor(
-    /** Path pattern relative to the project root, `/` separated, never starting with `/`. */
+    /**
+     * Path pattern relative to the project root, `/` separated, never starting with `/`.
+     *
+     * ## Example 1: read the declared paths
+     * ```kt
+     * val arch = architecture {
+     *     "domain".group { "UseCase" { layout { "useCase" / "GetUserUseCase".ktFile() } } }
+     * }
+     * arch.process { model -> model.declaredEntries.map { it.path } } shouldContainExactly
+     *     listOf("useCase", "useCase/GetUserUseCase.kt")
+     * ```
+     */
     public val path: String,
     /** [path] compiled. `Glob.hasWildcard` is what made a declaration optional by itself. */
-    public val glob: Glob,
-    /** What the declaration says about this path. */
+    @property:InternalKatachiApi public val glob: Glob,
+    /**
+     * What the declaration says about this path.
+     *
+     * ## Example 1: keep only the files a definition declared
+     * ```kt
+     * val arch = architecture {
+     *     "domain".group { "UseCase" { layout { "useCase" / "GetUserUseCase".ktFile() } } }
+     * }
+     * arch.process { model ->
+     *     model.declaredEntries.filter { it.kind == LayoutEntryKind.File }.map { it.path }
+     * } shouldContainExactly listOf("useCase/GetUserUseCase.kt")
+     * ```
+     */
     public val kind: LayoutEntryKind,
     /**
      * Whether a missing file at this path is a violation.
@@ -50,121 +135,61 @@ public class LayoutEntry internal constructor(
      * directory, so a directory only shows up once it holds a file, and the files it holds
      * report it themselves. A file holding a wildcard, or marked `optional()`, is not
      * required either.
+     *
+     * ## Example 1: list the files a definition insists on
+     * ```kt
+     * val arch = architecture {
+     *     "domain".group {
+     *         "UseCase" { layout { "useCase" / "GetUserUseCase".ktFile(); "useCase" / "*.kt".file() } }
+     *     }
+     * }
+     * arch.process { model -> model.declaredEntries.filter { it.required }.map { it.path } } shouldContainExactly
+     *     listOf("useCase/GetUserUseCase.kt")
+     * ```
      */
     public val required: Boolean,
-    /** The role that declared this path. */
+    /**
+     * The role that declared this path.
+     *
+     * ## Example 1: group the declared paths by the role that claims them
+     * ```kt
+     * val arch = architecture {
+     *     "domain".group { "UseCase" { layout { "useCase" / "GetUserUseCase".ktFile() } } }
+     * }
+     * arch.process { model ->
+     *     model.declaredEntries.groupBy({ it.role.qualifiedName }, { it.path })
+     * } shouldBe mapOf("domain/UseCase" to listOf("useCase", "useCase/GetUserUseCase.kt"))
+     * ```
+     */
     public val role: Role,
-    /** Where inside the `layout { }` block this path was written. */
+    /**
+     * Where inside the `layout { }` block this path was written.
+     *
+     * ## Example 1: point a report back at the line that declared a path
+     * ```kt
+     * val arch = architecture {
+     *     "domain".group { "UseCase" { layout { "useCase" / "GetUserUseCase".ktFile() } } }
+     * }
+     * arch.process { model -> model.declaredEntries.first().declaredAt.fileName } shouldBe
+     *     "ProjectArchitecture.kt"
+     * ```
+     */
     public val declaredAt: DeclarationSite,
-    /** The `description = "..."` of this directory, when it has one. */
+    /**
+     * The `description = "..."` of this directory, when it has one.
+     *
+     * ## Example 1: read the descriptions a definition wrote on its directories
+     * ```kt
+     * val arch = architecture {
+     *     "domain".group {
+     *         "UseCase" { layout { "useCase" { description = "各画面の振る舞い" } } }
+     *     }
+     * }
+     * arch.process { model -> model.declaredEntries.single().description } shouldBe "各画面の振る舞い"
+     * ```
+     */
     public val description: String?,
 ) {
     override fun toString(): String =
         "LayoutEntry($path, $kind, ${role.qualifiedName}${if (required) ", required" else ""})"
 }
-
-/**
- * Evaluates every `layout { }` block of every role and flattens them into one list.
- *
- * This is the first step of the check and the only place the deferred blocks are run.
- * Entries come out in declaration order — roles in the order they were declared, and within
- * a role a directory before the entries below it.
- *
- * A role that declares the same path twice, which `/` chains sharing a prefix do all the
- * time, contributes one entry for it. Two *different* roles claiming the same path each
- * contribute their own entry: that is allowed, and from v0.3 both show up in the generated
- * documentation.
- *
- * @param moduleIndex the project's modules, which `"...".module { }` keys are expanded
- *   against. The default index holds no module at all: a key naming one module still
- *   resolves through [Architecture.moduleResolver], while a key with a wildcard expands to
- *   nothing, so pass the real index whenever the file system is at hand.
- * @throws KatachiGlobSyntaxException when a layout key cannot be read as a path pattern.
- */
-@InternalKatachiApi
-public fun Architecture.flattenLayout(
-    moduleIndex: ModuleIndex = ModuleIndex(moduleResolver, emptyList()),
-): List<LayoutEntry> = allRoles.flatMap { it.flattenLayout(moduleIndex) }
-
-/** Evaluates this role's `layout { }` blocks. See [Architecture.flattenLayout]. */
-@InternalKatachiApi
-public fun Role.flattenLayout(
-    moduleIndex: ModuleIndex = ModuleIndex(ModuleResolver.Conventional, emptyList()),
-): List<LayoutEntry> {
-    val entries = LinkedHashMap<EntryKey, LayoutEntry>()
-    for (declaration in layouts) {
-        val root = LayoutNode(segment = "", declaredAt = declaration.declaredAt, isFile = false)
-        LayoutScopeImpl(root, moduleIndex, moduleContext = null).apply(declaration.block)
-        collectInto(entries, root, emptyList(), this)
-    }
-    return entries.values.toList()
-}
-
-/** A path claimed by the same role twice as the same kind of thing is one entry. */
-private data class EntryKey(val path: String, val kind: LayoutEntryKind)
-
-private fun collectInto(
-    entries: MutableMap<EntryKey, LayoutEntry>,
-    node: LayoutNode,
-    prefix: List<String>,
-    role: Role,
-) {
-    for (child in node.children) {
-        val segments = prefix + child.segment
-        val entry = child.toEntry(path = segments.joinToString("/"), role = role)
-        val key = EntryKey(entry.path, entry.kind)
-        entries[key] = entries[key]?.mergedWith(entry) ?: entry
-        collectInto(entries, child, segments, role)
-    }
-}
-
-private fun LayoutNode.toEntry(path: String, role: Role): LayoutEntry {
-    val kind = when {
-        isFile -> LayoutEntryKind.File
-        // `ignore()` subsumes `anyFile()`: nothing below is checked, the files directly
-        // inside included.
-        ignored -> LayoutEntryKind.Ignore
-        anyFile -> LayoutEntryKind.AnyFile
-        else -> LayoutEntryKind.Directory
-    }
-    val glob = compilePath(path, role, declaredAt)
-    return LayoutEntry(
-        path = path,
-        glob = glob,
-        kind = kind,
-        required = kind == LayoutEntryKind.File && !optional && !glob.hasWildcard,
-        role = role,
-        declaredAt = declaredAt,
-        description = description,
-    )
-}
-
-/**
- * Adds where the pattern was written to whatever the glob compiler complained about. The
- * layout blocks are deferred, so this is the first moment a bad key can be noticed at all,
- * and by then the stack no longer points anywhere useful.
- */
-private fun compilePath(path: String, role: Role, declaredAt: DeclarationSite): Glob =
-    try {
-        Glob.compile(path, Glob.PATH_SEPARATOR)
-    } catch (cause: KatachiGlobSyntaxException) {
-        throw KatachiGlobSyntaxException(
-            pattern = cause.pattern,
-            problem = cause.problem,
-            context = GlobContext.RoleLayoutPath(role = role, path = path, declaredAt = declaredAt),
-        )
-    }
-
-/**
- * Keeps the first declaration's position and description, and requires the path when any of
- * the declarations did.
- */
-private fun LayoutEntry.mergedWith(other: LayoutEntry): LayoutEntry = LayoutEntry(
-    path = path,
-    glob = glob,
-    kind = kind,
-    required = required || other.required,
-    role = role,
-    declaredAt = declaredAt,
-    description = description ?: other.description,
-)

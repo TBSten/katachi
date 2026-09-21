@@ -16,8 +16,16 @@ kotlin {
     // here instead. The wall itself is still verified: the samples (separate Gradle builds that
     // depend on the published `katachi` artifact) keep writing `@OptIn` themselves, standing in
     // for real consumers.
+    //
+    // `@ExperimentalKatachiApi` is opted in for exactly the same reason, even though it says
+    // something different ("this will change" rather than "do not touch"). The wall is there so
+    // that a *consumer* is aware of depending on a shape that still moves; katachi is the one
+    // moving it, so writing `@OptIn` inside `:katachi` would say nothing to anyone. Spelling it
+    // out per file would also be worse than pointless here: the compiler reports an opt-in that
+    // is already covered module-wide as an unnecessary-opt-in warning.
     compilerOptions {
         optIn.add("me.tbsten.katachi.dsl.InternalKatachiApi")
+        optIn.add("me.tbsten.katachi.dsl.ExperimentalKatachiApi")
     }
 }
 

@@ -3,6 +3,11 @@ package me.tbsten.katachi.dsl
 /**
  * Receiver of `"RoleName" { }`.
  *
+ * The four properties below are metadata under the hood — sugar over [Title], [Summary],
+ * [Documented] and [Examples] — and a processor adds its own words the same way, with
+ * `var RoleScope.owner by Owner`. They are members rather than extensions because they are
+ * what a definition is mostly made of: an import per word would be a tax on the common case.
+ *
  * ## Example 1: set a role's properties
  * ```kt
  * val arch = architecture {
@@ -17,7 +22,7 @@ package me.tbsten.katachi.dsl
  * ```
  */
 @KatachiDsl
-public sealed interface RoleScope {
+public sealed interface RoleScope : MetadataScope {
     /**
      * Display name. Defaults to the role name.
      *
@@ -28,7 +33,7 @@ public sealed interface RoleScope {
      *         "UseCase" { title = "ユースケース" }
      *     }
      * }
-     * arch.allRoles.single().title shouldBe "ユースケース"
+     * arch.allRoles.single()[Title] shouldBe "ユースケース"
      * ```
      */
     public var title: String
@@ -43,7 +48,7 @@ public sealed interface RoleScope {
      *         "UseCase" { summary = "各画面で発生するアプリ固有の1つの振る舞い" }
      *     }
      * }
-     * arch.allRoles.single().summary shouldBe "各画面で発生するアプリ固有の1つの振る舞い"
+     * arch.allRoles.single()[Summary] shouldBe "各画面で発生するアプリ固有の1つの振る舞い"
      * ```
      */
     public var summary: String?
@@ -59,7 +64,7 @@ public sealed interface RoleScope {
      *         "UseCase" { documented = false }
      *     }
      * }
-     * arch.allRoles.single().documented shouldBe false
+     * arch.allRoles.single()[Documented] shouldBe false
      * ```
      */
     public var documented: Boolean
@@ -100,16 +105,35 @@ public sealed interface RoleScope {
     public fun layout(block: LayoutScope.() -> Unit)
 }
 
-internal class RoleScopeImpl(name: String) : RoleScope {
-    override var title: String = name
-    override var summary: String? = null
-    override var documented: Boolean = true
-
-    val examples = mutableListOf<RoleExample>()
+internal class RoleScopeImpl(private val roleName: String) : RoleScope {
+    val metadata = MetadataBuilder()
     val layouts = mutableListOf<LayoutDeclaration>()
 
+    override var title: String
+        // The fallback lives here and is not written into the metadata: `Title` is absent
+        // unless someone wrote it, which is what lets a reader tell "called it that on
+        // purpose" from "never said".
+        get() = metadata[Title] ?: roleName
+        set(value) {
+            metadata[Title] = value
+        }
+
+    override var summary: String?
+        get() = metadata[Summary]
+        set(value) {
+            metadata[Summary] = value
+        }
+
+    override var documented: Boolean
+        get() = metadata[Documented] ?: true
+        set(value) {
+            metadata[Documented] = value
+        }
+
+    // Accumulating, unlike the three properties above, so it reads the key back and appends.
+    // The mechanism stays "one key, one value"; piling up is something this function does.
     override fun example(name: String, description: String) {
-        examples += RoleExample(name, description)
+        metadata[Examples] = metadata[Examples].orEmpty() + RoleExample(name, description)
     }
 
     override fun layout(block: LayoutScope.() -> Unit) {
@@ -137,10 +161,7 @@ internal fun declareRole(
     scope.block()
     return Role(
         name = name,
-        title = scope.title,
-        summary = scope.summary,
-        examples = scope.examples.toList(),
-        documented = scope.documented,
+        metadata = scope.metadata.build(),
         layouts = scope.layouts.toList(),
         groupPath = groupPath,
         declaredAt = declaredAt,
