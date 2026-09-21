@@ -9,7 +9,7 @@ import me.tbsten.katachi.dsl.ArchitectureScope
  */
 fun ArchitectureScope.dataRoles() {
     "data".group {
-        title = "データ"
+        title = "データレイヤー"
 
         "Repository" {
             title = "リポジトリ"

@@ -14,7 +14,7 @@ import me.tbsten.katachi.dsl.ArchitectureScope
  */
 fun ArchitectureScope.uiRoles() {
     "ui".group {
-        title = "UI"
+        title = "UI (共通レイヤー)"
 
         "Component" {
             title = "共通コンポーネント"

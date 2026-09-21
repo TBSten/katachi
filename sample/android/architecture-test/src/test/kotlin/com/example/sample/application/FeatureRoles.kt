@@ -18,7 +18,7 @@ import me.tbsten.katachi.dsl.ArchitectureScope
  */
 fun ArchitectureScope.featureRoles() {
     "feature".group {
-        title = "フィーチャー"
+        title = "各画面の構成"
 
         "Screen" {
             title = "画面"

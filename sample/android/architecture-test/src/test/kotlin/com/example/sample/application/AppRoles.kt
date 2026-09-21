@@ -10,7 +10,7 @@ import me.tbsten.katachi.dsl.ArchitectureScope
  */
 fun ArchitectureScope.appRoles() {
     "app".group {
-        title = "アプリ"
+        title = "エントリーポイントレイヤー"
 
         "Entrypoint" {
             title = "エントリポイント"
