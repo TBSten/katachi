@@ -3,6 +3,7 @@ package me.tbsten.katachi.test.dsl
 import io.kotest.core.spec.style.FreeSpec
 import io.kotest.matchers.collections.shouldContainExactly
 import io.kotest.matchers.shouldBe
+import me.tbsten.katachi.dsl.Description
 import me.tbsten.katachi.dsl.Examples
 import me.tbsten.katachi.dsl.RoleExample
 import me.tbsten.katachi.dsl.Summary
@@ -51,6 +52,69 @@ class RoleSpec : FreeSpec({
             }
         }
         arch.allRoles.single()[Summary] shouldBe "各画面で発生するアプリ固有の1つの振る舞い"
+    }
+
+    "description を省略した役割の Description は null になる" {
+        val arch = architecture { "domain".group { "UseCase" { } } }
+        arch.allRoles.single()[Description] shouldBe null
+    }
+
+    "description を指定すると Description から読める" {
+        val arch = architecture {
+            "domain".group {
+                "UseCase" { description = "UI からは UseCase だけを呼ぶ。" }
+            }
+        }
+        arch.allRoles.single()[Description] shouldBe "UI からは UseCase だけを呼ぶ。"
+    }
+
+    // 表の1セルに入る summary と違い、description は本文になるので改行が意味を持つ。
+    // trimIndent() した文字列がそのまま入ることを1文字ずつ固定する。
+    "description の複数行が改行ごとそのまま保たれる" {
+        val arch = architecture {
+            "domain".group {
+                "UseCase" {
+                    description = """
+                        UI からは UseCase だけを呼び、Repository を直接触らない。
+
+                        ### やっていいこと
+                        - 複数の Repository をまたぐ
+
+                        ### やってはいけないこと
+                        - Android の型に依存する
+                    """.trimIndent()
+                }
+            }
+        }
+
+        arch.allRoles.single()[Description] shouldBe listOf(
+            "UI からは UseCase だけを呼び、Repository を直接触らない。",
+            "",
+            "### やっていいこと",
+            "- 複数の Repository をまたぐ",
+            "",
+            "### やってはいけないこと",
+            "- Android の型に依存する",
+        ).joinToString("\n")
+    }
+
+    "summary と description は互いに独立している" {
+        val arch = architecture {
+            "domain".group {
+                "OnlySummary" { summary = "1行の概要" }
+                "OnlyDescription" { description = "本文だけ" }
+                "Both" {
+                    summary = "1行の概要"
+                    description = "本文"
+                }
+            }
+        }
+
+        arch.allRoles.map { it[Summary] to it[Description] } shouldContainExactly listOf(
+            "1行の概要" to null,
+            null to "本文だけ",
+            "1行の概要" to "本文",
+        )
     }
 
     "example を複数回呼ぶと、呼んだ順にすべて保持される" {

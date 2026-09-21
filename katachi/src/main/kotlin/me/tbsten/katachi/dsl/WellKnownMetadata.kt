@@ -65,6 +65,40 @@ public val Title: MetadataKey<String> = metadata()
 public val Summary: MetadataKey<String> = metadata()
 
 /**
+ * Free-form Markdown about a role: what it is, what it may do, what it may not.
+ *
+ * The pair to [Summary], and the division of labour between them is where each one is
+ * rendered. [Summary] is one line in a table cell — a group's README lists its roles as
+ * `| 役割 | 概要 |` — so a paragraph break would break the table. This one is the body of the
+ * role's own page, where a paragraph break is just a paragraph break.
+ *
+ * The value is kept exactly as written, newlines included. katachi decides where the text is
+ * placed, never what is inside it: a fixed set of sections (`## やっていいこと` and the rest)
+ * would be right for one team and wrong for the next, so the sections are the writer's.
+ *
+ * ## Example 1: read the free-form body of a role
+ * ```kt
+ * val arch = architecture {
+ *     "domain".group {
+ *         "UseCase" {
+ *             summary = "各画面で発生するアプリ固有の1つの振る舞い"
+ *             description = """
+ *                 UI からは UseCase だけを呼び、Repository を直接触らない。
+ *
+ *                 ### やっていいこと
+ *                 - 複数の Repository をまたぐ
+ *             """.trimIndent()
+ *         }
+ *     }
+ * }
+ * arch.allRoles.single()[Description].orEmpty().lines().first() shouldBe
+ *     "UI からは UseCase だけを呼び、Repository を直接触らない。"
+ * ```
+ */
+@ExperimentalKatachiApi
+public val Description: MetadataKey<String> = metadata()
+
+/**
  * Whether a group or a role is rendered into the generated documentation.
  *
  * Absent when it was not written, and absent means yes: a reader spells that as

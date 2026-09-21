@@ -3,10 +3,11 @@ package me.tbsten.katachi.dsl
 /**
  * Receiver of `"RoleName" { }`.
  *
- * The four properties below are metadata under the hood — sugar over [Title], [Summary],
- * [Documented] and [Examples] — and a processor adds its own words the same way, with
- * `var RoleScope.owner by Owner`. They are members rather than extensions because they are
- * what a definition is mostly made of: an import per word would be a tax on the common case.
+ * The five properties below are metadata under the hood — sugar over [Title], [Summary],
+ * [Description], [Documented] and [Examples] — and a processor adds its own words the same
+ * way, with `var RoleScope.owner by Owner`. They are members rather than extensions because
+ * they are what a definition is mostly made of: an import per word would be a tax on the
+ * common case.
  *
  * ## Example 1: set a role's properties
  * ```kt
@@ -52,6 +53,33 @@ public sealed interface RoleScope : MetadataScope {
      * ```
      */
     public var summary: String?
+
+    /**
+     * Free-form Markdown about this role: what it is, what it may do, what it may not.
+     *
+     * Write [summary] for the one line that lands in a table cell, and this for everything
+     * that needs more room. The text is kept exactly as written, newlines included, and
+     * katachi adds no structure of its own: the headings inside are yours to choose.
+     *
+     * ## Example 1: give a role a body with sections of its own
+     * ```kt
+     * val arch = architecture {
+     *     "domain".group {
+     *         "UseCase" {
+     *             summary = "各画面で発生するアプリ固有の1つの振る舞い"
+     *             description = """
+     *                 UI からは UseCase だけを呼び、Repository を直接触らない。
+     *
+     *                 ### やってはいけないこと
+     *                 - Android の型に依存する
+     *             """.trimIndent()
+     *         }
+     *     }
+     * }
+     * arch.allRoles.single()[Description].orEmpty().lines().size shouldBe 4
+     * ```
+     */
+    public var description: String?
 
     /**
      * Set to `false` to keep this role out of the generated documentation. It still takes
@@ -124,13 +152,19 @@ internal class RoleScopeImpl(private val roleName: String) : RoleScope {
             metadata[Summary] = value
         }
 
+    override var description: String?
+        get() = metadata[Description]
+        set(value) {
+            metadata[Description] = value
+        }
+
     override var documented: Boolean
         get() = metadata[Documented] ?: true
         set(value) {
             metadata[Documented] = value
         }
 
-    // Accumulating, unlike the three properties above, so it reads the key back and appends.
+    // Accumulating, unlike the four properties above, so it reads the key back and appends.
     // The mechanism stays "one key, one value"; piling up is something this function does.
     override fun example(name: String, description: String) {
         metadata[Examples] = metadata[Examples].orEmpty() + RoleExample(name, description)

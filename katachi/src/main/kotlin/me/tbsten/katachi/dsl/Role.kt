@@ -7,9 +7,9 @@ import me.tbsten.katachi.ExperimentalKatachiApi
  *
  * What a role *is* — its name, where it was declared, where its files live — is here. What
  * some processor wants to say *about* it is metadata, read with [get]: [Title], [Summary],
- * [Documented] and [Examples] are the ones katachi ships, and a processor adds its own with
- * [metadata]. Keeping them apart is what lets a new processor bring a new word without this
- * class growing a field for it.
+ * [Description], [Documented] and [Examples] are the ones katachi ships, and a processor adds
+ * its own with [metadata]. Keeping them apart is what lets a new processor bring a new word
+ * without this class growing a field for it.
  *
  * ## Example 1: declare a role and read it back
  * ```kt
