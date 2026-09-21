@@ -10,9 +10,15 @@ import { Code } from '@astrojs/starlight/components';
  *    syntax highlight は Starlight の `Code`（Expressive Code）に任せる。
  * 2. 子要素に書く — MDX のコードフェンスをそのまま入れる。
  *    フェンスの `title="..."` がそのままタイトルになる。
+ *
+ * `label` と `title` は役割が違う。Expressive Code が枠に出せる文字は `title` の
+ * 1 つだけで、そこは「どのファイルか」に使いたい。「それが何であるか」
+ * （入力なのか生成物なのか）は別の情報なので、パネル側の見出しとして出す。
  */
 interface Props {
-	/** カラムの見出しに出すファイル名。`code` を渡すときだけ効く。 */
+	/** パネルの見出し。「アーキテクチャ定義」「生成された Markdown」など。 */
+	label?: string;
+	/** コード枠に出すファイル名。`code` を渡すときだけ効く。 */
 	title?: string;
 	/** Expressive Code に渡す言語。`code` を渡すときだけ効く。 */
 	lang?: string;
@@ -20,9 +26,10 @@ interface Props {
 	code?: string;
 }
 
-const { title, lang, code } = Astro.props;
+const { label, title, lang, code } = Astro.props;
 ---
 
 <div class="code-comparison-panel">
+	{label && <p class="code-comparison-label">{label}</p>}
 	{code === undefined ? <slot /> : <Code code={code} lang={lang} title={title} />}
 </div>

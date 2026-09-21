@@ -31,6 +31,19 @@
 }
 
 /*
+ * パネルの見出し。Expressive Code が枠に出せる文字は `title` の 1 つだけで、
+ * そこはファイル名に使うので、「入力なのか生成物なのか」はここで出す。
+ * Starlight の色とサイズのトークンに乗せて、テーマを変えても浮かないようにする。
+ */
+.code-comparison-label {
+	margin: 0 0 0.4rem;
+	font-size: var(--sl-text-xs);
+	font-weight: 600;
+	line-height: 1.4;
+	color: var(--sl-color-gray-2);
+}
+
+/*
  * Expressive Code は自前で上下マージンを持っている。そのままだと左右の
  * カラムで先頭位置がずれるので、パネルの中では打ち消す。
  */
