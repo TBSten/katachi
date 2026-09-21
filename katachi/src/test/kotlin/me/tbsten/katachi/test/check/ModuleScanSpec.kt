@@ -4,7 +4,6 @@ import io.kotest.core.spec.style.FreeSpec
 import io.kotest.matchers.shouldBe
 import me.tbsten.katachi.check.ModuleResolver
 import me.tbsten.katachi.check.validate
-import me.tbsten.katachi.dsl.InternalKatachiApi
 import me.tbsten.katachi.dsl.gradle.capitalizedModuleNamePackage
 import me.tbsten.katachi.dsl.gradle.*
 import me.tbsten.katachi.dsl.kotlin.ktFile
@@ -20,7 +19,6 @@ import me.tbsten.katachi.dsl.pascalCase
  * resolver alone is enough for one — while a wildcard key quietly expanded to nothing, and
  * no spec noticed. These run the real entry point instead.
  */
-@OptIn(InternalKatachiApi::class)
 class ModuleScanSpec : FreeSpec({
     /** Two feature modules and one that is only a directory, under `/repo`. */
     fun repository(block: FakeFileSystemScope.() -> Unit = {}) = repositoryOf {

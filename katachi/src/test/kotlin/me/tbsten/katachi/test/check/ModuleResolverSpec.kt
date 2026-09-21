@@ -10,9 +10,7 @@ import me.tbsten.katachi.check.ModulePattern
 import me.tbsten.katachi.check.ModuleResolver
 import me.tbsten.katachi.check.discoverModules
 import me.tbsten.katachi.check.moduleIndex
-import me.tbsten.katachi.dsl.InternalKatachiApi
 
-@OptIn(InternalKatachiApi::class)
 class ModuleResolverSpec : FreeSpec({
     /**
      * A build shaped like the KMP sample: nested modules, a `feature/` that grows, a

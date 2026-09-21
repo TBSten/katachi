@@ -12,13 +12,21 @@ import io.kotest.matchers.collections.shouldContainExactly
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
 import java.io.File
+import me.tbsten.katachi.check.FileSelection
+import me.tbsten.katachi.check.FsPath
+import me.tbsten.katachi.check.KatachiFileSystem
+import me.tbsten.katachi.check.ModuleResolver
+import me.tbsten.katachi.check.ProjectRoot
 import me.tbsten.katachi.check.validate
 import me.tbsten.katachi.dsl.Architecture
 import me.tbsten.katachi.dsl.InternalKatachiApi
 import me.tbsten.katachi.dsl.LayoutEntry
 import me.tbsten.katachi.dsl.architecture
+import me.tbsten.katachi.dsl.conventionalModuleResolver
+import me.tbsten.katachi.dsl.gitTracked
 import me.tbsten.katachi.dsl.gradle.capitalizedModuleNamePackage
 import me.tbsten.katachi.dsl.flattenLayout
+import me.tbsten.katachi.dsl.wholeTree
 import me.tbsten.katachi.dsl.gradle.*
 import me.tbsten.katachi.dsl.kotlin.ktFile
 import me.tbsten.katachi.dsl.kotlin.ktsFile
@@ -214,12 +222,53 @@ class ProjectArchitectureSpec : FreeSpec({
         pathsUnder("com.other.app") shouldContain "src/main/kotlin/com/other/app/Application.kt"
     }
 
+    "gitTracked() / wholeTree() / conventionalModuleResolver() が利用者のビルドからも書ける" {
+        // They are context parameter extensions rather than `ArchitectureScope` members, and
+        // this build enables no compiler flag for them: an import is the whole cost. Proving
+        // it here rather than in katachi's own specs is the point, because `:katachi` compiles
+        // itself with settings a user's build does not have.
+        architecture { files = gitTracked() }.files shouldBe FileSelection.GitTracked
+        architecture { files = wholeTree() }.files shouldBe FileSelection.WholeTree
+        architecture { moduleResolver = conventionalModuleResolver() }
+            .moduleResolver shouldBe ModuleResolver.Conventional
+    }
+
+    "利用者が実装した FileSelection が、実際に走査するファイル集合を決める" {
+        // `FileSelection` is an ordinary interface, so a project whose files are listed by
+        // something other than git writes its own. The first assertion keeps the second from
+        // passing vacuously: over the real tree an empty definition reports plenty.
+        architecture { }.validate().isNotEmpty() shouldBe true
+
+        val overNothing = architecture { files = SelectsNothing }
+        overNothing.files shouldBe SelectsNothing
+        overNothing.validate() shouldBe emptyList()
+    }
+
     "正しい定義では違反が1件も出ない" {
         // The same run ProjectArchitectureTest makes, read as a list rather than as a thrown
         // error, so a failure here names the violations instead of only the message.
         projectArchitecture.validate() shouldBe emptyList()
     }
 })
+
+/**
+ * A [FileSelection] written the way a project outside katachi writes one: it hands the walk a
+ * view in which the project holds no files at all.
+ *
+ * `fileSystemFor` is `@InternalKatachiApi` because [KatachiFileSystem] and [ProjectRoot] are,
+ * so implementing it costs an explicit opt-in — which is exactly the wall this sample stands
+ * in for. Nothing else here is katachi's privilege: `GitTracked` and `WholeTree` implement the
+ * same interface with the same one method.
+ */
+@OptIn(InternalKatachiApi::class)
+private object SelectsNothing : FileSelection {
+    override fun fileSystemFor(
+        delegate: KatachiFileSystem,
+        projectRoot: ProjectRoot,
+    ): KatachiFileSystem = object : KatachiFileSystem by delegate {
+        override fun list(directory: FsPath): List<FsPath> = emptyList()
+    }
+}
 
 /** A flattened entry without the role that declared it, for comparing two definitions. */
 @OptIn(InternalKatachiApi::class)

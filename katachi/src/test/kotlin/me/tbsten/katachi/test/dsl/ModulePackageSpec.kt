@@ -6,10 +6,9 @@ import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
 import io.kotest.matchers.types.shouldBeInstanceOf
 import me.tbsten.katachi.dsl.gradle.HyphenFolding
-import me.tbsten.katachi.dsl.InternalKatachiApi
 import me.tbsten.katachi.dsl.KatachiDeclarationException
 import me.tbsten.katachi.dsl.gradle.ModulePackage
-import me.tbsten.katachi.dsl.gradle.ModulePackageException
+import me.tbsten.katachi.dsl.gradle.KatachiModulePackageException
 import me.tbsten.katachi.dsl.gradle.capitalizedModuleNamePackage
 import me.tbsten.katachi.dsl.gradle.moduleNamePackage
 import me.tbsten.katachi.dsl.gradle.resolveFor
@@ -28,7 +27,6 @@ private val concatenated = listOf(
     ":feature:debug-menu" to "feature/debugmenu",
 )
 
-@OptIn(InternalKatachiApi::class)
 class ModulePackageSpec : FreeSpec({
     "capitalizedModuleNamePackage" - {
         capitalized.forEach { (modulePath, expected) ->
@@ -138,7 +136,7 @@ class ModulePackageSpec : FreeSpec({
 
     "モジュール外での使用" - {
         "モジュールが無い場所で使うと失敗する" {
-            val thrown = shouldThrow<ModulePackageException> {
+            val thrown = shouldThrow<KatachiModulePackageException> {
                 capitalizedModuleNamePackage("com.example").resolveFor(null)
             }
 
@@ -146,22 +144,22 @@ class ModulePackageSpec : FreeSpec({
             thrown.message!!.shouldContain(".module { }")
         }
 
-        "ModulePackageException は KatachiDeclarationException として捕捉できる" {
+        "KatachiModulePackageException は KatachiDeclarationException として捕捉できる" {
             shouldThrow<KatachiDeclarationException> {
                 capitalizedModuleNamePackage().resolveFor(null)
-            }.shouldBeInstanceOf<ModulePackageException>()
+            }.shouldBeInstanceOf<KatachiModulePackageException>()
         }
 
-        "ModulePackageException は IllegalArgumentException として捕捉できる" {
+        "KatachiModulePackageException は IllegalArgumentException として捕捉できる" {
             shouldThrow<IllegalArgumentException> {
                 capitalizedModuleNamePackage().resolveFor(null)
-            }.shouldBeInstanceOf<ModulePackageException>()
+            }.shouldBeInstanceOf<KatachiModulePackageException>()
         }
     }
 
     "ディレクトリにならない導出結果" - {
         "ベース package の無いルートプロジェクトは失敗する" {
-            val thrown = shouldThrow<ModulePackageException> {
+            val thrown = shouldThrow<KatachiModulePackageException> {
                 capitalizedModuleNamePackage().resolveFor(":")
             }
 
@@ -170,7 +168,7 @@ class ModulePackageSpec : FreeSpec({
         }
 
         "空の階層を返す戦略は失敗する" {
-            val thrown = shouldThrow<ModulePackageException> {
+            val thrown = shouldThrow<KatachiModulePackageException> {
                 ModulePackage { "com//example" }.resolveFor(":core:domain")
             }
 

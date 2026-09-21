@@ -9,12 +9,10 @@ import io.kotest.matchers.string.shouldContain
 import io.kotest.matchers.string.shouldStartWith
 import io.kotest.matchers.types.shouldBeInstanceOf
 import io.kotest.core.spec.style.FreeSpec
-import me.tbsten.katachi.check.ArchitectureAssertionError
+import me.tbsten.katachi.check.KatachiArchitectureAssertionError
 import me.tbsten.katachi.check.assert
-import me.tbsten.katachi.dsl.InternalKatachiApi
 import me.tbsten.katachi.dsl.architecture
 
-@OptIn(InternalKatachiApi::class)
 class AssertSpec : FreeSpec({
     "違反が無ければ何も投げずに返る" {
         shouldNotThrowAny {
@@ -24,7 +22,7 @@ class AssertSpec : FreeSpec({
     }
 
     "違反があれば AssertionError のサブタイプを投げる" {
-        val failure = shouldThrow<ArchitectureAssertionError> {
+        val failure = shouldThrow<KatachiArchitectureAssertionError> {
             layoutArchitecture { ".gitignore".file() }
                 .assert(repositoryOf { ".gitignore"(); "notes.md"() })
         }
@@ -43,7 +41,7 @@ class AssertSpec : FreeSpec({
             // No `files` here: the point is that the default reaches the real tree.
             "app".group { "Role" { layout { "settings.gradle.kts".file() } } }
         }
-        val failure = shouldThrow<ArchitectureAssertionError> { repository.assert() }
+        val failure = shouldThrow<KatachiArchitectureAssertionError> { repository.assert() }
         val paths = failure.violations.map { it.path }
 
         paths shouldContain "README.md"
@@ -56,7 +54,7 @@ class AssertSpec : FreeSpec({
     }
 
     "例外は打ち切りに関係なく全件の違反を持つ" {
-        val failure = shouldThrow<ArchitectureAssertionError> {
+        val failure = shouldThrow<KatachiArchitectureAssertionError> {
             layoutArchitecture { ".gitignore".file() }
                 .assert(
                     repositoryOf {

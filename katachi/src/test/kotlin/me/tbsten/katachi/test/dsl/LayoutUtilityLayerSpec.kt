@@ -2,7 +2,6 @@ package me.tbsten.katachi.test.dsl
 
 import io.kotest.core.spec.style.FreeSpec
 import io.kotest.matchers.shouldBe
-import me.tbsten.katachi.dsl.InternalKatachiApi
 import me.tbsten.katachi.dsl.LayoutDirectory
 import me.tbsten.katachi.dsl.LayoutFile
 import me.tbsten.katachi.dsl.LayoutScope
@@ -23,7 +22,6 @@ import me.tbsten.katachi.dsl.kotlin.ktsFile
  * *reducible* to the core vocabulary, or "write your own the same way" would be an
  * invitation to write something weaker.
  */
-@OptIn(InternalKatachiApi::class)
 class LayoutUtilityLayerSpec : FreeSpec({
     "ライブラリ自身のユーティリティは core の語彙に還元できる" - {
         "ktFile() は .kt を付けた file() と同じ" {

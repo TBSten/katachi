@@ -5,6 +5,7 @@ import me.tbsten.katachi.dsl.Architecture
 import me.tbsten.katachi.dsl.ArchitectureScope
 import me.tbsten.katachi.dsl.LayoutScope
 import me.tbsten.katachi.dsl.architecture
+import me.tbsten.katachi.dsl.wholeTree
 
 /**
  * A tree with a project root marker the check never runs into.

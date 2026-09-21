@@ -170,6 +170,10 @@ architecture {
   （黙って全走査に落ちると手元と CI で結果が変わるため）。
   そもそも git 管理下でない / `git` コマンドが無い場合は `wholeTree()` として走査する
 - `.git/` `.gradle/` `.idea/` は `files` の指定によらず、どの階層にあっても検査されない
+- `gitTracked()` / `wholeTree()` は `me.tbsten.katachi.dsl` のトップレベル関数（`ArchitectureScope` を
+  context parameter に取る）。`architecture { }` の中でだけ書けて、利用者が同じ書き方で自分のものを足せる
+- **`FileSelection` は利用者が実装できる。** git 以外（Bazel、生成されたマニフェスト、社内ツール）が
+  ファイル一覧を持っているなら、`FileSelection` を実装して `files` に渡す
 
 ## モジュール構成
 

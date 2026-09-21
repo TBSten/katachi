@@ -5,6 +5,11 @@ package me.tbsten.katachi.dsl
  *
  * Captured while the DSL is evaluated so that a violation reported much later can still
  * point back at the line the user wrote.
+ *
+ * ## Example 1: print a declaration site
+ * ```kt
+ * DeclarationSite("ProjectArchitecture.kt", 42).toString() shouldBe "ProjectArchitecture.kt:42"
+ * ```
  */
 public data class DeclarationSite(
     public val fileName: String,
@@ -13,7 +18,14 @@ public data class DeclarationSite(
     override fun toString(): String = "$fileName:$lineNumber"
 
     public companion object {
-        /** Used when the call site cannot be determined from the stack trace. */
+        /**
+         * Used when the call site cannot be determined from the stack trace.
+         *
+         * ## Example 1: read the fallback value
+         * ```kt
+         * DeclarationSite.Unknown.fileName shouldBe "<unknown>"
+         * ```
+         */
         public val Unknown: DeclarationSite = DeclarationSite("<unknown>", -1)
     }
 }

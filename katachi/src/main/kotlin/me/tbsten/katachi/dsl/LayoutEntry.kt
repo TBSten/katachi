@@ -1,7 +1,8 @@
 package me.tbsten.katachi.dsl
 
 import me.tbsten.katachi.check.Glob
-import me.tbsten.katachi.check.GlobSyntaxException
+import me.tbsten.katachi.check.GlobContext
+import me.tbsten.katachi.check.KatachiGlobSyntaxException
 import me.tbsten.katachi.check.ModuleIndex
 import me.tbsten.katachi.check.ModuleResolver
 
@@ -78,7 +79,7 @@ public class LayoutEntry internal constructor(
  *   against. The default index holds no module at all: a key naming one module still
  *   resolves through [Architecture.moduleResolver], while a key with a wildcard expands to
  *   nothing, so pass the real index whenever the file system is at hand.
- * @throws GlobSyntaxException when a layout key cannot be read as a path pattern.
+ * @throws KatachiGlobSyntaxException when a layout key cannot be read as a path pattern.
  */
 @InternalKatachiApi
 public fun Architecture.flattenLayout(
@@ -100,10 +101,8 @@ public fun Role.flattenLayout(
 }
 
 /** A path claimed by the same role twice as the same kind of thing is one entry. */
-@OptIn(InternalKatachiApi::class)
 private data class EntryKey(val path: String, val kind: LayoutEntryKind)
 
-@OptIn(InternalKatachiApi::class)
 private fun collectInto(
     entries: MutableMap<EntryKey, LayoutEntry>,
     node: LayoutNode,
@@ -119,7 +118,6 @@ private fun collectInto(
     }
 }
 
-@OptIn(InternalKatachiApi::class)
 private fun LayoutNode.toEntry(path: String, role: Role): LayoutEntry {
     val kind = when {
         isFile -> LayoutEntryKind.File
@@ -146,14 +144,14 @@ private fun LayoutNode.toEntry(path: String, role: Role): LayoutEntry {
  * layout blocks are deferred, so this is the first moment a bad key can be noticed at all,
  * and by then the stack no longer points anywhere useful.
  */
-@OptIn(InternalKatachiApi::class)
 private fun compilePath(path: String, role: Role, declaredAt: DeclarationSite): Glob =
     try {
         Glob.compile(path, Glob.PATH_SEPARATOR)
-    } catch (cause: GlobSyntaxException) {
-        throw GlobSyntaxException(
-            "Role ${role.qualifiedName} declares the layout path `$path` at $declaredAt. " +
-                "${cause.message}",
+    } catch (cause: KatachiGlobSyntaxException) {
+        throw KatachiGlobSyntaxException(
+            pattern = cause.pattern,
+            problem = cause.problem,
+            context = GlobContext.RoleLayoutPath(role = role, path = path, declaredAt = declaredAt),
         )
     }
 
@@ -161,7 +159,6 @@ private fun compilePath(path: String, role: Role, declaredAt: DeclarationSite): 
  * Keeps the first declaration's position and description, and requires the path when any of
  * the declarations did.
  */
-@OptIn(InternalKatachiApi::class)
 private fun LayoutEntry.mergedWith(other: LayoutEntry): LayoutEntry = LayoutEntry(
     path = path,
     glob = glob,

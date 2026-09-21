@@ -1,6 +1,31 @@
 package me.tbsten.katachi.check
 
 import me.tbsten.katachi.dsl.InternalKatachiApi
+import me.tbsten.katachi.dsl.KatachiInternalException
+
+/**
+ * A module pattern with no wildcard in it named no module.
+ *
+ * @property pattern the pattern that was being expanded.
+ *
+ * ## Example 1: report it instead of treating it as a bad definition
+ * ```kt
+ * try {
+ *     projectArchitecture.assert()
+ * } catch (cause: KatachiUnresolvableModulePatternException) {
+ *     println("katachi bug, pattern was `${cause.pattern}`. Please report it.")
+ * }
+ * ```
+ */
+public class KatachiUnresolvableModulePatternException internal constructor(
+    public val pattern: String,
+) : KatachiInternalException(
+    message = """
+        The module pattern `$pattern` holds no wildcard, yet it names no single module.
+        A pattern without a wildcard always names exactly one, so a layout cannot cause
+        this. Please report it at https://github.com/TBSten/katachi/issues.
+    """.trimIndent(),
+)
 
 /**
  * Turns a Gradle module path into the directory that holds it.
@@ -13,20 +38,19 @@ import me.tbsten.katachi.dsl.InternalKatachiApi
  *
  * The default, [Conventional], replaces `:` with `/`. That is right for every project that
  * has not customised `projectDir`, which in practice means every new project. A build that
- * has customised it replaces the resolver:
+ * has customised it replaces the resolver. A resolver replaced this way is asked about the
+ * modules the layout names. It is not asked which modules exist: expanding `":feature:*"`
+ * walks the tree looking for build files (see [discoverModules]), and that stays convention
+ * based until a Gradle plugin can hand katachi the real list.
  *
- * ```kotlin
+ * ## Example 1: place a module at a non-conventional directory
+ * ```kt
  * val projectArchitecture = architecture {
  *   moduleResolver = ModuleResolver { module ->
  *     if (module.value == ":app") "apps/android" else module.segments.joinToString("/")
  *   }
  * }
  * ```
- *
- * A resolver replaced this way is asked about the modules the layout names. It is not asked
- * which modules exist: expanding `":feature:*"` walks the tree looking for build files (see
- * [discoverModules]), and that stays convention based until a Gradle plugin can hand katachi
- * the real list.
  */
 public fun interface ModuleResolver {
     /**
@@ -34,6 +58,11 @@ public fun interface ModuleResolver {
      *
      * The empty string means the project root itself, which is what the root project
      * resolves to.
+     *
+     * ## Example 1: check the default conversion
+     * ```kt
+     * ModuleResolver.Conventional.directoryOf(ModulePath.of(":core:data")) shouldBe "core/data"
+     * ```
      */
     public fun directoryOf(module: ModulePath): String
 
@@ -41,6 +70,11 @@ public fun interface ModuleResolver {
         /**
          * The default: `:` becomes `/`, so `:core:data` is `core/data` and `":"` is the
          * project root.
+         *
+         * ## Example 1: resolve the root project
+         * ```kt
+         * ModuleResolver.Conventional.directoryOf(ModulePath.ROOT) shouldBe ""
+         * ```
          */
         public val Conventional: ModuleResolver = ConventionalModuleResolver
     }
@@ -115,7 +149,9 @@ public class ModuleIndex internal constructor(
         if (pattern.hasWildcard) {
             matching(pattern)
         } else {
-            listOf(resolve(checkNotNull(pattern.literalPath) { "a pattern without a wildcard names one module" }))
+            val literalPath = pattern.literalPath
+                ?: throw KatachiUnresolvableModulePatternException(pattern.pattern)
+            listOf(resolve(literalPath))
         }
 
     override fun toString(): String = "ModuleIndex(${modules.size} modules, $resolver)"
@@ -162,7 +198,6 @@ private val SETTINGS_FILE_NAMES = listOf("settings.gradle.kts", "settings.gradle
 
 private val NEVER_WALKED = setOf("build", "buildSrc", "src")
 
-@OptIn(InternalKatachiApi::class)
 private fun collectModules(
     fileSystem: KatachiFileSystem,
     directory: FsPath,

@@ -1,6 +1,7 @@
 package me.tbsten.katachi.dsl
 
-import me.tbsten.katachi.check.GlobSyntaxException
+import me.tbsten.katachi.check.GlobProblem
+import me.tbsten.katachi.check.KatachiGlobSyntaxException
 
 /**
  * One node of the tree a `layout { }` block builds while it is evaluated.
@@ -67,11 +68,7 @@ internal class Chain(val top: LayoutNode, val leaf: LayoutNode)
 private fun splitKey(key: String): List<String> {
     val segments = key.split('/')
     if (segments.any { it.isEmpty() }) {
-        throw GlobSyntaxException(
-            "The layout key `$key` has an empty level. Two `/` in a row, a leading `/`, or a " +
-                "trailing `/` matches nothing; paths in `layout { }` are always relative to the " +
-                "project root.",
-        )
+        throw KatachiGlobSyntaxException(key, GlobProblem.EmptyLayoutKeyLevel)
     }
     return segments
 }
@@ -98,5 +95,5 @@ internal fun chainUnder(
         if (top == null) top = node
         current = node
     }
-    return Chain(top = checkNotNull(top), leaf = current)
+    return Chain(top = top ?: throw KatachiEmptyLayoutChainException(key), leaf = current)
 }

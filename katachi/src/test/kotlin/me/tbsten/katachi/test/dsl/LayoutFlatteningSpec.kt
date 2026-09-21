@@ -5,15 +5,13 @@ import io.kotest.core.spec.style.FreeSpec
 import io.kotest.matchers.ints.shouldBeGreaterThan
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
-import me.tbsten.katachi.check.GlobSyntaxException
-import me.tbsten.katachi.dsl.InternalKatachiApi
+import me.tbsten.katachi.check.KatachiGlobSyntaxException
 import me.tbsten.katachi.dsl.LayoutEntryKind
 import me.tbsten.katachi.dsl.architecture
 import me.tbsten.katachi.dsl.flattenLayout
 import me.tbsten.katachi.dsl.kotlin.ktFile
 import me.tbsten.katachi.dsl.kotlin.ktsFile
 
-@OptIn(InternalKatachiApi::class)
 class LayoutFlatteningSpec : FreeSpec({
     "キーの種類" - {
         "layout 直下のファイルはリポジトリルート直下のパスになる" {
@@ -233,7 +231,7 @@ class LayoutFlatteningSpec : FreeSpec({
 
     "壊れたキー" - {
         "空の階層を含むキーは読めないものとして弾かれる" {
-            val failure = shouldThrow<GlobSyntaxException> {
+            val failure = shouldThrow<KatachiGlobSyntaxException> {
                 layoutOf { "app//ios" { } }
             }
 
@@ -241,11 +239,11 @@ class LayoutFlatteningSpec : FreeSpec({
         }
 
         "先頭のスラッシュも弾かれる" {
-            shouldThrow<GlobSyntaxException> { layoutOf { "/app".file() } }
+            shouldThrow<KatachiGlobSyntaxException> { layoutOf { "/app".file() } }
         }
 
         "他のツールの glob 構文は役割と宣言位置つきで弾かれる" {
-            val failure = shouldThrow<GlobSyntaxException> {
+            val failure = shouldThrow<KatachiGlobSyntaxException> {
                 layoutOf { "{a,b}".file() }
             }
 

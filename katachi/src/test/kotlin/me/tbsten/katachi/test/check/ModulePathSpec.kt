@@ -7,12 +7,10 @@ import io.kotest.matchers.nulls.shouldBeNull
 import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
-import me.tbsten.katachi.check.GlobSyntaxException
+import me.tbsten.katachi.check.KatachiGlobSyntaxException
 import me.tbsten.katachi.check.ModulePath
 import me.tbsten.katachi.check.ModulePattern
-import me.tbsten.katachi.dsl.InternalKatachiApi
 
-@OptIn(InternalKatachiApi::class)
 class ModulePathSpec : FreeSpec({
     "モジュールパスの読み取り" - {
         "先頭の : はあってもなくても同じモジュールになる" {
@@ -59,22 +57,22 @@ class ModulePathSpec : FreeSpec({
 
     "読めないモジュールパスは DSL 評価時に落ちる" - {
         "空文字列" {
-            shouldThrow<GlobSyntaxException> { ModulePath.of("") }
+            shouldThrow<KatachiGlobSyntaxException> { ModulePath.of("") }
                 .message.shouldNotBeNull() shouldContain "must not be empty"
         }
 
         ": が2つ続く" {
-            shouldThrow<GlobSyntaxException> { ModulePath.of(":core::data") }
+            shouldThrow<KatachiGlobSyntaxException> { ModulePath.of(":core::data") }
                 .message.shouldNotBeNull() shouldContain "empty module name"
         }
 
         ": で終わる" {
-            shouldThrow<GlobSyntaxException> { ModulePath.of(":core:") }
+            shouldThrow<KatachiGlobSyntaxException> { ModulePath.of(":core:") }
                 .message.shouldNotBeNull() shouldContain "empty module name"
         }
 
         "ワイルドカードは1つのモジュールを名指ししていない" {
-            shouldThrow<GlobSyntaxException> { ModulePath.of(":feature:*") }
+            shouldThrow<KatachiGlobSyntaxException> { ModulePath.of(":feature:*") }
                 .message.shouldNotBeNull() shouldContain "uses `*`"
         }
     }
@@ -159,22 +157,22 @@ class ModulePathSpec : FreeSpec({
 
     "** の位置は DSL 評価時に検査される" - {
         "末尾以外に書くと落ちる" {
-            shouldThrow<GlobSyntaxException> { ModulePattern.compile(":feature:**:impl") }
+            shouldThrow<KatachiGlobSyntaxException> { ModulePattern.compile(":feature:**:impl") }
                 .message.shouldNotBeNull() shouldContain "before its last segment"
         }
 
         "2つ以上書くと落ちる" {
-            shouldThrow<GlobSyntaxException> { ModulePattern.compile(":**:feature:**") }
+            shouldThrow<KatachiGlobSyntaxException> { ModulePattern.compile(":**:feature:**") }
                 .message.shouldNotBeNull() shouldContain "at most once"
         }
 
         "空文字列は読めない" {
-            shouldThrow<GlobSyntaxException> { ModulePattern.compile("") }
+            shouldThrow<KatachiGlobSyntaxException> { ModulePattern.compile("") }
                 .message.shouldNotBeNull() shouldContain "must not be empty"
         }
 
         "katachi の glob に無いメタ文字は落ちる" {
-            shouldThrow<GlobSyntaxException> { ModulePattern.compile(":feature:{home,settings}") }
+            shouldThrow<KatachiGlobSyntaxException> { ModulePattern.compile(":feature:{home,settings}") }
         }
     }
 })

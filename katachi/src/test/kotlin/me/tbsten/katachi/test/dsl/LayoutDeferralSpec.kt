@@ -3,16 +3,11 @@ package me.tbsten.katachi.test.dsl
 import io.kotest.core.spec.style.FreeSpec
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.types.shouldBeSameInstanceAs
-import me.tbsten.katachi.dsl.InternalKatachiApi
 import me.tbsten.katachi.dsl.LayoutDeclaration
 import me.tbsten.katachi.dsl.LayoutScope
 import me.tbsten.katachi.dsl.architecture
 
-/**
- * `LayoutDeclaration.block` is marked @InternalKatachiApi, so reading it needs an explicit
- * opt-in. katachi's build gives the test source set no blanket opt-in on purpose.
- */
-@OptIn(InternalKatachiApi::class)
+/** `LayoutDeclaration.block` is `@InternalKatachiApi`; this helper reads it for the spec. */
 private fun LayoutDeclaration.deferredBlock(): LayoutScope.() -> Unit = block
 
 class LayoutDeferralSpec : FreeSpec({

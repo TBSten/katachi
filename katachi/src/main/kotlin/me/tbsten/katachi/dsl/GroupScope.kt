@@ -1,9 +1,34 @@
 package me.tbsten.katachi.dsl
 
-/** Receiver of `"name".group { }`. Holds nested groups and roles. */
+/**
+ * Receiver of `"name".group { }`. Holds nested groups and roles.
+ *
+ * ## Example 1: declare nested groups and roles
+ * ```kt
+ * val arch = architecture {
+ *     "domain".group {
+ *         title = "ドメイン"
+ *         "UseCase" { }
+ *         "model".group { }
+ *     }
+ * }
+ * ```
+ */
 @KatachiDsl
 public sealed interface GroupScope : GroupContainerScope {
-    /** Display name of this group. Defaults to the group name. */
+    /**
+     * Display name of this group. Defaults to the group name.
+     *
+     * ## Example 1: separate the identifier from the display name
+     * ```kt
+     * val arch = architecture {
+     *     "domain".group {
+     *         title = "ドメイン"
+     *     }
+     * }
+     * arch.groups.single().title shouldBe "ドメイン"
+     * ```
+     */
     public var title: String
 
     /**
@@ -11,6 +36,18 @@ public sealed interface GroupScope : GroupContainerScope {
      *
      * This is `String.invoke`, so the role name is written as a plain string literal
      * followed by its block.
+     *
+     * ## Example 1: declare a role inside a group
+     * ```kt
+     * val arch = architecture {
+     *     "domain".group {
+     *         "UseCase" {
+     *             title = "ユースケース"
+     *             summary = "各画面で発生するアプリ固有の1つの振る舞い"
+     *         }
+     *     }
+     * }
+     * ```
      */
     public operator fun String.invoke(block: RoleScope.() -> Unit)
 }
@@ -61,7 +98,7 @@ internal fun declareGroup(
     declaredNames: DeclaredNames,
     block: GroupScope.() -> Unit,
 ): Group {
-    requireValidIdentifier(name, IdentifierKind.Group, declaredAt)
+    requireValidIdentifier(name, DeclarationKind.Group, declaredAt)
     requireNoDuplicateGroup(declaredNames, name, parentPath, declaredAt)
     declaredNames.reserve(name, declaredAt)
     val path = parentPath + name

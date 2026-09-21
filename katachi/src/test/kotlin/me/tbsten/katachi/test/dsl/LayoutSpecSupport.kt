@@ -4,7 +4,6 @@ import me.tbsten.katachi.check.FsPath
 import me.tbsten.katachi.check.ModuleIndex
 import me.tbsten.katachi.check.ModuleResolver
 import me.tbsten.katachi.check.moduleIndex
-import me.tbsten.katachi.dsl.InternalKatachiApi
 import me.tbsten.katachi.dsl.LayoutEntry
 import me.tbsten.katachi.dsl.LayoutScope
 import me.tbsten.katachi.dsl.architecture
@@ -18,7 +17,6 @@ import me.tbsten.katachi.test.check.fakeFileSystem
  * The block is written in the calling spec, so every declaration site a flattened entry
  * carries points at that spec rather than at this file.
  */
-@OptIn(InternalKatachiApi::class)
 internal fun layoutOf(block: LayoutScope.() -> Unit): List<LayoutEntry> =
     architecture {
         "group".group {
@@ -27,7 +25,6 @@ internal fun layoutOf(block: LayoutScope.() -> Unit): List<LayoutEntry> =
     }.flattenLayout()
 
 /** [layoutOf] against a project whose modules are [moduleIndex]. See [moduleIndexOf]. */
-@OptIn(InternalKatachiApi::class)
 internal fun layoutOf(moduleIndex: ModuleIndex, block: LayoutScope.() -> Unit): List<LayoutEntry> =
     architecture {
         "group".group {
@@ -43,7 +40,6 @@ internal fun layoutOf(moduleIndex: ModuleIndex, block: LayoutScope.() -> Unit): 
  * moduleIndexOf("core/data", "feature/home")
  * ```
  */
-@OptIn(InternalKatachiApi::class)
 internal fun moduleIndexOf(
     vararg moduleDirectories: String,
     resolver: ModuleResolver = ModuleResolver.Conventional,
@@ -63,7 +59,6 @@ internal fun moduleIndexOf(
  * Two spellings of the same layout are compared through this, because `/` chaining and
  * nested blocks cannot be written on the same line and so never share a declaration site.
  */
-@OptIn(InternalKatachiApi::class)
 internal fun List<LayoutEntry>.shape(): List<String> = map { entry ->
     buildString {
         append(entry.path)

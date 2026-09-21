@@ -6,7 +6,8 @@ import me.tbsten.katachi.check.ModuleResolver
 /**
  * Anything that can hold groups: the root of the DSL and a group itself.
  *
- * ```kotlin
+ * ## Example 1: collect groups in an ArchitectureScope extension function
+ * ```kt
  * fun ArchitectureScope.domainRoles() {
  *   "domain".group { "UseCase" { } }
  * }
@@ -19,6 +20,24 @@ public sealed interface GroupContainerScope {
      *
      * @param documented pass `false` to keep the group out of the generated
      *   documentation. It still takes part in the check.
+     *
+     * ## Example 1: declare a group
+     * ```kt
+     * val arch = architecture {
+     *     "domain".group {
+     *         "UseCase" { }
+     *     }
+     * }
+     * ```
+     *
+     * ## Example 2: keep a group out of the generated documentation
+     * ```kt
+     * val arch = architecture {
+     *     "Gradle".group(documented = false) {
+     *         "VersionCatalog" { }
+     *     }
+     * }
+     * ```
      */
     public fun String.group(
         documented: Boolean = true,
@@ -31,33 +50,39 @@ public sealed interface GroupContainerScope {
  *
  * It intentionally has no `String.invoke`: a role has to sit in a group, because a group
  * is what decides the role's documentation output directory.
+ *
+ * ## Example 1: declare groups inside architecture { }
+ * ```kt
+ * val arch = architecture {
+ *     "domain".group {
+ *         "UseCase" { }
+ *     }
+ * }
+ * ```
  */
 @KatachiDsl
 public sealed interface ArchitectureScope : GroupContainerScope {
     /**
      * Which files of the project the check looks at. Defaults to [gitTracked].
      *
-     * ```kotlin
-     * val projectArchitecture = architecture {
+     * ## Example 1: walk the whole tree instead of only git-tracked files
+     * ```kt
+     * val arch = architecture {
      *   files = wholeTree()
-     *   domainRoles()
+     *   "domain".group { "UseCase" { } }
      * }
+     * arch.files shouldBe FileSelection.WholeTree
      * ```
      */
     public var files: FileSelection
-
-    /** Only the files git reports for this project. See [FileSelection.GitTracked]. */
-    public fun gitTracked(): FileSelection = FileSelection.GitTracked
-
-    /** Every file below the project root, whatever git thinks of it. See [FileSelection.WholeTree]. */
-    public fun wholeTree(): FileSelection = FileSelection.WholeTree
 
     /**
      * How a module path written in a `layout { }` becomes a directory. Defaults to
      * [conventionalModuleResolver].
      *
-     * ```kotlin
-     * val projectArchitecture = architecture {
+     * ## Example 1: replace the resolution rule for module paths
+     * ```kt
+     * val architecture = architecture {
      *   moduleResolver = ModuleResolver { module ->
      *     if (module.value == ":app") "apps/android" else module.segments.joinToString("/")
      *   }
@@ -65,9 +90,6 @@ public sealed interface ArchitectureScope : GroupContainerScope {
      * ```
      */
     public var moduleResolver: ModuleResolver
-
-    /** `:core:data` lives in `core/data`. See [ModuleResolver.Conventional]. */
-    public fun conventionalModuleResolver(): ModuleResolver = ModuleResolver.Conventional
 }
 
 internal class ArchitectureScopeImpl : ArchitectureScope {

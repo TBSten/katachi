@@ -5,9 +5,8 @@ import io.kotest.core.spec.style.FreeSpec
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
 import me.tbsten.katachi.dsl.gradle.HyphenFolding
-import me.tbsten.katachi.dsl.InternalKatachiApi
 import me.tbsten.katachi.dsl.gradle.ModulePackage
-import me.tbsten.katachi.dsl.gradle.ModulePackageException
+import me.tbsten.katachi.dsl.gradle.KatachiModulePackageException
 import me.tbsten.katachi.dsl.architecture
 import me.tbsten.katachi.dsl.gradle.capitalizedModuleNamePackage
 import me.tbsten.katachi.dsl.gradle.*
@@ -17,7 +16,6 @@ import me.tbsten.katachi.dsl.gradle.moduleNamePackage
 /** Declared the way a user declares it: one top level `val`, next to the architecture. */
 private val modulePackage = capitalizedModuleNamePackage("com.example")
 
-@OptIn(InternalKatachiApi::class)
 class LayoutModulePackageSpec : FreeSpec({
     "layout の中での modulePackage" - {
         "スラッシュ連結の途中に書ける" {
@@ -115,7 +113,7 @@ class LayoutModulePackageSpec : FreeSpec({
 
     "モジュールの外での使用" - {
         "layout 直下で使うとエラーになる" {
-            val failure = shouldThrow<ModulePackageException> {
+            val failure = shouldThrow<KatachiModulePackageException> {
                 layoutOf { modulePackage / "*".ktFile() }
             }
 
@@ -123,7 +121,7 @@ class LayoutModulePackageSpec : FreeSpec({
         }
 
         "ディレクトリブロックの中で使ってもエラーになる" {
-            shouldThrow<ModulePackageException> {
+            shouldThrow<KatachiModulePackageException> {
                 layoutOf { "app" { modulePackage / "*".ktFile() } }
             }
         }
@@ -131,7 +129,7 @@ class LayoutModulePackageSpec : FreeSpec({
         "ベース package の無いルートプロジェクトはディレクトリにならずエラーになる" {
             val withoutBase = capitalizedModuleNamePackage()
 
-            shouldThrow<ModulePackageException> {
+            shouldThrow<KatachiModulePackageException> {
                 layoutOf { ":".module { withoutBase / "*".ktFile() } }
             }
         }

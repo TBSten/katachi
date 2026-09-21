@@ -2,7 +2,6 @@ package me.tbsten.katachi.test.dsl
 
 import io.kotest.core.spec.style.FreeSpec
 import io.kotest.matchers.shouldBe
-import me.tbsten.katachi.dsl.InternalKatachiApi
 import me.tbsten.katachi.dsl.kotlin.ktFile
 
 /**
@@ -10,7 +9,6 @@ import me.tbsten.katachi.dsl.kotlin.ktFile
  * one flattened result. Only the declaration sites differ, which is why the comparison goes
  * through `shape()`.
  */
-@OptIn(InternalKatachiApi::class)
 class LayoutPathChainingSpec : FreeSpec({
     "スラッシュ連結は入れ子ブロックの糖衣" - {
         "ファイルで終わる連結が同じ入れ子と一致する" {

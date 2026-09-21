@@ -8,10 +8,8 @@ import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
 import me.tbsten.katachi.check.Glob
-import me.tbsten.katachi.check.GlobSyntaxException
-import me.tbsten.katachi.dsl.InternalKatachiApi
+import me.tbsten.katachi.check.KatachiGlobSyntaxException
 
-@OptIn(InternalKatachiApi::class)
 class GlobSpec : FreeSpec({
     fun modulePath(pattern: String) = Glob.compile(pattern, Glob.MODULE_SEPARATOR)
 
@@ -80,14 +78,14 @@ class GlobSpec : FreeSpec({
         }
 
         "\":feature:**:impl\" は拒否される" {
-            val exception = shouldThrow<GlobSyntaxException> {
+            val exception = shouldThrow<KatachiGlobSyntaxException> {
                 modulePath(":feature:**:impl").requireAtMostOneTrailingDoubleStar()
             }
             exception.message.shouldNotBeNull() shouldContain "last segment"
         }
 
         "** を2つ書くと拒否される" {
-            shouldThrow<GlobSyntaxException> {
+            shouldThrow<KatachiGlobSyntaxException> {
                 modulePath(":feature:**:**").requireAtMostOneTrailingDoubleStar()
             }
         }
@@ -138,8 +136,8 @@ class GlobSpec : FreeSpec({
 
     "他ツールの glob のメタ文字はワイルドカードとして働かない" - {
         listOf("{" to "{a,b}.kt", "?" to "Foo?.kt", "[" to "[abc].kt").forEach { (character, pattern) ->
-            "`$character` を含む pattern は GlobSyntaxException になる" {
-                val exception = shouldThrow<GlobSyntaxException> { Glob.compile(pattern) }
+            "`$character` を含む pattern は KatachiGlobSyntaxException になる" {
+                val exception = shouldThrow<KatachiGlobSyntaxException> { Glob.compile(pattern) }
                 exception.message.shouldNotBeNull() shouldContain "only `*` and `**`"
             }
         }
@@ -160,28 +158,28 @@ class GlobSpec : FreeSpec({
 
     "壊れた pattern は compile 時に落ちる" - {
         "空文字列" {
-            shouldThrow<GlobSyntaxException> { Glob.compile("") }
+            shouldThrow<KatachiGlobSyntaxException> { Glob.compile("") }
         }
 
         "区切り文字が2つ続く" {
-            shouldThrow<GlobSyntaxException> { Glob.compile("a//b") }
+            shouldThrow<KatachiGlobSyntaxException> { Glob.compile("a//b") }
         }
 
         "区切り文字で終わる" {
-            shouldThrow<GlobSyntaxException> { Glob.compile("a/b/") }
+            shouldThrow<KatachiGlobSyntaxException> { Glob.compile("a/b/") }
         }
 
         "** がセグメントの一部になっている" {
-            val exception = shouldThrow<GlobSyntaxException> { Glob.compile("a**b") }
+            val exception = shouldThrow<KatachiGlobSyntaxException> { Glob.compile("a**b") }
             exception.message.shouldNotBeNull() shouldContain "whole segment"
         }
 
         "セグメントの末尾の \\" {
-            shouldThrow<GlobSyntaxException> { Glob.compile("""a\""") }
+            shouldThrow<KatachiGlobSyntaxException> { Glob.compile("""a\""") }
         }
 
         "メタ文字でないものをエスケープしている" {
-            shouldThrow<GlobSyntaxException> { Glob.compile("""\a.kt""") }
+            shouldThrow<KatachiGlobSyntaxException> { Glob.compile("""\a.kt""") }
         }
     }
 

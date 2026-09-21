@@ -8,16 +8,13 @@ import io.kotest.matchers.shouldBe
 import me.tbsten.katachi.check.FileSelection
 import me.tbsten.katachi.check.FsPath
 import me.tbsten.katachi.check.GitTrackedFileSystem
-import me.tbsten.katachi.check.GitUnavailableException
+import me.tbsten.katachi.check.KatachiGitUnavailableException
 import me.tbsten.katachi.check.KatachiFileSystem
 import me.tbsten.katachi.check.RealFileSystem
-import me.tbsten.katachi.check.fileSystemFor
 import me.tbsten.katachi.check.findProjectRoot
 import me.tbsten.katachi.check.gitTrackedFileSystem
 import me.tbsten.katachi.check.isInsideGitWorkTree
-import me.tbsten.katachi.dsl.InternalKatachiApi
 
-@OptIn(InternalKatachiApi::class)
 class GitTrackedFileSystemSpec : FreeSpec({
     "偽のファイルシステムに被せたフィルタ" - {
         val root = FsPath.of("/repo")
@@ -182,7 +179,6 @@ private class CountingPaths(private val paths: List<String>) : Collection<String
 }
 
 /** Visits every directory and file below [root] through the four operations. */
-@OptIn(InternalKatachiApi::class)
 private fun walkEverything(fileSystem: KatachiFileSystem, root: FsPath) {
     for (child in fileSystem.list(root)) {
         fileSystem.exists(child)

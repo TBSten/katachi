@@ -19,8 +19,18 @@ import me.tbsten.katachi.dsl.LayoutScope
  * for it — and neither `main` nor `commonMain` is chosen for you, because that would mean
  * guessing at the kind of project this is.
  *
- * ```kotlin
+ * ```kt
  * val commonMain = "commonMain".sourceSet   // if writing it every time grates
+ * ```
+ *
+ * ## Example 1: Name a source set of your own
+ * ```kt
+ * import me.tbsten.katachi.dsl.gradle.*
+ * import me.tbsten.katachi.dsl.kotlin.ktFile
+ *
+ * ":testing".module {
+ *     "commonMain".sourceSet / kotlin / modulePackage / "Fake*".ktFile()
+ * }
  * ```
  */
 context(layoutScope: LayoutScope)
@@ -30,11 +40,35 @@ public val String.sourceSet: LayoutDirectory
         return with(layoutScope) { "src/$name" { } }
     }
 
-/** `src/main`, the same as `"main".sourceSet`. */
+/**
+ * `src/main`, the same as `"main".sourceSet`.
+ *
+ * ## Example 1: Place files directly under src/main
+ * ```kt
+ * ":app".module {
+ *     mainSourceSet {
+ *         "AndroidManifest.xml".file()
+ *         "res".ignore()
+ *     }
+ * }
+ * ```
+ */
 context(layoutScope: LayoutScope)
 public val mainSourceSet: LayoutDirectory get() = "main".sourceSet
 
-/** `src/test`, the same as `"test".sourceSet`. */
+/**
+ * `src/test`, the same as `"test".sourceSet`.
+ *
+ * ## Example 1: Place test code under src/test
+ * ```kt
+ * ":architecture-test".module {
+ *     testSourceSet / kotlin / "com/example/sample" {
+ *         "*Spec".ktFile()
+ *         "*Test".ktFile()
+ *     }
+ * }
+ * ```
+ */
 context(layoutScope: LayoutScope)
 public val testSourceSet: LayoutDirectory get() = "test".sourceSet
 
@@ -43,6 +77,13 @@ public val testSourceSet: LayoutDirectory get() = "test".sourceSet
  *
  * A source set does not imply it, so it is written out on both spellings of a path:
  * `mainSourceSet / kotlin / ...` and `mainSourceSet { kotlin { } }`.
+ *
+ * ## Example 1: Reach the kotlin directory below a source set
+ * ```kt
+ * ":core:domain".module {
+ *     mainSourceSet / kotlin / "Foo".ktFile()
+ * }
+ * ```
  */
 context(layoutScope: LayoutScope)
 public val kotlin: LayoutDirectory get() = with(layoutScope) { "kotlin" { } }

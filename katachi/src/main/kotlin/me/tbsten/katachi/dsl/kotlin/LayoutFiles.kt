@@ -18,6 +18,19 @@ import me.tbsten.katachi.dsl.LayoutScope
  * Declares a file with `.kt` appended: `"*UseCase".ktFile()` is `*UseCase.kt`.
  *
  * The same as `"*UseCase.kt".file()`, and produces the same declaration.
+ *
+ * ## Example 1: Declare a Kotlin file by name
+ * ```kt
+ * import me.tbsten.katachi.dsl.gradle.*
+ * import me.tbsten.katachi.dsl.kotlin.ktFile
+ *
+ * ":app".module {
+ *     mainSourceSet / kotlin / "com/example/sample" {
+ *         "MainActivity".ktFile()
+ *         "MainApplication".ktFile()
+ *     }
+ * }
+ * ```
  */
 context(layoutScope: LayoutScope)
 public fun String.ktFile(): LayoutFile {
@@ -29,6 +42,16 @@ public fun String.ktFile(): LayoutFile {
  * Declares a file with `.kts` appended: `"build.gradle".ktsFile()` is `build.gradle.kts`.
  *
  * The same as `"build.gradle.kts".file()`, and produces the same declaration.
+ *
+ * ## Example 1: Declare a module's own build script
+ * ```kt
+ * import me.tbsten.katachi.dsl.gradle.*
+ * import me.tbsten.katachi.dsl.kotlin.ktsFile
+ *
+ * ":".module {
+ *     "settings.gradle".ktsFile()
+ * }
+ * ```
  */
 context(layoutScope: LayoutScope)
 public fun String.ktsFile(): LayoutFile {

@@ -5,7 +5,7 @@ import io.kotest.core.spec.style.FreeSpec
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
 import io.kotest.matchers.types.shouldBeInstanceOf
-import me.tbsten.katachi.dsl.InvalidIdentifierException
+import me.tbsten.katachi.dsl.KatachiInvalidIdentifierException
 import me.tbsten.katachi.dsl.KatachiDeclarationException
 import me.tbsten.katachi.dsl.architecture
 
@@ -26,7 +26,7 @@ class IdentifierSpec : FreeSpec({
     "group 名" - {
         invalidNames.forEach { (name, reason) ->
             "$reason の group 名 \"$name\" は DSL 評価時に失敗する" {
-                shouldThrow<InvalidIdentifierException> {
+                shouldThrow<KatachiInvalidIdentifierException> {
                     architecture { name.group { } }
                 }.name shouldBe name
             }
@@ -42,7 +42,7 @@ class IdentifierSpec : FreeSpec({
     "役割名" - {
         invalidNames.forEach { (name, reason) ->
             "$reason の役割名 \"$name\" は DSL 評価時に失敗する" {
-                shouldThrow<InvalidIdentifierException> {
+                shouldThrow<KatachiInvalidIdentifierException> {
                     architecture { "domain".group { name { } } }
                 }.name shouldBe name
             }
@@ -56,10 +56,10 @@ class IdentifierSpec : FreeSpec({
         }
     }
 
-    "InvalidIdentifierException は KatachiDeclarationException として捕捉できる" {
+    "KatachiInvalidIdentifierException は KatachiDeclarationException として捕捉できる" {
         shouldThrow<KatachiDeclarationException> {
             architecture { "1domain".group { } }
-        }.shouldBeInstanceOf<InvalidIdentifierException>()
+        }.shouldBeInstanceOf<KatachiInvalidIdentifierException>()
     }
 
     "KatachiDeclarationException は IllegalArgumentException として捕捉できる" {
@@ -67,11 +67,11 @@ class IdentifierSpec : FreeSpec({
         // 直結するので、KatachiDeclarationException の基底を変えたらここが落ちる。
         shouldThrow<IllegalArgumentException> {
             architecture { "1domain".group { } }
-        }.shouldBeInstanceOf<InvalidIdentifierException>()
+        }.shouldBeInstanceOf<KatachiInvalidIdentifierException>()
     }
 
     "エラーメッセージに不正な名前・宣言位置・許される文字集合が含まれる" {
-        val thrown = shouldThrow<InvalidIdentifierException> {
+        val thrown = shouldThrow<KatachiInvalidIdentifierException> {
             architecture { "use case".group { } }
         }
 

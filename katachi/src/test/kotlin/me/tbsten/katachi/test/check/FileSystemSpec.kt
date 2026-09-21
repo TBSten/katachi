@@ -8,7 +8,6 @@ import java.io.File
 import me.tbsten.katachi.check.FsPath
 import me.tbsten.katachi.check.KatachiFileSystem
 import me.tbsten.katachi.check.RealFileSystem
-import me.tbsten.katachi.dsl.InternalKatachiApi
 
 /** Creates an empty file at each path, and every directory leading to it. */
 private fun buildRealTree(root: File, relativePaths: List<String>) {
@@ -26,7 +25,6 @@ private fun createTemporaryDirectory(): File {
     return directory
 }
 
-@OptIn(InternalKatachiApi::class)
 class FileSystemSpec : FreeSpec({
     "偽のファイルシステム" - {
         val fileSystem = fakeFileSystem(workingDirectory = "/repo/app") {

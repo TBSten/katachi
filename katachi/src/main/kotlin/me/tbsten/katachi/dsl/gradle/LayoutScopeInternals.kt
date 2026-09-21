@@ -1,24 +1,26 @@
 package me.tbsten.katachi.dsl.gradle
 
 import me.tbsten.katachi.dsl.InternalKatachiApi
-import me.tbsten.katachi.dsl.KatachiDeclarationException
+import me.tbsten.katachi.dsl.KatachiUnsupportedLayoutScopeException
 import me.tbsten.katachi.dsl.LayoutDirectoryScope
 import me.tbsten.katachi.dsl.LayoutModule
 import me.tbsten.katachi.dsl.LayoutScope
-import me.tbsten.katachi.dsl.LayoutScopeImpl
+import me.tbsten.katachi.dsl.ModuleAwareLayoutScope
 
 /**
  * The part of a layout scope a utility layer cannot reach through the public vocabulary.
  *
- * [LayoutScope] declares what a layout *says*; these three declare what the scope *knows*
- * while it is being evaluated. `"...".ktFile()` needs none of them — it is written against
- * `file()` alone — but the Gradle vocabulary in `this package` does:
- * expanding `":feature:*"` needs the project's modules, and `modulePackage` and `wildcards`
- * need the module the block is currently being evaluated for.
+ * [LayoutScope] declares what a layout *says*; these three hand out what the scope *knows*
+ * while it is being evaluated, which [ModuleAwareLayoutScope] declares. `"...".ktFile()`
+ * needs none of them — it is written against `file()` alone — but the Gradle vocabulary in
+ * this package does: expanding `":feature:*"` needs the project's modules, and
+ * `modulePackage` and `wildcards` need the module the block is currently being evaluated for.
  *
- * They are opt-in rather than `internal` on purpose. A project whose build is unusual enough
- * to need its own `.module { }` should be able to write one; it is not a supported surface,
- * and the opt-in is what says so.
+ * They are extensions on [LayoutScope] rather than plain members of [ModuleAwareLayoutScope]
+ * because `context(layoutScope: LayoutScope)` is the shape every utility is written in, a
+ * project's own as much as katachi's. They are opt-in rather than `internal` for the same
+ * reason. A project whose build is unusual enough to need its own `.module { }` should be
+ * able to write one; it is not a supported surface, and the opt-in is what says so.
  */
 
 /**
@@ -27,7 +29,7 @@ import me.tbsten.katachi.dsl.LayoutScopeImpl
  */
 @InternalKatachiApi
 public val LayoutScope.currentModulePath: String?
-    get() = impl().moduleContext?.modulePath
+    get() = moduleAware().currentModulePath
 
 /**
  * What the module path's wildcards captured for the module being evaluated, or `null`
@@ -37,7 +39,7 @@ public val LayoutScope.currentModulePath: String?
  */
 @InternalKatachiApi
 public val LayoutScope.currentWildcards: List<String>?
-    get() = impl().moduleContext?.wildcards
+    get() = moduleAware().currentWildcards
 
 /**
  * Runs [block] once per module [modulePath] stands for, below that module's own directory.
@@ -51,21 +53,24 @@ public val LayoutScope.currentWildcards: List<String>?
  * declaration a hand written directory block would make.
  *
  * @param modulePath a Gradle module path, possibly holding `*` or `**`.
- * @throws me.tbsten.katachi.check.GlobSyntaxException when the module path cannot be read.
- * @throws me.tbsten.katachi.dsl.KatachiDeclarationException when this scope is not the root of a `layout { }`
- *   block: a module path is resolved below the project root, so a directory around it would
- *   quietly be prepended to the answer.
+ * @throws me.tbsten.katachi.check.KatachiGlobSyntaxException when the module path cannot be read.
+ * @throws me.tbsten.katachi.dsl.KatachiModuleOutsideLayoutRootException when this scope is not
+ *   the root of a `layout { }` block: a module path is resolved below the project root, so a
+ *   directory around it would quietly be prepended to the answer.
  */
 @InternalKatachiApi
 public fun LayoutScope.expandModulePath(
     modulePath: String,
     block: LayoutDirectoryScope.() -> Unit,
-): LayoutModule = impl().expandModulePath(modulePath, block)
+): LayoutModule = moduleAware().expandModulePath(modulePath, block)
 
 /**
- * The one implementation of the sealed [LayoutScope] hierarchy.
+ * The scope seen as what it knows, which is what this package is written against.
  *
- * Both interfaces are `sealed` and both are implemented by [LayoutScopeImpl] alone, so the
- * cast cannot fail; it is written as one function so that saying so has one place.
+ * Every scope katachi hands to a `layout { }` block implements [ModuleAwareLayoutScope], so
+ * this holds; it is written as one function so that failing loudly when it does not has one
+ * place.
  */
-private fun LayoutScope.impl(): LayoutScopeImpl = this as LayoutScopeImpl
+private fun LayoutScope.moduleAware(): ModuleAwareLayoutScope =
+    this as? ModuleAwareLayoutScope
+        ?: throw KatachiUnsupportedLayoutScopeException(this::class.simpleName ?: "unknown scope")

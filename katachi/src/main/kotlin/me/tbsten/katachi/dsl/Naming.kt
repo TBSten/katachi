@@ -16,7 +16,8 @@ package me.tbsten.katachi.dsl
  * A digit is not a boundary because a module called `2fa` is one word, not a number followed
  * by a name, and splitting it would turn `2fa` into `2Fa`.
  *
- * ```kotlin
+ * ## Example 1: split a name into words
+ * ```kt
  * "debug-menu".nameWords    // [debug, menu]
  * "remoteAPI".nameWords     // [remote, api]
  * "APIClient".nameWords     // [api, client]
@@ -56,34 +57,69 @@ public val String.nameWords: List<String>
 /**
  * `debug-menu` as `DebugMenu`.
  *
- * Written on a captured wildcard, this is what ties a file name to the module it sits in:
+ * Written on a captured wildcard, this is what ties a file name to the module it sits in.
+ * A name that holds no word at all (`""`, `"--"`) converts to the empty string, and a name
+ * starting with a digit keeps it (`2fa` stays `2fa`), because there is no capital form of a
+ * digit to move to.
  *
- * ```kotlin
+ * ## Example 1: convert a name to PascalCase
+ * ```kt
+ * "debug-menu".pascalCase shouldBe "DebugMenu"
+ * "remoteAPI".pascalCase shouldBe "RemoteApi"
+ * ```
+ *
+ * ## Example 2: build a file name from a captured module name
+ * ```kt
  * ":feature:*".module {
  *   mainSourceSet / kotlin / modulePackage / "${wildcards[0].pascalCase}Screen".ktFile()
  * }
  * ```
- *
- * A name that holds no word at all (`""`, `"--"`) converts to the empty string, and a name
- * starting with a digit keeps it (`2fa` stays `2fa`), because there is no capital form of a
- * digit to move to.
  */
 public val String.pascalCase: String
     get() = nameWords.joinToString("") { it.capitalized() }
 
-/** `debug-menu` as `debugMenu`. The same words as [pascalCase], with the first one left alone. */
+/**
+ * `debug-menu` as `debugMenu`. The same words as [pascalCase], with the first one left alone.
+ *
+ * ## Example 1: convert a name to camelCase
+ * ```kt
+ * "debug-menu".camelCase shouldBe "debugMenu"
+ * "DebugMenu".camelCase shouldBe "debugMenu"
+ * ```
+ */
 public val String.camelCase: String
     get() = nameWords.mapIndexed { index, word -> if (index == 0) word else word.capitalized() }.joinToString("")
 
-/** `debugMenu` as `debug-menu`. */
+/**
+ * `debugMenu` as `debug-menu`.
+ *
+ * ## Example 1: convert a name to kebab-case
+ * ```kt
+ * "debugMenu".kebabCase shouldBe "debug-menu"
+ * ```
+ */
 public val String.kebabCase: String
     get() = nameWords.joinToString("-")
 
-/** `debugMenu` as `debug_menu`. */
+/**
+ * `debugMenu` as `debug_menu`.
+ *
+ * ## Example 1: convert a name to snake_case
+ * ```kt
+ * "debugMenu".snakeCase shouldBe "debug_menu"
+ * ```
+ */
 public val String.snakeCase: String
     get() = nameWords.joinToString("_")
 
-/** `debugMenu` as `DEBUG_MENU`. */
+/**
+ * `debugMenu` as `DEBUG_MENU`.
+ *
+ * ## Example 1: convert a name to SCREAMING_SNAKE_CASE
+ * ```kt
+ * "debugMenu".screamingSnakeCase shouldBe "DEBUG_MENU"
+ * ```
+ */
 public val String.screamingSnakeCase: String
     get() = nameWords.joinToString("_") { it.uppercase() }
 
@@ -92,6 +128,11 @@ public val String.screamingSnakeCase: String
  *
  * This is the spelling for a place that takes neither a separator nor a capital, such as a
  * package segment in a project that writes them all in lower case.
+ *
+ * ## Example 1: convert a name to flatcase
+ * ```kt
+ * "debug-menu".flatCase shouldBe "debugmenu"
+ * ```
  */
 public val String.flatCase: String
     get() = nameWords.joinToString("")

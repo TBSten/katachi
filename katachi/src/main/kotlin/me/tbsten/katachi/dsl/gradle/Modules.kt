@@ -1,10 +1,5 @@
-// The Gradle vocabulary is the one utility layer that cannot be written through the public
-// vocabulary alone: expanding a module path needs the project's module index.
-@file:OptIn(InternalKatachiApi::class)
-
 package me.tbsten.katachi.dsl.gradle
 
-import me.tbsten.katachi.dsl.InternalKatachiApi
 import me.tbsten.katachi.dsl.KatachiDeclarationException
 import me.tbsten.katachi.dsl.LayoutDirectoryScope
 import me.tbsten.katachi.dsl.LayoutModule
@@ -16,7 +11,7 @@ import me.tbsten.katachi.dsl.LayoutScope
  * This is sugar and nothing else. The two blocks below produce exactly the same
  * declarations, and a violation cannot tell which one was written:
  *
- * ```kotlin
+ * ```kt
  * ":core:domain:common".module {
  *   mainSourceSet / kotlin / "model" / "*".ktFile()
  * }
@@ -35,7 +30,7 @@ import me.tbsten.katachi.dsl.LayoutScope
  * The module path may hold wildcards, and then the block is evaluated once per module
  * that matches, with [wildcards] holding what that match captured:
  *
- * ```kotlin
+ * ```kt
  * ":feature:*".module {
  *   mainSourceSet / kotlin / "${wildcards[0].pascalCase}Screen".ktFile()
  * }
@@ -49,14 +44,56 @@ import me.tbsten.katachi.dsl.LayoutScope
  * Where a module path lands is [me.tbsten.katachi.check.ModuleResolver]'s answer, which
  * by default replaces `:` with `/`.
  *
- * @throws me.tbsten.katachi.check.GlobSyntaxException when the module path cannot be
+ * ## Example 1: Declare a module by its module path
+ * ```kt
+ * import me.tbsten.katachi.dsl.gradle.*
+ * import me.tbsten.katachi.dsl.kotlin.ktFile
+ *
+ * ":app".module {
+ *     mainSourceSet / kotlin / "com/example/sample" {
+ *         "MainActivity".ktFile()
+ *         "MainApplication".ktFile()
+ *     }
+ * }
+ * ```
+ *
+ * ## Example 2: Expand over every module a wildcard matches
+ * ```kt
+ * import me.tbsten.katachi.dsl.gradle.*
+ * import me.tbsten.katachi.dsl.kotlin.ktFile
+ * import me.tbsten.katachi.dsl.pascalCase
+ *
+ * ":feature:*".module {
+ *     "${wildcards[0].pascalCase}Screen".ktFile()
+ * }
+ * ```
+ *
+ * @throws me.tbsten.katachi.check.KatachiGlobSyntaxException when the module path cannot be
  *   read, `":core::data"` or a `**` written anywhere but last.
- * @throws KatachiDeclarationException when written anywhere but directly inside
- *   `layout { }`.
+ * @throws me.tbsten.katachi.dsl.KatachiModuleOutsideLayoutRootException when written
+ *   anywhere but directly inside `layout { }`.
  */
 context(layoutScope: LayoutScope)
 public fun String.module(block: LayoutDirectoryScope.() -> Unit): LayoutModule =
     layoutScope.expandModulePath(this, block)
+
+/**
+ * `wildcards` was read outside a `module { }` block.
+ *
+ * ## Example 1: catch a `wildcards` read that has no module to read from
+ * ```kt
+ * shouldThrow<KatachiWildcardsOutsideModuleException> {
+ *     layout { wildcards }
+ * }
+ * ```
+ */
+public class KatachiWildcardsOutsideModuleException internal constructor() :
+    KatachiDeclarationException(
+        message = "`wildcards` can only be read inside a `module { }` block. It holds what the " +
+            "module path's `*` and `**` captured for the module being evaluated, and " +
+            "directly under `layout { }`, or inside a plain directory block, there is no " +
+            "module path to have captured anything.",
+    )
 
 /**
  * What the module path's wildcards captured, for the module being evaluated.
@@ -65,14 +102,20 @@ public fun String.module(block: LayoutDirectoryScope.() -> Unit): LayoutModule =
  * `:feature:hoge:fuga` reads as `["hoge", "fuga"]` and against `:feature` itself as an
  * empty list — take the innermost name with `lastOrNull()`, not `last()`.
  *
- * @throws KatachiDeclarationException when read outside a `module { }` block, where
- *   there is no module path to have captured anything.
+ * @throws KatachiWildcardsOutsideModuleException when read outside a `module { }` block,
+ *   where there is no module path to have captured anything.
+ *
+ * ## Example 1: Build a file name from what a wildcard captured
+ * ```kt
+ * import me.tbsten.katachi.dsl.gradle.*
+ * import me.tbsten.katachi.dsl.kotlin.ktFile
+ * import me.tbsten.katachi.dsl.pascalCase
+ *
+ * ":feature:*".module {
+ *     "${wildcards[0].pascalCase}Screen".ktFile()
+ * }
+ * ```
  */
 context(layoutScope: LayoutScope)
 public val wildcards: List<String>
-    get() = layoutScope.currentWildcards ?: throw KatachiDeclarationException(
-        "`wildcards` can only be read inside a `module { }` block. It holds what the " +
-            "module path's `*` and `**` captured for the module being evaluated, and " +
-            "directly under `layout { }`, or inside a plain directory block, there is no " +
-            "module path to have captured anything.",
-    )
+    get() = layoutScope.currentWildcards ?: throw KatachiWildcardsOutsideModuleException()

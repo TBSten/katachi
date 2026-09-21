@@ -1,9 +1,7 @@
-// Module expansion is written entirely against katachi's own module index.
-@file:OptIn(InternalKatachiApi::class)
-
 package me.tbsten.katachi.dsl
 
-import me.tbsten.katachi.check.GlobSyntaxException
+import me.tbsten.katachi.check.GlobContext
+import me.tbsten.katachi.check.KatachiGlobSyntaxException
 import me.tbsten.katachi.check.ModuleIndex
 import me.tbsten.katachi.check.ModulePattern
 import me.tbsten.katachi.dsl.kotlin.ktsFile
@@ -17,9 +15,12 @@ internal class ModuleContext(
 )
 
 /**
- * Implements both receivers of the layout DSL. The root of a `layout { }` block is handed
- * out as [LayoutScope], which hides `description`, `anyFile()` and `ignore()`; a directory
- * block is handed out as [LayoutDirectoryScope], which shows them.
+ * Implements both receivers of the layout DSL, and [ModuleAwareLayoutScope] with them. The
+ * root of a `layout { }` block is handed out as [LayoutScope], which hides `description`,
+ * `anyFile()` and `ignore()`; a directory block is handed out as [LayoutDirectoryScope],
+ * which shows them. What the scope knows while it is being evaluated — the module at hand,
+ * and how to resolve a module path — is reached through [ModuleAwareLayoutScope], so that the
+ * utility layer never names this class.
  *
  * `/` works by re-parenting. `"gradle" / "libs.versions.toml".file()` evaluates the right
  * side first, so the file is declared in this scope and then moved under the directory the
@@ -36,8 +37,14 @@ internal class ModuleContext(
 internal class LayoutScopeImpl(
     private val container: LayoutNode,
     private val moduleIndex: ModuleIndex,
-    val moduleContext: ModuleContext?,
-) : LayoutDirectoryScope {
+    private val moduleContext: ModuleContext?,
+) : LayoutDirectoryScope, ModuleAwareLayoutScope {
+    override val currentModulePath: String?
+        get() = moduleContext?.modulePath
+
+    override val currentWildcards: List<String>?
+        get() = moduleContext?.wildcards
+
     override var description: String?
         get() = container.description
         set(value) {
@@ -58,7 +65,10 @@ internal class LayoutScopeImpl(
         return LayoutDirectory(top = chain.top, leaf = chain.leaf)
     }
 
-    override fun String.file(): LayoutFile = declareFile(this)
+    override fun String.file(): LayoutFile {
+        val chain = chainUnder(container, this, isFile = true, declaredAt = captureDeclarationSite())
+        return LayoutFile(top = chain.top, leaf = chain.leaf)
+    }
 
     override fun String.ignore(): LayoutDirectory {
         val chain = chainUnder(container, this, isFile = false, declaredAt = captureDeclarationSite())
@@ -105,11 +115,11 @@ internal class LayoutScopeImpl(
         return this
     }
 
-    /** See [expandModulePath], the opt-in API this backs. */
-    fun expandModulePath(key: String, block: LayoutDirectoryScope.() -> Unit): LayoutModule {
+    /** See [me.tbsten.katachi.dsl.gradle.expandModulePath], the opt-in API this backs. */
+    override fun expandModulePath(modulePath: String, block: LayoutDirectoryScope.() -> Unit): LayoutModule {
         val declaredAt = captureDeclarationSite()
-        requireLayoutRoot(key, declaredAt)
-        val pattern = compileModulePath(key, declaredAt)
+        requireLayoutRoot(modulePath, declaredAt)
+        val pattern = compileModulePath(modulePath, declaredAt)
         val declared = moduleIndex.expand(pattern).flatMap { module ->
             // The root project resolves to the project root itself, which is this scope's
             // own container: an empty directory name would otherwise become an empty level.
@@ -145,11 +155,6 @@ internal class LayoutScopeImpl(
     private fun scopeAt(node: LayoutNode): LayoutScopeImpl =
         LayoutScopeImpl(container = node, moduleIndex = moduleIndex, moduleContext = moduleContext)
 
-    private fun declareFile(name: String): LayoutFile {
-        val chain = chainUnder(container, name, isFile = true, declaredAt = captureDeclarationSite())
-        return LayoutFile(top = chain.top, leaf = chain.leaf)
-    }
-
     /**
      * A module path is relative to nothing: it is resolved to a directory below the project
      * root. Writing one inside a directory block would quietly put that directory in front
@@ -157,12 +162,7 @@ internal class LayoutScopeImpl(
      */
     private fun requireLayoutRoot(key: String, declaredAt: DeclarationSite) {
         if (container.parent == null && moduleContext == null) return
-        throw KatachiDeclarationException(
-            "`$key`.module { } at $declaredAt is not directly inside `layout { }`. A module " +
-                "path is resolved to a directory below the project root, so it cannot be " +
-                "nested in another directory. Move it up, or write the directory it lives in " +
-                "as a plain key.",
-        )
+        throw KatachiModuleOutsideLayoutRootException(modulePath = key, declaredAt = declaredAt)
     }
 }
 
@@ -174,6 +174,10 @@ internal class LayoutScopeImpl(
 private fun compileModulePath(key: String, declaredAt: DeclarationSite): ModulePattern =
     try {
         ModulePattern.compile(key)
-    } catch (cause: GlobSyntaxException) {
-        throw GlobSyntaxException("The layout declares the module `$key` at $declaredAt. ${cause.message}")
+    } catch (cause: KatachiGlobSyntaxException) {
+        throw KatachiGlobSyntaxException(
+            pattern = cause.pattern,
+            problem = cause.problem,
+            context = GlobContext.LayoutModulePath(key = key, declaredAt = declaredAt),
+        )
     }

@@ -4,13 +4,69 @@ import java.io.File
 import java.io.IOException
 import java.util.concurrent.TimeUnit
 import me.tbsten.katachi.dsl.InternalKatachiApi
+import me.tbsten.katachi.dsl.KatachiCheckException
 
-/** git could not answer which files belong to the project. */
+/**
+ * How the git invocation went wrong.
+ *
+ * One subtype per way it can, each holding what its own sentence needs. Internal bookkeeping:
+ * the set grows with whatever katachi asks git for.
+ */
 @InternalKatachiApi
-public class GitUnavailableException internal constructor(
-    message: String,
+public sealed interface GitProblem {
+    /** The sentence this problem contributes, for the [command] that was run in [root]. */
+    public fun explain(command: String, root: FsPath): String
+
+    /** The process could not be started at all — usually git is not installed. */
+    @InternalKatachiApi
+    public object CannotStart : GitProblem {
+        override fun explain(command: String, root: FsPath): String =
+            "Cannot run `$command` in $root. katachi checks the files git reports for " +
+                "this project; set `files = wholeTree()` in `architecture { }` to walk the " +
+                "whole directory tree instead."
+    }
+
+    /** The process started but did not finish in time. */
+    @InternalKatachiApi
+    public class TimedOut internal constructor(
+        public val seconds: Long,
+    ) : GitProblem {
+        override fun explain(command: String, root: FsPath): String =
+            "`$command` in $root did not finish within $seconds seconds."
+    }
+
+    /** The process finished, with a non-zero exit code. */
+    @InternalKatachiApi
+    public class Failed internal constructor(
+        public val exitCode: Int,
+        public val stderr: String,
+    ) : GitProblem {
+        override fun explain(command: String, root: FsPath): String =
+            "`$command` in $root exited with $exitCode: $stderr"
+    }
+}
+
+/**
+ * git could not answer which files belong to the project.
+ *
+ * @property command the command line that was run.
+ * @property root the directory it was run in.
+ *
+ * ## Example 1: fall back to the whole tree when git is unavailable
+ * ```kt
+ * try {
+ *     projectArchitecture.assert()
+ * } catch (cause: KatachiGitUnavailableException) {
+ *     println("`${cause.command}` failed in ${cause.root}")
+ * }
+ * ```
+ */
+public class KatachiGitUnavailableException internal constructor(
+    public val command: String,
+    public val root: FsPath,
+    @property:InternalKatachiApi public val problem: GitProblem,
     cause: Throwable? = null,
-) : IllegalStateException(message, cause)
+) : KatachiCheckException(problem.explain(command, root), cause)
 
 /**
  * A view of [delegate] that only shows the files git considers part of the project.
@@ -96,7 +152,6 @@ private val GIT_INSIDE_WORK_TREE: List<String> = listOf("git", "rev-parse", "--i
  * walking the whole tree. A failure *after* git has claimed the root is a different matter
  * and is reported: see [gitLsFiles].
  */
-@OptIn(InternalKatachiApi::class)
 internal fun isInsideGitWorkTree(root: FsPath): Boolean {
     val process = try {
         ProcessBuilder(GIT_INSIDE_WORK_TREE)
@@ -120,7 +175,7 @@ internal fun isInsideGitWorkTree(root: FsPath): Boolean {
  * git is run **once**, at the root, and the answer is kept as a set. The traversal above
  * this never spawns a process.
  *
- * @throws GitUnavailableException when git cannot be run or fails.
+ * @throws KatachiGitUnavailableException when git cannot be run or fails.
  */
 @InternalKatachiApi
 public fun gitTrackedFileSystem(delegate: KatachiFileSystem, root: FsPath): KatachiFileSystem =
@@ -134,18 +189,12 @@ public fun gitTrackedFileSystem(delegate: KatachiFileSystem, root: FsPath): Kata
  * without waiting for a `git add`. `-z` keeps names with spaces or non-ASCII characters
  * intact, which git would otherwise quote.
  */
-@OptIn(InternalKatachiApi::class)
 internal fun gitLsFiles(root: FsPath): List<String> {
     val commandLine = GIT_LS_FILES.joinToString(" ")
     val process = try {
         ProcessBuilder(GIT_LS_FILES).directory(File(root.value)).start()
     } catch (e: IOException) {
-        throw GitUnavailableException(
-            "Cannot run `$commandLine` in $root. katachi checks the files git reports for " +
-                "this project; set `files = wholeTree()` in `architecture { }` to walk the " +
-                "whole directory tree instead.",
-            e,
-        )
+        throw KatachiGitUnavailableException(commandLine, root, GitProblem.CannotStart, e)
     }
 
     // stderr is drained on its own thread: a process that fills the error pipe while we are
@@ -160,14 +209,20 @@ internal fun gitLsFiles(root: FsPath): List<String> {
     val output = process.inputStream.use { it.readBytes() }.toString(Charsets.UTF_8)
     if (!process.waitFor(GIT_TIMEOUT_SECONDS, TimeUnit.SECONDS)) {
         process.destroyForcibly()
-        throw GitUnavailableException("`$commandLine` in $root did not finish within $GIT_TIMEOUT_SECONDS seconds.")
+        throw KatachiGitUnavailableException(
+            commandLine,
+            root,
+            GitProblem.TimedOut(GIT_TIMEOUT_SECONDS),
+        )
     }
     errorDrain.join(TimeUnit.SECONDS.toMillis(1))
 
     val exitCode = process.exitValue()
     if (exitCode != 0) {
-        throw GitUnavailableException(
-            "`$commandLine` in $root exited with $exitCode: ${errorOutput.toString().trim()}",
+        throw KatachiGitUnavailableException(
+            commandLine,
+            root,
+            GitProblem.Failed(exitCode, errorOutput.toString().trim()),
         )
     }
     return output.split('\u0000').filter { it.isNotEmpty() }

@@ -8,12 +8,10 @@ import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
 import me.tbsten.katachi.check.FsPath
 import me.tbsten.katachi.check.ProjectRootMarker
-import me.tbsten.katachi.check.ProjectRootNotFoundException
+import me.tbsten.katachi.check.KatachiProjectRootNotFoundException
 import me.tbsten.katachi.check.RealFileSystem
 import me.tbsten.katachi.check.findProjectRoot
-import me.tbsten.katachi.dsl.InternalKatachiApi
 
-@OptIn(InternalKatachiApi::class)
 class ProjectRootSpec : FreeSpec({
     "作業ディレクトリから上に辿ってルートを特定する" - {
         "gradlew のあるディレクトリがルートになる" {
@@ -101,7 +99,7 @@ class ProjectRootSpec : FreeSpec({
             "/repo" { "app" { "Main.kt"() } }
         }
 
-        val exception = shouldThrow<ProjectRootNotFoundException> { findProjectRoot(fileSystem) }
+        val exception = shouldThrow<KatachiProjectRootNotFoundException> { findProjectRoot(fileSystem) }
         exception.message.shouldNotBeNull() shouldContain "/repo/app"
     }
 

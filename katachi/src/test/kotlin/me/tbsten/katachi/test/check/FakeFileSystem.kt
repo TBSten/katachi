@@ -2,7 +2,6 @@ package me.tbsten.katachi.test.check
 
 import me.tbsten.katachi.check.FsPath
 import me.tbsten.katachi.check.KatachiFileSystem
-import me.tbsten.katachi.dsl.InternalKatachiApi
 
 /**
  * An in-memory tree, built by [fakeFileSystem].
@@ -11,7 +10,6 @@ import me.tbsten.katachi.dsl.InternalKatachiApi
  * read any. Matching is case sensitive, unlike a default macOS volume; a spec that wants to
  * know what happens on such a volume has to use a real directory.
  */
-@OptIn(InternalKatachiApi::class)
 class FakeFileSystem internal constructor(
     override val workingDirectory: FsPath,
     private val files: Set<FsPath>,
@@ -47,7 +45,6 @@ class FakeFileSystem internal constructor(
  * }
  * ```
  */
-@OptIn(InternalKatachiApi::class)
 fun fakeFileSystem(
     workingDirectory: String,
     block: FakeFileSystemScope.() -> Unit,
@@ -57,7 +54,6 @@ fun fakeFileSystem(
     return builder.build(FsPath.of(workingDirectory))
 }
 
-@OptIn(InternalKatachiApi::class)
 class FakeFileSystemBuilder internal constructor() {
     private val files = mutableSetOf<FsPath>()
     private val directories = mutableSetOf(FsPath.of("/"))
@@ -88,7 +84,6 @@ class FakeFileSystemBuilder internal constructor() {
 }
 
 /** Receiver of a [fakeFileSystem] block. One instance per directory level. */
-@OptIn(InternalKatachiApi::class)
 class FakeFileSystemScope internal constructor(
     private val builder: FakeFileSystemBuilder,
     private val directory: FsPath,

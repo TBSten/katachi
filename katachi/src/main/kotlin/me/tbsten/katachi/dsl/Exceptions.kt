@@ -6,34 +6,62 @@ package me.tbsten.katachi.dsl
  *
  * It extends [IllegalArgumentException] because the offending value is always something
  * the caller passed to the DSL.
+ *
+ * ## Example 1: catch every declaration-time error the same way
+ * ```kt
+ * shouldThrow<KatachiDeclarationException> {
+ *     architecture {
+ *         "domain".group { }
+ *         "domain".group { }
+ *     }
+ * }
+ * ```
  */
-public open class KatachiDeclarationException internal constructor(
+public abstract class KatachiDeclarationException internal constructor(
     message: String,
 ) : IllegalArgumentException(message)
 
 /**
- * A group name or a role name is not a valid identifier.
+ * Base of every error raised while a check is running: the definition is fine, but the
+ * environment it was asked to run in is not.
  *
- * @property name the rejected name, as written.
- * @property declaredAt where it was written.
+ * It extends [IllegalStateException] because nothing is wrong with the values that were
+ * passed in — git is missing, the project root cannot be found, and the fix is out in the
+ * environment rather than in `architecture { }`.
+ *
+ * ## Example 1: tell an environment problem apart from a failed check
+ * ```kt
+ * try {
+ *     projectArchitecture.assert()
+ * } catch (cause: KatachiCheckException) {
+ *     println("katachi could not run here: ${cause.message}")
+ * }
+ * ```
  */
-public class InvalidIdentifierException internal constructor(
-    public val name: String,
-    public val declaredAt: DeclarationSite,
+public abstract class KatachiCheckException internal constructor(
     message: String,
-) : KatachiDeclarationException(message)
+    cause: Throwable? = null,
+) : IllegalStateException(message, cause)
 
 /**
- * The same group name was declared twice directly under the same parent, or the same role
- * name twice inside the same group.
+ * Base of every error that means one of katachi's own assumptions broke.
  *
- * @property name the duplicated name.
- * @property firstDeclaredAt where the name was declared the first time.
- * @property declaredAt where the rejected second declaration was written.
+ * There is nothing for the caller to fix: a definition cannot cause one of these, so every
+ * message says so and asks for a report at https://github.com/TBSten/katachi/issues.
+ *
+ * It exists instead of the standard library's own preconditions so that the class name in
+ * the stack trace says where the failure came from. A bare [IllegalStateException] leaves
+ * the reader guessing whether their own code or katachi is at fault.
+ *
+ * ## Example 1: report a katachi bug rather than treating it as a failed check
+ * ```kt
+ * try {
+ *     projectArchitecture.assert()
+ * } catch (cause: KatachiInternalException) {
+ *     println("Please report this at https://github.com/TBSten/katachi/issues: $cause")
+ * }
+ * ```
  */
-public class DuplicateDeclarationException internal constructor(
-    public val name: String,
-    public val firstDeclaredAt: DeclarationSite,
-    public val declaredAt: DeclarationSite,
+public abstract class KatachiInternalException internal constructor(
     message: String,
-) : KatachiDeclarationException(message)
+) : IllegalStateException(message)

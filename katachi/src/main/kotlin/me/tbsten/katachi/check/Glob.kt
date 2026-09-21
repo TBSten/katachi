@@ -1,11 +1,37 @@
 package me.tbsten.katachi.check
 
 import me.tbsten.katachi.dsl.InternalKatachiApi
+import me.tbsten.katachi.dsl.KatachiDeclarationException
 
-/** A glob pattern katachi cannot make sense of. */
-public class GlobSyntaxException internal constructor(
-    message: String,
-) : IllegalArgumentException(message)
+/**
+ * A glob pattern katachi cannot make sense of.
+ *
+ * The wording is [problem]'s, and [context] adds where the pattern was written when that is
+ * known. Both are internal bookkeeping; [pattern] is the part a caller can rely on.
+ *
+ * @property pattern the pattern as it was written.
+ *
+ * ## Example 1: catch a broken pattern and read back what was written
+ * ```kt
+ * shouldThrow<KatachiGlobSyntaxException> { ModulePath.of("") }
+ *     .pattern shouldBe ""
+ * ```
+ *
+ * ## Example 2: catch a broken pattern by its message
+ * ```kt
+ * shouldThrow<KatachiGlobSyntaxException> { ModulePath.of("") }
+ *     .message.shouldNotBeNull() shouldContain "must not be empty"
+ * ```
+ */
+public class KatachiGlobSyntaxException internal constructor(
+    public val pattern: String,
+    @property:InternalKatachiApi public val problem: GlobProblem,
+    @property:InternalKatachiApi public val context: GlobContext? = null,
+) : KatachiDeclarationException(globSyntaxMessage(pattern, problem, context))
+
+/** The context's sentence, when there is one, in front of the problem's own. */
+private fun globSyntaxMessage(pattern: String, problem: GlobProblem, context: GlobContext?): String =
+    if (context == null) problem.explain(pattern) else "${context.describe()} ${problem.explain(pattern)}"
 
 /** What a pattern captured when it matched. */
 @InternalKatachiApi
@@ -85,19 +111,11 @@ public class Glob private constructor(
     public fun requireAtMostOneTrailingDoubleStar() {
         val positions = segments.indices.filter { segments[it] == DOUBLE_STAR }
         if (positions.size > 1) {
-            throw GlobSyntaxException(
-                "`$pattern` uses `**` ${positions.size} times. A module path may use `**` at " +
-                    "most once, as its last segment, so that the index of each captured " +
-                    "wildcard is the same for every match.",
-            )
+            throw KatachiGlobSyntaxException(pattern, GlobProblem.DoubleStarUsedTooOften(positions.size))
         }
         val position = positions.firstOrNull() ?: return
         if (position != segments.lastIndex) {
-            throw GlobSyntaxException(
-                "`$pattern` uses `**` before its last segment. A module path may only use `**` " +
-                    "as its last segment, so that the index of each captured wildcard is the " +
-                    "same for every match.",
-            )
+            throw KatachiGlobSyntaxException(pattern, GlobProblem.DoubleStarBeforeLastSegment)
         }
     }
 
@@ -118,11 +136,12 @@ public class Glob private constructor(
         /**
          * Translates [pattern] into a regular expression.
          *
-         * @throws GlobSyntaxException when the pattern is empty, has an empty segment, uses
-         *   `**` as part of a larger segment, or uses a metacharacter katachi does not have.
+         * @throws KatachiGlobSyntaxException when the pattern is empty, has an empty segment,
+         *   uses `**` as part of a larger segment, or uses a metacharacter katachi does not
+         *   have.
          */
         public fun compile(pattern: String, separator: Char = PATH_SEPARATOR): Glob {
-            if (pattern.isEmpty()) throw GlobSyntaxException("A glob pattern must not be empty.")
+            if (pattern.isEmpty()) throw KatachiGlobSyntaxException(pattern, GlobProblem.EmptyPattern)
 
             // A leading separator is the pattern being rooted (`:feature:*`), not an empty
             // first segment.
@@ -130,10 +149,7 @@ public class Glob private constructor(
             val body = if (leadingSeparator) pattern.substring(1) else pattern
             val segments = body.split(separator)
             if (segments.any { it.isEmpty() }) {
-                throw GlobSyntaxException(
-                    "`$pattern` has an empty segment. Two `$separator` in a row, or a trailing " +
-                        "`$separator`, matches nothing.",
-                )
+                throw KatachiGlobSyntaxException(pattern, GlobProblem.EmptySegment(separator))
             }
 
             val escapedSeparator = escapeForRegex(separator)
@@ -174,9 +190,6 @@ public class Glob private constructor(
 
         private const val DOUBLE_STAR: String = "**"
 
-        /** Characters that mean themselves once written as `\<char>`. */
-        private const val ESCAPABLE: String = "*\\{}?[],"
-
         /** Characters of another tool's glob, rejected so that they are never silently literal. */
         private const val REJECTED: String = "{}?[]"
 
@@ -197,13 +210,12 @@ public class Glob private constructor(
                 val character = segment[index]
                 when {
                     character == '\\' -> {
-                        val escaped = segment.getOrNull(index + 1) ?: throw GlobSyntaxException(
-                            "`$pattern` ends a segment with `\\`. Write `\\\\` for a literal backslash.",
-                        )
-                        if (escaped !in ESCAPABLE) {
-                            throw GlobSyntaxException(
-                                "`$pattern` escapes `$escaped`, which katachi does not treat as a " +
-                                    "metacharacter. Only `$ESCAPABLE` can be escaped.",
+                        val escaped = segment.getOrNull(index + 1)
+                            ?: throw KatachiGlobSyntaxException(pattern, GlobProblem.TrailingBackslash)
+                        if (escaped !in GLOB_ESCAPABLE) {
+                            throw KatachiGlobSyntaxException(
+                                pattern,
+                                GlobProblem.UnescapableCharacter(escaped),
                             )
                         }
                         expression.append(escapeForRegex(escaped))
@@ -212,10 +224,9 @@ public class Glob private constructor(
 
                     character == '*' -> {
                         if (segment.getOrNull(index + 1) == '*') {
-                            throw GlobSyntaxException(
-                                "`$pattern` uses `**` as part of the segment `$segment`. `**` means " +
-                                    "\"zero levels or more\" and only makes sense as a whole segment; " +
-                                    "use a single `*` to match part of a name.",
+                            throw KatachiGlobSyntaxException(
+                                pattern,
+                                GlobProblem.DoubleStarInsideSegment(segment),
                             )
                         }
                         // One or more characters, never crossing a separator. A `*` never
@@ -225,10 +236,9 @@ public class Glob private constructor(
                         index++
                     }
 
-                    character in REJECTED -> throw GlobSyntaxException(
-                        "`$pattern` uses `$character`. katachi's glob has only `*` and `**`; write " +
-                            "`\\$character` for a literal `$character`, or write one layout key per " +
-                            "alternative.",
+                    character in REJECTED -> throw KatachiGlobSyntaxException(
+                        pattern,
+                        GlobProblem.RejectedMetacharacter(character),
                     )
 
                     else -> {

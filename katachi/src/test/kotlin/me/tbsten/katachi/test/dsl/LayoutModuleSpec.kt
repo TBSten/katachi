@@ -5,16 +5,16 @@ import io.kotest.core.spec.style.FreeSpec
 import io.kotest.matchers.ints.shouldBeGreaterThan
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
-import me.tbsten.katachi.check.GlobSyntaxException
+import io.kotest.matchers.types.shouldBeInstanceOf
+import me.tbsten.katachi.check.KatachiGlobSyntaxException
 import me.tbsten.katachi.check.ModuleResolver
-import me.tbsten.katachi.dsl.InternalKatachiApi
 import me.tbsten.katachi.dsl.KatachiDeclarationException
+import me.tbsten.katachi.dsl.KatachiModuleOutsideLayoutRootException
 import me.tbsten.katachi.dsl.gradle.*
 import me.tbsten.katachi.dsl.kotlin.ktFile
 import me.tbsten.katachi.dsl.kotlin.ktsFile
 import me.tbsten.katachi.dsl.pascalCase
 
-@OptIn(InternalKatachiApi::class)
 class LayoutModuleSpec : FreeSpec({
     "module は純粋な糖衣" - {
         "module の展開が手で書いたディレクトリブロックと一致する" {
@@ -187,7 +187,7 @@ class LayoutModuleSpec : FreeSpec({
         }
 
         "\"**\" を末尾以外に置くと評価時にエラーになる" {
-            val failure = shouldThrow<GlobSyntaxException> {
+            val failure = shouldThrow<KatachiGlobSyntaxException> {
                 layoutOf(features) { ":feature:**:impl".module { } }
             }
 
@@ -195,7 +195,7 @@ class LayoutModuleSpec : FreeSpec({
         }
 
         "読めないモジュールパスは宣言位置つきで弾かれる" {
-            val failure = shouldThrow<GlobSyntaxException> {
+            val failure = shouldThrow<KatachiGlobSyntaxException> {
                 layoutOf { ":core::data".module { } }
             }
 
@@ -241,6 +241,8 @@ class LayoutModuleSpec : FreeSpec({
                 layoutOf { "app" { ":core:data".module { } } }
             }
 
+            failure.shouldBeInstanceOf<KatachiModuleOutsideLayoutRootException>()
+                .modulePath shouldBe ":core:data"
             failure.message!! shouldContain "layout { }"
         }
 
@@ -255,6 +257,7 @@ class LayoutModuleSpec : FreeSpec({
                 layoutOf { wildcards }
             }
 
+            failure.shouldBeInstanceOf<KatachiWildcardsOutsideModuleException>()
             failure.message!! shouldContain "module { }"
         }
     }

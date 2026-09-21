@@ -5,6 +5,7 @@ import io.kotest.matchers.shouldBe
 import me.tbsten.katachi.check.ModulePath
 import me.tbsten.katachi.check.ModuleResolver
 import me.tbsten.katachi.dsl.architecture
+import me.tbsten.katachi.dsl.conventionalModuleResolver
 
 class ArchitectureModuleResolverSpec : FreeSpec({
     "moduleResolver を書かなければ規約ベースになる" {

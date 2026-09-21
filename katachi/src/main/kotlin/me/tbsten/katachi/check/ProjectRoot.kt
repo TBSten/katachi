@@ -1,6 +1,7 @@
 package me.tbsten.katachi.check
 
 import me.tbsten.katachi.dsl.InternalKatachiApi
+import me.tbsten.katachi.dsl.KatachiCheckException
 
 /**
  * A kind of file that marks the top of a project. Same set as Konsist's root providers, so a
@@ -49,11 +50,24 @@ public class ProjectRoot internal constructor(
         "ProjectRoot($path, markers=${markers.map { it.name }.sorted()})"
 }
 
-/** No project root above the working directory. */
-@InternalKatachiApi
-public class ProjectRootNotFoundException internal constructor(
-    message: String,
-) : IllegalStateException(message)
+/**
+ * No project root above the working directory.
+ *
+ * @property workingDirectory the directory the search started from.
+ *
+ * ## Example 1: report where the search started
+ * ```kt
+ * shouldThrow<KatachiProjectRootNotFoundException> { projectArchitecture.assert() }
+ *     .workingDirectory.value shouldBe "/repo/app"
+ * ```
+ */
+public class KatachiProjectRootNotFoundException internal constructor(
+    public val workingDirectory: FsPath,
+) : KatachiCheckException(
+    message = "Cannot find the project root above $workingDirectory. " +
+        "katachi looks for a Gradle wrapper (gradlew), a Maven wrapper (mvnw) or a git " +
+        "directory (.git) in the working directory and in every directory above it.",
+)
 
 /**
  * Walks up from the working directory and returns the first directory carrying a marker.
@@ -62,7 +76,7 @@ public class ProjectRootNotFoundException internal constructor(
  * different [KatachiFileSystem], which keeps the search itself under test rather than
  * bypassed.
  *
- * @throws ProjectRootNotFoundException when no parent carries any marker.
+ * @throws KatachiProjectRootNotFoundException when no parent carries any marker.
  */
 @InternalKatachiApi
 public fun findProjectRoot(fileSystem: KatachiFileSystem): ProjectRoot {
@@ -75,9 +89,5 @@ public fun findProjectRoot(fileSystem: KatachiFileSystem): ProjectRoot {
         if (markers.isNotEmpty()) return ProjectRoot(directory, markers)
         current = directory.parent
     }
-    throw ProjectRootNotFoundException(
-        "Cannot find the project root above ${fileSystem.workingDirectory}. " +
-            "katachi looks for a Gradle wrapper (gradlew), a Maven wrapper (mvnw) or a git " +
-            "directory (.git) in the working directory and in every directory above it.",
-    )
+    throw KatachiProjectRootNotFoundException(fileSystem.workingDirectory)
 }

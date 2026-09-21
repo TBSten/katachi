@@ -1,6 +1,5 @@
 package me.tbsten.katachi.check
 
-import me.tbsten.katachi.dsl.InternalKatachiApi
 import me.tbsten.katachi.dsl.LayoutEntry
 import me.tbsten.katachi.dsl.LayoutEntryKind
 
@@ -14,7 +13,6 @@ private const val NEARBY_LIMIT: Int = 3
  * Whether a file is allowed is decided by the union of every role's claims, and a file two
  * roles both allow is not a problem (from v0.3 the generated documentation lists both).
  */
-@OptIn(InternalKatachiApi::class)
 internal class LayoutIndex(entries: List<LayoutEntry>) {
     /**
      * Patterns matching a directory the traversal may descend into: every directory that was
@@ -76,7 +74,6 @@ internal class LayoutIndex(entries: List<LayoutEntry>) {
 /** `core/domain` for `core/domain/UseCase.kt`, and the empty string at the root. */
 internal fun String.parentPath(): String = substringBeforeLast('/', missingDelimiterValue = "")
 
-@OptIn(InternalKatachiApi::class)
 private fun LayoutEntry.directoryPatterns(): List<String> {
     val segments = path.split('/')
     // Every level above the last one is a directory whatever this entry is; the last level
@@ -95,7 +92,6 @@ private fun LayoutEntry.directoryPatterns(): List<String> {
  * directory the role stopped checking in is left out for the same reason: moving a file
  * there hides it instead of giving it a role.
  */
-@OptIn(InternalKatachiApi::class)
 private fun List<LayoutEntry>.nearbyLocations(): List<NearbyLocation> {
     val seen = LinkedHashMap<Pair<String, String>, NearbyLocation>()
     for (entry in this) {

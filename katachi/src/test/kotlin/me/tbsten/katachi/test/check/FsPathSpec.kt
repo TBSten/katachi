@@ -5,9 +5,7 @@ import io.kotest.matchers.collections.shouldContainExactly
 import io.kotest.matchers.nulls.shouldBeNull
 import io.kotest.matchers.shouldBe
 import me.tbsten.katachi.check.FsPath
-import me.tbsten.katachi.dsl.InternalKatachiApi
 
-@OptIn(InternalKatachiApi::class)
 class FsPathSpec : FreeSpec({
     "区切り文字を / に正規化する" - {
         "Windows の区切り文字を受け付ける" {
