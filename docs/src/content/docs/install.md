@@ -39,6 +39,8 @@ dependencies {
 `architecture { }` の中に、group と役割を書きます。
 
 ```kotlin title="architecture-test/src/test/kotlin/.../ProjectArchitecture.kt"
+val modulePackage = capitalizedModuleNamePackage("com.example")
+
 val projectArchitecture = architecture {
     "domain".group {
         title = "ドメイン"

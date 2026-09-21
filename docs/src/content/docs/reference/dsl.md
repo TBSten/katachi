@@ -69,7 +69,12 @@ val projectArchitecture = architecture {
 
 その役割のファイルをどこに置けるか。
 
+`modulePackage` は katachi が用意する名前ではありません。
+`capitalizedModuleNamePackage("com.example")` などで作って、自分で名前を付けた値です。
+
 ```kotlin
+val modulePackage = capitalizedModuleNamePackage("com.example")
+
 layout {
     ":core:domain".module {                    // Gradle module
         description = "複数 feature から使われるもの"
