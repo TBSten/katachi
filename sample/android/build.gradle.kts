@@ -8,7 +8,7 @@ plugins {
     // `org.jetbrains.kotlin.android` plugin must NOT be applied to a module any more.
     // That is why this is `apply false` and why no module below applies it.
     //
-    // What this line is for is the *version* of the compiler AGP runs. AGP 9.4.1 pulls
+    // What this line is for is the *version* of the compiler AGP runs. AGP 9.1.0 pulls
     // `org.jetbrains.kotlin:kotlin-gradle-plugin:2.2.10` onto the buildscript classpath,
     // whose compiler reads Kotlin metadata up to 2.3.0. katachi is built with Kotlin
     // 2.4.10 (metadata 2.4.0), so without this line `:app:compileDebugUnitTestKotlin`
@@ -26,4 +26,10 @@ plugins {
     //   2. hold AGP at 8.13.x, where KGP is applied explicitly and the version is ours
     //   3. build katachi against the Kotlin version AGP bundles
     alias(libs.plugins.kotlinAndroid) apply false
+
+    // The Compose compiler plugin ships with Kotlin and must be kept on exactly the
+    // Kotlin version above. The root catalog declares it against the same `kotlin`
+    // version reference, so it follows `libs` — the SSoT — without the version being
+    // duplicated into `sample.versions.toml` or spelled out here.
+    alias(libs.plugins.kotlinPluginCompose) apply false
 }

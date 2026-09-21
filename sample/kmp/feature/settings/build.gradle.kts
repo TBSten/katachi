@@ -1,6 +1,8 @@
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
     alias(sampleLibs.plugins.androidKotlinMultiplatformLibrary)
+    alias(sampleLibs.plugins.composeMultiplatform)
+    alias(libs.plugins.kotlinPluginCompose)
 }
 
 kotlin {
@@ -18,9 +20,12 @@ kotlin {
     sourceSets {
         commonMain.dependencies {
             api(project(":data"))
-            api(project(":ui:core"))
+            api(project(":ui"))
             api(project(":navigation"))
-            implementation(project(":ui:component"))
+            api(sampleLibs.lifecycleViewmodel)
+            // `viewModel { }` inside `SettingsRoute`.
+            implementation(sampleLibs.lifecycleViewmodelCompose)
+            implementation(sampleLibs.kotlinxCoroutinesCore)
         }
     }
 }

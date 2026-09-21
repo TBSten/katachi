@@ -29,25 +29,42 @@ GitHub Actions の ubuntu / macOS ランナーは `ANDROID_HOME` が設定済み
 
 ```sh
 ./gradlew :app:testDebugUnitTest   # katachi のテスト（kotest FreeSpec）
-./gradlew assembleDebug            # 9 モジュールのビルドと APK 生成
+./gradlew assembleDebug            # 7 モジュールのビルドと APK 生成
 ```
 
-`check` は 9 モジュール分の Android Lint を含んで 480 タスク超になるので、普段の確認には上の 2 つを使う。
+`check` は 7 モジュール分の Android Lint を含んで大量のタスクになるので、普段の確認には上の 2 つを使う。
 
 ## モジュール構成
 
 | モジュール | 中身 |
 |---|---|
-| `:app` | `MainActivity` / `MainApplication` / `AndroidManifest.xml` / `res/` / `proguard-rules.pro`、および katachi のテスト |
-| `:feature:home` `:feature:settings` | `<Feature>Screen.kt` / `<Feature>ViewModel.kt` / `<Feature>Route.kt` |
-| `:data` | `*Repository.kt` / `*RepositoryImpl.kt` |
-| `:ui:component` `:ui:theme` `:ui:core` | UI の共通部品 |
-| `:navigation` | 画面遷移 |
+| `:app` | `MainActivity`（`ComponentActivity` + `setContent` + `NavHost`）/ `MainApplication` / `AndroidManifest.xml` / `res/` / `proguard-rules.pro`、および katachi のテスト |
+| `:feature:home` `:feature:settings` | `<Feature>Screen.kt`（`@Composable`）/ `<Feature>ViewModel.kt`（`androidx.lifecycle.ViewModel` + `StateFlow`）/ `<Feature>Route.kt`（`NavGraphBuilder` 拡張） |
+| `:data` | `*Repository.kt` / `*RepositoryImpl.kt`。扱う対象ごとの package（`user` / `settings`）に分けて置く |
+| `:ui` | UI 層すべて。`component` / `theme` / `core` / `preview` は**この 1 モジュール内の package**（以前の `:ui:component` `:ui:theme` `:ui:core` は廃止） |
+| `:navigation` | `AppNavigator`。画面遷移の窓口を feature に渡す（グラフの組み立て自体は `:app`） |
 | `:testing` | 他モジュールのテストから使う Fake |
 
-中身はファイル配置を検査するためのスタブ。**Compose には依存していない**
-（AGP / Compose / Kotlin のバージョン組み合わせで詰まるリスクを避けるため。
-konsist でクラスの中身を検査したくなった時点で必要な分だけ実物に近づける）。
+Compose / AndroidX の実依存を入れてあり、`assembleDebug` は実際に Compose コンパイラを通る。
+`@Preview` も `:ui` と `:feature:*` に置いてある。どれも `:ui` の `preview` package にある
+`PreviewRoot { }` で中身を包む（テーマと背景を 1 箇所で決め、`darkTheme` で明暗を出し分ける）。
+
+## バージョンの制約
+
+- Kotlin / katachi / kotest はリポジトリルートの `gradle/libs.versions.toml`（`libs`）が SSoT。
+  Compose コンパイラプラグイン（`org.jetbrains.kotlin.plugin.compose`）もそこの
+  `libs.plugins.kotlinPluginCompose` を `alias` で参照して Kotlin バージョンに追従するので、
+  バージョンはルートの build ファイル以外に書かない。
+- AGP は **9.1.0 で固定**。これより新しいと Android Studio の Gradle sync が
+  `The project is using an incompatible version` で止まる。
+- AGP 9.1.0 が対応する `compileSdk` は 36 まで。AndroidX の AAR はそれぞれ
+  `minCompileSdk` を宣言しており、それが 37 になったバージョンは使えない。
+  `gradle/sample.versions.toml` の AndroidX のバージョンは「`minCompileSdk` が 36 以下で最新」を選んである。
+  上げる前に確認する:
+
+  ```sh
+  unzip -p <artifact>.aar META-INF/com/android/build/gradle/aar-metadata.properties
+  ```
 
 ## katachi の定義
 

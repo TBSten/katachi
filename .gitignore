@@ -5,7 +5,10 @@ build/
 !**/src/test/**/build/
 
 ### IntelliJ IDEA ###
-.idea/
+.idea/*
+!.idea/dictionaries/
+.idea/dictionaries/*
+!.idea/dictionaries/project.xml
 *.iws
 *.iml
 *.ipr
@@ -48,6 +51,9 @@ local.properties
 .cxx/
 
 ### Gradle (per-agent project caches) ###
+# Safety net only. Per-agent project caches belong under .local/tmp/ (already ignored);
+# this catches the older `--project-cache-dir .gradle-agent-<name>` convention, which
+# scattered directories across the repository root and every sample.
 # Created by `--project-cache-dir .gradle-agent-<name>`, used when several agents
 # build the same tree in parallel. Matches at every level, samples included.
 .gradle-agent-*/

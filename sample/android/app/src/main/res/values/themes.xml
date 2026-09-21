@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!--
+      The platform theme the window is created with, before Compose draws anything.
+      Colours and typography come from `AppTheme` in `:ui`; this only has to give the
+      activity a window without an action bar, so that `setContent` owns the whole screen.
+    -->
+    <style name="Theme.Sample" parent="@android:style/Theme.Material.Light.NoActionBar" />
+</resources>

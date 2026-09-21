@@ -1,6 +1,7 @@
 plugins {
     // AGP 9 compiles Kotlin itself; see the root build file.
     alias(sampleLibs.plugins.androidLibrary)
+    id("org.jetbrains.kotlin.plugin.compose")
 }
 
 android {
@@ -11,6 +12,10 @@ android {
         minSdk = 24
     }
 
+    buildFeatures {
+        compose = true
+    }
+
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
@@ -19,7 +24,14 @@ android {
 
 dependencies {
     implementation(project(":data"))
-    implementation(project(":navigation"))
-    implementation(project(":ui:component"))
-    implementation(project(":ui:theme"))
+    // Both are `api`: Compose and the navigation graph builder come through them and
+    // appear in this module's public signatures.
+    api(project(":navigation"))
+    api(project(":ui"))
+
+    implementation(platform(sampleLibs.composeBom))
+    implementation(sampleLibs.androidxLifecycleRuntimeCompose)
+    implementation(sampleLibs.androidxLifecycleViewModelCompose)
+    implementation(sampleLibs.composeUiToolingPreview)
+    debugImplementation(sampleLibs.composeUiTooling)
 }

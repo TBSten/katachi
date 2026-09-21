@@ -4,6 +4,11 @@ plugins {
     // brings its own Kotlin support and applying the Kotlin Android plugin fails the build
     // with "The 'org.jetbrains.kotlin.android' plugin is no longer required for Kotlin
     // support since AGP 9.0". The `kotlin { }` block below still works: AGP provides it.
+    //
+    // The Compose compiler plugin, on the other hand, is needed: it is what turns the
+    // `@Composable` functions in this module into real Compose code. It attaches to the
+    // Kotlin compilation AGP sets up.
+    alias(libs.plugins.kotlinPluginCompose)
 }
 
 android {
@@ -38,6 +43,11 @@ dependencies {
     implementation(project(":feature:home"))
     implementation(project(":feature:settings"))
     implementation(project(":navigation"))
+    // `AppTheme`. The Compose artifacts themselves arrive transitively: `:ui` exposes them
+    // with `api`.
+    implementation(project(":ui"))
+    // `ComponentActivity.setContent`.
+    implementation(sampleLibs.androidxActivityCompose)
 
     // katachi is a JVM library, so its tests have to run on a JVM source set. This sample
     // has no JVM target, so every katachi test of the sample lives here, in the unit tests

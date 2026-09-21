@@ -53,9 +53,18 @@ val projectArchitecture = architecture {
 
 | サンプル | 内容 | ルートから回すタスク |
 |---|---|---|
-| `sample/jvm` | Ktor の最小サーバ | `./gradlew checkSampleJvm` |
-| `sample/android` | マルチモジュールの Android アプリ | `./gradlew checkSampleAndroid` |
-| `sample/kmp` | Android + iOS の KMP プロジェクト | `./gradlew checkSampleKmp` |
+| `sample/jvm` | Ktor の最小サーバ（single module） | `./gradlew checkSampleJvm` |
+| `sample/android` | マルチモジュールの Android アプリ（Compose / AndroidX の実依存あり） | `./gradlew checkSampleAndroid` |
+| `sample/kmp` | Android + iOS の KMP プロジェクト（Compose Multiplatform の実依存あり） | `./gradlew checkSampleKmp` |
+
+スタブではなく**実物に近い中身**にしてある。`Screen` は本物の `@Composable`、`ViewModel` は本物の
+`androidx.lifecycle.ViewModel` を継承し、`@Preview` も実際に書いてある。検査対象が実プロジェクトと同じ形でなければ、
+katachi が実際の構成で機能することを確かめたことにならないため。
+
+モジュールの切り方も実プロジェクト寄りで、`:ui` と `:data` は**1モジュールの中を package で分ける**形にしてある
+（`:ui` は `component` / `theme` / `core` / `preview`、`:data` は android が `user` / `settings`、
+kmp が `user` / `platform`）。katachi が表現できなければならない形の中で最もよく出てくるのがこれなので、
+サンプルの主眼はここにある。
 
 ```bash
 ./gradlew check         # katachi 本体（:katachi）のテスト
@@ -89,11 +98,29 @@ val projectArchitecture = architecture {
 | Kotlin | 2.4.10 |
 | JDK / toolchain | 21 |
 | kotest | 6.2.5 |
-| AGP（サンプル） | 9.4.1 |
+| AGP（サンプル） | 9.1.0 — **上げないこと**（下記） |
+| compileSdk / targetSdk / minSdk（サンプル） | 36 / 36 / 24 |
+| Compose（サンプル） | android: BOM 2026.06.01 / kmp: Compose Multiplatform 1.10.3 |
 
 - Kotlin / katachi / kotest のバージョンは `gradle/libs.versions.toml` が SSoT。
-  3サンプルはこれを `libs` として読み、サンプル固有の依存（Ktor / AGP）だけを自分の catalog（`sampleLibs`）に持つ
+  3サンプルはこれを `libs` として読み、サンプル固有の依存（Ktor / AGP / Compose ランタイム）だけを
+  自分の catalog（`sampleLibs`）に持つ
+- **Compose コンパイラプラグイン**（`org.jetbrains.kotlin.plugin.compose`）は Kotlin と完全に同じバージョンでなければならず、
+  TOML catalog は別の catalog を参照できない。そのためこれだけはルート catalog に
+  `libs.plugins.kotlinPluginCompose` として置いてある。android / kmp のルート `build.gradle.kts` が
+  `alias(libs.plugins.kotlinPluginCompose) apply false` で読む。
+  Compose の**ランタイム**（BOM / Compose Multiplatform）は Kotlin と独立に決まるので、そちらは `sampleLibs` のまま
+- **AGP は Android Studio 側の対応上限に合わせる。** 9.1.0 なのは、これより新しいと Android Studio の
+  Gradle sync が `The project is using an incompatible version (AGP x.y.z) of the Android Gradle plugin.`
+  で止まるため。CLI のビルドだけを見て上げると、IDE で開けなくなる。上げるときは
+  [Android Studio と AGP の対応表](https://developer.android.com/build/releases/gradle-plugin#updating-gradle)を先に見る
 - AGP 9 は Kotlin コンパイラを内蔵していて、放っておくと katachi より古い Kotlin でサンプルをコンパイルしてしまう。
   サンプルのルート `build.gradle.kts` がその版を引き上げている（理由はそのファイルのコメントに書いてある）。
   CI は `.github/scripts/check-kotlin-versions.sh` で、この回避策が効き続けているかを毎回突き合わせる
+- **サンプルの Compose / AndroidX は「最新」ではなく「`minCompileSdk` が 36 以下で最新」を選ぶ。**
+  AGP 9.1.0 が扱える `compileSdk` は 36 までだが、2026 年後半の AndroidX は `minCompileSdk=37` を宣言し始めている。
+  Compose BOM 2026.08.00 以降・`lifecycle` 2.11.0・`navigation` 2.10.x・Compose Multiplatform 1.11.0 以降などを入れると
+  configuration の時点で `requires ... version 37 or later of the Android APIs` で落ちる。
+  同じ BOM でも artifact ごとに `minCompileSdk` が違うので、上げるときは
+  `unzip -p <artifact>.aar META-INF/com/android/build/gradle/aar-metadata.properties` で1つずつ確かめる
 - CI は `.github/workflows/ci.yml`。`main` への push と pull request で、本体と3サンプルをそれぞれ別ステップで回す

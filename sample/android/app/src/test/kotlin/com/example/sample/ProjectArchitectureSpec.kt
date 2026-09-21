@@ -28,6 +28,8 @@ class ProjectArchitectureSpec : FreeSpec({
             "ui/Component",
             "ui/Theme",
             "ui/UiCore",
+            "ui/Preview",
+            "ui/PreviewRoot",
             "ui/Navigation",
             "data/Repository",
             "testing/Fake",

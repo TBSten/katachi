@@ -3,6 +3,8 @@ plugins {
     alias(sampleLibs.plugins.androidKotlinMultiplatformLibrary)
 }
 
+// No Compose here on purpose: this module only holds the navigation types and the state of
+// the current destination, so it stays testable without a Compose runtime.
 kotlin {
     jvmToolchain(21)
 
@@ -14,4 +16,11 @@ kotlin {
 
     iosArm64()
     iosSimulatorArm64()
+
+    sourceSets {
+        commonMain.dependencies {
+            // `Navigator.current` is a `StateFlow`, so it is part of this module's surface.
+            api(sampleLibs.kotlinxCoroutinesCore)
+        }
+    }
 }

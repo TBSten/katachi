@@ -21,7 +21,9 @@ dependencyResolutionManagement {
     versionCatalogs {
         // Two catalogs on purpose.
         // `libs` is the repository root catalog: the single source of truth for the Kotlin,
-        // katachi and kotest versions shared by katachi itself and all three samples.
+        // katachi and kotest versions shared by katachi itself and all three samples. The
+        // Compose compiler plugin is versioned with Kotlin, so it is declared in that file
+        // too and read here as `libs.plugins.kotlinPluginCompose` — nothing is added on top.
         create("libs") {
             from(files("../../gradle/libs.versions.toml"))
         }
@@ -45,9 +47,7 @@ include(":app:android")
 include(":data")
 include(":feature:home")
 include(":feature:settings")
-include(":ui:component")
-include(":ui:theme")
-include(":ui:core")
+include(":ui")
 include(":navigation")
 include(":testing")
 

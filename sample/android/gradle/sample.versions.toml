@@ -4,8 +4,38 @@
 # catalog (`../../gradle/libs.versions.toml`, read as `libs`) so that the sample can
 # never disagree with the library it is testing.
 
+# AndroidX versions are not simply "the newest". AGP 9.1.0 supports compileSdk 36 at most
+# (see README.md), and every AAR declares the compileSdk it needs. The versions below are
+# the newest whose `minCompileSdk` is still <= 36; the next release of each one requires
+# 37 and fails the build with "requires libraries and applications that depend on it to
+# compile against version 37 or later of the Android APIs". Check before bumping:
+#   unzip -p <artifact>.aar META-INF/com/android/build/gradle/aar-metadata.properties
 [versions]
-agp = "9.4.1"
+agp = "9.1.0"
+androidxActivity = "1.12.4"
+androidxCore = "1.18.0"
+androidxLifecycle = "2.10.0"
+androidxNavigation = "2.9.8"
+# Compose 1.11.4 / Material3 1.4.0.
+composeBom = "2026.06.01"
+
+[libraries]
+androidxActivityCompose = { module = "androidx.activity:activity-compose", version.ref = "androidxActivity" }
+androidxCoreKtx = { module = "androidx.core:core-ktx", version.ref = "androidxCore" }
+androidxLifecycleRuntimeCompose = { module = "androidx.lifecycle:lifecycle-runtime-compose", version.ref = "androidxLifecycle" }
+androidxLifecycleViewModelCompose = { module = "androidx.lifecycle:lifecycle-viewmodel-compose", version.ref = "androidxLifecycle" }
+androidxNavigationCompose = { module = "androidx.navigation:navigation-compose", version.ref = "androidxNavigation" }
+# The BOM is applied with `implementation(platform(...))`; every other Compose artifact
+# below is then declared without a version and gets it from here.
+composeBom = { module = "androidx.compose:compose-bom", version.ref = "composeBom" }
+composeMaterial3 = { module = "androidx.compose.material3:material3" }
+composeRuntime = { module = "androidx.compose.runtime:runtime" }
+composeUi = { module = "androidx.compose.ui:ui" }
+# `ui-tooling` is `debugImplementation` only: it carries the preview renderer and must
+# not ship in release. `ui-tooling-preview` is the `@Preview` annotation itself, so it
+# is a normal `implementation`.
+composeUiTooling = { module = "androidx.compose.ui:ui-tooling" }
+composeUiToolingPreview = { module = "androidx.compose.ui:ui-tooling-preview" }
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }

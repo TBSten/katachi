@@ -3,7 +3,7 @@
 # Guards the AGP built-in Kotlin problem.
 #
 # AGP 9 compiles Kotlin itself and puts its own Kotlin Gradle Plugin (2.2.10 for
-# AGP 9.4.1) on the buildscript classpath. katachi is built with the Kotlin
+# AGP 9.1.0) on the buildscript classpath. katachi is built with the Kotlin
 # version of the root catalog, so if a sample ever ends up compiling with the
 # bundled KGP instead, its test sources fail with
 #   "Module was compiled with an incompatible version of Kotlin".

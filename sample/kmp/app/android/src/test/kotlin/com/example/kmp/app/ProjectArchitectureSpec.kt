@@ -6,6 +6,7 @@ import io.kotest.matchers.collections.shouldContainExactly
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 import io.kotest.matchers.string.shouldContain
+import io.kotest.matchers.string.shouldNotContain
 import java.io.File
 
 /**
@@ -27,6 +28,8 @@ class ProjectArchitectureSpec : FreeSpec({
                 "ui/Component",
                 "ui/Theme",
                 "ui/UiCore",
+                "ui/Preview",
+                "ui/PreviewRoot",
                 "ui/Navigation",
                 "data/Repository",
                 "data/PlatformImplementation",
@@ -103,6 +106,55 @@ class ProjectArchitectureSpec : FreeSpec({
         // `build/Git` is the only declaration in this sample without a `title`.
         projectArchitecture.allRoles.single { it.qualifiedName == "build/Git" }
             .title shouldBe "Git"
+    }
+
+    "ui の共通レイヤーの役割は :ui モジュールの package を指している" {
+        // `:ui:component` / `:ui:theme` / `:ui:core` は1つの `:ui` モジュールに統合された。
+        // summary が旧モジュールパスのまま残ると、生成されるドキュメントが実態と食い違う。
+        val roles = projectArchitecture.allRoles.associateBy { it.qualifiedName }
+        listOf("ui/Component", "ui/Theme", "ui/UiCore", "ui/PreviewRoot").forAll { qualifiedName ->
+            val summary = requireNotNull(roles[qualifiedName]?.summary) { "$qualifiedName に summary がない" }
+            summary shouldContain ":ui モジュールの"
+            summary shouldNotContain ":ui:"
+        }
+    }
+
+    "Preview と PreviewRoot は別の役割" {
+        // Two roles whose names are prefixes of each other, which is exactly where a mix-up
+        // would go unnoticed. `Preview` is the `@Preview` function itself and lives beside
+        // the composable it renders; `PreviewRoot` is the single wrapper in `:ui`.
+        val roles = projectArchitecture.allRoles.associateBy { it.qualifiedName }
+        val preview = requireNotNull(roles["ui/Preview"]) { "ui/Preview がない" }
+        val previewRoot = requireNotNull(roles["ui/PreviewRoot"]) { "ui/PreviewRoot がない" }
+
+        preview.summary.orEmpty() shouldContain "Preview.kt"
+        preview.summary.orEmpty() shouldContain "PreviewRoot で包む"
+        previewRoot.summary.orEmpty() shouldContain "preview package"
+    }
+
+    "data の役割は :data モジュールの package を指している" {
+        // `:data` was flat until the `user` / `platform` split. A summary that does not name
+        // its package would send a reader of the generated docs to the wrong directory.
+        val roles = projectArchitecture.allRoles.associateBy { it.qualifiedName }
+        val packageOfRole = mapOf(
+            "data/Repository" to "user",
+            "data/PlatformImplementation" to "platform",
+        )
+        packageOfRole.forAll { (qualifiedName, packageName) ->
+            val summary = requireNotNull(roles[qualifiedName]?.summary) { "$qualifiedName に summary がない" }
+            summary shouldContain ":data モジュールの $packageName package"
+        }
+    }
+
+    "data に settings package の役割は無い" {
+        // sample/android has a SettingsRepository and this sample does not. Naming a
+        // `settings` role here would document a package that no file lives in.
+        projectArchitecture.allRoles
+            .filter { it.groupPath == listOf("data") }
+            .map { it.name } shouldContainExactly listOf("Repository", "PlatformImplementation")
+        projectArchitecture.allRoles.forAll { role ->
+            role.summary.orEmpty() shouldNotContain "settings package"
+        }
     }
 
     "example は呼んだ順にすべて保持される" {

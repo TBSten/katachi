@@ -1,6 +1,6 @@
 package com.example.kmp.testing
 
-import com.example.kmp.data.UserRepository
+import com.example.kmp.data.user.UserRepository
 
 /**
  * Test double used from the tests of the other modules. It lives in `commonMain` of a

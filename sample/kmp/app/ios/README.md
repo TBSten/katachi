@@ -33,7 +33,9 @@ app/ios/
 katachi is a JVM library, so no katachi test can run on iOS. The Kotlin iOS targets are
 still declared (`iosArm64()` / `iosSimulatorArm64()` in the KMP modules) so that the module
 graph is a realistic one, but a Linux CI runner cannot compile them and a clean macOS
-runner would first download the Kotlin/Native distribution.
+runner would first download the Kotlin/Native distribution. Now that the UI modules use
+Compose Multiplatform, compiling them for iOS also means compiling the Compose Kotlin/Native
+klibs, which is slower still.
 
 CI therefore runs `:app:android:testDebugUnitTest`, which never reaches an iOS task.
 

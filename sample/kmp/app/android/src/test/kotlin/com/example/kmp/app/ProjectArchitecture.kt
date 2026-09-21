@@ -29,45 +29,70 @@ private fun ArchitectureScope.uiRoles() {
 
         "Screen" {
             title = "画面"
-            summary = "1つの画面。ViewModel の状態を受け取り、Component を組み合わせて描く"
+            summary = "1つの画面の @Composable。ViewModel の StateFlow を購読し、Component を組み合わせて描く"
             example("HomeScreen", "ホーム画面")
             example("SettingsScreen", "設定画面")
             layout { }
         }
         "ViewModel" {
             title = "ViewModel"
-            summary = "画面の状態を持ち、Repository から取得した値を UiState に変換する"
+            summary = "画面の状態を持つ androidx.lifecycle.ViewModel。" +
+                "Repository から取得した値を UiState に変換し、StateFlow で公開する"
             example("HomeViewModel", "ホーム画面の状態")
             layout { }
         }
         "Route" {
             title = "ルート"
-            summary = "画面を navigation の Destination に結びつける"
+            summary = "画面を navigation の Destination に結びつけ、ViewModel の生成も引き受ける"
             example("HomeRoute", "ホーム画面の遷移先")
             layout { }
         }
+        // Component / Theme / UiCore all live in the one `:ui` module. They used to be
+        // `:ui:component` / `:ui:theme` / `:ui:core`; now they are packages of `:ui`, which
+        // is the shape katachi has to be able to describe.
         "Component" {
             title = "共通コンポーネント"
-            summary = "複数の画面から使われる UI 部品"
+            summary = ":ui モジュールの component package。複数の画面から使われる @Composable 部品"
             example("PrimaryButton", "主要な操作のボタン")
             layout { }
         }
         "Theme" {
             title = "テーマ"
-            summary = "色・余白などのデザイントークン"
-            example("AppTheme", "アプリ全体のトークン")
+            summary = ":ui モジュールの theme package。MaterialTheme の設定と、色・余白のデザイントークン"
+            example("AppTheme", "アプリ全体のテーマ")
+            example("AppSpacing", "余白のトークン")
             layout { }
         }
         "UiCore" {
             title = "UI 基盤"
-            summary = "画面に依存しない UI の土台。UiState など"
+            summary = ":ui モジュールの core package。画面に依存しない UI の土台。UiState など"
             example("UiState", "画面の状態を表す型")
+            layout { }
+        }
+        // Unlike sample/android, which keeps its `@Preview` functions in the same file as the
+        // composable they render, this sample puts them in a `<Target>Preview.kt` file beside
+        // it. Both shapes are common; having one sample of each is the point.
+        "Preview" {
+            title = "プレビュー"
+            summary = "@Preview を付けた private @Composable。対象の Composable と同じ package の " +
+                "<対象>Preview.kt に置き、中身は PreviewRoot で包む"
+            example("PrimaryButtonPreview", "PrimaryButton のプレビュー")
+            example("HomeLoadedPreview", "読み込み済みの HomeContent のプレビュー")
+            layout { }
+        }
+        // The `preview` package of `:ui`. `PreviewRoot` is the only thing in it, and every
+        // `@Preview` in the sample goes through it instead of writing `AppTheme { }` itself.
+        "PreviewRoot" {
+            title = "プレビューの土台"
+            summary = ":ui モジュールの preview package。@Preview の中身を AppTheme と Surface で包む"
+            example("PreviewRoot", "すべての @Preview が使う wrapper")
             layout { }
         }
         "Navigation" {
             title = "ナビゲーション"
-            summary = "遷移先の定義と画面の繋ぎ込み"
+            summary = "遷移先の定義と、現在地を持つ Navigator"
             example("Destination", "遷移先の一覧")
+            example("Navigator", "現在の遷移先を StateFlow で持つ")
             layout { }
         }
     }
@@ -78,18 +103,27 @@ private fun ArchitectureScope.dataRoles() {
     "data".group {
         title = "データ"
 
+        // `:data` is one module split into packages, the same way `:ui` is.
+        // `user` holds the repositories, `platform` the expect/actual pair. There is no
+        // `settings` package here: unlike sample/android this sample has no
+        // SettingsRepository, and the settings screen reads `:data` through UserRepository
+        // and `platformName()`.
         "Repository" {
             title = "リポジトリ"
-            summary = "データの取得口。インターフェースと実装の2つの置き方を持つ"
+            summary = ":data モジュールの user package。データの取得口で、" +
+                "インターフェースと実装の2つの置き方を持つ"
             example("UserRepository", "ユーザーを取得するインターフェース")
             example("UserRepositoryImpl", "UserRepository の実装")
             layout { }
         }
         // The role that only exists because this is a KMP project: `commonMain` declares
-        // `expect`, and `androidMain` / `iosMain` supply the `actual`.
+        // `expect`, and `androidMain` / `iosMain` supply the `actual`. The three files have
+        // to sit in the same package, so the package is part of what this role describes.
         "PlatformImplementation" {
             title = "プラットフォーム実装"
-            summary = "commonMain の expect 宣言に対する、androidMain / iosMain の actual 実装"
+            summary = ":data モジュールの platform package。commonMain の expect 宣言と、" +
+                "androidMain / iosMain の actual 実装が同じ package に揃う"
+            example("PlatformInfo.kt", "commonMain の expect 宣言")
             example("PlatformInfo.android.kt", "Android 向けの actual")
             example("PlatformInfo.ios.kt", "iOS 向けの actual")
             layout { }
@@ -126,8 +160,9 @@ private fun ArchitectureScope.appRoles() {
 
         "Entrypoint" {
             title = "エントリポイント"
-            summary = "Android アプリの起動点"
+            summary = "Android アプリの起動点。ComponentActivity と、そこから setContent で呼ぶアプリ全体の @Composable"
             example("MainActivity", "起動時に表示される Activity")
+            example("AppRoot", "テーマとナビゲーションを組み立てる Composable")
             layout { }
         }
         "AndroidResource" {

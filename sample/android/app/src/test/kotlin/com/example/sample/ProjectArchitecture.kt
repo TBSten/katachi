@@ -19,7 +19,7 @@ val projectArchitecture = architecture {
 
         "Screen" {
             title = "画面"
-            summary = "1つの画面の見た目。:feature:<name> ごとに <Name>Screen.kt を置く"
+            summary = "1つの画面の見た目を描く @Composable。:feature:<name> ごとに <Name>Screen.kt を置く"
             example("HomeScreen", "ホーム画面")
             example("SettingsScreen", "設定画面")
             layout { }
@@ -27,7 +27,7 @@ val projectArchitecture = architecture {
 
         "ViewModel" {
             title = "ビューモデル"
-            summary = "画面の状態を保持し、イベントを受け取る"
+            summary = "画面の状態を StateFlow で公開し、イベントを受け取る androidx.lifecycle.ViewModel"
             example("HomeViewModel", "ホーム画面の状態")
             layout { }
         }
@@ -41,22 +41,39 @@ val projectArchitecture = architecture {
 
         "Component" {
             title = "共通コンポーネント"
-            summary = ":ui:component に置く、feature をまたいで使う部品"
+            summary = ":ui モジュールの component package に置く、feature をまたいで使う部品"
             example("AppButton", "アプリ共通のボタン")
             layout { }
         }
 
         "Theme" {
             title = "テーマ"
-            summary = ":ui:theme に置く、色・タイポグラフィ・形"
+            summary = ":ui モジュールの theme package に置く、色・タイポグラフィ・形"
             example("AppTheme", "アプリのテーマ")
             layout { }
         }
 
         "UiCore" {
             title = "UI 基盤"
-            summary = ":ui:core に置く、UI 層の土台になる型"
-            example("UiState", "画面状態のマーカー")
+            summary = ":ui モジュールの core package に置く、UI 層の土台になる型"
+            example("UiState", "画面状態を表す sealed interface")
+            layout { }
+        }
+
+        "Preview" {
+            title = "プレビュー"
+            summary = "@Preview を付けた private @Composable。対象の Composable と同じファイルに置き、" +
+                "中身は PreviewRoot で包む"
+            example("AppButtonFilledPreview", "AppButton のプレビュー")
+            example("HomeScreenContentPreview", "HomeScreen のプレビュー")
+            layout { }
+        }
+
+        "PreviewRoot" {
+            title = "プレビューの土台"
+            summary = ":ui モジュールの preview package に置く、すべての @Preview が中身を包む土台。" +
+                "テーマと背景を 1 箇所で決め、darkTheme を受け取って明暗を出し分ける"
+            example("PreviewRoot", "プレビュー共通の土台")
             layout { }
         }
 
@@ -73,7 +90,8 @@ val projectArchitecture = architecture {
 
         "Repository" {
             title = "リポジトリ"
-            summary = "データの取得と保存。インターフェースと実装を :data に置く"
+            summary = "データの取得と保存。インターフェースと実装を :data の、扱う対象ごとの package " +
+                "（user / settings）に並べて置く"
             example("UserRepository", "ユーザーの取得と保存のインターフェース")
             example("UserRepositoryImpl", "UserRepository の実装")
             // Two layouts: a role may live in more than one place. Here the interface

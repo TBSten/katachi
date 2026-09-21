@@ -1,9 +1,36 @@
 # Catalog of the dependencies that only this sample needs.
 # Read as `sampleLibs` (see settings.gradle.kts). The Kotlin / katachi / kotest versions
 # come from the repository root catalog, read as `libs`.
+#
+# The Compose compiler plugin is not here: it is versioned with Kotlin, so it is declared in
+# the root catalog and read as `libs.plugins.kotlinPluginCompose`.
 
 [versions]
-agp = "9.4.1"
+agp = "9.1.0"
+# Compose Multiplatform. Since 1.6 the compiler comes from `org.jetbrains.kotlin.plugin.compose`
+# (versioned with Kotlin), so this version only covers the runtime artifacts and the plugin
+# that supplies the `compose.*` dependency accessors.
+#
+# NOT the newest (1.12.0): its Android artifacts carry `minCompileSdk=37`, and this sample
+# compiles against 36 because AGP 9.1.0 supports no more than that. Raising either means
+# raising both, and AGP is held at 9.1.0 for Android Studio's Gradle sync. The same ceiling
+# is why `lifecycle` is 2.10.0 and not 2.11.0.
+composeMultiplatform = "1.10.3"
+# The Compose Multiplatform builds of the AndroidX lifecycle artifacts
+# (`org.jetbrains.androidx.lifecycle`), which is what gives commonMain a real `ViewModel`.
+lifecycle = "2.10.0"
+androidxActivity = "1.11.0"
+kotlinxCoroutines = "1.11.0"
+
+[libraries]
+# Android-only: `setContent` and the ComponentActivity integration.
+androidxActivityCompose = { module = "androidx.activity:activity-compose", version.ref = "androidxActivity" }
+# commonMain `ViewModel` and `viewModelScope`.
+lifecycleViewmodel = { module = "org.jetbrains.androidx.lifecycle:lifecycle-viewmodel", version.ref = "lifecycle" }
+# `viewModel { }` inside a composable.
+lifecycleViewmodelCompose = { module = "org.jetbrains.androidx.lifecycle:lifecycle-viewmodel-compose", version.ref = "lifecycle" }
+# `StateFlow`, which every state holder in this sample exposes.
+kotlinxCoroutinesCore = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "kotlinxCoroutines" }
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }
@@ -11,3 +38,4 @@ androidApplication = { id = "com.android.application", version.ref = "agp" }
 # old `com.android.library` + `androidTarget()` pairing: namespace / compileSdk / minSdk are
 # configured in `kotlin { androidLibrary { } }`, not in `android { }`.
 androidKotlinMultiplatformLibrary = { id = "com.android.kotlin.multiplatform.library", version.ref = "agp" }
+composeMultiplatform = { id = "org.jetbrains.compose", version.ref = "composeMultiplatform" }
