@@ -2,7 +2,7 @@ package me.tbsten.katachi.check
 
 import java.io.File
 import java.nio.file.Files
-import me.tbsten.katachi.dsl.InternalKatachiApi
+import me.tbsten.katachi.InternalKatachiApi
 
 /**
  * The [KatachiFileSystem] used when a user calls `assert()`: plain `java.io.File`, with the

@@ -1,5 +1,7 @@
 package me.tbsten.katachi.dsl
 
+import me.tbsten.katachi.InternalKatachiApi
+
 /**
  * A directory declared in a `layout { }` block.
  *

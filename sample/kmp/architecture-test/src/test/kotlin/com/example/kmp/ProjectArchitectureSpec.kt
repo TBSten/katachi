@@ -8,9 +8,9 @@ import io.kotest.matchers.shouldNotBe
 import io.kotest.matchers.string.shouldContain
 import io.kotest.matchers.string.shouldNotContain
 import java.io.File
+import me.tbsten.katachi.ExperimentalKatachiApi
 import me.tbsten.katachi.dsl.Documented
 import me.tbsten.katachi.dsl.Examples
-import me.tbsten.katachi.dsl.ExperimentalKatachiApi
 import me.tbsten.katachi.dsl.Summary
 import me.tbsten.katachi.dsl.Title
 

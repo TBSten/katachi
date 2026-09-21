@@ -1,10 +1,10 @@
 package me.tbsten.katachi.processor
 
+import me.tbsten.katachi.ExperimentalKatachiApi
 import me.tbsten.katachi.check.KatachiFileSystem
 import me.tbsten.katachi.check.Violation
 import me.tbsten.katachi.check.scanProject
 import me.tbsten.katachi.dsl.Architecture
-import me.tbsten.katachi.dsl.ExperimentalKatachiApi
 import me.tbsten.katachi.dsl.Group
 import me.tbsten.katachi.dsl.LayoutEntry
 import me.tbsten.katachi.dsl.Role

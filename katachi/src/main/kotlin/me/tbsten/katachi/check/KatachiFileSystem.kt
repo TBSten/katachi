@@ -1,6 +1,6 @@
 package me.tbsten.katachi.check
 
-import me.tbsten.katachi.dsl.InternalKatachiApi
+import me.tbsten.katachi.InternalKatachiApi
 
 /**
  * Every file system access katachi makes, in four operations.

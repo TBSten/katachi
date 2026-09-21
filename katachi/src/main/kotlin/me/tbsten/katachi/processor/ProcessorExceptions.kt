@@ -1,6 +1,6 @@
 package me.tbsten.katachi.processor
 
-import me.tbsten.katachi.dsl.ExperimentalKatachiApi
+import me.tbsten.katachi.ExperimentalKatachiApi
 import me.tbsten.katachi.dsl.KatachiDeclarationException
 import me.tbsten.katachi.dsl.Role
 

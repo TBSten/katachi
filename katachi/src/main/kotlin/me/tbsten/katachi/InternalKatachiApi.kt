@@ -1,4 +1,4 @@
-package me.tbsten.katachi.dsl
+package me.tbsten.katachi
 
 /**
  * Marks an API that has to be public so that katachi's own internals can reach it across
@@ -15,7 +15,7 @@ package me.tbsten.katachi.dsl
  *
  * ## Example 1: opt in to an internal API from code outside `:katachi`
  * ```kt
- * import me.tbsten.katachi.dsl.InternalKatachiApi
+ * import me.tbsten.katachi.InternalKatachiApi
  *
  * @OptIn(InternalKatachiApi::class)
  * class FsPathSpec : FreeSpec({

@@ -12,6 +12,8 @@ import io.kotest.matchers.collections.shouldContainExactly
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
 import java.io.File
+import me.tbsten.katachi.ExperimentalKatachiApi
+import me.tbsten.katachi.InternalKatachiApi
 import me.tbsten.katachi.check.FileSelection
 import me.tbsten.katachi.check.FsPath
 import me.tbsten.katachi.check.KatachiFileSystem
@@ -21,19 +23,17 @@ import me.tbsten.katachi.check.validate
 import me.tbsten.katachi.dsl.Architecture
 import me.tbsten.katachi.dsl.Documented
 import me.tbsten.katachi.dsl.Examples
-import me.tbsten.katachi.dsl.ExperimentalKatachiApi
-import me.tbsten.katachi.dsl.InternalKatachiApi
 import me.tbsten.katachi.dsl.LayoutEntry
 import me.tbsten.katachi.dsl.Title
 import me.tbsten.katachi.dsl.architecture
 import me.tbsten.katachi.dsl.conventionalModuleResolver
-import me.tbsten.katachi.dsl.gitTracked
-import me.tbsten.katachi.dsl.gradle.capitalizedModuleNamePackage
 import me.tbsten.katachi.dsl.flattenLayout
-import me.tbsten.katachi.dsl.wholeTree
+import me.tbsten.katachi.dsl.gitTracked
 import me.tbsten.katachi.dsl.gradle.*
+import me.tbsten.katachi.dsl.gradle.capitalizedModuleNamePackage
 import me.tbsten.katachi.dsl.kotlin.ktFile
 import me.tbsten.katachi.dsl.kotlin.ktsFile
+import me.tbsten.katachi.dsl.wholeTree
 
 /**
  * Checks that [projectArchitecture] builds into the model we expect, and that the check it

@@ -1,6 +1,6 @@
 package me.tbsten.katachi.dsl.gradle
 
-import me.tbsten.katachi.dsl.InternalKatachiApi
+import me.tbsten.katachi.InternalKatachiApi
 import me.tbsten.katachi.dsl.KatachiDeclarationException
 
 /**

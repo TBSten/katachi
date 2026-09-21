@@ -1,10 +1,10 @@
 package me.tbsten.katachi.processor
 
+import me.tbsten.katachi.ExperimentalKatachiApi
+import me.tbsten.katachi.InternalKatachiApi
 import me.tbsten.katachi.check.KatachiFileSystem
 import me.tbsten.katachi.check.RealFileSystem
 import me.tbsten.katachi.dsl.Architecture
-import me.tbsten.katachi.dsl.ExperimentalKatachiApi
-import me.tbsten.katachi.dsl.InternalKatachiApi
 
 /**
  * Something that consumes an architecture definition and produces [R].

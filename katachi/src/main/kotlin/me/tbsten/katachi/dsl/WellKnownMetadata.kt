@@ -1,5 +1,7 @@
 package me.tbsten.katachi.dsl
 
+import me.tbsten.katachi.ExperimentalKatachiApi
+
 /**
  * One concrete example of a role, as `example("GetUserUseCase", "ユーザーを取得する")`.
  *

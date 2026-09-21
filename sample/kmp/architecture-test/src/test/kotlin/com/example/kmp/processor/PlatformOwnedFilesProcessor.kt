@@ -1,6 +1,6 @@
-package com.example.kmp
+package com.example.kmp.processor
 
-import me.tbsten.katachi.dsl.ExperimentalKatachiApi
+import me.tbsten.katachi.ExperimentalKatachiApi
 import me.tbsten.katachi.processor.ArchitectureProcessor
 import me.tbsten.katachi.processor.ProjectModel
 

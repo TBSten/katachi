@@ -24,8 +24,8 @@ kotlin {
     // out per file would also be worse than pointless here: the compiler reports an opt-in that
     // is already covered module-wide as an unnecessary-opt-in warning.
     compilerOptions {
-        optIn.add("me.tbsten.katachi.dsl.InternalKatachiApi")
-        optIn.add("me.tbsten.katachi.dsl.ExperimentalKatachiApi")
+        optIn.add("me.tbsten.katachi.InternalKatachiApi")
+        optIn.add("me.tbsten.katachi.ExperimentalKatachiApi")
     }
 }
 

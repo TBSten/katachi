@@ -1,6 +1,6 @@
-package com.example.kmp
+package com.example.kmp.processor
 
-import me.tbsten.katachi.dsl.ExperimentalKatachiApi
+import me.tbsten.katachi.ExperimentalKatachiApi
 import me.tbsten.katachi.dsl.MetadataKey
 import me.tbsten.katachi.dsl.RoleScope
 import me.tbsten.katachi.dsl.metadata

@@ -1,7 +1,7 @@
 package me.tbsten.katachi.check
 
+import me.tbsten.katachi.InternalKatachiApi
 import me.tbsten.katachi.dsl.Architecture
-import me.tbsten.katachi.dsl.InternalKatachiApi
 
 /**
  * The failure `assert()` throws.

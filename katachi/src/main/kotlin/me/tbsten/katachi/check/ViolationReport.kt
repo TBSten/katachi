@@ -1,6 +1,6 @@
 package me.tbsten.katachi.check
 
-import me.tbsten.katachi.dsl.InternalKatachiApi
+import me.tbsten.katachi.InternalKatachiApi
 
 /** How many blocks `assert()` prints before it stops and counts the rest. */
 public const val DEFAULT_MAX_VIOLATIONS: Int = 10

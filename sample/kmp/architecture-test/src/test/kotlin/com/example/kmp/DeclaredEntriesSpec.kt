@@ -5,7 +5,7 @@ import io.kotest.matchers.collections.shouldBeEmpty
 import io.kotest.matchers.collections.shouldContain
 import io.kotest.matchers.collections.shouldNotBeEmpty
 import io.kotest.matchers.shouldBe
-import me.tbsten.katachi.dsl.ExperimentalKatachiApi
+import me.tbsten.katachi.ExperimentalKatachiApi
 import me.tbsten.katachi.processor.process
 
 /**

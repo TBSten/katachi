@@ -1,6 +1,6 @@
 package com.example.kmp.gradle
 
-import com.example.kmp.owner
+import com.example.kmp.processor.owner
 import me.tbsten.katachi.dsl.ArchitectureScope
 import me.tbsten.katachi.dsl.gradle.*
 import me.tbsten.katachi.dsl.kotlin.ktsFile
@@ -17,9 +17,10 @@ import me.tbsten.katachi.dsl.kotlin.ktsFile
  * group keeps its original name.
  *
  * Both roles also carry `owner = "platform"`, this sample's own metadata key (see
- * [com.example.kmp.Owner]). It is not part of katachi -- it exists only to give
- * `com.example.kmp.PlatformOwnedFilesProcessor` something to read, and to demonstrate that a
- * user of katachi can bring their own vocabulary the same way `documented` and `summary` do.
+ * [com.example.kmp.processor.Owner]). It is not part of katachi -- it exists only to give
+ * `com.example.kmp.processor.PlatformOwnedFilesProcessor` something to read, and to demonstrate
+ * that a user of katachi can bring their own vocabulary the same way `documented` and `summary`
+ * do.
  */
 fun ArchitectureScope.gradleRoles() {
     "build".group {

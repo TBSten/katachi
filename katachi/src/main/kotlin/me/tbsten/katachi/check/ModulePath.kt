@@ -1,6 +1,6 @@
 package me.tbsten.katachi.check
 
-import me.tbsten.katachi.dsl.InternalKatachiApi
+import me.tbsten.katachi.InternalKatachiApi
 
 /**
  * A Gradle module path with no wildcard left in it: `:core:data`.

@@ -1,6 +1,6 @@
 package me.tbsten.katachi.check
 
-import me.tbsten.katachi.dsl.InternalKatachiApi
+import me.tbsten.katachi.InternalKatachiApi
 
 /**
  * A path in the shape katachi works with: always `/` separated, never carrying `.` or `..`

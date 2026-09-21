@@ -1,6 +1,6 @@
 package me.tbsten.katachi.check
 
-import me.tbsten.katachi.dsl.InternalKatachiApi
+import me.tbsten.katachi.InternalKatachiApi
 
 /**
  * Which files the check considers part of the project.
@@ -36,7 +36,7 @@ import me.tbsten.katachi.dsl.InternalKatachiApi
  * import me.tbsten.katachi.check.FileSelection
  * import me.tbsten.katachi.check.KatachiFileSystem
  * import me.tbsten.katachi.check.ProjectRoot
- * import me.tbsten.katachi.dsl.InternalKatachiApi
+ * import me.tbsten.katachi.InternalKatachiApi
  * import me.tbsten.katachi.dsl.architecture
  *
  * // Only what `bazel query` reports as a source of this workspace. BazelSourceFileSystem is
@@ -74,7 +74,7 @@ public interface FileSelection {
      * import me.tbsten.katachi.check.FileSelection
      * import me.tbsten.katachi.check.KatachiFileSystem
      * import me.tbsten.katachi.check.ProjectRoot
-     * import me.tbsten.katachi.dsl.InternalKatachiApi
+     * import me.tbsten.katachi.InternalKatachiApi
      *
      * @OptIn(InternalKatachiApi::class)
      * object Everything : FileSelection {

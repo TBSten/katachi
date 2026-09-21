@@ -1,5 +1,7 @@
 package me.tbsten.katachi.dsl
 
+import me.tbsten.katachi.ExperimentalKatachiApi
+
 /**
  * A group of roles. One group is one documentation output directory; it says nothing
  * about where the files physically live, so the roles of one group may be spread over

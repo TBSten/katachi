@@ -1,5 +1,6 @@
 package me.tbsten.katachi.dsl
 
+import me.tbsten.katachi.InternalKatachiApi
 import me.tbsten.katachi.check.Glob
 import me.tbsten.katachi.check.GlobContext
 import me.tbsten.katachi.check.KatachiGlobSyntaxException

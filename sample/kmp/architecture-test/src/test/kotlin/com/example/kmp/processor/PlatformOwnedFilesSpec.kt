@@ -1,14 +1,15 @@
-package com.example.kmp
+package com.example.kmp.processor
 
 import com.example.kmp.application.appRoles
 import com.example.kmp.application.dataRoles
 import com.example.kmp.application.featureRoles
 import com.example.kmp.application.uiRoles
 import com.example.kmp.gradle.gradleRoles
+import com.example.kmp.projectArchitecture
 import com.example.kmp.testing.testingRoles
 import io.kotest.core.spec.style.FreeSpec
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
-import me.tbsten.katachi.dsl.ExperimentalKatachiApi
+import me.tbsten.katachi.ExperimentalKatachiApi
 import me.tbsten.katachi.dsl.architecture
 import me.tbsten.katachi.processor.process
 

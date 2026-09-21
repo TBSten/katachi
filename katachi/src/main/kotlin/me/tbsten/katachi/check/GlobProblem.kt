@@ -1,7 +1,7 @@
 package me.tbsten.katachi.check
 
+import me.tbsten.katachi.InternalKatachiApi
 import me.tbsten.katachi.dsl.DeclarationSite
-import me.tbsten.katachi.dsl.InternalKatachiApi
 import me.tbsten.katachi.dsl.Role
 
 /** Characters that mean themselves once written as `\<char>`. */

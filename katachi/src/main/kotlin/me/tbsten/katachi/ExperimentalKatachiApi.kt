@@ -1,4 +1,4 @@
-package me.tbsten.katachi.dsl
+package me.tbsten.katachi
 
 /**
  * Marks an API that is meant to be used, but whose shape is still going to change.
@@ -22,7 +22,7 @@ package me.tbsten.katachi.dsl
  *
  * ## Example 1: opt in to the processor API from code outside `:katachi`
  * ```kt
- * import me.tbsten.katachi.dsl.ExperimentalKatachiApi
+ * import me.tbsten.katachi.ExperimentalKatachiApi
  * import me.tbsten.katachi.processor.process
  *
  * @OptIn(ExperimentalKatachiApi::class)

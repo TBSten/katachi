@@ -1,5 +1,7 @@
 package me.tbsten.katachi.dsl
 
+import me.tbsten.katachi.ExperimentalKatachiApi
+import me.tbsten.katachi.InternalKatachiApi
 import me.tbsten.katachi.check.Glob
 
 /**

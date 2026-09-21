@@ -2,6 +2,7 @@ package me.tbsten.katachi.dsl
 
 import kotlin.reflect.KClass
 import kotlin.reflect.KProperty
+import me.tbsten.katachi.ExperimentalKatachiApi
 
 /**
  * A key a declaration can carry one value under.

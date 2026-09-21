@@ -1,6 +1,6 @@
 package com.example.kmp.tool
 
-import com.example.kmp.owner
+import com.example.kmp.processor.owner
 import me.tbsten.katachi.dsl.ArchitectureScope
 
 /**
@@ -22,7 +22,7 @@ fun ArchitectureScope.toolRoles() {
         "Git" {
             summary = ".gitignore など"
             documented = false
-            // Also `owner = "platform"` (see com.example.kmp.Owner), this sample's own
+            // Also `owner = "platform"` (see com.example.kmp.processor.Owner), this sample's own
             // metadata key -- not katachi's. `PlatformOwnedFilesSpec` builds a variant of
             // this exact role with the tag left out to prove its processor really reads it.
             owner = "platform"

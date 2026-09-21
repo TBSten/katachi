@@ -1,5 +1,7 @@
 package me.tbsten.katachi.dsl
 
+import me.tbsten.katachi.InternalKatachiApi
+
 /**
  * What a layout scope *knows* while it is being evaluated.
  *

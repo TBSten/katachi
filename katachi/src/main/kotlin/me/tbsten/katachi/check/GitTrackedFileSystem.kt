@@ -3,7 +3,7 @@ package me.tbsten.katachi.check
 import java.io.File
 import java.io.IOException
 import java.util.concurrent.TimeUnit
-import me.tbsten.katachi.dsl.InternalKatachiApi
+import me.tbsten.katachi.InternalKatachiApi
 import me.tbsten.katachi.dsl.KatachiCheckException
 
 /**

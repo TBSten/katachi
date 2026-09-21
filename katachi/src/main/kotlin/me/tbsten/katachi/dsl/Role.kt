@@ -1,5 +1,7 @@
 package me.tbsten.katachi.dsl
 
+import me.tbsten.katachi.ExperimentalKatachiApi
+
 /**
  * A role: what a file is for, and where it may live.
  *

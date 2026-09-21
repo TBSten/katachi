@@ -3,11 +3,11 @@ package com.example.kmp
 import io.kotest.core.spec.style.FreeSpec
 import io.kotest.matchers.shouldBe
 import java.io.File
+import me.tbsten.katachi.ExperimentalKatachiApi
+import me.tbsten.katachi.InternalKatachiApi
 import me.tbsten.katachi.check.RealFileSystem
 import me.tbsten.katachi.check.findProjectRoot
 import me.tbsten.katachi.check.moduleIndex
-import me.tbsten.katachi.dsl.ExperimentalKatachiApi
-import me.tbsten.katachi.dsl.InternalKatachiApi
 import me.tbsten.katachi.dsl.LayoutEntry
 import me.tbsten.katachi.dsl.flattenLayout
 

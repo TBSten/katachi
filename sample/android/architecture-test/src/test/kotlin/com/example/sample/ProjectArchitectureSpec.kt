@@ -11,12 +11,12 @@ import io.kotest.matchers.collections.shouldContainExactly
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
 import java.io.File
+import me.tbsten.katachi.ExperimentalKatachiApi
+import me.tbsten.katachi.InternalKatachiApi
 import me.tbsten.katachi.check.validate
 import me.tbsten.katachi.dsl.Architecture
 import me.tbsten.katachi.dsl.Documented
 import me.tbsten.katachi.dsl.Examples
-import me.tbsten.katachi.dsl.ExperimentalKatachiApi
-import me.tbsten.katachi.dsl.InternalKatachiApi
 import me.tbsten.katachi.dsl.Title
 import me.tbsten.katachi.dsl.architecture
 
