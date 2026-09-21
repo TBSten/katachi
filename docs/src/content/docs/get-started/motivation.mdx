@@ -31,7 +31,7 @@ class UseCaseKonsistTest {
 しかし実際には Konsist の特性によりそれが難しいことがわかります。
 
 :::caution[Scope の外は検証されない]
-Konsist はScope と呼ばれる記法を使って プロジェクト内の特定のファイルに絞って検証を行います。 **Scope 外のファイルやディレクトリについては検証の対象外** です。
+Konsist は Scope と呼ばれる記法を使って プロジェクト内の特定のファイルに絞って検証を行います。 **Scope 外のファイルやディレクトリについては検証の対象外** です。
 :::
 
 特定のファイルにフォーカスするだけではなく、**プロジェクト全体を広い視点で検証する手段が必要** です。
@@ -62,7 +62,7 @@ import CodeComparison from '../../../components/CodeComparison';
 
 katachi で採用されている Deny by default の原則により、**`projectArchitecture` に宣言されていないファイルはその存在を許されません**。
 
-AI Agent がルールに背くルールを書いたとしても、katachi はその存在を許さず、違反として報告します。
+AI Agent がルールに背くコードを書いたとしても、katachi はその存在を許さず、違反として報告します。
 </Aside>
 
 <details>
@@ -80,10 +80,10 @@ class GetUserUseCase {
 ```
 
 <FileTree>
-- core/domain/src/main/kotlin/com/example/project/
+- src/main/kotlin/com/example/project/
   - **GetUserUseCase.kt** ❌ 宣言されていない場所に置かれた
   - useCase/
-    - UpdateUserUseCase.kt ⭐️ 宣言されるべき場所
+    - UpdateUserUseCase.kt ⭐️ 宣言どおりの場所
 </FileTree>
 
 katachi を含んだ Unit test を実行すると、以下のようにエラーが報告されます。
@@ -91,10 +91,10 @@ katachi を含んだ Unit test を実行すると、以下のようにエラー�
 ```
 Katachi check failed: 1 violation (Unexpected: 1)
 
-[UnexpectedFile] core/domain/src/main/kotlin/com/example/project/GetUserUseCase.kt
+[UnexpectedFile] src/main/kotlin/com/example/project/GetUserUseCase.kt
   No role is defined for this file.
   Nearby locations:
-    UseCase    core/domain/src/main/kotlin/com/example/project/useCase/
+    UseCase    src/main/kotlin/com/example/project/useCase/
   How to fix:
     - Move it to one of the locations above
     - Delete it if it is not needed
@@ -102,7 +102,7 @@ Katachi check failed: 1 violation (Unexpected: 1)
         "GetUserUseCase" {
           summary = "TODO"
           layout {
-            "core/domain/src/main/kotlin/com/example/project" / "GetUserUseCase".ktFile()
+            "src/main/kotlin/com/example/project" / "GetUserUseCase".ktFile()
           }
         }
 ```
@@ -163,7 +163,7 @@ val projectArchitecture = architecture {
 </CodeComparison.Panel>
 </CodeComparison>
 
-katachi で定義したプロジェクト構造を SSoT として 人間も
+katachi で定義したプロジェクト構造を SSoT として 人間も AI Agent も読むことができるドキュメントを生成しましょう。
 
 ## katachi と Konsist
 
@@ -196,8 +196,5 @@ val projectArchitecture = architecture {
 ## まとめ
 
 - AI を使った開発では、**プロジェクト構造のルールを AI Agent に守らせる手段** が必要です。
-- katachi はプロジェクト全体の構造を定義・テストする DSL を提供します。
+- katachi はプロジェクト全体の構造を定義・テストしたり、ドキュメントを生成したりする DSL を提供します。
 - **Konsist だけでは不十分** です。プロジェクト全体の構造の検証は katachi、各ファイルの中身の検証は Konsist と使い分けるべきです。
-
-
-
