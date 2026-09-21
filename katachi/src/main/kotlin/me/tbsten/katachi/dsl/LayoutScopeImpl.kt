@@ -6,6 +6,7 @@ package me.tbsten.katachi.dsl
 import me.tbsten.katachi.check.GlobSyntaxException
 import me.tbsten.katachi.check.ModuleIndex
 import me.tbsten.katachi.check.ModulePattern
+import me.tbsten.katachi.dsl.kotlin.ktsFile
 
 /** The module a block is being evaluated for, or `null` when there is none. */
 internal class ModuleContext(

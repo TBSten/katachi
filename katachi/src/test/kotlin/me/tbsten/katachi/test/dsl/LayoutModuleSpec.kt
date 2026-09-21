@@ -10,8 +10,8 @@ import me.tbsten.katachi.check.ModuleResolver
 import me.tbsten.katachi.dsl.InternalKatachiApi
 import me.tbsten.katachi.dsl.KatachiDeclarationException
 import me.tbsten.katachi.dsl.gradle.*
-import me.tbsten.katachi.dsl.ktFile
-import me.tbsten.katachi.dsl.ktsFile
+import me.tbsten.katachi.dsl.kotlin.ktFile
+import me.tbsten.katachi.dsl.kotlin.ktsFile
 import me.tbsten.katachi.dsl.pascalCase
 
 @OptIn(InternalKatachiApi::class)

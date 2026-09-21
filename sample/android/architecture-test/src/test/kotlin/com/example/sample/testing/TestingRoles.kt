@@ -3,7 +3,7 @@ package com.example.sample.testing
 import com.example.sample.modulePackage
 import me.tbsten.katachi.dsl.ArchitectureScope
 import me.tbsten.katachi.dsl.gradle.*
-import me.tbsten.katachi.dsl.ktFile
+import me.tbsten.katachi.dsl.kotlin.ktFile
 
 /**
  * Roles that exist for testing: the shared fakes in `:testing`, the tests themselves, and

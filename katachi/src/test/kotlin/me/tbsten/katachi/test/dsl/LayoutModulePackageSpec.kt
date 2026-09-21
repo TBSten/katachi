@@ -11,7 +11,7 @@ import me.tbsten.katachi.dsl.gradle.ModulePackageException
 import me.tbsten.katachi.dsl.architecture
 import me.tbsten.katachi.dsl.gradle.capitalizedModuleNamePackage
 import me.tbsten.katachi.dsl.gradle.*
-import me.tbsten.katachi.dsl.ktFile
+import me.tbsten.katachi.dsl.kotlin.ktFile
 import me.tbsten.katachi.dsl.gradle.moduleNamePackage
 
 /** Declared the way a user declares it: one top level `val`, next to the architecture. */

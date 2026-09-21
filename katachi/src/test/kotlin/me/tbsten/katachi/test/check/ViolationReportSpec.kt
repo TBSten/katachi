@@ -7,8 +7,8 @@ import me.tbsten.katachi.check.MissingFile
 import me.tbsten.katachi.check.report
 import me.tbsten.katachi.check.validate
 import me.tbsten.katachi.dsl.InternalKatachiApi
-import me.tbsten.katachi.dsl.ktFile
-import me.tbsten.katachi.dsl.ktsFile
+import me.tbsten.katachi.dsl.kotlin.ktFile
+import me.tbsten.katachi.dsl.kotlin.ktsFile
 
 @OptIn(InternalKatachiApi::class)
 class ViolationReportSpec : FreeSpec({

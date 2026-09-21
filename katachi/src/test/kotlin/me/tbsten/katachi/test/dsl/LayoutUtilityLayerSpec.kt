@@ -7,8 +7,8 @@ import me.tbsten.katachi.dsl.LayoutDirectory
 import me.tbsten.katachi.dsl.LayoutFile
 import me.tbsten.katachi.dsl.LayoutScope
 import me.tbsten.katachi.dsl.gradle.*
-import me.tbsten.katachi.dsl.ktFile
-import me.tbsten.katachi.dsl.ktsFile
+import me.tbsten.katachi.dsl.kotlin.ktFile
+import me.tbsten.katachi.dsl.kotlin.ktsFile
 
 /**
  * Whatever katachi puts on top of `LayoutScope`, a project can put there too.

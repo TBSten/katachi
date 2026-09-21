@@ -3,7 +3,7 @@ package com.example.application
 import com.example.modulePackage
 import me.tbsten.katachi.dsl.ArchitectureScope
 import me.tbsten.katachi.dsl.gradle.*
-import me.tbsten.katachi.dsl.ktFile
+import me.tbsten.katachi.dsl.kotlin.ktFile
 
 /** Roles of the data layer: where the values come from. */
 fun ArchitectureScope.dataRoles() {

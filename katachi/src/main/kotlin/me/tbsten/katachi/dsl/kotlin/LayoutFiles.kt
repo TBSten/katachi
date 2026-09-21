@@ -1,4 +1,7 @@
-package me.tbsten.katachi.dsl
+package me.tbsten.katachi.dsl.kotlin
+
+import me.tbsten.katachi.dsl.LayoutFile
+import me.tbsten.katachi.dsl.LayoutScope
 
 /**
  * File spellings that are common enough to be worth a name, written on top of

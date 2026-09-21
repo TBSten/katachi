@@ -3,7 +3,7 @@ package com.example.kmp.testing
 import com.example.kmp.modulePackage
 import me.tbsten.katachi.dsl.ArchitectureScope
 import me.tbsten.katachi.dsl.gradle.*
-import me.tbsten.katachi.dsl.ktFile
+import me.tbsten.katachi.dsl.kotlin.ktFile
 
 /** Test doubles, the test code itself, and the architecture definition it checks. */
 fun ArchitectureScope.testingRoles() {
