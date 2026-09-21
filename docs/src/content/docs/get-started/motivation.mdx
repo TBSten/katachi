@@ -8,11 +8,11 @@ title: モチベーションと katachi の立ち位置
 
 しかしその **ドキュメントに記述された「UseCase はこう書く」という文言には何の強制力もありません**。プロジェクトのルールを知らない新規参入者や不確実性を伴う AI Agent によって 容易にルールは破られうるのです。
 
-## Konsist では不十分
+## Konsist だけでは足りない
 
 このようなプロジェクトのルールを無視するコードを許さないためのガードレールとして機能するツールの中に [Konsist](https://docs.konsist.lemonappdev.com/) があります。
 
-Konsist はプロジェクトのルールを Unit test として記述することができます。
+Konsist はプロジェクトのルールを Unit test として記述できます。
 
 ```kt
 class UseCaseKonsistTest {
@@ -38,7 +38,7 @@ Konsist は Scope と呼ばれる記法を使って プロジェクト内の特�
 
 ## katachi の出番
 
-katachi はプロジェクト全体を俯瞰して、プロジェクト内に現れて良いファイルの種類とその配置方法を宣言することができます。
+katachi はプロジェクト全体を俯瞰して、プロジェクト内に現れて良いファイルの種類とその配置方法を宣言できます。
 
 ```kt
 val projectArchitecture = architecture {
@@ -50,10 +50,12 @@ val projectArchitecture = architecture {
 }
 ```
 
-- プロジェクトの中で現れて良いファイルの種類（Role と呼ばれます）
-- その Role のファイルがどこに現れて良いのか？
+katachi では次の2つを宣言します。
 
-を 宣言的な DSL で記述することで、プロジェクト全体のディレクトリ構造をテストできるようになります。
+- プロジェクトの中に現れて良いファイルの種類（Role と呼ばれます）
+- その Role のファイルがどこに現れて良いか
+
+これを宣言的な DSL で書くことで、プロジェクト全体のディレクトリ構造をテストできるようになります。
 
 import { Aside, FileTree } from '@astrojs/starlight/components';
 import CodeComparison from '../../../components/CodeComparison';
@@ -167,7 +169,7 @@ katachi で定義したプロジェクト構造を SSoT として 人間も AI A
 
 ## katachi と Konsist
 
-katachi は Konsist と連携してプロジェクト全体を検証したのち、各々のファイルについて別個の検証を行うことができるようになっています。
+katachi は Konsist と連携してプロジェクト全体を検証したのち、各々のファイルについて別個に検証できます。
 
 ```kt
 val projectArchitecture = architecture {
@@ -197,4 +199,4 @@ val projectArchitecture = architecture {
 
 - AI を使った開発では、**プロジェクト構造のルールを AI Agent に守らせる手段** が必要です。
 - katachi はプロジェクト全体の構造を定義・テストしたり、ドキュメントを生成したりする DSL を提供します。
-- **Konsist だけでは不十分** です。プロジェクト全体の構造の検証は katachi、各ファイルの中身の検証は Konsist と使い分けるべきです。
+- プロジェクト全体の構造は katachi、各ファイルの中身は Konsist。**役割が違うので併用します**。
