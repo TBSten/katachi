@@ -4,9 +4,11 @@ import starlight from '@astrojs/starlight';
 
 // https://astro.build/config
 export default defineConfig({
-	// TODO: set `site` (and `base` if this is served from a project subpath such as
-	// GitHub Pages) once the deploy target is decided. Until then the sitemap is
-	// skipped, which is better than publishing one that points at the wrong host.
+	// TODO: GitHub Pages is the decided target, but publishing is still far off, so
+	// `site` / `base` stay unset for now. Setting `base` rewrites every internal link,
+	// so it lands together with the deploy workflow rather than ahead of it. Expect
+	// `site: 'https://tbsten.github.io'` and `base: '/katachi'`. Until then the sitemap
+	// is skipped, which is better than publishing one that points at the wrong host.
 	integrations: [
 		starlight({
 			title: 'katachi',
