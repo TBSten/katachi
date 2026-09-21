@@ -1,0 +1,66 @@
+---
+title: モチベーションと katachi の立ち位置
+---
+
+## アーキテクチャドキュメントは必ず実装と乖離する
+
+優秀なあなたのことですから プロジェクトの中に `/docs` ディレクトリが存在しており プロジェクト全体の構造・各コンポーネントのルールが詳細に記述されていることでしょう。
+
+しかしその **ドキュメントに記述された「UseCase はこう書く」という文言には何の強制力もありません**。プロジェクトのルールを知らない新規参入者や不確実性を伴う AI Agent によって 容易にルールは破られうるのです。
+
+## Konsist では不十分
+
+このようなプロジェクトのルールを無視するコードを許さないためのガードレールとして機能するツールの中に [Konsist](https://docs.konsist.lemonappdev.com/) があります。
+
+Konsist はプロジェクトのルールを Unit test として記述することができます。
+
+```kt
+class UseCaseKonsistTest {
+  @Test
+  fun `UseCase は 1 つの invoke 関数のみを持つ`() {
+      Konsist
+          .scopeFromProject()
+          .classes()
+          .withNameEndingWith("UseCase")
+          .assertTrue { it.functions().map { function -> function.name } == listOf("invoke") }
+  }
+}
+```
+
+一見すると Konsist はプロジェクトのルールを強制するための十分な手段に見えます。
+しかし実際には Konsist の特性によりそれが難しいことがわかります。
+
+:::caution[Scope の外は検証されない]
+Konsist はScope と呼ばれる記法を使って プロジェクト内の特定のファイルに絞って検証を行います。 **Scope 外のファイルやディレクトリについては検証の対象外** です。
+:::
+
+特定のファイルにフォーカスするだけではなく、**プロジェクト全体を広い視点で検証する手段が必要** です。
+
+## katachi の出番
+
+katachi はプロジェクト全体を俯瞰して、プロジェクト内に現れて良いファイルの種類とその配置方法を宣言することができます。
+
+```kt
+TODO
+```
+
+- プロジェクトの中で現れて良いファイルの種類（Role と呼ばれます）
+- その Role のファイルがどこに現れて良いのか？
+
+を 宣言的な DSL で記述することで、プロジェクト全体のディレクトリ構造をテストできるようになります。
+
+import { Aside } from '@astrojs/starlight/components';
+
+<Aside title="Deny by default">
+katachi で採用されている Deny by default の原則により、**`projectArchitecture` に宣言されていないファイルはその存在を許されません**。
+
+AI Agent がルールに背くルールを書いたとしても、katachi はその存在を許さず、違反として報告します。
+</Aside>
+
+また katachi は Konsist と連携してプロジェクト全体を検証したのち、各々のファイルについて別個の検証を行うことができるようになっています。
+
+```kt
+TODO
+```
+
+詳しくは [Konsist との統合](../guides/konsist-integration.md) のドキュメントをご覧ください。
