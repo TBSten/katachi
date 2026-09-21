@@ -114,7 +114,7 @@ Katachi check failed: 1 violation (Unexpected: 1)
 katachi で定義したプロジェクト構造の定義をもとに markdown のドキュメントを生成させることができます。
 
 ```shell
-./gradlew generateKatachiDocs
+$ ./gradlew generateKatachiDocs
 ```
 
 <CodeComparison>
@@ -125,8 +125,16 @@ val projectArchitecture = architecture {
     title = "ユースケース"
     summary = "各画面で発生するアプリ固有の1つの振る舞い"
 
+    example("GetUserUseCase", "ユーザーを取得する")
+    example("UpdateUserUseCase", "ユーザーを更新する")
+
     layout {
-      "src/main/kotlin/com/example/project/useCase" / "*UseCase".ktFile()
+      ":core:domain".module {
+        mainSourceSet / kotlin / modulePackage / "useCase" {
+          description = "複数の画面から使われるもの"
+          "*UseCase".ktFile()
+        }
+      }
     }
   }
 
@@ -145,7 +153,14 @@ val projectArchitecture = architecture {
 
 ## 配置場所
 
-- `src/main/kotlin/com/example/project/useCase/*UseCase.kt`
+| モジュール | パス | 使い分け |
+|---|---|---|
+| `:core:domain` | `src/main/kotlin/**/useCase/*UseCase.kt` | 複数の画面から使われるもの |
+
+## 例
+
+- `GetUserUseCase` ... ユーザーを取得する
+- `UpdateUserUseCase` ... ユーザーを更新する
 ```
 
 
