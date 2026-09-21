@@ -21,18 +21,59 @@ export default defineConfig({
 			social: [
 				{ icon: 'github', label: 'GitHub', href: 'https://github.com/tbsten/katachi' },
 			],
+			// サイドバーは手書き（`autogenerate` はやめた）。順序を人が決める形にしている。
+			// `index`（トップページ、`src/content/docs/index.mdx`）はサイドバーに出さない。
+			// サイトタイトル / ロゴから辿れるので十分という判断。ページ自体は残っている。
 			sidebar: [
 				{
-					label: 'はじめに',
+					label: 'はじめる',
 					items: [
-						{ label: 'katachi とは', slug: 'index' },
-						{ label: '導入する', slug: 'guides/install' },
+						{ label: 'モチベーションと katachi の立ち位置', slug: 'get-started/motivation' },
+						{ label: '初めてのアーキテクチャ定義', slug: 'get-started/first-architecture' },
+						{ label: 'FAQ', slug: 'get-started/faq' },
+					],
+				},
+				{ label: 'インストール', slug: 'install' },
+				{
+					label: 'コンセプト',
+					items: [
+						{ label: 'Deny by default', slug: 'concepts/deny-by-default' },
+						{ label: 'Role', slug: 'concepts/role' },
+						{ label: 'Layout', slug: 'concepts/layout' },
 					],
 				},
 				{
-					label: 'リファレンス',
-					items: [{ autogenerate: { directory: 'reference' } }],
+					label: 'ガイド',
+					items: [
+						{ label: 'Role 定義を分割する', slug: 'guides/split-roles' },
+						{ label: 'Konsist Integration', slug: 'guides/konsist-integration' },
+						{ label: 'Processor とそのカスタマイズ', slug: 'guides/processor' },
+					],
 				},
+				{
+					label: 'レシピ',
+					items: [
+						{ label: 'Android architecture guide に従った3層アーキテクチャ', slug: 'recipes/android-three-layer' },
+						{ label: 'feature モジュール分割', slug: 'recipes/feature-module-split' },
+						{ label: 'KMP の sourceSet と expect/actual', slug: 'recipes/kmp-source-set' },
+						{ label: 'Gradle 周辺（buildSrc / convention plugin / version catalog）', slug: 'recipes/gradle' },
+						{ label: 'Ktor のサーバサイドプロジェクト', slug: 'recipes/ktor-server' },
+						{ label: 'KSP プロセッサ', slug: 'recipes/ksp-processor' },
+						{ label: 'Kotlin コンパイラプラグイン', slug: 'recipes/kotlin-compiler-plugin' },
+						{ label: 'IntelliJ プラグイン', slug: 'recipes/intellij-plugin' },
+					],
+				},
+				{
+					label: 'API リファレンス',
+					// Dokka の出力はまだ無い。`docs/public/api-docs/index.html` のプレースホルダを
+					// 外部リンクとして指す（content collection のページではないので `link` を使う）。
+					link: '/api-docs/',
+					// `base` を設定すると（GitHub Pages 公開時に想定: `base: '/katachi'`）、
+					// Starlight の `slug` は自動でその配下に解決されるが、この `link` のような
+					// 素のパス文字列はズレる。公開時は `${import.meta.env.BASE_URL}api-docs/`
+					// のように base を差し込む形に直すこと。
+				},
+				{ label: 'ロードマップ', slug: 'roadmap' },
 			],
 		}),
 	],

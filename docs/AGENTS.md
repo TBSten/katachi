@@ -10,8 +10,12 @@ Manage the background server with `astro dev stop`, `astro dev status`, and `ast
 
 ## サイドバーの構成（決定済み・未実装）
 
+`index`（トップページ）は**サイドバーに出さない**。サイトタイトル / ロゴから辿れるので十分。
+
+**ドキュメントの本文は人が書く。** エージェントが用意してよいのは、サイドバーの配線と
+空ページ（frontmatter だけ）まで。
+
 ```
-- index
 - はじめる
     - モチベーションと katachi の立ち位置
     - 初めてのアーキテクチャ定義        （雑なインストール込み）
