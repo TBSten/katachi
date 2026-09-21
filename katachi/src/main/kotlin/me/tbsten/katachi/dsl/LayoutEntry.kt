@@ -2,6 +2,8 @@ package me.tbsten.katachi.dsl
 
 import me.tbsten.katachi.check.Glob
 import me.tbsten.katachi.check.GlobSyntaxException
+import me.tbsten.katachi.check.ModuleIndex
+import me.tbsten.katachi.check.ModuleResolver
 
 /** What a flattened layout entry declares about the path it names. */
 @InternalKatachiApi
@@ -72,18 +74,26 @@ public class LayoutEntry internal constructor(
  * contribute their own entry: that is allowed, and from v0.3 both show up in the generated
  * documentation.
  *
+ * @param moduleIndex the project's modules, which `"...".module { }` keys are expanded
+ *   against. The default index holds no module at all: a key naming one module still
+ *   resolves through [Architecture.moduleResolver], while a key with a wildcard expands to
+ *   nothing, so pass the real index whenever the file system is at hand.
  * @throws GlobSyntaxException when a layout key cannot be read as a path pattern.
  */
 @InternalKatachiApi
-public fun Architecture.flattenLayout(): List<LayoutEntry> = allRoles.flatMap { it.flattenLayout() }
+public fun Architecture.flattenLayout(
+    moduleIndex: ModuleIndex = ModuleIndex(moduleResolver, emptyList()),
+): List<LayoutEntry> = allRoles.flatMap { it.flattenLayout(moduleIndex) }
 
 /** Evaluates this role's `layout { }` blocks. See [Architecture.flattenLayout]. */
 @InternalKatachiApi
-public fun Role.flattenLayout(): List<LayoutEntry> {
+public fun Role.flattenLayout(
+    moduleIndex: ModuleIndex = ModuleIndex(ModuleResolver.Conventional, emptyList()),
+): List<LayoutEntry> {
     val entries = LinkedHashMap<EntryKey, LayoutEntry>()
     for (declaration in layouts) {
         val root = LayoutNode(segment = "", declaredAt = declaration.declaredAt, isFile = false)
-        LayoutScopeImpl(root).apply(declaration.block)
+        LayoutScopeImpl(root, moduleIndex, moduleContext = null).apply(declaration.block)
         collectInto(entries, root, emptyList(), this)
     }
     return entries.values.toList()

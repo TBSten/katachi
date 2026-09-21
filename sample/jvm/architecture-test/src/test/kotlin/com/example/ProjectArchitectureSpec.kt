@@ -7,6 +7,7 @@ import com.example.gradle.gradleRoles
 import com.example.testing.testingRoles
 import com.example.tool.toolRoles
 import io.kotest.core.spec.style.FreeSpec
+import io.kotest.matchers.collections.shouldContain
 import io.kotest.matchers.collections.shouldContainExactly
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
@@ -14,7 +15,10 @@ import java.io.File
 import me.tbsten.katachi.check.validate
 import me.tbsten.katachi.dsl.Architecture
 import me.tbsten.katachi.dsl.InternalKatachiApi
+import me.tbsten.katachi.dsl.LayoutEntry
 import me.tbsten.katachi.dsl.architecture
+import me.tbsten.katachi.dsl.capitalizedModuleNamePackage
+import me.tbsten.katachi.dsl.flattenLayout
 
 /**
  * Checks that [projectArchitecture] builds into the model we expect, and that the check it
@@ -154,12 +158,70 @@ class ProjectArchitectureSpec : FreeSpec({
         )
     }
 
+    "`.module { }` と sourceSet が、手で書いたディレクトリ宣言と同じエントリに展開される" {
+        // The whole claim of step 3: the sugar is a shorthand and not a second way of
+        // saying something slightly different. Written against `:architecture-test` rather
+        // than the root project so that the module directory itself is part of the answer.
+        val sugared = architecture {
+            "sugar".group {
+                "Sugared" {
+                    layout {
+                        ":architecture-test".module {
+                            mainSourceSet / kotlin / "*".ktFile()
+                        }
+                    }
+                }
+            }
+        }
+        val handWritten = architecture {
+            "sugar".group {
+                "HandWritten" {
+                    layout {
+                        "architecture-test" {
+                            "build".ignore()
+                            "build.gradle".ktsFile()
+                            "src/main" / "kotlin" / "*".ktFile()
+                        }
+                    }
+                }
+            }
+        }
+
+        // The role name is all that differs, so the entries are compared without it.
+        sugared.flattenLayout().map { shapeOf(it) } shouldBe handWritten.flattenLayout().map { shapeOf(it) }
+    }
+
+    "modulePackage はモジュールごとに解決され、base package を変えると宣言先が変わる" {
+        // Guards against the sugar going through without ever being read: if the package
+        // levels came from anywhere but `modulePackage`, both of these would land on the
+        // same path and the check would not be following the definition at all.
+        fun pathsUnder(base: String): List<String> = architecture {
+            "sugar".group {
+                "Packaged" {
+                    layout {
+                        ":".module {
+                            mainSourceSet / kotlin / capitalizedModuleNamePackage(base) / "Application".ktFile()
+                        }
+                    }
+                }
+            }
+        }.flattenLayout().map { it.path }
+
+        pathsUnder("com.example") shouldContain "src/main/kotlin/com/example/Application.kt"
+        pathsUnder("com.other.app") shouldContain "src/main/kotlin/com/other/app/Application.kt"
+    }
+
     "正しい定義では違反が1件も出ない" {
         // The same run ProjectArchitectureTest makes, read as a list rather than as a thrown
         // error, so a failure here names the violations instead of only the message.
         projectArchitecture.validate() shouldBe emptyList()
     }
 })
+
+/** A flattened entry without the role that declared it, for comparing two definitions. */
+@OptIn(InternalKatachiApi::class)
+private fun shapeOf(entry: LayoutEntry): String =
+    "${entry.path}\t${entry.kind}\t${if (entry.required) "required" else "optional"}"
 
 /**
  * [projectArchitecture] with `app/Entrypoint` removed, and nothing else changed.
@@ -176,9 +238,13 @@ private val architectureWithoutEntrypointRole: Architecture = architecture {
     "app".group {
         "ServerConfig" {
             layout {
-                "src/main/resources" {
-                    "application.conf".file()
-                    "logback.xml".file()
+                ":".module {
+                    mainSourceSet {
+                        "resources" {
+                            "application.conf".file()
+                            "logback.xml".file()
+                        }
+                    }
                 }
             }
         }

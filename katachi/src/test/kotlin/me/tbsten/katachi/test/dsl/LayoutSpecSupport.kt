@@ -1,10 +1,15 @@
 package me.tbsten.katachi.test.dsl
 
+import me.tbsten.katachi.check.FsPath
+import me.tbsten.katachi.check.ModuleIndex
+import me.tbsten.katachi.check.ModuleResolver
+import me.tbsten.katachi.check.moduleIndex
 import me.tbsten.katachi.dsl.InternalKatachiApi
 import me.tbsten.katachi.dsl.LayoutEntry
 import me.tbsten.katachi.dsl.LayoutScope
 import me.tbsten.katachi.dsl.architecture
 import me.tbsten.katachi.dsl.flattenLayout
+import me.tbsten.katachi.test.check.fakeFileSystem
 
 /**
  * Flattens a single `layout { }` block, wrapped in the smallest architecture that can hold
@@ -20,6 +25,36 @@ internal fun layoutOf(block: LayoutScope.() -> Unit): List<LayoutEntry> =
             "Role" { layout(block) }
         }
     }.flattenLayout()
+
+/** [layoutOf] against a project whose modules are [moduleIndex]. See [moduleIndexOf]. */
+@OptIn(InternalKatachiApi::class)
+internal fun layoutOf(moduleIndex: ModuleIndex, block: LayoutScope.() -> Unit): List<LayoutEntry> =
+    architecture {
+        "group".group {
+            "Role" { layout(block) }
+        }
+    }.flattenLayout(moduleIndex)
+
+/**
+ * A project whose modules are exactly [moduleDirectories], each given the build file that
+ * makes a directory a module.
+ *
+ * ```kotlin
+ * moduleIndexOf("core/data", "feature/home")
+ * ```
+ */
+@OptIn(InternalKatachiApi::class)
+internal fun moduleIndexOf(
+    vararg moduleDirectories: String,
+    resolver: ModuleResolver = ModuleResolver.Conventional,
+): ModuleIndex {
+    val fileSystem = fakeFileSystem(workingDirectory = "/repo") {
+        "/repo" {
+            moduleDirectories.forEach { "$it/build.gradle.kts"() }
+        }
+    }
+    return moduleIndex(fileSystem, FsPath.of("/repo"), resolver)
+}
 
 /**
  * The part of a flattened entry that a declaration decides, with everything that depends on

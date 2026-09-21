@@ -1,8 +1,7 @@
 package com.example.sample.application
 
+import com.example.sample.modulePackage
 import me.tbsten.katachi.dsl.ArchitectureScope
-import me.tbsten.katachi.dsl.LayoutDirectory
-import me.tbsten.katachi.dsl.LayoutScope
 
 /**
  * Roles of the shared UI: what `:ui` and `:navigation` hold.
@@ -10,10 +9,10 @@ import me.tbsten.katachi.dsl.LayoutScope
  * The per-feature roles (`Screen` / `ViewModel` / `Route`) live in [featureRoles]
  * instead. See the note there for why the two are separate groups.
  *
- * `:ui` is one module split into packages, which is what makes it the most verbose layout
- * of the sample in step 2: `component` / `theme` / `core` / `preview` are reached by writing
- * out `src/main/kotlin` and the whole base package by hand ([uiSources]). Step 3 replaces
- * all of that with `mainSourceSet / kotlin / modulePackage`, and the contrast is the point.
+ * `:ui` is one module split into packages, which is the shape `modulePackage` exists for:
+ * `component` / `theme` / `core` / `preview` are named as what they are — one more level
+ * below the module's own package — and `mainSourceSet / kotlin / modulePackage` says where
+ * that package starts without this file ever repeating `com/example/sample`.
  *
  * Deliberately not `inline`. katachi reads the declaration site off the stack trace, and an
  * inlined frame reports a line number remapped past the end of the caller's file, so every
@@ -28,7 +27,9 @@ fun ArchitectureScope.uiRoles() {
             summary = ":ui モジュールの component package に置く、feature をまたいで使う部品"
             example("AppButton", "アプリ共通のボタン")
             layout {
-                uiSources("component") / "*".ktFile()
+                ":ui".module {
+                    mainSourceSet / kotlin / modulePackage / "component" / "*".ktFile()
+                }
             }
         }
 
@@ -37,9 +38,12 @@ fun ArchitectureScope.uiRoles() {
             summary = ":ui モジュールの theme package に置く、色・タイポグラフィ・形"
             example("AppTheme", "アプリのテーマ")
             layout {
-                // Named exactly, not `*.kt`: there is one theme, and a second file turning
-                // up here should be a violation rather than a silent second theme.
-                uiSources("theme") / "AppTheme".ktFile()
+                ":ui".module {
+                    // Named exactly, not `*.kt`: there is one theme, and a second file
+                    // turning up here should be a violation rather than a silent second
+                    // theme.
+                    mainSourceSet / kotlin / modulePackage / "theme" / "AppTheme".ktFile()
+                }
             }
         }
 
@@ -48,7 +52,9 @@ fun ArchitectureScope.uiRoles() {
             summary = ":ui モジュールの core package に置く、UI 層の土台になる型"
             example("UiState", "画面状態を表す sealed interface")
             layout {
-                uiSources("core") / "*".ktFile()
+                ":ui".module {
+                    mainSourceSet / kotlin / modulePackage / "core" / "*".ktFile()
+                }
             }
         }
 
@@ -73,9 +79,11 @@ fun ArchitectureScope.uiRoles() {
                 "テーマと背景を 1 箇所で決め、darkTheme を受け取って明暗を出し分ける"
             example("PreviewRoot", "プレビュー共通の土台")
             layout {
-                // Required, so deleting the file fails the check with `[MissingFile]` rather
-                // than leaving every `@Preview` without a base.
-                uiSources("preview") / "PreviewRoot".ktFile()
+                ":ui".module {
+                    // Required, so deleting the file fails the check with `[MissingFile]`
+                    // rather than leaving every `@Preview` without a base.
+                    mainSourceSet / kotlin / modulePackage / "preview" / "PreviewRoot".ktFile()
+                }
             }
         }
 
@@ -84,19 +92,10 @@ fun ArchitectureScope.uiRoles() {
             summary = ":navigation に置く、画面間の移動"
             example("AppNavigator", "画面遷移の窓口")
             layout {
-                "navigation/src/main/kotlin/com/example/sample" /
-                    "navigation" / "*".ktFile()
+                ":navigation".module {
+                    mainSourceSet / kotlin / modulePackage / "*".ktFile()
+                }
             }
         }
     }
 }
-
-/**
- * One package of `:ui`: `ui/src/main/kotlin/com/example/sample/ui/<packageName>`.
- *
- * Every level is a plain directory, because step 2 has no notion of a Gradle module, a
- * source set or a base package. Step 3 writes the same thing as
- * `mainSourceSet / kotlin / modulePackage / packageName`.
- */
-private fun LayoutScope.uiSources(packageName: String): LayoutDirectory =
-    "ui/src/main/kotlin/com/example/sample/ui" / packageName

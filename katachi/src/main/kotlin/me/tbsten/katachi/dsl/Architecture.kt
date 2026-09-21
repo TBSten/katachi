@@ -1,6 +1,7 @@
 package me.tbsten.katachi.dsl
 
 import me.tbsten.katachi.check.FileSelection
+import me.tbsten.katachi.check.ModuleResolver
 
 /**
  * The whole architecture definition: the groups declared in `architecture { }` and,
@@ -15,6 +16,8 @@ public class Architecture internal constructor(
     public val groups: List<Group>,
     /** Which files of the project the check looks at. */
     public val files: FileSelection = FileSelection.GitTracked,
+    /** How a module path written in a `layout { }` becomes a directory. */
+    public val moduleResolver: ModuleResolver = ModuleResolver.Conventional,
 ) {
     /** Every group, parents before their children, in declaration order. */
     public val allGroups: List<Group> = groups.flatMap { it.selfAndDescendants() }

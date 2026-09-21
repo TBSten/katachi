@@ -15,6 +15,14 @@ tasks.test {
     testLogging {
         events("passed", "failed", "skipped")
     }
+    // `-Dkatachi.snapshot.update=true` is set on the Gradle invocation and therefore lands
+    // in the daemon's JVM; tests run in a forked JVM that inherits nothing, so it has to be
+    // handed over explicitly. Read through `providers` so the configuration cache records a
+    // dependency on the property instead of baking in whatever it was first set to.
+    systemProperty(
+        "katachi.snapshot.update",
+        providers.systemProperty("katachi.snapshot.update").getOrElse("false"),
+    )
 }
 
 dependencies {

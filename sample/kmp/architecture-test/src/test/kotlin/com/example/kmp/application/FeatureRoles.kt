@@ -1,26 +1,29 @@
 package com.example.kmp.application
 
+import com.example.kmp.modulePackage
 import me.tbsten.katachi.dsl.ArchitectureScope
+import me.tbsten.katachi.dsl.pascalCase
 
 /**
  * Roles of one feature: what every `:feature:<name>` module holds.
  *
  * Kept apart from [uiRoles] because the two differ in how they grow. A feature module is a
- * place where things are *expected* to multiply — step 2 writes it as `":feature:*"` and
- * reads the matched name back out of `wildcards` — while `:ui` and `:navigation` are shared
- * modules where adding something is a design decision. Folding both into one group would
- * hide that difference in the generated documentation, and would mix two shapes of `layout`
- * inside a single group.
+ * place where things are *expected* to multiply — `":feature:*".module { }` stands for however
+ * many there are and reads the matched name back out of `wildcards` — while `:ui` and
+ * `:navigation` are shared modules where adding something is a design decision. Folding both
+ * into one group would hide that difference in the generated documentation, and would mix two
+ * shapes of `layout` inside a single group.
  *
  * Not `inline`: an inlined call reports the caller's file with a line number remapped past
  * the end of that file, so every declaration below would record a position that does not
  * exist.
  *
- * Every layout here is spelled out as plain directories, down to the package. `:feature:home`
- * is the directory `feature/home`, `commonMain` is the directory `src/commonMain/kotlin`, and
- * the package is the directory chain below it. The `*` in `feature / "*"` is the module name
- * and the second one is the package matching it, which is what `":feature:*"` will say in one
- * go from step 3 onwards.
+ * The three roles here are where this sample ties a file name to the module it sits in.
+ * `wildcards[0]` is what `:feature:*` matched — `home` for `:feature:home` — so the file
+ * required of that module is `HomeScreen.kt` and nothing else: a `ProfileScreen.kt` under
+ * `:feature:home` is an `[UnexpectedFile]`, and it is `[MissingFile]` that reports a feature
+ * whose screen was renamed. Written as a plain `*Screen.kt` glob the check would have accepted
+ * both.
  */
 fun ArchitectureScope.featureRoles() {
     "feature".group {
@@ -32,8 +35,9 @@ fun ArchitectureScope.featureRoles() {
             example("HomeScreen", "ホーム画面")
             example("SettingsScreen", "設定画面")
             layout {
-                "feature" / "*" / "src/commonMain/kotlin" {
-                    "com/example/kmp/feature" / "*" / "*Screen".ktFile()
+                ":feature:*".module {
+                    "commonMain".sourceSet / kotlin / modulePackage /
+                        "${wildcards[0].pascalCase}Screen".ktFile()
                 }
             }
         }
@@ -43,8 +47,9 @@ fun ArchitectureScope.featureRoles() {
                 "Repository から取得した値を UiState に変換し、StateFlow で公開する"
             example("HomeViewModel", "ホーム画面の状態")
             layout {
-                "feature" / "*" / "src/commonMain/kotlin" {
-                    "com/example/kmp/feature" / "*" / "*ViewModel".ktFile()
+                ":feature:*".module {
+                    "commonMain".sourceSet / kotlin / modulePackage /
+                        "${wildcards[0].pascalCase}ViewModel".ktFile()
                 }
             }
         }
@@ -53,8 +58,9 @@ fun ArchitectureScope.featureRoles() {
             summary = "画面を navigation の Destination に結びつけ、ViewModel の生成も引き受ける"
             example("HomeRoute", "ホーム画面の遷移先")
             layout {
-                "feature" / "*" / "src/commonMain/kotlin" {
-                    "com/example/kmp/feature" / "*" / "*Route".ktFile()
+                ":feature:*".module {
+                    "commonMain".sourceSet / kotlin / modulePackage /
+                        "${wildcards[0].pascalCase}Route".ktFile()
                 }
             }
         }

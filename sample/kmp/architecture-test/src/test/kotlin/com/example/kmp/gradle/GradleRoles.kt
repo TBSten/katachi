@@ -26,22 +26,23 @@ fun ArchitectureScope.gradleRoles() {
             documented = false
             example("data/build.gradle.kts", ":data のビルドスクリプト")
             example("architecture-test/build.gradle.kts", ":architecture-test のビルドスクリプト")
-            // One line per module directory. `settings.gradle.kts` is the real list; keeping
-            // the two in step by hand is exactly the cost step 3 removes by resolving the
-            // module paths from the build itself.
+            // One line per module, written the way `settings.gradle.kts` writes it. An empty
+            // `.module { }` block is not an empty declaration: every module block says
+            // `build/` is not checked and `build.gradle.kts` has to be there, which is the
+            // whole of this role. The other roles say where that module's sources go.
             //
-            // Only `feature/*` is written with a wildcard, because that is the one place
-            // where modules are expected to multiply. A wildcard also makes the declaration
-            // optional, so the seven spelled-out scripts are the ones a deletion would
-            // report as `[MissingFile]`.
+            // Only `:feature:*` is written with a wildcard, because that is the one place
+            // where modules are expected to multiply. It stands for the feature modules that
+            // exist, so a new one is picked up without this list being touched — and a
+            // `feature/` directory that is not a module at all has nothing claiming it.
             layout {
-                "app/android/build.gradle".ktsFile()
-                "architecture-test/build.gradle".ktsFile()
-                "data/build.gradle".ktsFile()
-                "feature" / "*" / "build.gradle".ktsFile()
-                "navigation/build.gradle".ktsFile()
-                "testing/build.gradle".ktsFile()
-                "ui/build.gradle".ktsFile()
+                ":app:android".module { }
+                ":architecture-test".module { }
+                ":data".module { }
+                ":feature:*".module { }
+                ":navigation".module { }
+                ":testing".module { }
+                ":ui".module { }
             }
         }
         "GradleRoot" {
@@ -52,6 +53,11 @@ fun ArchitectureScope.gradleRoles() {
             // Directly under `layout { }` the paths are relative to the project root, which
             // for this sample is `sample/kmp` -- the first directory above the test's working
             // directory holding a `gradlew` (see ProjectRootSpec).
+            //
+            // Not written as `":".module { }` even though the root project is a Gradle module
+            // too: a module block's container is the project root itself there, so its
+            // `build/` line would stop the check over the whole repository. What this role
+            // describes is the files around the build, not a module.
             layout {
                 "settings.gradle".ktsFile()
                 "build.gradle".ktsFile()

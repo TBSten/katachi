@@ -6,7 +6,7 @@ import me.tbsten.katachi.check.GlobSyntaxException
  * One node of the tree a `layout { }` block builds while it is evaluated.
  *
  * The tree is short-lived: it exists between "run the deferred block" and "flatten it into
- * [LayoutEntry] values", and nothing outside this file ever sees it.
+ * [LayoutEntry] values", and nothing outside the DSL ever sees it.
  */
 internal class LayoutNode(
     /** One path segment, possibly holding `*` or `**`. Empty for the synthetic root. */
@@ -36,6 +36,12 @@ internal class LayoutNode(
         children += child
     }
 
+    /** Marks every file at or below this node optional. See [LayoutModule.optional]. */
+    fun markFilesOptional() {
+        if (isFile) optional = true
+        children.forEach { it.markFilesOptional() }
+    }
+
     /** Path from the root of the block being evaluated, for diagnostics. */
     fun pathFromDeclaration(): String {
         val segments = generateSequence(this) { it.parent }
@@ -50,7 +56,7 @@ internal class LayoutNode(
 }
 
 /** The outermost and innermost node a single key created. See [LayoutDirectory]. */
-private class Chain(val top: LayoutNode, val leaf: LayoutNode)
+internal class Chain(val top: LayoutNode, val leaf: LayoutNode)
 
 /**
  * Splits a key such as `"app/ios"` into its levels.
@@ -70,7 +76,8 @@ private fun splitKey(key: String): List<String> {
     return segments
 }
 
-private fun chainUnder(
+/** Declares [key], level by level, below [parent]. */
+internal fun chainUnder(
     parent: LayoutNode,
     key: String,
     isFile: Boolean,
@@ -92,87 +99,4 @@ private fun chainUnder(
         current = node
     }
     return Chain(top = checkNotNull(top), leaf = current)
-}
-
-/**
- * Implements both receivers of the layout DSL. The root of a `layout { }` block is handed
- * out as [LayoutScope], which hides `description`, `anyFile()` and `ignore()`; a directory
- * block is handed out as [LayoutDirectoryScope], which shows them.
- *
- * `/` works by re-parenting. `"gradle" / "libs.versions.toml".file()` evaluates the right
- * side first, so the file is declared in this scope and then moved under the directory the
- * left side created. Moving the *outermost* node of the right side is what makes a
- * multi-level key such as `"x" / "app/ios" { }` land as `x/app/ios`.
- */
-internal class LayoutScopeImpl(private val container: LayoutNode) : LayoutDirectoryScope {
-    override var description: String?
-        get() = container.description
-        set(value) {
-            container.description = value
-        }
-
-    override fun anyFile() {
-        container.anyFile = true
-    }
-
-    override fun ignore() {
-        container.ignored = true
-    }
-
-    override operator fun String.invoke(block: LayoutDirectoryScope.() -> Unit): LayoutDirectory {
-        val chain = chainUnder(container, this, isFile = false, declaredAt = captureDeclarationSite())
-        LayoutScopeImpl(chain.leaf).block()
-        return LayoutDirectory(top = chain.top, leaf = chain.leaf)
-    }
-
-    override fun String.file(): LayoutFile = declareFile(this)
-
-    override fun String.ktFile(): LayoutFile = declareFile("$this.kt")
-
-    override fun String.ktsFile(): LayoutFile = declareFile("$this.kts")
-
-    override fun String.ignore(): LayoutDirectory {
-        val chain = chainUnder(container, this, isFile = false, declaredAt = captureDeclarationSite())
-        chain.leaf.ignored = true
-        return LayoutDirectory(top = chain.top, leaf = chain.leaf)
-    }
-
-    override operator fun String.div(child: String): LayoutDirectory {
-        val declaredAt = captureDeclarationSite()
-        val left = chainUnder(container, this, isFile = false, declaredAt = declaredAt)
-        val right = chainUnder(left.leaf, child, isFile = false, declaredAt = declaredAt)
-        return LayoutDirectory(top = left.top, leaf = right.leaf)
-    }
-
-    override operator fun String.div(child: LayoutDirectory): LayoutDirectory {
-        val left = chainUnder(container, this, isFile = false, declaredAt = captureDeclarationSite())
-        left.leaf.add(child.top)
-        return LayoutDirectory(top = left.top, leaf = child.leaf)
-    }
-
-    override operator fun String.div(child: LayoutFile): LayoutFile {
-        val left = chainUnder(container, this, isFile = false, declaredAt = captureDeclarationSite())
-        left.leaf.add(child.top)
-        return LayoutFile(top = left.top, leaf = child.leaf)
-    }
-
-    override operator fun LayoutDirectory.div(child: String): LayoutDirectory {
-        val right = chainUnder(leaf, child, isFile = false, declaredAt = captureDeclarationSite())
-        return LayoutDirectory(top = this.top, leaf = right.leaf)
-    }
-
-    override operator fun LayoutDirectory.div(child: LayoutDirectory): LayoutDirectory {
-        leaf.add(child.top)
-        return LayoutDirectory(top = this.top, leaf = child.leaf)
-    }
-
-    override operator fun LayoutDirectory.div(child: LayoutFile): LayoutFile {
-        leaf.add(child.top)
-        return LayoutFile(top = this.top, leaf = child.leaf)
-    }
-
-    private fun declareFile(name: String): LayoutFile {
-        val chain = chainUnder(container, name, isFile = true, declaredAt = captureDeclarationSite())
-        return LayoutFile(top = chain.top, leaf = chain.leaf)
-    }
 }

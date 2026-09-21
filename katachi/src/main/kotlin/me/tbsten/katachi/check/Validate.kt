@@ -38,7 +38,9 @@ public fun Architecture.validate(): List<Violation> = validate(RealFileSystem())
  *
  * The project root is looked for in [fileSystem] itself, unfiltered: a marker such as
  * `.git/HEAD` belongs to none of the file sets `files` can select, so the search has to run
- * before the selection is applied.
+ * before the selection is applied. The module index is built the same way, because a module
+ * whose `build.gradle.kts` a file set happens to leave out is still a module, and a module
+ * path key with a wildcard would otherwise quietly expand to nothing.
  */
 @InternalKatachiApi
 public fun Architecture.validate(fileSystem: KatachiFileSystem): List<Violation> {
@@ -46,7 +48,7 @@ public fun Architecture.validate(fileSystem: KatachiFileSystem): List<Violation>
     return Scan(
         fileSystem = files.fileSystemFor(fileSystem, projectRoot),
         root = projectRoot.path,
-        layout = LayoutIndex(flattenLayout()),
+        layout = LayoutIndex(flattenLayout(moduleIndex(fileSystem, projectRoot.path, moduleResolver))),
     ).run()
 }
 

@@ -1,5 +1,6 @@
 package com.example.kmp.testing
 
+import com.example.kmp.modulePackage
 import me.tbsten.katachi.dsl.ArchitectureScope
 
 /** Test doubles, the test code itself, and the architecture definition it checks. */
@@ -12,8 +13,8 @@ fun ArchitectureScope.testingRoles() {
             summary = ":testing の commonMain に置く偽の実装。他モジュールのテストから使う"
             example("FakeUserRepository", "UserRepository の偽実装")
             layout {
-                "testing/src/commonMain/kotlin" {
-                    "com/example/kmp/testing" / "Fake*".ktFile()
+                ":testing".module {
+                    "commonMain".sourceSet / kotlin / modulePackage / "Fake*".ktFile()
                 }
             }
         }
@@ -25,13 +26,13 @@ fun ArchitectureScope.testingRoles() {
                 "純 Android / 純 JVM モジュールは src/test"
             example("ProjectArchitectureSpec", "この定義そのものを検証するテスト")
             // Only `:app:android` has test code of its own today, and it is an Android
-            // module, so `src/test` is the one place declared. A KMP module would add
-            // `src/commonTest/kotlin`; no module in this sample has one yet, and a path
+            // module, so `testSourceSet` is the one place declared. A KMP module would add
+            // `"commonTest".sourceSet`; no module in this sample has one yet, and a path
             // declared for a directory that does not exist would claim a shape the sample
             // does not have.
             layout {
-                "app/android/src/test/kotlin" {
-                    "com/example/kmp/app" / "*Spec".ktFile()
+                ":app:android".module {
+                    testSourceSet / kotlin / "com/example/kmp/app" / "*Spec".ktFile()
                 }
             }
         }
@@ -47,10 +48,14 @@ fun ArchitectureScope.testingRoles() {
             // Two patterns: the entry point sits in `com/example/kmp` itself, and each
             // concern gets one package below it (`application`, `gradle`, `testing`,
             // `tool`). The `*` in the middle is that package.
+            //
+            // The package is written out rather than derived: `modulePackage` would turn
+            // `:architecture-test` into `com/example/kmp/architectureTest`, and this module
+            // deliberately holds `com.example.kmp` itself, next to nothing else.
             layout {
-                "architecture-test/src/test/kotlin" {
-                    "com/example/kmp" / "*".ktFile()
-                    "com/example/kmp" / "*" / "*".ktFile()
+                ":architecture-test".module {
+                    testSourceSet / kotlin / "com/example/kmp" / "*".ktFile()
+                    testSourceSet / kotlin / "com/example/kmp" / "*" / "*".ktFile()
                 }
             }
         }

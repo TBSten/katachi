@@ -1,6 +1,7 @@
 package me.tbsten.katachi.dsl
 
 import me.tbsten.katachi.check.FileSelection
+import me.tbsten.katachi.check.ModuleResolver
 
 /**
  * Anything that can hold groups: the root of the DSL and a group itself.
@@ -50,6 +51,23 @@ public sealed interface ArchitectureScope : GroupContainerScope {
 
     /** Every file below the project root, whatever git thinks of it. See [FileSelection.WholeTree]. */
     public fun wholeTree(): FileSelection = FileSelection.WholeTree
+
+    /**
+     * How a module path written in a `layout { }` becomes a directory. Defaults to
+     * [conventionalModuleResolver].
+     *
+     * ```kotlin
+     * val projectArchitecture = architecture {
+     *   moduleResolver = ModuleResolver { module ->
+     *     if (module.value == ":app") "apps/android" else module.segments.joinToString("/")
+     *   }
+     * }
+     * ```
+     */
+    public var moduleResolver: ModuleResolver
+
+    /** `:core:data` lives in `core/data`. See [ModuleResolver.Conventional]. */
+    public fun conventionalModuleResolver(): ModuleResolver = ModuleResolver.Conventional
 }
 
 internal class ArchitectureScopeImpl : ArchitectureScope {
@@ -57,6 +75,8 @@ internal class ArchitectureScopeImpl : ArchitectureScope {
     private val declaredGroupNames = DeclaredNames()
 
     override var files: FileSelection = FileSelection.GitTracked
+
+    override var moduleResolver: ModuleResolver = ModuleResolver.Conventional
 
     override fun String.group(documented: Boolean, block: GroupScope.() -> Unit) {
         groups += declareGroup(
@@ -69,5 +89,6 @@ internal class ArchitectureScopeImpl : ArchitectureScope {
         )
     }
 
-    fun build(): Architecture = Architecture(groups = groups.toList(), files = files)
+    fun build(): Architecture =
+        Architecture(groups = groups.toList(), files = files, moduleResolver = moduleResolver)
 }

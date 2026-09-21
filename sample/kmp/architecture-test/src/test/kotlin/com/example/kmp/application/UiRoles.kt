@@ -1,6 +1,8 @@
 package com.example.kmp.application
 
+import com.example.kmp.modulePackage
 import me.tbsten.katachi.dsl.ArchitectureScope
+import me.tbsten.katachi.dsl.pascalCase
 
 /**
  * The shared UI modules a screen draws from: `:ui` and `:navigation`.
@@ -11,6 +13,11 @@ import me.tbsten.katachi.dsl.ArchitectureScope
  * Not `inline`: an inlined call reports the caller's file with a line number remapped past
  * the end of that file, so every declaration below would record a position that does not
  * exist.
+ *
+ * Every layout here starts at a module path rather than at a directory name. `":ui".module { }`
+ * is the directory the build puts `:ui` in, plus the two lines every Gradle module has
+ * (`build/` is not checked, `build.gradle.kts` has to be there), and the package below it
+ * comes from `modulePackage` instead of being spelled out per role.
  */
 fun ArchitectureScope.uiRoles() {
     "ui".group {
@@ -24,8 +31,8 @@ fun ArchitectureScope.uiRoles() {
             summary = ":ui モジュールの component package。複数の画面から使われる @Composable 部品"
             example("PrimaryButton", "主要な操作のボタン")
             layout {
-                "ui/src/commonMain/kotlin" {
-                    "com/example/kmp/ui/component" / "*".ktFile()
+                ":ui".module {
+                    "commonMain".sourceSet / kotlin / modulePackage / "component" / "*".ktFile()
                 }
             }
         }
@@ -35,8 +42,8 @@ fun ArchitectureScope.uiRoles() {
             example("AppTheme", "アプリ全体のテーマ")
             example("AppSpacing", "余白のトークン")
             layout {
-                "ui/src/commonMain/kotlin" {
-                    "com/example/kmp/ui/theme" / "*".ktFile()
+                ":ui".module {
+                    "commonMain".sourceSet / kotlin / modulePackage / "theme" / "*".ktFile()
                 }
             }
         }
@@ -45,8 +52,8 @@ fun ArchitectureScope.uiRoles() {
             summary = ":ui モジュールの core package。画面に依存しない UI の土台。UiState など"
             example("UiState", "画面の状態を表す型")
             layout {
-                "ui/src/commonMain/kotlin" {
-                    "com/example/kmp/ui/core" / "*".ktFile()
+                ":ui".module {
+                    "commonMain".sourceSet / kotlin / modulePackage / "core" / "*".ktFile()
                 }
             }
         }
@@ -63,12 +70,16 @@ fun ArchitectureScope.uiRoles() {
             // different modules instead of a directory of its own. `component/*.kt` of
             // `Component` covers the same file as well: two roles may claim one path, and
             // from v0.3 the generated documentation lists both.
+            //
+            // In a feature module the name is tied to the module the same way the screen it
+            // renders is: `:feature:home` may hold `Home*Preview.kt` and nothing else.
             layout {
-                "feature" / "*" / "src/commonMain/kotlin" {
-                    "com/example/kmp/feature" / "*" / "*Preview".ktFile()
+                ":feature:*".module {
+                    "commonMain".sourceSet / kotlin / modulePackage /
+                        "${wildcards[0].pascalCase}*Preview".ktFile()
                 }
-                "ui/src/commonMain/kotlin" {
-                    "com/example/kmp/ui/component" / "*Preview".ktFile()
+                ":ui".module {
+                    "commonMain".sourceSet / kotlin / modulePackage / "component" / "*Preview".ktFile()
                 }
             }
         }
@@ -78,11 +89,11 @@ fun ArchitectureScope.uiRoles() {
             title = "プレビューの土台"
             summary = ":ui モジュールの preview package。@Preview の中身を AppTheme と Surface で包む"
             example("PreviewRoot", "すべての @Preview が使う wrapper")
-            // The one file name in this sample written without a wildcard, so it is also the
-            // one declaration that is reported as `[MissingFile]` when it disappears.
+            // One of the file names in this sample written without a wildcard, so it is also
+            // one of the declarations that is reported as `[MissingFile]` when it disappears.
             layout {
-                "ui/src/commonMain/kotlin" {
-                    "com/example/kmp/ui/preview" / "PreviewRoot".ktFile()
+                ":ui".module {
+                    "commonMain".sourceSet / kotlin / modulePackage / "preview" / "PreviewRoot".ktFile()
                 }
             }
         }
@@ -92,8 +103,8 @@ fun ArchitectureScope.uiRoles() {
             example("Destination", "遷移先の一覧")
             example("Navigator", "現在の遷移先を StateFlow で持つ")
             layout {
-                "navigation/src/commonMain/kotlin" {
-                    "com/example/kmp/navigation" / "*".ktFile()
+                ":navigation".module {
+                    "commonMain".sourceSet / kotlin / modulePackage / "*".ktFile()
                 }
             }
         }

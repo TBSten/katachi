@@ -1,5 +1,6 @@
 package com.example.application
 
+import com.example.modulePackage
 import me.tbsten.katachi.dsl.ArchitectureScope
 
 /**
@@ -18,10 +19,13 @@ fun ArchitectureScope.apiRoles() {
             summary = "HTTP のリクエストを1つ受け取り、対応する Service を呼んで結果を返す"
             example("HealthController", "ヘルスチェックの結果を返す")
             layout {
-                // Step 2 spells every level out as a plain directory. `src/main` is not yet
-                // `mainSourceSet` and `com/example` is not yet `modulePackage`: those arrive in
-                // step 3, and the check has to give the same answer afterwards.
-                "src/main/kotlin/com/example/controller" / "*Controller".ktFile()
+                // The application is the root project, so its module path is `":"`. What the
+                // chain says is the same tree step 2 spelled out by hand: `mainSourceSet` is
+                // `src/main`, `kotlin` is the directory of that name, and `modulePackage`
+                // derives `com/example` from the module being evaluated.
+                ":".module {
+                    mainSourceSet / kotlin / modulePackage / "controller" / "*Controller".ktFile()
+                }
             }
         }
 
@@ -33,7 +37,9 @@ fun ArchitectureScope.apiRoles() {
             layout {
                 // No suffix to key on: a plugin file is named after the Ktor feature it
                 // installs, so the package itself is what says "this is a plugin".
-                "src/main/kotlin/com/example/plugin" / "*".ktFile()
+                ":".module {
+                    mainSourceSet / kotlin / modulePackage / "plugin" / "*".ktFile()
+                }
             }
         }
     }

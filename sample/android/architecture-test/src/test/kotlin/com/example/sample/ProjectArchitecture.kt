@@ -8,7 +8,25 @@ import com.example.sample.gradle.gradleRoles
 import com.example.sample.testing.testingRoles
 import com.example.sample.tool.toolRoles
 import me.tbsten.katachi.dsl.Architecture
+import me.tbsten.katachi.dsl.ModulePackage
 import me.tbsten.katachi.dsl.architecture
+import me.tbsten.katachi.dsl.capitalizedModuleNamePackage
+
+/**
+ * Where a module keeps its Kotlin sources, below its own source set.
+ *
+ * Declared once, here, and written as `modulePackage` inside every `module { }` block that
+ * follows the convention: `:ui` means `com/example/sample/ui`, `:feature:home` means
+ * `com/example/sample/feature/home`. It is a strategy rather than a string because one
+ * `val` has to stand for a different directory in every module it is read in.
+ *
+ * Two modules of this sample do **not** follow it and write their package out as a plain
+ * key instead: `:app`, whose sources sit directly in `com.example.sample` because it is the
+ * application itself, and `:architecture-test`, which is not a layer of the app at all.
+ * Bending the strategy into covering those two would hide, in a lambda, the very fact that
+ * they are exceptions.
+ */
+val modulePackage: ModulePackage = capitalizedModuleNamePackage("com.example.sample")
 
 /**
  * The architecture of this sample, written the way a user of katachi would write it.
@@ -26,10 +44,12 @@ import me.tbsten.katachi.dsl.architecture
  * the sample is also the worked example of it. Note that an extension function cannot be
  * called by its fully qualified name, which is why the imports above are needed.
  *
- * Step 2 fills in every `layout { }` with directories and files only: modules, source sets
- * and base packages are all written out as plain directories, which is verbose on purpose.
- * Step 3 rewrites the same declarations with `".module { }"`, source sets and
- * `modulePackage`, and the check result has to come out identical.
+ * Every `layout { }` below is written in terms of Gradle: a place is named by the module
+ * path it belongs to (`":feature:*".module { }`), the source set inside it (`mainSourceSet`)
+ * and [modulePackage], rather than by spelling the directories out. `:feature:*` is the one
+ * to read first — it is matched against the modules that exist, and what the `*` captured is
+ * read back as `wildcards[0]`, which is what ties a module's name to the names of the files
+ * in it.
  *
  * Building this value reads nothing from disk — the `layout { }` blocks are deferred until
  * a check runs — so it is safe to hold in a top level `val`.

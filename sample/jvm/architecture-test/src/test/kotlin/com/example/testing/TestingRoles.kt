@@ -21,9 +21,12 @@ fun ArchitectureScope.testingRoles() {
             example("ProjectArchitectureSpec", "この定義そのものを確かめる")
             layout {
                 // `**` stands for the package levels, which mirror the main source set and are
-                // not worth writing twice. The `*` after it is one file name, so a directory
-                // holding no `.kt` at all is still reported.
-                "src/test/kotlin" / "**" / "*".ktFile()
+                // not worth writing twice — so `modulePackage` is deliberately not used here.
+                // The `*` after it is one file name, so a directory holding no `.kt` at all is
+                // still reported.
+                ":".module {
+                    testSourceSet / kotlin / "**" / "*".ktFile()
+                }
             }
         }
 
@@ -34,8 +37,11 @@ fun ArchitectureScope.testingRoles() {
             example("ApiRoles.kt", "API レイヤーの役割を宣言する拡張関数")
             layout {
                 // The price of the recommended setup: `:architecture-test` checks itself, so
-                // the definition has to give itself a role like everything else.
-                "architecture-test/src/test/kotlin" / "**" / "*".ktFile()
+                // the definition has to give itself a role like everything else. The module
+                // path resolves to `architecture-test/`, which is where the files actually are.
+                ":architecture-test".module {
+                    testSourceSet / kotlin / "**" / "*".ktFile()
+                }
             }
         }
     }

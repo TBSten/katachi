@@ -1,5 +1,6 @@
 package com.example.sample.application
 
+import com.example.sample.modulePackage
 import me.tbsten.katachi.dsl.ArchitectureScope
 
 /**
@@ -22,17 +23,21 @@ fun ArchitectureScope.dataRoles() {
             // the same package, so `description` is what tells the two apart — which is the
             // question it exists to answer.
             layout {
-                "data/src/main/kotlin/com/example/sample/data" {
-                    description = "インターフェース。呼び出し側が依存する型"
-                    "user" { "*Repository".ktFile() }
-                    "settings" { "*Repository".ktFile() }
+                ":data".module {
+                    mainSourceSet / kotlin / modulePackage {
+                        description = "インターフェース。呼び出し側が依存する型"
+                        "user" { "*Repository".ktFile() }
+                        "settings" { "*Repository".ktFile() }
+                    }
                 }
             }
             layout {
-                "data/src/main/kotlin/com/example/sample/data" {
-                    description = "実装。インターフェースと同じ package に並べる"
-                    "user" { "*RepositoryImpl".ktFile() }
-                    "settings" { "*RepositoryImpl".ktFile() }
+                ":data".module {
+                    mainSourceSet / kotlin / modulePackage {
+                        description = "実装。インターフェースと同じ package に並べる"
+                        "user" { "*RepositoryImpl".ktFile() }
+                        "settings" { "*RepositoryImpl".ktFile() }
+                    }
                 }
             }
         }

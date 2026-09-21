@@ -1,5 +1,6 @@
 package com.example.application
 
+import com.example.modulePackage
 import me.tbsten.katachi.dsl.ArchitectureScope
 
 /** Roles that assemble and configure the running process. */
@@ -14,7 +15,9 @@ fun ArchitectureScope.appRoles() {
             layout {
                 // No wildcard, so this one is required: delete `Application.kt` and the check
                 // reports `[MissingFile]` instead of silently passing.
-                "src/main/kotlin/com/example/Application".ktFile()
+                ":".module {
+                    mainSourceSet / kotlin / modulePackage / "Application".ktFile()
+                }
             }
         }
 
@@ -26,9 +29,17 @@ fun ArchitectureScope.appRoles() {
             layout {
                 // Listed one by one rather than with `anyFile()`: there are exactly two of
                 // them, and a third one appearing is something to be told about.
-                "src/main/resources" {
-                    "application.conf".file()
-                    "logback.xml".file()
+                //
+                // `resources` is a plain directory, not a source set and not a package: a
+                // source set only ever means `src/<name>`, and what sits below it is written
+                // out.
+                ":".module {
+                    mainSourceSet {
+                        "resources" {
+                            "application.conf".file()
+                            "logback.xml".file()
+                        }
+                    }
                 }
             }
         }
