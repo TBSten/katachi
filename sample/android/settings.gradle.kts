@@ -48,6 +48,7 @@ rootProject.name = "katachi-sample-android"
 includeBuild("../..")
 
 include(":app")
+include(":architecture-test")
 include(":feature:home")
 include(":feature:settings")
 include(":data")

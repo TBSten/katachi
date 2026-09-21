@@ -17,6 +17,14 @@ plugins {
     // katachi with the older Kotlin.
     alias(libs.plugins.kotlinMultiplatform) apply false
 
+    // `:architecture-test` is a plain JVM module. The declaration has to be here rather than
+    // only in that module: the Kotlin Gradle Plugin is already on the buildscript classpath
+    // (the line above puts it there), and asking for `org.jetbrains.kotlin.jvm` with a
+    // version in a subproject then fails with "the plugin is already on the classpath with
+    // an unknown version, so compatibility cannot be checked". Declaring both ids in the
+    // same block resolves them together, from the one version of the root catalog.
+    alias(libs.plugins.kotlinJvm) apply false
+
     // Compose Multiplatform: the runtime artifacts and the `compose.*` accessors.
     alias(sampleLibs.plugins.composeMultiplatform) apply false
     // The Compose compiler. Released with Kotlin, so its alias lives in the root catalog and

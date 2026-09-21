@@ -26,6 +26,12 @@ plugins {
     //   2. hold AGP at 8.13.x, where KGP is applied explicitly and the version is ours
     //   3. build katachi against the Kotlin version AGP bundles
     alias(libs.plugins.kotlinAndroid) apply false
+    // `:architecture-test` is a plain kotlin("jvm") module. Declared here with the
+    // version so that the module itself can apply it without one: AGP already puts a
+    // Kotlin Gradle Plugin on the buildscript classpath with no version attached, and
+    // asking for a version in the module would fail with "already on the classpath
+    // with an unknown version".
+    alias(libs.plugins.kotlinJvm) apply false
 
     // The Compose compiler plugin ships with Kotlin and must be kept on exactly the
     // Kotlin version above. The root catalog declares it against the same `kotlin`

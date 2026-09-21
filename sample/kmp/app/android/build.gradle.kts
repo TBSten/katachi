@@ -49,10 +49,9 @@ dependencies {
     // `ComponentActivity.setContent`.
     implementation(sampleLibs.androidxActivityCompose)
 
-    // katachi is a JVM library, so its tests have to run on a JVM source set. This sample
-    // has no JVM target, so every katachi test of the sample lives here, in the unit tests
-    // of the one plain Android module.
-    testImplementation(libs.katachi)
+    // The katachi tests are NOT here: they live in `:architecture-test`, a plain JVM module
+    // of their own. What remains is this module's own unit tests -- the Compose-free parts
+    // of the sample, which need a JVM source set and have none of their own.
     testImplementation(libs.kotestRunnerJunit5)
     testImplementation(libs.kotestAssertionsCore)
     testImplementation(project(":testing"))

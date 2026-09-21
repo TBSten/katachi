@@ -27,39 +27,58 @@
  * One standalone Gradle build under `sample/`.
  *
  * @property name directory name under `sample/`, also the task name suffix.
- * @property defaultTask task invoked through that sample's own wrapper.
+ * @property defaultTasks tasks invoked through that sample's own wrapper.
  * @property needsAndroidSdk whether the build fails without an Android SDK location.
  */
 data class SampleBuild(
     val name: String,
-    val defaultTask: String,
+    val defaultTasks: List<String>,
     val needsAndroidSdk: Boolean,
 )
 
 val sampleBuilds = listOf(
-    SampleBuild("jvm", "check", needsAndroidSdk = false),
+    // `check` without a project path runs it in every project of the build, so
+    // `:architecture-test:test` -- the katachi verification -- is included.
+    SampleBuild("jvm", listOf("check"), needsAndroidSdk = false),
     // `check` here includes Android Lint over nine modules. Measured on this
     // sample: 14 s warm, 21 s with `clean --no-build-cache`, so there is no
     // reason to narrow it down to the unit tests. Revisit if the sample grows.
-    SampleBuild("android", "check", needsAndroidSdk = true),
+    SampleBuild("android", listOf("check"), needsAndroidSdk = true),
     // Deliberately NOT `check` / `build` / `assemble`, and there is no `jvmTest`
     // in this sample. Its modules declare iosArm64 / iosSimulatorArm64, so the
     // lifecycle tasks drag `compileKotlinIosArm64` and the Kotlin/Native
     // distribution download into the task graph, neither of which works on a
-    // Linux runner. `:app:android:testDebugUnitTest` never reaches an Apple task.
-    SampleBuild("kmp", ":app:android:testDebugUnitTest", needsAndroidSdk = true),
+    // Linux runner. Neither task below ever reaches an Apple task.
+    //
+    // Two tasks, because they verify two different things and neither implies
+    // the other:
+    //   * `:architecture-test:test` is the katachi verification. It moved out of
+    //     `:app:android` into a module of its own, so running only the Android
+    //     unit tests would let every katachi assertion silently stop running.
+    //   * `:app:android:testDebugUnitTest` is what proves the sample still
+    //     compiles as a Kotlin Multiplatform project. `:architecture-test` is a
+    //     plain JVM module that references none of `:ui` / `:data` / `:feature:*`.
+    SampleBuild(
+        "kmp",
+        listOf(":architecture-test:test", ":app:android:testDebugUnitTest"),
+        needsAndroidSdk = true,
+    ),
 )
 
 /**
- * Task to run inside `sample/[sample]`.
+ * Tasks to run inside `sample/[sample]`.
  *
  * Override for one sample with `-Pkatachi.sample.<name>.task=...`, or for all of
- * them with `-Pkatachi.sample.task=...`.
+ * them with `-Pkatachi.sample.task=...`. Several tasks are separated by spaces.
  */
-fun sampleTaskOf(sample: SampleBuild): String =
+fun sampleTasksOf(sample: SampleBuild): List<String> =
     providers.gradleProperty("katachi.sample.${sample.name}.task")
         .orElse(providers.gradleProperty("katachi.sample.task"))
-        .getOrElse(sample.defaultTask)
+        .orNull
+        ?.split(" ")
+        ?.filter { it.isNotBlank() }
+        ?.takeIf { it.isNotEmpty() }
+        ?: sample.defaultTasks
 
 private val gradlewCommand: List<String> =
     if (providers.systemProperty("os.name").get().lowercase().startsWith("windows")) {
@@ -107,7 +126,7 @@ val registeredSamples = mutableListOf<TaskProvider<Exec>>()
 
 sampleBuilds.forEach { sample ->
     val suffix = sample.name.replaceFirstChar { it.uppercaseChar() }
-    val sampleTask = sampleTaskOf(sample)
+    val sampleTasks = sampleTasksOf(sample)
     val sampleDir = layout.projectDirectory.dir("sample/${sample.name}").asFile
     // Captured eagerly: by the time the configuration block below runs,
     // `registeredSamples` would already contain this very task.
@@ -116,14 +135,17 @@ sampleBuilds.forEach { sample ->
     val task = tasks.register<Exec>("checkSample$suffix") {
         group = LifecycleBasePlugin.VERIFICATION_GROUP
         description = buildString {
-            append("Runs `$sampleTask` in the standalone sample build sample/${sample.name}.")
+            append(
+                "Runs `${sampleTasks.joinToString(" ")}` in the standalone sample build " +
+                    "sample/${sample.name}.",
+            )
             if (sample.needsAndroidSdk) {
                 append(" Needs an Android SDK: set ANDROID_HOME (or ANDROID_SDK_ROOT),")
                 append(" or write sdk.dir into sample/${sample.name}/local.properties.")
             }
         }
         workingDir = sampleDir
-        commandLine(gradlewCommand + listOf(sampleTask, "--console=plain"))
+        commandLine(gradlewCommand + sampleTasks + listOf("--console=plain"))
 
         // The nested build inherits this process's environment, so ANDROID_HOME
         // set by the developer or by CI already reaches it. This only covers the

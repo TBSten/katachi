@@ -44,6 +44,11 @@ rootProject.name = "katachi-sample-kmp"
 includeBuild("../..")
 
 include(":app:android")
+// The recommended home for katachi: one plain JVM module holding the architecture
+// definition and the test that asserts it. It matters most in a build like this one, whose
+// modules are all Kotlin Multiplatform without a JVM target -- katachi is a JVM library, so
+// there is no `commonTest` it could live in.
+include(":architecture-test")
 include(":data")
 include(":feature:home")
 include(":feature:settings")

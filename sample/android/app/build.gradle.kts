@@ -37,13 +37,6 @@ android {
     }
 }
 
-// kotest runs on the JUnit Platform. Without this, Gradle 9 fails the test task with
-// "There are test sources present and no filters are applied, but the test task did not
-// discover any tests to execute."
-tasks.withType<Test>().configureEach {
-    useJUnitPlatform()
-}
-
 dependencies {
     implementation(project(":feature:home"))
     implementation(project(":feature:settings"))
@@ -57,8 +50,4 @@ dependencies {
     debugImplementation(sampleLibs.composeUiTooling)
 
     // Resolved through the composite build declared in settings.gradle.kts.
-    testImplementation(libs.katachi)
-    testImplementation(libs.kotestRunnerJunit5)
-    testImplementation(libs.kotestAssertionsCore)
-    testImplementation(project(":testing"))
 }

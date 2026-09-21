@@ -5,7 +5,7 @@ deliberately invisible to `settings.gradle.kts`.
 
 That is the point: a real KMP repository mixes directories Gradle manages with directories
 it does not, and katachi has to describe both. The `app/XcodeProject` role in
-`app/android/src/test/kotlin/com/example/kmp/app/ProjectArchitecture.kt` is the one that
+`architecture-test/src/test/kotlin/com/example/kmp/application/AppRoles.kt` is the one that
 covers this directory; from implementation step 2 on it will be declared as ignored,
 because Xcode — not katachi — owns what is in here.
 
@@ -30,14 +30,17 @@ app/ios/
 
 ## Why iOS is not built in CI
 
-katachi is a JVM library, so no katachi test can run on iOS. The Kotlin iOS targets are
-still declared (`iosArm64()` / `iosSimulatorArm64()` in the KMP modules) so that the module
-graph is a realistic one, but a Linux CI runner cannot compile them and a clean macOS
-runner would first download the Kotlin/Native distribution. Now that the UI modules use
-Compose Multiplatform, compiling them for iOS also means compiling the Compose Kotlin/Native
-klibs, which is slower still.
+katachi is a JVM library, so no katachi test can run on iOS. That is why the definition
+lives in `:architecture-test`, a plain `kotlin("jvm")` module: none of the other modules
+here has a JVM target to put it in. The Kotlin iOS targets are still declared (`iosArm64()`
+/ `iosSimulatorArm64()` in the KMP modules) so that the module graph is a realistic one, but
+a Linux CI runner cannot compile them and a clean macOS runner would first download the
+Kotlin/Native distribution. Now that the UI modules use Compose Multiplatform, compiling
+them for iOS also means compiling the Compose Kotlin/Native klibs, which is slower still.
 
-CI therefore runs `:app:android:testDebugUnitTest`, which never reaches an iOS task.
+CI therefore runs `:architecture-test:test` (the katachi checks) and
+`:app:android:testDebugUnitTest` (the sample's own unit tests). Neither ever reaches an iOS
+task, and neither is a lifecycle task such as `check`, which would.
 
 ## Connecting the shared code (later)
 

@@ -1,0 +1,28 @@
+// The recommended way to adopt katachi: one plain JVM module that holds the architecture
+// definition and the test that asserts it. It belongs to no layer of the app, and it is a
+// plain kotlin("jvm") module even when the project is Android or KMP, because katachi
+// itself is a JVM library.
+plugins {
+    alias(libs.plugins.kotlinJvm)
+}
+
+kotlin {
+    jvmToolchain(21)
+}
+
+tasks.test {
+    useJUnitPlatform()
+    testLogging {
+        events("passed", "failed", "skipped")
+    }
+}
+
+dependencies {
+    // No version is written here: `libs.katachi` points at
+    // `me.tbsten.katachi:katachi:0.1.0-SNAPSHOT`, which does not exist in any repository.
+    // The `includeBuild("../..")` in settings.gradle.kts substitutes it with the local
+    // project, so a broken composite build fails loudly instead of silently resolving.
+    testImplementation(libs.katachi)
+    testImplementation(libs.kotestRunnerJunit5)
+    testImplementation(libs.kotestAssertionsCore)
+}

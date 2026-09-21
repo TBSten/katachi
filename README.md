@@ -12,10 +12,54 @@ v0.1 は **Deny by default のアーキテクチャテスト**として出す。
 > `layout { }` の中身の評価も `Architecture.assert()` もまだ無い。公開もしていない（`0.1.0-SNAPSHOT`）。
 > 詳細な計画は `.local/features-by-version/v0.1/`（リポジトリには含めていない作業メモ）にある。
 
+## 導入
+
+**プロジェクトの種別（JVM / Android / KMP）によらず、手順は同じ4ステップ。**
+
+1. **JVM モジュールを1つ作る。** 名前は `:architecture-test` など。Android でも KMP でも
+   素の `kotlin("jvm")` モジュールにする（katachi は JVM ライブラリなので）
+2. `testImplementation(katachi)` を足す
+3. `architecture { }` を書く
+4. テストを1個書く
+
+```kotlin
+// settings.gradle.kts
+include(":architecture-test")
+```
+
+```kotlin
+// architecture-test/build.gradle.kts
+plugins { kotlin("jvm") }
+
+tasks.test { useJUnitPlatform() }
+
+dependencies {
+    testImplementation("me.tbsten.katachi:katachi:0.1.0")
+}
+```
+
+```kotlin
+// architecture-test/src/test/kotlin/com/example/ProjectArchitectureTest.kt
+class ProjectArchitectureTest {
+    @Test fun `構成が allow list に従っている`() = projectArchitecture.assert()
+}
+```
+
+アーキテクチャ定義はプロジェクト全体を記述するもので、**どのレイヤーにも属さない**。
+だから既存モジュール（ルートの test や `:app` の test）に間借りさせず、モジュールを1つ立てる。
+KMP プロジェクトではそもそも間借り先が無い（katachi は JVM only なので `commonTest` には置けない）。
+
+代償はこのモジュール自身も allow list に載ることだが、
+「役割を持たないファイルは存在しない」という katachi の原則からすればむしろ載るべきもの。
+
+> [!NOTE]
+> `assert()` はまだ実装されていない（v0.1 ステップ2以降）。現時点で動くのは定義の記述までで、
+> サンプルは組み上がったモデルを検証するテストを書いている。
+
 ## 書き味
 
 ```kotlin
-// test sourceSet に置く
+// :architecture-test の test sourceSet に置く
 val projectArchitecture = architecture {
     "domain".group {
         title = "ドメイン"
@@ -31,8 +75,10 @@ val projectArchitecture = architecture {
 
 - Gradle plugin は要らない。`testImplementation` を足すだけ
 - JUnit4 / JUnit5 / kotest のどれでも使える（将来の `assert()` は `AssertionError` を投げるだけ）
-- 定義が大きくなったら `ArchitectureScope` の拡張関数に切り出してファイル分割できる
-  （分割に使う関数を `inline` にしないこと。`inline` にすると、違反メッセージが示す宣言位置が
+- 定義が大きくなったら `ArchitectureScope` の拡張関数に切り出してファイル分割できる。
+  違反メッセージが示す宣言位置は、呼び出し元ではなく**その宣言を書いたファイル**を指す
+  （3サンプルがこの形で書かれていて、テストで実証している）
+  （分割に使う関数を `inline` にしないこと。`inline` にすると、宣言位置が
   呼び出し元ファイルの末尾より後ろの、存在しない行を指す）
 
 ## モジュール構成
@@ -51,11 +97,22 @@ val projectArchitecture = architecture {
 **独立した Gradle ビルド**で、`includeBuild("../..")` で katachi をこのリポジトリのソースから取り込む。
 利用者と同じ書き方（`testImplementation(libs.katachi)`）で使うので、結合テストを兼ねている。
 
-| サンプル | 内容 | ルートから回すタスク |
-|---|---|---|
-| `sample/jvm` | Ktor の最小サーバ（single module） | `./gradlew checkSampleJvm` |
-| `sample/android` | マルチモジュールの Android アプリ（Compose / AndroidX の実依存あり） | `./gradlew checkSampleAndroid` |
-| `sample/kmp` | Android + iOS の KMP プロジェクト（Compose Multiplatform の実依存あり） | `./gradlew checkSampleKmp` |
+| サンプル | 内容 | katachi の定義の置き場所 | ルートから回すタスク |
+|---|---|---|---|
+| `sample/jvm` | Ktor の最小サーバ（アプリ本体はルートプロジェクトの1モジュール） | `:architecture-test` | `./gradlew checkSampleJvm` |
+| `sample/android` | マルチモジュールの Android アプリ（Compose / AndroidX の実依存あり） | `:app` の `src/test`（下記） | `./gradlew checkSampleAndroid` |
+| `sample/kmp` | Android + iOS の KMP プロジェクト（Compose Multiplatform の実依存あり） | `:architecture-test` | `./gradlew checkSampleKmp` |
+
+`:architecture-test` は上の「導入」で書いた推奨形そのもので、`kotlin("jvm")` と
+`testImplementation(libs.katachi)` しか持たない。`sample/android` だけは現状 `:app` の
+`src/test/kotlin` に間借りしていて、他の2つと形が揃っていない（→
+`.local/features-by-version/v0.1/open-issues.md`）。
+
+定義は**1ファイルではなく package で分けてある**。`application`（アプリ本体の役割）/
+`testing`（テスト関連）/ `gradle`（ビルド設定）/ `tool`（git など）の4つで、
+それぞれが非 inline の `ArchitectureScope` 拡張関数を公開し、`ProjectArchitecture.kt` はそれを呼ぶだけ。
+**拡張関数に切り出しても宣言位置が呼び出し元ではなく定義を書いたファイルを指すこと**を、
+各サンプルの `ProjectArchitectureSpec` がファイル名の完全一致で検証している。
 
 スタブではなく**実物に近い中身**にしてある。`Screen` は本物の `@Composable`、`ViewModel` は本物の
 `androidx.lifecycle.ViewModel` を継承し、`@Preview` も実際に書いてある。検査対象が実プロジェクトと同じ形でなければ、
@@ -76,8 +133,16 @@ kmp が `user` / `platform`）。katachi が表現できなければならない
 そのサンプルの `./gradlew` を直接叩いてもよい。
 
 回すタスクは `-Pkatachi.sample.<name>.task=...`（全サンプルなら `-Pkatachi.sample.task=...`）で差し替えられる。
-`sample/kmp` だけは `check` ではなく `:app:android:testDebugUnitTest` が既定になっている。
-`check` は iOS ターゲットのコンパイルを task graph に入れてしまい、Linux では通らないため。
+複数タスクはスペース区切りで書く。
+
+`sample/jvm` と `sample/android` は `check`。`sample/kmp` だけは
+`:architecture-test:test` と `:app:android:testDebugUnitTest` の**2つ**が既定になっている。
+
+- `check` を使わないのは、KMP モジュールが iOS ターゲットを宣言していて、`check` が
+  `compileKotlinIosArm64` と Kotlin/Native ツールチェーンのダウンロードを task graph に入れてしまうため
+- それでも2つ回すのは、片方ずつでは足りないため。`:architecture-test:test` が katachi の検証で、
+  `:app:android:testDebugUnitTest` が「サンプルが KMP プロジェクトとしてコンパイルできること」の検証。
+  `:architecture-test` は素の JVM モジュールで `:ui` / `:data` / `:feature:*` を一切参照しない
 
 ### Android SDK
 

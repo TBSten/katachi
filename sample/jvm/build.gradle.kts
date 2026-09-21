@@ -22,11 +22,10 @@ dependencies {
     implementation(sampleLibs.ktorSerializationKotlinxJson)
     implementation(sampleLibs.logbackClassic)
 
-    // No version is written here either: `libs.katachi` points at
-    // `me.tbsten.katachi:katachi:0.1.0-SNAPSHOT`, which does not exist in any repository.
-    // The `includeBuild("../..")` in settings.gradle.kts substitutes it with the local
-    // project, so a broken composite build fails loudly instead of silently resolving.
-    testImplementation(libs.katachi)
+    // katachi is not a dependency of this module. The architecture definition and the
+    // test that asserts it live in `:architecture-test`, a module of their own, because
+    // they describe the whole project and belong to no layer of it. kotest stays: this
+    // module still has tests of its own (HealthRouteTest).
     testImplementation(libs.kotestRunnerJunit5)
     testImplementation(libs.kotestAssertionsCore)
     testImplementation(sampleLibs.ktorServerTestHost)

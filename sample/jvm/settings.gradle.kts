@@ -42,6 +42,11 @@ rootProject.name = "katachi-sample-jvm"
 // Pulls katachi in as a composite build. No `dependencySubstitution { }` is needed: the
 // substitution is derived from `group` + project name, so `me.tbsten.katachi:katachi`
 // resolves to the local `:katachi` project. Verify with
-// `./gradlew dependencyInsight --configuration testRuntimeClasspath --dependency katachi`
-// and look for "(by composite build)".
+// `./gradlew :architecture-test:dependencyInsight --configuration testRuntimeClasspath
+// --dependency katachi` and look for "(by composite build)".
 includeBuild("../..")
+
+// The recommended way to adopt katachi: one plain JVM module holding the architecture
+// definition and the test that asserts it. Keeping it out of `:` (the application module)
+// is what makes the adoption steps identical for a JVM, an Android and a KMP project.
+include(":architecture-test")

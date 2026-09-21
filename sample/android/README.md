@@ -68,8 +68,48 @@ Compose / AndroidX の実依存を入れてあり、`assembleDebug` は実際に
 
 ## katachi の定義
 
-- `app/src/test/kotlin/com/example/sample/ProjectArchitecture.kt` — group と役割の定義
-- `app/src/test/kotlin/com/example/sample/ProjectArchitectureSpec.kt` — 組み上がった `Architecture` の検証
-- `app/src/test/kotlin/com/example/sample/ProjectRootSpec.kt` — プロジェクトルート特定の前提条件を守る番兵
+`architecture-test/src/test/kotlin/com/example/sample/` に置いてある。
+
+`:architecture-test` は素の `kotlin("jvm")` モジュールで、アプリのどのレイヤーにも属さない。
+katachi の推奨導入形そのもので、3サンプルとも同じ形になっている。
+
+- `ProjectArchitecture.kt` — `architecture { }` 本体。下の拡張関数を呼ぶだけ
+- `ProjectArchitectureSpec.kt` — 組み上がった `Architecture` の検証
+- `ProjectRootSpec.kt` — プロジェクトルート特定の前提条件を守る番兵
+
+group と役割の定義は、関心ごとに package を分けて `ArchitectureScope` の拡張関数にしてある。
+katachi が推奨する分割の形そのもので、サンプルがその実例を兼ねる。
+
+- `application/` — アプリ本体（`UiRoles.kt` / `DataRoles.kt` / `AppRoles.kt`）
+- `testing/` — テスト関連（`TestingRoles.kt`）
+- `gradle/` — ビルド設定（`GradleRoles.kt`）。`.gitignore` が `build/` を無視するので
+  package 名は `build` ではなく `gradle`
+- `tool/` — そのほかのツール（`ToolRoles.kt`）。いまは git だけ
+
+拡張関数は **`inline` にしない**。宣言位置はスタックトレースから取るので、inline すると
+呼び出し元ファイルの存在しない行を指すようになる。`ProjectArchitectureSpec` は各宣言の
+`declaredAt` がそれを書いたファイル（`UiRoles.kt` など）を指すことを検証していて、
+これが分割しても宣言位置が壊れないことの証明になっている。
 
 `layout { }` の中身は実装ステップ2以降で書き足す。
+
+### なぜ `:app` ではなく専用モジュールなのか
+
+もともとは `:app` の `src/test` に間借りしていた。移した理由は3つ。
+
+- **アーキテクチャ定義は app の一部ではない。** `:app` に置くと、どのレイヤーにも属さないものが
+  一レイヤーの持ち物に見える
+- **プロジェクトの種別によらず同じ形になる。** `sample/kmp` は JVM ターゲットを持たないので
+  `commonTest` に置けず、`:app:android` に間借りするしかなかった。専用モジュールならその問題が消える
+- **v0.3 の Gradle plugin が種別で分岐しなくなる。** `sourceSets["test"]` は Android では variant 単位、
+  KMP では存在しない。`kotlin("jvm")` のモジュールなら常に存在する
+
+移設にあたって変更が要らなかったもの: `ProjectRootSpec` の期待値（1階層上が `sample/android/gradlew`）、
+`ProjectArchitectureSpec` がソースを読み戻す相対パス（モジュール相対）、CI が回すタスク（`check` のまま
+`:architecture-test:test` を含む）。
+
+変更が要ったのは1点だけ。ルートの `build.gradle.kts` に
+`alias(libs.plugins.kotlinJvm) apply false` を足した。AGP がバージョン無しの
+Kotlin Gradle Plugin を buildscript classpath に載せるため、モジュール側でバージョンを指定すると
+`already on the classpath with an unknown version` で落ちる。
+

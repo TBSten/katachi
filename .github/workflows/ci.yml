@@ -66,8 +66,10 @@ jobs:
       - name: Check sample/android
         run: ./gradlew checkSampleAndroid --stacktrace
 
-      # Runs :app:android:testDebugUnitTest, not `check`: the KMP modules declare
-      # Apple targets that a Linux runner cannot build.
+      # Runs :architecture-test:test and :app:android:testDebugUnitTest, not
+      # `check`: the KMP modules declare Apple targets that a Linux runner cannot
+      # build. The first task is the katachi verification (it lives in a module of
+      # its own), the second proves the sample still compiles as a KMP project.
       - name: Check sample/kmp
         run: ./gradlew checkSampleKmp --stacktrace
 

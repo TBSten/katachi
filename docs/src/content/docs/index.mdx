@@ -1,0 +1,69 @@
+---
+title: katachi
+description: アーキテクチャを Kotlin DSL で書き、同じ定義からテストとドキュメントの両方を出す。
+template: splash
+hero:
+  tagline: アーキテクチャを1箇所に書いて、テストとドキュメントの両方にする。
+  actions:
+    - text: 導入する
+      link: /guides/install/
+      icon: right-arrow
+    - text: GitHub
+      link: https://github.com/tbsten/katachi
+      icon: external
+      variant: minimal
+---
+
+import { Card, CardGrid } from '@astrojs/starlight/components';
+
+:::caution[まだ実装中]
+katachi は v0.1 を実装している途中です。現時点で動くのは
+`architecture { }` / group / 役割の宣言までで、`layout { }` の中身の評価も
+`assert()` もまだありません。公開もしていません。
+:::
+
+## 何をするもの？
+
+アーキテクチャのドキュメントは腐ります。「UseCase はここに置く」と書いた README は、
+半年後には実態と食い違っています。テストとドキュメントが別々に書かれる限り、
+どちらかが必ず嘘をつきます。
+
+katachi は**同じ定義から両方を出します**。
+
+```kotlin
+val projectArchitecture = architecture {
+    "domain".group {
+        "UseCase" {
+            title = "ユースケース"
+            summary = "各画面で発生するアプリ固有の1つの振る舞い"
+            example("GetUserUseCase", "ユーザーを取得する")
+
+            layout {
+                ":core:domain".module {
+                    mainSourceSet / kotlin / modulePackage / "useCase" / "*UseCase".ktFile()
+                }
+            }
+        }
+    }
+}
+```
+
+この1つの定義が、テストとしては「宣言に載っていないファイルがあれば落ちる」検査になり、
+ドキュメントとしては「UseCase は何で、どこに置くのか」のページになります。
+
+<CardGrid stagger>
+	<Card title="Deny by default" icon="approve-check">
+		宣言に載っていないファイルは違反として報告されます。
+		「いつの間にか増えた置き場所」が起きません。
+	</Card>
+	<Card title="役割起点" icon="star">
+		モジュール構造ではなく**役割**から書きます。同じ役割が複数モジュールに
+		置かれても、説明は1箇所のままです。
+	</Card>
+	<Card title="Gradle plugin は不要" icon="setting">
+		依存を1つ足して、テストを1つ書くだけです。
+	</Card>
+	<Card title="中身の検査は Konsist に委譲" icon="puzzle">
+		配置は katachi、`.kt` の中身は Konsist。違反は同じレポートに並びます。
+	</Card>
+</CardGrid>
