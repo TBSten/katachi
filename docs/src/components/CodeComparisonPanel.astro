@@ -1,0 +1,28 @@
+---
+import { Code } from '@astrojs/starlight/components';
+
+/**
+ * `<CodeComparison>` の 1 カラム。
+ *
+ * 中身の書き方は 2 通りある。
+ *
+ * 1. `code` を渡す — Vite の `?raw` import で読んだ文字列をそのまま流す。
+ *    syntax highlight は Starlight の `Code`（Expressive Code）に任せる。
+ * 2. 子要素に書く — MDX のコードフェンスをそのまま入れる。
+ *    フェンスの `title="..."` がそのままタイトルになる。
+ */
+interface Props {
+	/** カラムの見出しに出すファイル名。`code` を渡すときだけ効く。 */
+	title?: string;
+	/** Expressive Code に渡す言語。`code` を渡すときだけ効く。 */
+	lang?: string;
+	/** ファイルの中身。`?raw` import の文字列を想定している。 */
+	code?: string;
+}
+
+const { title, lang, code } = Astro.props;
+---
+
+<div class="code-comparison-panel">
+	{code === undefined ? <slot /> : <Code code={code} lang={lang} title={title} />}
+</div>

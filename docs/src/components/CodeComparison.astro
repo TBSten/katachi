@@ -1,0 +1,21 @@
+---
+/**
+ * 入力のソースコードと、そこから生成されたファイルを横に並べる。
+ *
+ * 直接は使わず、`CodeComparison.ts` の既定エクスポート越しに
+ * `<CodeComparison>` / `<CodeComparison.Panel>` として使う。
+ *
+ * レイアウトの CSS は `src/styles/code-comparison.css`（Starlight の `customCss`）
+ * にある。理由はそのファイルの先頭コメントを参照。
+ */
+interface Props {
+	/** 並べる列数。既定は 2。 */
+	columns?: number;
+}
+
+const { columns = 2 } = Astro.props;
+---
+
+<div class="code-comparison" style={`--code-comparison-columns: ${columns};`}>
+	<slot />
+</div>

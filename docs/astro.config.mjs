@@ -15,6 +15,9 @@ export default defineConfig({
 			description:
 				'Android / KMP プロジェクトのアーキテクチャを Kotlin DSL で書き、同じ定義から「テスト」と「ドキュメント」の両方を出すライブラリ。',
 			defaultLocale: 'ja',
+			// CodeComparison のレイアウト。scoped style だとドット記法のコンポーネントに
+			// スタイルが伝播しないため、ここでグローバルに読ませている。
+			customCss: ['./src/styles/code-comparison.css'],
 			locales: {
 				root: { label: '日本語', lang: 'ja' },
 			},

@@ -1,0 +1,50 @@
+/*
+ * `<CodeComparison>` のレイアウト。
+ *
+ * `.astro` の scoped style ではなく、ここ（Starlight の `customCss`）に置いている。
+ * `CodeComparison.ts` の `Object.assign` 越しに、MDX からドット記法
+ * （`<CodeComparison.Panel>`）で使う形にしたところ、Astro のスタイル伝播が
+ * コンポーネントを辿れず、scoped style がページに 1 バイトも出力されなかったため。
+ * ドット記法を捨てるか、スタイルをグローバルに出すかの二択で、後者を採った。
+ */
+
+.code-comparison {
+	display: grid;
+	/*
+	 * `minmax(0, 1fr)` が肝。既定の `1fr` は `minmax(auto, 1fr)` と同じで、
+	 * 列が「中身の最小幅」より狭くならない。コードブロックは長い行をそのまま
+	 * 最小幅として主張するので、`auto` のままだとグリッドが横に伸びて
+	 * ページのレイアウトごと壊れる。0 を下限にして、はみ出しは
+	 * 各パネルの中でスクロールさせる。
+	 */
+	grid-template-columns: repeat(var(--code-comparison-columns, 2), minmax(0, 1fr));
+	gap: 1rem;
+	margin-block: 1rem;
+}
+
+.code-comparison-panel {
+	/*
+	 * グリッドの子は既定で `min-width: auto` なので、中身が縮まない限り列も
+	 * 縮まない。0 にして初めて `minmax(0, 1fr)` が効く。
+	 */
+	min-width: 0;
+}
+
+/*
+ * Expressive Code は自前で上下マージンを持っている。そのままだと左右の
+ * カラムで先頭位置がずれるので、パネルの中では打ち消す。
+ */
+.code-comparison-panel .expressive-code {
+	margin-block: 0;
+}
+
+.code-comparison-panel .expressive-code + .expressive-code {
+	margin-block-start: 0.5rem;
+}
+
+/* Starlight のコンテンツ幅が狭くなるあたりで縦積みに切り替える。 */
+@media (max-width: 50rem) {
+	.code-comparison {
+		grid-template-columns: minmax(0, 1fr);
+	}
+}
