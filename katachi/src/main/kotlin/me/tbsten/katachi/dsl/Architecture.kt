@@ -1,7 +1,6 @@
 package me.tbsten.katachi.dsl
 
-import me.tbsten.katachi.check.FileSelection
-import me.tbsten.katachi.check.ModuleResolver
+import me.tbsten.katachi.fs.FileSelection
 
 /**
  * The whole architecture definition: what was declared in `architecture { }` — the groups,

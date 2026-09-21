@@ -1,5 +1,7 @@
 package me.tbsten.katachi.dsl
 
+import me.tbsten.katachi.KatachiDeclarationException
+
 /**
  * What is being named by a declaration the DSL rejected.
  *

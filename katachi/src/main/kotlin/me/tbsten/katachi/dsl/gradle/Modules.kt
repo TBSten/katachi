@@ -1,6 +1,6 @@
 package me.tbsten.katachi.dsl.gradle
 
-import me.tbsten.katachi.dsl.KatachiDeclarationException
+import me.tbsten.katachi.KatachiDeclarationException
 import me.tbsten.katachi.dsl.LayoutDirectoryScope
 import me.tbsten.katachi.dsl.LayoutModule
 import me.tbsten.katachi.dsl.LayoutScope
@@ -41,7 +41,7 @@ import me.tbsten.katachi.dsl.LayoutScope
  * the module it names whether or not it is there, so a module that was deleted shows up
  * as its missing build file rather than silently disappearing from the check.
  *
- * Where a module path lands is [me.tbsten.katachi.check.ModuleResolver]'s answer, which
+ * Where a module path lands is [me.tbsten.katachi.dsl.ModuleResolver]'s answer, which
  * by default replaces `:` with `/`.
  *
  * ## Example 1: Declare a module by its module path
@@ -68,7 +68,7 @@ import me.tbsten.katachi.dsl.LayoutScope
  * }
  * ```
  *
- * @throws me.tbsten.katachi.check.KatachiGlobSyntaxException when the module path cannot be
+ * @throws me.tbsten.katachi.dsl.KatachiGlobSyntaxException when the module path cannot be
  *   read, `":core::data"` or a `**` written anywhere but last.
  * @throws me.tbsten.katachi.dsl.KatachiModuleOutsideLayoutRootException when written
  *   anywhere but directly inside `layout { }`.

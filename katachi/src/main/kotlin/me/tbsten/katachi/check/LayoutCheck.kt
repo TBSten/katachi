@@ -3,6 +3,7 @@ package me.tbsten.katachi.check
 import me.tbsten.katachi.ExperimentalKatachiApi
 import me.tbsten.katachi.processor.ArchitectureProcessor
 import me.tbsten.katachi.processor.ProjectModel
+import me.tbsten.katachi.scan.Violation
 
 /**
  * The `layout { }` check, written as a processor: files the project has that no role allows,

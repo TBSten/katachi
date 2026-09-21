@@ -5,8 +5,8 @@ import io.kotest.core.spec.style.FreeSpec
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
 import io.kotest.matchers.types.shouldBeInstanceOf
+import me.tbsten.katachi.KatachiDeclarationException
 import me.tbsten.katachi.dsl.KatachiInvalidIdentifierException
-import me.tbsten.katachi.dsl.KatachiDeclarationException
 import me.tbsten.katachi.dsl.architecture
 
 /** name -> なぜ不正か。テスト名に使う。 */

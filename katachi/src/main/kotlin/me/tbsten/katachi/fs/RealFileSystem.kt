@@ -1,4 +1,4 @@
-package me.tbsten.katachi.check
+package me.tbsten.katachi.fs
 
 import java.io.File
 import java.nio.file.Files

@@ -1,19 +1,19 @@
-package me.tbsten.katachi.test.check
+package me.tbsten.katachi.test.fs
 
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.FreeSpec
 import io.kotest.matchers.collections.shouldContainExactly
 import io.kotest.matchers.collections.shouldNotContain
 import io.kotest.matchers.shouldBe
-import me.tbsten.katachi.check.FileSelection
-import me.tbsten.katachi.check.FsPath
-import me.tbsten.katachi.check.GitTrackedFileSystem
-import me.tbsten.katachi.check.KatachiGitUnavailableException
-import me.tbsten.katachi.check.KatachiFileSystem
-import me.tbsten.katachi.check.RealFileSystem
-import me.tbsten.katachi.check.findProjectRoot
-import me.tbsten.katachi.check.gitTrackedFileSystem
-import me.tbsten.katachi.check.isInsideGitWorkTree
+import me.tbsten.katachi.fs.FileSelection
+import me.tbsten.katachi.fs.FsPath
+import me.tbsten.katachi.fs.GitTrackedFileSystem
+import me.tbsten.katachi.fs.KatachiFileSystem
+import me.tbsten.katachi.fs.KatachiGitUnavailableException
+import me.tbsten.katachi.fs.RealFileSystem
+import me.tbsten.katachi.fs.findProjectRoot
+import me.tbsten.katachi.fs.gitTrackedFileSystem
+import me.tbsten.katachi.fs.isInsideGitWorkTree
 
 class GitTrackedFileSystemSpec : FreeSpec({
     "偽のファイルシステムに被せたフィルタ" - {

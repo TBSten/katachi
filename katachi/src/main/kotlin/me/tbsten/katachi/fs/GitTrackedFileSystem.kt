@@ -1,10 +1,10 @@
-package me.tbsten.katachi.check
+package me.tbsten.katachi.fs
 
 import java.io.File
 import java.io.IOException
 import java.util.concurrent.TimeUnit
 import me.tbsten.katachi.InternalKatachiApi
-import me.tbsten.katachi.dsl.KatachiCheckException
+import me.tbsten.katachi.KatachiCheckException
 
 /**
  * How the git invocation went wrong.

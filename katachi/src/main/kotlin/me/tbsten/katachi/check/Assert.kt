@@ -2,6 +2,10 @@ package me.tbsten.katachi.check
 
 import me.tbsten.katachi.InternalKatachiApi
 import me.tbsten.katachi.dsl.Architecture
+import me.tbsten.katachi.fs.KatachiFileSystem
+import me.tbsten.katachi.fs.RealFileSystem
+import me.tbsten.katachi.scan.Severity
+import me.tbsten.katachi.scan.Violation
 
 /**
  * The failure `assert()` throws.

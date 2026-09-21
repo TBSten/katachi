@@ -1,5 +1,6 @@
-package me.tbsten.katachi.check
+package me.tbsten.katachi.scan
 
+import me.tbsten.katachi.dsl.Glob
 import me.tbsten.katachi.dsl.LayoutEntry
 import me.tbsten.katachi.dsl.LayoutEntryKind
 import me.tbsten.katachi.dsl.Role

@@ -1,7 +1,7 @@
-package me.tbsten.katachi.check
+package me.tbsten.katachi.dsl
 
 import me.tbsten.katachi.InternalKatachiApi
-import me.tbsten.katachi.dsl.KatachiInternalException
+import me.tbsten.katachi.KatachiInternalException
 
 /**
  * A module pattern with no wildcard in it named no module.
@@ -40,7 +40,7 @@ public class KatachiUnresolvableModulePatternException internal constructor(
  * has not customised `projectDir`, which in practice means every new project. A build that
  * has customised it replaces the resolver. A resolver replaced this way is asked about the
  * modules the layout names. It is not asked which modules exist: expanding `":feature:*"`
- * walks the tree looking for build files (see [discoverModules]), and that stays convention
+ * walks the tree looking for build files (see [me.tbsten.katachi.scan.discoverModules]), and that stays convention
  * based until a Gradle plugin can hand katachi the real list.
  *
  * ## Example 1: place a module at a non-conventional directory
@@ -126,7 +126,7 @@ internal class ModuleTarget(
  * The modules of a project, found once, so that every layout key is expanded against the
  * same list rather than walking the tree again.
  *
- * Built by [moduleIndex] — or by [unresolved] when no file system is at hand, which says
+ * Built by [me.tbsten.katachi.scan.moduleIndex] — or by [unresolved] when no file system is at hand, which says
  * something different and which [targetsOf] answers differently.
  */
 @InternalKatachiApi
@@ -153,7 +153,7 @@ public class ModuleIndex internal constructor(
     /**
      * Whether the project has been listed.
      *
-     * `false` only for an [unresolved] index. One built by [moduleIndex] is resolved even
+     * `false` only for an [unresolved] index. One built by [me.tbsten.katachi.scan.moduleIndex] is resolved even
      * when the project turned out to hold no module at all: that emptiness is an answer.
      */
     public val isResolved: Boolean get() = discovered != null
@@ -252,72 +252,6 @@ public class ModuleIndex internal constructor(
     }
 }
 
-/**
- * Finds the project's modules and pairs them with [resolver].
- *
- * The index this returns is resolved even when the project holds no module: the tree was
- * walked, and what it holds is the answer. [ModuleIndex.unresolved] is the other case.
- */
-@InternalKatachiApi
-public fun moduleIndex(
-    fileSystem: KatachiFileSystem,
-    projectRoot: FsPath,
-    resolver: ModuleResolver = ModuleResolver.Conventional,
-): ModuleIndex = ModuleIndex(
-    resolver = resolver,
-    discovered = discoverModules(fileSystem, projectRoot),
-)
-
-/**
- * Every module below [projectRoot], found by looking for build files.
- *
- * A directory is a module when it holds a `build.gradle.kts` or a `build.gradle`. That is
- * the one thing every Gradle project has — `settings.gradle.kts` is not readable without
- * evaluating it, and a directory name alone says nothing. A directory that is not a module
- * is still walked into, because `:app:android` is a project while `app` is only a folder.
- *
- * Three kinds of directory are left alone:
- *
- * - anything whose name starts with `.`, and `build`, `buildSrc` and `src`. None of them
- *   ever holds a module of this build, and walking `src` of every module is the bulk of the
- *   work otherwise;
- * - a directory holding a settings file, which makes it a separate build. Its projects
- *   belong to that build, not this one, so an included build such as `buildLogic` — or a
- *   sample project sitting inside a library's own repository — contributes no module here.
- *
- * Discovery is convention based and does not consult the [ModuleResolver]: a resolver maps a
- * module path to a directory, and that mapping cannot be run backwards.
- */
-@InternalKatachiApi
-public fun discoverModules(fileSystem: KatachiFileSystem, projectRoot: FsPath): List<ModulePath> {
-    val modules = mutableListOf<ModulePath>()
-    collectModules(fileSystem, projectRoot, ModulePath.ROOT, modules)
-    return modules
-}
-
-private val BUILD_FILE_NAMES = listOf("build.gradle.kts", "build.gradle")
-
-private val SETTINGS_FILE_NAMES = listOf("settings.gradle.kts", "settings.gradle")
-
-private val NEVER_WALKED = setOf("build", "buildSrc", "src")
-
-private fun collectModules(
-    fileSystem: KatachiFileSystem,
-    directory: FsPath,
-    module: ModulePath,
-    into: MutableList<ModulePath>,
-) {
-    if (BUILD_FILE_NAMES.any { fileSystem.exists(directory / it) }) into += module
-    for (child in fileSystem.list(directory)) {
-        val name = child.name
-        if (name.startsWith(".") || name in NEVER_WALKED) continue
-        if (!fileSystem.isDirectory(child)) continue
-        // A settings file makes this the root of another build. Its projects are that
-        // build's, so neither it nor anything below it is a module here.
-        if (SETTINGS_FILE_NAMES.any { fileSystem.exists(child / it) }) continue
-        collectModules(fileSystem, child, module.child(name), into)
-    }
-}
 
 /**
  * Cleans up what a replaced [ModuleResolver] returned: a leading or trailing `/`, a `\`, a

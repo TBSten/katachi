@@ -2,9 +2,9 @@ package me.tbsten.katachi.processor
 
 import me.tbsten.katachi.ExperimentalKatachiApi
 import me.tbsten.katachi.InternalKatachiApi
-import me.tbsten.katachi.check.KatachiFileSystem
-import me.tbsten.katachi.check.RealFileSystem
 import me.tbsten.katachi.dsl.Architecture
+import me.tbsten.katachi.fs.KatachiFileSystem
+import me.tbsten.katachi.fs.RealFileSystem
 
 /**
  * Something that consumes an architecture definition and produces [R].
@@ -103,7 +103,7 @@ public typealias ArchitectureProcessorUnit = ArchitectureProcessor<Unit>
  * projectArchitecture.process(docs)
  * ```
  *
- * @throws me.tbsten.katachi.check.KatachiProjectRootNotFoundException when the processor asks
+ * @throws me.tbsten.katachi.fs.KatachiProjectRootNotFoundException when the processor asks
  *   for files and no directory above the working directory carries a Gradle, Maven or git
  *   marker.
  */

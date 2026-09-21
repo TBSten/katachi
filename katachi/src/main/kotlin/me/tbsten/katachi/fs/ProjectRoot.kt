@@ -1,7 +1,7 @@
-package me.tbsten.katachi.check
+package me.tbsten.katachi.fs
 
 import me.tbsten.katachi.InternalKatachiApi
-import me.tbsten.katachi.dsl.KatachiCheckException
+import me.tbsten.katachi.KatachiCheckException
 
 /**
  * A kind of file that marks the top of a project. Same set as Konsist's root providers, so a

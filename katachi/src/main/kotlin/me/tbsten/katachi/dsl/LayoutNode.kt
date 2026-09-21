@@ -1,7 +1,5 @@
 package me.tbsten.katachi.dsl
 
-import me.tbsten.katachi.check.GlobProblem
-import me.tbsten.katachi.check.KatachiGlobSyntaxException
 
 /**
  * One node of the tree a `layout { }` block builds while it is evaluated.

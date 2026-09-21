@@ -2,14 +2,14 @@ package me.tbsten.katachi.test.check
 
 import io.kotest.core.spec.style.FreeSpec
 import io.kotest.matchers.shouldBe
-import me.tbsten.katachi.check.FileSelection
-import me.tbsten.katachi.check.FsPath
-import me.tbsten.katachi.check.KatachiFileSystem
-import me.tbsten.katachi.check.ProjectRoot
 import me.tbsten.katachi.check.validate
 import me.tbsten.katachi.dsl.architecture
 import me.tbsten.katachi.dsl.gitTracked
 import me.tbsten.katachi.dsl.wholeTree
+import me.tbsten.katachi.fs.FileSelection
+import me.tbsten.katachi.fs.FsPath
+import me.tbsten.katachi.fs.KatachiFileSystem
+import me.tbsten.katachi.fs.ProjectRoot
 
 class ArchitectureFilesSpec : FreeSpec({
     "files を書かなければ gitTracked() になる" {

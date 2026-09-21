@@ -1,4 +1,4 @@
-package me.tbsten.katachi.check
+package me.tbsten.katachi.scan
 
 import me.tbsten.katachi.dsl.DeclarationSite
 import me.tbsten.katachi.dsl.Role
@@ -12,6 +12,12 @@ import me.tbsten.katachi.dsl.Role
  *
  * A violation carries everything its report block needs and nothing else: the wording lives
  * in the report, not here.
+ *
+ * It sits next to the walk rather than next to `assert()` because the walk is what produces
+ * one. Deciding that a file no role allows is an `UnexpectedFile` is the same decision as
+ * deciding not to descend into the directory it sits in, so splitting the two would mean a
+ * second vocabulary that mirrors this one line for line. What `me.tbsten.katachi.check` holds
+ * instead is what a caller does with the list: word it, fail a test with it, ignore part of it.
  *
  * ## Example 1: inspect the violations after a failed check
  * ```kt

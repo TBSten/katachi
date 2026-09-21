@@ -1,14 +1,14 @@
 package me.tbsten.katachi.test.dsl
 
-import me.tbsten.katachi.check.FsPath
-import me.tbsten.katachi.check.ModuleIndex
-import me.tbsten.katachi.check.ModuleResolver
-import me.tbsten.katachi.check.moduleIndex
 import me.tbsten.katachi.dsl.LayoutEntry
 import me.tbsten.katachi.dsl.LayoutScope
+import me.tbsten.katachi.dsl.ModuleIndex
+import me.tbsten.katachi.dsl.ModuleResolver
 import me.tbsten.katachi.dsl.architecture
 import me.tbsten.katachi.dsl.flattenLayout
-import me.tbsten.katachi.test.check.fakeFileSystem
+import me.tbsten.katachi.fs.FsPath
+import me.tbsten.katachi.scan.moduleIndex
+import me.tbsten.katachi.test.fs.fakeFileSystem
 
 /**
  * Flattens a single `layout { }` block, wrapped in the smallest architecture that can hold

@@ -1,6 +1,13 @@
 package me.tbsten.katachi.check
 
 import me.tbsten.katachi.InternalKatachiApi
+import me.tbsten.katachi.scan.MissingFile
+import me.tbsten.katachi.scan.UncheckedDirectory
+import me.tbsten.katachi.scan.UncheckedFile
+import me.tbsten.katachi.scan.UnexpectedDirectory
+import me.tbsten.katachi.scan.UnexpectedFile
+import me.tbsten.katachi.scan.Violation
+import me.tbsten.katachi.scan.ViolationKind
 
 /** How many blocks `assert()` prints before it stops and counts the rest. */
 public const val DEFAULT_MAX_VIOLATIONS: Int = 10

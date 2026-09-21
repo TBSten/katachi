@@ -1,13 +1,13 @@
-package me.tbsten.katachi.test.check
+package me.tbsten.katachi.test.fs
 
 import io.kotest.assertions.withClue
 import io.kotest.core.spec.style.FreeSpec
 import io.kotest.matchers.collections.shouldContainExactly
 import io.kotest.matchers.shouldBe
 import java.io.File
-import me.tbsten.katachi.check.FsPath
-import me.tbsten.katachi.check.KatachiFileSystem
-import me.tbsten.katachi.check.RealFileSystem
+import me.tbsten.katachi.fs.FsPath
+import me.tbsten.katachi.fs.KatachiFileSystem
+import me.tbsten.katachi.fs.RealFileSystem
 
 /** Creates an empty file at each path, and every directory leading to it. */
 private fun buildRealTree(root: File, relativePaths: List<String>) {

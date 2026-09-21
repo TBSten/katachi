@@ -1,4 +1,4 @@
-package me.tbsten.katachi.test.check
+package me.tbsten.katachi.test.dsl
 
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.FreeSpec
@@ -7,8 +7,8 @@ import io.kotest.matchers.nulls.shouldBeNull
 import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
-import me.tbsten.katachi.check.Glob
-import me.tbsten.katachi.check.KatachiGlobSyntaxException
+import me.tbsten.katachi.dsl.Glob
+import me.tbsten.katachi.dsl.KatachiGlobSyntaxException
 
 class GlobSpec : FreeSpec({
     fun modulePath(pattern: String) = Glob.compile(pattern, Glob.MODULE_SEPARATOR)

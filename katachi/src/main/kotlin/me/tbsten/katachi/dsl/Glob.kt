@@ -1,7 +1,7 @@
-package me.tbsten.katachi.check
+package me.tbsten.katachi.dsl
 
 import me.tbsten.katachi.InternalKatachiApi
-import me.tbsten.katachi.dsl.KatachiDeclarationException
+import me.tbsten.katachi.KatachiDeclarationException
 
 /**
  * A glob pattern katachi cannot make sense of.

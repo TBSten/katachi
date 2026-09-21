@@ -11,7 +11,7 @@ import me.tbsten.katachi.dsl.Title
 import me.tbsten.katachi.dsl.architecture
 import me.tbsten.katachi.dsl.flattenLayout
 import me.tbsten.katachi.processor.process
-import me.tbsten.katachi.test.check.ForbiddenFileSystem
+import me.tbsten.katachi.test.fs.ForbiddenFileSystem
 
 /**
  * NOTE: このファイルのパッケージを `me.tbsten.katachi.dsl` にしてはいけない。

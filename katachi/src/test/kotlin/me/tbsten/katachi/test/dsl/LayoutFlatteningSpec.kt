@@ -5,7 +5,7 @@ import io.kotest.core.spec.style.FreeSpec
 import io.kotest.matchers.ints.shouldBeGreaterThan
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
-import me.tbsten.katachi.check.KatachiGlobSyntaxException
+import me.tbsten.katachi.dsl.KatachiGlobSyntaxException
 import me.tbsten.katachi.dsl.LayoutEntryKind
 import me.tbsten.katachi.dsl.architecture
 import me.tbsten.katachi.dsl.flattenLayout

@@ -1,4 +1,4 @@
-package me.tbsten.katachi.dsl
+package me.tbsten.katachi
 
 /**
  * Base of every error whose fix is in the definition. Catch this to treat "the definition

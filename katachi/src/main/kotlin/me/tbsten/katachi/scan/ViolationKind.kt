@@ -1,4 +1,4 @@
-package me.tbsten.katachi.check
+package me.tbsten.katachi.scan
 
 /**
  * What kind of problem a violation is — which is the same thing as what the reader has to do

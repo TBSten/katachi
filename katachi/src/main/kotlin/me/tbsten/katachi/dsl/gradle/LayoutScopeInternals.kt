@@ -53,7 +53,7 @@ public val LayoutScope.currentWildcards: List<String>?
  * declaration a hand written directory block would make.
  *
  * @param modulePath a Gradle module path, possibly holding `*` or `**`.
- * @throws me.tbsten.katachi.check.KatachiGlobSyntaxException when the module path cannot be read.
+ * @throws me.tbsten.katachi.dsl.KatachiGlobSyntaxException when the module path cannot be read.
  * @throws me.tbsten.katachi.dsl.KatachiModuleOutsideLayoutRootException when this scope is not
  *   the root of a `layout { }` block: a module path is resolved below the project root, so a
  *   directory around it would quietly be prepended to the answer.

@@ -2,13 +2,14 @@ package me.tbsten.katachi.test.check
 
 import io.kotest.core.spec.style.FreeSpec
 import io.kotest.matchers.shouldBe
-import me.tbsten.katachi.check.ModuleResolver
 import me.tbsten.katachi.check.validate
-import me.tbsten.katachi.dsl.gradle.capitalizedModuleNamePackage
+import me.tbsten.katachi.dsl.ModuleResolver
 import me.tbsten.katachi.dsl.gradle.*
+import me.tbsten.katachi.dsl.gradle.capitalizedModuleNamePackage
 import me.tbsten.katachi.dsl.kotlin.ktFile
 import me.tbsten.katachi.dsl.kotlin.ktsFile
 import me.tbsten.katachi.dsl.pascalCase
+import me.tbsten.katachi.test.fs.FakeFileSystemScope
 
 /**
  * The module keys seen from the check, not from the flattening.

@@ -1,4 +1,4 @@
-package me.tbsten.katachi.test.check
+package me.tbsten.katachi.test.dsl
 
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.FreeSpec
@@ -7,9 +7,9 @@ import io.kotest.matchers.nulls.shouldBeNull
 import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
-import me.tbsten.katachi.check.KatachiGlobSyntaxException
-import me.tbsten.katachi.check.ModulePath
-import me.tbsten.katachi.check.ModulePattern
+import me.tbsten.katachi.dsl.KatachiGlobSyntaxException
+import me.tbsten.katachi.dsl.ModulePath
+import me.tbsten.katachi.dsl.ModulePattern
 
 class ModulePathSpec : FreeSpec({
     "モジュールパスの読み取り" - {

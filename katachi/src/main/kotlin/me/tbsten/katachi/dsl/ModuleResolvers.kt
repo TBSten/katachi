@@ -1,6 +1,5 @@
 package me.tbsten.katachi.dsl
 
-import me.tbsten.katachi.check.ModuleResolver
 
 /**
  * Names for the module resolvers katachi ships with, written on top of [ModuleResolver] and
@@ -30,7 +29,7 @@ import me.tbsten.katachi.check.ModuleResolver
  *
  * ## Example 2: Place one module somewhere else
  * ```kt
- * import me.tbsten.katachi.check.ModuleResolver
+ * import me.tbsten.katachi.dsl.ModuleResolver
  * import me.tbsten.katachi.dsl.architecture
  *
  * val projectArchitecture = architecture {

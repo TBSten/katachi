@@ -1,11 +1,6 @@
 package me.tbsten.katachi.dsl
 
 import me.tbsten.katachi.InternalKatachiApi
-import me.tbsten.katachi.check.Glob
-import me.tbsten.katachi.check.GlobContext
-import me.tbsten.katachi.check.KatachiGlobSyntaxException
-import me.tbsten.katachi.check.ModuleIndex
-import me.tbsten.katachi.check.ModuleResolver
 
 /**
  * Evaluates every `layout { }` block of every role and flattens them into one list.

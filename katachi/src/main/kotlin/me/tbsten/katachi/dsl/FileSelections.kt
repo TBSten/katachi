@@ -1,6 +1,6 @@
 package me.tbsten.katachi.dsl
 
-import me.tbsten.katachi.check.FileSelection
+import me.tbsten.katachi.fs.FileSelection
 
 /**
  * Names for the file selections katachi ships with, written on top of [FileSelection] and

@@ -170,10 +170,15 @@ private inline fun <T> catchingPerFile(block: () -> T): Result<T> =
 | `VirtualMachineError`（`OutOfMemoryError` / `StackOverflowError`） | JVM がもう続けられない。握っても次のファイルで同じことが起きるだけで、原因だけが消える |
 | `LinkageError` | classpath が壊れている。全ファイルで失敗するので、報告が N 件の同じノイズで埋まる |
 | `InterruptedException` | 呼び出し側がやめろと言っている。握るのは無視すること |
-| `KatachiArchitectureAssertionError` | これは**結果**であって失敗ではない |
+| `AssertionError`（`KatachiArchitectureAssertionError` を含む） | これは**結果**であって失敗ではない |
 
 `KatachiInternalException` は**握ってよい**。katachi のバグだが、そのファイル 1 つを
 `[UncheckedFile]` にして残りを検査できるなら、その方が利用者に渡せるものが多い。
+
+投げ直す側を `KatachiArchitectureAssertionError` ではなく `AssertionError` にしてあるのは、
+走査が `check` より下の層に居て、上の層のクラス名を書けないため。範囲が広がる方向で、
+**利用者のテストハーネスが偽のファイルシステムの中から投げたアサーションも、結果であって
+走査の失敗ではない**、という理屈も立つ。
 
 ### 粒度
 

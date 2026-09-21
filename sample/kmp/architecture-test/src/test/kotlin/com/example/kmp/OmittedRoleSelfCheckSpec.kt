@@ -10,9 +10,9 @@ import com.example.kmp.tool.toolRoles
 import io.kotest.core.spec.style.FreeSpec
 import io.kotest.matchers.collections.shouldContainExactly
 import me.tbsten.katachi.InternalKatachiApi
-import me.tbsten.katachi.check.Violation
 import me.tbsten.katachi.check.validate
 import me.tbsten.katachi.dsl.architecture
+import me.tbsten.katachi.scan.Violation
 
 /**
  * **This is katachi's own verification, not something a user of katachi writes.**

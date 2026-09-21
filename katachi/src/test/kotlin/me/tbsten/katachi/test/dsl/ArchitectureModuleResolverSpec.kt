@@ -2,8 +2,8 @@ package me.tbsten.katachi.test.dsl
 
 import io.kotest.core.spec.style.FreeSpec
 import io.kotest.matchers.shouldBe
-import me.tbsten.katachi.check.ModulePath
-import me.tbsten.katachi.check.ModuleResolver
+import me.tbsten.katachi.dsl.ModulePath
+import me.tbsten.katachi.dsl.ModuleResolver
 import me.tbsten.katachi.dsl.architecture
 import me.tbsten.katachi.dsl.conventionalModuleResolver
 

@@ -1,5 +1,7 @@
 package me.tbsten.katachi.dsl
 
+import me.tbsten.katachi.KatachiInternalException
+
 /**
  * A layout scope reached the Gradle vocabulary without implementing [ModuleAwareLayoutScope].
  *

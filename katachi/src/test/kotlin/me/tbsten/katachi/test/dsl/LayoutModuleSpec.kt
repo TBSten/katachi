@@ -7,10 +7,10 @@ import io.kotest.matchers.ints.shouldBeGreaterThan
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
 import io.kotest.matchers.types.shouldBeInstanceOf
-import me.tbsten.katachi.check.KatachiGlobSyntaxException
-import me.tbsten.katachi.check.ModuleResolver
-import me.tbsten.katachi.dsl.KatachiDeclarationException
+import me.tbsten.katachi.KatachiDeclarationException
+import me.tbsten.katachi.dsl.KatachiGlobSyntaxException
 import me.tbsten.katachi.dsl.KatachiModuleOutsideLayoutRootException
+import me.tbsten.katachi.dsl.ModuleResolver
 import me.tbsten.katachi.dsl.camelCase
 import me.tbsten.katachi.dsl.flatCase
 import me.tbsten.katachi.dsl.gradle.*

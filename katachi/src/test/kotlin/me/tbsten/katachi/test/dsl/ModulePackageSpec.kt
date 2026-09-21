@@ -5,10 +5,10 @@ import io.kotest.core.spec.style.FreeSpec
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
 import io.kotest.matchers.types.shouldBeInstanceOf
+import me.tbsten.katachi.KatachiDeclarationException
 import me.tbsten.katachi.dsl.gradle.HyphenFolding
-import me.tbsten.katachi.dsl.KatachiDeclarationException
-import me.tbsten.katachi.dsl.gradle.ModulePackage
 import me.tbsten.katachi.dsl.gradle.KatachiModulePackageException
+import me.tbsten.katachi.dsl.gradle.ModulePackage
 import me.tbsten.katachi.dsl.gradle.capitalizedModuleNamePackage
 import me.tbsten.katachi.dsl.gradle.moduleNamePackage
 import me.tbsten.katachi.dsl.gradle.resolveFor

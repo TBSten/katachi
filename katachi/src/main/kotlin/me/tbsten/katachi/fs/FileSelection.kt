@@ -1,4 +1,4 @@
-package me.tbsten.katachi.check
+package me.tbsten.katachi.fs
 
 import me.tbsten.katachi.InternalKatachiApi
 
@@ -33,9 +33,9 @@ import me.tbsten.katachi.InternalKatachiApi
  *
  * ## Example 3: select the files Bazel manages, with a selection of your own
  * ```kt
- * import me.tbsten.katachi.check.FileSelection
- * import me.tbsten.katachi.check.KatachiFileSystem
- * import me.tbsten.katachi.check.ProjectRoot
+ * import me.tbsten.katachi.fs.FileSelection
+ * import me.tbsten.katachi.fs.KatachiFileSystem
+ * import me.tbsten.katachi.fs.ProjectRoot
  * import me.tbsten.katachi.InternalKatachiApi
  * import me.tbsten.katachi.dsl.architecture
  *
@@ -71,9 +71,9 @@ public interface FileSelection {
      *
      * ## Example 1: pass the tree through untouched
      * ```kt
-     * import me.tbsten.katachi.check.FileSelection
-     * import me.tbsten.katachi.check.KatachiFileSystem
-     * import me.tbsten.katachi.check.ProjectRoot
+     * import me.tbsten.katachi.fs.FileSelection
+     * import me.tbsten.katachi.fs.KatachiFileSystem
+     * import me.tbsten.katachi.fs.ProjectRoot
      * import me.tbsten.katachi.InternalKatachiApi
      *
      * @OptIn(InternalKatachiApi::class)

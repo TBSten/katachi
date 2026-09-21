@@ -3,11 +3,11 @@ package me.tbsten.katachi.test.check
 import io.kotest.core.spec.style.FreeSpec
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldStartWith
-import me.tbsten.katachi.check.MissingFile
 import me.tbsten.katachi.check.report
 import me.tbsten.katachi.check.validate
 import me.tbsten.katachi.dsl.kotlin.ktFile
 import me.tbsten.katachi.dsl.kotlin.ktsFile
+import me.tbsten.katachi.scan.MissingFile
 
 class ViolationReportSpec : FreeSpec({
     "Unexpected なファイル" - {

@@ -6,8 +6,8 @@ import io.kotest.matchers.collections.shouldContainExactly
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
 import io.kotest.matchers.types.shouldBeInstanceOf
+import me.tbsten.katachi.KatachiDeclarationException
 import me.tbsten.katachi.dsl.DeclarationKind
-import me.tbsten.katachi.dsl.KatachiDeclarationException
 import me.tbsten.katachi.dsl.KatachiDuplicateDeclarationException
 import me.tbsten.katachi.dsl.architecture
 

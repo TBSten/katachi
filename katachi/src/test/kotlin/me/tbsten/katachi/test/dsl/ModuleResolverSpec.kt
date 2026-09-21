@@ -1,15 +1,16 @@
-package me.tbsten.katachi.test.check
+package me.tbsten.katachi.test.dsl
 
 import io.kotest.core.spec.style.FreeSpec
 import io.kotest.matchers.collections.shouldContainExactly
 import io.kotest.matchers.shouldBe
-import me.tbsten.katachi.check.FsPath
-import me.tbsten.katachi.check.ModuleIndex
-import me.tbsten.katachi.check.ModulePath
-import me.tbsten.katachi.check.ModulePattern
-import me.tbsten.katachi.check.ModuleResolver
-import me.tbsten.katachi.check.discoverModules
-import me.tbsten.katachi.check.moduleIndex
+import me.tbsten.katachi.dsl.ModuleIndex
+import me.tbsten.katachi.dsl.ModulePath
+import me.tbsten.katachi.dsl.ModulePattern
+import me.tbsten.katachi.dsl.ModuleResolver
+import me.tbsten.katachi.fs.FsPath
+import me.tbsten.katachi.scan.discoverModules
+import me.tbsten.katachi.scan.moduleIndex
+import me.tbsten.katachi.test.fs.fakeFileSystem
 
 class ModuleResolverSpec : FreeSpec({
     /**

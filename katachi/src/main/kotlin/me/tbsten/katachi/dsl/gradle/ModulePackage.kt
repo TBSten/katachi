@@ -1,7 +1,7 @@
 package me.tbsten.katachi.dsl.gradle
 
 import me.tbsten.katachi.InternalKatachiApi
-import me.tbsten.katachi.dsl.KatachiDeclarationException
+import me.tbsten.katachi.KatachiDeclarationException
 
 /**
  * The directory a module's package lives in, as a strategy rather than as a path.

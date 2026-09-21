@@ -1,7 +1,7 @@
-package me.tbsten.katachi.test.check
+package me.tbsten.katachi.test.fs
 
-import me.tbsten.katachi.check.FsPath
-import me.tbsten.katachi.check.KatachiFileSystem
+import me.tbsten.katachi.fs.FsPath
+import me.tbsten.katachi.fs.KatachiFileSystem
 
 /**
  * A tree that throws instead of answering, for the paths a spec names.
