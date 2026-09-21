@@ -41,7 +41,13 @@ Konsist はScope と呼ばれる記法を使って プロジェクト内の特�
 katachi はプロジェクト全体を俯瞰して、プロジェクト内に現れて良いファイルの種類とその配置方法を宣言することができます。
 
 ```kt
-TODO
+val projectArchitecture = architecture {
+  "UseCase" {
+    layout {
+      "src/main/kotlin/com/example/project/useCase" / "*UseCase".ktFile()
+    }
+  }
+}
 ```
 
 - プロジェクトの中で現れて良いファイルの種類（Role と呼ばれます）
@@ -51,16 +57,114 @@ TODO
 
 import { Aside } from '@astrojs/starlight/components';
 
-<Aside title="Deny by default">
+<Aside title="Deny by default" type="tip">
+
 katachi で採用されている Deny by default の原則により、**`projectArchitecture` に宣言されていないファイルはその存在を許されません**。
 
 AI Agent がルールに背くルールを書いたとしても、katachi はその存在を許さず、違反として報告します。
 </Aside>
 
-また katachi は Konsist と連携してプロジェクト全体を検証したのち、各々のファイルについて別個の検証を行うことができるようになっています。
+<details>
+<summary>このルールによって検知される例</summary>
+
+例えばあなたのプロジェクトで「UseCase は `com.example.project.usecase` パッケージに `~UseCase` という名前で配置する」必要があるとします。
+これは以下のように宣言できます。
 
 ```kt
-TODO
+val projectArchitecture = architecture {
+  // UseCase という役割のファイルがあります
+  "UseCase" {
+    title = "UseCase"
+
+    layout {
+      ":core:domain".module {
+        // UseCase は com.example.project.usecase パッケージに配置される必要があります
+        val useCasePackageDir = mainSourceSet / kotlin / modulePackage / "useCase"
+
+        // UseCase は `~UseCase` という名前で終わる必要があります
+        useCasePackageDir / "*UseCase".ktFile()
+      }
+    }
+  }
+
+  // ...
+}
+
+class ProjectArchitectureTest {
+  @Test
+  fun `プロジェクトアーキテクチャを厳守したディレクトリ構造`() {
+    projectArchitecture.assert()
+  }
+}
 ```
 
+もし AI Agent が `com.example.project.GetUserUseCase` という名前のファイルを配置した場合:
+
+```
+core/domain/src/main/kotlin/com/example/project/
+├── GetUserUseCase.kt          ← 宣言されていない場所に置かれた
+└── useCase/
+    └── UpdateUserUseCase.kt   ← 宣言された場所
+```
+
+katachi を含んだ Unit test を実行すると、以下のようにエラーが報告されます。
+
+```
+Katachi check failed: 1 violation (Unexpected: 1)
+
+[UnexpectedFile] core/domain/src/main/kotlin/com/example/project/GetUserUseCase.kt
+  No role is defined for this file.
+  Nearby locations:
+    UseCase    core/domain/src/main/kotlin/com/example/project/useCase/
+  How to fix:
+    - Move it to one of the locations above
+    - Delete it if it is not needed
+    - Add a new role for it:
+        "GetUserUseCase" {
+          summary = "TODO"
+          layout {
+            "core/domain/src/main/kotlin/com/example/project" / "GetUserUseCase".ktFile()
+          }
+        }
+```
+
+</details>
+
+## katachi と Konsist
+
+katachi は Konsist と連携してプロジェクト全体を検証したのち、各々のファイルについて別個の検証を行うことができるようになっています。
+
+```kt
+val projectArchitecture = architecture {
+  "UseCase" {
+    // どこに置いてよいか
+    layout {
+      ":core:domain".module {
+        mainSourceSet / kotlin / modulePackage / "useCase" / "*UseCase".ktFile()
+      }
+    }
+
+    // 中身がどうあるべきか
+    "1 つの invoke 関数のみを持つこと".konsist {
+      classes()
+        .withNameEndingWith("UseCase")
+        .assertTrue { it.functions().map { function -> function.name } == listOf("invoke") }
+    }
+  }
+}
+```
+
+配置の違反と中身の違反が、同じ1つのレポートに並びます。
+
+katachi でプロジェクト全体の構造をテストしたのち、Konsist で各々のファイルの中身を検証するという使い分けが推奨されます。
+
 詳しくは [Konsist との統合](../guides/konsist-integration.md) のドキュメントをご覧ください。
+
+## まとめ
+
+- AI を使った開発では、プロジェクト構造のルールを AI Agent に守らせる手段が必要です。
+- katachi はプロジェクト全体の構造を定義・テストする DSL を提供します。
+- **Konsist だけでは不十分** です。プロジェクト全体の構造の検証は katachi、各ファイルの中身の検証は Konsist と使い分けるべきです。
+
+
+
