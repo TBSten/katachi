@@ -184,6 +184,10 @@ sampleBuilds.forEach { sample ->
             ":katachi-konsist:jar",
             ":katachi-konsist:test",
         )
+        // `:architecture-test:test` needs `:katachi:jar` and `:katachi-konsist:jar`, so it
+        // reaches the same two build directories a sample is fighting over. The two lines
+        // above already cover it in practice; listing the task itself is the honest version.
+        mustRunAfter(":architecture-test:test")
     }
     registeredSamples += task
     checkSamples.configure { dependsOn(task) }

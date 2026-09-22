@@ -23,3 +23,10 @@ include(":katachi")
 // The Konsist backend. A sibling subproject rather than a source set of `:katachi`, because
 // `:katachi` has no runtime dependencies and this one has Konsist as an `api` dependency.
 include(":katachi-konsist")
+
+// katachi's own architecture, declared with katachi and asserted like any other test. The
+// same recommended shape the three samples use: one independent JVM module that belongs to
+// no layer. It is not a source set of `:katachi` because the check walks from the repository
+// root (it looks for a `gradlew` above its working directory), so the module holding it has
+// to sit at the top level next to the modules it describes.
+include(":architecture-test")
