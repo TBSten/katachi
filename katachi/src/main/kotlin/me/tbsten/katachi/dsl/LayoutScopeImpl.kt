@@ -34,7 +34,19 @@ internal class LayoutScopeImpl(
     private val container: LayoutNode,
     private val moduleIndex: ModuleIndex,
     private val moduleContext: ModuleContext?,
+    /**
+     * Where every block of this one `layout { }` files what it declared, shared by every scope
+     * the block creates below it.
+     *
+     * One list per `layout { }` rather than one per scope, because the order sites are closed
+     * in is the order a report reads them in, and that order only exists across the whole
+     * block.
+     */
+    private val sites: MutableList<ConstraintSite>,
 ) : LayoutDirectoryScope, ModuleAwareLayoutScope {
+    /** Constraints written directly in *this* block. A nested block collects its own. */
+    private val constraints = mutableListOf<ConstraintDeclaration>()
+
     override val currentModulePath: String?
         get() = moduleContext?.modulePath
 
@@ -55,9 +67,15 @@ internal class LayoutScopeImpl(
         container.ignored = true
     }
 
+    override fun constraint(name: String?, declaredAt: DeclarationSite, check: FileSetConstraint) {
+        constraints += constraintDeclarationOf(name = name, declaredAt = declaredAt, check = check)
+    }
+
     override operator fun String.invoke(block: LayoutDirectoryScope.() -> Unit): LayoutDirectory {
         val chain = chainUnder(container, this, isFile = false, declaredAt = captureDeclarationSite())
-        scopeAt(chain.leaf).block()
+        val scope = scopeAt(chain.leaf)
+        scope.block()
+        scope.closeSite(owned = listOf(chain.leaf), anchor = chain.leaf)
         return LayoutDirectory(top = chain.top, leaf = chain.leaf)
     }
 
@@ -107,7 +125,9 @@ internal class LayoutScopeImpl(
     }
 
     override operator fun LayoutDirectory.invoke(block: LayoutDirectoryScope.() -> Unit): LayoutDirectory {
-        scopeAt(leaf).block()
+        val scope = scopeAt(leaf)
+        scope.block()
+        scope.closeSite(owned = listOf(leaf), anchor = leaf)
         return this
     }
 
@@ -122,7 +142,8 @@ internal class LayoutScopeImpl(
             // The root project resolves to the project root itself, which is this scope's
             // own container: an empty directory name would otherwise become an empty level.
             val directory = target.directory
-            val moduleDirectory = if (directory.isEmpty()) {
+            val isRootProject = directory.isEmpty()
+            val moduleDirectory = if (isRootProject) {
                 container
             } else {
                 chainUnder(container, directory, isFile = false, declaredAt = declaredAt).leaf
@@ -132,26 +153,61 @@ internal class LayoutScopeImpl(
                 container = moduleDirectory,
                 moduleIndex = moduleIndex,
                 moduleContext = ModuleContext(target.modulePath, target.wildcards),
+                sites = sites,
             )
             scope.expandModuleDefaults()
             scope.block()
-            moduleDirectory.children.drop(before)
+            val added = moduleDirectory.children.drop(before)
+            if (isRootProject) {
+                // `":".module { }` has no directory of its own: its block declares straight
+                // into the project root, which everything else in the `layout { }` shares. So
+                // a constraint written in it owns what this block added and nothing else, and
+                // there is no anchor directory to point a report at.
+                scope.closeSite(owned = added, anchor = null)
+            } else {
+                scope.closeSite(owned = listOf(moduleDirectory), anchor = moduleDirectory)
+            }
+            added
         }
         return LayoutModule(declared)
+    }
+
+    /**
+     * Records the constraints written in this block, together with what the block owns.
+     *
+     * Called when the block finishes, because a constraint covers what the block turned out to
+     * declare and that is not complete until then. A block that wrote no constraint records
+     * nothing: a site with no declaration would only make the evaluation walk subtrees nobody
+     * asked about.
+     */
+    fun closeSite(owned: List<LayoutNode>, anchor: LayoutNode?) {
+        if (constraints.isEmpty()) return
+        sites += ConstraintSite(
+            declarations = constraints.toList(),
+            owned = owned,
+            anchor = anchor,
+        )
     }
 
     /**
      * The two lines every Gradle module has. Written through the same vocabulary a user
      * writes, so that what a module block adds is the same declaration a hand written block
      * would make.
+     *
+     * Both are marked as katachi's own, which keeps them out of what a constraint written in
+     * the module block covers. See [LayoutNode.synthetic].
      */
     private fun expandModuleDefaults() {
-        "build".ignore()
-        "build.gradle".ktsFile()
+        "build".ignore().markSynthetic()
+        "build.gradle".ktsFile().markSynthetic()
     }
 
-    private fun scopeAt(node: LayoutNode): LayoutScopeImpl =
-        LayoutScopeImpl(container = node, moduleIndex = moduleIndex, moduleContext = moduleContext)
+    private fun scopeAt(node: LayoutNode): LayoutScopeImpl = LayoutScopeImpl(
+        container = node,
+        moduleIndex = moduleIndex,
+        moduleContext = moduleContext,
+        sites = sites,
+    )
 
     /**
      * A module path is relative to nothing: it is resolved to a directory below the project

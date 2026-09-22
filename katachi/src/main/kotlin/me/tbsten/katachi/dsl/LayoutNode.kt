@@ -29,6 +29,20 @@ internal class LayoutNode(
     /** Set by `anyFile()`. */
     var anyFile: Boolean = false
 
+    /**
+     * Whether katachi wrote this node rather than the user: the two lines every `module { }`
+     * block injects, and nothing else.
+     *
+     * It changes nothing about the check — `build/` is ignored and `build.gradle.kts` is
+     * required whoever declared them — and everything about what a constraint covers. A
+     * `":feature:*".module { constraint { } }` whose set of files silently included every
+     * feature module's build script would report that build script to a reader who never
+     * mentioned it, and a module with no source file yet would pass on the build script
+     * alone. Someone who does mean to constrain a build script writes
+     * `"build.gradle.kts".file()` themselves, in a block of their own.
+     */
+    var synthetic: Boolean = false
+
     fun add(child: LayoutNode) {
         child.parent?.children?.remove(child)
         child.parent = this
@@ -56,6 +70,28 @@ internal class LayoutNode(
 
 /** The outermost and innermost node a single key created. See [LayoutDirectory]. */
 internal class Chain(val top: LayoutNode, val leaf: LayoutNode)
+
+/** Marks every node a `module { }` default declared. See [LayoutNode.synthetic]. */
+internal fun LayoutDirectory.markSynthetic(): LayoutDirectory = also { markSynthetic(top, leaf) }
+
+/** Marks every node a `module { }` default declared. See [LayoutNode.synthetic]. */
+internal fun LayoutFile.markSynthetic(): LayoutFile = also { markSynthetic(top, leaf) }
+
+/**
+ * Walks [leaf] up to [top] inclusive.
+ *
+ * A key may spell out several levels, so the whole chain it created is katachi's, not only the
+ * node the value points at. Both defaults are one level, which makes this a loop of one today
+ * and correct if a default ever gains a level.
+ */
+private fun markSynthetic(top: LayoutNode, leaf: LayoutNode) {
+    var current: LayoutNode? = leaf
+    while (current != null) {
+        current.synthetic = true
+        if (current === top) return
+        current = current.parent
+    }
+}
 
 /**
  * Splits a key such as `"app/ios"` into its levels.

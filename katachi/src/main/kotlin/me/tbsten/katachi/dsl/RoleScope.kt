@@ -23,7 +23,7 @@ package me.tbsten.katachi.dsl
  * ```
  */
 @KatachiDsl
-public sealed interface RoleScope : MetadataScope {
+public sealed interface RoleScope : MetadataScope, ConstraintScope {
     /**
      * Display name. Defaults to the role name.
      *
@@ -137,6 +137,12 @@ internal class RoleScopeImpl(private val roleName: String) : RoleScope {
     val metadata = MetadataBuilder()
     val layouts = mutableListOf<LayoutDeclaration>()
 
+    /**
+     * Constraints written straight on the role, which cover the union of every `layout { }`
+     * it declares. See [ConstraintScope.constraint].
+     */
+    val constraints = mutableListOf<ConstraintDeclaration>()
+
     override var title: String
         // The fallback lives here and is not written into the metadata: `Title` is absent
         // unless someone wrote it, which is what lets a reader tell "called it that on
@@ -173,6 +179,10 @@ internal class RoleScopeImpl(private val roleName: String) : RoleScope {
     override fun layout(block: LayoutScope.() -> Unit) {
         layouts += LayoutDeclaration(declaredAt = captureDeclarationSite(), block = block)
     }
+
+    override fun constraint(name: String?, declaredAt: DeclarationSite, check: FileSetConstraint) {
+        constraints += constraintDeclarationOf(name = name, declaredAt = declaredAt, check = check)
+    }
 }
 
 /**
@@ -180,6 +190,11 @@ internal class RoleScopeImpl(private val roleName: String) : RoleScope {
  * role's properties.
  *
  * The name is reserved before [block] runs, for the same reason as in `declareGroup`.
+ *
+ * @throws KatachiConstraintWithoutLayoutException when the role wrote a constraint but no
+ *   `layout { }`. It is decided here, at the end of the block, because that is the first
+ *   moment both lists are complete — and it needs nothing else: no file is read, and no
+ *   module index is consulted.
  */
 internal fun declareRole(
     name: String,
@@ -193,10 +208,20 @@ internal fun declareRole(
     declaredNames.reserve(name, DeclarationKind.Role, declaredAt)
     val scope = RoleScopeImpl(name)
     scope.block()
+    // A wildcard module key that currently matches nothing still counts as a layout: such a
+    // role is a place waiting to fill up, which is the same thing `flattenLayout` already
+    // decides when it leaves those declarations out of `required`.
+    if (scope.constraints.isNotEmpty() && scope.layouts.isEmpty()) {
+        throw KatachiConstraintWithoutLayoutException(
+            role = name,
+            declaredAt = scope.constraints.first().declaredAt,
+        )
+    }
     return Role(
         name = name,
         metadata = scope.metadata.build(),
         layouts = scope.layouts.toList(),
+        constraints = scope.constraints.toList(),
         groupPath = groupPath,
         declaredAt = declaredAt,
     )

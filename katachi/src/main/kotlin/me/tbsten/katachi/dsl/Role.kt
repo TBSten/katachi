@@ -56,6 +56,14 @@ public class Role internal constructor(
      */
     public val layouts: List<LayoutDeclaration>,
     /**
+     * Constraints written straight on this role, in declaration order. They have not been
+     * evaluated, and they cover the union of every block in [layouts].
+     *
+     * Internal because a constraint says nothing until the layout around it has been
+     * evaluated: what the check works with is [DeclaredConstraint], not this.
+     */
+    internal val constraints: List<ConstraintDeclaration>,
+    /**
      * Names of the groups this role sits in, outermost first.
      *
      * ## Example 1: read the group path of a nested role

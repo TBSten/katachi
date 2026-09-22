@@ -37,6 +37,12 @@ package me.tbsten.katachi.dsl
  * The Gradle vocabulary lives in `me.tbsten.katachi.dsl.gradle` and is imported as
  * `import me.tbsten.katachi.dsl.gradle.*`.
  *
+ * ## What a layout says beyond where files live
+ *
+ * [ConstraintScope] comes with this one, so `constraint { }` can be written in any block of a
+ * `layout { }`. What it covers is the block it was written in: the entries of that subtree and
+ * nothing else. See [ConstraintScope.constraint].
+ *
  * ## Example 1: Declaring a file directly under the project root, and a nested one
  * ```kt
  * layout {
@@ -47,7 +53,7 @@ package me.tbsten.katachi.dsl
  * ```
  */
 @KatachiDsl
-public sealed interface LayoutScope {
+public sealed interface LayoutScope : ConstraintScope {
     /**
      * Declares a directory. Nest the blocks to walk down the tree.
      *
