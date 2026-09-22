@@ -174,8 +174,16 @@ sampleBuilds.forEach { sample ->
         // once (the two builds use different project caches, so Gradle's own
         // locking does not apply). These paths are resolved lazily and are
         // simply ignored when the task is not in the graph, so running a
-        // `checkSample*` task on its own is unaffected.
+        // `checkSample*` task on its own is unaffected. `includeBuild("../..")`
+        // also pulls in `:katachi-konsist`, so its own tasks contend for
+        // `katachi-konsist/build/` the same way.
         mustRunAfter(":katachi:check", ":katachi:build", ":katachi:jar", ":katachi:test")
+        mustRunAfter(
+            ":katachi-konsist:check",
+            ":katachi-konsist:build",
+            ":katachi-konsist:jar",
+            ":katachi-konsist:test",
+        )
     }
     registeredSamples += task
     checkSamples.configure { dependsOn(task) }

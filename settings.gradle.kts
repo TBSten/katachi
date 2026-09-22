@@ -19,3 +19,7 @@ plugins {
 rootProject.name = "katachi"
 
 include(":katachi")
+
+// The Konsist backend. A sibling subproject rather than a source set of `:katachi`, because
+// `:katachi` has no runtime dependencies and this one has Konsist as an `api` dependency.
+include(":katachi-konsist")

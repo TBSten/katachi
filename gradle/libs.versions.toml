@@ -10,11 +10,18 @@
 katachi = "0.1.0-SNAPSHOT"
 kotlin = "2.4.10"
 kotest = "6.2.5"
+# The Kotlin parser behind `konsist { }`. Only `:katachi-konsist` and the samples that use it
+# see this; `:katachi` itself stays dependency free.
+konsist = "0.17.3"
 
 [libraries]
 # katachi itself. Samples depend on it as `testImplementation(libs.katachi)`; the
 # `includeBuild("../..")` in their settings substitutes this module with the local build.
 katachi = { module = "me.tbsten.katachi:katachi", version.ref = "katachi" }
+# The konsist backend, substituted the same way `katachi` is. A sample only needs it when its
+# definition writes `konsist { }`.
+katachiKonsist = { module = "me.tbsten.katachi:katachi-konsist", version.ref = "katachi" }
+konsist = { module = "com.lemonappdev:konsist", version.ref = "konsist" }
 kotlinGradlePlugin = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
 kotestRunnerJunit5 = { module = "io.kotest:kotest-runner-junit5", version.ref = "kotest" }
 kotestAssertionsCore = { module = "io.kotest:kotest-assertions-core", version.ref = "kotest" }
