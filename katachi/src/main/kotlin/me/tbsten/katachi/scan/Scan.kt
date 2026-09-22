@@ -1,9 +1,10 @@
 package me.tbsten.katachi.scan
 
 import me.tbsten.katachi.dsl.Architecture
+import me.tbsten.katachi.dsl.DeclaredConstraint
 import me.tbsten.katachi.dsl.LayoutEntry
 import me.tbsten.katachi.dsl.Role
-import me.tbsten.katachi.dsl.flattenLayout
+import me.tbsten.katachi.dsl.evaluateLayout
 import me.tbsten.katachi.fs.FsPath
 import me.tbsten.katachi.fs.KatachiFileSystem
 import me.tbsten.katachi.fs.findProjectRoot
@@ -44,6 +45,20 @@ internal class ScanResult(
      * present with an empty list, which is why reads go through `orEmpty()`.
      */
     val filesByRole: Map<Role, List<String>>,
+    /**
+     * The constraints the layout declared, with the layout around each already evaluated.
+     *
+     * None of them has been run. They ride on the walk's result rather than being evaluated
+     * separately so that a check asks about the same entries this walk matched files against:
+     * flattening the layout a second time would be a second chance for the two to disagree
+     * about what a wildcard module key expanded to.
+     */
+    val constraints: List<DeclaredConstraint>,
+    /**
+     * Where the walk started, absolute — the one value a constraint backend needs that is not
+     * project relative, because a parser cannot be pointed at a relative path.
+     */
+    val projectRoot: FsPath,
 )
 
 /**
@@ -69,13 +84,15 @@ internal class ScanResult(
  */
 internal fun Architecture.scanProject(fileSystem: KatachiFileSystem): ScanResult {
     val projectRoot = findProjectRoot(fileSystem)
-    // TODO(v0.1 step 5): call `evaluateLayout` instead and carry its `constraints` and the
-    // project root on `ScanResult`, so that a check evaluates them against this same walk.
-    // Evaluating the blocks a second time would be a second chance for the two to disagree.
+    // One evaluation of the layout, read from both sides: the entries drive the walk, the
+    // constraints ride along to whichever check evaluates them. Flattening twice would be a
+    // second chance for the two to disagree about what a wildcard module key expanded to.
+    val evaluation = evaluateLayout(moduleIndex(fileSystem, projectRoot.path, moduleResolver))
     return Scan(
         fileSystem = files.fileSystemFor(fileSystem, projectRoot),
         root = projectRoot.path,
-        layout = LayoutIndex(flattenLayout(moduleIndex(fileSystem, projectRoot.path, moduleResolver))),
+        layout = LayoutIndex(evaluation.entries),
+        constraints = evaluation.constraints,
     ).run()
 }
 
@@ -97,6 +114,7 @@ private class Scan(
     private val fileSystem: KatachiFileSystem,
     private val root: FsPath,
     private val layout: LayoutIndex,
+    private val constraints: List<DeclaredConstraint>,
 ) {
     private val violations = mutableListOf<Violation>()
 
@@ -120,6 +138,8 @@ private class Scan(
             // parents before children, names in order.
             violations = violations.sortedBy { it.kind.ordinal },
             filesByRole = filesByRole,
+            constraints = constraints,
+            projectRoot = root,
         )
     }
 

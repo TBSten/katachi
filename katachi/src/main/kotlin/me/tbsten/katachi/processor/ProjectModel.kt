@@ -2,6 +2,7 @@ package me.tbsten.katachi.processor
 
 import me.tbsten.katachi.ExperimentalKatachiApi
 import me.tbsten.katachi.dsl.Architecture
+import me.tbsten.katachi.dsl.DeclaredConstraint
 import me.tbsten.katachi.dsl.Group
 import me.tbsten.katachi.dsl.LayoutEntry
 import me.tbsten.katachi.dsl.Role
@@ -178,6 +179,58 @@ public class ProjectModel internal constructor(
      * Reading it starts that walk, exactly as [filesOf] does.
      */
     internal val layoutViolations: List<Violation> get() = scan.violations
+
+    /**
+     * The constraints the definition declared, none of them evaluated yet.
+     *
+     * Internal for the same reason [layoutViolations] is: evaluating a constraint is a check's
+     * job, and the block itself is not something a third party can be handed in v0.1. Reading
+     * this starts the walk.
+     */
+    internal val declaredConstraints: List<DeclaredConstraint> get() = scan.constraints
+
+    /** Where the walk started, absolute — what a constraint backend opens files from. */
+    internal val projectRootPath: String get() = scan.projectRoot.value
+
+    /**
+     * The constraints some check took responsibility for during this run.
+     *
+     * [DeclaredConstraint] declares no `equals`, exactly as [Role] does not, so this is a set
+     * of identities. One [ProjectModel] is built per run, so what collects here is precisely
+     * "evaluated during this one walk" — which is what lets `assert(ConstraintCheck())` be
+     * told apart from `assert()` without anyone inspecting the types of the checks passed in.
+     */
+    private val evaluated: MutableSet<DeclaredConstraint> = HashSet()
+
+    internal fun hasEvaluated(constraint: DeclaredConstraint): Boolean = constraint in evaluated
+
+    internal fun markEvaluated(constraint: DeclaredConstraint) {
+        evaluated += constraint
+    }
+
+    /** The constraints nothing answered for, which the run has to report rather than drop. */
+    internal val unevaluatedConstraints: List<DeclaredConstraint>
+        get() = declaredConstraints.filterNot { it in evaluated }
+
+    /**
+     * Scratch space shared by every constraint of one run, with the same lifetime as
+     * [evaluated] and kept in the same place, so that
+     * [me.tbsten.katachi.dsl.ConstraintSubject.memo]'s "every constraint of one run" means one
+     * thing in the documentation and in the code.
+     */
+    private val constraintScratch: MutableMap<Any, Any> = mutableMapOf()
+
+    internal fun scratch(): MutableMap<Any, Any> = constraintScratch
+
+    /**
+     * The files [constraint] covers, in walk order.
+     *
+     * The role's own files narrowed by the constraint's coverage: a constraint can never be
+     * about a file the role that holds it does not own, so the role's list is the ceiling and
+     * the coverage only takes away from it.
+     */
+    internal fun filesUnder(constraint: DeclaredConstraint): List<String> =
+        scan.filesByRole[constraint.role].orEmpty().filter { constraint.coverage.covers(it) }
 
     /**
      * Files that exist and that [role]'s `layout { }` allows, as project relative `/`

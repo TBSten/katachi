@@ -3,18 +3,25 @@ package me.tbsten.katachi.check
 import me.tbsten.katachi.InternalKatachiApi
 import me.tbsten.katachi.scan.MissingFile
 import me.tbsten.katachi.scan.UncheckedCheck
+import me.tbsten.katachi.scan.UncheckedConstraint
 import me.tbsten.katachi.scan.UncheckedDirectory
 import me.tbsten.katachi.scan.UncheckedFile
 import me.tbsten.katachi.scan.UnexpectedDirectory
 import me.tbsten.katachi.scan.UnexpectedFile
+import me.tbsten.katachi.scan.UnsatisfiedConstraint
 import me.tbsten.katachi.scan.Violation
 import me.tbsten.katachi.scan.ViolationKind
 
 /** How many blocks `assert()` prints before it stops and counts the rest. */
 public const val DEFAULT_MAX_VIOLATIONS: Int = 10
 
-/** Indent of everything inside a block. A fragment meant to be copied adds another step. */
-private const val STEP: String = "  "
+/**
+ * Indent of everything inside a block. A fragment meant to be copied adds another step.
+ *
+ * `internal` rather than private so that `ConstraintBlocks.kt` — split off this file for size
+ * — indents to the same depth by construction rather than by copying the string.
+ */
+internal const val STEP: String = "  "
 
 /**
  * The violations, written out for the standard output of a test.
@@ -137,7 +144,10 @@ private fun uncheckedLines(violations: List<Violation>): List<String> = buildLis
         }
         add("$paths $noun could not be checked.")
     }
-    // TODO(v0.1 step 5): count `UncheckedConstraint` here, between paths and checks.
+    val constraints = violations.count { it is UncheckedConstraint }
+    if (constraints > 0) {
+        add("$constraints ${if (constraints == 1) "constraint" else "constraints"} could not be evaluated.")
+    }
     val checks = violations.count { it is UncheckedCheck }
     if (checks > 0) add("$checks ${if (checks == 1) "check" else "checks"} could not be run.")
 }
@@ -149,6 +159,8 @@ private fun blockOf(violation: Violation): List<String> = when (violation) {
     is UncheckedFile -> uncheckedFileBlock(violation)
     is UncheckedDirectory -> uncheckedDirectoryBlock(violation)
     is UncheckedCheck -> uncheckedCheckBlock(violation)
+    is UnsatisfiedConstraint -> unsatisfiedConstraintBlock(violation)
+    is UncheckedConstraint -> uncheckedConstraintBlock(violation)
     // A violation from outside katachi. The block is the first line plus the values it states
     // about itself, and nothing else: katachi does not know what it means, so it writes no
     // sentence about it and never offers a way to fix it. Compile-time exhaustiveness is lost
@@ -237,7 +249,7 @@ private fun foreignBlock(violation: Violation): List<String> = buildList {
  * line of a block. A newline in a label would break the very thing an agent greps for
  * (`grep -A 20 "^\["`). Trimming is not politeness here; it is what keeps the format a format.
  */
-private fun oneLine(value: String): String =
+internal fun oneLine(value: String): String =
     value.lineSequence().firstOrNull()?.trim().orEmpty().ifEmpty { "<empty>" }
 
 /**
@@ -249,7 +261,7 @@ private fun oneLine(value: String): String =
  * of the message is kept for the same reason: a message that wraps would break out of the
  * block's shape.
  */
-private fun causeLine(cause: Throwable): String {
+internal fun causeLine(cause: Throwable): String {
     val type = cause::class.qualifiedName ?: cause::class.java.name
     val message = cause.message?.lineSequence()?.firstOrNull()?.trim()
     return if (message.isNullOrEmpty()) type else "$type: $message"

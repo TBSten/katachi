@@ -36,11 +36,12 @@ public enum class ViolationKind {
     Missing,
 
     /**
-     * A constraint declared with `konsist { }` does not hold. Fix the code, or the constraint.
+     * A constraint declared with `constraint { }` — `konsist { }` included — does not hold.
+     * Fix the code, or the constraint.
      *
-     * ## Example 1: list `konsist { }` constraints that failed
+     * ## Example 1: list the constraints that failed
      * ```kt
-     * projectArchitecture.validate().filter { it.kind == ViolationKind.Constraint }
+     * projectArchitecture.validate(ConstraintCheck()).filter { it.kind == ViolationKind.Constraint }
      * ```
      */
     Constraint,

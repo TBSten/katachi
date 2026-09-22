@@ -134,9 +134,9 @@ internal fun Architecture.validateWith(
                 )
             }
         }
-        // One model, therefore one walk.
-        // TODO(v0.1 step 5): add `+ model.unevaluatedConstraintViolations()` here, so that a
-        //  constraint nothing evaluated is reported rather than silently passing.
-        (layout + found).sortedBy { it.kind.ordinal }
+        // One model, therefore one walk. The last term is the guard against the quietest way
+        // this library could break: a definition full of constraints, code breaking them, and
+        // a green test because nothing was handed a check that evaluates them.
+        (layout + found + model.unevaluatedConstraintViolations()).sortedBy { it.kind.ordinal }
     }
 }
