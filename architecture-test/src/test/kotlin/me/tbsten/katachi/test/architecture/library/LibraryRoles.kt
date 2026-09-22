@@ -80,6 +80,7 @@ fun ArchitectureScope.libraryRoles() {
                         files.flatMap(::publicDeclarationsOf).must(::showsExample)
                     }
                     mainSourceSet / kotlin / mainPackage / "fs" / "*".ktFile()
+                    mainSourceSet / kotlin / mainPackage / "fs" / "**" / "*".ktFile()
                 }
             }
         }
@@ -87,8 +88,16 @@ fun ArchitectureScope.libraryRoles() {
         "Dsl" {
             title = "DSL"
             summary = "architecture { } / group { } / role { } / layout { } の受け皿と、宣言されたモデル"
+            description = """
+                `dsl.gradle` と `dsl.kotlin` もこの層です。`layout { }` の上に context parameter で
+                書かれた語彙で、種類としては別物ですが依存としては同じ層にいます。
+                `dsl/LayoutScopeImpl.kt` が `dsl.kotlin.ktsFile` を import しているので
+                （`.module { }` が `build.gradle.kts` を注入するため）、
+                「コアは語彙を import しない」という規則は今日の時点で落ちます。
+            """.trimIndent()
             example("LayoutScope.kt", "layout { } の受け皿。コアの語彙はこれで全部")
             example("Architecture.kt", "宣言し終わった1つの定義")
+            example("Modules.kt", "\":core:data\".module { } — dsl.gradle の語彙")
             layout {
                 ":katachi".module {
                     "${laterLayersOf("dsl")} を import しないこと".konsist {
@@ -101,33 +110,7 @@ fun ArchitectureScope.libraryRoles() {
                         files.flatMap(::publicDeclarationsOf).must(::showsExample)
                     }
                     mainSourceSet / kotlin / mainPackage / "dsl" / "*".ktFile()
-                }
-            }
-        }
-
-        "LayoutVocabulary" {
-            title = "layout の語彙"
-            summary = "layout { } の上に context parameter で書かれた語彙。利用者が自分で書くときの手本"
-            example("Modules.kt", "\":core:data\".module { } — Gradle のモジュールを1つ宣言する")
-            example("LayoutFiles.kt", "\"...\".ktFile() — 拡張子を足すだけの2行")
-            layout {
-                ":katachi".module {
-                    // The same rule as `Dsl`: these are the `dsl` layer, split off by kind and
-                    // not by dependency. `dsl/LayoutScopeImpl.kt` imports `dsl.kotlin.ktsFile`
-                    // so that `.module { }` can inject `build.gradle.kts`, which means a rule
-                    // saying "the core does not import the vocabulary" would fail today. The
-                    // split says these files are a different kind of thing, nothing more.
-                    "${laterLayersOf("dsl")} を import しないこと".konsist {
-                        files.mustNot(importsLaterLayerThan("dsl"))
-                    }
-                    PACKAGE_MATCHES_PATH_RULE.konsist {
-                        packages.must { it.hasMatchingPath }
-                    }
-                    KDOC_EXAMPLE_RULE.konsist {
-                        files.flatMap(::publicDeclarationsOf).must(::showsExample)
-                    }
-                    mainSourceSet / kotlin / mainPackage / "dsl" / "gradle" / "*".ktFile()
-                    mainSourceSet / kotlin / mainPackage / "dsl" / "kotlin" / "*".ktFile()
+                    mainSourceSet / kotlin / mainPackage / "dsl" / "**" / "*".ktFile()
                 }
             }
         }
@@ -149,6 +132,7 @@ fun ArchitectureScope.libraryRoles() {
                         files.flatMap(::publicDeclarationsOf).must(::showsExample)
                     }
                     mainSourceSet / kotlin / mainPackage / "scan" / "*".ktFile()
+                    mainSourceSet / kotlin / mainPackage / "scan" / "**" / "*".ktFile()
                 }
             }
         }
@@ -170,6 +154,7 @@ fun ArchitectureScope.libraryRoles() {
                         files.flatMap(::publicDeclarationsOf).must(::showsExample)
                     }
                     mainSourceSet / kotlin / mainPackage / "processor" / "*".ktFile()
+                    mainSourceSet / kotlin / mainPackage / "processor" / "**" / "*".ktFile()
                 }
             }
         }
@@ -191,6 +176,7 @@ fun ArchitectureScope.libraryRoles() {
                         files.flatMap(::publicDeclarationsOf).must(::showsExample)
                     }
                     mainSourceSet / kotlin / mainPackage / "check" / "*".ktFile()
+                    mainSourceSet / kotlin / mainPackage / "check" / "**" / "*".ktFile()
                 }
             }
         }

@@ -1,8 +1,9 @@
 package com.example.controller
 
 import com.example.service.HealthService
-import io.ktor.server.response.*
-import io.ktor.server.routing.*
+import io.ktor.server.response.respond
+import io.ktor.server.routing.Route
+import io.ktor.server.routing.get
 
 /** Maps `GET /health` onto [HealthService]. */
 class HealthController(
