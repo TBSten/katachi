@@ -2,6 +2,7 @@ package me.tbsten.katachi.check
 
 import me.tbsten.katachi.InternalKatachiApi
 import me.tbsten.katachi.scan.MissingFile
+import me.tbsten.katachi.scan.UncheckedCheck
 import me.tbsten.katachi.scan.UncheckedDirectory
 import me.tbsten.katachi.scan.UncheckedFile
 import me.tbsten.katachi.scan.UnexpectedDirectory
@@ -29,20 +30,77 @@ private const val STEP: String = "  "
  */
 @InternalKatachiApi
 public fun List<Violation>.report(maxViolations: Int = DEFAULT_MAX_VIOLATIONS): String {
-    val shown = take(maxViolations.coerceAtLeast(0))
-    val hidden = size - shown.size
+    val shown = shownIndicesOf(this, maxViolations.coerceAtLeast(0)).map { this[it] }
+    val hiddenByKind = ViolationKind.entries
+        .associateWith { kind -> count { it.kind == kind } - shown.count { it.kind == kind } }
+        .filterValues { it > 0 }
+    val hidden = hiddenByKind.values.sum()
     return buildString {
         append(summaryLine(this@report))
         for (violation in shown) {
             append("\n\n")
             append(blockOf(violation).joinToString("\n"))
         }
-        if (hidden > 0) append("\n\nShowing first ${shown.size} ($hidden more)")
-        // After the truncation line, and outside it: this is the only sentence saying the
-        // result is partial, and a reader who does not see it is entitled to believe every
-        // path was looked at. Cutting it away with the blocks would make the report lie.
-        uncheckedLine(this@report)?.let { append("\n\n$it") }
+        if (hidden > 0) {
+            // A breakdown only earns its place when more than one kind is hiding something;
+            // with a single kind hidden it would just repeat the count already on this line.
+            val breakdown = if (hiddenByKind.size > 1) {
+                ": " + hiddenByKind.entries.joinToString(", ") { "${it.key} ${it.value}" }
+            } else {
+                ""
+            }
+            append("\n\nShowing first ${shown.size} ($hidden more$breakdown)")
+        }
+        // After the truncation line, and outside it: these are the only sentences saying the
+        // result is partial, and a reader who does not see them is entitled to believe every
+        // path, constraint and check was looked at. Cutting them away with the blocks would
+        // make the report lie.
+        for (line in uncheckedLines(this@report)) append("\n\n$line")
     }
+}
+
+/**
+ * Which indices of [violations] a report shows when it can only afford [max] blocks, in
+ * ascending order — chosen, never reordered, so the report keeps the caller's own order among
+ * the blocks it does show.
+ *
+ * The budget is split fairly across the kinds that actually turned up, not across all of
+ * [ViolationKind]: a run with only [ViolationKind.Unexpected] violations should not lose a slot
+ * to a [ViolationKind.Missing] that has nothing to show. Every kind present gets one block
+ * first, budget allowing; what is left is handed out one at a time, in [ViolationKind.entries]
+ * order, to whichever kind still has more to show, until the budget or every kind runs out.
+ */
+private fun shownIndicesOf(violations: List<Violation>, max: Int): List<Int> {
+    val indicesByKind = violations.indices.groupBy { violations[it].kind }
+    val quota = ViolationKind.entries.associateWith { 0 }.toMutableMap()
+    var budget = max
+
+    for (kind in ViolationKind.entries) {
+        if (budget <= 0) break
+        if (indicesByKind[kind].isNullOrEmpty()) continue
+        quota[kind] = 1
+        budget--
+    }
+
+    while (budget > 0) {
+        var grew = false
+        for (kind in ViolationKind.entries) {
+            if (budget <= 0) break
+            val available = indicesByKind[kind]?.size ?: 0
+            val current = quota.getValue(kind)
+            if (current < available) {
+                quota[kind] = current + 1
+                budget--
+                grew = true
+            }
+        }
+        // Every present kind is fully shown; a larger max cannot add more.
+        if (!grew) break
+    }
+
+    return ViolationKind.entries
+        .flatMap { kind -> indicesByKind[kind].orEmpty().take(quota.getValue(kind)) }
+        .sorted()
 }
 
 private fun summaryLine(violations: List<Violation>): String {
@@ -59,24 +117,29 @@ private fun summaryLine(violations: List<Violation>): String {
 }
 
 /**
- * How many paths the run could not look at, in a sentence, or `null` when it looked at all
+ * Sentences at the end of a report saying what the run could not finish, in this order: paths
+ * (files and/or directories), constraints, then checks that threw. Empty when the run saw all
  * of them.
  *
- * The wording follows what actually failed: files, directories, or `paths` when both did,
- * because no single noun covers the two and a report that says "files" about a directory
+ * The paths sentence follows what actually failed: files, directories, or `paths` when both
+ * did, because no single noun covers the two and a report that says "files" about a directory
  * sends the reader to the wrong place.
  */
-private fun uncheckedLine(violations: List<Violation>): String? {
+private fun uncheckedLines(violations: List<Violation>): List<String> = buildList {
     val files = violations.count { it is UncheckedFile }
     val directories = violations.count { it is UncheckedDirectory }
-    val total = files + directories
-    if (total == 0) return null
-    val noun = when {
-        directories == 0 -> if (files == 1) "file" else "files"
-        files == 0 -> if (directories == 1) "directory" else "directories"
-        else -> "paths"
+    val paths = files + directories
+    if (paths > 0) {
+        val noun = when {
+            directories == 0 -> if (files == 1) "file" else "files"
+            files == 0 -> if (directories == 1) "directory" else "directories"
+            else -> "paths"
+        }
+        add("$paths $noun could not be checked.")
     }
-    return "$total $noun could not be checked."
+    // TODO(v0.1 step 5): count `UncheckedConstraint` here, between paths and checks.
+    val checks = violations.count { it is UncheckedCheck }
+    if (checks > 0) add("$checks ${if (checks == 1) "check" else "checks"} could not be run.")
 }
 
 private fun blockOf(violation: Violation): List<String> = when (violation) {
@@ -85,6 +148,13 @@ private fun blockOf(violation: Violation): List<String> = when (violation) {
     is MissingFile -> missingFileBlock(violation)
     is UncheckedFile -> uncheckedFileBlock(violation)
     is UncheckedDirectory -> uncheckedDirectoryBlock(violation)
+    is UncheckedCheck -> uncheckedCheckBlock(violation)
+    // A violation from outside katachi. The block is the first line plus the values it states
+    // about itself, and nothing else: katachi does not know what it means, so it writes no
+    // sentence about it and never offers a way to fix it. Compile-time exhaustiveness is lost
+    // the moment `Violation` stops being sealed; `ViolationBlockCoverageSpec` gets it back for
+    // katachi's own violations by checking every one of them has a branch above this line.
+    else -> foreignBlock(violation)
 }
 
 private fun unexpectedFileBlock(violation: UnexpectedFile): List<String> = buildList {
@@ -142,6 +212,33 @@ private fun uncheckedDirectoryBlock(violation: UncheckedDirectory): List<String>
     "$STEP$STEP- Check that the directory is readable, then run the check again",
     "$STEP$STEP- If it is, report this at https://github.com/TBSten/katachi/issues with the cause above",
 )
+
+private fun uncheckedCheckBlock(violation: UncheckedCheck): List<String> = listOf(
+    "[${violation.label}] ${violation.path}",
+    "${STEP}Katachi failed while running ${violation.check}, so nothing it would have reported is known.",
+    "${STEP}Cause: ${causeLine(violation.cause)}",
+    "${STEP}How to fix:",
+    "$STEP$STEP- Read the cause above and fix the check, or stop passing it to assert()",
+    "$STEP$STEP- Report it at https://github.com/TBSten/katachi/issues if the check is one of katachi's",
+)
+
+/**
+ * A violation declared outside katachi. The block is the first line plus what [Violation.details]
+ * states about it, and nothing else: katachi does not know what the violation means, so it
+ * writes no sentence about it and offers no "How to fix:".
+ */
+private fun foreignBlock(violation: Violation): List<String> = buildList {
+    add("[${oneLine(violation.label)}] ${oneLine(violation.path)}")
+    for (detail in violation.details) add("$STEP${oneLine(detail.label)}: ${oneLine(detail.value)}")
+}
+
+/**
+ * Keeps a value written outside katachi — or by a user, such as a constraint name — inside one
+ * line of a block. A newline in a label would break the very thing an agent greps for
+ * (`grep -A 20 "^\["`). Trimming is not politeness here; it is what keeps the format a format.
+ */
+private fun oneLine(value: String): String =
+    value.lineSequence().firstOrNull()?.trim().orEmpty().ifEmpty { "<empty>" }
 
 /**
  * A failure in one line: its type and the first line of its message, which is what an issue

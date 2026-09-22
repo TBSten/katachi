@@ -11,7 +11,8 @@ import me.tbsten.katachi.dsl.Role
  * rewrite. `assert()` is the thin layer on top that turns a non-empty list into a failure.
  *
  * A violation carries everything its report block needs and nothing else: the wording lives
- * in the report, not here.
+ * in the report, not here. A violation declared outside katachi has no block of its own,
+ * though, so [details] is the door it uses to carry values in instead.
  *
  * It sits next to the walk rather than next to `assert()` because the walk is what produces
  * one. Deciding that a file no role allows is an `UnexpectedFile` is the same decision as
@@ -25,7 +26,7 @@ import me.tbsten.katachi.dsl.Role
  * failure.violations.filter { it.severity == Severity.Error }.map { it.path }
  * ```
  */
-public sealed interface Violation {
+public interface Violation {
     /**
      * Which of the three problems this is.
      *
@@ -68,6 +69,28 @@ public sealed interface Violation {
      * ```
      */
     public val label: String
+
+    /**
+     * What a report block states about this violation when katachi does not know its type,
+     * one entry per line, in this order.
+     *
+     * katachi's own violations leave this empty: their blocks are written in `ViolationReport`,
+     * because those blocks have shapes a flat list cannot hold — a nested list of nearby
+     * locations, a copyable DSL fragment, a "How to fix" section whose contents depend on the
+     * kind. That file stays the one place a reader looks to change how a report reads.
+     *
+     * A violation declared outside katachi has no block there, because the report cannot switch
+     * on a type it has never seen. So it says what it knows, and it says it as **values**: one
+     * label and one value per entry, one line each, no leading marker and no indentation of its
+     * own.
+     *
+     * ## Example 1: word a violation an artifact of your own produces
+     * ```kt
+     * override val details: List<ViolationDetail>
+     *     get() = listOf(ViolationDetail("Rule", ruleId), ViolationDetail("Line", "$line"))
+     * ```
+     */
+    public val details: List<ViolationDetail> get() = emptyList()
 }
 
 /**
