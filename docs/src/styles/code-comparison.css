@@ -41,15 +41,32 @@
 }
 
 /*
- * Expressive Code は自前で上下マージンを持っている。そのままだと左右の
- * カラムで先頭位置がずれるので、パネルの中では打ち消す。
+ * Starlight は本文の中の**隣り合う要素すべて**に `margin-top: 1rem` を入れる
+ * （`.sl-markdown-content` 配下の子孫に効く隣接セレクタで、直接の子に限らない）。
+ * それがこのコンポーネントでは2か所で悪さをする。
+ *
+ * 1. パネル 2 が「パネル 1 の次の要素」なので 1rem 下がり、**右のカラムだけ
+ *    上に余白が空く**。カラム同士の間隔は grid の `gap` が持っているので不要
+ * 2. コード枠が「バッジの次の要素」なので 1rem 下がり、`.code-comparison-label`
+ *    の `margin-bottom` と足されて間隔が 22.4px になる（狙いは 6.4px）
+ *
+ * **要素名やクラスで打ち消さないこと。** 以前は `.expressive-code` を狙っていたが、
+ * starlight-theme-nova がコード枠の markup を自前のもの（`data-nova-code-container`）に
+ * 差し替えるため、テーマを変えた瞬間に無言で効かなくなった。`* + *` を同じ形で
+ * 打ち消せば、中身が何で描かれていても成り立つ。
  */
-.code-comparison-panel .expressive-code {
-	margin-block: 0;
+.code-comparison > * + *,
+.code-comparison-panel > * + * {
+	margin-top: 0;
 }
 
-.code-comparison-panel .expressive-code + .expressive-code {
-	margin-block-start: 0.5rem;
+/*
+ * 1 つのパネルにコードを 2 つ以上積んだときだけ、間に少し空ける。
+ * バッジは対象外なので、バッジとコードの間隔は上の 0 のまま
+ * （`.code-comparison-label` の `margin-bottom` だけが効く）。
+ */
+.code-comparison-panel > :not(.code-comparison-label) + :not(.code-comparison-label) {
+	margin-top: 0.5rem;
 }
 
 /*
