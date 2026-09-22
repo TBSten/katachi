@@ -33,6 +33,37 @@ katachi が投げるものは、**利用者が取るべき行動**で3つに分�
 新しい例外を足すときは、まずこの表のどれに当たるかを決める。
 どれにも当たらないと感じたら、**基底を増やす前に分類を疑う**。
 
+### `KatachiDeclarationException` と `KatachiInternalException` は開いている（konsist 連携より）
+
+この2つの基底だけ、コンストラクタが `@ExperimentalKatachiApi public` で外部に開いている:
+
+```kotlin
+public abstract class KatachiDeclarationException
+@ExperimentalKatachiApi public constructor(message: String, cause: Throwable? = null) : IllegalArgumentException(message, cause)
+
+public abstract class KatachiInternalException
+@ExperimentalKatachiApi public constructor(message: String, cause: Throwable? = null) : IllegalStateException(message, cause)
+```
+
+- **第三者のアーキテクチャ検査バックエンド（`katachi-konsist` のような別 artifact）が、
+  この2つの基底を名乗ってよい。** `katachi-konsist` の `KatachiKonsist*Exception` 5本はこの経路で
+  作られている — もし `katachi` の外の第三者が同じことをしたければ、同じ2つの基底を継承すればよい
+- **どちらも `cause: Throwable?` を新たに取れる。** 既存のサブクラスは全部 `message =` を
+  名前付きで渡しているので無傷（コンストラクタのシグネチャが増えても呼び出し側は変わらない）。
+  `IllegalArgumentException(message, cause)` / `IllegalStateException(message, cause)` に
+  そのまま渡す
+- **`KatachiCheckException` と `KatachiArchitectureAssertionError` は `internal constructor` のまま。**
+  前者は「定義は正しいが**環境**が走らせられない」（git が無い、ルートが見つからない）という
+  katachi 自身の走査の話で、第三者バックエンドが名乗る理由がない。後者は検査の**結果**を表す型で、
+  `assert()` という一番外側の薄い皮だけが投げるべきもの
+- **`ExperimentalKatachiApi` は `AnnotationTarget.CONSTRUCTOR` を持つ**ので、コンストラクタへの
+  付与は構文として通る
+- `KatachiInternalException` の「メッセージにはこれが katachi のバグであると書く」という規約は、
+  この2つが開いたことで一般化する: **「これが（それを投げた）そのライブラリのバグであると書く」**。
+  `katachi` 自身が投げるものは今までどおり「katachi のバグ」で、`katachi-konsist` が投げるもの
+  （例: `KatachiKonsistScopeIncompleteException`）は「これは katachi-konsist 自身のバグ」と書く —
+  読み手（利用者）がどこに issue を立てればよいかを、メッセージだけで判断できるようにするため
+
 ## コンストラクタ引数
 
 ```kotlin

@@ -47,8 +47,14 @@ CI（`.github/workflows/ci.yml`、`pull_request` と `main` への push で走�
 `./gradlew check` と `./gradlew :katachi:check` は同じものを指す。Android SDK も
 Kotlin/Native も要らないのはこの空っぽさのおかげなので、ルートにプラグインやソースを足さない。
 
-`check` にぶら下がっているのは **compile と test だけ**。ktlint も konsist も、いまは入って
-いない（konsist は v0.1 のステップ 4）。フォーマット違反は誰も検出しないので、自分で揃える。
+`check` にぶら下がっているのは **compile と test だけ**。ktlint はいまも入っていない。
+フォーマット違反は誰も検出しないので、自分で揃える。
+
+**`./gradlew check` は `:katachi-konsist:test` も拾う。** ルートプロジェクトが
+`:katachi` に加えて `:katachi-konsist`（Konsist バックエンド。v0.1 ステップ4 で追加）も
+含んでいるため。`:katachi-konsist` のテストは実ファイルシステムを使う fixture 方式で、
+一時ディレクトリは `.local/tmp/katachi-konsist-fixtures/<連番>/` に書き出して `finally` で消す
+（Konsist は実ファイルのパスを要求するので、偽のファイルシステムでは動かない）。
 
 ### 2. サンプル 3 本の結合テスト — `./gradlew checkSamples`
 
@@ -177,8 +183,11 @@ mkdir -p .local/tmp/gradle-cache
 
 キャッシュディレクトリを分けても解決しない。**3 つのサンプルはどれも
 `includeBuild("../..")` で同じ `katachi/build/` に書き込む**ので、同時に走らせると壊れる。
-ルートの `build.gradle.kts` がタスク間に `mustRunAfter` を張っているのはこのため
-（`./gradlew check checkSamples` の同時実行も含めて順序を保証している）。
+`includeBuild("../..")` は `:katachi-konsist` も含んでいるので、**`katachi-konsist/build/` も
+同じ取り合いに加わる**（konsist { } を使わないサンプルでも、composite build 自体が
+`:katachi-konsist` を configure するため対象になる）。ルートの `build.gradle.kts` がタスク間に
+`mustRunAfter` を張っているのはこのため（`./gradlew check checkSamples` の同時実行も含めて
+順序を保証している。`:katachi:*` 4 タスクと `:katachi-konsist:*` 4 タスクの両方に張ってある）。
 
 subagent に分担させるときも、**サンプルを触るものは 1 体だけ**にする。
 
