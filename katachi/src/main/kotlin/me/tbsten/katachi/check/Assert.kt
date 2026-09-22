@@ -24,8 +24,8 @@ import me.tbsten.katachi.scan.Violation
  * val paths = failure.violations.map { it.path }
  * ```
  *
- * @param maxViolations how many violations the message spells out. [violations] holds them
- *   all either way.
+ * @param maxViolations the combined budget the message's error blocks and warning blocks share.
+ *   [violations] holds every violation of the run either way, warnings included.
  */
 public class KatachiArchitectureAssertionError internal constructor(
     /** Every violation of the run, including the ones the message left out. */
@@ -56,8 +56,9 @@ public class KatachiArchitectureAssertionError internal constructor(
  * The overload taking checks runs those on the same walk as well; this one runs [LayoutCheck]
  * alone.
  *
- * @param maxViolations how many violations the message spells out. The rest are counted on
- *   the last line. This is about the message only — the check always looks at everything.
+ * @param maxViolations the combined budget the message's error blocks and warning blocks
+ *   share. The rest are counted on their section's own last line. This is about the message
+ *   only — the check always looks at everything.
  * @throws KatachiArchitectureAssertionError when the check found anything that fails it.
  */
 public fun Architecture.assert(maxViolations: Int = DEFAULT_MAX_VIOLATIONS): Unit =
@@ -108,8 +109,9 @@ public fun Architecture.assert(
  * projectArchitecture.assert(ConstraintCheck(), TodoCheck(), maxViolations = 20)
  * ```
  *
- * @param maxViolations how many violations the message spells out. The rest are counted on
- *   the last line. This is about the message only — the check always looks at everything.
+ * @param maxViolations the combined budget the message's error blocks and warning blocks
+ *   share. The rest are counted on their section's own last line. This is about the message
+ *   only — the check always looks at everything.
  * @throws KatachiArchitectureAssertionError when anything that ran found something that fails
  *   it, a check that threw included.
  */
@@ -140,15 +142,25 @@ public fun Architecture.assert(
     maxViolations: Int = DEFAULT_MAX_VIOLATIONS,
 ): Unit = assertWith(fileSystem, listOf(check) + more, maxViolations)
 
-/** What all four `assert` overloads are: [validateWith], then throw if anything is an error. */
+/**
+ * What all four `assert` overloads are: [validateWith], then throw if anything is an error.
+ *
+ * Nothing failed when there is no [Severity.Error] violation, even if there are warnings — so
+ * there is no [KatachiArchitectureAssertionError] to carry them. Standard error is what is left:
+ * `report()` already renders a Warning-only list as the Warning section alone (see `report`'s
+ * own doc), so the same call that builds the failure message below builds this one too, and the
+ * two can never say something different about the same run.
+ */
 private fun Architecture.assertWith(
     fileSystem: KatachiFileSystem,
     checks: List<ArchitectureProcessor<List<Violation>>>,
     maxViolations: Int,
 ) {
     val violations = validateWith(fileSystem, checks)
-    // TODO(v0.1 step 5): once warnings exist, print them to standard error when nothing failed,
-    //  and keep them in the failure message when something did.
-    if (violations.none { it.severity == Severity.Error }) return
+    if (violations.none { it.severity == Severity.Error }) {
+        val warnings = violations.report(maxViolations)
+        if (warnings.isNotEmpty()) System.err.println(warnings)
+        return
+    }
     throw KatachiArchitectureAssertionError(violations, maxViolations)
 }

@@ -135,8 +135,17 @@ class ModuleScanSpec : FreeSpec({
 
             layoutArchitecture {
                 ":".module { "settings.gradle".ktsFile() }
-                ":feature:*".module { mainSourceSet / kotlin / modulePackage / "Screen".ktFile() }
-                ":core:*".module { mainSourceSet / kotlin / modulePackage / "Repository".ktFile() }
+                // This role really does live in two places, so both say which one to use — a
+                // `layout { }` with two of them and no `description` is a `MissingDescription`
+                // warning, and this spec is about `modulePackage`, not about that.
+                ":feature:*".module {
+                    description = "One feature's own screen"
+                    mainSourceSet / kotlin / modulePackage / "Screen".ktFile()
+                }
+                ":core:*".module {
+                    description = "What more than one feature reads through"
+                    mainSourceSet / kotlin / modulePackage / "Repository".ktFile()
+                }
             }
                 .validate(
                     repository {

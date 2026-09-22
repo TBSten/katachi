@@ -253,6 +253,8 @@ private fun LayoutNode.toEntry(path: String, role: Role): LayoutEntry {
         role = role,
         declaredAt = declaredAt,
         description = description,
+        synthetic = synthetic,
+        place = place,
     )
 }
 
@@ -275,6 +277,14 @@ private fun compilePath(path: String, role: Role, declaredAt: DeclarationSite): 
 /**
  * Keeps the first declaration's position and description, and requires the path when any of
  * the declarations did.
+ *
+ * [LayoutEntry.synthetic] is ANDed rather than kept from either side: a role that wrote
+ * `"build.gradle.kts".file()` itself, alongside what `.module { }` injected at the same path,
+ * declared that path on its own account and it is no longer only the sugar's doing.
+ *
+ * [LayoutEntry.place] is ORed, for the mirror-image reason: a path a role reached twice, once as
+ * a plain directory on the way somewhere and once by opening a `module { }` block on it, does
+ * have a block to write a `description = "..."` in.
  */
 private fun LayoutEntry.mergedWith(other: LayoutEntry): LayoutEntry = LayoutEntry(
     path = path,
@@ -284,4 +294,6 @@ private fun LayoutEntry.mergedWith(other: LayoutEntry): LayoutEntry = LayoutEntr
     role = role,
     declaredAt = declaredAt,
     description = description ?: other.description,
+    synthetic = synthetic && other.synthetic,
+    place = place || other.place,
 )

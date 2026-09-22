@@ -4,8 +4,10 @@ package me.tbsten.katachi.scan
  * What kind of problem a violation is — which is the same thing as what the reader has to do
  * about it, so a report groups its blocks by this.
  *
- * The declaration order is the order the blocks appear in a report, so an entry is appended
- * rather than inserted.
+ * The declaration order is the order the blocks appear in a report. [Failed] stays last no
+ * matter what — `Scan` and `validate` sort blocks with `sortedBy { it.kind.ordinal }`, and every
+ * existing report's ordering depends on [Failed] being the last kind — while a new entry goes in
+ * wherever it actually belongs among the rest, ahead of [Failed].
  *
  * ## Example 1: count violations by kind
  * ```kt
@@ -45,6 +47,33 @@ public enum class ViolationKind {
      * ```
      */
     Constraint,
+
+    /**
+     * Two or more declarations claim the same thing, so which one it belongs to is not decided.
+     * Decide, and drop or narrow the rest.
+     *
+     * Katachi itself only ever reports this kind with [Severity.Warning]: nothing that carries
+     * it is, on its own, a reason `assert()` fails.
+     *
+     * ## Example 1: list what more than one declaration claims
+     * ```kt
+     * projectArchitecture.validate().filter { it.kind == ViolationKind.Ambiguous }
+     * ```
+     */
+    Ambiguous,
+
+    /**
+     * A declaration does not say what it is for. Write the missing explanation.
+     *
+     * Katachi itself only ever reports this kind with [Severity.Warning]: nothing that carries
+     * it is, on its own, a reason `assert()` fails.
+     *
+     * ## Example 1: list declarations missing their explanation
+     * ```kt
+     * projectArchitecture.validate().filter { it.kind == ViolationKind.Unexplained }
+     * ```
+     */
+    Unexplained,
 
     /**
      * The check itself failed at a path, so that path is neither allowed nor reported.

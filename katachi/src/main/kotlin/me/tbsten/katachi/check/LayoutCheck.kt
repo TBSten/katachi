@@ -4,6 +4,7 @@ import me.tbsten.katachi.ExperimentalKatachiApi
 import me.tbsten.katachi.processor.ArchitectureProcessor
 import me.tbsten.katachi.processor.ProjectModel
 import me.tbsten.katachi.scan.Violation
+import me.tbsten.katachi.scan.layoutWarningsOf
 
 /**
  * The `layout { }` check, written as a processor: files the project has that no role allows,
@@ -25,6 +26,16 @@ import me.tbsten.katachi.scan.Violation
  * It takes no settings. `maxViolations` belongs to the report rather than to the check, which
  * always looks at everything.
  *
+ * Not everything it returns comes from that walk, though. [ProjectModel.declaredEntries] costs
+ * no walk of its own — it flattens the same `layout { }` blocks a second time, from the
+ * declarations alone — and is where declaration-only Warnings live: a path two roles both claim
+ * outright ([me.tbsten.katachi.scan.AmbiguousLayout]), and a role living in more than one place
+ * without saying which files belong in which
+ * ([me.tbsten.katachi.scan.MissingDescription]). Reading it is a second
+ * evaluation of every `layout { }` block, so a block with a side effect of its own runs twice
+ * per `assert()` — the same thing a wildcard module key already does once per module it expands
+ * to.
+ *
  * ## Example 1: look at what the check found without failing the test
  * ```kt
  * val violations = projectArchitecture.process(LayoutCheck())
@@ -40,7 +51,9 @@ import me.tbsten.katachi.scan.Violation
  */
 @ExperimentalKatachiApi
 public class LayoutCheck : ArchitectureProcessor<List<Violation>> {
-    // Reading this is what starts the walk; see [ProjectModel.layoutViolations] for why a
-    // processor is handed it through a door only katachi's own check can open.
-    override fun process(model: ProjectModel): List<Violation> = model.layoutViolations
+    // Reading `layoutViolations` is what starts the walk; see [ProjectModel.layoutViolations]
+    // for why a processor is handed it through a door only katachi's own check can open.
+    // `declaredEntries` costs no walk — see this class's own KDoc for why it is read here too.
+    override fun process(model: ProjectModel): List<Violation> =
+        model.layoutViolations + layoutWarningsOf(model.declaredEntries)
 }

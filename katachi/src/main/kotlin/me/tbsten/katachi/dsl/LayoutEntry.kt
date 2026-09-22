@@ -190,6 +190,28 @@ public class LayoutEntry internal constructor(
      * ```
      */
     public val description: String?,
+    /**
+     * Whether this entry is one of the two lines a `module { }` block injects (`build`, and
+     * `build.gradle.kts`) rather than something the user wrote.
+     *
+     * Internal: it exists for `ambiguousLayoutsOf` to drop what the sugar duplicates on
+     * every role that shares a module, not for a processor to read. See
+     * [me.tbsten.katachi.dsl.LayoutNode.synthetic], which this carries forward, and
+     * `mergedWith`, which keeps it `true` only while every declaration of this path stayed
+     * synthetic: a user who wrote `"build.gradle.kts".file()` themselves takes that path back.
+     */
+    internal val synthetic: Boolean,
+    /**
+     * Whether this entry is one of the places its role may live in — the directory a
+     * `"...".module { }` key opened, for a module other than the root project.
+     *
+     * Internal: it exists for `missingDescriptionsOf` to find the blocks a `description = "..."`
+     * could be written in, not for a processor to read. See [me.tbsten.katachi.dsl.LayoutNode.place],
+     * which this carries forward and whose KDoc says why only module keys carry it, and
+     * `mergedWith`, which ORs it: one declaration opening a block at a path is enough to make it
+     * somewhere a description belongs.
+     */
+    internal val place: Boolean,
 ) {
     override fun toString(): String =
         "LayoutEntry($path, $kind, ${role.qualifiedName}${if (required) ", required" else ""})"

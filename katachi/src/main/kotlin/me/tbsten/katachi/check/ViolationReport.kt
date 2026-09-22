@@ -1,7 +1,10 @@
 package me.tbsten.katachi.check
 
 import me.tbsten.katachi.InternalKatachiApi
+import me.tbsten.katachi.scan.AmbiguousLayout
+import me.tbsten.katachi.scan.MissingDescription
 import me.tbsten.katachi.scan.MissingFile
+import me.tbsten.katachi.scan.Severity
 import me.tbsten.katachi.scan.UncheckedCheck
 import me.tbsten.katachi.scan.UncheckedConstraint
 import me.tbsten.katachi.scan.UncheckedDirectory
@@ -40,43 +43,73 @@ internal const val STEP: String = "  "
  * relative to the project root, and the counts on the first line rather than the last,
  * because long output gets cut off at the end.
  *
+ * Only a [Severity.Error] violation can make `assert()` fail, so this text has three shapes:
+ * - **Any error present** — the usual failure report (summary, error blocks, the error
+ *   truncation line, the sentences saying what could not be checked), and — if there are any —
+ *   a Warning section appended after it.
+ * - **No errors, but warnings** — the Warning section alone. Nothing failed, so there is no
+ *   failure summary to hang it under.
+ * - **Neither** — an empty string.
+ *
  * ## Example 1: build a report of the current violations without failing anything
  * ```kt
  * val report = projectArchitecture.validate().report()
  * println(report)
  * ```
  *
- * @param maxViolations how many blocks to write. The line after the last one says how many
- *   were left out; the summary counts them all either way.
+ * @param maxViolations the combined budget for the two sections: how many error blocks and how
+ *   many warning blocks this writes out, together. A section with nothing in it spends none of
+ *   it; when only one severity is present, that section gets the whole budget; when both are,
+ *   warnings take a slice of it — never fewer than one block, never more than there are
+ *   warnings — capped at a quarter, and errors take what is left. Either truncation line says
+ *   how many more were left out of its own section; the summary counts every error either way.
  */
 @InternalKatachiApi
 public fun List<Violation>.report(maxViolations: Int = DEFAULT_MAX_VIOLATIONS): String {
-    val shown = shownIndicesOf(this, maxViolations.coerceAtLeast(0)).map { this[it] }
-    val hiddenByKind = ViolationKind.entries
-        .associateWith { kind -> count { it.kind == kind } - shown.count { it.kind == kind } }
-        .filterValues { it > 0 }
-    val hidden = hiddenByKind.values.sum()
+    val errors = filter { it.severity == Severity.Error }
+    val warnings = filter { it.severity == Severity.Warning }
+    if (errors.isEmpty() && warnings.isEmpty()) return ""
+
+    val budget = maxViolations.coerceAtLeast(0)
+    // Warnings draw from the same budget as errors, not a budget of their own: a report may
+    // never spell out more than `maxViolations` blocks in total. When one severity is absent,
+    // the other gets the whole budget, exactly as any single-severity list always has. When
+    // both are present, warnings take a slice capped at a quarter of the budget — never fewer
+    // than one block, so a report full of errors cannot crowd every warning out, and never
+    // more than there are warnings to show — and errors take the rest.
+    val warningBudget = when {
+        budget <= 0 -> 0
+        errors.isEmpty() -> minOf(warnings.size, budget)
+        else -> minOf(warnings.size, maxOf(1, budget / 4))
+    }
+    val errorBudget = budget - warningBudget
+    val shownErrors = shownIndicesOf(errors, errorBudget).map { errors[it] }
+    val shownWarnings = shownIndicesOf(warnings, warningBudget).map { warnings[it] }
+
     return buildString {
-        append(summaryLine(this@report))
-        for (violation in shown) {
-            append("\n\n")
-            append(blockOf(violation).joinToString("\n"))
-        }
-        if (hidden > 0) {
-            // A breakdown only earns its place when more than one kind is hiding something;
-            // with a single kind hidden it would just repeat the count already on this line.
-            val breakdown = if (hiddenByKind.size > 1) {
-                ": " + hiddenByKind.entries.joinToString(", ") { "${it.key} ${it.value}" }
-            } else {
-                ""
+        if (errors.isNotEmpty()) {
+            append(summaryLine(errors, warnings.size))
+            for (violation in shownErrors) {
+                append("\n\n")
+                append(blockOf(violation).joinToString("\n"))
             }
-            append("\n\nShowing first ${shown.size} ($hidden more$breakdown)")
+            truncationLine(errors, shownErrors, noun = "", withBreakdown = true)?.let { append("\n\n$it") }
+            // After the truncation line, and outside it: these are the only sentences saying
+            // the result is partial, and a reader who does not see them is entitled to believe
+            // every path, constraint and check was looked at. Cutting them away with the
+            // blocks would make the report lie.
+            for (line in uncheckedLines(errors)) append("\n\n$line")
         }
-        // After the truncation line, and outside it: these are the only sentences saying the
-        // result is partial, and a reader who does not see them is entitled to believe every
-        // path, constraint and check was looked at. Cutting them away with the blocks would
-        // make the report lie.
-        for (line in uncheckedLines(this@report)) append("\n\n$line")
+        if (warnings.isNotEmpty()) {
+            if (errors.isNotEmpty()) append("\n\n")
+            append(warningHeading(warnings.size))
+            for (violation in shownWarnings) {
+                append("\n\n")
+                append(blockOf(violation).joinToString("\n"))
+            }
+            truncationLine(warnings, shownWarnings, noun = " warnings", withBreakdown = false)
+                ?.let { append("\n\n$it") }
+        }
     }
 }
 
@@ -90,6 +123,9 @@ public fun List<Violation>.report(maxViolations: Int = DEFAULT_MAX_VIOLATIONS): 
  * to a [ViolationKind.Missing] that has nothing to show. Every kind present gets one block
  * first, budget allowing; what is left is handed out one at a time, in [ViolationKind.entries]
  * order, to whichever kind still has more to show, until the budget or every kind runs out.
+ *
+ * [report] calls this once for the errors and once for the warnings, each with its own slice of
+ * the overall budget, so [violations] here never mixes the two severities.
  */
 private fun shownIndicesOf(violations: List<Violation>, max: Int): List<Int> {
     val indicesByKind = violations.indices.groupBy { violations[it].kind }
@@ -124,17 +160,68 @@ private fun shownIndicesOf(violations: List<Violation>, max: Int): List<Int> {
         .sorted()
 }
 
-private fun summaryLine(violations: List<Violation>): String {
+/**
+ * The failure report's first line: how many errors, broken down by kind, with the warning
+ * count tacked on outside the parentheses.
+ *
+ * The warning count sits outside the per-kind breakdown on purpose: that breakdown answers
+ * "why did the check fail", and folding a warning's kind into it would misread as one more
+ * reason to fix something, when nothing here failed because of it.
+ */
+private fun summaryLine(errors: List<Violation>, warningCount: Int): String {
     val counted = ViolationKind.entries
-        .map { kind -> kind to violations.count { it.kind == kind } }
+        .map { kind -> kind to errors.count { it.kind == kind } }
         .filter { (_, count) -> count > 0 }
         .joinToString(", ") { (kind, count) -> "$kind: $count" }
-    val total = "${violations.size} ${if (violations.size == 1) "violation" else "violations"}"
-    return if (counted.isEmpty()) {
-        "Katachi check failed: $total"
+    val total = "${errors.size} ${if (errors.size == 1) "violation" else "violations"}"
+    val base = if (counted.isEmpty()) "Katachi check failed: $total" else "Katachi check failed: $total ($counted)"
+    return if (warningCount > 0) {
+        "$base, $warningCount ${if (warningCount == 1) "warning" else "warnings"}"
     } else {
-        "Katachi check failed: $total ($counted)"
+        base
     }
+}
+
+/**
+ * The heading the Warning section opens with, whether it stands alone (nothing failed) or is
+ * appended after a failure report.
+ *
+ * The second sentence stays the same regardless of the count on purpose. Written to agree with
+ * the count ("does" / "do not fail the check"), it would sit right under a first line that just
+ * said the check *did* fail whenever a run holds both errors and warnings, reading as if the
+ * report contradicted itself one line down.
+ */
+private fun warningHeading(count: Int): String {
+    val noun = if (count == 1) "warning" else "warnings"
+    return "Katachi check found $count $noun. Warnings never fail the check."
+}
+
+/**
+ * The "Showing first N (M more)" line for one severity's own slice of the budget — `null` when
+ * nothing of that severity was left out.
+ *
+ * @param noun appended right after the shown count: `""` for the error section, so it reads
+ *   `Showing first 10 (4 more: ...)` exactly as it always has, and `" warnings"` for the Warning
+ *   section.
+ * @param withBreakdown whether a kind-by-kind breakdown is appended when more than one kind is
+ *   hiding something. Off for the Warning section: a warning's own kind already names it on the
+ *   block's first line ([Violation.label]), so repeating the same two names here would say
+ *   nothing a reader does not already have.
+ */
+private fun truncationLine(all: List<Violation>, shown: List<Violation>, noun: String, withBreakdown: Boolean): String? {
+    val hiddenByKind = ViolationKind.entries
+        .associateWith { kind -> all.count { it.kind == kind } - shown.count { it.kind == kind } }
+        .filterValues { it > 0 }
+    val hidden = hiddenByKind.values.sum()
+    if (hidden <= 0) return null
+    // A breakdown only earns its place when more than one kind is hiding something; with a
+    // single kind hidden it would just repeat the count already on this line.
+    val breakdown = if (withBreakdown && hiddenByKind.size > 1) {
+        ": " + hiddenByKind.entries.joinToString(", ") { "${it.key} ${it.value}" }
+    } else {
+        ""
+    }
+    return "Showing first ${shown.size}$noun ($hidden more$breakdown)"
 }
 
 /**
@@ -175,6 +262,8 @@ private fun blockOf(violation: Violation): List<String> = when (violation) {
     is UncheckedCheck -> uncheckedCheckBlock(violation)
     is UnsatisfiedConstraint -> unsatisfiedConstraintBlock(violation)
     is UncheckedConstraint -> uncheckedConstraintBlock(violation)
+    is AmbiguousLayout -> ambiguousLayoutBlock(violation)
+    is MissingDescription -> missingDescriptionBlock(violation)
     // A violation from outside katachi. The block is the first line plus the values it states
     // about itself, and nothing else: katachi does not know what it means, so it writes no
     // sentence about it and never offers a way to fix it. Compile-time exhaustiveness is lost

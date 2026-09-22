@@ -141,10 +141,13 @@ class ScanSpec : FreeSpec({
 
     "複数の役割" - {
         "1つのファイルに2つの役割がマッチしても違反にならない" {
+            // The two declarations overlap on `core/GetUser.kt` without being the same text
+            // (`core/*.kt` vs `core/GetUser.kt`), so this is the "one file, two roles" case and
+            // not the "two roles, one declaration" case `AmbiguousLayout` reports (step 5-2).
             architectureOf {
                 "domain".group {
                     "UseCase" { layout { "core" / "*.kt".file() } }
-                    "Api" { layout { "core" / "*.kt".file() } }
+                    "Api" { layout { "core" / "GetUser.kt".file() } }
                 }
             }
                 .validate(repositoryOf { "core" { "GetUser.kt"() } })

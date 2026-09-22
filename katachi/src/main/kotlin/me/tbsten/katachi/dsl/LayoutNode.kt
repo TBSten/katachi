@@ -43,6 +43,27 @@ internal class LayoutNode(
      */
     var synthetic: Boolean = false
 
+    /**
+     * Whether this node is one of the places a role may live in — a directory a
+     * `"...".module { }` key opened for a module other than the root project, and nothing else.
+     *
+     * A role living in more than one place is asked to say which files belong in which, and the
+     * only spelling that has somewhere to write that answer is a block: `description = "..."` is
+     * written inside one, so a path that was never opened as a block could be warned about and
+     * never fixed. That is why the mark is put on here rather than worked out later from the
+     * flattened paths — by then a `/` chain and a block look the same.
+     *
+     * Only `module { }` keys carry it, although a plain `"core/domain" { }` block directly under
+     * `layout { }` reads like a place too. The reason is that katachi's own Gradle vocabulary is
+     * written in terms of plain directory blocks — `mainSourceSet` *is* `"src/main" { }`, `kotlin`
+     * *is* `"kotlin" { }` — evaluated in whatever scope they are read in, so marking every
+     * directory block would mark `src/main` and `src/main/kotlin` inside a `":".module { }` and
+     * call one role's single home three separate places. Telling a user's key from the
+     * vocabulary's own needs a distinction the DSL does not have yet; until it does, the narrower
+     * rule reports nothing it cannot explain.
+     */
+    var place: Boolean = false
+
     fun add(child: LayoutNode) {
         child.parent?.children?.remove(child)
         child.parent = this

@@ -77,10 +77,12 @@ fun ArchitectureScope.uiRoles() {
             // renders is: `:feature:home` may hold `Home*Preview.kt` and nothing else.
             layout {
                 ":feature:*".module {
+                    description = "画面のプレビュー。その画面を持つ feature モジュールに置く"
                     "commonMain".sourceSet / kotlin / modulePackage /
                         "${wildcards[0].pascalCase}*Preview".ktFile()
                 }
                 ":ui".module {
+                    description = "部品のプレビュー。どの画面にも属さないので :ui に置く"
                     "commonMain".sourceSet / kotlin / modulePackage / "component" / "*Preview".ktFile()
                 }
             }

@@ -38,12 +38,15 @@ fun ArchitectureScope.testingRoles() {
                 // deliberately not used here — unlike in `SpecSupport`, which names single
                 // files and therefore has to say where they are.
                 ":katachi".module {
+                    description = "ライブラリ本体の振る舞い。偽のファイルシステムで完結し、Konsist も Gradle も要らないもの"
                     testSourceSet / kotlin / "**" / "*Spec".ktFile()
                 }
                 ":katachi-konsist".module {
+                    description = "Konsist 連携の振る舞い。実ファイルを書き出して Konsist に読ませる必要があるもの"
                     testSourceSet / kotlin / "**" / "*Spec".ktFile()
                 }
                 ":architecture-test".module {
+                    description = "katachi を利用者として使う側。このリポジトリ自身の定義について確かめるもの"
                     testSourceSet / kotlin / "**" / "*Spec".ktFile()
                 }
             }
@@ -57,6 +60,7 @@ fun ArchitectureScope.testingRoles() {
             example("FixtureProject.kt", "Konsist に読ませる実ファイルを一時ディレクトリに書き出す")
             layout {
                 ":katachi".module {
+                    description = "スペックが使う道具のうち、:katachi だけで組み立てられるもの。偽のファイルシステムや DSL の下ごしらえ"
                     testSourceSet / kotlin / "**" / "*SpecSupport".ktFile()
                     testSourceSet / kotlin / testPackage / "dsl" / "ArchitectureExtensions".ktFile()
                     // Three of them — Fake / Forbidden / Throwing — and the glob stops short of
@@ -64,6 +68,7 @@ fun ArchitectureScope.testingRoles() {
                     testSourceSet / kotlin / testPackage / "fs" / "*FileSystem".ktFile()
                 }
                 ":katachi-konsist".module {
+                    description = "スペックが使う道具のうち、Konsist に読ませる実ファイルを一時ディレクトリに用意するもの"
                     testSourceSet / kotlin / "**" / "*SpecSupport".ktFile()
                     testSourceSet / kotlin / testPackage / "FixtureProject".ktFile()
                 }

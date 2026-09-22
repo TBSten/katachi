@@ -71,10 +71,11 @@ public class ConstraintCheck : ArchitectureProcessor<List<Violation>> {
  */
 private fun violationsOf(model: ProjectModel, declared: DeclaredConstraint): List<Violation> {
     val files = model.filesUnder(declared)
-    // Nothing to be about. Not a violation: a wildcard module key that has not filled up yet
-    // is the same declaration the layout check already treats as normal, and a place with no
-    // files hides no broken rule. It counts as seen, so `NotEvaluated` does not fire either.
-    // TODO(v0.1 step 5): once Warning exists, decide whether this should be one.
+    // Nothing to be about. Not a violation and not a warning either: a place with no files yet
+    // is what `layout { }` already treats as normal, and `UncheckedConstraintReason` dropped
+    // `NoMatchingFiles` for that same reason. A warning here would fire on every healthy young
+    // module and teach the reader to skip the section the real warnings live in. It counts as
+    // seen, so `NotEvaluated` does not fire either.
     if (files.isEmpty()) return emptyList()
 
     val order = files.withIndex().associate { (index, file) -> file to index }

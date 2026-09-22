@@ -28,7 +28,7 @@ import me.tbsten.katachi.dsl.Role
  */
 public interface Violation {
     /**
-     * Which of the three problems this is.
+     * Which kind of problem this is.
      *
      * ## Example 1: group violations for a report, one block per kind
      * ```kt

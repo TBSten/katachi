@@ -1,5 +1,7 @@
 package me.tbsten.katachi.test.check
 
+import java.io.ByteArrayOutputStream
+import java.io.PrintStream
 import me.tbsten.katachi.dsl.Architecture
 import me.tbsten.katachi.dsl.ArchitectureScope
 import me.tbsten.katachi.dsl.LayoutScope
@@ -50,3 +52,23 @@ internal fun layoutArchitecture(
 
 /** Violations as their report's first lines, which is what a spec about the traversal means. */
 internal fun List<Violation>.labels(): List<String> = map { "[${it.label}] ${it.path}" }
+
+/**
+ * Runs [block] with [System.err] swapped for a buffer, and returns whatever it printed.
+ *
+ * Standard error is `assertWith`'s only channel for a run that holds nothing but warnings, so a
+ * spec that wants to pin what came out of it has to capture the stream rather than read a
+ * return value. The original stream is restored even when [block] throws, so one spec's capture
+ * can never leak into the next.
+ */
+internal fun capturingStandardError(block: () -> Unit): String {
+    val original = System.err
+    val buffer = ByteArrayOutputStream()
+    System.setErr(PrintStream(buffer, true, "UTF-8"))
+    try {
+        block()
+    } finally {
+        System.setErr(original)
+    }
+    return buffer.toString("UTF-8")
+}

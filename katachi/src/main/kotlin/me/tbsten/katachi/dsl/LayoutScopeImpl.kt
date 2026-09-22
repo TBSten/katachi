@@ -147,6 +147,10 @@ internal class LayoutScopeImpl(
                 container
             } else {
                 chainUnder(container, directory, isFile = false, declaredAt = declaredAt).leaf
+                    // One of the places this role may live in. Not the root project: it has no
+                    // directory of its own, so `description = "..."` written in its block would
+                    // land on the layout root that every other block shares.
+                    .also { it.place = true }
             }
             val before = moduleDirectory.children.size
             val scope = LayoutScopeImpl(
