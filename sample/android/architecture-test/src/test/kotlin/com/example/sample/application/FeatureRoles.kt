@@ -38,8 +38,8 @@ fun ArchitectureScope.featureRoles() {
         title = "各画面の構成"
 
         "Screen" {
-            title = "画面"
-            summary = "1つの画面の見た目を描く @Composable。:feature:<name> ごとに <Name>Screen.kt を置く"
+            title = "Screen"
+            summary = "1つの画面の UI 実装となる @Composable。:feature:<name> ごとに <Name>Screen.kt を置く"
             example("HomeScreen", "ホーム画面")
             example("SettingsScreen", "設定画面")
             layout {
@@ -50,7 +50,7 @@ fun ArchitectureScope.featureRoles() {
         }
 
         "ViewModel" {
-            title = "ビューモデル"
+            title = "ViewModel"
             summary = "画面の状態を StateFlow で公開し、イベントを受け取る androidx.lifecycle.ViewModel"
             example("HomeViewModel", "ホーム画面の状態")
             layout {
@@ -61,7 +61,7 @@ fun ArchitectureScope.featureRoles() {
         }
 
         "Route" {
-            title = "ルート"
+            title = "Route"
             summary = "画面への遷移先。feature の外に公開する唯一の入口"
             example("HomeRoute", "ホーム画面への遷移先")
             layout {

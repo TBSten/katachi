@@ -175,7 +175,7 @@ class ProjectArchitectureSpec : FreeSpec({
 
     "title を書いた役割はその表示名になる" {
         val screen = projectArchitecture.allRoles.single { it.qualifiedName == "feature/Screen" }
-        screen[Title] shouldBe "画面"
+        screen[Title] shouldBe "Screen"
     }
 
     "1つの役割が複数の置き場所を layout として持てる" {
