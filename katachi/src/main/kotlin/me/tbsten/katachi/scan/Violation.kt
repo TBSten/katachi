@@ -251,11 +251,56 @@ public class UncheckedFile internal constructor(
 }
 
 /**
- * A directory the check failed at, so nothing below it was looked at.
+ * What a directory was being read for when it threw, and therefore what was lost with it.
  *
- * Reported instead of everything inside it, the way [UnexpectedDirectory] is: the walk never
+ * Two values, and only two, because a directory is read twice by one run and the two readings
+ * lose different things. The distinction is not cosmetic: saying "nothing below it was
+ * checked" about a search failure would be a claim the run cannot back up, since the walk that
+ * comes after it looks into that same directory perfectly well.
+ *
+ * ## Example 1: tell an unreadable directory from one whose modules went unfound
+ * ```kt
+ * projectArchitecture.validate().filterIsInstance<UncheckedDirectory>().map { it.reason } shouldBe
+ *     listOf(UncheckedDirectoryReason.NotWalked)
+ * ```
+ */
+public enum class UncheckedDirectoryReason {
+    /**
+     * The walk failed at the directory, so nothing below it was checked.
+     *
+     * ## Example 1: list the directories whose contents nothing looked at
+     * ```kt
+     * projectArchitecture.validate()
+     *     .filterIsInstance<UncheckedDirectory>()
+     *     .filter { it.reason == UncheckedDirectoryReason.NotWalked }
+     *     .map { it.path }
+     * ```
+     */
+    NotWalked,
+
+    /**
+     * The search for the project's Gradle modules failed at the directory, so a module key may
+     * stand for fewer modules than the project has. What the walk itself found below it is
+     * unaffected.
+     *
+     * ## Example 1: explain a `:feature:*` key that expanded to too few modules
+     * ```kt
+     * projectArchitecture.validate()
+     *     .filterIsInstance<UncheckedDirectory>()
+     *     .filter { it.reason == UncheckedDirectoryReason.ModulesNotDiscovered }
+     *     .map { it.path }
+     * ```
+     */
+    ModulesNotDiscovered,
+}
+
+/**
+ * A directory the check failed at, so part of what it would have said is unknown.
+ *
+ * Reported instead of everything inside it, the way [UnexpectedDirectory] is: the run never
  * got the directory's contents, so there is one path to report and it is this one. Its
- * siblings are unaffected.
+ * siblings are unaffected — and which of the two readings failed, which is what decides how
+ * much was lost, is [reason].
  *
  * ## Example 1: list the directories a run could not look into
  * ```kt
@@ -271,6 +316,16 @@ public class UncheckedFile internal constructor(
  */
 public class UncheckedDirectory internal constructor(
     override val path: String,
+    /**
+     * Which of the two readings of the directory failed. See [UncheckedDirectoryReason].
+     *
+     * ## Example 1: branch on how much a failed directory cost
+     * ```kt
+     * projectArchitecture.validate().filterIsInstance<UncheckedDirectory>().single().reason shouldBe
+     *     UncheckedDirectoryReason.ModulesNotDiscovered
+     * ```
+     */
+    public val reason: UncheckedDirectoryReason,
     /**
      * What was thrown while the directory was being checked.
      *

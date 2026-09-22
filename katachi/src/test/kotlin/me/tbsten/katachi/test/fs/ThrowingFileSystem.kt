@@ -9,21 +9,27 @@ import me.tbsten.katachi.fs.KatachiFileSystem
  * Paths are absolute, the way the traversal sees them (`/repo/src/App.kt`), and the throwable
  * is built per call so that one spec can hand the same tree to several runs.
  *
- * The two operations are configured separately because the traversal reacts to them
- * differently. A path whose `isDirectory` throws cannot even be classified, while a directory
- * whose `list` throws is known to be a directory and its siblings are still answerable.
+ * The three operations are configured separately because the readers of the tree react to
+ * them differently. A path whose `isDirectory` throws cannot even be classified, while a
+ * directory whose `list` throws is known to be a directory and its siblings are still
+ * answerable. `exists` is the one only the module search asks, which makes it the way to break
+ * that search alone: the walk never calls it, so a spec can fail one without the other.
+ *
+ * Nothing is configured by default, so a spec that names no path here is handed the delegate's
+ * own answers.
  */
 internal class ThrowingFileSystem(
     private val delegate: KatachiFileSystem,
     private val onIsDirectory: Map<String, () -> Throwable> = emptyMap(),
     private val onList: Map<String, () -> Throwable> = emptyMap(),
+    private val onExists: Map<String, () -> Throwable> = emptyMap(),
 ) : KatachiFileSystem {
     override val workingDirectory: FsPath get() = delegate.workingDirectory
 
-    // `exists` is left alone on purpose: finding the project root and discovering the modules
-    // both run before the walk and are not covered by it, so a spec about the walk must not
-    // break them.
-    override fun exists(path: FsPath): Boolean = delegate.exists(path)
+    override fun exists(path: FsPath): Boolean {
+        onExists[path.value]?.let { throw it() }
+        return delegate.exists(path)
+    }
 
     override fun isDirectory(path: FsPath): Boolean {
         onIsDirectory[path.value]?.let { throw it() }
@@ -45,3 +51,12 @@ internal fun KatachiFileSystem.failingAt(path: String, cause: () -> Throwable): 
 /** [this] with the directory at [path] throwing when it is listed. */
 internal fun KatachiFileSystem.failingToListAt(path: String, cause: () -> Throwable): KatachiFileSystem =
     ThrowingFileSystem(this, onList = mapOf(path to cause))
+
+/**
+ * [this] with the path at [path] throwing when its existence is asked about.
+ *
+ * The module search is the only reader that asks, so this breaks that search and leaves the
+ * walk of the tree answering exactly as it did before.
+ */
+internal fun KatachiFileSystem.failingToExistAt(path: String, cause: () -> Throwable): KatachiFileSystem =
+    ThrowingFileSystem(this, onExists = mapOf(path to cause))

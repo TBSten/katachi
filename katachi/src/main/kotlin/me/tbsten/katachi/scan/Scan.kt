@@ -24,9 +24,11 @@ private val FOREIGN_DIRECTORY_NAMES: Set<String> = setOf(".git", ".gradle", ".id
  * What the project root is called when it is the project root itself that could not be read.
  *
  * Its path relative to itself is the empty string, which would print as a first line with
- * nothing after the label.
+ * nothing after the label. `internal` rather than private so that the module search, which
+ * names directories the same way and can fail at the root too, spells it the same way by
+ * construction.
  */
-private const val ROOT_PATH: String = "."
+internal const val ROOT_PATH: String = "."
 
 /**
  * Everything one walk of the tree produced.
@@ -66,10 +68,17 @@ internal class ScanResult(
  * [me.tbsten.katachi.processor.ProjectModel] — which runs it at most once, so that a run
  * answering both "what is wrong" and "what does this role own" walks the tree once.
  *
- * Nothing in here is caught, unlike the walk it hands over to. Finding the root, selecting
- * the files and evaluating the definition each produce the one thing the walk needs, so a
- * failure in any of them leaves nothing to check and nothing to report — there is no
- * "the rest of the run" to save.
+ * Finding the root, selecting the files and evaluating the definition are not caught. Each
+ * produces the one thing the walk needs, so a failure in any of them leaves nothing to check
+ * and nothing to report — there is no "the rest of the run" to save.
+ *
+ * **The search for the modules is the exception, and it is caught per directory.** That
+ * reasoning does not reach it: a directory whose listing fails costs the modules below that
+ * one directory, while every sibling subtree still answers which modules it holds. So the
+ * search hands back what it found together with the directories it could not read, and those
+ * ride into the report as [UncheckedDirectory] blocks with
+ * [UncheckedDirectoryReason.ModulesNotDiscovered] — which is what keeps a wildcard module key
+ * quietly expanding to too few modules from looking like a project that simply has too few.
  *
  * The project root is looked for in [fileSystem] itself, unfiltered: a marker such as
  * `.git/HEAD` belongs to none of the file sets `files` can select, so the search has to run
@@ -84,15 +93,17 @@ internal class ScanResult(
  */
 internal fun Architecture.scanProject(fileSystem: KatachiFileSystem): ScanResult {
     val projectRoot = findProjectRoot(fileSystem)
+    val modules = scanModules(fileSystem, projectRoot.path)
     // One evaluation of the layout, read from both sides: the entries drive the walk, the
     // constraints ride along to whichever check evaluates them. Flattening twice would be a
     // second chance for the two to disagree about what a wildcard module key expanded to.
-    val evaluation = evaluateLayout(moduleIndex(fileSystem, projectRoot.path, moduleResolver))
+    val evaluation = evaluateLayout(modules.indexWith(moduleResolver))
     return Scan(
         fileSystem = files.fileSystemFor(fileSystem, projectRoot),
         root = projectRoot.path,
         layout = LayoutIndex(evaluation.entries),
         constraints = evaluation.constraints,
+        moduleFailures = modules.unchecked,
     ).run()
 }
 
@@ -115,6 +126,11 @@ private class Scan(
     private val root: FsPath,
     private val layout: LayoutIndex,
     private val constraints: List<DeclaredConstraint>,
+    /**
+     * What the search for the modules could not read, which happened before this walk started
+     * and belongs in the same report. See [scanProject].
+     */
+    private val moduleFailures: List<UncheckedDirectory>,
 ) {
     private val violations = mutableListOf<Violation>()
 
@@ -125,6 +141,9 @@ private class Scan(
     private val filesByRole = LinkedHashMap<Role, MutableList<String>>()
 
     fun run(): ScanResult {
+        // First, because the search ran before the walk did. `sortedBy` below is stable, so
+        // within the `Failed` group that order is what the reader sees.
+        violations += moduleFailures
         walk(root, "")
         for (entry in layout.requiredFiles) {
             // One declaration at a time: the entries are independent of each other, so the
@@ -156,7 +175,11 @@ private class Scan(
         // A listing that fails takes the whole directory with it — there are no children to
         // fall back to — but its parent still has the rest of its own children to walk.
         val children = catching { fileSystem.list(directory) }.getOrElse { cause ->
-            violations += UncheckedDirectory(path = path.ifEmpty { ROOT_PATH }, cause = cause)
+            violations += UncheckedDirectory(
+                path = path.ifEmpty { ROOT_PATH },
+                reason = UncheckedDirectoryReason.NotWalked,
+                cause = cause,
+            )
             return
         }
         for (child in children) {
@@ -184,7 +207,11 @@ private class Scan(
             if (isDirectory) visitDirectory(child, path) else visitFile(path)
         }.onFailure { cause ->
             violations += if (isDirectory) {
-                UncheckedDirectory(path = path, cause = cause)
+                UncheckedDirectory(
+                    path = path,
+                    reason = UncheckedDirectoryReason.NotWalked,
+                    cause = cause,
+                )
             } else {
                 UncheckedFile(path = path, cause = cause)
             }

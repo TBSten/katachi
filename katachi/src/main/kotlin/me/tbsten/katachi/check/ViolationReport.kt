@@ -5,6 +5,7 @@ import me.tbsten.katachi.scan.MissingFile
 import me.tbsten.katachi.scan.UncheckedCheck
 import me.tbsten.katachi.scan.UncheckedConstraint
 import me.tbsten.katachi.scan.UncheckedDirectory
+import me.tbsten.katachi.scan.UncheckedDirectoryReason
 import me.tbsten.katachi.scan.UncheckedFile
 import me.tbsten.katachi.scan.UnexpectedDirectory
 import me.tbsten.katachi.scan.UnexpectedFile
@@ -216,9 +217,26 @@ private fun uncheckedFileBlock(violation: UncheckedFile): List<String> = listOf(
     "$STEP$STEP- If it is, report this at https://github.com/TBSten/katachi/issues with the cause above",
 )
 
+/**
+ * A directory that threw.
+ *
+ * The two reasons differ in one sentence and in nothing else: what to do about an unreadable
+ * directory is the same either way, and only what was lost with it differs.
+ * [UncheckedDirectoryReason.NotWalked] costs everything below the directory;
+ * [UncheckedDirectoryReason.ModulesNotDiscovered] costs the modules at and below it, while the
+ * walk still looked inside — so reusing the first sentence for the second would tell the
+ * reader nothing there was checked when it was.
+ */
 private fun uncheckedDirectoryBlock(violation: UncheckedDirectory): List<String> = listOf(
     "[${violation.label}] ${violation.path}",
-    "${STEP}Katachi failed while checking this directory. Nothing below it was checked.",
+    when (violation.reason) {
+        UncheckedDirectoryReason.NotWalked ->
+            "${STEP}Katachi failed while checking this directory. Nothing below it was checked."
+
+        UncheckedDirectoryReason.ModulesNotDiscovered ->
+            "${STEP}Katachi failed while looking for modules here, so a module key may have " +
+                "expanded to fewer modules than the project has."
+    },
     "${STEP}Cause: ${causeLine(violation.cause)}",
     "${STEP}How to fix:",
     "$STEP$STEP- Check that the directory is readable, then run the check again",
