@@ -25,6 +25,11 @@ import me.tbsten.katachi.scan.catching
  * The overload taking checks runs those too, on the same walk; this one runs [LayoutCheck]
  * alone.
  *
+ * ## Example 1: read how many violations there are without failing anything
+ * ```kt
+ * projectArchitecture.validate().count { it.severity == Severity.Error }
+ * ```
+ *
  * @throws me.tbsten.katachi.fs.KatachiProjectRootNotFoundException when no directory above the
  *   working directory carries a Gradle, Maven or git marker.
  * @throws me.tbsten.katachi.fs.KatachiGitUnavailableException when `files = gitTracked()` and
@@ -44,6 +49,11 @@ public fun Architecture.validate(): List<Violation> = validate(RealFileSystem())
  *
  * As with `validate()`, the overload taking checks runs those too; this one runs [LayoutCheck]
  * alone.
+ *
+ * ## Example 1: check a definition against a tree that only exists in memory
+ * ```kt
+ * val violations = definition.validate(fakeFileSystem)
+ * ```
  */
 @InternalKatachiApi
 public fun Architecture.validate(fileSystem: KatachiFileSystem): List<Violation> =

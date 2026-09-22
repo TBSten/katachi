@@ -33,7 +33,15 @@ public class KatachiGlobSyntaxException internal constructor(
 private fun globSyntaxMessage(pattern: String, problem: GlobProblem, context: GlobContext?): String =
     if (context == null) problem.explain(pattern) else "${context.describe()} ${problem.explain(pattern)}"
 
-/** What a pattern captured when it matched. */
+/**
+ * What a pattern captured when it matched.
+ *
+ * ## Example 1: read what a trailing `**` captured, one element per level
+ * ```kt
+ * Glob.compile(":feature:**", Glob.MODULE_SEPARATOR).match(":feature:home:impl")
+ *     .shouldNotBeNull().wildcards shouldContainExactly listOf("home", "impl")
+ * ```
+ */
 @InternalKatachiApi
 public class GlobMatch internal constructor(
     /**
@@ -69,6 +77,13 @@ internal enum class GlobGroupKind { Single, Recursive }
  *
  * The JDK's `PathMatcher` is not used: it answers yes or no, and katachi has to hand the
  * matched parts back to the user as `wildcards`.
+ *
+ * ## Example 1: the same syntax reads a module path and a file path
+ * ```kt
+ * val glob = Glob.compile(":feature:*", Glob.MODULE_SEPARATOR)
+ * glob.matches(":feature:home") shouldBe true
+ * glob.matches(":feature") shouldBe false
+ * ```
  */
 @InternalKatachiApi
 public class Glob private constructor(
@@ -87,13 +102,38 @@ public class Glob private constructor(
      */
     internal val groupKinds: List<GlobGroupKind>,
 ) {
-    /** Whether the pattern contains a `*` or a `**`. Such a declaration is optional by nature. */
+    /**
+     * Whether the pattern contains a `*` or a `**`. Such a declaration is optional by nature.
+     *
+     * ## Example 1: tell a literal pattern apart from one with a wildcard
+     * ```kt
+     * Glob.compile("build.gradle.kts").hasWildcard shouldBe false
+     * Glob.compile("*.kt").hasWildcard shouldBe true
+     * ```
+     */
     public val hasWildcard: Boolean get() = groupKinds.isNotEmpty()
 
-    /** Whether [path] matches in full. */
+    /**
+     * Whether [path] matches in full.
+     *
+     * ## Example 1: a wildcard never crosses into a path it does not fully cover
+     * ```kt
+     * val glob = Glob.compile("*UseCase.kt")
+     * glob.matches("GetUserUseCase.kt") shouldBe true
+     * glob.matches("useCase/GetUserUseCase.kt") shouldBe false
+     * ```
+     */
     public fun matches(path: String): Boolean = regex.matches(path)
 
-    /** The match and what it captured, or `null` when [path] does not match. */
+    /**
+     * The match and what it captured, or `null` when [path] does not match.
+     *
+     * ## Example 1: read back what a single `*` captured
+     * ```kt
+     * Glob.compile("*UseCase.kt").match("GetUserUseCase.kt")
+     *     .shouldNotBeNull().wildcards shouldContainExactly listOf("GetUser")
+     * ```
+     */
     public fun match(path: String): GlobMatch? {
         val result = regex.matchEntire(path) ?: return null
         val wildcards = mutableListOf<String>()
@@ -114,6 +154,12 @@ public class Glob private constructor(
      * Module paths call this. Flattening `**` level by level means every level it matches
      * lands at the end of `wildcards`, so a `**` in the middle would shift the index of the
      * `*` after it from one match to the next.
+     *
+     * ## Example 1: reject a `**` that is not the pattern's last segment
+     * ```kt
+     * val glob = Glob.compile(":feature:**:impl", Glob.MODULE_SEPARATOR)
+     * shouldThrow<KatachiGlobSyntaxException> { glob.requireAtMostOneTrailingDoubleStar() }
+     * ```
      */
     public fun requireAtMostOneTrailingDoubleStar() {
         val positions = segments.indices.filter { segments[it] == DOUBLE_STAR }
@@ -133,15 +179,48 @@ public class Glob private constructor(
 
     override fun toString(): String = "Glob($pattern)"
 
+    /**
+     * Where a [Glob] is built: [compile] parses a pattern, and [PATH_SEPARATOR] /
+     * [MODULE_SEPARATOR] are the separators the two DSLs give it.
+     *
+     * ## Example 1: compile the same syntax for a file path and a module path
+     * ```kt
+     * Glob.compile("*.kt", Glob.PATH_SEPARATOR).matches("Foo.kt") shouldBe true
+     * Glob.compile(":feature:*", Glob.MODULE_SEPARATOR).matches(":feature:home") shouldBe true
+     * ```
+     */
     public companion object {
-        /** Separator of a file path. */
+        /**
+         * Separator of a file path.
+         *
+         * ## Example 1: compile a file path pattern with it
+         * ```kt
+         * val glob = Glob.compile("core/data/Repository.kt", Glob.PATH_SEPARATOR)
+         * glob.matches("core/data/Repository.kt") shouldBe true
+         * ```
+         */
         public const val PATH_SEPARATOR: Char = '/'
 
-        /** Separator of a Gradle module path. */
+        /**
+         * Separator of a Gradle module path.
+         *
+         * ## Example 1: compile a module path pattern with it
+         * ```kt
+         * val glob = Glob.compile(":feature:*", Glob.MODULE_SEPARATOR)
+         * glob.matches(":feature:home") shouldBe true
+         * ```
+         */
         public const val MODULE_SEPARATOR: Char = ':'
 
         /**
          * Translates [pattern] into a regular expression.
+         *
+         * ## Example 1: compile a pattern whose `**` matches any depth of path
+         * ```kt
+         * val glob = Glob.compile("**")
+         * glob.matches("useCase") shouldBe true
+         * glob.matches("useCase/GetUserUseCase.kt") shouldBe true
+         * ```
          *
          * @throws KatachiGlobSyntaxException when the pattern is empty, has an empty segment,
          *   uses `**` as part of a larger segment, or uses a metacharacter katachi does not

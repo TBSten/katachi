@@ -11,13 +11,58 @@ import me.tbsten.katachi.KatachiCheckException
  *
  * One subtype per way it can, each holding what its own sentence needs. Internal bookkeeping:
  * the set grows with whatever katachi asks git for.
+ *
+ * ## Example 1: only fall back to the whole tree when git itself is missing
+ * ```kt
+ * import me.tbsten.katachi.InternalKatachiApi
+ * import me.tbsten.katachi.fs.FsPath
+ * import me.tbsten.katachi.fs.GitProblem
+ * import me.tbsten.katachi.fs.KatachiFileSystem
+ * import me.tbsten.katachi.fs.KatachiGitUnavailableException
+ * import me.tbsten.katachi.fs.gitTrackedFileSystem
+ *
+ * @OptIn(InternalKatachiApi::class)
+ * fun sourcesOf(delegate: KatachiFileSystem, root: FsPath): KatachiFileSystem =
+ *     try {
+ *         gitTrackedFileSystem(delegate, root)
+ *     } catch (cause: KatachiGitUnavailableException) {
+ *         // A real failure — a timeout, or git exiting non-zero — should not be swallowed
+ *         // the same way as "git is not installed".
+ *         if (cause.problem is GitProblem.CannotStart) delegate else throw cause
+ *     }
+ * ```
  */
 @InternalKatachiApi
 public sealed interface GitProblem {
-    /** The sentence this problem contributes, for the [command] that was run in [root]. */
+    /**
+     * The sentence this problem contributes, for the [command] that was run in [root].
+     *
+     * ## Example 1: rebuild the sentence a caught exception already carries
+     * ```kt
+     * import me.tbsten.katachi.InternalKatachiApi
+     * import me.tbsten.katachi.fs.KatachiGitUnavailableException
+     *
+     * @OptIn(InternalKatachiApi::class)
+     * fun describe(cause: KatachiGitUnavailableException): String =
+     *     cause.problem.explain(cause.command, cause.root)
+     * ```
+     */
     public fun explain(command: String, root: FsPath): String
 
-    /** The process could not be started at all — usually git is not installed. */
+    /**
+     * The process could not be started at all — usually git is not installed.
+     *
+     * ## Example 1: tell the developer to install git
+     * ```kt
+     * import me.tbsten.katachi.InternalKatachiApi
+     * import me.tbsten.katachi.fs.GitProblem
+     * import me.tbsten.katachi.fs.KatachiGitUnavailableException
+     *
+     * @OptIn(InternalKatachiApi::class)
+     * fun installHint(cause: KatachiGitUnavailableException): String? =
+     *     if (cause.problem is GitProblem.CannotStart) "Install git and re-run the check." else null
+     * ```
+     */
     @InternalKatachiApi
     public object CannotStart : GitProblem {
         override fun explain(command: String, root: FsPath): String =
@@ -26,7 +71,22 @@ public sealed interface GitProblem {
                 "whole directory tree instead."
     }
 
-    /** The process started but did not finish in time. */
+    /**
+     * The process started but did not finish in time.
+     *
+     * ## Example 1: report how long katachi waited before giving up
+     * ```kt
+     * import me.tbsten.katachi.InternalKatachiApi
+     * import me.tbsten.katachi.fs.GitProblem
+     * import me.tbsten.katachi.fs.KatachiGitUnavailableException
+     *
+     * @OptIn(InternalKatachiApi::class)
+     * fun timeoutMessage(cause: KatachiGitUnavailableException): String? {
+     *     val problem = cause.problem as? GitProblem.TimedOut ?: return null
+     *     return "git did not answer within ${problem.seconds}s"
+     * }
+     * ```
+     */
     @InternalKatachiApi
     public class TimedOut internal constructor(
         public val seconds: Long,
@@ -35,7 +95,22 @@ public sealed interface GitProblem {
             "`$command` in $root did not finish within $seconds seconds."
     }
 
-    /** The process finished, with a non-zero exit code. */
+    /**
+     * The process finished, with a non-zero exit code.
+     *
+     * ## Example 1: surface git's own stderr when the command itself failed
+     * ```kt
+     * import me.tbsten.katachi.InternalKatachiApi
+     * import me.tbsten.katachi.fs.GitProblem
+     * import me.tbsten.katachi.fs.KatachiGitUnavailableException
+     *
+     * @OptIn(InternalKatachiApi::class)
+     * fun failureMessage(cause: KatachiGitUnavailableException): String? {
+     *     val problem = cause.problem as? GitProblem.Failed ?: return null
+     *     return "git exited ${problem.exitCode}: ${problem.stderr}"
+     * }
+     * ```
+     */
     @InternalKatachiApi
     public class Failed internal constructor(
         public val exitCode: Int,
@@ -76,6 +151,20 @@ public class KatachiGitUnavailableException internal constructor(
  *
  * Paths outside [root] are passed through untouched: the filter is about what belongs to the
  * project, and nothing outside the project is part of that question.
+ *
+ * ## Example 1: reuse one `git ls-files` run across several checks
+ * ```kt
+ * import me.tbsten.katachi.InternalKatachiApi
+ * import me.tbsten.katachi.fs.FsPath
+ * import me.tbsten.katachi.fs.GitTrackedFileSystem
+ * import me.tbsten.katachi.fs.KatachiFileSystem
+ *
+ * // `gitTrackedFileSystem` runs git itself; this reuses a list already fetched once, so a
+ * // second check against the same tree does not spawn git again.
+ * @OptIn(InternalKatachiApi::class)
+ * fun viewFor(delegate: KatachiFileSystem, root: FsPath, trackedPaths: List<String>): KatachiFileSystem =
+ *     GitTrackedFileSystem(delegate, root, trackedPaths)
+ * ```
  *
  * @param trackedPaths paths relative to [root], `/` separated, as `git ls-files` prints them.
  */
@@ -174,6 +263,23 @@ internal fun isInsideGitWorkTree(root: FsPath): Boolean {
  *
  * git is run **once**, at the root, and the answer is kept as a set. The traversal above
  * this never spawns a process.
+ *
+ * ## Example 1: build a FileSelection that always uses git-tracked files
+ * ```kt
+ * import me.tbsten.katachi.InternalKatachiApi
+ * import me.tbsten.katachi.fs.FileSelection
+ * import me.tbsten.katachi.fs.KatachiFileSystem
+ * import me.tbsten.katachi.fs.ProjectRoot
+ * import me.tbsten.katachi.fs.gitTrackedFileSystem
+ *
+ * @OptIn(InternalKatachiApi::class)
+ * object AlwaysGitTracked : FileSelection {
+ *     override fun fileSystemFor(
+ *         delegate: KatachiFileSystem,
+ *         projectRoot: ProjectRoot,
+ *     ): KatachiFileSystem = gitTrackedFileSystem(delegate, projectRoot.path)
+ * }
+ * ```
  *
  * @throws KatachiGitUnavailableException when git cannot be run or fails.
  */

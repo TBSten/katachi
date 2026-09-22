@@ -16,6 +16,13 @@ import me.tbsten.katachi.fs.KatachiFileSystem
  * A directory the search could not read is dropped here, along with the modules below it.
  * [scanModules] is the same search with those directories kept, which is what the check runs
  * so that it can report them instead of quietly answering with fewer modules.
+ *
+ * ## Example 1: list a project's modules once and resolve where one of them lives
+ * ```kt
+ * val fileSystem = RealFileSystem()
+ * val index = moduleIndex(fileSystem, findProjectRoot(fileSystem).path)
+ * println(index.resolve(ModulePath.of(":core:data")).directory)
+ * ```
  */
 @InternalKatachiApi
 public fun moduleIndex(
@@ -46,6 +53,13 @@ public fun moduleIndex(
  *
  * A directory that throws is skipped rather than allowed to end the search, and what was lost
  * with it is dropped by this overload. See [scanModules] for the answer that keeps it.
+ *
+ * ## Example 1: list every module below the project root
+ * ```kt
+ * val fileSystem = RealFileSystem()
+ * val modules = discoverModules(fileSystem, findProjectRoot(fileSystem).path)
+ * println(modules.joinToString { it.value })
+ * ```
  */
 @InternalKatachiApi
 public fun discoverModules(fileSystem: KatachiFileSystem, projectRoot: FsPath): List<ModulePath> =

@@ -135,6 +135,21 @@ public fun <R> Architecture.process(block: (ProjectModel) -> R): R =
  * processor end to end against a real checkout instead. Whether that seam becomes part of the
  * processor API is open, and step 4 will run into it again when a check arrives as a module of
  * its own.
+ *
+ * ## Example 1: run a class-based processor against a file system built for one spec
+ * ```kt
+ * class RoleCount : ArchitectureProcessor<Int> {
+ *     override fun process(model: ProjectModel): Int = model.roles.size
+ * }
+ *
+ * val fileSystem = object : KatachiFileSystem {
+ *     override val workingDirectory: FsPath = FsPath.of("/repo")
+ *     override fun exists(path: FsPath): Boolean = path == workingDirectory
+ *     override fun isDirectory(path: FsPath): Boolean = path == workingDirectory
+ *     override fun list(directory: FsPath): List<FsPath> = emptyList()
+ * }
+ * projectArchitecture.process(RoleCount(), fileSystem)
+ * ```
  */
 @InternalKatachiApi
 @ExperimentalKatachiApi
@@ -146,6 +161,17 @@ public fun <R> Architecture.process(
 /**
  * [process] against [fileSystem] with the processor written inline. The file system comes
  * first so that the block stays a trailing lambda.
+ *
+ * ## Example 1: run an inline processor against the same kind of file system
+ * ```kt
+ * val fileSystem = object : KatachiFileSystem {
+ *     override val workingDirectory: FsPath = FsPath.of("/repo")
+ *     override fun exists(path: FsPath): Boolean = path == workingDirectory
+ *     override fun isDirectory(path: FsPath): Boolean = path == workingDirectory
+ *     override fun list(directory: FsPath): List<FsPath> = emptyList()
+ * }
+ * val roleCount = projectArchitecture.process(fileSystem) { model -> model.roles.size }
+ * ```
  */
 @InternalKatachiApi
 @ExperimentalKatachiApi

@@ -26,6 +26,18 @@ import me.tbsten.katachi.dsl.ModuleAwareLayoutScope
 /**
  * The module this scope is being evaluated for, as katachi prints it (`":feature:home"`),
  * or `null` directly under `layout { }` and inside a plain directory block.
+ *
+ * ## Example 1: Write a custom description that names the current module
+ * ```kt
+ * import me.tbsten.katachi.InternalKatachiApi
+ * import me.tbsten.katachi.dsl.LayoutDirectoryScope
+ * import me.tbsten.katachi.dsl.gradle.currentModulePath
+ *
+ * @OptIn(InternalKatachiApi::class)
+ * public fun LayoutDirectoryScope.describeCurrentModule() {
+ *     description = currentModulePath?.let { "Part of $it" } ?: "Not inside a module"
+ * }
+ * ```
  */
 @InternalKatachiApi
 public val LayoutScope.currentModulePath: String?
@@ -36,6 +48,17 @@ public val LayoutScope.currentModulePath: String?
  * outside a module block, where there is no module path to have captured anything.
  *
  * See [wildcards], which is this with the error message.
+ *
+ * ## Example 1: Write a nullable-safe alternative to `wildcards`
+ * ```kt
+ * import me.tbsten.katachi.InternalKatachiApi
+ * import me.tbsten.katachi.dsl.LayoutScope
+ * import me.tbsten.katachi.dsl.gradle.currentWildcards
+ *
+ * @OptIn(InternalKatachiApi::class)
+ * public val LayoutScope.wildcardsOrEmpty: List<String>
+ *     get() = currentWildcards ?: emptyList()
+ * ```
  */
 @InternalKatachiApi
 public val LayoutScope.currentWildcards: List<String>?
@@ -57,6 +80,21 @@ public val LayoutScope.currentWildcards: List<String>?
  * @throws me.tbsten.katachi.dsl.KatachiModuleOutsideLayoutRootException when this scope is not
  *   the root of a `layout { }` block: a module path is resolved below the project root, so a
  *   directory around it would quietly be prepended to the answer.
+ *
+ * ## Example 1: Write your own alias for `.module { }`
+ * ```kt
+ * import me.tbsten.katachi.InternalKatachiApi
+ * import me.tbsten.katachi.dsl.LayoutDirectoryScope
+ * import me.tbsten.katachi.dsl.LayoutModule
+ * import me.tbsten.katachi.dsl.LayoutScope
+ * import me.tbsten.katachi.dsl.gradle.expandModulePath
+ *
+ * // This is exactly what `"...".module { }` does; a project can spell it however it likes.
+ * @OptIn(InternalKatachiApi::class)
+ * context(layoutScope: LayoutScope)
+ * public fun String.gradleModule(block: LayoutDirectoryScope.() -> Unit): LayoutModule =
+ *     layoutScope.expandModulePath(this, block)
+ * ```
  */
 @InternalKatachiApi
 public fun LayoutScope.expandModulePath(

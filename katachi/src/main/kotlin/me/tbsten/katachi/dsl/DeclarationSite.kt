@@ -17,6 +17,15 @@ public data class DeclarationSite(
 ) {
     override fun toString(): String = "$fileName:$lineNumber"
 
+    /**
+     * Where a stand-in [DeclarationSite] comes from when the real one could not be captured:
+     * [Unknown].
+     *
+     * ## Example 1: fall back when there is no real site
+     * ```kt
+     * val site = DeclarationSite.Unknown
+     * ```
+     */
     public companion object {
         /**
          * Used when the call site cannot be determined from the stack trace.

@@ -72,10 +72,15 @@ val testPackage: ModulePackage = ModulePackage { modulePath ->
  *
  * ## What the layer roles enforce that a layout cannot
  *
- * The seven roles of the `library` group are the package layers of `:katachi`, each carrying one
- * `konsist { }` forbidding imports of the layers after it. That half used to be a hand-written
- * spec reading the sources as text; it is a rule about imports, which is Konsist's job.
+ * The seven roles of the `library` group are the package layers of `:katachi`, each carrying a
+ * `konsist { }` forbidding imports of the layers after it, and a second one pinning its package
+ * to its directory so that the first means something. That half used to be a hand-written spec
+ * reading the sources as text; it is a rule about imports, which is Konsist's job.
  * See `library/LayerImports.kt`.
+ *
+ * A third `konsist { }` on each of those roles, and on `backend/KonsistBackend`, asks the
+ * repository's KDoc convention of every public declaration — see `library/KdocExamples.kt`.
+ * It is deliberately not asked of `sample/`, of this definition, or of test code.
  */
 val projectArchitecture: Architecture = architecture {
     libraryRoles()

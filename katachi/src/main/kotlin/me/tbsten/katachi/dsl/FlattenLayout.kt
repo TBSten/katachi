@@ -23,13 +23,42 @@ import me.tbsten.katachi.InternalKatachiApi
  *   index whenever the file system is at hand: expanding a wildcard key to the modules it
  *   matches is what the check needs, and nothing else can do it.
  * @throws KatachiGlobSyntaxException when a layout key cannot be read as a path pattern.
+ *
+ * ## Example 1: Read every path a definition declares, without touching a project
+ * ```kt
+ * import me.tbsten.katachi.dsl.kotlin.ktFile
+ *
+ * val projectArchitecture = architecture {
+ *     "domain".group {
+ *         "UseCase" { layout { "useCase" / "*UseCase".ktFile() } }
+ *     }
+ * }
+ *
+ * val declaredPaths = projectArchitecture.flattenLayout().map { it.path }
+ * ```
  */
 @InternalKatachiApi
 public fun Architecture.flattenLayout(
     moduleIndex: ModuleIndex = ModuleIndex.unresolved(moduleResolver),
 ): List<LayoutEntry> = evaluateLayout(moduleIndex).entries
 
-/** Evaluates this role's `layout { }` blocks. See [Architecture.flattenLayout]. */
+/**
+ * Evaluates this role's `layout { }` blocks. See [Architecture.flattenLayout].
+ *
+ * ## Example 1: Read one role's declared paths on their own
+ * ```kt
+ * import me.tbsten.katachi.dsl.kotlin.ktFile
+ *
+ * val projectArchitecture = architecture {
+ *     "domain".group {
+ *         "UseCase" { layout { "useCase" / "*UseCase".ktFile() } }
+ *     }
+ * }
+ *
+ * val useCase = projectArchitecture.allRoles.single { it.name == "UseCase" }
+ * val declaredPaths = useCase.flattenLayout().map { it.path }
+ * ```
+ */
 @InternalKatachiApi
 public fun Role.flattenLayout(
     moduleIndex: ModuleIndex = ModuleIndex.unresolved(ModuleResolver.Conventional),

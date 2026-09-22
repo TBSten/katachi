@@ -1,10 +1,10 @@
 package me.tbsten.katachi.test.architecture.library
 
 import me.tbsten.katachi.dsl.ArchitectureScope
-import me.tbsten.katachi.dsl.gradle.module
 import me.tbsten.katachi.dsl.gradle.div
 import me.tbsten.katachi.dsl.gradle.kotlin
 import me.tbsten.katachi.dsl.gradle.mainSourceSet
+import me.tbsten.katachi.dsl.gradle.module
 import me.tbsten.katachi.dsl.kotlin.ktFile
 import me.tbsten.katachi.konsist.konsist
 import me.tbsten.katachi.test.architecture.mainPackage
@@ -18,16 +18,22 @@ import me.tbsten.katachi.test.architecture.mainPackage
  * `processor/` and for `check/`. Where the two came apart, the role follows the kind and not
  * the package — see `Marker` and `LayoutVocabulary` below.
  *
- * Each role carries one `konsist { }` naming the layers it may not import. Together they are
- * what `katachi/src/test/kotlin/me/tbsten/katachi/test/PackageDependencySpec.kt` used to do by
- * reading the sources as text. The forbidden list is built from one table, in
- * `LayerImports.kt`, so the seven rules cannot drift apart.
+ * Each role carries the same three `konsist { }` rules, in the same order.
  *
- * ## Why every role repeats the same three lines
+ * 1. **The layers it may not import.** Together these are what
+ *    `katachi/src/test/kotlin/me/tbsten/katachi/test/PackageDependencySpec.kt` used to do by
+ *    reading the sources as text. The forbidden list is built from one table, in
+ *    `LayerImports.kt`, so the seven rules cannot drift apart.
+ * 2. **That the package matches the directory** — `PACKAGE_MATCHES_PATH_RULE`, which is what
+ *    keeps rule 1 meaning anything at all. See its own KDoc.
+ * 3. **That every public declaration shows an example** — `KDOC_EXAMPLE_RULE`, the repository's
+ *    KDoc convention. See `KdocExamples.kt`.
  *
- * A helper that wrote `konsist { }` for a layer would be captured as the declaration site of
- * all seven constraints, and every violation would point at the helper instead of at the role.
- * Only the predicate and the wording are shared; the declaration stays where it belongs.
+ * ## Why every role repeats the same lines
+ *
+ * A helper that wrote `konsist { }` for a role would be captured as the declaration site of all
+ * seven constraints, and every violation would point at the helper instead of at the role.
+ * Only the predicates and the wording are shared; the declaration stays where it belongs.
  */
 fun ArchitectureScope.libraryRoles() {
     "library".group {
@@ -43,6 +49,12 @@ fun ArchitectureScope.libraryRoles() {
                 ":katachi".module {
                     "${laterLayersOf("")} を import しないこと".konsist {
                         files.mustNot(importsLaterLayerThan(""))
+                    }
+                    PACKAGE_MATCHES_PATH_RULE.konsist {
+                        packages.must { it.hasMatchingPath }
+                    }
+                    KDOC_EXAMPLE_RULE.konsist {
+                        files.flatMap(::publicDeclarationsOf).must(::showsExample)
                     }
                     // The root package, and only it: `*` never crosses a `/`, so the layer
                     // directories one level down are untouched by this.
@@ -61,6 +73,12 @@ fun ArchitectureScope.libraryRoles() {
                     "${laterLayersOf("fs")} を import しないこと".konsist {
                         files.mustNot(importsLaterLayerThan("fs"))
                     }
+                    PACKAGE_MATCHES_PATH_RULE.konsist {
+                        packages.must { it.hasMatchingPath }
+                    }
+                    KDOC_EXAMPLE_RULE.konsist {
+                        files.flatMap(::publicDeclarationsOf).must(::showsExample)
+                    }
                     mainSourceSet / kotlin / mainPackage / "fs" / "*".ktFile()
                 }
             }
@@ -75,6 +93,12 @@ fun ArchitectureScope.libraryRoles() {
                 ":katachi".module {
                     "${laterLayersOf("dsl")} を import しないこと".konsist {
                         files.mustNot(importsLaterLayerThan("dsl"))
+                    }
+                    PACKAGE_MATCHES_PATH_RULE.konsist {
+                        packages.must { it.hasMatchingPath }
+                    }
+                    KDOC_EXAMPLE_RULE.konsist {
+                        files.flatMap(::publicDeclarationsOf).must(::showsExample)
                     }
                     mainSourceSet / kotlin / mainPackage / "dsl" / "*".ktFile()
                 }
@@ -96,6 +120,12 @@ fun ArchitectureScope.libraryRoles() {
                     "${laterLayersOf("dsl")} を import しないこと".konsist {
                         files.mustNot(importsLaterLayerThan("dsl"))
                     }
+                    PACKAGE_MATCHES_PATH_RULE.konsist {
+                        packages.must { it.hasMatchingPath }
+                    }
+                    KDOC_EXAMPLE_RULE.konsist {
+                        files.flatMap(::publicDeclarationsOf).must(::showsExample)
+                    }
                     mainSourceSet / kotlin / mainPackage / "dsl" / "gradle" / "*".ktFile()
                     mainSourceSet / kotlin / mainPackage / "dsl" / "kotlin" / "*".ktFile()
                 }
@@ -112,6 +142,12 @@ fun ArchitectureScope.libraryRoles() {
                     "${laterLayersOf("scan")} を import しないこと".konsist {
                         files.mustNot(importsLaterLayerThan("scan"))
                     }
+                    PACKAGE_MATCHES_PATH_RULE.konsist {
+                        packages.must { it.hasMatchingPath }
+                    }
+                    KDOC_EXAMPLE_RULE.konsist {
+                        files.flatMap(::publicDeclarationsOf).must(::showsExample)
+                    }
                     mainSourceSet / kotlin / mainPackage / "scan" / "*".ktFile()
                 }
             }
@@ -127,6 +163,12 @@ fun ArchitectureScope.libraryRoles() {
                     "${laterLayersOf("processor")} を import しないこと".konsist {
                         files.mustNot(importsLaterLayerThan("processor"))
                     }
+                    PACKAGE_MATCHES_PATH_RULE.konsist {
+                        packages.must { it.hasMatchingPath }
+                    }
+                    KDOC_EXAMPLE_RULE.konsist {
+                        files.flatMap(::publicDeclarationsOf).must(::showsExample)
+                    }
                     mainSourceSet / kotlin / mainPackage / "processor" / "*".ktFile()
                 }
             }
@@ -141,6 +183,12 @@ fun ArchitectureScope.libraryRoles() {
                 ":katachi".module {
                     "${laterLayersOf("check")} を import しないこと".konsist {
                         files.mustNot(importsLaterLayerThan("check"))
+                    }
+                    PACKAGE_MATCHES_PATH_RULE.konsist {
+                        packages.must { it.hasMatchingPath }
+                    }
+                    KDOC_EXAMPLE_RULE.konsist {
+                        files.flatMap(::publicDeclarationsOf).must(::showsExample)
                     }
                     mainSourceSet / kotlin / mainPackage / "check" / "*".ktFile()
                 }

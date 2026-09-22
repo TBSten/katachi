@@ -89,6 +89,16 @@ public class ModulePath private constructor(
 
     override fun toString(): String = value
 
+    /**
+     * Where [ModulePath] instances come from: [of] parses a raw string, and [ROOT] names the
+     * root project.
+     *
+     * ## Example 1: build a path and refer to the root project
+     * ```kt
+     * val module = ModulePath.of(":core:data")
+     * val root = ModulePath.ROOT
+     * ```
+     */
     public companion object {
         /**
          * The root project, `":"`.
@@ -140,6 +150,12 @@ public class ModulePath private constructor(
  * things on the two sides of the DSL. On top of the glob it adds what only a module path
  * needs: a leading `:` is optional, `":"` names the root project, and `**` is restricted to
  * the last segment so that the index of every captured wildcard is the same for every match.
+ *
+ * ## Example 1: compile a pattern and test it against a module
+ * ```kt
+ * val pattern = ModulePattern.compile(":feature:*")
+ * pattern.matches(ModulePath.of(":feature:login")) shouldBe true
+ * ```
  */
 @InternalKatachiApi
 public class ModulePattern private constructor(
@@ -148,10 +164,25 @@ public class ModulePattern private constructor(
     /** `null` for `":"`, which names the root project and matches nothing else. */
     private val glob: Glob?,
 ) {
-    /** Whether the pattern holds a `*` or a `**`, which is what makes a declaration optional. */
+    /**
+     * Whether the pattern holds a `*` or a `**`, which is what makes a declaration optional.
+     *
+     * ## Example 1: tell a wildcard pattern from a literal one
+     * ```kt
+     * ModulePattern.compile(":feature:*").hasWildcard shouldBe true
+     * ModulePattern.compile(":core:data").hasWildcard shouldBe false
+     * ```
+     */
     public val hasWildcard: Boolean get() = glob?.hasWildcard == true
 
-    /** The single module named, when there is no wildcard to expand. */
+    /**
+     * The single module named, when there is no wildcard to expand.
+     *
+     * ## Example 1: read the literal module a non-wildcard pattern names
+     * ```kt
+     * ModulePattern.compile(":core:data").literalPath shouldBe ModulePath.of(":core:data")
+     * ```
+     */
     public val literalPath: ModulePath?
         get() = if (hasWildcard) null else ModulePath.of(unescape(pattern))
 
@@ -186,7 +217,14 @@ public class ModulePattern private constructor(
             .removePrefix(Glob.MODULE_SEPARATOR.toString())
             .replace(Glob.MODULE_SEPARATOR, Glob.PATH_SEPARATOR)
 
-    /** Whether [module] is one of the modules this pattern names. */
+    /**
+     * Whether [module] is one of the modules this pattern names.
+     *
+     * ## Example 1: check a module against a pattern
+     * ```kt
+     * ModulePattern.compile(":feature:*").matches(ModulePath.of(":feature:login")) shouldBe true
+     * ```
+     */
     public fun matches(module: ModulePath): Boolean = match(module) != null
 
     /**
@@ -195,6 +233,11 @@ public class ModulePattern private constructor(
      * One element per `*`, and one **per level** for the trailing `**`, so `":feature:**"`
      * against `:feature:hoge:fuga` captures `["hoge", "fuga"]` and against `:feature` itself
      * captures nothing.
+     *
+     * ## Example 1: read out what a wildcard captured
+     * ```kt
+     * ModulePattern.compile(":feature:*").match(ModulePath.of(":feature:login")) shouldBe listOf("login")
+     * ```
      */
     public fun match(module: ModulePath): List<String>? {
         val glob = glob ?: return if (module.isRoot) emptyList() else null
@@ -207,6 +250,14 @@ public class ModulePattern private constructor(
 
     override fun toString(): String = "ModulePattern($pattern)"
 
+    /**
+     * Where [ModulePattern] instances come from: [compile] parses a raw pattern string.
+     *
+     * ## Example 1: compile a pattern from a layout key
+     * ```kt
+     * val pattern = ModulePattern.compile(":feature:*")
+     * ```
+     */
     public companion object {
         /**
          * What `wildcards` reads as when there is no module to have matched.
@@ -236,6 +287,11 @@ public class ModulePattern private constructor(
          *
          * @throws KatachiGlobSyntaxException when [raw] is empty or cannot be read as a glob,
          *   or when it uses `**` anywhere but as its last segment, or more than once.
+         *
+         * ## Example 1: compile a pattern with or without its leading `:`
+         * ```kt
+         * ModulePattern.compile("feature:*") shouldBe ModulePattern.compile(":feature:*")
+         * ```
          */
         public fun compile(raw: String): ModulePattern {
             if (raw.isEmpty()) throw KatachiGlobSyntaxException(raw, GlobProblem.EmptyModulePath)

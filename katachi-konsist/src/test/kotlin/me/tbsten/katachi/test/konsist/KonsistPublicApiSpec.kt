@@ -10,15 +10,18 @@ import java.io.File
  * Every `public` declaration of `:katachi-konsist`'s main sources carries a KDoc with a worked
  * example.
  *
- * `:katachi` has the same rule, checked by `ConstraintApiKdocSpec` — but that spec only covers
- * the files the constraint API was written into, because most of `:katachi`'s existing public
- * surface predates the rule. This module is new in its entirety, so there is no allowlist here:
- * every file under `src/main` is in scope from the start. This is also what replaces the
- * "目視確認" (an eyeballed completion condition) the earlier design draft settled for — forgetting
- * an example is now a red test, not something a reviewer has to remember to check.
+ * The whole repository now carries this rule as `KDOC_EXAMPLE_RULE`, a `konsist { }` on every
+ * role of `:katachi` and on this module's own role — see
+ * `architecture-test/src/test/kotlin/me/tbsten/katachi/test/architecture/library/KdocExamples.kt`.
+ * That is the rule; this spec is a second reading of it, kept because it is the one that fails
+ * inside this module's own `test` task rather than in `:architecture-test`, and because it is
+ * deliberately stricter: it asks every line starting with `public `, `override` included.
  *
- * Reads sources as text, the same way `PackageDependencySpec` and `ConstraintApiKdocSpec` do:
- * parsing Kotlin would be a far bigger thing to maintain than the rule it guards.
+ * Reads sources as text, the same way `PackageDependencySpec` does: parsing Kotlin would be a
+ * far bigger thing to maintain than the rule it guards.
+ *
+ * TODO: decide whether the stricter reading is worth two implementations of one rule, or
+ *   whether this spec should go the way `ConstraintApiKdocSpec` did once the constraint landed.
  */
 
 /** What a KDoc has to hold. The number after it is the example's own. */
@@ -46,9 +49,9 @@ private class UndocumentedDeclaration(val file: File, val line: Int, val declara
  * Whether the KDoc block ending just above [index] holds an example.
  *
  * Blank lines, annotations and `context(...)` receivers sit between a KDoc and what it
- * documents, so they are stepped over. Unlike `:katachi`'s `ConstraintApiKdocSpec` — whose
- * covered files only ever carry single-line markers such as `@ExperimentalKatachiApi` — this
- * module's shadowed Konsist assertions carry multi-line `@Deprecated(...)` blocks, so a bare
+ * documents, so they are stepped over. A single-line marker such as `@ExperimentalKatachiApi`
+ * would need no more than that, but this module's shadowed Konsist assertions carry multi-line
+ * `@Deprecated(...)` blocks, so a bare
  * `startsWith("@")` on one line is not enough: the line directly above the declaration is often
  * just the annotation's closing `)`. Paren depth is tracked back to whichever line opens that
  * block (an unbalanced text scan, same as the rest of this spec — good enough for source that

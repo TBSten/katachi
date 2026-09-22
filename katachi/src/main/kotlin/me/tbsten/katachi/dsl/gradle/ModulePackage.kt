@@ -207,13 +207,53 @@ public fun capitalizedModuleNamePackage(basePackage: String = ""): ModulePackage
  *
  * Internal bookkeeping: one subtype per thing that can go wrong, each holding what its own
  * sentence needs.
+ *
+ * ## Example 1: Branch on which problem was raised
+ * ```kt
+ * import me.tbsten.katachi.InternalKatachiApi
+ * import me.tbsten.katachi.dsl.gradle.KatachiModulePackageException
+ * import me.tbsten.katachi.dsl.gradle.ModulePackageProblem
+ *
+ * @OptIn(InternalKatachiApi::class)
+ * fun describe(exception: KatachiModulePackageException): String =
+ *     when (val problem = exception.problem) {
+ *         is ModulePackageProblem.OutsideModule -> problem.explain()
+ *         is ModulePackageProblem.NotADirectory -> "bad package for ${problem.modulePath}"
+ *     }
+ * ```
  */
 @InternalKatachiApi
 public sealed interface ModulePackageProblem {
-    /** The sentence this problem contributes. */
+    /**
+     * The sentence this problem contributes.
+     *
+     * ## Example 1: Read the sentence directly, without matching on the subtype
+     * ```kt
+     * import me.tbsten.katachi.InternalKatachiApi
+     * import me.tbsten.katachi.dsl.gradle.KatachiModulePackageException
+     *
+     * @OptIn(InternalKatachiApi::class)
+     * fun logProblem(exception: KatachiModulePackageException) {
+     *     println(exception.problem.explain())
+     * }
+     * ```
+     */
     public fun explain(): String
 
-    /** Written where there is no module to derive a package from. */
+    /**
+     * Written where there is no module to derive a package from.
+     *
+     * ## Example 1: Detect this one problem specifically
+     * ```kt
+     * import me.tbsten.katachi.InternalKatachiApi
+     * import me.tbsten.katachi.dsl.gradle.KatachiModulePackageException
+     * import me.tbsten.katachi.dsl.gradle.ModulePackageProblem
+     *
+     * @OptIn(InternalKatachiApi::class)
+     * fun isOutsideModule(exception: KatachiModulePackageException): Boolean =
+     *     exception.problem is ModulePackageProblem.OutsideModule
+     * ```
+     */
     @InternalKatachiApi
     public object OutsideModule : ModulePackageProblem {
         override fun explain(): String =
@@ -224,7 +264,22 @@ public sealed interface ModulePackageProblem {
                 "string."
     }
 
-    /** The strategy answered with something that is not a directory path. */
+    /**
+     * The strategy answered with something that is not a directory path.
+     *
+     * ## Example 1: Read which module and which bad directory it produced
+     * ```kt
+     * import me.tbsten.katachi.InternalKatachiApi
+     * import me.tbsten.katachi.dsl.gradle.KatachiModulePackageException
+     * import me.tbsten.katachi.dsl.gradle.ModulePackageProblem
+     *
+     * @OptIn(InternalKatachiApi::class)
+     * fun describeFailure(exception: KatachiModulePackageException): String? {
+     *     val problem = exception.problem as? ModulePackageProblem.NotADirectory ?: return null
+     *     return "${problem.modulePath} -> ${problem.directory}"
+     * }
+     * ```
+     */
     @InternalKatachiApi
     public class NotADirectory internal constructor(
         public val modulePath: String,
@@ -268,6 +323,25 @@ public class KatachiModulePackageException internal constructor(
  *   case directly under `layout { }` and inside a plain directory block.
  * @throws KatachiModulePackageException when [modulePath] is `null`, or when the strategy
  *   returned something that is not a directory path.
+ *
+ * ## Example 1: Write a custom operator that lands a `ModulePackage` in the current module
+ * ```kt
+ * import me.tbsten.katachi.InternalKatachiApi
+ * import me.tbsten.katachi.dsl.LayoutDirectory
+ * import me.tbsten.katachi.dsl.LayoutScope
+ * import me.tbsten.katachi.dsl.gradle.ModulePackage
+ * import me.tbsten.katachi.dsl.gradle.currentModulePath
+ * import me.tbsten.katachi.dsl.gradle.resolveFor
+ *
+ * // This is the same trick `ModulePackage / "child"` uses internally: resolve the strategy
+ * // for the module being evaluated, then continue as a plain directory key.
+ * @OptIn(InternalKatachiApi::class)
+ * context(layoutScope: LayoutScope)
+ * public fun ModulePackage.into(child: String): LayoutDirectory {
+ *     val directory = resolveFor(layoutScope.currentModulePath)
+ *     return with(layoutScope) { directory / child }
+ * }
+ * ```
  */
 @InternalKatachiApi
 public fun ModulePackage.resolveFor(modulePath: String?): String {

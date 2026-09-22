@@ -83,6 +83,7 @@ fun ArchitectureScope.testingRoles() {
                     // files needs no change here as long as both end in `Roles.kt`.
                     testSourceSet / kotlin / testPackage / "*" / "*Roles".ktFile()
                     testSourceSet / kotlin / testPackage / "library" / "LayerImports".ktFile()
+                    testSourceSet / kotlin / testPackage / "library" / "KdocExamples".ktFile()
                 }
             }
         }

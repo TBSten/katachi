@@ -8,6 +8,17 @@ import me.tbsten.katachi.InternalKatachiApi
  * The [KatachiFileSystem] used when a user calls `assert()`: plain `java.io.File`, with the
  * separator differences absorbed by [FsPath].
  *
+ * ## Example 1: point it somewhere other than the JVM's working directory
+ * ```kt
+ * import me.tbsten.katachi.InternalKatachiApi
+ * import me.tbsten.katachi.check.validate
+ * import me.tbsten.katachi.fs.RealFileSystem
+ * import java.io.File
+ *
+ * @OptIn(InternalKatachiApi::class)
+ * val violations = projectArchitecture.validate(RealFileSystem(File("/path/to/module")))
+ * ```
+ *
  * @param workingDirectoryFile where the project root search starts. Defaults to the JVM's
  *   working directory, which under Gradle is the module directory of the test being run.
  */

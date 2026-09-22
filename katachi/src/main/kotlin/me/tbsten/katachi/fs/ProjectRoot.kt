@@ -6,6 +6,14 @@ import me.tbsten.katachi.KatachiCheckException
 /**
  * A kind of file that marks the top of a project. Same set as Konsist's root providers, so a
  * project that works with Konsist works with katachi without extra configuration.
+ *
+ * ## Example 1: check which marker kind a project root carries
+ * ```kt
+ * val root = findProjectRoot(RealFileSystem())
+ * if (ProjectRootMarker.Git in root.markers) {
+ *     println("${root.path} is a git repository")
+ * }
+ * ```
  */
 @InternalKatachiApi
 public enum class ProjectRootMarker(internal val markerPaths: List<String>) {
@@ -35,6 +43,12 @@ public enum class ProjectRootMarker(internal val markerPaths: List<String>) {
  * All the markers are reported, not just the first one, because the caller needs more than
  * the location: `files = gitTracked()` behaves differently depending on whether the root is
  * a git repository at all (see [FileSelection]).
+ *
+ * ## Example 1: read the root a search found
+ * ```kt
+ * val root = findProjectRoot(RealFileSystem())
+ * println("${root.path} (markers: ${root.markers.map { it.name }})")
+ * ```
  */
 @InternalKatachiApi
 public class ProjectRoot internal constructor(
@@ -43,7 +57,17 @@ public class ProjectRoot internal constructor(
     /** Every marker kind present at [path], never empty. */
     public val markers: Set<ProjectRootMarker>,
 ) {
-    /** Whether [path] carries git's own marker files. */
+    /**
+     * Whether [path] carries git's own marker files.
+     *
+     * ## Example 1: branch on whether the root is a git repository
+     * ```kt
+     * val root = findProjectRoot(RealFileSystem())
+     * if (root.isGitRepository) {
+     *     println("${root.path} is tracked by git")
+     * }
+     * ```
+     */
     public val isGitRepository: Boolean get() = ProjectRootMarker.Git in markers
 
     override fun toString(): String =
@@ -75,6 +99,13 @@ public class KatachiProjectRootNotFoundException internal constructor(
  * There is no way to pass a root in explicitly. A test that wants a different root passes a
  * different [KatachiFileSystem], which keeps the search itself under test rather than
  * bypassed.
+ *
+ * ## Example 1: find the project root from a file system
+ * ```kt
+ * val fileSystem = RealFileSystem()
+ * val root = findProjectRoot(fileSystem)
+ * println("${root.path}, git repo: ${root.isGitRepository}")
+ * ```
  *
  * @throws KatachiProjectRootNotFoundException when no parent carries any marker.
  */

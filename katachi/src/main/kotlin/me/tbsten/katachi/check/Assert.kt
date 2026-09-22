@@ -68,6 +68,13 @@ public fun Architecture.assert(maxViolations: Int = DEFAULT_MAX_VIOLATIONS): Uni
  *
  * As with `assert(maxViolations)`, the overload taking checks runs those too; this one runs
  * [LayoutCheck] alone.
+ *
+ * ## Example 1: assert against a fake tree, capping how many violations the message spells out
+ * ```kt
+ * shouldThrow<KatachiArchitectureAssertionError> {
+ *     definition.assert(fakeFileSystem, maxViolations = 5)
+ * }
+ * ```
  */
 @InternalKatachiApi
 public fun Architecture.assert(

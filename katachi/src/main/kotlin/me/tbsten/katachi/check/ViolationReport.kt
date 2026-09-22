@@ -13,7 +13,14 @@ import me.tbsten.katachi.scan.UnsatisfiedConstraint
 import me.tbsten.katachi.scan.Violation
 import me.tbsten.katachi.scan.ViolationKind
 
-/** How many blocks `assert()` prints before it stops and counts the rest. */
+/**
+ * How many blocks `assert()` prints before it stops and counts the rest.
+ *
+ * ## Example 1: show twice as many blocks as `report()` shows by default
+ * ```kt
+ * projectArchitecture.validate().report(maxViolations = DEFAULT_MAX_VIOLATIONS * 2)
+ * ```
+ */
 public const val DEFAULT_MAX_VIOLATIONS: Int = 10
 
 /**
@@ -32,6 +39,12 @@ internal const val STEP: String = "  "
  * outside ASCII, one block per violation with its parts always in the same order, every path
  * relative to the project root, and the counts on the first line rather than the last,
  * because long output gets cut off at the end.
+ *
+ * ## Example 1: build a report of the current violations without failing anything
+ * ```kt
+ * val report = projectArchitecture.validate().report()
+ * println(report)
+ * ```
  *
  * @param maxViolations how many blocks to write. The line after the last one says how many
  *   were left out; the summary counts them all either way.

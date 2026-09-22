@@ -66,6 +66,17 @@ public fun interface ModuleResolver {
      */
     public fun directoryOf(module: ModulePath): String
 
+    /**
+     * Where the [ModuleResolver]s katachi ships with live.
+     *
+     * ## Example 1: name the default resolver explicitly
+     * ```kt
+     * val projectArchitecture = architecture {
+     *     moduleResolver = ModuleResolver.Conventional
+     *     "domain".group { "UseCase" { } }
+     * }
+     * ```
+     */
     public companion object {
         /**
          * The default: `:` becomes `/`, so `:core:data` is `core/data` and `":"` is the
@@ -86,7 +97,20 @@ private object ConventionalModuleResolver : ModuleResolver {
     override fun toString(): String = "ModuleResolver.Conventional"
 }
 
-/** One module a layout key named, with where it lives and what its wildcards captured. */
+/**
+ * One module a layout key named, with where it lives and what its wildcards captured.
+ *
+ * ## Example 1: read where a matched module lives
+ * ```kt
+ * import me.tbsten.katachi.fs.RealFileSystem
+ * import me.tbsten.katachi.scan.moduleIndex
+ *
+ * val fileSystem = RealFileSystem()
+ * val index = moduleIndex(fileSystem, fileSystem.workingDirectory)
+ * val featureModules: List<ResolvedModule> = index.matching(ModulePattern.compile(":feature:*"))
+ * featureModules.forEach { println("${it.path} -> ${it.directory}") }
+ * ```
+ */
 @InternalKatachiApi
 public class ResolvedModule internal constructor(
     /** The module itself, `:feature:home`. */
@@ -128,6 +152,15 @@ internal class ModuleTarget(
  *
  * Built by [me.tbsten.katachi.scan.moduleIndex] — or by [unresolved] when no file system is at hand, which says
  * something different and which [targetsOf] answers differently.
+ *
+ * ## Example 1: build the index once and reuse it for every layout key
+ * ```kt
+ * import me.tbsten.katachi.fs.RealFileSystem
+ * import me.tbsten.katachi.scan.moduleIndex
+ *
+ * val fileSystem = RealFileSystem()
+ * val index: ModuleIndex = moduleIndex(fileSystem, fileSystem.workingDirectory)
+ * ```
  */
 @InternalKatachiApi
 public class ModuleIndex internal constructor(
@@ -147,6 +180,16 @@ public class ModuleIndex internal constructor(
     /**
      * Every module found below the project root, outermost first and siblings by name. Empty
      * for an [unresolved] index, where [isResolved] is what tells the two apart.
+     *
+     * ## Example 1: list every module the search found
+     * ```kt
+     * import me.tbsten.katachi.fs.RealFileSystem
+     * import me.tbsten.katachi.scan.moduleIndex
+     *
+     * val fileSystem = RealFileSystem()
+     * val index = moduleIndex(fileSystem, fileSystem.workingDirectory)
+     * index.modules.forEach { module -> println(module.value) }
+     * ```
      */
     public val modules: List<ModulePath> get() = discovered.orEmpty()
 
@@ -155,6 +198,16 @@ public class ModuleIndex internal constructor(
      *
      * `false` only for an [unresolved] index. One built by [me.tbsten.katachi.scan.moduleIndex] is resolved even
      * when the project turned out to hold no module at all: that emptiness is an answer.
+     *
+     * ## Example 1: branch on whether the project has been walked yet
+     * ```kt
+     * import me.tbsten.katachi.fs.RealFileSystem
+     * import me.tbsten.katachi.scan.moduleIndex
+     *
+     * val fileSystem = RealFileSystem()
+     * val index = moduleIndex(fileSystem, fileSystem.workingDirectory)
+     * if (index.isResolved) println("${index.modules.size} modules found")
+     * ```
      */
     public val isResolved: Boolean get() = discovered != null
 
@@ -164,6 +217,12 @@ public class ModuleIndex internal constructor(
      * A module the layout names but the tree does not hold still resolves: the declaration
      * below it then reports the build file it requires as missing, which says more than
      * "this module is not here" would.
+     *
+     * ## Example 1: locate a module by its path, without walking the tree
+     * ```kt
+     * val index = ModuleIndex.unresolved(ModuleResolver.Conventional)
+     * index.resolve(ModulePath.of(":core:data")).directory // "core/data"
+     * ```
      */
     public fun resolve(module: ModulePath, wildcards: List<String> = emptyList()): ResolvedModule =
         ResolvedModule(
@@ -172,7 +231,19 @@ public class ModuleIndex internal constructor(
             wildcards = wildcards,
         )
 
-    /** Every existing module [pattern] matches, in [modules] order. */
+    /**
+     * Every existing module [pattern] matches, in [modules] order.
+     *
+     * ## Example 1: list the modules a wildcard key matches
+     * ```kt
+     * import me.tbsten.katachi.fs.RealFileSystem
+     * import me.tbsten.katachi.scan.moduleIndex
+     *
+     * val fileSystem = RealFileSystem()
+     * val index = moduleIndex(fileSystem, fileSystem.workingDirectory)
+     * index.matching(ModulePattern.compile(":feature:*")).map { it.path }
+     * ```
+     */
     public fun matching(pattern: ModulePattern): List<ResolvedModule> =
         modules.mapNotNull { module -> pattern.match(module)?.let { resolve(module, it) } }
 
@@ -183,6 +254,16 @@ public class ModuleIndex internal constructor(
      * all when none does — which is why such a key is never missing. A key without one
      * stands for exactly the module it names, existing or not, so that a module someone
      * deleted is reported rather than silently dropped.
+     *
+     * ## Example 1: expand a layout key the way `module { }` does
+     * ```kt
+     * import me.tbsten.katachi.fs.RealFileSystem
+     * import me.tbsten.katachi.scan.moduleIndex
+     *
+     * val fileSystem = RealFileSystem()
+     * val index = moduleIndex(fileSystem, fileSystem.workingDirectory)
+     * index.expand(ModulePattern.compile(":feature:*")).map { it.directory }
+     * ```
      */
     public fun expand(pattern: ModulePattern): List<ResolvedModule> =
         if (pattern.hasWildcard) {
@@ -238,6 +319,15 @@ public class ModuleIndex internal constructor(
         else -> "ModuleIndex(${discovered.size} modules, $resolver)"
     }
 
+    /**
+     * Where an index that has not walked the project comes from.
+     *
+     * ## Example 1: evaluate a definition without touching the file system
+     * ```kt
+     * val definition = architecture { "domain".group { "UseCase" { } } }
+     * val entries = definition.flattenLayout(ModuleIndex.unresolved(definition.moduleResolver))
+     * ```
+     */
     public companion object {
         /**
          * An index for a project nobody has listed, which is what a layout read without a
@@ -246,6 +336,13 @@ public class ModuleIndex internal constructor(
          * It still resolves a key naming one module — where `:core:data` lives is [resolver]'s
          * answer and needs no tree — while a key with a wildcard is kept as the pattern it was
          * written as. See [targetsOf].
+         *
+         * ## Example 1: a literal key still resolves, a wildcard key does not
+         * ```kt
+         * val index = ModuleIndex.unresolved(ModuleResolver.Conventional)
+         * index.resolve(ModulePath.of(":app")).directory // "app"
+         * index.matching(ModulePattern.compile(":feature:*")) // always empty; nothing has been listed
+         * ```
          */
         public fun unresolved(resolver: ModuleResolver): ModuleIndex =
             ModuleIndex(resolver = resolver, discovered = null)

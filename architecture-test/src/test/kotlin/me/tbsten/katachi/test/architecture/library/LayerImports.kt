@@ -23,6 +23,27 @@ private val LAYERS: List<String> = listOf("", "fs", "dsl", "scan", "processor", 
 private const val ROOT_PACKAGE: String = "me.tbsten.katachi"
 
 /**
+ * The name every role declares the place-matches-package rule under.
+ *
+ * ## Why this rule is part of the layer table and not a tidiness rule
+ *
+ * The two halves of a role disagree about what they read. A `layout { }` pins a file by the
+ * **directory** it sits in; [importsLaterLayerThan] decides what that file may import by the
+ * **package** its importers name. Nothing so far says the two agree, and where they do not the
+ * table stops meaning anything: a file written into `dsl/` under `package me.tbsten.katachi.fs`
+ * is checked as `dsl` and imported as `fs`, so `fs` would gain everything `dsl` can reach
+ * without a single rule going red.
+ *
+ * One line per role closes it, and one line is all it takes because Konsist already asks the
+ * question — `hasMatchingPath` compares a package declaration against its own file's path, so
+ * unlike [laterLayersOf] this rule needs nothing said about *which* layer the role is. That is
+ * also why the rule is a bare constant rather than a function: there is no per-role wording for
+ * a helper to build, and `konsist { }` still has to be written at the role so that a report
+ * points there rather than here.
+ */
+const val PACKAGE_MATCHES_PATH_RULE: String = "package 宣言がファイルの置き場所と一致すること"
+
+/**
  * The layers after [layer], worded to fit on the one line a constraint name gets.
  *
  * The hand-written spec this replaced opened its failure with the whole table, so that a

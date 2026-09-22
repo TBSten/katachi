@@ -14,19 +14,50 @@ internal const val GLOB_ESCAPABLE: String = "*\\{}?[],"
  *
  * This is katachi's own classification of its glob syntax and is expected to grow and change
  * with it, which is why it is not part of the supported surface.
+ *
+ * ## Example 1: tell which kind of problem a broken pattern raised
+ * ```kt
+ * shouldThrow<KatachiGlobSyntaxException> { Glob.compile("") }
+ *     .problem shouldBe GlobProblem.EmptyPattern
+ * shouldThrow<KatachiGlobSyntaxException> { Glob.compile("a**b") }
+ *     .problem.shouldBeInstanceOf<GlobProblem.DoubleStarInsideSegment>()
+ * ```
  */
 @InternalKatachiApi
 public sealed interface GlobProblem {
-    /** The sentence this problem contributes, for [pattern] as it was written. */
+    /**
+     * The sentence this problem contributes, for [pattern] as it was written.
+     *
+     * ## Example 1: read a problem's sentence directly
+     * ```kt
+     * GlobProblem.EmptyPattern.explain("") shouldBe "A glob pattern must not be empty."
+     * ```
+     */
     public fun explain(pattern: String): String
 
-    /** Nothing was written at all. */
+    /**
+     * Nothing was written at all.
+     *
+     * ## Example 1: an empty pattern
+     * ```kt
+     * shouldThrow<KatachiGlobSyntaxException> { Glob.compile("") }
+     *     .problem shouldBe GlobProblem.EmptyPattern
+     * ```
+     */
     @InternalKatachiApi
     public object EmptyPattern : GlobProblem {
         override fun explain(pattern: String): String = "A glob pattern must not be empty."
     }
 
-    /** Two separators in a row, or a trailing one. */
+    /**
+     * Two separators in a row, or a trailing one.
+     *
+     * ## Example 1: two separators in a row
+     * ```kt
+     * val problem = shouldThrow<KatachiGlobSyntaxException> { Glob.compile("a//b") }.problem
+     * problem.shouldBeInstanceOf<GlobProblem.EmptySegment>().separator shouldBe '/'
+     * ```
+     */
     @InternalKatachiApi
     public class EmptySegment internal constructor(
         public val separator: Char,
@@ -36,14 +67,30 @@ public sealed interface GlobProblem {
                 "`$separator`, matches nothing."
     }
 
-    /** A segment ends with a lone `\`, which escapes nothing. */
+    /**
+     * A segment ends with a lone `\`, which escapes nothing.
+     *
+     * ## Example 1: a pattern ending in a lone backslash
+     * ```kt
+     * shouldThrow<KatachiGlobSyntaxException> { Glob.compile("""a\""") }
+     *     .problem shouldBe GlobProblem.TrailingBackslash
+     * ```
+     */
     @InternalKatachiApi
     public object TrailingBackslash : GlobProblem {
         override fun explain(pattern: String): String =
             "`$pattern` ends a segment with `\\`. Write `\\\\` for a literal backslash."
     }
 
-    /** `\` in front of a character katachi does not treat as a metacharacter. */
+    /**
+     * `\` in front of a character katachi does not treat as a metacharacter.
+     *
+     * ## Example 1: escaping a character that is not a metacharacter
+     * ```kt
+     * val problem = shouldThrow<KatachiGlobSyntaxException> { Glob.compile("""\a.kt""") }.problem
+     * problem.shouldBeInstanceOf<GlobProblem.UnescapableCharacter>().character shouldBe 'a'
+     * ```
+     */
     @InternalKatachiApi
     public class UnescapableCharacter internal constructor(
         public val character: Char,
@@ -53,7 +100,15 @@ public sealed interface GlobProblem {
                 "metacharacter. Only `$GLOB_ESCAPABLE` can be escaped."
     }
 
-    /** `**` written as part of a larger segment, where it cannot mean "zero levels or more". */
+    /**
+     * `**` written as part of a larger segment, where it cannot mean "zero levels or more".
+     *
+     * ## Example 1: `**` glued to the rest of a segment
+     * ```kt
+     * val problem = shouldThrow<KatachiGlobSyntaxException> { Glob.compile("a**b") }.problem
+     * problem.shouldBeInstanceOf<GlobProblem.DoubleStarInsideSegment>().segment shouldBe "a**b"
+     * ```
+     */
     @InternalKatachiApi
     public class DoubleStarInsideSegment internal constructor(
         public val segment: String,
@@ -64,7 +119,15 @@ public sealed interface GlobProblem {
                 "use a single `*` to match part of a name."
     }
 
-    /** A metacharacter of another tool's glob, refused rather than silently read as a literal. */
+    /**
+     * A metacharacter of another tool's glob, refused rather than silently read as a literal.
+     *
+     * ## Example 1: a shell-style alternation character
+     * ```kt
+     * val problem = shouldThrow<KatachiGlobSyntaxException> { Glob.compile("Foo?.kt") }.problem
+     * problem.shouldBeInstanceOf<GlobProblem.RejectedMetacharacter>().character shouldBe '?'
+     * ```
+     */
     @InternalKatachiApi
     public class RejectedMetacharacter internal constructor(
         public val character: Char,
@@ -75,7 +138,17 @@ public sealed interface GlobProblem {
                 "alternative."
     }
 
-    /** A module path pattern uses `**` more than once. */
+    /**
+     * A module path pattern uses `**` more than once.
+     *
+     * ## Example 1: a module pattern with `**` twice
+     * ```kt
+     * val problem = shouldThrow<KatachiGlobSyntaxException> {
+     *     ModulePattern.compile(":**:feature:**")
+     * }.problem
+     * problem.shouldBeInstanceOf<GlobProblem.DoubleStarUsedTooOften>().count shouldBe 2
+     * ```
+     */
     @InternalKatachiApi
     public class DoubleStarUsedTooOften internal constructor(
         public val count: Int,
@@ -86,7 +159,15 @@ public sealed interface GlobProblem {
                 "wildcard is the same for every match."
     }
 
-    /** A module path pattern uses `**` somewhere other than as its last segment. */
+    /**
+     * A module path pattern uses `**` somewhere other than as its last segment.
+     *
+     * ## Example 1: `**` written before the last segment
+     * ```kt
+     * shouldThrow<KatachiGlobSyntaxException> { ModulePattern.compile(":feature:**:impl") }
+     *     .problem shouldBe GlobProblem.DoubleStarBeforeLastSegment
+     * ```
+     */
     @InternalKatachiApi
     public object DoubleStarBeforeLastSegment : GlobProblem {
         override fun explain(pattern: String): String =
@@ -95,14 +176,30 @@ public sealed interface GlobProblem {
                 "same for every match."
     }
 
-    /** A module path was written as an empty string. */
+    /**
+     * A module path was written as an empty string.
+     *
+     * ## Example 1: an empty module path
+     * ```kt
+     * shouldThrow<KatachiGlobSyntaxException> { ModulePath.of("") }
+     *     .problem shouldBe GlobProblem.EmptyModulePath
+     * ```
+     */
     @InternalKatachiApi
     public object EmptyModulePath : GlobProblem {
         override fun explain(pattern: String): String =
             "A module path must not be empty. Write `\":\"` for the root project."
     }
 
-    /** Two `:` in a row, or a trailing one, in a module path. */
+    /**
+     * Two `:` in a row, or a trailing one, in a module path.
+     *
+     * ## Example 1: two `:` in a row
+     * ```kt
+     * val problem = shouldThrow<KatachiGlobSyntaxException> { ModulePath.of(":core::data") }.problem
+     * problem.shouldBeInstanceOf<GlobProblem.EmptyModuleName>().separator shouldBe ':'
+     * ```
+     */
     @InternalKatachiApi
     public class EmptyModuleName internal constructor(
         public val separator: Char,
@@ -112,7 +209,15 @@ public sealed interface GlobProblem {
                 "`$separator`, names no module."
     }
 
-    /** A wildcard where exactly one module had to be named. */
+    /**
+     * A wildcard where exactly one module had to be named.
+     *
+     * ## Example 1: a wildcard in a module path
+     * ```kt
+     * val problem = shouldThrow<KatachiGlobSyntaxException> { ModulePath.of(":feature:*") }.problem
+     * problem.shouldBeInstanceOf<GlobProblem.WildcardInModuleName>().moduleName shouldBe "*"
+     * ```
+     */
     @InternalKatachiApi
     public class WildcardInModuleName internal constructor(
         public val moduleName: String,
@@ -122,7 +227,20 @@ public sealed interface GlobProblem {
                 "module; a pattern that matches several is expanded before this point."
     }
 
-    /** A layout key with two `/` in a row, a leading `/`, or a trailing one. */
+    /**
+     * A layout key with two `/` in a row, a leading `/`, or a trailing one.
+     *
+     * ## Example 1: two `/` in a row inside a layout key
+     * ```kt
+     * val arch = architecture {
+     *     "group".group {
+     *         "Role" { layout { "app//ios" { } } }
+     *     }
+     * }
+     * shouldThrow<KatachiGlobSyntaxException> { arch.flattenLayout() }
+     *     .problem shouldBe GlobProblem.EmptyLayoutKeyLevel
+     * ```
+     */
     @InternalKatachiApi
     public object EmptyLayoutKeyLevel : GlobProblem {
         override fun explain(pattern: String): String =
@@ -140,13 +258,53 @@ public sealed interface GlobProblem {
  * of the problem's own sentence.
  *
  * Like [GlobProblem], this is katachi's own bookkeeping rather than a supported surface.
+ *
+ * ## Example 1: a broken layout key reported with where it was declared
+ * ```kt
+ * val arch = architecture {
+ *     "group".group {
+ *         "Role" { layout { "{a,b}".file() } }
+ *     }
+ * }
+ * shouldThrow<KatachiGlobSyntaxException> { arch.flattenLayout() }
+ *     .message.shouldNotBeNull() shouldContain "Role group/Role declares the layout path"
+ * ```
  */
 @InternalKatachiApi
 public sealed interface GlobContext {
-    /** The sentence placed before the problem's own. */
+    /**
+     * The sentence placed before the problem's own.
+     *
+     * ## Example 1: read a context's sentence directly
+     * ```kt
+     * val arch = architecture {
+     *     "group".group {
+     *         "Role" { layout { "{a,b}".file() } }
+     *     }
+     * }
+     * val context = shouldThrow<KatachiGlobSyntaxException> { arch.flattenLayout() }
+     *     .context.shouldBeInstanceOf<GlobContext.RoleLayoutPath>()
+     * context.describe() shouldContain "Role group/Role declares the layout path"
+     * ```
+     */
     public fun describe(): String
 
-    /** A path pattern written in the `layout { }` of one role. */
+    /**
+     * A path pattern written in the `layout { }` of one role.
+     *
+     * ## Example 1: read which role and path a failure came from
+     * ```kt
+     * val arch = architecture {
+     *     "group".group {
+     *         "Role" { layout { "{a,b}".file() } }
+     *     }
+     * }
+     * val context = shouldThrow<KatachiGlobSyntaxException> { arch.flattenLayout() }
+     *     .context.shouldBeInstanceOf<GlobContext.RoleLayoutPath>()
+     * context.role.qualifiedName shouldBe "group/Role"
+     * context.path shouldBe "{a,b}"
+     * ```
+     */
     @InternalKatachiApi
     public class RoleLayoutPath internal constructor(
         public val role: Role,
@@ -157,7 +315,21 @@ public sealed interface GlobContext {
             "Role ${role.qualifiedName} declares the layout path `$path` at $declaredAt."
     }
 
-    /** A module path written as a `"...".module { }` key. */
+    /**
+     * A module path written as a `"...".module { }` key.
+     *
+     * ## Example 1: read which `.module { }` key a failure came from
+     * ```kt
+     * val arch = architecture {
+     *     "group".group {
+     *         "Role" { layout { ":core::data".module { } } }
+     *     }
+     * }
+     * val context = shouldThrow<KatachiGlobSyntaxException> { arch.flattenLayout() }
+     *     .context.shouldBeInstanceOf<GlobContext.LayoutModulePath>()
+     * context.key shouldBe ":core::data"
+     * ```
+     */
     @InternalKatachiApi
     public class LayoutModulePath internal constructor(
         public val key: String,
