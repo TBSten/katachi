@@ -31,6 +31,12 @@ dependencies {
     // The `includeBuild("../..")` in settings.gradle.kts substitutes it with the local
     // project, so a broken composite build fails loudly instead of silently resolving.
     testImplementation(libs.katachi)
+    // Only sample/jvm's definition writes `konsist { }` (in `DomainRoles.kt`'s `Service`
+    // role). sample/android and sample/kmp deliberately omit this dependency: they exercise
+    // `assert()` with zero constraints declared, which is the standing test that the
+    // unevaluated-constraint guard does not false-positive on a project that never adopts
+    // `konsist { }` at all.
+    testImplementation(libs.katachiKonsist)
     testImplementation(libs.kotestRunnerJunit5)
     testImplementation(libs.kotestAssertionsCore)
 

@@ -4,6 +4,7 @@ import com.example.modulePackage
 import me.tbsten.katachi.dsl.ArchitectureScope
 import me.tbsten.katachi.dsl.gradle.*
 import me.tbsten.katachi.dsl.kotlin.ktFile
+import me.tbsten.katachi.konsist.konsist
 
 /** Roles of the domain layer: the behaviour and the values the application is about. */
 fun ArchitectureScope.domainRoles() {
@@ -16,6 +17,15 @@ fun ArchitectureScope.domainRoles() {
             example("HealthService", "サーバの稼働状態を取得する")
             layout {
                 ":".module {
+                    // Adoption step 4 of katachi's own README (`konsist-integration`): the
+                    // one line that shows a backend-written constraint next to katachi's own
+                    // layout vocabulary. Also stands as the regression test for
+                    // `LayoutNode.synthetic` — a `":".module { }` block injects `build` and
+                    // `build.gradle.kts`, and this constraint would wrongly cover
+                    // `build.gradle.kts` if that exclusion ever broke.
+                    "public であること".konsist {
+                        classes().must { it.hasPublicOrDefaultModifier }
+                    }
                     mainSourceSet / kotlin / modulePackage / "service" / "*Service".ktFile()
                 }
             }
