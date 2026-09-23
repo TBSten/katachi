@@ -33,6 +33,8 @@ include(":architecture-test")
 // architecture-test/build.gradle.kts
 plugins { kotlin("jvm") }
 
+kotlin { jvmToolchain(21) }
+
 tasks.test { useJUnitPlatform() }
 
 dependencies {
@@ -47,6 +49,22 @@ dependencies {
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
 ```
+
+**JDK 21 以降**と **Kotlin 2.3 以降**が必要。katachi の artifact は Kotlin 2.4 系でビルドしているので、それより古いコンパイラはメタデータを読めず、すべてのシンボルが `Unresolved reference` になる。
+
+> [!IMPORTANT]
+> **Kotlin 2.3 系では `-Xcontext-parameters` を足す。** DSL の入口（`module` / `mainSourceSet` /
+> `ktFile` / `konsist` など）はすべて context parameters なので、無いと1つも書けない。
+>
+> ```kotlin
+> kotlin {
+>     jvmToolchain(21)
+>     compilerOptions.freeCompilerArgs.add("-Xcontext-parameters")
+> }
+> ```
+>
+> **Kotlin 2.4 以降では付けない。** 言語機能として入っているため、付けると redundant の
+> 警告が出て、`allWarningsAsErrors` のビルドが落ちる。
 
 > [!IMPORTANT]
 > **`junit-platform-launcher` を忘れると、テストは起動すらしない。**

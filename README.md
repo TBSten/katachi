@@ -46,7 +46,22 @@ dependencies {
 }
 ```
 
-Requires JDK 21 or later.
+Requires **JDK 21 or later** and **Kotlin 2.3 or later.** katachi's own artifacts are built with Kotlin 2.4, and an older compiler cannot read their metadata at all — every symbol comes back as `Unresolved reference`.
+
+> [!IMPORTANT]
+> **On Kotlin 2.3.x, add `-Xcontext-parameters`.** Every entry point of the DSL (`module`,
+> `mainSourceSet`, `ktFile`, `konsist` …) is a contextual declaration, so without it you cannot
+> write a single one.
+>
+> ```kotlin
+> kotlin {
+>     jvmToolchain(21)
+>     compilerOptions.freeCompilerArgs.add("-Xcontext-parameters")
+> }
+> ```
+>
+> **From Kotlin 2.4 on, leave it out.** The feature is in the language, and passing the flag
+> warns that it is redundant — which fails a build using `allWarningsAsErrors`.
 
 > [!IMPORTANT]
 > **Leave out `junit-platform-launcher` and the tests never start.** The `junit-jupiter`
