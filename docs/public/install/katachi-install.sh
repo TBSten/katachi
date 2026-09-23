@@ -21,6 +21,11 @@ set -eu
 
 # 配信元。ローカルで試すときだけ環境変数で差し替える。
 KATACHI_DOCS="${KATACHI_DOCS:-https://tbsten.github.io/katachi}"
+
+# チェックリストとレポートの言語。`init --lang` で決まり、作業用ディレクトリに
+# 記録される。以降のコマンドはそこから読むので、毎回指定しなくてよい。
+# 既定はサイトの既定ロケールに合わせて en。
+KATACHI_LANG="${KATACHI_LANG:-en}"
 KATACHI_RELEASES_API="https://api.github.com/repos/TBSten/katachi/releases/latest"
 KATACHI_RELEASES_PAGE="https://github.com/TBSten/katachi/releases"
 
@@ -55,6 +60,8 @@ katachi-install.sh — katachi のインストールのうち機械的にでき�
       --katachi <version> katachi のバージョンを明示する（既定: 最新を取得）
       --offline           ダウンロードを行わない
       --force             記入済みのチェックリスト・レポートも取り直す
+      --lang <en|ja>      チェックリストとレポートの言語（既定: en）。
+                          作業用ディレクトリに記録され、以降のコマンドが従う
 
       2回目以降の実行では、記入済みのファイルは上書きしません。
       また自分自身を作業用ディレクトリにコピーするので、以降は
@@ -110,9 +117,6 @@ katachi-install.sh — katachi のインストールのうち機械的にでき�
   sh katachi-install.sh summary
       ユーザに返す文面を組み立てて出力する。
 
-  sh katachi-install.sh permissions
-      作業を始める前にユーザへ提示する、許可の一覧を出力する。
-
   sh katachi-install.sh --help
 
 init と scaffold は Gradle のルートディレクトリで実行してください。
@@ -144,6 +148,10 @@ resolve_workdir() {
 require_workdir() {
 	WORKDIR=$(resolve_workdir) || die "作業用ディレクトリが分かりません。先に 'sh katachi-install.sh init' を実行し、以降は <作業用ディレクトリ>/katachi-install.sh を使ってください。"
 	MANIFEST="$WORKDIR/cache/MANIFEST"
+	# init が記録した言語を読む。環境変数が明示されていればそちらを優先する。
+	if [ -f "$WORKDIR/cache/lang" ] && [ -z "${KATACHI_LANG_EXPLICIT:-}" ]; then
+		KATACHI_LANG=$(cat "$WORKDIR/cache/lang")
+	fi
 }
 
 # 取得したものを1行ずつ記録する。あとから人間が何を落としたのか追えるように。
@@ -288,6 +296,11 @@ cmd_init() {
 			init_offline="yes"
 			shift
 			;;
+		--lang)
+			KATACHI_LANG="${2:?--lang に値がありません}"
+			KATACHI_LANG_EXPLICIT=yes
+			shift 2
+			;;
 		--force)
 			init_force="yes"
 			shift
@@ -355,9 +368,16 @@ cmd_init() {
 
 	# 以降このスクリプトは作業用ディレクトリから使う。ここに自分を置いておけば、
 	# セッションが切れても同じものを使い続けられる。
+	case "$KATACHI_LANG" in
+	en | ja) ;;
+	*) die "--lang は en か ja です（指定されたのは '${KATACHI_LANG}'）" ;;
+	esac
+
 	MANIFEST="$init_workdir/cache/MANIFEST"
 	mkdir -p "$init_workdir/cache"
 	install_self "$init_workdir"
+	# 以降のコマンドが同じ言語を使えるように記録する。
+	printf '%s' "$KATACHI_LANG" >"$init_workdir/cache/lang"
 
 	# チェックリストとレポート。**すでにあるものは上書きしない。**
 	# init をやり直したときに、記入済みの調査結果を消さないため。
@@ -368,7 +388,7 @@ cmd_init() {
 		if [ -s "$_cl" ] && [ "$init_force" = "no" ]; then
 			note "すでにあるので残しました: $_cl"
 		else
-			fetch_once "$KATACHI_DOCS/install/install-check-list.html" "$_cl" yes
+			fetch_once "$KATACHI_DOCS/install/$KATACHI_LANG/install-check-list.html" "$_cl" yes
 			write_checklist_data "$_cl" \
 				"$init_workdir" "$init_version" "$project_root" \
 				"${kotlin_version:-}" "$git_state"
@@ -378,7 +398,7 @@ cmd_init() {
 		if [ -s "$_rp" ] && [ "$init_force" = "no" ]; then
 			note "すでにあるので残しました: $_rp"
 		else
-			fetch_once "$KATACHI_DOCS/install/project-code-base-report-template.html" "$_rp" yes
+			fetch_once "$KATACHI_DOCS/install/$KATACHI_LANG/project-code-base-report-template.html" "$_rp" yes
 			write_report_data "$_rp" "$project_root"
 			note "配置しました:        $_rp"
 		fi
@@ -393,6 +413,7 @@ cmd_init() {
 	say "KATACHI_GIT=$git_state"
 	say "KATACHI_SETTINGS=$SETTINGS_FILE"
 	say "KATACHI_CLI=$init_workdir/katachi-install.sh"
+	say "KATACHI_LANG=$KATACHI_LANG"
 	say "========================================================"
 	say ""
 	say "以降は $init_workdir/katachi-install.sh を使ってください（再ダウンロードは不要です）。"
@@ -680,7 +701,9 @@ tasks.test {
 dependencies {
     testImplementation("me.tbsten.katachi:katachi:$_version")
 $_konsist_line
-    testImplementation("org.junit.jupiter:junit-jupiter:$JUNIT_VERSION")
+    testImplementation(platform("org.junit:junit-bom:$JUNIT_VERSION"))
+    testImplementation("org.junit.jupiter:junit-jupiter")
+    testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
 EOF
 	# repositories は宣言しない。Android のように FAIL_ON_PROJECT_REPOS が
@@ -1241,7 +1264,9 @@ rp = json.load(open(rp_path, encoding="utf-8")) if rp_path else None
 # 最後のステップは「verify を通すこと」そのものなので、自分で自分を未完了に
 # 数えない。数えると verify が永久に通らなくなる。
 steps = cl.get("steps", [])
-final = steps[-1]["id"] if steps else None
+# 「verify を通すこと」自体のステップ。任意のステップは対象外
+required = [s for s in steps if s.get("optional") is not True]
+final = required[-1]["id"] if required else None
 
 missing = []
 
@@ -1256,7 +1281,8 @@ if not steps:
     missing.append("check-list: steps がありません（テンプレートが壊れています）")
 
 for s in steps:
-    if s["id"] == final:
+    # 任意のステップは数えない。やらなくても完了とみなす
+    if s["id"] == final or s.get("optional") is True:
         continue
     for i in s.get("items", []):
         if not i.get("done"):
@@ -1351,8 +1377,10 @@ workdir = meta.get("workdir") or "<作業用ディレクトリ>"
 violations = cl.get("violations") or []
 questions = cl.get("questions") or []
 changed = cl.get("changedFiles") or []
-items = [i for s in cl.get("steps", []) for i in s.get("items", [])]
+steps = cl.get("steps", [])
+items = [i for s in steps if s.get("optional") is not True for i in s.get("items", [])]
 done = [i for i in items if i.get("done")]
+optional_items = [i for s in steps if s.get("optional") is True for i in s.get("items", [])]
 
 if len(done) < len(items):
     print("❌ katachi のセットアップができませんでした")
@@ -1384,7 +1412,15 @@ if questions:
 print("- 変更したファイル: %d 件" % len(changed))
 print("- Next action:")
 print("    - architecture-test/ 以下の ProjectArchitecture.kt を**レビュー**してください")
-print("    - CI への導入を検討してください")
+# 任意のステップで未実施のものを、これからやることとして出す。
+# label は「〜した」の完了形なので、そのまま出すと嘘になる。
+HINT = {
+    "6-1": "実際の実装タスクを1つ回して、定義が機能することを確かめてください",
+    "6-2": "CI に `:architecture-test:test` を組み込んでください",
+}
+for i in optional_items:
+    if not i.get("done"):
+        print("    - %s" % HINT.get(i["id"], i.get("label", i["id"])))
 '
 
 cmd_summary() {
@@ -1401,21 +1437,6 @@ cmd_summary() {
 		rm -f "$_a"
 		die "チェックリストの JSON を読めませんでした。data get check-list で中身を確認してください。"
 	fi
-}
-
-cmd_permissions() {
-	cat <<'PERM'
-katachi の導入を始めます。次の操作の許可をまとめてください。
-
-- https://tbsten.github.io/katachi/ 配下の取得 … 手順・テンプレート・ドキュメントの参照
-- https://api.github.com/repos/TBSten/katachi/releases/latest の取得 … 最新バージョンの確認
-- 作業用ディレクトリ配下のファイルの作成・更新 … チェックリストとレポートの保存
-- architecture-test/ 配下のファイルの作成 … テスト用モジュールの作成
-- ルートの build.gradle.kts と settings.gradle.kts への行追加 … ビルドへの組み込み
-- ./gradlew :architecture-test:test の実行 … 検証
-
-既存のソースコードは書き換えません。書き換えが必要になった場合は、その時点で改めて確認します。
-PERM
 }
 
 # ---------------------------------------------------------------- entry
@@ -1460,10 +1481,6 @@ verify)
 summary)
 	shift
 	cmd_summary "$@"
-	;;
-permissions)
-	shift
-	cmd_permissions "$@"
 	;;
 -h | --help | "")
 	usage

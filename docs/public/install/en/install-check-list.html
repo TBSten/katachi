@@ -1,9 +1,9 @@
 <!doctype html>
-<html lang="ja">
+<html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>katachi インストール チェックリスト</title>
+<title>katachi Install Checklist</title>
 <link rel="icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIiByb2xlPSJpbWciIGFyaWEtbGFiZWw9ImthdGFjaGkiPjxyZWN0IHdpZHRoPSI1MTIiIGhlaWdodD0iNTEyIiByeD0iMTAyIiBmaWxsPSIjYTJjY2Y3Ii8+PGcgZmlsbD0iI2ZmZiI+PHBhdGggZD0iTTk2IDE2MGg2MHYyOGgtMzJ2MTM2aDMydjI4SDk2eiIvPjxyZWN0IHg9IjIxOCIgeT0iMjE4IiB3aWR0aD0iNzYiIGhlaWdodD0iNzYiLz48cGF0aCBkPSJNNDE2IDM1MmgtNjB2LTI4aDMyVjE4OGgtMzJ2LTI4aDYweiIvPjwvZz48L3N2Zz4=">
 <style>
   :root {
@@ -90,7 +90,7 @@
   .skip-link { position: absolute; left: -999px; top: 0; }
   .skip-link:focus { left: 8px; top: 8px; z-index: 20; }
 
-  /* ヘッダ */
+  /* Header */
   .page-header { padding: 40px 0 24px; border-bottom: 1px solid var(--border); }
 
   .notice {
@@ -121,7 +121,7 @@
   }
 
 
-  /* 対になるもう1枚へのリンク */
+  /* Link to the paired page */
   .cross-link {
     display: grid;
     grid-template-columns: 1fr auto;
@@ -145,7 +145,7 @@
   }
 
   .cross-link:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
-  /* display: grid が UA の [hidden] { display: none } に勝ってしまうので上書きする */
+  /* display: grid overrides the UA's [hidden] { display: none }, so override it back */
   .cross-link[hidden] { display: none; }
   .cross-link-label { grid-area: label; font-size: 14px; font-weight: 700; }
   .cross-link-hint { grid-area: hint; color: var(--text-muted); font-size: 13px; }
@@ -159,7 +159,7 @@
 
   .cross-link:hover::after { transform: translateX(3px); }
 
-  /* 見出しと値の対（2カラム） */
+  /* Heading/value pairs (2 columns) */
   .kv {
     display: grid;
     grid-template-columns: max-content 1fr;
@@ -193,7 +193,7 @@
 
   .empty { color: var(--text-muted); margin: 16px 0 0; }
 
-  /* 未記入マーカー */
+  /* Unfilled marker */
   .todo {
     color: var(--text-muted);
     background: var(--surface-2);
@@ -206,7 +206,7 @@
   }
 
 
-  /* 進捗（上部に固定） */
+  /* Progress (sticky at top) */
   .progress {
     position: sticky;
     top: 0;
@@ -256,17 +256,17 @@
 
   main { padding-top: 8px; }
 
-  /* ステップ（縦のタイムライン + ステッパー） */
+  /* Steps (vertical timeline + stepper) */
   .steps { margin-top: 40px; }
 
-  /* ステップ同士は隙間を空けない。開いているときの余白は .step-body が持つ */
+  /* No gap between steps; the open-state spacing comes from .step-body */
   .step { position: relative; padding-bottom: 0; }
 
   .step::before {
     content: "";
     position: absolute;
     left: 13px;
-    /* 丸の下端から、次のステップの丸の上端まで */
+    /* From the bottom of this circle to the top of the next step's circle */
     top: calc(var(--summary-pad-y) + var(--num-size));
     bottom: calc(-1 * var(--summary-pad-y));
     width: 2px;
@@ -338,7 +338,7 @@
   .step.is-done .step-num { background: var(--ok); border-color: var(--ok); color: var(--bg); }
   .step.is-done .step-state { background: none; border-color: var(--ok); color: var(--ok); }
 
-  /* 完了したが警告あり */
+  /* Done, but with a warning */
   .step.is-done.has-warning::before { background: var(--warn); }
   .step.is-done.has-warning .step-num { background: var(--warn); border-color: var(--warn); color: var(--bg); }
   .step.is-done.has-warning .step-state { background: none; border-color: var(--warn); color: var(--warn); }
@@ -362,7 +362,7 @@
 
   .step-body { padding: 0 0 40px 40px; }
 
-  /* ステップ以外のセクション */
+  /* Sections other than steps */
   .block { margin-top: 40px; }
   .block > h2 { position: relative; padding-left: 12px; }
 
@@ -377,7 +377,7 @@
     background: var(--accent);
   }
 
-  /* チェック項目 */
+  /* Checklist items */
   .checklist { list-style: none; margin: 8px 0 0; padding: 0; }
   .checklist li { border-bottom: 1px solid var(--border); }
   .checklist li:last-child { border-bottom: none; }
@@ -407,7 +407,7 @@
 
   .remark { margin: 12px 0 0; font-size: 13px; color: var(--text-muted); }
 
-  /* 表 */
+  /* Table */
   .table-wrap {
     overflow-x: auto;
     margin: 16px 0 0;
@@ -451,7 +451,7 @@
   footer p { margin: 4px 0; }
 
   @media print {
-    /* OS がダークのままでも紙は白い。トークンをライト側で宣言し直す */
+    /* Paper stays white even when the OS is dark; redeclare tokens for light */
     :root {
       color-scheme: light;
 
@@ -475,7 +475,7 @@
     .link-button, .step > summary::after, .cross-link, .skip-link { display: none; }
     .todo { background: none; color: #000; border-bottom: 1px dashed #000; }
 
-    /* 背景グラフィックを出さない既定の印刷でも読めるよう、塗りではなく枠線で示す */
+    /* Show as an outline rather than a fill, so it still reads under default print settings that omit background graphics */
     .step .step-num,
     .step.is-done .step-num,
     .step.is-done.has-warning .step-num {
@@ -490,14 +490,14 @@
     .checklist label:hover, .step > summary:hover, tbody tr:hover { background: none; }
     a { color: #000; text-decoration: underline; }
 
-    /* 横スクロールに隠れていた列を紙に出す */
+    /* Bring columns hidden behind horizontal scroll onto the printed page */
     .table-wrap { overflow: visible; }
     table { table-layout: fixed; width: 100%; min-width: 0; }
 
     .step, .block { break-inside: avoid; }
   }
 
-  /* データを読めなかったときの表示（真っ白にしない） */
+  /* Shown when the data can't be read (avoid a blank page) */
   .error-box {
     margin: 16px 0 0;
     padding: 12px 16px;
@@ -513,7 +513,7 @@
 
   .noscript-note { padding-top: 16px; }
 
-  /* 見出しの右に付く件数 */
+  /* Count shown beside a heading */
   .count-badge {
     margin-left: 10px;
     padding: 1px 8px;
@@ -528,7 +528,7 @@
     white-space: nowrap;
   }
 
-  /* ユーザに確認したいこと */
+  /* Questions for you */
   .qa {
     margin-top: 12px;
     background: var(--surface);
@@ -598,9 +598,9 @@
 <noscript>
   <div class="wrap noscript-note">
     <div class="error-box">
-      <p>表示には JavaScript が必要です。</p>
-      <p>このページはページ内の JSON を読んで描画します。データそのものは、このファイルの
-      script type="application/json" id="checklist" のブロックにあります。</p>
+      <p>This page needs JavaScript to render.</p>
+      <p>This page reads the JSON embedded in it to render. The data itself lives in this file's
+      script type="application/json" id="checklist" block.</p>
     </div>
   </div>
 </noscript>
@@ -619,120 +619,120 @@
   "steps": [
     {
       "id": "0",
-      "title": "事前準備",
+      "title": "Preparation",
       "warning": null,
       "items": [
         {
           "id": "0-1",
-          "label": "このあとの作業に必要な権限をユーザからまとめて得た",
+          "label": "Got approval for all the operations up front",
           "done": false
         },
         {
           "id": "0-2",
-          "label": "sh katachi-install.sh init を実行した（Gradle ルート / Git / 作業用ディレクトリ / バージョン検出はこれが行う）",
+          "label": "Ran `sh katachi-install.sh init` (this detects the Gradle root, Git, working directory, and versions)",
           "done": false
         }
       ]
     },
     {
       "id": "1",
-      "title": "現在のプロジェクトコードベースの構造・各コンポーネントの制約を解析・推論",
+      "title": "Analyze the current codebase's structure and infer each component's constraints",
       "warning": null,
       "items": [
         {
           "id": "1-1",
-          "label": "コードベースを走査した",
+          "label": "Scanned the codebase",
           "done": false
         },
         {
           "id": "1-2",
-          "label": "project-code-base-report.html の JSON を埋めた",
+          "label": "Filled in the JSON in `project-code-base-report.html`",
           "done": false
         }
       ]
     },
     {
       "id": "2",
-      "title": ":architecture-test モジュールを作成し 標準的な katachi のテスト用モジュールとして設定",
+      "title": "Create the `:architecture-test` module and set it up as katachi's standard test module",
       "warning": null,
       "items": [
         {
           "id": "2-1",
-          "label": "sh katachi-install.sh scaffold --package <パッケージ名> を実行した",
+          "label": "Ran `sh katachi-install.sh scaffold --package <package name>`",
           "done": false
         },
         {
           "id": "2-2",
-          "label": "定義が空の状態で ./gradlew :architecture-test:test --rerun が Unexpected だけで落ちることを確認した",
+          "label": "Confirmed `./gradlew :architecture-test:test --rerun` fails with Unexpected only, on an empty definition",
           "done": false
         }
       ]
     },
     {
       "id": "3",
-      "title": "architecture { } 定義を作成",
+      "title": "Write the `architecture { }` definition",
       "warning": null,
       "items": [
         {
           "id": "3-1",
-          "label": "llms-full.txt を取得してドキュメントを把握した",
+          "label": "Fetched `llms-full.txt` and reviewed the documentation",
           "done": false
         },
         {
           "id": "3-2",
-          "label": "architecture { } 定義を作成した",
+          "label": "Wrote the `architecture { }` definition",
           "done": false
         }
       ]
     },
     {
       "id": "4",
-      "title": "検証する",
+      "title": "Verify",
       "warning": null,
       "items": [
         {
           "id": "4-1",
-          "label": "./gradlew :architecture-test:test --rerun を実行した",
+          "label": "Ran `./gradlew :architecture-test:test --rerun`",
           "done": false
         },
         {
           "id": "4-2",
-          "label": "katachi 由来でないエラー（Gradle / Java など）を解消した",
+          "label": "Resolved errors not caused by katachi (Gradle, Java, etc.)",
           "done": false
         }
       ]
     },
     {
       "id": "5",
-      "title": "チェックリストを確認する",
+      "title": "Review the checklist",
       "warning": null,
       "items": [
         {
           "id": "5-1",
-          "label": "このチェックリスト全体を見直した",
+          "label": "Reviewed this checklist in full",
           "done": false
         },
         {
           "id": "5-2",
-          "label": "未記入が残っていないことを確かめた",
+          "label": "Confirmed nothing was left unfilled",
           "done": false
         }
       ]
     },
     {
       "id": "6",
-      "title": "（任意）導入できたことを確かめ、CI に組み込む",
+      "title": "(Optional) Confirm it works, and wire it into CI",
       "warning": null,
       "optional": true,
       "items": [
         {
           "id": "6-1",
-          "label": "題材となる実装タスクを回して architecture { } の修正要否を判断した",
+          "label": "Ran a real implementation task and judged whether architecture { } needed changes",
           "done": false
         },
         {
           "id": "6-2",
-          "label": "CI に :architecture-test:test を組み込んだ",
+          "label": "Wired :architecture-test:test into CI",
           "done": false
         }
       ]
@@ -744,7 +744,7 @@
 }
 </script>
 
-<!-- 記入例: 上の JSON が完全に埋まった状態。この形で値を入れる。
+<!-- Example: the JSON above, fully filled in. Enter values in this shape.
 {
   "meta": {
     "workdir": ".katachi-install",
@@ -758,120 +758,120 @@
   "steps": [
     {
       "id": "0",
-      "title": "事前準備",
+      "title": "Preparation",
       "warning": null,
       "items": [
         {
           "id": "0-1",
-          "label": "このあとの作業に必要な権限をユーザからまとめて得た",
+          "label": "Got approval for all the operations up front",
           "done": true
         },
         {
           "id": "0-2",
-          "label": "sh katachi-install.sh init を実行した（Gradle ルート / Git / 作業用ディレクトリ / バージョン検出はこれが行う）",
+          "label": "Ran `sh katachi-install.sh init` (this detects the Gradle root, Git, working directory, and versions)",
           "done": true
         }
       ]
     },
     {
       "id": "1",
-      "title": "現在のプロジェクトコードベースの構造・各コンポーネントの制約を解析・推論",
+      "title": "Analyze the current codebase's structure and infer each component's constraints",
       "warning": null,
       "items": [
         {
           "id": "1-1",
-          "label": "コードベースを走査した",
+          "label": "Scanned the codebase",
           "done": true
         },
         {
           "id": "1-2",
-          "label": "project-code-base-report.html の JSON を埋めた",
+          "label": "Filled in the JSON in `project-code-base-report.html`",
           "done": true
         }
       ]
     },
     {
       "id": "2",
-      "title": ":architecture-test モジュールを作成し 標準的な katachi のテスト用モジュールとして設定",
+      "title": "Create the `:architecture-test` module and set it up as katachi's standard test module",
       "warning": null,
       "items": [
         {
           "id": "2-1",
-          "label": "sh katachi-install.sh scaffold \u002d\u002dpackage <パッケージ名> を実行した",
+          "label": "Ran `sh katachi-install.sh scaffold \u002d\u002dpackage <package name>`",
           "done": true
         },
         {
           "id": "2-2",
-          "label": "定義が空の状態で ./gradlew :architecture-test:test \u002d\u002drerun が Unexpected だけで落ちることを確認した",
+          "label": "Confirmed `./gradlew :architecture-test:test \u002d\u002drerun` fails with Unexpected only, on an empty definition",
           "done": true
         }
       ]
     },
     {
       "id": "3",
-      "title": "architecture { } 定義を作成",
+      "title": "Write the `architecture { }` definition",
       "warning": null,
       "items": [
         {
           "id": "3-1",
-          "label": "llms-full.txt を取得してドキュメントを把握した",
+          "label": "Fetched `llms-full.txt` and reviewed the documentation",
           "done": true
         },
         {
           "id": "3-2",
-          "label": "architecture { } 定義を作成した",
+          "label": "Wrote the `architecture { }` definition",
           "done": true
         }
       ]
     },
     {
       "id": "4",
-      "title": "検証する",
-      "warning": "アーキテクチャ違反を 1 件残しました",
+      "title": "Verify",
+      "warning": "Left 1 architecture violation unfixed",
       "items": [
         {
           "id": "4-1",
-          "label": "./gradlew :architecture-test:test \u002d\u002drerun を実行した",
+          "label": "Ran `./gradlew :architecture-test:test \u002d\u002drerun`",
           "done": true
         },
         {
           "id": "4-2",
-          "label": "katachi 由来でないエラー（Gradle / Java など）を解消した",
+          "label": "Resolved errors not caused by katachi (Gradle, Java, etc.)",
           "done": true
         }
       ]
     },
     {
       "id": "5",
-      "title": "チェックリストを確認する",
+      "title": "Review the checklist",
       "warning": null,
       "items": [
         {
           "id": "5-1",
-          "label": "このチェックリスト全体を見直した",
+          "label": "Reviewed this checklist in full",
           "done": false
         },
         {
           "id": "5-2",
-          "label": "未記入が残っていないことを確かめた",
+          "label": "Confirmed nothing was left unfilled",
           "done": false
         }
       ]
     },
     {
       "id": "6",
-      "title": "（任意）導入できたことを確かめ、CI に組み込む",
+      "title": "(Optional) Confirm it works, and wire it into CI",
       "warning": null,
       "optional": true,
       "items": [
         {
           "id": "6-1",
-          "label": "題材となる実装タスクを回して architecture { } の修正要否を判断した",
+          "label": "Ran a real implementation task and judged whether architecture { } needed changes",
           "done": false
         },
         {
           "id": "6-2",
-          "label": "CI に :architecture-test:test を組み込んだ",
+          "label": "Wired :architecture-test:test into CI",
           "done": false
         }
       ]
@@ -879,51 +879,51 @@
   ],
   "violations": [
     {
-      "violation": "ui 層から data 層の DataSource を直接参照している",
+      "violation": "The ui layer references the data layer's DataSource directly",
       "location": "app/src/main/kotlin/com/example/app/ui/home/HomeViewModel.kt:42",
-      "whyNotFixed": "呼び出し元が広く、1回の変更に収まらないため",
-      "suggestion": "GetHomeFeedUseCase を足し、ViewModel からはそれだけを呼ぶ"
+      "whyNotFixed": "Because the callers are too widespread to fix in a single change",
+      "suggestion": "Add a GetHomeFeedUseCase and have the ViewModel call only that"
     }
   ],
   "questions": [
     {
-      "question": "legacy パッケージは katachi の対象に含めますか？",
-      "observed": "app/src/main/kotlin/com/example/app/ui/legacy/ の配下だけ Fragment + Presenter のまま残っている",
+      "question": "Should the legacy package be included in katachi's scope?",
+      "observed": "Only the files under app/src/main/kotlin/com/example/app/ui/legacy/ still use the old Fragment + Presenter pattern",
       "options": [
-        "対象に含めて直す",
-        "当面 ignore する"
+        "Include it and fix it",
+        "Ignore it for now"
       ],
-      "recommendation": "B。対象が1画面だけで、移行の予定が決まっていないため"
+      "recommendation": "B. Only one screen is affected, and there's no migration plan decided yet"
     }
   ],
   "changedFiles": [
     {
       "path": "architecture-test/build.gradle.kts",
-      "change": "新規",
-      "summary": "katachi のテスト用モジュール"
+      "change": "Added",
+      "summary": "katachi's test module"
     },
     {
       "path": "settings.gradle.kts",
-      "change": "変更",
-      "summary": "architecture-test を include した"
+      "change": "Changed",
+      "summary": "Included architecture-test"
     }
   ]
 }
 -->
 
-<a class="skip-link" href="#main-content">本文へスキップ</a>
+<a class="skip-link" href="#main-content">Skip to content</a>
 
 <header class="page-header">
   <div class="wrap">
-    <h1>katachi インストール チェックリスト</h1>
+    <h1>katachi Install Checklist</h1>
     <p class="notice">
-      このファイルは AI エージェントが記入しました。内容はあなたのレビューが必要です。
+      An AI agent filled this in. <strong>You need to review it.</strong>
     </p>
     <div data-render="error"></div>
 
     <a class="cross-link" id="cross-link" href="./project-code-base-report.html" hidden>
-      <span class="cross-link-label">コードベース レポート</span>
-      <span class="cross-link-hint">このプロジェクトの解析結果</span>
+      <span class="cross-link-label">Codebase report</span>
+      <span class="cross-link-hint">Analysis of this project</span>
     </a>
 
     <div data-render="meta"></div>
@@ -935,8 +935,8 @@
     <div class="progress-row">
       <span id="progress-text"></span>
       <span class="progress-actions">
-        <a id="report-link" href="./project-code-base-report.html">レポートを見る</a>
-        <button type="button" class="link-button" id="toggle-all">すべて開く</button>
+        <a id="report-link" href="./project-code-base-report.html">View report</a>
+        <button type="button" class="link-button" id="toggle-all">Expand all</button>
       </span>
     </div>
     <div class="progress-track">
@@ -950,40 +950,39 @@
   <div class="steps" data-render="steps"></div>
 
   <section class="block" id="violations">
-    <h2>残しているアーキテクチャ違反<span class="count-badge" data-render="violationCount"></span></h2>
+    <h2>Architecture violations left unfixed<span class="count-badge" data-render="violationCount"></span></h2>
     <div data-render="violations"></div>
   </section>
 
   <section class="block" id="questions">
-    <h2>ユーザに確認したいこと<span class="count-badge" data-render="questionCount"></span></h2>
+    <h2>Questions for you<span class="count-badge" data-render="questionCount"></span></h2>
     <div data-render="questions"></div>
   </section>
 
   <section class="block" id="changed-files">
-    <h2>作成・変更したファイル<span class="count-badge" data-render="changedCount"></span></h2>
+    <h2>Files created or changed<span class="count-badge" data-render="changedCount"></span></h2>
     <div data-render="changedFiles"></div>
   </section>
 
 </main>
 
 <footer class="wrap">
-  <p><a href="https://tbsten.github.io/katachi/">katachi のドキュメント</a></p>
+  <p><a href="https://tbsten.github.io/katachi/">katachi documentation</a></p>
   <p>
-    このチェックリストは katachi のインストール手順
-    <a href="https://tbsten.github.io/katachi/install/index.md">https://tbsten.github.io/katachi/install/index.md</a>
-    に対応しています。
+    This checklist follows katachi's install instructions at
+    <a href="https://tbsten.github.io/katachi/install/index.md">https://tbsten.github.io/katachi/install/index.md</a>.
   </p>
 </footer>
 
 <script>
 (function () {
-  // ステップの見出しも項目も JSON から作る。HTML には文言を持たない
+  // Both step headings and items are built from JSON. The HTML holds no copy
   var stepNodes = [];
   var boxes = [];
-  // JSON を読めたか。読めていないときは件数を 0 と断言しない
+  // Whether the JSON could be read. When it couldn't, don't assert counts are 0
   var dataOk = true;
 
-  // ---- DOM ヘルパ（値は必ず textContent 経由で入れる） ----
+  // ---- DOM helpers (always set values via textContent) ----
   function el(tag, cls) {
     var node = document.createElement(tag);
     if (cls) node.className = cls;
@@ -994,14 +993,14 @@
   }
   function unfilled(key) {
     var span = el('span', 'todo');
-    span.textContent = '未記入: ' + key;
+    span.textContent = 'Unfilled: ' + key;
     return span;
   }
   function value(raw, key) {
     if (blank(raw)) return unfilled(key);
     return document.createTextNode(String(raw));
   }
-  // 空白で区切られた ASCII のトークンのうち、パスに見えるものを <code> にする
+  // Among whitespace-separated ASCII tokens, wrap ones that look like paths in <code>
   function richText(raw, key) {
     if (blank(raw)) return unfilled(key);
     var box = document.createDocumentFragment();
@@ -1016,10 +1015,10 @@
     });
     return box;
   }
-  // 空でも成立する場所は「なし」と出す
+  // Where an empty value is valid, show "None"
   function none(label) {
     var p = el('p', 'empty');
-    p.textContent = dataOk ? (label || 'なし') : '不明';
+    p.textContent = dataOk ? (label || 'None') : 'Unknown';
     return p;
   }
   function numbered(values, key) {
@@ -1083,13 +1082,13 @@
   }
   function record(raw) { return raw && typeof raw === 'object' ? raw : {}; }
   function list(raw) { return Array.isArray(raw) ? raw.map(record) : []; }
-  // 配列が空なら「未記入の1件」を出すために、空オブジェクトを1つ返す
+  // If the array is empty, return one empty object so a single "Unfilled" entry is shown
   function entries(raw) {
     var items = list(raw);
     return items.length ? items : [{}];
   }
   function countOf(raw) { return Array.isArray(raw) ? raw.length : 0; }
-  function countLabel(raw) { return dataOk ? countOf(raw) + ' 件' : '不明'; }
+  function countLabel(raw) { var n = countOf(raw); return dataOk ? n + (n === 1 ? ' item' : ' items') : 'Unknown'; }
   function mount(name, nodes) {
     var host = document.querySelector('[data-render="' + name + '"]');
     if (!host) return;
@@ -1097,7 +1096,7 @@
     nodes.forEach(function (node) { host.appendChild(node); });
   }
 
-  // ---- ステップ ----
+  // ---- Steps ----
   function stepItems(step) {
     return list(step.items);
   }
@@ -1162,7 +1161,7 @@
     mount('steps', items.map(stepBlock));
   }
 
-  // ---- 進捗と3つの状態 ----
+  // ---- Progress and the three states ----
   function checkedIn(nodes) {
     return nodes.filter(function (box) { return box.checked; }).length;
   }
@@ -1186,9 +1185,9 @@
       step.classList.toggle('has-warning', hasWarning);
       var chip = step.querySelector('.step-state');
       if (!chip) return;
-      if (complete && hasWarning) chip.textContent = '完了（警告）';
-      else if (complete) chip.textContent = '完了';
-      else if (optional(step) && done === 0) chip.textContent = '任意';
+      if (complete && hasWarning) chip.textContent = 'Done (warning)';
+      else if (complete) chip.textContent = 'Done';
+      else if (optional(step) && done === 0) chip.textContent = 'Optional';
       else chip.textContent = done + ' / ' + nodes.length;
     });
 
@@ -1196,20 +1195,20 @@
     var done = checkedIn(boxes) - optDone;
     var pct = total === 0 ? 0 : Math.round((done / total) * 100);
     var text = document.getElementById('progress-text');
-    text.textContent = done + ' / ' + total + ' 項目 完了（' + pct + '%）';
+    text.textContent = done + ' / ' + total + ' items done (' + pct + '%)';
     if (optTotal > 0) {
       var opt = el('span');
-      opt.textContent = '・任意 ' + optDone + ' / ' + optTotal;
+      opt.textContent = ' · optional ' + optDone + ' / ' + optTotal;
       text.appendChild(opt);
     }
     if (warnings > 0) {
       var note = el('span', 'progress-warn');
-      note.textContent = '・警告 ' + warnings + ' 件';
+      note.textContent = ' · ' + warnings + ' warning' + (warnings === 1 ? '' : 's');
       text.appendChild(note);
     }
     document.getElementById('progress-fill').style.width = pct + '%';
   }
-  // 読み込み時にだけ判定する。完了かつ警告なしのステップだけ閉じる
+  // Only decided at load time. Collapse only steps that are done with no warning
   function foldFinishedSteps() {
     stepNodes.forEach(function (step) {
       var nodes = boxesIn(step);
@@ -1221,21 +1220,21 @@
     });
   }
 
-  // ---- ステップ以降の3セクション ----
+  // ---- The three sections after the steps ----
   function renderMeta(meta) {
     mount('meta', [defs('kv', [
-      ['作業用ディレクトリ', value(meta.workdir, 'meta.workdir')],
-      ['katachi のバージョン', value(meta.version, 'meta.version')],
+      ['Working directory', value(meta.workdir, 'meta.workdir')],
+      ['katachi version', value(meta.version, 'meta.version')],
       ['Kotlin', value(meta.kotlin, 'meta.kotlin')],
-      ['Git 管理下', value(meta.git, 'meta.git')],
-      ['対象プロジェクトのルート', value(meta.projectRoot, 'meta.projectRoot')],
-      ['実行日時', value(meta.ranAt, 'meta.ranAt')]
+      ['Under Git', value(meta.git, 'meta.git')],
+      ['Target project root', value(meta.projectRoot, 'meta.projectRoot')],
+      ['Ran at', value(meta.ranAt, 'meta.ranAt')]
     ])]);
   }
 
   function renderViolations(violations) {
     mount('violationCount', [document.createTextNode(countLabel(violations))]);
-    if (!countOf(violations)) { mount('violations', [none('なし（All green）')]); return; }
+    if (!countOf(violations)) { mount('violations', [none('None (all green)')]); return; }
     var rows = entries(violations).map(function (item) {
       return [
         value(item.violation, 'violations[].violation'),
@@ -1244,7 +1243,7 @@
         value(item.suggestion, 'violations[].suggestion')
       ];
     });
-    mount('violations', [tableOf(['違反', '場所', '直さなかった理由', 'どうするのがよさそうか'], rows, 'text-first')]);
+    mount('violations', [tableOf(['Violation', 'Location', 'Why not fixed', 'Suggested next step'], rows, 'text-first')]);
   }
 
   function renderChangedFiles(changed) {
@@ -1257,7 +1256,7 @@
         value(item.summary, 'changedFiles[].summary')
       ];
     });
-    mount('changedFiles', [tableOf(['パス', '新規 / 変更', '内容'], rows)]);
+    mount('changedFiles', [tableOf(['Path', 'Added / Changed', 'Summary'], rows)]);
   }
 
   function questionCard(item, index) {
@@ -1271,12 +1270,12 @@
     summary.appendChild(title);
 
     var body = el('div', 'qa-body');
-    body.appendChild(subHeading('観測したこと'));
+    body.appendChild(subHeading('What was observed'));
     body.appendChild(paragraph(richText(item.observed, 'questions[].observed')));
-    body.appendChild(subHeading('選択肢'));
+    body.appendChild(subHeading('Options'));
     body.appendChild(numbered(item.options, 'questions[].options'));
     var pick = el('div', 'qa-pick');
-    pick.appendChild(subHeading('推奨'));
+    pick.appendChild(subHeading('Recommendation'));
     pick.appendChild(paragraph(value(item.recommendation, 'questions[].recommendation')));
     body.appendChild(pick);
 
@@ -1294,7 +1293,7 @@
   function renderError(message) {
     var box = el('div', 'error-box');
     var title = el('p');
-    title.textContent = 'チェックリストのデータ（このファイル内の JSON）を読めませんでした。';
+    title.textContent = 'Could not read the checklist data (the JSON in this file).';
     var detail = el('p');
     detail.textContent = message;
     box.appendChild(title);
@@ -1343,7 +1342,7 @@
     document.getElementById('toggle-all').addEventListener('click', function () {
       var opening = stepNodes.some(function (step) { return !step.open; });
       stepNodes.forEach(function (step) { step.open = opening; });
-      this.textContent = opening ? 'すべて閉じる' : 'すべて開く';
+      this.textContent = opening ? 'Collapse all' : 'Expand all';
     });
     openWhilePrinting();
   }
