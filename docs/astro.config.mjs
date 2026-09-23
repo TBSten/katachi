@@ -165,12 +165,13 @@ export default defineConfig({
 				},
 				{
 					label: 'API reference', translations: { ja: 'API リファレンス' },
-					// Dokka の出力はまだ無い。`docs/public/api-docs/index.html` のプレースホルダを
-					// 外部リンクとして指す（content collection のページではないので `link` を使う）。
+					// Dokka が `docs/public/api-docs/` に出す HTML。content collection の
+					// ページではないので `slug` ではなく `link` で指す。
 					//
-					// `slug` は Starlight が `base` 配下へ自動で解決するが、この `link` のような
-					// 素のパス文字列はしない。`base` を自分で前置する必要がある。
-					link: '/katachi/api-docs/',
+					// **`base` を自分で前置しないこと。** Starlight は `link` にも `base` を
+					// 付ける。`/katachi/api-docs/` と書くと `/katachi/katachi/api-docs/` になり、
+					// 日本語側ではさらに locale が挟まって `/katachi/ja/katachi/api-docs/` になる。
+					link: '/api-docs/',
 				},
 				{ label: 'Roadmap', translations: { ja: 'ロードマップ' }, slug: 'roadmap' },
 			],

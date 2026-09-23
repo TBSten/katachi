@@ -1,0 +1,20 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<!--
+  API リファレンス（Dokka の出力）は言語に依らず1つしか無い。
+  だが Starlight はサイドバーの `link` に locale を前置するので、日本語ページからは
+  /katachi/ja/api-docs/ へ飛ぶ。ここでその1枚だけを受けて本体へ送る。
+
+  659 ファイルを locale ぶん複製するより、リダイレクト1枚のほうが安い。
+-->
+<title>API reference</title>
+<link rel="canonical" href="/katachi/api-docs/">
+<meta http-equiv="refresh" content="0; url=/katachi/api-docs/">
+<script>location.replace('/katachi/api-docs/' + location.hash);</script>
+</head>
+<body>
+<p><a href="/katachi/api-docs/">API reference</a></p>
+</body>
+</html>
