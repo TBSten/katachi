@@ -437,6 +437,13 @@ json_escape() {
 }
 
 # JSON の値を書く。空なら null、そうでなければ引用符付きの文字列。
+json_number() {
+	case "$1" in
+	'' | *[!0-9]*) printf 'null' ;;
+	*) printf '%s' "$1" ;;
+	esac
+}
+
 json_value() {
 	if [ -z "$1" ]; then
 		printf 'null'
@@ -513,7 +520,7 @@ write_report_data() {
 		printf '  "meta": {\n'
 		printf '    "projectName": %s,\n' "$(json_value "$_name")"
 		printf '    "analyzedAt": %s,\n' "$(json_value "$_now")"
-		printf '    "fileCount": %s,\n' "$(json_value "$_count")"
+		printf '    "fileCount": %s,\n' "$(json_number "$_count")"
 		printf '    "gradleRoot": %s,\n' "$(json_value "$_root")"
 		printf '    "gitRoot": %s\n' "$(json_value "$_gitroot")"
 		printf '  }\n'
@@ -669,12 +676,30 @@ cmd_scaffold() {
 
 	say ""
 	say "次: ./gradlew :$MODULE_DIR:test --rerun"
-	say "    この時点では architecture { } が空なので、成功するのが正常です。"
+	say "    architecture { } が空なので、すべてのファイルが Unexpected として報告されて"
+	say "    落ちるのが正常です。Unexpected 以外のエラーが出た場合だけが問題です。"
 }
 
 write_module_build() {
 	_version="$1"
 	_konsist="$2"
+
+	# 生成物は利用者のリポジトリにそのまま残るので、コメントも --lang に合わせる
+	# （テスト関数名と同じ理由。write_test_kt を参照）。
+	case "$KATACHI_LANG" in
+	ja)
+		_log_note='        // 違反の一覧は AssertionError のメッセージに入っている。FULL にしないと
+        // "KatachiArchitectureAssertionError at ProjectArchitectureTest.kt:12" の1行しか出ず、
+        // 中身を見るのに build/test-results/**/*.xml を読む羽目になる（CI のログでも同じ）。'
+		_std_note='        // MissingDescription などの警告は stdout に出る。'
+		;;
+	*)
+		_log_note='        // The violation list lives in the AssertionError message. Without FULL you only get
+        // "KatachiArchitectureAssertionError at ProjectArchitectureTest.kt:12", and reading the
+        // detail means opening build/test-results/**/*.xml (the same goes for CI logs).'
+		_std_note='        // Warnings such as MissingDescription are printed to stdout.'
+		;;
+	esac
 
 	if [ "$_konsist" = "yes" ]; then
 		_konsist_line="    testImplementation(\"me.tbsten.katachi:katachi-konsist:$_version\")"
@@ -695,6 +720,10 @@ tasks.test {
     useJUnitPlatform()
     testLogging {
         events("passed", "failed", "skipped")
+$_log_note
+        exceptionFormat = org.gradle.api.tasks.testing.logging.TestExceptionFormat.FULL
+$_std_note
+        showStandardStreams = true
     }
 }
 
@@ -729,6 +758,13 @@ write_test_kt() {
 	_dir="$2"
 	_konsist="$3"
 
+	# テスト名は利用者のリポジトリにそのまま残るので、--lang に合わせる。
+	# 英語で進めている利用者に日本語の識別子を置いていかないため。
+	case "$KATACHI_LANG" in
+	ja) _test_name="プロジェクトの構成が定義どおりになっている" ;;
+	*) _test_name="the project matches its declaration" ;;
+	esac
+
 	if [ "$_konsist" = "yes" ]; then
 		cat >"$_dir/ProjectArchitectureTest.kt" <<EOF
 package $_package.test.architecture
@@ -741,7 +777,7 @@ import org.junit.jupiter.api.Test
 class ProjectArchitectureTest {
     @OptIn(ExperimentalKatachiApi::class)
     @Test
-    fun \`プロジェクトの構成が定義どおりになっている\`() {
+    fun \`$_test_name\`() {
         projectArchitecture.assert(KonsistCheck())
     }
 }
@@ -755,7 +791,7 @@ import org.junit.jupiter.api.Test
 
 class ProjectArchitectureTest {
     @Test
-    fun \`プロジェクトの構成が定義どおりになっている\`() {
+    fun \`$_test_name\`() {
         projectArchitecture.assert()
     }
 }

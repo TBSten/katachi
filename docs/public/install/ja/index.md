@@ -40,9 +40,14 @@ touch .katachi-probe && rm .katachi-probe
 ./gradlew --version
 ```
 
+```sh
+# 4. 取得したスクリプトの実行
+sh /tmp/katachi-install.sh --help
+```
+
 作業用ディレクトリも `architecture-test/` もプロジェクトルートの下に作るので、2 で両方の許可が取れます。**プローブは痕跡を残しません。** ディレクトリを作るプローブは書かないこと（`architecture-test/` が空で残ると、ステップ 2 の `scaffold` が「すでに存在します」で止まります）。
 
-**どれかで止まったら、そこで何が拒否されたかをユーザに伝えてください。** 1 が通らなければ手順を始められません。2 が通らなければファイルを作れません。3 が通らなければ検証できません。
+**どれかで止まったら、そこで何が拒否されたかをユーザに伝えてください。** 1 が通らなければ手順を始められません。2 が通らなければファイルを作れません。3 が通らなければ検証できません。4 が通らなければ以降のステップを1つも実行できません。エージェントは 1 と 4 をまとめて「外部スクリプトのダウンロードと実行」として拒否することがよくあります。その場合はその2行をユーザ自身に実行してもらってから続けてください。
 
 すべて通れば、以降のステップで許可を聞かれることはありません。
 
@@ -83,6 +88,7 @@ KATACHI_KOTLIN=2.4.10
 KATACHI_GIT=yes
 KATACHI_SETTINGS=settings.gradle.kts
 KATACHI_CLI=tmp/install-katachi/katachi-install.sh
+KATACHI_LANG=ja
 ```
 
 **以降のコマンドはすべて `KATACHI_CLI` のパスで実行します。** `/tmp` のほうは使いません。
@@ -92,6 +98,8 @@ KATACHI_CLI=tmp/install-katachi/katachi-install.sh
 **止まったら、出力に書かれているとおりに対処する。** 推測で回避策を作らない。作業用ディレクトリを変えたい場合は `--workdir <path>`、バージョンを固定したい場合は `--katachi <version>` を付けて実行し直す。
 
 `init` は**何度実行しても記入済みのファイルを壊しません**。途中で失敗したらそのまま実行し直してよい。
+
+**`init` が「作業用ディレクトリが git から見えています」と警告した場合は、それをユーザに伝えて** `.gitignore` への追加を提案してください。すでに ignore されている置き場がプロジェクトに無いときに起きます。放っておくとチェックリストとレポートがユーザのコミットに入ります。`.gitignore` を自分で書き換えないこと。
 
 以降で一時的な保存領域が必要な場合は `<KATACHI_WORKDIR>/tmp/` 内に保存し、作業用ディレクトリ直下を汚さないこと。
 
@@ -121,15 +129,15 @@ sh $CLI data set report new.json
 
 ```sh
 sh $CLI add violation --violation "..." --location "..." --whyNotFixed "..." --suggestion "..."
-sh $CLI add question  --question "..." --observed "..." --option "A" --option "B" --recommendation "..."
+sh $CLI add question  --question "..." --observed "..." --options "A" --options "B" --recommendation "..."
 sh $CLI add changed   --path "..." --change "新規" --summary "..."
-sh $CLI add role      --importance 5 --name ViewModel --layout "..." --naming "..." --allowed "..." --forbidden "..." --example "..." --count 12
+sh $CLI add role      --importance 5 --name ViewModel --layout "..." --naming "..." --allowed "..." --forbidden "..." --examples "..." --count 12
 sh $CLI add module    --path app --kind "Android application" --role "..." --buildFile "app/build.gradle.kts"
 sh $CLI add tool      --name ktlint --configPath ".editorconfig" --declareInKatachi "yes"
 sh $CLI add excluded  --path "..." --reason "..."
 ```
 
-`--option` と `--allowed` / `--forbidden` / `--example` は**複数回渡せます**。知らない項目名を渡すと、使える名前を並べて止まります。
+`--options` と `--allowed` / `--forbidden` / `--examples` は**複数回渡せます**。知らない項目名を渡すと、使える名前を並べて止まります。
 
 **HTML を直接編集しないこと。** 書き換えは必ず `data merge` か `data set` を通す。どちらも書き込む前に JSON を検査し、元のファイルを `.bak` に退避し、結果が壊れていれば自動で巻き戻します。
 
@@ -244,6 +252,8 @@ sh $CLI scaffold --package com.example.app
 
 プラグインのバージョン衝突、JUnit の engine、JVM toolchain、Android / KMP プロジェクトでの扱いは**すべてスクリプトが決めています。** 生成されたファイルを読んで直したくなっても、直さないこと。
 
+例外は、生成されたファイルを変えないとビルドがそもそも動かない場合だけです。これは上のルールより優先します。ただしその場合はスクリプト側のバグなので、`add changed` に理由を書いて記録し、`questions` にも登録してください。
+
 `konsist { }` を使わない方針が決まっている場合だけ `--no-konsist` を付ける。決まっていなければ既定のままでよい。
 
 作成できたら、この時点で一度動かす。
@@ -264,6 +274,14 @@ Katachi check failed: 4 violations (Unexpected: 4)
     - Add a new role for it:
         "BuildGradle" { ... }
 ```
+
+**表示されるのは先頭 10 件だけ**で、残りは件数だけが出ます。定義を書いている間すべて見たい場合は、`ProjectArchitectureTest.kt` で上限を上げてください。
+
+```kt
+projectArchitecture.assert(KonsistCheck(), maxViolations = 100)
+```
+
+`--no-konsist` の場合は check が入らないので `assert(maxViolations = 100)` と書きます。定義を書き終えたら既定に戻してください。
 
 **この形で落ちていれば配線は正しい**ということです。`Unexpected` 以外のエラー、たとえばコンパイルエラー、依存の解決失敗、`Could not start Gradle Test Executor` のようなものが出た場合だけが問題です。
 

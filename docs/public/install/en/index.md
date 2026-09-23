@@ -19,14 +19,39 @@ You are only responsible for judgment in the following:
 
 ### 0-1. Get all permissions up front
 
-These steps repeat network access, file creation, and running Gradle many times over. Checking in every time would leave the user doing nothing but approving requests endlessly. **Run the following, show the resulting text to the user exactly as it is, and get approval for everything at once.**
+These steps repeat network access, file creation, and running Gradle many times over. Checking in every time would leave the user doing nothing but approving requests endlessly.
+
+**Do not ask for permission in prose — actually run a harmless dummy of each.** The tool running you asks for permission per kind of command. Run each one once up front, and the real commands that follow are never asked about.
+
+Run the following **from the Gradle root directory**, **one at a time, separately.** Do not join them into a single line — a single line only earns you one kind of permission.
 
 ```sh
+# 1. Network - can the distribution point be reached
 curl -fsSL -o /tmp/katachi-install.sh https://tbsten.github.io/katachi/install/katachi-install.sh
-sh /tmp/katachi-install.sh permissions
 ```
 
-Do not compose the text yourself. Skip any operation the user declines, and record what could not be done in the checklist's `questions`.
+```sh
+# 2. Creating a file under the project
+touch .katachi-probe && rm .katachi-probe
+```
+
+```sh
+# 3. Running Gradle
+./gradlew --version
+```
+
+```sh
+# 4. Running the fetched script
+sh /tmp/katachi-install.sh --help
+```
+
+Both the working directory and `architecture-test/` are created under the project root, so 2 earns permission for both. **The probes leave no trace.** Do not write a probe that creates a directory (an empty `architecture-test/` left behind makes step 2's `scaffold` stop with "already exists").
+
+**If any of them is blocked, tell the user what was refused.** Without 1 you cannot start, without 2 you cannot create files, without 3 you cannot verify, and without 4 you cannot run any of the steps below. Agents commonly refuse 1 and 4 together, as "downloading and running an external script" — in that case, ask the user to run those two lines themselves and carry on.
+
+If all four pass, no permission will be asked for in any later step.
+
+**Existing source code is never rewritten.** The only times you touch it are when fixing a build error unrelated to katachi in step 4, and during the implementation task in step 6-A. If you are going to fix an architecture violation itself in step 4, check with the user again at that point.
 
 At this point `$CLI` does not exist yet. Record the check at the end of the next step, together.
 
@@ -63,6 +88,7 @@ KATACHI_KOTLIN=2.4.10
 KATACHI_GIT=yes
 KATACHI_SETTINGS=settings.gradle.kts
 KATACHI_CLI=tmp/install-katachi/katachi-install.sh
+KATACHI_LANG=en
 ```
 
 **All commands from here on are run with the `KATACHI_CLI` path.** The one in `/tmp` is not used.
@@ -72,6 +98,8 @@ Once this is done, run `sh $CLI check 0-1 0-2`.
 **If it stops, handle it exactly as the output says.** Do not invent a workaround. To change the working directory, re-run with `--workdir <path>`; to pin a version, re-run with `--katachi <version>`.
 
 `init` **never breaks already-filled-in files no matter how many times you run it.** If it fails partway through, you may just re-run it as is.
+
+**If `init` warns that the working directory is visible to git, pass that on to the user** and suggest adding it to `.gitignore`. It happens when the project has no already-ignored place to put it, and left alone the checklist and the report end up in their commits. Do not edit `.gitignore` yourself.
 
 Whenever you need temporary storage from here on, save it inside `<KATACHI_WORKDIR>/tmp/`, and do not clutter the top level of the working directory.
 
@@ -101,15 +129,15 @@ sh $CLI data set report new.json
 
 ```sh
 sh $CLI add violation --violation "..." --location "..." --whyNotFixed "..." --suggestion "..."
-sh $CLI add question  --question "..." --observed "..." --option "A" --option "B" --recommendation "..."
+sh $CLI add question  --question "..." --observed "..." --options "A" --options "B" --recommendation "..."
 sh $CLI add changed   --path "..." --change "New" --summary "..."
-sh $CLI add role      --importance 5 --name ViewModel --layout "..." --naming "..." --allowed "..." --forbidden "..." --example "..." --count 12
+sh $CLI add role      --importance 5 --name ViewModel --layout "..." --naming "..." --allowed "..." --forbidden "..." --examples "..." --count 12
 sh $CLI add module    --path app --kind "Android application" --role "..." --buildFile "app/build.gradle.kts"
 sh $CLI add tool      --name ktlint --configPath ".editorconfig" --declareInKatachi "yes"
 sh $CLI add excluded  --path "..." --reason "..."
 ```
 
-`--option` and `--allowed` / `--forbidden` / `--example` **can be passed multiple times.** Passing an unknown field name stops it and lists the names that are available.
+`--options` and `--allowed` / `--forbidden` / `--examples` **can be passed multiple times.** Passing an unknown field name stops it and lists the names that are available.
 
 **Do not edit the HTML directly.** Any rewrite must always go through `data merge` or `data set`. Both of them validate the JSON before writing, back up the original file to `.bak`, and automatically roll back if the result turns out broken.
 
@@ -224,6 +252,8 @@ This command does the following.
 
 Plugin version conflicts, the JUnit engine, the JVM toolchain, and handling for Android / KMP projects are **all decided by the script.** Even if you feel like fixing something after reading the generated files, do not fix it.
 
+The one exception is when the generated file has to change for the build to run at all. That takes priority over the rule above — but it means the script has a bug, so record it with `add changed` giving the reason, and register it in `questions` as well.
+
 Add `--no-konsist` only if it has been decided not to use `konsist { }`. If it hasn't been decided, leave the default as is.
 
 Once it's created, run it once at this point.
@@ -232,13 +262,34 @@ Once it's created, run it once at this point.
 ./gradlew :architecture-test:test --rerun
 ```
 
-Since `architecture { }` is still empty, **succeeding here is the expected outcome.**
+**Failing here is the expected outcome.** `architecture { }` is empty, so by the deny-by-default principle every file is reported as `Unexpected`. The output looks like this.
 
-If it fails, the cause is almost always the build configuration. Following the same policy as step 4, **attempt to fix errors unrelated to katachi (Gradle, Java, dependency resolution).** Only if it still can't be resolved, pass the output to the user exactly as it is and ask for their judgment.
+```
+Katachi check failed: 4 violations (Unexpected: 4)
+
+[UnexpectedFile] build.gradle.kts
+  No role is defined for this file.
+
+  How to fix:
+    - Add a new role for it:
+        "BuildGradle" { ... }
+```
+
+**Only the first 10 violations are printed**, with the rest shown as a count. To see them all while you write the definition, raise the budget in `ProjectArchitectureTest.kt`:
+
+```kt
+projectArchitecture.assert(KonsistCheck(), maxViolations = 100)
+```
+
+With `--no-konsist` the call has no check in it, so write `assert(maxViolations = 100)`. Put it back to the default once the definition is finished.
+
+**Failing in this shape means the wiring is correct.** Only an error that is not `Unexpected` is a problem — a compile error, a dependency resolution failure, something like `Could not start Gradle Test Executor`.
+
+In that case, following the same policy as step 4, **attempt to fix errors unrelated to katachi (Gradle, Java, dependency resolution).** Only if it still can't be resolved, pass the output to the user exactly as it is and ask for their judgment.
 
 If `scaffold` says "Did not rewrite automatically because a buildscript { } is present," **add the single line shown in the output to the root build file.** It will keep failing until you add it.
 
-Once it succeeds, record the files that were created or changed, then run `sh $CLI check 2-1 2-2`.
+Once you have confirmed it fails with `Unexpected` only, record the files that were created or changed, then run `sh $CLI check 2-1 2-2`.
 
 ```sh
 sh $CLI add changed --path "architecture-test/build.gradle.kts" --change "New" --summary "Build definition for the verification module"
