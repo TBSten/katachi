@@ -1,15 +1,15 @@
 ---
-title: ArchitectureProcessor とそのカスタマイズ
-description: ArchitectureProcessor の仕組みと、ProjectModel から自分で情報を取り出す独自 processor の書き方・実行方法。
+title: ArchitectureProcessor and customizing it
+description: How ArchitectureProcessor works, and how to write and run your own processor that pulls information out of a ProjectModel.
 tags:
   - advanced
 ---
 
 import { Aside, Tabs, TabItem } from "@astrojs/starlight/components"
 
-## ArchitectureProcessor とは
+## What is ArchitectureProcessor
 
-katachi の `ArchitectureProcessor` クラスはアーキテクチャ定義を元に 何かを行う interface です。
+katachi's `ArchitectureProcessor` is an interface that does something based on an architecture definition.
 
 ```kt
 public interface ArchitectureProcessor<out R> {
@@ -17,117 +17,117 @@ public interface ArchitectureProcessor<out R> {
 }
 ```
 
-## katachi の 2 要素
+## katachi's two elements
 
-katachi は 大きく分けて **アーキテクチャ定義** と **ArchitectureProcessor** の2つの要素から成ります。
+Broadly speaking, katachi consists of two elements: the **architecture definition** and **ArchitectureProcessor**.
 
 ```mermaid
 flowchart LR
-    D["architecture { }<br/>アーキテクチャ定義"] --> M["ProjectModel"]
-    M --> L["LayoutCheck<br/>配置を検証する"]
-    M --> K["KonsistCheck<br/>中身を検証する"]
-    M -.-> C["あなたの ArchitectureProcessor<br/>集計・抽出・別形式への出力"]
+    D["architecture { }<br/>Architecture definition"] --> M["ProjectModel"]
+    M --> L["LayoutCheck<br/>Validates placement"]
+    M --> K["KonsistCheck<br/>Validates contents"]
+    M -.-> C["Your ArchitectureProcessor<br/>Aggregation, extraction, output to other formats"]
 
     style D fill:#EAF2FB,stroke:#5B8DEF,stroke-width:2px
     style C fill:#FAFAFA,stroke:#BDBDBD,stroke-dasharray:4 3,color:#8A8A8A
 ```
 
-定義そのものは何も実行しません。**`ProjectModel` を受け取って何かをするのが ArchitectureProcessor** で、katachi が同梱しているものも、あなたが書くものも、区別はありません。
+The definition itself doesn't execute anything. **It's `ArchitectureProcessor` that takes a `ProjectModel` and does something with it** — there's no distinction between the ones katachi bundles and the ones you write.
 
-アーキテクチャ定義は `architecture { }` ブロックの中で記載するプロジェクトのアーキテクチャの定義です。
+The architecture definition is the definition of your project's architecture, written inside an `architecture { }` block.
 
-アーキテクチャを定義しただけでは何も起こりません。それを利用して何かを行うのが ArchitectureProcessor です。
+Defining an architecture by itself doesn't do anything. It's ArchitectureProcessor that uses it to do something.
 
-## ビルトインの ArchitectureProcessor
+## Built-in ArchitectureProcessors
 
-katachi はデフォルトで 3 つの ArchitectureProcessor を提供しています。
+katachi ships with three ArchitectureProcessors by default.
 
-| Processor | 何を行うか？ | ドキュメント |
+| Processor | What it does | Documentation |
 | --- | --- | --- |
-| `projectArchitecture.assert()` (`LayoutCheck`) | アーキテクチャ定義に沿ったファイル配置になっているかを検証して エラーがある場合はアサーション例外を発生させます。 |  |
-| `GenerateDocumentation` | プロジェクト定義に書かれた summary, description などのプロパティをもとにドキュメントを生成します。 | |
-| `GenerateCodeFromTemplate` | プロジェクト定義内の `template { }` ブロックの内容をもとにファイルを生成します。 | |
+| `projectArchitecture.assert()` (`LayoutCheck`) | Validates whether files are placed according to the architecture definition, and throws an assertion exception if there are errors. |  |
+| `GenerateDocumentation` | Generates documentation from properties such as summary and description written in the project definition. | |
+| `GenerateCodeFromTemplate` | Generates files based on the contents of `template { }` blocks in the project definition. | |
 
-いずれも プロジェクトのアーキテクチャ定義を受け取り、それらを何かしらの生成に役立てています。
+Each of them takes the project's architecture definition and puts it to use generating something.
 
-## ArchitectureProcessor の実行
+## Running an ArchitectureProcessor
 
-ArchitectureProcessor を実行する方法のパターンがいくつかあります。
+There are a few patterns for running an ArchitectureProcessor.
 
-ArchitectureProcessor ごとに推奨される実行方法は異なるため、個々の ArchitectureProcessor の実行方法についてはそれぞれのドキュメントを参照してください。
+The recommended way to run it differs per ArchitectureProcessor, so refer to each ArchitectureProcessor's own documentation for how to run it.
 
-### 実行方法1. 用意されている API をプログラムから呼び出す
+### Method 1. Call a provided API from your program
 
-ArchitectureProcessor とともに用意されている API （多くの場合トップレベル関数）がある場合、その API を呼び出すことで ArchitectureProcessor を実行できます。
+If an API is provided alongside the ArchitectureProcessor (often a top-level function), you can run the ArchitectureProcessor by calling that API.
 
-例えば LayoutCheck であれば `projectArchitecture.assert()` を呼び出すことでその ArchitectureProcessor を実行できます。
+For example, for LayoutCheck, you can run that ArchitectureProcessor by calling `projectArchitecture.assert()`.
 
 ```kt
-projectArchitecture.assert() // 内部で LayoutCheck().process(...) を呼び出す
+projectArchitecture.assert() // Internally calls LayoutCheck().process(...)
 ```
 
-### 実行方法2. コマンドラインから実行する
+### Method 2. Run it from the command line
 
-katachi gradle plugin には ArchitectureProcessor を実行するための `runKatachiProcessor` Gradle タスクが用意されています。
+The katachi Gradle plugin provides a `runKatachiProcessor` Gradle task for running an ArchitectureProcessor.
 
 ```shell
-# GenerateCodeFromTemplate を実行する例 
+# Example: running GenerateCodeFromTemplate
 
-# runKatachiProcessor task を実行します
+# Run the runKatachiProcessor task
 ./gradlew runKatachiProcessor \
-  # entrypoint に実行したい ArchitectureProcessor の factory を指定します
+  # Specify the factory of the ArchitectureProcessor you want to run as the entrypoint
   --entrypoint='me.tbsten.katachi.template.GenerateCodeFromTemplate$FromArgs' \
-  # -P で ArchitectureProcessor に渡す引数を指定します
+  # Use -P to pass arguments to the ArchitectureProcessor
   -Prole='UseCase' -Pname='GetItemList' -PinvokeImpl='TODO()' // ...
 ```
 
-## カスタムの ArchitectureProcessor
+## Custom ArchitectureProcessors
 
-ArchitectureProcessor は単純な interface として提供されているため あなたが独自に実装して自由に処理を追加することが可能です。
+Because ArchitectureProcessor is provided as a simple interface, you can implement your own and freely add processing.
 
-### 1. ArchitectureProcessor を実装する
+### 1. Implement ArchitectureProcessor
 
-ArchitectureProcessor を実装したクラスを用意して process メソッドを実装してください。
+Prepare a class that implements ArchitectureProcessor and implement the `process` method.
 
 ```kt
 class MyProcessor : ArchitectureProcessor<MyResult> {
     override fun process(model: ProjectModel): MyResult {
-        // model.roles           -> 定義された Role の一覧
-        // model.groups          -> group の一覧
-        // model.declaredEntries -> layout { } を平坦化した宣言の一覧
-        // model.filesOf(role)   -> その Role が実際に持っているファイルのパス
+        // model.roles           -> the list of declared Roles
+        // model.groups          -> the list of groups
+        // model.declaredEntries -> the flattened list of declarations from layout { }
+        // model.filesOf(role)   -> the paths of the files that Role actually has
         return model.roles.associate { it.qualifiedName to model.filesOf(it).size }
     }
 }
 ```
 
-`ProjectModel` が渡してくれるのはこの4つだけです。**アーキテクチャ定義そのものやファイルシステムには触れません。** 走査の結果だけが渡される形なので、processor はファイルを読みに行く必要がありません。
+`ProjectModel` hands you only these four things. **You never touch the architecture definition itself or the file system.** Only the results of the walk are passed in, so a processor never needs to go read files itself.
 
-戻り値の型は自分で決められます。値を返さず副作用だけを持つ processor には `ArchitectureProcessorUnit`（`ArchitectureProcessor<Unit>` の別名）が使えます。
+You decide the return type yourself. For a processor that has only side effects and returns no value, you can use `ArchitectureProcessorUnit` (an alias for `ArchitectureProcessor<Unit>`).
 
 <details>
-<summary>アーキテクチャ定義に独自のプロパティが必要になった場合</summary>
+<summary>When you need a custom property on the architecture definition</summary>
 
-場合によっては ArchitectureProcessor 利用側でアーキテクチャ定義に指定してほしい独自のプロパティが必要になるかもしれません。
-その場合は `Role の metadata` を利用することができます。
+Sometimes the user of an ArchitectureProcessor needs a custom property specified on the architecture definition.
+In that case, you can use a Role's `metadata`.
 
-例えばすでに非推奨になったものの過去の遺産として残ってしまっている Role を Deprecated としてマークしたい場合、以下のように Deprecated という metadata を定義して設定することができます。
+For example, say you want to mark a Role that's already deprecated but still hangs around as legacy code. You can define and set a `Deprecated` metadata key as follows.
 
 ```kt {1-2, 8-9, 17} nocollapse
-val Deprecated = metadata<Boolean>() // metadata のキー
+val Deprecated = metadata<Boolean>() // the metadata key
 var MetadataScope.deprecated: Boolean? by Deprecated
 
-// Processor 側
+// Processor side
 class MyProcessor : ArchitectureProcessor<Unit> {
    override fun process(model: ProjectModel) {
       for (role in model.roles) {
-         // Role[metadata のキー] で metadata の値を取得
+         // Get the metadata value with Role[the metadata key]
          val deprecated: Boolean? = role[Deprecated]
       }
    }
 }
 
-// 利用側
+// Usage side
 architecture {
    "UseCase" {
       deprecated = true
@@ -137,33 +137,33 @@ architecture {
 
 </details>
 
-### 2. ArchitectureProcessor を実行する方法を用意する
+### 2. Provide a way to run ArchitectureProcessor
 
-利用者が ArchitectureProcessor を実行する方法を用意してください。
+Provide a way for users to run your ArchitectureProcessor.
 
-API としてプログラムから実行したい場合は API を用意する方法が、ワンショットで実行したい場合は コマンドラインから実行する方法が推奨されます。
+If you want it runnable from a program as an API, providing an API is recommended; if you want to run it as a one-shot, running it from the command line is recommended.
 
 <Tabs>
-    <TabItem label="API を用意する">
+    <TabItem label="Provide an API">
 
-        `Architecture` の拡張関数を1本生やします。katachi が `assert()` を用意しているのと同じ形です。
+        Add a single extension function on `Architecture`. This is the same shape katachi uses to provide `assert()`.
 
         ```kt
-        // MyProcessor と同じファイルに置く
+        // Place this in the same file as MyProcessor
         @OptIn(ExperimentalKatachiApi::class)
         fun Architecture.countFiles(): MyResult = process(MyProcessor())
         ```
 
-        利用者は processor の存在を知らずに済みます。
+        Users don't even need to know the processor exists.
 
         ```kt
         val counts = projectArchitecture.countFiles()
         ```
 
     </TabItem>
-    <TabItem label="Gradle タスクから実行する">
+    <TabItem label="Run it from a Gradle task">
 
-        引数を受け取れるように、**処理の本体とは別に入口を用意します**。
+        To accept arguments, **provide an entry point separate from the processing itself**.
 
         ```kt
         class MyProcessor : ArchitectureProcessor<MyResult> {
@@ -171,7 +171,7 @@ API としてプログラムから実行したい場合は API を用意する�
                 // ...
             }
 
-            // 引数から MyProcessor を組み立てる。Gradle タスクが呼ぶのはこちら
+            // Builds a MyProcessor from arguments. This is what the Gradle task calls
             object FromArgs : (Map<String, String>) -> MyProcessor {
                   override fun invoke(args: Map<String, String>) =
                      MyProcessor(role = args.getValue("role"))
@@ -179,18 +179,18 @@ API としてプログラムから実行したい場合は API を用意する�
         }
         ```
 
-        処理そのものは `MyProcessor` に閉じたままなので、**同じクラスを API からもコマンドラインからも使えます**。
+        The processing itself stays contained in `MyProcessor`, so **you can use the same class from both the API and the command line**.
 
     </TabItem>
 </Tabs>
 
-用意した実行方法は **processor の KDoc に書いてください。** 利用者が最初に読むのはクラスの KDoc で、「どう呼ぶか」がそこに無いと、このページまで戻ってこないといけません。`## Example` としてコード例を置くのが katachi の書き方です。
+**Write the way to run it in the processor's KDoc.** The first thing users read is the class's KDoc, and if "how to call it" isn't there, they'd have to come back to this page. Placing a code example under `## Example` is katachi's convention.
 
-## まとめ
+## Summary
 
-- **`assert()` もドキュメント・テンプレート生成も ArchitectureProcessor** です。
-- 同じ仕組みに乗っかってカスタムの ArchitectureProcessor を作ることもできます。
+- **`assert()`, as well as documentation and template generation, are all ArchitectureProcessors.**
+- You can build your own custom ArchitectureProcessor on top of the same mechanism.
 
-## 次のステップ
+## Next steps
 
-- [ロードマップ](/katachi/roadmap/) ... この仕組みの上に乗る予定のドキュメント生成と Gradle plugin が、どのバージョンで来るのかを確かめましょう。
+- [Roadmap](/katachi/roadmap/) ... Check which version will bring the documentation generation and Gradle plugin that are planned to sit on top of this mechanism.

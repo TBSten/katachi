@@ -1,0 +1,214 @@
+---
+title: モチベーションと katachi の立ち位置
+description: アーキテクチャがドキュメントとテストに二重管理されて腐る問題と、katachi が1つの定義からその両方を出すという立ち位置。
+tags:
+  - beginner
+---
+
+## アーキテクチャドキュメントは必ず実装と乖離する
+
+優秀なあなたのことですから プロジェクトの中に `/docs` ディレクトリが存在しており プロジェクト全体の構造・各コンポーネントのルールが詳細に記述されていることでしょう。
+
+しかしその **ドキュメントに記述された「UseCase はこう書く」という文言には何の強制力もありません**。プロジェクトのルールを知らない新規参入者や不確実性を伴う AI Agent によって 容易にルールは破られうるのです。
+
+## Konsist だけでは足りない
+
+このようなプロジェクトのルールを無視するコードを許さないためのガードレールとして機能するツールの中に [Konsist](https://docs.konsist.lemonappdev.com/) があります。
+
+Konsist はプロジェクトのルールを Unit test として記述できます。
+
+```kt
+class UseCaseKonsistTest {
+  @Test
+  fun `UseCase は 1 つの invoke 関数のみを持つ`() {
+      Konsist
+          .scopeFromProject()
+          .classes()
+          .withNameEndingWith("UseCase")
+          .assertTrue { it.functions().map { function -> function.name } == listOf("invoke") }
+  }
+}
+```
+
+一見すると Konsist はプロジェクトのルールを強制するための十分な手段に見えます。
+しかし実際には Konsist の特性によりそれが難しいことがわかります。
+
+:::caution[Scope の外は検証されない]
+Konsist は Scope と呼ばれる記法を使って プロジェクト内の特定のファイルに絞って検証を行います。 **Scope 外のファイルやディレクトリについては検証の対象外** です。
+:::
+
+特定のファイルにフォーカスするだけではなく、**プロジェクト全体を広い視点で検証する手段が必要** です。
+
+## katachi の出番
+
+katachi はプロジェクト全体を俯瞰して、プロジェクト内に現れて良いファイルの種類とその配置方法を宣言できます。
+
+```kt
+val projectArchitecture = architecture {
+  "UseCase" {
+    layout {
+      "src/main/kotlin/com/example/project/useCase" / "*UseCase".ktFile()
+    }
+  }
+}
+```
+
+katachi では次の2つを宣言します。
+
+- プロジェクトの中に現れて良いファイルの種類（Role と呼ばれます）
+- その Role のファイルがどこに現れて良いか
+
+これを宣言的な DSL で書くことで、プロジェクト全体のディレクトリ構造をテストできるようになります。
+
+import { Aside, FileTree } from '@astrojs/starlight/components';
+import CodeComparison from '../../../../components/CodeComparison';
+
+<Aside title="Deny by default" type="tip">
+
+katachi で採用されている Deny by default の原則により、**`projectArchitecture` に宣言されていないファイルはその存在を許されません**。
+
+AI Agent がルールに背くコードを書いたとしても、katachi はその存在を許さず、違反として報告します。
+</Aside>
+
+<details>
+<summary>このルールによって検知される例</summary>
+
+もし AI Agent が `com.example.project.GetUserUseCase` という名前のファイルを配置した場合:
+
+```kt
+// com/example/project/GetUserUseCase.kt
+package com.example.project // ❌ 本来は com.example.project.useCase に置くべきです
+
+class GetUserUseCase {
+  suspend fun invoke() = ...
+}
+```
+
+<FileTree>
+- src/main/kotlin/com/example/project/
+  - **GetUserUseCase.kt** ❌ 宣言されていない場所に置かれた
+  - useCase/
+    - UpdateUserUseCase.kt ⭐️ 宣言どおりの場所
+</FileTree>
+
+katachi を含んだ Unit test を実行すると、以下のようにエラーが報告されます。
+
+```
+Katachi check failed: 1 violation (Unexpected: 1)
+
+[UnexpectedFile] src/main/kotlin/com/example/project/GetUserUseCase.kt
+  No role is defined for this file.
+
+  Nearby locations:
+    UseCase    src/main/kotlin/com/example/project/useCase/
+
+  How to fix:
+    - Move it to one of the locations above
+    - Delete it if it is not needed
+    - Add a new role for it:
+        "GetUserUseCase" {
+          summary = "TODO"
+          layout {
+            "src/main/kotlin/com/example/project" / "GetUserUseCase".ktFile()
+          }
+        }
+```
+
+</details>
+
+## ドキュメントを生成する
+
+katachi で定義したプロジェクト構造の定義をもとに markdown (もしくは mdx) のドキュメントを生成させることができます。
+
+```shell
+$ ./gradlew generateKatachiDocs
+```
+
+<CodeComparison>
+<CodeComparison.Panel label="アーキテクチャ定義" labelVariant="note">
+```kt title="ProjectArchitecture.kt"
+val projectArchitecture = architecture {
+  "UseCase" {
+    title = "ユースケース"
+    summary = "各画面で発生するアプリ固有の1つの振る舞い"
+
+    example("GetUserUseCase", "ユーザーを取得する")
+    example("UpdateUserUseCase", "ユーザーを更新する")
+
+    layout {
+      "src/main/kotlin/com/example/project/useCase" {
+        description = "複数の画面から使われるもの"
+        "*UseCase".ktFile()
+      }
+    }
+  }
+
+  // ...
+}
+```
+
+</CodeComparison.Panel>
+
+<CodeComparison.Panel label="生成された Markdown" labelVariant="success">
+```md title="docs/UseCase.md"
+# ユースケース
+
+各画面で発生するアプリ固有の1つの振る舞い
+
+## 配置場所
+
+| パス | 使い分け |
+|---|---|
+| `src/main/kotlin/com/example/project/useCase/*UseCase.kt` | 複数の画面から使われるもの |
+
+## 例
+
+- `GetUserUseCase` ... ユーザーを取得する
+- `UpdateUserUseCase` ... ユーザーを更新する
+```
+
+</CodeComparison.Panel>
+</CodeComparison>
+
+katachi で定義したプロジェクト構造を SSoT として 人間も AI Agent も読むことができるドキュメントを生成しましょう。
+
+## katachi と Konsist
+
+katachi は Konsist と連携してプロジェクト全体を検証したのち、各々のファイルについて別個に検証できます。
+
+```kt
+val projectArchitecture = architecture {
+  "UseCase" {
+    // どこに置いてよいか
+    layout {
+      "src/main/kotlin/com/example/project/useCase" / "*UseCase".ktFile()
+    }
+
+    // 中身がどうあるべきか
+    "1 つの invoke 関数のみを持つこと".konsist {
+      classes()
+        .withNameEndingWith("UseCase")
+        .assertTrue { it.functions().map { function -> function.name } == listOf("invoke") }
+    }
+  }
+}
+```
+
+配置の違反と中身の違反が、同じ1つのレポートに並びます。
+
+**katachi でプロジェクト全体の構造をテストしたのち、Konsist で各々のファイルの中身を検証する** という使い分けが推奨されます。
+
+詳しくは [Konsist との統合](/katachi/ja/guides/konsist-integration/) のドキュメントをご覧ください。
+
+## まとめ
+
+- AI を使った開発では、**プロジェクト構造のルールを AI Agent に守らせる手段** が必要です。
+- katachi はプロジェクト全体の構造を定義・テストしたり、ドキュメントを生成したりする DSL を提供します。
+- プロジェクト全体の構造は katachi、各ファイルの中身は Konsist。**役割が違うので併用します**。
+
+## 次のステップ
+
+- [初めてのアーキテクチャ定義](/katachi/ja/get-started/first-architecture/) ... あなたのプロジェクトに katachi のアーキテクチャ定義を導入して、その有用性について実感しましょう。
+- [FAQ](/katachi/ja/get-started/faq/) ... katachi の設計思想をよくある質問を通して理解しましょう。
+- [Role の定義](/katachi/ja/guides/role/) ... katachi でアーキテクチャ定義を行う基本単位である Role について学びましょう。
+- [Layout](/katachi/ja/guides/layout/) ... katachi でディレクトリ構造を定義するための Layout について学びましょう。

@@ -1,103 +1,103 @@
 ---
-title: ロードマップ
-description: katachi のバージョンごとの計画。v0.1 の DSL と検査から、declarations、Gradle plugin とドキュメント生成、既存プロジェクトへの導入まで。
+title: Roadmap
+description: katachi's plans by version — from the v0.1 DSL and checks, through declarations, the Gradle plugin and documentation generation, to adoption in existing projects.
 tags:
   - beginner
 ---
 
 import { Aside, Steps } from '@astrojs/starlight/components';
 
-katachi は「同じ定義から**テストとドキュメントの両方**を出す」ライブラリです。いまはその前半、**テスト**だけが動きます。
+katachi is a library that produces **both tests and documentation from the same definition.** Right now, only the first half — **tests** — actually works.
 
-並び順は **外部依存の少ない順、かつ利用者の負担が増えない順** です。各段階で単独で価値が出るようにしてあります。
+The order below goes **from fewest external dependencies to most, and from least burden on users to most.** Each stage is designed to deliver value on its own.
 
-<Aside type="caution" title="まだ公開されていません">
-katachi はまだ Maven Central に公開されていません。ここに書かれているバージョンは計画であって、リリース済みのものではありません。
+<Aside type="caution" title="Not yet published">
+katachi hasn't been published to Maven Central yet. The versions described here are plans, not releases.
 </Aside>
 
-## 全体像
+## Overview
 
-| バージョン | テーマ | 完了と言える条件 |
+| Version | Theme | Definition of done |
 |---|---|---|
-| **v0.1** | DSL + 検査 + `konsist { }` | 大規模なプロジェクトを表現でき、検査が通る |
-| **v0.2** | `declarations { }` | v0.1 で書いた `konsist { }` の大半を置き換えられる |
-| **v0.3** | Gradle plugin + ドキュメント生成 | `./gradlew generateKatachiDocs` でドキュメントが出る |
-| **v0.4 以降** | baseline / レポート出力 / 語彙数の計測 | **既存プロジェクト**に導入できる |
+| **v0.1** | DSL + checks + `konsist { }` | Can express a large project, and checks pass |
+| **v0.2** | `declarations { }` | Can replace most of the `konsist { }` written in v0.1 |
+| **v0.3** | Gradle plugin + documentation generation | `./gradlew generateKatachiDocs` produces documentation |
+| **v0.4 and beyond** | baseline / report output / vocabulary-size measurement | Can be adopted in an **existing project** |
 
-## v0.1 — 定義と検査
+## v0.1 — Definitions and checks
 
-最初のリリースです。**Deny by default のアーキテクチャテスト**として出します。
+This is the first release. It ships as a **Deny by default architecture test.**
 
 <Steps>
 
-1. **役割を起点にした DSL**
+1. **A DSL centered on roles**
 
-   「どの役割のファイルをどこに置けるか」を1箇所に書けます。[Role](/katachi/guides/role/) と [Layout](/katachi/guides/layout/) がこれにあたります。
+   You can write "which role's files can go where" in one place. [Role](/katachi/guides/role/) and [Layout](/katachi/guides/layout/) cover this.
 
-2. **宣言していないファイルが増えたら落ちる**
+2. **Fails when an undeclared file appears**
 
-   書いた allow list と実際のファイルツリーを突き合わせ、載っていないもの（`Unexpected`）と、あるはずなのに無いもの（`Missing`）を報告します。
+   It compares the allow list you wrote against the actual file tree, and reports files that aren't listed (`Unexpected`) and files that should exist but don't (`Missing`).
 
-3. **ファイルの中身の制約**
+3. **Constraints on file contents**
 
-   `"名前".konsist { }` に Konsist の式を書けば、配置だけでなく中の宣言も検査できます。[Konsist との統合](/katachi/guides/konsist-integration/) を参照してください。
+   Writing a Konsist expression in `"name".konsist { }` lets you check the declarations inside a file, not just its placement. See [Konsist integration](/katachi/guides/konsist-integration/).
 
 </Steps>
 
-出る artifact は 2 つです。
+There are two published artifacts.
 
-| artifact | 中身 |
+| artifact | Contents |
 |---|---|
-| `katachi` | 本体。**実行時依存ゼロ** |
-| `katachi-konsist` | `konsist { }` の実装。任意 |
+| `katachi` | The core library. **Zero runtime dependencies** |
+| `katachi-konsist` | The implementation of `konsist { }`. Optional |
 
-**対象は新規プロジェクトです。** 既存プロジェクトに入れると既存の違反が一度に噴き出すので、それを扱う仕組み（baseline）は v0.4 以降になります。
+**This targets new projects.** Adding it to an existing project would surface all its existing violations at once, so the mechanism for handling that (baseline) is planned for v0.4 and beyond.
 
 ## v0.2 — `declarations { }`
 
-v0.1 の `konsist { }` は、言ってしまえば**逃げ道**です。「ファイル名と同じクラスが1つだけあること」のようなよくある制約を、毎回 Konsist の式で書き下すことになります。
+v0.1's `konsist { }` is, frankly, **an escape hatch.** Common constraints, like "there's exactly one class with the same name as the file," end up being spelled out as a Konsist expression every time.
 
-v0.2 では、そこから**一級機能であるべきものを昇格**させます。
+In v0.2, we **promote what should be a first-class feature** out of that escape hatch.
 
-- 役割ごとに「このファイルに置いてよい top-level 宣言」を**列挙**する
-- 列挙されていない宣言は禁止される — **deny by default がファイルの中身にも及ぶ**
-- 違反したとき「期待 / 実際」と、リネーム先のような**具体的な直し方**が出る
+- **Enumerate**, per role, "the top-level declarations allowed in this file"
+- Declarations that aren't enumerated are forbidden — **deny by default extends to file contents too**
+- On a violation, it shows "expected / actual" along with a **concrete fix**, such as a rename target
 
-前提として、v0.1 を実プロジェクトで使い込み、`konsist { }` のブロックが溜まっていることが要ります。**何を昇格させるべきかは、溜まったものを見てから決めます。**
+This assumes v0.1 has been used extensively on real projects and a backlog of `konsist { }` blocks has accumulated. **What to promote will be decided after looking at what has accumulated.**
 
-## v0.3 — Gradle plugin とドキュメント生成
+## v0.3 — Gradle plugin and documentation generation
 
-katachi の売りが揃う段階です。
+This is the stage where katachi's selling points all come together.
 
 ```shell
 ./gradlew generateKatachiDocs
 ```
 
-プラグインを適用するだけで、**テストと同じ定義から** Markdown が 2 軸で生成されます。
+Just by applying the plugin, Markdown is generated along two axes **from the same definition as the tests.**
 
-- **役割リファレンス** — この役割は何で、どこに置くか
-- **ディレクトリ構成** — このディレクトリに何が置けるか
+- **Role reference** — what this role is, and where it goes
+- **Directory structure** — what can go in this directory
 
-両方が同じモデルから導かれるので、**互いに矛盾しません。** そして生成したドキュメント自体も検査の対象になります。
+Since both are derived from the same model, **they can never contradict each other.** And the generated documentation itself becomes subject to the checks too.
 
-[ArchitectureProcessor とそのカスタマイズ](/katachi/guides/processor/) で説明している仕組みが、ここで使われます。`assert()` と同じ interface の上に乗るので、特別扱いはありません。
+The mechanism described in [ArchitectureProcessor and customizing it](/katachi/guides/processor/) is what's used here. It sits on the same interface as `assert()`, so there's no special-casing.
 
-## v0.4 以降 — 既存プロジェクトへの導入
+## v0.4 and beyond — Adoption in existing projects
 
-ここまでは新規プロジェクト専用です。既存プロジェクトに入れられるようにするのが v0.4 以降の主題です。
+Everything up to this point is for new projects only. Making it possible to adopt katachi in existing projects is the theme of v0.4 and beyond.
 
-| 機能 | 何ができるか |
+| Feature | What it enables |
 |---|---|
-| **baseline** | 既存の違反を記録し、**新しく増えた分だけ**で落とす |
-| **レポート出力** | JSON / SARIF で出し、GitHub の PR にアノテーションとして載せる |
-| **語彙数の計測** | 役割の数と、役割ごとのファイル数を数値で出す |
-| **`pairedWith`** | 「すべての `Screen` に対応する `Preview` がある」のような網羅性を検査する |
+| **baseline** | Records existing violations and fails only on **newly added** ones |
+| **Report output** | Outputs JSON / SARIF, surfaced as annotations on GitHub PRs |
+| **Vocabulary-size measurement** | Reports the number of roles and the file count per role as numbers |
+| **`pairedWith`** | Checks coverage, such as "every `Screen` has a corresponding `Preview`" |
 
-**なぜ baseline が最後なのか。** baseline は「いまの違反を見なかったことにする」仕組みです。先に入れてしまうと、katachi を入れても何も起きないプロジェクトが量産されます。まず**新規プロジェクトで価値が出ること**を確かめてから出します。
+**Why is baseline last?** baseline is a mechanism for "pretending not to see" the violations you currently have. If it shipped first, you'd end up with a mass of projects where adopting katachi changes nothing. We want to first confirm that **it delivers value on new projects** before shipping it.
 
-この段階の仕様はまだほとんど決まっていません。バージョン番号の割り当ても「v0.4 以降」とひとまとまりです。
+The specification for this stage is largely undecided. Even the version numbering is grouped together as "v0.4 and beyond" for now.
 
-## 次のステップ
+## Next steps
 
-- [モチベーションと katachi の立ち位置](/katachi/get-started/motivation/) ... なぜこの順番なのかは、そもそも何を解こうとしているかに紐づいています。
-- [初めてのアーキテクチャ定義](/katachi/get-started/first-architecture/) ... いま動く v0.1 の範囲を実際に触ってみましょう。
+- [Motivation and where katachi fits](/katachi/get-started/motivation/) ... Why this order? It's tied to what katachi is trying to solve in the first place.
+- [Your first architecture definition](/katachi/get-started/first-architecture/) ... Try out the v0.1 functionality that works today.

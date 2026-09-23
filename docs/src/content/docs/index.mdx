@@ -1,6 +1,6 @@
 ---
 title: katachi
-description: Kotlin DSL でアーキテクチャを定義し、プロジェクト全体の構造を deny by default で検査するライブラリ。
+description: A library that defines your architecture in a Kotlin DSL and checks the structure of the whole project, deny by default.
 template: splash
 ---
 
@@ -16,13 +16,13 @@ import HomePillarScroll from '../../components/HomePillarScroll.astro';
 
 <div class="katachi-home__accent" aria-hidden="true"></div>
 
-<p class="katachi-home__lead">katachi で<br />動くアーキテクチャドキュメントを</p>
+<p class="katachi-home__lead">Architecture docs that run,<br />with katachi</p>
 
-<p class="katachi-home__intro">宣言していないファイルは、存在を許されない。プロジェクト全体の「どこに何を置けるか」を Kotlin DSL で書き、テストとして検証します。</p>
+<p class="katachi-home__intro">A file you never declared is not allowed to exist. Write what may go where across the whole project in a Kotlin DSL, and verify it as a test.</p>
 
-<nav class="katachi-home__hero-actions" aria-label="はじめる">
+<nav class="katachi-home__hero-actions" aria-label="Get started">
 
-[導入する →](/katachi/get-started/first-architecture/)
+[Get started →](/katachi/get-started/first-architecture/)
 
 [GitHub ↗](https://github.com/tbsten/katachi)
 
@@ -52,15 +52,15 @@ val projectArchitecture = architecture {
 
 <div class="katachi-home__split-copy">
 
-## <span id="katachi-home-problem">崩れるのは<br />いつも1ファイルから。</span>
+## <span id="katachi-home-problem">It always starts<br />with a single file.</span>
 
-置き場所の逸脱は、レビューで見逃しがちです。AI Agent が作ったファイルも、手本にするのは文書ではなく既存の配置。1つずれれば、そこから複製されていきます。
+A file in the wrong place is easy to miss in review. And when an AI agent writes one, what it imitates is not your documentation — it is the placement already in the tree. One file off, and it gets copied from there.
 
-**ドキュメントには、強制力がない。**
+**Documentation has no way to enforce itself.**
 
 </div>
 
-<div class="katachi-home__tree" aria-label="検査されていないディレクトリ構造の例">
+<div class="katachi-home__tree" aria-label="Example of a directory structure nobody checks">
 
 <p>src/main/kotlin/com/example/</p>
 
@@ -68,12 +68,12 @@ val projectArchitecture = architecture {
 ├─ useCase/
 │  ├─ GetUserUseCase.kt
 │  └─ UpdateUserUseCase.kt
-├─ DeleteUserUseCase.kt  ← 置き場所が違う
+├─ DeleteUserUseCase.kt  ← in the wrong place
 └─ misc/
-   └─ memo.md            ← 役割がない
+   └─ memo.md            ← has no role
 ```
 
-<small>この2つを、誰も検査していない</small>
+<small>Nobody is checking these two</small>
 
 </div>
 
@@ -81,9 +81,9 @@ val projectArchitecture = architecture {
 
 <section class="katachi-home__split katachi-home__split--reverse" aria-labelledby="katachi-home-solution">
 
-<div class="katachi-home__tree katachi-home__tree--allowed" aria-label="katachi が許可したディレクトリ構造の例">
+<div class="katachi-home__tree katachi-home__tree--allowed" aria-label="Example of a directory structure allowed by katachi">
 
-<p>ProjectArchitecture.kt が許可した範囲</p>
+<p>What ProjectArchitecture.kt allows</p>
 
 ```text
 src/main/kotlin/com/example/
@@ -93,23 +93,23 @@ src/main/kotlin/com/example/
 └─ misc/memo.md              ✕ reported
 ```
 
-<small><span aria-hidden="true">●</span> 宣言済み　<span aria-hidden="true">●</span> 違反として報告される</small>
+<small><span aria-hidden="true">●</span> Declared&nbsp;&nbsp;<span aria-hidden="true">●</span> Reported as a violation</small>
 
 </div>
 
 <div class="katachi-home__split-copy">
 
-## <span id="katachi-home-solution">宣言した場所だけが<br />存在を許される</span>
+## <span id="katachi-home-solution">Only what you declared<br />is allowed to exist</span>
 
-katachi では、存在してよいものを宣言します。禁止を数え上げるのではありません。
+In katachi you declare what may exist. You do not enumerate what is forbidden.
 
-**Deny by default — 宣言にないものは、存在できない。**
+**Deny by default — anything not in the declaration cannot exist.**
 
 </div>
 
 </section>
 
-<section class="katachi-home__pillars" aria-label="katachi の三つの柱" data-katachi-pillars data-active-pillar="0">
+<section class="katachi-home__pillars" aria-label="The three pillars of katachi" data-katachi-pillars data-active-pillar="0">
 
 <div class="katachi-home__pillar-list">
 
@@ -117,9 +117,9 @@ katachi では、存在してよいものを宣言します。禁止を数え上
 
 <p>03-01 — deny</p>
 
-### 宣言にないファイルは<br />アーキテクチャ違反
+### A file you never declared<br />is an architecture violation
 
-禁止を数え上げる運用から、存在してよいものを宣言する運用へ。「いつの間にか増えた置き場所」が起きません。
+Stop enumerating what is forbidden; declare what may exist instead. Locations no longer appear out of nowhere.
 
 ```kt
 "UseCase" { layout { "domain/useCase" / "*UseCase".ktFile() } }
@@ -132,13 +132,13 @@ katachi では、存在してよいものを宣言します。禁止を数え上
 
 <p>03-02 — role</p>
 
-### 役割駆動による<br />アーキテクチャ定義
+### Architecture definitions<br />driven by roles
 
-1つの役割が2つのモジュールに住んでいても、説明は1箇所のまま。置き場所は `layout { }` を並べて宣言します。
+Even when one role lives in two modules, the explanation stays in one place. Declare its placements by listing `layout { }` blocks.
 
 ```kt
 "UseCase" {
-  summary = "各画面で発生するアプリ固有の1つの振る舞い"
+  summary = "A single app-specific behavior that occurs on a screen"
   layout { "core/domain/useCase" / "*UseCase".ktFile() }
   layout { "feature/home/useCase" / "*UseCase".ktFile() }
 }
@@ -150,15 +150,15 @@ katachi では、存在してよいものを宣言します。禁止を数え上
 
 <p>03-03 — docs</p>
 
-### 検査した定義が、<br />そのままドキュメントへ
+### The definition you check<br />becomes the documentation
 
-`title` / `summary` / `example` を役割の中に書きます。同じ定義からのドキュメント生成は v0.3 で予定しています。
+Write `title`, `summary`, and `example` inside the role. Generating documentation from that same definition is planned for v0.3.
 
 ```kt
 "UseCase" {
-  title = "ユースケース"
-  summary = "各画面で発生するアプリ固有の1つの振る舞い"
-  example("GetUserUseCase", "ユーザーを取得する")
+  title = "Use case"
+  summary = "A single app-specific behavior that occurs on a screen"
+  example("GetUserUseCase", "Gets a user")
 }
 ```
 
@@ -184,7 +184,7 @@ katachi では、存在してよいものを宣言します。禁止を数え上
 
 ## <span id="katachi-home-agents">Built for AI agents.<br /><em>Good for humans too.</em></span>
 
-エージェントに効くのは、文章ではなく落ちるテスト。直し方まで書かれた出力は、人が読んでも分かります。
+What gets through to an agent is a failing test, not prose. And output that spells out how to fix it reads just as well to a human.
 
 </div>
 
@@ -192,17 +192,17 @@ katachi では、存在してよいものを宣言します。禁止を数え上
 
 <section class="katachi-home__cta" aria-labelledby="katachi-home-cta">
 
-## <span id="katachi-home-cta">プロジェクトの形を、宣言してみる。</span>
+## <span id="katachi-home-cta">Declare the shape of your project.</span>
 
-プロジェクト全体の構成を定義し、テストを実行しましょう。宣言にないファイルは違反として報告されます。
+Define the structure of the whole project and run the test. Any file that is not declared is reported as a violation.
 
 <div class="katachi-home__cards">
 
-[<strong>導入する <span>→</span></strong><small>定義を作り、テストを通すまでの手順。</small>](/katachi/get-started/first-architecture/)
+[<strong>Get started <span>→</span></strong><small>From writing a definition to a passing test.</small>](/katachi/get-started/first-architecture/)
 
-[<strong>設計思想を読む <span>→</span></strong><small>なぜ deny by default なのか、Konsist との住み分け。</small>](/katachi/get-started/motivation/)
+[<strong>Read the design philosophy <span>→</span></strong><small>Why deny by default, and where Konsist fits alongside it.</small>](/katachi/get-started/motivation/)
 
-[<strong>GitHub <span>↗</span></strong><small>実装とロードマップ。</small>](https://github.com/tbsten/katachi)
+[<strong>GitHub <span>↗</span></strong><small>The implementation and the roadmap.</small>](https://github.com/tbsten/katachi)
 
 </div>
 

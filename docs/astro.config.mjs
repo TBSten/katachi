@@ -32,7 +32,7 @@ export default defineConfig({
 				alt: '',
 			},
 			description:
-				'Android / KMP プロジェクトのアーキテクチャを Kotlin DSL で書き、同じ定義から「テスト」と「ドキュメント」の両方を出すライブラリ。',
+				'Declare your Android/KMP project architecture in a Kotlin DSL and check the whole tree against it, deny by default.',
 			// `locales` のキーで指す。ja は root なので 'root'。
 			defaultLocale: 'root',
 			// デザインシステムは starlight-theme-nova に任せる。
@@ -65,11 +65,11 @@ export default defineConfig({
 				'./src/styles/custom-global.css',
 				'./src/styles/home.css',
 			],
-			// 日本語が既定で `/katachi/` 配下、英語は `/katachi/en/` 配下。
-			// 英訳が無いページは Starlight が日本語で代替し、その旨の注意を出す。
+			// 英語が既定で `/katachi/` 配下、日本語は `/katachi/ja/` 配下。
+			// 訳が無いページは Starlight が既定ロケールで代替し、その旨の注意を出す。
 			locales: {
-				root: { label: '日本語', lang: 'ja' },
-				en: { label: 'English', lang: 'en' },
+				root: { label: 'English', lang: 'en' },
+				ja: { label: '日本語', lang: 'ja' },
 			},
 			// OGP。Starlight は og:title / og:description / og:url までは自分で出すが、
 			// 画像は出さない。`twitter:card` が summary_large_image なので、画像が無いと
@@ -125,50 +125,46 @@ export default defineConfig({
 			// サイトタイトル / ロゴから辿れるので十分という判断。ページ自体は残っている。
 			sidebar: [
 				{
-					label: 'はじめる',
-					translations: { en: 'Get started' },
+					label: 'Get started', translations: { ja: 'はじめる' },
 					items: [
-						{ label: 'モチベーション', translations: { en: 'Motivation' }, slug: 'get-started/motivation' },
-						{ label: '初めての定義', translations: { en: 'Your first definition' }, slug: 'get-started/first-architecture' },
-						{ label: 'FAQ', translations: { en: 'FAQ' }, slug: 'get-started/faq' },
-						{ label: '他ツールとの比較', translations: { en: 'Compared with other tools' }, slug: 'get-started/comparison-with-other-tools' },
+						{ label: 'Motivation', translations: { ja: 'モチベーション' }, slug: 'get-started/motivation' },
+						{ label: 'Your first definition', translations: { ja: '初めての定義' }, slug: 'get-started/first-architecture' },
+						{ label: 'FAQ', translations: { ja: 'FAQ' }, slug: 'get-started/faq' },
+						{ label: 'Compared with other tools', translations: { ja: '他ツールとの比較' }, slug: 'get-started/comparison-with-other-tools' },
 					],
 				},
 				{
 					// もとはコンセプトとガイドの2節だった。Role と Layout を読んだ人がそのまま
 					// konsist / processor へ進めるようにするため、間で節を切らない。
-					label: 'ガイド',
-					translations: { en: 'Guides' },
+					label: 'Guides', translations: { ja: 'ガイド' },
 					items: [
 						// この節の入口。Role と Layout はこの地図の深掘りなので、必ず先頭に置く。
 						// 下の「API リファレンス」（Dokka の全一覧）とは別物で、あちらが網羅、こちらが最小。
-						{ label: '基本的な API', translations: { en: 'The basic API' }, slug: 'guides/basic-api' },
+						{ label: 'The basic API', translations: { ja: '基本的な API' }, slug: 'guides/basic-api' },
 						// 「Role 定義を分割する」は独立ページをやめ、Role の末尾へ統合した。
-						{ label: 'Role', translations: { en: 'Role' }, slug: 'guides/role' },
-						{ label: 'Layout', translations: { en: 'Layout' }, slug: 'guides/layout' },
-						{ label: 'Konsist との統合', translations: { en: 'Konsist integration' }, slug: 'guides/konsist-integration' },
-						{ label: 'ArchitectureProcessor とそのカスタマイズ', translations: { en: 'ArchitectureProcessor' }, slug: 'guides/processor' },
+						{ label: 'Role', translations: { ja: 'Role' }, slug: 'guides/role' },
+						{ label: 'Layout', translations: { ja: 'Layout' }, slug: 'guides/layout' },
+						{ label: 'Konsist integration', translations: { ja: 'Konsist との統合' }, slug: 'guides/konsist-integration' },
+						{ label: 'ArchitectureProcessor', translations: { ja: 'ArchitectureProcessor とそのカスタマイズ' }, slug: 'guides/processor' },
 					],
 				},
 				{
-					label: 'レシピ',
-					translations: { en: 'Recipes' },
+					label: 'Recipes', translations: { ja: 'レシピ' },
 					items: [
 						// `/recipes/` の索引。中身は `SectionIndex` がこの `items` の順番を
 						// 読んで組み立てるので、ページを足すときに直すのはここだけでよい。
-						{ label: '一覧', translations: { en: 'All recipes' }, slug: 'recipes' },
-						{ label: 'Android の3層', translations: { en: 'Android three layers' }, slug: 'recipes/android-three-layer' },
-						{ label: 'Gradle', translations: { en: 'Gradle' }, slug: 'recipes/gradle' },
-						{ label: 'AI Agent', translations: { en: 'AI agents' }, slug: 'recipes/ai-agent' },
-						{ label: 'ktlint', translations: { en: 'ktlint' }, slug: 'recipes/ktlint' },
-						{ label: 'detekt', translations: { en: 'detekt' }, slug: 'recipes/detekt' },
-						{ label: 'Git', translations: { en: 'Git' }, slug: 'recipes/git' },
-						{ label: 'GitHub', translations: { en: 'GitHub' }, slug: 'recipes/github' },
+						{ label: 'All recipes', translations: { ja: '一覧' }, slug: 'recipes' },
+						{ label: 'Android three layers', translations: { ja: 'Android の3層' }, slug: 'recipes/android-three-layer' },
+						{ label: 'Gradle', translations: { ja: 'Gradle' }, slug: 'recipes/gradle' },
+						{ label: 'AI agents', translations: { ja: 'AI Agent' }, slug: 'recipes/ai-agent' },
+						{ label: 'ktlint', translations: { ja: 'ktlint' }, slug: 'recipes/ktlint' },
+						{ label: 'detekt', translations: { ja: 'detekt' }, slug: 'recipes/detekt' },
+						{ label: 'Git', translations: { ja: 'Git' }, slug: 'recipes/git' },
+						{ label: 'GitHub', translations: { ja: 'GitHub' }, slug: 'recipes/github' },
 					],
 				},
 				{
-					label: 'API リファレンス',
-					translations: { en: 'API reference' },
+					label: 'API reference', translations: { ja: 'API リファレンス' },
 					// Dokka の出力はまだ無い。`docs/public/api-docs/index.html` のプレースホルダを
 					// 外部リンクとして指す（content collection のページではないので `link` を使う）。
 					//
@@ -176,7 +172,7 @@ export default defineConfig({
 					// 素のパス文字列はしない。`base` を自分で前置する必要がある。
 					link: '/katachi/api-docs/',
 				},
-				{ label: 'ロードマップ', translations: { en: 'Roadmap' }, slug: 'roadmap' },
+				{ label: 'Roadmap', translations: { ja: 'ロードマップ' }, slug: 'roadmap' },
 			],
 		}),
 	],

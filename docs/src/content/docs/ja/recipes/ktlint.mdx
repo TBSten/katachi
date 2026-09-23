@@ -1,6 +1,6 @@
 ---
 title: ktlint
-description: An example of declaring where ktlint's .editorconfig and custom rule sets live in architecture { }.
+description: ktlint の .editorconfig と カスタムルールセットの置き場所を architecture { } で宣言する例。
 tags:
   - beginner
 ---
@@ -9,13 +9,13 @@ import { LinkCard } from '@astrojs/starlight/components';
 
 <LinkCard
   title="ktlint"
-  description="A linter / formatter for Kotlin. Configuration lives in .editorconfig."
+  description="Kotlin の linter / formatter。設定は .editorconfig に書く。"
   href="https://ktlint.github.io/ktlint/latest/"
 />
 
-ktlint lets you configure things like disabling lint rules through the .editorconfig file.
+ktlint は .editorconfig ファイルで lint rule の disable の設定などが可能です。
 
-You should declare .editorconfig in your architecture definition so katachi knows about it.
+アーキテクチャ定義に .editorconfig を設定して katachi に伝えるべきです。
 
 ```kt collapse
 // ProjectArchitecture.kt

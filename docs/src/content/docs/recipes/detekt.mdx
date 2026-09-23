@@ -1,6 +1,6 @@
 ---
 title: detekt
-description: detekt の設定ファイルと カスタムルールセットの置き場所を architecture { } で宣言する例。
+description: An example of declaring where detekt's configuration file and custom rule sets live in architecture { }.
 tags:
   - beginner
 ---
@@ -9,13 +9,13 @@ import { LinkCard } from '@astrojs/starlight/components';
 
 <LinkCard
   title="detekt"
-  description="Kotlin の静的解析ツール。ルールの有効・無効は YAML の設定ファイルに書く。"
+  description="A static analysis tool for Kotlin. Rules are enabled or disabled in a YAML configuration file."
   href="https://detekt.dev/"
 />
 
-detekt は YAML の設定ファイルでルールの有効・無効やしきい値の設定が可能です。
+detekt lets you configure rule enable/disable settings and thresholds through a YAML configuration file.
 
-アーキテクチャ定義に設定ファイルとベースラインを書いて katachi に伝えるべきです。
+You should declare the configuration file and baseline in your architecture definition so katachi knows about them.
 
 ```kt collapse
 // ProjectArchitecture.kt

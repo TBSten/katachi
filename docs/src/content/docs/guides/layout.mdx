@@ -1,22 +1,22 @@
 ---
-title: Layout システムでディレクトリ構成を厳守させる
+title: Enforce directory structure with the Layout system
 sidebar:
   label: Layout
-description: layout { } でディレクトリ構成とファイル名を宣言し、宣言していない場所にファイルが増えたら落とす方法。
+description: How to declare your directory structure and file names with layout { }, and fail the check when files appear in undeclared locations.
 tags:
   - intermediate
 ---
 
 import { Aside } from "@astrojs/starlight/components";
 
-## ファイルをどこにおけるか？を定義する
+## Defining where files may be placed
 
-Role に対応するファイルをどこに置けるかを定義するのが `layout { }` です。
+`layout { }` defines where the files for a Role may be placed.
 
 ```kt {3-6}
 architecture {
     "UseCase" {
-        // UseCase は useCase/ の中の *UseCase.kt にだけ置けます
+        // A UseCase may only be placed as *UseCase.kt inside useCase/
         layout {
             "src/main/kotlin/com/example/useCase" / "*UseCase".ktFile()
         }
@@ -24,13 +24,13 @@ architecture {
 }
 ```
 
-## ディレクトリ宣言の書き方のスタイル
+## Styles for writing directory declarations
 
-ディレクトリ宣言にはいくつか書き方があります。好みのスタイルで描くことができます。
+There are a few ways to write a directory declaration. You can use whichever style you prefer.
 
-### スラッシュで繋ぐ
+### Chaining with slashes
 
-各階層に置くものが1つだけのときは、`/` で繋いで1行で書けます。
+When each level has only one thing in it, you can chain them with `/` on a single line.
 
 ```kt
 layout {
@@ -38,7 +38,7 @@ layout {
 }
 ```
 
-ディレクトリだけを宣言することもできます。
+You can also declare just a directory.
 
 ```kt
 layout {
@@ -46,12 +46,12 @@ layout {
 }
 ```
 
-この場合 `app/ios` というディレクトリのみ存在が許されます。Deny by default の原則により それ以上のこと (app/ios 内にファイルをおく) は許されません。
+In this case, only the directory `app/ios` is allowed to exist. Under the Deny by default principle, anything beyond that — such as placing files inside `app/ios` — isn't allowed.
 
-### ブロックで囲む
+### Wrapping in a block
 
-同じディレクトリに複数のものを置くときは、ブロックで囲みます。
-特定ディレクトリ内に複数ファイルを配置したい場合に有用です。
+When you want to place multiple things in the same directory, wrap them in a block.
+This is useful when you want to place multiple files inside a specific directory.
 
 ```kt
 layout {
@@ -62,28 +62,28 @@ layout {
 }
 ```
 
-ブロックの中では `description` を書けます。生成ドキュメントで「この置き場所は何か」の説明になります。
+Inside the block, you can write `description`. It becomes the explanation of "what this location is for" in the generated documentation.
 
 ```kt
 layout {
     "src/main/kotlin/com/example/useCase" {
-        description = "複数の画面から使われるもの"
+        description = "Used from multiple screens"
         "*UseCase".ktFile()
     }
 }
 ```
 
-## 任意のファイルの配置を許す
+## Allowing arbitrary files to be placed
 
 <Aside type="caution">
-ここで説明する2つは **deny by default の逃げ道** です。使った範囲だけ検査が効かなくなります。
+The two features described here are **escape hatches from deny by default**. Wherever you use them, checking stops applying to that scope.
 
-「宣言するのが面倒だから」で広げると katachi を入れた意味が薄れます。**機械が生成するもの**や、**別のツールが構成を決めているもの**に限って使ってください。
+If you reach for them just because "declaring it is a hassle," you undermine the point of adopting katachi. Use them only for **things a machine generates** or **things whose structure is decided by another tool**.
 </Aside>
 
-### `anyFile()` — 直下のファイルだけ許す
+### `anyFile()` — allow only files directly inside
 
-そのディレクトリの**直下に限って**、どんなファイルでも置けるようにします。
+Allows any file to be placed, but **only directly inside** that directory.
 
 ```kt
 layout {
@@ -91,11 +91,11 @@ layout {
 }
 ```
 
-**サブディレクトリは許されません。** 1階層下にファイルがあれば、それは違反のまま報告されます。
+**Subdirectories aren't allowed.** A file one level deeper is still reported as a violation.
 
-### `ignore()` — 以下すべての検査をやめる
+### `ignore()` — stop checking everything below
 
-そのディレクトリより下を、**どの深さでも**検査しなくなります。
+Stops checking everything below that directory, **at any depth**.
 
 ```kt
 layout {
@@ -103,26 +103,26 @@ layout {
 }
 ```
 
-`"build".ignore()` と短く書くこともできます。
+You can also write it more concisely as `"build".ignore()`.
 
-### 空のブロックは逆の意味です
+### An empty block means the opposite
 
-見た目が似ているので、いちばん間違えやすいところです。
+This is the easiest thing to get wrong, since they look similar.
 
-| 書き方 | 意味 |
+| Syntax | Meaning |
 |---|---|
-| `"generated" { }` | **何も置けない。** 中にファイルがあれば違反 |
-| `"generated" { anyFile() }` | 直下ならどんなファイルでもよい |
-| `"generated" { ignore() }` | 以下すべて検査しない |
+| `"generated" { }` | **Nothing can be placed.** Any file inside is a violation |
+| `"generated" { anyFile() }` | Any file is fine, directly inside |
+| `"generated" { ignore() }` | Nothing below is checked |
 
-**「何も置かない」つもりでないなら、空のブロックにしないでください。** 
+**Don't leave a block empty unless you really mean "nothing goes here."**
 
-通常ディレクトリ宣言のブロックが空ブロックになることは推奨されません。（ディレクトリが存在するだけでその中身は何も置けない空ディレクトリとして存在を許容することになるためです）
+As a rule, an empty block for a directory declaration isn't recommended, because it permits the directory to exist as an empty directory whose contents can never hold anything.
 
-## ベストプラクティス
+## Best practices
 
-全てのディレクトリをすべての Role に書くのは非効率です。
-意味的な単位で定数化しましょう。
+Writing out every directory for every Role is inefficient.
+Extract them into constants at a meaningful unit.
 
 ```kt {1,6}
 val appPackageDir = "src/main/kotlin/com/example"
@@ -136,15 +136,15 @@ architecture {
 }
 ```
 
-## まとめ
+## Summary
 
-- `layout { }` は **Role のファイルが現れてよい場所** を宣言します。宣言していない場所のファイルは違反になります。
-- 書き方は `/` で繋ぐ形とブロックで囲む形の2つあり、**同じ宣言になります**。読みやすいほうを選んでください。
-- `anyFile()` と `ignore()` は **deny by default の逃げ道** です。使った範囲だけ検査が効かなくなります。
-- パスは **定数に切り出せます**。定義がディレクトリ構造のコピーになるのを防げます。
+- `layout { }` declares **where a Role's files may appear**. A file in an undeclared location is a violation.
+- There are two ways to write it — chaining with `/` or wrapping in a block — and **they declare the same thing**. Pick whichever is more readable.
+- `anyFile()` and `ignore()` are **escape hatches from deny by default**. Checking stops applying wherever you use them.
+- Paths **can be extracted into constants**. This keeps the definition from becoming a copy of your directory structure.
 
-## 次のステップ
+## Next steps
 
-- [Role](/katachi/guides/role/) ... 定義が大きくなってきたときに、ファイルと関数へ切り分ける方法を学びましょう。
-- [Konsist との統合](/katachi/guides/konsist-integration/) ... 置き場所だけでなく、ファイルの中身にも制約をかける方法を学びましょう。
-- [初めてのアーキテクチャ定義](/katachi/get-started/first-architecture/) ... あなたのプロジェクトに katachi を導入して、実際に宣言を書いてみましょう。
+- [Role](/katachi/guides/role/) ... Learn how to split a definition into files and functions as it grows.
+- [Konsist integration](/katachi/guides/konsist-integration/) ... Learn how to constrain not just placement but also the contents of files.
+- [Your first architecture definition](/katachi/get-started/first-architecture/) ... Introduce katachi into your project and actually write a declaration.

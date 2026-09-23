@@ -1,6 +1,6 @@
 ---
-title: Android architecture guide に従った3層アーキテクチャ
-description: Android アプリアーキテクチャガイドの UI・ドメイン・データ層を Role として宣言し、命名と中身の規約まで検査する例。
+title: Three-layer architecture following the Android architecture guide
+description: An example of declaring the UI, domain, and data layers of the Android app architecture guide as Roles, checking everything down to naming and content conventions.
 tags:
   - intermediate
 ---
@@ -8,16 +8,16 @@ tags:
 import { FileTree, LinkCard, Aside } from '@astrojs/starlight/components';
 
 <LinkCard
-  title="アプリ アーキテクチャ ガイド"
-  description="Android 公式の推奨アーキテクチャ。UI 層・ドメイン層・データ層の役割と依存の向き。"
+  title="App Architecture Guide"
+  description="Android's official recommended architecture: the roles of the UI, domain, and data layers, and the direction of their dependencies."
   href="https://developer.android.com/topic/architecture"
 />
 
-Android developers で公開されているアプリアーキテクチャガイドは Android アプリケーションのベースとなるアーキテクチャとして広く知られています。
+The app architecture guide published by Android Developers is widely known as the baseline architecture for Android applications.
 
-以下は Domain レイヤーを採用する場合のアーキテクチャ定義の例です。
+Below is an example architecture definition for a setup that adopts a domain layer.
 
-## ディレクトリ構造の例
+## Example directory structure
 
 <FileTree>
 - app/src/main/kotlin/com/example/project/
@@ -38,7 +38,7 @@ Android developers で公開されているアプリアーキテクチャガイ�
       - UserRemoteDataSource.kt
 </FileTree>
 
-## アーキテクチャ定義
+## Architecture definition
 
 ```kt
 // ProjectArchitecture.kt
@@ -80,7 +80,7 @@ fun DeclarationContainerScope.uiState() = "UiState" {
 }
 
 private fun ConstraintScope.shouldBeImmutable() =
-  "プロパティはすべて val であるべき".konsist {
+  "Every property must be a val".konsist {
     classes().must { klass -> klass.properties().all { it.hasValModifier } }
   }
 
@@ -96,17 +96,17 @@ fun DeclarationContainerScope.viewModel() = "ViewModel" {
 }
 
 private fun ConstraintScope.shouldContainsViewModelClass() =
-  "ファイル名と同じ名前のクラスを1つだけ宣言するべき".konsist {
+  "Must declare exactly one class with the same name as the file".konsist {
     files.must { file -> file.classes().map { it.name } == listOf(file.name) }
   }
 
 private fun ConstraintScope.shouldExtendsViewModel() =
-  "ViewModel を継承するべき".konsist {
+  "Must extend ViewModel".konsist {
     classes().must { klass -> klass.parents().any { it.name == "ViewModel" } }
   }
 
 private fun ConstraintScope.shouldUiStateFlowBePublic() =
-  "UiState の Flow を public で公開するべき".konsist {
+  "Must expose the UiState Flow as public".konsist {
     classes().must { klass ->
       klass.properties().any {
         it.hasPublicOrDefaultModifier && it.type?.name?.startsWith("StateFlow") == true
@@ -124,7 +124,7 @@ fun DeclarationContainerScope.screen() = "Screen" {
 }
 
 private fun ConstraintScope.shouldContainsPublicScreenComposable() =
-  "ファイル名と同じ名前の public な Composable を宣言するべき".konsist {
+  "Must declare a public Composable with the same name as the file".konsist {
     files.must { file ->
       file.functions().any {
         it.name == file.name && it.hasPublicOrDefaultModifier &&
@@ -144,12 +144,12 @@ fun DeclarationContainerScope.useCase() = "UseCase" {
 }
 
 private fun ConstraintScope.shouldContainsUseCaseClass() =
-  "ファイル名と同じ名前のクラスを1つだけ宣言するべき".konsist {
+  "Must declare exactly one class with the same name as the file".konsist {
     files.must { file -> file.classes().map { it.name } == listOf(file.name) }
   }
 
 private fun ConstraintScope.shouldSingleInvokePublicMethod() =
-  "public な invoke メソッドを1つだけ持つべき".konsist {
+  "Must have exactly one public invoke method".konsist {
     classes().must { klass ->
       klass.functions().filter { it.hasPublicOrDefaultModifier }.map { it.name } == listOf("invoke")
     }
@@ -172,7 +172,7 @@ fun DeclarationContainerScope.repositoryInterface() = "RepositoryInterface" {
 }
 
 private fun ConstraintScope.shouldContainsRepositoryInterface() =
-  "ファイル名と同じ名前の interface を1つだけ宣言するべき".konsist {
+  "Must declare exactly one interface with the same name as the file".konsist {
     files.must { file -> file.interfaces().map { it.name } == listOf(file.name) }
   }
 
@@ -186,7 +186,7 @@ fun DeclarationContainerScope.repositoryImplementation() = "RepositoryImplementa
 }
 
 private fun ConstraintScope.shouldContainsRepositoryImplementationClass() =
-  "ファイル名と同じ名前のクラスを1つだけ宣言するべき".konsist {
+  "Must declare exactly one class with the same name as the file".konsist {
     files.must { file -> file.classes().map { it.name } == listOf(file.name) }
   }
 
@@ -200,12 +200,12 @@ fun DeclarationContainerScope.dataSource() = "DataSource" {
 }
 
 private fun ConstraintScope.shouldContainsDataSourceClass() =
-  "ファイル名と同じ名前のクラスを1つだけ宣言するべき".konsist {
+  "Must declare exactly one class with the same name as the file".konsist {
     files.must { file -> file.classes().map { it.name } == listOf(file.name) }
   }
 ```
 
-<Aside type="caution" title="スニペットはあくまでスタートラインとしてつかうべきです">
-上記のスニペットにはドキュメントに出てくる要素を中心に取り上げており、実際のプロジェクトでは適宜追加や修正が必要です。
-たとえばあなたのプロダクトで Dagger Hilt を使っている場合は ViewModel の検査に `@HiltViewModel` アノテーションの有無を検査するように追加したり、Repository の実装クラスに `@Inject` コンストラクタがあることを検査するように追加するなど 追加のカスタマイズが必要になることでしょう。
+<Aside type="caution" title="Treat this snippet only as a starting point">
+This snippet focuses on the elements that appear in the documentation, and real projects will need additional additions and adjustments.
+For example, if your product uses Dagger Hilt, you might add a check for the `@HiltViewModel` annotation on ViewModels, or a check that repository implementation classes have an `@Inject` constructor — customizations like these will likely be necessary.
 </Aside>

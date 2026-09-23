@@ -1,31 +1,31 @@
 ---
-title: 基本的な API
-description: 覚えるのは6つだけ。architecture / group / 役割 / layout / konsist / assert。
+title: Basic API
+description: Just six things to remember. architecture / group / role / layout / konsist / assert.
 tags:
   - beginner
 ---
 
-このページでは katachi の主要 API を紹介します。
-これだけを覚えれば katachi の基本的な使い方を理解できるはずです。
+This page introduces katachi's core API.
+Once you know these, you should understand the basics of using katachi.
 
 ## 1. `architecture { }`
 
-`architecture { }` はプロジェクト全体のアーキテクチャを定義するエントリーポイントです。
-プロジェクト内に存在するファイルの役割をこのなかに書いていきます。
+`architecture { }` is the entry point for defining your project's overall architecture.
+Inside it, you write the roles of the files that exist in your project.
 
 ```kt
 architecture {
   "UseCase" { /* ... */ }
   "Repository-interface" { /* ... */ }
 }
-// このプロジェクトには `UseCase` と `Repository-interface` という2つの役割がある
+// This project has two roles: `UseCase` and `Repository-interface`
 ```
 
-アーキテクチャ内の要素 (Role) については後のセクションで深掘りします。
+The elements inside an architecture (Role) are covered in more depth in a later section.
 
-## 2. アーキテクチャをテストする `assert()`
+## 2. Testing the architecture with `assert()`
 
-`architecture { }` で定義したアーキテクチャをテストする関数が `assert()` です。
+`assert()` is the function that tests the architecture defined with `architecture { }`.
 
 ```kt {8}
 val projectArchitecture = architecture {
@@ -34,16 +34,14 @@ val projectArchitecture = architecture {
 }
 
 @Test
-fun `アーキテクチャに沿ったファイル配置になっている`() {
+fun `files are placed according to the architecture`() {
   projectArchitecture.assert()
 }
 ```
 
-## 3. Role を定義する `"名前" { }`
+## 3. Declaring a Role with `"Name" { }`
 
-アーキテクチャ定義を
-
-`"名前" { }` はプロジェクトの中に登場するファイルの役割 (Role) を定義します。
+As part of the architecture definition, `"Name" { }` declares the role that a file appearing in the project plays.
 
 ```kt {2,4}
 architecture {
@@ -53,11 +51,11 @@ architecture {
 }
 ```
 
-`architecture { }` ブロックの中に `"名前" { }` を書くことで、プロジェクト内に登場するファイルの役割を定義できます。
+Writing `"Name" { }` inside an `architecture { }` block lets you declare the roles of files that appear in the project.
 
-### Role の例
+### Example roles
 
-著名なアーキテクチャを採用している場合、役割は具体的には以下のようなものになるでしょう。
+If you're using a well-known architecture, roles typically look something like this.
 
 | Group | Role |
 |---|---|
@@ -73,19 +71,19 @@ architecture {
 
 ### Deny by default
 
-katachi では **宣言された Roleのファイルのみがプロジェクト内に存在を許されます** 。
+In katachi, **only files with a declared Role are allowed to exist in the project**.
 
-つまり katachi を導入する際、プロジェクト規約にあった Role の列挙が求められます。
+In other words, adopting katachi requires you to enumerate the Roles that match your project's conventions.
 
-### 関連ドキュメント
+### Related documentation
 
-Role については [Role 定義の詳細](/katachi/guides/role/) も参照してください。
+For Role, also see [Role definitions in depth](/katachi/guides/role/).
 
-## 4. Role をグルーピングする `"...".group { }`
+## 4. Grouping Roles with `"...".group { }`
 
-`"名前".group { }` は Role をまとめるためのブロックです。
+`"Name".group { }` is a block for grouping Roles together.
 
-例えば Clean architecture では、`UseCase` と `Repository-interface` は **同じ ドメインレイヤー の役割** です。
+For example, in Clean architecture, `UseCase` and `Repository-interface` are both **roles in the same domain layer**.
 
 ```kt {2}
 architecture {
@@ -96,17 +94,17 @@ architecture {
 }
 ```
 
-ドメインレイヤーという役割のグループを DSL で表現することで、役割同士の関係性・階層構造がより明確になるため、分かりやすい粒度で Role をグループ化することは分かりやすいアーキテクチャ定義を作る上で重要です。
+Expressing a group like "the domain layer" in the DSL makes the relationships and hierarchy between roles clearer. Grouping Roles at a sensible granularity is important for building an architecture definition that's easy to understand.
 
-### 関連ドキュメント
+### Related documentation
 
-Role のグループについては [Role 定義の詳細](/katachi/guides/role/) も参照してください。
+For grouping Roles, also see [Role definitions in depth](/katachi/guides/role/).
 
-## 5. ファイルが存在して良い位置を定義する `layout { }`
+## 5. Defining where files may exist with `layout { }`
 
-`"..." { }` を使った Role の定義では その Role に対応するファイルについての言及がありません。
+Declaring a Role with `"..." { }` doesn't say anything about the files that correspond to that Role.
 
-`layout { }` は Role に対応するファイルをどこに置けるかを定義するためのブロックです。
+`layout { }` is the block that defines where the files for a Role may be placed.
 
 ```kt {3-5}
 architecture {
@@ -117,23 +115,22 @@ architecture {
   }
 }
 
-// UseCase は `src/main/kotlin/com/example/useCase/*UseCase.kt` に置くことができる
+// A UseCase may be placed at `src/main/kotlin/com/example/useCase/*UseCase.kt`
 ```
 
-### どのように機能するか
+### How it works
 
-Deny by default の原則により `layout { }` で宣言されていない場所にファイルを置くことは許されません。
+Under the Deny by default principle, you can't place a file anywhere that isn't declared in `layout { }`.
 
-もし AI Agent が `src/main/kotlin/com/example/GetItemUseCase.kt` に新しい UseCase ファイルを置こうとしたとします (本来は useCase パッケージ内に配置すべきです)。
-`assert()` が呼び出された瞬間、katachi はこのパスに一致する Role が存在しないことを検知し、テストは失敗します。
+Say an AI Agent tries to place a new UseCase file at `src/main/kotlin/com/example/GetItemUseCase.kt` (it should really go inside the useCase package). The moment `assert()` is called, katachi detects that no Role matches this path, and the test fails.
 
-### 関連ドキュメント
+### Related documentation
 
-`layout { }` については [Layout 定義の詳細](/katachi/guides/layout/) も参照してください。
+For `layout { }`, also see [Layout definitions in depth](/katachi/guides/layout/).
 
-## 6. ファイル内の制約を定義する `"...".konsist { }`
+## 6. Constraining a file's contents with `"...".konsist { }`
 
-Role が定義されたファイルに [Konsist](https://docs.konsist.lemonappdev.com/) を使って制約を設定することができます。
+You can set constraints on the files of a declared Role using [Konsist](https://docs.konsist.lemonappdev.com/).
 
 ```kt {8}
 architecture {
@@ -142,26 +139,26 @@ architecture {
       "src/main/kotlin/com/example/useCase" / "*UseCase".ktFile()
     }
 
-    "invoke 関数を1つだけ持つこと".konsist {
+    "has exactly one invoke function".konsist {
       classes().must { it.functions().map { f -> f.name } == listOf("invoke") }
     }
   }
 }
 ```
 
-`layout { }` で指定したファイルに対して、Konsist の API を使って制約を設定することができます。
+You can set constraints on the files matched by `layout { }` using the Konsist API.
 
-### 関連ドキュメント
+### Related documentation
 
-`"...".konsist { }` については [Konsist 連携ガイド](/katachi/guides/konsist-integration/) も参照してください。
+For `"...".konsist { }`, also see the [Konsist integration guide](/katachi/guides/konsist-integration/).
 
-## まとめ
+## Summary
 
 <table>
   <tr>
     <th>API</th>
-    <th style="min-width: 12rem">何をするか</th>
-    <th>例</th>
+    <th style="min-width: 12rem">What it does</th>
+    <th>Example</th>
   </tr>
 
   <tr>
@@ -171,7 +168,7 @@ architecture {
       ```
     </td>
     <td>
-      プロジェクト全体のアーキテクチャを定義するエントリーポイントとなる関数です。
+      The function that serves as the entry point for defining your project's overall architecture.
     </td>
     <td>
       ```kt nocollapse
@@ -180,7 +177,7 @@ architecture {
       }
       ```
 
-      - 意味: このプロジェクトには `UseCase` という役割がある
+      - Meaning: this project has a role called `UseCase`
     </td>
   </tr>
 
@@ -191,28 +188,28 @@ architecture {
       ```
     </td>
     <td>
-      定義どおりにファイルが置かれているかを検査します。テストから呼ぶ1行で、これが無いと何も起きません。
+      Checks whether files are placed according to the definition. It's a single line called from a test — without it, nothing happens.
     </td>
     <td>
       ```kt nocollapse
       @Test
-      fun `配置が定義どおり`() {
+      fun `placement follows the definition`() {
         projectArchitecture.assert()
       }
       ```
 
-      - 意味: 違反があればテストが落ちる。1回の実行で全部の違反が1つのメッセージに出る
+      - Meaning: the test fails if there's a violation. A single run reports every violation in one message
     </td>
   </tr>
 
   <tr>
     <td>
       ```kt
-      "名前" { }
+      "Name" { }
       ```
     </td>
     <td>
-      プロジェクトの中に登場するファイルの役割 (Role) を定義します。
+      Declares the role (Role) of a file that appears in the project.
     </td>
     <td>
       ```kt nocollapse
@@ -221,18 +218,18 @@ architecture {
       }
       ```
 
-      - 意味: `UseCase` という役割がある。宣言していない役割のファイルは置けない
+      - Meaning: there's a role called `UseCase`. Files for undeclared roles can't be placed
     </td>
   </tr>
 
   <tr>
     <td>
       ```kt
-      "名前".group { }
+      "Name".group { }
       ```
     </td>
     <td>
-      Role をまとめて階層を作ります。任意で、使わなくても Role は書けます。
+      Groups Roles together to build a hierarchy. Optional — Roles work fine without it.
     </td>
     <td>
       ```kt nocollapse
@@ -241,7 +238,7 @@ architecture {
       }
       ```
 
-      - 意味: `UseCase` は domain レイヤーの役割。修飾名は `domain/UseCase` になる
+      - Meaning: `UseCase` is a role in the domain layer. Its qualified name becomes `domain/UseCase`
     </td>
   </tr>
 
@@ -252,7 +249,7 @@ architecture {
       ```
     </td>
     <td>
-      その Role のファイルをどこに置いてよいかを定義します。
+      Defines where that Role's files may be placed.
     </td>
     <td>
       ```kt nocollapse
@@ -262,33 +259,33 @@ architecture {
       }
       ```
 
-      - 意味: `domain/useCase/*UseCase.kt` にだけ置ける。それ以外の場所に置くと違反になる
+      - Meaning: it can only be placed at `domain/useCase/*UseCase.kt`. Anywhere else is a violation
     </td>
   </tr>
 
   <tr>
     <td>
       ```kt
-      "名前".konsist { }
+      "Name".konsist { }
       ```
     </td>
     <td>
-      その Role のファイルの中身に制約をかけます。別モジュール `katachi-konsist` が必要です。
+      Constrains the contents of that Role's files. Requires the separate `katachi-konsist` module.
     </td>
     <td>
       ```kt nocollapse
-      "invoke を1つだけ持つこと".konsist {
-        classes().must { /* 条件 */ }
+      "has exactly one invoke".konsist {
+        classes().must { /* condition */ }
       }
       ```
 
-      - 意味: 満たさないファイルがあると違反になる。**制約名がそのまま違反レポートに出る**
+      - Meaning: a file that doesn't satisfy this is a violation. **The constraint name appears directly in the violation report**
     </td>
   </tr>
 </table>
 
-## 次のステップ
+## Next steps
 
-- [初めてのアーキテクチャ定義](/katachi/get-started/first-architecture/) ... あなたのプロジェクトに katachi を導入して、この6つを実際に書いてみましょう。
-- [Role](/katachi/guides/role/) ... 役割に説明を書く方法と、定義がディレクトリ構造のコピーにならないようにする考え方を学びましょう。
-- [Layout](/katachi/guides/layout/) ... 置き場所の書き分けと、`anyFile()` / `ignore()` という deny by default の逃げ道の使いどころを学びましょう。
+- [Your first architecture definition](/katachi/get-started/first-architecture/) ... Introduce katachi into your project and actually write these six things.
+- [Role](/katachi/guides/role/) ... Learn how to write descriptions for roles, and how to keep the definition from becoming a copy of your directory structure.
+- [Layout](/katachi/guides/layout/) ... Learn how to write out placements, and when to reach for the deny-by-default escape hatches `anyFile()` / `ignore()`.

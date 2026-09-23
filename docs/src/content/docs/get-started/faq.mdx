@@ -1,107 +1,111 @@
 ---
 title: FAQ
-description: katachi がなぜこの形をしているのか。設計の考え方についてよくある質問。
+description: Why katachi has the shape it does. Common questions about the thinking behind its design.
 tags:
   - beginner
 ---
 
 import { Aside, LinkCard, CardGrid, FileTree } from '@astrojs/starlight/components';
 
-このページは **katachi がなぜこの形をしているのか** に答えます。
-導入手順や書き方は [初めてのアーキテクチャ定義](/katachi/get-started/first-architecture/) を参照してください。
+This page answers **why katachi has the shape it does**.
+For how to install it and how to write definitions, see [Your first architecture definition](/katachi/get-started/first-architecture/).
 
-## なぜ「宣言されていないファイルは違反」なのですか
+## Why is an undeclared file a violation?
 
-アーキテクチャが壊れるとき、壊し方はたいてい **「ルールに違反するものが書かれた」ではなく
-「誰も想定していない場所に何かが増えた」** です。
+When an architecture breaks, it usually does not break because
+**someone wrote something that violates a rule**; it breaks because **something appeared
+in a place nobody had thought about.**
 
-禁止リスト方式（「`domain` から `android.*` を import してはいけない」）は、
-**思いついた禁止事項しか守れません。** 思いつかなかった壊れ方は素通りします。
-そして一番多いのは、思いつかなかった壊れ方です。
+A deny-list ("`domain` must not import `android.*`")
+**only protects you from the prohibitions you thought of.** The ways of breaking things you
+did not think of pass straight through. And those are by far the most common ones.
 
-違うのは**列挙し損ねたものがどちらへ倒れるか**、その1点だけです。
+The one difference is **which way the things you failed to enumerate fall** — that is all.
 
 <details>
-<summary>セキュリティ分野との邂逅</summary>
+<summary>Where this meets security</summary>
 
-想定外の存在を怪しいと疑う考え方はセキュリティにも通ずるものがあります。
+Treating anything unexpected as suspicious is a habit security shares.
 
-これは **fail-safe defaults**（安全側に倒れる既定値）と呼ばれ、Saltzer と Schroeder が
-1975 年に挙げた設計原則の1つです。「アクセスの可否は**拒否の列挙ではなく許可の列挙**で決めよ」
-というもので、ファイアウォールを default deny から書き始めるのも、
-CSP を `default-src 'none'` から書き始めるのも、同じ原則の現れです。
+It is called **fail-safe defaults**, one of the design principles Saltzer and Schroeder
+listed in 1975: decide access **by enumerating what is permitted, not what is denied**.
+Starting a firewall from default deny, and starting a CSP from `default-src 'none'`,
+are both expressions of that same principle.
 
-理由も同じです。**禁止を列挙する方式は、列挙し損ねたものが素通りします。**
-シグネチャ方式のマルウェア対策が未知の検体を止められないのと同じで、
-**抜けたときに「静かに通る」側へ倒れます。**
-許可を列挙する方式なら、抜けたときは「通らない」側へ倒れます。
-どちらに倒れてほしいか、という選択です。
+The reasoning is the same too. **A scheme that enumerates prohibitions lets through
+whatever it failed to enumerate.** Just as signature-based malware protection cannot stop an
+unknown sample, **when something slips past, it falls to the "passes quietly" side.**
+With a scheme that enumerates permissions, whatever slips past falls to the "does not pass" side.
+It is a choice of which way you want it to fall.
 
-そして**代償も同じ**です。許可リストは列挙が大変で、運用が重い。
-それでも守る価値のある境界では採用されます。katachi の「最初が重い」も同じ話です。
+**The price is the same as well.** Allow-lists are laborious to enumerate and heavy to
+maintain. They are still adopted at boundaries worth defending. katachi being "heavy at the
+start" is the same story.
 
-もっとも katachi はセキュリティのための道具ではありません。
-借りているのは判断の形だけで、守っているのはアーキテクチャです。
+That said, katachi is not a security tool. All it borrows is the shape of the decision;
+what it defends is your architecture.
 
 </details>
 
-katachi は逆に、**現れてよいものを全部書かせます。** 書いていないものは違反です。
-これなら「想定していなかった」が起きません。想定していないもの自体が違反だからです。
+katachi does the opposite: **it makes you write down everything that may appear.** Anything you
+did not write down is a violation. That way "we never thought about it" cannot happen,
+because the unanticipated thing is itself the violation.
 
-代償は正直に言って**最初が重い**ことです。プロジェクトにあるファイルを全部説明しきるまで
-テストは緑になりません。それでも、**説明しきれないファイルがあるという事実のほうが情報**だと
-考えています。それは本当に要るファイルですか。
+The price, honestly, is that **the start is heavy.** The test will not go green until every
+file in the project has been accounted for. Even so, we think **the fact that some files cannot
+be accounted for is itself the information.** Do you really need that file?
 
-## 既存のプロジェクトに入れたら、違反だらけになりませんか
+## Won't an existing project be nothing but violations?
 
-なります。**それが正常な出発点です。**
+Yes. **That is the normal starting point.**
 
-初回の実行で出てくる違反の一覧は、そのまま
-**「このプロジェクトには、誰も説明できていないファイルがこれだけある」** という報告です。
-katachi が壊したのではなく、もともとそうだったものが見えただけです。
+The list of violations from the first run is, as it stands, a report saying
+**"this project contains this many files that nobody can account for."**
+katachi did not break anything; it only made visible what was already there.
 
-出てきたパスを1つずつ、定義に足すか・移すか・消すかで片付けていくことになります。
-この作業自体が、**チームがアーキテクチャについて合意し直す作業**になります。
+You will work through the reported paths one at a time, adding each to the definition,
+moving it, or deleting it. That work is itself **the team agreeing on its architecture again.**
 
-<Aside title="既存の状態を一旦受け入れたい場合">
-「今あるものは一旦そのままにして、新しく増えるものだけ止めたい」という要求は理解しています。
-**baseline 機能として予定していますが、まだ実装されていません**（[ロードマップ](/katachi/roadmap/)）。
-現時点では `process()` で違反のリストを受け取って自分で差し引くことはできます。
+<Aside title="If you want to accept the current state for now">
+We understand the request: "leave what is already here alone, and only stop new things from
+being added." **It is planned as a baseline feature, but it is not implemented yet**
+([Roadmap](/katachi/roadmap/)). For now, you can take the list of violations via `process()`
+and subtract them yourself.
 </Aside>
 
-## Konsist や ArchUnit があるのに、なぜ別のものが要るのですか
+## Konsist and ArchUnit exist — why does anything else need to?
 
-**見ている範囲が違います。**
+**They look at a different range.**
 
-Konsist や ArchUnit は **「対象を絞ってから、その中身を検証する」** 道具です。
+Konsist and ArchUnit are tools for **narrowing down a target and then checking its contents**.
 
 ```kt title="UseCaseKonsistTest.kt" {1-4}
-// ここで絞る
+// narrowing happens here
 Konsist.scopeFromProject()
     .classes()
     .withNameEndingWith("UseCase")   
 
-    // 絞ったもののみ検証
+    // only what the filter caught is checked
     .assertTrue { /* ... */ }
 ```
 
-この書き方では、**絞った網に引っかからないものは検証されません。**
+Written this way, **anything the net does not catch is never checked.**
 
 <FileTree>
 - src/main/kotlin/com/example/
   - useCase/
-    - **GetUserUseCase.kt** Konsist の視界に入る
-  - **UserHelper.kt** 名前が違うので視界に入らない
+    - **GetUserUseCase.kt** in Konsist's field of view
+  - **UserHelper.kt** the name does not match, so it stays out of view
   - misc/
-    - **memo.md** そもそもディレクトリごと視界に入らない
+    - **memo.md** the whole directory is out of view to begin with
 </FileTree>
 
-katachi は逆向きです。**プロジェクト全体を歩いて、宣言と突き合わせます。**
+katachi works the other way around. **It walks the whole project and matches it against the declaration.**
 
 ```mermaid
 flowchart TB
-    subgraph K["katachi が見る範囲 ＝ プロジェクト全体"]
-        subgraph S["Konsist の scope"]
+    subgraph K["What katachi sees = the whole project"]
+        subgraph S["Konsist's scope"]
             U1["GetUserUseCase.kt"]
             U2["UpdateUserUseCase.kt"]
         end
@@ -113,51 +117,51 @@ flowchart TB
     style K fill:#F5F7F8,stroke:#9BC7B6
 ```
 
-「あるべきでないものがある」を見つけるには、**全体を見る側の道具**が要ります。
+To find "something is here that should not be", you need **a tool that looks at the whole.**
 
-## では Konsist は要らなくなるのですか
+## So does Konsist become unnecessary?
 
-いいえ、**併用します。役割が違います。**
+No, **you use both. They do different jobs.**
 
-| | 何を見るか |
+| | What it looks at |
 |---|---|
-| katachi | ファイルが**どこにあるか**。プロジェクト全体の構造 |
-| Konsist | ファイルの**中身がどうあるか**。クラス・関数・可視性 |
+| katachi | **Where** a file is. The structure of the whole project |
+| Konsist | **What is inside** a file. Classes, functions, visibility |
 
-「`UseCase` は `useCase/` ディレクトリに置く」は katachi の仕事です。
-「`UseCase` は `invoke` 関数を1つだけ持つ」は Konsist の仕事です。
+"A `UseCase` goes in the `useCase/` directory" is katachi's job.
+"A `UseCase` has exactly one `invoke` function" is Konsist's job.
 
-katachi の定義の中に Konsist の制約を書けるようにしてあるので、
-**配置の違反と中身の違反が1つのレポートにまとまります。**
+Because you can write Konsist constraints inside a katachi definition,
+**placement violations and content violations end up in a single report.**
 
-また Konsist の「ファイルの中身を検証する」という立ち位置は Konsist に限ったものではありません。
-もしあなたが [detekt](https://detekt.dev/) のカスタムルール、[Konture](https://github.com/baole/konture) を利用している場合、検証したいルールによっては それらが Konsist の代替となるかもしれません。
+And Konsist is not the only tool that occupies the "check the contents of a file" position.
+If you use custom [detekt](https://detekt.dev/) rules or [Konture](https://github.com/baole/konture), those may serve as a substitute for Konsist, depending on the rule you want to check.
 
 
 <CardGrid>
   <LinkCard
-    title="Konsist との統合"
-    description="konsist { } の書き方と、1つのレポートにまとまる仕組み。"
+    title="Konsist integration"
+    description="How to write konsist { }, and how it all lands in one report."
     href="/katachi/guides/konsist-integration/"
   />
   <LinkCard
-    title="他ツールとの比較"
-    description="detekt・Konture など、中身を検証する他の選択肢との関係。"
+    title="Comparison with other tools"
+    description="How detekt, Konture, and the rest — the tools that check contents — relate to katachi."
     href="/katachi/get-started/comparison-with-other-tools/"
   />
 </CardGrid>
 
-## テストが1本しかないのはなぜですか
+## Why is there only one test?
 
-**1回走らせれば全部わかる**ようにしたいからです。
+Because **one run should tell you everything.**
 
-ルールごとにテストを分けると、1つ落ちた時点でそのテストは止まります。
-直して再実行して、次の違反を知って、また直す。**違反の数だけ往復**が発生します。
+If you split the tests up per rule, a test stops at the first failure.
+Fix it, rerun, learn about the next violation, fix again. **You get one round trip per violation.**
 
-katachi は `assert()` を1回呼ぶだけで、リポジトリ全体の違反が**1つの失敗メッセージ**に集まります。
-10箇所おかしければ10箇所が一度に出ます。読むのは1回です。
+katachi calls `assert()` once, and every violation in the repository gathers into **a single
+failure message**. If ten things are wrong, all ten come out at once. You read it once.
 
-```text title="1回の実行で返ってくるもの" {1}
+```text title="What a single run gives you" {1}
 Katachi check failed: 3 violations (Unexpected: 2, Missing: 1)
 
 [UnexpectedFile] src/main/kotlin/com/example/GetUserUseCase.kt
@@ -177,54 +181,59 @@ Katachi check failed: 3 violations (Unexpected: 2, Missing: 1)
   ...
 ```
 
-1行目に**総数と内訳**があります。ここを読めば、残りを読む前に規模が分かります。
+The first line carries **the total and the breakdown**. Read it and you know the scale before
+you read the rest.
 
-これは人間にとっても楽ですが、**AI Agent にとっては決定的**です。
-1回のテスト実行で直す材料が揃うか、10回往復するかの差になります。
+This is convenient for a human, but **for an AI agent it is decisive.**
+It is the difference between gathering everything you need to fix in one test run and making
+ten round trips.
 
-## テストが通るなら、ドキュメント生成は要らないのでは
+## If the test passes, why generate documentation?
 
-**ドキュメント生成はオプション機能ですが推奨**されます。
-テストは人間向けの説明ではないからです。
+**Generating documentation is optional, but recommended**, because a test is not an explanation
+written for humans.
 
-`assert()` が守ってくれるのは「定義どおりになっていること」だけです。
-新規参画者や AI Agent が知りたいのは「**なぜ**この構造なのか」であり それはテストの出力には出てきません。
+All `assert()` guarantees is that things match the definition.
+What a newcomer or an AI agent wants to know is **why** the structure is this way, and that does
+not appear in the test output.
 
-かといってドキュメントを別に書けば、**それが腐ります。** 腐ったドキュメントは
-無いよりたちが悪い。実装と食い違っていることに誰も気づかないからです。
+Write that documentation separately, though, and **it will rot.** Rotten documentation is worse
+than none at all, because nobody notices that it contradicts the implementation.
 
-そのため katachi は**同じ定義から両方を出します**。役割に書いた `summary` や
-`description` が、検査の対象であると同時にドキュメントの本文になります。
+So katachi **produces both from the same definition**. The `summary` and `description` you write
+in a role are at once the subject of the check and the body of the documentation.
 
 ```mermaid
 flowchart LR
-    D["architecture { }<br/>役割・配置・説明"]
-    D --> T["テスト<br/>宣言どおりか検査する"]
-    D --> M["ドキュメント<br/>何を置く場所か説明する"]
-    D -.-> C["自作 Processor<br/>集計・抽出・別形式への出力"]
+    D["architecture { }<br/>roles, placement, descriptions"]
+    D --> T["Test<br/>check that it matches the declaration"]
+    D --> M["Docs<br/>explain what each place is for"]
+    D -.-> C["Your own Processor<br/>aggregate, extract, emit other formats"]
 
     style D fill:#EAF2FB,stroke:#5B8DEF,stroke-width:2px
     style C fill:#FAFAFA,stroke:#BDBDBD,stroke-dasharray:4 3,color:#8A8A8A
 ```
 
-アーキテクチャ定義が Single Source of Truth となるため、**片方だけが古くなることが構造的に起きません。**
+Because the architecture definition is the single source of truth, **one side going stale on its
+own is structurally impossible.**
 
-テストとドキュメントは katachi が用意しているものですが、**この2つに限りません。**
-同じ定義から自分で何かを取り出すこともできます（[ArchitectureProcessor とそのカスタマイズ](/katachi/guides/processor/)）。
+Tests and documentation are what katachi ships, but **you are not limited to those two.**
+You can pull whatever you want out of the same definition
+([ArchitectureProcessor and customizing it](/katachi/guides/processor/)).
 
 <Aside type="caution">
-ドキュメント生成は **v0.3 で予定している機能で、まだ動きません。**
-現時点で使えるのは検査（`assert()`）までです。
+Documentation generation is **planned for v0.3 and does not work yet.**
+What you can use today is the check (`assert()`).
 </Aside>
 
-## 役割の名前や粒度は、どう決めればいいのですか
+## How do I decide the names and the granularity of roles?
 
-**チームが今その言葉を使っているかどうか**を基準にしてください。
+Use this criterion: **is the team already using that word?**
 
-katachi の役割は、新しい概念を導入するためのものではありません。
-すでに口頭やレビューで使われている言葉 —「これは UseCase だよね」「Repository に置いて」—
-を、そのまま宣言として書き出すものです。
+Roles in katachi are not there to introduce new concepts.
+They take the words already used out loud and in review — "this is a UseCase, right?",
+"put it in the Repository" — and write them down as declarations.
 
-そのため **定義はチームの合意物**であり、重要なレビューの対象です。
-AI Agent に初期の定義を作らせる場合でも、それは既存コードからの推測でしかないので、
-**最終的にチームが読んで合意する**ことを前提にしています。
+That makes **the definition an agreement of the team**, and an important subject of review.
+Even when you have an AI agent produce the initial definition, that is no more than a guess from
+the existing code, so **the team is expected to read it and agree on it in the end**.

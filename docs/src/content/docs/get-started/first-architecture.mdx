@@ -1,6 +1,6 @@
 ---
-title: 初めてのアーキテクチャ定義
-description: katachi を Gradle プロジェクトに入れ、:architecture-test モジュールを作って最初の architecture { } 定義を書くまでの手順。
+title: Your first architecture definition
+description: How to add katachi to a Gradle project, create an :architecture-test module, and write your first architecture { } definition.
 tags:
   - beginner
 ---
@@ -8,85 +8,108 @@ tags:
 import { Aside, Tabs, TabItem, Steps, Badge } from '@astrojs/starlight/components';
 
 <Aside>
-katachi の必要性について疑問がある場合は、先に [モチベーション](/katachi/get-started/motivation/) を先に読むことをおすすめします。
+If you are not yet convinced that you need katachi, read [Motivation](/katachi/get-started/motivation/) first.
 </Aside>
 
-## katachi をプロジェクトに導入する
+## Add katachi to your project
 
 <Tabs>
-  <TabItem label="AI Agent に任せる">
+  <TabItem label="Let an AI agent do it">
     <Steps>
 
-    1. あなたが利用している AI Agent を起動して以下のように **プロンプトを入力** してください。
+    1. Start the AI agent you use and **give it this prompt**.
 
         ```md
-        このプロジェクトに katachi を導入してください。
+        Set up katachi in this project.
 
-        - https://tbsten.github.io/katachi/install/index.md に従って導入してください。
+        - Follow https://tbsten.github.io/katachi/install/index.md to do it.
         ```
 
-        - 事前にプロジェクトを git 管理することをお勧めします。
-        - AI Agent が参照するページには katachi のプロジェクトへの導入を **あなたと共に** 行うように指示が書いてあります。
+        - Putting the project under git first is recommended.
+        - The page the AI agent reads tells it to set katachi up **together with you**.
 
         <details>
-        <summary>追加のオプション</summary>
-        - **アーキテクチャに関するドキュメントがコードベースの外にある場合** （ex. Notion で管理しているなど）、プロンプトの中にそのリンクを含めてください。
-        - デフォルトでは AI Agent は `architecture-test` モジュールを作成し、そこにアーキテクチャ定義を作成しようとします。
-          - **別のモジュールに作成したい場合** は `テストは <module> に作成してください` のようなプロンプトを追加してください。
-        - context 管理の一環として、**katachi 導入専用のセッションを新規に開始する** ことをお勧めします。
-            - Claude code, Codex CLI の場合: `/clear` コマンドでセッションをクリアしてからプロンプトを入力します。
+        <summary>Additional options</summary>
+        - **If your architecture documentation lives outside the codebase** (in Notion, for example), include a link to it in the prompt.
+        - By default the AI agent creates an `architecture-test` module and writes the architecture definition there.
+          - **To use a different module**, add a prompt such as `Create the test in <module>`.
+        - As a matter of context hygiene, **start a fresh session dedicated to setting up katachi**.
+            - For Claude Code or Codex CLI: clear the session with `/clear`, then enter the prompt.
         </details>
 
         <details>
-        <summary>AI Agent が行う手順の詳細</summary>
+        <summary>What the AI agent does, step by step</summary>
 
-            | | | 手順 |
+            | | | Step |
             |----|---|------|
-            | 1 | <Badge text="Agent" size="small" /> | 現在のプロジェクトコードベースの構造・各コンポーネントの制約を解析・推論する。 |
-            | 2 | <Badge text="Agent" size="small" /> | プロジェクトに `:architecture-test` モジュールを作成し 標準的な katachi のテスト用モジュールとして設定する。 |
-            | 3 | <Badge text="Agent" size="small" /> | 解析・推論された情報をもとに `architecture { ... }` 定義を `architecture-test/src/test/kotlin/.../test/architecture/ProjectArchitecture.kt` 内に定義する。 |
-            | 4 | <Badge text="あなたの協力が必要" size="small" variant="caution" /> | AI Agent が生成した `ProjectArchitecture.kt` をレビューしてください。<br/>AI Agent が生成したアーキテクチャルールは **既存コードベースから推察したものであり、必ずしも理想とされる構成・制約とあってない場合があります。** |
+            | 1 | <Badge text="Agent" size="small" /> | Analyze the current codebase and infer its structure and the constraints on each component. |
+            | 2 | <Badge text="Agent" size="small" /> | Create an `:architecture-test` module in the project and configure it as a standard katachi test module. |
+            | 3 | <Badge text="Agent" size="small" /> | Write the `architecture { ... }` definition in `architecture-test/src/test/kotlin/.../test/architecture/ProjectArchitecture.kt`, based on what it analyzed and inferred. |
+            | 4 | <Badge text="Needs your input" size="small" variant="caution" /> | Review the `ProjectArchitecture.kt` the AI agent generated.<br/>The architecture rules it produced are **guesses drawn from the existing codebase, and they do not necessarily match the structure and constraints you consider ideal.** |
 
         </details>
 
-    2. AI Agent があなたのプロジェクトにセットアップした差分を **レビュー** したり、内容を適宜修正してください。
+    2. **Review** the changes the AI agent made to your project and adjust them as needed.
 
-        注目すべき点:
-        - `architecture-test/src/test/kotlin/.../test/architecture/ProjectArchitecture.kt` がエントリーポイントとなります。
-        - 場合によっては AI Agent は `ProjectArchitecture.kt` のみならず、隣接したパッケージを作成しその中に architecture の断片を分割する可能性があります。その中のコードもレビュー対象です。
+        What to look at:
+        - `architecture-test/src/test/kotlin/.../test/architecture/ProjectArchitecture.kt` is the entry point.
+        - The AI agent may go beyond `ProjectArchitecture.kt` and create neighbouring packages that hold pieces of the architecture. Review that code too.
     
-        <Aside title="チーム開発">
-          - あなたがチーム開発を行なっている場合、チームメンバー (特にチームのリードとなる人物) にも重点的にレビューしてもらうべきでしょう。
+        <Aside title="Working in a team">
+          - If you work in a team, have your teammates (especially whoever leads it) review this closely as well.
         </Aside>
 
-    3. **アーキテクチャテストを実行** して テストが All green になることを確認してください。
+    3. **Run the architecture test** and confirm that it is all green.
 
         ```shell
         ./gradlew :architecture-test:test
         ```
 
-        これでセットアップは完了です。
+        That completes the setup.
+
+    4. <Badge text="Optional" size="small" /> <br/> Hand the AI agent a real task and see that it no longer produces files that break the architecture rules.
+
+        <details>
+        <summary>If you have implementation tasks coming up</summary>
+
+        If you have tasks that are actually coming up, running one of them as a trial is the best way to measure whether katachi does its job.
+        Hand the task to the AI agent and let it run.
+
+        If the task is tracked in JIRA, Notion, or similar, passing the link works well too.
+
+        </details>
+
+        <details>
+        <summary>If you have nothing in particular</summary>
+
+        Have the AI agent invent a hypothetical task and check whether katachi works as a guardrail.
+
+        ```md
+        Come up with a few hypothetical tasks that are likely to come up in this project.
+        ```
+
+        </details>
 
     </Steps>
   </TabItem>
-  <TabItem label="手動でインストールする">
+  <TabItem label="Install manually">
     <Steps>
 
-    1. **`:architecture-test` モジュールを作る**
+    1. **Create the `:architecture-test` module**
 
-        アプリのどの層にも属さない、アーキテクチャ定義とそれを検査するテストだけを置くモジュールです。
+        This module belongs to no layer of the app. It holds nothing but the architecture definition and the test that checks it.
 
         ```kotlin title="settings.gradle.kts"
         include(":architecture-test")
         ```
 
-    2. **依存を書く**
+    2. **Declare the dependencies**
 
-        プロジェクトが Android でも KMP でも、**ここはプレーンな `kotlin("jvm")` モジュール**にします。katachi 自身が JVM のライブラリだからです。
+        Whether your project is Android or KMP, **make this a plain `kotlin("jvm")` module**, because katachi itself is a JVM library.
 
         ```kotlin title="architecture-test/build.gradle.kts"
         plugins {
-            kotlin("jvm") version "<Kotlin のバージョン>"
+            kotlin("jvm") version "<Kotlin version>"
         }
 
         kotlin {
@@ -98,26 +121,26 @@ katachi の必要性について疑問がある場合は、先に [モチベー�
         }
 
         dependencies {
-            testImplementation("me.tbsten.katachi:katachi:<katachi のバージョン>")
-            testImplementation("me.tbsten.katachi:katachi-konsist:<katachi のバージョン>")
+            testImplementation("me.tbsten.katachi:katachi:<katachi version>")
+            testImplementation("me.tbsten.katachi:katachi-konsist:<katachi version>")
             testImplementation("org.junit.jupiter:junit-jupiter")
         }
         ```
 
-        <Aside type="caution" title="Android プロジェクトの場合">
-        ルートの `build.gradle.kts` に `kotlin("jvm") version "..." apply false` を書き、**モジュール側ではバージョンを書かずに** `kotlin("jvm")` とだけ書いてください。
+        <Aside type="caution" title="For Android projects">
+        Write `kotlin("jvm") version "..." apply false` in the root `build.gradle.kts`, and in the module write just `kotlin("jvm")`, **without a version**.
         </Aside>
 
-    3. **アーキテクチャを定義する。**
+    3. **Define the architecture.**
 
-        `architecture-test/src/test/kotlin/<パッケージ>/ProjectArchitecture.kt` がエントリーポイントです。
+        `architecture-test/src/test/kotlin/<package>/ProjectArchitecture.kt` is the entry point.
 
         ```kotlin
-        // 例
+        // Example
         val projectArchitecture = architecture {
             "domain".group {
                 "UseCase" {
-                    summary = "各画面で発生するアプリ固有の1つの振る舞い"
+                    summary = "A single app-specific behavior that occurs on a screen"
                     layout {
                         "domain/src/main/kotlin/usecase" {
                             "*UseCase.kt".file()
@@ -128,73 +151,73 @@ katachi の必要性について疑問がある場合は、先に [モチベー�
         }
         ```
 
-    4. **検査する1本のテストを書く**
+    4. **Write the one test that checks it**
 
-        ```kotlin title="architecture-test/src/test/kotlin/<パッケージ>/ProjectArchitectureTest.kt"
+        ```kotlin title="architecture-test/src/test/kotlin/<package>/ProjectArchitectureTest.kt"
         class ProjectArchitectureTest {
             @Test
-            fun `プロジェクトの構成が定義どおりになっている`() {
+            fun `the project structure matches the definition`() {
                 projectArchitecture.assert()
             }
         }
         ```
 
-        **プロジェクトが書くテストはこれ1本だけです。** リポジトリ全体の違反が1つの失敗メッセージに集まるので、ルールごとにテストを分ける意味がありません。
+        **This is the only test your project writes.** Every violation in the repository lands in a single failure message, so there is no point in splitting the test up per rule.
 
-    5. **実行する**
+    5. **Run it**
 
         ```shell
         ./gradlew :architecture-test:test
         ```
 
-        最初は **宣言していないファイルがすべて違反として出ます。** katachi は許可リスト方式なので、これが正常な出発点です。出てきたパスを定義に足すか、消すかを決めていってください。
+        At first **every file you have not declared comes out as a violation.** katachi is an allow-list, so this is the normal starting point. Go through the reported paths and decide, one by one, whether to add them to the definition or delete them.
 
     </Steps>
   </TabItem>
 </Tabs>
 
-## 導入できたことを確かめる
+## Confirm that the setup works
 
 <Tabs>
-    <TabItem label="AI Agent に検証させる">
-        AI Agent に実際にタスクを渡してアーキテクチャルールに違反するファイルを生成しないことをしてみましょう。
+    <TabItem label="Let an AI agent verify it">
+        Hand the AI agent a real task and see that it no longer produces files that break the architecture rules.
 
         <details>
-        <summary>今後発生しうる実装タスクがある場合</summary>
+        <summary>If you have implementation tasks coming up</summary>
 
-        実際に今後発生するタスクがあるなら、そのタスクを仮で実行させて katachi が機能するかを測るのが効果的です。
-        タスクの内容を AI Agent に渡し、実行させると良いでしょう。
+        If you have tasks that are actually coming up, running one of them as a trial is the best way to measure whether katachi does its job.
+        Hand the task to the AI agent and let it run.
 
-        JIRA, Notion などで管理されたタスクチケットがある場合はそれらを渡すことも効果的でしょう。
+        If the task is tracked in JIRA, Notion, or similar, passing those along works well too.
 
         </details>
 
         <details>
-        <summary>特にない場合</summary>
+        <summary>If you have nothing in particular</summary>
 
-        架空のタスクを AI Agent に考えさせて、katachi がガードレールとして機能するか検証させましょう。
+        Have the AI agent invent a hypothetical task and check whether katachi works as a guardrail.
 
         ```md
-        このプロジェクトで将来発生しそうな架空のタスクをいくつか考えてください。
+        Come up with a few hypothetical tasks that are likely to come up in this project.
         ```
 
         </details>
 
     </TabItem>
 
-    <TabItem label="手動で検証する">
-        1. アーキテクチャルールに違反するコード例を考えて 実際にそのソースファイルを作成してください。
-        2. `./gradlew :architecture-test:test` を実行して、アーキテクチャテストが失敗することを確認してください。
+    <TabItem label="Verify manually">
+        1. Think of a piece of code that breaks an architecture rule and actually create that source file.
+        2. Run `./gradlew :architecture-test:test` and confirm that the architecture test fails.
     </TabItem>
 </Tabs>
 
-## <Badge text="オプション" size="small" /> <br/> CI に組み込む
+## <Badge text="Optional" size="small" /> <br/> Wire it into CI
 
-品質を維持するには、katachi のアーキテクチャテストを CI に組み込み定期的に実行させることが大切です。
+To keep the quality up, run the katachi architecture test regularly by wiring it into CI.
 
 <Tabs>
     <TabItem label="Github Actions">
-        以下のようなワークフローファイルを追加してください。
+        Add a workflow file like this one.
 
         ```yaml title=".github/workflows/architecture.yml"
         name: Architecture
@@ -225,15 +248,15 @@ katachi の必要性について疑問がある場合は、先に [モチベー�
 
     </TabItem>
 
-    <TabItem label="その他の CI システム">
-        以下のようなワークフローを それぞれの CI システムの仕様に応じて記述します。
+    <TabItem label="Other CI systems">
+        Describe a workflow like the following, in whatever form your CI system expects.
 
-        1. Java をセットアップする。
-        2. `./gradlew :architecture-test:test` を実行する
-        3. 2 の結果をレポートする。
+        1. Set up Java.
+        2. Run `./gradlew :architecture-test:test`.
+        3. Report the result of step 2.
     </TabItem>
 </Tabs>
 
-## 次のステップ
+## Next steps
 
-- katachi の理解をより深め architecture 定義をより洗練するために、各種コンセプト・ガイドを参照してください。
+- Read the concepts and guides to deepen your understanding of katachi and refine your architecture definition.

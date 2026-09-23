@@ -1,31 +1,31 @@
 ---
-title: Konsist との統合
-description: konsist { } で Konsist の API を使い、ファイルの配置ではなく中の宣言に制約をかける方法。must / mustNot / mustBeEmpty の使い分け。
+title: Konsist integration
+description: How to use the Konsist API via konsist { } to constrain the declarations inside a file rather than its placement. When to use must, mustNot, and mustBeEmpty.
 tags:
   - intermediate
 ---
 import { Aside, LinkCard } from '@astrojs/starlight/components';
 
-katachi のコア API がディレクトリ構造・ファイルの位置に着目して検証を行うのに対し、`"...".konsist { }` を使うと Konsist の API を使って **ファイル内の宣言に対して検証** を行うことができます。
+While katachi's core API focuses on validating directory structure and file location, `"...".konsist { }` lets you use the Konsist API to **validate the declarations inside a file**.
 
-## インストール
+## Installation
 
-`"...".konsist { }` はオプション機能の別モジュールに切り出されているため、別途インストールする必要があります。
-`build.gradle.kts` に以下を追加してください。
+`"...".konsist { }` lives in a separate, optional module, so you need to install it separately.
+Add the following to `build.gradle.kts`.
 
 <table>
   <tr>
-    <td>バージョン</td>
-    <td>`katachi` 本体と同じもの。2つの artifact は常に同じバージョンで公開されます</td>
+    <td>Version</td>
+    <td>Same as the core `katachi` module. The two artifacts are always published with the same version</td>
   </tr>
   <tr>
-    <td>同梱する Konsist</td>
+    <td>Bundled Konsist</td>
     <td>0.17.3</td>
   </tr>
 </table>
 
 <Aside type="caution">
-  katachi はまだ Maven Central に公開されていません。公開の状況は [ロードマップ](/katachi/roadmap/) を参照してください。
+  katachi isn't published to Maven Central yet. See the [roadmap](/katachi/roadmap/) for the publishing status.
 </Aside>
 
 ```kts title="build.gradle.kts" {2}
@@ -34,24 +34,24 @@ dependencies {
 }
 ```
 
-次に `projectArchitecture.assert()` に `KonsistCheck()` を渡すことで、Konsist の検証を実行することができます。
+Next, pass `KonsistCheck()` to `projectArchitecture.assert()` to run the Konsist checks.
 
 ```kt del={3} ins={4}
 @Test
-fun `アーキテクチャに沿ったファイル配置になっている`() {
+fun `files are placed according to the architecture`() {
   projectArchitecture.assert()
   projectArchitecture.assert(KonsistCheck())
 }
 ```
 
-## 基本的な使い方
+## Basic usage
 
-Role のなかで その Role のファイルにどういう宣言があるのかを定義します。
+Inside a Role, you define what declarations that Role's files should have.
 
 ```kt
 architecture {
   "UseCase" {
-    "invoke 関数を1つだけ持つこと".konsist {
+    "has exactly one invoke function".konsist {
         classes().must { it.functions().map { f -> f.name } == listOf("invoke") }
     }
   }
@@ -59,45 +59,45 @@ architecture {
 ```
 
 <Aside type="caution">
-  `assertTrue { }` は利用してはいけません。これはその場でアサーションの例外を発生させてしまい DSL による宣言 と 検証 を分離するための設計に反するためです。
-  代わりに must / mustNot / mustBeEmpty を使ってください。
+  Don't use `assertTrue { }`. It throws an assertion exception on the spot, which goes against the design that separates DSL declaration from verification.
+  Use must / mustNot / mustBeEmpty instead.
 </Aside>
 
-## エラーの例
+## Example error
 
-制約の違反を検知した場合 以下のようにエラーメッセージが表示されます。
+When a constraint violation is detected, the error message looks like this.
 
 ```text
 Katachi check failed: 1 violation (Constraint: 1)
 
 [UnsatisfiedConstraint] src/main/kotlin/com/example/useCase/GetUserUseCase.kt
-  Role: UseCase / Constraint: "invoke 関数を1つだけ持つこと"
+  Role: UseCase / Constraint: "has exactly one invoke function"
   Declaration: GetUserUseCase (line 3)
   Declared at: ProjectArchitecture.kt:12
 ```
 
-**制約に付けた名前がそのまま出ます。** 制約が複数あるとき、どれが落ちたのかはこの1行で分かるので、名前は「満たすべきこと」の形で書いてください。
+**The name you gave the constraint appears exactly as written.** When there are multiple constraints, this single line tells you which one failed, so write the name in the form of what must be satisfied.
 
 ## Konsist API
 
-`"...".konsist { }` ブロック内では通常の Konsist API が使えます。
+Inside a `"...".konsist { }` block, you can use the regular Konsist API.
 
 <LinkCard
-  title="Konsist のドキュメント"
+  title="Konsist documentation"
   href="https://docs.konsist.lemonappdev.com/"
 />
 
-katachi が差し替えているのは `must` / `mustNot` / `mustBeEmpty` の3つだけで、対象を絞るまでの書き方は Konsist のものがそのまま使えます。
+katachi only replaces three things — `must`, `mustNot`, and `mustBeEmpty` — everything up to narrowing down the target uses Konsist's syntax as-is.
 
-## まとめ
+## Summary
 
-- `layout { }` が **どこに置いてよいか**、`konsist { }` が **中身がどうあるべきか** を担当します。
-- `katachi-konsist` は**任意のモジュール**です。依存の追加、 `assert(KonsistCheck())` の設定が必要です。
-- **制約名がそのまま違反レポートに出ます。** 名前は「満たすべきこと」の形で書いてください。
-- `assertTrue` 系は**コンパイルエラーになります**。その場で例外を投げてしまい、1回の実行で全違反を集める設計と噛み合わないためです。
+- `layout { }` handles **where files may be placed**, and `konsist { }` handles **what their contents should look like**.
+- `katachi-konsist` is an **optional module**. It requires adding the dependency and setting up `assert(KonsistCheck())`.
+- **The constraint name appears directly in the violation report.** Write the name in the form of what must be satisfied.
+- The `assertTrue` family **causes a compile error**. It throws an exception on the spot, which doesn't fit the design that collects every violation in a single run.
 
-## 次のステップ
+## Next steps
 
-- 各種レシピを参照して 実際に Konsist API を利用する例を参照してください。
-- [Role](/katachi/guides/role/) ... 制約を書く先である Role の説明・置き場所・グループの書き方を学びましょう。
-- [ArchitectureProcessor とそのカスタマイズ](/katachi/guides/processor/) ... `KonsistCheck` と同じ interface で、定義から自分で何かを取り出す方法を学びましょう。
+- See the various recipes for real examples that use the Konsist API.
+- [Role](/katachi/guides/role/) ... Learn how to write a Role's description, placement, and grouping — the place where you write constraints.
+- [ArchitectureProcessor and customizing it](/katachi/guides/processor/) ... Learn how to pull your own information out of the definition, using the same interface as `KonsistCheck`.

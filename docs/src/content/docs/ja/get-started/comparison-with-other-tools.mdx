@@ -1,0 +1,123 @@
+---
+title: 他ツールとの比較
+description: Konsist・ArchUnit・detekt・ProjectGuard・Konture と katachi の守備範囲の違い。
+tags:
+  - beginner
+---
+
+import { Aside } from '@astrojs/starlight/components';
+
+katachi を取り巻く類似ツールとして Konsist, ArchUnit などがあります。
+これらは **katachi と排他的とは限りません**。
+
+## 比較表
+
+| ツール | 何を見るか | どう走るか | katachi と併用 |
+|---|---|---|---|
+| **katachi** | **ファイルが存在してよいか。どこに置かれるか** | ユニットテスト | — |
+| [Konsist](https://docs.konsist.lemonappdev.com/) | クラス・関数・プロパティの中身。scope で絞った範囲 | ユニットテスト | ⭐️ 統合あり/推奨 |
+| [detekt](https://detekt.dev/) | ソースの静的解析。コードスメルと自作ルール | Gradle タスク / CLI | 🆗 可能 |
+| [ArchUnit](https://www.archunit.org/) | クラス間の依存と層。JVM のクラス情報 | ユニットテスト | 🆗 可能 |
+| [ProjectGuard](https://github.com/rubensousa/ProjectGuard) | モジュール同士の依存宣言。ビルドグラフ | Gradle プラグイン | 🆗 可能 |
+| [Konture](https://github.com/baole/konture) | モジュール依存・パッケージの閉じ方・クラスの性質 | ユニットテスト | 🆗 可能 |
+
+**katachi だけが「そのファイルは存在してよいか」を問います。**
+ほかの5つはすべて、**すでに存在しているもの**について、中身や関係を検証します。
+
+だから重なりません。むしろ重なるのは**他ツール同士**で、Konsist・ArchUnit・Konture は
+互いに守備範囲が近く、3つ全部を入れる意味は薄いはずです。
+
+## katachi と Konsist
+
+<table>
+  <tbody>
+    <tr><th>併用</th><td>⭐️ 統合あり/推奨</td></tr>
+  </tbody>
+</table>
+
+Konsist は `Konsist.scopeFromProject()` で対象を絞り、絞った範囲のクラスや関数を検証します。
+**絞った網に引っかからないものは検証されません。** 名前の規則から外れたファイルも、
+誰も想定していないディレクトリも、視界に入らないままです。
+
+katachi はその逆で、プロジェクト全体を歩いて宣言と突き合わせます。
+**「配置」と「中身」で担当が分かれる**ので、片方だけでは穴が残ります。
+
+katachi は `katachi-konsist` という任意モジュールでこの2つを繋ぎます。
+役割の中に `konsist { }` を書くと、**配置の違反と中身の違反が1つのレポートにまとまります。**
+
+```kt title="ProjectArchitecture.kt"
+"UseCase" {
+    // どこに置いてよいか — katachi の担当
+    layout {
+        "src/main/kotlin/com/example/useCase" / "*UseCase".ktFile()
+    }
+
+    // 中身がどうあるべきか — Konsist の担当
+    "1つの invoke 関数のみを持つこと".konsist {
+        classes().must { it.functions().map { f -> f.name } == listOf("invoke") }
+    }
+}
+```
+
+### アイデア
+
+役割の性質をそのまま制約にできます。サンプルでも1つ書いています。
+
+- **`UseCase` は `invoke` 関数を1つだけ持つ** — 役割の定義そのもの
+- **`Repository` は interface として宣言される** — 実装の差し替えを前提にした層で効く
+- **役割のファイルは外から使える可視性を持つ** — `classes().must { it.hasPublicOrDefaultModifier }`
+- **`ViewModel` は Android の View 型を参照しない** — 層の漏れを中身の側から止める
+- **`data` 層のクラスは特定のアノテーションを持つ** — シリアライズ対象の取りこぼしを防ぐ
+
+迷ったときの目安は、**「配置を変えれば直るか」** です。
+直るなら katachi の `layout { }`、直らないなら `konsist { }` の側です。
+
+## katachi と detekt
+
+<table>
+  <tbody>
+    <tr><th>併用</th><td>🆗 可能</td></tr>
+  </tbody>
+</table>
+
+detekt は Kotlin のソースを静的解析して、コードスメルやスタイルの逸脱を指摘します。
+自作ルールを書けば、プロジェクト固有の約束も検査できます。
+
+**見ている単位がファイルの中身なので、katachi とは衝突しません。**
+katachi が「このファイルはここに置いてよい」を決め、detekt が「その中身がどう書かれているか」を見ます。
+
+<Aside>
+**katachi は detekt との統合を持っていません。** 用意しているのは Konsist との統合だけです。
+
+ただし `konsist { }` は `constraint()` という**ツールに依存しない口**の上に薄く乗っているだけなので、
+構造としては detekt を使ったバックエンドも作れます。いまは無い、というだけです。
+</Aside>
+
+### アイデア
+
+detekt と `konsist { }` のどちらに書くか迷う場面があります。目安は2つです。
+
+- **レポートを1つにまとめたいなら `konsist { }`。**
+  配置の違反と並んで出るので、直す材料が1回のテスト実行で揃います
+- **プロジェクト全体に一律で効かせたいなら detekt。**
+  役割に紐づかない約束（関数の長さ、複雑度、命名の一般則）は、役割の中に書いても
+  意味が薄くなります
+
+detekt が向いているもの:
+
+- 関数の長さ・ネストの深さ・循環的複雑度
+- `println` や `TODO()` の残存
+- 特定の API の使用禁止（プロジェクト共通のもの）
+
+## まとめ
+
+- **katachi は「存在してよいか」を問う道具**です。ほかの5つは、存在しているものについて
+  「どうあるべきか」を問います
+- これらのツールは **排他ではありません**。必要な問いの数だけ katachi と別のツールを組み合わせましょう。
+- 重なるのは他ツール同士です。Konsist・ArchUnit・Konture を全部入れる必要はありません
+
+## 次のステップ
+
+- [Konsist との統合](/katachi/ja/guides/konsist-integration/) ... `konsist { }` の書き方と、配置の違反と中身の違反が1つのレポートにまとまる仕組みを学びましょう。
+- [FAQ](/katachi/ja/get-started/faq/) ... なぜプロジェクト全体を歩く道具が必要なのか、設計の考え方を理解しましょう。
+- [初めてのアーキテクチャ定義](/katachi/ja/get-started/first-architecture/) ... あなたのプロジェクトに katachi を導入して、実際の使い分けを試してみましょう。
