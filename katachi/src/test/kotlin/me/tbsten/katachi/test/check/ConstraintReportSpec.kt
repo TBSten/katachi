@@ -3,7 +3,7 @@ package me.tbsten.katachi.test.check
 import io.kotest.core.spec.style.FreeSpec
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldNotContain
-import me.tbsten.katachi.check.ConstraintCheck
+import me.tbsten.katachi.check.KonsistCheck
 import me.tbsten.katachi.check.report
 import me.tbsten.katachi.check.validate
 import me.tbsten.katachi.dsl.ConstraintFailure
@@ -54,7 +54,7 @@ class ConstraintReportSpec : FreeSpec({
                 }
             }
 
-            arch.validate(repositoryOf { "alpha" { "Helper.kt"() } }, ConstraintCheck())
+            arch.validate(repositoryOf { "alpha" { "Helper.kt"() } }, KonsistCheck())
                 .report() shouldBe
                 """
                 Katachi check failed: 1 violation (Constraint: 1)
@@ -79,7 +79,7 @@ class ConstraintReportSpec : FreeSpec({
                 }
             }
 
-            arch.validate(repositoryOf { "alpha" { "Helper.kt"() } }, ConstraintCheck())
+            arch.validate(repositoryOf { "alpha" { "Helper.kt"() } }, KonsistCheck())
                 .report() shouldBe
                 """
                 Katachi check failed: 1 violation (Constraint: 1)
@@ -108,7 +108,7 @@ class ConstraintReportSpec : FreeSpec({
                 }
             }
 
-            arch.validate(repositoryOf { "alpha" { "Helper.kt"() } }, ConstraintCheck())
+            arch.validate(repositoryOf { "alpha" { "Helper.kt"() } }, KonsistCheck())
                 .report().lines()[4] shouldBe "  Declaration: Helper"
         }
 
@@ -132,7 +132,7 @@ class ConstraintReportSpec : FreeSpec({
                 }
             }
 
-            arch.validate(repositoryOf { "alpha" { "Helper.kt"() } }, ConstraintCheck())
+            arch.validate(repositoryOf { "alpha" { "Helper.kt"() } }, KonsistCheck())
                 .report() shouldNotContain "How to fix:"
         }
     }
@@ -166,7 +166,7 @@ class ConstraintReportSpec : FreeSpec({
                   Declared at: ProjectArchitecture.kt:61 (layout of alpha)
 
                   How to fix:
-                    - Pass ConstraintCheck() to assert(): projectArchitecture.assert(ConstraintCheck())
+                    - Pass KonsistCheck() to assert(): projectArchitecture.assert(KonsistCheck())
                     - Remove the constraint at ProjectArchitecture.kt:61 if it is no longer wanted
 
                 1 constraint could not be evaluated.
@@ -191,7 +191,7 @@ class ConstraintReportSpec : FreeSpec({
                 }
             }
 
-            arch.validate(repositoryOf { "alpha" { "A.kt"() } }, ConstraintCheck()).report() shouldBe
+            arch.validate(repositoryOf { "alpha" { "A.kt"() } }, KonsistCheck()).report() shouldBe
                 """
                 Katachi check failed: 1 violation (Failed: 1)
 
@@ -234,7 +234,7 @@ class ConstraintReportSpec : FreeSpec({
                 repeat(12) { index -> "note-$index.md"() }
             }
 
-            val lines = arch.validate(tree, ConstraintCheck()).report(maxViolations = 2).lines()
+            val lines = arch.validate(tree, KonsistCheck()).report(maxViolations = 2).lines()
 
             lines.filter { it.startsWith("[") } shouldBe listOf(
                 "[UnexpectedFile] note-0.md",
@@ -268,7 +268,7 @@ class ConstraintReportSpec : FreeSpec({
                 }
             }
 
-            val report = arch.validate(repositoryOf { "alpha" { "A.kt"() } }, ConstraintCheck()).report()
+            val report = arch.validate(repositoryOf { "alpha" { "A.kt"() } }, KonsistCheck()).report()
 
             report.filterNot { it.code < 128 } shouldBe ""
         }

@@ -80,8 +80,8 @@ class KonsistConstraintSpec : FreeSpec({
 
     "制約を評価しなければ NotEvaluated として残る" {
         // The other half of the explicit wiring, seen from this module: `konsist { }` written
-        // and `ConstraintCheck()` left out of `assert(...)` is reported rather than passing.
-        val violations = konsistRunWithoutConstraintCheck("src/PublicThing.kt" to PUBLIC_THING_KT) {
+        // and `KonsistCheck()` left out of `assert(...)` is reported rather than passing.
+        val violations = konsistRunWithoutKonsistCheck("src/PublicThing.kt" to PUBLIC_THING_KT) {
             classes().must { it.hasInternalModifier }
         }
 
@@ -91,6 +91,6 @@ class KonsistConstraintSpec : FreeSpec({
 
         val report = violations.report()
         report shouldContain "Nothing evaluated this constraint, so nothing is known about it."
-        report shouldContain "Pass ConstraintCheck() to assert()"
+        report shouldContain "Pass KonsistCheck() to assert()"
     }
 })

@@ -11,7 +11,7 @@ import io.kotest.matchers.types.shouldBeInstanceOf
 import java.io.File
 import me.tbsten.katachi.ExperimentalKatachiApi
 import me.tbsten.katachi.InternalKatachiApi
-import me.tbsten.katachi.check.ConstraintCheck
+import me.tbsten.katachi.check.KonsistCheck
 import me.tbsten.katachi.check.report
 import me.tbsten.katachi.check.validate
 import me.tbsten.katachi.dsl.FileSetConstraint
@@ -88,7 +88,7 @@ class KonsistFailureSpec : FreeSpec({
                     }
                 }
 
-                val violations = projectArchitecture.validate(RealFileSystem(root), ConstraintCheck())
+                val violations = projectArchitecture.validate(RealFileSystem(root), KonsistCheck())
 
                 val unchecked = violations.filterIsInstance<UncheckedConstraint>()
                     .single { it.constraintName == "規約" }
@@ -190,7 +190,7 @@ class KonsistFailureSpec : FreeSpec({
                 }
             }
 
-            val violations = projectArchitecture.validate(RealFileSystem(root), ConstraintCheck())
+            val violations = projectArchitecture.validate(RealFileSystem(root), KonsistCheck())
 
             violations.filterIsInstance<UncheckedConstraint>().single().constraintName shouldBe "何も期待しない"
             val unsatisfied = violations.filterIsInstance<UnsatisfiedConstraint>().single()
@@ -222,7 +222,7 @@ class KonsistFailureSpec : FreeSpec({
                     }
                 }
 
-                val unchecked = projectArchitecture.validate(RealFileSystem(root), ConstraintCheck())
+                val unchecked = projectArchitecture.validate(RealFileSystem(root), KonsistCheck())
                     .filterIsInstance<UncheckedConstraint>()
                     .single()
 

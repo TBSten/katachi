@@ -4,7 +4,7 @@ package me.tbsten.katachi.test.konsist
 
 import me.tbsten.katachi.ExperimentalKatachiApi
 import me.tbsten.katachi.InternalKatachiApi
-import me.tbsten.katachi.check.ConstraintCheck
+import me.tbsten.katachi.check.KonsistCheck
 import me.tbsten.katachi.check.validate
 import me.tbsten.katachi.dsl.architecture
 import me.tbsten.katachi.dsl.wholeTree
@@ -46,15 +46,15 @@ internal fun konsistRun(
             }
         }
     }
-    projectArchitecture.validate(RealFileSystem(root), ConstraintCheck())
+    projectArchitecture.validate(RealFileSystem(root), KonsistCheck())
 }
 
 /**
- * The same run with `ConstraintCheck()` left out of the arguments — the mistake the unevaluated
+ * The same run with `KonsistCheck()` left out of the arguments — the mistake the unevaluated
  * guard exists for.
  */
 @OptIn(ExperimentalKatachiApi::class)
-internal fun konsistRunWithoutConstraintCheck(
+internal fun konsistRunWithoutKonsistCheck(
     vararg sources: Pair<String, String>,
     declarations: List<String> = listOf("*.kt"),
     block: KonsistScope.() -> Unit,

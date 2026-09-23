@@ -7,7 +7,7 @@ import io.kotest.matchers.collections.shouldBeEmpty
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.types.shouldBeInstanceOf
 import io.kotest.matchers.types.shouldBeSameInstanceAs
-import me.tbsten.katachi.check.ConstraintCheck
+import me.tbsten.katachi.check.KonsistCheck
 import me.tbsten.katachi.check.KatachiArchitectureAssertionError
 import me.tbsten.katachi.check.assert
 import me.tbsten.katachi.check.report
@@ -19,7 +19,7 @@ import me.tbsten.katachi.processor.process
 import me.tbsten.katachi.scan.UncheckedConstraintReason
 
 /**
- * What [ConstraintCheck] evaluates, what it refuses to leave unevaluated, and what one run
+ * What [KonsistCheck] evaluates, what it refuses to leave unevaluated, and what one run
  * shares between its constraints.
  *
  * A block that throws, and a backend answering about files it was never handed, are
@@ -34,7 +34,7 @@ import me.tbsten.katachi.scan.UncheckedConstraintReason
  * captureDeclarationSite() がライブラリ自身のフレームとして読み飛ばしてしまい、
  * 宣言位置が kotest 内部を指すようになる。
  */
-class ConstraintCheckSpec : FreeSpec({
+class KonsistCheckSpec : FreeSpec({
     "覆う範囲" - {
         "役割直下の制約が全 layout の和集合を覆う" {
             val arch = architectureOf {
@@ -52,7 +52,7 @@ class ConstraintCheckSpec : FreeSpec({
                     "alpha" { "A.kt"() }
                     "beta" { "B.kt"() }
                 },
-                ConstraintCheck(),
+                KonsistCheck(),
             ).labels() shouldBe listOf(
                 "[UnsatisfiedConstraint] alpha/A.kt",
                 "[UnsatisfiedConstraint] beta/B.kt",
@@ -79,7 +79,7 @@ class ConstraintCheckSpec : FreeSpec({
                     "alpha" { "A.kt"() }
                     "beta" { "B.kt"() }
                 },
-                ConstraintCheck(),
+                KonsistCheck(),
             ).labels() shouldBe listOf("[UnsatisfiedConstraint] alpha/A.kt")
         }
 
@@ -98,7 +98,7 @@ class ConstraintCheckSpec : FreeSpec({
                 }
             }
 
-            val violations = arch.validate(repositoryOf { "alpha" { "A.kt"() } }, ConstraintCheck())
+            val violations = arch.validate(repositoryOf { "alpha" { "A.kt"() } }, KonsistCheck())
 
             violations.labels() shouldBe listOf(
                 "[UnsatisfiedConstraint] alpha/A.kt",
@@ -136,9 +136,9 @@ class ConstraintCheckSpec : FreeSpec({
             }
             val tree = { repositoryOf { "alpha" { "A.kt"(); "B.kt"() } } }
 
-            before.validate(tree(), ConstraintCheck()).labels() shouldBe
-                after.validate(tree(), ConstraintCheck()).labels()
-            before.validate(tree(), ConstraintCheck()).labels() shouldBe listOf(
+            before.validate(tree(), KonsistCheck()).labels() shouldBe
+                after.validate(tree(), KonsistCheck()).labels()
+            before.validate(tree(), KonsistCheck()).labels() shouldBe listOf(
                 "[UnsatisfiedConstraint] alpha/A.kt",
                 "[UnsatisfiedConstraint] alpha/B.kt",
             )
@@ -165,7 +165,7 @@ class ConstraintCheckSpec : FreeSpec({
                     "alpha" { "B.kt"(); "A.kt"() }
                     "beta" { "C.kt"() }
                 },
-                ConstraintCheck(),
+                KonsistCheck(),
             ).shouldBeEmpty()
 
             val subject = recording.subjects.single()
@@ -196,7 +196,7 @@ class ConstraintCheckSpec : FreeSpec({
                 }
             }
 
-            arch.validate(repositoryOf { "alpha" { "A.kt"() } }, ConstraintCheck())
+            arch.validate(repositoryOf { "alpha" { "A.kt"() } }, KonsistCheck())
                 .unsatisfied().map { "${it.declaration}:${it.line}" } shouldBe
                 listOf("Helper:12", "Other:20")
         }
@@ -213,7 +213,7 @@ class ConstraintCheckSpec : FreeSpec({
                 }
             }
 
-            arch.validate(repositoryOf { "alpha" { "A.kt"(); "B.kt"() } }, ConstraintCheck())
+            arch.validate(repositoryOf { "alpha" { "A.kt"(); "B.kt"() } }, KonsistCheck())
                 .labels() shouldBe listOf(
                 "[UnsatisfiedConstraint] alpha/A.kt",
                 "[UnsatisfiedConstraint] alpha/B.kt",
@@ -239,7 +239,7 @@ class ConstraintCheckSpec : FreeSpec({
                     "alpha" { "Helper.kt"() }
                     "notes.md"()
                 },
-                ConstraintCheck(),
+                KonsistCheck(),
             )
 
             violations.labels() shouldBe listOf(
@@ -250,7 +250,7 @@ class ConstraintCheckSpec : FreeSpec({
                 "Katachi check failed: 2 violations (Unexpected: 1, Constraint: 1)"
         }
 
-        "ConstraintCheck を2つ渡しても違反は倍にならない" {
+        "KonsistCheck を2つ渡しても違反は倍にならない" {
             val recording = RecordingConstraint { subject ->
                 subject.files.map { ConstraintFailure(it) }
             }
@@ -264,15 +264,15 @@ class ConstraintCheckSpec : FreeSpec({
 
             arch.validate(
                 repositoryOf { "alpha" { "A.kt"() } },
-                ConstraintCheck(),
-                ConstraintCheck(),
+                KonsistCheck(),
+                KonsistCheck(),
             ).labels() shouldBe listOf("[UnsatisfiedConstraint] alpha/A.kt")
             recording.subjects.size shouldBe 1
         }
     }
 
     "未評価ガード" - {
-        "ConstraintCheck を渡さずに validate すると NotEvaluated になる" {
+        "KonsistCheck を渡さずに validate すると NotEvaluated になる" {
             val recording = RecordingConstraint()
             val arch = architectureOf {
                 "domain".group {
@@ -292,7 +292,7 @@ class ConstraintCheckSpec : FreeSpec({
             violations.report().lines().last() shouldBe "1 constraint could not be evaluated."
         }
 
-        "ConstraintCheck を渡せば出ない" {
+        "KonsistCheck を渡せば出ない" {
             val arch = architectureOf {
                 "domain".group {
                     "UseCase" {
@@ -301,10 +301,10 @@ class ConstraintCheckSpec : FreeSpec({
                 }
             }
 
-            arch.validate(repositoryOf { "alpha" { "A.kt"() } }, ConstraintCheck()).shouldBeEmpty()
+            arch.validate(repositoryOf { "alpha" { "A.kt"() } }, KonsistCheck()).shouldBeEmpty()
             // 利用者が実際に書くのは assert のほう。ガードが緑を保つのはこちらの綴りでもある。
             shouldNotThrowAny {
-                arch.assert(repositoryOf { "alpha" { "A.kt"() } }, ConstraintCheck())
+                arch.assert(repositoryOf { "alpha" { "A.kt"() } }, KonsistCheck())
             }
             shouldThrow<KatachiArchitectureAssertionError> {
                 arch.assert(repositoryOf { "alpha" { "A.kt"() } })
@@ -315,10 +315,10 @@ class ConstraintCheckSpec : FreeSpec({
             val arch = layoutArchitecture { "alpha" / "*.kt".file() }
 
             arch.validate(repositoryOf { "alpha" { "A.kt"() } }).shouldBeEmpty()
-            arch.validate(repositoryOf { "alpha" { "A.kt"() } }, ConstraintCheck()).shouldBeEmpty()
+            arch.validate(repositoryOf { "alpha" { "A.kt"() } }, KonsistCheck()).shouldBeEmpty()
         }
 
-        "process(ConstraintCheck()) 単体では未評価違反が出ない" {
+        "process(KonsistCheck()) 単体では未評価違反が出ない" {
             // ガードは validateWith が足すもの。processor を直接走らせた結果に
             // 「自分が評価しなかった制約」が混ざったら、返り値の意味が変わってしまう。
             val arch = architectureOf {
@@ -332,7 +332,7 @@ class ConstraintCheckSpec : FreeSpec({
                 }
             }
 
-            arch.process(ConstraintCheck(), repositoryOf { "alpha" { "A.kt"() } }).shouldBeEmpty()
+            arch.process(KonsistCheck(), repositoryOf { "alpha" { "A.kt"() } }).shouldBeEmpty()
         }
 
         "ディレクトリしか宣言していない役割でも1行目がドットにならない" {
@@ -365,7 +365,7 @@ class ConstraintCheckSpec : FreeSpec({
 
             // `alpha/` はあるが `.kt` が 1 つも無い。ワイルドカードの宣言が 0 件マッチなのは
             // layout 検査が既に「正常」と決めているので、制約側だけが赤くなってはいけない。
-            arch.validate(repositoryOf { "alpha" { } }, ConstraintCheck()).shouldBeEmpty()
+            arch.validate(repositoryOf { "alpha" { } }, KonsistCheck()).shouldBeEmpty()
             recording.subjects.shouldBeEmpty()
         }
     }
@@ -390,7 +390,7 @@ class ConstraintCheckSpec : FreeSpec({
                 }
             }
 
-            arch.validate(repositoryOf { "alpha" { "A.kt"() } }, ConstraintCheck()).shouldBeEmpty()
+            arch.validate(repositoryOf { "alpha" { "A.kt"() } }, KonsistCheck()).shouldBeEmpty()
 
             created shouldBe 1
             handed.size shouldBe 2
@@ -416,7 +416,7 @@ class ConstraintCheckSpec : FreeSpec({
             }
 
             val unchecked = arch
-                .validate(repositoryOf { "alpha" { "A.kt"() } }, ConstraintCheck())
+                .validate(repositoryOf { "alpha" { "A.kt"() } }, KonsistCheck())
                 .unchecked()
                 .single()
 

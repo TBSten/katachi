@@ -6,7 +6,7 @@ import io.kotest.matchers.collections.shouldBeEmpty
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
 import io.kotest.matchers.types.shouldBeInstanceOf
-import me.tbsten.katachi.check.ConstraintCheck
+import me.tbsten.katachi.check.KonsistCheck
 import me.tbsten.katachi.check.KatachiConstraintSubjectException
 import me.tbsten.katachi.check.report
 import me.tbsten.katachi.check.validate
@@ -27,7 +27,7 @@ import java.io.IOException
  * errors.md states per file, applied one level up: if this one fails, the neighbour can still
  * answer, so the neighbour must still be asked.
  *
- * What a satisfied or unsatisfied constraint does is [ConstraintCheckSpec]'s; the exact text of
+ * What a satisfied or unsatisfied constraint does is [KonsistCheckSpec]'s; the exact text of
  * these blocks is [ConstraintReportSpec]'s.
  *
  * NOTE: このファイルのパッケージを `me.tbsten.katachi.check` にしてはいけない。
@@ -65,7 +65,7 @@ class ConstraintFailureSpec : FreeSpec({
             }
 
             val unchecked = arch
-                .validate(repositoryOf { "alpha" { "A.kt"() } }, ConstraintCheck())
+                .validate(repositoryOf { "alpha" { "A.kt"() } }, KonsistCheck())
                 .unchecked()
                 .single()
 
@@ -90,7 +90,7 @@ class ConstraintFailureSpec : FreeSpec({
                 }
             }
 
-            val violations = arch.validate(repositoryOf { "alpha" { "A.kt"() } }, ConstraintCheck())
+            val violations = arch.validate(repositoryOf { "alpha" { "A.kt"() } }, KonsistCheck())
 
             violations.labels() shouldBe listOf(
                 "[UnsatisfiedConstraint] alpha/A.kt",
@@ -110,7 +110,7 @@ class ConstraintFailureSpec : FreeSpec({
                 }
             }
 
-            arch.validate(repositoryOf { "alpha" { "A.kt"() } }, ConstraintCheck())
+            arch.validate(repositoryOf { "alpha" { "A.kt"() } }, KonsistCheck())
                 .unchecked().single().path shouldBe "alpha"
         }
 
@@ -132,7 +132,7 @@ class ConstraintFailureSpec : FreeSpec({
                 }
 
                 val thrown = shouldThrow<Throwable> {
-                    arch.validate(repositoryOf { "alpha" { "A.kt"() } }, ConstraintCheck())
+                    arch.validate(repositoryOf { "alpha" { "A.kt"() } }, KonsistCheck())
                 }
                 thrown::class shouldBe fatal()::class
             }
@@ -157,7 +157,7 @@ class ConstraintFailureSpec : FreeSpec({
                     "alpha" { "A.kt"() }
                     "build.gradle.kts"()
                 },
-                ConstraintCheck(),
+                KonsistCheck(),
             )
 
             // 覆っていたファイルの違反も残らない。1 つでも外を答えたバックエンドは、
@@ -183,7 +183,7 @@ class ConstraintFailureSpec : FreeSpec({
                 }
             }
 
-            val violations = arch.validate(repositoryOf { "alpha" { "A.kt"() } }, ConstraintCheck())
+            val violations = arch.validate(repositoryOf { "alpha" { "A.kt"() } }, KonsistCheck())
 
             violations.unchecked().single().cause
                 .shouldBeInstanceOf<KatachiConstraintSubjectException>()
@@ -218,7 +218,7 @@ class ConstraintFailureSpec : FreeSpec({
 
             val violations = arch.validate(
                 tree,
-                ConstraintCheck(),
+                KonsistCheck(),
                 ThrowingProcessor { IllegalStateException("check boom") },
             )
 
@@ -248,7 +248,7 @@ class ConstraintFailureSpec : FreeSpec({
                 }
             }
 
-            arch.validate(repositoryOf { "alpha" { "A.kt"() } }, ConstraintCheck())
+            arch.validate(repositoryOf { "alpha" { "A.kt"() } }, KonsistCheck())
                 .report(maxViolations = 0)
                 .lines().last() shouldBe "1 constraint could not be evaluated."
         }
@@ -268,7 +268,7 @@ class ConstraintFailureSpec : FreeSpec({
                 }
             }
 
-            arch.validate(repositoryOf { "alpha" { "A.kt"() } }, ConstraintCheck())
+            arch.validate(repositoryOf { "alpha" { "A.kt"() } }, KonsistCheck())
                 .report().lines().last() shouldBe "2 constraints could not be evaluated."
         }
     }

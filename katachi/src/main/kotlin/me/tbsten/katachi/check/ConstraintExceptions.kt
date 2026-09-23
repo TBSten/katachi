@@ -21,7 +21,7 @@ private const val LISTED_PATHS: Int = 3
  *
  * ## Example 1: catch a backend that answered about the wrong files
  * ```kt
- * projectArchitecture.validate(ConstraintCheck())
+ * projectArchitecture.validate(KonsistCheck())
  *     .filterIsInstance<UncheckedConstraint>()
  *     .single().cause.shouldBeInstanceOf<KatachiConstraintSubjectException>()
  * ```

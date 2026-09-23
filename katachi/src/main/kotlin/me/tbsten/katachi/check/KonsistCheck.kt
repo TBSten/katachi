@@ -17,7 +17,7 @@ import me.tbsten.katachi.scan.catching
  * The check that evaluates `constraint { }` blocks — the `konsist { }` ones included.
  *
  * It is not run unless it is asked for. `assert()` walks the tree and checks the layout;
- * `assert(ConstraintCheck())` does that *and* runs the constraints. Making it explicit is
+ * `assert(KonsistCheck())` does that *and* runs the constraints. Making it explicit is
  * what lets a definition holding rules nobody evaluated be reported rather than pass quietly:
  * a constraint no check took responsibility for comes back as
  * [UncheckedConstraintReason.NotEvaluated].
@@ -30,37 +30,37 @@ import me.tbsten.katachi.scan.catching
  * @OptIn(ExperimentalKatachiApi::class)
  * class ProjectArchitectureTest {
  *     @Test
- *     fun `構成が allow list に従っている`() = projectArchitecture.assert(ConstraintCheck())
+ *     fun `構成が allow list に従っている`() = projectArchitecture.assert(KonsistCheck())
  * }
  * ```
  *
  * ## Example 2: read what the constraints found without failing the test
  * ```kt
- * projectArchitecture.validate(ConstraintCheck())
+ * projectArchitecture.validate(KonsistCheck())
  *     .filterIsInstance<UnsatisfiedConstraint>()
  *     .map { it.path } shouldBe emptyList()
  * ```
  */
 @ExperimentalKatachiApi
-public class ConstraintCheck : ArchitectureProcessor<List<Violation>> {
+public class KonsistCheck : ArchitectureProcessor<List<Violation>> {
     /**
      * Evaluates every constraint of [model] that nothing has evaluated yet.
      *
      * ## Example 1: run it as one check among others on a single walk
      * ```kt
-     * projectArchitecture.validate(ConstraintCheck(), TodoCheck())
+     * projectArchitecture.validate(KonsistCheck(), TodoCheck())
      * ```
      */
     override fun process(model: ProjectModel): List<Violation> = model.declaredConstraints
-        // Handed the same constraint twice in one run — `assert(ConstraintCheck(),
-        // ConstraintCheck())` — the second pass has nothing left to answer for.
+        // Handed the same constraint twice in one run — `assert(KonsistCheck(),
+        // KonsistCheck())` — the second pass has nothing left to answer for.
         .filterNot { model.hasEvaluated(it) }
         .flatMap { declared ->
             model.markEvaluated(declared)
             violationsOf(model, declared)
         }
 
-    override fun toString(): String = "ConstraintCheck"
+    override fun toString(): String = "KonsistCheck"
 }
 
 /**
@@ -144,7 +144,7 @@ internal fun uncheckedConstraintOf(
  * The constraints nobody evaluated, as violations.
  *
  * This is what closes the worst way this library could break — a definition full of rules,
- * code breaking them, and a green test — when `ConstraintCheck()` was left out of the
+ * code breaking them, and a green test — when `KonsistCheck()` was left out of the
  * arguments. A project that declares no constraints gets an empty list, so a user who has
  * never written one never sees any of this.
  */

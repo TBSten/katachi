@@ -43,7 +43,7 @@ public enum class ViolationKind {
      *
      * ## Example 1: list the constraints that failed
      * ```kt
-     * projectArchitecture.validate(ConstraintCheck()).filter { it.kind == ViolationKind.Constraint }
+     * projectArchitecture.validate(KonsistCheck()).filter { it.kind == ViolationKind.Constraint }
      * ```
      */
     Constraint,

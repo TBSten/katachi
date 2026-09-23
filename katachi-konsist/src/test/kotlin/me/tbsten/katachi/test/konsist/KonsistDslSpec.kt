@@ -7,7 +7,7 @@ import io.kotest.core.spec.style.FreeSpec
 import io.kotest.matchers.collections.shouldBeEmpty
 import io.kotest.matchers.shouldBe
 import me.tbsten.katachi.InternalKatachiApi
-import me.tbsten.katachi.check.ConstraintCheck
+import me.tbsten.katachi.check.KonsistCheck
 import me.tbsten.katachi.check.validate
 import me.tbsten.katachi.dsl.KatachiConstraintNameException
 import me.tbsten.katachi.dsl.KatachiConstraintWithoutLayoutException
@@ -50,10 +50,10 @@ class KonsistDslSpec : FreeSpec({
             }
 
             // Two constraints declared in two different places of one role, both evaluated by
-            // one `ConstraintCheck()` on one walk, both satisfied. `konsist { }` with an empty
+            // one `KonsistCheck()` on one walk, both satisfied. `konsist { }` with an empty
             // block would be refused for expecting nothing, so each says something trivially
             // true about the one class the fixture holds.
-            projectArchitecture.validate(RealFileSystem(root), ConstraintCheck()).shouldBeEmpty()
+            projectArchitecture.validate(RealFileSystem(root), KonsistCheck()).shouldBeEmpty()
         }
     }
 
@@ -84,7 +84,7 @@ class KonsistDslSpec : FreeSpec({
             invocations shouldBe 0
             // Handed one, it runs each block exactly once. That difference is the whole point
             // of the explicit wiring.
-            projectArchitecture.validate(RealFileSystem(root), ConstraintCheck())
+            projectArchitecture.validate(RealFileSystem(root), KonsistCheck())
             invocations shouldBe 2
         }
     }

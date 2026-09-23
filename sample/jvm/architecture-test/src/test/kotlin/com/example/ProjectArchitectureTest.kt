@@ -1,7 +1,7 @@
 package com.example
 
 import me.tbsten.katachi.ExperimentalKatachiApi
-import me.tbsten.katachi.check.ConstraintCheck
+import me.tbsten.katachi.check.KonsistCheck
 import me.tbsten.katachi.check.assert
 import org.junit.jupiter.api.Test
 
@@ -12,7 +12,7 @@ import org.junit.jupiter.api.Test
  * reading it costs one test run no matter how many things are off. Splitting this into a
  * test per role would cost one run per violation and say nothing more.
  *
- * `ConstraintCheck()` is passed explicitly because katachi never runs a `konsist { }` block
+ * `KonsistCheck()` is passed explicitly because katachi never runs a `konsist { }` block
  * nobody asked for: `assert()` alone would leave this project's one constraint (in
  * `roles/ServiceRole.kt`'s `Service` role) reported as
  * `[UncheckedConstraint] reason=NotEvaluated` instead of evaluated.
@@ -24,6 +24,6 @@ import org.junit.jupiter.api.Test
 class ProjectArchitectureTest {
     @Test
     fun `構成が allow list に従っている`() {
-        projectArchitecture.assert(ConstraintCheck())
+        projectArchitecture.assert(KonsistCheck())
     }
 }

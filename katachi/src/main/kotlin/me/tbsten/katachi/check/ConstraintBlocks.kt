@@ -53,7 +53,7 @@ internal fun uncheckedConstraintBlock(violation: UncheckedConstraint): List<Stri
     add("${STEP}How to fix:")
     when (violation.reason) {
         UncheckedConstraintReason.NotEvaluated -> {
-            add("$STEP$STEP- Pass ConstraintCheck() to assert(): projectArchitecture.assert(ConstraintCheck())")
+            add("$STEP$STEP- Pass KonsistCheck() to assert(): projectArchitecture.assert(KonsistCheck())")
             add("$STEP$STEP- Remove the constraint at ${violation.declaredAt} if it is no longer wanted")
         }
 

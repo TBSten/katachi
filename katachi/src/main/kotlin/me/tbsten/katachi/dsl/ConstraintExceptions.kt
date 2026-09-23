@@ -136,7 +136,7 @@ public class KatachiConstraintWithoutLayoutException internal constructor(
  * ## Example 1: report it rather than treating it as a failed check
  * ```kt
  * try {
- *     projectArchitecture.assert(ConstraintCheck())
+ *     projectArchitecture.assert(KonsistCheck())
  * } catch (cause: KatachiConstraintMemoTypeException) {
  *     println("scratch key ${cause.key} is used by two checks")
  * }

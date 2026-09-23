@@ -18,7 +18,7 @@ import me.tbsten.katachi.dsl.Role
  *
  * ## Example 1: list the files a constraint rejected
  * ```kt
- * projectArchitecture.validate(ConstraintCheck())
+ * projectArchitecture.validate(KonsistCheck())
  *     .filterIsInstance<UnsatisfiedConstraint>()
  *     .map { it.path } shouldBe listOf("core/domain/useCase/Helper.kt")
  * ```
@@ -110,7 +110,7 @@ public class UnsatisfiedConstraint internal constructor(
  */
 public enum class UncheckedConstraintReason {
     /**
-     * No check handed to `assert(...)` evaluated it — most often `ConstraintCheck()` was left
+     * No check handed to `assert(...)` evaluated it — most often `KonsistCheck()` was left
      * out of the arguments.
      *
      * ## Example 1: catch the run that forgot to evaluate its constraints
@@ -138,7 +138,7 @@ public enum class UncheckedConstraintReason {
  * A constraint nothing could answer for, so the run is a partial result.
  *
  * This is the violation that keeps `konsist { }` from being quietly decorative. A constraint
- * declared and never evaluated — because `ConstraintCheck()` was not passed to `assert(...)` —
+ * declared and never evaluated — because `KonsistCheck()` was not passed to `assert(...)` —
  * is the worst way this library can break: rules exist, code breaks them, the test is green.
  * So a constraint nobody took responsibility for is itself a violation.
  *

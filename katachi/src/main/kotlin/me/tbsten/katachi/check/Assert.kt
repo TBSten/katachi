@@ -99,14 +99,14 @@ public fun Architecture.assert(
  * class ProjectArchitectureTest {
  *     @Test
  *     fun `構成が allow list に従っている`() {
- *         projectArchitecture.assert(ConstraintCheck())
+ *         projectArchitecture.assert(KonsistCheck())
  *     }
  * }
  * ```
  *
  * ## Example 2: several checks, and a longer report
  * ```kt
- * projectArchitecture.assert(ConstraintCheck(), TodoCheck(), maxViolations = 20)
+ * projectArchitecture.assert(KonsistCheck(), TodoCheck(), maxViolations = 20)
  * ```
  *
  * @param maxViolations the combined budget the message's error blocks and warning blocks

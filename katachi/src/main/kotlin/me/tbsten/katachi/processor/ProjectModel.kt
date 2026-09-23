@@ -197,7 +197,7 @@ public class ProjectModel internal constructor(
      *
      * [DeclaredConstraint] declares no `equals`, exactly as [Role] does not, so this is a set
      * of identities. One [ProjectModel] is built per run, so what collects here is precisely
-     * "evaluated during this one walk" — which is what lets `assert(ConstraintCheck())` be
+     * "evaluated during this one walk" — which is what lets `assert(KonsistCheck())` be
      * told apart from `assert()` without anyone inspecting the types of the checks passed in.
      */
     private val evaluated: MutableSet<DeclaredConstraint> = HashSet()

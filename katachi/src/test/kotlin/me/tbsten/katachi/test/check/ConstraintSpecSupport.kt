@@ -8,7 +8,7 @@ import me.tbsten.katachi.scan.UnsatisfiedConstraint
 import me.tbsten.katachi.scan.Violation
 
 /**
- * The constraint blocks the step 5 specs hand to `ConstraintCheck`.
+ * The constraint blocks the step 5 specs hand to `KonsistCheck`.
  *
  * All of them are plain [FileSetConstraint]s written inline: what the check does with a
  * constraint has to hold for one written by hand, so nothing here knows what Konsist is.

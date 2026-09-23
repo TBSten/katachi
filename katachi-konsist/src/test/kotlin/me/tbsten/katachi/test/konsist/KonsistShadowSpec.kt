@@ -66,7 +66,7 @@ class KonsistShadowSpec : FreeSpec({
             // would go on to be reported as satisfied. That is the exact failure the shadows
             // exist to prevent, so the escape hatch has to be louder than the thing it escapes.
             //
-            // Loud, but not fatal to the run: the throw lands in `ConstraintCheck`'s per
+            // Loud, but not fatal to the run: the throw lands in `KonsistCheck`'s per
             // constraint catch, so this one rule is reported as unanswered and every other
             // rule of the definition still gets to say what it found.
             val violations = konsistRun("src/PublicThing.kt" to PUBLIC_THING_KT) {

@@ -15,7 +15,7 @@ import io.kotest.matchers.string.shouldContain
 import java.io.File
 import me.tbsten.katachi.ExperimentalKatachiApi
 import me.tbsten.katachi.InternalKatachiApi
-import me.tbsten.katachi.check.ConstraintCheck
+import me.tbsten.katachi.check.KonsistCheck
 import me.tbsten.katachi.check.validate
 import me.tbsten.katachi.dsl.Architecture
 import me.tbsten.katachi.dsl.Documented
@@ -169,9 +169,9 @@ class ProjectArchitectureSpec : FreeSpec({
         // an empty traversal passes just as happily. Dropping `app/Entrypoint` leaves
         // `Application.kt` in a directory other roles still claim, so the file itself has to
         // be reached and matched for this to fail - which is the part being proven here.
-        // `ConstraintCheck()` is passed so `service()`'s `konsist { }` constraint is
+        // `KonsistCheck()` is passed so `service()`'s `konsist { }` constraint is
         // evaluated rather than reported as `[UncheckedConstraint]` alongside it.
-        architectureWithoutEntrypointRole.validate(ConstraintCheck()).map { "[${it.label}] ${it.path}" } shouldBe listOf(
+        architectureWithoutEntrypointRole.validate(KonsistCheck()).map { "[${it.label}] ${it.path}" } shouldBe listOf(
             "[UnexpectedFile] src/main/kotlin/com/example/Application.kt",
         )
     }
@@ -254,10 +254,10 @@ class ProjectArchitectureSpec : FreeSpec({
     "正しい定義では違反が1件も出ない" {
         // The same run ProjectArchitectureTest makes, read as a list rather than as a thrown
         // error, so a failure here names the violations instead of only the message.
-        // `ConstraintCheck()` matches what `ProjectArchitectureTest` itself passes: without
+        // `KonsistCheck()` matches what `ProjectArchitectureTest` itself passes: without
         // it, the `konsist { }` constraint in `roles/ServiceRole.kt` would come back as
         // `[UncheckedConstraint] reason=NotEvaluated` instead of zero violations.
-        projectArchitecture.validate(ConstraintCheck()) shouldBe emptyList()
+        projectArchitecture.validate(KonsistCheck()) shouldBe emptyList()
     }
 })
 
