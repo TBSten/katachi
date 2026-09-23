@@ -1,5 +1,147 @@
 ---
-title: Gradle 周辺（buildSrc / convention plugin / version catalog）
+title: Gradle
+description: ビルドスクリプト・wrapper・version catalog を architecture { } で宣言する例。.module { } が何に展開されるか。
+tags:
+  - intermediate
 ---
 
-未執筆。
+import { Aside } from '@astrojs/starlight/components';
+
+ビルドまわりのファイルは、アプリのどの層にも属さないのに数が多く、放っておくと `[UnexpectedFile]` の常連になります。まとめて1つのグループに宣言してしまうのが楽です。
+
+生成ドキュメントには出したくないので `documented = false` を付けます。
+
+```kt collapse
+// ProjectArchitecture.kt
+import me.tbsten.katachi.dsl.architecture
+
+val projectArchitecture = architecture {
+    buildGroup()
+}
+
+// groups/BuildGroup.kt
+import me.tbsten.katachi.dsl.DeclarationContainerScope
+
+fun DeclarationContainerScope.buildGroup() = "build".group {
+    documented = false
+    title = "ビルド"
+
+    gradle()
+}
+
+// roles/Gradle.kt
+import me.tbsten.katachi.dsl.DeclarationContainerScope
+import me.tbsten.katachi.dsl.gradle.*
+import me.tbsten.katachi.dsl.kotlin.ktsFile
+
+fun DeclarationContainerScope.gradle() = "Gradle" {
+    title = "Gradle スクリプト"
+    summary = "ビルドの定義と Gradle wrapper"
+    documented = false
+
+    layout {
+        ":".module {
+            "settings.gradle".ktsFile()
+            "gradle.properties".file()
+            "gradlew".file()
+            "gradlew.bat".file()
+            "gradle" {
+                "libs.versions.toml".file()
+                "wrapper" {
+                    "gradle-wrapper.jar".file()
+                    "gradle-wrapper.properties".file()
+                }
+            }
+        }
+
+        ":architecture-test".module { }
+    }
+}
+```
+
+## `.module { }` が展開するもの
+
+`":app".module { }` は空に見えますが、次の2行と同じです。
+
+```kt
+"app" {
+    "build".ignore()
+    "build.gradle".ktsFile()
+}
+```
+
+**それ以上は増えません。** `src/` は含まれないので、モジュールの中身は別の Role が宣言します。だからモジュールを列挙するだけの Role は、ブロックが全部空になります。
+
+```kt
+fun DeclarationContainerScope.gradleModule() = "GradleModule" {
+    documented = false
+    layout {
+        ":app".module { }
+        ":architecture-test".module { }
+        ":feature:*".module { }
+        ":data".module { }
+        ":ui".module { }
+        ":navigation".module { }
+    }
+}
+```
+
+`settings.gradle.kts` の `include(...)` と1対1に並べます。`:feature:*` のようなワイルドカードは、**機能モジュールのように「増えることが前提」のものにだけ**使ってください。固定のモジュールを1行ずつ書いておくと、消えたときに気づけます。
+
+## `documented = false` は継承されません
+
+グループに書いても、中の Role には伝わりません。**両方に書いてください。**
+
+```kt
+fun DeclarationContainerScope.buildGroup() = "build".group {
+    documented = false     // グループを隠す
+
+    gradle()               // この中にも書かないと、Role は出てしまう
+}
+```
+
+書き忘れると、生成ドキュメントの一覧に `gradlew` や `gradle-wrapper.jar` が並びます。
+
+## ルート（`":"`）の書き方
+
+`":"` はルートプロジェクトで、プロジェクトルートそのものに解決されます。wrapper や `settings.gradle.kts` のように**モジュールに属さないファイル**は、ここに書きます。
+
+```kt
+":".module {
+    "settings.gradle".ktsFile()
+    "gradlew".file()
+    // ...
+}
+```
+
+<Aside type="caution">
+`":".module { }` の中で `ignore()` や `anyFile()` を書かないでください。コンテナが `layout { }` 直下と同じノードなので、**ルートモジュールではなくリポジトリ全体に効きます。**
+</Aside>
+
+## 消えたときに落ちるもの・落ちないもの
+
+`gradle-wrapper.jar` や `libs.versions.toml` のように**ワイルドカードを含まない宣言**は、実体が消えると `[MissingFile]` で落ちます。誤って消したことに気づけます。
+
+一方 `":feature:*".module { }` のように**ワイルドカードを含む宣言は、0件でも落ちません。** パターンは「これに合うものがあってよい」という意味で、「必ずある」ではないためです。
+
+この非対称を知らないと「宣言したのに落ちない」で混乱します。**必ずあってほしいものは、固定の名前で書いてください。**
+
+## ビルドが書き出すもの
+
+`build/` や `.kotlin/` は宣言しなくて構いません。`.gitignore` に入っていれば、既定の `files = gitTracked()` が最初から検査に渡しません。
+
+それでも `.module { }` が `"build".ignore()` を含んでいるのは、`files = wholeTree()` に切り替えたプロジェクトには git という後ろ盾が無く、**どちらの設定でも理由が読める**ようにするためです。
+
+## 現物
+
+- `sample/jvm` — 単一モジュール。`Gradle` 1つにまとめている
+- `sample/android` / `sample/kmp` — マルチモジュール。`GradleModule` と `GradleRoot` に分けている
+
+<Aside>
+グループ名は `build` ですが、**Kotlin の package 名は `gradle`** にしています。`.gitignore` の `build/` があらゆる階層にマッチして、定義ファイル自体が git から見えなくなるためです。グループ名と package 名は一致しなくて構いません。
+</Aside>
+
+## 次のステップ
+
+- [Layout](/katachi/guides/layout/) ... `layout { }` の書き方をひととおり学びましょう。
+- [Android の3層](/katachi/recipes/android-three-layer/) ... 層ごとの Role をどう分けるかを見ましょう。

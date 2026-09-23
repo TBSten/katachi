@@ -1,5 +1,8 @@
 ---
 title: モチベーションと katachi の立ち位置
+description: アーキテクチャがドキュメントとテストに二重管理されて腐る問題と、katachi が1つの定義からその両方を出すという立ち位置。
+tags:
+  - beginner
 ---
 
 ## アーキテクチャドキュメントは必ず実装と乖離する
@@ -95,8 +98,10 @@ Katachi check failed: 1 violation (Unexpected: 1)
 
 [UnexpectedFile] src/main/kotlin/com/example/project/GetUserUseCase.kt
   No role is defined for this file.
+
   Nearby locations:
     UseCase    src/main/kotlin/com/example/project/useCase/
+
   How to fix:
     - Move it to one of the locations above
     - Delete it if it is not needed
@@ -193,7 +198,7 @@ val projectArchitecture = architecture {
 
 **katachi でプロジェクト全体の構造をテストしたのち、Konsist で各々のファイルの中身を検証する** という使い分けが推奨されます。
 
-詳しくは [Konsist との統合](../guides/konsist-integration.md) のドキュメントをご覧ください。
+詳しくは [Konsist との統合](/katachi/guides/konsist-integration/) のドキュメントをご覧ください。
 
 ## まとめ
 
@@ -203,8 +208,7 @@ val projectArchitecture = architecture {
 
 ## 次のステップ
 
-- [初めてのアーキテクチャ定義](../first-architecture) ... あなたのプロジェクトに katachi のアーキテクチャ定義を導入して、その有用性について実感しましょう。
-- [FAQ](../faq) ... katachi の設計思想をよくある質問を通して理解しましょう。
-- [Deny by Default](../../concepts/deny-by-default) ... katachi の重要な原則である Deny by default について学びましょう。
-- [Role の定義](../../concepts/role) ... katachi でアーキテクチャ定義を行う基本単位である Role について学びましょう。
-- [Layout](../../concepts/layout) ... katachi でディレクトリ構造を定義するための Layout について学びましょう。
+- [初めてのアーキテクチャ定義](/katachi/get-started/first-architecture/) ... あなたのプロジェクトに katachi のアーキテクチャ定義を導入して、その有用性について実感しましょう。
+- [FAQ](/katachi/get-started/faq/) ... katachi の設計思想をよくある質問を通して理解しましょう。
+- [Role の定義](/katachi/guides/role/) ... katachi でアーキテクチャ定義を行う基本単位である Role について学びましょう。
+- [Layout](/katachi/guides/layout/) ... katachi でディレクトリ構造を定義するための Layout について学びましょう。

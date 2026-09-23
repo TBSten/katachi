@@ -1,0 +1,13 @@
+* {
+  --sl-sidebar-width: 14rem;
+}
+
+.sl-markdown-content table {
+  display: block;
+  max-width: 100%;
+  overflow-x: auto;
+}
+
+table .sl-badge {
+  white-space: nowrap;
+}

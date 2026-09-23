@@ -1,0 +1,514 @@
+---
+title: AI Agent
+description: Claude Code / Cursor / Copilot など 9 つの AI コーディングツールの設定ファイルを architecture { } で宣言する例。
+tags:
+  - intermediate
+---
+
+## Claude Code
+
+```kt collapse
+// ProjectArchitecture.kt
+import me.tbsten.katachi.dsl.architecture
+
+val projectArchitecture = architecture {
+    "AiAgent".group {
+        claudeCode()
+    }
+}
+
+// roles/ClaudeCode.kt
+import me.tbsten.katachi.dsl.DeclarationContainerScope
+
+fun DeclarationContainerScope.claudeCode() =
+    "ClaudeCode".group {
+        "Rules" {
+            layout {
+                "**/CLAUDE.md".file()
+                "**/AGENTS.md".file()
+                ".claude/rules/**/*.md".file()
+            }
+        }
+
+        "Skills" {
+            layout {
+                ".claude/skills/**/*".file()
+            }
+        }
+
+        "Agents" {
+            layout {
+                ".claude/agents/**/*.md".file()
+            }
+        }
+
+        "Commands" {
+            layout {
+                ".claude/commands/**/*.md".file()
+            }
+        }
+
+        "OutputStyles" {
+            layout {
+                ".claude/output-styles/*.md".file()
+            }
+        }
+
+        "Hooks" {
+            layout {
+                ".claude/hooks/**/*".file()
+            }
+        }
+
+        "Settings" {
+            layout {
+                ".claude/settings.json".file().optional()
+            }
+        }
+
+        "Mcp" {
+            layout {
+                ".mcp.json".file().optional()
+            }
+        }
+    }
+```
+
+## Cursor
+
+```kt collapse
+// ProjectArchitecture.kt
+import me.tbsten.katachi.dsl.architecture
+
+val projectArchitecture = architecture {
+    "AiAgent".group {
+        cursor()
+    }
+}
+
+// roles/Cursor.kt
+import me.tbsten.katachi.dsl.DeclarationContainerScope
+
+fun DeclarationContainerScope.cursor() =
+    "Cursor".group {
+        "Rules" {
+            layout {
+                ".cursor/rules/**/*.mdc".file()
+                "**/AGENTS.md".file()
+            }
+        }
+
+        "Skills" {
+            layout {
+                ".cursor/skills/**/*".file()
+            }
+        }
+
+        "Agents" {
+            layout {
+                ".cursor/agents/*.md".file()
+            }
+        }
+
+        "Commands" {
+            layout {
+                ".cursor/commands/*.md".file()
+            }
+        }
+
+        "Hooks" {
+            layout {
+                ".cursor/hooks.json".file().optional()
+                ".cursor/hooks/*.sh".file()
+            }
+        }
+
+        "Mcp" {
+            layout {
+                ".cursor/mcp.json".file().optional()
+            }
+        }
+
+        "Environment" {
+            layout {
+                ".cursor/environment.json".file().optional()
+            }
+        }
+
+        "Ignore" {
+            layout {
+                ".cursorignore".file().optional()
+                ".cursorindexingignore".file().optional()
+            }
+        }
+    }
+```
+
+## Windsurf (Devin Desktop)
+
+```kt collapse
+// ProjectArchitecture.kt
+import me.tbsten.katachi.dsl.architecture
+
+val projectArchitecture = architecture {
+    "AiAgent".group {
+        windsurf()
+    }
+}
+
+// roles/Windsurf.kt
+import me.tbsten.katachi.dsl.DeclarationContainerScope
+
+fun DeclarationContainerScope.windsurf() =
+    "Windsurf".group {
+        "Rules" {
+            layout {
+                ".devin/rules/*.md".file()
+                "**/AGENTS.md".file()
+            }
+        }
+
+        "Skills" {
+            layout {
+                ".devin/skills/**/*".file()
+            }
+        }
+
+        "Workflows" {
+            layout {
+                ".devin/workflows/*.md".file()
+            }
+        }
+
+        "Hooks" {
+            layout {
+                ".devin/hooks.json".file().optional()
+            }
+        }
+
+        "Ignore" {
+            layout {
+                ".devinignore".file().optional()
+            }
+        }
+
+        "Legacy" {
+            layout {
+                ".windsurfrules".file().optional()
+                ".windsurf/rules/*.md".file()
+                ".windsurf/skills/**/*".file()
+                ".windsurf/workflows/*.md".file()
+            }
+        }
+    }
+```
+
+## GitHub Copilot
+
+```kt collapse
+// ProjectArchitecture.kt
+import me.tbsten.katachi.dsl.architecture
+
+val projectArchitecture = architecture {
+    "AiAgent".group {
+        githubCopilot()
+    }
+}
+
+// roles/GitHubCopilot.kt
+import me.tbsten.katachi.dsl.DeclarationContainerScope
+
+fun DeclarationContainerScope.githubCopilot() =
+    "GitHubCopilot".group {
+        "Instructions" {
+            layout {
+                ".github/copilot-instructions.md".file().optional()
+                ".github/instructions/**/*.instructions.md".file()
+                "**/AGENTS.md".file()
+            }
+        }
+
+        "Skills" {
+            layout {
+                ".github/skills/**/*".file()
+            }
+        }
+
+        "Agents" {
+            layout {
+                ".github/agents/*.agent.md".file()
+            }
+        }
+
+        "Prompts" {
+            layout {
+                ".github/prompts/*.prompt.md".file()
+            }
+        }
+
+        "Hooks" {
+            layout {
+                ".github/hooks/*.json".file()
+            }
+        }
+
+        "Mcp" {
+            layout {
+                ".vscode/mcp.json".file().optional()
+            }
+        }
+
+        "SetupSteps" {
+            layout {
+                ".github/workflows/copilot-setup-steps.yml".file().optional()
+            }
+        }
+    }
+```
+
+## Cline
+
+```kt collapse
+// ProjectArchitecture.kt
+import me.tbsten.katachi.dsl.architecture
+
+val projectArchitecture = architecture {
+    "AiAgent".group {
+        cline()
+    }
+}
+
+// roles/Cline.kt
+import me.tbsten.katachi.dsl.DeclarationContainerScope
+
+fun DeclarationContainerScope.cline() =
+    "Cline".group {
+        "Rules" {
+            layout {
+                ".clinerules/**/*.md".file()
+                ".cline/rules/**/*.md".file()
+                "AGENTS.md".file().optional()
+            }
+        }
+
+        "Skills" {
+            layout {
+                ".cline/skills/**/*".file()
+            }
+        }
+
+        "Agents" {
+            layout {
+                ".cline/agents.yaml".file().optional()
+            }
+        }
+
+        "Hooks" {
+            layout {
+                ".cline/hooks/**/*".file()
+            }
+        }
+
+        "Ignore" {
+            layout {
+                ".clineignore".file().optional()
+            }
+        }
+    }
+```
+
+## JetBrains Junie
+
+```kt collapse
+// ProjectArchitecture.kt
+import me.tbsten.katachi.dsl.architecture
+
+val projectArchitecture = architecture {
+    "AiAgent".group {
+        junie()
+    }
+}
+
+// roles/Junie.kt
+import me.tbsten.katachi.dsl.DeclarationContainerScope
+
+fun DeclarationContainerScope.junie() =
+    "Junie".group {
+        "Rules" {
+            layout {
+                ".junie/rules/*.md".file()
+                ".junie/playbook.md".file().optional()
+                ".junie/guidelines.md".file().optional()
+                "**/AGENTS.md".file()
+            }
+        }
+
+        "Skills" {
+            layout {
+                ".junie/skills/**/*".file()
+            }
+        }
+
+        "Commands" {
+            layout {
+                ".junie/commands/*.md".file()
+            }
+        }
+
+        "Mcp" {
+            layout {
+                ".junie/mcp/mcp.json".file().optional()
+            }
+        }
+
+        "Config" {
+            layout {
+                ".junie/config.json".file().optional()
+            }
+        }
+
+        "Ignore" {
+            layout {
+                ".aiignore".file().optional()
+            }
+        }
+    }
+```
+
+## OpenAI Codex
+
+```kt collapse
+// ProjectArchitecture.kt
+import me.tbsten.katachi.dsl.architecture
+
+val projectArchitecture = architecture {
+    "AiAgent".group {
+        codex()
+    }
+}
+
+// roles/Codex.kt
+import me.tbsten.katachi.dsl.DeclarationContainerScope
+
+fun DeclarationContainerScope.codex() =
+    "Codex".group {
+        "Rules" {
+            layout {
+                "**/AGENTS.md".file()
+            }
+        }
+
+        "Skills" {
+            layout {
+                ".agents/skills/**/*".file()
+            }
+        }
+
+        "Config" {
+            layout {
+                ".codex/config.toml".file().optional()
+            }
+        }
+
+        "Hooks" {
+            layout {
+                ".codex/hooks.json".file().optional()
+            }
+        }
+
+        "SandboxRules" {
+            layout {
+                ".codex/rules/*.rules".file()
+            }
+        }
+    }
+```
+
+## Google Antigravity
+
+```kt collapse
+// ProjectArchitecture.kt
+import me.tbsten.katachi.dsl.architecture
+
+val projectArchitecture = architecture {
+    "AiAgent".group {
+        antigravity()
+    }
+}
+
+// roles/Antigravity.kt
+import me.tbsten.katachi.dsl.DeclarationContainerScope
+
+fun DeclarationContainerScope.antigravity() =
+    "Antigravity".group {
+        "Rules" {
+            layout {
+                "**/AGENTS.md".file()
+                "GEMINI.md".file().optional()
+                ".agents/rules/**/*.md".file()
+            }
+        }
+
+        "Skills" {
+            layout {
+                ".agents/skills/**/*".file()
+            }
+        }
+
+        "Agents" {
+            layout {
+                ".agents/agents/**/*.md".file()
+            }
+        }
+
+        "Mcp" {
+            layout {
+                ".agents/mcp_config.json".file().optional()
+            }
+        }
+
+        "Hooks" {
+            layout {
+                ".agents/hooks.json".file().optional()
+            }
+        }
+    }
+```
+
+## Aider
+
+```kt collapse
+// ProjectArchitecture.kt
+import me.tbsten.katachi.dsl.architecture
+
+val projectArchitecture = architecture {
+    "AiAgent".group {
+        aider()
+    }
+}
+
+// roles/Aider.kt
+import me.tbsten.katachi.dsl.DeclarationContainerScope
+
+fun DeclarationContainerScope.aider() =
+    "Aider".group {
+        "Conventions" {
+            layout {
+                "CONVENTIONS.md".file().optional()
+            }
+        }
+
+        "Settings" {
+            layout {
+                ".aider.conf.yml".file().optional()
+                ".aider.model.settings.yml".file().optional()
+            }
+        }
+
+        "Ignore" {
+            layout {
+                ".aiderignore".file().optional()
+            }
+        }
+    }
+```

@@ -1,0 +1,42 @@
+---
+---
+
+<script>
+	const pillarSections = document.querySelectorAll('[data-katachi-pillars]');
+	let frame = 0;
+
+	function updatePillarState() {
+		frame = 0;
+		const viewportCenter = window.innerHeight / 2;
+
+		for (const section of pillarSections) {
+			const pillars = [...section.querySelectorAll('[data-katachi-pillar]')];
+			if (pillars.length === 0) continue;
+
+			let activeIndex = 0;
+			let closestDistance = Number.POSITIVE_INFINITY;
+
+			pillars.forEach((pillar, index) => {
+				const bounds = pillar.getBoundingClientRect();
+				const pillarCenter = (bounds.top + bounds.bottom) / 2;
+				const distance = Math.abs(pillarCenter - viewportCenter);
+
+				if (distance < closestDistance) {
+					closestDistance = distance;
+					activeIndex = index;
+				}
+			});
+
+			section.dataset.activePillar = String(activeIndex);
+		}
+	}
+
+	function schedulePillarState() {
+		if (frame) return;
+		frame = window.requestAnimationFrame(updatePillarState);
+	}
+
+	window.addEventListener('scroll', schedulePillarState, { passive: true });
+	window.addEventListener('resize', schedulePillarState);
+	schedulePillarState();
+</script>

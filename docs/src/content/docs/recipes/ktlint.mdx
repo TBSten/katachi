@@ -1,0 +1,47 @@
+---
+title: ktlint
+description: ktlint の .editorconfig と カスタムルールセットの置き場所を architecture { } で宣言する例。
+tags:
+  - beginner
+---
+
+import { LinkCard } from '@astrojs/starlight/components';
+
+<LinkCard
+  title="ktlint"
+  description="Kotlin の linter / formatter。設定は .editorconfig に書く。"
+  href="https://ktlint.github.io/ktlint/latest/"
+/>
+
+ktlint は .editorconfig ファイルで lint rule の disable の設定などが可能です。
+
+アーキテクチャ定義に .editorconfig を設定して katachi に伝えるべきです。
+
+```kt collapse
+// ProjectArchitecture.kt
+import me.tbsten.katachi.dsl.architecture
+
+val projectArchitecture = architecture {
+    "Tools".group {
+        ktlint()
+    }
+}
+
+// roles/Ktlint.kt
+import me.tbsten.katachi.dsl.DeclarationContainerScope
+
+fun DeclarationContainerScope.ktlint() =
+    "Ktlint".group {
+        "EditorConfig" {
+            layout {
+                "**/.editorconfig".file()
+            }
+        }
+
+        "Baseline" {
+            layout {
+                "ktlint-baseline.xml".file().optional()
+            }
+        }
+    }
+```

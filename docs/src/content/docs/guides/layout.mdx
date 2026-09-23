@@ -1,0 +1,150 @@
+---
+title: Layout システムでディレクトリ構成を厳守させる
+sidebar:
+  label: Layout
+description: layout { } でディレクトリ構成とファイル名を宣言し、宣言していない場所にファイルが増えたら落とす方法。
+tags:
+  - intermediate
+---
+
+import { Aside } from "@astrojs/starlight/components";
+
+## ファイルをどこにおけるか？を定義する
+
+Role に対応するファイルをどこに置けるかを定義するのが `layout { }` です。
+
+```kt {3-6}
+architecture {
+    "UseCase" {
+        // UseCase は useCase/ の中の *UseCase.kt にだけ置けます
+        layout {
+            "src/main/kotlin/com/example/useCase" / "*UseCase".ktFile()
+        }
+    }
+}
+```
+
+## ディレクトリ宣言の書き方のスタイル
+
+ディレクトリ宣言にはいくつか書き方があります。好みのスタイルで描くことができます。
+
+### スラッシュで繋ぐ
+
+各階層に置くものが1つだけのときは、`/` で繋いで1行で書けます。
+
+```kt
+layout {
+    "src/main/kotlin/com/example/useCase" / "*UseCase".ktFile()
+}
+```
+
+ディレクトリだけを宣言することもできます。
+
+```kt
+layout {
+    "app" / "ios"
+}
+```
+
+この場合 `app/ios` というディレクトリのみ存在が許されます。Deny by default の原則により それ以上のこと (app/ios 内にファイルをおく) は許されません。
+
+### ブロックで囲む
+
+同じディレクトリに複数のものを置くときは、ブロックで囲みます。
+特定ディレクトリ内に複数ファイルを配置したい場合に有用です。
+
+```kt
+layout {
+    "src/main/kotlin/com/example/useCase" {
+        "*UseCase".ktFile()
+        "*UseCaseImpl".ktFile()
+    }
+}
+```
+
+ブロックの中では `description` を書けます。生成ドキュメントで「この置き場所は何か」の説明になります。
+
+```kt
+layout {
+    "src/main/kotlin/com/example/useCase" {
+        description = "複数の画面から使われるもの"
+        "*UseCase".ktFile()
+    }
+}
+```
+
+## 任意のファイルの配置を許す
+
+<Aside type="caution">
+ここで説明する2つは **deny by default の逃げ道** です。使った範囲だけ検査が効かなくなります。
+
+「宣言するのが面倒だから」で広げると katachi を入れた意味が薄れます。**機械が生成するもの**や、**別のツールが構成を決めているもの**に限って使ってください。
+</Aside>
+
+### `anyFile()` — 直下のファイルだけ許す
+
+そのディレクトリの**直下に限って**、どんなファイルでも置けるようにします。
+
+```kt
+layout {
+    "generated" { anyFile() }
+}
+```
+
+**サブディレクトリは許されません。** 1階層下にファイルがあれば、それは違反のまま報告されます。
+
+### `ignore()` — 以下すべての検査をやめる
+
+そのディレクトリより下を、**どの深さでも**検査しなくなります。
+
+```kt
+layout {
+    "build" { ignore() }
+}
+```
+
+`"build".ignore()` と短く書くこともできます。
+
+### 空のブロックは逆の意味です
+
+見た目が似ているので、いちばん間違えやすいところです。
+
+| 書き方 | 意味 |
+|---|---|
+| `"generated" { }` | **何も置けない。** 中にファイルがあれば違反 |
+| `"generated" { anyFile() }` | 直下ならどんなファイルでもよい |
+| `"generated" { ignore() }` | 以下すべて検査しない |
+
+**「何も置かない」つもりでないなら、空のブロックにしないでください。** 
+
+通常ディレクトリ宣言のブロックが空ブロックになることは推奨されません。（ディレクトリが存在するだけでその中身は何も置けない空ディレクトリとして存在を許容することになるためです）
+
+## ベストプラクティス
+
+全てのディレクトリをすべての Role に書くのは非効率です。
+意味的な単位で定数化しましょう。
+
+```kt {1,6}
+val appPackageDir = "src/main/kotlin/com/example"
+
+architecture {
+    "UseCase" {
+        layout {
+            appPackageDir / "useCase" / "*UseCase".ktFile()
+        }
+    }
+}
+```
+
+## まとめ
+
+- `layout { }` は **Role のファイルが現れてよい場所** を宣言します。宣言していない場所のファイルは違反になります。
+- 書き方は `/` で繋ぐ形とブロックで囲む形の2つあり、**同じ宣言になります**。読みやすいほうを選んでください。
+- `anyFile()` と `ignore()` は **deny by default の逃げ道** です。使った範囲だけ検査が効かなくなります。
+- パスは **定数に切り出せます**。定義がディレクトリ構造のコピーになるのを防げます。
+
+## 次のステップ
+
+- [Role](/katachi/guides/role/) ... 定義が大きくなってきたときに、ファイルと関数へ切り分ける方法を学びましょう。
+- [Konsist との統合](/katachi/guides/konsist-integration/) ... 置き場所だけでなく、ファイルの中身にも制約をかける方法を学びましょう。
+- [初めてのアーキテクチャ定義](/katachi/get-started/first-architecture/) ... あなたのプロジェクトに katachi を導入して、実際に宣言を書いてみましょう。

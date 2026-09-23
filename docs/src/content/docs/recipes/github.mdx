@@ -1,0 +1,93 @@
+---
+title: GitHub
+description: GitHub Actions のワークフローや CODEOWNERS、Community Health ファイルを architecture { } で宣言する例。
+tags:
+  - intermediate
+---
+
+```kt collapse
+// ProjectArchitecture.kt
+import me.tbsten.katachi.dsl.architecture
+
+val projectArchitecture = architecture {
+    "Tools".group {
+        github()
+    }
+}
+
+// roles/GitHub.kt
+import me.tbsten.katachi.dsl.DeclarationContainerScope
+
+fun DeclarationContainerScope.github() =
+    "GitHub".group {
+        "Workflow" {
+            layout {
+                ".github/workflows/*.yml".file()
+                ".github/workflows/*.yaml".file()
+            }
+        }
+
+        "CompositeAction" {
+            layout {
+                ".github/actions/*/action.yml".file()
+            }
+        }
+
+        "IssueTemplate" {
+            layout {
+                ".github/ISSUE_TEMPLATE/*.yml".file()
+                ".github/ISSUE_TEMPLATE/*.md".file()
+            }
+        }
+
+        "PullRequestTemplate" {
+            layout {
+                ".github/PULL_REQUEST_TEMPLATE.md".file().optional()
+            }
+        }
+
+        "CodeOwners" {
+            layout {
+                ".github/CODEOWNERS".file().optional()
+            }
+        }
+
+        "Dependabot" {
+            layout {
+                ".github/dependabot.yml".file().optional()
+            }
+        }
+
+        "CommunityHealth".group {
+            "Contributing" {
+                layout {
+                    ".github/CONTRIBUTING.md".file().optional()
+                }
+            }
+
+            "CodeOfConduct" {
+                layout {
+                    ".github/CODE_OF_CONDUCT.md".file().optional()
+                }
+            }
+
+            "Security" {
+                layout {
+                    ".github/SECURITY.md".file().optional()
+                }
+            }
+
+            "Support" {
+                layout {
+                    ".github/SUPPORT.md".file().optional()
+                }
+            }
+
+            "Funding" {
+                layout {
+                    ".github/FUNDING.yml".file().optional()
+                }
+            }
+        }
+    }
+```

@@ -1,63 +1,211 @@
 ---
 title: katachi
-description: アーキテクチャを Kotlin DSL で書き、同じ定義からテストとドキュメントの両方を出す。
+description: Kotlin DSL でアーキテクチャを定義し、プロジェクト全体の構造を deny by default で検査するライブラリ。
 template: splash
-hero:
-  tagline: アーキテクチャを1箇所に書いて、テストとドキュメントの両方にする。
-  actions:
-    - text: 導入する
-      link: /install/
-      icon: right-arrow
-    - text: GitHub
-      link: https://github.com/tbsten/katachi
-      icon: external
-      variant: minimal
 ---
 
-import { Card, CardGrid } from '@astrojs/starlight/components';
+import HomePillarScroll from '../../components/HomePillarScroll.astro';
 
-:::caution[まだ実装中]
-katachi は v0.1 を実装している途中です。現時点で動くのは
-`architecture { }` / group / 役割の宣言までで、`layout { }` の中身の評価も
-`assert()` もまだありません。公開もしていません。
-:::
+<div class="katachi-home">
 
-## 何をするもの？
+<section class="katachi-home__hero" aria-labelledby="katachi-home-title">
 
-アーキテクチャのドキュメントは腐ります。「UseCase はここに置く」と書いた README は、
-半年後には実態と食い違っています。テストとドキュメントが別々に書かれる限り、
-どちらかが必ず嘘をつきます。
+<p class="katachi-home__eyebrow">Kotlin architecture test</p>
 
-katachi は**同じ定義から両方を出します**。
+# <span id="katachi-home-title"><span class="katachi-home__hero-line">Deny</span> <span class="katachi-home__hero-line">by default</span></span>
 
-```kotlin
+<div class="katachi-home__accent" aria-hidden="true"></div>
+
+<p class="katachi-home__lead">katachi で<br />動くアーキテクチャドキュメントを</p>
+
+<p class="katachi-home__intro">宣言していないファイルは、存在を許されない。プロジェクト全体の「どこに何を置けるか」を Kotlin DSL で書き、テストとして検証します。</p>
+
+<nav class="katachi-home__hero-actions" aria-label="はじめる">
+
+[導入する →](/katachi/get-started/first-architecture/)
+
+[GitHub ↗](https://github.com/tbsten/katachi)
+
+</nav>
+
+<div class="katachi-home__hero-code">
+
+```kt title="ProjectArchitecture.kt"
 val projectArchitecture = architecture {
-    "domain".group {
-        "UseCase" {
-            title = "ユースケース"
-            summary = "各画面で発生するアプリ固有の1つの振る舞い"
-            example("GetUserUseCase", "ユーザーを取得する")
-
-            layout {
-                ":core:domain".module {
-                    mainSourceSet / kotlin / "com/example/useCase" / "*UseCase".ktFile()
-                }
-            }
+  "domain".group {
+    "UseCase" {
+      layout {
+        ":core:domain".module {
+          mainSourceSet / kotlin / modulePackage / "useCase" / "*UseCase".ktFile()
         }
+      }
     }
+  }
 }
 ```
 
-この1つの定義が、テストとしては「宣言に載っていないファイルがあれば落ちる」検査になり、
-ドキュメントとしては「UseCase は何で、どこに置くのか」のページになります。
+</div>
 
-<CardGrid stagger>
-	<Card title="Deny by default" icon="approve-check">
-		宣言に載っていないファイルは違反として報告されます。
-		「いつの間にか増えた置き場所」が起きません。
-	</Card>
-	<Card title="役割起点" icon="star">
-		モジュール構造ではなく**役割**から書きます。同じ役割が複数モジュールに
-		置かれても、説明は1箇所のままです。
-	</Card>
-</CardGrid>
+</section>
+
+<section class="katachi-home__split" aria-labelledby="katachi-home-problem">
+
+<div class="katachi-home__split-copy">
+
+## <span id="katachi-home-problem">崩れるのは<br />いつも1ファイルから。</span>
+
+置き場所の逸脱は、レビューで見逃しがちです。AI Agent が作ったファイルも、手本にするのは文書ではなく既存の配置。1つずれれば、そこから複製されていきます。
+
+**ドキュメントには、強制力がない。**
+
+</div>
+
+<div class="katachi-home__tree" aria-label="検査されていないディレクトリ構造の例">
+
+<p>src/main/kotlin/com/example/</p>
+
+```text
+├─ useCase/
+│  ├─ GetUserUseCase.kt
+│  └─ UpdateUserUseCase.kt
+├─ DeleteUserUseCase.kt  ← 置き場所が違う
+└─ misc/
+   └─ memo.md            ← 役割がない
+```
+
+<small>この2つを、誰も検査していない</small>
+
+</div>
+
+</section>
+
+<section class="katachi-home__split katachi-home__split--reverse" aria-labelledby="katachi-home-solution">
+
+<div class="katachi-home__tree katachi-home__tree--allowed" aria-label="katachi が許可したディレクトリ構造の例">
+
+<p>ProjectArchitecture.kt が許可した範囲</p>
+
+```text
+src/main/kotlin/com/example/
+├─ useCase/*UseCase.kt       ✓ declared
+├─ repository/*Repository.kt ✓ declared
+├─ DeleteUserUseCase.kt      ✕ reported
+└─ misc/memo.md              ✕ reported
+```
+
+<small><span aria-hidden="true">●</span> 宣言済み　<span aria-hidden="true">●</span> 違反として報告される</small>
+
+</div>
+
+<div class="katachi-home__split-copy">
+
+## <span id="katachi-home-solution">宣言した場所だけが<br />存在を許される</span>
+
+katachi では、存在してよいものを宣言します。禁止を数え上げるのではありません。
+
+**Deny by default — 宣言にないものは、存在できない。**
+
+</div>
+
+</section>
+
+<section class="katachi-home__pillars" aria-label="katachi の三つの柱" data-katachi-pillars data-active-pillar="0">
+
+<div class="katachi-home__pillar-list">
+
+<article class="katachi-home__pillar" data-katachi-pillar>
+
+<p>03-01 — deny</p>
+
+### 宣言にないファイルは<br />アーキテクチャ違反
+
+禁止を数え上げる運用から、存在してよいものを宣言する運用へ。「いつの間にか増えた置き場所」が起きません。
+
+```kt
+"UseCase" { layout { "domain/useCase" / "*UseCase".ktFile() } }
+// domain/useCase/Helper.kt → [UnexpectedFile]
+```
+
+</article>
+
+<article class="katachi-home__pillar" data-katachi-pillar>
+
+<p>03-02 — role</p>
+
+### 役割駆動による<br />アーキテクチャ定義
+
+1つの役割が2つのモジュールに住んでいても、説明は1箇所のまま。置き場所は `layout { }` を並べて宣言します。
+
+```kt
+"UseCase" {
+  summary = "各画面で発生するアプリ固有の1つの振る舞い"
+  layout { "core/domain/useCase" / "*UseCase".ktFile() }
+  layout { "feature/home/useCase" / "*UseCase".ktFile() }
+}
+```
+
+</article>
+
+<article class="katachi-home__pillar" data-katachi-pillar>
+
+<p>03-03 — docs</p>
+
+### 検査した定義が、<br />そのままドキュメントへ
+
+`title` / `summary` / `example` を役割の中に書きます。同じ定義からのドキュメント生成は v0.3 で予定しています。
+
+```kt
+"UseCase" {
+  title = "ユースケース"
+  summary = "各画面で発生するアプリ固有の1つの振る舞い"
+  example("GetUserUseCase", "ユーザーを取得する")
+}
+```
+
+</article>
+
+</div>
+
+<div class="katachi-home__pillar-words" aria-hidden="true">
+
+<span>Deny.</span>
+<span>Role.</span>
+<span>Docs.</span>
+
+</div>
+
+</section>
+
+<HomePillarScroll />
+
+<section class="katachi-home__agents" aria-labelledby="katachi-home-agents">
+
+<div class="katachi-home__agents-inner">
+
+## <span id="katachi-home-agents">Built for AI agents.<br /><em>Good for humans too.</em></span>
+
+エージェントに効くのは、文章ではなく落ちるテスト。直し方まで書かれた出力は、人が読んでも分かります。
+
+</div>
+
+</section>
+
+<section class="katachi-home__cta" aria-labelledby="katachi-home-cta">
+
+## <span id="katachi-home-cta">プロジェクトの形を、宣言してみる。</span>
+
+プロジェクト全体の構成を定義し、テストを実行しましょう。宣言にないファイルは違反として報告されます。
+
+<div class="katachi-home__cards">
+
+[<strong>導入する <span>→</span></strong><small>定義を作り、テストを通すまでの手順。</small>](/katachi/get-started/first-architecture/)
+
+[<strong>設計思想を読む <span>→</span></strong><small>なぜ deny by default なのか、Konsist との住み分け。</small>](/katachi/get-started/motivation/)
+
+[<strong>GitHub <span>↗</span></strong><small>実装とロードマップ。</small>](https://github.com/tbsten/katachi)
+
+</div>
+
+</section>
+
+</div>

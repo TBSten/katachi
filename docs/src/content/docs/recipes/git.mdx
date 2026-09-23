@@ -1,0 +1,29 @@
+---
+title: Git
+description: .gitignore や .gitattributes など Git 関連のファイルを architecture { } で宣言する例。
+tags:
+  - beginner
+---
+
+```kt collapse
+// ProjectArchitecture.kt
+import me.tbsten.katachi.dsl.architecture
+
+val projectArchitecture = architecture {
+    "Tools".group {
+        git()
+    }
+}
+
+// roles/Git.kt
+import me.tbsten.katachi.dsl.DeclarationContainerScope
+
+fun DeclarationContainerScope.git() =
+    "Git".group {
+        "Ignore" {
+            layout {
+                "**/.gitignore".file()
+            }
+        }
+    }
+```

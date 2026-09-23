@@ -1,0 +1,47 @@
+---
+title: detekt
+description: detekt の設定ファイルと カスタムルールセットの置き場所を architecture { } で宣言する例。
+tags:
+  - beginner
+---
+
+import { LinkCard } from '@astrojs/starlight/components';
+
+<LinkCard
+  title="detekt"
+  description="Kotlin の静的解析ツール。ルールの有効・無効は YAML の設定ファイルに書く。"
+  href="https://detekt.dev/"
+/>
+
+detekt は YAML の設定ファイルでルールの有効・無効やしきい値の設定が可能です。
+
+アーキテクチャ定義に設定ファイルとベースラインを書いて katachi に伝えるべきです。
+
+```kt collapse
+// ProjectArchitecture.kt
+import me.tbsten.katachi.dsl.architecture
+
+val projectArchitecture = architecture {
+    "Tools".group {
+        detekt()
+    }
+}
+
+// roles/Detekt.kt
+import me.tbsten.katachi.dsl.DeclarationContainerScope
+
+fun DeclarationContainerScope.detekt() =
+    "Detekt".group {
+        "Config" {
+            layout {
+                "config/detekt/*.yml".file()
+            }
+        }
+
+        "Baseline" {
+            layout {
+                "config/detekt/baseline.xml".file().optional()
+            }
+        }
+    }
+```

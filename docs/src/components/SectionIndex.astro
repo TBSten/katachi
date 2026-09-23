@@ -1,0 +1,70 @@
+---
+import { getCollection } from 'astro:content';
+import { CardGrid, LinkCard } from '@astrojs/starlight/components';
+
+/**
+ * その節に属するページをカードで並べる。`recipes/index.mdx` のような索引ページ用。
+ *
+ * **一覧は手で書かない。** ページの集合はビルド時に content collection から採るので、
+ * `.mdx` を1枚足せばカードも増える。並び順だけはサイドバー（`astro.config.mjs`）の
+ * 順番をそのまま使う — 順序は人が決めたものが既にあるので、そこに二重の決定を作らない。
+ *
+ * サイドバーに載っていないページは末尾に slug 順で付く。配線を忘れても索引からは
+ * 消えない、という側に倒してある。
+ */
+interface Props {
+	/** 収集するディレクトリの slug。`recipes/index.mdx` なら `recipes`。 */
+	dir: string;
+}
+
+const prefix = `${Astro.props.dir}/`;
+
+// starlight-llms-txt が `/llms-full.txt` を組むときは Starlight のルート外でページを
+// レンダリングするので、route data が無い。Starlight 自身がこのケースを try/catch で
+// 受けるよう案内している。この経路だけ並び順が slug 順に落ちるが、text の一括ダンプ
+// なので順番は問題にならない。
+let sidebar: typeof Astro.locals.starlightRoute.sidebar | undefined;
+try {
+	sidebar = Astro.locals.starlightRoute.sidebar;
+} catch {
+	sidebar = undefined;
+}
+
+// `base` を設定すると（公開時に想定: `base: '/katachi'`）サイドバーの href に base が付く。
+// content collection の id には付かないので、比べる前に剥がす。
+const base = import.meta.env.BASE_URL;
+const slugOf = (href: string) =>
+	(href.startsWith(base) ? href.slice(base.length) : href).replace(/^\/|\/$/g, '');
+
+// サイドバーを平坦化して slug -> 並び順 を作る。
+const order = new Map<string, number>();
+const walk = (entries: NonNullable<typeof sidebar>) => {
+	for (const entry of entries) {
+		if (entry.type === 'group') walk(entry.entries);
+		else order.set(slugOf(entry.href), order.size);
+	}
+};
+if (sidebar) walk(sidebar);
+
+// `prefix` で始まる id だけを採る。索引ページ自身の id は `recipes`（`/` で終わらない）
+// なので、この条件だけで自然に外れる。
+const pages = (
+	await getCollection('docs', (entry) => entry.id.startsWith(prefix) && !entry.data.draft)
+).sort(
+	(a, b) =>
+		(order.get(a.id) ?? Number.POSITIVE_INFINITY) -
+			(order.get(b.id) ?? Number.POSITIVE_INFINITY) || a.id.localeCompare(b.id),
+);
+---
+
+<CardGrid>
+	{
+		pages.map((page) => (
+			<LinkCard
+				title={page.data.title}
+				description={page.data.description}
+				href={`${base}${page.id}/`.replace(/\/{2,}/g, '/')}
+			/>
+		))
+	}
+</CardGrid>
