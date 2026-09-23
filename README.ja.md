@@ -2,17 +2,17 @@
 
 **Android / KMP プロジェクトのアーキテクチャを Kotlin DSL で書き、同じ定義から「テスト」と「ドキュメント」の両方を出す**ためのライブラリ。
 
-v0.1 は **Deny by default のアーキテクチャテスト**として出す。
+[English](./README.md) | 日本語
+
+v0.1 は **Deny by default のアーキテクチャテスト**として出している。
 「どの役割のファイルをどこに置けるか」を1箇所に宣言し、宣言に載っていないファイル（`Unexpected`）と、
 宣言されているのに実体が無いもの（`Missing`）をテストで検出する。
 ドキュメント生成は v0.3 の予定。
 
-> [!WARNING]
-> **まだ実装中。** 現時点で動くのは v0.1 のステップ2（`architecture { }` / group / 役割 /
-> `layout { }` のディレクトリとファイル / 実ファイルツリーとの突き合わせ / `assert()`）まで。
-> `"...".module { }`・sourceSet・`konsist { }`・Warning はまだ無い（ステップ3以降）。
-> 公開もしていない（`0.1.0-SNAPSHOT`）。
-> 詳細な計画は `.local/features-by-version/v0.1/`（リポジトリには含めていない作業メモ）にある。
+**ドキュメント: https://tbsten.github.io/katachi/ja/**
+
+> [!NOTE]
+> メジャーバージョンが 0 のあいだは、リリースに破壊的変更が入ることがある。
 
 ## 導入
 
@@ -37,15 +37,22 @@ tasks.test { useJUnitPlatform() }
 
 dependencies {
     testImplementation("me.tbsten.katachi:katachi:0.1.0")
+    // 任意。`konsist { }` を書くときだけ。
+    testImplementation("me.tbsten.katachi:katachi-konsist:0.1.0")
 
-    // JUnit Platform に実行エンジンを1つ載せる。katachi は AssertionError を投げるだけで
-    // テストフレームワークに依存しないので、エンジンは利用者が選ぶ。
+    // JUnit Platform に実行エンジンと launcher を載せる。katachi は AssertionError を
+    // 投げるだけでテストフレームワークに依存しないので、エンジンは利用者が選ぶ。
     testImplementation(platform("org.junit:junit-bom:5.13.4"))
     testImplementation("org.junit.jupiter:junit-jupiter")
+    testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
 ```
 
 > [!IMPORTANT]
+> **`junit-platform-launcher` を忘れると、テストは起動すらしない。**
+> `junit-jupiter` の集約 artifact は api / params / engine を含むが launcher は含まず、
+> Gradle 9 は自動で載せない。`Failed to load JUnit Platform` で落ちる。
+>
 > **エンジンを載せ忘れると、テストは「成功」するのではなく1度も実行されない。**
 > `useJUnitPlatform()` だけでは `@Test` を拾う実装が classpath に無く、`BUILD SUCCESSFUL` に
 > なるのにアーキテクチャ検査が空振りする。kotest で書く場合は `kotest-runner-junit5` が
@@ -179,8 +186,9 @@ architecture {
 
 | モジュール | 内容 |
 |---|---|
-| `:katachi` | 本体。**依存ゼロ・JVM only**。座標は `me.tbsten.katachi:katachi` |
-| `katachi-konsist` | `konsist { }` 用の任意モジュール。**まだ無い**（v0.1 ステップ4） |
+| `:katachi` | 本体。**実行時依存ゼロ・JVM only**。座標は `me.tbsten.katachi:katachi` |
+| `:katachi-konsist` | `konsist { }` 用の任意モジュール。座標は `me.tbsten.katachi:katachi-konsist` |
+| `:architecture-test` | katachi 自身のアーキテクチャ定義。**公開しない** |
 
 ルートプロジェクトは**サンプルの集約専用**で、プラグインもソースも持たない。
 `./gradlew check` が Android SDK や Kotlin/Native ツールチェーン無しで通る状態を保つため。
