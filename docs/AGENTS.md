@@ -18,44 +18,46 @@ Manage the background server with `astro dev stop`, `astro dev status`, and `ast
 ```
 - はじめる
     - モチベーションと katachi の立ち位置
-    - 初めてのアーキテクチャ定義        （雑なインストール込み）
+    - 初めてのアーキテクチャ定義        （インストール込み。専用ページは作らない）
     - FAQ                              （思想・考え方の FAQ。ハウツーは書かない）
-- インストール                          （エッジケース込みの詳細）
-- コンセプト
-    - Deny by default
-    - Role                             （group と「役割を持たないファイルは存在しない」を含む）
+    - 他ツールとの比較                  （Konsist / detekt / ArchUnit などとの守備範囲）
+- ガイド                                （もとはコンセプトとガイドの2節。1つにまとめた）
+    - 基本的な API                      （覚える6つ。この節の入口）
+    - Role                             （group と「Role 定義を分割する」を含む）
     - Layout システムでディレクトリ構成を厳守させる  ［サイドバーのラベルは `Layout`］
-- ガイド
-    - Role 定義を分割する
-    - Konsist Integration
+    - Konsist との統合
     - Processor とそのカスタマイズ
 - レシピ
+    - 一覧                              （`/recipes/`。カードはビルド時に自動収集する）
     - Android architecture guide に従った3層アーキテクチャ
-    - feature モジュール分割
-    - KMP の sourceSet と expect/actual
     - Gradle 周辺（buildSrc / convention plugin / version catalog）
     - Ktor のサーバサイドプロジェクト
-    - KSP プロセッサ
-    - Kotlin コンパイラプラグイン
-    - IntelliJ プラグイン
+    - AI Agent
+    - ktlint
+    - detekt
+    - Git
+    - GitHub
 - API リファレンス（/api-docs/）
 - ロードマップ
 ```
 
 決まっている判断:
 
-- **インストールは二段構え。** 「初めてのアーキテクチャ定義」で雑な手順を示し、
-  「インストール」ページでエッジケース込みの詳細を扱う
+- **インストール専用ページは作らない。** 「初めてのアーキテクチャ定義」が手順を全部持つ。
+  二段構えにしていた時期があるが、書き分けるほどの中身が無く、下のエッジケースも
+  そちらへ入れる
 - **エラーメッセージの読み方はドキュメント化しない。** メッセージそのものを読めば対処が
   分かるべきで、読み方のガイドが要る時点でメッセージ側の敗北。ドキュメントは必ずズレる
-- **既存プロジェクトへの段階導入は当面入れない。** 入れるならインストールページに
-- **`processor` はコンセプトに出さない。** 内部的な設計の話で、ほとんどの利用者は
-  `assert()` の1行しか触らない。コンセプトに置くと「理解しないと使えない」と言ってしまう。
-  ガイドのページが自分で短い前提（2〜3行）を持つ
+- **既存プロジェクトへの段階導入は当面入れない。** 入れるなら「初めてのアーキテクチャ定義」に
+- **`processor` は前面に出さない。** 内部的な設計の話で、ほとんどの利用者は
+  `assert()` の1行しか触らない。目立つ位置に置くと「理解しないと使えない」と言ってしまう。
+  ガイドの末尾に置き、ページが自分で短い前提（2〜3行）を持つ
 - **ページタイトルとサイドバーのラベルは分けられる**（Starlight の `sidebar.label`）
 - **存在しないページにリンクするとビルドが落ちる。** 書けるページから順に出す
+- **節の索引ページは `<SectionIndex dir="..." />` で出す。** ページの集合は content
+  collection から、並び順はサイドバーから採る。カードを手で並べない
 
-インストールページに入れるエッジケース（分かっているもの）:
+「初めてのアーキテクチャ定義」に入れるエッジケース（分かっているもの）:
 
 - **AGP プロジェクトでは `:architecture-test` の Kotlin プラグインにバージョンを書けない。**
   ルートで `alias(libs.plugins.kotlinJvm) apply false` が要る
@@ -64,6 +66,30 @@ Manage the background server with `astro dev stop`, `astro dev status`, and `ast
 - `files = gitTracked()` が効く条件（`git rev-parse --is-inside-work-tree`。
   プロジェクトルートに `.git` が無くてもよい）
 - Gradle のルートがリポジトリのルートと違う場合（モノレポ、サブモジュール）
+
+## `public/install/` — AI エージェント向けの配布物
+
+ドキュメントサイトのページではなく、**AI エージェントが `curl` で取りに来る素材**を置く場所。
+Astro は `public/` を加工せずそのままコピーするので、`<base-url>/install/...` で生のまま配信される。
+
+| ファイル | 役割 |
+|---|---|
+| `index.md` | インストール手順そのもの。エージェントはこれを読んで動く |
+| `katachi-install.sh` | 機械的にできる工程の**唯一の実装**。`init` と `scaffold` の2サブコマンド |
+| `install-check-list.html` | 進捗と結果のチェックリスト。`init` が配置し、`data-fill` 属性の欄を `sed` で埋める |
+| `project-code-base-report-template.html` | コードベース解析レポートのテンプレート。`init` が配置する |
+
+守ること:
+
+- **手順を `index.md` に足す前に、スクリプトでできないかを考える。** 「エージェントがよしなに」は
+  環境ごとにブレる。判断が要らない工程は `katachi-install.sh` に入れ、`index.md` は
+  コマンドを1行示すだけにする
+- **生成する内容を2箇所に書かない。** モジュールの雛形はスクリプトの中だけにある
+- `install-check-list.html` の `<dd data-fill="...">...</dd>` は**1行に収める。**
+  スクリプトが `sed` の行単位の置換で埋めている
+- スクリプトを直したら、`sh -n` に加えて**実際の Gradle プロジェクトで動かす。**
+  最低限「AGP + version catalog」「ルート build ファイル無し」「Kotlin JVM が既にルートに居る」の3つ
+- 配信元は `KATACHI_DOCS` 環境変数で差し替えられる。dev server に向けて試せる
 
 ## レシピ
 
@@ -74,37 +100,13 @@ CI で毎回回っている。解説 + サンプルの該当箇所へのリン�
 
 **サンプルに無いレシピを書くなら、サンプルを先に増やすほうが安全。**
 
-### 現物があるもの（優先）
+### レシピの一覧
 
 | レシピ | 教える語彙 | 現物 |
 |---|---|---|
 | Android architecture guide の3層 | 層による分割 | `sample/android` |
-| **feature モジュール分割** | `.module { }` とワイルドカード捕捉。「繰り返される構造」 | `sample/kmp`（`feature/Screen` ほか） |
-| **KMP の sourceSet と expect/actual** | `sourceSet`、1つの役割が複数の置き場所を持つ | `sample/kmp`（`data/PlatformImplementation`） |
 | **Gradle 周辺**（`buildSrc` / convention plugin / version catalog） | `documented = false`、`":".module { }` | 3サンプルの `build` group |
 | Ktor / サーバサイド JVM | （語彙は3層と同じ。立ち位置の証明） | `sample/jvm` |
-
-### プラグイン・ツール系（tbsten の skill 集と対になるもの）
-
-skill の `scaffold.sh` が雛形を作り、**katachi がその形を崩れないように固定する**。
-同じ仕事の前半と後半。将来 skill 側に katachi の定義を同梱する。
-
-アプリのレシピと性質が違う点: アプリで katachi が防ぐのは主に「ファイルが変なところにある」
-ことだが、**プラグイン系では「必須のファイルが無い → 黙って動かない」を防げる**。
-`META-INF/services/` の登録、`plugin.xml`、`ksp/Provider.kt` — どれも欠けても
-コンパイルは通り、気づくのは「なぜか動かない」と数時間溶かしたあと。`MissingFile` が
-一番効く場面。
-
-| レシピ | 元 skill | 構成 | 新しく教える語彙 |
-|---|---|---|---|
-| **KSP プロセッサ** | `ksp-plugin-setup.ja.md` | `<name>-runtime`（KMP 全ターゲット・アノテーションのみ）/ `<name>-ksp`（JVM only）/ `test/`（KMP 統合）/ `buildLogic/`（included build）。`ksp/` 直下に `SymbolProcessor.kt` `Provider.kt` `ProcessContext.kt`、`feature/<name>/` `core/` `options/` `util/` | 1リポジトリに複数 artifact があり**ターゲットが違う**構成。必須ファイル3つ |
-| **Kotlin コンパイラプラグイン** | `kotlin-compiler-plugin-setup.ja.md` | `buildSrc/` / `compiler-plugin/` / `gradle-plugin/` / `runtime/` / `integration-test/test-jvm/` / `integration-test/test-kmp/`。`META-INF/services/` に `CommandLineProcessor` と `CompilerPluginRegistrar` の登録 | **ネストしたモジュール階層**（`integration-test/test-jvm`）と、**`src/main/resources/` 側のレイアウト**。いまのサンプルはリソースの規約を持っていない |
-| **IntelliJ プラグイン** | `intellij-plugin-dev.ja.md` | `src/main/kotlin/` / `src/test/kotlin/` / **`src/preview/kotlin/`**（`PreviewMain.kt` `PreviewChecks.kt`）/ `resources/META-INF/plugin.xml` / `snapshots/preview/`（VRT golden）/ `:icons` | **`main` / `test` 以外の source set**。golden ディレクトリの宣言（v0.3 の「生成物自身も layout に宣言が要る」と同じ話） |
-
-**正直に書くべき限界**: KSP のスキルは `feature → core → util` の一方向依存を Konsist で
-強制している。**これは katachi の layout では表せない**（ディレクトリではなく import の話）。
-ステップ4 の `konsist { }` の担当になる。つまりこのレシピは
-**「layout で配置を固定し、konsist で依存の向きを固定する」を組み合わせる初めての例**になる。
 
 ## テーマ
 
