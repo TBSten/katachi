@@ -1,0 +1,47 @@
+---
+title: ktlint
+description: An example of declaring where ktlint's .editorconfig and custom rule sets live in architecture { }.
+tags:
+  - beginner
+---
+
+import { LinkCard } from '@astrojs/starlight/components';
+
+<LinkCard
+  title="ktlint"
+  description="A linter / formatter for Kotlin. Configuration lives in .editorconfig."
+  href="https://ktlint.github.io/ktlint/latest/"
+/>
+
+ktlint lets you configure things like disabling lint rules through the .editorconfig file.
+
+You should declare .editorconfig in your architecture definition so katachi knows about it.
+
+```kt collapse
+// ProjectArchitecture.kt
+import me.tbsten.katachi.dsl.architecture
+
+val projectArchitecture = architecture {
+    "Tools".group {
+        ktlint()
+    }
+}
+
+// roles/Ktlint.kt
+import me.tbsten.katachi.dsl.DeclarationContainerScope
+
+fun DeclarationContainerScope.ktlint() =
+    "Ktlint".group {
+        "EditorConfig" {
+            layout {
+                "**/.editorconfig".file()
+            }
+        }
+
+        "Baseline" {
+            layout {
+                "ktlint-baseline.xml".file().optional()
+            }
+        }
+    }
+```

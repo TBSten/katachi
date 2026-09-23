@@ -1,0 +1,103 @@
+---
+title: Konsist integration
+description: How to use the Konsist API via konsist { } to constrain the declarations inside a file rather than its placement. When to use must, mustNot, and mustBeEmpty.
+tags:
+  - intermediate
+---
+import { Aside, LinkCard } from '@astrojs/starlight/components';
+
+While katachi's core API focuses on validating directory structure and file location, `"...".konsist { }` lets you use the Konsist API to **validate the declarations inside a file**.
+
+## Installation
+
+`"...".konsist { }` lives in a separate, optional module, so you need to install it separately.
+Add the following to `build.gradle.kts`.
+
+<table>
+  <tr>
+    <td>Version</td>
+    <td>Same as the core `katachi` module. The two artifacts are always published with the same version</td>
+  </tr>
+  <tr>
+    <td>Bundled Konsist</td>
+    <td>0.17.3</td>
+  </tr>
+</table>
+
+<Aside type="caution">
+  katachi isn't published to Maven Central yet. See the [roadmap](/katachi/en/roadmap/) for the publishing status.
+</Aside>
+
+```kts title="build.gradle.kts" {2}
+dependencies {
+    testImplementation("me.tbsten.katachi:katachi-konsist:<version>")
+}
+```
+
+Next, pass `KonsistCheck()` to `projectArchitecture.assert()` to run the Konsist checks.
+
+```kt del={3} ins={4}
+@Test
+fun `files are placed according to the architecture`() {
+  projectArchitecture.assert()
+  projectArchitecture.assert(KonsistCheck())
+}
+```
+
+## Basic usage
+
+Inside a Role, you define what declarations that Role's files should have.
+
+```kt
+architecture {
+  "UseCase" {
+    "has exactly one invoke function".konsist {
+        classes().must { it.functions().map { f -> f.name } == listOf("invoke") }
+    }
+  }
+}
+```
+
+<Aside type="caution">
+  Don't use `assertTrue { }`. It throws an assertion exception on the spot, which goes against the design that separates DSL declaration from verification.
+  Use must / mustNot / mustBeEmpty instead.
+</Aside>
+
+## Example error
+
+When a constraint violation is detected, the error message looks like this.
+
+```text
+Katachi check failed: 1 violation (Constraint: 1)
+
+[UnsatisfiedConstraint] src/main/kotlin/com/example/useCase/GetUserUseCase.kt
+  Role: UseCase / Constraint: "has exactly one invoke function"
+  Declaration: GetUserUseCase (line 3)
+  Declared at: ProjectArchitecture.kt:12
+```
+
+**The name you gave the constraint appears exactly as written.** When there are multiple constraints, this single line tells you which one failed, so write the name in the form of what must be satisfied.
+
+## Konsist API
+
+Inside a `"...".konsist { }` block, you can use the regular Konsist API.
+
+<LinkCard
+  title="Konsist documentation"
+  href="https://docs.konsist.lemonappdev.com/"
+/>
+
+katachi only replaces three things — `must`, `mustNot`, and `mustBeEmpty` — everything up to narrowing down the target uses Konsist's syntax as-is.
+
+## Summary
+
+- `layout { }` handles **where files may be placed**, and `konsist { }` handles **what their contents should look like**.
+- `katachi-konsist` is an **optional module**. It requires adding the dependency and setting up `assert(KonsistCheck())`.
+- **The constraint name appears directly in the violation report.** Write the name in the form of what must be satisfied.
+- The `assertTrue` family **causes a compile error**. It throws an exception on the spot, which doesn't fit the design that collects every violation in a single run.
+
+## Next steps
+
+- See the various recipes for real examples that use the Konsist API.
+- [Role](/katachi/en/guides/role/) ... Learn how to write a Role's description, placement, and grouping — the place where you write constraints.
+- [ArchitectureProcessor and customizing it](/katachi/en/guides/processor/) ... Learn how to pull your own information out of the definition, using the same interface as `KonsistCheck`.

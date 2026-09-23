@@ -1,0 +1,412 @@
+---
+title: Role
+description: How to declare your project's elements with Role. Grouping with group, and how to split Role definitions across files.
+tags:
+  - intermediate
+---
+
+import { FileTree } from "@astrojs/starlight/components";
+import CodeComparison from "../../../../components/CodeComparison";
+
+## Declaring a Role
+
+An app that follows an architecture definition has files with specific roles.
+For example `UseCase`, `Repository`, `Controller`, or `ViewModel`.
+
+You define what roles exist inside `architecture { }`.
+
+```kt {2-5}
+architecture {
+    // Define a Role called UseCase
+    "UseCase" {
+        // Write the description, placement, and constraints inside here
+    }
+}
+```
+
+Starting from a Role, you describe the details of that role.
+
+- `title`, `summary`, `description`, etc. ... The description of the Role. Used when generating documentation.
+- `layout { }` ... Defines where the files for that Role may be placed.
+  - See [Layout definitions](/katachi/en/guides/layout/) for details.
+- `"constraint name".konsist { }` ... Defines constraints you can apply to that Role's files.
+  - Constraints are defined using Konsist. See [Konsist integration](/katachi/en/guides/konsist-integration/) for details.
+
+```kt
+architecture {
+    "UseCase" {
+        title = "Use case"
+        summary = "A single app-specific behavior that occurs on each screen"
+
+        example("GetUserUseCase", "Fetch the user")
+
+        // Where it may be placed
+        layout {
+            "src/main/kotlin/com/example/useCase" / "*UseCase".ktFile()
+        }
+
+        // What its contents should look like
+        "has exactly one invoke function".konsist {
+            classes().must { it.functions().map { f -> f.name } == listOf("invoke") }
+        }
+    }
+}
+```
+
+Let's look at each of these in a bit more detail.
+
+<details>
+<summary>Writing a description</summary>
+
+At minimum, all you need is `summary`. It becomes the one-line entry for the Role in the generated documentation's list table.
+
+```kt
+"UseCase" {
+    summary = "A single app-specific behavior that occurs on each screen"
+}
+```
+
+`description` can hold a longer explanation, and `example()` a representative example. Calls to `example()` are kept in the order you call them.
+
+```kt
+"UseCase" {
+    title = "Use case"
+    summary = "A single app-specific behavior that occurs on each screen"
+    description = """
+        Call only UseCase from the UI; never touch Repository directly.
+
+        ### Things not to do
+        - Depend on Android types
+    """.trimIndent()
+
+    example("GetUserUseCase", "Fetch the user")
+    example("UpdateUserUseCase", "Update the user")
+}
+```
+
+**Writing a Role name in Japanese fails.**
+
+```kt
+"ユースケース" {
+    summary = "A single app-specific behavior that occurs on each screen"
+}
+```
+
+This throws an exception the moment the definition is evaluated — before the check even runs.
+
+```text
+Invalid role name "ユースケース" declared at ProjectArchitecture.kt:42.
+Names must match [A-Za-z][A-Za-z0-9_-]*: start with an ASCII letter, then ASCII letters, digits, '_' or '-'.
+Use `title` for a human readable display name.
+```
+
+</details>
+
+<details>
+<summary>Declaring where files go</summary>
+
+This is the case where a Role has just one place to live.
+
+```kt
+"UseCase" {
+    layout {
+        "src/main/kotlin/com/example/useCase" / "*UseCase".ktFile()
+    }
+}
+```
+
+**You can write multiple `layout { }` blocks.** This declares that the same Role is allowed to appear in more than one place.
+
+```kt
+"Repository" {
+    // Interfaces go in domain
+    layout {
+        "domain/src/main/kotlin/repository" / "*Repository".ktFile()
+    }
+
+    // Implementations go in data
+    layout {
+        "data/src/main/kotlin/repository" / "*RepositoryImpl".ktFile()
+    }
+}
+```
+
+**Placing a file anywhere you haven't declared is a violation.**
+
+```text
+src/main/kotlin/com/example/GetUserUseCase.kt   ← placed outside useCase/
+```
+
+When you run the test, the nearby valid location and how to fix it are reported together in a single block.
+
+```text
+Katachi check failed: 1 violation (Unexpected: 1)
+
+[UnexpectedFile] src/main/kotlin/com/example/GetUserUseCase.kt
+  No role is defined for this file.
+
+  Nearby locations:
+    UseCase    src/main/kotlin/com/example/useCase/
+
+  How to fix:
+    - Move it to one of the locations above
+    - Delete it if it is not needed
+    - Add a new role for it:
+        "GetUserUseCase" {
+          summary = "TODO"
+          layout {
+            "src/main/kotlin/com/example" / "GetUserUseCase".ktFile()
+          }
+        }
+```
+
+</details>
+
+<details>
+<summary>Constraining the contents</summary>
+
+You give each constraint a name. **That name appears directly in the violation report.**
+
+```kt
+"UseCase" {
+    "has exactly one invoke function".konsist {
+        classes().must { it.functions().map { f -> f.name } == listOf("invoke") }
+    }
+}
+```
+
+You can also express a prohibition with `mustNot` and `mustBeEmpty()`.
+
+```kt
+"Repository" {
+    // Write the required condition as a negation
+    "must not be internal".konsist {
+        classes().mustNot { it.hasInternalModifier }
+    }
+
+    // Require that none match
+    "must not place Impl in the same location".konsist {
+        classes().filter { it.hasNameEndingWith("Impl") }.mustBeEmpty()
+    }
+}
+```
+
+**A class that doesn't satisfy the constraint is a violation.**
+
+```kt
+// Placed inside useCase/, but has a function other than invoke
+class GetUserUseCase(private val repository: UserRepository) {
+    suspend fun invoke(id: String) = repository.find(id)
+    fun clearCache() = repository.clear()   // ← this one
+}
+```
+
+It shows up in the same report as placement violations. **It even tells you which file and which line.**
+
+```text
+[UnsatisfiedConstraint] src/main/kotlin/com/example/useCase/GetUserUseCase.kt
+  Role: domain/UseCase / Constraint: "has exactly one invoke function"
+  Declaration: GetUserUseCase (line 3)
+  Declared at: ProjectArchitecture.kt:18 (layout of src/main/kotlin/com/example/useCase)
+```
+
+`How to fix:` is not shown. Since the body of a constraint is an arbitrary Kotlin expression, **katachi has no idea what would satisfy it.** Guessing would produce a lie, so it only points to where the rule is declared.
+
+</details>
+
+
+Also, because Role names are used for things like documentation generation, they must be ASCII only (letters, digits, and a few symbols).
+
+## Grouping Roles
+
+You can group Roles together using `"group name".group { ... }`.
+
+```kt {2,10}
+architecture {
+    "domain".group {
+        "UseCase" {
+            // ...
+        }
+
+        "Repository-interface" {
+            // ...
+        }
+    }
+}
+```
+
+## Best practices for designing Roles
+
+### A good Role definition needs no changes
+
+**If you have to rewrite `architecture { }` every time you add a feature to the app, that `architecture { }` definition is poorly designed.**
+
+Make good use of wildcards like `*` and `**` so that `architecture { }` doesn't end up as a duplicate of your directory structure, requiring double the work to maintain.
+
+## Splitting Role definitions
+
+The bigger the project, the more the `architecture { }` definition tends to bloat.
+
+Because `architecture { }` is a Kotlin DSL, you can factor it out into extension functions just like ordinary Kotlin code.
+
+Here's the recommended **way to split Role definitions**.
+
+### Splitting the `architecture { }` definition
+
+What tends to bloat is **the detail inside each Role**.
+Factor each Role out into its own extension function.
+
+<CodeComparison>
+    <CodeComparison.Panel label="Before">
+
+    <FileTree>
+        - ProjectArchitecture.kt
+    </FileTree>
+
+    ```kt title=ProjectArchitecture.kt nocollapse
+    architecture {
+        "UseCase" {
+            layout { 
+                "src/main/kotlin/com/example/project/useCase" / "*UseCase".ktFile()
+            }
+            "has exactly one invoke function".konsist {
+                classes().must { it.functions().map { f -> f.name } == listOf("invoke") }
+            }
+            // ...
+        }
+
+        "Repository-interface" {
+            layout { 
+                "src/main/kotlin/com/example/project/repository" / "*Repository".ktFile()
+            }
+            "must be an interface".konsist {
+                classes().must { it.isInterface }
+            }
+            // ...
+        }
+
+        // ...
+    }
+    ```
+
+    </CodeComparison.Panel>
+
+    <CodeComparison.Panel label="After" labelVariant="success">
+
+    <FileTree>
+        - ProjectArchitecture.kt
+        - **roles/**
+            - UseCaseRole.kt
+            - RepositoryInterfaceRole.kt
+    </FileTree>
+
+    ```kt title=ProjectArchitecture.kt
+    architecture {
+        useCase()
+        repositoryInterface()
+
+        // ...
+    }
+    ```
+
+    ```kt title=roles/UseCaseRole.kt
+    // hint: DeclarationContainerScope is the receiver of architecture { } and "...".group { }.
+    fun DeclarationContainerScope.useCase() = "UseCase" {
+        layout {
+            "src/main/kotlin/com/example/project/useCase" / "*UseCase".ktFile()
+        }
+        "has exactly one invoke function".konsist {
+            classes().must { it.functions().map { f -> f.name } == listOf("invoke") }
+        }
+        // ...
+    }
+    ```
+
+    ```kt title=roles/RepositoryInterfaceRole.kt
+    fun DeclarationContainerScope.repositoryInterface() = "Repository-interface" {
+        layout {
+            "src/main/kotlin/com/example/project/repository" / "*Repository".ktFile()
+        }
+        "must be an interface".konsist {
+            classes().must { it.isInterface }
+        }
+        // ...
+    }
+    ```
+
+    </CodeComparison.Panel>
+
+</CodeComparison>
+
+### Splitting the inside of a Role definition
+
+Within a Role definition, `"...".konsist { }` in particular tends to bloat as the number of constraints grows or they get more complex.
+
+Don't hesitate to factor `"...".konsist { }` out into private extension functions.
+
+<CodeComparison>
+    <CodeComparison.Panel label="Before">
+      ```kt
+        fun DeclarationContainerScope.useCase() = "UseCase" {
+            layout {
+                "src/main/kotlin/com/example/project/useCase" / "*UseCase".ktFile()
+            }
+            "has exactly one invoke function".konsist {
+                classes().must { it.functions().map { f -> f.name } == listOf("invoke") }
+            }
+            // ...
+        }
+      ```
+    </CodeComparison.Panel>
+
+    <CodeComparison.Panel label="After" labelVariant="success">
+      ```kt
+        fun DeclarationContainerScope.useCase() = "UseCase" {
+            layout {
+                "src/main/kotlin/com/example/project/useCase" / "*UseCase".ktFile()
+            }
+
+            onlyInvokeFun()
+            // ...
+        }
+
+        private fun RoleScope.onlyInvokeFun() = 
+            "has exactly one invoke function".konsist {
+                classes().must { it.functions().map { f -> f.name } == listOf("invoke") }
+            }
+      ```
+    </CodeComparison.Panel>
+</CodeComparison>
+
+## Summary
+
+- A Role is **a kind of file that's allowed to appear in the project**. It's independent of packages and modules.
+- A single Role **brings together** its description (`title` / `summary`), placement (`layout { }`), and constraints (`konsist { }`).
+- Even if the same Role is placed in multiple locations, **its description stays in one place**.
+- When bundled with `group`, a Role gets a **qualified name** like `domain/UseCase`.
+- **Role definitions bloat easily.** To keep `architecture { }` and Role definitions from bloating, make good use of extension functions to split them appropriately.
+
+```kt
+architecture {
+    "domain".group {
+        "UseCase" {
+            summary = "A single app-specific behavior that occurs on each screen"
+
+            // The same Role appears in two modules; the description stays in this one place
+            layout {
+                "core/domain/src/main/kotlin/useCase" / "*UseCase".ktFile()
+            }
+
+            "has exactly one invoke function".konsist {
+                classes().must { it.functions().map { f -> f.name } == listOf("invoke") }
+            }
+        }
+    }
+}
+```
+
+## Next steps
+
+- [Layout](/katachi/en/guides/layout/) ... Learn how to declare where a Role's files may be placed.
+- [Konsist integration](/katachi/en/guides/konsist-integration/) ... Learn how to constrain the contents of a Role's files.
+- [Your first architecture definition](/katachi/en/get-started/first-architecture/) ... Introduce katachi into your project and actually write a Role.

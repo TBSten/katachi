@@ -1,0 +1,47 @@
+---
+title: detekt
+description: An example of declaring where detekt's configuration file and custom rule sets live in architecture { }.
+tags:
+  - beginner
+---
+
+import { LinkCard } from '@astrojs/starlight/components';
+
+<LinkCard
+  title="detekt"
+  description="A static analysis tool for Kotlin. Rules are enabled or disabled in a YAML configuration file."
+  href="https://detekt.dev/"
+/>
+
+detekt lets you configure rule enable/disable settings and thresholds through a YAML configuration file.
+
+You should declare the configuration file and baseline in your architecture definition so katachi knows about them.
+
+```kt collapse
+// ProjectArchitecture.kt
+import me.tbsten.katachi.dsl.architecture
+
+val projectArchitecture = architecture {
+    "Tools".group {
+        detekt()
+    }
+}
+
+// roles/Detekt.kt
+import me.tbsten.katachi.dsl.DeclarationContainerScope
+
+fun DeclarationContainerScope.detekt() =
+    "Detekt".group {
+        "Config" {
+            layout {
+                "config/detekt/*.yml".file()
+            }
+        }
+
+        "Baseline" {
+            layout {
+                "config/detekt/baseline.xml".file().optional()
+            }
+        }
+    }
+```

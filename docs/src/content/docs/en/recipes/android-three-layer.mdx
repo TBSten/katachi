@@ -1,0 +1,211 @@
+---
+title: Three-layer architecture following the Android architecture guide
+description: An example of declaring the UI, domain, and data layers of the Android app architecture guide as Roles, checking everything down to naming and content conventions.
+tags:
+  - intermediate
+---
+
+import { FileTree, LinkCard, Aside } from '@astrojs/starlight/components';
+
+<LinkCard
+  title="App Architecture Guide"
+  description="Android's official recommended architecture: the roles of the UI, domain, and data layers, and the direction of their dependencies."
+  href="https://developer.android.com/topic/architecture"
+/>
+
+The app architecture guide published by Android Developers is widely known as the baseline architecture for Android applications.
+
+Below is an example architecture definition for a setup that adopts a domain layer.
+
+## Example directory structure
+
+<FileTree>
+- app/src/main/kotlin/com/example/project/
+  - ui/
+    - home/
+      - HomeUiState.kt
+      - HomeViewModel.kt
+      - HomeScreen.kt
+  - domain/
+    - user/
+      - GetUserUseCase.kt
+    - model/
+      - User.kt
+  - data/
+    - user/
+      - UserRepository.kt
+      - UserRepositoryImpl.kt
+      - UserRemoteDataSource.kt
+</FileTree>
+
+## Architecture definition
+
+```kt
+// ProjectArchitecture.kt
+/**
+ * See https://developer.android.com/topic/architecture
+ */
+val projectArchitecture = architecture {
+  // https://developer.android.com/topic/architecture/ui-layer
+  "ui".group {
+    uiState()
+    viewModel()
+    screen()
+  }
+
+  // https://developer.android.com/topic/architecture/domain-layer
+  "domain".group {
+    useCase()
+    domainModel()
+  }
+
+  // https://developer.android.com/topic/architecture/data-layer
+  "data".group {
+    repositoryInterface()
+    repositoryImplementation()
+    dataSource()
+  }  
+}
+
+// Constants.kt
+const val appPackageDir = "com/example/project"
+
+// roles/UiState.kt
+fun DeclarationContainerScope.uiState() = "UiState" {
+  layout {
+    "app" / mainSourceSet / appPackageDir / "ui/*" / "*UiState".ktFile()
+  }
+
+  shouldBeImmutable()
+}
+
+private fun ConstraintScope.shouldBeImmutable() =
+  "Every property must be a val".konsist {
+    classes().must { klass -> klass.properties().all { it.hasValModifier } }
+  }
+
+// roles/ViewModel.kt
+fun DeclarationContainerScope.viewModel() = "ViewModel" {
+  layout {
+    "app" / mainSourceSet / appPackageDir / "ui/*" / "*ViewModel".ktFile()
+  }
+
+  shouldContainsViewModelClass()
+  shouldExtendsViewModel()
+  shouldUiStateFlowBePublic()
+}
+
+private fun ConstraintScope.shouldContainsViewModelClass() =
+  "Must declare exactly one class with the same name as the file".konsist {
+    files.must { file -> file.classes().map { it.name } == listOf(file.name) }
+  }
+
+private fun ConstraintScope.shouldExtendsViewModel() =
+  "Must extend ViewModel".konsist {
+    classes().must { klass -> klass.parents().any { it.name == "ViewModel" } }
+  }
+
+private fun ConstraintScope.shouldUiStateFlowBePublic() =
+  "Must expose the UiState Flow as public".konsist {
+    classes().must { klass ->
+      klass.properties().any {
+        it.hasPublicOrDefaultModifier && it.type?.name?.startsWith("StateFlow") == true
+      }
+    }
+  }
+
+// roles/Screen.kt
+fun DeclarationContainerScope.screen() = "Screen" {
+  layout {
+    "app" / mainSourceSet / appPackageDir / "ui/*" / "*Screen".ktFile()
+  }
+
+  shouldContainsPublicScreenComposable()
+}
+
+private fun ConstraintScope.shouldContainsPublicScreenComposable() =
+  "Must declare a public Composable with the same name as the file".konsist {
+    files.must { file ->
+      file.functions().any {
+        it.name == file.name && it.hasPublicOrDefaultModifier &&
+          it.hasAnnotationWithName("Composable")
+      }
+    }
+  }
+
+// roles/UseCase.kt
+fun DeclarationContainerScope.useCase() = "UseCase" {
+  layout {
+    "app" / mainSourceSet / appPackageDir / "domain/*" / "*UseCase".ktFile()
+  }
+
+  shouldContainsUseCaseClass()
+  shouldSingleInvokePublicMethod()
+}
+
+private fun ConstraintScope.shouldContainsUseCaseClass() =
+  "Must declare exactly one class with the same name as the file".konsist {
+    files.must { file -> file.classes().map { it.name } == listOf(file.name) }
+  }
+
+private fun ConstraintScope.shouldSingleInvokePublicMethod() =
+  "Must have exactly one public invoke method".konsist {
+    classes().must { klass ->
+      klass.functions().filter { it.hasPublicOrDefaultModifier }.map { it.name } == listOf("invoke")
+    }
+  }
+
+// roles/DomainModel.kt
+fun DeclarationContainerScope.domainModel() = "DomainModel" {
+  layout {
+    "app" / mainSourceSet / appPackageDir / "domain/model" / "*".ktFile()
+  }
+}
+
+// roles/RepositoryInterface.kt
+fun DeclarationContainerScope.repositoryInterface() = "RepositoryInterface" {
+  layout {
+    "app" / mainSourceSet / appPackageDir / "data/*" / "*Repository".ktFile()
+  }
+
+  shouldContainsRepositoryInterface()
+}
+
+private fun ConstraintScope.shouldContainsRepositoryInterface() =
+  "Must declare exactly one interface with the same name as the file".konsist {
+    files.must { file -> file.interfaces().map { it.name } == listOf(file.name) }
+  }
+
+// roles/RepositoryImplementation.kt
+fun DeclarationContainerScope.repositoryImplementation() = "RepositoryImplementation" {
+  layout {
+    "app" / mainSourceSet / appPackageDir / "data/*" / "*RepositoryImpl".ktFile()
+  }
+
+  shouldContainsRepositoryImplementationClass()
+}
+
+private fun ConstraintScope.shouldContainsRepositoryImplementationClass() =
+  "Must declare exactly one class with the same name as the file".konsist {
+    files.must { file -> file.classes().map { it.name } == listOf(file.name) }
+  }
+
+// roles/DataSource.kt
+fun DeclarationContainerScope.dataSource() = "DataSource" {
+  layout {
+    "app" / mainSourceSet / appPackageDir / "data/*" / "*DataSource".ktFile()
+  }
+
+  shouldContainsDataSourceClass()
+}
+
+private fun ConstraintScope.shouldContainsDataSourceClass() =
+  "Must declare exactly one class with the same name as the file".konsist {
+    files.must { file -> file.classes().map { it.name } == listOf(file.name) }
+  }
+```
+
+<Aside type="caution" title="Treat this snippet only as a starting point">
+This snippet focuses on the elements that appear in the documentation, and real projects will need additional additions and adjustments.
+For example, if your product uses Dagger Hilt, you might add a check for the `@HiltViewModel` annotation on ViewModels, or a check that repository implementation classes have an `@Inject` constructor — customizations like these will likely be necessary.
+</Aside>

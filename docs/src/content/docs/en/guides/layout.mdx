@@ -1,0 +1,150 @@
+---
+title: Enforce directory structure with the Layout system
+sidebar:
+  label: Layout
+description: How to declare your directory structure and file names with layout { }, and fail the check when files appear in undeclared locations.
+tags:
+  - intermediate
+---
+
+import { Aside } from "@astrojs/starlight/components";
+
+## Defining where files may be placed
+
+`layout { }` defines where the files for a Role may be placed.
+
+```kt {3-6}
+architecture {
+    "UseCase" {
+        // A UseCase may only be placed as *UseCase.kt inside useCase/
+        layout {
+            "src/main/kotlin/com/example/useCase" / "*UseCase".ktFile()
+        }
+    }
+}
+```
+
+## Styles for writing directory declarations
+
+There are a few ways to write a directory declaration. You can use whichever style you prefer.
+
+### Chaining with slashes
+
+When each level has only one thing in it, you can chain them with `/` on a single line.
+
+```kt
+layout {
+    "src/main/kotlin/com/example/useCase" / "*UseCase".ktFile()
+}
+```
+
+You can also declare just a directory.
+
+```kt
+layout {
+    "app" / "ios"
+}
+```
+
+In this case, only the directory `app/ios` is allowed to exist. Under the Deny by default principle, anything beyond that — such as placing files inside `app/ios` — isn't allowed.
+
+### Wrapping in a block
+
+When you want to place multiple things in the same directory, wrap them in a block.
+This is useful when you want to place multiple files inside a specific directory.
+
+```kt
+layout {
+    "src/main/kotlin/com/example/useCase" {
+        "*UseCase".ktFile()
+        "*UseCaseImpl".ktFile()
+    }
+}
+```
+
+Inside the block, you can write `description`. It becomes the explanation of "what this location is for" in the generated documentation.
+
+```kt
+layout {
+    "src/main/kotlin/com/example/useCase" {
+        description = "Used from multiple screens"
+        "*UseCase".ktFile()
+    }
+}
+```
+
+## Allowing arbitrary files to be placed
+
+<Aside type="caution">
+The two features described here are **escape hatches from deny by default**. Wherever you use them, checking stops applying to that scope.
+
+If you reach for them just because "declaring it is a hassle," you undermine the point of adopting katachi. Use them only for **things a machine generates** or **things whose structure is decided by another tool**.
+</Aside>
+
+### `anyFile()` — allow only files directly inside
+
+Allows any file to be placed, but **only directly inside** that directory.
+
+```kt
+layout {
+    "generated" { anyFile() }
+}
+```
+
+**Subdirectories aren't allowed.** A file one level deeper is still reported as a violation.
+
+### `ignore()` — stop checking everything below
+
+Stops checking everything below that directory, **at any depth**.
+
+```kt
+layout {
+    "build" { ignore() }
+}
+```
+
+You can also write it more concisely as `"build".ignore()`.
+
+### An empty block means the opposite
+
+This is the easiest thing to get wrong, since they look similar.
+
+| Syntax | Meaning |
+|---|---|
+| `"generated" { }` | **Nothing can be placed.** Any file inside is a violation |
+| `"generated" { anyFile() }` | Any file is fine, directly inside |
+| `"generated" { ignore() }` | Nothing below is checked |
+
+**Don't leave a block empty unless you really mean "nothing goes here."**
+
+As a rule, an empty block for a directory declaration isn't recommended, because it permits the directory to exist as an empty directory whose contents can never hold anything.
+
+## Best practices
+
+Writing out every directory for every Role is inefficient.
+Extract them into constants at a meaningful unit.
+
+```kt {1,6}
+val appPackageDir = "src/main/kotlin/com/example"
+
+architecture {
+    "UseCase" {
+        layout {
+            appPackageDir / "useCase" / "*UseCase".ktFile()
+        }
+    }
+}
+```
+
+## Summary
+
+- `layout { }` declares **where a Role's files may appear**. A file in an undeclared location is a violation.
+- There are two ways to write it — chaining with `/` or wrapping in a block — and **they declare the same thing**. Pick whichever is more readable.
+- `anyFile()` and `ignore()` are **escape hatches from deny by default**. Checking stops applying wherever you use them.
+- Paths **can be extracted into constants**. This keeps the definition from becoming a copy of your directory structure.
+
+## Next steps
+
+- [Role](/katachi/en/guides/role/) ... Learn how to split a definition into files and functions as it grows.
+- [Konsist integration](/katachi/en/guides/konsist-integration/) ... Learn how to constrain not just placement but also the contents of files.
+- [Your first architecture definition](/katachi/en/get-started/first-architecture/) ... Introduce katachi into your project and actually write a declaration.

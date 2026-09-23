@@ -1,0 +1,29 @@
+---
+title: Git
+description: .gitignore, .gitattributes, and other Git-related files, declared in architecture { }.
+tags:
+  - beginner
+---
+
+```kt collapse
+// ProjectArchitecture.kt
+import me.tbsten.katachi.dsl.architecture
+
+val projectArchitecture = architecture {
+    "Tools".group {
+        git()
+    }
+}
+
+// roles/Git.kt
+import me.tbsten.katachi.dsl.DeclarationContainerScope
+
+fun DeclarationContainerScope.git() =
+    "Git".group {
+        "Ignore" {
+            layout {
+                "**/.gitignore".file()
+            }
+        }
+    }
+```
