@@ -1,0 +1,75 @@
+name: Publish
+
+on:
+  release:
+    types: [ published ]
+  workflow_dispatch:
+
+concurrency:
+  group: publish
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  publish:
+    name: publish
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v6
+
+      - name: Tag matches the version in the catalog
+        if: ${{ github.event_name == 'release' }}
+        run: |
+          catalog=$(sed -n 's/^katachi = "\(.*\)"/\1/p' gradle/libs.versions.toml | head -n 1)
+          tag="${GITHUB_REF_NAME#v}"
+          echo "catalog=$catalog  tag=$tag"
+          if [ "$catalog" != "$tag" ]; then
+            echo "::error::gradle/libs.versions.toml は $catalog、tag は $tag。揃えてから publish してください。"
+            exit 1
+          fi
+
+      - name: Version is not a SNAPSHOT
+        run: |
+          catalog=$(sed -n 's/^katachi = "\(.*\)"/\1/p' gradle/libs.versions.toml | head -n 1)
+          case "$catalog" in
+            *-SNAPSHOT)
+              echo "::error::$catalog は SNAPSHOT です。リリース版に上げてください。"
+              exit 1
+              ;;
+          esac
+
+      - name: Check
+        run: ./gradlew :katachi:check :katachi-konsist:check --stacktrace
+
+      - name: Publish to Maven Central
+        env:
+          ORG_GRADLE_PROJECT_mavenCentralUsername: ${{ secrets.MAVEN_CENTRAL_USERNAME }}
+          ORG_GRADLE_PROJECT_mavenCentralPassword: ${{ secrets.MAVEN_CENTRAL_PASSWORD }}
+          ORG_GRADLE_PROJECT_signingInMemoryKey: ${{ secrets.SIGNING_IN_MEMORY_KEY }}
+          ORG_GRADLE_PROJECT_signingInMemoryKeyId: ${{ secrets.SIGNING_IN_MEMORY_KEY_ID }}
+          ORG_GRADLE_PROJECT_signingInMemoryKeyPassword: ${{ secrets.SIGNING_IN_MEMORY_KEY_PASSWORD }}
+        run: ./gradlew publishAndReleaseToMavenCentral --no-configuration-cache --stacktrace
+
+      - name: Upload reports
+        if: ${{ failure() }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: publish-reports
+          path: |
+            **/build/reports/
+            **/build/test-results/
+          retention-days: 7
+          if-no-files-found: ignore
