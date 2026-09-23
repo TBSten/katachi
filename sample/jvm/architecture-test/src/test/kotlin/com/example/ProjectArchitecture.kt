@@ -1,12 +1,12 @@
 package com.example
 
-import com.example.application.apiRoles
-import com.example.application.appRoles
-import com.example.application.dataRoles
-import com.example.application.domainRoles
-import com.example.gradle.gradleRoles
-import com.example.testing.testingRoles
-import com.example.tool.toolRoles
+import com.example.groups.apiGroup
+import com.example.groups.appGroup
+import com.example.groups.buildGroup
+import com.example.groups.dataGroup
+import com.example.groups.domainGroup
+import com.example.groups.testingGroup
+import com.example.groups.toolGroup
 import me.tbsten.katachi.dsl.Architecture
 import me.tbsten.katachi.dsl.gradle.ModulePackage
 import me.tbsten.katachi.dsl.architecture
@@ -29,11 +29,17 @@ val modulePackage: ModulePackage = capitalizedModuleNamePackage("com.example")
 /**
  * The architecture of this sample, described with katachi.
  *
- * The definition is split by meaning into one package per concern - `application`,
- * `testing`, `gradle`, `tool` - and each package exposes `ArchitectureScope` extension
- * functions. This file only calls them, so it stays short no matter how many roles the
- * project grows. katachi captures the declaration site of every group and role, so a
- * violation still points at the file the user actually wrote, not at this one.
+ * The definition is split one declaration per file: `roles/<Name>Role.kt` holds one role and
+ * `groups/<Name>Group.kt` holds one group, which says what it is made of by calling the role
+ * functions in order. Both are extensions on `DeclarationContainerScope` - the scope that
+ * `architecture { }` and `"...".group { }` share - so a role can be moved into another group
+ * without touching the role's own file. This file only calls the seven group functions, so it
+ * stays short no matter how many roles the project grows.
+ *
+ * None of those functions may be `inline`. An inlined frame reports the caller's file with a
+ * line number past its end, and katachi captures the declaration site from the stack, so the
+ * violation would point at a line nobody wrote. Written once here rather than repeated in
+ * eighteen files; `ProjectArchitectureSpec` is what actually holds the line.
  *
  * Every role carries a `layout { }` saying where its files may live, written in terms of
  * Gradle: `":".module { }` for the application, which is the root project itself,
@@ -46,11 +52,11 @@ val modulePackage: ModulePackage = capitalizedModuleNamePackage("com.example")
  * covered by some role, and anything else fails `ProjectArchitectureTest`.
  */
 val projectArchitecture: Architecture = architecture {
-    apiRoles()
-    domainRoles()
-    dataRoles()
-    appRoles()
-    testingRoles()
-    gradleRoles()
-    toolRoles()
+    apiGroup()
+    domainGroup()
+    dataGroup()
+    appGroup()
+    testingGroup()
+    buildGroup()
+    toolGroup()
 }

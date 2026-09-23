@@ -1,13 +1,14 @@
 package com.example.sample
 
-import com.example.sample.application.appRoles
-import com.example.sample.application.dataRoles
-import com.example.sample.application.featureRoles
-import com.example.sample.application.uiRoles
-import com.example.sample.gradle.gradleRoles
-import com.example.sample.testing.testingRoles
+import com.example.sample.groups.appGroup
+import com.example.sample.groups.buildGroup
+import com.example.sample.groups.dataGroup
+import com.example.sample.groups.featureGroup
+import com.example.sample.groups.testingGroup
+import com.example.sample.groups.uiGroup
 import io.kotest.core.spec.style.FreeSpec
 import io.kotest.matchers.collections.shouldContainExactly
+import io.kotest.matchers.collections.shouldNotContain
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
 import java.io.File
@@ -19,6 +20,7 @@ import me.tbsten.katachi.dsl.Documented
 import me.tbsten.katachi.dsl.Examples
 import me.tbsten.katachi.dsl.Title
 import me.tbsten.katachi.dsl.architecture
+import me.tbsten.katachi.dsl.pascalCase
 
 /**
  * Checks that [projectArchitecture] builds into the model we meant to declare, and that the
@@ -30,10 +32,10 @@ import me.tbsten.katachi.dsl.architecture
  * that nothing in the surrounding toolchain quietly breaks the DSL — above all the
  * declaration site capture, which reads the JVM stack trace.
  *
- * Since the definition is split across `ArchitectureScope` extension functions in sibling
- * packages, the declaration site tests below are also the proof that the split is free:
- * a declaration written in `FeatureRoles.kt` must report `FeatureRoles.kt`, not the
- * `ProjectArchitecture.kt` that called into it.
+ * Since the definition is split one declaration per file, the declaration site tests below
+ * are also the proof that the split is free: a role written in `roles/ScreenRole.kt` must
+ * report `ScreenRole.kt`, not the `ProjectArchitecture.kt` that called into it — which no
+ * longer contains a single `group` or role call of its own.
  *
  * The last test is the one that keeps the rest honest: `assert()` passing proves nothing on
  * its own, because a traversal that reached no file at all would also pass. Removing one
@@ -73,64 +75,50 @@ class ProjectArchitectureSpec : FreeSpec({
 
     "役割の宣言位置として、その役割を書いたファイルの行番号が取れる" {
         val screen = projectArchitecture.allRoles.single { it.qualifiedName == "feature/Screen" }
-        screen.declaredAt.fileName shouldBe "FeatureRoles.kt"
+        screen.declaredAt.fileName shouldBe "ScreenRole.kt"
         // The exact line churns on every edit; that it is a real line is the point.
         (screen.declaredAt.lineNumber > 0) shouldBe true
     }
 
-    "group の宣言位置も、その group を書いたファイルになる" {
-        // One expectation per group, so the test states that the definition really is spread
-        // over seven files and that each declaration is attributed to its own.
-        projectArchitecture.allGroups.associate { it.qualifiedName to it.declaredAt.fileName } shouldBe
-            mapOf(
-                "feature" to "FeatureRoles.kt",
-                "ui" to "UiRoles.kt",
-                "data" to "DataRoles.kt",
-                "app" to "AppRoles.kt",
-                "testing" to "TestingRoles.kt",
-                "build" to "GradleRoles.kt",
-                "tool" to "ToolRoles.kt",
-            )
-    }
-
-    "役割の宣言位置は、その役割を含む group と同じファイルになる" {
-        val fileNameByGroup = projectArchitecture.allGroups.associate { it.qualifiedName to it.declaredAt.fileName }
-
-        projectArchitecture.allRoles.forEach { role ->
-            val groupPath = role.groupPath.joinToString("/")
-            role.declaredAt.fileName shouldBe fileNameByGroup.getValue(groupPath)
+    "group ごとに、その group の名前から決まるファイルで宣言されている" {
+        // The naming rule is the whole convention, so it is checked rather than listed: a
+        // group named `"debug-menu"` belongs in `DebugMenuGroup.kt`, and `pascalCase` is the
+        // same conversion katachi applies to a captured wildcard.
+        projectArchitecture.allGroups.forEach { group ->
+            group.declaredAt.fileName shouldBe "${group.name.pascalCase}Group.kt"
         }
     }
 
-    "宣言位置は呼び出し元の ProjectArchitecture.kt ではなく、複数のファイルに散らばる" {
+    "役割ごとに、その役割の名前から決まるファイルで宣言されている" {
+        projectArchitecture.allRoles.forEach { role ->
+            role.declaredAt.fileName shouldBe "${role.name.pascalCase}Role.kt"
+        }
+    }
+
+    "宣言位置が ProjectArchitecture.kt ではなく、宣言を書いたファイルを指す" {
         // The point of the split: neither `architecture { }` nor the extension functions are
-        // `inline`, so the captured frame is the declaration's own and never the `uiRoles()`
-        // call in ProjectArchitecture.kt.
+        // `inline`, so the captured frame is the declaration's own and never the `uiGroup()`
+        // call in ProjectArchitecture.kt. If katachi captured the frame one level out, every
+        // declaration would collapse onto that one file.
         val fileNames = (
             projectArchitecture.allGroups.map { it.declaredAt.fileName } +
                 projectArchitecture.allRoles.map { it.declaredAt.fileName }
-            ).toSet()
+            ).distinct()
 
-        fileNames shouldBe setOf(
-            "FeatureRoles.kt",
-            "UiRoles.kt",
-            "DataRoles.kt",
-            "AppRoles.kt",
-            "TestingRoles.kt",
-            "GradleRoles.kt",
-            "ToolRoles.kt",
-        )
+        fileNames shouldNotContain "ProjectArchitecture.kt"
     }
 
     "layout の宣言位置も、その役割を書いたファイルになる" {
         val screen = projectArchitecture.allRoles.single { it.qualifiedName == "feature/Screen" }
-        screen.layouts.single().declaredAt.fileName shouldBe "FeatureRoles.kt"
+        screen.layouts.single().declaredAt.fileName shouldBe "ScreenRole.kt"
     }
 
     "捕捉した行番号の行に、その宣言が実際に書かれている" {
         // The tests above only prove the file name and that the line is positive. This one
-        // reads the source back, so a one-frame shift — landing on the `uiRoles()` call, or
-        // on the `"ui".group {` that encloses a role — fails here. No line number is
+        // reads the source back, so a one-frame shift — landing on the `uiGroup()` call in
+        // ProjectArchitecture.kt, or on the `component()` call inside `UiGroup.kt` — fails
+        // here. It is also what catches an `inline` slipping onto a group or role function,
+        // since the remapped line number no longer holds the name. No line number is
         // hard-coded, so editing the declaration files does not break it.
         val sources = declarationSourceLines()
 
@@ -208,29 +196,29 @@ class ProjectArchitectureSpec : FreeSpec({
 })
 
 /**
- * [projectArchitecture] with `toolRoles()` left out, used by the last test above.
+ * [projectArchitecture] with `toolGroup()` left out, used by the last test above.
  *
  * Deliberately broken, and deliberately kept out of `ProjectArchitecture.kt`: that file is
  * what a user reads as the worked example of a definition, and a definition that is meant to
  * fail has no place in it.
  */
 private val architectureWithoutToolRoles: Architecture = architecture {
-    featureRoles()
-    uiRoles()
-    dataRoles()
-    appRoles()
-    testingRoles()
-    gradleRoles()
-    // toolRoles() — omitted on purpose. `.gitignore` and `README.md` lose their role.
+    featureGroup()
+    uiGroup()
+    dataGroup()
+    appGroup()
+    testingGroup()
+    buildGroup()
+    // toolGroup() — omitted on purpose. `.gitignore` and `README.md` lose their role.
 }
 
 /**
  * Every Kotlin source of this test source set, keyed by file name, so a captured line
  * number can be compared against what is actually written there.
  *
- * The declarations are spread over sibling packages, so the lookup is by file name rather
- * than by a fixed path: that is all a [me.tbsten.katachi.dsl.DeclarationSite] carries, and
- * it keeps the test from having to know which package a role was moved into.
+ * The declarations sit one per file under `groups/` and `roles/`, so the lookup is by file
+ * name rather than by a fixed path: that is all a [me.tbsten.katachi.dsl.DeclarationSite]
+ * carries, and it keeps the test from having to know which package a role was moved into.
  *
  * A test task's working directory is its module directory, but that is a default a build
  * file can change, so the source set is looked up by walking up from wherever the tests run.

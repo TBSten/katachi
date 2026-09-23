@@ -1,14 +1,15 @@
 package com.example
 
-import com.example.application.apiRoles
-import com.example.application.dataRoles
-import com.example.application.domainRoles
-import com.example.gradle.gradleRoles
-import com.example.testing.testingRoles
-import com.example.tool.toolRoles
+import com.example.groups.apiGroup
+import com.example.groups.buildGroup
+import com.example.groups.dataGroup
+import com.example.groups.domainGroup
+import com.example.groups.testingGroup
+import com.example.groups.toolGroup
+import com.example.roles.serverConfig
 import io.kotest.core.spec.style.FreeSpec
 import io.kotest.matchers.collections.shouldContain
-import io.kotest.matchers.collections.shouldContainExactly
+import io.kotest.matchers.collections.shouldNotContain
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
 import java.io.File
@@ -30,6 +31,7 @@ import me.tbsten.katachi.dsl.gradle.*
 import me.tbsten.katachi.dsl.gradle.capitalizedModuleNamePackage
 import me.tbsten.katachi.dsl.kotlin.ktFile
 import me.tbsten.katachi.dsl.kotlin.ktsFile
+import me.tbsten.katachi.dsl.pascalCase
 import me.tbsten.katachi.dsl.wholeTree
 import me.tbsten.katachi.fs.FileSelection
 import me.tbsten.katachi.fs.FsPath
@@ -46,9 +48,9 @@ import me.tbsten.katachi.fs.ProjectRoot
  * written by a user, in a user's build, against a katachi resolved through a composite
  * build.
  *
- * Since the definition was split into `ArchitectureScope` extension functions, it also
- * proves the harder half: declaration sites still point at the file the user wrote, even
- * though `ProjectArchitecture.kt` no longer contains a single `group` call.
+ * Since the definition was split one declaration per file, it also proves the harder half:
+ * declaration sites still point at the file the user wrote, even though
+ * `ProjectArchitecture.kt` no longer contains a single `group` or role call of its own.
  *
  * `validate()` is `@InternalKatachiApi` on purpose - a user asserts, and does not read the
  * violations - so this file opts in where a user would not have to. Reading metadata off a
@@ -89,53 +91,48 @@ class ProjectArchitectureSpec : FreeSpec({
         // Guards the stack-trace based capture in a real user build: if the frame filter
         // ever starts skipping user code, this reports the test runner's file instead.
         val controller = projectArchitecture.allRoles.single { it.qualifiedName == "api/Controller" }
-        controller.declaredAt.fileName shouldBe "ApiRoles.kt"
+        controller.declaredAt.fileName shouldBe "ControllerRole.kt"
         (controller.declaredAt.lineNumber > 0) shouldBe true
     }
 
     "group の宣言位置も、それを書いた拡張関数のファイルである" {
         val api = projectArchitecture.allGroups.single { it.qualifiedName == "api" }
-        api.declaredAt.fileName shouldBe "ApiRoles.kt"
+        api.declaredAt.fileName shouldBe "ApiGroup.kt"
     }
 
-    "宣言位置が ProjectArchitecture.kt ではなく、複数のファイルにまたがる" {
+    "宣言位置が ProjectArchitecture.kt ではなく、宣言を書いたファイルを指す" {
         // The point of splitting the definition: `ProjectArchitecture.kt` only calls the
-        // extension functions, so nothing may be attributed to it. If katachi captured the
-        // frame one level out, every declaration would collapse onto this one file.
+        // group functions, so nothing may be attributed to it. If katachi captured the frame
+        // one level out, every declaration would collapse onto this one file.
         val files = (projectArchitecture.allGroups.map { it.declaredAt } + projectArchitecture.allRoles.map { it.declaredAt })
             .map { it.fileName }
             .distinct()
-            .sorted()
 
-        files shouldContainExactly listOf(
-            "ApiRoles.kt",
-            "AppRoles.kt",
-            "DataRoles.kt",
-            "DomainRoles.kt",
-            "GradleRoles.kt",
-            "TestingRoles.kt",
-            "ToolRoles.kt",
-        )
+        files shouldNotContain "ProjectArchitecture.kt"
     }
 
-    "group ごとに、期待したファイルで宣言されている" {
+    "group ごとに、その group の名前から決まるファイルで宣言されている" {
+        // The naming rule is the whole convention, so it is checked rather than listed: a
+        // group named `"debug-menu"` belongs in `DebugMenuGroup.kt`, and `pascalCase` is the
+        // same conversion katachi applies to a captured wildcard.
         projectArchitecture.allGroups.forEach { group ->
-            group.declaredAt.fileName shouldBe DECLARING_FILES.getValue(group.qualifiedName)
+            group.declaredAt.fileName shouldBe "${group.name.pascalCase}Group.kt"
         }
     }
 
-    "役割は、それが属する group と同じファイルで宣言されている" {
+    "役割ごとに、その役割の名前から決まるファイルで宣言されている" {
         projectArchitecture.allRoles.forEach { role ->
-            val groupName = role.qualifiedName.substringBeforeLast('/')
-            role.declaredAt.fileName shouldBe DECLARING_FILES.getValue(groupName)
+            role.declaredAt.fileName shouldBe "${role.name.pascalCase}Role.kt"
         }
     }
 
     "捕捉した行番号の行に、その宣言が実際に書かれている" {
         // The tests above only prove the file name and that the line is positive. This one
         // reads the source back, so a one-frame shift lands on `architecture {` or on the
-        // `apiRoles()` call in ProjectArchitecture.kt and fails. No line number is
-        // hard-coded, so editing the definition does not break it.
+        // `apiGroup()` call in ProjectArchitecture.kt and fails. It is also what catches an
+        // `inline` slipping onto a group or role function, since the remapped line number no
+        // longer holds the name. No line number is hard-coded, so editing the definition does
+        // not break it.
         projectArchitecture.allGroups.forEach { group ->
             val source = sourceLinesOf(group.declaredAt.fileName)
             source[group.declaredAt.lineNumber - 1] shouldContain "\"${group.name}\""
@@ -172,7 +169,7 @@ class ProjectArchitectureSpec : FreeSpec({
         // an empty traversal passes just as happily. Dropping `app/Entrypoint` leaves
         // `Application.kt` in a directory other roles still claim, so the file itself has to
         // be reached and matched for this to fail - which is the part being proven here.
-        // `ConstraintCheck()` is passed so `domainRoles()`'s `konsist { }` constraint is
+        // `ConstraintCheck()` is passed so `service()`'s `konsist { }` constraint is
         // evaluated rather than reported as `[UncheckedConstraint]` alongside it.
         architectureWithoutEntrypointRole.validate(ConstraintCheck()).map { "[${it.label}] ${it.path}" } shouldBe listOf(
             "[UnexpectedFile] src/main/kotlin/com/example/Application.kt",
@@ -258,8 +255,8 @@ class ProjectArchitectureSpec : FreeSpec({
         // The same run ProjectArchitectureTest makes, read as a list rather than as a thrown
         // error, so a failure here names the violations instead of only the message.
         // `ConstraintCheck()` matches what `ProjectArchitectureTest` itself passes: without
-        // it, the `konsist { }` constraint in `domainRoles()`'s `Service` role would come
-        // back as `[UncheckedConstraint] reason=NotEvaluated` instead of zero violations.
+        // it, the `konsist { }` constraint in `roles/ServiceRole.kt` would come back as
+        // `[UncheckedConstraint] reason=NotEvaluated` instead of zero violations.
         projectArchitecture.validate(ConstraintCheck()) shouldBe emptyList()
     }
 })
@@ -292,43 +289,21 @@ private fun shapeOf(entry: LayoutEntry): String =
  * [projectArchitecture] with `app/Entrypoint` removed, and nothing else changed.
  *
  * Deliberately broken, and deliberately kept out of `ProjectArchitecture.kt`: a reader
- * looking for the definition to copy should never meet it. The rest of the `app` group is
- * repeated here rather than reused, because `appRoles()` declares both roles at once and a
- * group name may only be declared once.
+ * looking for the definition to copy should never meet it. Splitting one role per file pays
+ * for itself here — the `app` group is rebuilt by calling `serverConfig()`, so the role it
+ * keeps is the real one and only the omission is written out. Before the split, `appRoles()`
+ * declared both roles at once and the remaining one had to be copied by hand, where it could
+ * drift away from the definition it was standing in for.
  */
 private val architectureWithoutEntrypointRole: Architecture = architecture {
-    apiRoles()
-    domainRoles()
-    dataRoles()
-    "app".group {
-        "ServerConfig" {
-            layout {
-                ":".module {
-                    mainSourceSet {
-                        "resources" {
-                            "application.conf".file()
-                            "logback.xml".file()
-                        }
-                    }
-                }
-            }
-        }
-    }
-    testingRoles()
-    gradleRoles()
-    toolRoles()
+    apiGroup()
+    domainGroup()
+    dataGroup()
+    "app".group { serverConfig() }
+    testingGroup()
+    buildGroup()
+    toolGroup()
 }
-
-/** Which file each group - and therefore each of its roles - is declared in. */
-private val DECLARING_FILES: Map<String, String> = mapOf(
-    "api" to "ApiRoles.kt",
-    "domain" to "DomainRoles.kt",
-    "data" to "DataRoles.kt",
-    "app" to "AppRoles.kt",
-    "testing" to "TestingRoles.kt",
-    "build" to "GradleRoles.kt",
-    "tool" to "ToolRoles.kt",
-)
 
 /** Cached so that reading a source file once per declaration does not hit the disk again. */
 private val sourceLineCache = mutableMapOf<String, List<String>>()

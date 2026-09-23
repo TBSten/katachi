@@ -3,6 +3,7 @@ package com.example.kmp
 import io.kotest.core.spec.style.FreeSpec
 import io.kotest.inspectors.forAll
 import io.kotest.matchers.collections.shouldContainExactly
+import io.kotest.matchers.collections.shouldNotContain
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 import io.kotest.matchers.string.shouldContain
@@ -13,6 +14,7 @@ import me.tbsten.katachi.dsl.Documented
 import me.tbsten.katachi.dsl.Examples
 import me.tbsten.katachi.dsl.Summary
 import me.tbsten.katachi.dsl.Title
+import me.tbsten.katachi.dsl.pascalCase
 
 /**
  * Checks the definition under `src/test/kotlin/com/example/kmp` against the model katachi
@@ -59,9 +61,9 @@ class ProjectArchitectureSpec : FreeSpec({
     }
 
     "group は宣言した順に並ぶ" {
-        // The order is the order `ProjectArchitecture.kt` calls the extension functions in,
-        // which is the only thing that decides it now that the declarations are spread over
-        // six files.
+        // The order is the order `ProjectArchitecture.kt` calls the group functions in,
+        // which is the only thing that decides it now that every declaration lives in a
+        // file of its own.
         projectArchitecture.groups.map { it.name } shouldContainExactly
             listOf("feature", "ui", "data", "testing", "app", "build", "tool")
     }
@@ -70,48 +72,48 @@ class ProjectArchitectureSpec : FreeSpec({
         // The real point of this test: the declaration site is read off the stack trace, so
         // it is the kind of thing that breaks only outside katachi's own test setup.
         val screen = projectArchitecture.allRoles.single { it.qualifiedName == "feature/Screen" }
-        screen.declaredAt.fileName shouldBe "FeatureRoles.kt"
+        screen.declaredAt.fileName shouldBe "ScreenRole.kt"
         (screen.declaredAt.lineNumber > 0) shouldBe true
 
         // Groups and layouts carry one too.
         projectArchitecture.allGroups.single { it.name == "data" }
-            .declaredAt.fileName shouldBe "DataRoles.kt"
-        screen.layouts.single().declaredAt.fileName shouldBe "FeatureRoles.kt"
+            .declaredAt.fileName shouldBe "DataGroup.kt"
+        screen.layouts.single().declaredAt.fileName shouldBe "ScreenRole.kt"
     }
 
-    "宣言位置は拡張関数を書いたファイルを指し、6つのファイルにまたがる" {
-        // The definition is split across one file per concern and `ProjectArchitecture.kt`
-        // only calls them. Every declaration therefore has to point at the file it is
-        // written in, never at the file that called the function -- which is what would
+    "宣言位置は、その宣言の名前から決まるファイルを指す" {
+        // The definition is split one declaration per file and `ProjectArchitecture.kt` only
+        // calls the group functions. Every declaration therefore has to point at the file it
+        // is written in, never at the file that called the function -- which is what would
         // happen if the extension functions were `inline`, or if katachi's frame filter
         // stopped one level too early.
-        projectArchitecture.allGroups.associate { it.name to it.declaredAt.fileName } shouldBe
-            mapOf(
-                "feature" to "FeatureRoles.kt",
-                "ui" to "UiRoles.kt",
-                "data" to "DataRoles.kt",
-                "testing" to "TestingRoles.kt",
-                "app" to "AppRoles.kt",
-                "build" to "GradleRoles.kt",
-                "tool" to "ToolRoles.kt",
-            )
+        //
+        // The naming rule is checked rather than listed, so adding a role does not mean
+        // editing a table here: a group named `"debug-menu"` belongs in `DebugMenuGroup.kt`,
+        // and `pascalCase` is the same conversion katachi applies to a captured wildcard.
+        projectArchitecture.allGroups.forEach { group ->
+            group.declaredAt.fileName shouldBe "${group.name.pascalCase}Group.kt"
+        }
+        projectArchitecture.allRoles.forEach { role ->
+            role.declaredAt.fileName shouldBe "${role.name.pascalCase}Role.kt"
+        }
 
-        projectArchitecture.allRoles.map { it.declaredAt.fileName }.toSet() shouldBe
-            setOf(
-                "FeatureRoles.kt",
-                "UiRoles.kt",
-                "DataRoles.kt",
-                "TestingRoles.kt",
-                "AppRoles.kt",
-                "GradleRoles.kt",
-                "ToolRoles.kt",
-            )
+        // Said once more from the other side: if the frame were captured one level out,
+        // every declaration would collapse onto the file that called into it.
+        val fileNames = (
+            projectArchitecture.allGroups.map { it.declaredAt.fileName } +
+                projectArchitecture.allRoles.map { it.declaredAt.fileName }
+            ).distinct()
+
+        fileNames shouldNotContain "ProjectArchitecture.kt"
     }
 
     "捕捉した行番号の行に、その宣言が実際に書かれている" {
         // The test above only proves which file each declaration claims. This one reads the
-        // source back, so a one-frame shift -- landing on `"ui".group {` or on the
-        // `uiRoles()` call in ProjectArchitecture.kt -- fails here. No line number is
+        // source back, so a one-frame shift -- landing on the `uiGroup()` call in
+        // ProjectArchitecture.kt, or on the `component()` call inside `UiGroup.kt` -- fails
+        // here. It is also what catches an `inline` slipping onto a group or role function,
+        // since the remapped line number no longer holds the name. No line number is
         // hard-coded, so editing the definition does not break it.
         val sources = architectureDefinitionSources()
 

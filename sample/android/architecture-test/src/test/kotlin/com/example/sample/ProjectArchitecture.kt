@@ -1,12 +1,12 @@
 package com.example.sample
 
-import com.example.sample.application.appRoles
-import com.example.sample.application.dataRoles
-import com.example.sample.application.featureRoles
-import com.example.sample.application.uiRoles
-import com.example.sample.gradle.gradleRoles
-import com.example.sample.testing.testingRoles
-import com.example.sample.tool.toolRoles
+import com.example.sample.groups.appGroup
+import com.example.sample.groups.buildGroup
+import com.example.sample.groups.dataGroup
+import com.example.sample.groups.featureGroup
+import com.example.sample.groups.testingGroup
+import com.example.sample.groups.toolGroup
+import com.example.sample.groups.uiGroup
 import me.tbsten.katachi.dsl.Architecture
 import me.tbsten.katachi.dsl.gradle.ModulePackage
 import me.tbsten.katachi.dsl.architecture
@@ -25,29 +25,37 @@ import me.tbsten.katachi.dsl.gradle.capitalizedModuleNamePackage
  * application itself, and `:architecture-test`, which is not a layer of the app at all.
  * Bending the strategy into covering those two would hide, in a lambda, the very fact that
  * they are exceptions.
+ *
+ * Declared next to [projectArchitecture] rather than in one role file because every group
+ * uses it and none of them owns it.
  */
 val modulePackage: ModulePackage = capitalizedModuleNamePackage("com.example.sample")
 
 /**
  * The architecture of this sample, written the way a user of katachi would write it.
  *
- * The declarations themselves sit in sibling packages, one per kind of concern, and each
- * exposes `ArchitectureScope` extension functions that this file only calls:
+ * The definition is split one declaration per file: `roles/<Name>Role.kt` holds one role and
+ * `groups/<Name>Group.kt` holds one group, which says what it is made of by calling the role
+ * functions in order. Both are extensions on `DeclarationContainerScope` — the scope that
+ * `architecture { }` and `"...".group { }` share — so a role can be moved into another group
+ * without touching the role's own file. This file only calls the seven group functions, so it
+ * stays short no matter how many roles the app grows.
  *
- * - `application` — the app itself (`feature` / `ui` / `data` / `app`)
- * - `testing` — the shared fakes and the tests
- * - `gradle` — the build scripts. Named `gradle` and not `build` because `.gitignore`
- *   ignores `build/` at every level
- * - `tool` — everything else the repository carries, git for now
+ * The file *names* carry the convention, so nothing has to be written twice: a role named
+ * `"UiCore"` belongs in `roles/UiCoreRole.kt`, a group named `"build"` in
+ * `groups/BuildGroup.kt`. A `build` *directory* would have been invisible to git — `.gitignore`
+ * ignores `build/` at every level — but that entry matches directories only, so a file named
+ * after the group is safe.
  *
- * Splitting a definition this way is what katachi recommends once it outgrows one file, so
- * the sample is also the worked example of it. Note that an extension function cannot be
- * called by its fully qualified name, which is why the imports above are needed.
+ * None of those functions may be `inline`. An inlined frame reports the caller's file with a
+ * line number past its end, and katachi captures the declaration site from the stack, so the
+ * violation would point at a line nobody wrote. Written once here rather than repeated in
+ * twenty-six files; [ProjectArchitectureSpec] is what actually holds the line.
  *
- * Every `layout { }` below is written in terms of Gradle: a place is named by the module
- * path it belongs to (`":feature:*".module { }`), the source set inside it (`mainSourceSet`)
- * and [modulePackage], rather than by spelling the directories out. `:feature:*` is the one
- * to read first — it is matched against the modules that exist, and what the `*` captured is
+ * Every `layout { }` is written in terms of Gradle: a place is named by the module path it
+ * belongs to (`":feature:*".module { }`), the source set inside it (`mainSourceSet`) and
+ * [modulePackage], rather than by spelling the directories out. `:feature:*` is the one to
+ * read first — it is matched against the modules that exist, and what the `*` captured is
  * read back as `wildcards[0]`, which is what ties a module's name to the names of the files
  * in it.
  *
@@ -61,11 +69,11 @@ val modulePackage: ModulePackage = capitalizedModuleNamePackage("com.example.sam
  * Android unit test run.
  */
 val projectArchitecture: Architecture = architecture {
-    featureRoles()
-    uiRoles()
-    dataRoles()
-    appRoles()
-    testingRoles()
-    gradleRoles()
-    toolRoles()
+    featureGroup()
+    uiGroup()
+    dataGroup()
+    appGroup()
+    testingGroup()
+    buildGroup()
+    toolGroup()
 }

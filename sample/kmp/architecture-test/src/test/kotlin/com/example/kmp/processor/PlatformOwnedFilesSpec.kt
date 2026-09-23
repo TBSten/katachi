@@ -1,12 +1,12 @@
 package com.example.kmp.processor
 
-import com.example.kmp.application.appRoles
-import com.example.kmp.application.dataRoles
-import com.example.kmp.application.featureRoles
-import com.example.kmp.application.uiRoles
-import com.example.kmp.gradle.gradleRoles
+import com.example.kmp.groups.appGroup
+import com.example.kmp.groups.buildGroup
+import com.example.kmp.groups.dataGroup
+import com.example.kmp.groups.featureGroup
+import com.example.kmp.groups.testingGroup
+import com.example.kmp.groups.uiGroup
 import com.example.kmp.projectArchitecture
-import com.example.kmp.testing.testingRoles
 import io.kotest.core.spec.style.FreeSpec
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import me.tbsten.katachi.ExperimentalKatachiApi
@@ -24,7 +24,7 @@ import me.tbsten.katachi.processor.process
  * The processor API is `@ExperimentalKatachiApi`, so this file opts in. That opt-in is the
  * wall doing its job: a real consumer of the published `katachi` artifact writes exactly this
  * to depend on a shape that is still moving, which is different from writing `owner = "..."`
- * in [com.example.kmp.gradle.gradleRoles] -- that needs no opt-in, because the sugar hides it.
+ * in [com.example.kmp.roles.gradleModule] -- that needs no opt-in, because the sugar hides it.
  */
 @OptIn(ExperimentalKatachiApi::class)
 class PlatformOwnedFilesSpec : FreeSpec({
@@ -36,15 +36,18 @@ class PlatformOwnedFilesSpec : FreeSpec({
 
     "owner タグを外した役割からはファイルが集まらない（空振り防止）" {
         // tool/Git と同じ layout を持つが owner を書かない役割で組み直した定義。本物の
-        // toolRoles() との違いはこの1タグだけなので、processor が実際には Owner を
+        // toolGroup() との違いはこの1タグだけなので、processor が実際には Owner を
         // 読まずに全ファイルを返しているだけなら、ここでも .gitignore が混ざる。
+        //
+        // ここだけは git() を呼ばずに手で書き写している。呼べば owner が付いて、
+        // このテストが確かめたいこと（タグの有無で結果が変わる）が消えるため。
         val architectureWithUntaggedGit = architecture {
-            featureRoles()
-            uiRoles()
-            dataRoles()
-            testingRoles()
-            appRoles()
-            gradleRoles()
+            featureGroup()
+            uiGroup()
+            dataGroup()
+            testingGroup()
+            appGroup()
+            buildGroup()
             "tool".group {
                 documented = false
                 title = "ツール"

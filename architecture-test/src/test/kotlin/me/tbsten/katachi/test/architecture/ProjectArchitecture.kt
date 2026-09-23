@@ -3,13 +3,13 @@ package me.tbsten.katachi.test.architecture
 import me.tbsten.katachi.dsl.Architecture
 import me.tbsten.katachi.dsl.architecture
 import me.tbsten.katachi.dsl.gradle.ModulePackage
-import me.tbsten.katachi.test.architecture.docs.docsRoles
-import me.tbsten.katachi.test.architecture.gradle.gradleRoles
-import me.tbsten.katachi.test.architecture.library.backendRoles
-import me.tbsten.katachi.test.architecture.library.libraryRoles
-import me.tbsten.katachi.test.architecture.sample.sampleRoles
-import me.tbsten.katachi.test.architecture.testing.testingRoles
-import me.tbsten.katachi.test.architecture.tool.toolRoles
+import me.tbsten.katachi.test.architecture.groups.backendGroup
+import me.tbsten.katachi.test.architecture.groups.buildGroup
+import me.tbsten.katachi.test.architecture.groups.docsGroup
+import me.tbsten.katachi.test.architecture.groups.libraryGroup
+import me.tbsten.katachi.test.architecture.groups.sampleGroup
+import me.tbsten.katachi.test.architecture.groups.testingGroup
+import me.tbsten.katachi.test.architecture.groups.toolGroup
 
 /**
  * Where each module keeps its production sources, below its own `src/main/kotlin`.
@@ -55,10 +55,27 @@ val testPackage: ModulePackage = ModulePackage { modulePath ->
  * The architecture of katachi itself, described with katachi.
  *
  * The same recommended shape the three samples under `sample/` use, applied to the real
- * library: one independent JVM module, the definition split by meaning into one package per
- * concern, and `assert()` run from a test. katachi denies by default, so this is an allow
- * list — every file `files = gitTracked()` offers has to be covered by some role, and
- * anything else fails `ProjectArchitectureSpec`.
+ * library: one independent JVM module, the definition split one declaration per file, and
+ * `assert()` run from a test. katachi denies by default, so this is an allow list — every file
+ * `files = gitTracked()` offers has to be covered by some role, and anything else fails
+ * `ProjectArchitectureSpec`.
+ *
+ * ## How the definition is split
+ *
+ * `roles/<Name>Role.kt` holds one role and `groups/<Name>Group.kt` holds one group, which says
+ * what it is made of by calling the role functions in order. Both are extensions on
+ * `DeclarationContainerScope` — the scope `architecture { }` and `"...".group { }` share — so
+ * a role can be moved into another group without touching the role's own file. This file only
+ * calls the seven group functions.
+ *
+ * None of those functions may be `inline`. An inlined frame reports the caller's file with a
+ * line number past its end, and katachi captures the declaration site from the stack, so the
+ * violation would point at a line nobody wrote. Written once here rather than repeated in
+ * twenty-eight files; `DeclarationSiteSpec` is what actually holds the line.
+ *
+ * Two helpers sit next to this file rather than under `roles/`: `LayerImports.kt` and
+ * `KdocExamples.kt` are read by roles of more than one group, and `roles/` is declared to hold
+ * nothing but `*Role.kt`.
  *
  * ## Why this package is `me.tbsten.katachi.test.architecture`
  *
@@ -72,22 +89,22 @@ val testPackage: ModulePackage = ModulePackage { modulePath ->
  *
  * ## What the layer roles enforce that a layout cannot
  *
- * The seven roles of the `library` group are the package layers of `:katachi`, each carrying a
+ * The six roles of the `library` group are the package layers of `:katachi`, each carrying a
  * `konsist { }` forbidding imports of the layers after it, and a second one pinning its package
  * to its directory so that the first means something. That half used to be a hand-written spec
  * reading the sources as text; it is a rule about imports, which is Konsist's job.
- * See `library/LayerImports.kt`.
+ * See `LayerImports.kt`.
  *
- * A third `konsist { }` on each of those roles, and on `backend/KonsistBackend`, asks the
- * repository's KDoc convention of every public declaration — see `library/KdocExamples.kt`.
- * It is deliberately not asked of `sample/`, of this definition, or of test code.
+ * A third `konsist { }` on each of those roles, and two on `backend/KonsistBackend`, ask the
+ * repository's KDoc convention of every public declaration — see `KdocExamples.kt`. It is
+ * deliberately not asked of `sample/`, of this definition, or of test code.
  */
 val projectArchitecture: Architecture = architecture {
-    libraryRoles()
-    backendRoles()
-    testingRoles()
-    docsRoles()
-    sampleRoles()
-    gradleRoles()
-    toolRoles()
+    libraryGroup()
+    backendGroup()
+    testingGroup()
+    docsGroup()
+    sampleGroup()
+    buildGroup()
+    toolGroup()
 }

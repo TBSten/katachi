@@ -1,12 +1,12 @@
 package com.example.kmp
 
-import com.example.kmp.application.appRoles
-import com.example.kmp.application.dataRoles
-import com.example.kmp.application.featureRoles
-import com.example.kmp.application.uiRoles
-import com.example.kmp.gradle.gradleRoles
-import com.example.kmp.testing.testingRoles
-import com.example.kmp.tool.toolRoles
+import com.example.kmp.groups.appGroup
+import com.example.kmp.groups.buildGroup
+import com.example.kmp.groups.dataGroup
+import com.example.kmp.groups.featureGroup
+import com.example.kmp.groups.testingGroup
+import com.example.kmp.groups.toolGroup
+import com.example.kmp.groups.uiGroup
 import io.kotest.core.spec.style.FreeSpec
 import io.kotest.matchers.collections.shouldContainExactly
 import me.tbsten.katachi.InternalKatachiApi
@@ -29,14 +29,14 @@ import me.tbsten.katachi.scan.Violation
 class OmittedRoleSelfCheckSpec : FreeSpec({
     "役割を落とすと、その役割だけが引き受けていたファイルが Unexpected になる" {
         // `tool/Git` is the only role claiming `.gitignore`, and the only role of its group,
-        // so leaving `toolRoles()` out removes exactly one file's home.
+        // so leaving `toolGroup()` out removes exactly one file's home.
         val withoutTool = architecture {
-            featureRoles()
-            uiRoles()
-            dataRoles()
-            testingRoles()
-            appRoles()
-            gradleRoles()
+            featureGroup()
+            uiGroup()
+            dataGroup()
+            testingGroup()
+            appGroup()
+            buildGroup()
         }
 
         withoutTool.validate().labels() shouldContainExactly listOf("[UnexpectedFile] .gitignore")
@@ -50,12 +50,12 @@ class OmittedRoleSelfCheckSpec : FreeSpec({
         // `data` itself stays known, because `build/GradleModule` claims
         // `data/build.gradle.kts`.
         val withoutData = architecture {
-            featureRoles()
-            uiRoles()
-            testingRoles()
-            appRoles()
-            gradleRoles()
-            toolRoles()
+            featureGroup()
+            uiGroup()
+            testingGroup()
+            appGroup()
+            buildGroup()
+            toolGroup()
         }
 
         withoutData.validate().labels() shouldContainExactly

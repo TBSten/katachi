@@ -1,12 +1,12 @@
 package com.example.kmp
 
-import com.example.kmp.application.appRoles
-import com.example.kmp.application.dataRoles
-import com.example.kmp.application.featureRoles
-import com.example.kmp.application.uiRoles
-import com.example.kmp.gradle.gradleRoles
-import com.example.kmp.testing.testingRoles
-import com.example.kmp.tool.toolRoles
+import com.example.kmp.groups.appGroup
+import com.example.kmp.groups.buildGroup
+import com.example.kmp.groups.dataGroup
+import com.example.kmp.groups.featureGroup
+import com.example.kmp.groups.testingGroup
+import com.example.kmp.groups.toolGroup
+import com.example.kmp.groups.uiGroup
 import me.tbsten.katachi.dsl.Architecture
 import me.tbsten.katachi.dsl.gradle.ModulePackage
 import me.tbsten.katachi.dsl.architecture
@@ -26,7 +26,8 @@ import me.tbsten.katachi.dsl.gradle.capitalizedModuleNamePackage
  * say "this one is different".
  *
  * Declared as a top level `val` next to [projectArchitecture], the way a user of katachi
- * declares it: `modulePackage` is not a built-in symbol of the DSL.
+ * declares it: `modulePackage` is not a built-in symbol of the DSL. It sits here rather than in
+ * one role's file because every group reads it and none of them owns it.
  */
 val modulePackage: ModulePackage = capitalizedModuleNamePackage("com.example.kmp")
 
@@ -48,19 +49,30 @@ val modulePackage: ModulePackage = capitalizedModuleNamePackage("com.example.kmp
  * Kept in a top level `val`: building it reads nothing and runs no check, so the same value
  * can be shared by every test and, later, by documentation generation.
  *
- * This file does nothing but call the declarations, which live in one package per concern:
- * `application` for the app itself, `testing` for test code, `gradle` for the build scripts
- * and `tool` for everything else. They are plain (non-inline) `ArchitectureScope` extension
- * functions, which is how katachi expects a definition to be split, and the declaration site
- * each declaration records is the file it is written in — `ProjectArchitectureSpec` proves
- * it.
+ * This file does nothing but call the seven group functions. The definition itself is split
+ * one declaration per file: a role named `"UiCore"` is declared in the `roles` package, in
+ * `UiCoreRole.kt`, and a group named `"build"` in the `groups` package, in `BuildGroup.kt`.
+ * The file name is the whole of the convention, so nothing has to be written down twice — and
+ * a `build` *directory* would have been invisible to git, because `.gitignore` ignores `build/`
+ * at every level, but that entry matches directories only, so a file named after the group is
+ * safe.
+ *
+ * Both kinds are plain `DeclarationContainerScope` extension functions — the scope
+ * `architecture { }` and `"...".group { }` share — so a role can be moved into another group
+ * without its own file being touched.
+ *
+ * None of them may be `inline`. An inlined frame reports the caller's file with a line number
+ * remapped past the end of that file, and katachi captures the declaration site from the
+ * stack, so every declaration would record a position nobody wrote. Written once here rather
+ * than repeated in twenty-seven files; `ProjectArchitectureSpec` is what actually holds the
+ * line, by reading the captured line back out of the source.
  */
 val projectArchitecture: Architecture = architecture {
-    featureRoles()
-    uiRoles()
-    dataRoles()
-    testingRoles()
-    appRoles()
-    gradleRoles()
-    toolRoles()
+    featureGroup()
+    uiGroup()
+    dataGroup()
+    testingGroup()
+    appGroup()
+    buildGroup()
+    toolGroup()
 }
