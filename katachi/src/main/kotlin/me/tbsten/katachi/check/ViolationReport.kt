@@ -1,20 +1,7 @@
 package me.tbsten.katachi.check
 
 import me.tbsten.katachi.InternalKatachiApi
-import me.tbsten.katachi.scan.AmbiguousLayout
-import me.tbsten.katachi.scan.MissingDescription
-import me.tbsten.katachi.scan.MissingFile
-import me.tbsten.katachi.scan.Severity
-import me.tbsten.katachi.scan.UncheckedCheck
-import me.tbsten.katachi.scan.UncheckedConstraint
-import me.tbsten.katachi.scan.UncheckedDirectory
-import me.tbsten.katachi.scan.UncheckedDirectoryReason
-import me.tbsten.katachi.scan.UncheckedFile
-import me.tbsten.katachi.scan.UnexpectedDirectory
-import me.tbsten.katachi.scan.UnexpectedFile
-import me.tbsten.katachi.scan.UnsatisfiedConstraint
-import me.tbsten.katachi.scan.Violation
-import me.tbsten.katachi.scan.ViolationKind
+import me.tbsten.katachi.scan.*
 
 /**
  * How many blocks `assert()` prints before it stops and counts the rest.
@@ -208,7 +195,12 @@ private fun warningHeading(count: Int): String {
  *   block's first line ([Violation.label]), so repeating the same two names here would say
  *   nothing a reader does not already have.
  */
-private fun truncationLine(all: List<Violation>, shown: List<Violation>, noun: String, withBreakdown: Boolean): String? {
+private fun truncationLine(
+    all: List<Violation>,
+    shown: List<Violation>,
+    noun: String,
+    withBreakdown: Boolean
+): String? {
     val hiddenByKind = ViolationKind.entries
         .associateWith { kind -> all.count { it.kind == kind } - shown.count { it.kind == kind } }
         .filterValues { it > 0 }
@@ -276,12 +268,16 @@ private fun unexpectedFileBlock(violation: UnexpectedFile): List<String> = build
     add("[${violation.label}] ${violation.path}")
     add("${STEP}No role is defined for this file.")
     if (violation.nearby.isNotEmpty()) {
+        // Inside the branch, not before it: with no nearby locations this and the blank line
+        // before `How to fix:` would land back to back and open a two-line gap.
+        add("")
         add("${STEP}Nearby locations:")
         val width = violation.nearby.maxOf { it.role.qualifiedName.length }
         for (location in violation.nearby) {
             add("$STEP$STEP${location.role.qualifiedName.padEnd(width)} ${location.directory}/")
         }
     }
+    add("")
     add("${STEP}How to fix:")
     if (violation.nearby.isNotEmpty()) add("$STEP$STEP- Move it to one of the locations above")
     add("$STEP$STEP- Delete it if it is not needed")
@@ -292,6 +288,7 @@ private fun unexpectedFileBlock(violation: UnexpectedFile): List<String> = build
 private fun unexpectedDirectoryBlock(violation: UnexpectedDirectory): List<String> = buildList {
     add("[${violation.label}] ${violation.path}")
     add("${STEP}No role is defined for this directory. Nothing below it was checked.")
+    add("")
     add("${STEP}How to fix:")
     add("$STEP$STEP- Delete it if it is not needed")
     add("$STEP$STEP- Declare what belongs in it in the layout of an existing role")
@@ -305,6 +302,7 @@ private fun missingFileBlock(violation: MissingFile): List<String> = listOf(
     // the file is written first, and being told the definition is wrong would be misleading.
     "${STEP}No file has been created yet for role ${violation.role.qualifiedName}.",
     "${STEP}Declared at: ${violation.declaredAt}",
+    "",
     "${STEP}How to fix:",
     "$STEP$STEP- If it is not implemented yet, this error is expected",
     "$STEP$STEP- If it is no longer needed, remove the declaration at ${violation.declaredAt}",
@@ -314,6 +312,7 @@ private fun uncheckedFileBlock(violation: UncheckedFile): List<String> = listOf(
     "[${violation.label}] ${violation.path}",
     "${STEP}Katachi failed while checking this file, so nothing is known about it.",
     "${STEP}Cause: ${causeLine(violation.cause)}",
+    "",
     "${STEP}How to fix:",
     "$STEP$STEP- Check that the file is readable, then run the check again",
     "$STEP$STEP- If it is, report this at https://github.com/TBSten/katachi/issues with the cause above",
@@ -337,9 +336,10 @@ private fun uncheckedDirectoryBlock(violation: UncheckedDirectory): List<String>
 
         UncheckedDirectoryReason.ModulesNotDiscovered ->
             "${STEP}Katachi failed while looking for modules here, so a module key may have " +
-                "expanded to fewer modules than the project has."
+                    "expanded to fewer modules than the project has."
     },
     "${STEP}Cause: ${causeLine(violation.cause)}",
+    "",
     "${STEP}How to fix:",
     "$STEP$STEP- Check that the directory is readable, then run the check again",
     "$STEP$STEP- If it is, report this at https://github.com/TBSten/katachi/issues with the cause above",
@@ -349,6 +349,7 @@ private fun uncheckedCheckBlock(violation: UncheckedCheck): List<String> = listO
     "[${violation.label}] ${violation.path}",
     "${STEP}Katachi failed while running ${violation.check}, so nothing it would have reported is known.",
     "${STEP}Cause: ${causeLine(violation.cause)}",
+    "",
     "${STEP}How to fix:",
     "$STEP$STEP- Read the cause above and fix the check, or stop passing it to assert()",
     "$STEP$STEP- Report it at https://github.com/TBSten/katachi/issues if the check is one of katachi's",

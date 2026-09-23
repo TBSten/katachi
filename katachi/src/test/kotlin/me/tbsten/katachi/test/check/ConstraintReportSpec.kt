@@ -164,6 +164,7 @@ class ConstraintReportSpec : FreeSpec({
                   Nothing evaluated this constraint, so nothing is known about it.
                   Role: domain/UseCase / Constraint: "invoke"
                   Declared at: ProjectArchitecture.kt:61 (layout of alpha)
+
                   How to fix:
                     - Pass ConstraintCheck() to assert(): projectArchitecture.assert(ConstraintCheck())
                     - Remove the constraint at ProjectArchitecture.kt:61 if it is no longer wanted
@@ -199,6 +200,7 @@ class ConstraintReportSpec : FreeSpec({
                   Role: domain/UseCase / Constraint: "invoke"
                   Declared at: ProjectArchitecture.kt:61 (layout of alpha)
                   Cause: java.lang.IllegalStateException: boom
+
                   How to fix:
                     - Read the cause above: it says what stopped the constraint
                     - Check the constraint block at ProjectArchitecture.kt:61

@@ -89,9 +89,11 @@ class AmbiguousLayoutCheckSpec : FreeSpec({
 
                 [AmbiguousLayout] gradle/libs.versions.toml
                   2 roles declare this path, so a file here belongs to all of them.
+
                   Declared by:
                     group/RoleA $siteA
                     group/RoleB $siteB
+
                   How to fix:
                     - Keep the path in the role its files belong to, and remove it from the other
                     - Narrow one of them if they are about different files

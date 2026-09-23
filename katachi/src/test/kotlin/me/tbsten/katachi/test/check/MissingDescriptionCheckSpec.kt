@@ -154,6 +154,7 @@ class MissingDescriptionCheckSpec : FreeSpec({
                   Role group/Role may live in 2 places, and this one does not say when to use it.
                   Other place: feature/home
                   Declared at: $site
+
                   How to fix:
                     - Write `description = "..."` in this block, saying which files belong here rather than in the others
                     - Or merge this place into another if the two are really the same place

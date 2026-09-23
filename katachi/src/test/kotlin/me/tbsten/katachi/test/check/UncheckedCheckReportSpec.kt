@@ -22,6 +22,7 @@ class UncheckedCheckReportSpec : FreeSpec({
                 [UncheckedCheck] .
                   Katachi failed while running com.example.TodoCheck, so nothing it would have reported is known.
                   Cause: java.lang.IllegalStateException: boom
+
                   How to fix:
                     - Read the cause above and fix the check, or stop passing it to assert()
                     - Report it at https://github.com/TBSten/katachi/issues if the check is one of katachi's

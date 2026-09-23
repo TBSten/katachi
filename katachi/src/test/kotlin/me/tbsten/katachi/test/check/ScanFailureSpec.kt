@@ -143,6 +143,7 @@ class ScanFailureSpec : FreeSpec({
                 [UncheckedFile] src/Broken.kt
                   Katachi failed while checking this file, so nothing is known about it.
                   Cause: java.io.IOException: cannot read Broken.kt
+
                   How to fix:
                     - Check that the file is readable, then run the check again
                     - If it is, report this at https://github.com/TBSten/katachi/issues with the cause above
@@ -164,6 +165,7 @@ class ScanFailureSpec : FreeSpec({
                 [UncheckedDirectory] src/broken
                   Katachi failed while checking this directory. Nothing below it was checked.
                   Cause: java.io.IOException: cannot list broken
+
                   How to fix:
                     - Check that the directory is readable, then run the check again
                     - If it is, report this at https://github.com/TBSten/katachi/issues with the cause above

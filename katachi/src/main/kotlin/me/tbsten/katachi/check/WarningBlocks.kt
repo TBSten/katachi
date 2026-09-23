@@ -21,11 +21,13 @@ import me.tbsten.katachi.scan.MissingDescription
 internal fun ambiguousLayoutBlock(violation: AmbiguousLayout): List<String> = buildList {
     add("[${violation.label}] ${violation.path}")
     add("$STEP${violation.claims.size} roles declare this path, so a file here belongs to all of them.")
+    add("")
     add("${STEP}Declared by:")
     val width = violation.claims.maxOf { it.role.qualifiedName.length }
     for (claim in violation.claims) {
         add("$STEP$STEP${claim.role.qualifiedName.padEnd(width)} ${claim.declaredAt}")
     }
+    add("")
     add("${STEP}How to fix:")
     addAll(ambiguousLayoutFixLines(plural = violation.claims.size > 2))
 }
@@ -65,6 +67,7 @@ internal fun missingDescriptionBlock(violation: MissingDescription): List<String
         "and this one does not say when to use it.",
     otherPlacesLine(violation.otherPlaces),
     "${STEP}Declared at: ${violation.declaredAt}",
+    "",
     "${STEP}How to fix:",
     "$STEP$STEP- Write `description = \"...\"` in this block, saying which files belong here " +
         "rather than in the others",

@@ -49,6 +49,7 @@ internal fun uncheckedConstraintBlock(violation: UncheckedConstraint): List<Stri
     add("$STEP${constraintLine(violation.role.qualifiedName, violation.constraintName)}")
     add("${STEP}Declared at: ${violation.declaredAt}${inLayout(violation.layoutPath)}")
     violation.cause?.let { add("${STEP}Cause: ${causeLine(it)}") }
+    add("")
     add("${STEP}How to fix:")
     when (violation.reason) {
         UncheckedConstraintReason.NotEvaluated -> {

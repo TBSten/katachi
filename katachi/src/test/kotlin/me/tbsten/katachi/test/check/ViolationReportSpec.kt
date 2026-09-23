@@ -32,9 +32,11 @@ class ViolationReportSpec : FreeSpec({
 
                 [UnexpectedFile] core/domain/TokenRefresher.kt
                   No role is defined for this file.
+
                   Nearby locations:
                     domain/UseCase    core/domain/useCase/
                     domain/Repository core/domain/repository/
+
                   How to fix:
                     - Move it to one of the locations above
                     - Delete it if it is not needed
@@ -63,6 +65,7 @@ class ViolationReportSpec : FreeSpec({
 
                 [UnexpectedDirectory] tmp-experiment
                   No role is defined for this directory. Nothing below it was checked.
+
                   How to fix:
                     - Delete it if it is not needed
                     - Declare what belongs in it in the layout of an existing role
@@ -87,6 +90,7 @@ class ViolationReportSpec : FreeSpec({
 
                 [UnexpectedFile] build.gradle.kts
                   No role is defined for this file.
+
                   How to fix:
                     - Delete it if it is not needed
                     - Add a new role for it:
@@ -99,6 +103,7 @@ class ViolationReportSpec : FreeSpec({
 
                 [UnexpectedFile] libs.versions.toml
                   No role is defined for this file.
+
                   How to fix:
                     - Delete it if it is not needed
                     - Add a new role for it:
@@ -128,6 +133,7 @@ class ViolationReportSpec : FreeSpec({
                 [MissingFile] gradle/libs.versions.toml
                   No file has been created yet for role tool/VersionCatalog.
                   Declared at: $declaredAt
+
                   How to fix:
                     - If it is not implemented yet, this error is expected
                     - If it is no longer needed, remove the declaration at $declaredAt

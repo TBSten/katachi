@@ -154,6 +154,7 @@ class ModuleDiscoveryFailureSpec : FreeSpec({
                 [UncheckedDirectory] feature/home
                   Katachi failed while looking for modules here, so a module key may have expanded to fewer modules than the project has.
                   Cause: java.io.IOException: cannot read it
+
                   How to fix:
                     - Check that the directory is readable, then run the check again
                     - If it is, report this at https://github.com/TBSten/katachi/issues with the cause above
