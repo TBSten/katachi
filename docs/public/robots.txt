@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://tbsten.github.io/katachi/sitemap-index.xml

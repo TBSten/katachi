@@ -1,0 +1,42 @@
+# ページの難易度。読み手が「どこから読めばいいか」を判断するためのもので、
+# トピックの分類ではない。1ページに1つだけ付ける。
+#
+# label と description は locale ごとに出し分ける。
+
+tags:
+  beginner:
+    label:
+      ja: 初心者向け
+      en: Beginner
+    description:
+      ja: katachi を触ったことがなくても読めるページ。前提知識を要求しない。
+      en: Readable without any prior exposure to katachi. Assumes no background.
+    color: "#15803d"
+    difficulty: beginner
+    priority: 30
+
+  intermediate:
+    label:
+      ja: 中級者向け
+      en: Intermediate
+    description:
+      ja: 一度アーキテクチャ定義を書いたことがある人向け。基本的な API を前提にする。
+      en: For readers who have written a definition once. Assumes the basic API.
+    color: "#2563eb"
+    difficulty: intermediate
+    prerequisites:
+      - beginner
+    priority: 20
+
+  advanced:
+    label:
+      ja: 上級者向け
+      en: Advanced
+    description:
+      ja: katachi の仕組みに踏み込む。内部の設計や拡張の話を含む。
+      en: Goes into how katachi works, including internals and extension points.
+    color: "#b45309"
+    difficulty: advanced
+    prerequisites:
+      - intermediate
+    priority: 10
