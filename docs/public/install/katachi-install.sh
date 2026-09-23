@@ -30,6 +30,12 @@ KATACHI_RELEASES_API="https://api.github.com/repos/TBSten/katachi/releases/lates
 KATACHI_RELEASES_PAGE="https://github.com/TBSten/katachi/releases"
 
 # 生成するモジュールが使う固定値。プロジェクト側の事情で変わらないものだけを置く。
+# katachi が要求する Kotlin の下限。これより古いコンパイラは katachi の jar の
+# メタデータ（binary version 2.4.0）を読めず、architecture などのシンボルが
+# すべて Unresolved reference になる。実際に 2.2.0 でコンパイルして確認済み。
+KOTLIN_MIN_MAJOR="2"
+KOTLIN_MIN_MINOR="3"
+
 JVM_TOOLCHAIN="21"
 JUNIT_VERSION="5.13.4"
 
@@ -37,6 +43,10 @@ MODULE_DIR="architecture-test"
 
 # ---------------------------------------------------------------- 出力
 
+# メッセージに日本語を混ぜるときは、変数展開を必ず ${VAR} と波括弧で閉じること。
+# "$VAR）" のように $VAR の直後に非 ASCII が続くと、macOS の bash 3.2 は続くバイトを
+# 変数名の一部と誤読し、set -u と相まって "unbound variable" で落ちる。メッセージが
+# 出ないまま終了するので気づきにくい。これまでに4回踏んでいる。
 say() { printf '%s\n' "$*"; }
 note() { printf '   %s\n' "$*"; }
 warn() { printf '\n[!] %s\n' "$*" >&2; }
@@ -230,6 +240,11 @@ fetch_latest_version() {
 # プロジェクトが使っている Kotlin のバージョンを推定して標準出力に出す。
 # 1. version catalog の kotlin = "..."
 # 2. 各 build ファイルの `kotlin("jvm") version "..."` / `org.jetbrains.kotlin...version "..."`
+# "2.4.10" -> "2 4"。"2.3.0-RC" のような接尾辞は落とす。読めなければ空を返す。
+kotlin_major_minor() {
+	printf '%s' "$1" | sed -n 's/^\([0-9][0-9]*\)\.\([0-9][0-9]*\).*/\1 \2/p'
+}
+
 detect_kotlin_version() {
 	if [ -f "gradle/libs.versions.toml" ]; then
 		# `[versions]` の中の `kotlin = "..."` だけを見る。`[libraries]` にも
@@ -594,6 +609,29 @@ cmd_scaffold() {
 	[ -n "$sc_kotlin" ] ||
 		die "Kotlin のバージョンを検出できませんでした。--kotlin で指定してください。"
 
+	sc_mm=$(kotlin_major_minor "$sc_kotlin")
+	[ -n "$sc_mm" ] || die "Kotlin のバージョンを読み取れませんでした: $sc_kotlin"
+	sc_kmaj=${sc_mm% *}
+	sc_kmin=${sc_mm#* }
+
+	if [ "$sc_kmaj" -lt "$KOTLIN_MIN_MAJOR" ] ||
+		{ [ "$sc_kmaj" -eq "$KOTLIN_MIN_MAJOR" ] && [ "$sc_kmin" -lt "$KOTLIN_MIN_MINOR" ]; }; then
+		die "katachi $sc_version は Kotlin ${KOTLIN_MIN_MAJOR}.${KOTLIN_MIN_MINOR} 以降が必要です（このプロジェクトは ${sc_kotlin}）。
+    katachi の jar は Kotlin 2.4 系でビルドされているため、それより古いコンパイラは
+    メタデータを読めず、architecture などのシンボルがすべて Unresolved reference に
+    なります。プロジェクトの Kotlin を上げてから、もう一度実行してください。"
+	fi
+
+	# context parameters は 2.4 で言語に入った。2.3 系では呼ぶ側に
+	# -Xcontext-parameters が要り、2.4 以降で付けると
+	# "The argument '-Xcontext-parameters' is redundant" の警告が出る
+	# （allWarningsAsErrors な CI を落とす）。だから出し分ける。
+	if [ "$sc_kmaj" -eq 2 ] && [ "$sc_kmin" -lt 4 ]; then
+		sc_context_flag="yes"
+	else
+		sc_context_flag="no"
+	fi
+
 	if [ -e "$MODULE_DIR" ] && [ "$sc_force" = "no" ]; then
 		die "$MODULE_DIR/ がすでに存在します。上書きするなら --force を付けてください。"
 	fi
@@ -641,7 +679,7 @@ cmd_scaffold() {
 	fi
 
 	mkdir -p "$src_dir"
-	write_module_build "$sc_version" "$sc_konsist"
+	write_module_build "$sc_version" "$sc_konsist" "$sc_context_flag"
 	# **--force でも定義は上書きしない。** ここには人とエージェントが書いた
 	# architecture { } が入っている。やり直しで消えると取り返しがつかない。
 	if [ -s "$src_dir/ProjectArchitecture.kt" ]; then
@@ -683,6 +721,7 @@ cmd_scaffold() {
 write_module_build() {
 	_version="$1"
 	_konsist="$2"
+	_context_flag="$3"
 
 	# 生成物は利用者のリポジトリにそのまま残るので、コメントも --lang に合わせる
 	# （テスト関数名と同じ理由。write_test_kt を参照）。
@@ -701,6 +740,34 @@ write_module_build() {
 		;;
 	esac
 
+	if [ "$_context_flag" = "yes" ]; then
+		case "$KATACHI_LANG" in
+		ja)
+			_ctx_note='    // Kotlin 2.3 系では、context parameters を呼ぶ側にこのオプションが要る。
+    // katachi の DSL（module / mainSourceSet / ktFile など）はすべて context parameters
+    // なので、無いと1つも書けない。Kotlin を 2.4 以降に上げたらこの2行は消すこと
+    // （2.4 以降で付けたままだと redundant の警告が出る）。'
+			;;
+		*)
+			_ctx_note='    // Kotlin 2.3.x needs this on the calling side to use context parameters.
+    // Every katachi DSL entry point (module / mainSourceSet / ktFile ...) is a contextual
+    // declaration, so without it you cannot write a single one. Drop these two lines once
+    // the project moves to Kotlin 2.4 or later - from 2.4 on the flag warns that it is
+    // redundant.'
+			;;
+		esac
+		_kotlin_block="kotlin {
+    jvmToolchain($JVM_TOOLCHAIN)
+
+$_ctx_note
+    compilerOptions.freeCompilerArgs.add(\"-Xcontext-parameters\")
+}"
+	else
+		_kotlin_block="kotlin {
+    jvmToolchain($JVM_TOOLCHAIN)
+}"
+	fi
+
 	if [ "$_konsist" = "yes" ]; then
 		_konsist_line="    testImplementation(\"me.tbsten.katachi:katachi-konsist:$_version\")"
 	else
@@ -712,9 +779,7 @@ plugins {
     kotlin("jvm")
 }
 
-kotlin {
-    jvmToolchain($JVM_TOOLCHAIN)
-}
+$_kotlin_block
 
 tasks.test {
     useJUnitPlatform()
@@ -761,8 +826,16 @@ write_test_kt() {
 	# テスト名は利用者のリポジトリにそのまま残るので、--lang に合わせる。
 	# 英語で進めている利用者に日本語の識別子を置いていかないため。
 	case "$KATACHI_LANG" in
-	ja) _test_name="プロジェクトの構成が定義どおりになっている" ;;
-	*) _test_name="the project matches its declaration" ;;
+	ja)
+		_test_name="プロジェクトの構成が定義どおりになっている"
+		# 導入中は違反が数十〜百件出る。既定の 10 件で打ち切られると全体が見えず、
+		# 定義を書き進められない。書き終えたら外す前提の一時設定なので TODO を付ける。
+		_max_note='        // TODO: 導入が落ち着いたら maxViolations を外す（既定は 10 件）。'
+		;;
+	*)
+		_test_name="the project matches its declaration"
+		_max_note='        // TODO: drop maxViolations once the definition has settled (the default is 10).'
+		;;
 	esac
 
 	if [ "$_konsist" = "yes" ]; then
@@ -778,7 +851,8 @@ class ProjectArchitectureTest {
     @OptIn(ExperimentalKatachiApi::class)
     @Test
     fun \`$_test_name\`() {
-        projectArchitecture.assert(KonsistCheck())
+$_max_note
+        projectArchitecture.assert(KonsistCheck(), maxViolations = 200)
     }
 }
 EOF
@@ -792,7 +866,8 @@ import org.junit.jupiter.api.Test
 class ProjectArchitectureTest {
     @Test
     fun \`$_test_name\`() {
-        projectArchitecture.assert()
+$_max_note
+        projectArchitecture.assert(maxViolations = 200)
     }
 }
 EOF
@@ -1206,12 +1281,29 @@ FIELDS = {
     "excluded":   ("excluded",    ["path", "reason"], []),
 }
 
+# 二重登録を弾くためのキー。violation と question は同じ内容を2回書く理由が
+# あり得るので入れない。
+IDENTITY = {
+    "changed":  "path",
+    "module":   "path",
+    "excluded": "path",
+    "role":     "name",
+    "tool":     "name",
+}
+
 if kind not in FIELDS:
     sys.stderr.write("知らない種類です: %s\n" % kind)
     sys.stderr.write("使えるもの: %s\n" % ", ".join(FIELDS))
     sys.exit(1)
 
 key, scalars, lists = FIELDS[kind]
+
+if not args:
+    sys.stderr.write("項目を1つも指定していません: add %s\n" % kind)
+    sys.stderr.write("このまま追記すると中身が空の行ができます。\n")
+    sys.stderr.write("使えるもの: %s\n" % ", ".join(scalars + lists))
+    sys.exit(1)
+
 entry = {}
 for f in scalars:
     entry[f] = None
@@ -1242,7 +1334,18 @@ while i < len(args):
         sys.exit(1)
 
 data = json.load(open(src, encoding="utf-8"))
-data.setdefault(key, []).append(entry)
+rows = data.setdefault(key, [])
+
+idf = IDENTITY.get(kind)
+if idf is not None and entry.get(idf) is not None:
+    for row in rows:
+        if row.get(idf) == entry[idf]:
+            sys.stderr.write("その %s はすでに登録されています: %s\n" % (idf, entry[idf]))
+            sys.stderr.write("二重に記録しないため追記しませんでした。\n")
+            sys.stderr.write("書き換えたい場合は data get で取り出し、直してから data set してください。\n")
+            sys.exit(1)
+
+rows.append(entry)
 json.dump(data, open(dest, "w", encoding="utf-8"), ensure_ascii=False, indent=2)
 print("%s に1件追記しました（計 %d 件）" % (key, len(data[key])))
 '

@@ -137,7 +137,7 @@ sh $CLI add tool      --name ktlint --configPath ".editorconfig" --declareInKata
 sh $CLI add excluded  --path "..." --reason "..."
 ```
 
-`--options` と `--allowed` / `--forbidden` / `--examples` は**複数回渡せます**。知らない項目名を渡すと、使える名前を並べて止まります。
+`--options` と `--allowed` / `--forbidden` / `--examples` は**複数回渡せます**。知らない項目名を渡すと、使える名前を並べて止まります。項目を1つも渡さなかったとき、および同じ `--path` / `--name` がすでに登録されているときも止まります。空の行や重複した行が入らないようにするためです。
 
 **HTML を直接編集しないこと。** 書き換えは必ず `data merge` か `data set` を通す。どちらも書き込む前に JSON を検査し、元のファイルを `.bak` に退避し、結果が壊れていれば自動で巻き戻します。
 
@@ -250,7 +250,7 @@ sh $CLI scaffold --package com.example.app
 - ルートの build ファイルへの Kotlin JVM プラグインの追加（すでにあれば何もしない）
 - settings ファイルへの `include("architecture-test")` の追加（Groovy の `settings.gradle` なら `include 'architecture-test'`。すでにあれば何もしない）
 
-プラグインのバージョン衝突、JUnit の engine、JVM toolchain、Android / KMP プロジェクトでの扱いは**すべてスクリプトが決めています。** 生成されたファイルを読んで直したくなっても、直さないこと。
+プラグインのバージョン衝突、JUnit の engine、JVM toolchain、プロジェクトの Kotlin バージョンに応じたコンパイラオプション、Android / KMP プロジェクトでの扱いは**すべてスクリプトが決めています。** Kotlin 2.3 系なら `-Xcontext-parameters` を書き込み（これが無いと DSL を1つも呼べません）、2.4 以降では付けません（付けると redundant の警告になるため）。Kotlin 2.3 未満ならその旨を伝えて止まります。katachi の artifact をそのコンパイラが読めないためです。 生成されたファイルを読んで直したくなっても、直さないこと。
 
 例外は、生成されたファイルを変えないとビルドがそもそも動かない場合だけです。これは上のルールより優先します。ただしその場合はスクリプト側のバグなので、`add changed` に理由を書いて記録し、`questions` にも登録してください。
 
@@ -275,13 +275,7 @@ Katachi check failed: 4 violations (Unexpected: 4)
         "BuildGradle" { ... }
 ```
 
-**表示されるのは先頭 10 件だけ**で、残りは件数だけが出ます。定義を書いている間すべて見たい場合は、`ProjectArchitectureTest.kt` で上限を上げてください。
-
-```kt
-projectArchitecture.assert(KonsistCheck(), maxViolations = 100)
-```
-
-`--no-konsist` の場合は check が入らないので `assert(maxViolations = 100)` と書きます。定義を書き終えたら既定に戻してください。
+違反の表示件数は既定では 10 件ですが、**`scaffold` が生成するテストは `maxViolations = 200` にしてあります**（導入中は数十〜百件出るため）。`TODO` コメントが付いているので、ステップ 4 で外します。
 
 **この形で落ちていれば配線は正しい**ということです。`Unexpected` 以外のエラー、たとえばコンパイルエラー、依存の解決失敗、`Could not start Gradle Test Executor` のようなものが出た場合だけが問題です。
 
@@ -338,6 +332,8 @@ sh $CLI docs
   - 対処法が曖昧なものは後のステップでユーザに確認してもらうこととし、そのままにしておく
   - そのままにするエラーはチェックリストの `violations` に記載する（`violation` / `location` / `whyNotFixed` / `suggestion`）。
   - ユーザに判断してほしいことは**チェックリストの** `questions` に入れる（`sh $CLI add question ...`）。レポート側にも同名の配列があるが、そちらはステップ 1 で気づいた「コードベースの揺れ」を書く場所で、用途が違う。
+
+**緑になったら `ProjectArchitectureTest.kt` の `maxViolations` を外してください。** `scaffold` が導入中の見通しのために入れた一時設定で、`TODO` コメントが目印です。外したあとにもう一度 `./gradlew :architecture-test:test --rerun` を実行し、結果が変わらないことを確かめます。違反を残す場合は、残した件数が 10 件を超えるならそのまま残してよいので、その旨を `violations` に書いてください。
 
 終えたら `sh $CLI check 4-1 4-2`。違反を残した場合は `sh $CLI warn 4 "..."` で何を残したかを1行書く。
 

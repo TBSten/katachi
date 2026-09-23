@@ -137,7 +137,7 @@ sh $CLI add tool      --name ktlint --configPath ".editorconfig" --declareInKata
 sh $CLI add excluded  --path "..." --reason "..."
 ```
 
-`--options` and `--allowed` / `--forbidden` / `--examples` **can be passed multiple times.** Passing an unknown field name stops it and lists the names that are available.
+`--options` and `--allowed` / `--forbidden` / `--examples` **can be passed multiple times.** Passing an unknown field name stops it and lists the names that are available. It also stops when you pass no fields at all, and when the same `--path` or `--name` is already recorded — so a blank row and a duplicate row cannot get in.
 
 **Do not edit the HTML directly.** Any rewrite must always go through `data merge` or `data set`. Both of them validate the JSON before writing, back up the original file to `.bak`, and automatically roll back if the result turns out broken.
 
@@ -250,7 +250,7 @@ This command does the following.
 - Adding the Kotlin JVM plugin to the root build file (does nothing if it's already there)
 - Adding `include("architecture-test")` to the settings file (`include 'architecture-test'` for a Groovy `settings.gradle`; does nothing if it's already there)
 
-Plugin version conflicts, the JUnit engine, the JVM toolchain, and handling for Android / KMP projects are **all decided by the script.** Even if you feel like fixing something after reading the generated files, do not fix it.
+Plugin version conflicts, the JUnit engine, the JVM toolchain, the compiler options the project's Kotlin version needs, and handling for Android / KMP projects are **all decided by the script.** On Kotlin 2.3.x it writes `-Xcontext-parameters`, which the DSL cannot be called without; from 2.4 on it leaves the flag out, because there it only warns that it is redundant. Below Kotlin 2.3 it stops and says so — katachi's artifacts cannot be read by a compiler that old. Even if you feel like fixing something after reading the generated files, do not fix it.
 
 The one exception is when the generated file has to change for the build to run at all. That takes priority over the rule above — but it means the script has a bug, so record it with `add changed` giving the reason, and register it in `questions` as well.
 
@@ -275,13 +275,7 @@ Katachi check failed: 4 violations (Unexpected: 4)
         "BuildGradle" { ... }
 ```
 
-**Only the first 10 violations are printed**, with the rest shown as a count. To see them all while you write the definition, raise the budget in `ProjectArchitectureTest.kt`:
-
-```kt
-projectArchitecture.assert(KonsistCheck(), maxViolations = 100)
-```
-
-With `--no-konsist` the call has no check in it, so write `assert(maxViolations = 100)`. Put it back to the default once the definition is finished.
+The default budget is 10 violations, but **the test `scaffold` generates uses `maxViolations = 200`** — during adoption there are usually dozens to hundreds. It carries a `TODO` comment; you take it out in step 4.
 
 **Failing in this shape means the wiring is correct.** Only an error that is not `Unexpected` is a problem — a compile error, a dependency resolution failure, something like `Could not start Gradle Test Executor`.
 
@@ -336,6 +330,8 @@ Run this and check the result.
   - For ones where the fix is unclear, leave them as is and have the user confirm in a later step.
   - Record errors you leave in place in the checklist's `violations` (`violation` / `location` / `whyNotFixed` / `suggestion`).
   - Put anything you want the user to decide into **the checklist's** `questions` (`sh $CLI add question ...`). The report also has an array with the same name, but that one is for "inconsistencies in the codebase" noticed during step 1 — its purpose is different.
+
+**Once it is green, take `maxViolations` out of `ProjectArchitectureTest.kt`.** `scaffold` put it there only to keep the whole picture visible during adoption, and the `TODO` comment marks it. Run `./gradlew :architecture-test:test --rerun` once more afterwards and check the result has not changed. If you are leaving more than 10 violations in place, keep the setting and say so in `violations`.
 
 Once done, run `sh $CLI check 4-1 4-2`. If you left violations in place, write one line about what was left with `sh $CLI warn 4 "..."`.
 
