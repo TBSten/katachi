@@ -41,7 +41,7 @@ public class KatachiConstraintSubjectException internal constructor(
      *
      * ## Example 1: name the rule that answered about the wrong files
      * ```kt
-     * cause.shouldBeInstanceOf<KatachiConstraintSubjectException>().constraintName shouldBe "内部だけ"
+     * cause.shouldBeInstanceOf<KatachiConstraintSubjectException>().constraintName shouldBe "Internal only"
      * ```
      */
     public val constraintName: String?,

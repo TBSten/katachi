@@ -19,7 +19,7 @@ package me.tbsten.katachi
  *
  * @OptIn(InternalKatachiApi::class)
  * class FsPathSpec : FreeSpec({
- *     "区切り文字が続いても1つにまとめる" {
+ *     "collapses repeated separators into one" {
  *         FsPath.of("/repo//app///src").value shouldBe "/repo/app/src"
  *     }
  * })

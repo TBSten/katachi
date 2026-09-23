@@ -214,7 +214,7 @@ public sealed interface LayoutDirectoryScope : LayoutScope {
      * ```kt
      * layout {
      *   "core/domain" {
-     *     description = "複数 feature から使われるもの"
+     *     description = "Shared by more than one feature"
      *     "*UseCase".ktFile()
      *   }
      * }

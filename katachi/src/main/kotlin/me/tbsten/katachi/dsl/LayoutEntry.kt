@@ -183,10 +183,10 @@ public class LayoutEntry internal constructor(
      * ```kt
      * val arch = architecture {
      *     "domain".group {
-     *         "UseCase" { layout { "useCase" { description = "各画面の振る舞い" } } }
+     *         "UseCase" { layout { "useCase" { description = "Behavior for each screen" } } }
      *     }
      * }
-     * arch.process { model -> model.declaredEntries.single().description } shouldBe "各画面の振る舞い"
+     * arch.process { model -> model.declaredEntries.single().description } shouldBe "Behavior for each screen"
      * ```
      */
     public val description: String?,

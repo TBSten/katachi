@@ -41,7 +41,7 @@ public class KatachiKonsistNoExpectationException internal constructor(
      *
      * ## Example 1: name the rule that expects nothing
      * ```kt
-     * cause.shouldBeInstanceOf<KatachiKonsistNoExpectationException>().constraintName shouldBe "内部だけ"
+     * cause.shouldBeInstanceOf<KatachiKonsistNoExpectationException>().constraintName shouldBe "Internal only"
      * ```
      */
     public val constraintName: String?,
@@ -108,7 +108,7 @@ public class KatachiKonsistNoKotlinFilesException internal constructor(
      *
      * ## Example 1: name the rule that has nothing to parse
      * ```kt
-     * cause.shouldBeInstanceOf<KatachiKonsistNoKotlinFilesException>().constraintName shouldBe "規約"
+     * cause.shouldBeInstanceOf<KatachiKonsistNoKotlinFilesException>().constraintName shouldBe "Convention"
      * ```
      */
     public val constraintName: String?,

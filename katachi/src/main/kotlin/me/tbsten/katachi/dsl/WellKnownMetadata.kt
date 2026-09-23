@@ -3,7 +3,7 @@ package me.tbsten.katachi.dsl
 import me.tbsten.katachi.ExperimentalKatachiApi
 
 /**
- * One concrete example of a role, as `example("GetUserUseCase", "ユーザーを取得する")`.
+ * One concrete example of a role, as `example("GetUserUseCase", "Fetches a user")`.
  *
  * Name and description are separate arguments so that a description may contain anything,
  * `...` included.
@@ -13,12 +13,12 @@ import me.tbsten.katachi.ExperimentalKatachiApi
  * val arch = architecture {
  *     "domain".group {
  *         "UseCase" {
- *             example("GetUserUseCase", "ユーザーを取得する")
+ *             example("GetUserUseCase", "Fetches a user")
  *         }
  *     }
  * }
  * arch.allRoles.single()[Examples] shouldContainExactly
- *     listOf(RoleExample("GetUserUseCase", "ユーザーを取得する"))
+ *     listOf(RoleExample("GetUserUseCase", "Fetches a user"))
  * ```
  */
 public data class RoleExample(
@@ -37,12 +37,12 @@ public data class RoleExample(
  * ```kt
  * val arch = architecture {
  *     "domain".group {
- *         "UseCase" { title = "ユースケース" }
+ *         "UseCase" { title = "Use case" }
  *         "Repository" { }
  *     }
  * }
  * arch.allRoles.map { it[Title] ?: it.name } shouldContainExactly
- *     listOf("ユースケース", "Repository")
+ *     listOf("Use case", "Repository")
  * ```
  */
 @ExperimentalKatachiApi
@@ -55,10 +55,10 @@ public val Title: MetadataKey<String> = metadata()
  * ```kt
  * val arch = architecture {
  *     "domain".group {
- *         "UseCase" { summary = "各画面で発生するアプリ固有の1つの振る舞い" }
+ *         "UseCase" { summary = "A single app-specific behavior that happens on a screen" }
  *     }
  * }
- * arch.allRoles.single()[Summary] shouldBe "各画面で発生するアプリ固有の1つの振る舞い"
+ * arch.allRoles.single()[Summary] shouldBe "A single app-specific behavior that happens on a screen"
  * ```
  */
 @ExperimentalKatachiApi
@@ -69,11 +69,11 @@ public val Summary: MetadataKey<String> = metadata()
  *
  * The pair to [Summary], and the division of labour between them is where each one is
  * rendered. [Summary] is one line in a table cell — a group's README lists its roles as
- * `| 役割 | 概要 |` — so a paragraph break would break the table. This one is the body of the
+ * `| Role | Summary |` — so a paragraph break would break the table. This one is the body of the
  * role's own page, where a paragraph break is just a paragraph break.
  *
  * The value is kept exactly as written, newlines included. katachi decides where the text is
- * placed, never what is inside it: a fixed set of sections (`## やっていいこと` and the rest)
+ * placed, never what is inside it: a fixed set of sections (`## What it may do` and the rest)
  * would be right for one team and wrong for the next, so the sections are the writer's.
  *
  * ## Example 1: read the free-form body of a role
@@ -81,18 +81,18 @@ public val Summary: MetadataKey<String> = metadata()
  * val arch = architecture {
  *     "domain".group {
  *         "UseCase" {
- *             summary = "各画面で発生するアプリ固有の1つの振る舞い"
+ *             summary = "A single app-specific behavior that happens on a screen"
  *             description = """
- *                 UI からは UseCase だけを呼び、Repository を直接触らない。
+ *                 The UI calls use cases only; it never touches a repository directly.
  *
- *                 ### やっていいこと
- *                 - 複数の Repository をまたぐ
+ *                 ### What it may do
+ *                 - Spanning more than one repository
  *             """.trimIndent()
  *         }
  *     }
  * }
  * arch.allRoles.single()[Description].orEmpty().lines().first() shouldBe
- *     "UI からは UseCase だけを呼び、Repository を直接触らない。"
+ *     "The UI calls use cases only; it never touches a repository directly."
  * ```
  */
 @ExperimentalKatachiApi
@@ -132,8 +132,8 @@ public val Documented: MetadataKey<Boolean> = metadata()
  * val arch = architecture {
  *     "domain".group {
  *         "UseCase" {
- *             example("GetUserUseCase", "ユーザーを取得する")
- *             example("SignOutUseCase", "サインアウトする")
+ *             example("GetUserUseCase", "Fetches a user")
+ *             example("SignOutUseCase", "Signs the user out")
  *         }
  *     }
  * }

@@ -21,7 +21,7 @@ private fun nameOf(type: KClass<*>): String = type.qualifiedName ?: type.java.na
  * shouldThrow<KatachiConstraintNameException> {
  *     architecture {
  *         "UseCase" {
- *             constraint("invoke を\n持つこと") { emptyList() }
+ *             constraint("has an invoke\nfunction") { emptyList() }
  *             layout { "useCase" { } }
  *         }
  *     }
@@ -83,7 +83,7 @@ public class KatachiConstraintNameException internal constructor(
  * shouldThrow<KatachiConstraintWithoutLayoutException> {
  *     architecture {
  *         "domain".group {
- *             "UseCase" { constraint("invoke を持つこと") { emptyList() } }
+ *             "UseCase" { constraint("has an invoke function") { emptyList() } }
  *         }
  *     }
  * }.role shouldBe "UseCase"

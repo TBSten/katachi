@@ -157,10 +157,10 @@ public class Architecture internal constructor(
  * // ArchitectureExtensions.kt
  * fun ArchitectureScope.domainRoles() {
  *     "domain".group {
- *         title = "ドメイン"
+ *         title = "Domain"
  *         "UseCase" {
- *             title = "ユースケース"
- *             summary = "各画面で発生するアプリ固有の1つの振る舞い"
+ *             title = "Use case"
+ *             summary = "A single app-specific behavior that happens on a screen"
  *         }
  *     }
  * }

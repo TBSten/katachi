@@ -16,13 +16,13 @@ import me.tbsten.katachi.ExperimentalKatachiApi
  * val arch = architecture {
  *     "domain".group {
  *         "UseCase" {
- *             title = "ユースケース"
- *             summary = "各画面で発生するアプリ固有の1つの振る舞い"
+ *             title = "Use case"
+ *             summary = "A single app-specific behavior that happens on a screen"
  *         }
  *     }
  * }
  * arch.allRoles.single().name shouldBe "UseCase"
- * arch.allRoles.single()[Title] shouldBe "ユースケース"
+ * arch.allRoles.single()[Title] shouldBe "Use case"
  * ```
  */
 public class Role internal constructor(
@@ -142,9 +142,9 @@ public class Role internal constructor(
      * ## Example 2: read one of the keys katachi ships
      * ```kt
      * val arch = architecture {
-     *     "domain".group { "UseCase" { title = "ユースケース" } }
+     *     "domain".group { "UseCase" { title = "Use case" } }
      * }
-     * arch.allRoles.single()[Title] shouldBe "ユースケース"
+     * arch.allRoles.single()[Title] shouldBe "Use case"
      * ```
      */
     @ExperimentalKatachiApi

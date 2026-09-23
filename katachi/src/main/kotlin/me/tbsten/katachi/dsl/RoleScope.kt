@@ -14,9 +14,9 @@ package me.tbsten.katachi.dsl
  * val arch = architecture {
  *     "domain".group {
  *         "UseCase" {
- *             title = "ユースケース"
- *             summary = "各画面で発生するアプリ固有の1つの振る舞い"
- *             example("GetUserUseCase", "ユーザーを取得する")
+ *             title = "Use case"
+ *             summary = "A single app-specific behavior that happens on a screen"
+ *             example("GetUserUseCase", "Fetches a user")
  *         }
  *     }
  * }
@@ -31,10 +31,10 @@ public sealed interface RoleScope : MetadataScope, ConstraintScope {
      * ```kt
      * val arch = architecture {
      *     "domain".group {
-     *         "UseCase" { title = "ユースケース" }
+     *         "UseCase" { title = "Use case" }
      *     }
      * }
-     * arch.allRoles.single()[Title] shouldBe "ユースケース"
+     * arch.allRoles.single()[Title] shouldBe "Use case"
      * ```
      */
     public var title: String
@@ -46,10 +46,10 @@ public sealed interface RoleScope : MetadataScope, ConstraintScope {
      * ```kt
      * val arch = architecture {
      *     "domain".group {
-     *         "UseCase" { summary = "各画面で発生するアプリ固有の1つの振る舞い" }
+     *         "UseCase" { summary = "A single app-specific behavior that happens on a screen" }
      *     }
      * }
-     * arch.allRoles.single()[Summary] shouldBe "各画面で発生するアプリ固有の1つの振る舞い"
+     * arch.allRoles.single()[Summary] shouldBe "A single app-specific behavior that happens on a screen"
      * ```
      */
     public var summary: String?
@@ -66,12 +66,12 @@ public sealed interface RoleScope : MetadataScope, ConstraintScope {
      * val arch = architecture {
      *     "domain".group {
      *         "UseCase" {
-     *             summary = "各画面で発生するアプリ固有の1つの振る舞い"
+     *             summary = "A single app-specific behavior that happens on a screen"
      *             description = """
-     *                 UI からは UseCase だけを呼び、Repository を直接触らない。
+     *                 The UI calls use cases only; it never touches a repository directly.
      *
-     *                 ### やってはいけないこと
-     *                 - Android の型に依存する
+     *                 ### What it must not do
+     *                 - Depending on an Android type
      *             """.trimIndent()
      *         }
      *     }
@@ -106,7 +106,7 @@ public sealed interface RoleScope : MetadataScope, ConstraintScope {
      * val arch = architecture {
      *     "domain".group {
      *         "UseCase" {
-     *             example("GetUserUseCase", "ユーザーを取得する")
+     *             example("GetUserUseCase", "Fetches a user")
      *         }
      *     }
      * }

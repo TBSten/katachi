@@ -10,7 +10,7 @@ package me.tbsten.katachi.dsl
  * ```kt
  * val arch = architecture {
  *     "domain".group {
- *         title = "ドメイン"
+ *         title = "Domain"
  *         "UseCase" { }
  *         "model".group { }
  *     }
@@ -26,10 +26,10 @@ public sealed interface GroupScope : DeclarationContainerScope, MetadataScope {
      * ```kt
      * val arch = architecture {
      *     "domain".group {
-     *         title = "ドメイン"
+     *         title = "Domain"
      *     }
      * }
-     * arch.groups.single()[Title] shouldBe "ドメイン"
+     * arch.groups.single()[Title] shouldBe "Domain"
      * ```
      */
     public var title: String

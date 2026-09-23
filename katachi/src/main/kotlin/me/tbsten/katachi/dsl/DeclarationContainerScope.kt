@@ -57,7 +57,7 @@ public sealed interface DeclarationContainerScope {
     public fun String.group(block: GroupScope.() -> Unit)
 
     /**
-     * Declares a role: `"UseCase" { title = "ユースケース" }`.
+     * Declares a role: `"UseCase" { title = "Use case" }`.
      *
      * This is `String.invoke`, so the role name is written as a plain string literal
      * followed by its block.
@@ -73,8 +73,8 @@ public sealed interface DeclarationContainerScope {
      * val arch = architecture {
      *     "domain".group {
      *         "UseCase" {
-     *             title = "ユースケース"
-     *             summary = "各画面で発生するアプリ固有の1つの振る舞い"
+     *             title = "Use case"
+     *             summary = "A single app-specific behavior that happens on a screen"
      *         }
      *     }
      * }

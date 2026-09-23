@@ -40,7 +40,7 @@ import me.tbsten.katachi.dsl.KatachiDsl
  *
  * ## Example 1: every class in the covered files is internal
  * ```kt
- * "feature の外に出さないこと".konsist {
+ * "is not exposed outside its feature".konsist {
  *     classes().must { it.hasInternalModifier }
  * }
  * ```
@@ -68,7 +68,7 @@ public interface KonsistScope : KoScope {
      *
      * ## Example 1: every use case exposes `invoke`
      * ```kt
-     * "invoke を持つこと".konsist {
+     * "has an invoke function".konsist {
      *     classes().withNameEndingWith("UseCase")
      *         .must { klass -> klass.hasFunction { it.name == "invoke" } }
      * }
@@ -93,7 +93,7 @@ public interface KonsistScope : KoScope {
      *
      * ## Example 1: no use case depends on the Android framework
      * ```kt
-     * "Android に依存しないこと".konsist {
+     * "does not depend on Android".konsist {
      *     files.mustNot { file -> file.imports.any { it.name.startsWith("android.") } }
      * }
      * ```
@@ -108,7 +108,7 @@ public interface KonsistScope : KoScope {
      *
      * ## Example 1: no public class is left in an internal layer
      * ```kt
-     * "外から使えないこと".konsist {
+     * "is not usable from outside".konsist {
      *     classes().filter { it.hasPublicOrDefaultModifier }.mustBeEmpty()
      * }
      * ```

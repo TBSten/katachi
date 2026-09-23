@@ -7,7 +7,7 @@ import me.tbsten.katachi.dsl.ConstraintScope
  * Konsist.
  *
  * `this` is the name the report prints next to the role, so it is a sentence about the code
- * ("feature の外に出さないこと") rather than an identifier. Where the call is written decides
+ * ("is not exposed outside its feature") rather than an identifier. Where the call is written decides
  * what it covers: directly on a role it covers the union of every `layout { }` that role
  * declares, inside a directory block it covers that block's subtree and nothing else. That is
  * [ConstraintScope]'s rule, not this function's — `konsist { }` is one backend among several
@@ -33,7 +33,7 @@ import me.tbsten.katachi.dsl.ConstraintScope
  * "UseCase" {
  *     layout {
  *         ":core:domain".module {
- *             "外から使えること".konsist {
+ *             "is usable from outside".konsist {
  *                 classes().must { it.hasPublicOrDefaultModifier }
  *             }
  *             mainSourceSet / kotlin / modulePackage / "useCase" / "*UseCase".ktFile()
@@ -45,7 +45,7 @@ import me.tbsten.katachi.dsl.ConstraintScope
  * ## Example 2: one rule over everywhere the role lives
  * ```kt
  * "UseCase" {
- *     "invoke を持つこと".konsist {
+ *     "has an invoke function".konsist {
  *         classes().withNameEndingWith("UseCase")
  *             .must { klass -> klass.hasFunction { it.name == "invoke" } }
  *     }

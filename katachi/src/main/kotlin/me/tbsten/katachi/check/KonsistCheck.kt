@@ -30,7 +30,7 @@ import me.tbsten.katachi.scan.catching
  * @OptIn(ExperimentalKatachiApi::class)
  * class ProjectArchitectureTest {
  *     @Test
- *     fun `構成が allow list に従っている`() = projectArchitecture.assert(KonsistCheck())
+ *     fun `the project matches its declaration`() = projectArchitecture.assert(KonsistCheck())
  * }
  * ```
  *

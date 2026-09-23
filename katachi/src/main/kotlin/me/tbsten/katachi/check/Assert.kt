@@ -47,7 +47,7 @@ public class KatachiArchitectureAssertionError internal constructor(
  * ```kt
  * class ProjectArchitectureTest {
  *     @Test
- *     fun `構成が allow list に従っている`() {
+ *     fun `the project matches its declaration`() {
  *         projectArchitecture.assert()
  *     }
  * }
@@ -98,7 +98,7 @@ public fun Architecture.assert(
  * ```kt
  * class ProjectArchitectureTest {
  *     @Test
- *     fun `構成が allow list に従っている`() {
+ *     fun `the project matches its declaration`() {
  *         projectArchitecture.assert(KonsistCheck())
  *     }
  * }

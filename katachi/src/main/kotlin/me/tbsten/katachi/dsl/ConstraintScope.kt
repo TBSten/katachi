@@ -17,10 +17,10 @@ import me.tbsten.katachi.ExperimentalKatachiApi
  * ## Example 1: constrain one directory, and the whole role
  * ```kt
  * "UseCase" {
- *     constraint("invoke を持つこと") { subject -> /* every place below */ emptyList() }
+ *     constraint("has an invoke function") { subject -> /* every place below */ emptyList() }
  *     layout {
  *         ":core:domain".module {
- *             constraint("外から使えること") { subject -> /* core/domain only */ emptyList() }
+ *             constraint("is usable from outside") { subject -> /* core/domain only */ emptyList() }
  *             mainSourceSet / kotlin / "useCase" / "*UseCase".ktFile()
  *         }
  *     }
@@ -48,7 +48,7 @@ public sealed interface ConstraintScope {
      * ## Example 1: a constraint written by hand, without any backend
      * ```kt
      * "UseCase" {
-     *     constraint("TODO を残さないこと") { subject ->
+     *     constraint("leaves no TODO") { subject ->
      *         subject.files.filter { it.endsWith(".kt") }.map { ConstraintFailure(it) }
      *     }
      *     layout { "core/domain/useCase" { "*UseCase.kt".file() } }
@@ -58,7 +58,7 @@ public sealed interface ConstraintScope {
      * ## Example 2: point the report somewhere other than the calling line
      * ```kt
      * "UseCase" {
-     *     constraint("invoke を持つこと", DeclarationSite("DomainRules.kt", 12)) { subject ->
+     *     constraint("has an invoke function", DeclarationSite("DomainRules.kt", 12)) { subject ->
      *         emptyList()
      *     }
      *     layout { "core/domain/useCase" { "*UseCase.kt".file() } }

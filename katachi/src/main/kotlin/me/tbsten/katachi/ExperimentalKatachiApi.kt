@@ -27,7 +27,7 @@ package me.tbsten.katachi
  *
  * @OptIn(ExperimentalKatachiApi::class)
  * class PlatformOwnedFilesSpec : FreeSpec({
- *     "platform が持つ役割のファイルだけを集める" {
+ *     "collects only the files of roles the platform owns" {
  *         val files = projectArchitecture.process { model ->
  *             model.roles.filter { it.name.startsWith("Gradle") }.flatMap { model.filesOf(it) }
  *         }
