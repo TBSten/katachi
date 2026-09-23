@@ -1,10 +1,12 @@
 // =============================================================================
-// This file exists for ONE purpose: aggregating the sample builds under sample/.
+// This file exists for TWO purposes: aggregating the sample builds under sample/,
+// and aggregating the Dokka HTML of :katachi and :katachi-konsist for the docs site.
 //
-// The katachi library itself is `:katachi`. Do not add plugins, dependencies or
-// sources to this root project. `./gradlew check` has to keep working on a
-// machine that has neither an Android SDK nor a Kotlin/Native toolchain, and the
-// only thing that guarantees that is an empty root project.
+// The katachi library itself is `:katachi`. Do not add Android- or Kotlin/Native-
+// requiring plugins, dependencies or sources to this root project. `./gradlew check`
+// has to keep working on a machine that has neither an Android SDK nor a
+// Kotlin/Native toolchain. The Dokka aggregation below needs neither, so it is the
+// one deliberate exception to "an empty root project".
 // =============================================================================
 //
 // Why each sample is driven through its own wrapper instead of being part of
@@ -22,6 +24,48 @@
 //
 // An `Exec` task per sample has none of those problems and stays compatible with
 // the configuration cache.
+
+plugins {
+    // No version here (not `alias(libs.plugins.dokka)`): `buildSrc`'s own
+    // `implementation(libs.dokkaPlugin)` already puts the Dokka Gradle plugin on every
+    // build script's classpath, including the root's. Asking for a specific version on
+    // top of that makes Gradle refuse with "already on the classpath with an unknown
+    // version, so compatibility cannot be checked" -- applying by bare id resolves
+    // against that already-present, buildSrc-pinned version instead.
+    id("org.jetbrains.dokka")
+}
+
+// Aggregates the HTML Dokka output of `:katachi` and `:katachi-konsist` into one
+// site. The root project has no sources of its own -- it only collects the two
+// subprojects' Dokka Modules through the `dokka` configuration below, the way
+// DGPv2's multi-module setup is meant to work.
+dokka {
+    moduleName.set(rootProject.name)
+
+    dokkaPublications.named("html") {
+        // Written directly into the docs site's public/ so Astro can serve it as
+        // static content. This directory is otherwise off limits for this build
+        // (the docs site is maintained separately) -- Dokka's generated-content
+        // ownership of it is the one deliberate exception.
+        outputDirectory.set(layout.projectDirectory.dir("docs/public/api-docs"))
+    }
+}
+
+dependencies {
+    dokka(project(":katachi"))
+    dokka(project(":katachi-konsist"))
+}
+
+// CI (`.github/workflows/docs.yml`) runs exactly `./gradlew generateApiDocs` with
+// no other arguments, so this name has to stay stable even if Dokka's own task
+// names change across versions -- that's the whole reason it exists instead of
+// telling CI to run `dokkaGenerateHtml` directly.
+tasks.register("generateApiDocs") {
+    group = "documentation"
+    description = "Aggregates the :katachi and :katachi-konsist Dokka HTML into " +
+        "docs/public/api-docs/ for the docs site's API reference page."
+    dependsOn("dokkaGenerateHtml")
+}
 
 /**
  * One standalone Gradle build under `sample/`.

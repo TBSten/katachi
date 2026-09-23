@@ -12,4 +12,10 @@ kotlin {
 dependencies {
     // Add a dependency on the Kotlin Gradle plugin, so that convention plugins can apply it.
     implementation(libs.kotlinGradlePlugin)
+
+    // The publishing convention plugin applies both of these, so they have to be on the
+    // build logic's own classpath. A convention plugin cannot declare a plugin it does not
+    // compile against.
+    implementation(libs.vanniktechPublishPlugin)
+    implementation(libs.dokkaPlugin)
 }

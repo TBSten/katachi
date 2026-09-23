@@ -7,12 +7,16 @@
 # for the dependencies that only that sample needs (Ktor, AGP, ...).
 
 [versions]
-katachi = "0.1.0-SNAPSHOT"
+katachi = "0.1.0"
 kotlin = "2.4.10"
 kotest = "6.2.5"
 # The Kotlin parser behind `konsist { }`. Only `:katachi-konsist` and the samples that use it
 # see this; `:katachi` itself stays dependency free.
 konsist = "0.17.3"
+# 公開まわり。`:katachi` と `:katachi-konsist` の2つだけを Maven Central に出す。
+vanniktechPublish = "0.37.0"
+# javadoc jar を作るのに要る。Central は sources と javadoc の両方を必須にしている。
+dokka = "2.2.0"
 
 [libraries]
 # katachi itself. Samples depend on it as `testImplementation(libs.katachi)`; the
@@ -23,6 +27,10 @@ katachi = { module = "me.tbsten.katachi:katachi", version.ref = "katachi" }
 katachiKonsist = { module = "me.tbsten.katachi:katachi-konsist", version.ref = "katachi" }
 konsist = { module = "com.lemonappdev:konsist", version.ref = "konsist" }
 kotlinGradlePlugin = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
+# convention plugin から適用するため、plugin の marker artifact をライブラリとしても引く。
+# `plugins { }` の alias だけでは buildSrc のクラスパスに乗らない。
+vanniktechPublishPlugin = { module = "com.vanniktech:gradle-maven-publish-plugin", version.ref = "vanniktechPublish" }
+dokkaPlugin = { module = "org.jetbrains.dokka:dokka-gradle-plugin", version.ref = "dokka" }
 kotestRunnerJunit5 = { module = "io.kotest:kotest-runner-junit5", version.ref = "kotest" }
 kotestAssertionsCore = { module = "io.kotest:kotest-assertions-core", version.ref = "kotest" }
 # Not needed on the JVM (the JUnit 5 runner pulls the engine in). Kept for non-JVM
@@ -38,3 +46,5 @@ kotlinPluginSerialization = { id = "org.jetbrains.kotlin.plugin.serialization", 
 # in a sample's own catalog, because a TOML catalog cannot reference another one: writing
 # it per sample would duplicate the Kotlin version and let the two drift apart silently.
 kotlinPluginCompose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
+vanniktechPublish = { id = "com.vanniktech.maven.publish", version.ref = "vanniktechPublish" }
+dokka = { id = "org.jetbrains.dokka", version.ref = "dokka" }

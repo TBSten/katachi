@@ -1,5 +1,7 @@
 plugins {
     id("buildsrc.convention.kotlin-jvm")
+    // Maven Central へ出すのはこの2モジュールだけ。:architecture-test には付けない。
+    id("buildsrc.convention.katachi-publish")
 }
 
 group = "me.tbsten.katachi"
