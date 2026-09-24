@@ -7,7 +7,7 @@
 # for the dependencies that only that sample needs (Ktor, AGP, ...).
 
 [versions]
-katachi = "0.1.0"
+katachi = "0.1.1"
 kotlin = "2.4.10"
 kotest = "6.2.5"
 # The Kotlin parser behind `konsist { }`. Only `:katachi-konsist` and the samples that use it
