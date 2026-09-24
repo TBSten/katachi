@@ -27,3 +27,41 @@ fun DeclarationContainerScope.git() =
         }
     }
 ```
+
+## 入れ子の作業ツリー
+
+AI エージェントのツールは、リポジトリの中に git の作業ツリーを作ることがあります。Claude Code は
+`.claude/worktrees/` の下に作ります。これらは未追跡で ignore もされていないので、既定の
+`gitTracked()` は検査対象として渡します。そして 1 つの作業ツリーが 1 エントリとして出ます。
+
+```
+[UnexpectedFile] .claude/worktrees/agent-1/
+```
+
+`git ls-files` は入れ子のリポジトリの中に降りられないため、中のファイルではなくディレクトリ自体を
+報告します。末尾にスラッシュが付き、ファイルとして報告されるのはそのためです。
+
+ignore として宣言します。
+
+```kt
+// roles/Git.kt
+fun DeclarationContainerScope.git() =
+    "Git".group {
+        "Ignore" {
+            layout {
+                "**/.gitignore".file()
+            }
+        }
+
+        "AgentWorktree" {
+            summary = "AI エージェントが作業中に作る作業ツリー。中身はそのチェックアウトのもの。"
+            documented = false
+            layout {
+                ".claude" / "worktrees" { ignore() }
+            }
+        }
+    }
+```
+
+`.gitignore` に `.claude/worktrees/` を足しても検査の結果は同じで、`git status` にも出なくなります。
+チームの好みで選んでください。宣言しておくと、そう決めた理由が定義に残り、生成するドキュメントにも出せます。

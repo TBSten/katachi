@@ -27,3 +27,44 @@ fun DeclarationContainerScope.git() =
         }
     }
 ```
+
+## Nested work trees
+
+AI agent tooling tends to create git work trees inside the repository — Claude Code
+puts them under `.claude/worktrees/`. They are untracked and not ignored, so the
+default `gitTracked()` hands them to the check, and each one arrives as a single
+entry:
+
+```
+[UnexpectedFile] .claude/worktrees/agent-1/
+```
+
+`git ls-files` cannot descend into a nested repository, so it reports the directory
+itself rather than the files inside it. That is why the entry has a trailing slash
+and is reported as a file.
+
+Declare it as ignored:
+
+```kt
+// roles/Git.kt
+fun DeclarationContainerScope.git() =
+    "Git".group {
+        "Ignore" {
+            layout {
+                "**/.gitignore".file()
+            }
+        }
+
+        "AgentWorktree" {
+            summary = "Work trees an AI agent creates while it works. They belong to their own checkout."
+            documented = false
+            layout {
+                ".claude" / "worktrees" { ignore() }
+            }
+        }
+    }
+```
+
+Adding `.claude/worktrees/` to `.gitignore` has the same effect on the check, and
+keeps them out of `git status` as well. Pick whichever the team prefers — declaring
+it keeps the reason in the definition, where the generated documentation can show it.

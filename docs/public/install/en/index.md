@@ -384,6 +384,25 @@ import me.tbsten.katachi.konsist.konsist                 // when writing konsist
 
 **Star-import `me.tbsten.katachi.dsl.gradle`.** `/` is the `div` operator, so importing names one by one leaves you unable to chain paths.
 
+#### Do not stop at placement
+
+**Take the conventions you read in step 1 and go through them as candidates for `konsist { }`.** A definition that only says where files go only ever tells you that a file is in the right place.
+
+**Do not write catch-all roles.** A layout like `commonMain/**/*.kt` — "anything, as long as it is here" — looks like a check and is not one. In a real adoption this let **a test for the same responsibility be created somewhere else entirely, and accepted.** If a role would end up a catch-all, give it at least one of:
+
+- a pattern in the file name (`"*ViewModel".ktFile()`)
+- one `konsist { }` constraint (what a file of this role declares)
+
+#### Dividing the work with the static analysis already there
+
+The project may already run detekt, Android Lint, ktlint or a compiler plugin of its own. **Do not drop a constraint because something else covers it.** In a real adoption the agent leaned so hard on avoiding duplication that it under-constrained, and **the only convention violation actually caught came from the existing checker.**
+
+Decide like this.
+
+- **A convention that belongs to a role goes into katachi.** "A ViewModel never calls a repository directly" *is* the definition of that role. Another tool checking something similar does not change that — having it here keeps "what this role is" in one place.
+- **The only safe thing to drop is a rule an existing tool already fails the build on, with no per-file suppression.** If it can be suppressed file by file, katachi's copy still earns its place.
+- When unsure, write it. A constraint is easy to delete later.
+
 Fill in the `architecture { }` in `architecture-test/src/test/kotlin/<package>/test/architecture/ProjectArchitecture.kt`.
 
 Record the files you created or changed in `changedFiles` with `data merge`, then run `sh $CLI check 3-2`.
@@ -436,6 +455,8 @@ Only if `questions` has content, append each item's "question," "options," and "
 ## 6-A. (After reporting in 6) Confirm the installation worked
 
 Confirm a sample implementation task and carry it out.
+
+**Pick a task that adds new files.** What katachi looks at is where files go and what role they play, so a task that only edits files that already exist — a bug fix, say — exercises nothing. In a real adoption, 4 of 7 tasks touched only existing files and never gave katachi anything to say. A new screen, a new module or a new test is what you want.
 
 - If the user hasn't specified a task, come up with 1 to 5 tasks from different categories, tell the user, and then carry them out.
 - If the user has specified a task, judge whether it's reasonable. If it seems unreasonable, ask the user to decide whether to actually run it.
