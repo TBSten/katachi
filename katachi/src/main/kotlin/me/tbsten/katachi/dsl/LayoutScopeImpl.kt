@@ -150,7 +150,10 @@ internal class LayoutScopeImpl(
                     // One of the places this role may live in. Not the root project: it has no
                     // directory of its own, so `description = "..."` written in its block would
                     // land on the layout root that every other block shares.
-                    .also { it.place = true }
+                    .also {
+                        it.place = true
+                        it.modulePath = target.modulePath
+                    }
             }
             val before = moduleDirectory.children.size
             val scope = LayoutScopeImpl(
@@ -163,6 +166,10 @@ internal class LayoutScopeImpl(
             scope.block()
             val added = moduleDirectory.children.drop(before)
             if (isRootProject) {
+                // No directory carries the module path here, so the nodes the block added carry
+                // it themselves. Without this, everything a `":".module { }` declares would read
+                // as belonging to no module at all.
+                added.forEach { it.modulePath = target.modulePath }
                 // `":".module { }` has no directory of its own: its block declares straight
                 // into the project root, which everything else in the `layout { }` shares. So
                 // a constraint written in it owns what this block added and nothing else, and

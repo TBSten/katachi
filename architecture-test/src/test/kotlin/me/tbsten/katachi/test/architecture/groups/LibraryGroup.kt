@@ -2,6 +2,7 @@ package me.tbsten.katachi.test.architecture.groups
 
 import me.tbsten.katachi.dsl.DeclarationContainerScope
 import me.tbsten.katachi.test.architecture.roles.check
+import me.tbsten.katachi.test.architecture.roles.docs
 import me.tbsten.katachi.test.architecture.roles.dsl
 import me.tbsten.katachi.test.architecture.roles.fileSystem
 import me.tbsten.katachi.test.architecture.roles.marker
@@ -45,4 +46,5 @@ fun DeclarationContainerScope.libraryGroup() = "library".group {
     scan()
     processor()
     check()
+    docs()
 }

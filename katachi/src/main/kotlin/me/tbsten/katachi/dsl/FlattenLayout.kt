@@ -103,7 +103,7 @@ internal fun Role.evaluateLayout(moduleIndex: ModuleIndex): LayoutEvaluation {
         // Directly under `layout { }` there is no directory block to close the site, so the
         // root closes it: such a constraint owns that one block and not the role's others.
         scope.closeSite(owned = listOf(root), anchor = null)
-        collectInto(entries, root, emptyList(), this, byNode)
+        collectInto(entries, root, emptyList(), this, byNode, modulePath = null, inModule = emptyList())
         roots += root
     }
 
@@ -132,20 +132,52 @@ internal fun Role.evaluateLayout(moduleIndex: ModuleIndex): LayoutEvaluation {
 /** A path claimed by the same role twice as the same kind of thing is one entry. */
 internal data class EntryKey(val path: String, val kind: LayoutEntryKind)
 
+/**
+ * What a module package is written as in [LayoutEntry.pathInModule].
+ *
+ * `**` and not the resolved directory, because the package is a strategy: one `modulePackage`
+ * stands for a different directory in every module it is evaluated for, and a reader of one
+ * role's page is being shown the declaration rather than one module's expansion of it.
+ */
+internal const val MODULE_PACKAGE_PLACEHOLDER: String = "**"
+
 private fun collectInto(
     entries: MutableMap<EntryKey, LayoutEntry>,
     node: LayoutNode,
     prefix: List<String>,
     role: Role,
     byNode: MutableMap<LayoutNode, EntryKey>,
+    modulePath: String?,
+    inModule: List<String>,
 ) {
     for (child in node.children) {
         val segments = prefix + child.segment
-        val entry = child.toEntry(path = segments.joinToString("/"), role = role)
+        val childModulePath = child.modulePath ?: modulePath
+        val childInModule = when {
+            // The directory a module key opened is the module itself, so the path inside it
+            // starts over from there.
+            child.place -> emptyList()
+            // Consecutive levels of one package are one placeholder: `com/example/core/domain`
+            // is four nodes and one `modulePackage`.
+            child.modulePackage ->
+                if (inModule.lastOrNull() == MODULE_PACKAGE_PLACEHOLDER) {
+                    inModule
+                } else {
+                    inModule + MODULE_PACKAGE_PLACEHOLDER
+                }
+
+            else -> inModule + child.segment
+        }
+        val entry = child.toEntry(
+            path = segments.joinToString("/"),
+            role = role,
+            modulePath = childModulePath,
+            pathInModule = childInModule.joinToString("/"),
+        )
         val key = EntryKey(entry.path, entry.kind)
         entries[key] = entries[key]?.mergedWith(entry) ?: entry
         byNode[child] = key
-        collectInto(entries, child, segments, role, byNode)
+        collectInto(entries, child, segments, role, byNode, childModulePath, childInModule)
     }
 }
 
@@ -235,7 +267,12 @@ private fun anchorsOf(anchorPath: String?, covered: List<LayoutEntry>): List<Str
         .ifEmpty { covered.map { it.path }.take(1) }
 }
 
-private fun LayoutNode.toEntry(path: String, role: Role): LayoutEntry {
+private fun LayoutNode.toEntry(
+    path: String,
+    role: Role,
+    modulePath: String?,
+    pathInModule: String,
+): LayoutEntry {
     val kind = when {
         isFile -> LayoutEntryKind.File
         // `ignore()` subsumes `anyFile()`: nothing below is checked, the files directly
@@ -255,6 +292,8 @@ private fun LayoutNode.toEntry(path: String, role: Role): LayoutEntry {
         description = description,
         synthetic = synthetic,
         place = place,
+        modulePath = modulePath,
+        pathInModule = pathInModule,
     )
 }
 
@@ -296,4 +335,8 @@ private fun LayoutEntry.mergedWith(other: LayoutEntry): LayoutEntry = LayoutEntr
     description = description ?: other.description,
     synthetic = synthetic && other.synthetic,
     place = place || other.place,
+    // Kept from the first declaration, as the description above is: a path two blocks reached
+    // was written once in each of them, and the first one is the one a report already points at.
+    modulePath = modulePath ?: other.modulePath,
+    pathInModule = pathInModule,
 )

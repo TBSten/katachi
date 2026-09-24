@@ -4,6 +4,7 @@ import me.tbsten.katachi.dsl.LayoutDirectory
 import me.tbsten.katachi.dsl.LayoutDirectoryScope
 import me.tbsten.katachi.dsl.LayoutFile
 import me.tbsten.katachi.dsl.LayoutScope
+import me.tbsten.katachi.dsl.markModulePackage
 
 /**
  * Continues a `/` chain, or opens a block, at the package directory of the module being
@@ -123,10 +124,18 @@ public operator fun ModulePackage.invoke(block: LayoutDirectoryScope.() -> Unit)
 }
 
 /**
- * The package directory of the module this block is being evaluated for.
+ * The package directory of the module this block is being evaluated for, declared.
+ *
+ * It is declared here rather than handed back as a string so that the levels it produced can be
+ * marked as the strategy's doing. Documentation shows a module package as a placeholder instead
+ * of as `com/example/core/domain`, and once the levels are ordinary directory nodes nothing
+ * tells them apart from levels the user wrote.
  *
  * @throws KatachiModulePackageException outside a module block, where there is no module to
  *   derive a package from.
  */
 context(layoutScope: LayoutScope)
-private fun ModulePackage.packageDirectory(): String = resolveFor(layoutScope.currentModulePath)
+private fun ModulePackage.packageDirectory(): LayoutDirectory {
+    val directory = resolveFor(layoutScope.currentModulePath)
+    return with(layoutScope) { directory { } }.markModulePackage()
+}

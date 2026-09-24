@@ -212,6 +212,28 @@ public class LayoutEntry internal constructor(
      * somewhere a description belongs.
      */
     internal val place: Boolean,
+    /**
+     * The Gradle module path this entry sits in, as written in the `module { }` key, or `null`
+     * when no module key opened the block it was declared in.
+     *
+     * Internal: it exists so that documentation can show `:core:domain` next to a path that has
+     * that module's directory taken off the front, not for a processor to read. A wildcard key
+     * stays as it was written, because [me.tbsten.katachi.dsl.ModuleIndex] leaves it that way
+     * when nothing has listed the project.
+     */
+    internal val modulePath: String?,
+    /**
+     * [path] as the declaration reads inside its module: the module's own directory taken off
+     * the front, and every level a module package produced folded into a single `**`.
+     *
+     * Equal to [path] when [modulePath] is `null` or names the root project, neither of which
+     * has a directory of its own to take off.
+     *
+     * Internal for the same reason [modulePath] is. It is derived while the tree is flattened
+     * because that is the last moment the marks survive -- a flattened path is a string, and a
+     * string cannot say which of its levels the user wrote.
+     */
+    internal val pathInModule: String,
 ) {
     override fun toString(): String =
         "LayoutEntry($path, $kind, ${role.qualifiedName}${if (required) ", required" else ""})"

@@ -64,6 +64,24 @@ internal class LayoutNode(
      */
     var place: Boolean = false
 
+    /**
+     * The Gradle module path of the `module { }` block that opened this node, or `null`.
+     *
+     * Only the directory a module key opened carries it, and for the root project the nodes
+     * that key declared straight into the layout root. Flattening hands it down the subtree, so
+     * an entry can say which module it belongs to without the path being parsed back.
+     */
+    var modulePath: String? = null
+
+    /**
+     * Whether this node is one of the levels a module package resolved to.
+     *
+     * A module package is a strategy, not a path, so by the time a node exists the strategy's
+     * answer has already been spelled out level by level. Documentation wants the strategy
+     * back, and the mark is the only trace of it left.
+     */
+    var modulePackage: Boolean = false
+
     fun add(child: LayoutNode) {
         child.parent?.children?.remove(child)
         child.parent = this
@@ -97,6 +115,16 @@ internal fun LayoutDirectory.markSynthetic(): LayoutDirectory = also { markSynth
 
 /** Marks every node a `module { }` default declared. See [LayoutNode.synthetic]. */
 internal fun LayoutFile.markSynthetic(): LayoutFile = also { markSynthetic(top, leaf) }
+
+/** Marks every level a module package resolved to. See [LayoutNode.modulePackage]. */
+internal fun LayoutDirectory.markModulePackage(): LayoutDirectory = also {
+    var current: LayoutNode? = leaf
+    while (current != null) {
+        current.modulePackage = true
+        if (current === top) return@also
+        current = current.parent
+    }
+}
 
 /**
  * Walks [leaf] up to [top] inclusive.
