@@ -83,7 +83,14 @@ data class SampleBuild(
 val sampleBuilds = listOf(
     // `check` without a project path runs it in every project of the build, so
     // `:architecture-test:test` -- the katachi verification -- is included.
-    SampleBuild("jvm", listOf("check"), needsAndroidSdk = false),
+    // `runKatachiProcessor` is added on top of `check` because the link between the
+    // Gradle plugin and `main()` is a single string literal -- `KatachiPlugin.java`'s
+    // `"me.tbsten.katachi.processor.MainKt"` -- that nothing at build time verifies.
+    // The plugin's functional test carries the same literal on its own side, so it
+    // cannot catch the two drifting apart: it is not a regression guard for this.
+    // Actually invoking the task in this sample is what turns red when the class name
+    // drifts.
+    SampleBuild("jvm", listOf("check", "runKatachiProcessor"), needsAndroidSdk = false),
     // `check` here includes Android Lint over nine modules. Measured on this
     // sample: 14 s warm, 21 s with `clean --no-build-cache`, so there is no
     // reason to narrow it down to the unit tests. Revisit if the sample grows.
@@ -228,8 +235,21 @@ sampleBuilds.forEach { sample ->
             ":katachi-konsist:jar",
             ":katachi-konsist:test",
         )
+
+        // sample/jvm resolves `id("me.tbsten.katachi")` through `includeBuild("../..")` in
+        // its `pluginManagement`, so the nested build also writes to
+        // katachi-gradle-plugin/build/. That directory is contended for exactly the way the
+        // other two modules' are.
+        mustRunAfter(
+            ":katachi-gradle-plugin:check",
+            ":katachi-gradle-plugin:build",
+            ":katachi-gradle-plugin:jar",
+            ":katachi-gradle-plugin:test",
+        )
+
         // `:architecture-test:test` needs `:katachi:jar` and `:katachi-konsist:jar`, so it
-        // reaches the same two build directories a sample is fighting over. The two lines
+        // reaches the same two build directories a sample is fighting over. The
+        // `mustRunAfter(":katachi:...")` and `mustRunAfter(":katachi-konsist:...")` blocks
         // above already cover it in practice; listing the task itself is the honest version.
         mustRunAfter(":architecture-test:test")
     }

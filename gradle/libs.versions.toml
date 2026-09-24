@@ -13,10 +13,14 @@ kotest = "6.2.5"
 # The Kotlin parser behind `konsist { }`. Only `:katachi-konsist` and the samples that use it
 # see this; `:katachi` itself stays dependency free.
 konsist = "0.17.3"
-# 公開まわり。`:katachi` と `:katachi-konsist` の2つだけを Maven Central に出す。
+# 公開まわり。`:katachi` / `:katachi-konsist` / `:katachi-gradle-plugin` の3つだけを Maven Central に出す。
 vanniktechPublish = "0.37.0"
 # javadoc jar を作るのに要る。Central は sources と javadoc の両方を必須にしている。
 dokka = "2.2.0"
+# `:katachi-gradle-plugin` のテスト用。このリポジトリで JUnit を直接引くのはそこだけで、
+# ほかは kotest 経由。あのモジュールは Java だけで書かれていて kotest を使えない
+# （Kotlin plugin を付けると kotlin-stdlib が POM に載る）。
+junit = "5.14.4"
 
 [libraries]
 # katachi itself. Samples depend on it as `testImplementation(libs.katachi)`; the
@@ -31,6 +35,12 @@ kotlinGradlePlugin = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", ver
 # `plugins { }` の alias だけでは buildSrc のクラスパスに乗らない。
 vanniktechPublishPlugin = { module = "com.vanniktech:gradle-maven-publish-plugin", version.ref = "vanniktechPublish" }
 dokkaPlugin = { module = "org.jetbrains.dokka:dokka-gradle-plugin", version.ref = "dokka" }
+# JUnit 5。version を書かないものは BOM に決めさせる。
+junitBom = { module = "org.junit:junit-bom", version.ref = "junit" }
+junitJupiter = { module = "org.junit.jupiter:junit-jupiter" }
+junitJupiterParams = { module = "org.junit.jupiter:junit-jupiter-params" }
+# Gradle 9 は JUnit Platform の launcher を自分では足さない。
+junitPlatformLauncher = { module = "org.junit.platform:junit-platform-launcher" }
 kotestRunnerJunit5 = { module = "io.kotest:kotest-runner-junit5", version.ref = "kotest" }
 kotestAssertionsCore = { module = "io.kotest:kotest-assertions-core", version.ref = "kotest" }
 # Not needed on the JVM (the JUnit 5 runner pulls the engine in). Kept for non-JVM

@@ -1,6 +1,10 @@
 plugins {
     id("buildsrc.convention.kotlin-jvm")
-    // Maven Central へ出すのはこの2モジュールだけ。:architecture-test には付けない。
+    // Kotlin の互換設定（languageVersion 2.2）と Dokka。**katachi-publish より先に**書く:
+    // あちらの javadoc jar は、ここで生える dokkaGeneratePublicationJavadoc の出力を包む。
+    id("buildsrc.convention.katachi-kotlin-library")
+    // Maven Central へ出すのは :katachi / :katachi-konsist / :katachi-gradle-plugin の3つだけ。
+    // :architecture-test には付けない。
     id("buildsrc.convention.katachi-publish")
 }
 

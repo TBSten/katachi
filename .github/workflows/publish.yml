@@ -52,7 +52,7 @@ jobs:
           esac
 
       - name: Check
-        run: ./gradlew :katachi:check :katachi-konsist:check --stacktrace
+        run: ./gradlew :katachi:check :katachi-konsist:check :katachi-gradle-plugin:check --stacktrace
 
       - name: Publish to Maven Central
         env:

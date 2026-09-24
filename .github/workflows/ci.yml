@@ -49,6 +49,14 @@ jobs:
       - name: Kotlin versions agree across the samples
         run: .github/scripts/check-kotlin-versions.sh
 
+      # Its own step, ahead of the root `check` that also covers it. The GradleTestKit
+      # functional tests download every Gradle distribution of the compatibility matrix
+      # (8.0 and 9.6.0), which makes them the slowest and the only network-bound part of
+      # the check. Naming them here means a red run points at the plugin instead of at
+      # `./gradlew check`; the root check below then finds the work already done.
+      - name: Check katachi-gradle-plugin
+        run: ./gradlew :katachi-gradle-plugin:check --stacktrace
+
       - name: Check katachi
         run: ./gradlew check --stacktrace
 

@@ -1,87 +1,62 @@
 // Maven Central へ出すモジュールの共通設定。
 //
-// 適用するのは `:katachi` と `:katachi-konsist` の2つだけ。`:architecture-test` は
-// katachi 自身の検査用で、公開しない（この plugin を適用しなければ publish タスクも生えない）。
+// 適用するのは `:katachi` / `:katachi-konsist` / `:katachi-gradle-plugin` の3つ。
+// `:architecture-test` は katachi 自身の検査用で、公開しない
+// （この plugin を適用しなければ publish タスクも生えない）。
+//
+// **Kotlin 固有の設定はここには無い。** languageVersion 2.2 と Dokka は
+// `buildsrc.convention.katachi-kotlin-library` 側にあり、Kotlin の2モジュールだけが適用する。
+// `:katachi-gradle-plugin` は Java だけで書かれていて、Kotlin plugin が付くと
+// kotlin-stdlib が POM に載ってしまうため。
 //
 // 座標は me.tbsten.katachi。namespace は Central Portal で検証済み。
 package buildsrc.convention
 
+import com.vanniktech.maven.publish.GradlePlugin
 import com.vanniktech.maven.publish.JavadocJar
 import com.vanniktech.maven.publish.KotlinJvm
-import org.jetbrains.kotlin.gradle.dsl.KotlinVersion
+import com.vanniktech.maven.publish.SourcesJar
 
 plugins {
-    // 下の kotlin { } のアクセサを生やすために宣言している。実際に適用するのは
-    // buildsrc.convention.kotlin-jvm 側で、ここでの宣言は二重適用にならない。
-    kotlin("jvm")
     id("com.vanniktech.maven.publish")
-    // HTML 出力（ルートの集約用に module を作る）と Javadoc 出力（javadoc jar 用）は
-    // Dokka 2.x では別 plugin。`org.jetbrains.dokka` は HTML format を自動適用するのみで、
-    // Javadoc format は `org.jetbrains.dokka-javadoc` を別途適用しないと生えない
-    // （org.jetbrains.dokka.gradle.formats.DokkaJavadocPlugin のソースで確認済み）。
-    id("org.jetbrains.dokka")
-    id("org.jetbrains.dokka-javadoc")
-}
-
-dokka {
-    // モジュール表示名。デフォルトは project.name と同じだが、明示しておく
-    // （:katachi -> "katachi", :katachi-konsist -> "katachi-konsist"）。
-    moduleName.set(project.name)
-
-    dokkaSourceSets.configureEach {
-        jdkVersion.set(17)
-
-        // Kotlin stdlib への外部リンクは DGPv2 のデフォルトで有効
-        // （DokkaBasePlugin が enableKotlinStdLibDocumentationLink.convention(true) を設定する）。
-        // ここで明示的に externalDocumentationLinks を足す必要はない。
-
-        sourceLink {
-            // localDirectory は既定で layout.projectDirectory（このモジュールのルート）なので、
-            // Dokka がソースファイルへの相対パスを自動で remoteUrl の後ろに付け、
-            // remoteLineSuffix（既定 "#L"）で行番号を付ける。
-            remoteUrl("https://github.com/TBSten/katachi/blob/main/${project.name}")
-        }
-    }
-}
-
-// 公開する成果物は **Kotlin 2.2 のコンパイラが読める metadata** で出す。
-//
-// 既定のままだと metadata は mv=[2,4] になり、Kotlin 2.2 のプロジェクトでは
-// katachi のシンボルがすべて Unresolved reference になる（2.2 が読めるのは 2.3 まで）。
-// 実際に Kotlin 2.2.20 のプロジェクトへ導入しようとして詰まった報告があった。
-//
-// languageVersion を下げると context parameters が preview 扱いに戻るので、
-// katachi 自身のビルドに -Xcontext-parameters が要る。DSL の入口
-// （module / sourceSet / ktFile / konsist …）はすべて context parameters なので、
-// これを外すと katachi がコンパイルできない。
-//
-// coreLibrariesVersion も下げる。下げないと推移的に入る kotlin-stdlib が
-// 2.4 系になり、そちらの metadata で同じ問題が起きる。
-//
-// **代償**: katachi 自身が Kotlin 2.2 にある言語機能しか使えなくなる。
-// 下限を上げるときは README と katachi-install.sh の KOTLIN_MIN_* も一緒に動かすこと。
-kotlin {
-    compilerOptions {
-        languageVersion.set(KotlinVersion.KOTLIN_2_2)
-        apiVersion.set(KotlinVersion.KOTLIN_2_2)
-        freeCompilerArgs.add("-Xcontext-parameters")
-    }
-    coreLibrariesVersion = "2.2.20"
 }
 
 mavenPublishing {
     // Central は sources jar と javadoc jar の両方を必須にしている。
-    // Kotlin には javadoc が無いので、Dokka の出力を javadoc jar として包む。
     //
-    // タスク名は "dokkaGenerate" ではなく "dokkaGeneratePublicationJavadoc"。
-    // "dokkaGenerate" は DokkaBasePlugin が作る素の lifecycle タスク（DokkaBaseTask）で、
-    // 自身は @OutputDirectory を1つも持たない（dependsOn で個々の generatePublication
-    // タスクを束ねているだけ）。JavadocJar.Dokka(taskName) は素朴に
-    // `from(tasks.named(taskName))` するだけなので、"dokkaGenerate" を渡すと
-    // 依存タスクは走るが jar の中身が空になる
-    // （com.vanniktech.maven.publish.tasks.JavadocJar$Companion.dokkaJavadocJar のソースで確認済み）。
-    // "dokkaGeneratePublicationJavadoc" は @OutputDirectory を持つ実体のタスクなので中身が入る。
-    configure(KotlinJvm(javadocJar = JavadocJar.Dokka("dokkaGeneratePublicationJavadoc"), sourcesJar = true))
+    // どの platform になるかはモジュールによって違う。`:katachi` と `:katachi-konsist` は
+    // 素の Kotlin/JVM ライブラリ。`:katachi-gradle-plugin` は `java-gradle-plugin` を適用して
+    // いて、あちらが同じ `java` component から `pluginMaven` publication を、さらに登録した
+    // plugin id ごとに `<name>PluginMarkerMaven` を作る。ここで `KotlinJvm` を選ぶと
+    // `maven` という **2つ目の** publication が同じ座標で生え、両方がアップロードされる。
+    // `GradlePlugin` なら `java-gradle-plugin` が作った publication を装飾するだけで、
+    // marker は除外される（GradlePlugin.configure -> mavenPublicationsWithoutPluginMarker）。
+    //
+    // この判定は convention の適用時に走るので、モジュール側の plugins { } では
+    // `java-gradle-plugin` を **この convention より先に** 書くこと。下の afterEvaluate が
+    // 書き間違いを声に出して落とす。
+    if (project.plugins.hasPlugin("java-gradle-plugin")) {
+        // Java しか持たないモジュールなので javadoc は Dokka ではなく素の javadoc タスク。
+        configure(GradlePlugin(javadocJar = JavadocJar.Javadoc(), sourcesJar = SourcesJar.Sources()))
+    } else {
+        // タスク名は "dokkaGenerate" ではなく "dokkaGeneratePublicationJavadoc"。
+        // "dokkaGenerate" は DokkaBasePlugin が作る素の lifecycle タスク（DokkaBaseTask）で、
+        // 自身は @OutputDirectory を1つも持たない（dependsOn で個々の generatePublication
+        // タスクを束ねているだけ）。JavadocJar.Dokka(taskName) は素朴に
+        // `from(tasks.named(taskName))` するだけなので、"dokkaGenerate" を渡すと
+        // 依存タスクは走るが jar の中身が空になる
+        // （com.vanniktech.maven.publish.tasks.JavadocJar$Companion.dokkaJavadocJar のソースで確認済み）。
+        // "dokkaGeneratePublicationJavadoc" は @OutputDirectory を持つ実体のタスクなので中身が入る。
+        //
+        // sourcesJar に Boolean を渡す overload は 0.37.0 で deprecated。
+        // `SourcesJar.Sources()` は primary constructor の既定値と同じ意味。
+        configure(
+            KotlinJvm(
+                javadocJar = JavadocJar.Dokka("dokkaGeneratePublicationJavadoc"),
+                sourcesJar = SourcesJar.Sources(),
+            ),
+        )
+    }
 
     publishToMavenCentral()
 
@@ -92,13 +67,23 @@ mavenPublishing {
     }
 
     pom {
-        // artifactId はモジュール名がそのまま入る（katachi / katachi-konsist）。
+        // artifactId はモジュール名がそのまま入る
+        // （katachi / katachi-konsist / katachi-gradle-plugin）。
+        // plugin marker だけは me.tbsten.katachi:me.tbsten.katachi.gradle.plugin という
+        // 別座標になるが、name / description / licenses / developers / scm はこの pom { } が
+        // 全 publication に配るので marker にも入る。
         name.set(project.name)
         description.set(
             when (project.name) {
                 "katachi-konsist" ->
                     "Konsist backend for katachi. Adds `konsist { }` so an architecture " +
                         "definition can constrain what a file declares, not just where it lives."
+
+                "katachi-gradle-plugin" ->
+                    "Gradle plugin for katachi. Registers `runKatachiProcessor`, which runs a " +
+                        "katachi processor against the architecture definition on the module's " +
+                        "test runtime classpath."
+
                 else ->
                     "Declare your Android/KMP project architecture in a Kotlin DSL and check " +
                         "the whole tree against it, deny by default."
@@ -128,5 +113,22 @@ mavenPublishing {
             connection.set("scm:git:git://github.com/TBSten/katachi.git")
             developerConnection.set("scm:git:ssh://git@github.com/TBSten/katachi.git")
         }
+    }
+}
+
+// `java-gradle-plugin` をこの convention より後ろに書くと、上の分岐は静かに KotlinJvm 側へ
+// 落ちて `maven` と `pluginMaven` が同じ座標で2つ生える。Central へ2回上がるまで誰も
+// 気づけないので、configure 時に落とす。
+//
+// configure() 自体を afterEvaluate へ遅らせる案は採れない。vanniktech 自身の afterEvaluate が
+// 先に登録されていて platform を finalize するため、後から configure() すると例外になる。
+afterEvaluate {
+    val hasPluginDevelopment = project.plugins.hasPlugin("java-gradle-plugin")
+    val publishing = extensions.getByType(PublishingExtension::class.java)
+    val hasKotlinJvmPublication = publishing.publications.findByName("maven") != null
+    check(!hasPluginDevelopment || !hasKotlinJvmPublication) {
+        "${project.path}: apply `java-gradle-plugin` before " +
+            "`buildsrc.convention.katachi-publish`. Applied the other way round this module " +
+            "publishes the same coordinates twice, as `maven` and as `pluginMaven`."
     }
 }

@@ -7,6 +7,7 @@ import me.tbsten.katachi.test.architecture.groups.backendGroup
 import me.tbsten.katachi.test.architecture.groups.buildGroup
 import me.tbsten.katachi.test.architecture.groups.docsGroup
 import me.tbsten.katachi.test.architecture.groups.libraryGroup
+import me.tbsten.katachi.test.architecture.groups.pluginGroup
 import me.tbsten.katachi.test.architecture.groups.sampleGroup
 import me.tbsten.katachi.test.architecture.groups.testingGroup
 import me.tbsten.katachi.test.architecture.groups.toolGroup
@@ -66,12 +67,12 @@ val testPackage: ModulePackage = ModulePackage { modulePath ->
  * what it is made of by calling the role functions in order. Both are extensions on
  * `DeclarationContainerScope` — the scope `architecture { }` and `"...".group { }` share — so
  * a role can be moved into another group without touching the role's own file. This file only
- * calls the seven group functions.
+ * calls the eight group functions.
  *
  * None of those functions may be `inline`. An inlined frame reports the caller's file with a
  * line number past its end, and katachi captures the declaration site from the stack, so the
  * violation would point at a line nobody wrote. Written once here rather than repeated in
- * twenty-eight files; `DeclarationSiteSpec` is what actually holds the line.
+ * thirty files; `DeclarationSiteSpec` is what actually holds the line.
  *
  * Two helpers sit next to this file rather than under `roles/`: `LayerImports.kt` and
  * `KdocExamples.kt` are read by roles of more than one group, and `roles/` is declared to hold
@@ -102,6 +103,7 @@ val testPackage: ModulePackage = ModulePackage { modulePath ->
 val projectArchitecture: Architecture = architecture {
     libraryGroup()
     backendGroup()
+    pluginGroup()
     testingGroup()
     docsGroup()
     sampleGroup()

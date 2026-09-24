@@ -4,6 +4,11 @@
 // itself is a JVM library.
 plugins {
     alias(libs.plugins.kotlinJvm)
+    // katachi's own Gradle plugin, which registers `runKatachiProcessor`. No version is
+    // written: it is resolved from the composite build declared in `pluginManagement` of
+    // settings.gradle.kts. A real user writes `id("me.tbsten.katachi") version "<version>"`
+    // and resolves it from mavenCentral.
+    id("me.tbsten.katachi")
 }
 
 kotlin {
