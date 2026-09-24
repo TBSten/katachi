@@ -7,36 +7,48 @@ tags:
 
 import { Aside, Tabs, TabItem } from "@astrojs/starlight/components"
 
+このページでは katachi の重要な要素の 1つである ArchitectureProcessor について解説することで katachi への理解を一層深めることを目指します。
+
+後半では独自の ArchitectureProcessor を書いて実行する方法について解説します。
+
 ## ArchitectureProcessor とは
 
 katachi の `ArchitectureProcessor` クラスはアーキテクチャ定義を元に 何かを行う interface です。
 
 ```kt
-public interface ArchitectureProcessor<out R> {
-    public fun process(model: ProjectModel): R
+public interface ArchitectureProcessor<Args, Result> {
+    public val argsSerializer: KSerializer<Args>
+    public fun process(context: ArchitectureProcessContext<Args>): Result
 }
+```
+
+引数を取らない ArchitectureProcessor は `ArchitectureProcessorNoArg<Result>` を実装します。`argsSerializer` の記述を肩代わりするだけの薄い interface です。
+
+```kt
+public interface ArchitectureProcessorNoArg<Result> : ArchitectureProcessor<Unit, Result>
 ```
 
 ## katachi の 2 要素
 
 katachi は 大きく分けて **アーキテクチャ定義** と **ArchitectureProcessor** の2つの要素から成ります。
 
+{/* TODO 図も修正しないといけない */}
 ```mermaid
 flowchart LR
-    D["architecture { }<br/>アーキテクチャ定義"] --> M["ProjectModel"]
-    M --> L["LayoutCheck<br/>配置を検証する"]
-    M --> K["KonsistCheck<br/>中身を検証する"]
-    M -.-> C["あなたの ArchitectureProcessor<br/>集計・抽出・別形式への出力"]
+    D["architecture { }<br/>アーキテクチャ定義"]
+    D --> Layout["LayoutCheck<br/>配置を検証する"]
+    D --> Doc["DocumentGeneration<br/>ドキュメントを生成"]
+    D --> Template["TemplateGeneration<br/>コードを生成"]
+    D -.-> Custom["あなたの ArchitectureProcessor<br/>集計・抽出・別形式への出力"]
 
-    style D fill:#EAF2FB,stroke:#5B8DEF,stroke-width:2px
-    style C fill:#FAFAFA,stroke:#BDBDBD,stroke-dasharray:4 3,color:#8A8A8A
+    style D fill:#5B8DEF22,stroke:#5B8DEF,stroke-width:2px
+    style Custom fill:#BDBDBD22,stroke:#BDBDBD,stroke-dasharray:4 3,color:#8A8A8A
 ```
 
-定義そのものは何も実行しません。**`ProjectModel` を受け取って何かをするのが ArchitectureProcessor** で、katachi が同梱しているものも、あなたが書くものも、区別はありません。
+アーキテクチャ定義そのものは何も実行しません。**`ArchitectureProcessContext` を受け取って何かをするのが ArchitectureProcessor** です。
 
-アーキテクチャ定義は `architecture { }` ブロックの中で記載するプロジェクトのアーキテクチャの定義です。
-
-アーキテクチャを定義しただけでは何も起こりません。それを利用して何かを行うのが ArchitectureProcessor です。
+- アーキテクチャ定義は `architecture { }` ブロックの中で記載するプロジェクトのアーキテクチャの定義です。
+- アーキテクチャを定義しただけでは何も起こりません。それを利用して何かを行うのが ArchitectureProcessor です。
 
 ## ビルトインの ArchitectureProcessor
 
@@ -45,8 +57,8 @@ katachi はデフォルトで 3 つの ArchitectureProcessor を提供してい�
 | Processor | 何を行うか？ | ドキュメント |
 | --- | --- | --- |
 | `projectArchitecture.assert()` (`LayoutCheck`) | アーキテクチャ定義に沿ったファイル配置になっているかを検証して エラーがある場合はアサーション例外を発生させます。 |  |
-| `GenerateDocumentation` | プロジェクト定義に書かれた summary, description などのプロパティをもとにドキュメントを生成します。 | |
-| `GenerateCodeFromTemplate` | プロジェクト定義内の `template { }` ブロックの内容をもとにファイルを生成します。 | |
+| `GenerateDocumentation` | プロジェクト定義に書かれた summary, description などのプロパティをもとにドキュメントを生成します。 | [ドキュメント生成](/katachi/ja/guides/document-generation/) |
+| `GenerateCodeFromTemplate` | プロジェクト定義内の `template { }` ブロックの内容をもとにファイルを生成します。 | [テンプレートからのコード生成](/katachi/ja/guides/generate-code-from-template/) |
 
 いずれも プロジェクトのアーキテクチャ定義を受け取り、それらを何かしらの生成に役立てています。
 
@@ -68,18 +80,59 @@ projectArchitecture.assert() // 内部で LayoutCheck().process(...) を呼び�
 
 ### 実行方法2. コマンドラインから実行する
 
-katachi gradle plugin には ArchitectureProcessor を実行するための `runKatachiProcessor` Gradle タスクが用意されています。
+コマンドラインから ArchitectureProcessor を実行するには Gradle plugin を通じて 登録されている必要があります。
+
+```kts title="architecture-test/build.gradle.kts" {5-6}
+katachi {
+    processors {
+        // ...
+
+        // ⭐️ ArchitectureProcessor 名 と 対応するクラス名を指定する
+        register("someProcessor", "com.example.SomeProcessor")
+    }
+}
+```
+
+<details>
+    <summary>デフォルトで登録されている ArchitectureProcessor</summary>
+
+    `docs` (ドキュメント生成) と `template` (テンプレートからのコード生成) は一般的なユースケースであるためデフォルトで登録されています。
+    これらの ArchitectureProcessor を実行するために `katachi.processors` に登録する必要はありません。
+
+    ```kts title="architecture-test/build.gradle.kts" {5-7}
+    katachi {
+        architecture = "com.example.projectArchitecture"
+
+        processors {
+            // ⭐️ これらは不要です
+            register("docs", "me.tbsten.katachi.docs.GenerateDocumentation")
+            register("template", "me.tbsten.katachi.template.GenerateCodeFromTemplate")
+        }
+    }
+    ```
+
+</details>
+
+katachi gradle plugin には ArchitectureProcessor を実行するための `runKatachiProcessor` Gradle タスクが用意されているため、これを実行することで ArchitectureProcessor を実行できます。
 
 ```shell
 # GenerateCodeFromTemplate を実行する例 
 
 # runKatachiProcessor task を実行します
 ./gradlew runKatachiProcessor \
-  # entrypoint に実行したい ArchitectureProcessor の factory を指定します
-  --entrypoint='me.tbsten.katachi.template.GenerateCodeFromTemplate$FromArgs' \
-  # -P で ArchitectureProcessor に渡す引数を指定します
-  -Prole='UseCase' -Pname='GetItemList' -PinvokeImpl='TODO()' // ...
+  # 実行したい ArchitectureProcessor 名を指定
+  --processor='someProcessor' \
+  # --arg で ArchitectureProcessor に渡す引数を指定
+  --arg "someArg1=someValue1" --arg "someArg2=someValue2"
 ```
+
+実行例:
+
+```
+TODO
+```
+
+---
 
 ## カスタムの ArchitectureProcessor
 
@@ -89,51 +142,63 @@ ArchitectureProcessor は単純な interface として提供されているた�
 
 ArchitectureProcessor を実装したクラスを用意して process メソッドを実装してください。
 
+process メソッドの引数に渡される `context` には アーキテクチャ定義や引数などが格納されているためこれらを適宜参照して ArchitectureProcessor のロジックを実装します。
+
 ```kt
-class MyProcessor : ArchitectureProcessor<MyResult> {
-    override fun process(model: ProjectModel): MyResult {
-        // model.roles           -> 定義された Role の一覧
-        // model.groups          -> group の一覧
-        // model.declaredEntries -> layout { } を平坦化した宣言の一覧
-        // model.filesOf(role)   -> その Role が実際に持っているファイルのパス
-        return model.roles.associate { it.qualifiedName to model.filesOf(it).size }
+object CountFilesPerRole : ArchitectureProcessorNoArg<Map<String, Int>> {
+    override fun process(context: ArchitectureProcessContext<Unit>): Map<String, Int> {
+        // context.architecture    ... アーキテクチャ定義そのもの
+        // context.roles / groups  ... 定義された役割・group
+        // context.declaredEntries ... layout を平坦化した宣言の一覧
+        // context.filesOf(role)   ... その役割にマッチした実ファイル
+        // context.args            ... CLI から --arg で渡された引数（引数なしなら Unit）
+        // context.fileSystem      ... 走査に使うファイルシステム
+        // context.log()           ... 進捗を出します
+
+        context.log("Counting files per role...")
+        return context.roles.associate { role -> role.name to context.filesOf(role).size }
     }
 }
 ```
 
-`ProjectModel` が渡してくれるのはこの4つだけです。**アーキテクチャ定義そのものやファイルシステムには触れません。** 走査の結果だけが渡される形なので、processor はファイルを読みに行く必要がありません。
+<Aside type="tip">
+走査は Context の中で**1回しか起きません**。`roles` も `filesOf()` も同じ結果を読むので、何度呼んでもファイルツリーを読み直すことはありません。
+</Aside>
 
-戻り値の型は自分で決められます。値を返さず副作用だけを持つ processor には `ArchitectureProcessorUnit`（`ArchitectureProcessor<Unit>` の別名）が使えます。
+{/* TODO: API リファレンスが出たら `ArchitectureProcessContext` へリンクする */}
+`context` から取得できる情報の詳細は `ArchitectureProcessContext` の API ドキュメントを参照してください。
 
 <details>
-<summary>アーキテクチャ定義に独自のプロパティが必要になった場合</summary>
+<summary>Role の metadata</summary>
 
 場合によっては ArchitectureProcessor 利用側でアーキテクチャ定義に指定してほしい独自のプロパティが必要になるかもしれません。
-その場合は `Role の metadata` を利用することができます。
+その場合は **Role の metadata** を利用することができます。
 
 例えばすでに非推奨になったものの過去の遺産として残ってしまっている Role を Deprecated としてマークしたい場合、以下のように Deprecated という metadata を定義して設定することができます。
 
-```kt {1-2, 8-9, 17} nocollapse
-val Deprecated = metadata<Boolean>() // metadata のキー
-var MetadataScope.deprecated: Boolean? by Deprecated
+```kt nocollapse
+// metadata のキー。`Deprecated` は kotlin.Deprecated とぶつかるので避けます
+@OptIn(ExperimentalKatachiApi::class)
+val Obsolete: MetadataKey<Boolean> = metadata()
+
+@OptIn(ExperimentalKatachiApi::class)
+var MetadataScope.obsolete: Boolean? by Obsolete
 
 // Processor 側
-class MyProcessor : ArchitectureProcessor<Unit> {
-   override fun process(model: ProjectModel) {
-      for (role in model.roles) {
-         // Role[metadata のキー] で metadata の値を取得
-         val deprecated: Boolean? = role[Deprecated]
-      }
-   }
+object ObsoleteRoles : ArchitectureProcessorNoArg<List<String>> {
+    override fun process(context: ArchitectureProcessContext<Unit>): List<String> =
+        context.roles.filter { it[Obsolete] == true }.map { it.name }
 }
 
 // 利用側
 architecture {
    "UseCase" {
-      deprecated = true
+      obsolete = true
    }
 }
 ```
+
+`metadata<T>()` と `MetadataKey` は `@ExperimentalKatachiApi` です。書いていない metadata は**既定値を持たず「無い」**ので、読む側が「無いときどうするか」を決めます。
 
 </details>
 
@@ -146,37 +211,33 @@ API としてプログラムから実行したい場合は API を用意する�
 <Tabs>
     <TabItem label="API を用意する">
 
-        `Architecture` の拡張関数を1本生やします。katachi が `assert()` を用意しているのと同じ形です。
+        `Architecture` の拡張関数を用意します。katachi が `assert()` を用意しているのと同じ形です。
 
         ```kt
-        // MyProcessor と同じファイルに置く
+        // CountFilesPerRole と同じファイルに置く
         @OptIn(ExperimentalKatachiApi::class)
-        fun Architecture.countFiles(): MyResult = process(MyProcessor())
+        fun Architecture.countFilesPerRole(): Map<String, Int> = process(CountFilesPerRole)
         ```
 
         利用者は processor の存在を知らずに済みます。
 
         ```kt
-        val counts = projectArchitecture.countFiles()
+        val counts = projectArchitecture.countFilesPerRole()
         ```
 
     </TabItem>
     <TabItem label="Gradle タスクから実行する">
 
-        引数を受け取れるように、**処理の本体とは別に入口を用意します**。
+        TODO
 
         ```kt
-        class MyProcessor : ArchitectureProcessor<MyResult> {
-            override fun process(model: ProjectModel): MyResult {
-                // ...
-            }
+        TODO
+        ```
 
-            // 引数から MyProcessor を組み立てる。Gradle タスクが呼ぶのはこちら
-            object FromArgs : (Map<String, String>) -> MyProcessor {
-                  override fun invoke(args: Map<String, String>) =
-                     MyProcessor(role = args.getValue("role"))
-            }
-        }
+        CLI から `--arg` で引数を受け取りたい ArchitectureProcessor の場合は TODO
+
+        ```kt
+        TODO
         ```
 
         処理そのものは `MyProcessor` に閉じたままなので、**同じクラスを API からもコマンドラインからも使えます**。

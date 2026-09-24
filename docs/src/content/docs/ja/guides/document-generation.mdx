@@ -1,0 +1,222 @@
+---
+title: ドキュメント生成
+description: katachi のアーキテクチャ定義からドキュメントを生成する方法について解説します。
+tags:
+  - beginner
+---
+
+import { Tabs, TabItem } from '@astrojs/starlight/components';
+import CodeComparison from '../../../../components/CodeComparison';
+
+katachi は `architecture { }` 定義から markdown ドキュメントを生成することが可能です。
+
+## 基本
+
+build.gradle.kts に以下のように設定します。
+
+```kts title="architecture-test/build.gradle.kts" {2-3}
+katachi {
+    // ⭐️ `architecture { }` を定義しているプロパティの FQCN を設定
+    architecture = "com.example.projectArchitecture"
+}
+```
+
+設定ができたら `runKatachiProcessor --processor="docs"` gradle task を実行することで ドキュメントが生成されます。
+
+```shell
+./gradlew runKatachiProcessor --processor="docs" 
+```
+
+### 生成例
+
+```
+build/katachi/docs/
+├── README.md
+└── domain/
+    ├── README.md
+    ├── UseCase.md
+    └── Repository.md
+```
+
+<Tabs>
+    <TabItem label="README.md">
+        ```md
+        - [Domain レイヤー](./domain/README.md)
+        ```
+    </TabItem>
+    <TabItem label="domain/README.md">
+        ```md collapse
+        # Domain レイヤー
+
+        | 役割 | 概要 |
+        |---|---|
+        | [ユースケース](./UseCase.md) | 各画面で発生するアプリ固有の1つの振る舞い |
+        | [リポジトリ](./Repository.md) | データの取得と保存の境界 |
+
+        ## このグループの配置
+
+        :core:domain
+          useCase/       ユースケース
+          repository/    リポジトリ
+        ```
+    </TabItem>
+    <TabItem label="domain/UseCase.md">
+        ```md collapse
+        # ユースケース
+
+        各画面で発生するアプリ固有の1つの振る舞い
+
+        ## 配置場所
+
+        | モジュール | パス | 使い分け |
+        |---|---|---|
+        | `:core:domain` | `src/main/kotlin/**/useCase/*UseCase.kt` | |
+
+        ## 制約
+
+        - invoke メソッドのみを持つ
+
+        ## 例
+
+        - `GetItemListUseCase` ... 商品の一覧を取得する
+        - `SignInUseCase` ... サインインする
+        ```
+    </TabItem>
+    <TabItem label="domain/Repository.md">
+        ```md collapse
+        # リポジトリ
+
+        データの取得と保存の境界
+
+        ## 配置場所
+
+        | モジュール | パス | 使い分け |
+        |---|---|---|
+        | `:core:domain` | `src/main/kotlin/**/repository/*Repository.kt` | |
+        ```
+    </TabItem>
+</Tabs>
+
+`Repository` には `konsist { }` も `example()` も書いていないので、**`## 制約` と `## 例` の節ごと出ません。** 空の節は作られません。
+
+## 出力先ディレクトリ
+
+デフォルトではドキュメントは `build/katachi/docs/` 配下に生成されます。
+
+出力先は build.gradle.kts で `katachi.processors.docs.outputDir` に設定することで変更可能です。
+
+```kt {5-7}
+katachi {
+    architecture = "com.example.projectArchitecture"
+
+    processors {
+        docs {
+            outputDir = rootProject.layout.projectDirectory.dir("docs/")
+        }
+    }
+}
+```
+
+## 生成されるファイル
+
+`architecture { }` 定義から生成されるファイルは以下のとおりです。
+
+### 通常
+
+- `<出力先ディレクトリ>/README.md`
+- `<出力先ディレクトリ>/<Role名>.md`
+
+### グループがある場合
+
+- `<出力先ディレクトリ>/README.md`
+- `<出力先ディレクトリ>/<Role名>.md`
+- `<出力先ディレクトリ>/<グループ名>/README.md`
+- `<出力先ディレクトリ>/<グループ名>/<Role名>.md`
+
+## ドキュメント生成に利用されるプロパティ
+
+ドキュメントは、Role と group に設定したプロパティから生成されます。
+
+### Role
+
+| プロパティ | 生成されるドキュメントでの役割 |
+|---|---|
+| `title` | 役割ページの見出し。既定は役割の識別子 |
+| `summary` | 一覧の表に入る1行 |
+| `description` | 役割ページの本文。書いた Markdown が改行も含めてそのまま入ります。katachi は構造を足さないので、**中の見出しは書き手が決めます** |
+| `example(name, description)` | 具体例。1つの例につき1回呼びます。**呼んだ順**に並びます |
+| `documented` | `false` にするとドキュメントに出ません。ドキュメント化されないだけで **assert() などの検査には引き続き参加します** |
+
+### group
+
+group に設定できるのは2つだけです。**`summary` はありません。**
+
+| プロパティ | 生成されるドキュメントでの役割 |
+|---|---|
+| `title` | group の README の見出し。既定は group の識別子 |
+| `documented` | `false` にすると group ごとドキュメントに出ません。検査には参加します |
+
+<details>
+    <summary>注意: documented は継承されません</summary>
+
+    `documented = false` にした group の中の Role は、**自分でも `documented = false` と書かない限りドキュメントに出ます。** ネストした group も同じです。
+
+    ```kt
+    "build".group {
+        documented = false
+        "VersionCatalog" { documented = false }   // group 側だけでは足りない
+    }
+    ```
+
+</details>
+
+<CodeComparison>
+    <CodeComparison.Panel label="Role 定義">
+        ```kt
+        "UseCase" {
+            title = "UseCase"
+            summary = "各画面で発生するアプリ固有の1つの振る舞い"
+            description = """
+                UseCase はアプリ固有の1つの振る舞いを表すクラスです。
+            """.trimIndent()
+
+            example("GetItemListUseCase", "商品の一覧を取得する")
+            example("SignInUseCase", "サインインする")
+
+            layout {
+                "src/main/kotlin/com/example/useCase" /
+                    "*UseCase".ktFile()
+            }
+
+            "invoke メソッドのみを持つ".konsist { /* ... */ }
+        }
+        ```
+    </CodeComparison.Panel>
+    <CodeComparison.Panel label="生成されるマークダウン">
+        ```md title="UseCase.md"
+        # UseCase                                      ← title
+
+        各画面で発生するアプリ固有の1つの振る舞い        ← summary
+
+        UseCase はアプリ固有の1つの振る舞いを表すクラスです。  ← description
+
+        ## 例                                          ← example()
+
+        - `GetItemListUseCase` ... 商品の一覧を取得する
+        - `SignInUseCase` ... サインインする
+        ```
+    </CodeComparison.Panel>
+</CodeComparison>
+
+
+## まとめ
+
+- ドキュメントは**検査と同じ定義**から生成されます。2つを別々に書かないので、**ドキュメントと実体がずれません**。
+- 生成されるのは2軸です。**役割ページ**（この役割は何で、どこに置くか）と、**group の README の配置ツリー**（このディレクトリに何が置けるか）。
+- **`## 制約` に出るのは名前付きの `konsist { }` だけ**です。名前を書けば載るので、書く動機が自然に生まれます。
+
+## 次のステップ
+
+- [Role](/katachi/ja/guides/role/) ... 生成の材料になる `title` / `summary` / `description` / `example` の書き方を学びましょう。
+- [ArchitectureProcessor とそのカスタマイズ](/katachi/ja/guides/processor/) ... ドキュメント生成も ArchitectureProcessor の1つです。自分で別の成果物を出す方法を学びましょう。
+- [テンプレートからコード生成](/katachi/ja/guides/generate-code-from-template/) ... 同じ定義から、ドキュメントではなくコードを生成する方法を学びましょう。

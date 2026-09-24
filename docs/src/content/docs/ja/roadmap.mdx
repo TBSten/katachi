@@ -1,6 +1,6 @@
 ---
 title: ロードマップ
-description: katachi のバージョンごとの計画。v0.1 の DSL と検査から、Gradle plugin とドキュメント生成、declarations、既存プロジェクトへの導入まで。
+description: katachi のバージョンごとの計画。v0.1 の DSL と検査から、Gradle plugin・ドキュメント生成・declarations、既存プロジェクトへの導入まで。
 tags:
   - beginner
 ---
@@ -11,20 +11,19 @@ katachi は「同じ定義から**テストとドキュメントの両方**を�
 
 並び順は **まだ欠けている側を先に出す順** です。各段階で単独で価値が出るようにしてあります。
 
-ドキュメント生成は、定義を2つではなく1つ書けばよいことの根拠そのものであり、そして誰もまだ使えない部分です。`declarations { }` を後ろに置いているのは意図的で、あれは `konsist { }` からパターンを昇格させるものなので、実プロジェクトで `konsist { }` が十分に書かれるまで昇格させる対象がありません。
+ドキュメント生成は、定義を2つではなく1つ書けばよいことの根拠そのものであり、そして誰もまだ使えない部分です。`declarations { }` を同じ v0.2 に入れてあるのは**リリースを1回にまとめるため**で、実装の順序ではドキュメント生成が先です。あれは `konsist { }` からパターンを昇格させるものなので、実プロジェクトで `konsist { }` が十分に書かれるまで昇格させる対象がありません。
 
 ## 全体像
 
-| バージョン | テーマ | 完了と言える条件 |
-|---|---|---|
-| **v0.1** | DSL + 検査 + `konsist { }` | 大規模なプロジェクトを表現でき、検査が通る |
-| **v0.2** | Gradle plugin + ドキュメント生成 | `./gradlew generateKatachiDocs` でドキュメントが出る |
-| **v0.3** | `declarations { }` | v0.1 で書いた `konsist { }` の大半を置き換えられる |
-| **v0.4 以降** | baseline / レポート出力 / 語彙数の計測 | **既存プロジェクト**に導入できる |
+| バージョン | テーマ | 状態 | 完了と言える条件 |
+|---|---|---|---|
+| **v0.1** | DSL + 検査 + `konsist { }` | **0.1.1 を公開済み** | 大規模なプロジェクトを表現でき、検査が通る |
+| **v0.2** | Gradle plugin + ドキュメント生成 + `declarations { }` | 実装中 | `./gradlew runKatachiProcessor --processor=docs` でドキュメントが出て、v0.1 で書いた `konsist { }` の大半を置き換えられる |
+| **v0.3 以降** | baseline / レポート出力 / 語彙数の計測 | 未着手 | **既存プロジェクト**に導入できる |
 
 ## v0.1 — 定義と検査
 
-最初のリリースです。**Deny by default のアーキテクチャテスト**として出します。
+最初のリリースです。**Deny by default のアーキテクチャテスト**として出しました。
 
 <Steps>
 
@@ -46,92 +45,81 @@ katachi は「同じ定義から**テストとドキュメントの両方**を�
 
 | artifact | 中身 |
 |---|---|
-| `katachi` | 本体。**実行時依存ゼロ** |
+| `katachi` | 本体 |
 | `katachi-konsist` | `konsist { }` の実装。任意 |
 
-**対象は新規プロジェクトです。** 既存プロジェクトに入れると既存の違反が一度に噴き出すので、それを扱う仕組み（baseline）は v0.4 以降になります。
+**対象は新規プロジェクトです。** 既存プロジェクトに入れると既存の違反が一度に噴き出すので、それを扱う仕組み（baseline）は v0.3 以降になります。
 
-## v0.2 — Gradle plugin とドキュメント生成
+## v0.2 — Gradle plugin・ドキュメント生成・`declarations { }`
 
-katachi の売りが揃う段階です。
+katachi の売りが揃う段階で、**いま実装中**です。Gradle plugin の足場と、その上で処理を走らせる仕組み（processor）までが動いています。**ドキュメント生成そのものはこれからで、まだ使えません。**
 
 ```shell
-./gradlew generateKatachiDocs
+./gradlew runKatachiProcessor --processor=docs
 ```
 
-プラグインを適用するだけで、**テストと同じ定義から** Markdown が 2 軸で生成されます。
+プラグインを適用すれば、**テストと同じ定義から** Markdown が 2 軸で生成されるようにします。
 
 - **役割リファレンス** — この役割は何で、どこに置くか
 - **ディレクトリ構成** — このディレクトリに何が置けるか
 
-両方が同じモデルから導かれるので、**互いに矛盾しません。** そして生成したドキュメント自体も検査の対象になります。
+両方が同じモデルから導かれるので、**互いに矛盾しません。** 生成したあとのリンク切れも機械的に検査します。
 
-[ArchitectureProcessor とそのカスタマイズ](/katachi/ja/guides/processor/) で説明している仕組みが、ここで使われます。`assert()` と同じ interface の上に乗るので、特別扱いはありません。
+出力の形は [ドキュメント生成](/katachi/ja/guides/document-generation/)、走らせる仕組みは [ArchitectureProcessor とそのカスタマイズ](/katachi/ja/guides/processor/) にあります。ドキュメント生成は processor の1つにすぎず、利用者が書いた処理も同じタスクから呼べます。
 
-## v0.3 — `declarations { }`
+### `declarations { }` — `konsist { }` からの昇格
 
-v0.1 の `konsist { }` は、言ってしまえば**逃げ道**です。「ファイル名と同じクラスが1つだけあること」のようなよくある制約を、毎回 Konsist の式で書き下すことになります。
-
-v0.3 では、そこから**一級機能であるべきものを昇格**させます。
-
-- 役割ごとに「このファイルに置いてよい top-level 宣言」を**列挙**する
-- 列挙されていない宣言は禁止される — **deny by default がファイルの中身にも及ぶ**
-- 違反したとき「期待 / 実際」と、リネーム先のような**具体的な直し方**が出る
-
-### 何を置き換えるのか
-
-いまの逃げ道はこう書きます。どちらも v0.1 の本物のコードで、どちらも「ほとんどの role が言いたいこと」です。
+v0.1 の `konsist { }` は、言ってしまえば**逃げ道**です。「`*UseCase` interface と `Default*UseCase` class だけを置く」のような、ほとんどの役割が言いたいことを、毎回 Konsist の式で書き下すことになります。
 
 ```kt
-"UseCase" {
-    layout {
-        "domain" / "src/main/kotlin/com/example/useCase" / "*UseCase".ktFile()
-    }
-
-    "invoke をちょうど1つ持つこと".konsist {
-        classes().must { it.functions().map { f -> f.name } == listOf("invoke") }
-    }
-    "そのクラス以外を宣言しないこと".konsist {
-        files.must { file -> file.declarations(includeNested = false, includeLocal = false).count() == 1 }
+"interface と Default 実装のみ".konsist {
+    files.must { file ->
+        val decls = file.declarations(includeNested = false, includeLocal = false)
+        decls.size == 2 &&
+            decls.any { it is KoInterfaceDeclaration && it.name.endsWith("UseCase") } &&
+            decls.any { it is KoClassDeclaration && it.name.startsWith("Default") }
     }
 }
 ```
 
-同じ2つの規則が、こう読めるようにしたい。
+同じ規則が、こう読めるようにしたい。
 
 ```kt
 "UseCase" {
-    layout {
-        "domain" / "src/main/kotlin/com/example/useCase" / "*UseCase".ktFile()
-    }
-
     declarations {
-        classNamedAsFile {
-            function("invoke")
-        }
+        `interface`("*UseCase")
+        `class`("Default*UseCase")
     }
 }
 ```
 
-ファイルにはそれ以外を書けません。2つめのクラスも、トップレベルの拡張関数も、置き忘れた `typealias` も。`layout { }` が配置の allow list であるのと同じ意味で、このブロックが中身の allow list になります。
+列挙していない top-level 宣言は書けません。2つめのクラスも、トップレベルの拡張関数も、置き忘れた `typealias` も。`layout { }` が配置の allow list であるのと同じ意味で、このブロックが中身の allow list になります。
 
 そして katachi は「何が期待されていたか」を知っているので、違反のときに「制約が落ちた」以上のことを言えます。
 
 ```
-[UnexpectedDeclaration] domain/src/main/kotlin/com/example/useCase/GetUserUseCase.kt
-  Declared: class GetUserUseCase, fun List<User>.sortedByName()
-  Allowed:  class GetUserUseCase (named after the file)
-
+[Constraint] core/domain/.../GetUserUseCase.kt
+  The top-level declarations do not match what role UseCase allows.
+  Expected: interface *UseCase, class Default*UseCase
+  Actual:   interface GetUserUseCase, class GetUserUseCaseImpl, object Factory
   How to fix:
-    - Move sortedByName() to a role that allows top-level functions
-    - Or add it to the declarations { } of UseCase
+    - Rename GetUserUseCaseImpl to DefaultGetUserUseCase
+    - Delete object Factory, or move it to another file
 ```
 
-**上の形は素案で、確定ではありません。** 前提として、v0.1 を実プロジェクトで使い込み、`konsist { }` のブロックが溜まっていることが要ります。**何を昇格させるべきかは、溜まったものを見てから決めます。** plugin より後に置いているのはそのためです。逃げ道が実際に使い込まれるまで、昇格させる対象がありません。
+**上の形は素案で、確定ではありません。** 何を昇格させるかは、v0.1 を実プロジェクトで使って**溜まった `konsist { }` を見てから**決めます。材料が足りなければ、この機能だけ次の版へ戻します。ドキュメント生成より後に実装するのはそのためです。
 
-## v0.4 以降 — 既存プロジェクトへの導入
+### そのほか v0.2 に入るもの
 
-ここまでは新規プロジェクト専用です。既存プロジェクトに入れられるようにするのが v0.4 以降の主題です。
+| 機能 | 何ができるか |
+|---|---|
+| [`template { }`](/katachi/ja/guides/generate-code-from-template/) | 役割に適合するファイルをテンプレートから生成する |
+| `dependsOnlyOn` | 依存してよい先を**許可リスト**で書く。禁止リスト方式は書き漏れが素通りする |
+| ディレクトリの `konsist { }` の直下限定 | サブツリー全体ではなく、直下のファイルだけに効かせる |
+
+## v0.3 以降 — 既存プロジェクトへの導入
+
+ここまでは新規プロジェクト専用です。既存プロジェクトに入れられるようにするのが v0.3 以降の主題です。
 
 | 機能 | 何ができるか |
 |---|---|
@@ -142,7 +130,7 @@ v0.3 では、そこから**一級機能であるべきものを昇格**させ�
 
 **なぜ baseline が最後なのか。** baseline は「いまの違反を見なかったことにする」仕組みです。先に入れてしまうと、katachi を入れても何も起きないプロジェクトが量産されます。まず**新規プロジェクトで価値が出ること**を確かめてから出します。
 
-この段階の仕様はまだほとんど決まっていません。バージョン番号の割り当ても「v0.4 以降」とひとまとまりです。
+この段階の仕様はまだほとんど決まっていません。バージョン番号の割り当ても「v0.3 以降」とひとまとまりです。
 
 ## 次のステップ
 

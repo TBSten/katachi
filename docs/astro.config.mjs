@@ -122,9 +122,6 @@ export default defineConfig({
 			social: [
 				{ icon: 'github', label: 'GitHub', href: 'https://github.com/tbsten/katachi' },
 			],
-			// サイドバーは手書き（`autogenerate` はやめた）。順序を人が決める形にしている。
-			// `index`（トップページ、`src/content/docs/index.mdx`）はサイドバーに出さない。
-			// サイトタイトル / ロゴから辿れるので十分という判断。ページ自体は残っている。
 			sidebar: [
 				{
 					label: 'Get started', translations: { ja: 'はじめる' },
@@ -136,8 +133,6 @@ export default defineConfig({
 					],
 				},
 				{
-					// もとはコンセプトとガイドの2節だった。Role と Layout を読んだ人がそのまま
-					// konsist / processor へ進めるようにするため、間で節を切らない。
 					label: 'Guides', translations: { ja: 'ガイド' },
 					items: [
 						// この節の入口。Role と Layout はこの地図の深掘りなので、必ず先頭に置く。
@@ -147,14 +142,14 @@ export default defineConfig({
 						{ label: 'Role', translations: { ja: 'Role' }, slug: 'guides/role' },
 						{ label: 'Layout', translations: { ja: 'Layout' }, slug: 'guides/layout' },
 						{ label: 'Konsist integration', translations: { ja: 'Konsist との統合' }, slug: 'guides/konsist-integration' },
+						{ label: 'Document generation', translations: { ja: 'ドキュメント生成' }, slug: 'guides/document-generation' },
+						{ label: 'Generate code from template', translations: { ja: 'テンプレートからコード生成' }, slug: 'guides/generate-code-from-template' },
 						{ label: 'ArchitectureProcessor', translations: { ja: 'ArchitectureProcessor とそのカスタマイズ' }, slug: 'guides/processor' },
 					],
 				},
 				{
 					label: 'Recipes', translations: { ja: 'レシピ' },
 					items: [
-						// `/recipes/` の索引。中身は `SectionIndex` がこの `items` の順番を
-						// 読んで組み立てるので、ページを足すときに直すのはここだけでよい。
 						{ label: 'All recipes', translations: { ja: '一覧' }, slug: 'recipes' },
 						{ label: 'Android three layers', translations: { ja: 'Android の3層' }, slug: 'recipes/android-three-layer' },
 						{ label: 'Gradle', translations: { ja: 'Gradle' }, slug: 'recipes/gradle' },

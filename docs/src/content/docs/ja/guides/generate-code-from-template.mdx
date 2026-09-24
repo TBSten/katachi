@@ -1,0 +1,91 @@
+---
+title: テンプレートからコード生成
+description: アーキテクチャ定義に template { } を追加してコード生成を行う方法について解説します。
+tags:
+  - beginner
+---
+
+アーキテクチャ定義内に `template { }` を追加することで、アーキテクチャ定義からコードを生成することが可能です。
+
+```kt nocollapse
+"UseCase" {
+    // ...
+
+    useCaseTemplate()
+}
+
+private val RoleScope.useCaseTemplate() = template {
+    // テンプレートに使用する引数を定義できます
+    val packageName by stringParameter()
+    val name by stringParameter()
+    val implBody by stringParameter(default = """TODO("${name}UseCaseImpl の実装")""")
+
+    // content ブロックにテンプレートの内容を記述
+    content {
+        """
+            package $packageName
+
+            interface ${name}UseCase {
+                operator suspend fun invoke()
+            }
+
+            class ${name}UseCaseImpl : ${name}UseCase {
+                override suspend fun invoke() {
+                    $implBody
+                }
+            }
+
+            class Fake${name}UseCase : ${name}UseCase {
+                override suspend fun invoke() {
+                    // No op for fake implementation
+                }
+            }
+        """.trimIndent()
+    }
+}
+```
+
+```shell
+./gradlew runKatachiProcessor --processor="template" \
+    --arg "roleName=UseCase" --arg "name=GetItemList" --arg "packageName=com.example.domain.usecase"
+```
+
+## パラメータ
+
+コード生成時に `--arg` で渡せるパラメータを定義することができます。
+
+```kt
+template {
+    val name by stringParameter()
+    val implBody by stringParameter(default = """TODO("${name}UseCaseImpl の実装")""")
+    val shouldSuspend by booleanParameter(default = true)
+
+    // ...
+}
+```
+
+```kt {3}
+./gradlew runKatachiProcessor --processor="template" \
+    --arg "roleName=UseCase" \ # 必須引数
+    --arg "name=GetItemList" --arg 'implBody=println("Hello World")' --arg "shouldSuspend=false"
+```
+
+## ショートカット構文
+
+パラメータが必要ない場合は content { } ブロックを省略した記法も利用できます。
+
+```kt
+template(
+    """
+        ...
+    """.trimIndent()
+)
+```
+
+## まとめ
+
+TODO
+
+## 次のステップ
+
+TODO

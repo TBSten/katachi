@@ -1,0 +1,146 @@
+---
+title: Document generation
+description: How to generate documentation from a katachi architecture definition.
+tags:
+  - beginner
+---
+
+import CodeComparison from '../../../components/CodeComparison';
+
+katachi can generate Markdown documentation from an `architecture { }` definition.
+
+## Basics
+
+Configure it in `build.gradle.kts`.
+
+```kts title="architecture-test/build.gradle.kts" {2-3}
+katachi {
+    // ⭐️ The fully qualified name of the property holding your `architecture { }`
+    architecture = "com.example.projectArchitecture"
+}
+```
+
+Once that is set, running the `runKatachiProcessor --processor="docs"` Gradle task generates the documentation.
+
+```shell
+./gradlew runKatachiProcessor --processor="docs" 
+```
+
+TODO: file tree
+
+TODO: the actual generated files, as Tabs * code blocks
+
+## Output directory
+
+By default the documentation is generated under `build/katachi/docs/`.
+
+The destination can be changed by setting `katachi.processors.docs.outputDir` in `build.gradle.kts`.
+
+```kt {5-7}
+katachi {
+    architecture = "com.example.projectArchitecture"
+
+    processors {
+        docs {
+            outputDir = rootProject.layout.projectDirectory.dir("docs/")
+        }
+    }
+}
+```
+
+## Generated files
+
+These are the files generated from an `architecture { }` definition.
+
+TODO: one file tree covering both cases -- with and without groups.
+
+### Without groups
+
+- `<output directory>/README.md`
+- `<output directory>/<Role>.md`
+
+### With groups
+
+- `<output directory>/README.md`
+- `<output directory>/<Role>.md`
+- `<output directory>/<group>/README.md`
+- `<output directory>/<group>/<Role>.md`
+
+## Properties used to generate the documentation
+
+The documentation is generated from the properties you set on roles and groups.
+
+### Role
+
+| Property | What it becomes in the generated documentation |
+|---|---|
+| `title` | The heading of the role page. Defaults to the role's identifier |
+| `summary` | The single line that goes in the listing table |
+| `description` | The body of the role page. The Markdown you write goes in as is, newlines included. katachi adds no structure of its own, so **the headings inside are yours to choose** |
+| `example(name, description)` | A concrete example. Call it once per example; they appear **in the order you called them** |
+| `documented` | Set to `false` to keep it out of the documentation. It only stops being documented -- **it still takes part in `assert()` and the other checks** |
+
+### group
+
+There are only two properties on a group. **There is no `summary`.**
+
+| Property | What it becomes in the generated documentation |
+|---|---|
+| `title` | The heading of the group's README. Defaults to the group's identifier |
+| `documented` | Set to `false` to keep the whole group out of the documentation. It still takes part in the checks |
+
+<details>
+    <summary>Careful: documented is not inherited</summary>
+
+    A role inside a group with `documented = false` **still appears in the documentation unless it says `documented = false` for itself.** The same goes for a nested group.
+
+    ```kt
+    "build".group {
+        documented = false
+        "VersionCatalog" { documented = false }   // the group alone is not enough
+    }
+    ```
+
+</details>
+
+<CodeComparison>
+    <CodeComparison.Panel label="Role definition">
+        ```kt
+        "UseCase" {
+            title = "UseCase"
+            summary = "A single app-specific behavior that happens on a screen"
+            description = """
+                A UseCase is a class representing one app-specific behavior.
+            """.trimIndent()
+
+            example("GetItemListUseCase", "Fetches the list of items")
+            example("SignInUseCase", "Signs in")
+
+            layout {
+                "src/main/kotlin/com/example/useCase" /
+                    "*UseCase".ktFile()
+            }
+
+            "has only an invoke method".konsist { /* ... */ }
+        }
+        ```
+    </CodeComparison.Panel>
+    <CodeComparison.Panel label="Generated Markdown">
+        ```md title="README.md"
+        TODO
+        ```
+
+        ```md title="UseCase.md"
+        TODO
+        ```
+    </CodeComparison.Panel>
+</CodeComparison>
+
+
+## Summary
+
+TODO
+
+## Next steps
+
+TODO

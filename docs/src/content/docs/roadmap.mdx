@@ -1,6 +1,6 @@
 ---
 title: Roadmap
-description: katachi's plans by version — from the v0.1 DSL and checks, through the Gradle plugin and documentation generation, then declarations, to adoption in existing projects.
+description: katachi's plans by version — from the v0.1 DSL and checks, through the Gradle plugin, documentation generation and declarations, to adoption in existing projects.
 tags:
   - beginner
 ---
@@ -11,20 +11,19 @@ katachi is a library that produces **both tests and documentation from the same 
 
 The order below puts **the half that is still missing first.** Each stage is designed to deliver value on its own.
 
-Documentation generation is what makes one definition worth writing rather than two, and it is the part nobody can use yet. `declarations { }` waits behind it on purpose — it is a promotion of patterns out of `konsist { }`, and there is nothing to promote until enough `konsist { }` has been written on real projects.
+Documentation generation is what makes one definition worth writing rather than two, and it is the part nobody can use yet. `declarations { }` sits in the same v0.2 **so that it all ships in a single release**, but in implementation order documentation generation comes first. `declarations { }` is a promotion of patterns out of `konsist { }`, and there is nothing to promote until enough `konsist { }` has been written on real projects.
 
 ## Overview
 
-| Version | Theme | Definition of done |
-|---|---|---|
-| **v0.1** | DSL + checks + `konsist { }` | Can express a large project, and checks pass |
-| **v0.2** | Gradle plugin + documentation generation | `./gradlew generateKatachiDocs` produces documentation |
-| **v0.3** | `declarations { }` | Can replace most of the `konsist { }` written in v0.1 |
-| **v0.4 and beyond** | baseline / report output / vocabulary-size measurement | Can be adopted in an **existing project** |
+| Version | Theme | Status | Definition of done |
+|---|---|---|---|
+| **v0.1** | DSL + checks + `konsist { }` | **0.1.1 released** | Can express a large project, and checks pass |
+| **v0.2** | Gradle plugin + documentation generation + `declarations { }` | In progress | `./gradlew runKatachiProcessor --processor=docs` produces documentation, and most of the `konsist { }` written in v0.1 can be replaced |
+| **v0.3 and beyond** | baseline / report output / vocabulary-size measurement | Not started | Can be adopted in an **existing project** |
 
 ## v0.1 — Definitions and checks
 
-This is the first release. It ships as a **Deny by default architecture test.**
+This was the first release. It shipped as a **Deny by default architecture test.**
 
 <Steps>
 
@@ -46,92 +45,81 @@ There are two published artifacts.
 
 | artifact | Contents |
 |---|---|
-| `katachi` | The core library. **Zero runtime dependencies** |
+| `katachi` | The core library |
 | `katachi-konsist` | The implementation of `konsist { }`. Optional |
 
-**This targets new projects.** Adding it to an existing project would surface all its existing violations at once, so the mechanism for handling that (baseline) is planned for v0.4 and beyond.
+**This targets new projects.** Adding it to an existing project would surface all its existing violations at once, so the mechanism for handling that (baseline) is planned for v0.3 and beyond.
 
-## v0.2 — Gradle plugin and documentation generation
+## v0.2 — Gradle plugin, documentation generation and `declarations { }`
 
-This is the stage where katachi's selling points all come together.
+This is the stage where katachi's selling points all come together, and it is **currently being implemented.** The Gradle plugin scaffolding and the mechanism that runs work on top of it (processors) are in place. **Documentation generation itself is still ahead of us and cannot be used yet.**
 
 ```shell
-./gradlew generateKatachiDocs
+./gradlew runKatachiProcessor --processor=docs
 ```
 
-Just by applying the plugin, Markdown is generated along two axes **from the same definition as the tests.**
+The goal is that applying the plugin generates Markdown along two axes **from the same definition as the tests.**
 
 - **Role reference** — what this role is, and where it goes
 - **Directory structure** — what can go in this directory
 
-Since both are derived from the same model, **they can never contradict each other.** And the generated documentation itself becomes subject to the checks too.
+Since both are derived from the same model, **they can never contradict each other.** Broken links in the generated output are checked mechanically afterwards, too.
 
-The mechanism described in [ArchitectureProcessor and customizing it](/katachi/guides/processor/) is what's used here. It sits on the same interface as `assert()`, so there's no special-casing.
+The shape of the output is described in [Document generation](/katachi/guides/document-generation/), and the mechanism that runs it in [ArchitectureProcessor and customizing it](/katachi/guides/processor/). Documentation generation is just one processor; a processor you write yourself is invoked through the same task.
 
-## v0.3 — `declarations { }`
+### `declarations { }` — a promotion out of `konsist { }`
 
-v0.1's `konsist { }` is, frankly, **an escape hatch.** Common constraints, like "there's exactly one class with the same name as the file," end up being spelled out as a Konsist expression every time.
-
-In v0.3, we **promote what should be a first-class feature** out of that escape hatch.
-
-- **Enumerate**, per role, "the top-level declarations allowed in this file"
-- Declarations that aren't enumerated are forbidden — **deny by default extends to file contents too**
-- On a violation, it shows "expected / actual" along with a **concrete fix**, such as a rename target
-
-### What it would replace
-
-This is what the escape hatch looks like today. Both constraints are real v0.1 code, and both say something that almost every role wants to say.
+v0.1's `konsist { }` is, frankly, **an escape hatch.** Something almost every role wants to say — like "only a `*UseCase` interface and a `Default*UseCase` class go here" — ends up being spelled out as a Konsist expression every time.
 
 ```kt
-"UseCase" {
-    layout {
-        "domain" / "src/main/kotlin/com/example/useCase" / "*UseCase".ktFile()
-    }
-
-    "has exactly one invoke function".konsist {
-        classes().must { it.functions().map { f -> f.name } == listOf("invoke") }
-    }
-    "declares nothing but that class".konsist {
-        files.must { file -> file.declarations(includeNested = false, includeLocal = false).count() == 1 }
+"only the interface and its Default implementation".konsist {
+    files.must { file ->
+        val decls = file.declarations(includeNested = false, includeLocal = false)
+        decls.size == 2 &&
+            decls.any { it is KoInterfaceDeclaration && it.name.endsWith("UseCase") } &&
+            decls.any { it is KoClassDeclaration && it.name.startsWith("Default") }
     }
 }
 ```
 
-The aim is for the same two rules to read like this.
+The aim is for the same rule to read like this.
 
 ```kt
 "UseCase" {
-    layout {
-        "domain" / "src/main/kotlin/com/example/useCase" / "*UseCase".ktFile()
-    }
-
     declarations {
-        classNamedAsFile {
-            function("invoke")
-        }
+        `interface`("*UseCase")
+        `class`("Default*UseCase")
     }
 }
 ```
 
-Nothing else may appear in the file — a second class, a top-level extension function, a stray `typealias` — because the block is the allow list, in the same way `layout { }` is the allow list for placement.
+Top-level declarations that aren't enumerated may not appear — a second class, a top-level extension function, a stray `typealias` — because the block is the allow list for contents, in the same way `layout { }` is the allow list for placement.
 
 And the violation can say more than "a constraint failed", because katachi knows what was expected:
 
 ```
-[UnexpectedDeclaration] domain/src/main/kotlin/com/example/useCase/GetUserUseCase.kt
-  Declared: class GetUserUseCase, fun List<User>.sortedByName()
-  Allowed:  class GetUserUseCase (named after the file)
-
+[Constraint] core/domain/.../GetUserUseCase.kt
+  The top-level declarations do not match what role UseCase allows.
+  Expected: interface *UseCase, class Default*UseCase
+  Actual:   interface GetUserUseCase, class GetUserUseCaseImpl, object Factory
   How to fix:
-    - Move sortedByName() to a role that allows top-level functions
-    - Or add it to the declarations { } of UseCase
+    - Rename GetUserUseCaseImpl to DefaultGetUserUseCase
+    - Delete object Factory, or move it to another file
 ```
 
-**The shape above is a sketch, not a commitment.** It assumes v0.1 has been used extensively on real projects and a backlog of `konsist { }` blocks has accumulated. **What to promote will be decided after looking at what has accumulated.** That is the reason it comes after the plugin rather than before it: there is nothing to promote from until the escape hatch has been used in anger.
+**The shape above is a sketch, not a commitment.** What to promote will be decided **after looking at the `konsist { }` that has accumulated** from using v0.1 on real projects. If there isn't enough material, this one feature moves to the next version. That is why it is implemented after documentation generation.
 
-## v0.4 and beyond — Adoption in existing projects
+### Also landing in v0.2
 
-Everything up to this point is for new projects only. Making it possible to adopt katachi in existing projects is the theme of v0.4 and beyond.
+| Feature | What it enables |
+|---|---|
+| [`template { }`](/katachi/guides/generate-code-from-template/) | Generates a file that conforms to a role from a template |
+| `dependsOnlyOn` | Writes what may be depended on as an **allow list**. A deny-list approach lets omissions slip through |
+| Limiting a directory's `konsist { }` to direct children | Applies it only to the files directly in that directory, not the whole subtree |
+
+## v0.3 and beyond — Adoption in existing projects
+
+Everything up to this point is for new projects only. Making it possible to adopt katachi in existing projects is the theme of v0.3 and beyond.
 
 | Feature | What it enables |
 |---|---|
@@ -142,7 +130,7 @@ Everything up to this point is for new projects only. Making it possible to adop
 
 **Why is baseline last?** baseline is a mechanism for "pretending not to see" the violations you currently have. If it shipped first, you'd end up with a mass of projects where adopting katachi changes nothing. We want to first confirm that **it delivers value on new projects** before shipping it.
 
-The specification for this stage is largely undecided. Even the version numbering is grouped together as "v0.4 and beyond" for now.
+The specification for this stage is largely undecided. Even the version numbering is grouped together as "v0.3 and beyond" for now.
 
 ## Next steps
 
