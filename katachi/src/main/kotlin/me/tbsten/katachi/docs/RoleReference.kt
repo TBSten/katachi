@@ -44,9 +44,6 @@ import me.tbsten.katachi.processor.ArchitectureProcessContext
  * insensitive filesystem.
  * @throws KatachiBrokenDocumentLinkException when a generated link resolves to no generated page.
  */
-// TODO(v0.2 ステップ6): --arg mode=check
-//  Comparing instead of writing needs nothing more of this function -- the caller reads the
-//  files it would have written and diffs them against this map. The flag is the shell's.
 internal fun roleReferenceDocuments(context: ArchitectureProcessContext<*>): Map<String, String> {
     val architecture = context.architecture
     // One evaluation, not `context.declaredEntries` plus a second one for the constraints. The
@@ -71,13 +68,15 @@ internal fun roleReferenceDocuments(context: ArchitectureProcessContext<*>): Map
             groups = architecture.groups.filter { it.isDocumented },
             placements = placements,
             placementHeading = ROOT_PLACEMENT_HEADING,
+            // The root is what every breadcrumb ends up pointing at, so it has nothing above it.
+            ancestors = emptyList(),
         ),
     )
     for (role in architecture.roles.filter { it.isDocumented }) {
         documents.putRole(role, directory = "", placements, constraintNames)
     }
     for (group in architecture.groups) {
-        documents.putGroup(group, placements, constraintNames)
+        documents.putGroup(group, ancestors = emptyList(), placements, constraintNames)
     }
     return documents.pages().also(::checkDocumentLinks)
 }
@@ -85,6 +84,7 @@ internal fun roleReferenceDocuments(context: ArchitectureProcessContext<*>): Map
 /** A group's own page, its roles' pages, and — recursively — everything below it. */
 private fun Documents.putGroup(
     group: Group,
+    ancestors: List<Group>,
     placements: Map<Role, List<Placement>>,
     constraintNames: Map<Role, List<String>>,
 ) {
@@ -101,15 +101,33 @@ private fun Documents.putGroup(
             groups = group.groups.filter { it.isDocumented },
             placements = placements,
             placementHeading = GROUP_PLACEMENT_HEADING,
+            ancestors = breadcrumbOf(ancestors, depth = group.path.size),
         ),
     )
     for (role in group.roles.filter { it.isDocumented }) {
         putRole(role, directory, placements, constraintNames)
     }
     for (child in group.groups) {
-        putGroup(child, placements, constraintNames)
+        putGroup(child, ancestors + group, placements, constraintNames)
     }
 }
+
+/**
+ * The way back out of a group whose `README.md` sits [depth] directories below the output root.
+ *
+ * The number of `../` steps is a property of the two pages rather than of the code that writes
+ * the link, so it is counted: an ancestor [depth] levels up from the page, one fewer for each
+ * step down. The root comes first and is always there, which is what gives a group one level
+ * down a breadcrumb too — one step, to the page that lists it.
+ */
+private fun breadcrumbOf(ancestors: List<Group>, depth: Int): List<Crumb> =
+    listOf(Crumb(text = ROOT_TITLE, path = readmeUp(depth))) +
+        ancestors.mapIndexed { index, ancestor ->
+            Crumb(text = ancestor.displayName, path = readmeUp(depth - (index + 1)))
+        }
+
+/** The `README.md` [steps] directories above the page the link is written on. */
+private fun readmeUp(steps: Int): String = "../".repeat(steps) + README
 
 /** One role's page, below [directory] — empty for a role declared at the root. */
 private fun Documents.putRole(

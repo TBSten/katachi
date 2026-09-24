@@ -93,9 +93,22 @@ val sampleBuilds = listOf(
     // the processor registry, and `--arg` decoding -- not just the literal class name:
     // two processors (`layout`, the katachi-authored `object` `roleNames`) run in one
     // invocation, one of them with a decoded argument.
+    //
+    // `docs` is in that list for the same reason the run exists at all, one layer further in:
+    // `KatachiProcessors.java` registers it by default through a string literal,
+    // `"me.tbsten.katachi.docs.GenerateDocumentation"`, that nothing at build time resolves.
+    // The plugin's own unit test carries the same literal, so it cannot catch the two drifting
+    // apart either. This is the one run that does -- and it is added only here, because a
+    // literal can only be wrong in one way and proving it once is enough.
     SampleBuild(
         "jvm",
-        listOf("check", "runKatachiProcessor", "--processor=layout,roleNames", "--arg", "prefix=domain"),
+        listOf(
+            "check",
+            "runKatachiProcessor",
+            "--processor=layout,roleNames,docs",
+            "--arg",
+            "prefix=domain",
+        ),
         needsAndroidSdk = false,
     ),
     // `check` here includes Android Lint over nine modules. Measured on this

@@ -1,5 +1,6 @@
 package me.tbsten.katachi.test.docs
 
+import io.kotest.assertions.withClue
 import io.kotest.core.spec.style.FreeSpec
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
@@ -92,6 +93,8 @@ class ContainerPageSpec : FreeSpec({
 
             arch.page("domain/README.md") shouldBe
                 """
+                [アーキテクチャ](../README.md)
+
                 # ドメイン
 
                 | 役割 | 概要 |
@@ -122,6 +125,8 @@ class ContainerPageSpec : FreeSpec({
 
             arch.page("domain/README.md") shouldBe
                 """
+                [アーキテクチャ](../README.md)
+
                 # domain
 
                 | 役割 | 概要 |
@@ -156,6 +161,109 @@ class ContainerPageSpec : FreeSpec({
             }
 
             arch.page("domain/README.md") shouldNotContain "Internal"
+        }
+    }
+
+    "パンくず" - {
+        "ルートの README には出ない" {
+            val arch = architecture { "domain".group { } }
+
+            withClue("親がいないので、戻る先が無い") {
+                arch.page("README.md") shouldBe
+                    """
+                    # アーキテクチャ
+
+                    ## グループ
+
+                    - [domain](./domain/README.md)
+                    """.trimIndent() + "\n"
+            }
+        }
+
+        "深さ1の group にはルートへの1段だけが出る" {
+            val arch = architecture { "domain".group { title = "ドメイン" } }
+
+            arch.page("domain/README.md") shouldBe
+                """
+                [アーキテクチャ](../README.md)
+
+                # ドメイン
+                """.trimIndent() + "\n"
+        }
+
+        "ネストした group にはルートから親までが順に出る" {
+            val arch = architecture {
+                "ui".group {
+                    title = "UI"
+                    "screen".group { title = "画面" }
+                }
+            }
+
+            arch.page("ui/screen/README.md") shouldBe
+                """
+                [アーキテクチャ](../../README.md) / [UI](../README.md)
+
+                # 画面
+                """.trimIndent() + "\n"
+        }
+
+        "深さ3でも段数だけが増える" {
+            val arch = architecture {
+                "a".group {
+                    "b".group {
+                        "c".group { }
+                    }
+                }
+            }
+
+            arch.page("a/b/c/README.md") shouldBe
+                """
+                [アーキテクチャ](../../../README.md) / [a](../../README.md) / [b](../README.md)
+
+                # c
+                """.trimIndent() + "\n"
+        }
+
+        "リンクテキストは title、リンク先は識別子から決まる" {
+            val arch = architecture {
+                "ui".group {
+                    title = "ユーザーインターフェース"
+                    "screen".group { }
+                }
+            }
+
+            withClue("title を変えてもパスは ui/ のまま") {
+                arch.page("ui/screen/README.md") shouldContain
+                    "[ユーザーインターフェース](../README.md)"
+            }
+        }
+
+        "リンクテキストを壊す文字はエスケープされる" {
+            val arch = architecture {
+                "ui".group {
+                    title = "a] b"
+                    "screen".group { }
+                }
+            }
+
+            arch.page("ui/screen/README.md") shouldContain "[a\\] b](../README.md)"
+        }
+
+        "パンくずもリンク切れ検査に掛かる" {
+            val arch = architecture {
+                "ui".group {
+                    "screen".group { "Screen" { } }
+                }
+            }
+
+            withClue("解決しないパンくずがあれば documents() が例外で落ちる") {
+                arch.documents().keys.toList() shouldBe listOf(
+                    "README.md",
+                    "ui/README.md",
+                    "ui/screen/README.md",
+                    "ui/screen/Screen.md",
+                )
+            }
         }
     }
 })

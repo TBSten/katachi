@@ -17,6 +17,20 @@ import org.gradle.api.InvalidUserDataException;
  * nowhere in the stack trace. This module does not depend on {@code :katachi}, so every error
  * here is a plain Gradle exception rather than a Katachi one.
  *
+ * <h2>Which processors are there without being registered</h2>
+ *
+ * <p>{@code docs} is registered for every module this plugin is applied to, so
+ * {@code --processor=docs} works with an empty {@code katachi { } } block. It is the only one:
+ * {@code layout} and {@code konsist} would have to be defaulted too if the rule were "katachi's
+ * own processors", but {@code konsist} lives in {@code :katachi-konsist} and a module that does
+ * not depend on it would get a registry entry that fails to resolve at run time. Registering
+ * only what {@code :katachi} itself carries keeps every default entry resolvable.
+ *
+ * <p>A {@link #register} of the same key wins. Without that, swapping in a documentation
+ * processor of one's own would mean either accepting katachi's under its natural name or
+ * inventing a second one, and the default would have taken a name away from the user rather
+ * than saved them a line.
+ *
  * <h2>Example 1: register two processors</h2>
  *
  * <pre>{@code
@@ -29,9 +43,37 @@ import org.gradle.api.InvalidUserDataException;
  * }
  * }</pre>
  *
+ * <h2>Example 2: replace the built-in documentation processor</h2>
+ *
+ * <pre>{@code
+ * katachi {
+ *     architecture = "com.example.projectArchitecture"
+ *     processors {
+ *         register("docs", "com.example.processors.OurOwnDocs");
+ *     }
+ * }
+ * }</pre>
+ *
  * @see KatachiExtension
  */
 public class KatachiProcessors {
+
+    /**
+     * The registrations every module gets without asking, key to fully qualified class name.
+     *
+     * <p>Only processors that live in {@code me.tbsten.katachi:katachi} itself may be listed
+     * here. The generated entry point writes each of these into a {@code ::class.java} literal
+     * that has to compile against the module's test compile classpath, so a class from an
+     * artifact the module did not depend on would break {@code compileTestKotlin} for every user
+     * of this plugin rather than only for the one who asked for it.
+     */
+    private static final Map<String, String> DEFAULT_REGISTRATIONS = defaultRegistrations();
+
+    private static Map<String, String> defaultRegistrations() {
+        Map<String, String> defaults = new LinkedHashMap<>();
+        defaults.put("docs", "me.tbsten.katachi.docs.GenerateDocumentation");
+        return defaults;
+    }
 
     /**
      * Keys may hold letters, digits, underscore and hyphen only.
@@ -65,7 +107,8 @@ public class KatachiProcessors {
      * @param className the processor's fully qualified Kotlin class or object name, e.g.
      *     {@code "me.tbsten.katachi.check.LayoutCheck"}. Refused if it contains {@code $}: that
      *     is the JVM's own spelling of a nested class and cannot be written into the generated
-     *     Kotlin source, which needs {@code Outer.Inner} instead.
+     *     Kotlin source, which needs {@code Outer.Inner} instead. Registering a key this plugin
+     *     registers by default ({@code docs}) replaces it rather than failing.
      * @throws InvalidUserDataException when {@code key} is blank or holds a character other than
      *     a letter, digit, underscore or hyphen; when {@code key} was already registered, naming
      *     the class name it already points at; or when {@code className} is not a dotted
@@ -105,8 +148,17 @@ public class KatachiProcessors {
         registrations.put(key, className);
     }
 
-    /** Every registration so far, key to fully qualified class name, in registration order. */
+    /**
+     * Every processor this module can run, key to fully qualified class name: what
+     * {@link #register} was called with, on top of what this plugin registers by default.
+     *
+     * <p>The user's own registration of a default key replaces it. Order is not meaningful --
+     * {@link KatachiEntryPointSource#render} sorts by key so that reordering a build script
+     * cannot change the generated text.
+     */
     public Map<String, String> getRegistrations() {
-        return new LinkedHashMap<>(registrations);
+        Map<String, String> merged = new LinkedHashMap<>(DEFAULT_REGISTRATIONS);
+        merged.putAll(registrations);
+        return merged;
     }
 }

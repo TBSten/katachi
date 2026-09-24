@@ -14,13 +14,13 @@ package me.tbsten.katachi.docs
  * links it wrote, and the exact set of pages it produced. No file is read and no URL is fetched
  * -- an external link is somebody else's uptime, not katachi's.
  */
-// TODO(v0.2 ステップ6): confirm that a role's `description` stays in scope.
-//  Reading the finished pages cannot tell a paragraph a user wrote from one katachi wrote, so a
-//  relative link in a `description` is checked like any other. That is arguably right -- such a
-//  link resolves against an output tree whose depth katachi picked, so nobody else can check it
-//  -- but it is the one case where the failure is not katachi's bug, and the message has to say
-//  so in an extra sentence. Recording links as they are written would separate the two at the
-//  cost of a second channel between the writers and this check.
+// A relative link a user wrote in a `description` is checked like any other, and stays that way.
+// Reading the finished pages cannot tell that paragraph from one katachi wrote, and such a link
+// resolves against an output tree whose depth katachi picked -- so there is nobody else who
+// could check it. It is the one case where the failure is not katachi's bug, which is why
+// KatachiBrokenDocumentLinkException's message carries a sentence about it. Recording links as
+// they are written would separate the two, at the cost of a second channel between every writer
+// and this check; that is more machinery than one extra sentence is worth.
 internal fun checkDocumentLinks(pages: Map<String, String>) {
     val broken = pages.flatMap { (source, content) ->
         linksIn(content)

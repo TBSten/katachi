@@ -52,6 +52,8 @@ class DirectoryTreeSpec : FreeSpec({
 
             arch.page("domain/README.md") shouldBe
                 """
+                [アーキテクチャ](../README.md)
+
                 # domain
 
                 | 役割 | 概要 |

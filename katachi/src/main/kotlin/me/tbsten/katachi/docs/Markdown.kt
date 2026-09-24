@@ -59,6 +59,17 @@ internal val Role.isDocumented: Boolean get() = this[Documented] ?: true
 internal fun link(text: String, path: String): String = "[${escapeLinkText(text)}](./$path)"
 
 /**
+ * A Markdown link to a page above the one it is written on.
+ *
+ * Kept apart from [link] because the target already opens with `../`, and `.././` would be the
+ * same step spelled twice.
+ */
+internal fun upwardLink(text: String, path: String): String = "[${escapeLinkText(text)}]($path)"
+
+/** What separates two steps of a container page's breadcrumb. */
+internal const val BREADCRUMB_SEPARATOR: String = " / "
+
+/**
  * One row of a Markdown table.
  *
  * Every cell goes through [escapeCell], because a table is the one place in the generated text

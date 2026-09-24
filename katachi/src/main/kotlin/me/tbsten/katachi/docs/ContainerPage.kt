@@ -27,12 +27,39 @@ internal fun containerPage(
     groups: List<Group>,
     placements: Map<Role, List<Placement>>,
     placementHeading: String,
+    ancestors: List<Crumb>,
 ): String = buildString {
+    appendBreadcrumb(ancestors)
     append("# $title")
     appendRoleTable(roles)
     appendDirectoryTree(roles, placements, placementHeading)
     appendGroupList(groups)
     appendLine()
+}
+
+/** One step of a breadcrumb: what it reads as, and the way back to it from where it is written. */
+internal class Crumb(
+    /** The `title` of the container, or its identifier when it was given no title. */
+    val text: String,
+    /** Relative to the page the breadcrumb is written on, so it always opens with `../`. */
+    val path: String,
+)
+
+/**
+ * The way back out, above the heading.
+ *
+ * Only the containers a page is inside, never the page itself: a breadcrumb ending in the name
+ * of the page a reader is already on says nothing they cannot see. The root has none at all,
+ * which is what makes the line mean "there is something above this".
+ *
+ * Above the heading rather than below it because a reader who arrived at a nested group is
+ * asking where they are before they read what is here, and because a line after the title
+ * would sit between the title and the table it introduces.
+ */
+private fun StringBuilder.appendBreadcrumb(ancestors: List<Crumb>) {
+    if (ancestors.isEmpty()) return
+    append(ancestors.joinToString(BREADCRUMB_SEPARATOR) { upwardLink(it.text, it.path) })
+    append(SECTION_BREAK)
 }
 
 /**

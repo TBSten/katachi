@@ -1,5 +1,8 @@
 package me.tbsten.katachi.test.docs
 
+import java.io.File
+import java.nio.file.Files
+import me.tbsten.katachi.docs.GenerateDocumentation
 import me.tbsten.katachi.docs.roleReferenceDocuments
 import me.tbsten.katachi.dsl.Architecture
 import me.tbsten.katachi.processor.process
@@ -17,3 +20,26 @@ internal fun Architecture.documents(): Map<String, String> =
 
 /** One page of [documents], which fails the spec rather than returning null when it is absent. */
 internal fun Architecture.page(path: String): String = documents().getValue(path)
+
+/**
+ * A directory of this spec's own, gone again however [block] ends.
+ *
+ * The shell of [GenerateDocumentation] is the one part of documentation generation a fake tree
+ * cannot stand in for: what it does *is* write files, so the only spec that says anything about
+ * it is one that looks at a real directory afterwards.
+ */
+internal fun <R> withTempDirectory(block: (File) -> R): R {
+    val directory = Files.createTempDirectory("katachi-docs").toFile()
+    return try {
+        block(directory)
+    } finally {
+        directory.deleteRecursively()
+    }
+}
+
+/** Every file below [this], as a relative path with `/` separators, sorted. */
+internal fun File.relativeFilePaths(): List<String> = walkTopDown()
+    .filter { it.isFile }
+    .map { it.toRelativeString(this).replace(File.separatorChar, '/') }
+    .sorted()
+    .toList()
