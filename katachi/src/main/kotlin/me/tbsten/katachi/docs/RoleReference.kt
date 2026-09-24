@@ -66,6 +66,10 @@ internal fun roleReferenceDocuments(context: ArchitectureProcessContext<*>): Map
             title = ROOT_TITLE,
             roles = architecture.roles.filter { it.isDocumented },
             groups = architecture.groups.filter { it.isDocumented },
+            // TODO(v0.2): decide whether the root shows a placement tree of the roles declared
+            //  beside the groups. What is settled covers a group's README only, and a tree here
+            //  would be the one place a reader could not tell which group it is about.
+            placements = emptyMap(),
         ),
     )
     for (role in architecture.roles.filter { it.isDocumented }) {
@@ -94,6 +98,7 @@ private fun Documents.putGroup(
             title = group.displayName,
             roles = group.roles.filter { it.isDocumented },
             groups = group.groups.filter { it.isDocumented },
+            placements = placements,
         ),
     )
     for (role in group.roles.filter { it.isDocumented }) {

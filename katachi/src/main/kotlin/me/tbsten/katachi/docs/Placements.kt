@@ -5,12 +5,17 @@ import me.tbsten.katachi.dsl.LayoutEntryKind
 import me.tbsten.katachi.dsl.Role
 
 /**
- * One row of a role page's `## 配置場所` table: a place its files may live, as declared.
+ * A place a role's files may live, as declared: one row of its `## 配置場所` table, and one leaf
+ * of the `## このグループの配置` tree.
  *
  * It is what a `layout { }` says rather than what the project holds, so a pattern is here
  * whether or not a file sits at it. That is the whole point of generating documentation from
  * the declarations: the page describes the rule, and the check is what says whether the
  * repository keeps it.
+ *
+ * Both views are built from this same list, which is what keeps them from disagreeing: a role's
+ * table and the tree of the group it sits in cannot name different places, because neither reads
+ * the `layout { }` blocks a second time.
  */
 internal class Placement(
     /** The Gradle module, or `null` when this place is not inside a `module { }` block. */
@@ -19,6 +24,8 @@ internal class Placement(
     val path: String,
     /** The `description = "..."` this place was given, or the nearest one above it. */
     val description: String?,
+    /** Whether [path] names a directory — `ignore()` and `anyFile()` — rather than a file. */
+    val isDirectory: Boolean,
 )
 
 /**
@@ -49,6 +56,7 @@ private fun placementsOfRole(entries: List<LayoutEntry>): List<Placement> {
                 module = entry.moduleColumn(),
                 path = entry.pathColumn(),
                 description = descriptionAt(entry.path, descriptions),
+                isDirectory = entry.kind != LayoutEntryKind.File,
             )
         }
 }
