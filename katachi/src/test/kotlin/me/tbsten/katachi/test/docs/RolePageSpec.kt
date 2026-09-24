@@ -32,6 +32,8 @@ class RolePageSpec : FreeSpec({
 
             arch.page("domain/UseCase.md") shouldBe
                 """
+                [アーキテクチャ](../README.md) / [domain](README.md)
+
                 # ユースケース
 
                 各画面で発生するアプリ固有の1つの振る舞いを表す。
@@ -41,7 +43,7 @@ class RolePageSpec : FreeSpec({
         "title が無ければ識別子が見出しになる" {
             val arch = architecture { "domain".group { "UseCase" { } } }
 
-            arch.page("domain/UseCase.md") shouldBe "# UseCase\n"
+            arch.page("domain/UseCase.md") shouldBe "[アーキテクチャ](../README.md) / [domain](README.md)\n\n# UseCase\n"
         }
     }
 
@@ -65,6 +67,8 @@ class RolePageSpec : FreeSpec({
             withClue("見出しレベルを katachi が動かすと、そのまま保持するという約束が崩れる") {
                 arch.page("domain/UseCase.md") shouldBe
                     """
+                    [アーキテクチャ](../README.md) / [domain](README.md)
+
                     # ユースケース
 
                     1つの振る舞い
@@ -86,6 +90,8 @@ class RolePageSpec : FreeSpec({
 
             arch.page("domain/UseCase.md") shouldBe
                 """
+                [アーキテクチャ](../README.md) / [domain](README.md)
+
                 # UseCase
 
                 本文。
@@ -101,6 +107,8 @@ class RolePageSpec : FreeSpec({
 
             arch.page("domain/UseCase.md") shouldBe
                 """
+                [アーキテクチャ](../README.md) / [domain](README.md)
+
                 # UseCase
 
                 本文だけを書いた役割。
@@ -227,6 +235,50 @@ class RolePageSpec : FreeSpec({
         }
     }
 
+    "パンくず" - {
+        // 役割ページは葉で、読み手が最初に降り立つ場所。ここから上に戻る手段が無いと、
+        // group README と全体の索引にたどり着けない。コンテナページ側のパンくずは
+        // ContainerPageSpec が見ている。
+        "自分を並べている group までが順に出る" {
+            val arch = architecture {
+                "domain".group {
+                    title = "ドメイン"
+                    "UseCase" { }
+                }
+            }
+
+            arch.page("domain/UseCase.md") shouldBe
+                """
+                [アーキテクチャ](../README.md) / [ドメイン](README.md)
+
+                # UseCase
+                """.trimIndent() + "\n"
+        }
+
+        "ネストが深くなると段数だけが増える" {
+            val arch = architecture {
+                "ui".group {
+                    "screen".group {
+                        "Screen" { }
+                    }
+                }
+            }
+
+            arch.page("ui/screen/Screen.md") shouldBe
+                """
+                [アーキテクチャ](../../README.md) / [ui](../README.md) / [screen](README.md)
+
+                # Screen
+                """.trimIndent() + "\n"
+        }
+
+        "group に属さない役割はルートの README だけを指す" {
+            val arch = architecture { "Changelog" { } }
+
+            arch.page("Changelog.md") shouldBe "[アーキテクチャ](README.md)\n\n# Changelog\n"
+        }
+    }
+
     "節の並び" {
         val arch = architecture {
             "domain".group {
@@ -242,6 +294,8 @@ class RolePageSpec : FreeSpec({
 
         arch.page("domain/UseCase.md") shouldBe
             """
+            [アーキテクチャ](../README.md) / [domain](README.md)
+
             # UseCase
 
             1つの振る舞い

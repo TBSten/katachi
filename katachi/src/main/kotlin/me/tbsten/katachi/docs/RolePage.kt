@@ -21,7 +21,9 @@ internal fun rolePage(
     role: Role,
     placements: List<Placement>,
     constraintNames: List<String>,
+    ancestors: List<Crumb>,
 ): String = buildString {
+    appendBreadcrumb(ancestors)
     appendHeading(role)
     appendDescription(role)
     appendPlacements(placements)

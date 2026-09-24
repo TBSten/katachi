@@ -73,7 +73,9 @@ internal fun roleReferenceDocuments(context: ArchitectureProcessContext<*>): Map
         ),
     )
     for (role in architecture.roles.filter { it.isDocumented }) {
-        documents.putRole(role, directory = "", placements, constraintNames)
+        // A role written at the root sits beside the root `README.md`, so its one step back is
+        // `README.md` with no `../` in front of it. `breadcrumbOf` counts that from a depth of 0.
+        documents.putRole(role, directory = "", placements, constraintNames, breadcrumbOf(emptyList(), depth = 0))
     }
     for (group in architecture.groups) {
         documents.putGroup(group, ancestors = emptyList(), placements, constraintNames)
@@ -105,7 +107,9 @@ private fun Documents.putGroup(
         ),
     )
     for (role in group.roles.filter { it.isDocumented }) {
-        putRole(role, directory, placements, constraintNames)
+        // The group itself is the last step, because a role page is not the `README.md` of the
+        // directory it is in: the way back for its reader ends at the page that lists it.
+        putRole(role, directory, placements, constraintNames, breadcrumbOf(ancestors + group, depth = group.path.size))
     }
     for (child in group.groups) {
         putGroup(child, ancestors + group, placements, constraintNames)
@@ -135,6 +139,7 @@ private fun Documents.putRole(
     directory: String,
     placements: Map<Role, List<Placement>>,
     constraintNames: Map<Role, List<String>>,
+    ancestors: List<Crumb>,
 ) = put(
     path = "$directory${role.name}$PAGE_EXTENSION",
     owner = Owner("Role \"${role.qualifiedName}\"", role.declaredAt),
@@ -142,6 +147,7 @@ private fun Documents.putRole(
         role = role,
         placements = placements[role].orEmpty(),
         constraintNames = constraintNames[role].orEmpty(),
+        ancestors = ancestors,
     ),
 )
 
