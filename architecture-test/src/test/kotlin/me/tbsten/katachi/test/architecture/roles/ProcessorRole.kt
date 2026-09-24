@@ -20,8 +20,9 @@ import me.tbsten.katachi.test.architecture.showsExample
 fun DeclarationContainerScope.processor() = "Processor" {
     title = "プロセッサ"
     summary = "1度の走査の結果を受け取って、好きな形に変換する入口"
-    example("ProjectModel.kt", "走査を高々1度に抑えたうえで宣言と実体の両方を見せるモデル")
+    example("ArchitectureProcessContext.kt", "走査を高々1度に抑えたうえで、宣言と実体の両方を processor に見せる入口")
     example("ArchitectureProcessor.kt", "利用者が実装する変換")
+    example("StringMapDecoder.kt", "--arg key=value を processor の Args 型に読み替える")
     layout {
         ":katachi".module {
             importsOnlyEarlierLayers()

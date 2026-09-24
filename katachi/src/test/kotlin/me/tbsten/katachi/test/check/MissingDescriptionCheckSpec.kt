@@ -18,7 +18,7 @@ import me.tbsten.katachi.scan.MissingDescription
 import me.tbsten.katachi.scan.missingDescriptionsOf
 
 /**
- * [MissingDescription] wired through the real check — `ProjectModel.declaredEntries`,
+ * [MissingDescription] wired through the real check — `ArchitectureProcessContext.declaredEntries`,
  * `LayoutCheck`, `validate()` and `assert()` against a fake file system — and the wording of its
  * report block. `MissingDescriptionSpec` (in `test.scan`) covers the detector's own rule.
  */

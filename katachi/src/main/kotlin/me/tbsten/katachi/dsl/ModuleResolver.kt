@@ -281,7 +281,7 @@ public class ModuleIndex internal constructor(
      * wildcard key against an [unresolved] index: "no module matches `:feature:*`" and "nobody
      * has looked" would both come out as an empty list, and a caller that reads only the
      * declarations — documentation generation,
-     * [me.tbsten.katachi.processor.ProjectModel.declaredEntries] — would quietly lose every
+     * [me.tbsten.katachi.processor.ArchitectureProcessContext.declaredEntries] — would quietly lose every
      * declaration such a key makes. So an unresolved index keeps the key as itself: one
      * target whose directory is [ModulePattern.conventionalDirectory], the pattern with its
      * wildcards still in it, and whose wildcards are [ModulePattern.wildcardPlaceholders].

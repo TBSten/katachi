@@ -117,8 +117,8 @@ public fun Architecture.assert(
  */
 @ExperimentalKatachiApi
 public fun Architecture.assert(
-    check: ArchitectureProcessor<List<Violation>>,
-    vararg more: ArchitectureProcessor<List<Violation>>,
+    check: ArchitectureProcessor<Unit, List<Violation>>,
+    vararg more: ArchitectureProcessor<Unit, List<Violation>>,
     maxViolations: Int = DEFAULT_MAX_VIOLATIONS,
 ): Unit = assertWith(RealFileSystem(), listOf(check) + more, maxViolations)
 
@@ -137,8 +137,8 @@ public fun Architecture.assert(
 @ExperimentalKatachiApi
 public fun Architecture.assert(
     fileSystem: KatachiFileSystem,
-    check: ArchitectureProcessor<List<Violation>>,
-    vararg more: ArchitectureProcessor<List<Violation>>,
+    check: ArchitectureProcessor<Unit, List<Violation>>,
+    vararg more: ArchitectureProcessor<Unit, List<Violation>>,
     maxViolations: Int = DEFAULT_MAX_VIOLATIONS,
 ): Unit = assertWith(fileSystem, listOf(check) + more, maxViolations)
 
@@ -153,7 +153,7 @@ public fun Architecture.assert(
  */
 private fun Architecture.assertWith(
     fileSystem: KatachiFileSystem,
-    checks: List<ArchitectureProcessor<List<Violation>>>,
+    checks: List<ArchitectureProcessor<Unit, List<Violation>>>,
     maxViolations: Int,
 ) {
     val violations = validateWith(fileSystem, checks)

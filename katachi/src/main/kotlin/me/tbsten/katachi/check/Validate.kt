@@ -7,6 +7,7 @@ import me.tbsten.katachi.fs.KatachiFileSystem
 import me.tbsten.katachi.fs.RealFileSystem
 import me.tbsten.katachi.processor.ArchitectureProcessor
 import me.tbsten.katachi.processor.process
+import me.tbsten.katachi.processor.projectWalk
 import me.tbsten.katachi.scan.UncheckedCheck
 import me.tbsten.katachi.scan.Violation
 import me.tbsten.katachi.scan.catching
@@ -42,8 +43,8 @@ public fun Architecture.validate(): List<Violation> = validate(RealFileSystem())
  * [validate] against [fileSystem], which katachi's own specs use to hand it a tree that only
  * exists in memory.
  *
- * The walk is reached through [LayoutCheck] and the model it is handed, which is also why the
- * project root is resolved when this is called rather than when the model is built: the check
+ * The walk is reached through [LayoutCheck] and the context it is handed, which is also why the
+ * project root is resolved when this is called rather than when the context is built: the check
  * asks for the violations straight away, and asking is what starts the walk. See
  * `scanProject` for what that walk does and does not catch.
  *
@@ -92,8 +93,8 @@ public fun Architecture.validate(fileSystem: KatachiFileSystem): List<Violation>
 @InternalKatachiApi
 @ExperimentalKatachiApi
 public fun Architecture.validate(
-    check: ArchitectureProcessor<List<Violation>>,
-    vararg more: ArchitectureProcessor<List<Violation>>,
+    check: ArchitectureProcessor<Unit, List<Violation>>,
+    vararg more: ArchitectureProcessor<Unit, List<Violation>>,
 ): List<Violation> = validateWith(RealFileSystem(), listOf(check) + more)
 
 /**
@@ -110,8 +111,8 @@ public fun Architecture.validate(
 @ExperimentalKatachiApi
 public fun Architecture.validate(
     fileSystem: KatachiFileSystem,
-    check: ArchitectureProcessor<List<Violation>>,
-    vararg more: ArchitectureProcessor<List<Violation>>,
+    check: ArchitectureProcessor<Unit, List<Violation>>,
+    vararg more: ArchitectureProcessor<Unit, List<Violation>>,
 ): List<Violation> = validateWith(fileSystem, listOf(check) + more)
 
 /**
@@ -119,23 +120,23 @@ public fun Architecture.validate(
  */
 internal fun Architecture.validateWith(
     fileSystem: KatachiFileSystem,
-    checks: List<ArchitectureProcessor<List<Violation>>>,
+    checks: List<ArchitectureProcessor<Unit, List<Violation>>>,
 ): List<Violation> {
     // `LayoutCheck` runs below whatever was passed. Letting a passed one through as well would
     // put the same `Violation` instance in the list twice: the count, the blocks and the
     // truncation budget would all double for a caller who only spelled out what already
     // happens.
     val extra = checks.filterNot { it is LayoutCheck }
-    return process(fileSystem) { model ->
+    return process(fileSystem) { context ->
         // `LayoutCheck` does not appear in any signature above. Deny by default is the whole
         // of what katachi is, so it cannot depend on the caller remembering to ask for it.
-        val layout = LayoutCheck().process(model)
+        val layout = LayoutCheck().process(context)
         // One check at a time, each caught on its own: errors.md's "if this fails, can the
         // neighbour still answer" applies here exactly as it applies per file inside the walk.
         // A third-party check throwing once must not take the layout violations with it —
         // that is the failure this library can least afford.
         val found = extra.flatMap { check ->
-            catching { check.process(model) }.getOrElse { cause ->
+            catching { check.process(context) }.getOrElse { cause ->
                 listOf(
                     UncheckedCheck(
                         check = check::class.qualifiedName ?: check::class.java.name,
@@ -144,9 +145,10 @@ internal fun Architecture.validateWith(
                 )
             }
         }
-        // One model, therefore one walk. The last term is the guard against the quietest way
+        // One context, therefore one walk. The last term is the guard against the quietest way
         // this library could break: a definition full of constraints, code breaking them, and
         // a green test because nothing was handed a check that evaluates them.
-        (layout + found + model.unevaluatedConstraintViolations()).sortedBy { it.kind.ordinal }
+        (layout + found + context.projectWalk.unevaluatedConstraintViolations())
+            .sortedBy { it.kind.ordinal }
     }
 }

@@ -52,8 +52,8 @@ class LayoutCheckSpec : FreeSpec({
         val definition = layoutArchitecture { "core" { "App.kt".file() } }
         val tree = repositoryOf { "core" { "App.kt"(); "notes.md"() } }
 
-        val read = definition.process(tree) { model ->
-            LayoutCheck().process(model).labels() to model.filesOf(model.roles.single())
+        val read = definition.process(tree) { context ->
+            LayoutCheck().process(context).labels() to context.filesOf(context.roles.single())
         }
 
         read shouldBe (listOf("[UnexpectedFile] core/notes.md") to listOf("core/App.kt"))

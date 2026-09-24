@@ -11,8 +11,15 @@ katachi = "0.1.1"
 kotlin = "2.4.10"
 kotest = "6.2.5"
 # The Kotlin parser behind `konsist { }`. Only `:katachi-konsist` and the samples that use it
-# see this; `:katachi` itself stays dependency free.
+# see this; `:katachi` itself depends only on kotlinx.serialization (below), for decoding
+# processor arguments.
 konsist = "0.17.3"
+# processor の引数デコード。`:katachi` の唯一の実行時依存。**1.9.0 から上げない。**
+# 1.9.0 は kotlin-stdlib 2.2.0 に依存する最後の系列で、1.10.0 は 2.3.0、1.11.0 は 2.3.20 を
+# 引き連れる（Maven Central の POM で確認）。katachi は Kotlin 2.2 の利用者が読める metadata で
+# 出すために languageVersion / apiVersion / coreLibrariesVersion を 2.2 に固定しているので、
+# 2.3 系の stdlib を推移的に持ち込むとその固定が意味を失う。
+kotlinxSerialization = "1.9.0"
 # 公開まわり。`:katachi` / `:katachi-konsist` / `:katachi-gradle-plugin` の3つだけを Maven Central に出す。
 vanniktechPublish = "0.37.0"
 # javadoc jar を作るのに要る。Central は sources と javadoc の両方を必須にしている。
@@ -30,6 +37,8 @@ katachi = { module = "me.tbsten.katachi:katachi", version.ref = "katachi" }
 # definition writes `konsist { }`.
 katachiKonsist = { module = "me.tbsten.katachi:katachi-konsist", version.ref = "katachi" }
 konsist = { module = "com.lemonappdev:konsist", version.ref = "konsist" }
+# `KSerializer` / `AbstractDecoder` / `buildClassSerialDescriptor` だけを使う。json は要らない。
+kotlinxSerializationCore = { module = "org.jetbrains.kotlinx:kotlinx-serialization-core", version.ref = "kotlinxSerialization" }
 kotlinGradlePlugin = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
 # convention plugin から適用するため、plugin の marker artifact をライブラリとしても引く。
 # `plugins { }` の alias だけでは buildSrc のクラスパスに乗らない。

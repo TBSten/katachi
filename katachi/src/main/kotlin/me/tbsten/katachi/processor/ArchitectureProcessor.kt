@@ -1,181 +1,116 @@
 package me.tbsten.katachi.processor
 
+import kotlinx.serialization.KSerializer
+import kotlinx.serialization.builtins.serializer
 import me.tbsten.katachi.ExperimentalKatachiApi
-import me.tbsten.katachi.InternalKatachiApi
-import me.tbsten.katachi.dsl.Architecture
-import me.tbsten.katachi.fs.KatachiFileSystem
-import me.tbsten.katachi.fs.RealFileSystem
 
 /**
- * Something that consumes an architecture definition and produces [R].
+ * Something that reads an architecture definition and produces [Result].
  *
- * katachi had two fixed outputs — the check, and the documentation generation that comes
- * later — and no way for anyone else to add a third. This is that way in: the check is one
- * processor among others, not a privileged one.
+ * katachi had two fixed outputs -- the check, and documentation generation -- and no way for
+ * anyone else to add a third. This is that way in: the check is one processor among others,
+ * not a privileged one.
  *
- * It is an interface rather than an abstract class so that a one-off can be written as a
- * lambda (see the `process` overload that takes one), and it is deliberately not `suspend`:
- * making it suspend would force every plain JUnit or kotest test calling into it to wrap the
- * call in `runBlocking`, which would mean a dependency on `kotlinx-coroutines-core` — and
- * katachi ships with no runtime dependencies at all. A processor that needs concurrency can
- * start it inside [process] and block there.
+ * It takes one parameter, [ArchitectureProcessContext], and nothing else. A later version that
+ * has one more thing to hand a processor adds a member there, and every processor written
+ * against this keeps compiling.
  *
- * [R] may be [Unit]: a processor is allowed to have effects. How it has them is its own
- * business — [ProjectModel] offers nothing to write through, so a processor that produces
- * files takes the write operation as a constructor parameter.
+ * A processor holds no state -- the definition arrives on the context -- so it can be written
+ * as an `object`, and **there is nothing a user has to subclass.** A processor with settings is
+ * still free to be a class.
  *
- * ## Example 1: a processor with settings, written as a class
+ * [Result] may be [Unit]: a processor is allowed to have effects. It is deliberately not
+ * `suspend`, which would force every plain JUnit or kotest test calling into it to wrap the
+ * call in `runBlocking`.
+ *
+ * ## Example 1: a processor with typed arguments, written as an object
  * ```kt
- * class GenerateDocs(
- *     private val writeFile: (path: String, content: String) -> Unit,
- * ) : ArchitectureProcessor<Unit> {
- *     override fun process(model: ProjectModel) {
- *         for (role in model.roles) writeFile("${role.qualifiedName}.md", role.name)
+ * object GenerateCodeFromTemplate : ArchitectureProcessor<GenerateCodeFromTemplate.Args, Unit> {
+ *     override val argsSerializer: KSerializer<Args> = Args.serializer()
+ *
+ *     override fun process(context: ArchitectureProcessContext<Args>) {
+ *         context.log("Generating for role=${context.args.roleName}")
  *     }
+ *
+ *     @Serializable
+ *     data class Args(val roleName: String)
  * }
  *
- * projectArchitecture.process(GenerateDocs(writeFile = { path, text -> File(path).writeText(text) }))
+ * projectArchitecture.process(GenerateCodeFromTemplate, GenerateCodeFromTemplate.Args("GetUser"))
  * ```
  */
 @ExperimentalKatachiApi
-public interface ArchitectureProcessor<out R> {
+public interface ArchitectureProcessor<Args, Result> {
     /**
-     * Reads [model] and produces this processor's result.
+     * How a `--arg key=value` map becomes [Args].
      *
-     * ## Example 1: return something derived from the declarations
+     * A processor author writes one `@Serializable data class` and gets every field typed,
+     * instead of a getter per primitive type. A processor that takes no arguments does not
+     * write this at all -- see [ArchitectureProcessorNoArg].
+     *
+     * ## Example 1: hand over the generated serializer
      * ```kt
-     * class RoleCount : ArchitectureProcessor<Int> {
-     *     override fun process(model: ProjectModel): Int = model.roles.size
+     * object CountRoles : ArchitectureProcessor<CountRoles.Args, Int> {
+     *     override val argsSerializer: KSerializer<Args> = Args.serializer()
+     *
+     *     override fun process(context: ArchitectureProcessContext<Args>): Int =
+     *         context.roles.count { it.name.startsWith(context.args.prefix) }
+     *
+     *     @Serializable
+     *     data class Args(val prefix: String = "")
      * }
      * ```
      */
-    public fun process(model: ProjectModel): R
+    public val argsSerializer: KSerializer<Args>
+
+    /**
+     * Reads [context] and produces this processor's result.
+     *
+     * ## Example 1: return something derived from the declarations alone
+     * ```kt
+     * object RoleCount : ArchitectureProcessorNoArg<Int> {
+     *     override fun process(context: ArchitectureProcessContext<Unit>): Int =
+     *         context.roles.size
+     * }
+     * ```
+     */
+    public fun process(context: ArchitectureProcessContext<Args>): Result
 }
 
 /**
- * An [ArchitectureProcessor] that produces nothing, which is to say one that exists for its
- * effects.
+ * An [ArchitectureProcessor] that takes no arguments.
  *
- * `ArchitectureProcessor<Unit>` already says this, but it says it in a shape a reader has to
- * decode: a generic parameter that happens to be [Unit]. The alias states the intent in the
- * name instead, and it is the common case — writing files, printing a report, pushing to
- * something — so it is worth a name of its own.
+ * It carries the [argsSerializer] boilerplate and nothing else: `context.args` is still there
+ * and is still [Unit]. Giving this interface a shorter `process()` of its own was considered
+ * and dropped -- a second signature would thin out the one thing the context buys.
  *
- * Where the effect goes is still the processor's own business. [ProjectModel] offers nothing
- * to write through, so a processor takes the write operation as a constructor parameter. That
- * is also what makes it testable, and what makes "write it" and "check it is up to date" the
- * same processor with a different lambda.
+ * This replaces v0.1's `ArchitectureProcessorUnit`, which was an alias for
+ * `ArchitectureProcessor<Unit>`. With two type parameters that alias could no longer say what
+ * it meant, so the shape has a name instead.
  *
- * ## Example 1: write one file per role
+ * ## Example 1: a processor that exists for its effect
  * ```kt
- * class GenerateDocs(
- *     private val writeFile: (path: String, content: String) -> Unit,
- * ) : ArchitectureProcessorUnit {
- *     override fun process(model: ProjectModel) {
- *         for (role in model.roles) writeFile("${role.qualifiedName}.md", role.name)
+ * class RoleSummaryReport(
+ *     private val write: (path: String, content: String) -> Unit,
+ * ) : ArchitectureProcessorNoArg<Unit> {
+ *     override fun process(context: ArchitectureProcessContext<Unit>) {
+ *         for (role in context.roles) write("${role.qualifiedName}.md", "# ${role.qualifiedName}\n")
  *     }
  * }
  *
- * projectArchitecture.process(GenerateDocs { path, text -> File(path).writeText(text) })
+ * projectArchitecture.process(RoleSummaryReport { path, text -> File(path).writeText(text) })
  * ```
  *
  * ## Example 2: the same processor, verifying instead of writing
  * ```kt
  * val stale = mutableListOf<String>()
  * projectArchitecture.process(
- *     GenerateDocs { path, text -> if (File(path).readText() != text) stale += path },
+ *     RoleSummaryReport { path, text -> if (File(path).readText() != text) stale += path },
  * )
  * stale.shouldBeEmpty()
  * ```
  */
 @ExperimentalKatachiApi
-public typealias ArchitectureProcessorUnit = ArchitectureProcessor<Unit>
-
-/**
- * Runs [processor] against this definition and the real project, and returns its result.
- *
- * Reading the project is deferred to `ProjectModel.filesOf`, so a processor that only looks
- * at declarations does no IO — the search for the project root included.
- *
- * ## Example 1: run a processor that has settings
- * ```kt
- * val docs = GenerateDocs(writeFile = { path, text -> File(path).writeText(text) })
- * projectArchitecture.process(docs)
- * ```
- *
- * @throws me.tbsten.katachi.fs.KatachiProjectRootNotFoundException when the processor asks
- *   for files and no directory above the working directory carries a Gradle, Maven or git
- *   marker.
- */
-@ExperimentalKatachiApi
-public fun <R> Architecture.process(processor: ArchitectureProcessor<R>): R =
-    process(processor, RealFileSystem())
-
-/**
- * [process] with the processor written inline, for something used once.
- *
- * ## Example 1: pull out the files of the roles you care about
- * ```kt
- * val gradleFiles = projectArchitecture.process { model ->
- *     model.roles.filter { it.name.startsWith("Gradle") }.flatMap { model.filesOf(it) }
- * }
- * ```
- */
-@ExperimentalKatachiApi
-public fun <R> Architecture.process(block: (ProjectModel) -> R): R =
-    process(RealFileSystem(), block)
-
-/**
- * [process] against [fileSystem], which is how katachi's own specs run a processor against a
- * tree that only exists in memory. Same deferral: [fileSystem] is untouched unless the
- * processor asks for files.
- *
- * `@InternalKatachiApi`, so this door is katachi's own: [KatachiFileSystem] is internal too, so
- * a processor written outside `:katachi` has no in-memory tree to hand in and tests its
- * processor end to end against a real checkout instead. Whether that seam becomes part of the
- * processor API is open, and step 4 will run into it again when a check arrives as a module of
- * its own.
- *
- * ## Example 1: run a class-based processor against a file system built for one spec
- * ```kt
- * class RoleCount : ArchitectureProcessor<Int> {
- *     override fun process(model: ProjectModel): Int = model.roles.size
- * }
- *
- * val fileSystem = object : KatachiFileSystem {
- *     override val workingDirectory: FsPath = FsPath.of("/repo")
- *     override fun exists(path: FsPath): Boolean = path == workingDirectory
- *     override fun isDirectory(path: FsPath): Boolean = path == workingDirectory
- *     override fun list(directory: FsPath): List<FsPath> = emptyList()
- * }
- * projectArchitecture.process(RoleCount(), fileSystem)
- * ```
- */
-@InternalKatachiApi
-@ExperimentalKatachiApi
-public fun <R> Architecture.process(
-    processor: ArchitectureProcessor<R>,
-    fileSystem: KatachiFileSystem,
-): R = processor.process(ProjectModel(this, fileSystem))
-
-/**
- * [process] against [fileSystem] with the processor written inline. The file system comes
- * first so that the block stays a trailing lambda.
- *
- * ## Example 1: run an inline processor against the same kind of file system
- * ```kt
- * val fileSystem = object : KatachiFileSystem {
- *     override val workingDirectory: FsPath = FsPath.of("/repo")
- *     override fun exists(path: FsPath): Boolean = path == workingDirectory
- *     override fun isDirectory(path: FsPath): Boolean = path == workingDirectory
- *     override fun list(directory: FsPath): List<FsPath> = emptyList()
- * }
- * val roleCount = projectArchitecture.process(fileSystem) { model -> model.roles.size }
- * ```
- */
-@InternalKatachiApi
-@ExperimentalKatachiApi
-public fun <R> Architecture.process(
-    fileSystem: KatachiFileSystem,
-    block: (ProjectModel) -> R,
-): R = block(ProjectModel(this, fileSystem))
+public interface ArchitectureProcessorNoArg<Result> : ArchitectureProcessor<Unit, Result> {
+    override val argsSerializer: KSerializer<Unit> get() = Unit.serializer()
+}

@@ -1,19 +1,18 @@
 package com.example.kmp.processor
 
 import me.tbsten.katachi.ExperimentalKatachiApi
-import me.tbsten.katachi.processor.ArchitectureProcessorUnit
-import me.tbsten.katachi.processor.ProjectModel
+import me.tbsten.katachi.processor.ArchitectureProcessContext
+import me.tbsten.katachi.processor.ArchitectureProcessorNoArg
 
 /**
  * One short `<qualifiedName>.md` per role, handed to [write].
  *
- * This is this sample's only [ArchitectureProcessorUnit] -- [PlatformOwnedFilesProcessor] next
- * to it is `ArchitectureProcessor<List<String>>` and has a value to return, so it cannot use the
- * alias. This one exists only for its effect: calling [write] once per role, exactly the shape
- * `ArchitectureProcessorUnit` is named for.
+ * This is this sample's only [ArchitectureProcessorNoArg]`<Unit>` -- [PlatformOwnedFilesProcessor]
+ * next to it is `ArchitectureProcessorNoArg<List<String>>` and has a value to return. This one
+ * exists only for its effect: calling [write] once per role.
  *
  * Where [write] sends that text is deliberately not this class's business -- see
- * [ArchitectureProcessorUnit]'s own KDoc. That is what [RoleSummaryReportSpec] demonstrates: the
+ * [ArchitectureProcessorNoArg]'s own KDoc. That is what [RoleSummaryReportSpec] demonstrates: the
  * very same processor, run once with a lambda that collects into a map and once with a lambda
  * that compares against one, with no mode flag anywhere in this file.
  *
@@ -35,18 +34,16 @@ import me.tbsten.katachi.processor.ProjectModel
  * stale.shouldBeEmpty()
  * ```
  */
-// This `@OptIn` is where the experimental wall around `ArchitectureProcessorUnit` (a typealias,
-// not `ArchitectureProcessor` directly) actually bites: `: ArchitectureProcessorUnit` below does
-// not compile without it, from `com.example.kmp`, outside `:katachi`. That only works because
-// `ExperimentalKatachiApi`'s `@Target` was extended with `AnnotationTarget.TYPEALIAS` -- without
-// that, the typealias could not carry the annotation and this line would not need opt-in at all,
-// quietly widening the experimental surface. Do not remove this `@OptIn`.
+// The `@OptIn` is what a real consumer of the published artifact writes: implementing
+// `ArchitectureProcessorNoArg` outside `:katachi` does not compile without it. v0.1 made the
+// same point through the `ArchitectureProcessorUnit` typealias, which v0.2 dropped -- two type
+// parameters left nothing for an alias named after one of them to say.
 @OptIn(ExperimentalKatachiApi::class)
 class RoleSummaryReport(
     private val write: (path: String, content: String) -> Unit,
-) : ArchitectureProcessorUnit {
-    override fun process(model: ProjectModel) {
-        for (role in model.roles) {
+) : ArchitectureProcessorNoArg<Unit> {
+    override fun process(context: ArchitectureProcessContext<Unit>) {
+        for (role in context.roles) {
             write("${role.qualifiedName}.md", "# ${role.qualifiedName}\n")
         }
     }

@@ -28,8 +28,8 @@ package me.tbsten.katachi
  * @OptIn(ExperimentalKatachiApi::class)
  * class PlatformOwnedFilesSpec : FreeSpec({
  *     "collects only the files of roles the platform owns" {
- *         val files = projectArchitecture.process { model ->
- *             model.roles.filter { it.name.startsWith("Gradle") }.flatMap { model.filesOf(it) }
+ *         val files = projectArchitecture.process { context ->
+ *             context.roles.filter { it.name.startsWith("Gradle") }.flatMap { context.filesOf(it) }
  *         }
  *         files shouldContain "settings.gradle.kts"
  *     }
@@ -47,8 +47,10 @@ package me.tbsten.katachi
     AnnotationTarget.PROPERTY,
     AnnotationTarget.CONSTRUCTOR,
     // `TYPEALIAS` is here and not on `InternalKatachiApi`: an alias is a name a *consumer*
-    // reads, so the experimental surface has ones worth naming, while the internal surface
-    // has nothing to alias for people who are not supposed to touch it.
+    // reads, so the experimental surface is the one that could have aliases worth naming. The
+    // one that used it, `ArchitectureProcessorUnit`, is gone in v0.2 -- the target stays so
+    // that the next alias does not quietly widen the experimental surface by being unable to
+    // carry the marker.
     AnnotationTarget.TYPEALIAS,
 )
 public annotation class ExperimentalKatachiApi

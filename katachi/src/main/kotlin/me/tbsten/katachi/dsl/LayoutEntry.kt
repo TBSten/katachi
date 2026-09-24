@@ -79,11 +79,11 @@ public enum class LayoutEntryKind {
  * Roles declare where their own files may live and nothing else, so no single place in the
  * DSL holds the whole tree. The check builds that view by flattening every role's
  * `layout { }` into these entries and walking the real tree against them, and a processor
- * reads the same view through [me.tbsten.katachi.processor.ProjectModel.declaredEntries].
+ * reads the same view through [me.tbsten.katachi.processor.ArchitectureProcessContext.declaredEntries].
  *
  * It says what was *declared*, not what exists: an entry is here whether or not a file sits
  * at its path. What exists is
- * [me.tbsten.katachi.processor.ProjectModel.filesOf]'s answer instead.
+ * [me.tbsten.katachi.processor.ArchitectureProcessContext.filesOf]'s answer instead.
  *
  * ## Example 1: render the declared layout as text
  * ```kt

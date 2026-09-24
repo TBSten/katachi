@@ -13,7 +13,7 @@ import me.tbsten.katachi.dsl.kotlin.ktFile
 import me.tbsten.katachi.scan.AmbiguousLayout
 
 /**
- * [AmbiguousLayout] wired through the real check: `ProjectModel.declaredEntries`,
+ * [AmbiguousLayout] wired through the real check: `ArchitectureProcessContext.declaredEntries`,
  * `LayoutCheck`, `validate()` and `assert()` together, against a fake file system.
  * `AmbiguousLayoutSpec` (in `test.scan`) covers the detector's own rule in isolation.
  */

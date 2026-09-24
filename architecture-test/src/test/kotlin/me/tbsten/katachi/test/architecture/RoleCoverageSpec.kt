@@ -6,7 +6,7 @@ import me.tbsten.katachi.ExperimentalKatachiApi
 import me.tbsten.katachi.InternalKatachiApi
 import me.tbsten.katachi.dsl.LayoutEntry
 import me.tbsten.katachi.dsl.LayoutEntryKind
-import me.tbsten.katachi.processor.ProjectModel
+import me.tbsten.katachi.processor.ArchitectureProcessContext
 import me.tbsten.katachi.processor.process
 
 /**
@@ -35,14 +35,14 @@ import me.tbsten.katachi.processor.process
 class RoleCoverageSpec : FreeSpec({
     "役割" - {
         "ワイルドカードを含む宣言が、どれも1件以上の実ファイルに当たっている" {
-            val unmatched = projectArchitecture.process { model ->
-                model.declaredEntries
+            val unmatched = projectArchitecture.process { context ->
+                context.declaredEntries
                     // Entries without a wildcard are `required`, and a missing one is already
                     // reported as `[MissingFile]` by the check itself. `Ignore` and plain
                     // `Directory` entries claim no file and have nothing to match.
                     .filter { it.kind == LayoutEntryKind.File || it.kind == LayoutEntryKind.AnyFile }
                     .filterNot { it.required }
-                    .filterNot { model.matchesSomething(it) }
+                    .filterNot { context.matchesSomething(it) }
                     .map { "${it.role.qualifiedName}  ${it.path}" }
             }
 
@@ -59,7 +59,7 @@ class RoleCoverageSpec : FreeSpec({
  * rather than a file one, so it is matched against each file's parent.
  */
 @OptIn(ExperimentalKatachiApi::class, InternalKatachiApi::class)
-private fun ProjectModel.matchesSomething(entry: LayoutEntry): Boolean {
+private fun ArchitectureProcessContext<Unit>.matchesSomething(entry: LayoutEntry): Boolean {
     val owned = filesOf(entry.role)
     return when (entry.kind) {
         LayoutEntryKind.AnyFile ->

@@ -16,8 +16,8 @@ import me.tbsten.katachi.fs.FileSelection
 import me.tbsten.katachi.fs.FsPath
 import me.tbsten.katachi.fs.KatachiFileSystem
 import me.tbsten.katachi.fs.ProjectRoot
-import me.tbsten.katachi.processor.ArchitectureProcessor
-import me.tbsten.katachi.processor.ProjectModel
+import me.tbsten.katachi.processor.ArchitectureProcessContext
+import me.tbsten.katachi.processor.ArchitectureProcessorNoArg
 import me.tbsten.katachi.scan.Severity
 import me.tbsten.katachi.scan.Violation
 import me.tbsten.katachi.scan.ViolationDetail
@@ -35,21 +35,22 @@ private class TodoViolation(override val path: String) : Violation {
         get() = listOf(ViolationDetail("Rule", "TODO"), ViolationDetail("Line", "12"))
 }
 
-/** A check outside katachi: it reads the model and answers with violations of its own. */
+/** A check outside katachi: it reads the context and answers with violations of its own. */
 private class TodoCheck(private vararg val paths: String = arrayOf("app/src/Foo.kt")) :
-    ArchitectureProcessor<List<Violation>> {
-    override fun process(model: ProjectModel): List<Violation> = paths.map { TodoViolation(it) }
+    ArchitectureProcessorNoArg<List<Violation>> {
+    override fun process(context: ArchitectureProcessContext<Unit>): List<Violation> =
+        paths.map { TodoViolation(it) }
 }
 
 /** A check that finds nothing, for proving the layout check runs without being asked for. */
-private class SilentCheck : ArchitectureProcessor<List<Violation>> {
-    override fun process(model: ProjectModel): List<Violation> = emptyList()
+private class SilentCheck : ArchitectureProcessorNoArg<List<Violation>> {
+    override fun process(context: ArchitectureProcessContext<Unit>): List<Violation> = emptyList()
 }
 
 /** A check that is broken rather than failing: it throws instead of answering. */
 private class ThrowingCheck(private val failure: () -> Throwable) :
-    ArchitectureProcessor<List<Violation>> {
-    override fun process(model: ProjectModel): List<Violation> = throw failure()
+    ArchitectureProcessorNoArg<List<Violation>> {
+    override fun process(context: ArchitectureProcessContext<Unit>): List<Violation> = throw failure()
 }
 
 /**

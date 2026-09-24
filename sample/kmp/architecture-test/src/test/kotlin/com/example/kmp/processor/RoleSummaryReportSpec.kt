@@ -17,12 +17,10 @@ import me.tbsten.katachi.processor.process
  * ("書くモードと確かめるモードは、注入するラムダが違うだけ").
  *
  * This file's own `@OptIn(ExperimentalKatachiApi::class)` is needed for calling
- * [me.tbsten.katachi.processor.process] below, which is itself `@ExperimentalKatachiApi`. The
- * more interesting proof that the wall also holds *through the alias* sits in
- * [RoleSummaryReport] itself: `: ArchitectureProcessorUnit` there does not compile without its
- * own `@OptIn`, even though that line never spells out [me.tbsten.katachi.processor.ArchitectureProcessor].
- * Both files opting in independently is the point -- implementing the typealias and calling the
- * processor API are two separate places the experimental marker has to be crossed, not one.
+ * [me.tbsten.katachi.processor.process] below, which is itself `@ExperimentalKatachiApi`.
+ * [RoleSummaryReport] opts in separately, because implementing
+ * [me.tbsten.katachi.processor.ArchitectureProcessorNoArg] is a second place the experimental
+ * marker has to be crossed -- both files doing it independently is the point.
  */
 @OptIn(ExperimentalKatachiApi::class)
 class RoleSummaryReportSpec : FreeSpec({

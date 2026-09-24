@@ -74,9 +74,10 @@ internal class ScanResult(
 )
 
 /**
- * The one walk everything is built on, reached through
- * [me.tbsten.katachi.processor.ProjectModel] — which runs it at most once, so that a run
- * answering both "what is wrong" and "what does this role own" walks the tree once.
+ * The one walk everything is built on, reached through the context an
+ * [me.tbsten.katachi.processor.ArchitectureProcessor] is handed -- which runs it at most once,
+ * so that a run answering both "what is wrong" and "what does this role own" walks the tree
+ * once.
  *
  * Finding the root, selecting the files and evaluating the definition are not caught. Each
  * produces the one thing the walk needs, so a failure in any of them leaves nothing to check

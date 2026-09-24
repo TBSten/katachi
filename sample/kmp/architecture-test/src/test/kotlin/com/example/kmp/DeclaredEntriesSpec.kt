@@ -8,7 +8,7 @@ import me.tbsten.katachi.ExperimentalKatachiApi
 import me.tbsten.katachi.processor.process
 
 /**
- * `ProjectModel.declaredEntries`, read from outside `:katachi`.
+ * `ArchitectureProcessContext.declaredEntries`, read from outside `:katachi`.
  *
  * Two things are being stood on here, and both of them need to be stood on from *this* side of
  * the wall. `:katachi` opts its own module in to every marker it publishes, so a spec written
@@ -16,7 +16,7 @@ import me.tbsten.katachi.processor.process
  * opt-in it writes is the one a real consumer would write.
  *
  * - `LayoutEntry` and `LayoutEntryKind` have to be reachable with `@ExperimentalKatachiApi`
- *   alone. They used to be `@InternalKatachiApi`, which made `model.declaredEntries` an API
+ *   alone. They used to be `@InternalKatachiApi`, which made `context.declaredEntries` an API
  *   member whose elements nobody outside katachi was allowed to touch.
  * - `declaredEntries` and `filesOf` answer different questions, and a wildcard module key is
  *   where that shows. This sample writes `":feature:*".module { }` in five places, so it is the
@@ -25,7 +25,7 @@ import me.tbsten.katachi.processor.process
 @OptIn(ExperimentalKatachiApi::class)
 class DeclaredEntriesSpec : FreeSpec({
     "宣言しか見ない processor が declaredEntries からパスを読める" {
-        val paths = projectArchitecture.process { model -> model.declaredEntries.map { it.path } }
+        val paths = projectArchitecture.process { context -> context.declaredEntries.map { it.path } }
 
         // Declared directly under `layout { }` by build/GradleRoot, so no module key is
         // involved and the declared view and the walked view agree about it.
@@ -33,12 +33,12 @@ class DeclaredEntriesSpec : FreeSpec({
     }
 
     "ワイルドカードの module キーは declaredEntries にはパターンのまま、filesOf には展開されて現れる" {
-        // 1つの ProjectModel から両方を読む。別々に process すると「モデルが2つあるから
+        // 1つの Context から両方を読む。別々に process すると「モデルが2つあるから
         // 答えが違う」と読めてしまい、固定したいこと（同じモデルの2つのメンバが違う答えを
         // 返す）がぼやける。
-        val (declaredFeaturePaths, walkedFeatureFiles) = projectArchitecture.process { model ->
-            val declared = model.declaredEntries.map { it.path }.filter { it.startsWith("feature/") }
-            val walked = model.filesOf(model.roles.single { it.qualifiedName == "feature/Screen" })
+        val (declaredFeaturePaths, walkedFeatureFiles) = projectArchitecture.process { context ->
+            val declared = context.declaredEntries.map { it.path }.filter { it.startsWith("feature/") }
+            val walked = context.filesOf(context.roles.single { it.qualifiedName == "feature/Screen" })
             declared to walked
         }
 

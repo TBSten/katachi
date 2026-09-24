@@ -17,7 +17,7 @@ import me.tbsten.katachi.test.check.repositoryOf
 import me.tbsten.katachi.test.fs.FileSystemTouchedException
 import me.tbsten.katachi.test.fs.ForbiddenFileSystem
 
-class ProjectModelSpec : FreeSpec({
+class ArchitectureProcessContextSpec : FreeSpec({
     "ファイルシステムに触る境界" - {
         "宣言しか見ない processor はファイルシステムに触らない" {
             val definition = architectureOf {
@@ -26,10 +26,10 @@ class ProjectModelSpec : FreeSpec({
                 }
             }
 
-            definition.process(ForbiddenFileSystem) { model ->
-                model.groups.map { it.qualifiedName } +
-                    model.roles.map { it.qualifiedName } +
-                    model.declaredEntries.map { it.path }
+            definition.process(ForbiddenFileSystem) { context ->
+                context.groups.map { it.qualifiedName } +
+                    context.roles.map { it.qualifiedName } +
+                    context.declaredEntries.map { it.path }
             } shouldBe listOf("domain", "domain/UseCase", "useCase", "useCase/*UseCase.kt")
         }
 
@@ -37,8 +37,8 @@ class ProjectModelSpec : FreeSpec({
             val definition = layoutArchitecture { "useCase" / "*UseCase".ktFile() }
 
             shouldThrow<FileSystemTouchedException> {
-                definition.process(ForbiddenFileSystem) { model ->
-                    model.filesOf(model.roles.single())
+                definition.process(ForbiddenFileSystem) { context ->
+                    context.filesOf(context.roles.single())
                 }
             }
         }
@@ -49,9 +49,9 @@ class ProjectModelSpec : FreeSpec({
             // second and third call cost nothing, not how many directories one walk lists.
             fun listCallsWhenCalled(times: Int): Int {
                 val tree = CountingFileSystem(repositoryOf { "core" { "App.kt"(); "Main.kt"() } })
-                definition.process(tree) { model ->
-                    val role = model.roles.single()
-                    repeat(times) { model.filesOf(role) }
+                definition.process(tree) { context ->
+                    val role = context.roles.single()
+                    repeat(times) { context.filesOf(role) }
                 }
                 return tree.listCalls
             }
@@ -69,8 +69,8 @@ class ProjectModelSpec : FreeSpec({
                 }
             }
 
-            definition.process(repositoryOf { "core" { "GetUser.kt"(); "UserApi.kt"() } }) { model ->
-                model.roles.associate { it.qualifiedName to model.filesOf(it) }
+            definition.process(repositoryOf { "core" { "GetUser.kt"(); "UserApi.kt"() } }) { context ->
+                context.roles.associate { it.qualifiedName to context.filesOf(it) }
             } shouldBe mapOf(
                 "domain/UseCase" to listOf("core/GetUser.kt", "core/UserApi.kt"),
                 "domain/Api" to listOf("core/UserApi.kt"),
@@ -83,40 +83,40 @@ class ProjectModelSpec : FreeSpec({
                 "core" / "App.kt".file()
             }
 
-            definition.process(repositoryOf { "core" { "App.kt"() } }) { model ->
-                model.filesOf(model.roles.single())
+            definition.process(repositoryOf { "core" { "App.kt"() } }) { context ->
+                context.filesOf(context.roles.single())
             } shouldBe listOf("core/App.kt")
         }
 
         "anyFile を宣言した役割には直下のファイルが入る" {
             val definition = layoutArchitecture { "generated" { anyFile() } }
 
-            definition.process(repositoryOf { "generated" { "a.kt"(); "b.txt"() } }) { model ->
-                model.filesOf(model.roles.single())
+            definition.process(repositoryOf { "generated" { "a.kt"(); "b.txt"() } }) { context ->
+                context.filesOf(context.roles.single())
             } shouldBe listOf("generated/a.kt", "generated/b.txt")
         }
 
         "実体の無い宣言しか持たない役割は空になる" {
             val definition = layoutArchitecture { "gradle" / "libs.versions.toml".file() }
 
-            definition.process(repositoryOf { }) { model ->
-                model.filesOf(model.roles.single())
+            definition.process(repositoryOf { }) { context ->
+                context.filesOf(context.roles.single())
             } shouldBe emptyList()
         }
 
         "ignore した配下のファイルは返らない" {
             val definition = layoutArchitecture { "build".ignore() }
 
-            definition.process(repositoryOf { "build" { "output.jar"() } }) { model ->
-                model.filesOf(model.roles.single())
+            definition.process(repositoryOf { "build" { "output.jar"() } }) { context ->
+                context.filesOf(context.roles.single())
             } shouldBe emptyList()
         }
 
         "宣言のないファイルはどの役割にも入らない" {
             val definition = layoutArchitecture { "core" / "App.kt".file() }
 
-            definition.process(repositoryOf { "core" { "App.kt"(); "notes.md"() } }) { model ->
-                model.filesOf(model.roles.single())
+            definition.process(repositoryOf { "core" { "App.kt"(); "notes.md"() } }) { context ->
+                context.filesOf(context.roles.single())
             } shouldBe listOf("core/App.kt")
         }
     }
@@ -130,8 +130,8 @@ class ProjectModelSpec : FreeSpec({
             val another = layoutArchitecture { "core" / "App.kt".file() }
 
             val thrown = shouldThrow<KatachiUnknownRoleException> {
-                definition.process(repositoryOf { "core" { "App.kt"() } }) { model ->
-                    model.filesOf(another.allRoles.single())
+                definition.process(repositoryOf { "core" { "App.kt"() } }) { context ->
+                    context.filesOf(another.allRoles.single())
                 }
             }
 
@@ -143,8 +143,8 @@ class ProjectModelSpec : FreeSpec({
             val another = layoutArchitecture { "core" / "App.kt".file() }
 
             shouldThrow<KatachiUnknownRoleException> {
-                definition.process(ForbiddenFileSystem) { model ->
-                    model.filesOf(another.allRoles.single())
+                definition.process(ForbiddenFileSystem) { context ->
+                    context.filesOf(another.allRoles.single())
                 }
             }
         }
@@ -154,8 +154,8 @@ class ProjectModelSpec : FreeSpec({
             val another = layoutArchitecture { "core" / "App.kt".file() }
 
             val thrown = shouldThrow<KatachiUnknownRoleException> {
-                definition.process(ForbiddenFileSystem) { model ->
-                    model.filesOf(another.allRoles.single())
+                definition.process(ForbiddenFileSystem) { context ->
+                    context.filesOf(another.allRoles.single())
                 }
             }
 
@@ -189,10 +189,10 @@ class ProjectModelSpec : FreeSpec({
         }
 
         "同じモデルの declaredEntries にはパターン1件として現れ、filesOf には展開されて現れる" {
-            // 1つの ProjectModel から両方を読む。別々に process すると「モデルが2つある
+            // 1つの Context から両方を読む。別々に process すると「モデルが2つある
             // から答えが違う」と読めてしまう。
-            val (declared, walked) = definition.process(tree) { model ->
-                model.declaredEntries.map { it.path } to model.filesOf(model.roles.single())
+            val (declared, walked) = definition.process(tree) { context ->
+                context.declaredEntries.map { it.path } to context.filesOf(context.roles.single())
             }
 
             declared shouldBe patternEntries
@@ -207,7 +207,7 @@ class ProjectModelSpec : FreeSpec({
             // モジュールを増やしても減らしても宣言の見え方は1件のまま動かない。
             fun declaredPathsWith(vararg modules: String): List<String> = definition.process(
                 repositoryOf { modules.forEach { name -> "feature/$name/build.gradle.kts"() } },
-            ) { model -> model.declaredEntries.map { it.path } }
+            ) { context -> context.declaredEntries.map { it.path } }
 
             declaredPathsWith("home") shouldBe patternEntries
             declaredPathsWith("home", "settings", "search") shouldBe patternEntries
@@ -217,8 +217,8 @@ class ProjectModelSpec : FreeSpec({
         "ワイルドカードの module キーを読んでもファイルシステムには触らない" {
             // パターンのまま残すのにモジュール一覧は要らない、が守りたい性質。実在
             // モジュールを数えに行く実装に戻したらここで落ちる。
-            definition.process(ForbiddenFileSystem) { model ->
-                model.declaredEntries.map { it.path }
+            definition.process(ForbiddenFileSystem) { context ->
+                context.declaredEntries.map { it.path }
             } shouldBe patternEntries
         }
 
@@ -229,13 +229,31 @@ class ProjectModelSpec : FreeSpec({
                 "feature".group { "Module" { layout { ":feature:home".module { } } } }
             }
 
-            literal.process(tree) { model -> model.declaredEntries.map { it.path } } shouldBe
+            literal.process(tree) { context -> context.declaredEntries.map { it.path } } shouldBe
                 listOf(
                     "feature",
                     "feature/home",
                     "feature/home/build",
                     "feature/home/build.gradle.kts",
                 )
+        }
+    }
+
+    "withArgs で派生した Context" - {
+        "元の Context と走査を共有する（filesOf を両方から呼んでも1回）" {
+            val definition = layoutArchitecture { "core" / "*.kt".file() }
+
+            fun listCallsWhenDerived(derivations: Int): Int {
+                val tree = CountingFileSystem(repositoryOf { "core" { "App.kt"(); "Main.kt"() } })
+                definition.process(tree) { context ->
+                    val role = context.roles.single()
+                    context.filesOf(role)
+                    repeat(derivations) { context.withArgs(Unit).filesOf(role) }
+                }
+                return tree.listCalls
+            }
+
+            listCallsWhenDerived(derivations = 3) shouldBe listCallsWhenDerived(derivations = 0)
         }
     }
 })

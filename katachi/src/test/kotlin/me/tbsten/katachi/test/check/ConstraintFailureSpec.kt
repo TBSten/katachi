@@ -12,8 +12,8 @@ import me.tbsten.katachi.check.report
 import me.tbsten.katachi.check.validate
 import me.tbsten.katachi.dsl.ConstraintFailure
 import me.tbsten.katachi.dsl.FileSetConstraint
-import me.tbsten.katachi.processor.ArchitectureProcessor
-import me.tbsten.katachi.processor.ProjectModel
+import me.tbsten.katachi.processor.ArchitectureProcessContext
+import me.tbsten.katachi.processor.ArchitectureProcessorNoArg
 import me.tbsten.katachi.scan.UncheckedConstraintReason
 import me.tbsten.katachi.scan.Violation
 import me.tbsten.katachi.test.fs.failingAt
@@ -36,8 +36,8 @@ import java.io.IOException
 
 /** A check outside katachi that is broken rather than failing: it throws instead of answering. */
 private class ThrowingProcessor(private val failure: () -> Throwable) :
-    ArchitectureProcessor<List<Violation>> {
-    override fun process(model: ProjectModel): List<Violation> = throw failure()
+    ArchitectureProcessorNoArg<List<Violation>> {
+    override fun process(context: ArchitectureProcessContext<Unit>): List<Violation> = throw failure()
 }
 
 /**

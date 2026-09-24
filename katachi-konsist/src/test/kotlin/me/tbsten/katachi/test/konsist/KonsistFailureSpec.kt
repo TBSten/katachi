@@ -43,7 +43,7 @@ import me.tbsten.katachi.scan.UnsatisfiedConstraint
  *
  * **Why (2) is triggered by deleting a file rather than by a filesystem quirk.** This backend
  * asks Konsist to parse the same absolute paths katachi's own walk already found, once, before
- * any constraint runs (`ProjectModel.filesUnder`). If the files on disk never change between
+ * any constraint runs (the walk behind the process context). If the files on disk never change between
  * that walk and Konsist's own read, the two counts always agree — `KonsistAssumptionsSpec`
  * pins what Konsist actually returns, and nothing there produces a mismatch on its own. A
  * mismatch is a bug *by construction*: the only way to provoke one without editing production

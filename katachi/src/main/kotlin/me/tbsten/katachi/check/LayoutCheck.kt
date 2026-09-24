@@ -1,8 +1,9 @@
 package me.tbsten.katachi.check
 
 import me.tbsten.katachi.ExperimentalKatachiApi
-import me.tbsten.katachi.processor.ArchitectureProcessor
-import me.tbsten.katachi.processor.ProjectModel
+import me.tbsten.katachi.processor.ArchitectureProcessContext
+import me.tbsten.katachi.processor.ArchitectureProcessorNoArg
+import me.tbsten.katachi.processor.projectWalk
 import me.tbsten.katachi.scan.Violation
 import me.tbsten.katachi.scan.layoutWarningsOf
 
@@ -19,29 +20,30 @@ import me.tbsten.katachi.scan.layoutWarningsOf
  * and `assert()` is the only entry point that throws.
  *
  * Being a processor also means it shares the one walk of the project with everything else that
- * reads the same [ProjectModel]: asking this for violations and asking [ProjectModel.filesOf]
- * for a role's files costs one traversal, not two — and, because it is the same traversal,
- * the two answers cannot drift apart.
+ * reads the same [ArchitectureProcessContext]: asking this for violations and asking
+ * [ArchitectureProcessContext.filesOf] for a role's files costs one traversal, not two — and,
+ * because it is the same traversal, the two answers cannot drift apart.
  *
  * It takes no settings. `maxViolations` belongs to the report rather than to the check, which
  * always looks at everything.
  *
- * Not everything it returns comes from that walk, though. [ProjectModel.declaredEntries] costs
- * no walk of its own — it flattens the same `layout { }` blocks a second time, from the
- * declarations alone — and is where declaration-only Warnings live: a path two roles both claim
- * outright ([me.tbsten.katachi.scan.AmbiguousLayout]), and a role living in more than one place
- * without saying which files belong in which
+ * Not everything it returns comes from that walk, though.
+ * [ArchitectureProcessContext.declaredEntries] costs no walk of its own — it flattens the same
+ * `layout { }` blocks a second time, from the declarations alone — and is where
+ * declaration-only Warnings live: a path two roles both claim outright
+ * ([me.tbsten.katachi.scan.AmbiguousLayout]), and a role living in more than one place without
+ * saying which files belong in which
  * ([me.tbsten.katachi.scan.MissingDescription]). Reading it is a second
  * evaluation of every `layout { }` block, so a block with a side effect of its own runs twice
  * per `assert()` — the same thing a wildcard module key already does once per module it expands
  * to.
  *
- * The third Warning goes the other way and is why both halves are handed over together:
- * [ProjectModel.layoutFileOverlaps] holds the roles whose *different* patterns turned out to
- * select the same real files, which only the walk can know. It is the same
- * [me.tbsten.katachi.scan.AmbiguousLayout] the declarations produce, so the two are merged
- * where each can see the other rather than concatenated — a pair of roles named by both must
- * be one block, not two.
+ * The third Warning goes the other way and is why both halves are handed over together: the
+ * same walk also holds the roles whose *different* patterns turned out to select the same real
+ * files -- an overlap only katachi's own check can see, read through a door that stays internal
+ * rather than on the public context. It is the same [me.tbsten.katachi.scan.AmbiguousLayout]
+ * the declarations produce, so the two are merged where each can see the other rather than
+ * concatenated — a pair of roles named by both must be one block, not two.
  *
  * ## Example 1: look at what the check found without failing the test
  * ```kt
@@ -57,10 +59,12 @@ import me.tbsten.katachi.scan.layoutWarningsOf
  * ```
  */
 @ExperimentalKatachiApi
-public class LayoutCheck : ArchitectureProcessor<List<Violation>> {
-    // Reading `layoutViolations` is what starts the walk; see [ProjectModel.layoutViolations]
-    // for why a processor is handed it through a door only katachi's own check can open.
-    // `declaredEntries` costs no walk — see this class's own KDoc for why it is read here too.
-    override fun process(model: ProjectModel): List<Violation> =
-        model.layoutViolations + layoutWarningsOf(model.declaredEntries, model.layoutFileOverlaps)
+public class LayoutCheck : ArchitectureProcessorNoArg<List<Violation>> {
+    // Reading `layoutViolations` is what starts the walk. `declaredEntries` costs no walk --
+    // see this class's own KDoc for why it is read here too.
+    override fun process(context: ArchitectureProcessContext<Unit>): List<Violation> {
+        val walk = context.projectWalk
+        return walk.layoutViolations +
+            layoutWarningsOf(context.declaredEntries, walk.layoutFileOverlaps)
+    }
 }
