@@ -33,7 +33,12 @@ public enum class ProjectRootMarker(internal val markerPaths: List<String>) {
             ".mvn/wrapper/maven-wrapper.properties",
         ),
     ),
-    Git(listOf(".git/config", ".git/HEAD", ".git/refs")),
+    // `.git` itself is listed alongside the three files inside it, because in a worktree and in
+    // a submodule `.git` is a *file* holding `gitdir: <path>` and none of the three exist. Without
+    // this entry, katachi run from a worktree reports a repository as not being one -- which a
+    // subagent working in `.claude/worktrees/` hits every time. `exists` answers for a file and a
+    // directory alike, so the one entry covers both shapes.
+    Git(listOf(".git", ".git/config", ".git/HEAD", ".git/refs")),
 }
 
 /**

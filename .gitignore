@@ -61,6 +61,9 @@ local.properties
 ### AI Agent ###
 CLAUDE.local.md
 .claude/*.local.*
+# `EnterWorktree` がここに worktree を作る。放っておくと gitTracked() が未追跡のまま
+# 拾い上げ、:architecture-test:test が「宣言されていないファイルがある」で落ちる。
+.claude/worktrees/
 .local/
 .playwright-mcp/
 

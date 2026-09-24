@@ -79,6 +79,19 @@ class ProjectRootSpec : FreeSpec({
             root.isGitRepository shouldBe true
         }
 
+        ".git がディレクトリではなくファイルでも Git として認識する" {
+            // worktree と submodule の `.git` は `gitdir: <path>` の1行が入ったファイルで、
+            // `.git/config` も `.git/HEAD` も `.git/refs` も存在しない。ここが false になると、
+            // worktree で作業している利用者（と subagent）に嘘をつくことになる。
+            val fileSystem = fakeFileSystem(workingDirectory = "/worktree") {
+                "/worktree" { ".git"() }
+            }
+
+            val root = findProjectRoot(fileSystem)
+            root.markers shouldContainExactlyInAnyOrder listOf(ProjectRootMarker.Git)
+            root.isGitRepository shouldBe true
+        }
+
         "同じディレクトリにある複数のマーカーをすべて返す" {
             val fileSystem = fakeFileSystem(workingDirectory = "/repo") {
                 "/repo" {
