@@ -1,19 +1,7 @@
 package me.tbsten.katachi.processor
 
-import java.io.File
+import kotlin.system.exitProcess
 import me.tbsten.katachi.InternalKatachiApi
-
-/**
- * Where the walking skeleton writes its one file, relative to the JVM's working directory.
- *
- * `JavaExec` starts the process in the directory of the project the task belongs to, so this
- * lands in that module's own `build/`. That is outside `gitTracked()`, which is why a generated
- * file needs no `layout { }` declaration of its own.
- *
- * `WalkingSkeleton` stands where the processor's own name goes once there is one to put there.
- */
-// TODO(v0.2 step 2): replace with `build/katachi/<Processor>/`, named from the registry key.
-private const val SKELETON_OUTPUT_PATH: String = "build/katachi/WalkingSkeleton/skeleton.txt"
 
 /**
  * The entry point the Gradle plugin's `runKatachiProcessor` task starts.
@@ -24,35 +12,73 @@ private const val SKELETON_OUTPUT_PATH: String = "build/katachi/WalkingSkeleton/
  * string, so moving this file breaks the task without breaking the build — a sample run is what
  * catches it.
  *
- * ## What it does today
+ * ## What it does
  *
- * It writes one file and nothing else. Selecting processors, decoding their arguments and
- * reading the generated registry all arrive later; what this shape proves is that the plugin,
- * the user's classpath and this entry point are connected at all.
+ * 1. [parseProcessorCommandLine]s [args].
+ * 2. [loadEntryPoint]s the generated [KatachiEntryPoint] the plugin named with `--entry-point`.
+ * 3. [runProcessors] every selected key against that entry point's `architecture`, with the
+ *    `--arg` values.
+ * 4. Exits with a non-zero status if any processor failed.
  *
- * An exception thrown here ends the JVM with a non-zero status, and `JavaExec` turns that into a
- * failed task. Nothing is caught on purpose: a run that fails silently would be worse than one
- * that never ran.
+ * The exit happens **after** [runProcessors] has printed its full report, never before: the run's
+ * summary is the most useful thing on the screen, and returning a failing exit status first would
+ * cut the process off before `out` finished writing it.
+ *
+ * An exception thrown anywhere above is not caught here. It ends the JVM with a non-zero status,
+ * and `JavaExec` turns that into a failed task -- so a run that could not even get as far as
+ * printing a report still fails loudly rather than succeeding having done nothing.
  *
  * ## Example 1: run the entry point the way the Gradle task does
  * ```kt
- * import me.tbsten.katachi.InternalKatachiApi
- * import me.tbsten.katachi.processor.main
+ * @OptIn(InternalKatachiApi::class)
+ * object MyEntryPoint : KatachiEntryPoint {
+ *     override val architecture: Architecture = architecture {
+ *         "domain".group { "UseCase" { layout { "domain" / "*UseCase.kt".file() } } }
+ *     }
+ *     override val processors: Map<String, Class<*>> = mapOf(
+ *         "layout" to LayoutCheck::class.java,
+ *     )
+ * }
  *
  * @OptIn(InternalKatachiApi::class)
  * fun runIt() {
- *     main(emptyArray())
+ *     main(arrayOf("--entry-point=com.example.MyEntryPoint", "--processor=layout"))
  * }
  * ```
  *
- * @param args the command line the task passes on. Nothing reads it yet; it is written into the
- *   output so that a run can be told apart from the one before it.
+ * @param args the command line the `runKatachiProcessor` task passes on. See
+ *   [parseProcessorCommandLine] for the accepted form.
  */
-// TODO(v0.2 step 2): read `--processor` / `--arg` and drive the generated registry from here.
 @InternalKatachiApi
 public fun main(args: Array<String>) {
-    val output = File(SKELETON_OUTPUT_PATH).absoluteFile
-    output.parentFile?.mkdirs()
-    output.writeText("katachi walking skeleton\nargs=${args.joinToString(separator = " ")}\n")
-    println("[katachi] wrote $output")
+    val commandLine = parseProcessorCommandLine(args)
+    val entryPoint = loadEntryPoint(commandLine.entryPointClassName)
+    val summary = runProcessors(
+        architecture = entryPoint.architecture,
+        registry = entryPoint.processors,
+        processorKeys = commandLine.processorKeys,
+        rawArgs = commandLine.args,
+    )
+    if (summary.failed > 0) exitProcess(1)
+}
+
+/**
+ * Reads the Gradle plugin's generated [KatachiEntryPoint] off the test runtime classpath.
+ *
+ * The one reflective step of the whole path: `Class.forName` finds the generated class by name,
+ * and its Kotlin `object`-ness guarantees an `INSTANCE` field. Everything read off the result
+ * afterwards -- `architecture`, `processors` -- goes through the typed [KatachiEntryPoint]
+ * interface instead.
+ *
+ * @throws KatachiEntryPointNotFoundException when [className] cannot be loaded, has no
+ *   `INSTANCE` field, or that field is not a [KatachiEntryPoint].
+ */
+internal fun loadEntryPoint(className: String): KatachiEntryPoint {
+    val instance = runCatching {
+        val type = Class.forName(className, true, KatachiEntryPoint::class.java.classLoader)
+        type.getDeclaredField("INSTANCE").apply { isAccessible = true }.get(null)
+    }.getOrElse { cause -> throw KatachiEntryPointNotFoundException(className, cause) }
+
+    return instance as? KatachiEntryPoint
+        ?: throw KatachiEntryPointNotFoundException(className, cause = null)
 }

@@ -9,6 +9,11 @@ plugins {
     // settings.gradle.kts. A real user writes `id("me.tbsten.katachi") version "<version>"`
     // and resolves it from mavenCentral.
     id("me.tbsten.katachi")
+    // Only needed because this sample writes its own processor with a @Serializable Args
+    // type (`RoleNames`, registered below). A module that only registers
+    // ArchitectureProcessorNoArg processors -- sample/android and sample/kmp are exactly
+    // that -- needs no serialization compiler plugin at all.
+    alias(libs.plugins.kotlinPluginSerialization)
 }
 
 kotlin {
@@ -40,7 +45,8 @@ dependencies {
     // role). sample/android and sample/kmp deliberately omit this dependency: they exercise
     // `assert()` with zero constraints declared, which is the standing test that the
     // unevaluated-constraint guard does not false-positive on a project that never adopts
-    // `konsist { }` at all.
+    // `konsist { }` at all. This is also why `konsist` is registered as a katachi { processors
+    // { } } key only here, in `katachi { }` below.
     testImplementation(libs.katachiKonsist)
     testImplementation(libs.kotestRunnerJunit5)
     testImplementation(libs.kotestAssertionsCore)
@@ -49,4 +55,17 @@ dependencies {
     // runner only registers kotest's engine, so without this one the test compiles, is
     // discovered by no engine, and reports as passing without ever calling `assert()`.
     testRuntimeOnly(sampleLibs.junitJupiterEngine)
+}
+
+katachi {
+    architecture = "com.example.projectArchitecture"
+    processors {
+        // katachi's own checks, registered as processors: an argument-free class (not an
+        // object), which proves `runKatachiProcessor` can instantiate either shape.
+        register("layout", "me.tbsten.katachi.check.LayoutCheck")
+        register("konsist", "me.tbsten.katachi.check.KonsistCheck")
+        // A processor this sample writes itself, as an `object` with a @Serializable Args
+        // type -- see `com.example.processors.RoleNames`.
+        register("roleNames", "com.example.processors.RoleNames")
+    }
 }

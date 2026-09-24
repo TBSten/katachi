@@ -8,6 +8,10 @@
 // before this module existed the katachi tests had to squat in `:app:android`'s unit tests.
 plugins {
     alias(libs.plugins.kotlinJvm)
+    // No version is written: resolved from the composite build declared in
+    // `pluginManagement` of settings.gradle.kts. A real user writes
+    // `id("me.tbsten.katachi") version "<version>"` and resolves it from mavenCentral.
+    id("me.tbsten.katachi")
 }
 
 kotlin {
@@ -30,4 +34,14 @@ dependencies {
     testImplementation(libs.katachi)
     testImplementation(libs.kotestRunnerJunit5)
     testImplementation(libs.kotestAssertionsCore)
+}
+
+katachi {
+    architecture = "com.example.kmp.projectArchitecture"
+    processors {
+        // Same as sample/android: no konsist dependency and no serialization compiler
+        // plugin in this module, so only an ArchitectureProcessorNoArg processor is
+        // registered.
+        register("layout", "me.tbsten.katachi.check.LayoutCheck")
+    }
 }

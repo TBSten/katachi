@@ -4,6 +4,10 @@
 // itself is a JVM library.
 plugins {
     alias(libs.plugins.kotlinJvm)
+    // No version is written: resolved from the composite build declared in
+    // `pluginManagement` of settings.gradle.kts. A real user writes
+    // `id("me.tbsten.katachi") version "<version>"` and resolves it from mavenCentral.
+    id("me.tbsten.katachi")
 }
 
 kotlin {
@@ -40,4 +44,17 @@ dependencies {
     // the aggregate artifact is declared here on purpose. kotest's own engine keeps
     // running the `*Spec` classes next to it.
     testImplementation(sampleLibs.junitJupiter)
+}
+
+katachi {
+    architecture = "com.example.sample.projectArchitecture"
+    processors {
+        // `konsist` is deliberately not registered here: this module has no
+        // `testImplementation(libs.katachiKonsist)` dependency at all -- it is the standing
+        // test that `assert()` runs cleanly with zero constraints declared. Registering it
+        // as a processor would need a class it cannot see. Only sample/jvm registers it.
+        // No serialization compiler plugin is applied to this module either: `layout` is
+        // the only processor registered, and it is ArchitectureProcessorNoArg.
+        register("layout", "me.tbsten.katachi.check.LayoutCheck")
+    }
 }

@@ -8,6 +8,7 @@ import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.builtins.serializer
 import me.tbsten.katachi.processor.ArchitectureProcessContext
 import me.tbsten.katachi.processor.ArchitectureProcessor
 import me.tbsten.katachi.processor.ArchitectureProcessorNoArg
@@ -91,6 +92,15 @@ class ProcessorArgsSpec : FreeSpec({
                 BasicArgs.serializer(),
                 mapOf("name" to "GetUser", "somethingElse" to "ignored"),
             ) shouldBe BasicArgs(name = "GetUser")
+        }
+
+        "Unit.serializer() を --arg 無しでデコードすると Unit になる（ArchitectureProcessorNoArg の経路）" {
+            decodeFromStringMap(Unit.serializer(), emptyMap()) shouldBe Unit
+        }
+
+        "Unit.serializer() は他の processor 宛てのキーが混ざっていても素通りする" {
+            // 未知キー判定は checkNoUnknownArgs の仕事であって、decodeFromStringMap は関知しない。
+            decodeFromStringMap(Unit.serializer(), mapOf("roleName" to "GetUser")) shouldBe Unit
         }
     }
 

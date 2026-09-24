@@ -13,11 +13,30 @@ import me.tbsten.katachi.InternalKatachiApi
  * Nothing here has been run. The block is kept as it was written and evaluated only when a
  * check that evaluates constraints is handed to `assert(...)`.
  *
- * ## Example 1: read back what a definition declared, without running anything
+ * **There is no public way to reach one directly.** `declaredConstraints` sits on the internal
+ * walk behind [me.tbsten.katachi.processor.ArchitectureProcessContext], not on the context
+ * itself -- a `DeclaredConstraint` is something the outcome of `assert()` or `validate()` names
+ * in its failure report, never something a processor builds or reads on its own.
+ *
+ * ## Example 1: where one shows up -- named in a failed constraint's report, never built by hand
  * ```kt
- * projectArchitecture.process { model ->
- *     model.declaredConstraints.map { "${it.role.qualifiedName} ${it.name}" }
+ * val arch = architecture {
+ *     "domain".group {
+ *         "UseCase" {
+ *             layout {
+ *                 "useCase" {
+ *                     constraint("leaves no TODO") { subject ->
+ *                         subject.files.filter { it.endsWith(".kt") }.map { ConstraintFailure(it) }
+ *                     }
+ *                     "*UseCase.kt".file()
+ *                 }
+ *             }
+ *         }
+ *     }
  * }
+ * // `arch.assert()` walks the real project and turns a rejected file into a report block. What
+ * // this `DeclaredConstraint` type is used for is entirely inside that report machinery -- it
+ * // never appears as a value in user code, above or below this line.
  * ```
  */
 @InternalKatachiApi

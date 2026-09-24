@@ -27,6 +27,8 @@ fun DeclarationContainerScope.gradlePlugin() = "GradlePlugin" {
     summary = "runKatachiProcessor を登録する plugin。利用者の Gradle デーモンに読まれるので Java で書く"
     example("KatachiPlugin.java", "plugin 本体。runKatachiProcessor を登録する")
     example("RunKatachiProcessorTask.java", "test の runtimeClasspath で JVM を起動するタスク")
+    example("KatachiExtension.java", "利用者が書く katachi { } ブロック")
+    example("GenerateKatachiEntryPointTask.java", "architecture の参照とレジストリだけを吐くコード生成")
     layout {
         ":katachi-gradle-plugin".module {
             mainSourceSet / "java" / "me/tbsten/katachi/gradle" / "*.java".file()

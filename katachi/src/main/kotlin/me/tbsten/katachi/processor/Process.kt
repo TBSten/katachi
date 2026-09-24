@@ -31,8 +31,22 @@ public fun <R> Architecture.process(processor: ArchitectureProcessor<Unit, R>): 
  *
  * ## Example 1: run a processor with its own Args type
  * ```kt
- * val count = projectArchitecture.process(CountRoles, CountRoles.Args(prefix = "Gradle"))
- * count shouldBe 2
+ * object CountRoles : ArchitectureProcessor<CountRoles.Args, Int> {
+ *     override val argsSerializer: KSerializer<Args> = Args.serializer()
+ *
+ *     override fun process(context: ArchitectureProcessContext<Args>): Int =
+ *         context.roles.count { it.name.startsWith(context.args.prefix) }
+ *
+ *     @Serializable
+ *     data class Args(val prefix: String = "")
+ * }
+ *
+ * val arch = architecture {
+ *     "domain".group { "GetUserUseCase" { }; "GetOrderUseCase" { } }
+ *     "data".group { "GetUserRepository" { } }
+ * }
+ * val count = arch.process(CountRoles, CountRoles.Args(prefix = "Get"))
+ * count shouldBe 3
  * ```
  */
 @ExperimentalKatachiApi
@@ -66,13 +80,19 @@ public fun <R> Architecture.process(block: (ArchitectureProcessContext<Unit>) ->
  *
  * ## Example 1: run a processor against a file system built for one spec
  * ```kt
+ * val arch = architecture {
+ *     "domain".group { "UseCase" { layout { "domain" / "*UseCase.kt".file() } } }
+ * }
  * val fileSystem = object : KatachiFileSystem {
  *     override val workingDirectory: FsPath = FsPath.of("/repo")
- *     override fun exists(path: FsPath): Boolean = path == workingDirectory
+ *     // "gradlew" is one of the project root markers LayoutCheck's walk looks for; without one
+ *     // present, findProjectRoot throws before the check ever runs.
+ *     override fun exists(path: FsPath): Boolean =
+ *         path == workingDirectory || path == workingDirectory / "gradlew"
  *     override fun isDirectory(path: FsPath): Boolean = path == workingDirectory
  *     override fun list(directory: FsPath): List<FsPath> = emptyList()
  * }
- * projectArchitecture.process(LayoutCheck(), fileSystem) shouldBe emptyList()
+ * arch.process(LayoutCheck(), fileSystem) shouldBe emptyList()
  * ```
  */
 @InternalKatachiApi
@@ -87,7 +107,24 @@ public fun <R> Architecture.process(
  *
  * ## Example 1: run an argument-taking processor against an in-memory tree
  * ```kt
- * projectArchitecture.process(CountRoles, CountRoles.Args(prefix = ""), fakeFileSystem) shouldBe 3
+ * object CountRoles : ArchitectureProcessor<CountRoles.Args, Int> {
+ *     override val argsSerializer: KSerializer<Args> = Args.serializer()
+ *
+ *     override fun process(context: ArchitectureProcessContext<Args>): Int =
+ *         context.roles.count { it.name.startsWith(context.args.prefix) }
+ *
+ *     @Serializable
+ *     data class Args(val prefix: String = "")
+ * }
+ *
+ * val arch = architecture { "domain".group { "UseCase" { } } }
+ * val fileSystem = object : KatachiFileSystem {
+ *     override val workingDirectory: FsPath = FsPath.of("/repo")
+ *     override fun exists(path: FsPath): Boolean = path == workingDirectory
+ *     override fun isDirectory(path: FsPath): Boolean = path == workingDirectory
+ *     override fun list(directory: FsPath): List<FsPath> = emptyList()
+ * }
+ * arch.process(CountRoles, CountRoles.Args(prefix = ""), fileSystem) shouldBe 1
  * ```
  */
 @InternalKatachiApi
@@ -104,7 +141,15 @@ public fun <Args, R> Architecture.process(
  *
  * ## Example 1: run an inline processor against the same kind of file system
  * ```kt
- * val roleCount = projectArchitecture.process(fakeFileSystem) { context -> context.roles.size }
+ * val arch = architecture { "domain".group { "UseCase" { } } }
+ * val fileSystem = object : KatachiFileSystem {
+ *     override val workingDirectory: FsPath = FsPath.of("/repo")
+ *     override fun exists(path: FsPath): Boolean = path == workingDirectory
+ *     override fun isDirectory(path: FsPath): Boolean = path == workingDirectory
+ *     override fun list(directory: FsPath): List<FsPath> = emptyList()
+ * }
+ * val roleCount = arch.process(fileSystem) { context -> context.roles.size }
+ * roleCount shouldBe 1
  * ```
  */
 @InternalKatachiApi

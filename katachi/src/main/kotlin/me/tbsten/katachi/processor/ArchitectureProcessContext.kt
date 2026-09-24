@@ -82,15 +82,32 @@ public interface ArchitectureProcessContext<out Args> {
      * `@InternalKatachiApi`, because [KatachiFileSystem] is: a processor written outside
      * `:katachi` has no in-memory tree to hand in and tests against a real checkout instead.
      *
-     * ## Example 1: run a processor against a tree built for one spec
+     * ## Example 1: run a processor that reads the file system it is handed
      * ```kt
+     * object FilesOfFirstRole : ArchitectureProcessorNoArg<List<String>> {
+     *     override fun process(context: ArchitectureProcessContext<Unit>): List<String> =
+     *         context.filesOf(context.roles.first())
+     * }
+     *
+     * val arch = architecture {
+     *     "domain".group { "UseCase" { layout { "domain" / "*UseCase.kt".file() } } }
+     * }
      * val fileSystem = object : KatachiFileSystem {
      *     override val workingDirectory: FsPath = FsPath.of("/repo")
-     *     override fun exists(path: FsPath): Boolean = path == workingDirectory
-     *     override fun isDirectory(path: FsPath): Boolean = path == workingDirectory
-     *     override fun list(directory: FsPath): List<FsPath> = emptyList()
+     *     // "gradlew" is one of the project root markers the walk looks for; without one
+     *     // present, findProjectRoot throws before filesOf can run.
+     *     override fun exists(path: FsPath): Boolean =
+     *         path in setOf(workingDirectory, workingDirectory / "gradlew", workingDirectory / "domain")
+     *     override fun isDirectory(path: FsPath): Boolean =
+     *         path == workingDirectory || path == workingDirectory / "domain"
+     *     override fun list(directory: FsPath): List<FsPath> =
+     *         if (directory == workingDirectory / "domain") {
+     *             listOf(directory / "GetUserUseCase.kt")
+     *         } else {
+     *             emptyList()
+     *         }
      * }
-     * projectArchitecture.process(RoleNames, fileSystem) shouldBe emptyList()
+     * arch.process(FilesOfFirstRole, fileSystem) shouldBe listOf("domain/GetUserUseCase.kt")
      * ```
      */
     @InternalKatachiApi
@@ -245,7 +262,7 @@ public interface ArchitectureProcessContext<out Args> {
      *
      * ## Example 1: run two processors on one walk
      * ```kt
-     * @OptIn(InternalKatachiApi::class)
+     * @OptIn(ExperimentalKatachiApi::class, InternalKatachiApi::class)
      * fun <R> runBoth(
      *     context: ArchitectureProcessContext<Unit>,
      *     first: ArchitectureProcessorNoArg<List<R>>,

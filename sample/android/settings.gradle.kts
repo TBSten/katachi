@@ -2,6 +2,18 @@
 // settings file, exactly like a project that consumes katachi from the outside would.
 
 pluginManagement {
+    // `plugins { id("me.tbsten.katachi") }` is resolved here and nowhere else. The
+    // `includeBuild("../..")` further down substitutes *library* coordinates only --
+    // plugin resolution never looks at it -- so the same build is included a second time,
+    // in this block. Gradle treats the two as one included build; its own integration
+    // tests cover a build included both as a plugin build and as a regular one.
+    //
+    // A real user writes neither line. They keep the repositories below and write
+    // `id("me.tbsten.katachi") version "<version>"`. The sample stands in for that with a
+    // composite build, so that it always exercises the plugin in this working tree rather
+    // than the last one published.
+    includeBuild("../..")
+
     repositories {
         // AGP is published to Google Maven only.
         google()

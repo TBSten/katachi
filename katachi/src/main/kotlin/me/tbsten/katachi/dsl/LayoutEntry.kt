@@ -11,7 +11,7 @@ import me.tbsten.katachi.InternalKatachiApi
  * val arch = architecture {
  *     "domain".group { "UseCase" { layout { "useCase" / "GetUserUseCase".ktFile() } } }
  * }
- * arch.process { model -> model.declaredEntries.map { it.kind } } shouldContainExactly
+ * arch.process { context -> context.declaredEntries.map { it.kind } } shouldContainExactly
  *     listOf(LayoutEntryKind.Directory, LayoutEntryKind.File)
  * ```
  */
@@ -24,7 +24,7 @@ public enum class LayoutEntryKind {
      * ## Example 1: read back a directory a layout declared
      * ```kt
      * val arch = architecture { "domain".group { "UseCase" { layout { "useCase" { } } } } }
-     * arch.process { model -> model.declaredEntries.single().kind } shouldBe
+     * arch.process { context -> context.declaredEntries.single().kind } shouldBe
      *     LayoutEntryKind.Directory
      * ```
      */
@@ -38,8 +38,8 @@ public enum class LayoutEntryKind {
      * val arch = architecture {
      *     "domain".group { "UseCase" { layout { "useCase" / "GetUserUseCase".ktFile() } } }
      * }
-     * arch.process { model ->
-     *     model.declaredEntries.filter { it.kind == LayoutEntryKind.File }.map { it.path }
+     * arch.process { context ->
+     *     context.declaredEntries.filter { it.kind == LayoutEntryKind.File }.map { it.path }
      * } shouldContainExactly listOf("useCase/GetUserUseCase.kt")
      * ```
      */
@@ -52,8 +52,8 @@ public enum class LayoutEntryKind {
      * ## Example 1: find the directories a definition left open
      * ```kt
      * val arch = architecture { "build".group { "Generated" { layout { "generated" { anyFile() } } } } }
-     * arch.process { model ->
-     *     model.declaredEntries.filter { it.kind == LayoutEntryKind.AnyFile }.map { it.path }
+     * arch.process { context ->
+     *     context.declaredEntries.filter { it.kind == LayoutEntryKind.AnyFile }.map { it.path }
      * } shouldContainExactly listOf("generated")
      * ```
      */
@@ -65,8 +65,8 @@ public enum class LayoutEntryKind {
      * ## Example 1: list what a definition stops looking at
      * ```kt
      * val arch = architecture { "build".group { "Output" { layout { "build".ignore() } } } }
-     * arch.process { model ->
-     *     model.declaredEntries.filter { it.kind == LayoutEntryKind.Ignore }.map { it.path }
+     * arch.process { context ->
+     *     context.declaredEntries.filter { it.kind == LayoutEntryKind.Ignore }.map { it.path }
      * } shouldContainExactly listOf("build")
      * ```
      */
@@ -90,8 +90,8 @@ public enum class LayoutEntryKind {
  * val arch = architecture {
  *     "domain".group { "UseCase" { layout { "useCase" / "GetUserUseCase".ktFile() } } }
  * }
- * arch.process { model ->
- *     model.declaredEntries.map { "${it.role.qualifiedName} ${it.path} ${it.kind}" }
+ * arch.process { context ->
+ *     context.declaredEntries.map { "${it.role.qualifiedName} ${it.path} ${it.kind}" }
  * } shouldContainExactly listOf(
  *     "domain/UseCase useCase Directory",
  *     "domain/UseCase useCase/GetUserUseCase.kt File",
@@ -108,7 +108,7 @@ public class LayoutEntry internal constructor(
      * val arch = architecture {
      *     "domain".group { "UseCase" { layout { "useCase" / "GetUserUseCase".ktFile() } } }
      * }
-     * arch.process { model -> model.declaredEntries.map { it.path } } shouldContainExactly
+     * arch.process { context -> context.declaredEntries.map { it.path } } shouldContainExactly
      *     listOf("useCase", "useCase/GetUserUseCase.kt")
      * ```
      */
@@ -123,8 +123,8 @@ public class LayoutEntry internal constructor(
      * val arch = architecture {
      *     "domain".group { "UseCase" { layout { "useCase" / "GetUserUseCase".ktFile() } } }
      * }
-     * arch.process { model ->
-     *     model.declaredEntries.filter { it.kind == LayoutEntryKind.File }.map { it.path }
+     * arch.process { context ->
+     *     context.declaredEntries.filter { it.kind == LayoutEntryKind.File }.map { it.path }
      * } shouldContainExactly listOf("useCase/GetUserUseCase.kt")
      * ```
      */
@@ -144,7 +144,7 @@ public class LayoutEntry internal constructor(
      *         "UseCase" { layout { "useCase" / "GetUserUseCase".ktFile(); "useCase" / "*.kt".file() } }
      *     }
      * }
-     * arch.process { model -> model.declaredEntries.filter { it.required }.map { it.path } } shouldContainExactly
+     * arch.process { context -> context.declaredEntries.filter { it.required }.map { it.path } } shouldContainExactly
      *     listOf("useCase/GetUserUseCase.kt")
      * ```
      */
@@ -157,8 +157,8 @@ public class LayoutEntry internal constructor(
      * val arch = architecture {
      *     "domain".group { "UseCase" { layout { "useCase" / "GetUserUseCase".ktFile() } } }
      * }
-     * arch.process { model ->
-     *     model.declaredEntries.groupBy({ it.role.qualifiedName }, { it.path })
+     * arch.process { context ->
+     *     context.declaredEntries.groupBy({ it.role.qualifiedName }, { it.path })
      * } shouldBe mapOf("domain/UseCase" to listOf("useCase", "useCase/GetUserUseCase.kt"))
      * ```
      */
@@ -171,7 +171,7 @@ public class LayoutEntry internal constructor(
      * val arch = architecture {
      *     "domain".group { "UseCase" { layout { "useCase" / "GetUserUseCase".ktFile() } } }
      * }
-     * arch.process { model -> model.declaredEntries.first().declaredAt.fileName } shouldBe
+     * arch.process { context -> context.declaredEntries.first().declaredAt.fileName } shouldBe
      *     "ProjectArchitecture.kt"
      * ```
      */
@@ -186,7 +186,7 @@ public class LayoutEntry internal constructor(
      *         "UseCase" { layout { "useCase" { description = "Behavior for each screen" } } }
      *     }
      * }
-     * arch.process { model -> model.declaredEntries.single().description } shouldBe "Behavior for each screen"
+     * arch.process { context -> context.declaredEntries.single().description } shouldBe "Behavior for each screen"
      * ```
      */
     public val description: String?,

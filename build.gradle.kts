@@ -89,12 +89,19 @@ val sampleBuilds = listOf(
     // The plugin's functional test carries the same literal on its own side, so it
     // cannot catch the two drifting apart: it is not a regression guard for this.
     // Actually invoking the task in this sample is what turns red when the class name
-    // drifts.
-    SampleBuild("jvm", listOf("check", "runKatachiProcessor"), needsAndroidSdk = false),
+    // drifts. From v0.2 step 2 on, this run also exercises the generated entry point,
+    // the processor registry, and `--arg` decoding -- not just the literal class name:
+    // two processors (`layout`, the katachi-authored `object` `roleNames`) run in one
+    // invocation, one of them with a decoded argument.
+    SampleBuild(
+        "jvm",
+        listOf("check", "runKatachiProcessor", "--processor=layout,roleNames", "--arg", "prefix=domain"),
+        needsAndroidSdk = false,
+    ),
     // `check` here includes Android Lint over nine modules. Measured on this
     // sample: 14 s warm, 21 s with `clean --no-build-cache`, so there is no
     // reason to narrow it down to the unit tests. Revisit if the sample grows.
-    SampleBuild("android", listOf("check"), needsAndroidSdk = true),
+    SampleBuild("android", listOf("check", "runKatachiProcessor", "--processor=layout"), needsAndroidSdk = true),
     // Deliberately NOT `check` / `build` / `assemble`, and there is no `jvmTest`
     // in this sample. Its modules declare iosArm64 / iosSimulatorArm64, so the
     // lifecycle tasks drag `compileKotlinIosArm64` and the Kotlin/Native
@@ -109,9 +116,21 @@ val sampleBuilds = listOf(
     //   * `:app:android:testDebugUnitTest` is what proves the sample still
     //     compiles as a Kotlin Multiplatform project. `:architecture-test` is a
     //     plain JVM module that references none of `:ui` / `:data` / `:feature:*`.
+    //   * `:architecture-test:runKatachiProcessor` proves the plugin resolves and runs
+    //     inside a KMP composite build the same way it does in a plain JVM one.
+    //
+    // Task *paths* are used throughout rather than bare task names, on purpose: an
+    // unqualified name would resolve in every project of the build, and this sample's
+    // other modules declare iosArm64 / iosSimulatorArm64, which would drag Apple-only
+    // tasks into the graph the same way a lifecycle task would.
     SampleBuild(
         "kmp",
-        listOf(":architecture-test:test", ":app:android:testDebugUnitTest"),
+        listOf(
+            ":architecture-test:test",
+            ":app:android:testDebugUnitTest",
+            ":architecture-test:runKatachiProcessor",
+            "--processor=layout",
+        ),
         needsAndroidSdk = true,
     ),
 )

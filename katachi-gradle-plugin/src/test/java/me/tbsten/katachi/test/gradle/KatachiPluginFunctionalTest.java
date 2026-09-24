@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -128,7 +129,8 @@ class KatachiPluginFunctionalTest {
                         + "        out.getParentFile().mkdirs();\n"
                         + "        java.nio.file.Files.write(out.toPath(), \"walking skeleton\".getBytes(\"UTF-8\"));\n");
 
-        BuildResult result = runner(projectDir, gradleVersion, "runKatachiProcessor").build();
+        BuildResult result =
+                runner(projectDir, gradleVersion, "runKatachiProcessor", "--processor=skeleton").build();
 
         assertEquals(TaskOutcome.SUCCESS, outcomeOf(result));
         assertTrue(
@@ -151,7 +153,9 @@ class KatachiPluginFunctionalTest {
         writeTestJavaClass(
                 projectDir, "Boom", "        throw new IllegalStateException(\"boom from the fixture\");\n");
 
-        BuildResult result = runner(projectDir, gradleVersion, "runKatachiProcessor").buildAndFail();
+        BuildResult result =
+                runner(projectDir, gradleVersion, "runKatachiProcessor", "--processor=skeleton")
+                        .buildAndFail();
 
         assertEquals(TaskOutcome.FAILED, outcomeOf(result));
         assertTrue(
@@ -191,6 +195,16 @@ class KatachiPluginFunctionalTest {
                     .append("\")\n")
                     .append("}\n");
         }
+        // `exec()` refuses to run without an architecture and at least one processor key.
+        // These two tests are about the JavaExec pipe itself -- they override `mainClass` to a
+        // plain Java class in the fixture, so the generated entry point is never loaded and the
+        // value here is only ever checked for being a well-formed name.
+        buildScript
+                .append("\n")
+                .append("katachi {\n")
+                .append("    architecture = \"fixture.ProjectArchitectureKt\"\n")
+                .append("}\n");
+
         write(projectDir.resolve("build.gradle.kts"), buildScript.toString());
     }
 
@@ -218,7 +232,13 @@ class KatachiPluginFunctionalTest {
         Files.write(path, content.getBytes(StandardCharsets.UTF_8));
     }
 
-    private static GradleRunner runner(Path projectDir, String gradleVersion, String task) {
+    private static GradleRunner runner(
+            Path projectDir, String gradleVersion, String task, String... extraArguments) {
+        List<String> arguments = new ArrayList<>();
+        arguments.add(task);
+        arguments.add("--stacktrace");
+        arguments.add("--configuration-cache");
+        arguments.addAll(Arrays.asList(extraArguments));
         return GradleRunner.create()
                 .withProjectDir(projectDir.toFile())
                 .withGradleVersion(gradleVersion)
@@ -226,7 +246,7 @@ class KatachiPluginFunctionalTest {
                 // is what makes `id("me.tbsten.katachi")` resolve without a repository.
                 .withPluginClasspath()
                 .forwardOutput()
-                .withArguments(task, "--stacktrace", "--configuration-cache");
+                .withArguments(arguments);
     }
 
     private static TaskOutcome outcomeOf(BuildResult result) {

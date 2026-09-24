@@ -23,6 +23,8 @@ fun DeclarationContainerScope.processor() = "Processor" {
     example("ArchitectureProcessContext.kt", "走査を高々1度に抑えたうえで、宣言と実体の両方を processor に見せる入口")
     example("ArchitectureProcessor.kt", "利用者が実装する変換")
     example("StringMapDecoder.kt", "--arg key=value を processor の Args 型に読み替える")
+    example("KatachiEntryPoint.kt", "Gradle plugin が生成する object が実装する唯一の型。main() が名前で読むのはここだけ")
+    example("ProcessorRun.kt", "CLI から複数の processor を型消去された経路で走らせる")
     layout {
         ":katachi".module {
             importsOnlyEarlierLayers()

@@ -17,8 +17,24 @@ import me.tbsten.katachi.KatachiDeclarationException
  *
  * ## Example 1: catch a mistyped `--arg` key
  * ```kt
+ * object GenerateOne : ArchitectureProcessor<GenerateOne.Args, Unit> {
+ *     override val argsSerializer: KSerializer<Args> = Args.serializer()
+ *
+ *     override fun process(context: ArchitectureProcessContext<Args>) {
+ *         context.log("generating for ${context.args.roleName}")
+ *     }
+ *
+ *     @Serializable
+ *     data class Args(val roleName: String)
+ * }
+ *
  * val thrown = shouldThrow<KatachiUnknownProcessorArgException> {
- *     checkNoUnknownArgs(listOf(GenerateOne), mapOf("roleNam" to "X"))
+ *     runProcessors(
+ *         architecture = architecture { },
+ *         registry = mapOf("generate" to GenerateOne::class.java),
+ *         processorKeys = listOf("generate"),
+ *         rawArgs = mapOf("roleNam" to "X", "roleName" to "Y"),
+ *     )
  * }
  * thrown.known shouldContain "roleName"
  * ```
@@ -117,17 +133,23 @@ public class KatachiUnsupportedProcessorArgException internal constructor(
 )
 
 /**
- * A [me.tbsten.katachi.processor.ArchitectureProcessor.plus]-combined `argsSerializer` was
- * handed to a [kotlinx.serialization.encoding.Decoder] other than
+ * An `argsSerializer` combined with `+` (see the `ArchitectureProcessor` combination in
+ * `ProcessorComposition.kt`) was handed to a [kotlinx.serialization.encoding.Decoder] other than
  * [me.tbsten.katachi.processor.StringMapDecoder].
  *
  * @property decoder the class name of the decoder that was used.
  *
  * ## Example 1: a combined serializer only decodes from `--arg` values
  * ```kt
+ * @OptIn(ExperimentalSerializationApi::class)
+ * object NotAStringMapDecoder : AbstractDecoder() {
+ *     override val serializersModule: SerializersModule = EmptySerializersModule()
+ *     override fun decodeElementIndex(descriptor: SerialDescriptor): Int = CompositeDecoder.DECODE_DONE
+ * }
+ *
  * val combined = (LayoutCheck() + KonsistCheck()).argsSerializer
  * shouldThrow<KatachiProcessorArgsDecoderException> {
- *     Json.decodeFromString(combined, "{}")
+ *     combined.deserialize(NotAStringMapDecoder)
  * }
  * ```
  */
@@ -149,16 +171,21 @@ public class KatachiProcessorArgsDecoderException internal constructor(
 )
 
 /**
- * A [me.tbsten.katachi.processor.ArchitectureProcessor.plus]-combined `argsSerializer` was
- * asked to encode.
+ * An `argsSerializer` combined with `+` (see the `ArchitectureProcessor` combination in
+ * `ProcessorComposition.kt`) was asked to encode.
  *
  * @property serialName the combined serializer's serial name.
  *
  * ## Example 1: a combined serializer has nowhere to write values back to
  * ```kt
+ * @OptIn(ExperimentalSerializationApi::class)
+ * object NoOpEncoder : AbstractEncoder() {
+ *     override val serializersModule: SerializersModule = EmptySerializersModule()
+ * }
+ *
  * val combined = (LayoutCheck() + KonsistCheck()).argsSerializer
  * shouldThrow<KatachiProcessorArgsNotEncodableException> {
- *     Json.encodeToString(combined, Unit to Unit)
+ *     combined.serialize(NoOpEncoder, Unit to Unit)
  * }
  * ```
  */
