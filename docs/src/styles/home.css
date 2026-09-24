@@ -1,17 +1,30 @@
 /* Top page only. The page follows the supplied reference's typography, cadence, and surfaces,
  * while every code sample remains a normal Starlight/Expressive Code fence. */
+
+/* Starlight and nova both hold their dark values on :root and override for light with
+ * [data-theme='light']. These tokens keep the same shape so the page is never light-on-dark
+ * before the theme script runs, or with JavaScript off.
+ * The palette is kept local rather than mapped onto --sl-color-*: nova flattens
+ * --sl-color-accent to a grey, which would drop the brand blue in light mode. */
 .katachi-home {
+	--katachi-ink: #f3f4f6;
+	--katachi-muted: #99a1af;
+	--katachi-border: #1e2939;
+	--katachi-panel: #101828;
+	--katachi-accent: #60a5fa;
+	--katachi-dim: #364153;
+	color: var(--katachi-ink);
+	font-size: 15.5px;
+	line-height: 1.9;
+}
+
+:root[data-theme='light'] .katachi-home {
 	--katachi-ink: #14171a;
 	--katachi-muted: #616770;
 	--katachi-border: #e6e8eb;
 	--katachi-panel: #f7f7f8;
 	--katachi-accent: #2563eb;
-	--katachi-danger: #8a1c14;
-	--katachi-danger-bg: #ffe6e2;
 	--katachi-dim: #b9bec6;
-	color: var(--katachi-ink);
-	font-size: 15.5px;
-	line-height: 1.9;
 }
 
 /* Starlight renders the frontmatter title before splash content. The page has its own h1,

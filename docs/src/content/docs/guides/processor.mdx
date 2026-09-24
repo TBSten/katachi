@@ -28,8 +28,8 @@ flowchart LR
     M --> K["KonsistCheck<br/>Validates contents"]
     M -.-> C["Your ArchitectureProcessor<br/>Aggregation, extraction, output to other formats"]
 
-    style D fill:#EAF2FB,stroke:#5B8DEF,stroke-width:2px
-    style C fill:#FAFAFA,stroke:#BDBDBD,stroke-dasharray:4 3,color:#8A8A8A
+    style D fill:#5B8DEF22,stroke:#5B8DEF,stroke-width:2px
+    style C fill:#BDBDBD22,stroke:#BDBDBD,stroke-dasharray:4 3,color:#8A8A8A
 ```
 
 The definition itself doesn't execute anything. **It's `ArchitectureProcessor` that takes a `ProjectModel` and does something with it** — there's no distinction between the ones katachi bundles and the ones you write.
