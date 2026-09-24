@@ -101,7 +101,7 @@ At the end, the result is printed in the following format (a few lines of guidan
 
 ```
 KATACHI_WORKDIR=tmp/install-katachi
-KATACHI_VERSION=0.1.0
+KATACHI_VERSION=0.1.1
 KATACHI_PROJECT_ROOT=/path/to/project
 KATACHI_KOTLIN=2.4.10
 KATACHI_GIT=yes

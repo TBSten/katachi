@@ -38,9 +38,9 @@ kotlin { jvmToolchain(17) }
 tasks.test { useJUnitPlatform() }
 
 dependencies {
-    testImplementation("me.tbsten.katachi:katachi:0.1.0")
+    testImplementation("me.tbsten.katachi:katachi:0.1.1")
     // 任意。`konsist { }` を書くときだけ。
-    testImplementation("me.tbsten.katachi:katachi-konsist:0.1.0")
+    testImplementation("me.tbsten.katachi:katachi-konsist:0.1.1")
 
     // JUnit Platform に実行エンジンと launcher を載せる。katachi は AssertionError を
     // 投げるだけでテストフレームワークに依存しないので、エンジンは利用者が選ぶ。
