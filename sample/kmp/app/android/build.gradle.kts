@@ -30,7 +30,7 @@ android {
 }
 
 kotlin {
-    jvmToolchain(21)
+    jvmToolchain(17)
 }
 
 // Required. AGP's unit test tasks default to JUnit 4, and without this kotest discovers

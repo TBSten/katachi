@@ -113,7 +113,7 @@ If you are not yet convinced that you need katachi, read [Motivation](/katachi/g
         }
 
         kotlin {
-            jvmToolchain(21)
+            jvmToolchain(17)
         }
 
         tasks.test {
@@ -239,7 +239,7 @@ To keep the quality up, run the katachi architecture test regularly by wiring it
               - uses: actions/setup-java@v6
                 with:
                   distribution: temurin
-                  java-version: '21'
+                  java-version: '17'
 
               - uses: gradle/actions/setup-gradle@v6
 

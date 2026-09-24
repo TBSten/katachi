@@ -7,7 +7,7 @@ plugins {
 }
 
 kotlin {
-    jvmToolchain(21)
+    jvmToolchain(17)
 }
 
 tasks.test {
@@ -27,7 +27,7 @@ tasks.test {
 
 dependencies {
     // No version is written here: `libs.katachi` points at
-    // `me.tbsten.katachi:katachi:0.1.0-SNAPSHOT`, which does not exist in any repository.
+    // the version in this repository's catalog, which is not published yet.
     // The `includeBuild("../..")` in settings.gradle.kts substitutes it with the local
     // project, so a broken composite build fails loudly instead of silently resolving.
     testImplementation(libs.katachi)

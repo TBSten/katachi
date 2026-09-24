@@ -6,7 +6,7 @@ plugins {
 // No Compose here on purpose: this module only holds the navigation types and the state of
 // the current destination, so it stays testable without a Compose runtime.
 kotlin {
-    jvmToolchain(21)
+    jvmToolchain(17)
 
     androidLibrary {
         namespace = "com.example.kmp.navigation"

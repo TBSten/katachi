@@ -9,7 +9,7 @@ plugins {
 // inside it, not separate Gradle modules: katachi has to be able to say "this role
 // lives in this package of this module", which is the common shape in real projects.
 kotlin {
-    jvmToolchain(21)
+    jvmToolchain(17)
 
     androidLibrary {
         namespace = "com.example.kmp.ui"

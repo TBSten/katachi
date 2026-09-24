@@ -25,7 +25,7 @@ dokka {
     moduleName.set(project.name)
 
     dokkaSourceSets.configureEach {
-        jdkVersion.set(21)
+        jdkVersion.set(17)
 
         // Kotlin stdlib への外部リンクは DGPv2 のデフォルトで有効
         // （DokkaBasePlugin が enableKotlinStdLibDocumentationLink.convention(true) を設定する）。

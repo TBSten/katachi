@@ -7,7 +7,7 @@ pluginManagement {
 }
 
 plugins {
-    // Resolves the JDK 21 toolchain the modules ask for, so the sample builds on a machine
+    // Resolves the JDK 17 toolchain the modules ask for, so the sample builds on a machine
     // that only has some other JDK installed.
     id("org.gradle.toolchains.foojay-resolver-convention") version "1.0.0"
 }

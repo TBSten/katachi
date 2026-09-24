@@ -1,8 +1,8 @@
 plugins {
     // Registers the toolchain download repository for the `buildSrc` build, which is a
     // build of its own: the root settings file's resolver does not reach it, so without
-    // this the `jvmToolchain(21)` in buildSrc/build.gradle.kts fails with "Toolchain
-    // download repositories have not been configured." on a machine with no local JDK 21.
+    // this the `jvmToolchain(17)` in buildSrc/build.gradle.kts fails with "Toolchain
+    // download repositories have not been configured." on a machine with no local JDK 17.
     //
     // No `version` here, on purpose: the root settings file already puts this plugin on
     // the settings classpath, and repeating the version fails with "the plugin is already

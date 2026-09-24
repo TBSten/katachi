@@ -10,7 +10,7 @@ pluginManagement {
 }
 
 plugins {
-    // Resolves the JDK 21 toolchain requested by `jvmToolchain(21)` (D16).
+    // Resolves the JDK 17 toolchain requested by `jvmToolchain(17)` (D16).
     id("org.gradle.toolchains.foojay-resolver-convention") version "1.0.0"
 }
 

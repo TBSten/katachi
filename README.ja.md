@@ -33,7 +33,7 @@ include(":architecture-test")
 // architecture-test/build.gradle.kts
 plugins { kotlin("jvm") }
 
-kotlin { jvmToolchain(21) }
+kotlin { jvmToolchain(17) }
 
 tasks.test { useJUnitPlatform() }
 
@@ -50,7 +50,7 @@ dependencies {
 }
 ```
 
-**JDK 21 以降**と **Kotlin 2.3 以降**が必要。katachi の artifact は Kotlin 2.4 系でビルドしているので、それより古いコンパイラはメタデータを読めず、すべてのシンボルが `Unresolved reference` になる。
+**JDK 17 以降**と **Kotlin 2.3 以降**が必要。katachi の artifact は Kotlin 2.4 系でビルドしているので、それより古いコンパイラはメタデータを読めず、すべてのシンボルが `Unresolved reference` になる。
 
 > [!IMPORTANT]
 > **Kotlin 2.3 系では `-Xcontext-parameters` を足す。** DSL の入口（`module` / `mainSourceSet` /
@@ -58,7 +58,7 @@ dependencies {
 >
 > ```kotlin
 > kotlin {
->     jvmToolchain(21)
+>     jvmToolchain(17)
 >     compilerOptions.freeCompilerArgs.add("-Xcontext-parameters")
 > }
 > ```
@@ -281,7 +281,7 @@ kmp が `user` / `platform`）。katachi が表現できなければならない
 |---|---|
 | Gradle | 9.6.0 |
 | Kotlin | 2.4.10 |
-| JDK / toolchain | 21 |
+| JDK / toolchain | 17 |
 | kotest | 6.2.5 |
 | AGP（サンプル） | 9.1.0 — **上げないこと**（下記） |
 | compileSdk / targetSdk / minSdk（サンプル） | 36 / 36 / 24 |

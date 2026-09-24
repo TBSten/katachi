@@ -29,7 +29,7 @@ include(":architecture-test")
 // architecture-test/build.gradle.kts
 plugins { kotlin("jvm") }
 
-kotlin { jvmToolchain(21) }
+kotlin { jvmToolchain(17) }
 
 tasks.test { useJUnitPlatform() }
 
@@ -46,7 +46,7 @@ dependencies {
 }
 ```
 
-Requires **JDK 21 or later** and **Kotlin 2.3 or later.** katachi's own artifacts are built with Kotlin 2.4, and an older compiler cannot read their metadata at all — every symbol comes back as `Unresolved reference`.
+Requires **JDK 17 or later** and **Kotlin 2.3 or later.** katachi's own artifacts are built with Kotlin 2.4, and an older compiler cannot read their metadata at all — every symbol comes back as `Unresolved reference`.
 
 > [!IMPORTANT]
 > **On Kotlin 2.3.x, add `-Xcontext-parameters`.** Every entry point of the DSL (`module`,
@@ -55,7 +55,7 @@ Requires **JDK 21 or later** and **Kotlin 2.3 or later.** katachi's own artifact
 >
 > ```kotlin
 > kotlin {
->     jvmToolchain(21)
+>     jvmToolchain(17)
 >     compilerOptions.freeCompilerArgs.add("-Xcontext-parameters")
 > }
 > ```
@@ -237,7 +237,7 @@ See https://tbsten.github.io/katachi/roadmap/ for the detail.
 |---|---|
 | Gradle | 9.6.0 |
 | Kotlin | 2.4.10 |
-| JDK / toolchain | 21 |
+| JDK / toolchain | 17 |
 | kotest | 6.2.5 |
 | AGP (samples) | 9.1.0 — **do not raise it** |
 
