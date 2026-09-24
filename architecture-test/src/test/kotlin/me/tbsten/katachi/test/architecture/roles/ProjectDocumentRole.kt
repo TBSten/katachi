@@ -17,9 +17,11 @@ fun DeclarationContainerScope.projectDocument() = "ProjectDocument" {
     example("README.md", "katachi が何で、どう入れるか")
     example("LICENSE", "ライセンス")
     layout {
-        // Neither holds a wildcard, so both are required: deleting one is reported as
-        // `[MissingFile]` instead of quietly passing.
+        // None of them holds a wildcard, so all three are required: deleting one is reported
+        // as `[MissingFile]` instead of quietly passing. Writing the Japanese README out
+        // rather than `"README*.md"` is what keeps that true of it too.
         "README.md".file()
+        "README.ja.md".file()
         "LICENSE".file()
     }
 }
