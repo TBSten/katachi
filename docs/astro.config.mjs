@@ -49,12 +49,14 @@ export default defineConfig({
 			// 長いコードブロックを畳む。手触りの検証中で、しきい値は暫定。
 			expressiveCode: {
 				plugins: [
+					// ボタンの文言は指定しない。プラグインは i18n に対応しておらず
+					// 全ロケールに同じ文字列が出るため、日本語を入れると英語版
+					// （既定ロケール）にも日本語のボタンが出る。llms-full.txt にも
+					// そのまま混入していた（英語版に43箇所）。既定は Show more / Show less。
 					pluginCollapsible({
 						lineThreshold: 15,
 						previewLines: 8,
 						defaultCollapsed: true,
-						expandButtonText: 'すべて表示',
-						collapseButtonText: '折りたたむ',
 					}),
 				],
 			},
