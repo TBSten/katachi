@@ -8,8 +8,12 @@ package buildsrc.convention
 
 import com.vanniktech.maven.publish.JavadocJar
 import com.vanniktech.maven.publish.KotlinJvm
+import org.jetbrains.kotlin.gradle.dsl.KotlinVersion
 
 plugins {
+    // 下の kotlin { } のアクセサを生やすために宣言している。実際に適用するのは
+    // buildsrc.convention.kotlin-jvm 側で、ここでの宣言は二重適用にならない。
+    kotlin("jvm")
     id("com.vanniktech.maven.publish")
     // HTML 出力（ルートの集約用に module を作る）と Javadoc 出力（javadoc jar 用）は
     // Dokka 2.x では別 plugin。`org.jetbrains.dokka` は HTML format を自動適用するのみで、
@@ -38,6 +42,31 @@ dokka {
             remoteUrl("https://github.com/TBSten/katachi/blob/main/${project.name}")
         }
     }
+}
+
+// 公開する成果物は **Kotlin 2.2 のコンパイラが読める metadata** で出す。
+//
+// 既定のままだと metadata は mv=[2,4] になり、Kotlin 2.2 のプロジェクトでは
+// katachi のシンボルがすべて Unresolved reference になる（2.2 が読めるのは 2.3 まで）。
+// 実際に Kotlin 2.2.20 のプロジェクトへ導入しようとして詰まった報告があった。
+//
+// languageVersion を下げると context parameters が preview 扱いに戻るので、
+// katachi 自身のビルドに -Xcontext-parameters が要る。DSL の入口
+// （module / sourceSet / ktFile / konsist …）はすべて context parameters なので、
+// これを外すと katachi がコンパイルできない。
+//
+// coreLibrariesVersion も下げる。下げないと推移的に入る kotlin-stdlib が
+// 2.4 系になり、そちらの metadata で同じ問題が起きる。
+//
+// **代償**: katachi 自身が Kotlin 2.2 にある言語機能しか使えなくなる。
+// 下限を上げるときは README と katachi-install.sh の KOTLIN_MIN_* も一緒に動かすこと。
+kotlin {
+    compilerOptions {
+        languageVersion.set(KotlinVersion.KOTLIN_2_2)
+        apiVersion.set(KotlinVersion.KOTLIN_2_2)
+        freeCompilerArgs.add("-Xcontext-parameters")
+    }
+    coreLibrariesVersion = "2.2.20"
 }
 
 mavenPublishing {

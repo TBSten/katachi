@@ -50,10 +50,10 @@ dependencies {
 }
 ```
 
-**JDK 17 以降**と **Kotlin 2.3 以降**が必要。katachi の artifact は Kotlin 2.4 系でビルドしているので、それより古いコンパイラはメタデータを読めず、すべてのシンボルが `Unresolved reference` になる。
+**JDK 17 以降**と **Kotlin 2.2 以降**が必要。公開している artifact は `languageVersion` 2.2 でビルドしているので、2.2 のコンパイラでも metadata を読める。それより古いとすべてのシンボルが `Unresolved reference` になる。
 
 > [!IMPORTANT]
-> **Kotlin 2.3 系では `-Xcontext-parameters` を足す。** DSL の入口（`module` / `mainSourceSet` /
+> **Kotlin 2.4 未満では `-Xcontext-parameters` を足す。** DSL の入口（`module` / `mainSourceSet` /
 > `ktFile` / `konsist` など）はすべて context parameters なので、無いと1つも書けない。
 >
 > ```kotlin

@@ -30,11 +30,11 @@ KATACHI_RELEASES_API="https://api.github.com/repos/TBSten/katachi/releases/lates
 KATACHI_RELEASES_PAGE="https://github.com/TBSten/katachi/releases"
 
 # 生成するモジュールが使う固定値。プロジェクト側の事情で変わらないものだけを置く。
-# katachi が要求する Kotlin の下限。これより古いコンパイラは katachi の jar の
-# メタデータ（binary version 2.4.0）を読めず、architecture などのシンボルが
-# すべて Unresolved reference になる。実際に 2.2.0 でコンパイルして確認済み。
+# katachi が要求する Kotlin の下限。katachi の成果物は languageVersion 2.2 で
+# ビルドしているので、2.2 以降のコンパイラなら metadata を読める。これより古いと
+# architecture などのシンボルがすべて Unresolved reference になる。
 KOTLIN_MIN_MAJOR="2"
-KOTLIN_MIN_MINOR="3"
+KOTLIN_MIN_MINOR="2"
 
 JVM_TOOLCHAIN="17"
 JUNIT_VERSION="5.13.4"
@@ -649,12 +649,12 @@ cmd_scaffold() {
 	if [ "$sc_kmaj" -lt "$KOTLIN_MIN_MAJOR" ] ||
 		{ [ "$sc_kmaj" -eq "$KOTLIN_MIN_MAJOR" ] && [ "$sc_kmin" -lt "$KOTLIN_MIN_MINOR" ]; }; then
 		die "katachi $sc_version は Kotlin ${KOTLIN_MIN_MAJOR}.${KOTLIN_MIN_MINOR} 以降が必要です（このプロジェクトは ${sc_kotlin}）。
-    katachi の jar は Kotlin 2.4 系でビルドされているため、それより古いコンパイラは
-    メタデータを読めず、architecture などのシンボルがすべて Unresolved reference に
-    なります。プロジェクトの Kotlin を上げてから、もう一度実行してください。"
+    それより古いコンパイラは katachi の metadata を読めず、architecture などの
+    シンボルがすべて Unresolved reference になります。プロジェクトの Kotlin を
+    上げてから、もう一度実行してください。"
 	fi
 
-	# context parameters は 2.4 で言語に入った。2.3 系では呼ぶ側に
+	# context parameters は 2.4 で言語に入った。2.2 / 2.3 系では呼ぶ側に
 	# -Xcontext-parameters が要り、2.4 以降で付けると
 	# "The argument '-Xcontext-parameters' is redundant" の警告が出る
 	# （allWarningsAsErrors な CI を落とす）。だから出し分ける。
@@ -784,13 +784,13 @@ write_module_build() {
 	if [ "$_context_flag" = "yes" ]; then
 		case "$KATACHI_LANG" in
 		ja)
-			_ctx_note='    // Kotlin 2.3 系では、context parameters を呼ぶ側にこのオプションが要る。
+			_ctx_note='    // Kotlin 2.4 未満では、context parameters を呼ぶ側にこのオプションが要る。
     // katachi の DSL（module / mainSourceSet / ktFile など）はすべて context parameters
     // なので、無いと1つも書けない。Kotlin を 2.4 以降に上げたらこの2行は消すこと
     // （2.4 以降で付けたままだと redundant の警告が出る）。'
 			;;
 		*)
-			_ctx_note='    // Kotlin 2.3.x needs this on the calling side to use context parameters.
+			_ctx_note='    // Kotlin before 2.4 needs this on the calling side to use context parameters.
     // Every katachi DSL entry point (module / mainSourceSet / ktFile ...) is a contextual
     // declaration, so without it you cannot write a single one. Drop these two lines once
     // the project moves to Kotlin 2.4 or later - from 2.4 on the flag warns that it is

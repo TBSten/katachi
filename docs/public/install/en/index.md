@@ -311,7 +311,7 @@ This command does the following.
 - Adding the Kotlin JVM plugin to the root build file (does nothing if it's already there)
 - Adding `include("architecture-test")` to the settings file (`include 'architecture-test'` for a Groovy `settings.gradle`; does nothing if it's already there)
 
-Plugin version conflicts, the JUnit engine, the JVM toolchain, the compiler options the project's Kotlin version needs, and handling for Android / KMP projects are **all decided by the script.** On Kotlin 2.3.x it writes `-Xcontext-parameters`, which the DSL cannot be called without; from 2.4 on it leaves the flag out, because there it only warns that it is redundant. Below Kotlin 2.3 it stops and says so — katachi's artifacts cannot be read by a compiler that old. Even if you feel like fixing something after reading the generated files, do not fix it.
+Plugin version conflicts, the JUnit engine, the JVM toolchain, the compiler options the project's Kotlin version needs, and handling for Android / KMP projects are **all decided by the script.** Below Kotlin 2.4 it writes `-Xcontext-parameters`, which the DSL cannot be called without; from 2.4 on it leaves the flag out, because there it only warns that it is redundant. Below Kotlin 2.2 it stops and says so — katachi's metadata cannot be read by a compiler that old. Even if you feel like fixing something after reading the generated files, do not fix it.
 
 The one exception is when the generated file has to change for the build to run at all. That takes priority over the rule above — but it means the script has a bug, so record it with `add changed` giving the reason, and register it in `questions` as well.
 

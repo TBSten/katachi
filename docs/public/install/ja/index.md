@@ -311,7 +311,7 @@ sh $CLI scaffold --package com.example.app
 - ルートの build ファイルへの Kotlin JVM プラグインの追加（すでにあれば何もしない）
 - settings ファイルへの `include("architecture-test")` の追加（Groovy の `settings.gradle` なら `include 'architecture-test'`。すでにあれば何もしない）
 
-プラグインのバージョン衝突、JUnit の engine、JVM toolchain、プロジェクトの Kotlin バージョンに応じたコンパイラオプション、Android / KMP プロジェクトでの扱いは**すべてスクリプトが決めています。** Kotlin 2.3 系なら `-Xcontext-parameters` を書き込み（これが無いと DSL を1つも呼べません）、2.4 以降では付けません（付けると redundant の警告になるため）。Kotlin 2.3 未満ならその旨を伝えて止まります。katachi の artifact をそのコンパイラが読めないためです。 生成されたファイルを読んで直したくなっても、直さないこと。
+プラグインのバージョン衝突、JUnit の engine、JVM toolchain、プロジェクトの Kotlin バージョンに応じたコンパイラオプション、Android / KMP プロジェクトでの扱いは**すべてスクリプトが決めています。** Kotlin 2.4 未満なら `-Xcontext-parameters` を書き込み（これが無いと DSL を1つも呼べません）、2.4 以降では付けません（付けると redundant の警告になるため）。Kotlin 2.2 未満ならその旨を伝えて止まります。katachi の metadata をそのコンパイラが読めないためです。 生成されたファイルを読んで直したくなっても、直さないこと。
 
 例外は、生成されたファイルを変えないとビルドがそもそも動かない場合だけです。これは上のルールより優先します。ただしその場合はスクリプト側のバグなので、`add changed` に理由を書いて記録し、`questions` にも登録してください。
 

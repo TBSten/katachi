@@ -46,10 +46,10 @@ dependencies {
 }
 ```
 
-Requires **JDK 17 or later** and **Kotlin 2.3 or later.** katachi's own artifacts are built with Kotlin 2.4, and an older compiler cannot read their metadata at all — every symbol comes back as `Unresolved reference`.
+Requires **JDK 17 or later** and **Kotlin 2.2 or later.** The published artifacts are built with `languageVersion` 2.2 so that a 2.2 compiler can read their metadata; anything older sees every symbol as `Unresolved reference`.
 
 > [!IMPORTANT]
-> **On Kotlin 2.3.x, add `-Xcontext-parameters`.** Every entry point of the DSL (`module`,
+> **Before Kotlin 2.4, add `-Xcontext-parameters`.** Every entry point of the DSL (`module`,
 > `mainSourceSet`, `ktFile`, `konsist` …) is a contextual declaration, so without it you cannot
 > write a single one.
 >
