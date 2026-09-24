@@ -116,7 +116,13 @@ class GitTrackedFileSystemSpec : FreeSpec({
         }
 
         "フィルタなしなら同じツリーに無視されるものが見える" {
-            delegate.exists(root / ".local") shouldBe true
+            // `.git` であって `.local` ではない。`.local/` は .gitignore 済みで**コミットされない**
+            // ので、clone したてのチェックアウトや新しい worktree には存在しない。実際にここは
+            // `:katachi-konsist:test` が fixture 用に `.local/tmp/` を作るかどうか、つまり
+            // どちらのモジュールのテストが先に走ったかで結果が変わっていた。
+            // `.git` なら必ずある（worktree ではディレクトリではなくファイルだが、どちらでも
+            // `exists` は true）。すぐ上のケースがフィルタ越しには見えないことを pin している。
+            delegate.exists(root / ".git") shouldBe true
         }
     }
 
@@ -125,7 +131,8 @@ class GitTrackedFileSystemSpec : FreeSpec({
             val delegate = RealFileSystem()
             val projectRoot = findProjectRoot(delegate)
             val fileSystem = FileSelection.WholeTree.fileSystemFor(delegate, projectRoot)
-            fileSystem.exists(projectRoot.path / ".local") shouldBe true
+            // 上と同じ理由で `.git`。`.local/` の有無はテストの実行順で変わる。
+            fileSystem.exists(projectRoot.path / ".git") shouldBe true
         }
 
         "git の work tree の外では gitTracked() が全走査に落ちる" {
