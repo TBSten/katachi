@@ -36,6 +36,13 @@ import me.tbsten.katachi.scan.layoutWarningsOf
  * per `assert()` — the same thing a wildcard module key already does once per module it expands
  * to.
  *
+ * The third Warning goes the other way and is why both halves are handed over together:
+ * [ProjectModel.layoutFileOverlaps] holds the roles whose *different* patterns turned out to
+ * select the same real files, which only the walk can know. It is the same
+ * [me.tbsten.katachi.scan.AmbiguousLayout] the declarations produce, so the two are merged
+ * where each can see the other rather than concatenated — a pair of roles named by both must
+ * be one block, not two.
+ *
  * ## Example 1: look at what the check found without failing the test
  * ```kt
  * val violations = projectArchitecture.process(LayoutCheck())
@@ -55,5 +62,5 @@ public class LayoutCheck : ArchitectureProcessor<List<Violation>> {
     // for why a processor is handed it through a door only katachi's own check can open.
     // `declaredEntries` costs no walk — see this class's own KDoc for why it is read here too.
     override fun process(model: ProjectModel): List<Violation> =
-        model.layoutViolations + layoutWarningsOf(model.declaredEntries)
+        model.layoutViolations + layoutWarningsOf(model.declaredEntries, model.layoutFileOverlaps)
 }

@@ -28,6 +28,11 @@ fun DeclarationContainerScope.preview() = "Preview" {
     // `Component` covers the same file as well: two roles may claim one path, and
     // from v0.3 the generated documentation lists both.
     //
+    // katachi reports that overlap as `[AmbiguousLayout]` on the file both patterns match,
+    // which is a Warning and never fails `assert()`. It is kept rather than designed away:
+    // a preview belongs beside the component it renders, and the report saying so out loud
+    // is what this sample wants to show — see `OmittedRoleSelfCheckSpec`, which pins it.
+    //
     // In a feature module the name is tied to the module the same way the screen it
     // renders is: `:feature:home` may hold `Home*Preview.kt` and nothing else.
     layout {

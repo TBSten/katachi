@@ -48,6 +48,16 @@ internal class ScanResult(
      */
     val filesByRole: Map<Role, List<String>>,
     /**
+     * The files more than one role turned out to claim, grouped by the roles claiming them.
+     *
+     * Collected by the same walk rather than derived from [filesByRole] afterwards, for two
+     * reasons. [filesByRole] answers "does some role allow this file", so it holds the entries
+     * a `module { }` key injects as well, and a `build.gradle.kts` every role of a module
+     * carries is not an overlap anyone wrote. And a group has to name the lines that declared
+     * it, which is an entry, not a role.
+     */
+    val fileOverlaps: List<FileOverlap>,
+    /**
      * The constraints the layout declared, with the layout around each already evaluated.
      *
      * None of them has been run. They ride on the walk's result rather than being evaluated
@@ -140,6 +150,9 @@ private class Scan(
     /** The files each role turned out to own, in walk order. See [ScanResult.filesByRole]. */
     private val filesByRole = LinkedHashMap<Role, MutableList<String>>()
 
+    /** The files more than one role claimed, grouped as they are found. See [FileOverlaps]. */
+    private val fileOverlaps = FileOverlaps()
+
     fun run(): ScanResult {
         // First, because the search ran before the walk did. `sortedBy` below is stable, so
         // within the `Failed` group that order is what the reader sees.
@@ -157,6 +170,7 @@ private class Scan(
             // parents before children, names in order.
             violations = violations.sortedBy { it.kind.ordinal },
             filesByRole = filesByRole,
+            fileOverlaps = fileOverlaps.toList(),
             constraints = constraints,
             projectRoot = root,
         )
@@ -235,6 +249,10 @@ private class Scan(
         val roles = layout.rolesOf(path)
         // Every role that allows the file, not just the first: see [LayoutIndex.rolesOf].
         for (role in roles) filesByRole.getOrPut(role) { mutableListOf() } += path
+        // Only when two roles already allow it. `claimsOn` answers out of a subset of what
+        // `rolesOf` reads, so one role here can never be two there, and the ordinary file
+        // pays for one comparison instead of a second pass over every declaration.
+        if (roles.size > 1) fileOverlaps.record(path, layout.claimsOn(path))
         if (roles.isNotEmpty()) return
         violations += UnexpectedFile(path = path, nearby = layout.nearbyOf(path))
     }

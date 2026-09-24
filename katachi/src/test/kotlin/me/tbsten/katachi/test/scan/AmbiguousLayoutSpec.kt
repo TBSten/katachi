@@ -14,8 +14,10 @@ import me.tbsten.katachi.scan.ambiguousLayoutsOf
 
 /**
  * `ambiguousLayoutsOf`, the declaration-only half of step 5-2: what two roles' `layout { }`
- * blocks say by themselves, with no walk of a real tree involved. `AmbiguousLayoutCheckSpec`
- * covers the same detector wired through `validate()` / `assert()` against a fake file system.
+ * blocks say by themselves, with no walk of a real tree involved. Two roles whose patterns
+ * differ but select the same real file are the other half, in `AmbiguousFilesSpec`, and
+ * `AmbiguousLayoutCheckSpec` covers both wired through `validate()` / `assert()` against a
+ * fake file system.
  */
 private fun twoRoles(
     roleA: LayoutScope.() -> Unit,

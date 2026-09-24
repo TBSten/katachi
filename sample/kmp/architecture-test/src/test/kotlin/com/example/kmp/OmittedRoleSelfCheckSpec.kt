@@ -24,6 +24,9 @@ import me.tbsten.katachi.scan.Violation
  *
  * It uses `validate()`, which hands the violations back instead of throwing. That function is
  * `@InternalKatachiApi` on purpose: a user asserts, and this file is not a user.
+ *
+ * `validate()` answers with the warnings too, so [PREVIEW_OVERLAP] is in every expectation
+ * below. It is not a failure and not a side effect of dropping a group — see its own comment.
  */
 @OptIn(InternalKatachiApi::class)
 class OmittedRoleSelfCheckSpec : FreeSpec({
@@ -39,7 +42,8 @@ class OmittedRoleSelfCheckSpec : FreeSpec({
             buildGroup()
         }
 
-        withoutTool.validate().labels() shouldContainExactly listOf("[UnexpectedFile] .gitignore")
+        withoutTool.validate().labels() shouldContainExactly
+            listOf("[UnexpectedFile] .gitignore", PREVIEW_OVERLAP)
     }
 
     "未知のディレクトリは1件だけ報告され、その配下は掘られない" {
@@ -59,9 +63,21 @@ class OmittedRoleSelfCheckSpec : FreeSpec({
         }
 
         withoutData.validate().labels() shouldContainExactly
-            listOf("[UnexpectedDirectory] data/src")
+            listOf("[UnexpectedDirectory] data/src", PREVIEW_OVERLAP)
     }
 })
+
+/**
+ * The one overlap this sample means to have. In the `component` package of `:ui`, `Component`
+ * claims every `.kt` file and `Preview` claims the ones ending in `Preview.kt`, so the one file
+ * matching both belongs to both roles.
+ *
+ * katachi reports it as a Warning, which never fails `assert()` — see `roles/PreviewRole.kt`,
+ * where the overlap is declared on purpose. Both definitions above keep `uiGroup()`, so it is
+ * in both of their results and says nothing about the group each of them dropped.
+ */
+private const val PREVIEW_OVERLAP: String =
+    "[AmbiguousLayout] ui/src/commonMain/kotlin/com/example/kmp/ui/component/PrimaryButtonPreview.kt"
 
 /** `[UnexpectedFile] path`, which is how the first line of each violation block reads. */
 @OptIn(InternalKatachiApi::class)

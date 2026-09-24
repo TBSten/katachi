@@ -40,8 +40,18 @@ public class LayoutClaim internal constructor(
 }
 
 /**
- * Two or more roles declared the exact same path pattern, so a file placed there would belong
- * to every one of them at once and which of them it is actually for is not decided.
+ * Two or more roles claim the same thing, so a file there belongs to every one of them at once
+ * and which of them it is actually for is not decided.
+ *
+ * It is raised two ways, and [overlappingFiles] is how they are told apart. Either the roles
+ * wrote the **same pattern text**, which the declarations say by themselves and which holds
+ * whether or not a file is there yet; or their patterns are different but a walk of the project
+ * found them landing on the **same real files**, which is the case `"*.kt"` against
+ * `"*ViewModel.kt"` in one directory produces and which no comparison of the text could see.
+ *
+ * A file claimed by more than one role is allowed — a file is fine as long as *some* role allows
+ * it — but every `konsist { }` of every one of those roles is then checked against it, which is
+ * what makes an overlap nobody meant worth a warning.
  *
  * Katachi never raises this to [Severity.Error]: an intentional overlap is not a mistake, and
  * deciding which role a shared path belongs to is a judgment call the definitions' authors have
@@ -51,11 +61,22 @@ public class LayoutClaim internal constructor(
  * ```kt
  * projectArchitecture.validate().filterIsInstance<AmbiguousLayout>().map { it.path }
  * ```
+ *
+ * ## Example 2: tell the two ways it is raised apart
+ * ```kt
+ * val (onFiles, onText) = projectArchitecture.validate()
+ *     .filterIsInstance<AmbiguousLayout>()
+ *     .partition { it.overlappingFiles.isNotEmpty() }
+ * ```
  */
 public class AmbiguousLayout internal constructor(
     override val path: String,
     /**
      * The roles claiming [path], in declaration order. Always two or more.
+     *
+     * When [overlappingFiles] is not empty, a role that named the file comes before one that
+     * only left its directory open with `anyFile()`, and the declaration order holds within
+     * each of those two groups.
      *
      * ## Example 1: read every role that claims one ambiguous path
      * ```kt
@@ -63,6 +84,23 @@ public class AmbiguousLayout internal constructor(
      * ```
      */
     public val claims: List<LayoutClaim>,
+    /**
+     * Every file the walk found all of [claims] claiming, in walk order, with [path] first —
+     * or empty when this was raised from the declarations alone.
+     *
+     * Empty is the exact statement "no walk found this": the roles wrote the same pattern text,
+     * and whether a file sits at it was never asked. Non-empty means the opposite — these files
+     * exist and each of them belongs to all of [claims] at once. One warning covers the whole
+     * group however long this list is, so reading it is how a caller finds the rest.
+     *
+     * ## Example 1: count the files an overlap actually affects
+     * ```kt
+     * projectArchitecture.validate()
+     *     .filterIsInstance<AmbiguousLayout>()
+     *     .associate { it.path to it.overlappingFiles.size }
+     * ```
+     */
+    public val overlappingFiles: List<String>,
 ) : Violation {
     override val kind: ViolationKind get() = ViolationKind.Ambiguous
     override val severity: Severity get() = Severity.Warning
@@ -126,16 +164,23 @@ public class MissingDescription internal constructor(
 }
 
 /**
- * The warnings a definition's declarations alone can produce, with no file system involved.
+ * Katachi's Warning violations: what the declarations say by themselves, plus the overlaps
+ * only the walk can see.
  *
- * Both of katachi's Warning detectors read [entries] — the unresolved, un-walked flattening —
- * rather than a walk of the real tree: what more than one role claims and whether a place with
- * more than one role is missing its `description` are both questions the declarations answer by
- * themselves. See `me.tbsten.katachi.check.LayoutCheck`, which adds this to the errors a walk
- * finds.
+ * [entries] is the unresolved, un-walked flattening. Two of the three detectors need nothing
+ * else — whether two roles wrote one pattern, and whether a place with more than one role is
+ * missing its `description`, are questions the declarations answer on their own. The third
+ * cannot be answered that way at all, so [fileOverlaps] arrives already collected by the walk;
+ * see [FileOverlaps].
+ *
+ * The order is the order a report prints: the textual overlaps, then the ones found on files,
+ * then the unexplained places. See `me.tbsten.katachi.check.LayoutCheck`, which adds this to
+ * the errors the same walk found.
  */
-internal fun layoutWarningsOf(entries: List<LayoutEntry>): List<Violation> =
-    ambiguousLayoutsOf(entries) + missingDescriptionsOf(entries)
+internal fun layoutWarningsOf(entries: List<LayoutEntry>, fileOverlaps: List<FileOverlap>): List<Violation> {
+    val declared = ambiguousLayoutsOf(entries)
+    return declared + ambiguousFilesOf(fileOverlaps, declared) + missingDescriptionsOf(entries)
+}
 
 /**
  * The places of a role that has more than one and left this one without a `description`.
@@ -218,13 +263,23 @@ private fun holdsAClaim(path: String, roleEntries: List<LayoutEntry>): Boolean =
  *   role that did the same — the pair the report finds in that case is exactly the pair of
  *   roles that wrote it themselves, never the one that only let the sugar declare it.
  *
+ * ### Grouping is by path text, and that is only half the check
+ *
  * Grouping is by [LayoutEntry.path] alone — string equality, nothing smarter: a role writing
- * `":feature:*".module { }` and another writing `":feature:home".module { }` flatten to
- * different path text and never collide, however much the wildcard's real matches overlap the
- * literal one. That keeps the rule cheap and its outcome predictable from the text two roles
- * wrote, at the declared cost of missing overlaps that are only semantic rather than textual.
+ * `"*.kt".file()` and another writing `"*ViewModel.kt".file()` in one directory are different
+ * path text and never collide here, however completely the second's matches sit inside the
+ * first's.
+ *
+ * That gap is not left open any more. [ambiguousFilesOf] closes it from the other side, out of
+ * the walk: whatever the patterns say, two roles landing on one real file are reported. The two
+ * halves are both kept because neither covers the other — a pattern matching no file has
+ * nothing for a walk to find, and a walk needs no pattern to match to see an overlap — and a
+ * pair of roles reported by this one is dropped from that one rather than printed twice.
+ *
+ * So what this half is now is the cheap, IO-free statement that stays true before a single file
+ * exists, and reading it as "the whole of the overlap check" is the misreading to avoid.
  */
-internal fun ambiguousLayoutsOf(entries: List<LayoutEntry>): List<Violation> {
+internal fun ambiguousLayoutsOf(entries: List<LayoutEntry>): List<AmbiguousLayout> {
     val claimable = entries
         .asSequence()
         .filterNot { it.synthetic }
@@ -240,6 +295,8 @@ internal fun ambiguousLayoutsOf(entries: List<LayoutEntry>): List<Violation> {
         AmbiguousLayout(
             path = path,
             claims = byRole.values.map { LayoutClaim(role = it.role, declaredAt = it.declaredAt) },
+            // Nothing was walked to find this, and that is what the empty list states.
+            overlappingFiles = emptyList(),
         )
     }
 }

@@ -8,6 +8,7 @@ import me.tbsten.katachi.dsl.LayoutEntry
 import me.tbsten.katachi.dsl.Role
 import me.tbsten.katachi.dsl.flattenLayout
 import me.tbsten.katachi.fs.KatachiFileSystem
+import me.tbsten.katachi.scan.FileOverlap
 import me.tbsten.katachi.scan.Violation
 import me.tbsten.katachi.scan.scanProject
 
@@ -179,6 +180,17 @@ public class ProjectModel internal constructor(
      * Reading it starts that walk, exactly as [filesOf] does.
      */
     internal val layoutViolations: List<Violation> get() = scan.violations
+
+    /**
+     * The files that turned out to belong to more than one role, for
+     * [me.tbsten.katachi.check.LayoutCheck] to turn into warnings.
+     *
+     * Internal for the same reason [layoutViolations] is, and here for the same reason too:
+     * an overlap between two roles' patterns is only visible once real files have been matched
+     * against them, so the walk is the only place it can be seen and this is the door katachi's
+     * own check reads it through. Reading it starts that walk.
+     */
+    internal val layoutFileOverlaps: List<FileOverlap> get() = scan.fileOverlaps
 
     /**
      * The constraints the definition declared, none of them evaluated yet.

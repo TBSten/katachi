@@ -6,6 +6,7 @@ import me.tbsten.katachi.check.validate
 import me.tbsten.katachi.dsl.kotlin.ktFile
 import me.tbsten.katachi.fs.FsPath
 import me.tbsten.katachi.fs.GitTrackedFileSystem
+import me.tbsten.katachi.scan.Severity
 import me.tbsten.katachi.test.fs.fakeFileSystem
 
 class ScanSpec : FreeSpec({
@@ -140,18 +141,20 @@ class ScanSpec : FreeSpec({
     }
 
     "複数の役割" - {
-        "1つのファイルに2つの役割がマッチしても違反にならない" {
+        "1つのファイルに2つの役割がマッチしてもエラーにはならず、重なりの Warning だけが出る" {
             // The two declarations overlap on `core/GetUser.kt` without being the same text
-            // (`core/*.kt` vs `core/GetUser.kt`), so this is the "one file, two roles" case and
-            // not the "two roles, one declaration" case `AmbiguousLayout` reports (step 5-2).
-            architectureOf {
+            // (`core/*.kt` vs `core/GetUser.kt`). The walk allows the file — a file is fine
+            // as long as *some* role allows it — and reports the overlap itself as the
+            // `AmbiguousLayout` warning no comparison of the pattern text could have found.
+            val violations = architectureOf {
                 "domain".group {
                     "UseCase" { layout { "core" / "*.kt".file() } }
                     "Api" { layout { "core" / "GetUser.kt".file() } }
                 }
-            }
-                .validate(repositoryOf { "core" { "GetUser.kt"() } })
-                .labels() shouldBe emptyList()
+            }.validate(repositoryOf { "core" { "GetUser.kt"() } })
+
+            violations.labels() shouldBe listOf("[AmbiguousLayout] core/GetUser.kt")
+            violations.map { it.severity } shouldBe listOf(Severity.Warning)
         }
 
         "役割ごとの宣言は合わせて1つの allow list になる" {

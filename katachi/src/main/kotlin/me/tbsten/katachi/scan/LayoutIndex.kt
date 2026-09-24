@@ -32,6 +32,21 @@ internal class LayoutIndex(entries: List<LayoutEntry>) {
     private val openDirectories: List<LayoutEntry> =
         entries.filter { it.kind == LayoutEntryKind.AnyFile }
 
+    /**
+     * The same two lists with what a `module { }` key injects dropped — what [claimsOn]
+     * answers from, and the one place the two questions come apart.
+     *
+     * Every role sharing a module gets its own `build.gradle.kts` entry from the sugar, so
+     * that file is matched by all of them; [rolesOf] has to keep those entries, or the file
+     * would be an `[UnexpectedFile]` in a project that declares the module perfectly well.
+     * Nobody *claimed* it, though: the roles' authors wrote `.module { }`, not that line. So
+     * the ambiguity question reads these, exactly as `ambiguousLayoutsOf` drops the same
+     * entries before grouping by path text.
+     */
+    private val claimedFiles: List<LayoutEntry> = allowedFiles.filterNot { it.synthetic }
+
+    private val claimedOpenDirectories: List<LayoutEntry> = openDirectories.filterNot { it.synthetic }
+
     /** Directories nothing below is looked at in, from `ignore()`. */
     private val ignoredDirectories: List<Glob> =
         entries.filter { it.kind == LayoutEntryKind.Ignore }.map { it.glob }
@@ -54,22 +69,45 @@ internal class LayoutIndex(entries: List<LayoutEntry>) {
      * All of them, not the first one: the check lets two roles claim overlapping patterns, so
      * stopping at the first match would make `filesOf(role)` disagree with the very rule that
      * allowed the file. A role claiming the same path twice still shows up once, which is what
-     * the set is for.
+     * keying the matches by role is for.
      */
-    fun rolesOf(file: String): List<Role> {
-        val roles = LinkedHashSet<Role>()
-        for (entry in allowedFiles) {
-            if (entry.glob.matches(file)) roles += entry.role
+    fun rolesOf(file: String): List<Role> = matchesOn(file, allowedFiles, openDirectories).keys.toList()
+
+    /**
+     * The declarations that claim [file] as their role's own, one per role — two or more of
+     * them is an [AmbiguousLayout] a walk found rather than a reading of the declarations.
+     *
+     * The entry rather than the role, because a report has to point back at the line that
+     * wrote it, and with different patterns matching one file there is no declaration site to
+     * be derived from the role alone.
+     *
+     * The roles that named the file come before the roles that only left its directory open,
+     * and declaration order holds within each of those two groups. Its result is always a
+     * subset of [rolesOf]'s, which is what lets the walk ask this only for a file [rolesOf]
+     * already answered with two roles or more.
+     */
+    fun claimsOn(file: String): List<LayoutEntry> =
+        matchesOn(file, claimedFiles, claimedOpenDirectories).values.toList()
+
+    /** One entry per role out of [fileEntries] and [openEntries], first match winning. */
+    private fun matchesOn(
+        file: String,
+        fileEntries: List<LayoutEntry>,
+        openEntries: List<LayoutEntry>,
+    ): Map<Role, LayoutEntry> {
+        val matched = LinkedHashMap<Role, LayoutEntry>()
+        for (entry in fileEntries) {
+            if (entry.glob.matches(file)) matched.putIfAbsent(entry.role, entry)
         }
         val directory = file.parentPath()
         // `anyFile()` covers the files directly inside a directory and nothing deeper, and
         // the root itself is not a directory any role can declare.
         if (directory.isNotEmpty()) {
-            for (entry in openDirectories) {
-                if (entry.glob.matches(directory)) roles += entry.role
+            for (entry in openEntries) {
+                if (entry.glob.matches(directory)) matched.putIfAbsent(entry.role, entry)
             }
         }
-        return roles.toList()
+        return matched
     }
 
     /**
