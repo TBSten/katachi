@@ -5,17 +5,13 @@ tags:
   - beginner
 ---
 
-import { Aside, Steps } from '@astrojs/starlight/components';
+import { Steps } from '@astrojs/starlight/components';
 
 katachi は「同じ定義から**テストとドキュメントの両方**を出す」ライブラリです。いまはその前半、**テスト**だけが動きます。
 
 並び順は **まだ欠けている側を先に出す順** です。各段階で単独で価値が出るようにしてあります。
 
 ドキュメント生成は、定義を2つではなく1つ書けばよいことの根拠そのものであり、そして誰もまだ使えない部分です。`declarations { }` を後ろに置いているのは意図的で、あれは `konsist { }` からパターンを昇格させるものなので、実プロジェクトで `konsist { }` が十分に書かれるまで昇格させる対象がありません。
-
-<Aside type="note" title="リリース済みは v0.1 だけ">
-Maven Central に出ているのは v0.1.1 です。このページのそれより先のバージョンは計画であって、リリース済みのものではありません。
-</Aside>
 
 ## 全体像
 
