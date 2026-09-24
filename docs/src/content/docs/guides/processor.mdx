@@ -1,42 +1,54 @@
 ---
 title: ArchitectureProcessor and customizing it
-description: How ArchitectureProcessor works, and how to write and run your own processor that pulls information out of a ProjectModel.
+description: How ArchitectureProcessor works, and how to write and run your own processor that pulls information out of the context.
 tags:
   - advanced
 ---
 
 import { Aside, Tabs, TabItem } from "@astrojs/starlight/components"
 
+This page aims to deepen your understanding of katachi by explaining ArchitectureProcessor, one of katachi's key elements.
+
+The latter half explains how to write and run your own ArchitectureProcessor.
+
 ## What is ArchitectureProcessor
 
-katachi's `ArchitectureProcessor` is an interface that does something based on an architecture definition.
+katachi's `ArchitectureProcessor` class is an interface that does something based on an architecture definition.
 
 ```kt
-public interface ArchitectureProcessor<out R> {
-    public fun process(model: ProjectModel): R
+public interface ArchitectureProcessor<Args, Result> {
+    public val argsSerializer: KSerializer<Args>
+    public fun process(context: ArchitectureProcessContext<Args>): Result
 }
+```
+
+An ArchitectureProcessor that doesn't take arguments implements `ArchitectureProcessorNoArg<Result>`. It's a thin interface that just takes care of writing `argsSerializer` for you.
+
+```kt
+public interface ArchitectureProcessorNoArg<Result> : ArchitectureProcessor<Unit, Result>
 ```
 
 ## katachi's two elements
 
 Broadly speaking, katachi consists of two elements: the **architecture definition** and **ArchitectureProcessor**.
 
+{/* TODO: needs to update the diagram too */}
 ```mermaid
 flowchart LR
-    D["architecture { }<br/>Architecture definition"] --> M["ProjectModel"]
-    M --> L["LayoutCheck<br/>Validates placement"]
-    M --> K["KonsistCheck<br/>Validates contents"]
-    M -.-> C["Your ArchitectureProcessor<br/>Aggregation, extraction, output to other formats"]
+    D["architecture { }<br/>Architecture definition"]
+    D --> Layout["LayoutCheck<br/>Validates placement"]
+    D --> Doc["DocumentGeneration<br/>Generates documentation"]
+    D --> Template["TemplateGeneration<br/>Generates code"]
+    D -.-> Custom["Your ArchitectureProcessor<br/>Aggregation, extraction, output to other formats"]
 
     style D fill:#5B8DEF22,stroke:#5B8DEF,stroke-width:2px
-    style C fill:#BDBDBD22,stroke:#BDBDBD,stroke-dasharray:4 3,color:#8A8A8A
+    style Custom fill:#BDBDBD22,stroke:#BDBDBD,stroke-dasharray:4 3,color:#8A8A8A
 ```
 
-The definition itself doesn't execute anything. **It's `ArchitectureProcessor` that takes a `ProjectModel` and does something with it** — there's no distinction between the ones katachi bundles and the ones you write.
+The architecture definition itself doesn't execute anything. **It's `ArchitectureProcessor` that takes an `ArchitectureProcessContext` and does something with it.**
 
-The architecture definition is the definition of your project's architecture, written inside an `architecture { }` block.
-
-Defining an architecture by itself doesn't do anything. It's ArchitectureProcessor that uses it to do something.
+- The architecture definition is the definition of your project's architecture, written inside an `architecture { }` block.
+- Defining an architecture by itself doesn't do anything. It's ArchitectureProcessor that uses it to do something.
 
 ## Built-in ArchitectureProcessors
 
@@ -45,8 +57,8 @@ katachi ships with three ArchitectureProcessors by default.
 | Processor | What it does | Documentation |
 | --- | --- | --- |
 | `projectArchitecture.assert()` (`LayoutCheck`) | Validates whether files are placed according to the architecture definition, and throws an assertion exception if there are errors. |  |
-| `GenerateDocumentation` | Generates documentation from properties such as summary and description written in the project definition. | |
-| `GenerateCodeFromTemplate` | Generates files based on the contents of `template { }` blocks in the project definition. | |
+| `GenerateDocumentation` | Generates documentation from properties such as summary and description written in the project definition. | [Document generation](/katachi/guides/document-generation/) |
+| `GenerateCodeFromTemplate` | Generates files based on the contents of `template { }` blocks in the project definition. | [Generating code from a template](/katachi/guides/generate-code-from-template/) |
 
 Each of them takes the project's architecture definition and puts it to use generating something.
 
@@ -68,18 +80,59 @@ projectArchitecture.assert() // Internally calls LayoutCheck().process(...)
 
 ### Method 2. Run it from the command line
 
-The katachi Gradle plugin provides a `runKatachiProcessor` Gradle task for running an ArchitectureProcessor.
+To run an ArchitectureProcessor from the command line, it needs to be registered through the Gradle plugin.
+
+```kts title="architecture-test/build.gradle.kts" {5-6}
+katachi {
+    processors {
+        // ...
+
+        // ⭐️ Specify the ArchitectureProcessor name and its corresponding class name
+        register("someProcessor", "com.example.SomeProcessor")
+    }
+}
+```
+
+<details>
+    <summary>ArchitectureProcessors registered by default</summary>
+
+    `docs` (documentation generation) and `template` (code generation from a template) are registered by default because they're common use cases.
+    You don't need to register these ArchitectureProcessors in `katachi.processors` to run them.
+
+    ```kts title="architecture-test/build.gradle.kts" {5-7}
+    katachi {
+        architecture = "com.example.projectArchitecture"
+
+        processors {
+            // ⭐️ These are unnecessary
+            register("docs", "me.tbsten.katachi.docs.GenerateDocumentation")
+            register("template", "me.tbsten.katachi.template.GenerateCodeFromTemplate")
+        }
+    }
+    ```
+
+</details>
+
+The katachi Gradle plugin provides a `runKatachiProcessor` Gradle task for running an ArchitectureProcessor, so you can run one by executing this task.
 
 ```shell
 # Example: running GenerateCodeFromTemplate
 
 # Run the runKatachiProcessor task
 ./gradlew runKatachiProcessor \
-  # Specify the factory of the ArchitectureProcessor you want to run as the entrypoint
-  --entrypoint='me.tbsten.katachi.template.GenerateCodeFromTemplate$FromArgs' \
-  # Use -P to pass arguments to the ArchitectureProcessor
-  -Prole='UseCase' -Pname='GetItemList' -PinvokeImpl='TODO()' // ...
+  # Specify the name of the ArchitectureProcessor you want to run
+  --processor='someProcessor' \
+  # Use --arg to pass arguments to the ArchitectureProcessor
+  --arg "someArg1=someValue1" --arg "someArg2=someValue2"
 ```
+
+Example output:
+
+```
+TODO
+```
+
+---
 
 ## Custom ArchitectureProcessors
 
@@ -89,51 +142,63 @@ Because ArchitectureProcessor is provided as a simple interface, you can impleme
 
 Prepare a class that implements ArchitectureProcessor and implement the `process` method.
 
+The `context` passed as the argument to the `process` method holds the architecture definition, arguments, and so on, so refer to these as needed to implement your ArchitectureProcessor's logic.
+
 ```kt
-class MyProcessor : ArchitectureProcessor<MyResult> {
-    override fun process(model: ProjectModel): MyResult {
-        // model.roles           -> the list of declared Roles
-        // model.groups          -> the list of groups
-        // model.declaredEntries -> the flattened list of declarations from layout { }
-        // model.filesOf(role)   -> the paths of the files that Role actually has
-        return model.roles.associate { it.qualifiedName to model.filesOf(it).size }
+object CountFilesPerRole : ArchitectureProcessorNoArg<Map<String, Int>> {
+    override fun process(context: ArchitectureProcessContext<Unit>): Map<String, Int> {
+        // context.architecture    ... the architecture definition itself
+        // context.roles / groups  ... the defined roles / groups
+        // context.declaredEntries ... the flattened list of declarations from layout
+        // context.filesOf(role)   ... the actual files that matched that role
+        // context.args            ... arguments passed via --arg from the CLI (Unit if there are none)
+        // context.fileSystem      ... the file system used for the walk
+        // context.log()           ... outputs progress
+
+        context.log("Counting files per role...")
+        return context.roles.associate { role -> role.name to context.filesOf(role).size }
     }
 }
 ```
 
-`ProjectModel` hands you only these four things. **You never touch the architecture definition itself or the file system.** Only the results of the walk are passed in, so a processor never needs to go read files itself.
+<Aside type="tip">
+The walk happens **only once** within the Context. Both `roles` and `filesOf()` read the same result, so calling them repeatedly never re-reads the file tree.
+</Aside>
 
-You decide the return type yourself. For a processor that has only side effects and returns no value, you can use `ArchitectureProcessorUnit` (an alias for `ArchitectureProcessor<Unit>`).
+{/* TODO: link to `ArchitectureProcessContext` once the API reference is out */}
+For details on the information available from `context`, refer to `ArchitectureProcessContext`'s API documentation.
 
 <details>
-<summary>When you need a custom property on the architecture definition</summary>
+<summary>Role metadata</summary>
 
-Sometimes the user of an ArchitectureProcessor needs a custom property specified on the architecture definition.
-In that case, you can use a Role's `metadata`.
+In some cases, the user of an ArchitectureProcessor may need a custom property that they want specified on the architecture definition.
+In that case, you can use **Role metadata**.
 
-For example, say you want to mark a Role that's already deprecated but still hangs around as legacy code. You can define and set a `Deprecated` metadata key as follows.
+For example, if you want to mark a Role that's already deprecated but still lingers as legacy baggage as Deprecated, you can define and set a metadata key called Deprecated as follows.
 
-```kt {1-2, 8-9, 17} nocollapse
-val Deprecated = metadata<Boolean>() // the metadata key
-var MetadataScope.deprecated: Boolean? by Deprecated
+```kt nocollapse
+// The metadata key. `Deprecated` collides with kotlin.Deprecated, so it's avoided
+@OptIn(ExperimentalKatachiApi::class)
+val Obsolete: MetadataKey<Boolean> = metadata()
+
+@OptIn(ExperimentalKatachiApi::class)
+var MetadataScope.obsolete: Boolean? by Obsolete
 
 // Processor side
-class MyProcessor : ArchitectureProcessor<Unit> {
-   override fun process(model: ProjectModel) {
-      for (role in model.roles) {
-         // Get the metadata value with Role[the metadata key]
-         val deprecated: Boolean? = role[Deprecated]
-      }
-   }
+object ObsoleteRoles : ArchitectureProcessorNoArg<List<String>> {
+    override fun process(context: ArchitectureProcessContext<Unit>): List<String> =
+        context.roles.filter { it[Obsolete] == true }.map { it.name }
 }
 
 // Usage side
 architecture {
    "UseCase" {
-      deprecated = true
+      obsolete = true
    }
 }
 ```
+
+`metadata<T>()` and `MetadataKey` are `@ExperimentalKatachiApi`. Metadata that hasn't been written **has no default value — it's simply "absent,"** so it's up to the reader to decide what to do when it's absent.
 
 </details>
 
@@ -146,37 +211,33 @@ If you want it runnable from a program as an API, providing an API is recommende
 <Tabs>
     <TabItem label="Provide an API">
 
-        Add a single extension function on `Architecture`. This is the same shape katachi uses to provide `assert()`.
+        Provide an extension function on `Architecture`. This is the same shape katachi uses to provide `assert()`.
 
         ```kt
-        // Place this in the same file as MyProcessor
+        // Place this in the same file as CountFilesPerRole
         @OptIn(ExperimentalKatachiApi::class)
-        fun Architecture.countFiles(): MyResult = process(MyProcessor())
+        fun Architecture.countFilesPerRole(): Map<String, Int> = process(CountFilesPerRole)
         ```
 
         Users don't even need to know the processor exists.
 
         ```kt
-        val counts = projectArchitecture.countFiles()
+        val counts = projectArchitecture.countFilesPerRole()
         ```
 
     </TabItem>
     <TabItem label="Run it from a Gradle task">
 
-        To accept arguments, **provide an entry point separate from the processing itself**.
+        TODO
 
         ```kt
-        class MyProcessor : ArchitectureProcessor<MyResult> {
-            override fun process(model: ProjectModel): MyResult {
-                // ...
-            }
+        TODO
+        ```
 
-            // Builds a MyProcessor from arguments. This is what the Gradle task calls
-            object FromArgs : (Map<String, String>) -> MyProcessor {
-                  override fun invoke(args: Map<String, String>) =
-                     MyProcessor(role = args.getValue("role"))
-            }
-        }
+        For an ArchitectureProcessor that needs to receive arguments via `--arg` from the CLI, TODO
+
+        ```kt
+        TODO
         ```
 
         The processing itself stays contained in `MyProcessor`, so **you can use the same class from both the API and the command line**.
