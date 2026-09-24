@@ -78,7 +78,56 @@ In v0.3, we **promote what should be a first-class feature** out of that escape 
 - Declarations that aren't enumerated are forbidden — **deny by default extends to file contents too**
 - On a violation, it shows "expected / actual" along with a **concrete fix**, such as a rename target
 
-This assumes v0.1 has been used extensively on real projects and a backlog of `konsist { }` blocks has accumulated. **What to promote will be decided after looking at what has accumulated.** That is the reason it comes after the plugin rather than before it: there is nothing to promote from until the escape hatch has been used in anger.
+### What it would replace
+
+This is what the escape hatch looks like today. Both constraints are real v0.1 code, and both say something that almost every role wants to say.
+
+```kt
+"UseCase" {
+    layout {
+        "domain" / "src/main/kotlin/com/example/useCase" / "*UseCase".ktFile()
+    }
+
+    "has exactly one invoke function".konsist {
+        classes().must { it.functions().map { f -> f.name } == listOf("invoke") }
+    }
+    "declares nothing but that class".konsist {
+        files.must { file -> file.declarations(includeNested = false, includeLocal = false).count() == 1 }
+    }
+}
+```
+
+The aim is for the same two rules to read like this.
+
+```kt
+"UseCase" {
+    layout {
+        "domain" / "src/main/kotlin/com/example/useCase" / "*UseCase".ktFile()
+    }
+
+    declarations {
+        classNamedAsFile {
+            function("invoke")
+        }
+    }
+}
+```
+
+Nothing else may appear in the file — a second class, a top-level extension function, a stray `typealias` — because the block is the allow list, in the same way `layout { }` is the allow list for placement.
+
+And the violation can say more than "a constraint failed", because katachi knows what was expected:
+
+```
+[UnexpectedDeclaration] domain/src/main/kotlin/com/example/useCase/GetUserUseCase.kt
+  Declared: class GetUserUseCase, fun List<User>.sortedByName()
+  Allowed:  class GetUserUseCase (named after the file)
+
+  How to fix:
+    - Move sortedByName() to a role that allows top-level functions
+    - Or add it to the declarations { } of UseCase
+```
+
+**The shape above is a sketch, not a commitment.** It assumes v0.1 has been used extensively on real projects and a backlog of `konsist { }` blocks has accumulated. **What to promote will be decided after looking at what has accumulated.** That is the reason it comes after the plugin rather than before it: there is nothing to promote from until the escape hatch has been used in anger.
 
 ## v0.4 and beyond — Adoption in existing projects
 

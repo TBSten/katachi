@@ -78,7 +78,56 @@ v0.3 では、そこから**一級機能であるべきものを昇格**させ�
 - 列挙されていない宣言は禁止される — **deny by default がファイルの中身にも及ぶ**
 - 違反したとき「期待 / 実際」と、リネーム先のような**具体的な直し方**が出る
 
-前提として、v0.1 を実プロジェクトで使い込み、`konsist { }` のブロックが溜まっていることが要ります。**何を昇格させるべきかは、溜まったものを見てから決めます。** plugin より後に置いているのはそのためです。逃げ道が実際に使い込まれるまで、昇格させる対象がありません。
+### 何を置き換えるのか
+
+いまの逃げ道はこう書きます。どちらも v0.1 の本物のコードで、どちらも「ほとんどの role が言いたいこと」です。
+
+```kt
+"UseCase" {
+    layout {
+        "domain" / "src/main/kotlin/com/example/useCase" / "*UseCase".ktFile()
+    }
+
+    "invoke をちょうど1つ持つこと".konsist {
+        classes().must { it.functions().map { f -> f.name } == listOf("invoke") }
+    }
+    "そのクラス以外を宣言しないこと".konsist {
+        files.must { file -> file.declarations(includeNested = false, includeLocal = false).count() == 1 }
+    }
+}
+```
+
+同じ2つの規則が、こう読めるようにしたい。
+
+```kt
+"UseCase" {
+    layout {
+        "domain" / "src/main/kotlin/com/example/useCase" / "*UseCase".ktFile()
+    }
+
+    declarations {
+        classNamedAsFile {
+            function("invoke")
+        }
+    }
+}
+```
+
+ファイルにはそれ以外を書けません。2つめのクラスも、トップレベルの拡張関数も、置き忘れた `typealias` も。`layout { }` が配置の allow list であるのと同じ意味で、このブロックが中身の allow list になります。
+
+そして katachi は「何が期待されていたか」を知っているので、違反のときに「制約が落ちた」以上のことを言えます。
+
+```
+[UnexpectedDeclaration] domain/src/main/kotlin/com/example/useCase/GetUserUseCase.kt
+  Declared: class GetUserUseCase, fun List<User>.sortedByName()
+  Allowed:  class GetUserUseCase (named after the file)
+
+  How to fix:
+    - Move sortedByName() to a role that allows top-level functions
+    - Or add it to the declarations { } of UseCase
+```
+
+**上の形は素案で、確定ではありません。** 前提として、v0.1 を実プロジェクトで使い込み、`konsist { }` のブロックが溜まっていることが要ります。**何を昇格させるべきかは、溜まったものを見てから決めます。** plugin より後に置いているのはそのためです。逃げ道が実際に使い込まれるまで、昇格させる対象がありません。
 
 ## v0.4 以降 — 既存プロジェクトへの導入
 
