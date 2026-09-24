@@ -30,6 +30,7 @@ fun DeclarationContainerScope.docs() = "Docs" {
     example("RolePage.kt", "役割1つのページ。節ごとに関数が分かれている")
     example("Placements.kt", "layout のエントリを「配置場所」の表の行に変える")
     example("DirectoryTree.kt", "同じ行を転置して、group の README に出す配置ツリーにする")
+    example("LinkCheck.kt", "組み立てた最後に、相対リンクが実在するページを指しているか確かめる")
     layout {
         ":katachi".module {
             importsOnlyEarlierLayers()

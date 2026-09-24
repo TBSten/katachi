@@ -55,13 +55,13 @@ class RoleReferenceSpec : FreeSpec({
 
         "group に属さない役割は出力ルートの直下に出る" {
             val arch = architecture {
-                "Readme" { }
+                "Changelog" { }
                 "domain".group { "UseCase" { } }
             }
 
             arch.documents().keys.toList() shouldContainExactly listOf(
                 "README.md",
-                "Readme.md",
+                "Changelog.md",
                 "domain/README.md",
                 "domain/UseCase.md",
             )

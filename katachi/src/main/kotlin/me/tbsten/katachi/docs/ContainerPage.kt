@@ -9,9 +9,13 @@ import me.tbsten.katachi.dsl.Summary
  *
  * The root and a group are written by the same function because they hold the same two things
  * -- roles of their own, and containers below them -- and a reader arriving at either is asking
- * the same question. The heading is one difference, which a group takes from its `title` and the
- * root has no name to take; the placement tree is the other, and the root is passed no
- * [placements] because that tree is a group's.
+ * the same question. One rule covers both: a container shows the placement of the roles it lists
+ * right above, and of nothing else. So the root shows the roles written straight inside
+ * `architecture { }`, which are otherwise in no tree at all, and no page ever shows a tree that
+ * crosses groups -- a reader could not tell which group such a tree was about.
+ *
+ * The two differences are the heading, which a group takes from its `title` and the root has no
+ * name to take, and [placementHeading], because "このグループの配置" is not true of the root.
  *
  * There is no body text here. A group carries no `summary` and no `description` today: the one
  * thing said about a group is its name, and inventing a paragraph for it would be katachi
@@ -22,10 +26,11 @@ internal fun containerPage(
     roles: List<Role>,
     groups: List<Group>,
     placements: Map<Role, List<Placement>>,
+    placementHeading: String,
 ): String = buildString {
     append("# $title")
     appendRoleTable(roles)
-    appendDirectoryTree(roles, placements)
+    appendDirectoryTree(roles, placements, placementHeading)
     appendGroupList(groups)
     appendLine()
 }
@@ -62,11 +67,15 @@ private fun StringBuilder.appendRoleTable(roles: List<Role>) {
  * text -- a link inside a fenced block is not a link, and the table right above already carries
  * one per role.
  */
-private fun StringBuilder.appendDirectoryTree(roles: List<Role>, placements: Map<Role, List<Placement>>) {
+private fun StringBuilder.appendDirectoryTree(
+    roles: List<Role>,
+    placements: Map<Role, List<Placement>>,
+    heading: String,
+) {
     val tree = directoryTree(roles, placements)
     if (tree.isEmpty()) return
     append(SECTION_BREAK)
-    append("## このグループの配置")
+    append(heading)
     append(SECTION_BREAK)
     append("```\n")
     append(tree)

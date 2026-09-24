@@ -16,6 +16,18 @@ internal const val SECTION_BREAK: String = "\n\n"
 /** The heading of the documentation root, the one container with no name of its own. */
 internal const val ROOT_TITLE: String = "アーキテクチャ"
 
+/** What a group's placement tree is written under. */
+internal const val GROUP_PLACEMENT_HEADING: String = "## このグループの配置"
+
+/**
+ * What the root's placement tree is written under.
+ *
+ * Worded apart from [GROUP_PLACEMENT_HEADING] because the root is not a group -- it is where
+ * the groups are -- and the tree there is of the roles written beside them, not of everything
+ * below.
+ */
+internal const val ROOT_PLACEMENT_HEADING: String = "## ルート直下の配置"
+
 /** The file every container of the generated tree is read through. */
 internal const val README: String = "README.md"
 

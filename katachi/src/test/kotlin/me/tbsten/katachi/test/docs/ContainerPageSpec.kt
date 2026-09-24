@@ -34,9 +34,9 @@ class ContainerPageSpec : FreeSpec({
 
         "ルート直下の役割は概要つきの表になる" {
             val arch = architecture {
-                "Readme" {
-                    title = "リードミー"
-                    summary = "リポジトリの入口"
+                "Changelog" {
+                    title = "変更履歴"
+                    summary = "リリースごとの変更点"
                 }
                 "domain".group { }
             }
@@ -47,7 +47,7 @@ class ContainerPageSpec : FreeSpec({
 
                 | 役割 | 概要 |
                 |---|---|
-                | [リードミー](./Readme.md) | リポジトリの入口 |
+                | [変更履歴](./Changelog.md) | リリースごとの変更点 |
 
                 ## グループ
 
@@ -56,7 +56,7 @@ class ContainerPageSpec : FreeSpec({
         }
 
         "group が1つも無ければグループの節ごと出ない" {
-            val arch = architecture { "Readme" { } }
+            val arch = architecture { "Changelog" { } }
 
             arch.page("README.md") shouldNotContain "## グループ"
         }
@@ -69,12 +69,12 @@ class ContainerPageSpec : FreeSpec({
 
         "documented = false のルート直下の役割は一覧からもページからも消える" {
             val arch = architecture {
-                "Readme" { }
+                "Changelog" { }
                 "Scratch" { documented = false }
             }
 
             arch.page("README.md") shouldNotContain "Scratch"
-            arch.documents().keys.toList() shouldBe listOf("README.md", "Readme.md")
+            arch.documents().keys.toList() shouldBe listOf("README.md", "Changelog.md")
         }
     }
 

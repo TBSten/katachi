@@ -368,12 +368,62 @@ class DirectoryTreeSpec : FreeSpec({
             arch.page("domain/README.md") shouldNotContain TREE_HEADING
         }
 
-        "ルートの README にはツリーを出さない" {
-            val arch = architecture { "Readme" { layout { "README.md".file() } } }
-
-            withClue("group ごとの README にだけ出す。ルートに出すかは未決のまま") {
-                arch.page("README.md") shouldNotContain TREE_HEADING
+        "ルートの README には architecture { } 直下の役割の配置が出る" {
+            val arch = architecture {
+                "Changelog" {
+                    title = "変更履歴"
+                    layout { "CHANGELOG.md".file() }
+                }
+                "domain".group { title = "ドメイン" }
             }
+
+            withClue("group に属さない役割の配置は、ここに出さなければどのツリーにも出ない") {
+                arch.page("README.md") shouldBe
+                    """
+                    # アーキテクチャ
+
+                    | 役割 | 概要 |
+                    |---|---|
+                    | [変更履歴](./Changelog.md) |  |
+
+                    ## ルート直下の配置
+
+                    ```
+                    CHANGELOG.md  変更履歴
+                    ```
+
+                    ## グループ
+
+                    - [ドメイン](./domain/README.md)
+                    """.trimIndent() + "\n"
+            }
+        }
+
+        "ルートのツリーには group の中の役割の配置が出ない" {
+            val arch = architecture {
+                "Changelog" { layout { "CHANGELOG.md".file() } }
+                "domain".group {
+                    "UseCase" {
+                        layout { ":core:domain".module { mainSourceSet / kotlin / "*UseCase".ktFile() } }
+                    }
+                }
+            }
+
+            withClue("group を横断するツリーは、どの group の話なのか読み手に分からない") {
+                arch.tree("README.md", ROOT_TREE_HEADING) shouldBe "CHANGELOG.md  Changelog"
+            }
+        }
+
+        "ルート直下に役割が無ければ節ごと出ない" {
+            val arch = architecture {
+                "domain".group {
+                    "UseCase" {
+                        layout { ":core:domain".module { mainSourceSet / kotlin / "*UseCase".ktFile() } }
+                    }
+                }
+            }
+
+            arch.page("README.md") shouldNotContain ROOT_TREE_HEADING
         }
     }
 
@@ -396,12 +446,13 @@ class DirectoryTreeSpec : FreeSpec({
 /** The heading the tree is written under, which is also how a spec asks whether it is there. */
 private const val TREE_HEADING: String = "## このグループの配置"
 
-/** What opens the tree: everything a spec has to skip to reach the first line of it. */
-private const val TREE_OPENING: String = "$TREE_HEADING\n\n```\n"
+/** The same, on the root's own README, which is not a group and does not say it is one. */
+private const val ROOT_TREE_HEADING: String = "## ルート直下の配置"
 
 /** The tree of one page, without its heading and fence — which is what the specs above compare. */
-private fun Architecture.tree(path: String): String {
+private fun Architecture.tree(path: String, heading: String = TREE_HEADING): String {
     val page = page(path)
-    withClue("配置のツリーが無い:\n$page") { page shouldContain TREE_OPENING }
-    return page.substringAfter(TREE_OPENING).substringBefore("\n```")
+    val opening = "$heading\n\n```\n"
+    withClue("配置のツリーが無い:\n$page") { page shouldContain opening }
+    return page.substringAfter(opening).substringBefore("\n```")
 }

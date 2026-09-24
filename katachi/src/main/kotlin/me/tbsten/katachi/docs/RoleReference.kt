@@ -40,6 +40,9 @@ import me.tbsten.katachi.processor.ArchitectureProcessContext
  * ```
  *
  * @throws KatachiDocumentPathCollisionException when two declarations name the same page.
+ * @throws KatachiDocumentPathCaseCollisionException when two pages are one file on a case
+ * insensitive filesystem.
+ * @throws KatachiBrokenDocumentLinkException when a generated link resolves to no generated page.
  */
 // TODO(v0.2 ステップ6): --arg mode=check
 //  Comparing instead of writing needs nothing more of this function -- the caller reads the
@@ -66,10 +69,8 @@ internal fun roleReferenceDocuments(context: ArchitectureProcessContext<*>): Map
             title = ROOT_TITLE,
             roles = architecture.roles.filter { it.isDocumented },
             groups = architecture.groups.filter { it.isDocumented },
-            // TODO(v0.2): decide whether the root shows a placement tree of the roles declared
-            //  beside the groups. What is settled covers a group's README only, and a tree here
-            //  would be the one place a reader could not tell which group it is about.
-            placements = emptyMap(),
+            placements = placements,
+            placementHeading = ROOT_PLACEMENT_HEADING,
         ),
     )
     for (role in architecture.roles.filter { it.isDocumented }) {
@@ -78,7 +79,7 @@ internal fun roleReferenceDocuments(context: ArchitectureProcessContext<*>): Map
     for (group in architecture.groups) {
         documents.putGroup(group, placements, constraintNames)
     }
-    return documents.pages()
+    return documents.pages().also(::checkDocumentLinks)
 }
 
 /** A group's own page, its roles' pages, and — recursively — everything below it. */
@@ -99,6 +100,7 @@ private fun Documents.putGroup(
             roles = group.roles.filter { it.isDocumented },
             groups = group.groups.filter { it.isDocumented },
             placements = placements,
+            placementHeading = GROUP_PLACEMENT_HEADING,
         ),
     )
     for (role in group.roles.filter { it.isDocumented }) {
@@ -125,8 +127,11 @@ private fun Documents.putRole(
     ),
 )
 
-/** What produced a page, for the collision message to name. */
-private class Owner(val label: String, val declaredAt: DeclarationSite)
+/** What produced a page, for the collision messages to name. */
+private class Owner(val label: String, val declaredAt: DeclarationSite) {
+    /** `Role "domain/UseCase" at ProjectArchitecture.kt:42`, as a message writes it out. */
+    fun describe(): String = label + writtenAt(declaredAt)
+}
 
 /**
  * The pages built so far, refusing to let one overwrite another.
@@ -153,5 +158,24 @@ private class Documents {
         contents[path] = content
     }
 
-    fun pages(): Map<String, String> = contents
+    /**
+     * The pages, once no two of them are the same file.
+     *
+     * Case is asked about here rather than in [put] because, unlike an exact collision, it is a
+     * question about the whole set: a page is not wrong on its own, only next to another one.
+     * Reporting them together follows from that, and spares a reader one run per clash.
+     */
+    fun pages(): Map<String, String> {
+        val collisions = contents.keys
+            .groupBy { it.lowercase() }
+            .values
+            .filter { it.size > 1 }
+        if (collisions.isNotEmpty()) {
+            throw KatachiDocumentPathCaseCollisionException(
+                collisions = collisions,
+                owners = collisions.flatten().associateWith { owners[it]?.describe().orEmpty() },
+            )
+        }
+        return contents
+    }
 }
