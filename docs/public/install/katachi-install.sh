@@ -36,7 +36,7 @@ KATACHI_RELEASES_PAGE="https://github.com/TBSten/katachi/releases"
 KOTLIN_MIN_MAJOR="2"
 KOTLIN_MIN_MINOR="3"
 
-JVM_TOOLCHAIN="21"
+JVM_TOOLCHAIN="17"
 JUNIT_VERSION="5.13.4"
 
 MODULE_DIR="architecture-test"
@@ -44,7 +44,7 @@ MODULE_DIR="architecture-test"
 # ---------------------------------------------------------------- 出力
 
 # メッセージに日本語を混ぜるときは、変数展開を必ず ${VAR} と波括弧で閉じること。
-# "$VAR）" のように $VAR の直後に非 ASCII が続くと、macOS の bash 3.2 は続くバイトを
+# $VAR の直後に非 ASCII（全角の閉じ括弧など）が続くと、macOS の bash 3.2 は続くバイトを
 # 変数名の一部と誤読し、set -u と相まって "unbound variable" で落ちる。メッセージが
 # 出ないまま終了するので気づきにくい。これまでに4回踏んでいる。
 say() { printf '%s\n' "$*"; }
@@ -359,8 +359,40 @@ cmd_init() {
 	mkdir -p "$init_workdir/tmp" "$init_workdir/cache"
 	note "作業用ディレクトリ:  $init_workdir"
 
+	# katachi は「未追跡だが ignore もされていない」ファイルも検査する
+	# （git ls-files --others --exclude-standard 相当）。作業用ディレクトリが
+	# それに当たると、ステップ4で必ず [UnexpectedFile] として落ちる。
+	# 「提案してください」だけだと後回しにされ、原因不明の失敗になる。
 	if ! path_is_ignored "$init_workdir"; then
-		warn "$init_workdir は git から見えています。.gitignore への追加をユーザに提案してください。"
+		warn "${init_workdir} は git から見えています。このままだとステップ4で必ず失敗します。
+    katachi は未追跡でも ignore されていないファイルを検査するため、この作業用ディレクトリ
+    自体が [UnexpectedFile] になります。ユーザに .gitignore への追加を提案してください
+    （勝手に書き換えないこと）。"
+	fi
+
+	# 作業用ディレクトリ以外にも、未追跡で ignore もされていないものがあれば同じ問題を起こす。
+	# --directory でディレクトリ単位に畳むので、2万件あっても数行で済む。
+	if is_git_repo; then
+		# 作業用ディレクトリは上で専用の警告を出しているので落とす。git は --directory で
+		# 一番浅い未追跡ディレクトリに畳むため、workdir が tmp/install-katachi なら
+		# "tmp/" として出てくる。前方一致で両向きに判定する。
+		_untracked=$(
+			git ls-files --others --exclude-standard --directory --no-empty-directory 2>/dev/null |
+				while IFS= read -r _entry; do
+					_t=${_entry%/}
+					[ "$_t" = "$init_workdir" ] && continue
+					# 括弧を開く形にしてあるのは bash 3.2 対策。$( ) の中の case では
+					# パターンの ) を置換の終わりと誤認して syntax error になる。
+					case "$init_workdir/" in ("$_t"/*) continue ;; esac
+					case "$_t/" in ("$init_workdir"/*) continue ;; esac
+					printf '%s\n' "$_t"
+				done
+		)
+		if [ -n "$_untracked" ]; then
+			warn "未追跡で ignore もされていないものがあります。これらもステップ4で [UnexpectedFile] になります。
+    宣言するか、.gitignore に足すかをユーザに確認してください。"
+			printf '%s\n' "$_untracked" | sed 's/^/       /'
+		fi
 	fi
 
 	# katachi のバージョン。
@@ -727,12 +759,21 @@ write_module_build() {
 	# （テスト関数名と同じ理由。write_test_kt を参照）。
 	case "$KATACHI_LANG" in
 	ja)
+		_cache_note='    // このタスクはキャッシュさせない。katachi は実行時にリポジトリ全体を歩くが、
+    // Gradle から見える入力はこのモジュールのテストソースと classpath だけ。他の場所で
+    // ファイルが増減してもキーが変わらないので、UP-TO-DATE / FROM-CACHE になって
+    // 検査が一度も走らない。黙って通るガードは、ガードが無いより悪い。'
 		_log_note='        // 違反の一覧は AssertionError のメッセージに入っている。FULL にしないと
         // "KatachiArchitectureAssertionError at ProjectArchitectureTest.kt:12" の1行しか出ず、
         // 中身を見るのに build/test-results/**/*.xml を読む羽目になる（CI のログでも同じ）。'
 		_std_note='        // MissingDescription などの警告は stdout に出る。'
 		;;
 	*)
+		_cache_note='    // Never let this task be cached. katachi walks the whole repository when the test
+    // runs, but the only inputs Gradle can see are this module\x27s test sources and its
+    // classpath. A file added or moved anywhere else leaves the key unchanged, so Gradle
+    // answers UP-TO-DATE or FROM-CACHE and the check never runs. A guard that silently
+    // passes is worse than no guard at all.'
 		_log_note='        // The violation list lives in the AssertionError message. Without FULL you only get
         // "KatachiArchitectureAssertionError at ProjectArchitectureTest.kt:12", and reading the
         // detail means opening build/test-results/**/*.xml (the same goes for CI logs).'
@@ -782,6 +823,10 @@ plugins {
 $_kotlin_block
 
 tasks.test {
+$_cache_note
+    outputs.upToDateWhen { false }
+    outputs.cacheIf { false }
+
     useJUnitPlatform()
     testLogging {
         events("passed", "failed", "skipped")
@@ -951,9 +996,27 @@ EOF
 
 add_settings_include() {
 	if [ "$SETTINGS_DSL" = "groovy" ]; then
-		printf "\ninclude '%s'\n" "$MODULE_DIR" >>"$SETTINGS_FILE"
+		_inc_line="include '$MODULE_DIR'"
 	else
-		printf '\ninclude("%s")\n' "$MODULE_DIR" >>"$SETTINGS_FILE"
+		_inc_line="include(\"$MODULE_DIR\")"
+	fi
+
+	# 既存の include の並びの直後に入れる。素朴に末尾へ足すと
+	# dependencyResolutionManagement { } などの後ろに独りで置かれ、並びが崩れる。
+	# 手順書が生成物の書き換えを禁じている以上、位置はこちらで合わせる。
+	#
+	# include の直後の1文字で includeBuild を弾いている（B は [^A-Za-z0-9_] に入らない）。
+	# include が1つも無ければ末尾に足す。
+	_inc_at=$(grep -n '^[[:space:]]*include[^A-Za-z0-9_]' "$SETTINGS_FILE" | tail -n 1 | cut -d: -f1)
+
+	if [ -n "$_inc_at" ]; then
+		_inc_tmp="$SETTINGS_FILE.katachi.$$"
+		awk -v n="$_inc_at" -v line="$_inc_line" '
+			NR == n { print; print line; next }
+			{ print }
+		' "$SETTINGS_FILE" >"$_inc_tmp" && mv "$_inc_tmp" "$SETTINGS_FILE"
+	else
+		printf '\n%s\n' "$_inc_line" >>"$SETTINGS_FILE"
 	fi
 }
 
@@ -1273,6 +1336,10 @@ args = sys.argv[5:]
 FIELDS = {
     "violation":  ("violations",  ["violation", "location", "whyNotFixed", "suggestion"], []),
     "question":   ("questions",   ["question", "observed", "recommendation"], ["options"]),
+    # レポート側の questions。チェックリストの question とは行き先が違うだけで形は同じ。
+    # ステップ1で気づいた「コードベースの揺れ」を書く場所。
+    "codebase-question":
+                  ("questions",   ["question", "observed", "recommendation"], ["options"]),
     "changed":    ("changedFiles",["path", "change", "summary"], []),
     "module":     ("modules",     ["path", "kind", "role", "buildFile"], []),
     "role":       ("roles",       ["importance", "name", "layout", "naming", "count", "note"],
@@ -1354,7 +1421,7 @@ print("%s に1件追記しました（計 %d 件）" % (key, len(data[key])))
 add_target_of() {
 	case "$1" in
 	violation | question | changed) printf 'check-list\n' ;;
-	module | role | tool | excluded) printf 'report\n' ;;
+	module | role | tool | excluded | codebase-question) printf 'report\n' ;;
 	*) printf '\n' ;;
 	esac
 }
@@ -1362,7 +1429,7 @@ add_target_of() {
 cmd_add() {
 	need_python
 	_kind="${1:-}"
-	[ -n "$_kind" ] || die "add: 種類を指定してください（violation / question / changed / module / role / tool / excluded）"
+	[ -n "$_kind" ] || die "add: 種類を指定してください（violation / question / codebase-question / changed / module / role / tool / excluded）"
 	shift
 
 	_target=$(add_target_of "$_kind")
@@ -1511,6 +1578,11 @@ SUMMARY_PY='
 import json, sys
 
 cl = json.load(open(sys.argv[1], encoding="utf-8"))
+try:
+    report = json.load(open(sys.argv[2], encoding="utf-8"))
+except Exception:
+    report = {}
+report_questions = report.get("questions") or []
 meta = cl.get("meta") or {}
 workdir = meta.get("workdir") or "<作業用ディレクトリ>"
 violations = cl.get("violations") or []
@@ -1548,6 +1620,15 @@ else:
     print("- `:architecture-test:test` の実行結果: ✅ All green")
 if questions:
     print("- 確認したいことが %d 件あります（チェックリストの「ユーザに確認したいこと」）" % len(questions))
+if report_questions:
+    print("- コードベースの揺れが %d 件あります（レポートの questions）" % len(report_questions))
+    for q in report_questions:
+        text = q.get("question") or "(未記入)"
+        rec = q.get("recommendation")
+        if rec:
+            print("    - %s → 推奨: %s" % (text, rec))
+        else:
+            print("    - %s" % text)
 print("- 変更したファイル: %d 件" % len(changed))
 print("- Next action:")
 print("    - architecture-test/ 以下の ProjectArchitecture.kt を**レビュー**してください")
@@ -1569,11 +1650,22 @@ cmd_summary() {
 	[ -f "$_cl" ] || die "$_cl がありません。先に init を実行してください。"
 	_a="$WORKDIR/cache/.summary.$$"
 	extract_json "$_cl" checklist >"$_a" || die "チェックリストの JSON を読めません。"
-	# `set -e` の下では、条件に置かないと python の失敗で後始末に届かない。
-	if printf '%s' "$SUMMARY_PY" | python3 - "$_a"; then
-		rm -f "$_a"
+
+	# レポート側の questions も出す。ステップ1で書いたものがユーザに一度も
+	# 届かないまま終わる事故があったため（手順書ではステップ3の前に提示させている）。
+	_b="$WORKDIR/cache/.summary-report.$$"
+	_rp="$WORKDIR/project-code-base-report.html"
+	if [ -f "$_rp" ]; then
+		extract_json "$_rp" report >"$_b" 2>/dev/null || printf '{}\n' >"$_b"
 	else
-		rm -f "$_a"
+		printf '{}\n' >"$_b"
+	fi
+
+	# `set -e` の下では、条件に置かないと python の失敗で後始末に届かない。
+	if printf '%s' "$SUMMARY_PY" | python3 - "$_a" "$_b"; then
+		rm -f "$_a" "$_b"
+	else
+		rm -f "$_a" "$_b"
 		die "チェックリストの JSON を読めませんでした。data get check-list で中身を確認してください。"
 	fi
 }

@@ -17,6 +17,23 @@
 
 ## 0. 事前準備
 
+### 始める前に — セッションを片付ける（該当する場合だけ）
+
+これはチェックリストの項目ではありません。番号は付きません。
+
+**このセッションに別件の会話がたまっているなら、まずユーザにそう伝えてください。** この手順はステップ 0 から 6 まで長く、正確なコマンドを何十回も打ちます。ステップ 3 では 3500 行のドキュメントを読み込みます。別件の文脈が多いほど、手順を飛ばす・書かれていない回避策を作る・前の話題の前提を持ち込む、といったことが起きやすくなります。
+
+**勝手に判断せず、提案だけしてください。** ユーザが続行を選んだらそのまま進めます。
+
+クリアするとこの手順書も失われるので、提案するときは次の文面を添えてください。新しいセッションでこれを貼れば同じところから始められます。
+
+```
+このプロジェクトに katachi を導入してください。
+https://tbsten.github.io/katachi/install/ja/index.md に従って導入してください。
+```
+
+作業用ディレクトリを指定したい場合は「作業用ディレクトリは <パス> を使って」も添えてもらいます。
+
 ### 0-1. 権限を先に取り切る
 
 この手順はネットワークアクセス・ファイルの作成・Gradle の実行を何度も繰り返します。都度確認していると、ユーザは承認だけを延々と続けることになります。
@@ -29,6 +46,8 @@
 # 1. ネットワーク — 配信元から取れるか
 curl -fsSL -o /tmp/katachi-install.sh https://tbsten.github.io/katachi/install/katachi-install.sh
 ```
+
+> 置き場は `/tmp` でなくても構いません。エージェントの環境に「一時ファイルはセッション専用のディレクトリへ」といった方針があるなら、書ける場所ならどこでもよいので、以降の `sh <パス> init` をそのパスに読み替えてください。`init` が自分自身を作業用ディレクトリへコピーするので、この置き場を使うのは最初の1回だけです。
 
 ```sh
 # 2. プロジェクト配下へのファイル作成
@@ -130,6 +149,7 @@ sh $CLI data set report new.json
 ```sh
 sh $CLI add violation --violation "..." --location "..." --whyNotFixed "..." --suggestion "..."
 sh $CLI add question  --question "..." --observed "..." --options "A" --options "B" --recommendation "..."
+sh $CLI add codebase-question --question "..." --observed "..." --options "A" --options "B" --recommendation "..."
 sh $CLI add changed   --path "..." --change "新規" --summary "..."
 sh $CLI add role      --importance 5 --name ViewModel --layout "..." --naming "..." --allowed "..." --forbidden "..." --examples "..." --count 12
 sh $CLI add module    --path app --kind "Android application" --role "..." --buildFile "app/build.gradle.kts"
@@ -138,6 +158,8 @@ sh $CLI add excluded  --path "..." --reason "..."
 ```
 
 `--options` と `--allowed` / `--forbidden` / `--examples` は**複数回渡せます**。知らない項目名を渡すと、使える名前を並べて止まります。項目を1つも渡さなかったとき、および同じ `--path` / `--name` がすでに登録されているときも止まります。空の行や重複した行が入らないようにするためです。
+
+`add changed` は**1件ずつ**です。定義ファイルが何十件にもなったときは、**ディレクトリやワイルドカードでまとめて1件**にしてください（例: `--path "architecture-test/src/test/kotlin/**" --change "新規" --summary "architecture { } の定義一式（12ファイル）"`）。1ファイル1件で埋める必要はありません。
 
 **HTML を直接編集しないこと。** 書き換えは必ず `data merge` か `data set` を通す。どちらも書き込む前に JSON を検査し、元のファイルを `.bak` に退避し、結果が壊れていれば自動で巻き戻します。
 
@@ -171,7 +193,7 @@ sh $CLI data merge report <KATACHI_WORKDIR>/tmp/p.json
 }
 ```
 
-項目の id は `0-1` `0-2` / `1-1` `1-2` / `2-1` `2-2` / `3-1` `3-2` / `4-1` `4-2` / `5-1` `5-2` の12件。`label` は書き換えないこと。
+項目の id は `0-1` `0-2` / `1-1` `1-2` / `2-1` `2-2` / `3-1` `3-2` / `4-1` `4-2` / `5-1` `5-2` の12件と、**任意のステップ 6 の `6-1` `6-2`** の計14件。6-1 / 6-2 は 6-A / 6-B をやったときだけ入れ、`verify` の対象外です。`label` は書き換えないこと。
 
 **JSON を自分で書き換えないこと。** 専用のコマンドがあります。
 
@@ -193,6 +215,35 @@ sh $CLI warn 4 --clear         # 警告を消す
 **ここはあなたが判断するステップです。**
 
 プロジェクト内の Git にコミットされているすべてのファイルを走査し、`<KATACHI_WORKDIR>/project-code-base-report.html` の JSON を埋める。このファイルは init がすでに配置している。**テンプレートを取得し直さないこと。**
+
+#### まずプロジェクト自身のドキュメントを読む
+
+**コードより先に読んでください。** コードは「いまこうなっている」を示し、ドキュメントは「こうあるべき」を示します。`architecture { }` に書くのは後者です。コードだけを見て書くと、**現状をそのまま追認した定義**になり、既存の逸脱を「正しいもの」として固定してしまいます。
+
+見る場所（あるものだけでよい）:
+
+- `README` / `CONTRIBUTING` / `ARCHITECTURE.md`
+- `docs/` `doc/` `documentation/` とドキュメントサイト（`docs-site/` など）
+- ADR（`docs/adr/`、`doc/architecture/decisions/` など）
+- `CLAUDE.md` / `AGENTS.md` / `.cursor/rules` など、AI エージェント向けの規約
+- 各モジュール直下の `README`
+
+取り出すもの:
+
+| 取り出すもの | 行き先 |
+|---|---|
+| **チームが実際に使っている語彙**（`UseCase` か `Interactor` か、`Screen` か `Page` か） | `roles[].name`。**勝手に命名しないこと** |
+| 意図的な規則（「UI から Repository を直接呼ばない」など） | `roles[].allowed` / `forbidden` |
+| アーキテクチャの名前と、その選択の理由 | `architecture.name` / `rationale` / `characteristics` |
+| 独自の検査（Kotlin compiler plugin、detekt のカスタムルール、ktlint など） | `tools` |
+
+食い違いは `sh $CLI add codebase-question ...` で書きます（`add question` はチェックリスト側で、用途が違います）。
+
+**ドキュメントとコードが食い違ったら、`questions` に書いてください。** 黙ってコード側に合わせないこと。ドキュメントが古いのか、コードが逸脱しているのかは、利用者にしか判断できません。この食い違いこそが、ステップ3の前にユーザへ提示すべきものです。
+
+ドキュメントが1つも無ければ、この節は飛ばしてコードから推測します。その場合は「ドキュメントが無いので、以下はコードからの推測です」と `questions` に一言残してください。
+
+#### コードベースを走査する
 
 答えるのは次の4つ。
 
@@ -230,6 +281,16 @@ sh $CLI data merge report <KATACHI_WORKDIR>/tmp/roles.json
 利用できる場合は適宜 subagent を起動するなど コンテキストを多く消費しうるタスクであることを認識する。
 
 すべての記載が完了し次第 `sh $CLI check 1-1 1-2`。
+
+**レポートの `questions` に書いたことは、この時点でユーザに提示して回答をもらってください。**
+
+```sh
+sh $CLI data get report
+```
+
+で `questions` を読み、1件ずつ「気づいたこと・選択肢・あなたの推奨」を示して答えてもらいます。**ステップ 3 より後に回さないこと。** ここに書くのは「画面のファイルをパッケージ直下に統一するか、サブパッケージも許すか」のような揺れで、**どちらに決めるかで `layout` の書き方が変わります。** 定義を書き終えてから聞くと、書き直しになります。
+
+回答は `data get report` → 該当の `questions` を直す → `data set report` で反映してください（`recommendation` を回答で上書きするのが手軽です）。
 
 **このステップで特定したアプリのパッケージ名を次のステップで使う。**
 
@@ -311,6 +372,19 @@ sh $CLI docs
 読み終えたら `sh $CLI check 3-1`。
 
 ### 3-2. 定義を書く
+
+**よく使う import はこれです。** ドキュメントのサンプルには import が書かれていないので、ここに置いておきます。
+
+```kt
+import me.tbsten.katachi.dsl.architecture
+import me.tbsten.katachi.dsl.DeclarationContainerScope   // 定義を関数に分割するとき
+import me.tbsten.katachi.dsl.gradle.*                    // module / sourceSet / kotlin / `/` 演算子
+import me.tbsten.katachi.dsl.kotlin.ktFile
+import me.tbsten.katachi.dsl.kotlin.ktsFile
+import me.tbsten.katachi.konsist.konsist                 // konsist { } を書くとき
+```
+
+`me.tbsten.katachi.dsl.gradle` は**スター import にしてください。** `/` は `div` 演算子なので、個別に import すると連結が書けません。
 
 `architecture-test/src/test/kotlin/<パッケージ>/test/architecture/ProjectArchitecture.kt` の `architecture { }` を埋める。
 
@@ -400,7 +474,7 @@ jobs:
       - uses: actions/setup-java@v6
         with:
           distribution: temurin
-          java-version: '21'
+          java-version: '17'
 
       - uses: gradle/actions/setup-gradle@v6
 

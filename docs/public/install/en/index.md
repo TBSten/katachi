@@ -17,6 +17,23 @@ You are only responsible for judgment in the following:
 
 ## 0. Preparation
 
+### Before you start — clear the session (only if it applies)
+
+This is not a checklist item; it carries no number.
+
+**If this session already holds a lot of unrelated conversation, say so to the user first.** These steps run from 0 to 6, with dozens of exact commands along the way, and step 3 pulls in a 3,500-line document. The more unrelated context is in the way, the easier it is to skip a step, invent a workaround nobody wrote down, or carry an assumption over from the earlier topic.
+
+**Suggest it, do not decide it.** If the user chooses to carry on, carry on.
+
+Clearing also throws away this document, so include the text below when you suggest it. Pasting it into a fresh session starts again from the same place.
+
+```
+Install katachi in this project.
+Follow https://tbsten.github.io/katachi/install/en/index.md
+```
+
+If they want to pin the working directory, they can add "use <path> as the working directory".
+
 ### 0-1. Get all permissions up front
 
 These steps repeat network access, file creation, and running Gradle many times over. Checking in every time would leave the user doing nothing but approving requests endlessly.
@@ -29,6 +46,8 @@ Run the following **from the Gradle root directory**, **one at a time, separatel
 # 1. Network - can the distribution point be reached
 curl -fsSL -o /tmp/katachi-install.sh https://tbsten.github.io/katachi/install/katachi-install.sh
 ```
+
+> It does not have to be `/tmp`. If your environment has a rule such as "temporary files go in a session-scoped directory", any writable path will do — just read the later `sh <path> init` as that path. `init` copies itself into the working directory, so this location is used exactly once.
 
 ```sh
 # 2. Creating a file under the project
@@ -130,6 +149,7 @@ sh $CLI data set report new.json
 ```sh
 sh $CLI add violation --violation "..." --location "..." --whyNotFixed "..." --suggestion "..."
 sh $CLI add question  --question "..." --observed "..." --options "A" --options "B" --recommendation "..."
+sh $CLI add codebase-question --question "..." --observed "..." --options "A" --options "B" --recommendation "..."
 sh $CLI add changed   --path "..." --change "New" --summary "..."
 sh $CLI add role      --importance 5 --name ViewModel --layout "..." --naming "..." --allowed "..." --forbidden "..." --examples "..." --count 12
 sh $CLI add module    --path app --kind "Android application" --role "..." --buildFile "app/build.gradle.kts"
@@ -138,6 +158,8 @@ sh $CLI add excluded  --path "..." --reason "..."
 ```
 
 `--options` and `--allowed` / `--forbidden` / `--examples` **can be passed multiple times.** Passing an unknown field name stops it and lists the names that are available. It also stops when you pass no fields at all, and when the same `--path` or `--name` is already recorded — so a blank row and a duplicate row cannot get in.
+
+`add changed` takes **one entry at a time.** When the definition grows to dozens of files, record them as **a single entry using a directory or a wildcard** (for example `--path "architecture-test/src/test/kotlin/**" --change "New" --summary "the whole architecture { } definition (12 files)"`). There is no need for one entry per file.
 
 **Do not edit the HTML directly.** Any rewrite must always go through `data merge` or `data set`. Both of them validate the JSON before writing, back up the original file to `.bak`, and automatically roll back if the result turns out broken.
 
@@ -171,7 +193,7 @@ The checklist's JSON has `steps`. Progress is represented by setting the relevan
 }
 ```
 
-The item ids are `0-1` `0-2` / `1-1` `1-2` / `2-1` `2-2` / `3-1` `3-2` / `4-1` `4-2` / `5-1` `5-2` — 12 in total. Do not rewrite `label`.
+The item ids are `0-1` `0-2` / `1-1` `1-2` / `2-1` `2-2` / `3-1` `3-2` / `4-1` `4-2` / `5-1` `5-2` — 12 of them — plus **`6-1` `6-2` for the optional step 6**, 14 in all. Check 6-1 / 6-2 only if you did 6-A / 6-B; `verify` does not require them. Do not rewrite `label`.
 
 **Do not rewrite the JSON yourself.** There are dedicated commands for that.
 
@@ -193,6 +215,35 @@ There are also arrays for `violations` (architecture violations left in place), 
 **This is a step where you make the judgment calls.**
 
 Walk every file committed to Git in the project and fill in the JSON inside `<KATACHI_WORKDIR>/project-code-base-report.html`. This file has already been placed by `init`. **Do not fetch the template again.**
+
+#### Read the project's own documentation first
+
+**Read it before the code.** The code shows what the project *is*; the documentation shows what it is *meant to be*, and `architecture { }` declares the latter. Write the definition from the code alone and you get **a definition that rubber-stamps the present state**, freezing existing drift in place as if it were the rule.
+
+Where to look (whatever exists):
+
+- `README` / `CONTRIBUTING` / `ARCHITECTURE.md`
+- `docs/`, `doc/`, `documentation/`, and any documentation site (`docs-site/` and the like)
+- ADRs (`docs/adr/`, `doc/architecture/decisions/`, ...)
+- `CLAUDE.md` / `AGENTS.md` / `.cursor/rules` - conventions written for AI agents
+- a `README` inside each module
+
+What to take from it:
+
+| What | Where it goes |
+|---|---|
+| **The vocabulary the team actually uses** (`UseCase` or `Interactor`, `Screen` or `Page`) | `roles[].name`. **Do not invent names of your own** |
+| Deliberate rules ("the UI never calls a repository directly") | `roles[].allowed` / `forbidden` |
+| The name of the architecture and why it was chosen | `architecture.name` / `rationale` / `characteristics` |
+| Checks of their own (a Kotlin compiler plugin, custom detekt rules, ktlint) | `tools` |
+
+Write them with `sh $CLI add codebase-question ...` (`add question` goes to the checklist, which is for something else).
+
+**Where the documentation and the code disagree, write it into `questions`.** Do not quietly side with the code. Whether the documentation is stale or the code has drifted is something only the user can say - and that disagreement is exactly what belongs in front of them before step 3.
+
+If there is no documentation at all, skip this and infer from the code. Leave one line in `questions` saying so: that everything below is inferred, because the project documents nothing.
+
+#### Scan the codebase
 
 Answer the following four questions.
 
@@ -230,6 +281,16 @@ The report's `meta` (project name, analysis timestamp, file count, Gradle root, 
 Recognize that this task can consume a large amount of context, and launch subagents where available, as appropriate.
 
 Once everything is filled in, run `sh $CLI check 1-1 1-2`.
+
+**Put whatever you wrote into the report's `questions` in front of the user now, and get answers.**
+
+```sh
+sh $CLI data get report
+```
+
+Read `questions` out of it and take them one at a time, giving the observation, the options, and your recommendation. **Do not leave this until after step 3.** What belongs here are inconsistencies like "do screen files go directly in the package, or are subpackages allowed too" — **the answer changes how `layout` is written.** Ask after the definition is done and you will be rewriting it.
+
+Record the answers with `data get report`, edit those `questions`, then `data set report` (overwriting `recommendation` with the decision is the easy way).
 
 **Use the app package name identified in this step in the next step.**
 
@@ -309,6 +370,19 @@ This fetches the entire documentation site combined into a single text, and prin
 Once you've finished reading, run `sh $CLI check 3-1`.
 
 ### 3-2. Write the definition
+
+**These are the imports you will need.** The samples in the documentation do not show them, so they are here.
+
+```kt
+import me.tbsten.katachi.dsl.architecture
+import me.tbsten.katachi.dsl.DeclarationContainerScope   // when splitting the definition into functions
+import me.tbsten.katachi.dsl.gradle.*                    // module / sourceSet / kotlin / the `/` operator
+import me.tbsten.katachi.dsl.kotlin.ktFile
+import me.tbsten.katachi.dsl.kotlin.ktsFile
+import me.tbsten.katachi.konsist.konsist                 // when writing konsist { }
+```
+
+**Star-import `me.tbsten.katachi.dsl.gradle`.** `/` is the `div` operator, so importing names one by one leaves you unable to chain paths.
 
 Fill in the `architecture { }` in `architecture-test/src/test/kotlin/<package>/test/architecture/ProjectArchitecture.kt`.
 
@@ -396,7 +470,7 @@ jobs:
       - uses: actions/setup-java@v6
         with:
           distribution: temurin
-          java-version: '21'
+          java-version: '17'
 
       - uses: gradle/actions/setup-gradle@v6
 
