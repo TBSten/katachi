@@ -138,7 +138,7 @@ package も、素のディレクトリとして全部書き下す。
   一レイヤーの持ち物に見える
 - **プロジェクトの種別によらず同じ形になる。** `sample/kmp` は JVM ターゲットを持たないので
   `commonTest` に置けず、`:app:android` に間借りするしかなかった。専用モジュールならその問題が消える
-- **v0.3 の Gradle plugin が種別で分岐しなくなる。** `sourceSets["test"]` は Android では variant 単位、
+- **v0.2 の Gradle plugin が種別で分岐しなくなる。** `sourceSets["test"]` は Android では variant 単位、
   KMP では存在しない。`kotlin("jvm")` のモジュールなら常に存在する
 
 移設にあたって変更が要らなかったもの: `ProjectRootSpec` の期待値（1階層上が `sample/android/gradlew`）、

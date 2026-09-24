@@ -4,7 +4,7 @@
 
 English | [日本語](./README.ja.md)
 
-v0.1 ships the first half: **deny by default architecture testing.** You declare where each kind of file may live, in one place. Files no declaration covers come back as `Unexpected`, declarations with nothing behind them as `Missing`. Documentation generation lands in v0.3.
+v0.1 ships the first half: **deny by default architecture testing.** You declare where each kind of file may live, in one place. Files no declaration covers come back as `Unexpected`, declarations with nothing behind them as `Missing`. Documentation generation lands in v0.2.
 
 **Docs: https://tbsten.github.io/katachi/**
 
@@ -223,8 +223,8 @@ They are **close to the real thing, not stubs.** `Screen` is a real `@Composable
 | Version | Theme |
 |---|---|
 | **v0.1** | The DSL, the check, and `konsist { }` |
-| **v0.2** | `declarations { }` — declare what a file may declare, deny by default |
-| **v0.3** | Gradle plugin and documentation generation from the same definition |
+| **v0.2** | Gradle plugin and documentation generation from the same definition |
+| **v0.3** | `declarations { }` — declare what a file may declare, deny by default |
 | **v0.4+** | baseline, report output, vocabulary metrics — adopting katachi in an existing codebase |
 
 v0.1 targets **new projects.** Dropping katachi into an existing codebase surfaces every violation at once, and the mechanism for that (baseline) is deliberately last: ship it early and you get projects where katachi is installed and says nothing.

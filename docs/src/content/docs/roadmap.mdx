@@ -1,6 +1,6 @@
 ---
 title: Roadmap
-description: katachi's plans by version — from the v0.1 DSL and checks, through declarations, the Gradle plugin and documentation generation, to adoption in existing projects.
+description: katachi's plans by version — from the v0.1 DSL and checks, through the Gradle plugin and documentation generation, then declarations, to adoption in existing projects.
 tags:
   - beginner
 ---
@@ -9,7 +9,9 @@ import { Aside, Steps } from '@astrojs/starlight/components';
 
 katachi is a library that produces **both tests and documentation from the same definition.** Right now, only the first half — **tests** — actually works.
 
-The order below goes **from fewest external dependencies to most, and from least burden on users to most.** Each stage is designed to deliver value on its own.
+The order below puts **the half that is still missing first.** Each stage is designed to deliver value on its own.
+
+Documentation generation is what makes one definition worth writing rather than two, and it is the part nobody can use yet. `declarations { }` waits behind it on purpose — it is a promotion of patterns out of `konsist { }`, and there is nothing to promote until enough `konsist { }` has been written on real projects.
 
 <Aside type="note" title="Only v0.1 is released">
 v0.1.1 is on Maven Central. Every version beyond it on this page is a plan, not a release.
@@ -20,8 +22,8 @@ v0.1.1 is on Maven Central. Every version beyond it on this page is a plan, not 
 | Version | Theme | Definition of done |
 |---|---|---|
 | **v0.1** | DSL + checks + `konsist { }` | Can express a large project, and checks pass |
-| **v0.2** | `declarations { }` | Can replace most of the `konsist { }` written in v0.1 |
-| **v0.3** | Gradle plugin + documentation generation | `./gradlew generateKatachiDocs` produces documentation |
+| **v0.2** | Gradle plugin + documentation generation | `./gradlew generateKatachiDocs` produces documentation |
+| **v0.3** | `declarations { }` | Can replace most of the `konsist { }` written in v0.1 |
 | **v0.4 and beyond** | baseline / report output / vocabulary-size measurement | Can be adopted in an **existing project** |
 
 ## v0.1 — Definitions and checks
@@ -53,19 +55,7 @@ There are two published artifacts.
 
 **This targets new projects.** Adding it to an existing project would surface all its existing violations at once, so the mechanism for handling that (baseline) is planned for v0.4 and beyond.
 
-## v0.2 — `declarations { }`
-
-v0.1's `konsist { }` is, frankly, **an escape hatch.** Common constraints, like "there's exactly one class with the same name as the file," end up being spelled out as a Konsist expression every time.
-
-In v0.2, we **promote what should be a first-class feature** out of that escape hatch.
-
-- **Enumerate**, per role, "the top-level declarations allowed in this file"
-- Declarations that aren't enumerated are forbidden — **deny by default extends to file contents too**
-- On a violation, it shows "expected / actual" along with a **concrete fix**, such as a rename target
-
-This assumes v0.1 has been used extensively on real projects and a backlog of `konsist { }` blocks has accumulated. **What to promote will be decided after looking at what has accumulated.**
-
-## v0.3 — Gradle plugin and documentation generation
+## v0.2 — Gradle plugin and documentation generation
 
 This is the stage where katachi's selling points all come together.
 
@@ -81,6 +71,18 @@ Just by applying the plugin, Markdown is generated along two axes **from the sam
 Since both are derived from the same model, **they can never contradict each other.** And the generated documentation itself becomes subject to the checks too.
 
 The mechanism described in [ArchitectureProcessor and customizing it](/katachi/guides/processor/) is what's used here. It sits on the same interface as `assert()`, so there's no special-casing.
+
+## v0.3 — `declarations { }`
+
+v0.1's `konsist { }` is, frankly, **an escape hatch.** Common constraints, like "there's exactly one class with the same name as the file," end up being spelled out as a Konsist expression every time.
+
+In v0.3, we **promote what should be a first-class feature** out of that escape hatch.
+
+- **Enumerate**, per role, "the top-level declarations allowed in this file"
+- Declarations that aren't enumerated are forbidden — **deny by default extends to file contents too**
+- On a violation, it shows "expected / actual" along with a **concrete fix**, such as a rename target
+
+This assumes v0.1 has been used extensively on real projects and a backlog of `konsist { }` blocks has accumulated. **What to promote will be decided after looking at what has accumulated.** That is the reason it comes after the plugin rather than before it: there is nothing to promote from until the escape hatch has been used in anger.
 
 ## v0.4 and beyond — Adoption in existing projects
 

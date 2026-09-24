@@ -156,7 +156,7 @@ cd sample/jvm && ./gradlew :architecture-test:test --rerun -Dkatachi.snapshot.up
 - **ドキュメントサイト（`docs/`、Astro Starlight）** — `:katachi` やサンプルのコードを変えても
   触らなくてよい。`docs/` 自体を直したときだけ `cd docs && pnpm build`（pnpm。`pnpm-lock.yaml` がある）。
   Gradle ビルドからは完全に独立している
-- **Gradle plugin 経由の導入** — v0.3 以降の話で、まだ存在しない。導入形は `:architecture-test`
+- **Gradle plugin 経由の導入** — v0.2 以降の話で、まだ存在しない。導入形は `:architecture-test`
   という素の `kotlin("jvm")` モジュール 1 つだけ
 - **ルートプロジェクト自体** — 意図的に空。ソースもプラグインも無いので、検証する中身が無い
 - **`check-kotlin-versions.sh`** — Kotlin / AGP のバージョンやサンプルのルート `build.gradle.kts`
