@@ -1,4 +1,7 @@
-package me.tbsten.katachi.dsl
+package me.tbsten.katachi.dsl.internal
+
+import me.tbsten.katachi.dsl.DeclarationSite
+import me.tbsten.katachi.dsl.Role
 
 /** Characters that mean themselves once written as `\<char>`. */
 internal const val GLOB_ESCAPABLE: String = "*\\{}?[],"

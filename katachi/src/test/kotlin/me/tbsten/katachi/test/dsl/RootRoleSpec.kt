@@ -9,7 +9,7 @@ import me.tbsten.katachi.dsl.DeclarationKind
 import me.tbsten.katachi.dsl.KatachiDuplicateDeclarationException
 import me.tbsten.katachi.dsl.Title
 import me.tbsten.katachi.dsl.architecture
-import me.tbsten.katachi.dsl.flattenLayout
+import me.tbsten.katachi.dsl.internal.flattenLayout
 import me.tbsten.katachi.processor.process
 import me.tbsten.katachi.test.fs.ForbiddenFileSystem
 

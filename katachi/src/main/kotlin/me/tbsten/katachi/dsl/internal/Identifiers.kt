@@ -1,4 +1,9 @@
-package me.tbsten.katachi.dsl
+package me.tbsten.katachi.dsl.internal
+
+import me.tbsten.katachi.dsl.DeclarationKind
+import me.tbsten.katachi.dsl.DeclarationSite
+import me.tbsten.katachi.dsl.KatachiDuplicateDeclarationException
+import me.tbsten.katachi.dsl.KatachiInvalidIdentifierException
 
 /**
  * The character set every group name and role name must follow.

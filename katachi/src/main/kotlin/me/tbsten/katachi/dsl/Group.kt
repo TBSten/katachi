@@ -1,6 +1,8 @@
 package me.tbsten.katachi.dsl
 
 import me.tbsten.katachi.ExperimentalKatachiApi
+import me.tbsten.katachi.dsl.internal.MetadataValues
+import me.tbsten.katachi.dsl.internal.get
 
 /**
  * A group of roles. One group is one documentation output directory; it says nothing

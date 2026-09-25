@@ -4,7 +4,7 @@ import me.tbsten.katachi.dsl.LayoutDirectory
 import me.tbsten.katachi.dsl.LayoutDirectoryScope
 import me.tbsten.katachi.dsl.LayoutFile
 import me.tbsten.katachi.dsl.LayoutScope
-import me.tbsten.katachi.dsl.markModulePackage
+import me.tbsten.katachi.dsl.internal.markModulePackage
 
 /**
  * Continues a `/` chain, or opens a block, at the package directory of the module being

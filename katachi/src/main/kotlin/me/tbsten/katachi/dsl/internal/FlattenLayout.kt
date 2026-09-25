@@ -1,6 +1,14 @@
-package me.tbsten.katachi.dsl
+package me.tbsten.katachi.dsl.internal
 
 import me.tbsten.katachi.InternalKatachiApi
+import me.tbsten.katachi.dsl.Architecture
+import me.tbsten.katachi.dsl.DeclarationSite
+import me.tbsten.katachi.dsl.KatachiGlobSyntaxException
+import me.tbsten.katachi.dsl.LayoutEntry
+import me.tbsten.katachi.dsl.LayoutEntryKind
+import me.tbsten.katachi.dsl.LayoutScopeImpl
+import me.tbsten.katachi.dsl.ModuleResolver
+import me.tbsten.katachi.dsl.Role
 
 /**
  * Evaluates every `layout { }` block of every role and flattens them into one list.

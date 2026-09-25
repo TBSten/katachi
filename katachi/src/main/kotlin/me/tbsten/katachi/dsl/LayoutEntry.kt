@@ -2,6 +2,7 @@ package me.tbsten.katachi.dsl
 
 import me.tbsten.katachi.ExperimentalKatachiApi
 import me.tbsten.katachi.InternalKatachiApi
+import me.tbsten.katachi.dsl.internal.Glob
 
 /**
  * What a flattened layout entry declares about the path it names.
@@ -196,7 +197,7 @@ public class LayoutEntry internal constructor(
      *
      * Internal: it exists for `ambiguousLayoutsOf` to drop what the sugar duplicates on
      * every role that shares a module, not for a processor to read. See
-     * [me.tbsten.katachi.dsl.LayoutNode.synthetic], which this carries forward, and
+     * [me.tbsten.katachi.dsl.internal.LayoutNode.synthetic], which this carries forward, and
      * `mergedWith`, which keeps it `true` only while every declaration of this path stayed
      * synthetic: a user who wrote `"build.gradle.kts".file()` themselves takes that path back.
      */
@@ -206,7 +207,7 @@ public class LayoutEntry internal constructor(
      * `"...".module { }` key opened, for a module other than the root project.
      *
      * Internal: it exists for `missingDescriptionsOf` to find the blocks a `description = "..."`
-     * could be written in, not for a processor to read. See [me.tbsten.katachi.dsl.LayoutNode.place],
+     * could be written in, not for a processor to read. See [me.tbsten.katachi.dsl.internal.LayoutNode.place],
      * which this carries forward and whose KDoc says why only module keys carry it, and
      * `mergedWith`, which ORs it: one declaration opening a block at a path is enough to make it
      * somewhere a description belongs.
@@ -218,7 +219,7 @@ public class LayoutEntry internal constructor(
      *
      * Internal: it exists so that documentation can show `:core:domain` next to a path that has
      * that module's directory taken off the front, not for a processor to read. A wildcard key
-     * stays as it was written, because [me.tbsten.katachi.dsl.ModuleIndex] leaves it that way
+     * stays as it was written, because [me.tbsten.katachi.dsl.internal.ModuleIndex] leaves it that way
      * when nothing has listed the project.
      */
     internal val modulePath: String?,

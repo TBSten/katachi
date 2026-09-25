@@ -6,7 +6,7 @@ import java.io.File
 import me.tbsten.katachi.ExperimentalKatachiApi
 import me.tbsten.katachi.InternalKatachiApi
 import me.tbsten.katachi.dsl.LayoutEntry
-import me.tbsten.katachi.dsl.flattenLayout
+import me.tbsten.katachi.dsl.internal.flattenLayout
 import me.tbsten.katachi.fs.internal.RealFileSystem
 import me.tbsten.katachi.fs.internal.findProjectRoot
 import me.tbsten.katachi.scan.moduleIndex

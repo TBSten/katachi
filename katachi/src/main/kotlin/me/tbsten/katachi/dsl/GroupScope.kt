@@ -1,5 +1,11 @@
 package me.tbsten.katachi.dsl
 
+import me.tbsten.katachi.dsl.internal.DeclaredNames
+import me.tbsten.katachi.dsl.internal.MetadataBuilder
+import me.tbsten.katachi.dsl.internal.captureDeclarationSite
+import me.tbsten.katachi.dsl.internal.declareGroup
+import me.tbsten.katachi.dsl.internal.declareRole
+
 /**
  * Receiver of `"name".group { }`. Holds nested groups and roles.
  *
@@ -149,34 +155,4 @@ internal class GroupScopeImpl(private val path: List<String>) : GroupScope {
             block = block,
         )
     }
-}
-
-/**
- * Validates the name, takes it in [declaredNames], then evaluates [block] to collect the
- * nested groups, the roles and the metadata.
- *
- * The name is reserved before [block] runs so that a block which reaches back into this
- * same scope cannot slip a second declaration of the same name past the check.
- */
-internal fun declareGroup(
-    name: String,
-    parentPath: List<String>,
-    declaredAt: DeclarationSite,
-    declaredNames: DeclaredNames,
-    block: GroupScope.() -> Unit,
-): Group {
-    requireValidIdentifier(name, DeclarationKind.Group, declaredAt)
-    requireNameIsFree(declaredNames, DeclarationKind.Group, name, parentPath, declaredAt)
-    declaredNames.reserve(name, DeclarationKind.Group, declaredAt)
-    val path = parentPath + name
-    val scope = GroupScopeImpl(path)
-    scope.block()
-    return Group(
-        name = name,
-        metadata = scope.metadata.build(),
-        path = path,
-        groups = scope.groups.toList(),
-        roles = scope.roles.toList(),
-        declaredAt = declaredAt,
-    )
 }

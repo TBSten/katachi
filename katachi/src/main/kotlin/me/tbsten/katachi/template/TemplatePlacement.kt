@@ -1,10 +1,10 @@
 package me.tbsten.katachi.template
 
 import me.tbsten.katachi.dsl.DeclarationSite
-import me.tbsten.katachi.dsl.Glob
 import me.tbsten.katachi.dsl.LayoutEntry
 import me.tbsten.katachi.dsl.LayoutEntryKind
 import me.tbsten.katachi.dsl.Role
+import me.tbsten.katachi.dsl.internal.Glob
 
 /**
  * One declared file pattern of a role, split the way generation has to read it: the directory a

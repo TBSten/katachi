@@ -1,5 +1,10 @@
-package me.tbsten.katachi.dsl
+package me.tbsten.katachi.dsl.internal
 
+import me.tbsten.katachi.dsl.DeclarationSite
+import me.tbsten.katachi.dsl.KatachiEmptyLayoutChainException
+import me.tbsten.katachi.dsl.KatachiGlobSyntaxException
+import me.tbsten.katachi.dsl.LayoutDirectory
+import me.tbsten.katachi.dsl.LayoutFile
 
 /**
  * One node of the tree a `layout { }` block builds while it is evaluated.

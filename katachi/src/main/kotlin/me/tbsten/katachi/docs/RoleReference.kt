@@ -3,10 +3,10 @@ package me.tbsten.katachi.docs
 import me.tbsten.katachi.dsl.DeclarationSite
 import me.tbsten.katachi.dsl.Description
 import me.tbsten.katachi.dsl.Group
-import me.tbsten.katachi.dsl.ModuleIndex
 import me.tbsten.katachi.dsl.Role
 import me.tbsten.katachi.dsl.Title
-import me.tbsten.katachi.dsl.evaluateLayout
+import me.tbsten.katachi.dsl.internal.ModuleIndex
+import me.tbsten.katachi.dsl.internal.evaluateLayout
 import me.tbsten.katachi.processor.ArchitectureProcessContext
 
 /**

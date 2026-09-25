@@ -1,8 +1,8 @@
 package me.tbsten.katachi.docs
 
 import me.tbsten.katachi.dsl.DocumentSection
-import me.tbsten.katachi.dsl.MetadataValues
-import me.tbsten.katachi.dsl.documentSectionBodies
+import me.tbsten.katachi.dsl.internal.MetadataValues
+import me.tbsten.katachi.dsl.internal.documentSectionBodies
 
 /**
  * The sections the definition declared for itself, after every section katachi assembles.

@@ -9,7 +9,7 @@ import me.tbsten.katachi.dsl.gradle.mainSourceSet
 import me.tbsten.katachi.dsl.gradle.module
 import me.tbsten.katachi.dsl.kotlin.ktFile
 import me.tbsten.katachi.dsl.kotlin.ktsFile
-import me.tbsten.katachi.dsl.reportPath
+import me.tbsten.katachi.dsl.internal.reportPath
 
 /**
  * Which files a constraint turned out to be about, and which path a report opens with.

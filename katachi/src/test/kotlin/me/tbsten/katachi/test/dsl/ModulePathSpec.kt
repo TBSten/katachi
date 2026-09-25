@@ -9,7 +9,7 @@ import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
 import me.tbsten.katachi.dsl.KatachiGlobSyntaxException
 import me.tbsten.katachi.dsl.ModulePath
-import me.tbsten.katachi.dsl.ModulePattern
+import me.tbsten.katachi.dsl.internal.ModulePattern
 
 class ModulePathSpec : FreeSpec({
     "モジュールパスの読み取り" - {

@@ -16,8 +16,8 @@ import me.tbsten.katachi.dsl.KatachiTemplateParameterReusedException
 import me.tbsten.katachi.dsl.KatachiUnboundTemplateParameterException
 import me.tbsten.katachi.dsl.TemplateScope
 import me.tbsten.katachi.dsl.architecture
-import me.tbsten.katachi.dsl.evaluateTemplate
-import me.tbsten.katachi.dsl.templateParameterNames
+import me.tbsten.katachi.dsl.internal.evaluateTemplate
+import me.tbsten.katachi.dsl.internal.templateParameterNames
 
 /** The role every template below is declared on, so the messages have a name to print. */
 private const val ROLE: String = "UseCase"

@@ -1,4 +1,8 @@
-package me.tbsten.katachi.dsl
+package me.tbsten.katachi.dsl.internal
+
+import me.tbsten.katachi.dsl.DeclarationSite
+import me.tbsten.katachi.dsl.FileSetConstraint
+import me.tbsten.katachi.dsl.Role
 
 /**
  * One constraint, with the layout around it already evaluated.

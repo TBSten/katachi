@@ -23,7 +23,7 @@ import me.tbsten.katachi.dsl.Examples
 import me.tbsten.katachi.dsl.LayoutEntry
 import me.tbsten.katachi.dsl.Title
 import me.tbsten.katachi.dsl.architecture
-import me.tbsten.katachi.dsl.flattenLayout
+import me.tbsten.katachi.dsl.internal.flattenLayout
 import me.tbsten.katachi.dsl.gitTracked
 import me.tbsten.katachi.dsl.gradle.*
 import me.tbsten.katachi.dsl.gradle.capitalizedModuleNamePackage

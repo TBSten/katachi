@@ -1,7 +1,7 @@
 package me.tbsten.katachi.template
 
 import me.tbsten.katachi.dsl.Role
-import me.tbsten.katachi.dsl.TemplateDeclaration
+import me.tbsten.katachi.dsl.internal.TemplateDeclaration
 
 /**
  * The role `--arg roleName=` named.

@@ -3,9 +3,9 @@ package me.tbsten.katachi.test.dsl
 import io.kotest.core.spec.style.FreeSpec
 import io.kotest.matchers.collections.shouldContainExactly
 import io.kotest.matchers.shouldBe
-import me.tbsten.katachi.dsl.ModuleIndex
+import me.tbsten.katachi.dsl.internal.ModuleIndex
 import me.tbsten.katachi.dsl.ModulePath
-import me.tbsten.katachi.dsl.ModulePattern
+import me.tbsten.katachi.dsl.internal.ModulePattern
 import me.tbsten.katachi.dsl.ModuleResolver
 import me.tbsten.katachi.fs.FsPath
 import me.tbsten.katachi.scan.discoverModules

@@ -1,5 +1,11 @@
 package me.tbsten.katachi.dsl
 
+import me.tbsten.katachi.dsl.internal.ConstraintDeclaration
+import me.tbsten.katachi.dsl.internal.MetadataBuilder
+import me.tbsten.katachi.dsl.internal.TemplateDeclaration
+import me.tbsten.katachi.dsl.internal.captureDeclarationSite
+import me.tbsten.katachi.dsl.internal.constraintDeclarationOf
+
 /**
  * Receiver of `"RoleName" { }`.
  *
@@ -232,47 +238,4 @@ internal class RoleScopeImpl(private val roleName: String) : RoleScope {
     override fun constraint(name: String?, declaredAt: DeclarationSite, check: FileSetConstraint) {
         constraints += constraintDeclarationOf(name = name, declaredAt = declaredAt, check = check)
     }
-}
-
-/**
- * Validates the name, takes it in [declaredNames], then evaluates [block] to collect the
- * role's properties.
- *
- * The name is reserved before [block] runs, for the same reason as in `declareGroup`.
- *
- * @throws KatachiConstraintWithoutLayoutException when the role wrote a constraint but no
- *   `layout { }`. It is decided here, at the end of the block, because that is the first
- *   moment both lists are complete — and it needs nothing else: no file is read, and no
- *   module index is consulted.
- */
-internal fun declareRole(
-    name: String,
-    groupPath: List<String>,
-    declaredAt: DeclarationSite,
-    declaredNames: DeclaredNames,
-    block: RoleScope.() -> Unit,
-): Role {
-    requireValidIdentifier(name, DeclarationKind.Role, declaredAt)
-    requireNameIsFree(declaredNames, DeclarationKind.Role, name, groupPath, declaredAt)
-    declaredNames.reserve(name, DeclarationKind.Role, declaredAt)
-    val scope = RoleScopeImpl(name)
-    scope.block()
-    // A wildcard module key that currently matches nothing still counts as a layout: such a
-    // role is a place waiting to fill up, which is the same thing `flattenLayout` already
-    // decides when it leaves those declarations out of `required`.
-    if (scope.constraints.isNotEmpty() && scope.layouts.isEmpty()) {
-        throw KatachiConstraintWithoutLayoutException(
-            role = name,
-            declaredAt = scope.constraints.first().declaredAt,
-        )
-    }
-    return Role(
-        name = name,
-        metadata = scope.metadata.build(),
-        layouts = scope.layouts.toList(),
-        constraints = scope.constraints.toList(),
-        templates = scope.templates.toList(),
-        groupPath = groupPath,
-        declaredAt = declaredAt,
-    )
 }

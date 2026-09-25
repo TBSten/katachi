@@ -1,15 +1,15 @@
 package me.tbsten.katachi.test.dsl
 
 import me.tbsten.katachi.dsl.Architecture
-import me.tbsten.katachi.dsl.DeclaredConstraint
+import me.tbsten.katachi.dsl.internal.DeclaredConstraint
 import me.tbsten.katachi.dsl.FileSetConstraint
 import me.tbsten.katachi.dsl.LayoutEntry
 import me.tbsten.katachi.dsl.LayoutScope
-import me.tbsten.katachi.dsl.ModuleIndex
+import me.tbsten.katachi.dsl.internal.ModuleIndex
 import me.tbsten.katachi.dsl.ModuleResolver
 import me.tbsten.katachi.dsl.architecture
-import me.tbsten.katachi.dsl.evaluateLayout
-import me.tbsten.katachi.dsl.flattenLayout
+import me.tbsten.katachi.dsl.internal.evaluateLayout
+import me.tbsten.katachi.dsl.internal.flattenLayout
 import me.tbsten.katachi.fs.FsPath
 import me.tbsten.katachi.scan.moduleIndex
 import me.tbsten.katachi.test.fs.fakeFileSystem

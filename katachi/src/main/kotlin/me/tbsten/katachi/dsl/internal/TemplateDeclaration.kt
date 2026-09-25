@@ -1,4 +1,8 @@
-package me.tbsten.katachi.dsl
+package me.tbsten.katachi.dsl.internal
+
+import me.tbsten.katachi.dsl.DeclarationSite
+import me.tbsten.katachi.dsl.TemplateParameter
+import me.tbsten.katachi.dsl.TemplateScope
 
 /**
  * A `template { }` as it was written: the block, and where it was written.
@@ -57,4 +61,13 @@ internal enum class TemplateEvaluationMode {
      * collected so that the whole set can be reported at once.
      */
     Render,
+}
+
+/** What a [TemplateParameter] talks back to: the scope that is collecting this replay. */
+internal interface TemplateParameterBinder {
+    /** Takes the name the parameter has just been given. */
+    fun bind(parameter: TemplateParameter)
+
+    /** The value bound for this run, the declared default, or a stand-in noted as missing. */
+    fun valueOf(parameter: TemplateParameter): String
 }

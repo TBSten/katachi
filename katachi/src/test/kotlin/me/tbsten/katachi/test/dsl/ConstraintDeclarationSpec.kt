@@ -10,10 +10,10 @@ import me.tbsten.katachi.dsl.DeclarationSite
 import me.tbsten.katachi.dsl.FileSetConstraint
 import me.tbsten.katachi.dsl.KatachiConstraintNameException
 import me.tbsten.katachi.dsl.KatachiConstraintWithoutLayoutException
-import me.tbsten.katachi.dsl.ModuleIndex
+import me.tbsten.katachi.dsl.internal.ModuleIndex
 import me.tbsten.katachi.dsl.ModuleResolver
 import me.tbsten.katachi.dsl.architecture
-import me.tbsten.katachi.dsl.flattenLayout
+import me.tbsten.katachi.dsl.internal.flattenLayout
 import me.tbsten.katachi.dsl.gradle.mainSourceSet
 import me.tbsten.katachi.dsl.gradle.module
 import me.tbsten.katachi.dsl.kotlin.ktFile

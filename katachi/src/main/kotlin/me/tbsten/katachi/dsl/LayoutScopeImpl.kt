@@ -1,14 +1,17 @@
 package me.tbsten.katachi.dsl
 
+import me.tbsten.katachi.dsl.internal.ConstraintDeclaration
+import me.tbsten.katachi.dsl.internal.ConstraintSite
+import me.tbsten.katachi.dsl.internal.GlobContext
+import me.tbsten.katachi.dsl.internal.LayoutNode
+import me.tbsten.katachi.dsl.internal.ModuleContext
+import me.tbsten.katachi.dsl.internal.ModuleIndex
+import me.tbsten.katachi.dsl.internal.ModulePattern
+import me.tbsten.katachi.dsl.internal.captureDeclarationSite
+import me.tbsten.katachi.dsl.internal.chainUnder
+import me.tbsten.katachi.dsl.internal.constraintDeclarationOf
+import me.tbsten.katachi.dsl.internal.markSynthetic
 import me.tbsten.katachi.dsl.kotlin.ktsFile
-
-/** The module a block is being evaluated for, or `null` when there is none. */
-internal class ModuleContext(
-    /** The module path as katachi prints it, `":feature:home"`. */
-    val modulePath: String,
-    /** What the key's wildcards captured for this module. */
-    val wildcards: List<String>,
-)
 
 /**
  * Implements both receivers of the layout DSL, and [ModuleAwareLayoutScope] with them. The

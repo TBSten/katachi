@@ -1,4 +1,8 @@
-package me.tbsten.katachi.dsl
+package me.tbsten.katachi.dsl.internal
+
+import me.tbsten.katachi.dsl.DeclarationSite
+import me.tbsten.katachi.dsl.FileSetConstraint
+import me.tbsten.katachi.dsl.KatachiConstraintNameException
 
 /**
  * One `constraint { }` call, kept as written.

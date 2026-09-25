@@ -1,10 +1,10 @@
 package me.tbsten.katachi.scan
 
 import me.tbsten.katachi.dsl.Architecture
-import me.tbsten.katachi.dsl.DeclaredConstraint
 import me.tbsten.katachi.dsl.LayoutEntry
 import me.tbsten.katachi.dsl.Role
-import me.tbsten.katachi.dsl.evaluateLayout
+import me.tbsten.katachi.dsl.internal.DeclaredConstraint
+import me.tbsten.katachi.dsl.internal.evaluateLayout
 import me.tbsten.katachi.fs.FsPath
 import me.tbsten.katachi.fs.KatachiFileSystem
 import me.tbsten.katachi.fs.internal.findProjectRoot

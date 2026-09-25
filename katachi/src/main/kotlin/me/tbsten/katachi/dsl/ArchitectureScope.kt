@@ -1,5 +1,10 @@
 package me.tbsten.katachi.dsl
 
+import me.tbsten.katachi.dsl.internal.DeclaredNames
+import me.tbsten.katachi.dsl.internal.MetadataBuilder
+import me.tbsten.katachi.dsl.internal.captureDeclarationSite
+import me.tbsten.katachi.dsl.internal.declareGroup
+import me.tbsten.katachi.dsl.internal.declareRole
 import me.tbsten.katachi.fs.FileSelection
 
 /**

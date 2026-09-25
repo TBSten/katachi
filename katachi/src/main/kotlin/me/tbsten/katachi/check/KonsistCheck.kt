@@ -3,8 +3,8 @@ package me.tbsten.katachi.check
 import me.tbsten.katachi.ExperimentalKatachiApi
 import me.tbsten.katachi.dsl.ConstraintFailure
 import me.tbsten.katachi.dsl.ConstraintSubject
-import me.tbsten.katachi.dsl.DeclaredConstraint
-import me.tbsten.katachi.dsl.reportPath
+import me.tbsten.katachi.dsl.internal.DeclaredConstraint
+import me.tbsten.katachi.dsl.internal.reportPath
 import me.tbsten.katachi.internal.catching
 import me.tbsten.katachi.internal.runProcessorCatching
 import me.tbsten.katachi.processor.ArchitectureProcessContext

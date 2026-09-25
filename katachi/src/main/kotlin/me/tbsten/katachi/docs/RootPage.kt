@@ -1,9 +1,9 @@
 package me.tbsten.katachi.docs
 
 import me.tbsten.katachi.dsl.Group
-import me.tbsten.katachi.dsl.MetadataValues
 import me.tbsten.katachi.dsl.Role
 import me.tbsten.katachi.dsl.Summary
+import me.tbsten.katachi.dsl.internal.MetadataValues
 
 /**
  * The `README.md` of the documentation root: the one page a reader arrives at knowing nothing.

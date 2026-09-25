@@ -1,9 +1,9 @@
 package me.tbsten.katachi.scan
 
 import me.tbsten.katachi.InternalKatachiApi
-import me.tbsten.katachi.dsl.ModuleIndex
 import me.tbsten.katachi.dsl.ModulePath
 import me.tbsten.katachi.dsl.ModuleResolver
+import me.tbsten.katachi.dsl.internal.ModuleIndex
 import me.tbsten.katachi.fs.FsPath
 import me.tbsten.katachi.fs.KatachiFileSystem
 import me.tbsten.katachi.internal.catching

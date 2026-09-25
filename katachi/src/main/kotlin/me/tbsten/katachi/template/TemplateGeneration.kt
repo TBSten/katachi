@@ -2,7 +2,7 @@ package me.tbsten.katachi.template
 
 import me.tbsten.katachi.dsl.LayoutEntry
 import me.tbsten.katachi.dsl.Role
-import me.tbsten.katachi.dsl.evaluateTemplate
+import me.tbsten.katachi.dsl.internal.evaluateTemplate
 import me.tbsten.katachi.processor.ArchitectureProcessContext
 
 /**

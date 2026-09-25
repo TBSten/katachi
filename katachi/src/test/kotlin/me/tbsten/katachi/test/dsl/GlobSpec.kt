@@ -7,7 +7,7 @@ import io.kotest.matchers.nulls.shouldBeNull
 import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
-import me.tbsten.katachi.dsl.Glob
+import me.tbsten.katachi.dsl.internal.Glob
 import me.tbsten.katachi.dsl.KatachiGlobSyntaxException
 
 class GlobSpec : FreeSpec({

@@ -1,6 +1,7 @@
 package me.tbsten.katachi.dsl
 
 import kotlin.reflect.KProperty
+import me.tbsten.katachi.dsl.internal.TemplateParameterBinder
 
 /**
  * Receiver of `template { }`: the parameters a generated file is filled in from, and the files
@@ -211,13 +212,4 @@ public class TemplateParameter internal constructor(
     // is what makes the file name that came out of it explainable.
     override fun toString(): String =
         name?.let { "TemplateParameter($it)" } ?: "TemplateParameter(unbound, $declaredAt)"
-}
-
-/** What a [TemplateParameter] talks back to: the scope that is collecting this replay. */
-internal interface TemplateParameterBinder {
-    /** Takes the name the parameter has just been given. */
-    fun bind(parameter: TemplateParameter)
-
-    /** The value bound for this run, the declared default, or a stand-in noted as missing. */
-    fun valueOf(parameter: TemplateParameter): String
 }

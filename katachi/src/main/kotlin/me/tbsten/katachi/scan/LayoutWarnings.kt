@@ -201,7 +201,7 @@ internal fun layoutWarningsOf(entries: List<LayoutEntry>, fileOverlaps: List<Fil
  *
  * A role living in two plain directory blocks — `"core/domain" { }` and `"tool" { }` written
  * straight under `layout { }` — is not reported, however much it reads like two places. See
- * [me.tbsten.katachi.dsl.LayoutNode.place] for why the mark stops at module keys: katachi's own
+ * [me.tbsten.katachi.dsl.internal.LayoutNode.place] for why the mark stops at module keys: katachi's own
  * Gradle vocabulary is built out of plain directory blocks, and until a user's key can be told
  * from the vocabulary's own, a wider rule would report `src/main` and `src/main/kotlin` as two
  * homes of a role that has one.

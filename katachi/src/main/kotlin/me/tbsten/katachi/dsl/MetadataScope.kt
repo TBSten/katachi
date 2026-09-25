@@ -34,14 +34,3 @@ package me.tbsten.katachi.dsl
  */
 @KatachiDsl
 public sealed interface MetadataScope
-
-/**
- * The scope's collector. Matched rather than cast: [MetadataScope] is sealed, so the compiler
- * checks that every scope katachi hands to a block is covered, and a new one cannot be added
- * without this being updated.
- */
-internal fun MetadataScope.metadataBuilder(): MetadataBuilder = when (this) {
-    is RoleScopeImpl -> metadata
-    is GroupScopeImpl -> metadata
-    is ArchitectureScopeImpl -> metadata
-}

@@ -1,6 +1,10 @@
 package me.tbsten.katachi.dsl
 
 import me.tbsten.katachi.ExperimentalKatachiApi
+import me.tbsten.katachi.dsl.internal.ConstraintDeclaration
+import me.tbsten.katachi.dsl.internal.MetadataValues
+import me.tbsten.katachi.dsl.internal.TemplateDeclaration
+import me.tbsten.katachi.dsl.internal.get
 
 /**
  * A role: what a file is for, and where it may live.

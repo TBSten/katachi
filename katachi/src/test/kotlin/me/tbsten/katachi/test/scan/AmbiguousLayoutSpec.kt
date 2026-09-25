@@ -6,7 +6,7 @@ import io.kotest.matchers.shouldBe
 import me.tbsten.katachi.dsl.LayoutEntry
 import me.tbsten.katachi.dsl.LayoutScope
 import me.tbsten.katachi.dsl.architecture
-import me.tbsten.katachi.dsl.flattenLayout
+import me.tbsten.katachi.dsl.internal.flattenLayout
 import me.tbsten.katachi.dsl.gradle.module
 import me.tbsten.katachi.dsl.kotlin.ktFile
 import me.tbsten.katachi.scan.AmbiguousLayout

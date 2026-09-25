@@ -1,6 +1,7 @@
 package me.tbsten.katachi.dsl
 
 import me.tbsten.katachi.ExperimentalKatachiApi
+import me.tbsten.katachi.dsl.internal.captureDeclarationSite
 
 /**
  * A DSL receiver a constraint can be written on: a role block, and every block inside a

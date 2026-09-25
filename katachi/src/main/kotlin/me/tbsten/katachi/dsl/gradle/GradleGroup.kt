@@ -1,6 +1,7 @@
 package me.tbsten.katachi.dsl.gradle
 
 import me.tbsten.katachi.dsl.*
+import me.tbsten.katachi.dsl.internal.markSynthetic
 
 /**
  * Declares the files every Gradle build has, as a `"Gradle"` group with one role per kind of

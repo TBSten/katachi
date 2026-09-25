@@ -2,6 +2,9 @@ package me.tbsten.katachi.dsl
 
 import kotlin.reflect.KProperty
 import me.tbsten.katachi.ExperimentalKatachiApi
+import me.tbsten.katachi.dsl.internal.DocumentSectionBody
+import me.tbsten.katachi.dsl.internal.captureDeclarationSite
+import me.tbsten.katachi.dsl.internal.metadataBuilder
 
 /**
  * A section of the generated documentation, declared by whoever writes the definition.
@@ -151,23 +154,6 @@ public class DocumentSection internal constructor(
 @ExperimentalKatachiApi
 public fun documentSection(heading: String): DocumentSection =
     declareDocumentSection(heading = heading, parent = null)
-
-/** A body as it was written, and the section it was written under. */
-internal class DocumentSectionBody(val section: DocumentSection, val markdown: String)
-
-/** The Markdown written under [section], or `null` when this declaration did not write it. */
-internal operator fun MetadataValues.get(section: DocumentSection): String? =
-    this[section.key]?.markdown
-
-/**
- * The sections one declaration wrote, in the order it wrote them.
- *
- * Found by the shape of the value rather than by a key, because nobody holds the keys: a section
- * is declared by whoever writes the definition, and the page that renders it has never heard of
- * it.
- */
-internal fun MetadataValues.documentSectionBodies(): List<DocumentSectionBody> =
-    writtenValues().filterIsInstance<DocumentSectionBody>()
 
 /**
  * The deepest a section may sit: `##` plus [MAX_SECTION_DEPTH] steps is `######`, the last

@@ -5,7 +5,7 @@ import kotlinx.serialization.KSerializer
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import me.tbsten.katachi.ExperimentalKatachiApi
-import me.tbsten.katachi.dsl.templateParameterNames
+import me.tbsten.katachi.dsl.internal.templateParameterNames
 import me.tbsten.katachi.fs.internal.findProjectRoot
 import me.tbsten.katachi.internal.runProcessorCatching
 import me.tbsten.katachi.processor.ArchitectureProcessContext
@@ -119,7 +119,7 @@ public object GenerateCodeFromTemplate : ArchitectureProcessor<GenerateCodeFromT
      * Exactly the names that role's `template { }` declared -- not "anything", which is what
      * would put a hole in the check this answers for. Reading nothing off disk is what keeps
      * deciding "is this key a typo" free of a project walk: [templateRoleOf] and
-     * [me.tbsten.katachi.dsl.templateParameterNames] both work from the declarations alone.
+     * [me.tbsten.katachi.dsl.internal.templateParameterNames] both work from the declarations alone.
      */
     override fun undeclaredArgNames(context: ArchitectureProcessContext<*>): Set<String> {
         val roleName = context.rawArgs[ROLE_NAME_ARG] ?: return emptySet()
