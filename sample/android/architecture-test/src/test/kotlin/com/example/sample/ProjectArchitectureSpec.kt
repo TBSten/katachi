@@ -1,9 +1,9 @@
 package com.example.sample
 
 import com.example.sample.groups.appGroup
-import com.example.sample.groups.buildGroup
 import com.example.sample.groups.dataGroup
 import com.example.sample.groups.featureGroup
+import com.example.sample.groups.gradleGroup
 import com.example.sample.groups.testingGroup
 import com.example.sample.groups.uiGroup
 import io.kotest.core.spec.style.FreeSpec
@@ -46,7 +46,7 @@ import me.tbsten.katachi.dsl.pascalCase
 class ProjectArchitectureSpec : FreeSpec({
     "宣言した group がすべて宣言順にモデルに含まれる" {
         projectArchitecture.allGroups.map { it.qualifiedName } shouldContainExactly
-            listOf("feature", "ui", "data", "app", "testing", "build", "tool")
+            listOf("feature", "ui", "data", "app", "testing", "Gradle", "Gradle/GradleWrapper", "tool")
     }
 
     "宣言した役割が group ごと正しくモデルに含まれる" {
@@ -68,8 +68,13 @@ class ProjectArchitectureSpec : FreeSpec({
             "testing/ArchitectureDefinition",
             "testing/GeneratedDocumentation",
             "testing/LayoutSnapshot",
-            "build/GradleModule",
-            "build/GradleRoot",
+            "Gradle/SettingsScript",
+            "Gradle/BuildScript",
+            "Gradle/GradleProperties",
+            "Gradle/VersionCatalog",
+            "Gradle/GradleWrapper/LauncherScript",
+            "Gradle/GradleWrapper/WrapperJar",
+            "Gradle/GradleWrapper/WrapperProperties",
             "tool/Git",
             "tool/Documentation",
         )
@@ -86,15 +91,36 @@ class ProjectArchitectureSpec : FreeSpec({
         // The naming rule is the whole convention, so it is checked rather than listed: a
         // group named `"debug-menu"` belongs in `DebugMenuGroup.kt`, and `pascalCase` is the
         // same conversion katachi applies to a captured wildcard.
-        projectArchitecture.allGroups.forEach { group ->
+        //
+        // `Gradle` and everything nested under it are left out: they are declared by
+        // katachi's own `gradle()`, not by this convention — see the dedicated test below.
+        projectArchitecture.allGroups.filterNot { it.qualifiedName.isGradleGroupSubtree() }.forEach { group ->
             group.declaredAt.fileName shouldBe "${group.name.pascalCase}Group.kt"
         }
     }
 
     "役割ごとに、その役割の名前から決まるファイルで宣言されている" {
-        projectArchitecture.allRoles.forEach { role ->
+        projectArchitecture.allRoles.filterNot { it.qualifiedName.isGradleGroupSubtree() }.forEach { role ->
             role.declaredAt.fileName shouldBe "${role.name.pascalCase}Role.kt"
         }
+    }
+
+    "Gradle とその配下は、gradle() を呼んだ1箇所にまとめて宣言されている" {
+        // katachi はスタックトレースを自分のフレームの外まで辿って宣言位置を捕まえるので、
+        // `gradle()` の中で書かれた `"Gradle".group { }` やその中の `name { }` はそれぞれの
+        // 行ではなく、katachi の外で最初に見つかるフレーム — `groups/GradleGroup.kt` の
+        // `gradle()` 呼び出し — に集約される。「1宣言1ファイル」規約の例外ではなく、
+        // 宣言位置が実際に1箇所しかないことの表れ。
+        val gradleGroup = projectArchitecture.allGroups.single { it.qualifiedName == "Gradle" }
+        gradleGroup.declaredAt.fileName shouldBe "GradleGroup.kt"
+
+        val sites = (
+            projectArchitecture.allGroups.filter { it.qualifiedName.isGradleGroupSubtree() }
+                .map { it.declaredAt } +
+                projectArchitecture.allRoles.filter { it.qualifiedName.isGradleGroupSubtree() }
+                    .map { it.declaredAt }
+            ).distinct()
+        sites shouldBe listOf(gradleGroup.declaredAt)
     }
 
     "宣言位置が ProjectArchitecture.kt ではなく、宣言を書いたファイルを指す" {
@@ -124,33 +150,34 @@ class ProjectArchitectureSpec : FreeSpec({
         // hard-coded, so editing the declaration files does not break it.
         val sources = declarationSourceLines()
 
-        projectArchitecture.allGroups.forEach { group ->
+        projectArchitecture.allGroups.filterNot { it.qualifiedName.isGradleGroupSubtree() }.forEach { group ->
             val source = sources.getValue(group.declaredAt.fileName)
             source[group.declaredAt.lineNumber - 1] shouldContain "\"${group.name}\""
         }
-        projectArchitecture.allRoles.forEach { role ->
+        projectArchitecture.allRoles.filterNot { it.qualifiedName.isGradleGroupSubtree() }.forEach { role ->
             val source = sources.getValue(role.declaredAt.fileName)
             source[role.declaredAt.lineNumber - 1] shouldContain "\"${role.name}\""
         }
     }
 
-    "build group と tool group だけが documented = false になっている" {
+    "Gradle group と tool group だけが documented = false になっている" {
         // 書かなかった宣言には Documented が入らない。省略を true と読むのはここ（読む側）。
         val documentedByGroup =
-            projectArchitecture.allGroups.associate { it.name to (it[Documented] ?: true) }
+            projectArchitecture.allGroups.associate { it.qualifiedName to (it[Documented] ?: true) }
         documentedByGroup shouldBe mapOf(
             "feature" to true,
             "ui" to true,
             "data" to true,
             "app" to true,
             "testing" to true,
-            "build" to false,
+            "Gradle" to false,
+            "Gradle/GradleWrapper" to false,
             "tool" to false,
         )
     }
 
-    "build group と tool group の役割だけが documented = false になっている" {
-        val undocumentedGroupPaths = listOf(listOf("build"), listOf("tool"))
+    "Gradle group と tool group の役割だけが documented = false になっている" {
+        val undocumentedGroupPaths = listOf(listOf("Gradle"), listOf("Gradle", "GradleWrapper"), listOf("tool"))
         val (undocumentedRoles, otherRoles) =
             projectArchitecture.allRoles.partition { it.groupPath in undocumentedGroupPaths }
         undocumentedRoles.map { it[Documented] ?: true }.toSet() shouldBe setOf(false)
@@ -210,9 +237,12 @@ private val architectureWithoutToolRoles: Architecture = architecture {
     dataGroup()
     appGroup()
     testingGroup()
-    buildGroup()
+    gradleGroup()
     // toolGroup() — omitted on purpose. `.gitignore` and `README.md` lose their role.
 }
+
+/** `"Gradle"` itself or anything nested under it -- see `groups/GradleGroup.kt`. */
+private fun String.isGradleGroupSubtree(): Boolean = this == "Gradle" || startsWith("Gradle/")
 
 /**
  * Every Kotlin source of this test source set, keyed by file name, so a captured line

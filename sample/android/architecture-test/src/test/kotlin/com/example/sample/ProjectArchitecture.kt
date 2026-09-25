@@ -1,9 +1,9 @@
 package com.example.sample
 
 import com.example.sample.groups.appGroup
-import com.example.sample.groups.buildGroup
 import com.example.sample.groups.dataGroup
 import com.example.sample.groups.featureGroup
+import com.example.sample.groups.gradleGroup
 import com.example.sample.groups.testingGroup
 import com.example.sample.groups.toolGroup
 import com.example.sample.groups.uiGroup
@@ -42,8 +42,8 @@ val modulePackage: ModulePackage = capitalizedModuleNamePackage("com.example.sam
  * stays short no matter how many roles the app grows.
  *
  * The file *names* carry the convention, so nothing has to be written twice: a role named
- * `"UiCore"` belongs in `roles/UiCoreRole.kt`, a group named `"build"` in
- * `groups/BuildGroup.kt`. A `build` *directory* would have been invisible to git — `.gitignore`
+ * `"UiCore"` belongs in `roles/UiCoreRole.kt`, a group named `"Gradle"` in
+ * `groups/GradleGroup.kt`. A `build` *directory* would have been invisible to git — `.gitignore`
  * ignores `build/` at every level — but that entry matches directories only, so a file named
  * after the group is safe.
  *
@@ -78,6 +78,6 @@ val projectArchitecture: Architecture = architecture {
     dataGroup()
     appGroup()
     testingGroup()
-    buildGroup()
+    gradleGroup()
     toolGroup()
 }

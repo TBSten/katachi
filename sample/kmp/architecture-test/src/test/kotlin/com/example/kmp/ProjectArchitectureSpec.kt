@@ -31,7 +31,7 @@ import me.tbsten.katachi.dsl.pascalCase
 class ProjectArchitectureSpec : FreeSpec({
     "宣言した group がすべてモデルに含まれる" {
         projectArchitecture.allGroups.map { it.qualifiedName }.toSet() shouldBe
-            setOf("feature", "ui", "data", "testing", "app", "build", "tool")
+            setOf("feature", "ui", "data", "testing", "app", "Gradle", "Gradle/GradleWrapper", "tool")
     }
 
     "宣言した役割がすべてモデルに含まれる" {
@@ -56,8 +56,13 @@ class ProjectArchitectureSpec : FreeSpec({
                 "app/Entrypoint",
                 "app/AndroidResource",
                 "app/XcodeProject",
-                "build/GradleModule",
-                "build/GradleRoot",
+                "Gradle/SettingsScript",
+                "Gradle/BuildScript",
+                "Gradle/GradleProperties",
+                "Gradle/VersionCatalog",
+                "Gradle/GradleWrapper/LauncherScript",
+                "Gradle/GradleWrapper/WrapperJar",
+                "Gradle/GradleWrapper/WrapperProperties",
                 "tool/Documentation",
                 "tool/Git",
             )
@@ -68,7 +73,7 @@ class ProjectArchitectureSpec : FreeSpec({
         // which is the only thing that decides it now that every declaration lives in a
         // file of its own.
         projectArchitecture.groups.map { it.name } shouldContainExactly
-            listOf("feature", "ui", "data", "testing", "app", "build", "tool")
+            listOf("feature", "ui", "data", "testing", "app", "Gradle", "tool")
     }
 
     "宣言元のファイル名と行番号が取れる" {
@@ -94,10 +99,13 @@ class ProjectArchitectureSpec : FreeSpec({
         // The naming rule is checked rather than listed, so adding a role does not mean
         // editing a table here: a group named `"debug-menu"` belongs in `DebugMenuGroup.kt`,
         // and `pascalCase` is the same conversion katachi applies to a captured wildcard.
-        projectArchitecture.allGroups.forEach { group ->
+        //
+        // `Gradle` and everything nested under it are left out: they are declared by
+        // katachi's own `gradle()`, not by this convention -- see the dedicated test below.
+        projectArchitecture.allGroups.filterNot { it.qualifiedName.isGradleGroupSubtree() }.forEach { group ->
             group.declaredAt.fileName shouldBe "${group.name.pascalCase}Group.kt"
         }
-        projectArchitecture.allRoles.forEach { role ->
+        projectArchitecture.allRoles.filterNot { it.qualifiedName.isGradleGroupSubtree() }.forEach { role ->
             role.declaredAt.fileName shouldBe "${role.name.pascalCase}Role.kt"
         }
 
@@ -111,6 +119,24 @@ class ProjectArchitectureSpec : FreeSpec({
         fileNames shouldNotContain "ProjectArchitecture.kt"
     }
 
+    "Gradle とその配下は、gradle() を呼んだ1箇所にまとめて宣言されている" {
+        // katachi はスタックトレースを自分のフレームの外まで辿って宣言位置を捕まえるので、
+        // `gradle()` の中で書かれた `"Gradle".group { }` やその中の `name { }` はそれぞれの
+        // 行ではなく、katachi の外で最初に見つかるフレーム -- `groups/GradleGroup.kt` の
+        // `gradle()` 呼び出し -- に集約される。「1宣言1ファイル」規約の例外ではなく、
+        // 宣言位置が実際に1箇所しかないことの表れ。
+        val gradleGroup = projectArchitecture.allGroups.single { it.qualifiedName == "Gradle" }
+        gradleGroup.declaredAt.fileName shouldBe "GradleGroup.kt"
+
+        val sites = (
+            projectArchitecture.allGroups.filter { it.qualifiedName.isGradleGroupSubtree() }
+                .map { it.declaredAt } +
+                projectArchitecture.allRoles.filter { it.qualifiedName.isGradleGroupSubtree() }
+                    .map { it.declaredAt }
+            ).distinct()
+        sites shouldBe listOf(gradleGroup.declaredAt)
+    }
+
     "捕捉した行番号の行に、その宣言が実際に書かれている" {
         // The test above only proves which file each declaration claims. This one reads the
         // source back, so a one-frame shift -- landing on the `uiGroup()` call in
@@ -120,13 +146,13 @@ class ProjectArchitectureSpec : FreeSpec({
         // hard-coded, so editing the definition does not break it.
         val sources = architectureDefinitionSources()
 
-        projectArchitecture.allGroups.forEach { group ->
+        projectArchitecture.allGroups.filterNot { it.qualifiedName.isGradleGroupSubtree() }.forEach { group ->
             val lines = requireNotNull(sources[group.declaredAt.fileName]) {
                 "${group.name} の宣言元 ${group.declaredAt.fileName} が見つからない"
             }
             lines[group.declaredAt.lineNumber - 1] shouldContain "\"${group.name}\""
         }
-        projectArchitecture.allRoles.forEach { role ->
+        projectArchitecture.allRoles.filterNot { it.qualifiedName.isGradleGroupSubtree() }.forEach { role ->
             val lines = requireNotNull(sources[role.declaredAt.fileName]) {
                 "${role.qualifiedName} の宣言元 ${role.declaredAt.fileName} が見つからない"
             }
@@ -134,11 +160,11 @@ class ProjectArchitectureSpec : FreeSpec({
         }
     }
 
-    "ビルドとツールの group と役割は documented = false" {
-        listOf("build", "tool").forAll { groupName ->
-            projectArchitecture.allGroups.single { it.name == groupName }[Documented] shouldBe false
+    "Gradle とツールの group と役割は documented = false" {
+        listOf(listOf("Gradle"), listOf("Gradle", "GradleWrapper"), listOf("tool")).forAll { groupPath ->
+            projectArchitecture.allGroups.single { it.path == groupPath }[Documented] shouldBe false
             projectArchitecture.allRoles
-                .filter { it.groupPath == listOf(groupName) }
+                .filter { it.groupPath == groupPath }
                 .forAll { it[Documented] shouldBe false }
         }
     }
@@ -237,9 +263,10 @@ class ProjectArchitectureSpec : FreeSpec({
             "testing/ArchitectureDefinition がない"
         }
         definition[Summary].orEmpty() shouldContain ":architecture-test"
-        val moduleScriptExamples =
-            requireNotNull(roles["build/GradleModule"]?.get(Examples)) { "build/GradleModule がない" }
-        moduleScriptExamples.any { it.name == "architecture-test/build.gradle.kts" } shouldBe true
+        // `Gradle/BuildScript` needs no example naming it: `":**".module { }` already
+        // covers every module katachi finds, `:architecture-test` included, and `gradle()`
+        // sets no `example()` on the roles it declares.
+        requireNotNull(roles["Gradle/BuildScript"]) { "Gradle/BuildScript がない" }
     }
 
     "すべての役割が layout を1つ以上持つ" {
@@ -268,3 +295,6 @@ private fun architectureDefinitionSources(): Map<String, List<String>> {
         .filter { it.isFile && it.extension == "kt" }
         .associate { it.name to it.readLines() }
 }
+
+/** `"Gradle"` itself or anything nested under it -- see `groups/GradleGroup.kt`. */
+private fun String.isGradleGroupSubtree(): Boolean = this == "Gradle" || startsWith("Gradle/")

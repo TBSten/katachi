@@ -1,9 +1,9 @@
 package com.example.kmp
 
 import com.example.kmp.groups.appGroup
-import com.example.kmp.groups.buildGroup
 import com.example.kmp.groups.dataGroup
 import com.example.kmp.groups.featureGroup
+import com.example.kmp.groups.gradleGroup
 import com.example.kmp.groups.testingGroup
 import com.example.kmp.groups.toolGroup
 import com.example.kmp.groups.uiGroup
@@ -40,7 +40,7 @@ class OmittedRoleSelfCheckSpec : FreeSpec({
             dataGroup()
             testingGroup()
             appGroup()
-            buildGroup()
+            gradleGroup()
         }
 
         withoutTool.validate().labels() shouldContainExactly
@@ -52,14 +52,14 @@ class OmittedRoleSelfCheckSpec : FreeSpec({
         // directory has no role, and the five files below it are *not* reported one by one:
         // the one directory that has to be explained is, and the walk stops there.
         //
-        // `data` itself stays known, because `build/GradleModule` claims
-        // `data/build.gradle.kts`.
+        // `data` itself stays known, because `Gradle/BuildScript` claims
+        // `data/build.gradle.kts` through its `":**".module { }`.
         val withoutData = architecture {
             featureGroup()
             uiGroup()
             testingGroup()
             appGroup()
-            buildGroup()
+            gradleGroup()
             toolGroup()
         }
 

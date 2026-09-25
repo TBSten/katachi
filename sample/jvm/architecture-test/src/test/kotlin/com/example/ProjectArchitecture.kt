@@ -2,9 +2,9 @@ package com.example
 
 import com.example.groups.apiGroup
 import com.example.groups.appGroup
-import com.example.groups.buildGroup
 import com.example.groups.dataGroup
 import com.example.groups.domainGroup
+import com.example.groups.gradleGroup
 import com.example.groups.testingGroup
 import com.example.groups.toolGroup
 import me.tbsten.katachi.dsl.Architecture
@@ -61,6 +61,6 @@ val projectArchitecture: Architecture = architecture {
     dataGroup()
     appGroup()
     testingGroup()
-    buildGroup()
+    gradleGroup()
     toolGroup()
 }

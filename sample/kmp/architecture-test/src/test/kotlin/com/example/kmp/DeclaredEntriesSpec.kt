@@ -27,7 +27,7 @@ class DeclaredEntriesSpec : FreeSpec({
     "宣言しか見ない processor が declaredEntries からパスを読める" {
         val paths = projectArchitecture.process { context -> context.declaredEntries.map { it.path } }
 
-        // Declared directly under `layout { }` by build/GradleRoot, so no module key is
+        // Declared directly under `layout { }` by Gradle/SettingsScript, so no module key is
         // involved and the declared view and the walked view agree about it.
         paths shouldContain "settings.gradle.kts"
     }

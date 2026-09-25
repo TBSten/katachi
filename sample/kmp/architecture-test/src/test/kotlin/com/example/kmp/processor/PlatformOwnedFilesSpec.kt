@@ -1,9 +1,9 @@
 package com.example.kmp.processor
 
 import com.example.kmp.groups.appGroup
-import com.example.kmp.groups.buildGroup
 import com.example.kmp.groups.dataGroup
 import com.example.kmp.groups.featureGroup
+import com.example.kmp.groups.gradleGroup
 import com.example.kmp.groups.testingGroup
 import com.example.kmp.groups.uiGroup
 import com.example.kmp.projectArchitecture
@@ -47,7 +47,7 @@ class PlatformOwnedFilesSpec : FreeSpec({
             dataGroup()
             testingGroup()
             appGroup()
-            buildGroup()
+            gradleGroup()
             "tool".group {
                 documented = false
                 title = "ツール"
@@ -72,9 +72,10 @@ class PlatformOwnedFilesSpec : FreeSpec({
 })
 
 /**
- * Every file `owner = "platform"` reaches through `build/GradleModule` and `build/GradleRoot`,
- * shared by both tests above so the file list is written once. `tool/Git`'s `.gitignore` is
- * deliberately not here: it is the one file that tells the two tests apart.
+ * Every file `owner = "platform"` reaches through the `"Gradle"` group -- tagged as a whole in
+ * `groups/GradleGroup.kt` -- shared by both tests above so the file list is written once.
+ * `tool/Git`'s `.gitignore` is deliberately not here: it is the one file that tells the two
+ * tests apart.
  */
 private val platformOwnedFilesWithoutGit = listOf(
     "app/android/build.gradle.kts",

@@ -1,9 +1,9 @@
 package com.example.kmp
 
 import com.example.kmp.groups.appGroup
-import com.example.kmp.groups.buildGroup
 import com.example.kmp.groups.dataGroup
 import com.example.kmp.groups.featureGroup
+import com.example.kmp.groups.gradleGroup
 import com.example.kmp.groups.testingGroup
 import com.example.kmp.groups.toolGroup
 import com.example.kmp.groups.uiGroup
@@ -51,7 +51,7 @@ val modulePackage: ModulePackage = capitalizedModuleNamePackage("com.example.kmp
  *
  * This file does nothing but call the seven group functions. The definition itself is split
  * one declaration per file: a role named `"UiCore"` is declared in the `roles` package, in
- * `UiCoreRole.kt`, and a group named `"build"` in the `groups` package, in `BuildGroup.kt`.
+ * `UiCoreRole.kt`, and a group named `"Gradle"` in the `groups` package, in `GradleGroup.kt`.
  * The file name is the whole of the convention, so nothing has to be written down twice — and
  * a `build` *directory* would have been invisible to git, because `.gitignore` ignores `build/`
  * at every level, but that entry matches directories only, so a file named after the group is
@@ -75,6 +75,6 @@ val projectArchitecture: Architecture = architecture {
     dataGroup()
     testingGroup()
     appGroup()
-    buildGroup()
+    gradleGroup()
     toolGroup()
 }
