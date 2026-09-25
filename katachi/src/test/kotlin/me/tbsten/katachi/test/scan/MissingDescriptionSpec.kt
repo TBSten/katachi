@@ -12,7 +12,7 @@ import me.tbsten.katachi.dsl.gradle.mainSourceSet
 import me.tbsten.katachi.dsl.gradle.module
 import me.tbsten.katachi.dsl.kotlin.ktFile
 import me.tbsten.katachi.scan.MissingDescription
-import me.tbsten.katachi.scan.missingDescriptionsOf
+import me.tbsten.katachi.scan.internal.missingDescriptionsOf
 
 /**
  * `missingDescriptionsOf`, the declaration-only half of step 5-3: which of a role's places have

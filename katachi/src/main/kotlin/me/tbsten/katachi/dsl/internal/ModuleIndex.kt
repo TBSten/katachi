@@ -44,16 +44,16 @@ internal class ModuleTarget(
  * The modules of a project, found once, so that every layout key is expanded against the
  * same list rather than walking the tree again.
  *
- * Built by [me.tbsten.katachi.scan.moduleIndex] — or by [unresolved] when no file system is at hand, which says
+ * Built by [me.tbsten.katachi.scan.internal.moduleIndex] — or by [unresolved] when no file system is at hand, which says
  * something different and which [targetsOf] answers differently.
  *
- * Public only because [me.tbsten.katachi.scan.moduleIndex] hands it to katachi's own samples,
+ * Public only because [me.tbsten.katachi.scan.internal.moduleIndex] hands it to katachi's own samples,
  * which pass it straight on to [flattenLayout]. None of its members are.
  *
  * ## Example 1: build the index once and reuse it for every layout key
  * ```kt
  * import me.tbsten.katachi.fs.internal.RealFileSystem
- * import me.tbsten.katachi.scan.moduleIndex
+ * import me.tbsten.katachi.scan.internal.moduleIndex
  *
  * val fileSystem = RealFileSystem()
  * val index: ModuleIndex = moduleIndex(fileSystem, fileSystem.workingDirectory)

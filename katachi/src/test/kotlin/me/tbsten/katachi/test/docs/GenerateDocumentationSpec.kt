@@ -19,8 +19,8 @@ import me.tbsten.katachi.fs.KatachiFileSystem
 import me.tbsten.katachi.processor.FakeArchitectureProcessContext
 import me.tbsten.katachi.processor.KatachiInvalidProcessorArgException
 import me.tbsten.katachi.processor.KatachiUnknownProcessorArgException
-import me.tbsten.katachi.processor.checkNoUnknownArgs
 import me.tbsten.katachi.processor.decodeFromStringMap
+import me.tbsten.katachi.processor.internal.checkNoUnknownArgs
 import me.tbsten.katachi.test.fs.ForbiddenFileSystem
 
 /**

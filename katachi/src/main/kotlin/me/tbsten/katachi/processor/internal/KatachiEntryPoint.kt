@@ -1,4 +1,4 @@
-package me.tbsten.katachi.processor
+package me.tbsten.katachi.processor.internal
 
 import me.tbsten.katachi.InternalKatachiApi
 import me.tbsten.katachi.dsl.Architecture

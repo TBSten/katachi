@@ -3,6 +3,7 @@ package me.tbsten.katachi.test.template
 import java.io.File
 import java.nio.file.Files
 import me.tbsten.katachi.dsl.Architecture
+import me.tbsten.katachi.processor.internal.process
 import me.tbsten.katachi.processor.process
 import me.tbsten.katachi.template.templateFiles
 import me.tbsten.katachi.test.fs.ForbiddenFileSystem

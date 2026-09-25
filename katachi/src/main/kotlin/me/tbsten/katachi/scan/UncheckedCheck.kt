@@ -1,5 +1,7 @@
 package me.tbsten.katachi.scan
 
+import me.tbsten.katachi.scan.internal.ROOT_PATH
+
 /**
  * A check handed to `assert(...)` that threw, so nothing it would have reported is known.
  *

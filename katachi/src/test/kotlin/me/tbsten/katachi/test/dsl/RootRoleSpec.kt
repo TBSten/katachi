@@ -10,6 +10,7 @@ import me.tbsten.katachi.dsl.KatachiDuplicateDeclarationException
 import me.tbsten.katachi.dsl.Title
 import me.tbsten.katachi.dsl.architecture
 import me.tbsten.katachi.dsl.internal.flattenLayout
+import me.tbsten.katachi.processor.internal.process
 import me.tbsten.katachi.processor.process
 import me.tbsten.katachi.test.fs.ForbiddenFileSystem
 
@@ -77,7 +78,7 @@ class RootRoleSpec : FreeSpec({
 
             // この行番号はファイル内の位置に依存する。上のブロックを動かしたら直すこと。
             arch.allRoles.single().declaredAt.fileName shouldBe "RootRoleSpec.kt"
-            arch.allRoles.single().declaredAt.lineNumber shouldBe 75
+            arch.allRoles.single().declaredAt.lineNumber shouldBe 76
         }
     }
 

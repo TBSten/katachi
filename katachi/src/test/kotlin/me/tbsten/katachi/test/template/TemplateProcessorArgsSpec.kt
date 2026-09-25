@@ -16,7 +16,7 @@ import me.tbsten.katachi.dsl.architecture
 import me.tbsten.katachi.processor.ArchitectureProcessor
 import me.tbsten.katachi.processor.FakeArchitectureProcessContext
 import me.tbsten.katachi.processor.KatachiUnknownProcessorArgException
-import me.tbsten.katachi.processor.checkNoUnknownArgs
+import me.tbsten.katachi.processor.internal.checkNoUnknownArgs
 import me.tbsten.katachi.template.GenerateCodeFromTemplate
 import me.tbsten.katachi.template.KatachiNoTemplateException
 import me.tbsten.katachi.template.KatachiUnknownTemplateRoleException

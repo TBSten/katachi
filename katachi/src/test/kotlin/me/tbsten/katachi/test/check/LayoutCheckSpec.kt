@@ -14,6 +14,7 @@ import me.tbsten.katachi.check.validate
 import me.tbsten.katachi.dsl.KatachiModuleOutsideLayoutRootException
 import me.tbsten.katachi.dsl.gradle.module
 import me.tbsten.katachi.fs.KatachiProjectRootNotFoundException
+import me.tbsten.katachi.processor.internal.process
 import me.tbsten.katachi.processor.process
 import me.tbsten.katachi.test.fs.fakeFileSystem
 

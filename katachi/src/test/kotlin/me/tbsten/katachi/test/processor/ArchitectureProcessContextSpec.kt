@@ -10,8 +10,9 @@ import me.tbsten.katachi.dsl.kotlin.ktFile
 import me.tbsten.katachi.fs.FsPath
 import me.tbsten.katachi.fs.KatachiFileSystem
 import me.tbsten.katachi.processor.KatachiUnknownRoleException
+import me.tbsten.katachi.processor.internal.withArgs
+import me.tbsten.katachi.processor.internal.process
 import me.tbsten.katachi.processor.process
-import me.tbsten.katachi.processor.withArgs
 import me.tbsten.katachi.test.check.architectureOf
 import me.tbsten.katachi.test.check.layoutArchitecture
 import me.tbsten.katachi.test.check.repositoryOf

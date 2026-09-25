@@ -1,9 +1,10 @@
-package me.tbsten.katachi.scan
+package me.tbsten.katachi.scan.internal
 
 import me.tbsten.katachi.dsl.LayoutEntry
 import me.tbsten.katachi.dsl.LayoutEntryKind
 import me.tbsten.katachi.dsl.Role
 import me.tbsten.katachi.dsl.internal.Glob
+import me.tbsten.katachi.scan.NearbyLocation
 
 /** How many locations an `[UnexpectedFile]` block offers. */
 private const val NEARBY_LIMIT: Int = 3

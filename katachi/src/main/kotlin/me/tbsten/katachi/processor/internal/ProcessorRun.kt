@@ -1,8 +1,14 @@
-package me.tbsten.katachi.processor
+package me.tbsten.katachi.processor.internal
 
 import me.tbsten.katachi.dsl.Architecture
 import me.tbsten.katachi.fs.KatachiFileSystem
 import me.tbsten.katachi.fs.internal.RealFileSystem
+import me.tbsten.katachi.processor.ArchitectureProcessContext
+import me.tbsten.katachi.processor.ArchitectureProcessor
+import me.tbsten.katachi.processor.KatachiProcessorNotFoundException
+import me.tbsten.katachi.processor.KatachiProcessorNotInstantiableException
+import me.tbsten.katachi.processor.KatachiProcessorTypeException
+import me.tbsten.katachi.processor.decodeFromStringMap
 
 /**
  * How many of a `runProcessors` call's processors succeeded and how many failed.

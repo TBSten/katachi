@@ -21,8 +21,8 @@ import me.tbsten.katachi.dsl.architecture
 import me.tbsten.katachi.processor.KatachiProcessorNotFoundException
 import me.tbsten.katachi.processor.KatachiProcessorNotInstantiableException
 import me.tbsten.katachi.processor.KatachiProcessorTypeException
-import me.tbsten.katachi.processor.instantiateProcessor
-import me.tbsten.katachi.processor.runProcessors
+import me.tbsten.katachi.processor.internal.instantiateProcessor
+import me.tbsten.katachi.processor.internal.runProcessors
 import me.tbsten.katachi.test.check.architectureOf
 
 class ProcessorRunSpec : FreeSpec({

@@ -1,6 +1,7 @@
-package me.tbsten.katachi.processor
+package me.tbsten.katachi.processor.internal
 
 import kotlin.system.exitProcess
+import me.tbsten.katachi.processor.KatachiEntryPointNotFoundException
 
 /**
  * The entry point the Gradle plugin's `runKatachiProcessor` task starts.

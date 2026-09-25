@@ -125,7 +125,7 @@ public class KatachiProcessorTypeException internal constructor(
 )
 
 /**
- * The Gradle plugin's generated [KatachiEntryPoint] could not be read.
+ * The Gradle plugin's generated [me.tbsten.katachi.processor.internal.KatachiEntryPoint] could not be read.
  *
  * @property className the fully qualified name `main()` was handed with `--entry-point`.
  *

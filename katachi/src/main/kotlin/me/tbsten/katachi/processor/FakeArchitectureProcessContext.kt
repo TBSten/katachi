@@ -6,6 +6,7 @@ import me.tbsten.katachi.dsl.Group
 import me.tbsten.katachi.dsl.LayoutEntry
 import me.tbsten.katachi.dsl.Role
 import me.tbsten.katachi.fs.KatachiFileSystem
+import me.tbsten.katachi.processor.internal.RealArchitectureProcessContext
 
 /**
  * A context that answers exactly as the real one does and remembers what was logged.

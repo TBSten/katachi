@@ -9,7 +9,7 @@ import me.tbsten.katachi.dsl.LayoutEntry
 import me.tbsten.katachi.dsl.internal.flattenLayout
 import me.tbsten.katachi.fs.internal.RealFileSystem
 import me.tbsten.katachi.fs.internal.findProjectRoot
-import me.tbsten.katachi.scan.moduleIndex
+import me.tbsten.katachi.scan.internal.moduleIndex
 
 /**
  * katachi's own self-verification, not part of adopting katachi: a sentinel that records what

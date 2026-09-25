@@ -1,4 +1,4 @@
-package me.tbsten.katachi.processor
+package me.tbsten.katachi.processor.internal
 
 import kotlinx.serialization.SerializationException
 import kotlinx.serialization.descriptors.SerialDescriptor
@@ -7,6 +7,7 @@ import kotlinx.serialization.encoding.AbstractDecoder
 import kotlinx.serialization.encoding.CompositeDecoder
 import kotlinx.serialization.modules.EmptySerializersModule
 import kotlinx.serialization.modules.SerializersModule
+import me.tbsten.katachi.processor.KatachiUnsupportedProcessorArgException
 
 /**
  * Reads a `@Serializable` class out of the flat `key=value` map a `--arg` line produces.

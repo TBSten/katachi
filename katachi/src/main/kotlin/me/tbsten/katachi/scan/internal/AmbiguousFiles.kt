@@ -1,7 +1,9 @@
-package me.tbsten.katachi.scan
+package me.tbsten.katachi.scan.internal
 
 import me.tbsten.katachi.dsl.LayoutEntry
 import me.tbsten.katachi.dsl.Role
+import me.tbsten.katachi.scan.AmbiguousLayout
+import me.tbsten.katachi.scan.LayoutClaim
 
 /**
  * One set of roles, and the real files the walk found all of them claiming.

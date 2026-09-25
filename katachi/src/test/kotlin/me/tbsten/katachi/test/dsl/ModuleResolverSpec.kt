@@ -8,8 +8,8 @@ import me.tbsten.katachi.dsl.ModulePath
 import me.tbsten.katachi.dsl.internal.ModulePattern
 import me.tbsten.katachi.dsl.ModuleResolver
 import me.tbsten.katachi.fs.FsPath
-import me.tbsten.katachi.scan.discoverModules
-import me.tbsten.katachi.scan.moduleIndex
+import me.tbsten.katachi.scan.internal.discoverModules
+import me.tbsten.katachi.scan.internal.moduleIndex
 import me.tbsten.katachi.test.fs.fakeFileSystem
 
 class ModuleResolverSpec : FreeSpec({

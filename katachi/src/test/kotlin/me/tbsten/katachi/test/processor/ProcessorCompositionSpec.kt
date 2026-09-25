@@ -19,8 +19,9 @@ import me.tbsten.katachi.processor.ArchitectureProcessor
 import me.tbsten.katachi.processor.ArchitectureProcessorNoArg
 import me.tbsten.katachi.processor.KatachiProcessorArgsDecoderException
 import me.tbsten.katachi.processor.decodeFromStringMap
-import me.tbsten.katachi.processor.declaredArgNames
+import me.tbsten.katachi.processor.internal.declaredArgNames
 import me.tbsten.katachi.processor.plus
+import me.tbsten.katachi.processor.internal.process
 import me.tbsten.katachi.processor.process
 import me.tbsten.katachi.test.check.architectureOf
 import me.tbsten.katachi.test.check.layoutArchitecture

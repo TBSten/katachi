@@ -51,11 +51,11 @@ public class KatachiPlugin implements Plugin<Project> {
     /**
      * The entry point the task starts, as the JVM names it.
      *
-     * <p>{@code me/tbsten/katachi/processor/Main.kt} of {@code me.tbsten.katachi:katachi}
+     * <p>{@code me/tbsten/katachi/processor/internal/Main.kt} of {@code me.tbsten.katachi:katachi}
      * compiles to this class. Nothing verifies the name at build time -- it is a string on
      * this side of the module boundary -- so a sample run is what catches a move.
      */
-    private static final String KATACHI_MAIN_CLASS = "me.tbsten.katachi.processor.MainKt";
+    private static final String KATACHI_MAIN_CLASS = "me.tbsten.katachi.processor.internal.MainKt";
 
     /** The name of the code generation task this plugin registers. */
     private static final String GENERATE_KATACHI_ENTRY_POINT_TASK_NAME = "generateKatachiEntryPoint";

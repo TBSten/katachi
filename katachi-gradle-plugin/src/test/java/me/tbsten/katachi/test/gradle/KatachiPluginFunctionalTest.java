@@ -48,7 +48,7 @@ class KatachiPluginFunctionalTest {
     private static final String TASK_PATH = ":runKatachiProcessor";
 
     /** The entry point the task starts unless a build script says otherwise. */
-    private static final String KATACHI_MAIN_CLASS = "me.tbsten.katachi.processor.MainKt";
+    private static final String KATACHI_MAIN_CLASS = "me.tbsten.katachi.processor.internal.MainKt";
 
     /**
      * The Gradle versions to run every test of this class against.

@@ -6,6 +6,8 @@ import kotlinx.serialization.descriptors.buildClassSerialDescriptor
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
 import me.tbsten.katachi.ExperimentalKatachiApi
+import me.tbsten.katachi.processor.internal.StringMapDecoder
+import me.tbsten.katachi.processor.internal.withArgs
 
 /**
  * Two checks as one, reporting into a single list.

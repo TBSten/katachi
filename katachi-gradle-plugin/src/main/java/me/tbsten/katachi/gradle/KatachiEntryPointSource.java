@@ -84,7 +84,7 @@ final class KatachiEntryPointSource {
                         + "    level = DeprecationLevel.HIDDEN,\n"
                         + ")\n");
         out.append("public object ").append(SIMPLE_NAME)
-                .append(" : me.tbsten.katachi.processor.KatachiEntryPoint {\n");
+                .append(" : me.tbsten.katachi.processor.internal.KatachiEntryPoint {\n");
         String architectureSimpleName = architectureClassName.substring(architectureClassName.lastIndexOf('.') + 1);
         out.append("    public override val architecture: me.tbsten.katachi.dsl.Architecture = ")
                 .append(architectureSimpleName)

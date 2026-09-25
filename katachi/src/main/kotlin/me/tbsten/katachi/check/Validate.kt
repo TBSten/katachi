@@ -7,8 +7,8 @@ import me.tbsten.katachi.fs.KatachiFileSystem
 import me.tbsten.katachi.fs.internal.RealFileSystem
 import me.tbsten.katachi.internal.catching
 import me.tbsten.katachi.processor.ArchitectureProcessor
-import me.tbsten.katachi.processor.process
-import me.tbsten.katachi.processor.projectWalk
+import me.tbsten.katachi.processor.internal.process
+import me.tbsten.katachi.processor.internal.projectWalk
 import me.tbsten.katachi.scan.Violation
 
 /**

@@ -15,7 +15,7 @@ import me.tbsten.katachi.dsl.internal.flattenLayout
 import me.tbsten.katachi.dsl.gradle.module
 import me.tbsten.katachi.dsl.kotlin.ktFile
 import me.tbsten.katachi.scan.MissingDescription
-import me.tbsten.katachi.scan.missingDescriptionsOf
+import me.tbsten.katachi.scan.internal.missingDescriptionsOf
 
 /**
  * [MissingDescription] wired through the real check — `ArchitectureProcessContext.declaredEntries`,

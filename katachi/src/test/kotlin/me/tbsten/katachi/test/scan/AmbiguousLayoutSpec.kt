@@ -10,7 +10,7 @@ import me.tbsten.katachi.dsl.internal.flattenLayout
 import me.tbsten.katachi.dsl.gradle.module
 import me.tbsten.katachi.dsl.kotlin.ktFile
 import me.tbsten.katachi.scan.AmbiguousLayout
-import me.tbsten.katachi.scan.ambiguousLayoutsOf
+import me.tbsten.katachi.scan.internal.ambiguousLayoutsOf
 
 /**
  * `ambiguousLayoutsOf`, the declaration-only half of step 5-2: what two roles' `layout { }`

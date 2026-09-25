@@ -11,7 +11,7 @@ import me.tbsten.katachi.dsl.architecture
 import me.tbsten.katachi.dsl.internal.evaluateLayout
 import me.tbsten.katachi.dsl.internal.flattenLayout
 import me.tbsten.katachi.fs.FsPath
-import me.tbsten.katachi.scan.moduleIndex
+import me.tbsten.katachi.scan.internal.moduleIndex
 import me.tbsten.katachi.test.fs.fakeFileSystem
 
 /**

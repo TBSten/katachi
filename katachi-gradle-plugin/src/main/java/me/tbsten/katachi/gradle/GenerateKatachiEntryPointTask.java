@@ -18,7 +18,7 @@ import org.gradle.work.DisableCachingByDefault;
 /**
  * Writes {@code GeneratedKatachiEntryPoint.kt}, the sole bridge between a module's
  * {@code katachi { } } block and the running processor: see
- * {@code me.tbsten.katachi.processor.KatachiEntryPoint} on the {@code :katachi} side.
+ * {@code me.tbsten.katachi.processor.internal.KatachiEntryPoint} on the {@code :katachi} side.
  *
  * <p><strong>Does not fail when {@link #getArchitectureClassName()} is absent.</strong> This
  * task sits upstream of {@code compileTestKotlin} (see {@link KatachiPlugin}), so failing here

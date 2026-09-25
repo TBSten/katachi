@@ -1,10 +1,13 @@
-package me.tbsten.katachi.processor
+package me.tbsten.katachi.processor.internal
 
 import me.tbsten.katachi.dsl.Architecture
 import me.tbsten.katachi.dsl.Group
 import me.tbsten.katachi.dsl.LayoutEntry
 import me.tbsten.katachi.dsl.Role
 import me.tbsten.katachi.fs.KatachiFileSystem
+import me.tbsten.katachi.processor.ArchitectureProcessContext
+import me.tbsten.katachi.processor.FakeArchitectureProcessContext
+import me.tbsten.katachi.processor.KatachiForeignProcessContextException
 
 /**
  * The context every `process` entry point builds.

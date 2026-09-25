@@ -10,7 +10,7 @@ import me.tbsten.katachi.fs.internal.findProjectRoot
 import me.tbsten.katachi.internal.runProcessorCatching
 import me.tbsten.katachi.processor.ArchitectureProcessContext
 import me.tbsten.katachi.processor.ArchitectureProcessor
-import me.tbsten.katachi.processor.fileSystem
+import me.tbsten.katachi.processor.internal.fileSystem
 
 /**
  * The `--arg` name that says which role to run. Spelled once, because

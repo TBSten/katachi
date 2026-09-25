@@ -9,11 +9,11 @@ import me.tbsten.katachi.dsl.internal.flattenLayout
 import me.tbsten.katachi.dsl.gradle.module
 import me.tbsten.katachi.dsl.kotlin.ktFile
 import me.tbsten.katachi.scan.AmbiguousLayout
-import me.tbsten.katachi.scan.FileOverlap
-import me.tbsten.katachi.scan.FileOverlaps
-import me.tbsten.katachi.scan.LayoutIndex
-import me.tbsten.katachi.scan.ambiguousFilesOf
-import me.tbsten.katachi.scan.ambiguousLayoutsOf
+import me.tbsten.katachi.scan.internal.FileOverlap
+import me.tbsten.katachi.scan.internal.FileOverlaps
+import me.tbsten.katachi.scan.internal.LayoutIndex
+import me.tbsten.katachi.scan.internal.ambiguousFilesOf
+import me.tbsten.katachi.scan.internal.ambiguousLayoutsOf
 
 /**
  * `FileOverlaps` and `ambiguousFilesOf`, the half of step 5-2 that needs the files to exist:

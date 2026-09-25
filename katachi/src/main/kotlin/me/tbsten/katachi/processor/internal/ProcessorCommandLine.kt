@@ -1,4 +1,11 @@
-package me.tbsten.katachi.processor
+package me.tbsten.katachi.processor.internal
+
+import me.tbsten.katachi.processor.KatachiDuplicateEntryPointOptionException
+import me.tbsten.katachi.processor.KatachiDuplicateProcessorArgException
+import me.tbsten.katachi.processor.KatachiInvalidProcessorArgOptionException
+import me.tbsten.katachi.processor.KatachiMissingEntryPointOptionException
+import me.tbsten.katachi.processor.KatachiMissingProcessorSelectionException
+import me.tbsten.katachi.processor.KatachiUnknownProcessorOptionException
 
 /**
  * `main()`'s command line, already parsed.

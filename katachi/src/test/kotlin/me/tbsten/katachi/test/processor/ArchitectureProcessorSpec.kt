@@ -5,6 +5,7 @@ import io.kotest.matchers.shouldBe
 import me.tbsten.katachi.dsl.kotlin.ktFile
 import me.tbsten.katachi.processor.ArchitectureProcessContext
 import me.tbsten.katachi.processor.ArchitectureProcessorNoArg
+import me.tbsten.katachi.processor.internal.process
 import me.tbsten.katachi.processor.process
 import me.tbsten.katachi.test.check.architectureOf
 import me.tbsten.katachi.test.check.layoutArchitecture

@@ -9,8 +9,8 @@ import me.tbsten.katachi.processor.KatachiInvalidProcessorArgOptionException
 import me.tbsten.katachi.processor.KatachiMissingEntryPointOptionException
 import me.tbsten.katachi.processor.KatachiMissingProcessorSelectionException
 import me.tbsten.katachi.processor.KatachiUnknownProcessorOptionException
-import me.tbsten.katachi.processor.ProcessorCommandLine
-import me.tbsten.katachi.processor.parseProcessorCommandLine
+import me.tbsten.katachi.processor.internal.ProcessorCommandLine
+import me.tbsten.katachi.processor.internal.parseProcessorCommandLine
 
 class ProcessorCommandLineSpec : FreeSpec({
     "正常な argv" - {
