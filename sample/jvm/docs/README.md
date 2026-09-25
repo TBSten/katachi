@@ -33,11 +33,12 @@ HTTP に面する層。リクエストを受け取り、応答を返すところ
 
 ### [テスト](./testing/README.md)
 
-振る舞いを確かめるテストと、この定義そのもの、そこから生成されるドキュメント
+振る舞いを確かめるテストと、この定義そのもの、そこから書き出されるドキュメントとスナップショット
 
 - [テストコード](./testing/Test.md)
 - [アーキテクチャ定義](./testing/ArchitectureDefinition.md)
 - [生成ドキュメント](./testing/GeneratedDocumentation.md)
+- [レイアウトのスナップショット](./testing/LayoutSnapshot.md)
 
 ## API
 
@@ -68,8 +69,9 @@ HTTP に面する層。リクエストを受け取り、応答を返すところ
 
 ## テスト
 
-振る舞いを確かめるテストと、この定義そのもの、そこから生成されるドキュメント
+振る舞いを確かめるテストと、この定義そのもの、そこから書き出されるドキュメントとスナップショット
 
 - [テストコード](./testing/Test.md) ... src/test/kotlin に置かれるテスト。本体と同じ package 構成を保つ
 - [アーキテクチャ定義](./testing/ArchitectureDefinition.md) ... katachi の DSL で書かれた役割の定義。どのレイヤーにも属さない
 - [生成ドキュメント](./testing/GeneratedDocumentation.md) ... この定義から書き出され、リポジトリにコミットされる Markdown
+- [レイアウトのスナップショット](./testing/LayoutSnapshot.md) ... この定義を平坦化して全行書き出した記録。定義の変化を人が差分でレビューするためにある

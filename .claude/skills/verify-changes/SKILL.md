@@ -90,9 +90,11 @@ Kotlin/Native も要らないのはこの空っぽさのおかげなので、ル
 
 ### 3. スナップショットの差分が意図どおりか
 
-`sample/layout-snapshots/{jvm,android,kmp}.txt` に、平坦化後のレイアウトが
+`sample/{jvm,android,kmp}/snapshots/layout.txt` に、平坦化後のレイアウトが
 `<役割の qualifiedName> TAB <パス> TAB <種別> TAB <required|optional>` 1 行ずつで記録して
-ある。`LayoutSnapshotSpec` が毎回これと比較する。
+ある。`LayoutSnapshotSpec` が毎回これと比較する。各サンプルが自分のスナップショットを持ち、
+`testing/LayoutSnapshot` 役割で宣言しているので、消したり名前を変えたりするとそのサンプルの
+`:architecture-test:test` が `[MissingFile]` で落ちる。
 
 **何が壊れたときに落ちるか**: 「書き換えたが意味は変えていないはず」が実は変わっていたとき。
 糖衣構文（`.module { }`、`mainSourceSet`、`modulePackage`）が素のディレクトリ宣言と同じものを
@@ -100,7 +102,7 @@ Kotlin/Native も要らないのはこの空っぽさのおかげなので、ル
 
 判断のしかた:
 
-- **リファクタなら `git diff --stat sample/layout-snapshots` が空であることが受け入れ基準**。
+- **リファクタなら `git diff --stat "sample/*/snapshots"` が空であることが受け入れ基準**。
   1 行でも動いたらリファクタではない
 - **機能追加・構成変更なら差分を 1 行ずつ読む**。「増えた行が意図したパスか」「消えた行が
   消えてよいものか」。まとめて目を通して納得する、で済ませない
@@ -195,7 +197,7 @@ subagent に分担させるときも、**サンプルを触るものは 1 体だ
 
 ```bash
 git status --short
-git diff --stat sample/layout-snapshots
+git diff --stat "sample/*/snapshots"
 ```
 
 **新規ファイルは `git diff` に出ない**（untracked のため）。スナップショットを新規作成した

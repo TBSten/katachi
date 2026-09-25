@@ -18,10 +18,12 @@ import me.tbsten.katachi.dsl.DeclarationContainerScope
  *
  * ## Why the three are named one by one
  *
- * A wildcard `"*" { ignore() }` under `sample` would read the same and be wrong:
- * `LayoutIndex.isIgnored` is asked at the top of `visitDirectory`, before anything else, so it
- * would swallow `sample/layout-snapshots` too — and `LayoutSnapshot` would then report every
- * snapshot it declares as `[MissingFile]`.
+ * A wildcard `"*" { ignore() }` under `sample` would read the same and say something weaker.
+ * `LayoutIndex.isIgnored` is asked at the top of `visitDirectory`, before anything else, so a
+ * fourth directory under `sample/` would be ignored from the moment it appeared, without
+ * anyone having decided that it should be. Named one by one, a new sample is an
+ * `[UnexpectedDirectory]` until this role says otherwise — which is also when someone
+ * notices it needs a `checkSample<Name>` task of its own.
  */
 fun DeclarationContainerScope.sampleBuild() = "SampleBuild" {
     title = "サンプルビルド"

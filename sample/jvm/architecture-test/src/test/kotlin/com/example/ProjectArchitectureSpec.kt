@@ -83,6 +83,7 @@ class ProjectArchitectureSpec : FreeSpec({
             "testing/Test",
             "testing/ArchitectureDefinition",
             "testing/GeneratedDocumentation",
+            "testing/LayoutSnapshot",
             "build/Gradle",
             "tool/Git",
         )

@@ -2,11 +2,11 @@
 
 # テスト支援
 
-テストダブル、テストコード本体、katachi のアーキテクチャ定義、そこから生成されるドキュメント
+テストダブル、テストコード本体、katachi のアーキテクチャ定義、そこから書き出されるドキュメントとスナップショット
 
-テストにまつわる4つの役割です。Fake（`:testing` の commonMain）、Test（各モジュールの
+テストにまつわる5つの役割です。Fake（`:testing` の commonMain）、Test（各モジュールの
 テスト）、ArchitectureDefinition（`:architecture-test`）、GeneratedDocumentation
-（ルート直下の `docs/`）。
+（ルート直下の `docs/`）、LayoutSnapshot（ルート直下の `snapshots/`）。
 
 ArchitectureDefinition を Test と分けてあるのが、この group でいちばん言いたいことです。
 アーキテクチャ定義はテストコードではありません。プロジェクトの形を説明するのが仕事で、
@@ -18,10 +18,15 @@ Fake が `commonTest` ではなく `commonMain` にいるのも、この group �
 production の source set に置かざるをえないことがあります。`:testing` はそのために
 切られた、アプリ本体から誰も依存しないモジュールです。
 
-GeneratedDocumentation を ArchitectureDefinition と分けてあるのも同じ理由です。
-定義は人が書き、`docs/` は `--processor=docs` が書く。手を入れてよい場所が逆なので、
-1つの役割にまとめると「どちらを直せばいいのか」が言えなくなります。`build/` の外に
-置いた生成物にも役割が要る、という例にもなっています。
+GeneratedDocumentation と LayoutSnapshot を ArchitectureDefinition と分けてあるのも
+同じ理由です。定義は人が書き、`docs/` は `--processor=docs` が、`snapshots/` は
+`:architecture-test:test` が書く。手を入れてよい場所が逆なので、1つの役割にまとめると
+「どちらを直せばいいのか」が言えなくなります。`build/` の外に置いた生成物にも役割が
+要る、という例にもなっています。
+
+書き出されたもの同士も分けてあります。読み手が違うからです。`docs/` は定義を読みに
+来た人が開くページ、`snapshots/` は定義を書き換えた差分をレビューする人が見る
+テキストです。
 
 置いてはいけないもの:
 
@@ -33,6 +38,7 @@ GeneratedDocumentation を ArchitectureDefinition と分けてあるのも同じ
 | [テストコード](./Test.md) | 各モジュールのテスト。KMP モジュールは commonTest、純 Android / 純 JVM モジュールは src/test |
 | [アーキテクチャ定義](./ArchitectureDefinition.md) | :architecture-test モジュールの src/test。katachi の DSL で書いたこのプロジェクトの定義。どのレイヤーにも属さないので専用モジュールに置く |
 | [生成ドキュメント](./GeneratedDocumentation.md) | この定義から書き出され、リポジトリにコミットされる Markdown |
+| [レイアウトのスナップショット](./LayoutSnapshot.md) | この定義を平坦化して全行書き出した記録。定義の変化を人が差分でレビューするためにある |
 
 ## このグループの配置
 
@@ -51,4 +57,5 @@ GeneratedDocumentation を ArchitectureDefinition と分けてあるのも同じ
 docs/
   README.md                                     生成ドキュメント
   **/*.md                                       生成ドキュメント
+snapshots/layout.txt                            レイアウトのスナップショット
 ```

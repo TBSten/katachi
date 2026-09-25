@@ -38,12 +38,13 @@ feature をまたいで共有する UI。:ui の4つの package と :navigation
 
 ### [テスト](./testing/README.md)
 
-アプリを確かめるためにあるもの。共有のフェイク、テスト、アーキテクチャ定義、生成ドキュメント
+アプリを確かめるためにあるもの。共有のフェイク、テスト、アーキテクチャ定義、生成ドキュメント、レイアウトのスナップショット
 
 - [フェイク](./testing/Fake.md)
 - [テストコード](./testing/Test.md)
 - [アーキテクチャ定義](./testing/ArchitectureDefinition.md)
 - [生成ドキュメント](./testing/GeneratedDocumentation.md)
+- [レイアウトのスナップショット](./testing/LayoutSnapshot.md)
 
 ## 各画面の構成
 
@@ -79,9 +80,10 @@ feature をまたいで共有する UI。:ui の4つの package と :navigation
 
 ## テスト
 
-アプリを確かめるためにあるもの。共有のフェイク、テスト、アーキテクチャ定義、生成ドキュメント
+アプリを確かめるためにあるもの。共有のフェイク、テスト、アーキテクチャ定義、生成ドキュメント、レイアウトのスナップショット
 
 - [フェイク](./testing/Fake.md) ... :testing に置く、他モジュールのテストから使う偽の実装
 - [テストコード](./testing/Test.md) ... 各モジュールの src/test/kotlin に置くテストそのもの
 - [アーキテクチャ定義](./testing/ArchitectureDefinition.md) ... katachi の DSL で書かれた役割の定義。どのレイヤーにも属さない
 - [生成ドキュメント](./testing/GeneratedDocumentation.md) ... この定義から書き出され、リポジトリにコミットされる Markdown
+- [レイアウトのスナップショット](./testing/LayoutSnapshot.md) ... この定義を平坦化して全行書き出した記録。定義の変化を人が差分でレビューするためにある

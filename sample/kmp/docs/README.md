@@ -30,12 +30,13 @@
 
 ### [テスト支援](./testing/README.md)
 
-テストダブル、テストコード本体、katachi のアーキテクチャ定義、そこから生成されるドキュメント
+テストダブル、テストコード本体、katachi のアーキテクチャ定義、そこから書き出されるドキュメントとスナップショット
 
 - [フェイク](./testing/Fake.md)
 - [テストコード](./testing/Test.md)
 - [アーキテクチャ定義](./testing/ArchitectureDefinition.md)
 - [生成ドキュメント](./testing/GeneratedDocumentation.md)
+- [レイアウトのスナップショット](./testing/LayoutSnapshot.md)
 
 ### [アプリ](./app/README.md)
 
@@ -73,12 +74,13 @@ Gradle がビルドする Android アプリと、Xcode がビルドする iOS �
 
 ## テスト支援
 
-テストダブル、テストコード本体、katachi のアーキテクチャ定義、そこから生成されるドキュメント
+テストダブル、テストコード本体、katachi のアーキテクチャ定義、そこから書き出されるドキュメントとスナップショット
 
 - [フェイク](./testing/Fake.md) ... :testing の commonMain に置く偽の実装。他モジュールのテストから使う
 - [テストコード](./testing/Test.md) ... 各モジュールのテスト。KMP モジュールは commonTest、純 Android / 純 JVM モジュールは src/test
 - [アーキテクチャ定義](./testing/ArchitectureDefinition.md) ... :architecture-test モジュールの src/test。katachi の DSL で書いたこのプロジェクトの定義。どのレイヤーにも属さないので専用モジュールに置く
 - [生成ドキュメント](./testing/GeneratedDocumentation.md) ... この定義から書き出され、リポジトリにコミットされる Markdown
+- [レイアウトのスナップショット](./testing/LayoutSnapshot.md) ... この定義を平坦化して全行書き出した記録。定義の変化を人が差分でレビューするためにある
 
 ## アプリ
 

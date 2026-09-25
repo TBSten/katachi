@@ -56,14 +56,19 @@ class LayoutSnapshotSpec : FreeSpec({
 private const val UPDATE_PROPERTY: String = "katachi.snapshot.update"
 
 /**
- * Where the snapshots live, as a directory next to the sample project roots.
+ * Where this sample keeps its snapshot, below its own project root.
  *
- * Deliberately **outside** `sample/kmp`, because everything inside it is subject to this
- * sample's own allow list, and no existing role claims a snapshot file. Putting it in
- * `architecture-test/src/test/resources` would have meant editing a role definition — the
- * very thing this sentinel exists to keep still.
+ * Inside `sample/kmp`, and so subject to this sample's own allow list — which is the point
+ * rather than a price. The sample's `testing/LayoutSnapshot` role claims
+ * `snapshots/layout.txt` by name, so a snapshot deleted or renamed fails the check instead of
+ * quietly going missing, and the generated `docs/testing/LayoutSnapshot.md` is where a reader
+ * is told what this file is and how to regenerate it. Declaring it costs one role, the same
+ * one the generated `docs/` needed when it moved into the sample.
  */
-private const val SNAPSHOT_DIRECTORY_NAME: String = "layout-snapshots"
+private const val SNAPSHOT_DIRECTORY_NAME: String = "snapshots"
+
+/** The one snapshot this sample records, declared under [SNAPSHOT_DIRECTORY_NAME] by name. */
+private const val SNAPSHOT_FILE_NAME: String = "layout.txt"
 
 /**
  * The header written into the snapshot, so the file says how to regenerate itself.
@@ -120,7 +125,7 @@ private fun renderSnapshot(entries: List<LayoutEntry>): String {
 }
 
 /**
- * `sample/layout-snapshots/kmp.txt`, located through katachi's own project-root detection.
+ * `sample/kmp/snapshots/layout.txt`, located through katachi's own project-root detection.
  *
  * Reusing [findProjectRoot] rather than counting `..` from the working directory means the
  * lookup is guarded by [ProjectRootSpec] like everything else that depends on the root.
@@ -128,8 +133,5 @@ private fun renderSnapshot(entries: List<LayoutEntry>): String {
 @OptIn(InternalKatachiApi::class, ExperimentalKatachiApi::class)
 private fun snapshotFile(): File {
     val projectRoot = File(findProjectRoot(RealFileSystem()).path.value)
-    val samplesDirectory = requireNotNull(projectRoot.parentFile) {
-        "$projectRoot の親ディレクトリが取れない"
-    }
-    return File(samplesDirectory, "$SNAPSHOT_DIRECTORY_NAME/${projectRoot.name}.txt")
+    return File(projectRoot, "$SNAPSHOT_DIRECTORY_NAME/$SNAPSHOT_FILE_NAME")
 }

@@ -88,6 +88,8 @@ testing/GeneratedDocumentation	docs	Directory	optional
 testing/GeneratedDocumentation	docs/**	Directory	optional
 testing/GeneratedDocumentation	docs/**/*.md	File	optional
 testing/GeneratedDocumentation	docs/README.md	File	required
+testing/LayoutSnapshot	snapshots	Directory	optional
+testing/LayoutSnapshot	snapshots/layout.txt	File	required
 testing/Test	build	Ignore	optional
 testing/Test	build.gradle.kts	File	required
 testing/Test	src	Directory	optional

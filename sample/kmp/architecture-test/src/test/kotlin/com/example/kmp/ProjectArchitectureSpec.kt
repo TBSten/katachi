@@ -52,6 +52,7 @@ class ProjectArchitectureSpec : FreeSpec({
                 "testing/Test",
                 "testing/ArchitectureDefinition",
                 "testing/GeneratedDocumentation",
+                "testing/LayoutSnapshot",
                 "app/Entrypoint",
                 "app/AndroidResource",
                 "app/XcodeProject",

@@ -205,6 +205,8 @@ testing/GeneratedDocumentation	docs	Directory	optional
 testing/GeneratedDocumentation	docs/**	Directory	optional
 testing/GeneratedDocumentation	docs/**/*.md	File	optional
 testing/GeneratedDocumentation	docs/README.md	File	required
+testing/LayoutSnapshot	snapshots	Directory	optional
+testing/LayoutSnapshot	snapshots/layout.txt	File	required
 testing/Test	app	Directory	optional
 testing/Test	app/android	Directory	optional
 testing/Test	app/android/build	Ignore	optional
