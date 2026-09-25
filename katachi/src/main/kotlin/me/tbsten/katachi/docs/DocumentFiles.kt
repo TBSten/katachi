@@ -33,8 +33,12 @@ internal fun writeDocuments(outputRoot: File, pages: Map<String, String>, log: (
             file.parentFile?.mkdirs()
             file.writeText(content)
         }
-        log("Wrote $path")
     }
+    // Reported after the writing rather than during it, as one tree instead of one line per
+    // page. Twenty lines that each repeat their own directory are harder to read than the shape
+    // they form -- see `outputTreeLines`. Removals stay on their own lines above, because a
+    // deletion is the one thing here a reader has to notice.
+    outputTreeLines(pages.keys).forEach(log)
     removeEmptyDirectories(outputRoot)
 }
 

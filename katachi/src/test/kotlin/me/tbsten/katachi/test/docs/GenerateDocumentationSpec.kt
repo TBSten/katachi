@@ -149,10 +149,55 @@ class GenerateDocumentationSpec : FreeSpec({
                 context.logs shouldContainExactly listOf(
                     "Writing 3 pages to ${output.path}",
                     "Removed Stale.md, which this definition no longer produces.",
-                    "Wrote README.md",
-                    "Wrote domain/README.md",
-                    "Wrote domain/UseCase.md",
+                    "README.md",
+                    "domain/",
+                    "  README.md",
+                    "  UseCase.md",
                 )
+            }
+        }
+    }
+
+    "書いたページのログは木になる" - {
+        "ネストした group は段が深くなり、同じディレクトリ名は1度しか出ない" {
+            val arch = architecture {
+                "ui".group {
+                    "Screen" { }
+                    "parts".group { "Button" { }; "Icon" { } }
+                }
+                "data".group { "Repository" { } }
+            }
+
+            withTempDirectory { output ->
+                val context = writeContextFor(arch, output)
+
+                GenerateDocumentation.process(context)
+
+                context.logs.drop(1) shouldContainExactly listOf(
+                    "README.md",
+                    "ui/",
+                    "  README.md",
+                    "  Screen.md",
+                    "  parts/",
+                    "    README.md",
+                    "    Button.md",
+                    "    Icon.md",
+                    "data/",
+                    "  README.md",
+                    "  Repository.md",
+                )
+            }
+        }
+
+        "ページが1枚だけならディレクトリの行は出ない" {
+            val arch = architecture { }
+
+            withTempDirectory { output ->
+                val context = writeContextFor(arch, output)
+
+                GenerateDocumentation.process(context)
+
+                context.logs.drop(1) shouldContainExactly listOf("README.md")
             }
         }
     }
