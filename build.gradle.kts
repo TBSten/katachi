@@ -114,7 +114,15 @@ val sampleBuilds = listOf(
     // `check` here includes Android Lint over nine modules. Measured on this
     // sample: 14 s warm, 21 s with `clean --no-build-cache`, so there is no
     // reason to narrow it down to the unit tests. Revisit if the sample grows.
-    SampleBuild("android", listOf("check", "runKatachiProcessor", "--processor=layout"), needsAndroidSdk = true),
+    // `docs` is here and not only on the jvm sample, because the two samples exercise
+    // different shapes of the generator: this one has nested groups and a wildcard module key
+    // (`:feature:*`), which is where the placement tree has to print a pattern instead of a
+    // path. Running it only on jvm proved the plugin wiring and nothing about that.
+    SampleBuild(
+        "android",
+        listOf("check", "runKatachiProcessor", "--processor=layout,docs"),
+        needsAndroidSdk = true,
+    ),
     // Deliberately NOT `check` / `build` / `assemble`, and there is no `jvmTest`
     // in this sample. Its modules declare iosArm64 / iosSimulatorArm64, so the
     // lifecycle tasks drag `compileKotlinIosArm64` and the Kotlin/Native
@@ -142,7 +150,7 @@ val sampleBuilds = listOf(
             ":architecture-test:test",
             ":app:android:testDebugUnitTest",
             ":architecture-test:runKatachiProcessor",
-            "--processor=layout",
+            "--processor=layout,docs",
         ),
         needsAndroidSdk = true,
     ),
