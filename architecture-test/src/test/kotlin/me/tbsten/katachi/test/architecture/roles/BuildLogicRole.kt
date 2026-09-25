@@ -7,7 +7,7 @@ import me.tbsten.katachi.dsl.kotlin.ktsFile
 fun DeclarationContainerScope.buildLogic() = "BuildLogic" {
     title = "ビルドロジック"
     summary = "buildSrc の convention plugin。モジュール探索には出てこない別ビルド"
-    example("kotlin-jvm.gradle.kts", "jvmToolchain(21) と useJUnitPlatform() を配る")
+    example("kotlin-jvm.gradle.kts", "jvmToolchain(17) と useJUnitPlatform() を配る")
     layout {
         // Written as a plain directory rather than `":buildSrc".module { }`: buildSrc
         // is a build of its own, not a subproject of this one, so no module path

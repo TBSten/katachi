@@ -8,7 +8,7 @@ import me.tbsten.katachi.test.architecture.roles.git
 /**
  * The roles of the tooling around the project that is not the build itself.
  *
- * Like the build group, these are checked but kept out of the generated documentation.
+ * Like the `Gradle` group, these are checked but kept out of the generated documentation.
  *
  * ## `.idea/` deliberately has no role
  *

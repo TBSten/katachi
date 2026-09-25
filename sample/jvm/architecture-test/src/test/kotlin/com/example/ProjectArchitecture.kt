@@ -39,7 +39,7 @@ val modulePackage: ModulePackage = capitalizedModuleNamePackage("com.example")
  * None of those functions may be `inline`. An inlined frame reports the caller's file with a
  * line number past its end, and katachi captures the declaration site from the stack, so the
  * violation would point at a line nobody wrote. Written once here rather than repeated in
- * eighteen files; `ProjectArchitectureSpec` is what actually holds the line.
+ * twenty files; `ProjectArchitectureSpec` is what actually holds the line.
  *
  * Every role carries a `layout { }` saying where its files may live, written in terms of
  * Gradle: `":".module { }` for the application, which is the root project itself,

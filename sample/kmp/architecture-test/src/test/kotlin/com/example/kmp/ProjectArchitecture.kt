@@ -64,7 +64,7 @@ val modulePackage: ModulePackage = capitalizedModuleNamePackage("com.example.kmp
  * None of them may be `inline`. An inlined frame reports the caller's file with a line number
  * remapped past the end of that file, and katachi captures the declaration site from the
  * stack, so every declaration would record a position nobody wrote. Written once here rather
- * than repeated in twenty-seven files; `ProjectArchitectureSpec` is what actually holds the
+ * than repeated in twenty-eight files; `ProjectArchitectureSpec` is what actually holds the
  * line, by reading the captured line back out of the source.
  */
 val projectArchitecture: Architecture = architecture {

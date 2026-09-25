@@ -20,7 +20,7 @@ import me.tbsten.katachi.dsl.gradle.testSourceSet
  * Konsist 0.17.3 parses a file only when its name ends in `.kt`. Every file this role owns is a
  * `.java` file, so a constraint written here would cover files and find none it can read —
  * which katachi reports as `KatachiKonsistNoKotlinFilesException` rather than passing quietly.
- * The same reason keeps `konsist { }` out of the whole `build` group.
+ * The same reason keeps `konsist { }` out of the whole `Gradle` group.
  */
 fun DeclarationContainerScope.gradlePlugin() = "GradlePlugin" {
     title = "プラグイン本体"

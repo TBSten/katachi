@@ -14,9 +14,9 @@ import me.tbsten.katachi.check.validate
  * The whole of adopting katachi: one call, and the report it throws names every file nobody
  * declared, every declared file that is missing, and every constraint that was not satisfied.
  *
- * `KonsistCheck()` is not optional here. The seven roles of the `library` group declare three
+ * `KonsistCheck()` is not optional here. The nine roles of the `library` group declare three
  * `konsist { }` each and `backend/KonsistBackend` declares two, and a bare `assert()` evaluates
- * no constraints at all — it would report twenty-three `[UncheckedConstraint] reason=NotEvaluated`
+ * no constraints at all — it would report twenty-nine `[UncheckedConstraint] reason=NotEvaluated`
  * blocks instead of checking the import directions. A project that declares no constraint can
  * leave it out; this one cannot.
  */

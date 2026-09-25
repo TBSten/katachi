@@ -33,7 +33,7 @@ fun DeclarationContainerScope.git() = "Git" {
 
         置いてはいけないもの:
 
-        - ビルドファイル。`build.gradle.kts` や wrapper は build group の役割です
+        - ビルドファイル。`build.gradle.kts` や wrapper は `Gradle` group の役割です
         - CI の設定。このサンプルは自前の `.github/` を持たず、リポジトリルートの
           ワークフローから回されています
     """.trimIndent()

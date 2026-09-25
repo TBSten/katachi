@@ -6,10 +6,10 @@ import me.tbsten.katachi.dsl.DeclarationContainerScope
 
 /**
  * Files that belong to the tools around the project rather than to the build. Split out of
- * the `build` group so that "how this project is built" and "what tooling it carries" do not
+ * the `Gradle` group so that "how this project is built" and "what tooling it carries" do not
  * share one bucket.
  *
- * Undocumented for the same reason the build group is: real, but not part of the
+ * Undocumented for the same reason the `Gradle` group is: real, but not part of the
  * architecture a reader of the generated docs is looking for.
  */
 fun DeclarationContainerScope.toolGroup() = "tool".group {
@@ -17,7 +17,7 @@ fun DeclarationContainerScope.toolGroup() = "tool".group {
     title = "ツール"
     summary = "ビルドではなく、プロジェクトの周りの道具に属するファイル"
     description = """
-        プロジェクトの周りにある道具の設定と、人が読む `README.md` です。どちらも build group に
+        プロジェクトの周りにある道具の設定と、人が読む `README.md` です。どちらも `Gradle` group に
         入れてしまっても動きはします。それでも分けているのは、「このプロジェクトをどうビルドするか」
         と「このプロジェクトがどんな道具を持っているか」を1つのバケツに入れたくないからです。
         道具は種類が増える一方で、増えたときに分けるのは分けておくより面倒です。
@@ -30,11 +30,11 @@ fun DeclarationContainerScope.toolGroup() = "tool".group {
 
         ここに来ないもの:
 
-        - ビルドファイル。`build.gradle.kts` や wrapper は build group です
+        - ビルドファイル。`build.gradle.kts` や wrapper は `Gradle` group です
         - CI の設定。このサンプルは自前の `.github/` を持たず、リポジトリルートの
           ワークフローから回されています
 
-        build group と同じく `documented = false` です。実在するけれど、生成ドキュメントの
+        `Gradle` group と同じく `documented = false` です。実在するけれど、生成ドキュメントの
         読者が探しているアーキテクチャではありません。
     """.trimIndent()
 

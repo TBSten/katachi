@@ -14,8 +14,8 @@ import com.lemonappdev.konsist.api.provider.modifier.KoVisibilityModifierProvide
 /**
  * The name every role declares the KDoc rule under.
  *
- * Shared so that seven roles print one sentence rather than seven spellings of it, in the same
- * way `laterLayersOf` is shared. The `konsist { }` call itself stays in each role's own file —
+ * Shared so that every role declaring it prints one sentence rather than its own spelling of it,
+ * in the same way `laterLayersOf` is shared. The `konsist { }` call itself stays in each role's own file —
  * see `LayerImports.kt` for why it may not be wrapped in a shared one.
  */
 const val KDOC_EXAMPLE_RULE: String = """public な宣言に "## Example" を含む KDoc があること"""

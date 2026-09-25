@@ -22,7 +22,7 @@ import me.tbsten.katachi.test.architecture.roles.buildLogic
  * it is still a build concern rather than a `tool` one. Adding it here rather than reopening
  * `"build".group { }` keeps the same one-call shape the rest of this group has.
  *
- * Because the group and its own five roles are declared inside katachi's own `GradleGroup.kt`,
+ * Because the group and the groups and roles inside it are declared in katachi's own `GradleGroup.kt`,
  * not here, `Group.declaredAt` / `Role.declaredAt` for all of them resolve to the line below --
  * katachi walks the stack past its own frames to the first one outside itself, which is this
  * call. `BuildLogic` is different: `buildLogic()` is called from here, but the role itself is

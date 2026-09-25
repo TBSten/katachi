@@ -25,7 +25,7 @@ fun DeclarationContainerScope.toolGroup() = "tool".group {
         `.gitignore` と、人が読む `README.md` の2つ。CI の設定やフォーマッタの設定が増えたら、
         役割を足してここに入れる。
 
-        `build` group とは別にしてある。group は1度しか宣言できないのに対し、ここにあるのは
+        `Gradle` group とは別にしてある。group は1度しか宣言できないのに対し、ここにあるのは
         それぞれ別の道具のファイルなので、「ビルド」とひとまとめにすると次のファイルを
         どの役割に足すべきかが分からなくなる。
 

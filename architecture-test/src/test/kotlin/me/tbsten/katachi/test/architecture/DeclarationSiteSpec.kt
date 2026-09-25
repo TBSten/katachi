@@ -24,15 +24,15 @@ import me.tbsten.katachi.dsl.pascalCase
  *
  * ## The `Gradle` group is a second exception, narrower than the whole subtree
  *
- * `gradle()` declares its own group and five roles (`GradleWrapper` and the three roles inside
- * it, `SettingsScript`, `BuildScript`, `GradleProperties`, `VersionCatalog`) from inside
- * katachi's own `me.tbsten.katachi.dsl.gradle.GradleGroup.kt`, so their captured frame is not
- * that file but the first one outside katachi -- the `gradle { }` call in this project's own
- * `groups/GradleGroup.kt`. Every one of those five collapses onto that single line, which is
+ * `gradle()` declares its own group, the nested `GradleWrapper` group with its three roles, and
+ * four more roles (`SettingsScript`, `BuildScript`, `GradleProperties`, `VersionCatalog`) from
+ * inside katachi's own `me.tbsten.katachi.dsl.gradle.GradleGroup.kt`, so their captured frame is
+ * not that file but the first one outside katachi -- the `gradle { }` call in this project's own
+ * `groups/GradleGroup.kt`. Every one of those collapses onto that single line, which is
  * exactly what `Gradle は gradle() を呼んだ1箇所にまとめて宣言されている` below checks.
  *
- * `Gradle/BuildLogic` is declared inside the same `gradle { }` block but is not one of those
- * five: `buildLogic()` is a plain call to a function written in `roles/BuildLogicRole.kt`, and
+ * `Gradle/BuildLogic` is declared inside the same `gradle { }` block but is not one of
+ * those: `buildLogic()` is a plain call to a function written in `roles/BuildLogicRole.kt`, and
  * the role itself -- `"BuildLogic" { }` -- is literally written there, so its own frame is
  * outside katachi already and the walk never reaches `groups/GradleGroup.kt` at all. It is
  * checked by the ordinary per-file rule below, same as any other role.
@@ -111,7 +111,7 @@ class DeclarationSiteSpec : FreeSpec({
 })
 
 /**
- * The `Gradle` group and the five roles `gradle()` declares from inside itself -- everything
+ * The groups and roles `gradle()` declares from inside itself -- everything
  * whose declaration site collapses onto the single `gradle { }` call in `groups/GradleGroup.kt`
  * of this project. `Gradle/BuildLogic` is deliberately not in this set; see the class KDoc.
  *

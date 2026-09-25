@@ -90,7 +90,7 @@ val testPackage: ModulePackage = ModulePackage { modulePath ->
  *
  * ## What the layer roles enforce that a layout cannot
  *
- * The seven roles of the `library` group are the package layers of `:katachi`, each carrying a
+ * The nine roles of the `library` group are the package layers of `:katachi`, each carrying a
  * `konsist { }` forbidding imports of the layers after it, and a second one pinning its package
  * to its directory so that the first means something. That half used to be a hand-written spec
  * reading the sources as text; it is a rule about imports, which is Konsist's job.

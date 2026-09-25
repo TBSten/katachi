@@ -2,7 +2,10 @@ package com.example.sample.roles
 
 import com.example.sample.modulePackage
 import me.tbsten.katachi.dsl.DeclarationContainerScope
-import me.tbsten.katachi.dsl.gradle.*
+import me.tbsten.katachi.dsl.gradle.div
+import me.tbsten.katachi.dsl.gradle.kotlin
+import me.tbsten.katachi.dsl.gradle.mainSourceSet
+import me.tbsten.katachi.dsl.gradle.module
 import me.tbsten.katachi.dsl.kotlin.ktFile
 
 /** The role of a widget shared across features, rather than owned by one of them. */
@@ -65,10 +68,8 @@ fun DeclarationContainerScope.component() = "Component" {
 
                 @Preview(showBackground = true)
                 @Composable
-                private fun ${component}Preview() {
-                    PreviewRoot {
-                        $component(text = "$previewText")
-                    }
+                private fun ${component}Preview() = PreviewRoot {
+                    $component(text = "$previewText")
                 }
             """.trimIndent() + "\n"
         }

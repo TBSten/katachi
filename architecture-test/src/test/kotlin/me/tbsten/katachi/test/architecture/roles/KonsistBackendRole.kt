@@ -23,7 +23,7 @@ import me.tbsten.katachi.test.architecture.showsExample
  * and a rule with an empty forbidden list can never reject anything. Writing it would add a
  * constraint that is green by construction and says nothing — worse than absent, because it
  * reads as a rule that is being enforced. That is why this file carries two helpers where the
- * six `library` roles carry three.
+ * nine `library` roles carry three.
  *
  * What would actually be worth stating here — that the backend touches only katachi's
  * *public* surface — is already enforced by the build: `:katachi-konsist` opts into
@@ -31,7 +31,7 @@ import me.tbsten.katachi.test.architecture.showsExample
  * reach fails to compile. See `katachi-konsist/build.gradle.kts`.
  *
  * The other two rules do apply. This module is published, so its public declarations are a
- * surface a reader meets, and `KDOC_EXAMPLE_RULE` is the same sentence the six library roles
+ * surface a reader meets, and `KDOC_EXAMPLE_RULE` is the same sentence the nine library roles
  * declare. `PACKAGE_MATCHES_PATH_RULE` applies for the same reason the layer table lists
  * `konsist` at all: the entry only means something while the files under
  * `me/tbsten/katachi/konsist/` are the ones declaring `package me.tbsten.katachi.konsist`.
