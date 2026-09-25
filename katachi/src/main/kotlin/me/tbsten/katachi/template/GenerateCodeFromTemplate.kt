@@ -5,6 +5,7 @@ import kotlinx.serialization.KSerializer
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import me.tbsten.katachi.ExperimentalKatachiApi
+import me.tbsten.katachi.dsl.internal.evaluateTemplate
 import me.tbsten.katachi.dsl.internal.templateParameterNames
 import me.tbsten.katachi.fs.internal.findProjectRoot
 import me.tbsten.katachi.internal.runProcessorCatching
@@ -120,10 +121,15 @@ public object GenerateCodeFromTemplate : ArchitectureProcessor<GenerateCodeFromT
     /**
      * The parameters `--arg roleName=` named, so that the run's own check knows them.
      *
-     * Exactly the names that role's `template { }` declared -- not "anything", which is what
-     * would put a hole in the check this answers for. Reading nothing off disk is what keeps
-     * deciding "is this key a typo" free of a project walk: [templateRoleOf] and
-     * [me.tbsten.katachi.dsl.internal.templateParameterNames] both work from the declarations alone.
+     * Exactly the names that role's `template { }` declared for this run's values -- not
+     * "anything", which is what would put a hole in the check this answers for. Reading nothing
+     * off disk is what keeps deciding "is this key a typo" free of a project walk: [templateRoleOf]
+     * and [me.tbsten.katachi.dsl.internal.templateParameterNames] both work from the declarations
+     * alone.
+     *
+     * When those values leave the names in doubt -- a value that decides a branch could not be
+     * read, or was missing -- the run is failed here with that value's own exception, before any
+     * processor runs, rather than judged by names that may belong to the wrong branch.
      */
     override fun undeclaredArgNames(context: ArchitectureProcessContext<*>): Set<String> {
         val roleName = context.rawArgs[ROLE_NAME_ARG] ?: return emptySet()
@@ -133,7 +139,19 @@ public object GenerateCodeFromTemplate : ArchitectureProcessor<GenerateCodeFromT
         // never mentioned `Servce`. The run cannot succeed either way, and the first thing wrong
         // is the one worth saying: templateRoleOf lists the roles that do have a template.
         val role = templateRoleOf(context.roles, roleName)
-        return templateParameterNames(templateOf(role), role.qualifiedName)
+        val template = templateOf(role)
+        val names = templateParameterNames(template, role.qualifiedName, context.rawArgs)
+        if (names.isUnreliable) {
+            // A value that decides a branch could not be read or was missing, so the names above
+            // may belong to a branch the real run does not take: judging by them would report a
+            // parameter of the real branch as unknown and never say what is wrong. Nor can every
+            // key be let through -- the check is one union over the run, so that would also wave
+            // through a typo meant for another processor of it, which would then run on a default.
+            // The render of the same values is certain to fail with the real cause, and it touches
+            // no disk, so it is thrown here, before any processor runs -- like a roleName above.
+            evaluateTemplate(template, role.qualifiedName, context.rawArgs)
+        }
+        return names.declared
     }
 
     /**

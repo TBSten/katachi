@@ -12,8 +12,15 @@ import me.tbsten.katachi.KatachiDeclarationException
  * ignoring it -- the way `kotlinx-serialization-properties` does -- would turn that typo into
  * a processor quietly running with a default value instead of the one that was meant.
  *
+ * A processor may also name arguments for this run's values alone -- a template does, for its
+ * parameters -- and then a name declared inside a branch such as `if (withImpl) { }` is known only
+ * on the runs whose values take that branch. The message says so when that is possible, since
+ * such a key is spelled right and the fix is the value that opens its branch, not the key.
+ *
  * @property unknown the `--arg` keys that matched no processor's arguments.
  * @property known every `--arg` key the selected processors do accept.
+ * @property knownDependsOnValues whether some of [known] was named by a processor for this run's
+ *   values, so that other values could have made an [unknown] key known.
  *
  * ## Example 1: catch a mistyped `--arg` key
  * ```kt
@@ -42,6 +49,7 @@ import me.tbsten.katachi.KatachiDeclarationException
 public class KatachiUnknownProcessorArgException internal constructor(
     public val unknown: Set<String>,
     public val known: Set<String>,
+    public val knownDependsOnValues: Boolean = false,
 ) : KatachiDeclarationException(
     message = buildString {
         appendLine("Unknown processor argument(s): ${unknown.sorted().joinToString(", ")}.")
@@ -57,6 +65,15 @@ public class KatachiUnknownProcessorArgException internal constructor(
                 "Known arguments: ${known.sorted().joinToString(", ")}."
             },
         )
+        if (knownDependsOnValues) {
+            appendLine()
+            append(
+                "Some of these were named for this run's values, as a template's parameters are: " +
+                    "one declared inside a branch such as `if (withImpl) { }` is known only when " +
+                    "the run's values take that branch. If the key is spelled as declared, pass " +
+                    "the value that opens its branch.",
+            )
+        }
     },
 )
 

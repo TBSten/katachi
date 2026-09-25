@@ -27,12 +27,24 @@ internal fun declaredArgNames(processor: ArchitectureProcessor<*, *>): Set<Strin
 private fun acceptedArgNames(
     selected: List<Pair<String, ArchitectureProcessor<*, *>>>,
     context: ArchitectureProcessContext<*>,
-): Set<String> = buildSet {
+): AcceptedArgNames {
+    val names = mutableSetOf<String>()
+    var dependsOnValues = false
     for ((_, processor) in selected) {
-        addAll(declaredArgNames(processor))
-        addAll(processor.undeclaredArgNames(context))
+        names += declaredArgNames(processor)
+        val undeclared = processor.undeclaredArgNames(context)
+        if (undeclared.isNotEmpty()) dependsOnValues = true
+        names += undeclared
     }
+    return AcceptedArgNames(names, dependsOnValues)
 }
+
+/**
+ * [names] a run accepts, and whether any of them came from
+ * [ArchitectureProcessor.undeclaredArgNames] -- which answers for this run's values, so other
+ * values might have accepted more.
+ */
+private class AcceptedArgNames(val names: Set<String>, val dependsOnValues: Boolean)
 
 /**
  * Refuses a run in which some `--arg` key belongs to none of the chosen processors.
@@ -46,9 +58,13 @@ internal fun checkNoUnknownArgs(
     context: ArchitectureProcessContext<*>,
     values: Map<String, String>,
 ) {
-    val known = acceptedArgNames(selected, context)
-    val unknown = values.keys - known
+    val accepted = acceptedArgNames(selected, context)
+    val unknown = values.keys - accepted.names
     if (unknown.isEmpty()) return
 
-    throw KatachiUnknownProcessorArgException(unknown = unknown, known = known)
+    throw KatachiUnknownProcessorArgException(
+        unknown = unknown,
+        known = accepted.names,
+        knownDependsOnValues = accepted.dependsOnValues,
+    )
 }

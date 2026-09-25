@@ -7,6 +7,7 @@ import kotlinx.serialization.encoding.AbstractDecoder
 import kotlinx.serialization.encoding.CompositeDecoder
 import kotlinx.serialization.modules.EmptySerializersModule
 import kotlinx.serialization.modules.SerializersModule
+import me.tbsten.katachi.internal.ArgValueParsing
 import me.tbsten.katachi.processor.KatachiUnsupportedProcessorArgException
 
 /**
@@ -140,21 +141,22 @@ private fun splitArgValue(raw: String): List<String> =
     if (raw.isEmpty()) emptyList() else raw.split(',')
 
 /**
- * The one place a `--arg` string becomes a value.
+ * Where a processor's `--arg` string becomes a value. The rules themselves are
+ * [ArgValueParsing]'s, shared with a template's typed parameters.
  *
  * Every failure is a `SerializationException` so that `decodeFromStringMap` can turn it into a
  * katachi exception in one place. `"abc".toInt()` would throw `NumberFormatException`, which
  * is not one and would escape uncaught.
  */
 private object ArgValues {
-    fun int(raw: String): Int = raw.toIntOrNull() ?: fail(raw, "Int")
-    fun long(raw: String): Long = raw.toLongOrNull() ?: fail(raw, "Long")
-    fun short(raw: String): Short = raw.toShortOrNull() ?: fail(raw, "Short")
-    fun byte(raw: String): Byte = raw.toByteOrNull() ?: fail(raw, "Byte")
-    fun float(raw: String): Float = raw.toFloatOrNull() ?: fail(raw, "Float")
-    fun double(raw: String): Double = raw.toDoubleOrNull() ?: fail(raw, "Double")
-    fun boolean(raw: String): Boolean = raw.toBooleanStrictOrNull() ?: fail(raw, "Boolean")
-    fun char(raw: String): Char = raw.singleOrNull() ?: fail(raw, "Char")
+    fun int(raw: String): Int = ArgValueParsing.int(raw) ?: fail(raw, "Int")
+    fun long(raw: String): Long = ArgValueParsing.long(raw) ?: fail(raw, "Long")
+    fun short(raw: String): Short = ArgValueParsing.short(raw) ?: fail(raw, "Short")
+    fun byte(raw: String): Byte = ArgValueParsing.byte(raw) ?: fail(raw, "Byte")
+    fun float(raw: String): Float = ArgValueParsing.float(raw) ?: fail(raw, "Float")
+    fun double(raw: String): Double = ArgValueParsing.double(raw) ?: fail(raw, "Double")
+    fun boolean(raw: String): Boolean = ArgValueParsing.boolean(raw) ?: fail(raw, "Boolean")
+    fun char(raw: String): Char = ArgValueParsing.char(raw) ?: fail(raw, "Char")
 
     /**
      * An enum names its own accepted spellings, unlike every other type here.
@@ -163,13 +165,14 @@ private object ArgValues {
      * wrong, the case is wrong, or the value was never a thing -- and the answer is written down
      * right here in the descriptor. `Int` has nothing comparable to offer.
      */
-    fun enumIndex(descriptor: SerialDescriptor, raw: String): Int =
-        descriptor.getElementIndex(raw).takeIf { it != CompositeDecoder.UNKNOWN_NAME }
+    fun enumIndex(descriptor: SerialDescriptor, raw: String): Int {
+        val names = (0 until descriptor.elementsCount).map(descriptor::getElementName)
+        return ArgValueParsing.enumIndex(names, raw)
             ?: throw SerializationException(
                 """Cannot read "$raw" as ${descriptor.serialName}. Accepted values: """ +
-                    (0 until descriptor.elementsCount)
-                        .joinToString(", ", postfix = ".", transform = descriptor::getElementName),
+                    names.joinToString(", ", postfix = "."),
             )
+    }
 
     private fun fail(raw: String, type: String): Nothing =
         throw SerializationException("Cannot read \"$raw\" as $type.")

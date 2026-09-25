@@ -12,6 +12,7 @@ import java.io.File
 import me.tbsten.katachi.dsl.Architecture
 import me.tbsten.katachi.dsl.KatachiDuplicateTemplateFileException
 import me.tbsten.katachi.dsl.KatachiInvalidTemplateFileNameException
+import me.tbsten.katachi.dsl.KatachiInvalidTemplateParameterValueException
 import me.tbsten.katachi.dsl.architecture
 import me.tbsten.katachi.fs.internal.RealFileSystem
 import me.tbsten.katachi.processor.FakeArchitectureProcessContext
@@ -45,6 +46,27 @@ private fun useCaseArchitecture(): Architecture = architecture {
                         }
                     }
                     """.trimIndent()
+                }
+            }
+        }
+    }
+}
+
+/** A role whose implementation file is produced only when `withImpl` says so. */
+private fun repositoryArchitecture(): Architecture = architecture {
+    "data".group {
+        "Repository" {
+            layout {
+                "repository" / "*Repository.kt".file()
+                "repository" / "*RepositoryImpl.kt".file()
+            }
+            template {
+                val name by stringParameter()
+                val withImpl by booleanParameter(default = true)
+
+                file("${name}Repository.kt") { "interface ${name}Repository" }
+                if (withImpl) {
+                    file("${name}RepositoryImpl.kt") { "class ${name}RepositoryImpl : ${name}Repository" }
                 }
             }
         }
@@ -169,6 +191,35 @@ class GenerateCodeFromTemplateSpec : FreeSpec({
 
                 File(root, "useCase/GetUserUseCase.kt").readText() shouldBe "edited by hand"
                 logs.last() shouldContain "Wrote nothing"
+            }
+        }
+    }
+
+    "型付きのパラメータ" - {
+        "withImpl=false では Impl のファイルが書かれない" {
+            withTempProject { root ->
+                repositoryArchitecture().generateInto(
+                    root,
+                    mapOf("roleName" to "Repository", "name" to "User", "withImpl" to "false"),
+                )
+
+                root.relativeFilePaths() shouldContainExactly listOf(
+                    "gradlew",
+                    "repository/UserRepository.kt",
+                )
+            }
+        }
+
+        "読めない値で落ちたときは 1 つもファイルが書かれない" {
+            withTempProject { root ->
+                shouldThrow<KatachiInvalidTemplateParameterValueException> {
+                    repositoryArchitecture().generateInto(
+                        root,
+                        mapOf("roleName" to "Repository", "name" to "User", "withImpl" to "yes"),
+                    )
+                }
+
+                root.relativeFilePaths() shouldContainExactly listOf("gradlew")
             }
         }
     }

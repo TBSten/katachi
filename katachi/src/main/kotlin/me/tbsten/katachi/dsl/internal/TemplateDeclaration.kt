@@ -38,36 +38,14 @@ internal class RenderedTemplateFile(
     override fun toString(): String = "RenderedTemplateFile($fileName)"
 }
 
-/**
- * Why a template is being replayed.
- *
- * The block runs the same way either way; what differs is how far the replay goes and what an
- * unbound parameter costs.
- */
-internal enum class TemplateEvaluationMode {
-    /**
-     * To learn which `--arg` names this template accepts.
-     *
-     * Runs before any processor does, so it renders nothing: every parameter is named by its
-     * `val`, which the block body reaches on its own. Reading one that has no value yields a
-     * stand-in rather than a complaint, because there are no values yet to be missing.
-     */
-    Names,
-
-    /**
-     * To produce the files.
-     *
-     * Every `file { }` body is invoked, and a parameter with neither a value nor a default is
-     * collected so that the whole set can be reported at once.
-     */
-    Render,
-}
-
 /** What a [TemplateParameter] talks back to: the scope that is collecting this replay. */
 internal interface TemplateParameterBinder {
-    /** Takes the name the parameter has just been given. */
-    fun bind(parameter: TemplateParameter)
+    /**
+     * Takes the name the parameter has just been given, and reads the run's value for it once so
+     * that a value it cannot read is refused even when nothing ever reads the parameter.
+     */
+    fun bind(parameter: TemplateParameter<*>)
 
     /** The value bound for this run, the declared default, or a stand-in noted as missing. */
-    fun valueOf(parameter: TemplateParameter): String
+    fun <T> valueOf(parameter: TemplateParameter<T>): T
 }

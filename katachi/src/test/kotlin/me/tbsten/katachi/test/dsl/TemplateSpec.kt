@@ -5,7 +5,6 @@ import io.kotest.core.spec.style.FreeSpec
 import io.kotest.matchers.collections.shouldContainExactly
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
-import me.tbsten.katachi.dsl.Architecture
 import me.tbsten.katachi.dsl.KatachiDuplicateTemplateException
 import me.tbsten.katachi.dsl.KatachiDuplicateTemplateFileException
 import me.tbsten.katachi.dsl.KatachiDuplicateTemplateParameterException
@@ -14,27 +13,7 @@ import me.tbsten.katachi.dsl.KatachiInvalidTemplateFileNameException
 import me.tbsten.katachi.dsl.KatachiMissingTemplateParameterException
 import me.tbsten.katachi.dsl.KatachiTemplateParameterReusedException
 import me.tbsten.katachi.dsl.KatachiUnboundTemplateParameterException
-import me.tbsten.katachi.dsl.TemplateScope
 import me.tbsten.katachi.dsl.architecture
-import me.tbsten.katachi.dsl.internal.evaluateTemplate
-import me.tbsten.katachi.dsl.internal.templateParameterNames
-
-/** The role every template below is declared on, so the messages have a name to print. */
-private const val ROLE: String = "UseCase"
-
-private fun architectureWithTemplate(block: TemplateScope.() -> Unit): Architecture =
-    architecture {
-        "domain".group { ROLE { template(block) } }
-    }
-
-/** The rendered files of one template, as `file name -> content`. */
-private fun Architecture.render(values: Map<String, String> = emptyMap()): Map<String, String> =
-    evaluateTemplate(allRoles.single().templates.single(), ROLE, values)
-        .files
-        .associate { it.fileName to it.content }
-
-private fun Architecture.parameterNames(): Set<String> =
-    templateParameterNames(allRoles.single().templates.single(), ROLE)
 
 class TemplateSpec : FreeSpec({
     "宣言を溜める" - {
@@ -69,7 +48,7 @@ class TemplateSpec : FreeSpec({
             val thrown = shouldThrow<KatachiDuplicateTemplateException> {
                 architecture {
                     "domain".group {
-                        ROLE {
+                        TEMPLATE_ROLE {
                             template { file("A.kt") { "" } }
                             template { file("B.kt") { "" } }
                         }
@@ -77,7 +56,7 @@ class TemplateSpec : FreeSpec({
                 }
             }
 
-            thrown.role shouldBe ROLE
+            thrown.role shouldBe TEMPLATE_ROLE
             thrown.message.orEmpty() shouldContain "declares a second template"
         }
     }
@@ -176,7 +155,7 @@ class TemplateSpec : FreeSpec({
             }
 
             val thrown = shouldThrow<KatachiUnboundTemplateParameterException> { arch.render() }
-            thrown.role shouldBe ROLE
+            thrown.role shouldBe TEMPLATE_ROLE
             thrown.parameterSites.size shouldBe 1
             thrown.message.orEmpty() shouldContain "val name by stringParameter()"
         }
@@ -261,6 +240,6 @@ class TemplateSpec : FreeSpec({
     "1つもファイルを作らない template は落ちる" {
         val arch = architectureWithTemplate { }
 
-        shouldThrow<KatachiEmptyTemplateException> { arch.render() }.role shouldBe ROLE
+        shouldThrow<KatachiEmptyTemplateException> { arch.render() }.role shouldBe TEMPLATE_ROLE
     }
 })

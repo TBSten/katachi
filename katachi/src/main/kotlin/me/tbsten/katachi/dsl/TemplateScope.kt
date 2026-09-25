@@ -1,7 +1,9 @@
 package me.tbsten.katachi.dsl
 
+import kotlin.enums.EnumEntries
 import kotlin.reflect.KProperty
 import me.tbsten.katachi.dsl.internal.TemplateParameterBinder
+import me.tbsten.katachi.dsl.internal.TemplateParameterType
 
 /**
  * Receiver of `template { }`: the parameters a generated file is filled in from, and the files
@@ -13,8 +15,12 @@ import me.tbsten.katachi.dsl.internal.TemplateParameterBinder
  *
  * The block is stored, not evaluated, exactly like [RoleScope.layout] — `architecture { }` runs
  * long before anyone passes `--arg`. It is replayed once per run, with the values of that run
- * bound, so a parameter read anywhere inside it is an ordinary `String` and Kotlin's own string
- * templates are the whole templating language.
+ * bound, so a parameter read anywhere inside it is an ordinary value of the type it was declared
+ * with, and Kotlin's own string templates are the whole templating language.
+ *
+ * Every parameter is read as its `--arg <name>=<value>`, whatever its type. A value that does not
+ * fit the type, and a value that is missing, are not reported where the parameter is declared:
+ * they are collected over the whole replay and reported together once it ends.
  *
  * ## Example 1: declare a template on a role
  * ```kt
@@ -64,6 +70,42 @@ import me.tbsten.katachi.dsl.internal.TemplateParameterBinder
  * arch.allRoles.single().name shouldBe "UseCase"
  * ```
  *
+ * ## Example 3: choose which files to produce, and what goes in them, from typed parameters
+ * ```kt
+ * enum class Visibility { Public, Internal } // an enum class cannot be local: declare it at the top level
+ *
+ * val arch = architecture {
+ *     "data".group {
+ *         "Repository" {
+ *             layout {
+ *                 "repository" / "*Repository.kt".file()
+ *                 "repository" / "*RepositoryImpl.kt".file()
+ *             }
+ *             template {
+ *                 val name by stringParameter()
+ *                 val withImpl by booleanParameter(default = true)
+ *                 val pageSize by intParameter(default = 20)
+ *                 val visibility by enumParameter(default = Visibility.Public)
+ *                 val modifier = visibility.name.lowercase()
+ *
+ *                 // ./gradlew :architecture-test:runKatachiProcessor --processor=template \
+ *                 //   --arg roleName=Repository --arg name=User \
+ *                 //   --arg withImpl=false --arg pageSize=50 --arg visibility=Internal
+ *                 file("${name}Repository.kt") {
+ *                     "$modifier interface ${name}Repository { val pageSize: Int get() = $pageSize }"
+ *                 }
+ *                 if (withImpl) {
+ *                     file("${name}RepositoryImpl.kt") {
+ *                         "$modifier class ${name}RepositoryImpl : ${name}Repository"
+ *                     }
+ *                 }
+ *             }
+ *         }
+ *     }
+ * }
+ * arch.allRoles.single().name shouldBe "Repository"
+ * ```
+ *
  * @see RoleScope.template
  * @see TemplateParameter
  */
@@ -93,7 +135,86 @@ public sealed interface TemplateScope {
      * }
      * ```
      */
-    public fun stringParameter(default: String? = null): TemplateParameter
+    public fun stringParameter(default: String? = null): TemplateParameter<String>
+
+    /**
+     * Declares a parameter read as a `Boolean`, named by its property like [stringParameter].
+     *
+     * `true` or `false`, in lower case. Any other word is refused, never read as `false`.
+     *
+     * ## Example 1: produce a file only when asked to
+     * ```kt
+     * template {
+     *     val name by stringParameter()
+     *     val withImpl by booleanParameter(default = true) // --arg withImpl=false
+     *
+     *     file("${name}Repository.kt") { "interface ${name}Repository" }
+     *     if (withImpl) file("${name}RepositoryImpl.kt") { "class ${name}RepositoryImpl" }
+     * }
+     * ```
+     */
+    public fun booleanParameter(default: Boolean? = null): TemplateParameter<Boolean>
+
+    /**
+     * Declares a parameter read as an `Int`, named by its property like [stringParameter].
+     *
+     * A whole number in decimal, such as `20` or `-1`, within the range of `Int`.
+     *
+     * ## Example 1: put a number into the generated code
+     * ```kt
+     * template {
+     *     val name by stringParameter()
+     *     val pageSize by intParameter(default = 20) // --arg pageSize=50
+     *
+     *     file("${name}Pager.kt") { "const val PAGE_SIZE: Int = $pageSize" }
+     * }
+     * ```
+     */
+    public fun intParameter(default: Int? = null): TemplateParameter<Int>
+
+    /**
+     * Declares a required parameter read as one of [entries], named by its property like
+     * [stringParameter].
+     *
+     * One of the entry names, spelled exactly as declared in Kotlin -- not lower-cased the way
+     * `onExisting=skip` is.
+     *
+     * ## Example 1: require one entry of an enum
+     * ```kt
+     * enum class Visibility { Public, Internal }
+     *
+     * template {
+     *     val name by stringParameter()
+     *     val visibility by enumParameter(Visibility.entries) // --arg visibility=Internal
+     *
+     *     file("${name}.kt") { "${visibility.name.lowercase()} class $name" }
+     * }
+     * ```
+     *
+     * @throws KatachiEmptyEnumTemplateParameterException when the enum has no entries, so no
+     *   value could ever be read as it.
+     */
+    public fun <E : Enum<E>> enumParameter(entries: EnumEntries<E>): TemplateParameter<E>
+
+    /**
+     * Declares a parameter read as an entry of [default]'s enum, and [default] when none is given.
+     *
+     * One of the entry names, spelled exactly as declared in Kotlin -- not lower-cased the way
+     * `onExisting=skip` is. The entries are taken from [default]'s own enum class.
+     *
+     * ## Example 1: pick an entry, with one to fall back on
+     * ```kt
+     * enum class Visibility { Public, Internal }
+     *
+     * template {
+     *     val name by stringParameter()
+     *     val visibility by enumParameter(default = Visibility.Public) // --arg visibility=Internal
+     *
+     *     file("${name}.kt") { "${visibility.name.lowercase()} class $name" }
+     * }
+     * ```
+     */
+    public fun <E : Enum<E>> enumParameter(default: E): TemplateParameter<E>
 
     /**
      * Declares one file this template produces, and how to fill it in.
@@ -123,8 +244,8 @@ public sealed interface TemplateScope {
 /**
  * A parameter of a [TemplateScope], bound to the property it is written through.
  *
- * Read it and an ordinary `String` comes back, so a template is written in Kotlin's own string
- * templates and nothing else. The value is whatever `--arg <name>=<value>` carried for the run
+ * Read it and an ordinary value of the type it was declared with comes back, so a template is
+ * written in Kotlin's own string templates and nothing else. The value is whatever `--arg <name>=<value>` carried for the run
  * being replayed, or the default it was declared with.
  *
  * ## Example 1: declare two parameters, one of them with a default
@@ -138,10 +259,14 @@ public sealed interface TemplateScope {
  * ```
  *
  * @see TemplateScope.stringParameter
+ * @see TemplateScope.booleanParameter
+ * @see TemplateScope.intParameter
+ * @see TemplateScope.enumParameter
  */
-public class TemplateParameter internal constructor(
+public class TemplateParameter<out T> internal constructor(
     private val binder: TemplateParameterBinder,
-    internal val default: String?,
+    internal val type: TemplateParameterType<T>,
+    internal val default: T?,
     internal val declaredAt: DeclarationSite,
 ) {
     /** The property this was written through, or `null` while it has not reached one yet. */
@@ -166,7 +291,7 @@ public class TemplateParameter internal constructor(
      * }
      * ```
      */
-    public operator fun provideDelegate(thisRef: Any?, property: KProperty<*>): TemplateParameter {
+    public operator fun provideDelegate(thisRef: Any?, property: KProperty<*>): TemplateParameter<T> {
         bindTo(property.name)
         return this
     }
@@ -188,7 +313,7 @@ public class TemplateParameter internal constructor(
      * }
      * ```
      */
-    public operator fun getValue(thisRef: Any?, property: KProperty<*>): String {
+    public operator fun getValue(thisRef: Any?, property: KProperty<*>): T {
         bindTo(property.name)
         return binder.valueOf(this)
     }
@@ -200,6 +325,7 @@ public class TemplateParameter internal constructor(
             throw KatachiTemplateParameterReusedException(
                 firstName = current,
                 secondName = propertyName,
+                declaredWith = type.declaredWith,
                 declaredAt = declaredAt,
             )
         }

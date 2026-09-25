@@ -1,10 +1,12 @@
 package me.tbsten.katachi.dsl
 
+import kotlin.enums.EnumEntries
+import me.tbsten.katachi.dsl.internal.InvalidTemplateValue
+import me.tbsten.katachi.dsl.internal.ParsedArgValue
 import me.tbsten.katachi.dsl.internal.RenderedTemplateFile
-import me.tbsten.katachi.dsl.internal.TemplateDeclaration
 import me.tbsten.katachi.dsl.internal.TemplateEvaluation
-import me.tbsten.katachi.dsl.internal.TemplateEvaluationMode
 import me.tbsten.katachi.dsl.internal.TemplateParameterBinder
+import me.tbsten.katachi.dsl.internal.TemplateParameterType
 import me.tbsten.katachi.dsl.internal.captureDeclarationSite
 
 /** One `file(...)` of a template, and what it rendered to once its body was invoked. */
@@ -25,22 +27,52 @@ private class TemplateFileDeclaration(
 internal class TemplateScopeImpl(
     private val roleName: String,
     private val values: Map<String, String>,
-    private val mode: TemplateEvaluationMode,
 ) : TemplateScope, TemplateParameterBinder {
     /** Every parameter handed out, named or not. The unnamed ones are the mistake to report. */
-    private val created = mutableListOf<TemplateParameter>()
+    private val created = mutableListOf<TemplateParameter<*>>()
 
     /** The named ones, in declaration order. */
-    private val named = linkedMapOf<String, TemplateParameter>()
+    private val named = linkedMapOf<String, TemplateParameter<*>>()
 
     private val files = mutableListOf<TemplateFileDeclaration>()
 
-    /** Names read during a [TemplateEvaluationMode.Render] replay that had nothing to read. */
+    /** Names read during this replay that had nothing to read. */
     private val missing = linkedSetOf<String>()
 
-    override fun stringParameter(default: String?): TemplateParameter =
+    /** Values this run passed that their parameter could not read, by name, in declaration order. */
+    private val invalid = linkedMapOf<String, InvalidTemplateValue>()
+
+    override fun stringParameter(default: String?): TemplateParameter<String> =
+        parameter(TemplateParameterType.StringType, default)
+
+    override fun booleanParameter(default: Boolean?): TemplateParameter<Boolean> =
+        parameter(TemplateParameterType.BooleanType, default)
+
+    override fun intParameter(default: Int?): TemplateParameter<Int> =
+        parameter(TemplateParameterType.IntType, default)
+
+    override fun <E : Enum<E>> enumParameter(entries: EnumEntries<E>): TemplateParameter<E> {
+        if (entries.isEmpty()) {
+            throw KatachiEmptyEnumTemplateParameterException(
+                role = roleName,
+                declaredAt = captureDeclarationSite(),
+            )
+        }
+        return parameter(TemplateParameterType.EnumType(entries), default = null)
+    }
+
+    override fun <E : Enum<E>> enumParameter(default: E): TemplateParameter<E> {
+        // declaringJavaClass rather than javaClass: an entry with a body is its own subclass.
+        val entries = default.declaringJavaClass.enumConstants?.asList() ?: listOf(default)
+        return parameter(TemplateParameterType.EnumType(entries), default)
+    }
+
+    // Reached straight from each member and never through an inline function, so that
+    // captureDeclarationSite() sees the user's own line.
+    private fun <T> parameter(type: TemplateParameterType<T>, default: T?): TemplateParameter<T> =
         TemplateParameter(
             binder = this,
+            type = type,
             default = default,
             declaredAt = captureDeclarationSite(),
         ).also { created += it }
@@ -66,7 +98,7 @@ internal class TemplateScopeImpl(
         files += TemplateFileDeclaration(name = name, declaredAt = declaredAt, content = content)
     }
 
-    override fun bind(parameter: TemplateParameter) {
+    override fun bind(parameter: TemplateParameter<*>) {
         val name = parameter.name ?: return
         val first = named[name]
         if (first != null && first !== parameter) {
@@ -78,18 +110,35 @@ internal class TemplateScopeImpl(
             )
         }
         named[name] = parameter
+        val raw = values[name] ?: return
+        val parsed = parameter.type.parse(raw)
+        if (parsed is ParsedArgValue.Invalid) {
+            invalid[name] = InvalidTemplateValue(
+                name = name,
+                raw = raw,
+                type = parameter.type,
+                reason = parsed.reason,
+                default = parameter.default,
+                parameterDeclaredAt = parameter.declaredAt,
+            )
+        }
     }
 
-    override fun valueOf(parameter: TemplateParameter): String {
+    override fun <T> valueOf(parameter: TemplateParameter<T>): T {
         // Unnamed here means the caller reached `getValue` without a property, which cannot
         // happen through the DSL. `requireEveryParameterNamed` is what reports it.
-        val name = parameter.name ?: return parameter.default.orEmpty()
-        values[name]?.let { return it }
+        val name = parameter.name ?: return parameter.default ?: parameter.type.standIn("")
+        values[name]?.let { raw ->
+            when (val parsed = parameter.type.parse(raw)) {
+                is ParsedArgValue.Parsed -> return parsed.value
+                // Already recorded by bind, and refused when the replay ends; this only keeps the
+                // replay going so that every other problem is collected too.
+                is ParsedArgValue.Invalid -> return parameter.default ?: parameter.type.standIn(name)
+            }
+        }
         parameter.default?.let { return it }
-        if (mode == TemplateEvaluationMode.Render) missing += name
-        // A stand-in rather than an empty string, so that a body doing something with the value
-        // keeps working long enough for every other missing name to be collected too.
-        return name
+        missing += name
+        return parameter.type.standIn(name)
     }
 
     /** Invokes every `file { }` body. Reads inside them are what fill [missing]. */
@@ -99,6 +148,16 @@ internal class TemplateScopeImpl(
 
     /** The names declared so far, which is what a caller asks for before a run. */
     fun parameterNames(): Set<String> = named.keys.toSet()
+
+    /**
+     * Whether a value that could decide a branch was replaced by a stand-in: one that could not
+     * be read, or a missing one of a type other than String. A missing String only decides a
+     * branch in the rare template that compares it, and treating it as one would stop a
+     * misspelt `--arg nmae=User` from being reported as the unknown name it is.
+     */
+    fun branchedOnStandIn(): Boolean =
+        invalid.isNotEmpty() ||
+            missing.any { named[it]?.type != TemplateParameterType.StringType }
 
     /**
      * Refuses a parameter that never reached a property, which is `val name = stringParameter()`
@@ -111,20 +170,48 @@ internal class TemplateScopeImpl(
         throw KatachiUnboundTemplateParameterException(
             role = roleName,
             parameterSites = unnamed.map { it.declaredAt },
+            declaredWith = unnamed.first().type.declaredWith,
             declaredAt = declaredAt,
+        )
+    }
+
+    /**
+     * Reports every value the run passed that could not be read, together with every value it
+     * was missing, at once. The unreadable ones come first: a stand-in may have taken the replay
+     * down a branch that is why the others went missing.
+     */
+    fun requireEveryValueReadable(declaredAt: DeclarationSite, cause: Throwable?) {
+        if (invalid.isEmpty()) return
+        val missingNames = missing.sorted()
+        throw KatachiInvalidTemplateParameterValueException(
+            role = roleName,
+            names = invalid.keys.toList(),
+            problems = invalid.values.toList(),
+            missing = missingNames,
+            missingAccepted = acceptedDescriptionsOf(missingNames),
+            declaredAt = declaredAt,
+            cause = cause,
         )
     }
 
     /** Reports every value the run was missing at once, rather than one per attempt. */
     fun requireEveryValuePresent(declaredAt: DeclarationSite, cause: Throwable?) {
         if (missing.isEmpty()) return
+        val names = missing.sorted()
         throw KatachiMissingTemplateParameterException(
             role = roleName,
-            names = missing.sorted(),
+            names = names,
+            accepted = acceptedDescriptionsOf(names),
             declaredAt = declaredAt,
             cause = cause,
         )
     }
+
+    /** What each of [names] accepts, for the ones that do not accept anything. */
+    private fun acceptedDescriptionsOf(names: List<String>): Map<String, String> =
+        names.mapNotNull { name ->
+            named[name]?.type?.acceptedDescription?.let { name to it }
+        }.toMap()
 
     /** Refuses a template that produces nothing: there would be no reason to run it. */
     fun requireAtLeastOneFile(declaredAt: DeclarationSite) {

@@ -57,6 +57,8 @@ fun DeclarationContainerScope.repository() = "Repository" {
     template {
         val name by stringParameter()
         val item by stringParameter(default = "String")
+        // --arg withImpl=false produces the interface alone, for an implementation written by hand.
+        val withImpl by booleanParameter(default = true)
 
         file("${name}Repository.kt") {
             """
@@ -68,15 +70,17 @@ fun DeclarationContainerScope.repository() = "Repository" {
                 }
             """.trimIndent() + "\n"
         }
-        file("${name}RepositoryImpl.kt") {
-            """
-                package com.example.kmp.data.user
+        if (withImpl) {
+            file("${name}RepositoryImpl.kt") {
+                """
+                    package com.example.kmp.data.user
 
-                /** The real implementation. A stub, like [UserRepositoryImpl]. */
-                class ${name}RepositoryImpl : ${name}Repository {
-                    override fun items(): List<$item> = emptyList()
-                }
-            """.trimIndent() + "\n"
+                    /** The real implementation. A stub, like [UserRepositoryImpl]. */
+                    class ${name}RepositoryImpl : ${name}Repository {
+                        override fun items(): List<$item> = emptyList()
+                    }
+                """.trimIndent() + "\n"
+            }
         }
     }
 }
