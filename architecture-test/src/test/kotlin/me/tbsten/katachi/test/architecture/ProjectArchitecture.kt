@@ -4,8 +4,8 @@ import me.tbsten.katachi.dsl.Architecture
 import me.tbsten.katachi.dsl.architecture
 import me.tbsten.katachi.dsl.gradle.ModulePackage
 import me.tbsten.katachi.test.architecture.groups.backendGroup
-import me.tbsten.katachi.test.architecture.groups.buildGroup
 import me.tbsten.katachi.test.architecture.groups.docsGroup
+import me.tbsten.katachi.test.architecture.groups.gradleGroup
 import me.tbsten.katachi.test.architecture.groups.libraryGroup
 import me.tbsten.katachi.test.architecture.groups.pluginGroup
 import me.tbsten.katachi.test.architecture.groups.sampleGroup
@@ -107,6 +107,6 @@ val projectArchitecture: Architecture = architecture {
     testingGroup()
     docsGroup()
     sampleGroup()
-    buildGroup()
+    gradleGroup()
     toolGroup()
 }

@@ -42,6 +42,14 @@ class RoleCoverageSpec : FreeSpec({
                     // `Directory` entries claim no file and have nothing to match.
                     .filter { it.kind == LayoutEntryKind.File || it.kind == LayoutEntryKind.AnyFile }
                     .filterNot { it.required }
+                    // `gradle()`'s own roles declare both the Kotlin and the Groovy spelling of
+                    // `settings.gradle(.kts)` and `build.gradle(.kts)`, each optional so either
+                    // may be the one a build actually uses. This repository writes every script
+                    // in Kotlin, so the Groovy half is optional-and-unmatched by design, not a
+                    // hole in this project's coverage — `gradleOwnDeclarations` is the same set
+                    // `DeclarationSiteSpec` carves out, for a different reason: there, because
+                    // the declaration site is katachi's; here, because the declaration itself is.
+                    .filterNot { it.role.qualifiedName in gradleOwnDeclarations }
                     .filterNot { context.matchesSomething(it) }
                     .map { "${it.role.qualifiedName}  ${it.path}" }
             }
