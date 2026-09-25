@@ -35,6 +35,16 @@ dokka {
         // （DokkaBasePlugin が enableKotlinStdLibDocumentationLink.convention(true) を設定する）。
         // ここで明示的に externalDocumentationLinks を足す必要はない。
 
+        // モジュールの概要と、公開パッケージそれぞれの概要（`# Module <name>` / `# Package <fqName>` の
+        // 見出し）。tool/dokka の Summaries は「パッケージの概要は includes の最初の段落から取る」実装
+        // なので、ここに書かないとパッケージの行の概要は常に空になる。ファイルが無いモジュールに
+        // `includes.from` を渡すと Dokka が失敗するので、存在するときだけ足す
+        // （このコンベンションを適用するのは :katachi と :katachi-konsist の2つで、どちらも持つ）。
+        val moduleDoc = layout.projectDirectory.file("Module.md")
+        if (moduleDoc.asFile.exists()) {
+            includes.from(moduleDoc)
+        }
+
         sourceLink {
             // localDirectory は既定で layout.projectDirectory（このモジュールのルート）なので、
             // Dokka がソースファイルへの相対パスを自動で remoteUrl の後ろに付け、
