@@ -31,8 +31,9 @@ import me.tbsten.katachi.scan.Violation
 @OptIn(InternalKatachiApi::class)
 class OmittedRoleSelfCheckSpec : FreeSpec({
     "役割を落とすと、その役割だけが引き受けていたファイルが Unexpected になる" {
-        // `tool/Git` is the only role claiming `.gitignore`, and the only role of its group,
-        // so leaving `toolGroup()` out removes exactly one file's home.
+        // `tool` owns exactly two files, both at the root -- `.gitignore` and `README.md` --
+        // and no other role claims either, so leaving `toolGroup()` out removes exactly those
+        // two homes and the expectation can be written out in full.
         val withoutTool = architecture {
             featureGroup()
             uiGroup()
@@ -43,7 +44,7 @@ class OmittedRoleSelfCheckSpec : FreeSpec({
         }
 
         withoutTool.validate().labels() shouldContainExactly
-            listOf("[UnexpectedFile] .gitignore", PREVIEW_OVERLAP)
+            listOf("[UnexpectedFile] .gitignore", "[UnexpectedFile] README.md", PREVIEW_OVERLAP)
     }
 
     "未知のディレクトリは1件だけ報告され、その配下は掘られない" {

@@ -1,5 +1,6 @@
 package com.example.kmp.groups
 
+import com.example.kmp.roles.documentation
 import com.example.kmp.roles.git
 import me.tbsten.katachi.dsl.DeclarationContainerScope
 
@@ -16,7 +17,7 @@ fun DeclarationContainerScope.toolGroup() = "tool".group {
     title = "ツール"
     summary = "ビルドではなく、プロジェクトの周りの道具に属するファイル"
     description = """
-        プロジェクトの周りにある道具の設定です。今は `.gitignore` 1つだけなので、build group に
+        プロジェクトの周りにある道具の設定と、人が読む `README.md` です。どちらも build group に
         入れてしまっても動きはします。それでも分けているのは、「このプロジェクトをどうビルドするか」
         と「このプロジェクトがどんな道具を持っているか」を1つのバケツに入れたくないからです。
         道具は種類が増える一方で、増えたときに分けるのは分けておくより面倒です。
@@ -24,6 +25,7 @@ fun DeclarationContainerScope.toolGroup() = "tool".group {
         ここに来るもの:
 
         - git に伝える設定（`.gitignore`）
+        - このサンプルを開いた人に向けた説明（`README.md`）
         - 将来足すとすれば linter や formatter の設定、`.editorconfig` のようなもの
 
         ここに来ないもの:
@@ -36,5 +38,6 @@ fun DeclarationContainerScope.toolGroup() = "tool".group {
         読者が探しているアーキテクチャではありません。
     """.trimIndent()
 
+    documentation()
     git()
 }

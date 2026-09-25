@@ -219,6 +219,7 @@ testing/Test	app/android/src/test/kotlin/com/example	Directory	optional
 testing/Test	app/android/src/test/kotlin/com/example/kmp	Directory	optional
 testing/Test	app/android/src/test/kotlin/com/example/kmp/app	Directory	optional
 testing/Test	app/android/src/test/kotlin/com/example/kmp/app/*Spec.kt	File	optional
+tool/Documentation	README.md	File	required
 tool/Git	.gitignore	File	required
 ui/Component	ui	Directory	optional
 ui/Component	ui/build	Ignore	optional

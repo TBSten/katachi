@@ -97,4 +97,5 @@ testing/Test	src/test	Directory	optional
 testing/Test	src/test/kotlin	Directory	optional
 testing/Test	src/test/kotlin/**	Directory	optional
 testing/Test	src/test/kotlin/**/*.kt	File	optional
+tool/Documentation	README.md	File	required
 tool/Git	.gitignore	File	required

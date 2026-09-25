@@ -1,5 +1,6 @@
 package com.example.groups
 
+import com.example.roles.documentation
 import com.example.roles.git
 import me.tbsten.katachi.dsl.DeclarationContainerScope
 
@@ -14,13 +15,14 @@ fun DeclarationContainerScope.toolGroup() = "tool".group {
     summary = "ビルドそのものではない、プロジェクト周辺のツールの設定"
 
     description = """
-        リポジトリに置かれて開発を支える、ビルド以外のツールの設定です。いまは Git 設定の役割
-        （`.gitignore`）だけが入っています。
+        リポジトリに置かれて開発を支える、ビルド以外のものです。いまは Git 設定の役割
+        （`.gitignore`）と、人が読む `README.md` の2つが入っています。
 
         ビルドと同じく `documented = false` で、チェックはするが生成ドキュメントには出しません。
         エディタや CI の設定ファイルが増えたときは `.gitignore` の役割に混ぜず、このグループに
         役割を1つ足すのが想定している育て方です。
     """.trimIndent()
 
+    documentation()
     git()
 }

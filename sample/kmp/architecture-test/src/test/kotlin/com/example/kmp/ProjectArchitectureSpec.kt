@@ -58,6 +58,7 @@ class ProjectArchitectureSpec : FreeSpec({
                 "app/XcodeProject",
                 "build/GradleModule",
                 "build/GradleRoot",
+                "tool/Documentation",
                 "tool/Git",
             )
     }

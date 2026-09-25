@@ -85,6 +85,7 @@ class ProjectArchitectureSpec : FreeSpec({
             "testing/GeneratedDocumentation",
             "testing/LayoutSnapshot",
             "build/Gradle",
+            "tool/Documentation",
             "tool/Git",
         )
     }
@@ -152,8 +153,10 @@ class ProjectArchitectureSpec : FreeSpec({
             .map { it.qualifiedName } shouldBe listOf("build", "tool")
     }
 
-    "documented を省略した役割はすべて documented = true になる" {
-        projectArchitecture.allRoles.filterNot { it[Documented] ?: true } shouldBe emptyList()
+    "documented = false を付けた役割だけが documented = false になる" {
+        projectArchitecture.allRoles
+            .filterNot { it[Documented] ?: true }
+            .map { it.qualifiedName } shouldBe listOf("tool/Documentation")
     }
 
     "title を省略しなかった役割は指定した表示名を持つ" {
