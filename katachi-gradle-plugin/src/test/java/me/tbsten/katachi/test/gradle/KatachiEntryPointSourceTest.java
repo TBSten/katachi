@@ -76,6 +76,22 @@ class KatachiEntryPointSourceTest {
     }
 
     @Test
+    @DisplayName("生成された object は @Deprecated(HIDDEN) で、ソースからは解決できない")
+    void generatedObjectIsHidden() throws ReflectiveOperationException {
+        String source = render("com.example.projectArchitecture", new LinkedHashMap<>());
+        int deprecatedIndex = source.indexOf("@Deprecated(");
+        int levelIndex = source.indexOf("level = DeprecationLevel.HIDDEN");
+        int objectIndex = source.indexOf("public object GeneratedKatachiEntryPoint");
+
+        assertTrue(deprecatedIndex >= 0, "expected a @Deprecated annotation:\n" + source);
+        assertTrue(levelIndex > deprecatedIndex, "expected HIDDEN inside it:\n" + source);
+        // The annotation has to sit on the object, not on the file: a file-level `@Deprecated`
+        // says something different and would not take the object out of resolution.
+        assertTrue(
+                objectIndex > levelIndex,
+                "expected the annotation to be on the object:\n" + source);
+    }
+
     @DisplayName("@file:OptIn は package 行より前にある")
     void optInIsBeforePackageDirective() throws ReflectiveOperationException {
         String source = render("com.example.projectArchitecture", new LinkedHashMap<>());
