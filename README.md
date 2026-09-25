@@ -199,22 +199,23 @@ The root project exists **only to aggregate the samples** and carries no plugins
 
 ## Samples
 
-Three of them live under `sample/`. Each is a **standalone Gradle build** with its own `settings.gradle.kts` and wrapper, pulling katachi from this repository's sources through `includeBuild("../..")`. They consume it exactly the way you would (`testImplementation(libs.katachi)`), so they double as integration tests.
+Four of them live under `sample/`. Each is a **standalone Gradle build** with its own `settings.gradle.kts` and wrapper, pulling katachi from this repository's sources through `includeBuild("../..")`. They consume it exactly the way you would (`testImplementation(libs.katachi)`), so they double as integration tests.
 
 | Sample | What it is | Task from the root |
 |---|---|---|
 | `sample/jvm` | A minimal Ktor server | `./gradlew checkSampleJvm` |
 | `sample/android` | A multi-module Android app, with real Compose and AndroidX dependencies | `./gradlew checkSampleAndroid` |
 | `sample/kmp` | An Android + iOS KMP project, with real Compose Multiplatform dependencies | `./gradlew checkSampleKmp` |
+| `sample/custom-processor` | Three hand-written processors — no arguments, typed arguments, and a check that overrides `isFailure`. Its application is three files | `./gradlew checkSampleCustomProcessor` |
 
 They are **close to the real thing, not stubs.** `Screen` is a real `@Composable`, `ViewModel` extends the real `androidx.lifecycle.ViewModel`, `@Preview` is actually written. Checking something that does not look like a real project would not tell us katachi works on one.
 
 ```bash
 ./gradlew check         # the library itself
-./gradlew checkSamples  # all three samples, through their own wrappers
+./gradlew checkSamples  # every sample, through its own wrapper
 ```
 
-`checkSamples` runs the three **in sequence** — they share one katachi build, and running them in parallel corrupts katachi's `build/`.
+`checkSamples` runs them **in sequence** — they share one katachi build, and running them in parallel corrupts katachi's `build/`.
 
 `sample/android` and `sample/kmp` need an Android SDK: set `ANDROID_HOME`, or write `sdk.dir=...` into that sample's `local.properties`.
 
