@@ -1,7 +1,6 @@
 package me.tbsten.katachi.processor
 
 import kotlin.system.exitProcess
-import me.tbsten.katachi.InternalKatachiApi
 
 /**
  * The entry point the Gradle plugin's `runKatachiProcessor` task starts.
@@ -28,29 +27,17 @@ import me.tbsten.katachi.InternalKatachiApi
  * and `JavaExec` turns that into a failed task -- so a run that could not even get as far as
  * printing a report still fails loudly rather than succeeding having done nothing.
  *
- * ## Example 1: run the entry point the way the Gradle task does
- * ```kt
- * @OptIn(InternalKatachiApi::class)
- * object MyEntryPoint : KatachiEntryPoint {
- *     override val architecture: Architecture = architecture {
- *         "domain".group { "UseCase" { layout { "domain" / "*UseCase.kt".file() } } }
- *     }
- *     override val processors: Map<String, Class<*>> = mapOf(
- *         "layout" to LayoutCheck::class.java,
- *     )
- * }
+ * ## Why it is internal
  *
- * @OptIn(InternalKatachiApi::class)
- * fun runIt() {
- *     main(arrayOf("--entry-point=com.example.MyEntryPoint", "--processor=layout"))
- * }
- * ```
+ * Nothing calls this by its Kotlin name. The JVM finds it as `MainKt.main(String[])`, and a
+ * top level `internal` function is still `public static` in bytecode under its own name -- only
+ * members of a class get their names mangled. So it stays out of the public API, where a user
+ * could otherwise call a function that ends their process with `exitProcess`.
  *
  * @param args the command line the `runKatachiProcessor` task passes on. See
  *   [parseProcessorCommandLine] for the accepted form.
  */
-@InternalKatachiApi
-public fun main(args: Array<String>) {
+internal fun main(args: Array<String>) {
     val commandLine = parseProcessorCommandLine(args)
     val entryPoint = loadEntryPoint(commandLine.entryPointClassName)
     val summary = runProcessors(
