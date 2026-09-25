@@ -37,9 +37,6 @@ katachi {
 
         docs {
             outputDir = rootProject.layout.projectDirectory.dir("docs")
-            rootTitle = "Ktor サンプルアプリ"
-            rootDescription = "Ktor の小さな HTTP サーバを、katachi で形から説明したもの。" +
-                    "このページ以下はすべて `--processor=docs` が生成したもので、手では書かない。"
         }
     }
 }

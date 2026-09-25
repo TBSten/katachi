@@ -52,6 +52,10 @@ val modulePackage: ModulePackage = capitalizedModuleNamePackage("com.example")
  * covered by some role, and anything else fails `ProjectArchitectureTest`.
  */
 val projectArchitecture: Architecture = architecture {
+    title = "Ktor サンプルアプリ"
+    description = "Ktor の小さな HTTP サーバを、katachi で形から説明したもの。" +
+        "このページ以下はすべて `--processor=docs` が生成したもので、手では書かない。"
+
     apiGroup()
     domainGroup()
     dataGroup()

@@ -3,12 +3,7 @@ package me.tbsten.katachi.test.docs
 import io.kotest.assertions.withClue
 import io.kotest.core.spec.style.FreeSpec
 import io.kotest.matchers.shouldBe
-import me.tbsten.katachi.dsl.DeclarationContainerScope
-import me.tbsten.katachi.dsl.Description
 import me.tbsten.katachi.dsl.architecture
-
-/** The root has no `description` property of its own, so a test writes one the way a processor would. */
-private var DeclarationContainerScope.rootDescription by Description
 
 /**
  * What a container says about itself, above the list of what it holds.
@@ -101,7 +96,7 @@ class ContainerBodySpec : FreeSpec({
 
     "ルートの README にも同じ位置で出る" {
         val arch = architecture {
-            rootDescription = "このリポジトリの全体像。"
+            description = "このリポジトリの全体像。"
             "api".group { }
         }
 

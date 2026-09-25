@@ -19,9 +19,8 @@ internal const val SECTION_BREAK: String = "\n\n"
 /**
  * What the documentation root is called when nothing else says.
  *
- * Kept as the last fallback rather than as the heading itself: the root is the one container a
- * definition cannot name from the inside, so the name reaches it from outside -- `--arg
- * rootTitle=`, or the Gradle plugin sending the root project's name.
+ * Kept as the last fallback rather than as the heading itself: `architecture { title = ... }` is
+ * what names the root, and this is what a definition that never said gets.
  */
 internal const val ROOT_TITLE: String = "アーキテクチャ"
 
@@ -164,10 +163,10 @@ internal fun StringBuilder.appendDescription(metadata: MetadataValues) {
 }
 
 /**
- * The same body, for the one container whose text does not have to come from its own metadata.
+ * The same body, for a caller that has already chosen the text.
  *
- * The root can be described from outside the definition -- by `--arg rootDescription=`, or by
- * the Gradle plugin -- so the text arrives already chosen, and only the placing is shared.
+ * The root's paragraph goes through the same blank-is-unwritten reading as its heading before it
+ * gets here, so what is shared is the placing rather than the choosing.
  */
 internal fun StringBuilder.appendDescriptionText(description: String?) {
     val text = description?.trim()

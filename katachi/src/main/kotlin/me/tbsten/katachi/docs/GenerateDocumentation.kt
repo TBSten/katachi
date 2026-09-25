@@ -66,11 +66,7 @@ public object GenerateDocumentation : ArchitectureProcessor<GenerateDocumentatio
 
     override fun process(context: ArchitectureProcessContext<Args>) {
         val outputDir = context.args.outputDir
-        val pages = roleReferenceDocuments(
-            context = context,
-            rootTitle = context.args.rootTitle,
-            rootDescription = context.args.rootDescription,
-        )
+        val pages = roleReferenceDocuments(context)
         val outputRoot = File(outputDir)
         when (context.args.mode) {
             DocumentationMode.Write -> {
@@ -109,16 +105,6 @@ public object GenerateDocumentation : ArchitectureProcessor<GenerateDocumentatio
      *
      * GenerateDocumentation.Args(outputDir = "docs/architecture", mode = DocumentationMode.Check)
      * ```
-     *
-     * ## Example 2: name the root page after the product
-     * ```kt
-     * import me.tbsten.katachi.docs.GenerateDocumentation
-     *
-     * // # myapp ドキュメント
-     * //
-     * // このリポジトリの構成。
-     * GenerateDocumentation.Args(rootTitle = "myapp", rootDescription = "このリポジトリの構成。")
-     * ```
      */
     @Serializable
     public data class Args(
@@ -133,21 +119,6 @@ public object GenerateDocumentation : ArchitectureProcessor<GenerateDocumentatio
         val outputDir: String = DEFAULT_OUTPUT_DIR,
         /** Whether to write the pages or to compare them against what is already there. */
         val mode: DocumentationMode = DocumentationMode.Write,
-        /**
-         * What the root page is called: its heading is this followed by `" ドキュメント"`.
-         *
-         * `null` or blank falls back to the `title` the definition wrote on itself, and then to
-         * `"アーキテクチャ"`. The Gradle plugin sends the root project's name here, which is the
-         * name of the repository as everything else in a build already spells it.
-         */
-        val rootTitle: String? = null,
-        /**
-         * One paragraph under the root's heading, as Markdown, kept exactly as written.
-         *
-         * `null` or blank falls back to the `description` the definition wrote on itself, and
-         * then to no paragraph at all.
-         */
-        val rootDescription: String? = null,
     )
 }
 

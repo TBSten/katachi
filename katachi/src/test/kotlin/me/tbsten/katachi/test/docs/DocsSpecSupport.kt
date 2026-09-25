@@ -15,19 +15,15 @@ import me.tbsten.katachi.test.fs.ForbiddenFileSystem
  * without saying so, that building documentation reads nothing — a fake tree would answer
  * happily and the specs would stay green if that stopped being true.
  */
-internal fun Architecture.documents(
-    rootTitle: String? = null,
-    rootDescription: String? = null,
-): Map<String, String> = process(ForbiddenFileSystem) { context ->
-    roleReferenceDocuments(context, rootTitle = rootTitle, rootDescription = rootDescription)
+internal fun Architecture.documents(): Map<String, String> = process(ForbiddenFileSystem) { context ->
+    roleReferenceDocuments(context)
 }
 
 /** One page of [documents], which fails the spec rather than returning null when it is absent. */
 internal fun Architecture.page(path: String): String = documents().getValue(path)
 
-/** The root `README.md`, built the way a run that was told what to call the root builds it. */
-internal fun Architecture.rootReadme(rootTitle: String? = null, rootDescription: String? = null): String =
-    documents(rootTitle = rootTitle, rootDescription = rootDescription).getValue("README.md")
+/** The root `README.md`, which names itself from the definition's own title and description. */
+internal fun Architecture.rootReadme(): String = documents().getValue("README.md")
 
 /**
  * A directory of this spec's own, gone again however [block] ends.

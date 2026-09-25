@@ -31,8 +31,6 @@ katachi {
         register("layout", "me.tbsten.katachi.check.LayoutCheck")
         docs {
             outputDir = rootProject.layout.projectDirectory.dir("docs")
-            rootDescription = "Compose で書かれた Android アプリを、katachi で形から説明したもの。" +
-                    "このページ以下はすべて `--processor=docs` が生成したもので、手では書かない。"
         }
     }
 }

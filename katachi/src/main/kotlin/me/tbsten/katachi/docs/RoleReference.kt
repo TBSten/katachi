@@ -43,12 +43,12 @@ import me.tbsten.katachi.processor.ArchitectureProcessContext
  *
  * ## What names the root
  *
- * The root is the one container a definition cannot name from the inside, so its heading and its
- * paragraph reach it from outside: [rootTitle] and [rootDescription], which a `--arg` or the
- * Gradle plugin's `docs { }` block fills in. Either one wins over what `architecture { }` wrote
- * on itself, because a value that can be changed per run is the one that can answer "not this
- * time"; a definition cannot. Blank counts as unwritten on both sides, so an empty `--arg` asks
- * for the fallback rather than for an empty heading.
+ * The heading and the paragraph of the root page are `architecture { }`'s own `title` and
+ * `description`, the same words a group writes about itself. They used to also be settable per
+ * run, through `--arg` and the Gradle plugin's `docs { }` block, with the run winning; there is
+ * now one place to write them, because what a repository is called is a fact about the
+ * repository rather than about one run of one tool. Blank counts as unwritten, so a computed
+ * value that came out empty asks for the fallback rather than for an empty heading.
  *
  * @throws KatachiDocumentPathCollisionException when two declarations name the same page.
  * @throws KatachiDocumentPathCaseCollisionException when two pages are one file on a case
@@ -57,8 +57,6 @@ import me.tbsten.katachi.processor.ArchitectureProcessContext
  */
 internal fun roleReferenceDocuments(
     context: ArchitectureProcessContext<*>,
-    rootTitle: String? = null,
-    rootDescription: String? = null,
 ): Map<String, String> {
     val architecture = context.architecture
     // One evaluation, not `context.declaredEntries` plus a second one for the constraints. The
@@ -76,7 +74,7 @@ internal fun roleReferenceDocuments(
     // Decided once and handed to both the page and every breadcrumb that points back at it. A
     // reader who saw `# myapp ドキュメント` and then `[アーキテクチャ](../README.md)` two clicks
     // later has to work out that the two are the same page.
-    val rootName = rootTitle.orWritten(architecture.metadata[Title]) ?: ROOT_TITLE
+    val rootName = architecture.metadata[Title].orBlank() ?: ROOT_TITLE
 
     val documents = Documents()
     documents.put(
@@ -84,7 +82,7 @@ internal fun roleReferenceDocuments(
         owner = Owner("The documentation root", DeclarationSite.Unknown),
         content = rootPage(
             title = rootName,
-            description = rootDescription.orWritten(architecture.metadata[Description]),
+            description = architecture.metadata[Description].orBlank(),
             metadata = architecture.metadata,
             roles = architecture.roles.filter { it.isDocumented },
             groups = architecture.groups.filter { it.isDocumented },
@@ -103,14 +101,13 @@ internal fun roleReferenceDocuments(
 }
 
 /**
- * This value when a run actually gave one, and [written] otherwise.
+ * This value when something was actually written, and `null` when it was blank.
  *
- * Blank is unwritten: `--arg rootTitle=` is somebody clearing an option rather than asking for a
- * page with no heading, and a build script that computes the value can leave it empty without
- * having to know what the fallback would have been.
+ * Blank is unwritten: a definition that computes its own title -- from a version, from a property
+ * -- can come out empty without having to know what the fallback would have been, and a page with
+ * no heading is not what that asks for.
  */
-private fun String?.orWritten(written: String?): String? =
-    this?.takeIf { it.isNotBlank() } ?: written?.takeIf { it.isNotBlank() }
+private fun String?.orBlank(): String? = this?.takeIf { it.isNotBlank() }
 
 /** A group's own page, its roles' pages, and — recursively — everything below it. */
 private fun Documents.putGroup(

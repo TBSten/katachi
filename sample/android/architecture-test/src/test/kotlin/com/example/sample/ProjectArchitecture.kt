@@ -69,6 +69,10 @@ val modulePackage: ModulePackage = capitalizedModuleNamePackage("com.example.sam
  * Android unit test run.
  */
 val projectArchitecture: Architecture = architecture {
+    title = "katachi-sample-android"
+    description = "Compose で書かれた Android アプリを、katachi で形から説明したもの。" +
+        "このページ以下はすべて `--processor=docs` が生成したもので、手では書かない。"
+
     featureGroup()
     uiGroup()
     dataGroup()

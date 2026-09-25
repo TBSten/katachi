@@ -166,8 +166,8 @@ class KatachiPluginFunctionalTest {
 
     @ParameterizedTest(name = "Gradle {0}")
     @MethodSource("gradleVersions")
-    @DisplayName("docs には rootTitle として root project の名前が渡り、docs { } に書けばそちらが勝つ")
-    void docsIsGivenTheRootProjectNameAsItsRootTitle(String gradleVersion, @TempDir Path projectDir)
+    @DisplayName("docs はルートページの名前に関する --arg を一切送らない")
+    void docsSendsNothingAboutTheRootPageName(String gradleVersion, @TempDir Path projectDir)
             throws IOException {
         writeFixture(projectDir, "Args");
         writeTestJavaClass(
@@ -180,30 +180,15 @@ class KatachiPluginFunctionalTest {
 
         runner(projectDir, gradleVersion, "runKatachiProcessor", "--processor=docs").build();
 
-        // The name of the repository is a value only Gradle has, so the plugin is the only layer
-        // that can send it. Without it the generated root page would be headed "アーキテクチャ".
-        assertTrue(
-                argsOf(projectDir).contains("--arg=rootTitle=katachi-fixture"),
-                "the plugin did not send the root project's name as rootTitle:\n" + argsOf(projectDir));
-
-        appendBuildScript(
-                projectDir,
-                "\nkatachi {\n"
-                        + "    processors {\n"
-                        + "        docs {\n"
-                        + "            rootTitle = \"written-in-the-build-script\"\n"
-                        + "        }\n"
-                        + "    }\n"
-                        + "}\n");
-
-        runner(projectDir, gradleVersion, "runKatachiProcessor", "--processor=docs").build();
-
-        assertTrue(
-                argsOf(projectDir).contains("--arg=rootTitle=written-in-the-build-script"),
-                "docs { rootTitle = ... } lost to the convention:\n" + argsOf(projectDir));
+        // The root page names itself from `architecture { title = ... }`. The plugin used to send
+        // the root project's name as `--arg rootTitle`, which beat what the definition wrote on
+        // itself -- so the one place a reader would look was the one place that lost.
         assertFalse(
-                argsOf(projectDir).contains("katachi-fixture"),
-                "both the written value and the convention were sent:\n" + argsOf(projectDir));
+                argsOf(projectDir).contains("rootTitle"),
+                "the plugin still sends a rootTitle argument:\n" + argsOf(projectDir));
+        assertFalse(
+                argsOf(projectDir).contains("rootDescription"),
+                "the plugin still sends a rootDescription argument:\n" + argsOf(projectDir));
     }
 
     @ParameterizedTest(name = "Gradle {0}")

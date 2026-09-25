@@ -37,9 +37,6 @@ katachi {
         register("roleDocCoverage", "com.example.processors.RoleDocCoverage")
         docs {
             outputDir = rootProject.layout.projectDirectory.dir("docs")
-            rootTitle = "自作プロセッサのサンプル"
-            rootDescription = "katachi の定義を読む processor を、利用者が自分で書く方法だけを見せるサンプル。" +
-                    "このページ以下はすべて `--processor=docs` が生成したもので、手では書かない。"
         }
     }
 }

@@ -22,6 +22,42 @@ import me.tbsten.katachi.fs.FileSelection
 @KatachiDsl
 public sealed interface ArchitectureScope : DeclarationContainerScope {
     /**
+     * What the whole definition is called: the heading of the generated root page.
+     *
+     * Written here rather than passed in by whoever runs the generator, because it is a fact
+     * about the project and not about one run of one tool. `null` or unwritten leaves the root
+     * page its own default heading.
+     *
+     * ## Example 1: name the definition
+     * ```kt
+     * val arch = architecture {
+     *     title = "myapp"
+     *     "domain".group { "UseCase" { } }
+     * }
+     * arch[Title] shouldBe "myapp"
+     * ```
+     */
+    public var title: String?
+
+    /**
+     * One paragraph under the root page's heading, as Markdown, kept exactly as written.
+     *
+     * The place to say what the repository is and how to read what follows. Unwritten, the root
+     * page goes straight from its heading to the document map.
+     *
+     * ## Example 1: describe the repository on its root page
+     * ```kt
+     * val arch = architecture {
+     *     title = "myapp"
+     *     description = "このリポジトリの構成。役割ごとに1ページある。"
+     *     "domain".group { "UseCase" { } }
+     * }
+     * arch[Description] shouldBe "このリポジトリの構成。役割ごとに1ページある。"
+     * ```
+     */
+    public var description: String?
+
+    /**
      * Which files of the project the check looks at. Defaults to [gitTracked].
      *
      * ## Example 1: walk the whole tree instead of only git-tracked files
@@ -65,6 +101,18 @@ internal class ArchitectureScopeImpl : ArchitectureScope {
      * could say which one a reference means. Sharing the reservations is how that is said.
      */
     private val declaredNames = DeclaredNames()
+
+    override var title: String?
+        get() = metadata[Title]
+        set(value) {
+            metadata[Title] = value
+        }
+
+    override var description: String?
+        get() = metadata[Description]
+        set(value) {
+            metadata[Description] = value
+        }
 
     override var files: FileSelection = FileSelection.GitTracked
 

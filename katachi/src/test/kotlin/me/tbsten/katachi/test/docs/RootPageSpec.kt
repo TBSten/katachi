@@ -6,16 +6,8 @@ import io.kotest.matchers.collections.shouldContainExactly
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
 import io.kotest.matchers.string.shouldNotContain
-import me.tbsten.katachi.dsl.DeclarationContainerScope
-import me.tbsten.katachi.dsl.Description
 import me.tbsten.katachi.dsl.Title
 import me.tbsten.katachi.dsl.architecture
-
-/** `architecture { }` has no `title` property of its own, so a spec writes one as a processor would. */
-private var DeclarationContainerScope.rootTitle by Title
-
-/** The same for the paragraph under the heading. */
-private var DeclarationContainerScope.rootDescription by Description
 
 /**
  * What the root `README.md` says: the index of the whole output, and a section per group.
@@ -32,6 +24,8 @@ class RootPageSpec : FreeSpec({
     "ページ全体" - {
         "索引が先、group ごとの節が後ろに並ぶ" {
             val arch = architecture {
+                title = "myapp"
+                description = "このリポジトリの構成。"
                 "Changelog" { }
                 "api".group {
                     title = "API"
@@ -44,7 +38,7 @@ class RootPageSpec : FreeSpec({
                 }
             }
 
-            arch.rootReadme(rootTitle = "myapp", rootDescription = "このリポジトリの構成。") shouldBe
+            arch.rootReadme() shouldBe
                 """
                 # myapp ドキュメント
 
@@ -308,8 +302,8 @@ class RootPageSpec : FreeSpec({
         }
     }
 
-    "rootTitle と rootDescription" - {
-        "渡さなければ既定の見出しになり、本文は出ない" {
+    "title と description" - {
+        "書かなければ既定の見出しになり、本文は出ない" {
             val arch = architecture { "api".group { } }
 
             arch.rootReadme() shouldBe
@@ -324,10 +318,13 @@ class RootPageSpec : FreeSpec({
                 """.trimIndent() + "\n"
         }
 
-        "渡せば見出しも本文も変わる" {
-            val arch = architecture { }
+        "architecture { } に書けば見出しも本文も変わる" {
+            val arch = architecture {
+                title = "myapp"
+                description = "このリポジトリの構成。"
+            }
 
-            arch.rootReadme(rootTitle = "myapp", rootDescription = "このリポジトリの構成。") shouldBe
+            arch.rootReadme() shouldBe
                 """
                 # myapp ドキュメント
 
@@ -336,38 +333,25 @@ class RootPageSpec : FreeSpec({
         }
 
         "空文字は「書かなかった」と同じ扱いになる" {
-            val arch = architecture { }
-
-            arch.rootReadme(rootTitle = "  ", rootDescription = "") shouldBe "# アーキテクチャ ドキュメント\n"
-        }
-
-        "何も渡さなければ architecture { } に書いた title と description が使われる" {
             val arch = architecture {
-                rootTitle = "myapp"
-                rootDescription = "定義そのものが名乗った説明。"
+                title = "  "
+                description = ""
             }
 
-            arch.rootReadme() shouldBe
-                """
-                # myapp ドキュメント
-
-                定義そのものが名乗った説明。
-                """.trimIndent() + "\n"
+            withClue("組み立てた結果たまたま空になったとき、見出しの無いページを求めてはいない") {
+                arch.rootReadme() shouldBe "# アーキテクチャ ドキュメント\n"
+            }
         }
 
-        "引数は architecture { } に書いたものより強い" {
+        "ルートの title は group や役割のものと同じ語" {
             val arch = architecture {
-                rootTitle = "定義側"
-                rootDescription = "定義側の説明。"
+                title = "myapp"
+                "api".group { title = "API" }
             }
 
-            withClue("実行のたびに変えられる側が上。定義は「今回だけ違う」と言えない") {
-                arch.rootReadme(rootTitle = "引数側", rootDescription = "引数側の説明。") shouldBe
-                    """
-                    # 引数側 ドキュメント
-
-                    引数側の説明。
-                    """.trimIndent() + "\n"
+            withClue("ルートだけ別の書き方だと、定義を読む人が覚えることが1つ増える") {
+                arch[Title] shouldBe "myapp"
+                arch.groups.single()[Title] shouldBe "API"
             }
         }
     }

@@ -15,6 +15,8 @@ import me.tbsten.katachi.dsl.architecture
 import me.tbsten.katachi.fs.KatachiFileSystem
 import me.tbsten.katachi.processor.FakeArchitectureProcessContext
 import me.tbsten.katachi.processor.KatachiInvalidProcessorArgException
+import me.tbsten.katachi.processor.KatachiUnknownProcessorArgException
+import me.tbsten.katachi.processor.checkNoUnknownArgs
 import me.tbsten.katachi.processor.decodeFromStringMap
 import me.tbsten.katachi.test.fs.ForbiddenFileSystem
 
@@ -366,14 +368,21 @@ class GenerateDocumentationSpec : FreeSpec({
             ) shouldBe GenerateDocumentation.Args(outputDir = "docs/architecture")
         }
 
-        "rootTitle と rootDescription もそのまま文字列として渡る" {
-            decodeFromStringMap(
-                GenerateDocumentation.argsSerializer,
-                mapOf("rootTitle" to "myapp", "rootDescription" to "このリポジトリの構成。"),
-            ) shouldBe GenerateDocumentation.Args(
-                rootTitle = "myapp",
-                rootDescription = "このリポジトリの構成。",
-            )
+        "ルートの見出しは --arg では変えられない" {
+            // 定義が唯一の置き場になったので、rootTitle / rootDescription という引数は無い。
+            shouldThrow<KatachiUnknownProcessorArgException> {
+                checkNoUnknownArgs(
+                    selected = listOf("docs" to GenerateDocumentation),
+                    acceptsUndeclaredArgs = emptySet(),
+                    context = FakeArchitectureProcessContext(
+                        architecture = architecture { },
+                        args = Unit,
+                        fileSystem = ForbiddenFileSystem,
+                        rawArgs = mapOf("rootTitle" to "myapp"),
+                    ),
+                    values = mapOf("rootTitle" to "myapp"),
+                )
+            }.unknown shouldBe setOf("rootTitle")
         }
 
         "1つも渡さなければ全部が既定値になる" {
@@ -381,14 +390,14 @@ class GenerateDocumentationSpec : FreeSpec({
                 GenerateDocumentation.Args()
         }
 
-        "ルートの名前を渡すと見出しに出る" {
-            val arch = architecture { }
+        "定義に書いた title が見出しに出る" {
+            val arch = architecture { title = "myapp" }
 
             withTempDirectory { output ->
                 GenerateDocumentation.process(
                     FakeArchitectureProcessContext(
                         architecture = arch,
-                        args = GenerateDocumentation.Args(outputDir = output.path, rootTitle = "myapp"),
+                        args = GenerateDocumentation.Args(outputDir = output.path),
                         fileSystem = ForbiddenFileSystem,
                     ),
                 )

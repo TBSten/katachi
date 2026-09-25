@@ -68,6 +68,8 @@ val modulePackage: ModulePackage = capitalizedModuleNamePackage("com.example.kmp
  * line, by reading the captured line back out of the source.
  */
 val projectArchitecture: Architecture = architecture {
+    title = "katachi-sample-kmp"
+
     featureGroup()
     uiGroup()
     dataGroup()

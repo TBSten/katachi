@@ -22,8 +22,6 @@ import org.gradle.api.file.Directory;
  *     architecture = "com.example.projectArchitecture"
  *     docs {
  *         outputDir = "docs/architecture"
- *         rootTitle = "myapp"
- *         rootDescription = "このリポジトリの構成。"
  *     }
  * }
  * }</pre>
@@ -35,9 +33,6 @@ public class KatachiDocsOptions {
 
     private String outputDir;
     private KatachiDocsMode mode;
-    private String rootTitle;
-    private String rootDescription;
-    private String rootTitleConvention;
 
     /** Where the pages go, as the command line will carry it. */
     public Object getOutputDir() {
@@ -125,60 +120,6 @@ public class KatachiDocsOptions {
         this.mode = mode;
     }
 
-    /** What the generated root page calls itself. */
-    public String getRootTitle() {
-        return rootTitle;
-    }
-
-    /**
-     * Sets what the generated root page calls itself: its heading becomes this followed by
-     * {@code " ドキュメント"}.
-     *
-     * <p>Left unset, the name of the root project is sent instead -- the name the build already
-     * spells this repository with, and a value only Gradle knows, which is why the plugin fills it
-     * in rather than the processor defaulting to it. A definition that wrote a {@code title} on
-     * {@code architecture { } } itself is overridden by both: what a run can change wins over what
-     * a definition fixed.
-     */
-    public void setRootTitle(String rootTitle) {
-        if (rootTitle == null || rootTitle.isEmpty()) {
-            throw new InvalidUserDataException(
-                    "katachi { docs { rootTitle = ... } } was given no value. Leave it out "
-                            + "entirely to keep the default, the root project's name.");
-        }
-        this.rootTitle = rootTitle;
-    }
-
-    /** The one paragraph written under the root page's heading. */
-    public String getRootDescription() {
-        return rootDescription;
-    }
-
-    /**
-     * Sets the one paragraph written under the root page's heading, as Markdown.
-     *
-     * <p>Left unset, the {@code description} the definition wrote on {@code architecture { } } is
-     * used, and when there is none either, the heading is followed straight by the document map.
-     */
-    public void setRootDescription(String rootDescription) {
-        if (rootDescription == null || rootDescription.isEmpty()) {
-            throw new InvalidUserDataException(
-                    "katachi { docs { rootDescription = ... } } was given no value. Leave it out "
-                            + "entirely to write no paragraph under the heading.");
-        }
-        this.rootDescription = rootDescription;
-    }
-
-    /**
-     * The name to send as {@code rootTitle} when this block did not set one.
-     *
-     * <p>Package private and written by {@link KatachiPlugin}: it is the root project's name,
-     * which no other layer can see.
-     */
-    void setRootTitleConvention(String rootTitleConvention) {
-        this.rootTitleConvention = rootTitleConvention;
-    }
-
     /**
      * These options as the {@code --arg} values they become.
      *
@@ -192,28 +133,6 @@ public class KatachiDocsOptions {
         }
         if (mode != null) {
             args.put("mode", mode.wireName());
-        }
-        if (rootTitle != null) {
-            args.put("rootTitle", rootTitle);
-        }
-        if (rootDescription != null) {
-            args.put("rootDescription", rootDescription);
-        }
-        return args;
-    }
-
-    /**
-     * What this block sends although nobody wrote it: the values the processor cannot default to
-     * by itself.
-     *
-     * <p>Kept apart from {@link #toArgs()} so that an untouched {@code docs { } } block still
-     * counts as untouched -- writing {@code processors { args("docs") { } } } instead of this
-     * block is allowed, and a convention is not what that check is about.
-     */
-    Map<String, String> toConventionArgs() {
-        Map<String, String> args = new LinkedHashMap<>();
-        if (rootTitle == null && rootTitleConvention != null && !rootTitleConvention.isEmpty()) {
-            args.put("rootTitle", rootTitleConvention);
         }
         return args;
     }
