@@ -17,6 +17,7 @@ package me.tbsten.katachi.dsl
  *             title = "Use case"
  *             summary = "A single app-specific behavior that happens on a screen"
  *             example("GetUserUseCase", "Fetches a user")
+ *             example("SignOutUseCase")
  *         }
  *     }
  * }
@@ -99,20 +100,21 @@ public sealed interface RoleScope : MetadataScope, ConstraintScope {
 
     /**
      * Adds a concrete example. Call it once per example; the examples are kept in the
-     * order they were added.
+     * order they were added. [description] may be left out when the name speaks for itself.
      *
-     * ## Example 1: add a concrete example
+     * ## Example 1: add a concrete example, with and without a description
      * ```kt
      * val arch = architecture {
      *     "domain".group {
      *         "UseCase" {
      *             example("GetUserUseCase", "Fetches a user")
+     *             example("SignOutUseCase")
      *         }
      *     }
      * }
      * ```
      */
-    public fun example(name: String, description: String)
+    public fun example(name: String, description: String? = null)
 
     /**
      * Declares where files of this role may live. Call it once per place.
@@ -206,7 +208,7 @@ internal class RoleScopeImpl(private val roleName: String) : RoleScope {
 
     // Accumulating, unlike the four properties above, so it reads the key back and appends.
     // The mechanism stays "one key, one value"; piling up is something this function does.
-    override fun example(name: String, description: String) {
+    override fun example(name: String, description: String?) {
         metadata[Examples] = metadata[Examples].orEmpty() + RoleExample(name, description)
     }
 

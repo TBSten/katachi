@@ -233,6 +233,42 @@ class RolePageSpec : FreeSpec({
 
             arch.page("domain/UseCase.md") shouldNotContain "## 例"
         }
+
+        "description の無い example は名前だけが出て、... と説明は付かない" {
+            val arch = architecture {
+                "domain".group {
+                    "UseCase" {
+                        example("SignOutUseCase")
+                    }
+                }
+            }
+
+            arch.page("domain/UseCase.md") shouldContain
+                """
+                ## 例
+
+                - `SignOutUseCase`
+                """.trimIndent()
+        }
+
+        "description のある example と無い example が混ざると、無いものだけ名前だけになる" {
+            val arch = architecture {
+                "domain".group {
+                    "UseCase" {
+                        example("GetRecommendedProductListUseCase", "おすすめの商品リストを取得する")
+                        example("SignOutUseCase")
+                    }
+                }
+            }
+
+            arch.page("domain/UseCase.md") shouldContain
+                """
+                ## 例
+
+                - `GetRecommendedProductListUseCase` ... おすすめの商品リストを取得する
+                - `SignOutUseCase`
+                """.trimIndent()
+        }
     }
 
     "パンくず" - {

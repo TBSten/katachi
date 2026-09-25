@@ -149,6 +149,20 @@ class RoleSpec : FreeSpec({
         example.description shouldBe "商品のいいね状態 ... を切り替える"
     }
 
+    "example は description を省略して宣言でき、description は null になる" {
+        val arch = architecture {
+            "domain".group {
+                "UseCase" {
+                    example("SignOutUseCase")
+                }
+            }
+        }
+
+        val example = arch.allRoles.single()[Examples].orEmpty().single()
+        example.name shouldBe "SignOutUseCase"
+        example.description shouldBe null
+    }
+
     "example を1つも呼ばなければ Examples は書き込まれない" {
         val arch = architecture { "domain".group { "UseCase" { } } }
         arch.allRoles.single()[Examples] shouldBe null

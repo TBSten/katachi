@@ -69,12 +69,22 @@ private fun StringBuilder.appendConstraints(constraintNames: List<String>) {
     append(constraintNames.joinToString("\n") { "- $it" })
 }
 
-/** The concrete examples, as `name ... description`. */
+/**
+ * The concrete examples, as `name ... description`.
+ *
+ * An example with no description prints its name alone -- no `...` and nothing after it, since
+ * there is nothing to separate it from.
+ */
 private fun StringBuilder.appendExamples(role: Role) {
     val examples = role[Examples].orEmpty()
     if (examples.isEmpty()) return
     append(SECTION_BREAK)
     append("## 例")
     append(SECTION_BREAK)
-    append(examples.joinToString("\n") { "- `${it.name}` ... ${it.description}" })
+    append(
+        examples.joinToString("\n") {
+            val description = it.description
+            if (description == null) "- `${it.name}`" else "- `${it.name}` ... $description"
+        },
+    )
 }
