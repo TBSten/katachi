@@ -31,7 +31,7 @@ internal class LayoutNode(
 
     /**
      * Whether katachi wrote this node rather than the user: the two lines every `module { }`
-     * block injects, and nothing else.
+     * block injects, and the Groovy `build.gradle` that `gradle()` declares beside them.
      *
      * It changes nothing about the check — `build/` is ignored and `build.gradle.kts` is
      * required whoever declared them — and everything about what a constraint covers. A

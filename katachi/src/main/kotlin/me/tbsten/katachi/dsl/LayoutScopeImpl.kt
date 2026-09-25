@@ -43,6 +43,11 @@ internal class LayoutScopeImpl(
      * block.
      */
     private val sites: MutableList<ConstraintSite>,
+    /**
+     * The site every declaration of this block records, or `null` to read it off the stack.
+     * Set for a layout katachi itself wrote; see [isWrittenByKatachi].
+     */
+    private val pinnedSite: DeclarationSite? = null,
 ) : LayoutDirectoryScope, ModuleAwareLayoutScope {
     /** Constraints written directly in *this* block. A nested block collects its own. */
     private val constraints = mutableListOf<ConstraintDeclaration>()
@@ -72,7 +77,7 @@ internal class LayoutScopeImpl(
     }
 
     override operator fun String.invoke(block: LayoutDirectoryScope.() -> Unit): LayoutDirectory {
-        val chain = chainUnder(container, this, isFile = false, declaredAt = captureDeclarationSite())
+        val chain = chainUnder(container, this, isFile = false, declaredAt = siteHere())
         val scope = scopeAt(chain.leaf)
         scope.block()
         scope.closeSite(owned = listOf(chain.leaf), anchor = chain.leaf)
@@ -80,37 +85,37 @@ internal class LayoutScopeImpl(
     }
 
     override fun String.file(): LayoutFile {
-        val chain = chainUnder(container, this, isFile = true, declaredAt = captureDeclarationSite())
+        val chain = chainUnder(container, this, isFile = true, declaredAt = siteHere())
         return LayoutFile(top = chain.top, leaf = chain.leaf)
     }
 
     override fun String.ignore(): LayoutDirectory {
-        val chain = chainUnder(container, this, isFile = false, declaredAt = captureDeclarationSite())
+        val chain = chainUnder(container, this, isFile = false, declaredAt = siteHere())
         chain.leaf.ignored = true
         return LayoutDirectory(top = chain.top, leaf = chain.leaf)
     }
 
     override operator fun String.div(child: String): LayoutDirectory {
-        val declaredAt = captureDeclarationSite()
+        val declaredAt = siteHere()
         val left = chainUnder(container, this, isFile = false, declaredAt = declaredAt)
         val right = chainUnder(left.leaf, child, isFile = false, declaredAt = declaredAt)
         return LayoutDirectory(top = left.top, leaf = right.leaf)
     }
 
     override operator fun String.div(child: LayoutDirectory): LayoutDirectory {
-        val left = chainUnder(container, this, isFile = false, declaredAt = captureDeclarationSite())
+        val left = chainUnder(container, this, isFile = false, declaredAt = siteHere())
         left.leaf.add(child.top)
         return LayoutDirectory(top = left.top, leaf = child.leaf)
     }
 
     override operator fun String.div(child: LayoutFile): LayoutFile {
-        val left = chainUnder(container, this, isFile = false, declaredAt = captureDeclarationSite())
+        val left = chainUnder(container, this, isFile = false, declaredAt = siteHere())
         left.leaf.add(child.top)
         return LayoutFile(top = left.top, leaf = child.leaf)
     }
 
     override operator fun LayoutDirectory.div(child: String): LayoutDirectory {
-        val right = chainUnder(leaf, child, isFile = false, declaredAt = captureDeclarationSite())
+        val right = chainUnder(leaf, child, isFile = false, declaredAt = siteHere())
         return LayoutDirectory(top = this.top, leaf = right.leaf)
     }
 
@@ -133,7 +138,7 @@ internal class LayoutScopeImpl(
 
     /** See [me.tbsten.katachi.dsl.gradle.expandModulePath], the opt-in API this backs. */
     override fun expandModulePath(modulePath: String, block: LayoutDirectoryScope.() -> Unit): LayoutModule {
-        val declaredAt = captureDeclarationSite()
+        val declaredAt = siteHere()
         requireLayoutRoot(modulePath, declaredAt)
         val pattern = compileModulePath(modulePath, declaredAt)
         // Not `expand`: a wildcard key against an index that has not listed the project stands
@@ -161,6 +166,7 @@ internal class LayoutScopeImpl(
                 moduleIndex = moduleIndex,
                 moduleContext = ModuleContext(target.modulePath, target.wildcards),
                 sites = sites,
+                pinnedSite = pinnedSite,
             )
             scope.expandModuleDefaults()
             scope.block()
@@ -218,7 +224,10 @@ internal class LayoutScopeImpl(
         moduleIndex = moduleIndex,
         moduleContext = moduleContext,
         sites = sites,
+        pinnedSite = pinnedSite,
     )
+
+    private fun siteHere(): DeclarationSite = pinnedSite ?: captureDeclarationSite()
 
     /**
      * A module path is relative to nothing: it is resolved to a directory below the project

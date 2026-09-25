@@ -98,7 +98,11 @@ internal fun Role.evaluateLayout(moduleIndex: ModuleIndex): LayoutEvaluation {
 
     for (declaration in layouts) {
         val root = LayoutNode(segment = "", declaredAt = declaration.declaredAt, isFile = false)
-        val scope = LayoutScopeImpl(root, moduleIndex, moduleContext = null, sites = sites)
+        // A layout katachi ships has no frame of the user's in it while it runs, so every line
+        // it declares is pinned to where its `layout { }` was declared: the user's call that
+        // brought the role in, rather than whoever happened to start the check.
+        val pinnedSite = declaration.declaredAt.takeIf { isWrittenByKatachi(declaration.block) }
+        val scope = LayoutScopeImpl(root, moduleIndex, moduleContext = null, sites = sites, pinnedSite = pinnedSite)
         scope.apply(declaration.block)
         // Directly under `layout { }` there is no directory block to close the site, so the
         // root closes it: such a constraint owns that one block and not the role's others.

@@ -62,6 +62,15 @@ private fun isKatachiFrame(className: String): Boolean =
         !className.startsWith(KATACHI_TEST_PACKAGE_PREFIX)
 
 /**
+ * Whether [block] was compiled into katachi itself, such as a `layout { }` of a role
+ * [me.tbsten.katachi.dsl.gradle.gradle] declares, rather than written by the user.
+ *
+ * Such a block is evaluated with every frame of it inside katachi, so [captureDeclarationSite]
+ * would skip past it to whoever started the check. The caller pins the site instead.
+ */
+internal fun isWrittenByKatachi(block: Any): Boolean = isKatachiFrame(block.javaClass.name)
+
+/**
  * Picks the first stack frame outside katachi.
  *
  * Must be reached through a non-inline function. When the call is inlined into user code
