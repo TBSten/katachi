@@ -12,13 +12,16 @@ import com.lemonappdev.konsist.api.declaration.KoFileDeclaration
  * The empty name is the root package `me.tbsten.katachi` itself, which holds the opt-in
  * markers and the exception bases and depends on nothing.
  *
+ * `util` comes straight after it: general-purpose helpers written against the standard library
+ * alone, which every layer may use and which may use none of them.
+ *
  * `konsist` is `:katachi-konsist`'s layer. Nothing in `:katachi` can import it — the Gradle
  * dependency runs the other way — so its entry is not a rule that might break but a copy of
  * one that cannot. It is listed so that the layer rules in `roles/` name a complete set of
  * forbidden targets rather than falling silent at the end of the table.
  */
 private val LAYERS: List<String> =
-    listOf("", "fs", "dsl", "scan", "processor", "check", "docs", "template", "konsist")
+    listOf("", "util", "fs", "dsl", "scan", "processor", "check", "docs", "template", "konsist")
 
 /** The package every layer name is relative to. */
 private const val ROOT_PACKAGE: String = "me.tbsten.katachi"

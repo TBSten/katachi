@@ -9,6 +9,7 @@ import me.tbsten.katachi.test.architecture.roles.marker
 import me.tbsten.katachi.test.architecture.roles.processor
 import me.tbsten.katachi.test.architecture.roles.scan
 import me.tbsten.katachi.test.architecture.roles.template
+import me.tbsten.katachi.test.architecture.roles.util
 
 /**
  * The roles of `:katachi`, the library itself.
@@ -42,6 +43,7 @@ fun DeclarationContainerScope.libraryGroup() = "library".group {
     title = "ライブラリ"
 
     marker()
+    util()
     fileSystem()
     dsl()
     scan()
