@@ -16,20 +16,9 @@ import kotlin.coroutines.cancellation.CancellationException
  */
 internal val Throwable.isFatal: Boolean
     get() = when (this) {
-        // The JVM cannot carry on. Catching one only loses the cause: the next path runs into
-        // the same wall with less information attached.
         is VirtualMachineError -> true
-        // The classpath is broken, so every path fails the same way and the report fills up
-        // with copies of one problem instead of the violations it was asked for.
         is LinkageError -> true
-        // The caller asked for this to stop. Swallowing that is ignoring it.
         is InterruptedException -> true
-        // An assertion, which is a result rather than a failure of the walk: a finished check
-        // (`KatachiArchitectureAssertionError`) is one, and so is an assertion the caller's own
-        // test harness threw from inside the file system it handed in. Reporting either as an
-        // `[UncheckedFile]` would bury the answer the caller is waiting for. Named by the whole
-        // family rather than by the check's own class, because the check is written on top of
-        // this walk and naming it here would point the dependency back up.
         is AssertionError -> true
         else -> false
     }
