@@ -4,11 +4,15 @@
 
 ### [フィーチャー](./feature/README.md)
 
+1画面につき1モジュール。:feature:<name> が Screen / ViewModel / Route を必ず持つ
+
 - [画面](./feature/Screen.md)
 - [ViewModel](./feature/ViewModel.md)
 - [ルート](./feature/Route.md)
 
 ### [UI](./ui/README.md)
+
+:ui と :navigation。どの画面にも属さない共有の UI と、遷移先の定義
 
 - [共通コンポーネント](./ui/Component.md)
 - [テーマ](./ui/Theme.md)
@@ -19,10 +23,14 @@
 
 ### [データ](./data/README.md)
 
+:data モジュール。データの取得口と、プラットフォームで実装が変わる部分
+
 - [リポジトリ](./data/Repository.md)
 - [プラットフォーム実装](./data/PlatformImplementation.md)
 
 ### [テスト支援](./testing/README.md)
+
+テストダブル、テストコード本体、katachi のアーキテクチャ定義、そこから生成されるドキュメント
 
 - [フェイク](./testing/Fake.md)
 - [テストコード](./testing/Test.md)
@@ -30,6 +38,8 @@
 - [生成ドキュメント](./testing/GeneratedDocumentation.md)
 
 ### [アプリ](./app/README.md)
+
+Gradle がビルドする Android アプリと、Xcode がビルドする iOS アプリ
 
 - [エントリポイント](./app/Entrypoint.md)
 - [Android リソース](./app/AndroidResource.md)

@@ -94,6 +94,13 @@ private fun StringBuilder.appendMapEntries(roles: List<Role>, groups: List<Group
         append("#".repeat(TOP_MAP_HEADING_HASHES + depth))
         append(" ")
         append(groupLink(group))
+        // The group's own line of prose, under its heading in the index as well as in its
+        // section below. A reader scanning the map to decide where to go is asking exactly what
+        // a `summary` answers, and making them read the heading alone is making them guess.
+        group[Summary]?.takeIf { it.isNotBlank() }?.let { summary ->
+            append(SECTION_BREAK)
+            append(oneLine(summary))
+        }
         appendMapEntries(group.documentedRoles(), group.documentedGroups(), depth + 1)
     }
 }

@@ -6,24 +6,34 @@ Ktor の小さな HTTP サーバを、katachi で形から説明したもの。�
 
 ### [API](./api/README.md)
 
+HTTP に面する層。リクエストを受け取り、応答を返すところまでを持つ
+
 - [コントローラ](./api/Controller.md)
 - [Ktor プラグイン設定](./api/KtorPlugin.md)
 
 ### [ドメイン](./domain/README.md)
+
+アプリ固有の振る舞いと、その対象になる値
 
 - [サービス](./domain/Service.md)
 - [モデル](./domain/Model.md)
 
 ### [データ](./data/README.md)
 
+値がどこから来るのかを引き受ける層
+
 - [リポジトリ](./data/Repository.md)
 
 ### [アプリケーション](./app/README.md)
+
+プロセスの起動と、実行時に読み込まれる設定
 
 - [エントリポイント](./app/Entrypoint.md)
 - [サーバ設定](./app/ServerConfig.md)
 
 ### [テスト](./testing/README.md)
+
+振る舞いを確かめるテストと、この定義そのもの、そこから生成されるドキュメント
 
 - [テストコード](./testing/Test.md)
 - [アーキテクチャ定義](./testing/ArchitectureDefinition.md)

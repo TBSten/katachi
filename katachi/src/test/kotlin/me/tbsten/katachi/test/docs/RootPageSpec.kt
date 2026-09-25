@@ -230,6 +230,8 @@ class RootPageSpec : FreeSpec({
 
                 ### [API](./api/README.md)
 
+                HTTP に面するものを集めた層
+
                 - [Controller](./api/Controller.md)
 
                 ## API

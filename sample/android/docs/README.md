@@ -6,11 +6,15 @@ Compose で書かれた Android アプリを、katachi で形から説明した�
 
 ### [各画面の構成](./feature/README.md)
 
+画面1つぶんのモジュール。:feature:<name> ごとに Screen / ViewModel / Route を1つずつ置く
+
 - [Screen](./feature/Screen.md)
 - [ViewModel](./feature/ViewModel.md)
 - [Route](./feature/Route.md)
 
 ### [UI (共通レイヤー)](./ui/README.md)
+
+feature をまたいで共有する UI。:ui の4つの package と :navigation
 
 - [共通コンポーネント](./ui/Component.md)
 - [テーマ](./ui/Theme.md)
@@ -21,14 +25,20 @@ Compose で書かれた Android アプリを、katachi で形から説明した�
 
 ### [データレイヤー](./data/README.md)
 
+:data が持つもの。データの取得と保存
+
 - [リポジトリ](./data/Repository.md)
 
 ### [エントリーポイントレイヤー](./app/README.md)
+
+:app が持つもの。起動の入口と、Android のリソース
 
 - [エントリポイント](./app/Entrypoint.md)
 - [Android リソース](./app/AndroidResource.md)
 
 ### [テスト](./testing/README.md)
+
+アプリを確かめるためにあるもの。共有のフェイク、テスト、アーキテクチャ定義、生成ドキュメント
 
 - [フェイク](./testing/Fake.md)
 - [テストコード](./testing/Test.md)
