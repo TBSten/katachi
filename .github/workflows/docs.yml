@@ -7,6 +7,10 @@ on:
       - 'docs/**'
       - 'katachi/**'
       - 'katachi-konsist/**'
+      # The Dokka plugin and the build that wires it into generateApiDocs.
+      - 'tool/**'
+      - 'build.gradle.kts'
+      - 'gradle.properties'
       - 'buildSrc/**'
       - 'gradle/libs.versions.toml'
       - '.github/workflows/docs.yml'
@@ -39,6 +43,8 @@ jobs:
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v6
 
+      # verifyApiDocs follows generateApiDocs and fails the job when the Featured sections or
+      # the llms files are missing from docs/public/api-docs/.
       - name: Generate API reference
         run: ./gradlew generateApiDocs --stacktrace
 

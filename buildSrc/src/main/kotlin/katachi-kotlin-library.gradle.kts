@@ -68,3 +68,26 @@ kotlin {
     }
     coreLibrariesVersion = "2.2.20"
 }
+
+// このリポジトリの API リファレンス用の Dokka プラグイン（サイドバーの Featured と llms.txt / llms-full.txt）。
+// モジュールごとの run に入れる。`dokkaPlugin` ではなく `dokkaHtmlPlugin` にしているのは、Javadoc の
+// run（javadoc jar）に載せないため。束ねる run の側はルートの build.gradle.kts で同じものを足している。
+dependencies {
+    add("dokkaHtmlPlugin", project(":tool:dokka"))
+}
+
+// llms.txt のリンクを絶対 URL にする。渡すのは束ねたサイトのルート（api-docs/）の公開 URL で、
+// ルートの build.gradle.kts の束ねる run と同じ値。モジュールの run（遅延あり）はこの値を使わず、
+// リンクを仮のまま書き出し、束ねる run がモジュールの置き場所を足して絶対にする。単体の
+// publication（dokkaGeneratePublicationHtml、遅延なし）は自分の出力ルートをこの URL として扱う。
+// サイトの URL は gradle.properties の1か所。
+// pluginsConfiguration は HTML と Javadoc の run で共有だが、Javadoc の run にはプラグインが
+// 入っていないので、この設定は読まれずに捨てられる。
+dokka {
+    pluginsConfiguration {
+        registerBinding(KatachiDokkaPluginParameters::class, KatachiDokkaPluginParameters::class)
+        register<KatachiDokkaPluginParameters>("katachi") {
+            baseUrl.set(providers.gradleProperty("katachi.apiDocsBaseUrl"))
+        }
+    }
+}

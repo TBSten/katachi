@@ -30,6 +30,7 @@ val mainPackage: ModulePackage = ModulePackage { modulePath ->
     when (modulePath.removePrefix(":")) {
         "katachi" -> "me/tbsten/katachi"
         "katachi-konsist" -> "me/tbsten/katachi/konsist"
+        "tool:dokka" -> "me/tbsten/katachi/dokka"
         else -> ""
     }
 }
@@ -48,6 +49,7 @@ val testPackage: ModulePackage = ModulePackage { modulePath ->
         "katachi" -> "me/tbsten/katachi/test"
         "katachi-konsist" -> "me/tbsten/katachi/test/konsist"
         "architecture-test" -> "me/tbsten/katachi/test/architecture"
+        "tool:dokka" -> "me/tbsten/katachi/test/dokka"
         else -> ""
     }
 }

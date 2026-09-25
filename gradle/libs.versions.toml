@@ -44,6 +44,15 @@ kotlinGradlePlugin = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", ver
 # `plugins { }` の alias だけでは buildSrc のクラスパスに乗らない。
 vanniktechPublishPlugin = { module = "com.vanniktech:gradle-maven-publish-plugin", version.ref = "vanniktechPublish" }
 dokkaPlugin = { module = "org.jetbrains.dokka:dokka-gradle-plugin", version.ref = "dokka" }
+# `:tool:dokka`（このリポジトリの API リファレンス用の Dokka プラグイン）が使う。
+# 本体は Dokka の実行時に Dokka 自身が持っているので compileOnly、残りはテスト用。
+dokkaCore = { module = "org.jetbrains.dokka:dokka-core", version.ref = "dokka" }
+dokkaBase = { module = "org.jetbrains.dokka:dokka-base", version.ref = "dokka" }
+dokkaTemplating = { module = "org.jetbrains.dokka:templating-plugin", version.ref = "dokka" }
+dokkaAllModulesPage = { module = "org.jetbrains.dokka:all-modules-page-plugin", version.ref = "dokka" }
+dokkaTestApi = { module = "org.jetbrains.dokka:dokka-test-api", version.ref = "dokka" }
+dokkaBaseTestUtils = { module = "org.jetbrains.dokka:dokka-base-test-utils", version.ref = "dokka" }
+dokkaAnalysisKotlinSymbols = { module = "org.jetbrains.dokka:analysis-kotlin-symbols", version.ref = "dokka" }
 # JUnit 5。version を書かないものは BOM に決めさせる。
 junitBom = { module = "org.junit:junit-bom", version.ref = "junit" }
 junitJupiter = { module = "org.junit.jupiter:junit-jupiter" }

@@ -8,11 +8,33 @@ dokka {
     dokkaPublications.named("html") {
         outputDirectory.set(layout.projectDirectory.dir("docs/public/api-docs"))
     }
+
+    // :tool:dokka's settings for the aggregating run. The modules' runs get theirs from
+    // katachi-kotlin-library.
+    pluginsConfiguration {
+        registerBinding(
+            buildsrc.convention.KatachiDokkaPluginParameters::class,
+            buildsrc.convention.KatachiDokkaPluginParameters::class,
+        )
+        register<buildsrc.convention.KatachiDokkaPluginParameters>("katachi") {
+            // The aggregated output root, docs/public/api-docs/, as the docs site serves it.
+            baseUrl.set(providers.gradleProperty("katachi.apiDocsBaseUrl"))
+            // The tagline of README.md.
+            projectSummary.set(
+                "Declare your Android/KMP project architecture in a Kotlin DSL, and get both a " +
+                    "test and documentation out of the same definition.",
+            )
+        }
+    }
 }
 
 dependencies {
     dokka(project(":katachi"))
     dokka(project(":katachi-konsist"))
+    // The aggregating run's half of :tool:dokka: it collects each module's @featured
+    // declarations into the llms.txt that links the modules' own, and finishes their links.
+    // The modules' half is added by katachi-kotlin-library.
+    dokkaHtmlPlugin(project(":tool:dokka"))
 }
 
 tasks.register("generateApiDocs") {
@@ -20,6 +42,154 @@ tasks.register("generateApiDocs") {
     description = "Aggregates the :katachi and :katachi-konsist Dokka HTML into " +
             "docs/public/api-docs/ for the docs site's API reference page."
     dependsOn("dokkaGenerateHtml")
+    finalizedBy("verifyApiDocs")
+}
+
+/**
+ * Checks that :tool:dokka did its part of `generateApiDocs`: the Featured node of the sidebar and
+ * the Featured sections of the pages, the llms files and Markdown pages, and no intermediate
+ * fragment or unfinished llms link left behind.
+ *
+ * - Every module has its Featured node first in the aggregated sidebar (`navigation.html`, which
+ *   every page loads), listing as many declarations as the Featured section of its own `llms.txt`.
+ * - The top page has a Featured section above "All modules:" listing all of them, and each module
+ *   page one above "Packages".
+ * - Every HTML page has a Markdown version at its URL + `.md`, and every page that is a directory
+ *   (a module, a package, a type) an `llms.txt` and an `llms-full.txt` next to it.
+ * - Every link of all of these leads to a file that exists.
+ *
+ * List items without a summary are only counted, as a warning. Only reads the output; the
+ * plugin's own behaviour is covered by the tests of :tool:dokka.
+ */
+tasks.register("verifyApiDocs") {
+    group = "verification"
+    description = "Checks that docs/public/api-docs/ has the Featured node in its sidebar, the " +
+            "Featured sections, the llms files and the Markdown pages, and that their links lead somewhere."
+    mustRunAfter("dokkaGenerateHtml")
+    val apiDocs = layout.projectDirectory.dir("docs/public/api-docs").asFile
+    val modules = listOf("katachi", "katachi-konsist")
+    val baseUrl = providers.gradleProperty("katachi.apiDocsBaseUrl").map { it.removeSuffix("/") + "/" }.orNull
+    doLast {
+        val problems = mutableListOf<String>()
+        fun file(path: String): File? {
+            val file = File(apiDocs, path)
+            if (file.isFile) return file
+            problems += "$path is missing"
+            return null
+        }
+        /** Records [link], written in [from], unless it leads to a file of the output. */
+        fun checkLink(from: File, link: String) {
+            val target = link.substringBefore('#')
+            val file = when {
+                baseUrl != null && target.startsWith(baseUrl) -> File(apiDocs, target.removePrefix(baseUrl))
+                // Another library's documentation, such as the Kotlin standard library.
+                Regex("^[a-zA-Z][a-zA-Z0-9+.-]*:").containsMatchIn(target) -> return
+                else -> File(from.parentFile, target)
+            }
+            if (!file.normalize().isFile) problems += "${from.relativeTo(apiDocs)} links to $link, which does not exist"
+        }
+        /** The items of the `## Featured` section of the llms.txt at [path]. */
+        fun llmsFeaturedCount(path: String): Int {
+            val text = File(apiDocs, path).takeIf { it.isFile }?.readText() ?: return 0
+            return text.substringAfter("\n## Featured\n", "").substringBefore("\n## ")
+                .lines().count { it.startsWith("- [") }
+        }
+
+        file("llms.txt")
+        modules.forEach { module ->
+            file("$module/llms.txt")
+            file("$module/llms-full.txt")
+        }
+
+        // The sidebar as navigation-loader.js puts it on every page: a toc--part per module, whose
+        // first nested toc--part is Featured. Its links are relative to the output root.
+        val navigation = file("navigation.html")?.readText().orEmpty()
+        val tocLink = Regex("""<a href="([^"]*)" class="toc--link">(.*?)</a>""", RegexOption.DOT_MATCHES_ALL)
+        modules.forEach { module ->
+            val start = navigation.indexOf("""id="$module-nav-submenu-0"""")
+            val stop = navigation.indexOf("""id="$module-nav-submenu-1"""", startIndex = start.coerceAtLeast(0))
+            if (start < 0 || stop < 0) {
+                problems += "navigation.html has no Featured node under $module"
+                return@forEach
+            }
+            val links = tocLink.findAll(navigation.substring(start, stop)).map { match ->
+                match.groupValues[1] to match.groupValues[2].replace(Regex("<[^>]+>"), "").trim()
+            }.toList()
+            if (links.firstOrNull()?.second != "Featured") {
+                problems += "navigation.html does not have Featured first under $module, but ${links.firstOrNull()?.second}"
+                return@forEach
+            }
+            val entries = links.drop(1)
+            val expected = llmsFeaturedCount("$module/llms.txt")
+            if (entries.isEmpty() || entries.size != expected) {
+                problems += "navigation.html lists ${entries.size} featured declarations under $module, but " +
+                    "$module/llms.txt lists $expected"
+            }
+            links.forEach { (href, _) -> checkLink(File(apiDocs, "navigation.html"), href) }
+        }
+        // The Featured sections of the pages: one on the top page above "All modules:", listing
+        // every module's featured declarations, and one on each module page above "Packages".
+        val tableRow = Regex("""class="table-row""")
+        val href = Regex("""<a href="([^"]*)"""")
+        fun featuredSection(path: String, before: String): String? {
+            val html = File(apiDocs, path).takeIf { it.isFile }?.readText() ?: return null
+            val start = html.indexOf(">Featured<")
+            val stop = html.indexOf(before)
+            if (start < 0 || stop < start) {
+                problems += "$path has no Featured section above \"$before\""
+                return null
+            }
+            val section = html.substring(start, stop)
+            href.findAll(section).forEach { checkLink(File(apiDocs, path), it.groupValues[1]) }
+            return section
+        }
+        featuredSection("index.html", before = "All modules:")?.let { section ->
+            val rows = tableRow.findAll(section).count()
+            val expected = modules.sumOf { llmsFeaturedCount("$it/llms.txt") }
+            if (rows != expected) problems += "index.html lists $rows featured declarations, but the modules' llms.txt list $expected"
+        }
+        modules.forEach { featuredSection("$it/index.html", before = ">Packages<") }
+
+        // Every HTML page has its Markdown version at its URL + ".md", and every page that is a
+        // directory (a module, a package, a type) has its llms files.
+        apiDocs.walkTopDown().filter { it.isFile && it.extension == "html" && it.name != "navigation.html" }.forEach { html ->
+            if (!File(html.path + ".md").isFile) problems += "${html.relativeTo(apiDocs)} has no Markdown version"
+            if (html.name == "index.html" && html.parentFile != apiDocs) {
+                listOf("llms.txt", "llms-full.txt").filterNot { File(html.parentFile, it).isFile }.forEach {
+                    problems += "${html.parentFile.relativeTo(apiDocs)}/ has no $it"
+                }
+            }
+        }
+
+        val markdownLink = Regex("""\]\(([^)\s]+)\)""")
+        // A list item of an index with no summary after its link: `- [name](link)`.
+        val bareItem = Regex("""^- \[[^\]]*\]\([^)\s]+\)$""", RegexOption.MULTILINE)
+        var bareItems = 0
+        apiDocs.walkTopDown()
+            .filter { it.isFile && (it.name in setOf("llms.txt", "llms-full.txt") || it.name.endsWith(".html.md")) }
+            .forEach { file ->
+                val text = file.readText()
+                if ("katachi-dokka-path:" in text || "<katachi-dokka-link" in text) problems += "${file.relativeTo(apiDocs)} still has a link the aggregating run should have finished"
+                markdownLink.findAll(text).forEach { checkLink(file, it.groupValues[1]) }
+                if (file.name == "llms.txt" || file.name.endsWith(".md")) bareItems += bareItem.findAll(text).count()
+            }
+        if (bareItems > 0) {
+            logger.warn(
+                "verifyApiDocs: $bareItems list item(s) in the llms.txt files and Markdown pages have no " +
+                    "summary. Add a KDoc, or an @llm line, to the declarations they link to.",
+            )
+        }
+        apiDocs.walkTopDown().filter { it.name == "katachi-dokka-fragment.json" }.forEach {
+            problems += "${it.relativeTo(apiDocs)} was left in the output"
+        }
+        if (problems.isNotEmpty()) {
+            throw GradleException(
+                "docs/public/api-docs/ is not what :tool:dokka should have made of it:\n" +
+                    problems.distinct().joinToString("\n") { "  - $it" } +
+                    "\nRun ./gradlew :tool:dokka:check to see which part of the plugin broke.",
+            )
+        }
+    }
 }
 
 /**

@@ -10,7 +10,7 @@ import me.tbsten.katachi.dsl.kotlin.ktFile
 /**
  * The role of a test that confirms one behaviour.
  *
- * It reaches across all three modules, `:architecture-test` included. That module checks itself
+ * It reaches across every module that has tests, `:architecture-test` included. That module checks itself
  * like everything else — the price of the recommended setup, and the point of it.
  */
 fun DeclarationContainerScope.spec() = "Spec" {
@@ -33,6 +33,10 @@ fun DeclarationContainerScope.spec() = "Spec" {
         }
         ":architecture-test".module {
             description = "katachi を利用者として使う側。このリポジトリ自身の定義について確かめるもの"
+            testSourceSet / kotlin / "**" / "*Spec".ktFile()
+        }
+        ":tool:dokka".module {
+            description = "API リファレンス用の Dokka プラグインの振る舞い。インラインのソースから Dokka を実際に走らせて確かめるもの"
             testSourceSet / kotlin / "**" / "*Spec".ktFile()
         }
     }

@@ -36,3 +36,9 @@ include(":katachi-gradle-plugin")
 // root (it looks for a `gradlew` above its working directory), so the module holding it has
 // to sit at the top level next to the modules it describes.
 include(":architecture-test")
+
+// A Dokka plugin used only by this repository's own API reference (`generateApiDocs`): it lists
+// the declarations tagged `@featured` in the sidebar, and adds llms.txt files for AI agents.
+// Under `tool/` rather than at the top level because it is build tooling, not a published
+// artifact; `:tool` is only the implicit parent and has no build file of its own.
+include(":tool:dokka")

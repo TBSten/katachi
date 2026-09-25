@@ -57,6 +57,19 @@ jobs:
       - name: Check katachi-gradle-plugin
         run: ./gradlew :katachi-gradle-plugin:check --stacktrace
 
+      # The Dokka plugin behind the API reference (Featured sections, llms.txt). Named for
+      # the same reason: its tests run Dokka itself, several times over, and a red run should
+      # point at the plugin. The root check below covers it again and finds the work done.
+      - name: Check tool/dokka
+        run: ./gradlew :tool:dokka:check --stacktrace
+
+      # The same plugin wired into the real build: the modules' runs and the aggregating run
+      # of the API reference, then verifyApiDocs over what they wrote (Featured sections, the
+      # llms files and their links). The Docs workflow runs this too, but only on main; here a
+      # pull request that breaks the wiring goes red before it lands. Nothing is deployed.
+      - name: Generate and verify the API reference
+        run: ./gradlew generateApiDocs --stacktrace
+
       - name: Check katachi
         run: ./gradlew check --stacktrace
 

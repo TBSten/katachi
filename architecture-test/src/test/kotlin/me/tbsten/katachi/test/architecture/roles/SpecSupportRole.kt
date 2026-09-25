@@ -29,5 +29,9 @@ fun DeclarationContainerScope.specSupport() = "SpecSupport" {
             testSourceSet / kotlin / "**" / "*SpecSupport".ktFile()
             testSourceSet / kotlin / testPackage / "FixtureProject".ktFile()
         }
+        ":tool:dokka".module {
+            description = "Dokka プラグインのスペックが使う道具。Dokka の実行の組み立てと、@featured を付けたインラインのソース"
+            testSourceSet / kotlin / "**" / "*SpecSupport".ktFile()
+        }
     }
 }
