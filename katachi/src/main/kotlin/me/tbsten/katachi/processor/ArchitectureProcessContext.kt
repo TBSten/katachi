@@ -76,6 +76,33 @@ public interface ArchitectureProcessContext<out Args> {
     public val args: Args
 
     /**
+     * Every `--arg` of this run, by name, exactly as the command line spelled it.
+     *
+     * [args] is the typed reading of these, narrowed to the fields one processor declares, and is
+     * what a processor normally works with. This is the undecoded map, and it exists for the one
+     * shape [args] cannot have: a vocabulary that differs per role, such as the parameters a
+     * `template { }` declares, which no fixed set of fields could name.
+     *
+     * **Being able to read a name is not the same as being allowed to be passed it.** Whether a
+     * `--arg` belongs to this run at all is decided once, before any processor starts; what a
+     * processor may *see* afterwards is simply everything, because hiding half a map would buy
+     * nothing a reader could rely on.
+     *
+     * Empty for a run started in code rather than from the command line -- `Architecture.process`
+     * has nowhere to take one from.
+     *
+     * ## Example 1: read a value no Args field could declare
+     * ```kt
+     * object PrintRawArgs : ArchitectureProcessorNoArg<Unit> {
+     *     override fun process(context: ArchitectureProcessContext<Unit>) {
+     *         for ((name, value) in context.rawArgs) context.log("$name=$value")
+     *     }
+     * }
+     * ```
+     */
+    public val rawArgs: Map<String, String>
+
+    /**
      * The tree the walk reads, which katachi's own specs point at a tree that only exists in
      * memory.
      *

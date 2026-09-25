@@ -17,7 +17,8 @@ import com.lemonappdev.konsist.api.declaration.KoFileDeclaration
  * one that cannot. It is listed so that the layer rules in `roles/` name a complete set of
  * forbidden targets rather than falling silent at the end of the table.
  */
-private val LAYERS: List<String> = listOf("", "fs", "dsl", "scan", "processor", "check", "docs", "konsist")
+private val LAYERS: List<String> =
+    listOf("", "fs", "dsl", "scan", "processor", "check", "docs", "template", "konsist")
 
 /** The package every layer name is relative to. */
 private const val ROOT_PACKAGE: String = "me.tbsten.katachi"

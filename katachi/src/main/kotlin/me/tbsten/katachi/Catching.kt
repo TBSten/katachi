@@ -1,4 +1,4 @@
-package me.tbsten.katachi.scan
+package me.tbsten.katachi
 
 /**
  * Whether the check has to end instead of turning this into a violation.
@@ -37,11 +37,13 @@ internal val Throwable.isFatal: Boolean
  *
  * Written with `is` rather than `as`: nothing is cast here, the type is only asked about.
  *
- * It sits in `scan` rather than next to the walk that first needed it because the same rule
- * has to hold one layer up: `validate` runs each check handed to it under this, so that a
- * third-party check that throws becomes one `[UncheckedCheck]` block instead of the end of
- * the run. "Here it failed, so the neighbour still answers" is one rule, and one rule is one
- * place.
+ * It sits in the root package rather than next to the walk that first needed it, because the
+ * same rule has to hold in more than one layer: `validate` runs each check handed to it under
+ * this so that a third-party check that throws becomes one `[UncheckedCheck]` block, and
+ * `evaluateTemplate` runs a user's own `template { }` block under it so that a missing
+ * parameter is reported before whatever failed for want of it. "Here it failed, so the
+ * neighbour still answers" is one rule, and one rule is one place -- which has to be a place
+ * every layer may reach.
  */
 internal inline fun <T> catching(block: () -> T): Result<T> =
     runCatching(block).onFailure { if (it.isFatal) throw it }

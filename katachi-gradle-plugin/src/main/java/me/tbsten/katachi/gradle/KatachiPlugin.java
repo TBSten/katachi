@@ -87,6 +87,9 @@ public class KatachiPlugin implements Plugin<Project> {
                     task.getArchitectureClassName().set(project.provider(extension::getArchitecture));
                     task.getProcessors().set(
                             project.provider(() -> extension.getProcessors().getRegistrations()));
+                    task.getAcceptsUndeclaredArgs().set(
+                            project.provider(
+                                    () -> extension.getProcessors().getUndeclaredArgAcceptors()));
                     task.getOutputDirectory().set(project.getLayout().getBuildDirectory()
                             .dir("generated/sources/katachi/test/kotlin"));
                 });

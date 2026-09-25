@@ -58,6 +58,7 @@ public fun main(args: Array<String>) {
         registry = entryPoint.processors,
         processorKeys = commandLine.processorKeys,
         rawArgs = commandLine.args,
+        acceptsUndeclaredArgs = entryPoint.acceptsUndeclaredArgs,
     )
     if (summary.failed > 0) exitProcess(1)
 }

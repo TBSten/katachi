@@ -163,9 +163,20 @@ internal object ArgValues {
     fun boolean(raw: String): Boolean = raw.toBooleanStrictOrNull() ?: fail(raw, "Boolean")
     fun char(raw: String): Char = raw.singleOrNull() ?: fail(raw, "Char")
 
+    /**
+     * An enum names its own accepted spellings, unlike every other type here.
+     *
+     * "Cannot read \"Skip\" as OnExisting" leaves a reader to guess whether the spelling is
+     * wrong, the case is wrong, or the value was never a thing -- and the answer is written down
+     * right here in the descriptor. `Int` has nothing comparable to offer.
+     */
     fun enumIndex(descriptor: SerialDescriptor, raw: String): Int =
         descriptor.getElementIndex(raw).takeIf { it != CompositeDecoder.UNKNOWN_NAME }
-            ?: fail(raw, descriptor.serialName)
+            ?: throw SerializationException(
+                """Cannot read "$raw" as ${descriptor.serialName}. Accepted values: """ +
+                    (0 until descriptor.elementsCount)
+                        .joinToString(", ", postfix = ".", transform = descriptor::getElementName),
+            )
 
     private fun fail(raw: String, type: String): Nothing =
         throw SerializationException("Cannot read \"$raw\" as $type.")

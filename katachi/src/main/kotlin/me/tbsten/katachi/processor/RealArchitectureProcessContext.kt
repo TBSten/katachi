@@ -16,13 +16,17 @@ internal class RealArchitectureProcessContext<Args>(
     internal val walk: ProjectWalk,
     override val args: Args,
     private val onLog: (String) -> Unit,
+    // Last and defaulted so that `withArgs` and every `Architecture.process` overload keep their
+    // call shape: a run started in code has no command line to take one from.
+    override val rawArgs: Map<String, String> = emptyMap(),
 ) : ArchitectureProcessContext<Args> {
     constructor(
         architecture: Architecture,
         args: Args,
         fileSystem: KatachiFileSystem,
         onLog: (String) -> Unit = {},
-    ) : this(ProjectWalk(architecture, fileSystem), args, onLog)
+        rawArgs: Map<String, String> = emptyMap(),
+    ) : this(ProjectWalk(architecture, fileSystem), args, onLog, rawArgs)
 
     override val architecture: Architecture get() = walk.architecture
     override val fileSystem: KatachiFileSystem get() = walk.fileSystem
@@ -38,7 +42,7 @@ internal class RealArchitectureProcessContext<Args>(
         args: A,
         onLog: ((String) -> Unit)?,
     ): ArchitectureProcessContext<A> =
-        RealArchitectureProcessContext(walk, args, onLog ?: this.onLog)
+        RealArchitectureProcessContext(walk, args, onLog ?: this.onLog, rawArgs)
 
     override fun toString(): String = "ArchitectureProcessContext(args=$args, $walk)"
 }

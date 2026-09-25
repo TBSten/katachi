@@ -15,6 +15,9 @@ import me.tbsten.katachi.fs.KatachiFileSystem
 import me.tbsten.katachi.processor.ArchitectureProcessContext
 import me.tbsten.katachi.processor.ArchitectureProcessor
 import me.tbsten.katachi.processor.ArchitectureProcessorNoArg
+import me.tbsten.katachi.dsl.Architecture
+import me.tbsten.katachi.dsl.architecture
+import me.tbsten.katachi.processor.KatachiEntryPoint
 import me.tbsten.katachi.processor.KatachiProcessorNotFoundException
 import me.tbsten.katachi.processor.KatachiProcessorNotInstantiableException
 import me.tbsten.katachi.processor.KatachiProcessorTypeException
@@ -167,6 +170,33 @@ class ProcessorRunSpec : FreeSpec({
             }
         }
 
+        "エントリポイントが手を挙げた processor の undeclaredArgNames は known に足される" {
+            // build.gradle.kts -> 生成コード -> KatachiEntryPoint -> ここ、の最後の繋ぎ目。
+            // main() はこの値をそのまま渡すだけなので、読めていることをここで見ておく。
+            val summary = runProcessors(
+                architecture = definition,
+                registry = mapOf("undeclared" to UndeclaredNameRunProcessor::class.java),
+                processorKeys = listOf("undeclared"),
+                rawArgs = mapOf("greeting" to "hi"),
+                acceptsUndeclaredArgs = AcceptingEntryPoint.acceptsUndeclaredArgs,
+                out = {},
+            )
+
+            summary.failed shouldBe 0
+        }
+
+        "手を挙げていない processor の undeclaredArgNames は known に足されない" {
+            shouldThrow<IllegalArgumentException> {
+                runProcessors(
+                    architecture = definition,
+                    registry = mapOf("undeclared" to UndeclaredNameRunProcessor::class.java),
+                    processorKeys = listOf("undeclared"),
+                    rawArgs = mapOf("greeting" to "hi"),
+                    out = {},
+                )
+            }
+        }
+
         "実体化や未知キー判定は、どの processor も走る前に終わっている" {
             RanFlag.ran = false
 
@@ -297,4 +327,21 @@ private object FilesReadingProcessorA : ArchitectureProcessorNoArg<List<String>>
 private object FilesReadingProcessorB : ArchitectureProcessorNoArg<List<String>> {
     override fun process(context: ArchitectureProcessContext<Unit>): List<String> =
         context.roles.flatMap { context.filesOf(it) }
+}
+
+
+/** A processor whose vocabulary is not in its `Args`, the way a template's parameters are not. */
+private object UndeclaredNameRunProcessor : ArchitectureProcessorNoArg<Unit> {
+    override fun process(context: ArchitectureProcessContext<Unit>) {}
+
+    override fun undeclaredArgNames(context: ArchitectureProcessContext<*>): Set<String> =
+        setOf("greeting")
+}
+
+/** What the Gradle plugin generates for a module that wrote `acceptsUndeclaredArgs = true`. */
+private object AcceptingEntryPoint : KatachiEntryPoint {
+    override val architecture: Architecture = architecture { }
+    override val processors: Map<String, Class<*>> =
+        mapOf("undeclared" to UndeclaredNameRunProcessor::class.java)
+    override val acceptsUndeclaredArgs: Set<String> = setOf("undeclared")
 }

@@ -1,7 +1,9 @@
 package me.tbsten.katachi.gradle;
 
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeMap;
+import java.util.TreeSet;
 
 /**
  * Builds the text of the Kotlin source {@link GenerateKatachiEntryPointTask} writes.
@@ -45,9 +47,17 @@ final class KatachiEntryPointSource {
      * @param processors every registered processor, key to fully qualified class name. Rendered
      *     sorted by key, so that reordering registrations in a build script does not change the
      *     generated text.
+     * @param acceptsUndeclaredArgs the processor keys the module let katachi ask for extra
+     *     {@code --arg} names. It travels in the generated source rather than on the command line
+     *     because it belongs to the module and not to one run: the registry takes the same road,
+     *     and a command line flag nobody types would be a second, invisible one.
      */
-    static String render(String architectureClassName, Map<String, String> processors) {
+    static String render(
+            String architectureClassName,
+            Map<String, String> processors,
+            Set<String> acceptsUndeclaredArgs) {
         Map<String, String> sorted = new TreeMap<>(processors);
+        Set<String> sortedAcceptors = new TreeSet<>(acceptsUndeclaredArgs);
 
         StringBuilder out = new StringBuilder();
         out.append(
@@ -95,6 +105,17 @@ final class KatachiEntryPointSource {
             for (Map.Entry<String, String> entry : sorted.entrySet()) {
                 out.append("        \"").append(entry.getKey()).append("\" to ")
                         .append(entry.getValue()).append("::class.java,\n");
+            }
+            out.append("    )\n");
+        }
+        out.append("\n");
+        if (sortedAcceptors.isEmpty()) {
+            out.append(
+                    "    public override val acceptsUndeclaredArgs: Set<String> = emptySet()\n");
+        } else {
+            out.append("    public override val acceptsUndeclaredArgs: Set<String> = setOf(\n");
+            for (String key : sortedAcceptors) {
+                out.append("        \"").append(key).append("\",\n");
             }
             out.append("    )\n");
         }

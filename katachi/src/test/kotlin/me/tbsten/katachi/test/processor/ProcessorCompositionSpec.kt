@@ -19,7 +19,7 @@ import me.tbsten.katachi.processor.ArchitectureProcessor
 import me.tbsten.katachi.processor.ArchitectureProcessorNoArg
 import me.tbsten.katachi.processor.KatachiProcessorArgsDecoderException
 import me.tbsten.katachi.processor.decodeFromStringMap
-import me.tbsten.katachi.processor.knownArgNames
+import me.tbsten.katachi.processor.declaredArgNames
 import me.tbsten.katachi.processor.plus
 import me.tbsten.katachi.processor.process
 import me.tbsten.katachi.test.check.architectureOf
@@ -63,8 +63,8 @@ class ProcessorCompositionSpec : FreeSpec({
     "合成した argsSerializer の既知キーは両方の和集合になる" {
         val combined = ComposedRoleNameProcessor + CountProcessor
 
-        knownArgNames(listOf(combined)) shouldContain "roleName"
-        knownArgNames(listOf(combined)) shouldContain "count"
+        declaredArgNames(combined) shouldContain "roleName"
+        declaredArgNames(combined) shouldContain "count"
     }
 
     "両方が同じ名前のフィールドを持つとき、同じ値が両方に配られる" {

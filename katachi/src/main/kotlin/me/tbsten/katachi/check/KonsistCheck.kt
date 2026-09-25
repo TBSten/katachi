@@ -1,6 +1,7 @@
 package me.tbsten.katachi.check
 
 import me.tbsten.katachi.ExperimentalKatachiApi
+import me.tbsten.katachi.catching
 import me.tbsten.katachi.dsl.ConstraintFailure
 import me.tbsten.katachi.dsl.ConstraintSubject
 import me.tbsten.katachi.dsl.DeclaredConstraint
@@ -9,12 +10,11 @@ import me.tbsten.katachi.processor.ArchitectureProcessContext
 import me.tbsten.katachi.processor.ArchitectureProcessorNoArg
 import me.tbsten.katachi.processor.ProjectWalk
 import me.tbsten.katachi.processor.projectWalk
+import me.tbsten.katachi.scan.Severity
 import me.tbsten.katachi.scan.UncheckedConstraint
 import me.tbsten.katachi.scan.UncheckedConstraintReason
 import me.tbsten.katachi.scan.UnsatisfiedConstraint
-import me.tbsten.katachi.scan.Severity
 import me.tbsten.katachi.scan.Violation
-import me.tbsten.katachi.scan.catching
 
 /**
  * The check that evaluates `constraint { }` blocks — the `konsist { }` ones included.

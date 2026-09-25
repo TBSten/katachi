@@ -46,6 +46,10 @@ internal fun instantiateProcessor(type: Class<*>): ArchitectureProcessor<*, *> {
  * One processor's failure does not stop the others: each result is collected independently, and
  * the summary at the end reports how many of each there were.
  *
+ * @param acceptsUndeclaredArgs the processor keys this module wrote `acceptsUndeclaredArgs = true`
+ *   for, as the generated entry point carries them. A key listed here has its
+ *   [ArchitectureProcessor.undeclaredArgNames] counted as known; a key not listed here has that
+ *   answer used only as a hint in the error message.
  * @param out where the report's lines go. Defaults to [println], but a spec passes
  *   `mutableListOf<String>::add` instead so the run can be asserted on without capturing standard
  *   output.
@@ -55,6 +59,7 @@ internal fun runProcessors(
     registry: Map<String, Class<*>>,
     processorKeys: List<String>,
     rawArgs: Map<String, String>,
+    acceptsUndeclaredArgs: Set<String> = emptySet(),
     fileSystem: KatachiFileSystem = RealFileSystem(),
     out: (String) -> Unit = ::println,
 ): ProcessorRunSummary {
@@ -71,9 +76,16 @@ internal fun runProcessors(
         key to instantiateProcessor(type)
     }
 
-    checkNoUnknownArgs(selected.map { it.second }, rawArgs)
+    // `rawArgs` travels on the context as well as being decoded into each processor's own Args:
+    // a processor whose vocabulary differs per role -- a template's parameters -- has no fixed
+    // set of fields to declare them as. `withArgs` carries it to every processor of the run.
+    //
+    // Built before the check rather than after it, because the check asks the processors what
+    // this run made legal and they read that off the context. Nothing is walked by building it:
+    // the walk behind it is `by lazy` and no processor has run yet.
+    val base = RealArchitectureProcessContext(architecture, Unit, fileSystem, rawArgs = rawArgs)
 
-    val base = RealArchitectureProcessContext(architecture, Unit, fileSystem)
+    checkNoUnknownArgs(selected, acceptsUndeclaredArgs, base, rawArgs)
 
     data class Entry(val key: String, val result: Result<Outcome>)
 

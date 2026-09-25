@@ -39,11 +39,17 @@ public class FakeArchitectureProcessContext<Args>(
     architecture: Architecture,
     args: Args,
     fileSystem: KatachiFileSystem,
+    rawArgs: Map<String, String> = emptyMap(),
 ) : ArchitectureProcessContext<Args> {
     private val recorded: MutableList<String> = mutableListOf()
 
-    internal val real: RealArchitectureProcessContext<Args> =
-        RealArchitectureProcessContext(architecture, args, fileSystem, onLog = { recorded += it })
+    internal val real: RealArchitectureProcessContext<Args> = RealArchitectureProcessContext(
+        architecture = architecture,
+        args = args,
+        fileSystem = fileSystem,
+        onLog = { recorded += it },
+        rawArgs = rawArgs,
+    )
 
     /**
      * What [ArchitectureProcessContext.log] was called with, in order.
@@ -57,6 +63,7 @@ public class FakeArchitectureProcessContext<Args>(
 
     override val architecture: Architecture get() = real.architecture
     override val args: Args get() = real.args
+    override val rawArgs: Map<String, String> get() = real.rawArgs
     override val fileSystem: KatachiFileSystem get() = real.fileSystem
     override val groups: List<Group> get() = real.groups
     override val roles: List<Role> get() = real.roles

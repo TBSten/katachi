@@ -65,6 +65,14 @@ public class Role internal constructor(
      */
     internal val constraints: List<ConstraintDeclaration>,
     /**
+     * The `template { }` of this role, in declaration order. At most one is ever kept -- the
+     * list is what makes the second one a refusal rather than a replacement.
+     *
+     * Internal for the reason [constraints] is: a template says nothing until it has been
+     * replayed with the values of one run.
+     */
+    internal val templates: List<TemplateDeclaration>,
+    /**
      * Names of the groups this role sits in, outermost first.
      *
      * ## Example 1: read the group path of a nested role

@@ -77,6 +77,58 @@ public interface ArchitectureProcessor<Args, Result> {
     public fun process(context: ArchitectureProcessContext<Args>): Result
 
     /**
+     * The `--arg` names this one run may carry beyond the ones [argsSerializer] declares.
+     *
+     * A processor whose vocabulary depends on the definition rather than on its own type has no
+     * field to declare those names as: a template's parameters differ from role to role, so
+     * `Args` cannot name them and `checkNoUnknownArgs` would call every one of them a typo. This
+     * is where such a processor says what this particular run made legal -- `--arg roleName=UseCase`
+     * turns `name` and `implBody` into names, and nothing else into names.
+     *
+     * **It is a ceiling the build script opens, not one a processor opens for itself.** The answer
+     * is read only when the module wrote `acceptsUndeclaredArgs = true` for this processor's key,
+     * so a processor that answered with everything it was given still accepts nothing until
+     * someone wrote that line.
+     *
+     * ## The contract
+     *
+     * - **Called before any processor of the run runs**, so [context] carries the run's raw
+     *   arguments and the declarations, and **nothing here may read the file system.** An
+     *   implementation that walks the project would make deciding "is this key a typo" cost a
+     *   full scan.
+     * - **Answer [emptySet] when there is nothing to say**, rather than throwing to mean it.
+     *   Throwing is for the one case where nothing can be said because the run is already
+     *   wrong -- a role name no role answers to, say. Then it ends the run, and it should:
+     *   a processor that cannot tell a typo from a parameter has no answer to give, and
+     *   "nothing" would be a wrong one stated as fact. The exception a build script sees is
+     *   this one, so make it name what the user got wrong.
+     *   Asked of a processor the build script did **not** name in `acceptsUndeclaredArgs`, the
+     *   question is only building a hint for an error already on its way, and anything thrown
+     *   is swallowed: the user may not have meant this processor at all.
+     * - `context.args` is **not** this processor's `Args` yet -- decoding happens after this
+     *   check. Read [ArchitectureProcessContext.rawArgs] instead.
+     *
+     * ## Example 1: take one argument per role the definition declares
+     * ```kt
+     * import me.tbsten.katachi.processor.ArchitectureProcessContext
+     * import me.tbsten.katachi.processor.ArchitectureProcessorNoArg
+     *
+     * object AnnotateRoles : ArchitectureProcessorNoArg<Unit> {
+     *     override fun process(context: ArchitectureProcessContext<Unit>) {
+     *         for ((role, note) in context.rawArgs) context.log("$role: $note")
+     *     }
+     *
+     *     // `--arg domain/UseCase="owned by the platform team"`. The keys come from the
+     *     // definition rather than from this processor, so no Args class can hold them as
+     *     // fields -- which is the whole reason this method exists.
+     *     override fun undeclaredArgNames(context: ArchitectureProcessContext<*>): Set<String> =
+     *         context.roles.map { it.qualifiedName }.toSet()
+     * }
+     * ```
+     */
+    public fun undeclaredArgNames(context: ArchitectureProcessContext<*>): Set<String> = emptySet()
+
+    /**
      * Whether [result] means this run did not pass.
      *
      * `runKatachiProcessor` has no way to read a result it was never told the shape of: a

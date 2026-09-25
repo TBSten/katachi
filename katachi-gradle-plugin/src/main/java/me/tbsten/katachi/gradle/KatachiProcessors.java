@@ -2,7 +2,9 @@ package me.tbsten.katachi.gradle;
 
 import java.util.Collections;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.regex.Pattern;
 
 import org.gradle.api.Action;
@@ -21,12 +23,12 @@ import org.gradle.api.InvalidUserDataException;
  *
  * <h2>Which processors are there without being registered</h2>
  *
- * <p>{@code docs} is registered for every module this plugin is applied to, so
- * {@code --processor=docs} works with an empty {@code katachi { } } block. It is the only one:
- * {@code layout} and {@code konsist} would have to be defaulted too if the rule were "katachi's
- * own processors", but {@code konsist} lives in {@code :katachi-konsist} and a module that does
- * not depend on it would get a registry entry that fails to resolve at run time. Registering
- * only what {@code :katachi} itself carries keeps every default entry resolvable.
+ * <p>{@code docs} and {@code template} are registered for every module this plugin is applied
+ * to, so {@code --processor=docs} works with an empty {@code katachi { } } block. They are the
+ * only two: {@code layout} and {@code konsist} would have to be defaulted too if the rule were
+ * "katachi's own processors", but {@code konsist} lives in {@code :katachi-konsist} and a module
+ * that does not depend on it would get a registry entry that fails to resolve at run time.
+ * Registering only what {@code :katachi} itself carries keeps every default entry resolvable.
  *
  * <p>A {@link #register} of the same key wins. Without that, swapping in a documentation
  * processor of one's own would mean either accepting katachi's under its natural name or
@@ -74,6 +76,7 @@ public class KatachiProcessors {
     private static Map<String, String> defaultRegistrations() {
         Map<String, String> defaults = new LinkedHashMap<>();
         defaults.put("docs", "me.tbsten.katachi.docs.GenerateDocumentation");
+        defaults.put("template", "me.tbsten.katachi.template.GenerateCodeFromTemplate");
         return defaults;
     }
 
@@ -164,7 +167,7 @@ public class KatachiProcessors {
      * katachi {
      *     processors {
      *         register("roleNames", "com.example.processors.RoleNames") {
-     *             args("prefix", "domain")
+     *             arg("prefix", "domain")
      *         }
      *     }
      * }
@@ -240,11 +243,22 @@ public class KatachiProcessors {
     }
 
     /**
-     * Configures the template processor.
+     * Configures the template processor katachi ships.
      *
-     * <p>Code generation from a template is not implemented yet, so this block holds only
-     * {@code roleName} for now and grows as the rest is settled. Registering {@code template} is
-     * still this module's job -- katachi registers only {@code docs} by default.
+     * <p>Typed for the same reason {@link #docs(Action)} is. {@code template} is registered by
+     * default, so there is nothing to {@link #register}; what this block is usually written for is
+     * {@code acceptsUndeclaredArgs = true}, without which a template's own parameters cannot be
+     * passed as {@code --arg} at all.
+     *
+     * <pre>{@code
+     * katachi {
+     *     processors {
+     *         template {
+     *             acceptsUndeclaredArgs = true
+     *         }
+     *     }
+     * }
+     * }</pre>
      */
     public void template(Action<? super KatachiTemplateOptions> action) {
         action.execute(template);
@@ -267,8 +281,14 @@ public class KatachiProcessors {
     /** Every configured argument, by key: the typed blocks and the string form, merged. */
     Map<String, Map<String, String>> getConfiguredArgs() {
         Map<String, Map<String, String>> copy = new LinkedHashMap<>();
-        putTyped(copy, KatachiDocsOptions.KEY, docs.toArgs(), "docs { }");
-        putTyped(copy, KatachiTemplateOptions.KEY, template.toArgs(), "template { }");
+        Map<String, String> docsArgs = docs.toArgs();
+        putTyped(copy, KatachiDocsOptions.KEY, docsArgs, !docsArgs.isEmpty(), "docs { }");
+        putTyped(
+                copy,
+                KatachiTemplateOptions.KEY,
+                template.toArgs(),
+                template.isConfigured(),
+                "template { }");
         for (Map.Entry<String, KatachiProcessorArgs> entry : configuredArgs.entrySet()) {
             copy.put(entry.getKey(), entry.getValue().getValues());
         }
@@ -297,12 +317,20 @@ public class KatachiProcessors {
         collected.put(KatachiDocsOptions.KEY, merged);
     }
 
+    /**
+     * Records what a typed block configured, and refuses the same key being configured twice.
+     *
+     * <p>{@code configured} is asked separately from {@code typed.isEmpty()}: a block may carry a
+     * word that produces no argument -- {@code template { acceptsUndeclaredArgs = true } } -- and
+     * such a block still has to collide with {@code args("template") { } } rather than vanish.
+     */
     private void putTyped(
             Map<String, Map<String, String>> collected,
             String key,
             Map<String, String> typed,
+            boolean configured,
             String blockName) {
-        if (typed.isEmpty()) {
+        if (!configured) {
             return;
         }
         if (configuredArgs.containsKey(key)) {
@@ -312,6 +340,43 @@ public class KatachiProcessors {
                             + "thing, so one of the two is being ignored; keep the typed "
                             + blockName + " and remove the other.");
         }
+        if (typed.isEmpty()) {
+            return;
+        }
         collected.put(key, typed);
+    }
+
+    /**
+     * The registered keys this module let katachi ask for extra {@code --arg} names, sorted by the
+     * order they were written.
+     *
+     * <p>Not derivable from {@link #getConfiguredArgs()}: a block that only raises its hand
+     * produces no argument at all, so it would be invisible on that path.
+     *
+     * @throws InvalidUserDataException when a key raised its hand without being registered. The
+     *     flag would reach the generated entry point and then be dropped by a registry that has no
+     *     such key, which is a line in a build script doing nothing.
+     */
+    Set<String> getUndeclaredArgAcceptors() {
+        Set<String> acceptors = new LinkedHashSet<>();
+        if (template.getAcceptsUndeclaredArgs()) {
+            acceptors.add(KatachiTemplateOptions.KEY);
+        }
+        for (Map.Entry<String, KatachiProcessorArgs> entry : configuredArgs.entrySet()) {
+            if (entry.getValue().getAcceptsUndeclaredArgs()) {
+                acceptors.add(entry.getKey());
+            }
+        }
+        Map<String, String> registered = getRegistrations();
+        for (String key : acceptors) {
+            if (!registered.containsKey(key)) {
+                throw new InvalidUserDataException(
+                        "katachi processor key \"" + key + "\" sets acceptsUndeclaredArgs = true "
+                                + "but is not registered, so nothing would ever be asked what it "
+                                + "accepts. Register it first, e.g. register(\"" + key
+                                + "\", \"com.example.processors.Example\"), or remove the flag.");
+            }
+        }
+        return Collections.unmodifiableSet(acceptors);
     }
 }
