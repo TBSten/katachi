@@ -4,7 +4,7 @@ import me.tbsten.katachi.KatachiDeclarationException
 import me.tbsten.katachi.dsl.DeclarationSite
 
 /** How a message names a constraint: by its name when it has one, by where it was written otherwise. */
-internal fun namedConstraint(constraintName: String?, declaredAt: DeclarationSite): String =
+private fun namedConstraint(constraintName: String?, declaredAt: DeclarationSite): String =
     constraintName?.let { "\"$it\"" } ?: "declared at $declaredAt"
 
 /**

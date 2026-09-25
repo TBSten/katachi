@@ -93,7 +93,7 @@ class KonsistDslSpec : FreeSpec({
         // `konsist { }` is a thin wrapper over `ConstraintScope.constraint`, and the two ways to
         // observe that from outside `:katachi` are the exceptions `constraint` raises. Reading
         // the declarations back is `@InternalKatachiApi` *and* internal, so it is not available
-        // across the module boundary by design -- see the TODO above.
+        // across the module boundary by design.
         "layout { } を 1 つも持たない役割に書くと落ちる" {
             shouldThrow<KatachiConstraintWithoutLayoutException> {
                 architecture {

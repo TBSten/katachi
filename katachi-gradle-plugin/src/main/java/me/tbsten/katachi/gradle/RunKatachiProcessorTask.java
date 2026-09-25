@@ -144,7 +144,7 @@ public abstract class RunKatachiProcessorTask extends JavaExec {
             throw new InvalidUserDataException(
                     "katachi { architecture = ... } is not set in this module's "
                             + "build.gradle.kts. Add it, e.g. "
-                            + "`katachi { architecture = \"com.example.projectArchitecture\" } }`, "
+                            + "`katachi { architecture = \"com.example.projectArchitecture\" }`, "
                             + "then run this task again.");
         }
 

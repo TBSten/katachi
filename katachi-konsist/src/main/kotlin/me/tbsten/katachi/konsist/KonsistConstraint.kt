@@ -16,7 +16,7 @@ import me.tbsten.katachi.dsl.FileSetConstraint
  */
 internal class KonsistConstraint(
     /** The block as written. Run once per constraint per run, never at declaration time. */
-    internal val block: KonsistScope.() -> Unit,
+    private val block: KonsistScope.() -> Unit,
 ) : FileSetConstraint {
     override fun evaluate(subject: ConstraintSubject): List<ConstraintFailure> {
         val scope = KonsistScopeImpl(konsistScopeOf(subject))

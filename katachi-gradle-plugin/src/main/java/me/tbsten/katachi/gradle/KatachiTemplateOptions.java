@@ -63,11 +63,11 @@ public class KatachiTemplateOptions {
     public void setRoleName(String roleName) {
         if (roleName == null || !ROLE_NAME_PATTERN.matcher(roleName).matches()) {
             throw new InvalidUserDataException(
-                    "Invalid katachi { template { roleName = \"" + roleName + "\" } }. Write a "
-                            + "role's identifier, e.g. \"UseCase\", or \"domain/UseCase\" for a "
-                            + "role in another group. A title is not a name here: identifiers "
-                            + "hold only letters, digits, underscore and hyphen, separated by "
-                            + "\"/\".");
+                    "Invalid katachi { processors { template { roleName = \"" + roleName
+                            + "\" } } }. Write a role's identifier, e.g. \"UseCase\", or "
+                            + "\"domain/UseCase\" for a role in another group. A title is not a "
+                            + "name here: identifiers hold only letters, digits, underscore and "
+                            + "hyphen, separated by \"/\".");
         }
         this.roleName = roleName;
     }
@@ -89,8 +89,8 @@ public class KatachiTemplateOptions {
     public void setOnExisting(KatachiOnExisting onExisting) {
         if (onExisting == null) {
             throw new InvalidUserDataException(
-                    "katachi { template { onExisting = ... } } was given no value. Leave it out "
-                            + "entirely to keep the default, FAIL.");
+                    "katachi { processors { template { onExisting = ... } } } was given no "
+                            + "value. Leave it out entirely to keep the default, FAIL.");
         }
         this.onExisting = onExisting;
     }

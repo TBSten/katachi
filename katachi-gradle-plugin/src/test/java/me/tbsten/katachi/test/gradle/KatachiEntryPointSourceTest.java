@@ -92,6 +92,7 @@ class KatachiEntryPointSourceTest {
                 "expected the annotation to be on the object:\n" + source);
     }
 
+    @Test
     @DisplayName("@file:OptIn は package 行より前にある")
     void optInIsBeforePackageDirective() throws ReflectiveOperationException {
         String source = render("com.example.projectArchitecture", new LinkedHashMap<>());

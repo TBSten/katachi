@@ -20,8 +20,10 @@ import org.gradle.api.file.Directory;
  * <pre>{@code
  * katachi {
  *     architecture = "com.example.projectArchitecture"
- *     docs {
- *         outputDir = "docs/architecture"
+ *     processors {
+ *         docs {
+ *             outputDir = "docs/architecture"
+ *         }
  *     }
  * }
  * }</pre>
@@ -61,8 +63,8 @@ public class KatachiDocsOptions {
     public void setOutputDir(Object outputDir) {
         if (outputDir == null) {
             throw new InvalidUserDataException(
-                    "katachi { docs { outputDir = ... } } was given no value. Leave it out "
-                            + "entirely to keep the default, build/katachi/docs.");
+                    "katachi { processors { docs { outputDir = ... } } } was given no value. "
+                            + "Leave it out entirely to keep the default, build/katachi/docs.");
         }
         if (outputDir instanceof Directory) {
             this.outputDir = ((Directory) outputDir).getAsFile().getAbsolutePath();
@@ -76,15 +78,15 @@ public class KatachiDocsOptions {
             String path = outputDir.toString();
             if (path.isEmpty()) {
                 throw new InvalidUserDataException(
-                        "katachi { docs { outputDir = \"\" } } is empty. Leave it out entirely "
-                                + "to keep the default, build/katachi/docs.");
+                        "katachi { processors { docs { outputDir = \"\" } } } is empty. Leave it "
+                                + "out entirely to keep the default, build/katachi/docs.");
             }
             for (String segment : path.split("[/\\\\]")) {
                 if ("..".equals(segment)) {
                     throw new InvalidUserDataException(
-                            "katachi { docs { outputDir = \"" + path + "\" } } climbs out of "
-                                    + "this module with \"..\". Write a path under the module, "
-                                    + "or hand it a Directory: "
+                            "katachi { processors { docs { outputDir = \"" + path + "\" } } } "
+                                    + "climbs out of this module with \"..\". Write a path under "
+                                    + "the module, or hand it a Directory: "
                                     + "outputDir = rootProject.layout.projectDirectory.dir(\"docs\").");
                 }
             }
@@ -92,7 +94,7 @@ public class KatachiDocsOptions {
             return;
         }
         throw new InvalidUserDataException(
-                "katachi { docs { outputDir = ... } } was given a "
+                "katachi { processors { docs { outputDir = ... } } } was given a "
                         + outputDir.getClass().getName()
                         + ". Write a String relative to this module, or a Directory / File, e.g. "
                         + "outputDir = \"build/katachi/docs\" or "
@@ -114,8 +116,8 @@ public class KatachiDocsOptions {
     public void setMode(KatachiDocsMode mode) {
         if (mode == null) {
             throw new InvalidUserDataException(
-                    "katachi { docs { mode = ... } } was given no value. Leave it out entirely "
-                            + "to keep the default, WRITE.");
+                    "katachi { processors { docs { mode = ... } } } was given no value. Leave it "
+                            + "out entirely to keep the default, WRITE.");
         }
         this.mode = mode;
     }

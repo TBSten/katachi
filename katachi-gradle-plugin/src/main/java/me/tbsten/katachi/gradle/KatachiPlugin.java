@@ -43,10 +43,10 @@ import org.gradle.api.tasks.TaskProvider;
 public class KatachiPlugin implements Plugin<Project> {
 
     /** The name of the one task this plugin registers. */
-    static final String RUN_KATACHI_PROCESSOR_TASK_NAME = "runKatachiProcessor";
+    private static final String RUN_KATACHI_PROCESSOR_TASK_NAME = "runKatachiProcessor";
 
     /** The task group every task of this plugin is reported under. */
-    static final String TASK_GROUP = "katachi";
+    private static final String TASK_GROUP = "katachi";
 
     /**
      * The entry point the task starts, as the JVM names it.
@@ -55,10 +55,10 @@ public class KatachiPlugin implements Plugin<Project> {
      * compiles to this class. Nothing verifies the name at build time -- it is a string on
      * this side of the module boundary -- so a sample run is what catches a move.
      */
-    static final String KATACHI_MAIN_CLASS = "me.tbsten.katachi.processor.MainKt";
+    private static final String KATACHI_MAIN_CLASS = "me.tbsten.katachi.processor.MainKt";
 
     /** The name of the code generation task this plugin registers. */
-    static final String GENERATE_KATACHI_ENTRY_POINT_TASK_NAME = "generateKatachiEntryPoint";
+    private static final String GENERATE_KATACHI_ENTRY_POINT_TASK_NAME = "generateKatachiEntryPoint";
 
     /** {@inheritDoc} */
     @Override
@@ -69,7 +69,7 @@ public class KatachiPlugin implements Plugin<Project> {
 
         final KatachiExtension extension = project.getExtensions().create("katachi", KatachiExtension.class);
 
-        // Wrapped in `project.provider { ... }` because `katachi { } }` is evaluated after this
+        // Wrapped in `project.provider { ... }` because `katachi { }` is evaluated after this
         // `apply(Project)` returns: reading `extension.getArchitecture()` right here would
         // always see the field's initial `null`, before the user's own build script had a
         // chance to call `setArchitecture(...)`.

@@ -23,10 +23,10 @@ import java.util.TreeMap;
 final class KatachiEntryPointSource {
 
     /** The package the generated file declares. */
-    static final String PACKAGE_NAME = "me.tbsten.katachi.generated";
+    private static final String PACKAGE_NAME = "me.tbsten.katachi.generated";
 
     /** The generated object's simple name. */
-    static final String SIMPLE_NAME = "GeneratedKatachiEntryPoint";
+    private static final String SIMPLE_NAME = "GeneratedKatachiEntryPoint";
 
     /** The generated object's fully qualified name, what {@code --entry-point} is given. */
     static final String QUALIFIED_NAME = PACKAGE_NAME + "." + SIMPLE_NAME;

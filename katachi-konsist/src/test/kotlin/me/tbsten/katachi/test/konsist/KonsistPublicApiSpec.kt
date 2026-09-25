@@ -12,13 +12,13 @@ import java.io.File
  *
  * The whole repository now carries this rule as `KDOC_EXAMPLE_RULE`, a `konsist { }` on every
  * role of `:katachi` and on this module's own role — see
- * `architecture-test/src/test/kotlin/me/tbsten/katachi/test/architecture/library/KdocExamples.kt`.
+ * `architecture-test/src/test/kotlin/me/tbsten/katachi/test/architecture/KdocExamples.kt`.
  * That is the rule; this spec is a second reading of it, kept because it is the one that fails
  * inside this module's own `test` task rather than in `:architecture-test`, and because it is
  * deliberately stricter: it asks every line starting with `public `, `override` included.
  *
- * Reads sources as text, the same way `PackageDependencySpec` does: parsing Kotlin would be a
- * far bigger thing to maintain than the rule it guards.
+ * Reads sources as text: parsing Kotlin would be a far bigger thing to maintain than the rule
+ * it guards.
  *
  * TODO: decide whether the stricter reading is worth two implementations of one rule, or
  *   whether this spec should go the way `ConstraintApiKdocSpec` did once the constraint landed.

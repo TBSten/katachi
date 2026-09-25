@@ -212,7 +212,7 @@ class KonsistFailureSpec : FreeSpec({
                         "UseCase" {
                             // must を呼ばないので必ず落ちる。役割直下 (anchor = null) に書いて
                             // いるのが本題: path はここでは実在する "src" ディレクトリに解決
-                            // されるはずで、"." にはならない (anchorsOf, ConstraintSite.kt)。
+                            // されるはずで、"." にはならない (anchorsOf, FlattenLayout.kt)。
                             "規約".konsist { classes() }
                             layout {
                                 "gradlew".file()

@@ -74,6 +74,6 @@ internal fun konsistScopeOf(subject: ConstraintSubject): KoScope {
  * everything under `a/b` twice. Sorted so that one directory set always produces one
  * [ScopeKey] and the memo hits.
  */
-internal fun minimalDirectories(directories: Set<String>): List<String> = directories
+private fun minimalDirectories(directories: Set<String>): List<String> = directories
     .filterNot { candidate -> directories.any { it != candidate && candidate.startsWith("$it/") } }
     .sorted()
