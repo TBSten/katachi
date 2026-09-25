@@ -144,7 +144,7 @@ internal class ModuleTarget(
  *
  * ## Example 1: build the index once and reuse it for every layout key
  * ```kt
- * import me.tbsten.katachi.fs.RealFileSystem
+ * import me.tbsten.katachi.fs.internal.RealFileSystem
  * import me.tbsten.katachi.scan.moduleIndex
  *
  * val fileSystem = RealFileSystem()

@@ -2,7 +2,7 @@ package me.tbsten.katachi.processor
 
 import me.tbsten.katachi.dsl.Architecture
 import me.tbsten.katachi.fs.KatachiFileSystem
-import me.tbsten.katachi.fs.RealFileSystem
+import me.tbsten.katachi.fs.internal.RealFileSystem
 
 /**
  * How many of a `runProcessors` call's processors succeeded and how many failed.

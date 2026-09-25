@@ -7,13 +7,13 @@ import io.kotest.matchers.collections.shouldNotContain
 import io.kotest.matchers.shouldBe
 import me.tbsten.katachi.fs.FileSelection
 import me.tbsten.katachi.fs.FsPath
-import me.tbsten.katachi.fs.GitTrackedFileSystem
 import me.tbsten.katachi.fs.KatachiFileSystem
 import me.tbsten.katachi.fs.KatachiGitUnavailableException
-import me.tbsten.katachi.fs.RealFileSystem
-import me.tbsten.katachi.fs.findProjectRoot
-import me.tbsten.katachi.fs.gitTrackedFileSystem
-import me.tbsten.katachi.fs.isInsideGitWorkTree
+import me.tbsten.katachi.fs.internal.GitTrackedFileSystem
+import me.tbsten.katachi.fs.internal.RealFileSystem
+import me.tbsten.katachi.fs.internal.findProjectRoot
+import me.tbsten.katachi.fs.internal.gitTrackedFileSystem
+import me.tbsten.katachi.fs.internal.isInsideGitWorkTree
 
 class GitTrackedFileSystemSpec : FreeSpec({
     "偽のファイルシステムに被せたフィルタ" - {

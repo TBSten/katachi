@@ -8,7 +8,7 @@ import me.tbsten.katachi.check.KonsistCheck
 import me.tbsten.katachi.check.validate
 import me.tbsten.katachi.dsl.architecture
 import me.tbsten.katachi.dsl.wholeTree
-import me.tbsten.katachi.fs.RealFileSystem
+import me.tbsten.katachi.fs.internal.RealFileSystem
 import me.tbsten.katachi.konsist.KonsistScope
 import me.tbsten.katachi.konsist.konsist
 import me.tbsten.katachi.scan.Violation

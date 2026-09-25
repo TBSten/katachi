@@ -6,11 +6,11 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import me.tbsten.katachi.ExperimentalKatachiApi
 import me.tbsten.katachi.dsl.templateParameterNames
-import me.tbsten.katachi.fs.findProjectRoot
+import me.tbsten.katachi.fs.internal.findProjectRoot
+import me.tbsten.katachi.internal.runProcessorCatching
 import me.tbsten.katachi.processor.ArchitectureProcessContext
 import me.tbsten.katachi.processor.ArchitectureProcessor
 import me.tbsten.katachi.processor.fileSystem
-import me.tbsten.katachi.runProcessorCatching
 
 /**
  * The `--arg` name that says which role to run. Spelled once, because

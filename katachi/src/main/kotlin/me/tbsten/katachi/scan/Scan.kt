@@ -1,6 +1,5 @@
 package me.tbsten.katachi.scan
 
-import me.tbsten.katachi.catching
 import me.tbsten.katachi.dsl.Architecture
 import me.tbsten.katachi.dsl.DeclaredConstraint
 import me.tbsten.katachi.dsl.LayoutEntry
@@ -8,7 +7,8 @@ import me.tbsten.katachi.dsl.Role
 import me.tbsten.katachi.dsl.evaluateLayout
 import me.tbsten.katachi.fs.FsPath
 import me.tbsten.katachi.fs.KatachiFileSystem
-import me.tbsten.katachi.fs.findProjectRoot
+import me.tbsten.katachi.fs.internal.findProjectRoot
+import me.tbsten.katachi.internal.catching
 
 /**
  * Directories that are not this project's files at all, whatever `files` says.

@@ -28,6 +28,7 @@ fun DeclarationContainerScope.util() = "Util" {
             packageMatchesPath()
             publicDeclarationsShowExample()
             mainSourceSet / kotlin / mainPackage / "util" / "*".ktFile()
+            mainSourceSet / kotlin / mainPackage / "util" / "internal" / "*".ktFile()
         }
     }
 }

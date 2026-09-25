@@ -7,8 +7,8 @@ import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
 import me.tbsten.katachi.fs.FsPath
 import me.tbsten.katachi.fs.KatachiProjectRootNotFoundException
-import me.tbsten.katachi.fs.RealFileSystem
-import me.tbsten.katachi.fs.findProjectRoot
+import me.tbsten.katachi.fs.internal.RealFileSystem
+import me.tbsten.katachi.fs.internal.findProjectRoot
 
 class ProjectRootSpec : FreeSpec({
     "作業ディレクトリから上に辿ってルートを特定する" - {

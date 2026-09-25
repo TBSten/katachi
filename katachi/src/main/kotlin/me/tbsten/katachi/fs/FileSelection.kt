@@ -1,6 +1,8 @@
 package me.tbsten.katachi.fs
 
 import me.tbsten.katachi.ExperimentalKatachiApi
+import me.tbsten.katachi.fs.internal.gitTrackedFileSystem
+import me.tbsten.katachi.fs.internal.isInsideGitWorkTree
 
 /**
  * Which files the check considers part of the project.

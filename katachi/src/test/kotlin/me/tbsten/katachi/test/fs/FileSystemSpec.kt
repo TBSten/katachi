@@ -7,7 +7,7 @@ import io.kotest.matchers.shouldBe
 import java.io.File
 import me.tbsten.katachi.fs.FsPath
 import me.tbsten.katachi.fs.KatachiFileSystem
-import me.tbsten.katachi.fs.RealFileSystem
+import me.tbsten.katachi.fs.internal.RealFileSystem
 
 /** Creates an empty file at each path, and every directory leading to it. */
 private fun buildRealTree(root: File, relativePaths: List<String>) {

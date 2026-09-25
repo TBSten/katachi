@@ -2,10 +2,10 @@ package me.tbsten.katachi.check
 
 import me.tbsten.katachi.ExperimentalKatachiApi
 import me.tbsten.katachi.InternalKatachiApi
-import me.tbsten.katachi.catching
 import me.tbsten.katachi.dsl.Architecture
 import me.tbsten.katachi.fs.KatachiFileSystem
-import me.tbsten.katachi.fs.RealFileSystem
+import me.tbsten.katachi.fs.internal.RealFileSystem
+import me.tbsten.katachi.internal.catching
 import me.tbsten.katachi.processor.ArchitectureProcessor
 import me.tbsten.katachi.processor.process
 import me.tbsten.katachi.processor.projectWalk

@@ -3,7 +3,7 @@ package me.tbsten.katachi.processor
 import me.tbsten.katachi.ExperimentalKatachiApi
 import me.tbsten.katachi.dsl.Architecture
 import me.tbsten.katachi.fs.KatachiFileSystem
-import me.tbsten.katachi.fs.RealFileSystem
+import me.tbsten.katachi.fs.internal.RealFileSystem
 
 /**
  * Runs [processor] against this definition and the real project, and returns its answer.

@@ -5,8 +5,8 @@ import io.kotest.core.spec.style.FreeSpec
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.types.shouldBeSameInstanceAs
 import java.util.concurrent.CancellationException
-import me.tbsten.katachi.catching
-import me.tbsten.katachi.runProcessorCatching
+import me.tbsten.katachi.internal.catching
+import me.tbsten.katachi.internal.runProcessorCatching
 
 /**
  * The two ways katachi keeps what a block threw, and the one place they part: an

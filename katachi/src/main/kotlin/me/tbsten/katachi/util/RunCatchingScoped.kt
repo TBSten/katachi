@@ -1,5 +1,8 @@
 package me.tbsten.katachi.util
 
+import me.tbsten.katachi.util.internal.RunCatchingScopedController
+import me.tbsten.katachi.util.internal.newRunCatchingScopedScope
+
 /**
  * [runCatching], with a way to fail without stopping.
  *
@@ -107,34 +110,6 @@ public interface RunCatchingScopedScope {
      * ```
      */
     public fun failure(exception: Throwable)
-}
-
-@PublishedApi
-internal interface RunCatchingScopedController : RunCatchingScopedScope {
-    fun throwIfHasFailures()
-
-    class Threw(val exception: Throwable) : Throwable()
-}
-
-@PublishedApi
-internal fun newRunCatchingScopedScope(): RunCatchingScopedController = RunCatchingScopedScopeImpl()
-
-private class RunCatchingScopedScopeImpl : RunCatchingScopedController {
-    private val failures = mutableListOf<Throwable>()
-
-    override fun `throw`(exception: Throwable): Nothing {
-        throw RunCatchingScopedController.Threw(exception)
-    }
-
-    override fun failure(exception: Throwable) {
-        failures.add(exception)
-    }
-
-    override fun throwIfHasFailures() {
-        if (failures.isNotEmpty()) {
-            throw KatachiMultipleFailuresException(failures.toList())
-        }
-    }
 }
 
 /**

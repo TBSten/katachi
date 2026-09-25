@@ -17,7 +17,7 @@ import me.tbsten.katachi.check.validate
 import me.tbsten.katachi.dsl.FileSetConstraint
 import me.tbsten.katachi.dsl.architecture
 import me.tbsten.katachi.dsl.wholeTree
-import me.tbsten.katachi.fs.RealFileSystem
+import me.tbsten.katachi.fs.internal.RealFileSystem
 import me.tbsten.katachi.konsist.KatachiKonsistDirectAssertionException
 import me.tbsten.katachi.konsist.KatachiKonsistNoExpectationException
 import me.tbsten.katachi.konsist.KatachiKonsistNoKotlinFilesException

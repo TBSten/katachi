@@ -1,6 +1,6 @@
 package me.tbsten.katachi.dsl
 
-import me.tbsten.katachi.catching
+import me.tbsten.katachi.internal.catching
 
 /** One `file(...)` of a template, and what it rendered to once its body was invoked. */
 private class TemplateFileDeclaration(

@@ -1,8 +1,10 @@
-package me.tbsten.katachi.fs
+package me.tbsten.katachi.fs.internal
 
 import java.io.File
 import java.nio.file.Files
 import me.tbsten.katachi.InternalKatachiApi
+import me.tbsten.katachi.fs.FsPath
+import me.tbsten.katachi.fs.KatachiFileSystem
 
 /**
  * The [KatachiFileSystem] used when a user calls `assert()`: plain `java.io.File`, with the
@@ -13,7 +15,7 @@ import me.tbsten.katachi.InternalKatachiApi
  * import me.tbsten.katachi.ExperimentalKatachiApi
  * import me.tbsten.katachi.InternalKatachiApi
  * import me.tbsten.katachi.check.validate
- * import me.tbsten.katachi.fs.RealFileSystem
+ * import me.tbsten.katachi.fs.internal.RealFileSystem
  * import java.io.File
  *
  * @OptIn(InternalKatachiApi::class, ExperimentalKatachiApi::class)

@@ -1,10 +1,10 @@
 package me.tbsten.katachi.check
 
 import me.tbsten.katachi.ExperimentalKatachiApi
+import me.tbsten.katachi.internal.runProcessorCatching
 import me.tbsten.katachi.processor.ArchitectureProcessContext
 import me.tbsten.katachi.processor.ArchitectureProcessorNoArg
 import me.tbsten.katachi.processor.projectWalk
-import me.tbsten.katachi.runProcessorCatching
 import me.tbsten.katachi.scan.Violation
 import me.tbsten.katachi.scan.layoutWarningsOf
 

@@ -22,7 +22,7 @@ package me.tbsten.katachi
  * import me.tbsten.katachi.InternalKatachiApi
  * import me.tbsten.katachi.check.report
  * import me.tbsten.katachi.check.validate
- * import me.tbsten.katachi.fs.RealFileSystem
+ * import me.tbsten.katachi.fs.internal.RealFileSystem
  *
  * // katachi-konsist's own spec, reading the report of a fixture project.
  * @OptIn(InternalKatachiApi::class, ExperimentalKatachiApi::class)

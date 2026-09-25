@@ -1,7 +1,7 @@
 package me.tbsten.katachi.check
 
 import me.tbsten.katachi.ExperimentalKatachiApi
-import me.tbsten.katachi.isFatal
+import me.tbsten.katachi.internal.isFatal
 import me.tbsten.katachi.processor.ArchitectureProcessor
 import me.tbsten.katachi.scan.Severity
 import me.tbsten.katachi.scan.UncheckedCheck

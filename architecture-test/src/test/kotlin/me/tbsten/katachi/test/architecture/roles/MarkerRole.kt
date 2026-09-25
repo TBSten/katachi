@@ -38,6 +38,7 @@ fun DeclarationContainerScope.marker() = "Marker" {
             // The root package, and only it: `*` never crosses a `/`, so the layer
             // directories one level down are untouched by this.
             mainSourceSet / kotlin / mainPackage / "*".ktFile()
+            mainSourceSet / kotlin / mainPackage / "internal" / "*".ktFile()
         }
     }
 }

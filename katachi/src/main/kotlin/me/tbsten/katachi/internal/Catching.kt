@@ -1,4 +1,4 @@
-package me.tbsten.katachi
+package me.tbsten.katachi.internal
 
 import kotlin.coroutines.cancellation.CancellationException
 
