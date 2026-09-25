@@ -159,7 +159,7 @@ private class RunCatchingScopedScopeImpl : RunCatchingScopedController {
  */
 public class KatachiMultipleFailuresException internal constructor(
     exceptions: List<Throwable>,
-) : Throwable() {
+) : RuntimeException() {
     init {
         exceptions
             .forEach(::addSuppressed)
