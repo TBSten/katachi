@@ -1,0 +1,7 @@
+対象ファイル,翻訳先ファイル,備考
+README.ja.md,README.md,
+docs/src/content/docs/ja/**/*.mdx,docs/src/content/docs/**/*.mdx,
+docs/src/content/docs/ja/**/*.md,docs/src/content/docs/**/*.md,
+docs/public/install/ja/**/*.md,docs/public/install/en/**/*.md,
+docs/public/install/ja/**/*.html,docs/public/install/en/**/*.html,
+docs/src/content/i18n/ja.json,docs/src/content/i18n/en.json,Starlight の UI 文言の上書き。値だけを訳し、キーは変えない
