@@ -28,7 +28,7 @@ import me.tbsten.katachi.dsl.kotlin.ktsFile
  *
  * Only the core vocabulary is implemented here. `"...".ktFile()` and the Gradle vocabulary
  * are ordinary functions taking a [LayoutScope] as a context parameter, written on top of
- * what this class provides — see [ktFile] and the `me.tbsten.katachi.dsl.gradle` package.
+ * what this class provides — see [me.tbsten.katachi.dsl.kotlin.ktFile] and the `me.tbsten.katachi.dsl.gradle` package.
  * A source set is `"src/<name>" { }` and a module package is a directory key, so
  * neither needs anything of its own here: that is why `mainSourceSet / kotlin` and
  * `mainSourceSet { kotlin { } }` cannot come apart — they run the same code.
@@ -48,7 +48,7 @@ internal class LayoutScopeImpl(
     private val sites: MutableList<ConstraintSite>,
     /**
      * The site every declaration of this block records, or `null` to read it off the stack.
-     * Set for a layout katachi itself wrote; see [isWrittenByKatachi].
+     * Set for a layout katachi itself wrote; see [me.tbsten.katachi.dsl.internal.isWrittenByKatachi].
      */
     private val pinnedSite: DeclarationSite? = null,
 ) : LayoutDirectoryScope, ModuleAwareLayoutScope {

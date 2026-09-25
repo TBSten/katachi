@@ -26,6 +26,7 @@ fun DeclarationContainerScope.util() = "Util" {
         ":katachi".module {
             importsOnlyEarlierLayers()
             packageMatchesPath()
+            internalDeclarationsInInternalPackage()
             publicDeclarationsShowExample()
             mainSourceSet / kotlin / mainPackage / "util" / "*".ktFile()
             mainSourceSet / kotlin / mainPackage / "util" / "internal" / "*".ktFile()
@@ -52,4 +53,13 @@ private fun LayoutScope.packageMatchesPath() =
 private fun LayoutScope.publicDeclarationsShowExample() =
     KDOC_EXAMPLE_RULE.konsist {
         files.flatMap(::publicDeclarationsOf).must(::showsExample)
+    }
+
+private fun LayoutScope.internalDeclarationsInInternalPackage() =
+    INTERNAL_PACKAGE_RULE.konsist {
+        val sealedParents = classesAndInterfaces(includeNested = true)
+            .filter { it.hasSealedModifier }
+            .map { it.name }
+            .toSet()
+        files.flatMap { misplacedDeclarationsOf(it, sealedParents) }.mustBeEmpty()
     }

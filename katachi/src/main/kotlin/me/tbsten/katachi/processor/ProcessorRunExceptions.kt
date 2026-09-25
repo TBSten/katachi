@@ -52,7 +52,7 @@ public class KatachiProcessorNotFoundException internal constructor(
 /**
  * A registered processor class could be neither read as a singleton nor constructed.
  *
- * [instantiateProcessor] looks for a Kotlin `object`'s `INSTANCE` field first, and a no-argument
+ * [me.tbsten.katachi.processor.internal.instantiateProcessor] looks for a Kotlin `object`'s `INSTANCE` field first, and a no-argument
  * constructor second; this is thrown once both have failed.
  *
  * @property type the registered processor class.

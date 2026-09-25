@@ -115,7 +115,7 @@ public class ModulePath private constructor(
          *
          * @throws KatachiGlobSyntaxException when [raw] is empty, has an empty segment
          *   (`":core::data"`, `":core:"`), or still holds a `*` — a pattern goes through
-         *   [ModulePattern] instead.
+         *   [me.tbsten.katachi.dsl.internal.ModulePattern] instead.
          *
          * ## Example 1: read a path with or without its leading `:`
          * ```kt

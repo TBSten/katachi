@@ -13,14 +13,15 @@ fun DeclarationContainerScope.architectureDefinition() = "ArchitectureDefinition
     title = "アーキテクチャ定義"
     summary = "katachi の DSL で書かれた役割の定義。どのレイヤーにも属さない"
     example("ProjectArchitecture.kt", "定義の入口。group ごとの拡張関数を呼ぶ")
-    example("roles/DslRole.kt", "Dsl の役割と、その3本の制約を宣言する拡張関数")
+    example("roles/DslRole.kt", "Dsl の役割と、その4本の制約を宣言する拡張関数")
     layout {
         ":architecture-test".module {
             testSourceSet / kotlin / testPackage / "ProjectArchitecture".ktFile()
-            // Two shared helpers, next to the definition they serve because roles of more
-            // than one group read them. Neither holds a wildcard, so both are required:
+            // Three shared helpers, next to the definition they serve because roles of more
+            // than one group read them. None holds a wildcard, so all three are required:
             // moving one back under a package is reported rather than quietly allowed.
             testSourceSet / kotlin / testPackage / "LayerImports".ktFile()
+            testSourceSet / kotlin / testPackage / "InternalPackages".ktFile()
             testSourceSet / kotlin / testPackage / "KdocExamples".ktFile()
             // One declaration per file, and the file name says which kind it is. Only two
             // directories are allowed here, and only the matching suffix in each, so a

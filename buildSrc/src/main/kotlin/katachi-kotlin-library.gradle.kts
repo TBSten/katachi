@@ -41,6 +41,14 @@ dokka {
             // remoteLineSuffix（既定 "#L"）で行番号を付ける。
             remoteUrl("https://github.com/TBSten/katachi/blob/main/${project.name}")
         }
+
+        // `.internal` パッケージ（`me.tbsten.katachi.check.internal` など）は API リファレンスに出さない。
+        // 置いてあるのは internal と @InternalKatachiApi だけで、利用者が読むものではない。
+        // 代償として、公開 API の型がこれらを指す箇所（`LayoutEntry.glob` の `Glob` など）はリンクにならない。
+        perPackageOption {
+            matchingRegex.set(""".*\.internal(\..*)?""")
+            suppress.set(true)
+        }
     }
 }
 

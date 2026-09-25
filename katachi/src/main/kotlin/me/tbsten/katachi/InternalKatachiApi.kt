@@ -9,6 +9,9 @@ package me.tbsten.katachi
  * An API a project is meant to use while its shape still moves is [ExperimentalKatachiApi],
  * not this. What is not used from any other module is `internal`, not this.
  *
+ * A top-level declaration carrying this annotation lives in a `.internal` package
+ * (`me.tbsten.katachi.check.internal` and the like), next to the `internal` ones.
+ *
  * This annotation exists to stop *consumers* of the published `katachi` artifact from
  * depending on internals, not to stop katachi from depending on itself: the `:katachi`
  * module's own `build.gradle.kts` opts every file (main and test) in module-wide, so nothing

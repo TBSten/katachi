@@ -65,7 +65,7 @@ public class Role internal constructor(
      * evaluated, and they cover the union of every block in [layouts].
      *
      * Internal because a constraint says nothing until the layout around it has been
-     * evaluated: what the check works with is [DeclaredConstraint], not this.
+     * evaluated: what the check works with is [me.tbsten.katachi.dsl.internal.DeclaredConstraint], not this.
      */
     internal val constraints: List<ConstraintDeclaration>,
     /**

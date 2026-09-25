@@ -8,11 +8,13 @@ import me.tbsten.katachi.dsl.gradle.mainSourceSet
 import me.tbsten.katachi.dsl.gradle.module
 import me.tbsten.katachi.dsl.kotlin.ktFile
 import me.tbsten.katachi.konsist.konsist
+import me.tbsten.katachi.test.architecture.INTERNAL_PACKAGE_RULE
 import me.tbsten.katachi.test.architecture.KDOC_EXAMPLE_RULE
 import me.tbsten.katachi.test.architecture.PACKAGE_MATCHES_PATH_RULE
 import me.tbsten.katachi.test.architecture.importsLaterLayerThan
 import me.tbsten.katachi.test.architecture.laterLayersOf
 import me.tbsten.katachi.test.architecture.mainPackage
+import me.tbsten.katachi.test.architecture.misplacedDeclarationsOf
 import me.tbsten.katachi.test.architecture.publicDeclarationsOf
 import me.tbsten.katachi.test.architecture.showsExample
 
@@ -32,6 +34,7 @@ fun DeclarationContainerScope.check() = "Check" {
         ":katachi".module {
             importsOnlyEarlierLayers()
             packageMatchesPath()
+            internalDeclarationsInInternalPackage()
             publicDeclarationsShowExample()
             mainSourceSet / kotlin / mainPackage / "check" / "*".ktFile()
             mainSourceSet / kotlin / mainPackage / "check" / "**" / "*".ktFile()
@@ -58,4 +61,13 @@ private fun LayoutScope.packageMatchesPath() =
 private fun LayoutScope.publicDeclarationsShowExample() =
     KDOC_EXAMPLE_RULE.konsist {
         files.flatMap(::publicDeclarationsOf).must(::showsExample)
+    }
+
+private fun LayoutScope.internalDeclarationsInInternalPackage() =
+    INTERNAL_PACKAGE_RULE.konsist {
+        val sealedParents = classesAndInterfaces(includeNested = true)
+            .filter { it.hasSealedModifier }
+            .map { it.name }
+            .toSet()
+        files.flatMap { misplacedDeclarationsOf(it, sealedParents) }.mustBeEmpty()
     }

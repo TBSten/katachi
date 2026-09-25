@@ -76,8 +76,8 @@ val testPackage: ModulePackage = ModulePackage { modulePath ->
  * violation would point at a line nobody wrote. Written once here rather than repeated in
  * thirty files; `DeclarationSiteSpec` is what actually holds the line.
  *
- * Two helpers sit next to this file rather than under `roles/`: `LayerImports.kt` and
- * `KdocExamples.kt` are read by roles of more than one group, and `roles/` is declared to hold
+ * Three helpers sit next to this file rather than under `roles/`: `LayerImports.kt`,
+ * `InternalPackages.kt` and `KdocExamples.kt` are read by roles of more than one group, and `roles/` is declared to hold
  * nothing but `*Role.kt`.
  *
  * ## Why this package is `me.tbsten.katachi.test.architecture`

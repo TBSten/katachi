@@ -20,7 +20,7 @@ import me.tbsten.katachi.test.architecture.roles.util
  * `processor/` and for `check/`. Where the two came apart, the role follows the kind and not
  * the package — see `roles/MarkerRole.kt` and `roles/DslRole.kt`.
  *
- * Each role carries the same three `konsist { }` rules, in the same order.
+ * Each role carries the same four `konsist { }` rules, in the same order.
  *
  * 1. **The layers it may not import.** Together these are what
  *    `katachi/src/test/kotlin/me/tbsten/katachi/test/PackageDependencySpec.kt` used to do by
@@ -28,16 +28,19 @@ import me.tbsten.katachi.test.architecture.roles.util
  *    `LayerImports.kt`, so the rules cannot drift apart.
  * 2. **That the package matches the directory** — `PACKAGE_MATCHES_PATH_RULE`, which is what
  *    keeps rule 1 meaning anything at all. See its own KDoc.
- * 3. **That every public declaration shows an example** — `KDOC_EXAMPLE_RULE`, the repository's
+ * 3. **That internal code sits in a `.internal` package, and only there** —
+ *    `INTERNAL_PACKAGE_RULE`. See `InternalPackages.kt` for what counts, and for the direct
+ *    subtypes of a sealed type that Kotlin keeps next to it.
+ * 4. **That every public declaration shows an example** — `KDOC_EXAMPLE_RULE`, the repository's
  *    KDoc convention. See `KdocExamples.kt`.
  *
- * ## Why every role file repeats the same three helpers
+ * ## Why every role file repeats the same four helpers
  *
  * `konsist { }` is captured at the first stack frame outside katachi, so one shared helper
  * that wrote the constraint would become the declaration site of all of them, and every
  * violation would point at that helper instead of at the role. Each role file therefore keeps
- * its own `private` copy: the wording and the predicates are shared through `LayerImports.kt`
- * and `KdocExamples.kt`, and the declaration stays in the file that owns the role.
+ * its own `private` copy: the wording and the predicates are shared through `LayerImports.kt`,
+ * `InternalPackages.kt` and `KdocExamples.kt`, and the declaration stays in the file that owns the role.
  */
 fun DeclarationContainerScope.libraryGroup() = "library".group {
     title = "ライブラリ"

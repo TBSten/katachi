@@ -10,7 +10,7 @@ import me.tbsten.katachi.dsl.LayoutFile
  * One node of the tree a `layout { }` block builds while it is evaluated.
  *
  * The tree is short-lived: it exists between "run the deferred block" and "flatten it into
- * [LayoutEntry] values", and nothing outside the DSL ever sees it.
+ * [me.tbsten.katachi.dsl.LayoutEntry] values", and nothing outside the DSL ever sees it.
  */
 internal class LayoutNode(
     /** One path segment, possibly holding `*` or `**`. Empty for the synthetic root. */
@@ -94,7 +94,7 @@ internal class LayoutNode(
         children += child
     }
 
-    /** Marks every file at or below this node optional. See [LayoutModule.optional]. */
+    /** Marks every file at or below this node optional. See [me.tbsten.katachi.dsl.LayoutModule.optional]. */
     fun markFilesOptional() {
         if (isFile) optional = true
         children.forEach { it.markFilesOptional() }
