@@ -39,7 +39,7 @@ import me.tbsten.katachi.runProcessorCatching
  * definition it cannot render, a file it cannot read or write: nothing is thrown out of
  * `process`.
  *
- * ## Example 1: generate into the default directory
+ * ## Example 1: generate into the default directory from code
  * ```kt
  * import me.tbsten.katachi.docs.GenerateDocumentation
  * import me.tbsten.katachi.processor.process
@@ -66,6 +66,16 @@ import me.tbsten.katachi.runProcessorCatching
  * })
  * ```
  *
+ * ## Example 3: run it from the command line
+ * ```sh
+ * # No registration needed: the Gradle plugin registers it under `docs`.
+ * ./gradlew :architecture-test:runKatachiProcessor --processor=docs
+ *
+ * # Compare instead of writing, and fail when the pages on disk are out of date.
+ * ./gradlew :architecture-test:runKatachiProcessor --processor=docs --arg mode=check
+ * ```
+ *
+ * @see Args
  * @see DocumentationMode
  * @see KatachiStaleDocumentationException
  */
@@ -101,19 +111,39 @@ public object GenerateDocumentation : ArchitectureProcessor<GenerateDocumentatio
         }
 
     /**
-     * Where the pages go, whether they are written at all, and what the root page calls itself.
+     * Where the pages go, and whether they are written at all.
      *
-     * A `@Serializable` class rather than no arguments at all, which is what the specification
-     * asked for before the output directory had to be settable: `--arg outputDir=...` is the
-     * generic mechanism the task already has, and adding a `processors { docs { } }` block to
-     * the plugin for two values would be a second way to say the same thing.
+     * The same two values can be given three ways: from code, as `--arg` on the command line, or
+     * as the module's default in the Gradle plugin's `docs { }` block. A `--arg` wins over the
+     * block, so one run can differ without the build file being touched.
      *
-     * ## Example 1: compare a committed directory instead of writing into `build/`
+     * ## Example 1: from code
      * ```kt
      * import me.tbsten.katachi.docs.DocumentationMode
      * import me.tbsten.katachi.docs.GenerateDocumentation
      *
      * GenerateDocumentation.Args(outputDir = "docs/architecture", mode = DocumentationMode.Check)
+     * ```
+     *
+     * ## Example 2: from the command line
+     * ```sh
+     * ./gradlew :architecture-test:runKatachiProcessor --processor=docs \
+     *     --arg outputDir=docs/architecture --arg mode=check
+     * ```
+     *
+     * ## Example 3: as the module's default
+     * ```kts
+     * // architecture-test/build.gradle.kts
+     * import me.tbsten.katachi.gradle.KatachiDocsMode
+     *
+     * katachi {
+     *     processors {
+     *         docs {
+     *             outputDir = layout.projectDirectory.dir("docs/architecture")
+     *             mode = KatachiDocsMode.CHECK
+     *         }
+     *     }
+     * }
      * ```
      */
     @Serializable

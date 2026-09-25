@@ -52,7 +52,19 @@ import me.tbsten.katachi.scan.layoutWarningsOf
  * the declarations produce, so the two are merged where each can see the other rather than
  * concatenated — a pair of roles named by both must be one block, not two.
  *
- * ## Example 1: accept what is already there and fail only on something new
+ * ## Example 1: check the project from a test
+ * ```kt
+ * import me.tbsten.katachi.check.assert
+ *
+ * class ProjectArchitectureTest {
+ *     @Test
+ *     fun `the project matches its declaration`() = projectArchitecture.assert()
+ * }
+ * ```
+ *
+ * `assert()` runs this check without being asked for it.
+ *
+ * ## Example 2: accept what is already there and fail only on something new
  * ```kt
  * import me.tbsten.katachi.check.KatachiArchitectureAssertionError
  * import me.tbsten.katachi.check.LayoutCheck
@@ -65,6 +77,22 @@ import me.tbsten.katachi.scan.layoutWarningsOf
  * )
  * found.map { it.path }.filterNot { it in baseline } shouldBe emptyList()
  * ```
+ *
+ * ## Example 3: run it from the command line
+ * ```kts
+ * // architecture-test/build.gradle.kts
+ * katachi {
+ *     processors {
+ *         register("layout", "me.tbsten.katachi.check.LayoutCheck")
+ *     }
+ * }
+ * ```
+ * ```sh
+ * ./gradlew :architecture-test:runKatachiProcessor --processor=layout
+ * ```
+ *
+ * It is not registered by default: the test already runs it through `assert()`, and a key of its
+ * own is only needed to run the check alone from the command line.
  */
 @ExperimentalKatachiApi
 public class LayoutCheck : ArchitectureProcessorNoArg<List<Violation>> {

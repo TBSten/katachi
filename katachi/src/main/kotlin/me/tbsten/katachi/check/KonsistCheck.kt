@@ -44,6 +44,23 @@ import me.tbsten.katachi.scan.*
  *     .filterIsInstance<UnsatisfiedConstraint>()
  *     .map { it.path } shouldBe emptyList()
  * ```
+ *
+ * ## Example 3: run it from the command line
+ * ```kts
+ * // architecture-test/build.gradle.kts
+ * katachi {
+ *     processors {
+ *         register("konsist", "me.tbsten.katachi.check.KonsistCheck")
+ *     }
+ * }
+ * ```
+ * ```sh
+ * ./gradlew :architecture-test:runKatachiProcessor --processor=konsist
+ * ```
+ *
+ * Like [LayoutCheck], it is not registered by default. The module still needs
+ * `me.tbsten.katachi:katachi-konsist` on its test classpath for the `konsist { }` blocks to be
+ * evaluated at all.
  */
 @ExperimentalKatachiApi
 public class KonsistCheck : ArchitectureProcessorNoArg<List<Violation>> {

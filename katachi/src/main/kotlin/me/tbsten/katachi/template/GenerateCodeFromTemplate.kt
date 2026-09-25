@@ -45,17 +45,21 @@ private const val ROLE_NAME_ARG: String = "roleName"
  * file name, a symlink in the way, a mistake in the definition -- is a `failure` carrying that
  * exception. Nothing is thrown out of `process`.
  *
- * ## Example 1: generate the files of one role
+ * ## Example 1: generate the files of one role from code
  * ```kt
  * import me.tbsten.katachi.processor.process
  * import me.tbsten.katachi.template.GenerateCodeFromTemplate
  *
- * // ./gradlew runKatachiProcessor --processor=template --arg roleName=UseCase --arg name=GetUser
  * projectArchitecture.process(
  *     GenerateCodeFromTemplate,
- *     GenerateCodeFromTemplate.Args(roleName = "UseCase"),
+ *     GenerateCodeFromTemplate.Args(roleName = "Changelog"),
  * ).getOrThrow()
  * ```
+ *
+ * From code, the template's own parameters cannot be given: `process` takes [Args] and nothing
+ * else, and the parameters differ per role, so they are not fields of it. This runs a template
+ * whose parameters all have defaults. A template that needs `--arg name=...` is run from the
+ * command line, as in Example 3.
  *
  * ## Example 2: leave the whole set alone when any of it is already there
  * ```kt
@@ -69,6 +73,17 @@ private const val ROLE_NAME_ARG: String = "roleName"
  * ).getOrThrow()
  * ```
  *
+ * ## Example 3: run it from the command line
+ *
+ * No registration or configuration needed: the template's own parameters are `--arg` names the
+ * processor does not declare, and this module accepts them without asking.
+ * ```sh
+ * # No registration needed: the Gradle plugin registers it under `template`.
+ * ./gradlew :architecture-test:runKatachiProcessor --processor=template \
+ *     --arg roleName=UseCase --arg name=GetUser
+ * ```
+ *
+ * @see Args
  * @see OnExisting
  * @see KatachiExistingTemplateFileException
  */
@@ -123,12 +138,36 @@ public object GenerateCodeFromTemplate : ArchitectureProcessor<GenerateCodeFromT
      * and a `@Serializable` class is one fixed set of fields -- so they travel as plain `--arg`
      * entries and are read off [ArchitectureProcessContext.rawArgs] instead.
      *
-     * ## Example 1: name a role whose plain name two groups share
+     * The two values can be given three ways: from code, as `--arg` on the command line, or as the
+     * module's default in the Gradle plugin's `template { }` block. A `--arg` wins over the block.
+     *
+     * ## Example 1: from code, naming a role whose plain name two groups share
      * ```kt
      * import me.tbsten.katachi.template.GenerateCodeFromTemplate
+     * import me.tbsten.katachi.template.OnExisting
      *
-     * // ./gradlew runKatachiProcessor --processor=template --arg roleName=domain/UseCase
-     * GenerateCodeFromTemplate.Args(roleName = "domain/UseCase")
+     * GenerateCodeFromTemplate.Args(roleName = "domain/UseCase", onExisting = OnExisting.Skip)
+     * ```
+     *
+     * ## Example 2: from the command line
+     * ```sh
+     * ./gradlew :architecture-test:runKatachiProcessor --processor=template \
+     *     --arg roleName=domain/UseCase --arg onExisting=skip --arg name=GetUser
+     * ```
+     *
+     * ## Example 3: as the module's default
+     * ```kts
+     * // architecture-test/build.gradle.kts
+     * import me.tbsten.katachi.gradle.KatachiOnExisting
+     *
+     * katachi {
+     *     processors {
+     *         template {
+     *             roleName = "domain/UseCase"
+     *             onExisting = KatachiOnExisting.SKIP
+     *         }
+     *     }
+     * }
      * ```
      */
     @Serializable
