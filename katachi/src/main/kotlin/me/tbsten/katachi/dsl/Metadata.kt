@@ -142,6 +142,15 @@ public fun <T : Any> metadata(type: KClass<T>): MetadataKey<T> =
 internal class MetadataValues(private val values: Map<MetadataKey<*>, Any>) {
     operator fun <T : Any> get(key: MetadataKey<T>): T? = values[key]?.let { key.valueOf(it) }
 
+    /**
+     * Everything written here, in the order it was written.
+     *
+     * The one reading [get] cannot do: a [DocumentSection] is found by what its value is rather
+     * than through a key the reader already holds, and the order the DSL wrote the sections in is
+     * the order the generated page shows them in.
+     */
+    fun writtenValues(): List<Any> = values.values.toList()
+
     override fun toString(): String = "MetadataValues(${values.size})"
 }
 

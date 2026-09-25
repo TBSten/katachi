@@ -1,6 +1,7 @@
 package me.tbsten.katachi.docs
 
 import me.tbsten.katachi.dsl.Group
+import me.tbsten.katachi.dsl.MetadataValues
 import me.tbsten.katachi.dsl.Role
 import me.tbsten.katachi.dsl.Summary
 
@@ -17,12 +18,14 @@ import me.tbsten.katachi.dsl.Summary
  * The two differences are the heading, which a group takes from its `title` and the root has no
  * name to take, and [placementHeading], because "このグループの配置" is not true of the root.
  *
- * There is no body text here. A group carries no `summary` and no `description` today: the one
- * thing said about a group is its name, and inventing a paragraph for it would be katachi
- * writing documentation rather than generating it.
+ * What the container says about itself comes from [metadata] and is written exactly where a role
+ * page writes it: `summary` under the heading, `description` below that, and the sections the
+ * definition declared for itself last of all. A group and a role are two things a reader arrives
+ * at and asks "what is this" about, so they answer in one vocabulary -- see [appendTitle].
  */
 internal fun containerPage(
     title: String,
+    metadata: MetadataValues,
     roles: List<Role>,
     groups: List<Group>,
     placements: Map<Role, List<Placement>>,
@@ -30,10 +33,12 @@ internal fun containerPage(
     ancestors: List<Crumb>,
 ): String = buildString {
     appendBreadcrumb(ancestors)
-    append("# $title")
+    appendTitle(title, metadata)
+    appendDescription(metadata)
     appendRoleTable(roles)
     appendDirectoryTree(roles, placements, placementHeading)
     appendGroupList(groups)
+    appendDocumentSections(metadata)
     appendLine()
 }
 

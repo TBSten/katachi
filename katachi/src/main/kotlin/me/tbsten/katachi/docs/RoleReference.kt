@@ -64,6 +64,7 @@ internal fun roleReferenceDocuments(context: ArchitectureProcessContext<*>): Map
         owner = Owner("The documentation root", DeclarationSite.Unknown),
         content = containerPage(
             title = ROOT_TITLE,
+            metadata = architecture.metadata,
             roles = architecture.roles.filter { it.isDocumented },
             groups = architecture.groups.filter { it.isDocumented },
             placements = placements,
@@ -99,6 +100,7 @@ private fun Documents.putGroup(
         owner = Owner("Group \"${group.qualifiedName}\"", group.declaredAt),
         content = containerPage(
             title = group.displayName,
+            metadata = group.metadata,
             roles = group.roles.filter { it.isDocumented },
             groups = group.groups.filter { it.isDocumented },
             placements = placements,

@@ -8,8 +8,10 @@ import me.tbsten.katachi.ExperimentalKatachiApi
  * several modules. Groups can nest.
  *
  * What a group *is* — its name, its path, what it holds — is here. What some processor
- * wants to say *about* it is metadata, read with [get]: [Title] and [Documented] are the
- * ones katachi ships for groups, and a processor adds its own with [metadata].
+ * wants to say *about* it is metadata, read with [get]: [Title], [Summary], [Description] and
+ * [Documented] are the ones katachi ships for groups, a processor adds its own with [metadata],
+ * and whoever writes the definition adds a whole section of the generated page with
+ * [documentSection].
  *
  * ## Example 1: declare nested groups
  * ```kt
@@ -140,6 +142,24 @@ public class Group internal constructor(
      */
     @ExperimentalKatachiApi
     public operator fun <T : Any> get(key: MetadataKey<T>): T? = metadata[key]
+
+    /**
+     * The Markdown written on this group under [section], or `null` when this group did not
+     * write it.
+     *
+     * ## Example 1: read a section off a group
+     * ```kt
+     * val TestPolicy = documentSection("Testing")
+     * var DeclarationContainerScope.testPolicy by TestPolicy
+     *
+     * val arch = architecture {
+     *     "api".group { testPolicy = "- The status code" }
+     * }
+     * arch.groups.single()[TestPolicy] shouldBe "- The status code"
+     * ```
+     */
+    @ExperimentalKatachiApi
+    public operator fun get(section: DocumentSection): String? = metadata[section]
 
     internal fun selfAndDescendants(): List<Group> =
         listOf(this) + groups.flatMap { it.selfAndDescendants() }

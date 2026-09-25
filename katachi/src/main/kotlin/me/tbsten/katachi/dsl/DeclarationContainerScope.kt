@@ -8,6 +8,10 @@ package me.tbsten.katachi.dsl
  * role written straight into `architecture { }` sits in no group, its qualified name is its
  * own name, and there is one fewer concept to explain before the first definition can be read.
  *
+ * It is a [MetadataScope] as well, so a word that belongs to a container rather than to a role
+ * is offered once — `var DeclarationContainerScope.testPolicy by TestPolicy` — and can then be
+ * written on a group and on the root alike.
+ *
  * ## Example 1: declare a role and a group side by side
  * ```kt
  * val arch = architecture {
@@ -27,7 +31,7 @@ package me.tbsten.katachi.dsl
  * ```
  */
 @KatachiDsl
-public sealed interface DeclarationContainerScope {
+public sealed interface DeclarationContainerScope : MetadataScope {
     /**
      * Declares a group. Nest `group` calls to nest groups.
      *

@@ -1,8 +1,11 @@
 package me.tbsten.katachi.docs
 
+import me.tbsten.katachi.dsl.Description
 import me.tbsten.katachi.dsl.Documented
 import me.tbsten.katachi.dsl.Group
+import me.tbsten.katachi.dsl.MetadataValues
 import me.tbsten.katachi.dsl.Role
+import me.tbsten.katachi.dsl.Summary
 import me.tbsten.katachi.dsl.Title
 
 /**
@@ -95,11 +98,35 @@ internal fun StringBuilder.appendBreadcrumb(ancestors: List<Crumb>) {
 }
 
 /**
- * The roles this container holds, with the one line each of them gets.
+ * The title of a page, and below it the one line `summary` that the listing above also shows.
  *
  * `summary` is a table cell, which is exactly why the DSL keeps it apart from `description`:
- * this is the place a paragraph break would break.
+ * there a paragraph break would break the table, and here it is a paragraph like any other.
+ *
+ * One function for a role page and for a container page, because a group means by `summary` and
+ * `description` what a role means: the two pages differ in what they list, not in how they
+ * introduce themselves.
  */
+internal fun StringBuilder.appendTitle(title: String, metadata: MetadataValues) {
+    append("# $title")
+    val summary = metadata[Summary] ?: return
+    append(SECTION_BREAK)
+    append(summary)
+}
+
+/**
+ * The free-form body, exactly as it was written.
+ *
+ * Straight after the title, because it is the answer to "what is this" and a reader asks that
+ * before asking what is inside. Nothing is done to the text -- no heading is shifted, no
+ * paragraph is rewrapped -- because [Description] promises it is kept as written, and a promise
+ * that holds everywhere but in the generated page is not a promise.
+ */
+internal fun StringBuilder.appendDescription(metadata: MetadataValues) {
+    val description = metadata[Description] ?: return
+    append(SECTION_BREAK)
+    append(description.trim())
+}
 
 /**
  * One row of a Markdown table.

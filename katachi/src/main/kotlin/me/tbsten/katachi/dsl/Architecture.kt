@@ -1,5 +1,6 @@
 package me.tbsten.katachi.dsl
 
+import me.tbsten.katachi.ExperimentalKatachiApi
 import me.tbsten.katachi.fs.FileSelection
 
 /**
@@ -80,6 +81,10 @@ public class Architecture internal constructor(
      * ```
      */
     public val moduleResolver: ModuleResolver = ModuleResolver.Conventional,
+    /**
+     * What was written on `architecture { }` itself, beyond the declarations. Read through [get].
+     */
+    internal val metadata: MetadataValues = MetadataValues(emptyMap()),
 ) {
     /**
      * Every group, parents before their children, in declaration order.
@@ -128,6 +133,45 @@ public class Architecture internal constructor(
      * ```
      */
     public val allRoles: List<Role> = roles + allGroups.flatMap { it.roles }
+
+    /**
+     * The value written on the root under [key], or `null` when nothing was written there.
+     *
+     * The root is a container like a group, so something said about the whole definition is
+     * written and read the same way a group's is — see [Group.get].
+     *
+     * ## Example 1: read a processor's own key off the root
+     * ```kt
+     * val Owner: MetadataKey<String> = metadata()
+     * var DeclarationContainerScope.owner: String? by Owner
+     *
+     * val arch = architecture {
+     *     owner = "platform"
+     *     "domain".group { "UseCase" { } }
+     * }
+     * arch[Owner] shouldBe "platform"
+     * ```
+     */
+    @ExperimentalKatachiApi
+    public operator fun <T : Any> get(key: MetadataKey<T>): T? = metadata[key]
+
+    /**
+     * The Markdown written on the root under [section], or `null` when that section was left
+     * unwritten there.
+     *
+     * ## Example 1: read a section off the root
+     * ```kt
+     * val TestPolicy = documentSection("Testing")
+     * var DeclarationContainerScope.testPolicy by TestPolicy
+     *
+     * val arch = architecture {
+     *     testPolicy = "- Every module is checked by `assert()`"
+     * }
+     * arch[TestPolicy] shouldBe "- Every module is checked by `assert()`"
+     * ```
+     */
+    @ExperimentalKatachiApi
+    public operator fun get(section: DocumentSection): String? = metadata[section]
 
     override fun toString(): String =
         "Architecture(groups=${groups.map { it.name }}, roles=${allRoles.size})"

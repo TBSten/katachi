@@ -52,6 +52,8 @@ public sealed interface ArchitectureScope : DeclarationContainerScope {
 }
 
 internal class ArchitectureScopeImpl : ArchitectureScope {
+    val metadata = MetadataBuilder()
+
     private val groups = mutableListOf<Group>()
     private val roles = mutableListOf<Role>()
 
@@ -93,5 +95,6 @@ internal class ArchitectureScopeImpl : ArchitectureScope {
         roles = roles.toList(),
         files = files,
         moduleResolver = moduleResolver,
+        metadata = metadata.build(),
     )
 }
