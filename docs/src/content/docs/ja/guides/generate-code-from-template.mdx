@@ -5,50 +5,82 @@ tags:
   - beginner
 ---
 
+import { Aside } from "@astrojs/starlight/components"
+
 アーキテクチャ定義内に `template { }` を追加することで、アーキテクチャ定義からコードを生成することが可能です。
+
+**生成先は `template { }` が決めません。その役割の `layout { }` が決めます。** テンプレートが言うのはファイル名だけで、そのファイルがどのディレクトリに落ちるかは配置の定義から導かれます。そのため**生成した直後の `assert()` が通ります。**
 
 ```kt nocollapse
 "UseCase" {
-    // ...
+    layout {
+        ":core:domain".module { mainSourceSet / kotlin / modulePackage / "useCase" / "*UseCase".ktFile() }
+    }
 
-    useCaseTemplate()
-}
+    template {
+        // テンプレートに使用する引数を定義できます
+        val name by stringParameter()
+        val implBody by stringParameter(default = """TODO("${name}UseCase の実装")""")
 
-private val RoleScope.useCaseTemplate() = template {
-    // テンプレートに使用する引数を定義できます
-    val packageName by stringParameter()
-    val name by stringParameter()
-    val implBody by stringParameter(default = """TODO("${name}UseCaseImpl の実装")""")
+        // file() で、この template が生成するファイルを1つ宣言します
+        file("${name}UseCase.kt") {
+            """
+                package com.example.domain.useCase
 
-    // content ブロックにテンプレートの内容を記述
-    content {
-        """
-            package $packageName
-
-            interface ${name}UseCase {
-                operator suspend fun invoke()
-            }
-
-            class ${name}UseCaseImpl : ${name}UseCase {
-                override suspend fun invoke() {
-                    $implBody
+                interface ${name}UseCase {
+                    suspend operator fun invoke()
                 }
-            }
+            """.trimIndent()
+        }
 
-            class Fake${name}UseCase : ${name}UseCase {
-                override suspend fun invoke() {
-                    // No op for fake implementation
+        file("${name}UseCaseImpl.kt") {
+            """
+                package com.example.domain.useCase
+
+                class ${name}UseCaseImpl : ${name}UseCase {
+                    override suspend fun invoke() {
+                        $implBody
+                    }
                 }
-            }
-        """.trimIndent()
+            """.trimIndent()
+        }
     }
 }
 ```
 
 ```shell
 ./gradlew runKatachiProcessor --processor="template" \
-    --arg "roleName=UseCase" --arg "name=GetItemList" --arg "packageName=com.example.domain.usecase"
+    --arg "roleName=UseCase" --arg "name=GetItemList"
 ```
+
+<Aside type="caution">
+`--arg name=...` のように**テンプレート独自のパラメータを渡すには、そのモジュールが先に受け入れを表明している必要があります。**
+
+```kts title="architecture-test/build.gradle.kts"
+katachi {
+    processors {
+        template {
+            acceptsUndeclaredArgs = true
+        }
+    }
+}
+```
+
+パラメータの名前は役割ごとに違うため、`Args` クラスのフィールドとしては宣言できません。表明が無いと `Unknown processor argument(s): name.` で落ちます。
+</Aside>
+
+## file() はファイル名だけを言う
+
+`file()` に渡せるのは**拡張子つきのファイル名**であって、パスではありません。区切り文字が入っていると例外になります。
+
+```kt
+file("${name}UseCase.kt") { /* ... */ }      // OK
+file("useCase/${name}UseCase.kt") { /* ... */ }  // 例外
+```
+
+ディレクトリを両方に書くと、**同じことが2箇所に書かれて食い違えます。** 生成先は `layout { }` から導かれるので、テンプレート側で書く必要がありません。
+
+1つの `template { }` は複数の `file()` を持てます。同じ名前を2回宣言すると例外になります。
 
 ## パラメータ
 
@@ -57,35 +89,64 @@ private val RoleScope.useCaseTemplate() = template {
 ```kt
 template {
     val name by stringParameter()
-    val implBody by stringParameter(default = """TODO("${name}UseCaseImpl の実装")""")
-    val shouldSuspend by booleanParameter(default = true)
+    val implBody by stringParameter(default = """TODO("${name}UseCase の実装")""")
 
     // ...
 }
 ```
 
-```kt {3}
+**プロパティの名前がそのままパラメータの名前になります。** `val name by stringParameter()` は `--arg name=...` で渡すパラメータを宣言します。必ず `by` で書いてください。プロパティに届かなかったパラメータは名前を持てないので、ブロックの終わりで拒否されます。
+
+`default` を持たないパラメータは毎回値を渡す必要があります。`default` はその場で評価される普通の Kotlin の式なので、**上で宣言したパラメータを読めます。**
+
+```shell
 ./gradlew runKatachiProcessor --processor="template" \
-    --arg "roleName=UseCase" \ # 必須引数
-    --arg "name=GetItemList" --arg 'implBody=println("Hello World")' --arg "shouldSuspend=false"
+    --arg "roleName=UseCase" \
+    --arg "name=GetItemList" --arg 'implBody=println("Hello World")'
 ```
 
-## ショートカット構文
+<Aside>
+v0.2 で用意されているのは `stringParameter()` だけです。値は文字列として渡り、テンプレートは Kotlin の文字列テンプレートだけで書けます。
+</Aside>
 
-パラメータが必要ない場合は content { } ブロックを省略した記法も利用できます。
+## 既にファイルがあるとき
 
-```kt
-template(
-    """
-        ...
-    """.trimIndent()
-)
+生成先に既にファイルがある場合の振る舞いは `--arg onExisting=` で選べます。**既定は `fail` です。**
+
+| 値 | 振る舞い |
+| --- | --- |
+| `fail` (既定) | 1つでも既にあれば**1つも書かずに**失敗します |
+| `skip` | 1つでも既にあれば**1つも書かず**、失敗もしません |
+| `overwrite` | 既存を置き換えます |
+
+**どれも集合ごとに決まります。** 生成するファイルの一部だけが書かれてディレクトリが半端な状態になることはありません。`overwrite` の途中で書き込めなくなった場合も、置き換える前の内容に戻されます。
+
+```shell
+./gradlew runKatachiProcessor --processor="template" \
+    --arg "roleName=UseCase" --arg "name=GetItemList" --arg "onExisting=overwrite"
+```
+
+ビルドファイルに既定として書くこともできます。
+
+```kts title="architecture-test/build.gradle.kts"
+katachi {
+    processors {
+        template {
+            acceptsUndeclaredArgs = true
+            onExisting = KatachiOnExisting.SKIP
+        }
+    }
+}
 ```
 
 ## まとめ
 
-TODO
+- **生成先は `layout { }` が決めます。** テンプレートはファイル名だけを言うので、配置の定義と生成が食い違えません。
+- だから**生成した直後の `assert()` が通ります。** これがこの機能の存在意義です。
+- 書き込みは**全部入るか1つも入らないか**です。半端な状態のディレクトリは残りません。
 
 ## 次のステップ
 
-TODO
+- [Layout システムでディレクトリ構成を厳守させる](/katachi/ja/guides/layout/) ... 生成先を決めているのは `layout { }` です。その書き方を学びましょう。
+- [ドキュメント生成](/katachi/ja/guides/document-generation/) ... 同じ定義から、コードではなくドキュメントを生成する方法を学びましょう。
+- [ArchitectureProcessor とそのカスタマイズ](/katachi/ja/guides/processor/) ... テンプレート生成も ArchitectureProcessor の1つです。

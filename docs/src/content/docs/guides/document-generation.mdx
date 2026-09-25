@@ -82,11 +82,13 @@ The documentation is generated from the properties you set on roles and groups.
 
 ### group
 
-There are only two properties on a group. **There is no `summary`.**
+A group takes the same four properties a role does. **Only `example()` is missing.**
 
 | Property | What it becomes in the generated documentation |
 |---|---|
 | `title` | The heading of the group's README. Defaults to the group's identifier |
+| `summary` | The single line in the parent's document map and in the group's section |
+| `description` | The body of the group's README |
 | `documented` | Set to `false` to keep the whole group out of the documentation. It still takes part in the checks |
 
 <details>
