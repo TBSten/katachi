@@ -8,13 +8,7 @@ import me.tbsten.katachi.dsl.gradle.mainSourceSet
 import me.tbsten.katachi.dsl.gradle.module
 import me.tbsten.katachi.dsl.kotlin.ktFile
 import me.tbsten.katachi.konsist.konsist
-import me.tbsten.katachi.test.architecture.KDOC_EXAMPLE_RULE
-import me.tbsten.katachi.test.architecture.PACKAGE_MATCHES_PATH_RULE
-import me.tbsten.katachi.test.architecture.importsLaterLayerThan
-import me.tbsten.katachi.test.architecture.laterLayersOf
-import me.tbsten.katachi.test.architecture.mainPackage
-import me.tbsten.katachi.test.architecture.publicDeclarationsOf
-import me.tbsten.katachi.test.architecture.showsExample
+import me.tbsten.katachi.test.architecture.*
 
 /**
  * The role of the general-purpose helpers that know nothing about architecture definitions.
@@ -27,7 +21,7 @@ import me.tbsten.katachi.test.architecture.showsExample
 fun DeclarationContainerScope.util() = "Util" {
     title = "汎用の道具"
     summary = "アーキテクチャ定義を知らない、標準ライブラリだけで書かれた道具"
-    example("ResultExt.kt", "失敗を記録しながら最後まで進める runCatchingScoped")
+    example("RunCatchingScoped.kt", "失敗を記録しながら最後まで進める runCatchingScoped")
     layout {
         ":katachi".module {
             importsOnlyEarlierLayers()
