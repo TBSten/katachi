@@ -35,4 +35,42 @@ fun DeclarationContainerScope.component() = "Component" {
             mainSourceSet / kotlin / modulePackage / "component" / "*".ktFile()
         }
     }
+    // `file()` names the file only: `component/` comes from the layout above. The preview is
+    // wrapped in `PreviewRoot { }` from the start, as the Preview role asks.
+    //   ./gradlew :architecture-test:runKatachiProcessor --processor=template \
+    //       --arg roleName=Component --arg name=Label
+    template {
+        val name by stringParameter()
+        val previewText by stringParameter(default = name)
+        val component = "App$name"
+
+        file("$component.kt") {
+            """
+                package com.example.sample.ui.component
+
+                import androidx.compose.material3.Text
+                import androidx.compose.runtime.Composable
+                import androidx.compose.ui.Modifier
+                import androidx.compose.ui.tooling.preview.Preview
+                import com.example.sample.ui.preview.PreviewRoot
+
+                /** Shared ${name.lowercase()}, called by feature modules instead of Material's own. */
+                @Composable
+                fun $component(
+                    text: String,
+                    modifier: Modifier = Modifier,
+                ) {
+                    Text(text = text, modifier = modifier)
+                }
+
+                @Preview(showBackground = true)
+                @Composable
+                private fun ${component}Preview() {
+                    PreviewRoot {
+                        $component(text = "$previewText")
+                    }
+                }
+            """.trimIndent() + "\n"
+        }
+    }
 }

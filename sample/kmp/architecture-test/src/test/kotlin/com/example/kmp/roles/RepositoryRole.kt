@@ -2,7 +2,10 @@ package com.example.kmp.roles
 
 import com.example.kmp.modulePackage
 import me.tbsten.katachi.dsl.DeclarationContainerScope
-import me.tbsten.katachi.dsl.gradle.*
+import me.tbsten.katachi.dsl.gradle.div
+import me.tbsten.katachi.dsl.gradle.kotlin
+import me.tbsten.katachi.dsl.gradle.module
+import me.tbsten.katachi.dsl.gradle.sourceSet
 import me.tbsten.katachi.dsl.kotlin.ktFile
 
 /**
@@ -15,7 +18,7 @@ import me.tbsten.katachi.dsl.kotlin.ktFile
 fun DeclarationContainerScope.repository() = "Repository" {
     title = "リポジトリ"
     summary = ":data モジュールの user package。データの取得口で、" +
-        "インターフェースと実装の2つの置き方を持つ"
+            "インターフェースと実装の2つの置き方を持つ"
     description = """
         アプリがデータに触る入口です。`:data` の `user` package に、インターフェース
         （`*Repository.kt`）と実装（`*RepositoryImpl.kt`）を並べて置きます。呼ぶ側
@@ -48,6 +51,32 @@ fun DeclarationContainerScope.repository() = "Repository" {
         ":data".module {
             "commonMain".sourceSet / kotlin / modulePackage / "user" / "*Repository".ktFile()
             "commonMain".sourceSet / kotlin / modulePackage / "user" / "*RepositoryImpl".ktFile()
+        }
+    }
+
+    template {
+        val name by stringParameter()
+        val item by stringParameter(default = "String")
+
+        file("${name}Repository.kt") {
+            """
+                package com.example.kmp.data.user
+
+                /** Reads ${name.lowercase()} data. */
+                interface ${name}Repository {
+                    fun items(): List<$item>
+                }
+            """.trimIndent() + "\n"
+        }
+        file("${name}RepositoryImpl.kt") {
+            """
+                package com.example.kmp.data.user
+
+                /** The real implementation. A stub, like [UserRepositoryImpl]. */
+                class ${name}RepositoryImpl : ${name}Repository {
+                    override fun items(): List<$item> = emptyList()
+                }
+            """.trimIndent() + "\n"
         }
     }
 }

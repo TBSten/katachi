@@ -13,12 +13,12 @@ katachi はリポジトリのソースから `includeBuild("../..")` で取り�
 
 ## キーとなるファイル
 
-| ファイル                                                                                                                       | 何が分かるか                                                                                      |
-|--------------------------------------------------------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------|
-| [`ProjectArchitecture.kt`](architecture-test/src/test/kotlin/com/example/kmp/ProjectArchitecture.kt)                           | `architecture { }` の本体。group を呼んでいるだけで、役割は `roles/` に1ファイル1役割で置いてある |
-| [`roles/PlatformImplementationRole.kt`](architecture-test/src/test/kotlin/com/example/kmp/roles/PlatformImplementationRole.kt) | `expect` / `actual` をソースセットごとに宣言した役割                                              |
-| [`roles/XcodeProjectRole.kt`](architecture-test/src/test/kotlin/com/example/kmp/roles/XcodeProjectRole.kt)                     | Gradle の管理外にある `app/ios` を、検査しない場所として宣言した役割                              |
-| [`ProjectLayoutSpec.kt`](architecture-test/src/test/kotlin/com/example/kmp/ProjectLayoutSpec.kt)                               | 配置の検査。`projectArchitecture.assert()` を呼ぶだけ                                             |
+| ファイル                                                                                                                       | 何が分かるか                                                                                                        |
+|--------------------------------------------------------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------------------------|
+| [`ProjectArchitecture.kt`](architecture-test/src/test/kotlin/com/example/kmp/ProjectArchitecture.kt)                           | `architecture { }` の本体。group を呼んでいるだけで、役割は `roles/` に1ファイル1役割で置いてある                   |
+| [`roles/PlatformImplementationRole.kt`](architecture-test/src/test/kotlin/com/example/kmp/roles/PlatformImplementationRole.kt) | `expect` / `actual` をソースセットごとに宣言した役割                                                                |
+| [`roles/RepositoryRole.kt`](architecture-test/src/test/kotlin/com/example/kmp/roles/RepositoryRole.kt)                         | 1つの `template { }` でインターフェースと実装の2ファイルを生成する役割。置き場所は2つの `layout` パターンから決まる |
+| [`ProjectLayoutSpec.kt`](architecture-test/src/test/kotlin/com/example/kmp/ProjectLayoutSpec.kt)                               | 配置の検査。`projectArchitecture.assert()` を呼ぶだけ                                                               |
 
 ## 実行方法
 
@@ -37,12 +37,15 @@ cd sample/kmp
 
 # 定義からドキュメントを docs/ に生成する
 ./gradlew :architecture-test:runKatachiProcessor --processor=docs
+
+# Repository のテンプレートから :data の user package に ProfileRepository.kt と ProfileRepositoryImpl.kt を生成する
+./gradlew :architecture-test:runKatachiProcessor --processor=template --arg roleName=Repository --arg name=Profile
 ```
 
 タスクは `:architecture-test:test` のように**モジュールのパスまで書いてください。**`test` とだけ書くと
 iOS のモジュールのタスクまで対象になり、macOS と Xcode が必要になります。
 
-リポジトリのルートからは、CI と同じ一式を1コマンドで回せます。
+リポジトリのルートからは、CI と同じ一式（テンプレートから生成 → 検査 → 生成物を削除、まで含む）を1コマンドで回せます。
 
 ```sh
 ./gradlew checkSampleKmp

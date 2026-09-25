@@ -3,7 +3,10 @@ package com.example.roles
 import com.example.modulePackage
 import me.tbsten.katachi.dsl.DeclarationContainerScope
 import me.tbsten.katachi.dsl.LayoutScope
-import me.tbsten.katachi.dsl.gradle.*
+import me.tbsten.katachi.dsl.gradle.div
+import me.tbsten.katachi.dsl.gradle.kotlin
+import me.tbsten.katachi.dsl.gradle.mainSourceSet
+import me.tbsten.katachi.dsl.gradle.module
 import me.tbsten.katachi.dsl.kotlin.ktFile
 import me.tbsten.katachi.konsist.konsist
 
@@ -34,6 +37,22 @@ fun DeclarationContainerScope.service() = "Service" {
         ":".module {
             mustBePublic()
             mainSourceSet / kotlin / modulePackage / "service" / "*Service".ktFile()
+        }
+    }
+
+    template {
+        val name by stringParameter()
+        val kdoc by stringParameter(default = "$name に関するアプリ固有の振る舞い。")
+
+        file("${name}Service.kt") {
+            """
+                package com.example.service
+
+                /** $kdoc */
+                class ${name}Service {
+                    fun execute(): String = TODO("${name}Service の実装")
+                }
+            """.trimIndent() + "\n"
         }
     }
 }
