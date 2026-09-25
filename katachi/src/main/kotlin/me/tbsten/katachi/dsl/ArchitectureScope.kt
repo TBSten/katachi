@@ -73,7 +73,7 @@ public sealed interface ArchitectureScope : DeclarationContainerScope {
 
     /**
      * How a module path written in a `layout { }` becomes a directory. Defaults to
-     * [conventionalModuleResolver].
+     * [ModuleResolver.Conventional].
      *
      * ## Example 1: replace the resolution rule for module paths
      * ```kt

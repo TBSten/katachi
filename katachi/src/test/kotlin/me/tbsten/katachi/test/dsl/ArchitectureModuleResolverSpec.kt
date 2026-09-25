@@ -5,16 +5,10 @@ import io.kotest.matchers.shouldBe
 import me.tbsten.katachi.dsl.ModulePath
 import me.tbsten.katachi.dsl.ModuleResolver
 import me.tbsten.katachi.dsl.architecture
-import me.tbsten.katachi.dsl.conventionalModuleResolver
 
 class ArchitectureModuleResolverSpec : FreeSpec({
     "moduleResolver を書かなければ規約ベースになる" {
         architecture { }.moduleResolver shouldBe ModuleResolver.Conventional
-    }
-
-    "conventionalModuleResolver() を明示しても既定と同じ値になる" {
-        architecture { moduleResolver = conventionalModuleResolver() }
-            .moduleResolver shouldBe ModuleResolver.Conventional
     }
 
     "moduleResolver を差し替えると architecture がそれを持つ" {

@@ -21,10 +21,8 @@ import me.tbsten.katachi.dsl.Architecture
 import me.tbsten.katachi.dsl.Documented
 import me.tbsten.katachi.dsl.Examples
 import me.tbsten.katachi.dsl.LayoutEntry
-import me.tbsten.katachi.dsl.ModuleResolver
 import me.tbsten.katachi.dsl.Title
 import me.tbsten.katachi.dsl.architecture
-import me.tbsten.katachi.dsl.conventionalModuleResolver
 import me.tbsten.katachi.dsl.flattenLayout
 import me.tbsten.katachi.dsl.gitTracked
 import me.tbsten.katachi.dsl.gradle.*
@@ -275,15 +273,13 @@ class ProjectArchitectureSpec : FreeSpec({
         pathsUnder("com.other.app") shouldContain "src/main/kotlin/com/other/app/Application.kt"
     }
 
-    "gitTracked() / wholeTree() / conventionalModuleResolver() が利用者のビルドからも書ける" {
+    "gitTracked() / wholeTree() が利用者のビルドからも書ける" {
         // They are context parameter extensions rather than `ArchitectureScope` members, and
         // this build enables no compiler flag for them: an import is the whole cost. Proving
         // it here rather than in katachi's own specs is the point, because `:katachi` compiles
         // itself with settings a user's build does not have.
         architecture { files = gitTracked() }.files shouldBe FileSelection.GitTracked
         architecture { files = wholeTree() }.files shouldBe FileSelection.WholeTree
-        architecture { moduleResolver = conventionalModuleResolver() }
-            .moduleResolver shouldBe ModuleResolver.Conventional
     }
 
     "利用者が実装した FileSelection が、実際に走査するファイル集合を決める" {
