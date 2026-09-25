@@ -9,6 +9,7 @@ import me.tbsten.katachi.dsl.templateParameterNames
 import me.tbsten.katachi.fs.findProjectRoot
 import me.tbsten.katachi.processor.ArchitectureProcessContext
 import me.tbsten.katachi.processor.ArchitectureProcessor
+import me.tbsten.katachi.runProcessorCatching
 
 /**
  * The `--arg` name that says which role to run. Spelled once, because
@@ -37,6 +38,13 @@ private const val ROLE_NAME_ARG: String = "roleName"
  * no such net here, so the two things that could put a file somewhere unintended are closed
  * instead: a file name may hold no separator, and the directory comes only from the layout.
  *
+ * ## What it answers
+ *
+ * `success` once the files are written, or once [OnExisting.Skip] left them alone. Everything
+ * that stops it from writing -- a file already there under [OnExisting.Fail], a reserved or unsafe
+ * file name, a symlink in the way, a mistake in the definition -- is a `failure` carrying that
+ * exception. Nothing is thrown out of `process`.
+ *
  * ## Example 1: generate the files of one role
  * ```kt
  * import me.tbsten.katachi.processor.process
@@ -46,7 +54,7 @@ private const val ROLE_NAME_ARG: String = "roleName"
  * projectArchitecture.process(
  *     GenerateCodeFromTemplate,
  *     GenerateCodeFromTemplate.Args(roleName = "UseCase"),
- * )
+ * ).getOrThrow()
  * ```
  *
  * ## Example 2: leave the whole set alone when any of it is already there
@@ -58,7 +66,7 @@ private const val ROLE_NAME_ARG: String = "roleName"
  * projectArchitecture.process(
  *     GenerateCodeFromTemplate,
  *     GenerateCodeFromTemplate.Args(roleName = "UseCase", onExisting = OnExisting.Skip),
- * )
+ * ).getOrThrow()
  * ```
  *
  * @see OnExisting
@@ -68,24 +76,26 @@ private const val ROLE_NAME_ARG: String = "roleName"
 public object GenerateCodeFromTemplate : ArchitectureProcessor<GenerateCodeFromTemplate.Args, Unit> {
     override val argsSerializer: KSerializer<Args> = Args.serializer()
 
-    override fun process(context: ArchitectureProcessContext<Args>) {
-        val files = templateFiles(
-            context = context,
-            roleName = context.args.roleName,
-            values = context.rawArgs,
-        )
+    override fun process(context: ArchitectureProcessContext<Args>): Result<Unit> =
+        runProcessorCatching {
+            val files = templateFiles(
+                context = context,
+                roleName = context.args.roleName,
+                values = context.rawArgs,
+            )
 
-        // Resolved after the files are built, so that a definition problem is reported without the
-        // project root ever being searched for -- the same order documentation generation keeps.
-        val projectRoot = File(findProjectRoot(context.fileSystem).path.value)
-        context.log("Generating ${files.size} files under $projectRoot")
-        writeTemplateFiles(
-            projectRoot = projectRoot,
-            files = files,
-            onExisting = context.args.onExisting,
-            log = { message -> context.log(message) },
-        )
-    }
+            // Resolved after the files are built, so that a definition problem is reported without
+            // the project root ever being searched for -- the same order documentation generation
+            // keeps.
+            val projectRoot = File(findProjectRoot(context.fileSystem).path.value)
+            context.log("Generating ${files.size} files under $projectRoot")
+            writeTemplateFiles(
+                projectRoot = projectRoot,
+                files = files,
+                onExisting = context.args.onExisting,
+                log = { message -> context.log(message) },
+            )
+        }
 
     /**
      * The parameters `--arg roleName=` named, so that the run's own check knows them.

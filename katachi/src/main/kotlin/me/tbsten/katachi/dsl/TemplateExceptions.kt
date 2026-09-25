@@ -70,7 +70,7 @@ public class KatachiDuplicateTemplateException internal constructor(
  *     arch.process(
  *         GenerateCodeFromTemplate,
  *         GenerateCodeFromTemplate.Args(roleName = "UseCase"),
- *     )
+ *     ).getOrThrow()
  * }
  * thrown.fileName shouldBe "useCase/GetUserUseCase.kt"
  * ```
@@ -129,7 +129,7 @@ public class KatachiInvalidTemplateFileNameException internal constructor(
  *     arch.process(
  *         GenerateCodeFromTemplate,
  *         GenerateCodeFromTemplate.Args(roleName = "UseCase"),
- *     )
+ *     ).getOrThrow()
  * }
  * thrown.fileName shouldBe "GetUserUseCase.kt"
  * ```

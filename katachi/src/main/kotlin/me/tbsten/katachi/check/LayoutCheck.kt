@@ -4,7 +4,7 @@ import me.tbsten.katachi.ExperimentalKatachiApi
 import me.tbsten.katachi.processor.ArchitectureProcessContext
 import me.tbsten.katachi.processor.ArchitectureProcessorNoArg
 import me.tbsten.katachi.processor.projectWalk
-import me.tbsten.katachi.scan.Severity
+import me.tbsten.katachi.runProcessorCatching
 import me.tbsten.katachi.scan.Violation
 import me.tbsten.katachi.scan.layoutWarningsOf
 
@@ -19,6 +19,12 @@ import me.tbsten.katachi.scan.layoutWarningsOf
  * to win: a reader wants one report holding everything that is off, not the first finding plus
  * another run to learn the second. Turning a result into a test failure is `assert()`'s job,
  * and `assert()` is the only entry point that throws.
+ *
+ * "Returns" means [assertNoErrors] at the end of the body: warnings only is a
+ * `success`, and anything that fails the check is a `failure` carrying a
+ * [KatachiArchitectureAssertionError] that holds every violation found, warnings included.
+ * Whatever else goes wrong -- no project root, a mistake in the definition -- is a `failure`
+ * too, and is not thrown out of `process`.
  *
  * Being a processor also means it shares the one walk of the project with everything else that
  * reads the same [ArchitectureProcessContext]: asking this for violations and asking
@@ -46,32 +52,28 @@ import me.tbsten.katachi.scan.layoutWarningsOf
  * the declarations produce, so the two are merged where each can see the other rather than
  * concatenated — a pair of roles named by both must be one block, not two.
  *
- * ## Example 1: look at what the check found without failing the test
+ * ## Example 1: accept what is already there and fail only on something new
  * ```kt
- * val violations = projectArchitecture.process(LayoutCheck())
- * violations.map { it.path } shouldContain "notes.md"
- * ```
+ * import me.tbsten.katachi.check.KatachiArchitectureAssertionError
+ * import me.tbsten.katachi.check.LayoutCheck
+ * import me.tbsten.katachi.processor.process
  *
- * ## Example 2: accept what is already there and fail only on something new
- * ```kt
  * val baseline = setOf("legacy/Untouched.kt")
- * val fresh = projectArchitecture.process(LayoutCheck()).filterNot { it.path in baseline }
- * fresh.map { it.path } shouldBe emptyList()
+ * val found = projectArchitecture.process(LayoutCheck()).fold(
+ *     onSuccess = { it },
+ *     onFailure = { (it as? KatachiArchitectureAssertionError)?.violations ?: throw it },
+ * )
+ * found.map { it.path }.filterNot { it in baseline } shouldBe emptyList()
  * ```
  */
 @ExperimentalKatachiApi
 public class LayoutCheck : ArchitectureProcessorNoArg<List<Violation>> {
-    // Reading `layoutViolations` is what starts the walk. `declaredEntries` costs no walk --
-    // see this class's own KDoc for why it is read here too.
-    // Run from `runKatachiProcessor`, a check that found something has to fail the task.
-    // `Warning` does not: `assert()` prints warnings and returns, and the two entry points
-    // answering differently about the same violations would be worse than either answer.
-    override fun isFailure(result: List<Violation>): Boolean =
-        result.any { it.severity == Severity.Error }
-
-    override fun process(context: ArchitectureProcessContext<Unit>): List<Violation> {
-        val walk = context.projectWalk
-        return walk.layoutViolations +
-            layoutWarningsOf(context.declaredEntries, walk.layoutFileOverlaps)
-    }
+    override fun process(context: ArchitectureProcessContext<Unit>): Result<List<Violation>> =
+        runProcessorCatching {
+            val walk = context.projectWalk
+            (
+                walk.layoutViolations +
+                    layoutWarningsOf(context.declaredEntries, walk.layoutFileOverlaps)
+                ).assertNoErrors()
+        }
 }

@@ -14,17 +14,19 @@ import me.tbsten.katachi.processor.ArchitectureProcessorNoArg
  * carry a `summary` and at least one `example`.
  *
  * The third of the three shapes, and the one that is worth reading twice. It is a check, but it
- * does not return `List<Violation>` -- it returns [Report], a type of its own, because what it
- * found is two numbers and a list of reasons rather than a list of file paths.
+ * does not answer with `List<Violation>` -- its answer is a [Report], a type of its own, because
+ * what it found is two numbers and a list of reasons rather than a list of file paths.
  *
- * ## Why `isFailure` has to be written here
+ * ## Why it throws inside `runCatching` rather than answering a [Report] that says "missing"
  *
- * `runKatachiProcessor` never learns the shape of a result. A `List<Violation>` that is not
- * empty and a `List<String>` that is not empty look the same to it, so it cannot decide on its
- * own whether a run passed. [isFailure] is where that is said, and the default is `false`:
- * "producing a result is the whole job", which is right for a generator and wrong for a check.
- * Leaving it out would make this processor report `[OK]` and exit zero while holding the
- * problems it had just found.
+ * `runKatachiProcessor` never learns the shape of a result. A [Report] whose [Report.missing] is
+ * not empty and one whose list is empty look the same to it, so it cannot decide on its own
+ * whether a run passed. What it does read is the [Result]: `success` is `[OK]`, `failure` is
+ * `[FAILED]` and a non-zero exit. So the body runs inside `runCatching`, a clean definition
+ * ends it with the report, and one with gaps throws `IncompleteDocumentation(report)` there --
+ * the same [Report], carried on the exception so a test can still read it. Answering `success`
+ * either way would make this processor report `[OK]` and exit zero while holding the problems
+ * it had just found.
  *
  * ## Which roles it looks at
  *
@@ -34,15 +36,16 @@ import me.tbsten.katachi.processor.ArchitectureProcessorNoArg
  * is this processor's own: katachi keeps what was written, and what combining two values means
  * is a decision only the reader can make.
  *
- * ## Example 1: run it from a test and read both halves of the answer
+ * ## Example 1: run it from a test and read what it found, pass or fail
  * ```kt
- * val report = projectArchitecture.process(RoleDocCoverage)
- * report.missing shouldBe emptyList()
- * RoleDocCoverage.isFailure(report) shouldBe false
+ * val result = projectArchitecture.process(RoleDocCoverage)
+ * val report = result.getOrNull()
+ *     ?: (result.exceptionOrNull() as? RoleDocCoverage.IncompleteDocumentation)?.report
+ * report?.missing shouldBe emptyList()
  * ```
  */
 object RoleDocCoverage : ArchitectureProcessorNoArg<RoleDocCoverage.Report> {
-    override fun process(context: ArchitectureProcessContext<Unit>): Report {
+    override fun process(context: ArchitectureProcessContext<Unit>): Result<Report> = runCatching {
         // A group that opted out takes its roles with it, so the silent group names are
         // collected first and every prefix of a role's group path is checked against them.
         val silentGroups = context.groups
@@ -72,17 +75,26 @@ object RoleDocCoverage : ArchitectureProcessorNoArg<RoleDocCoverage.Report> {
             }
         }
 
-        return Report(checked = documented.size, missing = missing)
+        val report = Report(checked = documented.size, missing = missing)
+        if (missing.isNotEmpty()) throw IncompleteDocumentation(report)
+        report
     }
 
-    override fun isFailure(result: Report): Boolean = result.missing.isNotEmpty()
+    /**
+     * The answer "not every role is documented", with the [Report] that says which.
+     *
+     * An [AssertionError] so that `getOrThrow()` in a test reads as a failed assertion, and its
+     * message is [Report.toString] because that is what `runKatachiProcessor` prints under
+     * `[FAILED]`.
+     */
+    class IncompleteDocumentation(val report: Report) : AssertionError(report.toString())
 
     /**
      * What [RoleDocCoverage] found: how many roles it looked at, and everything that was missing.
      *
-     * `toString()` is written out because `runKatachiProcessor` prints a result that is not a
-     * `Collection` through it, and the generated `toString()` of a data class is the one line a
-     * reader least wants at the end of a run.
+     * `toString()` is written out because `runKatachiProcessor` prints it -- through the result on
+     * `[OK]`, through [IncompleteDocumentation]'s message on `[FAILED]` -- and the generated
+     * `toString()` of a data class is the one line a reader least wants at the end of a run.
      */
     data class Report(
         val checked: Int,

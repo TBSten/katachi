@@ -26,7 +26,7 @@ class FakeArchitectureProcessContextSpec : FreeSpec({
             fileSystem = ForbiddenFileSystem,
         )
 
-        LoggingProcessor.process(context)
+        LoggingProcessor.process(context).getOrThrow()
 
         context.logs shouldBe listOf("start", "found 1 roles", "done")
     }
@@ -38,7 +38,7 @@ class FakeArchitectureProcessContextSpec : FreeSpec({
             fileSystem = ForbiddenFileSystem,
         )
 
-        SilentProcessor.process(context)
+        SilentProcessor.process(context).getOrThrow()
 
         context.logs.shouldBeEmpty()
     }
@@ -75,7 +75,7 @@ class FakeArchitectureProcessContextSpec : FreeSpec({
 })
 
 private object LoggingProcessor : ArchitectureProcessorNoArg<Unit> {
-    override fun process(context: ArchitectureProcessContext<Unit>) {
+    override fun process(context: ArchitectureProcessContext<Unit>): Result<Unit> = runCatching {
         context.log("start")
         context.log("found ${context.roles.size} roles")
         context.log("done")
@@ -83,5 +83,5 @@ private object LoggingProcessor : ArchitectureProcessorNoArg<Unit> {
 }
 
 private object SilentProcessor : ArchitectureProcessorNoArg<Unit> {
-    override fun process(context: ArchitectureProcessContext<Unit>) {}
+    override fun process(context: ArchitectureProcessContext<Unit>): Result<Unit> = runCatching { }
 }

@@ -19,8 +19,8 @@ fun DeclarationContainerScope.processor() = "Processor" {
           `context.roles` と `context.filesOf(role)` からファイル数を数える
         - `RoleTable` — 型付きの引数。`@Serializable data class Args` を持ち、`--arg` から
           `String` / `List<String>` / `Int` / enum を受ける
-        - `RoleDocCoverage` — 検査。`List<Violation>` ではなく自前の `Report` を返し、
-          `isFailure(result)` を override して問題があれば `runKatachiProcessor` を落とす
+        - `RoleDocCoverage` — 検査。`List<Violation>` ではなく自前の `Report` を答えにし、
+          問題があれば `Result.failure` を返して `runKatachiProcessor` を落とす
 
         置いてよいのは `ArchitectureProcessor` の実装と、その引数・結果の型だけです。
 
@@ -40,7 +40,7 @@ fun DeclarationContainerScope.processor() = "Processor" {
     """.trimIndent()
     example("RoleFileCount", "引数なしの最小形")
     example("RoleTable", "型付き引数を取る形")
-    example("RoleDocCoverage", "isFailure を override した検査")
+    example("RoleDocCoverage", "Result.failure で run を落とす検査")
     layout {
         ":architecture-test".module {
             testSourceSet / kotlin / "com/example" / "processors" / "*".ktFile()

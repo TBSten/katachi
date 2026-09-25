@@ -28,12 +28,14 @@ import me.tbsten.katachi.fs.KatachiFileSystem
  * ## Example 1: a processor that reads the declarations and nothing else
  * ```kt
  * object RoleNames : ArchitectureProcessorNoArg<List<String>> {
- *     override fun process(context: ArchitectureProcessContext<Unit>): List<String> =
- *         context.roles.map { it.qualifiedName }
+ *     override fun process(context: ArchitectureProcessContext<Unit>): Result<List<String>> =
+ *         runCatching { context.roles.map { it.qualifiedName } }
  * }
  *
- * projectArchitecture.process(RoleNames) shouldContain "domain/UseCase"
+ * projectArchitecture.process(RoleNames).getOrThrow() shouldContain "domain/UseCase"
  * ```
+ *
+ * @see ArchitectureProcessor
  */
 @ExperimentalKatachiApi
 public interface ArchitectureProcessContext<out Args> {
@@ -112,8 +114,8 @@ public interface ArchitectureProcessContext<out Args> {
      * ## Example 1: run a processor that reads the file system it is handed
      * ```kt
      * object FilesOfFirstRole : ArchitectureProcessorNoArg<List<String>> {
-     *     override fun process(context: ArchitectureProcessContext<Unit>): List<String> =
-     *         context.filesOf(context.roles.first())
+     *     override fun process(context: ArchitectureProcessContext<Unit>): Result<List<String>> =
+     *         runCatching { context.filesOf(context.roles.first()) }
      * }
      *
      * val arch = architecture {
@@ -134,7 +136,7 @@ public interface ArchitectureProcessContext<out Args> {
      *             emptyList()
      *         }
      * }
-     * arch.process(FilesOfFirstRole, fileSystem) shouldBe listOf("domain/GetUserUseCase.kt")
+     * arch.process(FilesOfFirstRole, fileSystem).getOrThrow() shouldBe listOf("domain/GetUserUseCase.kt")
      * ```
      */
     @InternalKatachiApi
@@ -294,7 +296,8 @@ public interface ArchitectureProcessContext<out Args> {
      *     context: ArchitectureProcessContext<Unit>,
      *     first: ArchitectureProcessorNoArg<List<R>>,
      *     second: ArchitectureProcessorNoArg<List<R>>,
-     * ): List<R> = first.process(context.withArgs(Unit)) + second.process(context.withArgs(Unit))
+     * ): List<R> = first.process(context.withArgs(Unit)).getOrThrow() +
+     *     second.process(context.withArgs(Unit)).getOrThrow()
      * ```
      *
      * @param onLog where the derived context sends [log]. `null` keeps this context's own.

@@ -7,6 +7,7 @@ import io.kotest.assertions.withClue
 import io.kotest.core.spec.style.FreeSpec
 import io.kotest.matchers.collections.shouldContain
 import io.kotest.matchers.shouldBe
+import io.kotest.matchers.types.shouldBeInstanceOf
 import me.tbsten.katachi.ExperimentalKatachiApi
 import me.tbsten.katachi.dsl.architecture
 import me.tbsten.katachi.processor.decodeFromStringMap
@@ -26,7 +27,7 @@ import me.tbsten.katachi.processor.process
 @OptIn(ExperimentalKatachiApi::class)
 class CustomProcessorSpec : FreeSpec({
     "引数を取らない processor が、役割ごとのファイル数を返す" {
-        val lines = projectArchitecture.process(RoleFileCount)
+        val lines = projectArchitecture.process(RoleFileCount).getOrThrow()
 
         withClue(lines.joinToString("\n")) {
             lines.map { it.substringBefore(":") } shouldBe
@@ -46,7 +47,7 @@ class CustomProcessorSpec : FreeSpec({
                 groups = listOf("core"),
                 sortBy = RoleTable.SortBy.Name,
             ),
-        )
+        ).getOrThrow()
 
         withClue(table.joinToString("\n")) {
             table.take(2) shouldBe listOf("| 役割 | 概要 |", "|---|---|")
@@ -77,18 +78,18 @@ class CustomProcessorSpec : FreeSpec({
         )
     }
 
-    "検査する processor が、この定義には問題を見つけない" {
-        val report = projectArchitecture.process(RoleDocCoverage)
+    "検査する processor が、この定義には問題を見つけず success を返す" {
+        // getOrThrow() が投げれば、欠けている役割の一覧がそのまま失敗メッセージになる。
+        val report = projectArchitecture.process(RoleDocCoverage).getOrThrow()
 
         withClue(report.toString()) {
             report.missing shouldBe emptyList()
             // `core` と `testing` の7役割だけが対象。`build` と `tool` は documented = false。
             report.checked shouldBe 7
-            RoleDocCoverage.isFailure(report) shouldBe false
         }
     }
 
-    "検査する processor が、summary と example を欠いた定義に isFailure = true を返す" {
+    "検査する processor が、summary と example を欠いた定義に failure を返す" {
         // Deliberately broken, and deliberately built here rather than in `ProjectArchitecture.kt`:
         // a reader looking for the definition to copy should never meet it.
         val broken = architecture {
@@ -103,7 +104,11 @@ class CustomProcessorSpec : FreeSpec({
             }
         }
 
-        val report = broken.process(RoleDocCoverage)
+        // A `success` here would make the run print `[OK]` and exit zero while holding the
+        // two problems below -- a check that can never fail.
+        val failure = broken.process(RoleDocCoverage).exceptionOrNull()
+            .shouldBeInstanceOf<RoleDocCoverage.IncompleteDocumentation>()
+        val report = failure.report
 
         withClue(report.toString()) {
             report.checked shouldBe 2
@@ -111,9 +116,8 @@ class CustomProcessorSpec : FreeSpec({
                 RoleDocCoverage.Missing(role = "core/Blank", reason = "summary が無い"),
                 RoleDocCoverage.Missing(role = "core/Blank", reason = "example が1つも無い"),
             )
-            // Without this override the run would print `[OK]` and exit zero while holding
-            // the two problems above -- a check that can never fail.
-            RoleDocCoverage.isFailure(report) shouldBe true
+            // `runKatachiProcessor` prints the message under `[FAILED]`, so it is the report.
+            failure.message shouldBe report.toString()
         }
     }
 
@@ -127,12 +131,11 @@ class CustomProcessorSpec : FreeSpec({
             }
         }
 
-        val report = silent.process(RoleDocCoverage)
+        val report = silent.process(RoleDocCoverage).getOrThrow()
 
         withClue(report.toString()) {
             report.checked shouldBe 0
             report.missing shouldBe emptyList()
-            RoleDocCoverage.isFailure(report) shouldBe false
         }
     }
 })

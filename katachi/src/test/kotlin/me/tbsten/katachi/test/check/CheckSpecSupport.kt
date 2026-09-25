@@ -2,6 +2,7 @@ package me.tbsten.katachi.test.check
 
 import java.io.ByteArrayOutputStream
 import java.io.PrintStream
+import me.tbsten.katachi.check.KatachiArchitectureAssertionError
 import me.tbsten.katachi.dsl.Architecture
 import me.tbsten.katachi.dsl.ArchitectureScope
 import me.tbsten.katachi.dsl.LayoutScope
@@ -52,6 +53,18 @@ internal fun layoutArchitecture(
 
 /** Violations as their report's first lines, which is what a spec about the traversal means. */
 internal fun List<Violation>.labels(): List<String> = map { "[${it.label}] ${it.path}" }
+
+/**
+ * Every violation a check answered with, whether it passed or not.
+ *
+ * A check that found an error answers `failure(KatachiArchitectureAssertionError)`, and the
+ * violations ride on that; a spec about what was found wants them either way. Any other failure
+ * is rethrown, so a spec never mistakes a broken check for an empty answer.
+ */
+internal fun Result<List<Violation>>.found(): List<Violation> = fold(
+    onSuccess = { it },
+    onFailure = { (it as? KatachiArchitectureAssertionError)?.violations ?: throw it },
+)
 
 /**
  * Runs [block] with [System.err] swapped for a buffer, and returns whatever it printed.

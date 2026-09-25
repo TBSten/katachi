@@ -8,6 +8,7 @@ import io.kotest.matchers.string.shouldContain
 import me.tbsten.katachi.check.KatachiArchitectureAssertionError
 import me.tbsten.katachi.check.LayoutCheck
 import me.tbsten.katachi.check.assert
+import me.tbsten.katachi.check.assertNoErrors
 import me.tbsten.katachi.check.report
 import me.tbsten.katachi.check.validate
 import me.tbsten.katachi.dsl.Architecture
@@ -38,19 +39,21 @@ private class TodoViolation(override val path: String) : Violation {
 /** A check outside katachi: it reads the context and answers with violations of its own. */
 private class TodoCheck(private vararg val paths: String = arrayOf("app/src/Foo.kt")) :
     ArchitectureProcessorNoArg<List<Violation>> {
-    override fun process(context: ArchitectureProcessContext<Unit>): List<Violation> =
-        paths.map { TodoViolation(it) }
+    override fun process(context: ArchitectureProcessContext<Unit>): Result<List<Violation>> =
+        runCatching { paths.map<String, Violation> { TodoViolation(it) }.assertNoErrors() }
 }
 
 /** A check that finds nothing, for proving the layout check runs without being asked for. */
 private class SilentCheck : ArchitectureProcessorNoArg<List<Violation>> {
-    override fun process(context: ArchitectureProcessContext<Unit>): List<Violation> = emptyList()
+    override fun process(context: ArchitectureProcessContext<Unit>): Result<List<Violation>> =
+        runCatching { emptyList<Violation>().assertNoErrors() }
 }
 
 /** A check that is broken rather than failing: it throws instead of answering. */
 private class ThrowingCheck(private val failure: () -> Throwable) :
     ArchitectureProcessorNoArg<List<Violation>> {
-    override fun process(context: ArchitectureProcessContext<Unit>): List<Violation> = throw failure()
+    override fun process(context: ArchitectureProcessContext<Unit>): Result<List<Violation>> =
+        throw failure()
 }
 
 /**

@@ -28,6 +28,7 @@ class RoleSummaryReportSpec : FreeSpec({
         val written = mutableMapOf<String, String>()
 
         twoRoleArchitecture.process(RoleSummaryReport(write = { path, content -> written[path] = content }))
+            .getOrThrow()
 
         written shouldBe mapOf(
             "First.md" to "# First\n",
@@ -39,6 +40,7 @@ class RoleSummaryReportSpec : FreeSpec({
         // twoRoleArchitecture が書いたはずの内容を、先に集めるラムダで手に入れておく。
         val expected = mutableMapOf<String, String>()
         twoRoleArchitecture.process(RoleSummaryReport(write = { path, content -> expected[path] = content }))
+            .getOrThrow()
 
         // Second を外した定義に対して、比べるラムダで同じ processor を回す。Second を
         // まだ知らない実装がこのラムダに来た場合は seen に "Second.md" が残ってしまい、
@@ -52,7 +54,7 @@ class RoleSummaryReportSpec : FreeSpec({
                     if (expected[path] != content) mismatched += path
                 },
             ),
-        )
+        ).getOrThrow()
 
         (expected.keys - seen) shouldContainExactly setOf("Second.md")
         mismatched.shouldBeEmpty()

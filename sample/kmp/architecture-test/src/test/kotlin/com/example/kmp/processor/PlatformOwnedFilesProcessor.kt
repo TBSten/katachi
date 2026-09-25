@@ -21,6 +21,6 @@ import me.tbsten.katachi.processor.ArchitectureProcessorNoArg
 @OptIn(ExperimentalKatachiApi::class)
 class PlatformOwnedFilesProcessor(private val owner: String) :
     ArchitectureProcessorNoArg<List<String>> {
-    override fun process(context: ArchitectureProcessContext<Unit>): List<String> =
-        context.roles.filter { it[Owner] == owner }.flatMap { context.filesOf(it) }
+    override fun process(context: ArchitectureProcessContext<Unit>): Result<List<String>> =
+        runCatching { context.roles.filter { it[Owner] == owner }.flatMap { context.filesOf(it) } }
 }

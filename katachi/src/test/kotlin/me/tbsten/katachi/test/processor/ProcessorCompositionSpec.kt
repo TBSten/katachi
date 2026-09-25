@@ -37,8 +37,35 @@ class ProcessorCompositionSpec : FreeSpec({
     "+ で合成した processor は両方の結果を順につなげる" {
         val combined = FirstNames + SecondNames
 
-        definition.process(combined, Unit to Unit) shouldBe
-            definition.process(FirstNames) + definition.process(SecondNames)
+        definition.process(combined, Unit to Unit).getOrThrow() shouldBe
+            definition.process(FirstNames).getOrThrow() + definition.process(SecondNames).getOrThrow()
+    }
+
+    "片方が failure を返すと、合成した processor もその failure を返す" {
+        val failure = IllegalStateException("second said no")
+
+        val result = definition.process(FirstNames + FailingNames(failure), Unit to Unit)
+
+        result.exceptionOrNull() shouldBe failure
+    }
+
+    "両方が failure を返すと、先の failure を返し、後の failure は suppressed に残る" {
+        val first = IllegalStateException("first said no")
+        val second = IllegalStateException("second said no")
+
+        val result = definition.process(FailingNames(first) + FailingNames(second), Unit to Unit)
+
+        result.exceptionOrNull() shouldBe first
+        first.suppressed.toList() shouldBe listOf(second)
+    }
+
+    "先が failure を返しても、後の processor は走る" {
+        val ran = mutableListOf<String>()
+        val second = RecordingNames(ran)
+
+        definition.process(FailingNames(IllegalStateException("no")) + second, Unit to Unit)
+
+        ran shouldBe listOf("ran")
     }
 
     "+ で合成しても走査は1回しか起きない" {
@@ -90,20 +117,34 @@ private object NotAStringMapDecoder : AbstractDecoder() {
     override fun decodeElementIndex(descriptor: SerialDescriptor): Int = CompositeDecoder.DECODE_DONE
 }
 
+/** Answers "the run does not pass" with [failure], having done its job. */
+private class FailingNames(private val failure: Throwable) : ArchitectureProcessorNoArg<List<String>> {
+    override fun process(context: ArchitectureProcessContext<Unit>): Result<List<String>> =
+        runCatching { throw failure }
+}
+
+/** Passes with nothing, and leaves a mark in [ran] that it was run at all. */
+private class RecordingNames(private val ran: MutableList<String>) : ArchitectureProcessorNoArg<List<String>> {
+    override fun process(context: ArchitectureProcessContext<Unit>): Result<List<String>> = runCatching {
+        ran += "ran"
+        emptyList()
+    }
+}
+
 private object FirstNames : ArchitectureProcessorNoArg<List<String>> {
-    override fun process(context: ArchitectureProcessContext<Unit>): List<String> =
-        context.roles.map { "first:${it.qualifiedName}" }
+    override fun process(context: ArchitectureProcessContext<Unit>): Result<List<String>> =
+        runCatching { context.roles.map { "first:${it.qualifiedName}" } }
 }
 
 private object SecondNames : ArchitectureProcessorNoArg<List<String>> {
-    override fun process(context: ArchitectureProcessContext<Unit>): List<String> =
-        context.roles.map { "second:${it.qualifiedName}" }
+    override fun process(context: ArchitectureProcessContext<Unit>): Result<List<String>> =
+        runCatching { context.roles.map { "second:${it.qualifiedName}" } }
 }
 
 /** A processor that returns the files of every role it can see, to prove walk sharing. */
 private object FilesCount : ArchitectureProcessorNoArg<List<String>> {
-    override fun process(context: ArchitectureProcessContext<Unit>): List<String> =
-        context.roles.flatMap { context.filesOf(it) }
+    override fun process(context: ArchitectureProcessContext<Unit>): Result<List<String>> =
+        runCatching { context.roles.flatMap { context.filesOf(it) } }
 }
 
 @Serializable
@@ -118,22 +159,22 @@ private data class CountArgs(val count: Int = 1)
 private object ComposedRoleNameProcessor : ArchitectureProcessor<ComposedRoleNameArgs, List<String>> {
     override val argsSerializer: KSerializer<ComposedRoleNameArgs> = ComposedRoleNameArgs.serializer()
 
-    override fun process(context: ArchitectureProcessContext<ComposedRoleNameArgs>): List<String> =
-        listOf(context.args.roleName)
+    override fun process(context: ArchitectureProcessContext<ComposedRoleNameArgs>): Result<List<String>> =
+        runCatching { listOf(context.args.roleName) }
 }
 
 private object ComposedRoleNameProcessor2 : ArchitectureProcessor<ComposedRoleNameArgs2, List<String>> {
     override val argsSerializer: KSerializer<ComposedRoleNameArgs2> = ComposedRoleNameArgs2.serializer()
 
-    override fun process(context: ArchitectureProcessContext<ComposedRoleNameArgs2>): List<String> =
-        listOf(context.args.roleName)
+    override fun process(context: ArchitectureProcessContext<ComposedRoleNameArgs2>): Result<List<String>> =
+        runCatching { listOf(context.args.roleName) }
 }
 
 private object CountProcessor : ArchitectureProcessor<CountArgs, List<String>> {
     override val argsSerializer: KSerializer<CountArgs> = CountArgs.serializer()
 
-    override fun process(context: ArchitectureProcessContext<CountArgs>): List<String> =
-        List(context.args.count) { "x" }
+    override fun process(context: ArchitectureProcessContext<CountArgs>): Result<List<String>> =
+        runCatching { List(context.args.count) { "x" } }
 }
 
 /** A tree that answers normally and remembers how often it was listed. */

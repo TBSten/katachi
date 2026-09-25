@@ -206,7 +206,7 @@ Four of them live under `sample/`. Each is a **standalone Gradle build** with it
 | `sample/jvm` | A minimal Ktor server | `./gradlew checkSampleJvm` |
 | `sample/android` | A multi-module Android app, with real Compose and AndroidX dependencies | `./gradlew checkSampleAndroid` |
 | `sample/kmp` | An Android + iOS KMP project, with real Compose Multiplatform dependencies | `./gradlew checkSampleKmp` |
-| `sample/custom-processor` | Three hand-written processors — no arguments, typed arguments, and a check that overrides `isFailure`. Its application is three files | `./gradlew checkSampleCustomProcessor` |
+| `sample/custom-processor` | Three hand-written processors — no arguments, typed arguments, and a check that fails the run when it finds something. Its application is three files | `./gradlew checkSampleCustomProcessor` |
 
 They are **close to the real thing, not stubs.** `Screen` is a real `@Composable`, `ViewModel` extends the real `androidx.lifecycle.ViewModel`, `@Preview` is actually written. Checking something that does not look like a real project would not tell us katachi works on one.
 

@@ -37,7 +37,8 @@ import java.io.IOException
 /** A check outside katachi that is broken rather than failing: it throws instead of answering. */
 private class ThrowingProcessor(private val failure: () -> Throwable) :
     ArchitectureProcessorNoArg<List<Violation>> {
-    override fun process(context: ArchitectureProcessContext<Unit>): List<Violation> = throw failure()
+    override fun process(context: ArchitectureProcessContext<Unit>): Result<List<Violation>> =
+        throw failure()
 }
 
 /**

@@ -222,7 +222,7 @@ architecture {
 | `sample/jvm` | Ktor の最小サーバ（アプリ本体はルートプロジェクトの1モジュール） | `:architecture-test` | `./gradlew checkSampleJvm` |
 | `sample/android` | マルチモジュールの Android アプリ（Compose / AndroidX の実依存あり） | `:app` の `src/test`（下記） | `./gradlew checkSampleAndroid` |
 | `sample/kmp` | Android + iOS の KMP プロジェクト（Compose Multiplatform の実依存あり） | `:architecture-test` | `./gradlew checkSampleKmp` |
-| `sample/custom-processor` | 利用者が自分で書く processor 3本（引数なし / 型付き引数 / `isFailure` を override した検査）。アプリ本体は3ファイルだけ | `:architecture-test` | `./gradlew checkSampleCustomProcessor` |
+| `sample/custom-processor` | 利用者が自分で書く processor 3本（引数なし / 型付き引数 / 見つけたら run を失敗させる検査）。アプリ本体は3ファイルだけ | `:architecture-test` | `./gradlew checkSampleCustomProcessor` |
 
 `:architecture-test` は上の「導入」で書いた推奨形そのもので、`kotlin("jvm")` と
 `testImplementation(libs.katachi)` しか持たない。`sample/android` だけは現状 `:app` の

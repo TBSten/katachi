@@ -19,20 +19,21 @@ import me.tbsten.katachi.processor.ArchitectureProcessorNoArg
  *
  * The result is a `List<String>` rather than one joined string because `runKatachiProcessor`
  * prints a `Collection` one element per line; anything else arrives through `toString()`, which
- * for a list is a single bracketed line.
+ * for a list is a single bracketed line. It is always `Result.success`: counting has no answer
+ * that would fail the run.
  *
  * ## Example 1: run it from a test, through the API
  * ```kt
- * val lines = projectArchitecture.process(RoleFileCount)
+ * val lines = projectArchitecture.process(RoleFileCount).getOrThrow()
  * lines shouldContain "core/Model: 1 件"
  * ```
  *
  * @see RoleTable for the same shape with typed arguments.
  */
 object RoleFileCount : ArchitectureProcessorNoArg<List<String>> {
-    override fun process(context: ArchitectureProcessContext<Unit>): List<String> {
+    override fun process(context: ArchitectureProcessContext<Unit>): Result<List<String>> = runCatching {
         context.log("${context.roles.size} 個の役割が覆うファイルを数えます")
-        return context.roles.map { role ->
+        context.roles.map { role ->
             "${role.qualifiedName}: ${context.filesOf(role).size} 件"
         }
     }

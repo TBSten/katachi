@@ -9,7 +9,6 @@ import me.tbsten.katachi.fs.RealFileSystem
 import me.tbsten.katachi.processor.ArchitectureProcessor
 import me.tbsten.katachi.processor.process
 import me.tbsten.katachi.processor.projectWalk
-import me.tbsten.katachi.scan.UncheckedCheck
 import me.tbsten.katachi.scan.Violation
 
 /**
@@ -70,9 +69,20 @@ public fun Architecture.validate(fileSystem: KatachiFileSystem): List<Violation>
  *
  * A check that throws does not end the run. It becomes one
  * [me.tbsten.katachi.scan.UncheckedCheck] violation naming the check and what it threw, and
- * every other check still reports what it found. The exception is the family the walk itself
- * refuses to swallow (`VirtualMachineError`, `LinkageError`, `InterruptedException`,
- * `AssertionError`), which passes straight through.
+ * every other check still reports what it found. A check that answers `Result.failure` is read
+ * by what the failure is: a [KatachiArchitectureAssertionError] -- what [assertNoErrors]
+ * throws -- is the check saying what it found, and its violations join the list; any other
+ * failure is the check saying it could not tell, and becomes an `UncheckedCheck` like a throw.
+ * A check is expected to answer rather than throw, but one that throws anyway is caught here
+ * all the same.
+ *
+ * [LayoutCheck] is read differently. It keeps what stops it as a `failure` rather than
+ * throwing, and here that failure is thrown on: no project root, or a definition that cannot
+ * be read, is this call's own exception, not one check among others that could not tell.
+ *
+ * The exception to "a throw does not end the run" is the family the walk itself refuses to
+ * swallow (`VirtualMachineError`, `LinkageError`, `InterruptedException`, `AssertionError`),
+ * which passes straight through.
  *
  * The first check is a separate parameter rather than part of the vararg so that this cannot
  * be reached by `validate()`, `validate(10)` or `validate(fileSystem)`.
@@ -128,22 +138,26 @@ internal fun Architecture.validateWith(
     // happens.
     val extra = checks.filterNot { it is LayoutCheck }
     return process(fileSystem) { context ->
+        // Started here rather than inside `LayoutCheck`, which keeps whatever it threw as its
+        // answer: an exception the walk hands up -- the caller's own assertion from inside the
+        // file system included -- would otherwise come back looking like what the check found.
+        context.projectWalk.layoutViolations
         // `LayoutCheck` does not appear in any signature above. Deny by default is the whole
         // of what katachi is, so it cannot depend on the caller remembering to ask for it.
-        val layout = LayoutCheck().process(context)
+        // A failure other than what it found is thrown on: a layout check that cannot run --
+        // no project root, no git, a definition it cannot read -- leaves nothing to report, and
+        // `validate()` documents those exceptions as its own.
+        val layout = LayoutCheck().process(context).getOrElse { cause ->
+            (cause as? KatachiArchitectureAssertionError)?.violations ?: throw cause
+        }
         // One check at a time, each caught on its own: errors.md's "if this fails, can the
         // neighbour still answer" applies here exactly as it applies per file inside the walk.
         // A third-party check throwing once must not take the layout violations with it —
         // that is the failure this library can least afford.
         val found = extra.flatMap { check ->
-            catching { check.process(context) }.getOrElse { cause ->
-                listOf(
-                    UncheckedCheck(
-                        check = check::class.qualifiedName ?: check::class.java.name,
-                        cause = cause,
-                    ),
-                )
-            }
+            catching { check.process(context) }
+                .getOrElse { cause -> return@flatMap listOf(uncheckedCheckOf(check, cause)) }
+                .violationsOf(check)
         }
         // One context, therefore one walk. The last term is the guard against the quietest way
         // this library could break: a definition full of constraints, code breaking them, and

@@ -40,6 +40,7 @@ import me.tbsten.katachi.processor.ArchitectureProcessor
  * ## Example 1: run it from a test, with arguments built in code
  * ```kt
  * val table = projectArchitecture.process(RoleTable, RoleTable.Args(groups = listOf("core")))
+ *     .getOrThrow()
  * table.first() shouldBe "| 役割 | 概要 |"
  * ```
  *
@@ -48,7 +49,7 @@ import me.tbsten.katachi.processor.ArchitectureProcessor
 object RoleTable : ArchitectureProcessor<RoleTable.Args, List<String>> {
     override val argsSerializer: KSerializer<Args> = Args.serializer()
 
-    override fun process(context: ArchitectureProcessContext<Args>): List<String> {
+    override fun process(context: ArchitectureProcessContext<Args>): Result<List<String>> = runCatching {
         val args = context.args
         context.log(
             "title=${args.title} groups=${args.groups} " +
@@ -63,7 +64,7 @@ object RoleTable : ArchitectureProcessor<RoleTable.Args, List<String>> {
             SortBy.Name -> selected.sortedBy { it.qualifiedName }
         }
 
-        return listOf("| ${args.title} | 概要 |", "|---|---|") +
+        listOf("| ${args.title} | 概要 |", "|---|---|") +
             ordered.map { role -> "| ${role.qualifiedName} | ${role[Summary].orEmpty()} |" }
     }
 

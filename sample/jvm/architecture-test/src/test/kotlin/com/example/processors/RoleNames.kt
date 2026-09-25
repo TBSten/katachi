@@ -20,9 +20,9 @@ import me.tbsten.katachi.processor.ArchitectureProcessor
 object RoleNames : ArchitectureProcessor<RoleNames.Args, List<String>> {
     override val argsSerializer: KSerializer<Args> = Args.serializer()
 
-    override fun process(context: ArchitectureProcessContext<Args>): List<String> {
+    override fun process(context: ArchitectureProcessContext<Args>): Result<List<String>> = runCatching {
         context.log("Listing roles with prefix=${context.args.prefix}")
-        return context.roles.map { it.qualifiedName }.filter { it.startsWith(context.args.prefix) }
+        context.roles.map { it.qualifiedName }.filter { it.startsWith(context.args.prefix) }
     }
 
     @Serializable

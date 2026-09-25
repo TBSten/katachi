@@ -7,22 +7,29 @@ import me.tbsten.katachi.fs.KatachiFileSystem
 import me.tbsten.katachi.fs.RealFileSystem
 
 /**
- * Runs [processor] against this definition and the real project, and returns its result.
+ * Runs [processor] against this definition and the real project, and returns its answer.
+ *
+ * The [Result] is the processor's own, handed back untouched. A processor answers everything,
+ * its failures included, through that [Result] -- see [ArchitectureProcessor] -- so nothing is
+ * caught here: one that throws out of `process` anyway throws out of this call too.
  *
  * Reading the project is deferred to [ArchitectureProcessContext.filesOf], so a processor that
  * only looks at declarations does no IO -- the search for the project root included.
  *
- * ## Example 1: run a processor that takes no arguments
+ * ## Example 1: run a processor that takes no arguments, and fail the test on a failure
  * ```kt
- * val violations = projectArchitecture.process(LayoutCheck())
- * violations.map { it.path } shouldContain "notes.md"
+ * import me.tbsten.katachi.check.LayoutCheck
+ * import me.tbsten.katachi.processor.process
+ *
+ * val violations = projectArchitecture.process(LayoutCheck()).getOrThrow()
  * ```
  *
  * @throws me.tbsten.katachi.fs.KatachiProjectRootNotFoundException when the processor asks for
- *   files and no directory above the working directory carries a Gradle, Maven or git marker.
+ *   files outside its own `runCatching` and no directory above the working directory carries a
+ *   Gradle, Maven or git marker. katachi's own processors answer that as a `failure` instead.
  */
 @ExperimentalKatachiApi
-public fun <R> Architecture.process(processor: ArchitectureProcessor<Unit, R>): R =
+public fun <R> Architecture.process(processor: ArchitectureProcessor<Unit, R>): Result<R> =
     process(processor, Unit, RealFileSystem())
 
 /**
@@ -34,8 +41,8 @@ public fun <R> Architecture.process(processor: ArchitectureProcessor<Unit, R>): 
  * object CountRoles : ArchitectureProcessor<CountRoles.Args, Int> {
  *     override val argsSerializer: KSerializer<Args> = Args.serializer()
  *
- *     override fun process(context: ArchitectureProcessContext<Args>): Int =
- *         context.roles.count { it.name.startsWith(context.args.prefix) }
+ *     override fun process(context: ArchitectureProcessContext<Args>): Result<Int> =
+ *         runCatching { context.roles.count { it.name.startsWith(context.args.prefix) } }
  *
  *     @Serializable
  *     data class Args(val prefix: String = "")
@@ -46,17 +53,20 @@ public fun <R> Architecture.process(processor: ArchitectureProcessor<Unit, R>): 
  *     "data".group { "GetUserRepository" { } }
  * }
  * val count = arch.process(CountRoles, CountRoles.Args(prefix = "Get"))
- * count shouldBe 3
+ * count.getOrThrow() shouldBe 3
  * ```
  */
 @ExperimentalKatachiApi
 public fun <Args, R> Architecture.process(
     processor: ArchitectureProcessor<Args, R>,
     args: Args,
-): R = process(processor, args, RealFileSystem())
+): Result<R> = process(processor, args, RealFileSystem())
 
 /**
  * [process] with the processor written inline, for something used once.
+ *
+ * The block is not an [ArchitectureProcessor], so it answers with a plain [R]: there is no run to
+ * pass or fail, only a value to compute. Throwing out of the block ends the call as usual.
  *
  * ## Example 1: pull out the files of the roles you care about
  * ```kt
@@ -86,13 +96,13 @@ public fun <R> Architecture.process(block: (ArchitectureProcessContext<Unit>) ->
  * val fileSystem = object : KatachiFileSystem {
  *     override val workingDirectory: FsPath = FsPath.of("/repo")
  *     // "gradlew" is one of the project root markers LayoutCheck's walk looks for; without one
- *     // present, findProjectRoot throws before the check ever runs.
+ *     // present, the check answers with a failure before it looks at any file.
  *     override fun exists(path: FsPath): Boolean =
  *         path == workingDirectory || path == workingDirectory / "gradlew"
  *     override fun isDirectory(path: FsPath): Boolean = path == workingDirectory
  *     override fun list(directory: FsPath): List<FsPath> = emptyList()
  * }
- * arch.process(LayoutCheck(), fileSystem) shouldBe emptyList()
+ * arch.process(LayoutCheck(), fileSystem).getOrThrow() shouldBe emptyList()
  * ```
  */
 @InternalKatachiApi
@@ -100,7 +110,7 @@ public fun <R> Architecture.process(block: (ArchitectureProcessContext<Unit>) ->
 public fun <R> Architecture.process(
     processor: ArchitectureProcessor<Unit, R>,
     fileSystem: KatachiFileSystem,
-): R = process(processor, Unit, fileSystem)
+): Result<R> = process(processor, Unit, fileSystem)
 
 /**
  * [process] with arguments, against [fileSystem].
@@ -110,8 +120,8 @@ public fun <R> Architecture.process(
  * object CountRoles : ArchitectureProcessor<CountRoles.Args, Int> {
  *     override val argsSerializer: KSerializer<Args> = Args.serializer()
  *
- *     override fun process(context: ArchitectureProcessContext<Args>): Int =
- *         context.roles.count { it.name.startsWith(context.args.prefix) }
+ *     override fun process(context: ArchitectureProcessContext<Args>): Result<Int> =
+ *         runCatching { context.roles.count { it.name.startsWith(context.args.prefix) } }
  *
  *     @Serializable
  *     data class Args(val prefix: String = "")
@@ -124,7 +134,7 @@ public fun <R> Architecture.process(
  *     override fun isDirectory(path: FsPath): Boolean = path == workingDirectory
  *     override fun list(directory: FsPath): List<FsPath> = emptyList()
  * }
- * arch.process(CountRoles, CountRoles.Args(prefix = ""), fileSystem) shouldBe 1
+ * arch.process(CountRoles, CountRoles.Args(prefix = ""), fileSystem).getOrThrow() shouldBe 1
  * ```
  */
 @InternalKatachiApi
@@ -133,7 +143,7 @@ public fun <Args, R> Architecture.process(
     processor: ArchitectureProcessor<Args, R>,
     args: Args,
     fileSystem: KatachiFileSystem,
-): R = processor.process(RealArchitectureProcessContext(this, args, fileSystem))
+): Result<R> = processor.process(RealArchitectureProcessContext(this, args, fileSystem))
 
 /**
  * [process] against [fileSystem] with the processor written inline. The file system comes first

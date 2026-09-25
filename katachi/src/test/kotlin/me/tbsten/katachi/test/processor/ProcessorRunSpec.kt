@@ -1,6 +1,7 @@
 package me.tbsten.katachi.test.processor
 
 import io.kotest.assertions.throwables.shouldThrow
+import io.kotest.assertions.withClue
 import io.kotest.core.spec.style.FreeSpec
 import io.kotest.matchers.collections.shouldContain
 import io.kotest.matchers.shouldBe
@@ -124,6 +125,57 @@ class ProcessorRunSpec : FreeSpec({
 
             summary.succeeded shouldBe 1
             summary.failed shouldBe 1
+        }
+
+        "failure を返した processor は [FAILED] とメッセージの全行を出し、失敗に数えられる" {
+            val lines = mutableListOf<String>()
+
+            val summary = runProcessors(
+                architecture = definition,
+                registry = mapOf("ok" to ObjectProcessor::class.java, "no" to AnswersNoProcessor::class.java),
+                processorKeys = listOf("ok", "no"),
+                rawArgs = emptyMap(),
+                out = lines::add,
+            )
+
+            summary.succeeded shouldBe 1
+            summary.failed shouldBe 1
+            val failedAt = lines.indexOf("[FAILED] no")
+            withClue("複数行のメッセージも、1行目だけでなく全行が processor の下に字下げされて並ぶ") {
+                lines.subList(failedAt + 1, failedAt + 3) shouldBe
+                    listOf("  2 roles are still named Todo.", "  Rename them before the release.")
+            }
+        }
+
+        "投げた processor も [FAILED] とメッセージを出し、失敗に数えられる" {
+            val lines = mutableListOf<String>()
+
+            val summary = runProcessors(
+                architecture = definition,
+                registry = mapOf("boom" to BoomProcessor::class.java),
+                processorKeys = listOf("boom"),
+                rawArgs = emptyMap(),
+                out = lines::add,
+            )
+
+            summary.failed shouldBe 1
+            val failedAt = lines.indexOf("[FAILED] boom")
+            lines[failedAt + 1] shouldBe "  boom message"
+        }
+
+        "success の Collection は1要素1行で [OK] の下に出る" {
+            val lines = mutableListOf<String>()
+
+            runProcessors(
+                architecture = definition,
+                registry = mapOf("names" to NamesProcessor::class.java),
+                processorKeys = listOf("names"),
+                rawArgs = emptyMap(),
+                out = lines::add,
+            )
+
+            val okAt = lines.indexOf("[OK] names")
+            lines.subList(okAt + 1, okAt + 3) shouldBe listOf("first", "second")
         }
 
         "Unit を返す processor は結果を印字せず、非 Unit は印字する" {
@@ -267,11 +319,11 @@ private class RunCountingFileSystem(private val delegate: KatachiFileSystem) : K
 }
 
 private object ObjectProcessor : ArchitectureProcessorNoArg<Unit> {
-    override fun process(context: ArchitectureProcessContext<Unit>) {}
+    override fun process(context: ArchitectureProcessContext<Unit>): Result<Unit> = runCatching { }
 }
 
 private class NoArgClassProcessor : ArchitectureProcessorNoArg<Unit> {
-    override fun process(context: ArchitectureProcessContext<Unit>) {}
+    override fun process(context: ArchitectureProcessContext<Unit>): Result<Unit> = runCatching { }
 
     override fun equals(other: Any?): Boolean = other is NoArgClassProcessor
     override fun hashCode(): Int = NoArgClassProcessor::class.hashCode()
@@ -279,25 +331,39 @@ private class NoArgClassProcessor : ArchitectureProcessorNoArg<Unit> {
 
 private class RequiresArgumentProcessor(@Suppress("UNUSED_PARAMETER") prefix: String) :
     ArchitectureProcessorNoArg<Unit> {
-    override fun process(context: ArchitectureProcessContext<Unit>) {}
+    override fun process(context: ArchitectureProcessContext<Unit>): Result<Unit> = runCatching { }
+}
+
+/** Did its job, and the answer is that the run does not pass. */
+private object AnswersNoProcessor : ArchitectureProcessorNoArg<Unit> {
+    override fun process(context: ArchitectureProcessContext<Unit>): Result<Unit> =
+        runCatching {
+            throw IllegalStateException("2 roles are still named Todo.\nRename them before the release.")
+        }
+}
+
+private object NamesProcessor : ArchitectureProcessorNoArg<List<String>> {
+    override fun process(context: ArchitectureProcessContext<Unit>): Result<List<String>> =
+        runCatching { listOf("first", "second") }
 }
 
 private class NotAProcessor
 
 private object RunLoggingProcessor : ArchitectureProcessorNoArg<Unit> {
-    override fun process(context: ArchitectureProcessContext<Unit>) {
+    override fun process(context: ArchitectureProcessContext<Unit>): Result<Unit> = runCatching {
         context.log("hello")
     }
 }
 
 private object BoomProcessor : ArchitectureProcessorNoArg<Unit> {
-    override fun process(context: ArchitectureProcessContext<Unit>) {
+    override fun process(context: ArchitectureProcessContext<Unit>): Result<Unit> {
         throw IllegalStateException("boom message")
     }
 }
 
 private object ValueProcessor : ArchitectureProcessorNoArg<Int> {
-    override fun process(context: ArchitectureProcessContext<Unit>): Int = 42
+    override fun process(context: ArchitectureProcessContext<Unit>): Result<Int> =
+        runCatching { 42 }
 }
 
 @Serializable
@@ -306,7 +372,7 @@ private data class RunRoleNameArgs(val roleName: String = "")
 private object RunRoleNameProcessor : ArchitectureProcessor<RunRoleNameArgs, Unit> {
     override val argsSerializer: KSerializer<RunRoleNameArgs> = RunRoleNameArgs.serializer()
 
-    override fun process(context: ArchitectureProcessContext<RunRoleNameArgs>) {}
+    override fun process(context: ArchitectureProcessContext<RunRoleNameArgs>): Result<Unit> = runCatching { }
 }
 
 private object RanFlag {
@@ -314,25 +380,25 @@ private object RanFlag {
 }
 
 private object RecordsRunProcessor : ArchitectureProcessorNoArg<Unit> {
-    override fun process(context: ArchitectureProcessContext<Unit>) {
+    override fun process(context: ArchitectureProcessContext<Unit>): Result<Unit> = runCatching {
         RanFlag.ran = true
     }
 }
 
 private object FilesReadingProcessorA : ArchitectureProcessorNoArg<List<String>> {
-    override fun process(context: ArchitectureProcessContext<Unit>): List<String> =
-        context.roles.flatMap { context.filesOf(it) }
+    override fun process(context: ArchitectureProcessContext<Unit>): Result<List<String>> =
+        runCatching { context.roles.flatMap { context.filesOf(it) } }
 }
 
 private object FilesReadingProcessorB : ArchitectureProcessorNoArg<List<String>> {
-    override fun process(context: ArchitectureProcessContext<Unit>): List<String> =
-        context.roles.flatMap { context.filesOf(it) }
+    override fun process(context: ArchitectureProcessContext<Unit>): Result<List<String>> =
+        runCatching { context.roles.flatMap { context.filesOf(it) } }
 }
 
 
 /** A processor whose vocabulary is not in its `Args`, the way a template's parameters are not. */
 private object UndeclaredNameRunProcessor : ArchitectureProcessorNoArg<Unit> {
-    override fun process(context: ArchitectureProcessContext<Unit>) {}
+    override fun process(context: ArchitectureProcessContext<Unit>): Result<Unit> = runCatching { }
 
     override fun undeclaredArgNames(context: ArchitectureProcessContext<*>): Set<String> =
         setOf("greeting")

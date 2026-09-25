@@ -22,13 +22,13 @@ import me.tbsten.katachi.fs.KatachiFileSystem
  *     "walks the roles and says so" {
  *         val context = FakeArchitectureProcessContext(
  *             architecture = architecture { "domain".group { "UseCase" { } } },
- *             args = Unit,
+ *             args = GenerateDocumentation.Args(outputDir = "build/katachi/docs"),
  *             fileSystem = RealFileSystem(),
  *         )
  *
- *         GenerateDocumentation.process(context)
+ *         GenerateDocumentation.process(context).getOrThrow()
  *
- *         context.logs shouldBe listOf("Scanning 1 roles...")
+ *         context.logs.first() shouldStartWith "Writing "
  *     }
  * })
  * ```

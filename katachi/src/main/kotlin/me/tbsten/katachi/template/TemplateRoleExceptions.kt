@@ -20,7 +20,7 @@ import me.tbsten.katachi.dsl.DeclarationSite
  *
  * val arch = architecture { "domain".group { "UseCase" { } } }
  * val thrown = shouldThrow<KatachiUnknownTemplateRoleException> {
- *     arch.process(GenerateCodeFromTemplate, GenerateCodeFromTemplate.Args(roleName = "UseCse"))
+ *     arch.process(GenerateCodeFromTemplate, GenerateCodeFromTemplate.Args(roleName = "UseCse")).getOrThrow()
  * }
  * thrown.declaredRoles shouldBe listOf("domain/UseCase")
  * ```
@@ -68,7 +68,7 @@ public class KatachiUnknownTemplateRoleException internal constructor(
  *     "feature".group { "UseCase" { } }
  * }
  * val thrown = shouldThrow<KatachiAmbiguousTemplateRoleException> {
- *     arch.process(GenerateCodeFromTemplate, GenerateCodeFromTemplate.Args(roleName = "UseCase"))
+ *     arch.process(GenerateCodeFromTemplate, GenerateCodeFromTemplate.Args(roleName = "UseCase")).getOrThrow()
  * }
  * thrown.candidates shouldBe listOf("domain/UseCase", "feature/UseCase")
  * ```
@@ -109,7 +109,7 @@ public class KatachiAmbiguousTemplateRoleException internal constructor(
  *
  * val arch = architecture { "domain".group { "UseCase" { } } }
  * val thrown = shouldThrow<KatachiNoTemplateException> {
- *     arch.process(GenerateCodeFromTemplate, GenerateCodeFromTemplate.Args(roleName = "UseCase"))
+ *     arch.process(GenerateCodeFromTemplate, GenerateCodeFromTemplate.Args(roleName = "UseCase")).getOrThrow()
  * }
  * thrown.role shouldBe "domain/UseCase"
  * ```

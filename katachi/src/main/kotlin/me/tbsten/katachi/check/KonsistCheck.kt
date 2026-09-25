@@ -10,11 +10,8 @@ import me.tbsten.katachi.processor.ArchitectureProcessContext
 import me.tbsten.katachi.processor.ArchitectureProcessorNoArg
 import me.tbsten.katachi.processor.ProjectWalk
 import me.tbsten.katachi.processor.projectWalk
-import me.tbsten.katachi.scan.Severity
-import me.tbsten.katachi.scan.UncheckedConstraint
-import me.tbsten.katachi.scan.UncheckedConstraintReason
-import me.tbsten.katachi.scan.UnsatisfiedConstraint
-import me.tbsten.katachi.scan.Violation
+import me.tbsten.katachi.runProcessorCatching
+import me.tbsten.katachi.scan.*
 
 /**
  * The check that evaluates `constraint { }` blocks — the `konsist { }` ones included.
@@ -27,6 +24,10 @@ import me.tbsten.katachi.scan.Violation
  *
  * Passing it twice changes nothing — the second instance finds every constraint already
  * answered for and returns nothing, so no violation is counted twice.
+ *
+ * It answers through [assertNoErrors], like [LayoutCheck]: a constraint that could not be
+ * evaluated is reported as an [UncheckedConstraint] in that answer rather than thrown, and
+ * whatever else stops it is a `Result.failure` rather than a throw out of `process`.
  *
  * ## Example 1: the one line a project adds to evaluate its constraints
  * ```kt
@@ -46,31 +47,20 @@ import me.tbsten.katachi.scan.Violation
  */
 @ExperimentalKatachiApi
 public class KonsistCheck : ArchitectureProcessorNoArg<List<Violation>> {
-    /**
-     * Evaluates every constraint of this run that nothing has evaluated yet.
-     *
-     * ## Example 1: run it as one check among others on a single walk
-     * ```kt
-     * projectArchitecture.validate(KonsistCheck(), TodoCheck())
-     * ```
-     */
-    // Run from `runKatachiProcessor`, a check that found something has to fail the task.
-    // `Warning` does not: `assert()` prints warnings and returns, and the two entry points
-    // answering differently about the same violations would be worse than either answer.
-    override fun isFailure(result: List<Violation>): Boolean =
-        result.any { it.severity == Severity.Error }
-
-    override fun process(context: ArchitectureProcessContext<Unit>): List<Violation> {
-        val walk = context.projectWalk
-        return walk.declaredConstraints
-            // Handed the same constraint twice in one run — `assert(KonsistCheck(),
-            // KonsistCheck())` — the second pass has nothing left to answer for.
-            .filterNot { walk.hasEvaluated(it) }
-            .flatMap { declared ->
-                walk.markEvaluated(declared)
-                violationsOf(walk, declared)
-            }
-    }
+    /** Evaluates every constraint of this run that nothing has evaluated yet. */
+    override fun process(context: ArchitectureProcessContext<Unit>): Result<List<Violation>> =
+        runProcessorCatching {
+            val walk = context.projectWalk
+            walk.declaredConstraints
+                // Handed the same constraint twice in one run — `assert(KonsistCheck(),
+                // KonsistCheck())` — the second pass has nothing left to answer for.
+                .filterNot { walk.hasEvaluated(it) }
+                .flatMap { declared ->
+                    walk.markEvaluated(declared)
+                    violationsOf(walk, declared)
+                }
+                .assertNoErrors()
+        }
 
     override fun toString(): String = "KonsistCheck"
 }

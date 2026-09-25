@@ -23,11 +23,33 @@ import me.tbsten.katachi.ExperimentalKatachiApi
  * `--arg` value is handed to both halves. That is a deliberate bet that one name means one
  * thing; two processors using one name for two different things is the author's problem.
  *
- * ## Example 1: run the layout check and the constraint check as one processor
+ * ## What the combined answer is
+ *
+ * Both halves always run. The combination passes only when both do, and then its list is the
+ * two lists joined. When a half answers with a failure, that failure is the combination's
+ * answer -- the first half's when both fail, with the second's attached as a suppressed
+ * exception -- and a half that throws ends the call. A failing half's list is whatever its
+ * failure carries: to have two checks' violations merged into one report, pass them to
+ * `validate(check, more)` or `assert(check, more)` instead.
+ *
+ * ## Example 1: run two processors as one, on one walk
  * ```kt
- * val combined = LayoutCheck() + KonsistCheck()
- * val violations = projectArchitecture.process(combined, Unit to Unit)
- * violations.map { it.path } shouldContain "notes.md"
+ * import me.tbsten.katachi.processor.ArchitectureProcessContext
+ * import me.tbsten.katachi.processor.ArchitectureProcessorNoArg
+ * import me.tbsten.katachi.processor.plus
+ * import me.tbsten.katachi.processor.process
+ *
+ * object GroupNames : ArchitectureProcessorNoArg<List<String>> {
+ *     override fun process(context: ArchitectureProcessContext<Unit>): Result<List<String>> =
+ *         runCatching { context.groups.map { it.qualifiedName } }
+ * }
+ *
+ * object RoleNames : ArchitectureProcessorNoArg<List<String>> {
+ *     override fun process(context: ArchitectureProcessContext<Unit>): Result<List<String>> =
+ *         runCatching { context.roles.map { it.qualifiedName } }
+ * }
+ *
+ * val names = projectArchitecture.process(GroupNames + RoleNames, Unit to Unit).getOrThrow()
  * ```
  */
 @ExperimentalKatachiApi
@@ -42,12 +64,24 @@ internal class CombinedProcessor<Args1, Args2, R>(
     override val argsSerializer: KSerializer<Pair<Args1, Args2>> =
         CombinedArgsSerializer(first.argsSerializer, second.argsSerializer)
 
-    override fun process(context: ArchitectureProcessContext<Pair<Args1, Args2>>): List<R> {
+    override fun process(context: ArchitectureProcessContext<Pair<Args1, Args2>>): Result<List<R>> {
         val (firstArgs, secondArgs) = context.args
         // Only the arguments are swapped; the walk rides along, so composing does not add a
         // second traversal.
-        return first.process(context.withArgs(firstArgs)) +
-            second.process(context.withArgs(secondArgs))
+        val firstResult = first.process(context.withArgs(firstArgs))
+        val secondResult = second.process(context.withArgs(secondArgs))
+        // A `KatachiArchitectureAssertionError` from both halves cannot be merged here: `check`
+        // is a later layer than `processor`, so this layer cannot name it. The first failure
+        // wins and the second rides along as suppressed rather than being dropped.
+        return runCatching {
+            val firstList = firstResult.onFailure { firstFailure ->
+                // `addSuppressed` refuses the exception itself, which both halves may share.
+                secondResult.exceptionOrNull()
+                    ?.takeIf { it !== firstFailure }
+                    ?.let(firstFailure::addSuppressed)
+            }.getOrThrow()
+            firstList + secondResult.getOrThrow()
+        }
     }
 
     override fun toString(): String = "($first + $second)"

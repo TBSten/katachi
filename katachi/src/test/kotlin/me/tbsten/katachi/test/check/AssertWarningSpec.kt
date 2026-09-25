@@ -7,6 +7,7 @@ import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
 import me.tbsten.katachi.check.KatachiArchitectureAssertionError
 import me.tbsten.katachi.check.assert
+import me.tbsten.katachi.check.assertNoErrors
 import me.tbsten.katachi.processor.ArchitectureProcessContext
 import me.tbsten.katachi.processor.ArchitectureProcessorNoArg
 import me.tbsten.katachi.scan.Severity
@@ -27,8 +28,8 @@ private class TestWarningViolation(override val path: String) : Violation {
 /** A check outside katachi that always reports one warning at [path]. */
 private class WarningCheck(private val path: String = "docs/a.md") :
     ArchitectureProcessorNoArg<List<Violation>> {
-    override fun process(context: ArchitectureProcessContext<Unit>): List<Violation> =
-        listOf(TestWarningViolation(path))
+    override fun process(context: ArchitectureProcessContext<Unit>): Result<List<Violation>> =
+        runCatching { listOf<Violation>(TestWarningViolation(path)).assertNoErrors() }
 }
 
 /**

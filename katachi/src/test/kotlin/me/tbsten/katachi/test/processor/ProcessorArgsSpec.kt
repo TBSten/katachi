@@ -331,19 +331,19 @@ private data class NestedArgs(val name: String, val inner: Inner = Inner())
 private data class RoleNameArgs(val roleName: String)
 
 private object NoArgProcessor : ArchitectureProcessorNoArg<Unit> {
-    override fun process(context: ArchitectureProcessContext<Unit>) {}
+    override fun process(context: ArchitectureProcessContext<Unit>): Result<Unit> = runCatching { }
 }
 
 private object RoleNameProcessor : ArchitectureProcessor<RoleNameArgs, Unit> {
     override val argsSerializer: KSerializer<RoleNameArgs> = RoleNameArgs.serializer()
 
-    override fun process(context: ArchitectureProcessContext<RoleNameArgs>) {}
+    override fun process(context: ArchitectureProcessContext<RoleNameArgs>): Result<Unit> = runCatching { }
 }
 
 
 /** Answers with one name that no `Args` field declares, the way a template answers with a role's. */
 private object UndeclaredNameProcessor : ArchitectureProcessorNoArg<Unit> {
-    override fun process(context: ArchitectureProcessContext<Unit>) {}
+    override fun process(context: ArchitectureProcessContext<Unit>): Result<Unit> = runCatching { }
 
     override fun undeclaredArgNames(context: ArchitectureProcessContext<*>): Set<String> =
         setOf("greeting")
@@ -351,7 +351,7 @@ private object UndeclaredNameProcessor : ArchitectureProcessorNoArg<Unit> {
 
 /** Breaks the contract that `undeclaredArgNames` never throws, so the run can be seen surviving it. */
 private object ThrowingUndeclaredNameProcessor : ArchitectureProcessorNoArg<Unit> {
-    override fun process(context: ArchitectureProcessContext<Unit>) {}
+    override fun process(context: ArchitectureProcessContext<Unit>): Result<Unit> = runCatching { }
 
     override fun undeclaredArgNames(context: ArchitectureProcessContext<*>): Set<String> =
         throw IllegalStateException("undeclaredArgNames should not be trusted to behave")
@@ -365,7 +365,7 @@ private object ThrowingUndeclaredNameProcessor : ArchitectureProcessorNoArg<Unit
  * go on calling every real key a typo. An example nobody runs drifts from the thing it explains.
  */
 private object AnnotateRoles : ArchitectureProcessorNoArg<Unit> {
-    override fun process(context: ArchitectureProcessContext<Unit>) {
+    override fun process(context: ArchitectureProcessContext<Unit>): Result<Unit> = runCatching {
         for ((role, note) in context.rawArgs) context.log("$role: $note")
     }
 

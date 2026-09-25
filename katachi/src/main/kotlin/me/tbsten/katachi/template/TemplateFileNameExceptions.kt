@@ -32,7 +32,7 @@ import me.tbsten.katachi.dsl.DeclarationSite
  *     }
  * }
  * val thrown = shouldThrow<KatachiUnsafeTemplateFileNameException> {
- *     arch.process(GenerateCodeFromTemplate, GenerateCodeFromTemplate.Args(roleName = "UseCase"))
+ *     arch.process(GenerateCodeFromTemplate, GenerateCodeFromTemplate.Args(roleName = "UseCase")).getOrThrow()
  * }
  * thrown.characters shouldBe listOf("*")
  * ```
@@ -91,7 +91,7 @@ public class KatachiUnsafeTemplateFileNameException internal constructor(
  *     }
  * }
  * shouldThrow<KatachiTemplatePathOutsideProjectException> {
- *     arch.process(GenerateCodeFromTemplate, GenerateCodeFromTemplate.Args(roleName = "UseCase"))
+ *     arch.process(GenerateCodeFromTemplate, GenerateCodeFromTemplate.Args(roleName = "UseCase")).getOrThrow()
  * }
  * ```
  *

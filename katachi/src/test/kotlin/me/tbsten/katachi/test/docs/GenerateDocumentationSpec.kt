@@ -1,14 +1,17 @@
 package me.tbsten.katachi.test.docs
 
+import io.kotest.assertions.throwables.shouldNotThrowAny
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.assertions.withClue
 import io.kotest.core.spec.style.FreeSpec
 import io.kotest.matchers.collections.shouldContainExactly
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
+import io.kotest.matchers.types.shouldBeInstanceOf
 import java.io.File
 import me.tbsten.katachi.docs.DocumentationMode
 import me.tbsten.katachi.docs.GenerateDocumentation
+import me.tbsten.katachi.docs.KatachiDocumentIoException
 import me.tbsten.katachi.docs.KatachiStaleDocumentationException
 import me.tbsten.katachi.dsl.Architecture
 import me.tbsten.katachi.dsl.architecture
@@ -146,7 +149,7 @@ class GenerateDocumentationSpec : FreeSpec({
                 File(output, "Stale.md").writeText("# 古いページ\n")
                 val context = writeContextFor(arch, output)
 
-                GenerateDocumentation.process(context)
+                GenerateDocumentation.process(context).getOrThrow()
 
                 context.logs shouldContainExactly listOf(
                     "Writing 3 pages to ${output.path}",
@@ -173,7 +176,7 @@ class GenerateDocumentationSpec : FreeSpec({
             withTempDirectory { output ->
                 val context = writeContextFor(arch, output)
 
-                GenerateDocumentation.process(context)
+                GenerateDocumentation.process(context).getOrThrow()
 
                 context.logs.drop(1) shouldContainExactly listOf(
                     "README.md",
@@ -197,7 +200,7 @@ class GenerateDocumentationSpec : FreeSpec({
             withTempDirectory { output ->
                 val context = writeContextFor(arch, output)
 
-                GenerateDocumentation.process(context)
+                GenerateDocumentation.process(context).getOrThrow()
 
                 context.logs.drop(1) shouldContainExactly listOf("README.md")
             }
@@ -235,6 +238,23 @@ class GenerateDocumentationSpec : FreeSpec({
         }
     }
 
+    "process は投げずに答える" - {
+        "書き込めない出力先は failure として返す" {
+            val arch = architecture { "domain".group { "UseCase" { } } }
+
+            withTempDirectory { directory ->
+                // A regular file where the output directory should be: nothing can be written below it.
+                val output = File(directory, "not-a-directory").apply { writeText("") }
+
+                val result = shouldNotThrowAny {
+                    GenerateDocumentation.process(writeContextFor(arch, output))
+                }
+
+                result.exceptionOrNull().shouldBeInstanceOf<KatachiDocumentIoException>()
+            }
+        }
+    }
+
     "mode=check" - {
         "生成物が最新なら何も起きない" {
             val arch = architecture { "domain".group { "UseCase" { } } }
@@ -243,9 +263,24 @@ class GenerateDocumentationSpec : FreeSpec({
                 arch.generateDocumentation(output)
                 val context = checkContextFor(arch, output)
 
-                GenerateDocumentation.process(context)
+                GenerateDocumentation.process(context).getOrThrow()
 
                 context.logs.last() shouldBe "${output.path} is up to date."
+            }
+        }
+
+        "食い違いは投げずに failure で返す" {
+            val arch = architecture { "domain".group { "UseCase" { } } }
+
+            withTempDirectory { output ->
+                arch.generateDocumentation(output)
+                File(output, "README.md").writeText("# 手で書き換えた\n")
+
+                val result = shouldNotThrowAny { arch.checkDocumentation(output) }
+
+                withClue("答えが No であることは、仕事ができなかったこととは別に返す") {
+                    result.exceptionOrNull().shouldBeInstanceOf<KatachiStaleDocumentationException>()
+                }
             }
         }
 
@@ -256,7 +291,7 @@ class GenerateDocumentationSpec : FreeSpec({
                 arch.generateDocumentation(output)
                 File(output, "domain/UseCase.md").delete()
 
-                val failure = shouldThrow<KatachiStaleDocumentationException> { arch.checkDocumentation(output) }
+                val failure = arch.staleDocumentation(output)
 
                 failure.missing shouldContainExactly listOf("domain/UseCase.md")
                 failure.message.orEmpty() shouldContain "[missing]   domain/UseCase.md"
@@ -270,7 +305,7 @@ class GenerateDocumentationSpec : FreeSpec({
                 arch.generateDocumentation(output)
                 File(output, "README.md").writeText("# 手で書き換えた\n")
 
-                val failure = shouldThrow<KatachiStaleDocumentationException> { arch.checkDocumentation(output) }
+                val failure = arch.staleDocumentation(output)
 
                 failure.different shouldContainExactly listOf("README.md")
                 failure.message.orEmpty() shouldContain "[different] README.md"
@@ -284,7 +319,7 @@ class GenerateDocumentationSpec : FreeSpec({
                 arch.generateDocumentation(output)
                 File(output, "domain/Interactor.md").writeText("# 消えた役割\n")
 
-                val failure = shouldThrow<KatachiStaleDocumentationException> { arch.checkDocumentation(output) }
+                val failure = arch.staleDocumentation(output)
 
                 failure.extra shouldContainExactly listOf("domain/Interactor.md")
                 failure.message.orEmpty() shouldContain "[extra]     domain/Interactor.md"
@@ -300,7 +335,7 @@ class GenerateDocumentationSpec : FreeSpec({
                 File(output, "README.md").writeText("# 手で書き換えた\n")
                 File(output, "domain/Interactor.md").writeText("# 消えた役割\n")
 
-                val failure = shouldThrow<KatachiStaleDocumentationException> { arch.checkDocumentation(output) }
+                val failure = arch.staleDocumentation(output)
 
                 withClue("1件ずつ落ちると、直すのに3往復かかる") {
                     failure.message.orEmpty().lines().first() shouldBe
@@ -317,7 +352,7 @@ class GenerateDocumentationSpec : FreeSpec({
             withTempDirectory { output ->
                 val absent = File(output, "never-generated")
 
-                val failure = shouldThrow<KatachiStaleDocumentationException> { arch.checkDocumentation(absent) }
+                val failure = arch.staleDocumentation(absent)
 
                 failure.missing shouldContainExactly listOf(
                     "README.md",
@@ -335,7 +370,7 @@ class GenerateDocumentationSpec : FreeSpec({
                 File(output, "README.md").writeText("# 手で書き換えた\n")
                 File(output, "domain/Interactor.md").writeText("# 消えた役割\n")
 
-                shouldThrow<KatachiStaleDocumentationException> { arch.checkDocumentation(output) }
+                arch.staleDocumentation(output)
 
                 withClue("比べるだけなので、余分なページも書き換えた中身もそのまま残る") {
                     output.relativeFilePaths() shouldContainExactly listOf(
@@ -400,7 +435,7 @@ class GenerateDocumentationSpec : FreeSpec({
                         args = GenerateDocumentation.Args(outputDir = output.path),
                         fileSystem = ForbiddenFileSystem,
                     ),
-                )
+                ).getOrThrow()
 
                 File(output, "README.md").readText() shouldBe "# myapp ドキュメント\n"
             }
@@ -417,12 +452,16 @@ class GenerateDocumentationSpec : FreeSpec({
 })
 
 /** Writes this definition's documentation into [output], reading nothing of the project. */
-private fun Architecture.generateDocumentation(output: File) =
-    GenerateDocumentation.process(writeContextFor(this, output))
+private fun Architecture.generateDocumentation(output: File): Unit =
+    GenerateDocumentation.process(writeContextFor(this, output)).getOrThrow()
 
 /** Compares this definition's documentation against [output] without writing anything. */
-private fun Architecture.checkDocumentation(output: File) =
+private fun Architecture.checkDocumentation(output: File): Result<Unit> =
     GenerateDocumentation.process(checkContextFor(this, output))
+
+/** The failure [checkDocumentation] answers with, which it has to answer rather than throw. */
+private fun Architecture.staleDocumentation(output: File): KatachiStaleDocumentationException =
+    checkDocumentation(output).exceptionOrNull().shouldBeInstanceOf<KatachiStaleDocumentationException>()
 
 private fun writeContextFor(
     architecture: Architecture,

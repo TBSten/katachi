@@ -7,6 +7,7 @@ import io.kotest.core.spec.style.FreeSpec
 import io.kotest.matchers.collections.shouldContainExactly
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
+import io.kotest.matchers.types.shouldBeInstanceOf
 import java.io.File
 import me.tbsten.katachi.dsl.Architecture
 import me.tbsten.katachi.dsl.KatachiDuplicateTemplateFileException
@@ -71,7 +72,10 @@ private fun Architecture.generateInto(
         fileSystem = RealFileSystem(root),
         rawArgs = rawArgs,
     )
-    GenerateCodeFromTemplate.process(context)
+    // Every run that gets this far wrote its files, so it has to answer success; the ways it
+    // can refuse all come back as a failure, which `getOrThrow` turns into the throw the specs of
+    // those refusals catch.
+    GenerateCodeFromTemplate.process(context).getOrThrow()
     return context.logs
 }
 
@@ -185,7 +189,7 @@ class GenerateCodeFromTemplateSpec : FreeSpec({
         // KatachiInvalidTemplateFileNameException / KatachiDuplicateTemplateFileException の
         // KDoc の利用例そのもの。template { } は block を持っておくだけなので、この2つは
         // architecture { } では投げない -- 利用例がそう書かれていて、実行すると落ちた。
-        "パスを含む file() は、template を走らせたときに落ちる" {
+        "パスを含む file() は、template を走らせたときに failure になる" {
             val arch = architecture {
                 "domain".group {
                     "UseCase" { template { file("useCase/GetUserUseCase.kt") { "" } } }
@@ -195,15 +199,17 @@ class GenerateCodeFromTemplateSpec : FreeSpec({
             withClue("architecture { } の時点では何も起きない") {
                 shouldNotThrowAny { arch }
             }
-            shouldThrow<KatachiInvalidTemplateFileNameException> {
+            val result = shouldNotThrowAny {
                 arch.process(
                     GenerateCodeFromTemplate,
                     GenerateCodeFromTemplate.Args(roleName = "UseCase"),
                 )
-            }.fileName shouldBe "useCase/GetUserUseCase.kt"
+            }
+            result.exceptionOrNull().shouldBeInstanceOf<KatachiInvalidTemplateFileNameException>()
+                .fileName shouldBe "useCase/GetUserUseCase.kt"
         }
 
-        "同じ名前を2回宣言した template も、走らせたときに落ちる" {
+        "同じ名前を2回宣言した template も、走らせたときに failure になる" {
             val arch = architecture {
                 "domain".group {
                     "UseCase" {
@@ -215,12 +221,14 @@ class GenerateCodeFromTemplateSpec : FreeSpec({
                 }
             }
 
-            shouldThrow<KatachiDuplicateTemplateFileException> {
+            val result = shouldNotThrowAny {
                 arch.process(
                     GenerateCodeFromTemplate,
                     GenerateCodeFromTemplate.Args(roleName = "UseCase"),
                 )
-            }.fileName shouldBe "GetUserUseCase.kt"
+            }
+            result.exceptionOrNull().shouldBeInstanceOf<KatachiDuplicateTemplateFileException>()
+                .fileName shouldBe "GetUserUseCase.kt"
         }
     }
 })

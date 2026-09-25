@@ -44,7 +44,9 @@ internal fun instantiateProcessor(type: Class<*>): ArchitectureProcessor<*, *> {
  * of them runs -- see `checkNoUnknownArgs`.
  *
  * One processor's failure does not stop the others: each result is collected independently, and
- * the summary at the end reports how many of each there were.
+ * the summary at the end reports how many of each there were. A processor fails the run by
+ * answering `Result.failure` or by throwing; both are reported as `[FAILED]` with the
+ * exception's message, and a `success` is `[OK]` with its value.
  *
  * @param acceptsUndeclaredArgs the processor keys this module wrote `acceptsUndeclaredArgs = true`
  *   for, as the generated entry point carries them. A key listed here has its
@@ -87,19 +89,18 @@ internal fun runProcessors(
 
     checkNoUnknownArgs(selected, acceptsUndeclaredArgs, base, rawArgs)
 
-    data class Entry(val key: String, val result: Result<Outcome>)
+    data class Entry(val key: String, val result: Result<Any?>)
 
     val outcomes = selected.map { (key, processor) ->
+        // A throw and a `Result.failure` land in the same place: on the command line, "could
+        // not do the job" and "did the job, and the answer is no" both fail the run.
         val result = runCatching {
-            erase(processor).run(base, rawArgs) { message -> out("  [$key] $message") }
+            erase(processor).run(base, rawArgs) { message -> out("  [$key] $message") }.getOrThrow()
         }
         Entry(key, result)
     }
 
-    // A processor that threw failed, and so did one that answered `isFailure` about what it
-    // produced. Without the second, a check run from the command line would report `[OK]` while
-    // holding the violations it just found, and the task would exit zero.
-    val succeeded = outcomes.count { entry -> entry.result.map { !it.failed }.getOrDefault(false) }
+    val succeeded = outcomes.count { it.result.isSuccess }
     val failed = outcomes.size - succeeded
 
     val separator = "=".repeat(40)
@@ -111,19 +112,20 @@ internal fun runProcessors(
     for (outcome in outcomes) {
         outcome.result.fold(
             onSuccess = { produced ->
-                out(if (produced.failed) "[FAILED] ${outcome.key}" else "[OK] ${outcome.key}")
+                out("[OK] ${outcome.key}")
                 // One element per line. A collection printed through `toString` arrives as a
-                // single bracketed line, and a check's violations are exactly what a reader came
-                // to the end of the run to read.
-                when (val result = produced.result) {
+                // single bracketed line.
+                when (produced) {
                     Unit -> Unit
-                    is Collection<*> -> result.forEach { element -> out(element.toString()) }
-                    else -> out(result.toString())
+                    is Collection<*> -> produced.forEach { element -> out(element.toString()) }
+                    else -> out(produced.toString())
                 }
             },
             onFailure = { cause ->
                 out("[FAILED] ${outcome.key}")
-                out("  ${cause.message}")
+                // Line by line, so that a multi-line message -- a check's whole report -- stays
+                // indented under its processor instead of only its first line.
+                (cause.message ?: cause.toString()).lines().forEach { line -> out("  $line") }
             },
         )
         out("")
@@ -142,26 +144,20 @@ internal fun runProcessors(
  * parameters, and inside this class the serializer, the decoded arguments and `process` are
  * the same `Args` again -- checked by the compiler rather than asserted with a cast.
  */
-/** What one processor produced, and whether the processor calls that a failure. */
-internal class Outcome(val result: Any?, val failed: Boolean)
-
-private class ErasedProcessor<Args, Result>(
-    private val processor: ArchitectureProcessor<Args, Result>,
+private class ErasedProcessor<Args, R>(
+    private val processor: ArchitectureProcessor<Args, R>,
 ) {
     fun run(
         base: ArchitectureProcessContext<*>,
         rawArgs: Map<String, String>,
         onLog: (String) -> Unit,
-    ): Outcome {
+    ): Result<R> {
         val decodedArgs = decodeFromStringMap(processor.argsSerializer, rawArgs)
-        val result = processor.process(base.withArgs(decodedArgs, onLog))
-        // Asked here because this is the last place `Result` is still a type: the registry hands
-        // back an `ArchitectureProcessor<*, *>`, which cannot be asked about its own result.
-        return Outcome(result, processor.isFailure(result))
+        return processor.process(base.withArgs(decodedArgs, onLog))
     }
 }
 
 /** Captures [processor]'s type parameters so its arguments can be decoded without a cast. */
-private fun <Args, Result> erase(
-    processor: ArchitectureProcessor<Args, Result>,
-): ErasedProcessor<Args, Result> = ErasedProcessor(processor)
+private fun <Args, R> erase(
+    processor: ArchitectureProcessor<Args, R>,
+): ErasedProcessor<Args, R> = ErasedProcessor(processor)

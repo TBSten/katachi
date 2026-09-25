@@ -5,7 +5,8 @@ import me.tbsten.katachi.KatachiCheckException
 /**
  * The documentation on disk is not what the definition produces.
  *
- * Raised only by `--arg mode=check`, which compares instead of writing. The definition is fine
+ * Answered only by `--arg mode=check`, which compares instead of writing, and answered rather
+ * than thrown: [GenerateDocumentation] returns it as `Result.failure`. The definition is fine
  * and katachi is fine -- what is out of date is the output directory of an earlier run, which
  * is why this is a check failure about the environment rather than a bad declaration: the fix
  * is to regenerate and commit, not to edit `architecture { }`.
@@ -13,23 +14,18 @@ import me.tbsten.katachi.KatachiCheckException
  * All three kinds are reported together. Fixing them is one command either way, and a reader
  * who sees only the first of five learns nothing about whether the rest are the same mistake.
  *
- * ## Example 1: fail a CI job when the committed documentation is stale
+ * ## Example 1: list the stale pages a CI job found
  * ```kt
- * import io.kotest.assertions.throwables.shouldNotThrow
  * import me.tbsten.katachi.docs.DocumentationMode
  * import me.tbsten.katachi.docs.GenerateDocumentation
  * import me.tbsten.katachi.docs.KatachiStaleDocumentationException
  * import me.tbsten.katachi.processor.process
  *
- * shouldNotThrow<KatachiStaleDocumentationException> {
- *     projectArchitecture.process(
- *         GenerateDocumentation,
- *         GenerateDocumentation.Args(
- *             outputDir = "docs/architecture",
- *             mode = DocumentationMode.Check,
- *         ),
- *     )
- * }
+ * val stale = projectArchitecture.process(
+ *     GenerateDocumentation,
+ *     GenerateDocumentation.Args(outputDir = "docs/architecture", mode = DocumentationMode.Check),
+ * ).exceptionOrNull() as? KatachiStaleDocumentationException
+ * println(stale?.different.orEmpty())
  * ```
  *
  * @see GenerateDocumentation
@@ -82,7 +78,7 @@ public class KatachiStaleDocumentationException internal constructor(
  *     projectArchitecture.process(
  *         GenerateDocumentation,
  *         GenerateDocumentation.Args(outputDir = "/nowhere/katachi/docs"),
- *     )
+ *     ).getOrThrow()
  * }
  * println("could not write ${failure.path} under ${failure.outputDir}")
  * ```

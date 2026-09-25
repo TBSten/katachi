@@ -15,8 +15,10 @@ import me.tbsten.katachi.check.validate
 import me.tbsten.katachi.dsl.ConstraintFailure
 import me.tbsten.katachi.dsl.FileSetConstraint
 import me.tbsten.katachi.dsl.KatachiConstraintMemoTypeException
+import me.tbsten.katachi.fs.KatachiProjectRootNotFoundException
 import me.tbsten.katachi.processor.process
 import me.tbsten.katachi.scan.UncheckedConstraintReason
+import me.tbsten.katachi.test.fs.fakeFileSystem
 
 /**
  * What [KonsistCheck] evaluates, what it refuses to leave unevaluated, and what one run
@@ -332,7 +334,7 @@ class KonsistCheckSpec : FreeSpec({
                 }
             }
 
-            arch.process(KonsistCheck(), repositoryOf { "alpha" { "A.kt"() } }).shouldBeEmpty()
+            arch.process(KonsistCheck(), repositoryOf { "alpha" { "A.kt"() } }).found().shouldBeEmpty()
         }
 
         "ディレクトリしか宣言していない役割でも1行目がドットにならない" {
@@ -426,6 +428,43 @@ class KonsistCheckSpec : FreeSpec({
             cause.key shouldBe "scope"
             cause.expected shouldBe StringBuilder::class
             cause.actual shouldBe ScratchValue::class
+        }
+    }
+
+    "process は投げずに答える" - {
+        val withConstraint = { check: FileSetConstraint ->
+            architectureOf {
+                "domain".group {
+                    "UseCase" { layout { "alpha" { constraint("rule", check = check); "*.kt".file() } } }
+                }
+            }
+        }
+
+        "プロジェクトルートが見つからなければ failure として返す" {
+            val treeWithoutRoot = fakeFileSystem(workingDirectory = "/repo/app") {
+                "/repo" { "app" { "Main.kt"() } }
+            }
+
+            val result = shouldNotThrowAny { withConstraint(silentCheck()).process(KonsistCheck(), treeWithoutRoot) }
+
+            result.exceptionOrNull().shouldBeInstanceOf<KatachiProjectRootNotFoundException>()
+        }
+
+        "制約が投げた AssertionError も failure として返す" {
+            val assertion = AssertionError("the caller's own answer")
+
+            val result = shouldNotThrowAny {
+                withConstraint(throwing { assertion }).process(KonsistCheck(), repositoryOf { "alpha" { "A.kt"() } })
+            }
+
+            result.exceptionOrNull() shouldBeSameInstanceAs assertion
+        }
+
+        "致命的な例外は failure にせず投げる" {
+            shouldThrow<StackOverflowError> {
+                withConstraint(throwing { StackOverflowError() })
+                    .process(KonsistCheck(), repositoryOf { "alpha" { "A.kt"() } })
+            }
         }
     }
 })

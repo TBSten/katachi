@@ -62,7 +62,7 @@ public class KatachiUnknownRoleException internal constructor(
  * ## Example 1: run katachi's checks through a `process` entry point rather than by hand
  * ```kt
  * // Instead of LayoutCheck().process(myOwnContext):
- * val violations = projectArchitecture.process(LayoutCheck())
+ * val violations = projectArchitecture.process(LayoutCheck()).getOrThrow()
  * violations.map { it.path } shouldBe emptyList()
  * ```
  */

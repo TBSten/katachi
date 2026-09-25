@@ -7,6 +7,7 @@ import kotlinx.serialization.Serializable
 import me.tbsten.katachi.ExperimentalKatachiApi
 import me.tbsten.katachi.processor.ArchitectureProcessContext
 import me.tbsten.katachi.processor.ArchitectureProcessor
+import me.tbsten.katachi.runProcessorCatching
 
 /**
  * Writes the role reference of a definition to disk, as Markdown.
@@ -30,12 +31,20 @@ import me.tbsten.katachi.processor.ArchitectureProcessor
  * disk. Keeping the split means [DocumentationMode.Check] is not a second implementation of
  * anything, only a second ending.
  *
+ * ## What it answers
+ *
+ * `success` when the pages were written, or when [DocumentationMode.Check] found them up to date.
+ * A stale directory under [DocumentationMode.Check] is a `failure` carrying
+ * [KatachiStaleDocumentationException]. So is everything that stopped it from answering -- a
+ * definition it cannot render, a file it cannot read or write: nothing is thrown out of
+ * `process`.
+ *
  * ## Example 1: generate into the default directory
  * ```kt
  * import me.tbsten.katachi.docs.GenerateDocumentation
  * import me.tbsten.katachi.processor.process
  *
- * projectArchitecture.process(GenerateDocumentation, GenerateDocumentation.Args())
+ * projectArchitecture.process(GenerateDocumentation, GenerateDocumentation.Args()).getOrThrow()
  * ```
  *
  * ## Example 2: fail a test when the committed documentation is out of date
@@ -52,7 +61,7 @@ import me.tbsten.katachi.processor.ArchitectureProcessor
  *                 outputDir = "docs/architecture",
  *                 mode = DocumentationMode.Check,
  *             ),
- *         )
+ *         ).getOrThrow()
  *     }
  * })
  * ```
@@ -64,31 +73,32 @@ import me.tbsten.katachi.processor.ArchitectureProcessor
 public object GenerateDocumentation : ArchitectureProcessor<GenerateDocumentation.Args, Unit> {
     override val argsSerializer: KSerializer<Args> = Args.serializer()
 
-    override fun process(context: ArchitectureProcessContext<Args>) {
-        val outputDir = context.args.outputDir
-        val pages = roleReferenceDocuments(context)
-        val outputRoot = File(outputDir)
-        when (context.args.mode) {
-            DocumentationMode.Write -> {
-                context.log("Writing ${pages.size} pages to $outputDir")
-                writeDocuments(outputRoot, pages) { message -> context.log(message) }
-            }
-
-            DocumentationMode.Check -> {
-                context.log("Comparing ${pages.size} pages against $outputDir")
-                val difference = compareDocuments(outputRoot, pages)
-                if (!difference.isUpToDate) {
-                    throw KatachiStaleDocumentationException(
-                        outputDir = outputDir,
-                        missing = difference.missing,
-                        different = difference.different,
-                        extra = difference.extra,
-                    )
+    override fun process(context: ArchitectureProcessContext<Args>): Result<Unit> =
+        runProcessorCatching {
+            val outputDir = context.args.outputDir
+            val pages = roleReferenceDocuments(context)
+            val outputRoot = File(outputDir)
+            when (context.args.mode) {
+                DocumentationMode.Write -> {
+                    context.log("Writing ${pages.size} pages to $outputDir")
+                    writeDocuments(outputRoot, pages) { message -> context.log(message) }
                 }
-                context.log("$outputDir is up to date.")
+
+                DocumentationMode.Check -> {
+                    context.log("Comparing ${pages.size} pages against $outputDir")
+                    val difference = compareDocuments(outputRoot, pages)
+                    if (!difference.isUpToDate) {
+                        throw KatachiStaleDocumentationException(
+                            outputDir = outputDir,
+                            missing = difference.missing,
+                            different = difference.different,
+                            extra = difference.extra,
+                        )
+                    }
+                    context.log("$outputDir is up to date.")
+                }
             }
         }
-    }
 
     /**
      * Where the pages go, whether they are written at all, and what the root page calls itself.

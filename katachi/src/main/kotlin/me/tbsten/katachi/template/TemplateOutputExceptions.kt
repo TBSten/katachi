@@ -20,7 +20,7 @@ import me.tbsten.katachi.KatachiCheckException
  *     projectArchitecture.process(
  *         GenerateCodeFromTemplate,
  *         GenerateCodeFromTemplate.Args(roleName = "UseCase"),
- *     )
+ *     ).getOrThrow()
  * }
  * thrown.existing.size shouldBe 1
  * ```
@@ -68,7 +68,7 @@ public class KatachiExistingTemplateFileException internal constructor(
  *     projectArchitecture.process(
  *         GenerateCodeFromTemplate,
  *         GenerateCodeFromTemplate.Args(roleName = "UseCase"),
- *     )
+ *     ).getOrThrow()
  * }
  * println("could not write ${failure.path} under ${failure.projectRoot}")
  * ```
@@ -114,7 +114,7 @@ public class KatachiTemplateIoException internal constructor(
  *     projectArchitecture.process(
  *         GenerateCodeFromTemplate,
  *         GenerateCodeFromTemplate.Args(roleName = "UseCase"),
- *     )
+ *     ).getOrThrow()
  * }
  * thrown.reserved.single() shouldBe "src/main/kotlin/GreetUseCase.kt.katachi-new"
  * ```
@@ -166,7 +166,7 @@ public class KatachiReservedTemplatePathException internal constructor(
  *     projectArchitecture.process(
  *         GenerateCodeFromTemplate,
  *         GenerateCodeFromTemplate.Args(roleName = "UseCase"),
- *     )
+ *     ).getOrThrow()
  * }
  * thrown.path shouldBe "src/main/kotlin/GreetUseCase.kt"
  * ```
@@ -216,7 +216,7 @@ public class KatachiTemplateEscapesProjectException internal constructor(
  *     projectArchitecture.process(
  *         GenerateCodeFromTemplate,
  *         GenerateCodeFromTemplate.Args(roleName = "UseCase"),
- *     )
+ *     ).getOrThrow()
  * }
  * thrown.blocked.single() shouldBe "useCase/GetUserUseCase.kt"
  * ```

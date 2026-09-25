@@ -29,7 +29,7 @@ import me.tbsten.katachi.dsl.DeclarationSite
  *     }
  * }
  * val thrown = shouldThrow<KatachiNoTemplatePlacementException> {
- *     arch.process(GenerateCodeFromTemplate, GenerateCodeFromTemplate.Args(roleName = "UseCase"))
+ *     arch.process(GenerateCodeFromTemplate, GenerateCodeFromTemplate.Args(roleName = "UseCase")).getOrThrow()
  * }
  * thrown.fileName shouldBe "GetUser.kt"
  * ```
@@ -98,7 +98,7 @@ public class KatachiNoTemplatePlacementException internal constructor(
  *     }
  * }
  * shouldThrow<KatachiWildcardTemplatePlacementException> {
- *     arch.process(GenerateCodeFromTemplate, GenerateCodeFromTemplate.Args(roleName = "Screen"))
+ *     arch.process(GenerateCodeFromTemplate, GenerateCodeFromTemplate.Args(roleName = "Screen")).getOrThrow()
  * }
  * ```
  *
@@ -159,7 +159,7 @@ public class KatachiWildcardTemplatePlacementException internal constructor(
  *     }
  * }
  * val thrown = shouldThrow<KatachiAmbiguousTemplatePlacementException> {
- *     arch.process(GenerateCodeFromTemplate, GenerateCodeFromTemplate.Args(roleName = "UseCase"))
+ *     arch.process(GenerateCodeFromTemplate, GenerateCodeFromTemplate.Args(roleName = "UseCase")).getOrThrow()
  * }
  * thrown.candidates.size shouldBe 2
  * ```

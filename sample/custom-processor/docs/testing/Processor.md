@@ -14,8 +14,8 @@ katachi の定義を読んで何かを作る、このプロジェクト自身の
   `context.roles` と `context.filesOf(role)` からファイル数を数える
 - `RoleTable` — 型付きの引数。`@Serializable data class Args` を持ち、`--arg` から
   `String` / `List<String>` / `Int` / enum を受ける
-- `RoleDocCoverage` — 検査。`List<Violation>` ではなく自前の `Report` を返し、
-  `isFailure(result)` を override して問題があれば `runKatachiProcessor` を落とす
+- `RoleDocCoverage` — 検査。`List<Violation>` ではなく自前の `Report` を答えにし、
+  問題があれば `Result.failure` を返して `runKatachiProcessor` を落とす
 
 置いてよいのは `ArchitectureProcessor` の実装と、その引数・結果の型だけです。
 
@@ -43,4 +43,4 @@ katachi の定義を読んで何かを作る、このプロジェクト自身の
 
 - `RoleFileCount` ... 引数なしの最小形
 - `RoleTable` ... 型付き引数を取る形
-- `RoleDocCoverage` ... isFailure を override した検査
+- `RoleDocCoverage` ... Result.failure で run を落とす検査

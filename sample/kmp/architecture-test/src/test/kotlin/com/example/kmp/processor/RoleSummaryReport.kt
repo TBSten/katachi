@@ -20,7 +20,7 @@ import me.tbsten.katachi.processor.ArchitectureProcessorNoArg
  * ```kt
  * projectArchitecture.process(
  *     RoleSummaryReport(write = { path, content -> File(outDir, path).writeText(content) }),
- * )
+ * ).getOrThrow()
  * ```
  *
  * ## Example 2: the same processor, comparing instead of writing
@@ -30,7 +30,7 @@ import me.tbsten.katachi.processor.ArchitectureProcessorNoArg
  *     RoleSummaryReport(
  *         write = { path, content -> if (File(outDir, path).readText() != content) stale += path },
  *     ),
- * )
+ * ).getOrThrow()
  * stale.shouldBeEmpty()
  * ```
  */
@@ -42,7 +42,7 @@ import me.tbsten.katachi.processor.ArchitectureProcessorNoArg
 class RoleSummaryReport(
     private val write: (path: String, content: String) -> Unit,
 ) : ArchitectureProcessorNoArg<Unit> {
-    override fun process(context: ArchitectureProcessContext<Unit>) {
+    override fun process(context: ArchitectureProcessContext<Unit>): Result<Unit> = runCatching {
         for (role in context.roles) {
             write("${role.qualifiedName}.md", "# ${role.qualifiedName}\n")
         }

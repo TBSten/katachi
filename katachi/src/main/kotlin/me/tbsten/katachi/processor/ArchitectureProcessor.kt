@@ -5,7 +5,7 @@ import kotlinx.serialization.builtins.serializer
 import me.tbsten.katachi.ExperimentalKatachiApi
 
 /**
- * Something that reads an architecture definition and produces [Result].
+ * Something that reads an architecture definition and answers with a [kotlin.Result] of [R].
  *
  * katachi had two fixed outputs -- the check, and documentation generation -- and no way for
  * anyone else to add a third. This is that way in: the check is one processor among others,
@@ -19,28 +19,66 @@ import me.tbsten.katachi.ExperimentalKatachiApi
  * as an `object`, and **there is nothing a user has to subclass.** A processor with settings is
  * still free to be a class.
  *
- * [Result] may be [Unit]: a processor is allowed to have effects. It is deliberately not
- * `suspend`, which would force every plain JUnit or kotest test calling into it to wrap the
- * call in `runBlocking`.
+ * [R] may be [Unit]: a processor is allowed to have effects. It is deliberately not `suspend`,
+ * which would force every plain JUnit or kotest test calling into it to wrap the call in
+ * `runBlocking`.
+ *
+ * ## How [process] answers
+ *
+ * Write the body inside `runCatching { }`, and **when the answer is that the run does not pass,
+ * throw inside it.** The exception's message is what a reader of the build log sees:
+ * `runKatachiProcessor` reports `[FAILED]` and prints it, and reports `[OK]` with the value
+ * otherwise.
+ *
+ * A check that reports `Violation`s says "I found something" by ending its body with
+ * `me.tbsten.katachi.check.assertNoErrors`, which throws a `KatachiArchitectureAssertionError`
+ * when there is an error among them. `validate()` and `assert()` put that exception's violations
+ * into their one report; any other failure is read there as "this check could not do its job",
+ * and becomes one `UncheckedCheck`. On the command line both are `[FAILED]`.
+ *
+ * The runner and `validate()` still catch a processor that throws out of `process` instead, and
+ * treat it as the same failure, but a processor is expected not to.
  *
  * ## Example 1: a processor with typed arguments, written as an object
  * ```kt
- * object GenerateCodeFromTemplate : ArchitectureProcessor<GenerateCodeFromTemplate.Args, Unit> {
+ * import kotlinx.serialization.KSerializer
+ * import kotlinx.serialization.Serializable
+ * import me.tbsten.katachi.processor.ArchitectureProcessContext
+ * import me.tbsten.katachi.processor.ArchitectureProcessor
+ * import me.tbsten.katachi.processor.process
+ *
+ * object CountRoles : ArchitectureProcessor<CountRoles.Args, Int> {
  *     override val argsSerializer: KSerializer<Args> = Args.serializer()
  *
- *     override fun process(context: ArchitectureProcessContext<Args>) {
- *         context.log("Generating for role=${context.args.roleName}")
+ *     override fun process(context: ArchitectureProcessContext<Args>): Result<Int> = runCatching {
+ *         context.log("Counting roles with prefix=${context.args.prefix}")
+ *         context.roles.count { it.name.startsWith(context.args.prefix) }
  *     }
  *
  *     @Serializable
- *     data class Args(val roleName: String)
+ *     data class Args(val prefix: String = "")
  * }
  *
- * projectArchitecture.process(GenerateCodeFromTemplate, GenerateCodeFromTemplate.Args("GetUser"))
+ * val count: Int = projectArchitecture.process(CountRoles, CountRoles.Args("Get")).getOrThrow()
+ * ```
+ *
+ * ## Example 2: a check that makes the run fail when it found something
+ * ```kt
+ * import me.tbsten.katachi.processor.ArchitectureProcessContext
+ * import me.tbsten.katachi.processor.ArchitectureProcessorNoArg
+ *
+ * object ForbidTodoRoles : ArchitectureProcessorNoArg<List<String>> {
+ *     override fun process(context: ArchitectureProcessContext<Unit>): Result<List<String>> =
+ *         runCatching {
+ *             val todo = context.roles.map { it.qualifiedName }.filter { it.startsWith("Todo") }
+ *             check(todo.isEmpty()) { "Roles still named Todo: $todo" }
+ *             todo
+ *         }
+ * }
  * ```
  */
 @ExperimentalKatachiApi
-public interface ArchitectureProcessor<Args, Result> {
+public interface ArchitectureProcessor<Args, R> {
     /**
      * How a `--arg key=value` map becomes [Args].
      *
@@ -53,8 +91,8 @@ public interface ArchitectureProcessor<Args, Result> {
      * object CountRoles : ArchitectureProcessor<CountRoles.Args, Int> {
      *     override val argsSerializer: KSerializer<Args> = Args.serializer()
      *
-     *     override fun process(context: ArchitectureProcessContext<Args>): Int =
-     *         context.roles.count { it.name.startsWith(context.args.prefix) }
+     *     override fun process(context: ArchitectureProcessContext<Args>): Result<Int> =
+     *         runCatching { context.roles.count { it.name.startsWith(context.args.prefix) } }
      *
      *     @Serializable
      *     data class Args(val prefix: String = "")
@@ -64,17 +102,19 @@ public interface ArchitectureProcessor<Args, Result> {
     public val argsSerializer: KSerializer<Args>
 
     /**
-     * Reads [context] and produces this processor's result.
+     * Reads [context] and answers: `success` when the run passes, `failure` when it does not.
+     * Write the body inside `runCatching { }` and throw inside it to fail -- see this interface's
+     * own KDoc for how a check's findings are told apart from any other failure.
      *
-     * ## Example 1: return something derived from the declarations alone
+     * ## Example 1: answer from the declarations alone
      * ```kt
      * object RoleCount : ArchitectureProcessorNoArg<Int> {
-     *     override fun process(context: ArchitectureProcessContext<Unit>): Int =
-     *         context.roles.size
+     *     override fun process(context: ArchitectureProcessContext<Unit>): Result<Int> =
+     *         runCatching { context.roles.size }
      * }
      * ```
      */
-    public fun process(context: ArchitectureProcessContext<Args>): Result
+    public fun process(context: ArchitectureProcessContext<Args>): Result<R>
 
     /**
      * The `--arg` names this one run may carry beyond the ones [argsSerializer] declares.
@@ -114,9 +154,8 @@ public interface ArchitectureProcessor<Args, Result> {
      * import me.tbsten.katachi.processor.ArchitectureProcessorNoArg
      *
      * object AnnotateRoles : ArchitectureProcessorNoArg<Unit> {
-     *     override fun process(context: ArchitectureProcessContext<Unit>) {
-     *         for ((role, note) in context.rawArgs) context.log("$role: $note")
-     *     }
+     *     override fun process(context: ArchitectureProcessContext<Unit>): Result<Unit> =
+     *         runCatching { for ((role, note) in context.rawArgs) context.log("$role: $note") }
      *
      *     // `--arg domain/UseCase="owned by the platform team"`. The keys come from the
      *     // definition rather than from this processor, so no Args class can hold them as
@@ -127,33 +166,6 @@ public interface ArchitectureProcessor<Args, Result> {
      * ```
      */
     public fun undeclaredArgNames(context: ArchitectureProcessContext<*>): Set<String> = emptySet()
-
-    /**
-     * Whether [result] means this run did not pass.
-     *
-     * `runKatachiProcessor` has no way to read a result it was never told the shape of: a
-     * `List<Violation>` that is not empty and a `List<String>` that is not empty look the same
-     * to it. Without this, a check run from the command line reports `[OK]` and exits zero
-     * while holding the violations it just found -- a check that can never fail, which is the
-     * failure katachi exists to make impossible.
-     *
-     * Answering `false`, the default, says "producing a result is the whole job". A processor
-     * that generates something is done when it has generated it, and signals a real problem by
-     * throwing.
-     *
-     * @return `true` to have the run report `[FAILED]` for this processor and exit non-zero.
-     *
-     * ## Example 1: a check that fails the run when it found something
-     * ```kt
-     * object ForbidTodoRoles : ArchitectureProcessorNoArg<List<String>> {
-     *     override fun process(context: ArchitectureProcessContext<Unit>): List<String> =
-     *         context.roles.map { it.qualifiedName }.filter { it.startsWith("TODO") }
-     *
-     *     override fun isFailure(result: List<String>): Boolean = result.isNotEmpty()
-     * }
-     * ```
-     */
-    public fun isFailure(result: Result): Boolean = false
 }
 
 /**
@@ -169,27 +181,24 @@ public interface ArchitectureProcessor<Args, Result> {
  *
  * ## Example 1: a processor that exists for its effect
  * ```kt
+ * import java.io.File
+ * import me.tbsten.katachi.processor.ArchitectureProcessContext
+ * import me.tbsten.katachi.processor.ArchitectureProcessorNoArg
+ * import me.tbsten.katachi.processor.process
+ *
  * class RoleSummaryReport(
  *     private val write: (path: String, content: String) -> Unit,
  * ) : ArchitectureProcessorNoArg<Unit> {
- *     override fun process(context: ArchitectureProcessContext<Unit>) {
+ *     override fun process(context: ArchitectureProcessContext<Unit>): Result<Unit> = runCatching {
  *         for (role in context.roles) write("${role.qualifiedName}.md", "# ${role.qualifiedName}\n")
  *     }
  * }
  *
  * projectArchitecture.process(RoleSummaryReport { path, text -> File(path).writeText(text) })
- * ```
- *
- * ## Example 2: the same processor, verifying instead of writing
- * ```kt
- * val stale = mutableListOf<String>()
- * projectArchitecture.process(
- *     RoleSummaryReport { path, text -> if (File(path).readText() != text) stale += path },
- * )
- * stale.shouldBeEmpty()
+ *     .getOrThrow()
  * ```
  */
 @ExperimentalKatachiApi
-public interface ArchitectureProcessorNoArg<Result> : ArchitectureProcessor<Unit, Result> {
+public interface ArchitectureProcessorNoArg<R> : ArchitectureProcessor<Unit, R> {
     override val argsSerializer: KSerializer<Unit> get() = Unit.serializer()
 }

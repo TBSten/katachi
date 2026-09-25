@@ -29,7 +29,7 @@ import me.tbsten.katachi.processor.process
 @OptIn(ExperimentalKatachiApi::class)
 class PlatformOwnedFilesSpec : FreeSpec({
     "owner = \"platform\" が付いた役割のファイルをすべて集める" {
-        val files = projectArchitecture.process(PlatformOwnedFilesProcessor(owner = "platform"))
+        val files = projectArchitecture.process(PlatformOwnedFilesProcessor(owner = "platform")).getOrThrow()
 
         files shouldContainExactlyInAnyOrder (platformOwnedFilesWithoutGit + ".gitignore")
     }
@@ -65,6 +65,7 @@ class PlatformOwnedFilesSpec : FreeSpec({
         }
 
         val files = architectureWithUntaggedGit.process(PlatformOwnedFilesProcessor(owner = "platform"))
+            .getOrThrow()
 
         files shouldContainExactlyInAnyOrder platformOwnedFilesWithoutGit
     }

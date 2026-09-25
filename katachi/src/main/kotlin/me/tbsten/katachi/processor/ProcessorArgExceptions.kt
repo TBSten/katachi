@@ -23,9 +23,8 @@ import me.tbsten.katachi.KatachiDeclarationException
  * object GenerateOne : ArchitectureProcessor<GenerateOne.Args, Unit> {
  *     override val argsSerializer: KSerializer<Args> = Args.serializer()
  *
- *     override fun process(context: ArchitectureProcessContext<Args>) {
- *         context.log("generating for ${context.args.roleName}")
- *     }
+ *     override fun process(context: ArchitectureProcessContext<Args>): Result<Unit> =
+ *         runCatching { context.log("generating for ${context.args.roleName}") }
  *
  *     @Serializable
  *     data class Args(val roleName: String)
