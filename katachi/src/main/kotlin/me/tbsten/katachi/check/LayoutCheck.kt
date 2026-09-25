@@ -4,6 +4,7 @@ import me.tbsten.katachi.ExperimentalKatachiApi
 import me.tbsten.katachi.processor.ArchitectureProcessContext
 import me.tbsten.katachi.processor.ArchitectureProcessorNoArg
 import me.tbsten.katachi.processor.projectWalk
+import me.tbsten.katachi.scan.Severity
 import me.tbsten.katachi.scan.Violation
 import me.tbsten.katachi.scan.layoutWarningsOf
 
@@ -62,6 +63,12 @@ import me.tbsten.katachi.scan.layoutWarningsOf
 public class LayoutCheck : ArchitectureProcessorNoArg<List<Violation>> {
     // Reading `layoutViolations` is what starts the walk. `declaredEntries` costs no walk --
     // see this class's own KDoc for why it is read here too.
+    // Run from `runKatachiProcessor`, a check that found something has to fail the task.
+    // `Warning` does not: `assert()` prints warnings and returns, and the two entry points
+    // answering differently about the same violations would be worse than either answer.
+    override fun isFailure(result: List<Violation>): Boolean =
+        result.any { it.severity == Severity.Error }
+
     override fun process(context: ArchitectureProcessContext<Unit>): List<Violation> {
         val walk = context.projectWalk
         return walk.layoutViolations +

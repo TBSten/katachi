@@ -75,6 +75,33 @@ public interface ArchitectureProcessor<Args, Result> {
      * ```
      */
     public fun process(context: ArchitectureProcessContext<Args>): Result
+
+    /**
+     * Whether [result] means this run did not pass.
+     *
+     * `runKatachiProcessor` has no way to read a result it was never told the shape of: a
+     * `List<Violation>` that is not empty and a `List<String>` that is not empty look the same
+     * to it. Without this, a check run from the command line reports `[OK]` and exits zero
+     * while holding the violations it just found -- a check that can never fail, which is the
+     * failure katachi exists to make impossible.
+     *
+     * Answering `false`, the default, says "producing a result is the whole job". A processor
+     * that generates something is done when it has generated it, and signals a real problem by
+     * throwing.
+     *
+     * @return `true` to have the run report `[FAILED]` for this processor and exit non-zero.
+     *
+     * ## Example 1: a check that fails the run when it found something
+     * ```kt
+     * object ForbidTodoRoles : ArchitectureProcessorNoArg<List<String>> {
+     *     override fun process(context: ArchitectureProcessContext<Unit>): List<String> =
+     *         context.roles.map { it.qualifiedName }.filter { it.startsWith("TODO") }
+     *
+     *     override fun isFailure(result: List<String>): Boolean = result.isNotEmpty()
+     * }
+     * ```
+     */
+    public fun isFailure(result: Result): Boolean = false
 }
 
 /**

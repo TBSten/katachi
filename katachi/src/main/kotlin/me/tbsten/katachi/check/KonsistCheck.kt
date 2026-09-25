@@ -12,6 +12,7 @@ import me.tbsten.katachi.processor.projectWalk
 import me.tbsten.katachi.scan.UncheckedConstraint
 import me.tbsten.katachi.scan.UncheckedConstraintReason
 import me.tbsten.katachi.scan.UnsatisfiedConstraint
+import me.tbsten.katachi.scan.Severity
 import me.tbsten.katachi.scan.Violation
 import me.tbsten.katachi.scan.catching
 
@@ -53,6 +54,12 @@ public class KonsistCheck : ArchitectureProcessorNoArg<List<Violation>> {
      * projectArchitecture.validate(KonsistCheck(), TodoCheck())
      * ```
      */
+    // Run from `runKatachiProcessor`, a check that found something has to fail the task.
+    // `Warning` does not: `assert()` prints warnings and returns, and the two entry points
+    // answering differently about the same violations would be worse than either answer.
+    override fun isFailure(result: List<Violation>): Boolean =
+        result.any { it.severity == Severity.Error }
+
     override fun process(context: ArchitectureProcessContext<Unit>): List<Violation> {
         val walk = context.projectWalk
         return walk.declaredConstraints
