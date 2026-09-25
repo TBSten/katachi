@@ -99,6 +99,8 @@ public class KatachiPlugin implements Plugin<Project> {
                     task.setWorkingDir(projectDirectory);
                     task.getArchitectureClassName().set(project.provider(extension::getArchitecture));
                     task.getEntryPointClassName().convention(KatachiEntryPointSource.QUALIFIED_NAME);
+                    task.getConfiguredArgs().set(
+                            project.provider(() -> extension.getProcessors().getConfiguredArgs()));
                 });
 
         // `sourceSets` belongs to the java plugin, which `kotlin("jvm")` applies. Reading it

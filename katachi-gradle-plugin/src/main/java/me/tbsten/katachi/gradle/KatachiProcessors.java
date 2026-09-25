@@ -1,9 +1,11 @@
 package me.tbsten.katachi.gradle;
 
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.regex.Pattern;
 
+import org.gradle.api.Action;
 import org.gradle.api.InvalidUserDataException;
 
 /**
@@ -97,6 +99,9 @@ public class KatachiProcessors {
 
     /** Registrations in the order {@link #register} was called, key to class name. */
     private final Map<String, String> registrations = new LinkedHashMap<>();
+    private final Map<String, KatachiProcessorArgs> configuredArgs = new LinkedHashMap<>();
+    private final KatachiDocsOptions docs = new KatachiDocsOptions();
+    private final KatachiTemplateOptions template = new KatachiTemplateOptions();
 
     /**
      * Registers a processor to run under {@code --processor=<key>}.
@@ -149,6 +154,103 @@ public class KatachiProcessors {
     }
 
     /**
+     * Registers a processor and gives it the arguments it always runs with.
+     *
+     * <p>The arguments are this module's defaults: a {@code --arg} of the same name on the
+     * command line wins, so one run can still differ without the build script changing. They are
+     * sent only when {@code key} is actually selected.
+     *
+     * <pre>{@code
+     * katachi {
+     *     processors {
+     *         register("roleNames", "com.example.processors.RoleNames") {
+     *             args("prefix", "domain")
+     *         }
+     *     }
+     * }
+     * }</pre>
+     *
+     * @see #register(String, String)
+     */
+    public void register(String key, String className, Action<? super KatachiProcessorArgs> action) {
+        register(key, className);
+        configure(key, action);
+    }
+
+    /**
+     * Gives an already registered processor the arguments it always runs with.
+     *
+     * <p>The one to reach for when the registration is katachi's own -- {@code docs} is
+     * registered by default, so there is nothing to call {@link #register} for. Its typed block
+     * {@link #docs(Action)} is the better door for that one; this stays for a processor whose
+     * arguments katachi does not know.
+     *
+     * @throws InvalidUserDataException when the key is not one a processor may have, or when the
+     *     same key is configured twice.
+     */
+    public void args(String key, Action<? super KatachiProcessorArgs> action) {
+        if (key == null || key.isEmpty() || !KEY_PATTERN.matcher(key).matches()) {
+            throw new InvalidUserDataException(
+                    "Invalid katachi processor key \"" + key + "\" in args(...). "
+                            + "Keys may hold only letters, digits, underscore and hyphen.");
+        }
+        configure(key, action);
+    }
+
+    private void configure(String key, Action<? super KatachiProcessorArgs> action) {
+        if (configuredArgs.containsKey(key)) {
+            throw new InvalidUserDataException(
+                    "katachi processor key \"" + key + "\" is configured twice. "
+                            + "Write one block per key, holding every argument that key needs.");
+        }
+        KatachiProcessorArgs args = new KatachiProcessorArgs(key);
+        action.execute(args);
+        configuredArgs.put(key, args);
+    }
+
+    /** What `--processor=docs` is given every run. See {@link #docs(Action)}. */
+    public KatachiDocsOptions getDocs() {
+        return docs;
+    }
+
+    /**
+     * Configures the documentation processor katachi ships.
+     *
+     * <p>Typed, unlike {@link #args}, because these argument names are katachi's own and part of
+     * its public surface: a typo in {@code outputDir} belongs in the IDE rather than at the end
+     * of a run. What a project writes itself keeps going through the string form.
+     *
+     * <pre>{@code
+     * katachi {
+     *     processors {
+     *         docs {
+     *             outputDir = rootProject.layout.projectDirectory.dir("docs")
+     *         }
+     *     }
+     * }
+     * }</pre>
+     */
+    public void docs(Action<? super KatachiDocsOptions> action) {
+        action.execute(docs);
+    }
+
+    /** What `--processor=template` is given every run. See {@link #template(Action)}. */
+    public KatachiTemplateOptions getTemplate() {
+        return template;
+    }
+
+    /**
+     * Configures the template processor.
+     *
+     * <p>Code generation from a template is not implemented yet, so this block holds only
+     * {@code roleName} for now and grows as the rest is settled. Registering {@code template} is
+     * still this module's job -- katachi registers only {@code docs} by default.
+     */
+    public void template(Action<? super KatachiTemplateOptions> action) {
+        action.execute(template);
+    }
+
+    /**
      * Every processor this module can run, key to fully qualified class name: what
      * {@link #register} was called with, on top of what this plugin registers by default.
      *
@@ -160,5 +262,34 @@ public class KatachiProcessors {
         Map<String, String> merged = new LinkedHashMap<>(DEFAULT_REGISTRATIONS);
         merged.putAll(registrations);
         return merged;
+    }
+
+    /** Every configured argument, by key: the typed blocks and the string form, merged. */
+    Map<String, Map<String, String>> getConfiguredArgs() {
+        Map<String, Map<String, String>> copy = new LinkedHashMap<>();
+        putTyped(copy, KatachiDocsOptions.KEY, docs.toArgs(), "docs { }");
+        putTyped(copy, KatachiTemplateOptions.KEY, template.toArgs(), "template { }");
+        for (Map.Entry<String, KatachiProcessorArgs> entry : configuredArgs.entrySet()) {
+            copy.put(entry.getKey(), entry.getValue().getValues());
+        }
+        return Collections.unmodifiableMap(copy);
+    }
+
+    private void putTyped(
+            Map<String, Map<String, String>> collected,
+            String key,
+            Map<String, String> typed,
+            String blockName) {
+        if (typed.isEmpty()) {
+            return;
+        }
+        if (configuredArgs.containsKey(key)) {
+            throw new InvalidUserDataException(
+                    "processors { " + blockName + " } and processors { args(\"" + key
+                            + "\") { } } both configure \"" + key + "\". They mean the same "
+                            + "thing, so one of the two is being ignored; keep the typed "
+                            + blockName + " and remove the other.");
+        }
+        collected.put(key, typed);
     }
 }

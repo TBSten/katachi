@@ -43,5 +43,11 @@ katachi {
         // plugin in this module, so only an ArchitectureProcessorNoArg processor is
         // registered.
         register("layout", "me.tbsten.katachi.check.LayoutCheck")
+        // The typed block, rather than `--arg outputDir=...` on every invocation. Kept under
+        // `build/` on purpose: anywhere else and the generated pages would be picked up by
+        // `gitTracked()` and reported as files no role declares.
+        docs {
+            outputDir = "build/architecture-docs"
+        }
     }
 }

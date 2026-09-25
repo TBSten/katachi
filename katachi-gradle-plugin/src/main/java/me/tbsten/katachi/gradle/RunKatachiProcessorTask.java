@@ -1,12 +1,15 @@
 package me.tbsten.katachi.gradle;
 
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
+import java.util.Map;
 import java.util.List;
 import java.util.Set;
 
 import org.gradle.api.InvalidUserDataException;
 import org.gradle.api.provider.ListProperty;
+import org.gradle.api.provider.MapProperty;
 import org.gradle.api.provider.Property;
 import org.gradle.api.tasks.Input;
 import org.gradle.api.tasks.JavaExec;
@@ -107,6 +110,17 @@ public abstract class RunKatachiProcessorTask extends JavaExec {
     public abstract Property<String> getEntryPointClassName();
 
     /**
+     * What each processor key was given in {@code build.gradle.kts}, by key.
+     *
+     * <p>Filled by {@link KatachiPlugin} from the {@code katachi { }} block: the typed
+     * {@code docs { }} and {@code template { }} blocks, and the string form
+     * {@code processors { args("key") { } }}. Only the keys this run actually selects are sent,
+     * so configuring a processor that is not asked for costs nothing.
+     */
+    @Input
+    public abstract MapProperty<String, Map<String, String>> getConfiguredArgs();
+
+    /**
      * Validates this run's configuration and builds the argv the entry point reads, then starts
      * the JVM.
      *
@@ -147,6 +161,9 @@ public abstract class RunKatachiProcessorTask extends JavaExec {
             args.add("--processor=" + key);
         }
 
+        // The command line wins over what the build script configured, so `--arg` stays the way
+        // to vary one run without editing the build. Collected first for that reason: a key seen
+        // here is not overwritten below.
         Set<String> seenArgKeys = new LinkedHashSet<>();
         for (String rawArg : getProcessorArgs()) {
             int separatorIndex = rawArg.indexOf('=');
@@ -162,6 +179,39 @@ public abstract class RunKatachiProcessorTask extends JavaExec {
                                 + "once. Each --arg key may be passed only once.");
             }
             args.add("--arg=" + rawArg);
+        }
+
+        Map<String, Map<String, String>> configured = getConfiguredArgs().get();
+        Map<String, String> fromBuildScript = new LinkedHashMap<>();
+        Map<String, String> claimedBy = new LinkedHashMap<>();
+        for (String key : processorKeys) {
+            Map<String, String> forKey = configured.get(key);
+            if (forKey == null) {
+                continue;
+            }
+            for (Map.Entry<String, String> entry : forKey.entrySet()) {
+                String name = entry.getKey();
+                if (seenArgKeys.contains(name)) {
+                    continue;
+                }
+                String previousOwner = claimedBy.get(name);
+                if (previousOwner != null && !fromBuildScript.get(name).equals(entry.getValue())) {
+                    // Two selected processors both configured the same name, differently. The
+                    // command line carries one value per name, so there is no answer that serves
+                    // both; say which two disagree rather than picking one.
+                    throw new InvalidUserDataException(
+                            "\"" + previousOwner + "\" and \"" + key + "\" both configure the "
+                                    + "argument \"" + name + "\", to \"" + fromBuildScript.get(name)
+                                    + "\" and \"" + entry.getValue() + "\". A run carries one "
+                                    + "value per argument name, so run them separately, or pass "
+                                    + "--arg " + name + "=... to settle it for this run.");
+                }
+                fromBuildScript.put(name, entry.getValue());
+                claimedBy.put(name, key);
+            }
+        }
+        for (Map.Entry<String, String> entry : fromBuildScript.entrySet()) {
+            args.add("--arg=" + entry.getKey() + "=" + entry.getValue());
         }
 
         setArgs(args);

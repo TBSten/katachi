@@ -119,4 +119,5 @@ public class KatachiExtension {
     public void processors(Action<? super KatachiProcessors> action) {
         action.execute(processors);
     }
+
 }
