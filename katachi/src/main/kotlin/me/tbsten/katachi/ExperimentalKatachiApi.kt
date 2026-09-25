@@ -3,11 +3,14 @@ package me.tbsten.katachi
 /**
  * Marks an API that is meant to be used, but whose shape is still going to change.
  *
- * This is the opposite end of [InternalKatachiApi]. An internal API says "do not touch this";
- * an experimental one says "touch it, and expect to adjust when you upgrade". The processor
- * API is the first thing marked this way: what a processor is handed grows with every version
- * that finds something new to hand it, so freezing that shape at v0.1 would mean freezing it
- * around the two consumers that happen to exist today.
+ * This is the opposite end of [InternalKatachiApi]. An internal API is only for katachi's own
+ * other modules and says "do not touch this"; an experimental one is open to every project and
+ * says "touch it, and expect to adjust when you upgrade". The processor API is marked this
+ * way, and so is what a project needs to extend katachi on its own terms — its own
+ * [me.tbsten.katachi.fs.FileSelection], or its own `.module { }` built on
+ * [me.tbsten.katachi.dsl.gradle.expandModulePath]. What a processor is handed grows with every
+ * version that finds something new to hand it, so freezing that shape now would mean freezing
+ * it around the consumers that happen to exist today.
  *
  * The level is [RequiresOptIn.Level.ERROR], the same as [InternalKatachiApi]. A warning would
  * let a project depend on a shape that is going to move without anyone noticing until the
@@ -16,9 +19,8 @@ package me.tbsten.katachi
  * Like [InternalKatachiApi], this exists to make *consumers* of the published `katachi`
  * artifact say so out loud, not to make katachi say it to itself: the `:katachi` module's own
  * `build.gradle.kts` opts every file (main and test) in module-wide, so nothing inside
- * `:katachi` writes `@OptIn` for this. Code outside `:katachi` — the samples, which are
- * separate Gradle builds resolving the published artifact — still has to opt in explicitly,
- * which is what keeps this a real wall rather than a suggestion.
+ * `:katachi` writes `@OptIn` for this. Code outside `:katachi` still has to opt in
+ * explicitly, which is what keeps this a real wall rather than a suggestion.
  *
  * ## Example 1: opt in to the processor API from code outside `:katachi`
  * ```kt
@@ -46,11 +48,5 @@ package me.tbsten.katachi
     AnnotationTarget.FUNCTION,
     AnnotationTarget.PROPERTY,
     AnnotationTarget.CONSTRUCTOR,
-    // `TYPEALIAS` is here and not on `InternalKatachiApi`: an alias is a name a *consumer*
-    // reads, so the experimental surface is the one that could have aliases worth naming. The
-    // one that used it, `ArchitectureProcessorUnit`, is gone in v0.2 -- the target stays so
-    // that the next alias does not quietly widen the experimental surface by being unable to
-    // carry the marker.
-    AnnotationTarget.TYPEALIAS,
 )
 public annotation class ExperimentalKatachiApi

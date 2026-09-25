@@ -93,8 +93,8 @@ class GitTrackedFileSystemSpec : FreeSpec({
         val projectRoot = findProjectRoot(delegate)
         val root = projectRoot.path
 
-        "ルートが git リポジトリとして認識される" {
-            projectRoot.isGitRepository shouldBe true
+        "ルートが git の work tree の中にあると判定される" {
+            isInsideGitWorkTree(root) shouldBe true
         }
 
         "追跡中のファイルは見える" {
@@ -157,7 +157,6 @@ class GitTrackedFileSystemSpec : FreeSpec({
             // tree here, and `build/` would start showing up as violations.
             val delegate = RealFileSystem()
             val projectRoot = findProjectRoot(delegate)
-            projectRoot.isGitRepository shouldBe true
 
             val sampleRoot = projectRoot.path / "sample" / "jvm"
             isInsideGitWorkTree(sampleRoot) shouldBe true

@@ -1,12 +1,10 @@
 package me.tbsten.katachi.processor
 
 import me.tbsten.katachi.ExperimentalKatachiApi
-import me.tbsten.katachi.InternalKatachiApi
 import me.tbsten.katachi.dsl.Architecture
 import me.tbsten.katachi.dsl.Group
 import me.tbsten.katachi.dsl.LayoutEntry
 import me.tbsten.katachi.dsl.Role
-import me.tbsten.katachi.fs.KatachiFileSystem
 
 /**
  * Everything an [ArchitectureProcessor] is handed: the declarations, the arguments it was
@@ -103,44 +101,6 @@ public interface ArchitectureProcessContext<out Args> {
      * ```
      */
     public val rawArgs: Map<String, String>
-
-    /**
-     * The tree the walk reads, which katachi's own specs point at a tree that only exists in
-     * memory.
-     *
-     * `@InternalKatachiApi`, because [KatachiFileSystem] is: a processor written outside
-     * `:katachi` has no in-memory tree to hand in and tests against a real checkout instead.
-     *
-     * ## Example 1: run a processor that reads the file system it is handed
-     * ```kt
-     * object FilesOfFirstRole : ArchitectureProcessorNoArg<List<String>> {
-     *     override fun process(context: ArchitectureProcessContext<Unit>): Result<List<String>> =
-     *         runCatching { context.filesOf(context.roles.first()) }
-     * }
-     *
-     * val arch = architecture {
-     *     "domain".group { "UseCase" { layout { "domain" / "*UseCase.kt".file() } } }
-     * }
-     * val fileSystem = object : KatachiFileSystem {
-     *     override val workingDirectory: FsPath = FsPath.of("/repo")
-     *     // "gradlew" is one of the project root markers the walk looks for; without one
-     *     // present, findProjectRoot throws before filesOf can run.
-     *     override fun exists(path: FsPath): Boolean =
-     *         path in setOf(workingDirectory, workingDirectory / "gradlew", workingDirectory / "domain")
-     *     override fun isDirectory(path: FsPath): Boolean =
-     *         path == workingDirectory || path == workingDirectory / "domain"
-     *     override fun list(directory: FsPath): List<FsPath> =
-     *         if (directory == workingDirectory / "domain") {
-     *             listOf(directory / "GetUserUseCase.kt")
-     *         } else {
-     *             emptyList()
-     *         }
-     * }
-     * arch.process(FilesOfFirstRole, fileSystem).getOrThrow() shouldBe listOf("domain/GetUserUseCase.kt")
-     * ```
-     */
-    @InternalKatachiApi
-    public val fileSystem: KatachiFileSystem
 
     /**
      * Every group, parents before their children, in declaration order.
@@ -247,7 +207,8 @@ public interface ArchitectureProcessContext<out Args> {
      * and a file under an `ignore()` is never looked at in the first place.
      *
      * The first call resolves the project root and walks the tree; later calls, for this role
-     * or any other, reuse that one walk -- including from a context derived with [withArgs].
+     * or any other, reuse that one walk -- including composition's `+` and a CLI run naming
+     * several processors, both of which share one walk internally.
      *
      * ## Example 1: collect the files of the roles a processor cares about
      * ```kt
@@ -280,31 +241,4 @@ public interface ArchitectureProcessContext<out Args> {
      * ```
      */
     public fun log(message: String)
-
-    /**
-     * The same run with different arguments: everything else, the one walk of the project
-     * included, is shared.
-     *
-     * This is how `+` composition and a CLI run naming several processors stay at one walk.
-     * `@InternalKatachiApi` because deciding what a processor's arguments are is katachi's job,
-     * not a processor's.
-     *
-     * ## Example 1: run two processors on one walk
-     * ```kt
-     * @OptIn(ExperimentalKatachiApi::class, InternalKatachiApi::class)
-     * fun <R> runBoth(
-     *     context: ArchitectureProcessContext<Unit>,
-     *     first: ArchitectureProcessorNoArg<List<R>>,
-     *     second: ArchitectureProcessorNoArg<List<R>>,
-     * ): List<R> = first.process(context.withArgs(Unit)).getOrThrow() +
-     *     second.process(context.withArgs(Unit)).getOrThrow()
-     * ```
-     *
-     * @param onLog where the derived context sends [log]. `null` keeps this context's own.
-     */
-    @InternalKatachiApi
-    public fun <A> withArgs(
-        args: A,
-        onLog: ((String) -> Unit)? = null,
-    ): ArchitectureProcessContext<A>
 }

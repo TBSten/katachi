@@ -1,7 +1,6 @@
 package me.tbsten.katachi.check
 
 import me.tbsten.katachi.ExperimentalKatachiApi
-import me.tbsten.katachi.InternalKatachiApi
 import me.tbsten.katachi.dsl.Architecture
 import me.tbsten.katachi.fs.KatachiFileSystem
 import me.tbsten.katachi.fs.RealFileSystem
@@ -78,8 +77,7 @@ public fun Architecture.assert(maxViolations: Int = DEFAULT_MAX_VIOLATIONS): Uni
  * }
  * ```
  */
-@InternalKatachiApi
-public fun Architecture.assert(
+internal fun Architecture.assert(
     fileSystem: KatachiFileSystem,
     maxViolations: Int = DEFAULT_MAX_VIOLATIONS,
 ): Unit = assertWith(fileSystem, emptyList(), maxViolations)
@@ -134,9 +132,7 @@ public fun Architecture.assert(
  * }
  * ```
  */
-@InternalKatachiApi
-@ExperimentalKatachiApi
-public fun Architecture.assert(
+internal fun Architecture.assert(
     fileSystem: KatachiFileSystem,
     check: ArchitectureProcessor<Unit, List<Violation>>,
     vararg more: ArchitectureProcessor<Unit, List<Violation>>,

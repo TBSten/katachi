@@ -27,8 +27,8 @@ import me.tbsten.katachi.test.architecture.showsExample
 fun DeclarationContainerScope.marker() = "Marker" {
     title = "マーカーと例外基底"
     summary = "どの層にも属さず、すべての層が依存してよいもの"
-    example("ExperimentalKatachiApi.kt", "まだ形が動く API の opt-in マーカー")
-    example("InternalKatachiApi.kt", "ライブラリ内部で共有するための opt-in マーカー")
+    example("ExperimentalKatachiApi.kt", "利用者に開いているが、まだ形が動く API の opt-in マーカー")
+    example("InternalKatachiApi.kt", "ライブラリの他モジュール専用の API の opt-in マーカー")
     example("Exceptions.kt", "利用者が catch する例外の基底")
     layout {
         ":katachi".module {

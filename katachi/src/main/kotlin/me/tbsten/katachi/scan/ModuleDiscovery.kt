@@ -18,11 +18,14 @@ import me.tbsten.katachi.fs.KatachiFileSystem
  * [scanModules] is the same search with those directories kept, which is what the check runs
  * so that it can report them instead of quietly answering with fewer modules.
  *
- * ## Example 1: list a project's modules once and resolve where one of them lives
+ * Public only for katachi's own samples, which flatten their layout against the real tree to
+ * pin it down in a snapshot.
+ *
+ * ## Example 1: flatten a layout against the modules that really exist
  * ```kt
  * val fileSystem = RealFileSystem()
- * val index = moduleIndex(fileSystem, findProjectRoot(fileSystem).path)
- * println(index.resolve(ModulePath.of(":core:data")).directory)
+ * val index = moduleIndex(fileSystem, findProjectRoot(fileSystem).path, projectArchitecture.moduleResolver)
+ * val entries = projectArchitecture.flattenLayout(index)
  * ```
  */
 @InternalKatachiApi
@@ -57,13 +60,10 @@ public fun moduleIndex(
  *
  * ## Example 1: list every module below the project root
  * ```kt
- * val fileSystem = RealFileSystem()
- * val modules = discoverModules(fileSystem, findProjectRoot(fileSystem).path)
- * println(modules.joinToString { it.value })
+ * discoverModules(fileSystem, FsPath.of("/repo")).map { it.value } shouldContain ":core:data"
  * ```
  */
-@InternalKatachiApi
-public fun discoverModules(fileSystem: KatachiFileSystem, projectRoot: FsPath): List<ModulePath> =
+internal fun discoverModules(fileSystem: KatachiFileSystem, projectRoot: FsPath): List<ModulePath> =
     scanModules(fileSystem, projectRoot).modules
 
 /**

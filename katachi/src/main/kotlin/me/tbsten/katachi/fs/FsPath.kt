@@ -1,6 +1,6 @@
 package me.tbsten.katachi.fs
 
-import me.tbsten.katachi.InternalKatachiApi
+import me.tbsten.katachi.ExperimentalKatachiApi
 
 /**
  * A path in the shape katachi works with: always `/` separated, never carrying `.` or `..`
@@ -19,7 +19,7 @@ import me.tbsten.katachi.InternalKatachiApi
  * FsPath.of("/repo//app///src").value shouldBe "/repo/app/src"
  * ```
  */
-@InternalKatachiApi
+@ExperimentalKatachiApi
 public class FsPath private constructor(
     private val rootPrefix: String,
     /** The path split on `/`, outermost first. Empty for the root of an absolute path. */

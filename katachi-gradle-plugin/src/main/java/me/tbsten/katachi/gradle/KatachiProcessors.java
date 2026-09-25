@@ -268,8 +268,12 @@ public class KatachiProcessors {
      * <p>The user's own registration of a default key replaces it. Order is not meaningful --
      * {@link KatachiEntryPointSource#render} sorts by key so that reordering a build script
      * cannot change the generated text.
+     *
+     * <p>Package-private: only {@link KatachiPlugin}, in this same package, reads it to build the
+     * entry point source. Nothing outside this plugin's own code has a reason to see the raw
+     * registry rather than the generated processor it produces.
      */
-    public Map<String, String> getRegistrations() {
+    Map<String, String> getRegistrations() {
         Map<String, String> merged = new LinkedHashMap<>(DEFAULT_REGISTRATIONS);
         merged.putAll(registrations);
         return merged;

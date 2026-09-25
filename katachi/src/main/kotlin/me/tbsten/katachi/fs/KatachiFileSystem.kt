@@ -1,6 +1,6 @@
 package me.tbsten.katachi.fs
 
-import me.tbsten.katachi.InternalKatachiApi
+import me.tbsten.katachi.ExperimentalKatachiApi
 
 /**
  * Every file system access katachi makes, in four operations.
@@ -11,8 +11,9 @@ import me.tbsten.katachi.InternalKatachiApi
  * files anyway.
  *
  * Keeping it to four operations is what makes the in-memory implementation used by katachi's
- * own tests cheap, and it is also what lets a filtered view ([GitTrackedFileSystem]) wrap a
- * real tree without the traversal above it knowing.
+ * own tests cheap, and it is also what lets a filtered view — the one `files = gitTracked()`
+ * hands the walk, or a [FileSelection] of your own — wrap a real tree without the traversal
+ * above it knowing.
  *
  * ## Example 1: a minimal implementation of the four operations
  * ```kt
@@ -25,15 +26,15 @@ import me.tbsten.katachi.InternalKatachiApi
  * }
  * ```
  */
-@InternalKatachiApi
+@ExperimentalKatachiApi
 public interface KatachiFileSystem {
     /**
      * Where the check starts looking for the project root. Always absolute.
      *
      * ## Example 1: read where a file system starts looking
      * ```kt
-     * val fileSystem = RealFileSystem()
-     * println("Searching from ${fileSystem.workingDirectory}")
+     * fun describe(fileSystem: KatachiFileSystem): String =
+     *     "Searching from ${fileSystem.workingDirectory}"
      * ```
      */
     public val workingDirectory: FsPath
@@ -43,8 +44,8 @@ public interface KatachiFileSystem {
      *
      * ## Example 1: check whether a marker file sits at a path
      * ```kt
-     * val fileSystem = RealFileSystem()
-     * val hasSettings = fileSystem.exists(fileSystem.workingDirectory / "settings.gradle.kts")
+     * fun hasSettings(fileSystem: KatachiFileSystem): Boolean =
+     *     fileSystem.exists(fileSystem.workingDirectory / "settings.gradle.kts")
      * ```
      */
     public fun exists(path: FsPath): Boolean
@@ -55,9 +56,10 @@ public interface KatachiFileSystem {
      *
      * ## Example 1: decide whether to descend into a path
      * ```kt
-     * val fileSystem = RealFileSystem()
-     * val src = fileSystem.workingDirectory / "src"
-     * if (fileSystem.isDirectory(src)) fileSystem.list(src)
+     * fun sourcesOf(fileSystem: KatachiFileSystem): List<FsPath> {
+     *     val src = fileSystem.workingDirectory / "src"
+     *     return if (fileSystem.isDirectory(src)) fileSystem.list(src) else emptyList()
+     * }
      * ```
      */
     public fun isDirectory(path: FsPath): Boolean
@@ -68,8 +70,8 @@ public interface KatachiFileSystem {
      *
      * ## Example 1: read a directory's children, sorted by name
      * ```kt
-     * val fileSystem = RealFileSystem()
-     * val names = fileSystem.list(fileSystem.workingDirectory).map { it.name }
+     * fun childNames(fileSystem: KatachiFileSystem): List<String> =
+     *     fileSystem.list(fileSystem.workingDirectory).map { it.name }
      * ```
      */
     public fun list(directory: FsPath): List<FsPath>

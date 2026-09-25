@@ -40,7 +40,7 @@ public class KatachiUnresolvableModulePatternException internal constructor(
  * has not customised `projectDir`, which in practice means every new project. A build that
  * has customised it replaces the resolver. A resolver replaced this way is asked about the
  * modules the layout names. It is not asked which modules exist: expanding `":feature:*"`
- * walks the tree looking for build files (see [me.tbsten.katachi.scan.discoverModules]), and that stays convention
+ * walks the tree looking for a `build.gradle.kts` or `build.gradle`, and that stays convention
  * based until a Gradle plugin can hand katachi the real list.
  *
  * ## Example 1: place a module at a non-conventional directory
@@ -138,6 +138,9 @@ internal class ModuleTarget(
  *
  * Built by [me.tbsten.katachi.scan.moduleIndex] — or by [unresolved] when no file system is at hand, which says
  * something different and which [targetsOf] answers differently.
+ *
+ * Public only because [me.tbsten.katachi.scan.moduleIndex] hands it to katachi's own samples,
+ * which pass it straight on to [flattenLayout]. None of its members are.
  *
  * ## Example 1: build the index once and reuse it for every layout key
  * ```kt

@@ -15,7 +15,9 @@ import me.tbsten.katachi.fs.KatachiFileSystem
 internal class RealArchitectureProcessContext<Args>(
     internal val walk: ProjectWalk,
     override val args: Args,
-    private val onLog: (String) -> Unit,
+    // Internal rather than private so that the top-level `withArgs` below -- the only place that
+    // ever needs to carry it forward -- can read it back out of a context it did not build.
+    internal val onLog: (String) -> Unit,
     // Last and defaulted so that `withArgs` and every `Architecture.process` overload keep their
     // call shape: a run started in code has no command line to take one from.
     override val rawArgs: Map<String, String> = emptyMap(),
@@ -29,7 +31,6 @@ internal class RealArchitectureProcessContext<Args>(
     ) : this(ProjectWalk(architecture, fileSystem), args, onLog, rawArgs)
 
     override val architecture: Architecture get() = walk.architecture
-    override val fileSystem: KatachiFileSystem get() = walk.fileSystem
     override val groups: List<Group> get() = walk.groups
     override val roles: List<Role> get() = walk.roles
     override val declaredEntries: List<LayoutEntry> get() = walk.declaredEntries
@@ -37,12 +38,6 @@ internal class RealArchitectureProcessContext<Args>(
     override fun filesOf(role: Role): List<String> = walk.filesOf(role)
 
     override fun log(message: String): Unit = onLog(message)
-
-    override fun <A> withArgs(
-        args: A,
-        onLog: ((String) -> Unit)?,
-    ): ArchitectureProcessContext<A> =
-        RealArchitectureProcessContext(walk, args, onLog ?: this.onLog, rawArgs)
 
     override fun toString(): String = "ArchitectureProcessContext(args=$args, $walk)"
 }
@@ -62,3 +57,35 @@ internal val ArchitectureProcessContext<*>.projectWalk: ProjectWalk
         is FakeArchitectureProcessContext<*> -> real.walk
         else -> throw KatachiForeignProcessContextException(this::class.java.name)
     }
+
+/**
+ * The tree [this] context's walk reads, which katachi's own specs point at a tree that only
+ * exists in memory.
+ *
+ * Not on [ArchitectureProcessContext] itself: [KatachiFileSystem] has no in-memory implementation
+ * outside `:katachi`, so a processor written elsewhere tests against a real checkout instead and
+ * has no reason to reach for this.
+ */
+internal val ArchitectureProcessContext<*>.fileSystem: KatachiFileSystem get() = projectWalk.fileSystem
+
+/**
+ * The same run with different arguments: everything else, the one walk of the project included,
+ * is shared.
+ *
+ * This is how `+` composition and a CLI run naming several processors stay at one walk. Not on
+ * [ArchitectureProcessContext] itself: deciding what a processor's arguments are is katachi's
+ * job, not a processor's.
+ *
+ * @param onLog where the derived context sends [ArchitectureProcessContext.log]. `null` keeps
+ *   this context's own.
+ */
+internal fun <Args, A> ArchitectureProcessContext<Args>.withArgs(
+    args: A,
+    onLog: ((String) -> Unit)? = null,
+): ArchitectureProcessContext<A> = when (this) {
+    is RealArchitectureProcessContext<*> -> RealArchitectureProcessContext(walk, args, onLog ?: this.onLog, rawArgs)
+    is FakeArchitectureProcessContext<*> -> real.let {
+        RealArchitectureProcessContext(it.walk, args, onLog ?: it.onLog, it.rawArgs)
+    }
+    else -> throw KatachiForeignProcessContextException(this::class.java.name)
+}

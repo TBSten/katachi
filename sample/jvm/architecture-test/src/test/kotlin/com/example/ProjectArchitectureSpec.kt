@@ -307,12 +307,13 @@ class ProjectArchitectureSpec : FreeSpec({
  * A [FileSelection] written the way a project outside katachi writes one: it hands the walk a
  * view in which the project holds no files at all.
  *
- * `fileSystemFor` is `@InternalKatachiApi` because [KatachiFileSystem] and [ProjectRoot] are,
- * so implementing it costs an explicit opt-in — which is exactly the wall this sample stands
- * in for. Nothing else here is katachi's privilege: `GitTracked` and `WholeTree` implement the
- * same interface with the same one method.
+ * `fileSystemFor` is `@ExperimentalKatachiApi` because [KatachiFileSystem] and [ProjectRoot]
+ * are, so implementing it costs an explicit opt-in — the same one a user takes on to write
+ * their own `FileSelection`, which is exactly what this sample stands in for. Nothing else
+ * here is katachi's privilege: `GitTracked` and `WholeTree` implement the same interface with
+ * the same one method.
  */
-@OptIn(InternalKatachiApi::class)
+@OptIn(InternalKatachiApi::class, ExperimentalKatachiApi::class)
 private object SelectsNothing : FileSelection {
     override fun fileSystemFor(
         delegate: KatachiFileSystem,

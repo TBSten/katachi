@@ -2,13 +2,11 @@ package me.tbsten.katachi.test.fs
 
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.FreeSpec
-import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
 import me.tbsten.katachi.fs.FsPath
 import me.tbsten.katachi.fs.KatachiProjectRootNotFoundException
-import me.tbsten.katachi.fs.ProjectRootMarker
 import me.tbsten.katachi.fs.RealFileSystem
 import me.tbsten.katachi.fs.findProjectRoot
 
@@ -24,7 +22,6 @@ class ProjectRootSpec : FreeSpec({
 
             val root = findProjectRoot(fileSystem)
             root.path shouldBe FsPath.of("/repo")
-            root.markers shouldContainExactlyInAnyOrder listOf(ProjectRootMarker.Gradle)
         }
 
         "作業ディレクトリ自体がルートでもよい" {
@@ -51,59 +48,51 @@ class ProjectRootSpec : FreeSpec({
     }
 
     "マーカーの種類" - {
-        "gradle-wrapper.properties だけでも Gradle として認識する" {
-            val fileSystem = fakeFileSystem(workingDirectory = "/repo") {
-                "/repo" { "gradle/wrapper" { "gradle-wrapper.properties"() } }
-            }
-
-            findProjectRoot(fileSystem).markers shouldContainExactlyInAnyOrder listOf(ProjectRootMarker.Gradle)
-        }
-
-        "mvnw があれば Maven として認識する" {
-            val fileSystem = fakeFileSystem(workingDirectory = "/repo") {
-                "/repo" { "mvnw"() }
-            }
-
-            val root = findProjectRoot(fileSystem)
-            root.markers shouldContainExactlyInAnyOrder listOf(ProjectRootMarker.Maven)
-            root.isGitRepository shouldBe false
-        }
-
-        ".git/HEAD があれば Git として認識する" {
-            val fileSystem = fakeFileSystem(workingDirectory = "/repo") {
-                "/repo" { ".git" { "HEAD"() } }
-            }
-
-            val root = findProjectRoot(fileSystem)
-            root.markers shouldContainExactlyInAnyOrder listOf(ProjectRootMarker.Git)
-            root.isGitRepository shouldBe true
-        }
-
-        ".git がディレクトリではなくファイルでも Git として認識する" {
-            // worktree と submodule の `.git` は `gitdir: <path>` の1行が入ったファイルで、
-            // `.git/config` も `.git/HEAD` も `.git/refs` も存在しない。ここが false になると、
-            // worktree で作業している利用者（と subagent）に嘘をつくことになる。
-            val fileSystem = fakeFileSystem(workingDirectory = "/worktree") {
-                "/worktree" { ".git"() }
-            }
-
-            val root = findProjectRoot(fileSystem)
-            root.markers shouldContainExactlyInAnyOrder listOf(ProjectRootMarker.Git)
-            root.isGitRepository shouldBe true
-        }
-
-        "同じディレクトリにある複数のマーカーをすべて返す" {
-            val fileSystem = fakeFileSystem(workingDirectory = "/repo") {
+        "gradle-wrapper.properties だけでもルートになる" {
+            val fileSystem = fakeFileSystem(workingDirectory = "/repo/app") {
                 "/repo" {
-                    "gradlew"()
-                    ".git" { "config"() }
+                    "gradle/wrapper" { "gradle-wrapper.properties"() }
+                    "app" { "Main.kt"() }
                 }
             }
 
-            val root = findProjectRoot(fileSystem)
-            root.markers shouldContainExactlyInAnyOrder
-                listOf(ProjectRootMarker.Gradle, ProjectRootMarker.Git)
-            root.isGitRepository shouldBe true
+            findProjectRoot(fileSystem).path shouldBe FsPath.of("/repo")
+        }
+
+        "mvnw があればルートになる" {
+            val fileSystem = fakeFileSystem(workingDirectory = "/repo/app") {
+                "/repo" {
+                    "mvnw"()
+                    "app" { "Main.kt"() }
+                }
+            }
+
+            findProjectRoot(fileSystem).path shouldBe FsPath.of("/repo")
+        }
+
+        ".git/HEAD があればルートになる" {
+            val fileSystem = fakeFileSystem(workingDirectory = "/repo/app") {
+                "/repo" {
+                    ".git" { "HEAD"() }
+                    "app" { "Main.kt"() }
+                }
+            }
+
+            findProjectRoot(fileSystem).path shouldBe FsPath.of("/repo")
+        }
+
+        ".git がディレクトリではなくファイルでもルートになる" {
+            // worktree と submodule の `.git` は `gitdir: <path>` の1行が入ったファイルで、
+            // `.git/config` も `.git/HEAD` も `.git/refs` も存在しない。ここで止まらないと、
+            // worktree で作業している利用者（と subagent）のルートが上にずれる。
+            val fileSystem = fakeFileSystem(workingDirectory = "/worktree/app") {
+                "/worktree" {
+                    ".git"()
+                    "app" { "Main.kt"() }
+                }
+            }
+
+            findProjectRoot(fileSystem).path shouldBe FsPath.of("/worktree")
         }
     }
 
@@ -122,6 +111,6 @@ class ProjectRootSpec : FreeSpec({
         val fileSystem = RealFileSystem()
         val root = findProjectRoot(fileSystem)
         fileSystem.exists(root.path / "settings.gradle.kts") shouldBe true
-        (ProjectRootMarker.Gradle in root.markers) shouldBe true
+        fileSystem.exists(root.path / "gradlew") shouldBe true
     }
 })

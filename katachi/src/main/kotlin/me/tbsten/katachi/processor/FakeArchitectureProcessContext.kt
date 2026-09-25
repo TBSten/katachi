@@ -1,7 +1,6 @@
 package me.tbsten.katachi.processor
 
 import me.tbsten.katachi.ExperimentalKatachiApi
-import me.tbsten.katachi.InternalKatachiApi
 import me.tbsten.katachi.dsl.Architecture
 import me.tbsten.katachi.dsl.Group
 import me.tbsten.katachi.dsl.LayoutEntry
@@ -13,11 +12,12 @@ import me.tbsten.katachi.fs.KatachiFileSystem
  *
  * It delegates to the real implementation rather than reimplementing it, so a spec written
  * against this is a spec about the real walk: the only thing that differs is where
- * [ArchitectureProcessContext.log] goes.
+ * [ArchitectureProcessContext.log] goes. Meant for a processor's own tests: run it against an
+ * in-memory [architecture] and read [logs] back, without capturing standard output.
  *
  * ## Example 1: check what a processor reported, without capturing standard output
  * ```kt
- * @OptIn(InternalKatachiApi::class, ExperimentalKatachiApi::class)
+ * @OptIn(ExperimentalKatachiApi::class)
  * class GenerateDocumentationSpec : FreeSpec({
  *     "walks the roles and says so" {
  *         val context = FakeArchitectureProcessContext(
@@ -33,7 +33,6 @@ import me.tbsten.katachi.fs.KatachiFileSystem
  * })
  * ```
  */
-@InternalKatachiApi
 @ExperimentalKatachiApi
 public class FakeArchitectureProcessContext<Args>(
     architecture: Architecture,
@@ -54,9 +53,22 @@ public class FakeArchitectureProcessContext<Args>(
     /**
      * What [ArchitectureProcessContext.log] was called with, in order.
      *
-     * ## Example 1: assert on the messages a processor produced
+     * ## Example 1: read back what a processor logged
      * ```kt
-     * context.logs shouldContain "Scanning architecture..."
+     * @OptIn(ExperimentalKatachiApi::class)
+     * class GenerateDocumentationSpec : FreeSpec({
+     *     "walks the roles and says so" {
+     *         val context = FakeArchitectureProcessContext(
+     *             architecture = architecture { "domain".group { "UseCase" { } } },
+     *             args = GenerateDocumentation.Args(outputDir = "build/katachi/docs"),
+     *             fileSystem = RealFileSystem(),
+     *         )
+     *
+     *         GenerateDocumentation.process(context).getOrThrow()
+     *
+     *         context.logs.first() shouldStartWith "Writing "
+     *     }
+     * })
      * ```
      */
     public val logs: List<String> get() = recorded.toList()
@@ -64,7 +76,6 @@ public class FakeArchitectureProcessContext<Args>(
     override val architecture: Architecture get() = real.architecture
     override val args: Args get() = real.args
     override val rawArgs: Map<String, String> get() = real.rawArgs
-    override val fileSystem: KatachiFileSystem get() = real.fileSystem
     override val groups: List<Group> get() = real.groups
     override val roles: List<Role> get() = real.roles
     override val declaredEntries: List<LayoutEntry> get() = real.declaredEntries
@@ -72,11 +83,6 @@ public class FakeArchitectureProcessContext<Args>(
     override fun filesOf(role: Role): List<String> = real.filesOf(role)
 
     override fun log(message: String): Unit = real.log(message)
-
-    override fun <A> withArgs(
-        args: A,
-        onLog: ((String) -> Unit)?,
-    ): ArchitectureProcessContext<A> = real.withArgs(args, onLog)
 
     override fun toString(): String =
         "FakeArchitectureProcessContext(args=$args, logs=${recorded.size})"

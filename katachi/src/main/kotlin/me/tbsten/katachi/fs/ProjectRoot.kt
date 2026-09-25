@@ -1,5 +1,6 @@
 package me.tbsten.katachi.fs
 
+import me.tbsten.katachi.ExperimentalKatachiApi
 import me.tbsten.katachi.InternalKatachiApi
 import me.tbsten.katachi.KatachiCheckException
 
@@ -7,16 +8,10 @@ import me.tbsten.katachi.KatachiCheckException
  * A kind of file that marks the top of a project. Same set as Konsist's root providers, so a
  * project that works with Konsist works with katachi without extra configuration.
  *
- * ## Example 1: check which marker kind a project root carries
- * ```kt
- * val root = findProjectRoot(RealFileSystem())
- * if (ProjectRootMarker.Git in root.markers) {
- *     println("${root.path} is a git repository")
- * }
- * ```
+ * Only which directory carries one matters: [findProjectRoot] stops at the first directory
+ * that carries any of them, whichever kind it is.
  */
-@InternalKatachiApi
-public enum class ProjectRootMarker(internal val markerPaths: List<String>) {
+internal enum class ProjectRootMarker(val markerPaths: List<String>) {
     Gradle(
         listOf(
             "gradlew",
@@ -35,48 +30,47 @@ public enum class ProjectRootMarker(internal val markerPaths: List<String>) {
     ),
     // `.git` itself is listed alongside the three files inside it, because in a worktree and in
     // a submodule `.git` is a *file* holding `gitdir: <path>` and none of the three exist. Without
-    // this entry, katachi run from a worktree reports a repository as not being one -- which a
+    // this entry, katachi run from a worktree would not stop at a repository root -- which a
     // subagent working in `.claude/worktrees/` hits every time. `exists` answers for a file and a
     // directory alike, so the one entry covers both shapes.
     Git(listOf(".git", ".git/config", ".git/HEAD", ".git/refs")),
 }
 
 /**
- * The directory the check treats as the top of the project, together with **every** marker
- * found there.
+ * The directory the check treats as the top of the project.
  *
- * All the markers are reported, not just the first one, because the caller needs more than
- * the location: `files = gitTracked()` behaves differently depending on whether the root is
- * a git repository at all (see [FileSelection]).
+ * It is where the walk starts and what every reported path is relative to. Whether git
+ * applies is not decided here: `files = gitTracked()` asks git itself, because a project
+ * often sits below the repository root, where no `.git` is found at [path] (see
+ * [FileSelection.GitTracked]).
  *
- * ## Example 1: read the root a search found
+ * ## Example 1: hide one directory below the project root from the check
  * ```kt
- * val root = findProjectRoot(RealFileSystem())
- * println("${root.path} (markers: ${root.markers.map { it.name }})")
+ * import me.tbsten.katachi.ExperimentalKatachiApi
+ * import me.tbsten.katachi.fs.FileSelection
+ * import me.tbsten.katachi.fs.FsPath
+ * import me.tbsten.katachi.fs.KatachiFileSystem
+ * import me.tbsten.katachi.fs.ProjectRoot
+ *
+ * // Hides the project's `generated/` directory from the check, and nothing else.
+ * @OptIn(ExperimentalKatachiApi::class)
+ * object WithoutGenerated : FileSelection {
+ *     override fun fileSystemFor(
+ *         delegate: KatachiFileSystem,
+ *         projectRoot: ProjectRoot,
+ *     ): KatachiFileSystem = object : KatachiFileSystem by delegate {
+ *         override fun list(directory: FsPath): List<FsPath> =
+ *             delegate.list(directory).filterNot { it == projectRoot.path / "generated" }
+ *     }
+ * }
  * ```
  */
-@InternalKatachiApi
+@ExperimentalKatachiApi
 public class ProjectRoot internal constructor(
     /** The root directory itself. */
     public val path: FsPath,
-    /** Every marker kind present at [path], never empty. */
-    public val markers: Set<ProjectRootMarker>,
 ) {
-    /**
-     * Whether [path] carries git's own marker files.
-     *
-     * ## Example 1: branch on whether the root is a git repository
-     * ```kt
-     * val root = findProjectRoot(RealFileSystem())
-     * if (root.isGitRepository) {
-     *     println("${root.path} is tracked by git")
-     * }
-     * ```
-     */
-    public val isGitRepository: Boolean get() = ProjectRootMarker.Git in markers
-
-    override fun toString(): String =
-        "ProjectRoot($path, markers=${markers.map { it.name }.sorted()})"
+    override fun toString(): String = "ProjectRoot($path)"
 }
 
 /**
@@ -99,7 +93,8 @@ public class KatachiProjectRootNotFoundException internal constructor(
 )
 
 /**
- * Walks up from the working directory and returns the first directory carrying a marker.
+ * Walks up from the working directory and returns the first directory carrying a marker: a
+ * Gradle wrapper, a Maven wrapper or git's own files.
  *
  * There is no way to pass a root in explicitly. A test that wants a different root passes a
  * different [KatachiFileSystem], which keeps the search itself under test rather than
@@ -109,7 +104,7 @@ public class KatachiProjectRootNotFoundException internal constructor(
  * ```kt
  * val fileSystem = RealFileSystem()
  * val root = findProjectRoot(fileSystem)
- * println("${root.path}, git repo: ${root.isGitRepository}")
+ * println("Checking the project at ${root.path}")
  * ```
  *
  * @throws KatachiProjectRootNotFoundException when no parent carries any marker.
@@ -119,10 +114,10 @@ public fun findProjectRoot(fileSystem: KatachiFileSystem): ProjectRoot {
     var current: FsPath? = fileSystem.workingDirectory
     while (current != null) {
         val directory = current
-        val markers = ProjectRootMarker.entries.filterTo(linkedSetOf()) { marker ->
+        val carriesMarker = ProjectRootMarker.entries.any { marker ->
             marker.markerPaths.any { fileSystem.exists(directory / it) }
         }
-        if (markers.isNotEmpty()) return ProjectRoot(directory, markers)
+        if (carriesMarker) return ProjectRoot(directory)
         current = directory.parent
     }
     throw KatachiProjectRootNotFoundException(fileSystem.workingDirectory)

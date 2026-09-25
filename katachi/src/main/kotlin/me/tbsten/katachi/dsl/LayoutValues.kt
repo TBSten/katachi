@@ -100,9 +100,9 @@ public class LayoutModule internal constructor(
 /**
  * A `layout { }` block that has been declared but not evaluated.
  *
- * Blocks are deferred on purpose: the same `architecture { }` value is read by tests and
- * (from v0.3) by documentation generation, so building it must not touch the file system
- * or run any check. Evaluating one is what `flattenLayout()` does.
+ * Blocks are deferred on purpose: the same `architecture { }` value is read by tests and by
+ * documentation generation, so building it must not touch the file system or run any
+ * check. Evaluating one is what `flattenLayout()` does.
  *
  * ## Example 1: Reading a role's declared `layout { }` blocks back
  * ```kt

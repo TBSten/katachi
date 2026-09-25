@@ -1,4 +1,4 @@
-@file:OptIn(InternalKatachiApi::class)
+@file:OptIn(InternalKatachiApi::class, ExperimentalKatachiApi::class)
 
 package me.tbsten.katachi.test.konsist
 
@@ -6,6 +6,7 @@ import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.FreeSpec
 import io.kotest.matchers.collections.shouldBeEmpty
 import io.kotest.matchers.shouldBe
+import me.tbsten.katachi.ExperimentalKatachiApi
 import me.tbsten.katachi.InternalKatachiApi
 import me.tbsten.katachi.check.KonsistCheck
 import me.tbsten.katachi.check.validate

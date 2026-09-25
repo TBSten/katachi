@@ -36,7 +36,7 @@ class KatachiProcessorsTest {
     @Test
     @DisplayName("何も register しなくても docs が引ける")
     void docsIsRegisteredByDefault() {
-        Map<String, String> registrations = new KatachiProcessors().getRegistrations();
+        Map<String, String> registrations = registrations(new KatachiProcessors());
 
         assertEquals(GENERATE_DOCUMENTATION, registrations.get("docs"));
     }
@@ -44,7 +44,7 @@ class KatachiProcessorsTest {
     @Test
     @DisplayName("何も register しなくても template が引ける")
     void templateIsRegisteredByDefault() {
-        Map<String, String> registrations = new KatachiProcessors().getRegistrations();
+        Map<String, String> registrations = registrations(new KatachiProcessors());
 
         assertEquals(GENERATE_CODE_FROM_TEMPLATE, registrations.get("template"));
     }
@@ -52,7 +52,7 @@ class KatachiProcessorsTest {
     @Test
     @DisplayName("既定で登録されるのは docs と template だけ -- layout も konsist も入らない")
     void docsAndTemplateAreTheOnlyDefaults() {
-        Map<String, String> registrations = new KatachiProcessors().getRegistrations();
+        Map<String, String> registrations = registrations(new KatachiProcessors());
 
         // `konsist` would point into :katachi-konsist, which a module that does not depend on
         // it cannot compile a `::class.java` literal against. `layout` is left out with it so
@@ -72,7 +72,7 @@ class KatachiProcessorsTest {
         KatachiProcessors processors = new KatachiProcessors();
         processors.register("docs", "com.example.processors.OurOwnDocs");
 
-        assertEquals("com.example.processors.OurOwnDocs", processors.getRegistrations().get("docs"));
+        assertEquals("com.example.processors.OurOwnDocs", registrations(processors).get("docs"));
     }
 
     @Test
@@ -85,7 +85,7 @@ class KatachiProcessorsTest {
         processors.register("docs", "com.example.processors.OurOwnDocs");
 
         // Still the two defaults, with `docs` now pointing at the user's own class.
-        assertEquals(2, processors.getRegistrations().size());
+        assertEquals(2, registrations(processors).size());
     }
 
     @Test
@@ -109,7 +109,7 @@ class KatachiProcessorsTest {
         KatachiProcessors processors = new KatachiProcessors();
         processors.register("layout", "me.tbsten.katachi.check.LayoutCheck");
 
-        Map<String, String> registrations = processors.getRegistrations();
+        Map<String, String> registrations = registrations(processors);
 
         assertEquals(GENERATE_DOCUMENTATION, registrations.get("docs"));
         assertEquals("me.tbsten.katachi.check.LayoutCheck", registrations.get("layout"));
@@ -152,6 +152,15 @@ class KatachiProcessorsTest {
         return (Map<String, Map<String, String>>) invoke(processors, "getConfiguredArgs");
     }
 
+    /**
+     * Calls the package-private {@code KatachiProcessors.getRegistrations()}, for the same reason
+     * {@link #configuredArgs} does.
+     */
+    @SuppressWarnings("unchecked")
+    private static Map<String, String> registrations(KatachiProcessors processors) {
+        return (Map<String, String>) invoke(processors, "getRegistrations");
+    }
+
     private static Object invoke(KatachiProcessors processors, String methodName) {
         try {
             Method method = KatachiProcessors.class.getDeclaredMethod(methodName);
@@ -172,8 +181,8 @@ class KatachiProcessorsTest {
     void theReturnedMapIsACopy() {
         KatachiProcessors processors = new KatachiProcessors();
 
-        processors.getRegistrations().put("docs", "com.example.Sneaky");
+        registrations(processors).put("docs", "com.example.Sneaky");
 
-        assertEquals(GENERATE_DOCUMENTATION, processors.getRegistrations().get("docs"));
+        assertEquals(GENERATE_DOCUMENTATION, registrations(processors).get("docs"));
     }
 }

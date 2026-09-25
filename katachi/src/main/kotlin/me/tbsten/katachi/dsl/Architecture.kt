@@ -8,8 +8,8 @@ import me.tbsten.katachi.fs.FileSelection
  * the roles written straight into the root, and through the groups every other role.
  *
  * Building this value runs no check and reads nothing from the file system. The same
- * value is meant to be held in a top level `val` and read both by tests and (from v0.3)
- * by documentation generation.
+ * value is meant to be held in a top level `val` and read both by tests and by
+ * documentation generation.
  *
  * ## Example 1: the value returned by architecture { }
  * ```kt

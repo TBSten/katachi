@@ -1,26 +1,34 @@
 package me.tbsten.katachi
 
 /**
- * Marks an API that has to be public so that katachi's own internals can reach it across
- * package boundaries, but that is not part of the supported surface. It may change or be
- * removed in any release.
+ * Marks an API that is public only so that katachi's own other modules can reach it —
+ * `katachi-konsist`, the code the Gradle plugin generates, `tool/dokka`, katachi's own
+ * architecture test and samples. It is not part of the supported surface for anyone else, and
+ * it may change or be removed in any release.
+ *
+ * An API a project is meant to use while its shape still moves is [ExperimentalKatachiApi],
+ * not this. What is not used from any other module is `internal`, not this.
  *
  * This annotation exists to stop *consumers* of the published `katachi` artifact from
  * depending on internals, not to stop katachi from depending on itself: the `:katachi`
  * module's own `build.gradle.kts` opts every file (main and test) in module-wide, so nothing
- * inside `:katachi` writes `@OptIn` for this. Code outside `:katachi` — the samples
- * (separate Gradle builds that depend on the published artifact), `katachi-konsist`, or any
- * project extending katachi — still has to opt in explicitly, which is what keeps this a real
- * wall rather than a suggestion.
+ * inside `:katachi` writes `@OptIn` for this. Code outside `:katachi` — including katachi's
+ * own other modules — still has to opt in explicitly, which is what keeps this a real wall
+ * rather than a suggestion.
  *
- * ## Example 1: opt in to an internal API from code outside `:katachi`
+ * ## Example 1: opt in from one of katachi's own modules
  * ```kt
+ * import me.tbsten.katachi.ExperimentalKatachiApi
  * import me.tbsten.katachi.InternalKatachiApi
+ * import me.tbsten.katachi.check.report
+ * import me.tbsten.katachi.check.validate
+ * import me.tbsten.katachi.fs.RealFileSystem
  *
- * @OptIn(InternalKatachiApi::class)
- * class FsPathSpec : FreeSpec({
- *     "collapses repeated separators into one" {
- *         FsPath.of("/repo//app///src").value shouldBe "/repo/app/src"
+ * // katachi-konsist's own spec, reading the report of a fixture project.
+ * @OptIn(InternalKatachiApi::class, ExperimentalKatachiApi::class)
+ * class KonsistReportSpec : FreeSpec({
+ *     "names the broken constraint" {
+ *         projectArchitecture.validate(RealFileSystem(fixtureRoot)).report() shouldContain "must"
  *     }
  * })
  * ```

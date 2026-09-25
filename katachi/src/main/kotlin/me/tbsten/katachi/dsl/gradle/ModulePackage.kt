@@ -1,6 +1,6 @@
 package me.tbsten.katachi.dsl.gradle
 
-import me.tbsten.katachi.InternalKatachiApi
+import me.tbsten.katachi.ExperimentalKatachiApi
 import me.tbsten.katachi.KatachiDeclarationException
 
 /**
@@ -102,7 +102,7 @@ public enum class HyphenFolding {
      * `fuga-piyo` becomes `fugaPiyo`: the first word as written, every later word with its
      * first character upper-cased.
      *
-     * ## Example 1: The default folding
+     * ## Example 1: Fold the way capitalizedModuleNamePackage does
      * ```kt
      * import me.tbsten.katachi.dsl.gradle.HyphenFolding
      * import me.tbsten.katachi.dsl.gradle.moduleNamePackage
@@ -142,6 +142,9 @@ public enum class HyphenFolding {
  * carried over as it is: what this returns is matched against directory names, and a
  * directory may be named anything.
  *
+ * [hyphens] has no default: the usual folding has its own name,
+ * [capitalizedModuleNamePackage], and this function is for choosing a different one.
+ *
  * @param basePackage the package every module sits under, written either as `com.example` or
  *   as `com/example`. Empty means the module path is the whole package.
  * @param hyphens how a hyphen inside one level is folded away.
@@ -151,18 +154,18 @@ public enum class HyphenFolding {
  * import me.tbsten.katachi.dsl.gradle.*
  * import me.tbsten.katachi.dsl.kotlin.ktFile
  *
- * val modulePackage = moduleNamePackage("com.example")
+ * val modulePackage = moduleNamePackage("com.example", HyphenFolding.Concatenate)
  *
  * ":hoge:fuga-piyo".module {
  *     modulePackage / "*".ktFile()
  * }
- * // :hoge:fuga-piyo -> com/example/hoge/fugaPiyo
+ * // :hoge:fuga-piyo -> com/example/hoge/fugapiyo
  * ```
  * @see capitalizedModuleNamePackage
  */
 public fun moduleNamePackage(
     basePackage: String = "",
-    hyphens: HyphenFolding = HyphenFolding.Capitalize,
+    hyphens: HyphenFolding,
 ): ModulePackage {
     val base = splitBasePackage(basePackage)
     return ModulePackage { modulePath ->
@@ -174,7 +177,7 @@ public fun moduleNamePackage(
 }
 
 /**
- * [moduleNamePackage] with its default folding: `:hoge:fuga-piyo` becomes `hoge/fugaPiyo`.
+ * [moduleNamePackage] with [HyphenFolding.Capitalize]: `:hoge:fuga-piyo` becomes `hoge/fugaPiyo`.
  *
  * This is the preset to reach for first.
  *
@@ -208,54 +211,18 @@ public fun capitalizedModuleNamePackage(basePackage: String = ""): ModulePackage
  * Internal bookkeeping: one subtype per thing that can go wrong, each holding what its own
  * sentence needs.
  *
- * ## Example 1: Branch on which problem was raised
+ * ## Example 1: tell which problem was raised
  * ```kt
- * import me.tbsten.katachi.InternalKatachiApi
- * import me.tbsten.katachi.dsl.gradle.KatachiModulePackageException
- * import me.tbsten.katachi.dsl.gradle.ModulePackageProblem
- *
- * @OptIn(InternalKatachiApi::class)
- * fun describe(exception: KatachiModulePackageException): String =
- *     when (val problem = exception.problem) {
- *         is ModulePackageProblem.OutsideModule -> problem.explain()
- *         is ModulePackageProblem.NotADirectory -> "bad package for ${problem.modulePath}"
- *     }
+ * shouldThrow<KatachiModulePackageException> { capitalizedModuleNamePackage().resolveFor(null) }
+ *     .problem shouldBe ModulePackageProblem.OutsideModule
  * ```
  */
-@InternalKatachiApi
-public sealed interface ModulePackageProblem {
-    /**
-     * The sentence this problem contributes.
-     *
-     * ## Example 1: Read the sentence directly, without matching on the subtype
-     * ```kt
-     * import me.tbsten.katachi.InternalKatachiApi
-     * import me.tbsten.katachi.dsl.gradle.KatachiModulePackageException
-     *
-     * @OptIn(InternalKatachiApi::class)
-     * fun logProblem(exception: KatachiModulePackageException) {
-     *     println(exception.problem.explain())
-     * }
-     * ```
-     */
-    public fun explain(): String
+internal sealed interface ModulePackageProblem {
+    /** The sentence this problem contributes. */
+    fun explain(): String
 
-    /**
-     * Written where there is no module to derive a package from.
-     *
-     * ## Example 1: Detect this one problem specifically
-     * ```kt
-     * import me.tbsten.katachi.InternalKatachiApi
-     * import me.tbsten.katachi.dsl.gradle.KatachiModulePackageException
-     * import me.tbsten.katachi.dsl.gradle.ModulePackageProblem
-     *
-     * @OptIn(InternalKatachiApi::class)
-     * fun isOutsideModule(exception: KatachiModulePackageException): Boolean =
-     *     exception.problem is ModulePackageProblem.OutsideModule
-     * ```
-     */
-    @InternalKatachiApi
-    public object OutsideModule : ModulePackageProblem {
+    /** Written where there is no module to derive a package from. */
+    object OutsideModule : ModulePackageProblem {
         override fun explain(): String =
             "A module package can only be used inside a module block. It is derived from the " +
                 "module being evaluated, and directly under `layout { }`, or inside a plain " +
@@ -264,26 +231,10 @@ public sealed interface ModulePackageProblem {
                 "string."
     }
 
-    /**
-     * The strategy answered with something that is not a directory path.
-     *
-     * ## Example 1: Read which module and which bad directory it produced
-     * ```kt
-     * import me.tbsten.katachi.InternalKatachiApi
-     * import me.tbsten.katachi.dsl.gradle.KatachiModulePackageException
-     * import me.tbsten.katachi.dsl.gradle.ModulePackageProblem
-     *
-     * @OptIn(InternalKatachiApi::class)
-     * fun describeFailure(exception: KatachiModulePackageException): String? {
-     *     val problem = exception.problem as? ModulePackageProblem.NotADirectory ?: return null
-     *     return "${problem.modulePath} -> ${problem.directory}"
-     * }
-     * ```
-     */
-    @InternalKatachiApi
-    public class NotADirectory internal constructor(
-        public val modulePath: String,
-        public val directory: String,
+    /** The strategy answered with something that is not a directory path. */
+    class NotADirectory(
+        val modulePath: String,
+        val directory: String,
     ) : ModulePackageProblem {
         override fun explain(): String =
             "The module package of `$modulePath` came out as `$directory`, which is not a " +
@@ -313,7 +264,7 @@ public sealed interface ModulePackageProblem {
  * ```
  */
 public class KatachiModulePackageException internal constructor(
-    @property:InternalKatachiApi public val problem: ModulePackageProblem,
+    internal val problem: ModulePackageProblem,
 ) : KatachiDeclarationException(problem.explain())
 
 /**
@@ -324,9 +275,12 @@ public class KatachiModulePackageException internal constructor(
  * @throws KatachiModulePackageException when [modulePath] is `null`, or when the strategy
  *   returned something that is not a directory path.
  *
+ * Public so that a project can write its own `.module { }` vocabulary, and
+ * [ExperimentalKatachiApi] for the same reason as [currentModulePath].
+ *
  * ## Example 1: Write a custom operator that lands a `ModulePackage` in the current module
  * ```kt
- * import me.tbsten.katachi.InternalKatachiApi
+ * import me.tbsten.katachi.ExperimentalKatachiApi
  * import me.tbsten.katachi.dsl.LayoutDirectory
  * import me.tbsten.katachi.dsl.LayoutScope
  * import me.tbsten.katachi.dsl.gradle.ModulePackage
@@ -335,7 +289,7 @@ public class KatachiModulePackageException internal constructor(
  *
  * // This is the same trick `ModulePackage / "child"` uses internally: resolve the strategy
  * // for the module being evaluated, then continue as a plain directory key.
- * @OptIn(InternalKatachiApi::class)
+ * @OptIn(ExperimentalKatachiApi::class)
  * context(layoutScope: LayoutScope)
  * public fun ModulePackage.into(child: String): LayoutDirectory {
  *     val directory = resolveFor(layoutScope.currentModulePath)
@@ -343,7 +297,7 @@ public class KatachiModulePackageException internal constructor(
  * }
  * ```
  */
-@InternalKatachiApi
+@ExperimentalKatachiApi
 public fun ModulePackage.resolveFor(modulePath: String?): String {
     if (modulePath == null) {
         throw KatachiModulePackageException(ModulePackageProblem.OutsideModule)

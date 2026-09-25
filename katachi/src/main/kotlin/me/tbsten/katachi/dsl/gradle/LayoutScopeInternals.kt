@@ -1,6 +1,6 @@
 package me.tbsten.katachi.dsl.gradle
 
-import me.tbsten.katachi.InternalKatachiApi
+import me.tbsten.katachi.ExperimentalKatachiApi
 import me.tbsten.katachi.dsl.KatachiUnsupportedLayoutScopeException
 import me.tbsten.katachi.dsl.LayoutDirectoryScope
 import me.tbsten.katachi.dsl.LayoutModule
@@ -18,9 +18,10 @@ import me.tbsten.katachi.dsl.ModuleAwareLayoutScope
  *
  * They are extensions on [LayoutScope] rather than plain members of [ModuleAwareLayoutScope]
  * because `context(layoutScope: LayoutScope)` is the shape every utility is written in, a
- * project's own as much as katachi's. They are opt-in rather than `internal` for the same
- * reason. A project whose build is unusual enough to need its own `.module { }` should be
- * able to write one; it is not a supported surface, and the opt-in is what says so.
+ * project's own as much as katachi's. They are public for the same reason: a project whose
+ * build is unusual enough to need its own `.module { }` should be able to write one. They are
+ * [ExperimentalKatachiApi] because what a scope knows grows with the DSL, and the opt-in is
+ * what says their shape can still change.
  */
 
 /**
@@ -29,17 +30,17 @@ import me.tbsten.katachi.dsl.ModuleAwareLayoutScope
  *
  * ## Example 1: Write a custom description that names the current module
  * ```kt
- * import me.tbsten.katachi.InternalKatachiApi
+ * import me.tbsten.katachi.ExperimentalKatachiApi
  * import me.tbsten.katachi.dsl.LayoutDirectoryScope
  * import me.tbsten.katachi.dsl.gradle.currentModulePath
  *
- * @OptIn(InternalKatachiApi::class)
+ * @OptIn(ExperimentalKatachiApi::class)
  * public fun LayoutDirectoryScope.describeCurrentModule() {
  *     description = currentModulePath?.let { "Part of $it" } ?: "Not inside a module"
  * }
  * ```
  */
-@InternalKatachiApi
+@ExperimentalKatachiApi
 public val LayoutScope.currentModulePath: String?
     get() = moduleAware().currentModulePath
 
@@ -51,16 +52,16 @@ public val LayoutScope.currentModulePath: String?
  *
  * ## Example 1: Write a nullable-safe alternative to `wildcards`
  * ```kt
- * import me.tbsten.katachi.InternalKatachiApi
+ * import me.tbsten.katachi.ExperimentalKatachiApi
  * import me.tbsten.katachi.dsl.LayoutScope
  * import me.tbsten.katachi.dsl.gradle.currentWildcards
  *
- * @OptIn(InternalKatachiApi::class)
+ * @OptIn(ExperimentalKatachiApi::class)
  * public val LayoutScope.wildcardsOrEmpty: List<String>
  *     get() = currentWildcards ?: emptyList()
  * ```
  */
-@InternalKatachiApi
+@ExperimentalKatachiApi
 public val LayoutScope.currentWildcards: List<String>?
     get() = moduleAware().currentWildcards
 
@@ -83,20 +84,20 @@ public val LayoutScope.currentWildcards: List<String>?
  *
  * ## Example 1: Write your own alias for `.module { }`
  * ```kt
- * import me.tbsten.katachi.InternalKatachiApi
+ * import me.tbsten.katachi.ExperimentalKatachiApi
  * import me.tbsten.katachi.dsl.LayoutDirectoryScope
  * import me.tbsten.katachi.dsl.LayoutModule
  * import me.tbsten.katachi.dsl.LayoutScope
  * import me.tbsten.katachi.dsl.gradle.expandModulePath
  *
  * // This is exactly what `"...".module { }` does; a project can spell it however it likes.
- * @OptIn(InternalKatachiApi::class)
+ * @OptIn(ExperimentalKatachiApi::class)
  * context(layoutScope: LayoutScope)
  * public fun String.gradleModule(block: LayoutDirectoryScope.() -> Unit): LayoutModule =
  *     layoutScope.expandModulePath(this, block)
  * ```
  */
-@InternalKatachiApi
+@ExperimentalKatachiApi
 public fun LayoutScope.expandModulePath(
     modulePath: String,
     block: LayoutDirectoryScope.() -> Unit,

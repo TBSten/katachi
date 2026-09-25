@@ -45,7 +45,7 @@ class ModulePackageSpec : FreeSpec({
             modulePackage.resolveFor("core:data") shouldBe modulePackage.resolveFor(":core:data")
         }
 
-        "moduleNamePackage の既定と同じ結果になる" {
+        "moduleNamePackage に Capitalize を渡したのと同じ結果になる" {
             val preset = capitalizedModuleNamePackage("com.example")
             val general = moduleNamePackage("com.example", HyphenFolding.Capitalize)
             preset.resolveFor(":feature:debug-menu") shouldBe

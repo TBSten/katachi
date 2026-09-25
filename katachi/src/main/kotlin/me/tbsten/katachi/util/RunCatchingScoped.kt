@@ -10,9 +10,10 @@ package me.tbsten.katachi.util
  * What comes back:
  *
  * - [block] returned and nothing was recorded -> `success` with its value.
- * - [block] returned and something was recorded -> `failure` with a [MultiExceptions] holding
- *   every recorded failure as a suppressed exception, in the order they were recorded. One
- *   recorded failure is still wrapped, so a caller reads the same shape whatever the count.
+ * - [block] returned and something was recorded -> `failure` with a
+ *   [KatachiMultipleFailuresException] holding every recorded failure as a suppressed
+ *   exception, in the order they were recorded. One recorded failure is still wrapped, so a
+ *   caller reads the same shape whatever the count.
  * - [block] called `throw(exception)` -> `failure` with that exception itself.
  * - [block] threw anything else -> `failure` with what it threw.
  *
@@ -131,7 +132,7 @@ private class RunCatchingScopedScopeImpl : RunCatchingScopedController {
 
     override fun throwIfHasFailures() {
         if (failures.isNotEmpty()) {
-            throw MultiExceptions(failures.toList())
+            throw KatachiMultipleFailuresException(failures.toList())
         }
     }
 }
@@ -145,7 +146,7 @@ private class RunCatchingScopedScopeImpl : RunCatchingScopedController {
  *
  * ## Example 1: read what a block recorded
  * ```kt
- * import me.tbsten.katachi.util.MultiExceptions
+ * import me.tbsten.katachi.util.KatachiMultipleFailuresException
  * import me.tbsten.katachi.util.runCatchingScoped
  *
  * val failure = runCatchingScoped {
@@ -153,10 +154,12 @@ private class RunCatchingScopedScopeImpl : RunCatchingScopedController {
  *     failure(IllegalStateException("Entity has no summary"))
  * }.exceptionOrNull()
  *
- * (failure as MultiExceptions).suppressed.size shouldBe 2
+ * (failure as KatachiMultipleFailuresException).suppressed.size shouldBe 2
  * ```
  */
-public class MultiExceptions internal constructor(exceptions: List<Throwable>) : Throwable() {
+public class KatachiMultipleFailuresException internal constructor(
+    exceptions: List<Throwable>,
+) : Throwable() {
     init {
         exceptions
             .forEach(::addSuppressed)

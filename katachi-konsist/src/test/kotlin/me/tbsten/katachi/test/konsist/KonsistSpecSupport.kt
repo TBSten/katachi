@@ -1,4 +1,4 @@
-@file:OptIn(InternalKatachiApi::class)
+@file:OptIn(InternalKatachiApi::class, ExperimentalKatachiApi::class)
 
 package me.tbsten.katachi.test.konsist
 

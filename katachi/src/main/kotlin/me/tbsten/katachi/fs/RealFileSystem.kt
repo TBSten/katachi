@@ -10,12 +10,13 @@ import me.tbsten.katachi.InternalKatachiApi
  *
  * ## Example 1: point it somewhere other than the JVM's working directory
  * ```kt
+ * import me.tbsten.katachi.ExperimentalKatachiApi
  * import me.tbsten.katachi.InternalKatachiApi
  * import me.tbsten.katachi.check.validate
  * import me.tbsten.katachi.fs.RealFileSystem
  * import java.io.File
  *
- * @OptIn(InternalKatachiApi::class)
+ * @OptIn(InternalKatachiApi::class, ExperimentalKatachiApi::class)
  * val violations = projectArchitecture.validate(RealFileSystem(File("/path/to/module")))
  * ```
  *

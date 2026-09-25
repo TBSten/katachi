@@ -9,6 +9,7 @@ import me.tbsten.katachi.dsl.templateParameterNames
 import me.tbsten.katachi.fs.findProjectRoot
 import me.tbsten.katachi.processor.ArchitectureProcessContext
 import me.tbsten.katachi.processor.ArchitectureProcessor
+import me.tbsten.katachi.processor.fileSystem
 import me.tbsten.katachi.runProcessorCatching
 
 /**

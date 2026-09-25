@@ -12,7 +12,7 @@ private const val NEARBY_LIMIT: Int = 3
  * The flattened layout of every role, turned into the four questions the traversal asks.
  *
  * Whether a file is allowed is decided by the union of every role's claims, and a file two
- * roles both allow is not a problem (from v0.3 the generated documentation lists both). The
+ * roles both allow is not a problem (the generated documentation lists both). The
  * roles are kept alongside the patterns rather than dropped, because the answer the traversal
  * needs is not only "is this allowed" but "by whom": a processor asking `filesOf(role)` is
  * asking that same question from the other side.

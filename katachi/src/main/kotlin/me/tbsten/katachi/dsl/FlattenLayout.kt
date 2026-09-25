@@ -11,8 +11,10 @@ import me.tbsten.katachi.InternalKatachiApi
  *
  * A role that declares the same path twice, which `/` chains sharing a prefix do all the
  * time, contributes one entry for it. Two *different* roles claiming the same path each
- * contribute their own entry: that is allowed, and from v0.3 both show up in the generated
+ * contribute their own entry: that is allowed, and both show up in the generated
  * documentation.
+ *
+ * Public only for katachi's own samples, which pin their layout down in a snapshot with it.
  *
  * @param moduleIndex the project's modules, which `"...".module { }` keys are expanded
  *   against. The default index has not listed the project at all: a key naming one module
