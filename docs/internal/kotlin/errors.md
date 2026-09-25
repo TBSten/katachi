@@ -168,7 +168,7 @@ private fun LayoutScope.moduleAware(): ModuleAwareLayoutScope =
 ### 検査は途中で死なない
 
 **走査は最小でもファイル単位で握る。** 1 ファイルの失敗はそのファイルの結果になるだけで、
-残りの走査は続く。握りは `katachi/src/main/kotlin/me/tbsten/katachi/scan/Catching.kt` の
+残りの走査は続く。握りは `katachi/src/main/kotlin/me/tbsten/katachi/internal/Catching.kt` の
 1箇所に置く。
 
 ```kotlin

@@ -140,6 +140,12 @@ cd sample/jvm && ./gradlew :architecture-test:test --rerun -Dkatachi.snapshot.up
 書いてあること**。内部 API を公開面に出してしまうと、ここが「不要な opt-in」警告に変わる。
 逆にサンプルから `@OptIn` が消えたら、それは壁が緩んだサインなので疑う。
 
+内部実装の**置き場所**は機械的に見ている。トップレベルの `internal` / `@InternalKatachiApi` は
+`.internal` パッケージ（`me.tbsten.katachi.check.internal` など）に置く決まりで
+（`docs/internal/kotlin/kotlin.md`）、リポジトリ直下の `./gradlew :architecture-test:test` が
+`INTERNAL_PACKAGE_RULE` として library の各役割と `:katachi-konsist` で検査する。内部実装を
+足した・移したときはこれも回す。`.internal` パッケージは Dokka の API リファレンスにも出ない。
+
 ## 何はテストしなくて良いか
 
 毎回ここで時間を溶かさないための章。**理由つきで覚える**。

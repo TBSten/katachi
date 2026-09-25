@@ -7,10 +7,29 @@
 | 可視性                          | 説明                                                                                                                                                                   |
 |---------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | private                         | そのファイル・宣言内で private なもの。                                                                                                                                |
-| internal                        | そのモジュール内でのみ有効なもの。他モジュールから使われていないものは、`@InternalKatachiApi` を付けて public にせずこちらにする。                                     |
+| internal                        | そのモジュール内でのみ有効なもの。他モジュールから使われていないものは、`@InternalKatachiApi` を付けて public にせずこちらにする。トップレベル宣言は `.internal` パッケージに置く（下記）。 |
 | public * InternalKatachiApi     | ライブラリの他モジュール（katachi-konsist、Gradle プラグインの生成コード、tool/dokka、リポジトリ内の architecture-test・サンプル）専用。ユーザには触って欲しくない。 |
 | public * ExperimentalKatachiApi | ユーザに開いているが、形がまだ変わる API。ユーザが自前で katachi を拡張するためのもの（自前の `.module { }` を書くための `expandModulePath` など）もここ。              |
 | public                          | ユーザが触ることのできる public な API。 **explicitApi を指定しているため、省略してはいけない。**                                                                     |
+
+### 内部実装は `.internal` パッケージに置く
+
+トップレベルの `internal` 宣言と `@InternalKatachiApi` の宣言は、そのパッケージの `internal` サブパッケージに置く。
+
+| 元のパッケージ | 置き場所 |
+|---|---|
+| `me.tbsten.katachi`（ルート） | `me.tbsten.katachi.internal` |
+| `me.tbsten.katachi.<層>`（`dsl.gradle` のような下位パッケージも同じ） | `me.tbsten.katachi.<層>.internal` |
+| `me.tbsten.katachi.konsist`（`:katachi-konsist`） | `me.tbsten.katachi.konsist.internal` |
+
+- `.internal` パッケージには `internal` / `@InternalKatachiApi` / `private` のトップレベル宣言だけを置く。利用者に見せる public（`@ExperimentalKatachiApi` を含む）は置かない。
+- 対象は**トップレベル宣言だけ**。public な型のメンバ（`internal constructor`、`internal val` など）は型と一緒に元のパッケージに残る。
+- `private` はファイルの中に閉じているので、使う側と同じファイルに置く。public な側と `.internal` の側の両方から使う `private` は `internal` にして `.internal` に移す。
+- `@PublishedApi internal` も `.internal` に置く。inline 関数から参照されるので ABI の一部になる点に注意する。
+- **例外**: public な sealed interface の直接の実装（`ArchitectureScopeImpl`、`LayoutScopeImpl` など）は、Kotlin の規則で sealed と同じパッケージにしか置けないので、元のパッケージに `internal` のまま置く。
+- 層は `.internal` を含めて元のパッケージと同じとして扱う（`dsl.internal` は `dsl` 層）。
+- architecture-test の各層の役割が `INTERNAL_PACKAGE_RULE` で検査している。
+- `.internal` パッケージは Dokka の API リファレンスに出さない（`buildSrc/src/main/kotlin/katachi-kotlin-library.gradle.kts` の `perPackageOption`）。
 
 ## コメント
 
