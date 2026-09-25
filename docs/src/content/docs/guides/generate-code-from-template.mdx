@@ -4,3 +4,136 @@ description: How to generate code by adding template { } to an architecture defi
 tags:
   - beginner
 ---
+
+import { Aside } from "@astrojs/starlight/components"
+
+By adding `template { }` to an architecture definition, you can generate code from that definition.
+
+**`template { }` does not decide where files go. The role's `layout { }` does.** A template only names the files; which directory each one lands in is derived from the placement definition. That is why **`assert()` passes right after generating.**
+
+```kt nocollapse
+"UseCase" {
+    layout {
+        ":core:domain".module { mainSourceSet / kotlin / modulePackage / "useCase" / "*UseCase".ktFile() }
+    }
+
+    template {
+        // You can define the parameters the template uses
+        val name by stringParameter()
+        val implBody by stringParameter(default = """TODO("Implement ${name}UseCase")""")
+
+        // file() declares one file this template generates
+        file("${name}UseCase.kt") {
+            """
+                package com.example.domain.useCase
+
+                interface ${name}UseCase {
+                    suspend operator fun invoke()
+                }
+            """.trimIndent()
+        }
+
+        file("${name}UseCaseImpl.kt") {
+            """
+                package com.example.domain.useCase
+
+                class ${name}UseCaseImpl : ${name}UseCase {
+                    override suspend fun invoke() {
+                        $implBody
+                    }
+                }
+            """.trimIndent()
+        }
+    }
+}
+```
+
+```shell
+./gradlew runKatachiProcessor --processor="template" \
+    --arg "roleName=UseCase" --arg "name=GetItemList"
+```
+
+<Aside>
+**A template's own parameters, such as `--arg name=...`, can be passed as-is.** No declaration is needed on the module side. What is accepted is exactly the set of names the named role's `template { }` declares. A typo still fails, as before, with `Unknown processor argument(s): ...`
+</Aside>
+
+## file() only names the file
+
+What you pass to `file()` is **a file name with its extension**, not a path. A name containing a separator throws an exception.
+
+```kt
+file("${name}UseCase.kt") { /* ... */ }      // OK
+file("useCase/${name}UseCase.kt") { /* ... */ }  // exception
+```
+
+If the directory were written in both places, **the same thing would be said twice, and the two could disagree.** The destination is derived from `layout { }`, so the template does not need to say it.
+
+One `template { }` can have several `file()` calls. Declaring the same name twice throws an exception.
+
+## Parameters
+
+You can define parameters that are passed with `--arg` when generating code.
+
+```kt
+template {
+    val name by stringParameter()
+    val implBody by stringParameter(default = """TODO("Implement ${name}UseCase")""")
+
+    // ...
+}
+```
+
+**The property's name becomes the parameter's name.** `val name by stringParameter()` declares the parameter passed as `--arg name=...`. Always write it with `by`. A parameter that never reaches a property has no name, so it is rejected at the end of the block.
+
+A parameter without a `default` must be given a value every time. `default` is an ordinary Kotlin expression evaluated on the spot, so **it can read the parameters declared above it.**
+
+```shell
+./gradlew runKatachiProcessor --processor="template" \
+    --arg "roleName=UseCase" \
+    --arg "name=GetItemList" --arg 'implBody=println("Hello World")'
+```
+
+<Aside>
+In v0.2, `stringParameter()` is the only one available. Values arrive as strings, and a template can be written with nothing but Kotlin string templates.
+</Aside>
+
+## When a file already exists
+
+What happens when a file already exists at the destination is chosen with `--arg onExisting=`. **The default is `fail`.**
+
+| Value | Behavior |
+| --- | --- |
+| `fail` (default) | If even one already exists, it fails **without writing any** |
+| `skip` | If even one already exists, it **writes none** and does not fail |
+| `overwrite` | Replaces the existing ones |
+
+**Each of these applies to the whole set.** The directory is never left half-done with only some of the generated files written. If writing stops partway through an `overwrite`, the contents from before the replacement are restored.
+
+```shell
+./gradlew runKatachiProcessor --processor="template" \
+    --arg "roleName=UseCase" --arg "name=GetItemList" --arg "onExisting=overwrite"
+```
+
+You can also set it as the default in the build file.
+
+```kts title="architecture-test/build.gradle.kts"
+katachi {
+    processors {
+        template {
+            onExisting = KatachiOnExisting.SKIP
+        }
+    }
+}
+```
+
+## Summary
+
+- **The destination is decided by `layout { }`.** A template only names its files, so the placement definition and what gets generated cannot disagree.
+- That is why **`assert()` passes right after generating.** This is the reason the feature exists.
+- Writing is **all or nothing.** No half-done directory is left behind.
+
+## Next steps
+
+- [Enforce directory structure with the Layout system](/katachi/guides/layout/) ... `layout { }` is what decides the destination. Learn how to write it.
+- [Document generation](/katachi/guides/document-generation/) ... Learn how to generate documentation, rather than code, from the same definition.
+- [ArchitectureProcessor and customizing it](/katachi/guides/processor/) ... Template generation is one ArchitectureProcessor too.
