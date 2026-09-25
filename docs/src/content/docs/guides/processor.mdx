@@ -16,29 +16,38 @@ The latter half explains how to write and run your own ArchitectureProcessor.
 katachi's `ArchitectureProcessor` class is an interface that does something based on an architecture definition.
 
 ```kt
-public interface ArchitectureProcessor<Args, Result> {
+public interface ArchitectureProcessor<Args, R> {
     public val argsSerializer: KSerializer<Args>
-    public fun process(context: ArchitectureProcessContext<Args>): Result
+    public fun process(context: ArchitectureProcessContext<Args>): Result<R>
 }
 ```
 
-An ArchitectureProcessor that doesn't take arguments implements `ArchitectureProcessorNoArg<Result>`. It's a thin interface that just takes care of writing `argsSerializer` for you.
+Wrap the body of `process` in `runCatching { }`. **To answer "this run does not pass", throw inside it.** There is no need to build `Result.success` / `Result.failure` by hand.
+
+| Inside `runCatching { }` | Meaning | In `runKatachiProcessor` |
+| --- | --- | --- |
+| Reaches the end and returns a value | The run passes | `[OK]` |
+| Throws | The run does not pass (violations found, documentation out of date, the job could not be done, and so on) | `[FAILED]`. The exception's message is printed and the exit code is non-zero |
+
+A check that returns a list of violations calls `assertNoErrors()` last. It throws `KatachiArchitectureAssertionError` when there is a `Severity.Error` violation, and returns the list as it is when there are only warnings. `assert()` reads that exception as "found violations" and puts them into the one report; any other exception means the check could not answer, and is reported as `[UncheckedCheck]`. `LayoutCheck` and `KonsistCheck` are written this way too.
+
+An ArchitectureProcessor that doesn't take arguments implements `ArchitectureProcessorNoArg<R>`. It's a thin interface that just takes care of writing `argsSerializer` for you.
 
 ```kt
-public interface ArchitectureProcessorNoArg<Result> : ArchitectureProcessor<Unit, Result>
+public interface ArchitectureProcessorNoArg<R> : ArchitectureProcessor<Unit, R>
 ```
 
 ## katachi's two elements
 
 Broadly speaking, katachi consists of two elements: the **architecture definition** and **ArchitectureProcessor**.
 
-{/* TODO: needs to update the diagram too */}
 ```mermaid
 flowchart LR
     D["architecture { }<br/>Architecture definition"]
     D --> Layout["LayoutCheck<br/>Validates placement"]
-    D --> Doc["DocumentGeneration<br/>Generates documentation"]
-    D --> Template["TemplateGeneration<br/>Generates code"]
+    D --> Konsist["KonsistCheck<br/>Evaluates konsist { } constraints"]
+    D --> Doc["GenerateDocumentation<br/>Generates documentation"]
+    D --> Template["GenerateCodeFromTemplate<br/>Generates code"]
     D -.-> Custom["Your ArchitectureProcessor<br/>Aggregation, extraction, output to other formats"]
 
     style D fill:#5B8DEF22,stroke:#5B8DEF,stroke-width:2px
@@ -52,11 +61,12 @@ The architecture definition itself doesn't execute anything. **It's `Architectur
 
 ## Built-in ArchitectureProcessors
 
-katachi ships with three ArchitectureProcessors by default.
+katachi ships with four ArchitectureProcessors.
 
 | Processor | What it does | Documentation |
 | --- | --- | --- |
 | `projectArchitecture.assert()` (`LayoutCheck`) | Validates whether files are placed according to the architecture definition, and throws an assertion exception if there are errors. |  |
+| `KonsistCheck` | Evaluates the constraints written in `konsist { }`. Passed as `projectArchitecture.assert(KonsistCheck())`. | [Konsist integration](/katachi/guides/konsist-integration/) |
 | `GenerateDocumentation` | Generates documentation from properties such as summary and description written in the project definition. | [Document generation](/katachi/guides/document-generation/) |
 | `GenerateCodeFromTemplate` | Generates files based on the contents of `template { }` blocks in the project definition. | [Generating code from a template](/katachi/guides/generate-code-from-template/) |
 
@@ -146,7 +156,7 @@ The `context` passed as the argument to the `process` method holds the architect
 
 ```kt
 object CountFilesPerRole : ArchitectureProcessorNoArg<Map<String, Int>> {
-    override fun process(context: ArchitectureProcessContext<Unit>): Map<String, Int> {
+    override fun process(context: ArchitectureProcessContext<Unit>): Result<Map<String, Int>> = runCatching {
         // context.architecture    ... the architecture definition itself
         // context.roles / groups  ... the defined roles / groups
         // context.declaredEntries ... the flattened list of declarations from layout
@@ -156,7 +166,7 @@ object CountFilesPerRole : ArchitectureProcessorNoArg<Map<String, Int>> {
         // context.log()           ... outputs progress
 
         context.log("Counting files per role...")
-        return context.roles.associate { role -> role.name to context.filesOf(role).size }
+        context.roles.associate { role -> role.name to context.filesOf(role).size }
     }
 }
 ```
@@ -186,8 +196,9 @@ var MetadataScope.obsolete: Boolean? by Obsolete
 
 // Processor side
 object ObsoleteRoles : ArchitectureProcessorNoArg<List<String>> {
-    override fun process(context: ArchitectureProcessContext<Unit>): List<String> =
+    override fun process(context: ArchitectureProcessContext<Unit>): Result<List<String>> = runCatching {
         context.roles.filter { it[Obsolete] == true }.map { it.name }
+    }
 }
 
 // Usage side
@@ -216,7 +227,7 @@ If you want it runnable from a program as an API, providing an API is recommende
         ```kt
         // Place this in the same file as CountFilesPerRole
         @OptIn(ExperimentalKatachiApi::class)
-        fun Architecture.countFilesPerRole(): Map<String, Int> = process(CountFilesPerRole)
+        fun Architecture.countFilesPerRole(): Map<String, Int> = process(CountFilesPerRole).getOrThrow()
         ```
 
         Users don't even need to know the processor exists.
