@@ -1,52 +1,11 @@
-// =============================================================================
-// This file exists for TWO purposes: aggregating the sample builds under sample/,
-// and aggregating the Dokka HTML of :katachi and :katachi-konsist for the docs site.
-//
-// The katachi library itself is `:katachi`. Do not add Android- or Kotlin/Native-
-// requiring plugins, dependencies or sources to this root project. `./gradlew check`
-// has to keep working on a machine that has neither an Android SDK nor a
-// Kotlin/Native toolchain. The Dokka aggregation below needs neither, so it is the
-// one deliberate exception to "an empty root project".
-// =============================================================================
-//
-// Why each sample is driven through its own wrapper instead of being part of
-// this build:
-//
-//   * `includeBuild("sample/<name>")` in settings.gradle.kts would make every
-//     root invocation configure every sample, so `./gradlew :katachi:check`
-//     would start requiring the Android SDK and the Kotlin/Native distribution.
-//   * It would also stop the samples from exercising the code path a real user
-//     takes: a separate build that resolves `me.tbsten.katachi:katachi` as an
-//     external module and gets it substituted by `includeBuild("../..")`.
-//   * A `GradleBuild` task runs the nested build inside the same build tree, and
-//     Gradle then rejects the sample's own `includeBuild("../..")` with
-//     "Cannot include build 'katachi' in build ':jvm'. This is not supported yet."
-//
-// An `Exec` task per sample has none of those problems and stays compatible with
-// the configuration cache.
-
 plugins {
-    // No version here (not `alias(libs.plugins.dokka)`): `buildSrc`'s own
-    // `implementation(libs.dokkaPlugin)` already puts the Dokka Gradle plugin on every
-    // build script's classpath, including the root's. Asking for a specific version on
-    // top of that makes Gradle refuse with "already on the classpath with an unknown
-    // version, so compatibility cannot be checked" -- applying by bare id resolves
-    // against that already-present, buildSrc-pinned version instead.
     id("org.jetbrains.dokka")
 }
 
-// Aggregates the HTML Dokka output of `:katachi` and `:katachi-konsist` into one
-// site. The root project has no sources of its own -- it only collects the two
-// subprojects' Dokka Modules through the `dokka` configuration below, the way
-// DGPv2's multi-module setup is meant to work.
 dokka {
     moduleName.set(rootProject.name)
 
     dokkaPublications.named("html") {
-        // Written directly into the docs site's public/ so Astro can serve it as
-        // static content. This directory is otherwise off limits for this build
-        // (the docs site is maintained separately) -- Dokka's generated-content
-        // ownership of it is the one deliberate exception.
         outputDirectory.set(layout.projectDirectory.dir("docs/public/api-docs"))
     }
 }
@@ -56,24 +15,13 @@ dependencies {
     dokka(project(":katachi-konsist"))
 }
 
-// CI (`.github/workflows/docs.yml`) runs exactly `./gradlew generateApiDocs` with
-// no other arguments, so this name has to stay stable even if Dokka's own task
-// names change across versions -- that's the whole reason it exists instead of
-// telling CI to run `dokkaGenerateHtml` directly.
 tasks.register("generateApiDocs") {
     group = "documentation"
     description = "Aggregates the :katachi and :katachi-konsist Dokka HTML into " +
-        "docs/public/api-docs/ for the docs site's API reference page."
+            "docs/public/api-docs/ for the docs site's API reference page."
     dependsOn("dokkaGenerateHtml")
 }
 
-/**
- * One standalone Gradle build under `sample/`.
- *
- * @property name directory name under `sample/`, also the task name suffix.
- * @property defaultTasks tasks invoked through that sample's own wrapper.
- * @property needsAndroidSdk whether the build fails without an Android SDK location.
- */
 data class SampleBuild(
     val name: String,
     val defaultTasks: List<String>,
@@ -81,32 +29,6 @@ data class SampleBuild(
 )
 
 val sampleBuilds = listOf(
-    // `check` without a project path runs it in every project of the build, so
-    // `:architecture-test:test` -- the katachi verification -- is included.
-    // `runKatachiProcessor` is added on top of `check` because the link between the
-    // Gradle plugin and `main()` is a single string literal -- `KatachiPlugin.java`'s
-    // `"me.tbsten.katachi.processor.MainKt"` -- that nothing at build time verifies.
-    // The plugin's functional test carries the same literal on its own side, so it
-    // cannot catch the two drifting apart: it is not a regression guard for this.
-    // Actually invoking the task in this sample is what turns red when the class name
-    // drifts. From v0.2 step 2 on, this run also exercises the generated entry point,
-    // the processor registry, and `--arg` decoding -- not just the literal class name:
-    // two processors (`layout`, the katachi-authored `object` `roleNames`) run in one
-    // invocation, one of them with a decoded argument.
-    //
-    // `docs` is in that list for the same reason the run exists at all, one layer further in:
-    // `KatachiProcessors.java` registers it by default through a string literal,
-    // `"me.tbsten.katachi.docs.GenerateDocumentation"`, that nothing at build time resolves.
-    // The plugin's own unit test carries the same literal, so it cannot catch the two drifting
-    // apart either. This is the one run that does -- and it is added only here, because a
-    // literal can only be wrong in one way and proving it once is enough.
-    //
-    // `--arg mode=check` is what makes the committed `sample/jvm/docs/` trustworthy: `docs`
-    // then writes nothing and fails when the directory on disk is not what this definition
-    // produces, so a role edited without regenerating turns this task red instead of leaving a
-    // stale page in the repository. `--arg` is validated against the union of the known keys of
-    // *all* the selected processors, which is why `mode` passes alongside `prefix` here even
-    // though only `docs` reads it and only `roleNames` reads the other.
     SampleBuild(
         "jvm",
         listOf(
@@ -120,41 +42,11 @@ val sampleBuilds = listOf(
         ),
         needsAndroidSdk = false,
     ),
-    // `check` here includes Android Lint over nine modules. Measured on this
-    // sample: 14 s warm, 21 s with `clean --no-build-cache`, so there is no
-    // reason to narrow it down to the unit tests. Revisit if the sample grows.
-    // `docs` is here and not only on the jvm sample, because the two samples exercise
-    // different shapes of the generator: this one has nested groups and a wildcard module key
-    // (`:feature:*`), which is where the placement tree has to print a pattern instead of a
-    // path. Running it only on jvm proved the plugin wiring and nothing about that.
-    // `--arg mode=check` here for the same reason as on jvm: `sample/android/docs/` is
-    // committed, so something has to notice when it stops matching the definition.
     SampleBuild(
         "android",
         listOf("check", "runKatachiProcessor", "--processor=layout,docs", "--arg", "mode=check"),
         needsAndroidSdk = true,
     ),
-    // Deliberately NOT `check` / `build` / `assemble`, and there is no `jvmTest`
-    // in this sample. Its modules declare iosArm64 / iosSimulatorArm64, so the
-    // lifecycle tasks drag `compileKotlinIosArm64` and the Kotlin/Native
-    // distribution download into the task graph, neither of which works on a
-    // Linux runner. Neither task below ever reaches an Apple task.
-    //
-    // Two tasks, because they verify two different things and neither implies
-    // the other:
-    //   * `:architecture-test:test` is the katachi verification. It moved out of
-    //     `:app:android` into a module of its own, so running only the Android
-    //     unit tests would let every katachi assertion silently stop running.
-    //   * `:app:android:testDebugUnitTest` is what proves the sample still
-    //     compiles as a Kotlin Multiplatform project. `:architecture-test` is a
-    //     plain JVM module that references none of `:ui` / `:data` / `:feature:*`.
-    //   * `:architecture-test:runKatachiProcessor` proves the plugin resolves and runs
-    //     inside a KMP composite build the same way it does in a plain JVM one.
-    //
-    // Task *paths* are used throughout rather than bare task names, on purpose: an
-    // unqualified name would resolve in every project of the build, and this sample's
-    // other modules declare iosArm64 / iosSimulatorArm64, which would drag Apple-only
-    // tasks into the graph the same way a lifecycle task would.
     SampleBuild(
         "kmp",
         listOf(
@@ -162,27 +54,11 @@ val sampleBuilds = listOf(
             ":app:android:testDebugUnitTest",
             ":architecture-test:runKatachiProcessor",
             "--processor=layout,docs",
-            // As on the other two samples: `sample/kmp/docs/` is committed, and `mode=check`
-            // is what fails the build when it no longer matches the definition.
             "--arg",
             "mode=check",
         ),
         needsAndroidSdk = true,
     ),
-    // The fourth sample, and the only one whose subject is the *processor* rather than the
-    // project: three processors written by hand, one per shape.
-    //
-    // All three are named in the `--processor=` list, so this run is what proves a
-    // user-written processor still resolves out of the generated registry and still decodes
-    // its arguments. `roleDocCoverage` earns its place twice over: it overrides `isFailure`,
-    // which is the one API whose contract is "the run must turn red when the result says so".
-    // A regression there cannot be caught by a unit test of the processor alone -- the
-    // processor would keep answering `true` while the run kept exiting zero.
-    //
-    // `--arg sortBy=Declaration` overrides the `arg("sortBy", "Name")` written in
-    // `architecture-test/build.gradle.kts`, so the run also demonstrates the precedence
-    // between the two. `--arg mode=check` is what makes the committed
-    // `sample/custom-processor/docs/` trustworthy, exactly as on the other three samples.
     SampleBuild(
         "custom-processor",
         listOf(
@@ -200,12 +76,6 @@ val sampleBuilds = listOf(
     ),
 )
 
-/**
- * Tasks to run inside `sample/[sample]`.
- *
- * Override for one sample with `-Pkatachi.sample.<name>.task=...`, or for all of
- * them with `-Pkatachi.sample.task=...`. Several tasks are separated by spaces.
- */
 fun sampleTasksOf(sample: SampleBuild): List<String> =
     providers.gradleProperty("katachi.sample.${sample.name}.task")
         .orElse(providers.gradleProperty("katachi.sample.task"))
@@ -222,18 +92,12 @@ private val gradlewCommand: List<String> =
         listOf("./gradlew")
     }
 
-/**
- * Android SDK location taken from the environment, which is how CI provides it
- * (`ANDROID_HOME` is preset on the GitHub-hosted runners). `null` when neither
- * variable is set.
- */
 private val androidSdkFromEnvironment: String? =
     providers.environmentVariable("ANDROID_HOME")
         .orElse(providers.environmentVariable("ANDROID_SDK_ROOT"))
         .orNull
         ?.takeIf { it.isNotBlank() }
 
-/** Default install locations of the Android SDK, used only as a last resort. */
 private val wellKnownAndroidSdkDirs: List<File> =
     providers.systemProperty("user.home").get().let { home ->
         listOf(
@@ -245,31 +109,18 @@ private val wellKnownAndroidSdkDirs: List<File> =
 val checkSamples = tasks.register("checkSamples") {
     group = LifecycleBasePlugin.VERIFICATION_GROUP
     description = "Runs every standalone sample build under sample/ through its own wrapper. " +
-        "sample/android and sample/kmp need an Android SDK: set ANDROID_HOME (or ANDROID_SDK_ROOT), " +
-        "or write sdk.dir into sample/<name>/local.properties."
+            "sample/android and sample/kmp need an Android SDK: set ANDROID_HOME (or ANDROID_SDK_ROOT), " +
+            "or write sdk.dir into sample/<name>/local.properties."
 }
 
-/**
- * Every `checkSample*` task registered so far.
- *
- * Each new task is ordered after *all* of them, not just the one before it:
- * `mustRunAfter` does not chain transitively, so a pairwise chain falls apart as
- * soon as a sample is missing from the task graph (`./gradlew checkSampleJvm
- * checkSampleKmp`, or `./gradlew checkSamples -x checkSampleAndroid`).
- */
 val registeredSamples = mutableListOf<TaskProvider<Exec>>()
 
 sampleBuilds.forEach { sample ->
-    // Split on `-` so that a directory named `custom-processor` becomes the task
-    // `checkSampleCustomProcessor` rather than `checkSampleCustom-processor`, which is a legal
-    // Gradle task name but an awkward one to type and to read in a CI step.
     val suffix = sample.name.split("-").joinToString("") { part ->
         part.replaceFirstChar { it.uppercaseChar() }
     }
     val sampleTasks = sampleTasksOf(sample)
     val sampleDir = layout.projectDirectory.dir("sample/${sample.name}").asFile
-    // Captured eagerly: by the time the configuration block below runs,
-    // `registeredSamples` would already contain this very task.
     val predecessors = registeredSamples.toList()
 
     val task = tasks.register<Exec>("checkSample$suffix") {
@@ -277,7 +128,7 @@ sampleBuilds.forEach { sample ->
         description = buildString {
             append(
                 "Runs `${sampleTasks.joinToString(" ")}` in the standalone sample build " +
-                    "sample/${sample.name}.",
+                        "sample/${sample.name}.",
             )
             if (sample.needsAndroidSdk) {
                 append(" Needs an Android SDK: set ANDROID_HOME (or ANDROID_SDK_ROOT),")
@@ -287,12 +138,6 @@ sampleBuilds.forEach { sample ->
         workingDir = sampleDir
         commandLine(gradlewCommand + sampleTasks + listOf("--console=plain"))
 
-        // The nested build inherits this process's environment, so ANDROID_HOME
-        // set by the developer or by CI already reaches it. This only covers the
-        // remaining case: a developer machine with a standard Android Studio SDK
-        // but no environment variable and no local.properties. The existence
-        // check is not a tracked configuration-cache input, so after creating
-        // local.properties run once with `--no-configuration-cache`.
         if (sample.needsAndroidSdk &&
             androidSdkFromEnvironment == null &&
             !File(sampleDir, "local.properties").exists()
@@ -301,22 +146,8 @@ sampleBuilds.forEach { sample ->
                 ?.let { environment("ANDROID_HOME", it.absolutePath) }
         }
 
-        // Every sample includes the same katachi build and therefore shares
-        // katachi's build/ directory. Running two of them concurrently corrupts
-        // it, so they are kept strictly sequential -- whichever subset of the
-        // sample tasks ends up in the task graph.
         mustRunAfter(predecessors)
 
-        // The nested build compiles `:katachi` through `includeBuild("../..")`
-        // and writes to that same katachi/build/. The outer build's own katachi
-        // tasks are therefore just as much a conflict as another sample, and
-        // nothing stops `./gradlew check checkSamples` from running both at
-        // once (the two builds use different project caches, so Gradle's own
-        // locking does not apply). These paths are resolved lazily and are
-        // simply ignored when the task is not in the graph, so running a
-        // `checkSample*` task on its own is unaffected. `includeBuild("../..")`
-        // also pulls in `:katachi-konsist`, so its own tasks contend for
-        // `katachi-konsist/build/` the same way.
         mustRunAfter(":katachi:check", ":katachi:build", ":katachi:jar", ":katachi:test")
         mustRunAfter(
             ":katachi-konsist:check",
@@ -325,10 +156,6 @@ sampleBuilds.forEach { sample ->
             ":katachi-konsist:test",
         )
 
-        // sample/jvm resolves `id("me.tbsten.katachi")` through `includeBuild("../..")` in
-        // its `pluginManagement`, so the nested build also writes to
-        // katachi-gradle-plugin/build/. That directory is contended for exactly the way the
-        // other two modules' are.
         mustRunAfter(
             ":katachi-gradle-plugin:check",
             ":katachi-gradle-plugin:build",
@@ -336,10 +163,6 @@ sampleBuilds.forEach { sample ->
             ":katachi-gradle-plugin:test",
         )
 
-        // `:architecture-test:test` needs `:katachi:jar` and `:katachi-konsist:jar`, so it
-        // reaches the same two build directories a sample is fighting over. The
-        // `mustRunAfter(":katachi:...")` and `mustRunAfter(":katachi-konsist:...")` blocks
-        // above already cover it in practice; listing the task itself is the honest version.
         mustRunAfter(":architecture-test:test")
     }
     registeredSamples += task
