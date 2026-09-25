@@ -16,7 +16,7 @@ import com.example.kmp.ui.theme.AppSpacing
 
 /** The settings screen, bound to its state holder. */
 @Composable
-fun SettingsScreen(
+internal fun SettingsScreen(
     viewModel: SettingsViewModel,
     modifier: Modifier = Modifier,
 ) {

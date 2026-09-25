@@ -9,12 +9,12 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 
 /** What [SettingsScreen] draws once it has something to draw. */
-data class SettingsContent(
+internal data class SettingsContent(
     val darkThemeEnabled: Boolean,
 )
 
 /** State holder of [SettingsScreen]. */
-class SettingsViewModel(
+internal class SettingsViewModel(
     private val settingsRepository: SettingsRepository = SettingsRepositoryImpl(),
 ) : ViewModel() {
     private val mutableUiState = MutableStateFlow<UiState<SettingsContent>>(UiState.Loading)

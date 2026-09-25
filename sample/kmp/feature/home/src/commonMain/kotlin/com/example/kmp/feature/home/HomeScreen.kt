@@ -16,7 +16,7 @@ import com.example.kmp.ui.theme.AppSpacing
 
 /** The home screen, bound to its state holder. */
 @Composable
-fun HomeScreen(
+internal fun HomeScreen(
     viewModel: HomeViewModel,
     modifier: Modifier = Modifier,
 ) {

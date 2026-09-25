@@ -23,11 +23,11 @@ import com.example.sample.ui.preview.PreviewRoot
 /**
  * The home screen, wired to its [HomeViewModel].
  *
- * This overload is what the navigation graph calls. It only collects state and forwards
- * events, so the stateless overload below stays previewable and testable.
+ * This overload is what [homeScreen] calls, from the same module. It only collects state and
+ * forwards events, so the stateless overload below stays previewable and testable.
  */
 @Composable
-fun HomeScreen(
+internal fun HomeScreen(
     onNavigateToSettings: () -> Unit,
     modifier: Modifier = Modifier,
     viewModel: HomeViewModel = viewModel(),

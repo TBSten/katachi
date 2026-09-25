@@ -9,9 +9,9 @@
 置くことはできず、`HomeScreen.kt` を消すこともできない。画面が2つになったら
 feature モジュールごと分ける。
 
-1つのファイルに `HomeScreen` を2つ重ねて置く。ナビゲーションから呼ばれる public な方は
-`viewModel()` を既定引数で受け取り、`collectAsStateWithLifecycle()` で状態を集めて
-もう一方へ渡すだけ。`internal` な方は `UiState<HomeContent>` とコールバックだけを
+1つのファイルに `HomeScreen` を2つ重ねて置く。どちらも `internal`。ナビゲーションから
+呼ばれる方は `viewModel()` を既定引数で受け取り、`collectAsStateWithLifecycle()` で
+状態を集めてもう一方へ渡すだけ。もう一方は `UiState<HomeContent>` とコールバックだけを
 受け取る状態の関数で、`@Preview` が触るのはこちら。
 
 ここに置いてよいもの:

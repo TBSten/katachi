@@ -25,7 +25,7 @@ import com.example.sample.ui.preview.PreviewRoot
 
 /** The settings screen, wired to its [SettingsViewModel]. */
 @Composable
-fun SettingsScreen(
+internal fun SettingsScreen(
     onNavigateUp: () -> Unit,
     modifier: Modifier = Modifier,
     viewModel: SettingsViewModel = viewModel(),

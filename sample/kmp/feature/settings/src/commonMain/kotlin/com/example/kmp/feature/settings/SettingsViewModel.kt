@@ -11,13 +11,13 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
 /** What the settings screen shows. */
-data class SettingsUi(
+internal data class SettingsUi(
     val userCount: Int,
     val platform: String,
 )
 
 /** Holds the state of the settings screen. */
-class SettingsViewModel(private val repository: UserRepository) : ViewModel() {
+internal class SettingsViewModel(private val repository: UserRepository) : ViewModel() {
     private val mutableState = MutableStateFlow<UiState<SettingsUi>>(UiState.Loading)
 
     val state: StateFlow<UiState<SettingsUi>> = mutableState.asStateFlow()

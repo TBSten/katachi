@@ -16,7 +16,7 @@ import kotlinx.coroutines.launch
  * artifact (`org.jetbrains.androidx.lifecycle`), so the same class compiles for Android and
  * for iOS out of `commonMain`.
  */
-class HomeViewModel(private val repository: UserRepository) : ViewModel() {
+internal class HomeViewModel(private val repository: UserRepository) : ViewModel() {
     private val mutableState = MutableStateFlow<UiState<List<String>>>(UiState.Loading)
 
     /** The state the screen renders. */

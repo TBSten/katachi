@@ -9,7 +9,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 
 /** What [HomeScreen] draws once it has something to draw. */
-data class HomeContent(
+internal data class HomeContent(
     val userName: String,
     val visitCount: Int,
 )
@@ -20,7 +20,7 @@ data class HomeContent(
  * The default argument is what lets `viewModel()` build this without a factory. A real
  * app would inject the repository instead; the shape of the class is the same either way.
  */
-class HomeViewModel(
+internal class HomeViewModel(
     private val userRepository: UserRepository = UserRepositoryImpl(),
 ) : ViewModel() {
     private val mutableUiState = MutableStateFlow<UiState<HomeContent>>(UiState.Loading)
