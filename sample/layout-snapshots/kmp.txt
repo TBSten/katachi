@@ -201,6 +201,10 @@ testing/Fake	testing/src/commonMain/kotlin/com/example	Directory	optional
 testing/Fake	testing/src/commonMain/kotlin/com/example/kmp	Directory	optional
 testing/Fake	testing/src/commonMain/kotlin/com/example/kmp/testing	Directory	optional
 testing/Fake	testing/src/commonMain/kotlin/com/example/kmp/testing/Fake*.kt	File	optional
+testing/GeneratedDocumentation	docs	Directory	optional
+testing/GeneratedDocumentation	docs/**	Directory	optional
+testing/GeneratedDocumentation	docs/**/*.md	File	optional
+testing/GeneratedDocumentation	docs/README.md	File	required
 testing/Test	app	Directory	optional
 testing/Test	app/android	Directory	optional
 testing/Test	app/android/build	Ignore	optional

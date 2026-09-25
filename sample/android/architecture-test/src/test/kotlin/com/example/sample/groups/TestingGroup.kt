@@ -2,12 +2,13 @@ package com.example.sample.groups
 
 import com.example.sample.roles.architectureDefinition
 import com.example.sample.roles.fake
+import com.example.sample.roles.generatedDocumentation
 import com.example.sample.roles.test
 import me.tbsten.katachi.dsl.DeclarationContainerScope
 
 /**
- * Roles that exist for testing: the shared fakes in `:testing`, the tests themselves, and
- * the architecture definition.
+ * Roles that exist for testing: the shared fakes in `:testing`, the tests themselves, the
+ * architecture definition, and the pages that definition generates.
  *
  * The definition lives in `:architecture-test`, a module that belongs to no layer of the
  * application. It is still code someone has to maintain, so it gets a role of its own
@@ -24,11 +25,12 @@ import me.tbsten.katachi.dsl.DeclarationContainerScope
  */
 fun DeclarationContainerScope.testingGroup() = "testing".group {
     title = "テスト"
-    summary = "アプリを確かめるためにあるもの。共有のフェイク、テスト、アーキテクチャ定義"
+    summary = "アプリを確かめるためにあるもの。共有のフェイク、テスト、アーキテクチャ定義、生成ドキュメント"
     description = """
-        アプリのレイヤーではなく、アプリを確かめるためにあるもの。3つ集めてある。
+        アプリのレイヤーではなく、アプリを確かめるためにあるもの。4つ集めてある。
         フェイクは `:testing` にある差し替え用の実装、テストコードはテストそのもの、
-        アーキテクチャ定義は katachi の DSL で書かれたこの定義自身。
+        アーキテクチャ定義は katachi の DSL で書かれたこの定義自身、生成ドキュメントは
+        その定義から `--processor=docs` が書き出す `docs/`。
 
         アーキテクチャ定義をテストコードに混ぜていないのは、2つが別のことを書いているから。
         定義は「どんな形をしているか」、テストは「どう振る舞うか」。どちらも
@@ -43,10 +45,15 @@ fun DeclarationContainerScope.testingGroup() = "testing".group {
 
         `:architecture-test` は `:app` と並ぶ、package がモジュールパスから導けないモジュール。
         そのまま当てると `com/example/sample/architectureTest` になるので、この group の
-        2つの役割はどちらも `com/example/sample` を直接書いている。
+        定義側の2つの役割はどちらも `com/example/sample` を直接書いている。
+
+        生成ドキュメントだけはモジュールの中ですらなく、リポジトリのルート直下の `docs/` に出る。
+        `build/` の外にある生成物にも役割が要る、という例としてここに置いてある。
+        人が書くルートの `README.md` は別扱いで、`tool` グループの `Documentation` 役割の側。
     """.trimIndent()
 
     fake()
     test()
     architectureDefinition()
+    generatedDocumentation()
 }

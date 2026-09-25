@@ -84,6 +84,10 @@ testing/ArchitectureDefinition	architecture-test/src/test	Directory	optional
 testing/ArchitectureDefinition	architecture-test/src/test/kotlin	Directory	optional
 testing/ArchitectureDefinition	architecture-test/src/test/kotlin/**	Directory	optional
 testing/ArchitectureDefinition	architecture-test/src/test/kotlin/**/*.kt	File	optional
+testing/GeneratedDocumentation	docs	Directory	optional
+testing/GeneratedDocumentation	docs/**	Directory	optional
+testing/GeneratedDocumentation	docs/**/*.md	File	optional
+testing/GeneratedDocumentation	docs/README.md	File	required
 testing/Test	build	Ignore	optional
 testing/Test	build.gradle.kts	File	required
 testing/Test	src	Directory	optional

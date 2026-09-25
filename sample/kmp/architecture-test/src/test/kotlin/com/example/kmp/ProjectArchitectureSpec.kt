@@ -51,6 +51,7 @@ class ProjectArchitectureSpec : FreeSpec({
                 "testing/Fake",
                 "testing/Test",
                 "testing/ArchitectureDefinition",
+                "testing/GeneratedDocumentation",
                 "app/Entrypoint",
                 "app/AndroidResource",
                 "app/XcodeProject",

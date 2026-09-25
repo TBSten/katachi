@@ -173,6 +173,10 @@ testing/Fake	testing/src/main/kotlin/com/example	Directory	optional
 testing/Fake	testing/src/main/kotlin/com/example/sample	Directory	optional
 testing/Fake	testing/src/main/kotlin/com/example/sample/testing	Directory	optional
 testing/Fake	testing/src/main/kotlin/com/example/sample/testing/Fake*.kt	File	optional
+testing/GeneratedDocumentation	docs	Directory	optional
+testing/GeneratedDocumentation	docs/**	Directory	optional
+testing/GeneratedDocumentation	docs/**/*.md	File	optional
+testing/GeneratedDocumentation	docs/README.md	File	required
 testing/Test	architecture-test	Directory	optional
 testing/Test	architecture-test/build	Ignore	optional
 testing/Test	architecture-test/build.gradle.kts	File	required

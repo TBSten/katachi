@@ -66,6 +66,7 @@ class ProjectArchitectureSpec : FreeSpec({
             "testing/Fake",
             "testing/Test",
             "testing/ArchitectureDefinition",
+            "testing/GeneratedDocumentation",
             "build/GradleModule",
             "build/GradleRoot",
             "tool/Git",

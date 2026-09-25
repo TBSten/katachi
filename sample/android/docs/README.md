@@ -1,0 +1,77 @@
+# katachi-sample-android ドキュメント
+
+Compose で書かれた Android アプリを、katachi で形から説明したもの。このページ以下はすべて `--processor=docs` が生成したもので、手では書かない。
+
+## Document map
+
+### [各画面の構成](./feature/README.md)
+
+- [Screen](./feature/Screen.md)
+- [ViewModel](./feature/ViewModel.md)
+- [Route](./feature/Route.md)
+
+### [UI (共通レイヤー)](./ui/README.md)
+
+- [共通コンポーネント](./ui/Component.md)
+- [テーマ](./ui/Theme.md)
+- [UI 基盤](./ui/UiCore.md)
+- [プレビュー](./ui/Preview.md)
+- [プレビューの土台](./ui/PreviewRoot.md)
+- [画面遷移](./ui/Navigation.md)
+
+### [データレイヤー](./data/README.md)
+
+- [リポジトリ](./data/Repository.md)
+
+### [エントリーポイントレイヤー](./app/README.md)
+
+- [エントリポイント](./app/Entrypoint.md)
+- [Android リソース](./app/AndroidResource.md)
+
+### [テスト](./testing/README.md)
+
+- [フェイク](./testing/Fake.md)
+- [テストコード](./testing/Test.md)
+- [アーキテクチャ定義](./testing/ArchitectureDefinition.md)
+- [生成ドキュメント](./testing/GeneratedDocumentation.md)
+
+## 各画面の構成
+
+画面1つぶんのモジュール。:feature:<name> ごとに Screen / ViewModel / Route を1つずつ置く
+
+- [Screen](./feature/Screen.md) ... 1つの画面の UI 実装となる @Composable。:feature:<name> ごとに <Name>Screen.kt を置く
+- [ViewModel](./feature/ViewModel.md) ... 画面の状態を StateFlow で公開し、イベントを受け取る androidx.lifecycle.ViewModel
+- [Route](./feature/Route.md) ... 画面への遷移先。feature の外に公開する唯一の入口
+
+## UI (共通レイヤー)
+
+feature をまたいで共有する UI。:ui の4つの package と :navigation
+
+- [共通コンポーネント](./ui/Component.md) ... :ui モジュールの component package に置く、feature をまたいで使う部品
+- [テーマ](./ui/Theme.md) ... :ui モジュールの theme package に置く、色・タイポグラフィ・形
+- [UI 基盤](./ui/UiCore.md) ... :ui モジュールの core package に置く、UI 層の土台になる型
+- [プレビュー](./ui/Preview.md) ... @Preview を付けた private @Composable。対象の Composable と同じファイルに置き、中身は PreviewRoot で包む
+- [プレビューの土台](./ui/PreviewRoot.md) ... :ui モジュールの preview package に置く、すべての @Preview が中身を包む土台。テーマと背景を 1 箇所で決め、darkTheme を受け取って明暗を出し分ける
+- [画面遷移](./ui/Navigation.md) ... :navigation に置く、画面間の移動
+
+## データレイヤー
+
+:data が持つもの。データの取得と保存
+
+- [リポジトリ](./data/Repository.md) ... データの取得と保存。インターフェースと実装を :data の、扱う対象ごとの package （user / settings）に並べて置く
+
+## エントリーポイントレイヤー
+
+:app が持つもの。起動の入口と、Android のリソース
+
+- [エントリポイント](./app/Entrypoint.md) ... :app に置く、Android がアプリを起動するときに触る型
+- [Android リソース](./app/AndroidResource.md) ... AndroidManifest.xml・res/・proguard-rules.pro
+
+## テスト
+
+アプリを確かめるためにあるもの。共有のフェイク、テスト、アーキテクチャ定義、生成ドキュメント
+
+- [フェイク](./testing/Fake.md) ... :testing に置く、他モジュールのテストから使う偽の実装
+- [テストコード](./testing/Test.md) ... 各モジュールの src/test/kotlin に置くテストそのもの
+- [アーキテクチャ定義](./testing/ArchitectureDefinition.md) ... katachi の DSL で書かれた役割の定義。どのレイヤーにも属さない
+- [生成ドキュメント](./testing/GeneratedDocumentation.md) ... この定義から書き出され、リポジトリにコミットされる Markdown

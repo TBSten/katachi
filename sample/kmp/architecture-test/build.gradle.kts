@@ -43,11 +43,25 @@ katachi {
         // plugin in this module, so only an ArchitectureProcessorNoArg processor is
         // registered.
         register("layout", "me.tbsten.katachi.check.LayoutCheck")
-        // The typed block, rather than `--arg outputDir=...` on every invocation. Kept under
-        // `build/` on purpose: anywhere else and the generated pages would be picked up by
-        // `gitTracked()` and reported as files no role declares.
+        // The typed block, rather than `--arg outputDir=...` on every invocation. `docs`
+        // itself needs no `register`: the plugin registers it by default.
+        //
+        // The pages are written into the repository rather than under `build/`, which means
+        // `gitTracked()` offers them to the check like any other file -- the
+        // `GeneratedDocumentation` role in the `tool` group is what declares them, and
+        // without it the run fails with `[UnexpectedDirectory] docs`. A `Directory` rather
+        // than a string, because `outputDir` is resolved against the directory the task runs
+        // in and that is `:architecture-test`, one level below the root.
+        //
+        // CI adds `--arg mode=check` to the same invocation, so pages that are out of date
+        // with the definition fail the build instead of being silently stale.
         docs {
-            outputDir = "build/architecture-docs"
+            outputDir = rootProject.layout.projectDirectory.dir("docs")
+            // Neither `rootTitle` nor `rootDescription` here, on purpose: this is the sample
+            // that shows what the defaults look like. `rootTitle` falls back to the
+            // convention the plugin sends -- `rootProject.name` -- so the generated root page
+            // heads itself `# katachi-sample-kmp ドキュメント` with no paragraph under it.
+            // sample/jvm writes both values and sample/android writes only the description.
         }
     }
 }

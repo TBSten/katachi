@@ -1,0 +1,35 @@
+[Ktor サンプルアプリ](../README.md) / [API](README.md)
+
+# コントローラ
+
+HTTP のリクエストを1つ受け取り、対応する Service を呼んで結果を返す
+
+HTTP とアプリケーションの中身との境目です。パスとメソッドの登録、リクエストからの値の
+取り出し、Service が返した値を応答にするところまでを持ちます。
+
+置いてよいのは Ktor の `Route` に対する登録と、受け渡しのための変換だけです。
+`HealthController` は `register(route: Route)` の中で `route.get("/health") { ... }` を
+書き、呼び出す `HealthService` は既定値付きのコンストラクタ引数で受け取るので、
+テストから差し替えられます。
+
+置いてはいけないもの:
+
+- 条件分岐や計算。「どちらを返すか」を決めた時点で、それはサービスの仕事です
+- `com.example.repository` の呼び出し。Controller から直接データを取りに行きません
+- `install(...)` のような Application 全体への設定と `routing { }` 自体。どの Controller を
+  routing ツリーに繋ぐかは `plugin/Routing.kt` が決めます
+
+1ファイル1コントローラで、ファイル名は `*Controller.kt`。ファイル名がそのまま
+エンドポイントのまとまりを表すので、新しいパスを既存のファイルに足すのか新しく作るのかを
+名前だけで判断できます。なお `layout { }` が見ているのは置き場所と名前までで、
+上の「置いてはいけないもの」を機械的に弾いてはいません。
+
+## 配置場所
+
+| モジュール | パス | 使い分け |
+|---|---|---|
+| `:` | `src/main/kotlin/**/controller/*Controller.kt` |  |
+
+## 例
+
+- `HealthController` ... ヘルスチェックの受け口

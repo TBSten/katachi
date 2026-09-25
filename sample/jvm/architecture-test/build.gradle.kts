@@ -67,5 +67,26 @@ katachi {
         // A processor this sample writes itself, as an `object` with a @Serializable Args
         // type -- see `com.example.processors.RoleNames`.
         register("roleNames", "com.example.processors.RoleNames")
+        // `docs` needs no `register`: the plugin registers it by default. This block only
+        // moves its output. `rootProject.layout.projectDirectory.dir("docs")` is an absolute
+        // `Directory` rather than a string, so the path does not depend on which module the
+        // task happens to run in -- `outputDir` is resolved against the task's own directory,
+        // and this one lives in `:architecture-test`.
+        //
+        // Out of `build/` and into the repository, which means `gitTracked()` now offers the
+        // generated pages to the check like any other file: the `GeneratedDocumentation` role
+        // is what keeps them from being `[UnexpectedDirectory] docs`. The root build adds
+        // `--arg mode=check` on CI, so a definition edited without regenerating fails there.
+        docs {
+            outputDir = rootProject.layout.projectDirectory.dir("docs")
+            // The only sample that sets both. `rootTitle` defaults to `rootProject.name`
+            // (the plugin sends it as a convention), so leaving it out would head the page
+            // `# katachi-sample-jvm ドキュメント` -- a Gradle coordinate rather than a name a
+            // reader recognises. sample/android sets only `rootDescription` and sample/kmp
+            // sets neither, so all three shapes exist somewhere in the repository.
+            rootTitle = "Ktor サンプルアプリ"
+            rootDescription = "Ktor の小さな HTTP サーバを、katachi で形から説明したもの。" +
+                "このページ以下はすべて `--processor=docs` が生成したもので、手では書かない。"
+        }
     }
 }

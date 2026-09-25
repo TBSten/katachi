@@ -56,5 +56,23 @@ katachi {
         // No serialization compiler plugin is applied to this module either: `layout` is
         // the only processor registered, and it is ArchitectureProcessorNoArg.
         register("layout", "me.tbsten.katachi.check.LayoutCheck")
+        // `docs` is not registered here either -- the plugin registers it by default, and
+        // this block only says where it writes. Given as a `Directory` rather than a string
+        // because `outputDir` is resolved against the directory the task runs in, which is
+        // `:architecture-test`, not the root.
+        //
+        // The pages land in the repository instead of `build/`, so `gitTracked()` hands them
+        // to the check: the `GeneratedDocumentation` role in the `tool` group is what declares
+        // them. CI runs the same processor with `--arg mode=check`, which turns a definition
+        // changed without regenerating into a failure.
+        docs {
+            outputDir = rootProject.layout.projectDirectory.dir("docs")
+            // `rootTitle` is deliberately left out: the plugin sends `rootProject.name` as a
+            // convention, so the page heads itself `# katachi-sample-android ドキュメント`.
+            // Only `rootDescription` is written, which is the middle of the three shapes --
+            // sample/jvm writes both, sample/kmp writes neither.
+            rootDescription = "Compose で書かれた Android アプリを、katachi で形から説明したもの。" +
+                "このページ以下はすべて `--processor=docs` が生成したもので、手では書かない。"
+        }
     }
 }

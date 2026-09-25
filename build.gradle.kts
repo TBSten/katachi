@@ -100,6 +100,13 @@ val sampleBuilds = listOf(
     // The plugin's own unit test carries the same literal, so it cannot catch the two drifting
     // apart either. This is the one run that does -- and it is added only here, because a
     // literal can only be wrong in one way and proving it once is enough.
+    //
+    // `--arg mode=check` is what makes the committed `sample/jvm/docs/` trustworthy: `docs`
+    // then writes nothing and fails when the directory on disk is not what this definition
+    // produces, so a role edited without regenerating turns this task red instead of leaving a
+    // stale page in the repository. `--arg` is validated against the union of the known keys of
+    // *all* the selected processors, which is why `mode` passes alongside `prefix` here even
+    // though only `docs` reads it and only `roleNames` reads the other.
     SampleBuild(
         "jvm",
         listOf(
@@ -108,6 +115,8 @@ val sampleBuilds = listOf(
             "--processor=layout,roleNames,docs",
             "--arg",
             "prefix=domain",
+            "--arg",
+            "mode=check",
         ),
         needsAndroidSdk = false,
     ),
@@ -118,9 +127,11 @@ val sampleBuilds = listOf(
     // different shapes of the generator: this one has nested groups and a wildcard module key
     // (`:feature:*`), which is where the placement tree has to print a pattern instead of a
     // path. Running it only on jvm proved the plugin wiring and nothing about that.
+    // `--arg mode=check` here for the same reason as on jvm: `sample/android/docs/` is
+    // committed, so something has to notice when it stops matching the definition.
     SampleBuild(
         "android",
-        listOf("check", "runKatachiProcessor", "--processor=layout,docs"),
+        listOf("check", "runKatachiProcessor", "--processor=layout,docs", "--arg", "mode=check"),
         needsAndroidSdk = true,
     ),
     // Deliberately NOT `check` / `build` / `assemble`, and there is no `jvmTest`
@@ -151,6 +162,10 @@ val sampleBuilds = listOf(
             ":app:android:testDebugUnitTest",
             ":architecture-test:runKatachiProcessor",
             "--processor=layout,docs",
+            // As on the other two samples: `sample/kmp/docs/` is committed, and `mode=check`
+            // is what fails the build when it no longer matches the definition.
+            "--arg",
+            "mode=check",
         ),
         needsAndroidSdk = true,
     ),
