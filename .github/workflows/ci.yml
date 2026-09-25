@@ -32,7 +32,7 @@ jobs:
 
       # setup-gradle validates every gradle-wrapper.jar in the repository
       # (`validate-wrappers` defaults to true), which covers the wrappers of
-      # sample/jvm, sample/android and sample/kmp as well, so a separate
+      # every sample under sample/ as well, so a separate
       # gradle/actions/wrapper-validation step would be redundant.
       #
       # Gradle's dependency cache is reused between runs. To reuse the
@@ -80,6 +80,12 @@ jobs:
       # its own), the second proves the sample still compiles as a KMP project.
       - name: Check sample/kmp
         run: ./gradlew checkSampleKmp --stacktrace
+
+      # The processor sample. Its `runKatachiProcessor` run is the only place in CI where a
+      # user-written processor is resolved out of the generated registry and run -- three of
+      # them, one of which overrides `isFailure` and therefore decides the task's exit status.
+      - name: Check sample/custom-processor
+        run: ./gradlew checkSampleCustomProcessor --stacktrace
 
       - name: Upload reports
         if: ${{ failure() }}

@@ -169,6 +169,35 @@ val sampleBuilds = listOf(
         ),
         needsAndroidSdk = true,
     ),
+    // The fourth sample, and the only one whose subject is the *processor* rather than the
+    // project: three processors written by hand, one per shape.
+    //
+    // All three are named in the `--processor=` list, so this run is what proves a
+    // user-written processor still resolves out of the generated registry and still decodes
+    // its arguments. `roleDocCoverage` earns its place twice over: it overrides `isFailure`,
+    // which is the one API whose contract is "the run must turn red when the result says so".
+    // A regression there cannot be caught by a unit test of the processor alone -- the
+    // processor would keep answering `true` while the run kept exiting zero.
+    //
+    // `--arg sortBy=Declaration` overrides the `arg("sortBy", "Name")` written in
+    // `architecture-test/build.gradle.kts`, so the run also demonstrates the precedence
+    // between the two. `--arg mode=check` is what makes the committed
+    // `sample/custom-processor/docs/` trustworthy, exactly as on the other three samples.
+    SampleBuild(
+        "custom-processor",
+        listOf(
+            "check",
+            "runKatachiProcessor",
+            "--processor=roleFileCount,roleTable,roleDocCoverage,docs",
+            "--arg",
+            "groups=core,testing",
+            "--arg",
+            "sortBy=Declaration",
+            "--arg",
+            "mode=check",
+        ),
+        needsAndroidSdk = false,
+    ),
 )
 
 /**
@@ -231,7 +260,12 @@ val checkSamples = tasks.register("checkSamples") {
 val registeredSamples = mutableListOf<TaskProvider<Exec>>()
 
 sampleBuilds.forEach { sample ->
-    val suffix = sample.name.replaceFirstChar { it.uppercaseChar() }
+    // Split on `-` so that a directory named `custom-processor` becomes the task
+    // `checkSampleCustomProcessor` rather than `checkSampleCustom-processor`, which is a legal
+    // Gradle task name but an awkward one to type and to read in a CI step.
+    val suffix = sample.name.split("-").joinToString("") { part ->
+        part.replaceFirstChar { it.uppercaseChar() }
+    }
     val sampleTasks = sampleTasksOf(sample)
     val sampleDir = layout.projectDirectory.dir("sample/${sample.name}").asFile
     // Captured eagerly: by the time the configuration block below runs,
@@ -267,7 +301,7 @@ sampleBuilds.forEach { sample ->
                 ?.let { environment("ANDROID_HOME", it.absolutePath) }
         }
 
-        // All three samples include the same katachi build and therefore share
+        // Every sample includes the same katachi build and therefore shares
         // katachi's build/ directory. Running two of them concurrently corrupts
         // it, so they are kept strictly sequential -- whichever subset of the
         // sample tasks ends up in the task graph.

@@ -33,7 +33,7 @@ echo "root catalog ($catalog) declares kotlin = $expected"
 
 samples=("$@")
 if [ ${#samples[@]} -eq 0 ]; then
-  samples=(jvm android kmp)
+  samples=(jvm android kmp custom-processor)
 fi
 
 log_dir="$(mktemp -d)"
