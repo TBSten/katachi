@@ -1,5 +1,8 @@
-package me.tbsten.katachi.docs
+package me.tbsten.katachi.docs.internal
 
+import me.tbsten.katachi.docs.KatachiBrokenDocumentLinkException
+import me.tbsten.katachi.docs.KatachiDocumentPathCaseCollisionException
+import me.tbsten.katachi.docs.KatachiDocumentPathCollisionException
 import me.tbsten.katachi.dsl.DeclarationSite
 import me.tbsten.katachi.dsl.Description
 import me.tbsten.katachi.dsl.Group

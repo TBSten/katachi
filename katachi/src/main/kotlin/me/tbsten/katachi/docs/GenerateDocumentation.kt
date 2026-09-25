@@ -5,6 +5,9 @@ import kotlinx.serialization.KSerializer
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import me.tbsten.katachi.ExperimentalKatachiApi
+import me.tbsten.katachi.docs.internal.compareDocuments
+import me.tbsten.katachi.docs.internal.roleReferenceDocuments
+import me.tbsten.katachi.docs.internal.writeDocuments
 import me.tbsten.katachi.internal.runProcessorCatching
 import me.tbsten.katachi.processor.ArchitectureProcessContext
 import me.tbsten.katachi.processor.ArchitectureProcessor

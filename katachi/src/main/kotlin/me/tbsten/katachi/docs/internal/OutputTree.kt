@@ -1,4 +1,4 @@
-package me.tbsten.katachi.docs
+package me.tbsten.katachi.docs.internal
 
 /**
  * The written pages, drawn as the tree they form on disk.

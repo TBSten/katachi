@@ -20,8 +20,8 @@ package me.tbsten.katachi
  * ```kt
  * import me.tbsten.katachi.ExperimentalKatachiApi
  * import me.tbsten.katachi.InternalKatachiApi
- * import me.tbsten.katachi.check.report
- * import me.tbsten.katachi.check.validate
+ * import me.tbsten.katachi.check.internal.report
+ * import me.tbsten.katachi.check.internal.validate
  * import me.tbsten.katachi.fs.internal.RealFileSystem
  *
  * // katachi-konsist's own spec, reading the report of a fixture project.

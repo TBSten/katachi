@@ -2,6 +2,7 @@ package me.tbsten.katachi.docs
 
 import me.tbsten.katachi.KatachiDeclarationException
 import me.tbsten.katachi.KatachiInternalException
+import me.tbsten.katachi.docs.internal.writtenAt
 import me.tbsten.katachi.dsl.DeclarationSite
 
 /**
@@ -186,12 +187,3 @@ public class KatachiBrokenDocumentLinkException internal constructor(
 
 /** What the link turned out to mean, in the words the message needs. */
 private fun BrokenDocumentLink.landing(): String = resolved ?: "outside the output root"
-
-/**
- * ` at File.kt:42`, or nothing at all.
- *
- * The documentation root is produced by no line of any definition, so there is nothing to point
- * a reader at -- and `at <unknown>:-1` would send them looking for one.
- */
-internal fun writtenAt(site: DeclarationSite): String =
-    if (site == DeclarationSite.Unknown) "" else " at $site"

@@ -2,7 +2,7 @@ package me.tbsten.katachi.test.check
 
 import io.kotest.core.spec.style.FreeSpec
 import io.kotest.matchers.shouldBe
-import me.tbsten.katachi.check.validate
+import me.tbsten.katachi.check.internal.validate
 import me.tbsten.katachi.dsl.architecture
 import me.tbsten.katachi.dsl.gitTracked
 import me.tbsten.katachi.dsl.wholeTree

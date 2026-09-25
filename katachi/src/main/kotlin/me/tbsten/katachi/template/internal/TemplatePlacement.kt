@@ -1,10 +1,15 @@
-package me.tbsten.katachi.template
+package me.tbsten.katachi.template.internal
 
 import me.tbsten.katachi.dsl.DeclarationSite
 import me.tbsten.katachi.dsl.LayoutEntry
 import me.tbsten.katachi.dsl.LayoutEntryKind
 import me.tbsten.katachi.dsl.Role
 import me.tbsten.katachi.dsl.internal.Glob
+import me.tbsten.katachi.template.KatachiAmbiguousTemplatePlacementException
+import me.tbsten.katachi.template.KatachiNoTemplatePlacementException
+import me.tbsten.katachi.template.KatachiTemplatePathOutsideProjectException
+import me.tbsten.katachi.template.KatachiUnsafeTemplateFileNameException
+import me.tbsten.katachi.template.KatachiWildcardTemplatePlacementException
 
 /**
  * One declared file pattern of a role, split the way generation has to read it: the directory a

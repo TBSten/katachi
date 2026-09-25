@@ -1,4 +1,4 @@
-package me.tbsten.katachi.docs
+package me.tbsten.katachi.docs.internal
 
 import me.tbsten.katachi.dsl.Role
 

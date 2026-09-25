@@ -6,8 +6,8 @@ import io.kotest.core.spec.style.FreeSpec
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
 import me.tbsten.katachi.check.KatachiArchitectureAssertionError
-import me.tbsten.katachi.check.assert
 import me.tbsten.katachi.check.assertNoErrors
+import me.tbsten.katachi.check.internal.assert
 import me.tbsten.katachi.processor.ArchitectureProcessContext
 import me.tbsten.katachi.processor.ArchitectureProcessorNoArg
 import me.tbsten.katachi.scan.Severity

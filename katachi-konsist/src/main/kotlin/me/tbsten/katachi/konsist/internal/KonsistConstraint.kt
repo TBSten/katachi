@@ -1,9 +1,12 @@
-package me.tbsten.katachi.konsist
+package me.tbsten.katachi.konsist.internal
 
 import com.lemonappdev.konsist.core.exception.KoException
 import me.tbsten.katachi.dsl.ConstraintFailure
 import me.tbsten.katachi.dsl.ConstraintSubject
 import me.tbsten.katachi.dsl.FileSetConstraint
+import me.tbsten.katachi.konsist.KatachiKonsistDirectAssertionException
+import me.tbsten.katachi.konsist.KatachiKonsistNoExpectationException
+import me.tbsten.katachi.konsist.KonsistScope
 
 /**
  * What `konsist { }` stores, and what running it comes to.

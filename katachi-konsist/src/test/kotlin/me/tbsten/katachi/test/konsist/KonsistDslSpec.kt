@@ -9,7 +9,7 @@ import io.kotest.matchers.shouldBe
 import me.tbsten.katachi.ExperimentalKatachiApi
 import me.tbsten.katachi.InternalKatachiApi
 import me.tbsten.katachi.check.KonsistCheck
-import me.tbsten.katachi.check.validate
+import me.tbsten.katachi.check.internal.validate
 import me.tbsten.katachi.dsl.KatachiConstraintNameException
 import me.tbsten.katachi.dsl.KatachiConstraintWithoutLayoutException
 import me.tbsten.katachi.dsl.architecture

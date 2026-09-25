@@ -46,6 +46,7 @@ fun DeclarationContainerScope.konsistBackend() = "KonsistBackend" {
             packageMatchesPath()
             publicDeclarationsShowExample()
             mainSourceSet / kotlin / mainPackage / "*".ktFile()
+            mainSourceSet / kotlin / mainPackage / "internal" / "*".ktFile()
         }
     }
 }

@@ -1,4 +1,4 @@
-package me.tbsten.katachi.konsist
+package me.tbsten.katachi.konsist.internal
 
 import com.lemonappdev.konsist.api.container.KoScope
 import com.lemonappdev.konsist.api.provider.KoBaseProvider
@@ -7,6 +7,8 @@ import com.lemonappdev.konsist.api.provider.KoNameProvider
 import com.lemonappdev.konsist.api.provider.KoPathProvider
 import java.io.File
 import me.tbsten.katachi.dsl.ConstraintFailure
+import me.tbsten.katachi.konsist.KatachiKonsistUnlocatableDeclarationException
+import me.tbsten.katachi.konsist.KonsistScope
 
 /**
  * One element a block rejected: enough to open a report block on, and nothing more.

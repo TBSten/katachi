@@ -9,9 +9,9 @@ import io.kotest.matchers.string.shouldNotContain
 import io.kotest.matchers.types.shouldBeInstanceOf
 import java.io.IOException
 import me.tbsten.katachi.check.KatachiArchitectureAssertionError
-import me.tbsten.katachi.check.assert
-import me.tbsten.katachi.check.report
-import me.tbsten.katachi.check.validate
+import me.tbsten.katachi.check.internal.assert
+import me.tbsten.katachi.check.internal.report
+import me.tbsten.katachi.check.internal.validate
 import me.tbsten.katachi.dsl.KatachiUnresolvableModulePatternException
 import me.tbsten.katachi.dsl.kotlin.ktFile
 import me.tbsten.katachi.scan.UncheckedFile

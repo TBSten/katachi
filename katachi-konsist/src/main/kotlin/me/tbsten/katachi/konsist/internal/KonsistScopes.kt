@@ -1,9 +1,12 @@
-package me.tbsten.katachi.konsist
+package me.tbsten.katachi.konsist.internal
 
 import com.lemonappdev.konsist.api.Konsist
 import com.lemonappdev.konsist.api.container.KoScope
 import java.io.File
 import me.tbsten.katachi.dsl.ConstraintSubject
+import me.tbsten.katachi.konsist.KatachiKonsistNoKotlinFilesException
+import me.tbsten.katachi.konsist.KatachiKonsistScopeIncompleteException
+import me.tbsten.katachi.konsist.KonsistScope
 
 /**
  * The only file extension Konsist 0.17.3 parses.

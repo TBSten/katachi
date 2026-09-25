@@ -14,7 +14,7 @@ import io.kotest.matchers.string.shouldContain
 import java.io.File
 import me.tbsten.katachi.ExperimentalKatachiApi
 import me.tbsten.katachi.InternalKatachiApi
-import me.tbsten.katachi.check.validate
+import me.tbsten.katachi.check.internal.validate
 import me.tbsten.katachi.dsl.Architecture
 import me.tbsten.katachi.dsl.Documented
 import me.tbsten.katachi.dsl.Examples

@@ -11,6 +11,10 @@ import me.tbsten.katachi.internal.runProcessorCatching
 import me.tbsten.katachi.processor.ArchitectureProcessContext
 import me.tbsten.katachi.processor.ArchitectureProcessor
 import me.tbsten.katachi.processor.internal.fileSystem
+import me.tbsten.katachi.template.internal.templateFiles
+import me.tbsten.katachi.template.internal.templateOf
+import me.tbsten.katachi.template.internal.templateRoleOf
+import me.tbsten.katachi.template.internal.writeTemplateFiles
 
 /**
  * The `--arg` name that says which role to run. Spelled once, because

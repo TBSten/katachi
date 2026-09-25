@@ -1,8 +1,6 @@
 package me.tbsten.katachi.check
 
 import me.tbsten.katachi.ExperimentalKatachiApi
-import me.tbsten.katachi.internal.isFatal
-import me.tbsten.katachi.processor.ArchitectureProcessor
 import me.tbsten.katachi.scan.Severity
 import me.tbsten.katachi.scan.UncheckedCheck
 import me.tbsten.katachi.scan.Violation
@@ -59,23 +57,3 @@ public fun List<Violation>.assertNoErrors(): List<Violation> {
     }
     return this
 }
-
-internal fun Result<List<Violation>>.violationsOf(
-    check: ArchitectureProcessor<*, *>,
-): List<Violation> = fold(
-    onSuccess = { it },
-    onFailure = { cause ->
-        when {
-            cause is KatachiArchitectureAssertionError -> cause.violations
-            cause.isFatal -> throw cause
-            else -> listOf(uncheckedCheckOf(check, cause))
-        }
-    },
-)
-
-/** The one [UncheckedCheck] standing for [check], which could not answer because of [cause]. */
-internal fun uncheckedCheckOf(check: ArchitectureProcessor<*, *>, cause: Throwable): UncheckedCheck =
-    UncheckedCheck(
-        check = check::class.qualifiedName ?: check::class.java.name,
-        cause = cause,
-    )

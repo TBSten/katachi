@@ -1,17 +1,8 @@
-package me.tbsten.katachi.check
+package me.tbsten.katachi.check.internal
 
 import me.tbsten.katachi.InternalKatachiApi
+import me.tbsten.katachi.check.DEFAULT_MAX_VIOLATIONS
 import me.tbsten.katachi.scan.*
-
-/**
- * How many blocks `assert()` prints before it stops and counts the rest.
- *
- * ## Example 1: show twice as many blocks as `report()` shows by default
- * ```kt
- * projectArchitecture.validate().report(maxViolations = DEFAULT_MAX_VIOLATIONS * 2)
- * ```
- */
-public const val DEFAULT_MAX_VIOLATIONS: Int = 10
 
 /**
  * Indent of everything inside a block. A fragment meant to be copied adds another step.

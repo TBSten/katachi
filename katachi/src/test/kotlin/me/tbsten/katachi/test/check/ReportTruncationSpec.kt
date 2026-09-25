@@ -3,7 +3,7 @@ package me.tbsten.katachi.test.check
 import io.kotest.core.spec.style.FreeSpec
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
-import me.tbsten.katachi.check.report
+import me.tbsten.katachi.check.internal.report
 import me.tbsten.katachi.dsl.DeclarationSite
 import me.tbsten.katachi.dsl.Role
 import me.tbsten.katachi.scan.MissingFile

@@ -6,7 +6,7 @@ import me.tbsten.katachi.ExperimentalKatachiApi
 import me.tbsten.katachi.InternalKatachiApi
 import me.tbsten.katachi.check.KonsistCheck
 import me.tbsten.katachi.check.assert
-import me.tbsten.katachi.check.validate
+import me.tbsten.katachi.check.internal.validate
 
 /**
  * Asserts that this repository is shaped the way [projectArchitecture] says it is.

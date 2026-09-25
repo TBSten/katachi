@@ -12,8 +12,8 @@ import java.io.File
 import me.tbsten.katachi.ExperimentalKatachiApi
 import me.tbsten.katachi.InternalKatachiApi
 import me.tbsten.katachi.check.KonsistCheck
-import me.tbsten.katachi.check.report
-import me.tbsten.katachi.check.validate
+import me.tbsten.katachi.check.internal.report
+import me.tbsten.katachi.check.internal.validate
 import me.tbsten.katachi.dsl.FileSetConstraint
 import me.tbsten.katachi.dsl.architecture
 import me.tbsten.katachi.dsl.wholeTree
@@ -234,5 +234,5 @@ class KonsistFailureSpec : FreeSpec({
     }
 })
 
-/** Matches `check/ViolationReport.kt`'s own indent, so the shouldContain lines above read literally. */
+/** Matches `check/internal/ViolationReport.kt`'s own indent, so the shouldContain lines above read literally. */
 private const val STEP: String = "  "

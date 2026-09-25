@@ -5,7 +5,7 @@ package me.tbsten.katachi.test.konsist
 import me.tbsten.katachi.ExperimentalKatachiApi
 import me.tbsten.katachi.InternalKatachiApi
 import me.tbsten.katachi.check.KonsistCheck
-import me.tbsten.katachi.check.validate
+import me.tbsten.katachi.check.internal.validate
 import me.tbsten.katachi.dsl.architecture
 import me.tbsten.katachi.dsl.wholeTree
 import me.tbsten.katachi.fs.internal.RealFileSystem

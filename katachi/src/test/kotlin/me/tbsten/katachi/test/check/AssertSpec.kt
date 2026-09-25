@@ -11,6 +11,7 @@ import io.kotest.matchers.types.shouldBeInstanceOf
 import io.kotest.core.spec.style.FreeSpec
 import me.tbsten.katachi.check.KatachiArchitectureAssertionError
 import me.tbsten.katachi.check.assert
+import me.tbsten.katachi.check.internal.assert
 import me.tbsten.katachi.dsl.architecture
 
 class AssertSpec : FreeSpec({

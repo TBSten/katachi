@@ -10,7 +10,7 @@ import com.example.kmp.groups.uiGroup
 import io.kotest.core.spec.style.FreeSpec
 import io.kotest.matchers.collections.shouldContainExactly
 import me.tbsten.katachi.InternalKatachiApi
-import me.tbsten.katachi.check.validate
+import me.tbsten.katachi.check.internal.validate
 import me.tbsten.katachi.dsl.architecture
 import me.tbsten.katachi.scan.Violation
 

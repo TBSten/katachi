@@ -9,8 +9,8 @@ import me.tbsten.katachi.KatachiDeclarationException
 import me.tbsten.katachi.check.KatachiArchitectureAssertionError
 import me.tbsten.katachi.check.KonsistCheck
 import me.tbsten.katachi.check.LayoutCheck
-import me.tbsten.katachi.check.assert
-import me.tbsten.katachi.check.validate
+import me.tbsten.katachi.check.internal.assert
+import me.tbsten.katachi.check.internal.validate
 import me.tbsten.katachi.dsl.KatachiModuleOutsideLayoutRootException
 import me.tbsten.katachi.dsl.gradle.module
 import me.tbsten.katachi.fs.KatachiProjectRootNotFoundException

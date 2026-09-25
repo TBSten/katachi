@@ -8,8 +8,8 @@ import io.kotest.matchers.string.shouldContain
 import io.kotest.matchers.types.shouldBeInstanceOf
 import me.tbsten.katachi.check.KonsistCheck
 import me.tbsten.katachi.check.KatachiConstraintSubjectException
-import me.tbsten.katachi.check.report
-import me.tbsten.katachi.check.validate
+import me.tbsten.katachi.check.internal.report
+import me.tbsten.katachi.check.internal.validate
 import me.tbsten.katachi.dsl.ConstraintFailure
 import me.tbsten.katachi.dsl.FileSetConstraint
 import me.tbsten.katachi.processor.ArchitectureProcessContext

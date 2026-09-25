@@ -1,12 +1,22 @@
 package me.tbsten.katachi.check
 
 import me.tbsten.katachi.ExperimentalKatachiApi
+import me.tbsten.katachi.check.internal.assertWith
+import me.tbsten.katachi.check.internal.report
 import me.tbsten.katachi.dsl.Architecture
-import me.tbsten.katachi.fs.KatachiFileSystem
 import me.tbsten.katachi.fs.internal.RealFileSystem
 import me.tbsten.katachi.processor.ArchitectureProcessor
-import me.tbsten.katachi.scan.Severity
 import me.tbsten.katachi.scan.Violation
+
+/**
+ * How many blocks `assert()` prints before it stops and counts the rest.
+ *
+ * ## Example 1: show twice as many blocks as `report()` shows by default
+ * ```kt
+ * projectArchitecture.validate().report(maxViolations = DEFAULT_MAX_VIOLATIONS * 2)
+ * ```
+ */
+public const val DEFAULT_MAX_VIOLATIONS: Int = 10
 
 /**
  * The failure `assert()` throws.
@@ -62,25 +72,7 @@ public class KatachiArchitectureAssertionError internal constructor(
  * @featured
  */
 public fun Architecture.assert(maxViolations: Int = DEFAULT_MAX_VIOLATIONS): Unit =
-    assert(RealFileSystem(), maxViolations = maxViolations)
-
-/**
- * [assert] against [fileSystem]. See `validate(fileSystem)`.
- *
- * As with `assert(maxViolations)`, the overload taking checks runs those too; this one runs
- * [LayoutCheck] alone.
- *
- * ## Example 1: assert against a fake tree, capping how many violations the message spells out
- * ```kt
- * shouldThrow<KatachiArchitectureAssertionError> {
- *     definition.assert(fakeFileSystem, maxViolations = 5)
- * }
- * ```
- */
-internal fun Architecture.assert(
-    fileSystem: KatachiFileSystem,
-    maxViolations: Int = DEFAULT_MAX_VIOLATIONS,
-): Unit = assertWith(fileSystem, emptyList(), maxViolations)
+    assertWith(RealFileSystem(), emptyList(), maxViolations)
 
 /**
  * [assert] with more checks than the layout one, all on the same walk of the project.
@@ -120,44 +112,3 @@ public fun Architecture.assert(
     vararg more: ArchitectureProcessor<Unit, List<Violation>>,
     maxViolations: Int = DEFAULT_MAX_VIOLATIONS,
 ): Unit = assertWith(RealFileSystem(), listOf(check) + more, maxViolations)
-
-/**
- * [assert] with checks, against [fileSystem]: the in-memory tree katachi's own specs use, plus
- * whatever checks the spec is about.
- *
- * ## Example 1: fail a spec on a check of your own, against a tree that only exists in memory
- * ```kt
- * shouldThrow<KatachiArchitectureAssertionError> {
- *     definition.assert(fakeFileSystem, TodoCheck())
- * }
- * ```
- */
-internal fun Architecture.assert(
-    fileSystem: KatachiFileSystem,
-    check: ArchitectureProcessor<Unit, List<Violation>>,
-    vararg more: ArchitectureProcessor<Unit, List<Violation>>,
-    maxViolations: Int = DEFAULT_MAX_VIOLATIONS,
-): Unit = assertWith(fileSystem, listOf(check) + more, maxViolations)
-
-/**
- * What all four `assert` overloads are: [validateWith], then throw if anything is an error.
- *
- * Nothing failed when there is no [Severity.Error] violation, even if there are warnings — so
- * there is no [KatachiArchitectureAssertionError] to carry them. Standard error is what is left:
- * `report()` already renders a Warning-only list as the Warning section alone (see `report`'s
- * own doc), so the same call that builds the failure message below builds this one too, and the
- * two can never say something different about the same run.
- */
-private fun Architecture.assertWith(
-    fileSystem: KatachiFileSystem,
-    checks: List<ArchitectureProcessor<Unit, List<Violation>>>,
-    maxViolations: Int,
-) {
-    val violations = validateWith(fileSystem, checks)
-    if (violations.none { it.severity == Severity.Error }) {
-        val warnings = violations.report(maxViolations)
-        if (warnings.isNotEmpty()) System.err.println(warnings)
-        return
-    }
-    throw KatachiArchitectureAssertionError(violations, maxViolations)
-}

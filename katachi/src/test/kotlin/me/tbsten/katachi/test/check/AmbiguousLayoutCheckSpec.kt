@@ -5,9 +5,9 @@ import io.kotest.core.spec.style.FreeSpec
 import io.kotest.matchers.collections.shouldBeEmpty
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
-import me.tbsten.katachi.check.assert
-import me.tbsten.katachi.check.report
-import me.tbsten.katachi.check.validate
+import me.tbsten.katachi.check.internal.assert
+import me.tbsten.katachi.check.internal.report
+import me.tbsten.katachi.check.internal.validate
 import me.tbsten.katachi.dsl.gradle.module
 import me.tbsten.katachi.dsl.kotlin.ktFile
 import me.tbsten.katachi.scan.AmbiguousLayout

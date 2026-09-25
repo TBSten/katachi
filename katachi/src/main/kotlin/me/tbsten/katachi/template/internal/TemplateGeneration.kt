@@ -1,4 +1,4 @@
-package me.tbsten.katachi.template
+package me.tbsten.katachi.template.internal
 
 import me.tbsten.katachi.dsl.LayoutEntry
 import me.tbsten.katachi.dsl.Role

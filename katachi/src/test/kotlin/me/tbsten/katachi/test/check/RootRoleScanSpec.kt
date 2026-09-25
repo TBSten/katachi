@@ -2,7 +2,7 @@ package me.tbsten.katachi.test.check
 
 import io.kotest.core.spec.style.FreeSpec
 import io.kotest.matchers.shouldBe
-import me.tbsten.katachi.check.validate
+import me.tbsten.katachi.check.internal.validate
 
 /**
  * A role declared straight into `architecture { }` has to reach the walk, not only the model.

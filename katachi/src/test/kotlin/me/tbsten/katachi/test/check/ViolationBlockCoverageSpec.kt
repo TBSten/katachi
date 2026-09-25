@@ -25,11 +25,11 @@ private fun scanSourceRoot(): File {
 }
 
 private fun violationReportFile(): File {
-    val fromModule = File("src/main/kotlin/me/tbsten/katachi/check/ViolationReport.kt")
+    val fromModule = File("src/main/kotlin/me/tbsten/katachi/check/internal/ViolationReport.kt")
     return if (fromModule.isFile) {
         fromModule
     } else {
-        File("katachi/src/main/kotlin/me/tbsten/katachi/check/ViolationReport.kt")
+        File("katachi/src/main/kotlin/me/tbsten/katachi/check/internal/ViolationReport.kt")
     }
 }
 

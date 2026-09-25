@@ -1,7 +1,10 @@
-package me.tbsten.katachi.template
+package me.tbsten.katachi.template.internal
 
 import me.tbsten.katachi.dsl.Role
 import me.tbsten.katachi.dsl.internal.TemplateDeclaration
+import me.tbsten.katachi.template.KatachiAmbiguousTemplateRoleException
+import me.tbsten.katachi.template.KatachiNoTemplateException
+import me.tbsten.katachi.template.KatachiUnknownTemplateRoleException
 
 /**
  * The role `--arg roleName=` named.

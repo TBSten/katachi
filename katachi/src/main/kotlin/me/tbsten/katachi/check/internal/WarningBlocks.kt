@@ -1,4 +1,4 @@
-package me.tbsten.katachi.check
+package me.tbsten.katachi.check.internal
 
 import me.tbsten.katachi.scan.AmbiguousLayout
 import me.tbsten.katachi.scan.MissingDescription

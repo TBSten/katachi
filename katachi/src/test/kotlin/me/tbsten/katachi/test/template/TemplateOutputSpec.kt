@@ -14,7 +14,7 @@ import me.tbsten.katachi.template.KatachiTemplateEscapesProjectException
 import me.tbsten.katachi.template.KatachiTemplateIoException
 import me.tbsten.katachi.template.KatachiTemplateTargetNotAFileException
 import me.tbsten.katachi.template.OnExisting
-import me.tbsten.katachi.template.writeTemplateFiles
+import me.tbsten.katachi.template.internal.writeTemplateFiles
 
 /** The two files every spec below writes, in declaration order. */
 private val FILES: Map<String, String> = linkedMapOf(

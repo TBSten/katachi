@@ -1,5 +1,6 @@
-package me.tbsten.katachi.docs
+package me.tbsten.katachi.docs.internal
 
+import me.tbsten.katachi.dsl.DeclarationSite
 import me.tbsten.katachi.dsl.Description
 import me.tbsten.katachi.dsl.Documented
 import me.tbsten.katachi.dsl.Group
@@ -203,3 +204,12 @@ internal fun oneLine(value: String): String = value.lines().joinToString(" ") { 
 
 /** A `]` inside the text of a link would close it early. */
 private fun escapeLinkText(text: String): String = text.replace("]", "\\]")
+
+/**
+ * ` at File.kt:42`, or nothing at all.
+ *
+ * The documentation root is produced by no line of any definition, so there is nothing to point
+ * a reader at -- and `at <unknown>:-1` would send them looking for one.
+ */
+internal fun writtenAt(site: DeclarationSite): String =
+    if (site == DeclarationSite.Unknown) "" else " at $site"

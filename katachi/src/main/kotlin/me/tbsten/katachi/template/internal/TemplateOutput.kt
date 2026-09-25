@@ -1,9 +1,15 @@
-package me.tbsten.katachi.template
+package me.tbsten.katachi.template.internal
 
 import java.io.File
 import java.io.IOException
 import java.nio.file.Files
 import java.nio.file.StandardCopyOption
+import me.tbsten.katachi.template.KatachiExistingTemplateFileException
+import me.tbsten.katachi.template.KatachiReservedTemplatePathException
+import me.tbsten.katachi.template.KatachiTemplateEscapesProjectException
+import me.tbsten.katachi.template.KatachiTemplateIoException
+import me.tbsten.katachi.template.KatachiTemplateTargetNotAFileException
+import me.tbsten.katachi.template.OnExisting
 
 /** The suffix a file wears while it is written but not yet in place. */
 private const val STAGING_SUFFIX: String = ".katachi-new"

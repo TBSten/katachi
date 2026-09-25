@@ -1,6 +1,7 @@
 package me.tbsten.katachi.konsist
 
 import me.tbsten.katachi.dsl.ConstraintScope
+import me.tbsten.katachi.konsist.internal.KonsistConstraint
 
 /**
  * Declares a named constraint over the files the block around it matched, written with

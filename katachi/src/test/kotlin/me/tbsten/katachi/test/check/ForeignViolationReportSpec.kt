@@ -2,7 +2,7 @@ package me.tbsten.katachi.test.check
 
 import io.kotest.core.spec.style.FreeSpec
 import io.kotest.matchers.shouldBe
-import me.tbsten.katachi.check.report
+import me.tbsten.katachi.check.internal.report
 import me.tbsten.katachi.scan.Severity
 import me.tbsten.katachi.scan.Violation
 import me.tbsten.katachi.scan.ViolationDetail

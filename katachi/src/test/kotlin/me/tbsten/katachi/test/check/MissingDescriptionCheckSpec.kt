@@ -7,9 +7,9 @@ import io.kotest.matchers.collections.shouldBeEmpty
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
 import me.tbsten.katachi.check.KatachiArchitectureAssertionError
-import me.tbsten.katachi.check.assert
-import me.tbsten.katachi.check.report
-import me.tbsten.katachi.check.validate
+import me.tbsten.katachi.check.internal.assert
+import me.tbsten.katachi.check.internal.report
+import me.tbsten.katachi.check.internal.validate
 import me.tbsten.katachi.dsl.architecture
 import me.tbsten.katachi.dsl.internal.flattenLayout
 import me.tbsten.katachi.dsl.gradle.module

@@ -9,7 +9,7 @@ import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
 import me.tbsten.katachi.docs.KatachiBrokenDocumentLinkException
 import me.tbsten.katachi.docs.KatachiDocumentPathCaseCollisionException
-import me.tbsten.katachi.docs.checkDocumentLinks
+import me.tbsten.katachi.docs.internal.checkDocumentLinks
 import me.tbsten.katachi.dsl.architecture
 import me.tbsten.katachi.dsl.gradle.div
 import me.tbsten.katachi.dsl.gradle.kotlin

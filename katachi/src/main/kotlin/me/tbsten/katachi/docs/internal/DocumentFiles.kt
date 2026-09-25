@@ -1,7 +1,8 @@
-package me.tbsten.katachi.docs
+package me.tbsten.katachi.docs.internal
 
 import java.io.File
 import java.io.IOException
+import me.tbsten.katachi.docs.KatachiDocumentIoException
 
 /**
  * Makes [outputRoot] hold exactly [pages], and says through [log] everything it did.

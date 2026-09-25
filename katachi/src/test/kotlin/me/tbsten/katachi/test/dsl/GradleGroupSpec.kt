@@ -7,7 +7,7 @@ import io.kotest.matchers.maps.shouldContainKey
 import io.kotest.matchers.maps.shouldNotContainKey
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldNotContain
-import me.tbsten.katachi.check.validate
+import me.tbsten.katachi.check.internal.validate
 import me.tbsten.katachi.dsl.DeclarationSite
 import me.tbsten.katachi.dsl.Documented
 import me.tbsten.katachi.dsl.architecture
