@@ -60,6 +60,7 @@ public class KatachiArchitectureAssertionError internal constructor(
  *   share. The rest are counted on their section's own last line. This is about the message
  *   only — the check always looks at everything.
  * @throws KatachiArchitectureAssertionError when the check found anything that fails it.
+ * @featured
  */
 public fun Architecture.assert(maxViolations: Int = DEFAULT_MAX_VIOLATIONS): Unit =
     assert(RealFileSystem(), maxViolations = maxViolations)

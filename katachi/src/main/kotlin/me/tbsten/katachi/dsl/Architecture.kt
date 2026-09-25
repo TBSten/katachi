@@ -214,6 +214,8 @@ public class Architecture internal constructor(
  *     domainRoles()
  * }
  * ```
+ *
+ * @featured
  */
 public fun architecture(block: ArchitectureScope.() -> Unit): Architecture {
     val scope = ArchitectureScopeImpl()

@@ -52,6 +52,8 @@ import me.tbsten.katachi.dsl.ConstraintScope
  *     layout { ":core:domain".module { "useCase" / "*UseCase".ktFile() } }
  * }
  * ```
+ *
+ * @featured
  */
 context(scope: ConstraintScope)
 public fun String.konsist(block: KonsistScope.() -> Unit) {

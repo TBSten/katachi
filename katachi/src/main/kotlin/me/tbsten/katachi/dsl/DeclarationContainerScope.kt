@@ -57,6 +57,8 @@ public sealed interface DeclarationContainerScope : MetadataScope {
      *     }
      * }
      * ```
+     *
+     * @featured
      */
     public fun String.group(block: GroupScope.() -> Unit)
 
@@ -94,6 +96,8 @@ public sealed interface DeclarationContainerScope : MetadataScope {
      * }
      * arch.allRoles.single().qualifiedName shouldBe "Readme"
      * ```
+     *
+     * @featured
      */
     public operator fun String.invoke(block: RoleScope.() -> Unit)
 }

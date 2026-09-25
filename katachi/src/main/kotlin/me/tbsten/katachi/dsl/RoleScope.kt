@@ -129,6 +129,8 @@ public sealed interface RoleScope : MetadataScope, ConstraintScope {
      *     }
      * }
      * ```
+     *
+     * @featured
      */
     public fun layout(block: LayoutScope.() -> Unit)
 
@@ -157,6 +159,7 @@ public sealed interface RoleScope : MetadataScope, ConstraintScope {
      *
      * @throws KatachiDuplicateTemplateException when this role already declared one.
      * @see TemplateScope
+     * @featured
      */
     public fun template(block: TemplateScope.() -> Unit)
 }
