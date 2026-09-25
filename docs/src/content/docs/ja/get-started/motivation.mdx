@@ -121,56 +121,87 @@ Katachi check failed: 1 violation (Unexpected: 1)
 katachi で定義したプロジェクト構造の定義をもとに markdown (もしくは mdx) のドキュメントを生成させることができます。
 
 ```shell
-$ ./gradlew generateKatachiDocs
+$ ./gradlew runKatachiProcessor --processor=docs
 ```
 
 <CodeComparison>
-<CodeComparison.Panel label="アーキテクチャ定義" labelVariant="note">
-```kt title="ProjectArchitecture.kt"
-val projectArchitecture = architecture {
-  "UseCase" {
-    title = "ユースケース"
-    summary = "各画面で発生するアプリ固有の1つの振る舞い"
+  <CodeComparison.Panel label="アーキテクチャ定義" labelVariant="note">
+    ```kt title="ProjectArchitecture.kt"
+    val projectArchitecture = architecture {
+      "UseCase" {
+        title = "ユースケース"
+        summary = "各画面で発生するアプリ固有の1つの振る舞い"
 
-    example("GetUserUseCase", "ユーザーを取得する")
-    example("UpdateUserUseCase", "ユーザーを更新する")
+        example("GetUserUseCase", "ユーザーを取得する")
+        example("UpdateUserUseCase", "ユーザーを更新する")
 
-    layout {
-      "src/main/kotlin/com/example/project/useCase" {
-        description = "複数の画面から使われるもの"
-        "*UseCase".ktFile()
+        layout {
+          "src/main/kotlin/com/example/project/useCase" {
+            description = "複数の画面から使われるもの"
+            "*UseCase".ktFile()
+          }
+        }
       }
+
+      // ...
     }
-  }
+    ```
 
-  // ...
-}
-```
+  </CodeComparison.Panel>
 
-</CodeComparison.Panel>
+  <CodeComparison.Panel label="生成された Markdown" labelVariant="success">
+    ```md title="docs/UseCase.md"
+    # ユースケース
 
-<CodeComparison.Panel label="生成された Markdown" labelVariant="success">
-```md title="docs/UseCase.md"
-# ユースケース
+    各画面で発生するアプリ固有の1つの振る舞い
 
-各画面で発生するアプリ固有の1つの振る舞い
+    ## 配置場所
 
-## 配置場所
+    | パス | 使い分け |
+    |---|---|
+    | `src/main/kotlin/com/example/project/useCase/*UseCase.kt` | 複数の画面から使われるもの |
 
-| パス | 使い分け |
-|---|---|
-| `src/main/kotlin/com/example/project/useCase/*UseCase.kt` | 複数の画面から使われるもの |
+    ## 例
 
-## 例
+    - `GetUserUseCase` ... ユーザーを取得する
+    - `UpdateUserUseCase` ... ユーザーを更新する
+    ```
 
-- `GetUserUseCase` ... ユーザーを取得する
-- `UpdateUserUseCase` ... ユーザーを更新する
-```
-
-</CodeComparison.Panel>
+  </CodeComparison.Panel>
 </CodeComparison>
 
 katachi で定義したプロジェクト構造を SSoT として 人間も AI Agent も読むことができるドキュメントを生成しましょう。
+
+詳しくは [ドキュメント生成](/katachi/ja/guides/document-generation/) のドキュメントをご覧ください。
+
+TODO: link card
+
+## テンプレートからコード生成する
+
+アーキテクチャ定義内に典型的なソースコードのテンプレートを埋め込むことで、
+
+```shell
+TODO
+```
+
+<CodeComparison>
+  <CodeComparison.Panel label="アーキテクチャ定義" labelVariant="note">
+    ```kt title="ProjectArchitecture.kt"
+    TODO
+    ```
+  </CodeComparison.Panel>
+
+  <CodeComparison.Panel label="生成するコマンドと生成されたソースコード" labelVariant="success">
+
+    ```shell
+    TODO
+    ```
+
+    ```kt title="TODO"
+    ```
+  </CodeComparison.Panel>
+</CodeComparison>
+
 
 ## katachi と Konsist
 
