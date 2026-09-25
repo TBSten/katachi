@@ -9,8 +9,8 @@ import java.io.File
  * `blockOf`'s `when` lost compile-time exhaustiveness the moment `Violation` stopped being
  * sealed (`else -> foreignBlock(violation)` compiles whether or not katachi wrote a dedicated
  * block for a new violation of its own). This spec puts that check back as a machine check
- * instead of a reviewer's memory, the same way `PackageDependencySpec` reads sources as text
- * rather than parsing them: every `public class` under `scan/` whose supertype list mentions
+ * instead of a reviewer's memory, reading sources as text rather than parsing them: every
+ * `public class` under `scan/` whose supertype list mentions
  * `Violation` has to have its own `is <name> ->` branch in `blockOf`.
  */
 private val CLASS_HEADER = Regex("""(?m)^public class (\w+)""")

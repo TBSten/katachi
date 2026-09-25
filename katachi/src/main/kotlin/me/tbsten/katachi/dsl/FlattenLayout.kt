@@ -59,8 +59,7 @@ public fun Architecture.flattenLayout(
  * val declaredPaths = useCase.flattenLayout().map { it.path }
  * ```
  */
-@InternalKatachiApi
-public fun Role.flattenLayout(
+internal fun Role.flattenLayout(
     moduleIndex: ModuleIndex = ModuleIndex.unresolved(ModuleResolver.Conventional),
 ): List<LayoutEntry> = evaluateLayout(moduleIndex).entries
 
@@ -134,7 +133,7 @@ internal fun Role.evaluateLayout(moduleIndex: ModuleIndex): LayoutEvaluation {
 }
 
 /** A path claimed by the same role twice as the same kind of thing is one entry. */
-internal data class EntryKey(val path: String, val kind: LayoutEntryKind)
+private data class EntryKey(val path: String, val kind: LayoutEntryKind)
 
 /**
  * What a module package is written as in [LayoutEntry.pathInModule].
@@ -143,7 +142,7 @@ internal data class EntryKey(val path: String, val kind: LayoutEntryKind)
  * stands for a different directory in every module it is evaluated for, and a reader of one
  * role's page is being shown the declaration rather than one module's expansion of it.
  */
-internal const val MODULE_PACKAGE_PLACEHOLDER: String = "**"
+private const val MODULE_PACKAGE_PLACEHOLDER: String = "**"
 
 private fun collectInto(
     entries: MutableMap<EntryKey, LayoutEntry>,

@@ -8,9 +8,13 @@ import me.tbsten.katachi.ExperimentalKatachiApi
  * Decodes [values] into the type [deserializer] describes.
  *
  * **Unknown keys are not judged here.** [values] may hold keys meant for another processor of
- * the same run; [StringMapDecoder] only looks at the names its own descriptor carries, so the
+ * the same run; `StringMapDecoder` only looks at the names its own descriptor carries, so the
  * rest goes past untouched. Deciding that a key belongs to nobody is `checkNoUnknownArgs`'s
  * job, and it is done once for the whole run.
+ *
+ * **A comma splits only when the receiving field is a `List<T>` or a `Set<T>`.** `--arg
+ * tags=a,b` read into a `String` field is the string `"a,b"`, which is also the way out when a
+ * value has to contain a comma. There is no escape syntax.
  *
  * ## Example 1: read one processor's arguments out of the run's `--arg` map
  * ```kt
@@ -61,7 +65,7 @@ internal fun declaredArgNames(processor: ArchitectureProcessor<*, *>): Set<Strin
  * Nothing catches what [ArchitectureProcessor.undeclaredArgNames] throws -- see that member's
  * own KDoc for why a processor that cannot answer should throw rather than answer "nothing".
  */
-internal fun acceptedArgNames(
+private fun acceptedArgNames(
     selected: List<Pair<String, ArchitectureProcessor<*, *>>>,
     context: ArchitectureProcessContext<*>,
 ): Set<String> = buildSet {

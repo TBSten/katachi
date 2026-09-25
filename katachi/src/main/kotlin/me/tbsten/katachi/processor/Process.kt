@@ -1,7 +1,6 @@
 package me.tbsten.katachi.processor
 
 import me.tbsten.katachi.ExperimentalKatachiApi
-import me.tbsten.katachi.InternalKatachiApi
 import me.tbsten.katachi.dsl.Architecture
 import me.tbsten.katachi.fs.KatachiFileSystem
 import me.tbsten.katachi.fs.RealFileSystem
@@ -85,8 +84,8 @@ public fun <R> Architecture.process(block: (ArchitectureProcessContext<Unit>) ->
  * tree that only exists in memory. Same deferral: [fileSystem] is untouched unless the
  * processor asks for files.
  *
- * `@InternalKatachiApi`, so this door is katachi's own: [KatachiFileSystem] is marked the same
- * way, so a processor written outside `:katachi` tests against a real checkout instead.
+ * Internal, so this door is katachi's own: [KatachiFileSystem] is `@InternalKatachiApi`, so a
+ * processor written outside `:katachi` tests against a real checkout instead.
  *
  * ## Example 1: run a processor against a file system built for one spec
  * ```kt
@@ -105,9 +104,7 @@ public fun <R> Architecture.process(block: (ArchitectureProcessContext<Unit>) ->
  * arch.process(LayoutCheck(), fileSystem).getOrThrow() shouldBe emptyList()
  * ```
  */
-@InternalKatachiApi
-@ExperimentalKatachiApi
-public fun <R> Architecture.process(
+internal fun <R> Architecture.process(
     processor: ArchitectureProcessor<Unit, R>,
     fileSystem: KatachiFileSystem,
 ): Result<R> = process(processor, Unit, fileSystem)
@@ -137,9 +134,7 @@ public fun <R> Architecture.process(
  * arch.process(CountRoles, CountRoles.Args(prefix = ""), fileSystem).getOrThrow() shouldBe 1
  * ```
  */
-@InternalKatachiApi
-@ExperimentalKatachiApi
-public fun <Args, R> Architecture.process(
+internal fun <Args, R> Architecture.process(
     processor: ArchitectureProcessor<Args, R>,
     args: Args,
     fileSystem: KatachiFileSystem,
@@ -162,9 +157,7 @@ public fun <Args, R> Architecture.process(
  * roleCount shouldBe 1
  * ```
  */
-@InternalKatachiApi
-@ExperimentalKatachiApi
-public fun <R> Architecture.process(
+internal fun <R> Architecture.process(
     fileSystem: KatachiFileSystem,
     block: (ArchitectureProcessContext<Unit>) -> R,
 ): R = block(RealArchitectureProcessContext(this, Unit, fileSystem))

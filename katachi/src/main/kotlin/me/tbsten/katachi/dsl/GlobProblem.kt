@@ -1,7 +1,5 @@
 package me.tbsten.katachi.dsl
 
-import me.tbsten.katachi.InternalKatachiApi
-
 /** Characters that mean themselves once written as `\<char>`. */
 internal const val GLOB_ESCAPABLE: String = "*\\{}?[],"
 
@@ -23,8 +21,7 @@ internal const val GLOB_ESCAPABLE: String = "*\\{}?[],"
  *     .problem.shouldBeInstanceOf<GlobProblem.DoubleStarInsideSegment>()
  * ```
  */
-@InternalKatachiApi
-public sealed interface GlobProblem {
+internal sealed interface GlobProblem {
     /**
      * The sentence this problem contributes, for [pattern] as it was written.
      *
@@ -33,7 +30,7 @@ public sealed interface GlobProblem {
      * GlobProblem.EmptyPattern.explain("") shouldBe "A glob pattern must not be empty."
      * ```
      */
-    public fun explain(pattern: String): String
+    fun explain(pattern: String): String
 
     /**
      * Nothing was written at all.
@@ -44,8 +41,7 @@ public sealed interface GlobProblem {
      *     .problem shouldBe GlobProblem.EmptyPattern
      * ```
      */
-    @InternalKatachiApi
-    public object EmptyPattern : GlobProblem {
+    object EmptyPattern : GlobProblem {
         override fun explain(pattern: String): String = "A glob pattern must not be empty."
     }
 
@@ -58,9 +54,8 @@ public sealed interface GlobProblem {
      * problem.shouldBeInstanceOf<GlobProblem.EmptySegment>().separator shouldBe '/'
      * ```
      */
-    @InternalKatachiApi
-    public class EmptySegment internal constructor(
-        public val separator: Char,
+    class EmptySegment(
+        val separator: Char,
     ) : GlobProblem {
         override fun explain(pattern: String): String =
             "`$pattern` has an empty segment. Two `$separator` in a row, or a trailing " +
@@ -76,8 +71,7 @@ public sealed interface GlobProblem {
      *     .problem shouldBe GlobProblem.TrailingBackslash
      * ```
      */
-    @InternalKatachiApi
-    public object TrailingBackslash : GlobProblem {
+    object TrailingBackslash : GlobProblem {
         override fun explain(pattern: String): String =
             "`$pattern` ends a segment with `\\`. Write `\\\\` for a literal backslash."
     }
@@ -91,9 +85,8 @@ public sealed interface GlobProblem {
      * problem.shouldBeInstanceOf<GlobProblem.UnescapableCharacter>().character shouldBe 'a'
      * ```
      */
-    @InternalKatachiApi
-    public class UnescapableCharacter internal constructor(
-        public val character: Char,
+    class UnescapableCharacter(
+        val character: Char,
     ) : GlobProblem {
         override fun explain(pattern: String): String =
             "`$pattern` escapes `$character`, which katachi does not treat as a " +
@@ -109,9 +102,8 @@ public sealed interface GlobProblem {
      * problem.shouldBeInstanceOf<GlobProblem.DoubleStarInsideSegment>().segment shouldBe "a**b"
      * ```
      */
-    @InternalKatachiApi
-    public class DoubleStarInsideSegment internal constructor(
-        public val segment: String,
+    class DoubleStarInsideSegment(
+        val segment: String,
     ) : GlobProblem {
         override fun explain(pattern: String): String =
             "`$pattern` uses `**` as part of the segment `$segment`. `**` means " +
@@ -128,9 +120,8 @@ public sealed interface GlobProblem {
      * problem.shouldBeInstanceOf<GlobProblem.RejectedMetacharacter>().character shouldBe '?'
      * ```
      */
-    @InternalKatachiApi
-    public class RejectedMetacharacter internal constructor(
-        public val character: Char,
+    class RejectedMetacharacter(
+        val character: Char,
     ) : GlobProblem {
         override fun explain(pattern: String): String =
             "`$pattern` uses `$character`. katachi's glob has only `*` and `**`; write " +
@@ -149,9 +140,8 @@ public sealed interface GlobProblem {
      * problem.shouldBeInstanceOf<GlobProblem.DoubleStarUsedTooOften>().count shouldBe 2
      * ```
      */
-    @InternalKatachiApi
-    public class DoubleStarUsedTooOften internal constructor(
-        public val count: Int,
+    class DoubleStarUsedTooOften(
+        val count: Int,
     ) : GlobProblem {
         override fun explain(pattern: String): String =
             "`$pattern` uses `**` $count times. A module path may use `**` at " +
@@ -168,8 +158,7 @@ public sealed interface GlobProblem {
      *     .problem shouldBe GlobProblem.DoubleStarBeforeLastSegment
      * ```
      */
-    @InternalKatachiApi
-    public object DoubleStarBeforeLastSegment : GlobProblem {
+    object DoubleStarBeforeLastSegment : GlobProblem {
         override fun explain(pattern: String): String =
             "`$pattern` uses `**` before its last segment. A module path may only use `**` " +
                 "as its last segment, so that the index of each captured wildcard is the " +
@@ -185,8 +174,7 @@ public sealed interface GlobProblem {
      *     .problem shouldBe GlobProblem.EmptyModulePath
      * ```
      */
-    @InternalKatachiApi
-    public object EmptyModulePath : GlobProblem {
+    object EmptyModulePath : GlobProblem {
         override fun explain(pattern: String): String =
             "A module path must not be empty. Write `\":\"` for the root project."
     }
@@ -200,9 +188,8 @@ public sealed interface GlobProblem {
      * problem.shouldBeInstanceOf<GlobProblem.EmptyModuleName>().separator shouldBe ':'
      * ```
      */
-    @InternalKatachiApi
-    public class EmptyModuleName internal constructor(
-        public val separator: Char,
+    class EmptyModuleName(
+        val separator: Char,
     ) : GlobProblem {
         override fun explain(pattern: String): String =
             "`$pattern` has an empty module name. Two `$separator` in a row, or a trailing " +
@@ -218,9 +205,8 @@ public sealed interface GlobProblem {
      * problem.shouldBeInstanceOf<GlobProblem.WildcardInModuleName>().moduleName shouldBe "*"
      * ```
      */
-    @InternalKatachiApi
-    public class WildcardInModuleName internal constructor(
-        public val moduleName: String,
+    class WildcardInModuleName(
+        val moduleName: String,
     ) : GlobProblem {
         override fun explain(pattern: String): String =
             "`$pattern` uses `*` in the module name `$moduleName`. A module path names one " +
@@ -241,8 +227,7 @@ public sealed interface GlobProblem {
      *     .problem shouldBe GlobProblem.EmptyLayoutKeyLevel
      * ```
      */
-    @InternalKatachiApi
-    public object EmptyLayoutKeyLevel : GlobProblem {
+    object EmptyLayoutKeyLevel : GlobProblem {
         override fun explain(pattern: String): String =
             "The layout key `$pattern` has an empty level. Two `/` in a row, a leading `/`, or a " +
                 "trailing `/` matches nothing; paths in `layout { }` are always relative to the " +
@@ -270,8 +255,7 @@ public sealed interface GlobProblem {
  *     .message.shouldNotBeNull() shouldContain "Role group/Role declares the layout path"
  * ```
  */
-@InternalKatachiApi
-public sealed interface GlobContext {
+internal sealed interface GlobContext {
     /**
      * The sentence placed before the problem's own.
      *
@@ -287,7 +271,7 @@ public sealed interface GlobContext {
      * context.describe() shouldContain "Role group/Role declares the layout path"
      * ```
      */
-    public fun describe(): String
+    fun describe(): String
 
     /**
      * A path pattern written in the `layout { }` of one role.
@@ -305,11 +289,10 @@ public sealed interface GlobContext {
      * context.path shouldBe "{a,b}"
      * ```
      */
-    @InternalKatachiApi
-    public class RoleLayoutPath internal constructor(
-        public val role: Role,
-        public val path: String,
-        public val declaredAt: DeclarationSite,
+    class RoleLayoutPath(
+        val role: Role,
+        val path: String,
+        val declaredAt: DeclarationSite,
     ) : GlobContext {
         override fun describe(): String =
             "Role ${role.qualifiedName} declares the layout path `$path` at $declaredAt."
@@ -330,10 +313,9 @@ public sealed interface GlobContext {
      * context.key shouldBe ":core::data"
      * ```
      */
-    @InternalKatachiApi
-    public class LayoutModulePath internal constructor(
-        public val key: String,
-        public val declaredAt: DeclarationSite,
+    class LayoutModulePath(
+        val key: String,
+        val declaredAt: DeclarationSite,
     ) : GlobContext {
         override fun describe(): String = "The layout declares the module `$key` at $declaredAt."
     }

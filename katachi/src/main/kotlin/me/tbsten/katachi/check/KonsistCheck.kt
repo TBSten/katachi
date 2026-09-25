@@ -145,7 +145,7 @@ private fun violationsOf(walk: ProjectWalk, declared: DeclaredConstraint): List<
 }
 
 /** One [UncheckedConstraint], built from what the declaration already knows. */
-internal fun uncheckedConstraintOf(
+private fun uncheckedConstraintOf(
     declared: DeclaredConstraint,
     reason: UncheckedConstraintReason,
     cause: Throwable?,

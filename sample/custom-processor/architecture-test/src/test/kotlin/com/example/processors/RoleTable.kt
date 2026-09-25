@@ -27,7 +27,7 @@ import me.tbsten.katachi.processor.ArchitectureProcessor
  * - `--arg title=a,b` reaches [Args.title] as the single string `"a,b"`. **A comma splits only
  *   when the receiving field is a `List` or a `Set`**, and there is no escape syntax, so a
  *   `String` field is also the way out when a value has to contain a comma.
- *   Read [me.tbsten.katachi.processor.StringMapDecoder] for the rule itself.
+ *   Read [me.tbsten.katachi.processor.decodeFromStringMap] for the rule itself.
  * - `--arg groups=core,testing` reaches [Args.groups] as two elements.
  * - `--arg minExamples=2` reaches [Args.minExamples] as an `Int`; `minExamples=x` fails the run
  *   rather than quietly becoming zero.

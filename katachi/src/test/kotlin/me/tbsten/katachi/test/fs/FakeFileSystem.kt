@@ -54,7 +54,7 @@ fun fakeFileSystem(
     return builder.build(FsPath.of(workingDirectory))
 }
 
-class FakeFileSystemBuilder internal constructor() {
+internal class FakeFileSystemBuilder {
     private val files = mutableSetOf<FsPath>()
     private val directories = mutableSetOf(FsPath.of("/"))
 

@@ -6,7 +6,7 @@ import me.tbsten.katachi.KatachiDeclarationException
 /**
  * A glob pattern katachi cannot make sense of.
  *
- * The wording is [problem]'s, and [context] adds where the pattern was written when that is
+ * The wording is `problem`'s, and `context` adds where the pattern was written when that is
  * known. Both are internal bookkeeping; [pattern] is the part a caller can rely on.
  *
  * @property pattern the pattern as it was written.
@@ -25,8 +25,8 @@ import me.tbsten.katachi.KatachiDeclarationException
  */
 public class KatachiGlobSyntaxException internal constructor(
     public val pattern: String,
-    @property:InternalKatachiApi public val problem: GlobProblem,
-    @property:InternalKatachiApi public val context: GlobContext? = null,
+    internal val problem: GlobProblem,
+    internal val context: GlobContext? = null,
 ) : KatachiDeclarationException(globSyntaxMessage(pattern, problem, context))
 
 /** The context's sentence, when there is one, in front of the problem's own. */
@@ -42,14 +42,13 @@ private fun globSyntaxMessage(pattern: String, problem: GlobProblem, context: Gl
  *     .shouldNotBeNull().wildcards shouldContainExactly listOf("home", "impl")
  * ```
  */
-@InternalKatachiApi
-public class GlobMatch internal constructor(
+internal class GlobMatch(
     /**
      * One element per `*`, and one element **per level** for a `**`, in the order the
      * wildcards appear in the pattern. A `**` that matched no level contributes nothing, so
      * `":feature:**"` against `:feature` captures an empty list.
      */
-    public val wildcards: List<String>,
+    val wildcards: List<String>,
 ) {
     override fun toString(): String = "GlobMatch($wildcards)"
 }
@@ -90,7 +89,7 @@ public class Glob private constructor(
     /** The pattern as written. Two patterns are the same only when these strings are equal. */
     public val pattern: String,
     /** `/` for file paths, `:` for module paths. */
-    public val separator: Char,
+    internal val separator: Char,
     private val segments: List<String>,
     private val regex: Regex,
     /**
@@ -111,7 +110,7 @@ public class Glob private constructor(
      * Glob.compile("*.kt").hasWildcard shouldBe true
      * ```
      */
-    public val hasWildcard: Boolean get() = groupKinds.isNotEmpty()
+    internal val hasWildcard: Boolean get() = groupKinds.isNotEmpty()
 
     /**
      * Whether [path] matches in full.
@@ -134,7 +133,7 @@ public class Glob private constructor(
      *     .shouldNotBeNull().wildcards shouldContainExactly listOf("GetUser")
      * ```
      */
-    public fun match(path: String): GlobMatch? {
+    internal fun match(path: String): GlobMatch? {
         val result = regex.matchEntire(path) ?: return null
         val wildcards = mutableListOf<String>()
         groupKinds.forEachIndexed { index, kind ->
@@ -161,7 +160,7 @@ public class Glob private constructor(
      * shouldThrow<KatachiGlobSyntaxException> { glob.requireAtMostOneTrailingDoubleStar() }
      * ```
      */
-    public fun requireAtMostOneTrailingDoubleStar() {
+    internal fun requireAtMostOneTrailingDoubleStar() {
         val positions = segments.indices.filter { segments[it] == DOUBLE_STAR }
         if (positions.size > 1) {
             throw KatachiGlobSyntaxException(pattern, GlobProblem.DoubleStarUsedTooOften(positions.size))
@@ -189,7 +188,7 @@ public class Glob private constructor(
      * Glob.compile(":feature:*", Glob.MODULE_SEPARATOR).matches(":feature:home") shouldBe true
      * ```
      */
-    public companion object {
+    internal companion object {
         /**
          * Separator of a file path.
          *
@@ -199,7 +198,7 @@ public class Glob private constructor(
          * glob.matches("core/data/Repository.kt") shouldBe true
          * ```
          */
-        public const val PATH_SEPARATOR: Char = '/'
+        const val PATH_SEPARATOR: Char = '/'
 
         /**
          * Separator of a Gradle module path.
@@ -210,7 +209,7 @@ public class Glob private constructor(
          * glob.matches(":feature:home") shouldBe true
          * ```
          */
-        public const val MODULE_SEPARATOR: Char = ':'
+        const val MODULE_SEPARATOR: Char = ':'
 
         /**
          * Translates [pattern] into a regular expression.
@@ -226,7 +225,7 @@ public class Glob private constructor(
          *   uses `**` as part of a larger segment, or uses a metacharacter katachi does not
          *   have.
          */
-        public fun compile(pattern: String, separator: Char = PATH_SEPARATOR): Glob {
+        fun compile(pattern: String, separator: Char = PATH_SEPARATOR): Glob {
             if (pattern.isEmpty()) throw KatachiGlobSyntaxException(pattern, GlobProblem.EmptyPattern)
 
             // A leading separator is the pattern being rooted (`:feature:*`), not an empty

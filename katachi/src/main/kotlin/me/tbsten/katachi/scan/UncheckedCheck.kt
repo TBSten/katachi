@@ -34,7 +34,7 @@ public class UncheckedCheck internal constructor(
      */
     public val cause: Throwable,
 ) : Violation {
-    override val path: String get() = "."
+    override val path: String get() = ROOT_PATH
     override val kind: ViolationKind get() = ViolationKind.Failed
     override val severity: Severity get() = Severity.Error
     override val label: String get() = "UncheckedCheck"

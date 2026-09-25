@@ -1,7 +1,5 @@
 package me.tbsten.katachi.dsl
 
-import me.tbsten.katachi.InternalKatachiApi
-
 /**
  * A directory declared in a `layout { }` block.
  *
@@ -136,8 +134,7 @@ public class LayoutDeclaration internal constructor(
      */
     public val declaredAt: DeclarationSite,
     /** The block itself. Evaluated by the checker, not by the DSL. */
-    @property:InternalKatachiApi
-    public val block: LayoutScope.() -> Unit,
+    internal val block: LayoutScope.() -> Unit,
 ) {
     override fun toString(): String = "LayoutDeclaration($declaredAt)"
 }

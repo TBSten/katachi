@@ -53,7 +53,7 @@ public fun moduleIndex(
  * module path to a directory, and that mapping cannot be run backwards.
  *
  * A directory that throws is skipped rather than allowed to end the search, and what was lost
- * with it is dropped by this overload. See [scanModules] for the answer that keeps it.
+ * with it is dropped by this function. See [scanModules] for the answer that keeps it.
  *
  * ## Example 1: list every module below the project root
  * ```kt

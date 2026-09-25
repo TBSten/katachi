@@ -7,8 +7,6 @@ import kotlinx.serialization.encoding.AbstractDecoder
 import kotlinx.serialization.encoding.CompositeDecoder
 import kotlinx.serialization.modules.EmptySerializersModule
 import kotlinx.serialization.modules.SerializersModule
-import me.tbsten.katachi.ExperimentalKatachiApi
-import me.tbsten.katachi.InternalKatachiApi
 
 /**
  * Reads a `@Serializable` class out of the flat `key=value` map a `--arg` line produces.
@@ -33,10 +31,8 @@ import me.tbsten.katachi.InternalKatachiApi
  *     Args(roleName = "GetUser", tags = listOf("a", "b"))
  * ```
  */
-@ExperimentalKatachiApi
-public class StringMapDecoder(
-    @InternalKatachiApi
-    public val values: Map<String, String>,
+internal class StringMapDecoder(
+    val values: Map<String, String>,
 ) : AbstractDecoder() {
     override val serializersModule: SerializersModule = EmptySerializersModule()
 
@@ -145,15 +141,11 @@ private fun splitArgValue(raw: String): List<String> =
 /**
  * The one place a `--arg` string becomes a value.
  *
- * Shared between the two decoders through a function rather than a common base class: a
- * `public` [StringMapDecoder] cannot extend an `internal` type, and making the base public
- * would put a class nobody needs on the published surface.
- *
  * Every failure is a `SerializationException` so that `decodeFromStringMap` can turn it into a
  * katachi exception in one place. `"abc".toInt()` would throw `NumberFormatException`, which
  * is not one and would escape uncaught.
  */
-internal object ArgValues {
+private object ArgValues {
     fun int(raw: String): Int = raw.toIntOrNull() ?: fail(raw, "Int")
     fun long(raw: String): Long = raw.toLongOrNull() ?: fail(raw, "Long")
     fun short(raw: String): Short = raw.toShortOrNull() ?: fail(raw, "Short")

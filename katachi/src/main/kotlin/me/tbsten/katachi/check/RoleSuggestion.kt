@@ -48,7 +48,7 @@ private fun fileCallFor(name: String): String = when {
  * `tmp-experiment` suggests `TmpExperiment`. The extension of a Kotlin file is dropped
  * first, since `TokenRefresherKt` would read as a mistake.
  */
-internal fun suggestedRoleName(name: String): String {
+private fun suggestedRoleName(name: String): String {
     val base = when {
         name.endsWith(KTS_SUFFIX) -> name.dropLast(KTS_SUFFIX.length)
         name.endsWith(KT_SUFFIX) -> name.dropLast(KT_SUFFIX.length)

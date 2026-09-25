@@ -13,27 +13,11 @@ internal class TemplateDeclaration(
     override fun toString(): String = "TemplateDeclaration($declaredAt)"
 }
 
-/**
- * What one replay of a template produced.
- *
- * [parameters] is the whole vocabulary the template declared, in declaration order, whether or
- * not anything read it. [files] is what it wrote, already rendered.
- */
+/** What one replay of a template produced: the files it wrote, already rendered. */
 internal class TemplateEvaluation(
-    val parameters: List<TemplateParameterInfo>,
     val files: List<RenderedTemplateFile>,
 ) {
-    override fun toString(): String =
-        "TemplateEvaluation(${parameters.size} parameters, ${files.size} files)"
-}
-
-/** One parameter a template declared, as it was declared. */
-internal class TemplateParameterInfo(
-    val name: String,
-    val default: String?,
-    val declaredAt: DeclarationSite,
-) {
-    override fun toString(): String = "TemplateParameterInfo($name)"
+    override fun toString(): String = "TemplateEvaluation(${files.size} files)"
 }
 
 /**

@@ -57,7 +57,7 @@ class CustomProcessorSpec : FreeSpec({
     }
 
     "--arg のカンマは、受け取る側が List のときだけ分割される" {
-        // The rule StringMapDecoder documents, written out against this sample's own Args:
+        // The rule decodeFromStringMap documents, written out against this sample's own Args:
         // `title` is a String and keeps its comma, `groups` is a List and is split. There is
         // no escape syntax, so a String field is also the way to pass a value holding a comma.
         val args = decodeFromStringMap(

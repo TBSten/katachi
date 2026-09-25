@@ -50,13 +50,6 @@ internal const val BULLET_INDENT: String = "  "
 internal const val GROUP_PLACEMENT_HEADING: String = "## このグループの配置"
 
 /**
- * What the root's placement tree is written under.
- *
- * Worded apart from [GROUP_PLACEMENT_HEADING] because the root is not a group -- it is where
- * the groups are -- and the tree there is of the roles written beside them, not of everything
- * below.
- */
-/**
  * What the roles written straight into `architecture { }` are listed under.
  *
  * They need a section of their own because the map above names them without their `summary`,
@@ -65,6 +58,13 @@ internal const val GROUP_PLACEMENT_HEADING: String = "## このグループの�
  */
 internal const val ROOT_ROLES_HEADING: String = "## ルート直下の役割"
 
+/**
+ * What the root's placement tree is written under.
+ *
+ * Worded apart from [GROUP_PLACEMENT_HEADING] because the root is not a group -- it is where
+ * the groups are -- and the tree there is of the roles written beside them, not of everything
+ * below.
+ */
 internal const val ROOT_PLACEMENT_HEADING: String = "## ルート直下の配置"
 
 /** The file every container of the generated tree is read through. */
@@ -103,10 +103,10 @@ internal fun link(text: String, path: String): String = "[${escapeLinkText(text)
  * Kept apart from [link] because the target already opens with `../`, and `.././` would be the
  * same step spelled twice.
  */
-internal fun upwardLink(text: String, path: String): String = "[${escapeLinkText(text)}]($path)"
+private fun upwardLink(text: String, path: String): String = "[${escapeLinkText(text)}]($path)"
 
 /** What separates two steps of a container page's breadcrumb. */
-internal const val BREADCRUMB_SEPARATOR: String = " / "
+private const val BREADCRUMB_SEPARATOR: String = " / "
 
 /** One step of a breadcrumb: what it reads as, and the way back to it from where it is written. */
 internal class Crumb(
@@ -191,7 +191,7 @@ internal fun tableRow(cells: List<String>): String =
  * is one line by contract, but a contract is not a guarantee, and a broken table is far harder
  * to read than an escaped pipe.
  */
-internal fun escapeCell(value: String): String = oneLine(value.replace("|", "\\|"))
+private fun escapeCell(value: String): String = oneLine(value.replace("|", "\\|"))
 
 /**
  * A value written by a user, folded onto the one line the structure around it allows.

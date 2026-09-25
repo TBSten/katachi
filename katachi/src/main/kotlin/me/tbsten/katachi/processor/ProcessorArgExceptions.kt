@@ -134,7 +134,7 @@ public class KatachiUnsupportedProcessorArgException internal constructor(
 /**
  * An `argsSerializer` combined with `+` (see the `ArchitectureProcessor` combination in
  * `ProcessorComposition.kt`) was handed to a [kotlinx.serialization.encoding.Decoder] other than
- * [me.tbsten.katachi.processor.StringMapDecoder].
+ * katachi's own `StringMapDecoder`.
  *
  * @property decoder the class name of the decoder that was used.
  *

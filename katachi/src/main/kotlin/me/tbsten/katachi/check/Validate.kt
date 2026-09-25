@@ -85,7 +85,7 @@ public fun Architecture.validate(fileSystem: KatachiFileSystem): List<Violation>
  * which passes straight through.
  *
  * The first check is a separate parameter rather than part of the vararg so that this cannot
- * be reached by `validate()`, `validate(10)` or `validate(fileSystem)`.
+ * be reached by `validate()` or `validate(fileSystem)`.
  *
  * ## Example 1: read what a check of your own found, without failing the test
  * ```kt

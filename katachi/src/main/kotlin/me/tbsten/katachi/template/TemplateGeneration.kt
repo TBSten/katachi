@@ -25,13 +25,8 @@ internal fun templateFiles(
     return templateFilesOf(role, context.declaredEntries, values)
 }
 
-/**
- * [templateFiles] once the role has been resolved.
- *
- * Split out so that a spec can hand in a role and its entries directly, without an architecture
- * having to be reachable by name.
- */
-internal fun templateFilesOf(
+/** [templateFiles] once the role has been resolved. */
+private fun templateFilesOf(
     role: Role,
     declaredEntries: List<LayoutEntry>,
     values: Map<String, String>,

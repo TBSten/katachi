@@ -52,7 +52,7 @@ public class Architecture internal constructor(
      * arch.roles.map { it.qualifiedName } shouldContainExactly listOf("Readme")
      * ```
      */
-    public val roles: List<Role> = emptyList(),
+    public val roles: List<Role>,
     /**
      * Which files of the project the check looks at.
      *
@@ -65,7 +65,7 @@ public class Architecture internal constructor(
      * arch.files shouldBe FileSelection.WholeTree
      * ```
      */
-    public val files: FileSelection = FileSelection.GitTracked,
+    public val files: FileSelection,
     /**
      * How a module path written in a `layout { }` becomes a directory.
      *
@@ -80,11 +80,11 @@ public class Architecture internal constructor(
      * architecture.moduleResolver.directoryOf(ModulePath.of(":app")) shouldBe "apps/android"
      * ```
      */
-    public val moduleResolver: ModuleResolver = ModuleResolver.Conventional,
+    public val moduleResolver: ModuleResolver,
     /**
      * What was written on `architecture { }` itself, beyond the declarations. Read through [get].
      */
-    internal val metadata: MetadataValues = MetadataValues(emptyMap()),
+    internal val metadata: MetadataValues,
 ) {
     /**
      * Every group, parents before their children, in declaration order.

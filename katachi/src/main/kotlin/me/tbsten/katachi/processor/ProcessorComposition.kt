@@ -15,7 +15,7 @@ import me.tbsten.katachi.ExperimentalKatachiApi
  * cannot disagree about the files they are both describing.
  *
  * `@ExperimentalKatachiApi` for a concrete reason: the serializer behind the combined
- * arguments only works with katachi's own [StringMapDecoder], so it is not a serializer in the
+ * arguments only works with katachi's own `StringMapDecoder`, so it is not a serializer in the
  * general sense and would fail against JSON. Composition is for building a run in code; the
  * CLI's `--processor=A,B` takes a different route.
  *
@@ -57,7 +57,7 @@ public operator fun <Args1, Args2, R> ArchitectureProcessor<Args1, List<R>>.plus
     other: ArchitectureProcessor<Args2, List<R>>,
 ): ArchitectureProcessor<Pair<Args1, Args2>, List<R>> = CombinedProcessor(this, other)
 
-internal class CombinedProcessor<Args1, Args2, R>(
+private class CombinedProcessor<Args1, Args2, R>(
     private val first: ArchitectureProcessor<Args1, List<R>>,
     private val second: ArchitectureProcessor<Args2, List<R>>,
 ) : ArchitectureProcessor<Pair<Args1, Args2>, List<R>> {
@@ -94,7 +94,7 @@ internal class CombinedProcessor<Args1, Args2, R>(
  * halves, so such a name reaches both. Building the descriptor twice with the same name would
  * throw, which is the only reason the deduplication has to be explicit.
  */
-internal class CombinedArgsSerializer<A, B>(
+private class CombinedArgsSerializer<A, B>(
     private val aSerializer: KSerializer<A>,
     private val bSerializer: KSerializer<B>,
 ) : KSerializer<Pair<A, B>> {

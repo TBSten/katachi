@@ -1,7 +1,5 @@
 package me.tbsten.katachi.dsl
 
-import me.tbsten.katachi.InternalKatachiApi
-
 /**
  * A Gradle module path with no wildcard left in it: `:core:data`.
  *
@@ -150,40 +148,18 @@ public class ModulePath private constructor(
  * things on the two sides of the DSL. On top of the glob it adds what only a module path
  * needs: a leading `:` is optional, `":"` names the root project, and `**` is restricted to
  * the last segment so that the index of every captured wildcard is the same for every match.
- *
- * ## Example 1: compile a pattern and test it against a module
- * ```kt
- * val pattern = ModulePattern.compile(":feature:*")
- * pattern.matches(ModulePath.of(":feature:login")) shouldBe true
- * ```
  */
-@InternalKatachiApi
-public class ModulePattern private constructor(
+internal class ModulePattern private constructor(
     /** The pattern with its leading `:` filled in, e.g. `":feature:*"`. */
-    public val pattern: String,
+    val pattern: String,
     /** `null` for `":"`, which names the root project and matches nothing else. */
     private val glob: Glob?,
 ) {
-    /**
-     * Whether the pattern holds a `*` or a `**`, which is what makes a declaration optional.
-     *
-     * ## Example 1: tell a wildcard pattern from a literal one
-     * ```kt
-     * ModulePattern.compile(":feature:*").hasWildcard shouldBe true
-     * ModulePattern.compile(":core:data").hasWildcard shouldBe false
-     * ```
-     */
-    public val hasWildcard: Boolean get() = glob?.hasWildcard == true
+    /** Whether the pattern holds a `*` or a `**`, which is what makes a declaration optional. */
+    val hasWildcard: Boolean get() = glob?.hasWildcard == true
 
-    /**
-     * The single module named, when there is no wildcard to expand.
-     *
-     * ## Example 1: read the literal module a non-wildcard pattern names
-     * ```kt
-     * ModulePattern.compile(":core:data").literalPath shouldBe ModulePath.of(":core:data")
-     * ```
-     */
-    public val literalPath: ModulePath?
+    /** The single module named, when there is no wildcard to expand. */
+    val literalPath: ModulePath?
         get() = if (hasWildcard) null else ModulePath.of(unescape(pattern))
 
     /**
@@ -197,7 +173,7 @@ public class ModulePattern private constructor(
      * A `**` contributes one entry rather than one per level, because how many levels it
      * would have matched is exactly what has not been looked up.
      */
-    internal val wildcardPlaceholders: List<String>
+    val wildcardPlaceholders: List<String>
         get() = glob?.groupKinds.orEmpty().map { WILDCARD_PLACEHOLDER }
 
     /**
@@ -212,20 +188,13 @@ public class ModulePattern private constructor(
      * Escapes are carried over as written. `\*` means a literal `*` on both sides of the
      * translation, and `:` is not escapable, so splitting on it cannot cut an escape in half.
      */
-    internal val conventionalDirectory: String
+    val conventionalDirectory: String
         get() = pattern
             .removePrefix(Glob.MODULE_SEPARATOR.toString())
             .replace(Glob.MODULE_SEPARATOR, Glob.PATH_SEPARATOR)
 
-    /**
-     * Whether [module] is one of the modules this pattern names.
-     *
-     * ## Example 1: check a module against a pattern
-     * ```kt
-     * ModulePattern.compile(":feature:*").matches(ModulePath.of(":feature:login")) shouldBe true
-     * ```
-     */
-    public fun matches(module: ModulePath): Boolean = match(module) != null
+    /** Whether [module] is one of the modules this pattern names. */
+    fun matches(module: ModulePath): Boolean = match(module) != null
 
     /**
      * What the wildcards captured when [module] matched, or `null` when it did not.
@@ -233,13 +202,8 @@ public class ModulePattern private constructor(
      * One element per `*`, and one **per level** for the trailing `**`, so `":feature:**"`
      * against `:feature:hoge:fuga` captures `["hoge", "fuga"]` and against `:feature` itself
      * captures nothing.
-     *
-     * ## Example 1: read out what a wildcard captured
-     * ```kt
-     * ModulePattern.compile(":feature:*").match(ModulePath.of(":feature:login")) shouldBe listOf("login")
-     * ```
      */
-    public fun match(module: ModulePath): List<String>? {
+    fun match(module: ModulePath): List<String>? {
         val glob = glob ?: return if (module.isRoot) emptyList() else null
         return glob.match(module.value)?.wildcards
     }
@@ -250,15 +214,7 @@ public class ModulePattern private constructor(
 
     override fun toString(): String = "ModulePattern($pattern)"
 
-    /**
-     * Where [ModulePattern] instances come from: [compile] parses a raw pattern string.
-     *
-     * ## Example 1: compile a pattern from a layout key
-     * ```kt
-     * val pattern = ModulePattern.compile(":feature:*")
-     * ```
-     */
-    public companion object {
+    companion object {
         /**
          * What `wildcards` reads as when there is no module to have matched.
          *
@@ -280,20 +236,15 @@ public class ModulePattern private constructor(
          * at that level, and nothing here knows what kind of module that is. Deriving a better
          * word from the pattern's literal segments is v0.3's question, not this one's.
          */
-        internal const val WILDCARD_PLACEHOLDER: String = "<name>"
+        const val WILDCARD_PLACEHOLDER: String = "<name>"
 
         /**
          * Translates [raw] into a pattern, filling in the leading `:` when it was left out.
          *
          * @throws KatachiGlobSyntaxException when [raw] is empty or cannot be read as a glob,
          *   or when it uses `**` anywhere but as its last segment, or more than once.
-         *
-         * ## Example 1: compile a pattern with or without its leading `:`
-         * ```kt
-         * ModulePattern.compile("feature:*") shouldBe ModulePattern.compile(":feature:*")
-         * ```
          */
-        public fun compile(raw: String): ModulePattern {
+        fun compile(raw: String): ModulePattern {
             if (raw.isEmpty()) throw KatachiGlobSyntaxException(raw, GlobProblem.EmptyModulePath)
             val normalized = if (raw.startsWith(Glob.MODULE_SEPARATOR)) raw else "${Glob.MODULE_SEPARATOR}$raw"
             // `":"` is the root project. It is not a glob — `Glob.compile` would read the

@@ -74,9 +74,6 @@ internal class ConstraintCoverage(
         return parent.isNotEmpty() && anyFileGlobs.any { it.matches(parent) }
     }
 
-    /** Whether this constraint could not cover any file at all, whatever the project holds. */
-    val isEmpty: Boolean get() = fileGlobs.isEmpty() && anyFileGlobs.isEmpty()
-
     override fun toString(): String =
         "ConstraintCoverage(files=${fileGlobs.size}, anyFile=${anyFileGlobs.size})"
 }

@@ -13,7 +13,7 @@ import me.tbsten.katachi.dsl.Role
  *
  * Returned without a fence around it, and empty when no role of the container declared anything.
  */
-internal fun directoryTree(roles: List<Role>, placements: Map<Role, List<Placement>>): String {
+private fun directoryTree(roles: List<Role>, placements: Map<Role, List<Placement>>): String {
     // A module keeps the position of the declaration that first named it, rather than a sorted
     // one: reading the pages in the order the definition was written is what lets a reader match
     // the two up.

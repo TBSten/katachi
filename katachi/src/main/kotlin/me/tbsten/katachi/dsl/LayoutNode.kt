@@ -16,6 +16,7 @@ internal class LayoutNode(
     val isFile: Boolean,
 ) {
     var parent: LayoutNode? = null
+        private set
     val children: MutableList<LayoutNode> = mutableListOf()
 
     var description: String? = null

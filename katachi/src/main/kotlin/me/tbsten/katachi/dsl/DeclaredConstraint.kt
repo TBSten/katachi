@@ -1,7 +1,5 @@
 package me.tbsten.katachi.dsl
 
-import me.tbsten.katachi.InternalKatachiApi
-
 /**
  * One constraint, with the layout around it already evaluated.
  *
@@ -39,8 +37,7 @@ import me.tbsten.katachi.InternalKatachiApi
  * // never appears as a value in user code, above or below this line.
  * ```
  */
-@InternalKatachiApi
-public class DeclaredConstraint internal constructor(
+internal class DeclaredConstraint(
     /**
      * The role whose layout this constraint was written in.
      *
@@ -49,7 +46,7 @@ public class DeclaredConstraint internal constructor(
      * declaredConstraints.groupBy { it.role.qualifiedName }
      * ```
      */
-    public val role: Role,
+    val role: Role,
     /**
      * The resolved directories this constraint is anchored at, outermost first.
      *
@@ -62,7 +59,7 @@ public class DeclaredConstraint internal constructor(
      * declaredConstraints.single().paths shouldBe listOf("core/domain/useCase")
      * ```
      */
-    public val paths: List<String>,
+    val paths: List<String>,
     /**
      * The block's own resolved directory, or `null` when the constraint covers more than one
      * place — written on the role itself, or directly under `layout { }`.
@@ -75,7 +72,7 @@ public class DeclaredConstraint internal constructor(
      * declaredConstraints.filter { it.layoutPath != null }
      * ```
      */
-    public val layoutPath: String?,
+    val layoutPath: String?,
     /**
      * What the constraint was called, or `null` when it was declared without a name.
      *
@@ -84,7 +81,7 @@ public class DeclaredConstraint internal constructor(
      * declaredConstraints.mapNotNull { it.name }
      * ```
      */
-    public val name: String?,
+    val name: String?,
     /**
      * Where `constraint(...)` was written.
      *
@@ -93,11 +90,11 @@ public class DeclaredConstraint internal constructor(
      * declaredConstraints.single().declaredAt.fileName shouldBe "ProjectArchitecture.kt"
      * ```
      */
-    public val declaredAt: DeclarationSite,
+    val declaredAt: DeclarationSite,
     /** Which files this constraint covers. See [ConstraintCoverage]. */
-    internal val coverage: ConstraintCoverage,
+    val coverage: ConstraintCoverage,
     /** The block itself. Evaluated by a check, not by the DSL. */
-    internal val check: FileSetConstraint,
+    val check: FileSetConstraint,
 ) {
     override fun toString(): String =
         "DeclaredConstraint(${role.qualifiedName}, ${name ?: declaredAt}, paths=$paths)"

@@ -128,13 +128,6 @@ internal class TemplateScopeImpl(
     }
 
     fun evaluation(): TemplateEvaluation = TemplateEvaluation(
-        parameters = named.values.map {
-            TemplateParameterInfo(
-                name = it.name.orEmpty(),
-                default = it.default,
-                declaredAt = it.declaredAt,
-            )
-        },
         files = files.map {
             RenderedTemplateFile(
                 fileName = it.name,

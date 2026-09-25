@@ -295,7 +295,7 @@ public fun gitTrackedFileSystem(delegate: KatachiFileSystem, root: FsPath): Kata
  * without waiting for a `git add`. `-z` keeps names with spaces or non-ASCII characters
  * intact, which git would otherwise quote.
  */
-internal fun gitLsFiles(root: FsPath): List<String> {
+private fun gitLsFiles(root: FsPath): List<String> {
     val commandLine = GIT_LS_FILES.joinToString(" ")
     val process = try {
         ProcessBuilder(GIT_LS_FILES).directory(File(root.value)).start()

@@ -3,12 +3,8 @@ package me.tbsten.katachi.test.dsl
 import io.kotest.core.spec.style.FreeSpec
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.types.shouldBeSameInstanceAs
-import me.tbsten.katachi.dsl.LayoutDeclaration
 import me.tbsten.katachi.dsl.LayoutScope
 import me.tbsten.katachi.dsl.architecture
-
-/** `LayoutDeclaration.block` is `@InternalKatachiApi`; this helper reads it for the spec. */
-private fun LayoutDeclaration.deferredBlock(): LayoutScope.() -> Unit = block
 
 class LayoutDeferralSpec : FreeSpec({
     "architecture { } を評価しただけでは layout { } ブロックが実行されない" {
@@ -38,7 +34,7 @@ class LayoutDeferralSpec : FreeSpec({
             }
         }
 
-        arch.allRoles.single().layouts.single().deferredBlock() shouldBeSameInstanceAs declared
+        arch.allRoles.single().layouts.single().block shouldBeSameInstanceAs declared
     }
 
     "同じ group の役割が複数の layout を持てる" {
