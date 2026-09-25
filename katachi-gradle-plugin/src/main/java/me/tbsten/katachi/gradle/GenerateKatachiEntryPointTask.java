@@ -4,13 +4,11 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
-import java.util.Map;
 
 import org.gradle.api.DefaultTask;
 import org.gradle.api.file.DirectoryProperty;
 import org.gradle.api.provider.MapProperty;
 import org.gradle.api.provider.Property;
-import org.gradle.api.provider.SetProperty;
 import org.gradle.api.tasks.Input;
 import org.gradle.api.tasks.Optional;
 import org.gradle.api.tasks.OutputDirectory;
@@ -50,15 +48,6 @@ public abstract class GenerateKatachiEntryPointTask extends DefaultTask {
     @Input
     public abstract MapProperty<String, String> getProcessors();
 
-    /**
-     * The processor keys the module let katachi ask for extra {@code --arg} names.
-     *
-     * <p>An {@code @Input} like the registry, and for the same reason: it is written into the
-     * generated source, so changing it changes what {@code compileTestKotlin} compiles.
-     */
-    @Input
-    public abstract SetProperty<String> getAcceptsUndeclaredArgs();
-
     /** Where {@code GeneratedKatachiEntryPoint.kt} is written. */
     @OutputDirectory
     public abstract DirectoryProperty getOutputDirectory();
@@ -76,8 +65,7 @@ public abstract class GenerateKatachiEntryPointTask extends DefaultTask {
 
         String source = KatachiEntryPointSource.render(
                 getArchitectureClassName().get(),
-                getProcessors().get(),
-                getAcceptsUndeclaredArgs().get());
+                getProcessors().get());
 
         File outputFile = new File(outputDirectory, KatachiEntryPointSource.RELATIVE_PATH);
         Files.createDirectories(outputFile.getParentFile().toPath());

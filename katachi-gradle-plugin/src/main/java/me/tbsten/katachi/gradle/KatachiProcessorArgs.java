@@ -45,52 +45,9 @@ public class KatachiProcessorArgs {
 
     private final String key;
     private final Map<String, String> values = new LinkedHashMap<>();
-    private boolean acceptsUndeclaredArgs;
 
     KatachiProcessorArgs(String key) {
         this.key = key;
-    }
-
-    /**
-     * Whether this processor may be given {@code --arg} names its own {@code Args} type does not
-     * declare.
-     */
-    public boolean getAcceptsUndeclaredArgs() {
-        return acceptsUndeclaredArgs;
-    }
-
-    /**
-     * Lets this processor be given {@code --arg} names its own {@code Args} type does not declare.
-     *
-     * <p>katachi refuses an {@code --arg} no selected processor declares a field for, because a
-     * name that belongs to nobody is almost always a typo. A processor whose vocabulary comes from
-     * the architecture rather than from its own type -- a template, whose parameters differ from
-     * role to role -- has no field to declare those names as, and would lose every one of them to
-     * that rule.
-     *
-     * <p><strong>This is not "accept anything".</strong> Setting it lets the processor be
-     * <em>asked</em>, once per run and before anything runs, which extra names this run makes
-     * legal; only what it answers is accepted, and everything else is still refused. A run that
-     * selects this processor alongside another keeps the other one's arguments judged exactly as
-     * before.
-     *
-     * <p>The flag is written in the build script rather than decided by the processor, so that
-     * widening the check is always someone's explicit line in a file under review.
-     *
-     * <pre>{@code
-     * katachi {
-     *     processors {
-     *         register("scaffold", "com.example.processors.Scaffold") {
-     *             acceptsUndeclaredArgs = true
-     *         }
-     *     }
-     * }
-     * }</pre>
-     *
-     * @param acceptsUndeclaredArgs {@code true} to ask this processor what else this run accepts.
-     */
-    public void setAcceptsUndeclaredArgs(boolean acceptsUndeclaredArgs) {
-        this.acceptsUndeclaredArgs = acceptsUndeclaredArgs;
     }
 
     /**

@@ -191,51 +191,6 @@ class KatachiPluginFunctionalTest {
                 "the plugin still sends a rootDescription argument:\n" + argsOf(projectDir));
     }
 
-    @ParameterizedTest(name = "Gradle {0}")
-    @MethodSource("gradleVersions")
-    @DisplayName("acceptsUndeclaredArgs は生成されるエントリポイントに書き出される")
-    void acceptsUndeclaredArgsReachesTheGeneratedEntryPoint(String gradleVersion, @TempDir Path projectDir)
-            throws IOException {
-        writeFixture(projectDir, "");
-
-        // Nothing written: the flag has to be absent rather than defaulted on.
-        runner(projectDir, gradleVersion, "generateKatachiEntryPoint").build();
-        assertTrue(
-                generatedEntryPoint(projectDir)
-                        .contains("public override val acceptsUndeclaredArgs: Set<String> = emptySet()"),
-                "expected no acceptor before the flag is written:\n" + generatedEntryPoint(projectDir));
-
-        appendBuildScript(
-                projectDir,
-                "\nkatachi {\n"
-                        + "    processors {\n"
-                        + "        template {\n"
-                        + "            acceptsUndeclaredArgs = true\n"
-                        + "        }\n"
-                        + "    }\n"
-                        + "}\n");
-
-        runner(projectDir, gradleVersion, "generateKatachiEntryPoint").build();
-
-        // The generated source is the only road this flag travels; no `--arg` and no task option
-        // carries it. Reading the file is therefore the whole of the wiring, and running it on
-        // the version matrix is what checks that `@Input SetProperty<String>` is accepted on 8.0.
-        String generated = generatedEntryPoint(projectDir);
-        assertTrue(
-                generated.contains("public override val acceptsUndeclaredArgs: Set<String> = setOf(")
-                        && generated.contains("\"template\","),
-                "the flag never reached the generated entry point:\n" + generated);
-    }
-
-    /** The Kotlin source {@code generateKatachiEntryPoint} wrote, as text. */
-    private static String generatedEntryPoint(Path projectDir) throws IOException {
-        Path generated = projectDir.resolve(
-                "build/generated/sources/katachi/test/kotlin/me/tbsten/katachi/generated/"
-                        + "GeneratedKatachiEntryPoint.kt");
-        assertTrue(Files.exists(generated), "the entry point was never generated");
-        return new String(Files.readAllBytes(generated), StandardCharsets.UTF_8);
-    }
-
     /** What the fixture's {@code Args} entry point recorded of the command line it was given. */
     private static String argsOf(Path projectDir) throws IOException {
         Path recorded = projectDir.resolve("build/katachi/args.txt");

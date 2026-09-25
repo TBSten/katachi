@@ -13,9 +13,8 @@ import org.gradle.api.InvalidUserDataException;
  * {@code processors { args("key") { } }}.
  *
  * <p><strong>A template's own parameters are not written here.</strong> They differ from role to
- * role, so they travel as ordinary {@code --arg} entries -- which means the module has to write
- * {@link #setAcceptsUndeclaredArgs(boolean) acceptsUndeclaredArgs = true} once before any of them
- * is accepted.
+ * role, so they travel as ordinary {@code --arg} entries, and the template processor accepts them
+ * without any configuration in this block.
  *
  * <p>{@code template} is registered for every module this plugin is applied to, so there is
  * nothing to {@code register}.
@@ -25,7 +24,6 @@ import org.gradle.api.InvalidUserDataException;
  *     architecture = "com.example.projectArchitecture"
  *     processors {
  *         template {
- *             acceptsUndeclaredArgs = true
  *             onExisting = KatachiOnExisting.SKIP
  *         }
  *     }
@@ -44,7 +42,6 @@ public class KatachiTemplateOptions {
 
     private String roleName;
     private KatachiOnExisting onExisting;
-    private boolean acceptsUndeclaredArgs;
 
     /** The role whose template is used. */
     public String getRoleName() {
@@ -98,51 +95,9 @@ public class KatachiTemplateOptions {
         this.onExisting = onExisting;
     }
 
-    /** Whether a template's own parameters may be passed as {@code --arg}. */
-    public boolean getAcceptsUndeclaredArgs() {
-        return acceptsUndeclaredArgs;
-    }
-
-    /**
-     * Lets a template's own parameters be passed as {@code --arg}.
-     *
-     * <p><strong>Without this, a template with parameters cannot be run.</strong> katachi refuses
-     * an {@code --arg} no selected processor declares a field for, and a template's parameters are
-     * declared in {@code architecture { }} rather than on a {@code @Serializable} class -- so
-     * {@code --arg name=GetUser} is a typo as far as the check can tell.
-     *
-     * <p><strong>It is not "accept anything".</strong> Setting it lets the template processor be
-     * asked, before the run starts, which names the role in {@code --arg roleName=} declared with
-     * {@code stringParameter()}; exactly those are accepted and everything else still fails. A
-     * mistyped argument meant for another processor of the same run is not swallowed by this.
-     *
-     * <pre>{@code
-     * katachi {
-     *     processors {
-     *         template {
-     *             acceptsUndeclaredArgs = true
-     *         }
-     *     }
-     * }
-     * }</pre>
-     *
-     * @param acceptsUndeclaredArgs {@code true} to accept the parameters the selected role's
-     *     template declares.
-     */
-    public void setAcceptsUndeclaredArgs(boolean acceptsUndeclaredArgs) {
-        this.acceptsUndeclaredArgs = acceptsUndeclaredArgs;
-    }
-
-    /**
-     * Whether this block was written at all.
-     *
-     * <p>Asked instead of {@code toArgs().isEmpty()} because {@code acceptsUndeclaredArgs} is a
-     * word this block carries without producing an argument: a block holding only that one is
-     * configured, and has to collide with {@code args("template") { }} exactly as one holding a
-     * value would.
-     */
+    /** Whether this block was written at all. */
     boolean isConfigured() {
-        return roleName != null || onExisting != null || acceptsUndeclaredArgs;
+        return roleName != null || onExisting != null;
     }
 
     /** These options as the {@code --arg} values they become. Only what was set. */

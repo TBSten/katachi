@@ -53,20 +53,8 @@ import { Aside } from "@astrojs/starlight/components"
     --arg "roleName=UseCase" --arg "name=GetItemList"
 ```
 
-<Aside type="caution">
-`--arg name=...` のように**テンプレート独自のパラメータを渡すには、そのモジュールが先に受け入れを表明している必要があります。**
-
-```kts title="architecture-test/build.gradle.kts"
-katachi {
-    processors {
-        template {
-            acceptsUndeclaredArgs = true
-        }
-    }
-}
-```
-
-パラメータの名前は役割ごとに違うため、`Args` クラスのフィールドとしては宣言できません。表明が無いと `Unknown processor argument(s): name.` で落ちます。
+<Aside>
+`--arg name=...` のように**テンプレート独自のパラメータは、そのまま渡せます。** モジュール側の表明は要りません。受け付けるのは、名指しした役割の `template { }` が宣言した名前だけです。打ち間違いはこれまでどおり `Unknown processor argument(s): ...` で落ちます。
 </Aside>
 
 ## file() はファイル名だけを言う
@@ -132,7 +120,6 @@ v0.2 で用意されているのは `stringParameter()` だけです。値は文
 katachi {
     processors {
         template {
-            acceptsUndeclaredArgs = true
             onExisting = KatachiOnExisting.SKIP
         }
     }

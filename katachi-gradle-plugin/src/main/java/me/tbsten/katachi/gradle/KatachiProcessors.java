@@ -2,9 +2,7 @@ package me.tbsten.katachi.gradle;
 
 import java.util.Collections;
 import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
 import java.util.Map;
-import java.util.Set;
 import java.util.regex.Pattern;
 
 import org.gradle.api.Action;
@@ -246,15 +244,14 @@ public class KatachiProcessors {
      * Configures the template processor katachi ships.
      *
      * <p>Typed for the same reason {@link #docs(Action)} is. {@code template} is registered by
-     * default, so there is nothing to {@link #register}; what this block is usually written for is
-     * {@code acceptsUndeclaredArgs = true}, without which a template's own parameters cannot be
-     * passed as {@code --arg} at all.
+     * default, so there is nothing to {@link #register}; a template's own parameters are accepted
+     * as {@code --arg} without any configuration here.
      *
      * <pre>{@code
      * katachi {
      *     processors {
      *         template {
-     *             acceptsUndeclaredArgs = true
+     *             onExisting = KatachiOnExisting.SKIP
      *         }
      *     }
      * }
@@ -297,10 +294,6 @@ public class KatachiProcessors {
 
     /**
      * Records what a typed block configured, and refuses the same key being configured twice.
-     *
-     * <p>{@code configured} is asked separately from {@code typed.isEmpty()}: a block may carry a
-     * word that produces no argument -- {@code template { acceptsUndeclaredArgs = true } } -- and
-     * such a block still has to collide with {@code args("template") { } } rather than vanish.
      */
     private void putTyped(
             Map<String, Map<String, String>> collected,
@@ -322,39 +315,5 @@ public class KatachiProcessors {
             return;
         }
         collected.put(key, typed);
-    }
-
-    /**
-     * The registered keys this module let katachi ask for extra {@code --arg} names, sorted by the
-     * order they were written.
-     *
-     * <p>Not derivable from {@link #getConfiguredArgs()}: a block that only raises its hand
-     * produces no argument at all, so it would be invisible on that path.
-     *
-     * @throws InvalidUserDataException when a key raised its hand without being registered. The
-     *     flag would reach the generated entry point and then be dropped by a registry that has no
-     *     such key, which is a line in a build script doing nothing.
-     */
-    Set<String> getUndeclaredArgAcceptors() {
-        Set<String> acceptors = new LinkedHashSet<>();
-        if (template.getAcceptsUndeclaredArgs()) {
-            acceptors.add(KatachiTemplateOptions.KEY);
-        }
-        for (Map.Entry<String, KatachiProcessorArgs> entry : configuredArgs.entrySet()) {
-            if (entry.getValue().getAcceptsUndeclaredArgs()) {
-                acceptors.add(entry.getKey());
-            }
-        }
-        Map<String, String> registered = getRegistrations();
-        for (String key : acceptors) {
-            if (!registered.containsKey(key)) {
-                throw new InvalidUserDataException(
-                        "katachi processor key \"" + key + "\" sets acceptsUndeclaredArgs = true "
-                                + "but is not registered, so nothing would ever be asked what it "
-                                + "accepts. Register it first, e.g. register(\"" + key
-                                + "\", \"com.example.processors.Example\"), or remove the flag.");
-            }
-        }
-        return Collections.unmodifiableSet(acceptors);
     }
 }

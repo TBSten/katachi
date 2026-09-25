@@ -156,9 +156,6 @@ katachi {
         docs {
             outputDir = rootProject.layout.projectDirectory.dir("docs")
         }
-        template {
-            acceptsUndeclaredArgs = true
-        }
     }
 }
 ```
@@ -422,7 +419,7 @@ API としてプログラムから実行したい場合は API を用意する�
             | `enum` | 項目の名前で渡します（`@SerialName` を付けていればその名前）。大文字小文字も一致させてください |
             | `Map`、ネストした `@Serializable` | 対応していません |
 
-            **`Args` に宣言していない名前を `--arg` で渡すと、その場で落ちます。** 打ち間違えた引数が、既定値のまま黙って走ってしまうのを防ぐためです。役割ごとに引数名が変わるような processor は `acceptsUndeclaredArgs` と `undeclaredArgNames()` を使います。
+            **`Args` に宣言していない名前を `--arg` で渡すと、その場で落ちます。** 打ち間違えた引数が、既定値のまま黙って走ってしまうのを防ぐためです。役割ごとに引数名が変わるような processor は `undeclaredArgNames()` でその run が受け付ける名前を答えます。
 
         </details>
 

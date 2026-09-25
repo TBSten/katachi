@@ -408,7 +408,6 @@ class GenerateDocumentationSpec : FreeSpec({
             shouldThrow<KatachiUnknownProcessorArgException> {
                 checkNoUnknownArgs(
                     selected = listOf("docs" to GenerateDocumentation),
-                    acceptsUndeclaredArgs = emptySet(),
                     context = FakeArchitectureProcessContext(
                         architecture = architecture { },
                         args = Unit,

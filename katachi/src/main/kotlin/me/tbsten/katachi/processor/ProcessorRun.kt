@@ -48,10 +48,6 @@ internal fun instantiateProcessor(type: Class<*>): ArchitectureProcessor<*, *> {
  * answering `Result.failure` or by throwing; both are reported as `[FAILED]` with the
  * exception's message, and a `success` is `[OK]` with its value.
  *
- * @param acceptsUndeclaredArgs the processor keys this module wrote `acceptsUndeclaredArgs = true`
- *   for, as the generated entry point carries them. A key listed here has its
- *   [ArchitectureProcessor.undeclaredArgNames] counted as known; a key not listed here has that
- *   answer used only as a hint in the error message.
  * @param out where the report's lines go. Defaults to [println], but a spec passes
  *   `mutableListOf<String>::add` instead so the run can be asserted on without capturing standard
  *   output.
@@ -61,7 +57,6 @@ internal fun runProcessors(
     registry: Map<String, Class<*>>,
     processorKeys: List<String>,
     rawArgs: Map<String, String>,
-    acceptsUndeclaredArgs: Set<String> = emptySet(),
     fileSystem: KatachiFileSystem = RealFileSystem(),
     out: (String) -> Unit = ::println,
 ): ProcessorRunSummary {
@@ -87,7 +82,7 @@ internal fun runProcessors(
     // the walk behind it is `by lazy` and no processor has run yet.
     val base = RealArchitectureProcessContext(architecture, Unit, fileSystem, rawArgs = rawArgs)
 
-    checkNoUnknownArgs(selected, acceptsUndeclaredArgs, base, rawArgs)
+    checkNoUnknownArgs(selected, base, rawArgs)
 
     data class Entry(val key: String, val result: Result<Any?>)
 

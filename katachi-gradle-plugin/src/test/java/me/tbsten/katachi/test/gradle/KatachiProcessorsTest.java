@@ -8,7 +8,6 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
 
 import me.tbsten.katachi.gradle.KatachiOnExisting;
 import me.tbsten.katachi.gradle.KatachiProcessors;
@@ -58,13 +57,6 @@ class KatachiProcessorsTest {
         // `konsist` would point into :katachi-konsist, which a module that does not depend on
         // it cannot compile a `::class.java` literal against. `layout` is left out with it so
         // that the rule stays "only what :katachi itself carries".
-        //
-        // These two names are also written down in :katachi, in TYPED_BLOCK_KEYS
-        // (ProcessorArgExceptions.kt), which decides whether an error message suggests
-        // `processors { docs { } }` or `processors { args("docs") { } }`. :katachi cannot see
-        // this class -- the generated entry point has no Gradle on its classpath -- so adding a
-        // third default registration means changing that list too, and this test is where that
-        // is found out.
         Map<String, String> expected = new HashMap<>();
         expected.put("docs", GENERATE_DOCUMENTATION);
         expected.put("template", GENERATE_CODE_FROM_TEMPLATE);
@@ -124,55 +116,10 @@ class KatachiProcessorsTest {
     }
 
     @Test
-    @DisplayName("何も書かなければ未宣言 --arg に手を挙げた processor は1つも無い")
-    void nothingAcceptsUndeclaredArgsByDefault() {
-        // The flag is the ceiling of the whole mechanism: with it empty, no processor's answer
-        // is even read, so `--arg name=GetUser` fails however the processors are written.
-        assertEquals(Set.of(), undeclaredArgAcceptors(new KatachiProcessors()));
-    }
-
-    @Test
-    @DisplayName("template { acceptsUndeclaredArgs = true } は値を1つも持たなくても手を挙げたことになる")
-    void aFlagOnlyTemplateBlockStillRaisesItsHand() {
+    @DisplayName("template { } と args(\"template\") { } の併用は二重設定として落ちる")
+    void aTypedBlockStillCollidesWithTheStringForm() {
         KatachiProcessors processors = new KatachiProcessors();
-        processors.template(template -> template.setAcceptsUndeclaredArgs(true));
-
-        // getConfiguredArgs() cannot see this block -- it produces no --arg at all -- which is
-        // exactly why the flag travels on its own path.
-        assertEquals(Set.of("template"), undeclaredArgAcceptors(processors));
-    }
-
-    @Test
-    @DisplayName("register(key, fqcn) { acceptsUndeclaredArgs = true } も手を挙げられる")
-    void theStringFormCanRaiseItsHandToo() {
-        KatachiProcessors processors = new KatachiProcessors();
-        processors.register(
-                "scaffold",
-                "com.example.processors.Scaffold",
-                args -> args.setAcceptsUndeclaredArgs(true));
-
-        assertEquals(Set.of("scaffold"), undeclaredArgAcceptors(processors));
-    }
-
-    @Test
-    @DisplayName("register していないキーが手を挙げると落ちる -- 誰にも聞かれない設定になるため")
-    void raisingAHandWithoutRegisteringFails() {
-        KatachiProcessors processors = new KatachiProcessors();
-        processors.args("scaffold", args -> args.setAcceptsUndeclaredArgs(true));
-
-        InvalidUserDataException failure = assertThrows(
-                InvalidUserDataException.class, () -> undeclaredArgAcceptors(processors));
-
-        assertTrue(
-                failure.getMessage().contains("scaffold"),
-                "expected the message to name the key: " + failure.getMessage());
-    }
-
-    @Test
-    @DisplayName("template { } と args(\"template\") { } の併用は、値が無くても二重設定として落ちる")
-    void aFlagOnlyTypedBlockStillCollidesWithTheStringForm() {
-        KatachiProcessors processors = new KatachiProcessors();
-        processors.template(template -> template.setAcceptsUndeclaredArgs(true));
+        processors.template(template -> template.setRoleName("UseCase"));
         processors.args("template", args -> args.arg("roleName", "UseCase"));
 
         InvalidUserDataException failure =
@@ -193,19 +140,13 @@ class KatachiProcessorsTest {
     }
 
     /**
-     * Calls the package-private {@code KatachiProcessors.getUndeclaredArgAcceptors()}.
+     * Calls the package-private {@code KatachiProcessors.getConfiguredArgs()}.
      *
      * <p>Reflection for the reason {@code KatachiEntryPointSourceTest} uses it: this test sits in
      * {@code me.tbsten.katachi.test.gradle} like every other test of this module, so it sees the
      * plugin under the same visibility a user's build does. Opening the method up for the test
      * would change what the Gradle DSL exposes.
      */
-    @SuppressWarnings("unchecked")
-    private static Set<String> undeclaredArgAcceptors(KatachiProcessors processors) {
-        return (Set<String>) invoke(processors, "getUndeclaredArgAcceptors");
-    }
-
-    /** Calls the package-private {@code KatachiProcessors.getConfiguredArgs()}. */
     @SuppressWarnings("unchecked")
     private static Map<String, Map<String, String>> configuredArgs(KatachiProcessors processors) {
         return (Map<String, Map<String, String>>) invoke(processors, "getConfiguredArgs");

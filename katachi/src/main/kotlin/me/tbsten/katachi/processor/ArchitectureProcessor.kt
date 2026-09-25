@@ -125,10 +125,8 @@ public interface ArchitectureProcessor<Args, R> {
      * is where such a processor says what this particular run made legal -- `--arg roleName=UseCase`
      * turns `name` and `implBody` into names, and nothing else into names.
      *
-     * **It is a ceiling the build script opens, not one a processor opens for itself.** The answer
-     * is read only when the module wrote `acceptsUndeclaredArgs = true` for this processor's key,
-     * so a processor that answered with everything it was given still accepts nothing until
-     * someone wrote that line.
+     * **Every selected processor is asked, with no build-script step in between.** A name this
+     * answers with is accepted for the run; a name nothing answers with is still a typo.
      *
      * ## The contract
      *
@@ -141,10 +139,8 @@ public interface ArchitectureProcessor<Args, R> {
      *   wrong -- a role name no role answers to, say. Then it ends the run, and it should:
      *   a processor that cannot tell a typo from a parameter has no answer to give, and
      *   "nothing" would be a wrong one stated as fact. The exception a build script sees is
-     *   this one, so make it name what the user got wrong.
-     *   Asked of a processor the build script did **not** name in `acceptsUndeclaredArgs`, the
-     *   question is only building a hint for an error already on its way, and anything thrown
-     *   is swallowed: the user may not have meant this processor at all.
+     *   this one, so make it name what the user got wrong. This is called with no net for
+     *   every selected processor, so whatever it throws ends the run.
      * - `context.args` is **not** this processor's `Args` yet -- decoding happens after this
      *   check. Read [ArchitectureProcessContext.rawArgs] instead.
      *

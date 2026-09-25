@@ -5,11 +5,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.Collections;
 import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
 import java.util.Map;
-import java.util.Set;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -121,74 +118,16 @@ class KatachiEntryPointSourceTest {
         assertTrue(source.contains("Do not edit"), "expected a \"do not edit\" warning:\n" + source);
     }
 
-    @Test
-    @DisplayName("手を挙げた processor が1つも無いと acceptsUndeclaredArgs は emptySet() になる")
-    void noAcceptorsRendersEmptySet() throws ReflectiveOperationException {
-        String source = render("com.example.projectArchitecture", new LinkedHashMap<>());
-
-        assertTrue(
-                source.contains(
-                        "public override val acceptsUndeclaredArgs: Set<String> = emptySet()"),
-                "expected emptySet():\n" + source);
-    }
-
-    @Test
-    @DisplayName("手を挙げた processor は生成コードの acceptsUndeclaredArgs に出る")
-    void acceptorsAreRenderedAsASetLiteral() throws ReflectiveOperationException {
-        Set<String> acceptors = new LinkedHashSet<>();
-        acceptors.add("template");
-
-        String source = render("com.example.projectArchitecture", new LinkedHashMap<>(), acceptors);
-
-        // This is the whole road the flag travels: build script -> registry-shaped generated
-        // source -> KatachiEntryPoint -> checkNoUnknownArgs. Nothing carries it over the command
-        // line, so if it is missing here it is missing everywhere.
-        assertTrue(
-                source.contains("public override val acceptsUndeclaredArgs: Set<String> = setOf(")
-                        && source.contains("\"template\","),
-                "expected the key in a setOf(...) literal:\n" + source);
-    }
-
-    @Test
-    @DisplayName("acceptsUndeclaredArgs もキー順にソートされる -- 書いた順を変えても同じテキスト")
-    void acceptorsAreSortedByKey() throws ReflectiveOperationException {
-        Set<String> inOrder = new LinkedHashSet<>();
-        inOrder.add("template");
-        inOrder.add("scaffold");
-
-        Set<String> reversed = new LinkedHashSet<>();
-        reversed.add("scaffold");
-        reversed.add("template");
-
-        String fromInOrder = render("com.example.projectArchitecture", new LinkedHashMap<>(), inOrder);
-        String fromReversed = render("com.example.projectArchitecture", new LinkedHashMap<>(), reversed);
-
-        assertEquals(fromInOrder, fromReversed);
-        assertTrue(
-                fromInOrder.indexOf("\"scaffold\"") < fromInOrder.indexOf("\"template\""),
-                "expected scaffold before template:\n" + fromInOrder);
-    }
-
     /** Calls the package-private {@code KatachiEntryPointSource.render(...)} through reflection. */
     private static String render(String architectureClassName, Map<String, String> processors)
-            throws ReflectiveOperationException {
-        return render(architectureClassName, processors, Collections.<String>emptySet());
-    }
-
-    /** As above, with the keys that were let ask for extra {@code --arg} names. */
-    private static String render(
-            String architectureClassName,
-            Map<String, String> processors,
-            Set<String> acceptsUndeclaredArgs)
             throws ReflectiveOperationException {
         Class<?> type = Class.forName(CLASS_NAME);
         // Named with every parameter type: a `render` that grows an argument would otherwise not
         // fail to compile here, it would fail at run time with NoSuchMethodException.
-        Method render = type.getDeclaredMethod("render", String.class, Map.class, Set.class);
+        Method render = type.getDeclaredMethod("render", String.class, Map.class);
         render.setAccessible(true);
         try {
-            return (String) render.invoke(
-                    null, architectureClassName, processors, acceptsUndeclaredArgs);
+            return (String) render.invoke(null, architectureClassName, processors);
         } catch (InvocationTargetException e) {
             if (e.getCause() instanceof RuntimeException) {
                 throw (RuntimeException) e.getCause();

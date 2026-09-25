@@ -33,9 +33,8 @@ import me.tbsten.katachi.test.fs.ForbiddenFileSystem
  */
 class TemplateProcessorArgsSpec : FreeSpec({
     "--processor=docs,template" - {
-        "template が手を挙げていれば、その役割のパラメータが --arg として通る" {
+        "表明なしで、その役割のパラメータが --arg として通る" {
             checkBoth(
-                acceptsUndeclaredArgs = setOf("template"),
                 values = mapOf(
                     "roleName" to "UseCase",
                     "name" to "GetItemList",
@@ -45,12 +44,11 @@ class TemplateProcessorArgsSpec : FreeSpec({
             )
         }
 
-        "docs 宛てのタイポは、template が手を挙げていても落ちる" {
-            // (a)「未宣言の --arg を何でも受け取る」を選んでいたら、これが template に吸われて
-            // 黙って通っていた。ここが (b) を選んだ理由そのもの。
+        "docs 宛てのタイポは、template のパラメータが通っていても落ちる" {
+            // 「未宣言の --arg を何でも受け取る」だったら、これが template に吸われて
+            // 黙って通っていたはず。ここがそうならないことの確認。
             val thrown = shouldThrow<KatachiUnknownProcessorArgException> {
                 checkBoth(
-                    acceptsUndeclaredArgs = setOf("template"),
                     values = mapOf(
                         "roleName" to "UseCase",
                         "name" to "GetItemList",
@@ -62,24 +60,11 @@ class TemplateProcessorArgsSpec : FreeSpec({
             thrown.unknown shouldBe setOf("outputDirr")
         }
 
-        "手を挙げていないと、template のパラメータは未知キーとして落ちる" {
-            val thrown = shouldThrow<KatachiUnknownProcessorArgException> {
-                checkBoth(values = mapOf("roleName" to "UseCase", "name" to "GetItemList"))
-            }
-
-            thrown.unknown shouldBe setOf("name")
-            thrown.notAllowed shouldBe mapOf("template" to setOf("name"))
-            thrown.message.shouldNotBeNull() shouldContain "acceptsUndeclaredArgs = true"
-        }
-
         "roleName が無いと template は1つも答えられないので、パラメータは通らない" {
             // どの役割の template かが決まらない。契約どおり例外ではなく emptySet で答えるので、
             // 落ちるのは未知キーとしてになる。
             val thrown = shouldThrow<KatachiUnknownProcessorArgException> {
-                checkBoth(
-                    acceptsUndeclaredArgs = setOf("template"),
-                    values = mapOf("name" to "GetItemList"),
-                )
+                checkBoth(values = mapOf("name" to "GetItemList"))
             }
 
             thrown.unknown shouldBe setOf("name")
@@ -88,16 +73,13 @@ class TemplateProcessorArgsSpec : FreeSpec({
         "別の役割の template が宣言している名前は通らない" {
             // 答えるのは「この run が名指しした役割が宣言した名前」ちょうど。
             val thrown = shouldThrow<KatachiUnknownProcessorArgException> {
-                checkBoth(
-                    acceptsUndeclaredArgs = setOf("template"),
-                    values = mapOf("roleName" to "UseCase", "screenTitle" to "Home"),
-                )
+                checkBoth(values = mapOf("roleName" to "UseCase", "screenTitle" to "Home"))
             }
 
             thrown.unknown shouldBe setOf("screenTitle")
         }
 
-        "docs と template が宣言しているキーは、手を挙げていなくても通る" {
+        "docs と template が宣言しているキーは、両方同時に選んでも通る" {
             checkBoth(values = mapOf("roleName" to "UseCase", "mode" to "check"))
         }
     }
@@ -138,10 +120,7 @@ class TemplateProcessorArgsSpec : FreeSpec({
     "roleName の誤字" - {
         "誤字は roleName のほうが報告され、パラメータの名前にすり替わらない" {
             val thrown = shouldThrow<KatachiUnknownTemplateRoleException> {
-                checkBoth(
-                    mapOf("roleName" to "Servce", "name" to "Greeting"),
-                    acceptsUndeclaredArgs = setOf("template"),
-                )
+                checkBoth(mapOf("roleName" to "Servce", "name" to "Greeting"))
             }
 
             thrown.roleName shouldBe "Servce"
@@ -192,17 +171,13 @@ private fun contextOf(values: Map<String, String>) = FakeArchitectureProcessCont
 )
 
 /** Judges [values] the way one `--processor=docs,template` run does, before anything runs. */
-private fun checkBoth(
-    values: Map<String, String>,
-    acceptsUndeclaredArgs: Set<String> = emptySet(),
-) {
+private fun checkBoth(values: Map<String, String>) {
     val selected: List<Pair<String, ArchitectureProcessor<*, *>>> = listOf(
         "docs" to GenerateDocumentation,
         "template" to GenerateCodeFromTemplate,
     )
     checkNoUnknownArgs(
         selected = selected,
-        acceptsUndeclaredArgs = acceptsUndeclaredArgs,
         context = contextOf(values),
         values = values,
     )

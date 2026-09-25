@@ -140,76 +140,19 @@ class ProcessorArgsSpec : FreeSpec({
             thrown.known shouldContain "roleName"
         }
 
-        "手を挙げていない processor が undeclaredArgNames を答えても、そのキーは通らない" {
-            // フラグは天井で、processor の答えはその下の集合。天井が閉じていれば
-            // processor が何を答えても1つも通らない。
-            val thrown = shouldThrow<KatachiUnknownProcessorArgException> {
-                check(
-                    selected = listOf("scaffold" to UndeclaredNameProcessor),
-                    values = mapOf("greeting" to "hi"),
-                )
-            }
-
-            thrown.unknown shouldContain "greeting"
-        }
-
-        "手を挙げていない processor が受け取れたはずの名前は、直し方のヒントとして例外に載る" {
-            val thrown = shouldThrow<KatachiUnknownProcessorArgException> {
-                check(
-                    selected = listOf("scaffold" to UndeclaredNameProcessor),
-                    values = mapOf("greeting" to "hi"),
-                )
-            }
-
-            thrown.notAllowed shouldBe mapOf("scaffold" to setOf("greeting"))
-            thrown.message.shouldNotBeNull() shouldContain "acceptsUndeclaredArgs = true"
-        }
-
-        "利用者が登録したキーは args(\"...\") の綴りで案内する" {
-            val thrown = shouldThrow<KatachiUnknownProcessorArgException> {
-                check(
-                    selected = listOf("scaffold" to UndeclaredNameProcessor),
-                    values = mapOf("greeting" to "hi"),
-                )
-            }
-
-            thrown.message.shouldNotBeNull() shouldContain
-                """katachi { processors { args("scaffold") { acceptsUndeclaredArgs = true } } }"""
-        }
-
-        "既定で登録される2つは、型のついた block の綴りで案内する" {
-            // `processors { args("template") { } }` と `processors { template { } }` は同じ
-            // processor を指し、両方書くと plugin が拒む。案内が前者を名乗ると、利用者は
-            // このエラーから出た先でそちらのエラーに入る。
-            for (key in listOf("docs", "template")) {
-                val thrown = shouldThrow<KatachiUnknownProcessorArgException> {
-                    check(
-                        selected = listOf(key to UndeclaredNameProcessor),
-                        values = mapOf("greeting" to "hi"),
-                    )
-                }
-
-                withClue(key) {
-                    thrown.message.shouldNotBeNull() shouldContain
-                        "katachi { processors { $key { acceptsUndeclaredArgs = true } } }"
-                }
-            }
-        }
-
-        "手を挙げた processor が答えた名前は通る" {
+        "processor が undeclaredArgNames で答えた名前は、表明なしに通る" {
+            // 表明の仕組みが無くなったので、答えはそのまま run が受け付ける集合になる。
             check(
                 selected = listOf("scaffold" to UndeclaredNameProcessor),
-                acceptsUndeclaredArgs = setOf("scaffold"),
                 values = mapOf("greeting" to "hi"),
             )
         }
 
-        "手を挙げても、その processor が答えなかった名前は通らない" {
+        "processor が答えなかった名前は、これまでどおり通らない" {
             // 「何でも受け取る」ではない、というのがこの設計の要。
             val thrown = shouldThrow<KatachiUnknownProcessorArgException> {
                 check(
                     selected = listOf("scaffold" to UndeclaredNameProcessor),
-                    acceptsUndeclaredArgs = setOf("scaffold"),
                     values = mapOf("greetingg" to "hi"),
                 )
             }
@@ -217,16 +160,11 @@ class ProcessorArgsSpec : FreeSpec({
             thrown.unknown shouldBe setOf("greetingg")
         }
 
-        "手を挙げた processor が答えられなければ、その例外がそのまま出る" {
-            // 以前はここも握って emptySet として扱っていた。すると「答えられなかった」が
-            // 「何も受け取らない」に化け、利用者は自分が打ち間違えた roleName ではなく、
-            // その巻き添えで不明になったパラメータのほうを誤字だと告げられた。
-            // 手を挙げた processor の答えはこの run が何を受け付けるかそのものなので、
-            // 答えられないことは run の最初の間違いにあたる。
+        "processor の undeclaredArgNames が答えられなければ、その例外がそのまま出る" {
+            // 選ばれた processor 全部に網を張らずに問い合わせる: 答えられなければ run 自体が失敗する。
             shouldThrow<IllegalStateException> {
                 check(
                     selected = listOf("broken" to ThrowingUndeclaredNameProcessor),
-                    acceptsUndeclaredArgs = setOf("broken"),
                     values = mapOf("anything" to "x"),
                 )
             }
@@ -236,7 +174,6 @@ class ProcessorArgsSpec : FreeSpec({
             // undeclaredArgNames の KDoc に載っている例そのもの。
             check(
                 selected = listOf("annotate" to AnnotateRoles),
-                acceptsUndeclaredArgs = setOf("annotate"),
                 values = mapOf("domain/UseCase" to "owned by the platform team"),
                 architecture = oneRoleArchitecture(),
             )
@@ -245,7 +182,6 @@ class ProcessorArgsSpec : FreeSpec({
                 shouldThrow<KatachiUnknownProcessorArgException> {
                     check(
                         selected = listOf("annotate" to AnnotateRoles),
-                        acceptsUndeclaredArgs = setOf("annotate"),
                         values = mapOf("domain/Nope" to "x"),
                         architecture = oneRoleArchitecture(),
                     )
@@ -253,18 +189,11 @@ class ProcessorArgsSpec : FreeSpec({
             }
         }
 
-        "手を挙げていない processor が答えられなくても、その run は落ちない" {
-            // ヒントを作るためだけの問い合わせ。利用者がその processor を指していない
-            // こともあるので、答えられなければヒントが1つ減るだけで済ませる。
-            val thrown = shouldThrow<KatachiUnknownProcessorArgException> {
-                check(
-                    selected = listOf("broken" to ThrowingUndeclaredNameProcessor),
-                    values = mapOf("anything" to "x"),
-                )
-            }
-
-            thrown.unknown shouldContain "anything"
-            thrown.notAllowed shouldBe emptyMap()
+        "docs,template を同時に選んでも通る -- template のパラメータは表明なしで通る" {
+            check(
+                selected = listOf("docs" to NoArgProcessor, "template" to UndeclaredNameProcessor),
+                values = mapOf("greeting" to "hi"),
+            )
         }
     }
 })
@@ -273,11 +202,9 @@ class ProcessorArgsSpec : FreeSpec({
 private fun check(
     selected: List<Pair<String, ArchitectureProcessor<*, *>>>,
     values: Map<String, String>,
-    acceptsUndeclaredArgs: Set<String> = emptySet(),
     architecture: Architecture = architecture { },
 ) = checkNoUnknownArgs(
     selected = selected,
-    acceptsUndeclaredArgs = acceptsUndeclaredArgs,
     // ForbiddenFileSystem: the check runs before any processor does, so answering "is this key a
     // typo" may not walk the project. A context that throws on every read is what holds that.
     context = FakeArchitectureProcessContext(

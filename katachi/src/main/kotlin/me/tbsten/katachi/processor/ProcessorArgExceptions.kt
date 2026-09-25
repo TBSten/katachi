@@ -14,9 +14,6 @@ import me.tbsten.katachi.KatachiDeclarationException
  *
  * @property unknown the `--arg` keys that matched no processor's arguments.
  * @property known every `--arg` key the selected processors do accept.
- * @property notAllowed by processor key, the unknown names that processor would have accepted had
- *   the module written `acceptsUndeclaredArgs = true` for it. A hint and nothing else: a name in
- *   here was still refused, which is what keeps the flag the user's own decision.
  *
  * ## Example 1: catch a mistyped `--arg` key
  * ```kt
@@ -45,7 +42,6 @@ import me.tbsten.katachi.KatachiDeclarationException
 public class KatachiUnknownProcessorArgException internal constructor(
     public val unknown: Set<String>,
     public val known: Set<String>,
-    public val notAllowed: Map<String, Set<String>> = emptyMap(),
 ) : KatachiDeclarationException(
     message = buildString {
         appendLine("Unknown processor argument(s): ${unknown.sorted().joinToString(", ")}.")
@@ -61,36 +57,8 @@ public class KatachiUnknownProcessorArgException internal constructor(
                 "Known arguments: ${known.sorted().joinToString(", ")}."
             },
         )
-        for ((key, names) in notAllowed.toSortedMap()) {
-            appendLine()
-            append(
-                "\"$key\" would accept ${names.sorted().joinToString(", ")} if this module " +
-                    "asked for it: ${undeclaredArgsHint(key)}.",
-            )
-        }
     },
 )
-
-/**
- * The processor keys the Gradle plugin gives a block of their own.
- *
- * katachi's own two processors are registered into every module by the plugin, which also gives
- * each one a typed block. Both spellings reach the same processor, and writing both is refused, so
- * a hint naming the wrong one walks the reader into that refusal instead of out of this one.
- *
- * Named here rather than asked of the plugin because this runs inside the generated entry point,
- * where no Gradle type is on the classpath. The plugin's own list is pinned to these same two
- * names by a test of its own, so registering a third processor by default fails there, naming this
- * list as the other half to change.
- */
-private val TYPED_BLOCK_KEYS: Set<String> = setOf("docs", "template")
-
-/** How to spell "let this processor take arguments it does not declare", for [key]. */
-private fun undeclaredArgsHint(key: String): String = if (key in TYPED_BLOCK_KEYS) {
-    "katachi { processors { $key { acceptsUndeclaredArgs = true } } }"
-} else {
-    """katachi { processors { args("$key") { acceptsUndeclaredArgs = true } } }"""
-}
 
 /**
  * A processor's `@Serializable` arguments could not be read from the `--arg` values handed to
