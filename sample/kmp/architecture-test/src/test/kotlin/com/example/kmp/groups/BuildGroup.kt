@@ -26,6 +26,27 @@ import me.tbsten.katachi.dsl.DeclarationContainerScope
 fun DeclarationContainerScope.buildGroup() = "build".group {
     documented = false
     title = "ビルド"
+    summary = "各モジュールの build.gradle.kts と、その周りに置くビルドファイル"
+    description = """
+        ビルドスクリプトです。2つの役割の分かれ目はモジュールの中か外かで、GradleModule が
+        各モジュールの `build.gradle.kts`、GradleRoot が `settings.gradle.kts` や wrapper など
+        モジュールの周りにあるものです。
+
+        `documented = false` を書いています。リポジトリの形の一部ではありますが、生成される
+        ドキュメントを読む人が探しているアーキテクチャではないからです。検査からは外れません。
+        group と各役割の両方に書いているのは、katachi が宣言された値をそのまま保ち、
+        親から継承しないためです。省略は「書かなかった」として残り、それを true と読むのは
+        読む側の仕事になります。
+
+        `build/` や `.kotlin/`、`local.properties` のための役割はありません。開発者のマシンと
+        CI には存在しますが、どのコミットにも入っていないからです。`files` は既定の
+        `gitTracked()` のままなので、このプロジェクトがどのファイルを持つかを決めるのは git で、
+        git は無視したファイルを報告しません。締め出すために何かを宣言する必要はありません。
+
+        2つの役割はどちらも `owner = "platform"` を持ちます。これは katachi の語彙ではなく
+        このサンプルが自分で足したメタデータキーで、`PlatformOwnedFilesProcessor` だけが
+        読みます。同じキーを `tool/Git` も持っています。
+    """.trimIndent()
 
     gradleModule()
     gradleRoot()

@@ -14,6 +14,19 @@ import me.tbsten.katachi.dsl.DeclarationContainerScope
  */
 fun DeclarationContainerScope.testingGroup() = "testing".group {
     title = "テスト"
+    summary = "振る舞いを確かめるテストと、この定義そのもの"
+
+    description = """
+        アプリのレイヤーではなく、プロジェクトを支えているコードを集めた場所です。
+        テストコードと、アーキテクチャ定義そのものが入ります。
+
+        2つを分けているのは対象が違うからです。テストは振る舞いを確かめ、アーキテクチャ定義は
+        形を記述します。定義を `Test` の中に隠すと、`:architecture-test` というモジュールが
+        なぜあるのかがドキュメントから消えてしまいます。
+
+        ここに置いてはいけないのは、アプリの本体コードです。`:architecture-test` はアプリの
+        どのレイヤーにも属さないモジュールで、main ソースセットを持ちません。
+    """.trimIndent()
 
     test()
     architectureDefinition()

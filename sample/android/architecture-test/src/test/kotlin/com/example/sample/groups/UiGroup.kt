@@ -21,6 +21,25 @@ import me.tbsten.katachi.dsl.DeclarationContainerScope
  */
 fun DeclarationContainerScope.uiGroup() = "ui".group {
     title = "UI (共通レイヤー)"
+    summary = "feature をまたいで共有する UI。:ui の4つの package と :navigation"
+    description = """
+        どの画面からも使われる UI と、その土台。`:ui` は1つのモジュールを package で割ってあり、
+        `component`（共通部品）・`theme`（色とタイポグラフィ）・`core`（UI 層の語彙）・
+        `preview`（プレビューの土台）の4つ。`:navigation` は画面遷移の窓口だけを持つ別モジュール。
+
+        ここに置いてよいのは、2つ以上の feature が使うもの、あるいは使うと決まっているもの。
+        1つの画面でしか使わないものは、その feature モジュールに置く。`:ui` は下の層も
+        横の feature も知らないので、`:data` や `:feature:*` への依存は入らない。
+
+        feature 側の Screen / ViewModel / Route がここに無いのは、増え方が違うから。
+        あちらはモジュールを足せば勝手に増える場所で、こちらは1つ足すたびに
+        「全画面で使うのか」を決める場所なので、group を分けてある。
+
+        `:navigation` が `:ui` と別モジュールなのは、依存の向きのため。feature は
+        `AppNavigator` インターフェースにだけ依存し、`NavHostController` には触らない。
+        画面部品を使いたいだけのコードにナビゲーションの依存を持ち込ませないためでもある。
+        グラフの組み立ては `:app` が行う。
+    """.trimIndent()
 
     component()
     theme()

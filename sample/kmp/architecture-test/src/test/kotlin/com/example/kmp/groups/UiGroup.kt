@@ -25,6 +25,30 @@ import me.tbsten.katachi.dsl.DeclarationContainerScope
  */
 fun DeclarationContainerScope.uiGroup() = "ui".group {
     title = "UI"
+    summary = ":ui と :navigation。どの画面にも属さない共有の UI と、遷移先の定義"
+    description = """
+        画面から使われる側の、共有モジュール2つです。特定の画面に属さないものがここに集まります。
+
+        `:ui` は1つのモジュールを package で割っています。`component`（部品）、`theme`（見た目）、
+        `core`（画面の状態の型）、`preview`（プレビューの土台）の4つで、それぞれが役割1つです。
+        以前は `:ui:component` のような別モジュールでしたが、統合して package にしました。
+        「この役割はこのモジュールのこの package」と言えることが katachi に要る形だからで、
+        実際の現場でもこちらの方がよく見ます。
+
+        `:navigation` は同じ group にいますが Compose に依存しません。遷移先の一覧と現在地だけを
+        持ち、それをどう見せるかは `:app:android` の `AppRoot` の仕事です。画面から使われる側で
+        あることは `:ui` と同じなので、この group に置いています。
+
+        ここに置かないもの:
+
+        - 画面ごとの Screen / ViewModel / Route。それは feature group です
+        - feature モジュールへの依存。依存は常に feature から `:ui` / `:navigation` へ向きます。
+          逆向きの参照が1つ入ると、画面を足すたびに共有モジュールが太ります
+
+        layout はどれもモジュールパスから始まり、その下の package は `modulePackage` から
+        導きます。ディレクトリ名を書き写すのではなく、ビルドが言っていることをそのまま書く、
+        というのがこのサンプル全体の方針です。
+    """.trimIndent()
 
     component()
     theme()

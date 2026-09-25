@@ -13,6 +13,27 @@ fun DeclarationContainerScope.gradleModule() = "GradleModule" {
     summary = "各モジュールの build.gradle.kts"
     documented = false
     owner = "platform"
+    description = """
+        各モジュールが1つずつ持つ `build.gradle.kts` です。layout は
+        `settings.gradle.kts` と同じ並びで、1モジュール1行書いています。
+
+        空の `.module { }` は空の宣言ではありません。module ブロックは常に
+        「このモジュールの `build/` は検査しない」と「`build.gradle.kts` が無ければならない」の
+        2つを言うので、中身が空でもその2つが宣言されます。そのモジュールのソースがどこに行くかは、
+        それぞれの役割が別に言います。
+
+        ワイルドカードにしてあるのは `:feature:*` だけです。feature はモジュールが増える前提の
+        場所なので、増えてもこの一覧を触らずに済みます。裏を返すと、`feature/` の下にモジュール
+        ではないディレクトリを作ると、どの役割も名乗らないので `[UnexpectedFile]` になります。
+
+        `:architecture-test` もここに出てきます。katachi に専用モジュールを与えた代償で、
+        あのモジュールも他と同じく1つのモジュールだからです。
+
+        `documented = false` を group と役割の両方に書いているのは、katachi が宣言された値を
+        そのまま保ち、親から継承しないからです。読む側が `group[Documented] ?: true` と
+        組み合わせます。`owner = "platform"` はこのサンプル独自のメタデータキーで、
+        `PlatformOwnedFilesProcessor` だけが読みます。
+    """.trimIndent()
     example("data/build.gradle.kts", ":data のビルドスクリプト")
     example("architecture-test/build.gradle.kts", ":architecture-test のビルドスクリプト")
     // One line per module, written the way `settings.gradle.kts` writes it. An empty

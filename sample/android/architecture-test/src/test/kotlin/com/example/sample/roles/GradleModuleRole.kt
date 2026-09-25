@@ -15,6 +15,23 @@ fun DeclarationContainerScope.gradleModule() = "GradleModule" {
     title = "モジュールのビルドスクリプト"
     summary = "各モジュールの build.gradle.kts"
     documented = false
+    description = """
+        各モジュールの `build.gradle.kts`。`":app".module { }` のように空のブロックが並ぶ。
+        `.module { }` 自体が「そのディレクトリがある」「`build/` は見ない」
+        「`build.gradle.kts` がある」の3つを意味するので、中身を書かなくてもモジュールの宣言になる。
+
+        ここは `settings.gradle.kts` の `include(...)` を写した場所で、それ以上のことは書かない。
+        モジュールの中に何が入るかは、同じモジュールを名指しする他の役割が言う。
+        両方をここに書くと、`:ui` の中身が「UI の話」ではなく「ビルドの話」に見えてしまう。
+
+        feature だけは `":feature:*"` の1行。feature モジュールは誰にも断らずに増えるもので、
+        `include(":feature:profile")` を足したときにこの定義を直さずに済むようにしてある。
+
+        `documented = false`。ビルド設定はどのプロジェクトにもある同じ形で、このアプリが
+        何であるかを何も語らないので、生成されるドキュメントには出さない。検査はする。
+    """.trimIndent()
+    example("app/build.gradle.kts", ":app のビルドスクリプト")
+    example("feature/home/build.gradle.kts", ":feature:home のビルドスクリプト")
     layout {
         // One line per `include(...)` in settings.gradle.kts, in the same order —
         // except the features, which are one `":feature:*"` because a feature module

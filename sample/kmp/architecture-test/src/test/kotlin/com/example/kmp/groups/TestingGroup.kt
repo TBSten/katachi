@@ -15,6 +15,25 @@ import me.tbsten.katachi.dsl.DeclarationContainerScope
  */
 fun DeclarationContainerScope.testingGroup() = "testing".group {
     title = "テスト支援"
+    summary = "テストダブル、テストコード本体、そして katachi のアーキテクチャ定義"
+    description = """
+        テストにまつわる3つの役割です。Fake（`:testing` の commonMain）、Test（各モジュールの
+        テスト）、ArchitectureDefinition（`:architecture-test`）。
+
+        ArchitectureDefinition を Test と分けてあるのが、この group でいちばん言いたいことです。
+        アーキテクチャ定義はテストコードではありません。プロジェクトの形を説明するのが仕事で、
+        それを実際のディレクトリと突き合わせるテストは1行しかない。役割を与えておかないと、
+        `:architecture-test` が誰も宣言していないディレクトリになります。
+
+        Fake が `commonTest` ではなく `commonMain` にいるのも、この group が見せている形です。
+        テスト source set は他のモジュールから参照できないので、テストのためのコードでも
+        production の source set に置かざるをえないことがあります。`:testing` はそのために
+        切られた、アプリ本体から誰も依存しないモジュールです。
+
+        置いてはいけないもの:
+
+        - アプリ本体のコード。ここにあるのは「テストのための」コードと、プロジェクトの説明です
+    """.trimIndent()
 
     fake()
     test()

@@ -24,6 +24,27 @@ import me.tbsten.katachi.dsl.DeclarationContainerScope
  */
 fun DeclarationContainerScope.testingGroup() = "testing".group {
     title = "テスト"
+    summary = "アプリを確かめるためにあるもの。共有のフェイク、テスト、アーキテクチャ定義"
+    description = """
+        アプリのレイヤーではなく、アプリを確かめるためにあるもの。3つ集めてある。
+        フェイクは `:testing` にある差し替え用の実装、テストコードはテストそのもの、
+        アーキテクチャ定義は katachi の DSL で書かれたこの定義自身。
+
+        アーキテクチャ定義をテストコードに混ぜていないのは、2つが別のことを書いているから。
+        定義は「どんな形をしているか」、テストは「どう振る舞うか」。どちらも
+        `:architecture-test` にあり、ファイルの場所と名前で区別される
+        （`ProjectArchitecture.kt` と `groups/` `roles/` が定義、package 直下の
+        `*Spec.kt` `*Test.kt` がテスト）。定義を書き換える人とテストを足す人は
+        だいたい別のことをしているので、ドキュメント上でも別項目にしてある。
+
+        `:testing` だけがアプリ側のモジュールで、`:data` のインターフェースを満たす `Fake*` を
+        `main` ソースセットに置いて他モジュールのテストへ公開する。テスト用のコードを
+        あえて製品コードとして出すのは、`src/test` が他モジュールから見えないため。
+
+        `:architecture-test` は `:app` と並ぶ、package がモジュールパスから導けないモジュール。
+        そのまま当てると `com/example/sample/architectureTest` になるので、この group の
+        2つの役割はどちらも `com/example/sample` を直接書いている。
+    """.trimIndent()
 
     fake()
     test()

@@ -8,9 +8,31 @@ import me.tbsten.katachi.dsl.kotlin.ktsFile
 fun DeclarationContainerScope.gradle() = "Gradle" {
     title = "Gradle スクリプト"
     summary = "ビルドの定義と Gradle wrapper"
+    description = """
+        ビルド時にだけ効くものを集めた役割です。ルートの `build.gradle.kts` と
+        `settings.gradle.kts`、`gradle.properties`、wrapper 一式（`gradlew`, `gradlew.bat`,
+        `gradle/wrapper/`）、そしてこのサンプル専用の version catalog
+        `gradle/sample.versions.toml` が入ります。
+
+        `:architecture-test` については `.module { }` を空で書いてあります。`.module { }` は
+        それ自体がディレクトリと `build.gradle.kts` と `build/` の除外を意味するので、
+        モジュールが1つあるという事実だけを書けば足ります。ルート側に `build.gradle.kts` が
+        書かれていないのも同じ理由です。
+
+        置いてはいけないもの:
+
+        - 実行時に読む設定。ポートやログの設定はサーバ設定の役割です
+        - ビルドが書き出したもの。`build/` と `.kotlin/` は `.gitignore` にあり、既定の
+          `files = gitTracked()` では検査に渡りません。それでも各 `.module { }` が
+          `"build".ignore()` と書くのは、`files = wholeTree()` を選んだプロジェクトでも
+          理由が読めるようにするためです
+
+        この役割が属する `build` グループは `documented = false` なので、生成ドキュメントには
+        出ません。チェックの対象からは外れていません。
+    """.trimIndent()
     example("build.gradle.kts", "このサンプルのビルド定義")
-    example("architecture-test/build.gradle.kts", "アーキテクチャ定義モジュールのビルド定義")
-    example("settings.gradle.kts", "composite build と version catalog の配線")
+    example("architecture-test/build.gradle.kts", "定義モジュールのビルド定義")
+    example("settings.gradle.kts", "ビルド全体の配線")
     layout {
         // The application module is the root project, so `":"` resolves to the
         // repository root and everything below reads as a plain root-relative path.
