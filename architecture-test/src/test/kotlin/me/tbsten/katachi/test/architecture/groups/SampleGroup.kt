@@ -2,11 +2,12 @@ package me.tbsten.katachi.test.architecture.groups
 
 import me.tbsten.katachi.dsl.DeclarationContainerScope
 import me.tbsten.katachi.test.architecture.roles.sampleBuild
+import me.tbsten.katachi.test.architecture.roles.sampleGuide
 
 /**
  * The roles of `sample/`.
  *
- * One role, and what it declares is three `ignore()` lines. Each sample is an independent
+ * The samples themselves are ignored, one `ignore()` line each. Each sample is an independent
  * Gradle build that describes itself with katachi and asserts it from its own
  * `:architecture-test` — including the layout snapshot each keeps in its own `snapshots/` —
  * so repeating their contents here would put the same truth in two places.
@@ -19,4 +20,5 @@ fun DeclarationContainerScope.sampleGroup() = "sample".group {
     title = "サンプル"
 
     sampleBuild()
+    sampleGuide()
 }

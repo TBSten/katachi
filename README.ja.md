@@ -213,68 +213,19 @@ architecture {
 
 ## サンプル
 
-`sample/` の下に4つ置いてある。どれも `settings.gradle.kts` と gradle wrapper を自前で持つ
-**独立した Gradle ビルド**で、`includeBuild("../..")` で katachi をこのリポジトリのソースから取り込む。
-利用者と同じ書き方（`testImplementation(libs.katachi)`）で使うので、結合テストを兼ねている。
+`sample/` の下に4つ置いてある。それぞれの書き味・実行方法は各 README、サンプル全体に共通する
+設計方針やビルド設定は [`sample/README.md`](sample/README.md) にまとめてある。
 
-| サンプル | 内容 | katachi の定義の置き場所 | ルートから回すタスク |
-|---|---|---|---|
-| `sample/jvm` | Ktor の最小サーバ（アプリ本体はルートプロジェクトの1モジュール） | `:architecture-test` | `./gradlew checkSampleJvm` |
-| `sample/android` | マルチモジュールの Android アプリ（Compose / AndroidX の実依存あり） | `:app` の `src/test`（下記） | `./gradlew checkSampleAndroid` |
-| `sample/kmp` | Android + iOS の KMP プロジェクト（Compose Multiplatform の実依存あり） | `:architecture-test` | `./gradlew checkSampleKmp` |
-| `sample/custom-processor` | 利用者が自分で書く processor 3本（引数なし / 型付き引数 / 見つけたら run を失敗させる検査）。アプリ本体は3ファイルだけ | `:architecture-test` | `./gradlew checkSampleCustomProcessor` |
-
-`:architecture-test` は上の「導入」で書いた推奨形そのもので、`kotlin("jvm")` と
-`testImplementation(libs.katachi)` しか持たない。`sample/android` だけは現状 `:app` の
-`src/test/kotlin` に間借りしていて、他の2つと形が揃っていない（→
-`.local/features-by-version/v0.1/open-issues.md`）。
-
-定義は**1ファイルではなく package で分けてある**。`application`（アプリ本体の役割）/
-`testing`（テスト関連）/ `gradle`（ビルド設定）/ `tool`（git など）の4つで、
-それぞれが非 inline の `ArchitectureScope` 拡張関数を公開し、`ProjectArchitecture.kt` はそれを呼ぶだけ。
-**拡張関数に切り出しても宣言位置が呼び出し元ではなく定義を書いたファイルを指すこと**を、
-各サンプルの `ProjectArchitectureSpec` がファイル名の完全一致で検証している。
-
-スタブではなく**実物に近い中身**にしてある。`Screen` は本物の `@Composable`、`ViewModel` は本物の
-`androidx.lifecycle.ViewModel` を継承し、`@Preview` も実際に書いてある。検査対象が実プロジェクトと同じ形でなければ、
-katachi が実際の構成で機能することを確かめたことにならないため。
-
-モジュールの切り方も実プロジェクト寄りで、`:ui` と `:data` は**1モジュールの中を package で分ける**形にしてある
-（`:ui` は `component` / `theme` / `core` / `preview`、`:data` は android が `user` / `settings`、
-kmp が `user` / `platform`）。katachi が表現できなければならない形の中で最もよく出てくるのがこれなので、
-サンプルの主眼はここにある。
+| サンプル | 内容 | README |
+|---|---|---|
+| `sample/jvm` | Ktor の最小サーバ | [`sample/jvm/README.md`](sample/jvm/README.md) |
+| `sample/android` | マルチモジュールの Android アプリ（Compose / AndroidX の実依存あり） | [`sample/android/README.md`](sample/android/README.md) |
+| `sample/kmp` | Android + iOS の KMP プロジェクト（Compose Multiplatform の実依存あり） | [`sample/kmp/README.md`](sample/kmp/README.md) |
+| `sample/custom-processor` | 利用者が自分で書く processor の見本 | [`sample/custom-processor/README.md`](sample/custom-processor/README.md) |
 
 ```bash
-./gradlew check         # katachi 本体（:katachi）のテスト
-./gradlew checkSamples  # 全サンプル。各サンプルの gradlew を順に叩く
+./gradlew checkSamples  # 全サンプルをまとめて回す
 ```
-
-`checkSamples` は全サンプルを**順番に**回す（どれも同じ katachi ビルドを共有していて、
-並行させると katachi の `build/` が壊れるため）。個別に回したいときは各サンプルのディレクトリで
-そのサンプルの `./gradlew` を直接叩いてもよい。
-
-回すタスクは `-Pkatachi.sample.<name>.task=...`（全サンプルなら `-Pkatachi.sample.task=...`）で差し替えられる。
-複数タスクはスペース区切りで書く。
-
-`sample/jvm` と `sample/android` は `check`。`sample/kmp` だけは
-`:architecture-test:test` と `:app:android:testDebugUnitTest` の**2つ**が既定になっている。
-
-- `check` を使わないのは、KMP モジュールが iOS ターゲットを宣言していて、`check` が
-  `compileKotlinIosArm64` と Kotlin/Native ツールチェーンのダウンロードを task graph に入れてしまうため
-- それでも2つ回すのは、片方ずつでは足りないため。`:architecture-test:test` が katachi の検証で、
-  `:app:android:testDebugUnitTest` が「サンプルが KMP プロジェクトとしてコンパイルできること」の検証。
-  `:architecture-test` は素の JVM モジュールで `:ui` / `:data` / `:feature:*` を一切参照しない
-
-### Android SDK
-
-`sample/android` と `sample/kmp` は Android SDK を要求する。次のどちらかを用意する。
-
-- 環境変数 `ANDROID_HOME`（または `ANDROID_SDK_ROOT`）を設定する — CI はこちら
-- `sample/android/local.properties` / `sample/kmp/local.properties` に `sdk.dir=...` を書く
-  （`local.properties` はマシン固有なのでコミットしない）
-
-どちらも無い場合、ルートの `checkSample*` タスクは Android Studio の既定の SDK 位置
-（`~/Library/Android/sdk` / `~/Android/Sdk`）を最後の手段として探す。
 
 ## 開発
 
@@ -284,29 +235,8 @@ kmp が `user` / `platform`）。katachi が表現できなければならない
 | Kotlin | 2.4.10 |
 | JDK / toolchain | 17 |
 | kotest | 6.2.5 |
-| AGP（サンプル） | 9.1.0 — **上げないこと**（下記） |
-| compileSdk / targetSdk / minSdk（サンプル） | 36 / 36 / 24 |
-| Compose（サンプル） | android: BOM 2026.06.01 / kmp: Compose Multiplatform 1.10.3 |
 
-- Kotlin / katachi / kotest のバージョンは `gradle/libs.versions.toml` が SSoT。
-  3サンプルはこれを `libs` として読み、サンプル固有の依存（Ktor / AGP / Compose ランタイム）だけを
-  自分の catalog（`sampleLibs`）に持つ
-- **Compose コンパイラプラグイン**（`org.jetbrains.kotlin.plugin.compose`）は Kotlin と完全に同じバージョンでなければならず、
-  TOML catalog は別の catalog を参照できない。そのためこれだけはルート catalog に
-  `libs.plugins.kotlinPluginCompose` として置いてある。android / kmp のルート `build.gradle.kts` が
-  `alias(libs.plugins.kotlinPluginCompose) apply false` で読む。
-  Compose の**ランタイム**（BOM / Compose Multiplatform）は Kotlin と独立に決まるので、そちらは `sampleLibs` のまま
-- **AGP は Android Studio 側の対応上限に合わせる。** 9.1.0 なのは、これより新しいと Android Studio の
-  Gradle sync が `The project is using an incompatible version (AGP x.y.z) of the Android Gradle plugin.`
-  で止まるため。CLI のビルドだけを見て上げると、IDE で開けなくなる。上げるときは
-  [Android Studio と AGP の対応表](https://developer.android.com/build/releases/gradle-plugin#updating-gradle)を先に見る
-- AGP 9 は Kotlin コンパイラを内蔵していて、放っておくと katachi より古い Kotlin でサンプルをコンパイルしてしまう。
-  サンプルのルート `build.gradle.kts` がその版を引き上げている（理由はそのファイルのコメントに書いてある）。
-  CI は `.github/scripts/check-kotlin-versions.sh` で、この回避策が効き続けているかを毎回突き合わせる
-- **サンプルの Compose / AndroidX は「最新」ではなく「`minCompileSdk` が 36 以下で最新」を選ぶ。**
-  AGP 9.1.0 が扱える `compileSdk` は 36 までだが、2026 年後半の AndroidX は `minCompileSdk=37` を宣言し始めている。
-  Compose BOM 2026.08.00 以降・`lifecycle` 2.11.0・`navigation` 2.10.x・Compose Multiplatform 1.11.0 以降などを入れると
-  configuration の時点で `requires ... version 37 or later of the Android APIs` で落ちる。
-  同じ BOM でも artifact ごとに `minCompileSdk` が違うので、上げるときは
-  `unzip -p <artifact>.aar META-INF/com/android/build/gradle/aar-metadata.properties` で1つずつ確かめる
-- CI は `.github/workflows/ci.yml`。`main` への push と pull request で、本体と3サンプルをそれぞれ別ステップで回す
+- Kotlin / katachi / kotest のバージョンは `gradle/libs.versions.toml` が SSoT。サンプルはこれを
+  `libs` として読み、サンプル固有の依存は自分の catalog（`sampleLibs`）に持つ
+  （サンプルのビルド設定の詳細は [`sample/README.md`](sample/README.md) 参照）
+- CI は `.github/workflows/ci.yml`。`main` への push と pull request で、本体と4サンプルをそれぞれ別ステップで回す

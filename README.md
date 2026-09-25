@@ -199,25 +199,20 @@ The root project exists **only to aggregate the samples** and carries no plugins
 
 ## Samples
 
-Four of them live under `sample/`. Each is a **standalone Gradle build** with its own `settings.gradle.kts` and wrapper, pulling katachi from this repository's sources through `includeBuild("../..")`. They consume it exactly the way you would (`testImplementation(libs.katachi)`), so they double as integration tests.
+Four of them live under `sample/`. Each one's own README covers what it looks like and how to run
+it; what the samples share — design decisions and build setup — lives in
+[`sample/README.md`](sample/README.md).
 
-| Sample | What it is | Task from the root |
+| Sample | What it is | README |
 |---|---|---|
-| `sample/jvm` | A minimal Ktor server | `./gradlew checkSampleJvm` |
-| `sample/android` | A multi-module Android app, with real Compose and AndroidX dependencies | `./gradlew checkSampleAndroid` |
-| `sample/kmp` | An Android + iOS KMP project, with real Compose Multiplatform dependencies | `./gradlew checkSampleKmp` |
-| `sample/custom-processor` | Three hand-written processors — no arguments, typed arguments, and a check that fails the run when it finds something. Its application is three files | `./gradlew checkSampleCustomProcessor` |
-
-They are **close to the real thing, not stubs.** `Screen` is a real `@Composable`, `ViewModel` extends the real `androidx.lifecycle.ViewModel`, `@Preview` is actually written. Checking something that does not look like a real project would not tell us katachi works on one.
+| `sample/jvm` | A minimal Ktor server | [`sample/jvm/README.md`](sample/jvm/README.md) |
+| `sample/android` | A multi-module Android app, with real Compose and AndroidX dependencies | [`sample/android/README.md`](sample/android/README.md) |
+| `sample/kmp` | An Android + iOS KMP project, with real Compose Multiplatform dependencies | [`sample/kmp/README.md`](sample/kmp/README.md) |
+| `sample/custom-processor` | A hands-on tour of writing your own processor | [`sample/custom-processor/README.md`](sample/custom-processor/README.md) |
 
 ```bash
-./gradlew check         # the library itself
 ./gradlew checkSamples  # every sample, through its own wrapper
 ```
-
-`checkSamples` runs them **in sequence** — they share one katachi build, and running them in parallel corrupts katachi's `build/`.
-
-`sample/android` and `sample/kmp` need an Android SDK: set `ANDROID_HOME`, or write `sdk.dir=...` into that sample's `local.properties`.
 
 ## Roadmap
 
@@ -240,13 +235,12 @@ See https://tbsten.github.io/katachi/roadmap/ for the detail.
 | Kotlin | 2.4.10 |
 | JDK / toolchain | 17 |
 | kotest | 6.2.5 |
-| AGP (samples) | 9.1.0 — **do not raise it** |
 
-`gradle/libs.versions.toml` is the single source of truth for the Kotlin, katachi and kotest versions. The samples read it as `libs` and keep only their own dependencies in their own catalog.
+`gradle/libs.versions.toml` is the single source of truth for the Kotlin, katachi and kotest
+versions. The samples read it as `libs` and keep only their own dependencies in their own catalog
+(see [`sample/README.md`](sample/README.md) for the samples' own build setup).
 
-**AGP tracks what Android Studio supports, not the newest release.** Anything newer than 9.1.0 stops Android Studio's Gradle sync with `The project is using an incompatible version (AGP x.y.z) of the Android Gradle plugin.` Raising it because the CLI build is green makes the project impossible to open in the IDE.
-
-CI is `.github/workflows/ci.yml`: the library and each sample in their own step, on every push to `main` and every pull request.
+CI is `.github/workflows/ci.yml`: the library and each of the four samples in their own step, on every push to `main` and every pull request.
 
 ## License
 

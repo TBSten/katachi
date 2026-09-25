@@ -50,3 +50,16 @@ iOS のモジュールのタスクまで対象になり、macOS と Xcode が必
 ```sh
 ./gradlew checkSampleKmp
 ```
+
+## `checkSampleKmp` の既定タスクについて
+
+`checkSampleKmp` は他のサンプルと違い、既定タスクが `check` ではない。`check` を使わないのは、
+KMP モジュールが iOS ターゲットを宣言していて、`check` が `compileKotlinIosArm64` と Kotlin/Native
+ツールチェーンのダウンロードを task graph に入れてしまうため。
+
+代わりに `:architecture-test:test`（katachi の検証）と `:app:android:testDebugUnitTest`（サンプルが
+KMP プロジェクトとしてコンパイルできることの検証）の両方を回す。`:architecture-test` は素の JVM
+モジュールで `:ui` / `:data` / `:feature:*` を一切参照しないので、片方だけでは足りない。これに加えて
+`:architecture-test:runKatachiProcessor --processor=layout,docs --arg mode=check` が続き、layout の
+スナップショットと生成ドキュメントが最新であることを検査する。既定値の正確な中身はルートの
+`build.gradle.kts` の `sampleBuilds` を参照。
