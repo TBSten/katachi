@@ -37,6 +37,27 @@ internal fun directoryTree(roles: List<Role>, placements: Map<Role, List<Placeme
     return lines.joinToString("\n") { it.render(column) }
 }
 
+/**
+ * The tree of [roles] under [heading], inside a fence — or nothing at all when there is no tree.
+ *
+ * The role names in it are plain text: a link inside a fenced block is not a link, and every
+ * page that writes a tree already links each of these roles somewhere above it.
+ */
+internal fun StringBuilder.appendDirectoryTree(
+    roles: List<Role>,
+    placements: Map<Role, List<Placement>>,
+    heading: String,
+) {
+    val tree = directoryTree(roles, placements)
+    if (tree.isEmpty()) return
+    append(SECTION_BREAK)
+    append(heading)
+    append(SECTION_BREAK)
+    append("```\n")
+    append(tree)
+    append("\n```")
+}
+
 /** What separates the deepest path from the role names, so the names of a tree line up. */
 private const val NAME_GAP: Int = 2
 
@@ -75,11 +96,22 @@ private class TreeNode {
 
     fun appendTo(lines: MutableList<TreeLine>, indent: Int) {
         for ((name, child) in children) {
+            // A directory that holds one thing and is claimed by nobody is written on the same
+            // line as what it holds: `src/main/kotlin/**/` rather than five lines of one
+            // directory each. Those five say nothing a reader did not already know from the
+            // first -- the shape the tree is drawn for only starts where the path branches.
+            val segments = StringBuilder(name)
+            var node = child
+            while (node.roles.isEmpty() && node.children.size == 1) {
+                val (onlyName, onlyChild) = node.children.entries.first()
+                segments.append('/').append(onlyName)
+                node = onlyChild
+            }
             lines += TreeLine(
-                text = INDENT.repeat(indent) + name + if (child.namesDirectory()) "/" else "",
-                roles = child.roles.toList(),
+                text = INDENT.repeat(indent) + segments + if (node.namesDirectory()) "/" else "",
+                roles = node.roles.toList(),
             )
-            child.appendTo(lines, indent + 1)
+            node.appendTo(lines, indent + 1)
         }
     }
 

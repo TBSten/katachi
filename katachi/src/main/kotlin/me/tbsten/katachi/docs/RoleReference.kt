@@ -1,9 +1,11 @@
 package me.tbsten.katachi.docs
 
 import me.tbsten.katachi.dsl.DeclarationSite
+import me.tbsten.katachi.dsl.Description
 import me.tbsten.katachi.dsl.Group
 import me.tbsten.katachi.dsl.ModuleIndex
 import me.tbsten.katachi.dsl.Role
+import me.tbsten.katachi.dsl.Title
 import me.tbsten.katachi.dsl.evaluateLayout
 import me.tbsten.katachi.processor.ArchitectureProcessContext
 
@@ -39,12 +41,25 @@ import me.tbsten.katachi.processor.ArchitectureProcessContext
  * pages.keys shouldContainExactly listOf("README.md", "domain/README.md", "domain/UseCase.md")
  * ```
  *
+ * ## What names the root
+ *
+ * The root is the one container a definition cannot name from the inside, so its heading and its
+ * paragraph reach it from outside: [rootTitle] and [rootDescription], which a `--arg` or the
+ * Gradle plugin's `docs { }` block fills in. Either one wins over what `architecture { }` wrote
+ * on itself, because a value that can be changed per run is the one that can answer "not this
+ * time"; a definition cannot. Blank counts as unwritten on both sides, so an empty `--arg` asks
+ * for the fallback rather than for an empty heading.
+ *
  * @throws KatachiDocumentPathCollisionException when two declarations name the same page.
  * @throws KatachiDocumentPathCaseCollisionException when two pages are one file on a case
  * insensitive filesystem.
  * @throws KatachiBrokenDocumentLinkException when a generated link resolves to no generated page.
  */
-internal fun roleReferenceDocuments(context: ArchitectureProcessContext<*>): Map<String, String> {
+internal fun roleReferenceDocuments(
+    context: ArchitectureProcessContext<*>,
+    rootTitle: String? = null,
+    rootDescription: String? = null,
+): Map<String, String> {
     val architecture = context.architecture
     // One evaluation, not `context.declaredEntries` plus a second one for the constraints. The
     // entries of a `layout { }` and the constraints written inside it come out of the same run of
@@ -58,35 +73,49 @@ internal fun roleReferenceDocuments(context: ArchitectureProcessContext<*>): Map
         .mapNotNull { constraint -> constraint.name?.let { constraint.role to it } }
         .groupBy({ it.first }, { it.second })
 
+    // Decided once and handed to both the page and every breadcrumb that points back at it. A
+    // reader who saw `# myapp ドキュメント` and then `[アーキテクチャ](../README.md)` two clicks
+    // later has to work out that the two are the same page.
+    val rootName = rootTitle.orWritten(architecture.metadata[Title]) ?: ROOT_TITLE
+
     val documents = Documents()
     documents.put(
         path = README,
         owner = Owner("The documentation root", DeclarationSite.Unknown),
-        content = containerPage(
-            title = ROOT_TITLE,
+        content = rootPage(
+            title = rootName,
+            description = rootDescription.orWritten(architecture.metadata[Description]),
             metadata = architecture.metadata,
             roles = architecture.roles.filter { it.isDocumented },
             groups = architecture.groups.filter { it.isDocumented },
             placements = placements,
-            placementHeading = ROOT_PLACEMENT_HEADING,
-            // The root is what every breadcrumb ends up pointing at, so it has nothing above it.
-            ancestors = emptyList(),
         ),
     )
     for (role in architecture.roles.filter { it.isDocumented }) {
         // A role written at the root sits beside the root `README.md`, so its one step back is
         // `README.md` with no `../` in front of it. `breadcrumbOf` counts that from a depth of 0.
-        documents.putRole(role, directory = "", placements, constraintNames, breadcrumbOf(emptyList(), depth = 0))
+        documents.putRole(role, directory = "", placements, constraintNames, breadcrumbOf(rootName, emptyList(), depth = 0))
     }
     for (group in architecture.groups) {
-        documents.putGroup(group, ancestors = emptyList(), placements, constraintNames)
+        documents.putGroup(group, rootName, ancestors = emptyList(), placements, constraintNames)
     }
     return documents.pages().also(::checkDocumentLinks)
 }
 
+/**
+ * This value when a run actually gave one, and [written] otherwise.
+ *
+ * Blank is unwritten: `--arg rootTitle=` is somebody clearing an option rather than asking for a
+ * page with no heading, and a build script that computes the value can leave it empty without
+ * having to know what the fallback would have been.
+ */
+private fun String?.orWritten(written: String?): String? =
+    this?.takeIf { it.isNotBlank() } ?: written?.takeIf { it.isNotBlank() }
+
 /** A group's own page, its roles' pages, and — recursively — everything below it. */
 private fun Documents.putGroup(
     group: Group,
+    rootName: String,
     ancestors: List<Group>,
     placements: Map<Role, List<Placement>>,
     constraintNames: Map<Role, List<String>>,
@@ -104,17 +133,22 @@ private fun Documents.putGroup(
             roles = group.roles.filter { it.isDocumented },
             groups = group.groups.filter { it.isDocumented },
             placements = placements,
-            placementHeading = GROUP_PLACEMENT_HEADING,
-            ancestors = breadcrumbOf(ancestors, depth = group.path.size),
+            ancestors = breadcrumbOf(rootName, ancestors, depth = group.path.size),
         ),
     )
     for (role in group.roles.filter { it.isDocumented }) {
         // The group itself is the last step, because a role page is not the `README.md` of the
         // directory it is in: the way back for its reader ends at the page that lists it.
-        putRole(role, directory, placements, constraintNames, breadcrumbOf(ancestors + group, depth = group.path.size))
+        putRole(
+            role,
+            directory,
+            placements,
+            constraintNames,
+            breadcrumbOf(rootName, ancestors + group, depth = group.path.size),
+        )
     }
     for (child in group.groups) {
-        putGroup(child, ancestors + group, placements, constraintNames)
+        putGroup(child, rootName, ancestors + group, placements, constraintNames)
     }
 }
 
@@ -126,8 +160,8 @@ private fun Documents.putGroup(
  * step down. The root comes first and is always there, which is what gives a group one level
  * down a breadcrumb too — one step, to the page that lists it.
  */
-private fun breadcrumbOf(ancestors: List<Group>, depth: Int): List<Crumb> =
-    listOf(Crumb(text = ROOT_TITLE, path = readmeUp(depth))) +
+private fun breadcrumbOf(rootName: String, ancestors: List<Group>, depth: Int): List<Crumb> =
+    listOf(Crumb(text = rootName, path = readmeUp(depth))) +
         ancestors.mapIndexed { index, ancestor ->
             Crumb(text = ancestor.displayName, path = readmeUp(depth - (index + 1)))
         }

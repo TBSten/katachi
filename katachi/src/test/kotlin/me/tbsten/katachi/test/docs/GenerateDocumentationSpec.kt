@@ -366,9 +366,35 @@ class GenerateDocumentationSpec : FreeSpec({
             ) shouldBe GenerateDocumentation.Args(outputDir = "docs/architecture")
         }
 
-        "1つも渡さなければ両方とも既定値になる" {
+        "rootTitle と rootDescription もそのまま文字列として渡る" {
+            decodeFromStringMap(
+                GenerateDocumentation.argsSerializer,
+                mapOf("rootTitle" to "myapp", "rootDescription" to "このリポジトリの構成。"),
+            ) shouldBe GenerateDocumentation.Args(
+                rootTitle = "myapp",
+                rootDescription = "このリポジトリの構成。",
+            )
+        }
+
+        "1つも渡さなければ全部が既定値になる" {
             decodeFromStringMap(GenerateDocumentation.argsSerializer, emptyMap()) shouldBe
                 GenerateDocumentation.Args()
+        }
+
+        "ルートの名前を渡すと見出しに出る" {
+            val arch = architecture { }
+
+            withTempDirectory { output ->
+                GenerateDocumentation.process(
+                    FakeArchitectureProcessContext(
+                        architecture = arch,
+                        args = GenerateDocumentation.Args(outputDir = output.path, rootTitle = "myapp"),
+                        fileSystem = ForbiddenFileSystem,
+                    ),
+                )
+
+                File(output, "README.md").readText() shouldBe "# myapp ドキュメント\n"
+            }
         }
 
         "知らない mode は例外になる" {

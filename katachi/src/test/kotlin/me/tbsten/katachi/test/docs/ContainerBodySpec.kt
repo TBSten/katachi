@@ -107,13 +107,15 @@ class ContainerBodySpec : FreeSpec({
 
         arch.page("README.md") shouldBe
             """
-            # アーキテクチャ
+            # アーキテクチャ ドキュメント
 
             このリポジトリの全体像。
 
-            ## グループ
+            ## Document map
 
-            - [api](./api/README.md)
+            ### [api](./api/README.md)
+
+            ## api
             """.trimIndent() + "\n"
     }
 })

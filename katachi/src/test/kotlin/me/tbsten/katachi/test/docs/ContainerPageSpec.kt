@@ -8,77 +8,13 @@ import io.kotest.matchers.string.shouldNotContain
 import me.tbsten.katachi.dsl.architecture
 
 /**
- * What a `README.md` says: the root's, and a group's.
+ * What a group's `README.md` says. The root's is [RootPageSpec].
  *
  * NOTE: このファイルのパッケージを `me.tbsten.katachi.docs` にしてはいけない。
  * captureDeclarationSite() がライブラリ自身のフレームとして読み飛ばしてしまい、
  * 宣言位置が kotest 内部を指すようになる。
  */
 class ContainerPageSpec : FreeSpec({
-    "ルートの README" - {
-        "group が一覧としてリンクで並ぶ" {
-            val arch = architecture {
-                "domain".group { title = "ドメイン" }
-                "data".group { title = "データ" }
-            }
-
-            arch.page("README.md") shouldBe
-                """
-                # アーキテクチャ
-
-                ## グループ
-
-                - [ドメイン](./domain/README.md)
-                - [データ](./data/README.md)
-                """.trimIndent() + "\n"
-        }
-
-        "ルート直下の役割は概要つきの表になる" {
-            val arch = architecture {
-                "Changelog" {
-                    title = "変更履歴"
-                    summary = "リリースごとの変更点"
-                }
-                "domain".group { }
-            }
-
-            arch.page("README.md") shouldBe
-                """
-                # アーキテクチャ
-
-                | 役割 | 概要 |
-                |---|---|
-                | [変更履歴](./Changelog.md) | リリースごとの変更点 |
-
-                ## グループ
-
-                - [domain](./domain/README.md)
-                """.trimIndent() + "\n"
-        }
-
-        "group が1つも無ければグループの節ごと出ない" {
-            val arch = architecture { "Changelog" { } }
-
-            arch.page("README.md") shouldNotContain "## グループ"
-        }
-
-        "何も宣言していなければ見出しだけになる" {
-            val arch = architecture { }
-
-            arch.page("README.md") shouldBe "# アーキテクチャ\n"
-        }
-
-        "documented = false のルート直下の役割は一覧からもページからも消える" {
-            val arch = architecture {
-                "Changelog" { }
-                "Scratch" { documented = false }
-            }
-
-            arch.page("README.md") shouldNotContain "Scratch"
-            arch.documents().keys.toList() shouldBe listOf("README.md", "Changelog.md")
-        }
-    }
-
     "group の README" - {
         "見出しは title、リンク先は識別子になる" {
             val arch = architecture {
@@ -171,11 +107,13 @@ class ContainerPageSpec : FreeSpec({
             withClue("親がいないので、戻る先が無い") {
                 arch.page("README.md") shouldBe
                     """
-                    # アーキテクチャ
+                    # アーキテクチャ ドキュメント
 
-                    ## グループ
+                    ## Document map
 
-                    - [domain](./domain/README.md)
+                    ### [domain](./domain/README.md)
+
+                    ## domain
                     """.trimIndent() + "\n"
             }
         }

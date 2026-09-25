@@ -126,7 +126,7 @@ class RoleReferenceSpec : FreeSpec({
             arch.documents().keys.toList() shouldContainExactly listOf("README.md")
         }
 
-        "ルート README の group 一覧からも外れる" {
+        "ルート README の Document map からも外れる" {
             val arch = architecture {
                 "build".group { documented = false }
                 "domain".group { }
@@ -135,11 +135,13 @@ class RoleReferenceSpec : FreeSpec({
             withClue("ページが無い group へのリンクは、出た瞬間にリンク切れになる") {
                 arch.page("README.md") shouldBe
                     """
-                    # アーキテクチャ
+                    # アーキテクチャ ドキュメント
 
-                    ## グループ
+                    ## Document map
 
-                    - [domain](./domain/README.md)
+                    ### [domain](./domain/README.md)
+
+                    ## domain
                     """.trimIndent() + "\n"
             }
         }

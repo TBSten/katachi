@@ -200,7 +200,7 @@ class DocumentSectionPageSpec : FreeSpec({
         }
     }
 
-    "ルートの README にも、グループ一覧の後ろに出る" {
+    "ルートの README にも、katachi が組み立てた節すべての後ろに出る" {
         val arch = architecture {
             testPolicy = "リポジトリ全体の方針。"
             "api".group { }
@@ -208,11 +208,13 @@ class DocumentSectionPageSpec : FreeSpec({
 
         arch.page("README.md") shouldBe
             """
-            # アーキテクチャ
+            # アーキテクチャ ドキュメント
 
-            ## グループ
+            ## Document map
 
-            - [api](./api/README.md)
+            ### [api](./api/README.md)
+
+            ## api
 
             ## テスト方針
 

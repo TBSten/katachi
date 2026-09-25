@@ -69,6 +69,11 @@ public class KatachiPlugin implements Plugin<Project> {
 
         final KatachiExtension extension = project.getExtensions().create("katachi", KatachiExtension.class);
 
+        // The name of the repository, which is the one thing the documentation root cannot be
+        // told from inside a definition. Read here, eagerly, because it is a plain String and
+        // because `docs { rootTitle = ... }` in this module's own build script still wins over it.
+        extension.getProcessors().getDocs().setRootTitleConvention(project.getRootProject().getName());
+
         // Wrapped in `project.provider { ... }` because `katachi { } }` is evaluated after this
         // `apply(Project)` returns: reading `extension.getArchitecture()` right here would
         // always see the field's initial `null`, before the user's own build script had a

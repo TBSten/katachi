@@ -164,6 +164,55 @@ class KatachiPluginFunctionalTest {
                         + result.getOutput());
     }
 
+    @ParameterizedTest(name = "Gradle {0}")
+    @MethodSource("gradleVersions")
+    @DisplayName("docs には rootTitle として root project の名前が渡り、docs { } に書けばそちらが勝つ")
+    void docsIsGivenTheRootProjectNameAsItsRootTitle(String gradleVersion, @TempDir Path projectDir)
+            throws IOException {
+        writeFixture(projectDir, "Args");
+        writeTestJavaClass(
+                projectDir,
+                "Args",
+                "        java.io.File out = new java.io.File(\"build/katachi/args.txt\");\n"
+                        + "        out.getParentFile().mkdirs();\n"
+                        + "        java.nio.file.Files.write(\n"
+                        + "                out.toPath(), String.join(\"\\n\", args).getBytes(\"UTF-8\"));\n");
+
+        runner(projectDir, gradleVersion, "runKatachiProcessor", "--processor=docs").build();
+
+        // The name of the repository is a value only Gradle has, so the plugin is the only layer
+        // that can send it. Without it the generated root page would be headed "アーキテクチャ".
+        assertTrue(
+                argsOf(projectDir).contains("--arg=rootTitle=katachi-fixture"),
+                "the plugin did not send the root project's name as rootTitle:\n" + argsOf(projectDir));
+
+        appendBuildScript(
+                projectDir,
+                "\nkatachi {\n"
+                        + "    processors {\n"
+                        + "        docs {\n"
+                        + "            rootTitle = \"written-in-the-build-script\"\n"
+                        + "        }\n"
+                        + "    }\n"
+                        + "}\n");
+
+        runner(projectDir, gradleVersion, "runKatachiProcessor", "--processor=docs").build();
+
+        assertTrue(
+                argsOf(projectDir).contains("--arg=rootTitle=written-in-the-build-script"),
+                "docs { rootTitle = ... } lost to the convention:\n" + argsOf(projectDir));
+        assertFalse(
+                argsOf(projectDir).contains("katachi-fixture"),
+                "both the written value and the convention were sent:\n" + argsOf(projectDir));
+    }
+
+    /** What the fixture's {@code Args} entry point recorded of the command line it was given. */
+    private static String argsOf(Path projectDir) throws IOException {
+        Path recorded = projectDir.resolve("build/katachi/args.txt");
+        assertTrue(Files.exists(recorded), "the fixture entry point never ran");
+        return new String(Files.readAllBytes(recorded), StandardCharsets.UTF_8);
+    }
+
     /**
      * Writes a fixture project applying the plugin, optionally pointing the task elsewhere.
      *

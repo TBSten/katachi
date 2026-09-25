@@ -16,8 +16,36 @@ import me.tbsten.katachi.dsl.Title
  */
 internal const val SECTION_BREAK: String = "\n\n"
 
-/** The heading of the documentation root, the one container with no name of its own. */
+/**
+ * What the documentation root is called when nothing else says.
+ *
+ * Kept as the last fallback rather than as the heading itself: the root is the one container a
+ * definition cannot name from the inside, so the name reaches it from outside -- `--arg
+ * rootTitle=`, or the Gradle plugin sending the root project's name.
+ */
 internal const val ROOT_TITLE: String = "アーキテクチャ"
+
+/** What the root's heading adds to its name, so that the page says what it is. */
+internal const val ROOT_TITLE_SUFFIX: String = " ドキュメント"
+
+/**
+ * What the index of every generated page is written under.
+ *
+ * English among Japanese headings because that is what was asked for: "map" is the word the
+ * people reading this page use for it, and translating it would leave them looking for it.
+ */
+internal const val DOCUMENT_MAP_HEADING: String = "## Document map"
+
+/**
+ * What separates a link from the one line saying what it is.
+ *
+ * The same three dots a role page writes its `## 例` with. One generated document should not
+ * spell one idea two ways, and a dash is also a character a `summary` may open with.
+ */
+internal const val SUMMARY_SEPARATOR: String = " ... "
+
+/** One level of a nested Markdown list. */
+internal const val BULLET_INDENT: String = "  "
 
 /** What a group's placement tree is written under. */
 internal const val GROUP_PLACEMENT_HEADING: String = "## このグループの配置"
@@ -29,6 +57,15 @@ internal const val GROUP_PLACEMENT_HEADING: String = "## このグループの�
  * the groups are -- and the tree there is of the roles written beside them, not of everything
  * below.
  */
+/**
+ * What the roles written straight into `architecture { }` are listed under.
+ *
+ * They need a section of their own because the map above names them without their `summary`,
+ * and every role that belongs to a group gets one in that group's section. Without this they
+ * would be the only roles whose one line of prose appears nowhere on the page a reader starts on.
+ */
+internal const val ROOT_ROLES_HEADING: String = "## ルート直下の役割"
+
 internal const val ROOT_PLACEMENT_HEADING: String = "## ルート直下の配置"
 
 /** The file every container of the generated tree is read through. */
@@ -123,9 +160,20 @@ internal fun StringBuilder.appendTitle(title: String, metadata: MetadataValues) 
  * that holds everywhere but in the generated page is not a promise.
  */
 internal fun StringBuilder.appendDescription(metadata: MetadataValues) {
-    val description = metadata[Description] ?: return
+    appendDescriptionText(metadata[Description])
+}
+
+/**
+ * The same body, for the one container whose text does not have to come from its own metadata.
+ *
+ * The root can be described from outside the definition -- by `--arg rootDescription=`, or by
+ * the Gradle plugin -- so the text arrives already chosen, and only the placing is shared.
+ */
+internal fun StringBuilder.appendDescriptionText(description: String?) {
+    val text = description?.trim()
+    if (text.isNullOrEmpty()) return
     append(SECTION_BREAK)
-    append(description.trim())
+    append(text)
 }
 
 /**
@@ -144,11 +192,15 @@ internal fun tableRow(cells: List<String>): String =
  * is one line by contract, but a contract is not a guarantee, and a broken table is far harder
  * to read than an escaped pipe.
  */
-internal fun escapeCell(value: String): String = value
-    .replace("|", "\\|")
-    .lines()
-    .joinToString(" ") { it.trim() }
-    .trim()
+internal fun escapeCell(value: String): String = oneLine(value.replace("|", "\\|"))
+
+/**
+ * A value written by a user, folded onto the one line the structure around it allows.
+ *
+ * A table row and a list item both end at the first newline, so a `summary` that turned out to
+ * hold two lines would take the rest of the page with it.
+ */
+internal fun oneLine(value: String): String = value.lines().joinToString(" ") { it.trim() }.trim()
 
 /** A `]` inside the text of a link would close it early. */
 private fun escapeLinkText(text: String): String = text.replace("]", "\\]")

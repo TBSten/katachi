@@ -65,14 +65,9 @@ class DirectoryTreeSpec : FreeSpec({
 
                 ```
                 :core:domain
-                  src/
-                    main/
-                      kotlin/
-                        **/
-                          useCase/
-                            *UseCase.kt     ユースケース
-                          repository/
-                            *Repository.kt  リポジトリ
+                  src/main/kotlin/**/
+                    useCase/*UseCase.kt        ユースケース
+                    repository/*Repository.kt  リポジトリ
                 ```
 
                 ## グループ
@@ -116,18 +111,10 @@ class DirectoryTreeSpec : FreeSpec({
                 arch.tree("domain/README.md") shouldBe
                     """
                     :core:domain
-                      src/
-                        main/
-                          kotlin/
-                            useCase/
-                              *UseCase.kt  ユースケース
+                      src/main/kotlin/useCase/*UseCase.kt  ユースケース
 
                     :feature:*
-                      src/
-                        main/
-                          kotlin/
-                            useCase/
-                              *UseCase.kt  ユースケース
+                      src/main/kotlin/useCase/*UseCase.kt  ユースケース
                     """.trimIndent()
             }
         }
@@ -145,10 +132,7 @@ class DirectoryTreeSpec : FreeSpec({
             arch.tree("feature/README.md") shouldBe
                 """
                 :feature:*
-                  src/
-                    main/
-                      kotlin/
-                        *Screen.kt  画面
+                  src/main/kotlin/*Screen.kt  画面
                 """.trimIndent()
         }
 
@@ -167,7 +151,7 @@ class DirectoryTreeSpec : FreeSpec({
             }
 
             withClue("modulePackage はモジュールごとに違うディレクトリを指す戦略で、1つの値ではない") {
-                arch.tree("domain/README.md") shouldContain "        **/"
+                arch.tree("domain/README.md") shouldContain "**/"
             }
         }
 
@@ -200,8 +184,7 @@ class DirectoryTreeSpec : FreeSpec({
 
             arch.tree("tool/README.md") shouldBe
                 """
-                scripts/
-                  *.sh  スクリプト
+                scripts/*.sh  スクリプト
                 """.trimIndent()
         }
 
@@ -224,11 +207,9 @@ class DirectoryTreeSpec : FreeSpec({
 
             arch.tree("app/README.md") shouldBe
                 """
-                app/
-                  src/
-                    main/
-                      res/     リソース
-                      assets/  リソース
+                app/src/main/
+                  res/     リソース
+                  assets/  リソース
                 """.trimIndent()
         }
     }
@@ -252,10 +233,7 @@ class DirectoryTreeSpec : FreeSpec({
                 arch.tree("domain/README.md") shouldBe
                     """
                     :core:domain
-                      src/
-                        main/
-                          kotlin/
-                            *.kt  ユースケース, リポジトリ
+                      src/main/kotlin/*.kt  ユースケース, リポジトリ
                     """.trimIndent()
             }
         }
@@ -280,12 +258,9 @@ class DirectoryTreeSpec : FreeSpec({
             arch.tree("domain/README.md") shouldBe
                 """
                 :core:domain
-                  src/
-                    main/
-                      kotlin/
-                        useCase/
-                          *UseCase.kt      ユースケース
-                          *UseCaseImpl.kt  ユースケース
+                  src/main/kotlin/useCase/
+                    *UseCase.kt      ユースケース
+                    *UseCaseImpl.kt  ユースケース
                 """.trimIndent()
         }
 
@@ -302,8 +277,7 @@ class DirectoryTreeSpec : FreeSpec({
             withClue("optional() をツリーでどう見せるかは今回も決めていない。区別の記号を足さない") {
                 arch.tree("build/README.md") shouldBe
                     """
-                    gradle/
-                      libs.versions.toml  バージョンカタログ
+                    gradle/libs.versions.toml  バージョンカタログ
                     """.trimIndent()
             }
         }
@@ -382,11 +356,17 @@ class DirectoryTreeSpec : FreeSpec({
             withClue("group に属さない役割の配置は、ここに出さなければどのツリーにも出ない") {
                 arch.page("README.md") shouldBe
                     """
-                    # アーキテクチャ
+                    # アーキテクチャ ドキュメント
 
-                    | 役割 | 概要 |
-                    |---|---|
-                    | [変更履歴](./Changelog.md) |  |
+                    ## Document map
+
+                    - [変更履歴](./Changelog.md)
+
+                    ### [ドメイン](./domain/README.md)
+
+                    ## ルート直下の役割
+
+                    - [変更履歴](./Changelog.md)
 
                     ## ルート直下の配置
 
@@ -394,9 +374,7 @@ class DirectoryTreeSpec : FreeSpec({
                     CHANGELOG.md  変更履歴
                     ```
 
-                    ## グループ
-
-                    - [ドメイン](./domain/README.md)
+                    ## ドメイン
                     """.trimIndent() + "\n"
             }
         }

@@ -272,7 +272,29 @@ public class KatachiProcessors {
         for (Map.Entry<String, KatachiProcessorArgs> entry : configuredArgs.entrySet()) {
             copy.put(entry.getKey(), entry.getValue().getValues());
         }
+        fillDocsConventions(copy);
         return Collections.unmodifiableMap(copy);
+    }
+
+    /**
+     * Adds what only Gradle knows about {@code docs}, under whatever the build script already
+     * said.
+     *
+     * <p>Last, and never over an existing value: a convention is what applies when nobody wrote
+     * anything, so a {@code docs { } } block and an {@code args("docs") { } } block both keep
+     * every word they did write.
+     */
+    private void fillDocsConventions(Map<String, Map<String, String>> collected) {
+        Map<String, String> conventions = docs.toConventionArgs();
+        if (conventions.isEmpty()) {
+            return;
+        }
+        Map<String, String> merged = new LinkedHashMap<>(conventions);
+        Map<String, String> written = collected.get(KatachiDocsOptions.KEY);
+        if (written != null) {
+            merged.putAll(written);
+        }
+        collected.put(KatachiDocsOptions.KEY, merged);
     }
 
     private void putTyped(
