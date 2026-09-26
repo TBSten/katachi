@@ -75,7 +75,7 @@ const val appPackageDir = "com/example/project"
 // roles/UiState.kt
 fun DeclarationContainerScope.uiState() = "UiState" {
   layout {
-    "app" / mainSourceSet / appPackageDir / "ui/*" / "*UiState".ktFile()
+    "app" / mainSourceSet / kotlin / appPackageDir / "ui/*" / "*UiState".ktFile()
   }
 
   shouldBeImmutable()
@@ -89,7 +89,7 @@ private fun FileConstraintScope.shouldBeImmutable() =
 // roles/ViewModel.kt
 fun DeclarationContainerScope.viewModel() = "ViewModel" {
   layout {
-    "app" / mainSourceSet / appPackageDir / "ui/*" / "*ViewModel".ktFile()
+    "app" / mainSourceSet / kotlin / appPackageDir / "ui/*" / "*ViewModel".ktFile()
   }
 
   shouldContainsViewModelClass()
@@ -119,7 +119,7 @@ private fun FileConstraintScope.shouldUiStateFlowBePublic() =
 // roles/Screen.kt
 fun DeclarationContainerScope.screen() = "Screen" {
   layout {
-    "app" / mainSourceSet / appPackageDir / "ui/*" / "*Screen".ktFile()
+    "app" / mainSourceSet / kotlin / appPackageDir / "ui/*" / "*Screen".ktFile()
   }
 
   shouldContainsPublicScreenComposable()
@@ -138,7 +138,7 @@ private fun FileConstraintScope.shouldContainsPublicScreenComposable() =
 // roles/UseCase.kt
 fun DeclarationContainerScope.useCase() = "UseCase" {
   layout {
-    "app" / mainSourceSet / appPackageDir / "domain/*" / "*UseCase".ktFile()
+    "app" / mainSourceSet / kotlin / appPackageDir / "domain/*" / "*UseCase".ktFile()
   }
 
   shouldContainsUseCaseClass()
@@ -160,14 +160,14 @@ private fun FileConstraintScope.shouldSingleInvokePublicMethod() =
 // roles/DomainModel.kt
 fun DeclarationContainerScope.domainModel() = "DomainModel" {
   layout {
-    "app" / mainSourceSet / appPackageDir / "domain/model" / "*".ktFile()
+    "app" / mainSourceSet / kotlin / appPackageDir / "domain/model" / "*".ktFile()
   }
 }
 
 // roles/RepositoryInterface.kt
 fun DeclarationContainerScope.repositoryInterface() = "RepositoryInterface" {
   layout {
-    "app" / mainSourceSet / appPackageDir / "data/*" / "*Repository".ktFile()
+    "app" / mainSourceSet / kotlin / appPackageDir / "data/*" / "*Repository".ktFile()
   }
 
   shouldContainsRepositoryInterface()
@@ -181,7 +181,7 @@ private fun FileConstraintScope.shouldContainsRepositoryInterface() =
 // roles/RepositoryImplementation.kt
 fun DeclarationContainerScope.repositoryImplementation() = "RepositoryImplementation" {
   layout {
-    "app" / mainSourceSet / appPackageDir / "data/*" / "*RepositoryImpl".ktFile()
+    "app" / mainSourceSet / kotlin / appPackageDir / "data/*" / "*RepositoryImpl".ktFile()
   }
 
   shouldContainsRepositoryImplementationClass()
@@ -195,7 +195,7 @@ private fun FileConstraintScope.shouldContainsRepositoryImplementationClass() =
 // roles/DataSource.kt
 fun DeclarationContainerScope.dataSource() = "DataSource" {
   layout {
-    "app" / mainSourceSet / appPackageDir / "data/*" / "*DataSource".ktFile()
+    "app" / mainSourceSet / kotlin / appPackageDir / "data/*" / "*DataSource".ktFile()
   }
 
   shouldContainsDataSourceClass()

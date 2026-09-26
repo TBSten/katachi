@@ -36,13 +36,17 @@ dependencies {
 
 Next, pass `FileConstraintCheck()` to `projectArchitecture.assert()` to run the Konsist checks.
 
-```kt del={3} ins={4}
+```kt del={4} ins={1,5}
+@OptIn(ExperimentalKatachiApi::class)
 @Test
 fun `files are placed according to the architecture`() {
   projectArchitecture.assert()
   projectArchitecture.assert(FileConstraintCheck())
 }
 ```
+
+`FileConstraintCheck` is an experimental API, so it needs `@OptIn(ExperimentalKatachiApi::class)`.
+If you call `assert()` alone without passing `FileConstraintCheck()`, the constraints are not evaluated and the test fails with an `[UncheckedFileConstraint]` violation.
 
 ## Basic usage
 
@@ -51,12 +55,18 @@ Inside a Role, you define what declarations that Role's files should have.
 ```kt
 architecture {
   "UseCase" {
+    layout {
+      "src/main/kotlin/com/example/useCase" / "*UseCase".ktFile()
+    }
+
     "has exactly one invoke function".konsist {
         classes().must { it.functions().map { f -> f.name } == listOf("invoke") }
     }
   }
 }
 ```
+
+A constraint applies to the files that matched the Role's `layout { }`. Writing a constraint on a Role with no `layout { }` throws `KatachiFileConstraintWithoutLayoutException` as soon as the definition is evaluated.
 
 <Aside type="caution">
   Writing `assertTrue { }` inside `konsist { }` **causes a compile error** (it is blocked with an ERROR-level `@Deprecated`). Konsist's `assertTrue` throws an assertion exception on the spot, which goes against the design that separates DSL declaration from verification.

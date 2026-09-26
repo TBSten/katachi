@@ -122,7 +122,7 @@ No, **you use both. They do different jobs.**
 "A `UseCase` has exactly one `invoke` function" is Konsist's job.
 
 Because you can write Konsist constraints inside a katachi definition,
-**placement violations and content violations end up in a single report.**
+calling `assert(FileConstraintCheck())` in the test puts **placement violations and content violations in a single report.**
 
 And Konsist is not the only tool that occupies the "check the contents of a file" position.
 If you use custom [detekt](https://detekt.dev/) rules or [Konture](https://github.com/baole/konture), those may serve as a substitute for Konsist, depending on the rule you want to check.

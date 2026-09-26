@@ -160,6 +160,8 @@ architecture {
 
 制約の対象は `layout { }` で指定したファイルで、制約そのものは Konsist の API で書きます。
 
+制約を検査するには、テストで `assert()` の代わりに `assert(FileConstraintCheck())` を呼びます（`@OptIn(ExperimentalKatachiApi::class)` が必要です）。`assert()` だけでは制約が評価されず、`[UncheckedFileConstraint]` としてテストが落ちます。
+
 ### 関連ドキュメント
 
 `"...".konsist { }` については [Konsist 連携ガイド](/katachi/ja/guides/konsist-integration/) も参照してください。
@@ -282,7 +284,7 @@ architecture {
       ```
     </td>
     <td>
-      その Role のファイルの中身に制約をかけます。別モジュール `katachi-konsist` が必要です。
+      その Role のファイルの中身に制約をかけます。別モジュール `katachi-konsist` と、テストでの `assert(FileConstraintCheck())` が必要です。
     </td>
     <td>
       ```kt nocollapse

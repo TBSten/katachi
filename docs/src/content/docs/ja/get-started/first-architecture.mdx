@@ -89,7 +89,9 @@ katachi が必要かどうか疑問がある場合は、先に [モチベーシ�
         dependencies {
             testImplementation("me.tbsten.katachi:katachi:<katachi のバージョン>")
             testImplementation("me.tbsten.katachi:katachi-konsist:<katachi のバージョン>")
+            testImplementation(platform("org.junit:junit-bom:5.13.4"))
             testImplementation("org.junit.jupiter:junit-jupiter")
+            testRuntimeOnly("org.junit.platform:junit-platform-launcher")
         }
         ```
 
@@ -129,6 +131,8 @@ katachi が必要かどうか疑問がある場合は、先に [モチベーシ�
         ```
 
         **プロジェクトが書くテストはこれ1本だけです。** リポジトリ全体の違反が1つの失敗メッセージに集まるので、ルールごとにテストを分ける意味がありません。
+
+        定義に `konsist { }` を書いたら、`assert()` の代わりに `assert(FileConstraintCheck())` を呼び、テストに `@OptIn(ExperimentalKatachiApi::class)` を付けます。`assert()` だけでは制約が評価されず、テストが落ちます。詳しくは [Konsist との統合](/katachi/ja/guides/konsist-integration/) を参照してください。
 
     5. **実行する**
 

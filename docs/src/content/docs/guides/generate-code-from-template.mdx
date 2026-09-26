@@ -12,9 +12,14 @@ By adding `template { }` to an architecture definition, you can generate code fr
 **`template { }` does not decide where files go. The role's `layout { }` does.** A template only names the files; which directory each one lands in is derived from the placement definition. That is why **`assert()` passes right after generating.**
 
 ```kt nocollapse
+val modulePackage = capitalizedModuleNamePackage("com.example")
+
 "UseCase" {
     layout {
-        ":core:domain".module { mainSourceSet / kotlin / modulePackage / "useCase" / "*UseCase".ktFile() }
+        ":core:domain".module {
+            mainSourceSet / kotlin / modulePackage / "useCase" / "*UseCase".ktFile()
+            mainSourceSet / kotlin / modulePackage / "useCase" / "*UseCaseImpl".ktFile()
+        }
     }
 
     useCaseTemplate()
@@ -129,6 +134,8 @@ What happens when a file already exists at the destination is chosen with `--arg
 You can also set it as the default in the build file.
 
 ```kts title="architecture-test/build.gradle.kts"
+import me.tbsten.katachi.gradle.KatachiOnExisting
+
 katachi {
     processors {
         template {

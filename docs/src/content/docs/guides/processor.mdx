@@ -194,8 +194,9 @@ The `context` passed as the argument to the `process` method holds the architect
 
 <Tabs>
     <TabItem label="No arguments">
-        ```kt {2,3}
+        ```kt {3,4}
         // Define an object that implements ArchitectureProcessorNoArg
+        @OptIn(ExperimentalKatachiApi::class)
         object CountFilesPerRole : ArchitectureProcessorNoArg<Map<String, Int>> {
             override fun process(context: ArchitectureProcessContext<Unit>): Result<Map<String, Int>> = runCatching {
                 // context.architecture    ... the architecture definition
@@ -226,7 +227,8 @@ The `context` passed as the argument to the `process` method holds the architect
         }
         ```        
 
-        ```kt {1, 3, 5, 17} nocollapse
+        ```kt {2, 4, 6, 18} nocollapse
+        @OptIn(ExperimentalKatachiApi::class)
         object CountFilesPerRole : ArchitectureProcessor<CountFilesPerRole.Args, Map<String, Int>> {
             // Pass the type of the value received via --arg, and how to read it
             override val argsSerializer: KSerializer<Args> = Args.serializer()
@@ -269,6 +271,7 @@ val Obsolete: MetadataKey<Boolean> = metadata()
 var MetadataScope.obsolete: Boolean? by Obsolete
 
 // Processor side
+@OptIn(ExperimentalKatachiApi::class)
 object ObsoleteRoles : ArchitectureProcessorNoArg<List<String>> {
     override fun process(context: ArchitectureProcessContext<Unit>): Result<List<String>> = runCatching {
         context.roles.filter { it[Obsolete] == true }.map { it.name }

@@ -163,19 +163,19 @@ val projectArchitecture = architecture {
 
 <CodeComparison.Panel label="Generated Markdown" labelVariant="success">
 ```md title="docs/UseCase.md"
-[アーキテクチャ](README.md)
+[Architecture](README.md)
 
 # Use case
 
 A single app-specific behavior that occurs on a screen
 
-## 配置場所
+## Placement
 
-| モジュール | パス | 使い分け |
+| Module | Path | When to use |
 |---|---|---|
 |  | `src/main/kotlin/com/example/project/useCase/*UseCase.kt` | Ones used from more than one screen |
 
-## 例
+## Examples
 
 - `GetUserUseCase` ... Gets a user
 - `UpdateUserUseCase` ... Updates a user
@@ -208,7 +208,10 @@ $ ./gradlew katachiTemplate --arg roleName=UseCase --arg name=GetUser
     val projectArchitecture = architecture {
       "UseCase" {
         layout {
-          "src/main/kotlin/com/example/project/useCase" / "*UseCase".ktFile()
+          "src/main/kotlin/com/example/project/useCase" {
+            "*UseCase".ktFile()
+            "*UseCaseImpl".ktFile()
+          }
         }
 
         template {
@@ -247,9 +250,19 @@ $ ./gradlew katachiTemplate --arg roleName=UseCase --arg name=GetUser
 
     ```shell
     $ ./gradlew katachiTemplate --arg roleName=UseCase --arg name=GetUser
-    [template] Generating 2 files under file:///path/to/project
-    [template] Wrote file:///path/to/project/src/main/kotlin/com/example/project/useCase/GetUserUseCase.kt
-    [template] Wrote file:///path/to/project/src/main/kotlin/com/example/project/useCase/GetUserUseCaseImpl.kt
+    [1/3] Processors: template
+
+    [2/3] Processing...
+      [template] Generating 2 files under file:///path/to/project
+      [template] Wrote file:///path/to/project/src/main/kotlin/com/example/project/useCase/GetUserUseCase.kt
+      [template] Wrote file:///path/to/project/src/main/kotlin/com/example/project/useCase/GetUserUseCaseImpl.kt
+
+    ========================================
+    [3/3] Katachi processor run: 1 succeeded, 0 failed
+
+    [OK] template
+
+    ========================================
     ```
 
     ```kt title="src/main/kotlin/com/example/project/useCase/GetUserUseCase.kt"
@@ -292,7 +305,7 @@ val projectArchitecture = architecture {
 }
 ```
 
-Placement violations and content violations line up in one and the same report.
+When the test calls `assert(FileConstraintCheck())` (which needs `@OptIn(ExperimentalKatachiApi::class)`), placement violations and content violations line up in one and the same report.
 
 The recommended split is to **test the structure of the whole project with katachi, then check the contents of each file with Konsist**.
 

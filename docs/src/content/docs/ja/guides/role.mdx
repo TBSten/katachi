@@ -171,16 +171,26 @@ Katachi check failed: 1 violation (Unexpected: 1)
 
 ```kt
 "UseCase" {
+    layout {
+        "src/main/kotlin/com/example/useCase" / "*UseCase".ktFile()
+    }
+
     "invoke 関数を1つだけ持つこと".konsist {
         classes().must { it.functions().map { f -> f.name } == listOf("invoke") }
     }
 }
 ```
 
+制約の対象は、その Role の `layout { }` に当てはまったファイルです。`layout { }` の無い Role には制約を書けません。
+
 `mustNot` と `mustBeEmpty()` で禁止も書けます。
 
 ```kt
 "Repository" {
+    layout {
+        "src/main/kotlin/com/example/repository" / "*Repository".ktFile()
+    }
+
     // 満たすべき条件を否定で書く
     "internal にしないこと".konsist {
         classes().mustNot { it.hasInternalModifier }
@@ -203,7 +213,7 @@ class GetUserUseCase(private val repository: UserRepository) {
 }
 ```
 
-配置の違反と同じレポートに並びます。**どのファイルの何行目かまで出ます。**
+テストで `assert(FileConstraintCheck())` を呼ぶと（`@OptIn(ExperimentalKatachiApi::class)` が必要）、配置の違反と同じレポートに並びます。**どのファイルの何行目かまで出ます。**
 
 ```text
 [UnsatisfiedFileConstraint] src/main/kotlin/com/example/useCase/GetUserUseCase.kt

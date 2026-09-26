@@ -121,7 +121,7 @@ flowchart TB
 「`UseCase` は `invoke` 関数を1つだけ持つ」は Konsist の仕事です。
 
 katachi の定義の中に Konsist の制約を書けるようにしてあるので、
-**配置の違反と中身の違反が1つのレポートにまとまります。**
+テストで `assert(FileConstraintCheck())` を呼べば、**配置の違反と中身の違反が1つのレポートにまとまります。**
 
 「ファイルの中身を検証する」という立ち位置は、Konsist だけのものではありません。
 [detekt](https://detekt.dev/) のカスタムルールや [Konture](https://github.com/baole/konture) を使っているなら、検証したいルールによってはそれらが Konsist の代わりになるかもしれません。

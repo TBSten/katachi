@@ -31,6 +31,8 @@ import HomePillarScroll from '../../components/HomePillarScroll.astro';
 <div class="katachi-home__hero-code">
 
 ```kt title="ProjectArchitecture.kt"
+val modulePackage = capitalizedModuleNamePackage("com.example")
+
 val projectArchitecture = architecture {
   "domain".group {
     "UseCase" {

@@ -34,6 +34,8 @@ katachi {
 次の定義を例にします。
 
 ```kt
+val modulePackage = capitalizedModuleNamePackage("com.example")
+
 architecture {
     title = "myapp"
 
@@ -73,7 +75,7 @@ architecture {
 
     <TabItem label="README.md">
         ```md collapse
-        # myapp ドキュメント
+        # myapp documentation
 
         ## Document map
 
@@ -100,12 +102,12 @@ architecture {
 
         アプリ固有の振る舞いと、その対象になる値
 
-        | 役割 | 概要 |
+        | Role | Summary |
         |---|---|
         | [ユースケース](./UseCase.md) | 各画面で発生するアプリ固有の1つの振る舞い |
         | [リポジトリ](./Repository.md) | データの取得と保存の境界 |
 
-        ## このグループの配置
+        ## Placement in this group
 
         ```
         :core:domain
@@ -123,17 +125,17 @@ architecture {
 
         各画面で発生するアプリ固有の1つの振る舞い
 
-        ## 配置場所
+        ## Placement
 
-        | モジュール | パス | 使い分け |
+        | Module | Path | When to use |
         |---|---|---|
         | `:core:domain` | `src/main/kotlin/**/useCase/*UseCase.kt` |  |
 
-        ## 制約
+        ## Constraints
 
         - invoke メソッドのみを持つ
 
-        ## 例
+        ## Examples
 
         - `GetItemListUseCase` ... 商品の一覧
         - `SignInUseCase` ... サインイン
@@ -147,9 +149,9 @@ architecture {
 
         データの取得と保存の境界
 
-        ## 配置場所
+        ## Placement
 
-        | モジュール | パス | 使い分け |
+        | Module | Path | When to use |
         |---|---|---|
         | `:core:domain` | `src/main/kotlin/**/repository/*Repository.kt` |  |
         ```
@@ -168,20 +170,13 @@ architecture {
 
 出力先は、build.gradle.kts で `katachi.processors.docs.outputDir` を設定すると変更できます。
 
-{/* TODO: `outputDir` は String / File / Directory を受ける。String はモジュール相対、
-    Directory と File は絶対パスとして扱われる、と書く */}
-
-{/* TODO: **出力ディレクトリは katachi のものになる**、という契約が書かれていない。
-    その run が生成しなかった `*.md` は削除される（`.md` 以外は残る。削除は1件ずつログに出る）。
-    手書きの Markdown があるディレクトリを指すとそれが消えるので、ここは目立つ形で書く */}
-
 {/* TODO: 出力先を `build/` の外にすると `gitTracked()` が生成物を拾い、
     「どの役割も宣言していないファイル」として検査が落ちる。**役割として宣言する**必要がある。
     sample/<name>/docs がまさにその形なので、そこを実例として指す */}
 
 {/* TODO: ルートページの `title` / `description` の節が無い。
     `architecture { title = "..."; description = "..." }` の2つで、group や役割に書くのと同じ語。
-    書かなければ見出しは `アーキテクチャ ドキュメント`、本文は出ない。
+    書かなければ見出しは `Architecture documentation`、本文は出ない。
     **build.gradle.kts からは設定できない**（0.2 で `docs { rootTitle }` と `--arg rootTitle` を
     廃止した。書ける場所は定義の中の1箇所だけ） */}
 
@@ -195,11 +190,17 @@ katachi {
 
     processors {
         docs {
-            outputDir = rootProject.layout.projectDirectory.dir("docs/")
+            outputDir = rootProject.layout.projectDirectory.dir("docs/architecture")
         }
     }
 }
 ```
+
+<Aside type="caution">
+出力先ディレクトリは katachi が管理します。その回に生成しなかった `*.md` は削除されます（`.md` 以外のファイルは残り、削除したファイルはログに1件ずつ出ます）。手書きの Markdown があるディレクトリを出力先にすると、その Markdown が消えます。専用のディレクトリを指定してください。
+
+`outputDir` には String / Directory / File を渡せます。String はモジュールからの相対パス、Directory と File は絶対パスとして扱います。
+</Aside>
 
 ## 生成されるファイル
 
@@ -242,7 +243,7 @@ group は入れ子にでき、入れ子の group はその親の group のディ
 | [`title`](/katachi/api-docs/katachi/me.tbsten.katachi.dsl/-role-scope/title.html) | 役割ページの見出し。既定は役割の識別子 | `<Role名>.md`、および索引・一覧のリンク文字列 |
 | [`summary`](/katachi/api-docs/katachi/me.tbsten.katachi.dsl/-role-scope/summary.html) | 一覧の表に入る1行 | `<Role名>.md`、親の `README.md` |
 | [`description`](/katachi/api-docs/katachi/me.tbsten.katachi.dsl/-role-scope/description.html) | 役割ページの本文。書いた Markdown が改行も含めてそのまま入ります。katachi は構造を足さないので、**中の見出しは書き手が決めます** | `<Role名>.md` |
-| [`example(name, description)`](/katachi/api-docs/katachi/me.tbsten.katachi.dsl/-role-scope/example.html) | 具体例。1つの例につき1回呼びます。**呼んだ順**に並びます | `<Role名>.md` の `## 例` |
+| [`example(name, description)`](/katachi/api-docs/katachi/me.tbsten.katachi.dsl/-role-scope/example.html) | 具体例。1つの例につき1回呼びます。**呼んだ順**に並びます | `<Role名>.md` の `## Examples` |
 | [`documented`](/katachi/api-docs/katachi/me.tbsten.katachi.dsl/-role-scope/documented.html) | `false` にするとドキュメントに出ません。出ないだけで、**assert() などの検査には引き続き参加します** | --- |
 
 <CodeComparison>
@@ -269,7 +270,7 @@ group は入れ子にでき、入れ子の group はその親の group のディ
     </CodeComparison.Panel>
     <CodeComparison.Panel label="生成されるマークダウン">
         ```md title="UseCase.md"
-        [アーキテクチャ](README.md)                    ← パンくず
+        [Architecture](README.md)                    ← パンくず
 
         # UseCase                                      ← title
 
@@ -277,17 +278,17 @@ group は入れ子にでき、入れ子の group はその親の group のディ
 
         UseCase はアプリ固有の1つの振る舞いを表すクラスです。  ← description
 
-        ## 配置場所                                    ← layout { }
+        ## Placement                                    ← layout { }
 
-        | モジュール | パス | 使い分け |
+        | Module | Path | When to use |
         |---|---|---|
         |  | `src/main/kotlin/com/example/useCase/*UseCase.kt` |  |
 
-        ## 制約                                        ← konsist { } の名前
+        ## Constraints                                        ← konsist { } の名前
 
         - invoke メソッドのみを持つ
 
-        ## 例                                          ← example()
+        ## Examples                                          ← example()
 
         - `GetItemListUseCase` ... 商品の一覧を取得する
         - `SignInUseCase` ... サインインする
@@ -346,7 +347,7 @@ group に設定できるのは Role と同じ4つです。**`example()` だけ�
     </CodeComparison.Panel>
     <CodeComparison.Panel label="生成されるマークダウン">
         ````md title="domain/README.md"
-        [アーキテクチャ](../README.md)                  ← パンくず
+        [Architecture](../README.md)                  ← パンくず
 
         # Domain レイヤー                               ← title
 
@@ -354,12 +355,12 @@ group に設定できるのは Role と同じ4つです。**`example()` だけ�
 
         画面にも保存先にも依存しない層です。              ← description
 
-        | 役割 | 概要 |                                 ← 配下の役割の title と summary
+        | Role | Summary |                                 ← 配下の役割の title と summary
         |---|---|
         | [ユースケース](./UseCase.md) | 各画面で発生するアプリ固有の1つの振る舞い |
         | [リポジトリ](./Repository.md) | データの取得と保存の境界 |
 
-        ## このグループの配置                           ← 配下の役割の layout { }
+        ## Placement in this group                           ← 配下の役割の layout { }
 
         ```
         src/main/kotlin/com/example/domain/
@@ -377,6 +378,8 @@ title などデフォルトで用意されているセクションのほかに�
 セクションは `documentSection("見出し")` で宣言し、書き込むためのプロパティを `by` で作ります。
 
 ```kt
+@file:OptIn(ExperimentalKatachiApi::class)
+
 val TestPolicy = documentSection("テスト方針")
 var MetadataScope.testPolicy by TestPolicy
 ```
@@ -418,19 +421,19 @@ var MetadataScope.testPolicy by TestPolicy
     </CodeComparison.Panel>
     <CodeComparison.Panel label="生成されるマークダウン">
         ```md title="UseCase.md"
-        [アーキテクチャ](README.md)
+        [Architecture](README.md)
 
         # ユースケース
 
         各画面で発生するアプリ固有の1つの振る舞い
 
-        ## 配置場所
+        ## Placement
 
-        | モジュール | パス | 使い分け |
+        | Module | Path | When to use |
         |---|---|---|
         |  | `src/main/kotlin/com/example/useCase/*UseCase.kt` |  |
 
-        ## 例
+        ## Examples
 
         - `SignInUseCase` ... サインイン
 
@@ -443,13 +446,13 @@ var MetadataScope.testPolicy by TestPolicy
     </CodeComparison.Panel>
 </CodeComparison>
 
-独自のセクションは、**組み込みの節（`## 配置場所` / `## 制約` / `## 例`）の後ろ**に、定義の中で書いた順に並びます。
+独自のセクションは、**組み込みの節（`## Placement` / `## Constraints` / `## Examples`）の後ろ**に、定義の中で書いた順に並びます。
 
 ## まとめ
 
 - ドキュメントは**検査と同じ定義**から生成されます。2つを別々に書かないので、**ドキュメントと実体がずれません**。
-- 生成されるのは2軸です。**役割ページ**（この役割は何で、どこに置くか）と、**group とルートの README の配置ツリー**（このディレクトリに何が置けるか）。配置ツリーは group の README では `## このグループの配置`、ルートの README では `## ルート直下の配置` として出ます。
-- **`## 制約` に出るのは名前付きの `konsist { }` だけ**です。名前を書けば載るので、書く動機が自然に生まれます。
+- 生成されるのは2軸です。**役割ページ**（この役割は何で、どこに置くか）と、**group とルートの README の配置ツリー**（このディレクトリに何が置けるか）。配置ツリーは group の README では `## Placement in this group`、ルートの README では `## Placement at the root` として出ます。
+- **`## Constraints` に出るのは名前付きの `konsist { }` だけ**です。名前を書けば載るので、書く動機が自然に生まれます。
 
 ## 次のステップ
 

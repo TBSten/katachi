@@ -9,10 +9,15 @@ import { Aside } from "@astrojs/starlight/components"
 
 アーキテクチャ定義に `template { }` を追加すると、その定義からコードを生成できます。
 
-```kt {9} nocollapse
+```kt {14} nocollapse
+val modulePackage = capitalizedModuleNamePackage("com.example")
+
 "UseCase" {
     layout {
-        ":core:domain".module { mainSourceSet / kotlin / modulePackage / "useCase" / "*UseCase".ktFile() }
+        ":core:domain".module {
+            mainSourceSet / kotlin / modulePackage / "useCase" / "*UseCase".ktFile()
+            mainSourceSet / kotlin / modulePackage / "useCase" / "*UseCaseImpl".ktFile()
+        }
     }
 
     useCaseTemplate()
@@ -130,6 +135,8 @@ template {
 既定値は build.gradle.kts で設定することもできます。
 
 ```kts title="architecture-test/build.gradle.kts"
+import me.tbsten.katachi.gradle.KatachiOnExisting
+
 katachi {
     processors {
         template {

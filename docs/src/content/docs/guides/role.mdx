@@ -171,16 +171,26 @@ You give each constraint a name. **That name appears directly in the violation r
 
 ```kt
 "UseCase" {
+    layout {
+        "src/main/kotlin/com/example/useCase" / "*UseCase".ktFile()
+    }
+
     "has exactly one invoke function".konsist {
         classes().must { it.functions().map { f -> f.name } == listOf("invoke") }
     }
 }
 ```
 
+A constraint applies to the files that matched the Role's `layout { }`. You cannot write a constraint on a Role that has no `layout { }`.
+
 You can also express a prohibition with `mustNot` and `mustBeEmpty()`.
 
 ```kt
 "Repository" {
+    layout {
+        "src/main/kotlin/com/example/repository" / "*Repository".ktFile()
+    }
+
     // Write the required condition as a negation
     "must not be internal".konsist {
         classes().mustNot { it.hasInternalModifier }
@@ -203,7 +213,7 @@ class GetUserUseCase(private val repository: UserRepository) {
 }
 ```
 
-It shows up in the same report as placement violations. **It even tells you which file and which line.**
+When the test calls `assert(FileConstraintCheck())` (which needs `@OptIn(ExperimentalKatachiApi::class)`), it shows up in the same report as placement violations. **It even tells you which file and which line.**
 
 ```text
 [UnsatisfiedFileConstraint] src/main/kotlin/com/example/useCase/GetUserUseCase.kt

@@ -36,13 +36,17 @@ dependencies {
 
 次に、`projectArchitecture.assert()` に `FileConstraintCheck()` を渡すと、Konsist の検証を実行できます。
 
-```kt del={3} ins={4}
+```kt del={4} ins={1,5}
+@OptIn(ExperimentalKatachiApi::class)
 @Test
 fun `アーキテクチャに沿ったファイル配置になっている`() {
   projectArchitecture.assert()
   projectArchitecture.assert(FileConstraintCheck())
 }
 ```
+
+`FileConstraintCheck` は実験的 API なので、`@OptIn(ExperimentalKatachiApi::class)` が必要です。
+`FileConstraintCheck()` を渡さずに `assert()` だけを呼ぶと、制約は評価されず、`[UncheckedFileConstraint]` の違反としてテストが落ちます。
 
 ## 基本的な使い方
 
@@ -51,12 +55,18 @@ Role の中で、その Role のファイルにどういう宣言があるのか
 ```kt
 architecture {
   "UseCase" {
+    layout {
+      "src/main/kotlin/com/example/useCase" / "*UseCase".ktFile()
+    }
+
     "invoke 関数を1つだけ持つこと".konsist {
         classes().must { it.functions().map { f -> f.name } == listOf("invoke") }
     }
   }
 }
 ```
+
+制約の対象は、その Role の `layout { }` に当てはまったファイルです。`layout { }` の無い Role に制約を書くと、定義を評価した時点で `KatachiFileConstraintWithoutLayoutException` になります。
 
 <Aside type="caution">
   `konsist { }` の中で `assertTrue { }` を書くと、**コンパイルエラーになります**（ERROR レベルの `@Deprecated` で塞いでいます）。Konsist の `assertTrue` はその場でアサーションの例外を投げるので、DSL による宣言と検証を分けるという設計に反するためです。

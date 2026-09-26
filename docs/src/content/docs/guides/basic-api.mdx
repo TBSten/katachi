@@ -157,6 +157,8 @@ architecture {
 
 You can set constraints on the files matched by `layout { }` using the Konsist API.
 
+To check the constraints, call `assert(FileConstraintCheck())` instead of `assert()` in the test (it needs `@OptIn(ExperimentalKatachiApi::class)`). With `assert()` alone the constraints are not evaluated, and the test fails with `[UncheckedFileConstraint]`.
+
 ### Related documentation
 
 For `"...".konsist { }`, also see the [Konsist integration guide](/katachi/guides/konsist-integration/).
@@ -279,7 +281,7 @@ For `"...".konsist { }`, also see the [Konsist integration guide](/katachi/guide
       ```
     </td>
     <td>
-      Constrains the contents of that Role's files. Requires the separate `katachi-konsist` module.
+      Constrains the contents of that Role's files. Requires the separate `katachi-konsist` module and `assert(FileConstraintCheck())` in the test.
     </td>
     <td>
       ```kt nocollapse

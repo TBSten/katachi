@@ -89,7 +89,9 @@ If you are not yet convinced that you need katachi, read [Motivation](/katachi/g
         dependencies {
             testImplementation("me.tbsten.katachi:katachi:<katachi version>")
             testImplementation("me.tbsten.katachi:katachi-konsist:<katachi version>")
+            testImplementation(platform("org.junit:junit-bom:5.13.4"))
             testImplementation("org.junit.jupiter:junit-jupiter")
+            testRuntimeOnly("org.junit.platform:junit-platform-launcher")
         }
         ```
 
@@ -129,6 +131,8 @@ If you are not yet convinced that you need katachi, read [Motivation](/katachi/g
         ```
 
         **This is the only test your project writes.** Every violation in the repository lands in a single failure message, so there is no point in splitting the test up per rule.
+
+        If your definition has `konsist { }`, call `assert(FileConstraintCheck())` instead of `assert()` and add `@OptIn(ExperimentalKatachiApi::class)` to the test. With `assert()` alone the constraints are not evaluated and the test fails. See [Konsist integration](/katachi/guides/konsist-integration/) for details.
 
     5. **Run it**
 
