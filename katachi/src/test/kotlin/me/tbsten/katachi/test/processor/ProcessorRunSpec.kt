@@ -24,6 +24,7 @@ import me.tbsten.katachi.processor.ArchitectureProcessorNoArg
 import me.tbsten.katachi.processor.KatachiProcessorNotFoundException
 import me.tbsten.katachi.processor.KatachiProcessorNotInstantiableException
 import me.tbsten.katachi.processor.KatachiProcessorTypeException
+import me.tbsten.katachi.processor.KatachiUnknownProcessorArgException
 import me.tbsten.katachi.processor.internal.instantiateProcessor
 import me.tbsten.katachi.processor.internal.runProcessors
 import me.tbsten.katachi.test.check.architectureOf
@@ -289,6 +290,84 @@ class ProcessorRunSpec : FreeSpec({
 
             listCallsFor(listOf("a", "b")) shouldBe listCallsFor(listOf("a"))
         }
+
+        "argsFor" - {
+            val registry = mapOf(
+                "a" to RecordingProcessorA::class.java,
+                "b" to RecordingProcessorB::class.java,
+            )
+
+            "argsFor の引数はその processor にだけ届き、他の processor は既定値のまま" {
+                val summary = runProcessors(
+                    architecture = definition,
+                    registry = registry,
+                    processorKeys = listOf("a", "b"),
+                    rawArgs = emptyMap(),
+                    argsFor = mapOf("a" to mapOf("roleName" to "OnlyA")),
+                    out = {},
+                )
+
+                summary.failed shouldBe 0
+                RecordingProcessorA.seen shouldBe Seen("OnlyA", mapOf("roleName" to "OnlyA"))
+                RecordingProcessorB.seen shouldBe Seen("", emptyMap())
+            }
+
+            "同じ名前なら --arg（rawArgs）が argsFor に勝つ" {
+                runProcessors(
+                    architecture = definition,
+                    registry = registry,
+                    processorKeys = listOf("a", "b"),
+                    rawArgs = mapOf("roleName" to "FromCommandLine"),
+                    argsFor = mapOf("a" to mapOf("roleName" to "FromBuildScript")),
+                    out = {},
+                )
+
+                RecordingProcessorA.seen shouldBe Seen("FromCommandLine", mapOf("roleName" to "FromCommandLine"))
+                RecordingProcessorB.seen shouldBe Seen("FromCommandLine", mapOf("roleName" to "FromCommandLine"))
+            }
+
+            "argsFor の名前はその processor だけで判定され、他の processor が知っていても落ちる" {
+                RanFlag.ran = false
+
+                val thrown = shouldThrow<KatachiUnknownProcessorArgException> {
+                    runProcessors(
+                        architecture = definition,
+                        registry = mapOf(
+                            "first" to RecordsRunProcessor::class.java,
+                            "roleName" to RunRoleNameProcessor::class.java,
+                        ),
+                        processorKeys = listOf("first", "roleName"),
+                        rawArgs = emptyMap(),
+                        argsFor = mapOf("first" to mapOf("roleName" to "X")),
+                        out = {},
+                    )
+                }
+
+                thrown.unknown shouldBe setOf("roleName")
+                withClue("判定はどの processor も走る前に終わっている") { RanFlag.ran shouldBe false }
+            }
+
+            "argsFor があっても走査は1回で済む" {
+                fun listCallsFor(argsFor: Map<String, Map<String, String>>): Int {
+                    val tree = RunCountingFileSystem(fakeFileSystemFor())
+                    runProcessors(
+                        architecture = definition,
+                        registry = mapOf(
+                            "a" to FilesReadingProcessorA::class.java,
+                            "b" to FilesReadingProcessorB::class.java,
+                        ),
+                        processorKeys = listOf("a", "b"),
+                        rawArgs = emptyMap(),
+                        argsFor = argsFor,
+                        fileSystem = tree,
+                        out = {},
+                    )
+                    return tree.listCalls
+                }
+
+                listCallsFor(mapOf("a" to emptyMap())) shouldBe listCallsFor(emptyMap())
+            }
+        }
     }
 })
 
@@ -420,4 +499,24 @@ private object UndeclaredNameRunProcessor : ArchitectureProcessorNoArg<Unit> {
 
     override fun undeclaredArgNames(context: ArchitectureProcessContext<*>): Set<String> =
         setOf("greeting")
+}
+
+private data class Seen(val roleName: String, val rawArgs: Map<String, String>)
+
+private object RecordingProcessorA : ArchitectureProcessor<RunRoleNameArgs, Unit> {
+    var seen: Seen? = null
+    override val argsSerializer: KSerializer<RunRoleNameArgs> = RunRoleNameArgs.serializer()
+
+    override fun process(context: ArchitectureProcessContext<RunRoleNameArgs>): Result<Unit> = runCatching {
+        seen = Seen(context.args.roleName, context.rawArgs)
+    }
+}
+
+private object RecordingProcessorB : ArchitectureProcessor<RunRoleNameArgs, Unit> {
+    var seen: Seen? = null
+    override val argsSerializer: KSerializer<RunRoleNameArgs> = RunRoleNameArgs.serializer()
+
+    override fun process(context: ArchitectureProcessContext<RunRoleNameArgs>): Result<Unit> = runCatching {
+        seen = Seen(context.args.roleName, context.rawArgs)
+    }
 }

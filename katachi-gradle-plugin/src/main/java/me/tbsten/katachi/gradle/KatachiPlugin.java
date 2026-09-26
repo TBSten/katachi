@@ -1,6 +1,7 @@
 package me.tbsten.katachi.gradle;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -23,7 +24,8 @@ import org.gradle.api.tasks.TaskProvider;
  * <p>Every processor key gets a {@link KatachiProcessorTask} named {@code katachi} followed by
  * the key with its first letter upper-cased. {@code docs} and {@code template} are registered by
  * default, so {@code katachiDocs} and {@code katachiTemplate} are always there; a
- * {@code register("layout", ...)} adds {@code katachiLayout}. A key whose task name is already
+ * {@code register("layout", ...)} adds {@code katachiLayout}. {@code katachiProcessors} runs
+ * several of them in one JVM ({@link KatachiProcessorsTask}). A key whose task name is already
  * taken by another task stops the build at that {@code register(...)} line, rather than
  * replacing or shadowing the other task.
  *
@@ -63,6 +65,9 @@ public class KatachiPlugin implements Plugin<Project> {
      */
     private static final String KATACHI_MAIN_CLASS = "me.tbsten.katachi.processor.internal.MainKt";
 
+    /** The name of the task that runs several processors in one JVM. */
+    static final String PROCESSORS_TASK_NAME = "katachiProcessors";
+
     /** The name of the code generation task this plugin registers. */
     private static final String GENERATE_KATACHI_ENTRY_POINT_TASK_NAME = "generateKatachiEntryPoint";
 
@@ -96,6 +101,24 @@ public class KatachiPlugin implements Plugin<Project> {
         // build script makes -- so each task exists from the line that asked for it, without an
         // `afterEvaluate`, and is itself registered lazily.
         final KatachiProcessors processors = extension.getProcessors();
+
+        // Registered before any processor key is seen, so a key whose task would be named the
+        // same (`processors`) is refused by the check below with a message of its own.
+        project.getTasks().register(PROCESSORS_TASK_NAME, KatachiProcessorsTask.class, task -> {
+            task.setGroup(TASK_GROUP);
+            task.setDescription(
+                    "Runs several katachi processors in one JVM on the test runtime classpath of "
+                            + "this module. Choose them with --processor <key> (repeatable); pass "
+                            + "arguments to all of them with --arg key=value.");
+            task.getMainClass().convention(KATACHI_MAIN_CLASS);
+            task.setWorkingDir(projectDirectory);
+            task.getArchitectureClassName().set(project.provider(extension::getArchitecture));
+            task.getEntryPointClassName().convention(KatachiEntryPointSource.QUALIFIED_NAME);
+            task.getRegisteredKeys().set(project.provider(
+                    () -> new ArrayList<>(processors.getRegistrations().keySet())));
+            task.getConfiguredArgs().set(project.provider(processors::getConfiguredArgs));
+        });
+
         final Map<String, String> keyByTaskName = new HashMap<>();
         processors.whenKeyAdded(key -> {
             final String taskName = KatachiProcessors.taskNameOf(key);
@@ -170,6 +193,8 @@ public class KatachiPlugin implements Plugin<Project> {
             // tests is ordered before a run without a `dependsOn` of its own.
             project.getTasks().withType(KatachiProcessorTask.class).configureEach(task ->
                     task.setClasspath(testSourceSet.getRuntimeClasspath()));
+            project.getTasks().withType(KatachiProcessorsTask.class).configureEach(task ->
+                    task.setClasspath(testSourceSet.getRuntimeClasspath()));
         });
 
         // A safety net alongside the `srcDir(...)` above. Whether `SourceDirectorySet`'s
@@ -190,7 +215,9 @@ public class KatachiPlugin implements Plugin<Project> {
      */
     private static InvalidUserDataException taskNameTaken(String key, String taskName, String otherKey) {
         String holder = otherKey == null
-                ? "this project already has a task named \"" + taskName + "\""
+                ? (PROCESSORS_TASK_NAME.equals(taskName)
+                        ? "\"" + taskName + "\" is the plugin's own task that runs several processors in one JVM"
+                        : "this project already has a task named \"" + taskName + "\"")
                 : "the katachi processor key \"" + otherKey + "\" already registered the task \""
                         + taskName + "\"";
         return new InvalidUserDataException(

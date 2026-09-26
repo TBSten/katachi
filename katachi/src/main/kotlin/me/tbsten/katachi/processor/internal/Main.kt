@@ -21,8 +21,8 @@ import me.tbsten.katachi.processor.KatachiEntryPointNotFoundException
  * 4. Exits with a non-zero status if any processor failed.
  *
  * Each `katachi<Key>` task passes exactly one `--processor`: the key it was registered for. The
- * command line still accepts several, which is what [runProcessors] itself is written for, but
- * the plugin never sends more than one.
+ * plugin's `katachiProcessors` task passes several, so that they share this one JVM and one walk
+ * of the project, and hands each processor its build-script arguments with `--arg-for`.
  *
  * The exit happens **after** [runProcessors] has printed its full report, never before: the run's
  * summary is the most useful thing on the screen, and returning a failing exit status first would
@@ -50,6 +50,7 @@ internal fun main(args: Array<String>) {
         registry = entryPoint.processors,
         processorKeys = commandLine.processorKeys,
         rawArgs = commandLine.args,
+        argsFor = commandLine.argsFor,
     )
     if (summary.failed > 0) exitProcess(1)
 }

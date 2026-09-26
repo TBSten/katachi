@@ -58,6 +58,10 @@ internal fun instantiateProcessor(type: Class<*>): ArchitectureProcessor<*, *> {
  * answering `Result.failure` or by throwing; both are reported as `[FAILED]` with the
  * exception's message, and a `success` is `[OK]` with its value.
  *
+ * @param argsFor arguments for one processor only, by processor key: what `--arg-for` carries.
+ *   A processor is given its own entry here with [rawArgs] laid over it, so a command-line
+ *   `--arg` wins over a build-script value exactly as it does for a single-processor run. Each
+ *   entry's names are checked against its own processor alone.
  * @param out where the report's lines go. Defaults to [println], but a spec passes
  *   `mutableListOf<String>::add` instead so the run can be asserted on without capturing standard
  *   output.
@@ -67,6 +71,7 @@ internal fun runProcessors(
     registry: Map<String, Class<*>>,
     processorKeys: List<String>,
     rawArgs: Map<String, String>,
+    argsFor: Map<String, Map<String, String>> = emptyMap(),
     fileSystem: KatachiFileSystem = RealFileSystem(),
     out: (String) -> Unit = ::println,
 ): ProcessorRunSummary {
@@ -91,16 +96,23 @@ internal fun runProcessors(
     // this run made legal and they read that off the context. Nothing is walked by building it:
     // the walk behind it is `by lazy` and no processor has run yet.
     val base = RealArchitectureProcessContext(architecture, Unit, fileSystem, rawArgs = rawArgs)
+    // One context per processor, all on `base`'s walk: only the arguments differ, and only for a
+    // processor that has an `argsFor` entry.
+    val contexts: Map<String, ArchitectureProcessContext<*>> = selected.associate { (key, _) ->
+        val own = argsFor[key]
+        key to if (own.isNullOrEmpty()) base else RealArchitectureProcessContext(base.walk, Unit, base.onLog, own + rawArgs)
+    }
 
-    checkNoUnknownArgs(selected, base, rawArgs)
+    checkNoUnknownArgs(selected, contexts, rawArgs, argsFor)
 
     data class Entry(val key: String, val result: Result<Any?>)
 
     val outcomes = selected.map { (key, processor) ->
+        val context = contexts.getValue(key)
         // A throw and a `Result.failure` land in the same place: on the command line, "could
         // not do the job" and "did the job, and the answer is no" both fail the run.
         val result = runCatching {
-            erase(processor).run(base, rawArgs) { message -> out("  [$key] $message") }.getOrThrow()
+            erase(processor).run(context, context.rawArgs) { message -> out("  [$key] $message") }.getOrThrow()
         }
         Entry(key, result)
     }

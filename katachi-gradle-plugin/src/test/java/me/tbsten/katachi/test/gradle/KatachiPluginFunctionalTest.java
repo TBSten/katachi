@@ -270,6 +270,8 @@ class KatachiPluginFunctionalTest {
                         "katachiDocs",
                         "katachiLayout",
                         "katachiLayoutCheck",
+                        // The one task that is not per key: several processors in one JVM.
+                        "katachiProcessors",
                         "katachiTemplate",
                         "katachiTemplates"),
                 tasksOfGroup(output, "Katachi tasks"),

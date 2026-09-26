@@ -5,6 +5,7 @@ import io.kotest.core.spec.style.FreeSpec
 import io.kotest.matchers.shouldBe
 import me.tbsten.katachi.processor.KatachiDuplicateEntryPointOptionException
 import me.tbsten.katachi.processor.KatachiDuplicateProcessorArgException
+import me.tbsten.katachi.processor.KatachiInvalidProcessorArgForOptionException
 import me.tbsten.katachi.processor.KatachiInvalidProcessorArgOptionException
 import me.tbsten.katachi.processor.KatachiMissingEntryPointOptionException
 import me.tbsten.katachi.processor.KatachiMissingProcessorSelectionException
@@ -144,6 +145,82 @@ class ProcessorCommandLineSpec : FreeSpec({
                 )
             }
             thrown.argument shouldBe "stray"
+        }
+    }
+    "--arg-for（1つの processor にだけ渡す引数）" - {
+        "--arg-for=<key>:<name>=<value> は key ごとの引数として分解され、--arg とは混ざらない" {
+            val parsed = parseProcessorCommandLine(
+                arrayOf(
+                    "--entry-point=com.example.MyEntryPoint",
+                    "--processor=docs,layout",
+                    "--arg-for=docs:outputDir=docs/architecture",
+                    "--arg=roleName=GetUser",
+                ),
+            )
+
+            parsed.args shouldBe mapOf("roleName" to "GetUser")
+            parsed.argsFor shouldBe mapOf("docs" to mapOf("outputDir" to "docs/architecture"))
+        }
+
+        "値に : や = が入っていても、最初の : と その後の最初の = だけで割られる" {
+            parseProcessorCommandLine(
+                arrayOf(
+                    "--entry-point=com.example.MyEntryPoint",
+                    "--processor=template",
+                    "--arg-for=template:invokeImpl=a:b=c",
+                ),
+            ).argsFor shouldBe mapOf("template" to mapOf("invokeImpl" to "a:b=c"))
+        }
+
+        "--arg-for が無ければ argsFor は空" {
+            parseProcessorCommandLine(
+                arrayOf("--entry-point=com.example.MyEntryPoint", "--processor=layout"),
+            ).argsFor shouldBe emptyMap()
+        }
+
+        "形が <key>:<name>=<value> でなければ落ちる" {
+            listOf(
+                "--arg-for=docs",
+                "--arg-for=docs:outputDir",
+                "--arg-for=:outputDir=x",
+                "--arg-for=docs:=x",
+            ).forEach { token ->
+                val thrown = shouldThrow<KatachiInvalidProcessorArgForOptionException> {
+                    parseProcessorCommandLine(
+                        arrayOf("--entry-point=com.example.MyEntryPoint", "--processor=docs", token),
+                    )
+                }
+                thrown.argument shouldBe token
+                thrown.processorKey shouldBe null
+            }
+        }
+
+        "--processor で選ばれていない key 宛ての --arg-for は落ちる" {
+            val thrown = shouldThrow<KatachiInvalidProcessorArgForOptionException> {
+                parseProcessorCommandLine(
+                    arrayOf(
+                        "--entry-point=com.example.MyEntryPoint",
+                        "--processor=layout",
+                        "--arg-for=docs:outputDir=x",
+                    ),
+                )
+            }
+            thrown.processorKey shouldBe "docs"
+            thrown.selectedKeys shouldBe listOf("layout")
+        }
+
+        "同じ key と name の --arg-for が2回あれば落ちる" {
+            val thrown = shouldThrow<KatachiDuplicateProcessorArgException> {
+                parseProcessorCommandLine(
+                    arrayOf(
+                        "--entry-point=com.example.MyEntryPoint",
+                        "--processor=docs",
+                        "--arg-for=docs:outputDir=a",
+                        "--arg-for=docs:outputDir=b",
+                    ),
+                )
+            }
+            thrown.key shouldBe "docs:outputDir"
         }
     }
 })

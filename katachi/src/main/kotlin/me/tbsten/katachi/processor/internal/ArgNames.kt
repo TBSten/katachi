@@ -26,13 +26,13 @@ internal fun declaredArgNames(processor: ArchitectureProcessor<*, *>): Set<Strin
  */
 private fun acceptedArgNames(
     selected: List<Pair<String, ArchitectureProcessor<*, *>>>,
-    context: ArchitectureProcessContext<*>,
+    contexts: Map<String, ArchitectureProcessContext<*>>,
 ): AcceptedArgNames {
     val names = mutableSetOf<String>()
     var dependsOnValues = false
-    for ((_, processor) in selected) {
+    for ((key, processor) in selected) {
         names += declaredArgNames(processor)
-        val undeclared = processor.undeclaredArgNames(context)
+        val undeclared = processor.undeclaredArgNames(contexts.getValue(key))
         if (undeclared.isNotEmpty()) dependsOnValues = true
         names += undeclared
     }
@@ -49,17 +49,38 @@ private class AcceptedArgNames(val names: Set<String>, val dependsOnValues: Bool
 /**
  * Refuses a run in which some `--arg` key belongs to none of the chosen processors.
  *
- * The union, and once for the whole run: judging per processor would reject
- * `--processor=docs,template --arg roleName=X`, because `docs` takes no arguments and would
- * call `roleName` unknown before `template` was ever reached.
+ * [values] -- the `--arg`s every processor is given -- against the union, and once for the whole
+ * run: judging per processor would reject `--processor=docs,template --arg roleName=X`, because
+ * `docs` takes no arguments and would call `roleName` unknown before `template` was ever
+ * reached. Each entry of [argsFor] against its own processor alone, since only that processor is
+ * given it -- the same answer a run of that processor by itself would give.
+ *
+ * @param contexts each selected processor's context, by key, carrying the values it is given.
  */
+internal fun checkNoUnknownArgs(
+    selected: List<Pair<String, ArchitectureProcessor<*, *>>>,
+    contexts: Map<String, ArchitectureProcessContext<*>>,
+    values: Map<String, String>,
+    argsFor: Map<String, Map<String, String>> = emptyMap(),
+) {
+    val accepted = acceptedArgNames(selected, contexts)
+    throwIfUnknown(values.keys - accepted.names, accepted)
+
+    for (entry in selected) {
+        val own = argsFor[entry.first] ?: continue
+        val acceptedByOne = acceptedArgNames(listOf(entry), contexts)
+        throwIfUnknown(own.keys - values.keys - acceptedByOne.names, acceptedByOne)
+    }
+}
+
+/** [checkNoUnknownArgs] for a run in which every processor reads the same [context]. */
 internal fun checkNoUnknownArgs(
     selected: List<Pair<String, ArchitectureProcessor<*, *>>>,
     context: ArchitectureProcessContext<*>,
     values: Map<String, String>,
-) {
-    val accepted = acceptedArgNames(selected, context)
-    val unknown = values.keys - accepted.names
+): Unit = checkNoUnknownArgs(selected, selected.associate { (key, _) -> key to context }, values)
+
+private fun throwIfUnknown(unknown: Set<String>, accepted: AcceptedArgNames) {
     if (unknown.isEmpty()) return
 
     throw KatachiUnknownProcessorArgException(

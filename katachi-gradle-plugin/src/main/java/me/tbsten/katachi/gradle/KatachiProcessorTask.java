@@ -2,7 +2,6 @@ package me.tbsten.katachi.gradle;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -247,11 +246,7 @@ public abstract class KatachiProcessorTask extends JavaExec {
     @Override
     public void exec() {
         if (!getArchitectureClassName().isPresent()) {
-            throw new InvalidUserDataException(
-                    "katachi { architecture = ... } is not set in this module's "
-                            + "build.gradle.kts. Add it, e.g. "
-                            + "`katachi { architecture = \"com.example.projectArchitecture\" }`, "
-                            + "then run " + getName() + " again.");
+            throw KatachiCommandLineArgs.architectureNotSet(getName());
         }
 
         List<String> args = new ArrayList<>();
@@ -261,22 +256,10 @@ public abstract class KatachiProcessorTask extends JavaExec {
         // The command line wins over what the build script configured, so `--arg` stays the way
         // to vary one run without editing the build. Collected first for that reason: a key seen
         // here is not overwritten below.
-        Set<String> seenArgKeys = new LinkedHashSet<>();
-        for (String rawArg : getProcessorArgs()) {
-            int separatorIndex = rawArg.indexOf('=');
-            if (separatorIndex <= 0) {
-                throw new InvalidUserDataException(
-                        "Invalid --arg \"" + rawArg + "\" for " + getName() + ". Expected --arg "
-                                + "key=value, e.g. --arg roleName=GetUser.");
-            }
-            String key = rawArg.substring(0, separatorIndex);
-            if (!seenArgKeys.add(key)) {
-                throw new InvalidUserDataException(
-                        "--arg key \"" + key + "\" (\"" + rawArg + "\") was given more than "
-                                + "once to " + getName() + ". Each --arg key may be passed only "
-                                + "once.");
-            }
-            args.add("--arg=" + rawArg);
+        Map<String, String> commandLineArgs = KatachiCommandLineArgs.parse(getName(), getProcessorArgs());
+        Set<String> seenArgKeys = commandLineArgs.keySet();
+        for (Map.Entry<String, String> entry : commandLineArgs.entrySet()) {
+            args.add("--arg=" + entry.getKey() + "=" + entry.getValue());
         }
 
         for (Map.Entry<String, String> entry : getConfiguredArgs().get().entrySet()) {

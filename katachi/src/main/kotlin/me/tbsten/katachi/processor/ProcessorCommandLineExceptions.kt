@@ -103,7 +103,8 @@ public class KatachiUnknownProcessorOptionException internal constructor(
         )
         append(
             "Expected one of --entry-point=<fully qualified class name>, " +
-                "--processor=<key>[,<key>...] or --arg=<key>=<value>.",
+                "--processor=<key>[,<key>...], --arg=<key>=<value> or " +
+                "--arg-for=<processor key>:<key>=<value>.",
         )
     },
 )
@@ -175,5 +176,61 @@ public class KatachiDuplicateProcessorArgException internal constructor(
                 "run would go green having used something nobody meant to pass.",
         )
         append("Pass each --arg key once.")
+    },
+)
+
+/**
+ * An `--arg-for` token is not `<processor key>:<name>=<value>`, or names a processor the run did
+ * not select.
+ *
+ * `--arg-for` gives one argument to one processor of a run that selected several; the Gradle
+ * plugin's `katachiProcessors` task sends each processor's build-script arguments this way, so
+ * that `docs { outputDir = ... }` reaches `docs` only.
+ *
+ * ## Example 1: catch an --arg-for addressed to a processor that is not running
+ * ```kt
+ * val thrown = shouldThrow<KatachiInvalidProcessorArgForOptionException> {
+ *     main(
+ *         arrayOf(
+ *             "--entry-point=com.example.GeneratedKatachiEntryPoint",
+ *             "--processor=layout",
+ *             "--arg-for=docs:outputDir=docs/architecture",
+ *         ),
+ *     )
+ * }
+ * thrown.processorKey shouldBe "docs"
+ * ```
+ *
+ * @property argument the `--arg-for` token, as it was written.
+ * @property processorKey the processor key the token names, or `null` when the token is not of
+ *   the form `<processor key>:<name>=<value>` at all.
+ * @property selectedKeys the `--processor` keys of the run.
+ */
+@ExperimentalKatachiApi
+public class KatachiInvalidProcessorArgForOptionException internal constructor(
+    public val argument: String,
+    public val processorKey: String?,
+    public val selectedKeys: List<String>,
+) : KatachiDeclarationException(
+    message = buildString {
+        if (processorKey == null) {
+            appendLine("\"$argument\" is not of the form --arg-for=<processor key>:<name>=<value>.")
+            appendLine(
+                "The first : ends the processor key and the first = after it ends the name, so " +
+                    "a value may hold further : and = signs, but neither the key nor the name " +
+                    "may be empty.",
+            )
+            append("Write --arg-for=<processor key>:<name>=<value>, for example --arg-for=docs:outputDir=docs.")
+        } else {
+            appendLine(
+                "\"$argument\" gives an argument to the processor \"$processorKey\", which this run " +
+                    "did not select (selected: ${selectedKeys.joinToString(", ")}).",
+            )
+            appendLine(
+                "Dropping it would let an argument meant for one processor vanish without a " +
+                    "trace, as a misspelled key would.",
+            )
+            append("Add --processor=$processorKey, or remove the --arg-for.")
+        }
     },
 )
