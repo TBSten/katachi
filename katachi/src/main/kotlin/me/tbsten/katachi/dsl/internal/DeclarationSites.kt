@@ -34,6 +34,12 @@ private fun isKatachiFrame(className: String): Boolean =
 internal fun isWrittenByKatachi(block: Any): Boolean = isKatachiFrame(block.javaClass.name)
 
 /**
+ * Walks frames lazily so the cost depends on how many katachi frames sit on top, not on how
+ * deep the caller's stack is (kotest and Gradle add a few hundred frames below the DSL).
+ */
+private val stackWalker: StackWalker = StackWalker.getInstance()
+
+/**
  * Picks the first stack frame outside katachi.
  *
  * Must be reached through a non-inline function. When the call is inlined into user code
@@ -46,12 +52,11 @@ internal fun captureDeclarationSite(): DeclarationSite {
     //  file (package -> directory, per source set) would work for most projects, but Kotlin
     //  does not require the package to match the directory and KMP has several source sets
     //  with same-named files, so a guess could print a wrong absolute path.
-    for (frame in Throwable().stackTrace) {
-        if (isKatachiFrame(frame.className)) continue
-        return DeclarationSite(
-            fileName = frame.fileName ?: DeclarationSite.Unknown.fileName,
-            lineNumber = frame.lineNumber,
-        )
-    }
-    return DeclarationSite.Unknown
+    val frame = stackWalker.walk { frames ->
+        frames.filter { !isKatachiFrame(it.className) }.findFirst().orElse(null)
+    } ?: return DeclarationSite.Unknown
+    return DeclarationSite(
+        fileName = frame.fileName ?: DeclarationSite.Unknown.fileName,
+        lineNumber = frame.lineNumber,
+    )
 }
