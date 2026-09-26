@@ -16,6 +16,28 @@ description: >-
     {警告内容詳細}
     ```
 
+```mermaid
+flowchart TD
+    P["1. 前提チェック<br/>prepare.py"] -- "STOP" --> Ask["中断してユーザに確認<br/>（--force で再開）"]
+    P --> T["2. 翻訳同期<br/>translate-ja-en"]
+    P --> V["3. 公開範囲<br/>list-public-api.py"]
+    P --> R["4. リリースノート<br/>release-note-material.py"]
+    P --> D["5. 実装とドキュメント<br/>check-docs-against-impl"]
+
+    V --> V1["public"] & V2["@InternalKatachiApi"] & V3["@ExperimentalKatachiApi"]
+
+    T --> B["6-1. ビルドと配信<br/>generateApiDocs → pnpm build → pnpm preview"]
+    B --> C1["6. 巡回 en"] & C2["6. 巡回 ja"] & C3["6. 巡回 api-docs"]
+
+    V1 & V2 & V3 & R & D & C1 & C2 & C3 --> Rep["7. 報告"]
+```
+
+- 1 が通ったら、2・3・4・5 を並列に始める。3 と 6 の中は、区分ごとの subagent をさらに並列にする。
+- 6 は 2 を待つ。英語のページを訳し直してからビルドしないと、古い英語を巡回することになる。
+- 5 は日本語の原本だけを見るので、2 を待たない。3・4・5 はどれもファイルを書き換えないので、互いに待たない。
+- **Gradle を使う作業は同時に1つだけ。**5 がサンプルを動かす間と、6-1 の `generateApiDocs` は重ねない（同じ `katachi/build/` を取り合う）。走らせる前に `pgrep -fl GradleWrapperMain` で確かめる。
+- 7 は、ほかの全部が返ってから。チェックリストは各 subagent が返るたびにオーケストレータが書く。
+
 ## 1. 前提チェック
 
 スクリプトは `.claude/skills/prerelease/scripts/` にある。リポジトリの直下で、python3（標準ライブラリだけ）で実行する。
@@ -64,9 +86,11 @@ python3 .claude/skills/prerelease/scripts/prepare.py
       Gradle プラグインの Java（文字列を含む）・`tool/` / `test` / `sample` / `docs` 日本語のドキュメント）、シグネチャ。
       末尾に「基準にあって今は無い」宣言（削除・改名・非公開化の候補）。
     - **回数は目安。**名前だけで数えるので、`name` や `path` のような一般的な名前のメンバは別物も数える。
-      `@InternalKatachiApi` で `他 0` のものは `internal` にできる候補だが、本当に使われていないかは subagent に grep で確かめさせる。
+      `@InternalKatachiApi` で `他 0` のものは `internal` にできる候補だが、本当に使われていないかは subagent に grep
+      で確かめさせる。
 - 区分ごとに1体ずつ、並列な subagent に任せる。
-    - 渡すもの: その区分の一覧（`list-public-api.py --only public|internal-api|experimental`。基準から変わったものだけなら `--changed`）と、上の表。
+    - 渡すもの: その区分の一覧（`list-public-api.py --only public|internal-api|experimental`。基準から変わったものだけなら
+      `--changed`）と、上の表。
     - 1件ごとに「判断（OK / 要検討）・理由」を書かせる。宣言の場所と使われている場所はスクリプトの出力をそのまま使わせる。
     - 印の付いたもの（直前のリリースから増えた・変わった公開 API）は必ず目を通させる（差分は
       `git diff <基準> -- katachi/src/main katachi-konsist/src/main`）。
@@ -117,27 +141,30 @@ python3 .claude/skills/prerelease/scripts/prepare.py
    ```
 
 3. 区分（en / ja / api-docs）ごとに1体ずつ、並列な subagent（model: sonnet）に Playwright MCP で巡回させる。
-   渡すもの: その区分の URL の一覧と、下の「見ること」。スクリーンショットは `.local/release-v0.0.0/screenshots/<区分>/` に置かせる。
+   渡すもの: その区分の URL の一覧と、下の「見ること」。スクリーンショットは `.local/release-v0.0.0/screenshots/<区分>/`
+   に置かせる。
    **ページを直させない。**見つけたものは警告として報告させる。
 
    見ること（ページごと）:
-   - 開けるか（404 やビルドの取り残しが無いか）、コンソールのエラー・警告
-   - ページ内のリンク（サイト内のもの）が開けるか。API リファレンスへのリンクも含める
-   - 見た目が崩れていないか: `<Tabs>`（ラベルの折り返し）、`<FileTree>`、`<CodeComparison>`、Mermaid、表、コードブロック、`<details>`。
-     スクリーンショットを撮って目で見る
-   - 画面幅 390px で横にはみ出さないか（`document.documentElement.scrollWidth` が画面幅を超えないか）
-   - ja と en の切り替え: 言語の切り替えで対応するページへ移れるか。日本語のページに英語が、英語のページに日本語が混ざっていないか
-     （katachi が出力する固定の日本語の文字列は除く）
-   - 本文に残った `TODO` や、書きかけの文
+    - 開けるか（404 やビルドの取り残しが無いか）、コンソールのエラー・警告
+    - ページ内のリンク（サイト内のもの）が開けるか。API リファレンスへのリンクも含める
+    - 見た目が崩れていないか: `<Tabs>`（ラベルの折り返し）、`<FileTree>`、`<CodeComparison>`、Mermaid、表、コードブロック、
+      `<details>`。
+      スクリーンショットを撮って目で見る
+    - 画面幅 390px で横にはみ出さないか（`document.documentElement.scrollWidth` が画面幅を超えないか）
+    - ja と en の切り替え: 言語の切り替えで対応するページへ移れるか。日本語のページに英語が、英語のページに日本語が混ざっていないか
+      （katachi が出力する固定の日本語の文字列は除く）
+    - 本文に残った `TODO` や、書きかけの文
 
    API リファレンス（api-docs）で追加で見ること:
-   - サイドバー: 各モジュールの先頭が「⭐️ Featured」、その下に package の階層（`me.tbsten.katachi` 以下）が並ぶか。
-     選択中のページの強調と自動展開
-   - トップとモジュールのページの Featured の節、検索（Cmd+K）
-   - `llms.txt`、`llms-full.txt`、各ページの `.md`（HTML の URL に `.md` を足したもの）が開けるか
-   - `.internal` パッケージのページが出ていないか
+    - サイドバー: 各モジュールの先頭が「⭐️ Featured」、その下に package の階層（`me.tbsten.katachi` 以下）が並ぶか。
+      選択中のページの強調と自動展開
+    - トップとモジュールのページの Featured の節、検索（Cmd+K）
+    - `llms.txt`、`llms-full.txt`、各ページの `.md`（HTML の URL に `.md` を足したもの）が開けるか
+    - `.internal` パッケージのページが出ていないか
 
 4. 終わったら配信を止め、`.playwright-mcp/` などの一時ファイルを消す。
+
 - prerelease-check-list.md には、区分ごとのページ数と見つけた問題の件数、priority 7 以上の警告だけを書く。
 
 ## 7. 報告
