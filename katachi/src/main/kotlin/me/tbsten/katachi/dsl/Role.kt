@@ -1,7 +1,7 @@
 package me.tbsten.katachi.dsl
 
 import me.tbsten.katachi.ExperimentalKatachiApi
-import me.tbsten.katachi.dsl.internal.ConstraintDeclaration
+import me.tbsten.katachi.dsl.internal.FileConstraintDeclaration
 import me.tbsten.katachi.dsl.internal.MetadataValues
 import me.tbsten.katachi.dsl.internal.TemplateDeclaration
 import me.tbsten.katachi.dsl.internal.get
@@ -65,14 +65,14 @@ public class Role internal constructor(
      * evaluated, and they cover the union of every block in [layouts].
      *
      * Internal because a constraint says nothing until the layout around it has been
-     * evaluated: what the check works with is [me.tbsten.katachi.dsl.internal.DeclaredConstraint], not this.
+     * evaluated: what the check works with is [me.tbsten.katachi.dsl.internal.DeclaredFileConstraint], not this.
      */
-    internal val constraints: List<ConstraintDeclaration>,
+    internal val fileConstraints: List<FileConstraintDeclaration>,
     /**
      * The `template { }` of this role, in declaration order. At most one is ever kept -- the
      * list is what makes the second one a refusal rather than a replacement.
      *
-     * Internal for the reason [constraints] is: a template says nothing until it has been
+     * Internal for the reason [fileConstraints] is: a template says nothing until it has been
      * replayed with the values of one run.
      */
     internal val templates: List<TemplateDeclaration>,

@@ -1,8 +1,8 @@
 package me.tbsten.katachi.check.internal
 
-import me.tbsten.katachi.check.UncheckedConstraint
-import me.tbsten.katachi.check.UncheckedConstraintReason
-import me.tbsten.katachi.check.UnsatisfiedConstraint
+import me.tbsten.katachi.check.UncheckedFileConstraint
+import me.tbsten.katachi.check.UncheckedFileConstraintReason
+import me.tbsten.katachi.check.UnsatisfiedFileConstraint
 import me.tbsten.katachi.dsl.DeclarationSite
 import me.tbsten.katachi.internal.displayPath
 
@@ -22,7 +22,7 @@ import me.tbsten.katachi.internal.displayPath
  * so katachi does not know what would satisfy it, and a report that guessed would be inventing
  * a claim. The context lines say enough to find the rule and read it.
  */
-internal fun unsatisfiedConstraintBlock(violation: UnsatisfiedConstraint, root: String?): List<String> = buildList {
+internal fun unsatisfiedFileConstraintBlock(violation: UnsatisfiedFileConstraint, root: String?): List<String> = buildList {
     add("[${violation.label}] ${constraintPath(root, violation.path, violation.declaredAt)}")
     add(
         "$STEP${constraintLine(violation.role.qualifiedName, violation.constraintName)}",
@@ -35,17 +35,17 @@ internal fun unsatisfiedConstraintBlock(violation: UnsatisfiedConstraint, root: 
  * A constraint nothing could answer for.
  *
  * The two reasons print the same context and differ in one sentence and in whether there is a
- * cause to show. `How to fix:` is three lines for [UncheckedConstraintReason.Failed] and says
+ * cause to show. `How to fix:` is three lines for [UncheckedFileConstraintReason.Failed] and says
  * nothing about whose bug it is: the cause may be katachi's, the backend's, or the rule's, and
  * a line that always blamed katachi would be wrong most of the time.
  */
-internal fun uncheckedConstraintBlock(violation: UncheckedConstraint, root: String?): List<String> = buildList {
+internal fun uncheckedFileConstraintBlock(violation: UncheckedFileConstraint, root: String?): List<String> = buildList {
     add("[${violation.label}] ${constraintPath(root, violation.path, violation.declaredAt)}")
     when (violation.reason) {
-        UncheckedConstraintReason.NotEvaluated ->
+        UncheckedFileConstraintReason.NotEvaluated ->
             add("${STEP}Nothing evaluated this constraint, so nothing is known about it.")
 
-        UncheckedConstraintReason.Failed ->
+        UncheckedFileConstraintReason.Failed ->
             add("${STEP}Katachi failed while evaluating this constraint, so nothing is known about it.")
     }
     add("$STEP${constraintLine(violation.role.qualifiedName, violation.constraintName)}")
@@ -54,12 +54,12 @@ internal fun uncheckedConstraintBlock(violation: UncheckedConstraint, root: Stri
     add("")
     add("${STEP}How to fix:")
     when (violation.reason) {
-        UncheckedConstraintReason.NotEvaluated -> {
-            add("$STEP$STEP- Pass KonsistCheck() to assert(): projectArchitecture.assert(KonsistCheck())")
+        UncheckedFileConstraintReason.NotEvaluated -> {
+            add("$STEP$STEP- Pass FileConstraintCheck() to assert(): projectArchitecture.assert(FileConstraintCheck())")
             add("$STEP$STEP- Remove the constraint at ${violation.declaredAt} if it is no longer wanted")
         }
 
-        UncheckedConstraintReason.Failed -> {
+        UncheckedFileConstraintReason.Failed -> {
             add("$STEP$STEP- Read the cause above: it says what stopped the constraint")
             add("$STEP$STEP- Check the constraint block at ${violation.declaredAt}")
             add(
@@ -78,7 +78,7 @@ private fun constraintLine(role: String, constraintName: String?): String =
     if (constraintName == null) {
         "Role: $role"
     } else {
-        "Role: $role / Constraint: \"${oneLine(constraintName)}\""
+        "Role: $role / FileConstraint: \"${oneLine(constraintName)}\""
     }
 
 /** What inside the file was rejected, or nothing when the backend works per whole file. */
@@ -102,7 +102,7 @@ private fun inLayout(root: String?, layoutPath: String?): String =
  * The path a constraint block opens with, as a URI — unless it is the file name the constraint
  * was declared in.
  *
- * That is the last fallback of `DeclaredConstraint.reportPath`, used when the layout declared no
+ * That is the last fallback of `DeclaredFileConstraint.reportPath`, used when the layout declared no
  * path at all: a source file name, not a path below the project root, so resolving it against
  * the root would point at a file that is not there.
  */

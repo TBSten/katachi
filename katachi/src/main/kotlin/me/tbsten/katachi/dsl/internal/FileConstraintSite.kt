@@ -1,22 +1,22 @@
 package me.tbsten.katachi.dsl.internal
 
 import me.tbsten.katachi.dsl.DeclarationSite
-import me.tbsten.katachi.dsl.FileSetConstraint
-import me.tbsten.katachi.dsl.KatachiConstraintNameException
+import me.tbsten.katachi.dsl.FileConstraint
+import me.tbsten.katachi.dsl.KatachiFileConstraintNameException
 
 /**
- * One `constraint { }` call, kept as written.
+ * One `fileConstraint { }` call, kept as written.
  *
  * What it covers is not decided here: that depends on the block it sits in and on the entries
  * that block turned out to declare, neither of which is known while the DSL is still running.
- * See [ConstraintSite].
+ * See [FileConstraintSite].
  */
-internal class ConstraintDeclaration(
+internal class FileConstraintDeclaration(
     val name: String?,
     val declaredAt: DeclarationSite,
-    val check: FileSetConstraint,
+    val check: FileConstraint,
 ) {
-    override fun toString(): String = "ConstraintDeclaration(${name ?: declaredAt})"
+    override fun toString(): String = "FileConstraintDeclaration(${name ?: declaredAt})"
 }
 
 /**
@@ -26,15 +26,15 @@ internal class ConstraintDeclaration(
  * cannot be printed is a bad value in the definition — the same class of mistake as an invalid
  * role name, and worth the same immediate refusal.
  */
-internal fun constraintDeclarationOf(
+internal fun fileConstraintDeclarationOf(
     name: String?,
     declaredAt: DeclarationSite,
-    check: FileSetConstraint,
-): ConstraintDeclaration {
+    check: FileConstraint,
+): FileConstraintDeclaration {
     if (name != null && (name.isBlank() || name.any { it == '\n' || it == '\r' })) {
-        throw KatachiConstraintNameException(name = name, declaredAt = declaredAt)
+        throw KatachiFileConstraintNameException(name = name, declaredAt = declaredAt)
     }
-    return ConstraintDeclaration(name = name, declaredAt = declaredAt, check = check)
+    return FileConstraintDeclaration(name = name, declaredAt = declaredAt, check = check)
 }
 
 /**
@@ -45,9 +45,9 @@ internal fun constraintDeclarationOf(
  * until the tree is flattened, and a wildcard module key produces one site per module with a
  * different resolved path each time.
  */
-internal class ConstraintSite(
+internal class FileConstraintSite(
     /** The constraints written directly in that block, in the order they were written. */
-    val declarations: List<ConstraintDeclaration>,
+    val declarations: List<FileConstraintDeclaration>,
     /**
      * The nodes this block owns. The entries of these subtrees are what the constraint covers,
      * minus the ones a `module { }` block injected — see [LayoutNode.synthetic].
@@ -68,7 +68,7 @@ internal class ConstraintSite(
  * left open with `anyFile()`. Keeping the two rules in step is what stops a constraint from
  * covering a file the role does not own, or missing one it does.
  */
-internal class ConstraintCoverage(
+internal class FileConstraintCoverage(
     private val fileGlobs: List<Glob>,
     private val anyFileGlobs: List<Glob>,
 ) {
@@ -79,5 +79,5 @@ internal class ConstraintCoverage(
     }
 
     override fun toString(): String =
-        "ConstraintCoverage(files=${fileGlobs.size}, anyFile=${anyFileGlobs.size})"
+        "FileConstraintCoverage(files=${fileGlobs.size}, anyFile=${anyFileGlobs.size})"
 }

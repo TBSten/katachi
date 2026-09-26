@@ -9,7 +9,7 @@ import me.tbsten.katachi.internal.displayPath
  * The report blocks of the Warning violations — the ones a `layout { }` produces without a
  * failing file, whether they were read off the declarations or found by the walk.
  *
- * Split out of `ViolationReport.kt` on size alone — see `ConstraintBlocks.kt` for the same
+ * Split out of `ViolationReport.kt` on size alone — see `FileConstraintBlocks.kt` for the same
  * reasoning. The shared pieces (`STEP`) stay defined once, in `ViolationReport.kt`.
  */
 
@@ -23,7 +23,7 @@ import me.tbsten.katachi.internal.displayPath
  * behind it, and the consequence the reader missed is that both roles' constraints are being
  * checked against all of them.
  *
- * `How to fix:` is written, unlike [me.tbsten.katachi.check.ViolationKind.Constraint]'s blocks:
+ * `How to fix:` is written, unlike [me.tbsten.katachi.check.ViolationKind.FileConstraint]'s blocks:
  * the reason those stay silent is that a constraint's body is arbitrary Kotlin katachi does not
  * read, and neither reason applies here — katachi already knows everything an
  * [AmbiguousLayout] means, because it derived the violation itself.

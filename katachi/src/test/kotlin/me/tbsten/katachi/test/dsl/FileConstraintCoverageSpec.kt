@@ -14,7 +14,7 @@ import me.tbsten.katachi.dsl.internal.reportPath
 /**
  * Which files a constraint turned out to be about, and which path a report opens with.
  *
- * Where a constraint was written is [ConstraintDeclarationSpec]'s.
+ * Where a constraint was written is [FileConstraintDeclarationSpec]'s.
  *
  * NOTE: このファイルのパッケージを `me.tbsten.katachi.dsl` にしてはいけない。
  * captureDeclarationSite() がライブラリ自身のフレームとして読み飛ばしてしまう。
@@ -23,20 +23,20 @@ import me.tbsten.katachi.dsl.internal.reportPath
 /** The `kotlin` source directory, written out so that this spec needs no module package. */
 private const val KOTLIN_DIRECTORY: String = "kotlin"
 
-class ConstraintCoverageSpec : FreeSpec({
+class FileConstraintCoverageSpec : FreeSpec({
     "覆う範囲" - {
         "役割直下の制約が全 layout の和集合を覆う" {
             val arch = architecture {
                 "domain".group {
                     "UseCase" {
-                        constraint("role wide", check = silent())
+                        fileConstraint("role wide", check = silent())
                         layout { "alpha" / "*.kt".file() }
                         layout { "beta" / "*.kt".file() }
                     }
                 }
             }
 
-            val coverage = arch.declaredConstraints().single().coverage
+            val coverage = arch.declaredFileConstraints().single().coverage
             coverage.covers("alpha/GetUserUseCase.kt") shouldBe true
             coverage.covers("beta/GetUserUseCase.kt") shouldBe true
             coverage.covers("gamma/GetUserUseCase.kt") shouldBe false
@@ -47,7 +47,7 @@ class ConstraintCoverageSpec : FreeSpec({
                 "domain".group {
                     "UseCase" {
                         layout {
-                            constraint("alpha only", check = silent())
+                            fileConstraint("alpha only", check = silent())
                             "alpha" / "*.kt".file()
                         }
                         layout { "beta" / "*.kt".file() }
@@ -55,7 +55,7 @@ class ConstraintCoverageSpec : FreeSpec({
                 }
             }
 
-            val coverage = arch.declaredConstraints().single().coverage
+            val coverage = arch.declaredFileConstraints().single().coverage
             coverage.covers("alpha/GetUserUseCase.kt") shouldBe true
             coverage.covers("beta/GetUserUseCase.kt") shouldBe false
         }
@@ -66,7 +66,7 @@ class ConstraintCoverageSpec : FreeSpec({
                     "UseCase" {
                         layout {
                             "alpha" {
-                                constraint("alpha only", check = silent())
+                                fileConstraint("alpha only", check = silent())
                                 "nested" / "*.kt".file()
                             }
                             "beta" / "*.kt".file()
@@ -75,7 +75,7 @@ class ConstraintCoverageSpec : FreeSpec({
                 }
             }
 
-            val coverage = arch.declaredConstraints().single().coverage
+            val coverage = arch.declaredFileConstraints().single().coverage
             coverage.covers("alpha/nested/GetUserUseCase.kt") shouldBe true
             coverage.covers("beta/GetUserUseCase.kt") shouldBe false
         }
@@ -86,7 +86,7 @@ class ConstraintCoverageSpec : FreeSpec({
                     "Generated" {
                         layout {
                             "generated" {
-                                constraint("anything here", check = silent())
+                                fileConstraint("anything here", check = silent())
                                 anyFile()
                             }
                         }
@@ -94,7 +94,7 @@ class ConstraintCoverageSpec : FreeSpec({
                 }
             }
 
-            val coverage = arch.declaredConstraints().single().coverage
+            val coverage = arch.declaredFileConstraints().single().coverage
             coverage.covers("generated/Whatever.kt") shouldBe true
             coverage.covers("generated/nested/Whatever.kt") shouldBe false
         }
@@ -105,7 +105,7 @@ class ConstraintCoverageSpec : FreeSpec({
                     "UseCase" {
                         layout {
                             ":core:domain".module {
-                                constraint("in core/domain", check = silent())
+                                fileConstraint("in core/domain", check = silent())
                                 mainSourceSet / KOTLIN_DIRECTORY / "*UseCase".ktFile()
                             }
                         }
@@ -113,7 +113,7 @@ class ConstraintCoverageSpec : FreeSpec({
                 }
             }
 
-            val coverage = arch.declaredConstraints().single().coverage
+            val coverage = arch.declaredFileConstraints().single().coverage
             coverage.covers("core/domain/src/main/kotlin/GetUserUseCase.kt") shouldBe true
             coverage.covers("core/domain/build.gradle.kts") shouldBe false
         }
@@ -124,7 +124,7 @@ class ConstraintCoverageSpec : FreeSpec({
                     "Settings" {
                         layout {
                             ":".module {
-                                constraint("root project", check = silent())
+                                fileConstraint("root project", check = silent())
                                 "settings.gradle".ktsFile()
                             }
                         }
@@ -132,7 +132,7 @@ class ConstraintCoverageSpec : FreeSpec({
                 }
             }
 
-            val coverage = arch.declaredConstraints().single().coverage
+            val coverage = arch.declaredFileConstraints().single().coverage
             coverage.covers("settings.gradle.kts") shouldBe true
             coverage.covers("build.gradle.kts") shouldBe false
         }
@@ -144,7 +144,7 @@ class ConstraintCoverageSpec : FreeSpec({
                         layout {
                             "docs" / "*.md".file()
                             ":".module {
-                                constraint("root project", check = silent())
+                                fileConstraint("root project", check = silent())
                                 "settings.gradle".ktsFile()
                             }
                         }
@@ -152,7 +152,7 @@ class ConstraintCoverageSpec : FreeSpec({
                 }
             }
 
-            val coverage = arch.declaredConstraints().single().coverage
+            val coverage = arch.declaredFileConstraints().single().coverage
             coverage.covers("settings.gradle.kts") shouldBe true
             coverage.covers("docs/README.md") shouldBe false
         }
@@ -163,7 +163,7 @@ class ConstraintCoverageSpec : FreeSpec({
                     "Scripts" {
                         layout {
                             ":core:domain".module {
-                                constraint("build script too", check = silent())
+                                fileConstraint("build script too", check = silent())
                                 "build.gradle".ktsFile()
                             }
                         }
@@ -171,7 +171,7 @@ class ConstraintCoverageSpec : FreeSpec({
                 }
             }
 
-            arch.declaredConstraints().single().coverage
+            arch.declaredFileConstraints().single().coverage
                 .covers("core/domain/build.gradle.kts") shouldBe true
         }
     }
@@ -183,7 +183,7 @@ class ConstraintCoverageSpec : FreeSpec({
                     "Screen" {
                         layout {
                             ":feature:*".module {
-                                constraint("internal であること", check = silent())
+                                fileConstraint("internal であること", check = silent())
                                 mainSourceSet / KOTLIN_DIRECTORY / "*Screen".ktFile()
                             }
                         }
@@ -191,7 +191,7 @@ class ConstraintCoverageSpec : FreeSpec({
                 }
             }
 
-            val declared = arch.declaredConstraints(moduleIndexOf("feature/home", "feature/cart"))
+            val declared = arch.declaredFileConstraints(moduleIndexOf("feature/home", "feature/cart"))
             declared.map { it.layoutPath } shouldBe listOf("feature/cart", "feature/home")
             declared.map { it.paths } shouldBe listOf(listOf("feature/cart"), listOf("feature/home"))
             declared[0].coverage.covers("feature/cart/src/main/kotlin/CartScreen.kt") shouldBe true
@@ -204,7 +204,7 @@ class ConstraintCoverageSpec : FreeSpec({
                     "Screen" {
                         layout {
                             ":feature:*".module {
-                                constraint("internal であること", check = silent())
+                                fileConstraint("internal であること", check = silent())
                                 mainSourceSet / KOTLIN_DIRECTORY / "*Screen".ktFile()
                             }
                         }
@@ -212,7 +212,7 @@ class ConstraintCoverageSpec : FreeSpec({
                 }
             }
 
-            arch.declaredConstraints(moduleIndexOf("app")).shouldBeEmpty()
+            arch.declaredFileConstraints(moduleIndexOf("app")).shouldBeEmpty()
         }
     }
 
@@ -221,16 +221,16 @@ class ConstraintCoverageSpec : FreeSpec({
             val arch = architecture {
                 "domain".group {
                     "UseCase" {
-                        constraint("role wide", check = silent())
+                        fileConstraint("role wide", check = silent())
                         layout {
-                            constraint("layout wide", check = silent())
+                            fileConstraint("layout wide", check = silent())
                             "useCase" / "*.kt".file()
                         }
                     }
                 }
             }
 
-            arch.declaredConstraints().map { it.layoutPath } shouldBe listOf(null, null)
+            arch.declaredFileConstraints().map { it.layoutPath } shouldBe listOf(null, null)
         }
     }
 
@@ -239,14 +239,14 @@ class ConstraintCoverageSpec : FreeSpec({
             val arch = architecture {
                 "domain".group {
                     "UseCase" {
-                        constraint("role wide", check = silent())
+                        fileConstraint("role wide", check = silent())
                         layout { "feature" / "*" / "useCase" / "*.kt".file() }
                         layout { "core/domain/useCase" / "*.kt".file() }
                     }
                 }
             }
 
-            val declared = arch.declaredConstraints().single()
+            val declared = arch.declaredFileConstraints().single()
             declared.paths shouldBe listOf("feature/*/useCase", "core/domain/useCase")
             declared.reportPath shouldBe "core/domain/useCase"
         }
@@ -255,15 +255,15 @@ class ConstraintCoverageSpec : FreeSpec({
             val arch = architecture {
                 "domain".group {
                     "UseCase" {
-                        constraint("role wide", check = silent())
+                        fileConstraint("role wide", check = silent())
                         layout { }
                     }
                 }
             }
 
-            val declared = arch.declaredConstraints().single()
+            val declared = arch.declaredFileConstraints().single()
             declared.paths.shouldBeEmpty()
-            declared.reportPath shouldBe "ConstraintCoverageSpec.kt"
+            declared.reportPath shouldBe "FileConstraintCoverageSpec.kt"
             declared.reportPath shouldNotBe "."
         }
 
@@ -271,13 +271,13 @@ class ConstraintCoverageSpec : FreeSpec({
             val arch = architecture {
                 "build".group {
                     "Generated" {
-                        constraint("role wide", check = silent())
+                        fileConstraint("role wide", check = silent())
                         layout { "generated" { } }
                     }
                 }
             }
 
-            arch.declaredConstraints().single().reportPath shouldBe "generated"
+            arch.declaredFileConstraints().single().reportPath shouldBe "generated"
         }
     }
 })

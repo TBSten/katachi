@@ -48,7 +48,7 @@ internal class RealArchitectureProcessContext<Args>(
 /**
  * The walk behind [this], for katachi's own checks.
  *
- * [me.tbsten.katachi.check.LayoutCheck] and [me.tbsten.katachi.check.KonsistCheck] read
+ * [me.tbsten.katachi.check.LayoutCheck] and [me.tbsten.katachi.check.FileConstraintCheck] read
  * violations, constraints and the project root, none of which is on the public
  * [ArchitectureProcessContext]: a processor does not read violations off the context, it *is* a
  * check and produces them. This door exists only so that katachi's own checks can be processors

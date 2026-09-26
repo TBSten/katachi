@@ -48,7 +48,7 @@ import org.gradle.api.InvalidUserDataException;
  *     architecture = "com.example.projectArchitecture"
  *     processors {
  *         register("layout", "me.tbsten.katachi.check.LayoutCheck")
- *         register("konsist", "me.tbsten.katachi.check.KonsistCheck")
+ *         register("fileConstraint", "me.tbsten.katachi.check.FileConstraintCheck")
  *     }
  * }
  * }</pre>

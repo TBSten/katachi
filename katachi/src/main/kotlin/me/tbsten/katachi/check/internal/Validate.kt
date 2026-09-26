@@ -174,7 +174,7 @@ internal fun Architecture.validateWithRoot(
         // One context, therefore one walk. The last term is the guard against the quietest way
         // this library could break: a definition full of constraints, code breaking them, and
         // a green test because nothing was handed a check that evaluates them.
-        val violations = (layout + found + context.projectWalk.unevaluatedConstraintViolations())
+        val violations = (layout + found + context.projectWalk.unevaluatedFileConstraintViolations())
             .sortedBy { it.kind.ordinal }
         ValidationResult(violations, context.projectWalk.projectRoot)
     }

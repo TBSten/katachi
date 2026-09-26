@@ -83,7 +83,7 @@ internal fun Role.flattenLayout(
  */
 internal class LayoutEvaluation(
     val entries: List<LayoutEntry>,
-    val constraints: List<DeclaredConstraint>,
+    val fileConstraints: List<DeclaredFileConstraint>,
 )
 
 /** [flattenLayout], with the constraints kept. */
@@ -91,7 +91,7 @@ internal fun Architecture.evaluateLayout(moduleIndex: ModuleIndex): LayoutEvalua
     val evaluated = allRoles.map { it.evaluateLayout(moduleIndex) }
     return LayoutEvaluation(
         entries = evaluated.flatMap { it.entries },
-        constraints = evaluated.flatMap { it.constraints },
+        fileConstraints = evaluated.flatMap { it.fileConstraints },
     )
 }
 
@@ -103,7 +103,7 @@ internal fun Role.evaluateLayout(moduleIndex: ModuleIndex): LayoutEvaluation {
     // same name are two nodes that happen to fold into one entry, not one node.
     val byNode = mutableMapOf<LayoutNode, EntryKey>()
     val roots = mutableListOf<LayoutNode>()
-    val sites = mutableListOf<ConstraintSite>()
+    val sites = mutableListOf<FileConstraintSite>()
 
     for (declaration in layouts) {
         val root = LayoutNode(segment = "", declaredAt = declaration.declaredAt, isFile = false)
@@ -122,13 +122,13 @@ internal fun Role.evaluateLayout(moduleIndex: ModuleIndex): LayoutEvaluation {
 
     return LayoutEvaluation(
         entries = entries.values.toList(),
-        constraints = buildList {
+        fileConstraints = buildList {
             // The role's own constraints first: they are the widest thing said about it, and
             // they are written above the `layout { }` blocks in the definition too.
-            addAll(declaredConstraintsOf(this@evaluateLayout, constraints, roots, null, entries, byNode))
+            addAll(declaredFileConstraintsOf(this@evaluateLayout, fileConstraints, roots, null, entries, byNode))
             for (site in sites) {
                 addAll(
-                    declaredConstraintsOf(
+                    declaredFileConstraintsOf(
                         role = this@evaluateLayout,
                         declarations = site.declarations,
                         owned = site.owned,
@@ -200,24 +200,24 @@ private fun collectInto(
  * Every constraint of one block shares the same covered entries and the same anchor, so the
  * work is done once and handed to each of them.
  */
-private fun declaredConstraintsOf(
+private fun declaredFileConstraintsOf(
     role: Role,
-    declarations: List<ConstraintDeclaration>,
+    declarations: List<FileConstraintDeclaration>,
     owned: List<LayoutNode>,
     anchor: LayoutNode?,
     entries: Map<EntryKey, LayoutEntry>,
     byNode: Map<LayoutNode, EntryKey>,
-): List<DeclaredConstraint> {
+): List<DeclaredFileConstraint> {
     if (declarations.isEmpty()) return emptyList()
     val covered = coveredEntries(owned, entries, byNode)
     val anchorPath = anchor?.let { byNode[it]?.path }
     val paths = anchorsOf(anchorPath, covered)
-    val coverage = ConstraintCoverage(
+    val coverage = FileConstraintCoverage(
         fileGlobs = covered.filter { it.kind == LayoutEntryKind.File }.map { it.glob },
         anyFileGlobs = covered.filter { it.kind == LayoutEntryKind.AnyFile }.map { it.glob },
     )
     return declarations.map { declaration ->
-        DeclaredConstraint(
+        DeclaredFileConstraint(
             role = role,
             paths = paths,
             layoutPath = anchorPath,

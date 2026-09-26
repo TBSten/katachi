@@ -7,7 +7,7 @@ import me.tbsten.katachi.dsl.TemplateScope
 /**
  * A `template { }` as it was written: the block, and where it was written.
  *
- * Internal for the reason [ConstraintDeclaration] is: a template says nothing until it has been
+ * Internal for the reason [FileConstraintDeclaration] is: a template says nothing until it has been
  * replayed with the values of one run. What a caller works with is [TemplateEvaluation].
  */
 internal class TemplateDeclaration(

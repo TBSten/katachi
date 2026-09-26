@@ -70,7 +70,7 @@ internal fun roleReferenceDocuments(
     // here reads the project.
     val evaluation = architecture.evaluateLayout(ModuleIndex.unresolved(architecture.moduleResolver))
     val placements = placementsOf(evaluation.entries)
-    val constraintNames = evaluation.constraints
+    val constraintNames = evaluation.fileConstraints
         .mapNotNull { constraint -> constraint.name?.let { constraint.role to it } }
         .groupBy({ it.first }, { it.second })
 

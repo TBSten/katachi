@@ -9,7 +9,7 @@ import me.tbsten.katachi.dsl.LayoutEntry
 import me.tbsten.katachi.dsl.Role
 import me.tbsten.katachi.dsl.files.FsPath
 import me.tbsten.katachi.dsl.files.KatachiFileSystem
-import me.tbsten.katachi.dsl.internal.DeclaredConstraint
+import me.tbsten.katachi.dsl.internal.DeclaredFileConstraint
 import me.tbsten.katachi.dsl.internal.flattenLayout
 import me.tbsten.katachi.processor.KatachiUnknownRoleException
 
@@ -53,7 +53,7 @@ internal class ProjectWalk(
 
     val layoutFileOverlaps: List<FileOverlap> get() = scan.fileOverlaps
 
-    val declaredConstraints: List<DeclaredConstraint> get() = scan.constraints
+    val declaredFileConstraints: List<DeclaredFileConstraint> get() = scan.fileConstraints
 
     /** Where the walk started -- what a report resolves each relative path against. */
     val projectRoot: FsPath get() = scan.projectRoot
@@ -61,24 +61,24 @@ internal class ProjectWalk(
     /** Where the walk started, absolute -- what a constraint backend opens files from. */
     val projectRootPath: String get() = projectRoot.value
 
-    // `DeclaredConstraint` declares no `equals`, exactly as `Role` does not, so this is a set
+    // `DeclaredFileConstraint` declares no `equals`, exactly as `Role` does not, so this is a set
     // of identities. One walk is built per run, so what collects here is precisely "evaluated
-    // during this one run" -- which is what lets `assert(KonsistCheck())` be told apart from
+    // during this one run" -- which is what lets `assert(FileConstraintCheck())` be told apart from
     // `assert()` without anyone inspecting the types of the checks passed in.
-    private val evaluated: MutableSet<DeclaredConstraint> = HashSet()
+    private val evaluated: MutableSet<DeclaredFileConstraint> = HashSet()
 
-    fun hasEvaluated(constraint: DeclaredConstraint): Boolean = constraint in evaluated
+    fun hasEvaluated(constraint: DeclaredFileConstraint): Boolean = constraint in evaluated
 
-    fun markEvaluated(constraint: DeclaredConstraint) {
+    fun markEvaluated(constraint: DeclaredFileConstraint) {
         evaluated += constraint
     }
 
     /** The constraints nothing answered for, which the run has to report rather than drop. */
-    val unevaluatedConstraints: List<DeclaredConstraint>
-        get() = declaredConstraints.filterNot { it in evaluated }
+    val unevaluatedFileConstraints: List<DeclaredFileConstraint>
+        get() = declaredFileConstraints.filterNot { it in evaluated }
 
     // Same lifetime as `evaluated` and kept in the same place, so that
-    // `ConstraintSubject.memo`'s "every constraint of one run" means one thing in the
+    // `FileConstraintSubject.memo`'s "every constraint of one run" means one thing in the
     // documentation and in the code.
     private val constraintScratch: MutableMap<Any, Any> = mutableMapOf()
 
@@ -88,7 +88,7 @@ internal class ProjectWalk(
      * The files [constraint] covers, in walk order: the role's own files narrowed by the
      * constraint's coverage.
      */
-    fun filesUnder(constraint: DeclaredConstraint): List<String> =
+    fun filesUnder(constraint: DeclaredFileConstraint): List<String> =
         scan.filesByRole[constraint.role].orEmpty().filter { constraint.coverage.covers(it) }
 
     // Deliberately says nothing about the files: printing a context must not be what starts a

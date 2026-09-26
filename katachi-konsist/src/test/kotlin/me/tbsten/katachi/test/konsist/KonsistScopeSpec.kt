@@ -7,12 +7,12 @@ import io.kotest.matchers.collections.shouldBeEmpty
 import io.kotest.matchers.collections.shouldContainExactly
 import io.kotest.matchers.shouldBe
 import me.tbsten.katachi.InternalKatachiApi
-import me.tbsten.katachi.check.UnsatisfiedConstraint
+import me.tbsten.katachi.check.UnsatisfiedFileConstraint
 import me.tbsten.katachi.check.Violation
 
 /** The rejected paths of a run, in the order the report will print them. */
 private fun List<Violation>.rejectedPaths(): List<String> =
-    filterIsInstance<UnsatisfiedConstraint>().map { it.path }
+    filterIsInstance<UnsatisfiedFileConstraint>().map { it.path }
 
 class KonsistScopeSpec : FreeSpec({
     "must / mustNot / mustBeEmpty" - {
@@ -74,7 +74,7 @@ class KonsistScopeSpec : FreeSpec({
             // Three rejections from two expectations: one class and both files' `run`. Walk
             // order first, then the order the block produced them -- the sort is stable, so
             // the class the first `must` rejected still precedes the function the second did.
-            violations.filterIsInstance<UnsatisfiedConstraint>().map {
+            violations.filterIsInstance<UnsatisfiedFileConstraint>().map {
                 "${it.path}:${it.declaration}"
             } shouldContainExactly listOf(
                 "src/InternalThing.kt:run",
@@ -91,7 +91,7 @@ class KonsistScopeSpec : FreeSpec({
                 classes().must { false }
             }
 
-            violations.filterIsInstance<UnsatisfiedConstraint>().map {
+            violations.filterIsInstance<UnsatisfiedFileConstraint>().map {
                 "${it.path}:${it.declaration}"
             } shouldContainExactly listOf("src/PublicThing.kt:PublicThing")
         }
@@ -102,7 +102,7 @@ class KonsistScopeSpec : FreeSpec({
                 functions().must { false }
             }
 
-            violations.filterIsInstance<UnsatisfiedConstraint>().map { it.declaration } shouldBe
+            violations.filterIsInstance<UnsatisfiedFileConstraint>().map { it.declaration } shouldBe
                 listOf("PublicThing", "run")
         }
     }
@@ -136,7 +136,7 @@ class KonsistScopeSpec : FreeSpec({
                 files.mustBeEmpty()
             }
 
-            // One rejection, not two, and no `[UncheckedConstraint]`: the `.kts` was covered by
+            // One rejection, not two, and no `[UncheckedFileConstraint]`: the `.kts` was covered by
             // the constraint, never handed to Konsist, and never counted against it.
             violations.rejectedPaths() shouldContainExactly listOf("src/PublicThing.kt")
             violations.size shouldBe 1
@@ -149,7 +149,7 @@ class KonsistScopeSpec : FreeSpec({
                 classes().must { false }
             }
 
-            val rejected = violations.filterIsInstance<UnsatisfiedConstraint>().single()
+            val rejected = violations.filterIsInstance<UnsatisfiedFileConstraint>().single()
             rejected.path shouldBe "src/PublicThing.kt"
             rejected.declaration shouldBe "PublicThing"
             rejected.line shouldBe 3
@@ -166,7 +166,7 @@ class KonsistScopeSpec : FreeSpec({
                 declarations().must { false }
             }
 
-            val rejected = violations.filterIsInstance<UnsatisfiedConstraint>()
+            val rejected = violations.filterIsInstance<UnsatisfiedFileConstraint>()
             rejected.map { it.path }.distinct() shouldContainExactly listOf("src/PublicThing.kt")
             // A file declaration carries a name and a path but no location at all, so it is
             // reported with `line = null` rather than being dropped or throwing. Konsist names

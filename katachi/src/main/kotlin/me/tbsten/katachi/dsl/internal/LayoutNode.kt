@@ -41,7 +41,7 @@ internal class LayoutNode(
      *
      * It changes nothing about the check — `build/` is ignored and `build.gradle.kts` is
      * required whoever declared them — and everything about what a constraint covers. A
-     * `":feature:*".module { constraint { } }` whose set of files silently included every
+     * `":feature:*".module { fileConstraint { } }` whose set of files silently included every
      * feature module's build script would report that build script to a reader who never
      * mentioned it, and a module with no source file yet would pass on the build script
      * alone. Someone who does mean to constrain a build script writes

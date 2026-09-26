@@ -4,7 +4,7 @@ import me.tbsten.katachi.ExperimentalKatachiApi
 import kotlin.reflect.KClass
 
 /**
- * What a `constraint { }` block asks of the files the layout around it matched.
+ * What a `fileConstraint { }` block asks of the files the layout around it matched.
  *
  * It is handed the files that **exist**, already narrowed to the block the constraint was
  * written in, and answers with the ones it rejects. Whatever it does in between — parsing
@@ -17,17 +17,17 @@ import kotlin.reflect.KClass
  *
  * ## Example 1: reject every file whose name does not end in `UseCase.kt`
  * ```kt
- * val namedUseCase = FileSetConstraint { subject ->
- *     subject.files.filterNot { it.endsWith("UseCase.kt") }.map { ConstraintFailure(it) }
+ * val namedUseCase = FileConstraint { subject ->
+ *     subject.files.filterNot { it.endsWith("UseCase.kt") }.map { FileConstraintFailure(it) }
  * }
  * ```
  */
 @ExperimentalKatachiApi
-public fun interface FileSetConstraint {
+public fun interface FileConstraint {
     /**
      * Answers with the files of [subject] this constraint rejects, empty when it rejects none.
      *
-     * Every [ConstraintFailure.file] has to be one of [ConstraintSubject.files]: answering
+     * Every [FileConstraintFailure.file] has to be one of [FileConstraintSubject.files]: answering
      * about a file that was never asked about is reported rather than dropped, because a
      * backend that has silently stopped seeing the right files has no other way to find out.
      *
@@ -37,34 +37,34 @@ public fun interface FileSetConstraint {
      * rejected shouldBe listOf("core/domain/useCase/Helper.kt")
      * ```
      */
-    public fun evaluate(subject: ConstraintSubject): List<ConstraintFailure>
+    public fun evaluate(subject: FileConstraintSubject): List<FileConstraintFailure>
 }
 
 /**
- * One file a [FileSetConstraint] rejected, and optionally where inside it.
+ * One file a [FileConstraint] rejected, and optionally where inside it.
  *
  * A `data class` so that a backend's own tests can compare what it produced with
- * `shouldBe listOf(ConstraintFailure("core/domain/useCase/Helper.kt"))`, and so that the same
+ * `shouldBe listOf(FileConstraintFailure("core/domain/useCase/Helper.kt"))`, and so that the same
  * declaration rejected twice in one block counts once.
  *
  * ## Example 1: reject a whole file, without naming anything inside it
  * ```kt
- * ConstraintFailure("core/domain/useCase/Helper.kt")
+ * FileConstraintFailure("core/domain/useCase/Helper.kt")
  * ```
  *
  * ## Example 2: reject one declaration inside a file
  * ```kt
- * ConstraintFailure("core/domain/useCase/Helper.kt", declaration = "Helper", line = 12)
+ * FileConstraintFailure("core/domain/useCase/Helper.kt", declaration = "Helper", line = 12)
  * ```
  */
 @ExperimentalKatachiApi
-public data class ConstraintFailure(
+public data class FileConstraintFailure(
     /**
-     * The rejected file, project relative and spelled exactly as in [ConstraintSubject.files].
+     * The rejected file, project relative and spelled exactly as in [FileConstraintSubject.files].
      *
      * ## Example 1: read back which file was rejected
      * ```kt
-     * ConstraintFailure("core/domain/useCase/Helper.kt").file shouldBe
+     * FileConstraintFailure("core/domain/useCase/Helper.kt").file shouldBe
      *     "core/domain/useCase/Helper.kt"
      * ```
      */
@@ -75,7 +75,7 @@ public data class ConstraintFailure(
      *
      * ## Example 1: name the class a rule rejected
      * ```kt
-     * ConstraintFailure("core/domain/useCase/Helper.kt", declaration = "Helper").declaration
+     * FileConstraintFailure("core/domain/useCase/Helper.kt", declaration = "Helper").declaration
      *     shouldBe "Helper"
      * ```
      */
@@ -85,7 +85,7 @@ public data class ConstraintFailure(
      *
      * ## Example 1: point a report at the line a rule rejected
      * ```kt
-     * ConstraintFailure("core/domain/useCase/Helper.kt", line = 12).line shouldBe 12
+     * FileConstraintFailure("core/domain/useCase/Helper.kt", line = 12).line shouldBe 12
      * ```
      */
     public val line: Int? = null,
@@ -99,20 +99,20 @@ public data class ConstraintFailure(
  *
  * ## Example 1: read the covered files inside a constraint
  * ```kt
- * val noTodo = FileSetConstraint { subject ->
+ * val noTodo = FileConstraint { subject ->
  *     subject.files.filter { File("${subject.projectRoot}/$it").readText().contains("TODO") }
- *         .map { ConstraintFailure(it) }
+ *         .map { FileConstraintFailure(it) }
  * }
  * ```
  */
 @ExperimentalKatachiApi
-public class ConstraintSubject internal constructor(
+public class FileConstraintSubject internal constructor(
     /**
      * The role whose layout the constraint was written in.
      *
      * ## Example 1: word a failure with the role it belongs to
      * ```kt
-     * FileSetConstraint { subject ->
+     * FileConstraint { subject ->
      *     println("checking ${subject.role.qualifiedName}")
      *     emptyList()
      * }
@@ -124,7 +124,7 @@ public class ConstraintSubject internal constructor(
      *
      * ## Example 1: fall back to the declaration site when there is no name
      * ```kt
-     * FileSetConstraint { subject ->
+     * FileConstraint { subject ->
      *     println(subject.name ?: subject.declaredAt.toString())
      *     emptyList()
      * }
@@ -136,7 +136,7 @@ public class ConstraintSubject internal constructor(
      *
      * ## Example 1: point a backend's own error at the line that declared the constraint
      * ```kt
-     * FileSetConstraint { subject ->
+     * FileConstraint { subject ->
      *     throw IllegalStateException("cannot run, declared at ${subject.declaredAt}")
      * }
      * ```
@@ -148,7 +148,7 @@ public class ConstraintSubject internal constructor(
      *
      * ## Example 1: name the directories a constraint covers
      * ```kt
-     * FileSetConstraint { subject ->
+     * FileConstraint { subject ->
      *     println("under ${subject.paths.joinToString(", ")}")
      *     emptyList()
      * }
@@ -163,7 +163,7 @@ public class ConstraintSubject internal constructor(
      *
      * ## Example 1: turn a covered file into an absolute path
      * ```kt
-     * FileSetConstraint { subject ->
+     * FileConstraint { subject ->
      *     val absolute = subject.files.map { "${subject.projectRoot}/$it" }
      *     emptyList()
      * }
@@ -178,8 +178,8 @@ public class ConstraintSubject internal constructor(
      *
      * ## Example 1: reject every covered file that is not a Kotlin file
      * ```kt
-     * FileSetConstraint { subject ->
-     *     subject.files.filterNot { it.endsWith(".kt") }.map { ConstraintFailure(it) }
+     * FileConstraint { subject ->
+     *     subject.files.filterNot { it.endsWith(".kt") }.map { FileConstraintFailure(it) }
      * }
      * ```
      */
@@ -198,7 +198,7 @@ public class ConstraintSubject internal constructor(
      *
      * ## Example 1: parse a set of directories once per run
      * ```kt
-     * FileSetConstraint { subject ->
+     * FileConstraint { subject ->
      *     val parsed = subject.memo(ParsedScopeKey(subject.paths), ParsedScope::class) {
      *         ParsedScope.of(subject.paths)
      *     }
@@ -212,7 +212,7 @@ public class ConstraintSubject internal constructor(
         // than a bare ClassCastException: `Class.cast` below can no longer throw.
         val jvmType = type.java
         if (!jvmType.isInstance(existing)) {
-            throw KatachiConstraintMemoTypeException(
+            throw KatachiFileConstraintMemoTypeException(
                 key = key.toString(),
                 expected = type,
                 actual = existing::class,
@@ -222,5 +222,5 @@ public class ConstraintSubject internal constructor(
     }
 
     override fun toString(): String =
-        "ConstraintSubject(${role.qualifiedName}, ${name ?: declaredAt}, files=${files.size})"
+        "FileConstraintSubject(${role.qualifiedName}, ${name ?: declaredAt}, files=${files.size})"
 }

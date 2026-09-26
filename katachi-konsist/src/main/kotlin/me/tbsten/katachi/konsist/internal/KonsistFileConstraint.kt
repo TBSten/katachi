@@ -1,9 +1,9 @@
 package me.tbsten.katachi.konsist.internal
 
 import com.lemonappdev.konsist.core.exception.KoException
-import me.tbsten.katachi.dsl.ConstraintFailure
-import me.tbsten.katachi.dsl.ConstraintSubject
-import me.tbsten.katachi.dsl.FileSetConstraint
+import me.tbsten.katachi.dsl.FileConstraintFailure
+import me.tbsten.katachi.dsl.FileConstraintSubject
+import me.tbsten.katachi.dsl.FileConstraint
 import me.tbsten.katachi.konsist.KatachiKonsistDirectAssertionException
 import me.tbsten.katachi.konsist.KatachiKonsistNoExpectationException
 import me.tbsten.katachi.konsist.KonsistScope
@@ -17,11 +17,11 @@ import me.tbsten.katachi.konsist.KonsistScope
  * than left to throw prose katachi could not report. And a block that asked for nothing is
  * refused, because "rejected nothing" and "was never asked" read identically in a report.
  */
-internal class KonsistConstraint(
+internal class KonsistFileConstraint(
     /** The block as written. Run once per constraint per run, never at declaration time. */
     private val block: KonsistScope.() -> Unit,
-) : FileSetConstraint {
-    override fun evaluate(subject: ConstraintSubject): List<ConstraintFailure> {
+) : FileConstraint {
+    override fun evaluate(subject: FileConstraintSubject): List<FileConstraintFailure> {
         val scope = KonsistScopeImpl(konsistScopeOf(subject))
         try {
             scope.block()
@@ -42,8 +42,8 @@ internal class KonsistConstraint(
                 declaredAt = subject.declaredAt,
             )
         }
-        return scope.rejected.map { it.toConstraintFailure(subject.projectRoot) }
+        return scope.rejected.map { it.toFileConstraintFailure(subject.projectRoot) }
     }
 
-    override fun toString(): String = "KonsistConstraint"
+    override fun toString(): String = "KonsistFileConstraint"
 }

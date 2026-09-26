@@ -32,7 +32,7 @@ katachi {
     architecture = "com.example.projectArchitecture"
     processors {
         register("layout", "me.tbsten.katachi.check.LayoutCheck")
-        register("konsist", "me.tbsten.katachi.check.KonsistCheck")
+        register("fileConstraint", "me.tbsten.katachi.check.FileConstraintCheck")
         register("roleNames", "com.example.processors.RoleNames")
 
         docs {

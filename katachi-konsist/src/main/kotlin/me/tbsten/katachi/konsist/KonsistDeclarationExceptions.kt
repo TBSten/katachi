@@ -4,7 +4,7 @@ import me.tbsten.katachi.KatachiDeclarationException
 import me.tbsten.katachi.dsl.DeclarationSite
 
 /** How a message names a constraint: by its name when it has one, by where it was written otherwise. */
-private fun namedConstraint(constraintName: String?, declaredAt: DeclarationSite): String =
+private fun namedFileConstraint(constraintName: String?, declaredAt: DeclarationSite): String =
     constraintName?.let { "\"$it\"" } ?: "declared at $declaredAt"
 
 /**
@@ -17,8 +17,8 @@ private fun namedConstraint(constraintName: String?, declaredAt: DeclarationSite
  *
  * ## Example 1: catch a block that forgot to say what it wants
  * ```kt
- * projectArchitecture.validate(KonsistCheck())
- *     .filterIsInstance<UncheckedConstraint>()
+ * projectArchitecture.validate(FileConstraintCheck())
+ *     .filterIsInstance<UncheckedFileConstraint>()
  *     .single().cause.shouldBeInstanceOf<KatachiKonsistNoExpectationException>()
  * ```
  *
@@ -58,7 +58,7 @@ public class KatachiKonsistNoExpectationException internal constructor(
 ) : KatachiDeclarationException(
     message = buildString {
         appendLine(
-            "Konsist constraint ${namedConstraint(constraintName, declaredAt)} of role " +
+            "Konsist constraint ${namedFileConstraint(constraintName, declaredAt)} of role " +
                 "\"$role\" never called must, mustNot or mustBeEmpty.",
         )
         appendLine(
@@ -83,8 +83,8 @@ public class KatachiKonsistNoExpectationException internal constructor(
  *
  * ## Example 1: catch a rule written over files Konsist cannot read
  * ```kt
- * projectArchitecture.validate(KonsistCheck())
- *     .filterIsInstance<UncheckedConstraint>()
+ * projectArchitecture.validate(FileConstraintCheck())
+ *     .filterIsInstance<UncheckedFileConstraint>()
  *     .single().cause.shouldBeInstanceOf<KatachiKonsistNoKotlinFilesException>()
  * ```
  *
@@ -115,7 +115,7 @@ public class KatachiKonsistNoKotlinFilesException internal constructor(
     /**
      * Where the constraint was written.
      *
-     * ## Example 1: jump to the rule to rewrite as a plain `constraint { }`
+     * ## Example 1: jump to the rule to rewrite as a plain `fileConstraint { }`
      * ```kt
      * cause.shouldBeInstanceOf<KatachiKonsistNoKotlinFilesException>().declaredAt.lineNumber
      * ```
@@ -133,7 +133,7 @@ public class KatachiKonsistNoKotlinFilesException internal constructor(
 ) : KatachiDeclarationException(
     message = buildString {
         appendLine(
-            "Konsist constraint ${namedConstraint(constraintName, declaredAt)} of role " +
+            "Konsist constraint ${namedFileConstraint(constraintName, declaredAt)} of role " +
                 "\"$role\" covers $given ${if (given == 1) "file" else "files"}, none of them " +
                 "a .kt file Konsist can parse.",
         )
@@ -143,7 +143,7 @@ public class KatachiKonsistNoKotlinFilesException internal constructor(
                 "anything.",
         )
         append(
-            "Point the constraint at Kotlin sources, or write it as a plain `constraint { }` " +
+            "Point the constraint at Kotlin sources, or write it as a plain `fileConstraint { }` " +
                 "that reads the files itself.",
         )
     },
@@ -160,8 +160,8 @@ public class KatachiKonsistNoKotlinFilesException internal constructor(
  *
  * ## Example 1: catch a suppressed `assertTrue`
  * ```kt
- * projectArchitecture.validate(KonsistCheck())
- *     .filterIsInstance<UncheckedConstraint>()
+ * projectArchitecture.validate(FileConstraintCheck())
+ *     .filterIsInstance<UncheckedFileConstraint>()
  *     .single().cause.shouldBeInstanceOf<KatachiKonsistDirectAssertionException>()
  * ```
  *
@@ -202,8 +202,8 @@ public class KatachiKonsistDirectAssertionException internal constructor(
  *
  * ## Example 1: catch a rejection katachi could not point at a file
  * ```kt
- * projectArchitecture.validate(KonsistCheck())
- *     .filterIsInstance<UncheckedConstraint>()
+ * projectArchitecture.validate(FileConstraintCheck())
+ *     .filterIsInstance<UncheckedFileConstraint>()
  *     .single().cause.shouldBeInstanceOf<KatachiKonsistUnlocatableDeclarationException>()
  * ```
  *

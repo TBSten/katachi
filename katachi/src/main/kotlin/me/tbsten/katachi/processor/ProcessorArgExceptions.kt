@@ -161,7 +161,7 @@ public class KatachiUnsupportedProcessorArgException internal constructor(
  *     override fun decodeElementIndex(descriptor: SerialDescriptor): Int = CompositeDecoder.DECODE_DONE
  * }
  *
- * val combined = (LayoutCheck() + KonsistCheck()).argsSerializer
+ * val combined = (LayoutCheck() + FileConstraintCheck()).argsSerializer
  * shouldThrow<KatachiProcessorArgsDecoderException> {
  *     combined.deserialize(NotAStringMapDecoder)
  * }
@@ -197,7 +197,7 @@ public class KatachiProcessorArgsDecoderException internal constructor(
  *     override val serializersModule: SerializersModule = EmptySerializersModule()
  * }
  *
- * val combined = (LayoutCheck() + KonsistCheck()).argsSerializer
+ * val combined = (LayoutCheck() + FileConstraintCheck()).argsSerializer
  * shouldThrow<KatachiProcessorArgsNotEncodableException> {
  *     combined.serialize(NoOpEncoder, Unit to Unit)
  * }

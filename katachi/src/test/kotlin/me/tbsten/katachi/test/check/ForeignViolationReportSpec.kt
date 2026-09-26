@@ -99,15 +99,15 @@ class ForeignViolationReportSpec : FreeSpec({
     }
 
     "サマリ行" - {
-        "外部の kind = Constraint の違反も件数に乗る" {
+        "外部の kind = FileConstraint の違反も件数に乗る" {
             val violation = MinimalViolation(
                 path = "app/src/Foo.kt",
                 label = "TodoRule",
-                kind = ViolationKind.Constraint,
+                kind = ViolationKind.FileConstraint,
             )
 
             listOf(violation).report().lines().first() shouldBe
-                "Katachi check failed: 1 violation (Constraint: 1)"
+                "Katachi check failed: 1 violation (FileConstraint: 1)"
         }
     }
 })

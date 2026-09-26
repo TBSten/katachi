@@ -2,13 +2,13 @@ package me.tbsten.katachi.test.dsl
 
 import me.tbsten.katachi.check.internal.moduleIndex
 import me.tbsten.katachi.dsl.Architecture
-import me.tbsten.katachi.dsl.FileSetConstraint
+import me.tbsten.katachi.dsl.FileConstraint
 import me.tbsten.katachi.dsl.LayoutEntry
 import me.tbsten.katachi.dsl.LayoutScope
 import me.tbsten.katachi.dsl.ModuleResolver
 import me.tbsten.katachi.dsl.architecture
 import me.tbsten.katachi.dsl.files.FsPath
-import me.tbsten.katachi.dsl.internal.DeclaredConstraint
+import me.tbsten.katachi.dsl.internal.DeclaredFileConstraint
 import me.tbsten.katachi.dsl.internal.ModuleIndex
 import me.tbsten.katachi.dsl.internal.evaluateLayout
 import me.tbsten.katachi.dsl.internal.flattenLayout
@@ -62,12 +62,12 @@ internal fun moduleIndexOf(
  * Written as a function rather than a value so that each call is its own instance: a spec
  * comparing two declarations must not have them share one.
  */
-internal fun silent(): FileSetConstraint = FileSetConstraint { emptyList() }
+internal fun silent(): FileConstraint = FileConstraint { emptyList() }
 
 /** The constraints a definition declares, with its `layout { }` blocks evaluated. */
-internal fun Architecture.declaredConstraints(
+internal fun Architecture.declaredFileConstraints(
     moduleIndex: ModuleIndex = ModuleIndex.unresolved(moduleResolver),
-): List<DeclaredConstraint> = evaluateLayout(moduleIndex).constraints
+): List<DeclaredFileConstraint> = evaluateLayout(moduleIndex).fileConstraints
 
 /**
  * The part of a flattened entry that a declaration decides, with everything that depends on

@@ -60,7 +60,7 @@ final class KatachiEntryPointSource {
                         + "overwrites it.\n");
         out.append("@file:Suppress(\"RedundantVisibilityModifier\", \"unused\")\n");
         // Both walls, not just the internal one. `KatachiEntryPoint` itself and every
-        // processor a user is likely to register (`LayoutCheck`, `KonsistCheck`) carry
+        // processor a user is likely to register (`LayoutCheck`, `FileConstraintCheck`) carry
         // `@ExperimentalKatachiApi`, whose level is ERROR -- the file this writes would not
         // compile in the user's own test compilation without it.
         out.append(

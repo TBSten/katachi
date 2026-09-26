@@ -46,7 +46,7 @@ class CheckResultSpec : FreeSpec({
                 listOf<Violation>(ResultError("app/Foo.kt")).assertNoErrors()
             }
 
-            thrown.message.orEmpty().lines().first() shouldBe "Katachi check failed: 1 violation (Constraint: 1)"
+            thrown.message.orEmpty().lines().first() shouldBe "Katachi check failed: 1 violation (FileConstraint: 1)"
         }
     }
 
@@ -105,7 +105,7 @@ private val FindsErrorAndWarning: List<Violation> =
     listOf(ResultError("app/Foo.kt"), ResultWarning("docs/a.md"))
 
 private class ResultError(override val path: String) : Violation {
-    override val kind: ViolationKind get() = ViolationKind.Constraint
+    override val kind: ViolationKind get() = ViolationKind.FileConstraint
     override val severity: Severity get() = Severity.Error
     override val label: String get() = "ResultError"
 }

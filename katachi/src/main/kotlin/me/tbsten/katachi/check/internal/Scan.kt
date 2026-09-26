@@ -13,7 +13,7 @@ import me.tbsten.katachi.dsl.Role
 import me.tbsten.katachi.dsl.files.FsPath
 import me.tbsten.katachi.dsl.files.KatachiFileSystem
 import me.tbsten.katachi.dsl.files.internal.findProjectRoot
-import me.tbsten.katachi.dsl.internal.DeclaredConstraint
+import me.tbsten.katachi.dsl.internal.DeclaredFileConstraint
 import me.tbsten.katachi.dsl.internal.evaluateLayout
 import me.tbsten.katachi.internal.catching
 
@@ -73,7 +73,7 @@ internal class ScanResult(
      * flattening the layout a second time would be a second chance for the two to disagree
      * about what a wildcard module key expanded to.
      */
-    val constraints: List<DeclaredConstraint>,
+    val fileConstraints: List<DeclaredFileConstraint>,
     /**
      * Where the walk started, absolute — the one value a constraint backend needs that is not
      * project relative, because a parser cannot be pointed at a relative path.
@@ -121,7 +121,7 @@ internal fun Architecture.scanProject(fileSystem: KatachiFileSystem): ScanResult
         fileSystem = files.fileSystemFor(fileSystem, projectRoot),
         root = projectRoot.path,
         layout = LayoutIndex(evaluation.entries),
-        constraints = evaluation.constraints,
+        fileConstraints = evaluation.fileConstraints,
         moduleFailures = modules.unchecked,
     ).run()
 }
@@ -144,7 +144,7 @@ private class Scan(
     private val fileSystem: KatachiFileSystem,
     private val root: FsPath,
     private val layout: LayoutIndex,
-    private val constraints: List<DeclaredConstraint>,
+    private val fileConstraints: List<DeclaredFileConstraint>,
     /**
      * What the search for the modules could not read, which happened before this walk started
      * and belongs in the same report. See [scanProject].
@@ -180,7 +180,7 @@ private class Scan(
             violations = violations.sortedBy { it.kind.ordinal },
             filesByRole = filesByRole,
             fileOverlaps = fileOverlaps.toList(),
-            constraints = constraints,
+            fileConstraints = fileConstraints,
             projectRoot = root,
         )
     }

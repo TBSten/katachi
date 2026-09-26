@@ -10,7 +10,7 @@ import org.junit.jupiter.api.Test
  * One call checks the whole project: every violation lands in a single failure message, so
  * reading it costs one test run no matter how many things are off.
  *
- * No `KonsistCheck()` is passed, because this definition declares no `konsist { }` constraint.
+ * No `FileConstraintCheck()` is passed, because this definition declares no `konsist { }` constraint.
  * `assert()` with nothing to hand it is the shape `sample/android` and `sample/kmp` use too.
  *
  * Everything the three processors do is asserted next door, in `CustomProcessorSpec`.

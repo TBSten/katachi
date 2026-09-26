@@ -3,14 +3,14 @@ package me.tbsten.katachi.test.check
 import io.kotest.core.spec.style.FreeSpec
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldNotContain
-import me.tbsten.katachi.check.KonsistCheck
-import me.tbsten.katachi.check.UncheckedConstraint
-import me.tbsten.katachi.check.UncheckedConstraintReason
+import me.tbsten.katachi.check.FileConstraintCheck
+import me.tbsten.katachi.check.UncheckedFileConstraint
+import me.tbsten.katachi.check.UncheckedFileConstraintReason
 import me.tbsten.katachi.check.internal.report
 import me.tbsten.katachi.check.internal.validate
-import me.tbsten.katachi.dsl.ConstraintFailure
+import me.tbsten.katachi.dsl.FileConstraintFailure
 import me.tbsten.katachi.dsl.DeclarationSite
-import me.tbsten.katachi.dsl.FileSetConstraint
+import me.tbsten.katachi.dsl.FileConstraint
 import me.tbsten.katachi.dsl.files.FsPath
 
 /**
@@ -32,20 +32,20 @@ import me.tbsten.katachi.dsl.files.FsPath
 private val DECLARED_AT: DeclarationSite = DeclarationSite("ProjectArchitecture.kt", 61)
 
 /** Rejects one file, naming what inside it was rejected. */
-private fun rejectingDeclaration(file: String, declaration: String?, line: Int?): FileSetConstraint =
-    FileSetConstraint { subject ->
-        subject.files.filter { it == file }.map { ConstraintFailure(it, declaration, line) }
+private fun rejectingDeclaration(file: String, declaration: String?, line: Int?): FileConstraint =
+    FileConstraint { subject ->
+        subject.files.filter { it == file }.map { FileConstraintFailure(it, declaration, line) }
     }
 
-class ConstraintReportSpec : FreeSpec({
-    "UnsatisfiedConstraint" - {
+class FileConstraintReportSpec : FreeSpec({
+    "UnsatisfiedFileConstraint" - {
         "名前・宣言・行・layout をすべて持つブロック" {
             val arch = architectureOf {
                 "domain".group {
                     "UseCase" {
                         layout {
                             "alpha" {
-                                constraint(
+                                fileConstraint(
                                     name = "no helper",
                                     declaredAt = DECLARED_AT,
                                     check = rejectingDeclaration("alpha/Helper.kt", "Helper", 12),
@@ -57,13 +57,13 @@ class ConstraintReportSpec : FreeSpec({
                 }
             }
 
-            arch.validate(repositoryOf { "alpha" { "Helper.kt"() } }, KonsistCheck())
+            arch.validate(repositoryOf { "alpha" { "Helper.kt"() } }, FileConstraintCheck())
                 .report() shouldBe
                 """
-                Katachi check failed: 1 violation (Constraint: 1)
+                Katachi check failed: 1 violation (FileConstraint: 1)
 
-                [UnsatisfiedConstraint] alpha/Helper.kt
-                  Role: domain/UseCase / Constraint: "no helper"
+                [UnsatisfiedFileConstraint] alpha/Helper.kt
+                  Role: domain/UseCase / FileConstraint: "no helper"
                   Declaration: Helper (line 12)
                   Declared at: ProjectArchitecture.kt:61 (layout of alpha)
                 """.trimIndent()
@@ -73,7 +73,7 @@ class ConstraintReportSpec : FreeSpec({
             val arch = architectureOf {
                 "domain".group {
                     "UseCase" {
-                        constraint(
+                        fileConstraint(
                             declaredAt = DECLARED_AT,
                             check = rejectingDeclaration("alpha/Helper.kt", null, null),
                         )
@@ -82,12 +82,12 @@ class ConstraintReportSpec : FreeSpec({
                 }
             }
 
-            arch.validate(repositoryOf { "alpha" { "Helper.kt"() } }, KonsistCheck())
+            arch.validate(repositoryOf { "alpha" { "Helper.kt"() } }, FileConstraintCheck())
                 .report() shouldBe
                 """
-                Katachi check failed: 1 violation (Constraint: 1)
+                Katachi check failed: 1 violation (FileConstraint: 1)
 
-                [UnsatisfiedConstraint] alpha/Helper.kt
+                [UnsatisfiedFileConstraint] alpha/Helper.kt
                   Role: domain/UseCase
                   Declared at: ProjectArchitecture.kt:61
                 """.trimIndent()
@@ -99,7 +99,7 @@ class ConstraintReportSpec : FreeSpec({
                     "UseCase" {
                         layout {
                             "alpha" {
-                                constraint(
+                                fileConstraint(
                                     name = "no helper",
                                     declaredAt = DECLARED_AT,
                                     check = rejectingDeclaration("alpha/Helper.kt", "Helper", null),
@@ -111,7 +111,7 @@ class ConstraintReportSpec : FreeSpec({
                 }
             }
 
-            arch.validate(repositoryOf { "alpha" { "Helper.kt"() } }, KonsistCheck())
+            arch.validate(repositoryOf { "alpha" { "Helper.kt"() } }, FileConstraintCheck())
                 .report().lines()[4] shouldBe "  Declaration: Helper"
         }
 
@@ -123,7 +123,7 @@ class ConstraintReportSpec : FreeSpec({
                     "UseCase" {
                         layout {
                             "alpha" {
-                                constraint(
+                                fileConstraint(
                                     name = "no helper",
                                     declaredAt = DECLARED_AT,
                                     check = rejectsEverything(),
@@ -135,19 +135,19 @@ class ConstraintReportSpec : FreeSpec({
                 }
             }
 
-            arch.validate(repositoryOf { "alpha" { "Helper.kt"() } }, KonsistCheck())
+            arch.validate(repositoryOf { "alpha" { "Helper.kt"() } }, FileConstraintCheck())
                 .report() shouldNotContain "How to fix:"
         }
     }
 
-    "UncheckedConstraint" - {
+    "UncheckedFileConstraint" - {
         "NotEvaluated のブロックと末尾の件数行" {
             val arch = architectureOf {
                 "domain".group {
                     "UseCase" {
                         layout {
                             "alpha" {
-                                constraint(
+                                fileConstraint(
                                     name = "invoke",
                                     declaredAt = DECLARED_AT,
                                     check = silentCheck(),
@@ -163,13 +163,13 @@ class ConstraintReportSpec : FreeSpec({
                 """
                 Katachi check failed: 1 violation (Failed: 1)
 
-                [UncheckedConstraint] alpha
+                [UncheckedFileConstraint] alpha
                   Nothing evaluated this constraint, so nothing is known about it.
-                  Role: domain/UseCase / Constraint: "invoke"
+                  Role: domain/UseCase / FileConstraint: "invoke"
                   Declared at: ProjectArchitecture.kt:61 (layout of alpha)
 
                   How to fix:
-                    - Pass KonsistCheck() to assert(): projectArchitecture.assert(KonsistCheck())
+                    - Pass FileConstraintCheck() to assert(): projectArchitecture.assert(FileConstraintCheck())
                     - Remove the constraint at ProjectArchitecture.kt:61 if it is no longer wanted
 
                 1 constraint could not be evaluated.
@@ -182,7 +182,7 @@ class ConstraintReportSpec : FreeSpec({
                     "UseCase" {
                         layout {
                             "alpha" {
-                                constraint(
+                                fileConstraint(
                                     name = "invoke",
                                     declaredAt = DECLARED_AT,
                                     check = throwing { IllegalStateException("boom") },
@@ -194,13 +194,13 @@ class ConstraintReportSpec : FreeSpec({
                 }
             }
 
-            arch.validate(repositoryOf { "alpha" { "A.kt"() } }, KonsistCheck()).report() shouldBe
+            arch.validate(repositoryOf { "alpha" { "A.kt"() } }, FileConstraintCheck()).report() shouldBe
                 """
                 Katachi check failed: 1 violation (Failed: 1)
 
-                [UncheckedConstraint] alpha
+                [UncheckedFileConstraint] alpha
                   Katachi failed while evaluating this constraint, so nothing is known about it.
-                  Role: domain/UseCase / Constraint: "invoke"
+                  Role: domain/UseCase / FileConstraint: "invoke"
                   Declared at: ProjectArchitecture.kt:61 (layout of alpha)
                   Cause: java.lang.IllegalStateException: boom
 
@@ -215,13 +215,13 @@ class ConstraintReportSpec : FreeSpec({
     }
 
     "打ち切り" - {
-        "Constraint のブロックが1件は残り、打ち切り行が出る" {
+        "FileConstraint のブロックが1件は残り、打ち切り行が出る" {
             val arch = architectureOf {
                 "domain".group {
                     "UseCase" {
                         layout {
                             "alpha" {
-                                constraint(
+                                fileConstraint(
                                     name = "no helper",
                                     declaredAt = DECLARED_AT,
                                     check = rejectsEverything(),
@@ -237,11 +237,11 @@ class ConstraintReportSpec : FreeSpec({
                 repeat(12) { index -> "note-$index.md"() }
             }
 
-            val lines = arch.validate(tree, KonsistCheck()).report(maxViolations = 2).lines()
+            val lines = arch.validate(tree, FileConstraintCheck()).report(maxViolations = 2).lines()
 
             lines.filter { it.startsWith("[") } shouldBe listOf(
                 "[UnexpectedFile] note-0.md",
-                "[UnsatisfiedConstraint] alpha/Helper.kt",
+                "[UnsatisfiedFileConstraint] alpha/Helper.kt",
             )
             lines.last() shouldBe "Showing first 2 (11 more)"
         }
@@ -254,7 +254,7 @@ class ConstraintReportSpec : FreeSpec({
                     "UseCase" {
                         layout {
                             "alpha" {
-                                constraint(
+                                fileConstraint(
                                     name = "no helper",
                                     declaredAt = DECLARED_AT,
                                     check = rejectingDeclaration("alpha/Helper.kt", "Helper", 12),
@@ -266,13 +266,13 @@ class ConstraintReportSpec : FreeSpec({
                 }
             }
 
-            arch.validate(repositoryOf { "alpha" { "Helper.kt"() } }, KonsistCheck())
+            arch.validate(repositoryOf { "alpha" { "Helper.kt"() } }, FileConstraintCheck())
                 .report(projectRoot = FsPath.of("/repo")) shouldBe
                 """
-                Katachi check failed: 1 violation (Constraint: 1)
+                Katachi check failed: 1 violation (FileConstraint: 1)
 
-                [UnsatisfiedConstraint] file:///repo/alpha/Helper.kt
-                  Role: domain/UseCase / Constraint: "no helper"
+                [UnsatisfiedFileConstraint] file:///repo/alpha/Helper.kt
+                  Role: domain/UseCase / FileConstraint: "no helper"
                   Declaration: Helper (line 12)
                   Declared at: ProjectArchitecture.kt:61 (layout of file:///repo/alpha)
                 """.trimIndent()
@@ -286,16 +286,16 @@ class ConstraintReportSpec : FreeSpec({
                     "UseCase" {
                         layout {
                             "alpha" {
-                                constraint(name = "invoke", declaredAt = DECLARED_AT, check = silentCheck())
+                                fileConstraint(name = "invoke", declaredAt = DECLARED_AT, check = silentCheck())
                                 "*.kt".file()
                             }
                         }
                     }
                 }
-            }.validate(repositoryOf { "alpha" { "A.kt"() } }).filterIsInstance<UncheckedConstraint>().single()
-            val fallback = UncheckedConstraint(
+            }.validate(repositoryOf { "alpha" { "A.kt"() } }).filterIsInstance<UncheckedFileConstraint>().single()
+            val fallback = UncheckedFileConstraint(
                 path = DECLARED_AT.fileName,
-                reason = UncheckedConstraintReason.NotEvaluated,
+                reason = UncheckedFileConstraintReason.NotEvaluated,
                 role = declared.role,
                 constraintName = declared.constraintName,
                 layoutPath = null,
@@ -304,7 +304,7 @@ class ConstraintReportSpec : FreeSpec({
             )
 
             listOf(fallback).report(projectRoot = FsPath.of("/repo")).lines()[2] shouldBe
-                "[UncheckedConstraint] ProjectArchitecture.kt"
+                "[UncheckedFileConstraint] ProjectArchitecture.kt"
         }
     }
 
@@ -313,14 +313,14 @@ class ConstraintReportSpec : FreeSpec({
             val arch = architectureOf {
                 "domain".group {
                     "UseCase" {
-                        constraint(
+                        fileConstraint(
                             name = "role wide",
                             declaredAt = DECLARED_AT,
                             check = throwing { IllegalStateException("boom") },
                         )
                         layout {
                             "alpha" {
-                                constraint(
+                                fileConstraint(
                                     name = "alpha only",
                                     declaredAt = DECLARED_AT,
                                     check = rejectsEverything(),
@@ -332,7 +332,7 @@ class ConstraintReportSpec : FreeSpec({
                 }
             }
 
-            val report = arch.validate(repositoryOf { "alpha" { "A.kt"() } }, KonsistCheck()).report()
+            val report = arch.validate(repositoryOf { "alpha" { "A.kt"() } }, FileConstraintCheck()).report()
 
             report.filterNot { it.code < 128 } shouldBe ""
         }

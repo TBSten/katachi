@@ -8,10 +8,10 @@ import io.kotest.matchers.collections.shouldBeEmpty
 import io.kotest.matchers.shouldBe
 import me.tbsten.katachi.ExperimentalKatachiApi
 import me.tbsten.katachi.InternalKatachiApi
-import me.tbsten.katachi.check.KonsistCheck
+import me.tbsten.katachi.check.FileConstraintCheck
 import me.tbsten.katachi.check.internal.validate
-import me.tbsten.katachi.dsl.KatachiConstraintNameException
-import me.tbsten.katachi.dsl.KatachiConstraintWithoutLayoutException
+import me.tbsten.katachi.dsl.KatachiFileConstraintNameException
+import me.tbsten.katachi.dsl.KatachiFileConstraintWithoutLayoutException
 import me.tbsten.katachi.dsl.architecture
 import me.tbsten.katachi.dsl.files.internal.RealFileSystem
 import me.tbsten.katachi.dsl.wholeTree
@@ -21,7 +21,7 @@ import me.tbsten.katachi.konsist.konsist
  * Where `konsist { }` can be written, and where it refuses to be.
  *
  * The vocabulary inside the block is [KonsistAssumptionsSpec]'s; this one is only about the
- * entry point — a top level function in a **different artifact** that takes `ConstraintScope`
+ * entry point — a top level function in a **different artifact** that takes `FileConstraintScope`
  * as a context parameter. That such a function resolves with no compiler flag on the caller's
  * side is already settled by `dsl/gradle/Modules.kt` and `sample/jvm`, so what is left is the
  * containment: the places it must not resolve.
@@ -51,10 +51,10 @@ class KonsistDslSpec : FreeSpec({
             }
 
             // Two constraints declared in two different places of one role, both evaluated by
-            // one `KonsistCheck()` on one walk, both satisfied. `konsist { }` with an empty
+            // one `FileConstraintCheck()` on one walk, both satisfied. `konsist { }` with an empty
             // block would be refused for expecting nothing, so each says something trivially
             // true about the one class the fixture holds.
-            projectArchitecture.validate(RealFileSystem(root), KonsistCheck()).shouldBeEmpty()
+            projectArchitecture.validate(RealFileSystem(root), FileConstraintCheck()).shouldBeEmpty()
         }
     }
 
@@ -80,23 +80,23 @@ class KonsistDslSpec : FreeSpec({
 
             invocations shouldBe 0
             // A run that was not handed a check which evaluates constraints runs neither of
-            // them -- and says so, which is what the `[UncheckedConstraint]` blocks below are.
+            // them -- and says so, which is what the `[UncheckedFileConstraint]` blocks below are.
             projectArchitecture.validate(RealFileSystem(root))
             invocations shouldBe 0
             // Handed one, it runs each block exactly once. That difference is the whole point
             // of the explicit wiring.
-            projectArchitecture.validate(RealFileSystem(root), KonsistCheck())
+            projectArchitecture.validate(RealFileSystem(root), FileConstraintCheck())
             invocations shouldBe 2
         }
     }
 
-    "役割直下の konsist は宣言時に ConstraintScope へ届いている" - {
-        // `konsist { }` is a thin wrapper over `ConstraintScope.constraint`, and the two ways to
-        // observe that from outside `:katachi` are the exceptions `constraint` raises. Reading
+    "役割直下の konsist は宣言時に FileConstraintScope へ届いている" - {
+        // `konsist { }` is a thin wrapper over `FileConstraintScope.fileConstraint`, and the two ways to
+        // observe that from outside `:katachi` are the exceptions `fileConstraint` raises. Reading
         // the declarations back is `@InternalKatachiApi` *and* internal, so it is not available
         // across the module boundary by design.
         "layout { } を 1 つも持たない役割に書くと落ちる" {
-            shouldThrow<KatachiConstraintWithoutLayoutException> {
+            shouldThrow<KatachiFileConstraintWithoutLayoutException> {
                 architecture {
                     "domain".group {
                         "UseCase" { "名前".konsist { } }
@@ -106,7 +106,7 @@ class KonsistDslSpec : FreeSpec({
         }
 
         "空白だけの名前は宣言時に落ちる" {
-            shouldThrow<KatachiConstraintNameException> {
+            shouldThrow<KatachiFileConstraintNameException> {
                 architecture {
                     "domain".group {
                         "UseCase" {
@@ -119,7 +119,7 @@ class KonsistDslSpec : FreeSpec({
         }
     }
 
-    "layout の中の konsist は layout の評価時に ConstraintScope へ届く" {
+    "layout の中の konsist は layout の評価時に FileConstraintScope へ届く" {
         // `layout { }` is deferred, so a constraint written inside one is declared when the
         // layout is flattened rather than when `architecture { }` is built. A broken name
         // therefore lands at the same moment a broken glob key would.
@@ -139,7 +139,7 @@ class KonsistDslSpec : FreeSpec({
                 }
             }
 
-            shouldThrow<KatachiConstraintNameException> {
+            shouldThrow<KatachiFileConstraintNameException> {
                 projectArchitecture.validate(RealFileSystem(root))
             }
         }
@@ -155,9 +155,9 @@ class KonsistDslSpec : FreeSpec({
             //     konsist { }
             // }
             //
-            // e: No context argument for 'scope: ConstraintScope' found.
+            // e: No context argument for 'scope: FileConstraintScope' found.
             //
-            // ArchitectureScope は ConstraintScope を継承していない。architecture { } は役割を
+            // ArchitectureScope は FileConstraintScope を継承していない。architecture { } は役割を
             // 入れる器であってファイルの集合ではないので、そこに書かれた制約が覆うものが無い。
             true shouldBe true
         }
@@ -169,9 +169,9 @@ class KonsistDslSpec : FreeSpec({
             //     }
             // }
             //
-            // e: No context argument for 'scope: ConstraintScope' found.
+            // e: No context argument for 'scope: FileConstraintScope' found.
             //
-            // GroupScope も同じ理由で ConstraintScope を継承していない。group が持つのは役割で、
+            // GroupScope も同じ理由で FileConstraintScope を継承していない。group が持つのは役割で、
             // ファイルを持つのはその下の役割の layout。
             true shouldBe true
         }
@@ -184,7 +184,7 @@ class KonsistDslSpec : FreeSpec({
             //     layout { "core/domain" { "*.kt".file() } }
             // }
             //
-            // e: 'context(scope: ConstraintScope) fun String.konsist(block: KonsistScope.() ->
+            // e: 'context(scope: FileConstraintScope) fun String.konsist(block: KonsistScope.() ->
             //    Unit): Unit' cannot be called in this context with an implicit receiver.
             //    Use an explicit receiver if necessary.
             //

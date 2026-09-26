@@ -1,10 +1,10 @@
 package me.tbsten.katachi.dsl
 
-import me.tbsten.katachi.dsl.internal.ConstraintDeclaration
+import me.tbsten.katachi.dsl.internal.FileConstraintDeclaration
 import me.tbsten.katachi.dsl.internal.MetadataBuilder
 import me.tbsten.katachi.dsl.internal.TemplateDeclaration
 import me.tbsten.katachi.dsl.internal.captureDeclarationSite
-import me.tbsten.katachi.dsl.internal.constraintDeclarationOf
+import me.tbsten.katachi.dsl.internal.fileConstraintDeclarationOf
 
 /**
  * Receiver of `"RoleName" { }`.
@@ -30,7 +30,7 @@ import me.tbsten.katachi.dsl.internal.constraintDeclarationOf
  * ```
  */
 @KatachiDsl
-public sealed interface RoleScope : MetadataScope, ConstraintScope {
+public sealed interface RoleScope : MetadataScope, FileConstraintScope {
     /**
      * Display name. Defaults to the role name.
      *
@@ -181,9 +181,9 @@ internal class RoleScopeImpl(private val roleName: String) : RoleScope {
 
     /**
      * Constraints written straight on the role, which cover the union of every `layout { }`
-     * it declares. See [ConstraintScope.constraint].
+     * it declares. See [FileConstraintScope.fileConstraint].
      */
-    val constraints = mutableListOf<ConstraintDeclaration>()
+    val fileConstraints = mutableListOf<FileConstraintDeclaration>()
 
     override var title: String
         // The fallback lives here and is not written into the metadata: `Title` is absent
@@ -235,7 +235,7 @@ internal class RoleScopeImpl(private val roleName: String) : RoleScope {
         templates += TemplateDeclaration(declaredAt = declaredAt, block = block)
     }
 
-    override fun constraint(name: String?, declaredAt: DeclarationSite, check: FileSetConstraint) {
-        constraints += constraintDeclarationOf(name = name, declaredAt = declaredAt, check = check)
+    override fun fileConstraint(name: String?, declaredAt: DeclarationSite, check: FileConstraint) {
+        fileConstraints += fileConstraintDeclarationOf(name = name, declaredAt = declaredAt, check = check)
     }
 }

@@ -13,7 +13,7 @@ the three roots of katachi's exception hierarchy.
 
 The entry points that turn an [me.tbsten.katachi.dsl.Architecture] and a project into a pass or
 a failure — `assert`, `validate`, the `layout { }` check and the check that evaluates
-`constraint { }` blocks — and what they find while they walk a project: a violation, its kind
+`fileConstraint { }` blocks — and what they find while they walk a project: a violation, its kind
 and severity, and the warnings a definition can carry on its own.
 
 # Package me.tbsten.katachi.docs

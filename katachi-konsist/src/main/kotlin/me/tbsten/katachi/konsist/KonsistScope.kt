@@ -16,7 +16,7 @@ import me.tbsten.katachi.dsl.KatachiDsl
  *
  * The reason is the report, not taste. `assertTrue` throws on the first rejection and says
  * so in prose; katachi needs the rejected declarations themselves, because the first line of
- * an `[UnsatisfiedConstraint]` block is a real path a reader can open. Collecting them is the
+ * an `[UnsatisfiedFileConstraint]` block is a real path a reader can open. Collecting them is the
  * only way a block that rejects four classes can produce four blocks pointing at four files.
  * All twelve of Konsist's assertions are therefore shadowed below as compile errors — one
  * declaration per spelling, so that `classes().first().assertTrue { }` and
@@ -31,7 +31,7 @@ import me.tbsten.katachi.dsl.KatachiDsl
  * - **`.kts` files are never in the scope.** Konsist 0.17.3 parses a file only when its name
  *   ends in `.kt` (`File.isKotlinFile`), so a `build.gradle.kts` or any other script inside
  *   what a constraint covers is invisible here however the layout was written. A rule about
- *   build scripts has to be written as a plain `constraint { }` reading the text itself.
+ *   build scripts has to be written as a plain `fileConstraint { }` reading the text itself.
  * - **`assertArchitecture` is not shadowed.** It is a member extension of
  *   `KoArchitectureAssertion`, so it does not resolve from inside a `konsist { }` block at
  *   all — unless a block writes `with(KoArchitectureCreator) { }` to bring the dispatch

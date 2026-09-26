@@ -1,13 +1,13 @@
 package me.tbsten.katachi.dsl.internal
 
 import me.tbsten.katachi.dsl.DeclarationSite
-import me.tbsten.katachi.dsl.FileSetConstraint
+import me.tbsten.katachi.dsl.FileConstraint
 import me.tbsten.katachi.dsl.Role
 
 /**
  * One constraint, with the layout around it already evaluated.
  *
- * A [ConstraintDeclaration] says what the user wrote; this says what it turned out to be
+ * A [FileConstraintDeclaration] says what the user wrote; this says what it turned out to be
  * about. A wildcard module key produces one of these per module it expanded to, each with its
  * own resolved [layoutPath], which is why this is the value the check works with and the
  * declaration is not.
@@ -15,9 +15,9 @@ import me.tbsten.katachi.dsl.Role
  * Nothing here has been run. The block is kept as it was written and evaluated only when a
  * check that evaluates constraints is handed to `assert(...)`.
  *
- * **There is no public way to reach one directly.** `declaredConstraints` sits on the internal
+ * **There is no public way to reach one directly.** `declaredFileConstraints` sits on the internal
  * walk behind [me.tbsten.katachi.processor.ArchitectureProcessContext], not on the context
- * itself -- a `DeclaredConstraint` is something the outcome of `assert()` or `validate()` names
+ * itself -- a `DeclaredFileConstraint` is something the outcome of `assert()` or `validate()` names
  * in its failure report, never something a processor builds or reads on its own.
  *
  * ## Example 1: where one shows up -- named in a failed constraint's report, never built by hand
@@ -27,8 +27,8 @@ import me.tbsten.katachi.dsl.Role
  *         "UseCase" {
  *             layout {
  *                 "useCase" {
- *                     constraint("leaves no TODO") { subject ->
- *                         subject.files.filter { it.endsWith(".kt") }.map { ConstraintFailure(it) }
+ *                     fileConstraint("leaves no TODO") { subject ->
+ *                         subject.files.filter { it.endsWith(".kt") }.map { FileConstraintFailure(it) }
  *                     }
  *                     "*UseCase.kt".file()
  *                 }
@@ -37,17 +37,17 @@ import me.tbsten.katachi.dsl.Role
  *     }
  * }
  * // `arch.assert()` walks the real project and turns a rejected file into a report block. What
- * // this `DeclaredConstraint` type is used for is entirely inside that report machinery -- it
+ * // this `DeclaredFileConstraint` type is used for is entirely inside that report machinery -- it
  * // never appears as a value in user code, above or below this line.
  * ```
  */
-internal class DeclaredConstraint(
+internal class DeclaredFileConstraint(
     /**
      * The role whose layout this constraint was written in.
      *
      * ## Example 1: group the declared constraints by role
      * ```kt
-     * declaredConstraints.groupBy { it.role.qualifiedName }
+     * declaredFileConstraints.groupBy { it.role.qualifiedName }
      * ```
      */
     val role: Role,
@@ -60,7 +60,7 @@ internal class DeclaredConstraint(
      *
      * ## Example 1: name the places a constraint is about
      * ```kt
-     * declaredConstraints.single().paths shouldBe listOf("core/domain/useCase")
+     * declaredFileConstraints.single().paths shouldBe listOf("core/domain/useCase")
      * ```
      */
     val paths: List<String>,
@@ -73,7 +73,7 @@ internal class DeclaredConstraint(
      *
      * ## Example 1: tell a per-directory constraint from a role-wide one
      * ```kt
-     * declaredConstraints.filter { it.layoutPath != null }
+     * declaredFileConstraints.filter { it.layoutPath != null }
      * ```
      */
     val layoutPath: String?,
@@ -82,26 +82,26 @@ internal class DeclaredConstraint(
      *
      * ## Example 1: list the named constraints of a definition
      * ```kt
-     * declaredConstraints.mapNotNull { it.name }
+     * declaredFileConstraints.mapNotNull { it.name }
      * ```
      */
     val name: String?,
     /**
-     * Where `constraint(...)` was written.
+     * Where `fileConstraint(...)` was written.
      *
      * ## Example 1: point a report back at the line that declared the constraint
      * ```kt
-     * declaredConstraints.single().declaredAt.fileName shouldBe "ProjectArchitecture.kt"
+     * declaredFileConstraints.single().declaredAt.fileName shouldBe "ProjectArchitecture.kt"
      * ```
      */
     val declaredAt: DeclarationSite,
-    /** Which files this constraint covers. See [ConstraintCoverage]. */
-    val coverage: ConstraintCoverage,
+    /** Which files this constraint covers. See [FileConstraintCoverage]. */
+    val coverage: FileConstraintCoverage,
     /** The block itself. Evaluated by a check, not by the DSL. */
-    val check: FileSetConstraint,
+    val check: FileConstraint,
 ) {
     override fun toString(): String =
-        "DeclaredConstraint(${role.qualifiedName}, ${name ?: declaredAt}, paths=$paths)"
+        "DeclaredFileConstraint(${role.qualifiedName}, ${name ?: declaredAt}, paths=$paths)"
 }
 
 /**
@@ -112,5 +112,5 @@ internal class DeclaredConstraint(
  * fallback is the file the constraint was written in — never `"."`, which is a real path in
  * every project and says nothing about where to look.
  */
-internal val DeclaredConstraint.reportPath: String
+internal val DeclaredFileConstraint.reportPath: String
     get() = paths.firstOrNull { '*' !in it } ?: paths.firstOrNull() ?: declaredAt.fileName

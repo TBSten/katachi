@@ -94,14 +94,14 @@ public fun Architecture.assert(maxViolations: Int = DEFAULT_MAX_VIOLATIONS): Uni
  * class ProjectArchitectureTest {
  *     @Test
  *     fun `the project matches its declaration`() {
- *         projectArchitecture.assert(KonsistCheck())
+ *         projectArchitecture.assert(FileConstraintCheck())
  *     }
  * }
  * ```
  *
  * ## Example 2: several checks, and a longer report
  * ```kt
- * projectArchitecture.assert(KonsistCheck(), TodoCheck(), maxViolations = 20)
+ * projectArchitecture.assert(FileConstraintCheck(), TodoCheck(), maxViolations = 20)
  * ```
  *
  * @param maxViolations the combined budget the message's error blocks and warning blocks

@@ -18,9 +18,9 @@ private const val LISTED_PATHS: Int = 3
  *
  * ## Example 1: catch a backend that answered about the wrong files
  * ```kt
- * projectArchitecture.validate(KonsistCheck())
- *     .filterIsInstance<UncheckedConstraint>()
- *     .single().cause.shouldBeInstanceOf<KatachiConstraintSubjectException>()
+ * projectArchitecture.validate(FileConstraintCheck())
+ *     .filterIsInstance<UncheckedFileConstraint>()
+ *     .single().cause.shouldBeInstanceOf<KatachiFileConstraintSubjectException>()
  * ```
  *
  * @property role the qualified name of the role whose layout the constraint was written in.
@@ -30,13 +30,13 @@ private const val LISTED_PATHS: Int = 3
  * @param projectRoot what the message resolves [outside] against to print `file:///...` URIs.
  *   `null` prints them as they are.
  */
-public class KatachiConstraintSubjectException internal constructor(
+public class KatachiFileConstraintSubjectException internal constructor(
     /**
      * The qualified name of the role whose layout the constraint was written in.
      *
      * ## Example 1: read back which role's constraint misbehaved
      * ```kt
-     * cause.shouldBeInstanceOf<KatachiConstraintSubjectException>().role shouldBe "domain/UseCase"
+     * cause.shouldBeInstanceOf<KatachiFileConstraintSubjectException>().role shouldBe "domain/UseCase"
      * ```
      */
     public val role: String,
@@ -45,7 +45,7 @@ public class KatachiConstraintSubjectException internal constructor(
      *
      * ## Example 1: name the rule that answered about the wrong files
      * ```kt
-     * cause.shouldBeInstanceOf<KatachiConstraintSubjectException>().constraintName shouldBe "Internal only"
+     * cause.shouldBeInstanceOf<KatachiFileConstraintSubjectException>().constraintName shouldBe "Internal only"
      * ```
      */
     public val constraintName: String?,
@@ -54,7 +54,7 @@ public class KatachiConstraintSubjectException internal constructor(
      *
      * ## Example 1: jump to the constraint whose backend went off course
      * ```kt
-     * cause.shouldBeInstanceOf<KatachiConstraintSubjectException>().declaredAt.fileName shouldBe
+     * cause.shouldBeInstanceOf<KatachiFileConstraintSubjectException>().declaredAt.fileName shouldBe
      *     "ProjectArchitecture.kt"
      * ```
      */
@@ -64,7 +64,7 @@ public class KatachiConstraintSubjectException internal constructor(
      *
      * ## Example 1: read back the paths that were not part of the subject
      * ```kt
-     * cause.shouldBeInstanceOf<KatachiConstraintSubjectException>().outside shouldBe
+     * cause.shouldBeInstanceOf<KatachiFileConstraintSubjectException>().outside shouldBe
      *     listOf("build.gradle.kts")
      * ```
      */
@@ -74,7 +74,7 @@ public class KatachiConstraintSubjectException internal constructor(
     message = buildString {
         val named = constraintName?.let { "\"$it\"" } ?: "declared at $declaredAt"
         appendLine(
-            "Constraint $named of role \"$role\" answered about ${outside.size} " +
+            "File constraint $named of role \"$role\" answered about ${outside.size} " +
                 "${if (outside.size == 1) "file" else "files"} it was not asked about: " +
                 outside.take(LISTED_PATHS).joinToString(", ") { displayPath(projectRoot?.value, it) } +
                 if (outside.size > LISTED_PATHS) ", ..." else "",
@@ -86,7 +86,7 @@ public class KatachiConstraintSubjectException internal constructor(
         )
         append(
             "Check the backend at $declaredAt: it is most likely reading a wider set of files " +
-                "than `ConstraintSubject.files`.",
+                "than `FileConstraintSubject.files`.",
         )
     },
 )

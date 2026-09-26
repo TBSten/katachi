@@ -16,8 +16,8 @@ import me.tbsten.katachi.KatachiInternalException
  *
  * ## Example 1: recognise it as a katachi bug rather than a failed rule
  * ```kt
- * projectArchitecture.validate(KonsistCheck())
- *     .filterIsInstance<UncheckedConstraint>()
+ * projectArchitecture.validate(FileConstraintCheck())
+ *     .filterIsInstance<UncheckedFileConstraint>()
  *     .single().cause.shouldBeInstanceOf<KatachiKonsistScopeIncompleteException>()
  * ```
  *

@@ -18,10 +18,10 @@ import me.tbsten.katachi.dsl.internal.captureDeclarationSite
  * ## Example 1: constrain one directory, and the whole role
  * ```kt
  * "UseCase" {
- *     constraint("has an invoke function") { subject -> /* every place below */ emptyList() }
+ *     fileConstraint("has an invoke function") { subject -> /* every place below */ emptyList() }
  *     layout {
  *         ":core:domain".module {
- *             constraint("is usable from outside") { subject -> /* core/domain only */ emptyList() }
+ *             fileConstraint("is usable from outside") { subject -> /* core/domain only */ emptyList() }
  *             mainSourceSet / kotlin / "useCase" / "*UseCase".ktFile()
  *         }
  *     }
@@ -29,7 +29,7 @@ import me.tbsten.katachi.dsl.internal.captureDeclarationSite
  * ```
  */
 @KatachiDsl
-public sealed interface ConstraintScope {
+public sealed interface FileConstraintScope {
     /**
      * Declares a constraint over the files the block around it matched.
      *
@@ -40,8 +40,8 @@ public sealed interface ConstraintScope {
      * ## Example 1: a constraint written by hand, without any backend
      * ```kt
      * "UseCase" {
-     *     constraint("leaves no TODO") { subject ->
-     *         subject.files.filter { it.endsWith(".kt") }.map { ConstraintFailure(it) }
+     *     fileConstraint("leaves no TODO") { subject ->
+     *         subject.files.filter { it.endsWith(".kt") }.map { FileConstraintFailure(it) }
      *     }
      *     layout { "core/domain/useCase" { "*UseCase.kt".file() } }
      * }
@@ -50,7 +50,7 @@ public sealed interface ConstraintScope {
      * ## Example 2: point the report somewhere other than the calling line
      * ```kt
      * "UseCase" {
-     *     constraint("has an invoke function", DeclarationSite("DomainRules.kt", 12)) { subject ->
+     *     fileConstraint("has an invoke function", DeclarationSite("DomainRules.kt", 12)) { subject ->
      *         emptyList()
      *     }
      *     layout { "core/domain/useCase" { "*UseCase.kt".file() } }
@@ -64,12 +64,12 @@ public sealed interface ConstraintScope {
      *   outside `me.tbsten.katachi.*`, which is the line that called this. **A wrapper of your
      *   own has to pass its own caller's site**, or every report points at the wrapper.
      * @param check what to ask of the covered files.
-     * @throws KatachiConstraintNameException when [name] is blank or holds a line break.
+     * @throws KatachiFileConstraintNameException when [name] is blank or holds a line break.
      */
     @ExperimentalKatachiApi
-    public fun constraint(
+    public fun fileConstraint(
         name: String? = null,
         declaredAt: DeclarationSite = captureDeclarationSite(),
-        check: FileSetConstraint,
+        check: FileConstraint,
     )
 }

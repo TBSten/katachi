@@ -38,7 +38,7 @@ dependencies {
     //
     // `:katachi-konsist` already exposes `:katachi` and Konsist as `api` dependencies, so the
     // first line is transitively redundant. It is written out because this module names
-    // `architecture`, `assert` and `ConstraintCheck` directly.
+    // `architecture`, `assert` and `FileConstraintCheck` directly.
     testImplementation(project(":katachi"))
     testImplementation(project(":katachi-konsist"))
     testImplementation(libs.kotestRunnerJunit5)

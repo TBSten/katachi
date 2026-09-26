@@ -37,7 +37,7 @@ class DocumentSectionPageSpec : FreeSpec({
                         summary = "1つの振る舞い"
                         description = "本文。"
                         example("GetUserUseCase", "ユーザーを取得する")
-                        constraint("public であること") { emptyList() }
+                        fileConstraint("public であること") { emptyList() }
                         layout { "useCase" / "*UseCase".ktFile() }
                         testPolicy = "- 戻り値"
                         ownership = "platform"

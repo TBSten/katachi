@@ -33,7 +33,7 @@ import me.tbsten.katachi.processor.ArchitectureProcessorNoArg
  * [Violation.details] for the values its block states.
  */
 private class TodoViolation(override val path: String) : Violation {
-    override val kind: ViolationKind get() = ViolationKind.Constraint
+    override val kind: ViolationKind get() = ViolationKind.FileConstraint
     override val severity: Severity get() = Severity.Error
     override val label: String get() = "TodoRule"
     override val details: List<ViolationDetail>
@@ -142,7 +142,7 @@ class AssertWithChecksSpec : FreeSpec({
 
             failure.message!! shouldBe
                 """
-                Katachi check failed: 1 violation (Constraint: 1)
+                Katachi check failed: 1 violation (FileConstraint: 1)
 
                 [TodoRule] ${realUri("app/src/Foo.kt")}
                   Rule: TODO
@@ -151,13 +151,13 @@ class AssertWithChecksSpec : FreeSpec({
         }
 
         "配置違反と第三者の違反が1つのレポートに種別順で並ぶ" {
-            // `Unexpected` before `Constraint`, whatever order the checks ran in: the report
+            // `Unexpected` before `FileConstraint`, whatever order the checks ran in: the report
             // groups by kind because the reader does something different with each group.
             val violations = layoutArchitecture { ".gitignore".file() }
                 .validate(repositoryOf { ".gitignore"(); "notes.md"() }, TodoCheck("app/src/Foo.kt"))
 
             violations.labels() shouldBe listOf("[UnexpectedFile] notes.md", "[TodoRule] app/src/Foo.kt")
-            violations.summary() shouldBe "Katachi check failed: 2 violations (Unexpected: 1, Constraint: 1)"
+            violations.summary() shouldBe "Katachi check failed: 2 violations (Unexpected: 1, FileConstraint: 1)"
         }
     }
 

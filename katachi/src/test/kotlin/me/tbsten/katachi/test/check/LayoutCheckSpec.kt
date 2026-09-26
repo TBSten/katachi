@@ -7,7 +7,7 @@ import io.kotest.matchers.shouldBe
 import io.kotest.matchers.types.shouldBeInstanceOf
 import me.tbsten.katachi.KatachiDeclarationException
 import me.tbsten.katachi.check.KatachiArchitectureAssertionError
-import me.tbsten.katachi.check.KonsistCheck
+import me.tbsten.katachi.check.FileConstraintCheck
 import me.tbsten.katachi.check.LayoutCheck
 import me.tbsten.katachi.check.internal.assert
 import me.tbsten.katachi.check.internal.validate
@@ -106,7 +106,7 @@ class LayoutCheckSpec : FreeSpec({
         "追加の check を渡しても同じ" {
             val definition = moduleOutsideLayoutRoot()
 
-            shouldThrow<KatachiDeclarationException> { definition.validate(repositoryOf { }, KonsistCheck()) }
+            shouldThrow<KatachiDeclarationException> { definition.validate(repositoryOf { }, FileConstraintCheck()) }
         }
     }
 })

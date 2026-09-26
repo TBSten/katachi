@@ -11,13 +11,13 @@ import io.kotest.matchers.types.shouldBeInstanceOf
 import java.io.File
 import me.tbsten.katachi.ExperimentalKatachiApi
 import me.tbsten.katachi.InternalKatachiApi
-import me.tbsten.katachi.check.KonsistCheck
-import me.tbsten.katachi.check.UncheckedConstraint
-import me.tbsten.katachi.check.UncheckedConstraintReason
-import me.tbsten.katachi.check.UnsatisfiedConstraint
+import me.tbsten.katachi.check.FileConstraintCheck
+import me.tbsten.katachi.check.UncheckedFileConstraint
+import me.tbsten.katachi.check.UncheckedFileConstraintReason
+import me.tbsten.katachi.check.UnsatisfiedFileConstraint
 import me.tbsten.katachi.check.internal.report
 import me.tbsten.katachi.check.internal.validate
-import me.tbsten.katachi.dsl.FileSetConstraint
+import me.tbsten.katachi.dsl.FileConstraint
 import me.tbsten.katachi.dsl.architecture
 import me.tbsten.katachi.dsl.files.internal.RealFileSystem
 import me.tbsten.katachi.dsl.wholeTree
@@ -29,11 +29,11 @@ import me.tbsten.katachi.konsist.konsist
 
 /**
  * What every way a `konsist { }` constraint can fail to answer at all comes out as, seen through
- * the real report — the counterpart of `:katachi`'s `ConstraintFailureSpec`, one module over.
+ * the real report — the counterpart of `:katachi`'s `FileConstraintFailureSpec`, one module over.
  *
- * Five paths end at `[UncheckedConstraint] reason=Failed`, each pinned once here:
- * 1. the block itself throws — covered on the `:katachi` side (`ConstraintFailureSpec`), because
- *    that propagation is generic to every `FileSetConstraint` and knows nothing about Konsist.
+ * Five paths end at `[UncheckedFileConstraint] reason=Failed`, each pinned once here:
+ * 1. the block itself throws — covered on the `:katachi` side (`FileConstraintFailureSpec`), because
+ *    that propagation is generic to every `FileConstraint` and knows nothing about Konsist.
  * 2. scope construction itself fails ([KatachiKonsistScopeIncompleteException])
  * 3. the block never calls `must`, `mustNot` or `mustBeEmpty` ([KatachiKonsistNoExpectationException])
  * 4. the covered files hold no `.kt` Konsist can parse ([KatachiKonsistNoKotlinFilesException])
@@ -69,14 +69,14 @@ class KonsistFailureSpec : FreeSpec({
                                 "src" {
                                     "*.kt".file()
                                     // Declared before the konsist { } constraint below so that it
-                                    // runs first (ConstraintFailureSpec pins declaration order as
+                                    // runs first (FileConstraintFailureSpec pins declaration order as
                                     // evaluation order). It deletes B.kt, which katachi's own walk
                                     // already counted into `subject.files` for both constraints —
                                     // Konsist, reading the directory afterwards, sees one file
                                     // fewer than katachi asked for.
-                                    constraint(
+                                    fileConstraint(
                                         "B.kt を消す",
-                                        check = FileSetConstraint { subject ->
+                                        check = FileConstraint { subject ->
                                             File("${subject.projectRoot}/src/B.kt").delete()
                                             emptyList()
                                         },
@@ -88,17 +88,17 @@ class KonsistFailureSpec : FreeSpec({
                     }
                 }
 
-                val violations = projectArchitecture.validate(RealFileSystem(root), KonsistCheck())
+                val violations = projectArchitecture.validate(RealFileSystem(root), FileConstraintCheck())
 
-                val unchecked = violations.filterIsInstance<UncheckedConstraint>()
+                val unchecked = violations.filterIsInstance<UncheckedFileConstraint>()
                     .single { it.constraintName == "規約" }
-                unchecked.reason shouldBe UncheckedConstraintReason.Failed
+                unchecked.reason shouldBe UncheckedFileConstraintReason.Failed
                 val cause = unchecked.cause.shouldBeInstanceOf<KatachiKonsistScopeIncompleteException>()
                 cause.given shouldBe 2
                 cause.visible shouldBe 1
 
                 val report = violations.report()
-                report shouldContain "[UncheckedConstraint] src"
+                report shouldContain "[UncheckedFileConstraint] src"
                 // `causeLine` prints only the cause's first line — "this is katachi's own bug"
                 // lives in the exception's own second line (see `KatachiKonsistScopeIncompleteException`),
                 // so it never reaches the report itself. What the report says instead is the
@@ -120,8 +120,8 @@ class KonsistFailureSpec : FreeSpec({
                 classes()
             }
 
-            val unchecked = violations.filterIsInstance<UncheckedConstraint>().single()
-            unchecked.reason shouldBe UncheckedConstraintReason.Failed
+            val unchecked = violations.filterIsInstance<UncheckedFileConstraint>().single()
+            unchecked.reason shouldBe UncheckedFileConstraintReason.Failed
             unchecked.cause.shouldBeInstanceOf<KatachiKonsistNoExpectationException>()
 
             val report = violations.report()
@@ -140,8 +140,8 @@ class KonsistFailureSpec : FreeSpec({
                 classes().mustBeEmpty()
             }
 
-            val unchecked = violations.filterIsInstance<UncheckedConstraint>().single()
-            unchecked.reason shouldBe UncheckedConstraintReason.Failed
+            val unchecked = violations.filterIsInstance<UncheckedFileConstraint>().single()
+            unchecked.reason shouldBe UncheckedFileConstraintReason.Failed
             unchecked.cause.shouldBeInstanceOf<KatachiKonsistNoKotlinFilesException>().given shouldBe 1
 
             val report = violations.report()
@@ -190,10 +190,10 @@ class KonsistFailureSpec : FreeSpec({
                 }
             }
 
-            val violations = projectArchitecture.validate(RealFileSystem(root), KonsistCheck())
+            val violations = projectArchitecture.validate(RealFileSystem(root), FileConstraintCheck())
 
-            violations.filterIsInstance<UncheckedConstraint>().single().constraintName shouldBe "何も期待しない"
-            val unsatisfied = violations.filterIsInstance<UnsatisfiedConstraint>().single()
+            violations.filterIsInstance<UncheckedFileConstraint>().single().constraintName shouldBe "何も期待しない"
+            val unsatisfied = violations.filterIsInstance<UnsatisfiedFileConstraint>().single()
             unsatisfied.constraintName shouldBe "internal であること"
             unsatisfied.path shouldBe "src/PublicThing.kt"
         }
@@ -222,8 +222,8 @@ class KonsistFailureSpec : FreeSpec({
                     }
                 }
 
-                val unchecked = projectArchitecture.validate(RealFileSystem(root), KonsistCheck())
-                    .filterIsInstance<UncheckedConstraint>()
+                val unchecked = projectArchitecture.validate(RealFileSystem(root), FileConstraintCheck())
+                    .filterIsInstance<UncheckedFileConstraint>()
                     .single()
 
                 unchecked.path shouldNotBe "."

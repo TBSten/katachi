@@ -15,10 +15,10 @@ private fun nameOf(type: KClass<*>): String = type.qualifiedName ?: type.java.na
  *
  * ## Example 1: catch a constraint name holding a line break
  * ```kt
- * shouldThrow<KatachiConstraintNameException> {
+ * shouldThrow<KatachiFileConstraintNameException> {
  *     architecture {
  *         "UseCase" {
- *             constraint("has an invoke\nfunction") { emptyList() }
+ *             fileConstraint("has an invoke\nfunction") { emptyList() }
  *             layout { "useCase" { } }
  *         }
  *     }
@@ -28,14 +28,14 @@ private fun nameOf(type: KClass<*>): String = type.qualifiedName ?: type.java.na
  * @property name the rejected name, as written, with its line breaks escaped.
  * @property declaredAt where the constraint was written.
  */
-public class KatachiConstraintNameException internal constructor(
+public class KatachiFileConstraintNameException internal constructor(
     /**
      * The rejected name, as written.
      *
      * ## Example 1: read back the name that was rejected
      * ```kt
-     * shouldThrow<KatachiConstraintNameException> {
-     *     architecture { "UseCase" { constraint("   ") { emptyList() }; layout { } } }
+     * shouldThrow<KatachiFileConstraintNameException> {
+     *     architecture { "UseCase" { fileConstraint("   ") { emptyList() }; layout { } } }
      * }.name shouldBe "   "
      * ```
      */
@@ -45,8 +45,8 @@ public class KatachiConstraintNameException internal constructor(
      *
      * ## Example 1: jump to the line that declared the rejected constraint
      * ```kt
-     * shouldThrow<KatachiConstraintNameException> {
-     *     architecture { "UseCase" { constraint("   ") { emptyList() }; layout { } } }
+     * shouldThrow<KatachiFileConstraintNameException> {
+     *     architecture { "UseCase" { fileConstraint("   ") { emptyList() }; layout { } } }
      * }.declaredAt.lineNumber shouldBeGreaterThan 0
      * ```
      */
@@ -77,10 +77,10 @@ public class KatachiConstraintNameException internal constructor(
  *
  * ## Example 1: catch a constraint that has nothing to be about
  * ```kt
- * shouldThrow<KatachiConstraintWithoutLayoutException> {
+ * shouldThrow<KatachiFileConstraintWithoutLayoutException> {
  *     architecture {
  *         "domain".group {
- *             "UseCase" { constraint("has an invoke function") { emptyList() } }
+ *             "UseCase" { fileConstraint("has an invoke function") { emptyList() } }
  *         }
  *     }
  * }.role shouldBe "UseCase"
@@ -89,14 +89,14 @@ public class KatachiConstraintNameException internal constructor(
  * @property role the name of the role the constraint was written on.
  * @property declaredAt where the first constraint of that role was written.
  */
-public class KatachiConstraintWithoutLayoutException internal constructor(
+public class KatachiFileConstraintWithoutLayoutException internal constructor(
     /**
      * The name of the role the constraint was written on.
      *
      * ## Example 1: read back which role could not hold a constraint
      * ```kt
-     * shouldThrow<KatachiConstraintWithoutLayoutException> {
-     *     architecture { "UseCase" { constraint { emptyList() } } }
+     * shouldThrow<KatachiFileConstraintWithoutLayoutException> {
+     *     architecture { "UseCase" { fileConstraint { emptyList() } } }
      * }.role shouldBe "UseCase"
      * ```
      */
@@ -106,8 +106,8 @@ public class KatachiConstraintWithoutLayoutException internal constructor(
      *
      * ## Example 1: jump to the constraint that has nothing to be about
      * ```kt
-     * shouldThrow<KatachiConstraintWithoutLayoutException> {
-     *     architecture { "UseCase" { constraint { emptyList() } } }
+     * shouldThrow<KatachiFileConstraintWithoutLayoutException> {
+     *     architecture { "UseCase" { fileConstraint { emptyList() } } }
      * }.declaredAt.fileName shouldBe "ProjectArchitecture.kt"
      * ```
      */
@@ -132,8 +132,8 @@ public class KatachiConstraintWithoutLayoutException internal constructor(
  * ## Example 1: report it rather than treating it as a failed check
  * ```kt
  * try {
- *     projectArchitecture.assert(KonsistCheck())
- * } catch (cause: KatachiConstraintMemoTypeException) {
+ *     projectArchitecture.assert(FileConstraintCheck())
+ * } catch (cause: KatachiFileConstraintMemoTypeException) {
  *     println("scratch key ${cause.key} is used by two checks")
  * }
  * ```
@@ -142,13 +142,13 @@ public class KatachiConstraintWithoutLayoutException internal constructor(
  * @property expected the type the reader asked for.
  * @property actual the type the value already stored under that key has.
  */
-public class KatachiConstraintMemoTypeException internal constructor(
+public class KatachiFileConstraintMemoTypeException internal constructor(
     /**
      * The key, as its `toString()` prints it.
      *
      * ## Example 1: read back which key two checks fought over
      * ```kt
-     * shouldThrow<KatachiConstraintMemoTypeException> {
+     * shouldThrow<KatachiFileConstraintMemoTypeException> {
      *     subject.memo("scope", Int::class) { 1 }
      * }.key shouldBe "scope"
      * ```
@@ -159,7 +159,7 @@ public class KatachiConstraintMemoTypeException internal constructor(
      *
      * ## Example 1: read back the type that was asked for
      * ```kt
-     * shouldThrow<KatachiConstraintMemoTypeException> {
+     * shouldThrow<KatachiFileConstraintMemoTypeException> {
      *     subject.memo("scope", Int::class) { 1 }
      * }.expected shouldBe Int::class
      * ```
@@ -170,7 +170,7 @@ public class KatachiConstraintMemoTypeException internal constructor(
      *
      * ## Example 1: read back the type that was already there
      * ```kt
-     * shouldThrow<KatachiConstraintMemoTypeException> {
+     * shouldThrow<KatachiFileConstraintMemoTypeException> {
      *     subject.memo("scope", Int::class) { 1 }
      * }.actual shouldBe String::class
      * ```

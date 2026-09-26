@@ -7,9 +7,9 @@ import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
 import io.kotest.matchers.types.shouldBeInstanceOf
 import me.tbsten.katachi.InternalKatachiApi
-import me.tbsten.katachi.check.UncheckedConstraint
-import me.tbsten.katachi.check.UncheckedConstraintReason
-import me.tbsten.katachi.check.UnsatisfiedConstraint
+import me.tbsten.katachi.check.UncheckedFileConstraint
+import me.tbsten.katachi.check.UncheckedFileConstraintReason
+import me.tbsten.katachi.check.UnsatisfiedFileConstraint
 import me.tbsten.katachi.check.internal.report
 import me.tbsten.katachi.dsl.files.FsPath
 import me.tbsten.katachi.konsist.KatachiKonsistNoExpectationException
@@ -22,7 +22,7 @@ import me.tbsten.katachi.konsist.KatachiKonsistNoKotlinFilesException
  * [KonsistScopeSpec] is about what the block collects; this is about what comes out the other
  * end, because that text is the only thing a failing test shows.
  */
-class KonsistConstraintSpec : FreeSpec({
+class KonsistFileConstraintSpec : FreeSpec({
     "落ちた制約が 1 件のブロックになる" {
         val violations = konsistRun(
             "src/PublicThing.kt" to PUBLIC_THING_KT,
@@ -31,17 +31,17 @@ class KonsistConstraintSpec : FreeSpec({
             classes().must { it.hasInternalModifier }
         }
 
-        violations.filterIsInstance<UnsatisfiedConstraint>().single().path shouldBe
+        violations.filterIsInstance<UnsatisfiedFileConstraint>().single().path shouldBe
             "src/PublicThing.kt"
 
         val report = violations.report()
-        report shouldContain "Katachi check failed: 1 violation (Constraint: 1)"
+        report shouldContain "Katachi check failed: 1 violation (FileConstraint: 1)"
         // Without a root to resolve against, report() prints the path as the violation carries it.
-        report shouldContain "[UnsatisfiedConstraint] src/PublicThing.kt"
+        report shouldContain "[UnsatisfiedFileConstraint] src/PublicThing.kt"
         // With one, the first line is a file:// URI a reader -- or an agent -- can open as written.
         violations.report(projectRoot = FsPath.of("/repo")) shouldContain
-            "[UnsatisfiedConstraint] file:///repo/src/PublicThing.kt"
-        report shouldContain "Role: domain/UseCase / Constraint: \"規約\""
+            "[UnsatisfiedFileConstraint] file:///repo/src/PublicThing.kt"
+        report shouldContain "Role: domain/UseCase / FileConstraint: \"規約\""
         report shouldContain "Declaration: PublicThing (line 3)"
         report shouldContain "(layout of src)"
         // A constraint block never offers a way to fix itself: what would satisfy an arbitrary
@@ -57,13 +57,13 @@ class KonsistConstraintSpec : FreeSpec({
             classes()
         }
 
-        val unchecked = violations.filterIsInstance<UncheckedConstraint>().single()
-        unchecked.reason shouldBe UncheckedConstraintReason.Failed
+        val unchecked = violations.filterIsInstance<UncheckedFileConstraint>().single()
+        unchecked.reason shouldBe UncheckedFileConstraintReason.Failed
         unchecked.cause.shouldBeInstanceOf<KatachiKonsistNoExpectationException>()
             .role shouldBe "domain/UseCase"
 
         val report = violations.report()
-        report shouldContain "[UncheckedConstraint] src"
+        report shouldContain "[UncheckedFileConstraint] src"
         report shouldContain "Katachi failed while evaluating this constraint"
         report shouldContain "never called must, mustNot or mustBeEmpty"
         report.lines().last() shouldBe "1 constraint could not be evaluated."
@@ -77,24 +77,24 @@ class KonsistConstraintSpec : FreeSpec({
             classes().mustBeEmpty()
         }
 
-        val unchecked = violations.filterIsInstance<UncheckedConstraint>().single()
-        unchecked.reason shouldBe UncheckedConstraintReason.Failed
+        val unchecked = violations.filterIsInstance<UncheckedFileConstraint>().single()
+        unchecked.reason shouldBe UncheckedFileConstraintReason.Failed
         unchecked.cause.shouldBeInstanceOf<KatachiKonsistNoKotlinFilesException>().given shouldBe 1
     }
 
     "制約を評価しなければ NotEvaluated として残る" {
         // The other half of the explicit wiring, seen from this module: `konsist { }` written
-        // and `KonsistCheck()` left out of `assert(...)` is reported rather than passing.
-        val violations = konsistRunWithoutKonsistCheck("src/PublicThing.kt" to PUBLIC_THING_KT) {
+        // and `FileConstraintCheck()` left out of `assert(...)` is reported rather than passing.
+        val violations = konsistRunWithoutFileConstraintCheck("src/PublicThing.kt" to PUBLIC_THING_KT) {
             classes().must { it.hasInternalModifier }
         }
 
-        val unchecked = violations.filterIsInstance<UncheckedConstraint>().single()
-        unchecked.reason shouldBe UncheckedConstraintReason.NotEvaluated
+        val unchecked = violations.filterIsInstance<UncheckedFileConstraint>().single()
+        unchecked.reason shouldBe UncheckedFileConstraintReason.NotEvaluated
         unchecked.cause shouldBe null
 
         val report = violations.report()
         report shouldContain "Nothing evaluated this constraint, so nothing is known about it."
-        report shouldContain "Pass KonsistCheck() to assert()"
+        report shouldContain "Pass FileConstraintCheck() to assert()"
     }
 })

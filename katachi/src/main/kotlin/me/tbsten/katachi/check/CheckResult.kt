@@ -28,7 +28,7 @@ import me.tbsten.katachi.check.internal.assertNoErrors
  * import me.tbsten.katachi.check.ViolationKind
  *
  * class TodoFile(override val path: String) : Violation {
- *     override val kind: ViolationKind = ViolationKind.Constraint
+ *     override val kind: ViolationKind = ViolationKind.FileConstraint
  *     override val severity: Severity = Severity.Error
  *     override val label: String = "TodoFile"
  * }

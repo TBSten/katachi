@@ -1,7 +1,7 @@
 package me.tbsten.katachi.dsl
 
-import me.tbsten.katachi.dsl.internal.ConstraintDeclaration
-import me.tbsten.katachi.dsl.internal.ConstraintSite
+import me.tbsten.katachi.dsl.internal.FileConstraintDeclaration
+import me.tbsten.katachi.dsl.internal.FileConstraintSite
 import me.tbsten.katachi.dsl.internal.GlobContext
 import me.tbsten.katachi.dsl.internal.LayoutNode
 import me.tbsten.katachi.dsl.internal.ModuleContext
@@ -9,7 +9,7 @@ import me.tbsten.katachi.dsl.internal.ModuleIndex
 import me.tbsten.katachi.dsl.internal.ModulePattern
 import me.tbsten.katachi.dsl.internal.captureDeclarationSite
 import me.tbsten.katachi.dsl.internal.chainUnder
-import me.tbsten.katachi.dsl.internal.constraintDeclarationOf
+import me.tbsten.katachi.dsl.internal.fileConstraintDeclarationOf
 import me.tbsten.katachi.dsl.internal.markSynthetic
 import me.tbsten.katachi.dsl.kotlin.ktsFile
 
@@ -45,7 +45,7 @@ internal class LayoutScopeImpl(
      * in is the order a report reads them in, and that order only exists across the whole
      * block.
      */
-    private val sites: MutableList<ConstraintSite>,
+    private val sites: MutableList<FileConstraintSite>,
     /**
      * The site every declaration of this block records, or `null` to read it off the stack.
      * Set for a layout katachi itself wrote; see [me.tbsten.katachi.dsl.internal.isWrittenByKatachi].
@@ -53,7 +53,7 @@ internal class LayoutScopeImpl(
     private val pinnedSite: DeclarationSite? = null,
 ) : LayoutDirectoryScope, ModuleAwareLayoutScope {
     /** Constraints written directly in *this* block. A nested block collects its own. */
-    private val constraints = mutableListOf<ConstraintDeclaration>()
+    private val fileConstraints = mutableListOf<FileConstraintDeclaration>()
 
     override val currentModulePath: String?
         get() = moduleContext?.modulePath
@@ -75,8 +75,8 @@ internal class LayoutScopeImpl(
         container.ignored = true
     }
 
-    override fun constraint(name: String?, declaredAt: DeclarationSite, check: FileSetConstraint) {
-        constraints += constraintDeclarationOf(name = name, declaredAt = declaredAt, check = check)
+    override fun fileConstraint(name: String?, declaredAt: DeclarationSite, check: FileConstraint) {
+        fileConstraints += fileConstraintDeclarationOf(name = name, declaredAt = declaredAt, check = check)
     }
 
     override operator fun String.invoke(block: LayoutDirectoryScope.() -> Unit): LayoutDirectory {
@@ -201,9 +201,9 @@ internal class LayoutScopeImpl(
      * asked about.
      */
     fun closeSite(owned: List<LayoutNode>, anchor: LayoutNode?) {
-        if (constraints.isEmpty()) return
-        sites += ConstraintSite(
-            declarations = constraints.toList(),
+        if (fileConstraints.isEmpty()) return
+        sites += FileConstraintSite(
+            declarations = fileConstraints.toList(),
             owned = owned,
             anchor = anchor,
         )

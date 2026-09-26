@@ -4,12 +4,12 @@ import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.FreeSpec
 import io.kotest.matchers.collections.shouldBeEmpty
 import io.kotest.matchers.shouldBe
-import me.tbsten.katachi.dsl.ConstraintFailure
-import me.tbsten.katachi.dsl.ConstraintSubject
+import me.tbsten.katachi.dsl.FileConstraintFailure
+import me.tbsten.katachi.dsl.FileConstraintSubject
 import me.tbsten.katachi.dsl.DeclarationSite
-import me.tbsten.katachi.dsl.FileSetConstraint
-import me.tbsten.katachi.dsl.KatachiConstraintNameException
-import me.tbsten.katachi.dsl.KatachiConstraintWithoutLayoutException
+import me.tbsten.katachi.dsl.FileConstraint
+import me.tbsten.katachi.dsl.KatachiFileConstraintNameException
+import me.tbsten.katachi.dsl.KatachiFileConstraintWithoutLayoutException
 import me.tbsten.katachi.dsl.internal.ModuleIndex
 import me.tbsten.katachi.dsl.ModuleResolver
 import me.tbsten.katachi.dsl.architecture
@@ -21,7 +21,7 @@ import me.tbsten.katachi.dsl.kotlin.ktFile
 /**
  * Where a constraint was written, and what refuses to be written at all.
  *
- * What a constraint ends up *covering* is [ConstraintCoverageSpec]'s.
+ * What a constraint ends up *covering* is [FileConstraintCoverageSpec]'s.
  *
  * NOTE: このファイルのパッケージを `me.tbsten.katachi.dsl` にしてはいけない。
  * captureDeclarationSite() がライブラリ自身のフレームとして読み飛ばしてしまい、
@@ -29,10 +29,10 @@ import me.tbsten.katachi.dsl.kotlin.ktFile
  */
 
 /** Records how often it was evaluated. Nothing in step 4 evaluates one, which is the point. */
-private class CountingConstraint : FileSetConstraint {
+private class CountingFileConstraint : FileConstraint {
     var invocations: Int = 0
 
-    override fun evaluate(subject: ConstraintSubject): List<ConstraintFailure> {
+    override fun evaluate(subject: FileConstraintSubject): List<FileConstraintFailure> {
         invocations++
         return emptyList()
     }
@@ -41,21 +41,21 @@ private class CountingConstraint : FileSetConstraint {
 /** The `kotlin` source directory, written out so that this spec needs no module package. */
 private const val KOTLIN_DIRECTORY: String = "kotlin"
 
-class ConstraintDeclarationSpec : FreeSpec({
+class FileConstraintDeclarationSpec : FreeSpec({
     "宣言位置" - {
         "名前を省略しても利用者の行を指す" {
             val arch = architecture {
                 "domain".group {
                     "UseCase" {
-                        constraint(check = silent())
+                        fileConstraint(check = silent())
                         layout { "useCase" / "*.kt".file() }
                     }
                 }
             }
 
             // この行番号はファイル内の位置に依存する。上のブロックを動かしたら直すこと。
-            arch.declaredConstraints().single().declaredAt shouldBe
-                DeclarationSite("ConstraintDeclarationSpec.kt", 50)
+            arch.declaredFileConstraints().single().declaredAt shouldBe
+                DeclarationSite("FileConstraintDeclarationSpec.kt", 50)
         }
 
         "名前を付けても利用者の行を指す" {
@@ -64,7 +64,7 @@ class ConstraintDeclarationSpec : FreeSpec({
                     "UseCase" {
                         layout {
                             "useCase" {
-                                constraint("invoke を持つこと", check = silent())
+                                fileConstraint("invoke を持つこと", check = silent())
                                 "*.kt".file()
                             }
                         }
@@ -73,37 +73,37 @@ class ConstraintDeclarationSpec : FreeSpec({
             }
 
             // この行番号はファイル内の位置に依存する。
-            val declared = arch.declaredConstraints().single()
+            val declared = arch.declaredFileConstraints().single()
             declared.name shouldBe "invoke を持つこと"
-            declared.declaredAt shouldBe DeclarationSite("ConstraintDeclarationSpec.kt", 67)
+            declared.declaredAt shouldBe DeclarationSite("FileConstraintDeclarationSpec.kt", 67)
         }
 
         "declaredAt を明示で渡せる" {
             val arch = architecture {
                 "domain".group {
                     "UseCase" {
-                        constraint("x", DeclarationSite("DomainRules.kt", 12), silent())
+                        fileConstraint("x", DeclarationSite("DomainRules.kt", 12), silent())
                         layout { "useCase" / "*.kt".file() }
                     }
                 }
             }
 
-            arch.declaredConstraints().single().declaredAt shouldBe
+            arch.declaredFileConstraints().single().declaredAt shouldBe
                 DeclarationSite("DomainRules.kt", 12)
         }
     }
 
     "宣言しただけでは走らない" - {
-        "architecture { } の構築でも layout の評価でも FileSetConstraint は呼ばれない" {
-            val counting = CountingConstraint()
+        "architecture { } の構築でも layout の評価でも FileConstraint は呼ばれない" {
+            val counting = CountingFileConstraint()
 
             val arch = architecture {
                 "domain".group {
                     "UseCase" {
-                        constraint("role wide", check = counting)
+                        fileConstraint("role wide", check = counting)
                         layout {
                             "useCase" {
-                                constraint("in a block", check = counting)
+                                fileConstraint("in a block", check = counting)
                                 "*.kt".file()
                             }
                         }
@@ -112,18 +112,18 @@ class ConstraintDeclarationSpec : FreeSpec({
             }
 
             counting.invocations shouldBe 0
-            arch.declaredConstraints().size shouldBe 2
+            arch.declaredFileConstraints().size shouldBe 2
             counting.invocations shouldBe 0
         }
     }
 
     "制約名の検証" - {
         "空白だけの名前は宣言時に落ちる" {
-            val thrown = shouldThrow<KatachiConstraintNameException> {
+            val thrown = shouldThrow<KatachiFileConstraintNameException> {
                 architecture {
                     "domain".group {
                         "UseCase" {
-                            constraint("   ", check = silent())
+                            fileConstraint("   ", check = silent())
                             layout { "useCase" / "*.kt".file() }
                         }
                     }
@@ -131,15 +131,15 @@ class ConstraintDeclarationSpec : FreeSpec({
             }
 
             thrown.name shouldBe "   "
-            thrown.declaredAt.fileName shouldBe "ConstraintDeclarationSpec.kt"
+            thrown.declaredAt.fileName shouldBe "FileConstraintDeclarationSpec.kt"
         }
 
         "改行を含む名前は宣言時に落ちる" {
-            val thrown = shouldThrow<KatachiConstraintNameException> {
+            val thrown = shouldThrow<KatachiFileConstraintNameException> {
                 architecture {
                     "domain".group {
                         "UseCase" {
-                            constraint("invoke を\n持つこと", check = silent())
+                            fileConstraint("invoke を\n持つこと", check = silent())
                             layout { "useCase" / "*.kt".file() }
                         }
                     }
@@ -158,28 +158,28 @@ class ConstraintDeclarationSpec : FreeSpec({
             val arch = architecture {
                 "domain".group {
                     "UseCase" {
-                        layout { "useCase" { constraint("   ", check = silent()) } }
+                        layout { "useCase" { fileConstraint("   ", check = silent()) } }
                     }
                 }
             }
 
-            shouldThrow<KatachiConstraintNameException> { arch.flattenLayout() }
+            shouldThrow<KatachiFileConstraintNameException> { arch.flattenLayout() }
                 .name shouldBe "   "
         }
     }
 
     "layout を持たない役割" - {
         "制約を書くと宣言時に落ちる" {
-            val thrown = shouldThrow<KatachiConstraintWithoutLayoutException> {
+            val thrown = shouldThrow<KatachiFileConstraintWithoutLayoutException> {
                 architecture {
                     "domain".group {
-                        "UseCase" { constraint("invoke を持つこと", check = silent()) }
+                        "UseCase" { fileConstraint("invoke を持つこと", check = silent()) }
                     }
                 }
             }
 
             thrown.role shouldBe "UseCase"
-            thrown.declaredAt.fileName shouldBe "ConstraintDeclarationSpec.kt"
+            thrown.declaredAt.fileName shouldBe "FileConstraintDeclarationSpec.kt"
         }
 
         "制約を書かなければ落ちない" {
@@ -191,20 +191,20 @@ class ConstraintDeclarationSpec : FreeSpec({
 
     "flattenLayout の出力は制約の有無で変わらない" - {
         "module を含む layout のエントリが完全に一致する" {
-            val withConstraints = architecture {
+            val withFileConstraints = architecture {
                 "domain".group {
                     "UseCase" {
-                        constraint("role wide", check = silent())
+                        fileConstraint("role wide", check = silent())
                         layout {
                             ":core:domain".module {
-                                constraint("in core/domain", check = silent())
+                                fileConstraint("in core/domain", check = silent())
                                 mainSourceSet / KOTLIN_DIRECTORY / "*UseCase".ktFile()
                             }
                         }
                     }
                 }
             }
-            val withoutConstraints = architecture {
+            val withoutFileConstraints = architecture {
                 "domain".group {
                     "UseCase" {
                         layout {
@@ -216,8 +216,8 @@ class ConstraintDeclarationSpec : FreeSpec({
                 }
             }
 
-            withConstraints.flattenLayout().shape() shouldBe withoutConstraints.flattenLayout().shape()
-            withConstraints.flattenLayout().shape() shouldBe listOf(
+            withFileConstraints.flattenLayout().shape() shouldBe withoutFileConstraints.flattenLayout().shape()
+            withFileConstraints.flattenLayout().shape() shouldBe listOf(
                 "core [Directory]",
                 "core/domain [Directory]",
                 "core/domain/build [Ignore]",
@@ -230,19 +230,19 @@ class ConstraintDeclarationSpec : FreeSpec({
         }
 
         "Role.flattenLayout も一致する" {
-            val withConstraint = architecture {
+            val withFileConstraint = architecture {
                 "domain".group {
                     "UseCase" {
                         layout {
                             "useCase" {
-                                constraint("invoke を持つこと", check = silent())
+                                fileConstraint("invoke を持つこと", check = silent())
                                 "*UseCase".ktFile()
                             }
                         }
                     }
                 }
             }
-            val withoutConstraint = architecture {
+            val withoutFileConstraint = architecture {
                 "domain".group {
                     "UseCase" {
                         layout { "useCase" { "*UseCase".ktFile() } }
@@ -251,8 +251,8 @@ class ConstraintDeclarationSpec : FreeSpec({
             }
 
             val index = ModuleIndex.unresolved(ModuleResolver.Conventional)
-            withConstraint.allRoles.single().flattenLayout(index).shape() shouldBe
-                withoutConstraint.allRoles.single().flattenLayout(index).shape()
+            withFileConstraint.allRoles.single().flattenLayout(index).shape() shouldBe
+                withoutFileConstraint.allRoles.single().flattenLayout(index).shape()
         }
     }
 })

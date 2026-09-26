@@ -27,7 +27,7 @@ internal fun rolePage(
     appendTitle(role.displayName, role.metadata)
     appendDescription(role.metadata)
     appendPlacements(placements)
-    appendConstraints(constraintNames)
+    appendFileConstraints(constraintNames)
     appendExamples(role)
     appendDocumentSections(role.metadata)
     appendLine()
@@ -61,7 +61,7 @@ private fun StringBuilder.appendPlacements(placements: List<Placement>) {
  * Only the named ones reach here -- an unnamed constraint has nothing to print -- which is the
  * point of being able to name one: writing a name is what puts a rule on the page.
  */
-private fun StringBuilder.appendConstraints(constraintNames: List<String>) {
+private fun StringBuilder.appendFileConstraints(constraintNames: List<String>) {
     if (constraintNames.isEmpty()) return
     append(SECTION_BREAK)
     append("## 制約")

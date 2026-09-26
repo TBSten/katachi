@@ -3,7 +3,7 @@ package me.tbsten.katachi.konsist.internal
 import com.lemonappdev.konsist.api.Konsist
 import com.lemonappdev.konsist.api.container.KoScope
 import java.io.File
-import me.tbsten.katachi.dsl.ConstraintSubject
+import me.tbsten.katachi.dsl.FileConstraintSubject
 import me.tbsten.katachi.konsist.KatachiKonsistNoKotlinFilesException
 import me.tbsten.katachi.konsist.KatachiKonsistScopeIncompleteException
 import me.tbsten.katachi.konsist.KonsistScope
@@ -41,7 +41,7 @@ private data class ScopeKey(val directories: List<String>)
  * @throws KatachiKonsistScopeIncompleteException when the narrowing loses a file, which can
  *   only mean katachi's own absolute paths and Konsist's have stopped matching.
  */
-internal fun konsistScopeOf(subject: ConstraintSubject): KoScope {
+internal fun konsistScopeOf(subject: FileConstraintSubject): KoScope {
     val wanted = subject.files
         .filter { it.endsWith(PARSED_EXTENSION) }
         .map { "${subject.projectRoot}/$it" }

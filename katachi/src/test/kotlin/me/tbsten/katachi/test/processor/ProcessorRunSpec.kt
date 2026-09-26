@@ -360,7 +360,7 @@ private object FoundProcessor : ArchitectureProcessorNoArg<List<Violation>> {
 
 private object FoundViolation : Violation {
     override val path: String = "app/src/Foo.kt"
-    override val kind: ViolationKind = ViolationKind.Constraint
+    override val kind: ViolationKind = ViolationKind.FileConstraint
     override val severity: Severity = Severity.Warning
     override val label: String = "FoundIt"
 }

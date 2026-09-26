@@ -121,8 +121,8 @@ class RolePageSpec : FreeSpec({
             val arch = architecture {
                 "domain".group {
                     "UseCase" {
-                        constraint("invoke を持つこと") { emptyList() }
-                        constraint { emptyList() }
+                        fileConstraint("invoke を持つこと") { emptyList() }
+                        fileConstraint { emptyList() }
                         layout { "useCase" / "*UseCase".ktFile() }
                     }
                 }
@@ -144,7 +144,7 @@ class RolePageSpec : FreeSpec({
                     "UseCase" {
                         layout {
                             "useCase" {
-                                constraint("public であること") { emptyList() }
+                                fileConstraint("public であること") { emptyList() }
                                 "*UseCase".ktFile()
                             }
                         }
@@ -159,10 +159,10 @@ class RolePageSpec : FreeSpec({
             val arch = architecture {
                 "domain".group {
                     "UseCase" {
-                        constraint("役割ぜんたいの制約") { emptyList() }
+                        fileConstraint("役割ぜんたいの制約") { emptyList() }
                         layout {
                             "useCase" {
-                                constraint("この置き場所だけの制約") { emptyList() }
+                                fileConstraint("この置き場所だけの制約") { emptyList() }
                                 "*UseCase".ktFile()
                             }
                         }
@@ -181,7 +181,7 @@ class RolePageSpec : FreeSpec({
             val arch = architecture {
                 "domain".group {
                     "UseCase" {
-                        constraint { emptyList() }
+                        fileConstraint { emptyList() }
                         layout { "useCase" / "*UseCase".ktFile() }
                     }
                 }
@@ -194,11 +194,11 @@ class RolePageSpec : FreeSpec({
             val arch = architecture {
                 "domain".group {
                     "UseCase" {
-                        constraint("ユースケースの制約") { emptyList() }
+                        fileConstraint("ユースケースの制約") { emptyList() }
                         layout { "useCase" / "*UseCase".ktFile() }
                     }
                     "Repository" {
-                        constraint("リポジトリの制約") { emptyList() }
+                        fileConstraint("リポジトリの制約") { emptyList() }
                         layout { "repository" / "*Repository".ktFile() }
                     }
                 }
@@ -322,7 +322,7 @@ class RolePageSpec : FreeSpec({
                     summary = "1つの振る舞い"
                     description = "本文。"
                     example("GetUserUseCase", "ユーザーを取得する")
-                    constraint("public であること") { emptyList() }
+                    fileConstraint("public であること") { emptyList() }
                     layout { "useCase" / "*UseCase".ktFile() }
                 }
             }

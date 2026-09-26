@@ -10,7 +10,7 @@ import me.tbsten.katachi.internal.displayPath
 /**
  * Indent of everything inside a block. A fragment meant to be copied adds another step.
  *
- * `internal` rather than private so that `ConstraintBlocks.kt` — split off this file for size
+ * `internal` rather than private so that `FileConstraintBlocks.kt` — split off this file for size
  * — indents to the same depth by construction rather than by copying the string.
  */
 internal const val STEP: String = "  "
@@ -237,7 +237,7 @@ private fun uncheckedLines(violations: List<Violation>): List<String> = buildLis
         }
         add("$paths $noun could not be checked.")
     }
-    val constraints = violations.count { it is UncheckedConstraint }
+    val constraints = violations.count { it is UncheckedFileConstraint }
     if (constraints > 0) {
         add("$constraints ${if (constraints == 1) "constraint" else "constraints"} could not be evaluated.")
     }
@@ -252,8 +252,8 @@ private fun blockOf(violation: Violation, root: String?): List<String> = when (v
     is UncheckedFile -> uncheckedFileBlock(violation, root)
     is UncheckedDirectory -> uncheckedDirectoryBlock(violation, root)
     is UncheckedCheck -> uncheckedCheckBlock(violation, root)
-    is UnsatisfiedConstraint -> unsatisfiedConstraintBlock(violation, root)
-    is UncheckedConstraint -> uncheckedConstraintBlock(violation, root)
+    is UnsatisfiedFileConstraint -> unsatisfiedFileConstraintBlock(violation, root)
+    is UncheckedFileConstraint -> uncheckedFileConstraintBlock(violation, root)
     is AmbiguousLayout -> ambiguousLayoutBlock(violation, root)
     is MissingDescription -> missingDescriptionBlock(violation, root)
     // A violation from outside katachi. The block is the first line plus the values it states

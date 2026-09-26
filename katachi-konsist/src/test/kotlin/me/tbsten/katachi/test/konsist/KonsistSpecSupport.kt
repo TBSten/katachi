@@ -4,7 +4,7 @@ package me.tbsten.katachi.test.konsist
 
 import me.tbsten.katachi.ExperimentalKatachiApi
 import me.tbsten.katachi.InternalKatachiApi
-import me.tbsten.katachi.check.KonsistCheck
+import me.tbsten.katachi.check.FileConstraintCheck
 import me.tbsten.katachi.check.Violation
 import me.tbsten.katachi.check.internal.validate
 import me.tbsten.katachi.dsl.architecture
@@ -18,7 +18,7 @@ import me.tbsten.katachi.konsist.konsist
  * `konsist { }`, and one run of the check over it.
  *
  * Everything is end-to-end on purpose rather than for want of a smaller seam.
- * [me.tbsten.katachi.dsl.ConstraintSubject] has an `internal constructor`, so this module
+ * [me.tbsten.katachi.dsl.FileConstraintSubject] has an `internal constructor`, so this module
  * genuinely cannot build one — and that is the point being kept: if the konsist integration
  * ever needs something `:katachi` does not publish, it stops compiling rather than quietly
  * opting in. Adding an `@InternalKatachiApi` factory to make these specs smaller would throw
@@ -46,15 +46,15 @@ internal fun konsistRun(
             }
         }
     }
-    projectArchitecture.validate(RealFileSystem(root), KonsistCheck())
+    projectArchitecture.validate(RealFileSystem(root), FileConstraintCheck())
 }
 
 /**
- * The same run with `KonsistCheck()` left out of the arguments — the mistake the unevaluated
+ * The same run with `FileConstraintCheck()` left out of the arguments — the mistake the unevaluated
  * guard exists for.
  */
 @OptIn(ExperimentalKatachiApi::class)
-internal fun konsistRunWithoutKonsistCheck(
+internal fun konsistRunWithoutFileConstraintCheck(
     vararg sources: Pair<String, String>,
     declarations: List<String> = listOf("*.kt"),
     block: KonsistScope.() -> Unit,

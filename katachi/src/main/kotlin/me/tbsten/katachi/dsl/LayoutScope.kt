@@ -39,9 +39,9 @@ package me.tbsten.katachi.dsl
  *
  * ## What a layout says beyond where files live
  *
- * [ConstraintScope] comes with this one, so `constraint { }` can be written in any block of a
+ * [FileConstraintScope] comes with this one, so `fileConstraint { }` can be written in any block of a
  * `layout { }`. What it covers is the block it was written in: the entries of that subtree and
- * nothing else. See [ConstraintScope.constraint].
+ * nothing else. See [FileConstraintScope.fileConstraint].
  *
  * ## Example 1: Declaring a file directly under the project root, and a nested one
  * ```kt
@@ -53,7 +53,7 @@ package me.tbsten.katachi.dsl
  * ```
  */
 @KatachiDsl
-public sealed interface LayoutScope : ConstraintScope {
+public sealed interface LayoutScope : FileConstraintScope {
     /**
      * Declares a directory. Nest the blocks to walk down the tree.
      *

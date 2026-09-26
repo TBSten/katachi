@@ -6,7 +6,7 @@ import me.tbsten.katachi.dsl.Role
 /**
  * A constraint said no about a file that exists.
  *
- * The block a `constraint { }` — or a backend's `konsist { }` — holds is an arbitrary Kotlin
+ * The block a `fileConstraint { }` — or a backend's `konsist { }` — holds is an arbitrary Kotlin
  * expression, so katachi knows only two things about a rejection: which file it was about, and
  * optionally which declaration inside it. That is deliberately all a block of this kind
  * prints: there is no "How to fix", because what would satisfy the rule is the rule's own
@@ -18,18 +18,18 @@ import me.tbsten.katachi.dsl.Role
  *
  * ## Example 1: list the files a constraint rejected
  * ```kt
- * projectArchitecture.validate(KonsistCheck())
- *     .filterIsInstance<UnsatisfiedConstraint>()
+ * projectArchitecture.validate(FileConstraintCheck())
+ *     .filterIsInstance<UnsatisfiedFileConstraint>()
  *     .map { it.path } shouldBe listOf("core/domain/useCase/Helper.kt")
  * ```
  */
-public class UnsatisfiedConstraint internal constructor(
+public class UnsatisfiedFileConstraint internal constructor(
     /**
      * The rejected file, project relative — one of the files the constraint was handed.
      *
      * ## Example 1: open the file a rule rejected
      * ```kt
-     * violations.filterIsInstance<UnsatisfiedConstraint>().map { it.path }
+     * violations.filterIsInstance<UnsatisfiedFileConstraint>().map { it.path }
      * ```
      */
     override val path: String,
@@ -38,7 +38,7 @@ public class UnsatisfiedConstraint internal constructor(
      *
      * ## Example 1: name the class a rule rejected
      * ```kt
-     * violations.filterIsInstance<UnsatisfiedConstraint>().single().declaration shouldBe "Helper"
+     * violations.filterIsInstance<UnsatisfiedFileConstraint>().single().declaration shouldBe "Helper"
      * ```
      */
     public val declaration: String?,
@@ -47,7 +47,7 @@ public class UnsatisfiedConstraint internal constructor(
      *
      * ## Example 1: jump to the rejected declaration
      * ```kt
-     * violations.filterIsInstance<UnsatisfiedConstraint>().single().line shouldBe 12
+     * violations.filterIsInstance<UnsatisfiedFileConstraint>().single().line shouldBe 12
      * ```
      */
     public val line: Int?,
@@ -56,7 +56,7 @@ public class UnsatisfiedConstraint internal constructor(
      *
      * ## Example 1: group rejections by role
      * ```kt
-     * violations.filterIsInstance<UnsatisfiedConstraint>().groupBy { it.role.qualifiedName }
+     * violations.filterIsInstance<UnsatisfiedFileConstraint>().groupBy { it.role.qualifiedName }
      * ```
      */
     public val role: Role,
@@ -65,7 +65,7 @@ public class UnsatisfiedConstraint internal constructor(
      *
      * ## Example 1: tell two rules of one role apart
      * ```kt
-     * violations.filterIsInstance<UnsatisfiedConstraint>().map { it.constraintName }
+     * violations.filterIsInstance<UnsatisfiedFileConstraint>().map { it.constraintName }
      * ```
      */
     public val constraintName: String?,
@@ -74,7 +74,7 @@ public class UnsatisfiedConstraint internal constructor(
      *
      * ## Example 1: say which module a wildcard constraint was evaluated for
      * ```kt
-     * violations.filterIsInstance<UnsatisfiedConstraint>().single().layoutPath shouldBe "feature/cart"
+     * violations.filterIsInstance<UnsatisfiedFileConstraint>().single().layoutPath shouldBe "feature/cart"
      * ```
      */
     public val layoutPath: String?,
@@ -83,15 +83,15 @@ public class UnsatisfiedConstraint internal constructor(
      *
      * ## Example 1: point back at the line that declared the rule
      * ```kt
-     * violations.filterIsInstance<UnsatisfiedConstraint>().single().declaredAt.fileName shouldBe
+     * violations.filterIsInstance<UnsatisfiedFileConstraint>().single().declaredAt.fileName shouldBe
      *     "ProjectArchitecture.kt"
      * ```
      */
     public val declaredAt: DeclarationSite,
 ) : Violation {
-    override val kind: ViolationKind get() = ViolationKind.Constraint
+    override val kind: ViolationKind get() = ViolationKind.FileConstraint
     override val severity: Severity get() = Severity.Error
-    override val label: String get() = "UnsatisfiedConstraint"
+    override val label: String get() = "UnsatisfiedFileConstraint"
     override fun toString(): String = "[$label] $path"
 }
 
@@ -104,19 +104,19 @@ public class UnsatisfiedConstraint internal constructor(
  *
  * ## Example 1: tell a forgotten check apart from a broken rule
  * ```kt
- * violations.filterIsInstance<UncheckedConstraint>().map { it.reason } shouldBe
- *     listOf(UncheckedConstraintReason.NotEvaluated)
+ * violations.filterIsInstance<UncheckedFileConstraint>().map { it.reason } shouldBe
+ *     listOf(UncheckedFileConstraintReason.NotEvaluated)
  * ```
  */
-public enum class UncheckedConstraintReason {
+public enum class UncheckedFileConstraintReason {
     /**
-     * No check handed to `assert(...)` evaluated it — most often `KonsistCheck()` was left
+     * No check handed to `assert(...)` evaluated it — most often `FileConstraintCheck()` was left
      * out of the arguments.
      *
      * ## Example 1: catch the run that forgot to evaluate its constraints
      * ```kt
-     * violations.filterIsInstance<UncheckedConstraint>()
-     *     .filter { it.reason == UncheckedConstraintReason.NotEvaluated }
+     * violations.filterIsInstance<UncheckedFileConstraint>()
+     *     .filter { it.reason == UncheckedFileConstraintReason.NotEvaluated }
      * ```
      */
     NotEvaluated,
@@ -126,8 +126,8 @@ public enum class UncheckedConstraintReason {
      *
      * ## Example 1: read what stopped a constraint
      * ```kt
-     * violations.filterIsInstance<UncheckedConstraint>()
-     *     .filter { it.reason == UncheckedConstraintReason.Failed }
+     * violations.filterIsInstance<UncheckedFileConstraint>()
+     *     .filter { it.reason == UncheckedFileConstraintReason.Failed }
      *     .map { it.cause }
      * ```
      */
@@ -138,44 +138,44 @@ public enum class UncheckedConstraintReason {
  * A constraint nothing could answer for, so the run is a partial result.
  *
  * This is the violation that keeps `konsist { }` from being quietly decorative. A constraint
- * declared and never evaluated — because `KonsistCheck()` was not passed to `assert(...)` —
+ * declared and never evaluated — because `FileConstraintCheck()` was not passed to `assert(...)` —
  * is the worst way this library can break: rules exist, code breaks them, the test is green.
  * So a constraint nobody took responsibility for is itself a violation.
  *
  * ## Example 1: notice that a run evaluated no constraints
  * ```kt
  * projectArchitecture.validate()
- *     .filterIsInstance<UncheckedConstraint>()
- *     .map { it.reason } shouldBe listOf(UncheckedConstraintReason.NotEvaluated)
+ *     .filterIsInstance<UncheckedFileConstraint>()
+ *     .map { it.reason } shouldBe listOf(UncheckedFileConstraintReason.NotEvaluated)
  * ```
  */
-public class UncheckedConstraint internal constructor(
+public class UncheckedFileConstraint internal constructor(
     /**
      * Where to start looking: the directory the constraint is anchored at, or — when the
      * layout declared no directory at all — the file the constraint was written in.
      *
      * ## Example 1: read the path a report opens the block with
      * ```kt
-     * violations.filterIsInstance<UncheckedConstraint>().single().path shouldBe "core/domain/useCase"
+     * violations.filterIsInstance<UncheckedFileConstraint>().single().path shouldBe "core/domain/useCase"
      * ```
      */
     override val path: String,
     /**
-     * Which of the two ways nothing is known. See [UncheckedConstraintReason].
+     * Which of the two ways nothing is known. See [UncheckedFileConstraintReason].
      *
      * ## Example 1: branch on why a constraint went unanswered
      * ```kt
-     * violations.filterIsInstance<UncheckedConstraint>().single().reason shouldBe
-     *     UncheckedConstraintReason.Failed
+     * violations.filterIsInstance<UncheckedFileConstraint>().single().reason shouldBe
+     *     UncheckedFileConstraintReason.Failed
      * ```
      */
-    public val reason: UncheckedConstraintReason,
+    public val reason: UncheckedFileConstraintReason,
     /**
      * The role whose layout the constraint was written in.
      *
      * ## Example 1: say which role lost a rule
      * ```kt
-     * violations.filterIsInstance<UncheckedConstraint>().single().role.qualifiedName shouldBe
+     * violations.filterIsInstance<UncheckedFileConstraint>().single().role.qualifiedName shouldBe
      *     "domain/UseCase"
      * ```
      */
@@ -185,7 +185,7 @@ public class UncheckedConstraint internal constructor(
      *
      * ## Example 1: list the rules a run could not answer for
      * ```kt
-     * violations.filterIsInstance<UncheckedConstraint>().mapNotNull { it.constraintName }
+     * violations.filterIsInstance<UncheckedFileConstraint>().mapNotNull { it.constraintName }
      * ```
      */
     public val constraintName: String?,
@@ -194,7 +194,7 @@ public class UncheckedConstraint internal constructor(
      *
      * ## Example 1: say which module the unanswered rule belonged to
      * ```kt
-     * violations.filterIsInstance<UncheckedConstraint>().single().layoutPath shouldBe "feature/home"
+     * violations.filterIsInstance<UncheckedFileConstraint>().single().layoutPath shouldBe "feature/home"
      * ```
      */
     public val layoutPath: String?,
@@ -203,23 +203,23 @@ public class UncheckedConstraint internal constructor(
      *
      * ## Example 1: jump to the rule to delete or to start evaluating
      * ```kt
-     * violations.filterIsInstance<UncheckedConstraint>().single().declaredAt.lineNumber
+     * violations.filterIsInstance<UncheckedFileConstraint>().single().declaredAt.lineNumber
      * ```
      */
     public val declaredAt: DeclarationSite,
     /**
-     * What stopped it, or `null` for [UncheckedConstraintReason.NotEvaluated] — where nothing
+     * What stopped it, or `null` for [UncheckedFileConstraintReason.NotEvaluated] — where nothing
      * was tried, so nothing threw.
      *
      * ## Example 1: read the failure behind a broken rule
      * ```kt
-     * violations.filterIsInstance<UncheckedConstraint>().single().cause.shouldNotBeNull()
+     * violations.filterIsInstance<UncheckedFileConstraint>().single().cause.shouldNotBeNull()
      * ```
      */
     public val cause: Throwable?,
 ) : Violation {
     override val kind: ViolationKind get() = ViolationKind.Failed
     override val severity: Severity get() = Severity.Error
-    override val label: String get() = "UncheckedConstraint"
+    override val label: String get() = "UncheckedFileConstraint"
     override fun toString(): String = "[$label] $path"
 }

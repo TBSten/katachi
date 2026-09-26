@@ -77,7 +77,7 @@ const val PACKAGE_MATCHES_PATH_RULE: String = "package 宣言がファイルの�
  * The layers after [layer], worded to fit on the one line a constraint name gets.
  *
  * The hand-written spec this replaced opened its failure with the whole table, so that a
- * reader saw the rule and not only the breach. An `[UnsatisfiedConstraint]` block has no room
+ * reader saw the rule and not only the breach. An `[UnsatisfiedFileConstraint]` block has no room
  * for a table, so the rule is folded into the constraint's name instead: the report line reads
  * `docs / template / konsist を import しないこと`.
  */
@@ -87,7 +87,7 @@ fun laterLayersOf(layer: String): String =
 /**
  * A predicate selecting files that import a layer after [layer].
  *
- * Deliberately **not** a function that wraps `konsist { }`. `ConstraintScope.constraint`
+ * Deliberately **not** a function that wraps `konsist { }`. `FileConstraintScope.fileConstraint`
  * captures the first stack frame outside katachi as the declaration site, so a helper declared
  * *here* would make every layer role's report point at this file — and `konsist { }` has no
  * parameter for passing a site through. Returning only the predicate keeps the declaration in

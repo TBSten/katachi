@@ -51,19 +51,19 @@ class KatachiEntryPointSourceTest {
     void processorsAreSortedByKey() throws ReflectiveOperationException {
         Map<String, String> inOrder = new LinkedHashMap<>();
         inOrder.put("layout", "me.tbsten.katachi.check.LayoutCheck");
-        inOrder.put("konsist", "me.tbsten.katachi.check.KonsistCheck");
+        inOrder.put("fileConstraint", "me.tbsten.katachi.check.FileConstraintCheck");
 
         Map<String, String> reversed = new LinkedHashMap<>();
-        reversed.put("konsist", "me.tbsten.katachi.check.KonsistCheck");
+        reversed.put("fileConstraint", "me.tbsten.katachi.check.FileConstraintCheck");
         reversed.put("layout", "me.tbsten.katachi.check.LayoutCheck");
 
         String fromInOrder = render("com.example.projectArchitecture", inOrder);
         String fromReversed = render("com.example.projectArchitecture", reversed);
 
         assertEquals(fromInOrder, fromReversed);
-        int konsistIndex = fromInOrder.indexOf("\"konsist\"");
+        int fileConstraintIndex = fromInOrder.indexOf("\"fileConstraint\"");
         int layoutIndex = fromInOrder.indexOf("\"layout\"");
-        assertTrue(konsistIndex >= 0 && konsistIndex < layoutIndex, "expected konsist before layout:\n" + fromInOrder);
+        assertTrue(fileConstraintIndex >= 0 && fileConstraintIndex < layoutIndex, "expected fileConstraint before layout:\n" + fromInOrder);
     }
 
     @Test

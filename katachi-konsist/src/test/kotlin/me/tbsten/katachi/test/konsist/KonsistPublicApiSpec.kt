@@ -21,7 +21,7 @@ import java.io.File
  * it guards.
  *
  * TODO: decide whether the stricter reading is worth two implementations of one rule, or
- *   whether this spec should go the way `ConstraintApiKdocSpec` did once the constraint landed.
+ *   whether this spec should go the way `FileConstraintApiKdocSpec` did once the constraint landed.
  */
 
 /** What a KDoc has to hold. The number after it is the example's own. */

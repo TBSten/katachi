@@ -5,7 +5,7 @@ import me.tbsten.katachi.dsl.DeclarationSite
 import me.tbsten.katachi.dsl.Group
 import me.tbsten.katachi.dsl.GroupScope
 import me.tbsten.katachi.dsl.GroupScopeImpl
-import me.tbsten.katachi.dsl.KatachiConstraintWithoutLayoutException
+import me.tbsten.katachi.dsl.KatachiFileConstraintWithoutLayoutException
 import me.tbsten.katachi.dsl.Role
 import me.tbsten.katachi.dsl.RoleScope
 import me.tbsten.katachi.dsl.RoleScopeImpl
@@ -46,7 +46,7 @@ internal fun declareGroup(
  *
  * The name is reserved before [block] runs, for the same reason as in `declareGroup`.
  *
- * @throws KatachiConstraintWithoutLayoutException when the role wrote a constraint but no
+ * @throws KatachiFileConstraintWithoutLayoutException when the role wrote a constraint but no
  *   `layout { }`. It is decided here, at the end of the block, because that is the first
  *   moment both lists are complete — and it needs nothing else: no file is read, and no
  *   module index is consulted.
@@ -66,17 +66,17 @@ internal fun declareRole(
     // A wildcard module key that currently matches nothing still counts as a layout: such a
     // role is a place waiting to fill up, which is the same thing `flattenLayout` already
     // decides when it leaves those declarations out of `required`.
-    if (scope.constraints.isNotEmpty() && scope.layouts.isEmpty()) {
-        throw KatachiConstraintWithoutLayoutException(
+    if (scope.fileConstraints.isNotEmpty() && scope.layouts.isEmpty()) {
+        throw KatachiFileConstraintWithoutLayoutException(
             role = name,
-            declaredAt = scope.constraints.first().declaredAt,
+            declaredAt = scope.fileConstraints.first().declaredAt,
         )
     }
     return Role(
         name = name,
         metadata = scope.metadata.build(),
         layouts = scope.layouts.toList(),
-        constraints = scope.constraints.toList(),
+        fileConstraints = scope.fileConstraints.toList(),
         templates = scope.templates.toList(),
         groupPath = groupPath,
         declaredAt = declaredAt,

@@ -212,7 +212,7 @@ class GenerateDocumentationSpec : FreeSpec({
             val arch = architecture {
                 "domain".group {
                     "UseCase" {
-                        constraint("走らせてはいけない制約") { error("この制約は評価されたら失敗する") }
+                        fileConstraint("走らせてはいけない制約") { error("この制約は評価されたら失敗する") }
                         layout { "domain" { "*UseCase.kt".file() } }
                     }
                 }

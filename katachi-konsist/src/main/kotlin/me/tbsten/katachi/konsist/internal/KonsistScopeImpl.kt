@@ -6,7 +6,7 @@ import com.lemonappdev.konsist.api.provider.KoLocationProvider
 import com.lemonappdev.konsist.api.provider.KoNameProvider
 import com.lemonappdev.konsist.api.provider.KoPathProvider
 import java.io.File
-import me.tbsten.katachi.dsl.ConstraintFailure
+import me.tbsten.katachi.dsl.FileConstraintFailure
 import me.tbsten.katachi.konsist.KatachiKonsistUnlocatableDeclarationException
 import me.tbsten.katachi.konsist.KonsistScope
 
@@ -36,7 +36,7 @@ internal data class RejectedElement(
  *
  * It also counts how many times it was asked anything. A block that queries Konsist and never
  * ends the query rejects nothing, which is indistinguishable in a report from a rule every
- * file satisfies — so [expectations] is what lets `KonsistConstraint` refuse that answer
+ * file satisfies — so [expectations] is what lets `KonsistFileConstraint` refuse that answer
  * instead of returning it.
  */
 internal class KonsistScopeImpl(scope: KoScope) : KonsistScope, KoScope by scope {
@@ -108,8 +108,8 @@ private fun lineOf(element: KoBaseProvider, path: String): Int? {
 }
 
 /** One rejection, with its path written the way every other path in a report is written. */
-internal fun RejectedElement.toConstraintFailure(projectRoot: String): ConstraintFailure =
-    ConstraintFailure(
+internal fun RejectedElement.toFileConstraintFailure(projectRoot: String): FileConstraintFailure =
+    FileConstraintFailure(
         file = absolutePath.removePrefix("$projectRoot/"),
         declaration = name,
         line = line,

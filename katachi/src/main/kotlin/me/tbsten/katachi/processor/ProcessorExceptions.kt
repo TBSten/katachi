@@ -51,7 +51,7 @@ public class KatachiUnknownRoleException internal constructor(
 /**
  * A check was handed an [ArchitectureProcessContext] katachi did not build.
  *
- * [me.tbsten.katachi.check.LayoutCheck] and [me.tbsten.katachi.check.KonsistCheck] do not read
+ * [me.tbsten.katachi.check.LayoutCheck] and [me.tbsten.katachi.check.FileConstraintCheck] do not read
  * violations off the context -- they read the walk behind it, which only katachi's own context
  * carries. A context written elsewhere has declarations and nothing to check them against, and
  * answering with an empty list would say "this project is clean", which is the one wrong answer

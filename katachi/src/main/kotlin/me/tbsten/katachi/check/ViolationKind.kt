@@ -38,15 +38,15 @@ public enum class ViolationKind {
     Missing,
 
     /**
-     * A constraint declared with `constraint { }` — `konsist { }` included — does not hold.
+     * A constraint declared with `fileConstraint { }` — `konsist { }` included — does not hold.
      * Fix the code, or the constraint.
      *
      * ## Example 1: list the constraints that failed
      * ```kt
-     * projectArchitecture.validate(KonsistCheck()).filter { it.kind == ViolationKind.Constraint }
+     * projectArchitecture.validate(FileConstraintCheck()).filter { it.kind == ViolationKind.FileConstraint }
      * ```
      */
-    Constraint,
+    FileConstraint,
 
     /**
      * Two or more declarations claim the same thing, so which one it belongs to is not decided.
