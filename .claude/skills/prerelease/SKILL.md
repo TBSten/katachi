@@ -55,10 +55,10 @@ description: >-
 
 ## 5. 実際の実装・挙動 と ドキュメント に不整合がないかチェック
 
-- katachi/ katachi-konsist/ などのディレクトリの変更内容をチェックし、実際の実装内容 と ドキュメントに記載の内容
-  とに矛盾がないかをチェック。
-- sample/ ディレクトリなどを活用し、ライブラリの実際の挙動 と ドキュメントに記載の内容 とに矛盾がないかをチェック。
-- ドキュメントに記載が足りないものは警告として prerelease-check-list.md に記載。
+- check-docs-against-impl skill を実行する。
+    - 基準には直前のリリースのタグを渡す。
+    - 結果は `.local/release-v0.0.0/docs-vs-impl.md` にまとめさせる。
+- prerelease-check-list.md には、件数と priority 7 以上の警告だけを書く。
 
 ## 6. 報告
 
