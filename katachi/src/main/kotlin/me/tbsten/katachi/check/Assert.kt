@@ -7,7 +7,6 @@ import me.tbsten.katachi.dsl.Architecture
 import me.tbsten.katachi.fs.FsPath
 import me.tbsten.katachi.fs.internal.RealFileSystem
 import me.tbsten.katachi.processor.ArchitectureProcessor
-import me.tbsten.katachi.scan.Violation
 
 /**
  * How many blocks `assert()` prints before it stops and counts the rest.

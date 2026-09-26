@@ -2,12 +2,12 @@ package me.tbsten.katachi.check.internal
 
 import me.tbsten.katachi.check.DEFAULT_MAX_VIOLATIONS
 import me.tbsten.katachi.check.KatachiArchitectureAssertionError
+import me.tbsten.katachi.check.Severity
+import me.tbsten.katachi.check.UncheckedCheck
+import me.tbsten.katachi.check.Violation
 import me.tbsten.katachi.fs.FsPath
 import me.tbsten.katachi.internal.isFatal
 import me.tbsten.katachi.processor.ArchitectureProcessor
-import me.tbsten.katachi.scan.Severity
-import me.tbsten.katachi.scan.UncheckedCheck
-import me.tbsten.katachi.scan.Violation
 
 internal fun Result<List<Violation>>.violationsOf(
     check: ArchitectureProcessor<*, *>,

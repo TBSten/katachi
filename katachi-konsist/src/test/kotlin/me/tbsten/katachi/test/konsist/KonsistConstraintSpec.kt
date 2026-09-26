@@ -7,13 +7,13 @@ import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
 import io.kotest.matchers.types.shouldBeInstanceOf
 import me.tbsten.katachi.InternalKatachiApi
+import me.tbsten.katachi.check.UncheckedConstraint
+import me.tbsten.katachi.check.UncheckedConstraintReason
+import me.tbsten.katachi.check.UnsatisfiedConstraint
 import me.tbsten.katachi.check.internal.report
 import me.tbsten.katachi.fs.FsPath
 import me.tbsten.katachi.konsist.KatachiKonsistNoExpectationException
 import me.tbsten.katachi.konsist.KatachiKonsistNoKotlinFilesException
-import me.tbsten.katachi.scan.UncheckedConstraint
-import me.tbsten.katachi.scan.UncheckedConstraintReason
-import me.tbsten.katachi.scan.UnsatisfiedConstraint
 
 /**
  * What a `konsist { }` constraint produces once it has been through the whole machine: the

@@ -7,6 +7,10 @@ import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
 import me.tbsten.katachi.check.KatachiArchitectureAssertionError
 import me.tbsten.katachi.check.LayoutCheck
+import me.tbsten.katachi.check.Severity
+import me.tbsten.katachi.check.Violation
+import me.tbsten.katachi.check.ViolationDetail
+import me.tbsten.katachi.check.ViolationKind
 import me.tbsten.katachi.check.assert
 import me.tbsten.katachi.check.assertNoErrors
 import me.tbsten.katachi.check.internal.assert
@@ -23,10 +27,6 @@ import me.tbsten.katachi.fs.internal.findProjectRoot
 import me.tbsten.katachi.internal.fileUri
 import me.tbsten.katachi.processor.ArchitectureProcessContext
 import me.tbsten.katachi.processor.ArchitectureProcessorNoArg
-import me.tbsten.katachi.scan.Severity
-import me.tbsten.katachi.scan.Violation
-import me.tbsten.katachi.scan.ViolationDetail
-import me.tbsten.katachi.scan.ViolationKind
 
 /**
  * A violation the way a check outside katachi declares one: the public interface, plus

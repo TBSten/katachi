@@ -1,11 +1,11 @@
 package me.tbsten.katachi.check.internal
 
 import me.tbsten.katachi.InternalKatachiApi
+import me.tbsten.katachi.check.*
 import me.tbsten.katachi.check.DEFAULT_MAX_VIOLATIONS
 import me.tbsten.katachi.fs.FsPath
 import me.tbsten.katachi.internal.displayExistingPath
 import me.tbsten.katachi.internal.displayPath
-import me.tbsten.katachi.scan.*
 
 /**
  * Indent of everything inside a block. A fragment meant to be copied adds another step.

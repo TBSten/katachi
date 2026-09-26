@@ -2,7 +2,7 @@ package me.tbsten.katachi.test.check
 
 import io.kotest.core.spec.style.FreeSpec
 import io.kotest.matchers.shouldBe
-import me.tbsten.katachi.scan.ViolationDetail
+import me.tbsten.katachi.check.ViolationDetail
 
 class ViolationDetailSpec : FreeSpec({
     "等値比較" - {

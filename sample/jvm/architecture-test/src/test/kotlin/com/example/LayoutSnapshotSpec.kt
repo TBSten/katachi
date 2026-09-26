@@ -5,11 +5,11 @@ import io.kotest.matchers.shouldBe
 import java.io.File
 import me.tbsten.katachi.ExperimentalKatachiApi
 import me.tbsten.katachi.InternalKatachiApi
+import me.tbsten.katachi.check.internal.moduleIndex
 import me.tbsten.katachi.dsl.LayoutEntry
 import me.tbsten.katachi.dsl.internal.flattenLayout
 import me.tbsten.katachi.fs.internal.RealFileSystem
 import me.tbsten.katachi.fs.internal.findProjectRoot
-import me.tbsten.katachi.scan.internal.moduleIndex
 
 /**
  * katachi's own self-verification, not part of adopting katachi: a sentinel that pins down

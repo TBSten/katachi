@@ -9,6 +9,8 @@ import io.kotest.matchers.string.shouldNotContain
 import io.kotest.matchers.types.shouldBeInstanceOf
 import java.io.IOException
 import me.tbsten.katachi.check.KatachiArchitectureAssertionError
+import me.tbsten.katachi.check.UncheckedDirectory
+import me.tbsten.katachi.check.UncheckedDirectoryReason
 import me.tbsten.katachi.check.internal.report
 import me.tbsten.katachi.check.internal.validate
 import me.tbsten.katachi.dsl.KatachiUnresolvableModulePatternException
@@ -19,8 +21,6 @@ import me.tbsten.katachi.dsl.gradle.wildcards
 import me.tbsten.katachi.dsl.kotlin.ktFile
 import me.tbsten.katachi.dsl.kotlin.ktsFile
 import me.tbsten.katachi.dsl.pascalCase
-import me.tbsten.katachi.scan.UncheckedDirectory
-import me.tbsten.katachi.scan.UncheckedDirectoryReason
 import me.tbsten.katachi.test.fs.failingAt
 import me.tbsten.katachi.test.fs.failingToExistAt
 import me.tbsten.katachi.test.fs.failingToListAt

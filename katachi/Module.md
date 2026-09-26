@@ -12,8 +12,9 @@ the three roots of katachi's exception hierarchy.
 # Package me.tbsten.katachi.check
 
 The entry points that turn an [me.tbsten.katachi.dsl.Architecture] and a project into a pass or
-a failure: `assert`, `validate`, the `layout { }` check and the check that evaluates
-`constraint { }` blocks.
+a failure — `assert`, `validate`, the `layout { }` check and the check that evaluates
+`constraint { }` blocks — and what they find while they walk a project: a violation, its kind
+and severity, and the warnings a definition can carry on its own.
 
 # Package me.tbsten.katachi.docs
 
@@ -43,11 +44,6 @@ The small file system abstraction a check walks a project through, real or in-me
 The extension point a definition is read through: something that takes an
 [me.tbsten.katachi.processor.ArchitectureProcessContext] and answers with a `Result`, the way
 both the check and documentation generation do.
-
-# Package me.tbsten.katachi.scan
-
-What a check finds while it walks a project: a violation, its kind and severity, and the
-warnings a definition can carry on its own.
 
 # Package me.tbsten.katachi.template
 

@@ -1,6 +1,6 @@
-package me.tbsten.katachi.scan
+package me.tbsten.katachi.check
 
-import me.tbsten.katachi.scan.internal.ROOT_PATH
+import me.tbsten.katachi.check.internal.ROOT_PATH
 
 /**
  * A check handed to `assert(...)` that threw, so nothing it would have reported is known.

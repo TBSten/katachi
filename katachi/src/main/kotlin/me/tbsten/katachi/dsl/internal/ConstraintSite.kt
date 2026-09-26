@@ -63,7 +63,7 @@ internal class ConstraintSite(
 /**
  * Which files one constraint covers, as the patterns its own entries declared.
  *
- * The rule is [me.tbsten.katachi.scan.internal.LayoutIndex.rolesOf]'s, narrowed to one constraint's
+ * The rule is [me.tbsten.katachi.check.internal.LayoutIndex.rolesOf]'s, narrowed to one constraint's
  * entries: a file is covered when a file declaration matches it, or when its directory was
  * left open with `anyFile()`. Keeping the two rules in step is what stops a constraint from
  * covering a file the role does not own, or missing one it does.

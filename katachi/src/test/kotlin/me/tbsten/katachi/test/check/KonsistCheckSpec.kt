@@ -18,7 +18,7 @@ import me.tbsten.katachi.dsl.KatachiConstraintMemoTypeException
 import me.tbsten.katachi.fs.KatachiProjectRootNotFoundException
 import me.tbsten.katachi.processor.internal.process
 import me.tbsten.katachi.processor.process
-import me.tbsten.katachi.scan.UncheckedConstraintReason
+import me.tbsten.katachi.check.UncheckedConstraintReason
 import me.tbsten.katachi.test.fs.fakeFileSystem
 
 /**

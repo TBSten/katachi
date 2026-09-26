@@ -7,10 +7,10 @@ import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
 import io.kotest.matchers.types.shouldBeInstanceOf
 import me.tbsten.katachi.InternalKatachiApi
+import me.tbsten.katachi.check.UncheckedConstraint
+import me.tbsten.katachi.check.UncheckedConstraintReason
 import me.tbsten.katachi.check.internal.report
 import me.tbsten.katachi.konsist.KatachiKonsistDirectAssertionException
-import me.tbsten.katachi.scan.UncheckedConstraint
-import me.tbsten.katachi.scan.UncheckedConstraintReason
 
 /**
  * Konsist's own twelve assertions, and the fact that none of them can be written here.

@@ -5,13 +5,13 @@ package me.tbsten.katachi.test.konsist
 import me.tbsten.katachi.ExperimentalKatachiApi
 import me.tbsten.katachi.InternalKatachiApi
 import me.tbsten.katachi.check.KonsistCheck
+import me.tbsten.katachi.check.Violation
 import me.tbsten.katachi.check.internal.validate
 import me.tbsten.katachi.dsl.architecture
 import me.tbsten.katachi.dsl.wholeTree
 import me.tbsten.katachi.fs.internal.RealFileSystem
 import me.tbsten.katachi.konsist.KonsistScope
 import me.tbsten.katachi.konsist.konsist
-import me.tbsten.katachi.scan.Violation
 
 /**
  * What every end-to-end spec of this module shares: a throwaway project, one role, one

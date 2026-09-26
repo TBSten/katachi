@@ -1,4 +1,4 @@
-package me.tbsten.katachi.test.scan
+package me.tbsten.katachi.test.check
 
 import io.kotest.core.spec.style.FreeSpec
 import io.kotest.matchers.collections.shouldBeEmpty
@@ -9,8 +9,8 @@ import me.tbsten.katachi.dsl.architecture
 import me.tbsten.katachi.dsl.internal.flattenLayout
 import me.tbsten.katachi.dsl.gradle.module
 import me.tbsten.katachi.dsl.kotlin.ktFile
-import me.tbsten.katachi.scan.AmbiguousLayout
-import me.tbsten.katachi.scan.internal.ambiguousLayoutsOf
+import me.tbsten.katachi.check.AmbiguousLayout
+import me.tbsten.katachi.check.internal.ambiguousLayoutsOf
 
 /**
  * `ambiguousLayoutsOf`, the declaration-only half of step 5-2: what two roles' `layout { }`

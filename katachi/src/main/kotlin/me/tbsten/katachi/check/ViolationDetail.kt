@@ -1,4 +1,4 @@
-package me.tbsten.katachi.scan
+package me.tbsten.katachi.check
 
 /**
  * One labelled value a report block states about a violation katachi did not write.

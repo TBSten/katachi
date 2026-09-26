@@ -12,10 +12,10 @@ import me.tbsten.katachi.check.assertNoErrors
 import me.tbsten.katachi.check.internal.validate
 import me.tbsten.katachi.processor.ArchitectureProcessContext
 import me.tbsten.katachi.processor.ArchitectureProcessorNoArg
-import me.tbsten.katachi.scan.Severity
-import me.tbsten.katachi.scan.UncheckedCheck
-import me.tbsten.katachi.scan.Violation
-import me.tbsten.katachi.scan.ViolationKind
+import me.tbsten.katachi.check.Severity
+import me.tbsten.katachi.check.UncheckedCheck
+import me.tbsten.katachi.check.Violation
+import me.tbsten.katachi.check.ViolationKind
 
 /**
  * How a check says what it found: [assertNoErrors] at the end of its `runCatching`, and

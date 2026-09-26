@@ -2,12 +2,11 @@ package me.tbsten.katachi.check
 
 import me.tbsten.katachi.ExperimentalKatachiApi
 import me.tbsten.katachi.check.internal.assertNoErrors
+import me.tbsten.katachi.check.internal.layoutWarningsOf
 import me.tbsten.katachi.internal.runProcessorCatching
 import me.tbsten.katachi.processor.ArchitectureProcessContext
 import me.tbsten.katachi.processor.ArchitectureProcessorNoArg
 import me.tbsten.katachi.processor.internal.projectWalk
-import me.tbsten.katachi.scan.Violation
-import me.tbsten.katachi.scan.internal.layoutWarningsOf
 
 /**
  * The `layout { }` check, written as a processor: files the project has that no role allows,
@@ -39,9 +38,9 @@ import me.tbsten.katachi.scan.internal.layoutWarningsOf
  * [ArchitectureProcessContext.declaredEntries] costs no walk of its own — it flattens the same
  * `layout { }` blocks a second time, from the declarations alone — and is where
  * declaration-only Warnings live: a path two roles both claim outright
- * ([me.tbsten.katachi.scan.AmbiguousLayout]), and a role living in more than one place without
+ * ([me.tbsten.katachi.check.AmbiguousLayout]), and a role living in more than one place without
  * saying which files belong in which
- * ([me.tbsten.katachi.scan.MissingDescription]). Reading it is a second
+ * ([me.tbsten.katachi.check.MissingDescription]). Reading it is a second
  * evaluation of every `layout { }` block, so a block with a side effect of its own runs twice
  * per `assert()` — the same thing a wildcard module key already does once per module it expands
  * to.
@@ -49,7 +48,7 @@ import me.tbsten.katachi.scan.internal.layoutWarningsOf
  * The third Warning goes the other way and is why both halves are handed over together: the
  * same walk also holds the roles whose *different* patterns turned out to select the same real
  * files -- an overlap only katachi's own check can see, read through a door that stays internal
- * rather than on the public context. It is the same [me.tbsten.katachi.scan.AmbiguousLayout]
+ * rather than on the public context. It is the same [me.tbsten.katachi.check.AmbiguousLayout]
  * the declarations produce, so the two are merged where each can see the other rather than
  * concatenated — a pair of roles named by both must be one block, not two.
  *

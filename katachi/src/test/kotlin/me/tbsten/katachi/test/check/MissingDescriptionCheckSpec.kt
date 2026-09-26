@@ -15,13 +15,13 @@ import me.tbsten.katachi.dsl.internal.flattenLayout
 import me.tbsten.katachi.dsl.gradle.module
 import me.tbsten.katachi.dsl.kotlin.ktFile
 import me.tbsten.katachi.fs.FsPath
-import me.tbsten.katachi.scan.MissingDescription
-import me.tbsten.katachi.scan.internal.missingDescriptionsOf
+import me.tbsten.katachi.check.MissingDescription
+import me.tbsten.katachi.check.internal.missingDescriptionsOf
 
 /**
  * [MissingDescription] wired through the real check — `ArchitectureProcessContext.declaredEntries`,
  * `LayoutCheck`, `validate()` and `assert()` against a fake file system — and the wording of its
- * report block. `MissingDescriptionSpec` (in `test.scan`) covers the detector's own rule.
+ * report block. `MissingDescriptionSpec` covers the detector's own rule.
  */
 
 /** A role living in [modules], each holding one wildcard file and no `description`. */

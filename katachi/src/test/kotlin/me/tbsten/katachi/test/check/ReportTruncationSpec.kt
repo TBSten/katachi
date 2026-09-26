@@ -3,12 +3,12 @@ package me.tbsten.katachi.test.check
 import io.kotest.core.spec.style.FreeSpec
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
+import me.tbsten.katachi.check.MissingFile
+import me.tbsten.katachi.check.UncheckedFile
+import me.tbsten.katachi.check.UnexpectedFile
 import me.tbsten.katachi.check.internal.report
 import me.tbsten.katachi.dsl.DeclarationSite
 import me.tbsten.katachi.dsl.Role
-import me.tbsten.katachi.scan.MissingFile
-import me.tbsten.katachi.scan.UncheckedFile
-import me.tbsten.katachi.scan.UnexpectedFile
 
 /** A [Role] good enough to hang a [MissingFile] off of; nothing here reads its layout. */
 private val role: Role = architectureOf { "app".group { "Role" {} } }.allRoles.single()

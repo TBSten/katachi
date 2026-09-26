@@ -1,10 +1,10 @@
 package me.tbsten.katachi.check.internal
 
+import me.tbsten.katachi.check.UncheckedConstraint
+import me.tbsten.katachi.check.UncheckedConstraintReason
+import me.tbsten.katachi.check.UnsatisfiedConstraint
 import me.tbsten.katachi.dsl.DeclarationSite
 import me.tbsten.katachi.internal.displayPath
-import me.tbsten.katachi.scan.UncheckedConstraint
-import me.tbsten.katachi.scan.UncheckedConstraintReason
-import me.tbsten.katachi.scan.UnsatisfiedConstraint
 
 /**
  * The report blocks of the two constraint violations.

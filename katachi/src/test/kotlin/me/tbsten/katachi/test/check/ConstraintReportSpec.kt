@@ -4,14 +4,14 @@ import io.kotest.core.spec.style.FreeSpec
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldNotContain
 import me.tbsten.katachi.check.KonsistCheck
+import me.tbsten.katachi.check.UncheckedConstraint
+import me.tbsten.katachi.check.UncheckedConstraintReason
 import me.tbsten.katachi.check.internal.report
 import me.tbsten.katachi.check.internal.validate
 import me.tbsten.katachi.dsl.ConstraintFailure
 import me.tbsten.katachi.dsl.DeclarationSite
 import me.tbsten.katachi.dsl.FileSetConstraint
 import me.tbsten.katachi.fs.FsPath
-import me.tbsten.katachi.scan.UncheckedConstraint
-import me.tbsten.katachi.scan.UncheckedConstraintReason
 
 /**
  * What the two constraint blocks actually print.

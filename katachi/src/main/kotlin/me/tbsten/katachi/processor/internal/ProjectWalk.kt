@@ -1,5 +1,8 @@
 package me.tbsten.katachi.processor.internal
 
+import me.tbsten.katachi.check.Violation
+import me.tbsten.katachi.check.internal.FileOverlap
+import me.tbsten.katachi.check.internal.scanProject
 import me.tbsten.katachi.dsl.Architecture
 import me.tbsten.katachi.dsl.Group
 import me.tbsten.katachi.dsl.LayoutEntry
@@ -9,9 +12,6 @@ import me.tbsten.katachi.dsl.internal.flattenLayout
 import me.tbsten.katachi.fs.FsPath
 import me.tbsten.katachi.fs.KatachiFileSystem
 import me.tbsten.katachi.processor.KatachiUnknownRoleException
-import me.tbsten.katachi.scan.Violation
-import me.tbsten.katachi.scan.internal.FileOverlap
-import me.tbsten.katachi.scan.internal.scanProject
 
 /**
  * One run's worth of reading: the declarations, the single walk of the project, and the

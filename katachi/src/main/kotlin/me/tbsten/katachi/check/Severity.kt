@@ -1,4 +1,4 @@
-package me.tbsten.katachi.scan
+package me.tbsten.katachi.check
 
 /**
  * Whether a violation fails the check, or is only reported.

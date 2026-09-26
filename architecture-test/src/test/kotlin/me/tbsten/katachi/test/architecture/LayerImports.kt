@@ -15,13 +15,35 @@ import com.lemonappdev.konsist.api.declaration.KoFileDeclaration
  * `util` comes straight after it: general-purpose helpers written against the standard library
  * alone, which every layer may use and which may use none of them.
  *
+ * `processor` and `check` share one layer. The walk and its results (`Violation` and the rest)
+ * live in `check`, next to the `assert()` and the checks that produce them, and
+ * `processor.internal.ProjectWalk` hands that same walk to every processor; `check` in turn is
+ * built on `processor`. Each imports the other, so neither may come before the other: they may
+ * import each other freely, and both may import nothing after them.
+ *
  * `konsist` is `:katachi-konsist`'s layer. Nothing in `:katachi` can import it — the Gradle
  * dependency runs the other way — so its entry is not a rule that might break but a copy of
  * one that cannot. It is listed so that the layer rules in `roles/` name a complete set of
  * forbidden targets rather than falling silent at the end of the table.
  */
-private val LAYERS: List<String> =
-    listOf("", "util", "fs", "dsl", "scan", "processor", "check", "docs", "template", "konsist")
+private val LAYERS: List<List<String>> =
+    listOf(
+        listOf(""),
+        listOf("util"),
+        listOf("fs"),
+        listOf("dsl"),
+        listOf("processor", "check"),
+        listOf("docs"),
+        listOf("template"),
+        listOf("konsist"),
+    )
+
+/** The layers after the one [layer] belongs to, flattened in table order. */
+private fun layersAfter(layer: String): List<String> {
+    val index = LAYERS.indexOfFirst { layer in it }
+    require(index >= 0) { "`$layer` is not a layer in LAYERS" }
+    return LAYERS.drop(index + 1).flatten()
+}
 
 /** The package every layer name is relative to. */
 private const val ROOT_PACKAGE: String = "me.tbsten.katachi"
@@ -53,10 +75,10 @@ const val PACKAGE_MATCHES_PATH_RULE: String = "package 宣言がファイルの�
  * The hand-written spec this replaced opened its failure with the whole table, so that a
  * reader saw the rule and not only the breach. An `[UnsatisfiedConstraint]` block has no room
  * for a table, so the rule is folded into the constraint's name instead: the report line reads
- * `scan / processor / check / konsist を import しないこと`.
+ * `docs / template / konsist を import しないこと`.
  */
 fun laterLayersOf(layer: String): String =
-    LAYERS.drop(LAYERS.indexOf(layer) + 1).joinToString(" / ")
+    layersAfter(layer).joinToString(" / ")
 
 /**
  * A predicate selecting files that import a layer after [layer].
@@ -77,6 +99,6 @@ fun laterLayersOf(layer: String): String =
  * `me.tbsten.katachi.dsl.*`, which the prefix catches unchanged.
  */
 fun importsLaterLayerThan(layer: String): (KoFileDeclaration) -> Boolean {
-    val forbidden = LAYERS.drop(LAYERS.indexOf(layer) + 1).map { "$ROOT_PACKAGE.$it." }
+    val forbidden = layersAfter(layer).map { "$ROOT_PACKAGE.$it." }
     return { file -> file.imports.any { import -> forbidden.any { import.name.startsWith(it) } } }
 }

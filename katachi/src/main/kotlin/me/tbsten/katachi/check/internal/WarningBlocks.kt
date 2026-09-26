@@ -1,9 +1,9 @@
 package me.tbsten.katachi.check.internal
 
+import me.tbsten.katachi.check.AmbiguousLayout
+import me.tbsten.katachi.check.MissingDescription
 import me.tbsten.katachi.internal.displayExistingPath
 import me.tbsten.katachi.internal.displayPath
-import me.tbsten.katachi.scan.AmbiguousLayout
-import me.tbsten.katachi.scan.MissingDescription
 
 /**
  * The report blocks of the Warning violations — the ones a `layout { }` produces without a
@@ -23,7 +23,7 @@ import me.tbsten.katachi.scan.MissingDescription
  * behind it, and the consequence the reader missed is that both roles' constraints are being
  * checked against all of them.
  *
- * `How to fix:` is written, unlike [me.tbsten.katachi.scan.ViolationKind.Constraint]'s blocks:
+ * `How to fix:` is written, unlike [me.tbsten.katachi.check.ViolationKind.Constraint]'s blocks:
  * the reason those stay silent is that a constraint's body is arbitrary Kotlin katachi does not
  * read, and neither reason applies here — katachi already knows everything an
  * [AmbiguousLayout] means, because it derived the violation itself.

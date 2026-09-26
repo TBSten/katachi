@@ -7,6 +7,7 @@ import io.kotest.matchers.maps.shouldContainKey
 import io.kotest.matchers.maps.shouldNotContainKey
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldNotContain
+import me.tbsten.katachi.check.MissingFile
 import me.tbsten.katachi.check.internal.validate
 import me.tbsten.katachi.dsl.DeclarationSite
 import me.tbsten.katachi.dsl.Documented
@@ -16,7 +17,6 @@ import me.tbsten.katachi.dsl.gradle.kotlin
 import me.tbsten.katachi.dsl.gradle.mainSourceSet
 import me.tbsten.katachi.dsl.gradle.module
 import me.tbsten.katachi.dsl.kotlin.ktFile
-import me.tbsten.katachi.scan.MissingFile
 import me.tbsten.katachi.test.check.architectureOf
 import me.tbsten.katachi.test.check.labels
 import me.tbsten.katachi.test.check.repositoryOf

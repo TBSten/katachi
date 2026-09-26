@@ -12,7 +12,6 @@ import me.tbsten.katachi.processor.ArchitectureProcessContext
 import me.tbsten.katachi.processor.ArchitectureProcessorNoArg
 import me.tbsten.katachi.processor.internal.ProjectWalk
 import me.tbsten.katachi.processor.internal.projectWalk
-import me.tbsten.katachi.scan.*
 
 /**
  * The check that evaluates `constraint { }` blocks — the `konsist { }` ones included.

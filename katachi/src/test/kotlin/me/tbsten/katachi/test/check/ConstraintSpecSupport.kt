@@ -1,11 +1,11 @@
 package me.tbsten.katachi.test.check
 
+import me.tbsten.katachi.check.UncheckedConstraint
+import me.tbsten.katachi.check.UnsatisfiedConstraint
+import me.tbsten.katachi.check.Violation
 import me.tbsten.katachi.dsl.ConstraintFailure
 import me.tbsten.katachi.dsl.ConstraintSubject
 import me.tbsten.katachi.dsl.FileSetConstraint
-import me.tbsten.katachi.scan.UncheckedConstraint
-import me.tbsten.katachi.scan.UnsatisfiedConstraint
-import me.tbsten.katachi.scan.Violation
 
 /**
  * The constraint blocks the step 5 specs hand to `KonsistCheck`.

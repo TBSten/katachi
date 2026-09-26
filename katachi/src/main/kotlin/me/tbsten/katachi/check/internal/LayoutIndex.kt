@@ -1,10 +1,10 @@
-package me.tbsten.katachi.scan.internal
+package me.tbsten.katachi.check.internal
 
+import me.tbsten.katachi.check.NearbyLocation
 import me.tbsten.katachi.dsl.LayoutEntry
 import me.tbsten.katachi.dsl.LayoutEntryKind
 import me.tbsten.katachi.dsl.Role
 import me.tbsten.katachi.dsl.internal.Glob
-import me.tbsten.katachi.scan.NearbyLocation
 
 /** How many locations an `[UnexpectedFile]` block offers. */
 private const val NEARBY_LIMIT: Int = 3
@@ -76,7 +76,7 @@ internal class LayoutIndex(entries: List<LayoutEntry>) {
 
     /**
      * The declarations that claim [file] as their role's own, one per role — two or more of
-     * them is an [me.tbsten.katachi.scan.AmbiguousLayout] a walk found rather than a reading of the declarations.
+     * them is an [me.tbsten.katachi.check.AmbiguousLayout] a walk found rather than a reading of the declarations.
      *
      * The entry rather than the role, because a report has to point back at the line that
      * wrote it, and with different patterns matching one file there is no declaration site to

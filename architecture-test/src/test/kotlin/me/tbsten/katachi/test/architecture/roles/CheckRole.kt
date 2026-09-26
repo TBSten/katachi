@@ -19,7 +19,8 @@ import me.tbsten.katachi.test.architecture.publicDeclarationsOf
 import me.tbsten.katachi.test.architecture.showsExample
 
 /**
- * The role of the last layer: the one line a user writes, and the report it throws.
+ * The role of the last layer: the one line a user writes, the single walk behind it, and the
+ * report it throws.
  *
  * The function name shadows nothing — `kotlin.check` always takes a `Boolean`, so the
  * zero-argument call in `groups/LibraryGroup.kt` can only resolve to this extension. The naming
@@ -27,8 +28,10 @@ import me.tbsten.katachi.test.architecture.showsExample
  */
 fun DeclarationContainerScope.check() = "Check" {
     title = "検査"
-    summary = "利用者が呼ぶ assert() と、その報告の組み立て"
+    summary = "利用者が呼ぶ assert() と、宣言に導かれた1度だけの走査、その結果と報告の組み立て"
     example("Assert.kt", "利用者がテストに書く1行")
+    example("Scan.kt", "唯一の走査")
+    example("Violation.kt", "報告される1件")
     example("ViolationReport.kt", "違反1件を人が読める1ブロックにする")
     layout {
         ":katachi".module {

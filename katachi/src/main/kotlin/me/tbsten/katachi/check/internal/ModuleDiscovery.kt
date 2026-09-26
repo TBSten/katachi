@@ -1,14 +1,14 @@
-package me.tbsten.katachi.scan.internal
+package me.tbsten.katachi.check.internal
 
 import me.tbsten.katachi.InternalKatachiApi
+import me.tbsten.katachi.check.UncheckedDirectory
+import me.tbsten.katachi.check.UncheckedDirectoryReason
 import me.tbsten.katachi.dsl.ModulePath
 import me.tbsten.katachi.dsl.ModuleResolver
 import me.tbsten.katachi.dsl.internal.ModuleIndex
 import me.tbsten.katachi.fs.FsPath
 import me.tbsten.katachi.fs.KatachiFileSystem
 import me.tbsten.katachi.internal.catching
-import me.tbsten.katachi.scan.UncheckedDirectory
-import me.tbsten.katachi.scan.UncheckedDirectoryReason
 
 /**
  * Finds the project's modules and pairs them with [resolver].

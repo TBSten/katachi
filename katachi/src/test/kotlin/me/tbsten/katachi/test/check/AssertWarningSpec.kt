@@ -6,17 +6,17 @@ import io.kotest.core.spec.style.FreeSpec
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
 import me.tbsten.katachi.check.KatachiArchitectureAssertionError
+import me.tbsten.katachi.check.Severity
+import me.tbsten.katachi.check.Violation
+import me.tbsten.katachi.check.ViolationKind
 import me.tbsten.katachi.check.assertNoErrors
 import me.tbsten.katachi.check.internal.assert
 import me.tbsten.katachi.processor.ArchitectureProcessContext
 import me.tbsten.katachi.processor.ArchitectureProcessorNoArg
-import me.tbsten.katachi.scan.Severity
-import me.tbsten.katachi.scan.Violation
-import me.tbsten.katachi.scan.ViolationKind
 
 /**
  * A [Violation] with [Severity.Warning], the way a third-party check would declare one. Stands
- * in for [me.tbsten.katachi.scan.AmbiguousLayout] / `MissingDescription` until step 5-2 / 5-3
+ * in for [me.tbsten.katachi.check.AmbiguousLayout] / `MissingDescription` until step 5-2 / 5-3
  * give katachi its own Warning detectors.
  */
 private class TestWarningViolation(override val path: String) : Violation {

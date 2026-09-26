@@ -1,12 +1,12 @@
-package me.tbsten.katachi.scan.internal
+package me.tbsten.katachi.check.internal
 
+import me.tbsten.katachi.check.AmbiguousLayout
+import me.tbsten.katachi.check.LayoutClaim
+import me.tbsten.katachi.check.MissingDescription
+import me.tbsten.katachi.check.Violation
 import me.tbsten.katachi.dsl.LayoutEntry
 import me.tbsten.katachi.dsl.LayoutEntryKind
 import me.tbsten.katachi.dsl.Role
-import me.tbsten.katachi.scan.AmbiguousLayout
-import me.tbsten.katachi.scan.LayoutClaim
-import me.tbsten.katachi.scan.MissingDescription
-import me.tbsten.katachi.scan.Violation
 
 /**
  * Katachi's Warning violations: what the declarations say by themselves, plus the overlaps

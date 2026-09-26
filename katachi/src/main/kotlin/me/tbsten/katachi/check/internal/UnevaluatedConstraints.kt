@@ -1,11 +1,11 @@
 package me.tbsten.katachi.check.internal
 
+import me.tbsten.katachi.check.UncheckedConstraint
+import me.tbsten.katachi.check.UncheckedConstraintReason
+import me.tbsten.katachi.check.Violation
 import me.tbsten.katachi.dsl.internal.DeclaredConstraint
 import me.tbsten.katachi.dsl.internal.reportPath
 import me.tbsten.katachi.processor.internal.ProjectWalk
-import me.tbsten.katachi.scan.UncheckedConstraint
-import me.tbsten.katachi.scan.UncheckedConstraintReason
-import me.tbsten.katachi.scan.Violation
 
 /** One [UncheckedConstraint], built from what the declaration already knows. */
 internal fun uncheckedConstraintOf(

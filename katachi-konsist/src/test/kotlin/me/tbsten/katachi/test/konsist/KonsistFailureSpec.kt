@@ -12,6 +12,9 @@ import java.io.File
 import me.tbsten.katachi.ExperimentalKatachiApi
 import me.tbsten.katachi.InternalKatachiApi
 import me.tbsten.katachi.check.KonsistCheck
+import me.tbsten.katachi.check.UncheckedConstraint
+import me.tbsten.katachi.check.UncheckedConstraintReason
+import me.tbsten.katachi.check.UnsatisfiedConstraint
 import me.tbsten.katachi.check.internal.report
 import me.tbsten.katachi.check.internal.validate
 import me.tbsten.katachi.dsl.FileSetConstraint
@@ -23,9 +26,6 @@ import me.tbsten.katachi.konsist.KatachiKonsistNoExpectationException
 import me.tbsten.katachi.konsist.KatachiKonsistNoKotlinFilesException
 import me.tbsten.katachi.konsist.KatachiKonsistScopeIncompleteException
 import me.tbsten.katachi.konsist.konsist
-import me.tbsten.katachi.scan.UncheckedConstraint
-import me.tbsten.katachi.scan.UncheckedConstraintReason
-import me.tbsten.katachi.scan.UnsatisfiedConstraint
 
 /**
  * What every way a `konsist { }` constraint can fail to answer at all comes out as, seen through

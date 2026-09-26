@@ -10,7 +10,7 @@ import java.io.File
  * sealed (`else -> foreignBlock(violation)` compiles whether or not katachi wrote a dedicated
  * block for a new violation of its own). This spec puts that check back as a machine check
  * instead of a reviewer's memory, reading sources as text rather than parsing them: every
- * `public class` under `scan/` whose supertype list mentions
+ * `public class` under `check/` whose supertype list mentions
  * `Violation` has to have its own `is <name> ->` branch in `blockOf`.
  */
 private val CLASS_HEADER = Regex("""(?m)^public class (\w+)""")
@@ -18,10 +18,10 @@ private val SUPERTYPE_LINE = Regex("""(?m)^\)\s*:\s*(.*?)\s*\{\s*$""")
 private val VIOLATION_SUPERTYPE = Regex("""\bViolation\b""")
 private val BRANCH_NAME = Regex("""is (\w+) ->""")
 
-/** The `scan/` directory, found from wherever the test happens to be run. */
-private fun scanSourceRoot(): File {
-    val fromModule = File("src/main/kotlin/me/tbsten/katachi/scan")
-    return if (fromModule.isDirectory) fromModule else File("katachi/src/main/kotlin/me/tbsten/katachi/scan")
+/** The `check/` directory, found from wherever the test happens to be run. */
+private fun checkSourceRoot(): File {
+    val fromModule = File("src/main/kotlin/me/tbsten/katachi/check")
+    return if (fromModule.isDirectory) fromModule else File("katachi/src/main/kotlin/me/tbsten/katachi/check")
 }
 
 private fun violationReportFile(): File {
@@ -35,7 +35,7 @@ private fun violationReportFile(): File {
 
 /**
  * The names of every `public class` in [content] whose primary constructor is followed by
- * `: ... Violation ... {` — i.e. that implements `me.tbsten.katachi.scan.Violation`.
+ * `: ... Violation ... {` — i.e. that implements `me.tbsten.katachi.check.Violation`.
  *
  * Reads the primary constructor's closing `)` at the start of a line, the way this codebase
  * formats it, rather than the text between the class name and the first `{`: a KDoc example
@@ -55,7 +55,7 @@ private fun violationClassNamesIn(content: String): List<String> {
 }
 
 private fun violationImplementationNames(): List<String> =
-    scanSourceRoot().walkTopDown()
+    checkSourceRoot().walkTopDown()
         .filter { it.isFile && it.extension == "kt" }
         .sortedBy { it.path }
         .flatMap { file -> violationClassNamesIn(file.readText()) }
@@ -71,7 +71,7 @@ private fun blockOfBranchNames(): Set<String> {
 
 class ViolationBlockCoverageSpec : FreeSpec({
     "blockOf の網羅性" - {
-        "scan 配下の Violation 実装クラスがそれぞれ専用の分岐を持つ" {
+        "check 配下の Violation 実装クラスがそれぞれ専用の分岐を持つ" {
             val branches = blockOfBranchNames()
             val missing = violationImplementationNames().filterNot { it in branches }
 

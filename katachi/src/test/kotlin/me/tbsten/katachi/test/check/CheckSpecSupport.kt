@@ -3,12 +3,12 @@ package me.tbsten.katachi.test.check
 import java.io.ByteArrayOutputStream
 import java.io.PrintStream
 import me.tbsten.katachi.check.KatachiArchitectureAssertionError
+import me.tbsten.katachi.check.Violation
 import me.tbsten.katachi.dsl.Architecture
 import me.tbsten.katachi.dsl.ArchitectureScope
 import me.tbsten.katachi.dsl.LayoutScope
 import me.tbsten.katachi.dsl.architecture
 import me.tbsten.katachi.dsl.wholeTree
-import me.tbsten.katachi.scan.Violation
 import me.tbsten.katachi.test.fs.FakeFileSystem
 import me.tbsten.katachi.test.fs.FakeFileSystemScope
 import me.tbsten.katachi.test.fs.fakeFileSystem

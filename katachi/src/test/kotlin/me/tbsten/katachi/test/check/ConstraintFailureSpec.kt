@@ -14,8 +14,8 @@ import me.tbsten.katachi.dsl.ConstraintFailure
 import me.tbsten.katachi.dsl.FileSetConstraint
 import me.tbsten.katachi.processor.ArchitectureProcessContext
 import me.tbsten.katachi.processor.ArchitectureProcessorNoArg
-import me.tbsten.katachi.scan.UncheckedConstraintReason
-import me.tbsten.katachi.scan.Violation
+import me.tbsten.katachi.check.UncheckedConstraintReason
+import me.tbsten.katachi.check.Violation
 import me.tbsten.katachi.test.fs.failingAt
 import java.io.IOException
 

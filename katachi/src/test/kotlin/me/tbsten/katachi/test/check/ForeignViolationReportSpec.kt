@@ -2,11 +2,11 @@ package me.tbsten.katachi.test.check
 
 import io.kotest.core.spec.style.FreeSpec
 import io.kotest.matchers.shouldBe
+import me.tbsten.katachi.check.Severity
+import me.tbsten.katachi.check.Violation
+import me.tbsten.katachi.check.ViolationDetail
+import me.tbsten.katachi.check.ViolationKind
 import me.tbsten.katachi.check.internal.report
-import me.tbsten.katachi.scan.Severity
-import me.tbsten.katachi.scan.Violation
-import me.tbsten.katachi.scan.ViolationDetail
-import me.tbsten.katachi.scan.ViolationKind
 
 /**
  * A [Violation] the way a third-party check would define one: no access to katachi's internal

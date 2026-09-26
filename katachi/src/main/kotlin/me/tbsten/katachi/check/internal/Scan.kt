@@ -1,5 +1,12 @@
-package me.tbsten.katachi.scan.internal
+package me.tbsten.katachi.check.internal
 
+import me.tbsten.katachi.check.MissingFile
+import me.tbsten.katachi.check.UncheckedDirectory
+import me.tbsten.katachi.check.UncheckedDirectoryReason
+import me.tbsten.katachi.check.UncheckedFile
+import me.tbsten.katachi.check.UnexpectedDirectory
+import me.tbsten.katachi.check.UnexpectedFile
+import me.tbsten.katachi.check.Violation
 import me.tbsten.katachi.dsl.Architecture
 import me.tbsten.katachi.dsl.LayoutEntry
 import me.tbsten.katachi.dsl.Role
@@ -9,13 +16,6 @@ import me.tbsten.katachi.fs.FsPath
 import me.tbsten.katachi.fs.KatachiFileSystem
 import me.tbsten.katachi.fs.internal.findProjectRoot
 import me.tbsten.katachi.internal.catching
-import me.tbsten.katachi.scan.MissingFile
-import me.tbsten.katachi.scan.UncheckedDirectory
-import me.tbsten.katachi.scan.UncheckedDirectoryReason
-import me.tbsten.katachi.scan.UncheckedFile
-import me.tbsten.katachi.scan.UnexpectedDirectory
-import me.tbsten.katachi.scan.UnexpectedFile
-import me.tbsten.katachi.scan.Violation
 
 /**
  * Directories that are not this project's files at all, whatever `files` says.

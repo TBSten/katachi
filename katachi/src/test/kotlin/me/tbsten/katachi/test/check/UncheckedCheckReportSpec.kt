@@ -2,10 +2,10 @@ package me.tbsten.katachi.test.check
 
 import io.kotest.core.spec.style.FreeSpec
 import io.kotest.matchers.shouldBe
+import me.tbsten.katachi.check.UncheckedCheck
+import me.tbsten.katachi.check.UncheckedFile
 import me.tbsten.katachi.check.internal.report
 import me.tbsten.katachi.fs.FsPath
-import me.tbsten.katachi.scan.UncheckedCheck
-import me.tbsten.katachi.scan.UncheckedFile
 
 /**
  * `UncheckedCheck` — a check handed to `assert(...)` / `validate(...)` that threw — and how it

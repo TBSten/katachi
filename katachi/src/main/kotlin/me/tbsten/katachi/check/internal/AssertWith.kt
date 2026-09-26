@@ -2,11 +2,11 @@ package me.tbsten.katachi.check.internal
 
 import me.tbsten.katachi.check.DEFAULT_MAX_VIOLATIONS
 import me.tbsten.katachi.check.KatachiArchitectureAssertionError
+import me.tbsten.katachi.check.Severity
+import me.tbsten.katachi.check.Violation
 import me.tbsten.katachi.dsl.Architecture
 import me.tbsten.katachi.fs.KatachiFileSystem
 import me.tbsten.katachi.processor.ArchitectureProcessor
-import me.tbsten.katachi.scan.Severity
-import me.tbsten.katachi.scan.Violation
 
 /**
  * `assert()` against [fileSystem]. See `validate(fileSystem)`.

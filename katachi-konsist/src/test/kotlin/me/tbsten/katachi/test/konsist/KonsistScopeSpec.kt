@@ -7,8 +7,8 @@ import io.kotest.matchers.collections.shouldBeEmpty
 import io.kotest.matchers.collections.shouldContainExactly
 import io.kotest.matchers.shouldBe
 import me.tbsten.katachi.InternalKatachiApi
-import me.tbsten.katachi.scan.UnsatisfiedConstraint
-import me.tbsten.katachi.scan.Violation
+import me.tbsten.katachi.check.UnsatisfiedConstraint
+import me.tbsten.katachi.check.Violation
 
 /** The rejected paths of a run, in the order the report will print them. */
 private fun List<Violation>.rejectedPaths(): List<String> =

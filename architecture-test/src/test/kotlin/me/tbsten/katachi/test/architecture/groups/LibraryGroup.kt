@@ -7,7 +7,6 @@ import me.tbsten.katachi.test.architecture.roles.dsl
 import me.tbsten.katachi.test.architecture.roles.fileSystem
 import me.tbsten.katachi.test.architecture.roles.marker
 import me.tbsten.katachi.test.architecture.roles.processor
-import me.tbsten.katachi.test.architecture.roles.scan
 import me.tbsten.katachi.test.architecture.roles.template
 import me.tbsten.katachi.test.architecture.roles.util
 
@@ -15,8 +14,8 @@ import me.tbsten.katachi.test.architecture.roles.util
  * The roles of `:katachi`, the library itself.
  *
  * Here a role is a layer, and that is an observation rather than a shortcut: in this
- * repository the kinds of file and the package layers happen to coincide. A file in `scan/`
- * is a piece of the traversal and cannot be anything else; the same holds for `fs/`, for
+ * repository the kinds of file and the package layers happen to coincide. A file in `fs/`
+ * is a piece of the file system abstraction and cannot be anything else; the same holds for
  * `processor/` and for `check/`. Where the two came apart, the role follows the kind and not
  * the package — see `roles/MarkerRole.kt` and `roles/DslRole.kt`.
  *
@@ -49,7 +48,6 @@ fun DeclarationContainerScope.libraryGroup() = "library".group {
     util()
     fileSystem()
     dsl()
-    scan()
     processor()
     check()
     docs()

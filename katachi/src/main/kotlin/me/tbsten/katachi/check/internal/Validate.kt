@@ -4,6 +4,7 @@ import me.tbsten.katachi.ExperimentalKatachiApi
 import me.tbsten.katachi.InternalKatachiApi
 import me.tbsten.katachi.check.KatachiArchitectureAssertionError
 import me.tbsten.katachi.check.LayoutCheck
+import me.tbsten.katachi.check.Violation
 import me.tbsten.katachi.dsl.Architecture
 import me.tbsten.katachi.fs.FsPath
 import me.tbsten.katachi.fs.KatachiFileSystem
@@ -12,7 +13,6 @@ import me.tbsten.katachi.internal.catching
 import me.tbsten.katachi.processor.ArchitectureProcessor
 import me.tbsten.katachi.processor.internal.process
 import me.tbsten.katachi.processor.internal.projectWalk
-import me.tbsten.katachi.scan.Violation
 
 /**
  * Runs the check against the real file system and returns every violation.
@@ -71,7 +71,7 @@ public fun Architecture.validate(fileSystem: KatachiFileSystem): List<Violation>
  * twice.
  *
  * A check that throws does not end the run. It becomes one
- * [me.tbsten.katachi.scan.UncheckedCheck] violation naming the check and what it threw, and
+ * [me.tbsten.katachi.check.UncheckedCheck] violation naming the check and what it threw, and
  * every other check still reports what it found. A check that answers `Result.failure` is read
  * by what the failure is: a [KatachiArchitectureAssertionError] -- what [me.tbsten.katachi.check.assertNoErrors]
  * throws -- is the check saying what it found, and its violations join the list; any other

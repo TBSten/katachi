@@ -1,4 +1,4 @@
-package me.tbsten.katachi.scan
+package me.tbsten.katachi.check
 
 import me.tbsten.katachi.dsl.DeclarationSite
 import me.tbsten.katachi.dsl.Role

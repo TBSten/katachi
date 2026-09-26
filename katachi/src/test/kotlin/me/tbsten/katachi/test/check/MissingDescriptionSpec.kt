@@ -1,4 +1,4 @@
-package me.tbsten.katachi.test.scan
+package me.tbsten.katachi.test.check
 
 import io.kotest.core.spec.style.FreeSpec
 import io.kotest.matchers.collections.shouldBeEmpty
@@ -11,8 +11,8 @@ import me.tbsten.katachi.dsl.gradle.kotlin
 import me.tbsten.katachi.dsl.gradle.mainSourceSet
 import me.tbsten.katachi.dsl.gradle.module
 import me.tbsten.katachi.dsl.kotlin.ktFile
-import me.tbsten.katachi.scan.MissingDescription
-import me.tbsten.katachi.scan.internal.missingDescriptionsOf
+import me.tbsten.katachi.check.MissingDescription
+import me.tbsten.katachi.check.internal.missingDescriptionsOf
 
 /**
  * `missingDescriptionsOf`, the declaration-only half of step 5-3: which of a role's places have

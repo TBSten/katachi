@@ -5,18 +5,18 @@ import io.kotest.core.spec.style.FreeSpec
 import io.kotest.matchers.collections.shouldBeEmpty
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
+import me.tbsten.katachi.check.AmbiguousLayout
 import me.tbsten.katachi.check.internal.assert
 import me.tbsten.katachi.check.internal.report
 import me.tbsten.katachi.check.internal.validate
 import me.tbsten.katachi.dsl.gradle.module
 import me.tbsten.katachi.dsl.kotlin.ktFile
 import me.tbsten.katachi.fs.FsPath
-import me.tbsten.katachi.scan.AmbiguousLayout
 
 /**
  * [AmbiguousLayout] wired through the real check: `ArchitectureProcessContext.declaredEntries`,
  * `LayoutCheck`, `validate()` and `assert()` together, against a fake file system.
- * `AmbiguousLayoutSpec` (in `test.scan`) covers the detector's own rule in isolation.
+ * `AmbiguousLayoutSpec` covers the detector's own rule in isolation.
  */
 class AmbiguousLayoutCheckSpec : FreeSpec({
     "同じ glob を2つの役割が書くと Warning が1件になり assert() は落ちない" {

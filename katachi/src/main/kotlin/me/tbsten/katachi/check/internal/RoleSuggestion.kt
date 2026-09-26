@@ -1,7 +1,5 @@
 package me.tbsten.katachi.check.internal
 
-import me.tbsten.katachi.scan.internal.parentPath
-
 /**
  * A role declaration for [path], ready to paste into the definition.
  *
