@@ -33,6 +33,13 @@ public class KatachiDocsOptions {
     /** The registry key these arguments are for. Not configurable: it is katachi's own. */
     static final String KEY = "docs";
 
+    /**
+     * Where the documentation processor writes when {@code outputDir} is not given. A copy of
+     * {@code DEFAULT_OUTPUT_DIR} in {@code GenerateDocumentation.kt}; the plugin tells Gradle
+     * to watch it, so the two have to agree.
+     */
+    static final String DEFAULT_OUTPUT_DIR = "build/katachi/docs";
+
     private String outputDir;
     private KatachiDocsMode mode;
 

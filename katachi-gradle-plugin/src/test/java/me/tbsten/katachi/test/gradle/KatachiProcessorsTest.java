@@ -151,6 +151,55 @@ class KatachiProcessorsTest {
         assertEquals("skip", configuredArgs(processors).get("template").get("onExisting"));
     }
 
+    @Test
+    @DisplayName("outputs(...) を同じキーに2回書くと落ちる")
+    void declaringOutputsTwiceFails() {
+        KatachiProcessors processors = new KatachiProcessors();
+        processors.outputs("docs", outputs -> outputs.setReadsProjectFiles(true));
+
+        InvalidUserDataException failure = assertThrows(
+                InvalidUserDataException.class,
+                () -> processors.outputs("docs", outputs -> outputs.setReadsProjectFiles(false)));
+
+        assertTrue(
+                failure.getMessage().contains("\"docs\""),
+                "expected the message to name the key: " + failure.getMessage());
+    }
+
+    @Test
+    @DisplayName("outputs(...) の outputDir が .. でモジュールの外に出ると落ちる")
+    void anOutputDirClimbingOutFails() {
+        KatachiProcessors processors = new KatachiProcessors();
+
+        InvalidUserDataException failure = assertThrows(
+                InvalidUserDataException.class,
+                () -> processors.outputs("roleNames", outputs -> outputs.setOutputDir("../elsewhere")));
+
+        assertTrue(
+                failure.getMessage().contains("\"..\""),
+                "expected the message to point at the \"..\": " + failure.getMessage());
+    }
+
+    @Test
+    @DisplayName("outputs(...) の readsProjectFiles に null を渡すと落ちる")
+    void aNullReadsProjectFilesFails() {
+        KatachiProcessors processors = new KatachiProcessors();
+
+        assertThrows(
+                InvalidUserDataException.class,
+                () -> processors.outputs("roleNames", outputs -> outputs.setReadsProjectFiles(null)));
+    }
+
+    @Test
+    @DisplayName("outputs(...) のキーが不正なら落ちる")
+    void anInvalidOutputsKeyFails() {
+        KatachiProcessors processors = new KatachiProcessors();
+
+        assertThrows(
+                InvalidUserDataException.class,
+                () -> processors.outputs("role names", outputs -> outputs.setReadsProjectFiles(false)));
+    }
+
     /**
      * Calls the package-private {@code KatachiProcessors.getConfiguredArgs()}.
      *

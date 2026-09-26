@@ -1,5 +1,6 @@
 package me.tbsten.katachi.gradle;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -7,11 +8,15 @@ import java.util.Map;
 import java.util.Set;
 
 import org.gradle.api.InvalidUserDataException;
+import org.gradle.api.Task;
 import org.gradle.api.provider.MapProperty;
 import org.gradle.api.provider.Property;
+import org.gradle.api.specs.Spec;
 import org.gradle.api.tasks.Input;
+import org.gradle.api.tasks.Internal;
 import org.gradle.api.tasks.JavaExec;
 import org.gradle.api.tasks.Optional;
+import org.gradle.api.tasks.OutputDirectory;
 import org.gradle.api.tasks.options.Option;
 import org.gradle.work.DisableCachingByDefault;
 
@@ -30,6 +35,14 @@ import org.gradle.work.DisableCachingByDefault;
  * anything; this one starts one class and nothing else. Nothing on this path reads a test
  * engine, so {@code build/test-results/} stays absent after a run -- which is the mechanical
  * way to tell the two apart.
+ *
+ * <p>It runs every time unless its processor declared, through
+ * {@link KatachiProcessors#outputs}, that it reads no file of the project and where it writes.
+ * Only then is {@link #getCacheableOutputDirectory()} present, and only then may Gradle call the
+ * task up to date or restore it from the build cache: its inputs are the test runtime classpath
+ * (the definition) and the arguments, which Gradle already tracks. A processor that walks the
+ * project has every project file as an input, which is not declared anywhere, so it is never
+ * skipped.
  *
  * <p>{@code ignoreExitValue} is left at its default of {@code false}, and nothing here may set
  * it to {@code true}. That default is what makes the entry point's failures visible: an
@@ -64,13 +77,25 @@ import org.gradle.work.DisableCachingByDefault;
 // Stated on this type rather than left to the one JavaExec carries. `java-gradle-plugin` runs
 // `validatePlugins` with stricter validation, which asks every task type to say whether its
 // output may be cached; saying it here keeps the answer independent of whether Gradle treats
-// the supertype's annotation as inherited. It is also the true answer: what a processor writes
-// is decided at run time by the processor and its `--arg`, so there is no declared output for a
-// cache to key on.
+// the supertype's annotation as inherited. It is also the default answer: what an arbitrary
+// processor writes, and what it reads, is not known to the plugin. The `cacheIf` in the
+// constructor switches caching back on for a processor that declared both.
 @DisableCachingByDefault(because = "Runs an arbitrary processor whose outputs are not declared")
 public abstract class KatachiProcessorTask extends JavaExec {
 
     private List<String> processorArgs = new ArrayList<>();
+
+    /** Wires the one condition under which a run may be skipped or come from the build cache. */
+    public KatachiProcessorTask() {
+        getReadsProjectFiles().convention(true);
+        // Needed as well as the null output: an @OutputDirectory property that is present on the
+        // type but null still counts as "outputs declared", which alone would let Gradle call a
+        // run with no output files up to date.
+        getOutputs().upToDateWhen(new HasCacheableOutput());
+        getOutputs().cacheIf(
+                "the processor declared that it reads no project file, and where it writes",
+                new HasCacheableOutput());
+    }
 
     /** A processor argument as {@code key=value}. Repeatable; may itself contain {@code =}. */
     @Input
@@ -113,6 +138,97 @@ public abstract class KatachiProcessorTask extends JavaExec {
      */
     @Input
     public abstract MapProperty<String, String> getConfiguredArgs();
+
+    /**
+     * Whether the processor reads files of the project. Set by {@link KatachiPlugin} from
+     * {@code outputs(...)}; {@code true} unless declared otherwise.
+     */
+    @Input
+    public abstract Property<Boolean> getReadsProjectFiles();
+
+    /**
+     * The directory the processor writes when {@link #getOutputDirArg()} is not given, relative
+     * to the working directory or absolute. Set by {@link KatachiPlugin}.
+     *
+     * <p>{@code @Internal}: where the output lands is already tracked through
+     * {@link #getCacheableOutputDirectory()}, and a path here would only tie the cache key to
+     * one machine.
+     */
+    @Internal
+    public abstract Property<String> getDeclaredOutputDir();
+
+    /** The argument that replaces {@link #getDeclaredOutputDir()}. Set by {@link KatachiPlugin}. */
+    @Input
+    @Optional
+    public abstract Property<String> getOutputDirArg();
+
+    /**
+     * Argument values under which the processor writes nothing, such as {@code mode=check} for
+     * {@code docs}. Set by {@link KatachiPlugin}.
+     */
+    @Input
+    public abstract MapProperty<String, String> getWritesNothingWhen();
+
+    /**
+     * The directory this run writes, when Gradle may skip or cache the run; {@code null}
+     * otherwise.
+     *
+     * <p>{@code null} -- no output at all, so the task runs every time -- when the processor may
+     * read the project, declared no output directory, or is given an argument under which it
+     * writes nothing. The last one matters for {@code docs --arg mode=check}: a check that
+     * compares files on disk would otherwise be called up to date without comparing them.
+     *
+     * @return the output directory resolved against the working directory, or {@code null}.
+     */
+    @OutputDirectory
+    @Optional
+    public File getCacheableOutputDirectory() {
+        if (getReadsProjectFiles().getOrElse(true)) {
+            return null;
+        }
+        for (Map.Entry<String, String> entry : getWritesNothingWhen().get().entrySet()) {
+            if (entry.getValue().equals(argValue(entry.getKey()))) {
+                return null;
+            }
+        }
+        String path = getOutputDirArg().isPresent() ? argValue(getOutputDirArg().get()) : null;
+        if (path == null) {
+            path = getDeclaredOutputDir().getOrNull();
+        }
+        if (path == null) {
+            return null;
+        }
+        File file = new File(path);
+        File resolved = file.isAbsolute() ? file : new File(getWorkingDir(), path);
+        return resolved.toPath().normalize().toFile();
+    }
+
+    /**
+     * The value this run gives the argument {@code name}: the command line's first, then the
+     * build script's, the order {@link #exec()} sends them in. A malformed {@code --arg} is
+     * skipped here; {@link #exec()} is the one that reports it.
+     */
+    private String argValue(String name) {
+        String prefix = name + "=";
+        for (String rawArg : getProcessorArgs()) {
+            if (rawArg.startsWith(prefix)) {
+                return rawArg.substring(prefix.length());
+            }
+        }
+        return getConfiguredArgs().get().get(name);
+    }
+
+    /**
+     * The {@code upToDateWhen} and {@code cacheIf} condition. A named class rather than a lambda, because the
+     * configuration cache stores the spec and a plain Java lambda is not serializable.
+     */
+    static final class HasCacheableOutput implements Spec<Task> {
+        @Override
+        public boolean isSatisfiedBy(Task task) {
+            return task instanceof KatachiProcessorTask
+                    && ((KatachiProcessorTask) task).getCacheableOutputDirectory() != null;
+        }
+    }
 
     /**
      * Validates this run's configuration and builds the argv the entry point reads, then starts

@@ -126,6 +126,18 @@ public class KatachiPlugin implements Plugin<Project> {
                     Map<String, String> forKey = processors.getConfiguredArgs().get(key);
                     return forKey == null ? Collections.<String, String>emptyMap() : forKey;
                 }));
+                // Read when the task is realized, like the description: an `outputs(...)` or a
+                // `register("docs", ...)` written after this point still decides the answer.
+                task.getReadsProjectFiles().set(project.provider(
+                        () -> processors.resolvedOutputs(key).getReadsProjectFiles()));
+                task.getDeclaredOutputDir().set(project.provider(() -> {
+                    Object outputDir = processors.resolvedOutputs(key).getOutputDir();
+                    return outputDir == null ? null : outputDir.toString();
+                }));
+                task.getOutputDirArg().set(project.provider(
+                        () -> processors.resolvedOutputs(key).getOutputDirArg()));
+                task.getWritesNothingWhen().set(project.provider(
+                        () -> processors.resolvedOutputs(key).getWritesNothingWhen()));
             });
         });
 

@@ -112,6 +112,7 @@ public class KatachiProcessors {
     /** Registrations in the order {@link #register} was called, key to class name. */
     private final Map<String, String> registrations = new LinkedHashMap<>();
     private final Map<String, KatachiProcessorArgs> configuredArgs = new LinkedHashMap<>();
+    private final Map<String, KatachiProcessorOutputs> declaredOutputs = new LinkedHashMap<>();
     private final KatachiDocsOptions docs = new KatachiDocsOptions();
     private final KatachiTemplateOptions template = new KatachiTemplateOptions();
     private final List<Consumer<String>> keyAddedListeners = new ArrayList<>();
@@ -253,6 +254,69 @@ public class KatachiProcessors {
         KatachiProcessorArgs args = new KatachiProcessorArgs(key);
         action.execute(args);
         configuredArgs.put(key, args);
+    }
+
+    /**
+     * Declares what a processor reads and writes, so that its task can be up to date or come
+     * from the build cache.
+     *
+     * <p>Without this, a processor task runs every time. See {@link KatachiProcessorOutputs} for
+     * what the declaration promises. The key does not have to be registered yet, and may be one
+     * of the defaults: {@code outputs("docs") { readsProjectFiles = true }} makes
+     * {@code katachiDocs} run every time again.
+     *
+     * <pre>{@code
+     * katachi {
+     *     processors {
+     *         register("roleNames", "com.example.processors.RoleNames")
+     *         outputs("roleNames") {
+     *             readsProjectFiles = false
+     *             outputDir = "build/katachi/roleNames"
+     *         }
+     *     }
+     * }
+     * }</pre>
+     *
+     * @throws InvalidUserDataException when the key is not one a processor may have, or when the
+     *     same key is declared twice.
+     */
+    public void outputs(String key, Action<? super KatachiProcessorOutputs> action) {
+        if (key == null || key.isEmpty() || !KEY_PATTERN.matcher(key).matches()) {
+            throw new InvalidUserDataException(
+                    "Invalid katachi processor key \"" + key + "\" in outputs(...). "
+                            + "Keys may hold only letters, digits, underscore and hyphen.");
+        }
+        if (declaredOutputs.containsKey(key)) {
+            throw new InvalidUserDataException(
+                    "katachi processor key \"" + key + "\" has outputs(...) declared twice. "
+                            + "Write one block per key, holding the whole declaration.");
+        }
+        KatachiProcessorOutputs outputs = new KatachiProcessorOutputs(key);
+        action.execute(outputs);
+        declaredOutputs.put(key, outputs);
+    }
+
+    /**
+     * What the task of {@code key} is told about its processor's reads and writes: katachi's own
+     * declaration for its documentation processor, with {@link #outputs} laid over it.
+     *
+     * <p>katachi's declaration applies only while {@code docs} still points at katachi's own
+     * class. A replacement is unknown code, so it starts from "reads the project".
+     */
+    KatachiProcessorOutputs resolvedOutputs(String key) {
+        KatachiProcessorOutputs base = new KatachiProcessorOutputs(key);
+        base.setReadsProjectFiles(true);
+        if (KatachiDocsOptions.KEY.equals(key)
+                && DEFAULT_REGISTRATIONS.get(key).equals(getRegistrations().get(key))) {
+            // GenerateDocumentation reads the declarations only (ModuleIndex.unresolved, no
+            // filesOf), writes nothing but its outputDir, and writes nothing at all in check mode.
+            base.setReadsProjectFiles(false);
+            base.setOutputDir(KatachiDocsOptions.DEFAULT_OUTPUT_DIR);
+            base.setOutputDirArg("outputDir");
+            base.writesNothingWhen("mode", KatachiDocsMode.CHECK.wireName());
+        }
+        KatachiProcessorOutputs declared = declaredOutputs.get(key);
+        return declared == null ? base : base.overriddenBy(declared);
     }
 
     /** What {@code katachiDocs} is given every run. See {@link #docs(Action)}. */
