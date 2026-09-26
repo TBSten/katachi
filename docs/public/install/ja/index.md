@@ -433,7 +433,7 @@ import me.tbsten.katachi.konsist.konsist                 // konsist { } を書�
 | 誤り（1つの役割に詰めたもの） | 直し方 |
 |---|---|
 | `Gradle` に `settings.gradle.kts`・`gradle.properties`・`gradlew`・version catalog・wrapper、さらに `.gitignore` や `README.md` まで | Gradle のファイルは `gradle()` の1行に置き換え、`.gitignore` や `README.md` はそれぞれ別の役割にする。ドキュメントのレシピ「Gradle」にある、これらを1つの役割にまとめた形は写さない |
-| `ProjectMeta` / `RootDoc` に `README`・`LICENSE`・`CONTRIBUTING`・`CLAUDE.md` | `Readme` / `License` / … と1種類ずつ役割にし、group で束ねる |
+| `ProjectMeta` / `RootDoc` に `README`・`LICENSE`・`CONTRIBUTING`・`CLAUDE.md` | `ProjectReadme` / `License` / … と1種類ずつ役割にし、group で束ねる。役割名を `Readme` にすると、ドキュメント生成で索引の `README.md` と大文字小文字だけ違う名前になり、`katachiDocs` が落ちる |
 | `AgentAndCiConfig` に `.claude/`・`.github/`・`.run/` | ツールごとに役割にする（中身を検査しないなら、それぞれ `ignore()` でよい） |
 | `AndroidApp` にモジュールの中身まるごと（Manifest・Activity・`res/`・`build.gradle.kts`） | モジュールは group にし、中は種類ごとの役割にする |
 | 本体と、そのテストを同じ役割に | テストは別の役割にする |
@@ -450,7 +450,7 @@ import me.tbsten.katachi.konsist.konsist                 // konsist { } を書�
 
 // ○ 種類ごとに役割を分け、group で束ねる
 "meta".group {
-    "Readme" { layout { "README.md".file() } }
+    "ProjectReadme" { layout { "README.md".file() } }
     "License" { layout { "LICENSE".file() } }
     "GitIgnore" { layout { ".gitignore".file() } }
 }
@@ -521,7 +521,7 @@ import me.tbsten.katachi.konsist.konsist                 // konsist { } を書�
 
 - ディレクトリ名は group 名・役割名を先頭小文字にしたもの（`useCase`）、ファイル名は先頭大文字（`UseCase.kt`）。package 宣言はディレクトリに合わせる
 - group の中の group は、同じ形で1段深くする（`domain/model/Model.kt`、`domain/model/entity/Entity.kt`）
-- group に属さない役割は `<role>/<Role>.kt`（例: `readme/Readme.kt`）
+- group に属さない役割は `<role>/<Role>.kt`（例: `projectReadme/ProjectReadme.kt`）
 - 1ファイルに書くのは group か役割の**1つだけ**。group のファイルは、その下の役割の関数を呼ぶだけにする
 - 分けた関数は `DeclarationContainerScope` の拡張関数にし、呼ぶ側で import する（拡張関数は完全修飾名では呼べない）
 

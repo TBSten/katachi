@@ -431,7 +431,7 @@ In the field tests of the install kit, these shapes turned up in 13 projects.
 | Mistake (packed into one role) | Fix |
 |---|---|
 | `Gradle` holding `settings.gradle.kts`, `gradle.properties`, `gradlew`, the version catalog and the wrapper — and then `.gitignore` or even `README.md` | Replace the Gradle files with the one line `gradle()`, and give `.gitignore` and `README.md` a role each. Do not copy the shape in the documentation's "Gradle" recipe, which puts these in one role |
-| `ProjectMeta` / `RootDoc` holding `README`, `LICENSE`, `CONTRIBUTING`, `CLAUDE.md` | One role per kind — `Readme` / `License` / … — bundled in a group |
+| `ProjectMeta` / `RootDoc` holding `README`, `LICENSE`, `CONTRIBUTING`, `CLAUDE.md` | One role per kind — `ProjectReadme` / `License` / … — bundled in a group. A role named `Readme` gets a documentation page whose name differs from the index `README.md` only in case, and `katachiDocs` fails |
 | `AgentAndCiConfig` holding `.claude/`, `.github/`, `.run/` | One role per tool (if you do not check their contents, `ignore()` in each is fine) |
 | `AndroidApp` holding a whole module's contents (Manifest, Activity, `res/`, `build.gradle.kts`) | Make the module a group, with a role per kind inside |
 | Production code and its tests in the same role | Put the tests in a role of their own |
@@ -448,7 +448,7 @@ In the field tests of the install kit, these shapes turned up in 13 projects.
 
 // ✓ One role per kind, bundled in a group
 "meta".group {
-    "Readme" { layout { "README.md".file() } }
+    "ProjectReadme" { layout { "README.md".file() } }
     "License" { layout { "LICENSE".file() } }
     "GitIgnore" { layout { ".gitignore".file() } }
 }
@@ -519,7 +519,7 @@ Tidy up the 3-2 definition **without changing the check result.** When unsure ab
 
 - Directory names are the group or role name with a lowercase first letter (`useCase`); file names start with an uppercase letter (`UseCase.kt`). The package declaration follows the directory
 - A group inside a group goes one level deeper the same way (`domain/model/Model.kt`, `domain/model/entity/Entity.kt`)
-- A role outside any group is `<role>/<Role>.kt` (e.g. `readme/Readme.kt`)
+- A role outside any group is `<role>/<Role>.kt` (e.g. `projectReadme/ProjectReadme.kt`)
 - Each file holds **exactly one** group or role. A group's file only calls the functions of the roles under it
 - Make the split functions extension functions on `DeclarationContainerScope`, and import them where they are called (an extension function cannot be called by its fully qualified name)
 
