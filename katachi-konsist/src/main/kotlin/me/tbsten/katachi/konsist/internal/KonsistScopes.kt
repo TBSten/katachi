@@ -1,9 +1,9 @@
 package me.tbsten.katachi.konsist.internal
 
-import com.lemonappdev.konsist.api.Konsist
 import com.lemonappdev.konsist.api.container.KoScope
 import com.lemonappdev.konsist.api.declaration.KoFileDeclaration
 import com.lemonappdev.konsist.core.container.KoScopeCore
+import com.lemonappdev.konsist.core.util.KotlinFileParser
 import java.io.File
 import me.tbsten.katachi.dsl.FileConstraintSubject
 import me.tbsten.katachi.konsist.KatachiKonsistNoKotlinFilesException
@@ -15,33 +15,38 @@ import me.tbsten.katachi.konsist.KonsistScope
  *
  * `.kts` is deliberately absent, and this is measured rather than assumed: Konsist's
  * `File.isKotlinFile` is `name.endsWith(".kt")`, so a `build.gradle.kts` inside what a
- * constraint covers never reaches the parser however the layout was written. Asking for one
- * would make the count check below fail on every constraint that happens to cover a script —
- * see `KonsistAssumptionsSpec`, which pins the behaviour.
+ * constraint covers never reaches the parser however the layout was written, and
+ * `KotlinFileParser.getKoFile` rejects one outright. Asking for one would fail every constraint
+ * that happens to cover a script — see `KonsistAssumptionsSpec`, which pins both.
  */
 private const val PARSED_EXTENSION: String = ".kt"
 
-/** The parsed scope of one directory set, keyed so that two backends cannot collide on it. */
-private data class ScopeKey(val directories: List<String>)
+/** One file's parse within a run, keyed so that two backends cannot collide on it. */
+private data class ParsedFileKey(val absolutePath: String)
 
 /**
  * A Konsist scope holding exactly the files [subject] covers, and nothing else.
  *
- * Konsist parses from disk by directory, so the scope is built by handing it the smallest set
- * of directories covering the wanted files and then keeping only the files themselves. Both
- * halves matter: parsing is what costs time, so it is memoised across the constraints of one
- * run and, per file, across runs in [ParsedFileCache]; and keeping only the wanted files is what
- * keeps a constraint from seeing a sibling file its layout block does not cover.
+ * Each wanted file is parsed on its own, so a constraint costs the files it covers rather than
+ * everything under their directories, and a sibling it does not cover is never read. Parsing is
+ * what costs time, so each file is memoised across the constraints of one run and, across runs,
+ * in [ParsedFileCache].
  *
- * Absolute paths throughout. `Konsist.scopeFromExternalDirectories` never resolves a project
- * root of its own — which is why `KoFileDeclaration.projectPath` is unusable here, as
- * [KonsistScope]'s own documentation says — so a relative path would be resolved against the
- * JVM's working directory rather than against the project katachi walked.
+ * Konsist's public API only builds a scope from directories (or from paths relative to a project
+ * root it finds for itself), so the parse and the scope come from `konsist.core`:
+ * `KotlinFileParser.getKoFile` is what every directory scope calls per file, and `KoScopeCore`
+ * is the class every one of them returns. Neither is covered by Konsist's compatibility
+ * promise; `KonsistAssumptionsSpec` (9) pins both against the version katachi depends on.
+ *
+ * Absolute paths throughout. Konsist never resolves a project root of its own here — which is
+ * why `KoFileDeclaration.projectPath` is unusable, as [KonsistScope]'s own documentation says —
+ * so a relative path would be resolved against the JVM's working directory rather than against
+ * the project katachi walked.
  *
  * @throws KatachiKonsistNoKotlinFilesException when the constraint covers files but none that
  *   Konsist parses, so the block would be asked of an empty scope and pass by empty truth.
- * @throws KatachiKonsistScopeIncompleteException when the narrowing loses a file, which can
- *   only mean katachi's own absolute paths and Konsist's have stopped matching.
+ * @throws KatachiKonsistScopeIncompleteException when a wanted file could not be parsed as the
+ *   path katachi asked for — it vanished after the walk, or Konsist reports a different path.
  */
 internal fun konsistScopeOf(subject: FileConstraintSubject): KoScope {
     val wanted = subject.files
@@ -64,8 +69,6 @@ internal fun konsistScopeOf(subject: FileConstraintSubject): KoScope {
     if (parsedFiles.size != wanted.size) {
         throw KatachiKonsistScopeIncompleteException(given = wanted.size, visible = parsedFiles.size)
     }
-    // Konsist's public API only builds a scope from a directory; this is the class every one of
-    // those calls returns, and `slice` of one is exactly this constructor over a filtered list.
     return KoScopeCore(parsedFiles)
 }
 
@@ -73,45 +76,34 @@ internal fun konsistScopeOf(subject: FileConstraintSubject): KoScope {
  * Konsist's parse of each of [wanted], at most once per file per run, and not at all for a
  * file [ParsedFileCache] already holds under its current stamp.
  *
- * Only the files the cache missed are handed to Konsist, by directory, so a second run over an
- * unchanged tree parses nothing. Every stamp is taken before the parse it guards, and a parse
- * the run memo already held is never stored: it may predate the stamp.
+ * Every stamp is taken before the parse it guards, and a parse the run memo already held is
+ * never stored: it may predate the stamp. A file that is gone, or that Konsist reports under
+ * another path, is left out, so the caller's count check turns it into an exception rather than
+ * a scope that silently lacks it.
  */
 private fun parsedFilesOf(subject: FileConstraintSubject, wanted: Set<String>): List<KoFileDeclaration> {
-    val stamps = wanted.associateWith { ParsedFileCache.stampOf(it) }
     val found = HashMap<String, KoFileDeclaration>(wanted.size)
-    for ((path, stamp) in stamps) {
-        val cached = stamp?.let { ParsedFileCache.get(path, it) } ?: continue
-        found[path] = cached
-    }
-    val missed = wanted - found.keys
-    if (missed.isNotEmpty()) {
-        val directories = minimalDirectories(missed.mapTo(mutableSetOf()) { it.substringBeforeLast('/') })
+    for (path in wanted) {
+        val stamp = ParsedFileCache.stampOf(path)
+        val cached = stamp?.let { ParsedFileCache.get(path, it) }
+        if (cached != null) {
+            found[path] = cached
+            continue
+        }
+        val file = File(path)
+        // Deleted since the walk. `getKoFile` would reject it with a bare `require`; left out,
+        // it becomes the count mismatch that names the problem.
+        if (!file.isFile) continue
         var parsedHere = false
-        val parsed = subject.memo(ScopeKey(directories), KoScope::class) {
+        val parsed = subject.memo(ParsedFileKey(path), KoFileDeclaration::class) {
             parsedHere = true
-            Konsist.scopeFromExternalDirectories(directories)
+            KotlinFileParser.getKoFile(file)
         }
-        for (file in parsed.files) {
-            // Konsist reports the OS separator, so it is normalised before being looked up.
-            val path = File(file.path).invariantSeparatorsPath
-            if (path !in missed) continue
-            found[path] = file
-            val stamp = stamps[path]
-            if (parsedHere && stamp != null) ParsedFileCache.put(path, stamp, file)
-        }
+        // Konsist reports the OS separator, so it is normalised before being compared.
+        if (File(parsed.path).invariantSeparatorsPath != path) continue
+        found[path] = parsed
+        if (parsedHere && stamp != null) ParsedFileCache.put(path, stamp, parsed)
     }
     // Sorted by path, the order a Konsist scope lists its files in.
     return found.entries.sortedBy { it.key }.map { it.value }
 }
-
-/**
- * [directories] with every entry that an ancestor already covers dropped.
- *
- * `scopeFromExternalDirectories` walks recursively, so handing it both `a` and `a/b` parses
- * everything under `a/b` twice. Sorted so that one directory set always produces one
- * [ScopeKey] and the memo hits.
- */
-private fun minimalDirectories(directories: Set<String>): List<String> = directories
-    .filterNot { candidate -> directories.any { it != candidate && candidate.startsWith("$it/") } }
-    .sorted()

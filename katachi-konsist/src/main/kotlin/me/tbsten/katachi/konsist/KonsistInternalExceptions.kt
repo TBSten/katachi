@@ -5,11 +5,11 @@ import me.tbsten.katachi.KatachiInternalException
 /**
  * Konsist did not hand back every file katachi asked it to parse.
  *
- * The scope is built from absolute directory paths and then narrowed to an exact set of
- * absolute file paths. If one of those paths does not compare equal — a separator, a symlink,
- * a case difference — the file drops out of the scope, the block sees fewer declarations than
- * it should, and the constraint passes for the wrong reason. Counting is what makes that
- * loud instead of silent.
+ * The scope is built by parsing an exact set of absolute file paths, one by one. If a file is
+ * gone by the time it is parsed, or Konsist reports it under a path that does not compare
+ * equal — a separator, a symlink, a case difference — it drops out of the scope, the block sees
+ * fewer declarations than it should, and the constraint passes for the wrong reason. Counting
+ * is what makes that loud instead of silent.
  *
  * **This is katachi's bug, not the caller's.** Nothing a definition can say causes it, which
  * is why the base is [KatachiInternalException] and why the message asks for a report.
@@ -22,7 +22,7 @@ import me.tbsten.katachi.KatachiInternalException
  * ```
  *
  * @property given how many files katachi asked Konsist for.
- * @property visible how many of them came back in the sliced scope.
+ * @property visible how many of them came back in the scope.
  */
 public class KatachiKonsistScopeIncompleteException internal constructor(
     /**
@@ -35,9 +35,9 @@ public class KatachiKonsistScopeIncompleteException internal constructor(
      */
     public val given: Int,
     /**
-     * How many of them came back in the sliced scope.
+     * How many of them came back in the scope.
      *
-     * ## Example 1: read back how many files survived the slice
+     * ## Example 1: read back how many files made it into the scope
      * ```kt
      * cause.shouldBeInstanceOf<KatachiKonsistScopeIncompleteException>().visible shouldBe 2
      * ```

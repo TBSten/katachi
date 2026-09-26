@@ -1,9 +1,13 @@
 package me.tbsten.katachi.test.konsist
 
 import com.lemonappdev.konsist.api.Konsist
+import com.lemonappdev.konsist.api.container.KoScope
 import com.lemonappdev.konsist.api.ext.list.withNameEndingWith
 import com.lemonappdev.konsist.api.provider.KoBaseProvider
 import com.lemonappdev.konsist.api.provider.KoLocationProvider
+import com.lemonappdev.konsist.core.container.KoScopeCore
+import com.lemonappdev.konsist.core.util.KotlinFileParser
+import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.assertions.withClue
 import io.kotest.core.spec.style.FreeSpec
 import io.kotest.matchers.collections.shouldBeEmpty
@@ -19,11 +23,11 @@ import me.tbsten.katachi.konsist.KonsistScope
  * What katachi is allowed to assume about Konsist 0.17.3, measured rather than remembered.
  *
  * Konsist 0.17.3 is the last release of that line (2024-12), so these are not assumptions
- * about "Konsist" but about one frozen artifact. Every one of them is load bearing: the
- * evaluator written on top of this scope calls `scopeFromExternalDirectories` with absolute
- * paths, narrows the result with `slice`, compares counts to notice files it silently lost,
- * and reads `location` for line numbers. When one of these goes red, the evaluator is wrong
- * rather than the test.
+ * about "Konsist" but about one frozen artifact. The evaluator parses each covered file on its
+ * own with `KotlinFileParser.getKoFile` (9), builds the scope with `KoScopeCore`, compares counts
+ * to notice files it silently lost, and reads `location` for line numbers. (1) to (5) pin the
+ * directory API it used before, which is still what that parse has to agree with. When one of
+ * these goes red, the evaluator is wrong rather than the test.
  */
 class KonsistAssumptionsSpec : FreeSpec({
     "(1) scopeFromExternalDirectories が絶対パスのディレクトリを受け取る" {
@@ -274,6 +278,66 @@ class KonsistAssumptionsSpec : FreeSpec({
         bound.isEmpty() shouldBe true
 
         listOf(fromKonsistScopeKDoc, fromMustKDoc, fromMustNotAndEmptyKDoc).size shouldBe 3
+    }
+
+    // Not Konsist's public API: `KotlinFileParser` and `KoScopeCore` live in `konsist.core`, which
+    // makes no compatibility promise. `konsistScopeOf` parses only the files a constraint covers
+    // through these two, so a Konsist upgrade that moves or reshapes them has to fail here —
+    // at compile time where it can, and by value where it cannot.
+    "(9) core の KotlinFileParser と KoScopeCore（API 保証外）" - {
+        "getKoFile は絶対パスのファイル1つを解析し、path はその絶対パスになる" {
+            fixtureProject("src/main/kotlin/com/example/Service.kt" to SERVICE_KT) { root ->
+                val path = root.fixturePath("src/main/kotlin/com/example/Service.kt")
+
+                val file = KotlinFileParser.getKoFile(File(path))
+
+                File(file.path).invariantSeparatorsPath shouldBe path
+                file.classes().map { it.name } shouldBe listOf("Service")
+            }
+        }
+
+        "getKoFile の解析はディレクトリからの解析と同じ宣言と行番号を持つ" {
+            fixtureProject("src/main/kotlin/com/example/Service.kt" to SERVICE_KT) { root ->
+                val path = root.fixturePath("src/main/kotlin/com/example/Service.kt")
+
+                val single = KotlinFileParser.getKoFile(File(path))
+                val fromDirectory = Konsist.scopeFromExternalDirectories(listOf(root.fixturePath("src"))).files.single()
+
+                single.text shouldBe fromDirectory.text
+                single.classes().map { it.name to it.location } shouldBe
+                    fromDirectory.classes().map { it.name to it.location }
+                single.functions(includeNested = true).map { it.name } shouldBe
+                    fromDirectory.functions(includeNested = true).map { it.name }
+            }
+        }
+
+        "KoScopeCore は渡したファイルだけを path 順に持ち、宣言を問い合わせられる" {
+            fixtureProject(
+                "src/main/kotlin/com/example/Service.kt" to SERVICE_KT,
+                "src/main/kotlin/com/example/Repository.kt" to REPOSITORY_KT,
+                "src/main/kotlin/com/example/Main.kt" to MAIN_KT,
+            ) { root ->
+                val service = KotlinFileParser.getKoFile(File(root.fixturePath("src/main/kotlin/com/example/Service.kt")))
+                val repository =
+                    KotlinFileParser.getKoFile(File(root.fixturePath("src/main/kotlin/com/example/Repository.kt")))
+
+                val scope: KoScope = KoScopeCore(listOf(service, repository))
+
+                scope.files.map { File(it.path).name } shouldBe listOf("Repository.kt", "Service.kt")
+                scope.classes().map { it.name }.sorted() shouldBe listOf("Repository", "Service")
+            }
+        }
+
+        "getKoFile は .kt 以外と存在しないファイルを IllegalArgumentException で拒む" {
+            fixtureProject("build.gradle.kts" to "plugins { }\n") { root ->
+                shouldThrow<IllegalArgumentException> {
+                    KotlinFileParser.getKoFile(File(root.fixturePath("build.gradle.kts")))
+                }
+                shouldThrow<IllegalArgumentException> {
+                    KotlinFileParser.getKoFile(File(root.fixturePath("src/Missing.kt")))
+                }
+            }
+        }
     }
 })
 
