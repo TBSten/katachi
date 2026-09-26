@@ -34,10 +34,10 @@ cd sample/android
 ./gradlew :architecture-test:test
 
 # 定義からドキュメントを docs/ に生成する
-./gradlew :architecture-test:runKatachiProcessor --processor=docs
+./gradlew :architecture-test:katachiDocs
 
 # Component のテンプレートから :ui の component package に AppLabel.kt を生成する
-./gradlew :architecture-test:runKatachiProcessor --processor=template --arg roleName=Component --arg name=Label
+./gradlew :architecture-test:katachiTemplate --arg roleName=Component --arg name=Label
 ```
 
 リポジトリのルートからは、CI と同じ一式（テンプレートから生成 → 検査 → 生成物を削除、まで含む）を1コマンドで回せます。

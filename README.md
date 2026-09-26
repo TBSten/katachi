@@ -169,24 +169,6 @@ architecture {
 - `gitTracked()` and `wholeTree()` are top-level functions in `me.tbsten.katachi.dsl` taking `ArchitectureScope` as a context parameter. They can only be written inside `architecture { }`, and you can add your own the same way.
 - **`FileSelection` is yours to implement.** If something other than git owns the file list — Bazel, a generated manifest, an in-house tool — implement `FileSelection` and hand it to `files`.
 
-## Constraining what a file declares
-
-Placement is only half of it. `konsist { }` puts constraints on the contents of a file, in the same definition, using [Konsist](https://docs.konsist.lemonappdev.com/)'s API.
-
-```kotlin
-"UseCase" {
-    layout {
-        "domain" / "src/main/kotlin/com/example/useCase" / "*UseCase".ktFile()
-    }
-
-    "has exactly one invoke function".konsist {
-        classes().must { it.functions().map { f -> f.name } == listOf("invoke") }
-    }
-}
-```
-
-The name you give the constraint is what shows up in the violation report, so write it as the thing that must hold. Both kinds of violation — placement and contents — arrive in a single message.
-
 ## Modules
 
 | Module | What it is |
@@ -214,19 +196,6 @@ it; what the samples share — design decisions and build setup — lives in
 ./gradlew checkSamples  # every sample, through its own wrapper
 ```
 
-## Roadmap
-
-| Version | Theme |
-|---|---|
-| **v0.1** | The DSL, the check, and `konsist { }` |
-| **v0.2** | Gradle plugin and documentation generation from the same definition |
-| **v0.3** | `declarations { }` — declare what a file may declare, deny by default |
-| **v0.4+** | baseline, report output, vocabulary metrics — adopting katachi in an existing codebase |
-
-v0.1 targets **new projects.** Dropping katachi into an existing codebase surfaces every violation at once, and the mechanism for that (baseline) is deliberately last: ship it early and you get projects where katachi is installed and says nothing.
-
-See https://tbsten.github.io/katachi/roadmap/ for the detail.
-
 ## Development
 
 | | Version |
@@ -241,7 +210,3 @@ versions. The samples read it as `libs` and keep only their own dependencies in 
 (see [`sample/README.md`](sample/README.md) for the samples' own build setup).
 
 CI is `.github/workflows/ci.yml`: the library and each of the four samples in their own step, on every push to `main` and every pull request.
-
-## License
-
-MIT. See [LICENSE](./LICENSE).

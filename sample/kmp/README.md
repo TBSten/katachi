@@ -36,10 +36,10 @@ cd sample/kmp
 ./gradlew :architecture-test:test
 
 # 定義からドキュメントを docs/ に生成する
-./gradlew :architecture-test:runKatachiProcessor --processor=docs
+./gradlew :architecture-test:katachiDocs
 
 # Repository のテンプレートから :data の user package に ProfileRepository.kt と ProfileRepositoryImpl.kt を生成する
-./gradlew :architecture-test:runKatachiProcessor --processor=template --arg roleName=Repository --arg name=Profile
+./gradlew :architecture-test:katachiTemplate --arg roleName=Repository --arg name=Profile
 ```
 
 タスクは `:architecture-test:test` のように**モジュールのパスまで書いてください。**`test` とだけ書くと
@@ -60,6 +60,6 @@ KMP モジュールが iOS ターゲットを宣言していて、`check` が `c
 代わりに `:architecture-test:test`（katachi の検証）と `:app:android:testDebugUnitTest`（サンプルが
 KMP プロジェクトとしてコンパイルできることの検証）の両方を回す。`:architecture-test` は素の JVM
 モジュールで `:ui` / `:data` / `:feature:*` を一切参照しないので、片方だけでは足りない。これに加えて
-`:architecture-test:runKatachiProcessor --processor=layout,docs --arg mode=check` が続き、layout の
+`:architecture-test:katachiLayout :architecture-test:katachiDocs --arg mode=check` が続き、layout の
 スナップショットと生成ドキュメントが最新であることを検査する。既定値の正確な中身はルートの
 `build.gradle.kts` の `sampleBuilds` を参照。

@@ -28,9 +28,9 @@ cd sample/custom-processor
 ./gradlew :architecture-test:test
 
 # 自作の processor を1つずつ実行する
-./gradlew :architecture-test:runKatachiProcessor --processor=roleFileCount
-./gradlew :architecture-test:runKatachiProcessor --processor=roleTable --arg groups=core,testing --arg sortBy=Declaration
-./gradlew :architecture-test:runKatachiProcessor --processor=roleDocCoverage
+./gradlew :architecture-test:katachiRoleFileCount
+./gradlew :architecture-test:katachiRoleTable --arg groups=core,testing --arg sortBy=Declaration
+./gradlew :architecture-test:katachiRoleDocCoverage
 ```
 
 `--arg sortBy=Declaration` は、`build.gradle.kts` に書いた既定値 `Name` より優先されます。
