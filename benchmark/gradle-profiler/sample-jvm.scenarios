@@ -1,0 +1,40 @@
+# gradle-profiler scenarios for the katachi Gradle tasks, run against sample/jvm.
+#
+# What JMH in :benchmark cannot see: the Gradle side of katachi, i.e. configuration time, the
+# JVM that every `katachi<Key>` task starts, and whether a task stops being up to date or
+# cacheable. Run weekly by .github/workflows/gradle-profiler.yml; locally:
+#
+#   gradle-profiler --benchmark \
+#       --project-dir sample/jvm \
+#       --scenario-file benchmark/gradle-profiler/sample-jvm.scenarios \
+#       --gradle-user-home ~/.gradle \
+#       --output-dir .local/tmp/gradle-profiler-out
+#
+# `--warmups` / `--iterations` on the command line override the counts below, which is how a
+# quick local try-out stays short (`--warmups 1 --iterations 1`).
+#
+# The file lives next to the benchmarks rather than in sample/jvm, so that the sample -- a
+# model of what a user writes -- does not carry tooling of katachi's own.
+
+default-scenarios = ["architectureTest", "katachiDocs"]
+
+# The katachi check as a user runs it: the test task of the architecture-test module.
+# `cleanTest` plus `--no-build-cache` make every iteration run the tests again instead of
+# finding them up to date or restoring them from the cache (the sample turns the cache on).
+architectureTest {
+    title = ":architecture-test:test"
+    tasks = [":architecture-test:test"]
+    cleanup-tasks = [":architecture-test:cleanTest"]
+    gradle-args = ["--no-build-cache"]
+    warm-ups = 3
+    iterations = 10
+}
+
+# A processor task: a JavaExec that starts a JVM, loads the definition and writes the docs.
+# It is never up to date, so nothing has to be cleaned between iterations.
+katachiDocs {
+    title = ":architecture-test:katachiDocs"
+    tasks = [":architecture-test:katachiDocs"]
+    warm-ups = 3
+    iterations = 10
+}

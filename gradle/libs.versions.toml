@@ -28,6 +28,10 @@ dokka = "2.2.0"
 # ほかは kotest 経由。あのモジュールは Java だけで書かれていて kotest を使えない
 # （Kotlin plugin を付けると kotlin-stdlib が POM に載る）。
 junit = "5.14.4"
+# 性能ベンチマーク（公開しない :benchmark だけが使う）。jmh は JMH 本体、jmhPlugin は
+# me.champeau.jmh の Gradle プラグイン。公開モジュールには入らない。
+jmh = "1.37"
+jmhPlugin = "0.7.3"
 
 [libraries]
 # katachi itself. Samples depend on it as `testImplementation(libs.katachi)`; the
@@ -79,3 +83,5 @@ kotlinPluginSerialization = { id = "org.jetbrains.kotlin.plugin.serialization", 
 kotlinPluginCompose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 vanniktechPublish = { id = "com.vanniktech.maven.publish", version.ref = "vanniktechPublish" }
 dokka = { id = "org.jetbrains.dokka", version.ref = "dokka" }
+# :benchmark だけが付ける。公開モジュールの publish 設定には関わらない。
+jmh = { id = "me.champeau.jmh", version.ref = "jmhPlugin" }

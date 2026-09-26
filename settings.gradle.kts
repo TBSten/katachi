@@ -42,3 +42,7 @@ include(":architecture-test")
 // Under `tool/` rather than at the top level because it is build tooling, not a published
 // artifact; `:tool` is only the implicit parent and has no build file of its own.
 include(":tool:dokka")
+
+// Performance benchmarks (JMH), never published and not part of `check`. They run on demand
+// (`./gradlew :benchmark:jmh`) and use the synthetic projects from `:katachi`'s test fixtures.
+include(":benchmark")
