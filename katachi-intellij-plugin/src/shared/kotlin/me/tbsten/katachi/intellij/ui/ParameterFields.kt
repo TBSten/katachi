@@ -45,6 +45,9 @@ internal val WideLabelWidth = 120.dp
 /** The ▸ of String fields; other fields keep the slot empty so that right edges line up. */
 private val ToggleSlot = 16.dp
 
+/** The tallest a multi-line String field grows before it scrolls. */
+private val MultilineMaxHeight = 160.dp
+
 /** 🔗 / unlink always takes this slot, so linked and unlinked fields line up. */
 private val LinkSlot = 18.dp
 
@@ -136,7 +139,9 @@ private fun TextInput(field: FieldUi.Text, focusModifier: Modifier, onIntent: (K
     val placeholder: (@Composable () -> Unit)? = field.placeholder?.let { text -> { Text(text, color = faintText, maxLines = 1) } }
     Row(verticalAlignment = Alignment.Top) {
         if (field.isMultiline == true) {
-            TextArea(state = state, modifier = focusModifier.weight(1f).heightIn(min = 56.dp), outline = outline, placeholder = placeholder)
+            // Jewel's TextArea scrolls inside itself and fails when measured with an unbounded
+            // height, so it always gets an upper bound; longer text scrolls within the area.
+            TextArea(state = state, modifier = focusModifier.weight(1f).heightIn(min = 56.dp, max = MultilineMaxHeight), outline = outline, placeholder = placeholder)
         } else {
             TextField(
                 state = state,

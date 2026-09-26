@@ -49,10 +49,14 @@ private val slashFailure = GenerationItemResult.Failed(
 private fun running(statuses: Map<TemplateId, GenerationRowStatus>, conflict: ConflictQuestion? = null) =
     threeChecked.copy(generation = GenerationState.Running(order, statuses, conflict = conflict))
 
-private fun finished(vararg results: GenerationItemResult, view: ViewState = threeChecked.view) = threeChecked.copy(
-    generation = GenerationState.Finished(GenerationReport(order.zip(results.toList()) { id, r -> GenerationItemReport(id, r) }), LABEL),
-    view = view,
-)
+/** The default "open the first file" setting: the first written file carries "← opened". */
+private fun finished(vararg results: GenerationItemResult, view: ViewState = threeChecked.view): KatachiScreenState {
+    val report = GenerationReport(order.zip(results.toList()) { id, r -> GenerationItemReport(id, r) })
+    return threeChecked.copy(
+        generation = GenerationState.Finished(report, LABEL, openedFiles = report.writtenFiles.take(1).map { it.path }),
+        view = view,
+    )
+}
 
 internal val generationScenarios: List<Scenario> = listOf(
     Scenario(
@@ -87,6 +91,29 @@ internal val generationScenarios: List<Scenario> = listOf(
         ),
     ),
     Scenario("result-first-failed", finished(slashFailure, GenerationItemResult.NotRun, GenerationItemResult.NotRun)),
+    // A second run with the same name, after "generate more": the form says the files are there,
+    // and "stop here" in the conflict dialog leaves nothing written and nothing opened.
+    Scenario(
+        "second-run-form",
+        threeChecked.then(KatachiIntent.ToggleFileList(repositoryId)).let {
+            it.copy(
+                view = it.view.copy(
+                    existingPaths = setOf(
+                        "data/src/main/kotlin/com/example/data/user/UserRepository.kt",
+                        "data/src/main/kotlin/com/example/data/user/UserRepositoryImpl.kt",
+                    ),
+                ),
+            )
+        },
+    ),
+    Scenario(
+        "second-run-stopped",
+        finished(
+            GenerationItemResult.StoppedAtConflict(listOf(Path.of(DATA, "UserRepository.kt"), Path.of(DATA, "UserRepositoryImpl.kt"))),
+            GenerationItemResult.NotRun,
+            GenerationItemResult.NotRun,
+        ),
+    ),
     Scenario(
         "result-interrupted",
         finished(

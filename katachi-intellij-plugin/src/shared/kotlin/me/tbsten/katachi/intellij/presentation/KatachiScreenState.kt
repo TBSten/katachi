@@ -9,6 +9,7 @@ import me.tbsten.katachi.intellij.model.LoadFailure
 import me.tbsten.katachi.intellij.model.ModuleTemplate
 import me.tbsten.katachi.intellij.model.TemplateId
 import me.tbsten.katachi.intellij.model.templatesOf
+import java.nio.file.Path
 
 /** Why the list is empty (spec 02 "空状態"). An empty search result is derived by the UI instead. */
 internal sealed interface EmptyReason {
@@ -67,8 +68,15 @@ internal sealed interface GenerationState {
         val position: Int get() = (rows.count { statuses[it] is GenerationRowStatus.Finished } + 1).coerceAtMost(rows.size)
     }
 
-    /** The result screen. [localHistoryLabel] is what the footer names for undoing. */
-    data class Finished(val report: GenerationReport, val localHistoryLabel: String?) : GenerationState
+    /**
+     * The result screen. [localHistoryLabel] is what the footer names for undoing; [openedFiles]
+     * are the files the IDE opened afterwards ("← opened"), none when the setting says not to.
+     */
+    data class Finished(
+        val report: GenerationReport,
+        val localHistoryLabel: String?,
+        val openedFiles: List<Path> = emptyList(),
+    ) : GenerationState
 }
 
 /**

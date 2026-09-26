@@ -1,6 +1,5 @@
 package me.tbsten.katachi.intellij.ui
 
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -15,8 +14,6 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
@@ -39,14 +36,12 @@ import org.jetbrains.jewel.ui.component.Divider
 import org.jetbrains.jewel.ui.component.Icon
 import org.jetbrains.jewel.ui.component.Text
 import org.jetbrains.jewel.ui.component.TextField
-import org.jetbrains.jewel.ui.component.VerticallyScrollableContainer
 import org.jetbrains.jewel.ui.icons.AllIconsKeys
 
 /**
  * The one screen of the tool window (spec 02, 03): search, the list with the inline forms under
  * checked rows, and the fixed footer. The same order whether docked tall or wide.
  */
-@OptIn(ExperimentalFoundationApi::class)
 @Composable
 internal fun TemplateListPane(list: ListUi, onIntent: (KatachiIntent) -> Unit) {
     val focus = rememberListFocusController(list)
@@ -67,18 +62,7 @@ internal fun TemplateListPane(list: ListUi, onIntent: (KatachiIntent) -> Unit) {
             if (empty != null) {
                 MessageView(empty, onIntent)
             } else {
-                val lazyState = rememberLazyListState()
-                VerticallyScrollableContainer(scrollState = lazyState, modifier = Modifier.fillMaxSize()) {
-                    LazyColumn(state = lazyState, modifier = Modifier.fillMaxSize()) {
-                        list.items.forEach { item ->
-                            when (item) {
-                                is ListItemUi.ModuleHeader -> stickyHeader(key = item.key) { ModuleHeader(item, onIntent) }
-                                is ListItemUi.GroupHeader -> item(key = item.key) { GroupHeader(item) }
-                                is ListItemUi.Row -> item(key = item.key) { TemplateRow(item.row, list, focus, onIntent) }
-                            }
-                        }
-                    }
-                }
+                ListBody(list, focus, onIntent)
             }
             list.footer.countPopupOrNull()?.let { popup ->
                 CountPopup(popup, onDismiss = { onIntent(KatachiIntent.ToggleFileCountPopup) }, modifier = Modifier.align(Alignment.BottomStart))
@@ -105,9 +89,9 @@ private fun SearchField(search: SearchUi, list: ListUi, focus: ListFocusControll
 
 /** The band of a definition module (two or more modules only): fold, name, "checked/all" (E-05). */
 @Composable
-private fun ModuleHeader(header: ListItemUi.ModuleHeader, onIntent: (KatachiIntent) -> Unit) {
+internal fun ModuleHeader(header: ListItemUi.ModuleHeader, onIntent: (KatachiIntent) -> Unit, modifier: Modifier = Modifier) {
     Row(
-        Modifier.fillMaxWidth()
+        modifier.fillMaxWidth()
             .background(bandColor)
             .clickable { onIntent(KatachiIntent.ToggleModule(header.moduleId)) }
             .padding(horizontal = 8.dp, vertical = 4.dp),
@@ -126,7 +110,7 @@ private fun ModuleHeader(header: ListItemUi.ModuleHeader, onIntent: (KatachiInte
 
 /** A group ("data", "domain"): a small header, not indented (spec 02). */
 @Composable
-private fun GroupHeader(header: ListItemUi.GroupHeader) {
+internal fun GroupHeader(header: ListItemUi.GroupHeader) {
     Text(
         header.title,
         color = faintText,

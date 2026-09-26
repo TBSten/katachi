@@ -58,7 +58,8 @@ internal fun applyLoaded(state: KatachiScreenState, snapshots: List<DescriptionS
         loadErrorBanner = null,
         removedTemplates = merged.removedTemplates,
         form = merged.form,
-        view = state.view.copy(definitionChanged = false),
+        // A cause shown for a broken preview belongs to the definition just replaced (provisional).
+        view = state.view.copy(definitionChanged = false, causes = emptyMap()),
     )
 }
 
@@ -78,13 +79,27 @@ internal fun applyLoadCancelled(state: KatachiScreenState): KatachiScreenState =
         state.copy(loading = null, phase = ScreenPhase.LoadError(LoadFailure.Cancelled, emptyList()))
     }
 
-/** The rows of a generation, in list order, all waiting. */
+/**
+ * The rows of a generation, in list order, all waiting. The file-count popup closes: the footer it
+ * hangs from gives way to the progress, and it should not come back by itself afterwards (provisional).
+ */
 internal fun startGeneration(state: KatachiScreenState, waitingForLoad: Boolean): KatachiScreenState {
     val ids = state.rows.map { it.id }.filter { state.form.isSelected(it) }
     return state.copy(
         generation = GenerationState.Running(ids, ids.associateWith { GenerationRowStatus.Waiting }, waitingForLoad),
+        view = state.view.copy(fileCountPopupOpen = false),
     )
 }
+
+/**
+ * A result-screen button took the list back to [form]. The "▸ Details" opened under failed rows
+ * belong to that result and close with it, so the next failure starts folded (provisional).
+ */
+internal fun leaveResult(state: KatachiScreenState, form: FormState): KatachiScreenState = state.copy(
+    form = form,
+    generation = null,
+    view = state.view.copy(openDetails = state.view.openDetails.filterNotTo(LinkedHashSet()) { it is DetailsKey.ResultRow }),
+)
 
 internal fun updateGenerationRow(state: KatachiScreenState, id: TemplateId, status: GenerationRowStatus): KatachiScreenState {
     val running = state.generation as? GenerationState.Running ?: return state

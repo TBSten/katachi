@@ -39,10 +39,9 @@ internal fun uncheckAll(form: FormState): FormState = FormState(onExisting = for
 internal fun retryRemaining(form: FormState, report: GenerationReport): FormState {
     val keep = report.retryTargets.toSet()
     val done = report.items.map { it.templateId }.filter { it !in keep }.toSet()
-    return form.copy(
-        selected = form.selected.filter { it !in done },
-        expanded = form.expanded - done + keep,
-    )
+    val selected = form.selected.filter { it !in done }
+    // A retry target a reload removed since is no longer checked; it must not come back open.
+    return form.copy(selected = selected, expanded = form.expanded - done + keep.filter { it in selected })
 }
 
 /**

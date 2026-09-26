@@ -7,8 +7,10 @@ import me.tbsten.katachi.intellij.model.ParameterModel
 import me.tbsten.katachi.intellij.model.TemplateUnavailability
 
 /**
- * The list's entries: module bands (two or more modules only, E-05), group headers whenever the
- * group changes, and the rows the search leaves (E-16). Order is the JSON's.
+ * The list's entries: module bands (two or more modules only, E-05), a group header before each
+ * group's rows, and the rows the search leaves (E-16). The rows come in [templatesOf]'s order,
+ * which keeps each group together, so a header shows once; root roles come first, without one.
+ * A nested group's header is its whole path, `domain › model`, not indented (spec 02 "見出し").
  */
 internal fun listItemsOf(state: KatachiScreenState, strings: KatachiStrings): List<ListItemUi> {
     val hits = searchTemplates(state.rows, state.searchQuery, state.form)
@@ -36,7 +38,7 @@ internal fun listItemsOf(state: KatachiScreenState, strings: KatachiStrings): Li
             for (hit in moduleHits) {
                 val groupPath = hit.row.template.groupPath
                 if (groupPath != group && groupPath.isNotEmpty()) {
-                    add(ListItemUi.GroupHeader("group:${module.linkedRootPath}:${module.gradlePath}:$groupPath:${hit.row.template.roleName}", groupPath))
+                    add(ListItemUi.GroupHeader("group:${module.linkedRootPath}:${module.gradlePath}:$groupPath", groupTitleOf(groupPath)))
                 }
                 group = groupPath
                 add(ListItemUi.Row(rowUiOf(hit, state, strings)))
@@ -44,6 +46,9 @@ internal fun listItemsOf(state: KatachiScreenState, strings: KatachiStrings): Li
         }
     }
 }
+
+/** `domain/model` as `domain › model`: where a nested group sits, without indenting it. */
+internal fun groupTitleOf(groupPath: String): String = groupPath.split('/').joinToString(" › ")
 
 private fun moduleTitleOf(module: KatachiModule, showRoot: Boolean): String =
     if (showRoot) "${module.rootName} › ${module.gradlePath}" else module.gradlePath

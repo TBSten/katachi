@@ -47,9 +47,13 @@ class GenerationUiMapperTest {
     private val written = GeneratedFile(ROOT.resolve("data/UserRepository.kt"), WrittenKind.New)
     private val overwritten = GeneratedFile(ROOT.resolve("data/UserRepositoryImpl.kt"), WrittenKind.Overwritten)
 
-    private fun finished(vararg results: GenerationItemResult) = base.copy(
-        generation = GenerationState.Finished(GenerationReport(ids.zip(results.toList()) { id, r -> GenerationItemReport(id, r) }), "katachi: 生成前（Repository, Service, UseCase）"),
-    )
+    /** Opened as the default setting does: the first written file. */
+    private fun finished(vararg results: GenerationItemResult): KatachiScreenState {
+        val report = GenerationReport(ids.zip(results.toList()) { id, r -> GenerationItemReport(id, r) })
+        return base.copy(
+            generation = GenerationState.Finished(report, "katachi: 生成前（Repository, Service, UseCase）", report.writtenFiles.take(1).map { it.path }),
+        )
+    }
 
     @Test
     fun `生成中は各行の状態を出し、実行中の行の下にタスクと送る引数を出す`() {

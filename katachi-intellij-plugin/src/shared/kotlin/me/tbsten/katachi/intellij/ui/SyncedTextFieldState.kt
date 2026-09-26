@@ -18,22 +18,51 @@ import androidx.compose.runtime.snapshotFlow
 @Composable
 internal fun rememberSyncedTextFieldState(value: String, onChange: (String) -> Unit): TextFieldState {
     val state = remember { TextFieldState(value) }
-    val echoes = remember { EchoTracker() }
-    val latestValue = rememberUpdatedState(value)
+    val sync = remember { TextFieldSync(value) }
     val latestOnChange = rememberUpdatedState(onChange)
     LaunchedEffect(value) {
-        if (echoes.isEcho(value)) return@LaunchedEffect
-        if (state.text.toString() != value) state.setTextAndPlaceCursorAtEnd(value)
+        sync.onValue(value, state.text.toString())?.let { state.setTextAndPlaceCursorAtEnd(it) }
     }
     LaunchedEffect(state) {
         snapshotFlow { state.text.toString() }.collect { text ->
-            if (text != latestValue.value) {
-                echoes.sent(text)
-                latestOnChange.value(text)
-            }
+            if (sync.onTyped(text)) latestOnChange.value(text)
         }
     }
     return state
+}
+
+/**
+ * Keeps a text field and the value the UI state holds for it in step, without Compose.
+ *
+ * What the field reports is compared with the last text this field and the state agreed on, not
+ * with the latest value the composition saw: that one lags a frame behind, so typing a letter and
+ * deleting it before the next frame would look like "no change" and leave the state on the letter
+ * (the search stuck on a query the empty field no longer shows).
+ *
+ * ```kotlin
+ * val sync = TextFieldSync(initial = "")
+ * if (sync.onTyped("r")) send("r")      // the field changed
+ * sync.onValue("r", fieldText = "r")    // null: only the echo of "r"
+ * ```
+ */
+internal class TextFieldSync(initial: String) {
+    private var lastKnown = initial
+    private val echoes = EchoTracker()
+
+    /** The field now holds [text]; `true` when it is new and must be reported. */
+    fun onTyped(text: String): Boolean {
+        if (text == lastKnown) return false
+        lastKnown = text
+        echoes.sent(text)
+        return true
+    }
+
+    /** The state now holds [value]; returns the text to write into the field, or `null` to leave it. */
+    fun onValue(value: String, fieldText: String): String? {
+        if (echoes.isEcho(value)) return null
+        lastKnown = value
+        return value.takeIf { it != fieldText }
+    }
 }
 
 /**

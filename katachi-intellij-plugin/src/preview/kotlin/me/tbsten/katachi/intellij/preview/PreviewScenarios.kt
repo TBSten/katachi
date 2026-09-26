@@ -138,6 +138,19 @@ internal val listScenarios: List<Scenario> = listOf(
         ready(snapshot(arch, component, service)).then(check(component), input(component, "name", "Profile")),
         narrowHeight = 720,
     ),
+    // ▸ pressed: String fields turned into TextAreas inside the scrolling list, which measures its
+    // content with an unbounded height. One short value, one taller than the area's cap.
+    Scenario(
+        "form-multiline",
+        ready(snapshot(arch, component, service)).then(
+            check(component),
+            input(component, "name", "Profile"),
+            KatachiIntent.ToggleMultiline(FieldId(idOf(arch, component), "name")),
+            KatachiIntent.ToggleMultiline(FieldId(idOf(arch, component), "label")),
+            input(component, "label", (1..12).joinToString("\n") { "line $it" }),
+        ),
+        narrowHeight = 760,
+    ),
     Scenario(
         "form-errors",
         ready(snapshot(arch, component, service)).then(
@@ -185,6 +198,22 @@ internal val listScenarios: List<Scenario> = listOf(
             check(pagedList, archB),
         ),
         narrowHeight = 760,
+    ),
+    // Nested groups declared interleaved, and roles at the root: each group once, parents first.
+    Scenario(
+        "nested-groups",
+        ready(
+            snapshot(
+                arch,
+                template("Readme", null, emptyList(), listOf(kt("", "README.md"))),
+                template("domain/UseCase", "ユースケース", listOf(str("name")), listOf(kt("domain", "\${name}UseCase.kt"))),
+                template("domain/model/Entity", "エンティティ", listOf(str("name")), listOf(kt("domain/model", "\${name}.kt"))),
+                template("domain/model/value/Id", null, listOf(str("name")), listOf(kt("domain/model/value", "\${name}Id.kt"))),
+                template("domain/Service", "サービス", listOf(str("name")), listOf(kt("domain", "\${name}Service.kt"))),
+                template("feature/home/Screen", "画面", listOf(str("name")), listOf(kt("feature/home", "\${name}Screen.kt"))),
+            ),
+        ),
+        narrowHeight = 480,
     ),
     Scenario(
         "search-outside-selected",

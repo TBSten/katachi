@@ -53,6 +53,38 @@ internal data class DescriptionSnapshot(
     val loadedAt: Instant,
 )
 
-/** Every template of [snapshots] in list order: modules as given, templates in JSON order. */
+/**
+ * Every template of [snapshots] in list order: modules as given, and in each module the templates
+ * in [groupOrderOf]. Generation, "open the first file" and the keyboard all follow this order, so
+ * it is the order the screen shows.
+ */
 internal fun templatesOf(snapshots: List<DescriptionSnapshot>): List<ModuleTemplate> =
-    snapshots.flatMap { snapshot -> snapshot.templates.map { ModuleTemplate(snapshot.module, it) } }
+    snapshots.flatMap { snapshot -> groupOrderOf(snapshot.templates).map { ModuleTemplate(snapshot.module, it) } }
+
+/**
+ * [templates] gathered by group, so that each group shows once under one header: the roles at the
+ * root first, then every group in the order it first appears, its own roles before its child
+ * groups (parents before children, as katachi lists groups). Declaration order stays within a
+ * group. Provisional: the spec's "JSON order" assumed a group's roles are contiguous, which nested
+ * groups break (`domain/UseCase`, `domain/model/Entity`, `domain/Service`).
+ */
+internal fun groupOrderOf(templates: List<TemplateModel>): List<TemplateModel> {
+    val roles = LinkedHashMap<String, MutableList<TemplateModel>>()
+    val children = HashMap<String, LinkedHashSet<String>>()
+    for (template in templates) {
+        roles.getOrPut(template.groupPath) { mutableListOf() } += template
+        var path = template.groupPath
+        while (path.isNotEmpty()) {
+            val parent = path.substringBeforeLast('/', missingDelimiterValue = "")
+            children.getOrPut(parent) { LinkedHashSet() } += path
+            path = parent
+        }
+    }
+    val ordered = ArrayList<TemplateModel>(templates.size)
+    fun visit(path: String) {
+        roles[path]?.let(ordered::addAll)
+        children[path]?.forEach(::visit)
+    }
+    visit("")
+    return ordered
+}

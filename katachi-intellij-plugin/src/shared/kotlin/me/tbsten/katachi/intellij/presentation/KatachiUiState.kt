@@ -80,7 +80,7 @@ internal data class ListUi(
 
 internal data class SearchUi(val query: String, val placeholder: String, val enabled: Boolean)
 
-/** One entry of the list's LazyColumn. [key] is stable across states. */
+/** One entry of the list. [key] is stable across states, so a row keeps its remembered UI state. */
 internal sealed interface ListItemUi {
     val key: String
 

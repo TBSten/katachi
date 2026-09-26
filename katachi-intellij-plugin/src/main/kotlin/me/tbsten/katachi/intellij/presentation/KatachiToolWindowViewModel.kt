@@ -261,13 +261,15 @@ internal class KatachiToolWindowViewModel(
         }
         val report = session.run(items, state.form.onExisting, listener)
         ownWrites = ownWrites + report.writtenFiles.map { it.path }
+        var opened = emptyList<Path>()
         try {
             effects.refreshFiles(report.writtenFiles.map { it.path })
             val toOpen = filesToOpen(report, effects.openAfterGeneration())
             if (toOpen.isNotEmpty()) effects.openFiles(toOpen)
+            opened = toOpen
         } finally {
             // The files are written whatever the IDE did with them: the result shows either way.
-            mutableState.update { withExistingPaths(it.copy(generation = GenerationState.Finished(report, label))) }
+            mutableState.update { withExistingPaths(it.copy(generation = GenerationState.Finished(report, label, opened))) }
         }
         effects.notifyGenerationFinished(report)
     }
@@ -300,7 +302,8 @@ internal class KatachiToolWindowViewModel(
 
     private fun finishResult(next: (KatachiScreenState, GenerationReport) -> FormState) {
         val finished = mutableState.value.generation as? GenerationState.Finished ?: return
-        mutableState.update { it.copy(form = next(it, finished.report), generation = null) }
+        // The form changed wholesale (names emptied, rows unchecked): the "already exists" badges follow.
+        mutableState.update { withExistingPaths(leaveResult(it, next(it, finished.report))) }
     }
 
     private fun generationItemOf(row: ModuleTemplate, form: FormState): GenerationItem? {

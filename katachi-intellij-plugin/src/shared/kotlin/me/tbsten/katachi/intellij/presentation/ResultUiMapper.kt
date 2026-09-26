@@ -17,13 +17,11 @@ internal fun rowResultUiOf(
     view: ViewState,
     strings: KatachiStrings,
 ): RowResultUi {
-    val opened = finished.report.items.firstNotNullOfOrNull {
-        (it.result as? GenerationItemResult.Generated)?.files?.firstOrNull()
-    }
+    val opened = finished.openedFiles.toSet()
     fun existing(paths: List<Path>, badge: String) = paths.map { ResultFileUi(it.fileName.toString(), badge, null, KatachiIntent.OpenFile(it)) }
     return when (result) {
         is GenerationItemResult.Generated -> RowResultUi(
-            files = result.files.map { writtenFileUiOf(it, it == opened, strings) } +
+            files = result.files.map { writtenFileUiOf(it, it.path in opened, strings) } +
                 existing(result.existingExpected, strings.alreadyExists),
             message = listOfNotNull(
                 strings.writesUnknown.takeIf { result.writesUnknown },
