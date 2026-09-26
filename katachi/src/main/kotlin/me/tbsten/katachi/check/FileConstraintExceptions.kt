@@ -90,3 +90,32 @@ public class KatachiFileConstraintSubjectException internal constructor(
         )
     },
 )
+
+/**
+ * `FileConstraintCheck(parallelism = ...)` was given fewer than one thread.
+ *
+ * There is no "zero threads" that could mean anything sensible, and quietly treating it as one
+ * would hide a miscalculated value (`availableProcessors() - 1` on a one-core CI runner).
+ *
+ * ## Example 1: catch a parallelism that was worked out to zero
+ * ```kt
+ * shouldThrow<KatachiInvalidFileConstraintParallelismException> {
+ *     FileConstraintCheck(parallelism = 0)
+ * }.parallelism shouldBe 0
+ * ```
+ *
+ * @property parallelism the value that was passed.
+ * @property declaredAt where the check was created.
+ */
+public class KatachiInvalidFileConstraintParallelismException internal constructor(
+    /** The value that was passed. */
+    public val parallelism: Int,
+    /** Where the check was created. */
+    public val declaredAt: DeclarationSite,
+) : KatachiDeclarationException(
+    message = """
+        FileConstraintCheck was created with parallelism = $parallelism at $declaredAt.
+        It is the number of threads the constraints are evaluated on, so it has to be 1 or more.
+        Pass 1 (the default) to evaluate them one at a time, or a positive thread count such as `Runtime.getRuntime().availableProcessors()`.
+    """.trimIndent(),
+)

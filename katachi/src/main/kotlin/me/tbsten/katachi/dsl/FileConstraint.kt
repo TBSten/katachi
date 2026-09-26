@@ -1,6 +1,8 @@
 package me.tbsten.katachi.dsl
 
 import me.tbsten.katachi.ExperimentalKatachiApi
+import me.tbsten.katachi.dsl.internal.MemoSlot
+import java.util.concurrent.ConcurrentMap
 import kotlin.reflect.KClass
 
 /**
@@ -184,7 +186,7 @@ public class FileConstraintSubject internal constructor(
      * ```
      */
     public val files: List<String>,
-    private val shared: MutableMap<Any, Any>,
+    private val shared: ConcurrentMap<Any, MemoSlot>,
 ) {
     /**
      * Scratch space shared by every constraint of one run, and thrown away with it.
@@ -195,6 +197,10 @@ public class FileConstraintSubject internal constructor(
      * it on a value **unique to the backend that holds it**: two backends using the same key
      * for different types is reported as a bug rather than silently handing one the other's
      * value.
+     *
+     * [create] runs at most once per key per run, also when `FileConstraintCheck(parallelism = n)`
+     * evaluates constraints on several threads: the others asking for the same key wait for it.
+     * One that throws stores nothing, and the next caller runs its own [create].
      *
      * ## Example 1: parse a set of directories once per run
      * ```kt
@@ -207,7 +213,8 @@ public class FileConstraintSubject internal constructor(
      * ```
      */
     public fun <T : Any> memo(key: Any, type: KClass<T>, create: () -> T): T {
-        val existing = shared[key] ?: return create().also { shared[key] = it }
+        val slot = shared[key] ?: MemoSlot().let { fresh -> shared.putIfAbsent(key, fresh) ?: fresh }
+        val existing = slot.getOrCreate(create)
         // Checked before it is narrowed, so the failure is this library's own exception rather
         // than a bare ClassCastException: `Class.cast` below can no longer throw.
         val jvmType = type.java

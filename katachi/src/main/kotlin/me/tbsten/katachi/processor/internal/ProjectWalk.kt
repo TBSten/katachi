@@ -12,11 +12,14 @@ import me.tbsten.katachi.dsl.files.KatachiFileSystem
 import me.tbsten.katachi.dsl.internal.DeclaredFileConstraint
 import me.tbsten.katachi.dsl.internal.FileConstraintCoverage
 import me.tbsten.katachi.dsl.internal.LayoutEvaluation
+import me.tbsten.katachi.dsl.internal.MemoSlot
 import me.tbsten.katachi.dsl.internal.ModuleIndex
 import me.tbsten.katachi.dsl.internal.evaluateLayout
 import me.tbsten.katachi.processor.KatachiUnknownRoleException
 import java.util.Collections
 import java.util.IdentityHashMap
+import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.ConcurrentMap
 
 /**
  * One run's worth of reading: the declarations, the single walk of the project, and the
@@ -100,10 +103,12 @@ internal class ProjectWalk(
 
     // Same lifetime as `evaluated` and kept in the same place, so that
     // `FileConstraintSubject.memo`'s "every constraint of one run" means one thing in the
-    // documentation and in the code.
-    private val constraintScratch: MutableMap<Any, Any> = mutableMapOf()
+    // documentation and in the code. Concurrent because `FileConstraintCheck(parallelism = n)`
+    // evaluates constraints -- and so calls `memo` -- on several threads at once. Everything
+    // else here is only touched by the thread running the check.
+    private val constraintScratch: ConcurrentMap<Any, MemoSlot> = ConcurrentHashMap()
 
-    fun scratch(): MutableMap<Any, Any> = constraintScratch
+    fun scratch(): ConcurrentMap<Any, MemoSlot> = constraintScratch
 
     // Every constraint of one block shares one coverage instance, so narrowing once per coverage
     // is narrowing once per block. Keyed by identity -- `FileConstraintCoverage` declares no

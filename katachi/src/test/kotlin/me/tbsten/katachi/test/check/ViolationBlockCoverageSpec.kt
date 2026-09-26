@@ -15,7 +15,9 @@ import java.io.File
  */
 private val CLASS_HEADER = Regex("""(?m)^public class (\w+)""")
 private val SUPERTYPE_LINE = Regex("""(?m)^\)\s*:\s*(.*?)\s*\{\s*$""")
-private val VIOLATION_SUPERTYPE = Regex("""\bViolation\b""")
+// Not preceded by `<`: `ArchitectureProcessorNoArg<List<Violation>>` names a processor that
+// returns violations, not a violation.
+private val VIOLATION_SUPERTYPE = Regex("""(?<!<)\bViolation\b""")
 private val BRANCH_NAME = Regex("""is (\w+) ->""")
 
 /** The `check/` directory, found from wherever the test happens to be run. */
