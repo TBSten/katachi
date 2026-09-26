@@ -2,6 +2,9 @@ package me.tbsten.katachi.check.internal
 
 import me.tbsten.katachi.InternalKatachiApi
 import me.tbsten.katachi.check.DEFAULT_MAX_VIOLATIONS
+import me.tbsten.katachi.fs.FsPath
+import me.tbsten.katachi.internal.displayExistingPath
+import me.tbsten.katachi.internal.displayPath
 import me.tbsten.katachi.scan.*
 
 /**
@@ -18,8 +21,9 @@ internal const val STEP: String = "  "
  * What an agent reads is that output, so what is not in it does not exist; and what is good
  * for an agent turns out to be good for a person too. Hence: no colour and no character
  * outside ASCII, one block per violation with its parts always in the same order, every path
- * relative to the project root, and the counts on the first line rather than the last,
- * because long output gets cut off at the end.
+ * a `file:///...` absolute URI a reader can open as it stands — except a pattern, and the DSL
+ * fragment meant for pasting — and the counts on the first line rather than the last, because
+ * long output gets cut off at the end.
  *
  * Only a [Severity.Error] violation can make `assert()` fail, so this text has three shapes:
  * - **Any error present** — the usual failure report (summary, error blocks, the error
@@ -41,9 +45,14 @@ internal const val STEP: String = "  "
  *   warnings take a slice of it — never fewer than one block, never more than there are
  *   warnings — capped at a quarter, and errors take what is left. Either truncation line says
  *   how many more were left out of its own section; the summary counts every error either way.
+ * @param projectRoot what the violations' relative paths are resolved against to print them as
+ *   `file:///...` URIs. `null` prints them as the violations carry them, relative to the root.
  */
 @InternalKatachiApi
-public fun List<Violation>.report(maxViolations: Int = DEFAULT_MAX_VIOLATIONS): String {
+public fun List<Violation>.report(
+    maxViolations: Int = DEFAULT_MAX_VIOLATIONS,
+    projectRoot: FsPath? = null,
+): String {
     val errors = filter { it.severity == Severity.Error }
     val warnings = filter { it.severity == Severity.Warning }
     if (errors.isEmpty() && warnings.isEmpty()) return ""
@@ -69,7 +78,7 @@ public fun List<Violation>.report(maxViolations: Int = DEFAULT_MAX_VIOLATIONS): 
             append(summaryLine(errors, warnings.size))
             for (violation in shownErrors) {
                 append("\n\n")
-                append(blockOf(violation).joinToString("\n"))
+                append(blockOf(violation, projectRoot?.value).joinToString("\n"))
             }
             truncationLine(errors, shownErrors, noun = "", withBreakdown = true)?.let { append("\n\n$it") }
             // After the truncation line, and outside it: these are the only sentences saying
@@ -83,7 +92,7 @@ public fun List<Violation>.report(maxViolations: Int = DEFAULT_MAX_VIOLATIONS): 
             append(warningHeading(warnings.size))
             for (violation in shownWarnings) {
                 append("\n\n")
-                append(blockOf(violation).joinToString("\n"))
+                append(blockOf(violation, projectRoot?.value).joinToString("\n"))
             }
             truncationLine(warnings, shownWarnings, noun = " warnings", withBreakdown = false)
                 ?.let { append("\n\n$it") }
@@ -236,27 +245,27 @@ private fun uncheckedLines(violations: List<Violation>): List<String> = buildLis
     if (checks > 0) add("$checks ${if (checks == 1) "check" else "checks"} could not be run.")
 }
 
-private fun blockOf(violation: Violation): List<String> = when (violation) {
-    is UnexpectedFile -> unexpectedFileBlock(violation)
-    is UnexpectedDirectory -> unexpectedDirectoryBlock(violation)
-    is MissingFile -> missingFileBlock(violation)
-    is UncheckedFile -> uncheckedFileBlock(violation)
-    is UncheckedDirectory -> uncheckedDirectoryBlock(violation)
-    is UncheckedCheck -> uncheckedCheckBlock(violation)
-    is UnsatisfiedConstraint -> unsatisfiedConstraintBlock(violation)
-    is UncheckedConstraint -> uncheckedConstraintBlock(violation)
-    is AmbiguousLayout -> ambiguousLayoutBlock(violation)
-    is MissingDescription -> missingDescriptionBlock(violation)
+private fun blockOf(violation: Violation, root: String?): List<String> = when (violation) {
+    is UnexpectedFile -> unexpectedFileBlock(violation, root)
+    is UnexpectedDirectory -> unexpectedDirectoryBlock(violation, root)
+    is MissingFile -> missingFileBlock(violation, root)
+    is UncheckedFile -> uncheckedFileBlock(violation, root)
+    is UncheckedDirectory -> uncheckedDirectoryBlock(violation, root)
+    is UncheckedCheck -> uncheckedCheckBlock(violation, root)
+    is UnsatisfiedConstraint -> unsatisfiedConstraintBlock(violation, root)
+    is UncheckedConstraint -> uncheckedConstraintBlock(violation, root)
+    is AmbiguousLayout -> ambiguousLayoutBlock(violation, root)
+    is MissingDescription -> missingDescriptionBlock(violation, root)
     // A violation from outside katachi. The block is the first line plus the values it states
     // about itself, and nothing else: katachi does not know what it means, so it writes no
     // sentence about it and never offers a way to fix it. Compile-time exhaustiveness is lost
     // the moment `Violation` stops being sealed; `ViolationBlockCoverageSpec` gets it back for
     // katachi's own violations by checking every one of them has a branch above this line.
-    else -> foreignBlock(violation)
+    else -> foreignBlock(violation, root)
 }
 
-private fun unexpectedFileBlock(violation: UnexpectedFile): List<String> = buildList {
-    add("[${violation.label}] ${violation.path}")
+private fun unexpectedFileBlock(violation: UnexpectedFile, root: String?): List<String> = buildList {
+    add("[${violation.label}] ${displayExistingPath(root, violation.path)}")
     add("${STEP}No role is defined for this file.")
     if (violation.nearby.isNotEmpty()) {
         // Inside the branch, not before it: with no nearby locations this and the blank line
@@ -265,7 +274,7 @@ private fun unexpectedFileBlock(violation: UnexpectedFile): List<String> = build
         add("${STEP}Nearby locations:")
         val width = violation.nearby.maxOf { it.role.qualifiedName.length }
         for (location in violation.nearby) {
-            add("$STEP$STEP${location.role.qualifiedName.padEnd(width)} ${location.directory}/")
+            add("$STEP$STEP${location.role.qualifiedName.padEnd(width)} ${displayPath(root, location.directory)}/")
         }
     }
     add("")
@@ -276,8 +285,8 @@ private fun unexpectedFileBlock(violation: UnexpectedFile): List<String> = build
     addAll(fragment(roleSuggestionFor(violation.path, isDirectory = false)))
 }
 
-private fun unexpectedDirectoryBlock(violation: UnexpectedDirectory): List<String> = buildList {
-    add("[${violation.label}] ${violation.path}")
+private fun unexpectedDirectoryBlock(violation: UnexpectedDirectory, root: String?): List<String> = buildList {
+    add("[${violation.label}] ${displayExistingPath(root, violation.path)}")
     add("${STEP}No role is defined for this directory. Nothing below it was checked.")
     add("")
     add("${STEP}How to fix:")
@@ -287,8 +296,8 @@ private fun unexpectedDirectoryBlock(violation: UnexpectedDirectory): List<Strin
     addAll(fragment(roleSuggestionFor(violation.path, isDirectory = true)))
 }
 
-private fun missingFileBlock(violation: MissingFile): List<String> = listOf(
-    "[${violation.label}] ${violation.path}",
+private fun missingFileBlock(violation: MissingFile, root: String?): List<String> = listOf(
+    "[${violation.label}] ${displayPath(root, violation.path)}",
     // Neutral on purpose: a new module fails this way once, whichever of the declaration and
     // the file is written first, and being told the definition is wrong would be misleading.
     "${STEP}No file has been created yet for role ${violation.role.qualifiedName}.",
@@ -299,8 +308,8 @@ private fun missingFileBlock(violation: MissingFile): List<String> = listOf(
     "$STEP$STEP- If it is no longer needed, remove the declaration at ${violation.declaredAt}",
 )
 
-private fun uncheckedFileBlock(violation: UncheckedFile): List<String> = listOf(
-    "[${violation.label}] ${violation.path}",
+private fun uncheckedFileBlock(violation: UncheckedFile, root: String?): List<String> = listOf(
+    "[${violation.label}] ${displayExistingPath(root, violation.path)}",
     "${STEP}Katachi failed while checking this file, so nothing is known about it.",
     "${STEP}Cause: ${causeLine(violation.cause)}",
     "",
@@ -319,8 +328,8 @@ private fun uncheckedFileBlock(violation: UncheckedFile): List<String> = listOf(
  * walk still looked inside — so reusing the first sentence for the second would tell the
  * reader nothing there was checked when it was.
  */
-private fun uncheckedDirectoryBlock(violation: UncheckedDirectory): List<String> = listOf(
-    "[${violation.label}] ${violation.path}",
+private fun uncheckedDirectoryBlock(violation: UncheckedDirectory, root: String?): List<String> = listOf(
+    "[${violation.label}] ${displayExistingPath(root, violation.path)}",
     when (violation.reason) {
         UncheckedDirectoryReason.NotWalked ->
             "${STEP}Katachi failed while checking this directory. Nothing below it was checked."
@@ -336,8 +345,8 @@ private fun uncheckedDirectoryBlock(violation: UncheckedDirectory): List<String>
     "$STEP$STEP- If it is, report this at https://github.com/TBSten/katachi/issues with the cause above",
 )
 
-private fun uncheckedCheckBlock(violation: UncheckedCheck): List<String> = listOf(
-    "[${violation.label}] ${violation.path}",
+private fun uncheckedCheckBlock(violation: UncheckedCheck, root: String?): List<String> = listOf(
+    "[${violation.label}] ${displayExistingPath(root, violation.path)}",
     "${STEP}Katachi failed while running ${violation.check}, so nothing it would have reported is known.",
     "${STEP}Cause: ${causeLine(violation.cause)}",
     "",
@@ -351,8 +360,11 @@ private fun uncheckedCheckBlock(violation: UncheckedCheck): List<String> = listO
  * states about it, and nothing else: katachi does not know what the violation means, so it
  * writes no sentence about it and offers no "How to fix:".
  */
-private fun foreignBlock(violation: Violation): List<String> = buildList {
-    add("[${oneLine(violation.label)}] ${oneLine(violation.path)}")
+private fun foreignBlock(violation: Violation, root: String?): List<String> = buildList {
+    // A blank path has nothing to resolve: `<empty>` stays the marker it is rather than
+    // turning into a URI of a file named `<empty>`.
+    val path = violation.path.takeIf { it.isNotBlank() }?.let { displayPath(root, oneLine(it)) }
+    add("[${oneLine(violation.label)}] ${path ?: oneLine(violation.path)}")
     for (detail in violation.details) add("$STEP${oneLine(detail.label)}: ${oneLine(detail.value)}")
 }
 

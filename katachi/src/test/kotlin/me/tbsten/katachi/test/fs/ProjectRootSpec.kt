@@ -102,7 +102,7 @@ class ProjectRootSpec : FreeSpec({
         }
 
         val exception = shouldThrow<KatachiProjectRootNotFoundException> { findProjectRoot(fileSystem) }
-        exception.message.shouldNotBeNull() shouldContain "/repo/app"
+        exception.message.shouldNotBeNull() shouldContain "above file:///repo/app."
     }
 
     "このリポジトリ自身でもルートを特定できる" {

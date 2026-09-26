@@ -41,6 +41,11 @@ internal fun isWrittenByKatachi(block: Any): Boolean = isKatachiFrame(block.java
  * that file, so the reported line would be wrong.
  */
 internal fun captureDeclarationSite(): DeclarationSite {
+    // TODO: reports print every other path as a `file:///...` URI, but a site stays
+    //  `FileName.kt:42`: a frame carries no directory. Resolving `frame.className` to a source
+    //  file (package -> directory, per source set) would work for most projects, but Kotlin
+    //  does not require the package to match the directory and KMP has several source sets
+    //  with same-named files, so a guess could print a wrong absolute path.
     for (frame in Throwable().stackTrace) {
         if (isKatachiFrame(frame.className)) continue
         return DeclarationSite(

@@ -6,6 +6,7 @@ import me.tbsten.katachi.dsl.LayoutEntry
 import me.tbsten.katachi.dsl.Role
 import me.tbsten.katachi.dsl.internal.DeclaredConstraint
 import me.tbsten.katachi.dsl.internal.flattenLayout
+import me.tbsten.katachi.fs.FsPath
 import me.tbsten.katachi.fs.KatachiFileSystem
 import me.tbsten.katachi.processor.KatachiUnknownRoleException
 import me.tbsten.katachi.scan.Violation
@@ -54,8 +55,11 @@ internal class ProjectWalk(
 
     val declaredConstraints: List<DeclaredConstraint> get() = scan.constraints
 
+    /** Where the walk started -- what a report resolves each relative path against. */
+    val projectRoot: FsPath get() = scan.projectRoot
+
     /** Where the walk started, absolute -- what a constraint backend opens files from. */
-    val projectRootPath: String get() = scan.projectRoot.value
+    val projectRootPath: String get() = projectRoot.value
 
     // `DeclaredConstraint` declares no `equals`, exactly as `Role` does not, so this is a set
     // of identities. One walk is built per run, so what collects here is precisely "evaluated

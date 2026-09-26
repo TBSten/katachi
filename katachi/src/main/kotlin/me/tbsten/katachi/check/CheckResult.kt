@@ -1,6 +1,7 @@
 package me.tbsten.katachi.check
 
 import me.tbsten.katachi.ExperimentalKatachiApi
+import me.tbsten.katachi.check.internal.assertNoErrors
 import me.tbsten.katachi.scan.Severity
 import me.tbsten.katachi.scan.UncheckedCheck
 import me.tbsten.katachi.scan.Violation
@@ -51,9 +52,8 @@ import me.tbsten.katachi.scan.Violation
  *   [Severity.Error].
  */
 @ExperimentalKatachiApi
-public fun List<Violation>.assertNoErrors(): List<Violation> {
-    if (any { it.severity == Severity.Error }) {
-        throw KatachiArchitectureAssertionError(this, DEFAULT_MAX_VIOLATIONS)
-    }
-    return this
-}
+public fun List<Violation>.assertNoErrors(): List<Violation> =
+    // TODO: a third-party check has no project root to hand over here, so its message keeps the
+    //  paths relative. An overload taking the `ArchitectureProcessContext` could resolve them.
+    //  `validate()` / `assert()` rebuild the message with the root either way.
+    assertNoErrors(projectRoot = null)

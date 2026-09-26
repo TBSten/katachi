@@ -4,6 +4,7 @@ import me.tbsten.katachi.ExperimentalKatachiApi
 import me.tbsten.katachi.check.internal.assertWith
 import me.tbsten.katachi.check.internal.report
 import me.tbsten.katachi.dsl.Architecture
+import me.tbsten.katachi.fs.FsPath
 import me.tbsten.katachi.fs.internal.RealFileSystem
 import me.tbsten.katachi.processor.ArchitectureProcessor
 import me.tbsten.katachi.scan.Violation
@@ -35,12 +36,16 @@ public const val DEFAULT_MAX_VIOLATIONS: Int = 10
  *
  * @param maxViolations the combined budget the message's error blocks and warning blocks share.
  *   [violations] holds every violation of the run either way, warnings included.
+ * @param projectRoot what the message resolves each path against to print it as a
+ *   `file:///...` URI. `null` leaves the paths relative to the project root, as [violations]
+ *   carries them.
  */
 public class KatachiArchitectureAssertionError internal constructor(
     /** Every violation of the run, including the ones the message left out. */
     public val violations: List<Violation>,
     maxViolations: Int,
-) : AssertionError(violations.report(maxViolations))
+    projectRoot: FsPath? = null,
+) : AssertionError(violations.report(maxViolations, projectRoot))
 
 /**
  * Checks the project against this definition and fails the calling test if anything is off.

@@ -8,6 +8,8 @@ import me.tbsten.katachi.ExperimentalKatachiApi
 import me.tbsten.katachi.dsl.internal.evaluateTemplate
 import me.tbsten.katachi.dsl.internal.templateParameterNames
 import me.tbsten.katachi.fs.internal.findProjectRoot
+import me.tbsten.katachi.internal.absolutePathOf
+import me.tbsten.katachi.internal.fileUri
 import me.tbsten.katachi.internal.runProcessorCatching
 import me.tbsten.katachi.processor.ArchitectureProcessContext
 import me.tbsten.katachi.processor.ArchitectureProcessor
@@ -109,7 +111,7 @@ public object GenerateCodeFromTemplate : ArchitectureProcessor<GenerateCodeFromT
             // the project root ever being searched for -- the same order documentation generation
             // keeps.
             val projectRoot = File(findProjectRoot(context.fileSystem).path.value)
-            context.log("Generating ${files.size} files under $projectRoot")
+            context.log("Generating ${files.size} files under ${fileUri(absolutePathOf(projectRoot.path))}")
             writeTemplateFiles(
                 projectRoot = projectRoot,
                 files = files,

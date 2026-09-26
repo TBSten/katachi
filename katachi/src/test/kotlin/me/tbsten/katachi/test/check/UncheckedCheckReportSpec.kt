@@ -3,6 +3,7 @@ package me.tbsten.katachi.test.check
 import io.kotest.core.spec.style.FreeSpec
 import io.kotest.matchers.shouldBe
 import me.tbsten.katachi.check.internal.report
+import me.tbsten.katachi.fs.FsPath
 import me.tbsten.katachi.scan.UncheckedCheck
 import me.tbsten.katachi.scan.UncheckedFile
 
@@ -29,6 +30,13 @@ class UncheckedCheckReportSpec : FreeSpec({
 
                 1 check could not be run.
                 """.trimIndent()
+        }
+
+        "ルートを渡すと . はルートの file URI になる" {
+            val violation = UncheckedCheck(check = "com.example.TodoCheck", cause = IllegalStateException("boom"))
+
+            listOf(violation).report(projectRoot = FsPath.of("/repo")).lines()[2] shouldBe
+                "[UncheckedCheck] file:///repo"
         }
     }
 

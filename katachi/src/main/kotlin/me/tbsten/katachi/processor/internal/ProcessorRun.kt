@@ -2,13 +2,17 @@ package me.tbsten.katachi.processor.internal
 
 import me.tbsten.katachi.dsl.Architecture
 import me.tbsten.katachi.fs.KatachiFileSystem
+import me.tbsten.katachi.fs.internal.findProjectRoot
 import me.tbsten.katachi.fs.internal.RealFileSystem
+import me.tbsten.katachi.internal.catching
+import me.tbsten.katachi.internal.displayPath
 import me.tbsten.katachi.processor.ArchitectureProcessContext
 import me.tbsten.katachi.processor.ArchitectureProcessor
 import me.tbsten.katachi.processor.KatachiProcessorNotFoundException
 import me.tbsten.katachi.processor.KatachiProcessorNotInstantiableException
 import me.tbsten.katachi.processor.KatachiProcessorTypeException
 import me.tbsten.katachi.processor.decodeFromStringMap
+import me.tbsten.katachi.scan.Violation
 
 /**
  * How many of a `runProcessors` call's processors succeeded and how many failed.
@@ -110,6 +114,10 @@ internal fun runProcessors(
     out("[3/3] Katachi processor run: $succeeded succeeded, $failed failed")
     out("")
 
+    // Only asked for when a violation is printed, and never by starting a walk: finding the root
+    // is a few `exists` calls, and a root that cannot be found just leaves the paths relative.
+    val projectRoot by lazy { catching { findProjectRoot(fileSystem).path.value }.getOrNull() }
+
     for (outcome in outcomes) {
         outcome.result.fold(
             onSuccess = { produced ->
@@ -118,7 +126,7 @@ internal fun runProcessors(
                 // single bracketed line.
                 when (produced) {
                     Unit -> Unit
-                    is Collection<*> -> produced.forEach { element -> out(element.toString()) }
+                    is Collection<*> -> produced.forEach { element -> out(lineOf(element, projectRoot)) }
                     else -> out(produced.toString())
                 }
             },
@@ -135,6 +143,17 @@ internal fun runProcessors(
 
     return ProcessorRunSummary(succeeded = succeeded, failed = failed)
 }
+
+/**
+ * One element of a processor's answer, as a line. A [Violation] is written as its report's first
+ * line, with the path as a `file:///...` URI; anything else through `toString`.
+ */
+private fun lineOf(element: Any?, projectRoot: String?): String =
+    if (element is Violation) {
+        "[${element.label}] ${displayPath(projectRoot, element.path)}"
+    } else {
+        element.toString()
+    }
 
 /**
  * Holds a processor together with its own `Args` type, after the type has been captured.

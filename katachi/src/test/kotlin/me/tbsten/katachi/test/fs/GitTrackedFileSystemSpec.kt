@@ -5,10 +5,12 @@ import io.kotest.core.spec.style.FreeSpec
 import io.kotest.matchers.collections.shouldContainExactly
 import io.kotest.matchers.collections.shouldNotContain
 import io.kotest.matchers.shouldBe
+import io.kotest.matchers.string.shouldStartWith
 import me.tbsten.katachi.fs.FileSelection
 import me.tbsten.katachi.fs.FsPath
 import me.tbsten.katachi.fs.KatachiFileSystem
 import me.tbsten.katachi.fs.KatachiGitUnavailableException
+import me.tbsten.katachi.fs.internal.GitProblem
 import me.tbsten.katachi.fs.internal.GitTrackedFileSystem
 import me.tbsten.katachi.fs.internal.RealFileSystem
 import me.tbsten.katachi.fs.internal.findProjectRoot
@@ -164,6 +166,18 @@ class GitTrackedFileSystemSpec : FreeSpec({
             val fileSystem = gitTrackedFileSystem(delegate, sampleRoot)
             fileSystem.exists(sampleRoot / "settings.gradle.kts") shouldBe true
             fileSystem.exists(sampleRoot / "build") shouldBe false
+        }
+    }
+
+    "git が答えられなかったときの文面" - {
+        "実行した場所は file URI で出る" {
+            val root = FsPath.of("/repo")
+            GitProblem.CannotStart.explain("git ls-files", root) shouldStartWith
+                "Cannot run `git ls-files` in file:///repo. "
+            GitProblem.TimedOut(60).explain("git ls-files", root) shouldBe
+                "`git ls-files` in file:///repo did not finish within 60 seconds."
+            GitProblem.Failed(128, "fatal").explain("git ls-files", root) shouldBe
+                "`git ls-files` in file:///repo exited with 128: fatal"
         }
     }
 })

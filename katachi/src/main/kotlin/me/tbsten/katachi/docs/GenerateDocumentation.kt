@@ -8,6 +8,8 @@ import me.tbsten.katachi.ExperimentalKatachiApi
 import me.tbsten.katachi.docs.internal.compareDocuments
 import me.tbsten.katachi.docs.internal.roleReferenceDocuments
 import me.tbsten.katachi.docs.internal.writeDocuments
+import me.tbsten.katachi.internal.absolutePathOf
+import me.tbsten.katachi.internal.fileUri
 import me.tbsten.katachi.internal.runProcessorCatching
 import me.tbsten.katachi.processor.ArchitectureProcessContext
 import me.tbsten.katachi.processor.ArchitectureProcessor
@@ -91,14 +93,15 @@ public object GenerateDocumentation : ArchitectureProcessor<GenerateDocumentatio
             val outputDir = context.args.outputDir
             val pages = roleReferenceDocuments(context)
             val outputRoot = File(outputDir)
+            val outputUri = fileUri(absolutePathOf(outputDir))
             when (context.args.mode) {
                 DocumentationMode.Write -> {
-                    context.log("Writing ${pages.size} pages to $outputDir")
+                    context.log("Writing ${pages.size} pages to $outputUri")
                     writeDocuments(outputRoot, pages) { message -> context.log(message) }
                 }
 
                 DocumentationMode.Check -> {
-                    context.log("Comparing ${pages.size} pages against $outputDir")
+                    context.log("Comparing ${pages.size} pages against $outputUri")
                     val difference = compareDocuments(outputRoot, pages)
                     if (!difference.isUpToDate) {
                         throw KatachiStaleDocumentationException(
@@ -108,7 +111,7 @@ public object GenerateDocumentation : ArchitectureProcessor<GenerateDocumentatio
                             extra = difference.extra,
                         )
                     }
-                    context.log("$outputDir is up to date.")
+                    context.log("$outputUri is up to date.")
                 }
             }
         }

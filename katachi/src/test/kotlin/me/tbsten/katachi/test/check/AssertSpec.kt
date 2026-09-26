@@ -32,7 +32,7 @@ class AssertSpec : FreeSpec({
         // どのテストフレームワークにも依存しない。
         failure.shouldBeInstanceOf<AssertionError>()
         failure.message!! shouldStartWith "Katachi check failed: 1 violation (Unexpected: 1)"
-        failure.message!! shouldContain "[UnexpectedFile] notes.md"
+        failure.message!! shouldContain "[UnexpectedFile] file:///repo/notes.md"
     }
 
     "引数なしの assert は実ファイルシステムと実際の作業ディレクトリを見る" {

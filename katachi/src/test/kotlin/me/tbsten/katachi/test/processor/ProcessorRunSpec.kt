@@ -23,6 +23,9 @@ import me.tbsten.katachi.processor.KatachiProcessorNotInstantiableException
 import me.tbsten.katachi.processor.KatachiProcessorTypeException
 import me.tbsten.katachi.processor.internal.instantiateProcessor
 import me.tbsten.katachi.processor.internal.runProcessors
+import me.tbsten.katachi.scan.Severity
+import me.tbsten.katachi.scan.Violation
+import me.tbsten.katachi.scan.ViolationKind
 import me.tbsten.katachi.test.check.architectureOf
 
 class ProcessorRunSpec : FreeSpec({
@@ -175,6 +178,22 @@ class ProcessorRunSpec : FreeSpec({
 
             val okAt = lines.indexOf("[OK] names")
             lines.subList(okAt + 1, okAt + 3) shouldBe listOf("first", "second")
+        }
+
+        "success の Violation は [label] と file URI の1行で出る" {
+            val lines = mutableListOf<String>()
+
+            runProcessors(
+                architecture = definition,
+                registry = mapOf("found" to FoundProcessor::class.java),
+                processorKeys = listOf("found"),
+                rawArgs = emptyMap(),
+                fileSystem = fakeFileSystemFor(),
+                out = lines::add,
+            )
+
+            val okAt = lines.indexOf("[OK] found")
+            lines[okAt + 1] shouldBe "[FoundIt] file:///repo/app/src/Foo.kt"
         }
 
         "Unit を返す processor は結果を印字せず、非 Unit は印字する" {
@@ -331,6 +350,19 @@ private object AnswersNoProcessor : ArchitectureProcessorNoArg<Unit> {
 private object NamesProcessor : ArchitectureProcessorNoArg<List<String>> {
     override fun process(context: ArchitectureProcessContext<Unit>): Result<List<String>> =
         runCatching { listOf("first", "second") }
+}
+
+/** Answers one warning, so the run succeeds and prints it under `[OK]`. */
+private object FoundProcessor : ArchitectureProcessorNoArg<List<Violation>> {
+    override fun process(context: ArchitectureProcessContext<Unit>): Result<List<Violation>> =
+        runCatching { listOf(FoundViolation) }
+}
+
+private object FoundViolation : Violation {
+    override val path: String = "app/src/Foo.kt"
+    override val kind: ViolationKind = ViolationKind.Constraint
+    override val severity: Severity = Severity.Warning
+    override val label: String = "FoundIt"
 }
 
 private class NotAProcessor

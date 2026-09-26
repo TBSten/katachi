@@ -1,6 +1,7 @@
 package me.tbsten.katachi.check
 
 import me.tbsten.katachi.ExperimentalKatachiApi
+import me.tbsten.katachi.check.internal.assertNoErrors
 import me.tbsten.katachi.internal.runProcessorCatching
 import me.tbsten.katachi.processor.ArchitectureProcessContext
 import me.tbsten.katachi.processor.ArchitectureProcessorNoArg
@@ -102,6 +103,6 @@ public class LayoutCheck : ArchitectureProcessorNoArg<List<Violation>> {
             (
                 walk.layoutViolations +
                     layoutWarningsOf(context.declaredEntries, walk.layoutFileOverlaps)
-                ).assertNoErrors()
+                ).assertNoErrors(walk.projectRoot)
         }
 }

@@ -3,6 +3,8 @@ package me.tbsten.katachi.docs.internal
 import java.io.File
 import java.io.IOException
 import me.tbsten.katachi.docs.KatachiDocumentIoException
+import me.tbsten.katachi.internal.absolutePathOf
+import me.tbsten.katachi.internal.displayExistingPath
 
 /**
  * Makes [outputRoot] hold exactly [pages], and says through [log] everything it did.
@@ -26,7 +28,7 @@ internal fun writeDocuments(outputRoot: File, pages: Map<String, String>, log: (
     for (stale in existingPagesOf(outputRoot).filterNot { it.lowercase() in generated }) {
         val file = File(outputRoot, stale)
         catchingIo(stale, outputRoot) { if (!file.delete()) throw IOException("delete returned false") }
-        log("Removed $stale, which this definition no longer produces.")
+        log("Removed ${displayExistingPath(absolutePathOf(outputRoot.path), stale)}, which this definition no longer produces.")
     }
     for ((path, content) in pages) {
         val file = File(outputRoot, path)

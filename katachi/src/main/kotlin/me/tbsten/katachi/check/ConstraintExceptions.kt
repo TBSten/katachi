@@ -2,6 +2,8 @@ package me.tbsten.katachi.check
 
 import me.tbsten.katachi.KatachiDeclarationException
 import me.tbsten.katachi.dsl.DeclarationSite
+import me.tbsten.katachi.fs.FsPath
+import me.tbsten.katachi.internal.displayPath
 
 /** How many of the offending paths a message names before it stops listing them. */
 private const val LISTED_PATHS: Int = 3
@@ -18,6 +20,8 @@ private const val LISTED_PATHS: Int = 3
  * @property constraintName what the constraint was called, or `null`.
  * @property declaredAt where the constraint was written.
  * @property outside the paths that were answered about but never handed over.
+ * @param projectRoot what the message resolves [outside] against to print `file:///...` URIs.
+ *   `null` prints them as they are.
  *
  * ## Example 1: catch a backend that answered about the wrong files
  * ```kt
@@ -65,13 +69,14 @@ public class KatachiConstraintSubjectException internal constructor(
      * ```
      */
     public val outside: List<String>,
+    projectRoot: FsPath? = null,
 ) : KatachiDeclarationException(
     message = buildString {
         val named = constraintName?.let { "\"$it\"" } ?: "declared at $declaredAt"
         appendLine(
             "Constraint $named of role \"$role\" answered about ${outside.size} " +
                 "${if (outside.size == 1) "file" else "files"} it was not asked about: " +
-                outside.take(LISTED_PATHS).joinToString(", ") +
+                outside.take(LISTED_PATHS).joinToString(", ") { displayPath(projectRoot?.value, it) } +
                 if (outside.size > LISTED_PATHS) ", ..." else "",
         )
         appendLine(

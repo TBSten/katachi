@@ -152,8 +152,8 @@ class GenerateDocumentationSpec : FreeSpec({
                 GenerateDocumentation.process(context).getOrThrow()
 
                 context.logs shouldContainExactly listOf(
-                    "Writing 3 pages to ${output.path}",
-                    "Removed Stale.md, which this definition no longer produces.",
+                    "Writing 3 pages to file://${output.invariantSeparatorsPath}",
+                    "Removed file://${output.invariantSeparatorsPath}/Stale.md, which this definition no longer produces.",
                     "README.md",
                     "domain/",
                     "  README.md",
@@ -265,7 +265,7 @@ class GenerateDocumentationSpec : FreeSpec({
 
                 GenerateDocumentation.process(context).getOrThrow()
 
-                context.logs.last() shouldBe "${output.path} is up to date."
+                context.logs.last() shouldBe "file://${output.invariantSeparatorsPath} is up to date."
             }
         }
 
@@ -294,7 +294,7 @@ class GenerateDocumentationSpec : FreeSpec({
                 val failure = arch.staleDocumentation(output)
 
                 failure.missing shouldContainExactly listOf("domain/UseCase.md")
-                failure.message.orEmpty() shouldContain "[missing]   domain/UseCase.md"
+                failure.message.orEmpty() shouldContain "[missing]   file://${output.invariantSeparatorsPath}/domain/UseCase.md"
             }
         }
 
@@ -308,7 +308,7 @@ class GenerateDocumentationSpec : FreeSpec({
                 val failure = arch.staleDocumentation(output)
 
                 failure.different shouldContainExactly listOf("README.md")
-                failure.message.orEmpty() shouldContain "[different] README.md"
+                failure.message.orEmpty() shouldContain "[different] file://${output.invariantSeparatorsPath}/README.md"
             }
         }
 
@@ -322,7 +322,7 @@ class GenerateDocumentationSpec : FreeSpec({
                 val failure = arch.staleDocumentation(output)
 
                 failure.extra shouldContainExactly listOf("domain/Interactor.md")
-                failure.message.orEmpty() shouldContain "[extra]     domain/Interactor.md"
+                failure.message.orEmpty() shouldContain "[extra]     file://${output.invariantSeparatorsPath}/domain/Interactor.md"
             }
         }
 
@@ -339,7 +339,7 @@ class GenerateDocumentationSpec : FreeSpec({
 
                 withClue("1件ずつ落ちると、直すのに3往復かかる") {
                     failure.message.orEmpty().lines().first() shouldBe
-                        "3 documentation pages under \"${output.path}\" are not what this " +
+                        "3 documentation pages under file://${output.invariantSeparatorsPath} are not what this " +
                         "definition produces: 1 missing, 1 different, 1 extra."
                 }
                 failure.outputDir shouldBe output.path

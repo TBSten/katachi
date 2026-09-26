@@ -8,6 +8,7 @@ import io.kotest.matchers.string.shouldContain
 import io.kotest.matchers.types.shouldBeInstanceOf
 import me.tbsten.katachi.InternalKatachiApi
 import me.tbsten.katachi.check.internal.report
+import me.tbsten.katachi.fs.FsPath
 import me.tbsten.katachi.konsist.KatachiKonsistNoExpectationException
 import me.tbsten.katachi.konsist.KatachiKonsistNoKotlinFilesException
 import me.tbsten.katachi.scan.UncheckedConstraint
@@ -35,8 +36,11 @@ class KonsistConstraintSpec : FreeSpec({
 
         val report = violations.report()
         report shouldContain "Katachi check failed: 1 violation (Constraint: 1)"
-        // The first line is a path a reader -- or an agent -- can open as written.
+        // Without a root to resolve against, report() prints the path as the violation carries it.
         report shouldContain "[UnsatisfiedConstraint] src/PublicThing.kt"
+        // With one, the first line is a file:// URI a reader -- or an agent -- can open as written.
+        violations.report(projectRoot = FsPath.of("/repo")) shouldContain
+            "[UnsatisfiedConstraint] file:///repo/src/PublicThing.kt"
         report shouldContain "Role: domain/UseCase / Constraint: \"規約\""
         report shouldContain "Declaration: PublicThing (line 3)"
         report shouldContain "(layout of src)"

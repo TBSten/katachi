@@ -14,6 +14,7 @@ import me.tbsten.katachi.dsl.architecture
 import me.tbsten.katachi.dsl.internal.flattenLayout
 import me.tbsten.katachi.dsl.gradle.module
 import me.tbsten.katachi.dsl.kotlin.ktFile
+import me.tbsten.katachi.fs.FsPath
 import me.tbsten.katachi.scan.MissingDescription
 import me.tbsten.katachi.scan.internal.missingDescriptionsOf
 
@@ -59,8 +60,8 @@ class MissingDescriptionCheckSpec : FreeSpec({
             shouldNotThrowAny { definition.assert(tree) }
         }
 
-        printed shouldContain "[MissingDescription] core/domain"
-        printed shouldContain "[MissingDescription] feature/home"
+        printed shouldContain "[MissingDescription] file:///repo/core/domain"
+        printed shouldContain "[MissingDescription] file:///repo/feature/home"
         definition.validate(tree).filterIsInstance<MissingDescription>().map { it.path } shouldBe
             listOf("core/domain", "feature/home")
     }
@@ -114,6 +115,13 @@ class MissingDescriptionCheckSpec : FreeSpec({
 
         definition.validate(tree).filterIsInstance<MissingDescription>().map { it.path } shouldBe
             listOf("core/ui", "feature/*")
+
+        // A pattern is not a place a URI can point at, so it is printed as written.
+        val report = definition.validate(tree).report(projectRoot = FsPath.of("/repo"))
+        report shouldContain "[MissingDescription] file:///repo/core/ui"
+        report shouldContain "Other place: feature/*"
+        report shouldContain "[MissingDescription] feature/*"
+        report shouldContain "Other place: file:///repo/core/ui"
     }
 
     "Error と Warning が両方あると、失敗メッセージの末尾に Warning セクションが来る" {

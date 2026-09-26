@@ -1,5 +1,7 @@
 package me.tbsten.katachi.check.internal
 
+import me.tbsten.katachi.internal.displayExistingPath
+import me.tbsten.katachi.internal.displayPath
 import me.tbsten.katachi.scan.AmbiguousLayout
 import me.tbsten.katachi.scan.MissingDescription
 
@@ -26,16 +28,19 @@ import me.tbsten.katachi.scan.MissingDescription
  * read, and neither reason applies here — katachi already knows everything an
  * [AmbiguousLayout] means, because it derived the violation itself.
  */
-internal fun ambiguousLayoutBlock(violation: AmbiguousLayout): List<String> = buildList {
+internal fun ambiguousLayoutBlock(violation: AmbiguousLayout, root: String?): List<String> = buildList {
     val roles = violation.claims.size
     val onFiles = violation.overlappingFiles.isNotEmpty()
-    add("[${violation.label}] ${violation.path}")
+    // On files the path is one of them, found on disk; otherwise it is the declared path, which
+    // may be a pattern.
+    val path = if (onFiles) displayExistingPath(root, violation.path) else displayPath(root, violation.path)
+    add("[${violation.label}] $path")
     if (onFiles) {
         add("$STEP$roles roles claim this file, so it belongs to all of them.")
         add("${STEP}Every constraint those roles declare is checked against it.")
         // The first entry is `path`, already on the line above.
         val others = violation.overlappingFiles.drop(1)
-        if (others.isNotEmpty()) add(listedLine("Other file", "Other files", others))
+        if (others.isNotEmpty()) add(listedLine("Other file", "Other files", others.map { displayExistingPath(root, it) }))
     } else {
         add("$STEP$roles roles declare this path, so a file here belongs to all of them.")
     }
@@ -91,11 +96,11 @@ private fun ambiguousLayoutFixLines(onFiles: Boolean, plural: Boolean): List<Str
  * `[MissingFile]` because nothing is there, would here be katachi recommending a change it
  * already knows turns every file below into an `[UnexpectedFile]`.
  */
-internal fun missingDescriptionBlock(violation: MissingDescription): List<String> = listOf(
-    "[${violation.label}] ${violation.path}",
+internal fun missingDescriptionBlock(violation: MissingDescription, root: String?): List<String> = listOf(
+    "[${violation.label}] ${displayPath(root, violation.path)}",
     "${STEP}Role ${violation.role.qualifiedName} may live in ${violation.otherPlaces.size + 1} places, " +
         "and this one does not say when to use it.",
-    listedLine("Other place", "Other places", violation.otherPlaces),
+    listedLine("Other place", "Other places", violation.otherPlaces.map { displayPath(root, it) }),
     "${STEP}Declared at: ${violation.declaredAt}",
     "",
     "${STEP}How to fix:",

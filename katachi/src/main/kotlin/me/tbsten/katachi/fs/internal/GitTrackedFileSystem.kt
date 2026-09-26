@@ -6,6 +6,7 @@ import java.util.concurrent.TimeUnit
 import me.tbsten.katachi.fs.FsPath
 import me.tbsten.katachi.fs.KatachiFileSystem
 import me.tbsten.katachi.fs.KatachiGitUnavailableException
+import me.tbsten.katachi.internal.fileUri
 
 /**
  * How the git invocation went wrong.
@@ -26,8 +27,8 @@ internal sealed interface GitProblem {
     /** The process could not be started at all — usually git is not installed. */
     object CannotStart : GitProblem {
         override fun explain(command: String, root: FsPath): String =
-            "Cannot run `$command` in $root. katachi checks the files git reports for " +
-                "this project; set `files = wholeTree()` in `architecture { }` to walk the " +
+            "Cannot run `$command` in ${fileUri(root.value)}. katachi checks the files git " +
+                "reports for this project; set `files = wholeTree()` in `architecture { }` to walk the " +
                 "whole directory tree instead."
     }
 
@@ -36,7 +37,7 @@ internal sealed interface GitProblem {
         val seconds: Long,
     ) : GitProblem {
         override fun explain(command: String, root: FsPath): String =
-            "`$command` in $root did not finish within $seconds seconds."
+            "`$command` in ${fileUri(root.value)} did not finish within $seconds seconds."
     }
 
     /** The process finished, with a non-zero exit code. */
@@ -45,7 +46,7 @@ internal sealed interface GitProblem {
         val stderr: String,
     ) : GitProblem {
         override fun explain(command: String, root: FsPath): String =
-            "`$command` in $root exited with $exitCode: $stderr"
+            "`$command` in ${fileUri(root.value)} exited with $exitCode: $stderr"
     }
 }
 

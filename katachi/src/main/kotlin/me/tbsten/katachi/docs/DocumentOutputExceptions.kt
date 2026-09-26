@@ -1,6 +1,9 @@
 package me.tbsten.katachi.docs
 
 import me.tbsten.katachi.KatachiCheckException
+import me.tbsten.katachi.internal.absolutePathOf
+import me.tbsten.katachi.internal.displayExistingPath
+import me.tbsten.katachi.internal.fileUri
 
 /**
  * The documentation on disk is not what the definition produces.
@@ -41,14 +44,15 @@ public class KatachiStaleDocumentationException internal constructor(
     public val extra: List<String>,
 ) : KatachiCheckException(
     message = buildString {
+        val root = absolutePathOf(outputDir)
         appendLine(
             "${missing.size + different.size + extra.size} documentation pages under " +
-                "\"$outputDir\" are not what this definition produces: " +
+                "${fileUri(root)} are not what this definition produces: " +
                 "${missing.size} missing, ${different.size} different, ${extra.size} extra.",
         )
-        for (path in missing) appendLine("  [missing]   $path")
-        for (path in different) appendLine("  [different] $path")
-        for (path in extra) appendLine("  [extra]     $path")
+        for (path in missing) appendLine("  [missing]   ${displayExistingPath(root, path)}")
+        for (path in different) appendLine("  [different] ${displayExistingPath(root, path)}")
+        for (path in extra) appendLine("  [extra]     ${displayExistingPath(root, path)}")
         appendLine(
             "Nothing was written, because this run was asked to compare rather than generate.",
         )
@@ -93,7 +97,8 @@ public class KatachiDocumentIoException internal constructor(
     cause: Throwable,
 ) : KatachiCheckException(
     message = buildString {
-        appendLine("Cannot read or write the documentation page \"$path\" under \"$outputDir\".")
+        val root = absolutePathOf(outputDir)
+        appendLine("Cannot read or write the documentation page ${displayExistingPath(root, path)} under ${fileUri(root)}.")
         appendLine("The filesystem refused it: ${cause::class.simpleName}: ${cause.message}")
         append(
             "Check that `--arg outputDir=` names a directory this process may write to. " +

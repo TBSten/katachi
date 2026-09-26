@@ -55,8 +55,8 @@ class TemplateOutputSpec : FreeSpec({
                 writeTemplateFiles(root, FILES, OnExisting.Fail) { logs += it }
 
                 logs shouldContainExactly listOf(
-                    "Wrote useCase/GetUserUseCase.kt",
-                    "Wrote useCase/GetUserUseCaseImpl.kt",
+                    "Wrote file://${root.invariantSeparatorsPath}/useCase/GetUserUseCase.kt",
+                    "Wrote file://${root.invariantSeparatorsPath}/useCase/GetUserUseCaseImpl.kt",
                 )
             }
         }
@@ -81,6 +81,11 @@ class TemplateOutputSpec : FreeSpec({
 
                 thrown.existing shouldContainExactly listOf("useCase/GetUserUseCaseImpl.kt")
                 thrown.total shouldBe 2
+                // The property keeps the path as the layout spells it; the message opens it as a URI.
+                thrown.message.orEmpty().lines().take(2) shouldContainExactly listOf(
+                    "1 of 2 generated files already exist under file://${root.invariantSeparatorsPath}:",
+                    "  file://${root.invariantSeparatorsPath}/useCase/GetUserUseCaseImpl.kt",
+                )
                 // The file that was free is still absent: a half-applied template would leave a
                 // tree nothing on disk explains.
                 File(root, "useCase/GetUserUseCase.kt").exists() shouldBe false
@@ -98,6 +103,7 @@ class TemplateOutputSpec : FreeSpec({
                 File(root, "useCase/GetUserUseCase.kt").exists() shouldBe false
                 File(root, "useCase/GetUserUseCaseImpl.kt").readText() shouldBe "written by hand"
                 logs.single() shouldContain "Wrote nothing"
+                logs.single() shouldContain "(file://${root.invariantSeparatorsPath}/useCase/GetUserUseCaseImpl.kt)"
             }
         }
 

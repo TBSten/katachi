@@ -4,6 +4,8 @@ import java.io.File
 import java.io.IOException
 import java.nio.file.Files
 import java.nio.file.StandardCopyOption
+import me.tbsten.katachi.internal.absolutePathOf
+import me.tbsten.katachi.internal.displayExistingPath
 import me.tbsten.katachi.template.KatachiExistingTemplateFileException
 import me.tbsten.katachi.template.KatachiReservedTemplatePathException
 import me.tbsten.katachi.template.KatachiTemplateEscapesProjectException
@@ -61,6 +63,8 @@ internal fun writeTemplateFiles(
     onExisting: OnExisting,
     log: (String) -> Unit,
 ): Boolean {
+    // Only what the log prints resolves against this. The writing itself keeps using [projectRoot].
+    val root = absolutePathOf(projectRoot.path)
     val blocked = files.keys
         .filter { File(projectRoot, it).let { target -> target.exists() && !target.isFile } }
         .sorted()
@@ -84,13 +88,16 @@ internal fun writeTemplateFiles(
         OnExisting.Skip -> if (existing.isNotEmpty()) {
             log(
                 "Wrote nothing: ${existing.size} of ${files.size} files are already there " +
-                    "(${existing.joinToString(", ")}).",
+                    "(${existing.joinToString(", ") { displayExistingPath(root, it) }}).",
             )
             return false
         }
 
         OnExisting.Overwrite -> if (existing.isNotEmpty()) {
-            log("Overwriting ${existing.size} of ${files.size} files: ${existing.joinToString(", ")}")
+            log(
+                "Overwriting ${existing.size} of ${files.size} files: " +
+                    existing.joinToString(", ") { displayExistingPath(root, it) },
+            )
         }
     }
 
@@ -130,7 +137,7 @@ internal fun writeTemplateFiles(
         for (file in backedUp) file.backup.delete()
     }
 
-    for (path in files.keys) log("Wrote $path")
+    for (path in files.keys) log("Wrote ${displayExistingPath(root, path)}")
     return true
 }
 

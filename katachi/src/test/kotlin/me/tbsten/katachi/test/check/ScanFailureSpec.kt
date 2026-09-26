@@ -227,7 +227,7 @@ class ScanFailureSpec : FreeSpec({
                 openDefinition.assert(openTree.failingAt(brokenFile) { IOException("cannot read it") })
             }
 
-            failure.message!! shouldContain "[UncheckedFile] src/Broken.kt"
+            failure.message!! shouldContain "[UncheckedFile] file:///repo/src/Broken.kt"
             failure.message!!.lines().last() shouldBe "1 file could not be checked."
         }
     }

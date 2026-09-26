@@ -193,7 +193,7 @@ class ConstraintFailureSpec : FreeSpec({
             violations.report() shouldContain
                 "Cause: me.tbsten.katachi.check.KatachiConstraintSubjectException: " +
                 "Constraint \"no outsiders\" of role \"domain/UseCase\" answered about 4 files " +
-                "it was not asked about: a.kt, b.kt, c.kt, ..."
+                "it was not asked about: file:///repo/a.kt, file:///repo/b.kt, file:///repo/c.kt, ..."
         }
     }
 

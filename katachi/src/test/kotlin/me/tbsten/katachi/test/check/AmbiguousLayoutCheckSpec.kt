@@ -10,6 +10,7 @@ import me.tbsten.katachi.check.internal.report
 import me.tbsten.katachi.check.internal.validate
 import me.tbsten.katachi.dsl.gradle.module
 import me.tbsten.katachi.dsl.kotlin.ktFile
+import me.tbsten.katachi.fs.FsPath
 import me.tbsten.katachi.scan.AmbiguousLayout
 
 /**
@@ -31,7 +32,7 @@ class AmbiguousLayoutCheckSpec : FreeSpec({
             shouldNotThrowAny { definition.assert(tree) }
         }
 
-        printed shouldContain "[AmbiguousLayout] .gitignore"
+        printed shouldContain "[AmbiguousLayout] file:///repo/.gitignore"
         val warnings = definition.validate(tree).filterIsInstance<AmbiguousLayout>()
         warnings.map { it.path } shouldBe listOf(".gitignore")
         // The walk finds the same two roles on the real `.gitignore`, and that group is
@@ -257,6 +258,11 @@ class AmbiguousLayoutCheckSpec : FreeSpec({
 
             report shouldContain "[AmbiguousLayout] a/AViewModel.kt"
             report shouldContain "Other files: b/BViewModel.kt, c/CViewModel.kt, d/DViewModel.kt, and 1 more"
+
+            val rooted = definition.validate(tree).report(projectRoot = FsPath.of("/repo"))
+            rooted shouldContain "[AmbiguousLayout] file:///repo/a/AViewModel.kt"
+            rooted shouldContain "Other files: file:///repo/b/BViewModel.kt, file:///repo/c/CViewModel.kt, " +
+                "file:///repo/d/DViewModel.kt, and 1 more"
         }
 
         "実ファイル単位 — 3つ以上の役割で件数と How to fix が複数形になる" {

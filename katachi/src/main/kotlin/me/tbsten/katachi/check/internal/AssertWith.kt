@@ -66,11 +66,11 @@ internal fun Architecture.assertWith(
     checks: List<ArchitectureProcessor<Unit, List<Violation>>>,
     maxViolations: Int,
 ) {
-    val violations = validateWith(fileSystem, checks)
+    val (violations, projectRoot) = validateWithRoot(fileSystem, checks)
     if (violations.none { it.severity == Severity.Error }) {
-        val warnings = violations.report(maxViolations)
+        val warnings = violations.report(maxViolations, projectRoot)
         if (warnings.isNotEmpty()) System.err.println(warnings)
         return
     }
-    throw KatachiArchitectureAssertionError(violations, maxViolations)
+    throw KatachiArchitectureAssertionError(violations, maxViolations, projectRoot)
 }

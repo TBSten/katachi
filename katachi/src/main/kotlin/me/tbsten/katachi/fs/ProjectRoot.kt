@@ -2,6 +2,7 @@ package me.tbsten.katachi.fs
 
 import me.tbsten.katachi.ExperimentalKatachiApi
 import me.tbsten.katachi.KatachiCheckException
+import me.tbsten.katachi.internal.fileUri
 
 /**
  * The directory the check treats as the top of the project.
@@ -54,7 +55,7 @@ public class ProjectRoot internal constructor(
 public class KatachiProjectRootNotFoundException internal constructor(
     public val workingDirectory: FsPath,
 ) : KatachiCheckException(
-    message = "Cannot find the project root above $workingDirectory. " +
+    message = "Cannot find the project root above ${fileUri(workingDirectory.value)}. " +
         "katachi looks for a Gradle wrapper (gradlew), a Maven wrapper (mvnw) or a git " +
         "directory (.git) in the working directory and in every directory above it.",
 )

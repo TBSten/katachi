@@ -18,6 +18,9 @@ import me.tbsten.katachi.fs.FileSelection
 import me.tbsten.katachi.fs.FsPath
 import me.tbsten.katachi.fs.KatachiFileSystem
 import me.tbsten.katachi.fs.ProjectRoot
+import me.tbsten.katachi.fs.internal.RealFileSystem
+import me.tbsten.katachi.fs.internal.findProjectRoot
+import me.tbsten.katachi.internal.fileUri
 import me.tbsten.katachi.processor.ArchitectureProcessContext
 import me.tbsten.katachi.processor.ArchitectureProcessorNoArg
 import me.tbsten.katachi.scan.Severity
@@ -77,6 +80,12 @@ private object SelectsNothing : FileSelection {
 /** Over the real tree, seeing nothing. Paired with the overloads that take no file system. */
 private fun emptyRealTree(): Architecture = architecture { files = SelectsNothing }
 
+/**
+ * `path` as the report of a run over [emptyRealTree] prints it: under this repository's own
+ * root, which is wherever the checkout happens to be.
+ */
+private fun realUri(path: String): String = fileUri(findProjectRoot(RealFileSystem()).path.value, path)
+
 /** The first line of a report, which is where the counts are. */
 private fun List<Violation>.summary(): String = report().lines().first()
 
@@ -104,7 +113,7 @@ class AssertWithChecksSpec : FreeSpec({
 
         "assert(MyCheck()) と assert(fakeFs, MyCheck()) は検査を受け取る版に当たる" {
             shouldThrow<KatachiArchitectureAssertionError> { emptyRealTree().assert(TodoCheck()) }
-                .message!! shouldContain "[TodoRule] app/src/Foo.kt"
+                .message!! shouldContain "[TodoRule] ${realUri("app/src/Foo.kt")}"
 
             shouldThrow<KatachiArchitectureAssertionError> {
                 layoutArchitecture { ".gitignore".file() }
@@ -135,7 +144,7 @@ class AssertWithChecksSpec : FreeSpec({
                 """
                 Katachi check failed: 1 violation (Constraint: 1)
 
-                [TodoRule] app/src/Foo.kt
+                [TodoRule] ${realUri("app/src/Foo.kt")}
                   Rule: TODO
                   Line: 12
                 """.trimIndent()

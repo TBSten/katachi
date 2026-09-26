@@ -1,5 +1,7 @@
 package me.tbsten.katachi.check.internal
 
+import me.tbsten.katachi.dsl.DeclarationSite
+import me.tbsten.katachi.internal.displayPath
 import me.tbsten.katachi.scan.UncheckedConstraint
 import me.tbsten.katachi.scan.UncheckedConstraintReason
 import me.tbsten.katachi.scan.UnsatisfiedConstraint
@@ -20,13 +22,13 @@ import me.tbsten.katachi.scan.UnsatisfiedConstraint
  * so katachi does not know what would satisfy it, and a report that guessed would be inventing
  * a claim. The context lines say enough to find the rule and read it.
  */
-internal fun unsatisfiedConstraintBlock(violation: UnsatisfiedConstraint): List<String> = buildList {
-    add("[${violation.label}] ${violation.path}")
+internal fun unsatisfiedConstraintBlock(violation: UnsatisfiedConstraint, root: String?): List<String> = buildList {
+    add("[${violation.label}] ${constraintPath(root, violation.path, violation.declaredAt)}")
     add(
         "$STEP${constraintLine(violation.role.qualifiedName, violation.constraintName)}",
     )
     declarationLine(violation.declaration, violation.line)?.let { add("$STEP$it") }
-    add("${STEP}Declared at: ${violation.declaredAt}${inLayout(violation.layoutPath)}")
+    add("${STEP}Declared at: ${violation.declaredAt}${inLayout(root, violation.layoutPath)}")
 }
 
 /**
@@ -37,8 +39,8 @@ internal fun unsatisfiedConstraintBlock(violation: UnsatisfiedConstraint): List<
  * nothing about whose bug it is: the cause may be katachi's, the backend's, or the rule's, and
  * a line that always blamed katachi would be wrong most of the time.
  */
-internal fun uncheckedConstraintBlock(violation: UncheckedConstraint): List<String> = buildList {
-    add("[${violation.label}] ${violation.path}")
+internal fun uncheckedConstraintBlock(violation: UncheckedConstraint, root: String?): List<String> = buildList {
+    add("[${violation.label}] ${constraintPath(root, violation.path, violation.declaredAt)}")
     when (violation.reason) {
         UncheckedConstraintReason.NotEvaluated ->
             add("${STEP}Nothing evaluated this constraint, so nothing is known about it.")
@@ -47,7 +49,7 @@ internal fun uncheckedConstraintBlock(violation: UncheckedConstraint): List<Stri
             add("${STEP}Katachi failed while evaluating this constraint, so nothing is known about it.")
     }
     add("$STEP${constraintLine(violation.role.qualifiedName, violation.constraintName)}")
-    add("${STEP}Declared at: ${violation.declaredAt}${inLayout(violation.layoutPath)}")
+    add("${STEP}Declared at: ${violation.declaredAt}${inLayout(root, violation.layoutPath)}")
     violation.cause?.let { add("${STEP}Cause: ${causeLine(it)}") }
     add("")
     add("${STEP}How to fix:")
@@ -93,5 +95,16 @@ private fun declarationLine(declaration: String?, line: Int?): String? = when {
  * the key would give every one of those blocks the same context line and leave the reader
  * unable to tell which module the failure is about.
  */
-private fun inLayout(layoutPath: String?): String =
-    if (layoutPath == null) "" else " (layout of $layoutPath)"
+private fun inLayout(root: String?, layoutPath: String?): String =
+    if (layoutPath == null) "" else " (layout of ${displayPath(root, layoutPath)})"
+
+/**
+ * The path a constraint block opens with, as a URI — unless it is the file name the constraint
+ * was declared in.
+ *
+ * That is the last fallback of `DeclaredConstraint.reportPath`, used when the layout declared no
+ * path at all: a source file name, not a path below the project root, so resolving it against
+ * the root would point at a file that is not there.
+ */
+private fun constraintPath(root: String?, path: String, declaredAt: DeclarationSite): String =
+    if (path == declaredAt.fileName) path else displayPath(root, path)

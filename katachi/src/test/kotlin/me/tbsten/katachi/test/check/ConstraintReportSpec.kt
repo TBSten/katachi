@@ -9,6 +9,9 @@ import me.tbsten.katachi.check.internal.validate
 import me.tbsten.katachi.dsl.ConstraintFailure
 import me.tbsten.katachi.dsl.DeclarationSite
 import me.tbsten.katachi.dsl.FileSetConstraint
+import me.tbsten.katachi.fs.FsPath
+import me.tbsten.katachi.scan.UncheckedConstraint
+import me.tbsten.katachi.scan.UncheckedConstraintReason
 
 /**
  * What the two constraint blocks actually print.
@@ -241,6 +244,67 @@ class ConstraintReportSpec : FreeSpec({
                 "[UnsatisfiedConstraint] alpha/Helper.kt",
             )
             lines.last() shouldBe "Showing first 2 (11 more)"
+        }
+    }
+
+    "プロジェクトルートを渡したとき" - {
+        "開きのパスと layout は file URI になり、宣言位置はそのまま" {
+            val arch = architectureOf {
+                "domain".group {
+                    "UseCase" {
+                        layout {
+                            "alpha" {
+                                constraint(
+                                    name = "no helper",
+                                    declaredAt = DECLARED_AT,
+                                    check = rejectingDeclaration("alpha/Helper.kt", "Helper", 12),
+                                )
+                                "*.kt".file()
+                            }
+                        }
+                    }
+                }
+            }
+
+            arch.validate(repositoryOf { "alpha" { "Helper.kt"() } }, KonsistCheck())
+                .report(projectRoot = FsPath.of("/repo")) shouldBe
+                """
+                Katachi check failed: 1 violation (Constraint: 1)
+
+                [UnsatisfiedConstraint] file:///repo/alpha/Helper.kt
+                  Role: domain/UseCase / Constraint: "no helper"
+                  Declaration: Helper (line 12)
+                  Declared at: ProjectArchitecture.kt:61 (layout of file:///repo/alpha)
+                """.trimIndent()
+        }
+
+        "パスを持たない制約の開きは宣言したファイル名のままにする" {
+            // `reportPath`'s last fallback. The DSL refuses a constraint on a role without a
+            // layout, so the violation is built from one it does produce.
+            val declared = architectureOf {
+                "domain".group {
+                    "UseCase" {
+                        layout {
+                            "alpha" {
+                                constraint(name = "invoke", declaredAt = DECLARED_AT, check = silentCheck())
+                                "*.kt".file()
+                            }
+                        }
+                    }
+                }
+            }.validate(repositoryOf { "alpha" { "A.kt"() } }).filterIsInstance<UncheckedConstraint>().single()
+            val fallback = UncheckedConstraint(
+                path = DECLARED_AT.fileName,
+                reason = UncheckedConstraintReason.NotEvaluated,
+                role = declared.role,
+                constraintName = declared.constraintName,
+                layoutPath = null,
+                declaredAt = DECLARED_AT,
+                cause = null,
+            )
+
+            listOf(fallback).report(projectRoot = FsPath.of("/repo")).lines()[2] shouldBe
+                "[UncheckedConstraint] ProjectArchitecture.kt"
         }
     }
 

@@ -5,6 +5,7 @@ import me.tbsten.katachi.InternalKatachiApi
 import me.tbsten.katachi.check.KatachiArchitectureAssertionError
 import me.tbsten.katachi.check.LayoutCheck
 import me.tbsten.katachi.dsl.Architecture
+import me.tbsten.katachi.fs.FsPath
 import me.tbsten.katachi.fs.KatachiFileSystem
 import me.tbsten.katachi.fs.internal.RealFileSystem
 import me.tbsten.katachi.internal.catching
@@ -133,7 +134,16 @@ public fun Architecture.validate(
 internal fun Architecture.validateWith(
     fileSystem: KatachiFileSystem,
     checks: List<ArchitectureProcessor<Unit, List<Violation>>>,
-): List<Violation> {
+): List<Violation> = validateWithRoot(fileSystem, checks).violations
+
+/** [validateWith]'s violations, and the project root the walk resolved -- what a report needs. */
+internal data class ValidationResult(val violations: List<Violation>, val projectRoot: FsPath)
+
+/** [validateWith], also handing back the project root so `assert` can print absolute paths. */
+internal fun Architecture.validateWithRoot(
+    fileSystem: KatachiFileSystem,
+    checks: List<ArchitectureProcessor<Unit, List<Violation>>>,
+): ValidationResult {
     // `LayoutCheck` runs below whatever was passed. Letting a passed one through as well would
     // put the same `Violation` instance in the list twice: the count, the blocks and the
     // truncation budget would all double for a caller who only spelled out what already
@@ -164,7 +174,8 @@ internal fun Architecture.validateWith(
         // One context, therefore one walk. The last term is the guard against the quietest way
         // this library could break: a definition full of constraints, code breaking them, and
         // a green test because nothing was handed a check that evaluates them.
-        (layout + found + context.projectWalk.unevaluatedConstraintViolations())
+        val violations = (layout + found + context.projectWalk.unevaluatedConstraintViolations())
             .sortedBy { it.kind.ordinal }
+        ValidationResult(violations, context.projectWalk.projectRoot)
     }
 }

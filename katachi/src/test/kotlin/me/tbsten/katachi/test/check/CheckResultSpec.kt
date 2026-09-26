@@ -96,7 +96,7 @@ class CheckResultSpec : FreeSpec({
                 shouldNotThrowAny {
                     definition.assert(repositoryOf { ".gitignore"() }, warningsOnly)
                 }
-            } shouldContain "[ResultWarning] docs/a.md"
+            } shouldContain "[ResultWarning] file:///repo/docs/a.md"
         }
     }
 })

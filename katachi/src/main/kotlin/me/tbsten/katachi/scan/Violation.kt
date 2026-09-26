@@ -63,7 +63,10 @@ public interface Violation {
     /**
      * The `[...]` label of the block's first line, e.g. `UnexpectedFile`.
      *
-     * ## Example 1: print each violation like its report block's first line
+     * `[label] path` is the report block's first line with the path left relative to the project
+     * root; the report itself prints that path as a `file:///...` URI.
+     *
+     * ## Example 1: print each violation with its label
      * ```kt
      * projectArchitecture.validate().forEach { println("[${it.label}] ${it.path}") }
      * ```

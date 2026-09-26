@@ -80,6 +80,9 @@ class OmittedRoleSelfCheckSpec : FreeSpec({
 private const val PREVIEW_OVERLAP: String =
     "[AmbiguousLayout] ui/src/commonMain/kotlin/com/example/kmp/ui/component/PrimaryButtonPreview.kt"
 
-/** `[UnexpectedFile] path`, which is how the first line of each violation block reads. */
+/**
+ * `[UnexpectedFile] path`, with [Violation.path] relative to the project root. A report block's
+ * first line has the same shape, but prints the path as a `file:///...` URI.
+ */
 @OptIn(InternalKatachiApi::class)
 private fun List<Violation>.labels(): List<String> = map { "[${it.label}] ${it.path}" }

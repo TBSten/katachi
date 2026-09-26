@@ -51,7 +51,7 @@ class AssertWarningSpec : FreeSpec({
                 """
                 Katachi check found 1 warning. Warnings never fail the check.
 
-                [TestWarning] docs/a.md
+                [TestWarning] file:///repo/docs/a.md
                 """.trimIndent()
         }
     }
@@ -65,10 +65,10 @@ class AssertWarningSpec : FreeSpec({
                 definition.assert(tree, WarningCheck())
             }
 
-            failure.message!! shouldContain "[UnexpectedFile] notes.md"
+            failure.message!! shouldContain "[UnexpectedFile] file:///repo/notes.md"
             failure.message!! shouldContain "Katachi check found 1 warning. Warnings never fail the check."
             // The Warning section is the last thing in the message, after the error blocks.
-            failure.message!!.trimEnd().lines().last() shouldBe "[TestWarning] docs/a.md"
+            failure.message!!.trimEnd().lines().last() shouldBe "[TestWarning] file:///repo/docs/a.md"
         }
 
         "標準エラーには何も出ない（同じ文面は失敗メッセージに入っている）" {

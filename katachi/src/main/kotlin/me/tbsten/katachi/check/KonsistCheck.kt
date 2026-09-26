@@ -1,6 +1,7 @@
 package me.tbsten.katachi.check
 
 import me.tbsten.katachi.ExperimentalKatachiApi
+import me.tbsten.katachi.check.internal.assertNoErrors
 import me.tbsten.katachi.check.internal.uncheckedConstraintOf
 import me.tbsten.katachi.dsl.ConstraintFailure
 import me.tbsten.katachi.dsl.ConstraintSubject
@@ -76,7 +77,7 @@ public class KonsistCheck : ArchitectureProcessorNoArg<List<Violation>> {
                     walk.markEvaluated(declared)
                     violationsOf(walk, declared)
                 }
-                .assertNoErrors()
+                .assertNoErrors(walk.projectRoot)
         }
 
     override fun toString(): String = "KonsistCheck"
@@ -119,6 +120,7 @@ private fun violationsOf(walk: ProjectWalk, declared: DeclaredConstraint): List<
                 constraintName = declared.name,
                 declaredAt = declared.declaredAt,
                 outside = outside,
+                projectRoot = walk.projectRoot,
             )
         }
         answered

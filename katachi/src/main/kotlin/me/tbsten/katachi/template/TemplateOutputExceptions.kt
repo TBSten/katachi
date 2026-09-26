@@ -1,6 +1,9 @@
 package me.tbsten.katachi.template
 
 import me.tbsten.katachi.KatachiCheckException
+import me.tbsten.katachi.internal.absolutePathOf
+import me.tbsten.katachi.internal.displayExistingPath
+import me.tbsten.katachi.internal.fileUri
 
 /**
  * A file the template would have written is already there.
@@ -36,8 +39,9 @@ public class KatachiExistingTemplateFileException internal constructor(
     public val projectRoot: String,
 ) : KatachiCheckException(
     message = buildString {
-        appendLine("${existing.size} of $total generated files already exist under $projectRoot:")
-        for (path in existing) appendLine("  $path")
+        val root = absolutePathOf(projectRoot)
+        appendLine("${existing.size} of $total generated files already exist under ${fileUri(root)}:")
+        for (path in existing) appendLine("  ${displayExistingPath(root, path)}")
         appendLine(
             "Nothing was written, the files that were free included: a half-applied template " +
                 "leaves a tree nothing on disk explains, and these files are the repository's " +
@@ -83,7 +87,8 @@ public class KatachiTemplateIoException internal constructor(
     cause: Throwable,
 ) : KatachiCheckException(
     message = buildString {
-        appendLine("""Cannot write the generated file "$path" under $projectRoot.""")
+        val root = absolutePathOf(projectRoot)
+        appendLine("""Cannot write the generated file "${displayExistingPath(root, path)}" under ${fileUri(root)}.""")
         appendLine("The filesystem refused it: ${cause::class.simpleName}: ${cause.message}")
         append(
             "Generated files go where the role's layout { } says, relative to the project root " +
@@ -128,8 +133,9 @@ public class KatachiReservedTemplatePathException internal constructor(
     public val projectRoot: String,
 ) : KatachiCheckException(
     message = buildString {
-        appendLine("${reserved.size} path(s) katachi writes through are already taken under $projectRoot:")
-        for (path in reserved) appendLine("  $path")
+        val root = absolutePathOf(projectRoot)
+        appendLine("${reserved.size} path(s) katachi writes through are already taken under ${fileUri(root)}:")
+        for (path in reserved) appendLine("  ${displayExistingPath(root, path)}")
         appendLine(
             "The suffixes .katachi-new and .katachi-old are katachi's while a template runs: the " +
                 "first holds a file before it is in place, the second holds the file it replaces " +
@@ -182,9 +188,10 @@ public class KatachiTemplateEscapesProjectException internal constructor(
     public val projectRoot: String,
 ) : KatachiCheckException(
     message = buildString {
-        appendLine("""The generated file "$path" does not land inside the project.""")
-        appendLine("  project root: $projectRoot")
-        appendLine("  resolves to:  $resolved")
+        val root = absolutePathOf(projectRoot)
+        appendLine("""The generated file "${displayExistingPath(root, path)}" does not land inside the project.""")
+        appendLine("  project root: ${fileUri(root)}")
+        appendLine("  resolves to:  ${fileUri(absolutePathOf(resolved))}")
         appendLine(
             "A directory on the way is a symbolic link out of the tree. Generation writes source " +
                 "the user owns, and a file that lands where the definition does not describe is " +
@@ -230,8 +237,9 @@ public class KatachiTemplateTargetNotAFileException internal constructor(
     public val projectRoot: String,
 ) : KatachiCheckException(
     message = buildString {
-        appendLine("${blocked.size} generated file(s) are blocked by a directory under $projectRoot:")
-        for (path in blocked) appendLine("  $path")
+        val root = absolutePathOf(projectRoot)
+        appendLine("${blocked.size} generated file(s) are blocked by a directory under ${fileUri(root)}:")
+        for (path in blocked) appendLine("  ${displayExistingPath(root, path)}")
         appendLine(
             "onExisting decides what happens to a file that is already there, and the answer for " +
                 "overwrite is that the old contents are put back if the run fails. A directory " +

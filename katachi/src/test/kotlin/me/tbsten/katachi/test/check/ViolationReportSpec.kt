@@ -7,6 +7,7 @@ import me.tbsten.katachi.check.internal.report
 import me.tbsten.katachi.check.internal.validate
 import me.tbsten.katachi.dsl.kotlin.ktFile
 import me.tbsten.katachi.dsl.kotlin.ktsFile
+import me.tbsten.katachi.fs.FsPath
 import me.tbsten.katachi.scan.MissingFile
 
 class ViolationReportSpec : FreeSpec({
@@ -50,8 +51,48 @@ class ViolationReportSpec : FreeSpec({
                 """.trimIndent()
         }
 
+        "ルートを渡すとパスと移動先は file URI になり、DSL 断片は相対のまま" {
+            definition.validate(tree).report(projectRoot = FsPath.of("/repo")) shouldBe
+                """
+                Katachi check failed: 1 violation (Unexpected: 1)
+
+                [UnexpectedFile] file:///repo/core/domain/TokenRefresher.kt
+                  No role is defined for this file.
+
+                  Nearby locations:
+                    domain/UseCase    file:///repo/core/domain/useCase/
+                    domain/Repository file:///repo/core/domain/repository/
+
+                  How to fix:
+                    - Move it to one of the locations above
+                    - Delete it if it is not needed
+                    - Add a new role for it:
+                        "TokenRefresher" {
+                          summary = "TODO"
+                          layout {
+                            "core/domain" / "TokenRefresher".ktFile()
+                          }
+                        }
+                """.trimIndent()
+        }
+
+        "グロブの文字を名前に含む実在ファイルも file URI になる" {
+            val bracketed = repositoryOf {
+                "core/domain" {
+                    "[id].kt"()
+                    "useCase" { "GetUserUseCase.kt"() }
+                    "repository" { "UserRepository.kt"() }
+                }
+            }
+            val firstViolationLine = definition.validate(bracketed).report(projectRoot = FsPath.of("/repo"))
+                .lines().first { it.startsWith("[UnexpectedFile]") }
+            firstViolationLine shouldBe "[UnexpectedFile] file:///repo/core/domain/%5Bid%5D.kt"
+        }
+
         "出力に ANSI エスケープと非 ASCII の記号が含まれない" {
             definition.validate(tree).report().all { it.code in 0x20..0x7E || it == '\n' } shouldBe true
+            definition.validate(tree).report(projectRoot = FsPath.of("/repo/日本 語"))
+                .all { it.code in 0x20..0x7E || it == '\n' } shouldBe true
         }
     }
 
