@@ -22,7 +22,7 @@ dokka {
             // The tagline of README.md.
             projectSummary.set(
                 "Declare your Android/KMP project architecture in a Kotlin DSL, and get both a " +
-                    "test and documentation out of the same definition.",
+                        "test and documentation out of the same definition.",
             )
         }
     }
@@ -31,9 +31,8 @@ dokka {
 dependencies {
     dokka(project(":katachi"))
     dokka(project(":katachi-konsist"))
-    // The aggregating run's half of :tool:dokka: it collects each module's @featured
-    // declarations into the llms.txt that links the modules' own, and finishes their links.
-    // The modules' half is added by katachi-kotlin-library.
+    dokka(project(":katachi-gradle-plugin"))
+
     dokkaHtmlPlugin(project(":tool:dokka"))
 }
 
@@ -78,6 +77,7 @@ tasks.register("verifyApiDocs") {
             problems += "$path is missing"
             return null
         }
+
         /** Records [link], written in [from], unless it leads to a file of the output. */
         fun checkLink(from: File, link: String) {
             val target = link.substringBefore('#')
@@ -89,6 +89,7 @@ tasks.register("verifyApiDocs") {
             }
             if (!file.normalize().isFile) problems += "${from.relativeTo(apiDocs)} links to $link, which does not exist"
         }
+
         /** The items of the `## Featured` section of the llms.txt at [path]. */
         fun llmsFeaturedCount(path: String): Int {
             val text = File(apiDocs, path).takeIf { it.isFile }?.readText() ?: return 0
@@ -124,7 +125,7 @@ tasks.register("verifyApiDocs") {
             val expected = llmsFeaturedCount("$module/llms.txt")
             if (entries.isEmpty() || entries.size != expected) {
                 problems += "navigation.html lists ${entries.size} featured declarations under $module, but " +
-                    "$module/llms.txt lists $expected"
+                        "$module/llms.txt lists $expected"
             }
         }
         // The packages of each module are nested by name: no package directly under the module
@@ -132,7 +133,7 @@ tasks.register("verifyApiDocs") {
         modules.forEach { module ->
             val partLink = Regex(
                 """id="$module-nav-submenu[-\d]*"[^>]*data-nesting-level="(\d+)">\s*<div class="toc--row">\s*""" +
-                    """(?:<button[^>]*></button>)?\s*<a href="$module/([^/"]+)/index\.html" class="toc--link">""",
+                        """(?:<button[^>]*></button>)?\s*<a href="$module/([^/"]+)/index\.html" class="toc--link">""",
             )
             val packages = partLink.findAll(navigation).map { it.groupValues[1].toInt() to it.groupValues[2] }.toList()
             if (packages.isEmpty()) {
@@ -144,7 +145,7 @@ tasks.register("verifyApiDocs") {
                 val flat = topLevel.filter { it.startsWith("$parent.") }
                 if (flat.isNotEmpty()) {
                     problems += "navigation.html lists $flat next to $parent under $module instead of inside it: " +
-                        "the packages are not nested"
+                            "the packages are not nested"
                 }
             }
         }
@@ -176,14 +177,15 @@ tasks.register("verifyApiDocs") {
 
         // Every HTML page has its Markdown version at its URL + ".md", and every page that is a
         // directory (a module, a package, a type) has its llms files.
-        apiDocs.walkTopDown().filter { it.isFile && it.extension == "html" && it.name != "navigation.html" }.forEach { html ->
-            if (!File(html.path + ".md").isFile) problems += "${html.relativeTo(apiDocs)} has no Markdown version"
-            if (html.name == "index.html" && html.parentFile != apiDocs) {
-                listOf("llms.txt", "llms-full.txt").filterNot { File(html.parentFile, it).isFile }.forEach {
-                    problems += "${html.parentFile.relativeTo(apiDocs)}/ has no $it"
+        apiDocs.walkTopDown().filter { it.isFile && it.extension == "html" && it.name != "navigation.html" }
+            .forEach { html ->
+                if (!File(html.path + ".md").isFile) problems += "${html.relativeTo(apiDocs)} has no Markdown version"
+                if (html.name == "index.html" && html.parentFile != apiDocs) {
+                    listOf("llms.txt", "llms-full.txt").filterNot { File(html.parentFile, it).isFile }.forEach {
+                        problems += "${html.parentFile.relativeTo(apiDocs)}/ has no $it"
+                    }
                 }
             }
-        }
 
         val markdownLink = Regex("""\]\(([^)\s]+)\)""")
         // A list item of an index with no summary after its link: `- [name](link)`.
@@ -193,14 +195,18 @@ tasks.register("verifyApiDocs") {
             .filter { it.isFile && (it.name in setOf("llms.txt", "llms-full.txt") || it.name.endsWith(".html.md")) }
             .forEach { file ->
                 val text = file.readText()
-                if ("katachi-dokka-path:" in text || "<katachi-dokka-link" in text) problems += "${file.relativeTo(apiDocs)} still has a link the aggregating run should have finished"
+                if ("katachi-dokka-path:" in text || "<katachi-dokka-link" in text) problems += "${
+                    file.relativeTo(
+                        apiDocs
+                    )
+                } still has a link the aggregating run should have finished"
                 markdownLink.findAll(text).forEach { checkLink(file, it.groupValues[1]) }
                 if (file.name == "llms.txt" || file.name.endsWith(".md")) bareItems += bareItem.findAll(text).count()
             }
         if (bareItems > 0) {
             logger.warn(
                 "verifyApiDocs: $bareItems list item(s) in the llms.txt files and Markdown pages have no " +
-                    "summary. Add a KDoc, or an @llm line, to the declarations they link to.",
+                        "summary. Add a KDoc, or an @llm line, to the declarations they link to.",
             )
         }
         apiDocs.walkTopDown().filter { it.name == "katachi-dokka-fragment.json" }.forEach {
@@ -209,8 +215,8 @@ tasks.register("verifyApiDocs") {
         if (problems.isNotEmpty()) {
             throw GradleException(
                 "docs/public/api-docs/ is not what :tool:dokka should have made of it:\n" +
-                    problems.distinct().joinToString("\n") { "  - $it" } +
-                    "\nRun ./gradlew :tool:dokka:check to see which part of the plugin broke.",
+                        problems.distinct().joinToString("\n") { "  - $it" } +
+                        "\nRun ./gradlew :tool:dokka:check to see which part of the plugin broke.",
             )
         }
     }
@@ -416,7 +422,7 @@ sampleBuilds.forEach { sample ->
     val predecessors = registeredSamples.toList()
     val sdkNote = if (sample.needsAndroidSdk) {
         " Needs an Android SDK: set ANDROID_HOME (or ANDROID_SDK_ROOT)," +
-            " or write sdk.dir into sample/${sample.name}/local.properties."
+                " or write sdk.dir into sample/${sample.name}/local.properties."
     } else {
         ""
     }
@@ -431,7 +437,7 @@ sampleBuilds.forEach { sample ->
     val buildTask = tasks.register<Exec>(buildTaskName) {
         group = LifecycleBasePlugin.VERIFICATION_GROUP
         description = "Runs `${sampleTasks.joinToString(" ")}` in the standalone sample build " +
-            "sample/${sample.name}.$sdkNote"
+                "sample/${sample.name}.$sdkNote"
         runSampleWrapper(sample, sampleDir, sampleTasks)
         mustRunAfter(predecessors)
     }
@@ -447,12 +453,12 @@ sampleBuilds.forEach { sample ->
     // refused to start because the files were already there would have them deleted anyway.
     val marker = layout.buildDirectory.file("sample-template/${sample.name}.generated").get().asFile
     val generateArgs = listOf(":architecture-test:katachiTemplate") +
-        template.args.flatMap { listOf("--arg", it) }
+            template.args.flatMap { listOf("--arg", it) }
 
     val deleteTask = tasks.register<Delete>("deleteSample${suffix}Template") {
         group = LifecycleBasePlugin.VERIFICATION_GROUP
         description = "Deletes the files generateSample${suffix}Template wrote into " +
-            "sample/${sample.name}, and nothing else."
+                "sample/${sample.name}, and nothing else."
         onlyIf("generateSample${suffix}Template started generating") { marker.isFile }
         delete(generatedFiles + marker)
     }
@@ -460,7 +466,7 @@ sampleBuilds.forEach { sample ->
     val generateTask = tasks.register<Exec>("generateSample${suffix}Template") {
         group = LifecycleBasePlugin.VERIFICATION_GROUP
         description = "Runs `${generateArgs.joinToString(" ")}` in sample/${sample.name}. " +
-            "deleteSample${suffix}Template always follows it.$sdkNote"
+                "deleteSample${suffix}Template always follows it.$sdkNote"
         runSampleWrapper(sample, sampleDir, generateArgs)
         mustRunAfter(buildTask)
         finalizedBy(deleteTask)
@@ -471,10 +477,10 @@ sampleBuilds.forEach { sample ->
             if (leftovers.isNotEmpty()) {
                 throw GradleException(
                     "The template run would write over files that are already there, and the " +
-                        "clean-up after it would then delete them:\n" +
-                        leftovers.joinToString("\n") { "  ${it.path}" } +
-                        "\nIf they are left over from an earlier interrupted run, delete them " +
-                        "by hand and run again.",
+                            "clean-up after it would then delete them:\n" +
+                            leftovers.joinToString("\n") { "  ${it.path}" } +
+                            "\nIf they are left over from an earlier interrupted run, delete them " +
+                            "by hand and run again.",
                 )
             }
             marker.parentFile.mkdirs()
@@ -485,7 +491,7 @@ sampleBuilds.forEach { sample ->
     val checkTemplateTask = tasks.register<Exec>("checkSample${suffix}Template") {
         group = LifecycleBasePlugin.VERIFICATION_GROUP
         description = "Runs `${template.verifyTasks.joinToString(" ")}` in sample/${sample.name} " +
-            "while the files generateSample${suffix}Template wrote are still there.$sdkNote"
+                "while the files generateSample${suffix}Template wrote are still there.$sdkNote"
         runSampleWrapper(sample, sampleDir, template.verifyTasks)
         dependsOn(generateTask)
         doFirst {
@@ -493,9 +499,9 @@ sampleBuilds.forEach { sample ->
             if (missing.isNotEmpty()) {
                 throw GradleException(
                     "The template run did not write these files, so the list in the root " +
-                        "build.gradle.kts no longer matches the template of sample/$sampleName:\n" +
-                        missing.joinToString("\n") { "  ${it.path}" } +
-                        "\nFix the list, or the clean-up will leave generated files behind.",
+                            "build.gradle.kts no longer matches the template of sample/$sampleName:\n" +
+                            missing.joinToString("\n") { "  ${it.path}" } +
+                            "\nFix the list, or the clean-up will leave generated files behind.",
                 )
             }
         }
@@ -506,7 +512,7 @@ sampleBuilds.forEach { sample ->
     val task = tasks.register("checkSample$suffix") {
         group = LifecycleBasePlugin.VERIFICATION_GROUP
         description = "Runs checkSample${suffix}Build, then generates the files of a template " +
-            "in sample/${sample.name}, checks the sample with them in place and deletes them."
+                "in sample/${sample.name}, checks the sample with them in place and deletes them."
         dependsOn(buildTask, checkTemplateTask)
     }
     checkSamples.configure { dependsOn(task) }
