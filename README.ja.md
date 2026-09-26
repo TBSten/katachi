@@ -1,102 +1,105 @@
 # katachi
 
-**Android / KMP プロジェクトのアーキテクチャを Kotlin DSL で書き、同じ定義から「テスト」と「ドキュメント」の両方を出す**ためのライブラリ。
+**プロジェクトの「どこに何を置けるか」を Kotlin DSL で1箇所に宣言し、その定義からアーキテクチャテスト・ドキュメント・コードの雛形を作る**ライブラリ。JVM / Android / KMP のどれでも同じ手順で使える。
 
 [English](./README.md) | 日本語
 
-v0.1 は **Deny by default のアーキテクチャテスト**として出している。
-「どの役割のファイルをどこに置けるか」を1箇所に宣言し、宣言に載っていないファイル（`Unexpected`）と、
-宣言されているのに実体が無いもの（`Missing`）をテストで検出する。
-ドキュメント生成は v0.2 の予定。
-
-**ドキュメント: https://tbsten.github.io/katachi/ja/**
+**ドキュメント: https://tbsten.github.io/katachi/ja/**（English: https://tbsten.github.io/katachi/ ）
 
 > [!NOTE]
-> メジャーバージョンが 0 のあいだは、リリースに破壊的変更が入ることがある。
+> メジャーバージョンが 0 のあいだは、リリースに破壊的変更が入ることがある。v0.1 からの移行は [リリースノート](https://github.com/TBSten/katachi/releases) の v0.2.0 を参照。
+
+## 1つの定義から、テスト・ドキュメント・コードが出る
+
+役割（UseCase、Repository など）ごとに、置き場所と説明を書く。
+
+```kotlin
+"UseCase" {
+    title = "ユースケース"
+    summary = "各画面で発生するアプリ固有の1つの振る舞い"
+    layout { "domain/src/main/kotlin/com/example/useCase" / "*UseCase".ktFile() }
+    template { /* 新しい UseCase の雛形 */ }
+}
+```
+
+この定義から、次の3つが出てくる。
+
+- **テスト**: `projectArchitecture.assert()` が、宣言に無いファイル（`Unexpected`）と、宣言したのに実体が無いもの（`Missing`）を報告して落ちる。存在してよいものだけを宣言する **deny by default** なので、禁止事項を数え上げなくても「いつの間にか増えた置き場所」が残らない
+- **ドキュメント**: `./gradlew katachiDocs` が、group と役割ごとの Markdown を書き出す。`--arg mode=check` を付ければ、コミット済みのドキュメントが古くなっていないかを CI で確かめられる
+- **コード生成**: `./gradlew katachiTemplate --arg roleName=UseCase --arg name=GetUser` が、`layout { }` の決めた場所に雛形を置く
+
+ファイルの置き場所だけでなく中身も、`konsist { }` で同じ定義に制約として書ける（[Konsist との統合](https://tbsten.github.io/katachi/ja/guides/konsist-integration/)）。
 
 ## 導入
 
-**プロジェクトの種別（JVM / Android / KMP）によらず、手順は同じ4ステップ。**
+アーキテクチャ定義とテストだけを置く JVM モジュールを1つ作り、そこに katachi を入れる。プロジェクトが Android でも KMP でも、このモジュールは素の `kotlin("jvm")` にする（katachi が JVM のライブラリなので）。
 
-1. **JVM モジュールを1つ作る。** 名前は `:architecture-test` など。Android でも KMP でも
-   素の `kotlin("jvm")` モジュールにする（katachi は JVM ライブラリなので）
-2. `testImplementation(katachi)` を足す
-3. `architecture { }` を書く
-4. テストを1個書く
+**必要なもの**: JDK 17 以降、Kotlin 2.2 以降、Gradle 8.0 以降（Gradle plugin を使う場合）。
+
+### 1. モジュールを足し、プラグインの取得元に Maven Central を入れる
+
+katachi の Gradle plugin は Gradle Plugin Portal ではなく Maven Central に公開している。`pluginManagement { }` に `mavenCentral()` が無いと解決できない。
 
 ```kotlin
 // settings.gradle.kts
+pluginManagement {
+    repositories {
+        gradlePluginPortal()
+        mavenCentral()
+    }
+}
+
 include(":architecture-test")
 ```
 
+### 2. 依存とプラグインを書く
+
 ```kotlin
 // architecture-test/build.gradle.kts
-plugins { kotlin("jvm") }
+plugins {
+    // ルートの build.gradle.kts で `apply false` 済みなら、ここではバージョンを書かない
+    kotlin("jvm") version "2.4.10"
+    id("me.tbsten.katachi") version "0.2.0"
+}
 
 kotlin { jvmToolchain(17) }
 
 tasks.test { useJUnitPlatform() }
 
 dependencies {
-    testImplementation("me.tbsten.katachi:katachi:0.1.1")
+    testImplementation("me.tbsten.katachi:katachi:0.2.0")
     // 任意。`konsist { }` を書くときだけ。
-    testImplementation("me.tbsten.katachi:katachi-konsist:0.1.1")
+    testImplementation("me.tbsten.katachi:katachi-konsist:0.2.0")
 
-    // JUnit Platform に実行エンジンと launcher を載せる。katachi は AssertionError を
-    // 投げるだけでテストフレームワークに依存しないので、エンジンは利用者が選ぶ。
+    // katachi は AssertionError を投げるだけで、テストフレームワークに依存しない。
+    // 実行エンジンは利用者が選ぶ（これは JUnit 5 の例）。
     testImplementation(platform("org.junit:junit-bom:5.13.4"))
     testImplementation("org.junit.jupiter:junit-jupiter")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
-```
 
-**JDK 17 以降**と **Kotlin 2.2 以降**が必要。公開している artifact は `languageVersion` 2.2 でビルドしているので、2.2 のコンパイラでも metadata を読める。それより古いとすべてのシンボルが `Unresolved reference` になる。
-
-> [!IMPORTANT]
-> **Kotlin 2.4 未満では `-Xcontext-parameters` を足す。** DSL の入口（`module` / `mainSourceSet` /
-> `ktFile` / `konsist` など）はすべて context parameters なので、無いと1つも書けない。
->
-> ```kotlin
-> kotlin {
->     jvmToolchain(17)
->     compilerOptions.freeCompilerArgs.add("-Xcontext-parameters")
-> }
-> ```
->
-> **Kotlin 2.4 以降では付けない。** 言語機能として入っているため、付けると redundant の
-> 警告が出て、`allWarningsAsErrors` のビルドが落ちる。
-
-> [!IMPORTANT]
-> **`junit-platform-launcher` を忘れると、テストは起動すらしない。**
-> `junit-jupiter` の集約 artifact は api / params / engine を含むが launcher は含まず、
-> Gradle 9 は自動で載せない。`Failed to load JUnit Platform` で落ちる。
->
-> **エンジンを載せ忘れると、テストは「成功」するのではなく1度も実行されない。**
-> `useJUnitPlatform()` だけでは `@Test` を拾う実装が classpath に無く、`BUILD SUCCESSFUL` に
-> なるのにアーキテクチャ検査が空振りする。kotest で書く場合は `kotest-runner-junit5` が
-> 自前のエンジンを持つのでこれで足りるが、**`kotest-runner-junit5` は
-> `junit-jupiter-api` しか連れてこない**ので、素の `@Test` を混ぜるなら上の `junit-jupiter`
-> （engine 込み）が別途要る。`build/test-results/**/*.xml` の `tests=` が 0 でないことで確かめられる。
-
-```kotlin
-// architecture-test/src/test/kotlin/com/example/ProjectArchitectureTest.kt
-class ProjectArchitectureTest {
-    @Test fun `構成が allow list に従っている`() = projectArchitecture.assert()
+katachi {
+    // 3 で書くトップレベルの val の完全修飾名
+    architecture = "com.example.projectArchitecture"
 }
 ```
 
-アーキテクチャ定義はプロジェクト全体を記述するもので、**どのレイヤーにも属さない**。
-だから既存モジュール（ルートの test や `:app` の test）に間借りさせず、モジュールを1つ立てる。
-KMP プロジェクトではそもそも間借り先が無い（katachi は JVM only なので `commonTest` には置けない）。
+テストだけならプラグインは要らない。`katachiDocs` などのタスクを使うときに要る。
 
-代償はこのモジュール自身も allow list に載ることだが、
-「役割を持たないファイルは存在しない」という katachi の原則からすればむしろ載るべきもの。
-
-## 書き味
+### 3. アーキテクチャを定義する
 
 ```kotlin
-// :architecture-test の test sourceSet に置く
+// architecture-test/src/test/kotlin/com/example/ProjectArchitecture.kt
+package com.example
+
+import me.tbsten.katachi.dsl.architecture
+import me.tbsten.katachi.dsl.gradle.gradle
+import me.tbsten.katachi.dsl.kotlin.ktFile
+
 val projectArchitecture = architecture {
+    // Gradle のファイル（wrapper・settings・各モジュールの build スクリプト・version catalog）をまとめて宣言する
+    gradle()
+
     "domain".group {
         title = "ドメイン"
         "UseCase" {
@@ -104,26 +107,118 @@ val projectArchitecture = architecture {
             summary = "各画面で発生するアプリ固有の1つの振る舞い"
             example("GetUserUseCase", "ユーザーを取得する")
             layout {
-                "domain" / "src" / "main" / "kotlin" / "com" / "example" / "useCase" / "*UseCase".ktFile()
+                "domain/src/main/kotlin/com/example/useCase" / "*UseCase".ktFile()
+            }
+            template {
+                val name by stringParameter()
+                file("${name}UseCase.kt") {
+                    "package com.example.useCase\n\nclass ${name}UseCase\n"
+                }
             }
         }
     }
 }
 ```
 
-- Gradle plugin は要らない。`testImplementation` を足すだけ
-- JUnit4 / JUnit5 / kotest のどれでも使える（将来の `assert()` は `AssertionError` を投げるだけ）
-- 定義が大きくなったら `ArchitectureScope` の拡張関数に切り出してファイル分割できる。
-  違反メッセージが示す宣言位置は、呼び出し元ではなく**その宣言を書いたファイル**を指す
-  （3サンプルがこの形で書かれていて、テストで実証している）
-  （分割に使う関数を `inline` にしないこと。`inline` にすると、宣言位置が
-  呼び出し元ファイルの末尾より後ろの、存在しない行を指す）
+### 4. テストを1本書き、実行する
 
-## layout の書き方
+```kotlin
+// architecture-test/src/test/kotlin/com/example/ProjectArchitectureTest.kt
+package com.example
 
-`layout { }` の直下はリポジトリルート。文字列にブロックを付けるとディレクトリ、
-`.file()` / `.ktFile()`（`.kt` を付ける）/ `.ktsFile()`（`.kts` を付ける）を付けるとファイルになる。
-入れ子ブロックと `/` 連結は同じ意味で、キーに `"src/main/kotlin"` のような多階層を書いてもよい。
+import me.tbsten.katachi.check.assert
+import org.junit.jupiter.api.Test
+
+class ProjectArchitectureTest {
+    @Test
+    fun `構成が定義どおりになっている`() = projectArchitecture.assert()
+}
+```
+
+```shell
+./gradlew :architecture-test:test
+```
+
+**最初は、宣言していないファイルがすべて違反として出る。** 許可リスト方式なので、これが出発点になる。出てきたパスごとに、定義に足すか、ファイルを消すかを決めていく。違反はリポジトリ全体で1つの失敗メッセージにまとまるので、書くテストはこの1本だけでよい。
+
+`konsist { }` を書いた場合は、引数なしの `assert()` では制約が評価されず、`[UncheckedFileConstraint]` で落ちる。制約もまとめて検査するには、次のように書く。
+
+```kotlin
+import me.tbsten.katachi.ExperimentalKatachiApi
+import me.tbsten.katachi.check.FileConstraintCheck
+import me.tbsten.katachi.check.assert
+import org.junit.jupiter.api.Test
+
+@OptIn(ExperimentalKatachiApi::class)
+class ProjectArchitectureTest {
+    @Test
+    fun `構成が定義どおりになっている`() = projectArchitecture.assert(FileConstraintCheck())
+}
+```
+
+### 5. ドキュメントとコードを生成する
+
+```shell
+# build/katachi/docs に Markdown を書き出す
+./gradlew :architecture-test:katachiDocs
+
+# domain/src/main/kotlin/com/example/useCase/GetUserUseCase.kt を作る
+./gradlew :architecture-test:katachiTemplate --arg roleName=UseCase --arg name=GetUser
+```
+
+出力先の変え方、CI での古さの検査、テンプレートの引数は [ドキュメント生成](https://tbsten.github.io/katachi/ja/guides/document-generation/) と [テンプレートからコード生成](https://tbsten.github.io/katachi/ja/guides/generate-code-from-template/) にある。
+
+AI Agent に導入を任せることもできる。手順は [初めてのアーキテクチャ定義](https://tbsten.github.io/katachi/ja/get-started/first-architecture/) を参照。
+
+### テストが動かないときに確かめること
+
+<details>
+<summary><b>Kotlin 2.4 未満では <code>-Xcontext-parameters</code> が要る</b></summary>
+
+DSL の入口（`module` / `mainSourceSet` / `ktFile` / `konsist` など）はすべて context parameters で宣言している。フラグが無いと1つも書けない。
+
+```kotlin
+kotlin {
+    jvmToolchain(17)
+    compilerOptions.freeCompilerArgs.add("-Xcontext-parameters")
+}
+```
+
+Kotlin 2.4 以降では付けない。言語機能として入っているので、付けると redundant の警告が出て、`allWarningsAsErrors` のビルドが落ちる。
+
+Kotlin 2.2 より古いと、すべてのシンボルが `Unresolved reference` になる。公開している artifact は `languageVersion` 2.2 でビルドしている。
+
+</details>
+
+<details>
+<summary><b>JUnit の launcher とエンジンを忘れると、テストが起動しない・実行されない</b></summary>
+
+- **`junit-platform-launcher` が無いと起動しない。** `junit-jupiter` の集約 artifact は api / params / engine を含むが launcher は含まず、Gradle 9 は自動で足さない。`Failed to load JUnit Platform` で落ちる
+- **エンジンが無いと、テストは失敗せずに1度も実行されない。** `useJUnitPlatform()` だけでは `@Test` を拾う実装が classpath に無く、`BUILD SUCCESSFUL` のまま検査が空振りする。`build/test-results/**/*.xml` の `tests=` が 0 でないことで確かめられる
+- kotest で書く場合は `kotest-runner-junit5` が自前のエンジンを持つので、それで足りる。ただし `kotest-runner-junit5` が連れてくるのは `junit-jupiter-api` だけなので、素の `@Test` を混ぜるなら `junit-jupiter`（engine 込み）が別に要る
+
+</details>
+
+<details>
+<summary><b>なぜ既存モジュールの test に置かず、モジュールを1つ立てるのか</b></summary>
+
+アーキテクチャ定義はプロジェクト全体を記述するもので、どのレイヤーにも属さない。だから `:app` やルートの test に間借りさせない。KMP ではそもそも間借り先が無い（katachi は JVM only なので `commonTest` には置けない）。
+
+代償は、このモジュール自身も allow list に載ることだ。ただ「役割を持たないファイルは存在しない」という katachi の原則からすれば、むしろ載るべきものでもある。
+
+</details>
+
+## 定義の書き方
+
+JUnit 4 / JUnit 5 / kotest のどれでも使える。`assert()` は `AssertionError` を投げるだけだからだ。
+
+定義が大きくなったら、`DeclarationContainerScope` の拡張関数に切り出してファイルを分けられる（`architecture { }` と `"...".group { }` の中で呼べる）。違反メッセージが指す宣言位置は、呼び出し元ではなく、その宣言を書いたファイルになる。jvm / android / kmp の3つのサンプルがこの形で書かれていて、テストで確かめている。ただし分割に使う関数を `inline` にしてはいけない。`inline` にすると、宣言位置が呼び出し元ファイルの末尾より後ろの、存在しない行を指す。
+
+役割・group・`layout { }` の詳しい書き方は、ドキュメントサイトの [基本的な API](https://tbsten.github.io/katachi/ja/guides/basic-api/)、[Role](https://tbsten.github.io/katachi/ja/guides/role/)、[layout](https://tbsten.github.io/katachi/ja/guides/layout/) にある。以下は、まだサイトに載っていない細則。
+
+### layout の書き方
+
+`layout { }` の直下はリポジトリルート。文字列にブロックを付けるとディレクトリ、`.file()` / `.ktFile()`（`.kt` を付ける）/ `.ktsFile()`（`.kts` を付ける）を付けるとファイルになる。入れ子ブロックと `/` 連結は同じ意味で、キーに `"src/main/kotlin"` のような多階層を書いてもよい。
 
 ```kotlin
 layout {
@@ -145,14 +240,11 @@ layout {
 - **宣言したのに実体が無いファイルは `Missing`**。`.optional()` を付けると消える
 - **ワイルドカードを含む宣言は自動で optional**。0件マッチでも `Missing` にならない
 - `anyFile()` は**直下だけ**。サブディレクトリの中のファイルは `Unexpected` のまま
-- `ignore()` は `layout { }` の中にしか無い。「検査しない」と決めた理由が役割の `summary` として
-  ドキュメントに残るようにするため（グローバルな除外設定は用意しない）
+- `ignore()` は `layout { }` の中にしか無い。「検査しない」と決めた理由が役割の `summary` として生成ドキュメントに残るようにするためで、グローバルな除外設定は用意していない
 
 ### glob
 
-katachi の glob は **`*` と `**` の2つだけ**。`{a,b}` / `?` / `[abc]` は
-ワイルドカードとして働かず、書くとエラーになる（リテラルとして書きたければ `\*` のように
-バックスラッシュでエスケープする）。
+katachi の glob は **`*` と `**` の2つだけ**。`{a,b}` / `?` / `[abc]` はワイルドカードとして働かず、書くとエラーになる。文字そのものとして書きたければ `\*` のようにバックスラッシュでエスケープする。
 
 | 書き方 | 意味 |
 |---|---|
@@ -162,18 +254,13 @@ katachi の glob は **`*` と `**` の2つだけ**。`{a,b}` / `?` / `[abc]` �
 
 - `*` は**0文字にはマッチしない**（`*UseCase.kt` は `UseCase.kt` にマッチしない）
 - 照合は**常に大文字小文字を区別する**
-- ディレクトリのパスでもモジュールパス（`:feature:home`）でも `*` / `**` の意味は同じ
-- **ファイルの位置に `**` だけを書かない。** `"src/test/kotlin/**".file()` は
-  `src/test/kotlin` までしか「既知のディレクトリ」にならず、`src/test/kotlin/com` が
-  `[UnexpectedDirectory]` になる。`"src/test/kotlin" / "**" / "*".ktFile()` と書く
-- **パスの先頭に `**` を置かない。** `"**/build".ignore()` は `**`（= 任意のパス）自体を
-  既知のディレクトリとして登録してしまい、`[UnexpectedDirectory]` が一切出なくなる
+- ディレクトリのパスでもモジュールパス（`:feature:home`）でも、`*` / `**` の意味は同じ
+- **ファイルの位置に `**` だけを書かない。** `"src/test/kotlin/**".file()` は `src/test/kotlin` までしか「既知のディレクトリ」にならず、`src/test/kotlin/com` が `[UnexpectedDirectory]` になる。`"src/test/kotlin" / "**" / "*".ktFile()` と書く
+- **パスの先頭に `**` を置かない。** `"**/build".ignore()` は `**`（任意のパス）自体を既知のディレクトリとして登録してしまい、`[UnexpectedDirectory]` が一切出なくなる
 
-## 検査対象のファイル集合
+### 検査するファイル
 
-既定では **git が「このプロジェクトのファイル」と答えたものだけ**を検査する
-（`git ls-files --cached --others --exclude-standard` の結果。追跡中 + 未追跡だが無視されていないもの）。
-`build/` や `.DS_Store`、`local.properties` に役割を与える必要はない。
+既定では、**git が「このプロジェクトのファイル」と答えたものだけ**を検査する（`git ls-files --cached --others --exclude-standard` の結果。追跡中のものと、未追跡だが無視されていないもの）。`build/` や `.DS_Store`、`local.properties` に役割を与える必要はない。
 
 ```kotlin
 architecture {
@@ -182,50 +269,34 @@ architecture {
 }
 ```
 
-- ライブラリ依存はゼロだが、**既定では `git` コマンドをプロジェクトルートで起動する**
-  （`rev-parse --is-inside-work-tree` で可否を判定し、`ls-files` を1回）
-- プロジェクトルートは Konsist と同じ方式で特定する。作業ディレクトリから上へ辿り、
-  `gradlew` / `mvnw` / `.git` の**どれか1つでも**最初に見つかったディレクトリで止まる
-- **`gitTracked()` が効くかどうかは git に訊く**（`git rev-parse --is-inside-work-tree`）。
-  ルート直下に `.git` があるかでは判定しない。**リポジトリのサブディレクトリにある Gradle プロジェクト**
-  （モノレポの `repo/.git` と `repo/app/gradlew`、submodule、このリポジトリの `sample/` など）でも
-  git フィルタは正しく効く。`git ls-files` をルートで実行すれば、そのサブツリーのファイルが
-  ルートからの相対パスで返るため
-- git が「work tree の中だ」と答えた後に `git ls-files` が失敗する場合はエラーにする
-  （黙って全走査に落ちると手元と CI で結果が変わるため）。
-  そもそも git 管理下でない / `git` コマンドが無い場合は `wholeTree()` として走査する
-- `.git/` `.gradle/` `.idea/` は `files` の指定によらず、どの階層にあっても検査されない
-- `gitTracked()` / `wholeTree()` は `me.tbsten.katachi.dsl` のトップレベル関数（`ArchitectureScope` を
-  context parameter に取る）。`architecture { }` の中でだけ書けて、利用者が同じ書き方で自分のものを足せる
-- **`FileSelection` は利用者が実装できる。** git 以外（Bazel、生成されたマニフェスト、社内ツール）が
-  ファイル一覧を持っているなら、`FileSelection` を実装して `files` に渡す
-
-## モジュール構成
-
-| モジュール | 内容 |
-|---|---|
-| `:katachi` | 本体。**実行時依存ゼロ・JVM only**。座標は `me.tbsten.katachi:katachi` |
-| `:katachi-konsist` | `konsist { }` 用の任意モジュール。座標は `me.tbsten.katachi:katachi-konsist` |
-| `:architecture-test` | katachi 自身のアーキテクチャ定義。**公開しない** |
-
-ルートプロジェクトは**サンプルの集約専用**で、プラグインもソースも持たない。
-`./gradlew check` が Android SDK や Kotlin/Native ツールチェーン無しで通る状態を保つため。
+- **既定では `git` コマンドをプロジェクトルートで起動する**（`rev-parse --is-inside-work-tree` で可否を判定し、`ls-files` を1回）
+- プロジェクトルートは Konsist と同じ方式で決める。作業ディレクトリから上へ辿り、`gradlew` / `mvnw` / `.git` の**どれか1つでも**最初に見つかったディレクトリで止まる
+- **`gitTracked()` が効くかどうかは git に訊く。** ルート直下に `.git` があるかでは判定しない。モノレポ（`repo/.git` と `repo/app/gradlew`）、submodule、worktree、このリポジトリの `sample/` のように、リポジトリのサブディレクトリにある Gradle プロジェクトでも git のフィルタは正しく効く
+- git が「work tree の中だ」と答えた後に `git ls-files` が失敗した場合はエラーにする。黙って全走査に切り替えると、手元と CI で結果が変わるからだ。そもそも git 管理下でない場合や `git` コマンドが無い場合は、`wholeTree()` として走査する
+- `.git/` `.gradle/` `.idea/` は `files` の指定によらず、どの階層にあっても検査しない
+- `gitTracked()` / `wholeTree()` は `me.tbsten.katachi.dsl` のトップレベル関数で、`ArchitectureScope` を context parameter に取る。`architecture { }` の中でだけ書け、利用者も同じ形で自分のものを足せる
+- **`FileSelection` は利用者が実装できる。** Bazel、生成されたマニフェスト、社内ツールなど、git 以外がファイル一覧を持っているなら、`FileSelection` を実装して `files` に渡す
 
 ## サンプル
 
-`sample/` の下に4つ置いてある。それぞれの書き味・実行方法は各 README、サンプル全体に共通する
-設計方針やビルド設定は [`sample/README.md`](sample/README.md) にまとめてある。
+`sample/` の下に4つある。それぞれの書き味と実行方法は各 README に、サンプル全体に共通する設計方針とビルド設定は [`sample/README.md`](sample/README.md) にまとめてある。
 
-| サンプル | 内容 | README |
-|---|---|---|
-| `sample/jvm` | Ktor の最小サーバ | [`sample/jvm/README.md`](sample/jvm/README.md) |
-| `sample/android` | マルチモジュールの Android アプリ（Compose / AndroidX の実依存あり） | [`sample/android/README.md`](sample/android/README.md) |
-| `sample/kmp` | Android + iOS の KMP プロジェクト（Compose Multiplatform の実依存あり） | [`sample/kmp/README.md`](sample/kmp/README.md) |
-| `sample/custom-processor` | 利用者が自分で書く processor の見本 | [`sample/custom-processor/README.md`](sample/custom-processor/README.md) |
+| サンプル | 内容 |
+|---|---|
+| [`sample/jvm`](sample/jvm/README.md) | Ktor の最小サーバ |
+| [`sample/android`](sample/android/README.md) | マルチモジュールの Android アプリ（Compose / AndroidX の実依存あり） |
+| [`sample/kmp`](sample/kmp/README.md) | Android + iOS の KMP プロジェクト（Compose Multiplatform の実依存あり） |
+| [`sample/custom-processor`](sample/custom-processor/README.md) | 自分で processor を書くときの見本 |
 
-```bash
-./gradlew checkSamples  # 全サンプルをまとめて回す
-```
+jvm / android / kmp は、プラグイン・`gradle()`・`template { }` を使い、`katachiDocs` で生成したドキュメントをコミットしている。
+
+## 公開しているもの
+
+| artifact | 内容 |
+|---|---|
+| `me.tbsten.katachi:katachi` | 本体。DSL・検査・ドキュメント生成・テンプレート。**JVM only**。実行時の依存は `kotlinx-serialization-core` だけ |
+| `me.tbsten.katachi:katachi-konsist` | `konsist { }` 用の任意モジュール |
+| Gradle plugin `me.tbsten.katachi` | processor ごとのタスク（`katachiDocs` / `katachiTemplate` / `katachiTemplates` など）を足す。同じ版の `:katachi` と組み合わせて使う |
 
 ## 開発
 
@@ -236,7 +307,26 @@ architecture {
 | JDK / toolchain | 17 |
 | kotest | 6.2.5 |
 
-- Kotlin / katachi / kotest のバージョンは `gradle/libs.versions.toml` が SSoT。サンプルはこれを
-  `libs` として読み、サンプル固有の依存は自分の catalog（`sampleLibs`）に持つ
-  （サンプルのビルド設定の詳細は [`sample/README.md`](sample/README.md) 参照）
-- CI は `.github/workflows/ci.yml`。`main` への push と pull request で、本体と4サンプルをそれぞれ別ステップで回す
+リポジトリの中身:
+
+| 場所 | 内容 |
+|---|---|
+| `katachi/` / `katachi-konsist/` / `katachi-gradle-plugin/` | 公開する3つのモジュール |
+| `architecture-test/` | katachi 自身のアーキテクチャ定義。公開しない |
+| `tool/dokka/` | API リファレンスを作る Dokka plugin。公開しない |
+| `sample/` | 独立した Gradle ビルドとして動くサンプル |
+| `docs/` | ドキュメントサイト |
+
+```shell
+./gradlew check          # 本体の検査。Android SDK も Kotlin/Native も要らない
+./gradlew checkSamples   # 全サンプルを、それぞれの wrapper で順に回す
+./gradlew checkSampleJvm # 1つだけ回す（Android / KMP のサンプルは Android SDK が要る）
+```
+
+- サンプルはルートのサブプロジェクトではなく独立したビルドなので、`./gradlew check` には入らない。ルートプロジェクトはソースを持たず、API リファレンスの集約とサンプルを回すタスクだけを持つ
+- Kotlin / katachi / kotest のバージョンは `gradle/libs.versions.toml` が SSoT。サンプルはこれを `libs` として読み、サンプル固有の依存は自分の catalog（`sampleLibs`）に持つ（詳細は [`sample/README.md`](sample/README.md)）
+- CI は `.github/workflows/ci.yml`。`main` への push と pull request で、本体と4つのサンプルをそれぞれ別のステップで回す
+
+## ライセンス
+
+MIT。[LICENSE](./LICENSE) を参照。
