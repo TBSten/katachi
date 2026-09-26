@@ -90,6 +90,41 @@ class GitTrackedFileSystemSpec : FreeSpec({
         }
     }
 
+    "見えるディレクトリの集め方" - {
+        val root = FsPath.of("/repo")
+        val tracked = listOf(
+            "a/b/c/d/Deep.kt",
+            "a/b/Shallow.kt",
+            "a/e/f/Other.kt",
+            "a/b/c/g/Sibling.kt",
+            "Top.kt",
+        )
+        val expectedDirectories = setOf("a", "a/b", "a/b/c", "a/b/c/d", "a/b/c/g", "a/e", "a/e/f")
+        // Every ancestor of a tracked file, plus the directories next to them that hold nothing.
+        val probes = expectedDirectories + setOf("a/b/c/d/x", "a/b/h", "a/e/f/g", "b", "a/e/b")
+
+        "追跡ファイルがどの順で並んでいても、祖先ディレクトリはすべて見え、それ以外は見えない" {
+            for (order in permutations(tracked)) {
+                val fileSystem = GitTrackedFileSystem(EveryPathIsADirectory(root), root, order)
+                probes.filter { fileSystem.isDirectory(root / it) }.toSet() shouldBe expectedDirectories
+            }
+        }
+
+        "同じパスが何度報告されても結果は変わらない" {
+            val fileSystem = GitTrackedFileSystem(EveryPathIsADirectory(root), root, tracked + tracked.reversed())
+            probes.filter { fileSystem.isDirectory(root / it) }.toSet() shouldBe expectedDirectories
+        }
+
+        "ルートの外を指すパスはルートの中のディレクトリを増やさない" {
+            val fileSystem = GitTrackedFileSystem(
+                EveryPathIsADirectory(root),
+                root,
+                listOf("../outside/deep/File.kt", "a/File.kt"),
+            )
+            probes.filter { fileSystem.isDirectory(root / it) }.toSet() shouldBe setOf("a")
+        }
+    }
+
     "このリポジトリ自身に対して git フィルタが効く" - {
         val delegate = RealFileSystem()
         val projectRoot = findProjectRoot(delegate)
@@ -205,3 +240,22 @@ private fun walkEverything(fileSystem: KatachiFileSystem, root: FsPath) {
         if (fileSystem.isDirectory(child)) walkEverything(fileSystem, child)
     }
 }
+
+/** A tree in which every path exists and is a directory, so only the filter decides. */
+private class EveryPathIsADirectory(override val workingDirectory: FsPath) : KatachiFileSystem {
+    override fun exists(path: FsPath): Boolean = true
+
+    override fun isDirectory(path: FsPath): Boolean = true
+
+    override fun list(directory: FsPath): List<FsPath> = emptyList()
+}
+
+/** Every ordering of [items]; only meant for the handful of paths a spec lists by hand. */
+private fun <T> permutations(items: List<T>): List<List<T>> =
+    if (items.size <= 1) {
+        listOf(items)
+    } else {
+        items.indices.flatMap { index ->
+            permutations(items.filterIndexed { other, _ -> other != index }).map { listOf(items[index]) + it }
+        }
+    }

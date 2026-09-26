@@ -76,9 +76,11 @@ internal class GitTrackedFileSystem(
             val path = root / relative
             if (path == root) continue
             files += path
+            // Every directory in the set already has all of its ancestors up to [root] in it
+            // ([root] is there from the start), so the walk up stops at the first one seen.
             var parent = path.parent
             while (parent != null && parent.startsWith(root)) {
-                directories += parent
+                if (!directories.add(parent)) break
                 parent = parent.parent
             }
         }
