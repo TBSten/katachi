@@ -15,6 +15,7 @@ import me.tbsten.katachi.dsl.files.KatachiFileSystem
 import me.tbsten.katachi.dsl.files.internal.OutsideProjectDirectories
 import me.tbsten.katachi.dsl.files.internal.findProjectRoot
 import me.tbsten.katachi.dsl.internal.DeclaredFileConstraint
+import me.tbsten.katachi.dsl.internal.LayoutEvaluation
 import me.tbsten.katachi.dsl.internal.evaluateLayout
 import me.tbsten.katachi.internal.catching
 
@@ -76,6 +77,12 @@ internal class ScanResult(
      */
     val fileConstraints: List<DeclaredFileConstraint>,
     /**
+     * The evaluation of the layout the walk was driven by, kept so that reading the
+     * declarations afterwards can take over every role it holds that no wildcard module key
+     * made depend on the project. See [evaluateLayout].
+     */
+    val layout: LayoutEvaluation,
+    /**
      * Where the walk started, absolute — the one value a constraint backend needs that is not
      * project relative, because a parser cannot be pointed at a relative path.
      */
@@ -110,12 +117,19 @@ internal class ScanResult(
  * so a module in there could never have a file checked, while a module that is only not
  * tracked yet is still reported by git and still found.
  *
+ * [reusing] is an evaluation of this definition already made -- in practice the one
+ * `declaredEntries` made -- and every role of it that reached no wildcard module key is taken
+ * over rather than evaluated a second time. See [evaluateLayout].
+ *
  * @throws me.tbsten.katachi.dsl.KatachiProjectRootNotFoundException when no directory above
  *   the working directory carries a Gradle, Maven or git marker.
  * @throws me.tbsten.katachi.dsl.KatachiGitUnavailableException when `files = gitTracked()` and
  *   the project root is a git repository, but git cannot be run.
  */
-internal fun Architecture.scanProject(fileSystem: KatachiFileSystem): ScanResult {
+internal fun Architecture.scanProject(
+    fileSystem: KatachiFileSystem,
+    reusing: LayoutEvaluation? = null,
+): ScanResult {
     val projectRoot = findProjectRoot(fileSystem)
     val selected = files.fileSystemFor(fileSystem, projectRoot)
     val modules = scanModules(
@@ -126,12 +140,11 @@ internal fun Architecture.scanProject(fileSystem: KatachiFileSystem): ScanResult
     // One evaluation of the layout, read from both sides: the entries drive the walk, the
     // constraints ride along to whichever check evaluates them. Flattening twice would be a
     // second chance for the two to disagree about what a wildcard module key expanded to.
-    val evaluation = evaluateLayout(modules.indexWith(moduleResolver))
+    val evaluation = evaluateLayout(modules.indexWith(moduleResolver), reusing)
     return Scan(
         fileSystem = selected,
         root = projectRoot.path,
-        layout = LayoutIndex(evaluation.entries),
-        fileConstraints = evaluation.fileConstraints,
+        evaluation = evaluation,
         moduleFailures = modules.unchecked,
     ).run()
 }
@@ -153,14 +166,15 @@ internal fun Architecture.scanProject(fileSystem: KatachiFileSystem): ScanResult
 private class Scan(
     private val fileSystem: KatachiFileSystem,
     private val root: FsPath,
-    private val layout: LayoutIndex,
-    private val fileConstraints: List<DeclaredFileConstraint>,
+    private val evaluation: LayoutEvaluation,
     /**
      * What the search for the modules could not read, which happened before this walk started
      * and belongs in the same report. See [scanProject].
      */
     private val moduleFailures: List<UncheckedDirectory>,
 ) {
+    private val layout = LayoutIndex(evaluation.entries)
+
     private val violations = mutableListOf<Violation>()
 
     /** Every file the walk reached, as a project relative path. */
@@ -190,7 +204,8 @@ private class Scan(
             violations = violations.sortedBy { it.kind.ordinal },
             filesByRole = filesByRole,
             fileOverlaps = fileOverlaps.toList(),
-            fileConstraints = fileConstraints,
+            fileConstraints = evaluation.fileConstraints,
+            layout = evaluation,
             projectRoot = root,
         )
     }

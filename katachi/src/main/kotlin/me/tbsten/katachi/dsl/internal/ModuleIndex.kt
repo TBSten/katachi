@@ -62,7 +62,7 @@ internal class ModuleTarget(
 @InternalKatachiApi
 public class ModuleIndex internal constructor(
     /** How a module path becomes a directory. */
-    private val resolver: ModuleResolver,
+    internal val resolver: ModuleResolver,
     /**
      * The modules found below the project root, or `null` when nobody has looked.
      *
@@ -73,6 +73,11 @@ public class ModuleIndex internal constructor(
      * keys of the definition would vanish either way.
      */
     private val discovered: List<ModulePath>?,
+    /**
+     * Told whenever a layout key with a wildcard is expanded -- the one question whose answer
+     * depends on [discovered]. See [reportingWildcardKeys].
+     */
+    private val onWildcardKey: (() -> Unit)? = null,
 ) {
     /**
      * Every module found below the project root, outermost first and siblings by name. Empty
@@ -136,8 +141,9 @@ public class ModuleIndex internal constructor(
      * The check never takes that branch. It builds its index by walking the project, so a
      * wildcard key expands to the modules that exist, down to none of them.
      */
-    internal fun targetsOf(pattern: ModulePattern): List<ModuleTarget> =
-        if (pattern.hasWildcard && discovered == null) {
+    internal fun targetsOf(pattern: ModulePattern): List<ModuleTarget> {
+        if (pattern.hasWildcard) onWildcardKey?.invoke()
+        return if (pattern.hasWildcard && discovered == null) {
             listOf(
                 ModuleTarget(
                     modulePath = pattern.pattern,
@@ -154,6 +160,18 @@ public class ModuleIndex internal constructor(
                 )
             }
         }
+    }
+
+    /**
+     * This index, telling [onWildcardKey] each time a layout key with a wildcard is expanded.
+     *
+     * A layout evaluated without that happening reads nothing but [resolver] from its index, so
+     * it comes out the same against any index sharing the resolver -- listed or [unresolved].
+     * That is what lets one evaluation of such a role answer both
+     * [me.tbsten.katachi.processor.ArchitectureProcessContext.declaredEntries] and the walk.
+     */
+    internal fun reportingWildcardKeys(onWildcardKey: () -> Unit): ModuleIndex =
+        ModuleIndex(resolver = resolver, discovered = discovered, onWildcardKey = onWildcardKey)
 
     override fun toString(): String = when (discovered) {
         null -> "ModuleIndex(unresolved, $resolver)"

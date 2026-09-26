@@ -10,7 +10,9 @@ import me.tbsten.katachi.dsl.Role
 import me.tbsten.katachi.dsl.files.FsPath
 import me.tbsten.katachi.dsl.files.KatachiFileSystem
 import me.tbsten.katachi.dsl.internal.DeclaredFileConstraint
-import me.tbsten.katachi.dsl.internal.flattenLayout
+import me.tbsten.katachi.dsl.internal.LayoutEvaluation
+import me.tbsten.katachi.dsl.internal.ModuleIndex
+import me.tbsten.katachi.dsl.internal.evaluateLayout
 import me.tbsten.katachi.processor.KatachiUnknownRoleException
 
 /**
@@ -33,11 +35,27 @@ internal class ProjectWalk(
 
     val roles: List<Role> get() = architecture.allRoles
 
-    val declaredEntries: List<LayoutEntry> by lazy { architecture.flattenLayout() }
+    // Whichever of `declaredEntries` and the walk evaluated the layout last. The other one takes
+    // over every role of it that reached no wildcard module key, so a run that reads both
+    // evaluates each such `layout { }` block once rather than once per reading -- while
+    // `declaredEntries` still never waits for, nor starts, a walk.
+    @Volatile
+    private var lastEvaluation: LayoutEvaluation? = null
+
+    val declaredEntries: List<LayoutEntry> by lazy {
+        val evaluation = architecture.evaluateLayout(
+            ModuleIndex.unresolved(architecture.moduleResolver),
+            reusing = lastEvaluation,
+        )
+        lastEvaluation = evaluation
+        evaluation.entries
+    }
 
     // `by lazy` rather than a field is the whole of the "no IO until `filesOf`" promise:
     // building this resolves the project root, lists the modules and walks the tree.
-    private val scan by lazy { architecture.scanProject(fileSystem) }
+    private val scan by lazy {
+        architecture.scanProject(fileSystem, reusing = lastEvaluation).also { lastEvaluation = it.layout }
+    }
 
     // Built from the declarations alone, so asking costs no IO -- which is what lets `filesOf`
     // reject a foreign role without first walking the project. A plain `HashSet` on purpose:

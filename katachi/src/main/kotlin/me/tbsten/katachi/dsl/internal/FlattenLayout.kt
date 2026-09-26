@@ -80,23 +80,59 @@ internal fun Role.flattenLayout(
  * constraint covers *is* the set of entries the block around it declared, so evaluating the
  * blocks twice would be the same work done twice and one more chance for the two answers to
  * stop agreeing — the same reason the walk answers its own two questions at once.
+ *
+ * It also keeps each role's own evaluation, and whether that one reached a wildcard module key,
+ * so that the next evaluation of the same definition can take over every role whose answer
+ * cannot differ. See [Architecture.evaluateLayout].
  */
 internal class LayoutEvaluation(
     val entries: List<LayoutEntry>,
     val fileConstraints: List<DeclaredFileConstraint>,
+    /** The index's resolver, which is everything but the module list a layout reads from it. */
+    val resolver: ModuleResolver,
+    /**
+     * Whether a layout key with a wildcard was expanded -- the only point where the answer
+     * depends on which modules the index listed. See [ModuleIndex.reportingWildcardKeys].
+     */
+    val readsModuleList: Boolean,
+    /** Each role's own evaluation, in [Architecture.allRoles] order. Empty for one role's. */
+    val byRole: Map<Role, LayoutEvaluation> = emptyMap(),
 )
 
-/** [flattenLayout], with the constraints kept. */
-internal fun Architecture.evaluateLayout(moduleIndex: ModuleIndex): LayoutEvaluation {
-    val evaluated = allRoles.map { it.evaluateLayout(moduleIndex) }
+/**
+ * [flattenLayout], with the constraints kept.
+ *
+ * A role that [reusing] evaluated without reaching a wildcard module key is taken from it
+ * rather than evaluated again, provided both indexes share the resolver: that role's answer
+ * cannot depend on which modules an index listed. This is what spares one run a second
+ * evaluation of every `layout { }` block, when both the declarations alone and the walk want
+ * them. A role that did reach a wildcard key is evaluated again, because there the two
+ * readings really do differ.
+ */
+internal fun Architecture.evaluateLayout(
+    moduleIndex: ModuleIndex,
+    reusing: LayoutEvaluation? = null,
+): LayoutEvaluation {
+    val reusable = reusing?.takeIf { it.resolver == moduleIndex.resolver }?.byRole.orEmpty()
+    // `Role` declares no `equals`, so this is keyed by identity, as the walk's own map is.
+    val byRole = LinkedHashMap<Role, LayoutEvaluation>()
+    for (role in allRoles) {
+        byRole[role] = reusable[role]?.takeUnless { it.readsModuleList } ?: role.evaluateLayout(moduleIndex)
+    }
+    val evaluated = byRole.values
     return LayoutEvaluation(
         entries = evaluated.flatMap { it.entries },
         fileConstraints = evaluated.flatMap { it.fileConstraints },
+        resolver = moduleIndex.resolver,
+        readsModuleList = evaluated.any { it.readsModuleList },
+        byRole = byRole,
     )
 }
 
 /** [Role.flattenLayout], with the constraints kept. */
 internal fun Role.evaluateLayout(moduleIndex: ModuleIndex): LayoutEvaluation {
+    var readsModuleList = false
+    val index = moduleIndex.reportingWildcardKeys { readsModuleList = true }
     val entries = LinkedHashMap<EntryKey, LayoutEntry>()
     // Which entry each node produced. `LayoutNode` overrides neither `equals` nor `hashCode`,
     // so this is keyed by identity — which is what is wanted: two sibling declarations of the
@@ -111,7 +147,7 @@ internal fun Role.evaluateLayout(moduleIndex: ModuleIndex): LayoutEvaluation {
         // it declares is pinned to where its `layout { }` was declared: the user's call that
         // brought the role in, rather than whoever happened to start the check.
         val pinnedSite = declaration.declaredAt.takeIf { isWrittenByKatachi(declaration.block) }
-        val scope = LayoutScopeImpl(root, moduleIndex, moduleContext = null, sites = sites, pinnedSite = pinnedSite)
+        val scope = LayoutScopeImpl(root, index, moduleContext = null, sites = sites, pinnedSite = pinnedSite)
         scope.apply(declaration.block)
         // Directly under `layout { }` there is no directory block to close the site, so the
         // root closes it: such a constraint owns that one block and not the role's others.
@@ -139,6 +175,8 @@ internal fun Role.evaluateLayout(moduleIndex: ModuleIndex): LayoutEvaluation {
                 )
             }
         },
+        resolver = moduleIndex.resolver,
+        readsModuleList = readsModuleList,
     )
 }
 

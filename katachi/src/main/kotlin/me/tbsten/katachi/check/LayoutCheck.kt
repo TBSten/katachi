@@ -35,15 +35,15 @@ import me.tbsten.katachi.processor.internal.projectWalk
  * always looks at everything.
  *
  * Not everything it returns comes from that walk, though.
- * [ArchitectureProcessContext.declaredEntries] costs no walk of its own — it flattens the same
- * `layout { }` blocks a second time, from the declarations alone — and is where
- * declaration-only Warnings live: a path two roles both claim outright
- * ([me.tbsten.katachi.check.AmbiguousLayout]), and a role living in more than one place without
- * saying which files belong in which
- * ([me.tbsten.katachi.check.MissingDescription]). Reading it is a second
- * evaluation of every `layout { }` block, so a block with a side effect of its own runs twice
- * per `assert()` — the same thing a wildcard module key already does once per module it expands
- * to.
+ * [ArchitectureProcessContext.declaredEntries] costs no walk of its own — it is the `layout { }`
+ * blocks read from the declarations alone — and is where declaration-only Warnings live: a path
+ * two roles both claim outright ([me.tbsten.katachi.check.AmbiguousLayout]), and a role living in
+ * more than one place without saying which files belong in which
+ * ([me.tbsten.katachi.check.MissingDescription]). It is taken from the evaluation the walk
+ * already made rather than made again, so a role's `layout { }` block runs once per `assert()`.
+ * The exception is a role with a wildcard module key: read from the declarations, that key
+ * stays one pattern, while the walk expands it to the modules that exist, so such a block runs
+ * once for each reading — on top of the once per module it expands to.
  *
  * The third Warning goes the other way and is why both halves are handed over together: the
  * same walk also holds the roles whose *different* patterns turned out to select the same real
