@@ -1,6 +1,7 @@
 package com.example.sample.roles
 
 import com.example.sample.forbiddenContents
+import com.example.sample.groups.DataDomain
 import com.example.sample.modulePackage
 import me.tbsten.katachi.dsl.DeclarationContainerScope
 import me.tbsten.katachi.dsl.gradle.*
@@ -14,7 +15,8 @@ fun DeclarationContainerScope.repository() = "Repository" {
     description = """
         データの取得と保存を引き受ける、`:data` の唯一の役割。扱う対象ごとに package を割り
         （`user` / `settings`）、その中にインターフェース（`*Repository.kt`）と実装
-        （`*RepositoryImpl.kt`）を並べる。呼び出し側が依存するのはインターフェースだけで、
+        （`*RepositoryImpl.kt`）を並べる。ファイル名は package の名前で始める（`user` なら
+        `User*Repository.kt`）。呼び出し側が依存するのはインターフェースだけで、
         `Impl` の名前を ViewModel の引数に書くことはない。
 
         この役割は `layout { }` を2つ持つ。置き場所は同じ package で、違うのはファイル名の
@@ -37,12 +39,21 @@ fun DeclarationContainerScope.repository() = "Repository" {
     // (`*Repository.kt`) and the implementation (`*RepositoryImpl.kt`). Both sit in
     // the same package, so `description` is what tells the two apart — which is the
     // question it exists to answer.
+    //
+    // One package per DataDomain, and a file name has to start with that domain's
+    // name: that is what gives a generated `UserProfileRepository.kt` one package.
+    // Written twice because katachi's `*` matches one character or more, so
+    // `User*Repository` alone would not accept `UserRepository` itself.
     layout {
         ":data".module {
             mainSourceSet / kotlin / modulePackage {
                 description = "インターフェース。呼び出し側が依存する型"
-                "user" { "*Repository".ktFile() }
-                "settings" { "*Repository".ktFile() }
+                DataDomain.entries.forEach { domain ->
+                    domain.packageName {
+                        "${domain.name}Repository".ktFile()
+                        "${domain.name}*Repository".ktFile()
+                    }
+                }
             }
         }
     }
@@ -50,8 +61,47 @@ fun DeclarationContainerScope.repository() = "Repository" {
         ":data".module {
             mainSourceSet / kotlin / modulePackage {
                 description = "実装。インターフェースと同じ package に並べる"
-                "user" { "*RepositoryImpl".ktFile() }
-                "settings" { "*RepositoryImpl".ktFile() }
+                DataDomain.entries.forEach { domain ->
+                    domain.packageName {
+                        "${domain.name}RepositoryImpl".ktFile()
+                        "${domain.name}*RepositoryImpl".ktFile()
+                    }
+                }
+            }
+        }
+    }
+    // The interface declares one member, `load()`, which the Fake template implements
+    // too: generate both with the same `domain` and `name` and they fit each other.
+    //   ./gradlew :architecture-test:katachiTemplate \
+    //       --arg roleName=Repository --arg domain=User --arg name=Profile
+    template {
+        val domain by enumParameter(DataDomain.entries)
+        val name by stringParameter()
+        val withImpl by booleanParameter(default = true)
+        val repository = "${domain.name}${name}Repository"
+        val packageName = "com.example.sample.data.${domain.packageName}"
+
+        file("$repository.kt") {
+            """
+                package $packageName
+
+                /** Reads ${name.ifEmpty { domain.name }.lowercase()} data. */
+                interface $repository {
+                    // TODO: replace with what this repository actually reads and writes.
+                    fun load(): String
+                }
+            """.trimIndent()
+        }
+        if (withImpl) {
+            file("${repository}Impl.kt") {
+                """
+                    package $packageName
+
+                    /** Production implementation of [$repository]. */
+                    class ${repository}Impl : $repository {
+                        override fun load(): String = ""
+                    }
+                """.trimIndent()
             }
         }
     }

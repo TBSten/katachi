@@ -1,6 +1,7 @@
 package com.example.sample.roles
 
 import com.example.sample.forbiddenContents
+import com.example.sample.groups.DataDomain
 import com.example.sample.modulePackage
 import me.tbsten.katachi.dsl.DeclarationContainerScope
 import me.tbsten.katachi.dsl.gradle.*
@@ -40,6 +41,30 @@ fun DeclarationContainerScope.fake() = "Fake" {
     layout {
         ":testing".module {
             mainSourceSet / kotlin / modulePackage / "Fake*".ktFile()
+        }
+    }
+    // Implements what the Repository template generates for the same `domain` and `name`,
+    // so run that one first: the fake of an interface that is not there does not compile.
+    //   ./gradlew :architecture-test:katachiTemplate \
+    //       --arg roleName=Fake --arg domain=User --arg name=Profile
+    template {
+        val domain by enumParameter(DataDomain.entries)
+        val name by stringParameter()
+        val repository = "${domain.name}${name}Repository"
+
+        file("Fake$repository.kt") {
+            """
+                package com.example.sample.testing
+
+                import com.example.sample.data.${domain.packageName}.$repository
+
+                /** In-memory [$repository] for tests of other modules. */
+                class Fake$repository(
+                    private var value: String = "",
+                ) : $repository {
+                    override fun load(): String = value
+                }
+            """.trimIndent()
         }
     }
 }

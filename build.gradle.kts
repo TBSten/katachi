@@ -223,18 +223,29 @@ tasks.register("verifyApiDocs") {
 }
 
 /**
- * A `template { }` run against a sample, checked the way a user would meet it: generate, then
- * the sample's own `assert()` test and a compile of the generated sources, then delete what was
- * generated.
+ * One `katachiTemplate` run: the `--arg`s it is given and the files it writes.
  *
  * [generatedFiles] are relative to the sample and are the *only* paths the clean-up deletes.
  * They restate what the template and the layout decide together, so the check task refuses to
  * run when one of them is missing -- a list out of step with the template fails loudly instead
  * of leaving files behind.
  */
-data class SampleTemplate(
+data class SampleTemplateRun(
     val args: List<String>,
     val generatedFiles: List<String>,
+)
+
+/**
+ * The `template { }` runs against a sample, checked the way a user would meet them: generate,
+ * then the sample's own `assert()` test and a compile of the generated sources, then delete what
+ * was generated.
+ *
+ * [runs] go in order, one wrapper invocation each, and all of them are in place before
+ * [verifyTasks] run -- so a later run may generate code that uses an earlier one's (a fake of a
+ * repository generated just before it).
+ */
+data class SampleTemplate(
+    val runs: List<SampleTemplateRun>,
     val verifyTasks: List<String>,
 )
 
@@ -262,8 +273,12 @@ val sampleBuilds = listOf(
         ),
         needsAndroidSdk = false,
         template = SampleTemplate(
-            args = listOf("roleName=Service", "name=KatachiSmoke"),
-            generatedFiles = listOf("src/main/kotlin/com/example/service/KatachiSmokeService.kt"),
+            runs = listOf(
+                SampleTemplateRun(
+                    args = listOf("roleName=Service", "name=KatachiSmoke"),
+                    generatedFiles = listOf("src/main/kotlin/com/example/service/KatachiSmokeService.kt"),
+                ),
+            ),
             verifyTasks = listOf(
                 ":architecture-test:test",
                 "--tests",
@@ -278,14 +293,82 @@ val sampleBuilds = listOf(
         listOf("check", "katachiLayout", "katachiDocs", "--arg", "mode=check"),
         needsAndroidSdk = true,
         template = SampleTemplate(
-            args = listOf("roleName=Component", "name=KatachiSmoke"),
-            generatedFiles = listOf("ui/src/main/kotlin/com/example/sample/ui/component/AppKatachiSmoke.kt"),
+            runs = listOf(
+                SampleTemplateRun(
+                    args = listOf("roleName=Component", "name=KatachiSmoke"),
+                    generatedFiles = listOf("ui/src/main/kotlin/com/example/sample/ui/component/AppKatachiSmoke.kt"),
+                ),
+                SampleTemplateRun(
+                    args = listOf("roleName=FeatureComponent", "feature=Home", "name=KatachiSmoke"),
+                    generatedFiles = listOf(
+                        "feature/home/src/main/kotlin/com/example/sample/feature/home/component/HomeKatachiSmoke.kt",
+                    ),
+                ),
+                SampleTemplateRun(
+                    args = listOf(
+                        "roleName=FeatureComponent",
+                        "feature=Settings",
+                        "name=KatachiSmoke",
+                        "withPreview=false",
+                    ),
+                    generatedFiles = listOf(
+                        "feature/settings/src/main/kotlin/com/example/sample/feature/settings/component/" +
+                                "SettingsKatachiSmoke.kt",
+                    ),
+                ),
+                SampleTemplateRun(
+                    args = listOf("roleName=FeatureTest", "feature=Home", "name=KatachiSmoke"),
+                    generatedFiles = listOf(
+                        "feature/home/src/test/kotlin/com/example/sample/feature/home/HomeKatachiSmokeTest.kt",
+                    ),
+                ),
+                SampleTemplateRun(
+                    args = listOf("roleName=FeatureTest", "feature=Settings", "name=KatachiSmoke"),
+                    generatedFiles = listOf(
+                        "feature/settings/src/test/kotlin/com/example/sample/feature/settings/" +
+                                "SettingsKatachiSmokeTest.kt",
+                    ),
+                ),
+                SampleTemplateRun(
+                    args = listOf("roleName=Repository", "domain=User", "name=KatachiSmoke"),
+                    generatedFiles = listOf(
+                        "data/src/main/kotlin/com/example/sample/data/user/UserKatachiSmokeRepository.kt",
+                        "data/src/main/kotlin/com/example/sample/data/user/UserKatachiSmokeRepositoryImpl.kt",
+                    ),
+                ),
+                // After Repository: the fake implements the interface that run generated.
+                SampleTemplateRun(
+                    args = listOf("roleName=Fake", "domain=User", "name=KatachiSmoke"),
+                    generatedFiles = listOf(
+                        "testing/src/main/kotlin/com/example/sample/testing/FakeUserKatachiSmokeRepository.kt",
+                    ),
+                ),
+                SampleTemplateRun(
+                    args = listOf("roleName=ArchitectureDefinition", "name=KatachiSmoke"),
+                    generatedFiles = listOf(
+                        "architecture-test/src/test/kotlin/com/example/sample/roles/KatachiSmokeRole.kt",
+                    ),
+                ),
+                SampleTemplateRun(
+                    args = listOf("roleName=ArchitectureDefinition", "name=KatachiSmoke", "kind=Group"),
+                    generatedFiles = listOf(
+                        "architecture-test/src/test/kotlin/com/example/sample/groups/KatachiSmokeGroup.kt",
+                    ),
+                ),
+            ),
             verifyTasks = listOf(
+                // Compiles the generated role and group files too: they sit in its test sources.
                 ":architecture-test:test",
                 "--tests",
                 "com.example.sample.ProjectArchitectureTest",
                 "--rerun",
                 ":ui:compileDebugKotlin",
+                ":data:compileDebugKotlin",
+                ":testing:compileDebugKotlin",
+                // Compiles each feature module's main sources and runs its unit tests,
+                // the generated ones included.
+                ":feature:home:testDebugUnitTest",
+                ":feature:settings:testDebugUnitTest",
             ),
         ),
     ),
@@ -301,10 +384,14 @@ val sampleBuilds = listOf(
         ),
         needsAndroidSdk = true,
         template = SampleTemplate(
-            args = listOf("roleName=Repository", "name=KatachiSmoke"),
-            generatedFiles = listOf(
-                "data/src/commonMain/kotlin/com/example/kmp/data/user/KatachiSmokeRepository.kt",
-                "data/src/commonMain/kotlin/com/example/kmp/data/user/KatachiSmokeRepositoryImpl.kt",
+            runs = listOf(
+                SampleTemplateRun(
+                    args = listOf("roleName=Repository", "name=KatachiSmoke"),
+                    generatedFiles = listOf(
+                        "data/src/commonMain/kotlin/com/example/kmp/data/user/KatachiSmokeRepository.kt",
+                        "data/src/commonMain/kotlin/com/example/kmp/data/user/KatachiSmokeRepositoryImpl.kt",
+                    ),
+                ),
             ),
             verifyTasks = listOf(
                 ":architecture-test:test",
@@ -448,12 +535,10 @@ sampleBuilds.forEach { sample ->
         return@forEach
     }
 
-    val generatedFiles = template.generatedFiles.map { File(sampleDir, it) }
+    val generatedFiles = template.runs.flatMap { run -> run.generatedFiles.map { File(sampleDir, it) } }
     // Written just before generating and read by the clean-up: without it, a generation that
     // refused to start because the files were already there would have them deleted anyway.
     val marker = layout.buildDirectory.file("sample-template/${sample.name}.generated").get().asFile
-    val generateArgs = listOf(":architecture-test:katachiTemplate") +
-            template.args.flatMap { listOf("--arg", it) }
 
     val deleteTask = tasks.register<Delete>("deleteSample${suffix}Template") {
         group = LifecycleBasePlugin.VERIFICATION_GROUP
@@ -463,11 +548,12 @@ sampleBuilds.forEach { sample ->
         delete(generatedFiles + marker)
     }
 
-    val generateTask = tasks.register<Exec>("generateSample${suffix}Template") {
+    // Checks every run's files at once, before the first run writes anything: a run that found
+    // its files already there would otherwise have them deleted by the clean-up.
+    val prepareTask = tasks.register("prepareSample${suffix}Template") {
         group = LifecycleBasePlugin.VERIFICATION_GROUP
-        description = "Runs `${generateArgs.joinToString(" ")}` in sample/${sample.name}. " +
-                "deleteSample${suffix}Template always follows it.$sdkNote"
-        runSampleWrapper(sample, sampleDir, generateArgs)
+        description = "Refuses to start generateSample${suffix}Template when any file it would " +
+                "write is already in sample/${sample.name}, and marks the start for the clean-up."
         mustRunAfter(buildTask)
         finalizedBy(deleteTask)
         doFirst {
@@ -488,6 +574,30 @@ sampleBuilds.forEach { sample ->
         }
     }
 
+    // One wrapper invocation per run, in order: a task runs once per build, so the runs cannot
+    // share one invocation of katachiTemplate.
+    val runTasks = template.runs.mapIndexed { index, run ->
+        val generateArgs = listOf(":architecture-test:katachiTemplate") +
+                run.args.flatMap { listOf("--arg", it) }
+        tasks.register<Exec>("generateSample${suffix}Template${index + 1}") {
+            group = LifecycleBasePlugin.VERIFICATION_GROUP
+            description = "Runs `${generateArgs.joinToString(" ")}` in sample/${sample.name}. " +
+                    "deleteSample${suffix}Template always follows it.$sdkNote"
+            runSampleWrapper(sample, sampleDir, generateArgs)
+            dependsOn(prepareTask)
+            finalizedBy(deleteTask)
+        }
+    }
+    runTasks.zipWithNext { previous, next -> next.configure { mustRunAfter(previous) } }
+
+    val generateTask = tasks.register("generateSample${suffix}Template") {
+        group = LifecycleBasePlugin.VERIFICATION_GROUP
+        description = "Runs every template of sample/${sample.name} in turn " +
+                "(${runTasks.joinToString(", ") { it.name }}). " +
+                "deleteSample${suffix}Template always follows it."
+        dependsOn(runTasks)
+    }
+
     val checkTemplateTask = tasks.register<Exec>("checkSample${suffix}Template") {
         group = LifecycleBasePlugin.VERIFICATION_GROUP
         description = "Runs `${template.verifyTasks.joinToString(" ")}` in sample/${sample.name} " +
@@ -506,12 +616,12 @@ sampleBuilds.forEach { sample ->
             }
         }
     }
-    deleteTask.configure { mustRunAfter(checkTemplateTask) }
-    registeredSamples += listOf(generateTask, checkTemplateTask, deleteTask)
+    deleteTask.configure { mustRunAfter(runTasks, checkTemplateTask) }
+    registeredSamples += listOf(prepareTask) + runTasks + listOf(generateTask, checkTemplateTask, deleteTask)
 
     val task = tasks.register("checkSample$suffix") {
         group = LifecycleBasePlugin.VERIFICATION_GROUP
-        description = "Runs checkSample${suffix}Build, then generates the files of a template " +
+        description = "Runs checkSample${suffix}Build, then generates the files of its templates " +
                 "in sample/${sample.name}, checks the sample with them in place and deletes them."
         dependsOn(buildTask, checkTemplateTask)
     }

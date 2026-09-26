@@ -1,11 +1,14 @@
 package com.example.sample.groups
 
 import com.example.sample.modulePackage
+import com.example.sample.roles.featureComponent
+import com.example.sample.roles.featureTest
 import com.example.sample.roles.route
 import com.example.sample.roles.screen
 import com.example.sample.roles.viewModel
 import me.tbsten.katachi.dsl.DeclarationContainerScope
 import me.tbsten.katachi.dsl.LayoutDirectory
+import me.tbsten.katachi.dsl.LayoutDirectoryScope
 import me.tbsten.katachi.dsl.LayoutScope
 import me.tbsten.katachi.dsl.gradle.*
 
@@ -27,12 +30,12 @@ import me.tbsten.katachi.dsl.gradle.*
  * there is reported, and a missing `HomeScreen.kt` is reported too, which a `*Screen.kt`
  * could never say.
  *
- * All three roles below start from the same place, so that place is written once as
+ * The roles below start from the same place, so that place is written once as
  * [featureSources] — this project's own addition to the layout vocabulary, not katachi's.
  */
 fun DeclarationContainerScope.featureGroup() = "feature".group {
     title = "各画面の構成"
-    summary = "画面1つぶんのモジュール。:feature:<name> ごとに Screen / ViewModel / Route を1つずつ置く"
+    summary = "画面1つぶんのモジュール。:feature:<name> ごとに Screen / ViewModel / Route を1つずつ置き、画面の部品とテストを足していく"
     description = """
         `:feature:home` `:feature:settings` のような、画面1つぶんのモジュールの中身。
         どのモジュールにも `<Name>Screen.kt` `<Name>ViewModel.kt` `<Name>Route.kt` が
@@ -52,11 +55,18 @@ fun DeclarationContainerScope.featureGroup() = "feature".group {
         feature 同士は互いに依存しない。別の画面へ遷移するときも、遷移先の決定は `:app` 側にあり、
         feature が受け取るのはコールバック1つ。つながりは `:app` の1箇所にしかないので、
         feature を消すときに他の feature を読み直さなくて済む。
+
+        画面の部品とテストは、1つの feature の中で数が増えていく。どちらもファイル名を
+        モジュール名で始め（`HomeUserCard.kt`、`HomeViewModelTest.kt`）、テンプレートから
+        生成できる。この2つの役割だけは `":feature:*"` ではなくモジュールを1つずつ名指しして
+        あるので、feature を足したら `FeatureModule` にも1行足す。
     """.trimIndent()
 
     screen()
     viewModel()
     route()
+    featureComponent()
+    featureTest()
 }
 
 /**
@@ -73,12 +83,57 @@ fun DeclarationContainerScope.featureGroup() = "feature".group {
  * the same path `mainSourceSet / kotlin / modulePackage / "X".ktFile()` did, which is why
  * the recorded layout snapshot does not move when a role is rewritten to use it.
  *
- * `internal` and declared next to the group rather than inside one role's file, because all
- * three roles of this group read it. The directory entries it builds are attributed to this
+ * `internal` and declared next to the group rather than inside one role's file, because the
+ * roles of this group read it. The directory entries it builds are attributed to this
  * file; the `*.kt` entries that follow the `/` still belong to the role that wrote them, so a
  * violation keeps naming the role.
  */
 context(layoutScope: LayoutScope)
 internal fun featureSources(): LayoutDirectory = with(layoutScope) {
     mainSourceSet / kotlin / modulePackage
+}
+
+/**
+ * The feature modules this project has, by name: `Home` is `:feature:home`.
+ *
+ * `":feature:*"` is enough for a role that only has to be *checked*, and Screen, ViewModel and
+ * Route stay written that way. A role with a `template { }` needs more: katachi places a
+ * generated file by the role's `layout { }` alone, before anything is read from disk, so a
+ * layout under a wildcard module key has no single directory to write into. The roles that
+ * generate into a feature module therefore name each module through this enum instead
+ * ([eachFeatureModule]), and the template reads the same enum as a parameter
+ * (`--arg feature=Home`), so the list of modules is written once.
+ *
+ * The check keeps it honest in one direction: an entry whose module was deleted is reported
+ * as that module's missing `build.gradle.kts`. A new module missing from it is not reported
+ * until a file of one of those roles is put there, which then shows up as `[UnexpectedFile]`
+ * — add the entry when adding the module to `settings.gradle.kts`.
+ */
+enum class FeatureModule {
+    Home,
+    Settings,
+    ;
+
+    /** The module path, `:feature:home`. */
+    val modulePath: String get() = ":feature:${name.lowercase()}"
+}
+
+/**
+ * Declares [block] once for every [FeatureModule], inside that module.
+ *
+ * The concrete counterpart of `":feature:*".module { }`: what `wildcards[0]` would have
+ * captured arrives as the [FeatureModule] instead. A role that writes its file names from it
+ * (`"${feature.name}*"`) is what lets a template pick the module by the file name alone.
+ */
+context(layoutScope: LayoutScope)
+internal fun eachFeatureModule(block: LayoutDirectoryScope.(FeatureModule) -> Unit) {
+    with(layoutScope) {
+        FeatureModule.entries.forEach { feature ->
+            feature.modulePath.module {
+                // Two or more places for one role want a sentence each on when to pick it.
+                description = "`${feature.modulePath}` の分。ファイル名は `${feature.name}` で始める"
+                block(feature)
+            }
+        }
+    }
 }

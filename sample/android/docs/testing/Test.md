@@ -2,10 +2,11 @@
 
 # テストコード
 
-各モジュールの src/test/kotlin に置くテストそのもの
+:architecture-test の src/test/kotlin に置く、定義を検査するテスト
 
-テストそのもの。このサンプルでテストを持つモジュールは `:architecture-test` だけで、
-アプリ側の各モジュールはそこに書かれた定義を通して検査される。
+`:architecture-test` のテスト。アプリ側の各モジュールは、ここに書かれた定義を通して
+検査される。feature モジュールが自分の ViewModel を確かめるテストは別の役割
+（画面のテスト）で、そちらは各 feature の `src/test` にある。
 
 ファイル名が `*Spec.kt` か `*Test.kt` で、package の直下（`groups/` `roles/` の外）に
 あるものがテスト。同じモジュールにあるアーキテクチャ定義役割とはこの2点で区別され、

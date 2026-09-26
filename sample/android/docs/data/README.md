@@ -5,7 +5,8 @@
 :data が持つもの。データの取得と保存
 
 `:data` モジュール。いまは Repository 役割1つだけで、扱う対象ごとの package
-（`user` / `settings`）にインターフェースと実装を並べる。
+（`user` / `settings`）にインターフェースと実装を並べる。package は `DataDomain` の
+1項目ずつで、対象を増やすときはそこに1行足す。
 
 他のどのモジュールにも依存しない、このアプリで一番下の層。Android にも Compose にも
 触らないので、`:ui` や `:feature:*` を持ち出さずに読める。ViewModel はここの
@@ -25,9 +26,13 @@
 :data
   src/main/kotlin/**/
     user/
-      *Repository.kt      リポジトリ
-      *RepositoryImpl.kt  リポジトリ
+      UserRepository.kt           リポジトリ
+      User*Repository.kt          リポジトリ
+      UserRepositoryImpl.kt       リポジトリ
+      User*RepositoryImpl.kt      リポジトリ
     settings/
-      *Repository.kt      リポジトリ
-      *RepositoryImpl.kt  リポジトリ
+      SettingsRepository.kt       リポジトリ
+      Settings*Repository.kt      リポジトリ
+      SettingsRepositoryImpl.kt   リポジトリ
+      Settings*RepositoryImpl.kt  リポジトリ
 ```

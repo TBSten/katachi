@@ -6,7 +6,8 @@
 
 データの取得と保存を引き受ける、`:data` の唯一の役割。扱う対象ごとに package を割り
 （`user` / `settings`）、その中にインターフェース（`*Repository.kt`）と実装
-（`*RepositoryImpl.kt`）を並べる。呼び出し側が依存するのはインターフェースだけで、
+（`*RepositoryImpl.kt`）を並べる。ファイル名は package の名前で始める（`user` なら
+`User*Repository.kt`）。呼び出し側が依存するのはインターフェースだけで、
 `Impl` の名前を ViewModel の引数に書くことはない。
 
 この役割は `layout { }` を2つ持つ。置き場所は同じ package で、違うのはファイル名の
@@ -21,10 +22,14 @@
 
 | Module | Path | When to use |
 |---|---|---|
-| `:data` | `src/main/kotlin/**/user/*Repository.kt` | インターフェース。呼び出し側が依存する型 |
-| `:data` | `src/main/kotlin/**/settings/*Repository.kt` | インターフェース。呼び出し側が依存する型 |
-| `:data` | `src/main/kotlin/**/user/*RepositoryImpl.kt` | インターフェース。呼び出し側が依存する型 |
-| `:data` | `src/main/kotlin/**/settings/*RepositoryImpl.kt` | インターフェース。呼び出し側が依存する型 |
+| `:data` | `src/main/kotlin/**/user/UserRepository.kt` | インターフェース。呼び出し側が依存する型 |
+| `:data` | `src/main/kotlin/**/user/User*Repository.kt` | インターフェース。呼び出し側が依存する型 |
+| `:data` | `src/main/kotlin/**/settings/SettingsRepository.kt` | インターフェース。呼び出し側が依存する型 |
+| `:data` | `src/main/kotlin/**/settings/Settings*Repository.kt` | インターフェース。呼び出し側が依存する型 |
+| `:data` | `src/main/kotlin/**/user/UserRepositoryImpl.kt` | インターフェース。呼び出し側が依存する型 |
+| `:data` | `src/main/kotlin/**/user/User*RepositoryImpl.kt` | インターフェース。呼び出し側が依存する型 |
+| `:data` | `src/main/kotlin/**/settings/SettingsRepositoryImpl.kt` | インターフェース。呼び出し側が依存する型 |
+| `:data` | `src/main/kotlin/**/settings/Settings*RepositoryImpl.kt` | インターフェース。呼び出し側が依存する型 |
 
 ## Examples
 

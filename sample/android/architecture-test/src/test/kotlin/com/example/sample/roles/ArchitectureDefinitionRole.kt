@@ -52,4 +52,58 @@ fun DeclarationContainerScope.architectureDefinition() = "ArchitectureDefinition
             }
         }
     }
+    // A new role or group, as a skeleton to fill in. It is not called from anywhere yet:
+    // add the call to a group (or to `ProjectArchitecture.kt`) once it says something.
+    //   ./gradlew :architecture-test:katachiTemplate \
+    //       --arg roleName=ArchitectureDefinition --arg name=UseCase
+    //   ./gradlew :architecture-test:katachiTemplate \
+    //       --arg roleName=ArchitectureDefinition --arg name=Domain --arg kind=Group
+    template {
+        val name by stringParameter()
+        val kind by enumParameter(default = DeclarationKind.Role)
+        val function = name.replaceFirstChar { it.lowercaseChar() }
+
+        when (kind) {
+            DeclarationKind.Role -> file("${name}Role.kt") {
+                """
+                    package com.example.sample.roles
+
+                    import me.tbsten.katachi.dsl.DeclarationContainerScope
+
+                    // TODO: call $function() from the group this role belongs to.
+                    /** TODO: say what a file of the $name role is. */
+                    fun DeclarationContainerScope.$function() = "$name" {
+                        title = "$name"
+                        summary = "TODO: この役割のファイルが何か"
+                        // TODO: declare where its files live.
+                        layout { }
+                    }
+                """.trimIndent()
+            }
+
+            DeclarationKind.Group -> file("${name}Group.kt") {
+                """
+                    package com.example.sample.groups
+
+                    import me.tbsten.katachi.dsl.DeclarationContainerScope
+
+                    // TODO: call ${function}Group() from ProjectArchitecture.kt.
+                    /** TODO: say what the roles of the $name group have in common. */
+                    fun DeclarationContainerScope.${function}Group() = "$function".group {
+                        title = "$name"
+                        summary = "TODO: この group の役割に共通すること"
+                    }
+                """.trimIndent()
+            }
+        }
+    }
+}
+
+/** Which of the two declaration files the ArchitectureDefinition template writes. */
+enum class DeclarationKind {
+    /** `roles/<Name>Role.kt`. */
+    Role,
+
+    /** `groups/<Name>Group.kt`. */
+    Group,
 }

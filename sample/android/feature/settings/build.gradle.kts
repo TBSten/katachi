@@ -34,4 +34,9 @@ dependencies {
     implementation(sampleLibs.androidxLifecycleViewModelCompose)
     implementation(sampleLibs.composeUiToolingPreview)
     debugImplementation(sampleLibs.composeUiTooling)
+
+    // The ViewModel tests stand the ViewModel on `:testing`'s fakes instead of `:data`'s
+    // real implementations.
+    testImplementation(project(":testing"))
+    testImplementation(sampleLibs.junit)
 }

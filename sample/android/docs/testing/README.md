@@ -35,7 +35,7 @@
 | Role | Summary |
 |---|---|
 | [フェイク](./Fake.md) | :testing に置く、他モジュールのテストから使う偽の実装 |
-| [テストコード](./Test.md) | 各モジュールの src/test/kotlin に置くテストそのもの |
+| [テストコード](./Test.md) | :architecture-test の src/test/kotlin に置く、定義を検査するテスト |
 | [アーキテクチャ定義](./ArchitectureDefinition.md) | katachi の DSL で書かれた役割の定義。どのレイヤーにも属さない |
 | [生成ドキュメント](./GeneratedDocumentation.md) | この定義から書き出され、リポジトリにコミットされる Markdown |
 | [レイアウトのスナップショット](./LayoutSnapshot.md) | この定義を平坦化して全行書き出した記録。定義の変化を人が差分でレビューするためにある |
