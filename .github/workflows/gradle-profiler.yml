@@ -1,0 +1,89 @@
+name: Gradle profiler
+
+# Weekly benchmark of katachi's Gradle side (research table No.12): the architecture test task
+# and a processor task of sample/jvm, measured by gradle-profiler with warm-up builds. JMH in
+# :benchmark cannot see this part -- configuration time, the JVM every `katachi<Key>` task
+# starts, a task that stops being up to date or cacheable.
+#
+# Nothing is compared or alerted on yet: the numbers of one weekly run on a shared runner move
+# too much for a threshold. The CSV and the HTML report are kept as an artifact; compare two
+# weeks by downloading both.
+
+on:
+  schedule:
+    # Monday 19:00 UTC = Tuesday 04:00 JST, an hour after the nightly benchmark.
+    - cron: '0 19 * * 1'
+  workflow_dispatch:
+
+concurrency:
+  group: gradle-profiler
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+env:
+  GRADLE_PROFILER_VERSION: '0.25.2'
+
+jobs:
+  profile:
+    name: profile sample/jvm
+    runs-on: ubuntu-latest
+    # Two scenarios x (3 warm-ups + 10 builds), each starting from a stopped daemon.
+    timeout-minutes: 60
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v6
+
+      - name: Install gradle-profiler
+        run: |
+          curl -sSfL -o "${RUNNER_TEMP}/gradle-profiler.zip" \
+            "https://github.com/gradle/gradle-profiler/releases/download/v${GRADLE_PROFILER_VERSION}/gradle-profiler-${GRADLE_PROFILER_VERSION}.zip"
+          unzip -q "${RUNNER_TEMP}/gradle-profiler.zip" -d "${RUNNER_TEMP}"
+          echo "${RUNNER_TEMP}/gradle-profiler-${GRADLE_PROFILER_VERSION}/bin" >> "${GITHUB_PATH}"
+
+      # The Gradle user home setup-gradle prepared (~/.gradle), so the dependency cache is
+      # reused instead of gradle-profiler's default of an empty `gradle-user-home` in the
+      # working directory. The output goes outside the checkout, so nothing lands in the tree.
+      - name: Benchmark
+        run: >
+          gradle-profiler --benchmark
+          --project-dir sample/jvm
+          --scenario-file benchmark/gradle-profiler/sample-jvm.scenarios
+          --gradle-user-home "${HOME}/.gradle"
+          --output-dir "${RUNNER_TEMP}/gradle-profiler-out"
+
+      - name: Summary
+        if: ${{ always() }}
+        run: |
+          csv="${RUNNER_TEMP}/gradle-profiler-out/benchmark.csv"
+          if [ -f "${csv}" ]; then
+            {
+              echo "## gradle-profiler (sample/jvm)"
+              echo ""
+              echo '```'
+              cat "${csv}"
+              echo '```'
+            } >> "${GITHUB_STEP_SUMMARY}"
+          fi
+
+      - name: Upload results
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: gradle-profiler
+          path: |
+            ${{ runner.temp }}/gradle-profiler-out/benchmark.csv
+            ${{ runner.temp }}/gradle-profiler-out/benchmark.html
+            ${{ runner.temp }}/gradle-profiler-out/profile.log
+          retention-days: 90
+          if-no-files-found: ignore
