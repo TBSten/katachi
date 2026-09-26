@@ -1,0 +1,42 @@
+{
+  "templates": [
+    {
+      "roleName": "data/Repository",
+      "title": null,
+      "summary": null,
+      "parameterNames": [
+        "name"
+      ],
+      "fileCount": 1
+    }
+  ],
+  "details": [
+    {
+      "roleName": "data/Repository",
+      "title": null,
+      "summary": null,
+      "parameters": [
+        {
+          "name": "name",
+          "kind": "IntParameter",
+          "typeName": "Int",
+          "default": null,
+          "acceptedValues": [],
+          "isRequired": true,
+          "previewValue": "0",
+          "previewValueSource": "StandIn"
+        }
+      ],
+      "files": [
+        {
+          "fileName": "Repository${name}.kt",
+          "path": "b/Repository${name}.kt",
+          "unresolvedPatterns": [],
+          "content": ""
+        }
+      ],
+      "branches": [],
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=data/Repository --arg name=Name"
+    }
+  ]
+}

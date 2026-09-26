@@ -1,0 +1,18 @@
+> Task :arch-a:generateKatachiEntryPoint UP-TO-DATE
+> Task :arch-a:compileTestKotlin UP-TO-DATE
+> Task :arch-a:katachiTemplate
+Exception in thread "main" me.tbsten.katachi.processor.KatachiUnknownProcessorArgException: Unknown processor argument(s): implSuffix.
+None of the selected processors declare a field of that name, so passing it silently -- rather than failing -- would let a misspelled --arg key run as if it had never been given, with the field's default value instead.
+Known arguments: item, name, onExisting, roleName, withImpl.
+	at me.tbsten.katachi.processor.internal.ProcessorRunKt.checkNoUnknownArgs(ProcessorRun.kt:201)
+	at me.tbsten.katachi.processor.internal.MainKt.main(Main.kt:48)
+
+> Task :arch-a:katachiTemplate FAILED
+
+FAILURE: Build failed with an exception.
+
+* What went wrong:
+Execution failed for task ':arch-a:katachiTemplate'.
+> Process 'command '/opt/jdk/bin/java'' finished with non-zero exit value 1
+
+BUILD FAILED in 2s

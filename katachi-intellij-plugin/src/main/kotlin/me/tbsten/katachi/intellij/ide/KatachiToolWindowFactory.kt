@@ -1,0 +1,40 @@
+package me.tbsten.katachi.intellij.ide
+
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import com.intellij.openapi.project.DumbAware
+import com.intellij.openapi.project.Project
+import com.intellij.openapi.wm.ToolWindow
+import com.intellij.openapi.wm.ToolWindowFactory
+import me.tbsten.katachi.intellij.presentation.JapaneseKatachiStrings
+import me.tbsten.katachi.intellij.presentation.KatachiIntent
+import me.tbsten.katachi.intellij.presentation.uiStateOf
+import me.tbsten.katachi.intellij.ui.KatachiToolWindowContent
+import org.jetbrains.jewel.bridge.addComposeTab
+import java.time.Instant
+
+/**
+ * Hosts the `katachi` tool window: draws [KatachiProjectService]'s ViewModel with the Composable
+ * shared with the headless preview, and puts ⟳ / ■ and ⚙ in the title bar.
+ *
+ * [DumbAware]: nothing here reads PSI or indexes, so everything works while indexing (E-48).
+ */
+internal class KatachiToolWindowFactory : ToolWindowFactory, DumbAware {
+
+    override fun createToolWindowContent(project: Project, toolWindow: ToolWindow) {
+        val viewModel = KatachiProjectService.getInstance(project).viewModel
+        toolWindow.addComposeTab {
+            val state by viewModel.state.collectAsState()
+            KatachiToolWindowContent(uiStateOf(state, JapaneseKatachiStrings, Instant.now()), onIntent = viewModel::dispatch)
+        }
+        toolWindow.setTitleActions(listOf(ReloadOrStopAction(), OpenSettingsAction()))
+        // The platform creates the content the first time the tool window is shown: that is when
+        // detection and the first load run (spec 04), never on opening the project.
+        viewModel.dispatch(KatachiIntent.Opened)
+    }
+
+    companion object {
+        /** Must match the `id` of `<toolWindow>` in plugin.xml. */
+        const val TOOL_WINDOW_ID: String = "katachi"
+    }
+}

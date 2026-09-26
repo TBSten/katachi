@@ -2,6 +2,7 @@ package me.tbsten.katachi.intellij
 
 import com.intellij.openapi.wm.ToolWindowAnchor
 import com.intellij.openapi.wm.ToolWindowEP
+import me.tbsten.katachi.intellij.ide.KatachiToolWindowFactory
 
 /** plugin.xml registers the tool window the screen spec names, with this plugin's factory. */
 internal class KatachiToolWindowRegistrationTest : AnalysisTestBase() {

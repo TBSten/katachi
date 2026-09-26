@@ -1,0 +1,104 @@
+To honour the JVM settings for this build a single-use Daemon process will be forked. For more on this, please refer to https://docs.gradle.org/9.6.0/userguide/gradle_daemon.html#sec:disabling_the_daemon in the Gradle documentation.
+Daemon will be stopped at the end of the build 
+Calculating task graph as no cached configuration is available for tasks: :architecture-test:katachiTemplate --arg roleName=domain/NoSuchRole --arg name=IdePluginProbe
+> Task :ide-katachi:buildSrc:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :ide-katachi:buildSrc:generateExternalPluginSpecBuilders UP-TO-DATE
+> Task :ide-katachi:buildSrc:extractPrecompiledScriptPluginPlugins UP-TO-DATE
+> Task :ide-katachi:buildSrc:compilePluginsBlocks UP-TO-DATE
+> Task :ide-katachi:buildSrc:generatePrecompiledScriptPluginAccessors UP-TO-DATE
+> Task :ide-katachi:buildSrc:generateScriptPluginAdapters UP-TO-DATE
+> Task :ide-katachi:buildSrc:compileKotlin UP-TO-DATE
+> Task :ide-katachi:buildSrc:compileJava NO-SOURCE
+> Task :ide-katachi:buildSrc:compileGroovy NO-SOURCE
+> Task :ide-katachi:buildSrc:pluginDescriptors UP-TO-DATE
+> Task :ide-katachi:buildSrc:processResources UP-TO-DATE
+> Task :ide-katachi:buildSrc:classes UP-TO-DATE
+> Task :ide-katachi:buildSrc:jar UP-TO-DATE
+> Task :ide-katachi:katachi-gradle-plugin:compileJava UP-TO-DATE
+> Task :ide-katachi:katachi-gradle-plugin:pluginDescriptors UP-TO-DATE
+> Task :ide-katachi:katachi-gradle-plugin:processResources UP-TO-DATE
+> Task :ide-katachi:katachi-gradle-plugin:classes UP-TO-DATE
+> Task :ide-katachi:katachi-gradle-plugin:jar UP-TO-DATE
+> Task :ide-katachi:katachi:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :ide-katachi:katachi-konsist:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :architecture-test:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :ide-katachi:katachi:processResources NO-SOURCE
+> Task :ide-katachi:katachi-konsist:processResources NO-SOURCE
+> Task :architecture-test:processResources NO-SOURCE
+> Task :architecture-test:processTestResources NO-SOURCE
+> Task :architecture-test:generateKatachiEntryPoint UP-TO-DATE
+> Task :architecture-test:compileKotlin NO-SOURCE
+> Task :architecture-test:compileJava NO-SOURCE
+> Task :architecture-test:classes UP-TO-DATE
+> Task :architecture-test:jar UP-TO-DATE
+> Task :ide-katachi:katachi:compileKotlin UP-TO-DATE
+> Task :ide-katachi:katachi:compileJava NO-SOURCE
+> Task :ide-katachi:katachi:classes UP-TO-DATE
+> Task :ide-katachi:katachi:jar UP-TO-DATE
+> Task :ide-katachi:katachi-konsist:compileKotlin UP-TO-DATE
+> Task :ide-katachi:katachi-konsist:compileJava NO-SOURCE
+> Task :ide-katachi:katachi-konsist:classes UP-TO-DATE
+> Task :ide-katachi:katachi-konsist:jar UP-TO-DATE
+> Task :architecture-test:compileTestKotlin UP-TO-DATE
+> Task :architecture-test:compileTestJava NO-SOURCE
+> Task :architecture-test:testClasses UP-TO-DATE
+
+> Task :architecture-test:katachiTemplate FAILED
+[1/3] Processors: template
+
+[2/3] Processing...
+Exception in thread "main" me.tbsten.katachi.template.KatachiUnknownTemplateRoleException: Unknown role "domain/NoSuchRole".
+--arg roleName= names the role whose template is to be run, and this definition declares no role of that name.
+Declared roles:
+  Gradle/BuildScript
+  Gradle/GradleProperties
+  Gradle/GradleWrapper/LauncherScript
+  Gradle/GradleWrapper/WrapperJar
+  Gradle/GradleWrapper/WrapperProperties
+  Gradle/SettingsScript
+  Gradle/VersionCatalog
+  api/Controller
+  api/KtorPlugin
+  app/Entrypoint
+  app/ServerConfig
+  data/Repository
+  domain/Model
+  domain/Service
+  testing/ArchitectureDefinition
+  testing/GeneratedDocumentation
+  testing/LayoutSnapshot
+  testing/Test
+  tool/Documentation
+  tool/Git
+Pass one of them, either by its name or by its qualified name.
+	at me.tbsten.katachi.template.internal.TemplateRolesKt.templateRoleOf(TemplateRoles.kt:23)
+	at me.tbsten.katachi.template.GenerateCodeFromTemplate.undeclaredArgNames(GenerateCodeFromTemplate.kt:143)
+	at me.tbsten.katachi.processor.internal.ArgNamesKt.acceptedArgNames(ArgNames.kt:35)
+	at me.tbsten.katachi.processor.internal.ArgNamesKt.checkNoUnknownArgs(ArgNames.kt:66)
+	at me.tbsten.katachi.processor.internal.ProcessorRunKt.runProcessors(ProcessorRun.kt:106)
+	at me.tbsten.katachi.processor.internal.ProcessorRunKt.runProcessors$default(ProcessorRun.kt:69)
+	at me.tbsten.katachi.processor.internal.MainKt.main(Main.kt:48)
+
+[Incubating] Problems report is available at: file:///__ROOT__/build/reports/problems/problems-report.html
+
+FAILURE: Build failed with an exception.
+
+* What went wrong:
+Execution failed for task ':architecture-test:katachiTemplate' (registered by plugin 'me.tbsten.katachi').
+> Process 'command '/home/user/.gradle/jdks/eclipse_adoptium-17-aarch64-os_x.2/jdk-17.0.17+10/Contents/Home/bin/java'' finished with non-zero exit value 1
+
+* Try:
+> Run with --stacktrace option to get the stack trace.
+> Run with --info or --debug option to get more log output.
+> Run with --scan to get full insights from a Build Scan (powered by Develocity).
+> Get more help at https://help.gradle.org.
+
+Deprecated Gradle features were used in this build, making it incompatible with Gradle 10.
+
+You can use '--warning-mode all' to show the individual deprecation warnings and determine if they come from your own scripts or plugins.
+
+For more on this, please refer to https://docs.gradle.org/9.6.0/userguide/command_line_interface.html#sec:command_line_warnings in the Gradle documentation.
+
+BUILD FAILED in 7s
+21 actionable tasks: 1 executed, 20 up-to-date
+Configuration cache entry stored.

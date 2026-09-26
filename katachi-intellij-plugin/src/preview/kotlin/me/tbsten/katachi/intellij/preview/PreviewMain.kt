@@ -8,8 +8,11 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.ui.InternalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.renderComposeScene
+import androidx.compose.runtime.CompositionLocalProvider
+import me.tbsten.katachi.intellij.presentation.JapaneseKatachiStrings
+import me.tbsten.katachi.intellij.presentation.uiStateOf
 import me.tbsten.katachi.intellij.ui.KatachiToolWindowContent
-import me.tbsten.katachi.intellij.ui.KatachiToolWindowState
+import me.tbsten.katachi.intellij.ui.LocalStaticRendering
 import org.jetbrains.jewel.foundation.theme.JewelTheme
 import org.jetbrains.jewel.intui.standalone.theme.IntUiTheme
 import org.jetbrains.skia.EncodedImageFormat
@@ -28,22 +31,18 @@ import kotlin.system.exitProcess
  * Run `verifyPreview` first; update the golden only after a human has approved the change.
  */
 
-/** One preview PNG per theme. Cover edge cases (narrow width, empty state), not only the happy path. */
-private data class Scenario(
-    val name: String,
-    val width: Int,
-    val height: Int,
-    val state: KatachiToolWindowState,
-)
+/** Every state of the screen spec (PreviewScenarios.kt), each docked narrow and wide. */
+private val scenarios: List<Scenario> = statusScenarios + listScenarios + generationScenarios + longScenario
 
-// TODO: add the states of the screen spec (initialising, loading, list + form, empty, error) as they land.
-private val scenarios = listOf(
-    // Docked right, about 360px wide as in the screen spec.
-    Scenario("placeholder-right", width = 360, height = 480, state = KatachiToolWindowState.Placeholder),
-    // Docked at the bottom: wide and short. The screen spec keeps the same top-to-bottom layout
-    // here (the list and the form are never split), so this checks it still fits a short window.
-    Scenario("placeholder-bottom", width = 900, height = 200, state = KatachiToolWindowState.Placeholder),
-)
+/** One PNG per scenario × layout × theme. */
+private data class Render(val scenario: Scenario, val layout: String, val width: Int, val height: Int)
+
+private val renders: List<Render> = scenarios.flatMap { s ->
+    listOf(
+        Render(s, "narrow", NARROW_WIDTH, s.narrowHeight),
+        Render(s, "wide", WIDE_WIDTH, s.wideHeight),
+    )
+}
 
 private val themes = listOf("light" to false, "dark" to true)
 
@@ -66,10 +65,10 @@ fun main(args: Array<String>) {
     PreviewChecks.cleanManagedOutputs(outDir)
     outDir.mkdirs()
 
-    val expected = scenarios.flatMap { s -> themes.map { (theme, _) -> "preview-${s.name}-$theme.png" } }.toSet()
-    for (scenario in scenarios) {
+    val expected = renders.flatMap { r -> themes.map { (theme, _) -> fileNameOf(r, theme) } }.toSet()
+    for (render in renders) {
         for ((theme, dark) in themes) {
-            renderScenario(scenario, dark, File(outDir, "preview-${scenario.name}-$theme.png"))
+            renderScenario(render, dark, File(outDir, fileNameOf(render, theme)))
         }
     }
     writeGallery(outDir, expected.sorted())
@@ -112,13 +111,18 @@ fun main(args: Array<String>) {
     }
 }
 
+private fun fileNameOf(render: Render, theme: String) = "preview-${render.scenario.name}-${render.layout}-$theme.png"
+
 /** Standalone Jewel Int UI theme + renderComposeScene -> PNG. */
-private fun renderScenario(scenario: Scenario, dark: Boolean, out: File) {
-    val image = renderComposeScene(width = scenario.width, height = scenario.height) {
+private fun renderScenario(render: Render, dark: Boolean, out: File) {
+    val ui = uiStateOf(render.scenario.state, JapaneseKatachiStrings, PREVIEW_NOW)
+    val image = renderComposeScene(width = render.width, height = render.height) {
         IntUiTheme(isDark = dark) {
-            // Paint the whole root with the panel background; the transparent-corner gate needs it.
-            Box(Modifier.fillMaxSize().background(JewelTheme.globalColors.panelBackground)) {
-                KatachiToolWindowContent(scenario.state)
+            CompositionLocalProvider(LocalStaticRendering provides true) {
+                // Paint the whole root with the panel background; the transparent-corner gate needs it.
+                Box(Modifier.fillMaxSize().background(JewelTheme.globalColors.panelBackground)) {
+                    KatachiToolWindowContent(ui, onIntent = {})
+                }
             }
         }
     }

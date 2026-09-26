@@ -31,6 +31,8 @@ dependencies {
         intellijIdea(libs.versions.intellijIdea.get())
         // Brings the Analysis API (K2), so analyze { } works without further dependencies.
         bundledPlugin("org.jetbrains.kotlin")
+        // Gradle sync data and ExternalSystem runTask. Pairs with <depends>com.intellij.gradle</depends>.
+        bundledPlugin("com.intellij.gradle")
         // Jewel, Compose and Skiko come from the IDE rather than from the plugin. Each line pairs
         // with a <module name="..."/> in plugin.xml.
         bundledModule("intellij.platform.jewel.foundation")
@@ -65,6 +67,48 @@ intellijPlatform {
             // verifyPlugin on CI, or narrow it to "261.*".
             untilBuild = provider { null }
         }
+    }
+}
+
+// The Driver smoke (channel D): starts a real IDE with the built plugin through Starter and drives
+// it from JUnit 5. A source set of its own, as Starter is JUnit 5 only while `test` is JUnit 4.
+// Run on demand with `./gradlew integrationTest` (it opens IDE windows; not part of `check`).
+sourceSets {
+    create("integrationTest") {
+        compileClasspath += sourceSets.main.get().output
+        runtimeClasspath += sourceSets.main.get().output
+    }
+}
+// The configurations are named by string: accessors are generated only for source sets that exist
+// when the plugins block is applied, and Gradle 9.6 deprecates the `by getting` delegates.
+configurations.getByName("integrationTestImplementation") { extendsFrom(configurations.testImplementation.get()) }
+dependencies {
+    intellijPlatform { testFramework(TestFrameworkType.Starter, configurationName = "integrationTestImplementation") }
+    "integrationTestImplementation"(libs.junit.jupiter)
+    "integrationTestRuntimeOnly"(libs.junit.platform.launcher)
+    "integrationTestImplementation"(libs.kodein.di)
+    "integrationTestImplementation"(libs.kotlinx.coroutines.core)
+    // Starter brings kotlin-reflect 2.3.20 while Kodein pulls stdlib 2.1; reflect then fails on a
+    // class the older stdlib lacks (KotlinGenericDeclaration). Only this JVM runs it, not the plugin.
+    "integrationTestRuntimeOnly"(libs.kotlin.stdlib.starter)
+    // The Compose Compiler plugin runs on every compilation and fails without a runtime to see;
+    // the smoke has no Composables, so the runtime is there for the compiler only.
+    "integrationTestCompileOnly"(compose.runtime)
+}
+intellijPlatformTesting.testIdeUi.register("integrationTest") {
+    task {
+        // `registering` alone does not make testIdeUi pick up the source set: connect its classes.
+        val integrationTestSourceSet = sourceSets.getByName("integrationTest")
+        testClassesDirs = integrationTestSourceSet.output.classesDirs
+        classpath = integrationTestSourceSet.runtimeClasspath
+        useJUnitPlatform()
+        // The sample the smoke opens, and the IDE it starts (the build SDK's own distribution).
+        systemProperty("katachi.smoke.sampleProject", rootDir.resolve("../sample/jvm").canonicalPath)
+        systemProperty("katachi.smoke.ideHome", intellijPlatform.platformPath.toString())
+        // Where the smoke copies the repository to open sample/jvm without touching the original.
+        systemProperty("katachi.smoke.workDir", layout.buildDirectory.dir("integrationTest").get().asFile.path)
+        // Starter reports through Allure, which otherwise writes allure-results/ into this directory.
+        systemProperty("allure.results.directory", layout.buildDirectory.dir("integrationTest/allure-results").get().asFile.path)
     }
 }
 

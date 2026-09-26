@@ -1,0 +1,50 @@
+{
+  "templates": [
+    {
+      "roleName": "ui/Component",
+      "title": "共通コンポーネント",
+      "summary": ":ui モジュールの component package に置く、feature をまたいで使う部品",
+      "parameterNames": ["name", "previewText"],
+      "fileCount": 1
+    }
+  ],
+  "details": [
+    {
+      "roleName": "ui/Component",
+      "title": "共通コンポーネント",
+      "summary": ":ui モジュールの component package に置く、feature をまたいで使う部品",
+      "parameters": [
+        {
+          "name": "name",
+          "kind": "StringParameter",
+          "typeName": "String",
+          "default": null,
+          "acceptedValues": [],
+          "isRequired": true,
+          "previewValue": "${name}",
+          "previewValueSource": "Placeholder"
+        },
+        {
+          "name": "previewText",
+          "kind": "StringParameter",
+          "typeName": "String",
+          "default": "${name}",
+          "acceptedValues": [],
+          "isRequired": false,
+          "previewValue": "${previewText}",
+          "previewValueSource": "Placeholder"
+        }
+      ],
+      "files": [
+        {
+          "fileName": "App${name}.kt",
+          "path": "ui/src/main/kotlin/com/example/sample/ui/component/App${name}.kt",
+          "unresolvedPatterns": [],
+          "content": "package com.example.sample.ui.component\n\nimport androidx.compose.material3.Text\nimport androidx.compose.runtime.Composable\nimport androidx.compose.ui.Modifier\nimport androidx.compose.ui.tooling.preview.Preview\nimport com.example.sample.ui.preview.PreviewRoot\n\n/** Shared ${name}, called by feature modules instead of Material's own. */\n@Composable\nfun App${name}(\n    text: String,\n    modifier: Modifier = Modifier,\n) {\n    Text(text = text, modifier = modifier)\n}\n\n@Preview(showBackground = true)\n@Composable\nprivate fun App${name}Preview() = PreviewRoot {\n    App${name}(text = \"${previewText}\")\n}\n"
+        }
+      ],
+      "branches": [],
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=ui/Component --arg name=Name"
+    }
+  ]
+}

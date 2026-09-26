@@ -1,0 +1,368 @@
+{
+  "schemaHint": "unknown keys are ignored",
+  "templates": [
+    {
+      "roleName": "data/Repository",
+      "title": "リポジトリ",
+      "summary": "データの取得口",
+      "parameterNames": [
+        "name",
+        "item",
+        "withImpl",
+        "implSuffix"
+      ],
+      "fileCount": 2
+    },
+    {
+      "roleName": "domain/UseCase",
+      "title": "ユースケース",
+      "summary": null,
+      "parameterNames": [
+        "name",
+        "visibility",
+        "retries",
+        "withTest"
+      ],
+      "fileCount": 1
+    },
+    {
+      "roleName": "ui/Screen",
+      "title": null,
+      "summary": "画面",
+      "parameterNames": [
+        "name"
+      ],
+      "fileCount": 1
+    },
+    {
+      "roleName": "misc/Broken",
+      "title": null,
+      "summary": null,
+      "parameterNames": [
+        "name"
+      ],
+      "fileCount": null
+    },
+    {
+      "roleName": "misc/Future",
+      "title": "未来の型",
+      "summary": null,
+      "parameterNames": [
+        "items"
+      ],
+      "fileCount": 1
+    },
+    {
+      "roleName": "misc/NoArgs",
+      "title": null,
+      "summary": null,
+      "parameterNames": [],
+      "fileCount": 1
+    },
+    {
+      "roleName": "misc/Label",
+      "title": "ラベル \"引用\"\n改行",
+      "summary": "C:\\path\\to\t/タブ",
+      "parameterNames": [
+        "name",
+        "alias"
+      ],
+      "fileCount": 1
+    }
+  ],
+  "details": [
+    {
+      "roleName": "data/Repository",
+      "title": "リポジトリ",
+      "summary": "データの取得口",
+      "parameters": [
+        {
+          "name": "name",
+          "kind": "StringParameter",
+          "typeName": "String",
+          "default": null,
+          "acceptedValues": [],
+          "isRequired": true,
+          "previewValue": "${name}",
+          "previewValueSource": "Placeholder",
+          "futureKey": "ignored"
+        },
+        {
+          "name": "item",
+          "kind": "StringParameter",
+          "typeName": "String",
+          "default": "String",
+          "acceptedValues": [],
+          "isRequired": false,
+          "previewValue": "${item}",
+          "previewValueSource": "Placeholder"
+        },
+        {
+          "name": "withImpl",
+          "kind": "BooleanParameter",
+          "typeName": "Boolean",
+          "default": "true",
+          "acceptedValues": [
+            "true",
+            "false"
+          ],
+          "isRequired": false,
+          "previewValue": "true",
+          "previewValueSource": "Default"
+        },
+        {
+          "name": "implSuffix",
+          "kind": "StringParameter",
+          "typeName": "String",
+          "default": "Impl",
+          "acceptedValues": [],
+          "isRequired": false,
+          "previewValue": "${implSuffix}",
+          "previewValueSource": "Placeholder"
+        }
+      ],
+      "files": [
+        {
+          "fileName": "${name}Repository.kt",
+          "path": "data/src/main/kotlin/com/example/data/${name}Repository.kt",
+          "unresolvedPatterns": [],
+          "content": "package com.example.data\n\ninterface ${name}Repository\n"
+        },
+        {
+          "fileName": "${name}Repository${implSuffix}.kt",
+          "path": "data/src/main/kotlin/com/example/data/${name}Repository${implSuffix}.kt",
+          "unresolvedPatterns": [],
+          "content": "package com.example.data\n\nclass ${name}Repository${implSuffix} : ${name}Repository\n"
+        }
+      ],
+      "branches": [
+        {
+          "parameterName": "withImpl",
+          "value": "false",
+          "addedFiles": [],
+          "removedFiles": [
+            "${name}Repository${implSuffix}.kt"
+          ],
+          "addedParameters": [],
+          "removedParameters": [
+            "implSuffix"
+          ]
+        }
+      ],
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=data/Repository --arg name=Name"
+    },
+    {
+      "roleName": "domain/UseCase",
+      "title": "ユースケース",
+      "summary": null,
+      "parameters": [
+        {
+          "name": "name",
+          "kind": "StringParameter",
+          "typeName": "String",
+          "default": null,
+          "acceptedValues": [],
+          "isRequired": true,
+          "previewValue": "${name}",
+          "previewValueSource": "Placeholder"
+        },
+        {
+          "name": "visibility",
+          "kind": "EnumParameter",
+          "typeName": "Visibility",
+          "default": "Public",
+          "acceptedValues": [
+            "Public",
+            "Internal"
+          ],
+          "isRequired": false,
+          "previewValue": "Public",
+          "previewValueSource": "Default"
+        },
+        {
+          "name": "retries",
+          "kind": "IntParameter",
+          "typeName": "Int",
+          "default": "3",
+          "acceptedValues": [],
+          "isRequired": false,
+          "previewValue": "3",
+          "previewValueSource": "Default"
+        },
+        {
+          "name": "withTest",
+          "kind": "BooleanParameter",
+          "typeName": "Boolean",
+          "default": "false",
+          "acceptedValues": [
+            "true",
+            "false"
+          ],
+          "isRequired": false,
+          "previewValue": "false",
+          "previewValueSource": "Default"
+        }
+      ],
+      "files": [
+        {
+          "fileName": "${name}UseCase.kt",
+          "path": "domain/src/main/kotlin/com/example/domain/${name}UseCase.kt",
+          "unresolvedPatterns": [],
+          "content": "class ${name}UseCase\n"
+        }
+      ],
+      "branches": [
+        {
+          "parameterName": "visibility",
+          "value": "Internal",
+          "addedFiles": [
+            "${name}InternalApi.kt"
+          ],
+          "removedFiles": [],
+          "addedParameters": [],
+          "removedParameters": []
+        },
+        {
+          "parameterName": "withTest",
+          "value": "true",
+          "addedFiles": [
+            "${name}UseCaseTest.kt"
+          ],
+          "removedFiles": [],
+          "addedParameters": [
+            {
+              "name": "testRunner",
+              "kind": "StringParameter",
+              "typeName": "String",
+              "default": "JUnit",
+              "acceptedValues": [],
+              "isRequired": false,
+              "previewValue": "${testRunner}",
+              "previewValueSource": "Placeholder"
+            }
+          ],
+          "removedParameters": []
+        }
+      ],
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=domain/UseCase --arg name=Name"
+    },
+    {
+      "roleName": "ui/Screen",
+      "title": null,
+      "summary": "画面",
+      "parameters": [
+        {
+          "name": "name",
+          "kind": "StringParameter",
+          "typeName": "String",
+          "default": null,
+          "acceptedValues": [],
+          "isRequired": true,
+          "previewValue": "${name}",
+          "previewValueSource": "Placeholder"
+        }
+      ],
+      "files": [
+        {
+          "fileName": "${name}Screen.kt",
+          "path": null,
+          "unresolvedPatterns": [
+            "ui/src/main/kotlin/**/${name}Screen.kt"
+          ],
+          "content": "fun ${name}Screen() = \"quoted\"\n"
+        }
+      ],
+      "branches": [],
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=ui/Screen --arg name=Name"
+    },
+    {
+      "roleName": "misc/Future",
+      "title": "未来の型",
+      "summary": null,
+      "parameters": [
+        {
+          "name": "items",
+          "kind": "ListParameter",
+          "typeName": "List<String>",
+          "default": null,
+          "acceptedValues": [],
+          "isRequired": true,
+          "previewValue": "[]",
+          "previewValueSource": "SomethingNew"
+        }
+      ],
+      "files": [
+        {
+          "fileName": "Future.kt",
+          "path": "Future.kt",
+          "unresolvedPatterns": [],
+          "content": ""
+        }
+      ],
+      "branches": [],
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=misc/Future"
+    },
+    {
+      "roleName": "misc/NoArgs",
+      "title": null,
+      "summary": null,
+      "parameters": [],
+      "files": [
+        {
+          "fileName": "README.md",
+          "path": "README.md",
+          "unresolvedPatterns": [],
+          "content": "# 見出し\n"
+        }
+      ],
+      "branches": [],
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=misc/NoArgs"
+    },
+    {
+      "roleName": "misc/Label",
+      "title": "ラベル \"引用\"\n改行",
+      "summary": "C:\\path\\to\t/タブ",
+      "parameters": [
+        {
+          "name": "name",
+          "kind": "StringParameter",
+          "typeName": "String",
+          "default": null,
+          "acceptedValues": [],
+          "isRequired": true,
+          "previewValue": "${name}",
+          "previewValueSource": "Placeholder"
+        },
+        {
+          "name": "alias",
+          "kind": "StringParameter",
+          "typeName": "String",
+          "default": "${name}",
+          "acceptedValues": [],
+          "isRequired": false,
+          "previewValue": "${alias}",
+          "previewValueSource": "Placeholder"
+        }
+      ],
+      "files": [
+        {
+          "fileName": "${alias}.txt",
+          "path": "labels/${alias}.txt",
+          "unresolvedPatterns": [],
+          "content": "say \"${name}\"\n\\end\u0001\n"
+        }
+      ],
+      "branches": [],
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=misc/Label --arg name=Name"
+    },
+    {
+      "roleName": "ghost/Orphan",
+      "title": null,
+      "summary": null,
+      "parameters": [],
+      "files": [],
+      "branches": [],
+      "exampleCommand": "x"
+    }
+  ]
+}

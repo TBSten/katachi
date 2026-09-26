@@ -1,0 +1,17 @@
+> Task :arch-a:generateKatachiEntryPoint UP-TO-DATE
+> Task :arch-a:compileTestKotlin UP-TO-DATE
+> Task :arch-a:katachiTemplate
+  [template] Generating 2 files under file:///__ROOT__
+  [template] Overwriting 1 of 2 files: file:///__ROOT__/data/src/main/kotlin/com/example/data/UserRepository.kt
+  [template] Wrote file:///__ROOT__/data/src/main/kotlin/com/example/data/UserRepository.kt
+  [template] Wrote file:///__ROOT__/data/src/main/kotlin/com/example/data/UserRepositoryImpl.kt
+
+========================================
+[3/3] Katachi processor run: 1 succeeded, 0 failed
+
+[OK] template
+
+========================================
+
+BUILD SUCCESSFUL in 3s
+3 actionable tasks: 1 executed, 2 up-to-date

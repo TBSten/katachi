@@ -20,9 +20,21 @@ jewel = "0.37.0"
 jewelForIde = "261.26222.65"
 # The platform stopped providing JUnit 4 in 2.0.0-rc1, and BasePlatformTestCase is JUnit 4 based.
 junit4 = "4.13.2"
+# The Driver smoke only (integrationTest): Starter is JUnit 5 based and resolves Kodein at runtime.
+junitJupiter = "5.11.4"
+junitPlatformLauncher = "1.11.4"
+kodein = "7.20.2"
+kotlinxCoroutines = "1.10.1"
+# The stdlib matching the kotlin-reflect that Starter depends on. Only on the smoke's runtime classpath.
+kotlinStdlibStarter = "2.3.20-RC2"
 
 [libraries]
 junit4 = { module = "junit:junit", version.ref = "junit4" }
+junit-jupiter = { module = "org.junit.jupiter:junit-jupiter", version.ref = "junitJupiter" }
+junit-platform-launcher = { module = "org.junit.platform:junit-platform-launcher", version.ref = "junitPlatformLauncher" }
+kodein-di = { module = "org.kodein.di:kodein-di-jvm", version.ref = "kodein" }
+kotlin-stdlib-starter = { module = "org.jetbrains.kotlin:kotlin-stdlib", version.ref = "kotlinStdlibStarter" }
+kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm", version.ref = "kotlinxCoroutines" }
 
 [plugins]
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }

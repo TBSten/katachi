@@ -1,0 +1,15 @@
+> Task :arch-a:generateKatachiEntryPoint UP-TO-DATE
+> Task :arch-a:compileTestKotlin UP-TO-DATE
+> Task :arch-a:katachiTemplate
+[32m  [template] Generating 1 files under file:///__ROOT__[0m
+[1m  [template] Wrote file:///__ROOT__/data/UserRepository.kt[0m
+
+========================================
+[3/3] Katachi processor run: 1 succeeded, 0 failed
+
+[32m[OK] template[0m
+
+========================================
+
+BUILD SUCCESSFUL in 3s
+3 actionable tasks: 1 executed, 2 up-to-date

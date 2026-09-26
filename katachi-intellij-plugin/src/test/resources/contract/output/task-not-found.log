@@ -1,0 +1,9 @@
+FAILURE: Build failed with an exception.
+
+* What went wrong:
+Cannot locate tasks that match ':arch-a:katachiInternalTemplatesJson' as task 'katachiInternalTemplatesJson' not found in project ':arch-a'.
+
+* Try:
+> Run gradle tasks to get a list of available tasks.
+
+BUILD FAILED in 1s

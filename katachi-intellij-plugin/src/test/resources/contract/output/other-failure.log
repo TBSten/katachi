@@ -1,0 +1,9 @@
+> Task :arch-a:katachiInternalTemplatesJson FAILED
+
+FAILURE: Build failed with an exception.
+
+* What went wrong:
+Could not resolve all files for configuration ':arch-a:testRuntimeClasspath'.
+> Could not find me.tbsten.katachi:katachi:9.9.9.
+
+BUILD FAILED in 1s

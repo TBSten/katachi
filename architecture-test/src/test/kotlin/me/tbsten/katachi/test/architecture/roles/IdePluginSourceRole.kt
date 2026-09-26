@@ -20,6 +20,11 @@ fun DeclarationContainerScope.idePluginSource() = "IdePluginSource" {
         "katachi-intellij-plugin" / "src" {
             "main" / "kotlin" / "me/tbsten/katachi/intellij" / "**" / "*".ktFile()
             "main" / "resources" / "META-INF" / "plugin.xml".file()
+            "main" / "resources" / "META-INF" / "pluginIcon.svg".file()
+            "main" / "resources" / "META-INF" / "pluginIcon_dark.svg".file()
+            "main" / "resources" / "icons" / "*.svg".file()
+            "main" / "resources" / "messages" / "KatachiBundle.properties".file()
+            "main" / "resources" / "messages" / "KatachiBundle_*.properties".file()
             "shared" / "kotlin" / "me/tbsten/katachi/intellij" / "**" / "*".ktFile()
         }
     }

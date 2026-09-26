@@ -2,13 +2,14 @@
     <id>me.tbsten.katachi.intellij</id>
     <name>katachi</name>
     <vendor url="https://github.com/tbsten/katachi">tbsten</vendor>
-    <!-- TODO: rewrite once the template list and the generation form exist. -->
     <description><![CDATA[
         Generate code from the templates of your katachi architecture, from a tool window.
         Pick a template, fill in its arguments and press Generate; katachi's Gradle task writes the files.
     ]]></description>
 
     <depends>com.intellij.modules.platform</depends>
+    <!-- Detection reads the Gradle sync data; loading and generating run Gradle through ExternalSystem. -->
+    <depends>com.intellij.gradle</depends>
     <!-- The Analysis API. TODO: make it optional (config-file) if nothing ends up needing it. -->
     <depends>org.jetbrains.kotlin</depends>
 
@@ -28,8 +29,19 @@
         <supportsKotlinPluginMode supportsK2="true"/>
     </extensions>
 
+    <resource-bundle>messages.KatachiBundle</resource-bundle>
+
     <extensions defaultExtensionNs="com.intellij">
         <!-- The id is the tool window's title; the screen spec calls it `katachi`. -->
-        <toolWindow id="katachi" anchor="right" factoryClass="me.tbsten.katachi.intellij.KatachiToolWindowFactory"/>
+        <toolWindow id="katachi" anchor="right" icon="/icons/katachi.svg" factoryClass="me.tbsten.katachi.intellij.ide.KatachiToolWindowFactory"/>
+        <notificationGroup id="katachi" displayType="BALLOON" bundle="messages.KatachiBundle" key="notification.group"/>
+        <projectConfigurable parentId="tools" id="me.tbsten.katachi.intellij.settings" instance="me.tbsten.katachi.intellij.ide.KatachiConfigurable"
+                             bundle="messages.KatachiBundle" key="settings.displayName" nonDefaultProject="true"/>
+        <!-- The "definition changed" banner (E-44). -->
+        <vfs.asyncListener implementation="me.tbsten.katachi.intellij.ide.DefinitionChangeWatcher"/>
     </extensions>
+
+    <actions>
+        <action id="katachi.GenerateFromTemplate" class="me.tbsten.katachi.intellij.ide.GenerateFromTemplateAction" icon="/icons/katachi.svg"/>
+    </actions>
 </idea-plugin>

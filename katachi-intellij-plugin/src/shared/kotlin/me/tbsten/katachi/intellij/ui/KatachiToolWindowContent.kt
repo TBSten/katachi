@@ -1,43 +1,29 @@
 package me.tbsten.katachi.intellij.ui
 
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
-import org.jetbrains.jewel.ui.component.Text
+import me.tbsten.katachi.intellij.presentation.BodyUi
+import me.tbsten.katachi.intellij.presentation.KatachiIntent
+import me.tbsten.katachi.intellij.presentation.KatachiUiState
 
 /**
- * What the `katachi` tool window shows. PSI-free, so that the preview can build it by hand.
- *
- * TODO: grow into the states of the screen spec (initialising, loading, list + form, generating,
- *  result, empty, error).
- */
-internal sealed interface KatachiToolWindowState {
-    /** Shown until the template list is implemented. */
-    data object Placeholder : KatachiToolWindowState
-}
-
-/**
- * The root Composable of the tool window.
+ * The root Composable of the `katachi` tool window: draws [state] and sends what the user does to
+ * [onIntent]. It decides nothing; every text and every enabled state comes worded in [state].
  *
  * Compiled both into the plugin (bundled Jewel) and into the preview (standalone Jewel), so it may
- * only use API present in both. Labels are English: Japanese text is not yet verified to render
- * in the headless preview.
+ * only use API present in both.
  */
 @Composable
-internal fun KatachiToolWindowContent(state: KatachiToolWindowState, modifier: Modifier = Modifier) {
-    Column(
-        modifier = modifier.fillMaxSize().padding(16.dp),
-        verticalArrangement = Arrangement.spacedBy(8.dp),
-    ) {
-        when (state) {
-            KatachiToolWindowState.Placeholder -> {
-                Text("katachi")
-                Text("Coming soon: pick a template, fill in its arguments and generate the files.")
-            }
+internal fun KatachiToolWindowContent(state: KatachiUiState, onIntent: (KatachiIntent) -> Unit, modifier: Modifier = Modifier) {
+    Box(modifier.fillMaxSize()) {
+        when (val body = state.body) {
+            is BodyUi.Initializing -> InitializingView(body)
+            is BodyUi.InitialLoading -> InitialLoadingView(body, onIntent)
+            is BodyUi.Empty -> MessageView(body.message, onIntent)
+            is BodyUi.Error -> MessageView(body.message, onIntent)
+            is BodyUi.Listing -> TemplateListPane(body.list, onIntent)
         }
     }
 }

@@ -1,0 +1,5 @@
+> Task :arch-a:generateKatachiEntryPoint UP-TO-DATE
+> Task :arch-a:compileTestKotlin UP-TO-DATE
+> Task :arch-a:katachiTemplate
+  [template] Generating 2 files under file:///__ROOT__
+  [template] Wrote file:///__ROOT__/data/src/main/kotlin/com/example/data/UserRepository.kt

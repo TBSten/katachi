@@ -1,0 +1,13 @@
+> Task :arch-a:generateKatachiEntryPoint UP-TO-DATE
+> Task :arch-a:compileTestKotlin UP-TO-DATE
+> Task :arch-a:katachiTemplate
+
+========================================
+[3/3] Katachi processor run: 1 succeeded, 0 failed
+
+[OK] template
+
+========================================
+
+BUILD SUCCESSFUL in 3s
+3 actionable tasks: 1 executed, 2 up-to-date

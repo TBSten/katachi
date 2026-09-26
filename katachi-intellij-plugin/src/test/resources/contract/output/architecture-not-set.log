@@ -1,0 +1,9 @@
+> Task :arch-a:generateKatachiEntryPoint FAILED
+
+FAILURE: Build failed with an exception.
+
+* What went wrong:
+Execution failed for task ':arch-a:generateKatachiEntryPoint'.
+> katachi { architecture = ... } is not set in this module's build.gradle.kts. Set it to the fully qualified name of your architecture, for example `katachi { architecture = "com.example.projectArchitecture" }`, then run the task again.
+
+BUILD FAILED in 1s
