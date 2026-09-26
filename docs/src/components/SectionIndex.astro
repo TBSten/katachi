@@ -13,26 +13,38 @@ import { CardGrid, LinkCard } from '@astrojs/starlight/components';
  * 消えない、という側に倒してある。
  */
 interface Props {
-	/** 収集するディレクトリの slug。`recipes/index.mdx` なら `recipes`。 */
+	/** 収集するディレクトリの slug。`recipes/index.mdx` なら `recipes`。locale（`ja/`）は付けない — 表示中のページの locale を自動で足す。 */
 	dir: string;
 }
-
-const prefix = `${Astro.props.dir}/`;
 
 // starlight-llms-txt が `/llms-full.txt` を組むときは Starlight のルート外でページを
 // レンダリングするので、route data が無い。Starlight 自身がこのケースを try/catch で
 // 受けるよう案内している。この経路だけ並び順が slug 順に落ちるが、text の一括ダンプ
 // なので順番は問題にならない。
 let sidebar: typeof Astro.locals.starlightRoute.sidebar | undefined;
+let locale: string | undefined;
 try {
 	sidebar = Astro.locals.starlightRoute.sidebar;
+	locale = Astro.locals.starlightRoute.locale;
 } catch {
 	sidebar = undefined;
+	locale = undefined;
 }
 
 // `base` を設定すると（公開時に想定: `base: '/katachi'`）サイドバーの href に base が付く。
 // content collection の id には付かないので、比べる前に剥がす。
 const base = import.meta.env.BASE_URL;
+
+// 日本語のページの id は `ja/recipes/...` のように locale が前に付く。英語（root）には付かない。
+// route data が無い経路（上の llms の場合）では、URL の先頭の locale で見分ける。
+const localeOf = (pathname: string) => {
+	const first = (pathname.startsWith(base) ? pathname.slice(base.length) : pathname)
+		.replace(/^\//, '')
+		.split('/')[0];
+	return first === 'ja' ? 'ja' : undefined;
+};
+const pageLocale = locale ?? localeOf(Astro.url.pathname);
+const prefix = (pageLocale ? pageLocale + '/' : '') + Astro.props.dir + '/';
 const slugOf = (href: string) =>
 	(href.startsWith(base) ? href.slice(base.length) : href).replace(/^\/|\/$/g, '');
 
@@ -46,8 +58,8 @@ const walk = (entries: NonNullable<typeof sidebar>) => {
 };
 if (sidebar) walk(sidebar);
 
-// `prefix` で始まる id だけを採る。索引ページ自身の id は `recipes`（`/` で終わらない）
-// なので、この条件だけで自然に外れる。
+// `prefix` で始まる id だけを採る。索引ページ自身の id は `recipes` / `ja/recipes`（`/` で終わらない）
+// なので、この条件だけで自然に外れる。英語のページの prefix `recipes/` は `ja/recipes/...` には当たらない。
 const pages = (
 	await getCollection('docs', (entry) => entry.id.startsWith(prefix) && !entry.data.draft)
 ).sort(
@@ -63,7 +75,7 @@ const pages = (
 			<LinkCard
 				title={page.data.title}
 				description={page.data.description}
-				href={`${base}${page.id}/`.replace(/\/{2,}/g, '/')}
+				href={`${base}/${page.id}/`.replace(/\/{2,}/g, '/')}
 			/>
 		))
 	}
