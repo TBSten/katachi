@@ -28,13 +28,13 @@ ui group と分けてあるのは、増え方が違うからです。feature は
 3つの役割はすべて `commonMain` です。画面まわりに `androidMain` / `iosMain` は1つも
 ありません。プラットフォーム差は data group の PlatformImplementation に閉じています。
 
-| 役割 | 概要 |
+| Role | Summary |
 |---|---|
 | [画面](./Screen.md) | 1つの画面の @Composable。ViewModel の StateFlow を購読し、Component を組み合わせて描く |
 | [ViewModel](./ViewModel.md) | 画面の状態を持つ androidx.lifecycle.ViewModel。Repository から取得した値を UiState に変換し、StateFlow で公開する |
 | [ルート](./Route.md) | 画面を navigation の Destination に結びつけ、ViewModel の生成も引き受ける |
 
-## このグループの配置
+## Placement in this group
 
 ```
 :feature:*

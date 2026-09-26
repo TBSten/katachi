@@ -23,14 +23,14 @@ katachi の定義、それを読む自作プロセッサ3本、そして生成�
 ここに置いてはいけないのは、アプリの本体コードです。`:architecture-test` は
 main ソースセットを持ちません。
 
-| 役割 | 概要 |
+| Role | Summary |
 |---|---|
 | [アーキテクチャ定義](./ArchitectureDefinition.md) | katachi の DSL で書かれた役割の定義と、それを assert するテスト |
 | [プロセッサ](./Processor.md) | このプロジェクトが自分で書いた ArchitectureProcessor。定義を読んで何かを作る |
 | [生成ドキュメント](./GeneratedDocumentation.md) | この定義から書き出され、リポジトリにコミットされる Markdown |
 | [レイアウトスナップショット](./LayoutSnapshot.md) | `layout { }` を平坦化した結果を記録したテキスト。katachi 自身の自己検証用 |
 
-## このグループの配置
+## Placement in this group
 
 ```
 :architecture-test

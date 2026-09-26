@@ -43,14 +43,14 @@ push するとリポジトリルートの `checkSampleAndroid` が赤くなる�
 してもこの行は変わらない。索引だけワイルドカード無しで別に書いてあり、そちらは
 `required`。1度も生成していない状態がそこで見つかる。
 
-## 配置場所
+## Placement
 
-| モジュール | パス | 使い分け |
+| Module | Path | When to use |
 |---|---|---|
 |  | `docs/README.md` |  |
 |  | `docs/**/*.md` |  |
 
-## 例
+## Examples
 
 - `docs/README.md` ... 全ページの索引と、group ごとの一覧
 - `docs/feature/Screen.md` ... 役割1つのページ

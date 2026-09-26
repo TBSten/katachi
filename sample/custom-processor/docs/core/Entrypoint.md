@@ -23,12 +23,12 @@
 この役割の `layout { }` にはワイルドカードが無いので、`Main.kt` が1つあることを
 要求します。消せば `[MissingFile]` が出ます。
 
-## 配置場所
+## Placement
 
-| モジュール | パス | 使い分け |
+| Module | Path | When to use |
 |---|---|---|
 | `:` | `src/main/kotlin/**/Main.kt` |  |
 
-## 例
+## Examples
 
 - `Main.kt` ... プロセスの起動点

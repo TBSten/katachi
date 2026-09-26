@@ -1,4 +1,4 @@
-# katachi-sample-android ドキュメント
+# katachi-sample-android documentation
 
 Compose で書かれた Android アプリを、katachi で形から説明したもの。このページ以下はすべて `katachiDocs` が生成したもので、手では書かない。
 

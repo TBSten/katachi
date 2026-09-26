@@ -17,7 +17,7 @@ import me.tbsten.katachi.dsl.kotlin.ktFile
 import me.tbsten.katachi.dsl.kotlin.ktsFile
 
 /**
- * The `## 配置場所` table: which declarations get a row, and what lands in each column.
+ * The `## Placement` table: which declarations get a row, and what lands in each column.
  *
  * NOTE: このファイルのパッケージを `me.tbsten.katachi.docs` にしてはいけない。
  * captureDeclarationSite() がライブラリ自身のフレームとして読み飛ばしてしまい、
@@ -138,7 +138,7 @@ class PlacementSpec : FreeSpec({
         }
     }
 
-    "使い分けの列" - {
+    "When to use の列" - {
         "module { } に書いた description が、その下の宣言の行に出る" {
             val arch = architecture {
                 "domain".group {
@@ -241,10 +241,10 @@ class PlacementSpec : FreeSpec({
             arch.placementRows("domain/UseCase.md").size shouldBe 1
         }
 
-        "layout { } が空なら配置場所の節ごと出ない" {
+        "layout { } が空なら## Placement の節ごと出ない" {
             val arch = architecture { "domain".group { "UseCase" { } } }
 
-            arch.page("domain/UseCase.md") shouldNotContain "## 配置場所"
+            arch.page("domain/UseCase.md") shouldNotContain "## Placement"
         }
     }
 })

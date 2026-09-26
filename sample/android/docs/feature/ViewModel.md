@@ -26,13 +26,13 @@ Repository はコンストラクタ引数で受け取り、既定値に本番実
   Android には触らない
 - 画面のレイアウト。描くのは Screen の仕事
 
-## 配置場所
+## Placement
 
-| モジュール | パス | 使い分け |
+| Module | Path | When to use |
 |---|---|---|
 | `:feature:*` | `src/main/kotlin/**/<name>ViewModel.kt` |  |
 
-## 例
+## Examples
 
 - `HomeViewModel` ... ホーム画面の状態
 - `SettingsViewModel` ... 設定画面の状態

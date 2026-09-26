@@ -22,13 +22,13 @@ HomeViewModel という型の存在を知らずに画面を出せます。依存
 `commonMain` 固定にしてあるのは、Android の `AppRoot` からも、将来 `app/ios` が
 `ComposeUIViewController` を持ったときにも、同じ Route を呼べるようにするためです。
 
-## 配置場所
+## Placement
 
-| モジュール | パス | 使い分け |
+| Module | Path | When to use |
 |---|---|---|
 | `:feature:*` | `src/commonMain/kotlin/**/<name>Route.kt` |  |
 
-## 例
+## Examples
 
 - `HomeRoute` ... ホーム画面の遷移先
 - `SettingsRoute` ... 設定画面の遷移先

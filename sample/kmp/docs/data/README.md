@@ -23,12 +23,12 @@ KMP のプラットフォーム差をこの group に閉じ込めているのが
 - テスト用の偽実装。`FakeUserRepository` は `:testing` にあります
 - `@Composable`。`:data` のビルドスクリプトに Compose のプラグインは入っていません
 
-| 役割 | 概要 |
+| Role | Summary |
 |---|---|
 | [リポジトリ](./Repository.md) | :data モジュールの user package。データの取得口で、インターフェースと実装の2つの置き方を持つ |
 | [プラットフォーム実装](./PlatformImplementation.md) | :data モジュールの platform package。commonMain の expect 宣言と、androidMain / iosMain の actual 実装が同じ package に揃う |
 
-## このグループの配置
+## Placement in this group
 
 ```
 :data

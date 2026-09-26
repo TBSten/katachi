@@ -28,13 +28,13 @@ ViewModel を作らないと描けないものと、状態を渡せば描ける�
 共有するためです。プラットフォームで挙動が変わる処理が要るなら、画面ではなく `:data` の
 PlatformImplementation（expect/actual）に降ろしてください。
 
-## 配置場所
+## Placement
 
-| モジュール | パス | 使い分け |
+| Module | Path | When to use |
 |---|---|---|
 | `:feature:*` | `src/commonMain/kotlin/**/<name>Screen.kt` |  |
 
-## 例
+## Examples
 
 - `HomeScreen` ... ホーム画面
 - `SettingsScreen` ... 設定画面

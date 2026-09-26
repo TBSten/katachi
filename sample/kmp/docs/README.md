@@ -1,4 +1,4 @@
-# katachi-sample-kmp ドキュメント
+# katachi-sample-kmp documentation
 
 ## Document map
 

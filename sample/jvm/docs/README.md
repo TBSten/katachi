@@ -1,4 +1,4 @@
-# Ktor サンプルアプリ ドキュメント
+# Ktor サンプルアプリ documentation
 
 Ktor の小さな HTTP サーバを、katachi で形から説明したもの。このページ以下はすべて `katachiDocs` が生成したもので、手では書かない。
 

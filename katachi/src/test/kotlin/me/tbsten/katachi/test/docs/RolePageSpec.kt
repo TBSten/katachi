@@ -32,7 +32,7 @@ class RolePageSpec : FreeSpec({
 
             arch.page("domain/UseCase.md") shouldBe
                 """
-                [アーキテクチャ](../README.md) / [domain](README.md)
+                [Architecture](../README.md) / [domain](README.md)
 
                 # ユースケース
 
@@ -43,7 +43,7 @@ class RolePageSpec : FreeSpec({
         "title が無ければ識別子が見出しになる" {
             val arch = architecture { "domain".group { "UseCase" { } } }
 
-            arch.page("domain/UseCase.md") shouldBe "[アーキテクチャ](../README.md) / [domain](README.md)\n\n# UseCase\n"
+            arch.page("domain/UseCase.md") shouldBe "[Architecture](../README.md) / [domain](README.md)\n\n# UseCase\n"
         }
     }
 
@@ -67,7 +67,7 @@ class RolePageSpec : FreeSpec({
             withClue("見出しレベルを katachi が動かすと、そのまま保持するという約束が崩れる") {
                 arch.page("domain/UseCase.md") shouldBe
                     """
-                    [アーキテクチャ](../README.md) / [domain](README.md)
+                    [Architecture](../README.md) / [domain](README.md)
 
                     # ユースケース
 
@@ -90,7 +90,7 @@ class RolePageSpec : FreeSpec({
 
             arch.page("domain/UseCase.md") shouldBe
                 """
-                [アーキテクチャ](../README.md) / [domain](README.md)
+                [Architecture](../README.md) / [domain](README.md)
 
                 # UseCase
 
@@ -107,7 +107,7 @@ class RolePageSpec : FreeSpec({
 
             arch.page("domain/UseCase.md") shouldBe
                 """
-                [アーキテクチャ](../README.md) / [domain](README.md)
+                [Architecture](../README.md) / [domain](README.md)
 
                 # UseCase
 
@@ -116,7 +116,7 @@ class RolePageSpec : FreeSpec({
         }
     }
 
-    "## 制約" - {
+    "## Constraints" - {
         "名前を付けた制約だけが並ぶ" {
             val arch = architecture {
                 "domain".group {
@@ -131,7 +131,7 @@ class RolePageSpec : FreeSpec({
             withClue("名前を書けばドキュメントに載る、というのが名前を書く動機になっている") {
                 arch.page("domain/UseCase.md") shouldContain
                     """
-                    ## 制約
+                    ## Constraints
 
                     - invoke を持つこと
                     """.trimIndent()
@@ -187,7 +187,7 @@ class RolePageSpec : FreeSpec({
                 }
             }
 
-            arch.page("domain/UseCase.md") shouldNotContain "## 制約"
+            arch.page("domain/UseCase.md") shouldNotContain "## Constraints"
         }
 
         "他の役割の制約は混ざらない" {
@@ -208,7 +208,7 @@ class RolePageSpec : FreeSpec({
         }
     }
 
-    "## 例" - {
+    "## Examples" - {
         "example が 名前 ... 説明 の形で並ぶ" {
             val arch = architecture {
                 "domain".group {
@@ -221,7 +221,7 @@ class RolePageSpec : FreeSpec({
 
             arch.page("domain/UseCase.md") shouldContain
                 """
-                ## 例
+                ## Examples
 
                 - `GetRecommendedProductListUseCase` ... おすすめの商品リストを取得する
                 - `ToggleProductFavorite` ... 商品のいいね状態を切り替える
@@ -231,7 +231,7 @@ class RolePageSpec : FreeSpec({
         "example が1つも無ければ節ごと出ない" {
             val arch = architecture { "domain".group { "UseCase" { } } }
 
-            arch.page("domain/UseCase.md") shouldNotContain "## 例"
+            arch.page("domain/UseCase.md") shouldNotContain "## Examples"
         }
 
         "description の無い example は名前だけが出て、... と説明は付かない" {
@@ -245,7 +245,7 @@ class RolePageSpec : FreeSpec({
 
             arch.page("domain/UseCase.md") shouldContain
                 """
-                ## 例
+                ## Examples
 
                 - `SignOutUseCase`
                 """.trimIndent()
@@ -263,7 +263,7 @@ class RolePageSpec : FreeSpec({
 
             arch.page("domain/UseCase.md") shouldContain
                 """
-                ## 例
+                ## Examples
 
                 - `GetRecommendedProductListUseCase` ... おすすめの商品リストを取得する
                 - `SignOutUseCase`
@@ -285,7 +285,7 @@ class RolePageSpec : FreeSpec({
 
             arch.page("domain/UseCase.md") shouldBe
                 """
-                [アーキテクチャ](../README.md) / [ドメイン](README.md)
+                [Architecture](../README.md) / [ドメイン](README.md)
 
                 # UseCase
                 """.trimIndent() + "\n"
@@ -302,7 +302,7 @@ class RolePageSpec : FreeSpec({
 
             arch.page("ui/screen/Screen.md") shouldBe
                 """
-                [アーキテクチャ](../../README.md) / [ui](../README.md) / [screen](README.md)
+                [Architecture](../../README.md) / [ui](../README.md) / [screen](README.md)
 
                 # Screen
                 """.trimIndent() + "\n"
@@ -311,7 +311,7 @@ class RolePageSpec : FreeSpec({
         "group に属さない役割はルートの README だけを指す" {
             val arch = architecture { "Changelog" { } }
 
-            arch.page("Changelog.md") shouldBe "[アーキテクチャ](README.md)\n\n# Changelog\n"
+            arch.page("Changelog.md") shouldBe "[Architecture](README.md)\n\n# Changelog\n"
         }
     }
 
@@ -330,7 +330,7 @@ class RolePageSpec : FreeSpec({
 
         arch.page("domain/UseCase.md") shouldBe
             """
-            [アーキテクチャ](../README.md) / [domain](README.md)
+            [Architecture](../README.md) / [domain](README.md)
 
             # UseCase
 
@@ -338,17 +338,17 @@ class RolePageSpec : FreeSpec({
 
             本文。
 
-            ## 配置場所
+            ## Placement
 
-            | モジュール | パス | 使い分け |
+            | Module | Path | When to use |
             |---|---|---|
             |  | `useCase/*UseCase.kt` |  |
 
-            ## 制約
+            ## Constraints
 
             - public であること
 
-            ## 例
+            ## Examples
 
             - `GetUserUseCase` ... ユーザーを取得する
             """.trimIndent() + "\n"

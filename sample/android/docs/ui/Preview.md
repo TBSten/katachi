@@ -23,7 +23,7 @@ Android Studio のプレビューに出すためだけの `private` な `@Compos
 「`PreviewRoot` で包むこと」はどれもファイルの置き場所では表せないので、
 `konsist { }` が入るまでは文章だけの役割になっている。
 
-## 例
+## Examples
 
 - `AppButtonFilledPreview` ... AppButton のプレビュー
 - `HomeScreenContentPreview` ... HomeScreen のプレビュー

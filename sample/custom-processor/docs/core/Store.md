@@ -20,12 +20,12 @@
 `layout { }` は `store` パッケージ直下の `.kt` を認めます。ファイル名は縛っていないので、
 `*Store` という約束はこの文章にあるだけで、機械的には弾かれません。
 
-## 配置場所
+## Placement
 
-| モジュール | パス | 使い分け |
+| Module | Path | When to use |
 |---|---|---|
 | `:` | `src/main/kotlin/**/store/*.kt` |  |
 
-## 例
+## Examples
 
 - `NoteStore` ... メモリ上のノート一覧

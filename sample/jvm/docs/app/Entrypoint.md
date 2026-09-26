@@ -22,12 +22,12 @@
 要求します。消せば `[MissingFile]` が出るので、起動点がどこにも無い状態で
 通り過ぎることはありません。
 
-## 配置場所
+## Placement
 
-| モジュール | パス | 使い分け |
+| Module | Path | When to use |
 |---|---|---|
 | `:` | `src/main/kotlin/**/Application.kt` |  |
 
-## 例
+## Examples
 
 - `Application.kt` ... プロセスの起動点

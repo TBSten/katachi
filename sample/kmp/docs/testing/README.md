@@ -32,7 +32,7 @@ GeneratedDocumentation と LayoutSnapshot を ArchitectureDefinition と分け�
 
 - アプリ本体のコード。ここにあるのは「テストのための」コードと、プロジェクトの説明です
 
-| 役割 | 概要 |
+| Role | Summary |
 |---|---|
 | [フェイク](./Fake.md) | :testing の commonMain に置く偽の実装。他モジュールのテストから使う |
 | [テストコード](./Test.md) | 各モジュールのテスト。KMP モジュールは commonTest、純 Android / 純 JVM モジュールは src/test |
@@ -40,7 +40,7 @@ GeneratedDocumentation と LayoutSnapshot を ArchitectureDefinition と分け�
 | [生成ドキュメント](./GeneratedDocumentation.md) | この定義から書き出され、リポジトリにコミットされる Markdown |
 | [レイアウトのスナップショット](./LayoutSnapshot.md) | この定義を平坦化して全行書き出した記録。定義の変化を人が差分でレビューするためにある |
 
-## このグループの配置
+## Placement in this group
 
 ```
 :testing

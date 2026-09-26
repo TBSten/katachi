@@ -19,12 +19,12 @@
 ファイル名は `*.kt`（モジュール直下の package）。遷移の手段に関わる型が増えるなら
 ここに足すが、特定の画面の遷移先（`HomeRoute` など）は feature 側の Route 役割に置く。
 
-## 配置場所
+## Placement
 
-| モジュール | パス | 使い分け |
+| Module | Path | When to use |
 |---|---|---|
 | `:navigation` | `src/main/kotlin/**/*.kt` |  |
 
-## 例
+## Examples
 
 - `AppNavigator` ... 画面遷移の窓口

@@ -26,12 +26,12 @@ Android と iOS のどちらからも同じ部品が使われます。
 `@Preview` は入りません。`component/*.kt` は `*Preview.kt` にも一致するため、
 katachi は重なりを `[AmbiguousLayout]` として報告します。これは承知の上の形です。
 
-## 配置場所
+## Placement
 
-| モジュール | パス | 使い分け |
+| Module | Path | When to use |
 |---|---|---|
 | `:ui` | `src/commonMain/kotlin/**/component/*.kt` |  |
 
-## 例
+## Examples
 
 - `PrimaryButton` ... 主要な操作のボタン

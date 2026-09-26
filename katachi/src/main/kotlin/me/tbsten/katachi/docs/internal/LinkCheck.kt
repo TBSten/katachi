@@ -84,8 +84,8 @@ private fun resolveAgainst(source: String, target: String): String? {
  *
  * A fenced block is skipped whole: the placement tree lives in one, and its paths are full of
  * the characters a link is made of. Code spans are blanked out for the same reason one line
- * lower down -- a role's `## 例` writes identifiers in backticks, and a `description` may write
- * anything at all in them.
+ * lower down -- a role's `## Examples` writes identifiers in backticks, and a `description` may
+ * write anything at all in them.
  */
 private fun linksIn(content: String): List<DocumentLink> {
     val links = mutableListOf<DocumentLink>()

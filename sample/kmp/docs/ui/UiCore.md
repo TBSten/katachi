@@ -27,13 +27,13 @@ sealed interface です。
 `core` という名前は「基盤」以上のことを言っていないので、なんでも入る置き場になりがちです。
 「画面を知らない」「Compose を知らない」の2つを満たすかどうかで判断してください。
 
-## 配置場所
+## Placement
 
-| モジュール | パス | 使い分け |
+| Module | Path | When to use |
 |---|---|---|
 | `:ui` | `src/commonMain/kotlin/**/core/*.kt` |  |
 
-## 例
+## Examples
 
 - `UiState` ... 画面の状態を表す型
 - `valueOrNull` ... 値を取り出す拡張関数

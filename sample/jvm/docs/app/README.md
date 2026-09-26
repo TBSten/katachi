@@ -15,12 +15,12 @@
 ここに置かないのは、ビルド時にしか効かない設定（Gradle スクリプトの役割）と、
 個々の `install(...)` の中身（API 層の Ktor プラグイン設定の役割）です。
 
-| 役割 | 概要 |
+| Role | Summary |
 |---|---|
 | [エントリポイント](./Entrypoint.md) | プロセスの起動と、Ktor の Application モジュールの組み立て |
 | [サーバ設定](./ServerConfig.md) | 実行時に読み込まれる設定ファイル。Kotlin ではない資源も役割を持つ |
 
-## このグループの配置
+## Placement in this group
 
 ```
 :

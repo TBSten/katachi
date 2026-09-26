@@ -23,13 +23,13 @@ katachi の DSL で書かれた役割の定義。どのレイヤーにも属さ�
 分けるのは読みやすさのための約束であって、katachi の `layout { }` が強制しているわけでは
 ありません（`roles/` に何も宣言しない `.kt` を置いても通ります）。
 
-## 配置場所
+## Placement
 
-| モジュール | パス | 使い分け |
+| Module | Path | When to use |
 |---|---|---|
 | `:architecture-test` | `src/test/kotlin/**/*.kt` |  |
 
-## 例
+## Examples
 
 - `ProjectArchitecture.kt` ... 定義の入口
 - `roles/ControllerRole.kt` ... 役割1つの宣言

@@ -32,15 +32,15 @@ layout はどの行もワイルドカードなので、`iosMain` 側を丸ごと
 `[MissingFile]` を出しません。expect と actual が揃っているかを見られるのは
 コンパイラだけで、そのコンパイラが CI で動かない、という穴がここにあります。
 
-## 配置場所
+## Placement
 
-| モジュール | パス | 使い分け |
+| Module | Path | When to use |
 |---|---|---|
 | `:data` | `src/commonMain/kotlin/**/platform/*.kt` |  |
 | `:data` | `src/androidMain/kotlin/**/platform/*.android.kt` |  |
 | `:data` | `src/iosMain/kotlin/**/platform/*.ios.kt` |  |
 
-## 例
+## Examples
 
 - `PlatformInfo.kt` ... commonMain の expect 宣言
 - `PlatformInfo.android.kt` ... Android 向けの actual

@@ -40,12 +40,12 @@
 - 別の種類の記録。いまの `layout { }` は `snapshots/layout.txt` の1ファイルしか
   認めていないので、足すなら役割を書き換えるところから始まります
 
-## 配置場所
+## Placement
 
-| モジュール | パス | 使い分け |
+| Module | Path | When to use |
 |---|---|---|
 |  | `snapshots/layout.txt` |  |
 
-## 例
+## Examples
 
 - `snapshots/layout.txt` ... 平坦化した layout の全行

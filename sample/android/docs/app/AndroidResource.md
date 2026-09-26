@@ -20,15 +20,15 @@ katachi 側でもう一度書き下すと、同じ規則の写しが2つでき�
 このサンプルでは `:app` 以外に `res/` が無いので、この役割は `:app` だけを見ている。
 他のモジュールにリソースを置くなら、そのとき役割を広げる。
 
-## 配置場所
+## Placement
 
-| モジュール | パス | 使い分け |
+| Module | Path | When to use |
 |---|---|---|
 | `:app` | `proguard-rules.pro` |  |
 | `:app` | `src/main/AndroidManifest.xml` |  |
 |  | `app/src/main/res` |  |
 
-## 例
+## Examples
 
 - `AndroidManifest.xml` ... アプリの構成
 - `res/values/strings.xml` ... 文字列リソース

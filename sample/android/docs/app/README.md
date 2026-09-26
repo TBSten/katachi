@@ -21,12 +21,12 @@
 `com/example/sample` を直接書く。アプリ本体なので、`:ui` → `com.example.sample.ui` の
 ような対応を持たないため（もう1つは `:architecture-test`）。
 
-| 役割 | 概要 |
+| Role | Summary |
 |---|---|
 | [エントリポイント](./Entrypoint.md) | :app に置く、Android がアプリを起動するときに触る型 |
 | [Android リソース](./AndroidResource.md) | AndroidManifest.xml・res/・proguard-rules.pro |
 
-## このグループの配置
+## Placement in this group
 
 ```
 :app

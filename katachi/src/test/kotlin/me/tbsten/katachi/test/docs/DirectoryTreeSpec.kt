@@ -17,7 +17,7 @@ import me.tbsten.katachi.dsl.kotlin.ktFile
 import me.tbsten.katachi.dsl.kotlin.ktsFile
 
 /**
- * The `## このグループの配置` tree: the group's `layout` read along the other axis.
+ * The `## Placement in this group` tree: the group's `layout` read along the other axis.
  *
  * NOTE: このファイルのパッケージを `me.tbsten.katachi.docs` にしてはいけない。
  * captureDeclarationSite() がライブラリ自身のフレームとして読み飛ばしてしまい、
@@ -52,16 +52,16 @@ class DirectoryTreeSpec : FreeSpec({
 
             arch.page("domain/README.md") shouldBe
                 """
-                [アーキテクチャ](../README.md)
+                [Architecture](../README.md)
 
                 # domain
 
-                | 役割 | 概要 |
+                | Role | Summary |
                 |---|---|
                 | [ユースケース](./UseCase.md) |  |
                 | [リポジトリ](./Repository.md) |  |
 
-                ## このグループの配置
+                ## Placement in this group
 
                 ```
                 :core:domain
@@ -70,7 +70,7 @@ class DirectoryTreeSpec : FreeSpec({
                     repository/*Repository.kt  リポジトリ
                 ```
 
-                ## グループ
+                ## Groups
 
                 - [モデル](./model/README.md)
                 """.trimIndent() + "\n"
@@ -356,7 +356,7 @@ class DirectoryTreeSpec : FreeSpec({
             withClue("group に属さない役割の配置は、ここに出さなければどのツリーにも出ない") {
                 arch.page("README.md") shouldBe
                     """
-                    # アーキテクチャ ドキュメント
+                    # Architecture documentation
 
                     ## Document map
 
@@ -364,11 +364,11 @@ class DirectoryTreeSpec : FreeSpec({
 
                     ### [ドメイン](./domain/README.md)
 
-                    ## ルート直下の役割
+                    ## Roles at the root
 
                     - [変更履歴](./Changelog.md)
 
-                    ## ルート直下の配置
+                    ## Placement at the root
 
                     ```
                     CHANGELOG.md  変更履歴
@@ -424,10 +424,10 @@ class DirectoryTreeSpec : FreeSpec({
 })
 
 /** The heading the tree is written under, which is also how a spec asks whether it is there. */
-private const val TREE_HEADING: String = "## このグループの配置"
+private const val TREE_HEADING: String = "## Placement in this group"
 
 /** The same, on the root's own README, which is not a group and does not say it is one. */
-private const val ROOT_TREE_HEADING: String = "## ルート直下の配置"
+private const val ROOT_TREE_HEADING: String = "## Placement at the root"
 
 /** The tree of one page, without its heading and fence — which is what the specs above compare. */
 private fun Architecture.tree(path: String, heading: String = TREE_HEADING): String {

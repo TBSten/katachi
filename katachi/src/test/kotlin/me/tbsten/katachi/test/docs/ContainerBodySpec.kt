@@ -35,7 +35,7 @@ class ContainerBodySpec : FreeSpec({
             withClue("役割ページの description と同じ位置・同じ扱い") {
                 arch.page("api/README.md") shouldBe
                     """
-                    [アーキテクチャ](../README.md)
+                    [Architecture](../README.md)
 
                     # API
 
@@ -44,7 +44,7 @@ class ContainerBodySpec : FreeSpec({
                     ### 置かないもの
                     - ドメインの判断
 
-                    | 役割 | 概要 |
+                    | Role | Summary |
                     |---|---|
                     | [Controller](./Controller.md) |  |
                     """.trimIndent() + "\n"
@@ -62,7 +62,7 @@ class ContainerBodySpec : FreeSpec({
 
             arch.page("api/README.md") shouldBe
                 """
-                [アーキテクチャ](../README.md)
+                [Architecture](../README.md)
 
                 # API
 
@@ -79,7 +79,7 @@ class ContainerBodySpec : FreeSpec({
 
             arch.page("api/README.md") shouldBe
                 """
-                [アーキテクチャ](../README.md)
+                [Architecture](../README.md)
 
                 # api
 
@@ -90,7 +90,7 @@ class ContainerBodySpec : FreeSpec({
         "どちらも書かなければ、見出しの下には何も足さない" {
             val arch = architecture { "api".group { } }
 
-            arch.page("api/README.md") shouldBe "[アーキテクチャ](../README.md)\n\n# api\n"
+            arch.page("api/README.md") shouldBe "[Architecture](../README.md)\n\n# api\n"
         }
     }
 
@@ -102,7 +102,7 @@ class ContainerBodySpec : FreeSpec({
 
         arch.page("README.md") shouldBe
             """
-            # アーキテクチャ ドキュメント
+            # Architecture documentation
 
             このリポジトリの全体像。
 

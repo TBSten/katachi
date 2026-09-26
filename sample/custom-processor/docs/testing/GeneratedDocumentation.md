@@ -37,14 +37,14 @@ push するとリポジトリルートの `checkSampleCustomProcessor` が赤く
 ワイルドカード無しで別に書いてあり、そちらは `required` です。1度も生成していない状態が
 そこで見つかります。
 
-## 配置場所
+## Placement
 
-| モジュール | パス | 使い分け |
+| Module | Path | When to use |
 |---|---|---|
 |  | `docs/README.md` |  |
 |  | `docs/**/*.md` |  |
 
-## 例
+## Examples
 
 - `docs/README.md` ... 全ページの索引
 - `docs/testing/Processor.md` ... 役割1つのページ

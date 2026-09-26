@@ -21,12 +21,12 @@
 
 ファイル名は `*Repository.kt` で、1ファイル1クラスです。
 
-## 配置場所
+## Placement
 
-| モジュール | パス | 使い分け |
+| Module | Path | When to use |
 |---|---|---|
 | `:` | `src/main/kotlin/**/repository/*Repository.kt` |  |
 
-## 例
+## Examples
 
 - `HealthRepository` ... 稼働状態の取得元

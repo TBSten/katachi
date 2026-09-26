@@ -34,7 +34,7 @@ class DocumentSectionNestingSpec : FreeSpec({
 
         arch.page("api/README.md") shouldBe
             """
-            [アーキテクチャ](../README.md)
+            [Architecture](../README.md)
 
             # api
 
@@ -60,7 +60,7 @@ class DocumentSectionNestingSpec : FreeSpec({
         withClue("親の見出しが無いと、子が直前の節の下にぶら下がって読める") {
             arch.page("api/README.md") shouldBe
                 """
-                [アーキテクチャ](../README.md)
+                [Architecture](../README.md)
 
                 # api
 
@@ -90,7 +90,7 @@ class DocumentSectionNestingSpec : FreeSpec({
 
         arch.page("api/README.md") shouldBe
             """
-            [アーキテクチャ](../README.md)
+            [Architecture](../README.md)
 
             # api
 
@@ -116,7 +116,7 @@ class DocumentSectionNestingSpec : FreeSpec({
         withClue("h6 が Markdown の最後の見出し。これより深い節は宣言時に弾かれる") {
             arch.page("api/README.md") shouldBe
                 """
-                [アーキテクチャ](../README.md)
+                [Architecture](../README.md)
 
                 # api
 

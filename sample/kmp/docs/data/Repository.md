@@ -27,14 +27,14 @@ sample/android と違い、このサンプルには設定用のリポジトリ�
 `UserRepository` と `platformName()` を読むだけで足りています。使われていない package を
 定義に書くと、実体の無いディレクトリをドキュメントが案内することになります。
 
-## 配置場所
+## Placement
 
-| モジュール | パス | 使い分け |
+| Module | Path | When to use |
 |---|---|---|
 | `:data` | `src/commonMain/kotlin/**/user/*Repository.kt` |  |
 | `:data` | `src/commonMain/kotlin/**/user/*RepositoryImpl.kt` |  |
 
-## 例
+## Examples
 
 - `UserRepository` ... ユーザーを取得するインターフェース
 - `UserRepositoryImpl` ... UserRepository の実装

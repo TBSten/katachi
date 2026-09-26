@@ -22,13 +22,13 @@
 置いてはいけないもの: 本番から呼ばれるコード。`:testing` に依存してよいのは
 テストのコンパイル経路だけで、`:app` や `:feature:*` の `main` からは参照しない。
 
-## 配置場所
+## Placement
 
-| モジュール | パス | 使い分け |
+| Module | Path | When to use |
 |---|---|---|
 | `:testing` | `src/main/kotlin/**/Fake*.kt` |  |
 
-## 例
+## Examples
 
 - `FakeUserRepository` ... UserRepository のメモリ実装
 - `FakeSettingsRepository` ... SettingsRepository のメモリ実装

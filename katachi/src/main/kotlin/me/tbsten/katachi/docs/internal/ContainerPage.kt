@@ -43,7 +43,7 @@ internal fun containerPage(
 private fun StringBuilder.appendRoleTable(roles: List<Role>) {
     if (roles.isEmpty()) return
     append(SECTION_BREAK)
-    append(tableRow(listOf("役割", "概要")))
+    append(tableRow(listOf("Role", "Summary")))
     append("\n|---|---|")
     for (role in roles) {
         append("\n")
@@ -68,7 +68,7 @@ private fun StringBuilder.appendRoleTable(roles: List<Role>) {
 private fun StringBuilder.appendGroupList(groups: List<Group>) {
     if (groups.isEmpty()) return
     append(SECTION_BREAK)
-    append("## グループ")
+    append("## Groups")
     append(SECTION_BREAK)
     append(groups.joinToString("\n") { "- ${link(it.displayName, "${it.name}/$README")}" })
 }

@@ -21,16 +21,16 @@
 「public であること」を制約として書いており、うっかり `internal` を付けるとテストが
 落ちます。別パッケージの Controller から参照できなくなる前に気づけます。
 
-## 配置場所
+## Placement
 
-| モジュール | パス | 使い分け |
+| Module | Path | When to use |
 |---|---|---|
 | `:` | `src/main/kotlin/**/service/*Service.kt` |  |
 
-## 制約
+## Constraints
 
 - public であること
 
-## 例
+## Examples
 
 - `HealthService` ... サーバ稼働状態の取得

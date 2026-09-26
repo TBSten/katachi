@@ -24,9 +24,9 @@ katachi 自身の番兵である `LayoutSnapshotSpec` も同じモジュール�
 使わないのは、このモジュールのソースがモジュール名から導かれる
 `com/example/architectureTest` ではなく `com/example` に置かれているからです。
 
-## 配置場所
+## Placement
 
-| モジュール | パス | 使い分け |
+| Module | Path | When to use |
 |---|---|---|
 | `:architecture-test` | `src/test/kotlin/com/example/ProjectArchitecture.kt` |  |
 | `:architecture-test` | `src/test/kotlin/com/example/ProjectArchitectureTest.kt` |  |
@@ -34,7 +34,7 @@ katachi 自身の番兵である `LayoutSnapshotSpec` も同じモジュール�
 | `:architecture-test` | `src/test/kotlin/com/example/groups/*.kt` |  |
 | `:architecture-test` | `src/test/kotlin/com/example/roles/*.kt` |  |
 
-## 例
+## Examples
 
 - `ProjectArchitecture.kt` ... 定義の入口
 - `roles/StoreRole.kt` ... 役割1つの宣言

@@ -24,14 +24,14 @@ UI は `:ui` と `:feature:*` にある。ここに Composable が増え始め�
 `:app` はアプリ本体で、`:ui` → `com.example.sample.ui` のような
 モジュールパスとの対応を持たないため。
 
-## 配置場所
+## Placement
 
-| モジュール | パス | 使い分け |
+| Module | Path | When to use |
 |---|---|---|
 | `:app` | `src/main/kotlin/com/example/sample/MainActivity.kt` |  |
 | `:app` | `src/main/kotlin/com/example/sample/MainApplication.kt` |  |
 
-## 例
+## Examples
 
 - `MainActivity` ... 起動時に表示される Activity
 - `MainApplication` ... Application の実装

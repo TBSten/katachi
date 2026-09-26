@@ -28,13 +28,13 @@ feature モジュールごと分ける。
   コールバック（`onNavigateToSettings` / `onNavigateUp`）を呼ぶだけにする
 - 他の feature の型。feature 同士は互いを参照せず、`:app` が Route 越しにつなぐ
 
-## 配置場所
+## Placement
 
-| モジュール | パス | 使い分け |
+| Module | Path | When to use |
 |---|---|---|
 | `:feature:*` | `src/main/kotlin/**/<name>Screen.kt` |  |
 
-## 例
+## Examples
 
 - `HomeScreen` ... ホーム画面
 - `SettingsScreen` ... 設定画面

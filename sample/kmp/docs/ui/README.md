@@ -26,7 +26,7 @@ layout はどれもモジュールパスから始まり、その下の package �
 導きます。ディレクトリ名を書き写すのではなく、ビルドが言っていることをそのまま書く、
 というのがこのサンプル全体の方針です。
 
-| 役割 | 概要 |
+| Role | Summary |
 |---|---|
 | [共通コンポーネント](./Component.md) | :ui モジュールの component package。複数の画面から使われる @Composable 部品 |
 | [テーマ](./Theme.md) | :ui モジュールの theme package。MaterialTheme の設定と、色・余白のデザイントークン |
@@ -35,7 +35,7 @@ layout はどれもモジュールパスから始まり、その下の package �
 | [プレビューの土台](./PreviewRoot.md) | :ui モジュールの preview package。@Preview の中身を AppTheme と Surface で包む |
 | [ナビゲーション](./Navigation.md) | 遷移先の定義と、現在地を持つ Navigator |
 
-## このグループの配置
+## Placement in this group
 
 ```
 :ui

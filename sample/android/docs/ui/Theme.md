@@ -23,12 +23,12 @@
 - 背景や `Surface` の指定。プレビューの背景は `PreviewRoot`、実画面の背景は
   各 Screen が決める
 
-## 配置場所
+## Placement
 
-| モジュール | パス | 使い分け |
+| Module | Path | When to use |
 |---|---|---|
 | `:ui` | `src/main/kotlin/**/theme/AppTheme.kt` |  |
 
-## 例
+## Examples
 
 - `AppTheme` ... アプリのテーマ

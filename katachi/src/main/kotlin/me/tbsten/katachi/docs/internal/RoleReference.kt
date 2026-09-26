@@ -75,7 +75,7 @@ internal fun roleReferenceDocuments(
         .groupBy({ it.first }, { it.second })
 
     // Decided once and handed to both the page and every breadcrumb that points back at it. A
-    // reader who saw `# myapp ドキュメント` and then `[アーキテクチャ](../README.md)` two clicks
+    // reader who saw `# myapp documentation` and then `[Architecture](../README.md)` two clicks
     // later has to work out that the two are the same page.
     val rootName = architecture.metadata[Title].orBlank() ?: ROOT_TITLE
 

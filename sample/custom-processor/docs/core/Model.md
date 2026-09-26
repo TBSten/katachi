@@ -19,12 +19,12 @@
 対象は `model` パッケージ直下の `.kt` だけで、その下にディレクトリを掘っても
 この役割には入りません。
 
-## 配置場所
+## Placement
 
-| モジュール | パス | 使い分け |
+| Module | Path | When to use |
 |---|---|---|
 | `:` | `src/main/kotlin/**/model/*.kt` |  |
 
-## 例
+## Examples
 
 - `Note` ... 見出しと本文を持つノート

@@ -15,11 +15,11 @@
 分けたくなったらここに足す。いまは Repository 以外のファイルを `:data` に置くと違反になるので、
 「置いてから考える」ができないようになっている。
 
-| 役割 | 概要 |
+| Role | Summary |
 |---|---|
 | [リポジトリ](./Repository.md) | データの取得と保存。インターフェースと実装を :data の、扱う対象ごとの package （user / settings）に並べて置く |
 
-## このグループの配置
+## Placement in this group
 
 ```
 :data

@@ -21,14 +21,14 @@
 置いてはいけないもの: テストから使う道具。他モジュールのテストへ渡す差し替え実装は
 `:testing` のフェイク役割にあり、`src/test` からは公開できない。
 
-## 配置場所
+## Placement
 
-| モジュール | パス | 使い分け |
+| Module | Path | When to use |
 |---|---|---|
 | `:architecture-test` | `src/test/kotlin/com/example/sample/*Spec.kt` |  |
 | `:architecture-test` | `src/test/kotlin/com/example/sample/*Test.kt` |  |
 
-## 例
+## Examples
 
 - `ProjectArchitectureTest` ... 利用者が書く唯一のテスト
 - `ProjectArchitectureSpec` ... この定義そのものを検証するテスト

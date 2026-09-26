@@ -20,12 +20,12 @@ Application 全体に一度だけ効く設定と、どの Controller を routing
 「Controller から Repository を直接呼ばない」といった約束は、ここに文章として
 書いてあるだけで、機械的には弾かれません。
 
-| 役割 | 概要 |
+| Role | Summary |
 |---|---|
 | [コントローラ](./Controller.md) | HTTP のリクエストを1つ受け取り、対応する Service を呼んで結果を返す |
 | [Ktor プラグイン設定](./KtorPlugin.md) | Ktor の Application に対する横断的な設定を1つ行う |
 
-## このグループの配置
+## Placement in this group
 
 ```
 :

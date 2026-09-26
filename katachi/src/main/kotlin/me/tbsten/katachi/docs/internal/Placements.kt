@@ -5,8 +5,8 @@ import me.tbsten.katachi.dsl.LayoutEntryKind
 import me.tbsten.katachi.dsl.Role
 
 /**
- * A place a role's files may live, as declared: one row of its `## 配置場所` table, and one leaf
- * of the `## このグループの配置` tree.
+ * A place a role's files may live, as declared: one row of its `## Placement` table, and one leaf
+ * of the `## Placement in this group` tree.
  *
  * It is what a `layout { }` says rather than what the project holds, so a pattern is here
  * whether or not a file sits at it. That is the whole point of generating documentation from

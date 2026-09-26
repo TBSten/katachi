@@ -21,7 +21,7 @@ feature 側の Screen / ViewModel / Route がここに無いのは、増え方�
 画面部品を使いたいだけのコードにナビゲーションの依存を持ち込ませないためでもある。
 グラフの組み立ては `:app` が行う。
 
-| 役割 | 概要 |
+| Role | Summary |
 |---|---|
 | [共通コンポーネント](./Component.md) | :ui モジュールの component package に置く、feature をまたいで使う部品 |
 | [テーマ](./Theme.md) | :ui モジュールの theme package に置く、色・タイポグラフィ・形 |
@@ -30,7 +30,7 @@ feature 側の Screen / ViewModel / Route がここに無いのは、増え方�
 | [プレビューの土台](./PreviewRoot.md) | :ui モジュールの preview package に置く、すべての @Preview が中身を包む土台。テーマと背景を 1 箇所で決め、darkTheme を受け取って明暗を出し分ける |
 | [画面遷移](./Navigation.md) | :navigation に置く、画面間の移動 |
 
-## このグループの配置
+## Placement in this group
 
 ```
 :ui

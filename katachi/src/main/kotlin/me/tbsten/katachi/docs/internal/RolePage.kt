@@ -37,9 +37,9 @@ internal fun rolePage(
 private fun StringBuilder.appendPlacements(placements: List<Placement>) {
     if (placements.isEmpty()) return
     append(SECTION_BREAK)
-    append("## 配置場所")
+    append("## Placement")
     append(SECTION_BREAK)
-    append(tableRow(listOf("モジュール", "パス", "使い分け")))
+    append(tableRow(listOf("Module", "Path", "When to use")))
     append("\n|---|---|---|")
     for (placement in placements) {
         append("\n")
@@ -64,7 +64,7 @@ private fun StringBuilder.appendPlacements(placements: List<Placement>) {
 private fun StringBuilder.appendFileConstraints(constraintNames: List<String>) {
     if (constraintNames.isEmpty()) return
     append(SECTION_BREAK)
-    append("## 制約")
+    append("## Constraints")
     append(SECTION_BREAK)
     append(constraintNames.joinToString("\n") { "- $it" })
 }
@@ -79,7 +79,7 @@ private fun StringBuilder.appendExamples(role: Role) {
     val examples = role[Examples].orEmpty()
     if (examples.isEmpty()) return
     append(SECTION_BREAK)
-    append("## 例")
+    append("## Examples")
     append(SECTION_BREAK)
     append(
         examples.joinToString("\n") {

@@ -27,13 +27,13 @@ iOS アプリの側です。`app/ios` は Gradle モジュールではありま�
 - Kotlin のコード。共有したいコードは `:data` のような KMP モジュールに置き、
   framework として渡します（このサンプルでは設定していません）
 
-## 配置場所
+## Placement
 
-| モジュール | パス | 使い分け |
+| Module | Path | When to use |
 |---|---|---|
 |  | `app/ios` |  |
 
-## 例
+## Examples
 
 - `iosAppApp.swift` ... SwiftUI のエントリポイント
 - `ContentView.swift` ... iOS 側の画面

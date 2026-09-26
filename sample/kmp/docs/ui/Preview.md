@@ -30,14 +30,14 @@ IDE の補完で後者を足してしまうと iOS ターゲットが解決で�
 - プレビューの中で `AppTheme { }` を直接書くこと。包むのは `PreviewRoot` の仕事です
 - 本物の Repository やネットワークに触る処理。値はリテラルで書きます
 
-## 配置場所
+## Placement
 
-| モジュール | パス | 使い分け |
+| Module | Path | When to use |
 |---|---|---|
 | `:feature:*` | `src/commonMain/kotlin/**/<name>*Preview.kt` | 画面のプレビュー。その画面を持つ feature モジュールに置く |
 | `:ui` | `src/commonMain/kotlin/**/component/*Preview.kt` | 部品のプレビュー。どの画面にも属さないので :ui に置く |
 
-## 例
+## Examples
 
 - `PrimaryButtonPreview` ... PrimaryButton のプレビュー
 - `HomeLoadedPreview` ... 読み込み済みのホーム画面

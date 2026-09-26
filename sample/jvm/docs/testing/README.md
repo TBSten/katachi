@@ -21,14 +21,14 @@
 ここに置いてはいけないのは、アプリの本体コードです。`:architecture-test` はアプリの
 どのレイヤーにも属さないモジュールで、main ソースセットを持ちません。
 
-| 役割 | 概要 |
+| Role | Summary |
 |---|---|
 | [テストコード](./Test.md) | src/test/kotlin に置かれるテスト。本体と同じ package 構成を保つ |
 | [アーキテクチャ定義](./ArchitectureDefinition.md) | katachi の DSL で書かれた役割の定義。どのレイヤーにも属さない |
 | [生成ドキュメント](./GeneratedDocumentation.md) | この定義から書き出され、リポジトリにコミットされる Markdown |
 | [レイアウトのスナップショット](./LayoutSnapshot.md) | この定義を平坦化して全行書き出した記録。定義の変化を人が差分でレビューするためにある |
 
-## このグループの配置
+## Placement in this group
 
 ```
 :

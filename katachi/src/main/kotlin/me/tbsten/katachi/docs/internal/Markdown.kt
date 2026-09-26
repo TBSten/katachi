@@ -23,23 +23,24 @@ internal const val SECTION_BREAK: String = "\n\n"
  * Kept as the last fallback rather than as the heading itself: `architecture { title = ... }` is
  * what names the root, and this is what a definition that never said gets.
  */
-internal const val ROOT_TITLE: String = "アーキテクチャ"
+internal const val ROOT_TITLE: String = "Architecture"
 
 /** What the root's heading adds to its name, so that the page says what it is. */
-internal const val ROOT_TITLE_SUFFIX: String = " ドキュメント"
+internal const val ROOT_TITLE_SUFFIX: String = " documentation"
 
 /**
  * What the index of every generated page is written under.
  *
- * English among Japanese headings because that is what was asked for: "map" is the word the
- * people reading this page use for it, and translating it would leave them looking for it.
+ * Like every heading katachi writes itself, it is in English. The pages are written in one
+ * language rather than in the language of whoever reads them; what a definition writes --
+ * `title`, `summary`, `description`, the heading of a `documentSection` -- stays as written.
  */
 internal const val DOCUMENT_MAP_HEADING: String = "## Document map"
 
 /**
  * What separates a link from the one line saying what it is.
  *
- * The same three dots a role page writes its `## 例` with. One generated document should not
+ * The same three dots a role page writes its `## Examples` with. One generated document should not
  * spell one idea two ways, and a dash is also a character a `summary` may open with.
  */
 internal const val SUMMARY_SEPARATOR: String = " ... "
@@ -48,7 +49,7 @@ internal const val SUMMARY_SEPARATOR: String = " ... "
 internal const val BULLET_INDENT: String = "  "
 
 /** What a group's placement tree is written under. */
-internal const val GROUP_PLACEMENT_HEADING: String = "## このグループの配置"
+internal const val GROUP_PLACEMENT_HEADING: String = "## Placement in this group"
 
 /**
  * What the roles written straight into `architecture { }` are listed under.
@@ -57,7 +58,7 @@ internal const val GROUP_PLACEMENT_HEADING: String = "## このグループの�
  * and every role that belongs to a group gets one in that group's section. Without this they
  * would be the only roles whose one line of prose appears nowhere on the page a reader starts on.
  */
-internal const val ROOT_ROLES_HEADING: String = "## ルート直下の役割"
+internal const val ROOT_ROLES_HEADING: String = "## Roles at the root"
 
 /**
  * What the root's placement tree is written under.
@@ -66,7 +67,7 @@ internal const val ROOT_ROLES_HEADING: String = "## ルート直下の役割"
  * the groups are -- and the tree there is of the roles written beside them, not of everything
  * below.
  */
-internal const val ROOT_PLACEMENT_HEADING: String = "## ルート直下の配置"
+internal const val ROOT_PLACEMENT_HEADING: String = "## Placement at the root"
 
 /** The file every container of the generated tree is read through. */
 internal const val README: String = "README.md"

@@ -26,15 +26,15 @@ inline すると呼び出し元ファイルの、誰も書いていない行を�
 テストと同じモジュールを共有しているが、両者は別のことを書いている。
 定義は「どんな形をしているか」、テストは「どう振る舞うか」。区別はファイルの場所と名前でつく。
 
-## 配置場所
+## Placement
 
-| モジュール | パス | 使い分け |
+| Module | Path | When to use |
 |---|---|---|
 | `:architecture-test` | `src/test/kotlin/com/example/sample/ProjectArchitecture.kt` |  |
 | `:architecture-test` | `src/test/kotlin/com/example/sample/groups/*Group.kt` |  |
 | `:architecture-test` | `src/test/kotlin/com/example/sample/roles/*Role.kt` |  |
 
-## 例
+## Examples
 
 - `ProjectArchitecture.kt` ... 定義の入口
 - `roles/ScreenRole.kt` ... Screen の役割の宣言

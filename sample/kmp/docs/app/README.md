@@ -29,13 +29,13 @@ Gradle がビルドする Android アプリと、Xcode がビルドする iOS �
 - 画面そのもの。画面は feature モジュールにあり、ここは Route を呼ぶだけです
 - 共有したいロジック。ここに書いたものは iOS から見えません
 
-| 役割 | 概要 |
+| Role | Summary |
 |---|---|
 | [エントリポイント](./Entrypoint.md) | Android アプリの起動点。ComponentActivity と、そこから setContent で呼ぶアプリ全体の @Composable |
 | [Android リソース](./AndroidResource.md) | AndroidManifest.xml と res/ 以下のリソース XML。:app:android だけが持つ |
 | [Xcode プロジェクト](./XcodeProject.md) | app/ios 以下。Gradle の管理外で、検査もしない |
 
-## このグループの配置
+## Placement in this group
 
 ```
 :app:android

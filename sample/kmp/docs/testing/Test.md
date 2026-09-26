@@ -26,12 +26,12 @@ Android と iOS だけを持つ KMP で JVM ターゲットがないので、Com
 画面の `@Composable` はテストしていません。Compose のテストランタイムが要る話になり、
 このサンプルが見せたい範囲の外です。
 
-## 配置場所
+## Placement
 
-| モジュール | パス | 使い分け |
+| Module | Path | When to use |
 |---|---|---|
 | `:app:android` | `src/test/kotlin/com/example/kmp/app/*Spec.kt` |  |
 
-## 例
+## Examples
 
 - `SampleModulesSpec` ... :app:android のユニットテスト

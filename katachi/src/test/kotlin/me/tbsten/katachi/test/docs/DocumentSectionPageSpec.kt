@@ -47,7 +47,7 @@ class DocumentSectionPageSpec : FreeSpec({
 
             arch.page("domain/UseCase.md") shouldBe
                 """
-                [アーキテクチャ](../README.md) / [domain](README.md)
+                [Architecture](../README.md) / [domain](README.md)
 
                 # UseCase
 
@@ -55,17 +55,17 @@ class DocumentSectionPageSpec : FreeSpec({
 
                 本文。
 
-                ## 配置場所
+                ## Placement
 
-                | モジュール | パス | 使い分け |
+                | Module | Path | When to use |
                 |---|---|---|
                 |  | `useCase/*UseCase.kt` |  |
 
-                ## 制約
+                ## Constraints
 
                 - public であること
 
-                ## 例
+                ## Examples
 
                 - `GetUserUseCase` ... ユーザーを取得する
 
@@ -91,7 +91,7 @@ class DocumentSectionPageSpec : FreeSpec({
 
             arch.page("domain/UseCase.md") shouldBe
                 """
-                [アーキテクチャ](../README.md) / [domain](README.md)
+                [Architecture](../README.md) / [domain](README.md)
 
                 # UseCase
 
@@ -125,7 +125,7 @@ class DocumentSectionPageSpec : FreeSpec({
             withClue("description と同じ約束。見出しレベルも段落も katachi は動かさない") {
                 arch.page("domain/UseCase.md") shouldBe
                     """
-                    [アーキテクチャ](../README.md) / [domain](README.md)
+                    [Architecture](../README.md) / [domain](README.md)
 
                     # UseCase
 
@@ -148,7 +148,7 @@ class DocumentSectionPageSpec : FreeSpec({
             withClue("書かないことは null で言う。空文字は「書いたが中身がまだ無い」") {
                 arch.page("domain/UseCase.md") shouldBe
                     """
-                    [アーキテクチャ](../README.md) / [domain](README.md)
+                    [Architecture](../README.md) / [domain](README.md)
 
                     # UseCase
 
@@ -170,7 +170,7 @@ class DocumentSectionPageSpec : FreeSpec({
 
             arch.page("domain/UseCase.md") shouldBe
                 """
-                [アーキテクチャ](../README.md) / [domain](README.md)
+                [Architecture](../README.md) / [domain](README.md)
 
                 # UseCase
 
@@ -208,7 +208,7 @@ class DocumentSectionPageSpec : FreeSpec({
 
         arch.page("README.md") shouldBe
             """
-            # アーキテクチャ ドキュメント
+            # Architecture documentation
 
             ## Document map
 

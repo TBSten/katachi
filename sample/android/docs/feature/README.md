@@ -23,13 +23,13 @@ feature 同士は互いに依存しない。別の画面へ遷移するときも
 feature が受け取るのはコールバック1つ。つながりは `:app` の1箇所にしかないので、
 feature を消すときに他の feature を読み直さなくて済む。
 
-| 役割 | 概要 |
+| Role | Summary |
 |---|---|
 | [Screen](./Screen.md) | 1つの画面の UI 実装となる @Composable。:feature:<name> ごとに <Name>Screen.kt を置く |
 | [ViewModel](./ViewModel.md) | 画面の状態を StateFlow で公開し、イベントを受け取る androidx.lifecycle.ViewModel |
 | [Route](./Route.md) | 画面への遷移先。feature の外に公開する唯一の入口 |
 
-## このグループの配置
+## Placement in this group
 
 ```
 :feature:*

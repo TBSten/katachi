@@ -29,11 +29,11 @@ class ContainerPageSpec : FreeSpec({
 
             arch.page("domain/README.md") shouldBe
                 """
-                [アーキテクチャ](../README.md)
+                [Architecture](../README.md)
 
                 # ドメイン
 
-                | 役割 | 概要 |
+                | Role | Summary |
                 |---|---|
                 | [ユースケース](./UseCase.md) | 各画面で発生するアプリ固有の1つの振る舞い |
                 """.trimIndent() + "\n"
@@ -61,15 +61,15 @@ class ContainerPageSpec : FreeSpec({
 
             arch.page("domain/README.md") shouldBe
                 """
-                [アーキテクチャ](../README.md)
+                [Architecture](../README.md)
 
                 # domain
 
-                | 役割 | 概要 |
+                | Role | Summary |
                 |---|---|
                 | [UseCase](./UseCase.md) |  |
 
-                ## グループ
+                ## Groups
 
                 - [モデル](./model/README.md)
                 """.trimIndent() + "\n"
@@ -107,7 +107,7 @@ class ContainerPageSpec : FreeSpec({
             withClue("親がいないので、戻る先が無い") {
                 arch.page("README.md") shouldBe
                     """
-                    # アーキテクチャ ドキュメント
+                    # Architecture documentation
 
                     ## Document map
 
@@ -123,7 +123,7 @@ class ContainerPageSpec : FreeSpec({
 
             arch.page("domain/README.md") shouldBe
                 """
-                [アーキテクチャ](../README.md)
+                [Architecture](../README.md)
 
                 # ドメイン
                 """.trimIndent() + "\n"
@@ -139,7 +139,7 @@ class ContainerPageSpec : FreeSpec({
 
             arch.page("ui/screen/README.md") shouldBe
                 """
-                [アーキテクチャ](../../README.md) / [UI](../README.md)
+                [Architecture](../../README.md) / [UI](../README.md)
 
                 # 画面
                 """.trimIndent() + "\n"
@@ -156,7 +156,7 @@ class ContainerPageSpec : FreeSpec({
 
             arch.page("a/b/c/README.md") shouldBe
                 """
-                [アーキテクチャ](../../../README.md) / [a](../../README.md) / [b](../README.md)
+                [Architecture](../../../README.md) / [a](../../README.md) / [b](../README.md)
 
                 # c
                 """.trimIndent() + "\n"

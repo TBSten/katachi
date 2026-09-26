@@ -28,13 +28,13 @@ Compose に依存しません。ビルドスクリプトに Compose プラグイ
 グラフの定義という置き場所がもう1つ増えて、このサンプルが見せたい「どこに何を置くか」が
 ぼやけます。
 
-## 配置場所
+## Placement
 
-| モジュール | パス | 使い分け |
+| Module | Path | When to use |
 |---|---|---|
 | `:navigation` | `src/commonMain/kotlin/**/*.kt` |  |
 
-## 例
+## Examples
 
 - `Destination` ... 遷移先の一覧
 - `Navigator` ... 現在の遷移先を持つ型

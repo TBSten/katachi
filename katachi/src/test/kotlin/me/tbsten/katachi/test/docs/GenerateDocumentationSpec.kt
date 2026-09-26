@@ -223,7 +223,7 @@ class GenerateDocumentationSpec : FreeSpec({
                     arch.generateDocumentation(output)
                 }
 
-                File(output, "domain/UseCase.md") shouldContainText "## 制約"
+                File(output, "domain/UseCase.md") shouldContainText "## Constraints"
             }
         }
 
@@ -436,7 +436,7 @@ class GenerateDocumentationSpec : FreeSpec({
                     ),
                 ).getOrThrow()
 
-                File(output, "README.md").readText() shouldBe "# myapp ドキュメント\n"
+                File(output, "README.md").readText() shouldBe "# myapp documentation\n"
             }
         }
 

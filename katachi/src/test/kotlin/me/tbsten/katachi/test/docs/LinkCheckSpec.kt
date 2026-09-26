@@ -105,7 +105,7 @@ class LinkCheckSpec : FreeSpec({
             shouldNotThrowAny {
                 checkDocumentLinks(
                     mapOf(
-                        "domain/README.md" to "[配置場所](./UseCase.md#配置場所)",
+                        "domain/README.md" to "[Placement](./UseCase.md#placement)",
                         "domain/UseCase.md" to "",
                     ),
                 )
@@ -137,7 +137,7 @@ class LinkCheckSpec : FreeSpec({
 
         "ページ内アンカーは見ない" {
             withClue("見出しは利用者の title から出るので、katachi が約束できるものではない") {
-                shouldNotThrowAny { checkDocumentLinks(mapOf("README.md" to "[配置場所](#配置場所)")) }
+                shouldNotThrowAny { checkDocumentLinks(mapOf("README.md" to "[Placement](#placement)")) }
             }
         }
 

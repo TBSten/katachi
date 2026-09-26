@@ -29,13 +29,13 @@ KMP で引っかかりやすいところです。
 
 Repository は引数で受け取るだけで、自分では作りません。作るのは Route の役目です。
 
-## 配置場所
+## Placement
 
-| モジュール | パス | 使い分け |
+| Module | Path | When to use |
 |---|---|---|
 | `:feature:*` | `src/commonMain/kotlin/**/<name>ViewModel.kt` |  |
 
-## 例
+## Examples
 
 - `HomeViewModel` ... ホーム画面の状態
 - `SettingsViewModel` ... 設定画面の状態

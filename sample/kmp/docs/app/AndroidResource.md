@@ -24,14 +24,14 @@ Kotlin のソース以外で Android のビルドが要求するものです。`
 package に Kotlin で置いてあり、`res/values/` に相当するものがありません。Android 専用の
 置き場を使わないことが、そのまま iOS と共有できることになります。
 
-## 配置場所
+## Placement
 
-| モジュール | パス | 使い分け |
+| Module | Path | When to use |
 |---|---|---|
 | `:app:android` | `src/main/AndroidManifest.xml` |  |
 | `:app:android` | `src/main/res/*/*.xml` |  |
 
-## 例
+## Examples
 
 - `AndroidManifest.xml` ... アプリのマニフェスト
 - `res/values/strings.xml` ... 文字列リソース

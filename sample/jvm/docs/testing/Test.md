@@ -22,12 +22,12 @@ src/test/kotlin に置かれるテスト。本体と同じ package 構成を保�
 任意の `.kt` 1ファイル）。代わりに、`.kt` を1つも持たないディレクトリがテストソースセットの
 下に残っていれば報告されます。
 
-## 配置場所
+## Placement
 
-| モジュール | パス | 使い分け |
+| Module | Path | When to use |
 |---|---|---|
 | `:` | `src/test/kotlin/**/*.kt` |  |
 
-## 例
+## Examples
 
 - `HealthRouteTest` ... GET /health のテスト

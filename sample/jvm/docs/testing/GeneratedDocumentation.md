@@ -37,14 +37,14 @@ push するとリポジトリルートの `checkSampleJvm` が赤くなります
 してもこの行は変わりません。索引だけワイルドカード無しで別に書いてあり、そちらは
 `required` です。1度も生成していない状態がそこで見つかります。
 
-## 配置場所
+## Placement
 
-| モジュール | パス | 使い分け |
+| Module | Path | When to use |
 |---|---|---|
 |  | `docs/README.md` |  |
 |  | `docs/**/*.md` |  |
 
-## 例
+## Examples
 
 - `docs/README.md` ... 全ページの索引と、group ごとの一覧
 - `docs/api/Controller.md` ... 役割1つのページ

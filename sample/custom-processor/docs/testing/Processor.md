@@ -33,13 +33,13 @@ katachi の定義を読んで何かを作る、このプロジェクト自身の
 `layout { }` は `processors` パッケージ直下の `.kt` を認めます。ファイル名は
 縛っていません（1ファイル1 processor はこの文章にある約束で、機械的には弾かれません）。
 
-## 配置場所
+## Placement
 
-| モジュール | パス | 使い分け |
+| Module | Path | When to use |
 |---|---|---|
 | `:architecture-test` | `src/test/kotlin/com/example/processors/*.kt` |  |
 
-## 例
+## Examples
 
 - `RoleFileCount` ... 引数なしの最小形
 - `RoleTable` ... 型付き引数を取る形

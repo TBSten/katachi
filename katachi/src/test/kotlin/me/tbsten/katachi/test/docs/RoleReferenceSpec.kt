@@ -135,7 +135,7 @@ class RoleReferenceSpec : FreeSpec({
             withClue("ページが無い group へのリンクは、出た瞬間にリンク切れになる") {
                 arch.page("README.md") shouldBe
                     """
-                    # アーキテクチャ ドキュメント
+                    # Architecture documentation
 
                     ## Document map
 

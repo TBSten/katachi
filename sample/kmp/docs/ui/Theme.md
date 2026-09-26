@@ -21,13 +21,13 @@ Android の `res/values/themes.xml` ではなく Kotlin 側にテーマを持っ
 iOS には `res/` がないので、リソース XML に書いた見た目は共有できません。アプリ名のような
 Android ビルドが要求するものだけが `:app:android` の AndroidResource に残ります。
 
-## 配置場所
+## Placement
 
-| モジュール | パス | 使い分け |
+| Module | Path | When to use |
 |---|---|---|
 | `:ui` | `src/commonMain/kotlin/**/theme/*.kt` |  |
 
-## 例
+## Examples
 
 - `AppTheme` ... アプリ全体のテーマ
 - `AppSpacing` ... 余白のトークン

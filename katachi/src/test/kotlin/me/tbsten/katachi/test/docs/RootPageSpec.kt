@@ -40,7 +40,7 @@ class RootPageSpec : FreeSpec({
 
             arch.rootReadme() shouldBe
                 """
-                # myapp ドキュメント
+                # myapp documentation
 
                 このリポジトリの構成。
 
@@ -57,7 +57,7 @@ class RootPageSpec : FreeSpec({
 
                 - [Service](./domain/Service.md)
 
-                ## ルート直下の役割
+                ## Roles at the root
 
                 - [Changelog](./Changelog.md)
 
@@ -74,7 +74,7 @@ class RootPageSpec : FreeSpec({
 
         "何も宣言していなければ見出しだけになる" {
             withClue("中身の無い ## Document map は、見出しが無いより読み手に伝えるものが少ない") {
-                architecture { }.rootReadme() shouldBe "# アーキテクチャ ドキュメント\n"
+                architecture { }.rootReadme() shouldBe "# Architecture documentation\n"
             }
         }
     }
@@ -85,7 +85,7 @@ class RootPageSpec : FreeSpec({
 
             arch.rootReadme() shouldBe
                 """
-                # アーキテクチャ ドキュメント
+                # Architecture documentation
 
                 ## Document map
 
@@ -105,13 +105,13 @@ class RootPageSpec : FreeSpec({
             withClue("索引なので summary は書かない。名前だけを追えることのほうが役に立つ") {
                 arch.rootReadme() shouldBe
                     """
-                    # アーキテクチャ ドキュメント
+                    # Architecture documentation
 
                     ## Document map
 
                     - [Changelog](./Changelog.md)
 
-                    ## ルート直下の役割
+                    ## Roles at the root
 
                     - [Changelog](./Changelog.md) ... リリースごとの変更点
                     """.trimIndent() + "\n"
@@ -144,7 +144,7 @@ class RootPageSpec : FreeSpec({
 
             arch.rootReadme() shouldBe
                 """
-                # アーキテクチャ ドキュメント
+                # Architecture documentation
 
                 ## Document map
 
@@ -174,7 +174,7 @@ class RootPageSpec : FreeSpec({
             withClue("####### は見出しではなく、ただのハッシュ7個として出てしまう") {
                 arch.rootReadme() shouldBe
                     """
-                    # アーキテクチャ ドキュメント
+                    # Architecture documentation
 
                     ## Document map
 
@@ -218,7 +218,7 @@ class RootPageSpec : FreeSpec({
 
             arch.rootReadme() shouldBe
                 """
-                # アーキテクチャ ドキュメント
+                # Architecture documentation
 
                 ## Document map
 
@@ -274,7 +274,7 @@ class RootPageSpec : FreeSpec({
             withClue("ツリーは配置の情報を持っていて、Document map はそれを持っていない") {
                 arch.rootReadme() shouldBe
                     """
-                    # アーキテクチャ ドキュメント
+                    # Architecture documentation
 
                     ## Document map
 
@@ -284,11 +284,11 @@ class RootPageSpec : FreeSpec({
 
                     - [UseCase](./domain/UseCase.md)
 
-                    ## ルート直下の役割
+                    ## Roles at the root
 
                     - [変更履歴](./Changelog.md)
 
-                    ## ルート直下の配置
+                    ## Placement at the root
 
                     ```
                     CHANGELOG.md  変更履歴
@@ -308,7 +308,7 @@ class RootPageSpec : FreeSpec({
 
             arch.rootReadme() shouldBe
                 """
-                # アーキテクチャ ドキュメント
+                # Architecture documentation
 
                 ## Document map
 
@@ -326,7 +326,7 @@ class RootPageSpec : FreeSpec({
 
             arch.rootReadme() shouldBe
                 """
-                # myapp ドキュメント
+                # myapp documentation
 
                 このリポジトリの構成。
                 """.trimIndent() + "\n"
@@ -339,7 +339,7 @@ class RootPageSpec : FreeSpec({
             }
 
             withClue("組み立てた結果たまたま空になったとき、見出しの無いページを求めてはいない") {
-                arch.rootReadme() shouldBe "# アーキテクチャ ドキュメント\n"
+                arch.rootReadme() shouldBe "# Architecture documentation\n"
             }
         }
 

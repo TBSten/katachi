@@ -32,14 +32,14 @@ layout はわざと緩く、package の1段を `*` で受けています。`role
 足しても定義を触らずに通る、という側です。厳しく package 名まで書く形は
 sample/android の方にあり、両方あることで選べることが見えます。
 
-## 配置場所
+## Placement
 
-| モジュール | パス | 使い分け |
+| Module | Path | When to use |
 |---|---|---|
 | `:architecture-test` | `src/test/kotlin/com/example/kmp/*.kt` |  |
 | `:architecture-test` | `src/test/kotlin/com/example/kmp/*/*.kt` |  |
 
-## 例
+## Examples
 
 - `ProjectArchitecture.kt` ... 定義の入口
 - `roles/ComponentRole.kt` ... 役割1つの宣言

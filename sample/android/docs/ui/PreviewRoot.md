@@ -22,12 +22,12 @@
 - 本番の画面から呼ばれるもの。実画面のテーマは `MainActivity` が `AppTheme { }` で与える
 - プレビュー用のダミーデータ。渡す状態は各 `@Preview` がその場で書く
 
-## 配置場所
+## Placement
 
-| モジュール | パス | 使い分け |
+| Module | Path | When to use |
 |---|---|---|
 | `:ui` | `src/main/kotlin/**/preview/PreviewRoot.kt` |  |
 
-## 例
+## Examples
 
 - `PreviewRoot` ... プレビュー共通の土台

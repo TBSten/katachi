@@ -24,13 +24,13 @@ import することはない。
 - 他の feature の Route への参照
 - 引数の組み立て以上のロジック。遷移の判断は呼び出し元にある
 
-## 配置場所
+## Placement
 
-| モジュール | パス | 使い分け |
+| Module | Path | When to use |
 |---|---|---|
 | `:feature:*` | `src/main/kotlin/**/<name>Route.kt` |  |
 
-## 例
+## Examples
 
 - `HomeRoute` ... ホーム画面への遷移先
 - `SettingsRoute` ... 設定画面への遷移先

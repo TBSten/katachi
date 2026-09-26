@@ -23,13 +23,13 @@ Ktor の Application に対する横断的な設定を1つ行う
 「これはプラグイン設定だ」と言っているのは `plugin` パッケージそのものです。
 ファイル名は install する Ktor の機能の名前に合わせます。
 
-## 配置場所
+## Placement
 
-| モジュール | パス | 使い分け |
+| Module | Path | When to use |
 |---|---|---|
 | `:` | `src/main/kotlin/**/plugin/*.kt` |  |
 
-## 例
+## Examples
 
 - `Routing` ... routing ツリーの配線
 - `Serialization` ... JSON の入出力設定

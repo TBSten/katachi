@@ -24,12 +24,12 @@
 katachi を導入するプロジェクトには要りません。これは katachi 自身がサンプルを
 壊していないかを見るための仕掛けで、`ProjectArchitectureTest` とは目的が違います。
 
-## 配置場所
+## Placement
 
-| モジュール | パス | 使い分け |
+| Module | Path | When to use |
 |---|---|---|
 |  | `snapshots/*.txt` |  |
 
-## 例
+## Examples
 
 - `snapshots/layout.txt` ... 平坦化したレイアウトの全文

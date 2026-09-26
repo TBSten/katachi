@@ -23,12 +23,12 @@
 - `:data` や `:feature:*` への依存。`:ui` は下の層も横の feature も知らない
 - 色やタイポグラフィの直書き。`MaterialTheme` から読む（テーマ役割を参照）
 
-## 配置場所
+## Placement
 
-| モジュール | パス | 使い分け |
+| Module | Path | When to use |
 |---|---|---|
 | `:ui` | `src/main/kotlin/**/component/*.kt` |  |
 
-## 例
+## Examples
 
 - `AppButton` ... アプリ共通のボタン

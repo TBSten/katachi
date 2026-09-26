@@ -27,12 +27,12 @@
 - kotest などテストフレームワークへの依存。ここは production の source set なので、
   持ち込むとアプリ本体のビルドに紛れ込みます
 
-## 配置場所
+## Placement
 
-| モジュール | パス | 使い分け |
+| Module | Path | When to use |
 |---|---|---|
 | `:testing` | `src/commonMain/kotlin/**/Fake*.kt` |  |
 
-## 例
+## Examples
 
 - `FakeUserRepository` ... UserRepository の偽実装

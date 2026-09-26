@@ -24,16 +24,16 @@
   分けたくなったら、まず役割を増やす
 - 対象をまたぐ package。`user` の型が `settings` に混ざったら package を割り直す
 
-## 配置場所
+## Placement
 
-| モジュール | パス | 使い分け |
+| Module | Path | When to use |
 |---|---|---|
 | `:data` | `src/main/kotlin/**/user/*Repository.kt` | インターフェース。呼び出し側が依存する型 |
 | `:data` | `src/main/kotlin/**/settings/*Repository.kt` | インターフェース。呼び出し側が依存する型 |
 | `:data` | `src/main/kotlin/**/user/*RepositoryImpl.kt` | インターフェース。呼び出し側が依存する型 |
 | `:data` | `src/main/kotlin/**/settings/*RepositoryImpl.kt` | インターフェース。呼び出し側が依存する型 |
 
-## 例
+## Examples
 
 - `UserRepository` ... ユーザーの取得と保存のインターフェース
 - `UserRepositoryImpl` ... UserRepository の実装

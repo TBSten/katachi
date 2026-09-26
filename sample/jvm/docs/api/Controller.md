@@ -24,12 +24,12 @@ HTTP とアプリケーションの中身との境目です。パスとメソッ
 名前だけで判断できます。なお `layout { }` が見ているのは置き場所と名前までで、
 上の「置いてはいけないもの」を機械的に弾いてはいません。
 
-## 配置場所
+## Placement
 
-| モジュール | パス | 使い分け |
+| Module | Path | When to use |
 |---|---|---|
 | `:` | `src/main/kotlin/**/controller/*Controller.kt` |  |
 
-## 例
+## Examples
 
 - `HealthController` ... ヘルスチェックの受け口

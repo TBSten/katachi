@@ -19,12 +19,12 @@ Screen がこれを `when` で分岐する。
 `SettingsContent`）は、その feature の ViewModel と同じファイルに置く。
 描画に関わる部品は `component`、色や字は `theme`。
 
-## 配置場所
+## Placement
 
-| モジュール | パス | 使い分け |
+| Module | Path | When to use |
 |---|---|---|
 | `:ui` | `src/main/kotlin/**/core/*.kt` |  |
 
-## 例
+## Examples
 
 - `UiState` ... 画面状態を表す sealed interface

@@ -20,12 +20,12 @@ feature モジュールの `commonMain` にいるからです。テスト source
 この役割はワイルドカードを使わずファイル名を書ききっている数少ない宣言なので、
 `PreviewRoot.kt` が消えたり改名されたりすると `[MissingFile]` で報告されます。
 
-## 配置場所
+## Placement
 
-| モジュール | パス | 使い分け |
+| Module | Path | When to use |
 |---|---|---|
 | `:ui` | `src/commonMain/kotlin/**/preview/PreviewRoot.kt` |  |
 
-## 例
+## Examples
 
 - `PreviewRoot` ... すべての @Preview が使う wrapper

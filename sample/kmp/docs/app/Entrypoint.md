@@ -29,13 +29,13 @@ KMP モジュールの `commonMain` ではありません。`:app:android` は A
 導けません。だから layout は `modulePackage` を使わず package を直書きしています。
 規則に従わないものは、従わないと書く方が正直です。
 
-## 配置場所
+## Placement
 
-| モジュール | パス | 使い分け |
+| Module | Path | When to use |
 |---|---|---|
 | `:app:android` | `src/main/kotlin/com/example/kmp/app/*.kt` |  |
 
-## 例
+## Examples
 
 - `MainActivity` ... 起動時に表示される Activity
 - `AppRoot` ... アプリ全体を組み立てる Composable

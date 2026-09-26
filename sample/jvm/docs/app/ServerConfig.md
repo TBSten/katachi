@@ -21,14 +21,14 @@
 `layout { }` はワイルドカードではなく2つのファイルを名前で並べています。実行時に効く設定が
 3つ目に増えたら、それは黙って増えてよいものではなく、気づきたいものだからです。
 
-## 配置場所
+## Placement
 
-| モジュール | パス | 使い分け |
+| Module | Path | When to use |
 |---|---|---|
 | `:` | `src/main/resources/application.conf` |  |
 | `:` | `src/main/resources/logback.xml` |  |
 
-## 例
+## Examples
 
 - `application.conf` ... 待ち受けポートと適用モジュール
 - `logback.xml` ... ログの出力先と書式

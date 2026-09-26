@@ -16,13 +16,13 @@
 ここに置いてはいけないのは、定義や processor のコードです。どちらも `:architecture-test`
 にあり、`testing` グループの役割が覆います。
 
-| 役割 | 概要 |
+| Role | Summary |
 |---|---|
 | [エントリポイント](./Entrypoint.md) | プロセスの起動。`main()` を持つ唯一のファイル |
 | [モデル](./Model.md) | アプリが扱う値。data class・enum・値オブジェクトを置く |
 | [保管庫](./Store.md) | 値がどこから来るかを引き受ける。いまはメモリ上の固定値 |
 
-## このグループの配置
+## Placement in this group
 
 ```
 :
