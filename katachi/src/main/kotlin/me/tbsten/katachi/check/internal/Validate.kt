@@ -6,9 +6,9 @@ import me.tbsten.katachi.check.KatachiArchitectureAssertionError
 import me.tbsten.katachi.check.LayoutCheck
 import me.tbsten.katachi.check.Violation
 import me.tbsten.katachi.dsl.Architecture
-import me.tbsten.katachi.fs.FsPath
-import me.tbsten.katachi.fs.KatachiFileSystem
-import me.tbsten.katachi.fs.internal.RealFileSystem
+import me.tbsten.katachi.dsl.files.FsPath
+import me.tbsten.katachi.dsl.files.KatachiFileSystem
+import me.tbsten.katachi.dsl.files.internal.RealFileSystem
 import me.tbsten.katachi.internal.catching
 import me.tbsten.katachi.processor.ArchitectureProcessor
 import me.tbsten.katachi.processor.internal.process
@@ -33,9 +33,9 @@ import me.tbsten.katachi.processor.internal.projectWalk
  * projectArchitecture.validate().count { it.severity == Severity.Error }
  * ```
  *
- * @throws me.tbsten.katachi.fs.KatachiProjectRootNotFoundException when no directory above the
+ * @throws me.tbsten.katachi.dsl.KatachiProjectRootNotFoundException when no directory above the
  *   working directory carries a Gradle, Maven or git marker.
- * @throws me.tbsten.katachi.fs.KatachiGitUnavailableException when `files = gitTracked()` and
+ * @throws me.tbsten.katachi.dsl.KatachiGitUnavailableException when `files = gitTracked()` and
  *   the project root is a git repository, but git cannot be run.
  */
 @InternalKatachiApi

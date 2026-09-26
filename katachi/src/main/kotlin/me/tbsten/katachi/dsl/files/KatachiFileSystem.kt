@@ -1,4 +1,4 @@
-package me.tbsten.katachi.fs
+package me.tbsten.katachi.dsl.files
 
 import me.tbsten.katachi.ExperimentalKatachiApi
 
@@ -12,7 +12,7 @@ import me.tbsten.katachi.ExperimentalKatachiApi
  *
  * Keeping it to four operations is what makes the in-memory implementation used by katachi's
  * own tests cheap, and it is also what lets a filtered view — the one `files = gitTracked()`
- * hands the walk, or a [FileSelection] of your own — wrap a real tree without the traversal
+ * hands the walk, or a [me.tbsten.katachi.dsl.FileSelection] of your own — wrap a real tree without the traversal
  * above it knowing.
  *
  * ## Example 1: a minimal implementation of the four operations

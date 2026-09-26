@@ -3,14 +3,14 @@ package me.tbsten.katachi.test.dsl
 import io.kotest.core.spec.style.FreeSpec
 import io.kotest.matchers.collections.shouldContainExactly
 import io.kotest.matchers.shouldBe
-import me.tbsten.katachi.dsl.internal.ModuleIndex
-import me.tbsten.katachi.dsl.ModulePath
-import me.tbsten.katachi.dsl.internal.ModulePattern
-import me.tbsten.katachi.dsl.ModuleResolver
-import me.tbsten.katachi.fs.FsPath
 import me.tbsten.katachi.check.internal.discoverModules
 import me.tbsten.katachi.check.internal.moduleIndex
-import me.tbsten.katachi.test.fs.fakeFileSystem
+import me.tbsten.katachi.dsl.ModulePath
+import me.tbsten.katachi.dsl.ModuleResolver
+import me.tbsten.katachi.dsl.files.FsPath
+import me.tbsten.katachi.dsl.internal.ModuleIndex
+import me.tbsten.katachi.dsl.internal.ModulePattern
+import me.tbsten.katachi.test.dsl.files.fakeFileSystem
 
 class ModuleResolverSpec : FreeSpec({
     /**

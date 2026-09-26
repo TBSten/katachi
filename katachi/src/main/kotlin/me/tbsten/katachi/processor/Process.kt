@@ -2,8 +2,8 @@ package me.tbsten.katachi.processor
 
 import me.tbsten.katachi.ExperimentalKatachiApi
 import me.tbsten.katachi.dsl.Architecture
-import me.tbsten.katachi.fs.KatachiFileSystem
-import me.tbsten.katachi.fs.internal.RealFileSystem
+import me.tbsten.katachi.dsl.files.KatachiFileSystem
+import me.tbsten.katachi.dsl.files.internal.RealFileSystem
 import me.tbsten.katachi.processor.internal.process
 
 /**
@@ -24,7 +24,7 @@ import me.tbsten.katachi.processor.internal.process
  * val violations = projectArchitecture.process(LayoutCheck()).getOrThrow()
  * ```
  *
- * @throws me.tbsten.katachi.fs.KatachiProjectRootNotFoundException when the processor asks for
+ * @throws me.tbsten.katachi.dsl.KatachiProjectRootNotFoundException when the processor asks for
  *   files outside its own `runCatching` and no directory above the working directory carries a
  *   Gradle, Maven or git marker. katachi's own processors answer that as a `failure` instead.
  */

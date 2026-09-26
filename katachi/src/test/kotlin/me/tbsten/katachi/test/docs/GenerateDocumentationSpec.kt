@@ -15,13 +15,13 @@ import me.tbsten.katachi.docs.KatachiDocumentIoException
 import me.tbsten.katachi.docs.KatachiStaleDocumentationException
 import me.tbsten.katachi.dsl.Architecture
 import me.tbsten.katachi.dsl.architecture
-import me.tbsten.katachi.fs.KatachiFileSystem
+import me.tbsten.katachi.dsl.files.KatachiFileSystem
 import me.tbsten.katachi.processor.FakeArchitectureProcessContext
 import me.tbsten.katachi.processor.KatachiInvalidProcessorArgException
 import me.tbsten.katachi.processor.KatachiUnknownProcessorArgException
 import me.tbsten.katachi.processor.decodeFromStringMap
 import me.tbsten.katachi.processor.internal.checkNoUnknownArgs
-import me.tbsten.katachi.test.fs.ForbiddenFileSystem
+import me.tbsten.katachi.test.dsl.files.ForbiddenFileSystem
 
 /**
  * The shell of documentation generation: what reaches the disk, and what it says while doing it.

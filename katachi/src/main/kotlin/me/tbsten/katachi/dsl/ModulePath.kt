@@ -14,7 +14,7 @@ import me.tbsten.katachi.dsl.internal.GlobProblem
  * [ModuleResolver]'s, and only the default one happens to spell `:core:data` as `core/data`.
  *
  * Two module paths are equal when their segments are equal, so comparison is case sensitive
- * the same way [me.tbsten.katachi.fs.FsPath] is: a check must give the same answer locally and on CI.
+ * the same way [me.tbsten.katachi.dsl.files.FsPath] is: a check must give the same answer locally and on CI.
  *
  * ## Example 1: build one from a string and read it back
  * ```kt

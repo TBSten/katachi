@@ -1,9 +1,10 @@
 package me.tbsten.katachi.processor.internal
 
+import me.tbsten.katachi.check.Violation
 import me.tbsten.katachi.dsl.Architecture
-import me.tbsten.katachi.fs.KatachiFileSystem
-import me.tbsten.katachi.fs.internal.findProjectRoot
-import me.tbsten.katachi.fs.internal.RealFileSystem
+import me.tbsten.katachi.dsl.files.KatachiFileSystem
+import me.tbsten.katachi.dsl.files.internal.RealFileSystem
+import me.tbsten.katachi.dsl.files.internal.findProjectRoot
 import me.tbsten.katachi.internal.catching
 import me.tbsten.katachi.internal.displayPath
 import me.tbsten.katachi.processor.ArchitectureProcessContext
@@ -12,7 +13,6 @@ import me.tbsten.katachi.processor.KatachiProcessorNotFoundException
 import me.tbsten.katachi.processor.KatachiProcessorNotInstantiableException
 import me.tbsten.katachi.processor.KatachiProcessorTypeException
 import me.tbsten.katachi.processor.decodeFromStringMap
-import me.tbsten.katachi.check.Violation
 
 /**
  * How many of a `runProcessors` call's processors succeeded and how many failed.

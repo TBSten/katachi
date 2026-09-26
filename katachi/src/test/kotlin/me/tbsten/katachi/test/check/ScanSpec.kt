@@ -4,10 +4,10 @@ import io.kotest.core.spec.style.FreeSpec
 import io.kotest.matchers.shouldBe
 import me.tbsten.katachi.check.Severity
 import me.tbsten.katachi.check.internal.validate
+import me.tbsten.katachi.dsl.files.FsPath
+import me.tbsten.katachi.dsl.files.internal.GitTrackedFileSystem
 import me.tbsten.katachi.dsl.kotlin.ktFile
-import me.tbsten.katachi.fs.FsPath
-import me.tbsten.katachi.fs.internal.GitTrackedFileSystem
-import me.tbsten.katachi.test.fs.fakeFileSystem
+import me.tbsten.katachi.test.dsl.files.fakeFileSystem
 
 class ScanSpec : FreeSpec({
     "ルート直下" - {

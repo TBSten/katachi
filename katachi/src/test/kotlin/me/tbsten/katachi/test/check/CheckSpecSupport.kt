@@ -9,9 +9,9 @@ import me.tbsten.katachi.dsl.ArchitectureScope
 import me.tbsten.katachi.dsl.LayoutScope
 import me.tbsten.katachi.dsl.architecture
 import me.tbsten.katachi.dsl.wholeTree
-import me.tbsten.katachi.test.fs.FakeFileSystem
-import me.tbsten.katachi.test.fs.FakeFileSystemScope
-import me.tbsten.katachi.test.fs.fakeFileSystem
+import me.tbsten.katachi.test.dsl.files.FakeFileSystem
+import me.tbsten.katachi.test.dsl.files.FakeFileSystemScope
+import me.tbsten.katachi.test.dsl.files.fakeFileSystem
 
 /**
  * A tree with a project root marker the check never runs into.

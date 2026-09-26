@@ -14,7 +14,7 @@ import me.tbsten.katachi.dsl.KatachiDuplicateTemplateFileException
 import me.tbsten.katachi.dsl.KatachiInvalidTemplateFileNameException
 import me.tbsten.katachi.dsl.KatachiInvalidTemplateParameterValueException
 import me.tbsten.katachi.dsl.architecture
-import me.tbsten.katachi.fs.internal.RealFileSystem
+import me.tbsten.katachi.dsl.files.internal.RealFileSystem
 import me.tbsten.katachi.processor.FakeArchitectureProcessContext
 import me.tbsten.katachi.processor.process
 import me.tbsten.katachi.template.GenerateCodeFromTemplate

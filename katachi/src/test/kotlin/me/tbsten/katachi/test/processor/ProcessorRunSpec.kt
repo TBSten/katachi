@@ -4,28 +4,28 @@ import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.assertions.withClue
 import io.kotest.core.spec.style.FreeSpec
 import io.kotest.matchers.collections.shouldContain
-import io.kotest.matchers.shouldBe
 import io.kotest.matchers.nulls.shouldNotBeNull
+import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
 import io.kotest.matchers.string.shouldNotContain
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
+import me.tbsten.katachi.check.Severity
+import me.tbsten.katachi.check.Violation
+import me.tbsten.katachi.check.ViolationKind
+import me.tbsten.katachi.dsl.Architecture
+import me.tbsten.katachi.dsl.architecture
+import me.tbsten.katachi.dsl.files.FsPath
+import me.tbsten.katachi.dsl.files.KatachiFileSystem
 import me.tbsten.katachi.dsl.kotlin.ktFile
-import me.tbsten.katachi.fs.FsPath
-import me.tbsten.katachi.fs.KatachiFileSystem
 import me.tbsten.katachi.processor.ArchitectureProcessContext
 import me.tbsten.katachi.processor.ArchitectureProcessor
 import me.tbsten.katachi.processor.ArchitectureProcessorNoArg
-import me.tbsten.katachi.dsl.Architecture
-import me.tbsten.katachi.dsl.architecture
 import me.tbsten.katachi.processor.KatachiProcessorNotFoundException
 import me.tbsten.katachi.processor.KatachiProcessorNotInstantiableException
 import me.tbsten.katachi.processor.KatachiProcessorTypeException
 import me.tbsten.katachi.processor.internal.instantiateProcessor
 import me.tbsten.katachi.processor.internal.runProcessors
-import me.tbsten.katachi.check.Severity
-import me.tbsten.katachi.check.Violation
-import me.tbsten.katachi.check.ViolationKind
 import me.tbsten.katachi.test.check.architectureOf
 
 class ProcessorRunSpec : FreeSpec({

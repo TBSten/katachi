@@ -5,19 +5,19 @@ import io.kotest.core.spec.style.FreeSpec
 import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
+import me.tbsten.katachi.dsl.files.FsPath
+import me.tbsten.katachi.dsl.files.KatachiFileSystem
 import me.tbsten.katachi.dsl.gradle.module
 import me.tbsten.katachi.dsl.kotlin.ktFile
-import me.tbsten.katachi.fs.FsPath
-import me.tbsten.katachi.fs.KatachiFileSystem
 import me.tbsten.katachi.processor.KatachiUnknownRoleException
-import me.tbsten.katachi.processor.internal.withArgs
 import me.tbsten.katachi.processor.internal.process
+import me.tbsten.katachi.processor.internal.withArgs
 import me.tbsten.katachi.processor.process
 import me.tbsten.katachi.test.check.architectureOf
 import me.tbsten.katachi.test.check.layoutArchitecture
 import me.tbsten.katachi.test.check.repositoryOf
-import me.tbsten.katachi.test.fs.FileSystemTouchedException
-import me.tbsten.katachi.test.fs.ForbiddenFileSystem
+import me.tbsten.katachi.test.dsl.files.FileSystemTouchedException
+import me.tbsten.katachi.test.dsl.files.ForbiddenFileSystem
 
 class ArchitectureProcessContextSpec : FreeSpec({
     "ファイルシステムに触る境界" - {

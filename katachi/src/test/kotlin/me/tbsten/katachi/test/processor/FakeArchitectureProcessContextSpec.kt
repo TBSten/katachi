@@ -7,12 +7,12 @@ import me.tbsten.katachi.dsl.kotlin.ktFile
 import me.tbsten.katachi.processor.ArchitectureProcessContext
 import me.tbsten.katachi.processor.ArchitectureProcessorNoArg
 import me.tbsten.katachi.processor.FakeArchitectureProcessContext
-import me.tbsten.katachi.processor.internal.withArgs
 import me.tbsten.katachi.processor.internal.process
+import me.tbsten.katachi.processor.internal.withArgs
 import me.tbsten.katachi.processor.process
 import me.tbsten.katachi.test.check.architectureOf
 import me.tbsten.katachi.test.check.repositoryOf
-import me.tbsten.katachi.test.fs.ForbiddenFileSystem
+import me.tbsten.katachi.test.dsl.files.ForbiddenFileSystem
 
 class FakeArchitectureProcessContextSpec : FreeSpec({
     val definition = architectureOf {

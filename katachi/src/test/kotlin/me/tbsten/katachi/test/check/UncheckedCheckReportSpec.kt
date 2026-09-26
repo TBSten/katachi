@@ -5,7 +5,7 @@ import io.kotest.matchers.shouldBe
 import me.tbsten.katachi.check.UncheckedCheck
 import me.tbsten.katachi.check.UncheckedFile
 import me.tbsten.katachi.check.internal.report
-import me.tbsten.katachi.fs.FsPath
+import me.tbsten.katachi.dsl.files.FsPath
 
 /**
  * `UncheckedCheck` — a check handed to `assert(...)` / `validate(...)` that threw — and how it

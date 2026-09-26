@@ -10,7 +10,7 @@ import me.tbsten.katachi.test.architecture.roles.specSupport
  *
  * ## Why the tests are not split by layer
  *
- * The test sources of `:katachi` mirror the production packages — `fs`, `dsl`, `check` — so
+ * The test sources of `:katachi` mirror the production packages — `dsl`, `processor`, `check` — so
  * layers would have been the easy split. They would also have said nothing: a test may import
  * anything it likes, so there is no direction to enforce and no file that would land in the
  * wrong one. The boundary that is real here is a different one, and it is written in the file

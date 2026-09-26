@@ -9,9 +9,9 @@ import me.tbsten.katachi.check.AmbiguousLayout
 import me.tbsten.katachi.check.internal.assert
 import me.tbsten.katachi.check.internal.report
 import me.tbsten.katachi.check.internal.validate
+import me.tbsten.katachi.dsl.files.FsPath
 import me.tbsten.katachi.dsl.gradle.module
 import me.tbsten.katachi.dsl.kotlin.ktFile
-import me.tbsten.katachi.fs.FsPath
 
 /**
  * [AmbiguousLayout] wired through the real check: `ArchitectureProcessContext.declaredEntries`,

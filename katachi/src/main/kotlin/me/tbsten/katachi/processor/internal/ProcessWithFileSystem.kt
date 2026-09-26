@@ -1,7 +1,7 @@
 package me.tbsten.katachi.processor.internal
 
 import me.tbsten.katachi.dsl.Architecture
-import me.tbsten.katachi.fs.KatachiFileSystem
+import me.tbsten.katachi.dsl.files.KatachiFileSystem
 import me.tbsten.katachi.processor.ArchitectureProcessContext
 import me.tbsten.katachi.processor.ArchitectureProcessor
 

@@ -1,4 +1,4 @@
-package me.tbsten.katachi.fs
+package me.tbsten.katachi.dsl.files
 
 import me.tbsten.katachi.ExperimentalKatachiApi
 

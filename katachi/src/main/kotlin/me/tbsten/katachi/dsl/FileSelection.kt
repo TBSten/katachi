@@ -1,8 +1,10 @@
-package me.tbsten.katachi.fs
+package me.tbsten.katachi.dsl
 
 import me.tbsten.katachi.ExperimentalKatachiApi
-import me.tbsten.katachi.fs.internal.gitTrackedFileSystem
-import me.tbsten.katachi.fs.internal.isInsideGitWorkTree
+import me.tbsten.katachi.dsl.files.KatachiFileSystem
+import me.tbsten.katachi.dsl.files.ProjectRoot
+import me.tbsten.katachi.dsl.files.internal.gitTrackedFileSystem
+import me.tbsten.katachi.dsl.files.internal.isInsideGitWorkTree
 
 /**
  * Which files the check considers part of the project.
@@ -35,9 +37,9 @@ import me.tbsten.katachi.fs.internal.isInsideGitWorkTree
  *
  * ## Example 3: select the files Bazel manages, with a selection of your own
  * ```kt
- * import me.tbsten.katachi.fs.FileSelection
- * import me.tbsten.katachi.fs.KatachiFileSystem
- * import me.tbsten.katachi.fs.ProjectRoot
+ * import me.tbsten.katachi.dsl.FileSelection
+ * import me.tbsten.katachi.dsl.files.KatachiFileSystem
+ * import me.tbsten.katachi.dsl.files.ProjectRoot
  * import me.tbsten.katachi.ExperimentalKatachiApi
  * import me.tbsten.katachi.dsl.architecture
  *
@@ -74,9 +76,9 @@ public interface FileSelection {
      * ## Example 1: pass the tree through untouched
      * ```kt
      * import me.tbsten.katachi.ExperimentalKatachiApi
-     * import me.tbsten.katachi.fs.FileSelection
-     * import me.tbsten.katachi.fs.KatachiFileSystem
-     * import me.tbsten.katachi.fs.ProjectRoot
+     * import me.tbsten.katachi.dsl.FileSelection
+     * import me.tbsten.katachi.dsl.files.KatachiFileSystem
+     * import me.tbsten.katachi.dsl.files.ProjectRoot
      *
      * @OptIn(ExperimentalKatachiApi::class)
      * object Everything : FileSelection {

@@ -11,7 +11,7 @@ import me.tbsten.katachi.check.internal.validate
 import me.tbsten.katachi.dsl.ConstraintFailure
 import me.tbsten.katachi.dsl.DeclarationSite
 import me.tbsten.katachi.dsl.FileSetConstraint
-import me.tbsten.katachi.fs.FsPath
+import me.tbsten.katachi.dsl.files.FsPath
 
 /**
  * What the two constraint blocks actually print.

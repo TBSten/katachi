@@ -15,6 +15,11 @@ import com.lemonappdev.konsist.api.declaration.KoFileDeclaration
  * `util` comes straight after it: general-purpose helpers written against the standard library
  * alone, which every layer may use and which may use none of them.
  *
+ * `dsl.files` — the file system the walk reads, and the git-backed view of it — is `dsl`.
+ * `FileSelection` in `dsl` hands out the implementations in `dsl.files.internal`, and those
+ * implementations throw the exceptions declared next to `FileSelection`, so the two import
+ * each other; being one layer, they may.
+ *
  * `processor` and `check` share one layer. The walk and its results (`Violation` and the rest)
  * live in `check`, next to the `assert()` and the checks that produce them, and
  * `processor.internal.ProjectWalk` hands that same walk to every processor; `check` in turn is
@@ -30,7 +35,6 @@ private val LAYERS: List<List<String>> =
     listOf(
         listOf(""),
         listOf("util"),
-        listOf("fs"),
         listOf("dsl"),
         listOf("processor", "check"),
         listOf("docs"),
@@ -56,8 +60,8 @@ private const val ROOT_PACKAGE: String = "me.tbsten.katachi"
  * The two halves of a role disagree about what they read. A `layout { }` pins a file by the
  * **directory** it sits in; [importsLaterLayerThan] decides what that file may import by the
  * **package** its importers name. Nothing so far says the two agree, and where they do not the
- * table stops meaning anything: a file written into `dsl/` under `package me.tbsten.katachi.fs`
- * is checked as `dsl` and imported as `fs`, so `fs` would gain everything `dsl` can reach
+ * table stops meaning anything: a file written into `dsl/` under `package me.tbsten.katachi.util`
+ * is checked as `dsl` and imported as `util`, so `util` would gain everything `dsl` can reach
  * without a single rule going red.
  *
  * One line per role closes it, and one line is all it takes because Konsist already asks the

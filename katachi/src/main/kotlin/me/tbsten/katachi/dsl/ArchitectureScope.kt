@@ -5,7 +5,6 @@ import me.tbsten.katachi.dsl.internal.MetadataBuilder
 import me.tbsten.katachi.dsl.internal.captureDeclarationSite
 import me.tbsten.katachi.dsl.internal.declareGroup
 import me.tbsten.katachi.dsl.internal.declareRole
-import me.tbsten.katachi.fs.FileSelection
 
 /**
  * Receiver of `architecture { }`.

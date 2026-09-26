@@ -22,7 +22,7 @@ fun DeclarationContainerScope.specSupport() = "SpecSupport" {
             testSourceSet / kotlin / testPackage / "dsl" / "ArchitectureExtensions".ktFile()
             // Three of them — Fake / Forbidden / Throwing — and the glob stops short of
             // `FileSystemSpec.kt`, which is a spec and belongs to the role above.
-            testSourceSet / kotlin / testPackage / "fs" / "*FileSystem".ktFile()
+            testSourceSet / kotlin / testPackage / "dsl" / "files" / "*FileSystem".ktFile()
         }
         ":katachi-konsist".module {
             description = "スペックが使う道具のうち、Konsist に読ませる実ファイルを一時ディレクトリに用意するもの"

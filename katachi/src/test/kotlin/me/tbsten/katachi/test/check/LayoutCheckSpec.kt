@@ -12,11 +12,11 @@ import me.tbsten.katachi.check.LayoutCheck
 import me.tbsten.katachi.check.internal.assert
 import me.tbsten.katachi.check.internal.validate
 import me.tbsten.katachi.dsl.KatachiModuleOutsideLayoutRootException
+import me.tbsten.katachi.dsl.KatachiProjectRootNotFoundException
 import me.tbsten.katachi.dsl.gradle.module
-import me.tbsten.katachi.fs.KatachiProjectRootNotFoundException
 import me.tbsten.katachi.processor.internal.process
 import me.tbsten.katachi.processor.process
-import me.tbsten.katachi.test.fs.fakeFileSystem
+import me.tbsten.katachi.test.dsl.files.fakeFileSystem
 
 class LayoutCheckSpec : FreeSpec({
     "Error の違反は投げずに failure として返し、例外が違反を全件持つ" {

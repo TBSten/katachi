@@ -1,10 +1,10 @@
-package me.tbsten.katachi.fs.internal
+package me.tbsten.katachi.dsl.files.internal
 
 import me.tbsten.katachi.InternalKatachiApi
-import me.tbsten.katachi.fs.FsPath
-import me.tbsten.katachi.fs.KatachiFileSystem
-import me.tbsten.katachi.fs.KatachiProjectRootNotFoundException
-import me.tbsten.katachi.fs.ProjectRoot
+import me.tbsten.katachi.dsl.KatachiProjectRootNotFoundException
+import me.tbsten.katachi.dsl.files.FsPath
+import me.tbsten.katachi.dsl.files.KatachiFileSystem
+import me.tbsten.katachi.dsl.files.ProjectRoot
 
 /**
  * A kind of file that marks the top of a project. Same set as Konsist's root providers, so a

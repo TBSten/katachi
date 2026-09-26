@@ -5,7 +5,7 @@ import me.tbsten.katachi.check.KatachiArchitectureAssertionError
 import me.tbsten.katachi.check.Severity
 import me.tbsten.katachi.check.UncheckedCheck
 import me.tbsten.katachi.check.Violation
-import me.tbsten.katachi.fs.FsPath
+import me.tbsten.katachi.dsl.files.FsPath
 import me.tbsten.katachi.internal.isFatal
 import me.tbsten.katachi.processor.ArchitectureProcessor
 

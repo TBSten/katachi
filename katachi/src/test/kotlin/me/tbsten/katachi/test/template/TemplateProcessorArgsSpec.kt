@@ -22,7 +22,7 @@ import me.tbsten.katachi.processor.internal.checkNoUnknownArgs
 import me.tbsten.katachi.template.GenerateCodeFromTemplate
 import me.tbsten.katachi.template.KatachiNoTemplateException
 import me.tbsten.katachi.template.KatachiUnknownTemplateRoleException
-import me.tbsten.katachi.test.fs.ForbiddenFileSystem
+import me.tbsten.katachi.test.dsl.files.ForbiddenFileSystem
 
 /**
  * What `--processor=docs,template` accepts and what it refuses.

@@ -5,9 +5,9 @@ import me.tbsten.katachi.check.UncheckedDirectory
 import me.tbsten.katachi.check.UncheckedDirectoryReason
 import me.tbsten.katachi.dsl.ModulePath
 import me.tbsten.katachi.dsl.ModuleResolver
+import me.tbsten.katachi.dsl.files.FsPath
+import me.tbsten.katachi.dsl.files.KatachiFileSystem
 import me.tbsten.katachi.dsl.internal.ModuleIndex
-import me.tbsten.katachi.fs.FsPath
-import me.tbsten.katachi.fs.KatachiFileSystem
 import me.tbsten.katachi.internal.catching
 
 /**

@@ -1,7 +1,7 @@
-package me.tbsten.katachi.test.fs
+package me.tbsten.katachi.test.dsl.files
 
-import me.tbsten.katachi.fs.FsPath
-import me.tbsten.katachi.fs.KatachiFileSystem
+import me.tbsten.katachi.dsl.files.FsPath
+import me.tbsten.katachi.dsl.files.KatachiFileSystem
 
 /**
  * A tree that throws instead of answering, for the paths a spec names.

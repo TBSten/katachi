@@ -5,9 +5,9 @@ import kotlinx.serialization.KSerializer
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import me.tbsten.katachi.ExperimentalKatachiApi
+import me.tbsten.katachi.dsl.files.internal.findProjectRoot
 import me.tbsten.katachi.dsl.internal.evaluateTemplate
 import me.tbsten.katachi.dsl.internal.templateParameterNames
-import me.tbsten.katachi.fs.internal.findProjectRoot
 import me.tbsten.katachi.internal.absolutePathOf
 import me.tbsten.katachi.internal.fileUri
 import me.tbsten.katachi.internal.runProcessorCatching

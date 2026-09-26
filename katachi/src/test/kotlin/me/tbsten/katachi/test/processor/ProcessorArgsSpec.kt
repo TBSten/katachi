@@ -21,7 +21,7 @@ import me.tbsten.katachi.processor.KatachiUnknownProcessorArgException
 import me.tbsten.katachi.processor.KatachiUnsupportedProcessorArgException
 import me.tbsten.katachi.processor.decodeFromStringMap
 import me.tbsten.katachi.processor.internal.checkNoUnknownArgs
-import me.tbsten.katachi.test.fs.ForbiddenFileSystem
+import me.tbsten.katachi.test.dsl.files.ForbiddenFileSystem
 
 class ProcessorArgsSpec : FreeSpec({
     "decodeFromStringMap" - {

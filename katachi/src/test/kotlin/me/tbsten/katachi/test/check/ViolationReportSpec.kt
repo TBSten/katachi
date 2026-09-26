@@ -6,9 +6,9 @@ import io.kotest.matchers.string.shouldStartWith
 import me.tbsten.katachi.check.MissingFile
 import me.tbsten.katachi.check.internal.report
 import me.tbsten.katachi.check.internal.validate
+import me.tbsten.katachi.dsl.files.FsPath
 import me.tbsten.katachi.dsl.kotlin.ktFile
 import me.tbsten.katachi.dsl.kotlin.ktsFile
-import me.tbsten.katachi.fs.FsPath
 
 class ViolationReportSpec : FreeSpec({
     "Unexpected なファイル" - {

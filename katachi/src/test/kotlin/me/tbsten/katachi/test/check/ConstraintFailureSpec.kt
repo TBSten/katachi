@@ -6,18 +6,18 @@ import io.kotest.matchers.collections.shouldBeEmpty
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
 import io.kotest.matchers.types.shouldBeInstanceOf
-import me.tbsten.katachi.check.KonsistCheck
+import java.io.IOException
 import me.tbsten.katachi.check.KatachiConstraintSubjectException
+import me.tbsten.katachi.check.KonsistCheck
+import me.tbsten.katachi.check.UncheckedConstraintReason
+import me.tbsten.katachi.check.Violation
 import me.tbsten.katachi.check.internal.report
 import me.tbsten.katachi.check.internal.validate
 import me.tbsten.katachi.dsl.ConstraintFailure
 import me.tbsten.katachi.dsl.FileSetConstraint
 import me.tbsten.katachi.processor.ArchitectureProcessContext
 import me.tbsten.katachi.processor.ArchitectureProcessorNoArg
-import me.tbsten.katachi.check.UncheckedConstraintReason
-import me.tbsten.katachi.check.Violation
-import me.tbsten.katachi.test.fs.failingAt
-import java.io.IOException
+import me.tbsten.katachi.test.dsl.files.failingAt
 
 /**
  * What happens when a constraint cannot answer at all.

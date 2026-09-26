@@ -7,7 +7,7 @@ import me.tbsten.katachi.docs.internal.roleReferenceDocuments
 import me.tbsten.katachi.dsl.Architecture
 import me.tbsten.katachi.processor.internal.process
 import me.tbsten.katachi.processor.process
-import me.tbsten.katachi.test.fs.ForbiddenFileSystem
+import me.tbsten.katachi.test.dsl.files.ForbiddenFileSystem
 
 /**
  * The pages this definition produces, built against a tree that refuses to be read.

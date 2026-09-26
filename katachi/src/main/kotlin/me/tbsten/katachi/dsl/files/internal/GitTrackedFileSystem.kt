@@ -1,11 +1,11 @@
-package me.tbsten.katachi.fs.internal
+package me.tbsten.katachi.dsl.files.internal
 
 import java.io.File
 import java.io.IOException
 import java.util.concurrent.TimeUnit
-import me.tbsten.katachi.fs.FsPath
-import me.tbsten.katachi.fs.KatachiFileSystem
-import me.tbsten.katachi.fs.KatachiGitUnavailableException
+import me.tbsten.katachi.dsl.KatachiGitUnavailableException
+import me.tbsten.katachi.dsl.files.FsPath
+import me.tbsten.katachi.dsl.files.KatachiFileSystem
 import me.tbsten.katachi.internal.fileUri
 
 /**
@@ -123,7 +123,7 @@ private val GIT_INSIDE_WORK_TREE: List<String> = listOf("git", "rev-parse", "--i
 /**
  * Asks git whether [root] is inside a work tree.
  *
- * This is the question that decides whether [me.tbsten.katachi.fs.FileSelection.GitTracked] applies, and it is
+ * This is the question that decides whether [me.tbsten.katachi.dsl.FileSelection.GitTracked] applies, and it is
  * deliberately asked of git rather than answered by looking for a `.git` entry at [root].
  * A Gradle project frequently sits below the repository root — katachi's own samples do,
  * and so does any build inside a monorepo — and there `.git` is further up while

@@ -10,11 +10,11 @@ import me.tbsten.katachi.check.Violation
 import me.tbsten.katachi.dsl.Architecture
 import me.tbsten.katachi.dsl.LayoutEntry
 import me.tbsten.katachi.dsl.Role
+import me.tbsten.katachi.dsl.files.FsPath
+import me.tbsten.katachi.dsl.files.KatachiFileSystem
+import me.tbsten.katachi.dsl.files.internal.findProjectRoot
 import me.tbsten.katachi.dsl.internal.DeclaredConstraint
 import me.tbsten.katachi.dsl.internal.evaluateLayout
-import me.tbsten.katachi.fs.FsPath
-import me.tbsten.katachi.fs.KatachiFileSystem
-import me.tbsten.katachi.fs.internal.findProjectRoot
 import me.tbsten.katachi.internal.catching
 
 /**
@@ -105,9 +105,9 @@ internal class ScanResult(
  * whose `build.gradle.kts` a file set happens to leave out is still a module, and a module
  * path key with a wildcard would otherwise quietly expand to nothing.
  *
- * @throws me.tbsten.katachi.fs.KatachiProjectRootNotFoundException when no directory above
+ * @throws me.tbsten.katachi.dsl.KatachiProjectRootNotFoundException when no directory above
  *   the working directory carries a Gradle, Maven or git marker.
- * @throws me.tbsten.katachi.fs.KatachiGitUnavailableException when `files = gitTracked()` and
+ * @throws me.tbsten.katachi.dsl.KatachiGitUnavailableException when `files = gitTracked()` and
  *   the project root is a git repository, but git cannot be run.
  */
 internal fun Architecture.scanProject(fileSystem: KatachiFileSystem): ScanResult {

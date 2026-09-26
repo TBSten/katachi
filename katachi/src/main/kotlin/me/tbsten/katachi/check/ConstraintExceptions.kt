@@ -2,7 +2,7 @@ package me.tbsten.katachi.check
 
 import me.tbsten.katachi.KatachiDeclarationException
 import me.tbsten.katachi.dsl.DeclarationSite
-import me.tbsten.katachi.fs.FsPath
+import me.tbsten.katachi.dsl.files.FsPath
 import me.tbsten.katachi.internal.displayPath
 
 /** How many of the offending paths a message names before it stops listing them. */

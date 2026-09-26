@@ -10,7 +10,7 @@ import me.tbsten.katachi.processor.process
 import me.tbsten.katachi.test.check.architectureOf
 import me.tbsten.katachi.test.check.layoutArchitecture
 import me.tbsten.katachi.test.check.repositoryOf
-import me.tbsten.katachi.test.fs.ForbiddenFileSystem
+import me.tbsten.katachi.test.dsl.files.ForbiddenFileSystem
 
 class ArchitectureProcessorSpec : FreeSpec({
     val definition = architectureOf {

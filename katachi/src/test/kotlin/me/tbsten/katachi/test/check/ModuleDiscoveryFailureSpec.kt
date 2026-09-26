@@ -21,9 +21,9 @@ import me.tbsten.katachi.dsl.gradle.wildcards
 import me.tbsten.katachi.dsl.kotlin.ktFile
 import me.tbsten.katachi.dsl.kotlin.ktsFile
 import me.tbsten.katachi.dsl.pascalCase
-import me.tbsten.katachi.test.fs.failingAt
-import me.tbsten.katachi.test.fs.failingToExistAt
-import me.tbsten.katachi.test.fs.failingToListAt
+import me.tbsten.katachi.test.dsl.files.failingAt
+import me.tbsten.katachi.test.dsl.files.failingToExistAt
+import me.tbsten.katachi.test.dsl.files.failingToListAt
 
 /**
  * The search for the project's modules carrying on past a directory it could not read.

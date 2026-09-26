@@ -7,19 +7,19 @@ import io.kotest.matchers.collections.shouldBeEmpty
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.types.shouldBeInstanceOf
 import io.kotest.matchers.types.shouldBeSameInstanceAs
-import me.tbsten.katachi.check.KonsistCheck
 import me.tbsten.katachi.check.KatachiArchitectureAssertionError
+import me.tbsten.katachi.check.KonsistCheck
+import me.tbsten.katachi.check.UncheckedConstraintReason
 import me.tbsten.katachi.check.internal.assert
 import me.tbsten.katachi.check.internal.report
 import me.tbsten.katachi.check.internal.validate
 import me.tbsten.katachi.dsl.ConstraintFailure
 import me.tbsten.katachi.dsl.FileSetConstraint
 import me.tbsten.katachi.dsl.KatachiConstraintMemoTypeException
-import me.tbsten.katachi.fs.KatachiProjectRootNotFoundException
+import me.tbsten.katachi.dsl.KatachiProjectRootNotFoundException
 import me.tbsten.katachi.processor.internal.process
 import me.tbsten.katachi.processor.process
-import me.tbsten.katachi.check.UncheckedConstraintReason
-import me.tbsten.katachi.test.fs.fakeFileSystem
+import me.tbsten.katachi.test.dsl.files.fakeFileSystem
 
 /**
  * What [KonsistCheck] evaluates, what it refuses to leave unevaluated, and what one run

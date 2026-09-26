@@ -21,7 +21,7 @@ import me.tbsten.katachi.test.check.architectureOf
 import me.tbsten.katachi.test.check.labels
 import me.tbsten.katachi.test.check.repositoryOf
 import me.tbsten.katachi.test.docs.documents
-import me.tbsten.katachi.test.fs.FakeFileSystemScope
+import me.tbsten.katachi.test.dsl.files.FakeFileSystemScope
 
 class GradleGroupSpec : FreeSpec({
     /** A Kotlin DSL build as `gradle init` leaves it, with two modules below the root project. */

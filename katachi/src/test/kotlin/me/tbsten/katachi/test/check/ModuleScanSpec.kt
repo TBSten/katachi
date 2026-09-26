@@ -9,7 +9,7 @@ import me.tbsten.katachi.dsl.gradle.capitalizedModuleNamePackage
 import me.tbsten.katachi.dsl.kotlin.ktFile
 import me.tbsten.katachi.dsl.kotlin.ktsFile
 import me.tbsten.katachi.dsl.pascalCase
-import me.tbsten.katachi.test.fs.FakeFileSystemScope
+import me.tbsten.katachi.test.dsl.files.FakeFileSystemScope
 
 /**
  * The module keys seen from the check, not from the flattening.

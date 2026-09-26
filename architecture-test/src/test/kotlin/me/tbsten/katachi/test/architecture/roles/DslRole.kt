@@ -22,22 +22,30 @@ import me.tbsten.katachi.test.architecture.showsExample
  * The role of the layer that receives a definition and holds the declared model.
  *
  * The other place where the kind of file and the package layer come apart: `dsl.gradle` and
- * `dsl.kotlin` are the layout vocabulary rather than the core of the DSL, and they are still
- * this layer because that is where they sit in the dependency table. See the `description`.
+ * `dsl.kotlin` are the layout vocabulary rather than the core of the DSL, and `dsl.files` is
+ * the file system the walk reads; they are still this layer because that is where they sit in
+ * the dependency table. See the `description`.
  */
 fun DeclarationContainerScope.dsl() = "Dsl" {
     title = "DSL"
-    summary = "architecture { } / group { } / role { } / layout { } の受け皿と、宣言されたモデル"
+    summary = "architecture { } / group { } / role { } / layout { } の受け皿と、宣言されたモデル。走査するファイル集合の選択と、その下のファイルシステム"
     description = """
         `dsl.gradle` と `dsl.kotlin` もこの層です。`layout { }` の上に context parameter で
         書かれた語彙で、種類としては別物ですが依存としては同じ層にいます。
         `dsl/LayoutScopeImpl.kt` が `dsl.kotlin.ktsFile` を import しているので
         （`.module { }` が `build.gradle.kts` を注入するため）、
         「コアは語彙を import しない」という規則は今日の時点で落ちます。
+
+        `dsl.files` もこの層です。`files = gitTracked()` が選ぶファイルシステムの拡張点
+        （`KatachiFileSystem` / `FsPath` / `ProjectRoot`）と、その実装（`dsl.files.internal`）
+        です。`FileSelection` が実装を import し、実装が `FileSelection` の隣にある例外を
+        import するので、互いに import し合います。
     """.trimIndent()
     example("LayoutScope.kt", "layout { } の受け皿。コアの語彙はこれで全部")
     example("Architecture.kt", "宣言し終わった1つの定義")
     example("Modules.kt", "\":core:data\".module { } — dsl.gradle の語彙")
+    example("FileSelection.kt", "走査するファイル集合の選び方")
+    example("KatachiFileSystem.kt", "走査が触る最小のファイルシステム抽象 — dsl.files の拡張点")
     layout {
         ":katachi".module {
             importsOnlyEarlierLayers()

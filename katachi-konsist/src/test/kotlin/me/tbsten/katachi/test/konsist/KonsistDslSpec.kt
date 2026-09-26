@@ -13,8 +13,8 @@ import me.tbsten.katachi.check.internal.validate
 import me.tbsten.katachi.dsl.KatachiConstraintNameException
 import me.tbsten.katachi.dsl.KatachiConstraintWithoutLayoutException
 import me.tbsten.katachi.dsl.architecture
+import me.tbsten.katachi.dsl.files.internal.RealFileSystem
 import me.tbsten.katachi.dsl.wholeTree
-import me.tbsten.katachi.fs.internal.RealFileSystem
 import me.tbsten.katachi.konsist.konsist
 
 /**

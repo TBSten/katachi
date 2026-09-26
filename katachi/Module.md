@@ -23,7 +23,15 @@ Writes the role reference of a definition to disk, as Markdown.
 # Package me.tbsten.katachi.dsl
 
 The `architecture { }` DSL itself: groups, roles, `layout { }`, constraints and the metadata a
-definition carries.
+definition carries. It also holds `FileSelection` — which files a check walks, chosen with
+`files = gitTracked()` or `files = wholeTree()` — and the exceptions raised when that choice
+cannot be applied.
+
+# Package me.tbsten.katachi.dsl.files
+
+The small file system abstraction a check walks a project through, real or in-memory: the
+extension point a custom `FileSelection` is written against, together with the path and project
+root types it speaks in.
 
 # Package me.tbsten.katachi.dsl.gradle
 
@@ -34,10 +42,6 @@ DSL vocabulary for a Gradle multi-module project: module discovery, source sets,
 
 File name helpers written on top of the core DSL, such as `ktFile()`, as a worked example of the
 kind of utility layer a project writes for itself.
-
-# Package me.tbsten.katachi.fs
-
-The small file system abstraction a check walks a project through, real or in-memory.
 
 # Package me.tbsten.katachi.processor
 

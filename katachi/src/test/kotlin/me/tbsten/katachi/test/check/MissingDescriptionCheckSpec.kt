@@ -7,16 +7,16 @@ import io.kotest.matchers.collections.shouldBeEmpty
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
 import me.tbsten.katachi.check.KatachiArchitectureAssertionError
+import me.tbsten.katachi.check.MissingDescription
 import me.tbsten.katachi.check.internal.assert
+import me.tbsten.katachi.check.internal.missingDescriptionsOf
 import me.tbsten.katachi.check.internal.report
 import me.tbsten.katachi.check.internal.validate
 import me.tbsten.katachi.dsl.architecture
-import me.tbsten.katachi.dsl.internal.flattenLayout
+import me.tbsten.katachi.dsl.files.FsPath
 import me.tbsten.katachi.dsl.gradle.module
+import me.tbsten.katachi.dsl.internal.flattenLayout
 import me.tbsten.katachi.dsl.kotlin.ktFile
-import me.tbsten.katachi.fs.FsPath
-import me.tbsten.katachi.check.MissingDescription
-import me.tbsten.katachi.check.internal.missingDescriptionsOf
 
 /**
  * [MissingDescription] wired through the real check — `ArchitectureProcessContext.declaredEntries`,

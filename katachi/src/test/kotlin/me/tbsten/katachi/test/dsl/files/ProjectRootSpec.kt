@@ -1,14 +1,14 @@
-package me.tbsten.katachi.test.fs
+package me.tbsten.katachi.test.dsl.files
 
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.FreeSpec
 import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
-import me.tbsten.katachi.fs.FsPath
-import me.tbsten.katachi.fs.KatachiProjectRootNotFoundException
-import me.tbsten.katachi.fs.internal.RealFileSystem
-import me.tbsten.katachi.fs.internal.findProjectRoot
+import me.tbsten.katachi.dsl.KatachiProjectRootNotFoundException
+import me.tbsten.katachi.dsl.files.FsPath
+import me.tbsten.katachi.dsl.files.internal.RealFileSystem
+import me.tbsten.katachi.dsl.files.internal.findProjectRoot
 
 class ProjectRootSpec : FreeSpec({
     "作業ディレクトリから上に辿ってルートを特定する" - {

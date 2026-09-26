@@ -6,7 +6,7 @@ import me.tbsten.katachi.dsl.Architecture
 import me.tbsten.katachi.processor.internal.process
 import me.tbsten.katachi.processor.process
 import me.tbsten.katachi.template.internal.templateFiles
-import me.tbsten.katachi.test.fs.ForbiddenFileSystem
+import me.tbsten.katachi.test.dsl.files.ForbiddenFileSystem
 
 /**
  * What running [roleName]'s template would put in the project, against a tree that refuses to be

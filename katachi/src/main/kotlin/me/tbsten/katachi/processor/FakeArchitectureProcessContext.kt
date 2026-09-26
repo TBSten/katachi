@@ -5,7 +5,7 @@ import me.tbsten.katachi.dsl.Architecture
 import me.tbsten.katachi.dsl.Group
 import me.tbsten.katachi.dsl.LayoutEntry
 import me.tbsten.katachi.dsl.Role
-import me.tbsten.katachi.fs.KatachiFileSystem
+import me.tbsten.katachi.dsl.files.KatachiFileSystem
 import me.tbsten.katachi.processor.internal.RealArchitectureProcessContext
 
 /**

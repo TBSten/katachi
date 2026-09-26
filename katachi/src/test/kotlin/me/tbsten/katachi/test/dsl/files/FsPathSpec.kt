@@ -1,10 +1,10 @@
-package me.tbsten.katachi.test.fs
+package me.tbsten.katachi.test.dsl.files
 
 import io.kotest.core.spec.style.FreeSpec
 import io.kotest.matchers.collections.shouldContainExactly
 import io.kotest.matchers.nulls.shouldBeNull
 import io.kotest.matchers.shouldBe
-import me.tbsten.katachi.fs.FsPath
+import me.tbsten.katachi.dsl.files.FsPath
 
 class FsPathSpec : FreeSpec({
     "区切り文字を / に正規化する" - {

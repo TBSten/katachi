@@ -15,9 +15,9 @@ import me.tbsten.katachi.check.internal.report
 import me.tbsten.katachi.check.internal.validate
 import me.tbsten.katachi.dsl.KatachiUnresolvableModulePatternException
 import me.tbsten.katachi.dsl.kotlin.ktFile
-import me.tbsten.katachi.test.fs.ThrowingFileSystem
-import me.tbsten.katachi.test.fs.failingAt
-import me.tbsten.katachi.test.fs.failingToListAt
+import me.tbsten.katachi.test.dsl.files.ThrowingFileSystem
+import me.tbsten.katachi.test.dsl.files.failingAt
+import me.tbsten.katachi.test.dsl.files.failingToListAt
 
 /**
  * The traversal carrying on past a path it could not check.

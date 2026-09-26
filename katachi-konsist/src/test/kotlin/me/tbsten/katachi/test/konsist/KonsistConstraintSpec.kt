@@ -11,7 +11,7 @@ import me.tbsten.katachi.check.UncheckedConstraint
 import me.tbsten.katachi.check.UncheckedConstraintReason
 import me.tbsten.katachi.check.UnsatisfiedConstraint
 import me.tbsten.katachi.check.internal.report
-import me.tbsten.katachi.fs.FsPath
+import me.tbsten.katachi.dsl.files.FsPath
 import me.tbsten.katachi.konsist.KatachiKonsistNoExpectationException
 import me.tbsten.katachi.konsist.KatachiKonsistNoKotlinFilesException
 

@@ -3,7 +3,7 @@ package me.tbsten.katachi.check.internal
 import me.tbsten.katachi.InternalKatachiApi
 import me.tbsten.katachi.check.*
 import me.tbsten.katachi.check.DEFAULT_MAX_VIOLATIONS
-import me.tbsten.katachi.fs.FsPath
+import me.tbsten.katachi.dsl.files.FsPath
 import me.tbsten.katachi.internal.displayExistingPath
 import me.tbsten.katachi.internal.displayPath
 
