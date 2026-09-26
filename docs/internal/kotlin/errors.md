@@ -181,7 +181,7 @@ internal inline fun <T> catching(block: () -> T): Result<T> =
 
 - 失敗した単位ごとに `ViolationKind.Failed` の violation を作る。`UncheckedFile` /
   `UncheckedDirectory`（既存の `UnexpectedFile` / `UnexpectedDirectory` と同じ対）、
-  `UncheckedConstraint`、`UncheckedCheck` がそれ
+  `UncheckedFileConstraint`、`UncheckedCheck` がそれ
 - 握った `Throwable` も持たせ、`[UncheckedFile]` として他のブロックと並べる。ブロックには
   **型名と message の1行目**だけを出す（`ViolationReport.causeLine`）。スタックトレース全体は出さない —
   利用者がそのまま issue に貼れる程度に
@@ -305,7 +305,7 @@ public abstract class KatachiInternalException
   モジュールを答えられるので、子 1 つ単位で握り、`UncheckedDirectory`
   （`reason = ModulesNotDiscovered`）として報告に載せる
 - **`validate` が受け取った check 1 つ、constraint 1 つ。** 片方が投げても残りは答えを出せるので、
-  `UncheckedCheck` / `UncheckedConstraint` にして走査を続ける
+  `UncheckedCheck` / `UncheckedFileConstraint` にして走査を続ける
 
 一方**ルート探索は握らない** — ルートが決まらなければ検査するものが 1 つも残らず、
 「隣」が存在しないため。

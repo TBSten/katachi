@@ -6,9 +6,9 @@
 - [ ] publish 済の直前のリリースバージョン: {TODO}
 
 <details>
-<summary>memo</summary>
+    <summary>memo</summary>
 
-{TODO}
+    {TODO}
 
 </details>
 
@@ -18,9 +18,9 @@
 - [ ] 訳し直しが要る組が残っていない（`list-targets.py` の結果）: {TODO}
 
 <details>
-<summary>memo</summary>
+    <summary>memo</summary>
 
-{TODO}
+    {TODO}
 
 </details>
 
@@ -32,9 +32,9 @@
 - [ ] 一覧: {TODO file://.local/release-v0.0.0/visibility-check.md の絶対パス}
 
 <details>
-<summary>memo</summary>
+    <summary>memo</summary>
 
-{TODO}
+    {TODO}
 
 </details>
 
@@ -45,9 +45,9 @@
 - [ ] 未コミットの変更がリリースに入らないことを確かめた: {TODO}
 
 <details>
-<summary>memo</summary>
+    <summary>memo</summary>
 
-{TODO}
+    {TODO}
 
 </details>
 
@@ -57,9 +57,9 @@
 - [ ] 食い違い: {TODO} 件（priority 7 以上: {TODO} 件）
 
 <details>
-<summary>memo</summary>
+    <summary>memo</summary>
 
-{TODO}
+    {TODO}
 
 </details>
 
@@ -72,17 +72,17 @@
 - [ ] スクリーンショット: {TODO file://.local/release-v0.0.0/screenshots/ の絶対パス}
 
 <details>
-<summary>memo</summary>
+    <summary>memo</summary>
 
-{TODO}
+    {TODO}
 
 </details>
 
 ## そのほか
 
 <details>
-<summary>memo</summary>
+    <summary>memo</summary>
 
-{TODO}
+    {TODO}
 
 </details>

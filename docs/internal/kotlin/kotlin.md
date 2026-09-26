@@ -76,11 +76,17 @@
  * @return <オプション>
  * @see <オプションだが、関連するクラスが1つでもあるならそれをリンクすることを強く推奨>
  */
-context(scope: ConstraintScope)
+context(scope: FileConstraintScope)
 public fun String.konsist(block: KonsistScope.() -> Unit) {
     /* ... */
 }
 `````
+
+#### 並び順
+
+上のテンプレートのとおり、常に **1行サマリ → 詳細（本文・見出し） → `## Example` → ブロックタグ（`@param` 等）** の順で書く。
+Dokka は最初のブロックタグ以降を本文として扱わないため、タグより後ろに `## Example` や本文を置くと描画が崩れる。
+`architecture-test` の `KDOC_TAG_ORDER_RULE` がこの並びを機械的に検査する。
 
 #### `## Example` を書く単位
 
