@@ -33,6 +33,9 @@ class KatachiProcessorsTest {
     private static final String GENERATE_CODE_FROM_TEMPLATE =
             "me.tbsten.katachi.template.GenerateCodeFromTemplate";
 
+    /** Where the default template describer lives, as the generated source has to spell it. */
+    private static final String DESCRIBE_TEMPLATES = "me.tbsten.katachi.template.DescribeTemplates";
+
     @Test
     @DisplayName("何も register しなくても docs が引ける")
     void docsIsRegisteredByDefault() {
@@ -50,7 +53,15 @@ class KatachiProcessorsTest {
     }
 
     @Test
-    @DisplayName("既定で登録されるのは docs と template だけ -- layout も konsist も入らない")
+    @DisplayName("何も register しなくても templates が引ける")
+    void templatesIsRegisteredByDefault() {
+        Map<String, String> registrations = registrations(new KatachiProcessors());
+
+        assertEquals(DESCRIBE_TEMPLATES, registrations.get("templates"));
+    }
+
+    @Test
+    @DisplayName("既定で登録されるのは docs と template と templates だけ -- layout も konsist も入らない")
     void docsAndTemplateAreTheOnlyDefaults() {
         Map<String, String> registrations = registrations(new KatachiProcessors());
 
@@ -60,6 +71,7 @@ class KatachiProcessorsTest {
         Map<String, String> expected = new HashMap<>();
         expected.put("docs", GENERATE_DOCUMENTATION);
         expected.put("template", GENERATE_CODE_FROM_TEMPLATE);
+        expected.put("templates", DESCRIBE_TEMPLATES);
         assertEquals(
                 expected,
                 registrations,
@@ -84,8 +96,8 @@ class KatachiProcessorsTest {
         // without giving it a second name.
         processors.register("docs", "com.example.processors.OurOwnDocs");
 
-        // Still the two defaults, with `docs` now pointing at the user's own class.
-        assertEquals(2, registrations(processors).size());
+        // Still the three defaults, with `docs` now pointing at the user's own class.
+        assertEquals(3, registrations(processors).size());
     }
 
     @Test

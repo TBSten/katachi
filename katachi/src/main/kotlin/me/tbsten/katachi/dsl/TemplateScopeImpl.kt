@@ -149,6 +149,9 @@ internal class TemplateScopeImpl(
     /** The names declared so far, which is what a caller asks for before a run. */
     fun parameterNames(): Set<String> = named.keys.toSet()
 
+    /** The named parameters declared so far, in declaration order, types and defaults included. */
+    fun parameters(): List<TemplateParameter<*>> = named.values.toList()
+
     /**
      * Whether a value that could decide a branch was replaced by a stand-in: one that could not
      * be read, or a missing one of a type other than String. A missing String only decides a

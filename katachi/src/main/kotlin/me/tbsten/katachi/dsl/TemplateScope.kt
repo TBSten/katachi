@@ -1,9 +1,9 @@
 package me.tbsten.katachi.dsl
 
-import kotlin.enums.EnumEntries
-import kotlin.reflect.KProperty
 import me.tbsten.katachi.dsl.internal.TemplateParameterBinder
 import me.tbsten.katachi.dsl.internal.TemplateParameterType
+import kotlin.enums.EnumEntries
+import kotlin.reflect.KProperty
 
 /**
  * Receiver of `template { }`: the parameters a generated file is filled in from, and the files

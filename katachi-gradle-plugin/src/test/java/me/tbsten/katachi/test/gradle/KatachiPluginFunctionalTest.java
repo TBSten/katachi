@@ -72,7 +72,7 @@ class KatachiPluginFunctionalTest {
 
     @ParameterizedTest(name = "Gradle {0}")
     @MethodSource("gradleVersions")
-    @DisplayName("plugin を適用すると katachiDocs と katachiTemplate が test の runtimeClasspath つきで登録される")
+    @DisplayName("plugin を適用すると katachiDocs と katachiTemplate と katachiTemplates が test の runtimeClasspath つきで登録される")
     void registersTheTaskWithTheTestRuntimeClasspath(String gradleVersion, @TempDir Path projectDir)
             throws IOException {
         writeFixture(projectDir, "");
@@ -84,6 +84,7 @@ class KatachiPluginFunctionalTest {
                 "\n"
                         + "val katachiDocs = tasks.named<KatachiProcessorTask>(\"katachiDocs\")\n"
                         + "val katachiTemplate = tasks.named<KatachiProcessorTask>(\"katachiTemplate\")\n"
+                        + "val katachiTemplates = tasks.named<KatachiProcessorTask>(\"katachiTemplates\")\n"
                         + "\n"
                         + "tasks.register(\"reportKatachiWiring\") {\n"
                         + "    // Read into plain values at configuration time: a `doLast` that\n"
@@ -96,6 +97,8 @@ class KatachiPluginFunctionalTest {
                         + "    val docsKey = task.processorKey.get()\n"
                         + "    val templateKey = katachiTemplate.get().processorKey.get()\n"
                         + "    val templateClasspath = katachiTemplate.get().classpath.files.size\n"
+                        + "    val templatesKey = katachiTemplates.get().processorKey.get()\n"
+                        + "    val templatesClasspath = katachiTemplates.get().classpath.files.size\n"
                         + "    doLast {\n"
                         + "        println(\"katachi.mainClass=\" + mainClass)\n"
                         + "        println(\"katachi.group=\" + taskGroup)\n"
@@ -103,6 +106,8 @@ class KatachiPluginFunctionalTest {
                         + "        println(\"katachi.docsKey=\" + docsKey)\n"
                         + "        println(\"katachi.templateKey=\" + templateKey)\n"
                         + "        println(\"katachi.templateClasspath=\" + templateClasspath)\n"
+                        + "        println(\"katachi.templatesKey=\" + templatesKey)\n"
+                        + "        println(\"katachi.templatesClasspath=\" + templatesClasspath)\n"
                         + "        classpath.forEach { println(\"katachi.classpath=\" + it) }\n"
                         + "    }\n"
                         + "}\n");
@@ -115,6 +120,10 @@ class KatachiPluginFunctionalTest {
         assertFalse(
                 "0".equals(single(result, "katachi.templateClasspath=")),
                 "katachiTemplate was registered without the test runtime classpath");
+        assertEquals("templates", single(result, "katachi.templatesKey="));
+        assertFalse(
+                "0".equals(single(result, "katachi.templatesClasspath=")),
+                "katachiTemplates was registered without the test runtime classpath");
         assertEquals("katachi", single(result, "katachi.group="));
         assertEquals(
                 "false",
@@ -261,7 +270,8 @@ class KatachiPluginFunctionalTest {
                         "katachiDocs",
                         "katachiLayout",
                         "katachiLayoutCheck",
-                        "katachiTemplate"),
+                        "katachiTemplate",
+                        "katachiTemplates"),
                 tasksOfGroup(output, "Katachi tasks"),
                 output);
 
@@ -279,6 +289,11 @@ class KatachiPluginFunctionalTest {
                         "katachiTemplate - Runs the katachi processor "
                                 + "me.tbsten.katachi.template.GenerateCodeFromTemplate"),
                 "katachiTemplate is missing:\n" + output);
+        assertTrue(
+                output.contains(
+                        "katachiTemplates - Runs the katachi processor "
+                                + "me.tbsten.katachi.template.DescribeTemplates"),
+                "katachiTemplates is missing:\n" + output);
     }
 
     @ParameterizedTest(name = "Gradle {0}")

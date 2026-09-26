@@ -29,9 +29,10 @@ import org.gradle.api.InvalidUserDataException;
  *
  * <h2>Which processors are there without being registered</h2>
  *
- * <p>{@code docs} and {@code template} are registered for every module this plugin is applied
- * to, so {@code katachiDocs} and {@code katachiTemplate} work with an empty {@code katachi { } } block. They are the
- * only two: {@code layout} and {@code konsist} would have to be defaulted too if the rule were
+ * <p>{@code docs}, {@code template} and {@code templates} are registered for every module this
+ * plugin is applied to, so {@code katachiDocs}, {@code katachiTemplate} and
+ * {@code katachiTemplates} work with an empty {@code katachi { } } block. They are the only
+ * ones: {@code layout} and {@code konsist} would have to be defaulted too if the rule were
  * "katachi's own processors", but {@code konsist} lives in {@code :katachi-konsist} and a module
  * that does not depend on it would get a registry entry that fails to resolve at run time.
  * Registering only what {@code :katachi} itself carries keeps every default entry resolvable.
@@ -83,6 +84,7 @@ public class KatachiProcessors {
         Map<String, String> defaults = new LinkedHashMap<>();
         defaults.put("docs", "me.tbsten.katachi.docs.GenerateDocumentation");
         defaults.put("template", "me.tbsten.katachi.template.GenerateCodeFromTemplate");
+        defaults.put("templates", "me.tbsten.katachi.template.DescribeTemplates");
         return defaults;
     }
 
