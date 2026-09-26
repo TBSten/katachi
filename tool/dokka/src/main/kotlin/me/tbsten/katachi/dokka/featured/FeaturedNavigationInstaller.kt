@@ -21,7 +21,7 @@ import org.jetbrains.dokka.transformers.pages.PageTransformer
  * sidebar is the join of the modules' ones.
  */
 internal class FeaturedNavigationInstaller(private val context: DokkaContext) : PageTransformer {
-    private val title by lazy { context.katachiConfiguration().featuredTitle }
+    private val title by lazy { context.katachiConfiguration().htmlFeaturedTitle }
 
     override fun invoke(input: RootPageNode): RootPageNode {
         val navigation = input.children.filterIsInstance<NavigationPage>().firstOrNull() ?: return input

@@ -21,8 +21,10 @@ import org.jetbrains.dokka.plugability.configuration
  * ]
  * ```
  *
- * @property featuredTitle The name of the sidebar node, and the heading of the llms files' section,
- *   that lists the `@featured` declarations.
+ * @property featuredTitle The name of the sidebar node and the heading of the llms files' section
+ *   that lists the `@featured` declarations. HTML shows it with a star in front (see
+ *   `me.tbsten.katachi.dokka.featured.htmlFeaturedTitle`); the llms files and the per-page
+ *   Markdown keep it plain.
  * @property llms Whether each module gets an [LLMS_FILE], and the aggregated output an index of
  *   them.
  * @property llmsFull Whether each module gets an [LLMS_FULL_FILE] with every declaration's

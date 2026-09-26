@@ -115,8 +115,8 @@ tasks.register("verifyApiDocs") {
             val links = tocLink.findAll(navigation.substring(start, stop)).map { match ->
                 match.groupValues[1] to match.groupValues[2].replace(Regex("<[^>]+>"), "").trim()
             }.toList()
-            if (links.firstOrNull()?.second != "Featured") {
-                problems += "navigation.html does not have Featured first under $module, but ${links.firstOrNull()?.second}"
+            if (links.firstOrNull()?.second != "⭐️ Featured") {
+                problems += "navigation.html does not have ⭐️ Featured first under $module, but ${links.firstOrNull()?.second}"
                 return@forEach
             }
             val entries = links.drop(1)
@@ -133,7 +133,7 @@ tasks.register("verifyApiDocs") {
         val href = Regex("""<a href="([^"]*)"""")
         fun featuredSection(path: String, before: String): String? {
             val html = File(apiDocs, path).takeIf { it.isFile }?.readText() ?: return null
-            val start = html.indexOf(">Featured<")
+            val start = html.indexOf(">⭐️ Featured<")
             val stop = html.indexOf(before)
             if (start < 0 || stop < start) {
                 problems += "$path has no Featured section above \"$before\""

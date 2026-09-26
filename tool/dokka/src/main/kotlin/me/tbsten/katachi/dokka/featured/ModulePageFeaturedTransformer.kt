@@ -30,7 +30,7 @@ internal class ModulePageFeaturedTransformer(private val context: DokkaContext) 
             context.logger,
         )
     }
-    private val title by lazy { context.katachiConfiguration().featuredTitle }
+    private val title by lazy { context.katachiConfiguration().htmlFeaturedTitle }
 
     override fun invoke(input: RootPageNode): RootPageNode =
         input.transformContentPagesTree { page -> if (page is ModulePageNode) withFeatured(page) else page }

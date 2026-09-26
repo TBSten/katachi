@@ -15,7 +15,7 @@ class FeaturedSidebarSpec : FreeSpec({
         "モジュールの直下の先頭に Featured があり、モジュールのページを指す" {
             module.name shouldBe "sample-module"
             val featured = module.children.first()
-            featured.name shouldBe "Featured"
+            featured.name shouldBe "⭐️ Featured"
             featured.href shouldBe "index.html"
         }
 
@@ -60,12 +60,12 @@ class FeaturedSidebarSpec : FreeSpec({
             FeaturedSources.ALL_KINDS,
             DokkaRunner.configuration(pluginJson = """{ "featuredTitle": "Start here" }"""),
         )
-        sidebarOf(custom.files["navigation.html"].shouldNotBeNull()).single().children.first().name shouldBe "Start here"
+        sidebarOf(custom.files["navigation.html"].shouldNotBeNull()).single().children.first().name shouldBe "⭐️ Start here"
     }
 
     "@featured が無いモジュールのサイドバーは Dokka のまま" {
         val plain = DokkaRunner.run(FeaturedSources.NONE)
         sidebarOf(plain.files["navigation.html"].shouldNotBeNull()).single().children.map { it.name } shouldNotContain
-            "Featured"
+            "⭐️ Featured"
     }
 })

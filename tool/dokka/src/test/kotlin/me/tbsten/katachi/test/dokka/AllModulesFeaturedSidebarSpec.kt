@@ -27,7 +27,7 @@ class AllModulesFeaturedSidebarSpec : FreeSpec({
 
         "束ねたサイドバーでも、各モジュールの直下の先頭に Featured がある" {
             sidebar.map { it.name } shouldContainExactly listOf("alpha", "beta")
-            sidebar.map { module -> module.children.first().name } shouldContainExactly listOf("Featured", "Featured")
+            sidebar.map { module -> module.children.first().name } shouldContainExactly listOf("⭐️ Featured", "⭐️ Featured")
             sidebar.named("alpha").children.first().children.map { it.name } shouldContainExactly listOf("AlphaEntry")
             sidebar.named("beta").children.first().children.map { it.name } shouldContainExactly listOf("BetaEntry")
         }
@@ -66,7 +66,7 @@ class AllModulesFeaturedSidebarSpec : FreeSpec({
 
     "どのモジュールにも @featured が無ければ、サイドバーに Featured を足さない" {
         val output = generateMultiModule(File(workDirectory, "none"), mapOf("plain" to FeaturedSources.NONE))
-        sidebarOf(File(output, "navigation.html").readText()).single().children.map { it.name } shouldNotContain "Featured"
+        sidebarOf(File(output, "navigation.html").readText()).single().children.map { it.name } shouldNotContain "⭐️ Featured"
     }
 })
 

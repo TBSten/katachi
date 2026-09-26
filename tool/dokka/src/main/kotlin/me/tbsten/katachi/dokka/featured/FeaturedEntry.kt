@@ -1,5 +1,6 @@
 package me.tbsten.katachi.dokka.featured
 
+import me.tbsten.katachi.dokka.KatachiDokkaConfiguration
 import org.jetbrains.dokka.DokkaConfiguration.DokkaSourceSet
 import org.jetbrains.dokka.links.DRI
 import org.jetbrains.dokka.model.DAnnotation
@@ -13,6 +14,16 @@ import org.jetbrains.dokka.model.DProperty
 import org.jetbrains.dokka.model.DTypeAlias
 import org.jetbrains.dokka.model.Documentable
 import org.jetbrains.dokka.model.doc.DocTag
+
+/**
+ * [KatachiDokkaConfiguration.featuredTitle] as shown in HTML: with a star in front, so it stands
+ * out among the plain package and class nodes next to it in the sidebar and on module pages.
+ *
+ * The llms files and the per-page Markdown keep the plain [KatachiDokkaConfiguration.featuredTitle]
+ * as their heading instead, because that heading is machine-facing.
+ */
+internal val KatachiDokkaConfiguration.htmlFeaturedTitle: String
+    get() = "⭐️ $featuredTitle"
 
 /**
  * One `@featured` declaration of a module, as the sidebar, the llms files and the fragment need it.

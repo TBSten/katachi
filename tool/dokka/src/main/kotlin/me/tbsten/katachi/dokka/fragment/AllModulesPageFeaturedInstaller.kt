@@ -5,6 +5,7 @@ import me.tbsten.katachi.dokka.featured.FeaturedRow
 import me.tbsten.katachi.dokka.featured.FeaturedRowSummary
 import me.tbsten.katachi.dokka.featured.FeaturedSection
 import me.tbsten.katachi.dokka.featured.FeaturedTarget
+import me.tbsten.katachi.dokka.featured.htmlFeaturedTitle
 import me.tbsten.katachi.dokka.katachiConfiguration
 import org.jetbrains.dokka.base.DokkaBase
 import org.jetbrains.dokka.base.translators.documentables.PageContentBuilder
@@ -58,7 +59,7 @@ internal class AllModulesPageFeaturedInstaller(private val context: DokkaContext
 
         val section = FeaturedSection.build(
             builder = builder,
-            title = context.katachiConfiguration().featuredTitle,
+            title = context.katachiConfiguration().htmlFeaturedTitle,
             dri = page.dri,
             sourceSets = emptySet(),
             rows = rows,

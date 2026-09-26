@@ -15,7 +15,7 @@ class ModulePageFeaturedSpec : FreeSpec({
 
     "モジュールページの本文" - {
         "Featured の節が Packages の節より前にある" {
-            headersOf(page) shouldContainInOrder listOf("Featured", "Packages")
+            headersOf(page) shouldContainInOrder listOf("⭐️ Featured", "Packages")
         }
 
         "@featured の宣言を、サイドバーと同じ名前で1行ずつ並べる" {
@@ -44,6 +44,6 @@ class ModulePageFeaturedSpec : FreeSpec({
             FeaturedSources.ALL_KINDS,
             DokkaRunner.configuration(pluginJson = """{ "featuredTitle": "Start here" }"""),
         )
-        featuredSectionOf(custom.files["index.html"].shouldNotBeNull(), title = "Start here").shouldNotBeNull()
+        featuredSectionOf(custom.files["index.html"].shouldNotBeNull(), title = "⭐️ Start here").shouldNotBeNull()
     }
 })

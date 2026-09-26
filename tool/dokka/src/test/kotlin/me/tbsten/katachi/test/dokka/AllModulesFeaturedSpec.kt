@@ -27,7 +27,7 @@ class AllModulesFeaturedSpec : FreeSpec({
         val top by lazy { File(output, "index.html").readText() }
 
         "トップページでは、Featured の節が All modules: より前にある" {
-            val featured = top.indexOf(">Featured<")
+            val featured = top.indexOf(">⭐️ Featured<")
             withClue(headersOf(top)) {
                 (featured in 0 until top.indexOf("All modules:")) shouldBe true
             }
@@ -50,14 +50,15 @@ class AllModulesFeaturedSpec : FreeSpec({
 
         "各モジュールのページでも、Featured の節が Packages より前にあり、リンクは実在する" {
             val alpha = File(output, "alpha/index.html").readText()
-            headersOf(alpha) shouldContainInOrder listOf("Featured", "Packages")
+            headersOf(alpha) shouldContainInOrder listOf("⭐️ Featured", "Packages")
             featuredSectionOf(alpha).shouldNotBeNull().forEach { row ->
                 File(output, "alpha/${row.href}").normalize().isFile shouldBe true
             }
         }
 
         "サイドバーの Featured も残っている" {
-            File(output, "navigation.html").readText() shouldContain ">Featured<"
+            // ノードの名前は単語ごとに別の span に分かれて描かれるが、aria-label には分かれず入る。
+            File(output, "navigation.html").readText() shouldContain """aria-label="⭐️ Featured""""
         }
     }
 

@@ -9,7 +9,7 @@ internal data class FeaturedSectionRow(val name: String, val href: String, val s
  * The rows of the section headed [title] on the page [html], or null when the page has no such
  * section. The section is the `h2` Dokka renders for a level-2 header, followed by its table.
  */
-internal fun featuredSectionOf(html: String, title: String = "Featured"): List<FeaturedSectionRow>? {
+internal fun featuredSectionOf(html: String, title: String = "⭐️ Featured"): List<FeaturedSectionRow>? {
     val header = Jsoup.parse(html).select("h2").firstOrNull { it.text() == title } ?: return null
     val table = header.nextElementSibling()?.takeIf { it.hasClass("table") } ?: return emptyList()
     return table.children().filter { it.hasClass("table-row") }.map { row ->
