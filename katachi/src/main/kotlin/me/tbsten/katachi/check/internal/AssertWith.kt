@@ -24,7 +24,9 @@ import me.tbsten.katachi.processor.ArchitectureProcessor
 internal fun Architecture.assert(
     fileSystem: KatachiFileSystem,
     maxViolations: Int = DEFAULT_MAX_VIOLATIONS,
-): Unit = assertWith(fileSystem, emptyList(), maxViolations)
+): Unit {
+    assertWith(fileSystem, emptyList(), maxViolations)
+}
 
 /**
  * `assert()` with more checks than the layout one, all on the same walk of the project.
@@ -49,28 +51,50 @@ internal fun Architecture.assert(
     check: ArchitectureProcessor<Unit, List<Violation>>,
     vararg more: ArchitectureProcessor<Unit, List<Violation>>,
     maxViolations: Int = DEFAULT_MAX_VIOLATIONS,
-): Unit = assertWith(fileSystem, listOf(check) + more, maxViolations)
+): Unit {
+    assertWith(fileSystem, listOf(check) + more, maxViolations)
+}
 
 /**
- * What all four `assert` overloads are: [me.tbsten.katachi.check.internal.validateWith], then
- * throw if anything is an error.
+ * `assertNoErrors()` against [fileSystem]: [assert] that also hands back every violation of the
+ * run, warnings included.
+ */
+internal fun Architecture.assertNoErrors(
+    fileSystem: KatachiFileSystem,
+    maxViolations: Int = DEFAULT_MAX_VIOLATIONS,
+): List<Violation> = assertWith(fileSystem, emptyList(), maxViolations)
+
+/** `assertNoErrors(check, vararg more)` against [fileSystem]. */
+internal fun Architecture.assertNoErrors(
+    fileSystem: KatachiFileSystem,
+    check: ArchitectureProcessor<Unit, List<Violation>>,
+    vararg more: ArchitectureProcessor<Unit, List<Violation>>,
+    maxViolations: Int = DEFAULT_MAX_VIOLATIONS,
+): List<Violation> = assertWith(fileSystem, listOf(check) + more, maxViolations)
+
+/**
+ * What all four `assert` overloads and all four `assertNoErrors` overloads are:
+ * [me.tbsten.katachi.check.internal.validateWith], then throw if anything is an error.
  *
  * Nothing failed when there is no [Severity.Error] violation, even if there are warnings — so
  * there is no [KatachiArchitectureAssertionError] to carry them. Standard error is what is left:
  * `report()` already renders a Warning-only list as the Warning section alone (see `report`'s
  * own doc), so the same call that builds the failure message below builds this one too, and the
  * two can never say something different about the same run.
+ *
+ * Returns every violation of the run when it does not throw, which is what `assertNoErrors()`
+ * hands back and `assert()` drops.
  */
 internal fun Architecture.assertWith(
     fileSystem: KatachiFileSystem,
     checks: List<ArchitectureProcessor<Unit, List<Violation>>>,
     maxViolations: Int,
-) {
+): List<Violation> {
     val (violations, projectRoot) = validateWithRoot(fileSystem, checks)
     if (violations.none { it.severity == Severity.Error }) {
         val warnings = violations.report(maxViolations, projectRoot)
         if (warnings.isNotEmpty()) System.err.println(warnings)
-        return
+        return violations
     }
     throw KatachiArchitectureAssertionError(violations, maxViolations, projectRoot)
 }

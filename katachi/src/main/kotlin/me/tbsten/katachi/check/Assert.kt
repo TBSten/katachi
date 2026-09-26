@@ -75,8 +75,9 @@ public class KatachiArchitectureAssertionError internal constructor(
  * @throws KatachiArchitectureAssertionError when the check found anything that fails it.
  * @featured
  */
-public fun Architecture.assert(maxViolations: Int = DEFAULT_MAX_VIOLATIONS): Unit =
+public fun Architecture.assert(maxViolations: Int = DEFAULT_MAX_VIOLATIONS): Unit {
     assertWith(RealFileSystem(), emptyList(), maxViolations)
+}
 
 /**
  * [assert] with more checks than the layout one, all on the same walk of the project.
@@ -115,4 +116,70 @@ public fun Architecture.assert(
     check: ArchitectureProcessor<Unit, List<Violation>>,
     vararg more: ArchitectureProcessor<Unit, List<Violation>>,
     maxViolations: Int = DEFAULT_MAX_VIOLATIONS,
-): Unit = assertWith(RealFileSystem(), listOf(check) + more, maxViolations)
+): Unit {
+    assertWith(RealFileSystem(), listOf(check) + more, maxViolations)
+}
+
+/**
+ * [assert] that also hands back every violation of the run, warnings included, when it does not
+ * throw.
+ *
+ * It throws exactly where [assert] throws, with the same message, and prints the same warnings
+ * to standard error. What it adds is the return value: the same list `validate()` answers with,
+ * from the same single walk of the project. A test that wants to fail on errors **and** look at
+ * the warnings calls this once, instead of calling `assert()` and then `validate()` and paying
+ * for the walk -- git, module discovery, every constraint backend -- twice.
+ *
+ * The walk is not remembered between calls: each call looks at the project as it is now, so a
+ * file added or removed since the last call is never missed.
+ *
+ * Keep [assert] for a test function written with an expression body
+ * (`fun test() = projectArchitecture.assert()`): with this function there, the test would
+ * return a `List`, and JUnit does not run a test method that returns a value.
+ *
+ * ## Example 1: fail on errors, then require that there are no warnings either
+ * ```kt
+ * class ProjectArchitectureTest {
+ *     @Test
+ *     fun `the project matches its declaration, warnings included`() {
+ *         projectArchitecture.assertNoErrors(FileConstraintCheck()) shouldBe emptyList()
+ *     }
+ * }
+ * ```
+ *
+ * @param maxViolations the combined budget the message's error blocks and warning blocks
+ *   share, as for [assert].
+ * @throws KatachiArchitectureAssertionError when the check found anything that fails it.
+ * @return every violation of the run, sorted as `validate()` sorts them: only warnings, or
+ *   nothing, since any error throws instead.
+ * @see assert
+ * @see List.assertNoErrors
+ */
+@ExperimentalKatachiApi
+public fun Architecture.assertNoErrors(maxViolations: Int = DEFAULT_MAX_VIOLATIONS): List<Violation> =
+    assertWith(RealFileSystem(), emptyList(), maxViolations)
+
+/**
+ * [assertNoErrors] with more checks than the layout one, all on the same walk of the project.
+ *
+ * [LayoutCheck] runs whether or not it is in the arguments, exactly as for
+ * `assert(check, vararg more)`.
+ *
+ * ## Example 1: one walk for the constraints, the errors and the warnings
+ * ```kt
+ * val warnings = projectArchitecture.assertNoErrors(FileConstraintCheck(), TodoCheck())
+ * warnings.map { it.label } shouldNotContain "AmbiguousLayout"
+ * ```
+ *
+ * @param maxViolations the combined budget the message's error blocks and warning blocks
+ *   share, as for [assert].
+ * @throws KatachiArchitectureAssertionError when anything that ran found something that fails
+ *   it, a check that threw included.
+ * @return every violation of the run: only warnings, or nothing, since any error throws instead.
+ */
+@ExperimentalKatachiApi
+public fun Architecture.assertNoErrors(
+    check: ArchitectureProcessor<Unit, List<Violation>>,
+    vararg more: ArchitectureProcessor<Unit, List<Violation>>,
+    maxViolations: Int = DEFAULT_MAX_VIOLATIONS,
+): List<Violation> = assertWith(RealFileSystem(), listOf(check) + more, maxViolations)
