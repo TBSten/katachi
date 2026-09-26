@@ -675,12 +675,17 @@
       "items": [
         {
           "id": "3-1",
-          "label": "llms-full.txt を取得してドキュメントを把握した",
+          "label": "llms-full.txt と API リファレンスの索引を取得してドキュメントを把握した",
           "done": false
         },
         {
           "id": "3-2",
-          "label": "architecture { } 定義を作成した",
+          "label": "architecture { } 定義を書き、./gradlew :architecture-test:test --rerun の出力をリファクタリング前の基準として保存した",
+          "done": false
+        },
+        {
+          "id": "3-3",
+          "label": "定義をリファクタリングし（ファイル・パッケージの分割、説明、共通化）、compare-violations で検査結果が前後で変わらないことを確かめた",
           "done": false
         }
       ]
@@ -698,6 +703,11 @@
         {
           "id": "4-2",
           "label": "katachi 由来でないエラー（Gradle / Java など）を解消した",
+          "done": false
+        },
+        {
+          "id": "4-3",
+          "label": ":architecture-test:katachiDocs で docs を生成し、出力を確かめた",
           "done": false
         }
       ]
@@ -721,7 +731,7 @@
     },
     {
       "id": "6",
-      "title": "（任意）導入できたことを確かめ、CI に組み込む",
+      "title": "（任意）導入できたことを確かめ、CI・ドキュメント生成・テンプレートに広げる",
       "warning": null,
       "optional": true,
       "items": [
@@ -733,6 +743,16 @@
         {
           "id": "6-2",
           "label": "CI に :architecture-test:test を組み込んだ",
+          "done": false
+        },
+        {
+          "id": "6-3",
+          "label": "ドキュメント生成をセットアップした（title / description、コミットするかの決定）",
+          "done": false
+        },
+        {
+          "id": "6-4",
+          "label": "テンプレートを書き、1本生成した直後に :architecture-test:test が通ることを確かめた",
           "done": false
         }
       ]
@@ -814,12 +834,17 @@
       "items": [
         {
           "id": "3-1",
-          "label": "llms-full.txt を取得してドキュメントを把握した",
+          "label": "llms-full.txt と API リファレンスの索引を取得してドキュメントを把握した",
           "done": true
         },
         {
           "id": "3-2",
-          "label": "architecture { } 定義を作成した",
+          "label": "architecture { } 定義を書き、./gradlew :architecture-test:test --rerun の出力をリファクタリング前の基準として保存した",
+          "done": true
+        },
+        {
+          "id": "3-3",
+          "label": "定義をリファクタリングし（ファイル・パッケージの分割、説明、共通化）、compare-violations で検査結果が前後で変わらないことを確かめた",
           "done": true
         }
       ]
@@ -837,6 +862,11 @@
         {
           "id": "4-2",
           "label": "katachi 由来でないエラー（Gradle / Java など）を解消した",
+          "done": true
+        },
+        {
+          "id": "4-3",
+          "label": ":architecture-test:katachiDocs で docs を生成し、出力を確かめた",
           "done": true
         }
       ]
@@ -860,7 +890,7 @@
     },
     {
       "id": "6",
-      "title": "（任意）導入できたことを確かめ、CI に組み込む",
+      "title": "（任意）導入できたことを確かめ、CI・ドキュメント生成・テンプレートに広げる",
       "warning": null,
       "optional": true,
       "items": [
@@ -872,6 +902,16 @@
         {
           "id": "6-2",
           "label": "CI に :architecture-test:test を組み込んだ",
+          "done": false
+        },
+        {
+          "id": "6-3",
+          "label": "ドキュメント生成をセットアップした（title / description、コミットするかの決定）",
+          "done": false
+        },
+        {
+          "id": "6-4",
+          "label": "テンプレートを書き、1本生成した直後に :architecture-test:test が通ることを確かめた",
           "done": false
         }
       ]

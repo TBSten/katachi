@@ -643,7 +643,8 @@
   "roles": [],
   "tools": [],
   "excluded": [],
-  "questions": []
+  "questions": [],
+  "templates": []
 }
 </script>
 
@@ -671,8 +672,8 @@
     "characteristics": ["A few screens are trialing MVI"]
   },
   "modules": [
-    { "path": "app", "kind": "app", "role": "UI layer (Activity / Compose / ViewModel)", "buildFile": "app/build.gradle.kts" },
-    { "path": "domain", "kind": "library", "role": "Domain logic", "buildFile": "domain/build.gradle.kts" }
+    { "path": "app", "kind": "app", "responsibility": "UI layer (Activity / Compose / ViewModel)", "buildFile": "app/build.gradle.kts" },
+    { "path": "domain", "kind": "library", "responsibility": "Domain logic", "buildFile": "domain/build.gradle.kts" }
   ],
   "directoryTree": "app/\n  build.gradle.kts\n  src/main/kotlin/com/example/app/\n    MainActivity.kt\n    ui/\n      home/\n        HomeScreen.kt\n        HomeViewModel.kt\n",
   "roles": [
@@ -709,6 +710,15 @@
       "observed": "Only 3 *Interactor.kt files exist under domain/src/main/kotlin/com/example/app/domain/interactor/; the remaining 15 UseCases call the Repository directly",
       "options": ["Extend the Interactor layer to everything", "Drop Interactor and consolidate into UseCase", "Keep the current state and allow both"],
       "recommendation": "B. Only 3 Interactors exist, and consolidating into UseCase keeps the convention singular"
+    }
+  ],
+  "templates": [
+    {
+      "role": "UseCase",
+      "files": ["${name}UseCase.kt", "${name}UseCaseImpl.kt"],
+      "params": ["name"],
+      "basedOn": "domain/src/main/kotlin/com/example/app/domain/useCase/GetUserUseCase.kt",
+      "reason": "All 18 are an interface plus an Impl, and their bodies share one shape"
     }
   ]
 }
@@ -756,6 +766,7 @@
       <li><a href="#tools">5. Tools in use</a></li>
       <li><a href="#ignore">6. Excluded from katachi</a></li>
       <li><a href="#questions">7. Questions for you</a></li>
+      <li><a href="#templates">8. Template proposals</a></li>
     </ol>
   </nav>
 
@@ -777,7 +788,7 @@
 
     <section id="roles">
       <h2>4. Elements (candidate roles)</h2>
-      <p class="lede">Sorted from highest importance. 5 = must be in the definition / 1 = optional.</p>
+      <p class="lede">Sorted from highest importance. 5 = must be in the definition / 1 = optional. One element is one kind of file. A bundle of different kinds of files, such as a module, becomes a group in the definition.</p>
       <div data-render="roles"></div>
     </section>
 
@@ -794,6 +805,11 @@
     <section id="questions">
       <h2>7. Questions for you<span class="count-badge" data-render="questionCount"></span></h2>
       <div data-render="questions"></div>
+    </section>
+    <section id="templates">
+      <h2>8. Template proposals</h2>
+      <p class="lede">Proposals to give a <code>template { }</code> to roles that have many files of the same shape. The AI agent records them at the end of the installation. Optional.</p>
+      <div data-render="templates"></div>
     </section>
   </main>
 </div>
@@ -996,7 +1012,7 @@
       return [
         value(module.path, 'modules[].path'),
         value(module.kind, 'modules[].kind'),
-        value(module.role, 'modules[].role'),
+        value(module.responsibility, 'modules[].responsibility'),
         value(module.buildFile, 'modules[].buildFile')
       ];
     });
@@ -1010,7 +1026,7 @@
     pre.appendChild(code);
     mount('modules', [
       heading('Module list'),
-      tableOf(['Module', 'Kind', 'Role', 'Build file'], rows),
+      tableOf(['Module', 'Kind', 'Responsibility', 'Build file'], rows),
       heading('Directory structure'),
       pre
     ]);
@@ -1099,6 +1115,20 @@
       ];
     });
     mount('excluded', [tableOf(['Path', 'Reason'], rows)]);
+  }
+
+  function renderTemplates(templates) {
+    if (!countOf(templates)) { mount('templates', [none()]); return; }
+    var rows = entries(templates).map(function (entry) {
+      return [
+        value(entry.role, 'templates[].role'),
+        bulletsOrNone(entry.files),
+        inlineOrNone(entry.params),
+        blank(entry.basedOn) ? noneInline() : richText(entry.basedOn, 'templates[].basedOn'),
+        blank(entry.reason) ? document.createTextNode('') : document.createTextNode(String(entry.reason))
+      ];
+    });
+    mount('templates', [tableOf(['Role', 'Files it creates', 'Parameters', 'Based on', 'Why'], rows)]);
   }
 
   function questionCard(item, index) {
@@ -1215,6 +1245,7 @@
     renderTools(data.tools);
     renderExcluded(data.excluded);
     renderQuestions(data.questions);
+    renderTemplates(data.templates);
     highlightToc();
     openWhilePrinting();
   }

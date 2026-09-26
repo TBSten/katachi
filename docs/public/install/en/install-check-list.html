@@ -675,12 +675,17 @@
       "items": [
         {
           "id": "3-1",
-          "label": "Fetched `llms-full.txt` and reviewed the documentation",
+          "label": "Fetched `llms-full.txt` and the API reference index, and reviewed the documentation",
           "done": false
         },
         {
           "id": "3-2",
-          "label": "Wrote the `architecture { }` definition",
+          "label": "Wrote the `architecture { }` definition and saved the output of `./gradlew :architecture-test:test --rerun` as the baseline before refactoring",
+          "done": false
+        },
+        {
+          "id": "3-3",
+          "label": "Refactored the definition (splitting files and packages, descriptions, shared parts) and confirmed with `compare-violations` that the check result did not change",
           "done": false
         }
       ]
@@ -698,6 +703,11 @@
         {
           "id": "4-2",
           "label": "Resolved errors not caused by katachi (Gradle, Java, etc.)",
+          "done": false
+        },
+        {
+          "id": "4-3",
+          "label": "Generated the docs with :architecture-test:katachiDocs and checked the output",
           "done": false
         }
       ]
@@ -721,7 +731,7 @@
     },
     {
       "id": "6",
-      "title": "(Optional) Confirm it works, and wire it into CI",
+      "title": "(Optional) Confirm it works, and extend it to CI, docs and templates",
       "warning": null,
       "optional": true,
       "items": [
@@ -733,6 +743,16 @@
         {
           "id": "6-2",
           "label": "Wired :architecture-test:test into CI",
+          "done": false
+        },
+        {
+          "id": "6-3",
+          "label": "Set up documentation generation (title / description, whether to commit it)",
+          "done": false
+        },
+        {
+          "id": "6-4",
+          "label": "Wrote a template, generated one file, and confirmed :architecture-test:test passes right after",
           "done": false
         }
       ]
@@ -814,12 +834,17 @@
       "items": [
         {
           "id": "3-1",
-          "label": "Fetched `llms-full.txt` and reviewed the documentation",
+          "label": "Fetched `llms-full.txt` and the API reference index, and reviewed the documentation",
           "done": true
         },
         {
           "id": "3-2",
-          "label": "Wrote the `architecture { }` definition",
+          "label": "Wrote the `architecture { }` definition and saved the output of `./gradlew :architecture-test:test --rerun` as the baseline before refactoring",
+          "done": true
+        },
+        {
+          "id": "3-3",
+          "label": "Refactored the definition (splitting files and packages, descriptions, shared parts) and confirmed with `compare-violations` that the check result did not change",
           "done": true
         }
       ]
@@ -837,6 +862,11 @@
         {
           "id": "4-2",
           "label": "Resolved errors not caused by katachi (Gradle, Java, etc.)",
+          "done": true
+        },
+        {
+          "id": "4-3",
+          "label": "Generated the docs with :architecture-test:katachiDocs and checked the output",
           "done": true
         }
       ]
@@ -860,7 +890,7 @@
     },
     {
       "id": "6",
-      "title": "(Optional) Confirm it works, and wire it into CI",
+      "title": "(Optional) Confirm it works, and extend it to CI, docs and templates",
       "warning": null,
       "optional": true,
       "items": [
@@ -872,6 +902,16 @@
         {
           "id": "6-2",
           "label": "Wired :architecture-test:test into CI",
+          "done": false
+        },
+        {
+          "id": "6-3",
+          "label": "Set up documentation generation (title / description, whether to commit it)",
+          "done": false
+        },
+        {
+          "id": "6-4",
+          "label": "Wrote a template, generated one file, and confirmed :architecture-test:test passes right after",
           "done": false
         }
       ]

@@ -643,7 +643,8 @@
   "roles": [],
   "tools": [],
   "excluded": [],
-  "questions": []
+  "questions": [],
+  "templates": []
 }
 </script>
 
@@ -671,8 +672,8 @@
     "characteristics": ["一部の画面だけ MVI を試験導入している"]
   },
   "modules": [
-    { "path": "app", "kind": "app", "role": "UI 層（Activity / Compose / ViewModel）", "buildFile": "app/build.gradle.kts" },
-    { "path": "domain", "kind": "library", "role": "ドメインロジック", "buildFile": "domain/build.gradle.kts" }
+    { "path": "app", "kind": "app", "responsibility": "UI 層（Activity / Compose / ViewModel）", "buildFile": "app/build.gradle.kts" },
+    { "path": "domain", "kind": "library", "responsibility": "ドメインロジック", "buildFile": "domain/build.gradle.kts" }
   ],
   "directoryTree": "app/\n  build.gradle.kts\n  src/main/kotlin/com/example/app/\n    MainActivity.kt\n    ui/\n      home/\n        HomeScreen.kt\n        HomeViewModel.kt\n",
   "roles": [
@@ -709,6 +710,15 @@
       "observed": "domain/src/main/kotlin/com/example/app/domain/interactor/ 配下の *Interactor.kt は3件だけで、残る15件の UseCase は Repository を直接呼んでいる",
       "options": ["Interactor 層を全体に広げる", "Interactor を廃して UseCase に寄せる", "現状のまま両方を許す"],
       "recommendation": "B。Interactor が3件に留まっており、UseCase 側へ寄せるほうが規約を1つにできるため"
+    }
+  ],
+  "templates": [
+    {
+      "role": "UseCase",
+      "files": ["${name}UseCase.kt", "${name}UseCaseImpl.kt"],
+      "params": ["name"],
+      "basedOn": "domain/src/main/kotlin/com/example/app/domain/useCase/GetUserUseCase.kt",
+      "reason": "18 件がすべて interface と Impl の2ファイルで、中身の形も揃っているため"
     }
   ]
 }
@@ -756,6 +766,7 @@
       <li><a href="#tools">5. 利用しているツール</a></li>
       <li><a href="#ignore">6. katachi の対象外にするもの</a></li>
       <li><a href="#questions">7. ユーザに確認したいこと</a></li>
+      <li><a href="#templates">8. テンプレートの提案</a></li>
     </ol>
   </nav>
 
@@ -777,7 +788,7 @@
 
     <section id="roles">
       <h2>4. 要素（Role 候補）</h2>
-      <p class="lede">重要度の高い順に並んでいます。5 = 必ず定義に入れる / 1 = 入れなくてもよい。</p>
+      <p class="lede">重要度の高い順に並んでいます。5 = 必ず定義に入れる / 1 = 入れなくてもよい。1 つの要素は 1 種類のファイルです。モジュールのように種類の違うファイルのまとまりは、定義では group になります。</p>
       <div data-render="roles"></div>
     </section>
 
@@ -794,6 +805,11 @@
     <section id="questions">
       <h2>7. ユーザに確認したいこと<span class="count-badge" data-render="questionCount"></span></h2>
       <div data-render="questions"></div>
+    </section>
+    <section id="templates">
+      <h2>8. テンプレートの提案</h2>
+      <p class="lede">同じ形のファイルが何本もある役割に、<code>template { }</code> を当てる提案です。導入の最後に AI エージェントが記録します。任意です。</p>
+      <div data-render="templates"></div>
     </section>
   </main>
 </div>
@@ -996,7 +1012,7 @@
       return [
         value(module.path, 'modules[].path'),
         value(module.kind, 'modules[].kind'),
-        value(module.role, 'modules[].role'),
+        value(module.responsibility, 'modules[].responsibility'),
         value(module.buildFile, 'modules[].buildFile')
       ];
     });
@@ -1010,7 +1026,7 @@
     pre.appendChild(code);
     mount('modules', [
       heading('モジュール一覧'),
-      tableOf(['モジュール', '種別', '役割', 'ビルドファイル'], rows),
+      tableOf(['モジュール', '種別', '責務', 'ビルドファイル'], rows),
       heading('ディレクトリ構造'),
       pre
     ]);
@@ -1099,6 +1115,20 @@
       ];
     });
     mount('excluded', [tableOf(['パス', '理由'], rows)]);
+  }
+
+  function renderTemplates(templates) {
+    if (!countOf(templates)) { mount('templates', [none()]); return; }
+    var rows = entries(templates).map(function (entry) {
+      return [
+        value(entry.role, 'templates[].role'),
+        bulletsOrNone(entry.files),
+        inlineOrNone(entry.params),
+        blank(entry.basedOn) ? noneInline() : richText(entry.basedOn, 'templates[].basedOn'),
+        blank(entry.reason) ? document.createTextNode('') : document.createTextNode(String(entry.reason))
+      ];
+    });
+    mount('templates', [tableOf(['役割', '作るファイル', 'パラメータ', '元にした実例', '理由'], rows)]);
   }
 
   function questionCard(item, index) {
@@ -1215,6 +1245,7 @@
     renderTools(data.tools);
     renderExcluded(data.excluded);
     renderQuestions(data.questions);
+    renderTemplates(data.templates);
     highlightToc();
     openWhilePrinting();
   }
