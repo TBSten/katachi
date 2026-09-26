@@ -1,0 +1,37 @@
+---
+import { Aside } from '@astrojs/starlight/components';
+
+/**
+ * 「レシピのスニペットは出発点にすぎない」という注意。レシピのページ（一覧以外）の末尾に置く。
+ *
+ * 文言はここ1か所に書き、表示中のページの言語で切り替える。ページ固有の補足（使っている
+ * ライブラリに合わせた検査の例など）があれば、子要素として渡すと本文の後ろに続く。
+ */
+
+// starlight-llms-txt が `/llms-full.txt` を組むときは route data が無いので、URL で見分ける
+// （SectionIndex.astro と同じ理由）。
+let locale: string | undefined;
+try {
+	locale = Astro.locals.starlightRoute.locale;
+} catch {
+	locale = undefined;
+}
+const base = import.meta.env.BASE_URL;
+const path = Astro.url.pathname.startsWith(base) ? Astro.url.pathname.slice(base.length) : Astro.url.pathname;
+const isJa = (locale ?? path.replace(/^\//, '').split('/')[0]) === 'ja';
+
+const text = isJa
+	? {
+			title: 'スニペットはあくまでスタートラインとして使うべきです',
+			body: 'このページのスニペットは、よくある形を取り上げた例です。実際のプロジェクトでは、ディレクトリ構成や命名、使っているライブラリに合わせて、適宜追加や修正をしてください。',
+		}
+	: {
+			title: 'Treat this snippet only as a starting point',
+			body: 'The snippet on this page shows a common shape. In a real project, add to it and adjust it to fit your directory structure, naming, and the libraries you use.',
+		};
+---
+
+<Aside type="caution" title={text.title}>
+	<p>{text.body}</p>
+	<slot />
+</Aside>
