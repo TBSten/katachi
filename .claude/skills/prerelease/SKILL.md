@@ -17,25 +17,23 @@ description: >-
     ```
 
 ```mermaid
-flowchart TD
-    P["1. 前提チェック<br/>prepare.py"] -- "STOP" --> Ask["中断してユーザに確認<br/>（--force で再開）"]
+flowchart LR
+    P["1. 前提チェック<br/>prepare.py"] -- " STOP " --> Ask["中断してユーザに確認<br/>（--force で再開）"]
     P --> T["2. 翻訳同期<br/>translate-ja-en"]
     P --> V["3. 公開範囲<br/>list-public-api.py"]
     P --> R["4. リリースノート<br/>release-note-material.py"]
     P --> D["5. 実装とドキュメント<br/>check-docs-against-impl"]
-
     V --> V1["public"] & V2["@InternalKatachiApi"] & V3["@ExperimentalKatachiApi"]
-
     T --> B["6-1. ビルドと配信<br/>generateApiDocs → pnpm build → pnpm preview"]
     B --> C1["6. 巡回 en"] & C2["6. 巡回 ja"] & C3["6. 巡回 api-docs"]
-
     V1 & V2 & V3 & R & D & C1 & C2 & C3 --> Rep["7. 報告"]
 ```
 
 - 1 が通ったら、2・3・4・5 を並列に始める。3 と 6 の中は、区分ごとの subagent をさらに並列にする。
 - 6 は 2 を待つ。英語のページを訳し直してからビルドしないと、古い英語を巡回することになる。
 - 5 は日本語の原本だけを見るので、2 を待たない。3・4・5 はどれもファイルを書き換えないので、互いに待たない。
-- **Gradle を使う作業は同時に1つだけ。**5 がサンプルを動かす間と、6-1 の `generateApiDocs` は重ねない（同じ `katachi/build/` を取り合う）。走らせる前に `pgrep -fl GradleWrapperMain` で確かめる。
+- **Gradle を使う作業は同時に1つだけ。**5 がサンプルを動かす間と、6-1 の `generateApiDocs` は重ねない（同じ
+  `katachi/build/` を取り合う）。走らせる前に `pgrep -fl GradleWrapperMain` で確かめる。
 - 7 は、ほかの全部が返ってから。チェックリストは各 subagent が返るたびにオーケストレータが書く。
 
 ## 1. 前提チェック
