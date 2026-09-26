@@ -1,0 +1,30 @@
+# The versions move together with the target IDE: bumping one alone puts the build out of step
+# with the Kotlin and Jewel bundled in that IDE.
+
+[versions]
+# IntelliJ Platform Gradle Plugin (v2). Keep equal to the plugins block of settings.gradle.kts,
+# which cannot read this catalog.
+intellijPlatformGradlePlugin = "2.18.1"
+# Build SDK: 2026.1 = build 261 (resolves to the unified IU distribution; same generation as
+# Android Studio Quail 2026.1). `intellijIdeaCommunity` no longer resolves from 253 on.
+intellijIdea = "2026.1"
+# No newer than the Kotlin bundled in build 261. The Compose Compiler plugin follows it.
+kotlin = "2.3.0"
+# Compose Multiplatform for the standalone preview only (the plugin itself uses the IDE's
+# bundled Compose). Compatible: CMP 1.8+ needs Kotlin >= 2.1.0 with the Compose Compiler plugin on
+# the Kotlin version (kotlinlang.org/docs/multiplatform/compose-compatibility-and-versioning.html).
+composeMultiplatform = "1.9.0"
+# Standalone Jewel is published as "<jewel>-<jewelForIde>"; jewelForIde is also the version of
+# com.jetbrains.intellij.platform:icons.
+jewel = "0.37.0"
+jewelForIde = "261.26222.65"
+# The platform stopped providing JUnit 4 in 2.0.0-rc1, and BasePlatformTestCase is JUnit 4 based.
+junit4 = "4.13.2"
+
+[libraries]
+junit4 = { module = "junit:junit", version.ref = "junit4" }
+
+[plugins]
+kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
+kotlin-compose-compiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
+compose-multiplatform = { id = "org.jetbrains.compose", version.ref = "composeMultiplatform" }

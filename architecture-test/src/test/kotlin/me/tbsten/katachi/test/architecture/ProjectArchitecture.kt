@@ -6,6 +6,7 @@ import me.tbsten.katachi.dsl.gradle.ModulePackage
 import me.tbsten.katachi.test.architecture.groups.backendGroup
 import me.tbsten.katachi.test.architecture.groups.docsGroup
 import me.tbsten.katachi.test.architecture.groups.gradleGroup
+import me.tbsten.katachi.test.architecture.groups.idePluginGroup
 import me.tbsten.katachi.test.architecture.groups.libraryGroup
 import me.tbsten.katachi.test.architecture.groups.pluginGroup
 import me.tbsten.katachi.test.architecture.groups.sampleGroup
@@ -69,7 +70,7 @@ val testPackage: ModulePackage = ModulePackage { modulePath ->
  * what it is made of by calling the role functions in order. Both are extensions on
  * `DeclarationContainerScope` — the scope `architecture { }` and `"...".group { }` share — so
  * a role can be moved into another group without touching the role's own file. This file only
- * calls the eight group functions.
+ * calls the nine group functions.
  *
  * None of those functions may be `inline`. An inlined frame reports the caller's file with a
  * line number past its end, and katachi captures the declaration site from the stack, so the
@@ -109,6 +110,7 @@ val projectArchitecture: Architecture = architecture {
     libraryGroup()
     backendGroup()
     pluginGroup()
+    idePluginGroup()
     testingGroup()
     docsGroup()
     sampleGroup()

@@ -71,3 +71,8 @@ CLAUDE.local.md
 # here rather than docs/.gitignore because this directory is Gradle's output, not the
 # docs site's own source.
 /docs/public/api-docs/
+
+### IntelliJ Platform plugin ###
+# Written by the IntelliJ Platform Gradle Plugin of katachi-intellij-plugin/ (the resolved IDE
+# layout index, local platform artifacts and the coroutines agent). Regenerated on every build.
+.intellijPlatform/
