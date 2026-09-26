@@ -1,9 +1,11 @@
 ---
 title: detekt
-description: detekt の設定ファイルと カスタムルールセットの置き場所を architecture { } で宣言する例。
+description: detekt の設定ファイルとベースラインの置き場所を architecture { } で宣言する例。
 tags:
   - beginner
 ---
+
+import SnippetIsStartingPoint from '../../../../components/SnippetIsStartingPoint.astro';
 
 import { LinkCard } from '@astrojs/starlight/components';
 
@@ -13,9 +15,9 @@ import { LinkCard } from '@astrojs/starlight/components';
   href="https://detekt.dev/"
 />
 
-detekt は YAML の設定ファイルでルールの有効・無効やしきい値の設定が可能です。
+detekt では、ルールの有効・無効やしきい値を YAML の設定ファイルで設定できます。
 
-アーキテクチャ定義に設定ファイルとベースラインを書いて katachi に伝えるべきです。
+設定ファイルとベースラインは、アーキテクチャ定義に書いて katachi に伝えておくべきです。
 
 ```kt collapse
 // ProjectArchitecture.kt
@@ -45,3 +47,5 @@ fun DeclarationContainerScope.detekt() =
         }
     }
 ```
+
+<SnippetIsStartingPoint />

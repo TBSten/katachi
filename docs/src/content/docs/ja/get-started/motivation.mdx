@@ -5,15 +5,30 @@ tags:
   - beginner
 ---
 
+import { Aside, FileTree, LinkCard } from '@astrojs/starlight/components';
+import CodeComparison from '../../../../components/CodeComparison';
+
+<Aside title="時間がありませんか？">
+  katachi の全体像を掴むための 5分で読めるスライドもあります。
+
+  <LinkCard
+    title="5分でわかる katachi"
+    description="katachi が解く問題と、1つの定義からテストとドキュメントを出す仕組みを、スライドでざっと掴む。"
+    href="../../slides/katachi-in-5-minutes/index.html"
+    target="_blank"
+  />
+
+</Aside>
+
 ## アーキテクチャドキュメントは必ず実装と乖離する
 
-優秀なあなたのことですから プロジェクトの中に `/docs` ディレクトリが存在しており プロジェクト全体の構造・各コンポーネントのルールが詳細に記述されていることでしょう。
+優秀なあなたのことですから、プロジェクトには `/docs` ディレクトリがあり、プロジェクト全体の構造や各コンポーネントのルールが詳しく書かれていることでしょう。
 
-しかしその **ドキュメントに記述された「UseCase はこう書く」という文言には何の強制力もありません**。プロジェクトのルールを知らない新規参入者や不確実性を伴う AI Agent によって 容易にルールは破られうるのです。
+しかし、**ドキュメントに書かれた「UseCase はこう書く」という文言には、何の強制力もありません**。プロジェクトのルールを知らない新規参入者や、振る舞いに不確実さのある AI Agent は、そのルールをたやすく破りかねません。
 
 ## Konsist だけでは足りない
 
-このようなプロジェクトのルールを無視するコードを許さないためのガードレールとして機能するツールの中に [Konsist](https://docs.konsist.lemonappdev.com/) があります。
+ルールを無視したコードを通さないガードレールとして働くツールの1つに、[Konsist](https://docs.konsist.lemonappdev.com/) があります。
 
 Konsist はプロジェクトのルールを Unit test として記述できます。
 
@@ -30,18 +45,18 @@ class UseCaseKonsistTest {
 }
 ```
 
-一見すると Konsist はプロジェクトのルールを強制するための十分な手段に見えます。
-しかし実際には Konsist の特性によりそれが難しいことがわかります。
+一見すると、Konsist があればプロジェクトのルールを十分に強制できそうです。
+しかし実際には、Konsist のある特性のために、それは難しいのです。
 
 :::caution[Scope の外は検証されない]
-Konsist は Scope と呼ばれる記法を使って プロジェクト内の特定のファイルに絞って検証を行います。 **Scope 外のファイルやディレクトリについては検証の対象外** です。
+Konsist は Scope と呼ばれる記法で、プロジェクト内の特定のファイルに絞って検証します。**Scope の外にあるファイルやディレクトリは、検証されません**。
 :::
 
-特定のファイルにフォーカスするだけではなく、**プロジェクト全体を広い視点で検証する手段が必要** です。
+特定のファイルに絞って見るだけでなく、**プロジェクト全体を見渡して検証する手段が必要** です。
 
 ## katachi の出番
 
-katachi はプロジェクト全体を俯瞰して、プロジェクト内に現れて良いファイルの種類とその配置方法を宣言できます。
+katachi を使うと、プロジェクト全体を俯瞰して、そこに現れて良いファイルの種類と、その置き方を宣言できます。
 
 ```kt
 val projectArchitecture = architecture {
@@ -58,14 +73,11 @@ katachi では次の2つを宣言します。
 - プロジェクトの中に現れて良いファイルの種類（Role と呼ばれます）
 - その Role のファイルがどこに現れて良いか
 
-これを宣言的な DSL で書くことで、プロジェクト全体のディレクトリ構造をテストできるようになります。
-
-import { Aside, FileTree } from '@astrojs/starlight/components';
-import CodeComparison from '../../../../components/CodeComparison';
+これを宣言的な DSL で書くと、プロジェクト全体のディレクトリ構造をテストできるようになります。
 
 <Aside title="Deny by default" type="tip">
 
-katachi で採用されている Deny by default の原則により、**`projectArchitecture` に宣言されていないファイルはその存在を許されません**。
+katachi が採用している Deny by default の原則により、**`projectArchitecture` に宣言されていないファイルはその存在を許されません**。
 
 AI Agent がルールに背くコードを書いたとしても、katachi はその存在を許さず、違反として報告します。
 </Aside>
@@ -118,10 +130,10 @@ Katachi check failed: 1 violation (Unexpected: 1)
 
 ## ドキュメントを生成する
 
-katachi で定義したプロジェクト構造の定義をもとに markdown (もしくは mdx) のドキュメントを生成させることができます。
+katachi で書いたプロジェクト構造の定義から、markdown のドキュメントを生成できます。
 
 ```shell
-$ ./gradlew runKatachiProcessor --processor=docs
+$ ./gradlew katachiDocs
 ```
 
 <CodeComparison>
@@ -151,15 +163,17 @@ $ ./gradlew runKatachiProcessor --processor=docs
 
   <CodeComparison.Panel label="生成された Markdown" labelVariant="success">
     ```md title="docs/UseCase.md"
+    [アーキテクチャ](README.md)
+
     # ユースケース
 
     各画面で発生するアプリ固有の1つの振る舞い
 
     ## 配置場所
 
-    | パス | 使い分け |
-    |---|---|
-    | `src/main/kotlin/com/example/project/useCase/*UseCase.kt` | 複数の画面から使われるもの |
+    | モジュール | パス | 使い分け |
+    |---|---|---|
+    |  | `src/main/kotlin/com/example/project/useCase/*UseCase.kt` | 複数の画面から使われるもの |
 
     ## 例
 
@@ -170,42 +184,95 @@ $ ./gradlew runKatachiProcessor --processor=docs
   </CodeComparison.Panel>
 </CodeComparison>
 
-katachi で定義したプロジェクト構造を SSoT として 人間も AI Agent も読むことができるドキュメントを生成しましょう。
+katachi で定義したプロジェクト構造を SSoT にして、人間も AI Agent も読めるドキュメントを生成しましょう。
 
 詳しくは [ドキュメント生成](/katachi/ja/guides/document-generation/) のドキュメントをご覧ください。
 
-TODO: link card
+<LinkCard
+    title="ドキュメント生成"
+    description="architecture { } の定義から、役割ごとの Markdown を生成する方法。"
+    href="/katachi/ja/guides/document-generation/"
+/>
 
 ## テンプレートからコード生成する
 
-アーキテクチャ定義内に典型的なソースコードのテンプレートを埋め込むことで、
+アーキテクチャ定義内に典型的なソースコードのテンプレートを埋め込むと、その役割のファイルをコマンド1つで生成できます。生成先のディレクトリは `layout { }` から決まるので、生成した直後の検査もそのまま通ります。
 
 ```shell
-TODO
+$ ./gradlew katachiTemplate --arg roleName=UseCase --arg name=GetUser
 ```
 
 <CodeComparison>
   <CodeComparison.Panel label="アーキテクチャ定義" labelVariant="note">
     ```kt title="ProjectArchitecture.kt"
-    TODO
+    val projectArchitecture = architecture {
+      "UseCase" {
+        layout {
+          "src/main/kotlin/com/example/project/useCase" / "*UseCase".ktFile()
+        }
+
+        template {
+          val name by stringParameter()
+
+          file("${name}UseCase.kt") {
+            """
+              package com.example.project.useCase
+
+              interface ${name}UseCase {
+                suspend operator fun invoke()
+              }
+            """.trimIndent()
+          }
+
+          file("${name}UseCaseImpl.kt") {
+            """
+              package com.example.project.useCase
+
+              class ${name}UseCaseImpl : ${name}UseCase {
+                override suspend fun invoke() {
+                  // ここに振る舞いを書く
+                }
+              }
+            """.trimIndent()
+          }
+        }
+      }
+
+      // ...
+    }
     ```
   </CodeComparison.Panel>
 
   <CodeComparison.Panel label="生成するコマンドと生成されたソースコード" labelVariant="success">
 
     ```shell
-    TODO
+    $ ./gradlew katachiTemplate --arg roleName=UseCase --arg name=GetUser
+    [template] Generating 2 files under file:///path/to/project
+    [template] Wrote file:///path/to/project/src/main/kotlin/com/example/project/useCase/GetUserUseCase.kt
+    [template] Wrote file:///path/to/project/src/main/kotlin/com/example/project/useCase/GetUserUseCaseImpl.kt
     ```
 
-    ```kt title="TODO"
+    ```kt title="src/main/kotlin/com/example/project/useCase/GetUserUseCase.kt"
+    package com.example.project.useCase
+
+    interface GetUserUseCase {
+      suspend operator fun invoke()
+    }
     ```
   </CodeComparison.Panel>
 </CodeComparison>
 
+詳しくは [テンプレートからコード生成](/katachi/ja/guides/generate-code-from-template/) のドキュメントをご覧ください。
+
+<LinkCard
+    title="テンプレートからコード生成"
+    description="template { } の書き方と、パラメータ・既存ファイルがあるときの扱い。"
+    href="/katachi/ja/guides/generate-code-from-template/"
+/>
 
 ## katachi と Konsist
 
-katachi は Konsist と連携してプロジェクト全体を検証したのち、各々のファイルについて別個に検証できます。
+katachi は Konsist と連携すると、プロジェクト全体を検証したあとで、個々のファイルを別々に検証できます。
 
 ```kt
 val projectArchitecture = architecture {
@@ -219,7 +286,7 @@ val projectArchitecture = architecture {
     "1 つの invoke 関数のみを持つこと".konsist {
       classes()
         .withNameEndingWith("UseCase")
-        .assertTrue { it.functions().map { function -> function.name } == listOf("invoke") }
+        .must { it.functions().map { function -> function.name } == listOf("invoke") }
     }
   }
 }
@@ -227,7 +294,7 @@ val projectArchitecture = architecture {
 
 配置の違反と中身の違反が、同じ1つのレポートに並びます。
 
-**katachi でプロジェクト全体の構造をテストしたのち、Konsist で各々のファイルの中身を検証する** という使い分けが推奨されます。
+**katachi でプロジェクト全体の構造をテストし、そのあと Konsist で各ファイルの中身を検証する** という使い分けをおすすめします。
 
 詳しくは [Konsist との統合](/katachi/ja/guides/konsist-integration/) のドキュメントをご覧ください。
 
@@ -239,7 +306,7 @@ val projectArchitecture = architecture {
 
 ## 次のステップ
 
-- [初めてのアーキテクチャ定義](/katachi/ja/get-started/first-architecture/) ... あなたのプロジェクトに katachi のアーキテクチャ定義を導入して、その有用性について実感しましょう。
+- [初めてのアーキテクチャ定義](/katachi/ja/get-started/first-architecture/) ... あなたのプロジェクトに katachi のアーキテクチャ定義を導入して、その有用性を実感しましょう。
 - [FAQ](/katachi/ja/get-started/faq/) ... katachi の設計思想をよくある質問を通して理解しましょう。
 - [Role の定義](/katachi/ja/guides/role/) ... katachi でアーキテクチャ定義を行う基本単位である Role について学びましょう。
 - [Layout](/katachi/ja/guides/layout/) ... katachi でディレクトリ構造を定義するための Layout について学びましょう。

@@ -7,69 +7,34 @@ tags:
 
 import { Steps } from '@astrojs/starlight/components';
 
-katachi は「同じ定義から**テストとドキュメントの両方**を出す」ライブラリです。いまはその前半、**テスト**だけが動きます。
-
-並び順は **まだ欠けている側を先に出す順** です。各段階で単独で価値が出るようにしてあります。
-
-ドキュメント生成は、定義を2つではなく1つ書けばよいことの根拠そのものであり、そして誰もまだ使えない部分です。`declarations { }` を同じ v0.2 に入れてあるのは**リリースを1回にまとめるため**で、実装の順序ではドキュメント生成が先です。あれは `konsist { }` からパターンを昇格させるものなので、実プロジェクトで `konsist { }` が十分に書かれるまで昇格させる対象がありません。
-
 ## 全体像
 
-| バージョン | テーマ | 状態 | 完了と言える条件 |
-|---|---|---|---|
-| **v0.1** | DSL + 検査 + `konsist { }` | **0.1.1 を公開済み** | 大規模なプロジェクトを表現でき、検査が通る |
-| **v0.2** | Gradle plugin + ドキュメント生成 + `declarations { }` | 実装中 | `./gradlew runKatachiProcessor --processor=docs` でドキュメントが出て、v0.1 で書いた `konsist { }` の大半を置き換えられる |
-| **v0.3 以降** | baseline / レポート出力 / 語彙数の計測 | 未着手 | **既存プロジェクト**に導入できる |
-
-## v0.1 — 定義と検査
-
-最初のリリースです。**Deny by default のアーキテクチャテスト**として出しました。
-
-<Steps>
-
-1. **役割を起点にした DSL**
-
-   「どの役割のファイルをどこに置けるか」を1箇所に書けます。[Role](/katachi/ja/guides/role/) と [Layout](/katachi/ja/guides/layout/) がこれにあたります。
-
-2. **宣言していないファイルが増えたら落ちる**
-
-   書いた allow list と実際のファイルツリーを突き合わせ、載っていないもの（`Unexpected`）と、あるはずなのに無いもの（`Missing`）を報告します。
-
-3. **ファイルの中身の制約**
-
-   `"名前".konsist { }` に Konsist の式を書けば、配置だけでなく中の宣言も検査できます。[Konsist との統合](/katachi/ja/guides/konsist-integration/) を参照してください。
-
-</Steps>
-
-出る artifact は 2 つです。
-
-| artifact | 中身 |
-|---|---|
-| `katachi` | 本体 |
-| `katachi-konsist` | `konsist { }` の実装。任意 |
-
-**対象は新規プロジェクトです。** 既存プロジェクトに入れると既存の違反が一度に噴き出すので、それを扱う仕組み（baseline）は v0.3 以降になります。
+| バージョン | テーマ | 完了と言える条件 |
+|---|---|---|
+| **v0.1** | DSL + 検査 + `konsist { }` | 大規模なプロジェクトを表現でき、検査が通る |
+| **v0.2** | Gradle plugin + ドキュメント生成 + `declarations { }` | `./gradlew katachiDocs` でドキュメントが出て、v0.1 で書いた `konsist { }` の大半を置き換えられる |
+| **v0.3 以降** | baseline / レポート出力 / 語彙数の計測 | **既存プロジェクト**に導入できる |
 
 ## v0.2 — Gradle plugin・ドキュメント生成・`declarations { }`
 
-katachi の売りが揃う段階で、**いま実装中**です。Gradle plugin の足場と、その上で処理を走らせる仕組み（processor）までが動いています。**ドキュメント生成そのものはこれからで、まだ使えません。**
+katachi の売りが揃う段階で、**いま実装中**です。Gradle plugin の足場と、その上で処理を走らせる仕組み（processor）、そして**ドキュメント生成**までが動いています。**`declarations { }` はこれからです。**
 
 ```shell
-./gradlew runKatachiProcessor --processor=docs
+./gradlew katachiDocs
 ```
 
-プラグインを適用すれば、**テストと同じ定義から** Markdown が 2 軸で生成されるようにします。
+プラグインを適用すれば、**テストと同じ定義から** Markdown を 2 軸で生成できます。
 
 - **役割リファレンス** — この役割は何で、どこに置くか
 - **ディレクトリ構成** — このディレクトリに何が置けるか
 
 両方が同じモデルから導かれるので、**互いに矛盾しません。** 生成したあとのリンク切れも機械的に検査します。
 
-出力の形は [ドキュメント生成](/katachi/ja/guides/document-generation/)、走らせる仕組みは [ArchitectureProcessor とそのカスタマイズ](/katachi/ja/guides/processor/) にあります。ドキュメント生成は processor の1つにすぎず、利用者が書いた処理も同じタスクから呼べます。
+出力の形は [ドキュメント生成](/katachi/ja/guides/document-generation/) に、走らせる仕組みは [ArchitectureProcessor とそのカスタマイズ](/katachi/ja/guides/processor/) に書いてあります。ドキュメント生成は processor の1つにすぎず、利用者が書いた処理も同じタスクから呼べます。
 
 ### `declarations { }` — `konsist { }` からの昇格
 
-v0.1 の `konsist { }` は、言ってしまえば**逃げ道**です。「`*UseCase` interface と `Default*UseCase` class だけを置く」のような、ほとんどの役割が言いたいことを、毎回 Konsist の式で書き下すことになります。
+v0.1 の `konsist { }` は、言ってしまえば**逃げ道**です。「`*UseCase` interface と `Default*UseCase` class だけを置く」のように、ほとんどの役割が言いたいことでも、毎回 Konsist の式で書き下すことになります。
 
 ```kt
 "interface と Default 実装のみ".konsist {
@@ -95,10 +60,10 @@ v0.1 の `konsist { }` は、言ってしまえば**逃げ道**です。「`*Use
 
 列挙していない top-level 宣言は書けません。2つめのクラスも、トップレベルの拡張関数も、置き忘れた `typealias` も。`layout { }` が配置の allow list であるのと同じ意味で、このブロックが中身の allow list になります。
 
-そして katachi は「何が期待されていたか」を知っているので、違反のときに「制約が落ちた」以上のことを言えます。
+katachi は「何が期待されていたか」を知っています。だから違反のときに、「制約が落ちた」以上のことを言えます。
 
 ```
-[Constraint] core/domain/.../GetUserUseCase.kt
+[UnsatisfiedFileConstraint] core/domain/.../GetUserUseCase.kt
   The top-level declarations do not match what role UseCase allows.
   Expected: interface *UseCase, class Default*UseCase
   Actual:   interface GetUserUseCase, class GetUserUseCaseImpl, object Factory
@@ -107,7 +72,7 @@ v0.1 の `konsist { }` は、言ってしまえば**逃げ道**です。「`*Use
     - Delete object Factory, or move it to another file
 ```
 
-**上の形は素案で、確定ではありません。** 何を昇格させるかは、v0.1 を実プロジェクトで使って**溜まった `konsist { }` を見てから**決めます。材料が足りなければ、この機能だけ次の版へ戻します。ドキュメント生成より後に実装するのはそのためです。
+**上の形は素案で、確定ではありません。** 何を昇格させるかは、v0.1 を実プロジェクトで使って**溜まった `konsist { }` を見てから**決めます。材料が足りなければ、この機能だけ次の版へ回します。ドキュメント生成より後に実装するのはそのためです。
 
 ### そのほか v0.2 に入るもの
 
@@ -127,8 +92,6 @@ v0.1 の `konsist { }` は、言ってしまえば**逃げ道**です。「`*Use
 | **レポート出力** | JSON / SARIF で出し、GitHub の PR にアノテーションとして載せる |
 | **語彙数の計測** | 役割の数と、役割ごとのファイル数を数値で出す |
 | **`pairedWith`** | 「すべての `Screen` に対応する `Preview` がある」のような網羅性を検査する |
-
-**なぜ baseline が最後なのか。** baseline は「いまの違反を見なかったことにする」仕組みです。先に入れてしまうと、katachi を入れても何も起きないプロジェクトが量産されます。まず**新規プロジェクトで価値が出ること**を確かめてから出します。
 
 この段階の仕様はまだほとんど決まっていません。バージョン番号の割り当ても「v0.3 以降」とひとまとまりです。
 

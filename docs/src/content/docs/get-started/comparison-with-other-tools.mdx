@@ -7,7 +7,7 @@ tags:
 
 import { Aside } from '@astrojs/starlight/components';
 
-Konsist, ArchUnit, and similar tools live around katachi.
+Tools similar to katachi include Konsist, ArchUnit, and others.
 They are **not necessarily exclusive with katachi**.
 
 ## Comparison table
@@ -89,7 +89,7 @@ katachi decides "this file may live here"; detekt looks at "how the contents are
 <Aside>
 **katachi has no detekt integration.** The only integration it ships is with Konsist.
 
-That said, `konsist { }` is only a thin layer on top of `constraint()`, a **tool-agnostic hook**,
+That said, `konsist { }` is only a thin layer on top of `fileConstraint()`, a **tool-agnostic hook**,
 so structurally a detekt-backed implementation is possible. It just does not exist today.
 </Aside>
 

@@ -75,12 +75,6 @@ layout {
 
 ## Allowing arbitrary files to be placed
 
-<Aside type="caution">
-The two features described here are **escape hatches from deny by default**. Wherever you use them, checking stops applying to that scope.
-
-If you reach for them just because "declaring it is a hassle," you undermine the point of adopting katachi. Use them only for **things a machine generates** or **things whose structure is decided by another tool**.
-</Aside>
-
 ### `anyFile()` — allow only files directly inside
 
 Allows any file to be placed, but **only directly inside** that directory.
@@ -118,6 +112,12 @@ This is the easiest thing to get wrong, since they look similar.
 **Don't leave a block empty unless you really mean "nothing goes here."**
 
 As a rule, an empty block for a directory declaration isn't recommended, because it permits the directory to exist as an empty directory whose contents can never hold anything.
+
+<Aside type="caution">
+These are **escape hatches from deny by default**. Wherever you use them, checking stops applying to that scope.
+
+If you overuse `ignore()` and `anyFile()` just because "declaring it is a hassle," you undermine the point of adopting katachi. Use them only for **things a machine generates** or **things whose structure is decided by another tool**.
+</Aside>
 
 ## Best practices
 

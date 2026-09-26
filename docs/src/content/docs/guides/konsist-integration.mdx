@@ -34,13 +34,13 @@ dependencies {
 }
 ```
 
-Next, pass `KonsistCheck()` to `projectArchitecture.assert()` to run the Konsist checks.
+Next, pass `FileConstraintCheck()` to `projectArchitecture.assert()` to run the Konsist checks.
 
 ```kt del={3} ins={4}
 @Test
 fun `files are placed according to the architecture`() {
   projectArchitecture.assert()
-  projectArchitecture.assert(KonsistCheck())
+  projectArchitecture.assert(FileConstraintCheck())
 }
 ```
 
@@ -59,7 +59,7 @@ architecture {
 ```
 
 <Aside type="caution">
-  Don't use `assertTrue { }`. It throws an assertion exception on the spot, which goes against the design that separates DSL declaration from verification.
+  Writing `assertTrue { }` inside `konsist { }` **causes a compile error** (it is blocked with an ERROR-level `@Deprecated`). Konsist's `assertTrue` throws an assertion exception on the spot, which goes against the design that separates DSL declaration from verification.
   Use must / mustNot / mustBeEmpty instead.
 </Aside>
 
@@ -68,10 +68,10 @@ architecture {
 When a constraint violation is detected, the error message looks like this.
 
 ```text
-Katachi check failed: 1 violation (Constraint: 1)
+Katachi check failed: 1 violation (FileConstraint: 1)
 
-[UnsatisfiedConstraint] src/main/kotlin/com/example/useCase/GetUserUseCase.kt
-  Role: UseCase / Constraint: "has exactly one invoke function"
+[UnsatisfiedFileConstraint] src/main/kotlin/com/example/useCase/GetUserUseCase.kt
+  Role: UseCase / FileConstraint: "has exactly one invoke function"
   Declaration: GetUserUseCase (line 3)
   Declared at: ProjectArchitecture.kt:12
 ```
@@ -92,7 +92,7 @@ katachi only replaces three things — `must`, `mustNot`, and `mustBeEmpty` — 
 ## Summary
 
 - `layout { }` handles **where files may be placed**, and `konsist { }` handles **what their contents should look like**.
-- `katachi-konsist` is an **optional module**. It requires adding the dependency and setting up `assert(KonsistCheck())`.
+- `katachi-konsist` is an **optional module**. It requires adding the dependency and setting up `assert(FileConstraintCheck())`.
 - **The constraint name appears directly in the violation report.** Write the name in the form of what must be satisfied.
 - The `assertTrue` family **causes a compile error**. It throws an exception on the spot, which doesn't fit the design that collects every violation in a single run.
 
@@ -100,4 +100,4 @@ katachi only replaces three things — `must`, `mustNot`, and `mustBeEmpty` — 
 
 - See the various recipes for real examples that use the Konsist API.
 - [Role](/katachi/guides/role/) ... Learn how to write a Role's description, placement, and grouping — the place where you write constraints.
-- [ArchitectureProcessor and customizing it](/katachi/guides/processor/) ... Learn how to pull your own information out of the definition, using the same interface as `KonsistCheck`.
+- [ArchitectureProcessor and customizing it](/katachi/guides/processor/) ... Learn how to pull your own information out of the definition, using the same interface as `FileConstraintCheck`.

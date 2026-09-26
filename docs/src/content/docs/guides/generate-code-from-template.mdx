@@ -17,58 +17,43 @@ By adding `template { }` to an architecture definition, you can generate code fr
         ":core:domain".module { mainSourceSet / kotlin / modulePackage / "useCase" / "*UseCase".ktFile() }
     }
 
-    template {
-        // You can define the parameters the template uses
-        val name by stringParameter()
-        val implBody by stringParameter(default = """TODO("Implement ${name}UseCase")""")
+    useCaseTemplate()
+}
 
-        // file() declares one file this template generates
-        file("${name}UseCase.kt") {
-            """
-                package com.example.domain.useCase
+private fun RoleScope.useCaseTemplate() = template {
+    // You can define the parameters the template uses
+    val name by stringParameter()
+    val implBody by stringParameter(default = """TODO("Implement ${name}UseCase")""")
 
-                interface ${name}UseCase {
-                    suspend operator fun invoke()
+    // file() declares one file this template generates
+    file("${name}UseCase.kt") {
+        """
+            package com.example.domain.useCase
+
+            interface ${name}UseCase {
+                suspend operator fun invoke()
+            }
+        """.trimIndent()
+    }
+
+    file("${name}UseCaseImpl.kt") {
+        """
+            package com.example.domain.useCase
+
+            class ${name}UseCaseImpl : ${name}UseCase {
+                override suspend fun invoke() {
+                    $implBody
                 }
-            """.trimIndent()
-        }
-
-        file("${name}UseCaseImpl.kt") {
-            """
-                package com.example.domain.useCase
-
-                class ${name}UseCaseImpl : ${name}UseCase {
-                    override suspend fun invoke() {
-                        $implBody
-                    }
-                }
-            """.trimIndent()
-        }
+            }
+        """.trimIndent()
     }
 }
 ```
 
 ```shell
-./gradlew runKatachiProcessor --processor="template" \
+./gradlew katachiTemplate \
     --arg "roleName=UseCase" --arg "name=GetItemList"
 ```
-
-<Aside>
-**A template's own parameters, such as `--arg name=...`, can be passed as-is.** No declaration is needed on the module side. What is accepted is exactly the set of names the named role's `template { }` declares. A typo still fails, as before, with `Unknown processor argument(s): ...`
-</Aside>
-
-## file() only names the file
-
-What you pass to `file()` is **a file name with its extension**, not a path. A name containing a separator throws an exception.
-
-```kt
-file("${name}UseCase.kt") { /* ... */ }      // OK
-file("useCase/${name}UseCase.kt") { /* ... */ }  // exception
-```
-
-If the directory were written in both places, **the same thing would be said twice, and the two could disagree.** The destination is derived from `layout { }`, so the template does not need to say it.
-
-One `template { }` can have several `file()` calls. Declaring the same name twice throws an exception.
 
 ## Parameters
 
@@ -88,13 +73,42 @@ template {
 A parameter without a `default` must be given a value every time. `default` is an ordinary Kotlin expression evaluated on the spot, so **it can read the parameters declared above it.**
 
 ```shell
-./gradlew runKatachiProcessor --processor="template" \
+./gradlew katachiTemplate \
     --arg "roleName=UseCase" \
     --arg "name=GetItemList" --arg 'implBody=println("Hello World")'
 ```
 
+There are four parameter types. Every one of them is passed as `--arg name=value`.
+
+| How to write it | How to pass it | Accepted values |
+| --- | --- | --- |
+| `val name by stringParameter()` | `--arg name=User` | Anything |
+| `val withImpl by booleanParameter(default = true)` | `--arg withImpl=false` | `true` / `false` (lower case only) |
+| `val pageSize by intParameter(default = 20)` | `--arg pageSize=50` | A whole number |
+| `val visibility by enumParameter(default = Visibility.Public)` | `--arg visibility=Internal` | The name of an enum entry |
+
+An enum parameter without a default is written `val visibility by enumParameter(Visibility.entries)`.
+
+**An enum value is passed spelled exactly as it is declared in Kotlin.** katachi's own arguments such as `onExisting` are lower case (`--arg onExisting=skip`), so values with different spellings end up side by side on one line, as in `--arg onExisting=skip --arg visibility=Internal`.
+
+**A value that cannot be read is an error.** A value such as `--arg withImpl=yes` is never quietly replaced by the default. The error lists the values that are accepted.
+
+A boolean lets you choose which files to generate.
+
+```kt
+template {
+    val name by stringParameter()
+    val withImpl by booleanParameter(default = true)
+
+    file("${name}Repository.kt") { "interface ${name}Repository" }
+    if (withImpl) {
+        file("${name}RepositoryImpl.kt") { "class ${name}RepositoryImpl : ${name}Repository" }
+    }
+}
+```
+
 <Aside>
-In v0.2, `stringParameter()` is the only one available. Values arrive as strings, and a template can be written with nothing but Kotlin string templates.
+Declare the parameters together at the top of `template { }`. A parameter declared inside an `if` is accepted only on runs that take that branch.
 </Aside>
 
 ## When a file already exists
@@ -107,10 +121,8 @@ What happens when a file already exists at the destination is chosen with `--arg
 | `skip` | If even one already exists, it **writes none** and does not fail |
 | `overwrite` | Replaces the existing ones |
 
-**Each of these applies to the whole set.** The directory is never left half-done with only some of the generated files written. If writing stops partway through an `overwrite`, the contents from before the replacement are restored.
-
 ```shell
-./gradlew runKatachiProcessor --processor="template" \
+./gradlew katachiTemplate \
     --arg "roleName=UseCase" --arg "name=GetItemList" --arg "onExisting=overwrite"
 ```
 
@@ -126,11 +138,37 @@ katachi {
 }
 ```
 
+## Listing templates and viewing one in detail
+
+The **`katachiTemplates` task** tells you which roles have a template, and what to pass to get what. It writes no files. It is registered by default as well.
+
+```shell
+# The roles that have a template (title / summary, parameter names, number of files)
+./gradlew katachiTemplates
+
+# The template of one role, in detail
+./gradlew katachiTemplates --arg "roleName=Repository"
+```
+
+The detail shows the parameters (type, default, accepted values, whether required), the path and contents of each generated file, and a `katachiTemplate` command you can paste as is.
+
+```
+  [templates] Previewed with: name=${name} (placeholder), item=${item} (placeholder), withImpl=true (default)
+  [templates] Files (paths relative to the project root):
+  [templates]   data/src/commonMain/kotlin/com/example/kmp/data/user/${name}Repository.kt
+  [templates]     | interface ${name}Repository {
+  ...
+  [templates] Other values change which files are produced:
+  [templates]   --arg withImpl=false: leaves out ${name}RepositoryImpl.kt
+```
+
+The contents are filled in with stand-in values. **A string parameter is filled with its own name, as in `${name}`.** A Boolean, Int or enum parameter takes its default, or `true`, `0` or its first entry when it has none, and `Previewed with:` says which value was used. The files shown are those of the branch these values take. When another value of a Boolean or an enum changes which files are produced, that value and the files it adds or leaves out are listed at the end.
+
 ## Summary
 
-- **The destination is decided by `layout { }`.** A template only names its files, so the placement definition and what gets generated cannot disagree.
-- That is why **`assert()` passes right after generating.** This is the reason the feature exists.
-- Writing is **all or nothing.** No half-done directory is left behind.
+- Adding **`template { }`** to an architecture definition lets you generate code from a template with the **`katachiTemplate` task**.
+- The **`katachiTemplates` task** lists the templates and shows one in detail: its parameters and the files it produces.
+- **The destination is decided by `layout { }`.** A template only names its files, so the placement definition and what gets generated can never disagree.
 
 ## Next steps
 

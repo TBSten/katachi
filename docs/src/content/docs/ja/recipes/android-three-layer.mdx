@@ -5,7 +5,9 @@ tags:
   - intermediate
 ---
 
-import { FileTree, LinkCard, Aside } from '@astrojs/starlight/components';
+import SnippetIsStartingPoint from '../../../../components/SnippetIsStartingPoint.astro';
+
+import { FileTree, LinkCard } from '@astrojs/starlight/components';
 
 <LinkCard
   title="アプリ アーキテクチャ ガイド"
@@ -13,7 +15,7 @@ import { FileTree, LinkCard, Aside } from '@astrojs/starlight/components';
   href="https://developer.android.com/topic/architecture"
 />
 
-Android developers で公開されているアプリアーキテクチャガイドは Android アプリケーションのベースとなるアーキテクチャとして広く知られています。
+Android developers で公開されているアプリアーキテクチャガイドは、Android アプリケーションのベースとなるアーキテクチャとして広く知られています。
 
 以下は Domain レイヤーを採用する場合のアーキテクチャ定義の例です。
 
@@ -79,7 +81,7 @@ fun DeclarationContainerScope.uiState() = "UiState" {
   shouldBeImmutable()
 }
 
-private fun ConstraintScope.shouldBeImmutable() =
+private fun FileConstraintScope.shouldBeImmutable() =
   "プロパティはすべて val であるべき".konsist {
     classes().must { klass -> klass.properties().all { it.hasValModifier } }
   }
@@ -95,17 +97,17 @@ fun DeclarationContainerScope.viewModel() = "ViewModel" {
   shouldUiStateFlowBePublic()
 }
 
-private fun ConstraintScope.shouldContainsViewModelClass() =
+private fun FileConstraintScope.shouldContainsViewModelClass() =
   "ファイル名と同じ名前のクラスを1つだけ宣言するべき".konsist {
     files.must { file -> file.classes().map { it.name } == listOf(file.name) }
   }
 
-private fun ConstraintScope.shouldExtendsViewModel() =
+private fun FileConstraintScope.shouldExtendsViewModel() =
   "ViewModel を継承するべき".konsist {
     classes().must { klass -> klass.parents().any { it.name == "ViewModel" } }
   }
 
-private fun ConstraintScope.shouldUiStateFlowBePublic() =
+private fun FileConstraintScope.shouldUiStateFlowBePublic() =
   "UiState の Flow を public で公開するべき".konsist {
     classes().must { klass ->
       klass.properties().any {
@@ -123,7 +125,7 @@ fun DeclarationContainerScope.screen() = "Screen" {
   shouldContainsPublicScreenComposable()
 }
 
-private fun ConstraintScope.shouldContainsPublicScreenComposable() =
+private fun FileConstraintScope.shouldContainsPublicScreenComposable() =
   "ファイル名と同じ名前の public な Composable を宣言するべき".konsist {
     files.must { file ->
       file.functions().any {
@@ -143,12 +145,12 @@ fun DeclarationContainerScope.useCase() = "UseCase" {
   shouldSingleInvokePublicMethod()
 }
 
-private fun ConstraintScope.shouldContainsUseCaseClass() =
+private fun FileConstraintScope.shouldContainsUseCaseClass() =
   "ファイル名と同じ名前のクラスを1つだけ宣言するべき".konsist {
     files.must { file -> file.classes().map { it.name } == listOf(file.name) }
   }
 
-private fun ConstraintScope.shouldSingleInvokePublicMethod() =
+private fun FileConstraintScope.shouldSingleInvokePublicMethod() =
   "public な invoke メソッドを1つだけ持つべき".konsist {
     classes().must { klass ->
       klass.functions().filter { it.hasPublicOrDefaultModifier }.map { it.name } == listOf("invoke")
@@ -171,7 +173,7 @@ fun DeclarationContainerScope.repositoryInterface() = "RepositoryInterface" {
   shouldContainsRepositoryInterface()
 }
 
-private fun ConstraintScope.shouldContainsRepositoryInterface() =
+private fun FileConstraintScope.shouldContainsRepositoryInterface() =
   "ファイル名と同じ名前の interface を1つだけ宣言するべき".konsist {
     files.must { file -> file.interfaces().map { it.name } == listOf(file.name) }
   }
@@ -185,7 +187,7 @@ fun DeclarationContainerScope.repositoryImplementation() = "RepositoryImplementa
   shouldContainsRepositoryImplementationClass()
 }
 
-private fun ConstraintScope.shouldContainsRepositoryImplementationClass() =
+private fun FileConstraintScope.shouldContainsRepositoryImplementationClass() =
   "ファイル名と同じ名前のクラスを1つだけ宣言するべき".konsist {
     files.must { file -> file.classes().map { it.name } == listOf(file.name) }
   }
@@ -199,13 +201,12 @@ fun DeclarationContainerScope.dataSource() = "DataSource" {
   shouldContainsDataSourceClass()
 }
 
-private fun ConstraintScope.shouldContainsDataSourceClass() =
+private fun FileConstraintScope.shouldContainsDataSourceClass() =
   "ファイル名と同じ名前のクラスを1つだけ宣言するべき".konsist {
     files.must { file -> file.classes().map { it.name } == listOf(file.name) }
   }
 ```
 
-<Aside type="caution" title="スニペットはあくまでスタートラインとしてつかうべきです">
-上記のスニペットにはドキュメントに出てくる要素を中心に取り上げており、実際のプロジェクトでは適宜追加や修正が必要です。
-たとえばあなたのプロダクトで Dagger Hilt を使っている場合は ViewModel の検査に `@HiltViewModel` アノテーションの有無を検査するように追加したり、Repository の実装クラスに `@Inject` コンストラクタがあることを検査するように追加するなど 追加のカスタマイズが必要になることでしょう。
-</Aside>
+<SnippetIsStartingPoint>
+たとえばプロダクトで Dagger Hilt を使っているなら、ViewModel に `@HiltViewModel` アノテーションが付いているかの検査や、Repository の実装クラスに `@Inject` コンストラクタがあるかの検査を追加するなど、さらにカスタマイズが必要になるでしょう。
+</SnippetIsStartingPoint>

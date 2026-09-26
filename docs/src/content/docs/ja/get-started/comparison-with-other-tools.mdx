@@ -7,7 +7,7 @@ tags:
 
 import { Aside } from '@astrojs/starlight/components';
 
-katachi を取り巻く類似ツールとして Konsist, ArchUnit などがあります。
+katachi に似たツールとして、Konsist や ArchUnit などがあります。
 これらは **katachi と排他的とは限りません**。
 
 ## 比較表
@@ -89,7 +89,7 @@ katachi が「このファイルはここに置いてよい」を決め、detekt
 <Aside>
 **katachi は detekt との統合を持っていません。** 用意しているのは Konsist との統合だけです。
 
-ただし `konsist { }` は `constraint()` という**ツールに依存しない口**の上に薄く乗っているだけなので、
+ただし `konsist { }` は `fileConstraint()` という**ツールに依存しない口**の上に薄く乗っているだけなので、
 構造としては detekt を使ったバックエンドも作れます。いまは無い、というだけです。
 </Aside>
 

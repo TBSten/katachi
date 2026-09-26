@@ -27,12 +27,9 @@ The one difference is **which way the things you failed to enumerate fall** — 
 
 Treating anything unexpected as suspicious is a habit security shares.
 
-It is called **fail-safe defaults**, one of the design principles Saltzer and Schroeder
-listed in 1975: decide access **by enumerating what is permitted, not what is denied**.
-Starting a firewall from default deny, and starting a CSP from `default-src 'none'`,
-are both expressions of that same principle.
+It is called **fail-safe defaults**, one of the design principles.
 
-The reasoning is the same too. **A scheme that enumerates prohibitions lets through
+**A scheme that enumerates prohibitions lets through
 whatever it failed to enumerate.** Just as signature-based malware protection cannot stop an
 unknown sample, **when something slips past, it falls to the "passes quietly" side.**
 With a scheme that enumerates permissions, whatever slips past falls to the "does not pass" side.
@@ -64,14 +61,7 @@ The list of violations from the first run is, as it stands, a report saying
 katachi did not break anything; it only made visible what was already there.
 
 You will work through the reported paths one at a time, adding each to the definition,
-moving it, or deleting it. That work is itself **the team agreeing on its architecture again.**
-
-<Aside title="If you want to accept the current state for now">
-We understand the request: "leave what is already here alone, and only stop new things from
-being added." **It is planned as a baseline feature, but it is not implemented yet**
-([Roadmap](/katachi/roadmap/)). For now, you can take the list of violations via `process()`
-and subtract them yourself.
-</Aside>
+moving it, or deleting it. That is itself **the team agreeing on its architecture again.**
 
 ## Konsist and ArchUnit exist — why does anything else need to?
 
@@ -201,7 +191,7 @@ Write that documentation separately, though, and **it will rot.** Rotten documen
 than none at all, because nobody notices that it contradicts the implementation.
 
 So katachi **produces both from the same definition**. The `summary` and `description` you write
-in a role are at once the subject of the check and the body of the documentation.
+in a Role are at once the subject of the check and the body of the documentation.
 
 ```mermaid
 flowchart LR
@@ -226,14 +216,14 @@ Documentation generation is **planned for v0.2 and does not work yet.**
 What you can use today is the check (`assert()`).
 </Aside>
 
-## How do I decide the names and the granularity of roles?
+## How do I decide the names and the granularity of Roles?
 
 Use this criterion: **is the team already using that word?**
 
-Roles in katachi are not there to introduce new concepts.
-They take the words already used out loud and in review — "this is a UseCase, right?",
-"put it in the Repository" — and write them down as declarations.
+A Role in katachi is not there to introduce new concepts.
+It takes a word already used out loud and in review — "this is a UseCase, right?",
+"put it in the Repository" — and writes it down as a declaration.
 
-That makes **the definition an agreement of the team**, and an important subject of review.
+So, **the definition is an agreement of the team**, and an important subject of review.
 Even when you have an AI agent produce the initial definition, that is no more than a guess from
-the existing code, so **the team is expected to read it and agree on it in the end**.
+the existing code. **The team is expected to read it and agree on it in the end**.

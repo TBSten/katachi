@@ -6,11 +6,11 @@ tags:
 ---
 import { Aside, LinkCard } from '@astrojs/starlight/components';
 
-katachi のコア API がディレクトリ構造・ファイルの位置に着目して検証を行うのに対し、`"...".konsist { }` を使うと Konsist の API を使って **ファイル内の宣言に対して検証** を行うことができます。
+katachi のコア API は、ディレクトリ構造やファイルの位置に着目して検証します。`"...".konsist { }` を使うと、Konsist の API で **ファイル内の宣言を検証** できます。
 
 ## インストール
 
-`"...".konsist { }` はオプション機能の別モジュールに切り出されているため、別途インストールする必要があります。
+`"...".konsist { }` はオプション機能として別モジュールに切り出してあるため、別途インストールが必要です。
 `build.gradle.kts` に以下を追加してください。
 
 <table>
@@ -34,19 +34,19 @@ dependencies {
 }
 ```
 
-次に `projectArchitecture.assert()` に `KonsistCheck()` を渡すことで、Konsist の検証を実行することができます。
+次に、`projectArchitecture.assert()` に `FileConstraintCheck()` を渡すと、Konsist の検証を実行できます。
 
 ```kt del={3} ins={4}
 @Test
 fun `アーキテクチャに沿ったファイル配置になっている`() {
   projectArchitecture.assert()
-  projectArchitecture.assert(KonsistCheck())
+  projectArchitecture.assert(FileConstraintCheck())
 }
 ```
 
 ## 基本的な使い方
 
-Role のなかで その Role のファイルにどういう宣言があるのかを定義します。
+Role の中で、その Role のファイルにどういう宣言があるのかを定義します。
 
 ```kt
 architecture {
@@ -59,19 +59,19 @@ architecture {
 ```
 
 <Aside type="caution">
-  `assertTrue { }` は利用してはいけません。これはその場でアサーションの例外を発生させてしまい DSL による宣言 と 検証 を分離するための設計に反するためです。
+  `konsist { }` の中で `assertTrue { }` を書くと、**コンパイルエラーになります**（ERROR レベルの `@Deprecated` で塞いでいます）。Konsist の `assertTrue` はその場でアサーションの例外を投げるので、DSL による宣言と検証を分けるという設計に反するためです。
   代わりに must / mustNot / mustBeEmpty を使ってください。
 </Aside>
 
 ## エラーの例
 
-制約の違反を検知した場合 以下のようにエラーメッセージが表示されます。
+制約の違反を検知すると、次のようなエラーメッセージが表示されます。
 
 ```text
-Katachi check failed: 1 violation (Constraint: 1)
+Katachi check failed: 1 violation (FileConstraint: 1)
 
-[UnsatisfiedConstraint] src/main/kotlin/com/example/useCase/GetUserUseCase.kt
-  Role: UseCase / Constraint: "invoke 関数を1つだけ持つこと"
+[UnsatisfiedFileConstraint] src/main/kotlin/com/example/useCase/GetUserUseCase.kt
+  Role: UseCase / FileConstraint: "invoke 関数を1つだけ持つこと"
   Declaration: GetUserUseCase (line 3)
   Declared at: ProjectArchitecture.kt:12
 ```
@@ -92,12 +92,12 @@ katachi が差し替えているのは `must` / `mustNot` / `mustBeEmpty` の3�
 ## まとめ
 
 - `layout { }` が **どこに置いてよいか**、`konsist { }` が **中身がどうあるべきか** を担当します。
-- `katachi-konsist` は**任意のモジュール**です。依存の追加、 `assert(KonsistCheck())` の設定が必要です。
+- `katachi-konsist` は**任意のモジュール**です。依存の追加と `assert(FileConstraintCheck())` の設定が必要です。
 - **制約名がそのまま違反レポートに出ます。** 名前は「満たすべきこと」の形で書いてください。
 - `assertTrue` 系は**コンパイルエラーになります**。その場で例外を投げてしまい、1回の実行で全違反を集める設計と噛み合わないためです。
 
 ## 次のステップ
 
-- 各種レシピを参照して 実際に Konsist API を利用する例を参照してください。
+- Konsist API を実際に使う例は、各種レシピを参照してください。
 - [Role](/katachi/ja/guides/role/) ... 制約を書く先である Role の説明・置き場所・グループの書き方を学びましょう。
-- [ArchitectureProcessor とそのカスタマイズ](/katachi/ja/guides/processor/) ... `KonsistCheck` と同じ interface で、定義から自分で何かを取り出す方法を学びましょう。
+- [ArchitectureProcessor とそのカスタマイズ](/katachi/ja/guides/processor/) ... `FileConstraintCheck` と同じ interface で、定義から自分で何かを取り出す方法を学びましょう。

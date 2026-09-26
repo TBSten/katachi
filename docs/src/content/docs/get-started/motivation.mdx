@@ -5,6 +5,21 @@ tags:
   - beginner
 ---
 
+import { Aside, FileTree, LinkCard } from '@astrojs/starlight/components';
+import CodeComparison from '../../../components/CodeComparison';
+
+<Aside title="Short on time?">
+  There's also a 5-minute slide deck that gives you the big picture of katachi.
+
+  <LinkCard
+    title="katachi in 5 Minutes"
+    description="Get a quick grasp, in slides, of the problem katachi solves and how one definition produces both tests and documentation."
+    href="../../slides/katachi-in-5-minutes/index.html"
+    target="_blank"
+  />
+
+</Aside>
+
 ## Architecture documentation always drifts from the implementation
 
 Being the diligent developer you are, your project surely has a `/docs` directory that spells out the overall structure and the rules for every component.
@@ -59,9 +74,6 @@ katachi has you declare two things:
 - Where the files of that Role may appear
 
 Writing this in a declarative DSL lets you test the directory structure of the entire project.
-
-import { Aside, FileTree } from '@astrojs/starlight/components';
-import CodeComparison from '../../../components/CodeComparison';
 
 <Aside title="Deny by default" type="tip">
 
@@ -118,10 +130,10 @@ Katachi check failed: 1 violation (Unexpected: 1)
 
 ## Generate documentation
 
-From the project structure you defined with katachi, you can have Markdown (or MDX) documentation generated.
+From the project structure you defined with katachi, you can have Markdown documentation generated.
 
 ```shell
-$ ./gradlew runKatachiProcessor --processor=docs
+$ ./gradlew katachiDocs
 ```
 
 <CodeComparison>
@@ -151,17 +163,19 @@ val projectArchitecture = architecture {
 
 <CodeComparison.Panel label="Generated Markdown" labelVariant="success">
 ```md title="docs/UseCase.md"
+[アーキテクチャ](README.md)
+
 # Use case
 
 A single app-specific behavior that occurs on a screen
 
-## Locations
+## 配置場所
 
-| Path | When to use it |
-|---|---|
-| `src/main/kotlin/com/example/project/useCase/*UseCase.kt` | Ones used from more than one screen |
+| モジュール | パス | 使い分け |
+|---|---|---|
+|  | `src/main/kotlin/com/example/project/useCase/*UseCase.kt` | Ones used from more than one screen |
 
-## Examples
+## 例
 
 - `GetUserUseCase` ... Gets a user
 - `UpdateUserUseCase` ... Updates a user
@@ -171,6 +185,90 @@ A single app-specific behavior that occurs on a screen
 </CodeComparison>
 
 Treat the project structure you defined with katachi as the single source of truth, and generate documentation that both humans and AI agents can read.
+
+See [Document generation](/katachi/guides/document-generation/) for the details.
+
+<LinkCard
+    title="Document generation"
+    description="How to generate a Markdown page per role from the architecture { } definition."
+    href="/katachi/guides/document-generation/"
+/>
+
+## Generate code from templates
+
+By embedding a typical source code template inside the architecture definition, you can generate the files of a role with a single command. The directory they land in comes from `layout { }`, so the check passes right after generation.
+
+```shell
+$ ./gradlew katachiTemplate --arg roleName=UseCase --arg name=GetUser
+```
+
+<CodeComparison>
+  <CodeComparison.Panel label="Architecture definition" labelVariant="note">
+    ```kt title="ProjectArchitecture.kt"
+    val projectArchitecture = architecture {
+      "UseCase" {
+        layout {
+          "src/main/kotlin/com/example/project/useCase" / "*UseCase".ktFile()
+        }
+
+        template {
+          val name by stringParameter()
+
+          file("${name}UseCase.kt") {
+            """
+              package com.example.project.useCase
+
+              interface ${name}UseCase {
+                suspend operator fun invoke()
+              }
+            """.trimIndent()
+          }
+
+          file("${name}UseCaseImpl.kt") {
+            """
+              package com.example.project.useCase
+
+              class ${name}UseCaseImpl : ${name}UseCase {
+                override suspend fun invoke() {
+                  // Write the behavior here
+                }
+              }
+            """.trimIndent()
+          }
+        }
+      }
+
+      // ...
+    }
+    ```
+  </CodeComparison.Panel>
+
+  <CodeComparison.Panel label="Command to generate, and the generated source code" labelVariant="success">
+
+    ```shell
+    $ ./gradlew katachiTemplate --arg roleName=UseCase --arg name=GetUser
+    [template] Generating 2 files under file:///path/to/project
+    [template] Wrote file:///path/to/project/src/main/kotlin/com/example/project/useCase/GetUserUseCase.kt
+    [template] Wrote file:///path/to/project/src/main/kotlin/com/example/project/useCase/GetUserUseCaseImpl.kt
+    ```
+
+    ```kt title="src/main/kotlin/com/example/project/useCase/GetUserUseCase.kt"
+    package com.example.project.useCase
+
+    interface GetUserUseCase {
+      suspend operator fun invoke()
+    }
+    ```
+  </CodeComparison.Panel>
+</CodeComparison>
+
+See [Generating code from a template](/katachi/guides/generate-code-from-template/) for the details.
+
+<LinkCard
+    title="Generating code from a template"
+    description="How to write template { }, its parameters, and what happens when a file already exists."
+    href="/katachi/guides/generate-code-from-template/"
+/>
 
 ## katachi and Konsist
 
@@ -188,7 +286,7 @@ val projectArchitecture = architecture {
     "has exactly one invoke function".konsist {
       classes()
         .withNameEndingWith("UseCase")
-        .assertTrue { it.functions().map { function -> function.name } == listOf("invoke") }
+        .must { it.functions().map { function -> function.name } == listOf("invoke") }
     }
   }
 }

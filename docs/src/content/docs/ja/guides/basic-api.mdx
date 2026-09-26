@@ -5,13 +5,15 @@ tags:
   - beginner
 ---
 
-このページでは katachi の主要 API を紹介します。
-これだけを覚えれば katachi の基本的な使い方を理解できるはずです。
+import { FileTree } from '@astrojs/starlight/components';
+
+katachi の主要な API を紹介します。
+ここに挙げる API を覚えれば、katachi の基本的な使い方は分かるはずです。
 
 ## 1. `architecture { }`
 
 `architecture { }` はプロジェクト全体のアーキテクチャを定義するエントリーポイントです。
-プロジェクト内に存在するファイルの役割をこのなかに書いていきます。
+このブロックの中に、プロジェクトにあるファイルの役割を書きます。
 
 ```kt
 architecture {
@@ -21,7 +23,7 @@ architecture {
 // このプロジェクトには `UseCase` と `Repository-interface` という2つの役割がある
 ```
 
-アーキテクチャ内の要素 (Role) については後のセクションで深掘りします。
+アーキテクチャを構成する要素 (Role) は、後のセクションで詳しく説明します。
 
 ## 2. アーキテクチャをテストする `assert()`
 
@@ -53,11 +55,11 @@ architecture {
 }
 ```
 
-`architecture { }` ブロックの中に `"名前" { }` を書くことで、プロジェクト内に登場するファイルの役割を定義できます。
+`architecture { }` ブロックの中に `"名前" { }` を書くと、プロジェクトに登場するファイルの役割を定義できます。
 
 ### Role の例
 
-著名なアーキテクチャを採用している場合、役割は具体的には以下のようなものになるでしょう。
+よく知られたアーキテクチャを採用しているなら、役割はたとえば次のようになるでしょう。
 
 | Group | Role |
 |---|---|
@@ -73,9 +75,9 @@ architecture {
 
 ### Deny by default
 
-katachi では **宣言された Roleのファイルのみがプロジェクト内に存在を許されます** 。
+katachi では、**宣言した Role のファイルしかプロジェクトに存在を許されません**。
 
-つまり katachi を導入する際、プロジェクト規約にあった Role の列挙が求められます。
+つまり katachi を導入するときは、プロジェクトの規約に合った Role を列挙する必要があります。
 
 ### 関連ドキュメント
 
@@ -85,7 +87,7 @@ Role については [Role 定義の詳細](/katachi/ja/guides/role/) も参照�
 
 `"名前".group { }` は Role をまとめるためのブロックです。
 
-例えば Clean architecture では、`UseCase` と `Repository-interface` は **同じ ドメインレイヤー の役割** です。
+例えば Clean architecture では、`UseCase` と `Repository-interface` は **同じドメインレイヤーの役割** です。
 
 ```kt {2}
 architecture {
@@ -96,7 +98,7 @@ architecture {
 }
 ```
 
-ドメインレイヤーという役割のグループを DSL で表現することで、役割同士の関係性・階層構造がより明確になるため、分かりやすい粒度で Role をグループ化することは分かりやすいアーキテクチャ定義を作る上で重要です。
+ドメインレイヤーという役割のグループを DSL で表すと、役割同士の関係や階層構造がより明確になります。分かりやすいアーキテクチャ定義を作るには、分かりやすい粒度で Role をグループ化することが大切です。
 
 ### 関連ドキュメント
 
@@ -104,7 +106,7 @@ Role のグループについては [Role 定義の詳細](/katachi/ja/guides/ro
 
 ## 5. ファイルが存在して良い位置を定義する `layout { }`
 
-`"..." { }` を使った Role の定義では その Role に対応するファイルについての言及がありません。
+`"..." { }` で Role を定義しただけでは、その Role に対応するファイルについては何も書かれていません。
 
 `layout { }` は Role に対応するファイルをどこに置けるかを定義するためのブロックです。
 
@@ -122,10 +124,17 @@ architecture {
 
 ### どのように機能するか
 
-Deny by default の原則により `layout { }` で宣言されていない場所にファイルを置くことは許されません。
+Deny by default の原則により、`layout { }` で宣言していない場所にはファイルを置けません。
 
-もし AI Agent が `src/main/kotlin/com/example/GetItemUseCase.kt` に新しい UseCase ファイルを置こうとしたとします (本来は useCase パッケージ内に配置すべきです)。
-`assert()` が呼び出された瞬間、katachi はこのパスに一致する Role が存在しないことを検知し、テストは失敗します。
+たとえば AI Agent が、新しい UseCase ファイルを `src/main/kotlin/com/example/GetItemUseCase.kt` に置こうとしたとします (本来は useCase パッケージの中に置くべきです)。
+`assert()` が呼び出された時点で、katachi はこのパスに一致する Role が無いことを検知し、テストが失敗します。
+
+<FileTree>
+- src/main/kotlin/com/example/
+  - **GetItemUseCase.kt** ❌ `layout { }` で宣言していない場所
+  - useCase/
+    - GetUserUseCase.kt ⭐️ 宣言どおりの場所
+</FileTree>
 
 ### 関連ドキュメント
 
@@ -133,7 +142,7 @@ Deny by default の原則により `layout { }` で宣言されていない場�
 
 ## 6. ファイル内の制約を定義する `"...".konsist { }`
 
-Role が定義されたファイルに [Konsist](https://docs.konsist.lemonappdev.com/) を使って制約を設定することができます。
+Role を定義したファイルには、[Konsist](https://docs.konsist.lemonappdev.com/) で制約をかけられます。
 
 ```kt {8}
 architecture {
@@ -149,7 +158,7 @@ architecture {
 }
 ```
 
-`layout { }` で指定したファイルに対して、Konsist の API を使って制約を設定することができます。
+制約の対象は `layout { }` で指定したファイルで、制約そのものは Konsist の API で書きます。
 
 ### 関連ドキュメント
 
@@ -171,7 +180,7 @@ architecture {
       ```
     </td>
     <td>
-      プロジェクト全体のアーキテクチャを定義するエントリーポイントとなる関数です。
+      プロジェクト全体のアーキテクチャを定義する、エントリーポイントの関数です。
     </td>
     <td>
       ```kt nocollapse
@@ -232,7 +241,7 @@ architecture {
       ```
     </td>
     <td>
-      Role をまとめて階層を作ります。任意で、使わなくても Role は書けます。
+      Role をまとめて階層を作ります。使うかどうかは任意で、使わなくても Role は書けます。
     </td>
     <td>
       ```kt nocollapse

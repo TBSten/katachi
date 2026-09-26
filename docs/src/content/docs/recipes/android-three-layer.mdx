@@ -5,7 +5,9 @@ tags:
   - intermediate
 ---
 
-import { FileTree, LinkCard, Aside } from '@astrojs/starlight/components';
+import SnippetIsStartingPoint from '../../../components/SnippetIsStartingPoint.astro';
+
+import { FileTree, LinkCard } from '@astrojs/starlight/components';
 
 <LinkCard
   title="App Architecture Guide"
@@ -79,7 +81,7 @@ fun DeclarationContainerScope.uiState() = "UiState" {
   shouldBeImmutable()
 }
 
-private fun ConstraintScope.shouldBeImmutable() =
+private fun FileConstraintScope.shouldBeImmutable() =
   "Every property must be a val".konsist {
     classes().must { klass -> klass.properties().all { it.hasValModifier } }
   }
@@ -95,17 +97,17 @@ fun DeclarationContainerScope.viewModel() = "ViewModel" {
   shouldUiStateFlowBePublic()
 }
 
-private fun ConstraintScope.shouldContainsViewModelClass() =
+private fun FileConstraintScope.shouldContainsViewModelClass() =
   "Must declare exactly one class with the same name as the file".konsist {
     files.must { file -> file.classes().map { it.name } == listOf(file.name) }
   }
 
-private fun ConstraintScope.shouldExtendsViewModel() =
+private fun FileConstraintScope.shouldExtendsViewModel() =
   "Must extend ViewModel".konsist {
     classes().must { klass -> klass.parents().any { it.name == "ViewModel" } }
   }
 
-private fun ConstraintScope.shouldUiStateFlowBePublic() =
+private fun FileConstraintScope.shouldUiStateFlowBePublic() =
   "Must expose the UiState Flow as public".konsist {
     classes().must { klass ->
       klass.properties().any {
@@ -123,7 +125,7 @@ fun DeclarationContainerScope.screen() = "Screen" {
   shouldContainsPublicScreenComposable()
 }
 
-private fun ConstraintScope.shouldContainsPublicScreenComposable() =
+private fun FileConstraintScope.shouldContainsPublicScreenComposable() =
   "Must declare a public Composable with the same name as the file".konsist {
     files.must { file ->
       file.functions().any {
@@ -143,12 +145,12 @@ fun DeclarationContainerScope.useCase() = "UseCase" {
   shouldSingleInvokePublicMethod()
 }
 
-private fun ConstraintScope.shouldContainsUseCaseClass() =
+private fun FileConstraintScope.shouldContainsUseCaseClass() =
   "Must declare exactly one class with the same name as the file".konsist {
     files.must { file -> file.classes().map { it.name } == listOf(file.name) }
   }
 
-private fun ConstraintScope.shouldSingleInvokePublicMethod() =
+private fun FileConstraintScope.shouldSingleInvokePublicMethod() =
   "Must have exactly one public invoke method".konsist {
     classes().must { klass ->
       klass.functions().filter { it.hasPublicOrDefaultModifier }.map { it.name } == listOf("invoke")
@@ -171,7 +173,7 @@ fun DeclarationContainerScope.repositoryInterface() = "RepositoryInterface" {
   shouldContainsRepositoryInterface()
 }
 
-private fun ConstraintScope.shouldContainsRepositoryInterface() =
+private fun FileConstraintScope.shouldContainsRepositoryInterface() =
   "Must declare exactly one interface with the same name as the file".konsist {
     files.must { file -> file.interfaces().map { it.name } == listOf(file.name) }
   }
@@ -185,7 +187,7 @@ fun DeclarationContainerScope.repositoryImplementation() = "RepositoryImplementa
   shouldContainsRepositoryImplementationClass()
 }
 
-private fun ConstraintScope.shouldContainsRepositoryImplementationClass() =
+private fun FileConstraintScope.shouldContainsRepositoryImplementationClass() =
   "Must declare exactly one class with the same name as the file".konsist {
     files.must { file -> file.classes().map { it.name } == listOf(file.name) }
   }
@@ -199,13 +201,12 @@ fun DeclarationContainerScope.dataSource() = "DataSource" {
   shouldContainsDataSourceClass()
 }
 
-private fun ConstraintScope.shouldContainsDataSourceClass() =
+private fun FileConstraintScope.shouldContainsDataSourceClass() =
   "Must declare exactly one class with the same name as the file".konsist {
     files.must { file -> file.classes().map { it.name } == listOf(file.name) }
   }
 ```
 
-<Aside type="caution" title="Treat this snippet only as a starting point">
-This snippet focuses on the elements that appear in the documentation, and real projects will need additional additions and adjustments.
+<SnippetIsStartingPoint>
 For example, if your product uses Dagger Hilt, you might add a check for the `@HiltViewModel` annotation on ViewModels, or a check that repository implementation classes have an `@Inject` constructor — customizations like these will likely be necessary.
-</Aside>
+</SnippetIsStartingPoint>

@@ -31,6 +31,8 @@ Starting from a Role, you describe the details of that role.
   - See [Layout definitions](/katachi/guides/layout/) for details.
 - `"constraint name".konsist { }` ... Defines constraints you can apply to that Role's files.
   - Constraints are defined using Konsist. See [Konsist integration](/katachi/guides/konsist-integration/) for details.
+- `template` ... Defines the template used when creating a new file for that Role.
+  - See [Generate code from a template](/katachi/guides/generate-code-from-template/) for details.
 
 ```kt
 architecture {
@@ -204,8 +206,8 @@ class GetUserUseCase(private val repository: UserRepository) {
 It shows up in the same report as placement violations. **It even tells you which file and which line.**
 
 ```text
-[UnsatisfiedConstraint] src/main/kotlin/com/example/useCase/GetUserUseCase.kt
-  Role: domain/UseCase / Constraint: "has exactly one invoke function"
+[UnsatisfiedFileConstraint] src/main/kotlin/com/example/useCase/GetUserUseCase.kt
+  Role: domain/UseCase / FileConstraint: "has exactly one invoke function"
   Declaration: GetUserUseCase (line 3)
   Declared at: ProjectArchitecture.kt:18 (layout of src/main/kotlin/com/example/useCase)
 ```

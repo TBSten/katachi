@@ -54,7 +54,7 @@ val projectArchitecture = architecture {
 
 ## <span id="katachi-home-problem">崩れるのは<br />いつも1ファイルから。</span>
 
-置き場所の逸脱は、レビューで見逃しがちです。AI Agent が作ったファイルも、手本にするのは文書ではなく既存の配置。1つずれれば、そこから複製されていきます。
+置き場所の逸脱は、レビューで見逃しがちです。AI Agent がファイルを作るときも、手本にするのは文書ではなく既存の配置。1つずれれば、そこから複製されていきます。
 
 **ドキュメントには、強制力がない。**
 
@@ -115,8 +115,6 @@ katachi では、存在してよいものを宣言します。禁止を数え上
 
 <article class="katachi-home__pillar" data-katachi-pillar>
 
-<p>03-01 — deny</p>
-
 ### 宣言にないファイルは<br />アーキテクチャ違反
 
 禁止を数え上げる運用から、存在してよいものを宣言する運用へ。「いつの間にか増えた置き場所」が起きません。
@@ -129,8 +127,6 @@ katachi では、存在してよいものを宣言します。禁止を数え上
 </article>
 
 <article class="katachi-home__pillar" data-katachi-pillar>
-
-<p>03-02 — role</p>
 
 ### 役割駆動による<br />アーキテクチャ定義
 
@@ -148,11 +144,9 @@ katachi では、存在してよいものを宣言します。禁止を数え上
 
 <article class="katachi-home__pillar" data-katachi-pillar>
 
-<p>03-03 — docs</p>
-
 ### 検査した定義が、<br />そのままドキュメントへ
 
-`title` / `summary` / `example` を役割の中に書きます。同じ定義からのドキュメント生成は v0.2 で予定しています。
+`title` / `summary` / `example` を役割の中に書きます。v0.2 からは `./gradlew katachiDocs` で、同じ定義から[ドキュメントを生成](/katachi/ja/guides/document-generation/)できます。
 
 ```kt
 "UseCase" {
@@ -191,9 +185,11 @@ katachi では、存在してよいものを宣言します。禁止を数え上
 
 </section>
 
+{/* TODO: 「あなたのプロジェクトの形を、宣言してみる。」の上に、実際の宣言例のセクションを載せる */}
+
 <section class="katachi-home__cta" aria-labelledby="katachi-home-cta">
 
-## <span id="katachi-home-cta">プロジェクトの形を、宣言してみる。</span>
+## <span id="katachi-home-cta">あなたのプロジェクトの形を、宣言してみる。</span>
 
 プロジェクト全体の構成を定義し、テストを実行しましょう。宣言にないファイルは違反として報告されます。
 

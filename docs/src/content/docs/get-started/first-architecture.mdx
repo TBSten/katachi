@@ -37,18 +37,6 @@ If you are not yet convinced that you need katachi, read [Motivation](/katachi/g
             - For Claude Code or Codex CLI: clear the session with `/clear`, then enter the prompt.
         </details>
 
-        <details>
-        <summary>What the AI agent does, step by step</summary>
-
-            | | | Step |
-            |----|---|------|
-            | 1 | <Badge text="Agent" size="small" /> | Analyze the current codebase and infer its structure and the constraints on each component. |
-            | 2 | <Badge text="Agent" size="small" /> | Create an `:architecture-test` module in the project and configure it as a standard katachi test module. |
-            | 3 | <Badge text="Agent" size="small" /> | Write the `architecture { ... }` definition in `architecture-test/src/test/kotlin/.../test/architecture/ProjectArchitecture.kt`, based on what it analyzed and inferred. |
-            | 4 | <Badge text="Needs your input" size="small" variant="caution" /> | Review the `ProjectArchitecture.kt` the AI agent generated.<br/>The architecture rules it produced are **guesses drawn from the existing codebase, and they do not necessarily match the structure and constraints you consider ideal.** |
-
-        </details>
-
     2. **Review** the changes the AI agent made to your project and adjust them as needed.
 
         What to look at:
@@ -66,29 +54,6 @@ If you are not yet convinced that you need katachi, read [Motivation](/katachi/g
         ```
 
         That completes the setup.
-
-    4. <Badge text="Optional" size="small" /> <br/> Hand the AI agent a real task and see that it no longer produces files that break the architecture rules.
-
-        <details>
-        <summary>If you have implementation tasks coming up</summary>
-
-        If you have tasks that are actually coming up, running one of them as a trial is the best way to measure whether katachi does its job.
-        Hand the task to the AI agent and let it run.
-
-        If the task is tracked in JIRA, Notion, or similar, passing the link works well too.
-
-        </details>
-
-        <details>
-        <summary>If you have nothing in particular</summary>
-
-        Have the AI agent invent a hypothetical task and check whether katachi works as a guardrail.
-
-        ```md
-        Come up with a few hypothetical tasks that are likely to come up in this project.
-        ```
-
-        </details>
 
     </Steps>
   </TabItem>
@@ -110,6 +75,7 @@ If you are not yet convinced that you need katachi, read [Motivation](/katachi/g
         ```kotlin title="architecture-test/build.gradle.kts"
         plugins {
             kotlin("jvm") version "<Kotlin version>"
+            id("me.tbsten.katachi") version "<katachi version>"
         }
 
         kotlin {

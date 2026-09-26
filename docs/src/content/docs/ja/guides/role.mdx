@@ -10,10 +10,10 @@ import CodeComparison from "../../../../components/CodeComparison";
 
 ## Role を定義する
 
-アーキテクチャ定義に従ったアプリには 固有の役割 を持ったファイルが存在します。
+アーキテクチャ定義に従ったアプリには、固有の役割を持つファイルがあります。
 例えば `UseCase`, `Repository`, `Controller`, `ViewModel` などです。
 
-`architecture { }` のなかにどんな役割があるのかを定義します。
+どんな役割があるのかは、`architecture { }` の中で定義します。
 
 ```kt {2-5}
 architecture {
@@ -24,13 +24,15 @@ architecture {
 }
 ```
 
-Role を起点にして、役割の詳細を記述します。
+役割の詳細は、Role を起点にして書きます。
 
-- `title`, `summary`, `description`, etc. ... そのRoleの説明。ドキュメンテーション生成に利用されます。
+- `title`, `summary`, `description`, etc. ... そのRoleの説明です。ドキュメント生成に使われます。
 - `layout { }` ... そのRoleのファイルをどこに置けるかを定義します。
   - 詳しくは [レイアウトの定義](/katachi/ja/guides/layout/) を参照してください。
-- `"制約名".konsist { }` ... そのRoleのファイルにかけることのできる制限を定義します。
-  - 制約の定義には Konsist を利用します。詳しくは [Konsist との統合](/katachi/ja/guides/konsist-integration/) を参照してください。
+- `"制約名".konsist { }` ... そのRoleのファイルにかけられる制限を定義します。
+  - 制約は Konsist で書きます。詳しくは [Konsist との統合](/katachi/ja/guides/konsist-integration/) を参照してください。
+- `template` ... その Role のファイルを新規作成する際のテンプレートを定義します。
+  - 詳しくは [テンプレートからコード生成](/katachi/ja/guides/generate-code-from-template/) を参照してください。
 
 ```kt
 architecture {
@@ -53,12 +55,12 @@ architecture {
 }
 ```
 
-それぞれもう少し詳しく見ていきます。
+それぞれを、もう少し詳しく説明します。
 
 <details>
 <summary>説明を書く</summary>
 
-最小限は `summary` だけです。生成ドキュメントでRoleの一覧表に並ぶ1行になります。
+最低限必要なのは `summary` だけです。生成ドキュメントでRoleの一覧表に並ぶ1行になります。
 
 ```kt
 "UseCase" {
@@ -204,8 +206,8 @@ class GetUserUseCase(private val repository: UserRepository) {
 配置の違反と同じレポートに並びます。**どのファイルの何行目かまで出ます。**
 
 ```text
-[UnsatisfiedConstraint] src/main/kotlin/com/example/useCase/GetUserUseCase.kt
-  Role: domain/UseCase / Constraint: "invoke 関数を1つだけ持つこと"
+[UnsatisfiedFileConstraint] src/main/kotlin/com/example/useCase/GetUserUseCase.kt
+  Role: domain/UseCase / FileConstraint: "invoke 関数を1つだけ持つこと"
   Declaration: GetUserUseCase (line 3)
   Declared at: ProjectArchitecture.kt:18 (layout of src/main/kotlin/com/example/useCase)
 ```
@@ -215,11 +217,11 @@ class GetUserUseCase(private val repository: UserRepository) {
 </details>
 
 
-またRoleの名前はドキュメント生成等で利用される都合上、ASCII (英数字と一部の記号) のみを使用する必要があります。
+なお、Roleの名前はドキュメント生成などで使うため、ASCII（英数字と一部の記号）しか使えません。
 
 ## Role のグループ
 
-`"グループ名".group { ... }` を使って、Roleはグルーピングが可能です。
+`"グループ名".group { ... }` を使うと、Roleをグループにまとめられます。
 
 ```kt {2,10}
 architecture {
@@ -239,15 +241,15 @@ architecture {
 
 ### 良い Role 定義は変更を必要としない
 
-**アプリに機能を足すたびに `architecture { }` を書き換える必要がある場合、その `architecture { }` の定義は 悪い設計** と言えます。
+**アプリに機能を足すたびに `architecture { }` を書き換える必要があるなら、その `architecture { }` の定義は悪い設計です。**
 
-`architecture { }` がディレクトリ構造のコピーになって二度手間になってしまわないように、`*` `**` といったワイルドカードをうまく使ってください。
+`architecture { }` がディレクトリ構造の写しになって二度手間にならないよう、`*` や `**` といったワイルドカードをうまく使ってください。
 
 ## Role 定義を分割する
 
-大きなプロジェクトになればなるほど `architecture { }` 定義は肥大化していきます。
+プロジェクトが大きくなるほど、`architecture { }` の定義は肥大化します。
 
-`architecture { }` は Kotlin DSL なので、通常の Kotlin 同様 拡張関数 に切り出すことができます。
+`architecture { }` は Kotlin DSL なので、普通の Kotlin と同じように拡張関数へ切り出せます。
 
 ここではおすすめの **Role 定義の分割方法** を紹介します。
 
@@ -340,9 +342,9 @@ Role ごとに拡張関数に切り出しましょう。
 
 ### Role 定義の中を分割する
 
-Role 定義の中でも 特に `"...".konsist { }` は制約数が多かったり複雑になることで肥大化しがちです。
+Role 定義の中でも、特に `"...".konsist { }` は、制約が多かったり複雑になったりして肥大化しがちです。
 
-`"...".konsist { }` は積極的に private な 拡張関数に切り出しましょう。
+`"...".konsist { }` は、積極的に private な拡張関数へ切り出しましょう。
 
 <CodeComparison>
     <CodeComparison.Panel label="分割前">
@@ -384,7 +386,7 @@ Role 定義の中でも 特に `"...".konsist { }` は制約数が多かった�
 - 1つのRoleに、説明（`title` / `summary`）・置き場所（`layout { }`）・制約（`konsist { }`）が **まとまります**。
 - 同じRoleが複数の場所に置かれても、**説明は1箇所のまま** です。
 - `group` で束ねると、Roleは `domain/UseCase` という **修飾名** を持ちます。
-- **Role 定義は簡単に肥大化します**。 `architecture { }` や Role 定義を肥大化させないためにも、拡張関数を活用して適切に分割しましょう。
+- **Role 定義はすぐに肥大化します。** `architecture { }` や Role 定義が膨らまないよう、拡張関数を使って適切に分割しましょう。
 
 ```kt
 architecture {

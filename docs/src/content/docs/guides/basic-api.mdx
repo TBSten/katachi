@@ -5,6 +5,8 @@ tags:
   - beginner
 ---
 
+import { FileTree } from '@astrojs/starlight/components';
+
 This page introduces katachi's core API.
 Once you know these, you should understand the basics of using katachi.
 
@@ -123,6 +125,13 @@ architecture {
 Under the Deny by default principle, you can't place a file anywhere that isn't declared in `layout { }`.
 
 Say an AI Agent tries to place a new UseCase file at `src/main/kotlin/com/example/GetItemUseCase.kt` (it should really go inside the useCase package). The moment `assert()` is called, katachi detects that no Role matches this path, and the test fails.
+
+<FileTree>
+- src/main/kotlin/com/example/
+  - **GetItemUseCase.kt** ❌ a place not declared in `layout { }`
+  - useCase/
+    - GetUserUseCase.kt ⭐️ where the declaration puts it
+</FileTree>
 
 ### Related documentation
 

@@ -1,9 +1,11 @@
 ---
 title: ktlint
-description: An example of declaring where ktlint's .editorconfig and custom rule sets live in architecture { }.
+description: An example of declaring where ktlint's .editorconfig and baseline live in architecture { }.
 tags:
   - beginner
 ---
+
+import SnippetIsStartingPoint from '../../../components/SnippetIsStartingPoint.astro';
 
 import { LinkCard } from '@astrojs/starlight/components';
 
@@ -15,7 +17,7 @@ import { LinkCard } from '@astrojs/starlight/components';
 
 ktlint lets you configure things like disabling lint rules through the .editorconfig file.
 
-You should declare .editorconfig in your architecture definition so katachi knows about it.
+You should declare .editorconfig and the baseline (`ktlint-baseline.xml`) in your architecture definition so katachi knows about them.
 
 ```kt collapse
 // ProjectArchitecture.kt
@@ -45,3 +47,5 @@ fun DeclarationContainerScope.ktlint() =
         }
     }
 ```
+
+<SnippetIsStartingPoint />

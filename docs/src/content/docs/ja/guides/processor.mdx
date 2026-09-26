@@ -7,45 +7,40 @@ tags:
 
 import { Aside, Tabs, TabItem, LinkCard } from "@astrojs/starlight/components"
 
-このページでは katachi の重要な要素の 1つである ArchitectureProcessor について解説することで katachi への理解を一層深めることを目指します。
+このページでは、katachi の重要な構成要素の 1 つである ArchitectureProcessor を解説し、katachi への理解を一層深めることを目指します。
 
-後半では独自の ArchitectureProcessor を書いて実行する方法について解説します。
+後半では、独自の ArchitectureProcessor を書いて実行する方法を解説します。
 
 ## ArchitectureProcessor とは
 
-katachi の `ArchitectureProcessor` クラスはアーキテクチャ定義を元に 何かを行う interface です。
+katachi の `ArchitectureProcessor` は、アーキテクチャ定義をもとに何かを行う interface です。
 
 ```kt
 public interface ArchitectureProcessor<Args, R> {
+    // 引数の parser
     public val argsSerializer: KSerializer<Args>
+
+    // 何かを行う
     public fun process(context: ArchitectureProcessContext<Args>): Result<R>
 }
 ```
 
-`process` の本体は `runCatching { }` で包みます。**「この run は通らない」と答えるときは、その中で例外を投げます。**`Result.success` / `Result.failure` を手で組み立てる必要はありません。
+`process` の本体は `runCatching { }` で包みます。**「この run は通らない」と答えるときは、その中で例外を投げます。**
 
-| `runCatching { }` の中で | 意味 | `runKatachiProcessor` での扱い |
+| 戻り値 | 意味 | Gradle タスクでの扱い |
 | --- | --- | --- |
-| 最後まで進んで値を返す | run は通る | `[OK]` |
-| 例外を投げる | run は通らない（違反が見つかった、ドキュメントが古い、処理ができなかった など） | `[FAILED]`。例外のメッセージを表示し、exit が非ゼロになる |
-
-違反の一覧を返す検査は、最後に `assertNoErrors()` を呼びます。`Severity.Error` の違反があれば `KatachiArchitectureAssertionError` を投げ、Warning だけならそのまま返します。`assert()` はこの例外を「違反を見つけた」として1つのレポートにまとめ、それ以外の例外は「その検査は答えられなかった」（`[UncheckedCheck]`）として扱います。`LayoutCheck` と `KonsistCheck` もこの形で書かれています。
-
-引数を取らない ArchitectureProcessor は `ArchitectureProcessorNoArg<R>` を実装します。`argsSerializer` の記述を肩代わりするだけの薄い interface です。
-
-```kt
-public interface ArchitectureProcessorNoArg<R> : ArchitectureProcessor<Unit, R>
-```
+| Result.success | run は通る | `[OK]` |
+| Result.failure | run は通らない（違反が見つかった、ドキュメントが古い、処理ができなかった など） | `[FAILED]`。例外のメッセージを表示し、exit が非ゼロになる |
 
 ## katachi の 2 要素
 
-katachi は 大きく分けて **アーキテクチャ定義** と **ArchitectureProcessor** の2つの要素から成ります。
+katachi は大きく分けて、**アーキテクチャ定義** と **ArchitectureProcessor** の 2 つの要素でできています。
 
 ```mermaid
 flowchart LR
     D["architecture { }<br/>アーキテクチャ定義"]
     D --> Layout["LayoutCheck<br/>配置を検証する"]
-    D --> Konsist["KonsistCheck<br/>konsist { } の制約を検証する"]
+    D --> Konsist["FileConstraintCheck<br/>konsist { } の制約を検証する"]
     D --> Doc["GenerateDocumentation<br/>ドキュメントを生成"]
     D --> Template["GenerateCodeFromTemplate<br/>コードを生成"]
     D -.-> Custom["あなたの ArchitectureProcessor<br/>集計・抽出・別形式への出力"]
@@ -56,12 +51,12 @@ flowchart LR
 
 アーキテクチャ定義そのものは何も実行しません。**`ArchitectureProcessContext` を受け取って何かをするのが ArchitectureProcessor** です。
 
-- アーキテクチャ定義は `architecture { }` ブロックの中で記載するプロジェクトのアーキテクチャの定義です。
-- アーキテクチャを定義しただけでは何も起こりません。それを利用して何かを行うのが ArchitectureProcessor です。
+- アーキテクチャ定義は、プロジェクトのアーキテクチャを `architecture { }` ブロックの中に書いたものです。
+- アーキテクチャを定義しただけでは何も起こりません。その定義を使って何かを行うのが ArchitectureProcessor です。
 
 ## ビルトインの ArchitectureProcessor
 
-katachi は 4 つの ArchitectureProcessor を提供しています。
+katachi は 5 つの ArchitectureProcessor を提供しています。
 
 <table>
     <thead>
@@ -74,12 +69,12 @@ katachi は 4 つの ArchitectureProcessor を提供しています。
     <tbody>
         <tr>
             <td><code>projectArchitecture.assert()</code><br />(<code>LayoutCheck</code>)</td>
-            <td>アーキテクチャ定義に沿ったファイル配置になっているかを検証して エラーがある場合はアサーション例外を発生させます。</td>
+            <td>ファイル配置がアーキテクチャ定義に沿っているかを検証し、エラーがあればアサーション例外を発生させます。</td>
             <td></td>
         </tr>
         <tr>
-            <td><code>KonsistCheck</code></td>
-            <td><code>{"konsist { }"}</code> に書かれた制約を評価します。<code>projectArchitecture.assert(KonsistCheck())</code> のように渡します。</td>
+            <td><code>FileConstraintCheck</code></td>
+            <td><code>{"konsist { }"}</code> に書かれた制約を評価します。<code>projectArchitecture.assert(FileConstraintCheck())</code> のように渡します。</td>
             <td><a href="/katachi/ja/guides/konsist-integration/">Konsist との統合</a></td>
         </tr>
         <tr>
@@ -92,23 +87,28 @@ katachi は 4 つの ArchitectureProcessor を提供しています。
             <td>プロジェクト定義内の <code>{"template { }"}</code> ブロックの内容をもとにファイルを生成します。</td>
             <td><a href="/katachi/ja/guides/generate-code-from-template/">テンプレートからのコード生成</a></td>
         </tr>
+        <tr>
+            <td><code>DescribeTemplates</code></td>
+            <td><code>{"template { }"}</code> を持つ役割の一覧や、1つのテンプレートのパラメータと生成されるファイルを表示します。ファイルは書きません。</td>
+            <td><a href="/katachi/ja/guides/generate-code-from-template/">テンプレートからのコード生成</a></td>
+        </tr>
     </tbody>
 </table>
 
-いずれも プロジェクトのアーキテクチャ定義を受け取り、それらを何かしらの生成に役立てています。
+いずれもプロジェクトのアーキテクチャ定義を受け取り、それを検証（`LayoutCheck` / `FileConstraintCheck`）や生成（`GenerateDocumentation` / `GenerateCodeFromTemplate`）に役立てています。
 
 ## ArchitectureProcessor の実行
 
-ArchitectureProcessor を実行する方法のパターンがいくつかあります。
+ArchitectureProcessor の実行方法にはいくつかのパターンがあります。
 
-ArchitectureProcessor ごとに推奨される実行方法は異なるため、個々の ArchitectureProcessor の実行方法についてはそれぞれのドキュメントを参照してください。
+推奨される実行方法は ArchitectureProcessor ごとに異なります。個々の実行方法は、それぞれのドキュメントを参照してください。
 
 <Tabs>
     <TabItem label="API をプログラムから呼び出す">
 
-ArchitectureProcessor とともに用意されている API （多くの場合トップレベル関数）がある場合、その API を呼び出すことで ArchitectureProcessor を実行できます。
+ArchitectureProcessor に API（多くの場合トップレベル関数）が用意されていれば、その API を呼び出して ArchitectureProcessor を実行できます。
 
-例えば LayoutCheck であれば `projectArchitecture.assert()` を呼び出すことでその ArchitectureProcessor を実行できます。
+例えば LayoutCheck なら、`projectArchitecture.assert()` を呼び出すと実行できます。
 
 ```kt
 projectArchitecture.assert() // 内部で LayoutCheck().process(...) を呼び出す
@@ -117,7 +117,7 @@ projectArchitecture.assert() // 内部で LayoutCheck().process(...) を呼び�
     </TabItem>
     <TabItem label="コマンドラインから実行する">
 
-コマンドラインから ArchitectureProcessor を実行するには Gradle plugin を通じて 登録されている必要があります。
+コマンドラインから実行するには、ArchitectureProcessor を Gradle plugin に登録しておく必要があります。
 
 ```kts title="architecture-test/build.gradle.kts" {5-6}
 katachi {
@@ -130,7 +130,7 @@ katachi {
 }
 ```
 
-毎回同じ引数を渡すなら、**そのモジュールの既定値としてビルドファイルに1度だけ書けます。** コマンドラインの `--arg` のほうが強いので、1回だけ変えたいときにビルドファイルを触る必要はありません。
+また、登録と同時にデフォルト値を設定することもできます。
 
 ```kts title="architecture-test/build.gradle.kts"
 katachi {
@@ -140,7 +140,7 @@ katachi {
             arg("someArg1", "someValue1")
         }
 
-        // 既に登録されているキーに既定値だけ足す
+        // 既に登録されている processor に既定値だけ足す
         args("docs") {
             arg("mode", "check")
         }
@@ -148,31 +148,15 @@ katachi {
 }
 ```
 
-katachi 自身の 2 つには**型のついた block** が用意されています。引数名が katachi の公開面の一部になるので、打ち間違いがビルド時に分かります。
-
-```kts title="architecture-test/build.gradle.kts"
-katachi {
-    processors {
-        docs {
-            outputDir = rootProject.layout.projectDirectory.dir("docs")
-        }
-    }
-}
-```
-
-<Aside type="caution">
-同じキーを `docs { }` と `args("docs") { }` の両方で設定するとビルドが落ちます。同じ processor を指す 2 つの綴りなので、どちらか一方に寄せてください。
-</Aside>
-
 <details>
     <summary>デフォルトで登録されている ArchitectureProcessor</summary>
 
-    `docs` (ドキュメント生成) と `template` (テンプレートからのコード生成) は一般的なユースケースであるためデフォルトで登録されています。
-    これらの ArchitectureProcessor を実行するために `katachi.processors` に登録する必要はありません。
+    `docs`（ドキュメント生成）と `template`（テンプレートからのコード生成）、`templates`（テンプレートの一覧と詳細）はよく使われるので、デフォルトで登録されています。
+    これらを実行するために `katachi.processors` へ登録する必要はありません。
 
     同じキーを自分で `register` すると**そちらが勝ちます。** `docs` を自作の processor に差し替えることもできます。
 
-    ```kts title="architecture-test/build.gradle.kts" {5-7}
+    ```kts title="architecture-test/build.gradle.kts" {5-8}
     katachi {
         architecture = "com.example.projectArchitecture"
 
@@ -180,24 +164,16 @@ katachi {
             // ⭐️ これらは不要です
             register("docs", "me.tbsten.katachi.docs.GenerateDocumentation")
             register("template", "me.tbsten.katachi.template.GenerateCodeFromTemplate")
+            register("templates", "me.tbsten.katachi.template.DescribeTemplates")
         }
     }
     ```
 
 </details>
 
-katachi gradle plugin には ArchitectureProcessor を実行するための `runKatachiProcessor` Gradle タスクが用意されているため、これを実行することで ArchitectureProcessor を実行できます。
+登録した processor ごとに Gradle タスクが用意されます。
 
-```shell
-# GenerateCodeFromTemplate を実行する例 
-
-# runKatachiProcessor task を実行します
-./gradlew runKatachiProcessor \
-  # 実行したい ArchitectureProcessor 名を指定
-  --processor='someProcessor' \
-  # --arg で ArchitectureProcessor に渡す引数を指定
-  --arg "someArg1=someValue1" --arg "someArg2=someValue2"
-```
+タスク名は `katachi` + 登録キーの先頭を大文字にしたものです（例: `register("someProcessor", ...)` → `katachiSomeProcessor`）。
 
 実行例:
 
@@ -222,7 +198,7 @@ katachi gradle plugin には ArchitectureProcessor を実行するための `run
 ========================================
 ```
 
-`process` の `runCatching { }` の中で例外が投げられると `[FAILED] docs` になり、`1 succeeded, 0 failed` の数が変わって、タスクの exit が非ゼロになります。processor の戻り値が `Collection` の場合は 1 要素 1 行で出力されます。
+`process` の `runCatching { }` の中で例外が投げられると、表示は `[FAILED] docs` になり、`1 succeeded, 0 failed` の数も変わって、タスクの exit が非ゼロになります。processor の戻り値が `Collection` の場合は 1 要素 1 行で出力されます。
 
     </TabItem>
 </Tabs>
@@ -231,21 +207,21 @@ katachi gradle plugin には ArchitectureProcessor を実行するための `run
 
 ## カスタムの ArchitectureProcessor
 
-ArchitectureProcessor は単純な interface として提供されているため あなたが独自に実装して自由に処理を追加することが可能です。
+ArchitectureProcessor は単純な interface なので、自分で実装して自由に処理を追加できます。
 
 <Aside>
 
-Github リポジトリの sample/custom-processor モジュールにカスタム ArchitectureProcessor の例があります。
+    GitHub リポジトリの sample/custom-processor モジュールに、カスタム ArchitectureProcessor の例があります。
 
-<LinkCard title="sample/custom-processor" description="引数なし・引数あり・検査する processor の 3 本と、その登録" href="https://github.com/TBSten/katachi/tree/main/sample/custom-processor" />
+    <LinkCard title="sample/custom-processor" description="引数なし・引数あり・検査する processor の 3 本と、その登録" href="https://github.com/TBSten/katachi/tree/main/sample/custom-processor" />
 
 </Aside>
 
 ### 1. ArchitectureProcessor を実装する
 
-ArchitectureProcessorNoArg や ArchitectureProcessor を実装したクラスを用意して process メソッドを実装してください。
+ArchitectureProcessorNoArg か ArchitectureProcessor を実装したクラスを用意し、process メソッドを実装してください。
 
-process メソッドの引数に渡される `context` には アーキテクチャ定義や引数などが格納されているためこれらを適宜参照して ArchitectureProcessor のロジックを実装します。
+process メソッドに渡される `context` には、アーキテクチャ定義や引数などが入っています。これらを必要に応じて参照しながら、ArchitectureProcessor のロジックを書きます。
 
 <Tabs>
     <TabItem label="引数なし">
@@ -268,7 +244,7 @@ process メソッドの引数に渡される `context` には アーキテクチ
     
     </TabItem>
     <TabItem label="引数あり">
-        引数を受け取る必要がある ArchitectureProcessor を作成する場合、引数のパース処理に [kotlinx.serialization](https://github.com/kotlin/kotlinx.serialization) を利用します。
+        引数を受け取る ArchitectureProcessor を作る場合は、引数のパースに [kotlinx.serialization](https://github.com/kotlin/kotlinx.serialization) を利用します。
 
         ```kts {3, 7} title="architecture-test/build.gradle.kts" 
         plugins {
@@ -311,10 +287,10 @@ process メソッドの引数に渡される `context` には アーキテクチ
 <details>
 <summary>Role の metadata</summary>
 
-場合によっては ArchitectureProcessor 利用側でアーキテクチャ定義に指定してほしい独自のプロパティが必要になるかもしれません。
-その場合は **Role の metadata** を利用することができます。
+場合によっては、ArchitectureProcessor の側で、アーキテクチャ定義に独自のプロパティを指定してほしくなるかもしれません。
+その場合は **Role の metadata** を使えます。
 
-例えばすでに非推奨になったものの過去の遺産として残ってしまっている Role を Deprecated としてマークしたい場合、以下のように Deprecated という metadata を定義して設定することができます。
+例えば、すでに非推奨なのに過去の遺産として残ってしまっている Role を Obsolete としてマークしたいなら、以下のように Obsolete という metadata を定義して設定できます。
 
 ```kt nocollapse
 // metadata のキー
@@ -347,7 +323,7 @@ architecture {
 
 利用者が ArchitectureProcessor を実行する方法を用意してください。
 
-API としてプログラムから実行したい場合は API を用意する方法が、ワンショットで実行したい場合は コマンドラインから実行する方法が推奨されます。
+プログラムから API として実行したいなら API を用意する方法を、ワンショットで実行したいならコマンドラインから実行する方法をおすすめします。
 
 <Tabs>
     <TabItem label="API を用意する">
@@ -355,12 +331,11 @@ API としてプログラムから実行したい場合は API を用意する�
         `Architecture` の拡張関数を用意します。katachi が `assert()` を用意しているのと同じ形です。
 
         ```kt
-        // CountFilesPerRole と同じファイルに置く
         @OptIn(ExperimentalKatachiApi::class)
         fun Architecture.countFilesPerRole(): Map<String, Int> = process(CountFilesPerRole).getOrThrow()
         ```
 
-        利用者は processor の存在を知らずに済みます。
+        利用者は processor の存在を知らず用意された API を呼び出すことができます。
 
         ```kt
         val counts = projectArchitecture.countFilesPerRole()
@@ -369,7 +344,7 @@ API としてプログラムから実行したい場合は API を用意する�
     </TabItem>
     <TabItem label="Gradle タスクから実行する">
 
-        `katachi.processors.register` に登録すると、`runKatachiProcessor` から名前で呼べるようになります。
+        `katachi.processors.register` に登録すると、登録したキーから決まる名前の Gradle タスクとして呼べるようになります（`countFilesPerRole` → `katachiCountFilesPerRole`）。
 
         ```kts title="architecture-test/build.gradle.kts"
         katachi {
@@ -380,10 +355,12 @@ API としてプログラムから実行したい場合は API を用意する�
         ```
 
         ```shell
-        ./gradlew runKatachiProcessor --processor=countFilesPerRole
+        ./gradlew katachiCountFilesPerRole
         ```
 
-        `--arg` で引数を受け取りたい場合は、`@Serializable` なクラスを `Args` として宣言し、`argsSerializer` を返します。`ArchitectureProcessorNoArg` ではなく `ArchitectureProcessor<Args, R>` を実装してください。
+        `--arg` で引数を受け取りたい場合は、`@Serializable` なクラスを `Args` として宣言し、`argsSerializer` を返します。
+
+        `ArchitectureProcessorNoArg` ではなく `ArchitectureProcessor<Args, R>` を実装してください。
 
         ```kt
         @OptIn(ExperimentalKatachiApi::class)
@@ -401,13 +378,13 @@ API としてプログラムから実行したい場合は API を用意する�
         ```
 
         ```shell
-        ./gradlew runKatachiProcessor --processor=roleNames --arg prefix=domain/
+        ./gradlew katachiRoleNames --arg prefix=domain/
         ```
 
         `Args` を持つと、そのモジュールに `kotlin("plugin.serialization")` が必要になります。引数を取らない processor には要りません。
 
         <details>
-            <summary>--arg の値の読まれ方</summary>
+            <summary>`--arg` の値の読まれ方</summary>
 
             `--arg` の値は文字列として渡り、`Args` のフィールドの型に合わせて読まれます。
 
@@ -419,22 +396,21 @@ API としてプログラムから実行したい場合は API を用意する�
             | `enum` | 項目の名前で渡します（`@SerialName` を付けていればその名前）。大文字小文字も一致させてください |
             | `Map`、ネストした `@Serializable` | 対応していません |
 
-            **`Args` に宣言していない名前を `--arg` で渡すと、その場で落ちます。** 打ち間違えた引数が、既定値のまま黙って走ってしまうのを防ぐためです。役割ごとに引数名が変わるような processor は `undeclaredArgNames()` でその run が受け付ける名前を答えます。
-
         </details>
 
     </TabItem>
 </Tabs>
 
-用意した実行方法は **processor の KDoc に書いてください。** 利用者が最初に読むのはクラスの KDoc で、「どう呼ぶか」がそこに無いと、このページまで戻ってこないといけません。`## Example` としてコード例を置くのが katachi の書き方です。
+---
+
+用意した実行方法は **processor の KDoc に書くなど ドキュメンテーションとして用意して利用者に実行方法まで含めて伝えるようにしてください**。
 
 ## まとめ
 
 - **`assert()` もドキュメント・テンプレート生成も ArchitectureProcessor** です。
-- 同じ仕組みに乗っかってカスタムの ArchitectureProcessor を作ることもできます。
+- 同じ仕組みに乗せて、カスタムの ArchitectureProcessor を作ることもできます。
 
 ## 次のステップ
 
 - [ドキュメント生成](/katachi/ja/guides/document-generation/) ... 同じ仕組みに乗っている、いちばん大きなビルトイン processor です。
-- [テンプレートからコード生成](/katachi/ja/guides/generate-code-from-template/) ... 定義からコードを出すほうの processor です。
-- [ロードマップ](/katachi/ja/roadmap/) ... この先どの機能がどのバージョンで来るのかを確かめましょう。
+- [テンプレートからコード生成](/katachi/ja/guides/generate-code-from-template/) ... 定義からコードを出す processor です。

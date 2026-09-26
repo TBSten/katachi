@@ -115,8 +115,6 @@ In katachi you declare what may exist. You do not enumerate what is forbidden.
 
 <article class="katachi-home__pillar" data-katachi-pillar>
 
-<p>03-01 — deny</p>
-
 ### A file you never declared<br />is an architecture violation
 
 Stop enumerating what is forbidden; declare what may exist instead. Locations no longer appear out of nowhere.
@@ -129,8 +127,6 @@ Stop enumerating what is forbidden; declare what may exist instead. Locations no
 </article>
 
 <article class="katachi-home__pillar" data-katachi-pillar>
-
-<p>03-02 — role</p>
 
 ### Architecture definitions<br />driven by roles
 
@@ -148,11 +144,9 @@ Even when one role lives in two modules, the explanation stays in one place. Dec
 
 <article class="katachi-home__pillar" data-katachi-pillar>
 
-<p>03-03 — docs</p>
-
 ### The definition you check<br />becomes the documentation
 
-Write `title`, `summary`, and `example` inside the role. Generating documentation from that same definition is planned for v0.2.
+Write `title`, `summary`, and `example` inside the role. From v0.2, `./gradlew katachiDocs` [generates documentation](/katachi/guides/document-generation/) from that same definition.
 
 ```kt
 "UseCase" {
@@ -190,6 +184,8 @@ And output that spells out how to fix it reads just as well to a human.
 </div>
 
 </section>
+
+{/* TODO: Above "Declare the shape of your project.", add a section showing a real declaration example */}
 
 <section class="katachi-home__cta" aria-labelledby="katachi-home-cta">
 
