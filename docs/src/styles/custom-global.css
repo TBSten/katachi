@@ -11,3 +11,17 @@
 table .sl-badge {
   white-space: nowrap;
 }
+
+/*
+ * Keep each tab label on one line. Starlight lets the tabs shrink to the width of the page,
+ * so a label such as "domain/README.md" wraps mid-word. The tab list already scrolls
+ * sideways (.tablist-wrapper has overflow-x: auto), so labels that do not fit scroll
+ * instead of wrapping.
+ */
+starlight-tabs .tab {
+  flex-shrink: 0;
+}
+
+starlight-tabs .tab > [role='tab'] {
+  white-space: nowrap;
+}
