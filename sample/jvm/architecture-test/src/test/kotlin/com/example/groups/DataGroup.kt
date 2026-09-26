@@ -1,5 +1,6 @@
 package com.example.groups
 
+import com.example.forbiddenContents
 import com.example.roles.repository
 import me.tbsten.katachi.dsl.DeclarationContainerScope
 
@@ -16,7 +17,9 @@ fun DeclarationContainerScope.dataGroup() = "data".group {
         Repository が返すのはドメインのモデルで、取得元に固有の型をこの層の外へ出しません。
         Service は `HealthRepository.load()` を呼ぶだけで、その先が DB なのか固定値なのかを
         知らずに済みます。
+    """.trimIndent()
 
+    forbiddenContents = """
         ここに置いてはいけないのは、アプリ固有の判断です。何を優先するか・どう組み合わせるかは
         ドメインの担当で、この層は言われたものを取ってくるところまでにします。
     """.trimIndent()

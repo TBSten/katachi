@@ -1,5 +1,6 @@
 package com.example.roles
 
+import com.example.forbiddenContents
 import me.tbsten.katachi.dsl.DeclarationContainerScope
 import me.tbsten.katachi.dsl.gradle.*
 import me.tbsten.katachi.dsl.kotlin.ktFile
@@ -18,15 +19,14 @@ fun DeclarationContainerScope.architectureDefinition() = "ArchitectureDefinition
         プロセッサです。定義どおりかを確かめる `ProjectArchitectureTest` と、katachi 側の
         結合テストである `*Spec` も同じモジュールにあるので、この役割が覆います。
 
-        置いてはいけないもの:
-
-        - アプリのコード。`:architecture-test` に `src/main/kotlin` を作ると、
-          どの役割も覆わないファイルとして落ちます
-        - どのレイヤーに属するかが決まっているもの。ここは「形」だけを書く場所です
-
         `layout { }` は `**` でテストソースセット全体を見ています。`groups/` と `roles/` に
         分けるのは読みやすさのための約束であって、katachi の `layout { }` が強制しているわけでは
         ありません（`roles/` に何も宣言しない `.kt` を置いても通ります）。
+    """.trimIndent()
+    forbiddenContents = """
+        - アプリのコード。`:architecture-test` に `src/main/kotlin` を作ると、
+          どの役割も覆わないファイルとして落ちます
+        - どのレイヤーに属するかが決まっているもの。ここは「形」だけを書く場所です
     """.trimIndent()
     example("ProjectArchitecture.kt", "定義の入口")
     example("roles/ControllerRole.kt", "役割1つの宣言")

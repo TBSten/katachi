@@ -1,5 +1,6 @@
 package com.example.sample.roles
 
+import com.example.sample.forbiddenContents
 import com.example.sample.modulePackage
 import me.tbsten.katachi.dsl.DeclarationContainerScope
 import me.tbsten.katachi.dsl.gradle.*
@@ -29,8 +30,9 @@ fun DeclarationContainerScope.fake() = "Fake" {
         ファイル名は `Fake*.kt`。`:testing` に置けるのは差し替え用の実装だけで、
         テストのヘルパーやカスタムアサーションを足したくなったら、まず役割を増やす。
         テストそのものは別の役割（テストコード）で、`src/test` にある。
-
-        置いてはいけないもの: 本番から呼ばれるコード。`:testing` に依存してよいのは
+    """.trimIndent()
+    forbiddenContents = """
+        本番から呼ばれるコード。`:testing` に依存してよいのは
         テストのコンパイル経路だけで、`:app` や `:feature:*` の `main` からは参照しない。
     """.trimIndent()
     example("FakeUserRepository", "UserRepository のメモリ実装")

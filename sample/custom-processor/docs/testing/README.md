@@ -20,9 +20,6 @@ katachi の定義、それを読む自作プロセッサ3本、そして生成�
 `snapshots/` は `LayoutSnapshotSpec` が katachi 自身のために書くもので、
 更新の仕方も消したときに困る相手も違います。
 
-ここに置いてはいけないのは、アプリの本体コードです。`:architecture-test` は
-main ソースセットを持ちません。
-
 | Role | Summary |
 |---|---|
 | [アーキテクチャ定義](./ArchitectureDefinition.md) | katachi の DSL で書かれた役割の定義と、それを assert するテスト |
@@ -36,6 +33,7 @@ main ソースセットを持ちません。
 :architecture-test
   src/test/kotlin/com/example/
     ProjectArchitecture.kt      アーキテクチャ定義
+    DocumentSections.kt         アーキテクチャ定義
     ProjectArchitectureTest.kt  アーキテクチャ定義
     *Spec.kt                    アーキテクチャ定義
     groups/*.kt                 アーキテクチャ定義
@@ -47,3 +45,8 @@ docs/
   **/*.md                       生成ドキュメント
 snapshots/*.txt                 レイアウトスナップショット
 ```
+
+## 置いてはいけないもの
+
+ここに置いてはいけないのは、アプリの本体コードです。`:architecture-test` は
+main ソースセットを持ちません。

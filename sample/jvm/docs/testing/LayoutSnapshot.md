@@ -34,12 +34,6 @@
 1つ残るだけになるからです。この役割自身のページ
 （`docs/testing/LayoutSnapshot.md`）も生成されます。
 
-置いてはいけないもの:
-
-- 手書きのメモ。次の `-Dkatachi.snapshot.update=true` で丸ごと上書きされます
-- 別の種類の記録。いまの `layout { }` は `snapshots/layout.txt` の1ファイルしか
-  認めていないので、足すなら役割を書き換えるところから始まります
-
 ## Placement
 
 | Module | Path | When to use |
@@ -49,3 +43,9 @@
 ## Examples
 
 - `snapshots/layout.txt` ... 平坦化した layout の全行
+
+## 置いてはいけないもの
+
+- 手書きのメモ。次の `-Dkatachi.snapshot.update=true` で丸ごと上書きされます
+- 別の種類の記録。いまの `layout { }` は `snapshots/layout.txt` の1ファイルしか
+  認めていないので、足すなら役割を書き換えるところから始まります

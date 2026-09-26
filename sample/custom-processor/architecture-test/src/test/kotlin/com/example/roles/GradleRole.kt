@@ -1,5 +1,6 @@
 package com.example.roles
 
+import com.example.forbiddenContents
 import me.tbsten.katachi.dsl.DeclarationContainerScope
 import me.tbsten.katachi.dsl.gradle.*
 import me.tbsten.katachi.dsl.kotlin.ktsFile
@@ -22,17 +23,16 @@ fun DeclarationContainerScope.gradle() = "Gradle" {
         それ自体がディレクトリと `build.gradle.kts` と `build/` の除外を意味するので、
         モジュールが1つあるという事実だけを書けば足ります。
 
-        置いてはいけないもの:
-
+        この役割が属する `build` グループは `documented = false` なので、生成ドキュメントには
+        出ません。チェックの対象からは外れていません。
+    """.trimIndent()
+    forbiddenContents = """
         - 実行時に読む設定。このサンプルには実行時設定がありませんが、増えたときに
           ビルド設定と同じ場所に置くと、どちらを触れば動きが変わるのかが読めなくなります
         - ビルドが書き出したもの。`build/` と `.kotlin/` は `.gitignore` にあり、既定の
           `files = gitTracked()` では検査に渡りません。それでも各 `.module { }` が
           `"build".ignore()` と書くのは、`files = wholeTree()` を選んだプロジェクトでも
           理由が読めるようにするためです
-
-        この役割が属する `build` グループは `documented = false` なので、生成ドキュメントには
-        出ません。チェックの対象からは外れていません。
     """.trimIndent()
     example("architecture-test/build.gradle.kts", "processor 3本の登録")
     example("settings.gradle.kts", "ビルド全体の配線")

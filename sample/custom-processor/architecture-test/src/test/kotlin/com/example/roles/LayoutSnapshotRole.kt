@@ -1,5 +1,6 @@
 package com.example.roles
 
+import com.example.forbiddenContents
 import me.tbsten.katachi.dsl.DeclarationContainerScope
 
 /**
@@ -24,14 +25,13 @@ fun DeclarationContainerScope.layoutSnapshot() = "LayoutSnapshot" {
         `./gradlew :architecture-test:test --rerun -Dkatachi.snapshot.update=true` です。
         ファイル先頭のコメントにも同じコマンドが書いてあります。
 
-        置いてはいけないもの:
-
+        katachi を導入するプロジェクトには要りません。これは katachi 自身がサンプルを
+        壊していないかを見るための仕掛けで、`ProjectArchitectureTest` とは目的が違います。
+    """.trimIndent()
+    forbiddenContents = """
         - 手で書いた期待値。差分が出たときに直すのは定義側か、スナップショットの再生成の
           どちらかで、テキストを直接編集して辻褄を合わせると番兵の意味が無くなります
         - `.txt` 以外のファイル。いまの `layout { }` は `snapshots/*.txt` しか認めていません
-
-        katachi を導入するプロジェクトには要りません。これは katachi 自身がサンプルを
-        壊していないかを見るための仕掛けで、`ProjectArchitectureTest` とは目的が違います。
     """.trimIndent()
     example("snapshots/layout.txt", "平坦化したレイアウトの全文")
     layout {

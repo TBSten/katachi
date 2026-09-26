@@ -1,5 +1,6 @@
 package com.example.sample.roles
 
+import com.example.sample.forbiddenContents
 import com.example.sample.modulePackage
 import me.tbsten.katachi.dsl.DeclarationContainerScope
 import me.tbsten.katachi.dsl.gradle.*
@@ -23,9 +24,8 @@ fun DeclarationContainerScope.repository() = "Repository" {
         `:data` は他のモジュールに依存しない、このアプリで一番下の層。Android にも Compose にも
         触らないので、インターフェースは素の Kotlin として読める。ViewModel はコンストラクタで
         インターフェースを受け取り、テストでは `:testing` の `Fake*` に差し替える。
-
-        置いてはいけないもの:
-
+    """.trimIndent()
+    forbiddenContents = """
         - 画面向けの型。`UiState` に詰め替えるのは ViewModel の仕事で、`:data` は `:ui` を知らない
         - `*Repository.kt` `*RepositoryImpl.kt` 以外のファイル。DTO やデータソースを
           分けたくなったら、まず役割を増やす

@@ -1,5 +1,6 @@
 package com.example.roles
 
+import com.example.forbiddenContents
 import me.tbsten.katachi.dsl.DeclarationContainerScope
 
 /** The role of the version control configuration. */
@@ -16,10 +17,10 @@ fun DeclarationContainerScope.git() = "Git" {
         どの役割にも属さないまま通り過ぎます。逆に、追跡されているのに役割が無いファイルは
         落ちます。
 
-        置いてはいけないのは Git 以外のツールの設定です。増えたら `.gitignore` の役割に混ぜず、
-        `tool` グループに役割を1つ足します。この役割が属する `tool` グループは
-        `documented = false` なので、生成ドキュメントには出ません。
+        増えたら `.gitignore` の役割に混ぜず、`tool` グループに役割を1つ足します。この役割が属する
+        `tool` グループは `documented = false` なので、生成ドキュメントには出ません。
     """.trimIndent()
+    forbiddenContents = "置いてはいけないのは Git 以外のツールの設定です。"
     example(".gitignore", "管理対象から外すファイルの一覧")
     layout {
         ".gitignore".file()

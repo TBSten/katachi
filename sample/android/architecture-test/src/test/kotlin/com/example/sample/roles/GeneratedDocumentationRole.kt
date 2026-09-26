@@ -1,5 +1,6 @@
 package com.example.sample.roles
 
+import com.example.sample.forbiddenContents
 import me.tbsten.katachi.dsl.DeclarationContainerScope
 
 /**
@@ -40,17 +41,16 @@ fun DeclarationContainerScope.generatedDocumentation() = "GeneratedDocumentation
         （`docs/testing/GeneratedDocumentation.md`）も生成される。`Documentation` が
         `documented = false` なのと対になっていて、同じグループに置かなかった理由でもある。
 
-        置いてはいけないもの:
-
-        - 手書きのドキュメント。`docs/` 配下の `*.md` は生成のたびに作り直され、この定義が
-          作らないページは削除される
-        - `.md` 以外の資源。いまの `layout { }` は `*.md` しか認めていないので、画像を足すなら
-          役割を書き換えるところから始まる
-
         `layout { }` の `**` は0段以上に一致するので、索引の `docs/README.md` も
         `docs/<group>/README.md` も `docs/<group>/<役割>.md` も1行で覆える。group を入れ子に
         してもこの行は変わらない。索引だけワイルドカード無しで別に書いてあり、そちらは
         `required`。1度も生成していない状態がそこで見つかる。
+    """.trimIndent()
+    forbiddenContents = """
+        - 手書きのドキュメント。`docs/` 配下の `*.md` は生成のたびに作り直され、この定義が
+          作らないページは削除される
+        - `.md` 以外の資源。いまの `layout { }` は `*.md` しか認めていないので、画像を足すなら
+          役割を書き換えるところから始まる
     """.trimIndent()
     example("docs/README.md", "全ページの索引と、group ごとの一覧")
     example("docs/feature/Screen.md", "役割1つのページ")

@@ -18,16 +18,6 @@ katachi でこのプロジェクトの形を書いたコードです。いま読
 `ProjectArchitectureSpec` はその規則自体を検査していて、宣言位置をソースから読み戻すので、
 group / role の関数に `inline` が付くと落ちます。
 
-置いてよいもの:
-
-- 定義（`groups` / `roles` package）と、その入口の `ProjectArchitecture.kt`
-- 定義を検査する `*Spec.kt`
-- `processor` package の自作プロセッサ（`owner` のような独自メタデータを読むもの）
-
-置いてはいけないもの:
-
-- アプリのコード。このモジュールはアプリのどのレイヤーにも属しません
-
 layout はわざと緩く、package の1段を `*` で受けています。`roles` に新しいファイルを
 足しても定義を触らずに通る、という側です。厳しく package 名まで書く形は
 sample/android の方にあり、両方あることで選べることが見えます。
@@ -43,3 +33,13 @@ sample/android の方にあり、両方あることで選べることが見え�
 
 - `ProjectArchitecture.kt` ... 定義の入口
 - `roles/ComponentRole.kt` ... 役割1つの宣言
+
+## 置いてよいもの
+
+- 定義（`groups` / `roles` package）と、その入口の `ProjectArchitecture.kt`
+- 定義を検査する `*Spec.kt`
+- `processor` package の自作プロセッサ（`owner` のような独自メタデータを読むもの）
+
+## 置いてはいけないもの
+
+- アプリのコード。このモジュールはアプリのどのレイヤーにも属しません

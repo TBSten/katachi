@@ -1,5 +1,6 @@
 package com.example.groups
 
+import com.example.forbiddenContents
 import com.example.roles.entrypoint
 import com.example.roles.model
 import com.example.roles.store
@@ -26,7 +27,9 @@ fun DeclarationContainerScope.coreGroup() = "core".group {
 
         それでも役割を3つに割ってあるのは、`RoleFileCount` の出力にも `RoleTable` の表にも
         複数行が出てほしいからです。1つしか無いと、processor が何をしたのか出力から読み取れません。
+    """.trimIndent()
 
+    forbiddenContents = """
         ここに置いてはいけないのは、定義や processor のコードです。どちらも `:architecture-test`
         にあり、`testing` グループの役割が覆います。
     """.trimIndent()

@@ -17,14 +17,6 @@ katachi の定義を読んで何かを作る、このプロジェクト自身の
 - `RoleDocCoverage` — 検査。`List<Violation>` ではなく自前の `Report` を答えにし、
   問題があれば `Result.failure` を返して `katachiRoleDocCoverage` を落とす
 
-置いてよいのは `ArchitectureProcessor` の実装と、その引数・結果の型だけです。
-
-置いてはいけないもの:
-
-- 役割や group の宣言。それらはアーキテクチャ定義の役割です。定義は形を書くもの、
-  processor はその形を読むもので、混ぜると「どちらが先に決まるのか」が読めなくなります
-- アプリのコード。processor はビルド時に走るもので、`main()` からは呼ばれません
-
 `architecture-test/build.gradle.kts` の `katachi { processors { register(...) } }` に
 3本とも登録してあり、登録キーごとの `katachi<Key>` タスク（`katachiRoleTable` など）で実行できます。登録を忘れた processor は
 コマンドラインからは呼べませんが、テストから `projectArchitecture.process(...)` で
@@ -44,3 +36,13 @@ katachi の定義を読んで何かを作る、このプロジェクト自身の
 - `RoleFileCount` ... 引数なしの最小形
 - `RoleTable` ... 型付き引数を取る形
 - `RoleDocCoverage` ... Result.failure で run を落とす検査
+
+## 置いてよいもの
+
+置いてよいのは `ArchitectureProcessor` の実装と、その引数・結果の型だけです。
+
+## 置いてはいけないもの
+
+- 役割や group の宣言。それらはアーキテクチャ定義の役割です。定義は形を書くもの、
+  processor はその形を読むもので、混ぜると「どちらが先に決まるのか」が読めなくなります
+- アプリのコード。processor はビルド時に走るもので、`main()` からは呼ばれません

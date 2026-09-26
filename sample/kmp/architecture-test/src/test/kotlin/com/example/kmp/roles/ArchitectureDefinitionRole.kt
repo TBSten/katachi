@@ -1,5 +1,7 @@
 package com.example.kmp.roles
 
+import com.example.kmp.allowedContents
+import com.example.kmp.forbiddenContents
 import me.tbsten.katachi.dsl.DeclarationContainerScope
 import me.tbsten.katachi.dsl.gradle.*
 import me.tbsten.katachi.dsl.kotlin.ktFile
@@ -30,19 +32,17 @@ fun DeclarationContainerScope.architectureDefinition() = "ArchitectureDefinition
         `ProjectArchitectureSpec` はその規則自体を検査していて、宣言位置をソースから読み戻すので、
         group / role の関数に `inline` が付くと落ちます。
 
-        置いてよいもの:
-
-        - 定義（`groups` / `roles` package）と、その入口の `ProjectArchitecture.kt`
-        - 定義を検査する `*Spec.kt`
-        - `processor` package の自作プロセッサ（`owner` のような独自メタデータを読むもの）
-
-        置いてはいけないもの:
-
-        - アプリのコード。このモジュールはアプリのどのレイヤーにも属しません
-
         layout はわざと緩く、package の1段を `*` で受けています。`roles` に新しいファイルを
         足しても定義を触らずに通る、という側です。厳しく package 名まで書く形は
         sample/android の方にあり、両方あることで選べることが見えます。
+    """.trimIndent()
+    allowedContents = """
+        - 定義（`groups` / `roles` package）と、その入口の `ProjectArchitecture.kt`
+        - 定義を検査する `*Spec.kt`
+        - `processor` package の自作プロセッサ（`owner` のような独自メタデータを読むもの）
+    """.trimIndent()
+    forbiddenContents = """
+        - アプリのコード。このモジュールはアプリのどのレイヤーにも属しません
     """.trimIndent()
     example("ProjectArchitecture.kt", "定義の入口")
     example("roles/ComponentRole.kt", "役割1つの宣言")

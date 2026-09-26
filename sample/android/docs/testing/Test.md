@@ -18,9 +18,6 @@
 平坦化した layout をスナップショットと突き合わせ、`ProjectRootSpec` が
 プロジェクトルートの探索結果を見張る。
 
-置いてはいけないもの: テストから使う道具。他モジュールのテストへ渡す差し替え実装は
-`:testing` のフェイク役割にあり、`src/test` からは公開できない。
-
 ## Placement
 
 | Module | Path | When to use |
@@ -32,3 +29,8 @@
 
 - `ProjectArchitectureTest` ... 利用者が書く唯一のテスト
 - `ProjectArchitectureSpec` ... この定義そのものを検証するテスト
+
+## 置いてはいけないもの
+
+テストから使う道具。他モジュールのテストへ渡す差し替え実装は
+`:testing` のフェイク役割にあり、`src/test` からは公開できない。

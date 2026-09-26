@@ -17,12 +17,6 @@ KMP のプラットフォーム差をこの group に閉じ込めているのが
 `expect`/`actual` が1つもありません。プラットフォーム固有の処理が要るという話になったら、
 画面ではなくここに降ろしてください。
 
-置いてはいけないもの:
-
-- UI の型。`UiState` は `:ui` の core package にあり、`:data` はそれを知りません
-- テスト用の偽実装。`FakeUserRepository` は `:testing` にあります
-- `@Composable`。`:data` のビルドスクリプトに Compose のプラグインは入っていません
-
 | Role | Summary |
 |---|---|
 | [リポジトリ](./Repository.md) | :data モジュールの user package。データの取得口で、インターフェースと実装の2つの置き方を持つ |
@@ -41,3 +35,9 @@ KMP のプラットフォーム差をこの group に閉じ込めているのが
     androidMain/kotlin/**/platform/*.android.kt  プラットフォーム実装
     iosMain/kotlin/**/platform/*.ios.kt          プラットフォーム実装
 ```
+
+## 置いてはいけないもの
+
+- UI の型。`UiState` は `:ui` の core package にあり、`:data` はそれを知りません
+- テスト用の偽実装。`FakeUserRepository` は `:testing` にあります
+- `@Composable`。`:data` のビルドスクリプトに Compose のプラグインは入っていません

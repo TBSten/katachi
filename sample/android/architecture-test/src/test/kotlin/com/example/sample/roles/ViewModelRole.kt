@@ -1,5 +1,6 @@
 package com.example.sample.roles
 
+import com.example.sample.forbiddenContents
 import com.example.sample.groups.featureSources
 import me.tbsten.katachi.dsl.DeclarationContainerScope
 import me.tbsten.katachi.dsl.gradle.*
@@ -24,9 +25,8 @@ fun DeclarationContainerScope.viewModel() = "ViewModel" {
         （`userRepository: UserRepository = UserRepositoryImpl()`）。ファクトリ無しで
         `viewModel()` が組み立てられるようにするためで、DI を入れるならこの既定値が
         消えるだけで形は変わらない。
-
-        置いてはいけないもの:
-
+    """.trimIndent()
+    forbiddenContents = """
         - Compose への依存。`androidx.compose.*` を import せず、`@Composable` も書かない。
           この線が引けているから、状態の組み立てを Compose 抜きで読める
         - Android の Context / View / リソース。`androidx.lifecycle.ViewModel` を継承する以外に

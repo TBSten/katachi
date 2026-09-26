@@ -1,5 +1,6 @@
 package com.example.kmp.roles
 
+import com.example.kmp.forbiddenContents
 import com.example.kmp.modulePackage
 import me.tbsten.katachi.dsl.DeclarationContainerScope
 import me.tbsten.katachi.dsl.gradle.*
@@ -18,14 +19,13 @@ fun DeclarationContainerScope.theme() = "Theme" {
         色は `ColorScheme` 経由で配れますが、余白は配る仕組みが無いので、部品が直接読む
         `object` として置いています。トークンを足すならこの package です。
 
-        置いてはいけないもの:
-
-        - 1つの画面だけで使う色や寸法。それはその画面の中の定数です
-        - `@Composable` の部品。`component` package に置きます
-
         Android の `res/values/themes.xml` ではなく Kotlin 側にテーマを持っているのは KMP だからです。
         iOS には `res/` がないので、リソース XML に書いた見た目は共有できません。アプリ名のような
         Android ビルドが要求するものだけが `:app:android` の AndroidResource に残ります。
+    """.trimIndent()
+    forbiddenContents = """
+        - 1つの画面だけで使う色や寸法。それはその画面の中の定数です
+        - `@Composable` の部品。`component` package に置きます
     """.trimIndent()
     example("AppTheme", "アプリ全体のテーマ")
     example("AppSpacing", "余白のトークン")

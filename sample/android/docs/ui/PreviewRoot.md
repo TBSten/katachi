@@ -17,11 +17,6 @@
 `[MissingFile]` で検査が落ちる。すべての `@Preview` が依存する土台なので、
 黙って消えないようにしてある。
 
-置いてはいけないもの:
-
-- 本番の画面から呼ばれるもの。実画面のテーマは `MainActivity` が `AppTheme { }` で与える
-- プレビュー用のダミーデータ。渡す状態は各 `@Preview` がその場で書く
-
 ## Placement
 
 | Module | Path | When to use |
@@ -31,3 +26,8 @@
 ## Examples
 
 - `PreviewRoot` ... プレビュー共通の土台
+
+## 置いてはいけないもの
+
+- 本番の画面から呼ばれるもの。実画面のテーマは `MainActivity` が `AppTheme { }` で与える
+- プレビュー用のダミーデータ。渡す状態は各 `@Preview` がその場で書く

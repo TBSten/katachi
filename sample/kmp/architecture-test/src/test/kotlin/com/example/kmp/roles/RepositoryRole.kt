@@ -1,5 +1,6 @@
 package com.example.kmp.roles
 
+import com.example.kmp.forbiddenContents
 import com.example.kmp.modulePackage
 import me.tbsten.katachi.dsl.DeclarationContainerScope
 import me.tbsten.katachi.dsl.gradle.div
@@ -34,14 +35,13 @@ fun DeclarationContainerScope.repository() = "Repository" {
         なく隣の PlatformImplementation（expect/actual）が引き受けます。ここに `androidMain` を
         足すと、同じ「プラットフォーム差の吸収」が2か所に散ります。
 
-        置いてはいけないもの:
-
-        - UI の型。`UiState` は `:ui` の core package にあり、`:data` はそれを知りません
-        - テスト用の偽実装。`FakeUserRepository` は `:testing` の Fake の役割です
-
         sample/android と違い、このサンプルには設定用のリポジトリがありません。設定画面は
         `UserRepository` と `platformName()` を読むだけで足りています。使われていない package を
         定義に書くと、実体の無いディレクトリをドキュメントが案内することになります。
+    """.trimIndent()
+    forbiddenContents = """
+        - UI の型。`UiState` は `:ui` の core package にあり、`:data` はそれを知りません
+        - テスト用の偽実装。`FakeUserRepository` は `:testing` の Fake の役割です
     """.trimIndent()
     example("UserRepository", "ユーザーを取得するインターフェース")
     example("UserRepositoryImpl", "UserRepository の実装")

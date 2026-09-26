@@ -12,10 +12,6 @@ Application 全体に一度だけ効く設定と、どの Controller を routing
 どちらも「HTTP をどう受けるか」の話で、変えたくなる理由が同じなので同じグループに
 しています。
 
-ここに置いてはいけないのは「何を返すか」の判断と、値がどこから来るかです。前者は
-ドメイン、後者はデータの担当になります。実際、`io.ktor.server.*` の import が出てくるのは
-この層とエントリポイントだけで、`service` `repository` `model` には1つもありません。
-
 ただし katachi の `layout { }` が見ているのは置き場所とファイル名までです。
 「Controller から Repository を直接呼ばない」といった約束は、ここに文章として
 書いてあるだけで、機械的には弾かれません。
@@ -33,6 +29,12 @@ Application 全体に一度だけ効く設定と、どの Controller を routing
     controller/*Controller.kt  コントローラ
     plugin/*.kt                Ktor プラグイン設定
 ```
+
+## 置いてはいけないもの
+
+ここに置いてはいけないのは「何を返すか」の判断と、値がどこから来るかです。前者は
+ドメイン、後者はデータの担当になります。実際、`io.ktor.server.*` の import が出てくるのは
+この層とエントリポイントだけで、`service` `repository` `model` には1つもありません。
 
 ## テスト方針
 

@@ -14,20 +14,6 @@ feature モジュールごと分ける。
 状態を集めてもう一方へ渡すだけ。もう一方は `UiState<HomeContent>` とコールバックだけを
 受け取る状態の関数で、`@Preview` が触るのはこちら。
 
-ここに置いてよいもの:
-
-- 画面のレイアウトと、`UiState` の `Loading` / `Content` / `Error` の出し分け
-- `:ui` の共通コンポーネント（`AppButton` など）と Material3 の呼び出し
-- この画面のための `@Preview`（プレビュー役割を参照）
-
-置いてはいけないもの:
-
-- 状態の組み立てと保持。ViewModel の仕事で、`HomeContent` のような状態の型も
-  ViewModel と同じファイルに置く
-- `NavHostController` への依存。画面から出ていく遷移は、引数で受け取った
-  コールバック（`onNavigateToSettings` / `onNavigateUp`）を呼ぶだけにする
-- 他の feature の型。feature 同士は互いを参照せず、`:app` が Route 越しにつなぐ
-
 ## Placement
 
 | Module | Path | When to use |
@@ -38,3 +24,17 @@ feature モジュールごと分ける。
 
 - `HomeScreen` ... ホーム画面
 - `SettingsScreen` ... 設定画面
+
+## 置いてよいもの
+
+- 画面のレイアウトと、`UiState` の `Loading` / `Content` / `Error` の出し分け
+- `:ui` の共通コンポーネント（`AppButton` など）と Material3 の呼び出し
+- この画面のための `@Preview`（プレビュー役割を参照）
+
+## 置いてはいけないもの
+
+- 状態の組み立てと保持。ViewModel の仕事で、`HomeContent` のような状態の型も
+  ViewModel と同じファイルに置く
+- `NavHostController` への依存。画面から出ていく遷移は、引数で受け取った
+  コールバック（`onNavigateToSettings` / `onNavigateUp`）を呼ぶだけにする
+- 他の feature の型。feature 同士は互いを参照せず、`:app` が Route 越しにつなぐ

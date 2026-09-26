@@ -1,5 +1,6 @@
 package com.example.kmp.groups
 
+import com.example.kmp.forbiddenContents
 import com.example.kmp.roles.component
 import com.example.kmp.roles.navigation
 import com.example.kmp.roles.preview
@@ -39,15 +40,14 @@ fun DeclarationContainerScope.uiGroup() = "ui".group {
         持ち、それをどう見せるかは `:app:android` の `AppRoot` の仕事です。画面から使われる側で
         あることは `:ui` と同じなので、この group に置いています。
 
-        ここに置かないもの:
-
-        - 画面ごとの Screen / ViewModel / Route。それは feature group です
-        - feature モジュールへの依存。依存は常に feature から `:ui` / `:navigation` へ向きます。
-          逆向きの参照が1つ入ると、画面を足すたびに共有モジュールが太ります
-
         layout はどれもモジュールパスから始まり、その下の package は `modulePackage` から
         導きます。ディレクトリ名を書き写すのではなく、ビルドが言っていることをそのまま書く、
         というのがこのサンプル全体の方針です。
+    """.trimIndent()
+    forbiddenContents = """
+        - 画面ごとの Screen / ViewModel / Route。それは feature group です
+        - feature モジュールへの依存。依存は常に feature から `:ui` / `:navigation` へ向きます。
+          逆向きの参照が1つ入ると、画面を足すたびに共有モジュールが太ります
     """.trimIndent()
 
     component()

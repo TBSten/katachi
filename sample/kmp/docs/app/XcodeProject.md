@@ -18,15 +18,6 @@ iOS アプリの側です。`app/ios` は Gradle モジュールではありま�
 開けない壊れ方をするうえ、このサンプルは iOS 向けにビルドしないので置いても死荷重に
 なります。実際に動かしたければ Xcode で作ってください。
 
-置いてよいもの:
-
-- Xcode が持つもの。Swift のソース、`Info.plist`、アセットカタログ
-
-置いてはいけないもの:
-
-- Kotlin のコード。共有したいコードは `:data` のような KMP モジュールに置き、
-  framework として渡します（このサンプルでは設定していません）
-
 ## Placement
 
 | Module | Path | When to use |
@@ -37,3 +28,12 @@ iOS アプリの側です。`app/ios` は Gradle モジュールではありま�
 
 - `iosAppApp.swift` ... SwiftUI のエントリポイント
 - `ContentView.swift` ... iOS 側の画面
+
+## 置いてよいもの
+
+- Xcode が持つもの。Swift のソース、`Info.plist`、アセットカタログ
+
+## 置いてはいけないもの
+
+- Kotlin のコード。共有したいコードは `:data` のような KMP モジュールに置き、
+  framework として渡します（このサンプルでは設定していません）

@@ -1,5 +1,6 @@
 package com.example.sample.roles
 
+import com.example.sample.forbiddenContents
 import com.example.sample.modulePackage
 import me.tbsten.katachi.dsl.DeclarationContainerScope
 import me.tbsten.katachi.dsl.gradle.*
@@ -22,9 +23,8 @@ fun DeclarationContainerScope.theme() = "Theme" {
         アプリの入口（`MainActivity`）とプレビューの土台（`PreviewRoot`）がここを包むので、
         共通コンポーネントも feature の Screen も、自分がどちらのテーマにいるかを知らずに
         `MaterialTheme.colorScheme` / `MaterialTheme.typography` から読める。
-
-        置いてはいけないもの:
-
+    """.trimIndent()
+    forbiddenContents = """
         - 1つの画面・1つの部品でしか使わない色や寸法。使う場所に書く
         - 背景や `Surface` の指定。プレビューの背景は `PreviewRoot`、実画面の背景は
           各 Screen が決める

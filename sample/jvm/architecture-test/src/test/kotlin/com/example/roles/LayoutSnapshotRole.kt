@@ -1,5 +1,6 @@
 package com.example.roles
 
+import com.example.forbiddenContents
 import me.tbsten.katachi.dsl.DeclarationContainerScope
 
 /**
@@ -44,9 +45,8 @@ fun DeclarationContainerScope.layoutSnapshot() = "LayoutSnapshot" {
         場所は他に無く、一覧から外すとリポジトリを開いた人には由来の分からない `.txt` が
         1つ残るだけになるからです。この役割自身のページ
         （`docs/testing/LayoutSnapshot.md`）も生成されます。
-
-        置いてはいけないもの:
-
+    """.trimIndent()
+    forbiddenContents = """
         - 手書きのメモ。次の `-Dkatachi.snapshot.update=true` で丸ごと上書きされます
         - 別の種類の記録。いまの `layout { }` は `snapshots/layout.txt` の1ファイルしか
           認めていないので、足すなら役割を書き換えるところから始まります

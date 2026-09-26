@@ -1,5 +1,6 @@
 package com.example.kmp.groups
 
+import com.example.kmp.forbiddenContents
 import com.example.kmp.roles.platformImplementation
 import com.example.kmp.roles.repository
 import me.tbsten.katachi.dsl.DeclarationContainerScope
@@ -26,9 +27,8 @@ fun DeclarationContainerScope.dataGroup() = "data".group {
         `androidMain` / `iosMain` を持つのは `:data` だけで、UI 側（`:ui` と feature）には
         `expect`/`actual` が1つもありません。プラットフォーム固有の処理が要るという話になったら、
         画面ではなくここに降ろしてください。
-
-        置いてはいけないもの:
-
+    """.trimIndent()
+    forbiddenContents = """
         - UI の型。`UiState` は `:ui` の core package にあり、`:data` はそれを知りません
         - テスト用の偽実装。`FakeUserRepository` は `:testing` にあります
         - `@Composable`。`:data` のビルドスクリプトに Compose のプラグインは入っていません

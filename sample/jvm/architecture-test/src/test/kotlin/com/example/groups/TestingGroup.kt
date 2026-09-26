@@ -1,5 +1,6 @@
 package com.example.groups
 
+import com.example.forbiddenContents
 import com.example.roles.architectureDefinition
 import com.example.roles.generatedDocumentation
 import com.example.roles.layoutSnapshot
@@ -34,7 +35,9 @@ fun DeclarationContainerScope.testingGroup() = "testing".group {
         生成物にも役割が要る、という例にもなっています。2つを1つにまとめていないのは、
         読み手が違うからです。`docs/` は定義を読みに来た人が開くページ、`snapshots/` は
         定義を書き換えた差分をレビューする人が見るテキストです。
+    """.trimIndent()
 
+    forbiddenContents = """
         ここに置いてはいけないのは、アプリの本体コードです。`:architecture-test` はアプリの
         どのレイヤーにも属さないモジュールで、main ソースセットを持ちません。
     """.trimIndent()

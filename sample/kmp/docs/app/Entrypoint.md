@@ -14,17 +14,6 @@ KMP モジュールの `commonMain` ではありません。`:app:android` は A
 `app/ios` が `ComposeUIViewController` を持つようになったときに共有できるのが
 `AppRoot` 側だからです。Activity は Android 固有のまま残ります。
 
-置いてよいもの:
-
-- プラットフォームの起動点（`ComponentActivity`）と、その最小限の配線
-- アプリ全体を組み立てる `@Composable`
-
-置いてはいけないもの:
-
-- 画面そのもの。画面は feature モジュールにあり、ここは Route を呼ぶだけです
-- 状態。画面の状態は ViewModel、現在地は `:navigation` の `Navigator` が持ちます
-- 共有できる部品。ここに書いたものは iOS から見えません
-
 このモジュールの package は `com.example.kmp.app` で、モジュールパス `:app:android` からは
 導けません。だから layout は `modulePackage` を使わず package を直書きしています。
 規則に従わないものは、従わないと書く方が正直です。
@@ -39,3 +28,14 @@ KMP モジュールの `commonMain` ではありません。`:app:android` は A
 
 - `MainActivity` ... 起動時に表示される Activity
 - `AppRoot` ... アプリ全体を組み立てる Composable
+
+## 置いてよいもの
+
+- プラットフォームの起動点（`ComponentActivity`）と、その最小限の配線
+- アプリ全体を組み立てる `@Composable`
+
+## 置いてはいけないもの
+
+- 画面そのもの。画面は feature モジュールにあり、ここは Route を呼ぶだけです
+- 状態。画面の状態は ViewModel、現在地は `:navigation` の `Navigator` が持ちます
+- 共有できる部品。ここに書いたものは iOS から見えません

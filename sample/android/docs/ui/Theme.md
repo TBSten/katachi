@@ -17,12 +17,6 @@
 共通コンポーネントも feature の Screen も、自分がどちらのテーマにいるかを知らずに
 `MaterialTheme.colorScheme` / `MaterialTheme.typography` から読める。
 
-置いてはいけないもの:
-
-- 1つの画面・1つの部品でしか使わない色や寸法。使う場所に書く
-- 背景や `Surface` の指定。プレビューの背景は `PreviewRoot`、実画面の背景は
-  各 Screen が決める
-
 ## Placement
 
 | Module | Path | When to use |
@@ -32,3 +26,9 @@
 ## Examples
 
 - `AppTheme` ... アプリのテーマ
+
+## 置いてはいけないもの
+
+- 1つの画面・1つの部品でしか使わない色や寸法。使う場所に書く
+- 背景や `Surface` の指定。プレビューの背景は `PreviewRoot`、実画面の背景は
+  各 Screen が決める

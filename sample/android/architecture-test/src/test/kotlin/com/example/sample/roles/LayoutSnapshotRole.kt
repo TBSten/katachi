@@ -1,5 +1,6 @@
 package com.example.sample.roles
 
+import com.example.sample.forbiddenContents
 import me.tbsten.katachi.dsl.DeclarationContainerScope
 
 /**
@@ -43,9 +44,8 @@ fun DeclarationContainerScope.layoutSnapshot() = "LayoutSnapshot" {
         場所は他に無く、一覧から外すとリポジトリを開いた人には由来の分からない `.txt` が
         1つ残るだけになる。`GeneratedDocumentation` と同じ扱いで、`tool` グループの
         `Documentation` が `documented = false` なのとは逆側。
-
-        置いてはいけないもの:
-
+    """.trimIndent()
+    forbiddenContents = """
         - 手書きのメモ。次の `-Dkatachi.snapshot.update=true` で丸ごと上書きされる
         - 別の種類の記録。いまの `layout { }` は `snapshots/layout.txt` の1ファイルしか
           認めていないので、足すなら役割を書き換えるところから始まる

@@ -1,5 +1,7 @@
 package com.example.kmp.roles
 
+import com.example.kmp.allowedContents
+import com.example.kmp.forbiddenContents
 import com.example.kmp.modulePackage
 import me.tbsten.katachi.dsl.DeclarationContainerScope
 import me.tbsten.katachi.dsl.gradle.*
@@ -20,14 +22,12 @@ fun DeclarationContainerScope.fake() = "Fake" {
         `:app:android` のテストから使いたければ production 側に出すしかありません。
         `:testing` は `api(project(":data"))` だけに依存する、アプリ本体から誰も依存しない
         モジュールとして切ってあります。
-
-        置いてよいもの:
-
+    """.trimIndent()
+    allowedContents = """
         - `:data` のインターフェースを満たす偽実装。返す値はコンストラクタで差し替えられる形に
           しておきます（`FakeUserRepository(listOf("alice"))` のように）
-
-        置いてはいけないもの:
-
+    """.trimIndent()
+    forbiddenContents = """
         - テストそのもの。`*Spec.kt` は Test の役割です
         - production から呼ばれる実装。本物は `:data` の `*Impl` です
         - kotest などテストフレームワークへの依存。ここは production の source set なので、

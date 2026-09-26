@@ -19,9 +19,6 @@
 テストのヘルパーやカスタムアサーションを足したくなったら、まず役割を増やす。
 テストそのものは別の役割（テストコード）で、`src/test` にある。
 
-置いてはいけないもの: 本番から呼ばれるコード。`:testing` に依存してよいのは
-テストのコンパイル経路だけで、`:app` や `:feature:*` の `main` からは参照しない。
-
 ## Placement
 
 | Module | Path | When to use |
@@ -32,3 +29,8 @@
 
 - `FakeUserRepository` ... UserRepository のメモリ実装
 - `FakeSettingsRepository` ... SettingsRepository のメモリ実装
+
+## 置いてはいけないもの
+
+本番から呼ばれるコード。`:testing` に依存してよいのは
+テストのコンパイル経路だけで、`:app` や `:feature:*` の `main` からは参照しない。

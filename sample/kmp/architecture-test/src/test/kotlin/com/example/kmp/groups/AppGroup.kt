@@ -1,5 +1,7 @@
 package com.example.kmp.groups
 
+import com.example.kmp.allowedContents
+import com.example.kmp.forbiddenContents
 import com.example.kmp.roles.androidResource
 import com.example.kmp.roles.entrypoint
 import com.example.kmp.roles.xcodeProject
@@ -32,14 +34,12 @@ fun DeclarationContainerScope.appGroup() = "app".group {
         `com.example.kmp.app.android` ではない）です。だから Entrypoint と AndroidResource は
         `modulePackage` を使わず package を直書きしています。規則に従わないものを規則で
         書こうとして曲げるより、違うと書く方が読み手に親切です。
-
-        置いてよいもの:
-
+    """.trimIndent()
+    allowedContents = """
         - 起動点と、アプリ全体の組み立て（`AppRoot`）
         - Android のビルドが要求するリソース
-
-        置いてはいけないもの:
-
+    """.trimIndent()
+    forbiddenContents = """
         - 画面そのもの。画面は feature モジュールにあり、ここは Route を呼ぶだけです
         - 共有したいロジック。ここに書いたものは iOS から見えません
     """.trimIndent()

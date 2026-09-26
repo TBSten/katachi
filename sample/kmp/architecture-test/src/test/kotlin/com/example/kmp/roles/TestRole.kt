@@ -1,5 +1,6 @@
 package com.example.kmp.roles
 
+import com.example.kmp.forbiddenContents
 import me.tbsten.katachi.dsl.DeclarationContainerScope
 import me.tbsten.katachi.dsl.gradle.*
 import me.tbsten.katachi.dsl.kotlin.ktFile
@@ -29,13 +30,12 @@ fun DeclarationContainerScope.test() = "Test" {
         （`Navigator`、`UiState`、`FakeUserRepository`）を回せる JVM のテストがここしか
         ありません。
 
-        置いてはいけないもの:
-
-        - アーキテクチャ定義。`:architecture-test` は ArchitectureDefinition の役割です
-        - テストダブル。`Fake*` は `:testing` の commonMain にあります
-
         画面の `@Composable` はテストしていません。Compose のテストランタイムが要る話になり、
         このサンプルが見せたい範囲の外です。
+    """.trimIndent()
+    forbiddenContents = """
+        - アーキテクチャ定義。`:architecture-test` は ArchitectureDefinition の役割です
+        - テストダブル。`Fake*` は `:testing` の commonMain にあります
     """.trimIndent()
     example("SampleModulesSpec", ":app:android のユニットテスト")
     // Only `:app:android` has test code of its own today, and it is an Android

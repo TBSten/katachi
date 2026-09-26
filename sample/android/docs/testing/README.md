@@ -51,6 +51,7 @@
     *Spec.kt                   テストコード
     *Test.kt                   テストコード
     ProjectArchitecture.kt     アーキテクチャ定義
+    DocumentSections.kt        アーキテクチャ定義
     groups/*Group.kt           アーキテクチャ定義
     roles/*Role.kt             アーキテクチャ定義
 

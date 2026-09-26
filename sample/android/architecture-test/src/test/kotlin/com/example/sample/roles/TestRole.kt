@@ -1,5 +1,6 @@
 package com.example.sample.roles
 
+import com.example.sample.forbiddenContents
 import me.tbsten.katachi.dsl.DeclarationContainerScope
 import me.tbsten.katachi.dsl.gradle.*
 import me.tbsten.katachi.dsl.kotlin.ktFile
@@ -22,8 +23,9 @@ fun DeclarationContainerScope.test() = "Test" {
         `ProjectArchitectureSpec` が組み上がった定義を確かめ、`LayoutSnapshotSpec` が
         平坦化した layout をスナップショットと突き合わせ、`ProjectRootSpec` が
         プロジェクトルートの探索結果を見張る。
-
-        置いてはいけないもの: テストから使う道具。他モジュールのテストへ渡す差し替え実装は
+    """.trimIndent()
+    forbiddenContents = """
+        テストから使う道具。他モジュールのテストへ渡す差し替え実装は
         `:testing` のフェイク役割にあり、`src/test` からは公開できない。
     """.trimIndent()
     example("ProjectArchitectureTest", "利用者が書く唯一のテスト")

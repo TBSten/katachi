@@ -1,5 +1,6 @@
 package com.example.groups
 
+import com.example.forbiddenContents
 import com.example.roles.architectureDefinition
 import com.example.roles.generatedDocumentation
 import com.example.roles.layoutSnapshot
@@ -34,7 +35,9 @@ fun DeclarationContainerScope.testingGroup() = "testing".group {
         生成物の2つも役割が別です。`docs/` は `katachiDocs` が読む人のために書くもの、
         `snapshots/` は `LayoutSnapshotSpec` が katachi 自身のために書くもので、
         更新の仕方も消したときに困る相手も違います。
+    """.trimIndent()
 
+    forbiddenContents = """
         ここに置いてはいけないのは、アプリの本体コードです。`:architecture-test` は
         main ソースセットを持ちません。
     """.trimIndent()

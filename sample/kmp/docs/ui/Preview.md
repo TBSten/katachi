@@ -18,18 +18,6 @@ Android 専用の `androidx.compose.ui:ui-tooling-preview` とまったく同じ
 IDE の補完で後者を足してしまうと iOS ターゲットが解決できなくなります。
 `commonMain` でプレビューが書けているのは前者を使っているからです。
 
-置いてよいもの:
-
-- 状態を引数で渡せる stateless な Composable のプレビュー。`HomeScreen` ではなく
-  `HomeContent` を呼ぶので、ViewModel を組み立てずに描けます
-- 1つの対象につき状態ごとに複数。読み込み中・読み込み済み・失敗を並べて見られます
-
-置いてはいけないもの:
-
-- `public` なプレビュー。他から呼ぶものではないので `private` にします
-- プレビューの中で `AppTheme { }` を直接書くこと。包むのは `PreviewRoot` の仕事です
-- 本物の Repository やネットワークに触る処理。値はリテラルで書きます
-
 ## Placement
 
 | Module | Path | When to use |
@@ -41,3 +29,15 @@ IDE の補完で後者を足してしまうと iOS ターゲットが解決で�
 
 - `PrimaryButtonPreview` ... PrimaryButton のプレビュー
 - `HomeLoadedPreview` ... 読み込み済みのホーム画面
+
+## 置いてよいもの
+
+- 状態を引数で渡せる stateless な Composable のプレビュー。`HomeScreen` ではなく
+  `HomeContent` を呼ぶので、ViewModel を組み立てずに描けます
+- 1つの対象につき状態ごとに複数。読み込み中・読み込み済み・失敗を並べて見られます
+
+## 置いてはいけないもの
+
+- `public` なプレビュー。他から呼ぶものではないので `private` にします
+- プレビューの中で `AppTheme { }` を直接書くこと。包むのは `PreviewRoot` の仕事です
+- 本物の Repository やネットワークに触る処理。値はリテラルで書きます

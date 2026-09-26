@@ -13,9 +13,6 @@
 それでも役割を3つに割ってあるのは、`RoleFileCount` の出力にも `RoleTable` の表にも
 複数行が出てほしいからです。1つしか無いと、processor が何をしたのか出力から読み取れません。
 
-ここに置いてはいけないのは、定義や processor のコードです。どちらも `:architecture-test`
-にあり、`testing` グループの役割が覆います。
-
 | Role | Summary |
 |---|---|
 | [エントリポイント](./Entrypoint.md) | プロセスの起動。`main()` を持つ唯一のファイル |
@@ -31,3 +28,8 @@
     model/*.kt  モデル
     store/*.kt  保管庫
 ```
+
+## 置いてはいけないもの
+
+ここに置いてはいけないのは、定義や processor のコードです。どちらも `:architecture-test`
+にあり、`testing` グループの役割が覆います。

@@ -8,9 +8,7 @@ feature をまたいで共有する UI。:ui の4つの package と :navigation
 `component`（共通部品）・`theme`（色とタイポグラフィ）・`core`（UI 層の語彙）・
 `preview`（プレビューの土台）の4つ。`:navigation` は画面遷移の窓口だけを持つ別モジュール。
 
-ここに置いてよいのは、2つ以上の feature が使うもの、あるいは使うと決まっているもの。
-1つの画面でしか使わないものは、その feature モジュールに置く。`:ui` は下の層も
-横の feature も知らないので、`:data` や `:feature:*` への依存は入らない。
+`:ui` は下の層も横の feature も知らないので、`:data` や `:feature:*` への依存は入らない。
 
 feature 側の Screen / ViewModel / Route がここに無いのは、増え方が違うから。
 あちらはモジュールを足せば勝手に増える場所で、こちらは1つ足すたびに
@@ -43,3 +41,8 @@ feature 側の Screen / ViewModel / Route がここに無いのは、増え方�
 :navigation
   src/main/kotlin/**/*.kt   画面遷移
 ```
+
+## 置いてよいもの
+
+ここに置いてよいのは、2つ以上の feature が使うもの、あるいは使うと決まっているもの。
+1つの画面でしか使わないものは、その feature モジュールに置く。

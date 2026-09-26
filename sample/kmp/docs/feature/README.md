@@ -18,13 +18,6 @@ ui group と分けてあるのは、増え方が違うからです。feature は
 `:ui` や `:navigation` に何かを足すのは設計判断です。1つの group にまとめると、
 生成されるドキュメントでその差が消えてしまいます。
 
-ここに置かないもの:
-
-- 複数の画面から使う部品。それは `:ui` の Component です
-- データの取得。`:data` にあり、feature はインターフェース越しに読みます
-- 他の feature への依存。画面どうしは直接つながらず、`:navigation` の `Destination`
-  を介します
-
 3つの役割はすべて `commonMain` です。画面まわりに `androidMain` / `iosMain` は1つも
 ありません。プラットフォーム差は data group の PlatformImplementation に閉じています。
 
@@ -43,3 +36,10 @@ ui group と分けてあるのは、増え方が違うからです。feature は
     <name>ViewModel.kt  ViewModel
     <name>Route.kt      ルート
 ```
+
+## 置いてはいけないもの
+
+- 複数の画面から使う部品。それは `:ui` の Component です
+- データの取得。`:data` にあり、feature はインターフェース越しに読みます
+- 他の feature への依存。画面どうしは直接つながらず、`:navigation` の `Destination`
+  を介します

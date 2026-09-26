@@ -19,16 +19,6 @@ Gradle がビルドする Android アプリと、Xcode がビルドする iOS �
 `modulePackage` を使わず package を直書きしています。規則に従わないものを規則で
 書こうとして曲げるより、違うと書く方が読み手に親切です。
 
-置いてよいもの:
-
-- 起動点と、アプリ全体の組み立て（`AppRoot`）
-- Android のビルドが要求するリソース
-
-置いてはいけないもの:
-
-- 画面そのもの。画面は feature モジュールにあり、ここは Route を呼ぶだけです
-- 共有したいロジック。ここに書いたものは iOS から見えません
-
 | Role | Summary |
 |---|---|
 | [エントリポイント](./Entrypoint.md) | Android アプリの起動点。ComponentActivity と、そこから setContent で呼ぶアプリ全体の @Composable |
@@ -46,3 +36,13 @@ Gradle がビルドする Android アプリと、Xcode がビルドする iOS �
 
 app/ios/                             Xcode プロジェクト
 ```
+
+## 置いてよいもの
+
+- 起動点と、アプリ全体の組み立て（`AppRoot`）
+- Android のビルドが要求するリソース
+
+## 置いてはいけないもの
+
+- 画面そのもの。画面は feature モジュールにあり、ここは Route を呼ぶだけです
+- 共有したいロジック。ここに書いたものは iOS から見えません

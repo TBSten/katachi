@@ -13,12 +13,6 @@ katachi の DSL で書かれた役割の定義。どのレイヤーにも属さ�
 プロセッサです。定義どおりかを確かめる `ProjectArchitectureTest` と、katachi 側の
 結合テストである `*Spec` も同じモジュールにあるので、この役割が覆います。
 
-置いてはいけないもの:
-
-- アプリのコード。`:architecture-test` に `src/main/kotlin` を作ると、
-  どの役割も覆わないファイルとして落ちます
-- どのレイヤーに属するかが決まっているもの。ここは「形」だけを書く場所です
-
 `layout { }` は `**` でテストソースセット全体を見ています。`groups/` と `roles/` に
 分けるのは読みやすさのための約束であって、katachi の `layout { }` が強制しているわけでは
 ありません（`roles/` に何も宣言しない `.kt` を置いても通ります）。
@@ -34,3 +28,9 @@ katachi の DSL で書かれた役割の定義。どのレイヤーにも属さ�
 - `ProjectArchitecture.kt` ... 定義の入口
 - `roles/ControllerRole.kt` ... 役割1つの宣言
 - `ProjectArchitectureTest.kt` ... 定義を assert するテスト
+
+## 置いてはいけないもの
+
+- アプリのコード。`:architecture-test` に `src/main/kotlin` を作ると、
+  どの役割も覆わないファイルとして落ちます
+- どのレイヤーに属するかが決まっているもの。ここは「形」だけを書く場所です

@@ -1,5 +1,6 @@
 package com.example.roles
 
+import com.example.forbiddenContents
 import com.example.modulePackage
 import me.tbsten.katachi.dsl.DeclarationContainerScope
 import me.tbsten.katachi.dsl.gradle.*
@@ -18,15 +19,14 @@ fun DeclarationContainerScope.entrypoint() = "Entrypoint" {
         関数です。ここを読めば、このアプリにどんな横断的設定がどの順で入っているかが分かります。
         プラグイン設定を1つ足すときに触るのも、この並びの1行です。
 
-        置いてはいけないもの:
-
-        - `install(...)` の中身。設定そのものは Ktor プラグイン設定の役割で、ここには呼び出しだけ
-        - エンドポイントの登録。`routing { }` は `plugin/Routing.kt` が持ちます
-        - 待ち受けポートや適用モジュールの一覧。それは `application.conf`（サーバ設定）側です
-
         この役割の `layout { }` にはワイルドカードが無く、`Application.kt` が1つあることを
         要求します。消せば `[MissingFile]` が出るので、起動点がどこにも無い状態で
         通り過ぎることはありません。
+    """.trimIndent()
+    forbiddenContents = """
+        - `install(...)` の中身。設定そのものは Ktor プラグイン設定の役割で、ここには呼び出しだけ
+        - エンドポイントの登録。`routing { }` は `plugin/Routing.kt` が持ちます
+        - 待ち受けポートや適用モジュールの一覧。それは `application.conf`（サーバ設定）側です
     """.trimIndent()
     example("Application.kt", "プロセスの起動点")
     layout {

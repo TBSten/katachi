@@ -1,5 +1,7 @@
 package com.example.kmp.roles
 
+import com.example.kmp.allowedContents
+import com.example.kmp.forbiddenContents
 import com.example.kmp.modulePackage
 import me.tbsten.katachi.dsl.DeclarationContainerScope
 import me.tbsten.katachi.dsl.gradle.*
@@ -19,19 +21,17 @@ fun DeclarationContainerScope.uiCore() = "UiCore" {
         テストできます。実際 `:app:android` の `SampleModulesSpec` は Compose を起動せずに
         `valueOrNull()` の挙動を確かめています。
 
-        置いてよいもの:
-
+        `core` という名前は「基盤」以上のことを言っていないので、なんでも入る置き場になりがちです。
+        「画面を知らない」「Compose を知らない」の2つを満たすかどうかで判断してください。
+    """.trimIndent()
+    allowedContents = """
         - 画面の状態を表す型と、その小さな拡張関数
         - 複数の画面が共通で使う、UI 側だけの語彙
-
-        置いてはいけないもの:
-
+    """.trimIndent()
+    forbiddenContents = """
         - `@Composable`。部品は `component`、見た目は `theme` です
         - ドメインの型。ユーザーやその一覧は `:data` の持ち物で、`UiState` はそれを包むだけです
         - 特定の画面でしか意味を持たない状態。それは feature モジュール側に書きます
-
-        `core` という名前は「基盤」以上のことを言っていないので、なんでも入る置き場になりがちです。
-        「画面を知らない」「Compose を知らない」の2つを満たすかどうかで判断してください。
     """.trimIndent()
     example("UiState", "画面の状態を表す型")
     example("valueOrNull", "値を取り出す拡張関数")

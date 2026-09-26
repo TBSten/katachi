@@ -1,5 +1,6 @@
 package com.example.kmp.roles
 
+import com.example.kmp.forbiddenContents
 import com.example.kmp.processor.owner
 import me.tbsten.katachi.dsl.DeclarationContainerScope
 
@@ -30,9 +31,8 @@ fun DeclarationContainerScope.git() = "Git" {
         このサンプルで唯一 `title` を書いていない宣言でもあります。表示名を省いたときに何が
         出るか（役割名がそのまま使われること）を実際に試す場所として残してあり、
         `ProjectArchitectureSpec` がそれを固定しています。
-
-        置いてはいけないもの:
-
+    """.trimIndent()
+    forbiddenContents = """
         - ビルドファイル。`build.gradle.kts` や wrapper は `Gradle` group の役割です
         - CI の設定。このサンプルは自前の `.github/` を持たず、リポジトリルートの
           ワークフローから回されています

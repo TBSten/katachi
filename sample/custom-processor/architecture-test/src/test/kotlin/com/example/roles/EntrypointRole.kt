@@ -1,5 +1,7 @@
 package com.example.roles
 
+import com.example.allowedContents
+import com.example.forbiddenContents
 import com.example.modulePackage
 import me.tbsten.katachi.dsl.DeclarationContainerScope
 import me.tbsten.katachi.dsl.gradle.*
@@ -13,14 +15,6 @@ fun DeclarationContainerScope.entrypoint() = "Entrypoint" {
         `main()` が書かれる場所です。このサンプルでは `NoteStore` を作って `all()` を呼び、
         結果を標準出力に並べるだけで、分岐も設定もありません。
 
-        置いてよいのは、プロセスを起動して層を組み立てるところまでです。
-
-        置いてはいけないもの:
-
-        - 値そのもの。ノートの中身は保管庫の役割が持ちます。`main()` に直接書くと
-          「データがどこから来るのか」の答えがエントリポイントに移ってしまいます
-        - 値の形。`Note` の定義はモデルの役割です
-
         本体をわざわざ3つの役割に割っているのは、このサンプルの本題が processor だからです。
         役割が1つしか無いと、`RoleFileCount` が数える対象も `RoleTable` が並べる行も1件に
         なってしまい、processor の出力から何も読み取れません。アプリの規模から必要になった
@@ -28,6 +22,12 @@ fun DeclarationContainerScope.entrypoint() = "Entrypoint" {
 
         この役割の `layout { }` にはワイルドカードが無いので、`Main.kt` が1つあることを
         要求します。消せば `[MissingFile]` が出ます。
+    """.trimIndent()
+    allowedContents = "置いてよいのは、プロセスを起動して層を組み立てるところまでです。"
+    forbiddenContents = """
+        - 値そのもの。ノートの中身は保管庫の役割が持ちます。`main()` に直接書くと
+          「データがどこから来るのか」の答えがエントリポイントに移ってしまいます
+        - 値の形。`Note` の定義はモデルの役割です
     """.trimIndent()
     example("Main.kt", "プロセスの起動点")
     layout {

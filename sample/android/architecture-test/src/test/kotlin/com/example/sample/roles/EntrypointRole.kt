@@ -1,5 +1,6 @@
 package com.example.sample.roles
 
+import com.example.sample.forbiddenContents
 import me.tbsten.katachi.dsl.DeclarationContainerScope
 import me.tbsten.katachi.dsl.gradle.*
 import me.tbsten.katachi.dsl.kotlin.ktFile
@@ -21,13 +22,14 @@ fun DeclarationContainerScope.entrypoint() = "Entrypoint" {
         `MainApplication` は `Application` を継承するだけ。DI コンテナの初期化のような
         「起動時に1回だけ」の処理を足す場所として空けてある。
 
-        置いてはいけないもの: 画面の中身。`:app` は feature をつなぐだけで、
-        UI は `:ui` と `:feature:*` にある。ここに Composable が増え始めたら、
-        それは feature モジュールに引っ越すべきもの。
-
         この役割の package は `modulePackage` を使わず `com/example/sample` と直接書く。
         `:app` はアプリ本体で、`:ui` → `com.example.sample.ui` のような
         モジュールパスとの対応を持たないため。
+    """.trimIndent()
+    forbiddenContents = """
+        画面の中身。`:app` は feature をつなぐだけで、
+        UI は `:ui` と `:feature:*` にある。ここに Composable が増え始めたら、
+        それは feature モジュールに引っ越すべきもの。
     """.trimIndent()
     example("MainActivity", "起動時に表示される Activity")
     example("MainApplication", "Application の実装")

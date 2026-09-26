@@ -1,5 +1,6 @@
 package com.example.sample.roles
 
+import com.example.sample.forbiddenContents
 import com.example.sample.modulePackage
 import me.tbsten.katachi.dsl.DeclarationContainerScope
 import me.tbsten.katachi.dsl.gradle.*
@@ -23,9 +24,8 @@ fun DeclarationContainerScope.previewRoot() = "PreviewRoot" {
         `layout` はワイルドカードではなく `PreviewRoot.kt` と名指ししてあり、消すと
         `[MissingFile]` で検査が落ちる。すべての `@Preview` が依存する土台なので、
         黙って消えないようにしてある。
-
-        置いてはいけないもの:
-
+    """.trimIndent()
+    forbiddenContents = """
         - 本番の画面から呼ばれるもの。実画面のテーマは `MainActivity` が `AppTheme { }` で与える
         - プレビュー用のダミーデータ。渡す状態は各 `@Preview` がその場で書く
     """.trimIndent()

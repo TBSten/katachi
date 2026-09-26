@@ -1,5 +1,7 @@
 package com.example.roles
 
+import com.example.allowedContents
+import com.example.forbiddenContents
 import com.example.modulePackage
 import me.tbsten.katachi.dsl.DeclarationContainerScope
 import me.tbsten.katachi.dsl.gradle.*
@@ -17,15 +19,14 @@ fun DeclarationContainerScope.model() = "Model" {
         ドメインのモデルと API のペイロードを分けていないのは、このサンプルが意図して選んだ形です。
         両者がずれ始めたら API 層に DTO の役割を新しく立てて戻せるように、いまは1つにしてあります。
 
-        置いてよいのは data class・enum・値オブジェクトと、その値に閉じた計算です。
-        置いてはいけないもの:
-
-        - 取得や保存。I/O はリポジトリの役割です
-        - Ktor への依存。モデルが知ってよいのは `kotlinx.serialization` までです
-
         名前は「何を表す値か」そのもので、接尾辞は付けません（`HealthModel` ではなく `Health`）。
         対象は `model` パッケージ直下の `.kt` だけで、その下にディレクトリを掘っても
         この役割には入りません。
+    """.trimIndent()
+    allowedContents = "置いてよいのは data class・enum・値オブジェクトと、その値に閉じた計算です。"
+    forbiddenContents = """
+        - 取得や保存。I/O はリポジトリの役割です
+        - Ktor への依存。モデルが知ってよいのは `kotlinx.serialization` までです
     """.trimIndent()
     example("Health", "稼働状態とバージョン")
     layout {

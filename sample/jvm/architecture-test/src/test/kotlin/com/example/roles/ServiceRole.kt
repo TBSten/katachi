@@ -1,5 +1,7 @@
 package com.example.roles
 
+import com.example.allowedContents
+import com.example.forbiddenContents
 import com.example.modulePackage
 import me.tbsten.katachi.dsl.DeclarationContainerScope
 import me.tbsten.katachi.dsl.LayoutScope
@@ -19,18 +21,18 @@ fun DeclarationContainerScope.service() = "Service" {
         組み合わせて、モデルを返します。`HealthService.currentHealth()` はいまのところ
         `HealthRepository.load()` の結果を返すだけですが、判断が増えたときに増える先はここです。
 
-        置いてよいのは、アプリ固有の手順・判断・組み立てです。複数の Repository をまたぐ処理や、
-        取得した値を突き合わせる処理はここに来ます。
-
-        置いてはいけないもの:
-
-        - `Route`・`call`・`respond` といった Ktor の型。HTTP を知るのは API 層までです
-        - 取得元の詳細（接続先・クエリ・ファイルパス）。それはリポジトリが隠します
-        - 値の定義そのもの。data class はモデルの役割です
-
         ファイル名は `*Service.kt` で、1ファイル1クラス。この役割だけが `konsist { }` で
         「public であること」を制約として書いており、うっかり `internal` を付けるとテストが
         落ちます。別パッケージの Controller から参照できなくなる前に気づけます。
+    """.trimIndent()
+    allowedContents = """
+        置いてよいのは、アプリ固有の手順・判断・組み立てです。複数の Repository をまたぐ処理や、
+        取得した値を突き合わせる処理はここに来ます。
+    """.trimIndent()
+    forbiddenContents = """
+        - `Route`・`call`・`respond` といった Ktor の型。HTTP を知るのは API 層までです
+        - 取得元の詳細（接続先・クエリ・ファイルパス）。それはリポジトリが隠します
+        - 値の定義そのもの。data class はモデルの役割です
     """.trimIndent()
     example("HealthService", "サーバ稼働状態の取得")
     layout {

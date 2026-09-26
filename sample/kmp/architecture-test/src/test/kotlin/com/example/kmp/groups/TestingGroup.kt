@@ -1,5 +1,6 @@
 package com.example.kmp.groups
 
+import com.example.kmp.forbiddenContents
 import com.example.kmp.roles.architectureDefinition
 import com.example.kmp.roles.fake
 import com.example.kmp.roles.generatedDocumentation
@@ -43,9 +44,8 @@ fun DeclarationContainerScope.testingGroup() = "testing".group {
         書き出されたもの同士も分けてあります。読み手が違うからです。`docs/` は定義を読みに
         来た人が開くページ、`snapshots/` は定義を書き換えた差分をレビューする人が見る
         テキストです。
-
-        置いてはいけないもの:
-
+    """.trimIndent()
+    forbiddenContents = """
         - アプリ本体のコード。ここにあるのは「テストのための」コードと、プロジェクトの説明です
     """.trimIndent()
 

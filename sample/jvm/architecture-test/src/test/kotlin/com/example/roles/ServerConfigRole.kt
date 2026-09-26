@@ -1,5 +1,6 @@
 package com.example.roles
 
+import com.example.forbiddenContents
 import me.tbsten.katachi.dsl.DeclarationContainerScope
 import me.tbsten.katachi.dsl.gradle.*
 
@@ -16,14 +17,13 @@ fun DeclarationContainerScope.serverConfig() = "ServerConfig" {
         `Application.module()` と名指しで対になっていて、片方だけ直すと起動しません。
         `logback.xml` はログの出力先と書式を決めます。
 
-        置いてはいけないもの:
-
+        `layout { }` はワイルドカードではなく2つのファイルを名前で並べています。実行時に効く設定が
+        3つ目に増えたら、それは黙って増えてよいものではなく、気づきたいものだからです。
+    """.trimIndent()
+    forbiddenContents = """
         - ビルドの設定。依存やプラグインは Gradle スクリプトの役割です
         - 開発者ごとに違う値や秘密情報。`local.properties` は `.gitignore` に入っていて、
           既定の `files = gitTracked()` ではそもそも検査に渡りません
-
-        `layout { }` はワイルドカードではなく2つのファイルを名前で並べています。実行時に効く設定が
-        3つ目に増えたら、それは黙って増えてよいものではなく、気づきたいものだからです。
     """.trimIndent()
     example("application.conf", "待ち受けポートと適用モジュール")
     example("logback.xml", "ログの出力先と書式")

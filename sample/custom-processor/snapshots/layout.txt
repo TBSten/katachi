@@ -51,6 +51,7 @@ testing/ArchitectureDefinition	architecture-test/src/test/kotlin	Directory	optio
 testing/ArchitectureDefinition	architecture-test/src/test/kotlin/com	Directory	optional
 testing/ArchitectureDefinition	architecture-test/src/test/kotlin/com/example	Directory	optional
 testing/ArchitectureDefinition	architecture-test/src/test/kotlin/com/example/*Spec.kt	File	optional
+testing/ArchitectureDefinition	architecture-test/src/test/kotlin/com/example/DocumentSections.kt	File	required
 testing/ArchitectureDefinition	architecture-test/src/test/kotlin/com/example/ProjectArchitecture.kt	File	required
 testing/ArchitectureDefinition	architecture-test/src/test/kotlin/com/example/ProjectArchitectureTest.kt	File	required
 testing/ArchitectureDefinition	architecture-test/src/test/kotlin/com/example/groups	Directory	optional

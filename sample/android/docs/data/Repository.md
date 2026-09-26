@@ -17,13 +17,6 @@
 触らないので、インターフェースは素の Kotlin として読める。ViewModel はコンストラクタで
 インターフェースを受け取り、テストでは `:testing` の `Fake*` に差し替える。
 
-置いてはいけないもの:
-
-- 画面向けの型。`UiState` に詰め替えるのは ViewModel の仕事で、`:data` は `:ui` を知らない
-- `*Repository.kt` `*RepositoryImpl.kt` 以外のファイル。DTO やデータソースを
-  分けたくなったら、まず役割を増やす
-- 対象をまたぐ package。`user` の型が `settings` に混ざったら package を割り直す
-
 ## Placement
 
 | Module | Path | When to use |
@@ -37,3 +30,10 @@
 
 - `UserRepository` ... ユーザーの取得と保存のインターフェース
 - `UserRepositoryImpl` ... UserRepository の実装
+
+## 置いてはいけないもの
+
+- 画面向けの型。`UiState` に詰め替えるのは ViewModel の仕事で、`:data` は `:ui` を知らない
+- `*Repository.kt` `*RepositoryImpl.kt` 以外のファイル。DTO やデータソースを
+  分けたくなったら、まず役割を増やす
+- 対象をまたぐ package。`user` の型が `settings` に混ざったら package を割り直す

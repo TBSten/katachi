@@ -18,12 +18,6 @@ feature モジュールが外に見せる唯一のもの。`HomeRoute` のよう
 どの画面へ行くかを決めているのは `:app` 側で、feature が別の feature の Route を
 import することはない。
 
-置いてはいけないもの:
-
-- UI。`@Composable` として描くのは Screen で、ここは `composable(...)` への登録だけ
-- 他の feature の Route への参照
-- 引数の組み立て以上のロジック。遷移の判断は呼び出し元にある
-
 ## Placement
 
 | Module | Path | When to use |
@@ -34,3 +28,9 @@ import することはない。
 
 - `HomeRoute` ... ホーム画面への遷移先
 - `SettingsRoute` ... 設定画面への遷移先
+
+## 置いてはいけないもの
+
+- UI。`@Composable` として描くのは Screen で、ここは `composable(...)` への登録だけ
+- 他の feature の Route への参照
+- 引数の組み立て以上のロジック。遷移の判断は呼び出し元にある

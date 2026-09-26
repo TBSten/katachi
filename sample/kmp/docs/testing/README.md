@@ -28,10 +28,6 @@ GeneratedDocumentation と LayoutSnapshot を ArchitectureDefinition と分け�
 来た人が開くページ、`snapshots/` は定義を書き換えた差分をレビューする人が見る
 テキストです。
 
-置いてはいけないもの:
-
-- アプリ本体のコード。ここにあるのは「テストのための」コードと、プロジェクトの説明です
-
 | Role | Summary |
 |---|---|
 | [フェイク](./Fake.md) | :testing の commonMain に置く偽の実装。他モジュールのテストから使う |
@@ -59,3 +55,7 @@ docs/
   **/*.md                                       生成ドキュメント
 snapshots/layout.txt                            レイアウトのスナップショット
 ```
+
+## 置いてはいけないもの
+
+- アプリ本体のコード。ここにあるのは「テストのための」コードと、プロジェクトの説明です

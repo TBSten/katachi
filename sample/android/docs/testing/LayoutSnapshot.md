@@ -33,12 +33,6 @@
 1つ残るだけになる。`GeneratedDocumentation` と同じ扱いで、`tool` グループの
 `Documentation` が `documented = false` なのとは逆側。
 
-置いてはいけないもの:
-
-- 手書きのメモ。次の `-Dkatachi.snapshot.update=true` で丸ごと上書きされる
-- 別の種類の記録。いまの `layout { }` は `snapshots/layout.txt` の1ファイルしか
-  認めていないので、足すなら役割を書き換えるところから始まる
-
 ## Placement
 
 | Module | Path | When to use |
@@ -48,3 +42,9 @@
 ## Examples
 
 - `snapshots/layout.txt` ... 平坦化した layout の全行
+
+## 置いてはいけないもの
+
+- 手書きのメモ。次の `-Dkatachi.snapshot.update=true` で丸ごと上書きされる
+- 別の種類の記録。いまの `layout { }` は `snapshots/layout.txt` の1ファイルしか
+  認めていないので、足すなら役割を書き換えるところから始まる

@@ -1,5 +1,6 @@
 package com.example.sample.roles
 
+import com.example.sample.forbiddenContents
 import com.example.sample.groups.featureSources
 import me.tbsten.katachi.dsl.DeclarationContainerScope
 import me.tbsten.katachi.dsl.gradle.*
@@ -24,9 +25,8 @@ fun DeclarationContainerScope.route() = "Route" {
         （`onNavigateToSettings` / `onNavigateUp`）を Screen に渡す形で書く。
         どの画面へ行くかを決めているのは `:app` 側で、feature が別の feature の Route を
         import することはない。
-
-        置いてはいけないもの:
-
+    """.trimIndent()
+    forbiddenContents = """
         - UI。`@Composable` として描くのは Screen で、ここは `composable(...)` への登録だけ
         - 他の feature の Route への参照
         - 引数の組み立て以上のロジック。遷移の判断は呼び出し元にある

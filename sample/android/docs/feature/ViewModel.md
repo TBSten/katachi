@@ -18,14 +18,6 @@ Repository はコンストラクタ引数で受け取り、既定値に本番実
 `viewModel()` が組み立てられるようにするためで、DI を入れるならこの既定値が
 消えるだけで形は変わらない。
 
-置いてはいけないもの:
-
-- Compose への依存。`androidx.compose.*` を import せず、`@Composable` も書かない。
-  この線が引けているから、状態の組み立てを Compose 抜きで読める
-- Android の Context / View / リソース。`androidx.lifecycle.ViewModel` を継承する以外に
-  Android には触らない
-- 画面のレイアウト。描くのは Screen の仕事
-
 ## Placement
 
 | Module | Path | When to use |
@@ -36,3 +28,11 @@ Repository はコンストラクタ引数で受け取り、既定値に本番実
 
 - `HomeViewModel` ... ホーム画面の状態
 - `SettingsViewModel` ... 設定画面の状態
+
+## 置いてはいけないもの
+
+- Compose への依存。`androidx.compose.*` を import せず、`@Composable` も書かない。
+  この線が引けているから、状態の組み立てを Compose 抜きで読める
+- Android の Context / View / リソース。`androidx.lifecycle.ViewModel` を継承する以外に
+  Android には触らない
+- 画面のレイアウト。描くのは Screen の仕事

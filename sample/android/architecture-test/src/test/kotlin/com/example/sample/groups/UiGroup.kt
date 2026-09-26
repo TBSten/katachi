@@ -1,5 +1,6 @@
 package com.example.sample.groups
 
+import com.example.sample.allowedContents
 import com.example.sample.roles.component
 import com.example.sample.roles.navigation
 import com.example.sample.roles.preview
@@ -27,9 +28,7 @@ fun DeclarationContainerScope.uiGroup() = "ui".group {
         `component`（共通部品）・`theme`（色とタイポグラフィ）・`core`（UI 層の語彙）・
         `preview`（プレビューの土台）の4つ。`:navigation` は画面遷移の窓口だけを持つ別モジュール。
 
-        ここに置いてよいのは、2つ以上の feature が使うもの、あるいは使うと決まっているもの。
-        1つの画面でしか使わないものは、その feature モジュールに置く。`:ui` は下の層も
-        横の feature も知らないので、`:data` や `:feature:*` への依存は入らない。
+        `:ui` は下の層も横の feature も知らないので、`:data` や `:feature:*` への依存は入らない。
 
         feature 側の Screen / ViewModel / Route がここに無いのは、増え方が違うから。
         あちらはモジュールを足せば勝手に増える場所で、こちらは1つ足すたびに
@@ -39,6 +38,10 @@ fun DeclarationContainerScope.uiGroup() = "ui".group {
         `AppNavigator` インターフェースにだけ依存し、`NavHostController` には触らない。
         画面部品を使いたいだけのコードにナビゲーションの依存を持ち込ませないためでもある。
         グラフの組み立ては `:app` が行う。
+    """.trimIndent()
+    allowedContents = """
+        ここに置いてよいのは、2つ以上の feature が使うもの、あるいは使うと決まっているもの。
+        1つの画面でしか使わないものは、その feature モジュールに置く。
     """.trimIndent()
 
     component()

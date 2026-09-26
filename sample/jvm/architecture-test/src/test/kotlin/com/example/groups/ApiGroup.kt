@@ -2,6 +2,7 @@
 
 package com.example.groups
 
+import com.example.forbiddenContents
 import com.example.roles.controller
 import com.example.roles.ktorPlugin
 import me.tbsten.katachi.ExperimentalKatachiApi
@@ -38,13 +39,15 @@ fun DeclarationContainerScope.apiGroup() = "api".group {
         どちらも「HTTP をどう受けるか」の話で、変えたくなる理由が同じなので同じグループに
         しています。
 
-        ここに置いてはいけないのは「何を返すか」の判断と、値がどこから来るかです。前者は
-        ドメイン、後者はデータの担当になります。実際、`io.ktor.server.*` の import が出てくるのは
-        この層とエントリポイントだけで、`service` `repository` `model` には1つもありません。
-
         ただし katachi の `layout { }` が見ているのは置き場所とファイル名までです。
         「Controller から Repository を直接呼ばない」といった約束は、ここに文章として
         書いてあるだけで、機械的には弾かれません。
+    """.trimIndent()
+
+    forbiddenContents = """
+        ここに置いてはいけないのは「何を返すか」の判断と、値がどこから来るかです。前者は
+        ドメイン、後者はデータの担当になります。実際、`io.ktor.server.*` の import が出てくるのは
+        この層とエントリポイントだけで、`service` `repository` `model` には1つもありません。
     """.trimIndent()
 
     testPolicy = """

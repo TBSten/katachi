@@ -1,5 +1,7 @@
 package com.example.kmp.roles
 
+import com.example.kmp.allowedContents
+import com.example.kmp.forbiddenContents
 import com.example.kmp.modulePackage
 import me.tbsten.katachi.dsl.DeclarationContainerScope
 import me.tbsten.katachi.dsl.gradle.*
@@ -28,20 +30,18 @@ fun DeclarationContainerScope.screen() = "Screen" {
         ViewModel を作らないと描けないものと、状態を渡せば描けるものを分けておくと、
         プレビュー（ui/Preview）もテストも後者だけを相手にできます。
 
-        置いてよいもの:
-
-        - その画面の `@Composable` と、状態を引数で受け取る stateless な `<Name>Content`
-        - `:ui` の Component / Theme / UiCore を組み合わせる配置の記述
-
-        置いてはいけないもの:
-
-        - Repository の直接呼び出し。データは ViewModel が `UiState` にしてから渡します
-        - 他の feature モジュールの画面や、その内部の型
-        - `androidMain` / `iosMain` 版の画面。この役割は `commonMain` しか宣言していません
-
         `commonMain` だけなのは、Compose Multiplatform で Android と iOS が同じ画面コードを
         共有するためです。プラットフォームで挙動が変わる処理が要るなら、画面ではなく `:data` の
         PlatformImplementation（expect/actual）に降ろしてください。
+    """.trimIndent()
+    allowedContents = """
+        - その画面の `@Composable` と、状態を引数で受け取る stateless な `<Name>Content`
+        - `:ui` の Component / Theme / UiCore を組み合わせる配置の記述
+    """.trimIndent()
+    forbiddenContents = """
+        - Repository の直接呼び出し。データは ViewModel が `UiState` にしてから渡します
+        - 他の feature モジュールの画面や、その内部の型
+        - `androidMain` / `iosMain` 版の画面。この役割は `commonMain` しか宣言していません
     """.trimIndent()
     example("HomeScreen", "ホーム画面")
     example("SettingsScreen", "設定画面")

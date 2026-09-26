@@ -1,5 +1,7 @@
 package com.example.kmp.roles
 
+import com.example.kmp.allowedContents
+import com.example.kmp.forbiddenContents
 import me.tbsten.katachi.dsl.DeclarationContainerScope
 
 /**
@@ -28,13 +30,11 @@ fun DeclarationContainerScope.xcodeProject() = "XcodeProject" {
         `iosApp.xcodeproj/` はコミットしていません。手書きの `project.pbxproj` は Xcode が
         開けない壊れ方をするうえ、このサンプルは iOS 向けにビルドしないので置いても死荷重に
         なります。実際に動かしたければ Xcode で作ってください。
-
-        置いてよいもの:
-
+    """.trimIndent()
+    allowedContents = """
         - Xcode が持つもの。Swift のソース、`Info.plist`、アセットカタログ
-
-        置いてはいけないもの:
-
+    """.trimIndent()
+    forbiddenContents = """
         - Kotlin のコード。共有したいコードは `:data` のような KMP モジュールに置き、
           framework として渡します（このサンプルでは設定していません）
     """.trimIndent()

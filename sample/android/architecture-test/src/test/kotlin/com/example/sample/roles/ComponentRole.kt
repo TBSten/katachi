@@ -1,5 +1,7 @@
 package com.example.sample.roles
 
+import com.example.sample.allowedContents
+import com.example.sample.forbiddenContents
 import com.example.sample.modulePackage
 import me.tbsten.katachi.dsl.DeclarationContainerScope
 import me.tbsten.katachi.dsl.gradle.div
@@ -21,12 +23,13 @@ fun DeclarationContainerScope.component() = "Component" {
         呼び出し側が Material3 の `Button` と `OutlinedButton` を直接使い分けなくて済むようにするのが
         この役割の狙いなので、部品と、その部品のための enum や `@Preview` は同じファイルにまとめる。
 
-        ファイル名は `*.kt` で縛っていない。部品は増えることが前提だから。ただし
+        ファイル名は `*.kt` で縛っていない。部品は増えることが前提だから。
+    """.trimIndent()
+    allowedContents = """
         ここに置いてよいのは、2つ以上の feature が使うもの、あるいは使うと決まっているもの。
         1つの画面でしか使わない部品は、その feature モジュールに置く。
-
-        置いてはいけないもの:
-
+    """.trimIndent()
+    forbiddenContents = """
         - 状態の保持。値とコールバック（`text`、`onClick`）で受け渡し、`remember` で
           抱え込まない
         - `:data` や `:feature:*` への依存。`:ui` は下の層も横の feature も知らない

@@ -1,5 +1,6 @@
 package com.example.groups
 
+import com.example.forbiddenContents
 import com.example.roles.gradle
 import me.tbsten.katachi.dsl.DeclarationContainerScope
 
@@ -26,9 +27,9 @@ fun DeclarationContainerScope.buildGroup() = "build".group {
         このサンプルではもう1つ効きます。`RoleDocCoverage` は「ドキュメントに出る役割」だけを
         見るので、このグループの役割は対象外になります。metadata は継承されないため、
         group をたどって判断するのは processor 側の仕事です。
-
-        ここに置いてはいけないのは、実行時に読む設定です。
     """.trimIndent()
+
+    forbiddenContents = "ここに置いてはいけないのは、実行時に読む設定です。"
 
     gradle()
 }
