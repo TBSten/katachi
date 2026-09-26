@@ -23,15 +23,16 @@ internal class LayoutIndex(entries: List<LayoutEntry>) {
      * Patterns matching a directory the traversal may descend into: every directory that was
      * declared, and every directory on the way down to something that was.
      */
-    private val knownDirectories: List<Glob> =
-        entries.flatMapTo(linkedSetOf<String>()) { it.directoryPatterns() }.map { Glob.compile(it) }
+    private val knownDirectories: PrefixGlobIndex<Glob> = PrefixGlobIndex(
+        entries.flatMapTo(linkedSetOf<String>()) { it.directoryPatterns() }.map { Glob.compile(it) },
+    ) { it }
 
-    private val allowedFiles: List<LayoutEntry> =
-        entries.filter { it.kind == LayoutEntryKind.File }
+    private val allowedFiles: PrefixGlobIndex<LayoutEntry> =
+        entries.filter { it.kind == LayoutEntryKind.File }.indexedByGlob()
 
     /** Directories whose direct children are all allowed, from `anyFile()`. */
-    private val openDirectories: List<LayoutEntry> =
-        entries.filter { it.kind == LayoutEntryKind.AnyFile }
+    private val openDirectories: PrefixGlobIndex<LayoutEntry> =
+        entries.filter { it.kind == LayoutEntryKind.AnyFile }.indexedByGlob()
 
     /**
      * The same two lists with what a `module { }` key injects dropped — what [claimsOn]
@@ -44,13 +45,15 @@ internal class LayoutIndex(entries: List<LayoutEntry>) {
      * the ambiguity question reads these, exactly as `ambiguousLayoutsOf` drops the same
      * entries before grouping by path text.
      */
-    private val claimedFiles: List<LayoutEntry> = allowedFiles.filterNot { it.synthetic }
+    private val claimedFiles: PrefixGlobIndex<LayoutEntry> =
+        entries.filter { it.kind == LayoutEntryKind.File && !it.synthetic }.indexedByGlob()
 
-    private val claimedOpenDirectories: List<LayoutEntry> = openDirectories.filterNot { it.synthetic }
+    private val claimedOpenDirectories: PrefixGlobIndex<LayoutEntry> =
+        entries.filter { it.kind == LayoutEntryKind.AnyFile && !it.synthetic }.indexedByGlob()
 
     /** Directories nothing below is looked at in, from `ignore()`. */
-    private val ignoredDirectories: List<Glob> =
-        entries.filter { it.kind == LayoutEntryKind.Ignore }.map { it.glob }
+    private val ignoredDirectories: PrefixGlobIndex<LayoutEntry> =
+        entries.filter { it.kind == LayoutEntryKind.Ignore }.indexedByGlob()
 
     /** Declarations that have to be matched by a real file, in declaration order. */
     val requiredFiles: List<LayoutEntry> = entries.filter { it.required }
@@ -58,10 +61,10 @@ internal class LayoutIndex(entries: List<LayoutEntry>) {
     private val locations: List<NearbyLocation> = entries.nearbyLocations()
 
     /** Whether the check stops at [directory] because a role said to. */
-    fun isIgnored(directory: String): Boolean = ignoredDirectories.any { it.matches(directory) }
+    fun isIgnored(directory: String): Boolean = ignoredDirectories.anyMatches(directory)
 
     /** Whether any role declared [directory] itself, or something below it. */
-    fun isKnown(directory: String): Boolean = knownDirectories.any { it.matches(directory) }
+    fun isKnown(directory: String): Boolean = knownDirectories.anyMatches(directory)
 
     /**
      * Every role that allows a file to sit at [file], in declaration order, or empty when the
@@ -93,19 +96,19 @@ internal class LayoutIndex(entries: List<LayoutEntry>) {
     /** One entry per role out of [fileEntries] and [openEntries], first match winning. */
     private fun matchesOn(
         file: String,
-        fileEntries: List<LayoutEntry>,
-        openEntries: List<LayoutEntry>,
+        fileEntries: PrefixGlobIndex<LayoutEntry>,
+        openEntries: PrefixGlobIndex<LayoutEntry>,
     ): Map<Role, LayoutEntry> {
         val matched = LinkedHashMap<Role, LayoutEntry>()
-        for (entry in fileEntries) {
-            if (entry.glob.matches(file)) matched.putIfAbsent(entry.role, entry)
+        for (entry in fileEntries.matching(file)) {
+            matched.putIfAbsent(entry.role, entry)
         }
         val directory = file.parentPath()
         // `anyFile()` covers the files directly inside a directory and nothing deeper, and
         // the root itself is not a directory any role can declare.
         if (directory.isNotEmpty()) {
-            for (entry in openEntries) {
-                if (entry.glob.matches(directory)) matched.putIfAbsent(entry.role, entry)
+            for (entry in openEntries.matching(directory)) {
+                matched.putIfAbsent(entry.role, entry)
             }
         }
         return matched
@@ -129,6 +132,8 @@ internal class LayoutIndex(entries: List<LayoutEntry>) {
             .map { (location, _) -> location }
     }
 }
+
+private fun List<LayoutEntry>.indexedByGlob(): PrefixGlobIndex<LayoutEntry> = PrefixGlobIndex(this) { it.glob }
 
 /** `core/domain` for `core/domain/UseCase.kt`, and the empty string at the root. */
 internal fun String.parentPath(): String = substringBeforeLast('/', missingDelimiterValue = "")

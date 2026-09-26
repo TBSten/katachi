@@ -70,6 +70,15 @@ public class Glob private constructor(
      * captured before any match has happened.
      */
     internal val groupKinds: List<GlobGroupKind>,
+    /**
+     * The segments before the first one holding a wildcard, with their escapes undone: what
+     * any path this pattern matches has to start with, level for level.
+     *
+     * Empty for a rooted pattern (`:feature:*`), which is read from its first level instead
+     * of from the separator in front of it. Lets an index hand a path only the patterns
+     * that could match it without a second parser.
+     */
+    internal val literalPrefix: List<String>,
 ) {
     /**
      * Whether the pattern contains a `*` or a `**`. Such a declaration is optional by nature.
@@ -240,6 +249,7 @@ public class Glob private constructor(
                 segments = segments,
                 regex = Regex(expression.toString()),
                 groupKinds = kinds.toList(),
+                literalPrefix = if (leadingSeparator) emptyList() else literalPrefixOf(segments),
             )
         }
 
@@ -249,6 +259,37 @@ public class Glob private constructor(
         private const val REJECTED: String = "{}?[]"
 
         private const val REGEX_METACHARACTERS: String = "\\.[]{}()*+-?^$|&/<>"
+
+        private fun literalPrefixOf(segments: List<String>): List<String> {
+            val prefix = mutableListOf<String>()
+            for (segment in segments) {
+                prefix += literalOrNull(segment) ?: break
+            }
+            return prefix
+        }
+
+        /** [segment] with its escapes undone, or `null` when it holds a wildcard. */
+        private fun literalOrNull(segment: String): String? {
+            val literal = StringBuilder()
+            var index = 0
+            while (index < segment.length) {
+                val character = segment[index]
+                when (character) {
+                    // `compile` has already rejected a trailing or unknown escape.
+                    '\\' -> {
+                        literal.append(segment[index + 1])
+                        index += 2
+                    }
+
+                    '*' -> return null
+                    else -> {
+                        literal.append(character)
+                        index++
+                    }
+                }
+            }
+            return literal.toString()
+        }
 
         private fun escapeForRegex(character: Char): String =
             if (character in REGEX_METACHARACTERS) "\\$character" else character.toString()
