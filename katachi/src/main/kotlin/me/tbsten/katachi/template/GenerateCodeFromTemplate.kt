@@ -87,7 +87,7 @@ private const val ROLE_NAME_ARG: String = "roleName"
  * processor does not declare, and this module accepts them without asking.
  * ```sh
  * # No registration needed: the Gradle plugin registers it under `template`.
- * ./gradlew :architecture-test:runKatachiProcessor --processor=template \
+ * ./gradlew :architecture-test:katachiTemplate \
  *     --arg roleName=UseCase --arg name=GetUser
  * ```
  *
@@ -176,7 +176,7 @@ public object GenerateCodeFromTemplate : ArchitectureProcessor<GenerateCodeFromT
      *
      * ## Example 2: from the command line
      * ```sh
-     * ./gradlew :architecture-test:runKatachiProcessor --processor=template \
+     * ./gradlew :architecture-test:katachiTemplate \
      *     --arg roleName=domain/UseCase --arg onExisting=skip --arg name=GetUser
      * ```
      *
@@ -222,7 +222,7 @@ public object GenerateCodeFromTemplate : ArchitectureProcessor<GenerateCodeFromT
  * import me.tbsten.katachi.template.GenerateCodeFromTemplate
  * import me.tbsten.katachi.template.OnExisting
  *
- * // ./gradlew runKatachiProcessor --processor=template --arg roleName=UseCase \
+ * // ./gradlew katachiTemplate --arg roleName=UseCase \
  * //   --arg onExisting=overwrite
  * GenerateCodeFromTemplate.Args(roleName = "UseCase", onExisting = OnExisting.Overwrite)
  * ```

@@ -88,7 +88,7 @@ import me.tbsten.katachi.processor.internal.projectWalk
  * }
  * ```
  * ```sh
- * ./gradlew :architecture-test:runKatachiProcessor --processor=layout
+ * ./gradlew :architecture-test:katachiLayout
  * ```
  *
  * It is not registered by default: the test already runs it through `assert()`, and a key of its

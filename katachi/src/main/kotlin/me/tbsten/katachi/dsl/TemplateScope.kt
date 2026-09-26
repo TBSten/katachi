@@ -88,7 +88,7 @@ import me.tbsten.katachi.dsl.internal.TemplateParameterType
  *                 val visibility by enumParameter(default = Visibility.Public)
  *                 val modifier = visibility.name.lowercase()
  *
- *                 // ./gradlew :architecture-test:runKatachiProcessor --processor=template \
+ *                 // ./gradlew :architecture-test:katachiTemplate \
  *                 //   --arg roleName=Repository --arg name=User \
  *                 //   --arg withImpl=false --arg pageSize=50 --arg visibility=Internal
  *                 file("${name}Repository.kt") {
@@ -129,7 +129,7 @@ public sealed interface TemplateScope {
      *     val name by stringParameter()
      *     val implBody by stringParameter(default = """TODO("not implemented")""")
      *
-     *     // ./gradlew runKatachiProcessor --processor=template --arg roleName=UseCase \
+     *     // ./gradlew katachiTemplate --arg roleName=UseCase \
      *     //   --arg name=GetUser
      *     file("${name}UseCase.kt") { "// $implBody" }
      * }

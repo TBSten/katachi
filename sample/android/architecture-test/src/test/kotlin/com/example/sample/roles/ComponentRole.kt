@@ -40,7 +40,7 @@ fun DeclarationContainerScope.component() = "Component" {
     }
     // `file()` names the file only: `component/` comes from the layout above. The preview is
     // wrapped in `PreviewRoot { }` from the start, as the Preview role asks.
-    //   ./gradlew :architecture-test:runKatachiProcessor --processor=template \
+    //   ./gradlew :architecture-test:katachiTemplate \
     //       --arg roleName=Component --arg name=Label
     template {
         val name by stringParameter()

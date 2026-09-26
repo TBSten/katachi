@@ -30,7 +30,7 @@ import me.tbsten.katachi.test.architecture.showsExample
 fun DeclarationContainerScope.docs() = "Docs" {
     title = "ドキュメント生成"
     summary = "宣言から役割リファレンスの Markdown を組み立て、書き出す層"
-    example("GenerateDocumentation.kt", "--processor=docs の入口。組み立てた結果をディスクに置く唯一の場所")
+    example("GenerateDocumentation.kt", "katachiDocs の入口。組み立てた結果をディスクに置く唯一の場所")
     example("RoleReference.kt", "定義1つから、パスと中身の対応を組み立てる入口")
     example("RolePage.kt", "役割1つのページ。節ごとに関数が分かれている")
     example("Placements.kt", "layout のエントリを「配置場所」の表の行に変える")

@@ -19,7 +19,7 @@ import me.tbsten.katachi.processor.ArchitectureProcessorNoArg
  *
  * ## Why it throws inside `runCatching` rather than answering a [Report] that says "missing"
  *
- * `runKatachiProcessor` never learns the shape of a result. A [Report] whose [Report.missing] is
+ * A `katachi<Key>` task never learns the shape of a result. A [Report] whose [Report.missing] is
  * not empty and one whose list is empty look the same to it, so it cannot decide on its own
  * whether a run passed. What it does read is the [Result]: `success` is `[OK]`, `failure` is
  * `[FAILED]` and a non-zero exit. So the body runs inside `runCatching`, a clean definition
@@ -84,7 +84,7 @@ object RoleDocCoverage : ArchitectureProcessorNoArg<RoleDocCoverage.Report> {
      * The answer "not every role is documented", with the [Report] that says which.
      *
      * An [AssertionError] so that `getOrThrow()` in a test reads as a failed assertion, and its
-     * message is [Report.toString] because that is what `runKatachiProcessor` prints under
+     * message is [Report.toString] because that is what `katachiRoleDocCoverage` prints under
      * `[FAILED]`.
      */
     class IncompleteDocumentation(val report: Report) : AssertionError(report.toString())
@@ -92,7 +92,7 @@ object RoleDocCoverage : ArchitectureProcessorNoArg<RoleDocCoverage.Report> {
     /**
      * What [RoleDocCoverage] found: how many roles it looked at, and everything that was missing.
      *
-     * `toString()` is written out because `runKatachiProcessor` prints it -- through the result on
+     * `toString()` is written out because `katachiRoleDocCoverage` prints it -- through the result on
      * `[OK]`, through [IncompleteDocumentation]'s message on `[FAILED]` -- and the generated
      * `toString()` of a data class is the one line a reader least wants at the end of a run.
      */

@@ -7,7 +7,7 @@ import org.gradle.api.InvalidUserDataException;
 import org.gradle.api.file.Directory;
 
 /**
- * What {@code --processor=docs} is given every run, written in {@code build.gradle.kts}.
+ * What {@code katachiDocs} is given every run, written in {@code build.gradle.kts}.
  *
  * <p>Typed rather than a string map, because these arguments are katachi's own and their spelling
  * is part of its public surface: a typo in {@code outputDir} should be a red squiggle in the IDE,

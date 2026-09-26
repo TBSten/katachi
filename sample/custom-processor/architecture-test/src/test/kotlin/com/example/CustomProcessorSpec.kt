@@ -16,12 +16,12 @@ import me.tbsten.katachi.processor.process
 /**
  * The three processors of this sample, called the way a user calls them from a test.
  *
- * `runKatachiProcessor` is one of two doors and the slower one: it starts a JVM, resolves the
+ * A `katachi<Key>` task is one of two doors and the slower one: it starts a JVM, resolves the
  * registry and decodes a command line. `projectArchitecture.process(...)` is the other, and it
  * is what a processor is developed against -- the result comes back typed, so an assertion can
  * read it instead of parsing a printed report.
  *
- * Registering a processor in `build.gradle.kts` is what makes `--processor=<key>` work; it is
+ * Registering a processor in `build.gradle.kts` is what gives it a `katachi<Key>` task; it is
  * not needed for anything in this file.
  */
 @OptIn(ExperimentalKatachiApi::class)
@@ -116,7 +116,7 @@ class CustomProcessorSpec : FreeSpec({
                 RoleDocCoverage.Missing(role = "core/Blank", reason = "summary が無い"),
                 RoleDocCoverage.Missing(role = "core/Blank", reason = "example が1つも無い"),
             )
-            // `runKatachiProcessor` prints the message under `[FAILED]`, so it is the report.
+            // A `katachi<Key>` task prints the message under `[FAILED]`, so it is the report.
             failure.message shouldBe report.toString()
         }
     }

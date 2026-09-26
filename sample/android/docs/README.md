@@ -1,6 +1,6 @@
 # katachi-sample-android ドキュメント
 
-Compose で書かれた Android アプリを、katachi で形から説明したもの。このページ以下はすべて `--processor=docs` が生成したもので、手では書かない。
+Compose で書かれた Android アプリを、katachi で形から説明したもの。このページ以下はすべて `katachiDocs` が生成したもので、手では書かない。
 
 ## Document map
 

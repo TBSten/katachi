@@ -17,7 +17,7 @@ import me.tbsten.katachi.processor.ArchitectureProcessorNoArg
  * other half: it walks the project. The walk happens on the first call and is reused by every
  * later one, so asking once per role still costs one walk.
  *
- * The result is a `List<String>` rather than one joined string because `runKatachiProcessor`
+ * The result is a `List<String>` rather than one joined string because `katachiRoleFileCount`
  * prints a `Collection` one element per line; anything else arrives through `toString()`, which
  * for a list is a single bracketed line. It is always `Result.success`: counting has no answer
  * that would fail the run.

@@ -4,7 +4,10 @@ import me.tbsten.katachi.ExperimentalKatachiApi
 import me.tbsten.katachi.KatachiDeclarationException
 
 /**
- * `--processor=<key>` named a key nothing registered.
+ * The processor key the run was started for names nothing registered.
+ *
+ * Each `katachi<Key>` task of the Gradle plugin passes a key it registered itself, so this is
+ * reached only by a run started some other way.
  *
  * ## Example 1: an unregistered processor key
  * ```kt
@@ -42,8 +45,8 @@ public class KatachiProcessorNotFoundException internal constructor(
         } else {
             appendLine("Registered processors: ${known.sorted().joinToString(", ")}.")
             append(
-                "Pass one of those with --processor, or register \"$key\" in this module's " +
-                    "`katachi { processors { register(...) } }` first.",
+                "Run one of those through its own katachi<Key> task, or register \"$key\" in " +
+                    "this module's `katachi { processors { register(...) } }` first.",
             )
         }
     },
@@ -146,13 +149,14 @@ public class KatachiEntryPointNotFoundException internal constructor(
         appendLine("Could not read the generated entry point $className from the test runtime classpath.")
         appendLine(
             "Either it was never generated -- this class's `INSTANCE` was reached some other " +
-                "way than through the `runKatachiProcessor` task, which is the only thing that " +
-                "runs the `generateKatachiEntryPoint` task first -- or this module's " +
+                "way than through a katachi<Key> task, which is the only thing that runs the " +
+                "`generateKatachiEntryPoint` task first -- or this module's " +
                 "`katachi { architecture = ... }` is not set, in which case the generator " +
                 "writes nothing at all.",
         )
         append(
-            "Run this through `./gradlew runKatachiProcessor`, and check that " +
+            "Run this through the processor's own task (e.g. `./gradlew katachiDocs`), and " +
+                "check that " +
                 "`katachi { architecture = \"com.example.projectArchitecture\" }` is set in " +
                 "this module's build.gradle.kts.",
         )

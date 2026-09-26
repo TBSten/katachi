@@ -5,7 +5,7 @@ import me.tbsten.katachi.KatachiDeclarationException
 /**
  * A role declared `template { }` more than once.
  *
- * A role has one template so that `--processor=template --arg roleName=UseCase` never has to be
+ * A role has one template so that `katachiTemplate --arg roleName=UseCase` never has to be
  * told which of them was meant. A role that really produces several files says so with several
  * `file(...)` calls inside the one template.
  *
@@ -174,7 +174,7 @@ public class KatachiDuplicateTemplateFileException internal constructor(
  * val arch = architecture {
  *     "domain".group { "UseCase" { template { } } }
  * }
- * // Declaring it is fine; `--processor=template --arg roleName=UseCase` is what refuses it.
+ * // Declaring it is fine; `katachiTemplate --arg roleName=UseCase` is what refuses it.
  * arch.allRoles.single().name shouldBe "UseCase"
  * ```
  *

@@ -18,7 +18,7 @@ import me.tbsten.katachi.processor.ArchitectureProcessor
  * Writes the role reference of a definition to disk, as Markdown.
  *
  * Registered under the key `docs`, so a module that applies the Gradle plugin can run
- * `./gradlew runKatachiProcessor --processor=docs` without registering anything.
+ * `./gradlew katachiDocs` without registering anything.
  *
  * ## What it does and does not touch
  *
@@ -74,10 +74,10 @@ import me.tbsten.katachi.processor.ArchitectureProcessor
  * ## Example 3: run it from the command line
  * ```sh
  * # No registration needed: the Gradle plugin registers it under `docs`.
- * ./gradlew :architecture-test:runKatachiProcessor --processor=docs
+ * ./gradlew :architecture-test:katachiDocs
  *
  * # Compare instead of writing, and fail when the pages on disk are out of date.
- * ./gradlew :architecture-test:runKatachiProcessor --processor=docs --arg mode=check
+ * ./gradlew :architecture-test:katachiDocs --arg mode=check
  * ```
  *
  * @see Args
@@ -133,7 +133,7 @@ public object GenerateDocumentation : ArchitectureProcessor<GenerateDocumentatio
      *
      * ## Example 2: from the command line
      * ```sh
-     * ./gradlew :architecture-test:runKatachiProcessor --processor=docs \
+     * ./gradlew :architecture-test:katachiDocs \
      *     --arg outputDir=docs/architecture --arg mode=check
      * ```
      *
@@ -180,7 +180,7 @@ public object GenerateDocumentation : ArchitectureProcessor<GenerateDocumentatio
  * import me.tbsten.katachi.docs.DocumentationMode
  * import me.tbsten.katachi.docs.GenerateDocumentation
  *
- * // ./gradlew runKatachiProcessor --processor=docs --arg mode=check
+ * // ./gradlew katachiDocs --arg mode=check
  * GenerateDocumentation.Args(mode = DocumentationMode.Check)
  * ```
  */
@@ -203,6 +203,6 @@ public enum class DocumentationMode {
  * Where the pages go when `--arg outputDir=` is not given.
  *
  * `docs` is the registry key the plugin registers this processor under, so the path a user sees
- * in `build/` and the word they type after `--processor=` are the same one.
+ * in `build/` and the task they run (`katachiDocs`) name the same thing.
  */
 private const val DEFAULT_OUTPUT_DIR: String = "build/katachi/docs"

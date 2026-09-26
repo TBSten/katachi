@@ -15,7 +15,7 @@ import org.gradle.api.InvalidUserDataException;
  * in every invocation and every CI step.
  *
  * <p>Nothing here knows which processors exist. The key is a string and the arguments are strings,
- * exactly as they arrive over the command line, which is what keeps {@code runKatachiProcessor} a
+ * exactly as they arrive over the command line, which is what keeps {@link KatachiProcessorTask} a
  * task with no processor-specific logic in it. A name that is not one of the processor's arguments
  * is refused where every other unknown argument is, by the processor's own decoding, and names the
  * arguments it does know.

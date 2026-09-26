@@ -31,7 +31,7 @@ fun DeclarationContainerScope.testingGroup() = "testing".group {
         3つの形を1本ずつ受け持ちます。どれも `object` で、katachi 側に継承すべき基底クラスは
         ありません。
 
-        生成物の2つも役割が別です。`docs/` は `--processor=docs` が読む人のために書くもの、
+        生成物の2つも役割が別です。`docs/` は `katachiDocs` が読む人のために書くもの、
         `snapshots/` は `LayoutSnapshotSpec` が katachi 自身のために書くもので、
         更新の仕方も消したときに困る相手も違います。
 

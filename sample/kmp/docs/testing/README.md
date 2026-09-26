@@ -19,7 +19,7 @@ production の source set に置かざるをえないことがあります。`:t
 切られた、アプリ本体から誰も依存しないモジュールです。
 
 GeneratedDocumentation と LayoutSnapshot を ArchitectureDefinition と分けてあるのも
-同じ理由です。定義は人が書き、`docs/` は `--processor=docs` が、`snapshots/` は
+同じ理由です。定義は人が書き、`docs/` は `katachiDocs` が、`snapshots/` は
 `:architecture-test:test` が書く。手を入れてよい場所が逆なので、1つの役割にまとめると
 「どちらを直せばいいのか」が言えなくなります。`build/` の外に置いた生成物にも役割が
 要る、という例にもなっています。

@@ -4,11 +4,11 @@
 
 この定義から書き出され、リポジトリにコミットされる Markdown
 
-`./gradlew :architecture-test:runKatachiProcessor --processor=docs` が、この定義そのものから
+`./gradlew :architecture-test:katachiDocs` が、この定義そのものから
 書き出す Markdown です。出力先は `katachi { processors { docs { outputDir } } }` で
 `sample/kmp/docs` に向けてあります。
 
-これは手で書かない。`--processor=docs` が書く。ここに書き足した文章は次の生成で消えます。
+これは手で書かない。`katachiDocs` が書く。ここに書き足した文章は次の生成で消えます。
 直す場所は常に定義側で、役割や group の `title` `summary` `description` `example` が
 そのままページになります。
 
@@ -21,7 +21,7 @@
 古くなっていないかは CI が `--arg mode=check` で見ています。`mode=check` は何も書かずに
 ディスク上の内容と突き合わせ、食い違えば例外で落ちるので、定義を変えて生成し忘れたまま
 push するとリポジトリルートの `checkSampleKmp` が赤くなります。手元で直すには
-`--processor=docs` をもう一度走らせるだけです（`mode` を付けなければ書き込みです）。
+`katachiDocs` をもう一度走らせるだけです（`mode` を付けなければ書き込みです）。
 
 `documented = true` にしてあります。生成物であっても一覧に出ないと、この `docs/` が
 何なのかがどこにも書かれていないことになるからです。この役割自身のページ

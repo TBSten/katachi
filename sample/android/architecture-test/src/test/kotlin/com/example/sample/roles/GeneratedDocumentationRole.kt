@@ -3,7 +3,7 @@ package com.example.sample.roles
 import me.tbsten.katachi.dsl.DeclarationContainerScope
 
 /**
- * The role of the pages `--processor=docs` writes out of this very definition.
+ * The role of the pages `katachiDocs` writes out of this very definition.
  *
  * The counterpart of [documentation]: that one is prose a person writes and this one is not
  * written by hand at all. They are separate roles rather than one "documents" bucket precisely
@@ -13,11 +13,11 @@ fun DeclarationContainerScope.generatedDocumentation() = "GeneratedDocumentation
     title = "生成ドキュメント"
     summary = "この定義から書き出され、リポジトリにコミットされる Markdown"
     description = """
-        `./gradlew :architecture-test:runKatachiProcessor --processor=docs` が、この定義そのものから
+        `./gradlew :architecture-test:katachiDocs` が、この定義そのものから
         書き出す Markdown。出力先は `katachi { processors { docs { outputDir } } }` で
         `sample/android/docs` に向けてある。
 
-        これは手で書かない。`--processor=docs` が書く。ここに書き足した文章は次の生成で消える。
+        これは手で書かない。`katachiDocs` が書く。ここに書き足した文章は次の生成で消える。
         直す場所は常に定義側で、役割や group の `title` `summary` `description` `example` が
         そのままページになる。
 
@@ -33,7 +33,7 @@ fun DeclarationContainerScope.generatedDocumentation() = "GeneratedDocumentation
         古くなっていないかは CI が `--arg mode=check` で見ている。`mode=check` は何も書かずに
         ディスク上の内容と突き合わせ、食い違えば例外で落ちるので、定義を変えて生成し忘れたまま
         push するとリポジトリルートの `checkSampleAndroid` が赤くなる。手元で直すには
-        `--processor=docs` をもう一度走らせるだけ（`mode` を付けなければ書き込み）。
+        `katachiDocs` をもう一度走らせるだけ（`mode` を付けなければ書き込み）。
 
         `documented = true`。生成物であっても一覧に出ないと、この `docs/` が何なのかが
         どこにも書かれていないことになる。この役割自身のページ

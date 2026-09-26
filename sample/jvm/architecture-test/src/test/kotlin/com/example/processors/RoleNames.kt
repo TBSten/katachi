@@ -3,7 +3,7 @@ package com.example.processors
 // A processor this sample writes itself, registered in `architecture-test/build.gradle.kts`
 // under the key "roleNames". Whether it is written as an `object` (like this one) or as a
 // plain class with a no-argument constructor makes no difference to `katachi { processors {
-// register(...) } }` -- both are instantiated the same way by `runKatachiProcessor`.
+// register(...) } }` -- both are instantiated the same way by their `katachi<Key>` tasks.
 //
 // Its `Args` type is what pulls `alias(libs.plugins.kotlinPluginSerialization)` into this
 // module's `plugins { }`: a processor with no arguments at all -- see sample/android and

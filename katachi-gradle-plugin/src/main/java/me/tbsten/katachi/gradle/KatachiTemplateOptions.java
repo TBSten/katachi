@@ -5,7 +5,7 @@ import java.util.Map;
 import org.gradle.api.InvalidUserDataException;
 
 /**
- * What {@code --processor=template} is given every run, written in {@code build.gradle.kts}.
+ * What {@code katachiTemplate} is given every run, written in {@code build.gradle.kts}.
  *
  * <p>Typed, for the reason {@link KatachiDocsOptions} is: these argument names are katachi's own
  * and part of its public surface, so a typo in {@code onExisting} belongs in the IDE rather than

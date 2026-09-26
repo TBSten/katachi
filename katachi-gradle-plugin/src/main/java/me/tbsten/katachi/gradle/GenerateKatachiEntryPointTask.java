@@ -24,7 +24,7 @@ import org.gradle.work.DisableCachingByDefault;
  * task sits upstream of {@code compileTestKotlin} (see {@link KatachiPlugin}), so failing here
  * would fail {@code check} the moment the plugin is applied, before a user has had any reason to
  * set {@code architecture} at all -- forgetting it is not that expensive a mistake. Instead this
- * task quietly writes nothing, and {@link RunKatachiProcessorTask} is the one that fails, with a
+ * task quietly writes nothing, and {@link KatachiProcessorTask} is the one that fails, with a
  * message pointing at {@code katachi { architecture = ... } }, and only when a user actually
  * asks to run a processor.
  */

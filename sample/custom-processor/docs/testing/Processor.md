@@ -15,7 +15,7 @@ katachi の定義を読んで何かを作る、このプロジェクト自身の
 - `RoleTable` — 型付きの引数。`@Serializable data class Args` を持ち、`--arg` から
   `String` / `List<String>` / `Int` / enum を受ける
 - `RoleDocCoverage` — 検査。`List<Violation>` ではなく自前の `Report` を答えにし、
-  問題があれば `Result.failure` を返して `runKatachiProcessor` を落とす
+  問題があれば `Result.failure` を返して `katachiRoleDocCoverage` を落とす
 
 置いてよいのは `ArchitectureProcessor` の実装と、その引数・結果の型だけです。
 
@@ -26,7 +26,7 @@ katachi の定義を読んで何かを作る、このプロジェクト自身の
 - アプリのコード。processor はビルド時に走るもので、`main()` からは呼ばれません
 
 `architecture-test/build.gradle.kts` の `katachi { processors { register(...) } }` に
-3本とも登録してあり、`--processor=<key>` で選べます。登録を忘れた processor は
+3本とも登録してあり、登録キーごとの `katachi<Key>` タスク（`katachiRoleTable` など）で実行できます。登録を忘れた processor は
 コマンドラインからは呼べませんが、テストから `projectArchitecture.process(...)` で
 呼ぶぶんには登録は要りません。
 

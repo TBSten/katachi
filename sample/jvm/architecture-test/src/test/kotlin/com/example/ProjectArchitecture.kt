@@ -54,7 +54,7 @@ val modulePackage: ModulePackage = capitalizedModuleNamePackage("com.example")
 val projectArchitecture: Architecture = architecture {
     title = "Ktor サンプルアプリ"
     description = "Ktor の小さな HTTP サーバを、katachi で形から説明したもの。" +
-        "このページ以下はすべて `--processor=docs` が生成したもので、手では書かない。"
+        "このページ以下はすべて `katachiDocs` が生成したもので、手では書かない。"
 
     apiGroup()
     domainGroup()

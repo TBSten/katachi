@@ -4,7 +4,7 @@ import kotlin.system.exitProcess
 import me.tbsten.katachi.processor.KatachiEntryPointNotFoundException
 
 /**
- * The entry point the Gradle plugin's `runKatachiProcessor` task starts.
+ * The entry point every `katachi<Key>` task of the Gradle plugin starts.
  *
  * The task is a `JavaExec` and not a `Test`, so no test engine is on the way in: the JVM is
  * started with the applying module's test runtime classpath and this function is the only thing
@@ -19,6 +19,10 @@ import me.tbsten.katachi.processor.KatachiEntryPointNotFoundException
  * 3. [runProcessors] every selected key against that entry point's `architecture`, with the
  *    `--arg` values.
  * 4. Exits with a non-zero status if any processor failed.
+ *
+ * Each `katachi<Key>` task passes exactly one `--processor`: the key it was registered for. The
+ * command line still accepts several, which is what [runProcessors] itself is written for, but
+ * the plugin never sends more than one.
  *
  * The exit happens **after** [runProcessors] has printed its full report, never before: the run's
  * summary is the most useful thing on the screen, and returning a failing exit status first would
@@ -35,7 +39,7 @@ import me.tbsten.katachi.processor.KatachiEntryPointNotFoundException
  * members of a class get their names mangled. So it stays out of the public API, where a user
  * could otherwise call a function that ends their process with `exitProcess`.
  *
- * @param args the command line the `runKatachiProcessor` task passes on. See
+ * @param args the command line a `katachi<Key>` task passes on. See
  *   [parseProcessorCommandLine] for the accepted form.
  */
 internal fun main(args: Array<String>) {

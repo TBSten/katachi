@@ -66,8 +66,8 @@ public interface KatachiEntryPoint {
     public val architecture: Architecture
 
     /**
-     * Every processor the module registered, keyed by the name it is selected with on the
-     * command line (`--processor=<key>`).
+     * Every processor the module registered, keyed by the name its `katachi<Key>` task passes on
+     * the command line (`--processor=<key>`).
      *
      * The value is a raw `Class<*>`, not an `ArchitectureProcessor<*, *>` reference: the
      * generated code only ever names a class literal (`LayoutCheck::class.java`), which compiles

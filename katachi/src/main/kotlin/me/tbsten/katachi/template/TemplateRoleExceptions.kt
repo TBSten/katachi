@@ -125,7 +125,7 @@ public class KatachiNoTemplateException internal constructor(
     message = buildString {
         appendLine("""Role "$role" declared at $declaredAt has no template.""")
         appendLine(
-            "Running a role's template is what --processor=template does, and this role says " +
+            "Running a role's template is what the katachiTemplate task does, and this role says " +
                 "only where its files may live -- so the run would report success having " +
                 "written nothing.",
         )

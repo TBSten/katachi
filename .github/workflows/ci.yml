@@ -94,9 +94,9 @@ jobs:
       - name: Check sample/kmp
         run: ./gradlew checkSampleKmp --stacktrace
 
-      # The processor sample. Its `runKatachiProcessor` run is the only place in CI where a
+      # The processor sample. Its `katachi<Key>` tasks are the only place in CI where a
       # user-written processor is resolved out of the generated registry and run -- three of
-      # them, one of which answers `Result.failure` and therefore decides the task's exit status.
+      # them, one of which answers `Result.failure` and therefore decides its task's exit status.
       - name: Check sample/custom-processor
         run: ./gradlew checkSampleCustomProcessor --stacktrace
 

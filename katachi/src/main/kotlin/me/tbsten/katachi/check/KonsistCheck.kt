@@ -55,7 +55,7 @@ import me.tbsten.katachi.processor.internal.projectWalk
  * }
  * ```
  * ```sh
- * ./gradlew :architecture-test:runKatachiProcessor --processor=konsist
+ * ./gradlew :architecture-test:katachiKonsist
  * ```
  *
  * Like [LayoutCheck], it is not registered by default. The module still needs

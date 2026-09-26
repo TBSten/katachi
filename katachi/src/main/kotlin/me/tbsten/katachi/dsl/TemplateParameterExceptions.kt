@@ -173,7 +173,7 @@ public class KatachiTemplateParameterReusedException internal constructor(
  *         }
  *     }
  * }
- * // `--processor=template --arg roleName=UseCase` with no `--arg name=...` is refused with
+ * // `katachiTemplate --arg roleName=UseCase` with no `--arg name=...` is refused with
  * // `Template of role "UseCase" declared at ProjectArchitecture.kt:5 was run without values
  * // for: name.`
  * arch.allRoles.single().name shouldBe "UseCase"
@@ -228,7 +228,7 @@ public class KatachiMissingTemplateParameterException internal constructor(
  *         }
  *     }
  * }
- * // `--processor=template --arg roleName=Repository --arg name=User --arg withImpl=yes` is
+ * // `katachiTemplate --arg roleName=Repository --arg name=User --arg withImpl=yes` is
  * // refused with `withImpl="yes": withImpl is a booleanParameter() declared at ...
  * // Accepted values: true, false.`
  * arch.allRoles.single().name shouldBe "Repository"

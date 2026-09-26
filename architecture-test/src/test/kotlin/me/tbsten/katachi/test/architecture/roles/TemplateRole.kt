@@ -30,7 +30,7 @@ import me.tbsten.katachi.test.architecture.showsExample
 fun DeclarationContainerScope.template() = "Template" {
     title = "テンプレート生成"
     summary = "役割の template { } を replay して、layout が示す場所へファイルを書き出す層"
-    example("GenerateCodeFromTemplate.kt", "--processor=template の入口。--arg を受け取り、書き出しを起動する")
+    example("GenerateCodeFromTemplate.kt", "katachiTemplate の入口。--arg を受け取り、書き出しを起動する")
     example("TemplateGeneration.kt", "宣言と値から「パスと中身」の対応を組み立てる純粋関数")
     example("TemplatePlacement.kt", "生成したファイル名を layout のパターンと突き合わせ、置き場所を1つに決める")
     example("TemplateOutput.kt", "組み立てた結果をディスクに置く唯一の場所。全部書くか1つも書かないか")

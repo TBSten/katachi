@@ -220,10 +220,13 @@ val sampleBuilds = listOf(
         "jvm",
         listOf(
             "check",
-            "runKatachiProcessor",
-            "--processor=layout,roleNames,docs",
+            // One task per processor. Gradle attaches an option to the task right before it,
+            // so each `--arg` follows the task that takes it.
+            "katachiLayout",
+            "katachiRoleNames",
             "--arg",
             "prefix=domain",
+            "katachiDocs",
             "--arg",
             "mode=check",
         ),
@@ -242,7 +245,7 @@ val sampleBuilds = listOf(
     ),
     SampleBuild(
         "android",
-        listOf("check", "runKatachiProcessor", "--processor=layout,docs", "--arg", "mode=check"),
+        listOf("check", "katachiLayout", "katachiDocs", "--arg", "mode=check"),
         needsAndroidSdk = true,
         template = SampleTemplate(
             args = listOf("roleName=Component", "name=KatachiSmoke"),
@@ -261,8 +264,8 @@ val sampleBuilds = listOf(
         listOf(
             ":architecture-test:test",
             ":app:android:testDebugUnitTest",
-            ":architecture-test:runKatachiProcessor",
-            "--processor=layout,docs",
+            ":architecture-test:katachiLayout",
+            ":architecture-test:katachiDocs",
             "--arg",
             "mode=check",
         ),
@@ -286,12 +289,14 @@ val sampleBuilds = listOf(
         "custom-processor",
         listOf(
             "check",
-            "runKatachiProcessor",
-            "--processor=roleFileCount,roleTable,roleDocCoverage,docs",
+            "katachiRoleFileCount",
+            "katachiRoleTable",
             "--arg",
             "groups=core,testing",
             "--arg",
             "sortBy=Declaration",
+            "katachiRoleDocCoverage",
+            "katachiDocs",
             "--arg",
             "mode=check",
         ),
@@ -417,7 +422,7 @@ sampleBuilds.forEach { sample ->
     // Written just before generating and read by the clean-up: without it, a generation that
     // refused to start because the files were already there would have them deleted anyway.
     val marker = layout.buildDirectory.file("sample-template/${sample.name}.generated").get().asFile
-    val generateArgs = listOf(":architecture-test:runKatachiProcessor", "--processor=template") +
+    val generateArgs = listOf(":architecture-test:katachiTemplate") +
         template.args.flatMap { listOf("--arg", it) }
 
     val deleteTask = tasks.register<Delete>("deleteSample${suffix}Template") {

@@ -19,7 +19,7 @@ import me.tbsten.katachi.processor.internal.withArgs
  * `@ExperimentalKatachiApi` for a concrete reason: the serializer behind the combined
  * arguments only works with katachi's own `StringMapDecoder`, so it is not a serializer in the
  * general sense and would fail against JSON. Composition is for building a run in code; the
- * CLI's `--processor=A,B` takes a different route.
+ * Gradle plugin's one-task-per-processor route (`katachi<Key>`) takes a different path.
  *
  * **Fields of the same name in the two argument types are shared, not rejected.** The same
  * `--arg` value is handed to both halves. That is a deliberate bet that one name means one

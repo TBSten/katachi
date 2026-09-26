@@ -27,7 +27,7 @@ import me.tbsten.katachi.ExperimentalKatachiApi
  *
  * Write the body inside `runCatching { }`, and **when the answer is that the run does not pass,
  * throw inside it.** The exception's message is what a reader of the build log sees:
- * `runKatachiProcessor` reports `[FAILED]` and prints it, and reports `[OK]` with the value
+ * a `katachi<Key>` task reports `[FAILED]` and prints it, and reports `[OK]` with the value
  * otherwise.
  *
  * A check that reports `Violation`s says "I found something" by ending its body with

@@ -146,7 +146,7 @@ public sealed interface RoleScope : MetadataScope, ConstraintScope {
      * Declares how a file of this role is written from scratch. Call it at most once.
      *
      * The block is stored, not evaluated, like [layout]: it is replayed with the values of one
-     * run when `--processor=template` asks it for files. What it names are file names; where
+     * run when `katachiTemplate` asks it for files. What it names are file names; where
      * they land comes from this role's [layout].
      *
      * ## Example 1: declare a template on a role

@@ -1,8 +1,11 @@
 package me.tbsten.katachi.gradle;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
 import java.util.regex.Pattern;
 
 import org.gradle.api.Action;
@@ -10,7 +13,12 @@ import org.gradle.api.InvalidUserDataException;
 
 /**
  * The receiver of {@code katachi { processors { ... } } }: every processor this module
- * registers, keyed by the name it is selected with on the command line.
+ * registers, keyed by the name its Gradle task is derived from.
+ *
+ * <p>Every key gets a task of its own, named {@code katachi} followed by the key with its first
+ * letter upper-cased: {@code register("layout", ...)} adds {@code katachiLayout}. The task is
+ * registered the moment {@link #register} is called, not in {@code afterEvaluate}, so it is
+ * there for the configuration cache and for {@code ./gradlew tasks} alike.
  *
  * <p>Validation happens right here, inside {@link #register}, rather than being deferred to the
  * code generator. This is the only point in the whole path that still knows which line of the
@@ -22,7 +30,7 @@ import org.gradle.api.InvalidUserDataException;
  * <h2>Which processors are there without being registered</h2>
  *
  * <p>{@code docs} and {@code template} are registered for every module this plugin is applied
- * to, so {@code --processor=docs} works with an empty {@code katachi { } } block. They are the
+ * to, so {@code katachiDocs} and {@code katachiTemplate} work with an empty {@code katachi { } } block. They are the
  * only two: {@code layout} and {@code konsist} would have to be defaulted too if the rule were
  * "katachi's own processors", but {@code konsist} lives in {@code :katachi-konsist} and a module
  * that does not depend on it would get a registry entry that fails to resolve at run time.
@@ -81,8 +89,9 @@ public class KatachiProcessors {
     /**
      * Keys may hold letters, digits, underscore and hyphen only.
      *
-     * <p>A comma, space or {@code =} would collide with how {@code --processor=a,b} is split on
-     * the command line, or with {@code --arg=key=value}'s own syntax.
+     * <p>A key becomes part of a Gradle task name, and is handed to katachi's entry point on its
+     * command line; a comma, space or {@code =} would collide with how that command line is
+     * split, or with {@code --arg=key=value}'s own syntax.
      */
     private static final Pattern KEY_PATTERN = Pattern.compile("[A-Za-z0-9_-]+");
 
@@ -103,13 +112,16 @@ public class KatachiProcessors {
     private final Map<String, KatachiProcessorArgs> configuredArgs = new LinkedHashMap<>();
     private final KatachiDocsOptions docs = new KatachiDocsOptions();
     private final KatachiTemplateOptions template = new KatachiTemplateOptions();
+    private final List<Consumer<String>> keyAddedListeners = new ArrayList<>();
 
     /**
-     * Registers a processor to run under {@code --processor=<key>}.
+     * Registers a processor, and the Gradle task that runs it.
      *
-     * @param key the name this processor is selected with on the command line. Letters, digits,
-     *     underscore and hyphen only -- comma, whitespace and {@code =} are refused because they
-     *     collide with how the command line itself is split.
+     * @param key the name the processor's task is derived from: {@code katachi} followed by the
+     *     key with its first letter upper-cased, so {@code "layout"} runs as
+     *     {@code katachiLayout}. Letters, digits, underscore and hyphen only -- comma, whitespace
+     *     and {@code =} are refused because they collide with how katachi's command line is
+     *     split.
      * @param className the processor's fully qualified Kotlin class or object name, e.g.
      *     {@code "me.tbsten.katachi.check.LayoutCheck"}. Refused if it contains {@code $}: that
      *     is the JVM's own spelling of a nested class and cannot be written into the generated
@@ -118,15 +130,16 @@ public class KatachiProcessors {
      * @throws InvalidUserDataException when {@code key} is blank or holds a character other than
      *     a letter, digit, underscore or hyphen; when {@code key} was already registered, naming
      *     the class name it already points at; or when {@code className} is not a dotted
-     *     sequence of Kotlin identifiers.
+     *     sequence of Kotlin identifiers; or when the module already has a task by the name this
+     *     key would give its processor.
      */
     public void register(String key, String className) {
         if (key == null || key.isEmpty() || !KEY_PATTERN.matcher(key).matches()) {
             throw new InvalidUserDataException(
                     "Invalid katachi processor key \"" + key + "\". "
                             + "Keys may hold only letters, digits, underscore and hyphen "
-                            + "(comma, whitespace and \"=\" are refused because "
-                            + "--processor=a,b splits on comma and --arg=key=value splits on "
+                            + "(comma, whitespace and \"=\" are refused because the key "
+                            + "becomes part of a Gradle task name and --arg=key=value splits on "
                             + "\"=\").");
         }
         if (registrations.containsKey(key)) {
@@ -151,7 +164,38 @@ public class KatachiProcessors {
                             + "Expected a fully qualified Kotlin class or object name, e.g. "
                             + "\"me.tbsten.katachi.check.LayoutCheck\".");
         }
+        boolean isNewKey = !DEFAULT_REGISTRATIONS.containsKey(key);
+        if (isNewKey) {
+            // Before the put, so a listener that refuses the key (a task name collision) leaves
+            // the registry as it was.
+            for (Consumer<String> listener : keyAddedListeners) {
+                listener.accept(key);
+            }
+        }
         registrations.put(key, className);
+    }
+
+    /**
+     * Calls {@code listener} with every processor key this module can run: the ones already
+     * known, right away, and every one {@link #register} adds from now on.
+     *
+     * <p>A {@link #register} that replaces a default key ({@code docs}) is not reported again --
+     * the key, and so its task, already exists. Package-private: {@link KatachiPlugin} is the
+     * only reader, and it registers one task per reported key.
+     */
+    void whenKeyAdded(Consumer<String> listener) {
+        for (String key : getRegistrations().keySet()) {
+            listener.accept(key);
+        }
+        keyAddedListeners.add(listener);
+    }
+
+    /**
+     * The name of the task that runs the processor registered as {@code key}: {@code katachi}
+     * followed by {@code key} with its first letter upper-cased.
+     */
+    static String taskNameOf(String key) {
+        return "katachi" + Character.toUpperCase(key.charAt(0)) + key.substring(1);
     }
 
     /**
@@ -159,7 +203,7 @@ public class KatachiProcessors {
      *
      * <p>The arguments are this module's defaults: a {@code --arg} of the same name on the
      * command line wins, so one run can still differ without the build script changing. They are
-     * sent only when {@code key} is actually selected.
+     * sent only when {@code key}'s own task runs.
      *
      * <pre>{@code
      * katachi {
@@ -209,7 +253,7 @@ public class KatachiProcessors {
         configuredArgs.put(key, args);
     }
 
-    /** What `--processor=docs` is given every run. See {@link #docs(Action)}. */
+    /** What {@code katachiDocs} is given every run. See {@link #docs(Action)}. */
     public KatachiDocsOptions getDocs() {
         return docs;
     }
@@ -235,7 +279,7 @@ public class KatachiProcessors {
         action.execute(docs);
     }
 
-    /** What `--processor=template` is given every run. See {@link #template(Action)}. */
+    /** What {@code katachiTemplate} is given every run. See {@link #template(Action)}. */
     public KatachiTemplateOptions getTemplate() {
         return template;
     }

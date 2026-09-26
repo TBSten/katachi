@@ -44,7 +44,7 @@ val modulePackage: ModulePackage = capitalizedModuleNamePackage("com.example")
 val projectArchitecture: Architecture = architecture {
     title = "自作プロセッサのサンプル"
     description = "katachi の定義を読む processor を、利用者が自分で書く方法だけを見せるサンプル。" +
-        "このページ以下はすべて `--processor=docs` が生成したもので、手では書かない。"
+        "このページ以下はすべて `katachiDocs` が生成したもので、手では書かない。"
 
     coreGroup()
     testingGroup()

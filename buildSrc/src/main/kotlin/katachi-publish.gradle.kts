@@ -80,9 +80,9 @@ mavenPublishing {
                         "definition can constrain what a file declares, not just where it lives."
 
                 "katachi-gradle-plugin" ->
-                    "Gradle plugin for katachi. Registers `runKatachiProcessor`, which runs a " +
-                        "katachi processor against the architecture definition on the module's " +
-                        "test runtime classpath."
+                    "Gradle plugin for katachi. Registers one task per katachi processor " +
+                        "(katachiDocs, katachiTemplate, ...), each running it against the " +
+                        "architecture definition on the module's test runtime classpath."
 
                 else ->
                     "Declare your Android/KMP project architecture in a Kotlin DSL and check " +

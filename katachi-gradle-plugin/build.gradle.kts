@@ -39,8 +39,9 @@ gradlePlugin {
             id = "me.tbsten.katachi"
             implementationClass = "me.tbsten.katachi.gradle.KatachiPlugin"
             displayName = "katachi"
-            description = "Registers runKatachiProcessor, which runs a katachi processor on " +
-                    "the architecture definition's own test runtime classpath."
+            description = "Registers one task per katachi processor (katachiDocs, " +
+                    "katachiTemplate, ...), each running it on the architecture definition's " +
+                    "own test runtime classpath."
         }
     }
 }

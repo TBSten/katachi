@@ -46,9 +46,9 @@ public class KatachiMissingEntryPointOptionException internal constructor() :
             appendLine(
                 "It is what tells this run which module's architecture { } to answer for, and " +
                     "the Gradle plugin always passes it -- so a run without it was started by " +
-                    "hand, or by a task that is not runKatachiProcessor.",
+                    "hand, or by a task that is not one of the plugin's katachi<Key> tasks.",
             )
-            append("Start the run with ./gradlew runKatachiProcessor --processor=<key>.")
+            append("Start the run with the processor's own task, e.g. ./gradlew katachiDocs.")
         },
     )
 
@@ -72,7 +72,10 @@ public class KatachiMissingProcessorSelectionException internal constructor() :
                     "them -- would make what runs depend on the order of a build script " +
                     "rather than on what was asked for.",
             )
-            append("Name one, for example: ./gradlew runKatachiProcessor --processor=docs")
+            append(
+                "Start the run with the processor's own task, which passes its key, e.g. " +
+                    "./gradlew katachiDocs.",
+            )
         },
     )
 
