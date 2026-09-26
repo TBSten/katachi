@@ -10,10 +10,13 @@ import me.tbsten.katachi.dsl.Role
 import me.tbsten.katachi.dsl.files.FsPath
 import me.tbsten.katachi.dsl.files.KatachiFileSystem
 import me.tbsten.katachi.dsl.internal.DeclaredFileConstraint
+import me.tbsten.katachi.dsl.internal.FileConstraintCoverage
 import me.tbsten.katachi.dsl.internal.LayoutEvaluation
 import me.tbsten.katachi.dsl.internal.ModuleIndex
 import me.tbsten.katachi.dsl.internal.evaluateLayout
 import me.tbsten.katachi.processor.KatachiUnknownRoleException
+import java.util.Collections
+import java.util.IdentityHashMap
 
 /**
  * One run's worth of reading: the declarations, the single walk of the project, and the
@@ -102,12 +105,26 @@ internal class ProjectWalk(
 
     fun scratch(): MutableMap<Any, Any> = constraintScratch
 
+    // Every constraint of one block shares one coverage instance, so narrowing once per coverage
+    // is narrowing once per block. Keyed by identity -- `FileConstraintCoverage` declares no
+    // `equals` -- and by role too, although one coverage never serves two roles today. It lives
+    // on the walk, so it can never outlive the files it was narrowed from.
+    private val filesByCoverage: MutableMap<FileConstraintCoverage, Pair<Role, List<String>>> =
+        IdentityHashMap()
+
     /**
      * The files [constraint] covers, in walk order: the role's own files narrowed by the
-     * constraint's coverage.
+     * constraint's coverage. Constraints of one block get the same read-only list.
      */
-    fun filesUnder(constraint: DeclaredFileConstraint): List<String> =
-        scan.filesByRole[constraint.role].orEmpty().filter { constraint.coverage.covers(it) }
+    fun filesUnder(constraint: DeclaredFileConstraint): List<String> {
+        val cached = filesByCoverage[constraint.coverage]
+        if (cached != null && cached.first === constraint.role) return cached.second
+        val files = Collections.unmodifiableList(
+            scan.filesByRole[constraint.role].orEmpty().filter { constraint.coverage.covers(it) },
+        )
+        filesByCoverage[constraint.coverage] = constraint.role to files
+        return files
+    }
 
     // Deliberately says nothing about the files: printing a context must not be what starts a
     // walk of the project.
