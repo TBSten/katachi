@@ -21,7 +21,21 @@
 
 </details>
 
-##   
+## 3. 公開範囲（可視性）のチェック
+
+- [ ] public（注釈なし）: {TODO 件数} 件 / 要検討 {TODO} 件
+- [ ] public + `@InternalKatachiApi`: {TODO 件数} 件 / 要検討 {TODO} 件
+- [ ] public + `@ExperimentalKatachiApi`: {TODO 件数} 件 / 要検討 {TODO} 件
+- [ ] 一覧: {TODO file://.local/release-v0.0.0/visibility-check.md の絶対パス}
+
+<details>
+<summary>memo</summary>
+
+{TODO}
+
+</details>
+
+## そのほか
 
 <details>
 <summary>memo</summary>
