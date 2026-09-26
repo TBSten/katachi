@@ -44,7 +44,8 @@ export default defineConfig({
 				// /tags/ に一覧、/tags/<id>/ に各タグのページが出る。定義は tags.yml。
 				starlightTagsPlugin({ sidebar: false }),
 				// 内部リンクが切れていたらビルドを落とす。腐ったリンクを公開しないための歯止め。
-				starlightLinksValidator(),
+				// 相対リンクも許す（public/ のスライドへは ../../slides/... で張っている）。
+				starlightLinksValidator({ errorOnRelativeLinks: false }),
 			],
 			// 長いコードブロックを畳む。手触りの検証中で、しきい値は暫定。
 			expressiveCode: {
@@ -151,7 +152,7 @@ export default defineConfig({
 					label: 'Recipes', translations: { ja: 'レシピ' },
 					items: [
 						{ label: 'All recipes', translations: { ja: '一覧' }, slug: 'recipes' },
-						{ label: 'Android three layers', translations: { ja: 'Android の3層' }, slug: 'recipes/android-three-layer' },
+						{ label: 'Android three layers architecture', translations: { ja: 'Android の3層アーキテクチャ' }, slug: 'recipes/android-three-layer' },
 						{ label: 'Gradle', translations: { ja: 'Gradle' }, slug: 'recipes/gradle' },
 						{ label: 'AI agents', translations: { ja: 'AI Agent' }, slug: 'recipes/ai-agent' },
 						{ label: 'ktlint', translations: { ja: 'ktlint' }, slug: 'recipes/ktlint' },
@@ -174,4 +175,22 @@ export default defineConfig({
 			],
 		}),
 	],
+	vite: {
+		build: {
+			// 500 kB を超えるのは Mermaid の描画コードのチャンク（最大 1.5 MB）。astro-mermaid が
+			// 図のあるページでだけ動的に読むので、ほかのページの読み込みは重くならない。
+			chunkSizeWarningLimit: 2000,
+			rolldownOptions: {
+				// Astro が MDX ごとに差し込む "use astro:head-inject" に、rolldown がページの数だけ
+				// MODULE_LEVEL_DIRECTIVE を出す。Astro の内部の印で、こちらでは直せない。
+				onLog(level, log, handler) {
+					if (log.code === 'MODULE_LEVEL_DIRECTIVE' && log.message.includes('astro:head-inject')) return;
+					handler(level, log);
+				},
+			},
+		},
+	},
+	server: {
+		host: true,
+	},
 });
