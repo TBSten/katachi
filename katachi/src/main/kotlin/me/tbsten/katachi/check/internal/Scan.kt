@@ -12,6 +12,7 @@ import me.tbsten.katachi.dsl.LayoutEntry
 import me.tbsten.katachi.dsl.Role
 import me.tbsten.katachi.dsl.files.FsPath
 import me.tbsten.katachi.dsl.files.KatachiFileSystem
+import me.tbsten.katachi.dsl.files.internal.OutsideProjectDirectories
 import me.tbsten.katachi.dsl.files.internal.findProjectRoot
 import me.tbsten.katachi.dsl.internal.DeclaredFileConstraint
 import me.tbsten.katachi.dsl.internal.evaluateLayout
@@ -103,7 +104,11 @@ internal class ScanResult(
  * `.git/HEAD` belongs to none of the file sets `files` can select, so the search has to run
  * before the selection is applied. The module index is built the same way, because a module
  * whose `build.gradle.kts` a file set happens to leave out is still a module, and a module
- * path key with a wildcard would otherwise quietly expand to nothing.
+ * path key with a wildcard would otherwise quietly expand to nothing. The one thing the search
+ * takes from the selection is which directories it drops wholesale — under `gitTracked()`, a
+ * directory git reports nothing below, such as `node_modules/`. The walk never enters those,
+ * so a module in there could never have a file checked, while a module that is only not
+ * tracked yet is still reported by git and still found.
  *
  * @throws me.tbsten.katachi.dsl.KatachiProjectRootNotFoundException when no directory above
  *   the working directory carries a Gradle, Maven or git marker.
@@ -112,13 +117,18 @@ internal class ScanResult(
  */
 internal fun Architecture.scanProject(fileSystem: KatachiFileSystem): ScanResult {
     val projectRoot = findProjectRoot(fileSystem)
-    val modules = scanModules(fileSystem, projectRoot.path)
+    val selected = files.fileSystemFor(fileSystem, projectRoot)
+    val modules = scanModules(
+        fileSystem = fileSystem,
+        projectRoot = projectRoot.path,
+        skips = if (selected is OutsideProjectDirectories) selected::holdsNothingOfTheProject else { _ -> false },
+    )
     // One evaluation of the layout, read from both sides: the entries drive the walk, the
     // constraints ride along to whichever check evaluates them. Flattening twice would be a
     // second chance for the two to disagree about what a wildcard module key expanded to.
     val evaluation = evaluateLayout(modules.indexWith(moduleResolver))
     return Scan(
-        fileSystem = files.fileSystemFor(fileSystem, projectRoot),
+        fileSystem = selected,
         root = projectRoot.path,
         layout = LayoutIndex(evaluation.entries),
         fileConstraints = evaluation.fileConstraints,

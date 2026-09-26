@@ -65,7 +65,7 @@ internal class GitTrackedFileSystem(
     private val delegate: KatachiFileSystem,
     private val root: FsPath,
     trackedPaths: Collection<String>,
-) : KatachiFileSystem {
+) : KatachiFileSystem, OutsideProjectDirectories {
     private val visibleFiles: Set<FsPath>
     private val visibleDirectories: Set<FsPath>
 
@@ -97,6 +97,11 @@ internal class GitTrackedFileSystem(
     override fun list(directory: FsPath): List<FsPath> =
         delegate.list(directory).filter { !isFiltered(it) || isVisible(it) }
 
+    // A path git printed as one entry — a submodule, a nested repository — sits in
+    // [visibleFiles] rather than [visibleDirectories], and is not outside the project.
+    override fun holdsNothingOfTheProject(directory: FsPath): Boolean =
+        isFiltered(directory) && !isVisible(directory)
+
     override fun toString(): String =
         "GitTrackedFileSystem($root, files=${visibleFiles.size})"
 
@@ -104,6 +109,19 @@ internal class GitTrackedFileSystem(
 
     private fun isVisible(path: FsPath): Boolean =
         path in visibleFiles || path in visibleDirectories
+}
+
+/**
+ * A view of the tree that can tell a directory holds none of the project's files at all.
+ *
+ * The module search runs on the unfiltered tree, so that a module whose build file the view
+ * leaves out is still found. It asks this to skip what the view drops wholesale instead:
+ * `node_modules/` or a site's output under `gitTracked()` can be thousands of directories that
+ * the walk never enters, and no module found in there could ever have a file checked.
+ */
+internal interface OutsideProjectDirectories {
+    /** `true` only when nothing at or below [directory] is visible through this view. */
+    fun holdsNothingOfTheProject(directory: FsPath): Boolean
 }
 
 /** How long to wait for `git ls-files` before giving up. */

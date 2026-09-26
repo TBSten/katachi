@@ -7,6 +7,7 @@ import me.tbsten.katachi.dsl.ModulePath
 import me.tbsten.katachi.dsl.ModuleResolver
 import me.tbsten.katachi.dsl.files.FsPath
 import me.tbsten.katachi.dsl.files.KatachiFileSystem
+import me.tbsten.katachi.dsl.files.internal.OutsideProjectDirectories
 import me.tbsten.katachi.dsl.internal.ModuleIndex
 import me.tbsten.katachi.internal.catching
 
@@ -93,9 +94,19 @@ internal class ModuleScan(
 internal fun ModuleScan.indexWith(resolver: ModuleResolver): ModuleIndex =
     ModuleIndex(resolver = resolver, discovered = modules)
 
-/** [discoverModules], with the directories it could not read kept rather than dropped. */
-internal fun scanModules(fileSystem: KatachiFileSystem, projectRoot: FsPath): ModuleScan {
-    val search = ModuleSearch(fileSystem)
+/**
+ * [discoverModules], with the directories it could not read kept rather than dropped.
+ *
+ * A directory [skips] answers `true` for is left alone together with everything below it, the
+ * same as `build`. The check passes the selected view's
+ * [OutsideProjectDirectories.holdsNothingOfTheProject] here; see [scanProject].
+ */
+internal fun scanModules(
+    fileSystem: KatachiFileSystem,
+    projectRoot: FsPath,
+    skips: (FsPath) -> Boolean = { false },
+): ModuleScan {
+    val search = ModuleSearch(fileSystem, skips)
     search.collect(projectRoot, "", ModulePath.ROOT)
     return ModuleScan(modules = search.modules, unchecked = search.unchecked)
 }
@@ -114,7 +125,10 @@ private val NEVER_WALKED = setOf("build", "buildSrc", "src")
  * answers "which modules are in here" without needing this one, so there is no reason for one
  * unreadable directory to leave the whole project looking module-less.
  */
-private class ModuleSearch(private val fileSystem: KatachiFileSystem) {
+private class ModuleSearch(
+    private val fileSystem: KatachiFileSystem,
+    private val skips: (FsPath) -> Boolean,
+) {
     val modules = mutableListOf<ModulePath>()
 
     val unchecked = mutableListOf<UncheckedDirectory>()
@@ -145,6 +159,8 @@ private class ModuleSearch(private val fileSystem: KatachiFileSystem) {
     private fun visit(child: FsPath, path: String, module: ModulePath) {
         val name = child.name
         if (name.startsWith(".") || name in NEVER_WALKED) return
+        // Before `isDirectory`, so that a skipped child costs no file system call at all.
+        if (skips(child)) return
         if (!fileSystem.isDirectory(child)) return
         // A settings file makes this the root of another build. Its projects are that
         // build's, so neither it nor anything below it is a module here.
