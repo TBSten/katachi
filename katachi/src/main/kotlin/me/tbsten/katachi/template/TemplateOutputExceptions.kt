@@ -12,6 +12,9 @@ import me.tbsten.katachi.internal.fileUri
  * how work gets lost, and there is no undo below a generator. Nothing was written -- not even the
  * files that were free -- so the repository is exactly as it was before the run.
  *
+ * The katachi IDE plugin reads the first line of the message and the indented `file:///` lines
+ * under it to mark the files that are in the way, so keep their shape.
+ *
  * ## Example 1: re-run a template over a file it already produced
  * ```kt
  * import io.kotest.assertions.throwables.shouldThrow

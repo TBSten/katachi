@@ -55,6 +55,9 @@ private class StagedFile(
  * produces, which is right for a directory that is katachi's; here the neighbours of a generated
  * file are the user's own code.
  *
+ * The katachi IDE plugin reads the `Wrote`, `Overwriting` and `Wrote nothing` lines this logs
+ * (with their `file:///` URIs), so their shape is pinned by `TemplateCommandLineOutputSpec`.
+ *
  * @return whether anything was written. `false` only when [OnExisting.Skip] found something.
  */
 internal fun writeTemplateFiles(

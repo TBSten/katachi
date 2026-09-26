@@ -187,7 +187,8 @@ private fun filePreviewOf(
 }
 
 /**
- * Every other value of a Boolean or enum parameter that changes which files are produced.
+ * Every other value of a Boolean or enum parameter that changes which files are produced, or
+ * which parameters are declared -- a parameter inside `if (withImpl) { }` comes and goes with it.
  *
  * One parameter at a time, the rest kept at the preview's values: the combinations of several
  * would grow with every parameter, and one at a time already answers "what does this switch do".
@@ -201,6 +202,7 @@ private fun branchesOf(
     evaluation: TemplateEvaluation,
 ): List<TemplateBranch> {
     val baseFiles = evaluation.files.map { it.fileName }
+    val baseParameters = preview.parameters.map { it.name }
     val branches = mutableListOf<TemplateBranch>()
     for (parameter in preview.parameters) {
         val used = preview.values[parameter.name]
@@ -211,8 +213,19 @@ private fun branchesOf(
                 .getOrNull()?.files?.map { it.fileName } ?: continue
             val added = files - baseFiles.toSet()
             val removed = baseFiles - files.toSet()
-            if (added.isEmpty() && removed.isEmpty()) continue
-            branches += TemplateBranch(parameter.name, value, added, removed)
+            val addedParameters = variant.parameters.filter { it.name !in baseParameters }
+            val removedParameters = baseParameters - variant.parameters.map { it.name }.toSet()
+            if (added.isEmpty() && removed.isEmpty() && addedParameters.isEmpty() && removedParameters.isEmpty()) {
+                continue
+            }
+            branches += TemplateBranch(
+                parameterName = parameter.name,
+                value = value,
+                addedFiles = added,
+                removedFiles = removed,
+                addedParameters = addedParameters.map(::parameterPreviewOf),
+                removedParameters = removedParameters,
+            )
         }
     }
     return branches

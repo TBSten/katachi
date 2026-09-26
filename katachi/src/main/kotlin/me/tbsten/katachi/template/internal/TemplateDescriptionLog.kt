@@ -61,6 +61,12 @@ internal fun templateDetailLines(detail: TemplateDetail): List<String> = buildLi
                 val changes = buildList {
                     if (branch.addedFiles.isNotEmpty()) add("adds ${branch.addedFiles.joinToString(", ")}")
                     if (branch.removedFiles.isNotEmpty()) add("leaves out ${branch.removedFiles.joinToString(", ")}")
+                    if (branch.addedParameters.isNotEmpty()) {
+                        add("adds parameter ${branch.addedParameters.joinToString(", ") { it.name }}")
+                    }
+                    if (branch.removedParameters.isNotEmpty()) {
+                        add("drops parameter ${branch.removedParameters.joinToString(", ")}")
+                    }
                 }
                 add("  --arg ${branch.parameterName}=${branch.value}: ${changes.joinToString("; ")}")
             }

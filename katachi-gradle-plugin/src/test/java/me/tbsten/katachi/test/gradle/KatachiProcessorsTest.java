@@ -1,6 +1,7 @@
 package me.tbsten.katachi.test.gradle;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -61,7 +62,49 @@ class KatachiProcessorsTest {
     }
 
     @Test
-    @DisplayName("既定で登録されるのは docs と template と templates だけ -- layout も konsist も入らない")
+    @DisplayName("何も register しなくても internalTemplatesJson が DescribeTemplates で引ける")
+    void internalTemplatesJsonIsRegisteredByDefault() {
+        Map<String, String> registrations = registrations(new KatachiProcessors());
+
+        assertEquals(DESCRIBE_TEMPLATES, registrations.get("internalTemplatesJson"));
+    }
+
+    @Test
+    @DisplayName("internalTemplatesJson には既定で format=json と output が渡る")
+    void internalTemplatesJsonHasDefaultArgs() {
+        Map<String, String> args = configuredArgs(new KatachiProcessors()).get("internalTemplatesJson");
+
+        Map<String, String> expected = new HashMap<>();
+        expected.put("format", "json");
+        expected.put("output", "build/katachi/internalTemplatesJson/templateDescription.json");
+        assertEquals(expected, args);
+    }
+
+    @Test
+    @DisplayName("args(\"internalTemplatesJson\") { } は既定の引数に名前ごとに重なり、利用者が勝つ")
+    void userArgsWinOverTheDefaultArgsByName() {
+        KatachiProcessors processors = new KatachiProcessors();
+        processors.args("internalTemplatesJson", args -> args.arg("output", "build/elsewhere.json"));
+
+        Map<String, String> args = configuredArgs(processors).get("internalTemplatesJson");
+
+        assertEquals("json", args.get("format"), "the default the user did not touch was lost");
+        assertEquals("build/elsewhere.json", args.get("output"), "the default beat the user's own value");
+    }
+
+    @Test
+    @DisplayName("internalTemplatesJson を別のクラスで register し直すと、既定の引数は付かない")
+    void aReplacedInternalKeyGetsNoDefaultArgs() {
+        KatachiProcessors processors = new KatachiProcessors();
+        processors.register("internalTemplatesJson", "com.example.processors.OurOwnJson");
+
+        assertFalse(
+                configuredArgs(processors).containsKey("internalTemplatesJson"),
+                "katachi's arguments were handed to a processor that is not katachi's");
+    }
+
+    @Test
+    @DisplayName("既定で登録されるのは docs と template と templates と internalTemplatesJson だけ -- layout も konsist も入らない")
     void docsAndTemplateAreTheOnlyDefaults() {
         Map<String, String> registrations = registrations(new KatachiProcessors());
 
@@ -72,6 +115,7 @@ class KatachiProcessorsTest {
         expected.put("docs", GENERATE_DOCUMENTATION);
         expected.put("template", GENERATE_CODE_FROM_TEMPLATE);
         expected.put("templates", DESCRIBE_TEMPLATES);
+        expected.put("internalTemplatesJson", DESCRIBE_TEMPLATES);
         assertEquals(
                 expected,
                 registrations,
@@ -96,8 +140,8 @@ class KatachiProcessorsTest {
         // without giving it a second name.
         processors.register("docs", "com.example.processors.OurOwnDocs");
 
-        // Still the three defaults, with `docs` now pointing at the user's own class.
-        assertEquals(3, registrations(processors).size());
+        // Still the four defaults, with `docs` now pointing at the user's own class.
+        assertEquals(4, registrations(processors).size());
     }
 
     @Test

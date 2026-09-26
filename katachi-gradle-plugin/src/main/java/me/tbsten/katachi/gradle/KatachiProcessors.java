@@ -31,8 +31,9 @@ import org.gradle.api.InvalidUserDataException;
  *
  * <p>{@code docs}, {@code template} and {@code templates} are registered for every module this
  * plugin is applied to, so {@code katachiDocs}, {@code katachiTemplate} and
- * {@code katachiTemplates} work with an empty {@code katachi { } } block. They are the only
- * ones: {@code layout} and {@code konsist} would have to be defaulted too if the rule were
+ * {@code katachiTemplates} work with an empty {@code katachi { } } block. So is
+ * {@code internalTemplatesJson}, which the katachi IDE plugin runs to read the templates as JSON;
+ * its task has no group, since it is not meant to be run by hand. They are the only ones: {@code layout} and {@code konsist} would have to be defaulted too if the rule were
  * "katachi's own processors", but {@code konsist} lives in {@code :katachi-konsist} and a module
  * that does not depend on it would get a registry entry that fails to resolve at run time.
  * Registering only what {@code :katachi} itself carries keeps every default entry resolvable.
@@ -85,7 +86,49 @@ public class KatachiProcessors {
         defaults.put("docs", "me.tbsten.katachi.docs.GenerateDocumentation");
         defaults.put("template", "me.tbsten.katachi.template.GenerateCodeFromTemplate");
         defaults.put("templates", "me.tbsten.katachi.template.DescribeTemplates");
+        defaults.put(INTERNAL_TEMPLATES_JSON_KEY, "me.tbsten.katachi.template.DescribeTemplates");
         return defaults;
+    }
+
+    /** The key the katachi IDE plugin runs, as {@code katachiInternalTemplatesJson}, to list the templates. */
+    static final String INTERNAL_TEMPLATES_JSON_KEY = "internalTemplatesJson";
+
+    /** Where {@code katachiInternalTemplatesJson} writes, relative to the module directory. */
+    static final String INTERNAL_TEMPLATES_JSON_DIR = "build/katachi/internalTemplatesJson";
+
+    /**
+     * The arguments a default registration runs with, by key, while it still points at katachi's
+     * own class.
+     *
+     * <p>The same {@code DescribeTemplates} serves {@code templates} and
+     * {@code internalTemplatesJson}; only these arguments tell the two apart. The processor cannot
+     * pick its own output path, because it does not know the key it was registered under.
+     */
+    private static final Map<String, Map<String, String>> DEFAULT_ARGS = defaultArgs();
+
+    private static Map<String, Map<String, String>> defaultArgs() {
+        Map<String, String> templatesJson = new LinkedHashMap<>();
+        templatesJson.put("format", "json");
+        templatesJson.put("output", INTERNAL_TEMPLATES_JSON_DIR + "/templateDescription.json");
+        Map<String, Map<String, String>> defaults = new LinkedHashMap<>();
+        defaults.put(INTERNAL_TEMPLATES_JSON_KEY, Collections.unmodifiableMap(templatesJson));
+        return Collections.unmodifiableMap(defaults);
+    }
+
+    /**
+     * The description of each internal task while its key still points at katachi's own class.
+     * An internal task gets no group, so that {@code ./gradlew tasks} does not offer it; the
+     * description is for the IDE's Gradle tool window, where it still shows under "other".
+     */
+    private static final Map<String, String> INTERNAL_DESCRIPTIONS = internalDescriptions();
+
+    private static Map<String, String> internalDescriptions() {
+        Map<String, String> descriptions = new LinkedHashMap<>();
+        descriptions.put(
+                INTERNAL_TEMPLATES_JSON_KEY,
+                "Internal: writes the template list as JSON for the katachi IDE plugin. "
+                        + "Not meant to be run by hand.");
+        return Collections.unmodifiableMap(descriptions);
     }
 
     /**
@@ -306,6 +349,13 @@ public class KatachiProcessors {
     KatachiProcessorOutputs resolvedOutputs(String key) {
         KatachiProcessorOutputs base = new KatachiProcessorOutputs(key);
         base.setReadsProjectFiles(true);
+        if (INTERNAL_TEMPLATES_JSON_KEY.equals(key) && isDefaultRegistration(key)) {
+            // DescribeTemplates reads the declarations only, like the documentation processor,
+            // and with format=json writes the one file under this directory.
+            base.setReadsProjectFiles(false);
+            base.setOutputDir(INTERNAL_TEMPLATES_JSON_DIR);
+            base.writesNothingWhen("format", "text");
+        }
         if (KatachiDocsOptions.KEY.equals(key)
                 && DEFAULT_REGISTRATIONS.get(key).equals(getRegistrations().get(key))) {
             // GenerateDocumentation reads the declarations only (ModuleIndex.unresolved, no
@@ -317,6 +367,26 @@ public class KatachiProcessors {
         }
         KatachiProcessorOutputs declared = declaredOutputs.get(key);
         return declared == null ? base : base.overriddenBy(declared);
+    }
+
+    /** Whether {@code key} is registered by default and still points at katachi's own class. */
+    private boolean isDefaultRegistration(String key) {
+        String registered = registrations.get(key);
+        return DEFAULT_REGISTRATIONS.containsKey(key)
+                && (registered == null || registered.equals(DEFAULT_REGISTRATIONS.get(key)));
+    }
+
+    /**
+     * The description of {@code key}'s task when it is one of katachi's internal tasks, which get
+     * no group; {@code null} for every other key, a replaced internal one included.
+     *
+     * <p>Package-private: {@link KatachiPlugin} reads it when it configures the task.
+     */
+    String internalDescriptionOf(String key) {
+        if (!key.startsWith("internal") || !isDefaultRegistration(key)) {
+            return null;
+        }
+        return INTERNAL_DESCRIPTIONS.get(key);
     }
 
     /** What {@code katachiDocs} is given every run. See {@link #docs(Action)}. */
@@ -400,8 +470,20 @@ public class KatachiProcessors {
                 template.toArgs(),
                 template.isConfigured(),
                 "template { }");
+        for (Map.Entry<String, Map<String, String>> entry : DEFAULT_ARGS.entrySet()) {
+            if (isDefaultRegistration(entry.getKey())) {
+                copy.put(entry.getKey(), entry.getValue());
+            }
+        }
         for (Map.Entry<String, KatachiProcessorArgs> entry : configuredArgs.entrySet()) {
-            copy.put(entry.getKey(), entry.getValue().getValues());
+            // Laid over the defaults name by name, so that changing `output` keeps `format=json`.
+            Map<String, String> merged = new LinkedHashMap<>();
+            Map<String, String> defaults = copy.get(entry.getKey());
+            if (defaults != null) {
+                merged.putAll(defaults);
+            }
+            merged.putAll(entry.getValue().getValues());
+            copy.put(entry.getKey(), merged);
         }
         return Collections.unmodifiableMap(copy);
     }

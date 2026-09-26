@@ -25,7 +25,9 @@ import org.gradle.api.tasks.TaskProvider;
  * the key with its first letter upper-cased. {@code docs} and {@code template} are registered by
  * default, so {@code katachiDocs} and {@code katachiTemplate} are always there; a
  * {@code register("layout", ...)} adds {@code katachiLayout}. {@code katachiProcessors} runs
- * several of them in one JVM ({@link KatachiProcessorsTask}). A key whose task name is already
+ * several of them in one JVM ({@link KatachiProcessorsTask}). An internal key such as
+ * {@code internalTemplatesJson}, which the katachi IDE plugin runs, gets its task without a group
+ * so that {@code ./gradlew tasks} does not offer it. A key whose task name is already
  * taken by another task stops the build at that {@code register(...)} line, rather than
  * replacing or shadowing the other task.
  *
@@ -127,13 +129,19 @@ public class KatachiPlugin implements Plugin<Project> {
             }
             keyByTaskName.put(taskName, key);
             project.getTasks().register(taskName, KatachiProcessorTask.class, task -> {
-                task.setGroup(TASK_GROUP);
                 // Read when the task is realized, after the build script has run, so a
                 // `register("docs", ...)` replacing a default is what the description names.
-                task.setDescription(
-                        "Runs the katachi processor " + processors.getRegistrations().get(key)
-                                + " (registered as \"" + key + "\") on the test runtime "
-                                + "classpath of this module. Pass arguments with --arg key=value.");
+                String internalDescription = processors.internalDescriptionOf(key);
+                if (internalDescription == null) {
+                    task.setGroup(TASK_GROUP);
+                    task.setDescription(
+                            "Runs the katachi processor " + processors.getRegistrations().get(key)
+                                    + " (registered as \"" + key + "\") on the test runtime "
+                                    + "classpath of this module. Pass arguments with --arg key=value.");
+                } else {
+                    // No group: `./gradlew tasks` leaves it out, and only `tasks --all` lists it.
+                    task.setDescription(internalDescription);
+                }
                 task.getProcessorKey().set(key);
                 // A convention, not a set: a build script's `withType<KatachiProcessorTask>()
                 // .configureEach { mainClass.set(...) }` runs before this action for a task

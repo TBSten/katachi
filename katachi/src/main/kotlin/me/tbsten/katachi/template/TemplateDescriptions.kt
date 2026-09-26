@@ -1,5 +1,6 @@
 package me.tbsten.katachi.template
 
+import kotlinx.serialization.Serializable
 import me.tbsten.katachi.ExperimentalKatachiApi
 
 /**
@@ -61,6 +62,7 @@ public class TemplateList internal constructor(
  * @see TemplateList
  */
 @ExperimentalKatachiApi
+@Serializable
 public class TemplateSummary internal constructor(
     /** The role's qualified name (`data/Repository`), which `--arg roleName=` accepts. */
     public val roleName: String,
@@ -113,6 +115,7 @@ public class TemplateSummary internal constructor(
  * @see TemplateBranch
  */
 @ExperimentalKatachiApi
+@Serializable
 public class TemplateDetail internal constructor(
     /** The role's qualified name. */
     public val roleName: String,
@@ -124,7 +127,10 @@ public class TemplateDetail internal constructor(
     public val parameters: List<TemplateParameterPreview>,
     /** The files the template produces with the preview's values, in declaration order. */
     public val files: List<TemplateFilePreview>,
-    /** The other Boolean and enum values that change which files are produced. */
+    /**
+     * The other Boolean and enum values that change which files are produced, or which parameters
+     * are declared.
+     */
     public val branches: List<TemplateBranch>,
     /** A `./gradlew katachiTemplate ...` command that generates this template, ready to paste. */
     public val exampleCommand: String,
@@ -148,6 +154,7 @@ public class TemplateDetail internal constructor(
  * @see TemplateDetail
  */
 @ExperimentalKatachiApi
+@Serializable
 public class TemplateParameterPreview internal constructor(
     /** The name, which is also its `--arg` name. */
     public val name: String,
@@ -180,6 +187,7 @@ public class TemplateParameterPreview internal constructor(
  * ```
  */
 @ExperimentalKatachiApi
+@Serializable
 public enum class TemplateParameterKind {
     /** `stringParameter()`. */
     StringParameter,
@@ -203,6 +211,7 @@ public enum class TemplateParameterKind {
  * ```
  */
 @ExperimentalKatachiApi
+@Serializable
 public enum class PreviewValueSource {
     /** A String parameter, filled with `${name}` to show where its value goes. */
     Placeholder,
@@ -225,6 +234,7 @@ public enum class PreviewValueSource {
  * @see TemplateDetail
  */
 @ExperimentalKatachiApi
+@Serializable
 public class TemplateFilePreview internal constructor(
     /** The file name, with the preview's values filled in: `${name}Repository.kt`. */
     public val fileName: String,
@@ -243,9 +253,11 @@ public class TemplateFilePreview internal constructor(
 }
 
 /**
- * Another value of one Boolean or enum parameter, and how it changes the files produced.
+ * Another value of one Boolean or enum parameter, and how it changes the files produced or the
+ * parameters asked for.
  *
- * Found by changing that one parameter and keeping the preview's values for the rest.
+ * Found by changing that one parameter and keeping the preview's values for the rest. A value
+ * that changes neither is not a branch.
  *
  * ## Example 1: what `--arg withImpl=false` leaves out
  * ```kt
@@ -255,6 +267,7 @@ public class TemplateFilePreview internal constructor(
  * @see TemplateDetail
  */
 @ExperimentalKatachiApi
+@Serializable
 public class TemplateBranch internal constructor(
     /** The parameter whose value was changed. */
     public val parameterName: String,
@@ -264,6 +277,13 @@ public class TemplateBranch internal constructor(
     public val addedFiles: List<String>,
     /** File names produced with the preview's value and not with [value]. */
     public val removedFiles: List<String>,
+    /**
+     * Parameters declared with [value] and not with the preview's value, such as one written
+     * inside `if (withImpl) { }`, previewed the way [TemplateDetail.parameters] are.
+     */
+    public val addedParameters: List<TemplateParameterPreview>,
+    /** Names of the parameters declared with the preview's value and not with [value]. */
+    public val removedParameters: List<String>,
 ) {
     override fun toString(): String = "TemplateBranch($parameterName=$value)"
 }
