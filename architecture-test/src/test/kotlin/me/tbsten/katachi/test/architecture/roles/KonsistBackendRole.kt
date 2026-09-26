@@ -10,10 +10,12 @@ import me.tbsten.katachi.dsl.kotlin.ktFile
 import me.tbsten.katachi.konsist.konsist
 import me.tbsten.katachi.test.architecture.INTERNAL_PACKAGE_RULE
 import me.tbsten.katachi.test.architecture.KDOC_EXAMPLE_RULE
+import me.tbsten.katachi.test.architecture.KDOC_TAG_ORDER_RULE
 import me.tbsten.katachi.test.architecture.PACKAGE_MATCHES_PATH_RULE
 import me.tbsten.katachi.test.architecture.mainPackage
 import me.tbsten.katachi.test.architecture.misplacedDeclarationsOf
 import me.tbsten.katachi.test.architecture.publicDeclarationsOf
+import me.tbsten.katachi.test.architecture.keepsBlockTagsLast
 import me.tbsten.katachi.test.architecture.showsExample
 
 /**
@@ -24,19 +26,20 @@ import me.tbsten.katachi.test.architecture.showsExample
  * `konsist` is the last entry of the layer table, so the layers it may not import are none,
  * and a rule with an empty forbidden list can never reject anything. Writing it would add a
  * constraint that is green by construction and says nothing — worse than absent, because it
- * reads as a rule that is being enforced. That is why this file carries three helpers where the
- * nine `library` roles carry four.
+ * reads as a rule that is being enforced. That is why this file carries four helpers where the
+ * `library` roles carry five.
  *
  * What would actually be worth stating here — that the backend touches only katachi's
  * *public* surface — is already enforced by the build: `:katachi-konsist` opts into
  * `@ExperimentalKatachiApi` and deliberately not into `@InternalKatachiApi`, so an internal
  * reach fails to compile. See `katachi-konsist/build.gradle.kts`.
  *
- * The other three rules do apply. This module is published, so its public declarations are a
- * surface a reader meets, and `KDOC_EXAMPLE_RULE` is the same sentence the nine library roles
- * declare. `INTERNAL_PACKAGE_RULE` holds for the same reason: `KonsistScopeImpl` and the rest
- * of the backend's machinery live in `konsist.internal`, and a reader of the public package
- * should meet only what `konsist { }` offers. `PACKAGE_MATCHES_PATH_RULE` applies for the same reason the layer table lists
+ * The other four rules do apply. This module is published, so its public declarations are a
+ * surface a reader meets, and `KDOC_EXAMPLE_RULE` / `KDOC_TAG_ORDER_RULE` are the same two
+ * sentences the `library` roles declare. `INTERNAL_PACKAGE_RULE` holds for the same reason:
+ * `KonsistScopeImpl` and the rest of the backend's machinery live in `konsist.internal`, and a
+ * reader of the public package should meet only what `konsist { }` offers.
+ * `PACKAGE_MATCHES_PATH_RULE` applies for the same reason the layer table lists
  * `konsist` at all: the entry only means something while the files under
  * `me/tbsten/katachi/konsist/` are the ones declaring `package me.tbsten.katachi.konsist`.
  */
@@ -50,6 +53,7 @@ fun DeclarationContainerScope.konsistBackend() = "KonsistBackend" {
             packageMatchesPath()
             internalDeclarationsInInternalPackage()
             publicDeclarationsShowExample()
+            publicDeclarationsKeepTagsLast()
             mainSourceSet / kotlin / mainPackage / "*".ktFile()
             mainSourceSet / kotlin / mainPackage / "internal" / "*".ktFile()
         }
@@ -67,6 +71,11 @@ private fun LayoutScope.packageMatchesPath() =
 private fun LayoutScope.publicDeclarationsShowExample() =
     KDOC_EXAMPLE_RULE.konsist {
         files.flatMap(::publicDeclarationsOf).must(::showsExample)
+    }
+
+private fun LayoutScope.publicDeclarationsKeepTagsLast() =
+    KDOC_TAG_ORDER_RULE.konsist {
+        files.flatMap(::publicDeclarationsOf).must(::keepsBlockTagsLast)
     }
 
 private fun LayoutScope.internalDeclarationsInInternalPackage() =

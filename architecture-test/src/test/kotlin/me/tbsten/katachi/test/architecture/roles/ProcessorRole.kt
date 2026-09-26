@@ -10,12 +10,14 @@ import me.tbsten.katachi.dsl.kotlin.ktFile
 import me.tbsten.katachi.konsist.konsist
 import me.tbsten.katachi.test.architecture.INTERNAL_PACKAGE_RULE
 import me.tbsten.katachi.test.architecture.KDOC_EXAMPLE_RULE
+import me.tbsten.katachi.test.architecture.KDOC_TAG_ORDER_RULE
 import me.tbsten.katachi.test.architecture.PACKAGE_MATCHES_PATH_RULE
 import me.tbsten.katachi.test.architecture.importsLaterLayerThan
 import me.tbsten.katachi.test.architecture.laterLayersOf
 import me.tbsten.katachi.test.architecture.mainPackage
 import me.tbsten.katachi.test.architecture.misplacedDeclarationsOf
 import me.tbsten.katachi.test.architecture.publicDeclarationsOf
+import me.tbsten.katachi.test.architecture.keepsBlockTagsLast
 import me.tbsten.katachi.test.architecture.showsExample
 
 /** The role of the entry point a user implements to turn one walk into whatever they need. */
@@ -33,6 +35,7 @@ fun DeclarationContainerScope.processor() = "Processor" {
             packageMatchesPath()
             internalDeclarationsInInternalPackage()
             publicDeclarationsShowExample()
+            publicDeclarationsKeepTagsLast()
             mainSourceSet / kotlin / mainPackage / "processor" / "*".ktFile()
             mainSourceSet / kotlin / mainPackage / "processor" / "**" / "*".ktFile()
         }
@@ -58,6 +61,11 @@ private fun LayoutScope.packageMatchesPath() =
 private fun LayoutScope.publicDeclarationsShowExample() =
     KDOC_EXAMPLE_RULE.konsist {
         files.flatMap(::publicDeclarationsOf).must(::showsExample)
+    }
+
+private fun LayoutScope.publicDeclarationsKeepTagsLast() =
+    KDOC_TAG_ORDER_RULE.konsist {
+        files.flatMap(::publicDeclarationsOf).must(::keepsBlockTagsLast)
     }
 
 private fun LayoutScope.internalDeclarationsInInternalPackage() =

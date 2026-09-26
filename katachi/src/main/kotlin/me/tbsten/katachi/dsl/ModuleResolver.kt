@@ -5,8 +5,6 @@ import me.tbsten.katachi.KatachiInternalException
 /**
  * A module pattern with no wildcard in it named no module.
  *
- * @property pattern the pattern that was being expanded.
- *
  * ## Example 1: report it instead of treating it as a bad definition
  * ```kt
  * try {
@@ -15,6 +13,8 @@ import me.tbsten.katachi.KatachiInternalException
  *     println("katachi bug, pattern was `${cause.pattern}`. Please report it.")
  * }
  * ```
+ *
+ * @property pattern the pattern that was being expanded.
  */
 public class KatachiUnresolvableModulePatternException internal constructor(
     public val pattern: String,

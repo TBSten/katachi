@@ -64,11 +64,6 @@ public fun interface ModulePackage {
     /**
      * Returns the package directory of [modulePath], relative to that module's own directory.
      *
-     * @param modulePath the Gradle module path of the module being evaluated, such as
-     *   `":core:data"`. The leading `:` may be absent, and `":"` is the root project.
-     * @return a `/` separated directory path, such as `com/example/core/data`. It may not be
-     *   empty and may not hold an empty level.
-     *
      * ## Example 1: Ask a strategy for one module's package directory
      * ```kt
      * import me.tbsten.katachi.dsl.gradle.ModulePackage
@@ -77,6 +72,11 @@ public fun interface ModulePackage {
      *
      * flat.packageDirectoryOf(":core:data") // "com/example/data"
      * ```
+     *
+     * @param modulePath the Gradle module path of the module being evaluated, such as
+     *   `":core:data"`. The leading `:` may be absent, and `":"` is the root project.
+     * @return a `/` separated directory path, such as `com/example/core/data`. It may not be
+     *   empty and may not hold an empty level.
      */
     public fun packageDirectoryOf(modulePath: String): String
 }
@@ -146,10 +146,6 @@ public enum class HyphenFolding {
  * [hyphens] has no default: the usual folding has its own name,
  * [capitalizedModuleNamePackage], and this function is for choosing a different one.
  *
- * @param basePackage the package every module sits under, written either as `com.example` or
- *   as `com/example`. Empty means the module path is the whole package.
- * @param hyphens how a hyphen inside one level is folded away.
- *
  * ## Example 1: Derive one package level per module path segment
  * ```kt
  * import me.tbsten.katachi.dsl.gradle.*
@@ -163,6 +159,10 @@ public enum class HyphenFolding {
  * // :hoge:fuga-piyo -> com/example/hoge/fugapiyo
  * ```
  * @see capitalizedModuleNamePackage
+ *
+ * @param basePackage the package every module sits under, written either as `com.example` or
+ *   as `com/example`. Empty means the module path is the whole package.
+ * @param hyphens how a hyphen inside one level is folded away.
  */
 public fun moduleNamePackage(
     basePackage: String = "",
@@ -188,9 +188,6 @@ public fun moduleNamePackage(
  * // :feature:debug-menu -> com/example/feature/debugMenu
  * ```
  *
- * @param basePackage the package every module sits under, written either as `com.example` or
- *   as `com/example`.
- *
  * ## Example 1: Declare the strategy every module uses
  * ```kt
  * import me.tbsten.katachi.dsl.gradle.*
@@ -202,6 +199,9 @@ public fun moduleNamePackage(
  *     mainSourceSet / kotlin / modulePackage / "*".ktFile()
  * }
  * ```
+ *
+ * @param basePackage the package every module sits under, written either as `com.example` or
+ *   as `com/example`.
  */
 public fun capitalizedModuleNamePackage(basePackage: String = ""): ModulePackage =
     moduleNamePackage(basePackage = basePackage, hyphens = HyphenFolding.Capitalize)
@@ -244,11 +244,6 @@ public class KatachiModulePackageException internal constructor(
 /**
  * Derives the package directory for the module a layout block is being evaluated for.
  *
- * @param modulePath the module being evaluated, or `null` when there is none, which is the
- *   case directly under `layout { }` and inside a plain directory block.
- * @throws KatachiModulePackageException when [modulePath] is `null`, or when the strategy
- *   returned something that is not a directory path.
- *
  * Public so that a project can write its own `.module { }` vocabulary, and
  * [ExperimentalKatachiApi] for the same reason as [currentModulePath].
  *
@@ -270,6 +265,11 @@ public class KatachiModulePackageException internal constructor(
  *     return with(layoutScope) { directory / child }
  * }
  * ```
+ *
+ * @param modulePath the module being evaluated, or `null` when there is none, which is the
+ *   case directly under `layout { }` and inside a plain directory block.
+ * @throws KatachiModulePackageException when [modulePath] is `null`, or when the strategy
+ *   returned something that is not a directory path.
  */
 @ExperimentalKatachiApi
 public fun ModulePackage.resolveFor(modulePath: String?): String {

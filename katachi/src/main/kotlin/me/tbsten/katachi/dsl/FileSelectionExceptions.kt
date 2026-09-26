@@ -8,9 +8,6 @@ import me.tbsten.katachi.internal.fileUri
 /**
  * git could not answer which files belong to the project.
  *
- * @property command the command line that was run.
- * @property root the directory it was run in.
- *
  * ## Example 1: fall back to the whole tree when git is unavailable
  * ```kt
  * try {
@@ -19,6 +16,9 @@ import me.tbsten.katachi.internal.fileUri
  *     println("`${cause.command}` failed in ${cause.root}")
  * }
  * ```
+ *
+ * @property command the command line that was run.
+ * @property root the directory it was run in.
  */
 public class KatachiGitUnavailableException internal constructor(
     public val command: String,
@@ -30,13 +30,13 @@ public class KatachiGitUnavailableException internal constructor(
 /**
  * No project root above the working directory.
  *
- * @property workingDirectory the directory the search started from.
- *
  * ## Example 1: report where the search started
  * ```kt
  * shouldThrow<KatachiProjectRootNotFoundException> { projectArchitecture.assert() }
  *     .workingDirectory.value shouldBe "/repo/app"
  * ```
+ *
+ * @property workingDirectory the directory the search started from.
  */
 public class KatachiProjectRootNotFoundException internal constructor(
     public val workingDirectory: FsPath,

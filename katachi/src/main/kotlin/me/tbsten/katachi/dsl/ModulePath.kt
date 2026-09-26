@@ -113,14 +113,14 @@ public class ModulePath private constructor(
         /**
          * Reads [raw] as a module path, with or without its leading `:`.
          *
-         * @throws KatachiGlobSyntaxException when [raw] is empty, has an empty segment
-         *   (`":core::data"`, `":core:"`), or still holds a `*` — a pattern goes through
-         *   [me.tbsten.katachi.dsl.internal.ModulePattern] instead.
-         *
          * ## Example 1: read a path with or without its leading `:`
          * ```kt
          * ModulePath.of(":core:data") shouldBe ModulePath.of("core:data")
          * ```
+         *
+         * @throws KatachiGlobSyntaxException when [raw] is empty, has an empty segment
+         *   (`":core::data"`, `":core:"`), or still holds a `*` — a pattern goes through
+         *   [me.tbsten.katachi.dsl.internal.ModulePattern] instead.
          */
         public fun of(raw: String): ModulePath {
             if (raw.isEmpty()) throw KatachiGlobSyntaxException(raw, GlobProblem.EmptyModulePath)

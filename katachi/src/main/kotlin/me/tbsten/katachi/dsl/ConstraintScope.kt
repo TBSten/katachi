@@ -37,15 +37,6 @@ public sealed interface ConstraintScope {
      * runs, against the files the one walk of the project found. Building `architecture { }`
      * therefore reads nothing and runs nothing, the same way `layout { }` is deferred.
      *
-     * @param name what to call it, shown in the report next to the role. `null` means it is
-     *   named by its declaration site alone. It must hold at least one non-whitespace
-     *   character and no line break, because it is printed on one line of a report block.
-     * @param declaredAt where to point the report at. The default is the first stack frame
-     *   outside `me.tbsten.katachi.*`, which is the line that called this. **A wrapper of your
-     *   own has to pass its own caller's site**, or every report points at the wrapper.
-     * @param check what to ask of the covered files.
-     * @throws KatachiConstraintNameException when [name] is blank or holds a line break.
-     *
      * ## Example 1: a constraint written by hand, without any backend
      * ```kt
      * "UseCase" {
@@ -65,6 +56,15 @@ public sealed interface ConstraintScope {
      *     layout { "core/domain/useCase" { "*UseCase.kt".file() } }
      * }
      * ```
+     *
+     * @param name what to call it, shown in the report next to the role. `null` means it is
+     *   named by its declaration site alone. It must hold at least one non-whitespace
+     *   character and no line break, because it is printed on one line of a report block.
+     * @param declaredAt where to point the report at. The default is the first stack frame
+     *   outside `me.tbsten.katachi.*`, which is the line that called this. **A wrapper of your
+     *   own has to pass its own caller's site**, or every report points at the wrapper.
+     * @param check what to ask of the covered files.
+     * @throws KatachiConstraintNameException when [name] is blank or holds a line break.
      */
     @ExperimentalKatachiApi
     public fun constraint(

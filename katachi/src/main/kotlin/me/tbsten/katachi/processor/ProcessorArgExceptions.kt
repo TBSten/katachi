@@ -17,11 +17,6 @@ import me.tbsten.katachi.KatachiDeclarationException
  * on the runs whose values take that branch. The message says so when that is possible, since
  * such a key is spelled right and the fix is the value that opens its branch, not the key.
  *
- * @property unknown the `--arg` keys that matched no processor's arguments.
- * @property known every `--arg` key the selected processors do accept.
- * @property knownDependsOnValues whether some of [known] was named by a processor for this run's
- *   values, so that other values could have made an [unknown] key known.
- *
  * ## Example 1: catch a mistyped `--arg` key
  * ```kt
  * object GenerateOne : ArchitectureProcessor<GenerateOne.Args, Unit> {
@@ -44,6 +39,11 @@ import me.tbsten.katachi.KatachiDeclarationException
  * }
  * thrown.known shouldContain "roleName"
  * ```
+ *
+ * @property unknown the `--arg` keys that matched no processor's arguments.
+ * @property known every `--arg` key the selected processors do accept.
+ * @property knownDependsOnValues whether some of [known] was named by a processor for this run's
+ *   values, so that other values could have made an [unknown] key known.
  */
 @ExperimentalKatachiApi
 public class KatachiUnknownProcessorArgException internal constructor(
@@ -84,8 +84,6 @@ public class KatachiUnknownProcessorArgException internal constructor(
  * Wraps [Throwable.cause], the underlying `SerializationException` `decodeFromStringMap`
  * caught, whose own message names the field.
  *
- * @property serialName the argument class's `@Serializable` serial name.
- *
  * ## Example 1: a required field left out of `--arg`
  * ```kt
  * @Serializable
@@ -95,6 +93,8 @@ public class KatachiUnknownProcessorArgException internal constructor(
  *     decodeFromStringMap(Args.serializer(), emptyMap())
  * }
  * ```
+ *
+ * @property serialName the argument class's `@Serializable` serial name.
  */
 @ExperimentalKatachiApi
 public class KatachiInvalidProcessorArgException internal constructor(
@@ -117,9 +117,6 @@ public class KatachiInvalidProcessorArgException internal constructor(
  * A processor's argument type holds a shape `--arg key=value` cannot express: a `Map` field, or
  * a nested `@Serializable` class.
  *
- * @property serialName the serial name of the unsupported structure.
- * @property kind the [kotlinx.serialization.descriptors.SerialKind] that was refused, as text.
- *
  * ## Example 1: a `Map` field is refused rather than half-read
  * ```kt
  * @Serializable
@@ -129,6 +126,9 @@ public class KatachiInvalidProcessorArgException internal constructor(
  *     decodeFromStringMap(Args.serializer(), mapOf("labels" to "a=1"))
  * }
  * ```
+ *
+ * @property serialName the serial name of the unsupported structure.
+ * @property kind the [kotlinx.serialization.descriptors.SerialKind] that was refused, as text.
  */
 @ExperimentalKatachiApi
 public class KatachiUnsupportedProcessorArgException internal constructor(
@@ -153,8 +153,6 @@ public class KatachiUnsupportedProcessorArgException internal constructor(
  * `ProcessorComposition.kt`) was handed to a [kotlinx.serialization.encoding.Decoder] other than
  * katachi's own `StringMapDecoder`.
  *
- * @property decoder the class name of the decoder that was used.
- *
  * ## Example 1: a combined serializer only decodes from `--arg` values
  * ```kt
  * @OptIn(ExperimentalSerializationApi::class)
@@ -168,6 +166,8 @@ public class KatachiUnsupportedProcessorArgException internal constructor(
  *     combined.deserialize(NotAStringMapDecoder)
  * }
  * ```
+ *
+ * @property decoder the class name of the decoder that was used.
  */
 @ExperimentalKatachiApi
 public class KatachiProcessorArgsDecoderException internal constructor(
@@ -190,8 +190,6 @@ public class KatachiProcessorArgsDecoderException internal constructor(
  * An `argsSerializer` combined with `+` (see the `ArchitectureProcessor` combination in
  * `ProcessorComposition.kt`) was asked to encode.
  *
- * @property serialName the combined serializer's serial name.
- *
  * ## Example 1: a combined serializer has nowhere to write values back to
  * ```kt
  * @OptIn(ExperimentalSerializationApi::class)
@@ -204,6 +202,8 @@ public class KatachiProcessorArgsDecoderException internal constructor(
  *     combined.serialize(NoOpEncoder, Unit to Unit)
  * }
  * ```
+ *
+ * @property serialName the combined serializer's serial name.
  */
 @ExperimentalKatachiApi
 public class KatachiProcessorArgsNotEncodableException internal constructor(

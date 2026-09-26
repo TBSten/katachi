@@ -28,6 +28,7 @@ fun DeclarationContainerScope.util() = "Util" {
             packageMatchesPath()
             internalDeclarationsInInternalPackage()
             publicDeclarationsShowExample()
+            publicDeclarationsKeepTagsLast()
             mainSourceSet / kotlin / mainPackage / "util" / "*".ktFile()
             mainSourceSet / kotlin / mainPackage / "util" / "internal" / "*".ktFile()
         }
@@ -53,6 +54,11 @@ private fun LayoutScope.packageMatchesPath() =
 private fun LayoutScope.publicDeclarationsShowExample() =
     KDOC_EXAMPLE_RULE.konsist {
         files.flatMap(::publicDeclarationsOf).must(::showsExample)
+    }
+
+private fun LayoutScope.publicDeclarationsKeepTagsLast() =
+    KDOC_TAG_ORDER_RULE.konsist {
+        files.flatMap(::publicDeclarationsOf).must(::keepsBlockTagsLast)
     }
 
 private fun LayoutScope.internalDeclarationsInInternalPackage() =

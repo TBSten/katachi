@@ -14,11 +14,11 @@ import me.tbsten.katachi.check.internal.validate
  * The whole of adopting katachi: one call, and the report it throws names every file nobody
  * declared, every declared file that is missing, and every constraint that was not satisfied.
  *
- * `KonsistCheck()` is not optional here. The nine roles of the `library` group declare four
- * `konsist { }` each and `backend/KonsistBackend` declares three, and a bare `assert()` evaluates
- * no constraints at all — it would report thirty-nine `[UncheckedConstraint] reason=NotEvaluated`
- * blocks instead of checking the import directions. A project that declares no constraint can
- * leave it out; this one cannot.
+ * `KonsistCheck()` is not optional here. The roles of the `library` group declare five
+ * `konsist { }` each, `KonsistBackend` declares four and `DokkaPlugin` declares one, and a bare
+ * `assert()` evaluates no constraints at all — it would report every one of them as an
+ * `[UncheckedConstraint] reason=NotEvaluated` block instead of checking the import directions. A
+ * project that declares no constraint can leave it out; this one cannot.
  */
 @OptIn(ExperimentalKatachiApi::class, InternalKatachiApi::class)
 class ProjectArchitectureSpec : FreeSpec({

@@ -102,9 +102,6 @@ public class KatachiWildcardsOutsideModuleException internal constructor() :
  * `:feature:hoge:fuga` reads as `["hoge", "fuga"]` and against `:feature` itself as an
  * empty list — take the innermost name with `lastOrNull()`, not `last()`.
  *
- * @throws KatachiWildcardsOutsideModuleException when read outside a `module { }` block,
- *   where there is no module path to have captured anything.
- *
  * ## Example 1: Build a file name from what a wildcard captured
  * ```kt
  * import me.tbsten.katachi.dsl.gradle.*
@@ -115,6 +112,9 @@ public class KatachiWildcardsOutsideModuleException internal constructor() :
  *     "${wildcards[0].pascalCase}Screen".ktFile()
  * }
  * ```
+ *
+ * @throws KatachiWildcardsOutsideModuleException when read outside a `module { }` block,
+ *   where there is no module path to have captured anything.
  */
 context(layoutScope: LayoutScope)
 public val wildcards: List<String>

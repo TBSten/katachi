@@ -20,8 +20,24 @@ import com.lemonappdev.konsist.api.provider.modifier.KoVisibilityModifierProvide
  */
 const val KDOC_EXAMPLE_RULE: String = """public な宣言に "## Example" を含む KDoc があること"""
 
+/**
+ * The name every role declares the block-tag-order rule under.
+ *
+ * Dokka stops rendering a KDoc's body at its first block tag (`@param`, `@property`, `@return`,
+ * `@throws`, `@see`, `@sample`, `@since`, `@featured`, `@llm`, ...) — anything after that,
+ * including a later `## Example`, is folded into the tag section instead of the page body and
+ * renders broken. The repository's own convention (`docs/internal/kotlin/kotlin.md`) is 1行サマリ
+ * → 詳細 → `## Example` → ブロックタグ, in that order, so this rule is what keeps a KDoc from
+ * silently drifting out of an order Dokka can render.
+ */
+const val KDOC_TAG_ORDER_RULE: String =
+    """public な宣言の KDoc で、ブロックタグ（@param 等）より後ろに見出しや本文を置かないこと"""
+
 /** What a KDoc has to hold. The number and the title after it are the example's own. */
 private const val EXAMPLE_HEADING: String = "## Example"
+
+/** How a KDoc line opens a fenced code block, inside which `@` and `#` count for nothing. */
+private const val CODE_FENCE: String = "```"
 
 /**
  * How far up the containing chain the reachability walk goes before it gives up and answers
@@ -63,6 +79,63 @@ fun publicDeclarationsOf(file: KoFileDeclaration): List<KoBaseDeclaration> = fil
 /** Whether [declaration] shows how it is used. Its KDoc is read as text, heading and all. */
 fun showsExample(declaration: KoBaseDeclaration): Boolean =
     kDocOf(declaration)?.contains(EXAMPLE_HEADING) == true
+
+/**
+ * Whether [declaration]'s KDoc keeps every block tag at its end, with nothing but more tags
+ * after the first one.
+ *
+ * `null` (no KDoc at all) is not this rule's business — [KDOC_EXAMPLE_RULE] is what requires a
+ * KDoc to exist, so a missing one is reported there instead of here.
+ */
+fun keepsBlockTagsLast(declaration: KoBaseDeclaration): Boolean =
+    kDocOf(declaration)?.let { hasNothingAfterItsBlockTags(it) } != false
+
+/**
+ * Whether [kDocText] — the whole `/** ... */` block, delimiters included — never resumes prose
+ * or a heading once its first block tag line has started.
+ *
+ * A KDoc is read as the paragraphs a blank ` *` line separates -- the same unit a person edits by
+ * hand: a paragraph starting with `@` is a tag paragraph, and once one has been seen, every later
+ * paragraph must also start with `@`. A fenced code block's lines never start a new paragraph of
+ * their own, so a `@` or `#` written as an example inside one counts for nothing.
+ */
+private fun hasNothingAfterItsBlockTags(kDocText: String): Boolean {
+    val lines = kDocText.lines()
+    val bodyLines = lines.mapIndexed { index, raw ->
+        var line = raw
+        if (index == 0) line = line.substringAfter("/**", line)
+        if (index == lines.lastIndex) line = line.substringBeforeLast("*/", line)
+        val trimmed = line.trim()
+        if (trimmed.startsWith("*")) trimmed.removePrefix("*").trim() else trimmed
+    }
+
+    var inFence = false
+    var paragraphStarted = false
+    var isTagParagraph = false
+    var sawTagParagraph = false
+    for (line in bodyLines) {
+        val trimmed = line.trim()
+        if (trimmed.startsWith(CODE_FENCE)) {
+            inFence = !inFence
+            continue
+        }
+        if (inFence) continue
+        if (trimmed.isEmpty()) {
+            paragraphStarted = false
+            continue
+        }
+        if (!paragraphStarted) {
+            paragraphStarted = true
+            isTagParagraph = trimmed.startsWith("@")
+            if (isTagParagraph) {
+                sawTagParagraph = true
+            } else if (sawTagParagraph) {
+                return false
+            }
+        }
+    }
+    return true
+}
 
 /**
  * The KDoc of [declaration], asked of Konsist first and read off the file when Konsist has none.

@@ -18,7 +18,7 @@ import me.tbsten.katachi.test.architecture.roles.util
  * holds for `check/` and for `template/`. Where the two came apart, the role follows the kind and not
  * the package — see `roles/MarkerRole.kt` and `roles/DslRole.kt`.
  *
- * Each role carries the same four `konsist { }` rules, in the same order.
+ * Each role carries the same five `konsist { }` rules, in the same order.
  *
  * 1. **The layers it may not import.** Together these are what
  *    `katachi/src/test/kotlin/me/tbsten/katachi/test/PackageDependencySpec.kt` used to do by
@@ -31,8 +31,12 @@ import me.tbsten.katachi.test.architecture.roles.util
  *    subtypes of a sealed type that Kotlin keeps next to it.
  * 4. **That every public declaration shows an example** — `KDOC_EXAMPLE_RULE`, the repository's
  *    KDoc convention. See `KdocExamples.kt`.
+ * 5. **That no public declaration's KDoc puts a heading or a paragraph after its block tags** —
+ *    `KDOC_TAG_ORDER_RULE`. Dokka stops rendering a KDoc's body at its first block tag, so
+ *    anything written after one — most often a `## Example` that drifted below its `@param`s —
+ *    renders broken. See `KdocExamples.kt`.
  *
- * ## Why every role file repeats the same four helpers
+ * ## Why every role file repeats the same five helpers
  *
  * `konsist { }` is captured at the first stack frame outside katachi, so one shared helper
  * that wrote the constraint would become the declaration site of all of them, and every

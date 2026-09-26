@@ -13,9 +13,6 @@ private fun nameOf(type: KClass<*>): String = type.qualifiedName ?: type.java.na
 /**
  * A constraint was given a name katachi cannot print on one line.
  *
- * @property name the rejected name, as written, with its line breaks escaped.
- * @property declaredAt where the constraint was written.
- *
  * ## Example 1: catch a constraint name holding a line break
  * ```kt
  * shouldThrow<KatachiConstraintNameException> {
@@ -27,6 +24,9 @@ private fun nameOf(type: KClass<*>): String = type.qualifiedName ?: type.java.na
  *     }
  * }.declaredAt.fileName shouldBe "ProjectArchitecture.kt"
  * ```
+ *
+ * @property name the rejected name, as written, with its line breaks escaped.
+ * @property declaredAt where the constraint was written.
  */
 public class KatachiConstraintNameException internal constructor(
     /**
@@ -75,9 +75,6 @@ public class KatachiConstraintNameException internal constructor(
  * A role whose only layout is a wildcard module key that currently matches nothing is **not**
  * rejected: that is a place waiting to fill up, not a definition that cannot work.
  *
- * @property role the name of the role the constraint was written on.
- * @property declaredAt where the first constraint of that role was written.
- *
  * ## Example 1: catch a constraint that has nothing to be about
  * ```kt
  * shouldThrow<KatachiConstraintWithoutLayoutException> {
@@ -88,6 +85,9 @@ public class KatachiConstraintNameException internal constructor(
  *     }
  * }.role shouldBe "UseCase"
  * ```
+ *
+ * @property role the name of the role the constraint was written on.
+ * @property declaredAt where the first constraint of that role was written.
  */
 public class KatachiConstraintWithoutLayoutException internal constructor(
     /**
@@ -129,10 +129,6 @@ public class KatachiConstraintWithoutLayoutException internal constructor(
 /**
  * Two checks used the same scratch key for different types.
  *
- * @property key the key, as its `toString()` prints it.
- * @property expected the type the reader asked for.
- * @property actual the type the value already stored under that key has.
- *
  * ## Example 1: report it rather than treating it as a failed check
  * ```kt
  * try {
@@ -141,6 +137,10 @@ public class KatachiConstraintWithoutLayoutException internal constructor(
  *     println("scratch key ${cause.key} is used by two checks")
  * }
  * ```
+ *
+ * @property key the key, as its `toString()` prints it.
+ * @property expected the type the reader asked for.
+ * @property actual the type the value already stored under that key has.
  */
 public class KatachiConstraintMemoTypeException internal constructor(
     /**

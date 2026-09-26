@@ -15,8 +15,6 @@ import me.tbsten.katachi.dsl.Role
  * files, which reads exactly like "this role owns nothing" — a wrong answer that no test can
  * tell from a right one.
  *
- * @property role the role that was passed in.
- *
  * ## Example 1: catch a role read off the wrong definition
  * ```kt
  * val one = architecture { "domain".group { "UseCase" { } } }
@@ -26,6 +24,8 @@ import me.tbsten.katachi.dsl.Role
  *     one.process { context -> context.filesOf(other.allRoles.single()) }
  * }.role.qualifiedName shouldBe "domain/UseCase"
  * ```
+ *
+ * @property role the role that was passed in.
  */
 @ExperimentalKatachiApi
 public class KatachiUnknownRoleException internal constructor(
@@ -57,14 +57,14 @@ public class KatachiUnknownRoleException internal constructor(
  * answering with an empty list would say "this project is clean", which is the one wrong answer
  * a green test cannot be told from a right one.
  *
- * @property context the class name of the context that was passed in.
- *
  * ## Example 1: run katachi's checks through a `process` entry point rather than by hand
  * ```kt
  * // Instead of LayoutCheck().process(myOwnContext):
  * val violations = projectArchitecture.process(LayoutCheck()).getOrThrow()
  * violations.map { it.path } shouldBe emptyList()
  * ```
+ *
+ * @property context the class name of the context that was passed in.
  */
 @ExperimentalKatachiApi
 public class KatachiForeignProcessContextException internal constructor(

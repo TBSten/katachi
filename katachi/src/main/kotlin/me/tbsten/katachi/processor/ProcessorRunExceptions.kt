@@ -6,10 +6,6 @@ import me.tbsten.katachi.KatachiDeclarationException
 /**
  * `--processor=<key>` named a key nothing registered.
  *
- * @property key the key that was passed and matched nothing.
- * @property known every key registered in this module's `katachi { processors { register(...) }
- *   }`, sorted.
- *
  * ## Example 1: an unregistered processor key
  * ```kt
  * val thrown = shouldThrow<KatachiProcessorNotFoundException> {
@@ -22,6 +18,10 @@ import me.tbsten.katachi.KatachiDeclarationException
  * }
  * thrown.key shouldBe "layout"
  * ```
+ *
+ * @property key the key that was passed and matched nothing.
+ * @property known every key registered in this module's `katachi { processors { register(...) }
+ *   }`, sorted.
  */
 @ExperimentalKatachiApi
 public class KatachiProcessorNotFoundException internal constructor(
@@ -55,8 +55,6 @@ public class KatachiProcessorNotFoundException internal constructor(
  * [me.tbsten.katachi.processor.internal.instantiateProcessor] looks for a Kotlin `object`'s `INSTANCE` field first, and a no-argument
  * constructor second; this is thrown once both have failed.
  *
- * @property type the registered processor class.
- *
  * ## Example 1: a class with no `INSTANCE` field and no no-argument constructor
  * ```kt
  * class NeedsAnArgument(val prefix: String)
@@ -66,6 +64,8 @@ public class KatachiProcessorNotFoundException internal constructor(
  * }
  * thrown.type shouldBe NeedsAnArgument::class.java
  * ```
+ *
+ * @property type the registered processor class.
  */
 @ExperimentalKatachiApi
 public class KatachiProcessorNotInstantiableException internal constructor(
@@ -98,8 +98,6 @@ public class KatachiProcessorNotInstantiableException internal constructor(
 /**
  * A registered class was instantiated, but it is not an [ArchitectureProcessor].
  *
- * @property type the registered processor class.
- *
  * ## Example 1: a registered class that is not a processor
  * ```kt
  * class NotAProcessor
@@ -109,6 +107,8 @@ public class KatachiProcessorNotInstantiableException internal constructor(
  * }
  * thrown.type shouldBe NotAProcessor::class.java
  * ```
+ *
+ * @property type the registered processor class.
  */
 @ExperimentalKatachiApi
 public class KatachiProcessorTypeException internal constructor(
@@ -127,8 +127,6 @@ public class KatachiProcessorTypeException internal constructor(
 /**
  * The Gradle plugin's generated [me.tbsten.katachi.processor.internal.KatachiEntryPoint] could not be read.
  *
- * @property className the fully qualified name `main()` was handed with `--entry-point`.
- *
  * ## Example 1: an entry point class that was never generated
  * ```kt
  * val thrown = shouldThrow<KatachiEntryPointNotFoundException> {
@@ -136,6 +134,8 @@ public class KatachiProcessorTypeException internal constructor(
  * }
  * thrown.className shouldBe "me.tbsten.katachi.generated.GeneratedKatachiEntryPoint"
  * ```
+ *
+ * @property className the fully qualified name `main()` was handed with `--entry-point`.
  */
 @ExperimentalKatachiApi
 public class KatachiEntryPointNotFoundException internal constructor(

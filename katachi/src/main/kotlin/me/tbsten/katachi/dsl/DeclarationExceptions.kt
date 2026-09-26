@@ -62,16 +62,16 @@ public enum class DeclarationKind(
 /**
  * A group name or a role name is not a valid identifier.
  *
- * @property kind whether the rejected name was a group's or a role's.
- * @property name the rejected name, as written.
- * @property declaredAt where it was written.
- *
  * ## Example 1: catch an invalid name
  * ```kt
  * shouldThrow<KatachiInvalidIdentifierException> {
  *     architecture { "use case".group { } }
  * }.name shouldBe "use case"
  * ```
+ *
+ * @property kind whether the rejected name was a group's or a role's.
+ * @property name the rejected name, as written.
+ * @property declaredAt where it was written.
  */
 public class KatachiInvalidIdentifierException internal constructor(
     public val kind: DeclarationKind,
@@ -92,16 +92,6 @@ public class KatachiInvalidIdentifierException internal constructor(
  * A name was taken twice in one scope: the same group name directly under the same parent,
  * the same role name inside the same group, or a group and a role of the same name declared
  * side by side — groups and roles share one namespace in every container.
- *
- * @property kind whether the rejected declaration was a group's or a role's.
- * @property firstKind whether the declaration that took the name first was a group's or a
- *   role's. It differs from [kind] when a group and a role collided, and telling the two
- *   cases apart is what the last line of the message does.
- * @property name the duplicated name.
- * @property scope where the two declarations collided, such as `the root of architecture { }`
- *   or `group "domain/user"`. It is a value the message is built from, not the message.
- * @property firstDeclaredAt where the name was declared the first time.
- * @property declaredAt where the rejected second declaration was written.
  *
  * ## Example 1: catch a group declared twice under the same parent
  * ```kt
@@ -124,6 +114,16 @@ public class KatachiInvalidIdentifierException internal constructor(
  * thrown.kind shouldBe DeclarationKind.Role
  * thrown.firstKind shouldBe DeclarationKind.Group
  * ```
+ *
+ * @property kind whether the rejected declaration was a group's or a role's.
+ * @property firstKind whether the declaration that took the name first was a group's or a
+ *   role's. It differs from [kind] when a group and a role collided, and telling the two
+ *   cases apart is what the last line of the message does.
+ * @property name the duplicated name.
+ * @property scope where the two declarations collided, such as `the root of architecture { }`
+ *   or `group "domain/user"`. It is a value the message is built from, not the message.
+ * @property firstDeclaredAt where the name was declared the first time.
+ * @property declaredAt where the rejected second declaration was written.
  */
 public class KatachiDuplicateDeclarationException internal constructor(
     public val kind: DeclarationKind,
@@ -154,9 +154,6 @@ public class KatachiDuplicateDeclarationException internal constructor(
 /**
  * A `"...".module { }` key was written somewhere other than directly inside `layout { }`.
  *
- * @property modulePath the module path as it was written, without its `.module { }`.
- * @property declaredAt where it was written.
- *
  * ## Example 1: catch a module key nested inside a directory block
  * ```kt
  * shouldThrow<KatachiModuleOutsideLayoutRootException> {
@@ -165,6 +162,9 @@ public class KatachiDuplicateDeclarationException internal constructor(
  *     }
  * }.modulePath shouldBe ":core:data"
  * ```
+ *
+ * @property modulePath the module path as it was written, without its `.module { }`.
+ * @property declaredAt where it was written.
  */
 public class KatachiModuleOutsideLayoutRootException internal constructor(
     public val modulePath: String,

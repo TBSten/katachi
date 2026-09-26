@@ -23,11 +23,6 @@ import me.tbsten.katachi.konsist.internal.KonsistConstraint
  * `konsist { }` there does not compile: a group holds roles, not files, so there would be no
  * set of files for the block to be about.
  *
- * @param block what to ask of the covered files. See [KonsistScope].
- * @throws me.tbsten.katachi.dsl.KatachiConstraintNameException when the name is blank or holds
- *   a line break — it is printed on one line of a report block.
- * @throws me.tbsten.katachi.dsl.KatachiConstraintWithoutLayoutException when the role it is
- *   written on declares no `layout { }`, so nothing could ever be covered.
  *
  * ## Example 1: one rule, on one module
  * ```kt
@@ -54,6 +49,11 @@ import me.tbsten.katachi.konsist.internal.KonsistConstraint
  * }
  * ```
  *
+ * @param block what to ask of the covered files. See [KonsistScope].
+ * @throws me.tbsten.katachi.dsl.KatachiConstraintNameException when the name is blank or holds
+ *   a line break — it is printed on one line of a report block.
+ * @throws me.tbsten.katachi.dsl.KatachiConstraintWithoutLayoutException when the role it is
+ *   written on declares no `layout { }`, so nothing could ever be covered.
  * @featured
  */
 context(scope: ConstraintScope)
@@ -70,10 +70,6 @@ public fun String.konsist(block: KonsistScope.() -> Unit) {
  * only one constraint in that place; a report that has to say which of three rules failed
  * reads better with a name.
  *
- * @param block what to ask of the covered files. See [KonsistScope].
- * @throws me.tbsten.katachi.dsl.KatachiConstraintWithoutLayoutException when the role it is
- *   written on declares no `layout { }`, so nothing could ever be covered.
- *
  * ## Example 1: the only rule of one directory
  * ```kt
  * "UseCase" {
@@ -85,6 +81,10 @@ public fun String.konsist(block: KonsistScope.() -> Unit) {
  *     }
  * }
  * ```
+ *
+ * @param block what to ask of the covered files. See [KonsistScope].
+ * @throws me.tbsten.katachi.dsl.KatachiConstraintWithoutLayoutException when the role it is
+ *   written on declares no `layout { }`, so nothing could ever be covered.
  */
 context(scope: ConstraintScope)
 public fun konsist(block: KonsistScope.() -> Unit) {

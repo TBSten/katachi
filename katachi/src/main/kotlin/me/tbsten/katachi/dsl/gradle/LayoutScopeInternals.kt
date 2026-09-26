@@ -76,12 +76,6 @@ public val LayoutScope.currentWildcards: List<String>?
  * `"build.gradle".ktsFile()` — before [block] runs, so what this declares is the same
  * declaration a hand written directory block would make.
  *
- * @param modulePath a Gradle module path, possibly holding `*` or `**`.
- * @throws me.tbsten.katachi.dsl.KatachiGlobSyntaxException when the module path cannot be read.
- * @throws me.tbsten.katachi.dsl.KatachiModuleOutsideLayoutRootException when this scope is not
- *   the root of a `layout { }` block: a module path is resolved below the project root, so a
- *   directory around it would quietly be prepended to the answer.
- *
  * ## Example 1: Write your own alias for `.module { }`
  * ```kt
  * import me.tbsten.katachi.ExperimentalKatachiApi
@@ -96,6 +90,12 @@ public val LayoutScope.currentWildcards: List<String>?
  * public fun String.gradleModule(block: LayoutDirectoryScope.() -> Unit): LayoutModule =
  *     layoutScope.expandModulePath(this, block)
  * ```
+ *
+ * @param modulePath a Gradle module path, possibly holding `*` or `**`.
+ * @throws me.tbsten.katachi.dsl.KatachiGlobSyntaxException when the module path cannot be read.
+ * @throws me.tbsten.katachi.dsl.KatachiModuleOutsideLayoutRootException when this scope is not
+ *   the root of a `layout { }` block: a module path is resolved below the project root, so a
+ *   directory around it would quietly be prepended to the answer.
  */
 @ExperimentalKatachiApi
 public fun LayoutScope.expandModulePath(

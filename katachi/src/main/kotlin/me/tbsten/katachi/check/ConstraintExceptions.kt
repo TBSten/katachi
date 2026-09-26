@@ -16,19 +16,19 @@ private const val LISTED_PATHS: Int = 3
  * run would look like a rule that holds. So katachi refuses the whole answer instead, and the
  * constraint is reported as one nothing is known about.
  *
- * @property role the qualified name of the role whose layout the constraint was written in.
- * @property constraintName what the constraint was called, or `null`.
- * @property declaredAt where the constraint was written.
- * @property outside the paths that were answered about but never handed over.
- * @param projectRoot what the message resolves [outside] against to print `file:///...` URIs.
- *   `null` prints them as they are.
- *
  * ## Example 1: catch a backend that answered about the wrong files
  * ```kt
  * projectArchitecture.validate(KonsistCheck())
  *     .filterIsInstance<UncheckedConstraint>()
  *     .single().cause.shouldBeInstanceOf<KatachiConstraintSubjectException>()
  * ```
+ *
+ * @property role the qualified name of the role whose layout the constraint was written in.
+ * @property constraintName what the constraint was called, or `null`.
+ * @property declaredAt where the constraint was written.
+ * @property outside the paths that were answered about but never handed over.
+ * @param projectRoot what the message resolves [outside] against to print `file:///...` URIs.
+ *   `null` prints them as they are.
  */
 public class KatachiConstraintSubjectException internal constructor(
     /**

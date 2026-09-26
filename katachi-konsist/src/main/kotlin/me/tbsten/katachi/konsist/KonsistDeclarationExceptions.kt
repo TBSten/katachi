@@ -15,16 +15,16 @@ private fun namedConstraint(constraintName: String?, declaredAt: DeclarationSite
  * indistinguishable from a rule everything satisfies. Since this backend can count its own
  * expectations, it says so instead of returning a green answer nobody asked for.
  *
- * @property role the qualified name of the role whose layout the constraint was written in.
- * @property constraintName what the constraint was called, or `null`.
- * @property declaredAt where the constraint was written.
- *
  * ## Example 1: catch a block that forgot to say what it wants
  * ```kt
  * projectArchitecture.validate(KonsistCheck())
  *     .filterIsInstance<UncheckedConstraint>()
  *     .single().cause.shouldBeInstanceOf<KatachiKonsistNoExpectationException>()
  * ```
+ *
+ * @property role the qualified name of the role whose layout the constraint was written in.
+ * @property constraintName what the constraint was called, or `null`.
+ * @property declaredAt where the constraint was written.
  */
 public class KatachiKonsistNoExpectationException internal constructor(
     /**
@@ -81,17 +81,17 @@ public class KatachiKonsistNoExpectationException internal constructor(
  * A constraint covering **no** files at all is a different thing and is not an error: that is
  * a place waiting to fill up, and the layout check already treats it as normal.
  *
- * @property role the qualified name of the role whose layout the constraint was written in.
- * @property constraintName what the constraint was called, or `null`.
- * @property declaredAt where the constraint was written.
- * @property given how many files the constraint covered.
- *
  * ## Example 1: catch a rule written over files Konsist cannot read
  * ```kt
  * projectArchitecture.validate(KonsistCheck())
  *     .filterIsInstance<UncheckedConstraint>()
  *     .single().cause.shouldBeInstanceOf<KatachiKonsistNoKotlinFilesException>()
  * ```
+ *
+ * @property role the qualified name of the role whose layout the constraint was written in.
+ * @property constraintName what the constraint was called, or `null`.
+ * @property declaredAt where the constraint was written.
+ * @property given how many files the constraint covered.
  */
 public class KatachiKonsistNoKotlinFilesException internal constructor(
     /**
@@ -158,14 +158,14 @@ public class KatachiKonsistNoKotlinFilesException internal constructor(
  * report block here opens with a real path — so the constraint is reported as unanswered
  * rather than as a failure it cannot describe.
  *
- * @property spelling the assertion that ran, or the exception type when Konsist threw it.
- *
  * ## Example 1: catch a suppressed `assertTrue`
  * ```kt
  * projectArchitecture.validate(KonsistCheck())
  *     .filterIsInstance<UncheckedConstraint>()
  *     .single().cause.shouldBeInstanceOf<KatachiKonsistDirectAssertionException>()
  * ```
+ *
+ * @property spelling the assertion that ran, or the exception type when Konsist threw it.
  */
 public class KatachiKonsistDirectAssertionException internal constructor(
     /**
@@ -200,14 +200,14 @@ public class KatachiKonsistDirectAssertionException internal constructor(
  * `KoPathProvider`; one that does not could only be reported as a violation with no path,
  * which the report format does not have a shape for.
  *
- * @property declaration the simple type name of the element that could not be located.
- *
  * ## Example 1: catch a rejection katachi could not point at a file
  * ```kt
  * projectArchitecture.validate(KonsistCheck())
  *     .filterIsInstance<UncheckedConstraint>()
  *     .single().cause.shouldBeInstanceOf<KatachiKonsistUnlocatableDeclarationException>()
  * ```
+ *
+ * @property declaration the simple type name of the element that could not be located.
  */
 public class KatachiKonsistUnlocatableDeclarationException internal constructor(
     /**

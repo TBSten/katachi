@@ -5,8 +5,6 @@ import me.tbsten.katachi.KatachiInternalException
 /**
  * A layout scope reached the Gradle vocabulary without implementing [ModuleAwareLayoutScope].
  *
- * @property actualType the simple name of the class that turned up instead.
- *
  * ## Example 1: report it instead of treating it as a bad definition
  * ```kt
  * try {
@@ -15,6 +13,8 @@ import me.tbsten.katachi.KatachiInternalException
  *     println("katachi bug, scope was ${cause.actualType}. Please report it.")
  * }
  * ```
+ *
+ * @property actualType the simple name of the class that turned up instead.
  */
 public class KatachiUnsupportedLayoutScopeException internal constructor(
     public val actualType: String,
@@ -29,8 +29,6 @@ public class KatachiUnsupportedLayoutScopeException internal constructor(
 /**
  * A layout key was split into no level at all, so there is no node to hang the declaration on.
  *
- * @property key the layout key as it was written.
- *
  * ## Example 1: report it instead of treating it as a bad definition
  * ```kt
  * try {
@@ -39,6 +37,8 @@ public class KatachiUnsupportedLayoutScopeException internal constructor(
  *     println("katachi bug, key was `${cause.key}`. Please report it.")
  * }
  * ```
+ *
+ * @property key the layout key as it was written.
  */
 public class KatachiEmptyLayoutChainException internal constructor(
     public val key: String,

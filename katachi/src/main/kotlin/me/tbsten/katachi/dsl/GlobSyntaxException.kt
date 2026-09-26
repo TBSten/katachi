@@ -10,8 +10,6 @@ import me.tbsten.katachi.dsl.internal.GlobProblem
  * The wording is `problem`'s, and `context` adds where the pattern was written when that is
  * known. Both are internal bookkeeping; [pattern] is the part a caller can rely on.
  *
- * @property pattern the pattern as it was written.
- *
  * ## Example 1: catch a broken pattern and read back what was written
  * ```kt
  * shouldThrow<KatachiGlobSyntaxException> { ModulePath.of("") }
@@ -23,6 +21,8 @@ import me.tbsten.katachi.dsl.internal.GlobProblem
  * shouldThrow<KatachiGlobSyntaxException> { ModulePath.of("") }
  *     .message.shouldNotBeNull() shouldContain "must not be empty"
  * ```
+ *
+ * @property pattern the pattern as it was written.
  */
 public class KatachiGlobSyntaxException internal constructor(
     public val pattern: String,

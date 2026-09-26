@@ -98,9 +98,12 @@ val testPackage: ModulePackage = ModulePackage { modulePath ->
  * reading the sources as text; it is a rule about imports, which is Konsist's job.
  * See `LayerImports.kt`.
  *
- * A third `konsist { }` on each of those roles, and two on `backend/KonsistBackend`, ask the
- * repository's KDoc convention of every public declaration — see `KdocExamples.kt`. It is
- * deliberately not asked of `sample/`, of this definition, or of test code.
+ * A third and a fourth `konsist { }` on each of those roles — two on `backend/KonsistBackend`,
+ * and one alone on `tool/DokkaPlugin` — ask the repository's KDoc convention of every public
+ * declaration: that it shows a `## Example` (`KDOC_EXAMPLE_RULE`), and that nothing sits after
+ * its block tags, where Dokka would stop rendering it (`KDOC_TAG_ORDER_RULE`) — see
+ * `KdocExamples.kt`. It is deliberately not asked of `sample/`, of this definition, or of test
+ * code.
  */
 val projectArchitecture: Architecture = architecture {
     libraryGroup()

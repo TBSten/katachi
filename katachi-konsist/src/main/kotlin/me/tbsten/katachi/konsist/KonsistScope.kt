@@ -64,8 +64,6 @@ public interface KonsistScope : KoScope {
      * There is no `Sequence` overload. Konsist's sequence queries end with `.toList()`, and a
      * constraint has to hold every rejection at once anyway to report them in walk order.
      *
-     * @param predicate what has to hold. `true` keeps the element, `false` rejects it.
-     *
      * ## Example 1: every use case exposes `invoke`
      * ```kt
      * "has an invoke function".konsist {
@@ -80,6 +78,8 @@ public interface KonsistScope : KoScope {
      *     functions().must { it.hasPublicOrDefaultModifier }
      * }
      * ```
+     *
+     * @param predicate what has to hold. `true` keeps the element, `false` rejects it.
      */
     public fun <T : KoBaseProvider> List<T>.must(predicate: (T) -> Boolean)
 
@@ -89,14 +89,14 @@ public interface KonsistScope : KoScope {
      * The exact inverse of [must], written separately because `must { !it.hasX }` reads as a
      * double negative at the call site and the report cannot tell the two apart.
      *
-     * @param predicate what must not hold. `true` rejects the element, `false` keeps it.
-     *
      * ## Example 1: no use case depends on the Android framework
      * ```kt
      * "does not depend on Android".konsist {
      *     files.mustNot { file -> file.imports.any { it.name.startsWith("android.") } }
      * }
      * ```
+     *
+     * @param predicate what must not hold. `true` rejects the element, `false` keeps it.
      */
     public fun <T : KoBaseProvider> List<T>.mustNot(predicate: (T) -> Boolean)
 

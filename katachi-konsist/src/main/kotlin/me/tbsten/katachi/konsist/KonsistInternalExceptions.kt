@@ -14,15 +14,15 @@ import me.tbsten.katachi.KatachiInternalException
  * **This is katachi's bug, not the caller's.** Nothing a definition can say causes it, which
  * is why the base is [KatachiInternalException] and why the message asks for a report.
  *
- * @property given how many files katachi asked Konsist for.
- * @property visible how many of them came back in the sliced scope.
- *
  * ## Example 1: recognise it as a katachi bug rather than a failed rule
  * ```kt
  * projectArchitecture.validate(KonsistCheck())
  *     .filterIsInstance<UncheckedConstraint>()
  *     .single().cause.shouldBeInstanceOf<KatachiKonsistScopeIncompleteException>()
  * ```
+ *
+ * @property given how many files katachi asked Konsist for.
+ * @property visible how many of them came back in the sliced scope.
  */
 public class KatachiKonsistScopeIncompleteException internal constructor(
     /**

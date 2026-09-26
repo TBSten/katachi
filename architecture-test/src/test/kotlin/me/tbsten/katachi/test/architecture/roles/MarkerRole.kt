@@ -10,12 +10,14 @@ import me.tbsten.katachi.dsl.kotlin.ktFile
 import me.tbsten.katachi.konsist.konsist
 import me.tbsten.katachi.test.architecture.INTERNAL_PACKAGE_RULE
 import me.tbsten.katachi.test.architecture.KDOC_EXAMPLE_RULE
+import me.tbsten.katachi.test.architecture.KDOC_TAG_ORDER_RULE
 import me.tbsten.katachi.test.architecture.PACKAGE_MATCHES_PATH_RULE
 import me.tbsten.katachi.test.architecture.importsLaterLayerThan
 import me.tbsten.katachi.test.architecture.laterLayersOf
 import me.tbsten.katachi.test.architecture.mainPackage
 import me.tbsten.katachi.test.architecture.misplacedDeclarationsOf
 import me.tbsten.katachi.test.architecture.publicDeclarationsOf
+import me.tbsten.katachi.test.architecture.keepsBlockTagsLast
 import me.tbsten.katachi.test.architecture.showsExample
 
 /**
@@ -38,6 +40,7 @@ fun DeclarationContainerScope.marker() = "Marker" {
             packageMatchesPath()
             internalDeclarationsInInternalPackage()
             publicDeclarationsShowExample()
+            publicDeclarationsKeepTagsLast()
             // The root package, and only it: `*` never crosses a `/`, so the layer
             // directories one level down are untouched by this.
             mainSourceSet / kotlin / mainPackage / "*".ktFile()
@@ -49,7 +52,7 @@ fun DeclarationContainerScope.marker() = "Marker" {
 /** The empty name is the root package itself, the first entry of the layer table. */
 private const val LAYER: String = ""
 
-// The four rules are written here, in the role's own file, rather than in a shared one:
+// The five rules are written here, in the role's own file, rather than in a shared one:
 // `konsist { }` captures the first frame outside katachi as its declaration site, so a shared
 // wrapper would make every layer role report this same line. Private per file, the report keeps
 // naming the role that owns the rule.
@@ -66,6 +69,11 @@ private fun LayoutScope.packageMatchesPath() =
 private fun LayoutScope.publicDeclarationsShowExample() =
     KDOC_EXAMPLE_RULE.konsist {
         files.flatMap(::publicDeclarationsOf).must(::showsExample)
+    }
+
+private fun LayoutScope.publicDeclarationsKeepTagsLast() =
+    KDOC_TAG_ORDER_RULE.konsist {
+        files.flatMap(::publicDeclarationsOf).must(::keepsBlockTagsLast)
     }
 
 private fun LayoutScope.internalDeclarationsInInternalPackage() =

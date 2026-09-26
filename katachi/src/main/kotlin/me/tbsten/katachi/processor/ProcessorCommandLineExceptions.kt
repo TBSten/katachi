@@ -6,14 +6,14 @@ import me.tbsten.katachi.KatachiDeclarationException
 /**
  * `--entry-point` was passed more than once.
  *
- * @property argument the second `--entry-point` token, as it was written.
- *
  * ## Example 1: catch a command line that names two entry points
  * ```kt
  * shouldThrow<KatachiDuplicateEntryPointOptionException> {
  *     main(arrayOf("--entry-point=a.B", "--entry-point=c.D", "--processor=layout"))
  * }
  * ```
+ *
+ * @property argument the second `--entry-point` token, as it was written.
  */
 @ExperimentalKatachiApi
 public class KatachiDuplicateEntryPointOptionException internal constructor(
@@ -79,14 +79,14 @@ public class KatachiMissingProcessorSelectionException internal constructor() :
 /**
  * A token on the command line is none of the three katachi reads.
  *
- * @property argument the token, as it was written.
- *
  * ## Example 1: catch a misspelled option
  * ```kt
  * shouldThrow<KatachiUnknownProcessorOptionException> {
  *     main(arrayOf("--entry-point=com.example.GeneratedKatachiEntryPoint", "--processors=docs"))
  * }
  * ```
+ *
+ * @property argument the token, as it was written.
  */
 @ExperimentalKatachiApi
 public class KatachiUnknownProcessorOptionException internal constructor(
@@ -110,8 +110,6 @@ public class KatachiUnknownProcessorOptionException internal constructor(
  *
  * Covers both halves of the same mistake: no `=` at all, and an empty key before it.
  *
- * @property argument the `--arg` token, as it was written.
- *
  * ## Example 1: catch an --arg with nothing to split on
  * ```kt
  * shouldThrow<KatachiInvalidProcessorArgOptionException> {
@@ -124,6 +122,8 @@ public class KatachiUnknownProcessorOptionException internal constructor(
  *     )
  * }
  * ```
+ *
+ * @property argument the `--arg` token, as it was written.
  */
 @ExperimentalKatachiApi
 public class KatachiInvalidProcessorArgOptionException internal constructor(
@@ -143,9 +143,6 @@ public class KatachiInvalidProcessorArgOptionException internal constructor(
 /**
  * The same `--arg` key was passed twice.
  *
- * @property key the argument name that was given twice.
- * @property argument the second `--arg` token, as it was written.
- *
  * ## Example 1: catch a key passed twice
  * ```kt
  * shouldThrow<KatachiDuplicateProcessorArgException> {
@@ -159,6 +156,9 @@ public class KatachiInvalidProcessorArgOptionException internal constructor(
  *     )
  * }
  * ```
+ *
+ * @property key the argument name that was given twice.
+ * @property argument the second `--arg` token, as it was written.
  */
 @ExperimentalKatachiApi
 public class KatachiDuplicateProcessorArgException internal constructor(
