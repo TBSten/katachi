@@ -50,8 +50,9 @@ class FeaturedSidebarSpec : FreeSpec({
             }
         }
 
-        "Featured の後ろには Dokka の元のパッケージが続く" {
-            module.children.drop(1).map { it.name } shouldContainExactly listOf("sample", "sample.dsl")
+        "Featured の後ろには、名前の階層に並べ直したパッケージが続く" {
+            module.children.drop(1).map { it.name } shouldContainExactly listOf("sample")
+            module.children.drop(1).single().children.first().name shouldBe "dsl"
         }
     }
 

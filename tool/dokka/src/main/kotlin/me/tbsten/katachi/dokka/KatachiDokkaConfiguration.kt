@@ -1,5 +1,6 @@
 package me.tbsten.katachi.dokka
 
+import me.tbsten.katachi.dokka.navigation.PackageNavigation
 import org.jetbrains.dokka.plugability.ConfigurableBlock
 import org.jetbrains.dokka.plugability.DokkaContext
 import org.jetbrains.dokka.plugability.configuration
@@ -39,6 +40,15 @@ import org.jetbrains.dokka.plugability.configuration
  *   aggregating run puts it: pass the same value to every run, and the aggregating run makes the
  *   modules' links absolute.
  * @property projectSummary The one-line summary under the title of the aggregated [LLMS_FILE].
+ * @property packageNavigation How the sidebar lists the packages of each module. With
+ *   `"hierarchical-module-link"` (the default) they are nested by the `.`-separated segments of
+ *   their names, and a segment that is not a package of its own (`com.example`) links to the
+ *   module page: clicking its name opens the module page, where the sidebar highlights the module,
+ *   and leaves that segment closed (its arrow opens it). `"hierarchical-no-link"` nests them the same way, but such a segment is a label
+ *   that only opens and closes; it needs a copy of Dokka's sidebar rendering, which may have to
+ *   follow a Dokka upgrade by hand. `"flat"` keeps Dokka's list of full package names. In both
+ *   nested modes a segment without a package of its own is merged with its only sub-package
+ *   (`com > example` becomes `com.example`). The Featured node stays first in every mode.
  * @property optionalPackagePatterns Regular expressions matched against whole package names. A
  *   matching package, with its declarations, is listed under the `Optional` section of
  *   [LLMS_FILE], which the llms.txt format marks as skippable.
@@ -51,6 +61,7 @@ public data class KatachiDokkaConfiguration(
     val baseUrl: String? = null,
     val projectSummary: String? = null,
     val optionalPackagePatterns: List<String> = listOf(".*\\.internal(\\..*)?", ".*\\.impl(\\..*)?"),
+    val packageNavigation: String = "hierarchical-module-link",
 ) : ConfigurableBlock
 
 /** The llms.txt index of a module, or of the aggregated output: see https://llmstxt.org/. */
@@ -63,13 +74,22 @@ internal const val LLMS_FULL_FILE: String = "llms-full.txt"
 internal val KatachiDokkaConfiguration.llmsFiles: List<String>
     get() = listOfNotNull(LLMS_FILE.takeIf { llms }, LLMS_FULL_FILE.takeIf { llmsFull })
 
-/** Reads the configuration of this run, falling back to the defaults when none was given. */
-internal fun DokkaContext.katachiConfiguration(): KatachiDokkaConfiguration =
-    try {
+/**
+ * Reads the configuration of this run, falling back to the defaults when none was given.
+ *
+ * Values that are checked beyond their JSON type, such as
+ * [KatachiDokkaConfiguration.packageNavigation], are checked here, so that every run rejects them —
+ * also the aggregating run of a multi-module build, which never builds a module's sidebar.
+ */
+internal fun DokkaContext.katachiConfiguration(): KatachiDokkaConfiguration {
+    val read = try {
         configuration<KatachiDokkaPlugin, KatachiDokkaConfiguration>(this)
     } catch (e: Exception) {
         throw KatachiDokkaConfigurationException(e)
     } ?: KatachiDokkaConfiguration()
+    PackageNavigation.of(read.packageNavigation)
+    return read
+}
 
 /** The JSON given to [KatachiDokkaPlugin] through `pluginsConfiguration` could not be read. */
 internal class KatachiDokkaConfigurationException(

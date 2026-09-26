@@ -9,6 +9,7 @@ import org.jetbrains.dokka.PluginConfigurationImpl
 import org.jetbrains.dokka.base.testApi.testRunner.BaseAbstractTest
 import org.jetbrains.dokka.model.DModule
 import org.jetbrains.dokka.pages.RootPageNode
+import org.jetbrains.dokka.plugability.DokkaPlugin
 import org.jetbrains.dokka.testApi.logger.TestLogger
 import org.jetbrains.dokka.utilities.DokkaConsoleLogger
 import org.jetbrains.dokka.utilities.LoggingLevel
@@ -59,12 +60,19 @@ internal object DokkaRunner : BaseAbstractTest(TestLogger(DokkaConsoleLogger(Log
         }
     }
 
-    /** Generates [source] into memory and returns every stage the specs look at. */
-    fun run(source: String, configuration: DokkaConfigurationImpl = configuration()): DokkaRun {
+    /**
+     * Generates [source] into memory and returns every stage the specs look at. [plugins] are
+     * installed next to this plugin, for a spec that needs a hook of its own into the run.
+     */
+    fun run(
+        source: String,
+        configuration: DokkaConfigurationImpl = configuration(),
+        plugins: List<DokkaPlugin> = emptyList(),
+    ): DokkaRun {
         val writer = TestOutputWriterPlugin()
         var module: DModule? = null
         var pages: RootPageNode? = null
-        testInline(source, configuration, pluginOverrides = listOf(writer)) {
+        testInline(source, configuration, pluginOverrides = listOf(writer) + plugins) {
             documentablesTransformationStage = { module = it }
             pagesTransformationStage = { pages = it }
         }

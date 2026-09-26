@@ -66,6 +66,14 @@ abstract class KatachiDokkaPluginParameters @Inject constructor(
     @get:Optional
     abstract val optionalPackagePatterns: ListProperty<String>
 
+    /**
+     * How the sidebar lists packages: `hierarchical-module-link` (the plugin's default),
+     * `hierarchical-no-link` or `flat`.
+     */
+    @get:Input
+    @get:Optional
+    abstract val packageNavigation: Property<String>
+
     override fun jsonEncode(): String = JsonOutput.toJson(
         buildMap {
             featuredTitle.orNull?.let { put("featuredTitle", it) }
@@ -74,6 +82,7 @@ abstract class KatachiDokkaPluginParameters @Inject constructor(
             pageMarkdown.orNull?.let { put("pageMarkdown", it) }
             baseUrl.orNull?.let { put("baseUrl", it) }
             projectSummary.orNull?.let { put("projectSummary", it) }
+            packageNavigation.orNull?.let { put("packageNavigation", it) }
             optionalPackagePatterns.orNull?.takeIf { it.isNotEmpty() }?.let { put("optionalPackagePatterns", it) }
         },
     )

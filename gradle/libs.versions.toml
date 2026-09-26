@@ -53,6 +53,9 @@ dokkaAllModulesPage = { module = "org.jetbrains.dokka:all-modules-page-plugin", 
 dokkaTestApi = { module = "org.jetbrains.dokka:dokka-test-api", version.ref = "dokka" }
 dokkaBaseTestUtils = { module = "org.jetbrains.dokka:dokka-base-test-utils", version.ref = "dokka" }
 dokkaAnalysisKotlinSymbols = { module = "org.jetbrains.dokka:analysis-kotlin-symbols", version.ref = "dokka" }
+# `:tool:dokka` の `hierarchical-no-link` のサイドバーが HTML を組むのに使う。dokka-base が runtime
+# スコープで持つ版（dokka-base 2.2.0 の POM）に合わせる。Dokka を上げたら一緒に確かめる。
+dokkaKotlinxHtml = { module = "org.jetbrains.kotlinx:kotlinx-html-jvm", version = "0.9.1" }
 # JUnit 5。version を書かないものは BOM に決めさせる。
 junitBom = { module = "org.junit:junit-bom", version.ref = "junit" }
 junitJupiter = { module = "org.junit.jupiter:junit-jupiter" }

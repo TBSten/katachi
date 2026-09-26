@@ -45,6 +45,8 @@ dependencies {
     compileOnly(libs.dokkaCore)
     compileOnly(libs.dokkaBase)
     compileOnly(libs.dokkaTemplating)
+    // dokka-base depends on it at run time only; the hierarchical-no-link sidebar renders with it.
+    compileOnly(libs.dokkaKotlinxHtml)
 
     testImplementation(libs.dokkaCore)
     testImplementation(libs.dokkaBase)

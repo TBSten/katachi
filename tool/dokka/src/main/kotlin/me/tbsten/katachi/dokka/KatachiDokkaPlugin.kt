@@ -1,6 +1,5 @@
 package me.tbsten.katachi.dokka
 
-import me.tbsten.katachi.dokka.featured.FeaturedNavigationInstaller
 import me.tbsten.katachi.dokka.featured.FeaturedTagTransformer
 import me.tbsten.katachi.dokka.featured.ModulePageFeaturedTransformer
 import me.tbsten.katachi.dokka.fragment.AllModulesPageFeaturedInstaller
@@ -10,6 +9,7 @@ import me.tbsten.katachi.dokka.fragment.ModuleFragmentStrategy
 import me.tbsten.katachi.dokka.llms.LlmsIndexInstaller
 import me.tbsten.katachi.dokka.llms.LlmsModuleFileStrategy
 import me.tbsten.katachi.dokka.llms.LlmsModuleInstaller
+import me.tbsten.katachi.dokka.navigation.SidebarInstaller
 import org.jetbrains.dokka.CoreExtensions
 import org.jetbrains.dokka.base.DokkaBase
 import org.jetbrains.dokka.plugability.DokkaPlugin
@@ -29,6 +29,8 @@ import org.jetbrains.dokka.templates.TemplatingPlugin
  *   `llms.txt` at the root that links to the modules' ones.
  * - **Markdown pages**: every HTML page gets a Markdown version at its URL with `.md` appended,
  *   which is what the llms files link to.
+ * - **Package tree**: the sidebar nests the packages of a module by the `.`-separated segments of
+ *   their names (`com.example > data > local`) instead of listing their full names.
  *
  * Every link comes with a short summary: the text after an `@llm` tag, else the first sentence or
  * two of the KDoc. Neither `@featured` nor `@llm` is shown on the HTML pages.
@@ -42,7 +44,9 @@ import org.jetbrains.dokka.templates.TemplatingPlugin
  * `Documentable`, the sidebar entries are `NavigationNode`s of Dokka's own `NavigationPage`, the
  * sections are content built with Dokka's `PageContentBuilder`, the files are pages of the page
  * tree, and every link is resolved by Dokka's location provider. The all-modules-page plugin is
- * never referenced, so the same jar can be put on both runs' plugin classpath.
+ * never referenced, so the same jar can be put on both runs' plugin classpath. The one exception
+ * is opt-in: the `hierarchical-no-link` mode of [KatachiDokkaConfiguration.packageNavigation]
+ * renders the sidebar with a copy of `NavigationPage`'s rendering.
  *
  * ## Example
  *
@@ -73,8 +77,8 @@ public class KatachiDokkaPlugin : DokkaPlugin() {
         CoreExtensions.documentableTransformer providing ::FeaturedTagTransformer
     }
 
-    internal val featuredNavigationInstaller by extending {
-        dokkaBase.htmlPreprocessors providing ::FeaturedNavigationInstaller order {
+    internal val sidebarInstaller by extending {
+        dokkaBase.htmlPreprocessors providing ::SidebarInstaller order {
             after(dokkaBase.navigationPageInstaller)
         }
     }

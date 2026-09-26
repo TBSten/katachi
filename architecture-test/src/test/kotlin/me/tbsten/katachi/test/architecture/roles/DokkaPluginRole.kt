@@ -30,7 +30,7 @@ import me.tbsten.katachi.test.architecture.publicDeclarationsOf
  */
 fun DeclarationContainerScope.dokkaPlugin() = "DokkaPlugin" {
     title = "Dokka プラグイン"
-    summary = "API リファレンスに Featured（ページの節とサイドバー）と、AI エージェント向けの llms.txt・ページごとの Markdown を足す、このリポジトリ専用の Dokka プラグイン"
+    summary = "API リファレンスに Featured（ページの節とサイドバー）・サイドバーの package の階層表示と、AI エージェント向けの llms.txt・ページごとの Markdown を足す、このリポジトリ専用の Dokka プラグイン"
     example("KatachiDokkaPlugin.kt", "拡張の登録だけを持つプラグイン本体")
     example("FeaturedTagTransformer.kt", "@featured の付いた宣言に印を付ける")
     example("ModuleFragmentStrategy.kt", "モジュールごとの run が残した断片を、束ねる run で回収する")
@@ -45,6 +45,7 @@ fun DeclarationContainerScope.dokkaPlugin() = "DokkaPlugin" {
             mainSourceSet / kotlin / mainPackage / "llms" / "markdown" / "*".ktFile()
             mainSourceSet / kotlin / mainPackage / "llms" / "page" / "*".ktFile()
             mainSourceSet / kotlin / mainPackage / "llms" / "summary" / "*".ktFile()
+            mainSourceSet / kotlin / mainPackage / "navigation" / "*".ktFile()
             // How Dokka finds the plugin: `ServiceLoader` over the plugin classpath.
             mainSourceSet / "resources" / "META-INF/services" / "org.jetbrains.dokka.plugability.DokkaPlugin".file()
         }

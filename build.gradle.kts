@@ -52,6 +52,7 @@ tasks.register("generateApiDocs") {
  *
  * - Every module has its Featured node first in the aggregated sidebar (`navigation.html`, which
  *   every page loads), listing as many declarations as the Featured section of its own `llms.txt`.
+ * - Every module's packages are nested by name in the sidebar, not Dokka's flat list of full names.
  * - The top page has a Featured section above "All modules:" listing all of them, and each module
  *   page one above "Packages".
  * - Every HTML page has a Markdown version at its URL + `.md`, and every page that is a directory
@@ -125,8 +126,31 @@ tasks.register("verifyApiDocs") {
                 problems += "navigation.html lists ${entries.size} featured declarations under $module, but " +
                     "$module/llms.txt lists $expected"
             }
-            links.forEach { (href, _) -> checkLink(File(apiDocs, "navigation.html"), href) }
         }
+        // The packages of each module are nested by name: no package directly under the module
+        // node has one of its sub-packages next to it, as Dokka's flat list of full names would.
+        modules.forEach { module ->
+            val partLink = Regex(
+                """id="$module-nav-submenu[-\d]*"[^>]*data-nesting-level="(\d+)">\s*<div class="toc--row">\s*""" +
+                    """(?:<button[^>]*></button>)?\s*<a href="$module/([^/"]+)/index\.html" class="toc--link">""",
+            )
+            val packages = partLink.findAll(navigation).map { it.groupValues[1].toInt() to it.groupValues[2] }.toList()
+            if (packages.isEmpty()) {
+                problems += "navigation.html has no package node under $module"
+                return@forEach
+            }
+            val topLevel = packages.filter { (level, _) -> level == 1 }.map { it.second }
+            topLevel.forEach { parent ->
+                val flat = topLevel.filter { it.startsWith("$parent.") }
+                if (flat.isNotEmpty()) {
+                    problems += "navigation.html lists $flat next to $parent under $module instead of inside it: " +
+                        "the packages are not nested"
+                }
+            }
+        }
+        // Every link of the sidebar, the package tree included. Its links are relative to the root.
+        tocLink.findAll(navigation).map { it.groupValues[1] }.distinct()
+            .forEach { checkLink(File(apiDocs, "navigation.html"), it) }
         // The Featured sections of the pages: one on the top page above "All modules:", listing
         // every module's featured declarations, and one on each module page above "Packages".
         val tableRow = Regex("""class="table-row""")
