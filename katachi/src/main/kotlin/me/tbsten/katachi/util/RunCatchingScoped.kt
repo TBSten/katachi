@@ -74,6 +74,8 @@ public inline fun <R> runCatchingScoped(block: RunCatchingScopedScope.() -> R): 
  *     root.trimEnd('/')
  * }
  * ```
+ *
+ * @see runCatchingScoped
  */
 public interface RunCatchingScopedScope {
     /**
@@ -131,6 +133,8 @@ public interface RunCatchingScopedScope {
  *
  * (failure as KatachiMultipleFailuresException).suppressed.size shouldBe 2
  * ```
+ *
+ * @see runCatchingScoped
  */
 public class KatachiMultipleFailuresException internal constructor(
     exceptions: List<Throwable>,
