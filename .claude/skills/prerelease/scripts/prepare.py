@@ -47,9 +47,13 @@ def fill_template(text, version, previous, previous_note, release_dir):
     text = re.sub(r"(今回のリリースバージョン: )\{TODO\}", lambda m: m.group(1) + version, text, count=1)
     text = re.sub(r"(直前のリリースバージョン: )\{TODO\}",
                   lambda m: m.group(1) + (previous or "（無し）") + previous_note, text, count=1)
-    text = text.replace(
-        f"{{TODO file://.local/{release_dir.name}/visibility-check.md の絶対パス}}",
-        (release_dir / "visibility-check.md").resolve().as_uri(),
+    # 作業場所の中のファイル・ディレクトリを指す欄（visibility-check.md、release-note.md、
+    # docs-vs-impl.md、screenshots/ など）は、まだ無くても絶対 URI にしておく。
+    prefix = f"file://.local/{release_dir.name}/"
+    text = re.sub(
+        r"\{TODO " + re.escape(prefix) + r"([^ }]*) の絶対パス\}",
+        lambda m: (release_dir / m.group(1)).resolve().as_uri() + ("/" if m.group(1).endswith("/") else ""),
+        text,
     )
     return text
 
