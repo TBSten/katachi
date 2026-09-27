@@ -9,6 +9,35 @@ import starlightLlmsTxt from 'starlight-llms-txt';
 import starlightTagsPlugin from 'starlight-tags';
 // 内部リンクの切れをビルドで落とす。腐ったリンクを公開しないための歯止め。
 import starlightLinksValidator from 'starlight-links-validator';
+import { existsSync, readFileSync, statSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
+
+// `astro dev` は public/ の下のディレクトリの URL（`/katachi/api-docs/`）を index.html に
+// 解決せず 404 を返す。GitHub Pages とビルドしたサイトでは解決されるので、サイドバーの
+// 「API リファレンス」が dev サーバーでだけリンク切れになっていた。dev のときだけ、
+// public/ に `<dir>/index.html` があるディレクトリの URL を index.html へ書き換える。
+const publicDir = fileURLToPath(new URL('./public/', import.meta.url));
+const publicDirectoryIndex = {
+	name: 'katachi-public-directory-index',
+	apply: 'serve',
+	// Astro の dev ハンドラより先に登録しないと、その 404 が先に返る。
+	enforce: 'pre',
+	configureServer(server) {
+		server.middlewares.use((req, res, next) => {
+			// Vite has already taken `base` off the URL by the time it gets here (`/api-docs/`).
+			const path = (req.url ?? '').split('?')[0].replace(/^\/katachi(?=\/)/, '');
+			if (path.endsWith('/') && path !== '/') {
+				const index = `${publicDir}${decodeURIComponent(path.slice(1))}index.html`;
+				if (existsSync(index) && statSync(index).isFile()) {
+					res.setHeader('Content-Type', 'text/html; charset=utf-8');
+					res.end(readFileSync(index));
+					return;
+				}
+			}
+			next();
+		});
+	},
+};
 
 // https://astro.build/config
 export default defineConfig({
@@ -182,6 +211,7 @@ export default defineConfig({
 		}),
 	],
 	vite: {
+		plugins: [publicDirectoryIndex],
 		build: {
 			// 500 kB を超えるのは Mermaid の描画コードのチャンク（最大 1.5 MB）。astro-mermaid が
 			// 図のあるページでだけ動的に読むので、ほかのページの読み込みは重くならない。
