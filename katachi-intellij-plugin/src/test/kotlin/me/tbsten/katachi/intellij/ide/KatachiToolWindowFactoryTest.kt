@@ -11,6 +11,18 @@ import me.tbsten.katachi.intellij.presentation.ScreenPhase
 
 internal class KatachiToolWindowFactoryTest : KatachiIdeTestBase() {
 
+    fun `test Tool Window にはテンプレートのタブが名前つきで載る`() {
+        installService()
+        val toolWindow = ToolWindowHeadlessManagerImpl.MockToolWindow(project)
+
+        KatachiToolWindowFactory().createToolWindowContent(project, toolWindow)
+
+        assertEquals(
+            listOf(KatachiBundle.message("toolWindow.tab.template")),
+            toolWindow.contentManager.contents.map { it.displayName },
+        )
+    }
+
     fun `test Tool Window を作ると Compose のタブが1つ載り、同期データから定義モジュールを見つけて読み込む`() {
         val viewModel = installService()
         val toolWindow = ToolWindowHeadlessManagerImpl.MockToolWindow(project)
