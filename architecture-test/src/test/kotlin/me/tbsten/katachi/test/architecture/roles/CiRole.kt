@@ -6,9 +6,9 @@ import me.tbsten.katachi.dsl.DeclarationContainerScope
 fun DeclarationContainerScope.ci() = "Ci" {
     title = "CI"
     summary = "GitHub Actions のワークフローと、そこから呼ばれるスクリプト"
-    example("ci.yml", "check と3つのサンプルビルドを回す")
+    example("ci.yml", "check・サンプルのビルド・IDE プラグイン・ベンチマークを push と pull request のたびに回す")
     example("check-kotlin-versions.sh", "サンプルとルートの Kotlin バージョンの一致を見る")
-    example("benchmark.yml", "JMH と実プロジェクトでの計測を毎晩回し、gh-pages の履歴と比べる")
+    example("benchmark-pr.yml", "perf ラベルの付いた pull request を base と同じランナーで比べる")
     layout {
         ".github" {
             "workflows" / "*.yml".file()

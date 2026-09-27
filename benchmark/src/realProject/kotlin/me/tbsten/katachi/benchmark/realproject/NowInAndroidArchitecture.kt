@@ -19,7 +19,7 @@ import me.tbsten.katachi.konsist.konsist
  * violation, which is fine: the number of violations is recorded next to the time, and a
  * change in it means the definition or the pinned commit changed, not katachi.
  *
- * The commit it was written against is pinned in `.github/workflows/benchmark.yml`.
+ * The commit it was written against is pinned in the `bench-real-project` job of `.github/workflows/ci.yml`.
  */
 internal fun nowInAndroidArchitecture(): Architecture = architecture {
     files = gitTracked()

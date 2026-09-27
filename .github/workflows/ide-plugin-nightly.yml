@@ -15,7 +15,7 @@ name: IDE plugin nightly
 
 on:
   schedule:
-    # 19:00 UTC = 04:00 JST, an hour after benchmark.yml.
+    # 19:00 UTC = 04:00 JST.
     - cron: '0 19 * * *'
   workflow_dispatch:
     inputs:
