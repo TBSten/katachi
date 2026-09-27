@@ -3,6 +3,7 @@ package me.tbsten.katachi.processor
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.builtins.serializer
 import me.tbsten.katachi.ExperimentalKatachiApi
+import me.tbsten.katachi.processor.internal.NoArgContextView
 
 /**
  * Something that reads an architecture definition and answers with a [kotlin.Result] of [R].
@@ -64,11 +65,11 @@ import me.tbsten.katachi.ExperimentalKatachiApi
  *
  * ## Example 2: a check that makes the run fail when it found something
  * ```kt
- * import me.tbsten.katachi.processor.ArchitectureProcessContext
+ * import me.tbsten.katachi.processor.ArchitectureProcessNoArgContext
  * import me.tbsten.katachi.processor.ArchitectureProcessorNoArg
  *
  * object ForbidTodoRoles : ArchitectureProcessorNoArg<List<String>> {
- *     override fun process(context: ArchitectureProcessContext<Unit>): Result<List<String>> =
+ *     override fun process(context: ArchitectureProcessNoArgContext): Result<List<String>> =
  *         runCatching {
  *             val todo = context.roles.map { it.qualifiedName }.filter { it.startsWith("Todo") }
  *             check(todo.isEmpty()) { "Roles still named Todo: $todo" }
@@ -109,7 +110,7 @@ public interface ArchitectureProcessor<Args, R> {
      * ## Example 1: answer from the declarations alone
      * ```kt
      * object RoleCount : ArchitectureProcessorNoArg<Int> {
-     *     override fun process(context: ArchitectureProcessContext<Unit>): Result<Int> =
+     *     override fun process(context: ArchitectureProcessNoArgContext): Result<Int> =
      *         runCatching { context.roles.size }
      * }
      * ```
@@ -147,10 +148,11 @@ public interface ArchitectureProcessor<Args, R> {
      * ## Example 1: take one argument per role the definition declares
      * ```kt
      * import me.tbsten.katachi.processor.ArchitectureProcessContext
+     * import me.tbsten.katachi.processor.ArchitectureProcessNoArgContext
      * import me.tbsten.katachi.processor.ArchitectureProcessorNoArg
      *
      * object AnnotateRoles : ArchitectureProcessorNoArg<Unit> {
-     *     override fun process(context: ArchitectureProcessContext<Unit>): Result<Unit> =
+     *     override fun process(context: ArchitectureProcessNoArgContext): Result<Unit> =
      *         runCatching { for ((role, note) in context.rawArgs) context.log("$role: $note") }
      *
      *     // `--arg domain/UseCase="owned by the platform team"`. The keys come from the
@@ -167,9 +169,10 @@ public interface ArchitectureProcessor<Args, R> {
 /**
  * An [ArchitectureProcessor] that takes no arguments.
  *
- * It carries the [argsSerializer] boilerplate and nothing else: `context.args` is still there
- * and is still [Unit]. Giving this interface a shorter `process()` of its own was considered
- * and dropped -- a second signature would thin out the one thing the context buys.
+ * It carries the [argsSerializer] boilerplate, and hands [process] an
+ * [ArchitectureProcessNoArgContext]: the same context, with `args` deprecated because there is
+ * nothing in it to read. The `ArchitectureProcessContext<Unit>` overload that katachi calls is
+ * implemented here and forwards to it.
  *
  * This replaces v0.1's `ArchitectureProcessorUnit`, which was an alias for
  * `ArchitectureProcessor<Unit>`. With two type parameters that alias could no longer say what
@@ -178,14 +181,14 @@ public interface ArchitectureProcessor<Args, R> {
  * ## Example 1: a processor that exists for its effect
  * ```kt
  * import java.io.File
- * import me.tbsten.katachi.processor.ArchitectureProcessContext
+ * import me.tbsten.katachi.processor.ArchitectureProcessNoArgContext
  * import me.tbsten.katachi.processor.ArchitectureProcessorNoArg
  * import me.tbsten.katachi.processor.process
  *
  * class RoleSummaryReport(
  *     private val write: (path: String, content: String) -> Unit,
  * ) : ArchitectureProcessorNoArg<Unit> {
- *     override fun process(context: ArchitectureProcessContext<Unit>): Result<Unit> = runCatching {
+ *     override fun process(context: ArchitectureProcessNoArgContext): Result<Unit> = runCatching {
  *         for (role in context.roles) write("${role.qualifiedName}.md", "# ${role.qualifiedName}\n")
  *     }
  * }
@@ -197,4 +200,39 @@ public interface ArchitectureProcessor<Args, R> {
 @ExperimentalKatachiApi
 public interface ArchitectureProcessorNoArg<R> : ArchitectureProcessor<Unit, R> {
     override val argsSerializer: KSerializer<Unit> get() = Unit.serializer()
+    override fun process(context: ArchitectureProcessContext<Unit>): Result<R> =
+        this.process(context as? ArchitectureProcessNoArgContext ?: NoArgContextView(context))
+
+    /**
+     * Reads [context] and answers, exactly as [ArchitectureProcessor.process] does, without the
+     * `args` a processor with no arguments has nothing to read from.
+     *
+     * ## Example 1: answer from the declarations alone
+     * ```kt
+     * object RoleCount : ArchitectureProcessorNoArg<Int> {
+     *     override fun process(context: ArchitectureProcessNoArgContext): Result<Int> =
+     *         runCatching { context.roles.size }
+     * }
+     * ```
+     */
+    public fun process(context: ArchitectureProcessNoArgContext): Result<R>
+}
+
+/**
+ * The context an [ArchitectureProcessorNoArg] reads: an [ArchitectureProcessContext] whose
+ * `args` is deprecated, because a processor that takes no arguments has nothing in it.
+ *
+ * ## Example 1: read the declarations in a processor without arguments
+ * ```kt
+ * object RoleNames : ArchitectureProcessorNoArg<List<String>> {
+ *     override fun process(context: ArchitectureProcessNoArgContext): Result<List<String>> =
+ *         runCatching { context.roles.map { it.qualifiedName } }
+ * }
+ * ```
+ */
+@ExperimentalKatachiApi
+public interface ArchitectureProcessNoArgContext : ArchitectureProcessContext<Unit> {
+    @Suppress("DeprecatedCallableAddReplaceWith")
+    @Deprecated("In the NoArg Processor, no meaningful value is assigned to `args`. Please use ArchitectureProcessor if an argument is required.")
+    override val args: Unit get() = Unit
 }

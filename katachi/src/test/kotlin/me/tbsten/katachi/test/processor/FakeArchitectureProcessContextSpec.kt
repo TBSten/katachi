@@ -4,7 +4,7 @@ import io.kotest.core.spec.style.FreeSpec
 import io.kotest.matchers.collections.shouldBeEmpty
 import io.kotest.matchers.shouldBe
 import me.tbsten.katachi.dsl.kotlin.ktFile
-import me.tbsten.katachi.processor.ArchitectureProcessContext
+import me.tbsten.katachi.processor.ArchitectureProcessNoArgContext
 import me.tbsten.katachi.processor.ArchitectureProcessorNoArg
 import me.tbsten.katachi.processor.FakeArchitectureProcessContext
 import me.tbsten.katachi.processor.internal.process
@@ -77,7 +77,7 @@ class FakeArchitectureProcessContextSpec : FreeSpec({
 })
 
 private object LoggingProcessor : ArchitectureProcessorNoArg<Unit> {
-    override fun process(context: ArchitectureProcessContext<Unit>): Result<Unit> = runCatching {
+    override fun process(context: ArchitectureProcessNoArgContext): Result<Unit> = runCatching {
         context.log("start")
         context.log("found ${context.roles.size} roles")
         context.log("done")
@@ -85,5 +85,5 @@ private object LoggingProcessor : ArchitectureProcessorNoArg<Unit> {
 }
 
 private object SilentProcessor : ArchitectureProcessorNoArg<Unit> {
-    override fun process(context: ArchitectureProcessContext<Unit>): Result<Unit> = runCatching { }
+    override fun process(context: ArchitectureProcessNoArgContext): Result<Unit> = runCatching { }
 }

@@ -36,18 +36,18 @@ import me.tbsten.katachi.processor.internal.withArgs
  *
  * ## Example 1: run two processors as one, on one walk
  * ```kt
- * import me.tbsten.katachi.processor.ArchitectureProcessContext
+ * import me.tbsten.katachi.processor.ArchitectureProcessNoArgContext
  * import me.tbsten.katachi.processor.ArchitectureProcessorNoArg
  * import me.tbsten.katachi.processor.plus
  * import me.tbsten.katachi.processor.process
  *
  * object GroupNames : ArchitectureProcessorNoArg<List<String>> {
- *     override fun process(context: ArchitectureProcessContext<Unit>): Result<List<String>> =
+ *     override fun process(context: ArchitectureProcessNoArgContext): Result<List<String>> =
  *         runCatching { context.groups.map { it.qualifiedName } }
  * }
  *
  * object RoleNames : ArchitectureProcessorNoArg<List<String>> {
- *     override fun process(context: ArchitectureProcessContext<Unit>): Result<List<String>> =
+ *     override fun process(context: ArchitectureProcessNoArgContext): Result<List<String>> =
  *         runCatching { context.roles.map { it.qualifiedName } }
  * }
  *

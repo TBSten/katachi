@@ -15,7 +15,7 @@ import me.tbsten.katachi.check.internal.report
 import me.tbsten.katachi.check.internal.validate
 import me.tbsten.katachi.dsl.FileConstraintFailure
 import me.tbsten.katachi.dsl.FileConstraint
-import me.tbsten.katachi.processor.ArchitectureProcessContext
+import me.tbsten.katachi.processor.ArchitectureProcessNoArgContext
 import me.tbsten.katachi.processor.ArchitectureProcessorNoArg
 import me.tbsten.katachi.test.dsl.files.failingAt
 
@@ -37,7 +37,7 @@ import me.tbsten.katachi.test.dsl.files.failingAt
 /** A check outside katachi that is broken rather than failing: it throws instead of answering. */
 private class ThrowingProcessor(private val failure: () -> Throwable) :
     ArchitectureProcessorNoArg<List<Violation>> {
-    override fun process(context: ArchitectureProcessContext<Unit>): Result<List<Violation>> =
+    override fun process(context: ArchitectureProcessNoArgContext): Result<List<Violation>> =
         throw failure()
 }
 

@@ -19,6 +19,7 @@ import me.tbsten.katachi.dsl.files.FsPath
 import me.tbsten.katachi.dsl.files.KatachiFileSystem
 import me.tbsten.katachi.dsl.kotlin.ktFile
 import me.tbsten.katachi.processor.ArchitectureProcessContext
+import me.tbsten.katachi.processor.ArchitectureProcessNoArgContext
 import me.tbsten.katachi.processor.ArchitectureProcessor
 import me.tbsten.katachi.processor.ArchitectureProcessorNoArg
 import me.tbsten.katachi.processor.KatachiProcessorNotFoundException
@@ -403,11 +404,11 @@ private class RunCountingFileSystem(private val delegate: KatachiFileSystem) : K
 }
 
 private object ObjectProcessor : ArchitectureProcessorNoArg<Unit> {
-    override fun process(context: ArchitectureProcessContext<Unit>): Result<Unit> = runCatching { }
+    override fun process(context: ArchitectureProcessNoArgContext): Result<Unit> = runCatching { }
 }
 
 private class NoArgClassProcessor : ArchitectureProcessorNoArg<Unit> {
-    override fun process(context: ArchitectureProcessContext<Unit>): Result<Unit> = runCatching { }
+    override fun process(context: ArchitectureProcessNoArgContext): Result<Unit> = runCatching { }
 
     override fun equals(other: Any?): Boolean = other is NoArgClassProcessor
     override fun hashCode(): Int = NoArgClassProcessor::class.hashCode()
@@ -415,25 +416,25 @@ private class NoArgClassProcessor : ArchitectureProcessorNoArg<Unit> {
 
 private class RequiresArgumentProcessor(@Suppress("UNUSED_PARAMETER") prefix: String) :
     ArchitectureProcessorNoArg<Unit> {
-    override fun process(context: ArchitectureProcessContext<Unit>): Result<Unit> = runCatching { }
+    override fun process(context: ArchitectureProcessNoArgContext): Result<Unit> = runCatching { }
 }
 
 /** Did its job, and the answer is that the run does not pass. */
 private object AnswersNoProcessor : ArchitectureProcessorNoArg<Unit> {
-    override fun process(context: ArchitectureProcessContext<Unit>): Result<Unit> =
+    override fun process(context: ArchitectureProcessNoArgContext): Result<Unit> =
         runCatching {
             throw IllegalStateException("2 roles are still named Todo.\nRename them before the release.")
         }
 }
 
 private object NamesProcessor : ArchitectureProcessorNoArg<List<String>> {
-    override fun process(context: ArchitectureProcessContext<Unit>): Result<List<String>> =
+    override fun process(context: ArchitectureProcessNoArgContext): Result<List<String>> =
         runCatching { listOf("first", "second") }
 }
 
 /** Answers one warning, so the run succeeds and prints it under `[OK]`. */
 private object FoundProcessor : ArchitectureProcessorNoArg<List<Violation>> {
-    override fun process(context: ArchitectureProcessContext<Unit>): Result<List<Violation>> =
+    override fun process(context: ArchitectureProcessNoArgContext): Result<List<Violation>> =
         runCatching { listOf(FoundViolation) }
 }
 
@@ -447,19 +448,19 @@ private object FoundViolation : Violation {
 private class NotAProcessor
 
 private object RunLoggingProcessor : ArchitectureProcessorNoArg<Unit> {
-    override fun process(context: ArchitectureProcessContext<Unit>): Result<Unit> = runCatching {
+    override fun process(context: ArchitectureProcessNoArgContext): Result<Unit> = runCatching {
         context.log("hello")
     }
 }
 
 private object BoomProcessor : ArchitectureProcessorNoArg<Unit> {
-    override fun process(context: ArchitectureProcessContext<Unit>): Result<Unit> {
+    override fun process(context: ArchitectureProcessNoArgContext): Result<Unit> {
         throw IllegalStateException("boom message")
     }
 }
 
 private object ValueProcessor : ArchitectureProcessorNoArg<Int> {
-    override fun process(context: ArchitectureProcessContext<Unit>): Result<Int> =
+    override fun process(context: ArchitectureProcessNoArgContext): Result<Int> =
         runCatching { 42 }
 }
 
@@ -477,25 +478,25 @@ private object RanFlag {
 }
 
 private object RecordsRunProcessor : ArchitectureProcessorNoArg<Unit> {
-    override fun process(context: ArchitectureProcessContext<Unit>): Result<Unit> = runCatching {
+    override fun process(context: ArchitectureProcessNoArgContext): Result<Unit> = runCatching {
         RanFlag.ran = true
     }
 }
 
 private object FilesReadingProcessorA : ArchitectureProcessorNoArg<List<String>> {
-    override fun process(context: ArchitectureProcessContext<Unit>): Result<List<String>> =
+    override fun process(context: ArchitectureProcessNoArgContext): Result<List<String>> =
         runCatching { context.roles.flatMap { context.filesOf(it) } }
 }
 
 private object FilesReadingProcessorB : ArchitectureProcessorNoArg<List<String>> {
-    override fun process(context: ArchitectureProcessContext<Unit>): Result<List<String>> =
+    override fun process(context: ArchitectureProcessNoArgContext): Result<List<String>> =
         runCatching { context.roles.flatMap { context.filesOf(it) } }
 }
 
 
 /** A processor whose vocabulary is not in its `Args`, the way a template's parameters are not. */
 private object UndeclaredNameRunProcessor : ArchitectureProcessorNoArg<Unit> {
-    override fun process(context: ArchitectureProcessContext<Unit>): Result<Unit> = runCatching { }
+    override fun process(context: ArchitectureProcessNoArgContext): Result<Unit> = runCatching { }
 
     override fun undeclaredArgNames(context: ArchitectureProcessContext<*>): Set<String> =
         setOf("greeting")

@@ -3,7 +3,7 @@ package me.tbsten.katachi.test.processor
 import io.kotest.core.spec.style.FreeSpec
 import io.kotest.matchers.shouldBe
 import me.tbsten.katachi.dsl.kotlin.ktFile
-import me.tbsten.katachi.processor.ArchitectureProcessContext
+import me.tbsten.katachi.processor.ArchitectureProcessNoArgContext
 import me.tbsten.katachi.processor.ArchitectureProcessorNoArg
 import me.tbsten.katachi.processor.internal.process
 import me.tbsten.katachi.processor.process
@@ -59,24 +59,24 @@ class ArchitectureProcessorSpec : FreeSpec({
 
 /** A processor with no settings, written as an object: everything it needs is on the context. */
 private object RoleNames : ArchitectureProcessorNoArg<List<String>> {
-    override fun process(context: ArchitectureProcessContext<Unit>): Result<List<String>> =
+    override fun process(context: ArchitectureProcessNoArgContext): Result<List<String>> =
         runCatching { context.roles.map { it.qualifiedName } }
 }
 
 /** The same processor as [RoleNames], written as a no-arg class instead of an object. */
 private class RoleNamesAsClass : ArchitectureProcessorNoArg<List<String>> {
-    override fun process(context: ArchitectureProcessContext<Unit>): Result<List<String>> =
+    override fun process(context: ArchitectureProcessNoArgContext): Result<List<String>> =
         runCatching { context.roles.map { it.qualifiedName } }
 }
 
 /** A processor whose result is its effect, with the effect injected rather than hard-wired. */
 private class CollectRoleNames(private val write: (String) -> Unit) : ArchitectureProcessorNoArg<Unit> {
-    override fun process(context: ArchitectureProcessContext<Unit>): Result<Unit> = runCatching {
+    override fun process(context: ArchitectureProcessNoArgContext): Result<Unit> = runCatching {
         for (role in context.roles) write(role.qualifiedName)
     }
 }
 
 private class FilesOfEveryRole : ArchitectureProcessorNoArg<Map<String, List<String>>> {
-    override fun process(context: ArchitectureProcessContext<Unit>): Result<Map<String, List<String>>> =
+    override fun process(context: ArchitectureProcessNoArgContext): Result<Map<String, List<String>>> =
         runCatching { context.roles.associate { it.qualifiedName to context.filesOf(it) } }
 }

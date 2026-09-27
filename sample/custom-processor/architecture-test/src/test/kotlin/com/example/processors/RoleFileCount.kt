@@ -3,7 +3,7 @@
 package com.example.processors
 
 import me.tbsten.katachi.ExperimentalKatachiApi
-import me.tbsten.katachi.processor.ArchitectureProcessContext
+import me.tbsten.katachi.processor.ArchitectureProcessNoArgContext
 import me.tbsten.katachi.processor.ArchitectureProcessorNoArg
 
 /**
@@ -31,7 +31,7 @@ import me.tbsten.katachi.processor.ArchitectureProcessorNoArg
  * @see RoleTable for the same shape with typed arguments.
  */
 object RoleFileCount : ArchitectureProcessorNoArg<List<String>> {
-    override fun process(context: ArchitectureProcessContext<Unit>): Result<List<String>> = runCatching {
+    override fun process(context: ArchitectureProcessNoArgContext): Result<List<String>> = runCatching {
         context.log("${context.roles.size} 個の役割が覆うファイルを数えます")
         context.roles.map { role ->
             "${role.qualifiedName}: ${context.filesOf(role).size} 件"

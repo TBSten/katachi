@@ -16,7 +16,7 @@ import me.tbsten.katachi.dsl.architecture
 import me.tbsten.katachi.dsl.files.FsPath
 import me.tbsten.katachi.dsl.files.KatachiFileSystem
 import me.tbsten.katachi.dsl.files.ProjectRoot
-import me.tbsten.katachi.processor.ArchitectureProcessContext
+import me.tbsten.katachi.processor.ArchitectureProcessNoArgContext
 import me.tbsten.katachi.processor.ArchitectureProcessorNoArg
 
 private class NoteWarning(override val path: String) : Violation {
@@ -31,7 +31,7 @@ private class CountingWarningCheck(private val path: String = "docs/a.md") :
     var runs: Int = 0
         private set
 
-    override fun process(context: ArchitectureProcessContext<Unit>): Result<List<Violation>> {
+    override fun process(context: ArchitectureProcessNoArgContext): Result<List<Violation>> {
         runs++
         return runCatching { listOf<Violation>(NoteWarning(path)).assertNoErrors() }
     }

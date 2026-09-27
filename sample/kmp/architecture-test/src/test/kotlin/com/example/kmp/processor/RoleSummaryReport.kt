@@ -1,7 +1,7 @@
 package com.example.kmp.processor
 
 import me.tbsten.katachi.ExperimentalKatachiApi
-import me.tbsten.katachi.processor.ArchitectureProcessContext
+import me.tbsten.katachi.processor.ArchitectureProcessNoArgContext
 import me.tbsten.katachi.processor.ArchitectureProcessorNoArg
 
 /**
@@ -42,7 +42,7 @@ import me.tbsten.katachi.processor.ArchitectureProcessorNoArg
 class RoleSummaryReport(
     private val write: (path: String, content: String) -> Unit,
 ) : ArchitectureProcessorNoArg<Unit> {
-    override fun process(context: ArchitectureProcessContext<Unit>): Result<Unit> = runCatching {
+    override fun process(context: ArchitectureProcessNoArgContext): Result<Unit> = runCatching {
         for (role in context.roles) {
             write("${role.qualifiedName}.md", "# ${role.qualifiedName}\n")
         }

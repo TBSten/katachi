@@ -58,6 +58,7 @@ internal val ArchitectureProcessContext<*>.projectWalk: ProjectWalk
     get() = when (this) {
         is RealArchitectureProcessContext<*> -> walk
         is FakeArchitectureProcessContext<*> -> real.walk
+        is NoArgContextView -> base.projectWalk
         else -> throw KatachiForeignProcessContextException(this::class.java.name)
     }
 
@@ -90,5 +91,6 @@ internal fun <Args, A> ArchitectureProcessContext<Args>.withArgs(
     is FakeArchitectureProcessContext<*> -> real.let {
         RealArchitectureProcessContext(it.walk, args, onLog ?: it.onLog, it.rawArgs)
     }
+    is NoArgContextView -> base.withArgs(args, onLog)
     else -> throw KatachiForeignProcessContextException(this::class.java.name)
 }

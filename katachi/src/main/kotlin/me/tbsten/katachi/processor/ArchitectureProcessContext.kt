@@ -26,7 +26,7 @@ import me.tbsten.katachi.dsl.Role
  * ## Example 1: a processor that reads the declarations and nothing else
  * ```kt
  * object RoleNames : ArchitectureProcessorNoArg<List<String>> {
- *     override fun process(context: ArchitectureProcessContext<Unit>): Result<List<String>> =
+ *     override fun process(context: ArchitectureProcessNoArgContext): Result<List<String>> =
  *         runCatching { context.roles.map { it.qualifiedName } }
  * }
  *
@@ -47,8 +47,8 @@ public interface ArchitectureProcessContext<out Args> {
      * ## Example 1: reach the definition itself rather than the flattened views
      * ```kt
      * object TopLevelGroupCount : ArchitectureProcessorNoArg<Int> {
-     *     override fun process(context: ArchitectureProcessContext<Unit>): Int =
-     *         context.architecture.allGroups.count { it.path.isEmpty() }
+     *     override fun process(context: ArchitectureProcessNoArgContext): Result<Int> =
+     *         runCatching { context.architecture.allGroups.count { it.path.isEmpty() } }
      * }
      * ```
      */
@@ -94,7 +94,7 @@ public interface ArchitectureProcessContext<out Args> {
      * ## Example 1: read a value no Args field could declare
      * ```kt
      * object PrintRawArgs : ArchitectureProcessorNoArg<Unit> {
-     *     override fun process(context: ArchitectureProcessContext<Unit>) {
+     *     override fun process(context: ArchitectureProcessNoArgContext): Result<Unit> = runCatching {
      *         for ((name, value) in context.rawArgs) context.log("$name=$value")
      *     }
      * }
@@ -234,7 +234,7 @@ public interface ArchitectureProcessContext<out Args> {
      * ## Example 1: say what is happening, testably
      * ```kt
      * object GenerateDocumentation : ArchitectureProcessorNoArg<Unit> {
-     *     override fun process(context: ArchitectureProcessContext<Unit>) {
+     *     override fun process(context: ArchitectureProcessNoArgContext): Result<Unit> = runCatching {
      *         context.log("Scanning ${context.roles.size} roles...")
      *     }
      * }

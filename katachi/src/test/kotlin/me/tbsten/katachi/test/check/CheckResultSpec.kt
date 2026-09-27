@@ -10,7 +10,7 @@ import me.tbsten.katachi.check.KatachiArchitectureAssertionError
 import me.tbsten.katachi.check.internal.assert
 import me.tbsten.katachi.check.assertNoErrors
 import me.tbsten.katachi.check.internal.validate
-import me.tbsten.katachi.processor.ArchitectureProcessContext
+import me.tbsten.katachi.processor.ArchitectureProcessNoArgContext
 import me.tbsten.katachi.processor.ArchitectureProcessorNoArg
 import me.tbsten.katachi.check.Severity
 import me.tbsten.katachi.check.UncheckedCheck
@@ -119,12 +119,12 @@ private class ResultWarning(override val path: String) : Violation {
 /** A check outside katachi, written the recommended way: its whole body is [body] in `runCatching`. */
 private class AnsweringCheck(private val body: () -> List<Violation>) :
     ArchitectureProcessorNoArg<List<Violation>> {
-    override fun process(context: ArchitectureProcessContext<Unit>): Result<List<Violation>> =
+    override fun process(context: ArchitectureProcessNoArgContext): Result<List<Violation>> =
         runCatching { body() }
 }
 
 /** A check that breaks the contract and throws out of `process` instead of answering. */
 private object ThrowsInsteadOfAnswering : ArchitectureProcessorNoArg<List<Violation>> {
-    override fun process(context: ArchitectureProcessContext<Unit>): Result<List<Violation>> =
+    override fun process(context: ArchitectureProcessNoArgContext): Result<List<Violation>> =
         throw IllegalStateException("broken")
 }

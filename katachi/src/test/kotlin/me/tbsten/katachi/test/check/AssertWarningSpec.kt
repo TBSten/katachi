@@ -11,7 +11,7 @@ import me.tbsten.katachi.check.Violation
 import me.tbsten.katachi.check.ViolationKind
 import me.tbsten.katachi.check.assertNoErrors
 import me.tbsten.katachi.check.internal.assert
-import me.tbsten.katachi.processor.ArchitectureProcessContext
+import me.tbsten.katachi.processor.ArchitectureProcessNoArgContext
 import me.tbsten.katachi.processor.ArchitectureProcessorNoArg
 
 /**
@@ -28,7 +28,7 @@ private class TestWarningViolation(override val path: String) : Violation {
 /** A check outside katachi that always reports one warning at [path]. */
 private class WarningCheck(private val path: String = "docs/a.md") :
     ArchitectureProcessorNoArg<List<Violation>> {
-    override fun process(context: ArchitectureProcessContext<Unit>): Result<List<Violation>> =
+    override fun process(context: ArchitectureProcessNoArgContext): Result<List<Violation>> =
         runCatching { listOf<Violation>(TestWarningViolation(path)).assertNoErrors() }
 }
 

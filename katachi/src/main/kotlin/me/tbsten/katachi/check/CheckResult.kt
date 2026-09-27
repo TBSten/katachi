@@ -21,7 +21,7 @@ import me.tbsten.katachi.check.internal.assertNoErrors
  * ## Example 1: a check of your own that reports through the same report as the layout check
  * ```kt
  * import me.tbsten.katachi.check.assertNoErrors
- * import me.tbsten.katachi.processor.ArchitectureProcessContext
+ * import me.tbsten.katachi.processor.ArchitectureProcessNoArgContext
  * import me.tbsten.katachi.processor.ArchitectureProcessorNoArg
  * import me.tbsten.katachi.check.Severity
  * import me.tbsten.katachi.check.Violation
@@ -34,7 +34,7 @@ import me.tbsten.katachi.check.internal.assertNoErrors
  * }
  *
  * object NoTodoFiles : ArchitectureProcessorNoArg<List<Violation>> {
- *     override fun process(context: ArchitectureProcessContext<Unit>): Result<List<Violation>> =
+ *     override fun process(context: ArchitectureProcessNoArgContext): Result<List<Violation>> =
  *         runCatching {
  *             context.roles
  *                 .flatMap { context.filesOf(it) }

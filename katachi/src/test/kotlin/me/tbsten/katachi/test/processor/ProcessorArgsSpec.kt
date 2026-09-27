@@ -13,6 +13,7 @@ import kotlinx.serialization.builtins.serializer
 import me.tbsten.katachi.dsl.Architecture
 import me.tbsten.katachi.dsl.architecture
 import me.tbsten.katachi.processor.ArchitectureProcessContext
+import me.tbsten.katachi.processor.ArchitectureProcessNoArgContext
 import me.tbsten.katachi.processor.ArchitectureProcessor
 import me.tbsten.katachi.processor.ArchitectureProcessorNoArg
 import me.tbsten.katachi.processor.FakeArchitectureProcessContext
@@ -258,7 +259,7 @@ private data class NestedArgs(val name: String, val inner: Inner = Inner())
 private data class RoleNameArgs(val roleName: String)
 
 private object NoArgProcessor : ArchitectureProcessorNoArg<Unit> {
-    override fun process(context: ArchitectureProcessContext<Unit>): Result<Unit> = runCatching { }
+    override fun process(context: ArchitectureProcessNoArgContext): Result<Unit> = runCatching { }
 }
 
 private object RoleNameProcessor : ArchitectureProcessor<RoleNameArgs, Unit> {
@@ -270,7 +271,7 @@ private object RoleNameProcessor : ArchitectureProcessor<RoleNameArgs, Unit> {
 
 /** Answers with one name that no `Args` field declares, the way a template answers with a role's. */
 private object UndeclaredNameProcessor : ArchitectureProcessorNoArg<Unit> {
-    override fun process(context: ArchitectureProcessContext<Unit>): Result<Unit> = runCatching { }
+    override fun process(context: ArchitectureProcessNoArgContext): Result<Unit> = runCatching { }
 
     override fun undeclaredArgNames(context: ArchitectureProcessContext<*>): Set<String> =
         setOf("greeting")
@@ -278,7 +279,7 @@ private object UndeclaredNameProcessor : ArchitectureProcessorNoArg<Unit> {
 
 /** Breaks the contract that `undeclaredArgNames` never throws, so the run can be seen surviving it. */
 private object ThrowingUndeclaredNameProcessor : ArchitectureProcessorNoArg<Unit> {
-    override fun process(context: ArchitectureProcessContext<Unit>): Result<Unit> = runCatching { }
+    override fun process(context: ArchitectureProcessNoArgContext): Result<Unit> = runCatching { }
 
     override fun undeclaredArgNames(context: ArchitectureProcessContext<*>): Set<String> =
         throw IllegalStateException("undeclaredArgNames should not be trusted to behave")
@@ -292,7 +293,7 @@ private object ThrowingUndeclaredNameProcessor : ArchitectureProcessorNoArg<Unit
  * go on calling every real key a typo. An example nobody runs drifts from the thing it explains.
  */
 private object AnnotateRoles : ArchitectureProcessorNoArg<Unit> {
-    override fun process(context: ArchitectureProcessContext<Unit>): Result<Unit> = runCatching {
+    override fun process(context: ArchitectureProcessNoArgContext): Result<Unit> = runCatching {
         for ((role, note) in context.rawArgs) context.log("$role: $note")
     }
 

@@ -6,7 +6,7 @@ import me.tbsten.katachi.ExperimentalKatachiApi
 import me.tbsten.katachi.dsl.Documented
 import me.tbsten.katachi.dsl.Examples
 import me.tbsten.katachi.dsl.Summary
-import me.tbsten.katachi.processor.ArchitectureProcessContext
+import me.tbsten.katachi.processor.ArchitectureProcessNoArgContext
 import me.tbsten.katachi.processor.ArchitectureProcessorNoArg
 
 /**
@@ -45,7 +45,7 @@ import me.tbsten.katachi.processor.ArchitectureProcessorNoArg
  * ```
  */
 object RoleDocCoverage : ArchitectureProcessorNoArg<RoleDocCoverage.Report> {
-    override fun process(context: ArchitectureProcessContext<Unit>): Result<Report> = runCatching {
+    override fun process(context: ArchitectureProcessNoArgContext): Result<Report> = runCatching {
         // A group that opted out takes its roles with it, so the silent group names are
         // collected first and every prefix of a role's group path is checked against them.
         val silentGroups = context.groups

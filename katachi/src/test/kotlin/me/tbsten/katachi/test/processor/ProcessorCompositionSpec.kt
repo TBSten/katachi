@@ -15,6 +15,7 @@ import me.tbsten.katachi.dsl.files.FsPath
 import me.tbsten.katachi.dsl.files.KatachiFileSystem
 import me.tbsten.katachi.dsl.kotlin.ktFile
 import me.tbsten.katachi.processor.ArchitectureProcessContext
+import me.tbsten.katachi.processor.ArchitectureProcessNoArgContext
 import me.tbsten.katachi.processor.ArchitectureProcessor
 import me.tbsten.katachi.processor.ArchitectureProcessorNoArg
 import me.tbsten.katachi.processor.KatachiProcessorArgsDecoderException
@@ -120,31 +121,31 @@ private object NotAStringMapDecoder : AbstractDecoder() {
 
 /** Answers "the run does not pass" with [failure], having done its job. */
 private class FailingNames(private val failure: Throwable) : ArchitectureProcessorNoArg<List<String>> {
-    override fun process(context: ArchitectureProcessContext<Unit>): Result<List<String>> =
+    override fun process(context: ArchitectureProcessNoArgContext): Result<List<String>> =
         runCatching { throw failure }
 }
 
 /** Passes with nothing, and leaves a mark in [ran] that it was run at all. */
 private class RecordingNames(private val ran: MutableList<String>) : ArchitectureProcessorNoArg<List<String>> {
-    override fun process(context: ArchitectureProcessContext<Unit>): Result<List<String>> = runCatching {
+    override fun process(context: ArchitectureProcessNoArgContext): Result<List<String>> = runCatching {
         ran += "ran"
         emptyList()
     }
 }
 
 private object FirstNames : ArchitectureProcessorNoArg<List<String>> {
-    override fun process(context: ArchitectureProcessContext<Unit>): Result<List<String>> =
+    override fun process(context: ArchitectureProcessNoArgContext): Result<List<String>> =
         runCatching { context.roles.map { "first:${it.qualifiedName}" } }
 }
 
 private object SecondNames : ArchitectureProcessorNoArg<List<String>> {
-    override fun process(context: ArchitectureProcessContext<Unit>): Result<List<String>> =
+    override fun process(context: ArchitectureProcessNoArgContext): Result<List<String>> =
         runCatching { context.roles.map { "second:${it.qualifiedName}" } }
 }
 
 /** A processor that returns the files of every role it can see, to prove walk sharing. */
 private object FilesCount : ArchitectureProcessorNoArg<List<String>> {
-    override fun process(context: ArchitectureProcessContext<Unit>): Result<List<String>> =
+    override fun process(context: ArchitectureProcessNoArgContext): Result<List<String>> =
         runCatching { context.roles.flatMap { context.filesOf(it) } }
 }
 

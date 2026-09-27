@@ -9,7 +9,7 @@ import me.tbsten.katachi.dsl.internal.DeclaredFileConstraint
 import me.tbsten.katachi.dsl.internal.captureDeclarationSite
 import me.tbsten.katachi.internal.catching
 import me.tbsten.katachi.internal.runProcessorCatching
-import me.tbsten.katachi.processor.ArchitectureProcessContext
+import me.tbsten.katachi.processor.ArchitectureProcessNoArgContext
 import me.tbsten.katachi.processor.ArchitectureProcessorNoArg
 import me.tbsten.katachi.processor.internal.ProjectWalk
 import me.tbsten.katachi.processor.internal.projectWalk
@@ -99,7 +99,7 @@ public class FileConstraintCheck(
     }
 
     /** Evaluates every constraint of this run that nothing has evaluated yet. */
-    override fun process(context: ArchitectureProcessContext<Unit>): Result<List<Violation>> =
+    override fun process(context: ArchitectureProcessNoArgContext): Result<List<Violation>> =
         runProcessorCatching {
             val walk = context.projectWalk
             // Handed the same constraint twice in one run — `assert(FileConstraintCheck(),

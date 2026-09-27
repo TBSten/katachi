@@ -5,6 +5,7 @@ import me.tbsten.katachi.check.internal.assertNoErrors
 import me.tbsten.katachi.check.internal.layoutWarningsOf
 import me.tbsten.katachi.internal.runProcessorCatching
 import me.tbsten.katachi.processor.ArchitectureProcessContext
+import me.tbsten.katachi.processor.ArchitectureProcessNoArgContext
 import me.tbsten.katachi.processor.ArchitectureProcessorNoArg
 import me.tbsten.katachi.processor.internal.projectWalk
 
@@ -96,7 +97,7 @@ import me.tbsten.katachi.processor.internal.projectWalk
  */
 @ExperimentalKatachiApi
 public class LayoutCheck : ArchitectureProcessorNoArg<List<Violation>> {
-    override fun process(context: ArchitectureProcessContext<Unit>): Result<List<Violation>> =
+    override fun process(context: ArchitectureProcessNoArgContext): Result<List<Violation>> =
         runProcessorCatching {
             val walk = context.projectWalk
             (
