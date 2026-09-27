@@ -8,7 +8,8 @@
   `--with-bench` で JMH（`bench-jmh` の `./gradlew` の行）だけ足す。nowinandroid の計測は CI の環境変数に頼るので走らせない
 - `./gradlew` の行には `--no-daemon --console=plain --project-cache-dir .local/tmp/gradle-cache/prerelease-ci` を足す
   （ほかのビルドと cache を取り合わない）
-- 1つ落ちても最後まで走らせ、全部の結果を表にする。ログは1コマンド1ファイル
+- 1つ落ちても最後まで走らせ、全部の結果を表にする（<release-dir>/ci-checks.md）。ログは1コマンド1ファイルで
+  <release-dir>/tmp/ci-checks/ に置く（作業場所の直下には人が読む成果物だけを置く）
 - 終了コード: 全部通れば 0、1つでも落ちれば 1
 
 使い方（リポジトリの直下で）:
@@ -92,7 +93,7 @@ def with_flags(cmd):
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--release-dir", help="ログと結果の表を置く .local/release-v<版>")
+    ap.add_argument("--release-dir", help="結果の表（ci-checks.md）とログ（tmp/ci-checks/）を置く .local/release-v<版>")
     ap.add_argument("--list", action="store_true", help="走らせるコマンドを出すだけ")
     ap.add_argument("--with-bench", action="store_true", help="JMH（bench-jmh）も走らせる")
     a = ap.parse_args()
@@ -106,7 +107,7 @@ def main():
         return 0
 
     release_dir = (root / a.release_dir).resolve()
-    log_dir = release_dir / "ci-checks"
+    log_dir = release_dir / "tmp" / "ci-checks"
     log_dir.mkdir(parents=True, exist_ok=True)
     rows = []
     for n, (job, name, cmd) in enumerate(picked, 1):

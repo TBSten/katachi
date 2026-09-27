@@ -69,6 +69,7 @@
 - [ ] en: {TODO} ページ / 問題 {TODO} 件
 - [ ] ja: {TODO} ページ / 問題 {TODO} 件
 - [ ] api-docs: {TODO} ページ / 問題 {TODO} 件
+- [ ] 巡回の結果: {TODO file://.local/release-v0.0.0/site-crawl.md の絶対パス}
 - [ ] スクリーンショット: {TODO file://.local/release-v0.0.0/screenshots/ の絶対パス}
 
 <details>
@@ -82,6 +83,18 @@
 
 - [ ] 通った: {TODO} / {TODO}（`run-ci-checks.py`）
 - [ ] 結果: {TODO file://.local/release-v0.0.0/ci-checks.md の絶対パス}
+
+<details>
+    <summary>memo</summary>
+
+    {TODO}
+
+</details>
+
+## 9. インストールキットのチェック
+
+- [ ] 通った: {TODO} / {TODO}（`check-install-kit.sh`）
+- [ ] 結果: {TODO file://.local/release-v0.0.0/install-kit.md の絶対パス}
 
 <details>
     <summary>memo</summary>
