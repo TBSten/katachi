@@ -28,8 +28,6 @@ internal data class FormState(
     /** The field whose typing currently drives each link group (see LinkedParameters.kt). */
     val linkSources: Map<LinkKey, FieldId> = emptyMap(),
     val onExisting: OnExistingChoice = OnExistingChoice.Fail,
-    /** Rows whose expected-file list is open. Session only. */
-    val fileListsOpen: Set<TemplateId> = emptySet(),
 ) {
     fun inputsOf(templateId: TemplateId): Map<String, String> = inputs[templateId].orEmpty()
 

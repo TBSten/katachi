@@ -173,7 +173,7 @@ internal val listScenarios: List<Scenario> = listOf(
         narrowHeight = 760,
     ),
     Scenario(
-        "form-branch-counts",
+        "form-folded-branches",
         ready(snapshot(arch, repository, screen, navigation)).then(
             check(repository),
             input(repository, "name", "User"),
@@ -221,18 +221,6 @@ internal val listScenarios: List<Scenario> = listOf(
         narrowHeight = 480,
     ),
     Scenario(
-        "file-list-open",
-        ready(snapshot(arch, repository, mapper)).then(
-            check(repository),
-            input(repository, "name", "User"),
-            KatachiIntent.ToggleFileList(idOf(arch, repository)),
-            check(mapper),
-            input(mapper, "name", "User"),
-            KatachiIntent.ToggleFileList(idOf(arch, mapper)),
-        ).let { it.copy(view = it.view.copy(existingPaths = setOf("data/src/main/kotlin/com/example/data/user/UserRepositoryImpl.kt"))) },
-        narrowHeight = 720,
-    ),
-    Scenario(
         "preview-failed-cause",
         ready(snapshot(arch, dataSource, brokenTemplate, futureTemplate, service)).let {
             it.copy(
@@ -249,6 +237,6 @@ internal val listScenarios: List<Scenario> = listOf(
     ),
     Scenario(
         "overwrite-footer",
-        sampleList.then(input(service, "name", "User"), KatachiIntent.SetOnExisting(OnExistingChoice.Overwrite), KatachiIntent.ToggleFileCountPopup),
+        sampleList.then(input(service, "name", "User"), KatachiIntent.SetOnExisting(OnExistingChoice.Overwrite)),
     ),
 )

@@ -5,8 +5,8 @@ import me.tbsten.katachi.dsl.gradle.div
 import me.tbsten.katachi.dsl.kotlin.ktFile
 
 /**
- * The role of the IDE plugin's tests: plain JUnit for pure logic, and BasePlatformTestCase with
- * the Analysis API for what needs the platform.
+ * The role of the IDE plugin's tests: plain JUnit for pure logic, BasePlatformTestCase with the
+ * Analysis API for what needs the platform, and property-based and UI tests on standalone Compose.
  */
 fun DeclarationContainerScope.idePluginTest() = "IdePluginTest" {
     title = "IDE プラグインのテスト"
@@ -28,5 +28,8 @@ fun DeclarationContainerScope.idePluginTest() = "IdePluginTest" {
         }
         // The Driver smoke: a real IDE started by Starter (JUnit 5), run on demand by `integrationTest`.
         "katachi-intellij-plugin" / "src" / "integrationTest" / "kotlin" / "me/tbsten/katachi/intellij" / "**" / "*Test".ktFile()
+        // The property-based tests and the UI tests on standalone Compose, run by `uiTest` (which
+        // `test` runs too), with what they build on: generators, operations, invariants, the renderer.
+        "katachi-intellij-plugin" / "src" / "uiTest" / "kotlin" / "me/tbsten/katachi/intellij/uitest" / "**" / "*".ktFile()
     }
 }

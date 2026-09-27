@@ -63,32 +63,25 @@ internal interface KatachiStrings {
 
     // The list
     val searchPlaceholder: String
-    fun fileCount(count: Int?): String
     val outsideSearch: String
     fun filledCount(filled: Int, total: Int): String
     val previewFailed: String
     fun unknownKinds(kinds: List<String>): String
     val unresolvedTarget: String
     val copyCommand: String
-    val showContents: String
     val showCause: String
     val causeLoading: String
 
     // The inline form
     fun collapsedField(name: String, controller: String, value: String): String
-    fun branchAdds(value: String, files: List<String>): String
-    fun branchRemoves(value: String, files: List<String>): String
     fun valueLabel(value: String): String
     val chooseOne: String
     val requiredError: String
     fun notAnInt(min: Int, max: Int): String
     val notAccepted: String
-    fun generatesOne(fileName: String): String
-    fun generatesMany(fileName: String, others: Int): String
-    val generatesNothing: String
-    val expectedCaption: String
+    val multilineOn: String
+    val multilineOff: String
     val alreadyExists: String
-    val targetFromBranch: String
 
     // The footer
     val nothingSelected: String
@@ -104,9 +97,7 @@ internal interface KatachiStrings {
     val onExistingSkip: String
     val onExistingOverwrite: String
     val overwriteWarning: String
-    fun totalCount(count: ExpectedFileCount): String
     val generate: String
-    val countPopupTitle: String
 
     // Generating and the result
     fun rowWritten(count: Int): String

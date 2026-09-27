@@ -50,13 +50,6 @@ class FormOperationsTest {
         assertEquals(emptySet<Any>(), form.expanded)
     }
 
-    @Test
-    fun `予想ファイルの一覧を押すたびに開閉する`() {
-        val opened = toggleFileList(FormState(), one)
-        assertTrue(one in opened.fileListsOpen)
-        assertEquals(emptySet<Any>(), toggleFileList(opened, one).fileListsOpen)
-    }
-
     private val report = GenerationReport(
         listOf(
             GenerationItemReport(one, GenerationItemResult.Generated(emptyList())),

@@ -100,7 +100,7 @@ private fun baseRowOf(hit: SearchHit, state: KatachiScreenState, strings: Katach
             is TemplateUnavailability.UnknownParameterKind -> strings.unknownKinds(unavailability.kindNames)
             null -> strings.unresolvedTarget.takeIf { hasUnresolved }
         },
-        trailing = strings.fileCount(rowFileCountOf(row, inputs)),
+        trailing = "",
         isFaint = unavailability != null || hit.isOutsideSearch,
         note = strings.outsideSearch.takeIf { hit.isOutsideSearch },
         // Outside the search the "outside search, selected" note needs the room more.
@@ -108,7 +108,6 @@ private fun baseRowOf(hit: SearchHit, state: KatachiScreenState, strings: Katach
         isExpanded = expanded.takeIf { formVisible },
         menu = listOfNotNull(
             detail?.let { ActionUi(strings.copyCommand, KatachiIntent.CopyCommand(row.id)) },
-            detail?.let { ActionUi(strings.showContents, KatachiIntent.ShowExpectedContents(row.id)) },
             ActionUi(strings.showCause, KatachiIntent.ShowCause(row.id)).takeIf { unavailability == TemplateUnavailability.PreviewFailed },
         ),
         body = when {
@@ -118,12 +117,6 @@ private fun baseRowOf(hit: SearchHit, state: KatachiScreenState, strings: Katach
             else -> null
         },
     )
-}
-
-/** The row's own "N files": the preview's count moved by the branches the inputs take (E-09). */
-private fun rowFileCountOf(row: ModuleTemplate, inputs: Map<String, String>): Int? {
-    if (row.template.summary.fileCount == null) return null
-    return expectedFileCountOf(listOf(fileCountSourceOf(row.template, inputs))).total
 }
 
 /** "filled 2/3" of a folded form: shown fields holding a value (Booleans always do). */

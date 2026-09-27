@@ -43,7 +43,9 @@ internal fun activeBranchesOf(detail: TemplateDetailModel, inputs: Map<String, S
 
 /**
  * The form's lines in order: the preview's parameters, each followed by the parameters its branches
- * add. A parameter a taken branch removes, and one an untaken branch adds, is [FieldSlot.Collapsed].
+ * take away and then those they add, so that what an `if` holds sits under the field that controls
+ * it (katachi lists a parameter declared in an `if` the preview takes at the end). A parameter a
+ * taken branch removes, and one an untaken branch adds, is [FieldSlot.Collapsed].
  *
  * Only one parameter differing at a time is known (katachi previews branches one by one), so a
  * parameter that needs two values at once never shows; generation reports it instead.
@@ -57,18 +59,30 @@ internal fun fieldSlotsOf(detail: TemplateDetailModel, inputs: Map<String, Strin
         for (name in branch.removedParameters) removedBy.putIfAbsent(name, controller)
     }
 
+    // The first controller whose branch removes a parameter: the parameter goes under it.
+    val controllerOf = LinkedHashMap<String, String>()
+    for (branch in detail.branches) {
+        for (name in branch.removedParameters) {
+            if (name != branch.parameterName && branch.parameterName in baseNames) controllerOf.putIfAbsent(name, branch.parameterName)
+        }
+    }
+
     val slots = mutableListOf<FieldSlot>()
     val emitted = HashSet<String>()
-    for (parameter in detail.parameters) {
+    fun emit(parameter: ParameterModel) {
+        if (!emitted.add(parameter.name)) return
         val remover = removedBy[parameter.name]
         slots += if (remover == null) {
             FieldSlot.Shown(parameter)
         } else {
             FieldSlot.Collapsed(parameter, controllerName = remover.name, whenValue = remover.previewValue)
         }
-        emitted += parameter.name
+        detail.parameters.filter { controllerOf[it.name] == parameter.name }.forEach(::emit)
         slots += addedSlotsOf(parameter, detail.branches, active, baseNames, emitted)
     }
+    // A controlled parameter waits for its controller, unless the controller never comes (a cycle).
+    detail.parameters.filter { it.name !in controllerOf }.forEach(::emit)
+    detail.parameters.forEach(::emit)
     return slots
 }
 

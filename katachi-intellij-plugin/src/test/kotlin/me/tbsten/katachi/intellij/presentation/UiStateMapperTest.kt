@@ -91,11 +91,11 @@ class UiStateMapperTest {
     }
 
     @Test
-    fun `プレビューに失敗した行はチェックできず、ファイル数は疑問符で、原因を見るメニューを持つ`() {
+    fun `プレビューに失敗した行はチェックできず、原因を見るメニューを持つ`() {
         val row = list(ready(arch to listOf(broken))).row(broken)
         assertEquals(RowLeadUi.Check(checked = false, enabled = false), row.lead)
         assertEquals(RowMarker.Blocked, row.marker)
-        assertEquals("? files", row.trailing)
+        assertEquals("", row.trailing)
         assertTrue(row.menu.any { it.intent == KatachiIntent.ShowCause(id(broken)) })
     }
 
@@ -115,18 +115,28 @@ class UiStateMapperTest {
     }
 
     @Test
-    fun `分岐の外に出た欄は灰色の1行に畳み、分岐の説明を制御する欄に出す`() {
+    fun `分岐の外に出た欄は灰色の1行に畳み、制御する欄には予想の説明を出さない`() {
         val state = ready(arch to listOf(repository)).then(check(repository), input(repository, "name", "User"), input(repository, "withImpl", "false"))
         val form = list(state).row(repository).form()
         assertEquals(FieldUi.Collapsed(FieldId(id(repository), "implSuffix"), "implSuffix（withImpl がオンのとき）"), form.field("implSuffix"))
-        assertEquals("オン: UserRepositoryImpl.kt を作る", form.field("withImpl").cast<FieldUi.Bool>().note)
-        assertEquals("UserRepository.kt を生成", form.files.text)
+        assertEquals(FieldUi.Bool(FieldId(id(repository), "withImpl"), "withImpl", checked = false, link = LinkUi.None), form.field("withImpl"))
     }
 
     @Test
-    fun `未入力のプレースホルダはそのまま要約に出す`() {
-        val form = list(ready(arch to listOf(service)).then(check(service))).row(service).form()
-        assertEquals("\${name}Service.kt を生成", form.files.text)
+    fun `行の右端に予想のファイル数を出さない`() {
+        val state = ready(arch to listOf(repository, service)).then(check(repository), input(repository, "name", "User"))
+        assertEquals("", list(state).row(repository).trailing)
+        assertEquals("", list(state).row(service).trailing)
+    }
+
+    @Test
+    fun `文字列の欄の複数行への切り替えは向きに合わせたツールチップを持つ`() {
+        val state = ready(arch to listOf(service)).then(check(service))
+        val field = FieldId(id(service), "name")
+        assertEquals("複数行で入力", list(state).row(service).form().field("name").cast<FieldUi.Text>().multilineTooltip)
+        val text = list(state.then(KatachiIntent.ToggleMultiline(field))).row(service).form().field("name").cast<FieldUi.Text>()
+        assertEquals(true, text.isMultiline)
+        assertEquals("1行に戻す", text.multilineTooltip)
     }
 
     @Test

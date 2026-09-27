@@ -55,7 +55,6 @@ class SearchFilterTest {
         fun once() {
             searchTemplates(many, "role5x1", form)
             generateBlockerOf(many, form, BusyState.Idle)
-            expectedFileCountOf(many.filter { form.isSelected(it.id) }.map { fileCountSourceOf(it.template, form.inputsOf(it.id)) })
         }
         repeat(50) { once() }
         val rounds = 20

@@ -137,6 +137,58 @@ class SearchScenarioTest {
     }
 
     @Test
+    fun `検索で絞ったまま結果の画面を離れた直後の一覧は検索を保ち離れ方ごとにチェックの残りを反映する`() = runBlocking {
+        val s = ScenarioHarness(this)
+        s.open()
+        s.check(s.repository)
+        s.input(s.repository, "name", "User")
+        s.check(s.useCase)
+        s.type("repo", from = "")
+        assertEquals(listOf("data/Repository", "domain/UseCase"), s.shownRoles())
+        s.generate()
+
+        // "Generate more": both stay checked; the one outside the search keeps its note and no form.
+        s.dispatch(KatachiIntent.ContinueGenerating)
+        assertEquals("repo", s.ui().search.query)
+        assertEquals(true, s.ui().search.enabled)
+        assertEquals(listOf("data/Repository", "domain/UseCase"), s.shownRoles())
+        assertTrue(s.row(s.repository).body is RowBodyUi.Form)
+        assertEquals("検索外・選択中", s.row(s.useCase).note)
+        assertNull(s.row(s.useCase).body)
+        assertNull(s.ui().emptySearch)
+        s.input(s.repository, "name", "Order")
+        assertEquals("Order", s.inputOf(s.useCase, "name"))
+        s.generate()
+
+        // "Uncheck all": nothing is checked, so only what the search matches is left.
+        s.dispatch(KatachiIntent.UncheckAll)
+        assertEquals("repo", s.ui().search.query)
+        assertEquals(listOf("data/Repository"), s.shownRoles())
+        assertEquals(RowLeadUi.Check(checked = false, enabled = true), s.row(s.repository).lead)
+        assertEquals(false, s.formFooter().generateEnabled)
+    }
+
+    @Test
+    fun `検索で絞ったまま一致0件にして結果の画面を離れても検索外の選択中の行は出ている`() = runBlocking {
+        val s = ScenarioHarness(this)
+        s.open()
+        s.check(s.repository)
+        s.input(s.repository, "name", "User")
+        s.type("zzz", from = "")
+        assertEquals(listOf("data/Repository"), s.shownRoles())
+        s.generate()
+
+        s.dispatch(KatachiIntent.ContinueGenerating)
+        assertEquals(listOf("data/Repository"), s.shownRoles())
+        assertNull(s.ui().emptySearch)
+        s.input(s.repository, "name", "Order")
+        s.generate()
+        s.dispatch(KatachiIntent.UncheckAll)
+        assertTrue(s.shownRoles().isEmpty())
+        assertEquals("「zzz」に一致するテンプレートはありません", s.ui().emptySearch?.title)
+    }
+
+    @Test
     fun `同名の欄を連動させたまま2回生成すると2回目も両方に同じ名前が入る`() = runBlocking {
         val s = ScenarioHarness(this)
         s.open()

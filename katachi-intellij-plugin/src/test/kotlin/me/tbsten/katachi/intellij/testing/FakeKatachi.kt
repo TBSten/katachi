@@ -2,9 +2,11 @@ package me.tbsten.katachi.intellij.testing
 
 import me.tbsten.katachi.intellij.data.gradle.GradleRunOutcome
 import me.tbsten.katachi.intellij.data.gradle.GradleRunRequest
+import me.tbsten.katachi.intellij.model.KatachiModule
 import me.tbsten.katachi.intellij.model.ModuleTemplate
 import me.tbsten.katachi.intellij.presentation.ExpectedLocation
 import me.tbsten.katachi.intellij.presentation.expectedFilesOf
+import me.tbsten.katachi.intellij.presentation.resolveExpectedPath
 import java.nio.file.Path
 import java.util.Collections
 
@@ -33,18 +35,24 @@ internal class FakeKatachi(
      */
     var override: (args: Map<String, String>, index: Int) -> FakeRun? = { _, _ -> null }
 
+    /** The task path of the run being answered, for an [override] that tells modules apart. */
+    var currentTaskPath: String = ""
+        private set
+
     fun answer(request: GradleRunRequest): FakeRun {
         val args = request.tasks.single().args.toMap()
         val index = runs.size
         runs += args
+        currentTaskPath = request.tasks.single().taskPath
         override(args, index)?.let { return it }
         val roleName = args.getValue("roleName")
-        val row = rows().firstOrNull { it.template.roleName == roleName }
+        val taskPath = request.tasks.single().taskPath
+        val row = rows().firstOrNull { it.template.roleName == roleName && it.module.taskPath(KatachiModule.TEMPLATE_TASK) == taskPath }
             ?: return FakeRun(listOf("> Task ${request.tasks.single().taskPath} FAILED", "No template $roleName"), GradleRunOutcome.Failed)
         val detail = row.template.detail ?: return FakeRun(emptyList(), GradleRunOutcome.Failed)
         val paths = expectedFilesOf(detail, args - "roleName" - "onExisting")
             .mapNotNull { (it.location as? ExpectedLocation.Known)?.path }
-            .map { root.resolve(it) }
+            .mapNotNull { resolveExpectedPath(root, it) }
         val existing = paths.filter(fs::exists)
         return when {
             existing.isEmpty() -> written(paths, emptyList(), roleName)

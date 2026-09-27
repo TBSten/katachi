@@ -92,7 +92,7 @@ internal class KatachiToolWindowViewModel(
         mutableState.update { current ->
             val next = applyFormIntent(current, intent)
             applied = next != null
-            if (next == null) current else withExistingPaths(next)
+            next ?: current
         }
         if (applied) return
         if (ideIntents.handle(intent)) return
@@ -102,7 +102,9 @@ internal class KatachiToolWindowViewModel(
                 detectAndLoad()
             }
             // Only after the tool window was shown: a sync alone never runs Gradle for someone who does not look (spec 04).
-            KatachiIntent.SyncCompleted -> if (opened && mutableState.value.phase !is ScreenPhase.Ready) detectAndLoad()
+            KatachiIntent.SyncCompleted -> if (opened) {
+                if (mutableState.value.phase !is ScreenPhase.Ready) detectAndLoad() else redetectAfterSync()
+            }
             KatachiIntent.Reload -> reload()
             KatachiIntent.CancelLoad -> loadJob?.cancel()
             KatachiIntent.Generate -> generate()
@@ -114,10 +116,20 @@ internal class KatachiToolWindowViewModel(
         }
     }
 
+    /** ⟳ reads the synced data again first (no Gradle), so a module added since shows too. */
     private fun reload() {
         val current = mutableState.value
         if (current.generation is GenerationState.Running || loadJob?.isActive == true) return
-        launchLoad(detect = detection !is DetectionResult.Found && detection !is DetectionResult.TaskListMissing)
+        launchLoad(detect = true)
+    }
+
+    /**
+     * A sync over a shown list: the definition modules are looked for again, and Gradle runs only
+     * when they changed (a module added or removed). A sync that changed nothing leaves the list as it is.
+     */
+    private fun redetectAfterSync() {
+        if (mutableState.value.generation is GenerationState.Running || loadJob?.isActive == true) return
+        launchLoad(detect = true, onlyWhenModulesChanged = true)
     }
 
     private fun detectAndLoad() {
@@ -126,10 +138,10 @@ internal class KatachiToolWindowViewModel(
     }
 
     /** Detects first when [detect], then loads. Whatever goes wrong, `loading` does not stay set. */
-    private fun launchLoad(detect: Boolean) {
+    private fun launchLoad(detect: Boolean, onlyWhenModulesChanged: Boolean = false) {
         loadJob = scope.launch {
             try {
-                if (detect && !detect()) return@launch
+                if (detect && !detect(onlyWhenModulesChanged)) return@launch
                 load()
             } catch (e: CancellationException) {
                 mutableState.update(::applyLoadCancelled)
@@ -141,25 +153,37 @@ internal class KatachiToolWindowViewModel(
         }
     }
 
-    /** Reads the synced data and shows the cached list; `false` when there is nothing to load. */
-    private suspend fun detect(): Boolean {
+    /**
+     * Reads the synced data and shows the cached list; `false` when there is nothing to load, or when
+     * [onlyWhenModulesChanged] and the definition modules are the ones already shown.
+     */
+    private suspend fun detect(onlyWhenModulesChanged: Boolean = false): Boolean {
         mutableState.update { it.copy(phase = if (it.snapshots.isEmpty()) ScreenPhase.Initializing else it.phase) }
         // Walking the synced data and parsing the cached JSON are too slow for the EDT (a large Android build).
         val (result, cached) = withContext(ioDispatcher) {
             val found = detectDefinitionModules(syncedProject.read())
             found to if (found is DetectionResult.Found) loader.readCached(found.modules, found.katachiVersions) else emptyList()
         }
-        detection = result
         val modules = when (result) {
             is DetectionResult.Found -> result.modules
             is DetectionResult.TaskListMissing -> result.candidates
-            else -> {
-                mutableState.update { it.copy(phase = ScreenPhase.Empty(emptyReasonOf(result)), modules = emptyList()) }
-                return false
-            }
+            else -> null
         }
-        mutableState.update { state ->
-            if (cached.isEmpty()) state.copy(modules = modules) else applyLoaded(state.copy(modules = modules), cached)
+        val unchanged = modules == mutableState.value.modules && mutableState.value.snapshots.isNotEmpty()
+        if (onlyWhenModulesChanged && unchanged) return false
+        detection = result
+        if (modules == null) {
+            // No list to show a result on: it goes, as when a load leaves no template (applyLoaded).
+            mutableState.update {
+                it.copy(phase = ScreenPhase.Empty(emptyReasonOf(result)), modules = emptyList(), generation = it.generation as? GenerationState.Running)
+            }
+            return false
+        }
+        // The list on screen is newer than the cache when the modules did not change.
+        if (!unchanged) {
+            mutableState.update { state ->
+                if (cached.isEmpty()) state.copy(modules = modules) else applyLoaded(state.copy(modules = modules), cached)
+            }
         }
         return true
     }
@@ -179,7 +203,7 @@ internal class KatachiToolWindowViewModel(
         }
         mutableState.update { state ->
             when (result) {
-                is LoadResult.Loaded -> withExistingPaths(applyLoaded(state, result.snapshots))
+                is LoadResult.Loaded -> applyLoaded(state, result.snapshots)
                 is LoadResult.Failed -> applyLoadFailed(state, result.failure, result.output)
             }
         }
@@ -194,6 +218,9 @@ internal class KatachiToolWindowViewModel(
         val refreshing = loadJob?.isActive == true
         generationLabel = null
         mutableState.update { if (it.generation == null) startGeneration(it, waitingForLoad = refreshing) else it }
+        // This job's own session: its cleanup must not clear the session of a generation started
+        // after this one was cancelled (Generate pressed again right after cancelling).
+        val session = newSession()
         generationJob = scope.launch {
             try {
                 loadJob?.join()
@@ -203,7 +230,7 @@ internal class KatachiToolWindowViewModel(
                     mutableState.update { it.copy(generation = null) }
                     return@launch
                 }
-                runGeneration(state)
+                runGeneration(state, session)
             } catch (e: CancellationException) {
                 // cancelGeneration() already left the running state, or the project is closing.
                 throw e
@@ -212,25 +239,26 @@ internal class KatachiToolWindowViewModel(
                 val failure = GenerationFailure.NotReached(GradleFailure.Other(listOf(messageOf(e))))
                 mutableState.update { abortGeneration(it, failure, generationLabel) }
             } finally {
-                session = null
+                if (this@KatachiToolWindowViewModel.session === session) this@KatachiToolWindowViewModel.session = null
             }
         }
     }
 
-    private suspend fun runGeneration(state: KatachiScreenState) {
+    /** A session that marks the row waiting for the conflict dialog while it asks. */
+    private fun newSession(): GenerationSession = GenerationSession(runner, fileSystem) { question ->
+        val id = question.templateId
+        mutableState.update { updateGenerationRow(it, id, GenerationRowStatus.AwaitingConflict).withConflict(question) }
+        try {
+            effects.askConflict(question)
+        } finally {
+            mutableState.update { updateGenerationRow(it, id, GenerationRowStatus.Running(null)).withConflict(null) }
+        }
+    }
+
+    private suspend fun runGeneration(state: KatachiScreenState, session: GenerationSession) {
         val rows = state.rows.filter { state.form.isSelected(it.id) }
         val items = rows.mapNotNull { generationItemOf(it, state.form) }
         ownWrites = items.flatMap { it.expectedPaths }.toSet()
-        val session = GenerationSession(runner, fileSystem) { question ->
-            val id = question.templateId
-            mutableState.update { updateGenerationRow(it, id, GenerationRowStatus.AwaitingConflict).withConflict(question) }
-            try {
-                val expected = rows.firstOrNull { it.id == id }?.let { expectedContentsOf(it, state.form) }.orEmpty()
-                effects.askConflict(question, expected)
-            } finally {
-                mutableState.update { updateGenerationRow(it, id, GenerationRowStatus.Running(null)).withConflict(null) }
-            }
-        }
         // From here on "cancel" reaches the session, also while saving and labelling (E-21).
         this.session = session
         effects.saveAllDocuments()
@@ -269,23 +297,9 @@ internal class KatachiToolWindowViewModel(
             opened = toOpen
         } finally {
             // The files are written whatever the IDE did with them: the result shows either way.
-            mutableState.update { withExistingPaths(it.copy(generation = GenerationState.Finished(report, label, opened))) }
+            mutableState.update { it.copy(generation = GenerationState.Finished(report, label, opened)) }
         }
         effects.notifyGenerationFinished(report)
-    }
-
-    /**
-     * [state] with the "already exists" badges of the checked rows' expected files (E-17). Checked
-     * rows only, so typing stays cheap: a few `exists` calls per keystroke.
-     */
-    private fun withExistingPaths(state: KatachiScreenState): KatachiScreenState {
-        val existing = state.rows.filter { state.form.isSelected(it.id) }.flatMap { row ->
-            val detail = row.template.detail ?: return@flatMap emptyList()
-            expectedFilesOf(detail, state.form.inputsOf(row.id))
-                .mapNotNull { (it.location as? ExpectedLocation.Known)?.path }
-                .filter { path -> resolveExpectedPath(row.module.linkedRootPath, path)?.let(fileSystem::exists) == true }
-        }.toSet()
-        return if (existing == state.view.existingPaths) state else state.copy(view = state.view.copy(existingPaths = existing))
     }
 
     private fun cancelGeneration() {
@@ -302,8 +316,7 @@ internal class KatachiToolWindowViewModel(
 
     private fun finishResult(next: (KatachiScreenState, GenerationReport) -> FormState) {
         val finished = mutableState.value.generation as? GenerationState.Finished ?: return
-        // The form changed wholesale (names emptied, rows unchecked): the "already exists" badges follow.
-        mutableState.update { withExistingPaths(leaveResult(it, next(it, finished.report))) }
+        mutableState.update { leaveResult(it, next(it, finished.report)) }
     }
 
     private fun generationItemOf(row: ModuleTemplate, form: FormState): GenerationItem? {

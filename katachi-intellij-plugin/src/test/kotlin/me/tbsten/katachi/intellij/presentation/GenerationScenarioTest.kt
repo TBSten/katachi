@@ -33,12 +33,10 @@ class GenerationScenarioTest {
     private fun ScenarioHarness.resultFileNames(id: TemplateId) = result(id).files.map { "${it.name} ${it.badge} ${it.note.orEmpty()}".trim() }
 
     @Test
-    fun `続けて生成で同じ名前にするとフォームが既にあると示し2回目は1回目に書いたファイルと衝突する`() = runBlocking {
+    fun `続けて生成で同じ名前にすると2回目は1回目に書いたファイルと衝突しダイアログは実際の出力の既存ファイルを出す`() = runBlocking {
         val s = ScenarioHarness(this)
         s.open()
         s.fillRepository()
-        assertEquals("2 files", s.formFooter().countLabel)
-        assertEquals(listOf(null, null), s.form(s.repository).files.files.map { it.badge })
 
         s.generate()
         assertEquals(listOf("UserRepository.kt 新規 ← 開いた", "UserRepositoryImpl.kt 新規"), s.resultFileNames(s.repository))
@@ -52,7 +50,6 @@ class GenerationScenarioTest {
         assertEquals("Repository: name が未入力です", s.formFooter().reason)
 
         s.input(s.repository, "name", "User")
-        assertEquals(listOf("既にある", "既にある"), s.form(s.repository).files.files.map { it.badge })
 
         val questions = mutableListOf<ConflictQuestion>()
         s.effects.conflictAnswer = { questions += it; ConflictChoice.Stop }
@@ -76,12 +73,9 @@ class GenerationScenarioTest {
         assertEquals(listOf("UserRepository.kt 新規 ← 開いた"), s.resultFileNames(s.repository))
 
         s.dispatch(KatachiIntent.ContinueGenerating)
-        // Booleans stay, so the count still leaves the Impl out.
+        // Booleans stay, so the Impl is still left out.
         assertEquals("false", s.inputOf(s.repository, "withImpl"))
-        assertEquals("1 file", s.formFooter().countLabel)
         s.input(s.repository, "name", "Order")
-        assertEquals("OrderRepository.kt を生成", s.form(s.repository).files.text)
-        assertEquals(listOf<String?>(null), s.form(s.repository).files.files.map { it.badge })
 
         s.generate()
         assertEquals(listOf("OrderRepository.kt 新規 ← 開いた"), s.resultFileNames(s.repository))
@@ -103,7 +97,7 @@ class GenerationScenarioTest {
         assertEquals(OnExistingChoice.Skip, s.state.form.onExisting)
         assertEquals(RowLeadUi.Check(checked = false, enabled = true), s.row(s.repository).lead)
         assertNull(s.row(s.repository).body)
-        assertEquals("0 files", s.formFooter().countLabel)
+        assertEquals(false, s.formFooter().generateEnabled)
 
         s.check(s.useCase)
         s.input(s.useCase, "name", "Get")
@@ -139,7 +133,7 @@ class GenerationScenarioTest {
         assertEquals(listOf(s.useCase), s.state.form.selected)
         assertEquals(RowLeadUi.Check(checked = false, enabled = true), s.row(s.repository).lead)
         assertEquals("User", s.textField(s.useCase, "name").value)
-        assertEquals("1 file", s.formFooter().countLabel)
+        assertEquals(true, s.formFooter().generateEnabled)
 
         s.generate()
         assertEquals(listOf(s.useCase), s.state.generation.cast<GenerationState.Finished>().report.items.map { it.templateId })
@@ -304,18 +298,6 @@ class GenerationScenarioTest {
         assertEquals("overwrite", s.lastArgs()["onExisting"])
         assertEquals(listOf("UserRepository.kt 上書き ← 開いた", "UserRepositoryImpl.kt 上書き"), s.resultFileNames(s.repository))
         assertEquals(0, s.effects.log.count { it == "conflict" })
-    }
-
-    @Test
-    fun `ファイル数の一覧を開いたまま生成しても続けて生成で一覧は開き直さない`() = runBlocking {
-        val s = ScenarioHarness(this)
-        s.open()
-        s.fillRepository()
-        s.dispatch(KatachiIntent.ToggleFileCountPopup)
-        assertTrue(s.formFooter().countPopup != null)
-        s.generate()
-        s.dispatch(KatachiIntent.ContinueGenerating)
-        assertNull(s.formFooter().countPopup)
     }
 
     @Test

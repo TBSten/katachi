@@ -20,7 +20,6 @@ class ReloadMergeTest {
         expanded = setOf(repository, service),
         inputs = mapOf(repository to mapOf("name" to "User", "item" to "Long"), service to mapOf("name" to "User")),
         unlinked = setOf(FieldId(repository, "item")),
-        fileListsOpen = setOf(service),
     )
 
     @Test
@@ -45,7 +44,6 @@ class ReloadMergeTest {
         assertEquals(listOf(repository), result.form.selected)
         assertEquals(listOf(service), result.removedTemplates)
         assertEquals(setOf(repository), result.form.expanded)
-        assertEquals(emptySet<Any>(), result.form.fileListsOpen)
     }
 
     @Test

@@ -112,6 +112,46 @@ intellijPlatformTesting.testIdeUi.register("integrationTest") {
     }
 }
 
+// uiTest: the property-based tests that drive the ViewModel through sequences of operations and
+// render every state they reach, and the tests that operate the real Composables (compose ui-test).
+// Both need standalone Compose, which cannot share a classpath with the IDE's bundled one, so the
+// platform-free sources they drive are compiled into this source set once more, as `preview` does
+// with src/shared/kotlin: the data layer, the ViewModel and the test fakes.
+// `test` runs it too, with few iterations; `-Pkatachi.pbt.scale=N` runs N times as many sequences.
+sourceSets {
+    create("uiTest") {
+        kotlin.srcDir("src/uiTest/kotlin")
+        kotlin.srcDir("src/shared/kotlin")
+        kotlin.srcDir("src/main/kotlin/me/tbsten/katachi/intellij/data")
+        kotlin.srcDir("src/main/kotlin/me/tbsten/katachi/intellij/presentation")
+        kotlin.srcDir("src/test/kotlin/me/tbsten/katachi/intellij/testing")
+        resources.srcDir("src/test/resources")
+    }
+}
+dependencies {
+    "uiTestImplementation"(compose.desktop.currentOs)
+    "uiTestImplementation"(libs.compose.ui.test.junit4)
+    "uiTestImplementation"("org.jetbrains.jewel:jewel-int-ui-standalone:${libs.versions.jewel.get()}-${libs.versions.jewelForIde.get()}")
+    "uiTestImplementation"("com.jetbrains.intellij.platform:icons:${libs.versions.jewelForIde.get()}")
+    "uiTestImplementation"(libs.kotest.property)
+    "uiTestImplementation"(libs.junit4)
+    // The ViewModel logs through the platform's Logger; only that jar, not the platform with its Compose.
+    "uiTestImplementation"(files(configurations.named("intellijPlatformClasspath").map { platform -> platform.filter { it.name == "util-8.jar" } }))
+}
+val uiTest = tasks.register<Test>("uiTest") {
+    group = "verification"
+    description = "Property-based and UI tests over the real Composables on standalone Compose."
+    val uiTestSourceSet = sourceSets.getByName("uiTest")
+    testClassesDirs = uiTestSourceSet.output.classesDirs
+    classpath = uiTestSourceSet.runtimeClasspath
+    jvmArgs("-Djava.awt.headless=true", "-Dskiko.renderApi=SOFTWARE")
+    providers.gradleProperty("katachi.pbt.scale").orNull?.let { systemProperty("katachi.pbt.scale", it) }
+    providers.gradleProperty("katachi.pbt.seed").orNull?.let { systemProperty("katachi.pbt.seed", it) }
+    // Where a failing property writes its shrunk operation sequence and the PNG of the state it failed on.
+    systemProperty("katachi.pbt.outDir", layout.buildDirectory.dir("uiTest-failures").get().asFile.path)
+}
+tasks.test { dependsOn(uiTest) }
+
 // K2 for the Analysis API in tests, paired with <supportsKotlinPluginMode supportsK2="true"/>.
 // No useJUnitPlatform(): BasePlatformTestCase is JUnit 4 based.
 tasks.test { systemProperty("idea.kotlin.plugin.use.k2", "true") }

@@ -121,7 +121,7 @@ internal data class TemplateRowUi(
     val lead: RowLeadUi,
     val marker: RowMarker,
     val markerTooltip: String?,
-    /** "2 files", or the status during a generation ("実行中 > …"). */
+    /** The status during a generation ("実行中 > …"); empty while the list is editable. */
     val trailing: String,
     /** Grey: cannot be checked, or checked but outside the search. */
     val isFaint: Boolean,
@@ -151,7 +151,6 @@ internal data class FormUi(
     /** `summary` of the template, the first line of the form. */
     val summary: String?,
     val fields: List<FieldUi>,
-    val files: FileSummaryUi,
 )
 
 /** 🔗 on a linked field, the faint unlink icon on one whose link was broken (E-14). */
@@ -178,9 +177,10 @@ internal sealed interface FieldUi {
         val isNumber: Boolean,
         val error: String?,
         val link: LinkUi,
-        val note: String?,
         /** `null` for Int fields, which have no multi-line mode. */
         val isMultiline: Boolean?,
+        /** What the `>` next to the field does: "enter on several lines" / "back to one line". */
+        val multilineTooltip: String?,
     ) : FieldUi
 
     data class Bool(
@@ -188,7 +188,6 @@ internal sealed interface FieldUi {
         override val label: String,
         val checked: Boolean,
         val link: LinkUi,
-        val note: String?,
     ) : FieldUi {
         override val isRequired: Boolean get() = false
     }
@@ -203,7 +202,6 @@ internal sealed interface FieldUi {
         val placeholder: String,
         val error: String?,
         val link: LinkUi,
-        val note: String?,
     ) : FieldUi
 
     /** A parameter of an untaken branch: one grey line, its input kept but not sent (E-08). */
@@ -211,25 +209,6 @@ internal sealed interface FieldUi {
         override val isRequired: Boolean get() = false
     }
 }
-
-internal data class FileSummaryUi(
-    val text: String,
-    val hasWarning: Boolean,
-    val isOpen: Boolean,
-    val caption: String,
-    val files: List<ExpectedFileUi>,
-    val toggle: KatachiIntent,
-)
-
-internal data class ExpectedFileUi(
-    val name: String,
-    /** The directory shortened in the middle, or the unresolved patterns. */
-    val location: String,
-    /** The whole directory for the tooltip. */
-    val locationTooltip: String?,
-    val badge: String?,
-    val isWarning: Boolean,
-)
 
 internal data class RowResultUi(
     val files: List<ResultFileUi>,
@@ -250,8 +229,6 @@ internal sealed interface FooterUi {
         val onExistingOptions: List<ActionUi>,
         val onExistingIndex: Int,
         val overwriteWarning: String?,
-        val countLabel: String,
-        val countPopup: CountPopupUi?,
         val generate: ActionUi,
         val generateEnabled: Boolean,
         val generateTooltip: String?,
@@ -261,6 +238,3 @@ internal sealed interface FooterUi {
 
     data class Result(val summary: String, val isComplete: Boolean, val undo: String?, val actions: List<ActionUi>) : FooterUi
 }
-
-/** Every expected file of the checked templates, grouped by template (pressing the count). */
-internal data class CountPopupUi(val title: String, val groups: List<Pair<String, List<ExpectedFileUi>>>)

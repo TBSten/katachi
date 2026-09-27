@@ -6,14 +6,6 @@ import me.tbsten.katachi.intellij.model.ConflictQuestion
 import me.tbsten.katachi.intellij.model.GenerationReport
 import java.nio.file.Path
 
-/** A file a template is expected to write, with the preview contents filled with the inputs. */
-internal data class ExpectedContent(
-    val path: Path,
-    val fileName: String,
-    /** `null` for a file only a branch adds, whose contents the JSON does not carry. */
-    val content: String?,
-)
-
 /**
  * What the ViewModel asks of the IDE. Implemented over the IntelliJ API in `ide/`, faked in tests.
  *
@@ -33,11 +25,8 @@ internal interface IdeEffects {
     /** Opens [paths] in editors, focusing the first. Paths the VFS cannot find are skipped. */
     suspend fun openFiles(paths: List<Path>)
 
-    /**
-     * Shows the conflict dialog and waits for the answer (E-17). [expected] backs its
-     * "diff (expected)" links: the existing file against the preview filled with the inputs.
-     */
-    suspend fun askConflict(question: ConflictQuestion, expected: List<ExpectedContent>): ConflictChoice
+    /** Shows the conflict dialog with the files katachi reported existing, and waits for the answer (E-17). */
+    suspend fun askConflict(question: ConflictQuestion): ConflictChoice
 
     fun openAfterGeneration(): OpenAfterGeneration
 
@@ -55,7 +44,4 @@ internal interface IdeEffects {
     fun openDocs(page: DocsPage)
 
     fun copyToClipboard(text: String)
-
-    /** Opens each file's expected contents read-only ("show contents (expected)"). */
-    suspend fun showExpectedContents(files: List<ExpectedContent>)
 }

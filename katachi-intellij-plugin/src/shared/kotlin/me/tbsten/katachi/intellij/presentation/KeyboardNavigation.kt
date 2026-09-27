@@ -15,9 +15,6 @@ internal sealed interface FocusTarget {
     data class Row(val id: TemplateId) : FocusTarget
 
     data class Field(val id: FieldId) : FocusTarget
-
-    /** The one-line file summary of a form. */
-    data class FileSummary(val id: TemplateId) : FocusTarget
 }
 
 internal sealed interface NavKey {
@@ -93,11 +90,6 @@ internal fun navigate(list: ListUi, current: FocusTarget, key: NavKey): NavResul
         }
         is FocusTarget.Field -> when (key) {
             NavKey.Escape -> NavResult(focus = FocusMove.To(FocusTarget.Row(current.id.templateId)))
-            else -> NavResult()
-        }
-        is FocusTarget.FileSummary -> when (key) {
-            NavKey.Enter, NavKey.Space -> NavResult(intent = KatachiIntent.ToggleFileList(current.id))
-            NavKey.Escape -> NavResult(focus = FocusMove.To(FocusTarget.Row(current.id)))
             else -> NavResult()
         }
     }

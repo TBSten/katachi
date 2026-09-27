@@ -413,11 +413,10 @@ class KatachiToolWindowViewModelTest {
     }
 
     @Test
-    fun `パスに使えない文字を入力しても落ちずに既にある印を付けない`() = runBlocking {
+    fun `パスに使えない文字を入力しても落ちない`() = runBlocking {
         val vm = viewModel()
         vm.loaded()
         vm.fillRepository(name = "Us\u0000er")
         assertEquals("Us\u0000er", vm.state.value.form.inputOf(FieldId(repository, "name")))
-        assertTrue(vm.state.value.view.existingPaths.isEmpty())
     }
 }

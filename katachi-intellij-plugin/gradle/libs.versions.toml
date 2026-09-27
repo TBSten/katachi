@@ -27,6 +27,12 @@ kodein = "7.20.2"
 kotlinxCoroutines = "1.10.1"
 # The stdlib matching the kotlin-reflect that Starter depends on. Only on the smoke's runtime classpath.
 kotlinStdlibStarter = "2.3.20-RC2"
+# uiTest only: the property-based tests use kotest's generators (checkAll / Arb) as a library,
+# run from JUnit 4. 6.1 is built with a Kotlin this build's 2.3.0 can read.
+kotest = "6.1.11"
+# uiTest only: compose ui-test must match the Compose UI on the classpath, which standalone Jewel
+# raises above composeMultiplatform (Jewel 0.37 resolves 1.10.0); a mismatch fails at the first test.
+composeUiTest = "1.10.0"
 
 [libraries]
 junit4 = { module = "junit:junit", version.ref = "junit4" }
@@ -34,6 +40,8 @@ junit-jupiter = { module = "org.junit.jupiter:junit-jupiter", version.ref = "jun
 junit-platform-launcher = { module = "org.junit.platform:junit-platform-launcher", version.ref = "junitPlatformLauncher" }
 kodein-di = { module = "org.kodein.di:kodein-di-jvm", version.ref = "kodein" }
 kotlin-stdlib-starter = { module = "org.jetbrains.kotlin:kotlin-stdlib", version.ref = "kotlinStdlibStarter" }
+compose-ui-test-junit4 = { module = "org.jetbrains.compose.ui:ui-test-junit4", version.ref = "composeUiTest" }
+kotest-property = { module = "io.kotest:kotest-property", version.ref = "kotest" }
 kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm", version.ref = "kotlinxCoroutines" }
 
 [plugins]

@@ -83,11 +83,6 @@ class KeyboardNavigationTest {
     }
 
     @Test
-    fun `要約で Enter を押すと予想ファイルの一覧を開閉する`() {
-        assertEquals(NavResult(intent = KatachiIntent.ToggleFileList(repositoryId)), navigate(list(), FocusTarget.FileSummary(repositoryId), NavKey.Enter))
-    }
-
-    @Test
     fun `生成のショートカットは押せるときだけ生成する`() {
         assertFalse(navigate(list(), FocusTarget.Search, NavKey.Generate).isHandled)
         val ready = checked(KatachiIntent.ToggleCheck(serviceId), KatachiIntent.Input(FieldId(serviceId, "name"), "User"))

@@ -18,6 +18,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.PathEffect
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
@@ -53,7 +54,7 @@ private val LinkSlot = 18.dp
 
 /**
  * One line of the inline form: label (with `*` when required), the widget of its type, 🔗, and
- * under it the error and the branch note (spec 03 "入力部品は型で決める").
+ * under it the error (spec 03 "入力部品は型で決める").
  */
 @Composable
 internal fun ParameterField(field: FieldUi, labelWidth: Dp?, list: ListUi, focus: ListFocusController, onIntent: (KatachiIntent) -> Unit) {
@@ -62,12 +63,9 @@ internal fun ParameterField(field: FieldUi, labelWidth: Dp?, list: ListUi, focus
         return
     }
     val label = if (field.isRequired) "${field.label} *" else field.label
-    val focusModifier = Modifier.listFocus(FocusTarget.Field(field.id), focus, list, onIntent)
-    // A Boolean's note goes beside the checkbox when the form is wide, under it otherwise (spec 03).
-    val noteBeside = field is FieldUi.Bool && labelWidth != null && labelWidth >= WideLabelWidth
+    val focusModifier = Modifier.listFocus(FocusTarget.Field(field.id), focus, list, onIntent).testTag(KatachiTestTags.field(field.id))
     val below: @Composable () -> Unit = {
         errorOf(field)?.let { Text(it, color = errorText) }
-        noteOf(field)?.takeIf { !noteBeside }?.let { Text(it, color = faintText) }
     }
     // A name longer than the label column goes above its field rather than being cut.
     val sideWidth = labelWidth?.takeIf { label.length <= (it.value / LABEL_CHAR_WIDTH_DP).toInt() }
@@ -75,14 +73,14 @@ internal fun ParameterField(field: FieldUi, labelWidth: Dp?, list: ListUi, focus
         Row(verticalAlignment = Alignment.Top) {
             Text(label, maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.width(sideWidth).padding(top = 6.dp, end = 6.dp))
             Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
-                FieldWidget(field, focusModifier, noteBeside, onIntent)
+                FieldWidget(field, focusModifier, onIntent)
                 below()
             }
         }
     } else {
         Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
             Text(label, maxLines = 2, overflow = TextOverflow.Ellipsis)
-            FieldWidget(field, focusModifier, noteBeside, onIntent)
+            FieldWidget(field, focusModifier, onIntent)
             below()
         }
     }
@@ -94,13 +92,6 @@ private fun errorOf(field: FieldUi): String? = when (field) {
     is FieldUi.Bool, is FieldUi.Collapsed -> null
 }
 
-private fun noteOf(field: FieldUi): String? = when (field) {
-    is FieldUi.Text -> field.note
-    is FieldUi.Choice -> field.note
-    is FieldUi.Bool -> field.note
-    is FieldUi.Collapsed -> null
-}
-
 private fun linkOf(field: FieldUi): LinkUi = when (field) {
     is FieldUi.Text -> field.link
     is FieldUi.Choice -> field.link
@@ -110,19 +101,16 @@ private fun linkOf(field: FieldUi): LinkUi = when (field) {
 
 /** The widget and the link slot on one line. */
 @Composable
-private fun FieldWidget(field: FieldUi, focusModifier: Modifier, noteBeside: Boolean, onIntent: (KatachiIntent) -> Unit) {
+private fun FieldWidget(field: FieldUi, focusModifier: Modifier, onIntent: (KatachiIntent) -> Unit) {
     Row(verticalAlignment = Alignment.CenterVertically) {
         Box(Modifier.weight(1f)) {
             when (field) {
                 is FieldUi.Text -> TextInput(field, focusModifier, onIntent)
-                is FieldUi.Bool -> Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                    Checkbox(
-                        checked = field.checked,
-                        onCheckedChange = { onIntent(KatachiIntent.Input(field.id, it.toString())) },
-                        modifier = focusModifier,
-                    )
-                    field.note?.takeIf { noteBeside }?.let { Text(it, color = faintText, modifier = Modifier.padding(vertical = 4.dp)) }
-                }
+                is FieldUi.Bool -> Checkbox(
+                    checked = field.checked,
+                    onCheckedChange = { onIntent(KatachiIntent.Input(field.id, it.toString())) },
+                    modifier = focusModifier,
+                )
                 is FieldUi.Choice -> ChoiceInput(field, focusModifier, onIntent)
                 is FieldUi.Collapsed -> Unit
             }
@@ -154,16 +142,22 @@ private fun TextInput(field: FieldUi.Text, focusModifier: Modifier, onIntent: (K
     }
 }
 
-/** ▸ widens a String field to several lines (spec 03); an empty slot for the other types. */
+/**
+ * `>` widens a String field to several lines (spec 03), with a tooltip saying which way it goes;
+ * an empty slot for the other types.
+ */
 @Composable
 private fun MultilineToggle(field: FieldUi, onIntent: (KatachiIntent) -> Unit) {
     Box(Modifier.width(ToggleSlot), contentAlignment = Alignment.Center) {
-        val multiline = (field as? FieldUi.Text)?.isMultiline ?: return@Box
-        Icon(
-            if (multiline) AllIconsKeys.General.ChevronDown else AllIconsKeys.General.ChevronRight,
-            contentDescription = null,
-            modifier = Modifier.size(14.dp).clickable { onIntent(KatachiIntent.ToggleMultiline(field.id)) },
-        )
+        val text = field as? FieldUi.Text ?: return@Box
+        val multiline = text.isMultiline ?: return@Box
+        WithTooltip(text.multilineTooltip) {
+            Icon(
+                if (multiline) AllIconsKeys.General.ChevronDown else AllIconsKeys.General.ChevronRight,
+                contentDescription = text.multilineTooltip,
+                modifier = Modifier.size(14.dp).clickable { onIntent(KatachiIntent.ToggleMultiline(field.id)) }.testTag(KatachiTestTags.multiline(field.id)),
+            )
+        }
     }
 }
 

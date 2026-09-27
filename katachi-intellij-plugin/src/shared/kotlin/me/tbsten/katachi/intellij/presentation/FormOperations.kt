@@ -24,11 +24,6 @@ internal fun toggleCheck(form: FormState, rows: List<ModuleTemplate>, templateId
 internal fun setExpanded(form: FormState, templateId: TemplateId, expanded: Boolean): FormState =
     form.copy(expanded = if (expanded) form.expanded + templateId else form.expanded - templateId)
 
-internal fun toggleFileList(form: FormState, templateId: TemplateId): FormState =
-    form.copy(
-        fileListsOpen = if (templateId in form.fileListsOpen) form.fileListsOpen - templateId else form.fileListsOpen + templateId,
-    )
-
 /** "Uncheck all" after a result: back to the start, inputs dropped, the existing-files choice kept. */
 internal fun uncheckAll(form: FormState): FormState = FormState(onExisting = form.onExisting)
 

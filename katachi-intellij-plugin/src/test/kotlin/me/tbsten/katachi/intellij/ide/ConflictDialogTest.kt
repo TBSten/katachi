@@ -19,7 +19,7 @@ internal class ConflictDialogTest : AnalysisTestBase() {
     )
 
     private fun <T> withDialog(block: (ConflictDialog) -> T): T {
-        val dialog = ConflictDialog(project, question, emptyList())
+        val dialog = ConflictDialog(project, question)
         try {
             return block(dialog)
         } finally {
@@ -59,7 +59,7 @@ internal class ConflictDialogTest : AnalysisTestBase() {
     fun `test テスト用の答えを差し込むとダイアログを出さずにその答えを返す`() {
         ConflictDialogs.setTestAnswer({ ConflictChoice.SkipAndContinue }, testRootDisposable)
 
-        assertEquals(ConflictChoice.SkipAndContinue, ConflictDialogs.ask(project, question, emptyList()))
+        assertEquals(ConflictChoice.SkipAndContinue, ConflictDialogs.ask(project, question))
     }
 
     fun `test ラジオボタンを触らずに続けると上書きせず書かずに次へになる`() {

@@ -1,7 +1,9 @@
 package me.tbsten.katachi.intellij.testing
 
 import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withTimeout
@@ -11,6 +13,7 @@ import me.tbsten.katachi.intellij.data.detect.SyncedProject
 import me.tbsten.katachi.intellij.data.detect.SyncedRoot
 import me.tbsten.katachi.intellij.data.gradle.GradleRunOutcome
 import me.tbsten.katachi.intellij.data.gradle.GradleRunRequest
+import me.tbsten.katachi.intellij.model.KatachiModule
 import me.tbsten.katachi.intellij.model.TemplateId
 import me.tbsten.katachi.intellij.presentation.BodyUi
 import me.tbsten.katachi.intellij.presentation.FieldId
@@ -44,7 +47,7 @@ import java.time.Instant
  * val result = s.generate()
  * ```
  */
-internal class ScenarioHarness(scope: CoroutineScope) {
+internal class ScenarioHarness(scope: CoroutineScope, ioDispatcher: CoroutineDispatcher = Dispatchers.IO) {
     val fs = FakeFileSystem()
     val effects = FakeIdeEffects()
     val arch = module(":arch-a")
@@ -59,7 +62,11 @@ internal class ScenarioHarness(scope: CoroutineScope) {
         listOf(SyncedRoot(ROOT, "project", listOf(SyncedModule(":arch-a", arch.directory, setOf("katachiInternalTemplatesJson"), "0.3.0")))),
     )
     var loadJson: String = ContractFixtures.json("arch-a")
+    /** The JSON each other definition module's load writes (a module added by a later sync). */
+    val otherJson: MutableMap<KatachiModule, String> = mutableMapOf()
     var loadGate: CompletableDeferred<Unit>? = null
+    /** Replaces how a load answers when set: what it writes, how it ends, whether it waits. */
+    var loadOverride: (() -> FakeRun)? = null
     /** What "show cause" (`katachiTemplates`) prints. */
     var causeLines: List<String> = listOf("[FAILED] misc/Broken", "  Unresolved placeholder")
     var loads = 0
@@ -72,13 +79,13 @@ internal class ScenarioHarness(scope: CoroutineScope) {
     val runner = FakeGradleTaskRunner(fs) { request, _ -> answer(request) }
 
     init {
-        vm = KatachiToolWindowViewModel(scope, { synced }, runner, fs, effects)
+        vm = KatachiToolWindowViewModel(scope, { synced }, runner, fs, effects, ioDispatcher = ioDispatcher)
     }
 
     private fun answer(request: GradleRunRequest): FakeRun =
         if (request.taskNames.first().endsWith("katachiInternalTemplatesJson")) {
             loads++
-            FakeRun(writes = mapOf(arch.templateDescriptionJson to loadJson), gate = loadGate)
+            loadOverride?.invoke() ?: FakeRun(writes = mapOf(arch.templateDescriptionJson to loadJson) + otherJson.mapKeys { it.key.templateDescriptionJson }, gate = loadGate)
         } else if (request.taskNames.first().endsWith(":katachiTemplates")) {
             FakeRun(causeLines, GradleRunOutcome.Failed)
         } else {
@@ -142,6 +149,21 @@ internal class ScenarioHarness(scope: CoroutineScope) {
     fun form(id: TemplateId): FormUi = row(id).body.cast<RowBodyUi.Form>().form
 
     fun result(id: TemplateId): RowResultUi = row(id).body.cast<RowBodyUi.Result>().result
+
+    /** Makes [modules] the definition modules of the synced data, in this order. */
+    fun syncModules(modules: List<KatachiModule>) {
+        val root = (synced as SyncedProject.Synced).roots.single()
+        val synced = modules.map { SyncedModule(it.gradlePath, it.directory, setOf("katachiInternalTemplatesJson"), "0.3.0") }
+        this.synced = SyncedProject.Synced(listOf(root.copy(modules = synced)))
+    }
+
+    /** Makes [module] a definition module of the synced data, its load writing [json]. */
+    fun addModule(module: KatachiModule, json: String) {
+        val root = (synced as SyncedProject.Synced).roots.single()
+        val added = SyncedModule(module.gradlePath, module.directory, setOf("katachiInternalTemplatesJson"), "0.3.0")
+        synced = SyncedProject.Synced(listOf(root.copy(modules = root.modules + added)))
+        otherJson[module] = json
+    }
 
     fun textField(id: TemplateId, parameter: String): FieldUi.Text =
         form(id).fields.firstNotNullOf { (it as? FieldUi.Text)?.takeIf { field -> field.id.parameterName == parameter } }

@@ -19,7 +19,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.text.style.TextDecoration
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import me.tbsten.katachi.intellij.presentation.FocusMove
@@ -35,7 +35,7 @@ import org.jetbrains.jewel.ui.component.OutlinedButton
 import org.jetbrains.jewel.ui.component.Text
 import org.jetbrains.jewel.ui.icons.AllIconsKeys
 
-/** The fixed footer: existing files, the file count and Generate; or the progress; or the summary. */
+/** The fixed footer: existing files and Generate; or the progress; or the summary. */
 @Composable
 internal fun Footer(footer: FooterUi, list: ListUi, focus: ListFocusController, onIntent: (KatachiIntent) -> Unit) {
     Column(Modifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 6.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
@@ -71,18 +71,18 @@ private fun FormFooter(footer: FooterUi.Form, list: ListUi, focus: ListFocusCont
         }
     }
     BoxWithConstraints(Modifier.fillMaxWidth()) {
-        // Docked wide and short, the choice, the count and Generate share one line to leave the list room.
+        // Docked wide and short, the choice and Generate share one line to leave the list room.
         if (maxWidth >= WideFooterMinWidth) {
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                 OnExistingChoice(footer, onIntent)
                 footer.overwriteWarning?.let { OverwriteWarning(it, Modifier.widthIn(max = 320.dp)) }
-                CountAndGenerate(footer, onIntent, countAtStart = false, modifier = Modifier.weight(1f))
+                GenerateButton(footer, onIntent, modifier = Modifier.weight(1f))
             }
         } else {
             Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
                 OnExistingChoice(footer, onIntent)
                 footer.overwriteWarning?.let { OverwriteWarning(it) }
-                CountAndGenerate(footer, onIntent, countAtStart = true, modifier = Modifier.fillMaxWidth())
+                GenerateButton(footer, onIntent, modifier = Modifier.fillMaxWidth())
             }
         }
     }
@@ -112,20 +112,13 @@ private fun OnExistingChoice(footer: FooterUi.Form, onIntent: (KatachiIntent) ->
     }
 }
 
-/** "3 files" (press for the list) and Generate: the count at the start when narrow, beside the button when wide. */
+/** Generate, at the right end. */
 @Composable
-private fun CountAndGenerate(footer: FooterUi.Form, onIntent: (KatachiIntent) -> Unit, countAtStart: Boolean, modifier: Modifier = Modifier) {
-    Row(modifier, verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-        if (!countAtStart) Spacer(Modifier.weight(1f))
-        Text(
-            footer.countLabel,
-            textDecoration = TextDecoration.Underline,
-            maxLines = 1,
-            modifier = Modifier.clickable { onIntent(KatachiIntent.ToggleFileCountPopup) },
-        )
-        if (countAtStart) Spacer(Modifier.weight(1f))
+private fun GenerateButton(footer: FooterUi.Form, onIntent: (KatachiIntent) -> Unit, modifier: Modifier = Modifier) {
+    Row(modifier, verticalAlignment = Alignment.CenterVertically) {
+        Spacer(Modifier.weight(1f))
         WithTooltip(footer.generateTooltip) {
-            DefaultButton(onClick = { onIntent(footer.generate.intent) }, enabled = footer.generateEnabled) {
+            DefaultButton(onClick = { onIntent(footer.generate.intent) }, enabled = footer.generateEnabled, modifier = Modifier.testTag(KatachiTestTags.GENERATE)) {
                 Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
                     Icon(AllIconsKeys.Actions.Execute, contentDescription = null, modifier = Modifier.size(14.dp))
                     Text(footer.generate.label)

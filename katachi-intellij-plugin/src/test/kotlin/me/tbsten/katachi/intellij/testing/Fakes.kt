@@ -11,7 +11,6 @@ import me.tbsten.katachi.intellij.model.ConflictChoice
 import me.tbsten.katachi.intellij.model.ConflictQuestion
 import me.tbsten.katachi.intellij.model.GenerationReport
 import me.tbsten.katachi.intellij.presentation.DocsPage
-import me.tbsten.katachi.intellij.presentation.ExpectedContent
 import me.tbsten.katachi.intellij.presentation.IdeEffects
 import java.nio.file.Path
 import java.time.Instant
@@ -110,7 +109,7 @@ internal class FakeIdeEffects(
         opened += paths
     }
 
-    override suspend fun askConflict(question: ConflictQuestion, expected: List<ExpectedContent>): ConflictChoice {
+    override suspend fun askConflict(question: ConflictQuestion): ConflictChoice {
         log += "conflict"
         return conflictAnswer(question)
     }
@@ -141,11 +140,5 @@ internal class FakeIdeEffects(
 
     override fun copyToClipboard(text: String) {
         clipboard += text
-    }
-
-    val shownExpected: MutableList<ExpectedContent> = Collections.synchronizedList(mutableListOf())
-
-    override suspend fun showExpectedContents(files: List<ExpectedContent>) {
-        shownExpected += files
     }
 }

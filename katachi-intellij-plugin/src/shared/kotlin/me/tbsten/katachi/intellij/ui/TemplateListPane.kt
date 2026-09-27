@@ -1,7 +1,6 @@
 package me.tbsten.katachi.intellij.ui
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import org.jetbrains.jewel.ui.Orientation
 import androidx.compose.foundation.layout.Arrangement
@@ -10,28 +9,22 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.widthIn
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.key.onPreviewKeyEvent
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import me.tbsten.katachi.intellij.presentation.CountPopupUi
 import me.tbsten.katachi.intellij.presentation.FocusTarget
-import me.tbsten.katachi.intellij.presentation.FooterUi
 import me.tbsten.katachi.intellij.presentation.KatachiIntent
 import me.tbsten.katachi.intellij.presentation.ListItemUi
 import me.tbsten.katachi.intellij.presentation.ListUi
 import me.tbsten.katachi.intellij.presentation.NavKey
 import me.tbsten.katachi.intellij.presentation.navigate
 import me.tbsten.katachi.intellij.presentation.SearchUi
-import org.jetbrains.jewel.foundation.theme.JewelTheme
 import org.jetbrains.jewel.ui.component.Divider
 import org.jetbrains.jewel.ui.component.Icon
 import org.jetbrains.jewel.ui.component.Text
@@ -64,16 +57,11 @@ internal fun TemplateListPane(list: ListUi, onIntent: (KatachiIntent) -> Unit) {
             } else {
                 ListBody(list, focus, onIntent)
             }
-            list.footer.countPopupOrNull()?.let { popup ->
-                CountPopup(popup, onDismiss = { onIntent(KatachiIntent.ToggleFileCountPopup) }, modifier = Modifier.align(Alignment.BottomStart))
-            }
         }
         Divider(Orientation.Horizontal, Modifier.fillMaxWidth())
         Footer(list.footer, list, focus, onIntent)
     }
 }
-
-private fun FooterUi.countPopupOrNull(): CountPopupUi? = (this as? FooterUi.Form)?.countPopup
 
 @Composable
 private fun SearchField(search: SearchUi, list: ListUi, focus: ListFocusController, onIntent: (KatachiIntent) -> Unit) {
@@ -81,7 +69,8 @@ private fun SearchField(search: SearchUi, list: ListUi, focus: ListFocusControll
     TextField(
         state = state,
         enabled = search.enabled,
-        modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 6.dp).listFocus(FocusTarget.Search, focus, list, onIntent),
+        modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 6.dp).listFocus(FocusTarget.Search, focus, list, onIntent)
+            .testTag(KatachiTestTags.SEARCH),
         placeholder = { Text(search.placeholder, color = faintText) },
         leadingIcon = { Icon(AllIconsKeys.Actions.Search, contentDescription = null, modifier = Modifier.padding(end = 4.dp).size(16.dp)) },
     )
@@ -117,30 +106,4 @@ internal fun GroupHeader(header: ListItemUi.GroupHeader) {
         maxLines = 1,
         modifier = Modifier.fillMaxWidth().padding(start = 8.dp, end = 8.dp, top = 8.dp, bottom = 2.dp),
     )
-}
-
-/** Every expected file of the checked templates, above the footer (spec 03 "ファイル数を押すと一覧を出す"). */
-@Composable
-private fun CountPopup(popup: CountPopupUi, onDismiss: () -> Unit, modifier: Modifier = Modifier) {
-    Column(
-        modifier.padding(8.dp)
-            .widthIn(max = 480.dp)
-            .fillMaxWidth()
-            .heightIn(max = 320.dp)
-            .background(JewelTheme.globalColors.panelBackground)
-            .border(1.dp, lineColor)
-            .padding(8.dp),
-        verticalArrangement = Arrangement.spacedBy(4.dp),
-    ) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Text(popup.title, fontWeight = FontWeight.Bold, modifier = Modifier.weight(1f))
-            CloseButton(onDismiss)
-        }
-        Column(Modifier.verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-            popup.groups.forEach { (name, files) ->
-                Text(name, color = faintText)
-                files.forEach { ExpectedFileLine(it) }
-            }
-        }
-    }
 }

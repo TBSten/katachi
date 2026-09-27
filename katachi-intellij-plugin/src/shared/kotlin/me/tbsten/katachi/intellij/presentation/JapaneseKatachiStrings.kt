@@ -54,18 +54,12 @@ internal object JapaneseKatachiStrings : KatachiStrings {
     override fun removedTemplates(names: List<String>) = "${names.joinToString("、")} は無くなりました"
 
     override val searchPlaceholder = "検索"
-    override fun fileCount(count: Int?) = when (count) {
-        null -> "? files"
-        1 -> "1 file"
-        else -> "$count files"
-    }
     override val outsideSearch = "検索外・選択中"
     override fun filledCount(filled: Int, total: Int) = "入力済み $filled/$total"
     override val previewFailed = "プレビューに失敗しました。⋯ の「原因を見る」で理由を確かめられます。"
     override fun unknownKinds(kinds: List<String>) = "このプラグインが知らない型の引数があります（${kinds.joinToString()}）"
     override val unresolvedTarget = "生成先の決まらないファイルがあります"
     override val copyCommand = "コマンドをコピー"
-    override val showContents = "中身を見る（予想）"
     override val showCause = "原因を見る"
     override val causeLoading = "原因を調べています…"
 
@@ -74,8 +68,6 @@ internal object JapaneseKatachiStrings : KatachiStrings {
         // Latin values get spaces around them, as Japanese text around code does elsewhere.
         return if (label == value) "$name（$controller が $label のとき）" else "$name（$controller が${label}のとき）"
     }
-    override fun branchAdds(value: String, files: List<String>) = "${valueLabel(value)}: ${files.joinToString("、")} を作る"
-    override fun branchRemoves(value: String, files: List<String>) = "${valueLabel(value)}: ${files.joinToString("、")} を作らない"
     override fun valueLabel(value: String) = when (value) {
         "true" -> "オン"
         "false" -> "オフ"
@@ -85,12 +77,9 @@ internal object JapaneseKatachiStrings : KatachiStrings {
     override val requiredError = "入力してください"
     override fun notAnInt(min: Int, max: Int) = "整数で入力してください（$min〜$max）"
     override val notAccepted = "候補から選んでください"
-    override fun generatesOne(fileName: String) = "$fileName を生成"
-    override fun generatesMany(fileName: String, others: Int) = "$fileName ほか $others ファイルを生成"
-    override val generatesNothing = "生成するファイルはありません"
-    override val expectedCaption = "予想（入力値で置き換えた近似）"
+    override val multilineOn = "複数行で入力"
+    override val multilineOff = "1行に戻す"
     override val alreadyExists = "既にある"
-    override val targetFromBranch = "場所は生成後に決まります"
 
     override val nothingSelected = "テンプレートにチェックを入れてください"
     override fun reasonRequired(role: String, parameter: String) = "$role: $parameter が未入力です"
@@ -105,14 +94,7 @@ internal object JapaneseKatachiStrings : KatachiStrings {
     override val onExistingSkip = "スキップ"
     override val onExistingOverwrite = "上書き"
     override val overwriteWarning = "既存ファイルを確認なしで置き換えます"
-    override fun totalCount(count: ExpectedFileCount): String {
-        val prefix = if (count.isApproximate) "約 " else ""
-        val plus = if (count.hasUnknown) "+" else ""
-        val unit = if (count.total == 1 && !count.hasUnknown) "file" else "files"
-        return "$prefix${count.total}$plus $unit"
-    }
     override val generate = "生成"
-    override val countPopupTitle = "生成されるファイル（予想）"
 
     override fun rowWritten(count: Int) = if (count == 1) "1 file" else "$count files"
     override fun rowRunning(taskPath: String?) = if (taskPath == null) "実行中" else "実行中 > $taskPath"

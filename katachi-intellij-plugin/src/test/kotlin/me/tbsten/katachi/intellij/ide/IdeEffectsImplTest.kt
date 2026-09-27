@@ -62,19 +62,6 @@ internal class IdeEffectsImplTest : KatachiIdeTestBase() {
         assertEquals(KatachiBundle.message("localHistory.label", "Repository, UseCase"), name)
     }
 
-    fun `test 予想の中身を読み取り専用のタブで開く`() {
-        run {
-            effects.showExpectedContents(
-                listOf(me.tbsten.katachi.intellij.presentation.ExpectedContent(root.resolve("A.kt"), "A.kt", "class A\n")),
-            )
-        }
-
-        val opened = FileEditorManager.getInstance(project).openFiles.single()
-        assertEquals(KatachiBundle.message("expected.fileName", "A.kt"), opened.name)
-        assertFalse(opened.isWritable)
-        assertEquals("class A\n", FileDocumentManager.getInstance().getDocument(opened)?.text)
-    }
-
     fun `test ドキュメントの案内は日本語のページを指す`() {
         assertEquals("https://tbsten.github.io/katachi/ja/guides/generate-code-from-template/", docsUrlOf(DocsPage.WritingTemplates))
     }

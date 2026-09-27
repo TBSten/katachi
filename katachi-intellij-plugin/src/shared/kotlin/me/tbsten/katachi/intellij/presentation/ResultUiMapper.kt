@@ -110,7 +110,6 @@ internal fun footerUiOf(state: KatachiScreenState, strings: KatachiStrings): Foo
 
 private fun formFooterOf(state: KatachiScreenState, strings: KatachiStrings): FooterUi.Form {
     val blocker = state.generateBlocker
-    val checked = state.rows.filter { state.form.isSelected(it.id) }
     val reason = blocker?.let { reasonOf(it, state, strings) }
     val choices = OnExistingChoice.entries
     return FooterUi.Form(
@@ -128,18 +127,6 @@ private fun formFooterOf(state: KatachiScreenState, strings: KatachiStrings): Fo
         },
         onExistingIndex = choices.indexOf(state.form.onExisting),
         overwriteWarning = strings.overwriteWarning.takeIf { state.form.onExisting == OnExistingChoice.Overwrite },
-        countLabel = strings.totalCount(expectedFileCountOf(checked.map { fileCountSourceOf(it.template, state.form.inputsOf(it.id)) })),
-        countPopup = if (state.view.fileCountPopupOpen && checked.isNotEmpty()) {
-            CountPopupUi(
-                title = strings.countPopupTitle,
-                groups = checked.mapNotNull { row ->
-                    val detail = row.template.detail ?: return@mapNotNull null
-                    row.template.simpleName to expectedFilesOf(detail, state.form.inputsOf(row.id)).map { expectedFileUiOf(it, state.view, strings) }
-                },
-            )
-        } else {
-            null
-        },
         generate = ActionUi(strings.generate, KatachiIntent.Generate),
         generateEnabled = blocker == null,
         generateTooltip = reason,

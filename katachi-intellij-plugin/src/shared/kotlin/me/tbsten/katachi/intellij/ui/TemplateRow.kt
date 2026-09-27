@@ -25,6 +25,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.style.TextOverflow
@@ -66,7 +67,7 @@ internal fun TemplateRow(row: TemplateRowUi, list: ListUi, focus: ListFocusContr
         row.body?.let { body ->
             IndentedBody {
                 when (body) {
-                    is RowBodyUi.Form -> InlineForm(body.form, row, list, focus, onIntent)
+                    is RowBodyUi.Form -> InlineForm(body.form, list, focus, onIntent)
                     is RowBodyUi.Cause -> CauseLines(body.lines)
                     is RowBodyUi.Running -> RunningLines(body)
                     is RowBodyUi.Result -> ResultLines(body.result, onIntent)
@@ -98,7 +99,7 @@ private fun RowHeader(row: TemplateRowUi, list: ListUi, focus: ListFocusControll
                         checked = lead.checked,
                         onCheckedChange = { onIntent(KatachiIntent.ToggleCheck(row.id)) },
                         enabled = lead.enabled,
-                        modifier = Modifier.listFocus(FocusTarget.Row(row.id), focus, list, onIntent),
+                        modifier = Modifier.listFocus(FocusTarget.Row(row.id), focus, list, onIntent).testTag(KatachiTestTags.check(row.id)),
                     )
                     is RowLeadUi.Status -> StatusIcon(lead.status)
                 }
@@ -126,8 +127,9 @@ private fun RowHeader(row: TemplateRowUi, list: ListUi, focus: ListFocusControll
                     modifier = Modifier.padding(start = 8.dp).widthIn(max = trailingMax),
                 )
             }
-            // Rows without a form keep their menu here; a form carries it on its file summary line.
-            if (row.menu.isNotEmpty() && row.body !is RowBodyUi.Form && row.marker == RowMarker.Blocked) {
+            // The menu shows on a row whose form is open, and on a row that cannot be checked
+            // ("show cause"); a plain row stays quiet.
+            if (row.menu.isNotEmpty() && (row.body is RowBodyUi.Form || row.marker == RowMarker.Blocked)) {
                 Spacer(Modifier.width(4.dp))
                 MoreMenu(row.menu, onIntent)
             }
@@ -182,7 +184,7 @@ internal fun WithTooltip(tooltip: String?, modifier: Modifier = Modifier, conten
     }
 }
 
-/** The `⋯` of a row: copy the command, show the expected contents, show the cause. */
+/** The `⋯` of a row: copy the command, show the cause. */
 @Composable
 internal fun MoreMenu(actions: List<ActionUi>, onIntent: (KatachiIntent) -> Unit) {
     var open by remember { mutableStateOf(false) }

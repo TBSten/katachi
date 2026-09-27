@@ -91,21 +91,9 @@ internal val generationScenarios: List<Scenario> = listOf(
         ),
     ),
     Scenario("result-first-failed", finished(slashFailure, GenerationItemResult.NotRun, GenerationItemResult.NotRun)),
-    // A second run with the same name, after "generate more": the form says the files are there,
-    // and "stop here" in the conflict dialog leaves nothing written and nothing opened.
-    Scenario(
-        "second-run-form",
-        threeChecked.then(KatachiIntent.ToggleFileList(repositoryId)).let {
-            it.copy(
-                view = it.view.copy(
-                    existingPaths = setOf(
-                        "data/src/main/kotlin/com/example/data/user/UserRepository.kt",
-                        "data/src/main/kotlin/com/example/data/user/UserRepositoryImpl.kt",
-                    ),
-                ),
-            )
-        },
-    ),
+    // A second run with the same name, after "generate more": the form looks as before (nothing is
+    // predicted), and "stop here" in the conflict dialog leaves nothing written and nothing opened.
+    Scenario("second-run-form", threeChecked),
     Scenario(
         "second-run-stopped",
         finished(
@@ -150,6 +138,5 @@ internal val longScenario = Scenario(
     ready(snapshot(arch, *longTemplates.toTypedArray())).then(
         check(longFirst),
         input(longFirst, "featureNameUsedInEveryGeneratedFileName", "AccountSecuritySettings"),
-        KatachiIntent.ToggleFileList(idOf(arch, longFirst)),
     ),
 )

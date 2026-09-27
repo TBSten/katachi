@@ -25,12 +25,8 @@ internal data class ViewState(
     /** Module header bands folded by the user. Remembered per project (spec 04). */
     val collapsedModules: Set<ModuleId> = emptySet(),
     val openDetails: Set<DetailsKey> = emptySet(),
-    /** The footer's file count was pressed: the popup listing every expected file. */
-    val fileCountPopupOpen: Boolean = false,
     /** String fields widened to several lines with ▸. */
     val multilineFields: Set<FieldId> = emptySet(),
-    /** Expected paths (relative to the linked root, `/` separated) found on disk: "already exists". */
-    val existingPaths: Set<String> = emptySet(),
     val causes: Map<TemplateId, CauseState> = emptyMap(),
     /** The definition changed since the last load (E-44): the "reload" banner. */
     val definitionChanged: Boolean = false,
@@ -42,7 +38,6 @@ internal data class ViewState(
 internal fun applyViewIntent(view: ViewState, intent: KatachiIntent): ViewState? = when (intent) {
     is KatachiIntent.ToggleModule -> view.copy(collapsedModules = view.collapsedModules.toggle(intent.moduleId))
     is KatachiIntent.ToggleDetails -> view.copy(openDetails = view.openDetails.toggle(intent.key))
-    KatachiIntent.ToggleFileCountPopup -> view.copy(fileCountPopupOpen = !view.fileCountPopupOpen)
     is KatachiIntent.ToggleMultiline -> view.copy(multilineFields = view.multilineFields.toggle(intent.field))
     KatachiIntent.DismissDefinitionChanged -> view.copy(definitionChanged = false)
     KatachiIntent.DefinitionChanged -> view.copy(definitionChanged = true)

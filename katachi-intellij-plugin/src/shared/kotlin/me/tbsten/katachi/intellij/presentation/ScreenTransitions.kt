@@ -28,7 +28,6 @@ internal fun applyFormIntent(state: KatachiScreenState, intent: KatachiIntent): 
         is KatachiIntent.SetExpanded -> if (editable) setExpanded(form, intent.templateId, intent.expanded) else form
         is KatachiIntent.Input -> if (editable) inputField(form, rows, intent.field, intent.value) else form
         is KatachiIntent.Relink -> if (editable) relinkField(form, rows, intent.field) else form
-        is KatachiIntent.ToggleFileList -> toggleFileList(form, intent.templateId)
         is KatachiIntent.SetOnExisting -> if (editable) form.copy(onExisting = intent.choice) else form
         is KatachiIntent.Search -> return state.copy(searchQuery = intent.query, view = state.view.copy(revealedRows = emptySet()))
         is KatachiIntent.RevealField -> {
@@ -48,11 +47,30 @@ internal fun applyFormIntent(state: KatachiScreenState, intent: KatachiIntent): 
 /**
  * A load finished: swap the list, keep what still matches (E-45), and pick the phase. The list now
  * reflects the definition, so the "definition changed" banner goes away.
+ *
+ * A generation waiting for this load (E-41) keeps only the rows still checked: a removed template
+ * is not generated, nor counted in "k / n". When no template is left, neither a waiting
+ * generation nor a result stays: there is no list to show them on, and a result would come back,
+ * stale, with the next list otherwise (provisional). The waiting generation's job then finds
+ * nothing checked and ends without running anything.
  */
 internal fun applyLoaded(state: KatachiScreenState, snapshots: List<DescriptionSnapshot>): KatachiScreenState {
     val merged = mergeAfterReload(state.form, templatesOf(snapshots))
+    val phase = if (snapshots.all { it.templates.isEmpty() }) ScreenPhase.Empty(EmptyReason.NoTemplates) else ScreenPhase.Ready
     return state.copy(
-        phase = if (snapshots.all { it.templates.isEmpty() }) ScreenPhase.Empty(EmptyReason.NoTemplates) else ScreenPhase.Ready,
+        phase = phase,
+        generation = when (val generation = state.generation) {
+            is GenerationState.Running -> if (phase != ScreenPhase.Ready) {
+                null
+            } else {
+                generation.copy(
+                    rows = generation.rows.filter { merged.form.isSelected(it) },
+                    statuses = generation.statuses.filterKeys { merged.form.isSelected(it) },
+                )
+            }
+            is GenerationState.Finished -> generation.takeIf { phase == ScreenPhase.Ready }
+            null -> null
+        },
         snapshots = snapshots,
         loading = null,
         loadErrorBanner = null,
@@ -79,16 +97,10 @@ internal fun applyLoadCancelled(state: KatachiScreenState): KatachiScreenState =
         state.copy(loading = null, phase = ScreenPhase.LoadError(LoadFailure.Cancelled, emptyList()))
     }
 
-/**
- * The rows of a generation, in list order, all waiting. The file-count popup closes: the footer it
- * hangs from gives way to the progress, and it should not come back by itself afterwards (provisional).
- */
+/** The rows of a generation, in list order, all waiting. */
 internal fun startGeneration(state: KatachiScreenState, waitingForLoad: Boolean): KatachiScreenState {
     val ids = state.rows.map { it.id }.filter { state.form.isSelected(it) }
-    return state.copy(
-        generation = GenerationState.Running(ids, ids.associateWith { GenerationRowStatus.Waiting }, waitingForLoad),
-        view = state.view.copy(fileCountPopupOpen = false),
-    )
+    return state.copy(generation = GenerationState.Running(ids, ids.associateWith { GenerationRowStatus.Waiting }, waitingForLoad))
 }
 
 /**

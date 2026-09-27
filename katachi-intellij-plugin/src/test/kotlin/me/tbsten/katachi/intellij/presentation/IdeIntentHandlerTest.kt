@@ -71,30 +71,6 @@ class IdeIntentHandlerTest {
     }
 
     @Test
-    fun `中身を見るは入力値で置き換えた予想の中身を絶対パスつきで渡す`() = runBlocking {
-        val viewModel = loaded()
-        viewModel.dispatch(KatachiIntent.Input(FieldId(repository, "name"), "User"))
-
-        viewModel.dispatch(KatachiIntent.ShowExpectedContents(repository))
-
-        withTimeout(5_000) { while (effects.shownExpected.isEmpty()) kotlinx.coroutines.delay(10) }
-        val first = effects.shownExpected.first()
-        assertEquals("UserRepository.kt", first.fileName)
-        assertTrue(first.path.toString(), first.path.startsWith(ROOT))
-    }
-
-    @Test
-    fun `チェックした行の予想ファイルがディスクにあれば既にあるの印を付ける`() = runBlocking {
-        val viewModel = loaded()
-        fs.write(ROOT.resolve("data/src/main/kotlin/com/example/data/UserRepository.kt"), "")
-
-        viewModel.dispatch(KatachiIntent.ToggleCheck(repository))
-        viewModel.dispatch(KatachiIntent.Input(FieldId(repository, "name"), "User"))
-
-        assertEquals(setOf("data/src/main/kotlin/com/example/data/UserRepository.kt"), viewModel.state.value.view.existingPaths)
-    }
-
-    @Test
     fun `ログ・同期・ドキュメントは IDE にそのまま渡す`() = runBlocking {
         val viewModel = loaded()
 

@@ -38,10 +38,6 @@ internal class IdeIntentHandler(
             }
             is KatachiIntent.OpenFile -> scope.launch { effects.openFiles(listOf(intent.path)) }
             is KatachiIntent.CopyCommand -> rowOf(intent.templateId)?.let { effects.copyToClipboard(commandLineOf(it, state().form)) }
-            is KatachiIntent.ShowExpectedContents -> rowOf(intent.templateId)?.let { row ->
-                val files = expectedContentsOf(row, state().form).filter { it.content != null }
-                scope.launch { effects.showExpectedContents(files) }
-            }
             is KatachiIntent.ShowCause -> showCause(intent.templateId)
             else -> return false
         }
@@ -75,16 +71,6 @@ internal class IdeIntentHandler(
 
     private companion object {
         const val BUILD_SCRIPT = "build.gradle.kts"
-    }
-}
-
-/** The files [row] is expected to write with the current inputs, at absolute paths. Unresolved ones are left out. */
-internal fun expectedContentsOf(row: ModuleTemplate, form: FormState): List<ExpectedContent> {
-    val detail = row.template.detail ?: return emptyList()
-    return expectedFilesOf(detail, form.inputsOf(row.id)).mapNotNull { file ->
-        val known = file.location as? ExpectedLocation.Known ?: return@mapNotNull null
-        val path = resolveExpectedPath(row.module.linkedRootPath, known.path) ?: return@mapNotNull null
-        ExpectedContent(path, file.fileName, file.content)
     }
 }
 

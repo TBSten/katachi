@@ -33,7 +33,6 @@ internal fun mergeAfterReload(form: FormState, newRows: List<ModuleTemplate>): R
             .filterValues { it.isNotEmpty() },
         unlinked = form.unlinked.filterTo(LinkedHashSet(), ::keeps),
         linkSources = form.linkSources.filterValues(::keeps),
-        fileListsOpen = form.fileListsOpen.filterTo(LinkedHashSet()) { it in available },
     )
     return ReloadMergeResult(merged, removed)
 }

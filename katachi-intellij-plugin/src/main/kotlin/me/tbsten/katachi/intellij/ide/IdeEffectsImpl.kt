@@ -23,7 +23,6 @@ import me.tbsten.katachi.intellij.model.ConflictChoice
 import me.tbsten.katachi.intellij.model.ConflictQuestion
 import me.tbsten.katachi.intellij.model.GenerationReport
 import me.tbsten.katachi.intellij.presentation.DocsPage
-import me.tbsten.katachi.intellij.presentation.ExpectedContent
 import me.tbsten.katachi.intellij.presentation.IdeEffects
 import org.jetbrains.plugins.gradle.util.GradleConstants
 import java.awt.datatransfer.StringSelection
@@ -72,8 +71,8 @@ internal class IdeEffectsImpl(private val project: Project) : IdeEffects {
         }
     }
 
-    override suspend fun askConflict(question: ConflictQuestion, expected: List<ExpectedContent>): ConflictChoice =
-        onEdt { ConflictDialogs.ask(project, question, expected) } ?: ConflictChoice.Stop
+    override suspend fun askConflict(question: ConflictQuestion): ConflictChoice =
+        onEdt { ConflictDialogs.ask(project, question) } ?: ConflictChoice.Stop
 
     override fun openAfterGeneration(): OpenAfterGeneration = KatachiSettings.getInstance(project).openAfterGeneration
 
@@ -93,10 +92,6 @@ internal class IdeEffectsImpl(private val project: Project) : IdeEffects {
     override fun openDocs(page: DocsPage) = BrowserUtil.browse(docsUrlOf(page))
 
     override fun copyToClipboard(text: String) = CopyPasteManager.getInstance().setContents(StringSelection(text))
-
-    override suspend fun showExpectedContents(files: List<ExpectedContent>) {
-        onEdt { files.forEach { file -> file.content?.let { openExpectedContents(project, file.fileName, it) } } }
-    }
 
     /** Runs [block] on the EDT unless the project is gone; `null` when it was. */
     private suspend fun <T> onEdt(block: suspend () -> T): T? = withContext(Dispatchers.EDT) {

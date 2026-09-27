@@ -4,23 +4,21 @@ import com.intellij.openapi.Disposable
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.DialogWrapper
 import com.intellij.openapi.util.Disposer
-import com.intellij.ui.components.ActionLink
 import com.intellij.ui.components.JBRadioButton
 import com.intellij.ui.dsl.builder.panel
 import me.tbsten.katachi.intellij.model.ConflictChoice
 import me.tbsten.katachi.intellij.model.ConflictQuestion
-import me.tbsten.katachi.intellij.presentation.ExpectedContent
 import org.jetbrains.annotations.TestOnly
 import javax.swing.Action
 import javax.swing.JComponent
 
 /**
- * The only dialog of the plugin (spec 03 "衝突ダイアログ"): the files a template would write that
- * already exist, each with "diff (expected)", and what to do about the whole template.
+ * The only dialog of the plugin (spec 03 "衝突ダイアログ"): the files that already exist, as
+ * katachiTemplate reported them, and what to do about the whole template.
  *
  * ```
  * ┌ Files already exist (2 / 3: Repository) ─────────────┐
- * │ 📄 data/…/UserRepositoryImpl.kt   [Diff (expected)]  │
+ * │ 📄 data/…/UserRepositoryImpl.kt                      │
  * │ ( ) Overwrite  (•) Do not write this template and go on │
  * │                          [Stop Here]  [Continue]     │
  * └──────────────────────────────────────────────────────┘
@@ -29,7 +27,6 @@ import javax.swing.JComponent
 internal class ConflictDialog(
     private val project: Project,
     private val question: ConflictQuestion,
-    private val expected: List<ExpectedContent>,
 ) : DialogWrapper(project) {
     private lateinit var overwriteButton: JBRadioButton
     private lateinit var skipButton: JBRadioButton
@@ -44,13 +41,7 @@ internal class ConflictDialog(
     override fun createCenterPanel(): JComponent = panel {
         row { label(KatachiBundle.message("conflict.intro", question.existing.size)) }
         for (path in question.existing) {
-            row {
-                label(displayPathOf(path, question))
-                val contents = expected.firstOrNull { it.path == path }?.content
-                if (contents != null) {
-                    cell(ActionLink(KatachiBundle.message("conflict.diff")) { showExpectedDiff(project, path, contents) })
-                }
-            }
+            row { label(displayPathOf(path, question)) }
         }
         row { comment(KatachiBundle.message("conflict.note")) }
         buttonsGroup {
@@ -101,9 +92,9 @@ internal object ConflictDialogs {
     @Volatile private var testAnswer: ((ConflictQuestion) -> ConflictChoice)? = null
 
     /** Call on the EDT. */
-    fun ask(project: Project, question: ConflictQuestion, expected: List<ExpectedContent>): ConflictChoice {
+    fun ask(project: Project, question: ConflictQuestion): ConflictChoice {
         testAnswer?.let { return it(question) }
-        val dialog = ConflictDialog(project, question, expected)
+        val dialog = ConflictDialog(project, question)
         dialog.show()
         return dialog.choice
     }

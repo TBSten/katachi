@@ -32,8 +32,6 @@ internal sealed interface KatachiIntent {
 
     data class Search(val query: String) : KatachiIntent
 
-    data class ToggleFileList(val templateId: TemplateId) : KatachiIntent
-
     data class SetOnExisting(val choice: OnExistingChoice) : KatachiIntent
 
     data object Generate : KatachiIntent
@@ -57,8 +55,6 @@ internal sealed interface KatachiIntent {
     data class ToggleModule(val moduleId: ModuleId) : KatachiIntent
 
     data class ToggleDetails(val key: DetailsKey) : KatachiIntent
-
-    data object ToggleFileCountPopup : KatachiIntent
 
     /** ▸ next to a String field: one line ⇄ several lines. */
     data class ToggleMultiline(val field: FieldId) : KatachiIntent
@@ -89,9 +85,6 @@ internal sealed interface KatachiIntent {
     data class ShowCause(val templateId: TemplateId) : KatachiIntent
 
     data class CopyCommand(val templateId: TemplateId) : KatachiIntent
-
-    /** Opens the expected contents read-only ("show contents (expected)"). */
-    data class ShowExpectedContents(val templateId: TemplateId) : KatachiIntent
 }
 
 /** Documentation pages the empty states link to. */

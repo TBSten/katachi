@@ -24,9 +24,7 @@ import me.tbsten.katachi.intellij.model.TemplateId
 import me.tbsten.katachi.intellij.model.WrittenKind
 import me.tbsten.katachi.intellij.presentation.ExpectedLocation
 import me.tbsten.katachi.intellij.presentation.OnExistingChoice
-import me.tbsten.katachi.intellij.presentation.expectedFileCountOf
 import me.tbsten.katachi.intellij.presentation.expectedFilesOf
-import me.tbsten.katachi.intellij.presentation.fileCountSourceOf
 import me.tbsten.katachi.intellij.testing.ContractFixtures
 import me.tbsten.katachi.intellij.testing.FakeFileSystem
 import me.tbsten.katachi.intellij.testing.FakeGradleTaskRunner
@@ -107,10 +105,6 @@ class RealKatachiContractTest {
         )
         val interfaceOnly = expectedFilesOf(repository, mapOf("name" to "User", "withImpl" to "false"))
         assertEquals(listOf("UserRepository.kt"), interfaceOnly.map { it.fileName })
-
-        val count = expectedFileCountOf(listOf(fileCountSourceOf(template, mapOf("name" to "User", "withImpl" to "false"))))
-        assertEquals(1, count.total)
-        assertFalse(count.isApproximate)
     }
 
     @Test
