@@ -2,12 +2,7 @@ package me.tbsten.katachi.intellij
 
 import com.intellij.driver.client.Driver
 import com.intellij.driver.client.Remote
-import com.intellij.driver.sdk.FileEditorManager
-import com.intellij.driver.sdk.openToolWindow
-import com.intellij.driver.sdk.singleProject
-import com.intellij.driver.sdk.waitFor
-import com.intellij.driver.sdk.waitForIndicators
-import com.intellij.driver.sdk.waitForProjectOpen
+import com.intellij.driver.sdk.*
 import com.intellij.ide.starter.di.di
 import com.intellij.ide.starter.driver.engine.runIdeWithDriver
 import com.intellij.ide.starter.ide.IdeProductProvider
@@ -17,9 +12,9 @@ import com.intellij.ide.starter.path.GlobalPaths
 import com.intellij.ide.starter.project.LocalProjectInfo
 import com.intellij.ide.starter.runner.Starter
 import org.junit.jupiter.api.Assertions.assertTrue
+import org.junit.jupiter.api.Test
 import org.kodein.di.DI
 import org.kodein.di.bindSingleton
-import org.junit.jupiter.api.Test
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.Paths
@@ -46,6 +41,7 @@ interface KatachiDebugBridgeRef {
  * after opening the tool window goes through the plugin's debug bridge, which sends the intents a
  * click would.
  */
+@Suppress("NewApi")
 class ToolWindowSmokeTest {
     private val sample: Path = Paths.get(System.getProperty("katachi.smoke.sampleProject"))
     private val ideHome: Path = Paths.get(System.getProperty("katachi.smoke.ideHome"))
@@ -56,7 +52,11 @@ class ToolWindowSmokeTest {
         keepStarterFilesUnder(workDir.resolve("starter"))
         val project = copyOfSample()
         val ide = IdeProductProvider.IU.copy(getInstaller = { ExistingIdeInstaller(appBundleOf(ideHome)) })
-        val context = Starter.newContext("katachiToolWindowSmoke", TestCase(ide, LocalProjectInfo(project.resolve("sample/jvm"))), false)
+        val context = Starter.newContext(
+            "katachiToolWindowSmoke",
+            TestCase(ide, LocalProjectInfo(project.resolve("sample/jvm"))),
+            false
+        )
             .apply { pluginConfigurator.installPluginFromPath(Paths.get(System.getProperty("path.to.build.plugin"))) }
             // The plugin's debug bridge acts only when asked to.
             .applyVMOptionsPatch { addSystemProperty("katachi.debugBridge", true) }
@@ -71,13 +71,21 @@ class ToolWindowSmokeTest {
 
             openToolWindow("katachi")
             val bridge = service(KatachiDebugBridgeRef::class, ideProject)
-            waitFor("the template list", timeout = 10.minutes, interval = 2.seconds, errorMessage = { bridge.describeState() }) {
+            waitFor(
+                "the template list",
+                timeout = 10.minutes,
+                interval = 2.seconds,
+                errorMessage = { bridge.describeState() }) {
                 "template=domain/Service" in bridge.describeState()
             }
 
             assertTrue(bridge.checkAndFill("domain/Service", "name=SmokeProbe"), bridge.describeState())
             bridge.generate()
-            waitFor("the generation to finish", timeout = 10.minutes, interval = 2.seconds, errorMessage = { bridge.describeState() }) {
+            waitFor(
+                "the generation to finish",
+                timeout = 10.minutes,
+                interval = 2.seconds,
+                errorMessage = { bridge.describeState() }) {
                 "generation=finished" in bridge.describeState()
             }
             val state = bridge.describeState()
@@ -85,7 +93,11 @@ class ToolWindowSmokeTest {
 
             val written = project.resolve("sample/jvm/src/main/kotlin/com/example/service/SmokeProbeService.kt")
             assertTrue(Files.isRegularFile(written), "$written was not written")
-            waitFor("the written file to open", timeout = 1.minutes, interval = 1.seconds, errorMessage = { openFileOf(ideProject) }) {
+            waitFor(
+                "the written file to open",
+                timeout = 1.minutes,
+                interval = 1.seconds,
+                errorMessage = { openFileOf(ideProject) }) {
                 openFileOf(ideProject).endsWith("/SmokeProbeService.kt")
             }
         }
@@ -145,6 +157,9 @@ class ToolWindowSmokeTest {
     private fun run(directory: Path, vararg command: String) {
         Files.createDirectories(directory)
         val process = ProcessBuilder(*command).directory(directory.toFile()).inheritIO().start()
-        check(process.waitFor(5, TimeUnit.MINUTES) && process.exitValue() == 0) { "${command.joinToString(" ")} failed" }
+        check(
+            process.waitFor(5, TimeUnit.MINUTES) &&
+                    process.exitValue() == 0
+        ) { "${command.joinToString(" ")} failed" }
     }
 }
