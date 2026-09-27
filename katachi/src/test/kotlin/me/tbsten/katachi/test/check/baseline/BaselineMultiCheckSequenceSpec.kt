@@ -20,7 +20,6 @@ import me.tbsten.katachi.check.internal.renderBaseline
 import me.tbsten.katachi.dsl.Architecture
 import me.tbsten.katachi.dsl.DeclarationSite
 import me.tbsten.katachi.dsl.Role
-import me.tbsten.katachi.dsl.baselineFile
 import me.tbsten.katachi.processor.ArchitectureProcessor
 import me.tbsten.katachi.test.check.architectureOf
 import me.tbsten.katachi.test.check.repositoryOf
@@ -158,9 +157,9 @@ private fun describe(violations: List<Violation>): List<String> = violations
     .sorted()
 
 private val definition: Architecture = architectureOf {
-    baseline = baselineFile()
+    baseline()
     "Readme" { layout { "README.md".file() } }
-    "Baseline" { layout { "katachi-baseline.json".file() } }
+    "BaselineFile" { layout { "katachi-baseline.json".file() } }
 }
 
 class BaselineMultiCheckSequenceSpec : FreeSpec({

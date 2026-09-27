@@ -49,7 +49,7 @@ katachi が表現できなければならない形の中で最もよく出てく
 
 ## baseline
 
-`jvm` / `android` / `kmp` は定義に `baseline = baselineFile()` を書き、ルート直下の
+`jvm` / `android` / `kmp` は定義に `baseline()` を書き、ルート直下の
 `katachi-baseline.json` に「katachi を入れた時点ですでにあった違反」を記録して棚上げしている。
 台帳が空では何も確かめられないので、**違反を意図的に残してある**（`custom-processor` は対象外）。
 どれもソースのコメントに「baseline のデモとして意図的に違反している」と書いてある。

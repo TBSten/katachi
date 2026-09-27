@@ -47,7 +47,7 @@ feature をまたいで共有する UI。:ui の4つの package と :navigation
 - [アーキテクチャ定義](./testing/ArchitectureDefinition.md)
 - [生成ドキュメント](./testing/GeneratedDocumentation.md)
 - [レイアウトのスナップショット](./testing/LayoutSnapshot.md)
-- [baseline（棚上げした違反の台帳）](./testing/Baseline.md)
+- [baseline（棚上げした違反の台帳）](./testing/BaselineFile.md)
 
 ## 各画面の構成
 
@@ -92,4 +92,4 @@ feature をまたいで共有する UI。:ui の4つの package と :navigation
 - [アーキテクチャ定義](./testing/ArchitectureDefinition.md) ... katachi の DSL で書かれた役割の定義。どのレイヤーにも属さない
 - [生成ドキュメント](./testing/GeneratedDocumentation.md) ... この定義から書き出され、リポジトリにコミットされる Markdown
 - [レイアウトのスナップショット](./testing/LayoutSnapshot.md) ... この定義を平坦化して全行書き出した記録。定義の変化を人が差分でレビューするためにある
-- [baseline（棚上げした違反の台帳）](./testing/Baseline.md) ... katachi を入れた時点ですでにあった違反を記録し、テストを落とさずに棚上げしておく台帳
+- [baseline（棚上げした違反の台帳）](./testing/BaselineFile.md) ... katachi を入れた時点ですでにあった違反を記録し、テストを落とさずに棚上げしておく台帳

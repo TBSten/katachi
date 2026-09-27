@@ -75,7 +75,7 @@ class OmittedRoleSelfCheckSpec : FreeSpec({
 })
 
 /**
- * The violation left in the project on purpose, as the demo of `baseline = baselineFile()`, and
+ * The violation left in the project on purpose, as the demo of `baseline()`, and
  * recorded in `katachi-baseline.json`. `validate()` reports it; `assert()` holds it back. The
  * definition without `data` does not report it, because the walk stops at `data/src`.
  */

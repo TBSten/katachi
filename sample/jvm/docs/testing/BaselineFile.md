@@ -4,7 +4,7 @@
 
 katachi を入れた時点ですでにあった違反を記録し、テストを落とさずに棚上げしておく台帳
 
-`ProjectArchitecture.kt` の `baseline = baselineFile()` が指すファイルです。ここに記録した
+`ProjectArchitecture.kt` の `baseline()` が指すファイルです。ここに記録した
 違反は `:architecture-test:test` を落とさず、「held back N violations」と件数だけが出ます。
 記録に無い新しい違反は、これまでどおりテストを落とします。
 

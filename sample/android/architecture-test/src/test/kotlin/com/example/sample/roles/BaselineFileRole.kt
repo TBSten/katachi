@@ -4,17 +4,17 @@ import com.example.sample.forbiddenContents
 import me.tbsten.katachi.dsl.DeclarationContainerScope
 
 /**
- * The role of the baseline file that `baseline = baselineFile()` in `ProjectArchitecture.kt`
+ * The role of the baseline file that `baseline()` in `ProjectArchitecture.kt`
  * names.
  *
  * The file is a file of the project like any other, so `files = gitTracked()` hands it to the
  * check and it needs a role; without one the test fails with `[UnexpectedFile]` about it.
  */
-fun DeclarationContainerScope.baseline() = "Baseline" {
+fun DeclarationContainerScope.baselineFile() = "BaselineFile" {
     title = "baseline（棚上げした違反の台帳）"
     summary = "katachi を入れた時点ですでにあった違反を記録し、テストを落とさずに棚上げしておく台帳"
     description = """
-        `ProjectArchitecture.kt` の `baseline = baselineFile()` が指すファイル。ここに記録した
+        `ProjectArchitecture.kt` の `baseline()` が指すファイル。ここに記録した
         違反は `:architecture-test:test` を落とさず、「held back N violations」と件数だけが出る。
         記録に無い新しい違反は、これまでどおりテストを落とす。
 

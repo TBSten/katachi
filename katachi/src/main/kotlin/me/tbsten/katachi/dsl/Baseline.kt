@@ -2,8 +2,6 @@ package me.tbsten.katachi.dsl
 
 import me.tbsten.katachi.ExperimentalKatachiApi
 import me.tbsten.katachi.KatachiDeclarationException
-import me.tbsten.katachi.dsl.internal.captureDeclarationSite
-import me.tbsten.katachi.dsl.internal.isValidBaselinePath
 
 /**
  * Where the baseline lives: the ledger of violations the project already had when the check
@@ -31,8 +29,8 @@ import me.tbsten.katachi.dsl.internal.isValidBaselinePath
  * ## Example 1: hold back what is already there
  * ```kt
  * val projectArchitecture = architecture {
- *     baseline = baselineFile()
- *     "Baseline" {
+ *     baseline()                                // or baseline("config/katachi-baseline.json")
+ *     "BaselineFile" {
  *         summary = "Violations the project had when katachi was adopted"
  *         layout { "katachi-baseline.json".file() }
  *     }
@@ -43,14 +41,14 @@ import me.tbsten.katachi.dsl.internal.isValidBaselinePath
  * ./gradlew :architecture-test:test -Dkatachi.baseline.prune=true    # drop what was fixed
  * ```
  *
- * @see baselineFile
+ * @see ArchitectureScope.baseline
  * @see me.tbsten.katachi.check.StaleBaselineEntry
  */
 @ExperimentalKatachiApi
 public class Baseline internal constructor(
     /** The baseline file, relative to the project root and `/` separated. */
     public val path: String,
-    /** Where `baselineFile(...)` was called; not part of what makes two baselines equal. */
+    /** Where `baseline(...)` was called; not part of what makes two baselines equal. */
     internal val declaredAt: DeclarationSite = DeclarationSite.Unknown,
 ) {
     override fun equals(other: Any?): Boolean = other is Baseline && other.path == path
@@ -59,35 +57,12 @@ public class Baseline internal constructor(
 }
 
 /**
- * The baseline kept in the file at [path], relative to the project root.
- *
- * ## Example 1: keep the baseline somewhere other than the project root
- * ```kt
- * val projectArchitecture = architecture {
- *     baseline = baselineFile("config/katachi-baseline.json")
- * }
- * ```
- *
- * @param path relative to the project root, `/` separated, written the one way it can be: no
- *   `.` or `..` segment, no empty segment and no trailing `/`.
- * @throws KatachiInvalidBaselinePathException when [path] is empty, absolute, contains a `\`, or
- *   is not written the one way it can be.
- */
-@ExperimentalKatachiApi
-context(_: ArchitectureScope)
-public fun baselineFile(path: String = "katachi-baseline.json"): Baseline {
-    val declaredAt = captureDeclarationSite()
-    if (!isValidBaselinePath(path)) throw KatachiInvalidBaselinePathException(path, declaredAt)
-    return Baseline(path, declaredAt)
-}
-
-/**
- * The path given to `baselineFile(...)` is not a project-relative, `/` separated path.
+ * The path given to `baseline(...)` is not a project-relative, `/` separated path.
  *
  * ## Example 1: an absolute path is refused while the definition is read
  * ```kt
  * shouldThrow<KatachiInvalidBaselinePathException> {
- *     architecture { baseline = baselineFile("/tmp/katachi-baseline.json") }
+ *     architecture { baseline("/tmp/katachi-baseline.json") }
  * }
  * ```
  */
@@ -95,12 +70,12 @@ public fun baselineFile(path: String = "katachi-baseline.json"): Baseline {
 public class KatachiInvalidBaselinePathException internal constructor(
     /** The path as it was written. */
     public val path: String,
-    /** Where `baselineFile(...)` was called. */
+    /** Where `baseline(...)` was called. */
     public val declaredAt: DeclarationSite,
 ) : KatachiDeclarationException(
     message = """
         Invalid baseline path "$path" declared at $declaredAt.
         A baseline path is relative to the project root and separated by '/': not empty, no leading '/' or drive letter, no '\', no '.' or '..' segment, no '//' and no trailing '/'.
-        Write it the way the file sits below the project root, e.g. baselineFile("katachi-baseline.json") or baselineFile("config/katachi-baseline.json").
+        Write it the way the file sits below the project root, e.g. baseline("katachi-baseline.json") or baseline("config/katachi-baseline.json").
     """.trimIndent(),
 )

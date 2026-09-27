@@ -71,7 +71,7 @@ class ProjectArchitectureSpec : FreeSpec({
             "testing/ArchitectureDefinition",
             "testing/GeneratedDocumentation",
             "testing/LayoutSnapshot",
-            "testing/Baseline",
+            "testing/BaselineFile",
             "Gradle/SettingsScript",
             "Gradle/BuildScript",
             "Gradle/GradleProperties",
@@ -245,7 +245,7 @@ private val architectureWithoutToolRoles: Architecture = architecture {
 }
 
 /**
- * The violations left in the project on purpose, as the demo of `baseline = baselineFile()`, and
+ * The violations left in the project on purpose, as the demo of `baseline()`, and
  * recorded in `katachi-baseline.json`. `validate()` reports them; `assert()` holds them back.
  */
 private val violationsHeldBackByBaseline: List<String> = listOf(

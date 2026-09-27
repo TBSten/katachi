@@ -18,8 +18,8 @@ import me.tbsten.katachi.check.internal.BaselineEnvironment
 import me.tbsten.katachi.check.internal.assertWith
 import me.tbsten.katachi.check.internal.validate
 import me.tbsten.katachi.dsl.Architecture
+import me.tbsten.katachi.dsl.DeclarationContainerScope
 import me.tbsten.katachi.dsl.KatachiInvalidBaselinePathException
-import me.tbsten.katachi.dsl.baselineFile
 import me.tbsten.katachi.processor.ArchitectureProcessor
 import me.tbsten.katachi.check.Violation
 import me.tbsten.katachi.test.check.architectureOf
@@ -28,8 +28,13 @@ import me.tbsten.katachi.test.dsl.files.FakeFileSystem
 
 /** A definition that allows `README.md` and nothing else, with or without a baseline. */
 private fun definition(withBaseline: Boolean = true): Architecture = architectureOf {
-    if (withBaseline) baseline = baselineFile()
+    if (withBaseline) baseline()
     "Readme" { layout { "README.md".file() } }
+}
+
+/** The role function the baseline guide has users write, named like the old `baselineFile()`. */
+private fun DeclarationContainerScope.baselineFile() = "BaselineFile" {
+    layout { "katachi-baseline.json".file() }
 }
 
 /** A tree holding the allowed file plus [extra] files nothing allows. */
@@ -205,7 +210,7 @@ class BaselineAssertSpec : FreeSpec({
             definition().run(treeWith(), environmentOf(store, prune = true, standardError = err))
 
             store.files[BASELINE_FILE]!! shouldContain "\"checks\": {}"
-            err.joinToString("\n") shouldContain "baseline ="
+            err.joinToString("\n") shouldContain "baseline(...)"
         }
 
         "中身が変わらなければファイルに書かない" {
@@ -286,7 +291,7 @@ class BaselineAssertSpec : FreeSpec({
         for (path in listOf("", "/abs/katachi-baseline.json", "C:/katachi-baseline.json", "../katachi-baseline.json", "a/../b.json", "config\\baseline.json", "./katachi-baseline.json", "config//baseline.json", "config/", ".", "config/./baseline.json")) {
             "\"$path\" は定義を評価した時点で KatachiInvalidBaselinePathException になる" {
                 val failure = shouldThrow<KatachiInvalidBaselinePathException> {
-                    architectureOf { baseline = baselineFile(path) }
+                    architectureOf { baseline(path) }
                 }
                 failure.path shouldBe path
                 failure.message shouldContain "BaselineAssertSpec.kt"
@@ -294,10 +299,26 @@ class BaselineAssertSpec : FreeSpec({
         }
 
         "既定のパスは katachi-baseline.json で、相対パスはそのまま持つ" {
-            architectureOf { baseline = baselineFile() }.baseline!!.path shouldBe "katachi-baseline.json"
-            architectureOf { baseline = baselineFile("config/katachi/baseline.json") }.baseline!!.path shouldBe
+            architectureOf { baseline() }.baseline!!.path shouldBe "katachi-baseline.json"
+            architectureOf { baseline("config/katachi/baseline.json") }.baseline!!.path shouldBe
                 "config/katachi/baseline.json"
             architectureOf { }.baseline.shouldBeNull()
+        }
+
+        "2回呼ぶと後から渡したパスが使われる" {
+            architectureOf {
+                baseline()
+                baseline("config/katachi-baseline.json")
+            }.baseline!!.path shouldBe "config/katachi-baseline.json"
+        }
+
+        "利用者が baselineFile() という Role の関数を定義しても baseline() と衝突しない" {
+            val arch = architectureOf {
+                baseline()
+                baselineFile()
+            }
+            arch.baseline!!.path shouldBe "katachi-baseline.json"
+            arch.roles.map { it.name } shouldBe listOf("BaselineFile")
         }
     }
 
@@ -312,9 +333,9 @@ class BaselineAssertSpec : FreeSpec({
         "宣言してあれば警告しない" {
             val err = mutableListOf<String>()
             val declared = architectureOf {
-                baseline = baselineFile()
+                baseline()
                 "Readme" { layout { "README.md".file() } }
-                "Baseline" { layout { "katachi-baseline.json".file() } }
+                "BaselineFile" { layout { "katachi-baseline.json".file() } }
             }
             declared.run(treeWith("notes.md"), environmentOf(MemoryBaselineStore(), update = true, standardError = err))
 

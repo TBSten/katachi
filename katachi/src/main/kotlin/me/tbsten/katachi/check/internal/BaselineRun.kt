@@ -14,7 +14,7 @@ import me.tbsten.katachi.internal.catching
 import me.tbsten.katachi.internal.fileUri
 
 /** The role name a report suggests for the baseline file, the one its documentation uses. */
-internal const val BASELINE_ROLE_NAME: String = "Baseline"
+internal const val BASELINE_ROLE_NAME: String = "BaselineFile"
 
 /**
  * A run after the baseline had its say.
@@ -192,5 +192,5 @@ private fun undeclaredWarning(uri: String, path: String): String =
         "\"$BASELINE_ROLE_NAME\" { layout { ${layoutLineFor(path, isDirectory = false)} } }."
 
 private fun emptyNotice(uri: String): String =
-    "Baseline $uri holds back nothing any more: `baseline = ...` can be removed from the definition, " +
+    "Baseline $uri holds back nothing any more: `baseline(...)` can be removed from the definition, " +
         "and the file deleted."

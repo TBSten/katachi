@@ -6,15 +6,14 @@ import io.kotest.matchers.string.shouldContain
 import io.kotest.matchers.string.shouldNotContain
 import me.tbsten.katachi.check.LayoutCheck
 import me.tbsten.katachi.dsl.Architecture
-import me.tbsten.katachi.dsl.baselineFile
-import me.tbsten.katachi.processor.ArchitectureProcessContext
+import me.tbsten.katachi.processor.ArchitectureProcessNoArgContext
 import me.tbsten.katachi.processor.ArchitectureProcessorNoArg
 import me.tbsten.katachi.processor.internal.runProcessors
 import me.tbsten.katachi.test.check.architectureOf
 import me.tbsten.katachi.test.check.repositoryOf
 
 private val definition: Architecture = architectureOf {
-    baseline = baselineFile()
+    baseline()
     "Readme" { layout { "README.md".file() } }
 }
 
@@ -40,7 +39,7 @@ private fun runLayout(store: MemoryBaselineStore, vararg extra: String): Pair<In
 
 /** A processor that is not a check: it answers with names, and this time with none. */
 internal class NoNamesProcessor : ArchitectureProcessorNoArg<List<String>> {
-    override fun process(context: ArchitectureProcessContext<Unit>): Result<List<String>> = Result.success(emptyList())
+    override fun process(context: ArchitectureProcessNoArgContext): Result<List<String>> = Result.success(emptyList())
 }
 
 class BaselineProcessorRunSpec : FreeSpec({

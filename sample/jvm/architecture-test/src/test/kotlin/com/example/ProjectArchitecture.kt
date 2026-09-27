@@ -11,7 +11,6 @@ import me.tbsten.katachi.ExperimentalKatachiApi
 import me.tbsten.katachi.dsl.Architecture
 import me.tbsten.katachi.dsl.gradle.ModulePackage
 import me.tbsten.katachi.dsl.architecture
-import me.tbsten.katachi.dsl.baselineFile
 import me.tbsten.katachi.dsl.gradle.capitalizedModuleNamePackage
 
 /**
@@ -53,8 +52,8 @@ val modulePackage: ModulePackage = capitalizedModuleNamePackage("com.example")
  * katachi denies by default, so this is an allow list: every file in the project has to be
  * covered by some role, and anything else fails `ProjectArchitectureTest`.
  *
- * `baseline = baselineFile()` holds back the violations recorded in `katachi-baseline.json`
- * (declared by `roles/BaselineRole.kt`). Two are left in on purpose, as the demo of it: see
+ * `baseline()` holds back the violations recorded in `katachi-baseline.json`
+ * (declared by `roles/BaselineFileRole.kt`). Two are left in on purpose, as the demo of it: see
  * `service/LegacyHealthCheck.kt` and `service/LegacyStatusService.kt`.
  */
 @OptIn(ExperimentalKatachiApi::class)
@@ -62,7 +61,7 @@ val projectArchitecture: Architecture = architecture {
     title = "Ktor サンプルアプリ"
     description = "Ktor の小さな HTTP サーバを、katachi で形から説明したもの。" +
         "このページ以下はすべて `katachiDocs` が生成したもので、手では書かない。"
-    baseline = baselineFile()
+    baseline()
 
     apiGroup()
     domainGroup()

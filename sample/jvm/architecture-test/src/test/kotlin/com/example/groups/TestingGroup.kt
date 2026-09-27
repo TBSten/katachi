@@ -2,7 +2,7 @@ package com.example.groups
 
 import com.example.forbiddenContents
 import com.example.roles.architectureDefinition
-import com.example.roles.baseline
+import com.example.roles.baselineFile
 import com.example.roles.generatedDocumentation
 import com.example.roles.layoutSnapshot
 import com.example.roles.test
@@ -17,7 +17,7 @@ import me.tbsten.katachi.dsl.DeclarationContainerScope
  * than hiding inside `Test`: `ArchitectureDefinition` describes the shape and `Test` asserts
  * behaviour. `GeneratedDocumentation` and `LayoutSnapshot` are the shape written out — as
  * pages for a reader, and as one flattened line per entry for a reviewer's `git diff`.
- * `Baseline` is the ledger of the violations held back, which the test writes too.
+ * `BaselineFile` is the ledger of the violations held back, which the test writes too.
  */
 fun DeclarationContainerScope.testingGroup() = "testing".group {
     title = "テスト"
@@ -51,5 +51,5 @@ fun DeclarationContainerScope.testingGroup() = "testing".group {
     architectureDefinition()
     generatedDocumentation()
     layoutSnapshot()
-    baseline()
+    baselineFile()
 }

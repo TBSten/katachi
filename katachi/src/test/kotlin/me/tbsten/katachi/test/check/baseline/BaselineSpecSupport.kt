@@ -7,7 +7,7 @@ import me.tbsten.katachi.check.internal.BaselineEnvironment
 import me.tbsten.katachi.check.internal.BaselineRuns
 import me.tbsten.katachi.check.internal.BaselineStore
 import me.tbsten.katachi.check.internal.assertNoErrors
-import me.tbsten.katachi.processor.ArchitectureProcessContext
+import me.tbsten.katachi.processor.ArchitectureProcessNoArgContext
 import me.tbsten.katachi.processor.ArchitectureProcessorNoArg
 
 /** Where the fake repositories of these specs keep their baseline, as the store sees it. */
@@ -78,20 +78,20 @@ internal class ForeignViolation(
  */
 internal class ScriptedCheck(var violations: List<Violation> = emptyList()) :
     ArchitectureProcessorNoArg<List<Violation>> {
-    override fun process(context: ArchitectureProcessContext<Unit>): Result<List<Violation>> =
+    override fun process(context: ArchitectureProcessNoArgContext): Result<List<Violation>> =
         runCatching { violations.assertNoErrors(null) }
 }
 
 /** A second check class, so a spec can tell two checks' entries apart. */
 internal class OtherScriptedCheck(var violations: List<Violation> = emptyList()) :
     ArchitectureProcessorNoArg<List<Violation>> {
-    override fun process(context: ArchitectureProcessContext<Unit>): Result<List<Violation>> =
+    override fun process(context: ArchitectureProcessNoArgContext): Result<List<Violation>> =
         runCatching { violations.assertNoErrors(null) }
 }
 
 /** A check that throws instead of answering: the run becomes a partial result. */
 internal class ThrowingScriptedCheck : ArchitectureProcessorNoArg<List<Violation>> {
-    override fun process(context: ArchitectureProcessContext<Unit>): Result<List<Violation>> =
+    override fun process(context: ArchitectureProcessNoArgContext): Result<List<Violation>> =
         throw IllegalStateException("broken check")
 }
 

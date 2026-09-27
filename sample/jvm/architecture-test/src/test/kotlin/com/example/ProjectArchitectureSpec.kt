@@ -88,7 +88,7 @@ class ProjectArchitectureSpec : FreeSpec({
             "testing/ArchitectureDefinition",
             "testing/GeneratedDocumentation",
             "testing/LayoutSnapshot",
-            "testing/Baseline",
+            "testing/BaselineFile",
             "Gradle/GradleWrapper/LauncherScript",
             "Gradle/GradleWrapper/WrapperJar",
             "Gradle/GradleWrapper/WrapperProperties",
@@ -372,7 +372,7 @@ private fun shapeOf(entry: LayoutEntry): String =
     "${entry.path}\t${entry.kind}\t${if (entry.required) "required" else "optional"}"
 
 /**
- * The violations left in the project on purpose, as the demo of `baseline = baselineFile()`, and
+ * The violations left in the project on purpose, as the demo of `baseline()`, and
  * recorded in `katachi-baseline.json`. `validate()` reports them; `assert()` holds them back.
  */
 private val violationsHeldBackByBaseline: List<String> = listOf(

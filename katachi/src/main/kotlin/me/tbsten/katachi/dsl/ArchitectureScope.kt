@@ -6,6 +6,7 @@ import me.tbsten.katachi.dsl.internal.MetadataBuilder
 import me.tbsten.katachi.dsl.internal.captureDeclarationSite
 import me.tbsten.katachi.dsl.internal.declareGroup
 import me.tbsten.katachi.dsl.internal.declareRole
+import me.tbsten.katachi.dsl.internal.isValidBaselinePath
 
 /**
  * Receiver of `architecture { }`.
@@ -92,20 +93,29 @@ public sealed interface ArchitectureScope : DeclarationContainerScope {
     public var moduleResolver: ModuleResolver
 
     /**
-     * The ledger of violations to hold back, or `null` -- the default -- to hold back nothing.
-     * See [Baseline].
+     * Holds back the violations recorded in the baseline file at [path], relative to the project
+     * root. Without a call, nothing is held back. See [Baseline].
+     *
+     * Only the file is named here; it is written when a run is given
+     * `-Dkatachi.baseline.update=true`, and a `layout { }` has to allow it like any other file.
+     * Called again, the later path replaces the earlier one.
      *
      * ## Example 1: hold back the violations recorded in katachi-baseline.json
      * ```kt
      * val arch = architecture {
-     *     baseline = baselineFile()
-     *     "Baseline" { layout { "katachi-baseline.json".file() } }
+     *     baseline()
+     *     "BaselineFile" { layout { "katachi-baseline.json".file() } }
      * }
      * arch.baseline?.path shouldBe "katachi-baseline.json"
      * ```
+     *
+     * @param path relative to the project root, `/` separated, written the one way it can be: no
+     *   `.` or `..` segment, no empty segment and no trailing `/`.
+     * @throws KatachiInvalidBaselinePathException when [path] is empty, absolute, contains a `\`,
+     *   or is not written the one way it can be.
      */
     @ExperimentalKatachiApi
-    public var baseline: Baseline?
+    public fun baseline(path: String = "katachi-baseline.json")
 }
 
 internal class ArchitectureScopeImpl : ArchitectureScope {
@@ -139,7 +149,13 @@ internal class ArchitectureScopeImpl : ArchitectureScope {
 
     override var moduleResolver: ModuleResolver = ModuleResolver.Conventional
 
-    override var baseline: Baseline? = null
+    private var baseline: Baseline? = null
+
+    override fun baseline(path: String) {
+        val declaredAt = captureDeclarationSite()
+        if (!isValidBaselinePath(path)) throw KatachiInvalidBaselinePathException(path, declaredAt)
+        baseline = Baseline(path, declaredAt)
+    }
 
     override fun String.group(block: GroupScope.() -> Unit) {
         groups += declareGroup(

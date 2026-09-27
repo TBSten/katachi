@@ -17,21 +17,21 @@ baseline は 既存の違反を一時的に抑制して、新しい違反だけ�
 
 ## 設定する
 
-### 1. 定義に `baseline = baselineFile()` を書く
+### 1. 定義に `baseline()` を書く
 
 ```kt title="ProjectArchitecture.kt（抜粋）" {1,5}
 @OptIn(ExperimentalKatachiApi::class)
 val projectArchitecture: Architecture = architecture {
     // ...
-    baseline = baselineFile()
+    baseline()
 
     // ...
 }
 ```
 
-baseline を設定するとデフォルトではプロジェクトルートに `katachi-baseline.json` が生成され、このファイル内に baseline の内容が書き込まれます。
+baseline を設定すると、デフォルトではプロジェクトルートの `katachi-baseline.json` が Baseline ファイルとして使われます。ファイルが作られ baseline の内容が書き込まれるのは、手順3のように `-Dkatachi.baseline.update=true` を付けて実行したときです。
 
-位置を変更したい場合は `baselineFile("config/katachi-baseline.json")` のように設定してください。
+位置を変更したい場合は `baseline("config/katachi-baseline.json")` のように設定してください。
 
 ### 2. Baseline ファイル自身を `layout { }` で宣言する
 
@@ -80,7 +80,7 @@ Katachi baseline file:///path/to/project/katachi-baseline.json: 2 violations rec
 ## まとめ
 
 - baseline は、既存の違反を Baseline ファイルに記録して一時的に抑制し、**新しく増えた違反だけ**でテストを落とすための機能です。
-- 使うには、定義に `baseline = baselineFile()` を書き、Baseline ファイル自身も Role として `layout { }` に宣言します。
+- 使うには、定義に `baseline()` を書き、Baseline ファイル自身も Role として `layout { }` に宣言します。
 - Baseline ファイルは `-Dkatachi.baseline.update=true` を付けてアーキテクチャテストを実行すると作成・更新されます。できたファイルはコミットしておきましょう。
 
 ## 次のステップ

@@ -1,28 +1,28 @@
-package com.example.kmp.roles
+package com.example.roles
 
-import com.example.kmp.forbiddenContents
+import com.example.forbiddenContents
 import me.tbsten.katachi.dsl.DeclarationContainerScope
 
 /**
- * The role of the baseline file that `baseline = baselineFile()` in `ProjectArchitecture.kt`
+ * The role of the baseline file that `baseline()` in `ProjectArchitecture.kt`
  * names.
  *
  * The file is a file of the project like any other, so `files = gitTracked()` hands it to the
  * check and it needs a role; without one the test fails with `[UnexpectedFile]` about it.
  */
-fun DeclarationContainerScope.baseline() = "Baseline" {
+fun DeclarationContainerScope.baselineFile() = "BaselineFile" {
     title = "baseline（棚上げした違反の台帳）"
     summary = "katachi を入れた時点ですでにあった違反を記録し、テストを落とさずに棚上げしておく台帳"
     description = """
-        `ProjectArchitecture.kt` の `baseline = baselineFile()` が指すファイルです。ここに記録した
+        `ProjectArchitecture.kt` の `baseline()` が指すファイルです。ここに記録した
         違反は `:architecture-test:test` を落とさず、「held back N violations」と件数だけが出ます。
         記録に無い新しい違反は、これまでどおりテストを落とします。
 
-        このサンプルでは、baseline の見本として1件を意図的に残してあります。`:data` の
-        `androidMain` にある `user/UserAgent.android.kt` です。`androidMain` に置けるのは
-        `platform` package だけなので、`user` ディレクトリごと `[UnexpectedDirectory]` になります。
+        このサンプルでは、baseline の見本として2件を意図的に残してあります。
+        `service/LegacyHealthCheck.kt`（`*Service.kt` ではないので `[UnexpectedFile]`）と、
+        `service/LegacyStatusService.kt`（`internal` なので `public であること` の制約に違反）です。
 
-        これは手で書きません。更新は次の2つで行います。
+        これは手で書かない。更新は次の2つで行います。
 
         - `./gradlew :architecture-test:test -Dkatachi.baseline.update=true` — 今ある違反で丸ごと作り直す
         - `./gradlew :architecture-test:test -Dkatachi.baseline.prune=true` — 直した違反の項目だけを消す

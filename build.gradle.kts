@@ -250,7 +250,7 @@ data class SampleTemplate(
 )
 
 /**
- * The baseline a sample keeps (`baseline = baselineFile()`), checked the way a project that
+ * The baseline a sample keeps (`baseline()`), checked the way a project that
  * adopted it would rely on it: the architecture test passes while holding back [heldBack]
  * violations, an update run outside CI leaves [ledger] exactly as committed, and an entry for
  * a violation the project does not have fails the test as stale.

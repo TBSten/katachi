@@ -27,7 +27,7 @@
 | [アーキテクチャ定義](./ArchitectureDefinition.md) | katachi の DSL で書かれた役割の定義。どのレイヤーにも属さない |
 | [生成ドキュメント](./GeneratedDocumentation.md) | この定義から書き出され、リポジトリにコミットされる Markdown |
 | [レイアウトのスナップショット](./LayoutSnapshot.md) | この定義を平坦化して全行書き出した記録。定義の変化を人が差分でレビューするためにある |
-| [baseline（棚上げした違反の台帳）](./Baseline.md) | katachi を入れた時点ですでにあった違反を記録し、テストを落とさずに棚上げしておく台帳 |
+| [baseline（棚上げした違反の台帳）](./BaselineFile.md) | katachi を入れた時点ですでにあった違反を記録し、テストを落とさずに棚上げしておく台帳 |
 
 ## Placement in this group
 

@@ -11,7 +11,6 @@ import me.tbsten.katachi.ExperimentalKatachiApi
 import me.tbsten.katachi.dsl.Architecture
 import me.tbsten.katachi.dsl.gradle.ModulePackage
 import me.tbsten.katachi.dsl.architecture
-import me.tbsten.katachi.dsl.baselineFile
 import me.tbsten.katachi.dsl.gradle.capitalizedModuleNamePackage
 
 /**
@@ -67,8 +66,8 @@ val modulePackage: ModulePackage = capitalizedModuleNamePackage("com.example.sam
  * declaration's `declaredAt` points at the file it is actually written in — not at this one
  * — which is how the sample notices if capturing the declaration site ever breaks.
  *
- * `baseline = baselineFile()` holds back the violations recorded in `katachi-baseline.json`
- * (declared by `roles/BaselineRole.kt`). Two are left in on purpose, as the demo of it:
+ * `baseline()` holds back the violations recorded in `katachi-baseline.json`
+ * (declared by `roles/BaselineFileRole.kt`). Two are left in on purpose, as the demo of it:
  * `HomeFormatter.kt` in `:feature:home` and the `legacy` package of `:data`.
  */
 @OptIn(ExperimentalKatachiApi::class)
@@ -76,7 +75,7 @@ val projectArchitecture: Architecture = architecture {
     title = "katachi-sample-android"
     description = "Compose で書かれた Android アプリを、katachi で形から説明したもの。" +
         "このページ以下はすべて `katachiDocs` が生成したもので、手では書かない。"
-    baseline = baselineFile()
+    baseline()
 
     featureGroup()
     uiGroup()

@@ -232,7 +232,7 @@ testing/ArchitectureDefinition	architecture-test/src/test/kotlin/com/example/sam
 testing/ArchitectureDefinition	architecture-test/src/test/kotlin/com/example/sample/groups/*Group.kt	File	optional
 testing/ArchitectureDefinition	architecture-test/src/test/kotlin/com/example/sample/roles	Directory	optional
 testing/ArchitectureDefinition	architecture-test/src/test/kotlin/com/example/sample/roles/*Role.kt	File	optional
-testing/Baseline	katachi-baseline.json	File	required
+testing/BaselineFile	katachi-baseline.json	File	required
 testing/Fake	testing	Directory	optional
 testing/Fake	testing/build	Ignore	optional
 testing/Fake	testing/build.gradle.kts	File	required

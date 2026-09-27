@@ -16,7 +16,6 @@ import me.tbsten.katachi.check.internal.BaselineEnvironment
 import me.tbsten.katachi.check.internal.BaselineRuns
 import me.tbsten.katachi.check.internal.assertWith
 import me.tbsten.katachi.dsl.Architecture
-import me.tbsten.katachi.dsl.baselineFile
 import me.tbsten.katachi.processor.ArchitectureProcessor
 import me.tbsten.katachi.test.check.architectureOf
 import me.tbsten.katachi.test.check.repositoryOf
@@ -24,7 +23,7 @@ import me.tbsten.katachi.test.dsl.files.FakeFileSystem
 
 /** A definition that allows `README.md` and nothing else. The baseline file is not declared. */
 private fun definition(path: String = "katachi-baseline.json"): Architecture = architectureOf {
-    baseline = baselineFile(path)
+    baseline(path)
     "Readme" { layout { "README.md".file() } }
 }
 
@@ -122,16 +121,16 @@ class BaselineAssertEdgeSpec : FreeSpec({
 
             val message = definition().failure(treeWith("katachi-baseline.json"), environmentOf(store)).message!!
 
-            message shouldContain "\"Baseline\" {"
+            message shouldContain "\"BaselineFile\" {"
             message shouldContain "\"katachi-baseline.json\".file()"
-            err.joinToString("\n") shouldContain "\"Baseline\" { layout { \"katachi-baseline.json\".file() } }"
+            err.joinToString("\n") shouldContain "\"BaselineFile\" { layout { \"katachi-baseline.json\".file() } }"
         }
 
         "台帳ファイルを先に宣言してから初回の update をしても、まだ無い台帳ファイルの [MissingFile] を記録せず、次の実行は緑" {
             val declared = architectureOf {
-                baseline = baselineFile()
+                baseline()
                 "Readme" { layout { "README.md".file() } }
-                "Baseline" { layout { "katachi-baseline.json".file() } }
+                "BaselineFile" { layout { "katachi-baseline.json".file() } }
             }
             val store = MemoryBaselineStore()
 

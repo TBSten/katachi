@@ -93,7 +93,7 @@ testing/ArchitectureDefinition	architecture-test/src/test/kotlin/com/example	Dir
 testing/ArchitectureDefinition	architecture-test/src/test/kotlin/com/example/**	Directory	optional
 testing/ArchitectureDefinition	architecture-test/src/test/kotlin/com/example/**/*.kt	File	optional
 testing/ArchitectureDefinition	architecture-test/src/test/kotlin/com/example/*.kt	File	optional
-testing/Baseline	katachi-baseline.json	File	required
+testing/BaselineFile	katachi-baseline.json	File	required
 testing/GeneratedDocumentation	docs	Directory	optional
 testing/GeneratedDocumentation	docs/**	Directory	optional
 testing/GeneratedDocumentation	docs/**/*.md	File	optional

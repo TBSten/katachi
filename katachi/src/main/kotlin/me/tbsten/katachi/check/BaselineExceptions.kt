@@ -9,7 +9,7 @@ import me.tbsten.katachi.dsl.DeclarationSite
 private const val UPDATE_COMMAND: String = "./gradlew <module>:test -Dkatachi.baseline.update=true"
 
 /**
- * The baseline file named by `baseline = baselineFile(...)` does not exist.
+ * The baseline file named by `baseline(...)` does not exist.
  *
  * An ordinary run does not treat a missing file as an empty one: a typo in the path would
  * otherwise turn every held-back violation into a new one, or worse, go unnoticed once the
@@ -27,10 +27,10 @@ public class KatachiBaselineNotFoundException internal constructor(
 ) : KatachiCheckException(
     message = """
         Baseline file $file does not exist.
-        The definition names it with `baseline = baselineFile(...)`, so this run cannot tell which violations are held back.
+        The definition names it with `baseline(...)`, so this run cannot tell which violations are held back.
         Create it by running the architecture test once with -Dkatachi.baseline.update=true, e.g.
           $UPDATE_COMMAND
-        or correct the path passed to baselineFile(...) if the file is somewhere else.
+        or correct the path passed to baseline(...) if the file is somewhere else.
     """.trimIndent(),
 )
 
@@ -218,13 +218,13 @@ public class KatachiBaselineCheckConflictException internal constructor(
     public val check: String,
     /** The baseline file, as a `file:///...` URI. */
     public val file: String,
-    /** Where `baselineFile(...)` was called for the definition of the later run. */
+    /** Where `baseline(...)` was called for the definition of the later run. */
     public val declaredAt: DeclarationSite,
 ) : KatachiDeclarationException(
     message = """
         Check $check ran more than once in this test run against baseline file $file, declared at $declaredAt, and found different violations.
         The baseline files a check's entries under its class name alone, so each run would report the other runs' entries as stale, and an update or a prune by one would delete them.
         This happens when two assert(...) calls pass the check configured differently, or when two definitions with different layouts share one baseline file.
-        Pass every configuration of the check to a single assert(...) call, or give each definition a baseline file of its own with baselineFile("...").
+        Pass every configuration of the check to a single assert(...) call, or give each definition a baseline file of its own with baseline("...").
     """.trimIndent(),
 )

@@ -37,7 +37,7 @@
 - [アーキテクチャ定義](./testing/ArchitectureDefinition.md)
 - [生成ドキュメント](./testing/GeneratedDocumentation.md)
 - [レイアウトのスナップショット](./testing/LayoutSnapshot.md)
-- [baseline（棚上げした違反の台帳）](./testing/Baseline.md)
+- [baseline（棚上げした違反の台帳）](./testing/BaselineFile.md)
 
 ### [アプリ](./app/README.md)
 
@@ -82,7 +82,7 @@ Gradle がビルドする Android アプリと、Xcode がビルドする iOS �
 - [アーキテクチャ定義](./testing/ArchitectureDefinition.md) ... :architecture-test モジュールの src/test。katachi の DSL で書いたこのプロジェクトの定義。どのレイヤーにも属さないので専用モジュールに置く
 - [生成ドキュメント](./testing/GeneratedDocumentation.md) ... この定義から書き出され、リポジトリにコミットされる Markdown
 - [レイアウトのスナップショット](./testing/LayoutSnapshot.md) ... この定義を平坦化して全行書き出した記録。定義の変化を人が差分でレビューするためにある
-- [baseline（棚上げした違反の台帳）](./testing/Baseline.md) ... katachi を入れた時点ですでにあった違反を記録し、テストを落とさずに棚上げしておく台帳
+- [baseline（棚上げした違反の台帳）](./testing/BaselineFile.md) ... katachi を入れた時点ですでにあった違反を記録し、テストを落とさずに棚上げしておく台帳
 
 ## アプリ
 

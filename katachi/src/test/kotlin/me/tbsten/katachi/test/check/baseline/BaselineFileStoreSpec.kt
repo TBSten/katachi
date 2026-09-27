@@ -9,7 +9,6 @@ import me.tbsten.katachi.check.KatachiBaselineWriteException
 import me.tbsten.katachi.check.internal.BaselineStore
 import me.tbsten.katachi.check.internal.FileBaselineStore
 import me.tbsten.katachi.check.internal.assertWith
-import me.tbsten.katachi.dsl.baselineFile
 import me.tbsten.katachi.test.check.architectureOf
 import me.tbsten.katachi.test.check.repositoryOf
 import java.io.IOException
@@ -75,7 +74,7 @@ class BaselineFileStoreSpec : FreeSpec({
             override fun write(file: String, text: String): Unit = throw IOException("disk full")
         }
         val definition = architectureOf {
-            baseline = baselineFile()
+            baseline()
             "Readme" { layout { "README.md".file() } }
         }
 

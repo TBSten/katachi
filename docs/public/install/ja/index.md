@@ -564,8 +564,8 @@ sh $CLI compare-violations
 
 **残す違反が多く、ユーザが「今ある違反は棚上げして、新しい違反だけで落としたい」と望む場合は、baseline を提案できます。** 実験的な機能（`@ExperimentalKatachiApi`）なので、使うかどうかは `questions` でユーザに確認してから入れてください。使う場合の手順は次のとおりです。
 
-- `ProjectArchitecture.kt` の `architecture { }` に `baseline = baselineFile()` を書き、`val projectArchitecture` に `@OptIn(ExperimentalKatachiApi::class)` を付ける。台帳のファイルは既定で `katachi-baseline.json`（プロジェクトルート）
-- 台帳のファイルも検査の対象なので、役割を1つ足して `layout { }` で宣言する（例: `"Baseline" { layout { "katachi-baseline.json".file() } }`）。宣言しないと台帳自身が `[UnexpectedFile]` になり、これは棚上げできない
+- `ProjectArchitecture.kt` の `architecture { }` に `baseline()` を書き、`val projectArchitecture` に `@OptIn(ExperimentalKatachiApi::class)` を付ける。台帳のファイルは既定で `katachi-baseline.json`（プロジェクトルート）
+- 台帳のファイルも検査の対象なので、役割を1つ足して `layout { }` で宣言する（例: `"BaselineFile" { layout { "katachi-baseline.json".file() } }`）。宣言しないと台帳自身が `[UnexpectedFile]` になり、これは棚上げできない
 - `./gradlew :architecture-test:test -Dkatachi.baseline.update=true` で、今ある違反を台帳に書き出す。以降は台帳に無い違反だけでテストが落ちる。違反を直すと、その項目が `[StaleBaselineEntry]` で落ちるので、`-Dkatachi.baseline.prune=true` で消す（CI（`CI=true`）では update も prune も拒否される）
 
 棚上げした違反も `violations` に書いてください。台帳に入れても、違反が消えたわけではありません。

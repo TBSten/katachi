@@ -12,7 +12,6 @@ import me.tbsten.katachi.check.internal.BaselineLedger
 import me.tbsten.katachi.check.internal.assertWith
 import me.tbsten.katachi.check.internal.renderBaseline
 import me.tbsten.katachi.dsl.Architecture
-import me.tbsten.katachi.dsl.baselineFile
 import me.tbsten.katachi.test.check.architectureOf
 import me.tbsten.katachi.test.check.repositoryOf
 import kotlin.random.Random
@@ -55,7 +54,7 @@ private sealed interface Outcome {
     data class Failed(val reported: List<String>) : Outcome
 }
 
-private val definition: Architecture = architectureOf { baseline = baselineFile() }
+private val definition: Architecture = architectureOf { baseline() }
 
 private fun keyOf(found: Found) = BaselineKey(check = SCRIPTED, rule = found.rule, path = found.path)
 

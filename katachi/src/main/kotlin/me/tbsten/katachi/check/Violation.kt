@@ -149,7 +149,7 @@ public class UnexpectedFile internal constructor(
     public val nearby: List<NearbyLocation>,
     /**
      * The role name the report suggests declaring, or `null` to guess one from the file name.
-     * Set for the baseline file, which the documentation calls `"Baseline"`.
+     * Set for the baseline file, which the documentation calls `"BaselineFile"`.
      */
     internal val suggestedRole: String? = null,
 ) : Violation {

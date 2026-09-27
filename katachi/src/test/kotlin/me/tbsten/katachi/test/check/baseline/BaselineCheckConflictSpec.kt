@@ -11,14 +11,13 @@ import me.tbsten.katachi.check.Violation
 import me.tbsten.katachi.check.internal.BaselineRuns
 import me.tbsten.katachi.check.internal.assertWith
 import me.tbsten.katachi.dsl.Architecture
-import me.tbsten.katachi.dsl.baselineFile
 import me.tbsten.katachi.processor.ArchitectureProcessor
 import me.tbsten.katachi.test.check.architectureOf
 import me.tbsten.katachi.test.check.repositoryOf
 import me.tbsten.katachi.test.dsl.files.FakeFileSystem
 
 private fun definition(): Architecture = architectureOf {
-    baseline = baselineFile()
+    baseline()
     "Readme" { layout { "README.md".file() } }
 }
 
@@ -91,7 +90,7 @@ class BaselineCheckConflictSpec : FreeSpec({
     "2つの定義が layout の違う形で1つの台帳を共有すると、LayoutCheck の衝突として止まる" {
         val run = TestRun()
         val other = architectureOf {
-            baseline = baselineFile()
+            baseline()
             "Notes" { layout { "notes.md".file() } }
         }
         run.assert(definition(), treeWith("notes.md"), update = true)
@@ -138,7 +137,7 @@ class BaselineCheckConflictSpec : FreeSpec({
         "別の台帳ファイルなら同じ check クラスでも別々に覚える" {
             val run = TestRun()
             val elsewhere = architectureOf {
-                baseline = baselineFile("config/katachi-baseline.json")
+                baseline("config/katachi-baseline.json")
                 "Readme" { layout { "README.md".file() } }
             }
             run.assert(definition(), treeWith(), ScriptedCheck(listOf(ForeignViolation("a.kt"))), update = true)

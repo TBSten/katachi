@@ -1,7 +1,7 @@
 package com.example.sample.groups
 
 import com.example.sample.roles.architectureDefinition
-import com.example.sample.roles.baseline
+import com.example.sample.roles.baselineFile
 import com.example.sample.roles.fake
 import com.example.sample.roles.generatedDocumentation
 import com.example.sample.roles.layoutSnapshot
@@ -68,5 +68,5 @@ fun DeclarationContainerScope.testingGroup() = "testing".group {
     architectureDefinition()
     generatedDocumentation()
     layoutSnapshot()
-    baseline()
+    baselineFile()
 }

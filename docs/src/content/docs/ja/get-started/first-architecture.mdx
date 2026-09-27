@@ -121,7 +121,7 @@ katachi が必要かどうか疑問がある場合は、先に [モチベーシ�
 
         - **`outputs.upToDateWhen { false }` / `outputs.cacheIf { false }`**: katachi が検査するのはリポジトリ全体のファイルですが、Gradle が Test タスクの入力として見ているのはテストのクラスパスだけです。これが無いと、ファイルを足したり変えたりしても `:architecture-test:test` が `UP-TO-DATE` で飛ばされ、違反があっても緑のままになります。`cacheIf` は、ビルドキャッシュを有効にしているときに前の結果が使い回されないようにするための指定です。
         - **`testLogging { exceptionFormat = TestExceptionFormat.FULL }`**: これが無いと、テストが落ちてもコンソールには例外のクラス名の1行しか出ず、違反の一覧はテストレポートを開かないと読めません。
-        - **`katachi { architecture = ... }`**: ドキュメント生成・テンプレート・IDE プラグインが定義を見つけるための指定です。値は手順3で書く定義の完全修飾名（`package` + 変数名）にします。
+        - **`katachi { architecture = ... }`**: ドキュメント生成・テンプレートが定義を見つけるための指定です。値は手順3で書く定義の完全修飾名（`package` + 変数名）にします。
 
         <Aside type="caution" title="Android プロジェクトの場合">
         ルートの `build.gradle.kts` に `kotlin("jvm") version "..." apply false` を書き、**モジュール側ではバージョンを書かずに** `kotlin("jvm")` とだけ書いてください。
@@ -198,7 +198,7 @@ katachi が必要かどうか疑問がある場合は、先に [モチベーシ�
 
         Gradle のファイル（wrapper・`settings.gradle.kts`・build スクリプト・`gradle.properties`・version catalog）は、手順3の `gradle()` の1行で宣言できます。`buildSrc` や convention plugin がある場合は [Gradle 周辺のレシピ](/katachi/ja/recipes/gradle/) を参照してください。
 
-        既存の違反が多くてすぐには片付けられない場合は、実験的な機能の baseline で今ある違反を台帳のファイル（既定は `katachi-baseline.json`）に棚上げし、新しい違反だけでテストを落とすこともできます。`architecture { baseline = baselineFile() }` と書き、最初に `-Dkatachi.baseline.update=true` を付けて実行して台帳を作ります。棚上げした違反を直したら、`-Dkatachi.baseline.prune=true` で台帳から消すまでテストは落ちます。台帳のファイル自身も `layout { }` で宣言します。詳しくは [baseline](/katachi/ja/guides/baseline/) を参照してください。
+        既存の違反が多くてすぐには片付けられない場合は、実験的な機能の baseline で今ある違反を台帳のファイル（既定は `katachi-baseline.json`）に棚上げし、新しい違反だけでテストを落とすこともできます。`architecture { baseline() }` と書き、最初に `-Dkatachi.baseline.update=true` を付けて実行して台帳を作ります。棚上げした違反を直したら、`-Dkatachi.baseline.prune=true` で台帳から消すまでテストは落ちます。台帳のファイル自身も `layout { }` で宣言します。詳しくは [baseline](/katachi/ja/guides/baseline/) を参照してください。
 
     </Steps>
   </TabItem>
