@@ -15,6 +15,7 @@ docs/AGENTS.md の「`public/install/`」の節が「スクリプトを直した
 pgrep -fl GradleWrapperMain                                                                          # ほかの Gradle が走っていないこと
 sh .claude/skills/prerelease/scripts/check-install-kit.sh --release-dir .local/release-v<版>        # 走らせる（15〜20 分）
 sh .claude/skills/prerelease/scripts/check-install-kit.sh --release-dir .local/release-v<版> --only agp,rootjvm   # 一部だけ
+sh .claude/skills/prerelease/scripts/check-install-kit.sh --release-dir .local/release-v<版> --lang en --only agp,groovyinc   # 英語の出力（日本語が残れば NG）
 ```
 
 - やること（スクリプトの冒頭のコメントに詳細）:
