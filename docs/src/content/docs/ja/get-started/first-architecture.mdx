@@ -5,6 +5,10 @@ tags:
   - beginner
 ---
 
+{/*
+  このページの目的: katachi のモチベーションを理解したユーザが、自分のプロジェクトに katachi を導入することができること。導入の中には Gradle モジュールの設定・周辺の設定を含む。
+*/}
+
 import { Aside, Tabs, TabItem, Steps, Badge } from '@astrojs/starlight/components';
 
 <Aside>
@@ -182,7 +186,7 @@ katachi が必要かどうか疑問がある場合は、先に [モチベーシ�
 
         **プロジェクトが書くテストはこれ1本だけです。** リポジトリ全体の違反が1つの失敗メッセージに集まるので、ルールごとにテストを分ける意味がありません。
 
-        定義に `konsist { }` を書いたら、`assert()` の代わりに `assert(FileConstraintCheck())` を呼び、テストに `@OptIn(ExperimentalKatachiApi::class)` を付けます。`assert()` だけでは制約が評価されず、テストが落ちます。詳しくは [Konsist との統合](/katachi/ja/guides/konsist-integration/) を参照してください。
+        定義に `konsist { }` を書いたら、`assert()` の代わりに `assert(FileConstraintCheck())` を呼びます。`assert()` だけでは制約が評価されず、テストが落ちます。詳しくは [Konsist との統合](/katachi/ja/guides/konsist-integration/) を参照してください。
 
     5. **実行する**
 
@@ -194,7 +198,7 @@ katachi が必要かどうか疑問がある場合は、先に [モチベーシ�
 
         Gradle のファイル（wrapper・`settings.gradle.kts`・build スクリプト・`gradle.properties`・version catalog）は、手順3の `gradle()` の1行で宣言できます。`buildSrc` や convention plugin がある場合は [Gradle 周辺のレシピ](/katachi/ja/recipes/gradle/) を参照してください。
 
-        既存の違反が多くてすぐには片付けられない場合は、実験的な機能の baseline で今ある違反を台帳のファイル（既定は `katachi-baseline.json`）に棚上げし、新しい違反だけでテストを落とすこともできます。`architecture { baseline = baselineFile() }` と書き（`@OptIn(ExperimentalKatachiApi::class)` が要ります）、最初に `-Dkatachi.baseline.update=true` を付けて実行して台帳を作ります。棚上げした違反を直したら、`-Dkatachi.baseline.prune=true` で台帳から消すまでテストは落ちます。台帳のファイル自身も `layout { }` で宣言します。詳しくは [baseline](/katachi/ja/guides/baseline/) を参照してください。
+        既存の違反が多くてすぐには片付けられない場合は、実験的な機能の baseline で今ある違反を台帳のファイル（既定は `katachi-baseline.json`）に棚上げし、新しい違反だけでテストを落とすこともできます。`architecture { baseline = baselineFile() }` と書き、最初に `-Dkatachi.baseline.update=true` を付けて実行して台帳を作ります。棚上げした違反を直したら、`-Dkatachi.baseline.prune=true` で台帳から消すまでテストは落ちます。台帳のファイル自身も `layout { }` で宣言します。詳しくは [baseline](/katachi/ja/guides/baseline/) を参照してください。
 
     </Steps>
   </TabItem>

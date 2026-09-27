@@ -266,7 +266,7 @@ private fun FileConstraintScope.shouldContainsDataSourceClass() =
   }
 ```
 
-Because this uses `konsist { }`, add a dependency on `katachi-konsist` to `:architecture-test` and call `assert(FileConstraintCheck())` in the test (which needs `@OptIn(ExperimentalKatachiApi::class)`). With `assert()` alone the constraints are not evaluated and the test fails with `[UncheckedFileConstraint]`. See [Konsist integration](/katachi/guides/konsist-integration/) for details.
+Because this uses `konsist { }`, add a dependency on `katachi-konsist` to `:architecture-test` and call `assert(FileConstraintCheck())` in the test. With `assert()` alone the constraints are not evaluated and the test fails with `[UncheckedFileConstraint]`. See [Konsist integration](/katachi/guides/konsist-integration/) for details.
 
 <SnippetIsStartingPoint>
 For example, if your product uses Dagger Hilt, you might add a check for the `@HiltViewModel` annotation on ViewModels, or a check that repository implementation classes have an `@Inject` constructor — customizations like these will likely be necessary.

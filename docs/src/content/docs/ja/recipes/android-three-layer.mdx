@@ -266,7 +266,7 @@ private fun FileConstraintScope.shouldContainsDataSourceClass() =
   }
 ```
 
-`konsist { }` を使うので、`:architecture-test` に `katachi-konsist` への依存を足し、テストでは `assert(FileConstraintCheck())` を呼んでください（`@OptIn(ExperimentalKatachiApi::class)` が必要）。`assert()` だけでは制約が評価されず、`[UncheckedFileConstraint]` で落ちます。詳しくは [Konsist との統合](/katachi/ja/guides/konsist-integration/) を参照してください。
+`konsist { }` を使うので、`:architecture-test` に `katachi-konsist` への依存を足し、テストでは `assert(FileConstraintCheck())` を呼んでください。`assert()` だけでは制約が評価されず、`[UncheckedFileConstraint]` で落ちます。詳しくは [Konsist との統合](/katachi/ja/guides/konsist-integration/) を参照してください。
 
 <SnippetIsStartingPoint>
 たとえばプロダクトで Dagger Hilt を使っているなら、ViewModel に `@HiltViewModel` アノテーションが付いているかの検査や、Repository の実装クラスに `@Inject` コンストラクタがあるかの検査を追加するなど、さらにカスタマイズが必要になるでしょう。

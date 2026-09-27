@@ -110,7 +110,7 @@ class ProjectArchitectureTest {
 - **Kotlin 2.4 未満**: `compilerOptions.freeCompilerArgs.add("-Xcontext-parameters")` が要ります（2.4 以降では付けないでください。警告になります）
 - **`Failed to load JUnit Platform`**: `junit-platform-launcher` が足りません
 - **`Cannot create Launcher without at least one TestEngine` / `did not discover any tests to execute`**: JUnit のエンジン（`junit-jupiter`）が足りません。Gradle 8 では、ほかのエンジン（kotest など）があるとエラーにならず、`BUILD SUCCESSFUL` のまま検査が空振りすることがあります
-- **`konsist { }` を書いたら `[UncheckedFileConstraint]` で落ちる**: `assert(FileConstraintCheck())` と書きます（`@OptIn(ExperimentalKatachiApi::class)` が要ります）
+- **`konsist { }` を書いたら `[UncheckedFileConstraint]` で落ちる**: `assert(FileConstraintCheck())` と書きます
 
 </details>
 

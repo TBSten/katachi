@@ -45,7 +45,7 @@ fun `files are placed according to the architecture`() {
 }
 ```
 
-`FileConstraintCheck` is an experimental API, so it needs `@OptIn(ExperimentalKatachiApi::class)`.
+`FileConstraintCheck` is an experimental API.
 If you call `assert()` alone without passing `FileConstraintCheck()`, the constraints are not evaluated and the test fails with an `[UncheckedFileConstraint]` violation.
 
 ## Basic usage

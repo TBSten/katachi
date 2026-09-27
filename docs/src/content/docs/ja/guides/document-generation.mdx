@@ -5,6 +5,10 @@ tags:
   - beginner
 ---
 
+{/*
+  このページの目的: katachi のドキュメント生成機能について深く網羅的に理解してもらうこと。
+*/}
+
 import { Tabs, TabItem, Aside, LinkCard, FileTree } from '@astrojs/starlight/components';
 import CodeComparison from '../../../../components/CodeComparison';
 
@@ -170,21 +174,7 @@ architecture {
 
 出力先は、build.gradle.kts で `katachi.processors.docs.outputDir` を設定すると変更できます。
 
-{/* TODO: 出力先を `build/` の外にすると `gitTracked()` が生成物を拾い、
-    「どの役割も宣言していないファイル」として検査が落ちる。**役割として宣言する**必要がある。
-    sample/<name>/docs がまさにその形なので、そこを実例として指す */}
-
-{/* TODO: ルートページの `title` / `description` の節が無い。
-    `architecture { title = "..."; description = "..." }` の2つで、group や役割に書くのと同じ語。
-    書かなければ見出しは `Architecture documentation`、本文は出ない。
-    **build.gradle.kts からは設定できない**（0.2 で `docs { rootTitle }` と `--arg rootTitle` を
-    廃止した。書ける場所は定義の中の1箇所だけ） */}
-
-{/* TODO: `--arg mode=check` の節が無い。書かずにディスク上と比べ、食い違えば落ちる。
-    生成物をコミットしている場合に CI で「最新か」を見る手段で、いちばん需要がある。
-    欠けている / 中身が違う / 余分 の3種類を1つの例外にまとめて報告する */}
-
-```kt {5-7}
+```kt {6}
 katachi {
     architecture = "com.example.projectArchitecture"
 
@@ -195,12 +185,6 @@ katachi {
     }
 }
 ```
-
-<Aside type="caution">
-出力先ディレクトリは katachi が管理します。その回に生成しなかった `*.md` は削除されます（`.md` 以外のファイルは残り、削除したファイルはログに1件ずつ出ます）。手書きの Markdown があるディレクトリを出力先にすると、その Markdown が消えます。専用のディレクトリを指定してください。
-
-`outputDir` には String / Directory / File を渡せます。String はモジュールからの相対パス、Directory と File は絶対パスとして扱います。
-</Aside>
 
 ## 生成されるファイル
 
@@ -373,6 +357,52 @@ group に設定できるのは Role と同じ4つです。**`example()` だけ�
     </CodeComparison.Panel>
 </CodeComparison>
 
+### トップページ
+
+トップページ（出力先の直下の `README.md`）の見出しと説明は、`architecture { }` の直下に `title` と `description` を書いて設定します。
+
+| プロパティ | 生成されるドキュメントでの役割 | 使用されるページ |
+|---|---|---|
+| [`title`](/katachi/api-docs/katachi/me.tbsten.katachi.dsl/-architecture-scope/title.html) | トップページの見出し | `README.md`、すべてのページのパンくず |
+| [`description`](/katachi/api-docs/katachi/me.tbsten.katachi.dsl/-architecture-scope/description.html) | 見出しの直下の本文。 | `README.md` |
+
+<CodeComparison>
+    <CodeComparison.Panel label="architecture 定義">
+        ```kt
+        val projectArchitecture = architecture {
+            title = "myapp"
+            description = """
+                myapp のファイル構成です。
+
+                myapp は **MVVM * Clean Architecture** ベースで設計されています。
+            """.trimIndent()
+
+            "domain".group {
+                title = "Domain レイヤー"
+                summary = "アプリ固有の振る舞いと、その対象になる値"
+                "UseCase" { /* ... */ }
+            }
+        }
+        ```
+    </CodeComparison.Panel>
+    <CodeComparison.Panel label="生成されるマークダウン">
+        ```md title="README.md"
+        # myapp documentation
+
+        myapp のファイル構成です。
+
+        myapp は **MVVM * Clean Architecture** ベースで設計されています。
+
+        ## Document map
+
+        ### [Domain レイヤー](./domain/README.md)
+
+        アプリ固有の振る舞いと、その対象になる値
+        ...
+        ```
+    </CodeComparison.Panel>
+</CodeComparison>
+
 ### 独自のセクション
 
 title などデフォルトで用意されているセクションのほかに独自のセクションをドキュメントへ足したいときは、[`documentSection()`](/katachi/api-docs/katachi/me.tbsten.katachi.dsl/document-section.html) でセクションを定義します。
@@ -386,78 +416,72 @@ val TestPolicy = documentSection("テスト方針")
 var MetadataScope.testPolicy by TestPolicy
 ```
 
-**プロパティの受け口の型で、どこに書けるかが決まります。**
+<details>
+    <summary>セクションを入れ子にする</summary>
 
-| 受け口の型 | 書ける場所 |
-|---|---|
-| `MetadataScope` | group・役割・ルートのどこでも |
-| `DeclarationContainerScope` | group とルートだけ（役割には書けない） |
-| `RoleScope` | 役割だけ |
+    セクションは入れ子にできます。`TestPolicy.documentSection("ユニットテスト")` のように、親のセクションに対して宣言します。
+    **見出しのレベルは深さで決まります。** 最上位が `##` で、1段深くなるごとに `#` が1つ増えます。
+    親に本文を書いていなくても、子に本文があれば親の見出しは出ます。
 
-セクションは入れ子にできます。`TestPolicy.documentSection("ユニットテスト")` のように、親のセクションに対して宣言します。
-**見出しのレベルは深さで決まります。** 最上位が `##` で、1段深くなるごとに `#` が1つ増えます。
-親に本文を書いていなくても、子に本文があれば親の見出しは出ます。
+    <CodeComparison>
+        <CodeComparison.Panel label="セクションの定義">
+            ```kt
+            @file:OptIn(ExperimentalKatachiApi::class)
 
-<CodeComparison>
-    <CodeComparison.Panel label="セクションの定義">
-        ```kt
-        @file:OptIn(ExperimentalKatachiApi::class)
+            val TestPolicy = documentSection("テスト方針")
+            var MetadataScope.testPolicy by TestPolicy
 
-        val TestPolicy = documentSection("テスト方針")
-        var MetadataScope.testPolicy by TestPolicy
+            val UnitTest = TestPolicy.documentSection("ユニットテスト")
+            var RoleScope.unitTest by UnitTest
 
-        val UnitTest = TestPolicy.documentSection("ユニットテスト")
-        var RoleScope.unitTest by UnitTest
+            val projectArchitecture = architecture {
+                "UseCase" {
+                    title = "ユースケース"
+                    summary = "各画面で発生するアプリ固有の1つの振る舞い"
+                    example("SignInUseCase", "サインイン")
+                    layout { "src/main/kotlin/com/example/useCase" / "*UseCase".ktFile() }
 
-        val projectArchitecture = architecture {
-            "UseCase" {
-                title = "ユースケース"
-                summary = "各画面で発生するアプリ固有の1つの振る舞い"
-                example("SignInUseCase", "サインイン")
-                layout { "src/main/kotlin/com/example/useCase" / "*UseCase".ktFile() }
-
-                unitTest = "Repository を偽物に差し替えて、戻り値を確かめる。"
+                    unitTest = "Repository を偽物に差し替えて、戻り値を確かめる。"
+                }
             }
-        }
-        ```
-    </CodeComparison.Panel>
-    <CodeComparison.Panel label="生成されるマークダウン">
-        ```md title="UseCase.md"
-        [Architecture](README.md)
+            ```
+        </CodeComparison.Panel>
+        <CodeComparison.Panel label="生成されるマークダウン">
+            ```md title="UseCase.md"
+            [Architecture](README.md)
 
-        # ユースケース
+            # ユースケース
 
-        各画面で発生するアプリ固有の1つの振る舞い
+            各画面で発生するアプリ固有の1つの振る舞い
 
-        ## Placement
+            ## Placement
 
-        | Module | Path | When to use |
-        |---|---|---|
-        |  | `src/main/kotlin/com/example/useCase/*UseCase.kt` |  |
+            | Module | Path | When to use |
+            |---|---|---|
+            |  | `src/main/kotlin/com/example/useCase/*UseCase.kt` |  |
 
-        ## Examples
+            ## Examples
 
-        - `SignInUseCase` ... サインイン
+            - `SignInUseCase` ... サインイン
 
-        ## テスト方針                                  ← 本文は無いが、子があるので出る
+            ## テスト方針                                  ← 本文は無いが、子があるので出る
 
-        ### ユニットテスト                             ← 1段深いので ###
+            ### ユニットテスト                             ← 1段深いので ###
 
-        Repository を偽物に差し替えて、戻り値を確かめる。
-        ```
-    </CodeComparison.Panel>
-</CodeComparison>
+            Repository を偽物に差し替えて、戻り値を確かめる。
+            ```
+        </CodeComparison.Panel>
+    </CodeComparison>
 
-独自のセクションは、**組み込みの節（`## Placement` / `## Constraints` / `## Examples`）の後ろ**に、定義の中で書いた順に並びます。
+    独自のセクションは、**組み込みのセクション（`## Placement` / `## Constraints` / `## Examples`）の後ろ**に、定義の中で書いた順に並びます。
+
+</details>
 
 ## まとめ
 
-- ドキュメントは**検査と同じ定義**から生成されます。2つを別々に書かないので、**ドキュメントと実体がずれません**。
-- 生成されるのは2軸です。**役割ページ**（この役割は何で、どこに置くか）と、**group とルートの README の配置ツリー**（このディレクトリに何が置けるか）。配置ツリーは group の README では `## Placement in this group`、ルートの README では `## Placement at the root` として出ます。
-- **`## Constraints` に出るのは名前付きの `konsist { }` だけ**です。名前を書けば載るので、書く動機が自然に生まれます。
+- ドキュメントはアーキテクチャ定義の中に title, summary, description, summary, example などのプロパティを設定することで作成することができます。
 
 ## 次のステップ
 
-- [Role](/katachi/ja/guides/role/) ... 生成の材料になる `title` / `summary` / `description` / `example` の書き方を学びましょう。
+- [テンプレートからコード生成](/katachi/ja/guides/generate-code-from-template/) ... 同じ定義からドキュメントではなくコードを生成する方法を学びましょう。
 - [ArchitectureProcessor とそのカスタマイズ](/katachi/ja/guides/processor/) ... ドキュメント生成も ArchitectureProcessor の1つです。自分で別の成果物を出す方法を学びましょう。
-- [テンプレートからコード生成](/katachi/ja/guides/generate-code-from-template/) ... 同じ定義から、ドキュメントではなくコードを生成する方法を学びましょう。

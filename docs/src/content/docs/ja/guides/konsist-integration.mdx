@@ -4,6 +4,11 @@ description: konsist { } で Konsist の API を使い、ファイルの配置�
 tags:
   - intermediate
 ---
+
+{/*
+  このページの目的: katachi のなかで konsist を活用する方法を紹介する。
+*/}
+
 import { Aside, LinkCard } from '@astrojs/starlight/components';
 
 katachi のコア API は、ディレクトリ構造やファイルの位置に着目して検証します。`"...".konsist { }` を使うと、Konsist の API で **ファイル内の宣言を検証** できます。
@@ -24,9 +29,7 @@ katachi のコア API は、ディレクトリ構造やファイルの位置に�
   </tr>
 </table>
 
-<Aside type="note">
-  Maven Central に `me.tbsten.katachi:katachi-konsist` として公開しています。どのバージョンで何ができるかは [ロードマップ](/katachi/ja/roadmap/) を参照してください。
-</Aside>
+Konsist との統合は別アーティファクト `me.tbsten.katachi:katachi-konsist` に公開されているため、別途依存に追加する必要があります。
 
 ```kts title="build.gradle.kts" {2}
 dependencies {
@@ -44,9 +47,6 @@ fun `アーキテクチャに沿ったファイル配置になっている`() {
   projectArchitecture.assert(FileConstraintCheck())
 }
 ```
-
-`FileConstraintCheck` は実験的 API なので、`@OptIn(ExperimentalKatachiApi::class)` が必要です。
-`FileConstraintCheck()` を渡さずに `assert()` だけを呼ぶと、制約は評価されず、`[UncheckedFileConstraint]` の違反としてテストが落ちます。
 
 ## 基本的な使い方
 
@@ -67,11 +67,6 @@ architecture {
 ```
 
 制約の対象は、その Role の `layout { }` に当てはまったファイルです。`layout { }` の無い Role に制約を書くと、定義を評価した時点で `KatachiFileConstraintWithoutLayoutException` になります。
-
-<Aside type="caution">
-  `konsist { }` の中で `assertTrue { }` を書くと、**コンパイルエラーになります**（ERROR レベルの `@Deprecated` で塞いでいます）。Konsist の `assertTrue` は最初に弾いた1件でその場で例外を投げるので、katachi がどの宣言が弾かれたかを受け取れず、1回の実行で全違反を集められないためです。
-  代わりに must / mustNot / mustBeEmpty を使ってください。
-</Aside>
 
 ## ディレクトリごとに制約をかける
 

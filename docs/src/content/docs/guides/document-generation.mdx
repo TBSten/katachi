@@ -174,12 +174,6 @@ The destination can be changed by setting `katachi.processors.docs.outputDir` in
     the check fails on them as "files no role declares". They have to be **declared as a role**.
     sample/<name>/docs is exactly that setup, so point to it as the real-world example */}
 
-{/* TODO: There is no section on the root page's `title` / `description`.
-    They are the two of `architecture { title = "..."; description = "..." }`, the same words as on a group or role.
-    If left out, the heading is `Architecture documentation` and there is no body.
-    **They cannot be set from build.gradle.kts** (0.2 removed `docs { rootTitle }` and `--arg rootTitle`;
-    the one place to write them is inside the definition) */}
-
 {/* TODO: There is no section on `--arg mode=check`. It writes nothing, compares against what is on disk, and fails on any mismatch.
     It is how CI checks "is it up to date" when the generated files are committed, and it is the most in-demand use.
     It reports all three kinds -- missing / different content / extra -- together in one exception */}
@@ -373,6 +367,52 @@ A group takes the same four properties a role does. **Only `example()` is missin
     </CodeComparison.Panel>
 </CodeComparison>
 
+### Top page
+
+The heading and description of the top page (the `README.md` right under the output directory) are set by writing `title` and `description` directly inside `architecture { }`.
+
+| Property | Role in the generated documentation | Used on |
+|---|---|---|
+| [`title`](/katachi/api-docs/katachi/me.tbsten.katachi.dsl/-architecture-scope/title.html) | The top page's heading (`# <title> documentation`) and the first item of every page's breadcrumb. Defaults to `Architecture` | `README.md`, the breadcrumb of every page |
+| [`description`](/katachi/api-docs/katachi/me.tbsten.katachi.dsl/-architecture-scope/description.html) | The body right under the heading, as the Markdown you wrote. The place to say what the repository is and how to read the documentation | `README.md` |
+
+<CodeComparison>
+    <CodeComparison.Panel label="architecture definition">
+        ```kt
+        val projectArchitecture = architecture {
+            title = "myapp"
+            description = """
+                The file layout of myapp. There is one page per role.
+            """.trimIndent()
+
+            "domain".group {
+                title = "Domain layer"
+                summary = "The app-specific behaviors and the values they work on"
+                "UseCase" { /* ... */ }
+            }
+        }
+        ```
+    </CodeComparison.Panel>
+    <CodeComparison.Panel label="Generated Markdown">
+        ```md title="README.md"
+        # myapp documentation                          ← title
+
+        The file layout of myapp. There is one page per role.  ← description
+
+        ## Document map
+
+        ### [Domain layer](./domain/README.md)
+
+        The app-specific behaviors and the values they work on
+        ...
+        ```
+    </CodeComparison.Panel>
+</CodeComparison>
+
+Without `title`, the heading is `# Architecture documentation` and the breadcrumb starts with `[Architecture]`. Without `description`, the Document map starts right under the heading.
+
+These two can only be written inside the definition. They cannot be set from build.gradle.kts or `--arg`.
+
 ### Custom sections
 
 To add your own sections to the documentation on top of the built-in ones such as the title, define a section with [`documentSection()`](/katachi/api-docs/katachi/me.tbsten.katachi.dsl/document-section.html).
@@ -454,10 +494,6 @@ The following two throw **when the section is declared**, not when the documenta
 
 - An empty heading (`documentSection("")` or whitespace only): `KatachiUnnamedDocumentSectionException`
 - Nesting deeper than `######` (the sixth level and below, counting the top level `##` as the first): `KatachiDocumentSectionTooDeepException`
-
-<Aside>
-    `documentSection()` is an experimental API. A file that uses it needs `@OptIn(ExperimentalKatachiApi::class)` (the example above opts the whole file in with `@file:OptIn`).
-</Aside>
 
 ## Summary
 

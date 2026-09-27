@@ -5,6 +5,10 @@ tags:
   - beginner
 ---
 
+{/*
+  このページの目的: ユーザが katachi の基本的な API を理解して自身のプロジェクトのアーキテクチャを定義できるようになること。katachi が用意する API の全体像を掴めるようにすること。
+*/}
+
 import { FileTree } from '@astrojs/starlight/components';
 
 katachi の主要な API を紹介します。
@@ -142,7 +146,7 @@ Deny by default の原則により、`layout { }` で宣言していない場所
 
 Role を定義したファイルには、[Konsist](https://docs.konsist.lemonappdev.com/) で制約をかけられます。
 
-```kt {8}
+```kt {7}
 architecture {
   "UseCase" {
     layout {
@@ -158,7 +162,7 @@ architecture {
 
 制約の対象は `layout { }` で指定したファイルで、制約そのものは Konsist の API で書きます。
 
-制約を検査するには、テストで `assert()` の代わりに `assert(FileConstraintCheck())` を呼びます（`@OptIn(ExperimentalKatachiApi::class)` が必要です）。`assert()` だけでは制約が評価されず、`[UncheckedFileConstraint]` としてテストが落ちます。
+制約を検査するには、テストで `assert()` の代わりに `assert(FileConstraintCheck())` を呼びます。`assert()` だけでは制約が評価されず、`[UncheckedFileConstraint]` としてテストが落ちます。
 
 ### 関連ドキュメント
 

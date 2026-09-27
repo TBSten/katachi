@@ -43,7 +43,7 @@ katachi is the reverse: it walks the whole project and matches it against the de
 **Responsibility splits between "placement" and "contents"**, so either one alone leaves a hole.
 
 katachi bridges the two through an optional module called `katachi-konsist`.
-Write `konsist { }` inside a role and call `assert(FileConstraintCheck())` in the test (which needs `@OptIn(ExperimentalKatachiApi::class)`), and **placement violations and content violations land in a single report.**
+Write `konsist { }` inside a role and call `assert(FileConstraintCheck())` in the test, and **placement violations and content violations land in a single report.**
 
 ```kt title="ProjectArchitecture.kt"
 "UseCase" {
@@ -98,7 +98,7 @@ so structurally a detekt-backed implementation is possible. It just does not exi
 Sometimes it is unclear whether something belongs in detekt or in `konsist { }`. Two rules of thumb:
 
 - **If you want one report, use `konsist { }`.**
-  Checked with `assert(FileConstraintCheck())` (which needs `@OptIn(ExperimentalKatachiApi::class)`), it comes out alongside the placement violations, so a single test run gives you everything you need to fix
+  Checked with `assert(FileConstraintCheck())`, it comes out alongside the placement violations, so a single test run gives you everything you need to fix
 - **If you want it to apply uniformly across the project, use detekt.**
   Conventions that are not tied to a role (function length, complexity, general naming rules) lose
   their meaning when written inside a role

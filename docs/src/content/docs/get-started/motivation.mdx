@@ -307,7 +307,7 @@ val projectArchitecture = architecture {
 }
 ```
 
-When the test calls `assert(FileConstraintCheck())` (which needs `@OptIn(ExperimentalKatachiApi::class)`), placement violations and content violations line up in one and the same report.
+When the test calls `assert(FileConstraintCheck())`, placement violations and content violations line up in one and the same report.
 
 The recommended split is to **test the structure of the whole project with katachi, then check the contents of each file with Konsist**.
 

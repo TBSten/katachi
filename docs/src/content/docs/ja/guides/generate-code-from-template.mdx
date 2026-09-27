@@ -5,6 +5,10 @@ tags:
   - beginner
 ---
 
+{/*
+  このページの目的: katachi のテンプレート生成機能について深く網羅的に理解してもらうこと。
+*/}
+
 import { Aside } from "@astrojs/starlight/components"
 
 アーキテクチャ定義に `template { }` を追加すると、その定義からコードを生成できます。
@@ -59,7 +63,7 @@ private fun RoleScope.useCaseTemplate() = template {
     --arg "roleName=UseCase" --arg "name=GetItemList"
 ```
 
-生成先は `template { }` が決めません。その役割の `layout { }` が決めます。 
+`--arg roleName="<Roleの名前>"` と 各テンプレートに設定された引数を設定して呼び出す必要があります。
 
 ## パラメータ
 
@@ -74,9 +78,9 @@ template {
 }
 ```
 
-**プロパティの名前がそのままパラメータの名前になります。** `val name by stringParameter()` は `--arg name=...` で渡すパラメータを宣言します。必ず `by` で書いてください。プロパティに届かなかったパラメータは名前を持てないので、ブロックの終わりで拒否されます。
+**プロパティの名前がそのままパラメータの名前になります。** `val name by stringParameter()` は `--arg name=...` で渡すパラメータを宣言します。
 
-`default` を持たないパラメータは毎回値を渡す必要があります。`default` はその場で評価される普通の Kotlin の式なので、**上で宣言したパラメータを読めます。**
+`default` 引数にデフォルト値を設定することで引数が設定されなかった際のデフォルト値を設定できます。
 
 ```shell
 ./gradlew katachiTemplate \
@@ -94,28 +98,6 @@ template {
 | `val visibility by enumParameter(default = Visibility.Public)` | `--arg visibility=Internal` | enum のエントリ名 |
 
 default の無い enum パラメータは `val visibility by enumParameter(Visibility.entries)` と書きます。
-
-**enum の値は、Kotlin で宣言したとおりの綴りで渡します。** `onExisting` のような katachi 自身の引数は小文字（`--arg onExisting=skip`）なので、`--arg onExisting=skip --arg visibility=Internal` のように綴りの違う値が同じ行に並びます。
-
-**読めない値はエラーになります。** `--arg withImpl=yes` のような値を、default に読み替えて黙って進むことはありません。エラーには受け付ける値の一覧が出ます。
-
-真偽値を使うと、生成するファイルを出し分けられます。
-
-```kt
-template {
-    val name by stringParameter()
-    val withImpl by booleanParameter(default = true)
-
-    file("${name}Repository.kt") { "interface ${name}Repository" }
-    if (withImpl) {
-        file("${name}RepositoryImpl.kt") { "class ${name}RepositoryImpl : ${name}Repository" }
-    }
-}
-```
-
-<Aside>
-パラメータの宣言は `template { }` の先頭にまとめてください。`if` の中で宣言したパラメータは、その分岐を通る実行でしか受け付けられません。
-</Aside>
 
 ## 既にファイルがあるとき
 
@@ -148,7 +130,7 @@ katachi {
 
 ## テンプレートの一覧と詳細を見る
 
-どの役割がテンプレートを持ち、何を渡せば何が生成されるかは **`katachiTemplates` task** で確かめられます。ファイルは1つも書きません。こちらもデフォルトで登録されています。
+どの役割がテンプレートを持ち、何を渡せば何が生成されるかは **`katachiTemplates` task** で確かめられます。
 
 ```shell
 # テンプレートを持つ役割の一覧（title / summary、パラメータ名、生成するファイルの数）
@@ -170,14 +152,6 @@ katachi {
   [templates]   --arg withImpl=false: leaves out ${name}RepositoryImpl.kt
 ```
 
-中身はパラメータを仮の値で埋めたものです。**文字列のパラメータは `${name}` のようにパラメータ名で埋めます。** 真偽値・整数・enum は既定値で、既定値が無ければ `true`・`0`・最初のエントリで埋め、どの値を使ったかを `Previewed with:` に出します。出るのはその値でたどった分岐のファイルです。真偽値と enum のほかの値で生成するファイルが変わる場合は、その値と増減するファイルを最後に並べます。
-
-## IDE から生成する（IDE プラグイン・未公開・準備中）
-
-IntelliJ IDEA / Android Studio のツールウィンドウからテンプレートを選び、引数を埋めて生成する IDE プラグインを準備しています。ファイルを書くのは上の `katachiTemplate` タスクなので、生成されるものは同じです。定義は `build.gradle.kts` の `katachi { architecture = "..." }` から見つけます。
-
-**まだ JetBrains Marketplace に公開していないため、いまはインストールの方法を案内できません。** 公開したら、この節に入れ方と使い方を書きます。
-
 ## まとめ
 
 - **`template { }`** をアーキテクチャ定義に追加すると、**`katachiTemplate` task** でテンプレートからコードを生成できます。
@@ -186,6 +160,5 @@ IntelliJ IDEA / Android Studio のツールウィンドウからテンプレー�
 
 ## 次のステップ
 
-- [Layout システムでディレクトリ構成を厳守させる](/katachi/ja/guides/layout/) ... 生成先を決めているのは `layout { }` です。その書き方を学びましょう。
 - [ドキュメント生成](/katachi/ja/guides/document-generation/) ... 同じ定義から、コードではなくドキュメントを生成する方法を学びましょう。
 - [ArchitectureProcessor とそのカスタマイズ](/katachi/ja/guides/processor/) ... テンプレート生成も ArchitectureProcessor の1つです。

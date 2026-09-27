@@ -5,6 +5,10 @@ tags:
   - beginner
 ---
 
+{/*
+  このページの目的: katachi を使用したことないユーザに katachi の立ち位置、konsist など他ツールとの区別を理解してもらうこと。細かい API の使い方の詳細を教えることではない。
+*/}
+
 import { Aside, FileTree, LinkCard } from '@astrojs/starlight/components';
 import CodeComparison from '../../../../components/CodeComparison';
 
@@ -198,7 +202,7 @@ katachi で定義したプロジェクト構造を SSoT にして、人間も AI
 
 ## テンプレートからコード生成する
 
-アーキテクチャ定義内に典型的なソースコードのテンプレートを埋め込むと、その役割のファイルをコマンド1つで生成できます。生成先のディレクトリは `layout { }` から決まるので、生成した直後の検査もそのまま通ります。
+アーキテクチャ定義内に典型的なソースコードのテンプレートを埋め込むと、その役割のファイルをコマンド1つで生成できます。
 
 ```shell
 $ ./gradlew katachiTemplate --arg roleName=UseCase --arg name=GetUser
@@ -307,7 +311,7 @@ val projectArchitecture = architecture {
 }
 ```
 
-テストで `assert(FileConstraintCheck())` を呼ぶと（`@OptIn(ExperimentalKatachiApi::class)` が必要）、配置の違反と中身の違反が、同じ1つのレポートに並びます。
+テストで `assert(FileConstraintCheck())` を呼ぶと、配置の違反と中身の違反が、同じ1つのレポートに並びます。
 
 **katachi でプロジェクト全体の構造をテストし、そのあと Konsist で各ファイルの中身を検証する** という使い分けをおすすめします。
 

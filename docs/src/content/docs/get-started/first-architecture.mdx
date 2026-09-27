@@ -182,7 +182,7 @@ If you are not yet convinced that you need katachi, read [Motivation](/katachi/g
 
         **This is the only test your project writes.** Every violation in the repository lands in a single failure message, so there is no point in splitting the test up per rule.
 
-        If your definition has `konsist { }`, call `assert(FileConstraintCheck())` instead of `assert()` and add `@OptIn(ExperimentalKatachiApi::class)` to the test. With `assert()` alone the constraints are not evaluated and the test fails. See [Konsist integration](/katachi/guides/konsist-integration/) for details.
+        If your definition has `konsist { }`, call `assert(FileConstraintCheck())` instead of `assert()`. With `assert()` alone the constraints are not evaluated and the test fails. See [Konsist integration](/katachi/guides/konsist-integration/) for details.
 
     5. **Run it**
 
@@ -194,7 +194,7 @@ If you are not yet convinced that you need katachi, read [Motivation](/katachi/g
 
         Gradle's files (the wrapper, `settings.gradle.kts`, build scripts, `gradle.properties` and the version catalog) are declared by the single `gradle()` line in step 3. If you have `buildSrc` or convention plugins, see the [Gradle recipe](/katachi/recipes/gradle/).
 
-        If there are too many existing violations to clear up right away, the experimental baseline feature lets you set the current violations aside in a ledger file (`katachi-baseline.json` by default) so that only new violations fail the test. Write `architecture { baseline = baselineFile() }` (this needs `@OptIn(ExperimentalKatachiApi::class)`), then run the test once with `-Dkatachi.baseline.update=true` to create the ledger. Once you fix a violation that was set aside, the test keeps failing until you remove it from the ledger with `-Dkatachi.baseline.prune=true`. Declare the ledger file itself in `layout { }` too. See [Baseline](/katachi/guides/baseline/) for details.
+        If there are too many existing violations to clear up right away, the experimental baseline feature lets you set the current violations aside in a ledger file (`katachi-baseline.json` by default) so that only new violations fail the test. Write `architecture { baseline = baselineFile() }`, then run the test once with `-Dkatachi.baseline.update=true` to create the ledger. Once you fix a violation that was set aside, the test keeps failing until you remove it from the ledger with `-Dkatachi.baseline.prune=true`. Declare the ledger file itself in `layout { }` too. See [Baseline](/katachi/guides/baseline/) for details.
 
     </Steps>
   </TabItem>

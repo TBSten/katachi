@@ -157,7 +157,7 @@ architecture {
 
 You can set constraints on the files matched by `layout { }` using the Konsist API.
 
-To check the constraints, call `assert(FileConstraintCheck())` instead of `assert()` in the test (it needs `@OptIn(ExperimentalKatachiApi::class)`). With `assert()` alone the constraints are not evaluated, and the test fails with `[UncheckedFileConstraint]`.
+To check the constraints, call `assert(FileConstraintCheck())` instead of `assert()` in the test. With `assert()` alone the constraints are not evaluated, and the test fails with `[UncheckedFileConstraint]`.
 
 ### Related documentation
 

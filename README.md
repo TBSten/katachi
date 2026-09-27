@@ -110,7 +110,7 @@ The full walkthrough — importing, and handing it off to an AI agent — is in 
 - **Below Kotlin 2.4**: you need `compilerOptions.freeCompilerArgs.add("-Xcontext-parameters")` (don't add it from 2.4 on — it becomes a warning)
 - **`Failed to load JUnit Platform`**: you're missing `junit-platform-launcher`
 - **`Cannot create Launcher without at least one TestEngine` / `did not discover any tests to execute`**: you're missing a JUnit engine (`junit-jupiter`). On Gradle 8, if another engine (kotest, for example) is present, this may not fail at all: the build stays `BUILD SUCCESSFUL` while the check silently does nothing
-- **Writing `konsist { }` fails with `[UncheckedFileConstraint]`**: write `assert(FileConstraintCheck())` (needs `@OptIn(ExperimentalKatachiApi::class)`)
+- **Writing `konsist { }` fails with `[UncheckedFileConstraint]`**: write `assert(FileConstraintCheck())`
 
 </details>
 

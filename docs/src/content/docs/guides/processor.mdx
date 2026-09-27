@@ -28,7 +28,7 @@ public interface ArchitectureProcessor<Args, R> {
 }
 ```
 
-`ArchitectureProcessor` is `@ExperimentalKatachiApi`, so add `@OptIn(ExperimentalKatachiApi::class)` when you implement it.
+`ArchitectureProcessor` is `@ExperimentalKatachiApi`.
 
 Wrap the body of `process` in `runCatching { }`. **To answer "this run does not pass", throw inside it.**
 

@@ -213,7 +213,7 @@ class GetUserUseCase(private val repository: UserRepository) {
 }
 ```
 
-When the test calls `assert(FileConstraintCheck())` (which needs `@OptIn(ExperimentalKatachiApi::class)`), it shows up in the same report as placement violations. **It even tells you which file and which line.**
+When the test calls `assert(FileConstraintCheck())`, it shows up in the same report as placement violations. **It even tells you which file and which line.**
 
 ```text
 [UnsatisfiedFileConstraint] file:///path/to/project/src/main/kotlin/com/example/useCase/GetUserUseCase.kt

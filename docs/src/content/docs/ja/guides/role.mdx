@@ -5,6 +5,10 @@ tags:
   - intermediate
 ---
 
+{/*
+  このページの目的: katachi のアーキテクチャ定義における重要な要素である Role 周辺の使い方を深く網羅的に理解すること。
+*/}
+
 import { FileTree } from "@astrojs/starlight/components";
 import CodeComparison from "../../../../components/CodeComparison";
 
@@ -213,7 +217,7 @@ class GetUserUseCase(private val repository: UserRepository) {
 }
 ```
 
-テストで `assert(FileConstraintCheck())` を呼ぶと（`@OptIn(ExperimentalKatachiApi::class)` が必要）、配置の違反と同じレポートに並びます。**どのファイルの何行目かまで出ます。**
+テストで `assert(FileConstraintCheck())` を呼ぶと、配置の違反と同じレポートに並びます。**どのファイルの何行目かまで出ます。**
 
 ```text
 [UnsatisfiedFileConstraint] file:///path/to/project/src/main/kotlin/com/example/useCase/GetUserUseCase.kt
@@ -271,10 +275,6 @@ Role ごとに拡張関数に切り出しましょう。
 <CodeComparison>
     <CodeComparison.Panel label="分割前">
 
-    <FileTree>
-        - ProjectArchitecture.kt
-    </FileTree>
-
     ```kt title=ProjectArchitecture.kt nocollapse
     architecture {
         "UseCase" {
@@ -307,7 +307,7 @@ Role ごとに拡張関数に切り出しましょう。
 
     <FileTree>
         - ProjectArchitecture.kt
-        - **roles/**
+        - **domain/**
             - UseCaseRole.kt
             - RepositoryInterfaceRole.kt
     </FileTree>
@@ -321,7 +321,7 @@ Role ごとに拡張関数に切り出しましょう。
     }
     ```
 
-    ```kt title=roles/UseCaseRole.kt
+    ```kt title=domain/UseCaseRole.kt
     // hint: DeclarationContainerScope は architecture { } と "...".group { } のレシーバです。
     fun DeclarationContainerScope.useCase() = "UseCase" {
         layout {
@@ -334,7 +334,7 @@ Role ごとに拡張関数に切り出しましょう。
     }
     ```
 
-    ```kt title=roles/RepositoryInterfaceRole.kt
+    ```kt title=domain/RepositoryInterfaceRole.kt
     fun DeclarationContainerScope.repositoryInterface() = "Repository-interface" {
         layout {
             "src/main/kotlin/com/example/project/repository" / "*Repository".ktFile()

@@ -1,168 +1,88 @@
 ---
-title: baseline で既存の違反を棚上げする
+title: Baseline で既存の違反を一時的に無効化する
 description: 既存のプロジェクトに katachi を入れたときに、今ある違反を台帳のファイルに記録して棚上げし、新しく増えた違反だけでテストを落とす方法。
 tags:
   - intermediate
 ---
 
+{/*
+  このページの目的: 既存プロジェクトに katachi を導入する際に役立つ Baseline 機能について深く網羅的に理解する。
+*/}
+
 import { Aside } from '@astrojs/starlight/components';
-
-<Aside type="caution" title="実験的な機能です">
-`baseline` と `baselineFile()` は `@ExperimentalKatachiApi` です。定義に `@OptIn(ExperimentalKatachiApi::class)` が要り、書き方は今後変わることがあります。
-</Aside>
-
-## いつ使うか
 
 既存のプロジェクトに katachi を入れると、最初の実行で **宣言していないファイルがすべて違反として出ます。** 出てきたパスを定義に足すか・移すか・消すかで片付けていくのが基本ですが、数が多いとすぐには片付けきれません。
 
-baseline は、そのとき **今ある違反を台帳のファイルに記録して棚上げし、新しく増えた違反だけでテストを落とす** 仕組みです。台帳に記録した違反はテストを落とさず、件数だけが報告されます。
-
-台帳は **一時的な負債の置き場** です。ずっと認めておきたいファイルは台帳に入れず、定義の `layout { }` に役割として書いてください。そうすれば、なぜ認めているのかも定義に残ります。
+baseline は 既存の違反を一時的に抑制して、新しい違反だけをテストでエラーにする機能です。
 
 ## 設定する
-
-sample/jvm が baseline を使っているので、その実物を引用しながら説明します。
 
 ### 1. 定義に `baseline = baselineFile()` を書く
 
 ```kt title="ProjectArchitecture.kt（抜粋）" {1,5}
 @OptIn(ExperimentalKatachiApi::class)
 val projectArchitecture: Architecture = architecture {
-    title = "Ktor サンプルアプリ"
     // ...
     baseline = baselineFile()
 
-    apiGroup()
     // ...
 }
 ```
 
-[sample/jvm の ProjectArchitecture.kt](https://github.com/TBSten/katachi/blob/main/sample/jvm/architecture-test/src/test/kotlin/com/example/ProjectArchitecture.kt)
+baseline を設定するとデフォルトではプロジェクトルートに `katachi-baseline.json` が生成され、このファイル内に baseline の内容が書き込まれます。
 
-台帳のファイルは、既定ではプロジェクトのルートの `katachi-baseline.json` です。別の場所に置くなら、ルートからの相対パスで `baselineFile("config/katachi-baseline.json")` のように書きます。
+位置を変更したい場合は `baselineFile("config/katachi-baseline.json")` のように設定してください。
 
-### 2. 台帳のファイル自身を `layout { }` で宣言する
+### 2. Baseline ファイル自身を `layout { }` で宣言する
 
-台帳もプロジェクトのファイルの1つなので、どこかの役割の `layout { }` が許していないと `[UnexpectedFile]` になります。この違反は台帳に棚上げされません。役割の名前は `"Baseline"` がおすすめです。
+Baseline ファイルもプロジェクトのファイルの1つなので Role として宣言しないと `projectArchitecture.assert()` でエラーになってしまいます。
 
-```kt title="roles/BaselineRole.kt（抜粋）"
-fun DeclarationContainerScope.baseline() = "Baseline" {
-    title = "baseline（棚上げした違反の台帳）"
-    summary = "katachi を入れた時点ですでにあった違反を記録し、テストを落とさずに棚上げしておく台帳"
-    // description・forbiddenContents・example は省略
+慣例に従って "BaselineFile" という名前の Role を用意して architecture 定義内に追加してください。
+
+```kt
+val projectArchitecture = architecture {
+    // ...
+    "Tool".group {
+      "Katachi".group {
+        baselineFile()
+      }
+    }
+
+    // ...
+}
+
+fun DeclarationContainerScope.baselineFile() = "BaselineFile" {
+    title = "katachi Baseline ファイル"
+    summary = "既存の違反を一時的に抑制するためのファイル"
+    description = "参照: https://tbsten.github.io/katachi/ja/guides/baseline/"
     layout {
         "katachi-baseline.json".file()
     }
 }
 ```
 
-[sample/jvm の BaselineRole.kt](https://github.com/TBSten/katachi/blob/main/sample/jvm/architecture-test/src/test/kotlin/com/example/roles/BaselineRole.kt)
+### 3. Baseline ファイルを作成する
 
-### 3. 台帳を作ってコミットする
-
-`-Dkatachi.baseline.update=true` を付けてアーキテクチャテストを実行すると、今ある違反で台帳を作ります。テストは緑になります。
+`-Dkatachi.baseline.update=true` を付けてアーキテクチャテストを実行すると、全ての違反がエラーになる代わりに許容され Baseline ファイルに書き込まれます。
 
 ```shell
 ./gradlew :architecture-test:test -Dkatachi.baseline.update=true
 ```
 
-何件記録したかは、次の1行で報告されます。この行はテストの標準エラー出力に出るので、Gradle の既定の設定ではコンソールに出ません（見る方法は [結果の行はどこに出るか](#結果の行はどこに出るか) を見てください）。
+何件記録したかは、次の1行で報告されます。この行はテストの標準エラー出力に出るので、Gradle の既定の設定ではコンソールに出ません。
 
 ```
 Katachi baseline file:///path/to/project/katachi-baseline.json: 2 violations recorded in 2 entries (+2, -0).
 ```
 
-できたファイルをコミットします。台帳のファイルが無いまま普段の実行をすると、`KatachiBaselineNotFoundException` で落ちます（パスの書き間違いで、すべての違反が新しい違反に化けるのを防ぐためです）。
-
-Gradle plugin（`me.tbsten.katachi`）を当てたモジュールでは、`-Dkatachi.baseline.update` と `-Dkatachi.baseline.prune` がテストの JVM に渡ります。
-
-## 台帳の中身
-
-sample/jvm の台帳です。棚上げの見本として、2件を意図的に残しています。
-
-```json title="katachi-baseline.json"
-{
-  "version": 1,
-  "checks": {
-    "me.tbsten.katachi.check.FileConstraintCheck": [
-      {"rule": "UnsatisfiedFileConstraint", "path": "src/main/kotlin/com/example/service/LegacyStatusService.kt", "role": "domain/Service", "constraint": "public であること", "declaration": "LegacyStatusService"}
-    ],
-    "me.tbsten.katachi.check.LayoutCheck": [
-      {"rule": "UnexpectedFile", "path": "src/main/kotlin/com/example/service/LegacyHealthCheck.kt"}
-    ]
-  }
-}
-```
-
-[sample/jvm の katachi-baseline.json](https://github.com/TBSten/katachi/blob/main/sample/jvm/katachi-baseline.json)
-
-**違反は、見つけた検査・規則（`rule`）・パスで見分けます。** `konsist { }` などの制約の違反では、役割・制約の名前・宣言の名前も使います。**行番号は使いません。** そのため、ファイルの中を書き換えても、棚上げした違反が新しい違反に変わることはありません。一方、ファイルを移動したり名前を変えたりすると、新しい違反として扱われます（どこに置くかが、katachi の検査している中身そのものだからです）。同じ見分け方の違反が複数あるときは、`count` に件数を持ちます。
-
-1行に1項目で、決まった順に並びます。項目が増減しても、差分はその行だけで済みます。**手で編集することは想定していません。** 更新は次の2つのコマンドで行います。
-
-## 普段の実行と、違反を直したとき
-
-| やること | コマンド | 台帳への影響 |
-|---|---|---|
-| 普段の検査 | `./gradlew :architecture-test:test` | 突き合わせるだけで、書き換えない |
-| 作る・作り直す | `./gradlew :architecture-test:test -Dkatachi.baseline.update=true` | 走った検査の分を、今の違反で **丸ごと置き換える** |
-| 直した分を消す | `./gradlew :architecture-test:test -Dkatachi.baseline.prune=true` | 解消した項目を消す・件数を減らすだけ。**新しい違反は足さない** |
-
-普段の実行では、台帳に無い違反と、台帳の件数を超えた違反がテストを落とします。棚上げした件数は、テストが通ったときも落ちたときも1行で報告します。
-
-```
-Baseline file:///path/to/project/katachi-baseline.json held back 2 violations.
-```
-
-落ちたときは、この行は失敗の報告の末尾に出ます。通ったときの出どころは、下の [結果の行はどこに出るか](#結果の行はどこに出るか) で説明します。
-
-**棚上げした違反を直すと、テストは `[StaleBaselineEntry]` で落ちます。** 台帳が、もう無い違反を棚上げしたままになっているからです。残しておくと、次に同じパスへ置かれたファイルが黙って通ってしまいます。`-Dkatachi.baseline.prune=true` で台帳から消すまで落ち続けるので、棚上げの件数は減る一方になります。
-
-update ではなく prune で消すのは、直したついでに新しい違反まで台帳に入れてしまわないためです。台帳が空になったら、そのことが報告されます。定義から `baseline = ...` を外し、ファイルを消してかまいません。
-
-processor として登録した検査のタスク（`katachiLayout` など）も、同じ台帳と突き合わせます。ただし、これらのタスクには `-Dkatachi.baseline.update` と `-Dkatachi.baseline.prune` が効きません。台帳の更新はアーキテクチャテストで行ってください。
-
-### 結果の行はどこに出るか
-
-テストが通ったとき、次の行は **テストの標準エラー出力** に出ます。
-
-- 棚上げの件数（`Baseline … held back 2 violations.`）
-- update の結果（`Katachi baseline …: 2 violations recorded in 2 entries (+2, -0).`）
-- prune の結果（`Katachi baseline …: 1 fixed violation removed, 1 violation still held back.`）
-- 台帳が宣言されていないときの警告（`Warning: no role's layout { } allows the baseline file …`）
-
-Gradle の既定の設定では、標準エラー出力はコンソールに出ません。次のどちらかで見てください。
-
-- **テストレポート**: テストごとのページの「error output」の欄に出ます。sample/jvm なら `architecture-test/build/reports/tests/test/com.example.ProjectArchitectureTest/プロジェクトの構成が定義どおりになっている().html` です。一覧の `index.html` には出ません
-- **コンソールに出す**: テストのモジュールの `build.gradle.kts` で `showStandardStreams` を有効にします
-
-```kt title="architecture-test/build.gradle.kts（抜粋）" {3}
-tasks.test {
-    testLogging {
-        showStandardStreams = true
-    }
-}
-```
-
-## CI では台帳を書かない
-
-環境変数 `CI` が `true` のときに `-Dkatachi.baseline.update=true` か `-Dkatachi.baseline.prune=true` を付けると、`KatachiBaselineUpdateInCiException` で止まり、台帳は書き換わりません。CI が毎回台帳を作り直すと、どんな違反も通ってしまうからです。
-
-CI では突き合わせだけを行い、台帳の更新は手元で実行してコミットしてください。プルリクエストでは、台帳に増えた行がレビューの対象になります。
-
-## 注意すること
-
-- **`UnexpectedDirectory` を棚上げすると、そのディレクトリの下は素通りになります。** katachi は宣言されていないディレクトリの中には降りないので、その下にあとから足したファイルは違反として出ません。ディレクトリごと棚上げするより、ディレクトリを役割として宣言するほうが安全です
-- **棚上げできるのは Error の違反だけです。** 警告と、検査そのものができなかったもの（`[UncheckedFile]` など）は台帳に入りません
-- **台帳のファイル自身の違反は棚上げされません。** 手順2の宣言を忘れると、台帳を初めて作る update では警告が出るだけ（標準エラー出力なので、既定の設定では目に入りません）ですが、次の実行からは update も含めて `[UnexpectedFile]` で落ちます
+作成・更新されたファイルはコミットされるのが推奨です。
 
 ## まとめ
 
-- baseline は、既存のプロジェクトに入れたときの違反を **台帳に棚上げし、新しい違反だけで落とす** 実験的な機能です。
-- `architecture { baseline = baselineFile() }` を書き、台帳のファイル自身を `"Baseline"` の役割で宣言し、`-Dkatachi.baseline.update=true` で作ってコミットします。
-- 違反を直したら `[StaleBaselineEntry]` で落ちるので、`-Dkatachi.baseline.prune=true` で台帳を詰めます。CI では台帳を書きません。
+- baseline は、既存の違反を Baseline ファイルに記録して一時的に抑制し、**新しく増えた違反だけ**でテストを落とすための機能です。
+- 使うには、定義に `baseline = baselineFile()` を書き、Baseline ファイル自身も Role として `layout { }` に宣言します。
+- Baseline ファイルは `-Dkatachi.baseline.update=true` を付けてアーキテクチャテストを実行すると作成・更新されます。できたファイルはコミットしておきましょう。
 
 ## 次のステップ
 
 - [初めてのアーキテクチャ定義](/katachi/ja/get-started/first-architecture/) ... 台帳に棚上げする前の、最初の定義の書き方です。
-- [Layout](/katachi/ja/guides/layout/) ... 台帳ではなく定義で認めるときの、置き場所の書き方を学びましょう。
