@@ -5,11 +5,13 @@ tags:
   - beginner
 ---
 
+{/*
+  The purpose of this page: to give the reader a deep, thorough understanding of katachi's template generation feature.
+*/}
+
 import { Aside } from "@astrojs/starlight/components"
 
 By adding `template { }` to an architecture definition, you can generate code from that definition.
-
-**`template { }` does not decide where files go. The role's `layout { }` does.** A template only names the files; which directory each one lands in is derived from the placement definition. That is why **`assert()` passes right after generating.**
 
 ```kt nocollapse
 val modulePackage = capitalizedModuleNamePackage("com.example")
@@ -61,6 +63,8 @@ private fun RoleScope.useCaseTemplate() = template {
     --arg "roleName=UseCase" --arg "name=GetItemList"
 ```
 
+You must call it with `--arg roleName="<the role's name>"` set, along with the arguments configured for each template.
+
 ## Parameters
 
 You can define parameters that are passed with `--arg` when generating code.
@@ -74,9 +78,9 @@ template {
 }
 ```
 
-**The property's name becomes the parameter's name.** `val name by stringParameter()` declares the parameter passed as `--arg name=...`. Always write it with `by`. A parameter that never reaches a property has no name, so it is rejected at the end of the block.
+**The property's name becomes the parameter's name.** `val name by stringParameter()` declares the parameter passed as `--arg name=...`.
 
-A parameter without a `default` must be given a value every time. `default` is an ordinary Kotlin expression evaluated on the spot, so **it can read the parameters declared above it.**
+Setting a default value in the `default` argument lets you set the value used when the argument isn't provided.
 
 ```shell
 ./gradlew katachiTemplate \
@@ -94,28 +98,6 @@ There are four parameter types. Every one of them is passed as `--arg name=value
 | `val visibility by enumParameter(default = Visibility.Public)` | `--arg visibility=Internal` | The name of an enum entry |
 
 An enum parameter without a default is written `val visibility by enumParameter(Visibility.entries)`.
-
-**An enum value is passed spelled exactly as it is declared in Kotlin.** katachi's own arguments such as `onExisting` are lower case (`--arg onExisting=skip`), so values with different spellings end up side by side on one line, as in `--arg onExisting=skip --arg visibility=Internal`.
-
-**A value that cannot be read is an error.** A value such as `--arg withImpl=yes` is never quietly replaced by the default. The error lists the values that are accepted.
-
-A boolean lets you choose which files to generate.
-
-```kt
-template {
-    val name by stringParameter()
-    val withImpl by booleanParameter(default = true)
-
-    file("${name}Repository.kt") { "interface ${name}Repository" }
-    if (withImpl) {
-        file("${name}RepositoryImpl.kt") { "class ${name}RepositoryImpl : ${name}Repository" }
-    }
-}
-```
-
-<Aside>
-Declare the parameters together at the top of `template { }`. A parameter declared inside an `if` is accepted only on runs that take that branch.
-</Aside>
 
 ## When a file already exists
 
@@ -148,7 +130,7 @@ katachi {
 
 ## Listing templates and viewing one in detail
 
-The **`katachiTemplates` task** tells you which roles have a template, and what to pass to get what. It writes no files. It is registered by default as well.
+The **`katachiTemplates` task** tells you which roles have a template, and what to pass to get what.
 
 ```shell
 # The roles that have a template (title / summary, parameter names, number of files)
@@ -170,14 +152,6 @@ The detail shows the parameters (type, default, accepted values, whether require
   [templates]   --arg withImpl=false: leaves out ${name}RepositoryImpl.kt
 ```
 
-The contents are filled in with stand-in values. **A string parameter is filled with its own name, as in `${name}`.** A Boolean, Int or enum parameter takes its default, or `true`, `0` or its first entry when it has none, and `Previewed with:` says which value was used. The files shown are those of the branch these values take. When another value of a Boolean or an enum changes which files are produced, that value and the files it adds or leaves out are listed at the end.
-
-## Generating from the IDE (IDE plugin, unpublished, in preparation)
-
-An IDE plugin is in preparation that lets you pick a template from a tool window in IntelliJ IDEA / Android Studio, fill in its arguments and generate the code. The files are written by the `katachiTemplate` task above, so what gets generated is the same. It finds the definition through `katachi { architecture = "..." }` in `build.gradle.kts`.
-
-**It is not yet published on the JetBrains Marketplace, so we cannot tell you how to install it yet.** Once it is published, this section will describe how to install and use it.
-
 ## Summary
 
 - Adding **`template { }`** to an architecture definition lets you generate code from a template with the **`katachiTemplate` task**.
@@ -186,6 +160,5 @@ An IDE plugin is in preparation that lets you pick a template from a tool window
 
 ## Next steps
 
-- [Enforce directory structure with the Layout system](/katachi/guides/layout/) ... `layout { }` is what decides the destination. Learn how to write it.
 - [Document generation](/katachi/guides/document-generation/) ... Learn how to generate documentation, rather than code, from the same definition.
 - [ArchitectureProcessor and customizing it](/katachi/guides/processor/) ... Template generation is one ArchitectureProcessor too.

@@ -1,168 +1,86 @@
 ---
-title: Setting existing violations aside with baseline
+title: Temporarily disable existing violations with baseline
 description: How to record the current violations in a ledger file when adding katachi to an existing project, setting them aside so only newly added violations fail the test.
 tags:
   - intermediate
 ---
 
-import { Aside } from '@astrojs/starlight/components';
-
-<Aside type="caution" title="This is an experimental feature">
-`baseline` and `baselineFile()` are `@ExperimentalKatachiApi`. How they're written may change in the future.
-</Aside>
-
-## When to use it
+{/*
+  The purpose of this page: to gain a deep, comprehensive understanding of the baseline feature, which is useful when introducing katachi into an existing project.
+*/}
 
 Adding katachi to an existing project means that on the first run, **every undeclared file comes out as a violation.** The basic approach is to work through the reported paths one by one — adding them to the definition, moving them, or deleting them — but when there are a lot of them, you can't clear them all right away.
 
-baseline is a mechanism for that situation: it **records the current violations in a ledger file and sets them aside, so that only newly added violations fail the test.** Violations recorded in the ledger don't fail the test — only their count is reported.
-
-The ledger is **a place to hold temporary debt.** For files you want to keep allowing indefinitely, don't put them in the ledger — write them as a role in the definition's `layout { }` instead. That way, the reason they're allowed stays in the definition too.
+baseline is a feature that temporarily suppresses existing violations, so that only new violations fail the test.
 
 ## Setting it up
-
-sample/jvm uses baseline, so this explains it by quoting the real thing.
 
 ### 1. Write `baseline = baselineFile()` in the definition
 
 ```kt title="ProjectArchitecture.kt (excerpt)" {1,5}
 @OptIn(ExperimentalKatachiApi::class)
 val projectArchitecture: Architecture = architecture {
-    title = "Ktor sample app"
     // ...
     baseline = baselineFile()
 
-    apiGroup()
     // ...
 }
 ```
 
-[sample/jvm's ProjectArchitecture.kt](https://github.com/TBSten/katachi/blob/main/sample/jvm/architecture-test/src/test/kotlin/com/example/ProjectArchitecture.kt)
+By default, setting baseline generates `katachi-baseline.json` at the project root, and the contents of baseline are written into this file.
 
-By default, the ledger file is `katachi-baseline.json` at the project root. To put it somewhere else, write a path relative to the root, as in `baselineFile("config/katachi-baseline.json")`.
+To change the location, set it like `baselineFile("config/katachi-baseline.json")`.
 
-### 2. Declare the ledger file itself with `layout { }`
+### 2. Declare the baseline file itself with `layout { }`
 
-The ledger is itself one of the project's files, so unless some role's `layout { }` allows it, it becomes an `[UnexpectedFile]` violation. This violation is not set aside in the ledger. `"Baseline"` is recommended as the role's name.
+The baseline file is also one of the project's files, so unless it's declared as a role, `projectArchitecture.assert()` will error out.
 
-```kt title="roles/BaselineRole.kt (excerpt)"
-fun DeclarationContainerScope.baseline() = "Baseline" {
-    title = "baseline (ledger of set-aside violations)"
-    summary = "A ledger that records the violations that already existed when katachi was introduced, setting them aside without failing the test"
-    // description, forbiddenContents, and example are omitted
+Following convention, prepare a role named `"BaselineFile"` and add it to your architecture definition.
+
+```kt
+val projectArchitecture = architecture {
+    // ...
+    "Tool".group {
+      "Katachi".group {
+        baselineFile()
+      }
+    }
+
+    // ...
+}
+
+fun DeclarationContainerScope.baselineFile() = "BaselineFile" {
+    title = "katachi Baseline file"
+    summary = "A file for temporarily suppressing existing violations"
+    description = "See: https://tbsten.github.io/katachi/guides/baseline/"
     layout {
         "katachi-baseline.json".file()
     }
 }
 ```
 
-[sample/jvm's BaselineRole.kt](https://github.com/TBSten/katachi/blob/main/sample/jvm/architecture-test/src/test/kotlin/com/example/roles/BaselineRole.kt)
+### 3. Create the baseline file
 
-### 3. Create the ledger and commit it
-
-Running the architecture test with `-Dkatachi.baseline.update=true` creates the ledger from the current violations. The test turns green.
+Running the architecture test with `-Dkatachi.baseline.update=true` makes all violations pass instead of erroring, and writes them into the baseline file.
 
 ```shell
 ./gradlew :architecture-test:test -Dkatachi.baseline.update=true
 ```
 
-How many violations were recorded is reported in the following line. It goes to the test's standard error output, so with Gradle's default settings it doesn't show up in the console (see [Where the result lines go](#where-the-result-lines-go) for how to see it).
+How many were recorded is reported in the following line. This line goes to the test's standard error output, so with Gradle's default settings it doesn't show up in the console.
 
 ```
 Katachi baseline file:///path/to/project/katachi-baseline.json: 2 violations recorded in 2 entries (+2, -0).
 ```
 
-Commit the resulting file. Running an ordinary test without the ledger file fails with `KatachiBaselineNotFoundException` (this prevents a mistyped path from turning every violation into a new one).
-
-In a module with the Gradle plugin (`me.tbsten.katachi`) applied, `-Dkatachi.baseline.update` and `-Dkatachi.baseline.prune` are passed through to the test JVM.
-
-## What's in the ledger
-
-This is sample/jvm's ledger. Two entries are deliberately left in it as an example of what's set aside.
-
-```json title="katachi-baseline.json"
-{
-  "version": 1,
-  "checks": {
-    "me.tbsten.katachi.check.FileConstraintCheck": [
-      {"rule": "UnsatisfiedFileConstraint", "path": "src/main/kotlin/com/example/service/LegacyStatusService.kt", "role": "domain/Service", "constraint": "public であること", "declaration": "LegacyStatusService"}
-    ],
-    "me.tbsten.katachi.check.LayoutCheck": [
-      {"rule": "UnexpectedFile", "path": "src/main/kotlin/com/example/service/LegacyHealthCheck.kt"}
-    ]
-  }
-}
-```
-
-[sample/jvm's katachi-baseline.json](https://github.com/TBSten/katachi/blob/main/sample/jvm/katachi-baseline.json)
-
-**A violation is identified by the check that found it, the rule (`rule`), and the path.** For a constraint violation such as one from `konsist { }`, the role, the constraint's name, and the declaration's name are also used. **Line numbers are not used.** So rewriting the inside of a file never turns a set-aside violation into a new one. Moving or renaming a file, on the other hand, is treated as a new violation (because where it's placed is exactly what katachi checks). When there are multiple violations identified the same way, the count is held in `count`.
-
-One entry per line, in a fixed order. When entries are added or removed, the diff stays limited to that line. **It isn't meant to be edited by hand.** Updates are done with the following two commands.
-
-## Ordinary runs, and when you fix a violation
-
-| What | Command | Effect on the ledger |
-|---|---|---|
-| Ordinary check | `./gradlew :architecture-test:test` | Only checks against it, doesn't rewrite it |
-| Create / recreate | `./gradlew :architecture-test:test -Dkatachi.baseline.update=true` | **Wholly replaces** the entries for the checks that ran, with the current violations |
-| Remove fixed ones | `./gradlew :architecture-test:test -Dkatachi.baseline.prune=true` | Only removes resolved entries or reduces their count. **Never adds new violations** |
-
-In an ordinary run, a violation that isn't in the ledger, or one that exceeds the ledger's count, fails the test. The number of set-aside violations is reported in a single line, whether the test passes or fails.
-
-```
-Baseline file:///path/to/project/katachi-baseline.json held back 2 violations.
-```
-
-When the test fails, this line appears at the end of the failure report. Where it goes when the test passes is explained in [Where the result lines go](#where-the-result-lines-go) below.
-
-**Fixing a set-aside violation makes the test fail with `[StaleBaselineEntry]`.** That's because the ledger still has an entry set aside for a violation that no longer exists. Leaving it there would let a file placed at the same path later pass silently. The test keeps failing until you remove it from the ledger with `-Dkatachi.baseline.prune=true`, so the set-aside count only ever goes down.
-
-It's removed with prune rather than update so that fixing one thing doesn't also let new violations slip into the ledger. When the ledger becomes empty, that fact is reported. You can then remove `baseline = ...` from the definition and delete the file.
-
-The tasks of checks registered as processors (such as `katachiLayout`) also check against the same ledger. However, `-Dkatachi.baseline.update` and `-Dkatachi.baseline.prune` have no effect on those tasks. Update the ledger with the architecture test.
-
-### Where the result lines go
-
-When the test passes, the following lines go to **the test's standard error output.**
-
-- The set-aside count (`Baseline … held back 2 violations.`)
-- The result of update (`Katachi baseline …: 2 violations recorded in 2 entries (+2, -0).`)
-- The result of prune (`Katachi baseline …: 1 fixed violation removed, 1 violation still held back.`)
-- The warning when the ledger isn't declared (`Warning: no role's layout { } allows the baseline file …`)
-
-With Gradle's default settings, standard error output doesn't show up in the console. See it in one of these ways:
-
-- **The test report**: it appears in the "error output" section of each test's page. For sample/jvm, that's `architecture-test/build/reports/tests/test/com.example.ProjectArchitectureTest/プロジェクトの構成が定義どおりになっている().html`. It doesn't appear in the summary `index.html`
-- **Show it in the console**: enable `showStandardStreams` in the test module's `build.gradle.kts`
-
-```kt title="architecture-test/build.gradle.kts (excerpt)" {3}
-tasks.test {
-    testLogging {
-        showStandardStreams = true
-    }
-}
-```
-
-## The ledger isn't written in CI
-
-When the environment variable `CI` is `true`, adding `-Dkatachi.baseline.update=true` or `-Dkatachi.baseline.prune=true` stops with `KatachiBaselineUpdateInCiException`, and the ledger is not rewritten. If CI recreated the ledger every time, any violation at all would pass.
-
-In CI, only check against the ledger; update it locally and commit the result. In a pull request, the lines added to the ledger become something to review.
-
-## Things to be careful of
-
-- **Setting aside an `UnexpectedDirectory` makes everything under that directory pass through unchecked.** katachi doesn't descend into a directory that hasn't been declared, so a file added later under it never comes out as a violation. Declaring the directory as a role is safer than setting the whole directory aside.
-- **Only Error-level violations can be set aside.** Warnings, and things the check itself couldn't perform (such as `[UncheckedFile]`), don't go into the ledger.
-- **A violation on the ledger file itself is not set aside.** If you forget the declaration from step 2, the update that first creates the ledger only prints a warning (to standard error output, so with the default settings you won't see it), but every run after that, updates included, fails with `[UnexpectedFile]`.
+It's recommended to commit the created/updated file.
 
 ## Summary
 
-- baseline is an experimental feature that, when you add katachi to an existing project, **sets its violations aside in a ledger and fails only on new violations.**
-- Write `architecture { baseline = baselineFile() }`, declare the ledger file itself under a `"Baseline"` role, and create and commit it with `-Dkatachi.baseline.update=true`.
-- Fixing a violation makes the test fail with `[StaleBaselineEntry]`, so use `-Dkatachi.baseline.prune=true` to trim the ledger. The ledger is not written in CI.
+- baseline is a feature that records existing violations in the baseline file and temporarily suppresses them, so that only **newly added violations** fail the test.
+- To use it, write `baseline = baselineFile()` in the definition, and declare the baseline file itself as a role in `layout { }`.
+- The baseline file is created and updated by running the architecture test with `-Dkatachi.baseline.update=true`. Commit the resulting file.
 
 ## Next steps
 
 - [Your first architecture definition](/katachi/get-started/first-architecture/) ... How to write your first definition, before setting anything aside in the ledger.
-- [Layout](/katachi/guides/layout/) ... Learn how to write placement when you allow something in the definition instead of the ledger.
