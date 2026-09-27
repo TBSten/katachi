@@ -145,6 +145,8 @@ export default defineConfig({
 						{ label: 'Konsist integration', translations: { ja: 'Konsist との統合' }, slug: 'guides/konsist-integration' },
 						{ label: 'Document generation', translations: { ja: 'ドキュメント生成' }, slug: 'guides/document-generation' },
 						{ label: 'Generate code from template', translations: { ja: 'テンプレートからコード生成' }, slug: 'guides/generate-code-from-template' },
+						// 既存のプロジェクトに入れるときの棚上げ。実験的な機能なので、processor の手前（ガイドの後ろ寄り）に置く。
+						{ label: 'Baseline', translations: { ja: 'baseline' }, slug: 'guides/baseline' },
 						{ label: 'ArchitectureProcessor', translations: { ja: 'ArchitectureProcessor とそのカスタマイズ' }, slug: 'guides/processor' },
 					],
 				},

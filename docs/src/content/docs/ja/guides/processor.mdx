@@ -188,7 +188,7 @@ katachi {
 [1/3] Processors: docs
 
 [2/3] Processing...
-  [docs] Writing 17 pages to file:///path/to/sample/jvm/docs
+  [docs] Writing 18 pages to file:///path/to/sample/jvm/docs
   [docs] README.md
   [docs] api/
   [docs]   README.md
@@ -254,16 +254,14 @@ process メソッドに渡される `context` には、アーキテクチャ定�
     <TabItem label="引数あり">
         引数を受け取る ArchitectureProcessor を作る場合は、引数のパースに [kotlinx.serialization](https://github.com/kotlin/kotlinx.serialization) を利用します。
 
-        ```kts {3, 7} title="architecture-test/build.gradle.kts" 
+        ```kts {3} title="architecture-test/build.gradle.kts" 
         plugins {
             kotlin("jvm") version "<kotlin-version>"
             kotlin("plugin.serialization") version "<kotlin-version>"
         }
-
-        dependencies {
-            implementation("org.jetbrains.kotlinx:kotlinx-serialization-core:<serialization-version>")
-        }
         ```        
+
+        必要なのは `kotlin("plugin.serialization")` だけです。`kotlinx-serialization-core` は katachi が依存として公開しているので、katachi に依存していれば `KSerializer` と `@Serializable` はそのまま使えます。
 
         ```kt {2, 4, 6, 18} nocollapse
         @OptIn(ExperimentalKatachiApi::class)
@@ -384,6 +382,14 @@ architecture {
 
             @Serializable
             data class Args(val prefix: String = "")
+        }
+        ```
+
+        ```kts title="architecture-test/build.gradle.kts"
+        katachi {
+            processors {
+                register("roleNames", "com.example.processors.RoleNames")
+            }
         }
         ```
 

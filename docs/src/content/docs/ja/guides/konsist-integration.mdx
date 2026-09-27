@@ -100,7 +100,7 @@ Katachi check failed: 1 violation (FileConstraint: 1)
 katachi が足しているのは `must` / `mustNot` / `mustBeEmpty` の3つで、Konsist の `assertTrue` などのアサーションはコンパイルエラーで塞いでいます。対象を絞るまでの書き方は Konsist のものがそのまま使えます。
 
 <Aside type="caution" title="このブロックで使えないもの">
-  - **`.kts` のファイルは対象になりません。** Konsist が `.kt` のファイルしか読まないためです。`build.gradle.kts` などの規則は `konsist { }` では書けません。
+  - **`.kts` のファイルは対象になりません。** Konsist が `.kt` のファイルしか読まないためです。`build.gradle.kts` などの規則は `konsist { }` では書けません。ファイルの中身を自分で読む `fileConstraint(name) { subject -> ... }`（実験的な API）で書いてください。
   - **`projectPath` / `moduleName` は当てにしないでください。** katachi が歩いたプロジェクトではなく、Konsist が推測したルートを基準にした値になります。
 </Aside>
 

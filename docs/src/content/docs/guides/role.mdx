@@ -404,7 +404,7 @@ architecture {
         "UseCase" {
             summary = "A single app-specific behavior that occurs on each screen"
 
-            // The same Role appears in two modules; the description stays in this one place
+            // However many places it is put in, the description stays in this one place
             layout {
                 "core/domain/src/main/kotlin/useCase" / "*UseCase".ktFile()
             }

@@ -82,6 +82,8 @@ katachi が必要かどうか疑問がある場合は、先に [モチベーシ�
         プロジェクトが Android でも KMP でも、**ここはプレーンな `kotlin("jvm")` モジュール**にします。katachi 自身が JVM のライブラリだからです。
 
         ```kotlin title="architecture-test/build.gradle.kts"
+        import org.gradle.api.tasks.testing.logging.TestExceptionFormat
+
         plugins {
             kotlin("jvm") version "<Kotlin のバージョン>"
             id("me.tbsten.katachi") version "<katachi のバージョン>"
@@ -93,6 +95,11 @@ katachi が必要かどうか疑問がある場合は、先に [モチベーシ�
 
         tasks.test {
             useJUnitPlatform()
+            // 検査するファイルは Test タスクの入力ではないので、毎回走らせる（ビルドキャッシュにも結果を書かせない）
+            outputs.upToDateWhen { false }
+            outputs.cacheIf { false }
+            // 違反の一覧をコンソールに出す
+            testLogging { exceptionFormat = TestExceptionFormat.FULL }
         }
 
         dependencies {
@@ -102,7 +109,15 @@ katachi が必要かどうか疑問がある場合は、先に [モチベーシ�
             testImplementation("org.junit.jupiter:junit-jupiter")
             testRuntimeOnly("org.junit.platform:junit-platform-launcher")
         }
+
+        katachi {
+            architecture = "com.example.projectArchitecture"
+        }
         ```
+
+        - **`outputs.upToDateWhen { false }` / `outputs.cacheIf { false }`**: katachi が検査するのはリポジトリ全体のファイルですが、Gradle が Test タスクの入力として見ているのはテストのクラスパスだけです。これが無いと、ファイルを足したり変えたりしても `:architecture-test:test` が `UP-TO-DATE` で飛ばされ、違反があっても緑のままになります。`cacheIf` は、ビルドキャッシュを有効にしているときに前の結果が使い回されないようにするための指定です。
+        - **`testLogging { exceptionFormat = TestExceptionFormat.FULL }`**: これが無いと、テストが落ちてもコンソールには例外のクラス名の1行しか出ず、違反の一覧はテストレポートを開かないと読めません。
+        - **`katachi { architecture = ... }`**: ドキュメント生成・テンプレート・IDE プラグインが定義を見つけるための指定です。値は手順3で書く定義の完全修飾名（`package` + 変数名）にします。
 
         <Aside type="caution" title="Android プロジェクトの場合">
         ルートの `build.gradle.kts` に `kotlin("jvm") version "..." apply false` を書き、**モジュール側ではバージョンを書かずに** `kotlin("jvm")` とだけ書いてください。
@@ -132,8 +147,10 @@ katachi が必要かどうか疑問がある場合は、先に [モチベーシ�
         package com.example
 
         import me.tbsten.katachi.dsl.architecture
+        import me.tbsten.katachi.dsl.gradle.gradle
 
         val projectArchitecture = architecture {
+            gradle() // wrapper・settings・build スクリプトなど Gradle のファイル
             "domain".group {
                 "UseCase" {
                     summary = "各画面で発生するアプリ固有の1つの振る舞い"
@@ -175,7 +192,9 @@ katachi が必要かどうか疑問がある場合は、先に [モチベーシ�
 
         最初は **宣言していないファイルがすべて違反として出ます。** katachi は許可リスト方式なので、これが正常な出発点です。出てきたパスを定義に足すか、消すかを決めていってください。
 
-        既存の違反が多くてすぐには片付けられない場合は、実験的な機能の baseline（`architecture { baseline = baselineFile() }`）で今ある違反を台帳のファイル（既定は `katachi-baseline.json`）に棚上げし、新しい違反だけでテストを落とすこともできます。台帳のファイルも `layout { }` で宣言します。
+        Gradle のファイル（wrapper・`settings.gradle.kts`・build スクリプト・`gradle.properties`・version catalog）は、手順3の `gradle()` の1行で宣言できます。`buildSrc` や convention plugin がある場合は [Gradle 周辺のレシピ](/katachi/ja/recipes/gradle/) を参照してください。
+
+        既存の違反が多くてすぐには片付けられない場合は、実験的な機能の baseline で今ある違反を台帳のファイル（既定は `katachi-baseline.json`）に棚上げし、新しい違反だけでテストを落とすこともできます。`architecture { baseline = baselineFile() }` と書き（`@OptIn(ExperimentalKatachiApi::class)` が要ります）、最初に `-Dkatachi.baseline.update=true` を付けて実行して台帳を作ります。棚上げした違反を直したら、`-Dkatachi.baseline.prune=true` で台帳から消すまでテストは落ちます。台帳のファイル自身も `layout { }` で宣言します。詳しくは [baseline](/katachi/ja/guides/baseline/) を参照してください。
 
     </Steps>
   </TabItem>
@@ -270,3 +289,5 @@ katachi が必要かどうか疑問がある場合は、先に [モチベーシ�
     - [Layout](/katachi/ja/guides/layout/)
     - [Konsist との統合](/katachi/ja/guides/konsist-integration/)
     - [ドキュメント生成](/katachi/ja/guides/document-generation/)
+    - [テンプレートからコード生成](/katachi/ja/guides/generate-code-from-template/)
+    - [baseline](/katachi/ja/guides/baseline/)

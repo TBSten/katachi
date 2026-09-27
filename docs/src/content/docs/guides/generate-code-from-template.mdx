@@ -33,7 +33,7 @@ private fun RoleScope.useCaseTemplate() = template {
     // file() declares one file this template generates
     file("${name}UseCase.kt") {
         """
-            package com.example.domain.useCase
+            package com.example.core.domain.useCase
 
             interface ${name}UseCase {
                 suspend operator fun invoke()
@@ -43,7 +43,7 @@ private fun RoleScope.useCaseTemplate() = template {
 
     file("${name}UseCaseImpl.kt") {
         """
-            package com.example.domain.useCase
+            package com.example.core.domain.useCase
 
             class ${name}UseCaseImpl : ${name}UseCase {
                 override suspend fun invoke() {
@@ -56,6 +56,7 @@ private fun RoleScope.useCaseTemplate() = template {
 ```
 
 ```shell
+# Run the template generation
 ./gradlew katachiTemplate \
     --arg "roleName=UseCase" --arg "name=GetItemList"
 ```
@@ -170,6 +171,12 @@ The detail shows the parameters (type, default, accepted values, whether require
 ```
 
 The contents are filled in with stand-in values. **A string parameter is filled with its own name, as in `${name}`.** A Boolean, Int or enum parameter takes its default, or `true`, `0` or its first entry when it has none, and `Previewed with:` says which value was used. The files shown are those of the branch these values take. When another value of a Boolean or an enum changes which files are produced, that value and the files it adds or leaves out are listed at the end.
+
+## Generating from the IDE (IDE plugin, unpublished, in preparation)
+
+An IDE plugin is in preparation that lets you pick a template from a tool window in IntelliJ IDEA / Android Studio, fill in its arguments and generate the code. The files are written by the `katachiTemplate` task above, so what gets generated is the same. It finds the definition through `katachi { architecture = "..." }` in `build.gradle.kts`.
+
+**It is not yet published on the JetBrains Marketplace, so we cannot tell you how to install it yet.** Once it is published, this section will describe how to install and use it.
 
 ## Summary
 

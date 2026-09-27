@@ -7,7 +7,7 @@ For people changing katachi itself. For how to use it, see the [README](README.m
 | | Version |
 |---|---|
 | Gradle | 9.6.0 |
-| Kotlin | 2.4.10 |
+| Kotlin | 2.4.10 (2.3.0 for the IDE plugin only, kept in its own catalog) |
 | JDK / toolchain | 17 (21 for the IDE plugin only) |
 | kotest | 6.2.5 |
 
@@ -18,6 +18,7 @@ For people changing katachi itself. For how to use it, see the [README](README.m
 | `katachi/`, `katachi-konsist/`, `katachi-gradle-plugin/` | The three published modules |
 | `architecture-test/` | katachi's own architecture definition. Not published |
 | `tool/dokka/` | The Dokka plugin behind the API reference. Not published |
+| `benchmark/` | The JMH benchmarks. Not published. Not part of `check`; run them with `./gradlew :benchmark:jmh` |
 | `katachi-intellij-plugin/` | The plugin for IntelliJ IDEA and Android Studio, a standalone Gradle build |
 | `sample/` | The samples, each a standalone Gradle build |
 | `docs/` | The documentation site |
@@ -33,7 +34,7 @@ Four of them live under `sample/`. Each one's own README covers what it looks li
 | [`sample/kmp`](sample/kmp/README.md) | An Android + iOS KMP project, with real Compose Multiplatform dependencies |
 | [`sample/custom-processor`](sample/custom-processor/README.md) | A hands-on tour of writing your own processor |
 
-The jvm, android and kmp samples use the plugin, `gradle()` and `template { }`, and commit the documentation `katachiDocs` generates for them.
+All four use the plugin and `gradle()`, and commit the documentation `katachiDocs` generates for them. Only jvm, android and kmp use `template { }` and baseline.
 
 ## Checking
 
@@ -46,8 +47,8 @@ The jvm, android and kmp samples use the plugin, `gradle()` and `template { }`, 
 
 - The samples are standalone builds, not subprojects of the root, so `./gradlew check` does not run them. The root project has no sources; it only aggregates the API reference and carries the tasks that run the samples.
 - The IDE plugin is a standalone build too, run by neither `check` nor `checkSamples`. Its first run downloads the IntelliJ Platform SDK (a whole IDE). Its screen goldens (`verifyPreview`) were made on macOS and do not match byte for byte on other systems. The smoke test that starts a real IDE (`integrationTest`) is run by hand.
-- `gradle/libs.versions.toml` is the single source of truth for the Kotlin, katachi and kotest versions. The samples read it as `libs` and keep their own dependencies in their own catalog, `sampleLibs` (see [`sample/README.md`](sample/README.md)).
-- CI is `.github/workflows/ci.yml`: on every push to `main` and every pull request, the library and each of the four samples in their own step, and the IDE plugin in a job of its own on macOS.
+- `gradle/libs.versions.toml` is the single source of truth for the Kotlin, katachi, kotest and JUnit versions of the library and the samples (the IDE plugin is a standalone build and reads its own `katachi-intellij-plugin/gradle/libs.versions.toml`). The samples read it as `libs` and keep their own dependencies in their own catalog, `sampleLibs` (see [`sample/README.md`](sample/README.md)).
+- CI is `.github/workflows/ci.yml`: on every push to `main` and every pull request, the library and each of the four samples in their own step, and the IDE plugin in a job of its own on macOS. The benchmark jobs (`bench-jmh`, `bench-real-project`, `bench-store`) run on the same triggers. Their comparison only goes to the job summary, and a slowdown does not fail the build. `bench-store` adds the results to the history on `gh-pages`, on `main` only.
 
 ## Writing code
 

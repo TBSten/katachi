@@ -157,7 +157,7 @@ Example output:
 [1/3] Processors: docs
 
 [2/3] Processing...
-  [docs] Writing 17 pages to file:///path/to/sample/jvm/docs
+  [docs] Writing 18 pages to file:///path/to/sample/jvm/docs
   [docs] README.md
   [docs] api/
   [docs]   README.md
@@ -223,16 +223,14 @@ The `context` passed as the argument to the `process` method holds the architect
     <TabItem label="With arguments">
         To build an ArchitectureProcessor that takes arguments, use [kotlinx.serialization](https://github.com/kotlin/kotlinx.serialization) to parse them.
 
-        ```kts {3, 7} title="architecture-test/build.gradle.kts" 
+        ```kts {3} title="architecture-test/build.gradle.kts" 
         plugins {
             kotlin("jvm") version "<kotlin-version>"
             kotlin("plugin.serialization") version "<kotlin-version>"
         }
-
-        dependencies {
-            implementation("org.jetbrains.kotlinx:kotlinx-serialization-core:<serialization-version>")
-        }
         ```        
+
+        `kotlin("plugin.serialization")` is all you need. katachi exposes `kotlinx-serialization-core` as a dependency, so as long as you depend on katachi, `KSerializer` and `@Serializable` are available as they are.
 
         ```kt {2, 4, 6, 18} nocollapse
         @OptIn(ExperimentalKatachiApi::class)
@@ -352,6 +350,14 @@ If you want it runnable from a program as an API, providing an API is recommende
 
             @Serializable
             data class Args(val prefix: String = "")
+        }
+        ```
+
+        ```kts title="architecture-test/build.gradle.kts"
+        katachi {
+            processors {
+                register("roleNames", "com.example.processors.RoleNames")
+            }
         }
         ```
 

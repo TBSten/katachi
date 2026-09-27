@@ -35,18 +35,28 @@ Create one JVM module for the architecture definition.
 ```kotlin
 // settings.gradle.kts — the plugin is published to Maven Central
 pluginManagement { repositories { gradlePluginPortal(); mavenCentral() } }
+dependencyResolutionManagement { repositories { mavenCentral() } } // an existing project most likely has this already
 include(":architecture-test")
 ```
 
 ```kotlin
 // architecture-test/build.gradle.kts
+import org.gradle.api.tasks.testing.logging.TestExceptionFormat
+
 plugins {
     kotlin("jvm") version "2.4.10"
     id("me.tbsten.katachi") version "0.2.0"
 }
 
 kotlin { jvmToolchain(17) }
-tasks.test { useJUnitPlatform() }
+tasks.test {
+    useJUnitPlatform()
+    // The files being checked are not inputs of the Test task, so run it every time (and keep its result out of the build cache)
+    outputs.upToDateWhen { false }
+    outputs.cacheIf { false }
+    // Print the list of violations to the console
+    testLogging { exceptionFormat = TestExceptionFormat.FULL }
+}
 
 dependencies {
     testImplementation("me.tbsten.katachi:katachi:0.2.0")
@@ -55,8 +65,11 @@ dependencies {
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
 
+// Tells document generation, templates and the IDE plugin where to find the definition (its package + variable name)
 katachi { architecture = "com.example.projectArchitecture" }
 ```
+
+katachi checks the files of the whole repository, but Gradle only sees the test classpath as the Test task's input. Without `outputs.upToDateWhen { false }`, `:architecture-test:test` is skipped as `UP-TO-DATE` even after you add files, and stays green even when there are violations. `outputs.cacheIf { false }` keeps a previous result from being reused when the build cache is enabled. Without `testLogging { exceptionFormat = TestExceptionFormat.FULL }`, a failing test prints only a single line with the exception's class name to the console, and you cannot read the list of violations.
 
 Write the definition and a test.
 
@@ -84,19 +97,19 @@ class ProjectArchitectureTest {
 
 ```shell
 ./gradlew :architecture-test:test           # runs the check
-./gradlew :architecture-test:katachiDocs    # writes docs to build/katachi/docs
+./gradlew :architecture-test:katachiDocs    # writes docs to architecture-test/build/katachi/docs
 ```
 
 At first, every file you haven't declared comes back as a violation. For each path that shows up, decide whether to add it to the definition or delete the file.
 
-The full walkthrough — importing, templates, and handing it off to an AI agent — is in [Your first architecture definition](https://tbsten.github.io/katachi/get-started/first-architecture/).
+The full walkthrough — importing, and handing it off to an AI agent — is in [Your first architecture definition](https://tbsten.github.io/katachi/get-started/first-architecture/).
 
 <details>
 <summary><b>If it doesn't work</b></summary>
 
 - **Below Kotlin 2.4**: you need `compilerOptions.freeCompilerArgs.add("-Xcontext-parameters")` (don't add it from 2.4 on — it becomes a warning)
 - **`Failed to load JUnit Platform`**: you're missing `junit-platform-launcher`
-- **No test runs at all**: you're missing a JUnit engine (`junit-jupiter`). The build stays `BUILD SUCCESSFUL` while the check silently does nothing
+- **`Cannot create Launcher without at least one TestEngine` / `did not discover any tests to execute`**: you're missing a JUnit engine (`junit-jupiter`). On Gradle 8, if another engine (kotest, for example) is present, this may not fail at all: the build stays `BUILD SUCCESSFUL` while the check silently does nothing
 - **Writing `konsist { }` fails with `[UncheckedFileConstraint]`**: write `assert(FileConstraintCheck())` (needs `@OptIn(ExperimentalKatachiApi::class)`)
 
 </details>
@@ -109,6 +122,7 @@ The full walkthrough — importing, templates, and handing it off to an AI agent
 | Get the details of writing layouts | [Layout](https://tbsten.github.io/katachi/guides/layout/) |
 | Check file contents too | [Konsist integration](https://tbsten.github.io/katachi/guides/konsist-integration/) |
 | Generate documentation and code | [Document generation](https://tbsten.github.io/katachi/guides/document-generation/), [Generating code from a template](https://tbsten.github.io/katachi/guides/generate-code-from-template/) |
+| Adopt katachi while setting existing violations aside | [Baseline](https://tbsten.github.io/katachi/guides/baseline/) |
 | See a real project's definition | [Samples](CONTRIBUTING.md#samples), [Recipes](https://tbsten.github.io/katachi/recipes/) |
 
 ## Modules

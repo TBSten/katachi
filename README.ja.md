@@ -35,18 +35,28 @@
 ```kotlin
 // settings.gradle.kts — plugin は Maven Central に公開しています
 pluginManagement { repositories { gradlePluginPortal(); mavenCentral() } }
+dependencyResolutionManagement { repositories { mavenCentral() } } // 既存のプロジェクトなら、すでに書いてあるはずです
 include(":architecture-test")
 ```
 
 ```kotlin
 // architecture-test/build.gradle.kts
+import org.gradle.api.tasks.testing.logging.TestExceptionFormat
+
 plugins {
     kotlin("jvm") version "2.4.10"
     id("me.tbsten.katachi") version "0.2.0"
 }
 
 kotlin { jvmToolchain(17) }
-tasks.test { useJUnitPlatform() }
+tasks.test {
+    useJUnitPlatform()
+    // 検査するファイルは Test タスクの入力ではないので、毎回走らせる（ビルドキャッシュにも結果を書かせない）
+    outputs.upToDateWhen { false }
+    outputs.cacheIf { false }
+    // 違反の一覧をコンソールに出す
+    testLogging { exceptionFormat = TestExceptionFormat.FULL }
+}
 
 dependencies {
     testImplementation("me.tbsten.katachi:katachi:0.2.0")
@@ -55,8 +65,11 @@ dependencies {
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
 
+// ドキュメント生成・テンプレート・IDE プラグインが定義を見つけるための指定（定義の package + 変数名）
 katachi { architecture = "com.example.projectArchitecture" }
 ```
+
+katachi が検査するのはリポジトリ全体のファイルですが、Gradle が Test タスクの入力として見ているのはテストのクラスパスだけです。`outputs.upToDateWhen { false }` が無いと、ファイルを足しても `:architecture-test:test` が `UP-TO-DATE` で飛ばされ、違反があっても緑のままになります。`outputs.cacheIf { false }` は、ビルドキャッシュを有効にしているときに前の結果が使い回されないようにするための指定です。`testLogging { exceptionFormat = TestExceptionFormat.FULL }` が無いと、テストが落ちてもコンソールには例外のクラス名の1行しか出ず、違反の一覧が読めません。
 
 定義とテストを書きます。
 
@@ -84,19 +97,19 @@ class ProjectArchitectureTest {
 
 ```shell
 ./gradlew :architecture-test:test           # 検査する
-./gradlew :architecture-test:katachiDocs    # ドキュメントを build/katachi/docs に書き出す
+./gradlew :architecture-test:katachiDocs    # ドキュメントを architecture-test/build/katachi/docs に書き出す
 ```
 
 最初は、定義していないファイルがすべて違反として出ます。出てきたパスごとに、定義に足すかファイルを消すかを決めていきます。
 
-手順の全体（import・テンプレート・AI Agent に任せる方法）は [初めてのアーキテクチャ定義](https://tbsten.github.io/katachi/ja/get-started/first-architecture/) にあります。
+手順の全体（import・AI Agent に任せる方法）は [初めてのアーキテクチャ定義](https://tbsten.github.io/katachi/ja/get-started/first-architecture/) にあります。
 
 <details>
 <summary><b>うまく動かないとき</b></summary>
 
 - **Kotlin 2.4 未満**: `compilerOptions.freeCompilerArgs.add("-Xcontext-parameters")` が要ります（2.4 以降では付けないでください。警告になります）
 - **`Failed to load JUnit Platform`**: `junit-platform-launcher` が足りません
-- **テストが1件も実行されない**: JUnit のエンジン（`junit-jupiter`）が足りません。`BUILD SUCCESSFUL` のまま検査が空振りします
+- **`Cannot create Launcher without at least one TestEngine` / `did not discover any tests to execute`**: JUnit のエンジン（`junit-jupiter`）が足りません。Gradle 8 では、ほかのエンジン（kotest など）があるとエラーにならず、`BUILD SUCCESSFUL` のまま検査が空振りすることがあります
 - **`konsist { }` を書いたら `[UncheckedFileConstraint]` で落ちる**: `assert(FileConstraintCheck())` と書きます（`@OptIn(ExperimentalKatachiApi::class)` が要ります）
 
 </details>
@@ -109,6 +122,7 @@ class ProjectArchitectureTest {
 | 置き場所の書き方 | [Layout](https://tbsten.github.io/katachi/ja/guides/layout/) |
 | ファイルの中身も検査する | [Konsist との統合](https://tbsten.github.io/katachi/ja/guides/konsist-integration/) |
 | ドキュメント・コードを生成する | [ドキュメント生成](https://tbsten.github.io/katachi/ja/guides/document-generation/)、[テンプレートからコード生成](https://tbsten.github.io/katachi/ja/guides/generate-code-from-template/) |
+| 既存の違反を棚上げして導入する | [baseline](https://tbsten.github.io/katachi/ja/guides/baseline/) |
 | 実際の定義を見る | [サンプル](CONTRIBUTING.ja.md#サンプル)、[レシピ](https://tbsten.github.io/katachi/ja/recipes/) |
 
 ## モジュール

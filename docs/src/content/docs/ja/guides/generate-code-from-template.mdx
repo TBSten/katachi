@@ -31,7 +31,7 @@ private fun RoleScope.useCaseTemplate() = template {
     // file() で、この template が生成するファイルを1つ宣言します
     file("${name}UseCase.kt") {
         """
-            package com.example.domain.useCase
+            package com.example.core.domain.useCase
 
             interface ${name}UseCase {
                 suspend operator fun invoke()
@@ -41,7 +41,7 @@ private fun RoleScope.useCaseTemplate() = template {
 
     file("${name}UseCaseImpl.kt") {
         """
-            package com.example.domain.useCase
+            package com.example.core.domain.useCase
 
             class ${name}UseCaseImpl : ${name}UseCase {
                 override suspend fun invoke() {
@@ -171,6 +171,12 @@ katachi {
 ```
 
 中身はパラメータを仮の値で埋めたものです。**文字列のパラメータは `${name}` のようにパラメータ名で埋めます。** 真偽値・整数・enum は既定値で、既定値が無ければ `true`・`0`・最初のエントリで埋め、どの値を使ったかを `Previewed with:` に出します。出るのはその値でたどった分岐のファイルです。真偽値と enum のほかの値で生成するファイルが変わる場合は、その値と増減するファイルを最後に並べます。
+
+## IDE から生成する（IDE プラグイン・未公開・準備中）
+
+IntelliJ IDEA / Android Studio のツールウィンドウからテンプレートを選び、引数を埋めて生成する IDE プラグインを準備しています。ファイルを書くのは上の `katachiTemplate` タスクなので、生成されるものは同じです。定義は `build.gradle.kts` の `katachi { architecture = "..." }` から見つけます。
+
+**まだ JetBrains Marketplace に公開していないため、いまはインストールの方法を案内できません。** 公開したら、この節に入れ方と使い方を書きます。
 
 ## まとめ
 

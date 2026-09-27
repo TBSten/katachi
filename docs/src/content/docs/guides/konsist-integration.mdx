@@ -100,7 +100,7 @@ Inside a `"...".konsist { }` block, you can use the regular Konsist API.
 katachi adds three things — `must`, `mustNot`, and `mustBeEmpty` — and blocks Konsist's assertions such as `assertTrue` with compile errors. Everything up to narrowing down the target uses Konsist's syntax as-is.
 
 <Aside type="caution" title="What this block cannot do">
-  - **`.kts` files are never covered.** Konsist only reads `.kt` files. Rules about `build.gradle.kts` and the like cannot be written with `konsist { }`.
+  - **`.kts` files are never covered.** Konsist only reads `.kt` files. Rules about `build.gradle.kts` and the like cannot be written with `konsist { }`. Write them with `fileConstraint(name) { subject -> ... }` (an experimental API), which reads the file contents itself.
   - **Do not rely on `projectPath` / `moduleName`.** They are relative to the root Konsist guessed, not to the project katachi walked.
 </Aside>
 

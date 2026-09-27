@@ -404,7 +404,7 @@ architecture {
         "UseCase" {
             summary = "各画面で発生するアプリ固有の1つの振る舞い"
 
-            // 同じRoleが2つのモジュールに現れる。説明はこの1箇所のまま
+            // 置き場所が増えても、説明はこの1箇所のまま
             layout {
                 "core/domain/src/main/kotlin/useCase" / "*UseCase".ktFile()
             }
