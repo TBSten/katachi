@@ -627,3 +627,17 @@ sampleBuilds.forEach { sample ->
     }
     checkSamples.configure { dependsOn(task) }
 }
+
+// katachi-intellij-plugin is a standalone build too (it cannot share this build's Kotlin Gradle
+// Plugin, see its settings.gradle.kts), so it runs through its own wrapper as the samples do.
+// Neither `check` nor `checkSamples` depends on it: its first run downloads the IntelliJ Platform
+// SDK (a whole IDE distribution), and its preview goldens only match byte for byte on macOS. CI runs it in a
+// job of its own on a macOS runner. `integrationTest` (a real IDE driven by Starter) is left out;
+// run it by hand.
+tasks.register<Exec>("checkIdePlugin") {
+    group = LifecycleBasePlugin.VERIFICATION_GROUP
+    description = "Runs `buildPlugin test verifyPreview` in the standalone build katachi-intellij-plugin " +
+            "(`test` runs `uiTest` too). Needs a JDK 21 for its toolchain; verifyPreview expects macOS."
+    workingDir = layout.projectDirectory.dir("katachi-intellij-plugin").asFile
+    commandLine(gradlewCommand + listOf("buildPlugin", "test", "verifyPreview", "--console=plain"))
+}

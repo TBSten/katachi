@@ -110,3 +110,69 @@ jobs:
             **/build/test-results/
           retention-days: 7
           if-no-files-found: ignore
+
+  # katachi-intellij-plugin is a standalone Gradle build (see its settings.gradle.kts), so the
+  # root `check` above never reaches it. checkIdePlugin runs `buildPlugin test verifyPreview`
+  # through the plugin's own wrapper; `test` runs `uiTest` (the property-based and Compose UI
+  # tests) as well.
+  #
+  # macOS, not ubuntu: the verifyPreview goldens under katachi-intellij-plugin/snapshots/preview
+  # were rendered on macOS (Skia with the system's fonts and text shaping), and a Linux render does
+  # not match them byte for byte. The label is pinned to the macOS the goldens were made on; bump it
+  # together with an `updatePreview` run on the new version.
+  #
+  # `integrationTest` is not run here: it starts a real IDE through Starter and drives its windows,
+  # which needs a display session and minutes of IDE start-up per run, and it opens sample/jvm
+  # through a full Gradle import. It stays a check to run by hand before a release.
+  ide-plugin:
+    name: ide-plugin
+    runs-on: macos-26
+    timeout-minutes: 45
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      # The root build (which only configures here) runs on 17 like the job above; the plugin's
+      # `jvmToolchain(21)` needs a 21, the JBR version the 261 platform runs on. The last one listed
+      # becomes JAVA_HOME, which the plugin's wrapper inherits from the Exec task.
+      - name: Set up JDK 17 and 21
+        uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: |
+            17
+            21
+
+      # Caches ~/.gradle, which holds the IntelliJ Platform SDK the plugin compiles against once it
+      # has been downloaded (a whole IDE distribution, the slow part of a cold run).
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v6
+
+      # What the IntelliJ Platform Gradle Plugin keeps next to the build: the extracted platform
+      # layout and the product release list it resolves the SDK with.
+      - name: Cache .intellijPlatform
+        uses: actions/cache@v5
+        with:
+          path: katachi-intellij-plugin/.intellijPlatform
+          key: intellij-platform-${{ runner.os }}-${{ hashFiles('katachi-intellij-plugin/gradle/libs.versions.toml', 'katachi-intellij-plugin/settings.gradle.kts') }}
+          restore-keys: |
+            intellij-platform-${{ runner.os }}-
+
+      - name: Check katachi-intellij-plugin
+        run: ./gradlew checkIdePlugin --stacktrace
+
+      # The test reports, the shrunk counterexample and its PNG of a failing property
+      # (build/uiTest-failures), and the before/after report of a failing verifyPreview
+      # (build/preview/report).
+      - name: Upload reports
+        if: ${{ failure() }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: ide-plugin-reports
+          path: |
+            katachi-intellij-plugin/build/reports/
+            katachi-intellij-plugin/build/test-results/
+            katachi-intellij-plugin/build/uiTest-failures/
+            katachi-intellij-plugin/build/preview/report/
+          retention-days: 7
+          if-no-files-found: ignore

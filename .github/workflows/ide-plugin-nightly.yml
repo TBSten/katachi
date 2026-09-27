@@ -1,0 +1,102 @@
+name: IDE plugin nightly
+
+# The property-based tests of katachi-intellij-plugin (`uiTest`), run with 20 times the sequences
+# of the pull request run (ci.yml, job ide-plugin) and a seed of their own each night.
+#
+# The pull request run keeps a fixed seed and few sequences so that it stays short and repeatable.
+# Some states take a few hundred sequences to reach (before the generator mixed in the runs of
+# Scenarios.kt, a regression that kept a result over a list that had lost every template first
+# showed on the 380th), so this run explores further, and somewhere else each night. A red run
+# prints the shrunk catalog and operations; the job summary has the command that plays the same
+# seed again.
+#
+# macOS for the same reason as ci.yml: the renders the properties draw run on the same Skia and
+# fonts as the verifyPreview goldens, and the plugin is only checked there.
+
+on:
+  schedule:
+    # 19:00 UTC = 04:00 JST, an hour after benchmark.yml.
+    - cron: '0 19 * * *'
+  workflow_dispatch:
+    inputs:
+      seed:
+        description: 'Seed of the property-based tests (empty: the run id)'
+        required: false
+        default: ''
+      scale:
+        description: 'How many times the default number of sequences to run'
+        required: false
+        default: '20'
+
+concurrency:
+  group: ide-plugin-nightly
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  pbt:
+    name: pbt (scale ${{ inputs.scale || '20' }})
+    runs-on: macos-26
+    # Scale 20 took about 18 minutes on an Apple silicon laptop (the pull request run's properties
+    # take under a minute); the limit leaves room for a slower runner and a cold SDK download.
+    timeout-minutes: 90
+    env:
+      PBT_SEED: ${{ inputs.seed || github.run_id }}
+      PBT_SCALE: ${{ inputs.scale || '20' }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v6
+
+      - name: Cache .intellijPlatform
+        uses: actions/cache@v5
+        with:
+          path: katachi-intellij-plugin/.intellijPlatform
+          key: intellij-platform-${{ runner.os }}-${{ hashFiles('katachi-intellij-plugin/gradle/libs.versions.toml', 'katachi-intellij-plugin/settings.gradle.kts') }}
+          restore-keys: |
+            intellij-platform-${{ runner.os }}-
+
+      # Written first, so that a red run has it too.
+      - name: Record the seed
+        run: |
+          {
+            echo "### Property-based tests"
+            echo ""
+            echo "seed \`${PBT_SEED}\`, scale \`${PBT_SCALE}\`. To play the same sequences again:"
+            echo ""
+            echo "\`\`\`"
+            echo "cd katachi-intellij-plugin && ./gradlew uiTest -Pkatachi.pbt.seed=${PBT_SEED} -Pkatachi.pbt.scale=${PBT_SCALE}"
+            echo "\`\`\`"
+          } >> "${GITHUB_STEP_SUMMARY}"
+
+      # Straight through the plugin's own wrapper: only uiTest, without the root build around it.
+      - name: Run uiTest
+        working-directory: katachi-intellij-plugin
+        run: >
+          ./gradlew uiTest
+          "-Pkatachi.pbt.seed=${PBT_SEED}"
+          "-Pkatachi.pbt.scale=${PBT_SCALE}"
+          --console=plain
+          --stacktrace
+
+      - name: Upload reports
+        if: ${{ failure() }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: ide-plugin-pbt-reports
+          path: |
+            katachi-intellij-plugin/build/reports/
+            katachi-intellij-plugin/build/test-results/
+            katachi-intellij-plugin/build/uiTest-failures/
+          retention-days: 14
+          if-no-files-found: ignore
