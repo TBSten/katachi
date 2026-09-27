@@ -127,6 +127,118 @@ public class KatachiFileConstraintWithoutLayoutException internal constructor(
 )
 
 /**
+ * A constraint asked for `directOnly = true` somewhere that has no directory of its own.
+ *
+ * "Directly in" needs one directory to be directly in. A role lives wherever its `layout { }`
+ * blocks put it, and directly under `layout { }` or inside `":".module { }` the block writes
+ * into the project root, which every other block of that `layout { }` shares. Ignoring the
+ * flag there would leave a constraint that checks something other than what it says.
+ *
+ * Written on a role, this is thrown while `architecture { }` is evaluated. Written inside a
+ * `layout { }`, it is thrown when the layout is evaluated, because `layout { }` is deferred.
+ *
+ * ## Example 1: catch a direct-only constraint written on the role itself
+ * ```kt
+ * shouldThrow<KatachiFileConstraintDirectOnlyWithoutDirectoryException> {
+ *     architecture {
+ *         "util".group {
+ *             "Util" {
+ *                 fileConstraint("uses the stdlib only", directOnly = true) { emptyList() }
+ *                 layout { "util" { "*.kt".file() } }
+ *             }
+ *         }
+ *     }
+ * }.declaredAt.fileName shouldBe "ProjectArchitecture.kt"
+ * ```
+ *
+ * @property name what the constraint was called, or `null` when it was declared without a name.
+ * @property declaredAt where the constraint was written.
+ */
+public class KatachiFileConstraintDirectOnlyWithoutDirectoryException internal constructor(
+    /** What the constraint was called, or `null` when it was declared without a name. */
+    public val name: String?,
+    /** Where the constraint was written. */
+    public val declaredAt: DeclarationSite,
+) : KatachiDeclarationException(
+    message = buildString {
+        appendLine(
+            "Constraint ${labelOf(name)} declared at $declaredAt asks for directOnly = true, " +
+                "but it is not written in a directory block.",
+        )
+        appendLine(
+            "directOnly covers the files directly in the surrounding directory. Directly on a " +
+                "role, directly under `layout { }`, or in `\":\".module { }` there is no such " +
+                "directory: the role spans all its layouts, and the project root is shared.",
+        )
+        append(
+            "Move the constraint into the directory block whose own files it is about " +
+                "(e.g. `\"util\" { ... }` or `\":core\".module { ... }`), or drop directOnly " +
+                "to cover everything below.",
+        )
+    },
+)
+
+/**
+ * A constraint asked for `directOnly = true` in a block that declares no file directly.
+ *
+ * Such a constraint could never see a file: everything the block declares sits in a nested
+ * directory. The file `.module { }` adds by itself, `build.gradle.kts`, does not count, since
+ * a constraint written in a module block never covers it. This is a mistake in the definition,
+ * not an empty directory, so it is refused rather than left to pass as green.
+ *
+ * Thrown when the layout is evaluated, because `layout { }` is deferred.
+ *
+ * ## Example 1: catch a direct-only constraint over a directory that only has subdirectories
+ * ```kt
+ * val arch = architecture {
+ *     "util".group {
+ *         "Util" {
+ *             layout {
+ *                 "util" {
+ *                     fileConstraint("uses the stdlib only", directOnly = true) { emptyList() }
+ *                     "ksp" { "*.kt".file() }
+ *                 }
+ *             }
+ *         }
+ *     }
+ * }
+ * shouldThrow<KatachiFileConstraintDirectOnlyCoversNothingException> { arch.assert() }
+ *     .layoutPath shouldBe "util"
+ * ```
+ *
+ * @property name what the constraint was called, or `null` when it was declared without a name.
+ * @property layoutPath the directory the constraint was written in, resolved.
+ * @property declaredAt where the constraint was written.
+ */
+public class KatachiFileConstraintDirectOnlyCoversNothingException internal constructor(
+    /** What the constraint was called, or `null` when it was declared without a name. */
+    public val name: String?,
+    /** The directory the constraint was written in, resolved (`core/domain` for `":core:domain"`). */
+    public val layoutPath: String?,
+    /** Where the constraint was written. */
+    public val declaredAt: DeclarationSite,
+) : KatachiDeclarationException(
+    message = buildString {
+        appendLine(
+            "Constraint ${labelOf(name)} declared at $declaredAt asks for directOnly = true, " +
+                "but its block declares no file directly in ${layoutPath ?: "its directory"}.",
+        )
+        appendLine(
+            "directOnly covers only the files the block itself declares, not those of its " +
+                "nested directories, so this constraint could never see a file.",
+        )
+        append(
+            "Declare the files that sit directly in that directory (e.g. `\"*\".ktFile()` or " +
+                "`anyFile()`), move the constraint into the nested block it is about, or drop " +
+                "directOnly to cover everything below.",
+        )
+    },
+)
+
+/** A constraint as a message names it: its name in quotes, or a placeholder when it has none. */
+private fun labelOf(name: String?): String = if (name == null) "(unnamed)" else "\"${oneLine(name)}\""
+
+/**
  * Two checks used the same scratch key for different types.
  *
  * ## Example 1: report it rather than treating it as a failed check

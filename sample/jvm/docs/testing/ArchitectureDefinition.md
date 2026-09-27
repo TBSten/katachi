@@ -13,15 +13,25 @@ katachi の DSL で書かれた役割の定義。どのレイヤーにも属さ�
 プロセッサです。定義どおりかを確かめる `ProjectArchitectureTest` と、katachi 側の
 結合テストである `*Spec` も同じモジュールにあるので、この役割が覆います。
 
-`layout { }` は `**` でテストソースセット全体を見ています。`groups/` と `roles/` に
-分けるのは読みやすさのための約束であって、katachi の `layout { }` が強制しているわけでは
-ありません（`roles/` に何も宣言しない `.kt` を置いても通ります）。
+`layout { }` は `com/example` の下を `**` でまるごと見ています。`groups/` と `roles/` に
+分けるのは読みやすさのための約束であって、`layout { }` が強制しているわけではありません
+（`roles/` に何も宣言しない `.kt` を置いても通ります）。
+
+そのかわり、逆向きの約束だけは `konsist(directOnly = true)` で検査しています。
+`com/example` の**直下**には group・役割の宣言（`DeclarationContainerScope` の拡張関数）を
+置かず、それは `groups/` と `roles/` に書きます。`directOnly = true` なので、この制約は
+`groups/` と `roles/` の中のファイルには降りません。
 
 ## Placement
 
 | Module | Path | When to use |
 |---|---|---|
-| `:architecture-test` | `src/test/kotlin/**/*.kt` |  |
+| `:architecture-test` | `src/test/kotlin/com/example/*.kt` |  |
+| `:architecture-test` | `src/test/kotlin/com/example/**/*.kt` |  |
+
+## Constraints
+
+- 直下に group・役割の宣言を置かない
 
 ## Examples
 

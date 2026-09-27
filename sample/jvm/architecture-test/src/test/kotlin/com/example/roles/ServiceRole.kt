@@ -21,7 +21,7 @@ fun DeclarationContainerScope.service() = "Service" {
         組み合わせて、モデルを返します。`HealthService.currentHealth()` はいまのところ
         `HealthRepository.load()` の結果を返すだけですが、判断が増えたときに増える先はここです。
 
-        ファイル名は `*Service.kt` で、1ファイル1クラス。この役割だけが `konsist { }` で
+        ファイル名は `*Service.kt` で、1ファイル1クラス。アプリの役割ではこの役割だけが `konsist { }` で
         「public であること」を制約として書いており、うっかり `internal` を付けるとテストが
         落ちます。別パッケージの Controller から参照できなくなる前に気づけます。
     """.trimIndent()
@@ -62,7 +62,7 @@ fun DeclarationContainerScope.service() = "Service" {
 // Kept in this file rather than in a shared one: the declaration site is the first frame
 // outside katachi, so a violation keeps naming the role that owns the rule.
 //
-// The samples' one `konsist { }` constraint (katachi's guide: "Konsist integration"): the one
+// The samples' one `konsist { }` constraint on application code (katachi's guide: "Konsist integration"): the one
 // line that shows a backend-written constraint next to katachi's own layout vocabulary. Also stands as the
 // regression test for `LayoutNode.synthetic` — a `":".module { }` block injects `build` and
 // `build.gradle.kts`, and this constraint would wrongly cover `build.gradle.kts` if that

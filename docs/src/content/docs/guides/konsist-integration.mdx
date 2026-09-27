@@ -73,6 +73,35 @@ A constraint applies to the files that matched the Role's `layout { }`. Writing 
   Use must / mustNot / mustBeEmpty instead.
 </Aside>
 
+## Constraining one directory
+
+`konsist { }` can also be written in a directory block inside `layout { }`. It then covers **the files declared below that block (its whole subtree)**.
+
+When **a parent and its child need different rules** — `util/` may use only the Kotlin standard library while `util/ksp/` may also use the KSP API — add `directOnly = true`. The constraint then covers **only the files declared directly in that block**, and does not reach its child directories.
+
+```kt {4}
+"Util" {
+  layout {
+    "src/main/kotlin/com/example/util" {
+      "does not use the KSP API".konsist(directOnly = true) {
+        files.must { file -> file.imports.none { it.name.startsWith("com.google.devtools.ksp") } }
+      }
+      "*".ktFile()           // covered
+      "ksp" { "*".ktFile() } // not covered
+    }
+  }
+}
+```
+
+- "Directly" is decided by the shape of the declaration. A file declared a level down with `/`, such as `"ksp" / "*".ktFile()`, is not covered, and neither is one containing `**`, such as `"**/*.md".file()`. The block's own `anyFile()` is covered.
+- The unnamed `konsist(directOnly = true) { }` and the experimental `fileConstraint(name, directOnly = true) { }` work the same way.
+- Without it, the whole subtree is covered, as before.
+
+<Aside type="caution" title="Where directOnly cannot be written">
+  - **Directly on a Role, directly under `layout { }`, or inside `":".module { }`.** There is no directory there to be "directly" in, so it throws `KatachiFileConstraintDirectOnlyWithoutDirectoryException`.
+  - **In a block that declares no file directly.** It throws `KatachiFileConstraintDirectOnlyCoversNothingException`, so that a constraint that checks nothing cannot pass. The `build.gradle.kts` that `.module { }` adds on its own does not count.
+</Aside>
+
 ## Example error
 
 When a constraint violation is detected, the error message looks like this.
@@ -107,6 +136,7 @@ katachi adds three things — `must`, `mustNot`, and `mustBeEmpty` — and block
 ## Summary
 
 - `layout { }` handles **where files may be placed**, and `konsist { }` handles **what their contents should look like**.
+- A `konsist { }` written in a directory block covers its whole subtree. Add `directOnly = true` to cover only the files directly in it.
 - `katachi-konsist` is an **optional module**. It requires adding the dependency and setting up `assert(FileConstraintCheck())`.
 - **The constraint name appears directly in the violation report.** Write the name in the form of what must be satisfied.
 - The `assertTrue` family **causes a compile error**. It throws an exception on the spot, which doesn't fit the design that collects every violation in a single run.

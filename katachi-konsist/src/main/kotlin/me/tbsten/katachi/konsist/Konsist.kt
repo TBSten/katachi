@@ -10,9 +10,10 @@ import me.tbsten.katachi.konsist.internal.KonsistFileConstraint
  * `this` is the name the report prints next to the role, so it is a sentence about the code
  * ("is not exposed outside its feature") rather than an identifier. Where the call is written decides
  * what it covers: directly on a role it covers the union of every `layout { }` that role
- * declares, inside a directory block it covers that block's subtree and nothing else. That is
+ * declares, inside a directory block it covers that block's subtree and nothing else, or only
+ * the files that block declares directly when `directOnly = true`. That is
  * [FileConstraintScope]'s rule, not this function's — `konsist { }` is one backend among several
- * and changes nothing about scoping.
+ * and passes `directOnly` through unchanged.
  *
  * The block is stored, not run. It runs when a check that evaluates constraints runs, which
  * means `architecture { }` still reads no files and parses no Kotlin.
@@ -49,16 +50,37 @@ import me.tbsten.katachi.konsist.internal.KonsistFileConstraint
  * }
  * ```
  *
+ * ## Example 3: a rule for one directory that its subdirectories do not inherit
+ * ```kt
+ * "Util" {
+ *     layout {
+ *         "util" {
+ *             "does not use the KSP API".konsist(directOnly = true) {
+ *                 files.must { file -> file.imports.none { it.name.startsWith("com.google.devtools.ksp") } }
+ *             }
+ *             "*".ktFile()
+ *             "ksp" { "*".ktFile() } // not covered
+ *         }
+ *     }
+ * }
+ * ```
+ *
+ * @param directOnly `true` to cover only the files the surrounding directory block declares
+ *   directly, not those of its nested directories. See [FileConstraintScope.fileConstraint].
  * @param block what to ask of the covered files. See [KonsistScope].
  * @throws me.tbsten.katachi.dsl.KatachiFileConstraintNameException when the name is blank or holds
  *   a line break — it is printed on one line of a report block.
  * @throws me.tbsten.katachi.dsl.KatachiFileConstraintWithoutLayoutException when the role it is
  *   written on declares no `layout { }`, so nothing could ever be covered.
+ * @throws me.tbsten.katachi.dsl.KatachiFileConstraintDirectOnlyWithoutDirectoryException when
+ *   `directOnly = true` is written outside a directory block.
+ * @throws me.tbsten.katachi.dsl.KatachiFileConstraintDirectOnlyCoversNothingException when
+ *   `directOnly = true` is written in a block that declares no file directly.
  * @featured
  */
 context(scope: FileConstraintScope)
-public fun String.konsist(block: KonsistScope.() -> Unit) {
-    scope.fileConstraint(name = this, check = KonsistFileConstraint(block))
+public fun String.konsist(directOnly: Boolean = false, block: KonsistScope.() -> Unit) {
+    scope.fileConstraint(name = this, directOnly = directOnly, check = KonsistFileConstraint(block))
 }
 
 /**
@@ -82,11 +104,17 @@ public fun String.konsist(block: KonsistScope.() -> Unit) {
  * }
  * ```
  *
+ * @param directOnly `true` to cover only the files the surrounding directory block declares
+ *   directly, as for the named form.
  * @param block what to ask of the covered files. See [KonsistScope].
  * @throws me.tbsten.katachi.dsl.KatachiFileConstraintWithoutLayoutException when the role it is
  *   written on declares no `layout { }`, so nothing could ever be covered.
+ * @throws me.tbsten.katachi.dsl.KatachiFileConstraintDirectOnlyWithoutDirectoryException when
+ *   `directOnly = true` is written outside a directory block.
+ * @throws me.tbsten.katachi.dsl.KatachiFileConstraintDirectOnlyCoversNothingException when
+ *   `directOnly = true` is written in a block that declares no file directly.
  */
 context(scope: FileConstraintScope)
-public fun konsist(block: KonsistScope.() -> Unit) {
-    scope.fileConstraint(name = null, check = KonsistFileConstraint(block))
+public fun konsist(directOnly: Boolean = false, block: KonsistScope.() -> Unit) {
+    scope.fileConstraint(name = null, directOnly = directOnly, check = KonsistFileConstraint(block))
 }

@@ -75,8 +75,23 @@ internal class LayoutScopeImpl(
         container.ignored = true
     }
 
-    override fun fileConstraint(name: String?, declaredAt: DeclarationSite, check: FileConstraint) {
-        fileConstraints += fileConstraintDeclarationOf(name = name, declaredAt = declaredAt, check = check)
+    override fun fileConstraint(
+        name: String?,
+        declaredAt: DeclarationSite,
+        directOnly: Boolean,
+        check: FileConstraint,
+    ) {
+        // The layout root is the project root, shared by every block of the `layout { }` and by
+        // `":".module { }` alike, so "directly in it" would not be this block's files.
+        if (directOnly && container.parent == null) {
+            throw KatachiFileConstraintDirectOnlyWithoutDirectoryException(name = name, declaredAt = declaredAt)
+        }
+        fileConstraints += fileConstraintDeclarationOf(
+            name = name,
+            declaredAt = declaredAt,
+            directOnly = directOnly,
+            check = check,
+        )
     }
 
     override operator fun String.invoke(block: LayoutDirectoryScope.() -> Unit): LayoutDirectory {

@@ -82,7 +82,7 @@ class FileConstraintDeclarationSpec : FreeSpec({
             val arch = architecture {
                 "domain".group {
                     "UseCase" {
-                        fileConstraint("x", DeclarationSite("DomainRules.kt", 12), silent())
+                        fileConstraint("x", DeclarationSite("DomainRules.kt", 12), check = silent())
                         layout { "useCase" / "*.kt".file() }
                     }
                 }

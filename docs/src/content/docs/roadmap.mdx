@@ -17,7 +17,7 @@ import { Steps } from '@astrojs/starlight/components';
 
 ## v0.2 — Gradle plugin, documentation generation, templates and baseline
 
-This is the stage where katachi's selling points all come together, and it **has been released as 0.2.0.** It includes the Gradle plugin scaffolding, the mechanism that runs work on top of it (processors), **documentation generation**, code generation from templates and baseline (experimental). `dependsOnlyOn` and limiting a directory's `konsist { }` to direct children, which were planned for v0.2, did not make it into 0.2.0 and have been moved to the v0.3-and-beyond table below.
+This is the stage where katachi's selling points all come together, and it **has been released as 0.2.0.** It includes the Gradle plugin scaffolding, the mechanism that runs work on top of it (processors), **documentation generation**, code generation from templates and baseline (experimental). `dependsOnlyOn`, which was planned for v0.2, did not make it into 0.2.0 and has been moved to the v0.3-and-beyond table below.
 
 ```shell
 ./gradlew katachiDocs
@@ -39,6 +39,7 @@ The shape of the output is described in [Document generation](/katachi/guides/do
 | [`template { }`](/katachi/guides/generate-code-from-template/) | Generates a file that conforms to a role from a template. Arguments can be typed (`stringParameter()` / `booleanParameter()` / `intParameter()` / `enumParameter()`). `katachiTemplates` shows the list of templates and their details |
 | [**baseline**](/katachi/guides/baseline/) (experimental) | Records existing violations in a ledger file and fails only on **newly added** ones. Write `architecture { baseline = baselineFile() }` (this needs `@OptIn(ExperimentalKatachiApi::class)`) and declare the ledger file itself in `layout { }` too. Record with `-Dkatachi.baseline.update=true`, and drop what you fixed from the ledger with `-Dkatachi.baseline.prune=true` |
 | [`gradle()`](/katachi/recipes/gradle/) | Declares, in one line, the Gradle files every project has: the wrapper, settings, build scripts, `gradle.properties` and the version catalog |
+| [Limiting a directory's `konsist { }` to direct children](/katachi/guides/konsist-integration/#constraining-one-directory) | Makes a `konsist { }` written in a directory block apply only to the files directly in it, rather than to its whole subtree. Written as `konsist(directOnly = true)`. For layouts where a parent and its child need different rules (such as `util/` and `util/ksp/`) |
 | IDE plugin (**unpublished**) | Pick a template from a tool window in IntelliJ IDEA / Android Studio, fill in its arguments and generate the code. It is developed separately from katachi's own versions and has not been published yet |
 
 ## v0.3 and beyond — Adoption in existing projects and `declarations { }`
@@ -48,7 +49,6 @@ Making katachi easier to adopt in existing projects is the theme of v0.3 and bey
 | Feature | What it enables |
 |---|---|
 | **`dependsOnlyOn`** | Writes what may be depended on as an **allow list**. A deny-list approach lets omissions slip through. Moved here from the v0.2 plan |
-| **Limiting a directory's `konsist { }` to direct children** | Applies it only to the files directly in that directory, not the whole subtree. Moved here from the v0.2 plan |
 | **Report output** | Outputs JSON / SARIF, surfaced as annotations on GitHub PRs |
 | **`pairedWith`** | Checks coverage, such as "every `Screen` has a corresponding `Preview`" |
 | **Vocabulary-size measurement** | Reports the number of roles and the file count per role as numbers |

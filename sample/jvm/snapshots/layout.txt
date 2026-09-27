@@ -88,8 +88,11 @@ testing/ArchitectureDefinition	architecture-test/build.gradle.kts	File	required
 testing/ArchitectureDefinition	architecture-test/src	Directory	optional
 testing/ArchitectureDefinition	architecture-test/src/test	Directory	optional
 testing/ArchitectureDefinition	architecture-test/src/test/kotlin	Directory	optional
-testing/ArchitectureDefinition	architecture-test/src/test/kotlin/**	Directory	optional
-testing/ArchitectureDefinition	architecture-test/src/test/kotlin/**/*.kt	File	optional
+testing/ArchitectureDefinition	architecture-test/src/test/kotlin/com	Directory	optional
+testing/ArchitectureDefinition	architecture-test/src/test/kotlin/com/example	Directory	optional
+testing/ArchitectureDefinition	architecture-test/src/test/kotlin/com/example/**	Directory	optional
+testing/ArchitectureDefinition	architecture-test/src/test/kotlin/com/example/**/*.kt	File	optional
+testing/ArchitectureDefinition	architecture-test/src/test/kotlin/com/example/*.kt	File	optional
 testing/Baseline	katachi-baseline.json	File	required
 testing/GeneratedDocumentation	docs	Directory	optional
 testing/GeneratedDocumentation	docs/**	Directory	optional

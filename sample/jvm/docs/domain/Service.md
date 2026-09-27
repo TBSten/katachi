@@ -8,7 +8,7 @@
 組み合わせて、モデルを返します。`HealthService.currentHealth()` はいまのところ
 `HealthRepository.load()` の結果を返すだけですが、判断が増えたときに増える先はここです。
 
-ファイル名は `*Service.kt` で、1ファイル1クラス。この役割だけが `konsist { }` で
+ファイル名は `*Service.kt` で、1ファイル1クラス。アプリの役割ではこの役割だけが `konsist { }` で
 「public であること」を制約として書いており、うっかり `internal` を付けるとテストが
 落ちます。別パッケージの Controller から参照できなくなる前に気づけます。
 

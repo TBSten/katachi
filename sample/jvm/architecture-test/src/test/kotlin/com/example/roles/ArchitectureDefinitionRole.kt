@@ -4,6 +4,7 @@ import com.example.forbiddenContents
 import me.tbsten.katachi.dsl.DeclarationContainerScope
 import me.tbsten.katachi.dsl.gradle.*
 import me.tbsten.katachi.dsl.kotlin.ktFile
+import me.tbsten.katachi.konsist.konsist
 
 /** The role of the katachi definition itself, which belongs to no layer of the application. */
 fun DeclarationContainerScope.architectureDefinition() = "ArchitectureDefinition" {
@@ -19,9 +20,14 @@ fun DeclarationContainerScope.architectureDefinition() = "ArchitectureDefinition
         プロセッサです。定義どおりかを確かめる `ProjectArchitectureTest` と、katachi 側の
         結合テストである `*Spec` も同じモジュールにあるので、この役割が覆います。
 
-        `layout { }` は `**` でテストソースセット全体を見ています。`groups/` と `roles/` に
-        分けるのは読みやすさのための約束であって、katachi の `layout { }` が強制しているわけでは
-        ありません（`roles/` に何も宣言しない `.kt` を置いても通ります）。
+        `layout { }` は `com/example` の下を `**` でまるごと見ています。`groups/` と `roles/` に
+        分けるのは読みやすさのための約束であって、`layout { }` が強制しているわけではありません
+        （`roles/` に何も宣言しない `.kt` を置いても通ります）。
+
+        そのかわり、逆向きの約束だけは `konsist(directOnly = true)` で検査しています。
+        `com/example` の**直下**には group・役割の宣言（`DeclarationContainerScope` の拡張関数）を
+        置かず、それは `groups/` と `roles/` に書きます。`directOnly = true` なので、この制約は
+        `groups/` と `roles/` の中のファイルには降りません。
     """.trimIndent()
     forbiddenContents = """
         - アプリのコード。`:architecture-test` に `src/main/kotlin` を作ると、
@@ -40,7 +46,16 @@ fun DeclarationContainerScope.architectureDefinition() = "ArchitectureDefinition
         // definition further costs no line here — and buys no enforcement either: a file
         // under `roles/` that declares no role passes just the same.
         ":architecture-test".module {
-            testSourceSet / kotlin / "**" / "*".ktFile()
+            testSourceSet / kotlin / "com/example" {
+                // The samples' one `directOnly` constraint (katachi's guide: "Konsist
+                // integration"). Without `directOnly = true` it would also cover `groups/` and
+                // `roles/`, where every file is exactly such a declaration, and fail.
+                "直下に group・役割の宣言を置かない".konsist(directOnly = true) {
+                    functions().mustNot { it.receiverType?.name == "DeclarationContainerScope" }
+                }
+                "*".ktFile()
+                "**" / "*".ktFile()
+            }
         }
     }
 }

@@ -36,7 +36,9 @@
   src/test/kotlin/**/*.kt  テストコード
 
 :architecture-test
-  src/test/kotlin/**/*.kt  アーキテクチャ定義
+  src/test/kotlin/com/example/
+    *.kt                   アーキテクチャ定義
+    **/*.kt                アーキテクチャ定義
 
 docs/
   README.md                生成ドキュメント

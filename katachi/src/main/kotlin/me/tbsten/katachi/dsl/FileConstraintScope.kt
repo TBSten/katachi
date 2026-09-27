@@ -9,8 +9,10 @@ import me.tbsten.katachi.dsl.internal.captureDeclarationSite
  *
  * Where it is written decides what it covers. Directly on a role it covers the union of every
  * `layout { }` that role declares; inside a directory block it covers that block's own subtree
- * and nothing else. That is the whole of the scoping rule, and it is why this is an interface
- * shared by the two receivers rather than one function on each of them.
+ * and nothing else — or, with `directOnly = true`, only the files that block declares directly,
+ * leaving out what its nested directories declare. That is the whole of the scoping rule, and
+ * it is why this is an interface shared by the two receivers rather than one function on each
+ * of them.
  *
  * `ArchitectureScope` and `GroupScope` deliberately do **not** get it: a group holds roles, not
  * files, so there would be no set of files for a constraint written there to be about.
@@ -23,6 +25,19 @@ import me.tbsten.katachi.dsl.internal.captureDeclarationSite
  *         ":core:domain".module {
  *             fileConstraint("is usable from outside") { subject -> /* core/domain only */ emptyList() }
  *             mainSourceSet / kotlin / "useCase" / "*UseCase".ktFile()
+ *         }
+ *     }
+ * }
+ * ```
+ *
+ * ## Example 2: a parent directory whose rule does not reach its children
+ * ```kt
+ * "Util" {
+ *     layout {
+ *         "util" {
+ *             fileConstraint("uses the stdlib only", directOnly = true) { subject -> /* util/ only */ emptyList() }
+ *             "*".ktFile()
+ *             "ksp" { "*".ktFile() } // not covered: util/ksp/ may use the KSP API
  *         }
  *     }
  * }
@@ -63,13 +78,23 @@ public sealed interface FileConstraintScope {
      * @param declaredAt where to point the report at. The default is the first stack frame
      *   outside `me.tbsten.katachi.*`, which is the line that called this. **A wrapper of your
      *   own has to pass its own caller's site**, or every report points at the wrapper.
+     * @param directOnly `true` to cover only the files the surrounding directory block declares
+     *   directly: its own file declarations, and its own `anyFile()`. What its nested blocks
+     *   declare, or what it declares a level down with `/` (`"ksp" / "*".ktFile()`, and
+     *   a leading `**` segment alike), is left out. `false`, the default, covers the whole subtree.
      * @param check what to ask of the covered files.
      * @throws KatachiFileConstraintNameException when [name] is blank or holds a line break.
+     * @throws KatachiFileConstraintDirectOnlyWithoutDirectoryException when [directOnly] is
+     *   `true` somewhere with no directory of its own: directly on a role, directly under
+     *   `layout { }`, or in `":".module { }`.
+     * @throws KatachiFileConstraintDirectOnlyCoversNothingException when [directOnly] is `true`
+     *   and the block declares no file directly, so the constraint could never see one.
      */
     @ExperimentalKatachiApi
     public fun fileConstraint(
         name: String? = null,
         declaredAt: DeclarationSite = captureDeclarationSite(),
+        directOnly: Boolean = false,
         check: FileConstraint,
     )
 }

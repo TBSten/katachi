@@ -10,6 +10,7 @@ import me.tbsten.katachi.ExperimentalKatachiApi
 import me.tbsten.katachi.InternalKatachiApi
 import me.tbsten.katachi.check.FileConstraintCheck
 import me.tbsten.katachi.check.internal.validate
+import me.tbsten.katachi.dsl.KatachiFileConstraintDirectOnlyWithoutDirectoryException
 import me.tbsten.katachi.dsl.KatachiFileConstraintNameException
 import me.tbsten.katachi.dsl.KatachiFileConstraintWithoutLayoutException
 import me.tbsten.katachi.dsl.architecture
@@ -145,6 +146,99 @@ class KonsistDslSpec : FreeSpec({
         }
     }
 
+    "directOnly" - {
+        // The fixture: an internal class directly in `util/`, and a public one a level below in
+        // `util/ksp/`. "Every class is internal" holds for the first and not for the second, so
+        // whether the second was covered is what the result says.
+        fun utilFixture(use: (java.io.File) -> Unit) = fixtureProject(
+            "util/Strings.kt" to UTIL_STRINGS_KT,
+            "util/ksp/Symbols.kt" to UTIL_KSP_SYMBOLS_KT,
+            use = use,
+        )
+
+        "名前付きの konsist(directOnly = true) は子ディレクトリのファイルを見ない" {
+            utilFixture { root ->
+                val projectArchitecture = architecture {
+                    files = wholeTree()
+                    "util".group {
+                        "Util" {
+                            layout {
+                                "gradlew".file()
+                                "util" {
+                                    "internal であること".konsist(directOnly = true) {
+                                        classes().must { it.hasInternalModifier }
+                                    }
+                                    "*.kt".file()
+                                    "ksp" { "*.kt".file() }
+                                }
+                            }
+                        }
+                    }
+                }
+
+                projectArchitecture.validate(RealFileSystem(root), FileConstraintCheck()).shouldBeEmpty()
+            }
+        }
+
+        "名前なしの konsist(directOnly = true) も子ディレクトリのファイルを見ない" {
+            utilFixture { root ->
+                val projectArchitecture = architecture {
+                    files = wholeTree()
+                    "util".group {
+                        "Util" {
+                            layout {
+                                "gradlew".file()
+                                "util" {
+                                    konsist(directOnly = true) { classes().must { it.hasInternalModifier } }
+                                    "*.kt".file()
+                                    "ksp" { "*.kt".file() }
+                                }
+                            }
+                        }
+                    }
+                }
+
+                projectArchitecture.validate(RealFileSystem(root), FileConstraintCheck()).shouldBeEmpty()
+            }
+        }
+
+        "directOnly を書かなければ子ディレクトリのファイルも見る" {
+            utilFixture { root ->
+                val projectArchitecture = architecture {
+                    files = wholeTree()
+                    "util".group {
+                        "Util" {
+                            layout {
+                                "gradlew".file()
+                                "util" {
+                                    "internal であること".konsist { classes().must { it.hasInternalModifier } }
+                                    "*.kt".file()
+                                    "ksp" { "*.kt".file() }
+                                }
+                            }
+                        }
+                    }
+                }
+
+                val failures = projectArchitecture.validate(RealFileSystem(root), FileConstraintCheck())
+                failures.map { it.path } shouldBe listOf("util/ksp/Symbols.kt")
+            }
+        }
+
+        "役割直下の konsist(directOnly = true) は宣言時に落ちる" {
+            shouldThrow<KatachiFileConstraintDirectOnlyWithoutDirectoryException> {
+                architecture {
+                    "util".group {
+                        "Util" {
+                            konsist(directOnly = true) { }
+                            layout { "util" { "*.kt".file() } }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
     "書けない場所" - {
         // 答えがコンパイルエラーなので、走るテストにはできない。下の 3 つは実際に
         // コンパイルして落ちることを確認済み（Kotlin 2.4.10、:katachi-konsist:compileTestKotlin。
@@ -204,4 +298,16 @@ private val GET_USER_KT: String = """
     internal class GetUser {
         operator fun invoke() = Unit
     }
+""".trimIndent() + "\n"
+
+private val UTIL_STRINGS_KT: String = """
+    package com.example.util
+
+    internal class Strings
+""".trimIndent() + "\n"
+
+private val UTIL_KSP_SYMBOLS_KT: String = """
+    package com.example.util.ksp
+
+    class Symbols
 """.trimIndent() + "\n"

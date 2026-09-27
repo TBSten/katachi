@@ -3,6 +3,7 @@ package me.tbsten.katachi.dsl.internal
 import me.tbsten.katachi.InternalKatachiApi
 import me.tbsten.katachi.dsl.Architecture
 import me.tbsten.katachi.dsl.DeclarationSite
+import me.tbsten.katachi.dsl.KatachiFileConstraintDirectOnlyCoversNothingException
 import me.tbsten.katachi.dsl.KatachiGlobSyntaxException
 import me.tbsten.katachi.dsl.LayoutEntry
 import me.tbsten.katachi.dsl.LayoutEntryKind
@@ -250,10 +251,16 @@ private fun declaredFileConstraintsOf(
     val covered = coveredEntries(owned, entries, byNode)
     val anchorPath = anchor?.let { byNode[it]?.path }
     val paths = anchorsOf(anchorPath, covered)
-    val coverage = FileConstraintCoverage(
-        fileGlobs = covered.filter { it.kind == LayoutEntryKind.File }.map { it.glob },
-        anyFileGlobs = covered.filter { it.kind == LayoutEntryKind.AnyFile }.map { it.glob },
-    )
+    val coverage = coverageOf(covered)
+    // Worked out only when a block asked for it: most blocks never do.
+    val directCoverage by lazy(LazyThreadSafetyMode.NONE) {
+        val direct = directEntries(owned, entries, byNode)
+        if (direct.none { it.kind == LayoutEntryKind.File || it.kind == LayoutEntryKind.AnyFile }) {
+            null
+        } else {
+            coverageOf(direct)
+        }
+    }
     return declarations.map { declaration ->
         DeclaredFileConstraint(
             role = role,
@@ -261,10 +268,46 @@ private fun declaredFileConstraintsOf(
             layoutPath = anchorPath,
             name = declaration.name,
             declaredAt = declaration.declaredAt,
-            coverage = coverage,
+            coverage = if (declaration.directOnly) {
+                directCoverage ?: throw KatachiFileConstraintDirectOnlyCoversNothingException(
+                    name = declaration.name,
+                    layoutPath = anchorPath ?: "",
+                    declaredAt = declaration.declaredAt,
+                )
+            } else {
+                coverage
+            },
             check = declaration.check,
         )
     }
+}
+
+private fun coverageOf(covered: List<LayoutEntry>): FileConstraintCoverage = FileConstraintCoverage(
+    fileGlobs = covered.filter { it.kind == LayoutEntryKind.File }.map { it.glob },
+    anyFileGlobs = covered.filter { it.kind == LayoutEntryKind.AnyFile }.map { it.glob },
+)
+
+/**
+ * The entries a `directOnly` constraint covers: [owned] themselves, whose `anyFile()` opens
+ * exactly the files directly inside them, and the files declared as their immediate children.
+ *
+ * A child *directory* is left out even when it is `anyFile()`, because what it opens is a level
+ * further down. One node is one path segment, so `"ksp" / "*".ktFile()` and
+ * `"ksp" { "*".ktFile() }` are the same tree and are both left out.
+ */
+private fun directEntries(
+    owned: List<LayoutNode>,
+    entries: Map<EntryKey, LayoutEntry>,
+    byNode: Map<LayoutNode, EntryKey>,
+): List<LayoutEntry> {
+    val keys = LinkedHashSet<EntryKey>()
+    for (node in owned) {
+        if (!node.synthetic) byNode[node]?.let { keys += it }
+        for (child in node.children) {
+            if (child.isFile && !child.synthetic) byNode[child]?.let { keys += it }
+        }
+    }
+    return keys.mapNotNull { entries[it] }
 }
 
 /** The entries of [owned]'s subtrees, in the order the blocks declared them. */

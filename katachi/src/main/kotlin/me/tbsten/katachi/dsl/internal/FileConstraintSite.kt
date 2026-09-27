@@ -14,6 +14,8 @@ import me.tbsten.katachi.dsl.KatachiFileConstraintNameException
 internal class FileConstraintDeclaration(
     val name: String?,
     val declaredAt: DeclarationSite,
+    /** Whether it covers only what its block declares directly. See [FileConstraintSite]. */
+    val directOnly: Boolean,
     val check: FileConstraint,
 ) {
     override fun toString(): String = "FileConstraintDeclaration(${name ?: declaredAt})"
@@ -29,12 +31,13 @@ internal class FileConstraintDeclaration(
 internal fun fileConstraintDeclarationOf(
     name: String?,
     declaredAt: DeclarationSite,
+    directOnly: Boolean,
     check: FileConstraint,
 ): FileConstraintDeclaration {
     if (name != null && (name.isBlank() || name.any { it == '\n' || it == '\r' })) {
         throw KatachiFileConstraintNameException(name = name, declaredAt = declaredAt)
     }
-    return FileConstraintDeclaration(name = name, declaredAt = declaredAt, check = check)
+    return FileConstraintDeclaration(name = name, declaredAt = declaredAt, directOnly = directOnly, check = check)
 }
 
 /**
