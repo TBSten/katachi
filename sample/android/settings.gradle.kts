@@ -33,7 +33,7 @@ dependencyResolutionManagement {
         // Two catalogs on purpose.
         //
         // `libs` is the repository root catalog: the single source of truth for the
-        // Kotlin, katachi and kotest versions, shared with katachi itself and with the
+        // Kotlin, katachi, kotest and JUnit versions, shared with katachi itself and with the
         // other samples. Reading it here is what keeps the sample from drifting.
         create("libs") {
             from(files("../../gradle/libs.versions.toml"))

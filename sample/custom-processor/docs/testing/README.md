@@ -43,7 +43,7 @@ katachi の定義、それを読む自作プロセッサ3本、そして生成�
 docs/
   README.md                     生成ドキュメント
   **/*.md                       生成ドキュメント
-snapshots/*.txt                 レイアウトスナップショット
+snapshots/layout.txt            レイアウトスナップショット
 ```
 
 ## 置いてはいけないもの

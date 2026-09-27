@@ -1,6 +1,6 @@
 # katachi のサンプル自己検証用スナップショット。手で編集しない。
 # 生成元: sample/android の LayoutSnapshotSpec (projectArchitecture.flattenLayout() の結果)
-# 更新: cd sample/android && ./gradlew :architecture-test:test --rerun -Dkatachi.snapshot.update=true
+# 更新: cd sample/android && ./gradlew :architecture-test:test -Dkatachi.snapshot.update=true
 # 1行 = <役割の qualifiedName> TAB <パス> TAB <種別> TAB <required|optional>
 Gradle/BuildScript	app	Directory	optional
 Gradle/BuildScript	app/build	Ignore	optional

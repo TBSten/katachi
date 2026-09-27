@@ -2,7 +2,7 @@
 # https://docs.gradle.org/current/userguide/platforms.html#sub:version-catalog
 # https://docs.gradle.org/current/userguide/platforms.html#sub::toml-dependencies-format
 #
-# This catalog is the single source of truth for the Kotlin, katachi and kotest versions.
+# This catalog is the single source of truth for the Kotlin, katachi, kotest and JUnit versions.
 # Each sample under `sample/` reads it as `libs` and keeps its own catalog (`sampleLibs`)
 # for the dependencies that only that sample needs (Ktor, AGP, ...).
 
@@ -76,7 +76,6 @@ kotestFrameworkEngine = { module = "io.kotest:kotest-framework-engine", version.
 
 [plugins]
 kotlinJvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
-kotlinAndroid = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 kotlinMultiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
 kotlinPluginSerialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
 # The Compose compiler plugin has to match the Kotlin version exactly. It lives here, not

@@ -55,7 +55,7 @@ class OmittedRoleSelfCheckSpec : FreeSpec({
 
     "未知のディレクトリは1件だけ報告され、その配下は掘られない" {
         // The `data` group is what claims everything under `data/src`. Without it that
-        // directory has no role, and the five files below it are *not* reported one by one:
+        // directory has no role, and the six files below it are *not* reported one by one:
         // the one directory that has to be explained is, and the walk stops there.
         //
         // `data` itself stays known, because `Gradle/BuildScript` claims

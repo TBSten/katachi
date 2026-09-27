@@ -6,11 +6,11 @@ import me.tbsten.katachi.check.assert
 import org.junit.jupiter.api.Test
 
 /**
- * The adoption step itself, and the only test a user writes.
+ * The adoption step itself: one test that checks the project against [projectArchitecture].
  *
- * One call checks the whole project: every violation lands in a single failure message, so
- * reading it costs one test run no matter how many things are off. Splitting this into a
- * test per role would cost one run per violation and say nothing more.
+ * **This is the only test a project adopting katachi writes.** Every violation of the whole
+ * repository arrives in a single failure message, so there is nothing to gain from splitting
+ * it up.
  *
  * `FileConstraintCheck()` is passed explicitly because katachi never runs a `konsist { }` block
  * nobody asked for: `assert()` alone would leave this project's one constraint (in
@@ -23,7 +23,7 @@ import org.junit.jupiter.api.Test
 @OptIn(ExperimentalKatachiApi::class)
 class ProjectArchitectureTest {
     @Test
-    fun `構成が allow list に従っている`() {
+    fun `プロジェクトの構成が定義どおりになっている`() {
         projectArchitecture.assert(FileConstraintCheck())
     }
 }

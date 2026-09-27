@@ -110,11 +110,11 @@ Kotlin/Native も要らないのはこの空っぽさのおかげなので、ル
 更新は自動ではない。サンプルのディレクトリに降りて:
 
 ```bash
-cd sample/jvm && ./gradlew :architecture-test:test --rerun -Dkatachi.snapshot.update=true
+cd sample/jvm && ./gradlew :architecture-test:test -Dkatachi.snapshot.update=true
 ```
 
-**`--rerun` を省かない。** システムプロパティは `test` タスクの入力に配線してあるが、
-他の入力が変わっていなければ Gradle はタスクごと飛ばす。更新したつもりで何も起きない。
+`--rerun` は要らない。どのサンプルも `:architecture-test:test` に `outputs.upToDateWhen { false }` を
+付けてあり、毎回走る（検査対象のリポジトリ全体はこのタスクの入力に入っていないため）。
 
 ### 4. 空振り検出 — テストが「落ちること」を確かめる
 

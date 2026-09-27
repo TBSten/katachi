@@ -125,9 +125,9 @@ class CustomProcessorSpec : FreeSpec({
         // Metadata is not inherited, so walking up `groupPath` is the processor's own doing.
         // The role below writes neither `summary` nor `example` and is still not reported.
         val silent = architecture {
-            "build".group {
+            "hidden".group {
                 documented = false
-                "Gradle" { }
+                "Silent" { }
             }
         }
 

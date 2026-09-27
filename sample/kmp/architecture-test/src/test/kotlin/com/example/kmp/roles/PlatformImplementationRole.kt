@@ -28,10 +28,9 @@ fun DeclarationContainerScope.platformImplementation() = "PlatformImplementation
         は Kotlin の要求ではなく慣習ですが、ここでパターンに書いた以上はこのプロジェクトの規則に
         なります。
 
-        注意点として、iOS の `actual` は CI でコンパイルされません。CI が走らせるのは
-        `:architecture-test:test` と `:app:android:testDebugUnitTest` だけで、Kotlin/Native の
-        ビルドには触らないからです（理由は `app/ios/README.md` にあります）。しかもこの役割の
-        layout はどの行もワイルドカードなので、`iosMain` 側を丸ごと書き忘れても katachi は
+        注意点として、iOS の `actual` は CI でコンパイルされません。CI が走らせるタスクは
+        どれも Kotlin/Native のビルドに触らないからです（理由は `app/ios/README.md` にあります）。
+        しかもこの役割の layout はどの行もワイルドカードなので、`iosMain` 側を丸ごと書き忘れても katachi は
         `[MissingFile]` を出しません。expect と actual が揃っているかを見られるのは
         コンパイラだけで、そのコンパイラが CI で動かない、という穴がここにあります。
     """.trimIndent()

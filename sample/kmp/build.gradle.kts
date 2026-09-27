@@ -27,7 +27,8 @@ plugins {
     // same block resolves them together, from the one version of the root catalog.
     alias(libs.plugins.kotlinJvm) apply false
 
-    // Compose Multiplatform: the runtime artifacts and the `compose.*` accessors.
+    // Compose Multiplatform's Gradle plugin. The libraries themselves are named directly in
+    // gradle/sample.versions.toml: its `compose.*` dependency accessors are deprecated since 1.10.
     alias(sampleLibs.plugins.composeMultiplatform) apply false
     // The Compose compiler. Released with Kotlin, so its alias lives in the root catalog and
     // carries the same version as the other `libs.plugins.kotlin*` aliases.

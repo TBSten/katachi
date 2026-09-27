@@ -9,9 +9,7 @@
 `layout { }` が最終的に何を許しているのかがそのまま並ぶ。
 
 これは手で編集しない。`LayoutSnapshotSpec` が書く。更新するには
-`./gradlew :architecture-test:test --rerun -Dkatachi.snapshot.update=true` を走らせるだけ
-（`--rerun` が要るのは、このシステムプロパティは `test` タスクの入力に配線してあるものの、
-他の入力が変わっていなければ Gradle が UP-TO-DATE で済ませてしまうため）。
+`./gradlew :architecture-test:test -Dkatachi.snapshot.update=true` を走らせるだけ。
 
 何のためにあるかというと、定義の変化を人が差分でレビューするため。9つのモジュールに
 散った役割を `.module { }` や `modulePackage` で書き直したとき、読みやすくなっただけ

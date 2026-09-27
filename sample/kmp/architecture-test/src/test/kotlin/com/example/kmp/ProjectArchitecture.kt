@@ -54,10 +54,7 @@ val modulePackage: ModulePackage = capitalizedModuleNamePackage("com.example.kmp
  * This file does nothing but call the seven group functions. The definition itself is split
  * one declaration per file: a role named `"UiCore"` is declared in the `roles` package, in
  * `UiCoreRole.kt`, and a group named `"Gradle"` in the `groups` package, in `GradleGroup.kt`.
- * The file name is the whole of the convention, so nothing has to be written down twice — and
- * a `build` *directory* would have been invisible to git, because `.gitignore` ignores `build/`
- * at every level, but that entry matches directories only, so a file named after the group is
- * safe.
+ * The file name is the whole of the convention, so nothing has to be written down twice.
  *
  * Both kinds are plain `DeclarationContainerScope` extension functions — the scope
  * `architecture { }` and `"...".group { }` share — so a role can be moved into another group

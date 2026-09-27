@@ -216,9 +216,7 @@ class ProjectArchitectureSpec : FreeSpec({
         // empty result here would mean the check walked nothing and passed for free.
         //
         // `tool` is the group to drop because it owns exactly two files, both at the root,
-        // so the expectation can be written out in full rather than as a count. The order
-        // is katachi's: violations are grouped by kind, and within a kind the traversal
-        // order survives — the root listed by name, where `.gitignore` precedes `README.md`.
+        // so the expectation can be written out in full rather than as a count.
         val violations = architectureWithoutToolRoles.validate()
 
         // `validate()` does not read the baseline, so the violations it holds back are here too.

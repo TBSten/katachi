@@ -25,25 +25,27 @@ kotlin {
         commonMain.dependencies {
             // `api`, not `implementation`: `AppTheme` and `PrimaryButton` are themselves
             // `@Composable`, so every caller needs Compose on its own compile classpath.
-            api(compose.runtime)
-            api(compose.foundation)
-            api(compose.material3)
-            api(compose.ui)
-            // The `@Preview` annotation, which is NOT part of `compose.ui`.
+            // Named directly from the catalog: Compose Multiplatform 1.10 deprecated the
+            // plugin's `compose.runtime` / `compose.ui` / ... accessors in favour of this.
+            api(sampleLibs.composeRuntime)
+            api(sampleLibs.composeFoundation)
+            api(sampleLibs.composeMaterial3)
+            api(sampleLibs.composeUi)
+            // The `@Preview` annotation, which is NOT part of `ui`.
             //
-            // `compose.preview` is `org.jetbrains.compose.ui:ui-tooling-preview`: a
-            // multiplatform artifact, so `@Preview` can be written in commonMain. Since
-            // Compose Multiplatform 1.10 the annotation it carries is spelled
-            // `androidx.compose.ui.tooling.preview.Preview` — the same fully qualified name
-            // as the Android-only annotation, but a different artifact. Do not reach for
-            // `androidx.compose.ui:ui-tooling-preview`, which has no iOS variant.
+            // `org.jetbrains.compose.ui:ui-tooling-preview` is a multiplatform artifact, so
+            // `@Preview` can be written in commonMain. Since Compose Multiplatform 1.10 the
+            // annotation it carries is spelled `androidx.compose.ui.tooling.preview.Preview` —
+            // the same fully qualified name as the Android-only annotation, but a different
+            // artifact. Do not reach for `androidx.compose.ui:ui-tooling-preview`, which has no
+            // iOS variant.
             //
-            // The older `compose.components.uiToolingPreview`
+            // The older `org.jetbrains.compose.components:components-ui-tooling-preview`
             // (`org.jetbrains.compose.ui.tooling.preview.Preview`) still resolves but the
             // compiler reports its annotation as deprecated.
             //
             // `api` because the previews live in the feature modules, not here.
-            api(compose.preview)
+            api(sampleLibs.composeUiToolingPreview)
         }
     }
 }

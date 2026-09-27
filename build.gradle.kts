@@ -300,7 +300,6 @@ val sampleBuilds = listOf(
                 ":architecture-test:test",
                 "--tests",
                 "com.example.ProjectArchitectureTest",
-                "--rerun",
                 ":compileKotlin",
             ),
         ),
@@ -379,7 +378,6 @@ val sampleBuilds = listOf(
                 ":architecture-test:test",
                 "--tests",
                 "com.example.sample.ProjectArchitectureTest",
-                "--rerun",
                 ":ui:compileDebugKotlin",
                 ":data:compileDebugKotlin",
                 ":testing:compileDebugKotlin",
@@ -416,7 +414,6 @@ val sampleBuilds = listOf(
                 ":architecture-test:test",
                 "--tests",
                 "com.example.kmp.ProjectArchitectureTest",
-                "--rerun",
                 ":data:compileAndroidMain",
             ),
         ),
@@ -547,7 +544,7 @@ fun registerSampleBaselineTasks(
         (testSegments.dropLast(1) + listOf("build", "test-results", testSegments.last(), "TEST-${baseline.testClass}.xml"))
             .joinToString("/"),
     )
-    val testRun = listOf(baseline.testTask, "--tests", baseline.testClass, "--rerun")
+    val testRun = listOf(baseline.testTask, "--tests", baseline.testClass)
     val updatedLine = "${baseline.heldBack} violation${if (baseline.heldBack == 1) "" else "s"} recorded in"
     val heldBackLine = "held back ${baseline.heldBack} violation${if (baseline.heldBack == 1) "" else "s"}."
     val stateDir = layout.buildDirectory.dir("sample-baseline").get().asFile

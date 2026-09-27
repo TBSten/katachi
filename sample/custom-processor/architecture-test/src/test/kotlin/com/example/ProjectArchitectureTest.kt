@@ -4,11 +4,11 @@ import me.tbsten.katachi.check.assert
 import org.junit.jupiter.api.Test
 
 /**
- * The only test a user writes: one plain JUnit test named `ProjectArchitectureTest`, the same
- * in all four samples.
+ * The adoption step itself: one test that checks the project against [projectArchitecture].
  *
- * One call checks the whole project: every violation lands in a single failure message, so
- * reading it costs one test run no matter how many things are off.
+ * **This is the only test a project adopting katachi writes.** Every violation of the whole
+ * repository arrives in a single failure message, so there is nothing to gain from splitting
+ * it up. It is a plain JUnit test, the same in all four samples.
  *
  * No `FileConstraintCheck()` is passed, because this definition declares no `konsist { }`
  * constraint. `sample/android` and `sample/kmp` call `assert()` bare as well; only `sample/jvm`,
@@ -18,7 +18,7 @@ import org.junit.jupiter.api.Test
  */
 class ProjectArchitectureTest {
     @Test
-    fun `構成が allow list に従っている`() {
+    fun `プロジェクトの構成が定義どおりになっている`() {
         projectArchitecture.assert()
     }
 }

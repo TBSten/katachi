@@ -6,9 +6,10 @@ import org.junit.jupiter.api.Test
 /**
  * The adoption step itself: one test that checks the project against [projectArchitecture].
  *
- * **This is the only test a project adopting katachi writes.** There is no list of rules to
- * keep in step with the definition -- the definition *is* the rule -- and every violation of
- * the whole repository arrives in a single failure message instead of one per run.
+ * **This is the only test a project adopting katachi writes.** Every violation of the whole
+ * repository arrives in a single failure message, so there is nothing to gain from splitting
+ * it up. There is no list of rules to keep in step with the definition either -- the
+ * definition *is* the rule.
  *
  * Nothing here mentions a path, a file system or a project root: `assert()` finds the project
  * root by walking up from the working directory (see [ProjectRootSpec]) and reads the tree from
@@ -17,7 +18,7 @@ import org.junit.jupiter.api.Test
  */
 class ProjectArchitectureTest {
     @Test
-    fun `リポジトリの中身が定義した layout どおりである`() {
+    fun `プロジェクトの構成が定義どおりになっている`() {
         projectArchitecture.assert()
     }
 }

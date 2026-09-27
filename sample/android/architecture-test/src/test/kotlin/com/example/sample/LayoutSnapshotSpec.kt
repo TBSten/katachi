@@ -72,15 +72,11 @@ private const val SNAPSHOT_FILE_NAME: String = "layout.txt"
 
 /**
  * The header written into the snapshot, so the file says how to regenerate itself.
- *
- * `--rerun` is part of it on purpose: the system property is wired into the `test` task as
- * an input, but a test task whose inputs are otherwise unchanged still has to be told to
- * run again.
  */
 private val HEADER: List<String> = listOf(
     "# katachi のサンプル自己検証用スナップショット。手で編集しない。",
     "# 生成元: sample/android の LayoutSnapshotSpec (projectArchitecture.flattenLayout() の結果)",
-    "# 更新: cd sample/android && ./gradlew :architecture-test:test --rerun -D$UPDATE_PROPERTY=true",
+    "# 更新: cd sample/android && ./gradlew :architecture-test:test -D$UPDATE_PROPERTY=true",
     "# 1行 = <役割の qualifiedName> TAB <パス> TAB <種別> TAB <required|optional>",
 )
 

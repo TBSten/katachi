@@ -14,7 +14,8 @@ import me.tbsten.katachi.dsl.DeclarationContainerScope
  * scripts, they are checked but not documented.
  *
  * This group is also what `ProjectArchitectureSpec` leaves out to prove the check is not
- * passing by accident: drop it and exactly the two files it covers turn into violations.
+ * passing by accident: drop it and the two files it covers turn into violations, on top of the
+ * ones the baseline holds back, which are there either way.
  */
 fun DeclarationContainerScope.toolGroup() = "tool".group {
     documented = false
@@ -33,7 +34,8 @@ fun DeclarationContainerScope.toolGroup() = "tool".group {
 
         この group は、検査が素通りしていないことの証明にも使われている。
         `ProjectArchitectureSpec` は `toolGroup()` だけを外した定義を組み、`.gitignore` と
-        `README.md` のちょうど2件が `[UnexpectedFile]` になることを確かめる。group を外しても
+        `README.md` の2件が `[UnexpectedFile]` として増える（baseline に棚上げした違反は
+        もともと出る）ことを確かめる。group を外しても
         違反が0件なら、検査は何も歩いていないことになる。
     """.trimIndent()
 

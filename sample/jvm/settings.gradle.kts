@@ -22,7 +22,7 @@ pluginManagement {
 }
 
 plugins {
-    // Resolves the JDK 17 toolchain requested by `jvmToolchain(17)` (D16).
+    // Resolves the JDK 17 toolchain requested by `jvmToolchain(17)`.
     id("org.gradle.toolchains.foojay-resolver-convention") version "1.0.0"
 }
 
@@ -33,8 +33,8 @@ dependencyResolutionManagement {
         mavenCentral()
     }
     versionCatalogs {
-        // Two catalogs (D2). The root catalog is the single source of truth for the
-        // Kotlin, katachi and kotest versions, so the sample cannot drift from the
+        // Two catalogs. The root catalog is the single source of truth for the
+        // Kotlin, katachi, kotest and JUnit versions, so the sample cannot drift from the
         // library it is testing.
         create("libs") {
             from(files("../../gradle/libs.versions.toml"))

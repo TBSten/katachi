@@ -1,3 +1,5 @@
+import org.gradle.api.tasks.testing.logging.TestExceptionFormat
+
 plugins {
     alias(libs.plugins.kotlinJvm)
     id("me.tbsten.katachi")
@@ -9,8 +11,15 @@ kotlin {
 
 tasks.test {
     useJUnitPlatform()
+    // The tests check the whole repository, which is not an input of this task: without this,
+    // adding or moving a file would leave the task UP-TO-DATE and the check would be skipped.
+    outputs.upToDateWhen { false }
+    outputs.cacheIf { false }
     testLogging {
         events("passed", "failed", "skipped")
+        // The violations are listed in the assertion message; without FULL the console shows
+        // only the exception type and the line that threw it.
+        exceptionFormat = TestExceptionFormat.FULL
     }
     systemProperty(
         "katachi.snapshot.update",

@@ -76,3 +76,6 @@ CLAUDE.local.md
 # Written by the IntelliJ Platform Gradle Plugin of katachi-intellij-plugin/ (the resolved IDE
 # layout index, local platform artifacts and the coroutines agent). Regenerated on every build.
 .intellijPlatform/
+
+# Python bytecode of the skills' scripts
+__pycache__/

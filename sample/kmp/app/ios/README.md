@@ -39,8 +39,8 @@ CI ランナーではコンパイルできず、まっさらな macOS ランナ�
 コンパイルすると Compose の Kotlin/Native klib までコンパイルすることになり、さらに遅くなります。
 
 そのため CI（ルートの `./gradlew checkSampleKmp`）が回すのは、`:architecture-test:test`（katachi の検査）、
-`:app:android:testDebugUnitTest`（サンプル自身のユニットテスト）、`:architecture-test:katachiLayout` と
-`:architecture-test:katachiDocs --arg mode=check`（layout のスナップショットと生成ドキュメントが最新か）、
+`:app:android:testDebugUnitTest`（サンプル自身のユニットテスト）、`:architecture-test:katachiLayout`（配置の検査）と
+`:architecture-test:katachiDocs --arg mode=check`（生成ドキュメントが最新か）、
 それにテンプレートからの生成と baseline の確認です。どれも iOS のタスクには届きません。`check` のような
 lifecycle タスクは iOS のタスクまで引き込むので使っていません。
 

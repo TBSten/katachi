@@ -12,7 +12,7 @@
 安全だと言えます。
 
 これは手で書かない。`LayoutSnapshotSpec` が書く。意図して変えたときの更新は
-`./gradlew :architecture-test:test --rerun -Dkatachi.snapshot.update=true` です。
+`./gradlew :architecture-test:test -Dkatachi.snapshot.update=true` です。
 ファイル先頭のコメントにも同じコマンドが書いてあります。
 
 katachi を導入するプロジェクトには要りません。これは katachi 自身がサンプルを
@@ -22,7 +22,7 @@ katachi を導入するプロジェクトには要りません。これは katac
 
 | Module | Path | When to use |
 |---|---|---|
-|  | `snapshots/*.txt` |  |
+|  | `snapshots/layout.txt` |  |
 
 ## Examples
 
@@ -32,4 +32,5 @@ katachi を導入するプロジェクトには要りません。これは katac
 
 - 手で書いた期待値。差分が出たときに直すのは定義側か、スナップショットの再生成の
   どちらかで、テキストを直接編集して辻褄を合わせると番兵の意味が無くなります
-- `.txt` 以外のファイル。いまの `layout { }` は `snapshots/*.txt` しか認めていません
+- 別の種類の記録。いまの `layout { }` は `snapshots/layout.txt` の1ファイルしか
+  認めていないので、足すなら役割を書き換えるところから始まります

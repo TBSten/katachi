@@ -45,9 +45,7 @@ val modulePackage: ModulePackage = capitalizedModuleNamePackage("com.example.sam
  *
  * The file *names* carry the convention, so nothing has to be written twice: a role named
  * `"UiCore"` belongs in `roles/UiCoreRole.kt`, a group named `"Gradle"` in
- * `groups/GradleGroup.kt`. A `build` *directory* would have been invisible to git — `.gitignore`
- * ignores `build/` at every level — but that entry matches directories only, so a file named
- * after the group is safe.
+ * `groups/GradleGroup.kt`.
  *
  * None of those functions may be `inline`. An inlined frame reports the caller's file with a
  * line number past its end, and katachi captures the declaration site from the stack, so the

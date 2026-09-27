@@ -22,7 +22,7 @@ fun DeclarationContainerScope.layoutSnapshot() = "LayoutSnapshot" {
         安全だと言えます。
 
         これは手で書かない。`LayoutSnapshotSpec` が書く。意図して変えたときの更新は
-        `./gradlew :architecture-test:test --rerun -Dkatachi.snapshot.update=true` です。
+        `./gradlew :architecture-test:test -Dkatachi.snapshot.update=true` です。
         ファイル先頭のコメントにも同じコマンドが書いてあります。
 
         katachi を導入するプロジェクトには要りません。これは katachi 自身がサンプルを
@@ -31,12 +31,16 @@ fun DeclarationContainerScope.layoutSnapshot() = "LayoutSnapshot" {
     forbiddenContents = """
         - 手で書いた期待値。差分が出たときに直すのは定義側か、スナップショットの再生成の
           どちらかで、テキストを直接編集して辻褄を合わせると番兵の意味が無くなります
-        - `.txt` 以外のファイル。いまの `layout { }` は `snapshots/*.txt` しか認めていません
+        - 別の種類の記録。いまの `layout { }` は `snapshots/layout.txt` の1ファイルしか
+          認めていないので、足すなら役割を書き換えるところから始まります
     """.trimIndent()
     example("snapshots/layout.txt", "平坦化したレイアウトの全文")
     layout {
         "snapshots" {
-            "*.txt".file()
+            // Written out by name rather than as `*.txt`, so the entry carries no wildcard
+            // and is therefore `required`. A snapshot that was deleted is reported as
+            // `[MissingFile]` here instead of passing as an empty allow list.
+            "layout.txt".file()
         }
     }
 }

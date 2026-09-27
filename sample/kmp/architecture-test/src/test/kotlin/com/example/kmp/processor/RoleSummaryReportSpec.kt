@@ -12,7 +12,7 @@ import me.tbsten.katachi.processor.process
 /**
  * [RoleSummaryReport] run twice with two different `write` lambdas: once collecting, once
  * comparing. Nothing in [RoleSummaryReport] branches on which mode is running -- the mode is
- * entirely the lambda's business: for an `ArchitectureProcessor<Unit>`, writing and checking
+ * entirely the lambda's business: for an `ArchitectureProcessorNoArg<Unit>`, writing and checking
  * differ only in the lambda that is injected.
  *
  * This file's own `@OptIn(ExperimentalKatachiApi::class)` is needed for calling

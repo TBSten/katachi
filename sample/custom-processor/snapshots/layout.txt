@@ -1,6 +1,6 @@
 # katachi のサンプル自己検証用スナップショット。手で編集しない。
 # 生成元: sample/custom-processor の LayoutSnapshotSpec (projectArchitecture.flattenLayout() の結果)
-# 更新: cd sample/custom-processor && ./gradlew :architecture-test:test --rerun -Dkatachi.snapshot.update=true
+# 更新: cd sample/custom-processor && ./gradlew :architecture-test:test -Dkatachi.snapshot.update=true
 # 1行 = <役割の qualifiedName> TAB <パス> TAB <種別> TAB <required|optional>
 Gradle/BuildScript	architecture-test	Directory	optional
 Gradle/BuildScript	architecture-test/build	Ignore	optional
@@ -69,7 +69,7 @@ testing/GeneratedDocumentation	docs/**	Directory	optional
 testing/GeneratedDocumentation	docs/**/*.md	File	optional
 testing/GeneratedDocumentation	docs/README.md	File	required
 testing/LayoutSnapshot	snapshots	Directory	optional
-testing/LayoutSnapshot	snapshots/*.txt	File	optional
+testing/LayoutSnapshot	snapshots/layout.txt	File	required
 testing/Processor	architecture-test	Directory	optional
 testing/Processor	architecture-test/build	Ignore	optional
 testing/Processor	architecture-test/build.gradle.kts	File	required

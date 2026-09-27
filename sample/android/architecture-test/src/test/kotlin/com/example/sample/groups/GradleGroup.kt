@@ -7,12 +7,10 @@ import me.tbsten.katachi.dsl.gradle.gradle
  * The `"Gradle"` group katachi ships (see [gradle]): the wrapper, `settings.gradle.kts`, every
  * module's `build.gradle.kts`, the root `gradle.properties` and the version catalog.
  *
- * This used to be two hand-written roles — `build/GradleModule` for the per-module
- * `build.gradle.kts` files, `build/GradleRoot` for everything around them — under a
- * `"build".group { }` this sample wrote itself. `gradle()` says the same thing in one call,
- * split one kind of file per role instead of two roles split module-vs-root, and there is no
- * `"build"` group around it any more: `gradle()`'s own `"Gradle"` group already sets
- * `documented = false` and a title, so wrapping it in a second group would only repeat that.
+ * `gradle()` needs no module list: its build-script role expands `":**".module { }`, the same
+ * modules `settings.gradle.kts` already names. Its own `"Gradle"` group already sets
+ * `documented = false` and a title, so it is called as is rather than wrapped in a group of
+ * this sample's own.
  *
  * Because the group and every role inside it are declared inside katachi's own
  * `GradleGroup.kt`, not here, `Group.declaredAt` / `Role.declaredAt` for all of them resolve to

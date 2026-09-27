@@ -12,8 +12,8 @@
 部品のプレビューはどの画面にも属さないので `:ui` に置きます。どちらも「描く対象の隣」
 という同じ規則から出てくる2箇所です。
 
-この `@Preview` は Compose Multiplatform の `compose.preview`
-（`org.jetbrains.compose.ui:ui-tooling-preview`）のものです。注釈の完全修飾名は
+この `@Preview` は Compose Multiplatform の
+`org.jetbrains.compose.ui:ui-tooling-preview` のものです。注釈の完全修飾名は
 Android 専用の `androidx.compose.ui:ui-tooling-preview` とまったく同じなので、
 IDE の補完で後者を足してしまうと iOS ターゲットが解決できなくなります。
 `commonMain` でプレビューが書けているのは前者を使っているからです。
