@@ -25,9 +25,16 @@ internal fun Result<List<Violation>>.violationsOf(
 /** The one [UncheckedCheck] standing for [check], which could not answer because of [cause]. */
 internal fun uncheckedCheckOf(check: ArchitectureProcessor<*, *>, cause: Throwable): UncheckedCheck =
     UncheckedCheck(
-        check = check::class.qualifiedName ?: check::class.java.name,
+        check = checkNameOf(check),
         cause = cause,
     )
+
+/**
+ * What a check is called in a report and in the baseline: its qualified class name, or its JVM
+ * name when it has none (an anonymous or local class).
+ */
+internal fun checkNameOf(check: ArchitectureProcessor<*, *>): String =
+    check::class.qualifiedName ?: check::class.java.name
 
 /** [assertNoErrors], with the message's paths resolved against [projectRoot]. */
 internal fun List<Violation>.assertNoErrors(projectRoot: FsPath?): List<Violation> {

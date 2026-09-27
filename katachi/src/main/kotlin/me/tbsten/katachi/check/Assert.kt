@@ -2,7 +2,7 @@ package me.tbsten.katachi.check
 
 import me.tbsten.katachi.ExperimentalKatachiApi
 import me.tbsten.katachi.check.internal.assertWith
-import me.tbsten.katachi.check.internal.report
+import me.tbsten.katachi.check.internal.reportWithTrailer
 import me.tbsten.katachi.dsl.Architecture
 import me.tbsten.katachi.dsl.files.FsPath
 import me.tbsten.katachi.dsl.files.internal.RealFileSystem
@@ -40,11 +40,15 @@ public const val DEFAULT_MAX_VIOLATIONS: Int = 10
  *   carries them.
  */
 public class KatachiArchitectureAssertionError internal constructor(
-    /** Every violation of the run, including the ones the message left out. */
+    /**
+     * Every violation of the run, including the ones the message left out. With a baseline,
+     * what it held back is not here, and its stale entries are.
+     */
     public val violations: List<Violation>,
     maxViolations: Int,
     projectRoot: FsPath? = null,
-) : AssertionError(violations.report(maxViolations, projectRoot))
+    trailer: List<String> = emptyList(),
+) : AssertionError(violations.reportWithTrailer(maxViolations, projectRoot, trailer))
 
 /**
  * Checks the project against this definition and fails the calling test if anything is off.

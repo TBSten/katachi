@@ -74,7 +74,8 @@ internal fun Architecture.assertNoErrors(
 
 /**
  * What all four `assert` overloads and all four `assertNoErrors` overloads are:
- * [me.tbsten.katachi.check.internal.validateWith], then throw if anything is an error.
+ * [me.tbsten.katachi.check.internal.validateWith], then the baseline if the definition has one,
+ * then throw if anything is an error.
  *
  * Nothing failed when there is no [Severity.Error] violation, even if there are warnings — so
  * there is no [KatachiArchitectureAssertionError] to carry them. Standard error is what is left:
@@ -82,19 +83,31 @@ internal fun Architecture.assertNoErrors(
  * own doc), so the same call that builds the failure message below builds this one too, and the
  * two can never say something different about the same run.
  *
- * Returns every violation of the run when it does not throw, which is what `assertNoErrors()`
- * hands back and `assert()` drops.
+ * Returns every violation of the run the baseline did not hold back when it does not throw,
+ * which is what `assertNoErrors()` hands back and `assert()` drops.
  */
 internal fun Architecture.assertWith(
     fileSystem: KatachiFileSystem,
     checks: List<ArchitectureProcessor<Unit, List<Violation>>>,
     maxViolations: Int,
+    environment: BaselineEnvironment = BaselineEnvironment(),
 ): List<Violation> {
-    val (violations, projectRoot) = validateWithRoot(fileSystem, checks)
+    val baseline = baseline
+    // Read before the walk: a refused update on CI should not cost a whole run first.
+    val mode = if (baseline == null) BaselineMode.Check else environment.mode()
+    val result = validateWithRoot(fileSystem, checks)
+    val projectRoot = result.projectRoot
+    val outcome = baseline?.let {
+        applyBaseline(it, projectRoot, result.ran, result.unattributed, result.baselineDeclared, mode, environment)
+    }
+    outcome?.notices?.forEach(environment.standardError)
+    val violations = outcome?.violations ?: result.violations
+    val trailer = outcome?.trailer.orEmpty()
     if (violations.none { it.severity == Severity.Error }) {
         val warnings = violations.report(maxViolations, projectRoot)
-        if (warnings.isNotEmpty()) System.err.println(warnings)
+        if (warnings.isNotEmpty()) environment.standardError(warnings)
+        trailer.forEach(environment.standardError)
         return violations
     }
-    throw KatachiArchitectureAssertionError(violations, maxViolations, projectRoot)
+    throw KatachiArchitectureAssertionError(violations, maxViolations, projectRoot, trailer)
 }

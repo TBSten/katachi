@@ -101,6 +101,20 @@ public fun List<Violation>.report(
 }
 
 /**
+ * [report], followed by [trailer]: lines about the run as a whole that come last, after every
+ * truncation line, so that cutting blocks away never cuts them too. Empty [trailer] is [report].
+ */
+internal fun List<Violation>.reportWithTrailer(
+    maxViolations: Int,
+    projectRoot: FsPath?,
+    trailer: List<String>,
+): String {
+    val report = report(maxViolations, projectRoot)
+    if (trailer.isEmpty()) return report
+    return if (report.isEmpty()) trailer.joinToString("\n") else report + "\n\n" + trailer.joinToString("\n")
+}
+
+/**
  * Which indices of [violations] a report shows when it can only afford [max] blocks, in
  * ascending order — chosen, never reordered, so the report keeps the caller's own order among
  * the blocks it does show.
@@ -256,6 +270,7 @@ private fun blockOf(violation: Violation, root: String?): List<String> = when (v
     is UncheckedFileConstraint -> uncheckedFileConstraintBlock(violation, root)
     is AmbiguousLayout -> ambiguousLayoutBlock(violation, root)
     is MissingDescription -> missingDescriptionBlock(violation, root)
+    is StaleBaselineEntry -> staleBaselineEntryBlock(violation, root)
     // A violation from outside katachi. The block is the first line plus the values it states
     // about itself, and nothing else: katachi does not know what it means, so it writes no
     // sentence about it and never offers a way to fix it. Compile-time exhaustiveness is lost
@@ -282,7 +297,10 @@ private fun unexpectedFileBlock(violation: UnexpectedFile, root: String?): List<
     if (violation.nearby.isNotEmpty()) add("$STEP$STEP- Move it to one of the locations above")
     add("$STEP$STEP- Delete it if it is not needed")
     add("$STEP$STEP- Add a new role for it:")
-    addAll(fragment(roleSuggestionFor(violation.path, isDirectory = false)))
+    val suggestion = violation.suggestedRole
+        ?.let { roleSuggestionFor(violation.path, isDirectory = false, roleName = it) }
+        ?: roleSuggestionFor(violation.path, isDirectory = false)
+    addAll(fragment(suggestion))
 }
 
 private fun unexpectedDirectoryBlock(violation: UnexpectedDirectory, root: String?): List<String> = buildList {

@@ -7,8 +7,12 @@ package me.tbsten.katachi.check.internal
  * layout DSL to answer a report. The name is a guess, and `summary = "TODO"` says out loud
  * that the guess is not the finished declaration.
  */
-internal fun roleSuggestionFor(path: String, isDirectory: Boolean): List<String> = listOf(
-    "\"${suggestedRoleName(path.substringAfterLast('/'))}\" {",
+internal fun roleSuggestionFor(
+    path: String,
+    isDirectory: Boolean,
+    roleName: String = suggestedRoleName(path.substringAfterLast('/')),
+): List<String> = listOf(
+    "\"$roleName\" {",
     "  summary = \"TODO\"",
     "  layout {",
     "    ${layoutLineFor(path, isDirectory)}",
@@ -23,7 +27,7 @@ internal fun roleSuggestionFor(path: String, isDirectory: Boolean): List<String>
  * live here*, which would turn one report into one per file inside. Someone who wants the
  * files to have roles writes them out instead, which the block above the fragment says.
  */
-private fun layoutLineFor(path: String, isDirectory: Boolean): String {
+internal fun layoutLineFor(path: String, isDirectory: Boolean): String {
     if (isDirectory) return "\"$path\" { ignore() }"
     val directory = path.parentPath()
     val file = fileCallFor(path.substringAfterLast('/'))

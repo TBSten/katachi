@@ -86,6 +86,12 @@ public class Architecture internal constructor(
      * What was written on `architecture { }` itself, beyond the declarations. Read through [get].
      */
     internal val metadata: MetadataValues,
+    /**
+     * The ledger of violations `assert()` holds back, or `null` when nothing is held back. See
+     * [Baseline].
+     */
+    @ExperimentalKatachiApi
+    public val baseline: Baseline? = null,
 ) {
     /**
      * Every group, parents before their children, in declaration order.

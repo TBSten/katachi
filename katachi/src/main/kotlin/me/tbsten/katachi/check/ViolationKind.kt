@@ -1,5 +1,7 @@
 package me.tbsten.katachi.check
 
+import me.tbsten.katachi.ExperimentalKatachiApi
+
 /**
  * What kind of problem a violation is — which is the same thing as what the reader has to do
  * about it, so a report groups its blocks by this.
@@ -47,6 +49,22 @@ public enum class ViolationKind {
      * ```
      */
     FileConstraint,
+
+    /**
+     * An entry of the baseline holds back more violations than the project still has: some of
+     * what it held back was fixed. Shrink the entry so the fixed violation cannot come back
+     * unnoticed.
+     *
+     * The last kind that fails a check by what it found; everything after it either only warns
+     * or says the check could not look.
+     *
+     * ## Example 1: list the baseline entries that are out of date
+     * ```kt
+     * failure.violations.filter { it.kind == ViolationKind.Stale }
+     * ```
+     */
+    @ExperimentalKatachiApi
+    Stale,
 
     /**
      * Two or more declarations claim the same thing, so which one it belongs to is not decided.

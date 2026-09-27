@@ -1,6 +1,14 @@
 package me.tbsten.katachi.processor.internal
 
+import me.tbsten.katachi.check.DEFAULT_MAX_VIOLATIONS
+import me.tbsten.katachi.check.KatachiArchitectureAssertionError
+import me.tbsten.katachi.check.Severity
 import me.tbsten.katachi.check.Violation
+import me.tbsten.katachi.check.internal.BaselineEnvironment
+import me.tbsten.katachi.check.internal.BaselineMode
+import me.tbsten.katachi.check.internal.CheckedViolations
+import me.tbsten.katachi.check.internal.applyBaseline
+import me.tbsten.katachi.check.internal.checkNameOf
 import me.tbsten.katachi.dsl.Architecture
 import me.tbsten.katachi.dsl.files.KatachiFileSystem
 import me.tbsten.katachi.dsl.files.internal.RealFileSystem
@@ -65,6 +73,7 @@ internal fun instantiateProcessor(type: Class<*>): ArchitectureProcessor<*, *> {
  * @param out where the report's lines go. Defaults to [println], but a spec passes
  *   `mutableListOf<String>::add` instead so the run can be asserted on without capturing standard
  *   output.
+ * @param baselineEnvironment where the definition's baseline is read from, when it has one.
  */
 internal fun runProcessors(
     architecture: Architecture,
@@ -74,6 +83,7 @@ internal fun runProcessors(
     argsFor: Map<String, Map<String, String>> = emptyMap(),
     fileSystem: KatachiFileSystem = RealFileSystem(),
     out: (String) -> Unit = ::println,
+    baselineEnvironment: BaselineEnvironment = BaselineEnvironment(),
 ): ProcessorRunSummary {
     out("[1/3] Processors: ${processorKeys.joinToString(", ")}")
     out("")
@@ -114,7 +124,7 @@ internal fun runProcessors(
         val result = runCatching {
             erase(processor).run(context, context.rawArgs) { message -> out("  [$key] $message") }.getOrThrow()
         }
-        Entry(key, result)
+        Entry(key, result.againstBaseline(architecture, processor, base.walk, baselineEnvironment))
     }
 
     val succeeded = outcomes.count { it.result.isSuccess }
@@ -134,6 +144,11 @@ internal fun runProcessors(
         outcome.result.fold(
             onSuccess = { produced ->
                 out("[OK] ${outcome.key}")
+                if (produced is HeldBack) {
+                    produced.violations.forEach { element -> out(lineOf(element, projectRoot)) }
+                    produced.trailer.forEach { line -> out("  $line") }
+                    return@fold
+                }
                 // One element per line. A collection printed through `toString` arrives as a
                 // single bracketed line.
                 when (produced) {
@@ -154,6 +169,57 @@ internal fun runProcessors(
     out(separator)
 
     return ProcessorRunSummary(succeeded = succeeded, failed = failed)
+}
+
+/**
+ * A check's answer after the baseline held part of it back: what is left, and the lines saying
+ * how much was held back. Only ever a success -- anything left that fails is a failure instead.
+ */
+private class HeldBack(val violations: List<Violation>, val trailer: List<String>)
+
+/**
+ * [this] result of [processor], compared with the definition's baseline when there is one and
+ * the processor is a check -- its class declares a list of violations as its answer (see
+ * [declaresViolationList]), or it failed with a [KatachiArchitectureAssertionError] carrying them.
+ *
+ * Only compared, never updated: `-Dkatachi.baseline.update` belongs to the architecture test,
+ * which runs the same checks together. A run here reads the ledger the definition names, so no
+ * argument is needed for it.
+ */
+private fun Result<Any?>.againstBaseline(
+    architecture: Architecture,
+    processor: ArchitectureProcessor<*, *>,
+    walk: ProjectWalk,
+    environment: BaselineEnvironment,
+): Result<Any?> {
+    val baseline = architecture.baseline ?: return this
+    val violations = fold(
+        onSuccess = { produced ->
+            val answer = (produced as? List<*>)?.takeIf { list -> list.all { it is Violation } }?.filterIsInstance<Violation>()
+            when (declaresViolationList(processor)) {
+                true -> answer
+                false -> null
+                // Undeclared: only a list that holds a violation says it is one.
+                null -> answer?.takeIf { it.isNotEmpty() }
+            }
+        },
+        onFailure = { cause -> (cause as? KatachiArchitectureAssertionError)?.violations },
+    ) ?: return this
+    return runCatching {
+        val outcome = applyBaseline(
+            baseline = baseline,
+            projectRoot = walk.projectRoot,
+            ran = listOf(CheckedViolations(checkNameOf(processor), violations)),
+            unattributed = emptyList(),
+            declared = true,
+            mode = BaselineMode.Check,
+            environment = environment,
+        )
+        if (outcome.violations.any { it.severity == Severity.Error }) {
+            throw KatachiArchitectureAssertionError(outcome.violations, DEFAULT_MAX_VIOLATIONS, walk.projectRoot, outcome.trailer)
+        }
+        HeldBack(outcome.violations, outcome.trailer)
+    }
 }
 
 /**

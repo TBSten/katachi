@@ -136,8 +136,24 @@ internal fun Architecture.validateWith(
     checks: List<ArchitectureProcessor<Unit, List<Violation>>>,
 ): List<Violation> = validateWithRoot(fileSystem, checks).violations
 
-/** [validateWith]'s violations, and the project root the walk resolved -- what a report needs. */
-internal data class ValidationResult(val violations: List<Violation>, val projectRoot: FsPath)
+/**
+ * [validateWith]'s violations, and what the rest of `assert()` needs from the same walk: the
+ * project root, for a report's absolute paths, and the same violations filed under the check
+ * that reported them, for the baseline.
+ *
+ * @property ran what each check reported, [LayoutCheck] first. Every element of [violations]
+ *   is in exactly one of these or in [unattributed].
+ * @property unattributed violations no single check is accountable for.
+ * @property baselineDeclared whether a `layout { }` allows the baseline file; `false` when the
+ *   definition has no baseline.
+ */
+internal data class ValidationResult(
+    val violations: List<Violation>,
+    val projectRoot: FsPath,
+    val ran: List<CheckedViolations> = emptyList(),
+    val unattributed: List<Violation> = emptyList(),
+    val baselineDeclared: Boolean = false,
+)
 
 /** [validateWith], also handing back the project root so `assert` can print absolute paths. */
 internal fun Architecture.validateWithRoot(
@@ -166,16 +182,29 @@ internal fun Architecture.validateWithRoot(
         // neighbour still answer" applies here exactly as it applies per file inside the walk.
         // A third-party check throwing once must not take the layout violations with it —
         // that is the failure this library can least afford.
-        val found = extra.flatMap { check ->
-            catching { check.process(context) }
-                .getOrElse { cause -> return@flatMap listOf(uncheckedCheckOf(check, cause)) }
+        val found = extra.map { check ->
+            val answer = catching { check.process(context) }
+                .getOrElse { cause -> return@map CheckedViolations(checkNameOf(check), listOf(uncheckedCheckOf(check, cause))) }
                 .violationsOf(check)
+            CheckedViolations(checkNameOf(check), answer)
         }
         // One context, therefore one walk. The last term is the guard against the quietest way
         // this library could break: a definition full of constraints, code breaking them, and
         // a green test because nothing was handed a check that evaluates them.
-        val violations = (layout + found + context.projectWalk.unevaluatedFileConstraintViolations())
-            .sortedBy { it.kind.ordinal }
-        ValidationResult(violations, context.projectWalk.projectRoot)
+        val unattributed = context.projectWalk.unevaluatedFileConstraintViolations()
+        val ran = listOf(CheckedViolations(LAYOUT_CHECK_NAME, layout)) + found
+        val violations = (ran.flatMap { it.violations } + unattributed).sortedBy { it.kind.ordinal }
+        val declared = baseline?.let { isAllowedByLayout(LayoutIndex(context.projectWalk.declaredEntries), it.path) } ?: false
+        ValidationResult(violations, context.projectWalk.projectRoot, ran, unattributed, declared)
     }
+}
+
+/** The name [LayoutCheck]'s entries are filed under in the baseline. */
+internal val LAYOUT_CHECK_NAME: String = LayoutCheck::class.qualifiedName ?: LayoutCheck::class.java.name
+
+/** Whether a role's `layout { }` allows a file at [path], or ignores a directory above it. */
+private fun isAllowedByLayout(index: LayoutIndex, path: String): Boolean {
+    if (index.rolesOf(path).isNotEmpty()) return true
+    val segments = path.split('/')
+    return (1 until segments.size).any { index.isIgnored(segments.take(it).joinToString("/")) }
 }

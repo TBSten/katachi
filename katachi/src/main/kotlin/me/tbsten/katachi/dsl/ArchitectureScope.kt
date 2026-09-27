@@ -1,5 +1,6 @@
 package me.tbsten.katachi.dsl
 
+import me.tbsten.katachi.ExperimentalKatachiApi
 import me.tbsten.katachi.dsl.internal.DeclaredNames
 import me.tbsten.katachi.dsl.internal.MetadataBuilder
 import me.tbsten.katachi.dsl.internal.captureDeclarationSite
@@ -89,6 +90,22 @@ public sealed interface ArchitectureScope : DeclarationContainerScope {
      * ```
      */
     public var moduleResolver: ModuleResolver
+
+    /**
+     * The ledger of violations to hold back, or `null` -- the default -- to hold back nothing.
+     * See [Baseline].
+     *
+     * ## Example 1: hold back the violations recorded in katachi-baseline.json
+     * ```kt
+     * val arch = architecture {
+     *     baseline = baselineFile()
+     *     "Baseline" { layout { "katachi-baseline.json".file() } }
+     * }
+     * arch.baseline?.path shouldBe "katachi-baseline.json"
+     * ```
+     */
+    @ExperimentalKatachiApi
+    public var baseline: Baseline?
 }
 
 internal class ArchitectureScopeImpl : ArchitectureScope {
@@ -122,6 +139,8 @@ internal class ArchitectureScopeImpl : ArchitectureScope {
 
     override var moduleResolver: ModuleResolver = ModuleResolver.Conventional
 
+    override var baseline: Baseline? = null
+
     override fun String.group(block: GroupScope.() -> Unit) {
         groups += declareGroup(
             name = this,
@@ -148,5 +167,6 @@ internal class ArchitectureScopeImpl : ArchitectureScope {
         files = files,
         moduleResolver = moduleResolver,
         metadata = metadata.build(),
+        baseline = baseline,
     )
 }
