@@ -10,9 +10,10 @@ import me.tbsten.katachi.intellij.data.generate.OpenAfterGeneration
 
 /** Settings | Tools | katachi: the two choices [KatachiSettings] offers. */
 internal class KatachiConfigurable(private val project: Project) : BoundConfigurable(KatachiBundle.message("settings.displayName")) {
-    override fun createPanel(): DialogPanel {
+    /** An empty page when the IDE fails to build it, rather than an error over the Settings dialog. */
+    override fun createPanel(): DialogPanel = sdkCall("build the katachi settings page") {
         val settings = KatachiSettings.getInstance(project)
-        return panel {
+        panel {
             row {
                 checkBox(KatachiBundle.message("settings.autoReload")).bindSelected(settings::autoReloadOnSave)
             }
@@ -22,7 +23,7 @@ internal class KatachiConfigurable(private val project: Project) : BoundConfigur
                 row { radioButton(KatachiBundle.message("settings.open.none"), OpenAfterGeneration.None) }
             }.bind(settings::openAfterGeneration)
         }
-    }
+    }.getOrElse { DialogPanel() }
 
     companion object {
         /** The `id` of `<projectConfigurable>` in plugin.xml, for opening this page from the tool window. */

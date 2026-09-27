@@ -91,12 +91,17 @@ private fun displayPathOf(path: java.nio.file.Path, question: ConflictQuestion):
 internal object ConflictDialogs {
     @Volatile private var testAnswer: ((ConflictQuestion) -> ConflictChoice)? = null
 
-    /** Call on the EDT. */
+    /**
+     * Call on the EDT. A dialog the IDE fails to show answers [ConflictChoice.Stop], the safe answer,
+     * which the result shows at that template.
+     */
     fun ask(project: Project, question: ConflictQuestion): ConflictChoice {
         testAnswer?.let { return it(question) }
-        val dialog = ConflictDialog(project, question)
-        dialog.show()
-        return dialog.choice
+        return sdkCall("ask about the existing files of ${question.templateId.roleName}") {
+            val dialog = ConflictDialog(project, question)
+            dialog.show()
+            dialog.choice
+        }.getOrDefault(ConflictChoice.Stop)
     }
 
     @TestOnly

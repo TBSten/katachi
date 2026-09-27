@@ -23,14 +23,16 @@ import java.time.Instant
 internal class KatachiToolWindowFactory : ToolWindowFactory, DumbAware {
 
     override fun createToolWindowContent(project: Project, toolWindow: ToolWindow) {
-        val viewModel = KatachiProjectService.getInstance(project).viewModel
-        toolWindow.addComposeTab(KatachiBundle.message("toolWindow.tab.template")) {
-            val state by viewModel.state.collectAsState()
-            KatachiToolWindowContent(uiStateOf(state, JapaneseKatachiStrings, Instant.now()), onIntent = viewModel::dispatch)
+        val viewModel = sdkCall("create the katachi project service") { KatachiProjectService.getInstance(project).viewModel }.getOrNull() ?: return
+        sdkCall("add the Template tab") {
+            toolWindow.addComposeTab(KatachiBundle.message("toolWindow.tab.template")) {
+                val state by viewModel.state.collectAsState()
+                KatachiToolWindowContent(uiStateOf(state, JapaneseKatachiStrings, Instant.now()), onIntent = viewModel::dispatch)
+            }
         }
         // TODO: ⟳ / ■ belong to the Template tab. Move them into that tab's own toolbar once a second
         //  tab exists, so they do not show over a tab they do nothing for.
-        toolWindow.setTitleActions(listOf(ReloadOrStopAction(), OpenSettingsAction()))
+        sdkCall("add the title actions") { toolWindow.setTitleActions(listOf(ReloadOrStopAction(), OpenSettingsAction())) }
         // The platform creates the content the first time the tool window is shown: that is when
         // detection and the first load run (spec 04), never on opening the project.
         viewModel.dispatch(KatachiIntent.Opened)

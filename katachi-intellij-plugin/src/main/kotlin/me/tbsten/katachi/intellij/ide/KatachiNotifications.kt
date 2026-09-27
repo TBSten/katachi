@@ -31,17 +31,23 @@ internal object KatachiNotifications {
 
     /** Whether a notification would be shown now: the tool window is not on screen. */
     fun isToolWindowHidden(project: Project): Boolean =
-        ToolWindowManager.getInstance(project).getToolWindow(KatachiToolWindowFactory.TOOL_WINDOW_ID)?.isVisible != true
+        sdkCall("look whether the katachi tool window is shown") {
+            ToolWindowManager.getInstance(project).getToolWindow(KatachiToolWindowFactory.TOOL_WINDOW_ID)?.isVisible != true
+        }.getOrDefault(true)
 
     private fun notifyIfHidden(project: Project, text: String, type: NotificationType) {
         if (project.isDisposed || !isToolWindowHidden(project)) return
-        NotificationGroupManager.getInstance().getNotificationGroup(GROUP_ID)
-            .createNotification(text, type)
-            .addAction(
-                NotificationAction.createSimpleExpiring(KatachiBundle.message("notification.open")) {
-                    ToolWindowManager.getInstance(project).getToolWindow(KatachiToolWindowFactory.TOOL_WINDOW_ID)?.activate(null)
-                },
-            )
-            .notify(project)
+        sdkCall("show the notification \"$text\"") {
+            NotificationGroupManager.getInstance().getNotificationGroup(GROUP_ID)
+                .createNotification(text, type)
+                .addAction(
+                    NotificationAction.createSimpleExpiring(KatachiBundle.message("notification.open")) {
+                        sdkCall("open the katachi tool window") {
+                            ToolWindowManager.getInstance(project).getToolWindow(KatachiToolWindowFactory.TOOL_WINDOW_ID)?.activate(null)
+                        }
+                    },
+                )
+                .notify(project)
+        }
     }
 }

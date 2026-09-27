@@ -6,6 +6,7 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withTimeout
 import me.tbsten.katachi.intellij.data.detect.SyncedModule
+import me.tbsten.katachi.intellij.data.generate.OpenAfterGeneration
 import me.tbsten.katachi.intellij.data.detect.SyncedProject
 import me.tbsten.katachi.intellij.data.detect.SyncedRoot
 import me.tbsten.katachi.intellij.data.gradle.GradleRunOutcome
@@ -28,6 +29,7 @@ import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
+import java.nio.file.Path
 
 class KatachiToolWindowViewModelTest {
     private val fs = FakeFileSystem()
@@ -158,6 +160,33 @@ class KatachiToolWindowViewModelTest {
         assertEquals(2, effects.refreshed.size)
         val args = runner.requests.last().tasks.single().args
         assertEquals(listOf("roleName" to "data/Repository", "onExisting" to "fail", "name" to "User"), args)
+    }
+
+    @Test
+    fun `IDEがラベルを付けられなかった生成は結果にラベルを出さずに完了する`() = runBlocking {
+        effects.labelPut = false
+        val vm = viewModel()
+        vm.loaded()
+        vm.fillRepository()
+        vm.dispatch(KatachiIntent.Generate)
+        val finished = vm.finished()
+
+        assertNull(finished.localHistoryLabel)
+        assertEquals(listOf("save", "save", "label", "refresh", "open", "notifyGenerated"), effects.log)
+    }
+
+    @Test
+    fun `IDEがファイルを開けなかった生成は失敗にならず開いたファイルだけを結果に出す`() = runBlocking {
+        effects.openSetting = OpenAfterGeneration.All
+        effects.openable = { false }
+        val vm = viewModel()
+        vm.loaded()
+        vm.fillRepository()
+        vm.dispatch(KatachiIntent.Generate)
+        val finished = vm.finished()
+
+        assertEquals(emptyList<Path>(), finished.openedFiles)
+        assertTrue(finished.report.isComplete)
     }
 
     @Test

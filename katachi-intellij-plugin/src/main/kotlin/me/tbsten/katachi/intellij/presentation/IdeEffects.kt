@@ -16,14 +16,20 @@ internal interface IdeEffects {
     /** Before any Gradle run, so it reads the definitions as edited (E-51). */
     suspend fun saveAllDocuments()
 
-    /** A Local History label before generating (E-47); returns the label's name for the result footer. */
-    suspend fun putLocalHistoryLabel(roleNames: List<String>): String
+    /**
+     * A Local History label before generating (E-47); returns the label's name for the result
+     * footer, or `null` when the IDE could not put it, so that the footer names no label to undo to.
+     */
+    suspend fun putLocalHistoryLabel(roleNames: List<String>): String?
 
     /** Makes the VFS see files Gradle wrote behind its back; reloads open editors of overwritten ones. */
     suspend fun refreshFiles(paths: List<Path>)
 
-    /** Opens [paths] in editors, focusing the first. Paths the VFS cannot find are skipped. */
-    suspend fun openFiles(paths: List<Path>)
+    /**
+     * Opens [paths] in editors, focusing the first, and returns the ones that did open: paths the
+     * VFS cannot find, or that the IDE failed to open, are left out.
+     */
+    suspend fun openFiles(paths: List<Path>): List<Path>
 
     /** Shows the conflict dialog with the files katachi reported existing, and waits for the answer (E-17). */
     suspend fun askConflict(question: ConflictQuestion): ConflictChoice

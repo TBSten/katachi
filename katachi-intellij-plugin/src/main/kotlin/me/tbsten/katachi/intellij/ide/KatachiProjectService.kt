@@ -58,7 +58,7 @@ internal class KatachiProjectService(
     @Suppress("unused") // Called by the platform.
     constructor(project: Project, scope: CoroutineScope) : this(project, scope, KatachiPorts.of(project))
 
-    private val settings = KatachiSettings.getInstance(project)
+    private val settings: KatachiSettings? = sdkCall("read the katachi settings") { KatachiSettings.getInstance(project) }.getOrNull()
 
     val viewModel: KatachiToolWindowViewModel = KatachiToolWindowViewModel(
         scope = scope,
@@ -67,26 +67,33 @@ internal class KatachiProjectService(
         fileSystem = ports.fileSystem,
         effects = ports.effects,
         initial = KatachiScreenState(
-            form = FormState(onExisting = settings.onExisting),
-            view = ViewState(collapsedModules = settings.collapsedModules),
+            form = settings?.let { FormState(onExisting = it.onExisting) } ?: FormState(),
+            view = settings?.let { ViewState(collapsedModules = it.collapsedModules) } ?: ViewState(),
         ),
     )
 
     init {
-        project.messageBus.connect(this).subscribe(
-            ProjectDataImportListener.TOPIC,
-            object : ProjectDataImportListener {
-                override fun onImportFinished(projectPath: String?) {
-                    dispatchOnEdt(KatachiIntent.SyncCompleted)
-                }
-            },
-        )
+        // Without it the list does not follow a Gradle sync; ⟳ still reloads it.
+        sdkCall("listen to Gradle syncs") {
+            project.messageBus.connect(this).subscribe(
+                ProjectDataImportListener.TOPIC,
+                object : ProjectDataImportListener {
+                    override fun onImportFinished(projectPath: String?) {
+                        dispatchOnEdt(KatachiIntent.SyncCompleted)
+                    }
+                },
+            )
+        }
         // What the user picks in the combo and folds stays with the project (spec 04 "入力値の保存").
         // On the EDT, like the settings UI, so that two writes of the set never overlap.
-        scope.launch(Dispatchers.EDT) {
-            viewModel.state.map { it.form.onExisting to it.view.collapsedModules }.distinctUntilChanged().collect { (onExisting, collapsed) ->
-                settings.onExisting = onExisting
-                settings.collapsedModules = collapsed
+        if (settings != null) {
+            scope.launch(Dispatchers.EDT) {
+                viewModel.state.map { it.form.onExisting to it.view.collapsedModules }.distinctUntilChanged().collect { (onExisting, collapsed) ->
+                    sdkCall("save the katachi settings") {
+                        settings.onExisting = onExisting
+                        settings.collapsedModules = collapsed
+                    }
+                }
             }
         }
     }
@@ -99,7 +106,7 @@ internal class KatachiProjectService(
      */
     fun onDefinitionChanged() {
         dispatchOnEdt(KatachiIntent.DefinitionChanged)
-        if (!settings.autoReloadOnSave || viewModel.state.value.loading != null) return
+        if (settings?.autoReloadOnSave != true || viewModel.state.value.loading != null) return
         autoReload?.cancel()
         autoReload = scope.launch {
             delay(AUTO_RELOAD_DELAY_MILLIS)
@@ -117,6 +124,7 @@ internal class KatachiProjectService(
     companion object {
         private const val AUTO_RELOAD_DELAY_MILLIS = 2_000L
 
+        /** Call inside [sdkCall]. */
         fun getInstance(project: Project): KatachiProjectService = project.service()
     }
 }

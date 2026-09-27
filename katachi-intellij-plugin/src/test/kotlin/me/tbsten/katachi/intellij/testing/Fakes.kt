@@ -81,10 +81,15 @@ internal class FakeFileSystem : ProjectFileSystem {
     override fun exists(path: Path): Boolean = path in files
 }
 
-/** Records every effect in order; conflicts are answered by [conflictAnswer]. */
+/**
+ * Records every effect in order; conflicts are answered by [conflictAnswer]. [labelPut] and
+ * [openable] play an IDE that fails to put the label or to open a file.
+ */
 internal class FakeIdeEffects(
     var conflictAnswer: suspend (ConflictQuestion) -> ConflictChoice = { ConflictChoice.Stop },
     var openSetting: OpenAfterGeneration = OpenAfterGeneration.First,
+    var labelPut: Boolean = true,
+    var openable: (Path) -> Boolean = { true },
 ) : IdeEffects {
     val log: MutableList<String> = Collections.synchronizedList(mutableListOf())
     val opened: MutableList<Path> = Collections.synchronizedList(mutableListOf())
@@ -94,9 +99,9 @@ internal class FakeIdeEffects(
         log += "save"
     }
 
-    override suspend fun putLocalHistoryLabel(roleNames: List<String>): String {
+    override suspend fun putLocalHistoryLabel(roleNames: List<String>): String? {
         log += "label"
-        return "katachi: before generating (${roleNames.joinToString(", ")})"
+        return "katachi: before generating (${roleNames.joinToString(", ")})".takeIf { labelPut }
     }
 
     override suspend fun refreshFiles(paths: List<Path>) {
@@ -104,9 +109,11 @@ internal class FakeIdeEffects(
         refreshed += paths
     }
 
-    override suspend fun openFiles(paths: List<Path>) {
+    override suspend fun openFiles(paths: List<Path>): List<Path> {
         log += "open"
-        opened += paths
+        val openedNow = paths.filter(openable)
+        opened += openedNow
+        return openedNow
     }
 
     override suspend fun askConflict(question: ConflictQuestion): ConflictChoice {

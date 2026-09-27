@@ -72,6 +72,9 @@ internal class KatachiDebugBridge(private val project: Project) {
     /** Presses Generate. */
     fun generate() = onEdt { viewModel.dispatch(KatachiIntent.Generate) }
 
+    /** Presses "uncheck all", which also leaves the result of the last generation. */
+    fun uncheckAll() = onEdt { viewModel.dispatch(KatachiIntent.UncheckAll) }
+
     private fun onEdt(block: () -> Unit) = ApplicationManager.getApplication().invokeAndWait(block)
 }
 

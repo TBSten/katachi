@@ -20,18 +20,32 @@ import java.nio.file.Path
 /**
  * Reads the Gradle builds linked to [project] and their synced data (`ProjectDataManager`), without
  * running Gradle (spec 01).
+ *
+ * When the IDE fails to hand the data over, [read] throws [KatachiSyncedDataUnreadableException],
+ * which the ViewModel shows as a load error with its message.
  */
 internal class ProjectDataModuleSource(private val project: Project) : SyncedProjectSource {
-    override fun read(): SyncedProject {
+    override fun read(): SyncedProject = sdkCall("read the Gradle sync data") {
         val linked = GradleSettings.getInstance(project).linkedProjectsSettings.map { it.externalProjectPath }
         if (linked.isEmpty()) return SyncedProject.NotGradle
         val data = ProjectDataManager.getInstance().getExternalProjectsData(project, GradleConstants.SYSTEM_ID)
         val structures = linked.mapNotNull { path ->
             data.firstOrNull { it.externalProjectPath == path }?.externalProjectStructure
         }
-        return syncedProjectOf(structures)
-    }
+        syncedProjectOf(structures)
+    }.getOrElse { throw KatachiSyncedDataUnreadableException(it) }
 }
+
+/** The IDE threw while handing over the Gradle sync data; [cause] is what it threw. */
+internal class KatachiSyncedDataUnreadableException(
+    override val cause: Throwable,
+) : IllegalStateException(
+    """
+        The IDE could not hand over the Gradle sync data: $cause.
+        Sync the Gradle project again (Gradle tool window, "Sync All Gradle Projects"), then reload the templates.
+    """.trimIndent(),
+    cause,
+)
 
 /** [structures] (one per linked root that has synced) as the detector reads them. */
 internal fun syncedProjectOf(structures: List<DataNode<ProjectData>>): SyncedProject =

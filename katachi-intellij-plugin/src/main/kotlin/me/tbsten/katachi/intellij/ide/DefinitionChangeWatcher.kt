@@ -16,12 +16,15 @@ import java.nio.file.Path
  */
 internal class DefinitionChangeWatcher : AsyncFileListener {
     override fun prepareChange(events: List<VFileEvent>): AsyncFileListener.ChangeApplier? {
-        val services = ProjectManager.getInstance().openProjects.mapNotNull { project ->
-            if (project.isDisposed) return@mapNotNull null
-            project.serviceIfCreated<KatachiProjectService>()
-        }
+        // Missing a change only misses the banner; the list itself is as it was.
+        val services = sdkCall("find the open katachi tool windows") {
+            ProjectManager.getInstance().openProjects.mapNotNull { project ->
+                if (project.isDisposed) return@mapNotNull null
+                project.serviceIfCreated<KatachiProjectService>()
+            }
+        }.getOrNull().orEmpty()
         if (services.isEmpty()) return null
-        val paths = events.mapNotNull { event -> pathOf(event.path) }
+        val paths = events.mapNotNull { event -> sdkCall("read the path of a VFS event") { event.path }.getOrNull()?.let(::pathOf) }
         val changed = services.filter { service ->
             val viewModel = service.viewModel
             // A generation writing into its own definition module (a single-module build) is not a change.

@@ -293,8 +293,7 @@ internal class KatachiToolWindowViewModel(
         try {
             effects.refreshFiles(report.writtenFiles.map { it.path })
             val toOpen = filesToOpen(report, effects.openAfterGeneration())
-            if (toOpen.isNotEmpty()) effects.openFiles(toOpen)
-            opened = toOpen
+            if (toOpen.isNotEmpty()) opened = effects.openFiles(toOpen)
         } finally {
             // The files are written whatever the IDE did with them: the result shows either way.
             mutableState.update { it.copy(generation = GenerationState.Finished(report, label, opened)) }

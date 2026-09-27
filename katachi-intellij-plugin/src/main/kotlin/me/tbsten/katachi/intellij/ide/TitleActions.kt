@@ -16,21 +16,23 @@ internal class ReloadOrStopAction : DumbAwareAction() {
     override fun getActionUpdateThread(): ActionUpdateThread = ActionUpdateThread.BGT
 
     override fun update(e: AnActionEvent) {
-        val viewModel = e.project?.serviceIfCreated<KatachiProjectService>()?.viewModel
-        if (viewModel == null) {
-            e.presentation.isEnabled = false
-            return
+        sdkCall("update the reload action") {
+            val viewModel = e.project?.serviceIfCreated<KatachiProjectService>()?.viewModel
+            if (viewModel == null) {
+                e.presentation.isEnabled = false
+                return@sdkCall
+            }
+            val state = viewModel.state.value
+            val stop = titleActionOf(state) == TitleAction.Stop
+            e.presentation.icon = if (stop) AllIcons.Actions.Suspend else AllIcons.Actions.Refresh
+            e.presentation.text = KatachiBundle.message(if (stop) "action.stop.text" else "action.reload.text")
+            e.presentation.description = KatachiBundle.message(if (stop) "action.stop.description" else "action.reload.description")
+            e.presentation.isEnabled = stop || state.generation !is GenerationState.Running
         }
-        val state = viewModel.state.value
-        val stop = titleActionOf(state) == TitleAction.Stop
-        e.presentation.icon = if (stop) AllIcons.Actions.Suspend else AllIcons.Actions.Refresh
-        e.presentation.text = KatachiBundle.message(if (stop) "action.stop.text" else "action.reload.text")
-        e.presentation.description = KatachiBundle.message(if (stop) "action.stop.description" else "action.reload.description")
-        e.presentation.isEnabled = stop || state.generation !is GenerationState.Running
     }
 
     override fun actionPerformed(e: AnActionEvent) {
-        val viewModel = e.project?.serviceIfCreated<KatachiProjectService>()?.viewModel ?: return
+        val viewModel = sdkCall("find the katachi tool window") { e.project?.serviceIfCreated<KatachiProjectService>()?.viewModel }.getOrNull() ?: return
         val loading = viewModel.state.value.loading != null
         viewModel.dispatch(if (loading) KatachiIntent.CancelLoad else KatachiIntent.Reload)
     }
@@ -42,6 +44,6 @@ internal class OpenSettingsAction : DumbAwareAction(KatachiBundle.message("actio
 
     override fun actionPerformed(e: AnActionEvent) {
         val project = e.project ?: return
-        ShowSettingsUtil.getInstance().showSettingsDialog(project, KatachiConfigurable::class.java)
+        sdkCall("open the katachi settings") { ShowSettingsUtil.getInstance().showSettingsDialog(project, KatachiConfigurable::class.java) }
     }
 }
