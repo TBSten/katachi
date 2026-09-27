@@ -107,8 +107,8 @@ Astro は `public/` を加工せずそのままコピーするので、`<base-ur
 | ファイル | 役割 |
 |---|---|
 | `index.md` | インストール手順そのもの。エージェントはこれを読んで動く |
-| `katachi-install.sh` | 機械的にできる工程の**唯一の実装**。`init` と `scaffold` の2サブコマンド |
-| `install-check-list.html` | 進捗と結果のチェックリスト。`init` が配置し、`data-fill` 属性の欄を `sed` で埋める |
+| `katachi-install.sh` | 機械的にできる工程の**唯一の実装**。`init`・`doctor`・`scaffold` のほか、チェックリストとレポートを読み書きする `data`・`check`・`add`・`verify`・`summary` など（一覧は `--help`）。出力の言語は `init --lang` に従う |
+| `install-check-list.html` | 進捗と結果のチェックリスト。`init` が配置し、中の `<script type="application/json" id="checklist">` をスクリプトの `data` 系のサブコマンドが書き換える |
 | `project-code-base-report-template.html` | コードベース解析レポートのテンプレート。`init` が配置する |
 
 守ること:
@@ -117,8 +117,8 @@ Astro は `public/` を加工せずそのままコピーするので、`<base-ur
   環境ごとにブレる。判断が要らない工程は `katachi-install.sh` に入れ、`index.md` は
   コマンドを1行示すだけにする
 - **生成する内容を2箇所に書かない。** モジュールの雛形はスクリプトの中だけにある
-- `install-check-list.html` の `<dd data-fill="...">...</dd>` は**1行に収める。**
-  スクリプトが `sed` の行単位の置換で埋めている
+- **スクリプトの出力は ja / en の2通りを並べて書く**（`say "日本語" "English"` の形）。片方だけ足さない
+- スクリプトが使うコマンドを増やしたら、サブコマンドごとの前提（`REQ_*` と `doctor`）にも足す
 - スクリプトを直したら、`sh -n` に加えて**実際の Gradle プロジェクトで動かす。**
   最低限「AGP + version catalog」「ルート build ファイル無し」「Kotlin JVM が既にルートに居る」の3つ
   - これらを含む 9 種の形は `.claude/skills/prerelease/scripts/check-install-kit.sh` でまとめて回せる。
