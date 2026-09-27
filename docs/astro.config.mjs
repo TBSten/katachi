@@ -33,6 +33,10 @@ export default defineConfig({
 			},
 			description:
 				'Declare your Android/KMP project architecture in a Kotlin DSL and check the whole tree against it, deny by default.',
+			// タイトルの上に、frontmatter の tags（難易度）をラベルで出す。
+			components: {
+				PageTitle: './src/components/overrides/PageTitle.astro',
+			},
 			// `locales` のキーで指す。ja は root なので 'root'。
 			defaultLocale: 'root',
 			// デザインシステムは starlight-theme-nova に任せる。
@@ -146,7 +150,7 @@ export default defineConfig({
 						{ label: 'Document generation', translations: { ja: 'ドキュメント生成' }, slug: 'guides/document-generation' },
 						{ label: 'Generate code from template', translations: { ja: 'テンプレートからコード生成' }, slug: 'guides/generate-code-from-template' },
 						// 既存のプロジェクトに入れるときの棚上げ。実験的な機能なので、processor の手前（ガイドの後ろ寄り）に置く。
-						{ label: 'Baseline', translations: { ja: 'baseline' }, slug: 'guides/baseline' },
+						{ label: 'Baseline', translations: { ja: 'Baseline' }, slug: 'guides/baseline' },
 						{ label: 'ArchitectureProcessor', translations: { ja: 'ArchitectureProcessor とそのカスタマイズ' }, slug: 'guides/processor' },
 					],
 				},

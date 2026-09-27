@@ -9,8 +9,7 @@ export const collections = {
 		loader: docsLoader(),
 		schema: docsSchema({ extend: starlightTagsExtension }),
 	}),
-	// Declared because astro.config.mjs sets `locales`. Without it every build warns
-	// that the "i18n" collection does not exist. The directory stays empty until we
-	// actually translate Starlight's own UI strings.
+	// Declared because astro.config.mjs sets `locales`. src/content/i18n/ja.json translates
+	// the UI strings of starlight-tags, which ships no Japanese.
 	i18n: defineCollection({ loader: i18nLoader(), schema: i18nSchema() }),
 };

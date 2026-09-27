@@ -1,1 +1,24 @@
-{}
+{
+  "starlightTags.totalTags": "タグの数",
+  "starlightTags.pagesTagged": "タグの付いたページ",
+  "starlightTags.tagCloud": "タグクラウド",
+  "starlightTags.alphabeticalIndex": "五十音・アルファベット順",
+  "starlightTags.allTags": "すべてのタグ",
+  "starlightTags.page": "ページ",
+  "starlightTags.pages": "ページ",
+  "starlightTags.pageTags": "タグ:",
+  "starlightTags.taggedPrefix": "タグ:",
+  "starlightTags.relatedTags": "関連するタグ",
+  "starlightTags.pagesWithTag": "このタグの付いたページ",
+  "starlightTags.related": "関連",
+  "starlightTags.path": "道筋:",
+  "starlightTags.pagination.label": "ページ送り",
+  "starlightTags.pagination.page": "ページ",
+  "starlightTags.pagination.of": "/",
+  "starlightTags.pagination.previous": "前のページ",
+  "starlightTags.pagination.next": "次のページ",
+  "starlightTags.pagination.item": "件",
+  "starlightTags.pagination.items": "件",
+  "starlightTags.popularTags": "よく使われるタグ",
+  "starlightTags.viewAllTags": "すべてのタグを見る"
+}
