@@ -24,10 +24,12 @@ internal object JapaneseKatachiStrings : KatachiStrings {
     override val notSyncedTitle = "Gradle の同期が済んでいません"
     override val notSyncedBody = "同期が終わると、自動で探し直します。"
     override val notInstalledTitle = "katachi が見つかりません"
-    override val notInstalledBody = "定義モジュールに katachi の Gradle プラグインを適用してください。適用した直後なら、Gradle を同期してください。"
+    override val notInstalledBody =
+        "定義モジュールに katachi の Gradle プラグインを適用してください。適用した直後なら、Gradle を同期してください。"
     override val installGuide = "導入手順を見る"
     override fun outdatedTitle(version: String?) =
         if (version == null) "katachi を更新してください（0.3 以降）" else "katachi を更新してください（いま $version、0.3 以降が必要）"
+
     override val outdatedBody = "この版の katachi は、IDE 用のタスクを持っていません。"
     override val updateGuide = "更新手順を見る"
     override fun searchEmptyTitle(query: String) = "「$query」に一致するテンプレートはありません"
@@ -57,7 +59,9 @@ internal object JapaneseKatachiStrings : KatachiStrings {
     override val outsideSearch = "検索外・選択中"
     override fun filledCount(filled: Int, total: Int) = "入力済み $filled/$total"
     override val previewFailed = "プレビューに失敗しました。⋯ の「原因を見る」で理由を確かめられます。"
-    override fun unknownKinds(kinds: List<String>) = "このプラグインが知らない型の引数があります（${kinds.joinToString()}）"
+    override fun unknownKinds(kinds: List<String>) =
+        "このプラグインが知らない型の引数があります（${kinds.joinToString()}）"
+
     override val unresolvedTarget = "生成先の決まらないファイルがあります"
     override val copyCommand = "コマンドをコピー"
     override val showCause = "原因を見る"
@@ -68,11 +72,13 @@ internal object JapaneseKatachiStrings : KatachiStrings {
         // Latin values get spaces around them, as Japanese text around code does elsewhere.
         return if (label == value) "$name（$controller が $label のとき）" else "$name（$controller が${label}のとき）"
     }
+
     override fun valueLabel(value: String) = when (value) {
         "true" -> "オン"
         "false" -> "オフ"
         else -> value
     }
+
     override val chooseOne = "選んでください"
     override val requiredError = "入力してください"
     override fun notAnInt(min: Int, max: Int) = "整数で入力してください（$min〜$max）"
@@ -108,7 +114,7 @@ internal object JapaneseKatachiStrings : KatachiStrings {
     override val fileNew = "新規"
     override val fileOverwritten = "上書き"
     override val fileSkipped = "スキップ"
-    override val openedMarker = "← 開いた"
+    override val openedMarker = "← Opened"
     override val rowSkipped = "既にあるファイルがあるので、書きませんでした"
     override val rowStopped = "ここで止めました（既にあるファイルがあります）"
     override val rowInterrupted = "中断（書かれたかは不明）"

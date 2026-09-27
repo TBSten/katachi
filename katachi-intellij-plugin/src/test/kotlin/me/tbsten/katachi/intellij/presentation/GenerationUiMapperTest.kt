@@ -100,7 +100,7 @@ class GenerationUiMapperTest {
         val rows = list(state)
         val result = rows.row(repositoryId).body.cast<RowBodyUi.Result>().result
         assertEquals(listOf("新規", "上書き"), result.files.map { it.badge })
-        assertEquals("← 開いた", result.files.first().note)
+        assertEquals("← Opened", result.files.first().note)
         assertNull(result.files.last().note)
         assertEquals(listOf("生成済み（書いたファイルは不明）"), rows.row(serviceId).body.cast<RowBodyUi.Result>().result.message)
         val footer = rows.footer.cast<FooterUi.Result>()

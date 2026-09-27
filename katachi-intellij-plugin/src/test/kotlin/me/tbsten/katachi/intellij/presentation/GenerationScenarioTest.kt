@@ -39,7 +39,7 @@ class GenerationScenarioTest {
         s.fillRepository()
 
         s.generate()
-        assertEquals(listOf("UserRepository.kt 新規 ← 開いた", "UserRepositoryImpl.kt 新規"), s.resultFileNames(s.repository))
+        assertEquals(listOf("UserRepository.kt 新規 ← Opened", "UserRepositoryImpl.kt 新規"), s.resultFileNames(s.repository))
         assertEquals("1 件を生成しました", s.resultFooter().summary)
         assertEquals(listOf(s.dataDir.resolve("UserRepository.kt")), s.effects.opened)
 
@@ -70,7 +70,7 @@ class GenerationScenarioTest {
         s.fillRepository()
         s.input(s.repository, "withImpl", "false")
         s.generate()
-        assertEquals(listOf("UserRepository.kt 新規 ← 開いた"), s.resultFileNames(s.repository))
+        assertEquals(listOf("UserRepository.kt 新規 ← Opened"), s.resultFileNames(s.repository))
 
         s.dispatch(KatachiIntent.ContinueGenerating)
         // Booleans stay, so the Impl is still left out.
@@ -78,7 +78,7 @@ class GenerationScenarioTest {
         s.input(s.repository, "name", "Order")
 
         s.generate()
-        assertEquals(listOf("OrderRepository.kt 新規 ← 開いた"), s.resultFileNames(s.repository))
+        assertEquals(listOf("OrderRepository.kt 新規 ← Opened"), s.resultFileNames(s.repository))
         assertEquals(listOf("UserRepository.kt", "OrderRepository.kt"), s.effects.opened.map { it.fileName.toString() })
         assertEquals(1, s.state.generation.cast<GenerationState.Finished>().report.items.size)
     }
@@ -106,7 +106,7 @@ class GenerationScenarioTest {
         assertEquals(listOf(s.useCase), s.state.generation.cast<GenerationState.Finished>().report.items.map { it.templateId })
         assertEquals(RowLeadUi.Check(checked = false, enabled = false), s.row(s.repository).lead)
         assertNull(s.row(s.repository).body)
-        assertEquals(listOf("GetUseCase.kt 新規 ← 開いた"), s.resultFileNames(s.useCase))
+        assertEquals(listOf("GetUseCase.kt 新規 ← Opened"), s.resultFileNames(s.useCase))
 
         // Checking Repository again after "uncheck all" starts from an empty form.
         s.dispatch(KatachiIntent.UncheckAll)
@@ -144,7 +144,7 @@ class GenerationScenarioTest {
         s.input(s.useCase, "name", "Order")
         s.generate()
         assertEquals("Order", s.lastArgs()["name"])
-        assertEquals(listOf("OrderUseCase.kt 新規 ← 開いた"), s.resultFileNames(s.useCase))
+        assertEquals(listOf("OrderUseCase.kt 新規 ← Opened"), s.resultFileNames(s.useCase))
     }
 
     @Test
@@ -242,13 +242,13 @@ class GenerationScenarioTest {
         val questions = mutableListOf<ConflictQuestion>()
         s.effects.conflictAnswer = { questions += it; ConflictChoice.Overwrite }
         s.generate()
-        assertEquals(listOf("UserRepository.kt 上書き ← 開いた", "UserRepositoryImpl.kt 新規"), s.resultFileNames(s.repository))
+        assertEquals(listOf("UserRepository.kt 上書き ← Opened", "UserRepositoryImpl.kt 新規"), s.resultFileNames(s.repository))
 
         s.dispatch(KatachiIntent.ContinueGenerating)
         s.input(s.repository, "name", "User")
         s.generate()
         assertEquals(listOf(1, 2), questions.map { it.existing.size })
-        assertEquals(listOf("UserRepository.kt 上書き ← 開いた", "UserRepositoryImpl.kt 上書き"), s.resultFileNames(s.repository))
+        assertEquals(listOf("UserRepository.kt 上書き ← Opened", "UserRepositoryImpl.kt 上書き"), s.resultFileNames(s.repository))
     }
 
     @Test
@@ -296,7 +296,7 @@ class GenerationScenarioTest {
         assertEquals("既存ファイルを確認なしで置き換えます", s.formFooter().overwriteWarning)
         s.generate()
         assertEquals("overwrite", s.lastArgs()["onExisting"])
-        assertEquals(listOf("UserRepository.kt 上書き ← 開いた", "UserRepositoryImpl.kt 上書き"), s.resultFileNames(s.repository))
+        assertEquals(listOf("UserRepository.kt 上書き ← Opened", "UserRepositoryImpl.kt 上書き"), s.resultFileNames(s.repository))
         assertEquals(0, s.effects.log.count { it == "conflict" })
     }
 
@@ -314,7 +314,7 @@ class GenerationScenarioTest {
         s.input(s.repository, "name", "Order")
         s.effects.openSetting = OpenAfterGeneration.All
         s.generate()
-        assertEquals(listOf("OrderRepository.kt 新規 ← 開いた", "OrderRepositoryImpl.kt 新規 ← 開いた"), s.resultFileNames(s.repository))
+        assertEquals(listOf("OrderRepository.kt 新規 ← Opened", "OrderRepositoryImpl.kt 新規 ← Opened"), s.resultFileNames(s.repository))
     }
 
     @Test
