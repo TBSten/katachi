@@ -121,6 +121,8 @@ Astro は `public/` を加工せずそのままコピーするので、`<base-ur
   スクリプトが `sed` の行単位の置換で埋めている
 - スクリプトを直したら、`sh -n` に加えて**実際の Gradle プロジェクトで動かす。**
   最低限「AGP + version catalog」「ルート build ファイル無し」「Kotlin JVM が既にルートに居る」の3つ
+  - これらを含む 9 種の形は `.claude/skills/prerelease/scripts/check-install-kit.sh` でまとめて回せる。
+    リリース前には prerelease の手順 9 が、これに加えて手順書どおりに実在のプロジェクトへ導入する統合テストも回す
 - 配信元は `KATACHI_DOCS` 環境変数で差し替えられる。dev server に向けて試せる
 
 ## レシピ
