@@ -93,8 +93,11 @@
 
 ## 9. インストールキットのチェック
 
-- [ ] 通った: {TODO} / {TODO}（`check-install-kit.sh`）
-- [ ] 結果: {TODO file://.local/release-v0.0.0/install-kit.md の絶対パス}
+- [ ] 9-1 通った: {TODO} / {TODO}（`check-install-kit.sh`）
+- [ ] 9-1 結果: {TODO file://.local/release-v0.0.0/install-kit.md の絶対パス}
+- [ ] 9-2 手順書どおりに最後まで導入できた: ja {TODO} / en {TODO}
+- [ ] 9-2 所見: {TODO} 件（priority 7 以上: {TODO} 件）
+- [ ] 9-2 結果: {TODO file://.local/release-v0.0.0/install-e2e.md の絶対パス}
 
 <details>
     <summary>memo</summary>

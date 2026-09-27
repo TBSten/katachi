@@ -29,8 +29,9 @@ flowchart LR
     T --> B["6-1. ビルドと配信<br/>generateApiDocs → pnpm build → pnpm preview"]
     B --> C1["6. 巡回 en"] & C2["6. 巡回 ja"] & C3["6. 巡回 api-docs"]
     CI -- " Gradle を空ける " --> D & B
-    B -- " Gradle を空ける " --> IK["9. インストールキット<br/>check-install-kit.sh"]
-    V1 & V2 & V3 & R & D & C1 & C2 & C3 & CI & IK --> Rep["7. 報告"]
+    B -- " Gradle を空ける " --> IK["9-1. インストールキット<br/>check-install-kit.sh"]
+    IK --> IE["9-2. 統合テスト<br/>手順書どおりに導入 ja / en<br/>＋手順書のレビュー"]
+    V1 & V2 & V3 & R & D & C1 & C2 & C3 & CI & IE --> Rep["7. 報告"]
 ```
 
 - 1 が通ったら、2・3・4・8 を並列に始める。3 と 6 の中は、区分ごとの subagent をさらに並列にする。
@@ -55,7 +56,8 @@ flowchart LR
 | `docs-vs-impl.md`                | 5        |
 | `site-crawl.md`・`screenshots/`  | 6        |
 | `ci-checks.md`                   | 8        |
-| `install-kit.md`                 | 9        |
+| `install-kit.md`                 | 9-1      |
+| `install-e2e.md`                 | 9-2      |
 
 ログ・材料・中間ファイルはすべて `.local/release-v<版>/tmp/` の下に置く。例: `tmp/release-note-material.txt`、
 `tmp/ci-checks/`（コマンドごとのログ）、`tmp/install-kit/`（fixture とログ）、`tmp/pages-<区分>.txt`、`tmp/crawl/`
@@ -102,9 +104,13 @@ priority 10 の警告。結果は `ci-checks.md`、ログは `tmp/ci-checks/`。
 
 ## 9. インストールキットのチェック
 
-`check-install-kit.sh` で `docs/public/install/katachi-install.sh` を合成の Gradle プロジェクト（fixture）で動かし、
-init → scaffold → `:architecture-test:test` が「Unexpected だけで落ちる」（配線は正しい）かを確かめる。
-オーケストレータが自分で走らせてよい。1つでも NG なら priority 10 の警告。結果は `install-kit.md`、fixture とログは `tmp/install-kit/`。
+- 9-1: `check-install-kit.sh` で `docs/public/install/katachi-install.sh` を合成の Gradle プロジェクト（fixture）で動かし、
+  init → scaffold → `:architecture-test:test` が「Unexpected だけで落ちる」（配線は正しい）かを確かめる。
+  オーケストレータが自分で走らせてよい。1つでも NG なら priority 10 の警告。結果は `install-kit.md`、fixture とログは `tmp/install-kit/`。
+- 9-2: 統合テスト。subagent（opus）が AI エージェントとして手順書（ja / en）どおりに実在のプロジェクトの写しへ最後まで導入し、
+  もう1体が手順書・スクリプト・チェックリストの食い違いを読んで確かめる。**手順書が適切か**を見る。結果は `install-e2e.md`。
+  6-1 の配信を配信元に使うので、9-2 が終わるまで配信を止めない。
+
 詳細: [references/install-kit.md](references/install-kit.md)
 
 ## 7. 報告
