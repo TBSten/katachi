@@ -12,6 +12,7 @@ import org.gradle.api.Project;
 import org.gradle.api.plugins.JavaPluginExtension;
 import org.gradle.api.tasks.SourceSet;
 import org.gradle.api.tasks.TaskProvider;
+import org.gradle.api.tasks.testing.Test;
 
 /**
  * Registers one task per katachi processor on the module that holds the katachi architecture
@@ -30,6 +31,10 @@ import org.gradle.api.tasks.TaskProvider;
  * so that {@code ./gradlew tasks} does not offer it. A key whose task name is already
  * taken by another task stops the build at that {@code register(...)} line, rather than
  * replacing or shadowing the other task.
+ *
+ * <p>It also hands {@code -Dkatachi.baseline.update} and {@code -Dkatachi.baseline.prune} on to
+ * every {@code Test} task of the module ({@link KatachiBaselineArguments}), so that the
+ * architecture test can update its baseline.
  *
  * <p>Applying this plugin to a module without the {@code java} plugin registers the tasks but
  * leaves their classpath empty, so a run fails at startup rather than at configuration time.
@@ -203,6 +208,24 @@ public class KatachiPlugin implements Plugin<Project> {
                     task.setClasspath(testSourceSet.getRuntimeClasspath()));
             project.getTasks().withType(KatachiProcessorsTask.class).configureEach(task ->
                     task.setClasspath(testSourceSet.getRuntimeClasspath()));
+        });
+
+        // The architecture test is an ordinary Test task, and it is where the baseline is
+        // updated. `-Dkatachi.baseline.update` on the Gradle command line reaches this build's
+        // JVM only; this hands it on to every test JVM of the module. Every Test task rather
+        // than `test` alone, because a project may keep its architecture test in a task of its
+        // own.
+        project.getTasks().withType(Test.class).configureEach(test -> {
+            KatachiBaselineArguments baselineArguments = new KatachiBaselineArguments(
+                    project.getProviders().systemProperty(KatachiBaselineArguments.UPDATE_PROPERTY),
+                    project.getProviders().systemProperty(KatachiBaselineArguments.PRUNE_PROPERTY));
+            test.getJvmArgumentProviders().add(baselineArguments);
+            // An update or a prune is asked for to have its side effect on the baseline file,
+            // which is not an output of the task. An unchanged input would otherwise report the
+            // task UP-TO-DATE, or restore it FROM-CACHE, without having touched the file.
+            test.getOutputs().upToDateWhen(baselineArguments.notRequested());
+            test.getOutputs().doNotCacheIf(
+                    "-Dkatachi.baseline.update or -Dkatachi.baseline.prune was given", baselineArguments.requested());
         });
 
         // A safety net alongside the `srcDir(...)` above. Whether `SourceDirectorySet`'s
