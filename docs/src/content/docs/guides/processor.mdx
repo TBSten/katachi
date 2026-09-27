@@ -16,14 +16,19 @@ The latter half explains how to write and run your own ArchitectureProcessor.
 katachi's `ArchitectureProcessor` class is an interface that does something based on an architecture definition.
 
 ```kt
+@ExperimentalKatachiApi
 public interface ArchitectureProcessor<Args, R> {
     // Parser for the arguments
     public val argsSerializer: KSerializer<Args>
 
     // Does something
     public fun process(context: ArchitectureProcessContext<Args>): Result<R>
+
+    // (Excerpt. Members with a default implementation, such as undeclaredArgNames, are omitted)
 }
 ```
+
+`ArchitectureProcessor` is `@ExperimentalKatachiApi`, so add `@OptIn(ExperimentalKatachiApi::class)` when you implement it.
 
 Wrap the body of `process` in `runCatching { }`. **To answer "this run does not pass", throw inside it.**
 
@@ -125,6 +130,8 @@ katachi {
     `docs` (documentation generation), `template` (code generation from a template) and `templates` (listing and describing templates) are registered by default because they're common use cases.
     You don't need to register these ArchitectureProcessors in `katachi.processors` to run them.
 
+    Besides these, `internalTemplatesJson` (task `katachiInternalTemplatesJson`), which the IDE plugin uses, is registered as well. It exists for the IDE plugin, so you don't need to run it yourself.
+
     ```kts title="architecture-test/build.gradle.kts" {5-8}
     katachi {
         architecture = "com.example.projectArchitecture"
@@ -150,7 +157,7 @@ Example output:
 [1/3] Processors: docs
 
 [2/3] Processing...
-  [docs] Writing 17 pages to /path/to/sample/jvm/docs
+  [docs] Writing 17 pages to file:///path/to/sample/jvm/docs
   [docs] README.md
   [docs] api/
   [docs]   README.md
@@ -203,7 +210,7 @@ The `context` passed as the argument to the `process` method holds the architect
                 // context.roles / groups  ... the defined roles / groups
                 // context.declaredEntries ... the flattened list of declarations from layout
                 // context.filesOf(role)   ... the actual files that matched that role
-                // context.fileSystem      ... the file system used for the walk
+                // context.rawArgs         ... the arguments passed, as raw names and values
                 // context.log()           ... outputs progress
 
                 context.log("Counting files per role...")

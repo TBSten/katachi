@@ -20,6 +20,9 @@ import {Aside, CardGrid, FileTree, LinkCard} from '@astrojs/starlight/components
 **思いついた禁止事項しか守れません。** 思いつかなかった壊れ方は素通りします。
 そして一番多いのは、思いつかなかった壊れ方です。
 
+katachi は逆に、**現れてよいものを全部書かせます。** 書いていないものは違反です。
+これなら「想定していなかった」が起きません。想定していないもの自体が違反だからです。
+
 違うのは**列挙し損ねたものがどちらへ倒れるか**、その1点だけです。
 
 <details>
@@ -43,9 +46,6 @@ import {Aside, CardGrid, FileTree, LinkCard} from '@astrojs/starlight/components
 
 </details>
 
-katachi は逆に、**現れてよいものを全部書かせます。** 書いていないものは違反です。
-これなら「想定していなかった」が起きません。想定していないもの自体が違反だからです。
-
 この設計の代償は **最初が重い** ことです。
 プロジェクトにあるファイルを全部説明しきるまでテストは Green になりません。
 それでも、**説明しきれないファイルがあるという事実のほうが情報** だと
@@ -61,6 +61,9 @@ katachi が壊したのではなく、もともとそうだったものが見え
 
 出てきたパスを1つずつ、定義に足すか・移すか・消すかで片付けていきます。
 これはそのまま、**チームがアーキテクチャについて合意し直す作業**でもあります。
+
+すぐには片付けきれない場合は、実験的な機能の baseline（`architecture { baseline = baselineFile() }`）で
+今ある違反を台帳のファイルに棚上げし、新しい違反だけでテストを落とすこともできます。
 
 ## Konsist や ArchUnit があるのに、なぜ別のものが要るのですか
 
@@ -121,7 +124,7 @@ flowchart TB
 「`UseCase` は `invoke` 関数を1つだけ持つ」は Konsist の仕事です。
 
 katachi の定義の中に Konsist の制約を書けるようにしてあるので、
-テストで `assert(FileConstraintCheck())` を呼べば、**配置の違反と中身の違反が1つのレポートにまとまります。**
+テストで `assert(FileConstraintCheck())` を呼べば（`@OptIn(ExperimentalKatachiApi::class)` が要ります）、**配置の違反と中身の違反が1つのレポートにまとまります。**
 
 「ファイルの中身を検証する」という立ち位置は、Konsist だけのものではありません。
 [detekt](https://detekt.dev/) のカスタムルールや [Konture](https://github.com/baole/konture) を使っているなら、検証したいルールによってはそれらが Konsist の代わりになるかもしれません。
@@ -153,20 +156,20 @@ katachi は `assert()` を1回呼ぶだけで、リポジトリ全体の違反�
 ```text title="1回の実行で返ってくるもの" {1}
 Katachi check failed: 3 violations (Unexpected: 2, Missing: 1)
 
-[UnexpectedFile] src/main/kotlin/com/example/GetUserUseCase.kt
+[UnexpectedFile] file:///path/to/project/src/main/kotlin/com/example/GetUserUseCase.kt
   No role is defined for this file.
 
   Nearby locations:
-    UseCase    src/main/kotlin/com/example/useCase/
+    UseCase file:///path/to/project/src/main/kotlin/com/example/useCase/
 
   How to fix:
     - Move it to one of the locations above
     ...
 
-[UnexpectedDirectory] src/main/kotlin/com/example/misc
+[UnexpectedDirectory] file:///path/to/project/src/main/kotlin/com/example/misc
   ...
 
-[MissingFile] src/main/kotlin/com/example/useCase/DeleteUserUseCase.kt
+[MissingFile] file:///path/to/project/src/main/kotlin/com/example/useCase/DeleteUserUseCase.kt
   ...
 ```
 
@@ -204,11 +207,6 @@ flowchart LR
 
 テストとドキュメントは katachi が用意しているものですが、**この2つに限りません。**
 同じ定義から自分で何かを取り出すこともできます（[ArchitectureProcessor とそのカスタマイズ](/katachi/ja/guides/processor/)）。
-
-<Aside type="caution">
-    ドキュメント生成は **v0.2 で予定している機能で、まだ動きません。**
-    現時点で使えるのは検査（`assert()`）までです。
-</Aside>
 
 ## Role の名前や粒度は、どう決めればいいのですか
 

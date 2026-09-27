@@ -1,6 +1,6 @@
 ---
 title: Gradle
-description: An example of declaring build scripts, the wrapper, and the version catalog in architecture { }, and what .module { } expands into.
+description: An example of declaring build scripts, the wrapper, and the version catalog in architecture { }, and of declaring a composite build / buildSrc when you use one.
 tags:
   - intermediate
 ---
@@ -10,14 +10,25 @@ import SnippetIsStartingPoint from '../../../components/SnippetIsStartingPoint.a
 import { Aside } from '@astrojs/starlight/components';
 
 ```kt title="ProjectArchitecture.kt"
+import me.tbsten.katachi.dsl.architecture
+import me.tbsten.katachi.dsl.gradle.gradle
+
 val architecture = architecture {
     gradle() // Declares gradle.kts, the Gradle wrapper, and the like with documented = false
 }
 ```
 
+The samples declare it with the same single line ([GradleGroup.kt in sample/jvm](https://github.com/TBSten/katachi/blob/main/sample/jvm/architecture-test/src/test/kotlin/com/example/groups/GradleGroup.kt)).
+
 ## When you use a composite build / buildSrc
 
+`gradle()` does not declare included builds such as `build-logic`, nor `buildSrc`. Declare their build scripts and convention plugins yourself.
+
 ```kt title="ProjectArchitecture.kt"
+import me.tbsten.katachi.dsl.architecture
+import me.tbsten.katachi.dsl.gradle.gradle
+import me.tbsten.katachi.dsl.kotlin.ktFile
+import me.tbsten.katachi.dsl.kotlin.ktsFile
 
 const val buildConventionDir = "build-logic" // Use "buildSrc" instead if you use buildSrc
 
@@ -25,15 +36,23 @@ val architecture = architecture {
     gradle()
 
     "Build".group {
-        "ConventionPlugins" {
-            documented = false
+        documented = false
 
+        "BuildScript" {
             layout {
-                buildConventionDir / "src/main/kotlin" /
-                    "*.gradle".ktsFile()
+                buildConventionDir {
+                    "build.gradle".ktsFile()
+                    "settings.gradle".ktsFile().optional() // buildSrc may go without one
+                }
+            }
+        }
 
-                buildConventionDir / "src/main/kotlin" /
-                    "*".ktFile()
+        "ConventionPlugins" {
+            layout {
+                "$buildConventionDir/src/main/kotlin" {
+                    "*.gradle".ktsFile()
+                    "**" / "*".ktFile() // also allows classes in packages
+                }
             }
 
             // ./gradlew katachiTemplate --arg roleName=Build/ConventionPlugins --arg name=kotlin-library

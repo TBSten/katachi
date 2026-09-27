@@ -69,7 +69,7 @@ architecture {
 制約の対象は、その Role の `layout { }` に当てはまったファイルです。`layout { }` の無い Role に制約を書くと、定義を評価した時点で `KatachiFileConstraintWithoutLayoutException` になります。
 
 <Aside type="caution">
-  `konsist { }` の中で `assertTrue { }` を書くと、**コンパイルエラーになります**（ERROR レベルの `@Deprecated` で塞いでいます）。Konsist の `assertTrue` はその場でアサーションの例外を投げるので、DSL による宣言と検証を分けるという設計に反するためです。
+  `konsist { }` の中で `assertTrue { }` を書くと、**コンパイルエラーになります**（ERROR レベルの `@Deprecated` で塞いでいます）。Konsist の `assertTrue` は最初に弾いた1件でその場で例外を投げるので、katachi がどの宣言が弾かれたかを受け取れず、1回の実行で全違反を集められないためです。
   代わりに must / mustNot / mustBeEmpty を使ってください。
 </Aside>
 
@@ -80,7 +80,7 @@ architecture {
 ```text
 Katachi check failed: 1 violation (FileConstraint: 1)
 
-[UnsatisfiedFileConstraint] src/main/kotlin/com/example/useCase/GetUserUseCase.kt
+[UnsatisfiedFileConstraint] file:///path/to/project/src/main/kotlin/com/example/useCase/GetUserUseCase.kt
   Role: UseCase / FileConstraint: "invoke 関数を1つだけ持つこと"
   Declaration: GetUserUseCase (line 3)
   Declared at: ProjectArchitecture.kt:12
@@ -97,7 +97,12 @@ Katachi check failed: 1 violation (FileConstraint: 1)
   href="https://docs.konsist.lemonappdev.com/"
 />
 
-katachi が差し替えているのは `must` / `mustNot` / `mustBeEmpty` の3つだけで、対象を絞るまでの書き方は Konsist のものがそのまま使えます。
+katachi が足しているのは `must` / `mustNot` / `mustBeEmpty` の3つで、Konsist の `assertTrue` などのアサーションはコンパイルエラーで塞いでいます。対象を絞るまでの書き方は Konsist のものがそのまま使えます。
+
+<Aside type="caution" title="このブロックで使えないもの">
+  - **`.kts` のファイルは対象になりません。** Konsist が `.kt` のファイルしか読まないためです。`build.gradle.kts` などの規則は `konsist { }` では書けません。
+  - **`projectPath` / `moduleName` は当てにしないでください。** katachi が歩いたプロジェクトではなく、Konsist が推測したルートを基準にした値になります。
+</Aside>
 
 ## まとめ
 

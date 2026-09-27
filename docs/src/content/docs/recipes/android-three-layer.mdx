@@ -44,10 +44,15 @@ Below is an example architecture definition for a setup that adopts a domain lay
 
 ```kt
 // ProjectArchitecture.kt
+import me.tbsten.katachi.dsl.architecture
+import me.tbsten.katachi.dsl.gradle.gradle
+
 /**
  * See https://developer.android.com/topic/architecture
  */
 val projectArchitecture = architecture {
+  gradle() // Gradle files such as the wrapper, settings and build scripts
+
   // https://developer.android.com/topic/architecture/ui-layer
   "ui".group {
     uiState()
@@ -73,6 +78,13 @@ val projectArchitecture = architecture {
 const val appPackageDir = "com/example/project"
 
 // roles/UiState.kt
+import me.tbsten.katachi.dsl.DeclarationContainerScope
+import me.tbsten.katachi.dsl.FileConstraintScope
+import me.tbsten.katachi.dsl.gradle.kotlin
+import me.tbsten.katachi.dsl.gradle.mainSourceSet
+import me.tbsten.katachi.dsl.kotlin.ktFile
+import me.tbsten.katachi.konsist.konsist
+
 fun DeclarationContainerScope.uiState() = "UiState" {
   layout {
     "app" / mainSourceSet / kotlin / appPackageDir / "ui/*" / "*UiState".ktFile()
@@ -83,10 +95,17 @@ fun DeclarationContainerScope.uiState() = "UiState" {
 
 private fun FileConstraintScope.shouldBeImmutable() =
   "Every property must be a val".konsist {
-    classes().must { klass -> klass.properties().all { it.hasValModifier } }
+    classes().must { klass -> klass.properties().all { it.isVal } }
   }
 
 // roles/ViewModel.kt
+import me.tbsten.katachi.dsl.DeclarationContainerScope
+import me.tbsten.katachi.dsl.FileConstraintScope
+import me.tbsten.katachi.dsl.gradle.kotlin
+import me.tbsten.katachi.dsl.gradle.mainSourceSet
+import me.tbsten.katachi.dsl.kotlin.ktFile
+import me.tbsten.katachi.konsist.konsist
+
 fun DeclarationContainerScope.viewModel() = "ViewModel" {
   layout {
     "app" / mainSourceSet / kotlin / appPackageDir / "ui/*" / "*ViewModel".ktFile()
@@ -117,6 +136,13 @@ private fun FileConstraintScope.shouldUiStateFlowBePublic() =
   }
 
 // roles/Screen.kt
+import me.tbsten.katachi.dsl.DeclarationContainerScope
+import me.tbsten.katachi.dsl.FileConstraintScope
+import me.tbsten.katachi.dsl.gradle.kotlin
+import me.tbsten.katachi.dsl.gradle.mainSourceSet
+import me.tbsten.katachi.dsl.kotlin.ktFile
+import me.tbsten.katachi.konsist.konsist
+
 fun DeclarationContainerScope.screen() = "Screen" {
   layout {
     "app" / mainSourceSet / kotlin / appPackageDir / "ui/*" / "*Screen".ktFile()
@@ -136,6 +162,13 @@ private fun FileConstraintScope.shouldContainsPublicScreenComposable() =
   }
 
 // roles/UseCase.kt
+import me.tbsten.katachi.dsl.DeclarationContainerScope
+import me.tbsten.katachi.dsl.FileConstraintScope
+import me.tbsten.katachi.dsl.gradle.kotlin
+import me.tbsten.katachi.dsl.gradle.mainSourceSet
+import me.tbsten.katachi.dsl.kotlin.ktFile
+import me.tbsten.katachi.konsist.konsist
+
 fun DeclarationContainerScope.useCase() = "UseCase" {
   layout {
     "app" / mainSourceSet / kotlin / appPackageDir / "domain/*" / "*UseCase".ktFile()
@@ -158,6 +191,11 @@ private fun FileConstraintScope.shouldSingleInvokePublicMethod() =
   }
 
 // roles/DomainModel.kt
+import me.tbsten.katachi.dsl.DeclarationContainerScope
+import me.tbsten.katachi.dsl.gradle.kotlin
+import me.tbsten.katachi.dsl.gradle.mainSourceSet
+import me.tbsten.katachi.dsl.kotlin.ktFile
+
 fun DeclarationContainerScope.domainModel() = "DomainModel" {
   layout {
     "app" / mainSourceSet / kotlin / appPackageDir / "domain/model" / "*".ktFile()
@@ -165,6 +203,13 @@ fun DeclarationContainerScope.domainModel() = "DomainModel" {
 }
 
 // roles/RepositoryInterface.kt
+import me.tbsten.katachi.dsl.DeclarationContainerScope
+import me.tbsten.katachi.dsl.FileConstraintScope
+import me.tbsten.katachi.dsl.gradle.kotlin
+import me.tbsten.katachi.dsl.gradle.mainSourceSet
+import me.tbsten.katachi.dsl.kotlin.ktFile
+import me.tbsten.katachi.konsist.konsist
+
 fun DeclarationContainerScope.repositoryInterface() = "RepositoryInterface" {
   layout {
     "app" / mainSourceSet / kotlin / appPackageDir / "data/*" / "*Repository".ktFile()
@@ -179,6 +224,13 @@ private fun FileConstraintScope.shouldContainsRepositoryInterface() =
   }
 
 // roles/RepositoryImplementation.kt
+import me.tbsten.katachi.dsl.DeclarationContainerScope
+import me.tbsten.katachi.dsl.FileConstraintScope
+import me.tbsten.katachi.dsl.gradle.kotlin
+import me.tbsten.katachi.dsl.gradle.mainSourceSet
+import me.tbsten.katachi.dsl.kotlin.ktFile
+import me.tbsten.katachi.konsist.konsist
+
 fun DeclarationContainerScope.repositoryImplementation() = "RepositoryImplementation" {
   layout {
     "app" / mainSourceSet / kotlin / appPackageDir / "data/*" / "*RepositoryImpl".ktFile()
@@ -193,6 +245,13 @@ private fun FileConstraintScope.shouldContainsRepositoryImplementationClass() =
   }
 
 // roles/DataSource.kt
+import me.tbsten.katachi.dsl.DeclarationContainerScope
+import me.tbsten.katachi.dsl.FileConstraintScope
+import me.tbsten.katachi.dsl.gradle.kotlin
+import me.tbsten.katachi.dsl.gradle.mainSourceSet
+import me.tbsten.katachi.dsl.kotlin.ktFile
+import me.tbsten.katachi.konsist.konsist
+
 fun DeclarationContainerScope.dataSource() = "DataSource" {
   layout {
     "app" / mainSourceSet / kotlin / appPackageDir / "data/*" / "*DataSource".ktFile()
@@ -206,6 +265,8 @@ private fun FileConstraintScope.shouldContainsDataSourceClass() =
     files.must { file -> file.classes().map { it.name } == listOf(file.name) }
   }
 ```
+
+Because this uses `konsist { }`, add a dependency on `katachi-konsist` to `:architecture-test` and call `assert(FileConstraintCheck())` in the test (which needs `@OptIn(ExperimentalKatachiApi::class)`). With `assert()` alone the constraints are not evaluated and the test fails with `[UncheckedFileConstraint]`. See [Konsist integration](/katachi/guides/konsist-integration/) for details.
 
 <SnippetIsStartingPoint>
 For example, if your product uses Dagger Hilt, you might add a check for the `@HiltViewModel` annotation on ViewModels, or a check that repository implementation classes have an `@Inject` constructor — customizations like these will likely be necessary.

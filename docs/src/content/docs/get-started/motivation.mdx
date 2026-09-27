@@ -108,11 +108,11 @@ Running the unit test that includes katachi reports the error like this:
 ```
 Katachi check failed: 1 violation (Unexpected: 1)
 
-[UnexpectedFile] src/main/kotlin/com/example/project/GetUserUseCase.kt
+[UnexpectedFile] file:///path/to/project/src/main/kotlin/com/example/project/GetUserUseCase.kt
   No role is defined for this file.
 
   Nearby locations:
-    UseCase    src/main/kotlin/com/example/project/useCase/
+    UseCase file:///path/to/project/src/main/kotlin/com/example/project/useCase/
 
   How to fix:
     - Move it to one of the locations above
@@ -135,6 +135,8 @@ From the project structure you defined with katachi, you can have Markdown docum
 ```shell
 $ ./gradlew katachiDocs
 ```
+
+Once you point the Gradle plugin at the definition with `katachi { architecture = "..." }`, the pages are written to `build/katachi/docs` of the module that holds the definition.
 
 <CodeComparison>
 <CodeComparison.Panel label="Architecture definition" labelVariant="note">
@@ -162,7 +164,7 @@ val projectArchitecture = architecture {
 </CodeComparison.Panel>
 
 <CodeComparison.Panel label="Generated Markdown" labelVariant="success">
-```md title="docs/UseCase.md"
+```md title="build/katachi/docs/UseCase.md"
 [Architecture](README.md)
 
 # Use case

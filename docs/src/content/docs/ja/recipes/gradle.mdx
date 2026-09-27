@@ -1,6 +1,6 @@
 ---
 title: Gradle
-description: ビルドスクリプト・wrapper・version catalog を architecture { } で宣言する例と、.module { } が何に展開されるかの説明。
+description: ビルドスクリプト・wrapper・version catalog を architecture { } で宣言する例と、composite build / buildSrc を使っている場合の宣言の例。
 tags:
   - intermediate
 ---
@@ -10,14 +10,25 @@ import SnippetIsStartingPoint from '../../../../components/SnippetIsStartingPoin
 import { Aside } from '@astrojs/starlight/components';
 
 ```kt title="ProjectArchitecture.kt"
+import me.tbsten.katachi.dsl.architecture
+import me.tbsten.katachi.dsl.gradle.gradle
+
 val architecture = architecture {
     gradle() // gradle.kts, gradle wrapper などが documented = false で宣言されます
 }
 ```
 
+サンプルでも同じ1行で宣言しています（[sample/jvm の GradleGroup.kt](https://github.com/TBSten/katachi/blob/main/sample/jvm/architecture-test/src/test/kotlin/com/example/groups/GradleGroup.kt)）。
+
 ## composite build / buildSrc を利用している場合
 
+`gradle()` は `build-logic` などの included build と `buildSrc` を宣言しません。その中のビルドスクリプトと規約プラグインは、自分で宣言します。
+
 ```kt title="ProjectArchitecture.kt"
+import me.tbsten.katachi.dsl.architecture
+import me.tbsten.katachi.dsl.gradle.gradle
+import me.tbsten.katachi.dsl.kotlin.ktFile
+import me.tbsten.katachi.dsl.kotlin.ktsFile
 
 const val buildConventionDir = "build-logic" // buildSrc を利用する場合は代わりに "buildSrc"
 
@@ -25,18 +36,40 @@ val architecture = architecture {
     gradle()
 
     "Build".group {
-        "ConventionPlugins" {
-            documented = false
+        documented = false
 
+        "BuildScript" {
             layout {
-                buildConventionDir / "src/main/kotlin" /
-                    "*.gradle".ktsFile()
+                buildConventionDir {
+                    "build.gradle".ktsFile()
+                    "settings.gradle".ktsFile().optional() // buildSrc では無くてもよい
+                }
+            }
+        }
 
-                buildConventionDir / "src/main/kotlin" /
-                    "*".ktFile()
+        "ConventionPlugins" {
+            layout {
+                "$buildConventionDir/src/main/kotlin" {
+                    "*.gradle".ktsFile()
+                    "**" / "*".ktFile() // パッケージを切ったクラスも許す
+                }
+            }
+
+            // ./gradlew katachiTemplate --arg roleName=Build/ConventionPlugins --arg name=kotlin-library
+            template {
+                val name by stringParameter()
+
+                file("${name}.gradle.kts") {
+                    """
+                        plugins {
+                            kotlin("jvm")
+                        }
+                    """.trimIndent()
+                }
             }
         }
     }
 }
+```
 
 <SnippetIsStartingPoint />

@@ -308,16 +308,18 @@ A group takes the same four properties a role does. **Only `example()` is missin
 | [`documented`](/katachi/api-docs/katachi/me.tbsten.katachi.dsl/-group-scope/documented.html) | Set to `false` to keep the whole group out of the documentation. It still takes part in the checks | --- |
 
 <details>
-    <summary>Careful: documented is not inherited</summary>
+    <summary>Careful: documented = false takes the group's contents out with it</summary>
 
-    A role inside a group with `documented = false` **still appears in the documentation unless it says `documented = false` for itself.** The same goes for a nested group.
+    A group with `documented = false` **takes its roles and nested groups out of the documentation along with it,** whatever those roles write for themselves.
 
     ```kt
     "build".group {
         documented = false
-        "VersionCatalog" { documented = false }   // the group alone is not enough
+        "VersionCatalog" { }   // leaves the documentation together with the group
     }
     ```
+
+    The value itself is not copied onto the roles and groups inside (each keeps what it wrote). A processor of your own that reads this value should walk up `Role.groupPath` and look at the parent groups' values too.
 
 </details>
 

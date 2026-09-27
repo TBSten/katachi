@@ -16,14 +16,19 @@ import { Aside, Tabs, TabItem, LinkCard } from "@astrojs/starlight/components"
 katachi の `ArchitectureProcessor` は、アーキテクチャ定義をもとに何かを行う interface です。
 
 ```kt
+@ExperimentalKatachiApi
 public interface ArchitectureProcessor<Args, R> {
     // 引数の parser
     public val argsSerializer: KSerializer<Args>
 
     // 何かを行う
     public fun process(context: ArchitectureProcessContext<Args>): Result<R>
+
+    // （抜粋。既定の実装を持つ undeclaredArgNames などは省略）
 }
 ```
+
+`ArchitectureProcessor` は `@ExperimentalKatachiApi` なので、実装するときは `@OptIn(ExperimentalKatachiApi::class)` を付けます。
 
 `process` の本体は `runCatching { }` で包みます。**「この run は通らない」と答えるときは、その中で例外を投げます。**
 
@@ -154,6 +159,8 @@ katachi {
     `docs`（ドキュメント生成）と `template`（テンプレートからのコード生成）、`templates`（テンプレートの一覧と詳細）はよく使われるので、デフォルトで登録されています。
     これらを実行するために `katachi.processors` へ登録する必要はありません。
 
+    このほか、IDE プラグインが使う `internalTemplatesJson`（タスク `katachiInternalTemplatesJson`）も登録されます。IDE プラグインのためのものなので、自分で実行する必要はありません。
+
     同じキーを自分で `register` すると**そちらが勝ちます。** `docs` を自作の processor に差し替えることもできます。
 
     ```kts title="architecture-test/build.gradle.kts" {5-8}
@@ -181,7 +188,7 @@ katachi {
 [1/3] Processors: docs
 
 [2/3] Processing...
-  [docs] Writing 17 pages to /path/to/sample/jvm/docs
+  [docs] Writing 17 pages to file:///path/to/sample/jvm/docs
   [docs] README.md
   [docs] api/
   [docs]   README.md
@@ -234,7 +241,7 @@ process メソッドに渡される `context` には、アーキテクチャ定�
                 // context.roles / groups  ... 定義された役割・group
                 // context.declaredEntries ... layout を flat にした宣言の一覧
                 // context.filesOf(role)   ... その役割にマッチした実ファイル
-                // context.fileSystem      ... 走査に使うファイルシステム
+                // context.rawArgs         ... 渡された引数（名前と値）をそのまま
                 // context.log()           ... 進捗を表示します
 
                 context.log("Counting files per role...")

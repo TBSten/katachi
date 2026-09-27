@@ -13,11 +13,11 @@ import { Steps } from '@astrojs/starlight/components';
 |---|---|---|
 | **v0.1** | DSL + checks + `konsist { }` | Can express a large project, and checks pass |
 | **v0.2** | Gradle plugin + documentation generation + `declarations { }` | `./gradlew katachiDocs` produces documentation, and most of the `konsist { }` written in v0.1 can be replaced |
-| **v0.3 and beyond** | baseline / report output / vocabulary-size measurement | Can be adopted in an **existing project** |
+| **v0.3 and beyond** | Report output / vocabulary-size measurement | Can be adopted in an **existing project** |
 
 ## v0.2 — Gradle plugin, documentation generation and `declarations { }`
 
-This is the stage where katachi's selling points all come together, and it is **currently being implemented.** The Gradle plugin scaffolding, the mechanism that runs work on top of it (processors), and **documentation generation** are in place. **`declarations { }` is still ahead of us.**
+This is the stage where katachi's selling points all come together, and it is **currently being implemented.** The Gradle plugin scaffolding, the mechanism that runs work on top of it (processors), **documentation generation**, code generation from templates, the IDE plugin and baseline (experimental) are in place. **`declarations { }` is still ahead of us.**
 
 ```shell
 ./gradlew katachiDocs
@@ -78,19 +78,18 @@ And the violation can say more than "a constraint failed", because katachi knows
 
 | Feature | What it enables |
 |---|---|
-| [`template { }`](/katachi/guides/generate-code-from-template/) | Generates a file that conforms to a role from a template |
+| [`template { }`](/katachi/guides/generate-code-from-template/) | Generates a file that conforms to a role from a template. Arguments can be typed (`stringParameter()` / `booleanParameter()` / `intParameter()` / `enumParameter()`) |
+| IDE plugin | Pick a template from a tool window in IntelliJ IDEA / Android Studio, fill in its arguments and generate the code |
+| **baseline** (experimental) | Records existing violations in a ledger file and fails only on **newly added** ones. Write `architecture { baseline = baselineFile() }`, record with `-Dkatachi.baseline.update=true`, and drop what you fixed from the ledger with `-Dkatachi.baseline.prune=true` |
 | `dependsOnlyOn` | Writes what may be depended on as an **allow list**. A deny-list approach lets omissions slip through |
 | Limiting a directory's `konsist { }` to direct children | Applies it only to the files directly in that directory, not the whole subtree |
 
-Of these, `template { }` is already usable.
-
 ## v0.3 and beyond — Adoption in existing projects
 
-Everything up to this point is for new projects only. Making it possible to adopt katachi in existing projects is the theme of v0.3 and beyond.
+Making katachi easier to adopt in existing projects is the theme of v0.3 and beyond. Only baseline, which sets the current violations aside, has already landed in v0.2 as an experimental feature.
 
 | Feature | What it enables |
 |---|---|
-| **baseline** | Records existing violations and fails only on **newly added** ones |
 | **Report output** | Outputs JSON / SARIF, surfaced as annotations on GitHub PRs |
 | **Vocabulary-size measurement** | Reports the number of roles and the file count per role as numbers |
 | **`pairedWith`** | Checks coverage, such as "every `Screen` has a corresponding `Preview`" |
@@ -100,4 +99,4 @@ The specification for this stage is largely undecided. Even the version numberin
 ## Next steps
 
 - [Motivation and where katachi fits](/katachi/get-started/motivation/) ... Why this order? It's tied to what katachi is trying to solve in the first place.
-- [Your first architecture definition](/katachi/get-started/first-architecture/) ... Try out the v0.1 functionality that works today.
+- [Your first architecture definition](/katachi/get-started/first-architecture/) ... Try out what works today.

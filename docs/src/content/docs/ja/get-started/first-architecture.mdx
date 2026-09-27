@@ -41,7 +41,7 @@ katachi が必要かどうか疑問がある場合は、先に [モチベーシ�
 
         注目すべき点:
         - `architecture-test/src/test/kotlin/.../test/architecture/ProjectArchitecture.kt` がエントリーポイントです。
-        - 場合によっては、AI Agent が `ProjectArchitecture.kt` だけでなく隣のパッケージも作り、architecture の定義を断片に分けてそこへ置くことがあります。そのパッケージのコードもレビュー対象です。
+        - AI Agent は architecture の定義を group・役割ごとのファイルに分け、`ProjectArchitecture.kt` の下のパッケージに置きます。そのファイルもレビュー対象です。
     
         <Aside title="チーム開発">
           - チームで開発している場合は、チームメンバー（特にチームのリード）にも重点的にレビューしてもらいましょう。
@@ -65,8 +65,17 @@ katachi が必要かどうか疑問がある場合は、先に [モチベーシ�
         アプリのどの層にも属さない、アーキテクチャ定義とそれを検査するテストだけを置くモジュールです。
 
         ```kotlin title="settings.gradle.kts"
+        pluginManagement {
+            repositories {
+                gradlePluginPortal()
+                mavenCentral()
+            }
+        }
+
         include(":architecture-test")
         ```
+
+        katachi の Gradle plugin は Gradle Plugin Portal ではなく Maven Central に公開しています。`pluginManagement { }` に `mavenCentral()` が無いと、plugin を解決できません。
 
     2. **依存を書く**
 
@@ -89,7 +98,7 @@ katachi が必要かどうか疑問がある場合は、先に [モチベーシ�
         dependencies {
             testImplementation("me.tbsten.katachi:katachi:<katachi のバージョン>")
             testImplementation("me.tbsten.katachi:katachi-konsist:<katachi のバージョン>")
-            testImplementation(platform("org.junit:junit-bom:5.13.4"))
+            testImplementation(platform("org.junit:junit-bom:5.14.4"))
             testImplementation("org.junit.jupiter:junit-jupiter")
             testRuntimeOnly("org.junit.platform:junit-platform-launcher")
         }
@@ -99,12 +108,31 @@ katachi が必要かどうか疑問がある場合は、先に [モチベーシ�
         ルートの `build.gradle.kts` に `kotlin("jvm") version "..." apply false` を書き、**モジュール側ではバージョンを書かずに** `kotlin("jvm")` とだけ書いてください。
         </Aside>
 
+        <details>
+        <summary>Kotlin のバージョン（2.2 以上。2.4 未満ならコンパイラオプションが要る）</summary>
+
+        Kotlin は **2.2 以上** を使ってください。それより前の Kotlin は katachi のライブラリの metadata を読めません。
+
+        `ktFile()` や `konsist { }` などは context parameters で宣言しています。**Kotlin 2.4 未満** では、次のオプションが無いと呼べません（2.4 以降では付けないでください。警告になります）。
+
+        ```kotlin title="architecture-test/build.gradle.kts"
+        kotlin {
+            compilerOptions.freeCompilerArgs.add("-Xcontext-parameters")
+        }
+        ```
+
+        </details>
+
     3. **アーキテクチャを定義する。**
 
         `architecture-test/src/test/kotlin/<パッケージ>/ProjectArchitecture.kt` がエントリーポイントです。
 
         ```kotlin
         // 例
+        package com.example
+
+        import me.tbsten.katachi.dsl.architecture
+
         val projectArchitecture = architecture {
             "domain".group {
                 "UseCase" {
@@ -122,6 +150,11 @@ katachi が必要かどうか疑問がある場合は、先に [モチベーシ�
     4. **検査する1本のテストを書く**
 
         ```kotlin title="architecture-test/src/test/kotlin/<パッケージ>/ProjectArchitectureTest.kt"
+        package com.example
+
+        import me.tbsten.katachi.check.assert
+        import org.junit.jupiter.api.Test
+
         class ProjectArchitectureTest {
             @Test
             fun `プロジェクトの構成が定義どおりになっている`() {
@@ -141,6 +174,8 @@ katachi が必要かどうか疑問がある場合は、先に [モチベーシ�
         ```
 
         最初は **宣言していないファイルがすべて違反として出ます。** katachi は許可リスト方式なので、これが正常な出発点です。出てきたパスを定義に足すか、消すかを決めていってください。
+
+        既存の違反が多くてすぐには片付けられない場合は、実験的な機能の baseline（`architecture { baseline = baselineFile() }`）で今ある違反を台帳のファイル（既定は `katachi-baseline.json`）に棚上げし、新しい違反だけでテストを落とすこともできます。台帳のファイルも `layout { }` で宣言します。
 
     </Steps>
   </TabItem>
@@ -229,4 +264,9 @@ katachi が必要かどうか疑問がある場合は、先に [モチベーシ�
 
 ## 次のステップ
 
-- katachi への理解を深め、architecture 定義を洗練させるには、各種コンセプト・ガイドを参照してください。
+- katachi への理解を深め、architecture 定義を洗練させるには、各種ガイドを参照してください。
+    - [基本的な API](/katachi/ja/guides/basic-api/)
+    - [Role](/katachi/ja/guides/role/)
+    - [Layout](/katachi/ja/guides/layout/)
+    - [Konsist との統合](/katachi/ja/guides/konsist-integration/)
+    - [ドキュメント生成](/katachi/ja/guides/document-generation/)

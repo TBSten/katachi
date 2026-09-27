@@ -7,6 +7,8 @@ tags:
 
 import SnippetIsStartingPoint from '../../../../components/SnippetIsStartingPoint.astro';
 
+複数のツールを使う場合は、`**/AGENTS.md` や `.agents/skills/**/*` のように、同じファイルを複数のツールの役割が宣言することになります。そのまま組み合わせると `[AmbiguousLayout]` の警告が出ます（テストは落ちません）。共通のファイルは、共通の役割に1度だけ書いてください。
+
 ## Claude Code
 
 ```kt collapse
@@ -262,6 +264,7 @@ fun DeclarationContainerScope.githubCopilot() =
 
         "SetupSteps" {
             layout {
+                // GitHub のレシピの Workflow（.github/workflows/*.yml）とも重なる
                 ".github/workflows/copilot-setup-steps.yml".file().optional()
             }
         }

@@ -144,11 +144,11 @@ When you run the test, the nearby valid location and how to fix it are reported 
 ```text
 Katachi check failed: 1 violation (Unexpected: 1)
 
-[UnexpectedFile] src/main/kotlin/com/example/GetUserUseCase.kt
+[UnexpectedFile] file:///path/to/project/src/main/kotlin/com/example/GetUserUseCase.kt
   No role is defined for this file.
 
   Nearby locations:
-    UseCase    src/main/kotlin/com/example/useCase/
+    UseCase file:///path/to/project/src/main/kotlin/com/example/useCase/
 
   How to fix:
     - Move it to one of the locations above
@@ -216,10 +216,10 @@ class GetUserUseCase(private val repository: UserRepository) {
 When the test calls `assert(FileConstraintCheck())` (which needs `@OptIn(ExperimentalKatachiApi::class)`), it shows up in the same report as placement violations. **It even tells you which file and which line.**
 
 ```text
-[UnsatisfiedFileConstraint] src/main/kotlin/com/example/useCase/GetUserUseCase.kt
-  Role: domain/UseCase / FileConstraint: "has exactly one invoke function"
+[UnsatisfiedFileConstraint] file:///path/to/project/src/main/kotlin/com/example/useCase/GetUserUseCase.kt
+  Role: UseCase / FileConstraint: "has exactly one invoke function"
   Declaration: GetUserUseCase (line 3)
-  Declared at: ProjectArchitecture.kt:18 (layout of src/main/kotlin/com/example/useCase)
+  Declared at: ProjectArchitecture.kt:12
 ```
 
 `How to fix:` is not shown. Since the body of a constraint is an arbitrary Kotlin expression, **katachi has no idea what would satisfy it.** Guessing would produce a lie, so it only points to where the rule is declared.
@@ -291,8 +291,8 @@ Factor each Role out into its own extension function.
             layout { 
                 "src/main/kotlin/com/example/project/repository" / "*Repository".ktFile()
             }
-            "must be an interface".konsist {
-                classes().must { it.isInterface }
+            "must not hold a class".konsist {
+                classes().mustBeEmpty()
             }
             // ...
         }
@@ -339,8 +339,8 @@ Factor each Role out into its own extension function.
         layout {
             "src/main/kotlin/com/example/project/repository" / "*Repository".ktFile()
         }
-        "must be an interface".konsist {
-            classes().must { it.isInterface }
+        "must not hold a class".konsist {
+            classes().mustBeEmpty()
         }
         // ...
     }

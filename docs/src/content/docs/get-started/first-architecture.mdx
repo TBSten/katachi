@@ -41,7 +41,7 @@ If you are not yet convinced that you need katachi, read [Motivation](/katachi/g
 
         What to look at:
         - `architecture-test/src/test/kotlin/.../test/architecture/ProjectArchitecture.kt` is the entry point.
-        - The AI agent may go beyond `ProjectArchitecture.kt` and create neighbouring packages that hold pieces of the architecture. Review that code too.
+        - The AI agent splits the architecture definition into one file per group and per role, and puts them in packages under `ProjectArchitecture.kt`. Review those files too.
     
         <Aside title="Working in a team">
           - If you work in a team, have your teammates (especially whoever leads it) review this closely as well.
@@ -65,8 +65,17 @@ If you are not yet convinced that you need katachi, read [Motivation](/katachi/g
         This module belongs to no layer of the app. It holds nothing but the architecture definition and the test that checks it.
 
         ```kotlin title="settings.gradle.kts"
+        pluginManagement {
+            repositories {
+                gradlePluginPortal()
+                mavenCentral()
+            }
+        }
+
         include(":architecture-test")
         ```
+
+        katachi's Gradle plugin is published to Maven Central, not to the Gradle Plugin Portal. Without `mavenCentral()` in `pluginManagement { }`, the plugin cannot be resolved.
 
     2. **Declare the dependencies**
 
@@ -89,7 +98,7 @@ If you are not yet convinced that you need katachi, read [Motivation](/katachi/g
         dependencies {
             testImplementation("me.tbsten.katachi:katachi:<katachi version>")
             testImplementation("me.tbsten.katachi:katachi-konsist:<katachi version>")
-            testImplementation(platform("org.junit:junit-bom:5.13.4"))
+            testImplementation(platform("org.junit:junit-bom:5.14.4"))
             testImplementation("org.junit.jupiter:junit-jupiter")
             testRuntimeOnly("org.junit.platform:junit-platform-launcher")
         }
@@ -99,12 +108,31 @@ If you are not yet convinced that you need katachi, read [Motivation](/katachi/g
         Write `kotlin("jvm") version "..." apply false` in the root `build.gradle.kts`, and in the module write just `kotlin("jvm")`, **without a version**.
         </Aside>
 
+        <details>
+        <summary>Kotlin version (2.2 or later; below 2.4 a compiler option is needed)</summary>
+
+        Use Kotlin **2.2 or later**. Earlier Kotlin versions cannot read the metadata of katachi's libraries.
+
+        `ktFile()`, `konsist { }` and others are declared with context parameters. **Below Kotlin 2.4** they cannot be called without the following option (do not add it on 2.4 or later; it causes a warning).
+
+        ```kotlin title="architecture-test/build.gradle.kts"
+        kotlin {
+            compilerOptions.freeCompilerArgs.add("-Xcontext-parameters")
+        }
+        ```
+
+        </details>
+
     3. **Define the architecture.**
 
         `architecture-test/src/test/kotlin/<package>/ProjectArchitecture.kt` is the entry point.
 
         ```kotlin
         // Example
+        package com.example
+
+        import me.tbsten.katachi.dsl.architecture
+
         val projectArchitecture = architecture {
             "domain".group {
                 "UseCase" {
@@ -122,6 +150,11 @@ If you are not yet convinced that you need katachi, read [Motivation](/katachi/g
     4. **Write the one test that checks it**
 
         ```kotlin title="architecture-test/src/test/kotlin/<package>/ProjectArchitectureTest.kt"
+        package com.example
+
+        import me.tbsten.katachi.check.assert
+        import org.junit.jupiter.api.Test
+
         class ProjectArchitectureTest {
             @Test
             fun `the project structure matches the definition`() {
@@ -141,6 +174,8 @@ If you are not yet convinced that you need katachi, read [Motivation](/katachi/g
         ```
 
         At first **every file you have not declared comes out as a violation.** katachi is an allow-list, so this is the normal starting point. Go through the reported paths and decide, one by one, whether to add them to the definition or delete them.
+
+        If there are too many existing violations to clear up right away, the experimental baseline feature (`architecture { baseline = baselineFile() }`) lets you set the current violations aside in a ledger file (`katachi-baseline.json` by default) so that only new violations fail the test. Declare the ledger file in `layout { }` too.
 
     </Steps>
   </TabItem>
@@ -229,4 +264,9 @@ To keep the quality up, run the katachi architecture test regularly by wiring it
 
 ## Next steps
 
-- Read the concepts and guides to deepen your understanding of katachi and refine your architecture definition.
+- Read the guides to deepen your understanding of katachi and refine your architecture definition.
+    - [Basic API](/katachi/guides/basic-api/)
+    - [Role](/katachi/guides/role/)
+    - [Layout](/katachi/guides/layout/)
+    - [Konsist integration](/katachi/guides/konsist-integration/)
+    - [Document generation](/katachi/guides/document-generation/)

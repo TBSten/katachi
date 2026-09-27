@@ -7,6 +7,8 @@ tags:
 
 import SnippetIsStartingPoint from '../../../components/SnippetIsStartingPoint.astro';
 
+If you use more than one tool, the roles of several tools end up declaring the same files, such as `**/AGENTS.md` and `.agents/skills/**/*`. Combining them as they are produces `[AmbiguousLayout]` warnings (the test does not fail). Write the shared files only once, in a shared role.
+
 ## Claude Code
 
 ```kt collapse
@@ -262,6 +264,7 @@ fun DeclarationContainerScope.githubCopilot() =
 
         "SetupSteps" {
             layout {
+                // Also overlaps with Workflow (.github/workflows/*.yml) in the GitHub recipe
                 ".github/workflows/copilot-setup-steps.yml".file().optional()
             }
         }

@@ -144,11 +144,11 @@ src/main/kotlin/com/example/GetUserUseCase.kt   ← useCase/ の外に置いて�
 ```text
 Katachi check failed: 1 violation (Unexpected: 1)
 
-[UnexpectedFile] src/main/kotlin/com/example/GetUserUseCase.kt
+[UnexpectedFile] file:///path/to/project/src/main/kotlin/com/example/GetUserUseCase.kt
   No role is defined for this file.
 
   Nearby locations:
-    UseCase    src/main/kotlin/com/example/useCase/
+    UseCase file:///path/to/project/src/main/kotlin/com/example/useCase/
 
   How to fix:
     - Move it to one of the locations above
@@ -216,10 +216,10 @@ class GetUserUseCase(private val repository: UserRepository) {
 テストで `assert(FileConstraintCheck())` を呼ぶと（`@OptIn(ExperimentalKatachiApi::class)` が必要）、配置の違反と同じレポートに並びます。**どのファイルの何行目かまで出ます。**
 
 ```text
-[UnsatisfiedFileConstraint] src/main/kotlin/com/example/useCase/GetUserUseCase.kt
-  Role: domain/UseCase / FileConstraint: "invoke 関数を1つだけ持つこと"
+[UnsatisfiedFileConstraint] file:///path/to/project/src/main/kotlin/com/example/useCase/GetUserUseCase.kt
+  Role: UseCase / FileConstraint: "invoke 関数を1つだけ持つこと"
   Declaration: GetUserUseCase (line 3)
-  Declared at: ProjectArchitecture.kt:18 (layout of src/main/kotlin/com/example/useCase)
+  Declared at: ProjectArchitecture.kt:12
 ```
 
 `How to fix:` は出ません。制約の中身は任意の Kotlin 式なので、**何をすれば満たされるかを katachi は知りません。** 推測で書くと嘘になるため、規則の場所だけを示しています。
@@ -291,8 +291,8 @@ Role ごとに拡張関数に切り出しましょう。
             layout { 
                 "src/main/kotlin/com/example/project/repository" / "*Repository".ktFile()
             }
-            "interface であること".konsist {
-                classes().must { it.isInterface }
+            "class を置かないこと".konsist {
+                classes().mustBeEmpty()
             }
             // ...
         }
@@ -339,8 +339,8 @@ Role ごとに拡張関数に切り出しましょう。
         layout {
             "src/main/kotlin/com/example/project/repository" / "*Repository".ktFile()
         }
-        "interface であること".konsist {
-            classes().must { it.isInterface }
+        "class を置かないこと".konsist {
+            classes().mustBeEmpty()
         }
         // ...
     }

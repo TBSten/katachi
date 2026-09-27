@@ -13,11 +13,11 @@ import { Steps } from '@astrojs/starlight/components';
 |---|---|---|
 | **v0.1** | DSL + 検査 + `konsist { }` | 大規模なプロジェクトを表現でき、検査が通る |
 | **v0.2** | Gradle plugin + ドキュメント生成 + `declarations { }` | `./gradlew katachiDocs` でドキュメントが出て、v0.1 で書いた `konsist { }` の大半を置き換えられる |
-| **v0.3 以降** | baseline / レポート出力 / 語彙数の計測 | **既存プロジェクト**に導入できる |
+| **v0.3 以降** | レポート出力 / 語彙数の計測 | **既存プロジェクト**に導入できる |
 
 ## v0.2 — Gradle plugin・ドキュメント生成・`declarations { }`
 
-katachi の売りが揃う段階で、**いま実装中**です。Gradle plugin の足場と、その上で処理を走らせる仕組み（processor）、そして**ドキュメント生成**までが動いています。**`declarations { }` はこれからです。**
+katachi の売りが揃う段階で、**いま実装中**です。Gradle plugin の足場と、その上で処理を走らせる仕組み（processor）、**ドキュメント生成**、テンプレートからのコード生成、IDE プラグイン、baseline（実験的）までが動いています。**`declarations { }` はこれからです。**
 
 ```shell
 ./gradlew katachiDocs
@@ -78,17 +78,18 @@ katachi は「何が期待されていたか」を知っています。だから
 
 | 機能 | 何ができるか |
 |---|---|
-| [`template { }`](/katachi/ja/guides/generate-code-from-template/) | 役割に適合するファイルをテンプレートから生成する |
+| [`template { }`](/katachi/ja/guides/generate-code-from-template/) | 役割に適合するファイルをテンプレートから生成する。引数は型付きで受けられる（`stringParameter()` / `booleanParameter()` / `intParameter()` / `enumParameter()`） |
+| IDE プラグイン | IntelliJ IDEA / Android Studio のツールウィンドウからテンプレートを選び、引数を埋めてコードを生成する |
+| **baseline**（実験的） | 既存の違反を台帳のファイルに記録し、**新しく増えた分だけ**で落とす。`architecture { baseline = baselineFile() }` と書き、`-Dkatachi.baseline.update=true` で記録、`-Dkatachi.baseline.prune=true` で直した分を台帳から消す |
 | `dependsOnlyOn` | 依存してよい先を**許可リスト**で書く。禁止リスト方式は書き漏れが素通りする |
 | ディレクトリの `konsist { }` の直下限定 | サブツリー全体ではなく、直下のファイルだけに効かせる |
 
 ## v0.3 以降 — 既存プロジェクトへの導入
 
-ここまでは新規プロジェクト専用です。既存プロジェクトに入れられるようにするのが v0.3 以降の主題です。
+既存プロジェクトに入れやすくするのが v0.3 以降の主題です。今ある違反を棚上げする baseline だけは、実験的な機能として v0.2 に先に入りました。
 
 | 機能 | 何ができるか |
 |---|---|
-| **baseline** | 既存の違反を記録し、**新しく増えた分だけ**で落とす |
 | **レポート出力** | JSON / SARIF で出し、GitHub の PR にアノテーションとして載せる |
 | **語彙数の計測** | 役割の数と、役割ごとのファイル数を数値で出す |
 | **`pairedWith`** | 「すべての `Screen` に対応する `Preview` がある」のような網羅性を検査する |
@@ -98,4 +99,4 @@ katachi は「何が期待されていたか」を知っています。だから
 ## 次のステップ
 
 - [モチベーションと katachi の立ち位置](/katachi/ja/get-started/motivation/) ... なぜこの順番なのかは、そもそも何を解こうとしているかに紐づいています。
-- [初めてのアーキテクチャ定義](/katachi/ja/get-started/first-architecture/) ... いま動く v0.1 の範囲を実際に触ってみましょう。
+- [初めてのアーキテクチャ定義](/katachi/ja/get-started/first-architecture/) ... いま動く範囲を実際に触ってみましょう。

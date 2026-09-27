@@ -20,6 +20,10 @@ A deny-list ("`domain` must not import `android.*`")
 **only protects you from the prohibitions you thought of.** The ways of breaking things you
 did not think of pass straight through. And those are by far the most common ones.
 
+katachi does the opposite: **it makes you write down everything that may appear.** Anything you
+did not write down is a violation. That way "we never thought about it" cannot happen,
+because the unanticipated thing is itself the violation.
+
 The one difference is **which way the things you failed to enumerate fall** — that is all.
 
 <details>
@@ -44,10 +48,6 @@ what it defends is your architecture.
 
 </details>
 
-katachi does the opposite: **it makes you write down everything that may appear.** Anything you
-did not write down is a violation. That way "we never thought about it" cannot happen,
-because the unanticipated thing is itself the violation.
-
 The price, honestly, is that **the start is heavy.** The test will not go green until every
 file in the project has been accounted for. Even so, we think **the fact that some files cannot
 be accounted for is itself the information.** Do you really need that file?
@@ -62,6 +62,9 @@ katachi did not break anything; it only made visible what was already there.
 
 You will work through the reported paths one at a time, adding each to the definition,
 moving it, or deleting it. That is itself **the team agreeing on its architecture again.**
+
+If you cannot clear them all up right away, the experimental baseline feature (`architecture { baseline = baselineFile() }`)
+lets you set the current violations aside in a ledger file so that only new violations fail the test.
 
 ## Konsist and ArchUnit exist — why does anything else need to?
 
@@ -122,7 +125,7 @@ No, **you use both. They do different jobs.**
 "A `UseCase` has exactly one `invoke` function" is Konsist's job.
 
 Because you can write Konsist constraints inside a katachi definition,
-calling `assert(FileConstraintCheck())` in the test puts **placement violations and content violations in a single report.**
+calling `assert(FileConstraintCheck())` in the test (this needs `@OptIn(ExperimentalKatachiApi::class)`) puts **placement violations and content violations in a single report.**
 
 And Konsist is not the only tool that occupies the "check the contents of a file" position.
 If you use custom [detekt](https://detekt.dev/) rules or [Konture](https://github.com/baole/konture), those may serve as a substitute for Konsist, depending on the rule you want to check.
@@ -154,20 +157,20 @@ failure message**. If ten things are wrong, all ten come out at once. You read i
 ```text title="What a single run gives you" {1}
 Katachi check failed: 3 violations (Unexpected: 2, Missing: 1)
 
-[UnexpectedFile] src/main/kotlin/com/example/GetUserUseCase.kt
+[UnexpectedFile] file:///path/to/project/src/main/kotlin/com/example/GetUserUseCase.kt
   No role is defined for this file.
 
   Nearby locations:
-    UseCase    src/main/kotlin/com/example/useCase/
+    UseCase file:///path/to/project/src/main/kotlin/com/example/useCase/
 
   How to fix:
     - Move it to one of the locations above
     ...
 
-[UnexpectedDirectory] src/main/kotlin/com/example/misc
+[UnexpectedDirectory] file:///path/to/project/src/main/kotlin/com/example/misc
   ...
 
-[MissingFile] src/main/kotlin/com/example/useCase/DeleteUserUseCase.kt
+[MissingFile] file:///path/to/project/src/main/kotlin/com/example/useCase/DeleteUserUseCase.kt
   ...
 ```
 
@@ -210,11 +213,6 @@ own is structurally impossible.**
 Tests and documentation are what katachi ships, but **you are not limited to those two.**
 You can pull whatever you want out of the same definition
 ([ArchitectureProcessor and customizing it](/katachi/guides/processor/)).
-
-<Aside type="caution">
-Documentation generation is **planned for v0.2 and does not work yet.**
-What you can use today is the check (`assert()`).
-</Aside>
 
 ## How do I decide the names and the granularity of Roles?
 

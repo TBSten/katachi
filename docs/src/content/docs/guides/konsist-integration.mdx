@@ -69,7 +69,7 @@ architecture {
 A constraint applies to the files that matched the Role's `layout { }`. Writing a constraint on a Role with no `layout { }` throws `KatachiFileConstraintWithoutLayoutException` as soon as the definition is evaluated.
 
 <Aside type="caution">
-  Writing `assertTrue { }` inside `konsist { }` **causes a compile error** (it is blocked with an ERROR-level `@Deprecated`). Konsist's `assertTrue` throws an assertion exception on the spot, which goes against the design that separates DSL declaration from verification.
+  Writing `assertTrue { }` inside `konsist { }` **causes a compile error** (it is blocked with an ERROR-level `@Deprecated`). Konsist's `assertTrue` throws on the spot at the first declaration it rejects, so katachi cannot learn which declarations were rejected and cannot collect every violation in a single run.
   Use must / mustNot / mustBeEmpty instead.
 </Aside>
 
@@ -80,7 +80,7 @@ When a constraint violation is detected, the error message looks like this.
 ```text
 Katachi check failed: 1 violation (FileConstraint: 1)
 
-[UnsatisfiedFileConstraint] src/main/kotlin/com/example/useCase/GetUserUseCase.kt
+[UnsatisfiedFileConstraint] file:///path/to/project/src/main/kotlin/com/example/useCase/GetUserUseCase.kt
   Role: UseCase / FileConstraint: "has exactly one invoke function"
   Declaration: GetUserUseCase (line 3)
   Declared at: ProjectArchitecture.kt:12
@@ -97,7 +97,12 @@ Inside a `"...".konsist { }` block, you can use the regular Konsist API.
   href="https://docs.konsist.lemonappdev.com/"
 />
 
-katachi only replaces three things — `must`, `mustNot`, and `mustBeEmpty` — everything up to narrowing down the target uses Konsist's syntax as-is.
+katachi adds three things — `must`, `mustNot`, and `mustBeEmpty` — and blocks Konsist's assertions such as `assertTrue` with compile errors. Everything up to narrowing down the target uses Konsist's syntax as-is.
+
+<Aside type="caution" title="What this block cannot do">
+  - **`.kts` files are never covered.** Konsist only reads `.kt` files. Rules about `build.gradle.kts` and the like cannot be written with `konsist { }`.
+  - **Do not rely on `projectPath` / `moduleName`.** They are relative to the root Konsist guessed, not to the project katachi walked.
+</Aside>
 
 ## Summary
 

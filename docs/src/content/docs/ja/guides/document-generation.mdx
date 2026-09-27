@@ -308,16 +308,18 @@ group に設定できるのは Role と同じ4つです。**`example()` だけ�
 | [`documented`](/katachi/api-docs/katachi/me.tbsten.katachi.dsl/-group-scope/documented.html) | `false` にすると group ごとドキュメントに出ません。検査には参加します | --- |
 
 <details>
-    <summary>注意: documented は継承されません</summary>
+    <summary>注意: documented = false は group の中身ごと外します</summary>
 
-    `documented = false` にした group の中の Role は、**自分でも `documented = false` と書かない限りドキュメントに出ます。** ネストした group も同じです。
+    `documented = false` にした group は、**中の Role とネストした group もまとめてドキュメントに出なくなります。** 中の Role が自分で何と書いていても同じです。
 
     ```kt
     "build".group {
         documented = false
-        "VersionCatalog" { documented = false }   // group 側だけでは足りない
+        "VersionCatalog" { }   // group と一緒にドキュメントから外れる
     }
     ```
+
+    値そのものは中の Role や group に写されません（それぞれ自分が書いた値を持ちます）。自作の processor でこの値を見るときは、`Role.groupPath` をたどって親の group の値も見てください。
 
 </details>
 

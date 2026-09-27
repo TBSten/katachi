@@ -108,11 +108,11 @@ katachi を含んだ Unit test を実行すると、以下のようにエラー�
 ```
 Katachi check failed: 1 violation (Unexpected: 1)
 
-[UnexpectedFile] src/main/kotlin/com/example/project/GetUserUseCase.kt
+[UnexpectedFile] file:///path/to/project/src/main/kotlin/com/example/project/GetUserUseCase.kt
   No role is defined for this file.
 
   Nearby locations:
-    UseCase    src/main/kotlin/com/example/project/useCase/
+    UseCase file:///path/to/project/src/main/kotlin/com/example/project/useCase/
 
   How to fix:
     - Move it to one of the locations above
@@ -135,6 +135,8 @@ katachi で書いたプロジェクト構造の定義から、markdown のドキ
 ```shell
 $ ./gradlew katachiDocs
 ```
+
+Gradle plugin の `katachi { architecture = "..." }` で定義の場所を指定しておくと、定義を置いたモジュールの `build/katachi/docs` に書き出されます。
 
 <CodeComparison>
   <CodeComparison.Panel label="アーキテクチャ定義" labelVariant="note">
@@ -162,7 +164,7 @@ $ ./gradlew katachiDocs
   </CodeComparison.Panel>
 
   <CodeComparison.Panel label="生成された Markdown" labelVariant="success">
-    ```md title="docs/UseCase.md"
+    ```md title="build/katachi/docs/UseCase.md"
     [Architecture](README.md)
 
     # ユースケース

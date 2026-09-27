@@ -43,7 +43,7 @@ fun `files are placed according to the architecture`() {
 
 ## 3. Declaring a Role with `"Name" { }`
 
-As part of the architecture definition, `"Name" { }` declares the role that a file appearing in the project plays.
+`"Name" { }` declares the role that a file appearing in the project plays.
 
 ```kt {2,4}
 architecture {
@@ -209,7 +209,7 @@ For `"...".konsist { }`, also see the [Konsist integration guide](/katachi/guide
       }
       ```
 
-      - Meaning: the test fails if there's a violation. A single run reports every violation in one message
+      - Meaning: the test fails if there's a violation. A single run collects every violation and puts them in one message. By default the message details up to 10 of them (change it with `assert(maxViolations = …)`); the rest are only counted
     </td>
   </tr>
 
