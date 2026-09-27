@@ -1,7 +1,7 @@
 ---
-name: verify-changes
+name: katachi:verify-changes
 description: >-
-  Use when code under katachi/ or sample/ has changed and needs verifying — which Gradle
+  (katachi) Use when code under katachi/ or sample/ has changed and needs verifying — which Gradle
   tasks to run, in what order, how to read the layout snapshots, and which parts of the
   repository (app/ios, the Compose UI, the docs site) are deliberately not verified.
   katachi の :katachi / sample/ を変更したあとの検証手順。「何をテストしたいか」と
@@ -15,15 +15,15 @@ description: >-
 
 ## どこまで回すか
 
-| 変更した場所 | 回すもの |
-| --- | --- |
-| `:katachi` の内部実装だけ（リファクタ・リネーム） | `./gradlew check` → `./gradlew checkSamples` → **スナップショット無差分** |
-| DSL の語彙を足した / 変えた | 上 + サンプルのどれかで**実際に書いてみる** + 空振り検出 |
-| サンプルの構成（モジュール・ファイル配置）を変えた | そのサンプルの `checkSample<Name>` + **スナップショット更新して差分を読む** |
-| サンプルのアーキテクチャ定義だけを書き換えた | 同上。リファクタのつもりなら無差分が受け入れ基準 |
-| Kotlin / AGP のバージョン、サンプルのルート `build.gradle.kts` | 上 + `.github/scripts/check-kotlin-versions.sh` |
-| `docs/`（Astro サイト）だけ | `cd docs && pnpm build`。Gradle は不要 |
-| `.md` / コメントだけ | ビルド不要 |
+| 変更した場所                                                   | 回すもの                                                                    |
+|----------------------------------------------------------------|-----------------------------------------------------------------------------|
+| `:katachi` の内部実装だけ（リファクタ・リネーム）              | `./gradlew check` → `./gradlew checkSamples` → **スナップショット無差分**   |
+| DSL の語彙を足した / 変えた                                    | 上 + サンプルのどれかで**実際に書いてみる** + 空振り検出                    |
+| サンプルの構成（モジュール・ファイル配置）を変えた             | そのサンプルの `checkSample<Name>` + **スナップショット更新して差分を読む** |
+| サンプルのアーキテクチャ定義だけを書き換えた                   | 同上。リファクタのつもりなら無差分が受け入れ基準                            |
+| Kotlin / AGP のバージョン、サンプルのルート `build.gradle.kts` | 上 + `.github/scripts/check-kotlin-versions.sh`                             |
+| `docs/`（Astro サイト）だけ                                    | `cd docs && pnpm build`。Gradle は不要                                      |
+| `.md` / コメントだけ                                           | ビルド不要                                                                  |
 
 CI（`.github/workflows/ci.yml`、`pull_request` と `main` への push で走る）が実際に回すのは
 次の 5 つだけ。ローカルでこれが緑なら CI も緑になる。
@@ -59,17 +59,17 @@ Kotlin/Native も要らないのはこの空っぽさのおかげなので、ル
 ### 2. サンプル 3 本の結合テスト — `./gradlew checkSamples`
 
 **何が壊れたときに落ちるか**: 利用者と同じ経路。サンプルは `includeBuild("../..")` で
-`me.tbsten.katachi:katachi` を差し替える**別ビルド**なので、公開 API の形・`@InternalKatachiApi`
+`me.tbsten.katachi:katachi` を差し替える **別ビルド**なので、公開 API の形・`@InternalKatachiApi`
 のオプトイン壁・宣言位置のスタックトレース取得が、単体テストでは見えない形で壊れるとここで落ちる。
 
 個別に回すなら `checkSampleJvm` / `checkSampleAndroid` / `checkSampleKmp`。
 それぞれサンプル自身の wrapper を叩く `Exec` タスクで、既定で走るのは:
 
-| サンプル | 既定のタスク | 補足 |
-| --- | --- | --- |
-| jvm | `check` | `:architecture-test:test` を含む |
-| android | `check` | 9 モジュールの Android Lint 込みで warm 14 秒程度 |
-| kmp | `:architecture-test:test` と `:app:android:testDebugUnitTest` | `check` にすると Apple ターゲットを引きずる |
+| サンプル | 既定のタスク                                                  | 補足                                              |
+|----------|---------------------------------------------------------------|---------------------------------------------------|
+| jvm      | `check`                                                       | `:architecture-test:test` を含む                  |
+| android  | `check`                                                       | 9 モジュールの Android Lint 込みで warm 14 秒程度 |
+| kmp      | `:architecture-test:test` と `:app:android:testDebugUnitTest` | `check` にすると Apple ターゲットを引きずる       |
 
 絞りたいときは `-Pkatachi.sample.kmp.task=":architecture-test:test"` のようにサンプル単位で、
 `-Pkatachi.sample.task=...` で全体に上書きできる。
@@ -84,7 +84,7 @@ Kotlin/Native も要らないのはこの空っぽさのおかげなので、ル
 
 `sample/android` と `sample/kmp` は Android SDK が要る。`ANDROID_HOME`（または
 `ANDROID_SDK_ROOT`）が通っていれば何もしなくてよい。無ければ
-`sample/<name>/local.properties` に `sdk.dir` を書く（**このファイルはコミットしない**。
+`sample/<name>/local.properties` に `sdk.dir` を書く（ **このファイルはコミットしない**。
 `.gitignore` 済み）。作った直後の 1 回だけ `--no-configuration-cache` を付ける
 — 存在チェックが configuration cache の入力になっていないため。
 
@@ -118,11 +118,11 @@ cd sample/jvm && ./gradlew :architecture-test:test -Dkatachi.snapshot.update=tru
 
 ### 4. 空振り検出 — テストが「落ちること」を確かめる
 
-このリポジトリで実際にあった事故: `LayoutSnapshotSpec` が `Validate.kt` の配線が壊れたまま
-**緑のままだった**。Spec が自前で `ModuleIndex` を組んでいて、本番の経路を通っていなかったため。
+このリポジトリで実際にあった事故: `LayoutSnapshotSpec` が `Validate.kt` の配線が壊れたまま **緑のままだった**。Spec が自前で
+`ModuleIndex` を組んでいて、本番の経路を通っていなかったため。
 `flattenLayout()` が引数なしで呼ばれていたのに誰も気付かなかった。
 
-通ったことは、見ていることの証明にならない。**新しいテストを足したときは必ず 1 度、実装を
+通ったことは、見ていることの証明にならない。 **新しいテストを足したときは必ず 1 度、実装を
 わざと壊して落ちることを見る。** 壊し方は「そのテストが守っているはずの 1 行を削る」でよい。
 
 サンプル側にはこれが常設で組み込んである。触ったら意味を確かめること。
@@ -135,12 +135,12 @@ cd sample/jvm && ./gradlew :architecture-test:test -Dkatachi.snapshot.update=tru
 
 `:katachi` は `explicitApi()` が有効。`public` を省いた新しい宣言はコンパイルが通らない。
 
-`@InternalKatachiApi` の壁は、`:katachi` 自身がモジュール全体で opt-in しているので**内側では
-検証できない**。壁が生きている証拠は、**サンプル側に `@OptIn(InternalKatachiApi::class)` が
+`@InternalKatachiApi` の壁は、`:katachi` 自身がモジュール全体で opt-in しているので **内側では
+検証できない**。壁が生きている証拠は、 **サンプル側に `@OptIn(InternalKatachiApi::class)` が
 書いてあること**。内部 API を公開面に出してしまうと、ここが「不要な opt-in」警告に変わる。
 逆にサンプルから `@OptIn` が消えたら、それは壁が緩んだサインなので疑う。
 
-内部実装の**置き場所**は機械的に見ている。トップレベルの `internal` / `@InternalKatachiApi` は
+内部実装の **置き場所**は機械的に見ている。トップレベルの `internal` / `@InternalKatachiApi` は
 `.internal` パッケージ（`me.tbsten.katachi.check.internal` など）に置く決まりで
 （`docs/internal/kotlin/kotlin.md`）、リポジトリ直下の `./gradlew :architecture-test:test` が
 `INTERNAL_PACKAGE_RULE` として library の各役割と `:katachi-konsist` で検査する。内部実装を
@@ -148,7 +148,7 @@ cd sample/jvm && ./gradlew :architecture-test:test -Dkatachi.snapshot.update=tru
 
 ## 何はテストしなくて良いか
 
-毎回ここで時間を溶かさないための章。**理由つきで覚える**。
+毎回ここで時間を溶かさないための章。 **理由つきで覚える**。
 
 - **`sample/kmp/app/ios`** — `settings.gradle.kts` に `include` されていない。Xcode プロジェクトと
   README が置いてあるだけで、Gradle のビルド対象ではない。iOS のビルドも結合テストもしない
@@ -157,8 +157,8 @@ cd sample/jvm && ./gradlew :architecture-test:test -Dkatachi.snapshot.update=tru
   `compileKotlinIosArm64` と Kotlin/Native ディストリビューションのダウンロードを引きずる。
   既定の 2 タスク（`:architecture-test:test` と `:app:android:testDebugUnitTest`）は
   どちらも Apple タスクに到達しない。ここを広げない
-- **サンプル UI の実行・描画** — Compose / androidx の実依存を入れてあるのは「依存が解決して
-  **コンパイルが通る**」ことに意味があるのであって、画面を出すためではない。instrumented test は
+- **サンプル UI の実行・描画** — Compose / androidx の実依存を入れてあるのは「依存が解決して **コンパイルが通る**
+  」ことに意味があるのであって、画面を出すためではない。instrumented test は
   無く、エミュレータも実機も要らない。`PreviewRoot { }` も同じで、プレビューが描けることは
   検証対象ではない
 - **ドキュメントサイト（`docs/`、Astro Starlight）** — `:katachi` やサンプルのコードを変えても
@@ -189,15 +189,15 @@ mkdir -p .local/tmp/gradle-cache
 
 ### ただし、サンプルは並列に回してはいけない
 
-キャッシュディレクトリを分けても解決しない。**3 つのサンプルはどれも
+キャッシュディレクトリを分けても解決しない。 **3 つのサンプルはどれも
 `includeBuild("../..")` で同じ `katachi/build/` に書き込む**ので、同時に走らせると壊れる。
-`includeBuild("../..")` は `:katachi-konsist` も含んでいるので、**`katachi-konsist/build/` も
+`includeBuild("../..")` は `:katachi-konsist` も含んでいるので、 **`katachi-konsist/build/` も
 同じ取り合いに加わる**（konsist { } を使わないサンプルでも、composite build 自体が
 `:katachi-konsist` を configure するため対象になる）。ルートの `build.gradle.kts` がタスク間に
 `mustRunAfter` を張っているのはこのため（`./gradlew check checkSamples` の同時実行も含めて
 順序を保証している。`:katachi:*` 4 タスクと `:katachi-konsist:*` 4 タスクの両方に張ってある）。
 
-subagent に分担させるときも、**サンプルを触るものは 1 体だけ**にする。
+subagent に分担させるときも、 **サンプルを触るものは 1 体だけ**にする。
 
 ### 差分の確認
 

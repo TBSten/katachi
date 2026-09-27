@@ -1,7 +1,7 @@
 ---
-name: prerelease
+name: katachi:prerelease
 description: >-
-  リリース前の準備。
+  (katachi) リリース前の準備。
 ---
 
 - @./prerelease-check-list.md を .local/release-v0.0.0/prerelease-check-list.md にコピーし適宜記載していく。
