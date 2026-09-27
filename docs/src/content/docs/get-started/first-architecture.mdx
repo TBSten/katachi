@@ -117,7 +117,7 @@ If you are not yet convinced that you need katachi, read [Motivation](/katachi/g
 
         - **`outputs.upToDateWhen { false }` / `outputs.cacheIf { false }`**: katachi checks the files of the whole repository, but Gradle only sees the test classpath as the Test task's input. Without this line, `:architecture-test:test` is skipped as `UP-TO-DATE` even after you add or change files, and stays green even when there are violations. `cacheIf` keeps a previous result from being reused when the build cache is enabled.
         - **`testLogging { exceptionFormat = TestExceptionFormat.FULL }`**: without it, a failing test prints only a single line with the exception's class name to the console, and you have to open the test report to read the list of violations.
-        - **`katachi { architecture = ... }`**: tells document generation, templates and the IDE plugin where to find the definition. Set it to the fully qualified name of the definition you write in step 3 (`package` + variable name).
+        - **`katachi { architecture = ... }`**: tells document generation and templates where to find the definition. Set it to the fully qualified name of the definition you write in step 3 (`package` + variable name).
 
         <Aside type="caution" title="For Android projects">
         Write `kotlin("jvm") version "..." apply false` in the root `build.gradle.kts`, and in the module write just `kotlin("jvm")`, **without a version**.
@@ -194,7 +194,7 @@ If you are not yet convinced that you need katachi, read [Motivation](/katachi/g
 
         Gradle's files (the wrapper, `settings.gradle.kts`, build scripts, `gradle.properties` and the version catalog) are declared by the single `gradle()` line in step 3. If you have `buildSrc` or convention plugins, see the [Gradle recipe](/katachi/recipes/gradle/).
 
-        If there are too many existing violations to clear up right away, the experimental baseline feature lets you set the current violations aside in a ledger file (`katachi-baseline.json` by default) so that only new violations fail the test. Write `architecture { baseline = baselineFile() }`, then run the test once with `-Dkatachi.baseline.update=true` to create the ledger. Once you fix a violation that was set aside, the test keeps failing until you remove it from the ledger with `-Dkatachi.baseline.prune=true`. Declare the ledger file itself in `layout { }` too. See [Baseline](/katachi/guides/baseline/) for details.
+        If there are too many existing violations to clear up right away, the experimental baseline feature lets you set the current violations aside in a ledger file (`katachi-baseline.json` by default) so that only new violations fail the test. Write `architecture { baseline() }`, then run the test once with `-Dkatachi.baseline.update=true` to create the ledger. Once you fix a violation that was set aside, the test keeps failing until you remove it from the ledger with `-Dkatachi.baseline.prune=true`. Declare the ledger file itself in `layout { }` too. See [Baseline](/katachi/guides/baseline/) for details.
 
     </Steps>
   </TabItem>

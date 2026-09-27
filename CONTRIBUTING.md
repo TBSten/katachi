@@ -48,7 +48,7 @@ All four use the plugin and `gradle()`, and commit the documentation `katachiDoc
 - The samples are standalone builds, not subprojects of the root, so `./gradlew check` does not run them. The root project has no sources; it only aggregates the API reference and carries the tasks that run the samples.
 - The IDE plugin is a standalone build too, run by neither `check` nor `checkSamples`. Its first run downloads the IntelliJ Platform SDK (a whole IDE). Its screen goldens (`verifyPreview`) were made on macOS and do not match byte for byte on other systems. The smoke test that starts a real IDE (`integrationTest`) is run by hand.
 - `gradle/libs.versions.toml` is the single source of truth for the Kotlin, katachi, kotest and JUnit versions of the library and the samples (the IDE plugin is a standalone build and reads its own `katachi-intellij-plugin/gradle/libs.versions.toml`). The samples read it as `libs` and keep their own dependencies in their own catalog, `sampleLibs` (see [`sample/README.md`](sample/README.md)).
-- CI is `.github/workflows/ci.yml`: on every push to `main` and every pull request, the library and each of the four samples in their own step, and the IDE plugin in a job of its own on macOS. The benchmark jobs (`bench-jmh`, `bench-real-project`, `bench-store`) run on the same triggers. Their comparison only goes to the job summary, and a slowdown does not fail the build. `bench-store` adds the results to the history on `gh-pages`, on `main` only.
+- CI is `.github/workflows/ci.yml`: on every push to `main` and every pull request, the library and each of the four samples in their own step, the documentation site build in a `docs` job, and the IDE plugin in a job of its own on macOS. The benchmark jobs (`bench-jmh`, `bench-real-project`, `bench-store`) run on the same triggers. Their comparison only goes to the job summary, and a slowdown does not fail the build. `bench-store` adds the results to the history on `gh-pages`, on `main` only.
 
 ## Writing code
 
@@ -56,5 +56,5 @@ All four use the plugin and `gradle()`, and commit the documentation `katachiDoc
 
 ## Writing documentation
 
-- The documentation site is `docs/` (Astro + Starlight). `cd docs && pnpm run build` builds it, link check included.
+- The documentation site is `docs/` (Astro + Starlight). First run `./gradlew generateApiDocs` at the repository root to prepare the API reference (`docs/public/api-docs/`; it's gitignored, and the link check fails without it), then `pnpm install` in `docs` and `pnpm run build` to build it, link check included.
 - **Japanese is the source; English is a translation.** Write `docs/src/content/docs/ja/`, `README.ja.md` and `CONTRIBUTING.ja.md`, and translate the English side from them. Do not add anything to the English side alone (see [`docs/CLAUDE.md`](docs/CLAUDE.md)).

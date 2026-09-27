@@ -63,7 +63,7 @@ katachi did not break anything; it only made visible what was already there.
 You will work through the reported paths one at a time, adding each to the definition,
 moving it, or deleting it. That is itself **the team agreeing on its architecture again.**
 
-If you cannot clear them all up right away, the experimental baseline feature (`architecture { baseline = baselineFile() }`)
+If you cannot clear them all up right away, the experimental baseline feature (`architecture { baseline() }`)
 lets you set the current violations aside in a ledger file so that only new violations fail the test.
 Setting them aside is temporary: you remove each violation from the ledger once you fix it. See [Baseline](/katachi/guides/baseline/) for how to write it.
 

@@ -562,8 +562,8 @@ Run this and check the result.
 
 **If many violations remain and the user wants to "shelve what is there now and fail only on new ones", you can propose the baseline.** It is an experimental feature (`@ExperimentalKatachiApi`), so ask the user in `questions` before putting it in. To use it:
 
-- Write `baseline = baselineFile()` in `architecture { }` in `ProjectArchitecture.kt`, and put `@OptIn(ExperimentalKatachiApi::class)` on `val projectArchitecture`. The ledger file defaults to `katachi-baseline.json` (at the project root)
-- The ledger file is checked too, so add a role that declares it in `layout { }` (e.g. `"Baseline" { layout { "katachi-baseline.json".file() } }`). Without it the ledger itself becomes an `[UnexpectedFile]`, and that one cannot be shelved
+- Write `baseline()` in `architecture { }` in `ProjectArchitecture.kt`, and put `@OptIn(ExperimentalKatachiApi::class)` on `val projectArchitecture`. The ledger file defaults to `katachi-baseline.json` (at the project root)
+- The ledger file is checked too, so add a role that declares it in `layout { }` (e.g. `"BaselineFile" { layout { "katachi-baseline.json".file() } }`). Without it the ledger itself becomes an `[UnexpectedFile]`, and that one cannot be shelved
 - `./gradlew :architecture-test:test -Dkatachi.baseline.update=true` writes the violations there now into the ledger. From then on only violations missing from the ledger fail the test. Once a violation is fixed, its entry fails as `[StaleBaselineEntry]`, so remove it with `-Dkatachi.baseline.prune=true` (on CI (`CI=true`) both update and prune are refused)
 
 Write the shelved violations in `violations` too. Putting them in the ledger does not make them go away.

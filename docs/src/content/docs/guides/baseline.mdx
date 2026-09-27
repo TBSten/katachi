@@ -15,21 +15,21 @@ baseline is a feature that temporarily suppresses existing violations, so that o
 
 ## Setting it up
 
-### 1. Write `baseline = baselineFile()` in the definition
+### 1. Write `baseline()` in the definition
 
 ```kt title="ProjectArchitecture.kt (excerpt)" {1,5}
 @OptIn(ExperimentalKatachiApi::class)
 val projectArchitecture: Architecture = architecture {
     // ...
-    baseline = baselineFile()
+    baseline()
 
     // ...
 }
 ```
 
-By default, setting baseline generates `katachi-baseline.json` at the project root, and the contents of baseline are written into this file.
+When you set baseline, by default the project root's `katachi-baseline.json` is used as the baseline file. The file is created and the baseline contents are written when you run it with `-Dkatachi.baseline.update=true`, as in step 3.
 
-To change the location, set it like `baselineFile("config/katachi-baseline.json")`.
+To change the location, set it like `baseline("config/katachi-baseline.json")`.
 
 ### 2. Declare the baseline file itself with `layout { }`
 
@@ -78,7 +78,7 @@ It's recommended to commit the created/updated file.
 ## Summary
 
 - baseline is a feature that records existing violations in the baseline file and temporarily suppresses them, so that only **newly added violations** fail the test.
-- To use it, write `baseline = baselineFile()` in the definition, and declare the baseline file itself as a role in `layout { }`.
+- To use it, write `baseline()` in the definition, and declare the baseline file itself as a role in `layout { }`.
 - The baseline file is created and updated by running the architecture test with `-Dkatachi.baseline.update=true`. Commit the resulting file.
 
 ## Next steps

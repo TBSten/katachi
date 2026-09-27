@@ -65,7 +65,7 @@ dependencies {
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
 
-// Tells document generation, templates and the IDE plugin where to find the definition (its package + variable name)
+// Tells document generation and templates where to find the definition (its package + variable name)
 katachi { architecture = "com.example.projectArchitecture" }
 ```
 

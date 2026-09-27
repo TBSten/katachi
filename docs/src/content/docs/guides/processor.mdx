@@ -205,7 +205,7 @@ The `context` passed as the argument to the `process` method holds the architect
         // Define an object that implements ArchitectureProcessorNoArg
         @OptIn(ExperimentalKatachiApi::class)
         object CountFilesPerRole : ArchitectureProcessorNoArg<Map<String, Int>> {
-            override fun process(context: ArchitectureProcessContext<Unit>): Result<Map<String, Int>> = runCatching {
+            override fun process(context: ArchitectureProcessNoArgContext): Result<Map<String, Int>> = runCatching {
                 // context.architecture    ... the architecture definition
                 // context.roles / groups  ... the defined roles / groups
                 // context.declaredEntries ... the flattened list of declarations from layout
@@ -278,7 +278,7 @@ var MetadataScope.obsolete: Boolean? by Obsolete
 // Processor side
 @OptIn(ExperimentalKatachiApi::class)
 object ObsoleteRoles : ArchitectureProcessorNoArg<List<String>> {
-    override fun process(context: ArchitectureProcessContext<Unit>): Result<List<String>> = runCatching {
+    override fun process(context: ArchitectureProcessNoArgContext): Result<List<String>> = runCatching {
         context.roles.filter { it[Obsolete] == true }.map { it.name }
     }
 }
@@ -308,7 +308,7 @@ If you want it runnable from a program as an API, providing an API is recommende
 
         ```kt
         @OptIn(ExperimentalKatachiApi::class)
-        fun Architecture.countFilesPerRole(): Map<String, Int> = process(CountFilesPerRole).getOrThrow()
+        fun Architecture.countFilesPerRole(): Map<String, Int> = process(CountFilesPerRole, CountFilesPerRole.Args()).getOrThrow()
         ```
 
         Users can call the provided API without needing to know the processor exists.
