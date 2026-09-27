@@ -65,7 +65,7 @@ dependencies {
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
 
-// ドキュメント生成・テンプレート・IDE プラグインが定義を見つけるための指定（定義の package + 変数名）
+// ドキュメント生成・テンプレートが定義を見つけるための指定（定義の package + 変数名）
 katachi { architecture = "com.example.projectArchitecture" }
 ```
 

@@ -5,8 +5,6 @@ import starlightThemeNova from 'starlight-theme-nova';
 import mermaid from 'astro-mermaid';
 import { pluginCollapsible } from 'expressive-code-collapsible';
 import starlightLlmsTxt from 'starlight-llms-txt';
-// ページに難易度のタグを付け、タグごとの一覧ページを自動生成する。定義は tags.yml。
-import starlightTagsPlugin from 'starlight-tags';
 // 内部リンクの切れをビルドで落とす。腐ったリンクを公開しないための歯止め。
 import starlightLinksValidator from 'starlight-links-validator';
 import { existsSync, readFileSync, statSync } from 'node:fs';
@@ -62,7 +60,10 @@ export default defineConfig({
 			},
 			description:
 				'Declare your Android/KMP project architecture in a Kotlin DSL and check the whole tree against it, deny by default.',
-			// タイトルの上に、frontmatter の tags（難易度）をラベルで出す。
+			// タイトルの上に、frontmatter の tags（難易度、定義は tags.yml）をラベルで出す。
+			// リンクにはしない自前描画（DifficultyTag.astro）。starlight-tags は使っていない
+			// — v2.0.0 は /tags/ 系のページを常に生成し、日本語側でそのリンクが
+			// `/katachi/ja/ja/...` と locale が二重になって 404 になる不具合があったため。
 			components: {
 				PageTitle: './src/components/overrides/PageTitle.astro',
 			},
@@ -73,9 +74,6 @@ export default defineConfig({
 				starlightThemeNova(),
 				// /llms.txt・/llms-full.txt・/llms-small.txt を生成する。
 				starlightLlmsTxt(),
-				// 難易度タグ。サイドバーには出さない（ガイドの並びを崩さないため）。
-				// /tags/ に一覧、/tags/<id>/ に各タグのページが出る。定義は tags.yml。
-				starlightTagsPlugin({ sidebar: false }),
 				// 内部リンクが切れていたらビルドを落とす。腐ったリンクを公開しないための歯止め。
 				// 相対リンクも許す（public/ のスライドへは ../../slides/... で張っている）。
 				starlightLinksValidator({ errorOnRelativeLinks: false }),

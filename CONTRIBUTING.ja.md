@@ -49,7 +49,7 @@ katachi 自体を直す人向けの情報。使い方は [README](README.ja.md) 
 - サンプルはルートのサブプロジェクトではなく独立したビルドなので、`./gradlew check` には入らない。ルートプロジェクトはソースを持たず、API リファレンスの集約とサンプルを回すタスクだけを持つ
 - IDE プラグインも独立したビルドで、`check` にも `checkSamples` にも入らない。初回は IntelliJ Platform の SDK（IDE 一式）をダウンロードする。画面の golden（`verifyPreview`）は macOS で作ったもので、ほかの OS ではバイト単位で一致しない。実 IDE を起動するスモーク（`integrationTest`）は手で回す
 - 本体とサンプルの Kotlin / katachi / kotest / JUnit のバージョンは `gradle/libs.versions.toml` が SSoT（IDE プラグインは独立したビルドで、自分の `katachi-intellij-plugin/gradle/libs.versions.toml` を読む）。サンプルはこれを `libs` として読み、サンプル固有の依存は自分の catalog（`sampleLibs`）に持つ（詳細は [`sample/README.md`](sample/README.md)）
-- CI は `.github/workflows/ci.yml`。`main` への push と pull request で、本体と4つのサンプルをそれぞれ別のステップで、IDE プラグインを macOS の別のジョブで回す。同じトリガでベンチマークのジョブ（`bench-jmh`・`bench-real-project`・`bench-store`）も回す。結果の比較はジョブのサマリに出すだけで、遅くなっても落ちない。`bench-store` は `main` のときだけ結果を `gh-pages` の履歴に足す
+- CI は `.github/workflows/ci.yml`。`main` への push と pull request で、本体と4つのサンプルをそれぞれ別のステップで、ドキュメントサイトのビルドを `docs` ジョブで、IDE プラグインを macOS の別のジョブで回す。同じトリガでベンチマークのジョブ（`bench-jmh`・`bench-real-project`・`bench-store`）も回す。結果の比較はジョブのサマリに出すだけで、遅くなっても落ちない。`bench-store` は `main` のときだけ結果を `gh-pages` の履歴に足す
 
 ## コードを書く
 
@@ -57,5 +57,5 @@ katachi 自体を直す人向けの情報。使い方は [README](README.ja.md) 
 
 ## ドキュメントを書く
 
-- ドキュメントサイトは `docs/`（Astro + Starlight）。`cd docs && pnpm run build` でビルドできる（リンクの検査を含む）
+- ドキュメントサイトは `docs/`（Astro + Starlight）。先にリポジトリ直下で `./gradlew generateApiDocs` を実行して API リファレンス（`docs/public/api-docs/`。gitignore されており、無いとリンクの検査が落ちる）を用意し、`docs` で `pnpm install` してから `pnpm run build` でビルドできる（リンクの検査を含む）
 - **日本語が原本で、英語は翻訳。** `docs/src/content/docs/ja/` と `README.ja.md`・`CONTRIBUTING.ja.md` を書き、英語側はそこから訳す。英語側だけに内容を足さない（詳細は [`docs/CLAUDE.md`](docs/CLAUDE.md)）

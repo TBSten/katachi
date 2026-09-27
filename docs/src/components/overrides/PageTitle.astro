@@ -1,23 +1,12 @@
 ---
 /**
  * Starlight's page title, with the page's difficulty tag (frontmatter `tags`, defined in
- * tags.yml) shown as a label above it. The label text comes from tags.yml per locale, so the
- * Japanese pages read 初心者向け and the English ones Beginner.
+ * tags.yml) shown as a plain, non-link label above it. The label text comes from tags.yml per
+ * locale, so the Japanese pages read 初心者向け and the English ones Beginner.
  */
 import Default from '@astrojs/starlight/components/PageTitle.astro';
-import { PageTags } from 'starlight-tags/components';
+import DifficultyTag from './DifficultyTag.astro';
 ---
 
-<div class="katachi-page-tags">
-	<PageTags variant="solid" size="small" showIcon={false} />
-</div>
+<DifficultyTag />
 <Default><slot /></Default>
-
-<style>
-	.katachi-page-tags:empty {
-		display: none;
-	}
-	.katachi-page-tags {
-		margin-bottom: 0.5rem;
-	}
-</style>

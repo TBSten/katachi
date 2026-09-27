@@ -203,7 +203,7 @@ process メソッドに渡される `context` には、アーキテクチャ定�
         // ArchitectureProcessorNoArg を実装した object を定義
         @OptIn(ExperimentalKatachiApi::class)
         object CountFilesPerRole : ArchitectureProcessorNoArg<Map<String, Int>> {
-            override fun process(context: ArchitectureProcessContext<Unit>): Result<Map<String, Int>> = runCatching {
+            override fun process(context: ArchitectureProcessNoArgContext): Result<Map<String, Int>> = runCatching {
                 // context.architecture    ... アーキテクチャ定義
                 // context.roles / groups  ... 定義された役割・group
                 // context.declaredEntries ... layout を flat にした宣言の一覧
@@ -275,7 +275,7 @@ var MetadataScope.obsolete: Boolean? by Obsolete
 // Processor 側
 @OptIn(ExperimentalKatachiApi::class)
 object ObsoleteRoles : ArchitectureProcessorNoArg<List<String>> {
-    override fun process(context: ArchitectureProcessContext<Unit>): Result<List<String>> = runCatching {
+    override fun process(context: ArchitectureProcessNoArgContext): Result<List<String>> = runCatching {
         context.roles.filter { it[Obsolete] == true }.map { it.name }
     }
 }
@@ -305,7 +305,7 @@ architecture {
 
         ```kt
         @OptIn(ExperimentalKatachiApi::class)
-        fun Architecture.countFilesPerRole(): Map<String, Int> = process(CountFilesPerRole).getOrThrow()
+        fun Architecture.countFilesPerRole(): Map<String, Int> = process(CountFilesPerRole, CountFilesPerRole.Args()).getOrThrow()
         ```
 
         利用者は processor の存在を知らず用意された API を呼び出すことができます。

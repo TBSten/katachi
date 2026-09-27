@@ -1,0 +1,83 @@
+---
+/**
+ * ページの難易度ラベル（frontmatter の `tags`、id の定義は `docs/tags.yml`）を、
+ * リンクではないただのラベルとして出す。
+ *
+ * かつては starlight-tags の `<PageTags>` を使い、ラベルが `/tags/<id>/` への
+ * リンクになっていたが、v2.0.0 はそのタグ一覧ページ自体を常に生成してしまい、
+ * かつ日本語ページではリンク先が `/katachi/ja/ja/...` と locale が二重になって
+ * 404 になる不具合があった。タグ一覧ページを出さないと決めたため、プラグインを
+ * 外し、tags.yml を直接読んでラベルだけを自前で描画する。
+ */
+import fs from 'node:fs';
+import yaml from 'js-yaml';
+
+interface TagDefinition {
+	label: Record<string, string>;
+	color?: string;
+}
+
+interface ResolvedTag {
+	id: string;
+	label: string;
+	color?: string;
+}
+
+let tagDefinitionsCache: Record<string, TagDefinition> | undefined;
+
+// docs/tags.yml (このファイルからは3階層上) を一度だけ読んで使い回す。
+function loadTagDefinitions(): Record<string, TagDefinition> {
+	if (!tagDefinitionsCache) {
+		const raw = fs.readFileSync(new URL('../../../tags.yml', import.meta.url), 'utf-8');
+		const parsed = yaml.load(raw, { schema: yaml.JSON_SCHEMA }) as { tags: Record<string, TagDefinition> };
+		tagDefinitionsCache = parsed.tags;
+	}
+	return tagDefinitionsCache;
+}
+
+const definitions = loadTagDefinitions();
+// English (root locale) の frontmatter/route data は `locale` が undefined になる。
+const localeKey = Astro.locals.starlightRoute?.locale ?? 'en';
+const frontmatterTags: string[] = Astro.locals.starlightRoute?.entry?.data?.tags ?? [];
+
+const tags: ResolvedTag[] = frontmatterTags
+	.map((id) => {
+		const def = definitions[id];
+		if (!def) return undefined;
+		return { id, label: def.label[localeKey] ?? def.label.en ?? id, color: def.color };
+	})
+	.filter((tag): tag is ResolvedTag => tag !== undefined);
+---
+
+{tags.length > 0 && (
+	<ul class="katachi-difficulty-tags" aria-label="difficulty">
+		{tags.map((tag) => (
+			<li class="katachi-difficulty-tag" style={`--tag-color: ${tag.color ?? 'var(--sl-color-accent)'}`}>
+				{tag.label}
+			</li>
+		))}
+	</ul>
+)}
+
+<style>
+	.katachi-difficulty-tags {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.375rem;
+		list-style: none;
+		margin: 0 0 0.5rem;
+		padding: 0;
+	}
+
+	.katachi-difficulty-tag {
+		display: inline-flex;
+		align-items: center;
+		padding: 0.3rem 0.6rem;
+		border-radius: 9999px;
+		background: var(--tag-color);
+		color: white;
+		font-size: 0.75rem;
+		font-weight: 500;
+		line-height: 1;
+	}
+</style>
