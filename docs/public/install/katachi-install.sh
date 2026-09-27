@@ -546,7 +546,17 @@ cmd_init() {
 	# katachi の版も記録し、scaffold が --katachi なしでも同じ版を使うようにする。
 	# 記録しないと scaffold が GitHub の最新を取り直し、init --katachi で固定した版と
 	# 黙って食い違う。分からなかった（UNKNOWN）ときは古い記録を残さない。
-	if [ "$init_version" = "UNKNOWN" ]; then
+	#
+	# --katachi なしのやり直しでは、前回の記録を残す。最新で上書きすると、前回
+	# --katachi で固定した版が黙って変わり、残したチェックリストの meta.version とも食い違う。
+	_iv_recorded=""
+	[ -s "$init_workdir/cache/version" ] && _iv_recorded=$(cat "$init_workdir/cache/version")
+	if [ "$init_version_source" = "latest" ] && [ -n "$_iv_recorded" ] && [ "$init_force" = "no" ]; then
+		if [ "$_iv_recorded" != "$init_version" ]; then
+			note "                    → 前回の init が記録した ${_iv_recorded} を使い続けます（最新は ${init_version}。変えるなら --katachi を付けて実行し直す）"
+		fi
+		init_version="$_iv_recorded"
+	elif [ "$init_version" = "UNKNOWN" ]; then
 		rm -f "$init_workdir/cache/version"
 	else
 		printf '%s' "$init_version" >"$init_workdir/cache/version"
@@ -560,6 +570,8 @@ cmd_init() {
 
 		if [ -s "$_cl" ] && [ "$init_force" = "no" ]; then
 			note "すでにあるので残しました: $(file_uri "$_cl")"
+			# 版だけは今回の値にそろえる（--katachi で変えた場合）。記入済みの欄は触らない。
+			[ "$init_version" = "UNKNOWN" ] || update_checklist_meta "$_cl" version "$init_version"
 		else
 			fetch_once "$KATACHI_DOCS/install/$KATACHI_LANG/install-check-list.html" "$_cl" yes
 			write_checklist_data "$_cl" \
@@ -660,6 +672,22 @@ write_checklist_data() {
 	else
 		rm -f "$_data"
 		warn "チェックリストのメタ欄を初期化できませんでした（python3 か jq が要ります）。$(file_uri "$_file") を直接確認してください。"
+	fi
+}
+
+# チェックリストのメタ欄の1つ（$2）を $3 で上書きする。$1 はチェックリストのファイル。
+# init のやり直しで残したチェックリストの version と、init が検出できず scaffold が
+# --kotlin で受け取った kotlin を書き戻すのに使う。書き戻さないと verify が
+# 未記入として数え続けたり、実際に使った版と食い違ったりする。
+update_checklist_meta() {
+	[ -f "$1" ] && [ -n "$3" ] || return 0
+	_um_data="$1.meta.$$"
+	printf '{\n  "meta": {\n    "%s": %s\n  }\n}\n' "$2" "$(json_value "$3")" >"$_um_data"
+	if cmd_data merge "$1" "$_um_data" --id checklist >/dev/null 2>&1; then
+		rm -f "$_um_data" "$1.bak"
+	else
+		rm -f "$_um_data"
+		warn "チェックリストの meta.$2 を ${3} にできませんでした（python3 か jq が要ります）。data merge で直してください。"
 	fi
 }
 
@@ -865,7 +893,8 @@ cmd_scaffold() {
 	note "ソース:       $(file_uri "$src_dir")/"
 	note "ルートに追加: $root_needs_plugin ($(file_uri "$ROOT_BUILD_FILE"))"
 	[ "$kotlin_placement" = "module" ] &&
-		note "              サブプロジェクトが Kotlin プラグインを版付きで宣言しているため、ルートには足さず :$MODULE_DIR に版を書きます"
+		note "              サブプロジェクトが Kotlin プラグインを版付きで宣言しているため、ルートには足さず :$MODULE_DIR に版を書きます
+              Gradle が「The Kotlin Gradle plugin was loaded multiple times ...」と警告しますが、この構成では想定どおりです"
 	note "include 追加: $settings_needs_include ($(file_uri "$SETTINGS_FILE"))"
 	note "pluginManagement に追加: ${settings_needs_plugin_repos}${plugin_repos_missing:+（${plugin_repos_missing}）}"
 	[ "$sc_maven_local" = "yes" ] && note "mavenLocal:   有効（開発者向け）"
@@ -945,8 +974,14 @@ cmd_scaffold() {
 		say "足すまで ./gradlew :$MODULE_DIR:test は失敗します。"
 	fi
 
+	# init が Kotlin を検出できず --kotlin で受け取った場合、チェックリストの meta.kotlin が
+	# 空のまま残り、verify が未記入として数え続ける。実際に使った版で埋める。
+	if _sc_wd=$(resolve_workdir); then
+		update_checklist_meta "$_sc_wd/check-list.html" kotlin "$sc_kotlin"
+	fi
+
 	say ""
-	say "次: ./gradlew :$MODULE_DIR:test --rerun"
+	say "次: ./gradlew :$MODULE_DIR:test"
 	say "    architecture { } が空なので、すべてのファイルが Unexpected として報告されて"
 	say "    落ちるのが正常です。Unexpected 以外のエラーが出た場合だけが問題です。"
 }
@@ -1180,8 +1215,30 @@ catalog_kotlin_accessors_joined() {
 	done | tr '\n' '|' | sed 's/|$//'
 }
 
-# $1 の内容（行コメントを落としたもの）が、Kotlin Gradle plugin をクラスパスに載せる
-# 宣言を含むか。ルートの build ファイルに使う。
+# $1 のトップレベルの plugins { } と buildscript { } の中身だけを出す（行コメントは落とす）。
+# 宣言がクラスパスに効くのはこの2か所だけ。subprojects { } の中の
+# plugins.withId("org.jetbrains.kotlin.jvm") / pluginManager.withPlugin(...) /
+# apply(plugin = "...") は「そのプラグインが当たっていたら」という参照で、載せはしない。
+#
+# 行コメントは `//` の前が `:` でないものだけ落とす。`uri("https://...")` の `//` から先を
+# 消すと閉じ括弧 `}` も消え、括弧の深さがずれて後ろの plugins { } を見落とす。
+root_plugin_blocks() {
+	sed -E 's#(^|[^:])//.*#\1#' "$1" | awk '
+		!inblk && depth == 0 && /^[[:space:]]*(plugins|buildscript)[[:space:]]*\{/ { inblk = 1 }
+		{
+			line = $0
+			if (inblk) print line
+			opened = gsub(/\{/, "{", line)
+			closed = gsub(/\}/, "}", line)
+			depth += opened - closed
+			if (depth < 0) depth = 0
+			if (inblk && depth == 0) inblk = 0
+		}
+	'
+}
+
+# $1（ルートの build ファイル）が、Kotlin Gradle plugin をクラスパスに載せる宣言を含むか。
+# 見るのはトップレベルの plugins { } と buildscript { } の中だけ（root_plugin_blocks）。
 #   - id("org.jetbrains.kotlin.jvm|multiplatform|android|js|kapt") / kotlin("...")
 #   - version catalog の別名（alias(libs.plugins.<何でも>)）
 #   - buildscript { } の classpath の kotlin-gradle-plugin
@@ -1190,7 +1247,7 @@ kotlin_plugin_declared_in() {
 	_kd_pat="org\\.jetbrains\\.kotlin\\.(${KOTLIN_KGP_IDS})([\"']|$)|kotlin\\(\"(${KOTLIN_KGP_IDS})\"\\)|kotlin-gradle-plugin|libs\\.plugins\\.kotlin[.]?([jJ]vm|[mM]ultiplatform|[aA]ndroid)([^A-Za-z0-9_.]|$)"
 	_kd_accs=$(catalog_kotlin_accessors_joined plugins libraries)
 	[ -n "$_kd_accs" ] && _kd_pat="${_kd_pat}|${_kd_accs}"
-	sed 's://.*::' "$1" | grep -qE "$_kd_pat"
+	root_plugin_blocks "$1" | grep -qE "$_kd_pat"
 }
 
 # buildSrc が Kotlin Gradle plugin を依存に持っているか。buildSrc の実行時クラスパスは
@@ -1244,7 +1301,8 @@ kotlin_plugin_requested_by_subprojects() {
 }
 
 # :architecture-test の kotlin("jvm") をどう解決させるかを決めて出す。
-#   root   ルートの build ファイルか buildSrc がすでに Kotlin Gradle plugin を持っている
+#   root   ルートの build ファイル（の plugins { } か buildscript { }）か buildSrc がすでに
+#          Kotlin Gradle plugin を持っている
 #   add    どこにも無い。ルートに id("org.jetbrains.kotlin.jvm") version ... apply false を足す
 #   module サブプロジェクトだけが版付きで持っている。ルートには足さず、モジュールに版を書く
 #

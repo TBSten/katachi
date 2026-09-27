@@ -115,11 +115,13 @@ KATACHI_LANG=ja
 
 ここまで終わったら `sh $CLI check 0-1 0-2`。
 
-**止まったら、出力に書かれているとおりに対処する。** 推測で回避策を作らない。作業用ディレクトリを変えたい場合は `--workdir <path>`、バージョンを固定したい場合は `--katachi <version>` を付けて実行し直す（`init` が記録した版を `scaffold` も使います）。
+**止まったら、出力に書かれているとおりに対処する。** 推測で回避策を作らない。作業用ディレクトリを変えたい場合は `--workdir <path>`、バージョンを固定したい場合は `--katachi <version>` を付けて実行し直す（`init` が記録した版を `scaffold` も使います。`--katachi` なしでやり直したときは、前回記録した版をそのまま使います）。
 
 `init` は**何度実行しても記入済みのファイルを壊しません**。途中で失敗したらそのまま実行し直してよい。
 
-**`init` が「作業用ディレクトリが git から見えています」と警告した場合は、それをユーザに伝えて** `.gitignore` への追加を提案してください。すでに ignore されている置き場がプロジェクトに無いときに起きます。放っておくとチェックリストとレポートがユーザのコミットに入ります。`.gitignore` を自分で書き換えないこと。
+**`init` が「作業用ディレクトリが git から見えています」と警告した場合は、それをユーザに伝えて** `.gitignore` への追加を提案してください。すでに ignore されている置き場がプロジェクトに無いときに起きます。katachi は未追跡でも ignore されていないファイルを検査するので、放っておくとステップ 4 で作業用ディレクトリ自体が `[UnexpectedFile]` になります（チェックリストとレポートがユーザのコミットに入る原因にもなります）。`.gitignore` を自分で書き換えないこと。
+
+**「未追跡で ignore もされていないものがあります」と一覧が出た場合も、理由は同じです。** 一覧のものを定義で宣言するか `.gitignore` に足すかを、ユーザに確認してください。
 
 以降で一時的な保存領域が必要な場合は `<KATACHI_WORKDIR>/tmp/` 内に保存し、作業用ディレクトリ直下を汚さないこと。
 
@@ -207,7 +209,7 @@ sh $CLI warn 4 --clear         # 警告を消す
 
 `check` は**知らない id を渡すと止まります**。打ち間違いが黙って無視されることはありません。
 
-`warn` のステップ id は **0〜5** です（チェックリストのステップはそこまで）。付けたステップは黄色になり、完了していても開いたまま表示されます。
+`warn` のステップ id は **0〜6** です（チェックリストのステップはそこまで）。付けたステップは黄色になり、完了していても開いたまま表示されます。
 
 ほかに `violations`（残したアーキテクチャ違反）、`questions`（ユーザに確認したいこと）、`changedFiles`（作成・変更したファイル）の配列があります。
 
@@ -303,13 +305,13 @@ sh $CLI scaffold --package com.example.app
 
 `--package` にはステップ 1 で特定したアプリのパッケージ名を渡す。katachi のバージョンは `init` が記録したものを、Kotlin のバージョンはプロジェクトから検出したものを使うので、ふつうは他の引数は要りません。
 
-**`init` が「Kotlin のバージョンを検出できませんでした」と警告していた場合だけ**、`--kotlin <version>` を足してください。省くと `scaffold` が止まります。
+**`init` が「Kotlin のバージョンを検出できませんでした」と警告していた場合だけ**、`--kotlin <version>` を足してください。省くと `scaffold` が止まります。渡した版は、`scaffold` がチェックリストの `meta.kotlin` にも書き込みます。
 
 このコマンドが以下を行う。
 
-- `architecture-test/build.gradle.kts` の作成。Kotlin JVM と katachi の Gradle plugin（`me.tbsten.katachi`）を入れ、`katachi { architecture = "<パッケージ>.test.architecture.projectArchitecture" }` で定義の置き場所を plugin に教える。plugin は katachi の依存を足さないので、`testImplementation("me.tbsten.katachi:katachi:<version>")` なども一緒に書かれる
+- `architecture-test/build.gradle.kts` の作成。Kotlin JVM と katachi の Gradle plugin（`me.tbsten.katachi`）を入れ、`katachi { architecture = "<パッケージ>.test.architecture.projectArchitecture" }` で定義の置き場所を plugin に教える。plugin は katachi の依存を足さないので、`testImplementation("me.tbsten.katachi:katachi:<version>")` なども一緒に書かれる。`tasks.test { }` には `outputs.upToDateWhen { false }` と `outputs.cacheIf { false }` も書かれる。katachi が検査するファイル（リポジトリ全体）は Test タスクの入力に入っていないので、これが無いとファイルを足したり動かしたりしても Gradle がテストを `UP-TO-DATE` として飛ばし、違反があっても緑のままになる
 - `ProjectArchitecture.kt` と `ProjectArchitectureTest.kt` の作成
-- ルートの build ファイルへの Kotlin JVM プラグインの追加（ルートか `buildSrc` に Kotlin のプラグインがすでにあれば何もしない。サブプロジェクトだけが版付きで宣言している場合は、ルートには足さず `architecture-test` 側に版を書く）
+- ルートの build ファイルへの Kotlin JVM プラグインの追加（ルートの `plugins { }` / `buildscript { }` か `buildSrc` に Kotlin のプラグインがすでにあれば何もしない。サブプロジェクトだけが版付きで宣言している場合は、ルートには足さず `architecture-test` 側に版を書く。このとき Gradle が `The Kotlin Gradle plugin was loaded multiple times in different subprojects ...` と警告しますが、この構成では想定どおりなのでそのままにしてください。ルートに足したり版を消したりすると、今度はプラグインの解決で落ちます）
 - settings ファイルへの `include("architecture-test")` の追加（Groovy の `settings.gradle` なら `include 'architecture-test'`。すでにあれば何もしない）
 - settings ファイルの `pluginManagement { repositories { } }` への `mavenCentral()` の追加。katachi の Gradle plugin は Maven Central にあるため（すでにあれば何もしない。`pluginManagement { }` が無ければ作る）
 
@@ -322,10 +324,10 @@ sh $CLI scaffold --package com.example.app
 作成できたら、この時点で一度動かす。
 
 ```sh
-./gradlew :architecture-test:test --rerun
+./gradlew :architecture-test:test
 ```
 
-**ここでは失敗するのが正常です。** `architecture { }` が空なので、deny by default の原則どおり、すべてのファイルが `Unexpected` として報告されます。次のような出力になります。
+**ここでは失敗するのが正常です。** `architecture { }` が空なので、deny by default の原則どおり、すべてのファイルが `Unexpected` として報告されます。次のような出力になります（先頭の抜粋。実際には違反ごとに同じ形の段落が続き、前後に Gradle の出力も付きます）。
 
 ```
 Katachi check failed: 4 violations (Unexpected: 4)
@@ -484,7 +486,7 @@ import me.tbsten.katachi.konsist.konsist                 // konsist { } を書�
 書き終えたら一度動かし、**出力をリファクタリング前の基準として保存します。** 3-3 でこれと比べます。
 
 ```sh
-./gradlew :architecture-test:test --rerun > <KATACHI_WORKDIR>/tmp/test-before-refactor.log 2>&1
+./gradlew :architecture-test:test > <KATACHI_WORKDIR>/tmp/test-before-refactor.log 2>&1
 ```
 
 ここで求めるのは**コンパイルが通り、検査が最後まで走ること**です。`Katachi check failed: ...` で落ちるのはかまいません（違反と向き合うのはステップ 4）。コンパイルエラーや Gradle のエラーで検査まで届かないときは、直してから取り直してください。
@@ -532,7 +534,7 @@ import me.tbsten.katachi.konsist.konsist                 // konsist { } を書�
 整え終えたら、3-2 と同じ形でもう一度動かし、比べます。
 
 ```sh
-./gradlew :architecture-test:test --rerun > <KATACHI_WORKDIR>/tmp/test-after-refactor.log 2>&1
+./gradlew :architecture-test:test > <KATACHI_WORKDIR>/tmp/test-after-refactor.log 2>&1
 sh $CLI compare-violations
 ```
 
@@ -543,7 +545,7 @@ sh $CLI compare-violations
 ## 4. 検証する
 
 ```sh
-./gradlew :architecture-test:test --rerun
+./gradlew :architecture-test:test
 ```
 
 を実行して結果を確認する。
@@ -558,7 +560,15 @@ sh $CLI compare-violations
   - そのままにするエラーはチェックリストの `violations` に記載する（`violation` / `location` / `whyNotFixed` / `suggestion`）。
   - ユーザに判断してほしいことは**チェックリストの** `questions` に入れる（`sh $CLI add question ...`）。レポート側にも同名の配列があるが、そちらはステップ 1 で気づいた「コードベースの揺れ」を書く場所で、用途が違う。
 
-**緑になったら `ProjectArchitectureTest.kt` の `maxViolations` を外してください。** `scaffold` が導入中の見通しのために入れた一時設定で、`TODO` コメントが目印です。外したあとにもう一度 `./gradlew :architecture-test:test --rerun` を実行し、結果が変わらないことを確かめます。違反を残す場合、残した違反が 10 件を超えるなら `maxViolations` は外さずに残してかまいません（外すと 10 件しか表示されません）。残したときは、その旨を `violations` に書いてください。
+**緑になったら `ProjectArchitectureTest.kt` の `maxViolations` を外してください。** `scaffold` が導入中の見通しのために入れた一時設定で、`TODO` コメントが目印です。外したあとにもう一度 `./gradlew :architecture-test:test` を実行し、結果が変わらないことを確かめます。違反を残す場合、残した違反が 10 件を超えるなら `maxViolations` は外さずに残してかまいません（外すと 10 件しか表示されません）。残したときは、その旨を `violations` に書いてください。
+
+**残す違反が多く、ユーザが「今ある違反は棚上げして、新しい違反だけで落としたい」と望む場合は、baseline を提案できます。** 実験的な機能（`@ExperimentalKatachiApi`）なので、使うかどうかは `questions` でユーザに確認してから入れてください。使う場合の手順は次のとおりです。
+
+- `ProjectArchitecture.kt` の `architecture { }` に `baseline = baselineFile()` を書き、`val projectArchitecture` に `@OptIn(ExperimentalKatachiApi::class)` を付ける。台帳のファイルは既定で `katachi-baseline.json`（プロジェクトルート）
+- 台帳のファイルも検査の対象なので、役割を1つ足して `layout { }` で宣言する（例: `"Baseline" { layout { "katachi-baseline.json".file() } }`）。宣言しないと台帳自身が `[UnexpectedFile]` になり、これは棚上げできない
+- `./gradlew :architecture-test:test -Dkatachi.baseline.update=true` で、今ある違反を台帳に書き出す。以降は台帳に無い違反だけでテストが落ちる。違反を直すと、その項目が `[StaleBaselineEntry]` で落ちるので、`-Dkatachi.baseline.prune=true` で消す（CI（`CI=true`）では update も prune も拒否される）
+
+棚上げした違反も `violations` に書いてください。台帳に入れても、違反が消えたわけではありません。
 
 違反を残した場合は `sh $CLI warn 4 "..."` で何を残したかを1行書く。
 
@@ -735,7 +745,7 @@ Pull request 作成時・Merge request 作成時・pre-push hook など スト�
    - CI で `--arg mode=check` を回す（6-B の末尾）
 
    **出力先は katachi のものになります。** そこにある、今回の生成で作られなかった `*.md` は消されます。手書きの Markdown があるディレクトリを指さないこと。
-4. 生成し直し、`./gradlew :architecture-test:test --rerun` が通ることを確かめる。
+4. 生成し直し、`./gradlew :architecture-test:test` が通ることを確かめる。
 
 作成・変更したファイルを `add changed` で記録し、`sh $CLI check 6-3`。
 
@@ -773,11 +783,11 @@ Pull request 作成時・Merge request 作成時・pre-push hook など スト�
 
    ```sh
    ./gradlew :architecture-test:katachiTemplate --arg roleName=UseCase --arg name=Sample
-   ./gradlew :architecture-test:test --rerun
+   ./gradlew :architecture-test:test
    ```
 
    `test` が落ちたら、`template { }` のファイル名が `layout { }` のパターン（`"*UseCase".ktFile()` など）に合っているかを確かめる。
-5. **生成したファイルは確認用なので消す**（ユーザが残すと言った場合を除く）。消したあと、もう一度 `./gradlew :architecture-test:test --rerun` が通ることを確かめる。
+5. **生成したファイルは確認用なので消す**（ユーザが残すと言った場合を除く）。消したあと、もう一度 `./gradlew :architecture-test:test` が通ることを確かめる。
 
 作成・変更したファイルを `add changed` で記録し、`sh $CLI check 6-4`。
 

@@ -115,11 +115,13 @@ KATACHI_LANG=en
 
 Once this is done, run `sh $CLI check 0-1 0-2`.
 
-**If it stops, handle it exactly as the output says.** Do not invent a workaround. To change the working directory, re-run with `--workdir <path>`; to pin a version, re-run with `--katachi <version>` (`scaffold` uses the version `init` recorded).
+**If it stops, handle it exactly as the output says.** Do not invent a workaround. To change the working directory, re-run with `--workdir <path>`; to pin a version, re-run with `--katachi <version>` (`scaffold` uses the version `init` recorded. Re-running without `--katachi` keeps the version recorded last time).
 
 `init` **never breaks already-filled-in files no matter how many times you run it.** If it fails partway through, you may just re-run it as is.
 
-**If `init` warns that the working directory is visible to git, pass that on to the user** and suggest adding it to `.gitignore`. It happens when the project has no already-ignored place to put it, and left alone the checklist and the report end up in their commits. Do not edit `.gitignore` yourself.
+**If `init` warns that the working directory is visible to git, pass that on to the user** and suggest adding it to `.gitignore`. It happens when the project has no already-ignored place to put it. katachi checks files that are untracked but not ignored, so left alone the working directory itself becomes an `[UnexpectedFile]` in step 4 (and the checklist and the report can end up in their commits). Do not edit `.gitignore` yourself.
+
+**If it lists things that are "untracked and not ignored", the reason is the same.** Ask the user whether to declare each of them in the definition or add it to `.gitignore`.
 
 Whenever you need temporary storage from here on, save it inside `<KATACHI_WORKDIR>/tmp/`, and do not clutter the top level of the working directory.
 
@@ -207,7 +209,7 @@ sh $CLI warn 4 --clear         # clear the warning
 
 `check` **stops if you pass an id it doesn't recognize.** A typo is never silently ignored.
 
-`warn`'s step id is **0 through 5** (that's as far as the checklist's steps go). A step with a warning turns yellow, and stays expanded even once it's complete.
+`warn`'s step id is **0 through 6** (that's as far as the checklist's steps go). A step with a warning turns yellow, and stays expanded even once it's complete.
 
 There are also arrays for `violations` (architecture violations left in place), `questions` (things to confirm with the user), and `changedFiles` (files created or changed).
 
@@ -303,13 +305,13 @@ sh $CLI scaffold --package com.example.app
 
 Pass the app package name identified in step 1 to `--package`. It uses the katachi version `init` recorded and the Kotlin version detected from the project, so normally no other arguments are needed.
 
-**Only if `init` warned "Could not detect the Kotlin version"**, add `--kotlin <version>`. Omitting it will cause `scaffold` to stop.
+**Only if `init` warned "Could not detect the Kotlin version"**, add `--kotlin <version>`. Omitting it will cause `scaffold` to stop. `scaffold` also writes the version you pass into the checklist's `meta.kotlin`.
 
 This command does the following.
 
-- Creating `architecture-test/build.gradle.kts`. It applies Kotlin JVM and the katachi Gradle plugin (`me.tbsten.katachi`), and tells the plugin where the definition lives with `katachi { architecture = "<package>.test.architecture.projectArchitecture" }`. The plugin does not add katachi as a dependency, so `testImplementation("me.tbsten.katachi:katachi:<version>")` and the rest are written alongside it
+- Creating `architecture-test/build.gradle.kts`. It applies Kotlin JVM and the katachi Gradle plugin (`me.tbsten.katachi`), and tells the plugin where the definition lives with `katachi { architecture = "<package>.test.architecture.projectArchitecture" }`. The plugin does not add katachi as a dependency, so `testImplementation("me.tbsten.katachi:katachi:<version>")` and the rest are written alongside it. `tasks.test { }` also gets `outputs.upToDateWhen { false }` and `outputs.cacheIf { false }`. The files katachi checks (the whole repository) are not inputs of the Test task, so without these Gradle skips the test as `UP-TO-DATE` after a file is added or moved, and it stays green even with violations
 - Creating `ProjectArchitecture.kt` and `ProjectArchitectureTest.kt`
-- Adding the Kotlin JVM plugin to the root build file (does nothing if the root or `buildSrc` already has a Kotlin plugin. If only subprojects declare it, with a version, it adds nothing to the root and writes the version in `architecture-test` instead)
+- Adding the Kotlin JVM plugin to the root build file (does nothing if the root's `plugins { }` / `buildscript { }` or `buildSrc` already has a Kotlin plugin. If only subprojects declare it, with a version, it adds nothing to the root and writes the version in `architecture-test` instead. Gradle then warns `The Kotlin Gradle plugin was loaded multiple times in different subprojects ...`; that is expected with this setup, so leave it. Adding it to the root or removing the version makes plugin resolution fail instead)
 - Adding `include("architecture-test")` to the settings file (`include 'architecture-test'` for a Groovy `settings.gradle`; does nothing if it's already there)
 - Adding `mavenCentral()` to `pluginManagement { repositories { } }` in the settings file, because the katachi Gradle plugin is published to Maven Central (does nothing if it's already there; creates `pluginManagement { }` if there is none)
 
@@ -322,10 +324,10 @@ Add `--no-konsist` only if it has been decided not to use `konsist { }`. If it h
 Once it's created, run it once at this point.
 
 ```sh
-./gradlew :architecture-test:test --rerun
+./gradlew :architecture-test:test
 ```
 
-**Failing here is the expected outcome.** `architecture { }` is empty, so by the deny-by-default principle every file is reported as `Unexpected`. The output looks like this.
+**Failing here is the expected outcome.** `architecture { }` is empty, so by the deny-by-default principle every file is reported as `Unexpected`. The output looks like this (the beginning only: a paragraph of the same shape follows for each violation, with Gradle's own output around it).
 
 ```
 Katachi check failed: 4 violations (Unexpected: 4)
@@ -482,7 +484,7 @@ Fill in the `architecture { }` in `architecture-test/src/test/kotlin/<package>/t
 Once written, run it once and **save the output as the baseline before refactoring.** 3-3 compares against it.
 
 ```sh
-./gradlew :architecture-test:test --rerun > <KATACHI_WORKDIR>/tmp/test-before-refactor.log 2>&1
+./gradlew :architecture-test:test > <KATACHI_WORKDIR>/tmp/test-before-refactor.log 2>&1
 ```
 
 What you need here is **for it to compile and for the check to run to the end.** Failing with `Katachi check failed: ...` is fine (violations are dealt with in step 4). If a compile error or a Gradle error keeps the check from running, fix it and take the log again.
@@ -530,7 +532,7 @@ Tidy up the 3-2 definition **without changing the check result.** When unsure ab
 Once tidied up, run it again the same way as in 3-2 and compare.
 
 ```sh
-./gradlew :architecture-test:test --rerun > <KATACHI_WORKDIR>/tmp/test-after-refactor.log 2>&1
+./gradlew :architecture-test:test > <KATACHI_WORKDIR>/tmp/test-after-refactor.log 2>&1
 sh $CLI compare-violations
 ```
 
@@ -541,7 +543,7 @@ Record the files you created or changed in `changedFiles` (the split files can b
 ## 4. Verify
 
 ```sh
-./gradlew :architecture-test:test --rerun
+./gradlew :architecture-test:test
 ```
 
 Run this and check the result.
@@ -556,7 +558,15 @@ Run this and check the result.
   - Record errors you leave in place in the checklist's `violations` (`violation` / `location` / `whyNotFixed` / `suggestion`).
   - Put anything you want the user to decide into **the checklist's** `questions` (`sh $CLI add question ...`). The report also has an array with the same name, but that one is for "inconsistencies in the codebase" noticed during step 1 — its purpose is different.
 
-**Once it is green, take `maxViolations` out of `ProjectArchitectureTest.kt`.** `scaffold` put it there only to keep the whole picture visible during adoption, and the `TODO` comment marks it. Run `./gradlew :architecture-test:test --rerun` once more afterwards and check the result has not changed. If more than 10 violations remain, you may keep `maxViolations` (without it only 10 are shown). When you leave violations, say so in `violations`.
+**Once it is green, take `maxViolations` out of `ProjectArchitectureTest.kt`.** `scaffold` put it there only to keep the whole picture visible during adoption, and the `TODO` comment marks it. Run `./gradlew :architecture-test:test` once more afterwards and check the result has not changed. If more than 10 violations remain, you may keep `maxViolations` (without it only 10 are shown). When you leave violations, say so in `violations`.
+
+**If many violations remain and the user wants to "shelve what is there now and fail only on new ones", you can propose the baseline.** It is an experimental feature (`@ExperimentalKatachiApi`), so ask the user in `questions` before putting it in. To use it:
+
+- Write `baseline = baselineFile()` in `architecture { }` in `ProjectArchitecture.kt`, and put `@OptIn(ExperimentalKatachiApi::class)` on `val projectArchitecture`. The ledger file defaults to `katachi-baseline.json` (at the project root)
+- The ledger file is checked too, so add a role that declares it in `layout { }` (e.g. `"Baseline" { layout { "katachi-baseline.json".file() } }`). Without it the ledger itself becomes an `[UnexpectedFile]`, and that one cannot be shelved
+- `./gradlew :architecture-test:test -Dkatachi.baseline.update=true` writes the violations there now into the ledger. From then on only violations missing from the ledger fail the test. Once a violation is fixed, its entry fails as `[StaleBaselineEntry]`, so remove it with `-Dkatachi.baseline.prune=true` (on CI (`CI=true`) both update and prune are refused)
+
+Write the shelved violations in `violations` too. Putting them in the ledger does not make them go away.
 
 If you left violations in place, write one line about what was left with `sh $CLI warn 4 "..."`.
 
@@ -733,7 +743,7 @@ Do this only if the user wants it.
    - Run `--arg mode=check` in CI (the end of 6-B)
 
    **The output directory becomes katachi's.** Any `*.md` in it that this run did not generate is deleted. Do not point it at a directory holding handwritten Markdown.
-4. Generate again, and confirm `./gradlew :architecture-test:test --rerun` passes.
+4. Generate again, and confirm `./gradlew :architecture-test:test` passes.
 
 Record the files you created or changed with `add changed`, then run `sh $CLI check 6-3`.
 
@@ -771,11 +781,11 @@ Do this only for the roles, among those proposed in step 6, that the user agreed
 
    ```sh
    ./gradlew :architecture-test:katachiTemplate --arg roleName=UseCase --arg name=Sample
-   ./gradlew :architecture-test:test --rerun
+   ./gradlew :architecture-test:test
    ```
 
    If `test` fails, check that the file names in `template { }` match the patterns in `layout { }` (such as `"*UseCase".ktFile()`).
-5. **Delete the generated file, since it was only for checking** (unless the user says to keep it). After deleting it, confirm `./gradlew :architecture-test:test --rerun` passes once more.
+5. **Delete the generated file, since it was only for checking** (unless the user says to keep it). After deleting it, confirm `./gradlew :architecture-test:test` passes once more.
 
 Record the files you created or changed with `add changed`, then run `sh $CLI check 6-4`.
 
