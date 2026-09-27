@@ -65,6 +65,8 @@ Manage the background server with `astro dev stop`, `astro dev status`, and `ast
   ガイドの末尾に置き、ページが自分で短い前提（2〜3行）を持つ
 - **ページタイトルとサイドバーのラベルは分けられる**（Starlight の `sidebar.label`）
 - **存在しないページにリンクするとビルドが落ちる。** 書けるページから順に出す
+- **`@ExperimentalKatachiApi` が要る API を使う箇所に「`@OptIn(ExperimentalKatachiApi::class)` が必要です」と書かない。**
+  opt-in が無ければコンパイラがそう言うので、エラーメッセージから直せる。本文とコード例が注記で重くなるだけ
 - **節の索引ページは `<SectionIndex dir="..." />` で出す。** ページの集合は content
   collection から、並び順はサイドバーから採る。カードを手で並べない
 
