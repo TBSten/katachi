@@ -216,14 +216,14 @@ public class KatachiFileConstraintDirectOnlyCoversNothingException internal cons
     /** What the constraint was called, or `null` when it was declared without a name. */
     public val name: String?,
     /** The directory the constraint was written in, resolved (`core/domain` for `":core:domain"`). */
-    public val layoutPath: String?,
+    public val layoutPath: String,
     /** Where the constraint was written. */
     public val declaredAt: DeclarationSite,
 ) : KatachiDeclarationException(
     message = buildString {
         appendLine(
             "Constraint ${labelOf(name)} declared at $declaredAt asks for scope = DirectOnly, " +
-                "but its block declares no file directly in ${layoutPath ?: "its directory"}.",
+                "but its block declares no file directly in $layoutPath.",
         )
         appendLine(
             "DirectOnly covers only the files the block itself declares, not those of its " +

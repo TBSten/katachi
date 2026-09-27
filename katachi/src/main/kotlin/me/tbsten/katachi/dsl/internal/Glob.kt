@@ -57,7 +57,7 @@ internal enum class GlobGroupKind { Single, Recursive }
 @InternalKatachiApi
 public class Glob private constructor(
     /** The pattern as written. Two patterns are the same only when these strings are equal. */
-    public val pattern: String,
+    internal val pattern: String,
     /** `/` for file paths, `:` for module paths. */
     internal val separator: Char,
     private val segments: List<String>,
