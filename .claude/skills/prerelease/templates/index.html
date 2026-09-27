@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>v{版} リリース前チェック</title>
+<style>
+:root{--bg:#fbfaf7;--fg:#1d1d1f;--muted:#6b6b70;--line:#e3e1dc;--card:#fff;--red:#c0392b;--amber:#b7791f;--blue:#2b6cb0;--green:#2f855a;--code:#f1efea}
+@media (prefers-color-scheme:dark){:root{--bg:#17171a;--fg:#ececef;--muted:#9a9aa2;--line:#2e2e34;--card:#1f1f23;--red:#f07167;--amber:#f6c35b;--blue:#7fb3ff;--green:#6fd39a;--code:#2a2a30}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:15px/1.7 -apple-system,"Hiragino Sans","Noto Sans JP",sans-serif}
+main{max-width:880px;margin:0 auto;padding:24px 16px 64px}
+h1{font-size:22px;margin:0 0 4px}
+.sub{color:var(--muted);font-size:13px;margin:0 0 20px}
+.summary{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:24px}
+.pill{border:1px solid var(--line);background:var(--card);border-radius:999px;padding:4px 12px;font-size:13px}
+.pill b{margin-right:4px}
+h2{font-size:17px;margin:28px 0 8px;padding-left:10px;border-left:4px solid var(--c,var(--line))}
+h2 small{color:var(--muted);font-weight:normal;font-size:13px;margin-left:6px}
+.item{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 14px;margin:8px 0;display:grid;grid-template-columns:22px 1fr;gap:4px 10px}
+.item input{margin-top:5px;width:16px;height:16px}
+.item.done .t{text-decoration:line-through;color:var(--muted)}
+.t{font-weight:600}
+.p{font-size:11px;font-weight:700;border-radius:4px;padding:1px 6px;margin-right:6px;color:#fff;background:var(--muted);vertical-align:1px}
+.p8{background:var(--red)}.p7{background:var(--red)}.p5{background:var(--amber)}.p4,.p3,.p2{background:var(--muted)}
+.body{grid-column:2;font-size:14px;color:var(--fg)}
+.ask{grid-column:2;font-size:14px;margin-top:2px}
+.ask b{color:var(--blue)}
+details{grid-column:2;font-size:13.5px;color:var(--muted)}
+details summary{cursor:pointer}
+details ul{margin:6px 0;padding-left:20px}
+code{background:var(--code);border-radius:4px;padding:0 4px;font-size:.9em;word-break:break-all}
+a{color:var(--blue);word-break:break-all}
+</style>
+<style>
+.badge{display:inline-block;font-weight:700;border-radius:8px;padding:2px 10px;margin-right:8px}
+.ok{background:color-mix(in srgb,var(--green) 18%,transparent);color:var(--green)}
+.warn{background:color-mix(in srgb,var(--red) 18%,transparent);color:var(--red)}
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:10px;margin:8px 0}
+.card{background:var(--card);border:1px solid var(--line);border-left:4px solid var(--c,var(--line));border-radius:10px;padding:10px 14px}
+.card .n{font-size:12px;color:var(--muted)}
+.card .r{font-weight:700;margin:2px 0}
+.card .l{font-size:13px}
+.card.ok-c{--c:var(--green)}.card.warn-c{--c:var(--red)}.card.note-c{--c:var(--amber)}
+.lead{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:12px 16px;margin:12px 0}
+</style>
+</head>
+<body>
+<main>
+<!-- 数字や件数は prerelease-check-list.md の値をそのまま使う（SSoT）。補足は <details> に入れ、first view を絞る。
+     カードの状態: ok-c（通過・問題なし）/ note-c（軽微な警告あり）/ warn-c（priority 7 以上・落ちた）。 -->
+<h1><span class="badge ok">✅</span>v{版} リリース前チェック</h1>
+<p class="sub">{YYYY-MM-DD HH:MM} / 対象 {コミット} / 基準 {直前のタグ}</p>
+
+<div class="lead">
+  <div>{リリースノートの概要。7 の報告と同じ 3 文}</div>
+  <p class="sub" style="margin:8px 0 0">
+    <a href="TODO.html">TODO（{n} 件）</a> ・ <a href="release-note.md">リリースノート</a> ・ <a href="prerelease-check-list.md">チェックリスト</a>
+  </p>
+</div>
+
+<h2 style="--c:var(--red)">重要な警告<small>priority 7 以上。無ければ節ごと消す</small></h2>
+<div class="item" data-id="w-example"><div></div><div class="t"><span class="p p8">p8</span>{タイトル}</div>
+<div class="body">{1〜2 文。TODO.html の該当項目と同じ内容}</div></div>
+
+<h2>手順ごとの結果</h2>
+<div class="cards">
+  <div class="card ok-c"><div class="n">1. 前提チェック</div><div class="r">{版} / 直前 {版}</div><div class="l"><a href="prerelease-check-list.md">チェックリスト</a></div></div>
+  <div class="card ok-c"><div class="n">2. 翻訳の同期</div><div class="r">訳し直し {n} 件</div></div>
+  <div class="card ok-c"><div class="n">3. 公開範囲</div><div class="r">要検討 {n} 件</div><div class="l"><a href="visibility-check.md">visibility-check.md</a></div></div>
+  <div class="card ok-c"><div class="n">4. リリースノート</div><div class="r">BREAKING {n} 件</div><div class="l"><a href="release-note.md">release-note.md</a></div></div>
+  <div class="card note-c"><div class="n">5. 実装とドキュメント</div><div class="r">{n} 件（p7 以上 {n}）</div><div class="l"><a href="docs-vs-impl.md">docs-vs-impl.md</a></div></div>
+  <div class="card ok-c"><div class="n">6. サイトの巡回</div><div class="r">en {n} / ja {n} / api-docs {n} ページ・問題 {n} 件</div><div class="l"><a href="site-crawl.md">site-crawl.md</a> ・ <a href="screenshots/">screenshots</a></div></div>
+  <div class="card ok-c"><div class="n">8. CI と同等</div><div class="r">{n} / {n}</div><div class="l"><a href="ci-checks.md">ci-checks.md</a></div></div>
+  <div class="card ok-c"><div class="n">9-1. インストールキット（fixture）</div><div class="r">{n} / {n}</div><div class="l"><a href="install-kit.md">install-kit.md</a></div></div>
+  <div class="card ok-c"><div class="n">9-2. 統合テスト</div><div class="r">ja {✓/✗} / en {✓/✗}・所見 {n} 件</div><div class="l"><a href="install-e2e.md">install-e2e.md</a></div></div>
+</div>
+
+<h2 style="--c:var(--amber)">軽微な警告<small>{n} 件</small></h2>
+<details><summary>手順ごとの内訳</summary><ul>
+  <li>{手順}: {n} 件（{成果物へのリンク}）</li>
+</ul></details>
+</main>
+</body>
+</html>
