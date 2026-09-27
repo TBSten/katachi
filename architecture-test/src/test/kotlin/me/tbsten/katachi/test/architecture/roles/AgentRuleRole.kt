@@ -20,6 +20,8 @@ fun DeclarationContainerScope.agentRule() = "AgentRule" {
             // A skill may bring the scripts its steps run. They sit next to the SKILL.md that
             // tells an agent when to run them, rather than somewhere the agent has to be told about.
             "skills" / "*" / "scripts" / "*".file()
+            // The details of each step, split out so that SKILL.md stays a short outline.
+            "skills" / "*" / "references" / "*.md".file()
         }
     }
 }
