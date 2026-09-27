@@ -33,10 +33,13 @@ import org.gradle.api.InvalidUserDataException;
  * plugin is applied to, so {@code katachiDocs}, {@code katachiTemplate} and
  * {@code katachiTemplates} work with an empty {@code katachi { } } block. So is
  * {@code internalTemplatesJson}, which the katachi IDE plugin runs to read the templates as JSON;
- * its task has no group, since it is not meant to be run by hand. They are the only ones: {@code layout} and {@code konsist} would have to be defaulted too if the rule were
- * "katachi's own processors", but {@code konsist} lives in {@code :katachi-konsist} and a module
- * that does not depend on it would get a registry entry that fails to resolve at run time.
- * Registering only what {@code :katachi} itself carries keeps every default entry resolvable.
+ * its task has no group, since it is not meant to be run by hand. They are the only ones: the
+ * checks ({@code LayoutCheck}, {@code FileConstraintCheck}) are not registered by default,
+ * although {@code :katachi} carries them too. A check already runs where a build expects it to,
+ * in the {@code test} task through {@code assert()}; a default {@code katachiLayout} would be a
+ * second way to run the same check that nobody asked for, and a CI that runs both would report
+ * every violation twice. A module that wants to run a check from the command line registers it,
+ * as in the example below.
  *
  * <p>A {@link #register} of the same key wins. Without that, swapping in a documentation
  * processor of one's own would mean either accepting katachi's under its natural name or
