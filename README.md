@@ -62,6 +62,8 @@ Write the definition and a test.
 
 ```kotlin
 // architecture-test/src/test/kotlin/com/example/ProjectArchitecture.kt
+package com.example
+
 val projectArchitecture = architecture {
     gradle() // Gradle files: wrapper, settings, build scripts, etc.
     "domain".group {
@@ -72,6 +74,8 @@ val projectArchitecture = architecture {
 }
 
 // architecture-test/src/test/kotlin/com/example/ProjectArchitectureTest.kt
+package com.example
+
 class ProjectArchitectureTest {
     @Test
     fun `the project matches its definition`() = projectArchitecture.assert()
