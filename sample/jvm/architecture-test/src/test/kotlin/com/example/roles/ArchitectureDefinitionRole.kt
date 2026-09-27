@@ -2,6 +2,7 @@ package com.example.roles
 
 import com.example.forbiddenContents
 import me.tbsten.katachi.dsl.DeclarationContainerScope
+import me.tbsten.katachi.dsl.FileConstraintRange.DirectOnly
 import me.tbsten.katachi.dsl.gradle.*
 import me.tbsten.katachi.dsl.kotlin.ktFile
 import me.tbsten.katachi.konsist.konsist
@@ -24,9 +25,9 @@ fun DeclarationContainerScope.architectureDefinition() = "ArchitectureDefinition
         分けるのは読みやすさのための約束であって、`layout { }` が強制しているわけではありません
         （`roles/` に何も宣言しない `.kt` を置いても通ります）。
 
-        そのかわり、逆向きの約束だけは `konsist(directOnly = true)` で検査しています。
+        そのかわり、逆向きの約束だけは `konsist(scope = DirectOnly)` で検査しています。
         `com/example` の**直下**には group・役割の宣言（`DeclarationContainerScope` の拡張関数）を
-        置かず、それは `groups/` と `roles/` に書きます。`directOnly = true` なので、この制約は
+        置かず、それは `groups/` と `roles/` に書きます。`scope = DirectOnly` なので、この制約は
         `groups/` と `roles/` の中のファイルには降りません。
     """.trimIndent()
     forbiddenContents = """
@@ -47,10 +48,10 @@ fun DeclarationContainerScope.architectureDefinition() = "ArchitectureDefinition
         // under `roles/` that declares no role passes just the same.
         ":architecture-test".module {
             testSourceSet / kotlin / "com/example" {
-                // The samples' one `directOnly` constraint (katachi's guide: "Konsist
-                // integration"). Without `directOnly = true` it would also cover `groups/` and
+                // The samples' one `DirectOnly` constraint (katachi's guide: "Konsist
+                // integration"). With the default scope, `Subtree`, it would also cover `groups/` and
                 // `roles/`, where every file is exactly such a declaration, and fail.
-                "直下に group・役割の宣言を置かない".konsist(directOnly = true) {
+                "直下に group・役割の宣言を置かない".konsist(scope = DirectOnly) {
                     functions().mustNot { it.receiverType?.name == "DeclarationContainerScope" }
                 }
                 "*".ktFile()

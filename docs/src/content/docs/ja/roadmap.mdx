@@ -39,7 +39,7 @@ katachi の売りが揃う段階で、**0.2.0 としてリリースしました*
 | [`template { }`](/katachi/ja/guides/generate-code-from-template/) | 役割に適合するファイルをテンプレートから生成する。引数は型付きで受けられる（`stringParameter()` / `booleanParameter()` / `intParameter()` / `enumParameter()`）。`katachiTemplates` でテンプレートの一覧と詳細を確かめられる |
 | [**baseline**](/katachi/ja/guides/baseline/)（実験的） | 既存の違反を台帳のファイルに記録し、**新しく増えた分だけ**で落とす。`architecture { baseline = baselineFile() }` と書き（`@OptIn(ExperimentalKatachiApi::class)` が要る）、台帳のファイル自身も `layout { }` で宣言する。`-Dkatachi.baseline.update=true` で記録、`-Dkatachi.baseline.prune=true` で直した分を台帳から消す |
 | [`gradle()`](/katachi/ja/recipes/gradle/) | wrapper・settings・build スクリプト・`gradle.properties`・version catalog など、どのプロジェクトにもある Gradle のファイルを1行で宣言する |
-| [ディレクトリの `konsist { }` の直下限定](/katachi/ja/guides/konsist-integration/#ディレクトリごとに制約をかける) | ディレクトリブロックに書いた `konsist { }` を、サブツリー全体ではなく直下のファイルだけに効かせる。`konsist(directOnly = true)` と書く。親と子で制約が違う構成（`util/` と `util/ksp/` など）に使う |
+| [ディレクトリの `konsist { }` の直下限定](/katachi/ja/guides/konsist-integration/#ディレクトリごとに制約をかける) | ディレクトリブロックに書いた `konsist { }` を、サブツリー全体ではなく直下のファイルだけに効かせる。`konsist(scope = DirectOnly)` と書く。親と子で制約が違う構成（`util/` と `util/ksp/` など）に使う |
 | IDE プラグイン（**未公開**） | IntelliJ IDEA / Android Studio のツールウィンドウからテンプレートを選び、引数を埋めてコードを生成する。katachi 本体の版とは別に進めていて、まだ公開していない |
 
 ## v0.3 以降 — 既存プロジェクトへの導入と `declarations { }`

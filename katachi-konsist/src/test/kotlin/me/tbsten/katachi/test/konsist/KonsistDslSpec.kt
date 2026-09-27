@@ -10,6 +10,7 @@ import me.tbsten.katachi.ExperimentalKatachiApi
 import me.tbsten.katachi.InternalKatachiApi
 import me.tbsten.katachi.check.FileConstraintCheck
 import me.tbsten.katachi.check.internal.validate
+import me.tbsten.katachi.dsl.FileConstraintRange
 import me.tbsten.katachi.dsl.KatachiFileConstraintDirectOnlyWithoutDirectoryException
 import me.tbsten.katachi.dsl.KatachiFileConstraintNameException
 import me.tbsten.katachi.dsl.KatachiFileConstraintWithoutLayoutException
@@ -146,7 +147,7 @@ class KonsistDslSpec : FreeSpec({
         }
     }
 
-    "directOnly" - {
+    "scope = DirectOnly" - {
         // The fixture: an internal class directly in `util/`, and a public one a level below in
         // `util/ksp/`. "Every class is internal" holds for the first and not for the second, so
         // whether the second was covered is what the result says.
@@ -156,7 +157,7 @@ class KonsistDslSpec : FreeSpec({
             use = use,
         )
 
-        "名前付きの konsist(directOnly = true) は子ディレクトリのファイルを見ない" {
+        "名前付きの konsist(scope = DirectOnly) は子ディレクトリのファイルを見ない" {
             utilFixture { root ->
                 val projectArchitecture = architecture {
                     files = wholeTree()
@@ -165,7 +166,7 @@ class KonsistDslSpec : FreeSpec({
                             layout {
                                 "gradlew".file()
                                 "util" {
-                                    "internal であること".konsist(directOnly = true) {
+                                    "internal であること".konsist(scope = FileConstraintRange.DirectOnly) {
                                         classes().must { it.hasInternalModifier }
                                     }
                                     "*.kt".file()
@@ -180,7 +181,7 @@ class KonsistDslSpec : FreeSpec({
             }
         }
 
-        "名前なしの konsist(directOnly = true) も子ディレクトリのファイルを見ない" {
+        "名前なしの konsist(scope = DirectOnly) も子ディレクトリのファイルを見ない" {
             utilFixture { root ->
                 val projectArchitecture = architecture {
                     files = wholeTree()
@@ -189,7 +190,7 @@ class KonsistDslSpec : FreeSpec({
                             layout {
                                 "gradlew".file()
                                 "util" {
-                                    konsist(directOnly = true) { classes().must { it.hasInternalModifier } }
+                                    konsist(scope = FileConstraintRange.DirectOnly) { classes().must { it.hasInternalModifier } }
                                     "*.kt".file()
                                     "ksp" { "*.kt".file() }
                                 }
@@ -202,7 +203,7 @@ class KonsistDslSpec : FreeSpec({
             }
         }
 
-        "directOnly を書かなければ子ディレクトリのファイルも見る" {
+        "scope を書かなければ子ディレクトリのファイルも見る" {
             utilFixture { root ->
                 val projectArchitecture = architecture {
                     files = wholeTree()
@@ -225,12 +226,12 @@ class KonsistDslSpec : FreeSpec({
             }
         }
 
-        "役割直下の konsist(directOnly = true) は宣言時に落ちる" {
+        "役割直下の konsist(scope = DirectOnly) は宣言時に落ちる" {
             shouldThrow<KatachiFileConstraintDirectOnlyWithoutDirectoryException> {
                 architecture {
                     "util".group {
                         "Util" {
-                            konsist(directOnly = true) { }
+                            konsist(scope = FileConstraintRange.DirectOnly) { }
                             layout { "util" { "*.kt".file() } }
                         }
                     }

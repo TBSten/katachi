@@ -21,6 +21,9 @@ import me.tbsten.katachi.check.internal.validate
 import me.tbsten.katachi.dsl.Architecture
 import me.tbsten.katachi.dsl.Documented
 import me.tbsten.katachi.dsl.Examples
+import me.tbsten.katachi.dsl.FileConstraintRange
+import me.tbsten.katachi.dsl.FileConstraintRange.DirectOnly
+import me.tbsten.katachi.dsl.FileConstraintRange.Subtree
 import me.tbsten.katachi.dsl.FileSelection
 import me.tbsten.katachi.dsl.LayoutEntry
 import me.tbsten.katachi.dsl.Title
@@ -298,18 +301,18 @@ class ProjectArchitectureSpec : FreeSpec({
         overNothing.validate() shouldBe emptyList()
     }
 
-    "directOnly の konsist は groups/ と roles/ に降りず、外すと降りてそこで落ちる" {
-        // `roles/ArchitectureDefinitionRole.kt` passing proves nothing about `directOnly` on its
+    "scope = DirectOnly の konsist は groups/ と roles/ に降りず、Subtree にすると降りてそこで落ちる" {
+        // `roles/ArchitectureDefinitionRole.kt` passing proves nothing about `DirectOnly` on its
         // own: a constraint that covered nothing would pass too. Taking the flag away has to
         // make the same rule reach `groups/` and `roles/`, where every file declares exactly
         // what it forbids.
-        fun unsatisfiedPaths(directOnly: Boolean): List<String> = architecture {
+        fun unsatisfiedPaths(scope: FileConstraintRange): List<String> = architecture {
             "testing".group {
                 "Definition" {
                     layout {
                         ":architecture-test".module {
                             testSourceSet / kotlin / "com/example" {
-                                "直下に group・役割の宣言を置かない".konsist(directOnly = directOnly) {
+                                "直下に group・役割の宣言を置かない".konsist(scope = scope) {
                                     functions().mustNot { it.receiverType?.name == "DeclarationContainerScope" }
                                 }
                                 "*".ktFile()
@@ -323,8 +326,8 @@ class ProjectArchitectureSpec : FreeSpec({
             .filter { it.label == "UnsatisfiedFileConstraint" }
             .map { it.path }
 
-        unsatisfiedPaths(directOnly = true) shouldBe emptyList()
-        unsatisfiedPaths(directOnly = false) shouldContain
+        unsatisfiedPaths(DirectOnly) shouldBe emptyList()
+        unsatisfiedPaths(Subtree) shouldContain
             "architecture-test/src/test/kotlin/com/example/roles/ServiceRole.kt"
     }
 

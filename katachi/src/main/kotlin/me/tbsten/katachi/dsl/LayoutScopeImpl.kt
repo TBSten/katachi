@@ -78,18 +78,18 @@ internal class LayoutScopeImpl(
     override fun fileConstraint(
         name: String?,
         declaredAt: DeclarationSite,
-        directOnly: Boolean,
+        scope: FileConstraintRange,
         check: FileConstraint,
     ) {
         // The layout root is the project root, shared by every block of the `layout { }` and by
         // `":".module { }` alike, so "directly in it" would not be this block's files.
-        if (directOnly && container.parent == null) {
+        if (scope == FileConstraintRange.DirectOnly && container.parent == null) {
             throw KatachiFileConstraintDirectOnlyWithoutDirectoryException(name = name, declaredAt = declaredAt)
         }
         fileConstraints += fileConstraintDeclarationOf(
             name = name,
             declaredAt = declaredAt,
-            directOnly = directOnly,
+            scope = scope,
             check = check,
         )
     }

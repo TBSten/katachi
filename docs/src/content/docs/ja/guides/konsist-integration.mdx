@@ -77,13 +77,15 @@ architecture {
 
 `konsist { }` は `layout { }` の中のディレクトリブロックにも書けます。そのときの対象は、**そのブロックの下（サブツリー全体）で宣言したファイル**です。
 
-`util/` には Kotlin の標準ライブラリだけ、`util/ksp/` では KSP の API も使ってよい、のように**親と子で制約が違う**ときは、`directOnly = true` を付けます。対象が**そのブロックの直下で宣言したファイル**だけになり、子ディレクトリには降りません。
+`util/` には Kotlin の標準ライブラリだけ、`util/ksp/` では KSP の API も使ってよい、のように**親と子で制約が違う**ときは、`scope = DirectOnly` を付けます。対象が**そのブロックの直下で宣言したファイル**だけになり、子ディレクトリには降りません。
 
-```kt {4}
+```kt {1,6}
+import me.tbsten.katachi.dsl.FileConstraintRange.DirectOnly
+
 "Util" {
   layout {
     "src/main/kotlin/com/example/util" {
-      "KSP の API を使わないこと".konsist(directOnly = true) {
+      "KSP の API を使わないこと".konsist(scope = DirectOnly) {
         files.must { file -> file.imports.none { it.name.startsWith("com.google.devtools.ksp") } }
       }
       "*".ktFile()           // 対象になる
@@ -94,10 +96,11 @@ architecture {
 ```
 
 - 「直下」は宣言の形で決まります。`"ksp" / "*".ktFile()` のように `/` で1段下に書いたものも、`"**/*.md".file()` のように `**` を含むものも、対象になりません。ブロック自身の `anyFile()` は対象になります。
-- 名前の無い `konsist(directOnly = true) { }` と、実験的な API の `fileConstraint(name, directOnly = true) { }` も同じです。
-- 何も付けなければ、これまでどおりサブツリー全体が対象です。
+- `scope` の型は列挙型 `FileConstraintRange` です。値の import を書かない場合は `scope = FileConstraintRange.DirectOnly` と書きます。
+- 名前の無い `konsist(scope = DirectOnly) { }` と、実験的な API の `fileConstraint(name, scope = DirectOnly) { }` も同じです。
+- 何も付けなければ（既定値の `Subtree`）、これまでどおりサブツリー全体が対象です。
 
-<Aside type="caution" title="directOnly を書けない場所">
+<Aside type="caution" title="DirectOnly を書けない場所">
   - **Role の直下・`layout { }` の直下・`":".module { }` の中**には書けません。「直下」を決めるディレクトリが無いためで、`KatachiFileConstraintDirectOnlyWithoutDirectoryException` になります。
   - **直下にファイルを1つも宣言していないブロック**に書くと、`KatachiFileConstraintDirectOnlyCoversNothingException` になります。何も検査しない制約が通ってしまうのを防ぐためです。`.module { }` が自動で足す `build.gradle.kts` は数えません。
 </Aside>
@@ -136,7 +139,7 @@ katachi が足しているのは `must` / `mustNot` / `mustBeEmpty` の3つで�
 ## まとめ
 
 - `layout { }` が **どこに置いてよいか**、`konsist { }` が **中身がどうあるべきか** を担当します。
-- ディレクトリブロックに書いた `konsist { }` はサブツリー全体が対象です。直下だけにしたいときは `directOnly = true` を付けます。
+- ディレクトリブロックに書いた `konsist { }` はサブツリー全体が対象です。直下だけにしたいときは `scope = DirectOnly` を付けます。
 - `katachi-konsist` は**任意のモジュール**です。依存の追加と `assert(FileConstraintCheck())` の設定が必要です。
 - **制約名がそのまま違反レポートに出ます。** 名前は「満たすべきこと」の形で書いてください。
 - `assertTrue` 系は**コンパイルエラーになります**。その場で例外を投げてしまい、1回の実行で全違反を集める設計と噛み合わないためです。

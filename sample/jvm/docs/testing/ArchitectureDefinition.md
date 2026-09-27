@@ -17,9 +17,9 @@ katachi の DSL で書かれた役割の定義。どのレイヤーにも属さ�
 分けるのは読みやすさのための約束であって、`layout { }` が強制しているわけではありません
 （`roles/` に何も宣言しない `.kt` を置いても通ります）。
 
-そのかわり、逆向きの約束だけは `konsist(directOnly = true)` で検査しています。
+そのかわり、逆向きの約束だけは `konsist(scope = DirectOnly)` で検査しています。
 `com/example` の**直下**には group・役割の宣言（`DeclarationContainerScope` の拡張関数）を
-置かず、それは `groups/` と `roles/` に書きます。`directOnly = true` なので、この制約は
+置かず、それは `groups/` と `roles/` に書きます。`scope = DirectOnly` なので、この制約は
 `groups/` と `roles/` の中のファイルには降りません。
 
 ## Placement

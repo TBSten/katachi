@@ -127,7 +127,8 @@ public class KatachiFileConstraintWithoutLayoutException internal constructor(
 )
 
 /**
- * A constraint asked for `directOnly = true` somewhere that has no directory of its own.
+ * A constraint asked for `scope = FileConstraintRange.DirectOnly` somewhere that has no directory
+ * of its own.
  *
  * "Directly in" needs one directory to be directly in. A role lives wherever its `layout { }`
  * blocks put it, and directly under `layout { }` or inside `":".module { }` the block writes
@@ -143,7 +144,7 @@ public class KatachiFileConstraintWithoutLayoutException internal constructor(
  *     architecture {
  *         "util".group {
  *             "Util" {
- *                 fileConstraint("uses the stdlib only", directOnly = true) { emptyList() }
+ *                 fileConstraint("uses the stdlib only", scope = FileConstraintRange.DirectOnly) { emptyList() }
  *                 layout { "util" { "*.kt".file() } }
  *             }
  *         }
@@ -162,24 +163,25 @@ public class KatachiFileConstraintDirectOnlyWithoutDirectoryException internal c
 ) : KatachiDeclarationException(
     message = buildString {
         appendLine(
-            "Constraint ${labelOf(name)} declared at $declaredAt asks for directOnly = true, " +
+            "Constraint ${labelOf(name)} declared at $declaredAt asks for scope = DirectOnly, " +
                 "but it is not written in a directory block.",
         )
         appendLine(
-            "directOnly covers the files directly in the surrounding directory. Directly on a " +
+            "DirectOnly covers the files directly in the surrounding directory. Directly on a " +
                 "role, directly under `layout { }`, or in `\":\".module { }` there is no such " +
                 "directory: the role spans all its layouts, and the project root is shared.",
         )
         append(
             "Move the constraint into the directory block whose own files it is about " +
-                "(e.g. `\"util\" { ... }` or `\":core\".module { ... }`), or drop directOnly " +
-                "to cover everything below.",
+                "(e.g. `\"util\" { ... }` or `\":core\".module { ... }`), or use the default " +
+                "scope, Subtree, to cover everything below.",
         )
     },
 )
 
 /**
- * A constraint asked for `directOnly = true` in a block that declares no file directly.
+ * A constraint asked for `scope = FileConstraintRange.DirectOnly` in a block that declares no file
+ * directly.
  *
  * Such a constraint could never see a file: everything the block declares sits in a nested
  * directory. The file `.module { }` adds by itself, `build.gradle.kts`, does not count, since
@@ -195,7 +197,7 @@ public class KatachiFileConstraintDirectOnlyWithoutDirectoryException internal c
  *         "Util" {
  *             layout {
  *                 "util" {
- *                     fileConstraint("uses the stdlib only", directOnly = true) { emptyList() }
+ *                     fileConstraint("uses the stdlib only", scope = FileConstraintRange.DirectOnly) { emptyList() }
  *                     "ksp" { "*.kt".file() }
  *                 }
  *             }
@@ -220,17 +222,17 @@ public class KatachiFileConstraintDirectOnlyCoversNothingException internal cons
 ) : KatachiDeclarationException(
     message = buildString {
         appendLine(
-            "Constraint ${labelOf(name)} declared at $declaredAt asks for directOnly = true, " +
+            "Constraint ${labelOf(name)} declared at $declaredAt asks for scope = DirectOnly, " +
                 "but its block declares no file directly in ${layoutPath ?: "its directory"}.",
         )
         appendLine(
-            "directOnly covers only the files the block itself declares, not those of its " +
+            "DirectOnly covers only the files the block itself declares, not those of its " +
                 "nested directories, so this constraint could never see a file.",
         )
         append(
             "Declare the files that sit directly in that directory (e.g. `\"*\".ktFile()` or " +
-                "`anyFile()`), move the constraint into the nested block it is about, or drop " +
-                "directOnly to cover everything below.",
+                "`anyFile()`), move the constraint into the nested block it is about, or use the " +
+                "default scope, Subtree, to cover everything below.",
         )
     },
 )

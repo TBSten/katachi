@@ -3,6 +3,7 @@ package me.tbsten.katachi.dsl.internal
 import me.tbsten.katachi.InternalKatachiApi
 import me.tbsten.katachi.dsl.Architecture
 import me.tbsten.katachi.dsl.DeclarationSite
+import me.tbsten.katachi.dsl.FileConstraintRange
 import me.tbsten.katachi.dsl.KatachiFileConstraintDirectOnlyCoversNothingException
 import me.tbsten.katachi.dsl.KatachiGlobSyntaxException
 import me.tbsten.katachi.dsl.LayoutEntry
@@ -268,7 +269,7 @@ private fun declaredFileConstraintsOf(
             layoutPath = anchorPath,
             name = declaration.name,
             declaredAt = declaration.declaredAt,
-            coverage = if (declaration.directOnly) {
+            coverage = if (declaration.scope == FileConstraintRange.DirectOnly) {
                 directCoverage ?: throw KatachiFileConstraintDirectOnlyCoversNothingException(
                     name = declaration.name,
                     layoutPath = anchorPath ?: "",
@@ -288,7 +289,7 @@ private fun coverageOf(covered: List<LayoutEntry>): FileConstraintCoverage = Fil
 )
 
 /**
- * The entries a `directOnly` constraint covers: [owned] themselves, whose `anyFile()` opens
+ * The entries a [FileConstraintRange.DirectOnly] constraint covers: [owned] themselves, whose `anyFile()` opens
  * exactly the files directly inside them, and the files declared as their immediate children.
  *
  * A child *directory* is left out even when it is `anyFile()`, because what it opens is a level

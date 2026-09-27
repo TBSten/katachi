@@ -4,6 +4,7 @@ import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.FreeSpec
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
+import me.tbsten.katachi.dsl.FileConstraintRange
 import me.tbsten.katachi.dsl.KatachiFileConstraintDirectOnlyCoversNothingException
 import me.tbsten.katachi.dsl.KatachiFileConstraintDirectOnlyWithoutDirectoryException
 import me.tbsten.katachi.dsl.architecture
@@ -13,7 +14,7 @@ import me.tbsten.katachi.dsl.kotlin.ktFile
 import me.tbsten.katachi.dsl.kotlin.ktsFile
 
 /**
- * `fileConstraint(directOnly = true)`: a constraint that covers only what its own directory
+ * `fileConstraint(scope = FileConstraintRange.DirectOnly)`: a constraint that covers only what its own directory
  * declares directly, not what the directories below it declare.
  *
  * NOTE: このファイルのパッケージを `me.tbsten.katachi.dsl` にしてはいけない。
@@ -31,7 +32,7 @@ class FileConstraintDirectOnlySpec : FreeSpec({
                     "Util" {
                         layout {
                             "util" {
-                                fileConstraint("stdlib only", directOnly = true, check = silent())
+                                fileConstraint("stdlib only", scope = FileConstraintRange.DirectOnly, check = silent())
                                 "*.kt".file()
                                 "ksp" { "*.kt".file() }
                             }
@@ -51,7 +52,7 @@ class FileConstraintDirectOnlySpec : FreeSpec({
                     "Util" {
                         layout {
                             "util" {
-                                fileConstraint("stdlib only", directOnly = true, check = silent())
+                                fileConstraint("stdlib only", scope = FileConstraintRange.DirectOnly, check = silent())
                                 "*.kt".file()
                                 "ksp" / "*.kt".file()
                             }
@@ -65,14 +66,15 @@ class FileConstraintDirectOnlySpec : FreeSpec({
             coverage.covers("util/ksp/Symbols.kt") shouldBe false
         }
 
-        "書かなければ従来どおり部分木全体を覆う" {
+        "scope を書かないか Subtree なら従来どおり部分木全体を覆う" {
             val arch = architecture {
                 "util".group {
                     "Util" {
                         layout {
                             "util" {
                                 fileConstraint("subtree", check = silent())
-                                fileConstraint("direct", directOnly = true, check = silent())
+                                fileConstraint("explicit subtree", scope = FileConstraintRange.Subtree, check = silent())
+                                fileConstraint("direct", scope = FileConstraintRange.DirectOnly, check = silent())
                                 "*.kt".file()
                                 "ksp" { "*.kt".file() }
                             }
@@ -81,9 +83,10 @@ class FileConstraintDirectOnlySpec : FreeSpec({
                 }
             }
 
-            val (subtree, direct) = arch.declaredFileConstraints()
+            val (subtree, explicitSubtree, direct) = arch.declaredFileConstraints()
             subtree.name shouldBe "subtree"
             subtree.coverage.covers("util/ksp/Symbols.kt") shouldBe true
+            explicitSubtree.coverage.covers("util/ksp/Symbols.kt") shouldBe true
             direct.name shouldBe "direct"
             direct.coverage.covers("util/ksp/Symbols.kt") shouldBe false
         }
@@ -94,7 +97,7 @@ class FileConstraintDirectOnlySpec : FreeSpec({
                     "Generated" {
                         layout {
                             "generated" {
-                                fileConstraint("top level only", directOnly = true, check = silent())
+                                fileConstraint("top level only", scope = FileConstraintRange.DirectOnly, check = silent())
                                 anyFile()
                                 "nested" { anyFile() }
                             }
@@ -114,7 +117,7 @@ class FileConstraintDirectOnlySpec : FreeSpec({
                     "Doc" {
                         layout {
                             "doc" {
-                                fileConstraint("index only", directOnly = true, check = silent())
+                                fileConstraint("index only", scope = FileConstraintRange.DirectOnly, check = silent())
                                 "README.md".file()
                                 "**/*.md".file()
                             }
@@ -134,7 +137,7 @@ class FileConstraintDirectOnlySpec : FreeSpec({
                     "UseCase" {
                         layout {
                             ":core:domain".module {
-                                fileConstraint("module root", directOnly = true, check = silent())
+                                fileConstraint("module root", scope = FileConstraintRange.DirectOnly, check = silent())
                                 "README.md".file()
                                 mainSourceSet / KOTLIN_DIRECTORY / "*UseCase".ktFile()
                             }
@@ -155,7 +158,7 @@ class FileConstraintDirectOnlySpec : FreeSpec({
                     "Scripts" {
                         layout {
                             ":core:domain".module {
-                                fileConstraint("build script", directOnly = true, check = silent())
+                                fileConstraint("build script", scope = FileConstraintRange.DirectOnly, check = silent())
                                 "build.gradle".ktsFile()
                             }
                         }
@@ -167,13 +170,13 @@ class FileConstraintDirectOnlySpec : FreeSpec({
                 .covers("core/domain/build.gradle.kts") shouldBe true
         }
 
-        "layoutPath と paths は directOnly でも変わらない" {
+        "layoutPath と paths は DirectOnly でも変わらない" {
             val arch = architecture {
                 "util".group {
                     "Util" {
                         layout {
                             "util" {
-                                fileConstraint("stdlib only", directOnly = true, check = silent())
+                                fileConstraint("stdlib only", scope = FileConstraintRange.DirectOnly, check = silent())
                                 "*.kt".file()
                             }
                         }
@@ -193,7 +196,7 @@ class FileConstraintDirectOnlySpec : FreeSpec({
                 architecture {
                     "util".group {
                         "Util" {
-                            fileConstraint("stdlib only", directOnly = true, check = silent())
+                            fileConstraint("stdlib only", scope = FileConstraintRange.DirectOnly, check = silent())
                             layout { "util" { "*.kt".file() } }
                         }
                     }
@@ -210,7 +213,7 @@ class FileConstraintDirectOnlySpec : FreeSpec({
                 "util".group {
                     "Util" {
                         layout {
-                            fileConstraint(directOnly = true, check = silent())
+                            fileConstraint(scope = FileConstraintRange.DirectOnly, check = silent())
                             "*.kt".file()
                         }
                     }
@@ -229,7 +232,7 @@ class FileConstraintDirectOnlySpec : FreeSpec({
                     "Settings" {
                         layout {
                             ":".module {
-                                fileConstraint("root project", directOnly = true, check = silent())
+                                fileConstraint("root project", scope = FileConstraintRange.DirectOnly, check = silent())
                                 "settings.gradle".ktsFile()
                             }
                         }
@@ -243,14 +246,14 @@ class FileConstraintDirectOnlySpec : FreeSpec({
         }
     }
 
-    "覆うものが無い directOnly" - {
+    "覆うものが無い DirectOnly" - {
         "直下にファイル宣言が無いと layout の評価時に落ちる" {
             val arch = architecture {
                 "util".group {
                     "Util" {
                         layout {
                             "util" {
-                                fileConstraint("stdlib only", directOnly = true, check = silent())
+                                fileConstraint("stdlib only", scope = FileConstraintRange.DirectOnly, check = silent())
                                 "ksp" { "*.kt".file() }
                             }
                         }
@@ -272,7 +275,7 @@ class FileConstraintDirectOnlySpec : FreeSpec({
                     "UseCase" {
                         layout {
                             ":core:domain".module {
-                                fileConstraint("module root", directOnly = true, check = silent())
+                                fileConstraint("module root", scope = FileConstraintRange.DirectOnly, check = silent())
                                 mainSourceSet / KOTLIN_DIRECTORY / "*UseCase".ktFile()
                             }
                         }
@@ -285,7 +288,7 @@ class FileConstraintDirectOnlySpec : FreeSpec({
             }.layoutPath shouldBe "core/domain"
         }
 
-        "directOnly を書かない制約は覆うものが無くても従来どおり落ちない" {
+        "DirectOnly でない制約は覆うものが無くても従来どおり落ちない" {
             val arch = architecture {
                 "build".group {
                     "Generated" {

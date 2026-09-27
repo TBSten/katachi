@@ -238,17 +238,17 @@ internal class RoleScopeImpl(private val roleName: String) : RoleScope {
     override fun fileConstraint(
         name: String?,
         declaredAt: DeclarationSite,
-        directOnly: Boolean,
+        scope: FileConstraintRange,
         check: FileConstraint,
     ) {
         // A role has no directory of its own: it lives wherever its `layout { }` blocks put it.
-        if (directOnly) {
+        if (scope == FileConstraintRange.DirectOnly) {
             throw KatachiFileConstraintDirectOnlyWithoutDirectoryException(name = name, declaredAt = declaredAt)
         }
         fileConstraints += fileConstraintDeclarationOf(
             name = name,
             declaredAt = declaredAt,
-            directOnly = false,
+            scope = FileConstraintRange.Subtree,
             check = check,
         )
     }
