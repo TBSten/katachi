@@ -52,7 +52,7 @@ val modulePackage: ModulePackage = capitalizedModuleNamePackage("com.example.sam
  * None of those functions may be `inline`. An inlined frame reports the caller's file with a
  * line number past its end, and katachi captures the declaration site from the stack, so the
  * violation would point at a line nobody wrote. Written once here rather than repeated in
- * twenty-six files; [ProjectArchitectureSpec] is what actually holds the line.
+ * twenty-nine files; [ProjectArchitectureSpec] is what actually holds the line.
  *
  * Every `layout { }` is written in terms of Gradle: a place is named by the module path it
  * belongs to (`":feature:*".module { }`), the source set inside it (`mainSourceSet`) and
@@ -67,8 +67,7 @@ val modulePackage: ModulePackage = capitalizedModuleNamePackage("com.example.sam
  * [ProjectArchitectureTest] is the whole of what a user writes. [ProjectArchitectureSpec]
  * is katachi's own integration test on top of it, and asserts among other things that every
  * declaration's `declaredAt` points at the file it is actually written in — not at this one
- * — which is how the sample notices if capturing the declaration site ever breaks in a real
- * Android unit test run.
+ * — which is how the sample notices if capturing the declaration site ever breaks.
  *
  * `baseline = baselineFile()` holds back the violations recorded in `katachi-baseline.json`
  * (declared by `roles/BaselineRole.kt`). Two are left in on purpose, as the demo of it:

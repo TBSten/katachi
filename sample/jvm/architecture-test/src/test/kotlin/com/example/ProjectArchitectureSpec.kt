@@ -225,7 +225,7 @@ class ProjectArchitectureSpec : FreeSpec({
     }
 
     "`.module { }` と sourceSet が、手で書いたディレクトリ宣言と同じエントリに展開される" {
-        // The whole claim of step 3: the sugar is a shorthand and not a second way of
+        // The whole claim of the sugar: it is a shorthand and not a second way of
         // saying something slightly different. Written against `:architecture-test` rather
         // than the root project so that the module directory itself is part of the answer.
         val sugared = architecture {

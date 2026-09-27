@@ -31,8 +31,8 @@ import me.tbsten.katachi.processor.ArchitectureProcessorNoArg
  * ## Which roles it looks at
  *
  * Only the ones a reader will meet. A role that wrote `documented = false`, and a role inside a
- * group that wrote it, are skipped -- `build/Gradle` and the `tool` roles of this sample are
- * exactly that. Metadata is not inherited, so the walk up [me.tbsten.katachi.dsl.Role.groupPath]
+ * group that wrote it, are skipped -- the `Gradle` roles `gradle()` declares and the `tool`
+ * roles of this sample are exactly that. Metadata is not inherited, so the walk up [me.tbsten.katachi.dsl.Role.groupPath]
  * is this processor's own: katachi keeps what was written, and what combining two values means
  * is a decision only the reader can make.
  *

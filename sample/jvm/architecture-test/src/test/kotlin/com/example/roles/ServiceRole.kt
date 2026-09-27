@@ -62,8 +62,8 @@ fun DeclarationContainerScope.service() = "Service" {
 // Kept in this file rather than in a shared one: the declaration site is the first frame
 // outside katachi, so a violation keeps naming the role that owns the rule.
 //
-// Adoption step 4 of katachi's own README (`konsist-integration`): the one line that shows a
-// backend-written constraint next to katachi's own layout vocabulary. Also stands as the
+// The samples' one `konsist { }` constraint (katachi's guide: "Konsist integration"): the one
+// line that shows a backend-written constraint next to katachi's own layout vocabulary. Also stands as the
 // regression test for `LayoutNode.synthetic` — a `":".module { }` block injects `build` and
 // `build.gradle.kts`, and this constraint would wrongly cover `build.gradle.kts` if that
 // exclusion ever broke.

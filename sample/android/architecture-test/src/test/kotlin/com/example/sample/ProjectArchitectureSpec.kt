@@ -271,8 +271,7 @@ private fun String.isGradleGroupSubtree(): Boolean = this == "Gradle" || startsW
  */
 private fun declarationSourceLines(): Map<String, List<String>> {
     val relativePath = "src/test/kotlin/com/example/sample"
-    // `getProperty` is a platform type, and AGP compiles unit tests in strict mode; the JVM
-    // always defines `user.dir`.
+    // `getProperty` is a platform type; the JVM always defines `user.dir`.
     val workingDir = File(requireNotNull(System.getProperty("user.dir"))).absoluteFile
     val sourceRoot = generateSequence(workingDir) { it.parentFile }
         .map { File(it, relativePath) }

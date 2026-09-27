@@ -38,16 +38,12 @@ dependencyResolutionManagement {
         mavenCentral()
     }
     versionCatalogs {
-        // Two catalogs. The root catalog is the single source of truth for the Kotlin,
-        // katachi and kotest versions, so the sample cannot drift from the library it is
-        // testing.
+        // The root catalog is the single source of truth for the Kotlin, katachi, kotest and
+        // JUnit versions, so the sample cannot drift from the library it is testing. Unlike
+        // the other samples there is no `sampleLibs`: this one needs nothing the root catalog
+        // does not already have.
         create("libs") {
             from(files("../../gradle/libs.versions.toml"))
-        }
-        // Everything only this sample needs lives next to the sample. Here that is one
-        // entry: the JUnit engine that `ProjectArchitectureTest` needs to be discovered.
-        create("sampleLibs") {
-            from(files("gradle/sample.versions.toml"))
         }
     }
 }

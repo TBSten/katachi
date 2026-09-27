@@ -5,7 +5,7 @@ import me.tbsten.katachi.dsl.gradle.gradle
 
 /**
  * The `"Gradle"` group katachi ships (see [gradle]): the wrapper, `settings.gradle.kts`, every
- * module's `build.gradle.kts`, `gradle.properties` and the version catalog.
+ * module's `build.gradle.kts`, the root `gradle.properties` and the version catalog.
  *
  * This sample used to write that group out by hand as `build/Gradle`, one role with a `layout`
  * listing every file. `gradle()` says the same thing without writing the module list twice --

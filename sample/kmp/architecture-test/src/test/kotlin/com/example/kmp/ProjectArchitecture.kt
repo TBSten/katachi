@@ -49,7 +49,7 @@ val modulePackage: ModulePackage = capitalizedModuleNamePackage("com.example.kmp
  * inside a work tree rather than looking for a `.git` beside it.
  *
  * Kept in a top level `val`: building it reads nothing and runs no check, so the same value
- * can be shared by every test and, later, by documentation generation.
+ * can be shared by every test and by `katachiDocs`, which generates `docs/` from it.
  *
  * This file does nothing but call the seven group functions. The definition itself is split
  * one declaration per file: a role named `"UiCore"` is declared in the `roles` package, in
@@ -66,7 +66,7 @@ val modulePackage: ModulePackage = capitalizedModuleNamePackage("com.example.kmp
  * None of them may be `inline`. An inlined frame reports the caller's file with a line number
  * remapped past the end of that file, and katachi captures the declaration site from the
  * stack, so every declaration would record a position nobody wrote. Written once here rather
- * than repeated in twenty-eight files; `ProjectArchitectureSpec` is what actually holds the
+ * than repeated in twenty-nine files; `ProjectArchitectureSpec` is what actually holds the
  * line, by reading the captured line back out of the source.
  *
  * `baseline = baselineFile()` holds back the violations recorded in `katachi-baseline.json`

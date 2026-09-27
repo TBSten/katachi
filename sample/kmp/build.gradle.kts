@@ -7,9 +7,11 @@ plugins {
     // 1. It is the plugin the Kotlin Multiplatform modules apply.
     // 2. It pins the Kotlin Gradle Plugin on the buildscript classpath to the version of the
     //    root catalog (2.4.10). AGP 9.1.0 bundles KGP 2.2.10 and uses it for its built-in
-    //    Kotlin support, so without this line `:app:android` would compile against 2.2.10
-    //    and fail to read katachi's metadata:
-    //    "Module was compiled with an incompatible version of Kotlin".
+    //    Kotlin support; if that 2.2.10 won, the build would compile with a compiler that
+    //    cannot read katachi's metadata (2.4.0), and `:architecture-test:compileTestKotlin`
+    //    would fail with "Module was compiled with an incompatible version of Kotlin".
+    //    `./gradlew buildEnvironment` shows `kotlin-gradle-plugin:2.2.10 -> 2.4.10`, and
+    //    `.github/scripts/check-kotlin-versions.sh` checks that on CI.
     //    Keep this declaration even though the root project applies no plugin itself.
     //
     // If a future AGP stops honouring the classpath version, the fallbacks are, in order:

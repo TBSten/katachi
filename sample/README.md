@@ -13,8 +13,10 @@ gradle wrapper を持ち、`includeBuild("../..")` で katachi をこのリポ�
 | [`kmp`](kmp/README.md) | Android + iOS の KMP プロジェクト（Compose Multiplatform の実依存あり） | `:architecture-test` | `./gradlew checkSampleKmp` |
 | [`custom-processor`](custom-processor/README.md) | 利用者が自分で書く processor 3本の見本。アプリ本体は3ファイルだけ | `:architecture-test` | `./gradlew checkSampleCustomProcessor` |
 
-どのサンプルも `:architecture-test` はルートの README「導入」で書いた推奨形そのもので、`kotlin("jvm")` と
-`testImplementation(libs.katachi)` しか持たない。
+どのサンプルも katachi の定義は `:architecture-test` に置いてある。`kotlin("jvm")` の素のモジュールで、
+アプリのどのモジュールにも依存しない。利用者が書くテストは JUnit 5 の `ProjectArchitectureTest` 1本で、
+4サンプルとも同じ形（`konsist { }` を使う `jvm` だけが `assert(FileConstraintCheck())` を呼ぶ）。
+それ以外の `*Spec`（kotest）は katachi 自身の結合テストで、katachi を使うだけのプロジェクトには要らない。
 
 ## 実物に近い中身にしてある理由
 
@@ -39,12 +41,13 @@ katachi が表現できなければならない形の中で最もよく出てく
 ## 定義のファイル分割
 
 各サンプルの `architecture { }` は1ファイルではなく、`groups/`（1ファイル1 group）と
-`roles/`（1ファイル1役割）に package を分けて書いてある。それぞれが非 inline の `ArchitectureScope`
-拡張関数を公開し、`ProjectArchitecture.kt` はそれを呼ぶだけ。**拡張関数に切り出しても宣言位置が
-呼び出し元ではなく定義を書いたファイルを指すこと**を、各サンプルの `ProjectArchitectureSpec` が
+`roles/`（1ファイル1役割）に package を分けて書いてある。それぞれが非 inline の
+`DeclarationContainerScope` 拡張関数を公開し（`architecture { }` の中でも `group { }` の中でも呼べる）、
+`ProjectArchitecture.kt` はそれを呼ぶだけ。**拡張関数に切り出しても宣言位置が呼び出し元ではなく
+定義を書いたファイルを指すこと**を、`jvm` / `android` / `kmp` の `ProjectArchitectureSpec` が
 ファイル名の完全一致で検証している。
 
-## baseline（意図的に残した違反）
+## baseline
 
 `jvm` / `android` / `kmp` は定義に `baseline = baselineFile()` を書き、ルート直下の
 `katachi-baseline.json` に「katachi を入れた時点ですでにあった違反」を記録して棚上げしている。
@@ -72,7 +75,7 @@ katachi が表現できなければならない形の中で最もよく出てく
 ## checkSamples を順番に回す理由
 
 ```bash
-./gradlew check         # katachi 本体（:katachi）のテスト
+./gradlew check         # katachi 本体（サンプルを除く全モジュール）の検査
 ./gradlew checkSamples  # 全サンプル。各サンプルの gradlew を順に叩く
 ```
 
@@ -82,9 +85,13 @@ katachi ビルドを共有していて、並行させると katachi の `build/`
 
 ## 回すタスクの差し替え
 
-各 `checkSample<Name>` が既定で回すタスクは `-Pkatachi.sample.<name>.task=...`
+サンプルのビルドで回すタスクは `-Pkatachi.sample.<name>.task=...`
 （全サンプルなら `-Pkatachi.sample.task=...`）で差し替えられる。複数タスクはスペース区切りで書く。
 既定値はルートの `build.gradle.kts` の `sampleBuilds` に書いてある。
+
+差し替わるのは、サンプルの `./gradlew` を叩く1工程だけ。テンプレートを持つ `jvm` / `android` / `kmp` では
+その工程は `checkSample<Name>Build` で、`checkSample<Name>` はそのあとにテンプレートからの生成と検査、
+baseline の3つの確認を続ける。テンプレートの無い `custom-processor` では `checkSample<Name>` がその工程そのもの。
 
 `kmp` だけは既定タスクが `check` ではない（理由は [`kmp/README.md`](kmp/README.md) 参照）。
 `kmp` でタスクを直接指定するときは `:architecture-test:test` のように**モジュールのパスまで書く**
@@ -109,7 +116,7 @@ katachi ビルドを共有していて、並行させると katachi の `build/`
 | compileSdk / targetSdk / minSdk | 36 / 36 / 24 |
 | Compose | android: BOM 2026.06.01 / kmp: Compose Multiplatform 1.10.3 |
 
-- Kotlin / katachi / kotest のバージョンはルートの `gradle/libs.versions.toml` が SSoT。`android` /
+- Kotlin / katachi / kotest / JUnit のバージョンはルートの `gradle/libs.versions.toml` が SSoT。`android` /
   `kmp` はこれを `libs` として読み、サンプル固有の依存（AGP / Compose ランタイムなど）だけを
   自分の catalog（`sampleLibs`）に持つ
 - **Compose コンパイラプラグイン**（`org.jetbrains.kotlin.plugin.compose`）は Kotlin と完全に

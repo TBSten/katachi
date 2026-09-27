@@ -23,17 +23,20 @@ fun DeclarationContainerScope.preview() = "Preview" {
         `viewModel()` を取る方のオーバーロードはプレビューしない。明暗を並べたいときは
         `PreviewRoot(darkTheme = true)` を使う（`AppButtonFilledDarkPreview`）。
 
-        この約束はいまのところ検査していない。「private であること」「`@Composable` であること」
-        「`PreviewRoot` で包むこと」はどれもファイルの置き場所では表せないので、
-        `konsist { }` が入るまでは文章だけの役割になっている。
+        この約束はこのサンプルでは検査していない。「private であること」「`@Composable` で
+        あること」「`PreviewRoot` で包むこと」はどれもファイルの置き場所では表せず、書くなら
+        `konsist { }` になる。ただしこの役割は自分のファイルを持たないので、制約を置くのは
+        プレビューを抱える共通コンポーネント役割と Screen 役割の側になる。このサンプルでは
+        そこまではせず、文章だけの役割にしている（`konsist { }` の見本は sample/jvm）。
     """.trimIndent()
     example("AppButtonFilledPreview", "AppButton のプレビュー")
     example("HomeScreenContentPreview", "HomeScreen のプレビュー")
     // Deliberately empty. In this sample a preview is a function inside the file of
     // the Composable it previews, so it owns no path of its own: claiming one here
     // would duplicate what `Component` and `Screen` already allow.
-    // TODO(step 4): state what this role really means with `konsist { }` — a
-    //  `@Preview` function is private, is a @Composable, and wraps its body in
-    //  `PreviewRoot`. Until then the role carries documentation only.
+    // What it means -- private, @Composable, body wrapped in `PreviewRoot` -- is left as
+    // prose. A `konsist { }` constraint could say it, but it would have to sit on
+    // `Component` and `Screen`, the roles that own the files; sample/jvm is the sample that
+    // shows `konsist { }`.
     layout { }
 }

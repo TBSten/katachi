@@ -1,6 +1,6 @@
 # Catalog for the dependencies that only sample/android needs; read as `sampleLibs`.
 #
-# Kotlin, katachi and kotest are NOT declared here. They come from the repository root
+# Kotlin, katachi, kotest and JUnit 5 are NOT declared here. They come from the repository root
 # catalog (`../../gradle/libs.versions.toml`, read as `libs`) so that the sample can
 # never disagree with the library it is testing.
 
@@ -21,9 +21,6 @@ composeBom = "2026.06.01"
 # JUnit 4 for the feature modules' own unit tests: what AGP's unit test task runs without
 # any extra configuration, so those modules need no JUnit Platform setup.
 junit = "4.13.2"
-# Matches the JUnit Platform 1.13.4 that kotest 6.2.5 already puts on the test classpath.
-# Only `:architecture-test` uses it, for the single plain JUnit test a user would write.
-junitJupiter = "5.13.4"
 
 [libraries]
 androidxActivityCompose = { module = "androidx.activity:activity-compose", version.ref = "androidxActivity" }
@@ -43,9 +40,6 @@ composeUi = { module = "androidx.compose.ui:ui" }
 composeUiTooling = { module = "androidx.compose.ui:ui-tooling" }
 composeUiToolingPreview = { module = "androidx.compose.ui:ui-tooling-preview" }
 junit = { module = "junit:junit", version.ref = "junit" }
-# The aggregate artifact: `junit-jupiter-api` to compile against plus the engine that runs
-# it. Declaring only the API would compile and then run nothing.
-junitJupiter = { module = "org.junit.jupiter:junit-jupiter", version.ref = "junitJupiter" }
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }

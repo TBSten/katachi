@@ -24,7 +24,7 @@ import me.tbsten.katachi.processor.process
  * The processor API is `@ExperimentalKatachiApi`, so this file opts in. That opt-in is the
  * wall doing its job: a real consumer of the published `katachi` artifact writes exactly this
  * to depend on a shape that is still moving, which is different from writing `owner = "..."`
- * in [com.example.kmp.roles.gradleModule] -- that needs no opt-in, because the sugar hides it.
+ * in [com.example.kmp.groups.gradleGroup] -- that needs no opt-in, because the sugar hides it.
  */
 @OptIn(ExperimentalKatachiApi::class)
 class PlatformOwnedFilesSpec : FreeSpec({

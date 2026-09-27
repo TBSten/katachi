@@ -25,7 +25,13 @@ dependencies {
     testImplementation(libs.kotestRunnerJunit5)
     testImplementation(libs.kotestAssertionsCore)
 
-    testRuntimeOnly(sampleLibs.junitJupiterEngine)
+    // `ProjectArchitectureTest` is a plain JUnit 5 test -- the form a user writes. kotest's
+    // runner puts the Jupiter API on the compile classpath but registers only kotest's own
+    // engine, so without `junit-jupiter` (API plus engine) that test would compile and then be
+    // discovered by nothing. The BOM also lines up the junit-platform kotest brings in.
+    testImplementation(platform(libs.junitBom))
+    testImplementation(libs.junitJupiter)
+    testRuntimeOnly(libs.junitPlatformLauncher)
 }
 
 katachi {

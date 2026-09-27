@@ -24,9 +24,11 @@ kotlinxSerialization = "1.9.0"
 vanniktechPublish = "0.37.0"
 # javadoc jar を作るのに要る。Central は sources と javadoc の両方を必須にしている。
 dokka = "2.2.0"
-# `:katachi-gradle-plugin` のテスト用。このリポジトリで JUnit を直接引くのはそこだけで、
-# ほかは kotest 経由。あのモジュールは Java だけで書かれていて kotest を使えない
-# （Kotlin plugin を付けると kotlin-stdlib が POM に載る）。
+# JUnit を直接引くのは2か所。`:katachi-gradle-plugin` のテスト（Java だけで書かれていて
+# kotest を使えない。Kotlin plugin を付けると kotlin-stdlib が POM に載る）と、各サンプルの
+# `:architecture-test` にある利用者向けの1本 `ProjectArchitectureTest`（利用者が書く形は
+# 素の JUnit 5 なので）。本体のほかのテストは kotest 経由。サンプルは BOM ごと読むので、
+# kotest が持ち込む junit-platform もこの版にそろう。
 junit = "5.14.4"
 # 性能ベンチマーク（公開しない :benchmark だけが使う）。jmh は JMH 本体、jmhPlugin は
 # me.champeau.jmh の Gradle プラグイン。公開モジュールには入らない。

@@ -48,6 +48,4 @@ dependencies {
     implementation(sampleLibs.androidxCoreKtx)
     implementation(sampleLibs.composeUiToolingPreview)
     debugImplementation(sampleLibs.composeUiTooling)
-
-    // Resolved through the composite build declared in settings.gradle.kts.
 }

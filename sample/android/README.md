@@ -18,14 +18,15 @@ katachi はリポジトリのソースから `includeBuild("../..")` で取り�
 | [`roles/ComponentRole.kt`](architecture-test/src/test/kotlin/com/example/sample/roles/ComponentRole.kt)         | 役割1つの書き方。置き場所の `layout { }` と、そこへ `App<Name>.kt` を生成する `template { }` を並べている |
 | [`ProjectArchitectureTest.kt`](architecture-test/src/test/kotlin/com/example/sample/ProjectArchitectureTest.kt) | 利用者が書くテストはこれ1つ。`projectArchitecture.assert()` を呼ぶだけ                                    |
 | [`docs/README.md`](docs/README.md)                                                                              | 定義から生成したドキュメント。手では書いていない                                                          |
-| [`katachi-baseline.json`](katachi-baseline.json) | baseline の台帳。`HomeFormatter.kt` と `:data` の `legacy/` の2件を意図的に残して棚上げしている（[`../README.md`](../README.md#baseline意図的に残した違反)） |
+| [`katachi-baseline.json`](katachi-baseline.json) | baseline の台帳。`HomeFormatter.kt` と `:data` の `legacy/` の2件を意図的に残して棚上げしている（[`../README.md`](../README.md#baseline)） |
 
 ## 実行方法
 
 **Android SDK が必要です。**`ANDROID_HOME` を設定するか、`local.properties` に `sdk.dir` を書いてください。
 
 ```sh
-echo "sdk.dir=$HOME/Library/Android/sdk" > local.properties
+# リポジトリのルートで
+echo "sdk.dir=$HOME/Library/Android/sdk" > sample/android/local.properties
 ```
 
 ```sh

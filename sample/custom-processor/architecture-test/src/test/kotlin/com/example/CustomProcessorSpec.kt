@@ -84,7 +84,7 @@ class CustomProcessorSpec : FreeSpec({
 
         withClue(report.toString()) {
             report.missing shouldBe emptyList()
-            // `core` と `testing` の7役割だけが対象。`build` と `tool` は documented = false。
+            // `core` と `testing` の7役割だけが対象。`Gradle` と `tool` は documented = false。
             report.checked shouldBe 7
         }
     }

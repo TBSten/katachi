@@ -13,13 +13,13 @@ import me.tbsten.katachi.dsl.internal.flattenLayout
 
 /**
  * katachi's own self-verification, not part of adopting katachi: a sentinel that pins down
- * what this sample's layout means while step 3 rewrites it with `.module { }`,
- * `mainSourceSet` and `modulePackage`.
+ * which tree this sample's layout checks, so that rewriting the definition shows up as a diff.
  *
- * Step 3 is accepted only if the sugar says exactly what the plain directories said, and
- * that cannot be shown after the fact. So the flattened layout of the step 2 definition is
- * recorded as text and compared on every run: rewriting a role with sugar keeps this green,
- * rewriting it into something that checks a different tree does not.
+ * The definition leans on shorthand -- `.module { }`, `mainSourceSet`, `modulePackage`,
+ * `gradle()` -- and whether a rewrite still checks the same files cannot be read off the
+ * source. So the flattened layout is recorded as text and compared on every run: a rewrite
+ * that says the same thing in other words keeps this green, one that checks a different tree
+ * does not, and a change to what katachi's own shorthand expands to lands here as a diff too.
  *
  * `flattenLayout()` is `@InternalKatachiApi` and the [LayoutEntry] it returns is
  * `@ExperimentalKatachiApi` — a user asserts and never reads the entries — so this file opts
@@ -95,9 +95,8 @@ private fun File.write(text: String) {
  * The layout as the check sees it.
  *
  * The module index is built from the real tree, exactly as a check that knows about Gradle
- * modules has to: with the step 2 definition no key names a module, so the index changes
- * nothing, and once step 3 rewrites the keys as `":app".module { }` it is what resolves
- * them. Recording the snapshot without it would compare two different questions.
+ * modules has to: it is what resolves keys like `":app".module { }` and `":**".module { }`
+ * into directories. Recording the snapshot without it would compare two different questions.
  */
 @OptIn(InternalKatachiApi::class, ExperimentalKatachiApi::class)
 private fun flattenCurrentLayout(): List<LayoutEntry> {
@@ -111,7 +110,8 @@ private fun flattenCurrentLayout(): List<LayoutEntry> {
  * Renders the entries in an order that depends on nothing but the entries themselves.
  *
  * Declaration order is deliberately dropped: reordering the roles changes nothing about
- * what the check accepts, and step 3 may well move a declaration from one place to another.
+ * what the check accepts, and a refactoring may well move a declaration from one place to
+ * another.
  */
 @OptIn(InternalKatachiApi::class, ExperimentalKatachiApi::class)
 private fun renderSnapshot(entries: List<LayoutEntry>): String {

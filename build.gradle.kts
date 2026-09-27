@@ -415,12 +415,12 @@ val sampleBuilds = listOf(
             verifyTasks = listOf(
                 ":architecture-test:test",
                 "--tests",
-                "com.example.kmp.ProjectLayoutSpec",
+                "com.example.kmp.ProjectArchitectureTest",
                 "--rerun",
                 ":data:compileAndroidMain",
             ),
         ),
-        baseline = SampleBaseline(":architecture-test:test", "com.example.kmp.ProjectLayoutSpec", heldBack = 1),
+        baseline = SampleBaseline(":architecture-test:test", "com.example.kmp.ProjectArchitectureTest", heldBack = 1),
     ),
     SampleBuild(
         "custom-processor",

@@ -18,16 +18,16 @@ katachi はリポジトリのソースから `includeBuild("../..")` で取り�
 | [`ProjectArchitecture.kt`](architecture-test/src/test/kotlin/com/example/kmp/ProjectArchitecture.kt)                           | `architecture { }` の本体。group を呼んでいるだけで、役割は `roles/` に1ファイル1役割で置いてある                   |
 | [`roles/PlatformImplementationRole.kt`](architecture-test/src/test/kotlin/com/example/kmp/roles/PlatformImplementationRole.kt) | `expect` / `actual` をソースセットごとに宣言した役割                                                                |
 | [`roles/RepositoryRole.kt`](architecture-test/src/test/kotlin/com/example/kmp/roles/RepositoryRole.kt)                         | 1つの `template { }` でインターフェースと実装の2ファイルを生成する役割。置き場所は2つの `layout` パターンから決まる |
-| [`ProjectLayoutSpec.kt`](architecture-test/src/test/kotlin/com/example/kmp/ProjectLayoutSpec.kt)                               | 配置の検査。`projectArchitecture.assert()` を呼ぶだけ                                                               |
-| [`katachi-baseline.json`](katachi-baseline.json) | baseline の台帳。`:data` の `androidMain` にある `user/` の1件を意図的に残して棚上げしている（[`../README.md`](../README.md#baseline意図的に残した違反)） |
+| [`ProjectArchitectureTest.kt`](architecture-test/src/test/kotlin/com/example/kmp/ProjectArchitectureTest.kt)                   | 利用者が書くテストはこれ1つ。`projectArchitecture.assert()` を呼ぶだけ                                              |
+| [`katachi-baseline.json`](katachi-baseline.json) | baseline の台帳。`:data` の `androidMain` にある `user/` の1件を意図的に残して棚上げしている（[`../README.md`](../README.md#baseline)） |
 
 ## 実行方法
 
-**Android SDK が必要です。**`ANDROID_HOME` を設定するか、`local.properties` に `sdk.dir` を書いてください
-。
+**Android SDK が必要です。**`ANDROID_HOME` を設定するか、`local.properties` に `sdk.dir` を書いてください。
 
 ```sh
-echo "sdk.dir=$HOME/Library/Android/sdk" > local.properties
+# リポジトリのルートで
+echo "sdk.dir=$HOME/Library/Android/sdk" > sample/kmp/local.properties
 ```
 
 ```sh

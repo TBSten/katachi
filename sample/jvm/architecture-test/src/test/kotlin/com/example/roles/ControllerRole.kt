@@ -35,9 +35,9 @@ fun DeclarationContainerScope.controller() = "Controller" {
     example("HealthController", "ヘルスチェックの受け口")
     layout {
         // The application is the root project, so its module path is `":"`. What the
-        // chain says is the same tree step 2 spelled out by hand: `mainSourceSet` is
-        // `src/main`, `kotlin` is the directory of that name, and `modulePackage`
-        // derives `com/example` from the module being evaluated.
+        // chain says is the same tree as `src/main/kotlin/com/example/controller` spelled
+        // out by hand: `mainSourceSet` is `src/main`, `kotlin` is the directory of that
+        // name, and `modulePackage` derives `com/example` from the module being evaluated.
         ":".module {
             mainSourceSet / kotlin / modulePackage / "controller" / "*Controller".ktFile()
         }

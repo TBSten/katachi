@@ -1,5 +1,5 @@
 # Catalog of the dependencies that only this sample needs.
-# Read as `sampleLibs` (see settings.gradle.kts). The Kotlin / katachi / kotest versions
+# Read as `sampleLibs` (see settings.gradle.kts). The Kotlin / katachi / kotest / JUnit versions
 # come from the repository root catalog, read as `libs`.
 #
 # The Compose compiler plugin is not here: it is versioned with Kotlin, so it is declared in

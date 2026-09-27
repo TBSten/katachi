@@ -1,7 +1,7 @@
 package com.example
 
-import com.example.groups.buildGroup
 import com.example.groups.coreGroup
+import com.example.groups.gradleGroup
 import com.example.groups.testingGroup
 import com.example.groups.toolGroup
 import me.tbsten.katachi.dsl.Architecture
@@ -48,6 +48,6 @@ val projectArchitecture: Architecture = architecture {
 
     coreGroup()
     testingGroup()
-    buildGroup()
+    gradleGroup()
     toolGroup()
 }

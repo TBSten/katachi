@@ -20,7 +20,7 @@ fun DeclarationContainerScope.architectureDefinition() = "ArchitectureDefinition
     description = """
         katachi でこのプロジェクトの形を書いたコードです。いま読んでいるファイルもこの役割に
         属します。テストコードとは分けてあります。定義の仕事はプロジェクトを説明することで、
-        それを実際のディレクトリと突き合わせるテスト（`ProjectLayoutSpec`）は1行しかありません。
+        それを実際のディレクトリと突き合わせるテスト（`ProjectArchitectureTest`）は1行しかありません。
 
         専用の `:architecture-test` モジュールに置いているのは KMP だからです。katachi は JVM の
         ライブラリで、このビルドの他のモジュールは Android と iOS だけを持つ KMP なので、
@@ -28,7 +28,7 @@ fun DeclarationContainerScope.architectureDefinition() = "ArchitectureDefinition
         用意する、というのが katachi の推奨する形でもあります。
 
         宣言1つにつきファイル1つ、という規則で並べます。役割 `"UiCore"` は
-        `roles/UiCoreRole.kt`、group `"build"` は `groups/BuildGroup.kt`。
+        `roles/UiCoreRole.kt`、group `"app"` は `groups/AppGroup.kt`。
         `ProjectArchitectureSpec` はその規則自体を検査していて、宣言位置をソースから読み戻すので、
         group / role の関数に `inline` が付くと落ちます。
 
@@ -38,6 +38,7 @@ fun DeclarationContainerScope.architectureDefinition() = "ArchitectureDefinition
     """.trimIndent()
     allowedContents = """
         - 定義（`groups` / `roles` package）と、その入口の `ProjectArchitecture.kt`
+        - 定義とリポジトリを突き合わせる `ProjectArchitectureTest.kt`（利用者が書く唯一のテスト）
         - 定義を検査する `*Spec.kt`
         - `processor` package の自作プロセッサ（`owner` のような独自メタデータを読むもの）
     """.trimIndent()

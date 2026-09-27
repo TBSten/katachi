@@ -21,7 +21,7 @@ import me.tbsten.katachi.dsl.pascalCase
  * builds from it: names, titles, summaries and declaration sites.
  *
  * Whether the repository matches that definition is a different question, asked by
- * [ProjectLayoutSpec] with one `assert()`.
+ * [ProjectArchitectureTest] with one `assert()`.
  *
  * Titles, summaries and examples are metadata on the declaration, read back as `role[Title]`.
  * That read is `@ExperimentalKatachiApi` — the shape still moves — while writing it in the

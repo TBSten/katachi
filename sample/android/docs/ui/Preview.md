@@ -19,9 +19,11 @@ Android Studio のプレビューに出すためだけの `private` な `@Compos
 `viewModel()` を取る方のオーバーロードはプレビューしない。明暗を並べたいときは
 `PreviewRoot(darkTheme = true)` を使う（`AppButtonFilledDarkPreview`）。
 
-この約束はいまのところ検査していない。「private であること」「`@Composable` であること」
-「`PreviewRoot` で包むこと」はどれもファイルの置き場所では表せないので、
-`konsist { }` が入るまでは文章だけの役割になっている。
+この約束はこのサンプルでは検査していない。「private であること」「`@Composable` で
+あること」「`PreviewRoot` で包むこと」はどれもファイルの置き場所では表せず、書くなら
+`konsist { }` になる。ただしこの役割は自分のファイルを持たないので、制約を置くのは
+プレビューを抱える共通コンポーネント役割と Screen 役割の側になる。このサンプルでは
+そこまではせず、文章だけの役割にしている（`konsist { }` の見本は sample/jvm）。
 
 ## Examples
 

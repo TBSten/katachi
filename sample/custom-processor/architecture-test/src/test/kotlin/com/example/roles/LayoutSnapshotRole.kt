@@ -18,7 +18,7 @@ fun DeclarationContainerScope.layoutSnapshot() = "LayoutSnapshot" {
         並べたテキストです。`LayoutSnapshotSpec` が毎回作り直し、記録済みの内容と突き合わせます。
 
         役割の書き方を変えたとき、検査する対象が変わっていないことを示すためのものです。
-        糖衣（`".".module { }` や `mainSourceSet`）への書き換えは、この差分が空であるかぎり
+        糖衣（`":".module { }` や `mainSourceSet`）への書き換えは、この差分が空であるかぎり
         安全だと言えます。
 
         これは手で書かない。`LayoutSnapshotSpec` が書く。意図して変えたときの更新は

@@ -56,7 +56,7 @@ rootProject.name = "katachi-sample-android"
 
 // Pull katachi in as a composite build, so `testImplementation(libs.katachi)` resolves
 // to the sources in this repository instead of to a published artifact. Verify with:
-//   ./gradlew :app:dependencyInsight --configuration debugUnitTestRuntimeClasspath --dependency katachi
+//   ./gradlew :architecture-test:dependencyInsight --configuration testRuntimeClasspath --dependency katachi
 includeBuild("../..")
 
 include(":app")

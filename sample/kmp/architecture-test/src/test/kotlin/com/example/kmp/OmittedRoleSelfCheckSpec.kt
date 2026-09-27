@@ -17,7 +17,7 @@ import me.tbsten.katachi.dsl.architecture
 /**
  * **This is katachi's own verification, not something a user of katachi writes.**
  *
- * [ProjectLayoutSpec] proves that the check passes on a repository that matches its
+ * [ProjectArchitectureTest] proves that the check passes on a repository that matches its
  * definition. On its own that proves very little: a check that never reports anything passes
  * just as well. So this spec builds definitions that are deliberately incomplete — the real
  * one minus one group of roles — and pins down exactly what katachi reports for each.

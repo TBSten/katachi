@@ -6,7 +6,7 @@ import me.tbsten.katachi.check.assert
 import org.junit.jupiter.api.Test
 
 /**
- * Step 4 of adopting katachi, and the only test a user writes.
+ * The adoption step itself, and the only test a user writes.
  *
  * One call checks the whole project: every violation lands in a single failure message, so
  * reading it costs one test run no matter how many things are off. Splitting this into a
