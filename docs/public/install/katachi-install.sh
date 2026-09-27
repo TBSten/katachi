@@ -2186,7 +2186,7 @@ cmd_compare_violations() {
 	_cv_before="${1:-${WORKDIR}/tmp/test-before-refactor.log}"
 	_cv_after="${2:-${WORKDIR}/tmp/test-after-refactor.log}"
 	for _cv_f in "$_cv_before" "$_cv_after"; do
-		[ -f "$_cv_f" ] || die "$(file_uri "$_cv_f") がありません。./gradlew :architecture-test:test --rerun の出力をこのパスに保存してください（手順書 3-2 / 3-3）。"
+		[ -f "$_cv_f" ] || die "$(file_uri "$_cv_f") がありません。./gradlew :architecture-test:test の出力をこのパスに保存してください（手順書 3-2 / 3-3）。"
 		has_check_result "$_cv_f" ||
 			die "$(file_uri "$_cv_f") に検査の結果がありません。コンパイルエラーなどで検査まで届いていません。直してから取り直してください。"
 	done

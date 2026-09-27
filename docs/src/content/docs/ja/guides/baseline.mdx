@@ -66,6 +66,12 @@ fun DeclarationContainerScope.baseline() = "Baseline" {
 ./gradlew :architecture-test:test -Dkatachi.baseline.update=true
 ```
 
+何件記録したかは、次の1行で報告されます。この行はテストの標準エラー出力に出るので、Gradle の既定の設定ではコンソールに出ません（見る方法は [結果の行はどこに出るか](#結果の行はどこに出るか) を見てください）。
+
+```
+Katachi baseline file:///path/to/project/katachi-baseline.json: 2 violations recorded in 2 entries (+2, -0).
+```
+
 できたファイルをコミットします。台帳のファイルが無いまま普段の実行をすると、`KatachiBaselineNotFoundException` で落ちます（パスの書き間違いで、すべての違反が新しい違反に化けるのを防ぐためです）。
 
 Gradle plugin（`me.tbsten.katachi`）を当てたモジュールでは、`-Dkatachi.baseline.update` と `-Dkatachi.baseline.prune` がテストの JVM に渡ります。
@@ -108,11 +114,35 @@ sample/jvm の台帳です。棚上げの見本として、2件を意図的に�
 Baseline file:///path/to/project/katachi-baseline.json held back 2 violations.
 ```
 
-テストが通ったときは、この行は **テストの標準エラー出力** に出ます。Gradle の既定の設定ではコンソールに出ないので、テストレポート（`architecture-test/build/reports/tests/test/index.html`）の標準エラー出力の欄で見てください。落ちたときは、失敗の報告の末尾に出ます。
+落ちたときは、この行は失敗の報告の末尾に出ます。通ったときの出どころは、下の [結果の行はどこに出るか](#結果の行はどこに出るか) で説明します。
 
 **棚上げした違反を直すと、テストは `[StaleBaselineEntry]` で落ちます。** 台帳が、もう無い違反を棚上げしたままになっているからです。残しておくと、次に同じパスへ置かれたファイルが黙って通ってしまいます。`-Dkatachi.baseline.prune=true` で台帳から消すまで落ち続けるので、棚上げの件数は減る一方になります。
 
 update ではなく prune で消すのは、直したついでに新しい違反まで台帳に入れてしまわないためです。台帳が空になったら、そのことが報告されます。定義から `baseline = ...` を外し、ファイルを消してかまいません。
+
+processor として登録した検査のタスク（`katachiLayout` など）も、同じ台帳と突き合わせます。ただし、これらのタスクには `-Dkatachi.baseline.update` と `-Dkatachi.baseline.prune` が効きません。台帳の更新はアーキテクチャテストで行ってください。
+
+### 結果の行はどこに出るか
+
+テストが通ったとき、次の行は **テストの標準エラー出力** に出ます。
+
+- 棚上げの件数（`Baseline … held back 2 violations.`）
+- update の結果（`Katachi baseline …: 2 violations recorded in 2 entries (+2, -0).`）
+- prune の結果（`Katachi baseline …: 1 fixed violation removed, 1 violation still held back.`）
+- 台帳が宣言されていないときの警告（`Warning: no role's layout { } allows the baseline file …`）
+
+Gradle の既定の設定では、標準エラー出力はコンソールに出ません。次のどちらかで見てください。
+
+- **テストレポート**: テストごとのページの「error output」の欄に出ます。sample/jvm なら `architecture-test/build/reports/tests/test/com.example.ProjectArchitectureTest/プロジェクトの構成が定義どおりになっている().html` です。一覧の `index.html` には出ません
+- **コンソールに出す**: テストのモジュールの `build.gradle.kts` で `showStandardStreams` を有効にします
+
+```kt title="architecture-test/build.gradle.kts（抜粋）" {3}
+tasks.test {
+    testLogging {
+        showStandardStreams = true
+    }
+}
+```
 
 ## CI では台帳を書かない
 
@@ -124,7 +154,7 @@ CI では突き合わせだけを行い、台帳の更新は手元で実行し�
 
 - **`UnexpectedDirectory` を棚上げすると、そのディレクトリの下は素通りになります。** katachi は宣言されていないディレクトリの中には降りないので、その下にあとから足したファイルは違反として出ません。ディレクトリごと棚上げするより、ディレクトリを役割として宣言するほうが安全です
 - **棚上げできるのは Error の違反だけです。** 警告と、検査そのものができなかったもの（`[UncheckedFile]` など）は台帳に入りません
-- **台帳のファイル自身の違反は棚上げされません。** 手順2の宣言を忘れると、台帳を初めて作る update では警告が出るだけですが、次の実行からは update も含めて `[UnexpectedFile]` で落ちます
+- **台帳のファイル自身の違反は棚上げされません。** 手順2の宣言を忘れると、台帳を初めて作る update では警告が出るだけ（標準エラー出力なので、既定の設定では目に入りません）ですが、次の実行からは update も含めて `[UnexpectedFile]` で落ちます
 
 ## まとめ
 

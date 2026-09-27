@@ -12,18 +12,18 @@ import { Steps } from '@astrojs/starlight/components';
 | Version | Theme | Definition of done |
 |---|---|---|
 | **v0.1** | DSL + checks + `konsist { }` | Can express a large project, and checks pass |
-| **v0.2** | Gradle plugin + documentation generation + templates + baseline | `./gradlew katachiDocs` produces documentation. With existing violations set aside in a baseline, only new violations fail the test |
+| **v0.2** | Gradle plugin + documentation generation + templates + baseline | `./gradlew katachiDocs` produces documentation. With existing violations set aside in a baseline, the test fails only on new violations and on entries still in the ledger after they were fixed |
 | **v0.3 and beyond** | `declarations { }` / report output / vocabulary-size measurement | Can be adopted in an **existing project**. Most of the `konsist { }` written in v0.1 can be replaced with `declarations { }` |
 
-## v0.2 — Gradle plugin, documentation generation and templates
+## v0.2 — Gradle plugin, documentation generation, templates and baseline
 
-This is the stage where katachi's selling points all come together, and it is **currently being implemented.** The Gradle plugin scaffolding, the mechanism that runs work on top of it (processors), **documentation generation**, code generation from templates and baseline (experimental) are in place. **`dependsOnlyOn` and limiting a directory's `konsist { }` to direct children are still ahead of us.**
+This is the stage where katachi's selling points all come together, and it **has been released as 0.2.0.** It includes the Gradle plugin scaffolding, the mechanism that runs work on top of it (processors), **documentation generation**, code generation from templates and baseline (experimental). `dependsOnlyOn` and limiting a directory's `konsist { }` to direct children, which were planned for v0.2, did not make it into 0.2.0 and have been moved to the v0.3-and-beyond table below.
 
 ```shell
 ./gradlew katachiDocs
 ```
 
-Applying the plugin lets you generate Markdown along two axes **from the same definition as the tests.**
+Apply the plugin and point it at your definition with `katachi { architecture = "..." }`, and you can generate Markdown along two axes **from the same definition as the tests.**
 
 - **Role reference** — what this role is, and where it goes
 - **Directory structure** — what can go in this directory
@@ -32,7 +32,7 @@ Since both are derived from the same model, **they can never contradict each oth
 
 The shape of the output is described in [Document generation](/katachi/guides/document-generation/), and the mechanism that runs it in [ArchitectureProcessor and customizing it](/katachi/guides/processor/). Documentation generation is just one processor; a processor you write yourself is invoked through the same task.
 
-### Also landing in v0.2
+### Also included in v0.2
 
 | Feature | What it enables |
 |---|---|
@@ -40,8 +40,6 @@ The shape of the output is described in [Document generation](/katachi/guides/do
 | [**baseline**](/katachi/guides/baseline/) (experimental) | Records existing violations in a ledger file and fails only on **newly added** ones. Write `architecture { baseline = baselineFile() }` (this needs `@OptIn(ExperimentalKatachiApi::class)`) and declare the ledger file itself in `layout { }` too. Record with `-Dkatachi.baseline.update=true`, and drop what you fixed from the ledger with `-Dkatachi.baseline.prune=true` |
 | [`gradle()`](/katachi/recipes/gradle/) | Declares, in one line, the Gradle files every project has: the wrapper, settings, build scripts, `gradle.properties` and the version catalog |
 | IDE plugin (**unpublished**) | Pick a template from a tool window in IntelliJ IDEA / Android Studio, fill in its arguments and generate the code. It is developed separately from katachi's own versions and has not been published yet |
-| `dependsOnlyOn` (**not available yet**) | Writes what may be depended on as an **allow list**. A deny-list approach lets omissions slip through |
-| Limiting a directory's `konsist { }` to direct children (**not available yet**) | Applies it only to the files directly in that directory, not the whole subtree |
 
 ## v0.3 and beyond — Adoption in existing projects and `declarations { }`
 
@@ -49,6 +47,8 @@ Making katachi easier to adopt in existing projects is the theme of v0.3 and bey
 
 | Feature | What it enables |
 |---|---|
+| **`dependsOnlyOn`** | Writes what may be depended on as an **allow list**. A deny-list approach lets omissions slip through. Moved here from the v0.2 plan |
+| **Limiting a directory's `konsist { }` to direct children** | Applies it only to the files directly in that directory, not the whole subtree. Moved here from the v0.2 plan |
 | **Report output** | Outputs JSON / SARIF, surfaced as annotations on GitHub PRs |
 | **`pairedWith`** | Checks coverage, such as "every `Screen` has a corresponding `Preview`" |
 | **Vocabulary-size measurement** | Reports the number of roles and the file count per role as numbers |

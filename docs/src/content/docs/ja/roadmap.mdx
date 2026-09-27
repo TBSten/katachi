@@ -12,18 +12,18 @@ import { Steps } from '@astrojs/starlight/components';
 | バージョン | テーマ | 完了と言える条件 |
 |---|---|---|
 | **v0.1** | DSL + 検査 + `konsist { }` | 大規模なプロジェクトを表現でき、検査が通る |
-| **v0.2** | Gradle plugin + ドキュメント生成 + テンプレート + baseline | `./gradlew katachiDocs` でドキュメントが出る。既存の違反を baseline に棚上げした状態で、新しい違反だけでテストが落ちる |
+| **v0.2** | Gradle plugin + ドキュメント生成 + テンプレート + baseline | `./gradlew katachiDocs` でドキュメントが出る。既存の違反を baseline に棚上げした状態で、新しい違反と、直したのに台帳に残っている項目でだけテストが落ちる |
 | **v0.3 以降** | `declarations { }` / レポート出力 / 語彙数の計測 | **既存プロジェクト**に導入できる。v0.1 で書いた `konsist { }` の大半を `declarations { }` で置き換えられる |
 
-## v0.2 — Gradle plugin・ドキュメント生成・テンプレート
+## v0.2 — Gradle plugin・ドキュメント生成・テンプレート・baseline
 
-katachi の売りが揃う段階で、**いま実装中**です。Gradle plugin の足場と、その上で処理を走らせる仕組み（processor）、**ドキュメント生成**、テンプレートからのコード生成、baseline（実験的）までが動いています。**`dependsOnlyOn` と、ディレクトリの `konsist { }` の直下限定はこれからです。**
+katachi の売りが揃う段階で、**0.2.0 としてリリースしました**。Gradle plugin の足場と、その上で処理を走らせる仕組み（processor）、**ドキュメント生成**、テンプレートからのコード生成、baseline（実験的）が入っています。v0.2 の計画にあった `dependsOnlyOn` と、ディレクトリの `konsist { }` の直下限定は 0.2.0 に間に合わず、下の v0.3 以降の表へ回しました。
 
 ```shell
 ./gradlew katachiDocs
 ```
 
-プラグインを適用すれば、**テストと同じ定義から** Markdown を 2 軸で生成できます。
+プラグインを適用し、`katachi { architecture = "..." }` で定義を指せば、**テストと同じ定義から** Markdown を 2 軸で生成できます。
 
 - **役割リファレンス** — この役割は何で、どこに置くか
 - **ディレクトリ構成** — このディレクトリに何が置けるか
@@ -32,7 +32,7 @@ katachi の売りが揃う段階で、**いま実装中**です。Gradle plugin 
 
 出力の形は [ドキュメント生成](/katachi/ja/guides/document-generation/) に、走らせる仕組みは [ArchitectureProcessor とそのカスタマイズ](/katachi/ja/guides/processor/) に書いてあります。ドキュメント生成は processor の1つにすぎず、利用者が書いた処理も同じタスクから呼べます。
 
-### そのほか v0.2 に入るもの
+### そのほか v0.2 に入ったもの
 
 | 機能 | 何ができるか |
 |---|---|
@@ -40,8 +40,6 @@ katachi の売りが揃う段階で、**いま実装中**です。Gradle plugin 
 | [**baseline**](/katachi/ja/guides/baseline/)（実験的） | 既存の違反を台帳のファイルに記録し、**新しく増えた分だけ**で落とす。`architecture { baseline = baselineFile() }` と書き（`@OptIn(ExperimentalKatachiApi::class)` が要る）、台帳のファイル自身も `layout { }` で宣言する。`-Dkatachi.baseline.update=true` で記録、`-Dkatachi.baseline.prune=true` で直した分を台帳から消す |
 | [`gradle()`](/katachi/ja/recipes/gradle/) | wrapper・settings・build スクリプト・`gradle.properties`・version catalog など、どのプロジェクトにもある Gradle のファイルを1行で宣言する |
 | IDE プラグイン（**未公開**） | IntelliJ IDEA / Android Studio のツールウィンドウからテンプレートを選び、引数を埋めてコードを生成する。katachi 本体の版とは別に進めていて、まだ公開していない |
-| `dependsOnlyOn`（**まだ使えません**） | 依存してよい先を**許可リスト**で書く。禁止リスト方式は書き漏れが素通りする |
-| ディレクトリの `konsist { }` の直下限定（**まだ使えません**） | サブツリー全体ではなく、直下のファイルだけに効かせる |
 
 ## v0.3 以降 — 既存プロジェクトへの導入と `declarations { }`
 
@@ -49,6 +47,8 @@ katachi の売りが揃う段階で、**いま実装中**です。Gradle plugin 
 
 | 機能 | 何ができるか |
 |---|---|
+| **`dependsOnlyOn`** | 依存してよい先を**許可リスト**で書く。禁止リスト方式は書き漏れが素通りする。v0.2 の計画から移した |
+| **ディレクトリの `konsist { }` の直下限定** | サブツリー全体ではなく、直下のファイルだけに効かせる。v0.2 の計画から移した |
 | **レポート出力** | JSON / SARIF で出し、GitHub の PR にアノテーションとして載せる |
 | **`pairedWith`** | 「すべての `Screen` に対応する `Preview` がある」のような網羅性を検査する |
 | **語彙数の計測** | 役割の数と、役割ごとのファイル数を数値で出す |

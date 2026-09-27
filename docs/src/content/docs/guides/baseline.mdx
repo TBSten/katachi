@@ -66,6 +66,12 @@ Running the architecture test with `-Dkatachi.baseline.update=true` creates the 
 ./gradlew :architecture-test:test -Dkatachi.baseline.update=true
 ```
 
+How many violations were recorded is reported in the following line. It goes to the test's standard error output, so with Gradle's default settings it doesn't show up in the console (see [Where the result lines go](#where-the-result-lines-go) for how to see it).
+
+```
+Katachi baseline file:///path/to/project/katachi-baseline.json: 2 violations recorded in 2 entries (+2, -0).
+```
+
 Commit the resulting file. Running an ordinary test without the ledger file fails with `KatachiBaselineNotFoundException` (this prevents a mistyped path from turning every violation into a new one).
 
 In a module with the Gradle plugin (`me.tbsten.katachi`) applied, `-Dkatachi.baseline.update` and `-Dkatachi.baseline.prune` are passed through to the test JVM.
@@ -108,11 +114,35 @@ In an ordinary run, a violation that isn't in the ledger, or one that exceeds th
 Baseline file:///path/to/project/katachi-baseline.json held back 2 violations.
 ```
 
-When the test passes, this line goes to **the test's standard error output.** With Gradle's default settings that doesn't show up in the console, so look for it in the standard error section of the test report (`architecture-test/build/reports/tests/test/index.html`). When it fails, it appears at the end of the failure report.
+When the test fails, this line appears at the end of the failure report. Where it goes when the test passes is explained in [Where the result lines go](#where-the-result-lines-go) below.
 
 **Fixing a set-aside violation makes the test fail with `[StaleBaselineEntry]`.** That's because the ledger still has an entry set aside for a violation that no longer exists. Leaving it there would let a file placed at the same path later pass silently. The test keeps failing until you remove it from the ledger with `-Dkatachi.baseline.prune=true`, so the set-aside count only ever goes down.
 
 It's removed with prune rather than update so that fixing one thing doesn't also let new violations slip into the ledger. When the ledger becomes empty, that fact is reported. You can then remove `baseline = ...` from the definition and delete the file.
+
+The tasks of checks registered as processors (such as `katachiLayout`) also check against the same ledger. However, `-Dkatachi.baseline.update` and `-Dkatachi.baseline.prune` have no effect on those tasks. Update the ledger with the architecture test.
+
+### Where the result lines go
+
+When the test passes, the following lines go to **the test's standard error output.**
+
+- The set-aside count (`Baseline … held back 2 violations.`)
+- The result of update (`Katachi baseline …: 2 violations recorded in 2 entries (+2, -0).`)
+- The result of prune (`Katachi baseline …: 1 fixed violation removed, 1 violation still held back.`)
+- The warning when the ledger isn't declared (`Warning: no role's layout { } allows the baseline file …`)
+
+With Gradle's default settings, standard error output doesn't show up in the console. See it in one of these ways:
+
+- **The test report**: it appears in the "error output" section of each test's page. For sample/jvm, that's `architecture-test/build/reports/tests/test/com.example.ProjectArchitectureTest/プロジェクトの構成が定義どおりになっている().html`. It doesn't appear in the summary `index.html`
+- **Show it in the console**: enable `showStandardStreams` in the test module's `build.gradle.kts`
+
+```kt title="architecture-test/build.gradle.kts (excerpt)" {3}
+tasks.test {
+    testLogging {
+        showStandardStreams = true
+    }
+}
+```
 
 ## The ledger isn't written in CI
 
@@ -124,7 +154,7 @@ In CI, only check against the ledger; update it locally and commit the result. I
 
 - **Setting aside an `UnexpectedDirectory` makes everything under that directory pass through unchecked.** katachi doesn't descend into a directory that hasn't been declared, so a file added later under it never comes out as a violation. Declaring the directory as a role is safer than setting the whole directory aside.
 - **Only Error-level violations can be set aside.** Warnings, and things the check itself couldn't perform (such as `[UncheckedFile]`), don't go into the ledger.
-- **A violation on the ledger file itself is not set aside.** If you forget the declaration from step 2, the update that first creates the ledger only prints a warning, but every run after that, updates included, fails with `[UnexpectedFile]`.
+- **A violation on the ledger file itself is not set aside.** If you forget the declaration from step 2, the update that first creates the ledger only prints a warning (to standard error output, so with the default settings you won't see it), but every run after that, updates included, fails with `[UnexpectedFile]`.
 
 ## Summary
 
