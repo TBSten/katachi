@@ -1,0 +1,300 @@
+{
+  "templates": [
+    {
+      "roleName": "AllTypes",
+      "title": "全部の型（2つ目）",
+      "summary": null,
+      "parameterNames": ["name", "label", "enabled", "verbose", "count", "pageSize", "mode", "fallbackMode"],
+      "fileCount": 1
+    },
+    {
+      "roleName": "SecondRoot",
+      "title": null,
+      "summary": "2つ目のルート直下",
+      "parameterNames": ["name"],
+      "fileCount": 1
+    },
+    {
+      "roleName": "Counter",
+      "title": "カウンター",
+      "summary": null,
+      "parameterNames": ["name"],
+      "fileCount": 1
+    },
+    {
+      "roleName": "a/Shallow",
+      "title": "浅い（2つ目）",
+      "summary": null,
+      "parameterNames": ["name", "withImpl"],
+      "fileCount": 1
+    },
+    {
+      "roleName": "second/OnlyHere",
+      "title": "2つ目だけ",
+      "summary": null,
+      "parameterNames": ["name"],
+      "fileCount": 1
+    },
+    {
+      "roleName": "second/AlsoOnlyHere",
+      "title": null,
+      "summary": null,
+      "parameterNames": ["name", "count"],
+      "fileCount": 1
+    }
+  ],
+  "details": [
+    {
+      "roleName": "AllTypes",
+      "title": "全部の型（2つ目）",
+      "summary": null,
+      "parameters": [
+        {
+          "name": "name",
+          "kind": "StringParameter",
+          "typeName": "String",
+          "default": null,
+          "acceptedValues": [],
+          "isRequired": true,
+          "previewValue": "${name}",
+          "previewValueSource": "Placeholder"
+        },
+        {
+          "name": "label",
+          "kind": "StringParameter",
+          "typeName": "String",
+          "default": "ラベル",
+          "acceptedValues": [],
+          "isRequired": false,
+          "previewValue": "${label}",
+          "previewValueSource": "Placeholder"
+        },
+        {
+          "name": "enabled",
+          "kind": "BooleanParameter",
+          "typeName": "Boolean",
+          "default": null,
+          "acceptedValues": ["true", "false"],
+          "isRequired": true,
+          "previewValue": "true",
+          "previewValueSource": "StandIn"
+        },
+        {
+          "name": "verbose",
+          "kind": "BooleanParameter",
+          "typeName": "Boolean",
+          "default": "false",
+          "acceptedValues": ["true", "false"],
+          "isRequired": false,
+          "previewValue": "false",
+          "previewValueSource": "Default"
+        },
+        {
+          "name": "count",
+          "kind": "IntParameter",
+          "typeName": "Int",
+          "default": null,
+          "acceptedValues": [],
+          "isRequired": true,
+          "previewValue": "0",
+          "previewValueSource": "StandIn"
+        },
+        {
+          "name": "pageSize",
+          "kind": "IntParameter",
+          "typeName": "Int",
+          "default": "20",
+          "acceptedValues": [],
+          "isRequired": false,
+          "previewValue": "20",
+          "previewValueSource": "Default"
+        },
+        {
+          "name": "mode",
+          "kind": "EnumParameter",
+          "typeName": "SyntheticMode",
+          "default": null,
+          "acceptedValues": ["Compact", "Expanded"],
+          "isRequired": true,
+          "previewValue": "Compact",
+          "previewValueSource": "StandIn"
+        },
+        {
+          "name": "fallbackMode",
+          "kind": "EnumParameter",
+          "typeName": "SyntheticMode",
+          "default": "Compact",
+          "acceptedValues": ["Compact", "Expanded"],
+          "isRequired": false,
+          "previewValue": "Compact",
+          "previewValueSource": "Default"
+        }
+      ],
+      "files": [
+        {
+          "fileName": "${name}Second.kt",
+          "path": "src/main/kotlin/allTypes/${name}Second.kt",
+          "unresolvedPatterns": [],
+          "content": "// ${label} true false 0 20 Compact Compact\nclass ${name}Second\n"
+        }
+      ],
+      "branches": [],
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=AllTypes --arg name=Name --arg enabled=true --arg count=0 --arg mode=Compact"
+    },
+    {
+      "roleName": "SecondRoot",
+      "title": null,
+      "summary": "2つ目のルート直下",
+      "parameters": [
+        {
+          "name": "name",
+          "kind": "StringParameter",
+          "typeName": "String",
+          "default": null,
+          "acceptedValues": [],
+          "isRequired": true,
+          "previewValue": "${name}",
+          "previewValueSource": "Placeholder"
+        }
+      ],
+      "files": [
+        {
+          "fileName": "${name}SecondRoot.kt",
+          "path": "src/main/kotlin/secondRoot/${name}SecondRoot.kt",
+          "unresolvedPatterns": [],
+          "content": "class ${name}SecondRoot\n"
+        }
+      ],
+      "branches": [],
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=SecondRoot --arg name=Name"
+    },
+    {
+      "roleName": "Counter",
+      "title": "カウンター",
+      "summary": null,
+      "parameters": [
+        {
+          "name": "name",
+          "kind": "IntParameter",
+          "typeName": "Int",
+          "default": null,
+          "acceptedValues": [],
+          "isRequired": true,
+          "previewValue": "0",
+          "previewValueSource": "StandIn"
+        }
+      ],
+      "files": [
+        {
+          "fileName": "Counter0.kt",
+          "path": "src/main/kotlin/counter/Counter0.kt",
+          "unresolvedPatterns": [],
+          "content": "const val COUNTER: Int = 0\n"
+        }
+      ],
+      "branches": [],
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=Counter --arg name=0"
+    },
+    {
+      "roleName": "a/Shallow",
+      "title": "浅い（2つ目）",
+      "summary": null,
+      "parameters": [
+        {
+          "name": "name",
+          "kind": "StringParameter",
+          "typeName": "String",
+          "default": null,
+          "acceptedValues": [],
+          "isRequired": true,
+          "previewValue": "${name}",
+          "previewValueSource": "Placeholder"
+        },
+        {
+          "name": "withImpl",
+          "kind": "StringParameter",
+          "typeName": "String",
+          "default": "yes",
+          "acceptedValues": [],
+          "isRequired": false,
+          "previewValue": "${withImpl}",
+          "previewValueSource": "Placeholder"
+        }
+      ],
+      "files": [
+        {
+          "fileName": "${name}.kt",
+          "path": "src/main/kotlin/a/${name}.kt",
+          "unresolvedPatterns": [],
+          "content": "// ${withImpl}\ninterface ${name}\n"
+        }
+      ],
+      "branches": [],
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=a/Shallow --arg name=Name"
+    },
+    {
+      "roleName": "second/OnlyHere",
+      "title": "2つ目だけ",
+      "summary": null,
+      "parameters": [
+        {
+          "name": "name",
+          "kind": "StringParameter",
+          "typeName": "String",
+          "default": null,
+          "acceptedValues": [],
+          "isRequired": true,
+          "previewValue": "${name}",
+          "previewValueSource": "Placeholder"
+        }
+      ],
+      "files": [
+        {
+          "fileName": "${name}OnlyHere.kt",
+          "path": "src/main/kotlin/second/${name}OnlyHere.kt",
+          "unresolvedPatterns": [],
+          "content": "class ${name}OnlyHere\n"
+        }
+      ],
+      "branches": [],
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=second/OnlyHere --arg name=Name"
+    },
+    {
+      "roleName": "second/AlsoOnlyHere",
+      "title": null,
+      "summary": null,
+      "parameters": [
+        {
+          "name": "name",
+          "kind": "StringParameter",
+          "typeName": "String",
+          "default": null,
+          "acceptedValues": [],
+          "isRequired": true,
+          "previewValue": "${name}",
+          "previewValueSource": "Placeholder"
+        },
+        {
+          "name": "count",
+          "kind": "IntParameter",
+          "typeName": "Int",
+          "default": "3",
+          "acceptedValues": [],
+          "isRequired": false,
+          "previewValue": "3",
+          "previewValueSource": "Default"
+        }
+      ],
+      "files": [
+        {
+          "fileName": "${name}AlsoOnlyHere.kt",
+          "path": "src/main/kotlin/second/${name}AlsoOnlyHere.kt",
+          "unresolvedPatterns": [],
+          "content": "val ${name}Count: Int = 3\n"
+        }
+      ],
+      "branches": [],
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=second/AlsoOnlyHere --arg name=Name"
+    }
+  ]
+}
