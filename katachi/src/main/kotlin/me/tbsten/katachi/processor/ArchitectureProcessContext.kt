@@ -228,8 +228,7 @@ public interface ArchitectureProcessContext<out Args> {
      * Reports progress, through whatever the caller wired up rather than standard output.
      *
      * A processor that writes with `println` cannot be tested without capturing the JVM's
-     * output stream. This one can: a spec hands in a [FakeArchitectureProcessContext] and reads
-     * [FakeArchitectureProcessContext.logs] back.
+     * output stream. This one can: whoever runs the processor decides where the messages go.
      *
      * ## Example 1: say what is happening, testably
      * ```kt

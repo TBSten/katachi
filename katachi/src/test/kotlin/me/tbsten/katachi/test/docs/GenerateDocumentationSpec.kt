@@ -16,7 +16,7 @@ import me.tbsten.katachi.docs.KatachiStaleDocumentationException
 import me.tbsten.katachi.dsl.Architecture
 import me.tbsten.katachi.dsl.architecture
 import me.tbsten.katachi.dsl.files.KatachiFileSystem
-import me.tbsten.katachi.processor.FakeArchitectureProcessContext
+import me.tbsten.katachi.processor.internal.FakeArchitectureProcessContext
 import me.tbsten.katachi.processor.KatachiInvalidProcessorArgException
 import me.tbsten.katachi.processor.KatachiUnknownProcessorArgException
 import me.tbsten.katachi.processor.decodeFromStringMap

@@ -6,7 +6,6 @@ import me.tbsten.katachi.dsl.LayoutEntry
 import me.tbsten.katachi.dsl.Role
 import me.tbsten.katachi.dsl.files.KatachiFileSystem
 import me.tbsten.katachi.processor.ArchitectureProcessContext
-import me.tbsten.katachi.processor.FakeArchitectureProcessContext
 import me.tbsten.katachi.processor.KatachiForeignProcessContextException
 
 /**

@@ -6,7 +6,7 @@ import io.kotest.matchers.shouldBe
 import me.tbsten.katachi.dsl.kotlin.ktFile
 import me.tbsten.katachi.processor.ArchitectureProcessNoArgContext
 import me.tbsten.katachi.processor.ArchitectureProcessorNoArg
-import me.tbsten.katachi.processor.FakeArchitectureProcessContext
+import me.tbsten.katachi.processor.internal.FakeArchitectureProcessContext
 import me.tbsten.katachi.processor.internal.process
 import me.tbsten.katachi.processor.internal.withArgs
 import me.tbsten.katachi.processor.process

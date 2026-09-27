@@ -12,7 +12,7 @@ import kotlinx.serialization.builtins.serializer
 import me.tbsten.katachi.dsl.Architecture
 import me.tbsten.katachi.dsl.architecture
 import me.tbsten.katachi.dsl.gradle.module
-import me.tbsten.katachi.processor.FakeArchitectureProcessContext
+import me.tbsten.katachi.processor.internal.FakeArchitectureProcessContext
 import me.tbsten.katachi.template.DescribeTemplates
 import me.tbsten.katachi.template.KatachiUnsupportedTemplateJsonValueException
 import me.tbsten.katachi.template.TemplateList

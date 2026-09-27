@@ -1,19 +1,18 @@
-package me.tbsten.katachi.processor
+package me.tbsten.katachi.processor.internal
 
-import me.tbsten.katachi.ExperimentalKatachiApi
 import me.tbsten.katachi.dsl.Architecture
 import me.tbsten.katachi.dsl.Group
 import me.tbsten.katachi.dsl.LayoutEntry
 import me.tbsten.katachi.dsl.Role
 import me.tbsten.katachi.dsl.files.KatachiFileSystem
-import me.tbsten.katachi.processor.internal.RealArchitectureProcessContext
+import me.tbsten.katachi.processor.ArchitectureProcessContext
 
 /**
  * A context that answers exactly as the real one does and remembers what was logged.
  *
  * It delegates to the real implementation rather than reimplementing it, so a spec written
  * against this is a spec about the real walk: the only thing that differs is where
- * [ArchitectureProcessContext.log] goes. Meant for a processor's own tests: run it against an
+ * [ArchitectureProcessContext.log] goes. Meant for katachi's own processor specs: run it against an
  * in-memory [architecture] and read [logs] back, without capturing standard output.
  *
  * ## Example 1: check what a processor reported, without capturing standard output
@@ -34,8 +33,7 @@ import me.tbsten.katachi.processor.internal.RealArchitectureProcessContext
  * })
  * ```
  */
-@ExperimentalKatachiApi
-public class FakeArchitectureProcessContext<Args>(
+internal class FakeArchitectureProcessContext<Args>(
     architecture: Architecture,
     args: Args,
     fileSystem: KatachiFileSystem,
@@ -72,7 +70,7 @@ public class FakeArchitectureProcessContext<Args>(
      * })
      * ```
      */
-    public val logs: List<String> get() = recorded.toList()
+    val logs: List<String> get() = recorded.toList()
 
     override val architecture: Architecture get() = real.architecture
     override val args: Args get() = real.args

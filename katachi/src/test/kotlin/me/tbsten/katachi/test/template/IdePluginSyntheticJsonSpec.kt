@@ -3,7 +3,7 @@ package me.tbsten.katachi.test.template
 import io.kotest.core.spec.style.FreeSpec
 import java.io.File
 import me.tbsten.katachi.dsl.Architecture
-import me.tbsten.katachi.processor.FakeArchitectureProcessContext
+import me.tbsten.katachi.processor.internal.FakeArchitectureProcessContext
 import me.tbsten.katachi.template.DescribeTemplates
 import me.tbsten.katachi.template.DescribeTemplatesFormat
 import me.tbsten.katachi.test.dsl.files.ForbiddenFileSystem
