@@ -23,16 +23,19 @@ flowchart LR
     P --> V["3. 公開範囲<br/>list-public-api.py"]
     P --> R["4. リリースノート<br/>release-note-material.py"]
     P --> D["5. 実装とドキュメント<br/>check-docs-against-impl"]
+    P --> CI["8. CI と同等のチェック<br/>run-ci-checks.py"]
     V --> V1["public"] & V2["@InternalKatachiApi"] & V3["@ExperimentalKatachiApi"]
     T --> B["6-1. ビルドと配信<br/>generateApiDocs → pnpm build → pnpm preview"]
     B --> C1["6. 巡回 en"] & C2["6. 巡回 ja"] & C3["6. 巡回 api-docs"]
-    V1 & V2 & V3 & R & D & C1 & C2 & C3 --> Rep["7. 報告"]
+    CI -- " Gradle を空ける " --> D & B
+    V1 & V2 & V3 & R & D & C1 & C2 & C3 & CI --> Rep["7. 報告"]
 ```
 
-- 1 が通ったら、2・3・4・5 を並列に始める。3 と 6 の中は、区分ごとの subagent をさらに並列にする。
+- 1 が通ったら、2・3・4・8 を並列に始める。3 と 6 の中は、区分ごとの subagent をさらに並列にする。
+- 8 は Gradle を長く使う（10〜20 分）。5 のサンプルを動かす作業と 6-1 は、8 が終わってから始める。
 - 6 は 2 を待つ。英語のページを訳し直してからビルドしないと、古い英語を巡回することになる。
 - 5 は日本語の原本だけを見るので、2 を待たない。3・4・5 はどれもファイルを書き換えないので、互いに待たない。
-- **Gradle を使う作業は同時に1つだけ。**5 がサンプルを動かす間と、6-1 の `generateApiDocs` は重ねない（同じ
+- **Gradle を使う作業は同時に1つだけ。**8、5 がサンプルを動かす間、6-1 の `generateApiDocs` は重ねない（同じ
   `katachi/build/` を取り合う）。走らせる前に `pgrep -fl GradleWrapperMain` で確かめる。
 - 7 は、ほかの全部が返ってから。チェックリストは各 subagent が返るたびにオーケストレータが書く。
 
@@ -164,6 +167,25 @@ python3 .claude/skills/prerelease/scripts/prepare.py
 4. 終わったら配信を止め、`.playwright-mcp/` などの一時ファイルを消す。
 
 - prerelease-check-list.md には、区分ごとのページ数と見つけた問題の件数、priority 7 以上の警告だけを書く。
+
+## 8. CI と同等のチェック
+
+リリースするコミットで、CI（`.github/workflows/ci.yml`）と同じチェックを手元で通す。CI が緑でも、未 push のコミットや
+CI に上がっていない差分があれば、それは誰も確かめていない。
+
+```shell
+python3 .claude/skills/prerelease/scripts/run-ci-checks.py --list                                  # 走らせるコマンドを見る
+python3 .claude/skills/prerelease/scripts/run-ci-checks.py --release-dir .local/release-v<版>      # 走らせる
+```
+
+- コマンドはスクリプトに書き写さず、毎回 ci.yml の `run:` から読む。走らせるのはジョブ `check` と `ide-plugin`
+  （IDE プラグインの画面の golden は macOS で作ったものなので、macOS で走らせる）。ベンチマークのジョブは既定で飛ばす
+  （失敗で落ちない計測。JMH も見たいときは `--with-bench`）
+- 1つ落ちても最後まで走り、`.local/release-v<版>/ci-checks.md` に結果の表を、`ci-checks/` にコマンドごとのログを書く
+- **オーケストレータが自分で走らせてよい**（判断の要らない作業。background で起動し、終わったら結果の表だけ読む）
+- 前提: Android SDK（ルートの `local.properties` か `ANDROID_HOME`）と、IDE プラグイン用の JDK 21
+- 1つでも落ちたら priority 10 の警告にする（リリースしてはいけない状態）。落ちたステップのログの末尾から原因を1〜2行で書く
+- prerelease-check-list.md には、通った数 / 全体と、落ちたステップだけを書く
 
 ## 7. 報告
 

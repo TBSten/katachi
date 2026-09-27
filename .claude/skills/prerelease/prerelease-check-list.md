@@ -78,6 +78,18 @@
 
 </details>
 
+## 8. CI と同等のチェック
+
+- [ ] 通った: {TODO} / {TODO}（`run-ci-checks.py`）
+- [ ] 結果: {TODO file://.local/release-v0.0.0/ci-checks.md の絶対パス}
+
+<details>
+    <summary>memo</summary>
+
+    {TODO}
+
+</details>
+
 ## そのほか
 
 <details>
