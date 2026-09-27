@@ -118,7 +118,7 @@ The full walkthrough — importing, templates, and handing it off to an AI agent
 | `me.tbsten.katachi:katachi-konsist` | Only if you use `konsist { }` |
 | Gradle plugin `me.tbsten.katachi` | Tasks such as `katachiDocs` and `katachiTemplate`. Pair it with the same version of the library |
 
-## Contribute
+## Contribution
 
 See [CONTRIBUTING.md](CONTRIBUTING.md).
 

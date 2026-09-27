@@ -118,7 +118,7 @@ class ProjectArchitectureTest {
 | `me.tbsten.katachi:katachi-konsist` | `konsist { }` を使うときだけ |
 | Gradle plugin `me.tbsten.katachi` | `katachiDocs` / `katachiTemplate` などのタスク。同じ版の本体と組み合わせます |
 
-## Contribute
+## Contribution
 
 [CONTRIBUTING.ja.md](CONTRIBUTING.ja.md) を参照してください。
 
