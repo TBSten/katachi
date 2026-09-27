@@ -374,8 +374,21 @@ detect_kotlin_version() {
 			sed 's://.*::' "$_f"
 		done |
 		grep -E 'org\.jetbrains\.kotlin|kotlin\("(jvm|android|multiplatform)"\)' |
-		sed -n 's/.*version[[:space:]]*[("'"'"']\{1,2\}\([0-9][0-9.]*[0-9A-Za-z.-]*\).*/\1/p' |
+		sed -n \
+			-e 's/.*version[[:space:]]*[("'"'"']\{1,2\}\([0-9][0-9.]*[0-9A-Za-z.-]*\).*/\1/p' \
+			-e 's/.*kotlin-gradle-plugin:\([0-9][0-9.]*[0-9A-Za-z.-]*\).*/\1/p' |
 		head -n 1)
+	if [ -n "${_v:-}" ]; then
+		printf '%s\n' "$_v"
+		return 0
+	fi
+
+	# buildscript の時代の書き方: 版は gradle.properties に置き、build ファイルからは
+	# `$kotlin_version` などで参照する。build ファイルの行には数字が無いのでここで拾う。
+	if [ -f "gradle.properties" ]; then
+		_v=$(sed -n -E 's/^[[:space:]]*(kotlin\.version|kotlinVersion|kotlin_version)[[:space:]]*=[[:space:]]*([0-9][0-9.]*[0-9A-Za-z.-]*).*/\2/p' gradle.properties |
+			head -n 1)
+	fi
 	printf '%s\n' "${_v:-}"
 }
 
