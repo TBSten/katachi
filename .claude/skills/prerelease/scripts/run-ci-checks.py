@@ -3,7 +3,7 @@
 
 コマンドはここに書き写さず、毎回 ci.yml から読む（ci.yml が唯一の置き場。手順を足しても直すのは ci.yml だけ）。
 
-- 走らせるのは、ジョブ `check` と `ide-plugin` の `run:` 全部。ci.yml に書いた順
+- 走らせるのは、ジョブ `check` と `docs` と `ide-plugin` の `run:` 全部。ci.yml に書いた順（ステップの `working-directory` も読む）
 - ベンチマークのジョブ（名前が `bench-` で始まるもの）は既定で飛ばす。失敗で落ちない計測で、JMH だけで 15〜20 分かかる。
   `--with-bench` で JMH（`bench-jmh` の `./gradlew` の行）だけ足す。nowinandroid の計測は CI の環境変数に頼るので走らせない
 - `./gradlew` の行には `--no-daemon --console=plain --project-cache-dir .local/tmp/gradle-cache/prerelease-ci` を足す
@@ -20,7 +20,7 @@ from pathlib import Path
 
 sys.dont_write_bytecode = True
 
-JOBS = ("check", "ide-plugin")
+JOBS = ("check", "docs", "ide-plugin")
 GRADLE_FLAGS = ["--no-daemon", "--console=plain", "--project-cache-dir", ".local/tmp/gradle-cache/prerelease-ci"]
 
 
@@ -31,7 +31,7 @@ def repo_root():
 
 def jobs_of(ci_yml):
     """{ジョブ名: [(ステップ名, コマンド)]}。ci.yml の形（2 字下げのジョブ、`- name:` と `run:`）だけを読む小さな読み手。"""
-    jobs, job, name = {}, None, None
+    jobs, job, name, workdir = {}, None, None, None
     lines = ci_yml.splitlines()
     # Only what is under the top-level `jobs:` (not `on:`, whose keys sit at the same indent).
     i = next((n + 1 for n, l in enumerate(lines) if l.rstrip() == "jobs:"), len(lines))
@@ -47,7 +47,10 @@ def jobs_of(ci_yml):
             continue
         m = re.match(r"^\s+- name:\s*(.+?)\s*$", line)
         if m and job:
-            name = m.group(1)
+            name, workdir = m.group(1), None
+        m = re.match(r"^\s+working-directory:\s*(.+?)\s*$", line)
+        if m and job:
+            workdir = m.group(1)
         m = re.match(r"^(\s+)run:\s*(.*?)\s*$", line)
         if m and job:
             indent, value = len(m.group(1)), m.group(2)
@@ -59,11 +62,16 @@ def jobs_of(ci_yml):
                     i += 1
                 body = [b for b in body if b]
                 value = (" " if value.startswith(">") else "\n").join(body)
-                jobs[job].append((name or value, value))
+                jobs[job].append((name or value, in_dir(workdir, value)))
                 continue
-            jobs[job].append((name or value, value))
+            jobs[job].append((name or value, in_dir(workdir, value)))
         i += 1
     return jobs
+
+
+def in_dir(workdir, cmd):
+    """Runs `cmd` in the step's working-directory, as GitHub Actions does."""
+    return f"cd {workdir} && {cmd}" if workdir else cmd
 
 
 def commands(root, with_bench):
@@ -79,7 +87,7 @@ def commands(root, with_bench):
 
 
 def with_flags(cmd):
-    return cmd + " " + " ".join(GRADLE_FLAGS) if cmd.startswith("./gradlew") else cmd
+    return cmd + " " + " ".join(GRADLE_FLAGS) if "./gradlew" in cmd.split(" && ")[-1][:10] else cmd
 
 
 def main():
