@@ -22,7 +22,7 @@
 
 これはチェックリストの項目ではありません。番号は付きません。
 
-**このセッションに別件の会話がたまっているなら、まずユーザにそう伝えてください。** この手順はステップ 0 から 6 まで長く、正確なコマンドを何十回も打ちます。ステップ 3 では 3500 行のドキュメントを読み込みます。別件の文脈が多いほど、手順を飛ばす・書かれていない回避策を作る・前の話題の前提を持ち込む、といったことが起きやすくなります。
+**このセッションに別件の会話がたまっているなら、まずユーザにそう伝えてください。** この手順はステップ 0 から 6 まで長く、正確なコマンドを何十回も打ちます。ステップ 3 では数千行のドキュメントを読み込みます。別件の文脈が多いほど、手順を飛ばす・書かれていない回避策を作る・前の話題の前提を持ち込む、といったことが起きやすくなります。
 
 **勝手に判断せず、提案だけしてください。** ユーザが続行を選んだらそのまま進めます。
 
@@ -115,7 +115,7 @@ KATACHI_LANG=ja
 
 ここまで終わったら `sh $CLI check 0-1 0-2`。
 
-**止まったら、出力に書かれているとおりに対処する。** 推測で回避策を作らない。作業用ディレクトリを変えたい場合は `--workdir <path>`、バージョンを固定したい場合は `--katachi <version>` を付けて実行し直す。
+**止まったら、出力に書かれているとおりに対処する。** 推測で回避策を作らない。作業用ディレクトリを変えたい場合は `--workdir <path>`、バージョンを固定したい場合は `--katachi <version>` を付けて実行し直す（`init` が記録した版を `scaffold` も使います）。
 
 `init` は**何度実行しても記入済みのファイルを壊しません**。途中で失敗したらそのまま実行し直してよい。
 
@@ -301,7 +301,7 @@ sh $CLI data get report
 sh $CLI scaffold --package com.example.app
 ```
 
-`--package` にはステップ 1 で特定したアプリのパッケージ名を渡す。katachi と Kotlin のバージョンは検出されるので、ふつうは他の引数は要りません。
+`--package` にはステップ 1 で特定したアプリのパッケージ名を渡す。katachi のバージョンは `init` が記録したものを、Kotlin のバージョンはプロジェクトから検出したものを使うので、ふつうは他の引数は要りません。
 
 **`init` が「Kotlin のバージョンを検出できませんでした」と警告していた場合だけ**、`--kotlin <version>` を足してください。省くと `scaffold` が止まります。
 
@@ -309,7 +309,7 @@ sh $CLI scaffold --package com.example.app
 
 - `architecture-test/build.gradle.kts` の作成。Kotlin JVM と katachi の Gradle plugin（`me.tbsten.katachi`）を入れ、`katachi { architecture = "<パッケージ>.test.architecture.projectArchitecture" }` で定義の置き場所を plugin に教える。plugin は katachi の依存を足さないので、`testImplementation("me.tbsten.katachi:katachi:<version>")` なども一緒に書かれる
 - `ProjectArchitecture.kt` と `ProjectArchitectureTest.kt` の作成
-- ルートの build ファイルへの Kotlin JVM プラグインの追加（すでにあれば何もしない）
+- ルートの build ファイルへの Kotlin JVM プラグインの追加（ルートか `buildSrc` に Kotlin のプラグインがすでにあれば何もしない。サブプロジェクトだけが版付きで宣言している場合は、ルートには足さず `architecture-test` 側に版を書く）
 - settings ファイルへの `include("architecture-test")` の追加（Groovy の `settings.gradle` なら `include 'architecture-test'`。すでにあれば何もしない）
 - settings ファイルの `pluginManagement { repositories { } }` への `mavenCentral()` の追加。katachi の Gradle plugin は Maven Central にあるため（すでにあれば何もしない。`pluginManagement { }` が無ければ作る）
 
@@ -344,7 +344,7 @@ Katachi check failed: 4 violations (Unexpected: 4)
 
 その場合はステップ 4 と同じ方針で、**katachi に関係ないエラー（Gradle・Java・依存解決）は修正を試みてください。** それでも解けない場合だけ、出力をそのままユーザに伝えて判断を仰ぎます。
 
-`scaffold` が「buildscript { } を持つため自動で書き換えませんでした」と言った場合は、**出力に示された1行をルートの build ファイルに足してください。** 足すまで必ず失敗します。「pluginManagement { } の形を読み取れなかった」と言った場合も同じで、出力に示されたものを settings ファイルに足してください。
+`scaffold` が「buildscript { } を持つため自動で書き換えませんでした」と言った場合は、**出力に示された1行をルートの build ファイルに足してください。** 足すまで必ず失敗します。「pluginManagement { } の形を読み取れなかった」「include 文の終わりを読み取れなかった」と言った場合も同じで、出力に示されたものを settings ファイルに足してください。
 
 `Unexpected` だけで落ちることを確認したら、作成・変更されたファイルを記録して `sh $CLI check 2-1 2-2`。
 
@@ -558,7 +558,7 @@ sh $CLI compare-violations
   - そのままにするエラーはチェックリストの `violations` に記載する（`violation` / `location` / `whyNotFixed` / `suggestion`）。
   - ユーザに判断してほしいことは**チェックリストの** `questions` に入れる（`sh $CLI add question ...`）。レポート側にも同名の配列があるが、そちらはステップ 1 で気づいた「コードベースの揺れ」を書く場所で、用途が違う。
 
-**緑になったら `ProjectArchitectureTest.kt` の `maxViolations` を外してください。** `scaffold` が導入中の見通しのために入れた一時設定で、`TODO` コメントが目印です。外したあとにもう一度 `./gradlew :architecture-test:test --rerun` を実行し、結果が変わらないことを確かめます。違反を残す場合は、残した件数が 10 件を超えるならそのまま残してよいので、その旨を `violations` に書いてください。
+**緑になったら `ProjectArchitectureTest.kt` の `maxViolations` を外してください。** `scaffold` が導入中の見通しのために入れた一時設定で、`TODO` コメントが目印です。外したあとにもう一度 `./gradlew :architecture-test:test --rerun` を実行し、結果が変わらないことを確かめます。違反を残す場合、残した違反が 10 件を超えるなら `maxViolations` は外さずに残してかまいません（外すと 10 件しか表示されません）。残したときは、その旨を `violations` に書いてください。
 
 違反を残した場合は `sh $CLI warn 4 "..."` で何を残したかを1行書く。
 
@@ -606,7 +606,7 @@ sh $CLI summary
 |---|---|
 | `--role` | 役割の名前（`architecture { }` に書いた名前） |
 | `--files` | 作るファイル名。**複数回渡せる。** `${name}UseCase.kt` のように、パラメータを埋め込んだ形で書く（例: interface と実装の2つ） |
-| `--params` | `stringParameter()` で受けるパラメータ名。複数回渡せる |
+| `--params` | `stringParameter()` などの `*Parameter()` で受けるパラメータ名。複数回渡せる |
 | `--basedOn` | 雛形の元にする既存ファイル（`roles[].examples` の1本） |
 | `--reason` | その役割に当てる理由（件数と、形が揃っていること） |
 
@@ -743,7 +743,7 @@ Pull request 作成時・Merge request 作成時・pre-push hook など スト�
 
 ステップ 6 で記録した提案に、ユーザが同意した役割だけ行う。
 
-**始める前に、テンプレートからのコード生成のページを読む。**3-1 で取得した全文のうち `Generating code from a template` の節です（日本語版は https://tbsten.github.io/katachi/ja/guides/generate-code-from-template/ ）。`template { }` で書ける語（`file()` と `stringParameter()`）、`file()` にパスを渡せない理由、既存ファイルがあるときの扱いはここに書いてあります。シグネチャに迷ったら、推測で書かずに 3-1 の「API に迷ったら」の llms.txt を読んでください（`template { }` の入口は https://tbsten.github.io/katachi/api-docs/katachi/me.tbsten.katachi.dsl/-role-scope/template.html.md ）。
+**始める前に、テンプレートからのコード生成のページを読む。**3-1 で取得した全文のうち `Generating code from a template` の節です（日本語版は https://tbsten.github.io/katachi/ja/guides/generate-code-from-template/ ）。`template { }` で書ける語（`file()` と `stringParameter()` などの `*Parameter()`）、`file()` にパスを渡せない理由、既存ファイルがあるときの扱いはここに書いてあります。シグネチャに迷ったら、推測で書かずに 3-1 の「API に迷ったら」の llms.txt を読んでください（`template { }` の入口は https://tbsten.github.io/katachi/api-docs/katachi/me.tbsten.katachi.dsl/-role-scope/template.html.md ）。
 
 1. 提案を確かめる（`sh $CLI data get report` の `templates`）。
 2. その役割に `template { }` を書く。**中身は `basedOn` のファイルを元にする。** 生成先のディレクトリは書かない（`layout { }` から決まる）。`file()` にはファイル名だけを渡す
@@ -767,7 +767,7 @@ Pull request 作成時・Merge request 作成時・pre-push hook など スト�
    }
    ```
 
-   使えるのは `stringParameter()`（`default = ...` も可）と `file("...") { "中身" }` だけです。これ以外の語を推測で足さないこと。
+   使えるのは `stringParameter()` / `booleanParameter()` / `intParameter()`（`default = ...` も可）、`enumParameter()`（`entries` か既定値を渡す）と `file("...") { "中身" }` だけです。これ以外の語を推測で足さないこと。
 3. テンプレート独自のパラメータ（`--arg name=...`）は、モジュール側の設定なしにそのまま渡せる。受け付けるのは、名指しした役割の `template { }` が宣言した名前だけで、打ち間違いはこれまでどおり `Unknown processor argument(s): ...` で落ちる。
 4. 1本生成し、**直後に検査が通ること**を確かめる。
 

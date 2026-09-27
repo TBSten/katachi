@@ -22,7 +22,7 @@ You are only responsible for judgment in the following:
 
 This is not a checklist item; it carries no number.
 
-**If this session already holds a lot of unrelated conversation, say so to the user first.** These steps run from 0 to 6, with dozens of exact commands along the way, and step 3 pulls in a 3,500-line document. The more unrelated context is in the way, the easier it is to skip a step, invent a workaround nobody wrote down, or carry an assumption over from the earlier topic.
+**If this session already holds a lot of unrelated conversation, say so to the user first.** These steps run from 0 to 6, with dozens of exact commands along the way, and step 3 pulls in a document several thousand lines long. The more unrelated context is in the way, the easier it is to skip a step, invent a workaround nobody wrote down, or carry an assumption over from the earlier topic.
 
 **Suggest it, do not decide it.** If the user chooses to carry on, carry on.
 
@@ -115,7 +115,7 @@ KATACHI_LANG=en
 
 Once this is done, run `sh $CLI check 0-1 0-2`.
 
-**If it stops, handle it exactly as the output says.** Do not invent a workaround. To change the working directory, re-run with `--workdir <path>`; to pin a version, re-run with `--katachi <version>`.
+**If it stops, handle it exactly as the output says.** Do not invent a workaround. To change the working directory, re-run with `--workdir <path>`; to pin a version, re-run with `--katachi <version>` (`scaffold` uses the version `init` recorded).
 
 `init` **never breaks already-filled-in files no matter how many times you run it.** If it fails partway through, you may just re-run it as is.
 
@@ -301,7 +301,7 @@ Record the answers with `data get report`, edit those `questions`, then `data se
 sh $CLI scaffold --package com.example.app
 ```
 
-Pass the app package name identified in step 1 to `--package`. The katachi and Kotlin versions are detected automatically, so normally no other arguments are needed.
+Pass the app package name identified in step 1 to `--package`. It uses the katachi version `init` recorded and the Kotlin version detected from the project, so normally no other arguments are needed.
 
 **Only if `init` warned "Could not detect the Kotlin version"**, add `--kotlin <version>`. Omitting it will cause `scaffold` to stop.
 
@@ -309,7 +309,7 @@ This command does the following.
 
 - Creating `architecture-test/build.gradle.kts`. It applies Kotlin JVM and the katachi Gradle plugin (`me.tbsten.katachi`), and tells the plugin where the definition lives with `katachi { architecture = "<package>.test.architecture.projectArchitecture" }`. The plugin does not add katachi as a dependency, so `testImplementation("me.tbsten.katachi:katachi:<version>")` and the rest are written alongside it
 - Creating `ProjectArchitecture.kt` and `ProjectArchitectureTest.kt`
-- Adding the Kotlin JVM plugin to the root build file (does nothing if it's already there)
+- Adding the Kotlin JVM plugin to the root build file (does nothing if the root or `buildSrc` already has a Kotlin plugin. If only subprojects declare it, with a version, it adds nothing to the root and writes the version in `architecture-test` instead)
 - Adding `include("architecture-test")` to the settings file (`include 'architecture-test'` for a Groovy `settings.gradle`; does nothing if it's already there)
 - Adding `mavenCentral()` to `pluginManagement { repositories { } }` in the settings file, because the katachi Gradle plugin is published to Maven Central (does nothing if it's already there; creates `pluginManagement { }` if there is none)
 
@@ -344,7 +344,7 @@ The default budget is 10 violations, but **the test `scaffold` generates uses `m
 
 In that case, following the same policy as step 4, **attempt to fix errors unrelated to katachi (Gradle, Java, dependency resolution).** Only if it still can't be resolved, pass the output to the user exactly as it is and ask for their judgment.
 
-If `scaffold` says "Did not rewrite automatically because a buildscript { } is present," **add the single line shown in the output to the root build file.** It will keep failing until you add it. The same goes for "could not read the shape of pluginManagement { }": add what the output shows to the settings file.
+If `scaffold` says "Did not rewrite automatically because a buildscript { } is present," **add the single line shown in the output to the root build file.** It will keep failing until you add it. The same goes for "could not read the shape of pluginManagement { }" and "could not read where the include statement ends": add what the output shows to the settings file.
 
 Once you have confirmed it fails with `Unexpected` only, record the files that were created or changed, then run `sh $CLI check 2-1 2-2`.
 
@@ -556,7 +556,7 @@ Run this and check the result.
   - Record errors you leave in place in the checklist's `violations` (`violation` / `location` / `whyNotFixed` / `suggestion`).
   - Put anything you want the user to decide into **the checklist's** `questions` (`sh $CLI add question ...`). The report also has an array with the same name, but that one is for "inconsistencies in the codebase" noticed during step 1 — its purpose is different.
 
-**Once it is green, take `maxViolations` out of `ProjectArchitectureTest.kt`.** `scaffold` put it there only to keep the whole picture visible during adoption, and the `TODO` comment marks it. Run `./gradlew :architecture-test:test --rerun` once more afterwards and check the result has not changed. If you are leaving more than 10 violations in place, keep the setting and say so in `violations`.
+**Once it is green, take `maxViolations` out of `ProjectArchitectureTest.kt`.** `scaffold` put it there only to keep the whole picture visible during adoption, and the `TODO` comment marks it. Run `./gradlew :architecture-test:test --rerun` once more afterwards and check the result has not changed. If more than 10 violations remain, you may keep `maxViolations` (without it only 10 are shown). When you leave violations, say so in `violations`.
 
 If you left violations in place, write one line about what was left with `sh $CLI warn 4 "..."`.
 
@@ -604,7 +604,7 @@ For each role, decide the following and record it with `add template`.
 |---|---|
 | `--role` | The role's name (as written in `architecture { }`) |
 | `--files` | The files it creates. **Can be passed more than once.** Write them with the parameter embedded, like `${name}UseCase.kt` (for example, an interface and its implementation) |
-| `--params` | The parameter names taken with `stringParameter()`. Can be passed more than once |
+| `--params` | The parameter names taken with `stringParameter()` or another `*Parameter()`. Can be passed more than once |
 | `--basedOn` | The existing file the skeleton is based on (one of `roles[].examples`) |
 | `--reason` | Why this role gets one (the count, and that the files share a shape) |
 
@@ -741,7 +741,7 @@ Record the files you created or changed with `add changed`, then run `sh $CLI ch
 
 Do this only for the roles, among those proposed in step 6, that the user agreed to.
 
-**Before you start, read the page on generating code from a template.** It is the `Generating code from a template` section of the full text you fetched in 3-1 (also at https://tbsten.github.io/katachi/guides/generate-code-from-template/ ). The words `template { }` offers (`file()` and `stringParameter()`), why `file()` takes no path, and what happens when a file already exists are all there. When unsure about a signature, read the llms.txt in "When unsure about an API" in 3-1 instead of guessing (the entry point for `template { }` is https://tbsten.github.io/katachi/api-docs/katachi/me.tbsten.katachi.dsl/-role-scope/template.html.md ).
+**Before you start, read the page on generating code from a template.** It is the `Generating code from a template` section of the full text you fetched in 3-1 (also at https://tbsten.github.io/katachi/guides/generate-code-from-template/ ). The words `template { }` offers (`file()` and the `*Parameter()` functions such as `stringParameter()`), why `file()` takes no path, and what happens when a file already exists are all there. When unsure about a signature, read the llms.txt in "When unsure about an API" in 3-1 instead of guessing (the entry point for `template { }` is https://tbsten.github.io/katachi/api-docs/katachi/me.tbsten.katachi.dsl/-role-scope/template.html.md ).
 
 1. Check the proposals (`templates` in `sh $CLI data get report`).
 2. Write a `template { }` on that role. **Base its content on the `basedOn` file.** Do not write the output directory (it follows from `layout { }`). Pass only a file name to `file()`
@@ -765,7 +765,7 @@ Do this only for the roles, among those proposed in step 6, that the user agreed
    }
    ```
 
-   All there is to use is `stringParameter()` (optionally with `default = ...`) and `file("...") { "content" }`. Do not add other words by guessing.
+   All there is to use is `stringParameter()` / `booleanParameter()` / `intParameter()` (optionally with `default = ...`), `enumParameter()` (given `entries` or a default value), and `file("...") { "content" }`. Do not add other words by guessing.
 3. A template's own parameters (`--arg name=...`) can be passed as-is, with no setting needed on the module side. What is accepted is exactly the set of names the named role's `template { }` declares; a typo still fails, as before, with `Unknown processor argument(s): ...`
 4. Generate one file, and confirm **the check passes right after**.
 

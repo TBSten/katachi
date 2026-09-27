@@ -20,12 +20,16 @@
 # 開発者向け: KATACHI_MAVEN_LOCAL=1
 #   リリース前の katachi を ~/.m2 に publish して試すための口。利用者の手順には出さない。
 #   init に付けると作業用ディレクトリに記録され、以降の scaffold も従う。
-#   - init / scaffold の「Gradle plugin は 0.2.0 以降」の確認を飛ばす
+#   - init / scaffold の「Gradle plugin は 0.2.0 以降」の確認を飛ばす（--katachi か
+#     init で指定した版のときだけ。GitHub の最新を取ってきた版では飛ばさない）
 #   - scaffold が settings の pluginManagement { repositories { } } と
 #     dependencyResolutionManagement { repositories { } } に mavenLocal() を足す
 #
-#     KATACHI_MAVEN_LOCAL=1 sh katachi-install.sh init --katachi 0.1.1
-#     sh <作業用ディレクトリ>/katachi-install.sh scaffold --package com.example.app --katachi 0.1.1
+#     # katachi のリポジトリで。署名の設定が無い手元では -Pkatachi.skipSigning が要る
+#     ./gradlew publishToMavenLocal -Pkatachi.skipSigning
+#     # 試すプロジェクトで。scaffold は init の --katachi を引き継ぐ
+#     KATACHI_MAVEN_LOCAL=1 sh katachi-install.sh init --katachi 0.2.0
+#     sh <作業用ディレクトリ>/katachi-install.sh scaffold --package com.example.app
 
 set -eu
 
@@ -118,7 +122,8 @@ katachi-install.sh — katachi のインストールのうち機械的にでき�
       :architecture-test モジュールを作成し、ビルドに組み込む。
 
       --package <pkg>     アプリのパッケージ名（必須）
-      --katachi <version> katachi のバージョン（既定: 最新を取得）
+      --katachi <version> katachi のバージョン（既定: init が記録した版。
+                          無ければ最新を取得）
       --kotlin <version>  Kotlin のバージョン（既定: プロジェクトから検出）
       --no-konsist        katachi-konsist を使わない構成で生成する
       --force             既存の architecture-test/ を上書きする
@@ -190,9 +195,11 @@ katachi-install.sh — katachi のインストールのうち機械的にでき�
   KATACHI_MAVEN_LOCAL=1
       ~/.m2 に publish したリリース前の katachi で試すための口。
       init に付けると作業用ディレクトリに記録され、以降の scaffold も従う。
-      「Gradle plugin は 0.2.0 以降」の確認を飛ばし、scaffold が settings の
-      pluginManagement と dependencyResolutionManagement の repositories に
-      mavenLocal() を足す。利用者の導入では使わない。
+      「Gradle plugin は 0.2.0 以降」の確認を飛ばし（GitHub の最新を取ってきた
+      版では飛ばさない）、scaffold が settings の pluginManagement と
+      dependencyResolutionManagement の repositories に mavenLocal() を足す。
+      利用者の導入では使わない。~/.m2 へは katachi のリポジトリで
+      ./gradlew publishToMavenLocal -Pkatachi.skipSigning として出す。
 
 init と scaffold は Gradle のルートディレクトリで実行してください。
 data と docs は、作業用ディレクトリに置かれたこのスクリプトから実行してください。
@@ -316,9 +323,11 @@ maven_local_enabled() {
 # $1 の katachi に Gradle plugin があるかを確かめ、無ければ止まる。
 # plugin は 0.2.0 で入った。それより前の版で scaffold まで進むと、Gradle が
 # plugin を解決できずに落ち、原因が分かりにくい。KATACHI_MAVEN_LOCAL のときは
-# 開発版を任意の版番号で試せるように飛ばす。
+# 開発版を任意の版番号で試せるように飛ばす。ただし $2 が latest（GitHub の最新を
+# 取ってきた版）なら飛ばさない。人が選んだ版ではないので、~/.m2 の開発版と
+# 食い違っていても黙って進んでしまう。
 require_plugin_version() {
-	maven_local_enabled && return 0
+	[ "${2:-}" != "latest" ] && maven_local_enabled && return 0
 	_pv_mm=$(kotlin_major_minor "$1")
 	[ -n "$_pv_mm" ] || return 0
 	_pv_maj=${_pv_mm% *}
@@ -387,6 +396,7 @@ download() {
 cmd_init() {
 	init_workdir=""
 	init_version=""
+	init_version_source="explicit"
 	init_offline="no"
 	init_force="no"
 
@@ -431,12 +441,13 @@ cmd_init() {
 	# katachi のバージョン。plugin の無い版なら何も作らないうちに止まる。
 	if [ -z "$init_version" ] && [ "$init_offline" = "no" ]; then
 		init_version=$(fetch_latest_version)
+		init_version_source="latest"
 	fi
 	if [ -z "$init_version" ]; then
 		warn "katachi の最新バージョンを取得できませんでした。$KATACHI_RELEASES_PAGE を見て --katachi で指定してください。"
 		init_version="UNKNOWN"
 	else
-		require_plugin_version "$init_version"
+		require_plugin_version "$init_version" "$init_version_source"
 		note "katachi:            $init_version"
 	fi
 	if maven_local_enabled; then
@@ -532,6 +543,14 @@ cmd_init() {
 	case "${KATACHI_MAVEN_LOCAL:-}" in
 	1 | yes | true) printf 'yes' >"$init_workdir/cache/maven-local" ;;
 	esac
+	# katachi の版も記録し、scaffold が --katachi なしでも同じ版を使うようにする。
+	# 記録しないと scaffold が GitHub の最新を取り直し、init --katachi で固定した版と
+	# 黙って食い違う。分からなかった（UNKNOWN）ときは古い記録を残さない。
+	if [ "$init_version" = "UNKNOWN" ]; then
+		rm -f "$init_workdir/cache/version"
+	else
+		printf '%s' "$init_version" >"$init_workdir/cache/version"
+	fi
 
 	# チェックリストとレポート。**すでにあるものは上書きしない。**
 	# init をやり直したときに、記入済みの調査結果を消さないため。
@@ -746,10 +765,19 @@ cmd_scaffold() {
 		KATACHI_LANG=$(cat "$_sc_wd/cache/lang")
 	fi
 
-	[ -n "$sc_version" ] || sc_version=$(fetch_latest_version)
+	# katachi の版は --katachi > init が記録した版 > GitHub の最新 の順に決める。
+	sc_version_source="explicit"
+	if [ -z "$sc_version" ] && _sc_wd=$(resolve_workdir) && [ -s "$_sc_wd/cache/version" ]; then
+		sc_version=$(cat "$_sc_wd/cache/version")
+		sc_version_source="init"
+	fi
+	if [ -z "$sc_version" ]; then
+		sc_version=$(fetch_latest_version)
+		sc_version_source="latest"
+	fi
 	[ -n "$sc_version" ] ||
 		die "katachi のバージョンが分かりません。$KATACHI_RELEASES_PAGE を見て --katachi で指定してください。"
-	require_plugin_version "$sc_version"
+	require_plugin_version "$sc_version" "$sc_version_source"
 	if maven_local_enabled; then
 		sc_maven_local="yes"
 	else
@@ -790,20 +818,22 @@ cmd_scaffold() {
 	pkg_path=$(printf '%s' "$sc_package" | tr '.' '/')/test/architecture
 	src_dir="$MODULE_DIR/src/test/kotlin/$pkg_path"
 
-	# ルートに Kotlin JVM プラグインが宣言済みかどうかで、モジュール側の書き方が変わる。
-	# 宣言済み: モジュールはバージョンを書かない（書くと "already on the classpath with
-	# an unknown version" で落ちる）。未宣言: ルートに apply false で足して同じ形にする。
-	# コメントを落としてから見る。`// TODO: org.jetbrains.kotlin.jvm ...` を
-	# 「宣言済み」と誤判定すると、ルートに何も足されないまま versionless の
-	# kotlin("jvm") が書かれ、Gradle が plugin not found で落ちる。
-	#
-	# version catalog の `alias(libs.plugins.kotlin.jvm)` / `libs.plugins.kotlinJvm`
-	# も宣言済みとみなす。見落とすと同じプラグインを二重宣言して Gradle が死ぬ。
-	if [ -f "$ROOT_BUILD_FILE" ] && sed 's://.*::' "$ROOT_BUILD_FILE" |
-		grep -qE 'org\.jetbrains\.kotlin\.jvm|kotlin\("jvm"\)|libs\.plugins\.kotlin[.-]?[jJ]vm|kotlinJvm|kotlin-jvm'; then
-		root_needs_plugin="no"
-	else
+	# Kotlin Gradle plugin がすでにルートのクラスパスにあるかで、モジュール側の書き方が
+	# 変わる。判定は kotlin_plugin_placement を参照。
+	#   root:   ルートか buildSrc が持っている。モジュールは版を書かない
+	#   add:    誰も持っていない。ルートに apply false で足し、モジュールは版を書かない
+	#   module: サブプロジェクトだけが版付きで宣言している。ルートには足さず、
+	#           モジュールに版を書く
+	kotlin_placement=$(kotlin_plugin_placement)
+	if [ "$kotlin_placement" = "add" ]; then
 		root_needs_plugin="yes"
+	else
+		root_needs_plugin="no"
+	fi
+	if [ "$kotlin_placement" = "module" ]; then
+		sc_kotlin_plugin="kotlin(\"jvm\") version \"$sc_kotlin\""
+	else
+		sc_kotlin_plugin="kotlin(\"jvm\")"
 	fi
 
 	if sed 's://.*::' "$SETTINGS_FILE" 2>/dev/null |
@@ -824,12 +854,18 @@ cmd_scaffold() {
 
 	say "作成する内容"
 	note "パッケージ:   $sc_package"
-	note "katachi:      $sc_version"
+	case "$sc_version_source" in
+	init) note "katachi:      ${sc_version}（init が記録した版）" ;;
+	latest) note "katachi:      ${sc_version}（GitHub の最新リリース）" ;;
+	*) note "katachi:      $sc_version" ;;
+	esac
 	note "Kotlin:       $sc_kotlin"
 	note "konsist:      $sc_konsist"
 	note "モジュール:   $(file_uri "$MODULE_DIR")/"
 	note "ソース:       $(file_uri "$src_dir")/"
 	note "ルートに追加: $root_needs_plugin ($(file_uri "$ROOT_BUILD_FILE"))"
+	[ "$kotlin_placement" = "module" ] &&
+		note "              サブプロジェクトが Kotlin プラグインを版付きで宣言しているため、ルートには足さず :$MODULE_DIR に版を書きます"
 	note "include 追加: $settings_needs_include ($(file_uri "$SETTINGS_FILE"))"
 	note "pluginManagement に追加: ${settings_needs_plugin_repos}${plugin_repos_missing:+（${plugin_repos_missing}）}"
 	[ "$sc_maven_local" = "yes" ] && note "mavenLocal:   有効（開発者向け）"
@@ -841,7 +877,7 @@ cmd_scaffold() {
 	fi
 
 	mkdir -p "$src_dir"
-	write_module_build "$sc_version" "$sc_konsist" "$sc_context_flag" "$sc_package"
+	write_module_build "$sc_version" "$sc_konsist" "$sc_context_flag" "$sc_package" "$sc_kotlin_plugin"
 	# **--force でも定義は上書きしない。** ここには人とエージェントが書いた
 	# architecture { } が入っている。やり直しで消えると取り返しがつかない。
 	if [ -s "$src_dir/ProjectArchitecture.kt" ]; then
@@ -853,6 +889,7 @@ cmd_scaffold() {
 
 	ROOT_PLUGIN_MANUAL=""
 	SETTINGS_MANUAL=""
+	SETTINGS_INCLUDE_MANUAL=""
 	[ "$root_needs_plugin" = "yes" ] && add_root_plugin "$sc_kotlin"
 	[ "$settings_needs_include" = "yes" ] && add_settings_include
 	[ "$settings_needs_plugin_repos" = "yes" ] && add_plugin_repositories "$plugin_repos_missing"
@@ -867,7 +904,8 @@ cmd_scaffold() {
 	say "$(file_uri "$src_dir/ProjectArchitecture.kt")"
 	say "$(file_uri "$src_dir/ProjectArchitectureTest.kt")"
 	[ "$root_needs_plugin" = "yes" ] && say "${sc_root_build_uri} （Kotlin JVM プラグインを apply false で追加）"
-	[ "$settings_needs_include" = "yes" ] && say "${sc_settings_uri} （include を追加）"
+	[ "$settings_needs_include" = "yes" ] && [ -z "$SETTINGS_INCLUDE_MANUAL" ] &&
+		say "${sc_settings_uri} （include を追加）"
 	[ "$settings_needs_plugin_repos" = "yes" ] && [ -z "$SETTINGS_MANUAL" ] &&
 		say "${sc_settings_uri} （pluginManagement の repositories に ${plugin_repos_missing} を追加）"
 	[ "$DEPENDENCY_MAVEN_LOCAL" = "added" ] &&
@@ -882,6 +920,15 @@ cmd_scaffold() {
 		say "$SETTINGS_MANUAL"
 		say ""
 		say "katachi の Gradle plugin（${KATACHI_PLUGIN_ID}）は Maven Central にあります。足すまで ./gradlew :$MODULE_DIR:test は失敗します。"
+	fi
+	if [ -n "$SETTINGS_INCLUDE_MANUAL" ]; then
+		warn "${sc_settings_uri} の include 文の終わりを読み取れなかったため、include を自動で足しませんでした。"
+		say ""
+		say "次の1行を、${sc_settings_uri} の既存の include 文の後ろ（閉じ括弧より後）に足してください。"
+		say ""
+		say "$SETTINGS_INCLUDE_MANUAL"
+		say ""
+		say "足すまで ./gradlew :$MODULE_DIR:test は失敗します。"
 	fi
 	if [ "$DEPENDENCY_MAVEN_LOCAL" = "manual" ]; then
 		warn "${sc_settings_uri} に dependencyResolutionManagement { repositories { } } が無いため、依存の解決先に mavenLocal() を足せませんでした（開発者向けの KATACHI_MAVEN_LOCAL）。"
@@ -909,6 +956,7 @@ write_module_build() {
 	_konsist="$2"
 	_context_flag="$3"
 	_package="$4"
+	_kotlin_plugin="$5"
 
 	# 生成物は利用者のリポジトリにそのまま残るので、コメントも --lang に合わせる
 	# （テスト関数名と同じ理由。write_test_kt を参照）。
@@ -980,7 +1028,7 @@ $_ctx_note
 
 	cat >"$MODULE_DIR/build.gradle.kts" <<EOF
 plugins {
-    kotlin("jvm")
+    $_kotlin_plugin
 $_plugin_note
     id("$KATACHI_PLUGIN_ID") version "$_version"
 }
@@ -1089,6 +1137,130 @@ EOF
 	fi
 }
 
+# Kotlin Gradle plugin の本体（org.jetbrains.kotlin:kotlin-gradle-plugin）に入っている
+# プラグインの id の末尾。このどれかがクラスパスにあれば、kotlin("jvm") も同じ jar から
+# 版なしで解決できる。plugin.serialization や plugin.compose は別の jar なので数えない。
+KOTLIN_KGP_IDS="jvm|multiplatform|android|js|kapt"
+
+# gradle/libs.versions.toml から、Kotlin Gradle plugin を指す別名を Kotlin DSL の
+# アクセサの正規表現（libs\.plugins\.kotlin\.jvm など）にして1行ずつ出す。
+#   $1 = plugins:   [plugins] で org.jetbrains.kotlin.<KOTLIN_KGP_IDS> を指すもの
+#   $1 = libraries: [libraries] で kotlin-gradle-plugin を指すもの
+# 別名は自由に付けられる（composables-ui は `jvm = { id = "org.jetbrains.kotlin.jvm" }`）
+# ので、名前ではなく中身で判定する。
+catalog_kotlin_accessors() {
+	[ -f "gradle/libs.versions.toml" ] || return 0
+	sed 's:#.*::' "gradle/libs.versions.toml" | awk -v want="$1" -v ids="$KOTLIN_KGP_IDS" '
+		/^[[:space:]]*\[/ { section = $0; next }
+		{
+			hit = 0
+			if (want == "plugins" && section ~ /^[[:space:]]*\[plugins\]/ &&
+				$0 ~ ("[\"\047]org\\.jetbrains\\.kotlin\\.(" ids ")([\"\047:]|$)")) hit = 1
+			if (want == "libraries" && section ~ /^[[:space:]]*\[libraries\]/ &&
+				($0 ~ /org\.jetbrains\.kotlin:kotlin-gradle-plugin/ ||
+				 ($0 ~ /org\.jetbrains\.kotlin["\047]/ && $0 ~ /name[[:space:]]*=[[:space:]]*["\047]kotlin-gradle-plugin["\047]/))) hit = 1
+			if (!hit) next
+			key = $0
+			sub(/^[[:space:]]*/, "", key)
+			sub(/[[:space:]]*=.*/, "", key)
+			gsub(/["\047]/, "", key)
+			# Gradle は - _ . を区切りとしてアクセサの . に変える。
+			gsub(/[-_.]/, "\\.", key)
+			if (want == "plugins") print "libs\\.plugins\\." key "([^A-Za-z0-9_.]|$)"
+			else print "libs\\." key "([^A-Za-z0-9_.]|$)"
+		}
+	'
+}
+
+# catalog_kotlin_accessors の結果を | でつないで1つの正規表現にする。無ければ空。
+# 引数は catalog_kotlin_accessors に渡す種類（plugins / libraries）を1つ以上。
+catalog_kotlin_accessors_joined() {
+	for _cj_kind in "$@"; do
+		catalog_kotlin_accessors "$_cj_kind"
+	done | tr '\n' '|' | sed 's/|$//'
+}
+
+# $1 の内容（行コメントを落としたもの）が、Kotlin Gradle plugin をクラスパスに載せる
+# 宣言を含むか。ルートの build ファイルに使う。
+#   - id("org.jetbrains.kotlin.jvm|multiplatform|android|js|kapt") / kotlin("...")
+#   - version catalog の別名（alias(libs.plugins.<何でも>)）
+#   - buildscript { } の classpath の kotlin-gradle-plugin
+kotlin_plugin_declared_in() {
+	[ -f "$1" ] || return 1
+	_kd_pat="org\\.jetbrains\\.kotlin\\.(${KOTLIN_KGP_IDS})([\"']|$)|kotlin\\(\"(${KOTLIN_KGP_IDS})\"\\)|kotlin-gradle-plugin|libs\\.plugins\\.kotlin[.]?([jJ]vm|[mM]ultiplatform|[aA]ndroid)([^A-Za-z0-9_.]|$)"
+	_kd_accs=$(catalog_kotlin_accessors_joined plugins libraries)
+	[ -n "$_kd_accs" ] && _kd_pat="${_kd_pat}|${_kd_accs}"
+	sed 's://.*::' "$1" | grep -qE "$_kd_pat"
+}
+
+# buildSrc が Kotlin Gradle plugin を依存に持っているか。buildSrc の実行時クラスパスは
+# すべての build スクリプトの親になるので、持っていればルートに足さなくても載っている
+# （kilua）。buildSrc 自身の plugins { kotlin("jvm") } は buildSrc のコンパイル用で、
+# プロジェクトのクラスパスには載らないので数えない。compileOnly も同じ理由で数えない。
+kotlin_plugin_in_buildsrc() {
+	for _kb_f in buildSrc/build.gradle.kts buildSrc/build.gradle; do
+		[ -f "$_kb_f" ] || continue
+		_kb_pat="kotlin-gradle-plugin|kotlin\\(\"gradle-plugin\""
+		_kb_accs=$(catalog_kotlin_accessors_joined libraries)
+		[ -n "$_kb_accs" ] && _kb_pat="${_kb_pat}|${_kb_accs}"
+		sed 's://.*::' "$_kb_f" | grep -E '(implementation|api|runtimeOnly)[[:space:](]' |
+			grep -qE "$_kb_pat" && return 0
+	done
+	return 1
+}
+
+# ルート以外のプロジェクトのどれかが、Kotlin Gradle plugin のプラグインを**版付きで**
+# 要求しているか（kotlin("multiplatform") version "..." / alias(libs.plugins.<別名>)）。
+# このときルートに版付きで足すと、そのプロジェクト側の要求が "already on the classpath
+# with an unknown version" で落ちる（kdoctor）。同じ版でも、id が違えば落ちる。
+#
+# 別の settings を持つディレクトリ（includeBuild される build-logic など）は別のビルドなので見ない。
+kotlin_plugin_requested_by_subprojects() {
+	_ks_pat="kotlin\\(\"(${KOTLIN_KGP_IDS})\"\\)[[:space:]]+version|id[[:space:](]+[\"']org\\.jetbrains\\.kotlin\\.(${KOTLIN_KGP_IDS})[\"']\\)?[[:space:]]+version"
+	_ks_accs=$(catalog_kotlin_accessors_joined plugins)
+	[ -n "$_ks_accs" ] && _ks_pat="${_ks_pat}|alias\\((${_ks_accs})"
+	# '.?*' は隠しディレクトリ。'.*' だと起点の . 自体に当たって何も見なくなる。
+	find . -maxdepth 6 \
+		\( -name build -o -name node_modules -o -name buildSrc -o -name '.?*' -o -name "$MODULE_DIR" \) -prune -o \
+		\( -name 'build.gradle.kts' -o -name 'build.gradle' \) -print 2>/dev/null |
+		while IFS= read -r _ks_f; do
+			_ks_d=${_ks_f%/*}
+			# ルートの build ファイルは kotlin_plugin_declared_in が見ている。
+			[ "$_ks_d" = "." ] && continue
+			_ks_other_build="no"
+			while [ "$_ks_d" != "." ] && [ -n "$_ks_d" ]; do
+				if [ -f "$_ks_d/settings.gradle.kts" ] || [ -f "$_ks_d/settings.gradle" ]; then
+					_ks_other_build="yes"
+					break
+				fi
+				_ks_d=${_ks_d%/*}
+			done
+			[ "$_ks_other_build" = "yes" ] && continue
+			if sed 's://.*::' "$_ks_f" | grep -qE "$_ks_pat"; then
+				printf '%s\n' "$_ks_f"
+				break
+			fi
+		done | grep -q .
+}
+
+# :architecture-test の kotlin("jvm") をどう解決させるかを決めて出す。
+#   root   ルートの build ファイルか buildSrc がすでに Kotlin Gradle plugin を持っている
+#   add    どこにも無い。ルートに id("org.jetbrains.kotlin.jvm") version ... apply false を足す
+#   module サブプロジェクトだけが版付きで持っている。ルートには足さず、モジュールに版を書く
+#
+# コメントを落としてから見る。`// TODO: org.jetbrains.kotlin.jvm ...` を「宣言済み」と
+# 誤判定すると、ルートに何も足されないまま版なしの kotlin("jvm") が書かれ、Gradle が
+# plugin not found で落ちる。
+kotlin_plugin_placement() {
+	if kotlin_plugin_declared_in "$ROOT_BUILD_FILE" || kotlin_plugin_in_buildsrc; then
+		echo root
+	elif kotlin_plugin_requested_by_subprojects; then
+		echo module
+	else
+		echo add
+	fi
+}
+
 # ルートの build ファイルに Kotlin JVM プラグインを apply false で宣言する。
 #
 # **利用者のファイルなので、形が想定と違ったら書き換えずに指示を出す。**
@@ -1175,11 +1347,15 @@ add_settings_include() {
 	# dependencyResolutionManagement { } などの後ろに独りで置かれ、並びが崩れる。
 	# 手順書が生成物の書き換えを禁じている以上、位置はこちらで合わせる。
 	#
-	# include の直後の1文字で includeBuild を弾いている（B は [^A-Za-z0-9_] に入らない）。
+	# 入れる位置は最後の include **文の終わり**。include は複数行に渡ることがある
+	# （`include(` の次の行から並べる形や、Groovy の `include ':a',` の続き）。文の途中に
+	# 入れると settings が構文エラーになる。終わりを判定できなければ書き換えずに指示を出す。
 	# include が1つも無ければ末尾に足す。
-	_inc_at=$(grep -n '^[[:space:]]*include[^A-Za-z0-9_]' "$SETTINGS_FILE" | tail -n 1 | cut -d: -f1)
+	_inc_at=$(settings_include_end "$SETTINGS_FILE")
 
-	if [ -n "$_inc_at" ]; then
+	if [ "$_inc_at" = "?" ]; then
+		SETTINGS_INCLUDE_MANUAL="$_inc_line"
+	elif [ "$_inc_at" != "0" ]; then
 		_inc_tmp="$SETTINGS_FILE.katachi.$$"
 		awk -v n="$_inc_at" -v line="$_inc_line" '
 			NR == n { print; print line; next }
@@ -1188,6 +1364,54 @@ add_settings_include() {
 	else
 		printf '\n%s\n' "$_inc_line" >>"$SETTINGS_FILE"
 	fi
+}
+
+# settings の中で、トップレベル（{ } の外）にある最後の include 文が終わる行番号を出す。
+# include が無ければ 0、文の終わりを判定できなければ ? を出す。
+#
+# 文の終わり = 丸括弧の深さが 0 に戻り、行末が `,` でない行。
+#   include(":a", ":b")            -> その行
+#   include(\n  ":a",\n)            -> `)` の行
+#   include ':a',\n    ':b'         -> `':b'` の行（Groovy）
+# include の直後の1文字で includeBuild を弾いている（B は [^A-Za-z0-9_] に入らない）。
+# { } の中の include（if や forEach の中）は数えない。そこに足すと条件つきになる。
+# 行コメントは先に落とす。文字列の中の括弧は数えない。
+settings_include_end() {
+	sed 's://.*::' "$1" | awk '
+		function scan(s,    i, c, q) {
+			q = ""
+			for (i = 1; i <= length(s); i++) {
+				c = substr(s, i, 1)
+				if (q != "") {
+					if (c == "\\") { i++; continue }
+					if (c == q) q = ""
+					continue
+				}
+				if (c == "\"" || c == "\047") { q = c; continue }
+				if (c == "(") paren++
+				else if (c == ")") paren--
+				else if (c == "{") brace++
+				else if (c == "}") brace--
+			}
+		}
+		{
+			line = $0
+			sub(/[[:space:]]+$/, "", line)
+			if (!open && brace == 0 && line ~ /^[[:space:]]*include[^A-Za-z0-9_]/) {
+				open = 1
+				paren = 0
+			}
+			scan(line)
+			if (open && paren <= 0 && line !~ /,$/) {
+				open = 0
+				last = NR
+			}
+		}
+		END {
+			if (open) print "?"
+			else print last + 0
+		}
+	'
 }
 
 # settings の中のトップレベルのブロック（pluginManagement / dependencyResolutionManagement）と、

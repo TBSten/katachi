@@ -60,8 +60,10 @@ mavenPublishing {
 
     publishToMavenCentral()
 
-    // `publishToMavenLocal` で手元に出すときは署名しない。GPG 鍵が無い環境でも
-    // ローカル検証ができるようにするため。CI の本番公開では必ず署名する。
+    // `-Pkatachi.skipSigning` を付けたときだけ署名しない。GPG 鍵が無い環境でも
+    // `./gradlew publishToMavenLocal -Pkatachi.skipSigning` でローカル検証ができるように
+    // するため。タスク名は見ないので、付けずに publishToMavenLocal すると署名しようとして
+    // signatory が無いと落ちる。CI の本番公開ではこのプロパティを付けないので必ず署名する。
     if (!providers.gradleProperty("katachi.skipSigning").isPresent) {
         signAllPublications()
     }
