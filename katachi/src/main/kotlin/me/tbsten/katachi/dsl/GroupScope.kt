@@ -84,15 +84,17 @@ public sealed interface GroupScope : DeclarationContainerScope {
      * Set to `false` to keep this group out of the generated documentation. It still takes
      * part in the check.
      *
-     * The value is not inherited: a role inside a group that opted out has to say so for
-     * itself, and so does a nested group.
+     * The generated documentation leaves out everything inside the group with it: its roles and
+     * nested groups, whatever they wrote themselves. The value itself is not copied onto them
+     * (each keeps what it wrote, as all metadata does), so a processor of your own that reads it
+     * walks up [Role.groupPath].
      *
      * ## Example 1: keep a group out of the generated documentation
      * ```kt
      * val arch = architecture {
      *     "build".group {
      *         documented = false
-     *         "VersionCatalog" { documented = false }
+     *         "VersionCatalog" { }
      *     }
      * }
      * arch.groups.single()[Documented] shouldBe false
