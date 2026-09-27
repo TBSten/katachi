@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>v{版} 確認 TODO</title>
+<style>
+:root{--bg:#fbfaf7;--fg:#1d1d1f;--muted:#6b6b70;--line:#e3e1dc;--card:#fff;--red:#c0392b;--amber:#b7791f;--blue:#2b6cb0;--green:#2f855a;--code:#f1efea}
+@media (prefers-color-scheme:dark){:root{--bg:#17171a;--fg:#ececef;--muted:#9a9aa2;--line:#2e2e34;--card:#1f1f23;--red:#f07167;--amber:#f6c35b;--blue:#7fb3ff;--green:#6fd39a;--code:#2a2a30}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:15px/1.7 -apple-system,"Hiragino Sans","Noto Sans JP",sans-serif}
+main{max-width:880px;margin:0 auto;padding:24px 16px 64px}
+h1{font-size:22px;margin:0 0 4px}
+.sub{color:var(--muted);font-size:13px;margin:0 0 20px}
+.summary{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:24px}
+.pill{border:1px solid var(--line);background:var(--card);border-radius:999px;padding:4px 12px;font-size:13px}
+.pill b{margin-right:4px}
+h2{font-size:17px;margin:28px 0 8px;padding-left:10px;border-left:4px solid var(--c,var(--line))}
+h2 small{color:var(--muted);font-weight:normal;font-size:13px;margin-left:6px}
+.item{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 14px;margin:8px 0;display:grid;grid-template-columns:22px 1fr;gap:4px 10px}
+.item input{margin-top:5px;width:16px;height:16px}
+.item.done .t{text-decoration:line-through;color:var(--muted)}
+.t{font-weight:600}
+.p{font-size:11px;font-weight:700;border-radius:4px;padding:1px 6px;margin-right:6px;color:#fff;background:var(--muted);vertical-align:1px}
+.p8{background:var(--red)}.p7{background:var(--red)}.p5{background:var(--amber)}.p4,.p3,.p2{background:var(--muted)}
+.body{grid-column:2;font-size:14px;color:var(--fg)}
+.ask{grid-column:2;font-size:14px;margin-top:2px}
+.ask b{color:var(--blue)}
+details{grid-column:2;font-size:13.5px;color:var(--muted)}
+details summary{cursor:pointer}
+details ul{margin:6px 0;padding-left:20px}
+code{background:var(--code);border-radius:4px;padding:0 4px;font-size:.9em;word-break:break-all}
+a{color:var(--blue);word-break:break-all}
+</style>
+</head>
+<body>
+<main>
+<h1>v{版} リリース前に確認してほしいこと</h1>
+<p class="sub">{YYYY-MM-DD HH:MM} 更新 / main は origin より {n} コミット先（未 push）/ チェックはこのブラウザに保存されます</p>
+
+<div class="summary">
+  <span class="pill"><b style="color:var(--red)">{n}</b>リリース前に直すか決める</span>
+  <span class="pill"><b style="color:var(--amber)">{n}</b>判断してほしい</span>
+  <span class="pill"><b style="color:var(--blue)">{n}</b>目を通してほしい</span>
+  <span class="pill"><b style="color:var(--green)">{n}</b>操作してほしい</span>
+  <span class="pill"><b style="color:var(--muted)">{n}</b>決定済み・対応中</span>
+</div>
+
+<!-- 項目の書き方: data-id は項目ごとに一意で、次の生成でも変えない（チェックの状態が引き継がれる）。
+     決まった項目は消さずに「決定済み・対応中」へ移し、🔧 対応中 / ✏️ 編集済み・検証中 / ✓ 済 を付ける。
+     補足の情報は <details> に入れ、最初に見える情報を絞る。 -->
+
+<h2 style="--c:var(--red)">1. リリース前に直すか決める<small>priority 7 以上。放置すると利用者が詰まる</small></h2>
+
+<div class="item" data-id="example-p8"><input type="checkbox"><div class="t"><span class="p p8">p8</span>{警告のタイトル}</div>
+<div class="body">{何が起きるか・原因を1〜2文}</div>
+<div class="ask"><b>決めてほしい:</b> {選択肢 (a) / (b) / (c)。おすすめがあれば先頭に}</div>
+<details><summary>詳細</summary><ul><li>{根拠・リンク（file:// の絶対パス）}</li></ul></details></div>
+
+<h2 style="--c:var(--amber)">2. 判断してほしい<small>リリースは止めないが、方針が要る</small></h2>
+
+<h2 style="--c:var(--blue)">3. 目を通してほしい</h2>
+
+<h2 style="--c:var(--green)">4. 操作してほしい</h2>
+
+<div class="item" data-id="push"><input type="checkbox"><div class="t">main を push する</div><div class="body">{前提}</div></div>
+<div class="item" data-id="publish"><input type="checkbox"><div class="t">v{版} を publish する</div><div class="body">署名と Maven Central への publish は利用者が行う。</div></div>
+
+<h2 style="--c:var(--line)">5. 決定済み・対応中<small>🔧 対応中 / ✏️ 編集済み・検証中 / ✓ 済</small></h2>
+
+<div class="item" data-id="example-done"><input type="checkbox" disabled><div class="t">✓ {決まったこと}（{コミット}）</div></div>
+
+<p class="sub" style="margin-top:28px">{いま走っているもの・待っているもの}</p>
+</main>
+<script>
+const KEY='katachi-v{版}-todo';
+let s={};try{s=JSON.parse(localStorage.getItem(KEY)||'{}')}catch(e){}
+document.querySelectorAll('.item').forEach(el=>{
+  const cb=el.querySelector('input'),id=el.dataset.id;
+  cb.checked=!!s[id];el.classList.toggle('done',cb.checked);
+  cb.addEventListener('change',()=>{s[id]=cb.checked;el.classList.toggle('done',cb.checked);try{localStorage.setItem(KEY,JSON.stringify(s))}catch(e){}});
+});
+</script>
+</body>
+</html>

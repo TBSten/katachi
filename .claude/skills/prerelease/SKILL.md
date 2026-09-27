@@ -58,6 +58,8 @@ flowchart LR
 | `ci-checks.md`                   | 8        |
 | `install-kit.md`                 | 9-1      |
 | `install-e2e.md`                 | 9-2      |
+| `TODO.html`                      | 途中から・オーケストレータ（利用者がやること・決めることだけ） |
+| `index.html`                     | 7（結果をひとまとめにしたもの） |
 
 ログ・材料・中間ファイルはすべて `.local/release-v<版>/tmp/` の下に置く。例: `tmp/release-note-material.txt`、
 `tmp/ci-checks/`（コマンドごとのログ）、`tmp/install-kit/`（fixture とログ）、`tmp/pages-<区分>.txt`、`tmp/crawl/`
@@ -115,12 +117,17 @@ priority 10 の警告。結果は `ci-checks.md`、ログは `tmp/ci-checks/`。
 
 ## 7. 報告
 
+- **`TODO.html` は 7 を待たずに作り、状況が変わるたびに更新する**（subagent が返るたび・利用者が答えるたび）。
+  利用者の手が要るもの（直すか決める / 判断 / 目を通す / 操作）だけを並べる。7 の直前に、結果をひとまとめにした
+  `index.html` を作る。どちらも `.local/release-v<版>/` の直下。詳細: [references/report-html.md](references/report-html.md)
 - それぞれの実行結果を
 - 上記のステップを実行してきた中で見つけた警告をサマライズし重要なものがあればユーザに警告する。
 - 形式は以下。この形式から外れないように厳密に処理する。
   ```
   ✅ リリース前チェック完了
 
+  - 結果: file://{index.html の絶対パス}
+  - TODO: file://{TODO.html の絶対パス}（{n} 件）
   - チェックリスト: file://{prerelease-check-list.md の絶対パス}
   - リリースノート: file://{.local/release-v0.0.0/release-note.md の絶対パス}
   
