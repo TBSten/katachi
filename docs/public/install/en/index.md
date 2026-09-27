@@ -61,9 +61,11 @@ touch .katachi-probe && rm .katachi-probe
 ```
 
 ```sh
-# 4. Running the fetched script
-sh /tmp/katachi-install.sh --help
+# 4. Running the fetched script (and checking that the required commands are available)
+sh /tmp/katachi-install.sh doctor --lang en
 ```
+
+`doctor` in 4 checks that the commands this procedure uses are available (`curl`, `python3`, and basic commands such as `awk` and `sed`; `git` is recommended). **If anything is missing, it lists everything that is missing, with hints on how to install it, and stops.** Pass that output on to the user, have them install what is missing, and run 4 again. `init` runs the same check first.
 
 Both the working directory and `architecture-test/` are created under the project root, so 2 earns permission for both. **The probes leave no trace.** Do not write a probe that creates a directory (an empty `architecture-test/` left behind makes step 2's `scaffold` stop with "already exists").
 
@@ -83,12 +85,13 @@ Run the following **from the Gradle root directory**.
 sh /tmp/katachi-install.sh init --lang en
 ```
 
-> `--lang en` tells the script which language to fetch the checklist and report templates in. Japanese is available as `--lang ja`.
+> `--lang en` tells the script which language to fetch the checklist and report templates in, **and which language its own output (including the `summary` text) is in.** Japanese is available as `--lang ja`.
 
 The script was already fetched in 0-1. **`curl` runs only once across the whole procedure** — `init` copies itself into the working directory, and every command from here on uses that copy.
 
 This command does all of the following. **Do not redo any of this by hand.**
 
+- Checking that the required commands are available (stops before creating anything if not)
 - Confirming this is a Gradle project (stops if not)
 - Checking whether it's under Git management (warns if not)
 - Deciding on and creating the working directory (inside a `.gitignore`d location if one exists, otherwise `tmp/install-katachi/`)
@@ -600,7 +603,7 @@ This lists unfilled fields and unchecked items. **If nothing is printed, you're 
 sh $CLI summary
 ```
 
-**Return the output to the user exactly as it is. Do not compose the text yourself.**
+**Return the output to the user exactly as it is. Do not compose the text yourself.** The output is in the language you chose with `init`'s `--lang`; there is no need to translate it.
 
 #### Before summary — record template proposals
 

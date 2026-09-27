@@ -7,7 +7,8 @@
 #   1. sh -n と /bin/bash -n（macOS の bash 3.2）で katachi-install.sh の構文を確かめる
 #   2. リポジトリの katachi を mavenLocal に publish する（fixture は KATACHI_MAVEN_LOCAL=1 でそれを使う）
 #   3. fixture ごとに（順番に。Gradle を重ねない）:
-#      - KATACHI_DOCS=file://<repo>/docs/public で init --lang ja --katachi <今回の版> → scaffold
+#      - KATACHI_DOCS=file://<repo>/docs/public で init --lang <ja|en> --katachi <今回の版> → scaffold
+#        （--lang は既定 ja。en を渡すと、出力に日本語が残っていないかも確かめる）
 #        （手順書どおり、init が Kotlin の版を検出できなかったときだけ scaffold に --kotlin を渡す）
 #      - settings に architecture-test の include が1回だけ、正しい位置（最後の include 文の直後）に入ったか
 #      - settings に dependencyResolutionManagement が無ければ、scaffold の警告どおり mavenLocal() と
@@ -26,32 +27,37 @@
 #   sh .claude/skills/prerelease/scripts/check-install-kit.sh --release-dir .local/release-v<版>
 #   sh .claude/skills/prerelease/scripts/check-install-kit.sh --release-dir .local/release-v<版> --only agp,rootjvm
 #   sh .claude/skills/prerelease/scripts/check-install-kit.sh --release-dir .local/release-v<版> --skip-publish
+#   sh .claude/skills/prerelease/scripts/check-install-kit.sh --release-dir .local/release-v<版> --lang en --only agp
 #
 # 決まり: $(...) は使わない（リポジトリの決まり）。$VAR の直後に日本語を置かない（${VAR} で閉じる。bash 3.2 が食う）。
 set -u
 
 usage() {
 	cat <<'EOF'
-使い方: sh check-install-kit.sh --release-dir .local/release-v<版> [--only <fixture>,...] [--skip-publish]
+使い方: sh check-install-kit.sh --release-dir .local/release-v<版> [--only <fixture>,...] [--skip-publish] [--lang <ja|en>]
   --release-dir   作業場所（結果は <dir>/install-kit.md、fixture とログは <dir>/tmp/install-kit/）
   --only          指定した fixture だけ走らせる（カンマ区切り）
   --skip-publish  publishToMavenLocal を飛ばす（直前に publish 済みのとき）
+  --lang          init に渡す言語（既定 ja）。en のときは init / scaffold の出力に日本語が残っていないかも見る
 EOF
 }
 
 RELEASE_DIR=""
 ONLY=""
 SKIP_PUBLISH="no"
+LANG_ARG="ja"
 while [ $# -gt 0 ]; do
 	case "$1" in
 	--release-dir) RELEASE_DIR="${2:?--release-dir に値がありません}"; shift 2 ;;
 	--only) ONLY="${2:?--only に値がありません}"; shift 2 ;;
 	--skip-publish) SKIP_PUBLISH="yes"; shift ;;
+	--lang) LANG_ARG="${2:?--lang に値がありません}"; shift 2 ;;
 	-h | --help) usage; exit 0 ;;
 	*) usage >&2; exit 2 ;;
 	esac
 done
 [ -n "${RELEASE_DIR}" ] || { usage >&2; exit 2; }
+case "${LANG_ARG}" in ja | en) ;; *) usage >&2; exit 2 ;; esac
 
 REPO=`git rev-parse --show-toplevel` || exit 2
 case "${RELEASE_DIR}" in
@@ -173,8 +179,8 @@ run_fixture() { # $1 = fixture
 	export KATACHI_DOCS="file://${REPO}/docs/public"
 	export KATACHI_MAVEN_LOCAL=1
 	{
-		echo "### init --lang ja --katachi ${VERSION}"
-		(cd "$d" && sh "${KIT}" init --lang ja --katachi "${VERSION}")
+		echo "### init --lang ${LANG_ARG} --katachi ${VERSION}"
+		(cd "$d" && sh "${KIT}" init --lang "${LANG_ARG}" --katachi "${VERSION}")
 		echo "init exit=$?"
 	} >"${setup_log}" 2>&1
 	cli=`sed -n 's/^KATACHI_CLI=//p' "${setup_log}" | tail -1`
@@ -199,6 +205,21 @@ run_fixture() { # $1 = fixture
 		(cd "$d" && git diff -- settings.gradle.kts settings.gradle build.gradle.kts build.gradle && git status --short)
 	} >>"${setup_log}" 2>&1
 	if grep -q "^scaffold exit=0" "${setup_log}"; then SCAFFOLD="OK"; else SCAFFOLD="NG"; return; fi
+
+	# en のときは、init / scaffold の出力（### の見出しと git diff より前の行）に日本語が残っていないか。
+	# 見るのはひらがな・カタカナ・漢字・全角の記号。fixture のパスには日本語が無い前提。
+	if [ "${LANG_ARG}" = "en" ]; then
+		ja_lines=`sed '/^### git diff/,$d' "${setup_log}" | grep -v '^###' | python3 -c 'import re,sys
+n=0
+for l in sys.stdin:
+    if re.search("[\u3000-\u30ff\u4e00-\u9fff\uff00-\uffef]", l):
+        n+=1; sys.stderr.write(l)
+print(n)' 2>>"${LOGS}/${fx}-ja-lines.log"`
+		if [ "${ja_lines}" != "0" ]; then
+			SCAFFOLD="NG: en の出力に日本語が ${ja_lines} 行（${LOGS}/${fx}-ja-lines.log）"
+			return
+		fi
+	fi
 
 	check_include "${fx}" "${settings}"
 
@@ -276,6 +297,7 @@ done
 	echo
 	echo "- 通った: ${OK_COUNT} / ${TOTAL}"
 	echo "- 版: katachi ${VERSION} / Kotlin ${K} / AGP ${AGP}"
+	echo "- init の --lang: ${LANG_ARG}"
 	echo "- 構文（sh -n・/bin/bash -n）: ${SYNTAX}（[ログ](file://${LOGS}/syntax.log)）"
 	echo "- publishToMavenLocal: ${PUBLISH}（[ログ](file://${LOGS}/publish.log)）"
 	echo "- スクリプト: \`.claude/skills/prerelease/scripts/check-install-kit.sh\`（fixture の定義は \`install-kit-fixtures.sh\`）"

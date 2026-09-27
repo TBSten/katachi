@@ -11,10 +11,11 @@
 # 決めます。
 #
 # POSIX sh。bash 固有の機能は使っていません。
-# 必要なもの: sh / curl / awk / sed / git（あれば）
-# check / uncheck / warn / verify / summary / add / lint / data merge は python3（無ければ jq）も使う。
+# 必要なもの: sh / awk / sed / grep などの基本コマンド / curl / python3 / git（推奨）
+# 何が要るかはサブコマンドごとに require_commands で最初に確かめる（REQ_* を参照）。
+# `doctor` で全部をまとめて確かめられる。
 #
-# ネットワークを使うのは init と docs だけ。どちらも curl に接続・転送の
+# ネットワークを使うのは init と docs（と、版を決められないときの scaffold）だけ。どれも curl に接続・転送の
 # timeout を設定してあり、ぶら下がったまま止まることはない。
 #
 # 開発者向け: KATACHI_MAVEN_LOCAL=1
@@ -36,10 +37,10 @@ set -eu
 # 配信元。ローカルで試すときだけ環境変数で差し替える。
 KATACHI_DOCS="${KATACHI_DOCS:-https://tbsten.github.io/katachi}"
 
-# チェックリストとレポートの言語。`init --lang` で決まり、作業用ディレクトリに
-# 記録される。以降のコマンドはそこから読むので、毎回指定しなくてよい。
-# 既定はサイトの既定ロケールに合わせて en。
-KATACHI_LANG="${KATACHI_LANG:-en}"
+# 言語。チェックリストとレポート、scaffold の生成物のコメント、**このスクリプトの出力**が従う。
+# `init --lang` で決まり、作業用ディレクトリ（cache/lang）に記録される。以降のコマンドは
+# そこから読むので、毎回指定しなくてよい。決め方は resolve_lang を参照。
+KATACHI_LANG="${KATACHI_LANG:-}"
 KATACHI_RELEASES_API="https://api.github.com/repos/TBSten/katachi/releases/latest"
 KATACHI_RELEASES_PAGE="https://github.com/TBSten/katachi/releases"
 
@@ -63,17 +64,37 @@ MODULE_DIR="architecture-test"
 
 # ---------------------------------------------------------------- 出力
 
+# 利用者に見える文言は、日本語と英語を並べて渡す。
+#
+#   say "作業用ディレクトリ: ${x}" "Working directory: ${x}"
+#
+# 引数が1つなら言語によらずそのまま出す（KEY=VALUE の行、パスだけの行、空行）。
+# 文言はここ以外に持たない。同じ文言を2か所に書かないこと。
+#
 # メッセージに日本語を混ぜるときは、変数展開を必ず ${VAR} と波括弧で閉じること。
 # $VAR の直後に非 ASCII（全角の閉じ括弧など）が続くと、macOS の bash 3.2 は続くバイトを
 # 変数名の一部と誤読し、set -u と相まって "unbound variable" で落ちる。メッセージが
 # 出ないまま終了するので気づきにくい。これまでに4回踏んでいる。
-say() { printf '%s\n' "$*"; }
-note() { printf '   %s\n' "$*"; }
-warn() { printf '\n[!] %s\n' "$*" >&2; }
+pick() {
+	if [ $# -ge 2 ] && [ "${KATACHI_LANG:-ja}" = "en" ]; then
+		printf '%s' "$2"
+	else
+		printf '%s' "$1"
+	fi
+}
+say() { printf '%s\n' "$(pick "$@")"; }
+note() { printf '   %s\n' "$(pick "$@")"; }
+warn() { printf '\n[!] %s\n' "$(pick "$@")" >&2; }
 
 die() {
-	printf '\n[x] %s\n' "$*" >&2
+	printf '\n[x] %s\n' "$(pick "$@")" >&2
 	exit 1
+}
+
+# オプションの値が無ければ止まる。$1 = オプション名, $2 = 値。
+# ${2:?...} だとシェルの形式のメッセージになり、言語も合わせられない。
+need_value() {
+	[ -n "${2:-}" ] || die "${1} に値がありません。" "${1} needs a value."
 }
 
 # 人に見せるパスを file:// で始まる絶対 URI にして出す（改行は付けない）。
@@ -84,7 +105,7 @@ die() {
 #   cd && pwd で正規化する。pwd は -P を付けない論理パスで、シンボリックリンクは解決しない
 # - 存在しないパスは連結するだけ
 # - % / 空白 / # / ? だけを百分率符号化する。日本語は UTF-8 のまま出す
-#   （出力はもともと日本語なので、ASCII に揃える必要はない）
+#   （利用者のパスに日本語があればそのまま出す。ASCII に揃える必要はない）
 # 同じ規則の Python 版が PYROLES と SUMMARY_PY の中にある。変えるときは揃えること。
 file_uri() {
 	_fu_p=$1
@@ -98,6 +119,14 @@ file_uri() {
 }
 
 usage() {
+	if [ "${KATACHI_LANG:-ja}" = "en" ]; then
+		usage_en
+	else
+		usage_ja
+	fi
+}
+
+usage_ja() {
 	cat <<'USAGE'
 katachi-install.sh — katachi のインストールのうち機械的にできる部分をまとめて行う
 
@@ -111,12 +140,17 @@ katachi-install.sh — katachi のインストールのうち機械的にでき�
       --katachi <version> katachi のバージョンを明示する（既定: 最新を取得）
       --offline           ダウンロードを行わない
       --force             記入済みのチェックリスト・レポートも取り直す
-      --lang <en|ja>      チェックリストとレポートの言語（既定: en）。
+      --lang <en|ja>      チェックリスト・レポート・このスクリプトの出力の言語（既定: en）。
                           作業用ディレクトリに記録され、以降のコマンドが従う
 
       2回目以降の実行では、記入済みのファイルは上書きしません。
       また自分自身を作業用ディレクトリにコピーするので、以降は
       <作業用ディレクトリ>/katachi-install.sh を使ってください。
+
+  sh katachi-install.sh doctor [--lang <en|ja>]
+      このスクリプトが使うコマンド（curl・python3・git など）がそろっているかを確かめる。
+      足りないものがあれば、全部と入れ方の手がかりを並べて 1 を返す。
+      init もはじめに同じ確認をする。
 
   sh katachi-install.sh scaffold --package <com.example.app> [オプション]
       :architecture-test モジュールを作成し、ビルドに組み込む。
@@ -206,6 +240,212 @@ data と docs は、作業用ディレクトリに置かれたこのスクリプ
 USAGE
 }
 
+usage_en() {
+	cat <<'USAGE'
+katachi-install.sh - does the mechanical parts of installing katachi
+
+Usage:
+  sh katachi-install.sh init [options]
+      Checks that this is the Gradle root, creates the working directory, and
+      places the check list and the report template.
+      Prints the result as KEY=VALUE lines at the end (the later steps read them).
+
+      --workdir <path>    Use this working directory (default: chosen automatically)
+      --katachi <version> Use this katachi version (default: the latest release)
+      --offline           Do not download anything
+      --force             Fetch the check list and the report again, even if filled in
+      --lang <en|ja>      Language of the check list, the report and this script's
+                          output (default: en). Recorded in the working directory;
+                          later commands follow it
+
+      On later runs, files that are already filled in are not overwritten.
+      The script also copies itself into the working directory, so from then on
+      use <working directory>/katachi-install.sh.
+
+  sh katachi-install.sh doctor [--lang <en|ja>]
+      Checks that the commands this script uses (curl, python3, git, ...) are available.
+      If anything is missing, lists all of it with hints on how to install it and returns 1.
+      init runs the same check first.
+
+  sh katachi-install.sh scaffold --package <com.example.app> [options]
+      Creates the :architecture-test module and wires it into the build.
+
+      --package <pkg>     The app's package name (required)
+      --katachi <version> katachi version (default: the one init recorded,
+                          otherwise the latest release)
+      --kotlin <version>  Kotlin version (default: detected from the project)
+      --no-konsist        Generate a setup that does not use katachi-konsist
+      --force             Overwrite an existing architecture-test/
+      --dry-run           Write nothing; only print what would be done
+
+  sh katachi-install.sh data get <target> [--id <id>]
+      Prints the embedded JSON. You do not need to read the HTML itself.
+      <target> is check-list, report, or a file path.
+
+  sh katachi-install.sh data set <target> <json> [--id <id>]
+      Replaces the embedded JSON with <json> as a whole.
+
+  sh katachi-install.sh data merge <target> <json> [--id <id>]
+      Deep-merges <json> into the existing content. Easier for partial updates.
+      Arrays are replaced as a whole (not appended to).
+
+      Both set and merge validate the JSON before writing, keep the original
+      file as .bak, and roll back automatically if the result is broken.
+
+  sh katachi-install.sh add <kind> [--<field> <value> ...]
+      Appends one entry to an array. Unlike merge, existing entries are kept.
+      check-list: violation / question / changed
+      report:     module / role / tool / excluded / codebase-question / template
+
+  sh katachi-install.sh docs [--small] [--refresh]
+      Fetches the full guide (llms-full.txt) into cache/ in the working directory
+      and prints its path. Does not fetch again if it is already there.
+
+  sh katachi-install.sh docs --api [--refresh]
+      Fetches the root index of the API reference (Dokka), api-docs/llms.txt.
+      It lists the main APIs and links to each module's index and full text.
+
+  sh katachi-install.sh docs --api <katachi|katachi-konsist> [--refresh]
+      Fetches the full API text (signatures and KDoc) of the given module.
+      Use it to check an API's signature or parameters.
+
+  sh katachi-install.sh check <item id>...
+  sh katachi-install.sh uncheck <item id>...
+      Marks check list items as done / not done.
+      An unknown id stops the command and lists the ids you can use.
+
+  sh katachi-install.sh warn <step id> <text>
+  sh katachi-install.sh warn <step id> --clear
+      Attaches a warning to a step / removes it. A step with a warning turns
+      yellow and stays open even when it is done.
+
+  sh katachi-install.sh lint
+      Reads the definition (architecture-test/src/test/kotlin) and lists roles that
+      seem to hold files of different kinds. Also runs on check 3-2 / check 3-3.
+      It is a plain text scan, so false positives are possible. Never fails (always returns 0).
+
+  sh katachi-install.sh compare-violations [<log before> <log after>]
+      Compares two outputs of ./gradlew :architecture-test:test and checks that the
+      check result (the number and content of violations) has not changed. Use it
+      before and after refactoring the definition (step 3-3 of the guide).
+      Defaults: <working directory>/tmp/test-before-refactor.log and test-after-refactor.log.
+      [MissingDescription] warnings should go down as descriptions are added, so only
+      their counts are shown.
+      Returns 0 if nothing changed; otherwise prints the difference and returns 1.
+
+  sh katachi-install.sh verify
+      Lists blank fields and unfinished items. If nothing is left, marks the last
+      step as done and returns 0. Otherwise returns 1.
+
+  sh katachi-install.sh summary
+      Builds and prints the message to give back to the user.
+
+  sh katachi-install.sh --help
+
+Environment variables for developers:
+  KATACHI_MAVEN_LOCAL=1
+      A hook for trying an unreleased katachi published to ~/.m2.
+      Set it on init and it is recorded in the working directory; later scaffold runs follow it.
+      Skips the "Gradle plugin needs 0.2.0 or later" check (not for a version fetched
+      as the latest release from GitHub), and scaffold adds mavenLocal() to the
+      repositories of pluginManagement and dependencyResolutionManagement in settings.
+      Not for real installations. Publish to ~/.m2 from the katachi repository with
+      ./gradlew publishToMavenLocal -Pkatachi.skipSigning
+
+Run init and scaffold in the Gradle root directory.
+Run data and docs with the copy of this script in the working directory.
+USAGE
+}
+
+# ---------------------------------------------------------------- 前提のコマンド
+
+# サブコマンドごとに要るコマンド。実装が実際に呼んでいるものだけを置く。
+# 足すときは、そのコマンドを使うサブコマンドの REQ_* に入れること。
+#
+# python3 は JSON の検査・マージ・加工に使う。以前は jq でも代われたが、check / add /
+# verify / summary が python3 を必須にしていたため、jq だけの環境では導入を最後まで
+# 進められなかった。分岐を減らすため python3 に一本化した。
+REQ_BASE="awk sed grep tr cut head tail wc date cp mv rm mkdir cat sort find chmod"
+REQ_INIT="${REQ_BASE} curl python3"
+REQ_INIT_OFFLINE="${REQ_BASE} python3"
+REQ_SCAFFOLD="${REQ_BASE}"
+REQ_JSON="${REQ_BASE} python3"
+REQ_DOCS="${REQ_BASE} curl"
+REQ_COMPARE="${REQ_BASE} cmp diff"
+REQ_ALL="${REQ_BASE} cmp diff curl python3"
+# 無くても進めるが、あれば使うもの。無ければ警告だけ出す。
+REC_ALL="git"
+
+# $1 の入れ方の手がかりを出す（改行は付けない）。
+install_hint() {
+	case "$1" in
+	python3)
+		pick "macOS: xcode-select --install か brew install python / Debian・Ubuntu: sudo apt-get install python3 / Fedora: sudo dnf install python3 / Alpine: apk add python3" \
+			"macOS: xcode-select --install or brew install python / Debian, Ubuntu: sudo apt-get install python3 / Fedora: sudo dnf install python3 / Alpine: apk add python3"
+		;;
+	curl)
+		pick "macOS: 標準で入っています（無ければ brew install curl）/ Debian・Ubuntu: sudo apt-get install curl / Fedora: sudo dnf install curl / Alpine: apk add curl" \
+			"macOS: ships with the OS (otherwise brew install curl) / Debian, Ubuntu: sudo apt-get install curl / Fedora: sudo dnf install curl / Alpine: apk add curl"
+		;;
+	git)
+		pick "macOS: xcode-select --install か brew install git / Debian・Ubuntu: sudo apt-get install git / Fedora: sudo dnf install git / Alpine: apk add git" \
+			"macOS: xcode-select --install or brew install git / Debian, Ubuntu: sudo apt-get install git / Fedora: sudo dnf install git / Alpine: apk add git"
+		;;
+	cmp | diff)
+		pick "Debian・Ubuntu: sudo apt-get install diffutils / Fedora: sudo dnf install diffutils / Alpine: apk add diffutils" \
+			"Debian, Ubuntu: sudo apt-get install diffutils / Fedora: sudo dnf install diffutils / Alpine: apk add diffutils"
+		;;
+	*)
+		pick "POSIX の基本コマンドです。PATH にあるかを確かめてください（Debian・Ubuntu: coreutils / findutils / sed / gawk か mawk）" \
+			"A basic POSIX command. Check that it is on PATH (Debian, Ubuntu: coreutils / findutils / sed / gawk or mawk)"
+		;;
+	esac
+}
+
+# $1 = 必須のコマンド（空白区切り）, $2 = あれば使うコマンド（空白区切り）。
+# 足りないものを**全部まとめて**出す。必須が1つでも欠けていれば 1 を返す（止まるかは呼び出し側）。
+check_commands() {
+	_cc_missing=""
+	for _cc_c in $1; do
+		command -v "$_cc_c" >/dev/null 2>&1 || _cc_missing="${_cc_missing} ${_cc_c}"
+	done
+	_cc_rec=""
+	for _cc_c in ${2:-}; do
+		command -v "$_cc_c" >/dev/null 2>&1 || _cc_rec="${_cc_rec} ${_cc_c}"
+	done
+	if [ -n "$_cc_rec" ]; then
+		{
+			printf '\n[!] %s\n' "$(pick "次のコマンドが見つかりません。無くても進めますが、あったほうが確実です:" \
+				"These commands were not found. You can go on without them, but it is safer to have them:")"
+			for _cc_c in $_cc_rec; do
+				printf '    - %s: %s\n' "$_cc_c" "$(install_hint "$_cc_c")"
+			done
+			case "${_cc_rec} " in
+			*" git "*)
+				printf '      %s\n' "$(pick "git が無いと Git 管理下かを判定できず、未追跡のファイルの確認も飛ばします。" \
+					"Without git, the script cannot tell whether the project is under Git, and skips the check for untracked files.")"
+				;;
+			esac
+		} >&2
+	fi
+	[ -z "$_cc_missing" ] && return 0
+	{
+		printf '\n[x] %s\n' "$(pick "このコマンドに必要なものが足りません。次を入れてから、同じコマンドをやり直してください:" \
+			"Some commands this needs are missing. Install the following, then run the same command again:")"
+		for _cc_c in $_cc_missing; do
+			printf '    - %s: %s\n' "$_cc_c" "$(install_hint "$_cc_c")"
+		done
+		printf '    %s\n' "$(pick "入れたのに見つからない場合は、PATH を確かめてください（いまの PATH: ${PATH}）。" \
+			"If you installed them and they are still not found, check PATH (current PATH: ${PATH}).")"
+	} >&2
+	return 1
+}
+
+# 必須のコマンドが無ければ、足りないものを全部並べて止まる。
+require_commands() {
+	check_commands "$1" "${2:-}" || exit 1
+}
+
 # ---------------------------------------------------------------- 共通
 
 # このスクリプト自身が置かれているディレクトリ。
@@ -228,12 +468,48 @@ resolve_workdir() {
 }
 
 require_workdir() {
-	WORKDIR=$(resolve_workdir) || die "作業用ディレクトリが分かりません。先に 'sh katachi-install.sh init' を実行し、以降は <作業用ディレクトリ>/katachi-install.sh を使ってください。"
+	WORKDIR=$(resolve_workdir) || die "作業用ディレクトリが分かりません。先に 'sh katachi-install.sh init' を実行し、以降は <作業用ディレクトリ>/katachi-install.sh を使ってください。" \
+		"Cannot find the working directory. Run 'sh katachi-install.sh init' first, and from then on use <working directory>/katachi-install.sh."
 	MANIFEST="$WORKDIR/cache/MANIFEST"
-	# init が記録した言語を読む。環境変数が明示されていればそちらを優先する。
-	if [ -f "$WORKDIR/cache/lang" ] && [ -z "${KATACHI_LANG_EXPLICIT:-}" ]; then
-		KATACHI_LANG=$(cat "$WORKDIR/cache/lang")
+}
+
+# 言語を決める。スクリプトの出力もこれに従うので、サブコマンドを振り分ける前に1回だけ呼ぶ。
+#   init:   --lang（cmd_init が上書きする）> 環境変数 KATACHI_LANG > en（サイトの既定ロケール）
+#   その他: --lang（受け付けるものだけ）> init が作業用ディレクトリに記録した言語
+#           > 環境変数 KATACHI_LANG > ja
+# init の既定を en にしているのは、チェックリストとレポートの既定に合わせるため（手順書が
+# 「省略すると英語」と書いている）。init は必ず記録するので、init 後のコマンドが ja の既定に
+# 落ちることはない。落ちるのは init の前に --help などを呼んだときだけ。
+resolve_lang() {
+	if [ "${1:-}" = "init" ]; then
+		KATACHI_LANG="${KATACHI_LANG:-en}"
+	else
+		_rl_wd=$(resolve_workdir) || _rl_wd=""
+		if [ -n "$_rl_wd" ] && [ -s "$_rl_wd/cache/lang" ]; then
+			KATACHI_LANG=$(cat "$_rl_wd/cache/lang")
+		fi
+		KATACHI_LANG="${KATACHI_LANG:-ja}"
 	fi
+	# 記録や環境変数が壊れていても、出力が読めなくならないように ja に倒す。
+	# init の --lang の誤りは cmd_init が止める。
+	case "$KATACHI_LANG" in
+	en | ja) ;;
+	*) KATACHI_LANG="ja" ;;
+	esac
+	# 埋め込みの python（CHECK_PY など）も同じ言語で出すために渡す。
+	export KATACHI_LANG
+}
+
+# --lang の値を確かめて KATACHI_LANG に入れる。init と doctor が使う。
+set_lang_option() {
+	case "${1:-}" in
+	en | ja)
+		KATACHI_LANG="$1"
+		KATACHI_LANG_EXPLICIT=yes
+		export KATACHI_LANG
+		;;
+	*) die "--lang は en か ja です（指定されたのは '${1:-}'）。" "--lang must be en or ja (got '${1:-}')." ;;
+	esac
 }
 
 # 取得したものを1行ずつ記録する。あとから人間が何を落としたのか追えるように。
@@ -264,7 +540,8 @@ require_gradle_root() {
 		SETTINGS_FILE="settings.gradle"
 		SETTINGS_DSL="groovy"
 	else
-		die "settings.gradle.kts / settings.gradle が見つかりません。Gradle のルートディレクトリで実行してください（いまいるのは $(file_uri "$PWD")）。"
+		die "settings.gradle.kts / settings.gradle が見つかりません。Gradle のルートディレクトリで実行してください（いまいるのは $(file_uri "$PWD")）。" \
+			"settings.gradle.kts / settings.gradle not found. Run this in the Gradle root directory (you are in $(file_uri "$PWD"))."
 	fi
 }
 
@@ -335,7 +612,9 @@ require_plugin_version() {
 	if [ "$_pv_maj" -lt "$KATACHI_MIN_MAJOR" ] ||
 		{ [ "$_pv_maj" -eq "$KATACHI_MIN_MAJOR" ] && [ "$_pv_min" -lt "$KATACHI_MIN_MINOR" ]; }; then
 		die "katachi ${1} には Gradle plugin（${KATACHI_PLUGIN_ID}）がありません。このスクリプトが作る構成は Gradle plugin を使うため、katachi ${KATACHI_MIN_MAJOR}.${KATACHI_MIN_MINOR}.0 以降が必要です。
-    ${KATACHI_RELEASES_PAGE} で ${KATACHI_MIN_MAJOR}.${KATACHI_MIN_MINOR}.0 以降が出ているかを確かめ、--katachi <version> で指定してやり直してください。"
+    ${KATACHI_RELEASES_PAGE} で ${KATACHI_MIN_MAJOR}.${KATACHI_MIN_MINOR}.0 以降が出ているかを確かめ、--katachi <version> で指定してやり直してください。" \
+			"katachi ${1} has no Gradle plugin (${KATACHI_PLUGIN_ID}). The setup this script creates uses the Gradle plugin, so it needs katachi ${KATACHI_MIN_MAJOR}.${KATACHI_MIN_MINOR}.0 or later.
+    Check ${KATACHI_RELEASES_PAGE} for ${KATACHI_MIN_MAJOR}.${KATACHI_MIN_MINOR}.0 or later, and run again with --katachi <version>."
 	fi
 }
 
@@ -394,14 +673,17 @@ detect_kotlin_version() {
 
 # $1 を $2 にダウンロードする。
 download() {
-	command -v curl >/dev/null 2>&1 || die "curl が見つかりません。"
+	require_commands curl
 	# 接続は 10 秒で見切り、転送は 120 秒まで待つ。一過性の失敗は2回まで自動で
 	# やり直す。ここで止まると手順全体が進まないので、バージョン取得より長い。
 	curl -fsSL --connect-timeout 10 --max-time 120 --retry 2 --retry-delay 2 \
 		-o "$2" "$1" ||
-		die "ダウンロードに失敗しました: $1
+		die "ダウンロードに失敗しました: ${1}
   ネットワークかプロキシの設定を確認してください。
-  手動で取得する場合は、このファイルを $(file_uri "$2") に置いてから同じコマンドをやり直してください。"
+  手動で取得する場合は、このファイルを $(file_uri "$2") に置いてから同じコマンドをやり直してください。" \
+			"Download failed: ${1}
+  Check your network or proxy settings.
+  To fetch it by hand, put the file at $(file_uri "$2") and run the same command again."
 }
 
 # ---------------------------------------------------------------- init
@@ -416,11 +698,13 @@ cmd_init() {
 	while [ $# -gt 0 ]; do
 		case "$1" in
 		--workdir)
-			init_workdir="${2:?--workdir に値がありません}"
+			need_value "$1" "${2:-}"
+			init_workdir="$2"
 			shift 2
 			;;
 		--katachi)
-			init_version="${2:?--katachi に値がありません}"
+			need_value "$1" "${2:-}"
+			init_version="$2"
 			shift 2
 			;;
 		--offline)
@@ -428,8 +712,8 @@ cmd_init() {
 			shift
 			;;
 		--lang)
-			KATACHI_LANG="${2:?--lang に値がありません}"
-			KATACHI_LANG_EXPLICIT=yes
+			need_value "$1" "${2:-}"
+			set_lang_option "$2"
 			shift 2
 			;;
 		--force)
@@ -440,16 +724,27 @@ cmd_init() {
 			usage
 			return 0
 			;;
-		*) die "init: 知らないオプションです: $1" ;;
+		*) die "init: 知らないオプションです: ${1}" "init: unknown option: ${1}" ;;
 		esac
 	done
+
+	# 要るコマンドを、ネットワークにもファイルにも触る前に確かめる。足りないものは
+	# まとめて1回で言う。python3 は init 自身もチェックリストの初期化に使い、以降の
+	# check / add / verify / summary も使うので、--offline でも要る。
+	if [ "$init_offline" = "yes" ]; then
+		require_commands "$REQ_INIT_OFFLINE" "$REC_ALL"
+	else
+		require_commands "$REQ_INIT" "$REC_ALL"
+	fi
 
 	require_gradle_root
 	project_root=$(pwd)
 
-	say "katachi のインストールを開始します"
-	note "プロジェクトルート: $(file_uri "$project_root")"
-	note "settings:          $(file_uri "$SETTINGS_FILE")"
+	say "katachi のインストールを開始します" "Starting the katachi installation"
+	note "プロジェクトルート: $(file_uri "$project_root")" \
+		"Project root:       $(file_uri "$project_root")"
+	note "settings:          $(file_uri "$SETTINGS_FILE")" \
+		"settings:           $(file_uri "$SETTINGS_FILE")"
 
 	# katachi のバージョン。plugin の無い版なら何も作らないうちに止まる。
 	if [ -z "$init_version" ] && [ "$init_offline" = "no" ]; then
@@ -457,22 +752,26 @@ cmd_init() {
 		init_version_source="latest"
 	fi
 	if [ -z "$init_version" ]; then
-		warn "katachi の最新バージョンを取得できませんでした。$KATACHI_RELEASES_PAGE を見て --katachi で指定してください。"
+		warn "katachi の最新バージョンを取得できませんでした。${KATACHI_RELEASES_PAGE} を見て --katachi で指定してください。" \
+			"Could not get the latest katachi version. Look it up at ${KATACHI_RELEASES_PAGE} and pass it with --katachi."
 		init_version="UNKNOWN"
 	else
 		require_plugin_version "$init_version" "$init_version_source"
-		note "katachi:            $init_version"
+		note "katachi:            ${init_version}"
 	fi
 	if maven_local_enabled; then
-		note "mavenLocal:         有効（開発者向け。scaffold が mavenLocal() を足す）"
+		note "mavenLocal:         有効（開発者向け。scaffold が mavenLocal() を足す）" \
+			"mavenLocal:         on (for developers; scaffold adds mavenLocal())"
 	fi
 
 	if is_git_repo; then
 		git_state="yes"
-		note "Git:               管理下にあります"
+		note "Git:               管理下にあります" \
+			"Git:                under version control"
 	else
 		git_state="no"
-		warn "Git で管理されていません。失敗したときに変更を戻せないので、先にコミットするかバックアップを取ってください。"
+		warn "Git で管理されていません。失敗したときに変更を戻せないので、先にコミットするかバックアップを取ってください。" \
+			"The project is not under Git. You cannot undo the changes if something goes wrong, so commit or back up first."
 	fi
 
 	# 作業用ディレクトリ。ignore されている置き場があればそこ、無ければ tmp/。
@@ -493,7 +792,8 @@ cmd_init() {
 	# 呼び出す場所に縛られる）。判定には指定どおりの init_workdir を使い続ける。
 	init_workdir_abs=$(CDPATH='' cd -- "$init_workdir" && pwd)
 	init_workdir_uri=$(file_uri "$init_workdir_abs")
-	note "作業用ディレクトリ:  ${init_workdir_uri}"
+	note "作業用ディレクトリ:  ${init_workdir_uri}" \
+		"Working directory:  ${init_workdir_uri}"
 
 	# katachi は「未追跡だが ignore もされていない」ファイルも検査する
 	# （git ls-files --others --exclude-standard 相当）。作業用ディレクトリが
@@ -503,7 +803,11 @@ cmd_init() {
 		warn "${init_workdir_uri} は git から見えています。このままだとステップ4で必ず失敗します。
     katachi は未追跡でも ignore されていないファイルを検査するため、この作業用ディレクトリ
     自体が [UnexpectedFile] になります。ユーザに .gitignore への追加を提案してください
-    （勝手に書き換えないこと）。"
+    （勝手に書き換えないこと）。" \
+			"${init_workdir_uri} is visible to git. As it is, step 4 will fail for sure.
+    katachi checks untracked files that are not ignored, so this working directory itself
+    becomes an [UnexpectedFile]. Suggest to the user that it be added to .gitignore
+    (do not edit .gitignore yourself)."
 	fi
 
 	# 作業用ディレクトリ以外にも、未追跡で ignore もされていないものがあれば同じ問題を起こす。
@@ -526,7 +830,9 @@ cmd_init() {
 		)
 		if [ -n "$_untracked" ]; then
 			warn "未追跡で ignore もされていないものがあります。これらもステップ4で [UnexpectedFile] になります。
-    宣言するか、.gitignore に足すかをユーザに確認してください。"
+    宣言するか、.gitignore に足すかをユーザに確認してください。" \
+				"There are untracked files that are not ignored. These also become [UnexpectedFile] in step 4.
+    Ask the user whether to declare them or add them to .gitignore."
 			printf '%s\n' "$_untracked" | while IFS= read -r _u; do
 			printf '       %s\n' "$(file_uri "$_u")"
 		done
@@ -535,22 +841,19 @@ cmd_init() {
 
 	kotlin_version=$(detect_kotlin_version)
 	if [ -n "$kotlin_version" ]; then
-		note "Kotlin:             ${kotlin_version}（プロジェクトから検出）"
+		note "Kotlin:             ${kotlin_version}（プロジェクトから検出）" \
+			"Kotlin:             ${kotlin_version} (detected from the project)"
 	else
-		warn "Kotlin のバージョンを検出できませんでした。scaffold に --kotlin で渡してください。"
+		warn "Kotlin のバージョンを検出できませんでした。scaffold に --kotlin で渡してください。" \
+			"Could not detect the Kotlin version. Pass it to scaffold with --kotlin."
 	fi
 
 	# 以降このスクリプトは作業用ディレクトリから使う。ここに自分を置いておけば、
 	# セッションが切れても同じものを使い続けられる。
-	case "$KATACHI_LANG" in
-	en | ja) ;;
-	*) die "--lang は en か ja です（指定されたのは '${KATACHI_LANG}'）" ;;
-	esac
-
 	MANIFEST="$init_workdir/cache/MANIFEST"
 	mkdir -p "$init_workdir/cache"
 	install_self "$init_workdir"
-	# 以降のコマンドが同じ言語を使えるように記録する。
+	# 以降のコマンドが同じ言語を使えるように記録する（出力の言語もこれに従う）。
 	printf '%s' "$KATACHI_LANG" >"$init_workdir/cache/lang"
 	# KATACHI_MAVEN_LOCAL も同じく記録し、scaffold で付け忘れても効くようにする。
 	case "${KATACHI_MAVEN_LOCAL:-}" in
@@ -566,7 +869,8 @@ cmd_init() {
 	[ -s "$init_workdir/cache/version" ] && _iv_recorded=$(cat "$init_workdir/cache/version")
 	if [ "$init_version_source" = "latest" ] && [ -n "$_iv_recorded" ] && [ "$init_force" = "no" ]; then
 		if [ "$_iv_recorded" != "$init_version" ]; then
-			note "                    → 前回の init が記録した ${_iv_recorded} を使い続けます（最新は ${init_version}。変えるなら --katachi を付けて実行し直す）"
+			note "                    → 前回の init が記録した ${_iv_recorded} を使い続けます（最新は ${init_version}。変えるなら --katachi を付けて実行し直す）" \
+				"                    → keeping ${_iv_recorded}, recorded by the previous init (the latest is ${init_version}; to change it, run again with --katachi)"
 		fi
 		init_version="$_iv_recorded"
 	elif [ "$init_version" = "UNKNOWN" ]; then
@@ -582,7 +886,8 @@ cmd_init() {
 		_rp="$init_workdir/project-code-base-report.html"
 
 		if [ -s "$_cl" ] && [ "$init_force" = "no" ]; then
-			note "すでにあるので残しました: $(file_uri "$_cl")"
+			note "すでにあるので残しました: $(file_uri "$_cl")" \
+				"Kept (already there): $(file_uri "$_cl")"
 			# 版だけは今回の値にそろえる（--katachi で変えた場合）。記入済みの欄は触らない。
 			[ "$init_version" = "UNKNOWN" ] || update_checklist_meta "$_cl" version "$init_version"
 		else
@@ -590,20 +895,24 @@ cmd_init() {
 			write_checklist_data "$_cl" \
 				"$init_workdir" "$init_version" "$project_root" \
 				"${kotlin_version:-}" "$git_state"
-			note "配置しました:        $(file_uri "$_cl")"
+			note "配置しました:        $(file_uri "$_cl")" \
+				"Placed:             $(file_uri "$_cl")"
 		fi
 
 		if [ -s "$_rp" ] && [ "$init_force" = "no" ]; then
-			note "すでにあるので残しました: $(file_uri "$_rp")"
+			note "すでにあるので残しました: $(file_uri "$_rp")" \
+				"Kept (already there): $(file_uri "$_rp")"
 		else
 			fetch_once "$KATACHI_DOCS/install/$KATACHI_LANG/project-code-base-report-template.html" "$_rp" yes
 			write_report_data "$_rp" "$project_root"
-			note "配置しました:        $(file_uri "$_rp")"
+			note "配置しました:        $(file_uri "$_rp")" \
+				"Placed:             $(file_uri "$_rp")"
 		fi
 	fi
 
 	say ""
-	say "== init の結果 =========================================="
+	say "== init の結果 ==========================================" \
+		"== init result ========================================="
 	say "KATACHI_WORKDIR=$init_workdir_abs"
 	say "KATACHI_VERSION=$init_version"
 	say "KATACHI_PROJECT_ROOT=$project_root"
@@ -614,9 +923,11 @@ cmd_init() {
 	say "KATACHI_LANG=$KATACHI_LANG"
 	say "========================================================"
 	say ""
-	say "以降は ${init_workdir_uri}/katachi-install.sh を使ってください（再ダウンロードは不要です）。"
+	say "以降は ${init_workdir_uri}/katachi-install.sh を使ってください（再ダウンロードは不要です）。" \
+		"From now on, use ${init_workdir_uri}/katachi-install.sh (no need to download it again)."
 	say ""
-	say "次: プロジェクトを解析して ${init_workdir_uri}/project-code-base-report.html を埋めてください。"
+	say "次: プロジェクトを解析して ${init_workdir_uri}/project-code-base-report.html を埋めてください。" \
+		"Next: analyze the project and fill in ${init_workdir_uri}/project-code-base-report.html."
 }
 
 # このスクリプト自身を作業用ディレクトリへ置く。以降のステップはそちらを使う。
@@ -627,6 +938,22 @@ install_self() {
 	_there=$(cd "$_wd" && pwd)
 	[ "$_here" = "$_there" ] && return 0
 	cp "$0" "$_wd/katachi-install.sh" && chmod +x "$_wd/katachi-install.sh"
+}
+
+# cmd_data を、スクリプトごと終わらせずに呼ぶ。成功なら 0。
+#
+# cmd_data は失敗すると die（exit 1）する。if の条件に置いても exit はスクリプト全体を
+# 終わらせるので、`if cmd_data ... >/dev/null 2>&1` と書くと、else の警告に届かないまま
+# 何も言わずに止まる（python3 の無い環境で init が黙って exit 1 していた）。
+# サブシェルで呼び、失敗の理由（stderr）は DATA_ERR に改行つきで入れて警告に添える。
+data_quietly() {
+	DATA_ERR=""
+	if _dq_err=$( (cmd_data "$@" >/dev/null) 2>&1); then
+		return 0
+	fi
+	[ -n "$_dq_err" ] && DATA_ERR="
+${_dq_err}"
+	return 1
 }
 
 # JSON の文字列値として安全な形に直す。
@@ -680,11 +1007,12 @@ write_checklist_data() {
 		printf '}\n'
 	} >"$_data"
 
-	if cmd_data merge "$_file" "$_data" --id checklist >/dev/null 2>&1; then
+	if data_quietly merge "$_file" "$_data" --id checklist; then
 		rm -f "$_data" "$_file.bak"
 	else
 		rm -f "$_data"
-		warn "チェックリストのメタ欄を初期化できませんでした（python3 か jq が要ります）。$(file_uri "$_file") を直接確認してください。"
+		warn "チェックリストのメタ欄を初期化できませんでした。$(file_uri "$_file") を直接確認してください。${DATA_ERR}" \
+			"Could not initialize the meta fields of the check list. Check $(file_uri "$_file") directly.${DATA_ERR}"
 	fi
 }
 
@@ -696,11 +1024,12 @@ update_checklist_meta() {
 	[ -f "$1" ] && [ -n "$3" ] || return 0
 	_um_data="$1.meta.$$"
 	printf '{\n  "meta": {\n    "%s": %s\n  }\n}\n' "$2" "$(json_value "$3")" >"$_um_data"
-	if cmd_data merge "$1" "$_um_data" --id checklist >/dev/null 2>&1; then
+	if data_quietly merge "$1" "$_um_data" --id checklist; then
 		rm -f "$_um_data" "$1.bak"
 	else
 		rm -f "$_um_data"
-		warn "チェックリストの meta.$2 を ${3} にできませんでした（python3 か jq が要ります）。data merge で直してください。"
+		warn "チェックリストの meta.${2} を ${3} にできませんでした。data merge で直してください。${DATA_ERR}" \
+			"Could not set meta.${2} of the check list to ${3}. Fix it with data merge.${DATA_ERR}"
 	fi
 }
 
@@ -741,11 +1070,12 @@ write_report_data() {
 		printf '}\n'
 	} >"$_data"
 
-	if cmd_data merge "$_file" "$_data" --id report >/dev/null 2>&1; then
+	if data_quietly merge "$_file" "$_data" --id report; then
 		rm -f "$_data" "$_file.bak"
 	else
 		rm -f "$_data"
-		warn "レポートのメタ欄を初期化できませんでした。$(file_uri "$_file") を直接確認してください。"
+		warn "レポートのメタ欄を初期化できませんでした。$(file_uri "$_file") を直接確認してください。${DATA_ERR}" \
+			"Could not initialize the meta fields of the report. Check $(file_uri "$_file") directly.${DATA_ERR}"
 	fi
 }
 
@@ -762,15 +1092,18 @@ cmd_scaffold() {
 	while [ $# -gt 0 ]; do
 		case "$1" in
 		--package)
-			sc_package="${2:?--package に値がありません}"
+			need_value "$1" "${2:-}"
+			sc_package="$2"
 			shift 2
 			;;
 		--katachi)
-			sc_version="${2:?--katachi に値がありません}"
+			need_value "$1" "${2:-}"
+			sc_version="$2"
 			shift 2
 			;;
 		--kotlin)
-			sc_kotlin="${2:?--kotlin に値がありません}"
+			need_value "$1" "${2:-}"
+			sc_kotlin="$2"
 			shift 2
 			;;
 		--no-konsist)
@@ -789,22 +1122,23 @@ cmd_scaffold() {
 			usage
 			return 0
 			;;
-		*) die "scaffold: 知らないオプションです: $1" ;;
+		*) die "scaffold: 知らないオプションです: ${1}" "scaffold: unknown option: ${1}" ;;
 		esac
 	done
 
-	[ -n "$sc_package" ] || die "--package が必要です（例: --package com.example.app）"
+	require_commands "$REQ_SCAFFOLD"
+
+	[ -n "$sc_package" ] || die "--package が必要です（例: --package com.example.app）" \
+		"--package is required (for example: --package com.example.app)"
 	printf '%s' "$sc_package" | grep -qE '^[a-z][a-zA-Z0-9_]*(\.[a-z][a-zA-Z0-9_]*)*$' ||
-		die "--package がパッケージ名として不正です: $sc_package"
+		die "--package がパッケージ名として不正です: ${sc_package}" \
+			"--package is not a valid package name: ${sc_package}"
 
 	require_gradle_root
 	resolve_root_build_file
 
-	# 生成物のコメントとテスト名は init が記録した言語に合わせる。scaffold は
-	# 作業用ディレクトリに置かれたこのスクリプトから呼ばれるので、記録を読める。
-	if [ -z "${KATACHI_LANG_EXPLICIT:-}" ] && _sc_wd=$(resolve_workdir) && [ -f "$_sc_wd/cache/lang" ]; then
-		KATACHI_LANG=$(cat "$_sc_wd/cache/lang")
-	fi
+	# 生成物のコメントとテスト名も KATACHI_LANG に従う。scaffold は作業用ディレクトリに
+	# 置かれたこのスクリプトから呼ばれるので、resolve_lang が init の記録を読んでいる。
 
 	# katachi の版は --katachi > init が記録した版 > GitHub の最新 の順に決める。
 	sc_version_source="explicit"
@@ -813,11 +1147,14 @@ cmd_scaffold() {
 		sc_version_source="init"
 	fi
 	if [ -z "$sc_version" ]; then
+		# 版を GitHub から取るときだけ curl が要る。
+		require_commands curl
 		sc_version=$(fetch_latest_version)
 		sc_version_source="latest"
 	fi
 	[ -n "$sc_version" ] ||
-		die "katachi のバージョンが分かりません。$KATACHI_RELEASES_PAGE を見て --katachi で指定してください。"
+		die "katachi のバージョンが分かりません。${KATACHI_RELEASES_PAGE} を見て --katachi で指定してください。" \
+			"Cannot tell the katachi version. Look it up at ${KATACHI_RELEASES_PAGE} and pass it with --katachi."
 	require_plugin_version "$sc_version" "$sc_version_source"
 	if maven_local_enabled; then
 		sc_maven_local="yes"
@@ -827,19 +1164,25 @@ cmd_scaffold() {
 
 	[ -n "$sc_kotlin" ] || sc_kotlin=$(detect_kotlin_version)
 	[ -n "$sc_kotlin" ] ||
-		die "Kotlin のバージョンを検出できませんでした。--kotlin で指定してください。"
+		die "Kotlin のバージョンを検出できませんでした。--kotlin で指定してください。" \
+			"Could not detect the Kotlin version. Pass it with --kotlin."
 
 	sc_mm=$(kotlin_major_minor "$sc_kotlin")
-	[ -n "$sc_mm" ] || die "Kotlin のバージョンを読み取れませんでした: $sc_kotlin"
+	[ -n "$sc_mm" ] || die "Kotlin のバージョンを読み取れませんでした: ${sc_kotlin}" \
+		"Could not read the Kotlin version: ${sc_kotlin}"
 	sc_kmaj=${sc_mm% *}
 	sc_kmin=${sc_mm#* }
 
 	if [ "$sc_kmaj" -lt "$KOTLIN_MIN_MAJOR" ] ||
 		{ [ "$sc_kmaj" -eq "$KOTLIN_MIN_MAJOR" ] && [ "$sc_kmin" -lt "$KOTLIN_MIN_MINOR" ]; }; then
-		die "katachi $sc_version は Kotlin ${KOTLIN_MIN_MAJOR}.${KOTLIN_MIN_MINOR} 以降が必要です（このプロジェクトは ${sc_kotlin}）。
+		die "katachi ${sc_version} は Kotlin ${KOTLIN_MIN_MAJOR}.${KOTLIN_MIN_MINOR} 以降が必要です（このプロジェクトは ${sc_kotlin}）。
     それより古いコンパイラは katachi の metadata を読めず、architecture などの
     シンボルがすべて Unresolved reference になります。プロジェクトの Kotlin を
-    上げてから、もう一度実行してください。"
+    上げてから、もう一度実行してください。" \
+			"katachi ${sc_version} needs Kotlin ${KOTLIN_MIN_MAJOR}.${KOTLIN_MIN_MINOR} or later (this project uses ${sc_kotlin}).
+    Older compilers cannot read katachi's metadata, and every symbol such as
+    architecture becomes an Unresolved reference. Upgrade the project's Kotlin,
+    then run this again."
 	fi
 
 	# context parameters は 2.4 で言語に入った。2.2 / 2.3 系では呼ぶ側に
@@ -853,7 +1196,8 @@ cmd_scaffold() {
 	fi
 
 	if [ -e "$MODULE_DIR" ] && [ "$sc_force" = "no" ]; then
-		die "$(file_uri "$MODULE_DIR")/ がすでに存在します。上書きするなら --force を付けてください。"
+		die "$(file_uri "$MODULE_DIR")/ がすでに存在します。上書きするなら --force を付けてください。" \
+			"$(file_uri "$MODULE_DIR")/ already exists. Add --force to overwrite it."
 	fi
 
 	pkg_path=$(printf '%s' "$sc_package" | tr '.' '/')/test/architecture
@@ -893,28 +1237,39 @@ cmd_scaffold() {
 		settings_needs_plugin_repos="no"
 	fi
 
-	say "作成する内容"
-	note "パッケージ:   $sc_package"
+	say "作成する内容" "What will be created"
+	note "パッケージ:   ${sc_package}" \
+		"Package:      ${sc_package}"
 	case "$sc_version_source" in
-	init) note "katachi:      ${sc_version}（init が記録した版）" ;;
-	latest) note "katachi:      ${sc_version}（GitHub の最新リリース）" ;;
-	*) note "katachi:      $sc_version" ;;
+	init) note "katachi:      ${sc_version}（init が記録した版）" \
+		"katachi:      ${sc_version} (recorded by init)" ;;
+	latest) note "katachi:      ${sc_version}（GitHub の最新リリース）" \
+		"katachi:      ${sc_version} (the latest release on GitHub)" ;;
+	*) note "katachi:      ${sc_version}" ;;
 	esac
-	note "Kotlin:       $sc_kotlin"
-	note "konsist:      $sc_konsist"
-	note "モジュール:   $(file_uri "$MODULE_DIR")/"
-	note "ソース:       $(file_uri "$src_dir")/"
-	note "ルートに追加: $root_needs_plugin ($(file_uri "$ROOT_BUILD_FILE"))"
+	note "Kotlin:       ${sc_kotlin}"
+	note "konsist:      ${sc_konsist}"
+	note "モジュール:   $(file_uri "$MODULE_DIR")/" \
+		"Module:       $(file_uri "$MODULE_DIR")/"
+	note "ソース:       $(file_uri "$src_dir")/" \
+		"Sources:      $(file_uri "$src_dir")/"
+	note "ルートに追加: ${root_needs_plugin} ($(file_uri "$ROOT_BUILD_FILE"))" \
+		"Add to root:  ${root_needs_plugin} ($(file_uri "$ROOT_BUILD_FILE"))"
 	[ "$kotlin_placement" = "module" ] &&
-		note "              サブプロジェクトが Kotlin プラグインを版付きで宣言しているため、ルートには足さず :$MODULE_DIR に版を書きます
-              Gradle が「The Kotlin Gradle plugin was loaded multiple times ...」と警告しますが、この構成では想定どおりです"
-	note "include 追加: $settings_needs_include ($(file_uri "$SETTINGS_FILE"))"
-	note "pluginManagement に追加: ${settings_needs_plugin_repos}${plugin_repos_missing:+（${plugin_repos_missing}）}"
-	[ "$sc_maven_local" = "yes" ] && note "mavenLocal:   有効（開発者向け）"
+		note "              サブプロジェクトが Kotlin プラグインを版付きで宣言しているため、ルートには足さず :${MODULE_DIR} に版を書きます
+              Gradle が「The Kotlin Gradle plugin was loaded multiple times ...」と警告しますが、この構成では想定どおりです" \
+			"              A subproject declares the Kotlin plugin with a version, so it is not added to the root; the version goes into :${MODULE_DIR}
+              Gradle warns \"The Kotlin Gradle plugin was loaded multiple times ...\"; that is expected with this setup"
+	note "include 追加: ${settings_needs_include} ($(file_uri "$SETTINGS_FILE"))" \
+		"Add include:  ${settings_needs_include} ($(file_uri "$SETTINGS_FILE"))"
+	note "pluginManagement に追加: ${settings_needs_plugin_repos}${plugin_repos_missing:+（${plugin_repos_missing}）}" \
+		"Add to pluginManagement: ${settings_needs_plugin_repos}${plugin_repos_missing:+ (${plugin_repos_missing})}"
+	[ "$sc_maven_local" = "yes" ] && note "mavenLocal:   有効（開発者向け）" \
+		"mavenLocal:   on (for developers)"
 
 	if [ "$sc_dry" = "yes" ]; then
 		say ""
-		say "--dry-run のため何も書きませんでした。"
+		say "--dry-run のため何も書きませんでした。" "Nothing was written (--dry-run)."
 		return 0
 	fi
 
@@ -923,7 +1278,8 @@ cmd_scaffold() {
 	# **--force でも定義は上書きしない。** ここには人とエージェントが書いた
 	# architecture { } が入っている。やり直しで消えると取り返しがつかない。
 	if [ -s "$src_dir/ProjectArchitecture.kt" ]; then
-		note "すでにあるので残しました: $(file_uri "$src_dir/ProjectArchitecture.kt")"
+		note "すでにあるので残しました: $(file_uri "$src_dir/ProjectArchitecture.kt")" \
+			"Kept (already there): $(file_uri "$src_dir/ProjectArchitecture.kt")"
 	else
 		write_architecture_kt "$sc_package" "$src_dir"
 	fi
@@ -939,52 +1295,70 @@ cmd_scaffold() {
 	[ "$sc_maven_local" = "yes" ] && add_dependency_maven_local
 
 	say ""
-	say "== 作成しました ========================================"
+	say "== 作成しました ========================================" \
+		"== Created ============================================="
 	sc_root_build_uri=$(file_uri "$ROOT_BUILD_FILE")
 	sc_settings_uri=$(file_uri "$SETTINGS_FILE")
 	say "$(file_uri "$MODULE_DIR/build.gradle.kts")"
 	say "$(file_uri "$src_dir/ProjectArchitecture.kt")"
 	say "$(file_uri "$src_dir/ProjectArchitectureTest.kt")"
-	[ "$root_needs_plugin" = "yes" ] && say "${sc_root_build_uri} （Kotlin JVM プラグインを apply false で追加）"
+	[ "$root_needs_plugin" = "yes" ] && say "${sc_root_build_uri} （Kotlin JVM プラグインを apply false で追加）" \
+		"${sc_root_build_uri} (added the Kotlin JVM plugin with apply false)"
 	[ "$settings_needs_include" = "yes" ] && [ -z "$SETTINGS_INCLUDE_MANUAL" ] &&
-		say "${sc_settings_uri} （include を追加）"
+		say "${sc_settings_uri} （include を追加）" \
+			"${sc_settings_uri} (added the include)"
 	[ "$settings_needs_plugin_repos" = "yes" ] && [ -z "$SETTINGS_MANUAL" ] &&
-		say "${sc_settings_uri} （pluginManagement の repositories に ${plugin_repos_missing} を追加）"
+		say "${sc_settings_uri} （pluginManagement の repositories に ${plugin_repos_missing} を追加）" \
+			"${sc_settings_uri} (added ${plugin_repos_missing} to the repositories of pluginManagement)"
 	[ "$DEPENDENCY_MAVEN_LOCAL" = "added" ] &&
-		say "${sc_settings_uri} （dependencyResolutionManagement の repositories に mavenLocal() を追加。開発者向け）"
+		say "${sc_settings_uri} （dependencyResolutionManagement の repositories に mavenLocal() を追加。開発者向け）" \
+			"${sc_settings_uri} (added mavenLocal() to the repositories of dependencyResolutionManagement; for developers)"
 	say "========================================================"
+	sc_fails_until="足すまで ./gradlew :${MODULE_DIR}:test は失敗します。"
+	sc_fails_until_en="./gradlew :${MODULE_DIR}:test fails until you add it."
 	if [ -n "$SETTINGS_MANUAL" ]; then
-		warn "${sc_settings_uri} の pluginManagement { } の形を読み取れなかったため、自動で書き換えませんでした。"
+		warn "${sc_settings_uri} の pluginManagement { } の形を読み取れなかったため、自動で書き換えませんでした。" \
+			"Could not read the shape of pluginManagement { } in ${sc_settings_uri}, so it was not edited automatically."
 		say ""
-		say "${sc_settings_uri} の pluginManagement { repositories { } } に、次を足してください"
-		say "（pluginManagement { } が無ければ、ファイルの先頭に作ってください）。"
+		say "${sc_settings_uri} の pluginManagement { repositories { } } に、次を足してください
+（pluginManagement { } が無ければ、ファイルの先頭に作ってください）。" \
+			"Add the following to pluginManagement { repositories { } } in ${sc_settings_uri}
+(if there is no pluginManagement { }, create one at the top of the file)."
 		say ""
 		say "$SETTINGS_MANUAL"
 		say ""
-		say "katachi の Gradle plugin（${KATACHI_PLUGIN_ID}）は Maven Central にあります。足すまで ./gradlew :$MODULE_DIR:test は失敗します。"
+		say "katachi の Gradle plugin（${KATACHI_PLUGIN_ID}）は Maven Central にあります。${sc_fails_until}" \
+			"katachi's Gradle plugin (${KATACHI_PLUGIN_ID}) is on Maven Central. ${sc_fails_until_en}"
 	fi
 	if [ -n "$SETTINGS_INCLUDE_MANUAL" ]; then
-		warn "${sc_settings_uri} の include 文の終わりを読み取れなかったため、include を自動で足しませんでした。"
+		warn "${sc_settings_uri} の include 文の終わりを読み取れなかったため、include を自動で足しませんでした。" \
+			"Could not find where the include statement in ${sc_settings_uri} ends, so the include was not added automatically."
 		say ""
-		say "次の1行を、${sc_settings_uri} の既存の include 文の後ろ（閉じ括弧より後）に足してください。"
+		say "次の1行を、${sc_settings_uri} の既存の include 文の後ろ（閉じ括弧より後）に足してください。" \
+			"Add the following line after the existing include statement in ${sc_settings_uri} (after its closing parenthesis)."
 		say ""
 		say "$SETTINGS_INCLUDE_MANUAL"
 		say ""
-		say "足すまで ./gradlew :$MODULE_DIR:test は失敗します。"
+		say "$sc_fails_until" "$sc_fails_until_en"
 	fi
 	if [ "$DEPENDENCY_MAVEN_LOCAL" = "manual" ]; then
-		warn "${sc_settings_uri} に dependencyResolutionManagement { repositories { } } が無いため、依存の解決先に mavenLocal() を足せませんでした（開発者向けの KATACHI_MAVEN_LOCAL）。"
-		say "  :$MODULE_DIR が依存を解決している repositories { } に mavenLocal() を手で足してください。"
+		warn "${sc_settings_uri} に dependencyResolutionManagement { repositories { } } が無いため、依存の解決先に mavenLocal() を足せませんでした（開発者向けの KATACHI_MAVEN_LOCAL）。" \
+			"${sc_settings_uri} has no dependencyResolutionManagement { repositories { } }, so mavenLocal() could not be added to where dependencies are resolved (KATACHI_MAVEN_LOCAL, for developers)."
+		say "  :${MODULE_DIR} が依存を解決している repositories { } に mavenLocal() を手で足してください。" \
+			"  Add mavenLocal() by hand to the repositories { } that :${MODULE_DIR} resolves its dependencies from."
 	fi
 	if [ -n "${ROOT_PLUGIN_MANUAL:-}" ]; then
-		warn "${sc_root_build_uri} は buildscript { } を持つため、自動で書き換えませんでした。"
+		warn "${sc_root_build_uri} は buildscript { } を持つため、自動で書き換えませんでした。" \
+			"${sc_root_build_uri} has a buildscript { } block, so it was not edited automatically."
 		say ""
-		say "次の1行を、${sc_root_build_uri} の buildscript { } の**後ろ**にある"
-		say "plugins { } の中に足してください（plugins { } が無ければ作ってください）。"
+		say "次の1行を、${sc_root_build_uri} の buildscript { } の**後ろ**にある
+plugins { } の中に足してください（plugins { } が無ければ作ってください）。" \
+			"Add the following line inside the plugins { } block that comes **after** buildscript { }
+in ${sc_root_build_uri} (create plugins { } if there is none)."
 		say ""
 		say "$ROOT_PLUGIN_MANUAL"
 		say ""
-		say "足すまで ./gradlew :$MODULE_DIR:test は失敗します。"
+		say "$sc_fails_until" "$sc_fails_until_en"
 	fi
 
 	# init が Kotlin を検出できず --kotlin で受け取った場合、チェックリストの meta.kotlin が
@@ -994,9 +1368,12 @@ cmd_scaffold() {
 	fi
 
 	say ""
-	say "次: ./gradlew :$MODULE_DIR:test"
-	say "    architecture { } が空なので、すべてのファイルが Unexpected として報告されて"
-	say "    落ちるのが正常です。Unexpected 以外のエラーが出た場合だけが問題です。"
+	say "次: ./gradlew :${MODULE_DIR}:test
+    architecture { } が空なので、すべてのファイルが Unexpected として報告されて
+    落ちるのが正常です。Unexpected 以外のエラーが出た場合だけが問題です。" \
+		"Next: ./gradlew :${MODULE_DIR}:test
+    architecture { } is empty, so every file is reported as Unexpected and the test
+    fails. That is expected. Only errors other than Unexpected are a problem."
 }
 
 write_module_build() {
@@ -1371,7 +1748,8 @@ EOF
 		fi
 		rm -f "$_tmp"
 		mv "$ROOT_BUILD_FILE.bak" "$ROOT_BUILD_FILE"
-		die "$(file_uri "$ROOT_BUILD_FILE") の書き換えに失敗しました。元に戻しました。"
+		die "$(file_uri "$ROOT_BUILD_FILE") の書き換えに失敗しました。元に戻しました。" \
+			"Failed to edit $(file_uri "$ROOT_BUILD_FILE"). It was restored."
 	fi
 
 	# トップレベルの buildscript { } がある: plugins { } はその後ろに来る必要があり、
@@ -1404,7 +1782,8 @@ EOF
 	fi
 	rm -f "$_tmp"
 	mv "$ROOT_BUILD_FILE.bak" "$ROOT_BUILD_FILE"
-	die "$(file_uri "$ROOT_BUILD_FILE") の書き換えに失敗しました。元に戻しました。"
+	die "$(file_uri "$ROOT_BUILD_FILE") の書き換えに失敗しました。元に戻しました。" \
+		"Failed to edit $(file_uri "$ROOT_BUILD_FILE"). It was restored."
 }
 
 add_settings_include() {
@@ -1601,7 +1980,8 @@ add_plugin_repositories() {
 	else
 		rm -f "$_tmp"
 		mv "$SETTINGS_FILE.bak" "$SETTINGS_FILE"
-		die "$(file_uri "$SETTINGS_FILE") の書き換えに失敗しました。元に戻しました。"
+		die "$(file_uri "$SETTINGS_FILE") の書き換えに失敗しました。元に戻しました。" \
+			"Failed to edit $(file_uri "$SETTINGS_FILE"). It was restored."
 	fi
 }
 
@@ -1654,15 +2034,10 @@ extract_json() {
 	' "$1"
 }
 
-# JSON として妥当かを見る。python3 も jq も無ければ検査を飛ばす。
+# JSON として妥当かを見る。python3 は呼び出し側の require_commands で確かめてある。
+# 検査せずに書き込むと、壊れた JSON に気づけないまま HTML が表示されなくなる。
 validate_json() {
-	if command -v python3 >/dev/null 2>&1; then
-		python3 -m json.tool <"$1" >/dev/null
-	elif command -v jq >/dev/null 2>&1; then
-		jq empty <"$1"
-	else
-		die "JSON を検査できる道具がありません（python3 か jq が要ります）。検査せずに書き込むと、壊れた JSON に気づけないまま HTML が表示されなくなるので中断します。"
-	fi
+	python3 -m json.tool <"$1" >/dev/null
 }
 
 # check-list / report という短い名前でも指定できるようにする。
@@ -1682,8 +2057,7 @@ resolve_data_target() {
 
 # $1 に $2 を深くマージして $3 に書く。配列は丸ごと置き換える（追記しない）。
 merge_json() {
-	if command -v python3 >/dev/null 2>&1; then
-		python3 - "$1" "$2" "$3" <<'PYMERGE'
+	python3 - "$1" "$2" "$3" <<'PYMERGE'
 import json, sys
 
 def deep(base, patch):
@@ -1700,11 +2074,6 @@ with open(sys.argv[3], "w", encoding="utf-8") as out:
     json.dump(deep(base, patch), out, ensure_ascii=False, indent=2)
     out.write("\n")
 PYMERGE
-	elif command -v jq >/dev/null 2>&1; then
-		jq -s '.[0] * .[1]' "$1" "$2" >"$3"
-	else
-		die "data merge には python3 か jq が必要です。get と set は使えます。"
-	fi
 }
 
 cmd_data() {
@@ -1714,59 +2083,66 @@ cmd_data() {
 	shift 2>/dev/null || true
 
 	case "$_action" in
-	get | set | merge) ;;
-	*) die "data のサブコマンドは get / set / merge です（指定されたのは '${_action}'）" ;;
+	get) require_commands "$REQ_BASE" ;;
+	set | merge) require_commands "$REQ_JSON" ;;
+	*) die "data のサブコマンドは get / set / merge です（指定されたのは '${_action}'）" \
+		"The data subcommands are get / set / merge (got '${_action}')" ;;
 	esac
-	[ -n "$_html" ] || die "data $_action: 対象を指定してください（check-list / report / ファイルパス）。"
+	[ -n "$_html" ] || die "data ${_action}: 対象を指定してください（check-list / report / ファイルパス）。" \
+		"data ${_action}: specify the target (check-list / report / a file path)."
 	_html=$(resolve_data_target "$_html")
 	_html_uri=$(file_uri "$_html")
-	[ -f "$_html" ] || die "ファイルがありません: ${_html_uri}"
+	[ -f "$_html" ] || die "ファイルがありません: ${_html_uri}" "File not found: ${_html_uri}"
 
 	if [ "$_action" != "get" ]; then
 		_json="${1:-}"
 		shift 2>/dev/null || true
-		[ -n "$_json" ] || die "data $_action: JSON ファイルを指定してください。"
-		[ -f "$_json" ] || die "ファイルがありません: $(file_uri "$_json")"
+		[ -n "$_json" ] || die "data ${_action}: JSON ファイルを指定してください。" \
+			"data ${_action}: specify the JSON file."
+		[ -f "$_json" ] || die "ファイルがありません: $(file_uri "$_json")" "File not found: $(file_uri "$_json")"
 	fi
 
 	_id=""
 	while [ $# -gt 0 ]; do
 		case "$1" in
 		--id)
-			_id="${2:?--id に値がありません}"
+			need_value "$1" "${2:-}"
+			_id="$2"
 			shift 2
 			;;
-		*) die "data: 知らないオプションです: $1" ;;
+		*) die "data: 知らないオプションです: ${1}" "data: unknown option: ${1}" ;;
 		esac
 	done
 	[ -n "$_id" ] || _id=$(guess_block_id "$_html")
+	_no_block="${_html_uri} に id=\"${_id}\" の JSON ブロックが見つかりません。"
+	_no_block_en="No JSON block with id=\"${_id}\" in ${_html_uri}."
 
 	if [ "$_action" = "get" ]; then
-		extract_json "$_html" "$_id" ||
-			die "${_html_uri} に id=\"$_id\" の JSON ブロックが見つかりません。"
+		extract_json "$_html" "$_id" || die "$_no_block" "$_no_block_en"
 		return 0
 	fi
 
 	validate_json "$_json" ||
-		die "$(file_uri "$_json") が JSON として読めません。直してからやり直してください。"
+		die "$(file_uri "$_json") が JSON として読めません。直してからやり直してください。" \
+			"$(file_uri "$_json") is not valid JSON. Fix it and try again."
 
 	_merged=""
 	if [ "$_action" = "merge" ]; then
 		_merged="$_json.merged.$$"
 		if ! extract_json "$_html" "$_id" >"$_merged.base" 2>/dev/null; then
 			rm -f "$_merged.base"
-			die "${_html_uri} に id=\"$_id\" の JSON ブロックが見つかりません。開始タグと閉じタグは、それぞれ行頭に単独で置かれている必要があります。"
+			die "${_no_block}開始タグと閉じタグは、それぞれ行頭に単独で置かれている必要があります。" \
+				"${_no_block_en} The opening and closing tags must each be alone at the start of a line."
 		fi
 		if ! merge_json "$_merged.base" "$_json" "$_merged"; then
 			rm -f "$_merged" "$_merged.base"
-			die "JSON をマージできませんでした。"
+			die "JSON をマージできませんでした。" "Could not merge the JSON."
 		fi
 		rm -f "$_merged.base"
 		_json="$_merged"
 	fi
 
-	extract_json "$_html" "$_id" >/dev/null ||
-		die "${_html_uri} に id=\"$_id\" の JSON ブロックが見つかりません。"
+	extract_json "$_html" "$_id" >/dev/null || die "$_no_block" "$_no_block_en"
 
 	# JSON の値に `</script>` が入っていると、ブラウザの HTML パーサがそこで
 	# ブロックを打ち切る。JSON としては等価な `<\/script>` に置き換えて無害化する。
@@ -1792,17 +2168,20 @@ cmd_data() {
 	else
 		rm -f "$_tmp" "$_safe"
 		mv "$_html.bak" "$_html"
-		die "${_html_uri} の書き換えに失敗しました。元に戻しました。"
+		die "${_html_uri} の書き換えに失敗しました。元に戻しました。" \
+			"Failed to edit ${_html_uri}. It was restored."
 	fi
 
 	_check="$_html.check.$$"
 	if extract_json "$_html" "$_id" >"$_check" 2>/dev/null && validate_json "$_check"; then
 		rm -f "$_check" ${_merged:+"$_merged"}
-		say "${_html_uri} の id=\"$_id\" を更新しました（元は ${_html_uri}.bak）。"
+		say "${_html_uri} の id=\"${_id}\" を更新しました（元は ${_html_uri}.bak）。" \
+			"Updated id=\"${_id}\" in ${_html_uri} (the original is ${_html_uri}.bak)."
 	else
 		rm -f "$_check" ${_merged:+"$_merged"}
 		mv "$_html.bak" "$_html"
-		die "差し込んだ結果が読み直せなかったため、元に戻しました。JSON の値に </script> のような、HTML を打ち切る文字列が含まれていないか確認してください。"
+		die "差し込んだ結果が読み直せなかったため、元に戻しました。JSON の値に </script> のような、HTML を打ち切る文字列が含まれていないか確認してください。" \
+			"The result could not be read back, so it was restored. Check that no JSON value contains a string that cuts the HTML short, such as </script>."
 	fi
 }
 
@@ -1838,10 +2217,11 @@ cmd_docs() {
 			usage
 			return 0
 			;;
-		*) die "docs: 知らないオプションです: $1" ;;
+		*) die "docs: 知らないオプションです: ${1}" "docs: unknown option: ${1}" ;;
 		esac
 	done
 
+	require_commands "$REQ_DOCS"
 	require_workdir
 
 	if [ "$_api" = "yes" ]; then
@@ -1881,7 +2261,8 @@ cmd_docs() {
 # あわせて、Gradle のファイルを手書きの役割で宣言していれば gradle() を勧める。
 lint_roles() {
 	command -v python3 >/dev/null 2>&1 || {
-		note "役割の点検は python3 が無いため飛ばしました。"
+		note "役割の点検は python3 が無いため飛ばしました。" \
+			"Skipped the role check because python3 is not available."
 		return 0
 	}
 	# プロジェクトルートは init がチェックリストに記録したものを使う。
@@ -1891,7 +2272,9 @@ lint_roles() {
 		_lr_json="$_lr_wd/cache/.lint-cl.$$"
 		extract_json "$_lr_wd/check-list.html" checklist >"$_lr_json" 2>/dev/null || :
 	fi
-	python3 - "$_lr_json" "$MODULE_DIR" <<'PYROLES' || :
+	{
+		printf '%s\n' "$PY_LANG"
+		cat <<'PYROLES'
 import os, re, sys
 
 # 役割（"Name" { }）ごとに、layout { } の中で宣言しているファイルを集め、
@@ -1935,7 +2318,7 @@ KINDS = [
     (r"^(changelog|changes|release[-_]?notes)", "CHANGELOG", False),
     (r"^code[-_]of[-_]conduct", "CODE_OF_CONDUCT", False),
     (r"^security\.md$", "SECURITY.md", False),
-    (r"^(claude|agents|gemini|copilot-instructions)\.md$", "AI エージェント向けの指示", False),
+    (r"^(claude|agents|gemini|copilot-instructions)\.md$", t("AI エージェント向けの指示", "AI agent instructions"), False),
     (r"^\.gitignore$", ".gitignore", False),
     (r"^\.gitattributes$", ".gitattributes", False),
     (r"^\.editorconfig$", ".editorconfig", False),
@@ -1945,7 +2328,7 @@ KINDS = [
     (r"^gemfile(\.lock)?$", "Gemfile", False),
     (r"^dangerfile", "Dangerfile", False),
     (r"^(package(-lock)?\.json|yarn\.lock|pnpm-lock\.yaml)$", "npm", False),
-    (r"^(detekt|lint)[^/]*\.(yml|yaml|xml)$", "静的解析の設定", False),
+    (r"^(detekt|lint)[^/]*\.(yml|yaml|xml)$", t("静的解析の設定", "static analysis config"), False),
 ]
 
 
@@ -2098,7 +2481,8 @@ def scan(path, roles):
 
 roles = []
 if not os.path.isdir(root):
-    print("役割の点検: 定義のディレクトリがありません（%s）。scaffold の後に実行してください。" % file_uri(root))
+    print(t("役割の点検: 定義のディレクトリがありません（%s）。scaffold の後に実行してください。",
+            "Role check: the definition directory does not exist (%s). Run this after scaffold.") % file_uri(root))
     sys.exit(0)
 for d, _, fs in os.walk(root):
     for f in sorted(fs):
@@ -2117,50 +2501,65 @@ for r in roles:
             if gradle:
                 gradle_hand.append((r, name))
     if len(kinds) >= 2:
-        reasons.append("種類の違うファイルが同居しています: " + " / ".join(
-            "%s（%s）" % (label, ", ".join(sorted(set(names)))) for label, names in kinds.items()))
+        reasons.append(t("種類の違うファイルが同居しています: ", "Files of different kinds share this role: ") + " / ".join(
+            t("%s（%s）", "%s (%s)") % (label, ", ".join(sorted(set(names)))) for label, names in kinds.items()))
     dots = sorted(set(seg for _, t, _ in r.catchall for seg in t.split("/")[-1:] if seg.startswith(".") and len(seg) > 1))
     if len(dots) >= 2:
-        reasons.append("ツールごとの設定ディレクトリを anyFile() / ignore() でまとめています: " + ", ".join(dots))
+        reasons.append(t("ツールごとの設定ディレクトリを anyFile() / ignore() でまとめています: ",
+                         "Groups per-tool config directories with anyFile() / ignore(): ") + ", ".join(dots))
     TEST = re.compile(r"^(test|testSourceSet|androidTest|androidUnitTest|androidInstrumentedTest|[a-z][A-Za-z]*Test|testFixtures)$")
     MAIN = re.compile(r"^(main|mainSourceSet|[a-z][A-Za-z]*Main)$")
     segs = [set(p.replace("\\", "/").split("/")) for p in r.places]
     has_test = any(any(TEST.match(x) for x in s_) for s_ in segs)
     has_main = any(any(MAIN.match(x) for x in s_) and not any(TEST.match(x) for x in s_) for s_ in segs)
     if has_test and has_main:
-        reasons.append("本体（main）とテスト（test）のファイルを同じ役割で宣言しています")
+        reasons.append(t("本体（main）とテスト（test）のファイルを同じ役割で宣言しています",
+                         "Declares main and test files in the same role"))
     if reasons:
         warnings.append((r, reasons))
 
 if not warnings and not gradle_hand:
-    print("役割の点検: 種類の違うファイルを抱えていそうな役割は見つかりませんでした（%d 件を走査）。" % len(roles))
+    print(t("役割の点検: 種類の違うファイルを抱えていそうな役割は見つかりませんでした（%d 件を走査）。",
+            "Role check: no role seems to hold files of different kinds (%d scanned).") % len(roles))
     sys.exit(0)
 print()
-print("== 役割の点検（失敗にはしません） ================================")
-print("定義: %s" % file_uri(root))
+print(t("== 役割の点検（失敗にはしません） ================================",
+        "== Role check (never fails) ======================================"))
+print(t("定義: %s", "Definition: %s") % file_uri(root))
 if warnings:
     print()
-    print("種類の違うファイルを1つの役割に抱えていそうなものが %d 件あります（%d 件を走査）。" % (len(warnings), len(roles)))
+    print(t("種類の違うファイルを1つの役割に抱えていそうなものが %d 件あります（%d 件を走査）。",
+            "Roles that seem to hold files of different kinds: %d (%d scanned).") % (len(warnings), len(roles)))
     for r, reasons in warnings:
         print()
-        print('  %s:%d 役割 "%s"' % (file_uri(r.path), r.line, r.name))
+        print(t('  %s:%d 役割 "%s"', '  %s:%d role "%s"') % (file_uri(r.path), r.line, r.name))
         for x in reasons:
             print("    - " + x)
     print()
-    print("役割（\"Name\" { }）は1種類のファイルを表し、種類の違うものを束ねるのは group です。")
-    print("手順書 3-2 の「1 つの役割 = 1 種類のファイル」の3つの問いで見直し、分けるべきものは")
-    print("種類ごとの役割に分けて group で束ねてください。テキストの素朴な走査なので誤検知はあり得ます。")
-    print("見直して1種類だと判断したものは、そのままでかまいません。")
+    print(t("""役割（"Name" { }）は1種類のファイルを表し、種類の違うものを束ねるのは group です。
+手順書 3-2 の「1 つの役割 = 1 種類のファイル」の3つの問いで見直し、分けるべきものは
+種類ごとの役割に分けて group で束ねてください。テキストの素朴な走査なので誤検知はあり得ます。
+見直して1種類だと判断したものは、そのままでかまいません。""",
+            """A role ("Name" { }) stands for one kind of file; group is what bundles different kinds.
+Review them with the three questions of "one role = one kind of file" in step 3-2 of the guide,
+and split what should be split into one role per kind, bundled with group. This is a plain text
+scan, so false positives are possible. If you review a role and decide it is one kind, leave it."""))
 if gradle_hand:
     names = sorted(set(r.name for r, _ in gradle_hand))
     print()
-    print("Gradle のファイルを手書きの役割で宣言しています（役割: %s）。" % ", ".join(names))
-    print("katachi 0.2 以降は gradle() が wrapper・settings・ビルドスクリプト・gradle.properties・")
-    print("version catalog を種類ごとの役割に分けて宣言します（import me.tbsten.katachi.dsl.gradle.*）。")
-    print("これらの役割を消して gradle() の1行に置き換えてください。buildSrc や includeBuild した")
-    print("ビルドは gradle() の対象外なので、それだけは自分の役割に残します。")
+    print(t("Gradle のファイルを手書きの役割で宣言しています（役割: %s）。",
+            "Gradle files are declared in hand-written roles (roles: %s).") % ", ".join(names))
+    print(t("""katachi 0.2 以降は gradle() が wrapper・settings・ビルドスクリプト・gradle.properties・
+version catalog を種類ごとの役割に分けて宣言します（import me.tbsten.katachi.dsl.gradle.*）。
+これらの役割を消して gradle() の1行に置き換えてください。buildSrc や includeBuild した
+ビルドは gradle() の対象外なので、それだけは自分の役割に残します。""",
+            """Since katachi 0.2, gradle() declares the wrapper, settings, build scripts, gradle.properties
+and the version catalog as one role per kind (import me.tbsten.katachi.dsl.gradle.*).
+Remove these roles and replace them with the single line gradle(). buildSrc and included
+builds are not covered by gradle(), so keep only those in your own roles."""))
 print("==================================================================")
 PYROLES
+	} | python3 - "$_lr_json" "$MODULE_DIR" || :
 	[ -n "$_lr_json" ] && rm -f "$_lr_json"
 	return 0
 }
@@ -2195,13 +2594,16 @@ count_missing_description() {
 }
 
 cmd_compare_violations() {
+	require_commands "$REQ_COMPARE"
 	require_workdir
 	_cv_before="${1:-${WORKDIR}/tmp/test-before-refactor.log}"
 	_cv_after="${2:-${WORKDIR}/tmp/test-after-refactor.log}"
 	for _cv_f in "$_cv_before" "$_cv_after"; do
-		[ -f "$_cv_f" ] || die "$(file_uri "$_cv_f") がありません。./gradlew :architecture-test:test の出力をこのパスに保存してください（手順書 3-2 / 3-3）。"
+		[ -f "$_cv_f" ] || die "$(file_uri "$_cv_f") がありません。./gradlew :architecture-test:test の出力をこのパスに保存してください（手順書 3-2 / 3-3）。" \
+			"$(file_uri "$_cv_f") not found. Save the output of ./gradlew :architecture-test:test to this path (steps 3-2 / 3-3 of the guide)."
 		has_check_result "$_cv_f" ||
-			die "$(file_uri "$_cv_f") に検査の結果がありません。コンパイルエラーなどで検査まで届いていません。直してから取り直してください。"
+			die "$(file_uri "$_cv_f") に検査の結果がありません。コンパイルエラーなどで検査まで届いていません。直してから取り直してください。" \
+				"$(file_uri "$_cv_f") has no check result. The build did not get as far as the check (a compile error, for example). Fix it and capture the log again."
 	done
 
 	mkdir -p "$WORKDIR/cache"
@@ -2214,32 +2616,37 @@ cmd_compare_violations() {
 	_cv_n_a=$(grep -c '^\[' "$_cv_a" || :)
 	_cv_n_b=$(grep -c '^\[' "$_cv_b" || :)
 
-	say "前: $(file_uri "$_cv_before")"
-	say "後: $(file_uri "$_cv_after")"
-	say "違反の見出し: 前 ${_cv_n_a} 件 / 後 ${_cv_n_b} 件"
-	say "[MissingDescription]（比べない）: 前 ${_cv_md_a} 件 / 後 ${_cv_md_b} 件"
+	say "前: $(file_uri "$_cv_before")" "Before: $(file_uri "$_cv_before")"
+	say "後: $(file_uri "$_cv_after")" "After:  $(file_uri "$_cv_after")"
+	say "違反の見出し: 前 ${_cv_n_a} 件 / 後 ${_cv_n_b} 件" \
+		"Violation headings: before ${_cv_n_a} / after ${_cv_n_b}"
+	say "[MissingDescription]（比べない）: 前 ${_cv_md_a} 件 / 後 ${_cv_md_b} 件" \
+		"[MissingDescription] (not compared): before ${_cv_md_a} / after ${_cv_md_b}"
 	if cmp -s "$_cv_a" "$_cv_b"; then
 		rm -f "$_cv_a" "$_cv_b"
 		say ""
-		say "検査結果は変わっていません。"
+		say "検査結果は変わっていません。" "The check result has not changed."
 		return 0
 	fi
 	say ""
-	say "検査結果が変わっています（- が前だけ、+ が後だけにある行）。"
+	say "検査結果が変わっています（- が前だけ、+ が後だけにある行）。" \
+		"The check result has changed (- lines only in before, + lines only in after)."
 	diff "$_cv_a" "$_cv_b" | sed -n -e 's/^< /  - /p' -e 's/^> /  + /p' || :
 	rm -f "$_cv_a" "$_cv_b"
 	say ""
-	say "リファクタリングで振る舞いが変わっています。前のログを取り直すのではなく、定義のほうを直してください。"
-	say "分けた定義ファイルが [UnexpectedFile] になっているなら、architecture-test/ を受け持つ役割の layout { } が"
-	say "<group>/<role>/<Role>.kt の深さまで受け入れていません。"
+	say "リファクタリングで振る舞いが変わっています。前のログを取り直すのではなく、定義のほうを直してください。
+分けた定義ファイルが [UnexpectedFile] になっているなら、architecture-test/ を受け持つ役割の layout { } が
+<group>/<role>/<Role>.kt の深さまで受け入れていません。" \
+		"The refactoring changed the behavior. Fix the definition instead of capturing the before log again.
+If the split definition files show up as [UnexpectedFile], the layout { } of the role that owns
+architecture-test/ does not accept files as deep as <group>/<role>/<Role>.kt."
 	exit 1
 }
 
 # ---------------------------------------------------------------- 進捗と点検
 
 need_python() {
-	command -v python3 >/dev/null 2>&1 ||
-		die "このコマンドには python3 が必要です。data get / set / merge は python3 なしでも使えます。"
+	require_commands "$REQ_JSON"
 }
 
 # チェックリストの JSON を python に渡して加工し、書き戻す。
@@ -2248,16 +2655,18 @@ edit_checklist() {
 	need_python
 	require_workdir
 	_cl="$WORKDIR/check-list.html"
-	[ -f "$_cl" ] || die "$(file_uri "$_cl") がありません。先に init を実行してください。"
+	[ -f "$_cl" ] || die "$(file_uri "$_cl") がありません。先に init を実行してください。" \
+		"$(file_uri "$_cl") not found. Run init first."
 
 	_script="$1"
 	shift
 	_cur="$_cl.cur.$$"
 	extract_json "$_cl" checklist >"$_cur" ||
-		die "$(file_uri "$_cl") から JSON を取り出せませんでした。"
+		die "$(file_uri "$_cl") から JSON を取り出せませんでした。" \
+			"Could not extract the JSON from $(file_uri "$_cl")."
 
 	_out="$_cl.new.$$"
-	if printf '%s' "$_script" | python3 - "$_cur" "$_out" "$@"; then
+	if printf '%s\n%s' "$PY_LANG" "$_script" | python3 - "$_cur" "$_out" "$@"; then
 		rm -f "$_cur"
 		if cmd_data set "$_cl" "$_out" --id checklist >/dev/null; then
 			rm -f "$_out" "$_cl.bak"
@@ -2271,6 +2680,19 @@ edit_checklist() {
 	fi
 }
 
+# 埋め込みの python すべての先頭に付ける。出力の言語を sh 側（resolve_lang）と揃える。
+# 文言は t("日本語", "English") で並べる。**この変数の中に \' を書かないこと**（sh の単引用符）。
+PY_LANG='
+import os
+
+# 出力の言語。sh 側の resolve_lang が決めて環境変数 KATACHI_LANG で渡す。
+EN = os.environ.get("KATACHI_LANG") == "en"
+
+
+def t(ja, en):
+    return en if EN else ja
+'
+
 CHECK_PY='
 import json, sys
 src, dest, done = sys.argv[1], sys.argv[2], sys.argv[3] == "true"
@@ -2279,17 +2701,21 @@ data = json.load(open(src, encoding="utf-8"))
 known = {i["id"]: i for s in data.get("steps", []) for i in s.get("items", [])}
 unknown = [i for i in ids if i not in known]
 if unknown:
-    sys.stderr.write("知らない項目 id です: %s\n" % ", ".join(unknown))
-    sys.stderr.write("使える id: %s\n" % ", ".join(known))
+    sys.stderr.write(t("知らない項目 id です: %s\n", "Unknown item id: %s\n") % ", ".join(unknown))
+    sys.stderr.write(t("使える id: %s\n", "Valid ids: %s\n") % ", ".join(known))
     sys.exit(1)
 for i in ids:
     known[i]["done"] = done
 json.dump(data, open(dest, "w", encoding="utf-8"), ensure_ascii=False, indent=2)
-print("%s: %s" % ("完了にしました" if done else "未完了に戻しました", ", ".join(ids)))
+if done:
+    print(t("完了にしました: %s", "Marked as done: %s") % ", ".join(ids))
+else:
+    print(t("未完了に戻しました: %s", "Marked as not done: %s") % ", ".join(ids))
 '
 
 cmd_check() {
-	[ $# -gt 0 ] || die "check: 項目 id を1つ以上指定してください（例: check 1-1 1-2）"
+	[ $# -gt 0 ] || die "check: 項目 id を1つ以上指定してください（例: check 1-1 1-2）" \
+		"check: specify one or more item ids (for example: check 1-1 1-2)"
 	edit_checklist "$CHECK_PY" true "$@"
 	# 定義を書き終えた時点と整え終えた時点で、役割の取り違えを拾う。
 	# 完了にはしたうえで警告だけ出す。
@@ -2304,7 +2730,8 @@ cmd_check() {
 }
 
 cmd_uncheck() {
-	[ $# -gt 0 ] || die "uncheck: 項目 id を1つ以上指定してください。"
+	[ $# -gt 0 ] || die "uncheck: 項目 id を1つ以上指定してください。" \
+		"uncheck: specify one or more item ids."
 	edit_checklist "$CHECK_PY" false "$@"
 }
 
@@ -2315,22 +2742,27 @@ text = sys.argv[4] if len(sys.argv) > 4 else None
 data = json.load(open(src, encoding="utf-8"))
 steps = {s["id"]: s for s in data.get("steps", [])}
 if step_id not in steps:
-    sys.stderr.write("知らないステップ id です: %s\n" % step_id)
-    sys.stderr.write("使える id: %s\n" % ", ".join(steps))
+    sys.stderr.write(t("知らないステップ id です: %s\n", "Unknown step id: %s\n") % step_id)
+    sys.stderr.write(t("使える id: %s\n", "Valid ids: %s\n") % ", ".join(steps))
     sys.exit(1)
 steps[step_id]["warning"] = text
 json.dump(data, open(dest, "w", encoding="utf-8"), ensure_ascii=False, indent=2)
-print("ステップ %s の警告を%s" % (step_id, "消しました" if text is None else "設定しました"))
+if text is None:
+    print(t("ステップ %s の警告を消しました", "Cleared the warning on step %s") % step_id)
+else:
+    print(t("ステップ %s の警告を設定しました", "Set a warning on step %s") % step_id)
 '
 
 cmd_warn() {
-	[ $# -gt 0 ] || die "warn: ステップ id を指定してください（例: warn 4 \"違反を2件残しました\"）"
+	[ $# -gt 0 ] || die "warn: ステップ id を指定してください（例: warn 4 \"違反を2件残しました\"）" \
+		"warn: specify the step id (for example: warn 4 \"Left 2 violations\")"
 	_step="$1"
 	shift
 	if [ "${1:-}" = "--clear" ]; then
 		edit_checklist "$WARN_PY" "$_step"
 	else
-		[ -n "${1:-}" ] || die "warn: 警告の文言を指定してください（消すなら --clear）"
+		[ -n "${1:-}" ] || die "warn: 警告の文言を指定してください（消すなら --clear）" \
+			"warn: specify the warning text (or --clear to remove it)"
 		edit_checklist "$WARN_PY" "$_step" "$1"
 	fi
 }
@@ -2377,16 +2809,16 @@ IDENTITY = {
 }
 
 if kind not in FIELDS:
-    sys.stderr.write("知らない種類です: %s\n" % kind)
-    sys.stderr.write("使えるもの: %s\n" % ", ".join(FIELDS))
+    sys.stderr.write(t("知らない種類です: %s\n", "Unknown kind: %s\n") % kind)
+    sys.stderr.write(t("使えるもの: %s\n", "Valid kinds: %s\n") % ", ".join(FIELDS))
     sys.exit(1)
 
 key, scalars, lists = FIELDS[kind]
 
 if not args:
-    sys.stderr.write("項目を1つも指定していません: add %s\n" % kind)
-    sys.stderr.write("このまま追記すると中身が空の行ができます。\n")
-    sys.stderr.write("使えるもの: %s\n" % ", ".join(scalars + lists))
+    sys.stderr.write(t("項目を1つも指定していません: add %s\n", "No fields given: add %s\n") % kind)
+    sys.stderr.write(t("このまま追記すると中身が空の行ができます。\n", "Appending as is would add an empty row.\n"))
+    sys.stderr.write(t("使えるもの: %s\n", "Valid fields: %s\n") % ", ".join(scalars + lists))
     sys.exit(1)
 
 entry = {}
@@ -2399,7 +2831,7 @@ i = 0
 while i < len(args):
     name = args[i].lstrip("-")
     if i + 1 >= len(args):
-        sys.stderr.write("--%s に値がありません\n" % name)
+        sys.stderr.write(t("--%s に値がありません\n", "--%s needs a value\n") % name)
         sys.exit(1)
     value = args[i + 1]
     i += 2
@@ -2410,14 +2842,15 @@ while i < len(args):
             try:
                 value = int(value)
             except ValueError:
-                sys.stderr.write("--%s は数値で指定してください: %s\n" % (name, value))
+                sys.stderr.write(t("--%s は数値で指定してください: %s\n", "--%s must be a number: %s\n") % (name, value))
                 sys.exit(1)
         entry[name] = value
     else:
-        sys.stderr.write("--%s は %s で使えません\n" % (name, kind))
+        sys.stderr.write(t("--%s は %s で使えません\n", "--%s cannot be used with %s\n") % (name, kind))
         if kind == "module" and name == "role":
-            sys.stderr.write("モジュールの受け持ちは --responsibility です。katachi の Role（1種類のファイル）とは別物で、モジュールは定義では group になります。\n")
-        sys.stderr.write("使えるもの: %s\n" % ", ".join(scalars + lists))
+            sys.stderr.write(t("モジュールの受け持ちは --responsibility です。katachi の Role（1種類のファイル）とは別物で、モジュールは定義では group になります。\n",
+                               "What a module is responsible for goes in --responsibility. It is not a katachi Role (one kind of file); a module becomes a group in the definition.\n"))
+        sys.stderr.write(t("使えるもの: %s\n", "Valid fields: %s\n") % ", ".join(scalars + lists))
         sys.exit(1)
 
 data = json.load(open(src, encoding="utf-8"))
@@ -2427,14 +2860,15 @@ idf = IDENTITY.get(kind)
 if idf is not None and entry.get(idf) is not None:
     for row in rows:
         if row.get(idf) == entry[idf]:
-            sys.stderr.write("その %s はすでに登録されています: %s\n" % (idf, entry[idf]))
-            sys.stderr.write("二重に記録しないため追記しませんでした。\n")
-            sys.stderr.write("書き換えたい場合は data get で取り出し、直してから data set してください。\n")
+            sys.stderr.write(t("その %s はすでに登録されています: %s\n", "That %s is already recorded: %s\n") % (idf, entry[idf]))
+            sys.stderr.write(t("二重に記録しないため追記しませんでした。\n", "Not appended, to avoid recording it twice.\n"))
+            sys.stderr.write(t("書き換えたい場合は data get で取り出し、直してから data set してください。\n",
+                               "To change it, take it out with data get, edit it, and write it back with data set.\n"))
             sys.exit(1)
 
 rows.append(entry)
 json.dump(data, open(dest, "w", encoding="utf-8"), ensure_ascii=False, indent=2)
-print("%s に1件追記しました（計 %d 件）" % (key, len(data[key])))
+print(t("%s に1件追記しました（計 %d 件）", "Appended 1 entry to %s (%d in total)") % (key, len(data[key])))
 '
 
 # どの種類がどちらのファイルに属するか。
@@ -2449,24 +2883,26 @@ add_target_of() {
 cmd_add() {
 	need_python
 	_kind="${1:-}"
-	[ -n "$_kind" ] || die "add: 種類を指定してください（violation / question / codebase-question / changed / module / role / tool / excluded / template）"
+	[ -n "$_kind" ] || die "add: 種類を指定してください（violation / question / codebase-question / changed / module / role / tool / excluded / template）" \
+		"add: specify the kind (violation / question / codebase-question / changed / module / role / tool / excluded / template)"
 	shift
 
 	_target=$(add_target_of "$_kind")
-	[ -n "$_target" ] || die "add: 知らない種類です: $_kind"
+	[ -n "$_target" ] || die "add: 知らない種類です: ${_kind}" "add: unknown kind: ${_kind}"
 
 	_html=$(resolve_data_target "$_target")
-	[ -f "$_html" ] || die "ファイルがありません: $(file_uri "$_html")"
+	[ -f "$_html" ] || die "ファイルがありません: $(file_uri "$_html")" "File not found: $(file_uri "$_html")"
 	_id=$(guess_block_id "$_html")
 
 	_cur="$_html.cur.$$"
 	extract_json "$_html" "$_id" >"$_cur" || {
 		rm -f "$_cur"
-		die "$(file_uri "$_html") から JSON を取り出せません。"
+		die "$(file_uri "$_html") から JSON を取り出せません。" \
+			"Could not extract the JSON from $(file_uri "$_html")."
 	}
 
 	_new="$_html.new.$$"
-	if printf '%s' "$ADD_PY" | python3 - "$_cur" "$_new" "$_target" "$_kind" "$@"; then
+	if printf '%s\n%s' "$PY_LANG" "$ADD_PY" | python3 - "$_cur" "$_new" "$_target" "$_kind" "$@"; then
 		rm -f "$_cur"
 		cmd_data set "$_html" "$_new" --id "$_id" >/dev/null &&
 			rm -f "$_new" "$_html.bak"
@@ -2504,7 +2940,8 @@ for k, v in (cl.get("meta") or {}).items():
         missing.append("check-list: meta.%s" % k)
 
 if not steps:
-    missing.append("check-list: steps がありません（テンプレートが壊れています）")
+    missing.append(t("check-list: steps がありません（テンプレートが壊れています）",
+                     "check-list: no steps (the template is broken)"))
 
 for s in steps:
     # 任意のステップは数えない。やらなくても完了とみなす
@@ -2512,7 +2949,7 @@ for s in steps:
         continue
     for i in s.get("items", []):
         if not i.get("done"):
-            missing.append("check-list: 未チェック %s %s" % (i["id"], i.get("label", "")))
+            missing.append(t("check-list: 未チェック %s %s", "check-list: not done %s %s") % (i["id"], i.get("label", "")))
 
 if rp is not None:
     for k, v in (rp.get("meta") or {}).items():
@@ -2537,7 +2974,7 @@ if rp is not None:
 warnings = [(s["id"], s["warning"]) for s in steps if s.get("warning")]
 
 if missing:
-    print("未完了・未記入が %d 件あります。" % len(missing))
+    print(t("未完了・未記入が %d 件あります。", "Unfinished or blank: %d") % len(missing))
     print()
     for m in missing:
         print("  - %s" % m)
@@ -2547,13 +2984,14 @@ else:
             for i in s.get("items", []):
                 i["done"] = True
     json.dump(cl, open(out_path, "w", encoding="utf-8"), ensure_ascii=False, indent=2)
-    print("未完了・未記入はありません。ステップ %s を完了にしました。" % final)
+    print(t("未完了・未記入はありません。ステップ %s を完了にしました。",
+            "Nothing is unfinished or blank. Marked step %s as done.") % final)
 
 if warnings:
     print()
-    print("警告つきのステップ:")
+    print(t("警告つきのステップ:", "Steps with warnings:"))
     for sid, text in warnings:
-        print("  - ステップ %s: %s" % (sid, text))
+        print(t("  - ステップ %s: %s", "  - step %s: %s") % (sid, text))
 
 sys.exit(1 if missing else 0)
 '
@@ -2563,23 +3001,26 @@ cmd_verify() {
 	require_workdir
 	_cl="$WORKDIR/check-list.html"
 	_rp="$WORKDIR/project-code-base-report.html"
-	[ -f "$_cl" ] || die "$(file_uri "$_cl") がありません。先に init を実行してください。"
+	[ -f "$_cl" ] || die "$(file_uri "$_cl") がありません。先に init を実行してください。" \
+		"$(file_uri "$_cl") not found. Run init first."
 
 	_a="$WORKDIR/cache/.verify-cl.$$"
 	_out="$WORKDIR/cache/.verify-out.$$"
-	extract_json "$_cl" checklist >"$_a" || die "チェックリストの JSON を読めません。"
+	extract_json "$_cl" checklist >"$_a" || die "チェックリストの JSON を読めません。" \
+		"Cannot read the JSON of the check list."
 
 	_b=""
 	if [ -f "$_rp" ]; then
 		_b="$WORKDIR/cache/.verify-rp.$$"
 		if ! extract_json "$_rp" report >"$_b"; then
 			rm -f "$_a" "$_b"
-			die "レポートの JSON を読めません。開始タグと閉じタグは、それぞれ行頭に単独で置かれている必要があります。"
+			die "レポートの JSON を読めません。開始タグと閉じタグは、それぞれ行頭に単独で置かれている必要があります。" \
+				"Cannot read the JSON of the report. The opening and closing tags must each be alone at the start of a line."
 		fi
 	fi
 
 	# `set -e` の下では、条件に置かないとここで抜けて後始末が走らない。
-	if printf '%s' "$VERIFY_PY" | python3 - "$_a" "$_out" ${_b:+"$_b"}; then
+	if printf '%s\n%s' "$PY_LANG" "$VERIFY_PY" | python3 - "$_a" "$_out" ${_b:+"$_b"}; then
 		_rc=0
 	else
 		_rc=1
@@ -2618,7 +3059,7 @@ def file_uri(path):
 
 def in_workdir(name):
     if not workdir:
-        return "<作業用ディレクトリ>/" + name
+        return t("<作業用ディレクトリ>/", "<working directory>/") + name
     return file_uri(os.path.join(workdir, name))
 
 violations = cl.get("violations") or []
@@ -2630,51 +3071,60 @@ done = [i for i in items if i.get("done")]
 optional_items = [i for s in steps if s.get("optional") is True for i in s.get("items", [])]
 
 if len(done) < len(items):
-    print("❌ katachi のセットアップができませんでした")
+    print(t("❌ katachi のセットアップができませんでした", "❌ Could not set up katachi"))
     print()
-    print("終わっていない項目:")
+    print(t("終わっていない項目:", "Unfinished items:"))
     for i in items:
         if not i.get("done"):
             print("- %s %s" % (i["id"], i.get("label", "")))
     print()
-    print("チェックリスト:")
+    print(t("チェックリスト:", "Check list:"))
     print(in_workdir("check-list.html"))
     sys.exit(0)
 
 if violations:
-    print("⚠️ katachi のセットアップを行いました")
+    print(t("⚠️ katachi のセットアップを行いました", "⚠️ Set up katachi"))
 else:
-    print("✅ katachi のセットアップを行いました")
+    print(t("✅ katachi のセットアップを行いました", "✅ Set up katachi"))
 print()
-print("**生成されたコードはあなたのレビューが必要不可欠** です。内容を確認してください。")
+print(t("**生成されたコードはあなたのレビューが必要不可欠** です。内容を確認してください。",
+        "**The generated code needs your review.** Please check what it contains."))
 print()
-print("- チェックリスト: %s" % in_workdir("check-list.html"))
-print("- コードベース レポート: %s" % in_workdir("project-code-base-report.html"))
+print(t("- チェックリスト: %s", "- Check list: %s") % in_workdir("check-list.html"))
+print(t("- コードベース レポート: %s", "- Codebase report: %s") % in_workdir("project-code-base-report.html"))
 if violations:
-    print("- `:architecture-test:test` の実行結果: ⚠️ %d 件のアーキテクチャ違反を残しています" % len(violations))
+    print(t("- `:architecture-test:test` の実行結果: ⚠️ %d 件のアーキテクチャ違反を残しています",
+            "- `:architecture-test:test` result: ⚠️ architecture violations left: %d") % len(violations))
 else:
-    print("- `:architecture-test:test` の実行結果: ✅ All green")
+    print(t("- `:architecture-test:test` の実行結果: ✅ All green", "- `:architecture-test:test` result: ✅ All green"))
 if questions:
-    print("- 確認したいことが %d 件あります（チェックリストの「ユーザに確認したいこと」）" % len(questions))
+    print(t("- 確認したいことが %d 件あります（チェックリストの「ユーザに確認したいこと」）",
+            "- Questions for you: %d (\"Questions for the user\" in the check list)") % len(questions))
 if report_questions:
-    print("- コードベースの揺れが %d 件あります（レポートの questions）" % len(report_questions))
+    print(t("- コードベースの揺れが %d 件あります（レポートの questions）",
+            "- Inconsistencies in the codebase: %d (questions in the report)") % len(report_questions))
     for q in report_questions:
-        text = q.get("question") or "(未記入)"
+        text = q.get("question") or t("(未記入)", "(blank)")
         rec = q.get("recommendation")
         if rec:
-            print("    - %s → 推奨: %s" % (text, rec))
+            print(t("    - %s → 推奨: %s", "    - %s → recommended: %s") % (text, rec))
         else:
             print("    - %s" % text)
-print("- 変更したファイル: %d 件" % len(changed))
+print(t("- 変更したファイル: %d 件", "- Changed files: %d") % len(changed))
 print("- Next action:")
-print("    - %s/ 以下の ProjectArchitecture.kt を**レビュー**してください" % file_uri("architecture-test"))
+print(t("    - %s/ 以下の ProjectArchitecture.kt を**レビュー**してください",
+        "    - **Review** ProjectArchitecture.kt under %s/") % file_uri("architecture-test"))
 # 任意のステップで未実施のものを、これからやることとして出す。
 # label は「〜した」の完了形なので、そのまま出すと嘘になる。
 HINT = {
-    "6-1": "実際の実装タスクを1つ回して、定義が機能することを確かめてください",
-    "6-2": "CI に `:architecture-test:test` を組み込んでください",
-    "6-3": "ドキュメント生成をセットアップできます（`architecture { title / description }` を書き、`./gradlew :architecture-test:katachiDocs` で生成。生成物をコミットするかを決めてください）",
-    "6-4": "テンプレートからのコード生成をセットアップできます。提案は次の %d 件です（レポートの「テンプレートの提案」）",
+    "6-1": t("実際の実装タスクを1つ回して、定義が機能することを確かめてください",
+             "Run one real implementation task and confirm that the definition works"),
+    "6-2": t("CI に `:architecture-test:test` を組み込んでください",
+             "Add `:architecture-test:test` to CI"),
+    "6-3": t("ドキュメント生成をセットアップできます（`architecture { title / description }` を書き、`./gradlew :architecture-test:katachiDocs` で生成。生成物をコミットするかを決めてください）",
+             "You can set up documentation generation (write `architecture { title / description }` and generate with `./gradlew :architecture-test:katachiDocs`; decide whether to commit the output)"),
+    "6-4": t("テンプレートからのコード生成をセットアップできます。提案は次の %d 件です（レポートの「テンプレートの提案」）",
+             "You can set up code generation from templates. Suggestions: %d (\"Template suggestions\" in the report)"),
 }
 for i in optional_items:
     if i.get("done"):
@@ -2684,10 +3134,11 @@ for i in optional_items:
         if not report_templates:
             continue
         print("    - %s" % (HINT["6-4"] % len(report_templates)))
-        for t in report_templates:
-            files = ", ".join(t.get("files") or []) or "(未記入)"
-            params = ", ".join(t.get("params") or []) or "なし"
-            print("        - %s: %s（パラメータ: %s）" % (t.get("role") or "(未記入)", files, params))
+        for tpl in report_templates:
+            files = ", ".join(tpl.get("files") or []) or t("(未記入)", "(blank)")
+            params = ", ".join(tpl.get("params") or []) or t("なし", "none")
+            print(t("        - %s: %s（パラメータ: %s）", "        - %s: %s (parameters: %s)")
+                  % (tpl.get("role") or t("(未記入)", "(blank)"), files, params))
         continue
     print("    - %s" % HINT.get(i["id"], i.get("label", i["id"])))
 '
@@ -2696,9 +3147,11 @@ cmd_summary() {
 	need_python
 	require_workdir
 	_cl="$WORKDIR/check-list.html"
-	[ -f "$_cl" ] || die "$(file_uri "$_cl") がありません。先に init を実行してください。"
+	[ -f "$_cl" ] || die "$(file_uri "$_cl") がありません。先に init を実行してください。" \
+		"$(file_uri "$_cl") not found. Run init first."
 	_a="$WORKDIR/cache/.summary.$$"
-	extract_json "$_cl" checklist >"$_a" || die "チェックリストの JSON を読めません。"
+	extract_json "$_cl" checklist >"$_a" || die "チェックリストの JSON を読めません。" \
+		"Cannot read the JSON of the check list."
 
 	# レポート側の questions も出す。ステップ1で書いたものがユーザに一度も
 	# 届かないまま終わる事故があったため（手順書ではステップ3の前に提示させている）。
@@ -2711,17 +3164,48 @@ cmd_summary() {
 	fi
 
 	# `set -e` の下では、条件に置かないと python の失敗で後始末に届かない。
-	if printf '%s' "$SUMMARY_PY" | python3 - "$_a" "$_b"; then
+	if printf '%s\n%s' "$PY_LANG" "$SUMMARY_PY" | python3 - "$_a" "$_b"; then
 		rm -f "$_a" "$_b"
 	else
 		rm -f "$_a" "$_b"
-		die "チェックリストの JSON を読めませんでした。data get check-list で中身を確認してください。"
+		die "チェックリストの JSON を読めませんでした。data get check-list で中身を確認してください。" \
+			"Could not read the JSON of the check list. Check its content with data get check-list."
 	fi
+}
+
+# ---------------------------------------------------------------- doctor
+
+# このスクリプトが使うコマンドがそろっているかを、導入を始める前にまとめて確かめる。
+# 手順書の 0-1（権限を先に取り切る）がこれを呼ぶ。init も同じ確認を最初にする。
+cmd_doctor() {
+	while [ $# -gt 0 ]; do
+		case "$1" in
+		--lang)
+			need_value "$1" "${2:-}"
+			set_lang_option "$2"
+			shift 2
+			;;
+		-h | --help)
+			usage
+			return 0
+			;;
+		*) die "doctor: 知らないオプションです: ${1}" "doctor: unknown option: ${1}" ;;
+		esac
+	done
+	require_commands "$REQ_ALL" "$REC_ALL"
+	say "必要なコマンドはそろっています（${REQ_ALL}）。" \
+		"All required commands are available (${REQ_ALL})."
 }
 
 # ---------------------------------------------------------------- entry
 
+resolve_lang "${1:-}"
+
 case "${1:-}" in
+doctor)
+	shift
+	cmd_doctor "$@"
+	;;
 init)
 	shift
 	cmd_init "$@"
@@ -2774,6 +3258,7 @@ summary)
 	usage
 	;;
 *)
-	die "知らないサブコマンドです: $1（--help を見てください）"
+	die "知らないサブコマンドです: ${1}（--help を見てください）" \
+		"Unknown subcommand: ${1} (see --help)"
 	;;
 esac
