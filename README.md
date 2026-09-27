@@ -110,9 +110,9 @@ The full walkthrough — importing, templates, and handing it off to an AI agent
 | Generate documentation and code | [Document generation](https://tbsten.github.io/katachi/guides/document-generation/), [Generating code from a template](https://tbsten.github.io/katachi/guides/generate-code-from-template/) |
 | See a real project's definition | [Samples](CONTRIBUTING.md#samples), [Recipes](https://tbsten.github.io/katachi/recipes/) |
 
-## What is published
+## Modules
 
-| Artifact | What it is |
+| Module | What it is |
 |---|---|
 | `me.tbsten.katachi:katachi` | The main library (JVM) |
 | `me.tbsten.katachi:katachi-konsist` | Only if you use `konsist { }` |

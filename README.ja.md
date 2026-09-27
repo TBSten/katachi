@@ -110,9 +110,9 @@ class ProjectArchitectureTest {
 | ドキュメント・コードを生成する | [ドキュメント生成](https://tbsten.github.io/katachi/ja/guides/document-generation/)、[テンプレートからコード生成](https://tbsten.github.io/katachi/ja/guides/generate-code-from-template/) |
 | 実際の定義を見る | [サンプル](CONTRIBUTING.ja.md#サンプル)、[レシピ](https://tbsten.github.io/katachi/ja/recipes/) |
 
-## 公開しているもの
+## モジュール
 
-| artifact | 内容 |
+| モジュール | 内容 |
 |---|---|
 | `me.tbsten.katachi:katachi` | 本体（JVM） |
 | `me.tbsten.katachi:katachi-konsist` | `konsist { }` を使うときだけ |
