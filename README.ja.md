@@ -8,9 +8,6 @@
 
 [English](./README.md) | 日本語 ・ [ドキュメント](https://tbsten.github.io/katachi/ja/)
 
-> [!NOTE]
-> 0.x のあいだは、リリースに破壊的変更が入ることがあります。
-
 ## できること
 
 ```kotlin

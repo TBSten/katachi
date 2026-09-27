@@ -8,9 +8,6 @@
 
 English | [日本語](./README.ja.md) ・ [Docs](https://tbsten.github.io/katachi/)
 
-> [!NOTE]
-> While the major version is 0, releases may contain breaking changes.
-
 ## What katachi does
 
 ```kotlin
