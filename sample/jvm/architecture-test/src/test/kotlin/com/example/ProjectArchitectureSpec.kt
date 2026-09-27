@@ -9,6 +9,7 @@ import com.example.groups.toolGroup
 import com.example.roles.serverConfig
 import io.kotest.core.spec.style.FreeSpec
 import io.kotest.matchers.collections.shouldContain
+import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotest.matchers.collections.shouldNotContain
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
@@ -83,6 +84,7 @@ class ProjectArchitectureSpec : FreeSpec({
             "testing/ArchitectureDefinition",
             "testing/GeneratedDocumentation",
             "testing/LayoutSnapshot",
+            "testing/Baseline",
             "Gradle/GradleWrapper/LauncherScript",
             "Gradle/GradleWrapper/WrapperJar",
             "Gradle/GradleWrapper/WrapperProperties",
@@ -215,9 +217,11 @@ class ProjectArchitectureSpec : FreeSpec({
         // be reached and matched for this to fail - which is the part being proven here.
         // `FileConstraintCheck()` is passed so `service()`'s `konsist { }` constraint is
         // evaluated rather than reported as `[UncheckedFileConstraint]` alongside it.
-        architectureWithoutEntrypointRole.validate(FileConstraintCheck()).map { "[${it.label}] ${it.path}" } shouldBe listOf(
-            "[UnexpectedFile] src/main/kotlin/com/example/Application.kt",
-        )
+        // `validate()` does not read the baseline, so the two violations it holds back are here too.
+        architectureWithoutEntrypointRole.validate(FileConstraintCheck()).map { "[${it.label}] ${it.path}" }
+            .shouldContainExactlyInAnyOrder(
+                listOf("[UnexpectedFile] src/main/kotlin/com/example/Application.kt") + violationsHeldBackByBaseline,
+            )
     }
 
     "`.module { }` と sourceSet が、手で書いたディレクトリ宣言と同じエントリに展開される" {
@@ -293,13 +297,17 @@ class ProjectArchitectureSpec : FreeSpec({
         overNothing.validate() shouldBe emptyList()
     }
 
-    "正しい定義では違反が1件も出ない" {
+    "正しい定義では、baseline に棚上げした違反のほかは1件も出ない" {
         // The same run ProjectArchitectureTest makes, read as a list rather than as a thrown
         // error, so a failure here names the violations instead of only the message.
         // `FileConstraintCheck()` matches what `ProjectArchitectureTest` itself passes: without
         // it, the `konsist { }` constraint in `roles/ServiceRole.kt` would come back as
-        // `[UncheckedFileConstraint] reason=NotEvaluated` instead of zero violations.
-        projectArchitecture.validate(FileConstraintCheck()) shouldBe emptyList()
+        // `[UncheckedFileConstraint] reason=NotEvaluated` instead of being evaluated.
+        //
+        // `validate()` does not read the baseline, so what `katachi-baseline.json` holds back
+        // is all that may come back: the two violations left in on purpose, and nothing else.
+        projectArchitecture.validate(FileConstraintCheck()).map { "[${it.label}] ${it.path}" }
+            .shouldContainExactlyInAnyOrder(violationsHeldBackByBaseline)
     }
 })
 
@@ -327,6 +335,15 @@ private object SelectsNothing : FileSelection {
 @OptIn(InternalKatachiApi::class, ExperimentalKatachiApi::class)
 private fun shapeOf(entry: LayoutEntry): String =
     "${entry.path}\t${entry.kind}\t${if (entry.required) "required" else "optional"}"
+
+/**
+ * The violations left in the project on purpose, as the demo of `baseline = baselineFile()`, and
+ * recorded in `katachi-baseline.json`. `validate()` reports them; `assert()` holds them back.
+ */
+private val violationsHeldBackByBaseline: List<String> = listOf(
+    "[UnexpectedFile] src/main/kotlin/com/example/service/LegacyHealthCheck.kt",
+    "[UnsatisfiedFileConstraint] src/main/kotlin/com/example/service/LegacyStatusService.kt",
+)
 
 /** `"Gradle"` itself or anything nested under it -- see `groups/GradleGroup.kt`. */
 private fun String.isGradleGroupSubtree(): Boolean = this == "Gradle" || startsWith("Gradle/")

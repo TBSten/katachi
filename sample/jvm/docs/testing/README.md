@@ -18,12 +18,16 @@
 読み手が違うからです。`docs/` は定義を読みに来た人が開くページ、`snapshots/` は
 定義を書き換えた差分をレビューする人が見るテキストです。
 
+`katachi-baseline.json` も、テストが書き出すファイルとしてここに入ります。katachi を
+入れた時点ですでにあった違反の台帳で、そこに記録した違反はテストを落としません。
+
 | Role | Summary |
 |---|---|
 | [テストコード](./Test.md) | src/test/kotlin に置かれるテスト。本体と同じ package 構成を保つ |
 | [アーキテクチャ定義](./ArchitectureDefinition.md) | katachi の DSL で書かれた役割の定義。どのレイヤーにも属さない |
 | [生成ドキュメント](./GeneratedDocumentation.md) | この定義から書き出され、リポジトリにコミットされる Markdown |
 | [レイアウトのスナップショット](./LayoutSnapshot.md) | この定義を平坦化して全行書き出した記録。定義の変化を人が差分でレビューするためにある |
+| [baseline（棚上げした違反の台帳）](./Baseline.md) | katachi を入れた時点ですでにあった違反を記録し、テストを落とさずに棚上げしておく台帳 |
 
 ## Placement in this group
 
@@ -38,6 +42,7 @@ docs/
   README.md                生成ドキュメント
   **/*.md                  生成ドキュメント
 snapshots/layout.txt       レイアウトのスナップショット
+katachi-baseline.json      baseline（棚上げした違反の台帳）
 ```
 
 ## 置いてはいけないもの

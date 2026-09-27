@@ -19,6 +19,7 @@ katachi はリポジトリのソースから `includeBuild("../..")` で取り�
 | [`roles/PlatformImplementationRole.kt`](architecture-test/src/test/kotlin/com/example/kmp/roles/PlatformImplementationRole.kt) | `expect` / `actual` をソースセットごとに宣言した役割                                                                |
 | [`roles/RepositoryRole.kt`](architecture-test/src/test/kotlin/com/example/kmp/roles/RepositoryRole.kt)                         | 1つの `template { }` でインターフェースと実装の2ファイルを生成する役割。置き場所は2つの `layout` パターンから決まる |
 | [`ProjectLayoutSpec.kt`](architecture-test/src/test/kotlin/com/example/kmp/ProjectLayoutSpec.kt)                               | 配置の検査。`projectArchitecture.assert()` を呼ぶだけ                                                               |
+| [`katachi-baseline.json`](katachi-baseline.json) | baseline の台帳。`:data` の `androidMain` にある `user/` の1件を意図的に残して棚上げしている（[`../README.md`](../README.md#baseline意図的に残した違反)） |
 
 ## 実行方法
 

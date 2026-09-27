@@ -2,6 +2,7 @@ package com.example.kmp.groups
 
 import com.example.kmp.forbiddenContents
 import com.example.kmp.roles.architectureDefinition
+import com.example.kmp.roles.baseline
 import com.example.kmp.roles.fake
 import com.example.kmp.roles.generatedDocumentation
 import com.example.kmp.roles.layoutSnapshot
@@ -19,11 +20,12 @@ import me.tbsten.katachi.dsl.DeclarationContainerScope
  */
 fun DeclarationContainerScope.testingGroup() = "testing".group {
     title = "テスト支援"
-    summary = "テストダブル、テストコード本体、katachi のアーキテクチャ定義、そこから書き出されるドキュメントとスナップショット"
+    summary = "テストダブル、テストコード本体、katachi のアーキテクチャ定義、そこから書き出されるドキュメントとスナップショット、棚上げした違反の台帳"
     description = """
-        テストにまつわる5つの役割です。Fake（`:testing` の commonMain）、Test（各モジュールの
+        テストにまつわる6つの役割です。Fake（`:testing` の commonMain）、Test（各モジュールの
         テスト）、ArchitectureDefinition（`:architecture-test`）、GeneratedDocumentation
-        （ルート直下の `docs/`）、LayoutSnapshot（ルート直下の `snapshots/`）。
+        （ルート直下の `docs/`）、LayoutSnapshot（ルート直下の `snapshots/`）、Baseline
+        （ルート直下の `katachi-baseline.json`。棚上げした違反の台帳）。
 
         ArchitectureDefinition を Test と分けてあるのが、この group でいちばん言いたいことです。
         アーキテクチャ定義はテストコードではありません。プロジェクトの形を説明するのが仕事で、
@@ -54,4 +56,5 @@ fun DeclarationContainerScope.testingGroup() = "testing".group {
     architectureDefinition()
     generatedDocumentation()
     layoutSnapshot()
+    baseline()
 }

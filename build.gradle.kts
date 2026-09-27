@@ -249,11 +249,28 @@ data class SampleTemplate(
     val verifyTasks: List<String>,
 )
 
+/**
+ * The baseline a sample keeps (`baseline = baselineFile()`), checked the way a project that
+ * adopted it would rely on it: the architecture test passes while holding back [heldBack]
+ * violations, an update run outside CI leaves [ledger] exactly as committed, and an entry for
+ * a violation the project does not have fails the test as stale.
+ *
+ * [testTask] and [testClass] name the one test that asserts the definition; the update runs it
+ * alone, so the specs next to it cannot write anything else.
+ */
+data class SampleBaseline(
+    val testTask: String,
+    val testClass: String,
+    val heldBack: Int,
+    val ledger: String = "katachi-baseline.json",
+)
+
 data class SampleBuild(
     val name: String,
     val defaultTasks: List<String>,
     val needsAndroidSdk: Boolean,
     val template: SampleTemplate? = null,
+    val baseline: SampleBaseline? = null,
 )
 
 val sampleBuilds = listOf(
@@ -287,6 +304,7 @@ val sampleBuilds = listOf(
                 ":compileKotlin",
             ),
         ),
+        baseline = SampleBaseline(":architecture-test:test", "com.example.ProjectArchitectureTest", heldBack = 2),
     ),
     SampleBuild(
         "android",
@@ -371,6 +389,7 @@ val sampleBuilds = listOf(
                 ":feature:settings:testDebugUnitTest",
             ),
         ),
+        baseline = SampleBaseline(":architecture-test:test", "com.example.sample.ProjectArchitectureTest", heldBack = 2),
     ),
     SampleBuild(
         "kmp",
@@ -401,6 +420,7 @@ val sampleBuilds = listOf(
                 ":data:compileAndroidMain",
             ),
         ),
+        baseline = SampleBaseline(":architecture-test:test", "com.example.kmp.ProjectLayoutSpec", heldBack = 1),
     ),
     SampleBuild(
         "custom-processor",
@@ -498,6 +518,169 @@ fun Exec.runSampleWrapper(sample: SampleBuild, sampleDir: File, tasks: List<Stri
             ?.let { environment("ANDROID_HOME", it.absolutePath) }
     }
     runsAfterRootBuilds()
+}
+
+/**
+ * The three runs that check [baseline] in the sample in [sampleDir], in order, each after
+ * everything registered before it: held back, up to date, and stale when it should be. The
+ * predecessors are read here, not in the lazy configure blocks, which would see the tasks of
+ * the samples registered later too and make the order a cycle.
+ *
+ * What each run found is read from the test's JUnit XML report rather than from the console:
+ * the "held back" line goes to standard error, which the samples do not echo, and a failure
+ * message is cut short on the console. The report is deleted before each run, so a run that
+ * never got as far as the test cannot pass on the one before it.
+ */
+fun registerSampleBaselineTasks(
+    sample: SampleBuild,
+    baseline: SampleBaseline,
+    suffix: String,
+    sampleDir: File,
+    sdkNote: String,
+): List<TaskProvider<out Task>> {
+    val sampleName = sample.name
+    val ledger = File(sampleDir, baseline.ledger)
+    val ledgerName = baseline.ledger
+    val testSegments = baseline.testTask.removePrefix(":").split(":")
+    val report = File(
+        sampleDir,
+        (testSegments.dropLast(1) + listOf("build", "test-results", testSegments.last(), "TEST-${baseline.testClass}.xml"))
+            .joinToString("/"),
+    )
+    val testRun = listOf(baseline.testTask, "--tests", baseline.testClass, "--rerun")
+    val updatedLine = "${baseline.heldBack} violation${if (baseline.heldBack == 1) "" else "s"} recorded in"
+    val heldBackLine = "held back ${baseline.heldBack} violation${if (baseline.heldBack == 1) "" else "s"}."
+    val stateDir = layout.buildDirectory.dir("sample-baseline").get().asFile
+    // The ledger as it was before the stale run, kept outside the sample; the restore puts it back.
+    val backup = File(stateDir, "$sampleName.$ledgerName")
+    val probePath = "katachi-stale-probe/NotInTheProject.kt"
+    val layoutCheckLine = "\"me.tbsten.katachi.check.LayoutCheck\": ["
+
+    val heldBackTaskPredecessors = registeredSamples.toList()
+    val heldBackTask = tasks.register<Exec>("checkSample${suffix}BaselineHeldBack") {
+        group = LifecycleBasePlugin.VERIFICATION_GROUP
+        description = "Runs `${testRun.joinToString(" ")}` in sample/$sampleName and requires it to pass " +
+                "while holding back ${baseline.heldBack} violation(s) with $ledgerName.$sdkNote"
+        runSampleWrapper(sample, sampleDir, testRun)
+        mustRunAfter(heldBackTaskPredecessors)
+        doFirst { report.delete() }
+        doLast {
+            val text = report.takeIf { it.isFile }?.readText()
+                ?: throw GradleException("The test left no report at ${report.path}.")
+            if (heldBackLine !in text) {
+                throw GradleException(
+                    "sample/$sampleName passed, but its report at ${report.path} does not say " +
+                            "\"$heldBackLine\". Either the definition " +
+                            "no longer reads $ledgerName, or the violations left in on purpose changed: " +
+                            "keep heldBack in the root build.gradle.kts in step with the ledger.",
+                )
+            }
+        }
+    }
+    registeredSamples += heldBackTask
+
+    val upToDateTaskPredecessors = registeredSamples.toList()
+    val upToDateTask = tasks.register<Exec>("checkSample${suffix}BaselineUpToDate") {
+        group = LifecycleBasePlugin.VERIFICATION_GROUP
+        description = "Runs `${testRun.joinToString(" ")} -Dkatachi.baseline.update=true` in " +
+                "sample/$sampleName without the CI variable, and requires $ledgerName to come out " +
+                "exactly as it was.$sdkNote"
+        runSampleWrapper(sample, sampleDir, testRun + "-Dkatachi.baseline.update=true")
+        // An update is refused when CI=true, which is exactly where this has to run.
+        environment.remove("CI")
+        mustRunAfter(upToDateTaskPredecessors)
+        val before = File(stateDir, "$sampleName.before.$ledgerName")
+        doFirst {
+            val committed = ledger.takeIf { it.isFile }
+                ?: throw GradleException("sample/$sampleName has no ${ledger.path} to compare the update with.")
+            before.parentFile.mkdirs()
+            committed.copyTo(before, overwrite = true)
+            report.delete()
+        }
+        doLast {
+            val expected = before.readText()
+            val actual = ledger.readText()
+            before.delete()
+            // Without this, a property the test JVM never received would pass as "nothing changed".
+            if (updatedLine !in report.takeIf { it.isFile }?.readText().orEmpty()) {
+                throw GradleException(
+                    "sample/$sampleName passed, but its report at ${report.path} does not say " +
+                            "\"$updatedLine\": -Dkatachi.baseline.update=true did not reach the test.",
+                )
+            }
+            if (actual != expected) {
+                val removed = expected.lines() - actual.lines().toSet()
+                val added = actual.lines() - expected.lines().toSet()
+                throw GradleException(
+                    "Updating the baseline of sample/$sampleName changed ${ledger.path}, so the " +
+                            "committed ledger does not match the project (or the update is not " +
+                            "deterministic):\n" +
+                            (removed.map { "  - $it" } + added.map { "  + $it" }).joinToString("\n") +
+                            "\nThe updated ledger was left in place: review it with git diff, and " +
+                            "commit it or fix the violation instead.",
+                )
+            }
+        }
+    }
+    registeredSamples += upToDateTask
+
+    val restoreTask = tasks.register("restoreSample${suffix}Baseline") {
+        group = LifecycleBasePlugin.VERIFICATION_GROUP
+        description = "Puts back the $ledgerName of sample/$sampleName that " +
+                "checkSample${suffix}BaselineStale added an entry to, and nothing else."
+        onlyIf("checkSample${suffix}BaselineStale changed the ledger") { backup.isFile }
+        doLast {
+            backup.copyTo(ledger, overwrite = true)
+            backup.delete()
+        }
+    }
+
+    val staleTaskPredecessors = registeredSamples.toList()
+    val staleTask = tasks.register<Exec>("checkSample${suffix}BaselineStale") {
+        group = LifecycleBasePlugin.VERIFICATION_GROUP
+        description = "Adds an entry for a file sample/$sampleName does not have to its $ledgerName, " +
+                "requires `${testRun.joinToString(" ")}` to fail with [StaleBaselineEntry] about it, " +
+                "and puts the ledger back.$sdkNote"
+        runSampleWrapper(sample, sampleDir, testRun)
+        isIgnoreExitValue = true
+        mustRunAfter(staleTaskPredecessors)
+        finalizedBy(restoreTask)
+        doFirst {
+            if (backup.exists()) {
+                throw GradleException(
+                    "${backup.path} is left over from an interrupted run, so ${ledger.path} may " +
+                            "still hold the probe entry. Copy it back over the ledger by hand, " +
+                            "delete it, and run again.",
+                )
+            }
+            val original = ledger.readText()
+            val lines = original.lines()
+            val at = lines.indexOfFirst { it.trim() == layoutCheckLine }
+            if (at < 0) {
+                throw GradleException("${ledger.path} has no line $layoutCheckLine to add the probe entry after.")
+            }
+            backup.parentFile.mkdirs()
+            ledger.copyTo(backup, overwrite = true)
+            val probe = "      {\"rule\": \"UnexpectedFile\", \"path\": \"$probePath\"},"
+            ledger.writeText((lines.take(at + 1) + probe + lines.drop(at + 1)).joinToString("\n"))
+            report.delete()
+        }
+        doLast {
+            val exitValue = (this as Exec).executionResult.get().exitValue
+            val text = report.takeIf { it.isFile }?.readText().orEmpty()
+            if (exitValue == 0 || "[StaleBaselineEntry]" !in text || probePath !in text) {
+                throw GradleException(
+                    "sample/$sampleName was expected to fail with [StaleBaselineEntry] about " +
+                            "$probePath, an entry for a file it does not have, but " +
+                            (if (exitValue == 0) "the test passed." else "its report at ${report.path} does not say so."),
+                )
+            }
+        }
+    }
+    restoreTask.configure { mustRunAfter(staleTask) }
+    registeredSamples += listOf(staleTask, restoreTask)
+
+    return listOf(heldBackTask, upToDateTask, staleTask)
 }
 
 sampleBuilds.forEach { sample ->
@@ -619,11 +802,15 @@ sampleBuilds.forEach { sample ->
     deleteTask.configure { mustRunAfter(runTasks, checkTemplateTask) }
     registeredSamples += listOf(prepareTask) + runTasks + listOf(generateTask, checkTemplateTask, deleteTask)
 
+    val baselineTasks = sample.baseline?.let { registerSampleBaselineTasks(sample, it, suffix, sampleDir, sdkNote) }
+        .orEmpty()
+
     val task = tasks.register("checkSample$suffix") {
         group = LifecycleBasePlugin.VERIFICATION_GROUP
         description = "Runs checkSample${suffix}Build, then generates the files of its templates " +
-                "in sample/${sample.name}, checks the sample with them in place and deletes them."
-        dependsOn(buildTask, checkTemplateTask)
+                "in sample/${sample.name}, checks the sample with them in place and deletes them" +
+                (if (baselineTasks.isEmpty()) "." else ", then checks its baseline.")
+        dependsOn(listOf(buildTask, checkTemplateTask) + baselineTasks)
     }
     checkSamples.configure { dependsOn(task) }
 }

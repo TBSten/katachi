@@ -1,6 +1,7 @@
 package com.example.sample.groups
 
 import com.example.sample.roles.architectureDefinition
+import com.example.sample.roles.baseline
 import com.example.sample.roles.fake
 import com.example.sample.roles.generatedDocumentation
 import com.example.sample.roles.layoutSnapshot
@@ -9,7 +10,8 @@ import me.tbsten.katachi.dsl.DeclarationContainerScope
 
 /**
  * Roles that exist for testing: the shared fakes in `:testing`, the tests themselves, the
- * architecture definition, and the two things that definition is written out as.
+ * architecture definition, the two things that definition is written out as, and the baseline
+ * of the violations held back.
  *
  * The definition lives in `:architecture-test`, a module that belongs to no layer of the
  * application. It is still code someone has to maintain, so it gets a role of its own
@@ -26,13 +28,14 @@ import me.tbsten.katachi.dsl.DeclarationContainerScope
  */
 fun DeclarationContainerScope.testingGroup() = "testing".group {
     title = "テスト"
-    summary = "アプリを確かめるためにあるもの。共有のフェイク、テスト、アーキテクチャ定義、生成ドキュメント、レイアウトのスナップショット"
+    summary = "アプリを確かめるためにあるもの。共有のフェイク、テスト、アーキテクチャ定義、生成ドキュメント、レイアウトのスナップショット、baseline"
     description = """
-        アプリのレイヤーではなく、アプリを確かめるためにあるもの。5つ集めてある。
+        アプリのレイヤーではなく、アプリを確かめるためにあるもの。6つ集めてある。
         フェイクは `:testing` にある差し替え用の実装、テストコードはテストそのもの、
         アーキテクチャ定義は katachi の DSL で書かれたこの定義自身、生成ドキュメントは
         その定義から `katachiDocs` が書き出す `docs/`、レイアウトのスナップショットは
-        同じ定義を平坦化して `:architecture-test:test` が書き出す `snapshots/`。
+        同じ定義を平坦化して `:architecture-test:test` が書き出す `snapshots/`、baseline は
+        棚上げした違反の台帳 `katachi-baseline.json`。
 
         アーキテクチャ定義をテストコードに混ぜていないのは、2つが別のことを書いているから。
         定義は「どんな形をしているか」、テストは「どう振る舞うか」。どちらも
@@ -55,6 +58,9 @@ fun DeclarationContainerScope.testingGroup() = "testing".group {
         人が開くページ、`snapshots/` は定義を書き換えた差分をレビューする人が見るテキスト。
         人が書くルートの `README.md` はどちらとも別扱いで、`tool` グループの `Documentation`
         役割の側。
+
+        baseline は katachi を入れた時点ですでにあった違反の台帳で、そこに記録した違反は
+        テストを落とさない。これもテストが書き出すファイルなので、生成物と同じくここに置いてある。
     """.trimIndent()
 
     fake()
@@ -62,4 +68,5 @@ fun DeclarationContainerScope.testingGroup() = "testing".group {
     architectureDefinition()
     generatedDocumentation()
     layoutSnapshot()
+    baseline()
 }

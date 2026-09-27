@@ -1,0 +1,8 @@
+{
+  "version": 1,
+  "checks": {
+    "me.tbsten.katachi.check.LayoutCheck": [
+      {"rule": "UnexpectedDirectory", "path": "data/src/androidMain/kotlin/com/example/kmp/data/user"}
+    ]
+  }
+}

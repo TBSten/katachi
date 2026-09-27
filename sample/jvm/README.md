@@ -19,6 +19,7 @@ katachi はリポジトリのソースから `includeBuild("../..")` で取り�
 | [`roles/ServiceRole.kt`](architecture-test/src/test/kotlin/com/example/roles/ServiceRole.kt)             | `layout { }` に加えて `konsist { }` で制約を書いた役割。`template { }` で `*Service.kt` を生成する見本も兼ねる |
 | [`ProjectArchitectureTest.kt`](architecture-test/src/test/kotlin/com/example/ProjectArchitectureTest.kt) | 利用者が書くテストはこれ1つ。`konsist { }` も評価するために `assert(FileConstraintCheck())` を呼んでいる              |
 | [`processors/RoleNames.kt`](architecture-test/src/test/kotlin/com/example/processors/RoleNames.kt)       | `--arg` で引数を受け取る自作 processor の最小例                                                                |
+| [`katachi-baseline.json`](katachi-baseline.json) | baseline の台帳。`service/LegacyHealthCheck.kt` と `service/LegacyStatusService.kt` の2件を意図的に残して棚上げしている（[`../README.md`](../README.md#baseline意図的に残した違反)） |
 
 ## 実行方法
 

@@ -7,9 +7,11 @@ import com.example.kmp.groups.gradleGroup
 import com.example.kmp.groups.testingGroup
 import com.example.kmp.groups.toolGroup
 import com.example.kmp.groups.uiGroup
+import me.tbsten.katachi.ExperimentalKatachiApi
 import me.tbsten.katachi.dsl.Architecture
 import me.tbsten.katachi.dsl.gradle.ModulePackage
 import me.tbsten.katachi.dsl.architecture
+import me.tbsten.katachi.dsl.baselineFile
 import me.tbsten.katachi.dsl.gradle.capitalizedModuleNamePackage
 
 /**
@@ -66,9 +68,15 @@ val modulePackage: ModulePackage = capitalizedModuleNamePackage("com.example.kmp
  * stack, so every declaration would record a position nobody wrote. Written once here rather
  * than repeated in twenty-eight files; `ProjectArchitectureSpec` is what actually holds the
  * line, by reading the captured line back out of the source.
+ *
+ * `baseline = baselineFile()` holds back the violations recorded in `katachi-baseline.json`
+ * (declared by `roles/BaselineRole.kt`). One is left in on purpose, as the demo of it: the
+ * `user` directory in `androidMain` of `:data`.
  */
+@OptIn(ExperimentalKatachiApi::class)
 val projectArchitecture: Architecture = architecture {
     title = "katachi-sample-kmp"
+    baseline = baselineFile()
 
     featureGroup()
     uiGroup()

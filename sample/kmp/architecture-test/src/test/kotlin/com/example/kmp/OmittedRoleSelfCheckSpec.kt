@@ -43,8 +43,14 @@ class OmittedRoleSelfCheckSpec : FreeSpec({
             gradleGroup()
         }
 
+        // `validate()` does not read the baseline, so what it holds back is here too.
         withoutTool.validate().labels() shouldContainExactly
-            listOf("[UnexpectedFile] .gitignore", "[UnexpectedFile] README.md", PREVIEW_OVERLAP)
+            listOf(
+                "[UnexpectedFile] .gitignore",
+                "[UnexpectedFile] README.md",
+                HELD_BACK_BY_BASELINE,
+                PREVIEW_OVERLAP,
+            )
     }
 
     "未知のディレクトリは1件だけ報告され、その配下は掘られない" {
@@ -67,6 +73,14 @@ class OmittedRoleSelfCheckSpec : FreeSpec({
             listOf("[UnexpectedDirectory] data/src", PREVIEW_OVERLAP)
     }
 })
+
+/**
+ * The violation left in the project on purpose, as the demo of `baseline = baselineFile()`, and
+ * recorded in `katachi-baseline.json`. `validate()` reports it; `assert()` holds it back. The
+ * definition without `data` does not report it, because the walk stops at `data/src`.
+ */
+private const val HELD_BACK_BY_BASELINE: String =
+    "[UnexpectedDirectory] data/src/androidMain/kotlin/com/example/kmp/data/user"
 
 /**
  * The one overlap this sample means to have. In the `component` package of `:ui`, `Component`

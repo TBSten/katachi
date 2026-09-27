@@ -8,6 +8,7 @@ import com.example.sample.groups.testingGroup
 import com.example.sample.groups.uiGroup
 import io.kotest.core.spec.style.FreeSpec
 import io.kotest.matchers.collections.shouldContainExactly
+import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotest.matchers.collections.shouldNotContain
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
@@ -70,6 +71,7 @@ class ProjectArchitectureSpec : FreeSpec({
             "testing/ArchitectureDefinition",
             "testing/GeneratedDocumentation",
             "testing/LayoutSnapshot",
+            "testing/Baseline",
             "Gradle/SettingsScript",
             "Gradle/BuildScript",
             "Gradle/GradleProperties",
@@ -219,10 +221,11 @@ class ProjectArchitectureSpec : FreeSpec({
         // order survives — the root listed by name, where `.gitignore` precedes `README.md`.
         val violations = architectureWithoutToolRoles.validate()
 
-        violations.map { "[${it.label}] ${it.path}" } shouldContainExactly listOf(
+        // `validate()` does not read the baseline, so the violations it holds back are here too.
+        violations.map { "[${it.label}] ${it.path}" } shouldContainExactlyInAnyOrder listOf(
             "[UnexpectedFile] .gitignore",
             "[UnexpectedFile] README.md",
-        )
+        ) + violationsHeldBackByBaseline
     }
 })
 
@@ -242,6 +245,15 @@ private val architectureWithoutToolRoles: Architecture = architecture {
     gradleGroup()
     // toolGroup() — omitted on purpose. `.gitignore` and `README.md` lose their role.
 }
+
+/**
+ * The violations left in the project on purpose, as the demo of `baseline = baselineFile()`, and
+ * recorded in `katachi-baseline.json`. `validate()` reports them; `assert()` holds them back.
+ */
+private val violationsHeldBackByBaseline: List<String> = listOf(
+    "[UnexpectedDirectory] data/src/main/kotlin/com/example/sample/data/legacy",
+    "[UnexpectedFile] feature/home/src/main/kotlin/com/example/sample/feature/home/HomeFormatter.kt",
+)
 
 /** `"Gradle"` itself or anything nested under it -- see `groups/GradleGroup.kt`. */
 private fun String.isGradleGroupSubtree(): Boolean = this == "Gradle" || startsWith("Gradle/")

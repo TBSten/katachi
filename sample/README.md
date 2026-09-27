@@ -44,6 +44,31 @@ katachi が表現できなければならない形の中で最もよく出てく
 呼び出し元ではなく定義を書いたファイルを指すこと**を、各サンプルの `ProjectArchitectureSpec` が
 ファイル名の完全一致で検証している。
 
+## baseline（意図的に残した違反）
+
+`jvm` / `android` / `kmp` は定義に `baseline = baselineFile()` を書き、ルート直下の
+`katachi-baseline.json` に「katachi を入れた時点ですでにあった違反」を記録して棚上げしている。
+台帳が空では何も確かめられないので、**違反を意図的に残してある**（`custom-processor` は対象外）。
+どれもソースのコメントに「baseline のデモとして意図的に違反している」と書いてある。
+
+| サンプル | 残してある違反 |
+|---|---|
+| `jvm` | `service/LegacyHealthCheck.kt`（`[UnexpectedFile]`）、`service/LegacyStatusService.kt`（`internal` なので `konsist { }` の制約違反） |
+| `android` | `:feature:home` の `HomeFormatter.kt`（`[UnexpectedFile]`）、`:data` の `legacy/`（`[UnexpectedDirectory]`） |
+| `kmp` | `:data` の `androidMain` にある `user/`（`[UnexpectedDirectory]`） |
+
+`checkSample<Name>` はふだんの検査に加えて、baseline について次の3つを確かめる。
+
+| タスク | 確かめること |
+|---|---|
+| `checkSample<Name>BaselineHeldBack` | 定義を検査するテストが緑で、`held back N violations.` を出す |
+| `checkSample<Name>BaselineUpToDate` | `CI` を外して `-Dkatachi.baseline.update=true` で走らせても、台帳が1文字も変わらない（台帳が最新で、書き出しが決定的） |
+| `checkSample<Name>BaselineStale` | 台帳に存在しないファイルの項目を1行足すと `[StaleBaselineEntry]` で落ちる。台帳はそのあと元に戻す |
+
+残した違反を直したり増やしたりしたら、そのサンプルで
+`./gradlew :architecture-test:test -Dkatachi.baseline.update=true` を走らせて台帳を更新し、
+ルートの `build.gradle.kts` の `SampleBaseline(heldBack = ...)` の件数を合わせる。
+
 ## checkSamples を順番に回す理由
 
 ```bash

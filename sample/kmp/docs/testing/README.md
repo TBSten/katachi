@@ -2,11 +2,12 @@
 
 # テスト支援
 
-テストダブル、テストコード本体、katachi のアーキテクチャ定義、そこから書き出されるドキュメントとスナップショット
+テストダブル、テストコード本体、katachi のアーキテクチャ定義、そこから書き出されるドキュメントとスナップショット、棚上げした違反の台帳
 
-テストにまつわる5つの役割です。Fake（`:testing` の commonMain）、Test（各モジュールの
+テストにまつわる6つの役割です。Fake（`:testing` の commonMain）、Test（各モジュールの
 テスト）、ArchitectureDefinition（`:architecture-test`）、GeneratedDocumentation
-（ルート直下の `docs/`）、LayoutSnapshot（ルート直下の `snapshots/`）。
+（ルート直下の `docs/`）、LayoutSnapshot（ルート直下の `snapshots/`）、Baseline
+（ルート直下の `katachi-baseline.json`。棚上げした違反の台帳）。
 
 ArchitectureDefinition を Test と分けてあるのが、この group でいちばん言いたいことです。
 アーキテクチャ定義はテストコードではありません。プロジェクトの形を説明するのが仕事で、
@@ -35,6 +36,7 @@ GeneratedDocumentation と LayoutSnapshot を ArchitectureDefinition と分け�
 | [アーキテクチャ定義](./ArchitectureDefinition.md) | :architecture-test モジュールの src/test。katachi の DSL で書いたこのプロジェクトの定義。どのレイヤーにも属さないので専用モジュールに置く |
 | [生成ドキュメント](./GeneratedDocumentation.md) | この定義から書き出され、リポジトリにコミットされる Markdown |
 | [レイアウトのスナップショット](./LayoutSnapshot.md) | この定義を平坦化して全行書き出した記録。定義の変化を人が差分でレビューするためにある |
+| [baseline（棚上げした違反の台帳）](./Baseline.md) | katachi を入れた時点ですでにあった違反を記録し、テストを落とさずに棚上げしておく台帳 |
 
 ## Placement in this group
 
@@ -54,6 +56,7 @@ docs/
   README.md                                     生成ドキュメント
   **/*.md                                       生成ドキュメント
 snapshots/layout.txt                            レイアウトのスナップショット
+katachi-baseline.json                           baseline（棚上げした違反の台帳）
 ```
 
 ## 置いてはいけないもの

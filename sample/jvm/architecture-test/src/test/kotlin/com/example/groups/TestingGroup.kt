@@ -2,6 +2,7 @@ package com.example.groups
 
 import com.example.forbiddenContents
 import com.example.roles.architectureDefinition
+import com.example.roles.baseline
 import com.example.roles.generatedDocumentation
 import com.example.roles.layoutSnapshot
 import com.example.roles.test
@@ -16,6 +17,7 @@ import me.tbsten.katachi.dsl.DeclarationContainerScope
  * than hiding inside `Test`: `ArchitectureDefinition` describes the shape and `Test` asserts
  * behaviour. `GeneratedDocumentation` and `LayoutSnapshot` are the shape written out — as
  * pages for a reader, and as one flattened line per entry for a reviewer's `git diff`.
+ * `Baseline` is the ledger of the violations held back, which the test writes too.
  */
 fun DeclarationContainerScope.testingGroup() = "testing".group {
     title = "テスト"
@@ -35,6 +37,9 @@ fun DeclarationContainerScope.testingGroup() = "testing".group {
         生成物にも役割が要る、という例にもなっています。2つを1つにまとめていないのは、
         読み手が違うからです。`docs/` は定義を読みに来た人が開くページ、`snapshots/` は
         定義を書き換えた差分をレビューする人が見るテキストです。
+
+        `katachi-baseline.json` も、テストが書き出すファイルとしてここに入ります。katachi を
+        入れた時点ですでにあった違反の台帳で、そこに記録した違反はテストを落としません。
     """.trimIndent()
 
     forbiddenContents = """
@@ -46,4 +51,5 @@ fun DeclarationContainerScope.testingGroup() = "testing".group {
     architectureDefinition()
     generatedDocumentation()
     layoutSnapshot()
+    baseline()
 }

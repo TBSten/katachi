@@ -204,6 +204,7 @@ testing/ArchitectureDefinition	architecture-test/src/test/kotlin/com/example/kmp
 testing/ArchitectureDefinition	architecture-test/src/test/kotlin/com/example/kmp/*	Directory	optional
 testing/ArchitectureDefinition	architecture-test/src/test/kotlin/com/example/kmp/*.kt	File	optional
 testing/ArchitectureDefinition	architecture-test/src/test/kotlin/com/example/kmp/*/*.kt	File	optional
+testing/Baseline	katachi-baseline.json	File	required
 testing/Fake	testing	Directory	optional
 testing/Fake	testing/build	Ignore	optional
 testing/Fake	testing/build.gradle.kts	File	required
