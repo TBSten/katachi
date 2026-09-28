@@ -10,8 +10,6 @@ plugins {
 }
 
 kotlin {
-    explicitApi()
-
     // The jar runs inside Dokka's worker, next to the kotlin-stdlib Dokka brings: dokka-core
     // 2.2.0 depends on kotlin-stdlib 2.0.21 (its POM). Keeping the API and the stdlib dependency
     // at 2.0 means this plugin never asks for anything newer than that worker is guaranteed to
