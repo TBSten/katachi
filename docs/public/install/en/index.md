@@ -611,7 +611,7 @@ sh $CLI summary
 
 Work from `roles` in the step 1 report (`sh $CLI data get report`). **The good candidates are roles with many files of the same shape** (UseCase, ViewModel, Screen, Repository, and so on). Do not propose one for a role with a small `count`, or one whose files each take a different shape.
 
-**Roles whose destination directory or module is a wildcard, like `:feature:*`, are candidates too** (ViewModel and Screen are usually shaped this way). Name that `*` with `capture("feature")` / `.module(capture = "feature")` and you can pick the destination with `--arg feature=home` (step 2 of 6-D). The only things that can't be named are a directory's partial match (`feature-*`) and `**`; don't propose one for a role whose destination is only that.
+**Roles whose destination directory or module is a wildcard, like `:feature:*`, are candidates too** (ViewModel and Screen are usually shaped this way). Name that `*` with `capture("feature")` / `.module(capture = "feature")` and you can pick the destination with `--arg feature=home` (step 2 of 6-D). **Every `*` left in the destination needs a name, both the module's and the package directory's.** The only things that can't be named are a directory's partial match (`feature-*`) and `**`; don't propose one for a role whose destination is only that.
 
 For each role, decide the following and record it with `add template`.
 
@@ -619,13 +619,13 @@ For each role, decide the following and record it with `add template`.
 |---|---|
 | `--role` | The role's name (as written in `architecture { }`) |
 | `--files` | The files it creates. **Can be passed more than once.** Write them with the parameter embedded, like `${name}UseCase.kt` (for example, an interface and its implementation) |
-| `--params` | The parameter names taken with `stringParameter()` or another `*Parameter()`, plus the name given to a wildcard in the destination (for example, `feature`). Can be passed more than once |
+| `--params` | The parameter names taken with `stringParameter()` or another `*Parameter()`, plus the name given to a wildcard in the destination (for example, `feature`). Can be passed more than once. **If the destination has more than one `*` (the module and the package directory, for example), list that many** |
 | `--basedOn` | The existing file the skeleton is based on (one of `roles[].examples`) |
 | `--reason` | Why this role gets one (the count, and that the files share a shape) |
 
 ```sh
 sh $CLI add template --role UseCase --files '${name}UseCase.kt' --files '${name}UseCaseImpl.kt' --params name --basedOn "domain/src/main/kotlin/com/example/app/domain/useCase/GetUserUseCase.kt" --reason "All 18 are an interface plus an Impl, and share one shape"
-sh $CLI add template --role ViewModel --files '${name}ViewModel.kt' --params feature --params name --basedOn "feature/home/src/main/kotlin/com/example/app/feature/home/HomeViewModel.kt" --reason "12 are one each in every :feature:* module, and share one shape. Name the * in :feature:* as feature to pick the destination"
+sh $CLI add template --role ViewModel --files '${name}ViewModel.kt' --params feature --params featurePackage --params name --basedOn "feature/home/src/main/kotlin/com/example/app/feature/home/HomeViewModel.kt" --reason "12 are one each in every :feature:* module, and share one shape. Name the * in :feature:* and the * of the package directory to pick the destination"
 ```
 
 If you judge that no role suits a template, record nothing. What you record shows up in the "Next action" of `summary` and in the report's "Template proposals". **Do not write `template { }` here.** That happens in 6-D, after the user agrees.
@@ -787,16 +787,17 @@ Do this only for the roles, among those proposed in step 6, that the user agreed
    "ViewModel" {
        layout {
            ":feature:*".module(capture = "feature") {   // was ":feature:*".module {
-               /* unchanged inside */
+               // was ... / "feature" / "*" / "*ViewModel".ktFile()
+               mainSourceSet / kotlin / "com/example/app/feature" / capture("featurePackage") / "*ViewModel".ktFile()
            }
        }
        template {
-           val feature = captureValue("feature")   // "home" for --arg feature=home
+           val featurePackage = captureValue("featurePackage")   // "home" for --arg featurePackage=home
            val name by stringParameter()
 
            file("${name}ViewModel.kt") {
                """
-                   package com.example.app.feature.$feature
+                   package com.example.app.feature.$featurePackage
 
                    class ${name}ViewModel
                """.trimIndent()
@@ -806,6 +807,10 @@ Do this only for the roles, among those proposed in step 6, that the user agreed
    ```
 
    For a directory's `*`, rewrite the `"*"` in `"feature" / "*" / ...` as `capture("feature")`. For a module with more than one `*`, pass the names in order, as in `.module("feature", "layer")`.
+
+   **Name every `*` left in the directory part of the destination, the module's and the directories' alike.** If there is both a module `*` and a package directory `*`, as in the example above, you need both `.module(capture = ...)` and `capture(...)`. If even one unnamed `*` is left, that path is not a destination and `katachiTemplate` fails.
+
+   **If the package directory's name differs from the module's name (module `appConfig` and directory `appconfig`, for example), give that directory's `*` its own name, separate from the module's, and use its `captureValue()` in the package.** If you put the module's name (`captureValue("feature")`) in the package, you write a package that disagrees with its directory, and since both the check and the compiler pass, you won't notice.
 
    All there is to use is `stringParameter()` / `booleanParameter()` / `intParameter()` (optionally with `default = ...`), `enumParameter()` (given `entries` or a default value), `file("...") { "content" }`, plus `capture("name")` / `.module(capture = "name")` to name a wildcard in the destination and, to read its value, `captureValue("name")` (inside the template) / `wildcard("name")` (inside a module block in layout). Do not add other words by guessing.
 3. A template's own parameters (`--arg name=...`) can be passed as-is, with no setting needed on the module side. What is accepted is exactly the set of names the named role's `template { }` declares, plus the names given to wildcards in its `layout { }`; a typo still fails, as before, with `Unknown processor argument(s): ...`
@@ -819,7 +824,7 @@ Do this only for the roles, among those proposed in step 6, that the user agreed
    For a role whose wildcard was named, pass that value too. **A module's value must be one that already exists** (passing one that doesn't fails, listing the modules that do).
 
    ```sh
-   ./gradlew :architecture-test:katachiTemplate --arg roleName=ViewModel --arg feature=home --arg name=Sample
+   ./gradlew :architecture-test:katachiTemplate --arg roleName=ViewModel --arg feature=home --arg featurePackage=home --arg name=Sample
    ./gradlew :architecture-test:test
    ```
 

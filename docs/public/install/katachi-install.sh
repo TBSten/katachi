@@ -35,7 +35,11 @@
 set -eu
 
 # 配信元。ローカルで試すときだけ環境変数で差し替える。
-KATACHI_DOCS="${KATACHI_DOCS:-https://tbsten.github.io/katachi}"
+# init に渡した値は作業用ディレクトリ（cache/docs）に記録され、以降のコマンドは環境変数が
+# 無ければそれを使う（resolve_docs）。init にだけ渡して docs が黙って本番を取る、を防ぐため。
+KATACHI_DOCS_DEFAULT="https://tbsten.github.io/katachi"
+KATACHI_DOCS_ENV="${KATACHI_DOCS:-}"
+KATACHI_DOCS="${KATACHI_DOCS:-$KATACHI_DOCS_DEFAULT}"
 
 # 言語。チェックリストとレポート、scaffold の生成物のコメント、**このスクリプトの出力**が従う。
 # `init --lang` で決まり、作業用ディレクトリ（cache/lang）に記録される。以降のコマンドは
@@ -235,6 +239,12 @@ katachi-install.sh — katachi のインストールのうち機械的にでき�
       利用者の導入では使わない。~/.m2 へは katachi のリポジトリで
       ./gradlew publishToMavenLocal -Pkatachi.skipSigning として出す。
 
+  KATACHI_DOCS=<URL>
+      手順書・テンプレート・ガイドの配信元（既定: https://tbsten.github.io/katachi）。
+      ビルド済みのサイト（docs/dist を配信したもの）か配信 URL に向ける。docs/public には
+      llms-full.txt などが無い。init に付けると作業用ディレクトリに記録され、以降の
+      docs なども従う（付けずに init し直すと本番に戻る）。docs は取得元を標準エラーに出す。
+
 init と scaffold は Gradle のルートディレクトリで実行してください。
 data と docs は、作業用ディレクトリに置かれたこのスクリプトから実行してください。
 USAGE
@@ -351,6 +361,13 @@ Environment variables for developers:
       repositories of pluginManagement and dependencyResolutionManagement in settings.
       Not for real installations. Publish to ~/.m2 from the katachi repository with
       ./gradlew publishToMavenLocal -Pkatachi.skipSigning
+
+  KATACHI_DOCS=<URL>
+      Where the guide, templates and docs are served from (default: https://tbsten.github.io/katachi).
+      Point it at a built site (docs/dist, served) or a served URL; docs/public has no
+      llms-full.txt and the like. Set it on init and it is recorded in the working directory;
+      later commands such as docs follow it (running init again without it goes back to the
+      default). docs prints the source URL to standard error.
 
 Run init and scaffold in the Gradle root directory.
 Run data and docs with the copy of this script in the working directory.
@@ -498,6 +515,17 @@ resolve_lang() {
 	esac
 	# 埋め込みの python（CHECK_PY など）も同じ言語で出すために渡す。
 	export KATACHI_LANG
+}
+
+# 配信元を決める。環境変数 KATACHI_DOCS > init が作業用ディレクトリに記録した配信元 > 本番。
+# init は記録する側なので、環境変数か本番だけを見る。
+resolve_docs() {
+	[ -n "$KATACHI_DOCS_ENV" ] && return 0
+	[ "${1:-}" = "init" ] && return 0
+	_rd_wd=$(resolve_workdir) || _rd_wd=""
+	if [ -n "$_rd_wd" ] && [ -s "$_rd_wd/cache/docs" ]; then
+		KATACHI_DOCS=$(cat "$_rd_wd/cache/docs")
+	fi
 }
 
 # --lang の値を確かめて KATACHI_LANG に入れる。init と doctor が使う。
@@ -855,6 +883,15 @@ cmd_init() {
 	install_self "$init_workdir"
 	# 以降のコマンドが同じ言語を使えるように記録する（出力の言語もこれに従う）。
 	printf '%s' "$KATACHI_LANG" >"$init_workdir/cache/lang"
+	# 配信元も記録し、以降のコマンド（docs など）が環境変数なしでも同じ配信元を使うようにする。
+	# 本番（既定）なら記録を消す。前回ローカルに向けた記録が残ると、黙ってそちらを取り続ける。
+	if [ "$KATACHI_DOCS" = "$KATACHI_DOCS_DEFAULT" ]; then
+		rm -f "$init_workdir/cache/docs"
+	else
+		printf '%s' "$KATACHI_DOCS" >"$init_workdir/cache/docs"
+		note "配信元:             ${KATACHI_DOCS}（KATACHI_DOCS。以降のコマンドもこれを使う）" \
+			"Docs source:        ${KATACHI_DOCS} (KATACHI_DOCS; later commands use it too)"
+	fi
 	# KATACHI_MAVEN_LOCAL も同じく記録し、scaffold で付け忘れても効くようにする。
 	case "${KATACHI_MAVEN_LOCAL:-}" in
 	1 | yes | true) printf 'yes' >"$init_workdir/cache/maven-local" ;;
@@ -2241,7 +2278,19 @@ cmd_docs() {
 	fi
 	_dest="$WORKDIR/cache/$_name"
 
+	if [ -s "$_dest" ] && [ "$_refresh" = "no" ]; then
+		_cached="yes"
+	else
+		_cached="no"
+	fi
 	fetch_once "$_url" "$_dest" "$_refresh"
+	# 取得元は標準エラーに出す。標準出力はパスだけ（機械が読む）。
+	if [ "$_cached" = "yes" ]; then
+		printf '%s\n' "$(pick "取得元: ${_url}（取得済みのものを使いました。取り直すなら --refresh）" \
+			"Source: ${_url} (used the copy already fetched; add --refresh to fetch it again)")" >&2
+	else
+		printf '%s\n' "$(pick "取得元: ${_url}" "Source: ${_url}")" >&2
+	fi
 	printf '%s\n' "$_dest"
 }
 
@@ -2292,6 +2341,31 @@ try:
 except Exception:
     pass
 root = os.path.join(project_root, sys.argv[2], "src", "test", "kotlin")
+
+
+def included_builds():
+    # buildSrc と、settings で includeBuild したビルドのディレクトリ（プロジェクトルートからの相対）。
+    # これらのビルドは gradle() の対象外なので、手書きの役割で宣言していても gradle() を勧めない。
+    found = {"buildSrc"}
+    for name in ("settings.gradle.kts", "settings.gradle"):
+        path = os.path.join(project_root, name)
+        if not os.path.isfile(path):
+            continue
+        src = open(path, encoding="utf-8", errors="replace").read()
+        for m in re.finditer(r"""\bincludeBuild\s*\(?\s*["']([^"']+)["']""", src):
+            d = os.path.normpath(m.group(1)).replace("\\", "/")
+            if d not in (".", "") and not d.startswith(".."):
+                found.add(d)
+    return found
+
+
+INCLUDED = included_builds()
+
+
+def in_included_build(where):
+    # where は "/build-logic/build.gradle.kts" や ":build-logic/..." の形。先頭の区切りを落として比べる
+    w = where.replace("\\", "/").replace(":", "/").lstrip("/")
+    return any(w == d or w.startswith(d + "/") for d in INCLUDED)
 
 
 def file_uri(path):
@@ -2395,7 +2469,9 @@ def tokenize(src):
         elif c.isalpha() or c == "_" or c == "`":
             j = i + 1
             if c == "`":
-                j = src.find("`", i + 1) + 1
+                # 閉じの ` が無ければ末尾まで。find の -1 に 1 を足すと j が 0 に戻り、無限に回る
+                j = src.find("`", i + 1)
+                j = n if j < 0 else j + 1
             else:
                 while j < n and (src[j].isalnum() or src[j] == "_"):
                     j += 1
@@ -2410,7 +2486,7 @@ def tokenize(src):
 class Role:
     def __init__(self, name, path, line):
         self.name, self.path, self.line = name, path, line
-        self.files = []      # (名前, 行)
+        self.files = []      # (名前, 行, 宣言の場所)
         self.catchall = []   # (anyFile / ignore, 対象, 行)
         self.places = []     # 宣言の場所（本体とテストの同居を見る）
 
@@ -2469,7 +2545,7 @@ def scan(path, roles):
         if t == "id" and v in ("file", "ktFile", "ktsFile") and prev[1] == "." and nxt[1] == "(":
             if prev2[0] == "str" and prev2[1] is not None:
                 name = prev2[1] + {"file": "", "ktFile": ".kt", "ktsFile": ".kts"}[v]
-                role.files.append((name, line))
+                role.files.append((name, line, where))
                 role.places.append(where)
         elif t == "id" and v in ("anyFile", "ignore") and nxt[1] == "(":
             target = dirs
@@ -2494,11 +2570,12 @@ gradle_hand = []
 for r in roles:
     reasons = []
     kinds = {}
-    for name, line in r.files:
+    for name, line, where in r.files:
         label, gradle = kind_of(name)
         if label:
             kinds.setdefault(label, []).append(name.rsplit("/", 1)[-1])
-            if gradle:
+            # buildSrc と includeBuild したビルドの下は gradle() の対象外なので勧めない
+            if gradle and not in_included_build(where):
                 gradle_hand.append((r, name))
     if len(kinds) >= 2:
         reasons.append(t("種類の違うファイルが同居しています: ", "Files of different kinds share this role: ") + " / ".join(
@@ -2552,11 +2629,11 @@ if gradle_hand:
     print(t("""katachi 0.2 以降は gradle() が wrapper・settings・ビルドスクリプト・gradle.properties・
 version catalog を種類ごとの役割に分けて宣言します（import me.tbsten.katachi.dsl.gradle.*）。
 これらの役割を消して gradle() の1行に置き換えてください。buildSrc や includeBuild した
-ビルドは gradle() の対象外なので、それだけは自分の役割に残します。""",
+ビルドは gradle() の対象外なので、それだけは自分の役割に残します（この点検もその下は数えません）。""",
             """Since katachi 0.2, gradle() declares the wrapper, settings, build scripts, gradle.properties
 and the version catalog as one role per kind (import me.tbsten.katachi.dsl.gradle.*).
 Remove these roles and replace them with the single line gradle(). buildSrc and included
-builds are not covered by gradle(), so keep only those in your own roles."""))
+builds are not covered by gradle(), so keep only those in your own roles (this check skips them too)."""))
 print("==================================================================")
 PYROLES
 	} | python3 - "$_lr_json" "$MODULE_DIR" || :
@@ -2815,6 +2892,14 @@ if kind not in FIELDS:
 
 key, scalars, lists = FIELDS[kind]
 
+# --help: 使える項目を並べて終わる。ファイルには触らない（init 前でも答えられるように）
+if any(a in ("-h", "--help") for a in args):
+    print(t("使い方: add %s --<項目> <値> ...（%s に追記）", "Usage: add %s --<field> <value> ... (appends to %s)") % (kind, key))
+    print(t("使える項目: %s", "Valid fields: %s") % ", ".join("--" + f for f in scalars + lists))
+    if lists:
+        print(t("複数回渡せる項目: %s", "Fields you can pass more than once: %s") % ", ".join("--" + f for f in lists))
+    sys.exit(0)
+
 if not args:
     sys.stderr.write(t("項目を1つも指定していません: add %s\n", "No fields given: add %s\n") % kind)
     sys.stderr.write(t("このまま追記すると中身が空の行ができます。\n", "Appending as is would add an empty row.\n"))
@@ -2883,12 +2968,27 @@ add_target_of() {
 cmd_add() {
 	need_python
 	_kind="${1:-}"
+	case "$_kind" in
+	-h | --help)
+		say "使い方: add <種類> --<項目> <値> ...（項目は add <種類> --help）" \
+			"Usage: add <kind> --<field> <value> ... (for the fields: add <kind> --help)"
+		say "  check-list: violation / question / changed"
+		say "  report:     module / role / tool / excluded / codebase-question / template"
+		return 0
+		;;
+	esac
 	[ -n "$_kind" ] || die "add: 種類を指定してください（violation / question / codebase-question / changed / module / role / tool / excluded / template）" \
 		"add: specify the kind (violation / question / codebase-question / changed / module / role / tool / excluded / template)"
 	shift
 
 	_target=$(add_target_of "$_kind")
 	[ -n "$_target" ] || die "add: 知らない種類です: ${_kind}" "add: unknown kind: ${_kind}"
+
+	# --help なら使える項目を並べて終わる。チェックリストやレポートには触らない。
+	if wants_help "$@"; then
+		printf '%s\n%s' "$PY_LANG" "$ADD_PY" | python3 - "" "" "$_target" "$_kind" --help
+		return $?
+	fi
 
 	_html=$(resolve_data_target "$_target")
 	[ -f "$_html" ] || die "ファイルがありません: $(file_uri "$_html")" "File not found: $(file_uri "$_html")"
@@ -3199,7 +3299,29 @@ cmd_doctor() {
 
 # ---------------------------------------------------------------- entry
 
+# 引数のどれかが -h / --help か。自前で --help を読まないサブコマンドの入口で使う。
+wants_help() {
+	for _wh in "$@"; do
+		case "$_wh" in
+		-h | --help) return 0 ;;
+		esac
+	done
+	return 1
+}
+
 resolve_lang "${1:-}"
+
+# 自前で --help を読まないサブコマンドは、ここで使い方を出す。値として --help を
+# 読んで「値がありません」と落ちたり、作業用ディレクトリが無いと言って止まったりしないように。
+case "${1:-}" in
+data | check | uncheck | warn | lint | compare-violations | verify | summary)
+	if wants_help "$@"; then
+		usage
+		exit 0
+	fi
+	;;
+esac
+resolve_docs "${1:-}"
 
 case "${1:-}" in
 doctor)

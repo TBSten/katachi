@@ -12,6 +12,12 @@
   手順書の `https://tbsten.github.io/katachi` は `<配信元>` に読み替え、
   スクリプトには `KATACHI_DOCS=<配信元>` を渡す。localhost への curl がサンドボックスで空になるときは、
   サンドボックスを外して実行してよい（このホストに対してだけ）。
+- **配信元はビルド済みのサイトに限る**（6-1 で配信している URL か、`file://<repo>/docs/dist`）。
+  `docs/public` は使わない。`llms-full.txt` などはビルドで作られるので、`docs/public` を指すと `docs` が取れない。
+- `KATACHI_DOCS` は **init に渡す。** init が作業用ディレクトリ（`cache/docs`）に記録し、以降のコマンド（`docs` など）は
+  環境変数が無くてもそれを使う（init が `配信元: ...` の行を出す）。`docs` は取得元の URL を標準エラーに
+  `取得元: ...` と出すので、**本番（`https://tbsten.github.io/katachi`）になっていないことを毎回確かめる。**
+  本番になっていたら、それは所見（priority 6 以上）として書く。
 - **4321 番は利用者の astro dev なので使わない。**
 - 今回の版の katachi は Maven Central に未公開。9-1 の `check-install-kit.sh` が mavenLocal に publish している。依存の解決のために mavenLocal() を足すのは
   「リリース前だから要る逸脱」として許す（手順書の問題には数えない。ただし足した場所と方法を記録する）。
