@@ -159,6 +159,7 @@ What `capture()` replaces is a `*` that occupies one whole level. The rules:
 - **It can't be used for a partial match.** Write a glob like `feature-*` as `*`, unchanged
 - **It can't be used on `**`.** How many levels of directory to create isn't decided
 - A name follows the same rule as a Role name (starts with a letter, followed by letters, digits, `_`, `-`)
+- **It can't share a name with a template parameter.** The name becomes the `--arg` name as is, so writing `capture("name")` on a Role whose template has `val name by stringParameter()` fails as soon as you run `katachiTemplate` / `katachiTemplates`. `roleName` and `onExisting` can't be used either. Name it for what that level represents, like `feature` or `screen`
 - **Using the same name twice in one path fails at declaration time.** Using the same name in a different path of the same Role is fine — the two paths then share one value
 
 ### Module wildcards can be named too
@@ -173,7 +174,19 @@ The `*` in `":feature:*".module { }` is named with the `capture` argument.
 
 Inside the block, `wildcard("feature")` returns the value of the module currently being evaluated. For `:feature:home`, that's `home`, so the file the declaration above requires is `HomeScreen.kt`.
 
-When there's more than one `*`, pass the names in order, as in `":feature:*:*".module("feature", "layer") { }`. If the number of names doesn't match the number of `*`, it fails at declaration time. Naming it doesn't change the check's result from the unnamed `":feature:*".module { }`.
+`wildcard("feature")` can only be called inside the `.module(capture = "feature") { }` block that gave it that name. Calling it outside a module — directly under `layout { }`, or in an ordinary directory block — fails, naming where it was called. A directory's `capture("feature")` value can't be read from layout; read it with `captureValue("feature")` inside a template.
+
+When reading the definition without looking at the project's modules (document generation, or `katachiTemplates`), `wildcard("feature")` returns the placeholder string `<feature>`.
+
+If both a module's `*` and a directory's `*` remain in the destination, **name both**. When the package directory differs from the module name (`:feature:appConfig`'s package is `appconfig/`), give the package directory's `*` a separate name too.
+
+```kt
+":feature:*".module(capture = "feature") {
+    mainSourceSet / kotlin / "com/example/feature" / capture("featurePackage") / "*ViewModel".ktFile()
+}
+```
+
+When there's more than one `*`, pass the names in order, as in `":feature:*:*".module("feature", "layer") { }`. If the number of names doesn't match the number of `*`, it fails at declaration time. `**` can't be named either, as in `":feature:**".module(capture = "feature")` — how many levels it stands for isn't decided. Naming it doesn't change the check's result from the unnamed `":feature:*".module { }`.
 
 In a module key, even a partial match like `":feature:*-impl".module(capture = "feature")` can be named. The value is the part matched by `*` (`home` for `:feature:home-impl`).
 

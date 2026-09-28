@@ -137,7 +137,7 @@ A template only names its file; `layout { }` decides the directory. So when `lay
 
 `--arg feature=home` fixes the `*` in `:feature:*` to `home`, so `HomeUserCard.kt` goes into the `component/` of `:feature:home`.
 
-**The capture's name becomes the `--arg` name as is.** Inside the template, you can read the same value with `captureValue("feature")`. The example above uses it for both the package name and the file name. You don't need to redeclare it with `by stringParameter()` — doing so means the same name is received from two places, which fails as soon as you run `katachiTemplate` / `katachiTemplates --arg roleName=...` (the `./gradlew test` check doesn't run the template, so it won't be caught there). A parameter declared only inside a branch such as `if (withTest) { }` is also caught by a run that doesn't take that branch. `roleName` and `onExisting` can't be used as capture names either, for the same reason.
+**The capture's name becomes the `--arg` name as is.** Inside the template, you can read the same value with `captureValue("feature")`. The example above uses it for both the package name and the file name. If you forget to pass a value, you get the same error whether the capture is used in the destination path or read with `captureValue` — it lists where the capture is declared, plus the directories and modules that currently exist. You don't need to redeclare it with `by stringParameter()` — doing so means the same name is received from two places, which fails as soon as you run `katachiTemplate` / `katachiTemplates --arg roleName=...` (the `./gradlew test` check doesn't run the template, so it won't be caught there). A parameter declared only inside a branch such as `if (withTest) { }` is also caught by a run that doesn't take that branch. `roleName` and `onExisting` can't be used as capture names either, for the same reason.
 
 A directory's `capture()` works the same way.
 
@@ -151,23 +151,66 @@ layout {
 
 `--arg resource=user --arg name=User` creates `controller/user/UserController.kt`, making `controller/user/` if it doesn't exist yet.
 
+**If the destination directory has two or more `*`, name every one of them.** If both a module's `*` and a package directory's `*` remain, you need both `.module(capture = ...)` and `capture(...)`. If even one unnamed `*` remains, that path won't become a destination.
+
+**If the package directory's name differs from the module's name, give that directory its own separate capture.** For example, if module `:feature:appConfig`'s package is `appconfig/`, putting `captureValue("feature")` (`appConfig`) into the package writes a package that disagrees with the directory. Both the check and the compiler pass, so you won't notice. Name the package directory's `*` with something like `capture("featurePackage")`, and use that `captureValue("featurePackage")` for the package.
+
+```kt
+layout {
+    ":feature:*".module(capture = "feature") {
+        mainSourceSet / kotlin / "com/example/feature" / capture("featurePackage") / "*ViewModel".ktFile()
+    }
+}
+```
+
+**If you use `captureValue()` for a package or class name, sanitize the value or reject it.** A capture's value is only checked for being valid as a directory name, so a value containing `-`, like `--arg feature=user-profile`, passes too. Putting it straight into the package produces a file that won't compile. Sanitize it inside the template, e.g. with `.replace("-", "")`, or reject it with `require(...)`.
+
+```kt
+template {
+    val feature = captureValue("feature")
+    require(feature.all { it.isLetterOrDigit() }) { "--arg feature=$feature: use letters and digits only" }
+    // ...
+}
+```
+
+In a `katachiTemplates` preview, a capture's value runs as the literal string `${feature}`. If you validate the value with `require(...)`, either let a value starting with `${` pass so the preview still works, or write the check so it only takes effect when `katachiTemplate` actually passes a value.
+
 <Aside>
 **A module's capture can only be given a module that already exists.** `:feature:*` declares "a module that currently exists," so a file written into a module that doesn't exist becomes a violation at the next check. Add the module to `settings.gradle.kts` first. A directory's capture has no such restriction.
 </Aside>
 
 ### Only write when the destination narrows to exactly one
 
-For each path in a Role's `layout { }`, katachi fills in the captures with the `--arg` values. It then treats as a destination candidate any path where no wildcard remains in the directory part and the file name matches the file pattern. **It writes only when there's exactly one candidate.**
+For each path in a Role's `layout { }`, katachi fills in the captures with the `--arg` values. It then treats as a destination candidate any path where no wildcard remains in the directory part and the file name matches the file pattern. **If a candidate path includes a capture for which a value was passed with `--arg`, it narrows to just that one.** It then **writes only when there's exactly one candidate.**
+
+For example, passing `--arg x=login` to a Role that has both `scenario/common/*Scn.kt` and `scenario/capture("x")/*Scn.kt` writes to `scenario/login/` (`common` drops out of the candidates). If you don't pass `x`, it fails with "`x` is missing" rather than writing to `common`.
 
 | Situation | What happens |
 | --- | --- |
-| A capture's value wasn't passed | Fails, naming the missing `--arg` |
-| Two or more candidates | Fails, listing the candidate paths. katachi never picks one on its own |
+| A candidate path includes a capture with a passed value | Only that path becomes a candidate. Paths without the capture drop out |
+| A capture's value wasn't passed | If a path whose file name matches has a capture, it fails, naming the missing `--arg`. **Even if another path without a capture exists, it won't write there.** It also lists the directories and modules that currently exist |
+| Two or more candidates | Fails, listing the candidate paths. katachi never picks one on its own. If the candidates differ by only one path segment, it points out that segment and suggests turning it into a `capture()` |
 | An unnamed `*` remains in the directory | That path isn't a candidate. If every path is like that, it fails and suggests naming the wildcard with `capture()` |
-| The value doesn't form a single directory name | Fails for a value that's empty, `.`, `..`, contains `/` or `\`, or contains a character not allowed in a file name |
+| A `**` remains in the directory | That path isn't a candidate. If every path is like that, it fails and suggests declaring a separate path without `**` |
+| The value doesn't form a single directory name | Fails for a value that's empty, whitespace only, `.`, `..`, contains `/` or `\`, or contains a character not allowed in a file name or a control character. A value Windows silently alters or refuses (leading/trailing whitespace, a trailing `.`, a reserved name like `CON` / `NUL` / `COM1`) also fails, on every OS |
 | The module doesn't exist | Fails, listing the modules that do exist and the `--arg` that picks each one. It writes nothing even if other paths could receive a file |
 
-A directory's partial match (`feature-*`) and `**` can't be named. A Role whose destination only has paths like that can't generate from a template. A module key's `*` can be named even in a partial match like `":feature:*-impl".module(capture = "feature")` (the value is the part matched by `*` — `--arg feature=home` gives `:feature:home-impl`).
+The behavior of a Role that has only concrete paths (a Role without any captures) doesn't change because of this narrowing.
+
+A directory's partial match (`feature-*`) and `**` can't be named. A Role whose destination only has paths like that can't generate from a template as is. For `**`, declare the directory the template writes to as a separate path without `**` (the check accepts both, while generation uses the one without `**`).
+
+```kt
+layout {
+    ":*".module(capture = "app") {
+        capture("recipe") {
+            "*Activity".ktFile()          // this is the destination
+            "**" / "*Activity".ktFile()   // the check also accepts deeper nesting
+        }
+    }
+}
+```
+
+Directories written with a fixed list (`for (m in recipeApps) { m { ... } }`) each become a concrete path one by one, so there end up being multiple candidates. If you want to select one as the destination, turn that level into `*` and name it with `capture()`. A module key's `*` can be named even in a partial match like `":feature:*-impl".module(capture = "feature")` (the value is the part matched by `*` — `--arg feature=home` gives `:feature:home-impl`).
 
 ## When a file already exists
 
@@ -210,7 +253,7 @@ The **`katachiTemplates` task** tells you which roles have a template, and what 
 ./gradlew katachiTemplates --arg "roleName=Repository"
 ```
 
-The detail shows the parameters (type, default, accepted values, whether required), the path and contents of each generated file, and a `katachiTemplate` command you can paste as is.
+The detail shows the parameters (type, default, accepted values, whether required), the path and contents of each generated file, and a `katachiTemplate` command.
 
 ```
   [templates] Previewed with: name=${name} (placeholder), item=${item} (placeholder), withImpl=true (default)
@@ -222,15 +265,26 @@ The detail shows the parameters (type, default, accepted values, whether require
   [templates]   --arg withImpl=false: leaves out ${name}RepositoryImpl.kt
 ```
 
-For a Role whose destination has a wildcard name, a `Captures` section appears too. It shows which `--arg` selects which directory.
+For a Role whose destination has a wildcard name, a `Captures` section appears too. It shows which `--arg` selects which directory. In the destination path, the capture part appears like `${resource}`. A module's capture appears the same way too — for `:feature:*`, as `feature/${feature}/...`.
 
 ```
   [templates] Captures (--arg values that choose the directory):
   [templates]   resource: level 7 of src/main/kotlin/com/example/controller/*/*Controller.kt
   ...
-  [templates] Generate it with:
-  [templates]   ./gradlew katachiTemplate --arg roleName=api/Controller --arg resource=resource --arg name=Name
+  [templates] Generate it with, putting the directory or module each <capture> stands for in its place:
+  [templates]   ./gradlew katachiTemplate --arg roleName=api/Controller --arg resource=<resource> --arg name=Name
 ```
+
+A command's capture value is a placeholder like `<resource>`. It can't be run as is, so rewrite it with the directory or module value you actually want to generate before running it.
+
+For a Role where a wildcard remains in the destination and truly can't be placed (a Role that only has an unnamed `*` or a `**`), the command is replaced with the reason and how to fix it.
+
+```
+  [templates] It cannot be generated as the layout is declared: HomeScreen.kt has no single directory (above).
+  [templates] Name every * left in the directory with capture("...") -- or .module(capture = "...") for a module key -- so that a run can choose it with --arg.
+```
+
+In a preview, a capture's value runs as the literal string `${feature}` too, the same as a parameter. If you validate a value inside the template, only the preview may fail.
 
 ## Summary
 
