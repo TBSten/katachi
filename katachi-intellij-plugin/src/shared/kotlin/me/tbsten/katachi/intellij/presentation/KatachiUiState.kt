@@ -133,6 +133,11 @@ internal data class TemplateRowUi(
     val isExpanded: Boolean?,
     val menu: List<ActionUi>,
     val body: RowBodyUi?,
+    /**
+     * The request number of [View template] when this row is the highlighted one (C2), else `null`.
+     * The row scrolls into view once per number.
+     */
+    val highlight: Int? = null,
 )
 
 internal sealed interface RowBodyUi {

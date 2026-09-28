@@ -14,7 +14,8 @@ import io.kotest.property.arbitrary.list
  * Sequences of [stepArb] (single operations and the runs of Scenarios.kt), at most [range]`.last`
  * long, shrinking by halves and then one step at a time.
  */
-internal fun opsArb(range: IntRange): Arb<List<Op>> = arbitrary(OpsShrinker) { Arb.list(stepArb, range).bind().flatten().take(range.last) }
+internal fun opsArb(range: IntRange, steps: Arb<List<Op>> = stepArb): Arb<List<Op>> =
+    arbitrary(OpsShrinker) { Arb.list(steps, range).bind().flatten().take(range.last) }
 
 private object OpsShrinker : Shrinker<List<Op>> {
     override fun shrink(value: List<Op>): List<List<Op>> {

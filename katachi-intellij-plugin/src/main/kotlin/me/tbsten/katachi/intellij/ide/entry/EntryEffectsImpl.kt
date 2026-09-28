@@ -4,6 +4,7 @@ import com.intellij.notification.NotificationGroupManager
 import com.intellij.notification.NotificationType
 import com.intellij.openapi.options.ShowSettingsUtil
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.wm.ToolWindowManager
 import kotlinx.coroutines.launch
 import me.tbsten.katachi.intellij.data.generate.EntryGenerationRefusal
 import me.tbsten.katachi.intellij.data.generate.SingleFileGenerationRequest
@@ -12,12 +13,14 @@ import me.tbsten.katachi.intellij.ide.KatachiBundle
 import me.tbsten.katachi.intellij.ide.KatachiConfigurable
 import me.tbsten.katachi.intellij.ide.KatachiNotifications
 import me.tbsten.katachi.intellij.ide.KatachiProjectService
+import me.tbsten.katachi.intellij.ide.KatachiToolWindowFactory
 import me.tbsten.katachi.intellij.ide.dialog.GenerateDialogEnvironment
 import me.tbsten.katachi.intellij.ide.dialog.GenerateDialogs
 import me.tbsten.katachi.intellij.ide.dialog.realGenerateDialogEnvironmentOf
 import me.tbsten.katachi.intellij.ide.dialog.singleFileGenerationOf
 import me.tbsten.katachi.intellij.ide.sdkCall
 import me.tbsten.katachi.intellij.model.TemplateId
+import me.tbsten.katachi.intellij.presentation.KatachiIntent
 import me.tbsten.katachi.intellij.presentation.entry.EntryEffects
 import me.tbsten.katachi.intellij.presentation.entry.GenerateDialogRequest
 
@@ -25,7 +28,7 @@ import me.tbsten.katachi.intellij.presentation.entry.GenerateDialogRequest
  * [EntryEffects] over the IntelliJ API. Every SDK call goes through `sdkCall`: a failure becomes a
  * balloon, never a failed click; control flow is thrown again.
  *
- * The seams ([notify], [showSettings], [environmentOf], [generate]) default to the real IDE calls;
+ * The seams ([notify], [showSettings], [environmentOf], [generate], [activateToolWindow]) default to the real IDE calls;
  * tests swap them, because a modal dialog and the settings window cannot be shown headless.
  *
  * ```kotlin
@@ -38,6 +41,7 @@ internal class EntryEffectsImpl(
     private val showSettings: (Project) -> Unit = { ShowSettingsUtil.getInstance().showSettingsDialog(it, KatachiConfigurable::class.java) },
     private val environmentOf: (Project, GenerateDialogRequest) -> GenerateDialogEnvironment = ::realGenerateDialogEnvironmentOf,
     private val generate: (SingleFileGenerationRequest) -> Unit = { startGeneration(project, it, notify) },
+    private val activateToolWindow: (Project) -> Unit = ::activateKatachiToolWindow,
 ) : EntryEffects {
     /**
      * Opens the dialog and, when the user pressed [Generate], starts the generation in the project's
@@ -54,8 +58,22 @@ internal class EntryEffectsImpl(
             .onFailure { notify(KatachiBundle.message("entry.openSettingsFailed", it.message.orEmpty())) }
     }
 
-    // TODO(C2): activate the tool window and dispatch KatachiIntent.RevealTemplate.
-    override fun revealTemplateInToolWindow(template: TemplateId) = Unit
+    /**
+     * Hands the highlight to the project service's ViewModel first, then brings the tool window up
+     * as `GenerateFromTemplateAction` does. The state outlives the tool window's content, so a
+     * tool window the platform creates now shows the row highlighted and scrolls to it (C2).
+     */
+    override fun revealTemplateInToolWindow(template: TemplateId) {
+        sdkCall("show ${template.template} in the katachi tool window") {
+            KatachiProjectService.getInstance(project).viewModel.dispatch(KatachiIntent.RevealTemplate(template))
+            activateToolWindow(project)
+        }.onFailure { notify(KatachiBundle.message("entry.revealFailed", it.message.orEmpty())) }
+    }
+}
+
+/** Shows and focuses the `katachi` tool window, creating its content the first time. */
+private fun activateKatachiToolWindow(project: Project) {
+    ToolWindowManager.getInstance(project).getToolWindow(KatachiToolWindowFactory.TOOL_WINDOW_ID)?.activate(null, true)
 }
 
 /** Runs the generation of [request] in the project service's scope; a refusal that only the run can tell is a balloon. */

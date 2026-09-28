@@ -118,6 +118,7 @@ private fun baseRowOf(hit: SearchHit, state: KatachiScreenState, strings: Katach
             expanded -> RowBodyUi.Form(formUiOf(row, detail, state, strings))
             else -> null
         },
+        highlight = state.view.highlight?.takeIf { it.templateId == row.id }?.sequence,
     )
 }
 
