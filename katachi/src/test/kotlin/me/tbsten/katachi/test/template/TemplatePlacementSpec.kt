@@ -1,327 +1,116 @@
 package me.tbsten.katachi.test.template
 
-import io.kotest.assertions.throwables.shouldThrow
-import io.kotest.assertions.withClue
 import io.kotest.core.spec.style.FreeSpec
-import io.kotest.matchers.collections.shouldContainExactly
+import io.kotest.matchers.maps.shouldContainExactly
 import io.kotest.matchers.shouldBe
-import io.kotest.matchers.string.shouldContain
-import me.tbsten.katachi.dsl.architecture
-import me.tbsten.katachi.dsl.gradle.module
-import me.tbsten.katachi.template.KatachiAmbiguousTemplatePlacementException
-import me.tbsten.katachi.template.KatachiAmbiguousTemplateRoleException
-import me.tbsten.katachi.template.KatachiNoTemplateException
-import me.tbsten.katachi.template.KatachiNoTemplatePlacementException
-import me.tbsten.katachi.template.KatachiTemplatePathOutsideProjectException
-import me.tbsten.katachi.template.KatachiUnknownTemplateRoleException
-import me.tbsten.katachi.template.KatachiUnsafeTemplateFileNameException
-import me.tbsten.katachi.template.KatachiWildcardTemplatePlacementException
+import me.tbsten.katachi.dsl.template
+import me.tbsten.katachi.test.check.architectureOf
 
 /**
- * Where a generated file lands, decided from the declarations alone.
- *
- * Writing it is [TemplateOutputSpec]'s.
- *
- * NOTE: このファイルのパッケージを `me.tbsten.katachi.template` にしてはいけない。
- * captureDeclarationSite() がライブラリ自身のフレームとして読み飛ばしてしまい、
- * 宣言位置が kotest 内部を指すようになる。
+ * Where a template's file lands: [me.tbsten.katachi.dsl.LayoutEntry.path], with every capture
+ * filled in by the run's values -- design draft section 4. There is no candidate search: the
+ * declaration `.template { }` sits on already names the one place its file goes.
  */
 class TemplatePlacementSpec : FreeSpec({
-    "ディレクトリは layout から導く" - {
-        "宣言されたパターンに一致するファイル名が、そのディレクトリへ落ちる" {
-            val arch = architecture {
-                "domain".group {
-                    "UseCase" {
-                        layout { "useCase" / "*UseCase.kt".file() }
-                        template {
-                            val name by stringParameter()
-                            file("${name}UseCase.kt") { "interface ${name}UseCase" }
-                        }
-                    }
-                }
-            }
-
-            arch.generated("UseCase", mapOf("name" to "GetUser")) shouldBe
-                mapOf("useCase/GetUserUseCase.kt" to "interface GetUserUseCase\n")
-        }
-
-        "本文は改行で終わる" {
-            val arch = architecture {
+    "宣言どおりのパスに、値なしでも書ける（capture が無い）" {
+        val arch = architectureOf {
+            "domain".group {
                 "UseCase" {
-                    layout { "useCase" / "*UseCase.kt".file() }
-                    template {
-                        // `""".trimIndent()` stops at the last character the author typed, which
-                        // is what a block like this one usually ends with.
-                        file("GetUserUseCase.kt") { "interface GetUserUseCase" }
+                    layout { "useCase" / "GetUserUseCase.kt".file().template { "class GetUserUseCase" } }
+                }
+            }
+        }
+        arch.generated("UseCase") shouldContainExactly mapOf("useCase/GetUserUseCase.kt" to "class GetUserUseCase")
+    }
+
+    "ディレクトリの capture を値で埋める" {
+        val arch = architectureOf {
+            "feature".group {
+                "ViewModel" {
+                    layout {
+                        "feature" / capture("feature") / "ViewModel.kt".file().template {
+                            "class ${captureValue("feature")}ViewModel"
+                        }
                     }
                 }
             }
-
-            withClue("最終行に改行が無いファイルは、利用者の formatter が最初に指摘する") {
-                arch.generated("UseCase").values.single() shouldBe "interface GetUserUseCase\n"
-            }
         }
+        arch.generated("feature.ViewModel", mapOf("feature" to "home")) shouldContainExactly
+            mapOf("feature/home/ViewModel.kt" to "class homeViewModel")
+    }
 
-        "すでに改行で終わっていれば足さない" {
-            val arch = architecture {
+    "ファイル名の部分一致で capture を埋める" {
+        val arch = architectureOf {
+            "domain".group {
                 "UseCase" {
-                    layout { "useCase" / "*UseCase.kt".file() }
-                    template {
-                        file("GetUserUseCase.kt") { "interface GetUserUseCase\n" }
-                    }
-                }
-            }
-
-            arch.generated("UseCase").values.single() shouldBe "interface GetUserUseCase\n"
-        }
-
-        "1つの template が複数のファイルを別々のディレクトリへ置ける" {
-            val arch = architecture {
-                "domain".group {
-                    "UseCase" {
-                        layout { "api" / "*UseCase.kt".file() }
-                        layout { "impl" / "*UseCaseImpl.kt".file() }
-                        template {
-                            file("GetUserUseCase.kt") { "api" }
-                            file("GetUserUseCaseImpl.kt") { "impl" }
+                    layout {
+                        "useCase" / "${capture("name")}UseCase.kt".file().template {
+                            "class ${captureValue("name")}UseCase"
                         }
                     }
                 }
             }
-
-            arch.generatedPaths("UseCase") shouldContainExactly listOf(
-                "api/GetUserUseCase.kt",
-                "impl/GetUserUseCaseImpl.kt",
-            )
         }
-
-        "宣言の順にファイルが並ぶ" {
-            val arch = architecture {
-                "domain".group {
-                    "UseCase" {
-                        layout { "useCase" / "*.kt".file() }
-                        template {
-                            file("B.kt") { "b" }
-                            file("A.kt") { "a" }
-                        }
-                    }
-                }
-            }
-
-            arch.generated("UseCase").keys.toList() shouldContainExactly
-                listOf("useCase/B.kt", "useCase/A.kt")
-        }
-
-        "同じディレクトリを2つのパターンが受けても曖昧にはならない" {
-            val arch = architecture {
-                "domain".group {
-                    "UseCase" {
-                        layout {
-                            "useCase" / "*.kt".file()
-                            "useCase" / "*UseCase.kt".file()
-                        }
-                        template { file("GetUserUseCase.kt") { "" } }
-                    }
-                }
-            }
-
-            arch.generatedPaths("UseCase") shouldContainExactly listOf("useCase/GetUserUseCase.kt")
-        }
-
-        "プロジェクトルート直下のパターンにも落ちる" {
-            val arch = architecture {
-                "Doc" {
-                    layout { "*.md".file() }
-                    template { file("NOTES.md") { "notes" } }
-                }
-            }
-
-            arch.generatedPaths("Doc") shouldContainExactly listOf("NOTES.md")
-        }
+        arch.generated("UseCase", mapOf("name" to "GetUser")) shouldContainExactly
+            mapOf("useCase/GetUserUseCase.kt" to "class GetUserUseCase")
     }
 
-    "置き場所が決まらないものは例外" - {
-        "どのパターンにも一致しないファイル名で落ちる" {
-            val arch = architecture {
-                "domain".group {
-                    "UseCase" {
-                        layout { "useCase" / "*UseCase.kt".file() }
-                        template { file("GetUser.kt") { "" } }
+    "ディレクトリとファイル名、両方に capture があっても埋まる" {
+        val arch = architectureOf {
+            "feature".group {
+                "Screen" {
+                    layout {
+                        "feature" / capture("feature") / "component" /
+                            "${capture("fileName")}Screen.kt".file().template {
+                                "package feature.${captureValue("feature")}.component"
+                            }
                     }
                 }
             }
-
-            val thrown = shouldThrow<KatachiNoTemplatePlacementException> { arch.generated("UseCase") }
-            thrown.fileName shouldBe "GetUser.kt"
-            thrown.declaredPatterns shouldContainExactly listOf("useCase/*UseCase.kt")
-            thrown.message.orEmpty() shouldContain "has no place in role"
         }
-
-        "候補が2つ以上あると落ちる" {
-            val arch = architecture {
-                "domain".group {
-                    "UseCase" {
-                        layout { "api" / "*UseCase.kt".file() }
-                        layout { "impl" / "*UseCase.kt".file() }
-                        template { file("GetUserUseCase.kt") { "" } }
-                    }
-                }
-            }
-
-            val thrown =
-                shouldThrow<KatachiAmbiguousTemplatePlacementException> { arch.generated("UseCase") }
-            thrown.candidates shouldContainExactly
-                listOf("api/GetUserUseCase.kt", "impl/GetUserUseCase.kt")
-        }
-
-        "ディレクトリ側にワイルドカードが残っていると落ちる" {
-            val arch = architecture {
-                "feature".group {
-                    "Screen" {
-                        layout { "feature" / "*" / "*Screen.kt".file() }
-                        template { file("HomeScreen.kt") { "" } }
-                    }
-                }
-            }
-
-            val thrown =
-                shouldThrow<KatachiWildcardTemplatePlacementException> { arch.generated("Screen") }
-            thrown.patterns shouldContainExactly listOf("feature/*/*Screen.kt")
-            thrown.message.orEmpty() shouldContain "no single directory"
-        }
-
-        "ワイルドカードのモジュールキーでも落ちる" {
-            val arch = architecture {
-                "feature".group {
-                    "Screen" {
-                        layout { ":feature:*".module { "*Screen.kt".file() } }
-                        template { file("HomeScreen.kt") { "" } }
-                    }
-                }
-            }
-
-            val thrown =
-                shouldThrow<KatachiWildcardTemplatePlacementException> { arch.generated("Screen") }
-            thrown.patterns.single() shouldContain "*"
-        }
-
-        "ディレクトリの宣言だけでは置き場所にならない" {
-            val arch = architecture {
-                "build".group {
-                    "Generated" {
-                        layout { "generated" { anyFile() } }
-                        template { file("Thing.kt") { "" } }
-                    }
-                }
-            }
-
-            shouldThrow<KatachiNoTemplatePlacementException> { arch.generated("Generated") }
-        }
-
-        "プロジェクトルートの外へ出るパスは落ちる" {
-            val arch = architecture {
-                "domain".group {
-                    "UseCase" {
-                        layout { ".." / "*UseCase.kt".file() }
-                        template { file("GetUserUseCase.kt") { "" } }
-                    }
-                }
-            }
-
-            val thrown =
-                shouldThrow<KatachiTemplatePathOutsideProjectException> { arch.generated("UseCase") }
-            thrown.path shouldBe "../GetUserUseCase.kt"
-        }
+        arch.generated("feature.Screen", mapOf("feature" to "home", "fileName" to "UserCard")) shouldContainExactly
+            mapOf("feature/home/component/UserCardScreen.kt" to "package feature.home.component")
     }
 
-    "作れないファイル名は落ちる" - {
-        "glob のメタ文字を含む名前で落ちる" {
-            val arch = architecture {
-                "domain".group {
-                    "UseCase" {
-                        layout { "useCase" / "*UseCase.kt".file() }
-                        template {
-                            val name by stringParameter()
-                            file("${name}UseCase.kt") { "" }
-                        }
+    "名前の無い * の宣言と合流しても、宣言の順によらず .template 側の capture で埋まる" {
+        // レビューで見つかったバグの再現: 名前の無い宣言が先に書かれていると、合流したエントリの
+        // captureVariants は [NONE, {name}] の順になり、.captureVariants.firstOrNull() で NONE を
+        // 拾って生成先のパスに * が残ったまま書かれていた（LayoutEntry.templateCaptures 追加前）。
+        val unnamedFirst = architectureOf {
+            "domain".group {
+                "UseCase" {
+                    layout {
+                        "dir" / "*.kt".file()
+                        "dir" / "${capture("name")}.kt".file().template { "// ${captureValue("name")}" }
                     }
                 }
             }
-
-            val thrown = shouldThrow<KatachiUnsafeTemplateFileNameException> {
-                arch.generated("UseCase", mapOf("name" to "Get*"))
-            }
-            thrown.characters shouldContainExactly listOf("*")
         }
+        unnamedFirst.generated("UseCase", mapOf("name" to "GetUser")) shouldContainExactly
+            mapOf("dir/GetUser.kt" to "// GetUser")
 
-        "Windows で使えない文字を含む名前で落ちる" {
-            val arch = architecture {
-                "domain".group {
-                    "UseCase" {
-                        layout { "useCase" / "*UseCase.kt".file() }
-                        template {
-                            val name by stringParameter()
-                            file("${name}UseCase.kt") { "" }
-                        }
+        val namedFirst = architectureOf {
+            "domain".group {
+                "UseCase" {
+                    layout {
+                        "dir" / "${capture("name")}.kt".file().template { "// ${captureValue("name")}" }
+                        "dir" / "*.kt".file()
                     }
                 }
             }
-
-            val thrown = shouldThrow<KatachiUnsafeTemplateFileNameException> {
-                arch.generated("UseCase", mapOf("name" to "Get:User"))
-            }
-            thrown.characters shouldContainExactly listOf(":")
         }
+        namedFirst.generated("UseCase", mapOf("name" to "GetUser")) shouldContainExactly
+            mapOf("dir/GetUser.kt" to "// GetUser")
     }
 
-    "役割の選び方" - {
-        "修飾名でも素の名前でも同じ役割に届く" {
-            val arch = architecture {
-                "domain".group {
-                    "UseCase" {
-                        layout { "useCase" / "*.kt".file() }
-                        template { file("A.kt") { "a" } }
-                    }
+    "戻り値には末尾の改行を足さない" {
+        val arch = architectureOf {
+            "domain".group {
+                "UseCase" {
+                    layout { "useCase" / "GetUserUseCase.kt".file().template { "class GetUserUseCase" } }
                 }
             }
-
-            arch.generatedPaths("UseCase") shouldBe arch.generatedPaths("domain/UseCase")
         }
-
-        "素の名前が2つの group で衝突していると落ちる" {
-            val arch = architecture {
-                "domain".group {
-                    "UseCase" {
-                        layout { "domain" / "*.kt".file() }
-                        template { file("A.kt") { "" } }
-                    }
-                }
-                "feature".group {
-                    "UseCase" {
-                        layout { "feature" / "*.kt".file() }
-                        template { file("A.kt") { "" } }
-                    }
-                }
-            }
-
-            val thrown = shouldThrow<KatachiAmbiguousTemplateRoleException> { arch.generated("UseCase") }
-            thrown.candidates shouldContainExactly listOf("domain/UseCase", "feature/UseCase")
-        }
-
-        "知らない役割名は宣言済みの一覧つきで落ちる" {
-            val arch = architecture { "domain".group { "UseCase" { } } }
-
-            val thrown = shouldThrow<KatachiUnknownTemplateRoleException> { arch.generated("UseCse") }
-            thrown.declaredRoles shouldContainExactly listOf("domain/UseCase")
-        }
-
-        "template を持たない役割は落ちる" {
-            val arch = architecture {
-                "domain".group { "UseCase" { layout { "useCase" / "*.kt".file() } } }
-            }
-
-            shouldThrow<KatachiNoTemplateException> { arch.generated("UseCase") }.role shouldBe
-                "domain/UseCase"
-        }
+        arch.generated("UseCase").getValue("useCase/GetUserUseCase.kt") shouldBe "class GetUserUseCase"
     }
 })

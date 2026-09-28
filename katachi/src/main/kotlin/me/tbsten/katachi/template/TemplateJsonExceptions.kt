@@ -46,45 +46,83 @@ public class KatachiTemplateJsonOutputMissingException internal constructor() : 
 )
 
 /**
- * `--arg format=json` and `--arg roleName=` were given together.
+ * `--arg format=json` and `--arg template=` were given together.
  *
- * The JSON form always holds every template, so a role to narrow it to would be silently
- * ignored. Refusing says so instead.
+ * The JSON form always holds every template, so one to narrow it to would be silently ignored.
+ * Refusing says so instead.
  *
- * ## Example 1: catch a JSON run narrowed to one role
+ * ## Example 1: catch a JSON run narrowed to one template
  * ```kt
  * import io.kotest.assertions.throwables.shouldThrow
  * import io.kotest.matchers.shouldBe
  * import me.tbsten.katachi.processor.process
  * import me.tbsten.katachi.template.DescribeTemplates
  * import me.tbsten.katachi.template.DescribeTemplatesFormat
- * import me.tbsten.katachi.template.KatachiTemplateJsonWithRoleNameException
+ * import me.tbsten.katachi.template.KatachiTemplateJsonWithTemplateException
  *
- * val thrown = shouldThrow<KatachiTemplateJsonWithRoleNameException> {
+ * val thrown = shouldThrow<KatachiTemplateJsonWithTemplateException> {
  *     projectArchitecture.process(
  *         DescribeTemplates,
- *         DescribeTemplates.Args(roleName = "Repository", format = DescribeTemplatesFormat.Json, output = "out.json"),
+ *         DescribeTemplates.Args(template = "Repository", format = DescribeTemplatesFormat.Json, output = "out.json"),
  *     ).getOrThrow()
  * }
- * thrown.roleName shouldBe "Repository"
+ * thrown.template shouldBe "Repository"
  * ```
  *
  * @see DescribeTemplates
  */
-public class KatachiTemplateJsonWithRoleNameException internal constructor(
-    /** The name `--arg roleName=` carried, as written. */
-    public val roleName: String,
+public class KatachiTemplateJsonWithTemplateException internal constructor(
+    /** The specifier `--arg template=` carried, as written. */
+    public val template: String,
 ) : KatachiDeclarationException(
     message = buildString {
-        appendLine("""--arg format=json was given together with --arg roleName=$roleName.""")
+        appendLine("""--arg format=json was given together with --arg template=$template.""")
         appendLine(
             "The JSON form always holds every template and the detail of each, so it has no " +
-                "use for a role to narrow it to.",
+                "use for one to narrow it to.",
         )
         append(
-            "Drop --arg roleName= to write the JSON, or drop --arg format=json to print that " +
+            "Drop --arg template= to write the JSON, or drop --arg format=json to print that " +
                 "one template as text.",
         )
+    },
+)
+
+/**
+ * `--arg template=` named more than one template while describing (rather than generating).
+ *
+ * `katachiTemplates --arg template=` explains one template at a time; a run of it says nothing
+ * about a *set* the way `katachiTemplate` does, so more than one specifier has nowhere to go.
+ *
+ * ## Example 1: catch a describe run given two templates
+ * ```kt
+ * import io.kotest.assertions.throwables.shouldThrow
+ * import me.tbsten.katachi.processor.process
+ * import me.tbsten.katachi.template.DescribeTemplates
+ * import me.tbsten.katachi.template.KatachiMultipleTemplatesToDescribeException
+ *
+ * shouldThrow<KatachiMultipleTemplatesToDescribeException> {
+ *     projectArchitecture.process(
+ *         DescribeTemplates,
+ *         DescribeTemplates.Args(template = "data.Repository.repository,data.Repository.repositoryImpl"),
+ *     ).getOrThrow()
+ * }
+ * ```
+ *
+ * @see DescribeTemplates
+ */
+public class KatachiMultipleTemplatesToDescribeException internal constructor(
+    /** The value `--arg template=` carried, as written. */
+    public val template: String,
+) : KatachiDeclarationException(
+    message = buildString {
+        appendLine("""--arg template=$template names more than one template.""")
+        appendLine(
+            "katachiTemplates explains one template at a time -- its parameters, its captures, " +
+                "the file it produces -- and a run of it says nothing about generating a set the " +
+                "way katachiTemplate does.",
+        )
+        append("Pass one specifier, or drop --arg template= to list every template instead.")
     },
 )
 

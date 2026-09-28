@@ -1,71 +1,8 @@
 package me.tbsten.katachi.template
 
 import me.tbsten.katachi.KatachiDeclarationException
+import me.tbsten.katachi.KatachiInternalException
 import me.tbsten.katachi.dsl.DeclarationSite
-
-/**
- * A rendered file name holds a character katachi will not create a file with.
- *
- * The name is built from `--arg` values, so a value carrying a `*` or a `?` would reach the disk.
- * Such a file is matched by the very patterns that are supposed to describe it and cannot be named
- * back from a shell, and the Windows-illegal characters are refused everywhere so that a check
- * gives the same answer on every machine.
- *
- * ## Example 1: catch a parameter value that would make an unnameable file
- * ```kt
- * import io.kotest.assertions.throwables.shouldThrow
- * import me.tbsten.katachi.dsl.architecture
- * import me.tbsten.katachi.dsl.file
- * import me.tbsten.katachi.processor.process
- * import me.tbsten.katachi.template.GenerateCodeFromTemplate
- * import me.tbsten.katachi.template.KatachiUnsafeTemplateFileNameException
- *
- * val arch = architecture {
- *     "domain".group {
- *         "UseCase" {
- *             layout { "useCase" / "*UseCase.kt".file() }
- *             template {
- *                 val name by stringParameter(default = "*")
- *                 file("${name}UseCase.kt") { "// a use case" }
- *             }
- *         }
- *     }
- * }
- * val thrown = shouldThrow<KatachiUnsafeTemplateFileNameException> {
- *     arch.process(GenerateCodeFromTemplate, GenerateCodeFromTemplate.Args(roleName = "UseCase")).getOrThrow()
- * }
- * thrown.characters shouldBe listOf("*")
- * ```
- *
- * @see GenerateCodeFromTemplate
- */
-public class KatachiUnsafeTemplateFileNameException internal constructor(
-    /** The role whose template produced it, qualified. */
-    public val role: String,
-    /** The generated file name, exactly as it came out of the template. */
-    public val fileName: String,
-    /** The refused characters, each as a one-character string, sorted. */
-    public val characters: List<String>,
-    /** Where the `file(...)` that produced the name was written. */
-    public val declaredAt: DeclarationSite,
-) : KatachiDeclarationException(
-    message = buildString {
-        appendLine(
-            """Template file "$fileName" declared at $declaredAt, in role "$role", holds """ +
-                """${characters.joinToString(" ") { "'$it'" }}.""",
-        )
-        appendLine(
-            "katachi reads '*', '?', '[', ']', '{' and '}' as glob syntax, so a file named with " +
-                "one is matched by the patterns that are meant to describe it; ':', '\"', '<', " +
-                "'>' and '|' cannot be part of a file name on Windows, and a check has to give " +
-                "the same answer on every machine.",
-        )
-        append(
-            "The name is built from --arg values, so this is almost always a value that is not " +
-                "what it was meant to be. Pass one made of the characters a file name may hold.",
-        )
-    },
-)
 
 /**
  * A role's layout resolves a generated file to a path outside the project.
@@ -85,13 +22,12 @@ public class KatachiUnsafeTemplateFileNameException internal constructor(
  * val arch = architecture {
  *     "domain".group {
  *         "UseCase" {
- *             layout { ".." / "*UseCase.kt".file() }
- *             template { file("GetUserUseCase.kt") { "// a use case" } }
+ *             layout { ".." / "GetUserUseCase.kt".file().template { "// a use case" } }
  *         }
  *     }
  * }
  * shouldThrow<KatachiTemplatePathOutsideProjectException> {
- *     arch.process(GenerateCodeFromTemplate, GenerateCodeFromTemplate.Args(roleName = "UseCase")).getOrThrow()
+ *     arch.process(GenerateCodeFromTemplate, GenerateCodeFromTemplate.Args(template = listOf("UseCase"))).getOrThrow()
  * }
  * ```
  *
@@ -102,7 +38,7 @@ public class KatachiTemplatePathOutsideProjectException internal constructor(
     public val role: String,
     /** The refused path, as the layout spelled it. */
     public val path: String,
-    /** Where the `file(...)` that produced the name was written. */
+    /** Where the `.template { }` declaration was written. */
     public val declaredAt: DeclarationSite,
 ) : KatachiDeclarationException(
     message = buildString {
@@ -116,4 +52,84 @@ public class KatachiTemplatePathOutsideProjectException internal constructor(
         )
         append("""Remove the ".." from that role's layout { }, or root the path inside the project.""")
     },
+)
+
+/**
+ * A run's values, once filled into a template's declared path, produced a path that template's
+ * own `layout { }` pattern does not match.
+ *
+ * The path this template generates is worked out from the same declaration its `layout { }` and
+ * its `.template { }` share, so the two cannot disagree once every value has passed capture
+ * validation -- reaching this means the value checks upstream of it missed something.
+ *
+ * ## Example 1: report it rather than treating it as a failed run
+ * ```kt
+ * try {
+ *     projectArchitecture.process(
+ *         GenerateCodeFromTemplate,
+ *         GenerateCodeFromTemplate.Args(template = listOf("data.Repository.repository")),
+ *     ).getOrThrow()
+ * } catch (bug: KatachiTemplatePathMismatchException) {
+ *     println("Please report this at https://github.com/TBSten/katachi/issues: ${bug.path}")
+ * }
+ * ```
+ *
+ * @see GenerateCodeFromTemplate
+ */
+public class KatachiTemplatePathMismatchException internal constructor(
+    /** The template that produced [path], its complete `--arg template=` specifier. */
+    public val template: String,
+    /** The declared pattern the filled-in path was checked against. */
+    public val pattern: String,
+    /** The path the run's values filled in, which [pattern] does not match. */
+    public val path: String,
+) : KatachiInternalException(
+    message = """
+        Template "$template" filled its declared path $pattern in as "$path", which the pattern
+        itself does not match. The path a template generates is worked out from the same
+        declaration its layout { } and its .template { } share, so this cannot happen once every
+        value has passed capture validation -- this is a bug in katachi. Please report it at
+        https://github.com/TBSten/katachi/issues.
+    """.trimIndent(),
+)
+
+/**
+ * A template whose path runs through a module capture found no declaration of itself once the
+ * layout was flattened again against the module the run's values picked.
+ *
+ * Re-flattening the same `layout { }` against that module reaches the very `.template { }` call
+ * the template was listed from, so this cannot happen once the module has been found -- reaching
+ * this means katachi lost track of which declaration the template is. Refused rather than
+ * generated from the un-resolved declaration, which still holds `<name>` in place of what
+ * `wildcard(name)` reads and would write that text into the path.
+ *
+ * ## Example 1: report it rather than treating it as a failed run
+ * ```kt
+ * try {
+ *     projectArchitecture.process(
+ *         GenerateCodeFromTemplate,
+ *         GenerateCodeFromTemplate.Args(template = listOf("feature.FeatureComponent")),
+ *     ).getOrThrow()
+ * } catch (bug: KatachiTemplateEntryNotResolvedException) {
+ *     println("Please report this at https://github.com/TBSten/katachi/issues: ${bug.template}")
+ * }
+ * ```
+ *
+ * @see GenerateCodeFromTemplate
+ */
+public class KatachiTemplateEntryNotResolvedException internal constructor(
+    /** The template being generated, its complete `--arg template=` specifier. */
+    public val template: String,
+    /** The module captures' values the run passed, by capture name. */
+    public val values: Map<String, String>,
+    /** Where the `.template { }` declaration was written. */
+    public val declaredAt: DeclarationSite,
+) : KatachiInternalException(
+    message = """
+        Template "$template", declared at $declaredAt, was not found again after binding its module captures to
+        ${values.entries.joinToString { (name, value) -> "$name=$value" }}. The module was found, and
+        flattening the layout against it reaches the same .template { } call the template was
+        listed from, so this is a bug in katachi. Please report it at
+        https://github.com/TBSten/katachi/issues.
+    """.trimIndent(),
 )

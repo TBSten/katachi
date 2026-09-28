@@ -26,7 +26,7 @@ final class KatachiCommandLineArgs {
             if (separatorIndex <= 0) {
                 throw new InvalidUserDataException(
                         "Invalid --arg \"" + rawArg + "\" for " + taskName + ". Expected --arg "
-                                + "key=value, e.g. --arg roleName=GetUser.");
+                                + "key=value, e.g. --arg template=UseCase.");
             }
             String key = rawArg.substring(0, separatorIndex);
             if (parsed.containsKey(key)) {

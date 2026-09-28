@@ -3,31 +3,66 @@ package me.tbsten.katachi.test.template
 import java.io.File
 import java.nio.file.Files
 import me.tbsten.katachi.dsl.Architecture
+import me.tbsten.katachi.dsl.internal.ModuleIndex
 import me.tbsten.katachi.processor.internal.process
 import me.tbsten.katachi.processor.process
-import me.tbsten.katachi.template.internal.templateFiles
+import me.tbsten.katachi.template.internal.templateFilesFor
 import me.tbsten.katachi.test.dsl.files.ForbiddenFileSystem
 
 /**
- * What running [roleName]'s template would put in the project, against a tree that refuses to be
- * read.
+ * What running the templates [specifiers] name would put in the project, against a tree that
+ * refuses to be read.
  *
  * [ForbiddenFileSystem] rather than a fake one, for the reason [me.tbsten.katachi.test.docs] uses
  * it: every spec built on this also asserts, without saying so, that deciding *what* to generate
- * reads nothing. A fake tree would answer happily and the claim would quietly stop being true.
+ * reads nothing but a module capture's value, which only reads the modules that exist. A fake
+ * tree would answer happily and the claim would quietly stop being true.
  */
 internal fun Architecture.generated(
-    roleName: String,
+    specifiers: List<String>,
     values: Map<String, String> = emptyMap(),
 ): Map<String, String> = process(ForbiddenFileSystem) { context ->
-    templateFiles(context, roleName, values)
+    templateFilesFor(context, specifiers, values)
 }
 
-/** Where [roleName]'s template would write, sorted, without the contents. */
-internal fun Architecture.generatedPaths(
-    roleName: String,
+/** [generated], for one specifier. */
+internal fun Architecture.generated(
+    specifier: String,
     values: Map<String, String> = emptyMap(),
-): List<String> = generated(roleName, values).keys.sorted()
+): Map<String, String> = generated(listOf(specifier), values)
+
+/**
+ * [generated], against [modules] instead of an unresolved index -- for a spec that needs a module
+ * capture's value to pick a module that really exists. [ForbiddenFileSystem] still backs the
+ * context itself: [modules] is a fixed answer built once by [me.tbsten.katachi.test.dsl.moduleIndexOf],
+ * not a second tree this run might read.
+ */
+internal fun Architecture.generated(
+    specifiers: List<String>,
+    values: Map<String, String> = emptyMap(),
+    modules: () -> ModuleIndex,
+): Map<String, String> = process(ForbiddenFileSystem) { context ->
+    templateFilesFor(context, specifiers, values, modules)
+}
+
+/** [generated] with [modules], for one specifier. */
+internal fun Architecture.generated(
+    specifier: String,
+    values: Map<String, String> = emptyMap(),
+    modules: () -> ModuleIndex,
+): Map<String, String> = generated(listOf(specifier), values, modules)
+
+/** Where the templates [specifiers] name would write, sorted, without the contents. */
+internal fun Architecture.generatedPaths(
+    specifiers: List<String>,
+    values: Map<String, String> = emptyMap(),
+): List<String> = generated(specifiers, values).keys.sorted()
+
+/** [generatedPaths], for one specifier. */
+internal fun Architecture.generatedPaths(
+    specifier: String,
+    values: Map<String, String> = emptyMap(),
+): List<String> = generatedPaths(listOf(specifier), values)
 
 /** A directory of this spec's own, gone again however [block] ends. */
 internal fun <R> withTempProject(block: (File) -> R): R {

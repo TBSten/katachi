@@ -1,330 +1,151 @@
 package me.tbsten.katachi.test.template
 
 import io.kotest.assertions.throwables.shouldThrow
-import io.kotest.assertions.withClue
 import io.kotest.core.spec.style.FreeSpec
-import io.kotest.matchers.collections.shouldBeEmpty
 import io.kotest.matchers.collections.shouldContainExactly
+import io.kotest.matchers.maps.shouldContainExactly
 import io.kotest.matchers.shouldBe
-import io.kotest.matchers.string.shouldContain
-import io.kotest.matchers.string.shouldEndWith
-import io.kotest.matchers.string.shouldNotContain
-import io.kotest.matchers.string.shouldStartWith
-import me.tbsten.katachi.check.Severity
-import me.tbsten.katachi.check.internal.validate
-import me.tbsten.katachi.dsl.Architecture
-import me.tbsten.katachi.dsl.ModuleResolver
-import me.tbsten.katachi.dsl.architecture
-import me.tbsten.katachi.dsl.gradle.capitalizedModuleNamePackage
-import me.tbsten.katachi.dsl.gradle.div
-import me.tbsten.katachi.dsl.gradle.kotlin
-import me.tbsten.katachi.dsl.gradle.mainSourceSet
 import me.tbsten.katachi.dsl.gradle.module
 import me.tbsten.katachi.dsl.gradle.wildcard
-import me.tbsten.katachi.dsl.internal.ModuleIndex
-import me.tbsten.katachi.dsl.kotlin.ktFile
-import me.tbsten.katachi.dsl.pascalCase
-import me.tbsten.katachi.dsl.wholeTree
-import me.tbsten.katachi.processor.internal.process
-import me.tbsten.katachi.template.KatachiInvalidTemplateCaptureValueException
+import me.tbsten.katachi.dsl.template
 import me.tbsten.katachi.template.KatachiMissingTemplateCaptureException
 import me.tbsten.katachi.template.KatachiTemplateModuleNotFoundException
-import me.tbsten.katachi.template.KatachiWildcardTemplatePlacementException
-import me.tbsten.katachi.template.internal.templateFiles
-import me.tbsten.katachi.test.check.repositoryOf
-import me.tbsten.katachi.test.dsl.files.FakeFileSystemScope
-import me.tbsten.katachi.test.dsl.files.ForbiddenFileSystem
+import me.tbsten.katachi.test.check.architectureOf
 import me.tbsten.katachi.test.dsl.moduleIndexOf
 
 /**
- * Runs [roleName]'s template with the modules [modules] answers, against a tree that refuses to be
- * read otherwise.
- */
-private fun Architecture.generatedWith(
-    roleName: String,
-    values: Map<String, String>,
-    modules: () -> ModuleIndex,
-): Map<String, String> = process(ForbiddenFileSystem) { context ->
-    templateFiles(context, roleName, values, modules)
-}
-
-private val features: () -> ModuleIndex = { moduleIndexOf("feature/home", "feature/settings") }
-
-private val modulePackage = capitalizedModuleNamePackage("com.example")
-
-/** A Screen role in every feature module, its file named after the module. */
-private fun screenArchitecture(): Architecture = architecture {
-    files = wholeTree()
-    "feature".group {
-        "Screen" {
-            layout {
-                ":feature:*".module(capture = "feature") {
-                    mainSourceSet / kotlin / modulePackage / "${wildcard("feature").pascalCase}*Screen".ktFile()
-                }
-            }
-            template {
-                val name by stringParameter()
-                val feature = captureValue("feature")
-                file("${feature.pascalCase}${name}Screen.kt") { "package com.example.feature.$feature" }
-            }
-        }
-    }
-}
-
-/**
- * Where a generated file lands when the module is a wildcard named with
- * `.module(capture = "...")`: the module has to exist, and it is looked up only then.
- *
- * NOTE: このファイルのパッケージを `me.tbsten.katachi.template` にしてはいけない。
- * captureDeclarationSite() がライブラリ自身のフレームとして読み飛ばしてしまい、
- * 宣言位置が kotest 内部を指すようになる。
+ * A module capture -- `":feature:${capture("...")}".module { }` -- is a *kind* of module until a
+ * run's values pick one that exists; generation re-flattens against the real project only then.
  */
 class TemplateModuleCapturePlacementSpec : FreeSpec({
-    "モジュールの capture" - {
-        "実在するモジュールを渡すとそのモジュールに、modulePackage と wildcard 由来のファイル名で生成される" {
-            val generated = screenArchitecture().generatedWith(
-                "Screen",
-                mapOf("feature" to "home", "name" to "List"),
-                features,
-            )
+    val features = { moduleIndexOf("feature/home", "feature/settings") }
 
-            val path = generated.keys.single()
-            path shouldStartWith "feature/home/src/main/kotlin/"
-            path shouldEndWith "/HomeListScreen.kt"
-            path shouldNotContain "*"
-            path shouldNotContain "<name>"
-            generated.values.single() shouldBe "package com.example.feature.home\n"
-        }
-
-        "実在しないモジュールを渡すと KatachiTemplateModuleNotFoundException で実在するモジュールを並べる" {
-            val thrown = shouldThrow<KatachiTemplateModuleNotFoundException> {
-                screenArchitecture().generatedWith("Screen", mapOf("feature" to "hoem", "name" to "List"), features)
-            }
-
-            thrown.modulePattern shouldBe ":feature:*"
-            thrown.modulePath shouldBe ":feature:hoem"
-            thrown.existing shouldContainExactly listOf(":feature:home", ":feature:settings")
-            thrown.message.orEmpty() shouldContain "[UnexpectedDirectory]"
-            thrown.fileName shouldBe "HoemListScreen.kt"
-            thrown.message.orEmpty() shouldContain "Template file \"HoemListScreen.kt\" declared at"
-        }
-
-        "実在しないモジュールの案内は、モジュールパスではなく --arg に渡す値の形で出す" {
-            val thrown = shouldThrow<KatachiTemplateModuleNotFoundException> {
-                screenArchitecture().generatedWith("Screen", mapOf("feature" to "hoem", "name" to "List"), features)
-            }
-
-            thrown.captureNames shouldBe listOf("feature")
-            thrown.existingArgs shouldContainExactly listOf("--arg feature=home", "--arg feature=settings")
-            thrown.message.orEmpty() shouldContain "--arg feature=home"
-            thrown.message.orEmpty() shouldContain "--arg feature=settings"
-            thrown.message.orEmpty() shouldContain "not `:feature:home`"
-        }
-
-        "* が2つのキーの案内は、モジュールごとに2つの --arg を並べる" {
-            val arch = architecture {
-                "Api" {
-                    layout { ":core:*:*".module("layer", "part") { "*Api.kt".file() } }
-                    template { file("UserApi.kt") { "" } }
-                }
-            }
-            val modules = { moduleIndexOf("core/data/remote", "core/domain/local") }
-
-            val thrown = shouldThrow<KatachiTemplateModuleNotFoundException> {
-                arch.generatedWith("Api", mapOf("layer" to "data", "part" to "local"), modules)
-            }
-            thrown.existingArgs shouldContainExactly listOf(
-                "--arg layer=data --arg part=remote",
-                "--arg layer=domain --arg part=local",
-            )
-        }
-
-        "打ち間違えた値は、別の具体的なパスが受け取れても KatachiTemplateModuleNotFoundException" {
-            val arch = architecture {
+    "実在するモジュールの capture を値で選べる" {
+        val arch = architectureOf {
+            "feature".group {
                 "Screen" {
                     layout {
-                        ":feature:*".module(capture = "feature") { "*Screen.kt".file() }
-                        ":app".module { "*Screen.kt".file() }
-                    }
-                    template { file("HomeScreen.kt") { "" } }
-                }
-            }
-            val modules = { moduleIndexOf("app", "feature/home") }
-
-            shouldThrow<KatachiTemplateModuleNotFoundException> {
-                arch.generatedWith("Screen", mapOf("feature" to "hoem"), modules)
-            }.modulePath shouldBe ":feature:hoem"
-        }
-
-        "モジュールの capture に1セグメントでない値を渡すと、モジュールを探さずに KatachiInvalidTemplateCaptureValueException" {
-            var scans = 0
-            listOf("home/list", "..", "").forEach { value ->
-                shouldThrow<KatachiInvalidTemplateCaptureValueException> {
-                    screenArchitecture().generatedWith("Screen", mapOf("feature" to value, "name" to "List")) {
-                        scans++
-                        features()
-                    }
-                }.name shouldBe "feature"
-            }
-            scans shouldBe 0
-        }
-
-        "モジュールの capture にモジュールパスを渡すと、モジュールパスの1段と言い、渡す値を案内する" {
-            val thrown = shouldThrow<KatachiInvalidTemplateCaptureValueException> {
-                screenArchitecture().generatedWith("Screen", mapOf("feature" to ":feature:home", "name" to "List"), features)
-            }
-
-            thrown.isModuleCapture shouldBe true
-            thrown.message.orEmpty() shouldContain "which is not one level of the module path"
-            thrown.message.orEmpty() shouldContain "Pass `home`, not `:feature:home`: --arg feature=home."
-            thrown.message.orEmpty() shouldNotContain "directory level"
-        }
-
-        "部分一致のモジュールキーにも名前を付けられ、値は * の部分だけを受け取る" {
-            val arch = architecture {
-                "Screen" {
-                    layout { ":feature:*-impl".module(capture = "feature") { "*Screen.kt".file() } }
-                    template { file("HomeScreen.kt") { "" } }
-                }
-            }
-            val modules = { moduleIndexOf("feature/home-impl", "feature/settings-impl") }
-
-            arch.generatedWith("Screen", mapOf("feature" to "home"), modules).keys shouldBe
-                setOf("feature/home-impl/HomeScreen.kt")
-        }
-
-        "1つのパスでモジュールの capture とパスの capture を併用できる" - {
-            "規約どおりのディレクトリのモジュール" {
-                val arch = architecture {
-                    "Screen" {
-                        layout {
-                            ":feature:*".module(capture = "feature") { "src" / capture("layer") / "*Screen.kt".file() }
+                        ":feature:${capture("feature")}".module {
+                            "Screen.kt".file().template {
+                                "package feature.${captureValue("feature")}"
+                            }
                         }
-                        template { file("HomeScreen.kt") { "" } }
                     }
                 }
-
-                arch.generatedWith("Screen", mapOf("feature" to "home", "layer" to "ui"), features).keys shouldBe
-                    setOf("feature/home/src/ui/HomeScreen.kt")
-            }
-
-            "moduleResolver で階層の数が規約と違うモジュール" {
-                // The resolver puts `:feature:home`'s sources one level below its directory, the
-                // way a `projectDir` override in settings.gradle.kts can, so the path capture sits
-                // at another segment index than under the conventional directory. Discovery finds
-                // the modules by their build files and does not consult the resolver.
-                val resolver = ModuleResolver { module -> module.segments.joinToString("/") + "/android" }
-                val arch = architecture {
-                    moduleResolver = resolver
-                    "Screen" {
-                        layout {
-                            ":feature:*".module(capture = "feature") { "src" / capture("layer") / "*Screen.kt".file() }
-                        }
-                        template { file("HomeScreen.kt") { "" } }
-                    }
-                }
-                val modules = { moduleIndexOf("feature/home", "feature/settings", resolver = resolver) }
-
-                arch.generatedWith("Screen", mapOf("feature" to "home", "layer" to "ui"), modules).keys shouldBe
-                    setOf("feature/home/android/src/ui/HomeScreen.kt")
             }
         }
 
-        "* が2つのキーは2つの値で1つのモジュールに決まる" {
-            val arch = architecture {
-                "Api" {
-                    layout { ":core:*:*".module("layer", "part") { "*Api.kt".file() } }
-                    template { file("UserApi.kt") { "" } }
-                }
-            }
-            val modules = { moduleIndexOf("core/data/remote", "core/data/local", "core/domain/remote") }
-
-            arch.generatedWith("Api", mapOf("layer" to "data", "part" to "remote"), modules).keys shouldBe
-                setOf("core/data/remote/UserApi.kt")
-        }
-
-        "capture の値が無いと KatachiMissingTemplateCaptureException で、今あるモジュールの値を並べる" {
-            var scans = 0
-            val arch = architecture {
-                "Screen" {
-                    layout {
-                        ":feature:*".module(capture = "feature") { "${wildcard("feature").pascalCase}*Screen".ktFile() }
-                    }
-                    template { file("HomeListScreen.kt") { "" } }
-                }
-            }
-            val thrown = shouldThrow<KatachiMissingTemplateCaptureException> {
-                arch.generatedWith("Screen", emptyMap()) {
-                    scans++
-                    features()
-                }
-            }
-
-            thrown.names shouldBe listOf("feature")
-            thrown.existingValues shouldBe mapOf("feature" to listOf("home", "settings"))
-            thrown.message.orEmpty() shouldContain "--arg feature=<feature>, such as --arg feature=home"
-            withClue("モジュールを読むのは、失敗が決まってから今ある値を並べるための1回だけ") { scans shouldBe 1 }
-        }
-
-        "名前の無い module キーは今までどおり KatachiWildcardTemplatePlacementException" {
-            val arch = architecture {
-                "Screen" {
-                    layout { ":feature:*".module { "*Screen.kt".file() } }
-                    template { file("HomeScreen.kt") { "" } }
-                }
-            }
-
-            shouldThrow<KatachiWildcardTemplatePlacementException> {
-                arch.generatedWith("Screen", mapOf("feature" to "home"), features)
-            }
-        }
-
-        "モジュールの capture を持たない役割はモジュールを探さない" {
-            var scans = 0
-            val arch = architecture {
-                "ViewModel" {
-                    layout { "feature" / capture("feature") / "*ViewModel.kt".file() }
-                    template { file("HomeViewModel.kt") { "" } }
-                }
-            }
-
-            arch.generatedWith("ViewModel", mapOf("feature" to "home")) {
-                scans++
-                features()
-            }.keys shouldBe setOf("feature/home/HomeViewModel.kt")
-            scans shouldBe 0
-        }
+        arch.generated("feature.Screen", mapOf("feature" to "home"), features) shouldContainExactly
+            mapOf("feature/home/Screen.kt" to "package feature.home")
     }
 
-    "生成物がそのまま検査を通る" - {
-        "パスの capture で生成したファイルは Error を1つも出さない" {
-            val arch = architecture {
-                files = wholeTree()
-                "ViewModel" {
-                    layout { "feature" / capture("feature") / "*ViewModel.kt".file() }
-                    template { file("HomeViewModel.kt") { "" } }
+    "実在しないモジュールを選ぶと KatachiTemplateModuleNotFoundException になり、実在する値を並べる" {
+        val arch = architectureOf {
+            "feature".group {
+                "Screen" {
+                    layout {
+                        ":feature:${capture("feature")}".module {
+                            "Screen.kt".file().template { "// screen" }
+                        }
+                    }
                 }
             }
-            val path = arch.generated("ViewModel", mapOf("feature" to "home")).keys.single()
-
-            arch.validate(repositoryOf { file(path) }).filter { it.severity == Severity.Error }.shouldBeEmpty()
         }
 
-        "モジュールの capture で生成したファイルは Error を1つも出さない" {
-            val arch = screenArchitecture()
-            val path = arch.generatedWith("Screen", mapOf("feature" to "home", "name" to "List"), features).keys.single()
-            val tree = repositoryOf {
-                "feature/home/build.gradle.kts"()
-                "feature/settings/build.gradle.kts"()
-                file(path)
+        val thrown = shouldThrow<KatachiTemplateModuleNotFoundException> {
+            arch.generated("feature.Screen", mapOf("feature" to "hoem"), features)
+        }
+        thrown.existing shouldContainExactly listOf(":feature:home", ":feature:settings")
+        thrown.captureNames shouldContainExactly listOf("feature")
+    }
+
+    "モジュール capture の値が無ければ KatachiMissingTemplateCaptureException（プロジェクトは読まない）" {
+        val arch = architectureOf {
+            "feature".group {
+                "Screen" {
+                    layout {
+                        ":feature:${capture("feature")}".module {
+                            "Screen.kt".file().template { "// screen" }
+                        }
+                    }
+                }
             }
-
-            arch.validate(tree).filter { it.severity == Severity.Error }.shouldBeEmpty()
         }
+
+        // ForbiddenFileSystem のまま（modules 引数を渡さない既定の generated）: 値が無い段階で
+        // 落ちるので、モジュール一覧を読みに行くことさえない。
+        val thrown = shouldThrow<KatachiMissingTemplateCaptureException> { arch.generated("feature.Screen") }
+        thrown.names shouldContainExactly listOf("feature")
+    }
+
+    "同じ役割が複数モジュールに展開されても、値で1つに絞られる" {
+        val arch = architectureOf {
+            "feature".group {
+                "BuildFile" {
+                    layout {
+                        ":feature:${capture("feature")}".module {
+                            "module.txt".file().template(id = "module") {
+                                captureValue("feature")
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        arch.generated("feature.BuildFile.module", mapOf("feature" to "settings"), features) shouldContainExactly
+            mapOf("feature/settings/module.txt" to "settings")
+    }
+
+    "ファイル名に wildcard(name) を使うテンプレートは、選んだモジュールの値でパスが埋まる（'<feature>' のまま書かれない）" {
+        // 最終検証で見つかった blocker の再現: 生成先を決めるとき、モジュールを実在のものに束ねて
+        // 平坦化し直した entry と、宣言の一覧（モジュールを解決しない平坦化）のテンプレートを
+        // LayoutTemplate.equals で突き合わせていたため、2回の平坦化で別物と判定されて
+        // 未解決の entry に戻り、wildcard("feature") のプレースホルダ '<feature>' がパスに残っていた。
+        val arch = architectureOf {
+            "feature".group {
+                "Component" {
+                    layout {
+                        ":feature:${capture("feature")}".module {
+                            "component" / "${wildcard("feature")}${capture("name")}.kt".file().template {
+                                "package feature.${captureValue("feature")}"
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        arch.generated("feature.Component", mapOf("feature" to "home", "name" to "Card"), features) shouldContainExactly
+            mapOf("feature/home/component/homeCard.kt" to "package feature.home")
+    }
+
+    "ループで id を変えた .template をモジュールのワイルドカードの中に書いても、選んだ id の宣言に絞られる" {
+        // 突き合わせが宣言の場所（ソース行）だけだと、同じ行から id を変えて作った2つの宣言の
+        // どちらを指すかが決まらない。id まで見て、指定した方のファイル名で書かれることを確かめる。
+        val arch = architectureOf {
+            "feature".group {
+                "Part" {
+                    layout {
+                        ":feature:${capture("feature")}".module {
+                            listOf("Screen", "Route").forEach { kind ->
+                                "${wildcard("feature")}${capture("name")}$kind.kt".file().template(id = kind.lowercase()) {
+                                    "// $kind of ${captureValue("feature")}"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        arch.generated(
+            listOf("feature.Part.screen", "feature.Part.route"),
+            mapOf("feature" to "settings", "name" to "Main"),
+            features,
+        ) shouldContainExactly mapOf(
+            "feature/settings/settingsMainScreen.kt" to "// Screen of settings",
+            "feature/settings/settingsMainRoute.kt" to "// Route of settings",
+        )
     }
 })
-
-/** A file at [path], relative to the enclosing block. */
-private fun FakeFileSystemScope.file(path: String) {
-    path()
-}

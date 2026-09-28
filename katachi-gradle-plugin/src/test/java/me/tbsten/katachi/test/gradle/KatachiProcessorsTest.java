@@ -175,8 +175,8 @@ class KatachiProcessorsTest {
     @DisplayName("template { } と args(\"template\") { } の併用は二重設定として落ちる")
     void aTypedBlockStillCollidesWithTheStringForm() {
         KatachiProcessors processors = new KatachiProcessors();
-        processors.template(template -> template.setRoleName("UseCase"));
-        processors.args("template", args -> args.arg("roleName", "UseCase"));
+        processors.template(template -> template.setTemplate(java.util.List.of("UseCase")));
+        processors.args("template", args -> args.arg("template", "UseCase"));
 
         InvalidUserDataException failure =
                 assertThrows(InvalidUserDataException.class, () -> configuredArgs(processors));
@@ -193,6 +193,42 @@ class KatachiProcessorsTest {
         processors.template(template -> template.setOnExisting(KatachiOnExisting.SKIP));
 
         assertEquals("skip", configuredArgs(processors).get("template").get("onExisting"));
+    }
+
+    @Test
+    @DisplayName("template { template = listOf(a, b) } は --arg template=a,b になる")
+    void templateListTravelsAsACommaJoinedArg() {
+        KatachiProcessors processors = new KatachiProcessors();
+        processors.template(template -> template.setTemplate(
+                java.util.List.of("data.Repository.repository", "data.Repository.repositoryImpl")));
+
+        assertEquals(
+                "data.Repository.repository,data.Repository.repositoryImpl",
+                configuredArgs(processors).get("template").get("template"));
+    }
+
+    @Test
+    @DisplayName("template { template = ... } に不正な指定を渡すと落ちる")
+    void anInvalidTemplateSpecifierFails() {
+        KatachiProcessors processors = new KatachiProcessors();
+
+        InvalidUserDataException failure = assertThrows(
+                InvalidUserDataException.class,
+                () -> processors.template(template -> template.setTemplate(java.util.List.of("Use Case"))));
+
+        assertTrue(
+                failure.getMessage().contains("Use Case"),
+                "expected the message to name the offending entry: " + failure.getMessage());
+    }
+
+    @Test
+    @DisplayName("template { template = emptyList() } は落ちる")
+    void anEmptyTemplateListFails() {
+        KatachiProcessors processors = new KatachiProcessors();
+
+        assertThrows(
+                InvalidUserDataException.class,
+                () -> processors.template(template -> template.setTemplate(java.util.List.of())));
     }
 
     @Test

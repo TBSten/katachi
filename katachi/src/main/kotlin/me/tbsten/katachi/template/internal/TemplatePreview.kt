@@ -1,21 +1,16 @@
 package me.tbsten.katachi.template.internal
 
-import me.tbsten.katachi.dsl.DeclarationSite
-import me.tbsten.katachi.dsl.LayoutEntry
-import me.tbsten.katachi.dsl.Role
 import me.tbsten.katachi.dsl.Summary
 import me.tbsten.katachi.dsl.Title
 import me.tbsten.katachi.dsl.internal.DeclaredTemplateParameter
-import me.tbsten.katachi.dsl.internal.TemplateDeclaration
-import me.tbsten.katachi.dsl.internal.TemplateEvaluation
+import me.tbsten.katachi.dsl.internal.LayoutCaptures
+import me.tbsten.katachi.dsl.internal.LayoutTemplate
 import me.tbsten.katachi.dsl.internal.TemplateParameterOrigin
 import me.tbsten.katachi.dsl.internal.TemplateParameterType
 import me.tbsten.katachi.dsl.internal.declaredTemplateParameters
 import me.tbsten.katachi.dsl.internal.evaluateTemplate
 import me.tbsten.katachi.dsl.internal.templateParameterNames
 import me.tbsten.katachi.internal.catching
-import me.tbsten.katachi.template.KatachiMissingTemplateCaptureException
-import me.tbsten.katachi.template.KatachiWildcardTemplatePlacementException
 import me.tbsten.katachi.template.PreviewValueSource
 import me.tbsten.katachi.template.TemplateBranch
 import me.tbsten.katachi.template.TemplateDetail
@@ -34,68 +29,66 @@ import me.tbsten.katachi.template.TemplateSummary
 private const val MAX_REPLAYS: Int = 16
 
 /** The values a preview runs a template with, and the parameters those values declare. */
-private class PreviewValues(
+internal class PreviewValues(
     val parameters: List<DeclaredTemplateParameter>,
     val values: Map<String, String>,
 )
 
 /**
- * [role]'s template as one line of the list. [entries] are the declared layout, which the
- * captures are read from.
+ * [template] as one line of the list. [DeclaredTemplate.entries] is where the captures are read
+ * from.
  *
- * Never fails over one template: a capture and a parameter sharing a name leave [TemplateSummary.fileCount]
- * `null`, as any other template that cannot be previewed does, so that one broken role does not
- * cost the list -- or the IDE, which reads the same list -- every other template.
- * [templateDetailOf] and a run of the template say what is wrong.
+ * Never fails over one template: a capture and a parameter sharing a name leave
+ * [TemplateSummary.conflict] `true`, as any other template that cannot be previewed does, so that
+ * one broken declaration does not cost the list -- or the IDE, which reads the same list -- every
+ * other template. [templateDetailOf] and a run of the template say what is wrong.
  */
-internal fun templateSummaryOf(role: Role, entries: List<LayoutEntry>): TemplateSummary {
-    val template = templateOf(role)
-    val roleEntries = entries.filter { it.role === role }
-    val captureNames = captureNamesOf(roleEntries)
-    val preview = previewValuesOf(template, role.qualifiedName, captureNames)
-    val fileCount = catching {
-        requireNoCaptureConflicts(role, roleEntries, template, preview.values)
-        evaluateTemplate(template, role.qualifiedName, preview.values, captureNames, isPreview = true)
-    }.getOrNull()?.files?.size
+internal fun templateSummaryOf(template: DeclaredTemplate): TemplateSummary {
+    val captureNames = captureNamesOf(template.entries)
+    val preview = previewValuesOf(template.template, template.role.qualifiedName, captureNames)
+    val conflict = catching {
+        requireNoConflicts(listOf(template), preview.values)
+        evaluateTemplate(template.template, template.role.qualifiedName, preview.values, captureNames, isPreview = true)
+    }.isFailure
     return TemplateSummary(
-        roleName = role.qualifiedName,
-        title = role[Title],
-        summary = role[Summary],
+        template = template.specifier,
+        id = template.id,
+        title = titleOf(template),
+        roleName = template.role.qualifiedName,
+        summary = template.role[Summary],
         parameterNames = preview.parameters.map { it.name },
-        fileCount = fileCount,
-        captures = capturePreviewsOf(roleEntries),
+        captures = capturePreviewsOf(template.entries),
+        conflict = conflict,
     )
 }
 
 /**
- * [role]'s template explained: its parameters, and its files rendered with stand-in values.
+ * [template] explained: its parameters, and the file it produces rendered with stand-in values.
  *
- * Reads nothing off disk: the paths come from [entries], the declared layout.
+ * Reads nothing off disk: the path comes from [DeclaredTemplate.entries], the declared layout.
  */
-internal fun templateDetailOf(role: Role, entries: List<LayoutEntry>): TemplateDetail {
-    val template = templateOf(role)
-    val roleEntries = entries.filter { it.role === role }
-    val captureNames = captureNamesOf(roleEntries)
-    val preview = previewValuesOf(template, role.qualifiedName, captureNames)
-    requireNoCaptureConflicts(role, roleEntries, template, preview.values)
-    val evaluation = evaluateTemplate(template, role.qualifiedName, preview.values, captureNames, isPreview = true)
-    val stringNames = preview.parameters
-        .filter { it.type == TemplateParameterType.StringType }
-        .map { it.name } + captureNames
-
+internal fun templateDetailOf(template: DeclaredTemplate): TemplateDetail {
+    val captureNames = captureNamesOf(template.entries)
+    val preview = previewValuesOf(template.template, template.role.qualifiedName, captureNames)
+    requireNoConflicts(listOf(template), preview.values)
+    val content = evaluateTemplate(template.template, template.role.qualifiedName, preview.values, captureNames, isPreview = true)
     return TemplateDetail(
-        roleName = role.qualifiedName,
-        title = role[Title],
-        summary = role[Summary],
+        template = template.specifier,
+        id = template.id,
+        title = titleOf(template),
+        roleName = template.role.qualifiedName,
+        summary = template.role[Summary],
         parameters = preview.parameters.map(::parameterPreviewOf),
-        files = evaluation.files.map { file ->
-            filePreviewOf(role, roleEntries, stringNames, captureNames, file.fileName, file.content, file.declaredAt)
-        },
-        branches = branchesOf(template, role.qualifiedName, captureNames, preview, evaluation),
-        exampleCommand = exampleCommandOf(role.qualifiedName, captureNames, preview.parameters),
-        captures = capturePreviewsOf(roleEntries),
+        files = listOf(filePreviewOf(template, preview, content)),
+        branches = branchesOf(template, captureNames, preview, content),
+        exampleCommand = exampleCommandOf(template, captureNames, preview.parameters),
+        captures = capturePreviewsOf(template.entries),
     )
 }
+
+/** `.template { }`'s own `title`, falling back to [DeclaredTemplate.id], then to the role's `title`. */
+private fun titleOf(template: DeclaredTemplate): String =
+    template.title ?: template.id ?: template.role[Title] ?: template.role.qualifiedName
 
 /**
  * The values to preview [template] with, replayed until the parameters they declare settle.
@@ -104,7 +97,7 @@ internal fun templateDetailOf(role: Role, entries: List<LayoutEntry>): TemplateD
  * Every capture in [captureNames] reads as its placeholder, `${name}`, as a String parameter does.
  */
 private fun previewValuesOf(
-    template: TemplateDeclaration,
+    template: LayoutTemplate,
     roleName: String,
     captureNames: Set<String>,
     fixed: Map<String, String> = emptyMap(),
@@ -142,7 +135,7 @@ private const val MAX_BRANCH_RUNS: Int = 64
  * replays it is made of, this never throws.
  */
 internal fun parameterOriginsOnEveryBranch(
-    template: TemplateDeclaration,
+    template: LayoutTemplate,
     roleName: String,
     captureNames: Set<String>,
     values: Map<String, String>,
@@ -190,15 +183,6 @@ private fun previewValueOf(parameter: DeclaredTemplateParameter): Pair<String, P
     return standIn to PreviewValueSource.StandIn
 }
 
-/** `${name}`: what a String parameter reads as in a preview. */
-private fun placeholderOf(name: String): String = "\$" + "{" + name + "}"
-
-/** [value] as `--arg` spells it: an enum entry by its name, anything else by `toString`. */
-private fun argSpellingOf(value: Any): String = when (value) {
-    is Enum<*> -> value.name
-    else -> value.toString()
-}
-
 private fun parameterPreviewOf(parameter: DeclaredTemplateParameter): TemplateParameterPreview {
     val (value, source) = previewValueOf(parameter)
     return TemplateParameterPreview(
@@ -221,136 +205,73 @@ private fun kindOf(type: TemplateParameterType<*>): TemplateParameterKind = when
 }
 
 /**
- * Where [fileName] would land, decided by the same [placeTemplateFile] generation uses.
+ * [template]'s one file, previewed: its declared pattern, its path with [preview]'s values filled
+ * in, and its [content].
  *
- * The name still holds `${name}`, whose `$`, `{` and `}` generation would refuse as a file name.
- * So the layout is asked about the name with each placeholder spelt as a plain word, and the
- * directory it answers is put in front of the name as the preview spells it. Every capture is
- * filled in the same way and spelt back as `${name}` -- a module capture too, as the directory the
- * module key's own convention gives it (`${feature}` below `feature/` for `":feature:*"`), since
- * which module a value picks is only known once the modules have been listed.
- *
- * A capture used inside a file name, not only a directory (`"${wildcard("feature").pascalCase}*"`),
- * needs the same plain word on the layout's side of the match too: `wildcard(...)` reads a capture
- * with no module bound as `<name>`, which a naming conversion leaves unchanged the same way it
- * leaves a [CAPTURE_TOKEN] unchanged, but the two spellings are not each other, so the plain word
- * this candidate name uses has to replace the layout's `<name>` as well -- [placeTemplateFile]'s
- * `patternNameRewrite` is where that happens. Without it, a role that reads a capture back with
- * `captureValue(...)` to name a file the same way its `layout { }` names the directory would never
- * match its own pattern.
- *
- * `<name>` can also turn up **inside** a directory, not only in a file name: a `ModulePackage`
- * derives its directory straight from the module path text
- * ([me.tbsten.katachi.dsl.internal.ModuleTarget.modulePath]), which an unresolved wildcard key
- * carries the same placeholder in. Left alone that reads as an ordinary, unnamed `*` -- a
- * directory no run could ever pick -- so the restore below turns every `<name>` back into
- * `${name}` too, next to the token.
+ * A capture reads as `${name}` in the path exactly as it does in the content -- there is no real
+ * value to fill a preview's path with, only the same placeholder a String parameter gets. A
+ * module capture is the one exception: which module it would pick is a question only the modules
+ * that exist could answer, so [TemplateFilePreview.path] is `null` whenever one is present, as
+ * [TemplateFilePreview.pattern] (the declared shape, captures included) still is not.
  */
-private fun filePreviewOf(
-    role: Role,
-    entries: List<LayoutEntry>,
-    stringNames: List<String>,
-    captureNames: Set<String>,
-    fileName: String,
-    content: String,
-    declaredAt: DeclarationSite,
-): TemplateFilePreview {
-    val tokens = captureNames.withIndex().associate { (index, name) -> name to "$CAPTURE_TOKEN$index" }
-    var plainName = fileName
-    for (name in stringNames) {
-        val standIn = tokens[name] ?: name.replaceFirstChar(Char::uppercaseChar)
-        plainName = plainName.replace(placeholderOf(name), standIn)
-    }
-    return try {
-        var placed = placeTemplateFile(
-            role,
-            PlacementLayout(entries),
-            plainName,
-            declaredAt,
-            tokens,
-            patternNameRewrite = { segment ->
-                tokens.entries.fold(segment) { spelt, (name, token) -> spelt.replace("<$name>", token) }
-            },
-        )
-        for ((name, token) in tokens) {
-            // The token stands for a file-name occurrence of the capture (`patternNameRewrite`,
-            // above), and `<name>` for a directory built straight out of the module path itself
-            // -- `ModulePackage` does this, splitting it on `:` before any capture gets to fill
-            // a `*` in. Both read back as the same `${name}` a preview shows everywhere else.
-            placed = placed.replace(token, placeholderOf(name)).replace("<$name>", placeholderOf(name))
-        }
-        val directory = placed.substringBeforeLast('/', missingDelimiterValue = "")
-        TemplateFilePreview(
-            fileName = fileName,
-            path = if (directory.isEmpty()) fileName else "$directory/$fileName",
-            unresolvedPatterns = emptyList(),
-            content = content,
-        )
-    } catch (wildcard: KatachiWildcardTemplatePlacementException) {
-        TemplateFilePreview(
-            fileName = fileName,
-            path = null,
-            unresolvedPatterns = wildcard.patterns.map { pattern ->
-                tokens.entries.fold(pattern) { spelt, (name, token) -> spelt.replace(token, placeholderOf(name)) }
-            },
-            content = content,
-        )
-    } catch (unfilled: KatachiMissingTemplateCaptureException) {
-        TemplateFilePreview(
-            fileName = fileName,
-            path = null,
-            unresolvedPatterns = unfilled.missing.keys.sorted(),
-            content = content,
-        )
-    }
+private fun filePreviewOf(template: DeclaredTemplate, preview: PreviewValues, content: String): TemplateFilePreview {
+    val entry = template.entries.first()
+    // See TemplateGeneration.templateFileFor's identical read: `templateCaptures`, not
+    // `.captureVariants.firstOrNull()`, is what is guaranteed to be this template's own variant
+    // when this path folded two declarations into one entry.
+    val variant = entry.templateCaptures ?: entry.captureVariants.firstOrNull() ?: LayoutCaptures.NONE
+    val placeholders = variant.names.associateWith(::placeholderOf)
+    val pattern = fillCapturedPath(entry.path, variant, placeholders)
+    val path = if (variant.moduleCapture != null) null else pattern
+    return TemplateFilePreview(
+        pattern = pattern,
+        fileName = pattern.substringAfterLast('/'),
+        path = path,
+        captures = variant.names,
+        parameters = preview.parameters.map { it.name },
+        content = content,
+    )
 }
 
 /**
- * What a capture is spelt as while a preview asks the layout about it, whether it names a
- * directory or is read back into a file name with `captureValue(...)`: a plain word no glob reads
- * as anything, numbered per capture, and swapped back for `${name}` afterwards.
- */
-private const val CAPTURE_TOKEN: String = "katachiCapturePreview"
-
-/**
- * Every other value of a Boolean or enum parameter that changes which files are produced, or
- * which parameters are declared -- a parameter inside `if (withImpl) { }` comes and goes with it.
+ * Every other value of a Boolean or enum parameter that changes this template's content or the
+ * parameters it declares.
  *
  * One parameter at a time, the rest kept at the preview's values: the combinations of several
  * would grow with every parameter, and one at a time already answers "what does this switch do".
  * A value the template cannot render with is left out rather than reported -- the detail is about
  * what the template does, and `katachiTemplate` reports a failure with that value itself.
+ *
+ * [TemplateBranch.addedFiles] / [TemplateBranch.removedFiles] stay empty: a template describes
+ * exactly one file, so no value changes *which* file it is -- only whether it can be rendered at
+ * all (in which case the branch is skipped, as it always was) or what it and its parameters are.
  */
 private fun branchesOf(
-    template: TemplateDeclaration,
-    roleName: String,
+    template: DeclaredTemplate,
     captureNames: Set<String>,
     preview: PreviewValues,
-    evaluation: TemplateEvaluation,
+    content: String,
 ): List<TemplateBranch> {
-    val baseFiles = evaluation.files.map { it.fileName }
     val baseParameters = preview.parameters.map { it.name }
     val branches = mutableListOf<TemplateBranch>()
     for (parameter in preview.parameters) {
         val used = preview.values[parameter.name]
         for (value in parameter.type.acceptedValues) {
             if (value == used) continue
-            val variant = previewValuesOf(template, roleName, captureNames, fixed = mapOf(parameter.name to value))
-            val files = catching {
-                evaluateTemplate(template, roleName, variant.values, captureNames, isPreview = true)
-            }.getOrNull()?.files?.map { it.fileName } ?: continue
-            val added = files - baseFiles.toSet()
-            val removed = baseFiles - files.toSet()
+            val variant = previewValuesOf(template.template, template.role.qualifiedName, captureNames, fixed = mapOf(parameter.name to value))
+            val variantContent = catching {
+                evaluateTemplate(template.template, template.role.qualifiedName, variant.values, captureNames, isPreview = true)
+            }.getOrNull() ?: continue
             val addedParameters = variant.parameters.filter { it.name !in baseParameters }
             val removedParameters = baseParameters - variant.parameters.map { it.name }.toSet()
-            if (added.isEmpty() && removed.isEmpty() && addedParameters.isEmpty() && removedParameters.isEmpty()) {
+            if (variantContent == content && addedParameters.isEmpty() && removedParameters.isEmpty()) {
                 continue
             }
             branches += TemplateBranch(
                 parameterName = parameter.name,
                 value = value,
-                addedFiles = added,
-                removedFiles = removed,
+                addedFiles = emptyList(),
+                removedFiles = emptyList(),
                 addedParameters = addedParameters.map(::parameterPreviewOf),
                 removedParameters = removedParameters,
             )
@@ -360,9 +281,9 @@ private fun branchesOf(
 }
 
 /**
- * A `katachiTemplate` command for [roleName] with every capture and every required parameter given
- * a value -- a String parameter its own name with the first letter upper-cased, and a capture
- * `<name>`.
+ * A `katachiTemplate` command for [template] with every capture and every required parameter
+ * given a value -- a String parameter its own name with the first letter upper-cased, and a
+ * capture `<name>`.
  *
  * A capture is left as a slot on purpose. Its value is a directory or a module of the user's own
  * project, and no word the preview could make up is one: a command that ran as pasted would
@@ -370,12 +291,12 @@ private fun branchesOf(
  * filled before the command runs at all.
  */
 private fun exampleCommandOf(
-    roleName: String,
+    template: DeclaredTemplate,
     captureNames: Set<String>,
     parameters: List<DeclaredTemplateParameter>,
 ): String =
     buildString {
-        append("./gradlew katachiTemplate --arg roleName=").append(roleName)
+        append("./gradlew katachiTemplate --arg template=").append(template.specifier)
         for (name in captureNames) append(" --arg ").append(name).append("=<").append(name).append('>')
         for (parameter in parameters) {
             if (parameter.default != null) continue

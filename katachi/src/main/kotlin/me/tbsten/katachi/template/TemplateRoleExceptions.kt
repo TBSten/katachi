@@ -1,136 +1,184 @@
 package me.tbsten.katachi.template
 
 import me.tbsten.katachi.KatachiDeclarationException
-import me.tbsten.katachi.dsl.DeclarationSite
 
 /**
- * `--arg roleName=` named a role the definition does not declare.
+ * `--arg template=` named something no template answers to.
  *
- * Almost always a typo or a role that has been renamed, so the message lists what the definition
- * does declare: the fix is one of those names, and reading them is faster than opening the
- * definition.
+ * Almost always a typo, a template whose role or id was renamed, or a group left out of a
+ * qualified name -- see the design draft's section 3 for how a specifier is read. The message
+ * lists what the definition does declare, since the fix is one of those specifiers and reading
+ * them is faster than opening the definition.
  *
- * ## Example 1: catch a misspelled role name
+ * ## Example 1: catch a misspelt specifier
  * ```kt
  * import io.kotest.assertions.throwables.shouldThrow
  * import me.tbsten.katachi.dsl.architecture
  * import me.tbsten.katachi.processor.process
  * import me.tbsten.katachi.template.GenerateCodeFromTemplate
- * import me.tbsten.katachi.template.KatachiUnknownTemplateRoleException
+ * import me.tbsten.katachi.template.KatachiUnknownTemplateException
  *
  * val arch = architecture { "domain".group { "UseCase" { } } }
- * val thrown = shouldThrow<KatachiUnknownTemplateRoleException> {
- *     arch.process(GenerateCodeFromTemplate, GenerateCodeFromTemplate.Args(roleName = "UseCse")).getOrThrow()
+ * val thrown = shouldThrow<KatachiUnknownTemplateException> {
+ *     arch.process(GenerateCodeFromTemplate, GenerateCodeFromTemplate.Args(template = listOf("UseCse"))).getOrThrow()
  * }
- * thrown.declaredRoles shouldBe listOf("domain/UseCase")
+ * thrown.declaredTemplates shouldBe emptyList()
  * ```
  *
  * @see GenerateCodeFromTemplate
+ * @see DescribeTemplates
  */
-public class KatachiUnknownTemplateRoleException internal constructor(
-    /** The name `--arg roleName=` carried, as written. */
-    public val roleName: String,
-    /** Every role the definition declares, qualified and sorted. */
-    public val declaredRoles: List<String>,
+public class KatachiUnknownTemplateException internal constructor(
+    /** The specifier `--arg template=` carried, as written. */
+    public val specifier: String,
+    /** Every specifier the definition declares, sorted. */
+    public val declaredTemplates: List<String>,
 ) : KatachiDeclarationException(
     message = buildString {
-        appendLine("""Unknown role "$roleName".""")
+        appendLine("""Unknown template "$specifier".""")
         appendLine(
-            "--arg roleName= names the role whose template is to be run, and this definition " +
-                "declares no role of that name.",
+            "--arg template= names the template to run or describe, by role.id (or role alone " +
+                "for a role with one template), and this definition declares no template of " +
+                "that name.",
         )
-        if (declaredRoles.isEmpty()) {
-            append("This definition declares no role at all.")
+        if (declaredTemplates.isEmpty()) {
+            append("This definition declares no template at all.")
         } else {
-            appendLine("Declared roles:")
-            for (role in declaredRoles) appendLine("  $role")
-            append("""Pass one of them, either by its name or by its qualified name.""")
+            appendLine("Declared templates:")
+            for (template in declaredTemplates) appendLine("  $template")
+            append("Pass one of them.")
         }
     },
 )
 
 /**
- * `--arg roleName=` named something two groups both declare.
+ * `--arg template=` named something more than one template answers to.
  *
- * The short name is a convenience that holds only while it names one thing. Once it does not,
- * katachi says so rather than picking whichever group was written first.
+ * Reached two ways: a specifier that leaves its group out and its role has more than one
+ * template, and a specifier read two ways at once -- `feature.Screen` as either the role `Screen`
+ * of group `feature`, or the id `Screen` of a role `feature` -- see the design draft's section 3.
+ * Either way, [candidates] is what to choose from: every one of them is a specifier
+ * `--arg template=` accepts on its own.
  *
- * ## Example 1: catch a plain name two groups declare
+ * ## Example 1: catch a role name that no longer picks one template
  * ```kt
  * import io.kotest.assertions.throwables.shouldThrow
  * import me.tbsten.katachi.dsl.architecture
  * import me.tbsten.katachi.processor.process
  * import me.tbsten.katachi.template.GenerateCodeFromTemplate
- * import me.tbsten.katachi.template.KatachiAmbiguousTemplateRoleException
+ * import me.tbsten.katachi.template.KatachiAmbiguousTemplateException
  *
- * val arch = architecture {
- *     "domain".group { "UseCase" { } }
- *     "feature".group { "UseCase" { } }
+ * val thrown = shouldThrow<KatachiAmbiguousTemplateException> {
+ *     projectArchitecture.process(
+ *         GenerateCodeFromTemplate,
+ *         GenerateCodeFromTemplate.Args(template = listOf("Repository")),
+ *     ).getOrThrow()
  * }
- * val thrown = shouldThrow<KatachiAmbiguousTemplateRoleException> {
- *     arch.process(GenerateCodeFromTemplate, GenerateCodeFromTemplate.Args(roleName = "UseCase")).getOrThrow()
- * }
- * thrown.candidates shouldBe listOf("domain/UseCase", "feature/UseCase")
+ * thrown.candidates shouldBe listOf("data.Repository.repository", "data.Repository.repositoryImpl")
  * ```
  *
  * @see GenerateCodeFromTemplate
+ * @see DescribeTemplates
  */
-public class KatachiAmbiguousTemplateRoleException internal constructor(
-    /** The name `--arg roleName=` carried, as written. */
-    public val roleName: String,
-    /** The qualified names of every role carrying it, sorted. */
+public class KatachiAmbiguousTemplateException internal constructor(
+    /** The specifier `--arg template=` carried, as written. */
+    public val specifier: String,
+    /** Every template [specifier] could mean, each a complete `--arg template=` specifier, sorted. */
     public val candidates: List<String>,
 ) : KatachiDeclarationException(
     message = buildString {
-        appendLine("""Role name "$roleName" is declared ${candidates.size} times.""")
+        appendLine("""Template specifier "$specifier" names ${candidates.size} templates.""")
         for (candidate in candidates) appendLine("  $candidate")
         appendLine(
-            "A plain role name reaches a role only while it names one of them, and answering " +
-                "with whichever group happens to be written first would make the command line " +
-                "mean two things.",
+            "A specifier that leaves its group out reaches a role only while its plain name " +
+                "picks one templated role, and a role reaches a template on its own only while " +
+                "it has one -- picking one of several here would make the command line mean " +
+                "more than one thing.",
         )
-        append("Pass the qualified name instead, such as `--arg roleName=${candidates.first()}`.")
+        append("""Pass one of the specifiers above, such as `--arg template=${candidates.first()}`.""")
     },
 )
 
 /**
- * The role `--arg roleName=` named declares no `template { }`.
+ * `--arg template=` was given a set of specifiers that cannot mean what a run needs: none at all,
+ * one that is empty, or two that name the same template.
  *
- * Nothing about the role is wrong -- it is simply not a role that generates anything, and running
- * it would report success having written no file.
+ * A run's values and its `onExisting` cover the whole set, and writing is all-or-nothing (see
+ * [GenerateCodeFromTemplate]), so a specifier that could not have been meant is refused before any
+ * of that runs, rather than silently ignored or generated twice.
  *
- * ## Example 1: catch a role that has no template
+ * ## Example 1: catch a run given the same specifier twice
  * ```kt
  * import io.kotest.assertions.throwables.shouldThrow
- * import me.tbsten.katachi.dsl.architecture
  * import me.tbsten.katachi.processor.process
  * import me.tbsten.katachi.template.GenerateCodeFromTemplate
- * import me.tbsten.katachi.template.KatachiNoTemplateException
+ * import me.tbsten.katachi.template.KatachiInvalidTemplateSpecifierException
  *
- * val arch = architecture { "domain".group { "UseCase" { } } }
- * val thrown = shouldThrow<KatachiNoTemplateException> {
- *     arch.process(GenerateCodeFromTemplate, GenerateCodeFromTemplate.Args(roleName = "UseCase")).getOrThrow()
+ * val thrown = shouldThrow<KatachiInvalidTemplateSpecifierException> {
+ *     projectArchitecture.process(
+ *         GenerateCodeFromTemplate,
+ *         GenerateCodeFromTemplate.Args(template = listOf("UseCase", "UseCase")),
+ *     ).getOrThrow()
  * }
- * thrown.role shouldBe "domain/UseCase"
+ * thrown.problem shouldBe KatachiInvalidTemplateSpecifierException.Problem.Duplicate
  * ```
  *
  * @see GenerateCodeFromTemplate
+ * @see DescribeTemplates
  */
-public class KatachiNoTemplateException internal constructor(
-    /** The role that was named, qualified. */
-    public val role: String,
-    /** Where `"RoleName" { }` was written. */
-    public val declaredAt: DeclarationSite,
+public class KatachiInvalidTemplateSpecifierException internal constructor(
+    /** What is wrong with [specifiers]. */
+    public val problem: Problem,
+    /** The specifiers `--arg template=` carried, exactly as split on `,`. */
+    public val specifiers: List<String>,
 ) : KatachiDeclarationException(
     message = buildString {
-        appendLine("""Role "$role" declared at $declaredAt has no template.""")
-        appendLine(
-            "Running a role's template is what the katachiTemplate task does, and this role says " +
-                "only where its files may live -- so the run would report success having " +
-                "written nothing.",
-        )
-        append(
-            """Add a template { } to that role, with one file("...") { } per file it produces.""",
-        )
+        when (problem) {
+            Problem.Empty -> {
+                appendLine("--arg template= was given no specifier.")
+                append("Pass at least one, such as --arg template=UseCase, or drop --arg template= " +
+                    "entirely to list every template with katachiTemplates instead of generating.")
+            }
+            Problem.EmptyElement -> {
+                appendLine("""--arg template=${specifiers.joinToString(",")} holds an empty element.""")
+                append(
+                    "A comma separates specifiers, so two commas in a row -- or one at either end " +
+                        "-- leave an empty one between them. Remove it, or the extra comma.",
+                )
+            }
+            Problem.Duplicate -> {
+                appendLine(
+                    """--arg template=${specifiers.joinToString(",")} names the same template more """ +
+                        "than once.",
+                )
+                append(
+                    "Whether spelled the same way twice or reached through two different " +
+                        "specifiers, one template can be generated only once per run. Remove the " +
+                        "repeat.",
+                )
+            }
+        }
     },
-)
+) {
+    /**
+     * What is wrong with a set of specifiers.
+     *
+     * ## Example 1: tell an empty set from a set with an empty element
+     * ```kt
+     * when (thrown.problem) {
+     *     KatachiInvalidTemplateSpecifierException.Problem.Empty -> "pass at least one"
+     *     else -> "check the commas"
+     * }
+     * ```
+     */
+    public enum class Problem {
+        /** `--arg template=` (or `Args(template = emptyList())`) named nothing at all. */
+        Empty,
+
+        /** Two commas in a row, or one at either end, left an empty specifier between them. */
+        EmptyElement,
+
+        /** The same template, reached by the same spelling twice or by two different ones. */
+        Duplicate,
+    }
+}

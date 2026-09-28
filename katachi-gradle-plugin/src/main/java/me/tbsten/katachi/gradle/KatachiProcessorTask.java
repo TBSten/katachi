@@ -51,7 +51,7 @@ import org.gradle.work.DisableCachingByDefault;
  * <h2>Example 1: run one processor with an argument</h2>
  *
  * <pre>{@code
- * ./gradlew :architecture-test:katachiTemplate --arg roleName=UseCase --arg name=GetUser
+ * ./gradlew :architecture-test:katachiTemplate --arg template=UseCase --arg name=GetUser
  * }</pre>
  *
  * <h2>Example 2: run two processors in one build</h2>

@@ -1,6 +1,7 @@
 package me.tbsten.katachi.gradle;
 
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import org.gradle.api.InvalidUserDataException;
 
@@ -12,9 +13,9 @@ import org.gradle.api.InvalidUserDataException;
  * at the end of a run. What a project writes itself keeps going through
  * {@code processors { args("key") { } }}.
  *
- * <p><strong>A template's own parameters are not written here.</strong> They differ from role to
- * role, so they travel as ordinary {@code --arg} entries, and the template processor accepts them
- * without any configuration in this block.
+ * <p><strong>A template's own parameters are not written here.</strong> They differ from template
+ * to template, so they travel as ordinary {@code --arg} entries, and the template processor
+ * accepts them without any configuration in this block.
  *
  * <p>{@code template} is registered for every module this plugin is applied to, so there is
  * nothing to {@code register}.
@@ -37,48 +38,57 @@ public class KatachiTemplateOptions {
     /** The registry key these arguments are for. Not configurable: it is katachi's own. */
     static final String KEY = "template";
 
-    private static final java.util.regex.Pattern ROLE_NAME_PATTERN =
-            java.util.regex.Pattern.compile("[A-Za-z][A-Za-z0-9_-]*(/[A-Za-z][A-Za-z0-9_-]*)*");
+    private static final java.util.regex.Pattern TEMPLATE_SPECIFIER_PATTERN =
+            java.util.regex.Pattern.compile("[A-Za-z][A-Za-z0-9_-]*(\\.[A-Za-z][A-Za-z0-9_-]*)*");
 
-    private String roleName;
+    private List<String> template;
     private KatachiOnExisting onExisting;
 
-    /** The role whose template is used. */
-    public String getRoleName() {
-        return roleName;
+    /** The templates run: each by {@code role.id} (or {@code role} alone for its one template). */
+    public List<String> getTemplate() {
+        return template;
     }
 
     /**
-     * Sets the role whose template is used.
+     * Sets the templates run, each by {@code role.id} -- or {@code role} alone while that role has
+     * one template -- with a leading group written as {@code group.role.id}.
      *
-     * <p>The role's identifier, not its {@code title}: {@code "UseCase"} for a role declared beside
-     * the one asking, and {@code "domain/UseCase"} for one in another group.
+     * <p>Usually left alone. Which template to generate is the one thing that changes from run to
+     * run, so it is normally passed as {@code --arg template=data.Repository.repository}; writing
+     * it here fixes the module to one set of templates. More than one entry generates them
+     * together, exactly as {@code --arg template=a,b} does.
      *
-     * <p>Usually left alone. Which role to generate is the one thing that changes from run to run,
-     * so it is normally passed as {@code --arg roleName=UseCase}; writing it here fixes the module
-     * to one role.
-     *
-     * @throws InvalidUserDataException when the name is not one a role can have.
+     * @throws InvalidUserDataException when [template] is {@code null}, empty, or holds a specifier
+     *     that is not {@code role}, {@code role.id} or {@code group.role.id}.
      */
-    public void setRoleName(String roleName) {
-        if (roleName == null || !ROLE_NAME_PATTERN.matcher(roleName).matches()) {
+    public void setTemplate(List<String> template) {
+        if (template == null || template.isEmpty()) {
             throw new InvalidUserDataException(
-                    "Invalid katachi { processors { template { roleName = \"" + roleName
-                            + "\" } } }. Write a role's identifier, e.g. \"UseCase\", or "
-                            + "\"domain/UseCase\" for a role in another group. A title is not a "
-                            + "name here: identifiers hold only letters, digits, underscore and "
-                            + "hyphen, separated by \"/\".");
+                    "katachi { processors { template { template = ... } } } was given no value. "
+                            + "Write at least one specifier, e.g. template = listOf(\"UseCase\"), "
+                            + "or leave the block out entirely to pass --arg template= at the "
+                            + "command line instead.");
         }
-        this.roleName = roleName;
+        for (String specifier : template) {
+            if (specifier == null || !TEMPLATE_SPECIFIER_PATTERN.matcher(specifier).matches()) {
+                throw new InvalidUserDataException(
+                        "Invalid katachi { processors { template { template = ... } } } entry \""
+                                + specifier + "\". Write a template specifier, e.g. \"UseCase\", "
+                                + "\"UseCase.impl\", or \"domain.UseCase\" for a role in a group. "
+                                + "A title is not a specifier here: identifiers hold only letters, "
+                                + "digits, underscore and hyphen, separated by \".\".");
+            }
+        }
+        this.template = template;
     }
 
-    /** What a run does when a file the template produces is already on disk. */
+    /** What a run does when a file a template produces is already on disk. */
     public KatachiOnExisting getOnExisting() {
         return onExisting;
     }
 
     /**
-     * Sets what a run does when a file the template produces is already on disk.
+     * Sets what a run does when a file a template produces is already on disk.
      *
      * <p>Left unset, the processor's own default applies, which is {@link KatachiOnExisting#FAIL}.
      * All three answers decide about the whole set of files rather than about one of them, so
@@ -97,14 +107,14 @@ public class KatachiTemplateOptions {
 
     /** Whether this block was written at all. */
     boolean isConfigured() {
-        return roleName != null || onExisting != null;
+        return template != null || onExisting != null;
     }
 
     /** These options as the {@code --arg} values they become. Only what was set. */
     Map<String, String> toArgs() {
         Map<String, String> args = new LinkedHashMap<>();
-        if (roleName != null) {
-            args.put("roleName", roleName);
+        if (template != null) {
+            args.put("template", String.join(",", template));
         }
         if (onExisting != null) {
             args.put("onExisting", onExisting.wireName());

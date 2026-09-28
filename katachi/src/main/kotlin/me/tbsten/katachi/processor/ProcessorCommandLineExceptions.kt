@@ -121,7 +121,7 @@ public class KatachiUnknownProcessorOptionException internal constructor(
  *         arrayOf(
  *             "--entry-point=com.example.GeneratedKatachiEntryPoint",
  *             "--processor=docs",
- *             "--arg=roleName",
+ *             "--arg=name",
  *         ),
  *     )
  * }
@@ -140,7 +140,7 @@ public class KatachiInvalidProcessorArgOptionException internal constructor(
                 "(--arg=invokeImpl=TODO() is one token and one argument), but a name before " +
                 "the first one is what says which field of which processor is being set.",
         )
-        append("Write --arg=<key>=<value>, for example --arg=roleName=GetUser.")
+        append("Write --arg=<key>=<value>, for example --arg=name=GetUser.")
     },
 )
 
@@ -154,8 +154,8 @@ public class KatachiInvalidProcessorArgOptionException internal constructor(
  *         arrayOf(
  *             "--entry-point=com.example.GeneratedKatachiEntryPoint",
  *             "--processor=template",
- *             "--arg=roleName=GetUser",
- *             "--arg=roleName=PutUser",
+ *             "--arg=template=GetUser",
+ *             "--arg=template=PutUser",
  *         ),
  *     )
  * }

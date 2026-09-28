@@ -26,6 +26,7 @@ import me.tbsten.katachi.processor.KatachiProcessorNotFoundException
 import me.tbsten.katachi.processor.KatachiProcessorNotInstantiableException
 import me.tbsten.katachi.processor.KatachiProcessorTypeException
 import me.tbsten.katachi.processor.KatachiUnknownProcessorArgException
+import me.tbsten.katachi.dsl.template
 import me.tbsten.katachi.processor.internal.instantiateProcessor
 import me.tbsten.katachi.processor.internal.runProcessors
 import me.tbsten.katachi.template.GenerateCodeFromTemplate
@@ -391,54 +392,64 @@ class ProcessorRunSpec : FreeSpec({
         }
 
         "テンプレートの引数の検査で投げた例外（capture とパラメータの衝突）も生のスタックトレースにせず [FAILED] template で出す" {
-            val lines = mutableListOf<String>()
-            val arch = architecture {
-                "Screen" {
-                    layout { "feature" / capture("name") / "*Screen.kt".file() }
-                    template {
-                        val name by stringParameter()
-                        file("${name}Screen.kt") { "" }
+            // "name" is both a directory-level capture and the template's own parameter --
+            // both would read --arg name=..., which is exactly what KatachiTemplateParameterConflictException refuses.
+            val withConflict = architectureOf {
+                "domain".group {
+                    "UseCase" {
+                        layout {
+                            "useCase" / "${capture("name")}UseCase.kt".file().template {
+                                val name by stringParameter()
+                                "class ${name}UseCase"
+                            }
+                        }
                     }
                 }
             }
+            val lines = mutableListOf<String>()
 
             val summary = runProcessors(
-                architecture = arch,
+                architecture = withConflict,
                 registry = mapOf("template" to GenerateCodeFromTemplate::class.java),
                 processorKeys = listOf("template"),
-                rawArgs = mapOf("roleName" to "Screen", "name" to "Home"),
+                rawArgs = mapOf("template" to "UseCase", "name" to "User"),
                 out = lines::add,
             )
 
+            summary.succeeded shouldBe 0
             summary.failed shouldBe 1
             lines shouldContain "[FAILED] template"
-            lines.any { it.startsWith("  Capture \"name\" of role \"Screen\"") } shouldBe true
+            withClue(lines.joinToString("\n")) {
+                lines.any { it.contains("is also the name of") } shouldBe true
+            }
         }
 
         "テンプレートの中で投げた例外も [FAILED] template で出す" {
-            val lines = mutableListOf<String>()
-            val arch = architecture {
-                "Screen" {
-                    layout { "feature" / "*Screen.kt".file() }
-                    template {
-                        val mode by booleanParameter()
-                        check(false) { "template says no" }
-                        file("${mode}Screen.kt") { "" }
+            val withThrowingTemplate = architectureOf {
+                "domain".group {
+                    "UseCase" {
+                        layout {
+                            "useCase" / "GetUserUseCase.kt".file().template {
+                                error("boom")
+                            }
+                        }
                     }
                 }
             }
+            val lines = mutableListOf<String>()
 
             val summary = runProcessors(
-                architecture = arch,
+                architecture = withThrowingTemplate,
                 registry = mapOf("template" to GenerateCodeFromTemplate::class.java),
                 processorKeys = listOf("template"),
-                rawArgs = mapOf("roleName" to "Screen", "mode" to "true"),
+                rawArgs = mapOf("template" to "UseCase"),
                 out = lines::add,
             )
 
+            summary.succeeded shouldBe 0
             summary.failed shouldBe 1
             lines shouldContain "[FAILED] template"
-            lines shouldContain "  template says no"
+            lines shouldContain "  boom"
         }
     }
 })

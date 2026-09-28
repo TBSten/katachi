@@ -38,12 +38,11 @@ private fun displayPatternOf(declaration: CaptureDeclaration): String =
 private fun declaredWithOf(declaration: CaptureDeclaration?, name: String): String {
     val module = declaration?.variant?.moduleCapture?.takeIf { name in it.names }
         ?: return "capture(\"$name\")"
-    val names = if (module.names.size == 1) {
-        "capture = \"${module.names.single()}\""
-    } else {
-        module.names.joinToString(", ") { "\"$it\"" }
-    }
-    return "\"${module.modulePattern}\".module($names)"
+    // Re-compiling an already-substituted pattern (`*`, not a capture token): nothing here can
+    // raise KatachiAdjacentCaptureException, so which declaration site is blamed does not matter.
+    val pattern = ModulePattern.compile(module.modulePattern, DeclarationSite.Unknown)
+    val filled = pattern.filledIn(module.names.map { "\${capture(\"$it\")}" })
+    return "\"$filled\".module { }"
 }
 
 /**
@@ -103,7 +102,9 @@ internal fun existingCaptureValues(
         declaration == null -> emptyList()
         module != null -> {
             val index = module.names.indexOf(name)
-            modules().matchingModules(ModulePattern.compile(module.modulePattern))
+            // Re-compiling an already-substituted pattern (`*`, not a capture token): nothing
+            // here can raise KatachiAdjacentCaptureException, so the declaration site is moot.
+            modules().matchingModules(ModulePattern.compile(module.modulePattern, DeclarationSite.Unknown))
                 .mapNotNull { it.wildcards.getOrNull(index) }
                 .distinct()
                 .sorted()

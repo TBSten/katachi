@@ -176,7 +176,7 @@ public class KatachiEntryPointNotFoundException internal constructor(
  *
  * ## Example 1: two processors, one of which cannot read its template
  * ```kt
- * // ./gradlew katachiRun --processor=docs,template --arg roleName=Broken
+ * // ./gradlew katachiRun --processor=docs,template --arg template=Broken
  * // [FAILED] docs
  * //   Processor "docs" was not run: template failed before any processor ran, ...
  * // [FAILED] template

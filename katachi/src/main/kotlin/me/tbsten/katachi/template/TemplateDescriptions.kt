@@ -6,7 +6,7 @@ import me.tbsten.katachi.ExperimentalKatachiApi
 /**
  * What [DescribeTemplates] answers: the list of templates, or the detail of one.
  *
- * Without `--arg roleName=` the answer is a [TemplateList]; with it, a [TemplateDetail].
+ * Without `--arg template=` the answer is a [TemplateList]; with it, a [TemplateDetail].
  *
  * ## Example 1: tell the two answers apart
  * ```kt
@@ -16,7 +16,7 @@ import me.tbsten.katachi.ExperimentalKatachiApi
  * import me.tbsten.katachi.template.TemplateList
  *
  * when (val answer = projectArchitecture.process(DescribeTemplates, DescribeTemplates.Args()).getOrThrow()) {
- *     is TemplateList -> answer.templates.map { it.roleName }
+ *     is TemplateList -> answer.templates.map { it.template }
  *     is TemplateDetail -> answer.files.map { it.fileName }
  * }
  * ```
@@ -27,23 +27,23 @@ import me.tbsten.katachi.ExperimentalKatachiApi
 public sealed interface TemplateDescription
 
 /**
- * Every role that declares a `template { }`, in declaration order.
+ * Every `.template { }` declared, in declaration order.
  *
- * ## Example 1: the qualified names of every role with a template
+ * ## Example 1: the specifiers of every template
  * ```kt
  * import me.tbsten.katachi.processor.process
  * import me.tbsten.katachi.template.DescribeTemplates
  * import me.tbsten.katachi.template.TemplateList
  *
  * val list = projectArchitecture.process(DescribeTemplates, DescribeTemplates.Args()).getOrThrow()
- * (list as? TemplateList)?.templates?.map { it.roleName }
+ * (list as? TemplateList)?.templates?.map { it.template }
  * ```
  *
  * @see TemplateSummary
  */
 @ExperimentalKatachiApi
 public class TemplateList internal constructor(
-    /** One entry per role with a template. Empty when no role declares one. */
+    /** One entry per declared template. Empty when no declaration has one. */
     public val templates: List<TemplateSummary>,
 ) : TemplateDescription {
     override fun toString(): String =
@@ -51,9 +51,9 @@ public class TemplateList internal constructor(
 }
 
 /**
- * One line of a [TemplateList]: which role, what it is, what it takes and how much it writes.
+ * One line of a [TemplateList]: which template, what it is, and what it takes.
  *
- * ## Example 1: the roles whose template takes no parameter at all
+ * ## Example 1: the templates that take no parameter at all
  * ```kt
  * val list = projectArchitecture.process(DescribeTemplates, DescribeTemplates.Args()).getOrThrow()
  * (list as? TemplateList)?.templates.orEmpty().filter { it.parameterNames.isEmpty() }
@@ -64,42 +64,43 @@ public class TemplateList internal constructor(
 @ExperimentalKatachiApi
 @Serializable
 public class TemplateSummary internal constructor(
-    /** The role's qualified name (`data/Repository`), which `--arg roleName=` accepts. */
+    /** The complete specifier `--arg template=` accepts for this template: this list's own key. */
+    public val template: String,
+    /** This template's `id`, or `null` for the one template of a role that declares no other. */
+    public val id: String?,
+    /** `.template { }`'s own `title`, falling back to [id], then to the role's `title`. */
+    public val title: String,
+    /** The role this template belongs to, qualified, `.` separated. */
     public val roleName: String,
-    /** The role's `title`, or `null` when it declares none. */
-    public val title: String?,
     /** The role's `summary`, or `null` when it declares none. */
     public val summary: String?,
-    /** The parameters the template declares when previewed, in declaration order. */
+    /** This template's parameters when previewed, in declaration order. */
     public val parameterNames: List<String>,
-    /**
-     * How many files the template produces when previewed, or `null` when the preview failed.
-     *
-     * A preview fills the parameters as [TemplateDetail.parameters] explains, so a template whose
-     * files depend on a Boolean or an enum may produce a different number with other values.
-     */
-    public val fileCount: Int?,
-    /** The role's named wildcards, which a run also takes as `--arg`. See [TemplateCapturePreview]. */
+    /** This template's named wildcards, which a run also takes as `--arg`. See [TemplateCapturePreview]. */
     public val captures: List<TemplateCapturePreview>,
+    /**
+     * Whether this template's preview could not be built -- a capture and a parameter sharing a
+     * name, say. Such a template is still listed, since one that cannot be previewed is not one
+     * that cannot be run: a real run may give every value the preview could only guess at.
+     * [DescribeTemplates] with `--arg template=` of this template, or an actual run, says why.
+     */
+    public val conflict: Boolean,
 ) {
-    override fun toString(): String = "TemplateSummary($roleName)"
+    override fun toString(): String = "TemplateSummary($template)"
 }
 
 /**
- * One role's template explained: its parameters, and the files it produces with them filled in
- * by stand-in values.
+ * One template explained: its parameters, and the file it produces with them filled in by
+ * stand-in values.
  *
  * ## How the parameters are filled in
  *
  * A String parameter is filled with a placeholder spelling its own name, `${name}`, so the
- * contents show where each value goes. A Boolean, Int or enum parameter cannot hold such a
- * placeholder, so it takes its default, or -- when it has none -- `true`, `0` or its first entry.
- * Which value each parameter took is [TemplateParameterPreview.previewValue].
+ * contents show where each value goes. A Boolean, Int or enum parameter cannot hold one, so it is
+ * given its default, or -- when it has none -- `true`, `0` or its first entry. Which value each
+ * parameter took is [TemplateParameterPreview.previewValue].
  *
- * The files are the ones the template produces with *those* values. A file that appears only
- * under another value of a Boolean or an enum is listed in [branches].
- *
- * ## Example 1: the paths the template would write
+ * ## Example 1: the path the template would write
  * ```kt
  * import me.tbsten.katachi.processor.process
  * import me.tbsten.katachi.template.DescribeTemplates
@@ -107,9 +108,9 @@ public class TemplateSummary internal constructor(
  *
  * val detail = projectArchitecture.process(
  *     DescribeTemplates,
- *     DescribeTemplates.Args(roleName = "Repository"),
+ *     DescribeTemplates.Args(template = "data.Repository.repository"),
  * ).getOrThrow()
- * (detail as? TemplateDetail)?.files?.map { it.path ?: it.fileName }
+ * (detail as? TemplateDetail)?.files?.single()?.let { it.path ?: it.fileName }
  * ```
  *
  * @see TemplateParameterPreview
@@ -119,31 +120,28 @@ public class TemplateSummary internal constructor(
 @ExperimentalKatachiApi
 @Serializable
 public class TemplateDetail internal constructor(
-    /** The role's qualified name. */
+    /** The complete specifier `--arg template=` accepts for this template. */
+    public val template: String,
+    /** This template's `id`, or `null` for the one template of a role that declares no other. */
+    public val id: String?,
+    /** `.template { }`'s own `title`, falling back to [id], then to the role's `title`. */
+    public val title: String,
+    /** The role this template belongs to, qualified, `.` separated. */
     public val roleName: String,
-    /** The role's `title`, or `null` when it declares none. */
-    public val title: String?,
     /** The role's `summary`, or `null` when it declares none. */
     public val summary: String?,
-    /** The parameters the template declares with the preview's values, in declaration order. */
+    /** The parameters this template declares with the preview's values, in declaration order. */
     public val parameters: List<TemplateParameterPreview>,
-    /** The files the template produces with the preview's values, in declaration order. */
+    /** The one file this template produces with the preview's values, in a list for the JSON's sake. */
     public val files: List<TemplateFilePreview>,
-    /**
-     * The other Boolean and enum values that change which files are produced, or which parameters
-     * are declared.
-     */
+    /** The other Boolean and enum values that change this template's content or its parameters. */
     public val branches: List<TemplateBranch>,
     /** A `./gradlew katachiTemplate ...` command that generates this template, ready to paste. */
     public val exampleCommand: String,
-    /**
-     * The role's named wildcards, which a run also takes as `--arg`. Kept apart from [parameters]:
-     * the template does not declare them, and their value picks a directory.
-     */
+    /** This template's named wildcards, which a run also takes as `--arg`. See [TemplateCapturePreview]. */
     public val captures: List<TemplateCapturePreview>,
 ) : TemplateDescription {
-    override fun toString(): String =
-        "Template $roleName: ${parameters.size} parameters, ${files.size} files"
+    override fun toString(): String = "Template $template: ${parameters.size} parameters"
 }
 
 /**
@@ -153,7 +151,7 @@ public class TemplateDetail internal constructor(
  * ```kt
  * val detail = projectArchitecture.process(
  *     DescribeTemplates,
- *     DescribeTemplates.Args(roleName = "Repository"),
+ *     DescribeTemplates.Args(template = "data.Repository.repository"),
  * ).getOrThrow()
  * (detail as? TemplateDetail)?.parameters.orEmpty().filter { it.isRequired }.map { it.name }
  * ```
@@ -184,18 +182,18 @@ public class TemplateParameterPreview internal constructor(
 }
 
 /**
- * One named wildcard of a role, as a template run takes it: a `capture("...")` level of a file
- * pattern, or a name `"...".module(capture = ...)` gave a module wildcard.
+ * One named wildcard of a template, as a run takes it: a `capture("...")` level of its declared
+ * path, or a name `":...".module { }`'s key gave a module wildcard.
  *
- * A name used in several places is listed once per place, so that where a value lands can be
- * read from the list. Its preview value, where one appears in [TemplateDetail.files], is
- * `${name}`, as a String parameter's is.
+ * A name used in several places is listed once per place, so that where a value lands can be read
+ * from the list. Its preview value, where one appears in [TemplateDetail.files], is `${name}`, as
+ * a String parameter's is.
  *
  * ## Example 1: the `--arg` names a run has to add for the directories
  * ```kt
  * val detail = projectArchitecture.process(
  *     DescribeTemplates,
- *     DescribeTemplates.Args(roleName = "ViewModel"),
+ *     DescribeTemplates.Args(template = "feature.Screen"),
  * ).getOrThrow()
  * (detail as? TemplateDetail)?.captures.orEmpty().map { it.name }.distinct()
  * ```
@@ -221,6 +219,11 @@ public class TemplateCapturePreview internal constructor(
      * position among the `*`s of a module key.
      */
     public val position: Int,
+    /**
+     * The pattern of the one segment this capture sits in, `${fileName}Screen.kt` for a partial
+     * match -- `${name}` in place of every capture that segment holds, itself included.
+     */
+    public val segment: String,
 ) {
     override fun toString(): String = "TemplateCapturePreview($name at $pattern[$position])"
 }
@@ -239,7 +242,7 @@ public enum class TemplateCaptureKind {
     /** `capture("...")`: a directory level, which a run may create. */
     PathCapture,
 
-    /** `"...".module(capture = ...)`: a module wildcard, which has to name a module that exists. */
+    /** A named module key's wildcard: a module wildcard, which has to name a module that exists. */
     ModuleCapture,
 }
 
@@ -291,11 +294,11 @@ public enum class PreviewValueSource {
 }
 
 /**
- * One file of a [TemplateDetail]: where it would land, and what it would hold.
+ * The one file of a [TemplateDetail]: where it would land, and what it would hold.
  *
- * ## Example 1: the files whose directory the layout does not decide
+ * ## Example 1: whether the layout decides this template's path
  * ```kt
- * detail.files.filter { it.path == null }.map { it.unresolvedPatterns }
+ * detail.files.single().path != null
  * ```
  *
  * @see TemplateDetail
@@ -303,17 +306,20 @@ public enum class PreviewValueSource {
 @ExperimentalKatachiApi
 @Serializable
 public class TemplateFilePreview internal constructor(
+    /** The declared pattern, `/` separated, with every capture written as `${name}`. */
+    public val pattern: String,
     /** The file name, with the preview's values filled in: `${name}Repository.kt`. */
     public val fileName: String,
     /**
      * Where the file would land, relative to the project root, or `null` when the layout does
-     * not decide it: every pattern that accepts the name still has a wildcard in its directory,
-     * such as a module written `:feature:*`, or a module capture whose module only a run's value
-     * picks. A directory `capture("...")` names is shown as `${name}`.
+     * not decide it: it sits below a module capture, whose module only the modules that exist
+     * could pick. A directory `capture("...")` names is shown as `${name}`.
      */
     public val path: String?,
-    /** When [path] is `null`, the patterns that accept the name. Empty otherwise. */
-    public val unresolvedPatterns: List<String>,
+    /** This template's captures that appear on [pattern], by name. */
+    public val captures: List<String>,
+    /** This template's parameters, by name. */
+    public val parameters: List<String>,
     /** The contents, with the preview's values filled in. */
     public val content: String,
 ) {
@@ -321,15 +327,15 @@ public class TemplateFilePreview internal constructor(
 }
 
 /**
- * Another value of one Boolean or enum parameter, and how it changes the files produced or the
- * parameters asked for.
+ * Another value of one Boolean or enum parameter, and how it changes this template's content or
+ * the parameters it declares.
  *
  * Found by changing that one parameter and keeping the preview's values for the rest. A value
  * that changes neither is not a branch.
  *
- * ## Example 1: what `--arg withImpl=false` leaves out
+ * ## Example 1: what `--arg withImpl=false` adds or drops
  * ```kt
- * detail.branches.filter { it.parameterName == "withImpl" && it.value == "false" }.flatMap { it.removedFiles }
+ * detail.branches.filter { it.parameterName == "withImpl" && it.value == "false" }.flatMap { it.addedParameters }
  * ```
  *
  * @see TemplateDetail
@@ -341,9 +347,13 @@ public class TemplateBranch internal constructor(
     public val parameterName: String,
     /** The value it was changed to, as `--arg` spells it. */
     public val value: String,
-    /** File names produced with [value] and not with the preview's value. */
+    /**
+     * File names this template would produce with [value] and not with the preview's value. A
+     * template describes exactly one file once it renders, so this is empty unless [value] makes
+     * rendering fail where the preview's own value did not.
+     */
     public val addedFiles: List<String>,
-    /** File names produced with the preview's value and not with [value]. */
+    /** The mirror image of [addedFiles]: file names produced with the preview's value and not with [value]. */
     public val removedFiles: List<String>,
     /**
      * Parameters declared with [value] and not with the preview's value, such as one written

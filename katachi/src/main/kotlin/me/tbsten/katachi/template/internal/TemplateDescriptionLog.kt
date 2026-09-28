@@ -10,36 +10,39 @@ import me.tbsten.katachi.template.TemplateParameterKind
 import me.tbsten.katachi.template.TemplateParameterPreview
 
 /**
- * [list] as the lines `katachiTemplates` prints: one block per template, then how to go further.
+ * [list] as the lines `katachiTemplates` prints: one line per template, then how to go further.
  *
  * Lines rather than one string, because the run prefixes each logged line with its processor's
  * key: a multi-line message would lose the prefix after its first line.
  */
 internal fun templateListLines(list: TemplateList): List<String> = buildList {
     if (list.templates.isEmpty()) {
-        add("No role declares a template { }.")
+        add("No declaration attaches a template { }.")
         return@buildList
     }
     add("${list.templates.size} ${plural(list.templates.size, "template")}:")
     for (template in list.templates) {
-        add("- ${headingOf(template.roleName, template.title)}")
+        add("- ${headingOf(template.template, template.title)}")
         template.summary?.let { add("    $it") }
         val parameters = template.parameterNames.ifEmpty { listOf("(none)") }
         add("    parameters: ${parameters.joinToString(", ")}")
         if (template.captures.isNotEmpty()) {
             add("    captures: ${template.captures.map { it.name }.distinct().joinToString(", ")}")
         }
-        add("    files: ${template.fileCount ?: "(the preview failed; see katachiTemplates --arg roleName=${template.roleName})"}")
+        if (template.conflict) {
+            add("    (the preview failed; see katachiTemplates --arg template=${template.template})")
+        }
     }
     add(
-        "Show one with `./gradlew katachiTemplates --arg roleName=<role>`, and generate it with " +
-            "`./gradlew katachiTemplate --arg roleName=<role> --arg <parameter>=<value>`.",
+        "Show one with `./gradlew katachiTemplates --arg template=<template>`, and generate it " +
+            "with `./gradlew katachiTemplate --arg template=<template> --arg <parameter>=<value>`.",
     )
 }
 
-/** [detail] as the lines `katachiTemplates --arg roleName=...` prints. */
+/** [detail] as the lines `katachiTemplates --arg template=...` prints. */
 internal fun templateDetailLines(detail: TemplateDetail): List<String> = buildList {
-    add("Template of ${headingOf(detail.roleName, detail.title)}")
+    add("Template ${headingOf(detail.template, detail.title)}")
+    add("  role: ${detail.roleName}")
     detail.summary?.let { add("  $it") }
 
     add("")
@@ -58,20 +61,18 @@ internal fun templateDetailLines(detail: TemplateDetail): List<String> = buildLi
 
     add("")
     add("Previewed with: ${previewValuesLine(detail.parameters)}")
-    add("Files (paths relative to the project root):")
-    for (file in detail.files) addAll(fileLines(file))
+    add("File (path relative to the project root):")
+    addAll(fileLines(detail.files.single()))
 
     val switchable = detail.parameters.filter { it.acceptedValues.isNotEmpty() }
     if (switchable.isNotEmpty()) {
         add("")
         if (detail.branches.isEmpty()) {
-            add("No other value of ${switchable.joinToString(", ") { it.name }} changes which files are produced.")
+            add("No other value of ${switchable.joinToString(", ") { it.name }} changes the content or the parameters.")
         } else {
-            add("Other values change which files are produced:")
+            add("Other values change the content or the parameters:")
             for (branch in detail.branches) {
-                val changes = buildList {
-                    if (branch.addedFiles.isNotEmpty()) add("adds ${branch.addedFiles.joinToString(", ")}")
-                    if (branch.removedFiles.isNotEmpty()) add("leaves out ${branch.removedFiles.joinToString(", ")}")
+                val paramChanges = buildList {
                     if (branch.addedParameters.isNotEmpty()) {
                         add("adds parameter ${branch.addedParameters.joinToString(", ") { it.name }}")
                     }
@@ -79,49 +80,15 @@ internal fun templateDetailLines(detail: TemplateDetail): List<String> = buildLi
                         add("drops parameter ${branch.removedParameters.joinToString(", ")}")
                     }
                 }
+                val changes = paramChanges.ifEmpty { listOf("changes the content") }
                 add("  --arg ${branch.parameterName}=${branch.value}: ${changes.joinToString("; ")}")
             }
         }
     }
 
     add("")
-    val unplaced = detail.files.filter { it.path == null }
-    if (unplaced.isEmpty()) {
-        add(
-            if (detail.captures.isEmpty()) {
-                "Generate it with:"
-            } else {
-                "Generate it with, putting the directory or module each <capture> stands for in its place:"
-            },
-        )
-        add("  ${detail.exampleCommand}")
-    } else {
-        addAll(unplacedLines(unplaced))
-    }
-}
-
-/**
- * Why a template with [unplaced] files cannot be generated as its role is declared, and what to
- * change: said instead of a command that would only fail.
- */
-private fun unplacedLines(unplaced: List<TemplateFilePreview>): List<String> = buildList {
-    add(
-        "It cannot be generated as the layout is declared: ${unplaced.joinToString(", ") { it.fileName }} " +
-            "${if (unplaced.size == 1) "has" else "have"} no single directory (above).",
-    )
-    val patterns = unplaced.flatMap { it.unresolvedPatterns }.map { it.substringBeforeLast('/', missingDelimiterValue = "") }
-    if (patterns.any { directory -> directory.split('/').any { '*' in it && it != "**" } }) {
-        add(
-            "Name every * left in the directory with capture(\"...\") -- or .module(capture = \"...\") for a " +
-                "module key -- so that a run can choose it with --arg.",
-        )
-    }
-    if (patterns.any { directory -> directory.split('/').any { it == "**" } }) {
-        add(
-            "A ** cannot be named: declare the directory the template writes into as a path of its own, " +
-                "without the **, next to the one that has it.",
-        )
-    }
+    add("Generate it with, putting the directory or module each <capture> stands for in its place:")
+    add("  ${detail.exampleCommand}")
 }
 
 /** `name: String, required` / `withImpl: Boolean, default true, accepts true or false`. */
@@ -159,13 +126,13 @@ private fun fileLines(file: TemplateFilePreview): List<String> = buildList {
     if (path != null) {
         add("  $path")
     } else {
-        add("  ${file.fileName} -- no single directory: ${file.unresolvedPatterns.joinToString(", ")}")
+        add("  ${file.fileName} -- below a module capture, whose module a run's values pick: ${file.pattern}")
     }
     for (line in file.content.trimEnd('\n').lines()) add("    | $line")
 }
 
-private fun headingOf(roleName: String, title: String?): String =
-    if (title == null) roleName else "$roleName ($title)"
+private fun headingOf(specifier: String, title: String): String =
+    if (title == specifier) specifier else "$specifier ($title)"
 
 private fun quotedIfString(parameter: TemplateParameterPreview, value: String): String =
     if (parameter.kind == TemplateParameterKind.StringParameter) "\"$value\"" else value

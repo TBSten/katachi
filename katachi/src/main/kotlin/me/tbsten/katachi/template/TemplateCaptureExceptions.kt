@@ -7,8 +7,8 @@ import me.tbsten.katachi.dsl.DeclarationSite
 /**
  * A run gave no value for a capture its role's template needs.
  *
- * `capture("feature")` in a role's `layout { }` stands for a directory that template generation
- * fills in from `--arg feature=...`, and `":feature:*".module(capture = "feature") { }` for a module.
+ * `capture("feature")` in a `layout { }` stands for a directory that template generation fills
+ * in from `--arg feature=...`, and `":feature:${capture("feature")}".module { }` for a module.
  * Without the value there is no directory, and choosing one would be inventing the answer.
  *
  * The same exception, with the same message, whichever way the capture was needed: a file whose
@@ -20,7 +20,7 @@ import me.tbsten.katachi.dsl.DeclarationSite
  * ```kt
  * import io.kotest.assertions.throwables.shouldThrow
  * import me.tbsten.katachi.dsl.architecture
- * import me.tbsten.katachi.dsl.file
+ * import me.tbsten.katachi.dsl.template
  * import me.tbsten.katachi.processor.process
  * import me.tbsten.katachi.template.GenerateCodeFromTemplate
  * import me.tbsten.katachi.template.KatachiMissingTemplateCaptureException
@@ -28,13 +28,14 @@ import me.tbsten.katachi.dsl.DeclarationSite
  * val arch = architecture {
  *     "feature".group {
  *         "ViewModel" {
- *             layout { "feature" / capture("feature") / "*ViewModel.kt".file() }
- *             template { file("HomeViewModel.kt") { "class HomeViewModel" } }
+ *             layout {
+ *                 "feature" / capture("feature") / "ViewModel.kt".file().template { "class ViewModel" }
+ *             }
  *         }
  *     }
  * }
  * val thrown = shouldThrow<KatachiMissingTemplateCaptureException> {
- *     arch.process(GenerateCodeFromTemplate, GenerateCodeFromTemplate.Args(roleName = "ViewModel")).getOrThrow()
+ *     arch.process(GenerateCodeFromTemplate, GenerateCodeFromTemplate.Args(template = listOf("feature.ViewModel"))).getOrThrow()
  * }
  * thrown.names shouldBe listOf("feature")
  * ```
@@ -61,7 +62,7 @@ public class KatachiMissingTemplateCaptureException internal constructor(
      * own, or the project could not be read.
      */
     public val existingValues: Map<String, List<String>>,
-    /** How each of [names] is declared: `capture("feature")` or `":feature:*".module(capture = "feature")`. */
+    /** How each of [names] is declared: `capture("feature")` or `":feature:${capture("feature")}".module { }`. */
     internal val declaredWith: Map<String, String>,
     /** Where the `file(...)` that could not be placed, or the `template { }` that read the capture, was written. */
     public val declaredAt: DeclarationSite,
@@ -116,7 +117,7 @@ public class KatachiMissingTemplateCaptureException internal constructor(
  * import io.kotest.assertions.throwables.shouldThrow
  * import me.tbsten.katachi.template.KatachiInvalidTemplateCaptureValueException
  *
- * // ./gradlew katachiTemplate --arg roleName=ViewModel --arg feature=home/list
+ * // ./gradlew katachiTemplate --arg template=feature.ViewModel --arg feature=home/list
  * val thrown = shouldThrow<KatachiInvalidTemplateCaptureValueException> { generate() }
  * thrown.problem shouldBe KatachiInvalidTemplateCaptureValueException.Problem.Separator
  * ```
@@ -130,8 +131,14 @@ public class KatachiInvalidTemplateCaptureValueException internal constructor(
     public val name: String,
     /** The value the run passed. */
     public val value: String,
-    /** What is wrong with [value]. */
+    /** What is wrong: with [value] itself when [segment] is `null`, with [segment] otherwise. */
     public val problem: Problem,
+    /**
+     * The whole path segment [value] landed in, with every capture of it filled in -- `"a."` for
+     * `"${capture("x")}."` given `--arg x=a`. `null` when [problem] is about [value] on its own,
+     * such as one holding a `/`, rather than about the segment it partially filled.
+     */
+    public val segment: String? = null,
     /** Where a layout path naming the capture was declared. */
     public val captureDeclaredAt: DeclarationSite,
     /** Whether the capture names a `*` of a module key rather than a directory level. */
@@ -139,10 +146,17 @@ public class KatachiInvalidTemplateCaptureValueException internal constructor(
 ) : KatachiDeclarationException(
     message = buildString {
         val level = if (isModuleCapture) "one level of the module path" else "one directory level"
-        appendLine(
-            """Capture "$name" of role "$role" declared at $captureDeclaredAt was given "$value", """ +
-                "which is not $level: ${problem.description}.",
-        )
+        if (segment == null) {
+            appendLine(
+                """Capture "$name" of role "$role" declared at $captureDeclaredAt was given "$value", """ +
+                    "which is not $level: ${problem.description}.",
+            )
+        } else {
+            appendLine(
+                """Capture "$name" of role "$role" declared at $captureDeclaredAt was given "$value", """ +
+                    """which fills its path segment in as "$segment": ${problem.description}.""",
+            )
+        }
         val lastLevel = value.split(':', '/', '\\').lastOrNull { it.isNotBlank() }
         when {
             isModuleCapture && ':' in value && lastLevel != null -> append(
@@ -156,6 +170,10 @@ public class KatachiInvalidTemplateCaptureValueException internal constructor(
                 )
                 append("Pass a single directory name, such as --arg $name=${lastLevel ?: "home"}.")
             }
+            segment != null -> append(
+                "A capture may fill only part of a segment -- \"\${capture(\"$name\")}Screen.kt\", say -- " +
+                    "so the value alone can be fine and the segment it lands in still not: " + problem.fix(name),
+            )
             else -> append(problem.fix(name))
         }
     },
@@ -215,7 +233,7 @@ public class KatachiInvalidTemplateCaptureValueException internal constructor(
 /**
  * A module capture was given a value that names no existing module.
  *
- * A wildcard module key, `":feature:*".module(capture = "feature") { }`, stands for the modules
+ * A wildcard module key, `":feature:${capture("feature")}".module { }`, stands for the modules
  * that exist. Generating into one that does not would put files in a directory no module owns,
  * and the next `assert()` would report it as `[UnexpectedDirectory]`. Refused even when another
  * place of the role would take the file: the value was passed on purpose, and generating
@@ -230,7 +248,7 @@ public class KatachiInvalidTemplateCaptureValueException internal constructor(
  * import io.kotest.assertions.throwables.shouldThrow
  * import me.tbsten.katachi.template.KatachiTemplateModuleNotFoundException
  *
- * // ./gradlew katachiTemplate --arg roleName=Screen --arg feature=hoem --arg name=Home
+ * // ./gradlew katachiTemplate --arg template=feature.Screen --arg feature=hoem --arg name=Home
  * val thrown = shouldThrow<KatachiTemplateModuleNotFoundException> { generate() }
  * thrown.existingArgs shouldBe listOf("--arg feature=home", "--arg feature=settings")
  * ```

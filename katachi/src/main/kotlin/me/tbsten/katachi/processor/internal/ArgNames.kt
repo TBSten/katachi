@@ -52,8 +52,8 @@ private class AcceptedArgNames(val names: Set<String>, val dependsOnValues: Bool
  * Refuses a run in which some `--arg` key belongs to none of the chosen processors.
  *
  * [values] -- the `--arg`s every processor is given -- against the union, and once for the whole
- * run: judging per processor would reject `--processor=docs,template --arg roleName=X`, because
- * `docs` takes no arguments and would call `roleName` unknown before `template` was ever
+ * run: judging per processor would reject `--processor=docs,template --arg name=X`, because
+ * `docs` takes no arguments and would call `name` unknown before `template` was ever
  * reached. Each entry of [argsFor] against its own processor alone, since only that processor is
  * given it -- the same answer a run of that processor by itself would give.
  *

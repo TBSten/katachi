@@ -13,7 +13,7 @@ import me.tbsten.katachi.template.TemplateSummary
 
 /**
  * The whole of `templateDescription.json`: the list, and the detail of every template whose
- * preview succeeded. A template whose preview failed is in [templates] with `fileCount: null` and
+ * preview succeeded. A template whose preview failed is in [templates] with `conflict: true` and
  * missing from [details].
  */
 @Serializable

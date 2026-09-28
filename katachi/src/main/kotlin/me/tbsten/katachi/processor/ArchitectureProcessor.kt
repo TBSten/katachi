@@ -123,7 +123,7 @@ public interface ArchitectureProcessor<Args, R> {
      * A processor whose vocabulary depends on the definition rather than on its own type has no
      * field to declare those names as: a template's parameters differ from role to role, so
      * `Args` cannot name them and `checkNoUnknownArgs` would call every one of them a typo. This
-     * is where such a processor says what this particular run made legal -- `--arg roleName=UseCase`
+     * is where such a processor says what this particular run made legal -- `--arg template=UseCase`
      * turns `name` and `implBody` into names, and nothing else into names.
      *
      * **Every selected processor is asked, with no build-script step in between.** A name this
