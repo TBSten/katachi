@@ -1,6 +1,8 @@
 // The build of the katachi IDE plugin (IntelliJ IDEA / Android Studio, build 261 and up).
 // Generated from the intellij-plugin-dev skill's scaffold; versions live in gradle/libs.versions.toml.
+import org.jetbrains.intellij.platform.gradle.IntelliJPlatformType
 import org.jetbrains.intellij.platform.gradle.TestFrameworkType
+import org.jetbrains.intellij.platform.gradle.tasks.VerifyPluginTask.FailureLevel
 
 plugins {
     alias(libs.plugins.kotlin.jvm)
@@ -63,9 +65,41 @@ intellijPlatform {
     pluginConfiguration {
         ideaVersion {
             sinceBuild = "261"
-            // No upper bound: every future build is declared compatible. TODO: gate it with
-            // verifyPlugin on CI, or narrow it to "261.*".
+            // No upper bound: every future build is declared compatible. Safe only because the
+            // nightly workflow gates it with verifyPlugin against IDEA and Android Studio (below
+            // and ide-plugin-nightly.yml); narrow to "261.*" if that gate is ever dropped.
             untilBuild = provider { null }
+        }
+    }
+    // `./gradlew verifyPlugin` checks binary compatibility against the IDEs configured here. It
+    // downloads those IDEs (recommended() resolves IDEA IU/IC for the since/until range above), so
+    // it runs on the nightly workflow rather than on every build (ide-plugin-nightly.yml).
+    // Android Studio is added explicitly: recommended() only resolves the base platform's own
+    // family (IDEA), and katachi ships to Android Studio users too (research-android-studio.md).
+    // The version must be the exact "version" field from jb.gg/android-studio-releases-list.json
+    // (four components; the marketing name "2026.1.4" or the platform build "261.26222.65" do not
+    // resolve). "2026.1.4.8" is Android Studio Quail 4 Patch 1, whose platform build matches
+    // libs.versions.toml's jewelForIde (261.26222.65); bump both together.
+    // The plugin ID includes "intellij" (me.tbsten.katachi.intellij), which the Plugin Verifier
+    // flags as a Marketplace naming convention warning unrelated to compatibility; muted here
+    // rather than renaming the ID, which is unrelated to and out of scope for this task.
+    pluginVerification {
+        freeArgs = listOf("-mute", "TemplateWordInPluginId")
+        // Fail on what breaks users (binary incompatibility, removal-scheduled or misused API), not
+        // on INTERNAL_API_USAGES: the one hit today is BaseState.intIncrementModificationCount()
+        // that the `by stringSet()` state delegate compiles into KatachiSettings. Every IDE
+        // (IDEA 261/262/263 and Android Studio) reports it as "Compatible".
+        // TODO: remove the internal-API call from KatachiSettings, then drop this override.
+        failureLevel = listOf(
+            FailureLevel.COMPATIBILITY_PROBLEMS,
+            FailureLevel.INVALID_PLUGIN,
+            FailureLevel.SCHEDULED_FOR_REMOVAL_API_USAGES,
+            FailureLevel.OVERRIDE_ONLY_API_USAGES,
+            FailureLevel.NON_EXTENDABLE_API_USAGES,
+        )
+        ides {
+            recommended()
+            create(IntelliJPlatformType.AndroidStudio, "2026.1.4.8")
         }
     }
 }
