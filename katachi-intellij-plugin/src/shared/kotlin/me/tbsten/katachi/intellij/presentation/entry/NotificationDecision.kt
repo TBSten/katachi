@@ -62,6 +62,27 @@ internal sealed interface NotificationDecision {
  * ```
  */
 internal fun decideNotification(input: NotificationInput): NotificationDecision {
-    // TODO(A3): design section 1's four patterns x settings x memory x ledger x availability.
-    return NotificationDecision.Hidden
+    val settings = input.settings
+    if (!settings.notificationsEnabled) return NotificationDecision.Hidden
+    // A file katachi just generated counts as closed (decision 8), and so does one closed with x.
+    if (input.ledgerEntry is LedgerEntry.Succeeded || input.memory.isDismissed(input.file)) return NotificationDecision.Hidden
+
+    when (val entry = input.ledgerEntry) {
+        is LedgerEntry.Generating ->
+            return NotificationDecision.Generating(command = entry.command.takeUnless { input.commentable })
+        // A file that holds a comment goes back to the ordinary decision: empty, so "create" again (decision 3).
+        is LedgerEntry.Failed ->
+            if (!input.commentable) return NotificationDecision.FailedWithCommand(entry.command)
+        is LedgerEntry.Succeeded, null -> Unit
+    }
+
+    if (input.availability != EntryAvailability.Ready || input.matches.isEmpty()) return NotificationDecision.Hidden
+    return when (input.content) {
+        FileContentState.Empty ->
+            if (settings.emptyFileNotification) NotificationDecision.CreateFromTemplate(input.matches) else NotificationDecision.Hidden
+        FileContentState.HasContent -> {
+            val firstTimeLeft = !settings.contentFirstTimeOnly || !input.memory.hasShownContentNotice(input.file)
+            if (settings.contentFileNotification && firstTimeLeft) NotificationDecision.ViewTemplate(input.matches) else NotificationDecision.Hidden
+        }
+    }
 }
