@@ -10,9 +10,11 @@ import com.intellij.openapi.externalSystem.service.project.manage.ProjectDataImp
 import com.intellij.openapi.project.Project
 import com.intellij.ui.EditorNotifications
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.async
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -29,6 +31,9 @@ import me.tbsten.katachi.intellij.data.ProjectFileSystem
 import me.tbsten.katachi.intellij.data.detect.SyncedProjectSource
 import me.tbsten.katachi.intellij.data.generate.GenerationCatalogPort
 import me.tbsten.katachi.intellij.data.generate.GenerationCatalogReload
+import me.tbsten.katachi.intellij.data.generate.SingleFileGeneration
+import me.tbsten.katachi.intellij.data.generate.SingleFileGenerationRequest
+import me.tbsten.katachi.intellij.data.generate.SingleFileGenerationResult
 import me.tbsten.katachi.intellij.data.gradle.GradleTaskRunner
 import me.tbsten.katachi.intellij.data.gradle.SerialGradleTaskRunner
 import me.tbsten.katachi.intellij.data.load.LoadResult
@@ -106,6 +111,7 @@ internal class KatachiProjectService(
     val gradleRunner: GradleTaskRunner = SerialGradleTaskRunner(ports.runner)
 
     private val fileSystem: ProjectFileSystem = ports.fileSystem
+    private val effects: IdeEffects = ports.effects
     private val importInProgress: () -> Boolean = ports.importInProgress ?: ::platformImportInProgress
     private val refreshNotifications: () -> Unit = ports.refreshNotifications ?: ::updateAllNotifications
     private val buildIndex: (List<DescriptionSnapshot>) -> TemplatePlacementIndex =
@@ -140,6 +146,24 @@ internal class KatachiProjectService(
         ),
         loadsWithoutUser = { settings?.let { sdkCall("read the auto-load setting") { it.autoLoadTemplates }.getOrNull() } ?: true },
     )
+
+    /**
+     * The generation from the editor notification and the New menu (E3) over this project's one runner,
+     * list, index and ledger, so it never overlaps a load of the tool window.
+     */
+    val entryGeneration: SingleFileGeneration = SingleFileGeneration(effects, gradleRunner, fileSystem, this, ledger)
+
+    /**
+     * Runs [request] off the EDT in [scope]: closing the project cancels it, and with it Gradle (E-49).
+     * Failures reach the user as balloons from the generation itself; a refusal (the target got content
+     * after the dialog checked it) as a balloon from here.
+     */
+    fun generateFromEntry(request: SingleFileGenerationRequest): Deferred<SingleFileGenerationResult> =
+        scope.async(Dispatchers.Default) {
+            entryGeneration.run(request).also { result ->
+                if (result is SingleFileGenerationResult.Refused) effects.notifyEntryGenerationRefused(result.refusal)
+            }
+        }
 
     init {
         // Without it the list does not follow a Gradle sync; ⟳ still reloads it.
