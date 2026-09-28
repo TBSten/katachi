@@ -18,6 +18,11 @@
 触らないので、インターフェースは素の Kotlin として読める。ViewModel はコンストラクタで
 インターフェースを受け取り、テストでは `:testing` の `Fake*` に差し替える。
 
+`User*Repository.kt` / `User*RepositoryImpl.kt` の部分だけテンプレートから生成できる
+（`UserRepository.kt` / `UserRepositoryImpl.kt` 自身は各領域に最初から手書きで置いてあり、
+生成の対象ではない）。領域ごとに id を分けてあり、`--arg
+template=data.Repository.user,data.Repository.userImpl --arg name=Cache` で両方を1回に作る。
+
 ## Placement
 
 | Module | Path | When to use |

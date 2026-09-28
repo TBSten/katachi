@@ -38,7 +38,7 @@ class DeclaredEntriesSpec : FreeSpec({
         // 返す）がぼやける。
         val (declaredFeaturePaths, walkedFeatureFiles) = projectArchitecture.process { context ->
             val declared = context.declaredEntries.map { it.path }.filter { it.startsWith("feature/") }
-            val walked = context.filesOf(context.roles.single { it.qualifiedName == "feature/Screen" })
+            val walked = context.filesOf(context.roles.single { it.qualifiedName == "feature.Screen" })
             declared to walked
         }
 

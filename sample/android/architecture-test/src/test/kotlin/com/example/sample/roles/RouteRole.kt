@@ -34,7 +34,7 @@ fun DeclarationContainerScope.route() = "Route" {
     example("HomeRoute", "ホーム画面への遷移先")
     example("SettingsRoute", "設定画面への遷移先")
     layout {
-        ":feature:*".module(capture = "feature") {
+        ":feature:${capture("feature")}".module {
             featureSources() / "${wildcard("feature").pascalCase}Route".ktFile()
         }
     }

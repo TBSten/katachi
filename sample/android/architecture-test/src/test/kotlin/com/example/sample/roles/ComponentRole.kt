@@ -9,6 +9,7 @@ import me.tbsten.katachi.dsl.gradle.kotlin
 import me.tbsten.katachi.dsl.gradle.mainSourceSet
 import me.tbsten.katachi.dsl.gradle.module
 import me.tbsten.katachi.dsl.kotlin.ktFile
+import me.tbsten.katachi.dsl.template
 
 /** The role of a widget shared across features, rather than owned by one of them. */
 fun DeclarationContainerScope.component() = "Component" {
@@ -24,6 +25,10 @@ fun DeclarationContainerScope.component() = "Component" {
         この役割の狙いなので、部品と、その部品のための enum や `@Preview` は同じファイルにまとめる。
 
         ファイル名は `*.kt` で縛っていない。部品は増えることが前提だから。
+
+        テンプレートから生成できる。ファイル名まるごとが `capture("name")` なので、
+        `--arg template=Component --arg name=AppLabel` で `AppLabel.kt` ができる
+        （`App` から始めるのはこの役割の慣習であって、layout が強制してはいない）。
     """.trimIndent()
     allowedContents = """
         ここに置いてよいのは、2つ以上の feature が使うもの、あるいは使うと決まっているもの。
@@ -36,45 +41,42 @@ fun DeclarationContainerScope.component() = "Component" {
         - 色やタイポグラフィの直書き。`MaterialTheme` から読む（テーマ役割を参照）
     """.trimIndent()
     example("AppButton", "アプリ共通のボタン")
+    // The whole file name is one capture: `component/` comes from the layout, and the name
+    // passed to `--arg name=` becomes both the file name and the composable's own name. The
+    // preview is wrapped in `PreviewRoot { }` from the start, as the Preview role asks.
+    //   ./gradlew :architecture-test:katachiTemplate --arg template=Component --arg name=AppLabel
     layout {
         ":ui".module {
-            mainSourceSet / kotlin / modulePackage / "component" / "*".ktFile()
-        }
-    }
-    // `file()` names the file only: `component/` comes from the layout above. The preview is
-    // wrapped in `PreviewRoot { }` from the start, as the Preview role asks.
-    //   ./gradlew :architecture-test:katachiTemplate \
-    //       --arg roleName=Component --arg name=Label
-    template {
-        val name by stringParameter()
-        val previewText by stringParameter(default = name)
-        val component = "App$name"
+            mainSourceSet / kotlin / modulePackage / "component" / capture("name").ktFile()
+                .template {
+                    val name = captureValue("name")
+                    val previewText by stringParameter(default = name)
 
-        file("$component.kt") {
-            """
-                package com.example.sample.ui.component
+                    """
+                        package com.example.sample.ui.component
 
-                import androidx.compose.material3.Text
-                import androidx.compose.runtime.Composable
-                import androidx.compose.ui.Modifier
-                import androidx.compose.ui.tooling.preview.Preview
-                import com.example.sample.ui.preview.PreviewRoot
+                        import androidx.compose.material3.Text
+                        import androidx.compose.runtime.Composable
+                        import androidx.compose.ui.Modifier
+                        import androidx.compose.ui.tooling.preview.Preview
+                        import com.example.sample.ui.preview.PreviewRoot
 
-                /** Shared ${name.lowercase()}, called by feature modules instead of Material's own. */
-                @Composable
-                fun $component(
-                    text: String,
-                    modifier: Modifier = Modifier,
-                ) {
-                    Text(text = text, modifier = modifier)
+                        /** Shared ${name.lowercase()}, called by feature modules instead of Material's own. */
+                        @Composable
+                        fun $name(
+                            text: String,
+                            modifier: Modifier = Modifier,
+                        ) {
+                            Text(text = text, modifier = modifier)
+                        }
+
+                        @Preview(showBackground = true)
+                        @Composable
+                        private fun ${name}Preview() = PreviewRoot {
+                            $name(text = "$previewText")
+                        }
+                    """.trimIndent() + "\n"
                 }
-
-                @Preview(showBackground = true)
-                @Composable
-                private fun ${component}Preview() = PreviewRoot {
-                    $component(text = "$previewText")
-                }
-            """.trimIndent() + "\n"
         }
     }
 }

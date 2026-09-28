@@ -3,6 +3,7 @@ package com.example.sample.roles
 import me.tbsten.katachi.dsl.DeclarationContainerScope
 import me.tbsten.katachi.dsl.gradle.*
 import me.tbsten.katachi.dsl.kotlin.ktFile
+import me.tbsten.katachi.dsl.template
 
 /** The role of the katachi definition itself, which belongs to no layer of the application. */
 fun DeclarationContainerScope.architectureDefinition() = "ArchitectureDefinition" {
@@ -35,6 +36,14 @@ fun DeclarationContainerScope.architectureDefinition() = "ArchitectureDefinition
     """.trimIndent()
     example("ProjectArchitecture.kt", "定義の入口")
     example("roles/ScreenRole.kt", "Screen の役割の宣言")
+    // A new role or group, as a skeleton to fill in. It is not called from anywhere yet:
+    // add the call to a group (or to `ProjectArchitecture.kt`) once it says something.
+    // `groups/` and `roles/` each carry their own id (`group` / `role`) rather than a `kind`
+    // parameter, because which one to write is which file declaration was chosen, not a value.
+    //   ./gradlew :architecture-test:katachiTemplate \
+    //       --arg template=testing.ArchitectureDefinition.role --arg name=UseCase
+    //   ./gradlew :architecture-test:katachiTemplate \
+    //       --arg template=testing.ArchitectureDefinition.group --arg name=Domain
     layout {
         ":architecture-test".module {
             testSourceSet / kotlin / "com/example/sample" {
@@ -47,63 +56,47 @@ fun DeclarationContainerScope.architectureDefinition() = "ArchitectureDefinition
                 // `groups/` holds `*Group.kt` and `roles/` holds `*Role.kt`, so a helper
                 // dropped into either is reported as `[UnexpectedFile]` rather than
                 // quietly becoming a third kind of file.
-                "groups" { "*Group".ktFile() }
-                "roles" { "*Role".ktFile() }
+                "groups" {
+                    "${capture("name")}Group".ktFile()
+                        .template(id = "group") {
+                            val name = captureValue("name")
+                            val function = name.replaceFirstChar { it.lowercaseChar() }
+                            """
+                                package com.example.sample.groups
+
+                                import me.tbsten.katachi.dsl.DeclarationContainerScope
+
+                                // TODO: call ${function}Group() from ProjectArchitecture.kt.
+                                /** TODO: say what the roles of the $name group have in common. */
+                                fun DeclarationContainerScope.${function}Group() = "$function".group {
+                                    title = "$name"
+                                    summary = "TODO: この group の役割に共通すること"
+                                }
+                            """.trimIndent() + "\n"
+                        }
+                }
+                "roles" {
+                    "${capture("name")}Role".ktFile()
+                        .template(id = "role") {
+                            val name = captureValue("name")
+                            val function = name.replaceFirstChar { it.lowercaseChar() }
+                            """
+                                package com.example.sample.roles
+
+                                import me.tbsten.katachi.dsl.DeclarationContainerScope
+
+                                // TODO: call $function() from the group this role belongs to.
+                                /** TODO: say what a file of the $name role is. */
+                                fun DeclarationContainerScope.$function() = "$name" {
+                                    title = "$name"
+                                    summary = "TODO: この役割のファイルが何か"
+                                    // TODO: declare where its files live.
+                                    layout { }
+                                }
+                            """.trimIndent() + "\n"
+                        }
+                }
             }
         }
     }
-    // A new role or group, as a skeleton to fill in. It is not called from anywhere yet:
-    // add the call to a group (or to `ProjectArchitecture.kt`) once it says something.
-    //   ./gradlew :architecture-test:katachiTemplate \
-    //       --arg roleName=ArchitectureDefinition --arg name=UseCase
-    //   ./gradlew :architecture-test:katachiTemplate \
-    //       --arg roleName=ArchitectureDefinition --arg name=Domain --arg kind=Group
-    template {
-        val name by stringParameter()
-        val kind by enumParameter(default = DeclarationKind.Role)
-        val function = name.replaceFirstChar { it.lowercaseChar() }
-
-        when (kind) {
-            DeclarationKind.Role -> file("${name}Role.kt") {
-                """
-                    package com.example.sample.roles
-
-                    import me.tbsten.katachi.dsl.DeclarationContainerScope
-
-                    // TODO: call $function() from the group this role belongs to.
-                    /** TODO: say what a file of the $name role is. */
-                    fun DeclarationContainerScope.$function() = "$name" {
-                        title = "$name"
-                        summary = "TODO: この役割のファイルが何か"
-                        // TODO: declare where its files live.
-                        layout { }
-                    }
-                """.trimIndent()
-            }
-
-            DeclarationKind.Group -> file("${name}Group.kt") {
-                """
-                    package com.example.sample.groups
-
-                    import me.tbsten.katachi.dsl.DeclarationContainerScope
-
-                    // TODO: call ${function}Group() from ProjectArchitecture.kt.
-                    /** TODO: say what the roles of the $name group have in common. */
-                    fun DeclarationContainerScope.${function}Group() = "$function".group {
-                        title = "$name"
-                        summary = "TODO: この group の役割に共通すること"
-                    }
-                """.trimIndent()
-            }
-        }
-    }
-}
-
-/** Which of the two declaration files the ArchitectureDefinition template writes. */
-enum class DeclarationKind {
-    /** `roles/<Name>Role.kt`. */
-    Role,
-
-    /** `groups/<Name>Group.kt`. */
-    Group,
 }

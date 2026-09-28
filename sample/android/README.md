@@ -15,8 +15,8 @@ katachi はリポジトリのソースから `includeBuild("../..")` で取り�
 | ファイル                                                                                                        | 何が分かるか                                                                                              |
 |-----------------------------------------------------------------------------------------------------------------|-----------------------------------------------------------------------------------------------------------|
 | [`ProjectArchitecture.kt`](architecture-test/src/test/kotlin/com/example/sample/ProjectArchitecture.kt)         | `architecture { }` の本体。group を呼んでいるだけで、役割は `roles/` に1ファイル1役割で置いてある         |
-| [`roles/ComponentRole.kt`](architecture-test/src/test/kotlin/com/example/sample/roles/ComponentRole.kt)         | 役割1つの書き方。置き場所の `layout { }` と、そこへ `App<Name>.kt` を生成する `template { }` を並べている |
-| [`roles/FeatureComponentRole.kt`](architecture-test/src/test/kotlin/com/example/sample/roles/FeatureComponentRole.kt) | `":feature:*".module(capture = "feature")` の見本。`wildcard("feature")` で置き場所を、`captureValue("feature")` でテンプレートの中身を、同じ capture から決める |
+| [`roles/ComponentRole.kt`](architecture-test/src/test/kotlin/com/example/sample/roles/ComponentRole.kt)         | 役割1つの書き方。ファイル名まるごとが `capture("name")` の `.template { }` で、渡した名前そのままのファイルを生成する |
+| [`roles/FeatureComponentRole.kt`](architecture-test/src/test/kotlin/com/example/sample/roles/FeatureComponentRole.kt) | `":feature:${capture("feature")}".module { }` の見本。`wildcard("feature")` で置き場所を、`captureValue("feature")` でテンプレートの中身を、同じ capture から決める |
 | [`ProjectArchitectureTest.kt`](architecture-test/src/test/kotlin/com/example/sample/ProjectArchitectureTest.kt) | 利用者が書くテストはこれ1つ。`projectArchitecture.assert()` を呼ぶだけ                                    |
 | [`docs/README.md`](docs/README.md)                                                                              | 定義から生成したドキュメント。手では書いていない                                                          |
 | [`katachi-baseline.json`](katachi-baseline.json) | baseline の台帳。`HomeFormatter.kt` と `:data` の `legacy/` の2件を意図的に残して棚上げしている（[`../README.md`](../README.md#baseline)） |
@@ -40,11 +40,12 @@ cd sample/android
 ./gradlew :architecture-test:katachiDocs
 
 # Component のテンプレートから :ui の component package に AppLabel.kt を生成する
-./gradlew :architecture-test:katachiTemplate --arg roleName=Component --arg name=Label
+# （ファイル名まるごとが capture("name") なので、"App" が要るなら --arg name=AppLabel と渡す）
+./gradlew :architecture-test:katachiTemplate --arg template=Component --arg name=AppLabel
 
 # FeatureComponent のテンプレートから :feature:home の component package に HomeUserCard.kt を生成する
 # （feature は layout で :feature:* に付けた名前。どのモジュールに生成するかをこれで選ぶ）
-./gradlew :architecture-test:katachiTemplate --arg roleName=FeatureComponent --arg feature=home --arg name=UserCard
+./gradlew :architecture-test:katachiTemplate --arg template=feature.FeatureComponent --arg feature=home --arg name=UserCard
 ```
 
 リポジトリのルートからは、CI と同じ一式（テンプレートから生成 → 検査 → 生成物を削除、まで含む）を1コマンドで回せます。

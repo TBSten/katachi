@@ -63,7 +63,7 @@ fun DeclarationContainerScope.preview() = "Preview" {
     // In a feature module the name is tied to the module the same way the screen it
     // renders is: `:feature:home` may hold `Home*Preview.kt` and nothing else.
     layout {
-        ":feature:*".module(capture = "feature") {
+        ":feature:${capture("feature")}".module {
             description = "画面のプレビュー。その画面を持つ feature モジュールに置く"
             "commonMain".sourceSet / kotlin / modulePackage /
                 "${wildcard("feature").pascalCase}*Preview".ktFile()

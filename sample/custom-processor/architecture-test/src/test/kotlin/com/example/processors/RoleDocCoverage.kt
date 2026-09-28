@@ -56,7 +56,7 @@ object RoleDocCoverage : ArchitectureProcessorNoArg<RoleDocCoverage.Report> {
         val documented = context.roles.filter { role ->
             (role[Documented] ?: true) &&
                 role.groupPath.indices.none { depth ->
-                    role.groupPath.take(depth + 1).joinToString("/") in silentGroups
+                    role.groupPath.take(depth + 1).joinToString(".") in silentGroups
                 }
         }
         context.log(

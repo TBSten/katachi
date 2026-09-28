@@ -6,6 +6,7 @@ import com.example.sample.modulePackage
 import me.tbsten.katachi.dsl.DeclarationContainerScope
 import me.tbsten.katachi.dsl.gradle.*
 import me.tbsten.katachi.dsl.kotlin.ktFile
+import me.tbsten.katachi.dsl.template
 
 /**
  * The role of a stand-in implementation other modules' tests use.
@@ -31,6 +32,11 @@ fun DeclarationContainerScope.fake() = "Fake" {
         ファイル名は `Fake*.kt`。`:testing` に置けるのは差し替え用の実装だけで、
         テストのヘルパーやカスタムアサーションを足したくなったら、まず役割を増やす。
         テストそのものは別の役割（テストコード）で、`src/test` にある。
+
+        テンプレートから生成できる。`repository` に渡すのは実装したいインターフェースの名前
+        そのもの（`UserRepository`）で、`--arg template=testing.Fake --arg repository=UserRepository`
+        で `FakeUserRepository.kt` ができる。どの領域の package に置くかは、名前の頭が
+        `DataDomain` のどれと一致するかで決める。
     """.trimIndent()
     forbiddenContents = """
         本番から呼ばれるコード。`:testing` に依存してよいのは
@@ -38,33 +44,39 @@ fun DeclarationContainerScope.fake() = "Fake" {
     """.trimIndent()
     example("FakeUserRepository", "UserRepository のメモリ実装")
     example("FakeSettingsRepository", "SettingsRepository のメモリ実装")
+    // Implements what the Repository template generates (`--arg name=` there is folded into
+    // `repository` here), so run that one first: the fake of an interface that is not there
+    // does not compile.
+    //   ./gradlew :architecture-test:katachiTemplate \
+    //       --arg template=testing.Fake --arg repository=UserProfileRepository
     layout {
         ":testing".module {
-            mainSourceSet / kotlin / modulePackage / "Fake*".ktFile()
-        }
-    }
-    // Implements what the Repository template generates for the same `domain` and `name`,
-    // so run that one first: the fake of an interface that is not there does not compile.
-    //   ./gradlew :architecture-test:katachiTemplate \
-    //       --arg roleName=Fake --arg domain=User --arg name=Profile
-    template {
-        val domain by enumParameter(DataDomain.entries)
-        val name by stringParameter()
-        val repository = "${domain.name}${name}Repository"
+            mainSourceSet / kotlin / modulePackage / "Fake${capture("repository")}".ktFile()
+                .template {
+                    val repository = captureValue("repository")
+                    // The package a repository interface lives in is not part of its own name, so it
+                    // is found the same way DataDomain.packageName itself is used elsewhere: by the
+                    // domain name it starts with.
+                    val domain = DataDomain.entries.firstOrNull { repository.startsWith(it.name) }
+                    require(isPreview || domain != null) {
+                        "--arg repository=$repository: must start with one of " +
+                            DataDomain.entries.joinToString { it.name }
+                    }
+                    val packageName = "com.example.sample.data.${(domain ?: DataDomain.entries.first()).packageName}"
 
-        file("Fake$repository.kt") {
-            """
-                package com.example.sample.testing
+                    """
+                        package com.example.sample.testing
 
-                import com.example.sample.data.${domain.packageName}.$repository
+                        import $packageName.$repository
 
-                /** In-memory [$repository] for tests of other modules. */
-                class Fake$repository(
-                    private var value: String = "",
-                ) : $repository {
-                    override fun load(): String = value
+                        /** In-memory [$repository] for tests of other modules. */
+                        class Fake$repository(
+                            private var value: String = "",
+                        ) : $repository {
+                            override fun load(): String = value
+                        }
+                    """.trimIndent() + "\n"
                 }
-            """.trimIndent()
         }
     }
 }

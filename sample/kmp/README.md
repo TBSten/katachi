@@ -17,8 +17,8 @@ katachi はリポジトリのソースから `includeBuild("../..")` で取り�
 |--------------------------------------------------------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------------------------|
 | [`ProjectArchitecture.kt`](architecture-test/src/test/kotlin/com/example/kmp/ProjectArchitecture.kt)                           | `architecture { }` の本体。group を呼んでいるだけで、役割は `roles/` に1ファイル1役割で置いてある                   |
 | [`roles/PlatformImplementationRole.kt`](architecture-test/src/test/kotlin/com/example/kmp/roles/PlatformImplementationRole.kt) | `expect` / `actual` をソースセットごとに宣言した役割                                                                |
-| [`roles/RepositoryRole.kt`](architecture-test/src/test/kotlin/com/example/kmp/roles/RepositoryRole.kt)                         | 1つの `template { }` でインターフェースと実装の2ファイルを生成する役割。置き場所は2つの `layout` パターンから決まる |
-| [`roles/FeatureComponentRole.kt`](architecture-test/src/test/kotlin/com/example/kmp/roles/FeatureComponentRole.kt)             | `":feature:*".module(capture = "feature")` の見本。`wildcard("feature")` で置き場所を、`captureValue("feature")` でテンプレートの中身を、同じ capture から決める |
+| [`roles/RepositoryRole.kt`](architecture-test/src/test/kotlin/com/example/kmp/roles/RepositoryRole.kt)                         | 2つのファイル宣言にそれぞれ `.template(id = ...)` を付け、インターフェースと実装を別々に（または `--arg template=a,b` でまとめて）生成できる役割 |
+| [`roles/FeatureComponentRole.kt`](architecture-test/src/test/kotlin/com/example/kmp/roles/FeatureComponentRole.kt)             | `":feature:${capture("feature")}".module { }` の見本。`wildcard("feature")` で置き場所を、`captureValue("feature")` でテンプレートの中身を、同じ capture から決める |
 | [`ProjectArchitectureTest.kt`](architecture-test/src/test/kotlin/com/example/kmp/ProjectArchitectureTest.kt)                   | 利用者が書くテストはこれ1つ。`projectArchitecture.assert()` を呼ぶだけ                                              |
 | [`katachi-baseline.json`](katachi-baseline.json) | baseline の台帳。`:data` の `androidMain` にある `user/` の1件を意図的に残して棚上げしている（[`../README.md`](../README.md#baseline)） |
 
@@ -41,11 +41,12 @@ cd sample/kmp
 ./gradlew :architecture-test:katachiDocs
 
 # Repository のテンプレートから :data の user package に ProfileRepository.kt と ProfileRepositoryImpl.kt を生成する
-./gradlew :architecture-test:katachiTemplate --arg roleName=Repository --arg name=Profile
+# （2つの id をカンマ区切りでまとめて指定。片方だけなら data.Repository.repository だけを渡す）
+./gradlew :architecture-test:katachiTemplate --arg template=data.Repository.repository,data.Repository.repositoryImpl --arg name=Profile
 
 # FeatureComponent のテンプレートから :feature:settings の component package に SettingsToggleRow.kt を生成する
 # （feature は layout で :feature:* に付けた名前。どのモジュールに生成するかをこれで選ぶ）
-./gradlew :architecture-test:katachiTemplate --arg roleName=FeatureComponent --arg feature=settings --arg name=ToggleRow
+./gradlew :architecture-test:katachiTemplate --arg template=feature.FeatureComponent --arg feature=settings --arg name=ToggleRow
 ```
 
 タスクは `:architecture-test:test` のように**モジュールのパスまで書いてください。**`test` とだけ書くと

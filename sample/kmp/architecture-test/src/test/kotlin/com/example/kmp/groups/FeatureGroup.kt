@@ -11,7 +11,7 @@ import me.tbsten.katachi.dsl.DeclarationContainerScope
  * Roles of one feature: what every `:feature:<name>` module holds.
  *
  * Kept apart from [uiGroup] because the two differ in how they grow. A feature module is a
- * place where things are *expected* to multiply — `":feature:*".module(capture = "feature") { }`
+ * place where things are *expected* to multiply — `":feature:${capture("feature")}".module { }`
  * stands for however many there are and reads the matched name back as `wildcard("feature")` —
  * while `:ui` and
  * `:navigation` are shared modules where adding something is a design decision. Folding both
@@ -38,7 +38,7 @@ fun DeclarationContainerScope.featureGroup() = "feature".group {
         「その名前の画面が要る」まで言い切れるのがこの group の形です。
 
         ui group と分けてあるのは、増え方が違うからです。feature はモジュールが増える前提の
-        場所で、`":feature:*".module(capture = "feature") { }` という1つの宣言が何個あっても
+        場所で、`":feature:${'$'}{capture("feature")}".module { }` という1つの宣言が何個あっても
         足ります。一方 `:ui` や `:navigation` に何かを足すのは設計判断です。1つの group にまとめると、
         生成されるドキュメントでその差が消えてしまいます。
 

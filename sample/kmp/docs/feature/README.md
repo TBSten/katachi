@@ -14,7 +14,7 @@ Screen / ViewModel / Route の3つをここに集めたのは、どれも「1つ
 「その名前の画面が要る」まで言い切れるのがこの group の形です。
 
 ui group と分けてあるのは、増え方が違うからです。feature はモジュールが増える前提の
-場所で、`":feature:*".module(capture = "feature") { }` という1つの宣言が何個あっても
+場所で、`":feature:${capture("feature")}".module { }` という1つの宣言が何個あっても
 足ります。一方 `:ui` や `:navigation` に何かを足すのは設計判断です。1つの group にまとめると、
 生成されるドキュメントでその差が消えてしまいます。
 

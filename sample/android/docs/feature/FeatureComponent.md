@@ -13,8 +13,9 @@ Screen が大きくなってきたときに切り出す、その画面専用の�
 ここに置いたままでは他の feature からは呼べない。
 
 テンプレートから生成できる。`:feature:*` の `*` に `feature` と名前を付けてあるので、
-`--arg feature=home --arg name=UserCard` で `HomeUserCard.kt` が `:feature:home` に入る。
-`feature` に渡せるのは実在する feature モジュールの名前だけ。
+`--arg template=feature.FeatureComponent --arg feature=home --arg name=UserCard` で
+`HomeUserCard.kt` が `:feature:home` に入る。`feature` に渡せるのは実在する
+feature モジュールの名前だけ。
 
 ## Placement
 

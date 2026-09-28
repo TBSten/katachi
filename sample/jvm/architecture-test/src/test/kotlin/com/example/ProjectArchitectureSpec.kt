@@ -70,42 +70,42 @@ class ProjectArchitectureSpec : FreeSpec({
             "app",
             "testing",
             "Gradle",
-            "Gradle/GradleWrapper",
+            "Gradle.GradleWrapper",
             "tool",
         )
     }
 
     "宣言した役割がすべて group のパス付きでモデルに含まれる" {
         projectArchitecture.allRoles.map { it.qualifiedName }.toSet() shouldBe setOf(
-            "api/Controller",
-            "api/KtorPlugin",
-            "domain/Service",
-            "domain/Model",
-            "data/Repository",
-            "app/Entrypoint",
-            "app/ServerConfig",
-            "testing/Test",
-            "testing/ArchitectureDefinition",
-            "testing/GeneratedDocumentation",
-            "testing/LayoutSnapshot",
-            "testing/BaselineFile",
-            "Gradle/GradleWrapper/LauncherScript",
-            "Gradle/GradleWrapper/WrapperJar",
-            "Gradle/GradleWrapper/WrapperProperties",
-            "Gradle/SettingsScript",
-            "Gradle/BuildScript",
-            "Gradle/GradleProperties",
-            "Gradle/VersionCatalog",
-            "Gradle/DaemonJvmProperties",
-            "tool/Documentation",
-            "tool/Git",
+            "api.Controller",
+            "api.KtorPlugin",
+            "domain.Service",
+            "domain.Model",
+            "data.Repository",
+            "app.Entrypoint",
+            "app.ServerConfig",
+            "testing.Test",
+            "testing.ArchitectureDefinition",
+            "testing.GeneratedDocumentation",
+            "testing.LayoutSnapshot",
+            "testing.BaselineFile",
+            "Gradle.GradleWrapper.LauncherScript",
+            "Gradle.GradleWrapper.WrapperJar",
+            "Gradle.GradleWrapper.WrapperProperties",
+            "Gradle.SettingsScript",
+            "Gradle.BuildScript",
+            "Gradle.GradleProperties",
+            "Gradle.VersionCatalog",
+            "Gradle.DaemonJvmProperties",
+            "tool.Documentation",
+            "tool.Git",
         )
     }
 
     "役割の宣言位置として、それを書いた拡張関数のファイルの行番号が取れる" {
         // Guards the stack-trace based capture in a real user build: if the frame filter
         // ever starts skipping user code, this reports the test runner's file instead.
-        val controller = projectArchitecture.allRoles.single { it.qualifiedName == "api/Controller" }
+        val controller = projectArchitecture.allRoles.single { it.qualifiedName == "api.Controller" }
         controller.declaredAt.fileName shouldBe "ControllerRole.kt"
         (controller.declaredAt.lineNumber > 0) shouldBe true
     }
@@ -188,27 +188,27 @@ class ProjectArchitectureSpec : FreeSpec({
         // 書かなかった宣言には Documented が入らない。省略を true と読むのはここ（読む側）。
         projectArchitecture.allGroups
             .filterNot { it[Documented] ?: true }
-            .map { it.qualifiedName } shouldBe listOf("Gradle", "Gradle/GradleWrapper", "tool")
+            .map { it.qualifiedName } shouldBe listOf("Gradle", "Gradle.GradleWrapper", "tool")
     }
 
     "documented = false を付けた役割だけが documented = false になる" {
         projectArchitecture.allRoles
             .filterNot { it[Documented] ?: true }
             .map { it.qualifiedName } shouldBe listOf(
-            "Gradle/SettingsScript",
-            "Gradle/BuildScript",
-            "Gradle/GradleProperties",
-            "Gradle/VersionCatalog",
-            "Gradle/DaemonJvmProperties",
-            "Gradle/GradleWrapper/LauncherScript",
-            "Gradle/GradleWrapper/WrapperJar",
-            "Gradle/GradleWrapper/WrapperProperties",
-            "tool/Documentation",
+            "Gradle.SettingsScript",
+            "Gradle.BuildScript",
+            "Gradle.GradleProperties",
+            "Gradle.VersionCatalog",
+            "Gradle.DaemonJvmProperties",
+            "Gradle.GradleWrapper.LauncherScript",
+            "Gradle.GradleWrapper.WrapperJar",
+            "Gradle.GradleWrapper.WrapperProperties",
+            "tool.Documentation",
         )
     }
 
     "title を省略しなかった役割は指定した表示名を持つ" {
-        val model = projectArchitecture.allRoles.single { it.qualifiedName == "domain/Model" }
+        val model = projectArchitecture.allRoles.single { it.qualifiedName == "domain.Model" }
         model[Title] shouldBe "モデル"
         model[Examples].orEmpty().map { it.name } shouldBe listOf("Health")
     }
@@ -384,7 +384,7 @@ private val violationsHeldBackByBaseline: List<String> = listOf(
 )
 
 /** `"Gradle"` itself or anything nested under it -- see `groups/GradleGroup.kt`. */
-private fun String.isGradleGroupSubtree(): Boolean = this == "Gradle" || startsWith("Gradle/")
+private fun String.isGradleGroupSubtree(): Boolean = this == "Gradle" || startsWith("Gradle.")
 
 /**
  * [projectArchitecture] with `app/Entrypoint` removed, and nothing else changed.

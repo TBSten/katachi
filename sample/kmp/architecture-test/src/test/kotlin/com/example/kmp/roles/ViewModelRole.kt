@@ -45,7 +45,7 @@ fun DeclarationContainerScope.viewModel() = "ViewModel" {
     example("HomeViewModel", "ホーム画面の状態")
     example("SettingsViewModel", "設定画面の状態")
     layout {
-        ":feature:*".module(capture = "feature") {
+        ":feature:${capture("feature")}".module {
             "commonMain".sourceSet / kotlin / modulePackage /
                 "${wildcard("feature").pascalCase}ViewModel".ktFile()
         }

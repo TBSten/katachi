@@ -236,7 +236,7 @@ data class SampleTemplateRun(
 )
 
 /**
- * The `template { }` runs against a sample, checked the way a user would meet them: generate,
+ * The `.template { }` runs against a sample, checked the way a user would meet them: generate,
  * then the sample's own `assert()` test and a compile of the generated sources, then delete what
  * was generated.
  *
@@ -292,12 +292,12 @@ val sampleBuilds = listOf(
         template = SampleTemplate(
             runs = listOf(
                 SampleTemplateRun(
-                    args = listOf("roleName=Service", "name=KatachiSmoke"),
+                    args = listOf("template=domain.Service", "name=KatachiSmoke"),
                     generatedFiles = listOf("src/main/kotlin/com/example/service/KatachiSmokeService.kt"),
                 ),
                 // `resource` is the layout's `capture("resource")`: it picks the directory.
                 SampleTemplateRun(
-                    args = listOf("roleName=Controller", "resource=health", "name=KatachiSmoke"),
+                    args = listOf("template=Controller", "resource=health", "name=KatachiSmoke"),
                     generatedFiles = listOf(
                         "src/main/kotlin/com/example/controller/health/KatachiSmokeController.kt",
                     ),
@@ -318,20 +318,23 @@ val sampleBuilds = listOf(
         needsAndroidSdk = true,
         template = SampleTemplate(
             runs = listOf(
+                // Component's file name is the whole of `capture("name")`, with no "App" prefix
+                // baked into the layout's pattern -- unlike the old `roleName=Component` role-level
+                // template, the value passed here has to spell it out itself to land at the same path.
                 SampleTemplateRun(
-                    args = listOf("roleName=Component", "name=KatachiSmoke"),
+                    args = listOf("template=Component", "name=AppKatachiSmoke"),
                     generatedFiles = listOf("ui/src/main/kotlin/com/example/sample/ui/component/AppKatachiSmoke.kt"),
                 ),
                 // `feature` is the name the layout gave `:feature:*`: it picks the module.
                 SampleTemplateRun(
-                    args = listOf("roleName=FeatureComponent", "feature=home", "name=KatachiSmoke"),
+                    args = listOf("template=feature.FeatureComponent", "feature=home", "name=KatachiSmoke"),
                     generatedFiles = listOf(
                         "feature/home/src/main/kotlin/com/example/sample/feature/home/component/HomeKatachiSmoke.kt",
                     ),
                 ),
                 SampleTemplateRun(
                     args = listOf(
-                        "roleName=FeatureComponent",
+                        "template=feature.FeatureComponent",
                         "feature=settings",
                         "name=KatachiSmoke",
                         "withPreview=false",
@@ -341,41 +344,45 @@ val sampleBuilds = listOf(
                                 "SettingsKatachiSmoke.kt",
                     ),
                 ),
+                // FeatureTest has one id per module (`home` / `settings`), not a `screen` parameter.
                 SampleTemplateRun(
-                    args = listOf("roleName=FeatureTest", "screen=Home", "name=KatachiSmoke"),
+                    args = listOf("template=feature.FeatureTest.home", "name=KatachiSmoke"),
                     generatedFiles = listOf(
                         "feature/home/src/test/kotlin/com/example/sample/feature/home/HomeKatachiSmokeTest.kt",
                     ),
                 ),
                 SampleTemplateRun(
-                    args = listOf("roleName=FeatureTest", "screen=Settings", "name=KatachiSmoke"),
+                    args = listOf("template=feature.FeatureTest.settings", "name=KatachiSmoke"),
                     generatedFiles = listOf(
                         "feature/settings/src/test/kotlin/com/example/sample/feature/settings/" +
                                 "SettingsKatachiSmokeTest.kt",
                     ),
                 ),
+                // The interface and the implementation are two ids of the same role
+                // (`data.Repository.user` / `.userImpl`), generated together in one `--arg template=a,b`.
                 SampleTemplateRun(
-                    args = listOf("roleName=Repository", "domain=User", "name=KatachiSmoke"),
+                    args = listOf("template=data.Repository.user,data.Repository.userImpl", "name=KatachiSmoke"),
                     generatedFiles = listOf(
                         "data/src/main/kotlin/com/example/sample/data/user/UserKatachiSmokeRepository.kt",
                         "data/src/main/kotlin/com/example/sample/data/user/UserKatachiSmokeRepositoryImpl.kt",
                     ),
                 ),
                 // After Repository: the fake implements the interface that run generated.
+                // `repository` is that interface's own name (folded from the old `domain` + `name`).
                 SampleTemplateRun(
-                    args = listOf("roleName=Fake", "domain=User", "name=KatachiSmoke"),
+                    args = listOf("template=testing.Fake", "repository=UserKatachiSmokeRepository"),
                     generatedFiles = listOf(
                         "testing/src/main/kotlin/com/example/sample/testing/FakeUserKatachiSmokeRepository.kt",
                     ),
                 ),
                 SampleTemplateRun(
-                    args = listOf("roleName=ArchitectureDefinition", "name=KatachiSmoke"),
+                    args = listOf("template=ArchitectureDefinition.role", "name=KatachiSmoke"),
                     generatedFiles = listOf(
                         "architecture-test/src/test/kotlin/com/example/sample/roles/KatachiSmokeRole.kt",
                     ),
                 ),
                 SampleTemplateRun(
-                    args = listOf("roleName=ArchitectureDefinition", "name=KatachiSmoke", "kind=Group"),
+                    args = listOf("template=ArchitectureDefinition.group", "name=KatachiSmoke"),
                     generatedFiles = listOf(
                         "architecture-test/src/test/kotlin/com/example/sample/groups/KatachiSmokeGroup.kt",
                     ),
@@ -410,8 +417,14 @@ val sampleBuilds = listOf(
         needsAndroidSdk = true,
         template = SampleTemplate(
             runs = listOf(
+                // The interface and the implementation are two ids of the same role
+                // (`data.Repository.repository` / `.repositoryImpl`), generated in one
+                // `--arg template=a,b`.
                 SampleTemplateRun(
-                    args = listOf("roleName=Repository", "name=KatachiSmoke"),
+                    args = listOf(
+                        "template=data.Repository.repository,data.Repository.repositoryImpl",
+                        "name=KatachiSmoke",
+                    ),
                     generatedFiles = listOf(
                         "data/src/commonMain/kotlin/com/example/kmp/data/user/KatachiSmokeRepository.kt",
                         "data/src/commonMain/kotlin/com/example/kmp/data/user/KatachiSmokeRepositoryImpl.kt",
@@ -419,7 +432,7 @@ val sampleBuilds = listOf(
                 ),
                 // `feature` is the name the layout gave `:feature:*`: it picks the module.
                 SampleTemplateRun(
-                    args = listOf("roleName=FeatureComponent", "feature=home", "name=KatachiSmoke"),
+                    args = listOf("template=feature.FeatureComponent", "feature=home", "name=KatachiSmoke"),
                     generatedFiles = listOf(
                         "feature/home/src/commonMain/kotlin/com/example/kmp/feature/home/component/HomeKatachiSmoke.kt",
                     ),

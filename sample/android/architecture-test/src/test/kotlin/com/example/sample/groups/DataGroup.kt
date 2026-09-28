@@ -29,7 +29,8 @@ fun DeclarationContainerScope.dataGroup() = "data".group {
  *
  * Read twice, so the list is written once. The Repository role's `layout { }` declares one
  * package per entry, and requires every file in it to start with that entry's name
- * (`user/User*Repository.kt`); the Repository and Fake templates take it as `--arg domain=User`.
+ * (`user/User*Repository.kt`); each entry's own id (`--arg template=data.Repository.user`) is
+ * what the Repository template takes, and Fake reads the same name back from `repository`.
  *
  * A fixed list rather than a directory `capture(...)` is what lets `layout { }` require that:
  * unlike a module key, whose `wildcard(...)` a layout can read back while it is still being

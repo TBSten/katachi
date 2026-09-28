@@ -7,6 +7,7 @@ import me.tbsten.katachi.dsl.DeclarationContainerScope
 import me.tbsten.katachi.dsl.gradle.*
 import me.tbsten.katachi.dsl.kotlin.ktFile
 import me.tbsten.katachi.dsl.pascalCase
+import me.tbsten.katachi.dsl.template
 
 /**
  * The role of a widget one screen uses and no other: the feature-local counterpart of Component.
@@ -31,8 +32,9 @@ fun DeclarationContainerScope.featureComponent() = "FeatureComponent" {
         ここに置いたままでは他の feature からは呼べない。
 
         テンプレートから生成できる。`:feature:*` の `*` に `feature` と名前を付けてあるので、
-        `--arg feature=home --arg name=UserCard` で `HomeUserCard.kt` が `:feature:home` に入る。
-        `feature` に渡せるのは実在する feature モジュールの名前だけ。
+        `--arg template=feature.FeatureComponent --arg feature=home --arg name=UserCard` で
+        `HomeUserCard.kt` が `:feature:home` に入る。`feature` に渡せるのは実在する
+        feature モジュールの名前だけ。
     """.trimIndent()
     allowedContents = """
         - 値とコールバックを受け取る `internal` な `@Composable`
@@ -43,67 +45,65 @@ fun DeclarationContainerScope.featureComponent() = "FeatureComponent" {
         - 他の feature の型、`public` な宣言。外から見えるのは Route だけ
     """.trimIndent()
     example("HomeUserCard", "ホーム画面だけで使うカード（例）")
-    layout {
-        ":feature:*".module(capture = "feature") {
-            featureSources() / "component" / "${wildcard("feature").pascalCase}*".ktFile()
-        }
-    }
     // The module is chosen by `--arg feature=...`, the name the layout gave `:feature:*`.
     // A module that does not exist is refused rather than created.
     //   ./gradlew :architecture-test:katachiTemplate \
-    //       --arg roleName=FeatureComponent --arg feature=home --arg name=UserCard
-    template {
-        val feature = captureValue("feature")
-        val name by stringParameter()
-        val withPreview by booleanParameter(default = true)
-        val component = "${feature.pascalCase}$name"
-        val previewImports = if (withPreview) {
-            """
-                import androidx.compose.ui.tooling.preview.Preview
-                import com.example.sample.ui.preview.PreviewRoot
+    //       --arg template=feature.FeatureComponent --arg feature=home --arg name=UserCard
+    layout {
+        ":feature:${capture("feature")}".module {
+            featureSources() / "component" / "${wildcard("feature").pascalCase}${capture("name")}".ktFile()
+                .template {
+                    val feature = captureValue("feature")
+                    val name = captureValue("name")
+                    val withPreview by booleanParameter(default = true)
+                    val component = "${feature.pascalCase}$name"
+                    val previewImports = if (withPreview) {
+                        """
+                            import androidx.compose.ui.tooling.preview.Preview
+                            import com.example.sample.ui.preview.PreviewRoot
 
-            """.trimIndent()
-        } else {
-            ""
-        }
-        val preview = if (withPreview) {
-            "\n\n" + """
-                @Preview(showBackground = true)
-                @Composable
-                private fun ${component}Preview() = PreviewRoot {
-                    $component(title = "$name")
+                        """.trimIndent()
+                    } else {
+                        ""
+                    }
+                    val preview = if (withPreview) {
+                        "\n\n" + """
+                            @Preview(showBackground = true)
+                            @Composable
+                            private fun ${component}Preview() = PreviewRoot {
+                                $component(title = "$name")
+                            }
+                        """.trimIndent()
+                    } else {
+                        ""
+                    }
+
+                    """
+                        |package com.example.sample.feature.$feature.component
+                        |
+                        |import androidx.compose.foundation.layout.Arrangement
+                        |import androidx.compose.foundation.layout.Column
+                        |import androidx.compose.material3.MaterialTheme
+                        |import androidx.compose.material3.Text
+                        |import androidx.compose.runtime.Composable
+                        |import androidx.compose.ui.Modifier
+                        |import androidx.compose.ui.unit.dp
+                        |$previewImports
+                        |/** Part of the $feature screen that no other screen uses. */
+                        |@Composable
+                        |internal fun $component(
+                        |    title: String,
+                        |    modifier: Modifier = Modifier,
+                        |) {
+                        |    Column(
+                        |        modifier = modifier,
+                        |        verticalArrangement = Arrangement.spacedBy(8.dp),
+                        |    ) {
+                        |        Text(text = title, style = MaterialTheme.typography.titleMedium)
+                        |    }
+                        |}$preview
+                    """.trimMargin()
                 }
-            """.trimIndent()
-        } else {
-            ""
-        }
-
-        file("$component.kt") {
-            """
-                |package com.example.sample.feature.$feature.component
-                |
-                |import androidx.compose.foundation.layout.Arrangement
-                |import androidx.compose.foundation.layout.Column
-                |import androidx.compose.material3.MaterialTheme
-                |import androidx.compose.material3.Text
-                |import androidx.compose.runtime.Composable
-                |import androidx.compose.ui.Modifier
-                |import androidx.compose.ui.unit.dp
-                |$previewImports
-                |/** Part of the $feature screen that no other screen uses. */
-                |@Composable
-                |internal fun $component(
-                |    title: String,
-                |    modifier: Modifier = Modifier,
-                |) {
-                |    Column(
-                |        modifier = modifier,
-                |        verticalArrangement = Arrangement.spacedBy(8.dp),
-                |    ) {
-                |        Text(text = title, style = MaterialTheme.typography.titleMedium)
-                |    }
-                |}$preview
-            """.trimMargin()
         }
     }
 }

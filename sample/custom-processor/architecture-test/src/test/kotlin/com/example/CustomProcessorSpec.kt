@@ -35,7 +35,7 @@ class CustomProcessorSpec : FreeSpec({
             // `tool/Documentation` covers `README.md` and nothing else -- no `.module { }`,
             // so no `build.gradle.kts` is counted with it and the number does not move when
             // a source file is added elsewhere.
-            lines shouldContain "tool/Documentation: 1 件"
+            lines shouldContain "tool.Documentation: 1 件"
         }
     }
 
@@ -52,7 +52,7 @@ class CustomProcessorSpec : FreeSpec({
         withClue(table.joinToString("\n")) {
             table.take(2) shouldBe listOf("| 役割 | 概要 |", "|---|---|")
             table.drop(2).map { it.substringAfter("| ").substringBefore(" |") } shouldBe
-                listOf("core/Entrypoint", "core/Model", "core/Store")
+                listOf("core.Entrypoint", "core.Model", "core.Store")
         }
     }
 
@@ -113,8 +113,8 @@ class CustomProcessorSpec : FreeSpec({
         withClue(report.toString()) {
             report.checked shouldBe 2
             report.missing shouldBe listOf(
-                RoleDocCoverage.Missing(role = "core/Blank", reason = "summary が無い"),
-                RoleDocCoverage.Missing(role = "core/Blank", reason = "example が1つも無い"),
+                RoleDocCoverage.Missing(role = "core.Blank", reason = "summary が無い"),
+                RoleDocCoverage.Missing(role = "core.Blank", reason = "example が1つも無い"),
             )
             // A `katachi<Key>` task prints the message under `[FAILED]`, so it is the report.
             failure.message shouldBe report.toString()

@@ -31,43 +31,43 @@ import me.tbsten.katachi.dsl.pascalCase
 class ProjectArchitectureSpec : FreeSpec({
     "宣言した group がすべてモデルに含まれる" {
         projectArchitecture.allGroups.map { it.qualifiedName }.toSet() shouldBe
-            setOf("feature", "ui", "data", "testing", "app", "Gradle", "Gradle/GradleWrapper", "tool")
+            setOf("feature", "ui", "data", "testing", "app", "Gradle", "Gradle.GradleWrapper", "tool")
     }
 
     "宣言した役割がすべてモデルに含まれる" {
         projectArchitecture.allRoles.map { it.qualifiedName }.toSet() shouldBe
             setOf(
-                "feature/Screen",
-                "feature/ViewModel",
-                "feature/Route",
-                "feature/FeatureComponent",
-                "ui/Component",
-                "ui/Theme",
-                "ui/UiCore",
-                "ui/Preview",
-                "ui/PreviewRoot",
-                "ui/Navigation",
-                "data/Repository",
-                "data/PlatformImplementation",
-                "testing/Fake",
-                "testing/Test",
-                "testing/ArchitectureDefinition",
-                "testing/GeneratedDocumentation",
-                "testing/LayoutSnapshot",
-                "testing/BaselineFile",
-                "app/Entrypoint",
-                "app/AndroidResource",
-                "app/XcodeProject",
-                "Gradle/SettingsScript",
-                "Gradle/BuildScript",
-                "Gradle/GradleProperties",
-                "Gradle/VersionCatalog",
-                "Gradle/DaemonJvmProperties",
-                "Gradle/GradleWrapper/LauncherScript",
-                "Gradle/GradleWrapper/WrapperJar",
-                "Gradle/GradleWrapper/WrapperProperties",
-                "tool/Documentation",
-                "tool/Git",
+                "feature.Screen",
+                "feature.ViewModel",
+                "feature.Route",
+                "feature.FeatureComponent",
+                "ui.Component",
+                "ui.Theme",
+                "ui.UiCore",
+                "ui.Preview",
+                "ui.PreviewRoot",
+                "ui.Navigation",
+                "data.Repository",
+                "data.PlatformImplementation",
+                "testing.Fake",
+                "testing.Test",
+                "testing.ArchitectureDefinition",
+                "testing.GeneratedDocumentation",
+                "testing.LayoutSnapshot",
+                "testing.BaselineFile",
+                "app.Entrypoint",
+                "app.AndroidResource",
+                "app.XcodeProject",
+                "Gradle.SettingsScript",
+                "Gradle.BuildScript",
+                "Gradle.GradleProperties",
+                "Gradle.VersionCatalog",
+                "Gradle.DaemonJvmProperties",
+                "Gradle.GradleWrapper.LauncherScript",
+                "Gradle.GradleWrapper.WrapperJar",
+                "Gradle.GradleWrapper.WrapperProperties",
+                "tool.Documentation",
+                "tool.Git",
             )
     }
 
@@ -82,7 +82,7 @@ class ProjectArchitectureSpec : FreeSpec({
     "宣言元のファイル名と行番号が取れる" {
         // The real point of this test: the declaration site is read off the stack trace, so
         // it is the kind of thing that breaks only outside katachi's own test setup.
-        val screen = projectArchitecture.allRoles.single { it.qualifiedName == "feature/Screen" }
+        val screen = projectArchitecture.allRoles.single { it.qualifiedName == "feature.Screen" }
         screen.declaredAt.fileName shouldBe "ScreenRole.kt"
         (screen.declaredAt.lineNumber > 0) shouldBe true
 
@@ -177,11 +177,11 @@ class ProjectArchitectureSpec : FreeSpec({
         // 省略を true と読むのは読む側の仕事。宣言には「書かなかった」だけが残る。
         projectArchitecture.allGroups.single { it.name == "ui" }[Documented] shouldBe null
         projectArchitecture.allRoles
-            .single { it.qualifiedName == "data/Repository" }[Documented] shouldBe null
+            .single { it.qualifiedName == "data.Repository" }[Documented] shouldBe null
     }
 
     "title を書いた役割・group は表示名がそれになる" {
-        projectArchitecture.allRoles.single { it.qualifiedName == "feature/Screen" }[Title] shouldBe
+        projectArchitecture.allRoles.single { it.qualifiedName == "feature.Screen" }[Title] shouldBe
             "画面"
         // The group is named `ui` but titled `UI`, so this fails if the declared title is
         // dropped in favour of the default.
@@ -190,7 +190,7 @@ class ProjectArchitectureSpec : FreeSpec({
 
     "title を省略した役割は Title を持たず、役割名がそのまま表示名になる" {
         // `tool/Git` is the only declaration in this sample without a `title`.
-        val git = projectArchitecture.allRoles.single { it.qualifiedName == "tool/Git" }
+        val git = projectArchitecture.allRoles.single { it.qualifiedName == "tool.Git" }
         git[Title] shouldBe null
         (git[Title] ?: git.name) shouldBe "Git"
     }
@@ -199,7 +199,7 @@ class ProjectArchitectureSpec : FreeSpec({
         // `:ui:component` / `:ui:theme` / `:ui:core` は1つの `:ui` モジュールに統合された。
         // summary が旧モジュールパスのまま残ると、生成されるドキュメントが実態と食い違う。
         val roles = projectArchitecture.allRoles.associateBy { it.qualifiedName }
-        listOf("ui/Component", "ui/Theme", "ui/UiCore", "ui/PreviewRoot").forAll { qualifiedName ->
+        listOf("ui.Component", "ui.Theme", "ui.UiCore", "ui.PreviewRoot").forAll { qualifiedName ->
             val summary = requireNotNull(roles[qualifiedName]?.get(Summary)) { "$qualifiedName に summary がない" }
             summary shouldContain ":ui モジュールの"
             summary shouldNotContain ":ui:"
@@ -211,8 +211,8 @@ class ProjectArchitectureSpec : FreeSpec({
         // would go unnoticed. `Preview` is the `@Preview` function itself and lives beside
         // the composable it renders; `PreviewRoot` is the single wrapper in `:ui`.
         val roles = projectArchitecture.allRoles.associateBy { it.qualifiedName }
-        val preview = requireNotNull(roles["ui/Preview"]) { "ui/Preview がない" }
-        val previewRoot = requireNotNull(roles["ui/PreviewRoot"]) { "ui/PreviewRoot がない" }
+        val preview = requireNotNull(roles["ui.Preview"]) { "ui.Preview がない" }
+        val previewRoot = requireNotNull(roles["ui.PreviewRoot"]) { "ui.PreviewRoot がない" }
 
         preview[Summary].orEmpty() shouldContain "Preview.kt"
         preview[Summary].orEmpty() shouldContain "PreviewRoot で包む"
@@ -224,8 +224,8 @@ class ProjectArchitectureSpec : FreeSpec({
         // its package would send a reader of the generated docs to the wrong directory.
         val roles = projectArchitecture.allRoles.associateBy { it.qualifiedName }
         val packageOfRole = mapOf(
-            "data/Repository" to "user",
-            "data/PlatformImplementation" to "platform",
+            "data.Repository" to "user",
+            "data.PlatformImplementation" to "platform",
         )
         packageOfRole.forAll { (qualifiedName, packageName) ->
             val summary = requireNotNull(roles[qualifiedName]?.get(Summary)) { "$qualifiedName に summary がない" }
@@ -245,7 +245,7 @@ class ProjectArchitectureSpec : FreeSpec({
     }
 
     "example は呼んだ順にすべて保持される" {
-        projectArchitecture.allRoles.single { it.qualifiedName == "data/Repository" }[Examples]
+        projectArchitecture.allRoles.single { it.qualifiedName == "data.Repository" }[Examples]
             .orEmpty().map { it.name } shouldContainExactly
             listOf("UserRepository", "UserRepositoryImpl")
     }
@@ -253,9 +253,9 @@ class ProjectArchitectureSpec : FreeSpec({
     "KMP 特有の役割が宣言されている" {
         // These three are what makes this sample different from sample/android.
         val roles = projectArchitecture.allRoles.associateBy { it.qualifiedName }
-        roles["data/PlatformImplementation"] shouldNotBe null
-        roles["app/XcodeProject"] shouldNotBe null
-        roles["testing/Test"]?.get(Summary)?.contains("commonTest") shouldBe true
+        roles["data.PlatformImplementation"] shouldNotBe null
+        roles["app.XcodeProject"] shouldNotBe null
+        roles["testing.Test"]?.get(Summary)?.contains("commonTest") shouldBe true
     }
 
     "katachi の定義を置くモジュール自身にも役割がある" {
@@ -263,14 +263,14 @@ class ProjectArchitectureSpec : FreeSpec({
         // of the repository, so it needs a role too. Its sources are the definition itself,
         // and its build script falls under the module build script role.
         val roles = projectArchitecture.allRoles.associateBy { it.qualifiedName }
-        val definition = requireNotNull(roles["testing/ArchitectureDefinition"]) {
-            "testing/ArchitectureDefinition がない"
+        val definition = requireNotNull(roles["testing.ArchitectureDefinition"]) {
+            "testing.ArchitectureDefinition がない"
         }
         definition[Summary].orEmpty() shouldContain ":architecture-test"
         // `Gradle/BuildScript` needs no example naming it: `":**".module { }` already
         // covers every module katachi finds, `:architecture-test` included, and `gradle()`
         // sets no `example()` on the roles it declares.
-        requireNotNull(roles["Gradle/BuildScript"]) { "Gradle/BuildScript がない" }
+        requireNotNull(roles["Gradle.BuildScript"]) { "Gradle.BuildScript がない" }
     }
 
     "すべての役割が layout を1つ以上持つ" {
@@ -301,4 +301,4 @@ private fun architectureDefinitionSources(): Map<String, List<String>> {
 }
 
 /** `"Gradle"` itself or anything nested under it -- see `groups/GradleGroup.kt`. */
-private fun String.isGradleGroupSubtree(): Boolean = this == "Gradle" || startsWith("Gradle/")
+private fun String.isGradleGroupSubtree(): Boolean = this == "Gradle" || startsWith("Gradle.")

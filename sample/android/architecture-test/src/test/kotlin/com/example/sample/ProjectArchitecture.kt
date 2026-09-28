@@ -52,7 +52,7 @@ val modulePackage: ModulePackage = capitalizedModuleNamePackage("com.example.sam
  * twenty-nine files; [ProjectArchitectureSpec] is what actually holds the line.
  *
  * Every `layout { }` is written in terms of Gradle: a place is named by the module path it
- * belongs to (`":feature:*".module(capture = "feature") { }`), the source set inside it
+ * belongs to (`":feature:${capture("feature")}".module { }`), the source set inside it
  * (`mainSourceSet`) and [modulePackage], rather than by spelling the directories out.
  * `:feature:*` is the one to read first — it is matched against the modules that exist, and
  * what the `*` captured is read back by its name as `wildcard("feature")`, which is what ties a

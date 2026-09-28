@@ -17,8 +17,8 @@ katachi はリポジトリのソースから `includeBuild("../..")` で取り�
 | ファイル                                                                                                 | 何が分かるか                                                                                                   |
 |----------------------------------------------------------------------------------------------------------|----------------------------------------------------------------------------------------------------------------|
 | [`ProjectArchitecture.kt`](architecture-test/src/test/kotlin/com/example/ProjectArchitecture.kt)         | `architecture { }` の本体。7 つの group を呼んでいるだけで、役割は `roles/` に1ファイル1役割で置いてある       |
-| [`roles/ServiceRole.kt`](architecture-test/src/test/kotlin/com/example/roles/ServiceRole.kt)             | `layout { }` に加えて `konsist { }` で制約を書いた役割。`template { }` で `*Service.kt` を生成する見本も兼ねる |
-| [`roles/ControllerRole.kt`](architecture-test/src/test/kotlin/com/example/roles/ControllerRole.kt)       | `capture("resource")` でディレクトリの `*` に名前を付け、`template { }` から `captureValue("resource")` で読み返す見本。package にそのまま使う値なので `require(...)` で弾いている |
+| [`roles/ServiceRole.kt`](architecture-test/src/test/kotlin/com/example/roles/ServiceRole.kt)             | `layout { }` に加えて `konsist { }` で制約を書いた役割。ファイルの宣言に付けた `.template { }` で `*Service.kt` を生成する見本も兼ねる |
+| [`roles/ControllerRole.kt`](architecture-test/src/test/kotlin/com/example/roles/ControllerRole.kt)       | `capture("resource")` でディレクトリの `*` に名前を付け、`.template { }` から `captureValue("resource")` で読み返す見本。package にそのまま使う値なので `require(...)` で弾いている |
 | [`roles/ArchitectureDefinitionRole.kt`](architecture-test/src/test/kotlin/com/example/roles/ArchitectureDefinitionRole.kt) | `konsist(scope = DirectOnly)` の例。`com/example` 直下にだけ効き、`groups/`・`roles/` には降りない制約 |
 | [`ProjectArchitectureTest.kt`](architecture-test/src/test/kotlin/com/example/ProjectArchitectureTest.kt) | 利用者が書くテストはこれ1つ。`konsist { }` も評価するために `assert(FileConstraintCheck())` を呼んでいる              |
 | [`processors/RoleNames.kt`](architecture-test/src/test/kotlin/com/example/processors/RoleNames.kt)       | `--arg` で引数を受け取る自作 processor の最小例                                                                |
@@ -41,11 +41,11 @@ cd sample/jvm
 ./gradlew :architecture-test:katachiRoleNames --arg prefix=domain
 
 # Service のテンプレートから src/main/kotlin/com/example/service/GreetingService.kt を生成する
-./gradlew :architecture-test:katachiTemplate --arg roleName=Service --arg name=Greeting
+./gradlew :architecture-test:katachiTemplate --arg template=domain.Service --arg name=Greeting
 
 # Controller のテンプレートから src/main/kotlin/com/example/controller/greeting/GreetingController.kt を生成する
 # （resource は layout で capture("resource") と名前を付けた階層。どのディレクトリに生成するかをこれで選ぶ）
-./gradlew :architecture-test:katachiTemplate --arg roleName=Controller --arg resource=greeting --arg name=Greeting
+./gradlew :architecture-test:katachiTemplate --arg template=Controller --arg resource=greeting --arg name=Greeting
 ```
 
 リポジトリのルートからは、CI と同じ一式（テンプレートから生成 → 検査 → 生成物を削除、まで含む）を1コマンドで回せます。

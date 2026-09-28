@@ -7,6 +7,7 @@ import me.tbsten.katachi.dsl.DeclarationContainerScope
 import me.tbsten.katachi.dsl.gradle.*
 import me.tbsten.katachi.dsl.kotlin.ktFile
 import me.tbsten.katachi.dsl.pascalCase
+import me.tbsten.katachi.dsl.template
 
 /**
  * The role of a part one screen draws and no other: the feature-local counterpart of Component.
@@ -43,38 +44,34 @@ fun DeclarationContainerScope.featureComponent() = "FeatureComponent" {
         - `public` な宣言。feature の外から見えるのは Route だけです
     """.trimIndent()
     example("HomeUserCard", "ホーム画面だけで使う、ユーザー1人ぶんの表示")
-    layout {
-        ":feature:*".module(capture = "feature") {
-            "commonMain".sourceSet / kotlin / modulePackage / "component" /
-                "${wildcard("feature").pascalCase}*".ktFile()
-        }
-    }
     // The module is chosen by `--arg feature=...`, the name the layout gave `:feature:*`.
     // A module that does not exist is refused rather than created.
     //   ./gradlew :architecture-test:katachiTemplate \
-    //       --arg roleName=FeatureComponent --arg feature=home --arg name=UserCard
-    template {
-        val feature = captureValue("feature")
-        val name by stringParameter()
-        val component = "${feature.pascalCase}$name"
+    //       --arg template=feature.FeatureComponent --arg feature=home --arg name=UserCard
+    layout {
+        ":feature:${capture("feature")}".module {
+            "commonMain".sourceSet / kotlin / modulePackage / "component" /
+                "${wildcard("feature").pascalCase}${capture("name")}".ktFile()
+                    .template {
+                        val feature = captureValue("feature")
+                        val component = "${feature.pascalCase}${captureValue("name")}"
+                        """
+                            package com.example.kmp.feature.$feature.component
 
-        file("$component.kt") {
-            """
-                package com.example.kmp.feature.$feature.component
+                            import androidx.compose.material3.Text
+                            import androidx.compose.runtime.Composable
+                            import androidx.compose.ui.Modifier
 
-                import androidx.compose.material3.Text
-                import androidx.compose.runtime.Composable
-                import androidx.compose.ui.Modifier
-
-                /** Part of the $feature screen that no other screen uses. */
-                @Composable
-                internal fun $component(
-                    name: String,
-                    modifier: Modifier = Modifier,
-                ) {
-                    Text(text = name, modifier = modifier)
-                }
-            """.trimIndent() + "\n"
+                            /** Part of the $feature screen that no other screen uses. */
+                            @Composable
+                            internal fun $component(
+                                name: String,
+                                modifier: Modifier = Modifier,
+                            ) {
+                                Text(text = name, modifier = modifier)
+                            }
+                        """.trimIndent() + "\n"
+                    }
         }
     }
 }

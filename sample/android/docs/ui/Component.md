@@ -14,6 +14,10 @@
 
 ファイル名は `*.kt` で縛っていない。部品は増えることが前提だから。
 
+テンプレートから生成できる。ファイル名まるごとが `capture("name")` なので、
+`--arg template=Component --arg name=AppLabel` で `AppLabel.kt` ができる
+（`App` から始めるのはこの役割の慣習であって、layout が強制してはいない）。
+
 ## Placement
 
 | Module | Path | When to use |

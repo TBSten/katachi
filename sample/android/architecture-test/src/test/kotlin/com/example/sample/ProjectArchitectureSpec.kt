@@ -47,46 +47,46 @@ import me.tbsten.katachi.dsl.pascalCase
 class ProjectArchitectureSpec : FreeSpec({
     "宣言した group がすべて宣言順にモデルに含まれる" {
         projectArchitecture.allGroups.map { it.qualifiedName } shouldContainExactly
-            listOf("feature", "ui", "data", "app", "testing", "Gradle", "Gradle/GradleWrapper", "tool")
+            listOf("feature", "ui", "data", "app", "testing", "Gradle", "Gradle.GradleWrapper", "tool")
     }
 
     "宣言した役割が group ごと正しくモデルに含まれる" {
         projectArchitecture.allRoles.map { it.qualifiedName }.toSet() shouldBe setOf(
-            "feature/Screen",
-            "feature/ViewModel",
-            "feature/Route",
-            "feature/FeatureComponent",
-            "feature/FeatureTest",
-            "ui/Component",
-            "ui/Theme",
-            "ui/UiCore",
-            "ui/Preview",
-            "ui/PreviewRoot",
-            "ui/Navigation",
-            "data/Repository",
-            "app/Entrypoint",
-            "app/AndroidResource",
-            "testing/Fake",
-            "testing/Test",
-            "testing/ArchitectureDefinition",
-            "testing/GeneratedDocumentation",
-            "testing/LayoutSnapshot",
-            "testing/BaselineFile",
-            "Gradle/SettingsScript",
-            "Gradle/BuildScript",
-            "Gradle/GradleProperties",
-            "Gradle/VersionCatalog",
-            "Gradle/DaemonJvmProperties",
-            "Gradle/GradleWrapper/LauncherScript",
-            "Gradle/GradleWrapper/WrapperJar",
-            "Gradle/GradleWrapper/WrapperProperties",
-            "tool/Git",
-            "tool/Documentation",
+            "feature.Screen",
+            "feature.ViewModel",
+            "feature.Route",
+            "feature.FeatureComponent",
+            "feature.FeatureTest",
+            "ui.Component",
+            "ui.Theme",
+            "ui.UiCore",
+            "ui.Preview",
+            "ui.PreviewRoot",
+            "ui.Navigation",
+            "data.Repository",
+            "app.Entrypoint",
+            "app.AndroidResource",
+            "testing.Fake",
+            "testing.Test",
+            "testing.ArchitectureDefinition",
+            "testing.GeneratedDocumentation",
+            "testing.LayoutSnapshot",
+            "testing.BaselineFile",
+            "Gradle.SettingsScript",
+            "Gradle.BuildScript",
+            "Gradle.GradleProperties",
+            "Gradle.VersionCatalog",
+            "Gradle.DaemonJvmProperties",
+            "Gradle.GradleWrapper.LauncherScript",
+            "Gradle.GradleWrapper.WrapperJar",
+            "Gradle.GradleWrapper.WrapperProperties",
+            "tool.Git",
+            "tool.Documentation",
         )
     }
 
     "役割の宣言位置として、その役割を書いたファイルの行番号が取れる" {
-        val screen = projectArchitecture.allRoles.single { it.qualifiedName == "feature/Screen" }
+        val screen = projectArchitecture.allRoles.single { it.qualifiedName == "feature.Screen" }
         screen.declaredAt.fileName shouldBe "ScreenRole.kt"
         // The exact line churns on every edit; that it is a real line is the point.
         (screen.declaredAt.lineNumber > 0) shouldBe true
@@ -143,7 +143,7 @@ class ProjectArchitectureSpec : FreeSpec({
     }
 
     "layout の宣言位置も、その役割を書いたファイルになる" {
-        val screen = projectArchitecture.allRoles.single { it.qualifiedName == "feature/Screen" }
+        val screen = projectArchitecture.allRoles.single { it.qualifiedName == "feature.Screen" }
         screen.layouts.single().declaredAt.fileName shouldBe "ScreenRole.kt"
     }
 
@@ -177,7 +177,7 @@ class ProjectArchitectureSpec : FreeSpec({
             "app" to true,
             "testing" to true,
             "Gradle" to false,
-            "Gradle/GradleWrapper" to false,
+            "Gradle.GradleWrapper" to false,
             "tool" to false,
         )
     }
@@ -191,23 +191,23 @@ class ProjectArchitectureSpec : FreeSpec({
     }
 
     "title を省略した役割は Title を持たず、役割名がそのまま表示名になる" {
-        val git = projectArchitecture.allRoles.single { it.qualifiedName == "tool/Git" }
+        val git = projectArchitecture.allRoles.single { it.qualifiedName == "tool.Git" }
         git[Title] shouldBe null
         (git[Title] ?: git.name) shouldBe "Git"
     }
 
     "title を書いた役割はその表示名になる" {
-        val screen = projectArchitecture.allRoles.single { it.qualifiedName == "feature/Screen" }
+        val screen = projectArchitecture.allRoles.single { it.qualifiedName == "feature.Screen" }
         screen[Title] shouldBe "Screen"
     }
 
     "1つの役割が複数の置き場所を layout として持てる" {
-        val repository = projectArchitecture.allRoles.single { it.qualifiedName == "data/Repository" }
+        val repository = projectArchitecture.allRoles.single { it.qualifiedName == "data.Repository" }
         repository.layouts.size shouldBe 2
     }
 
     "example は呼んだ順に保持される" {
-        val repository = projectArchitecture.allRoles.single { it.qualifiedName == "data/Repository" }
+        val repository = projectArchitecture.allRoles.single { it.qualifiedName == "data.Repository" }
         repository[Examples].orEmpty().map { it.name } shouldContainExactly
             listOf("UserRepository", "UserRepositoryImpl")
     }
@@ -256,7 +256,7 @@ private val violationsHeldBackByBaseline: List<String> = listOf(
 )
 
 /** `"Gradle"` itself or anything nested under it -- see `groups/GradleGroup.kt`. */
-private fun String.isGradleGroupSubtree(): Boolean = this == "Gradle" || startsWith("Gradle/")
+private fun String.isGradleGroupSubtree(): Boolean = this == "Gradle" || startsWith("Gradle.")
 
 /**
  * Every Kotlin source of this test source set, keyed by file name, so a captured line

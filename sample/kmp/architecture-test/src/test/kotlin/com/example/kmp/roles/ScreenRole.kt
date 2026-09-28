@@ -46,7 +46,7 @@ fun DeclarationContainerScope.screen() = "Screen" {
     example("HomeScreen", "ホーム画面")
     example("SettingsScreen", "設定画面")
     layout {
-        ":feature:*".module(capture = "feature") {
+        ":feature:${capture("feature")}".module {
             "commonMain".sourceSet / kotlin / modulePackage /
                 "${wildcard("feature").pascalCase}Screen".ktFile()
         }

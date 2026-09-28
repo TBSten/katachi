@@ -10,6 +10,7 @@ import me.tbsten.katachi.dsl.gradle.kotlin
 import me.tbsten.katachi.dsl.gradle.mainSourceSet
 import me.tbsten.katachi.dsl.gradle.module
 import me.tbsten.katachi.dsl.kotlin.ktFile
+import me.tbsten.katachi.dsl.template
 import me.tbsten.katachi.konsist.konsist
 
 /** The role holding one application-specific behaviour, built out of repositories. */
@@ -35,26 +36,24 @@ fun DeclarationContainerScope.service() = "Service" {
         - 値の定義そのもの。data class はモデルの役割です
     """.trimIndent()
     example("HealthService", "サーバ稼働状態の取得")
+    // ./gradlew :architecture-test:katachiTemplate --arg template=domain.Service --arg name=User
     layout {
         ":".module {
             mustBePublic()
-            mainSourceSet / kotlin / modulePackage / "service" / "*Service".ktFile()
-        }
-    }
+            mainSourceSet / kotlin / modulePackage / "service" /
+                "${capture("name")}Service".ktFile()
+                    .template {
+                        val name = captureValue("name")
+                        val kdoc by stringParameter(default = "$name に関するアプリ固有の振る舞い。")
+                        """
+                            package com.example.service
 
-    template {
-        val name by stringParameter()
-        val kdoc by stringParameter(default = "$name に関するアプリ固有の振る舞い。")
-
-        file("${name}Service.kt") {
-            """
-                package com.example.service
-
-                /** $kdoc */
-                class ${name}Service {
-                    fun execute(): String = TODO("${name}Service の実装")
-                }
-            """.trimIndent() + "\n"
+                            /** $kdoc */
+                            class ${name}Service {
+                                fun execute(): String = TODO("${name}Service の実装")
+                            }
+                        """.trimIndent() + "\n"
+                    }
         }
     }
 }

@@ -22,7 +22,8 @@ import me.tbsten.katachi.dsl.gradle.*
  * hide that difference in the generated documentation, and would mix two shapes of `layout`
  * inside a single group.
  *
- * This is the group where the module path earns its keep twice over. `":feature:*"` stands
+ * This is the group where the module path earns its keep twice over. `":feature:*"` (written
+ * `":feature:${capture("feature")}"`) stands
  * for the feature modules that exist, so adding `:feature:profile` to `settings.gradle.kts`
  * needs no edit here; and `wildcard("feature")` is that module's own name, so a file is not merely
  * allowed to be *a* screen but has to be **that module's** screen. `:feature:home` may hold
@@ -99,11 +100,13 @@ internal fun featureSources(): LayoutDirectory = with(layoutScope) {
  * The feature modules this project has, by name: `Home` is `:feature:home`.
  *
  * Only for a template whose *content* differs per module. Choosing the module a file is
- * generated into needs no list: `":feature:*".module(capture = "feature")` names the wildcard,
- * and `--arg feature=home` binds it to a module that exists — which is how FeatureComponent is
- * written. FeatureTest arranges a different fake for each screen, so its template is a `when`
- * over this enum (`--arg screen=Home`) and [eachFeatureModule] declares its layout module by
- * module; a new module fails to compile there until the new screen is taught to it.
+ * generated into needs no list: `":feature:${capture("feature")}".module { }` names the
+ * wildcard, and `--arg feature=home` binds it to a module that exists — which is how
+ * FeatureComponent is written. FeatureTest arranges a different fake for each screen, so its
+ * template is a `when` over this enum, and [eachFeatureModule] declares its layout module by
+ * module, one `.template` per module with the module's own id
+ * (`--arg template=feature.FeatureTest.home`); a new module fails to compile there until the
+ * new screen is taught to it.
  *
  * The check keeps it honest in one direction: an entry whose module was deleted is reported
  * as that module's missing `build.gradle.kts`. A new module missing from it is not reported
@@ -122,7 +125,7 @@ enum class FeatureModule {
 /**
  * Declares [block] once for every [FeatureModule], inside that module.
  *
- * The concrete counterpart of `":feature:*".module(capture = "feature") { }`: what
+ * The concrete counterpart of `":feature:${capture("feature")}".module { }`: what
  * `wildcard("feature")` would have read arrives as the [FeatureModule] instead, for a template
  * that branches on it. A role that only picks the module should use the capture.
  */

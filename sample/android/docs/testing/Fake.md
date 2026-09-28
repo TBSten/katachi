@@ -19,6 +19,11 @@
 テストのヘルパーやカスタムアサーションを足したくなったら、まず役割を増やす。
 テストそのものは別の役割（テストコード）で、`src/test` にある。
 
+テンプレートから生成できる。`repository` に渡すのは実装したいインターフェースの名前
+そのもの（`UserRepository`）で、`--arg template=testing.Fake --arg repository=UserRepository`
+で `FakeUserRepository.kt` ができる。どの領域の package に置くかは、名前の頭が
+`DataDomain` のどれと一致するかで決める。
+
 ## Placement
 
 | Module | Path | When to use |
