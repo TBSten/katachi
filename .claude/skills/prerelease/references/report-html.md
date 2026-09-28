@@ -27,9 +27,9 @@
 
 - 雛形: [templates/index.html](../templates/index.html)。TODO.html と同じ見た目
 - 冒頭: 版・対象のコミット・日時、結果のバッジ（✅ / ⚠️）、リリースノートの概要（7 の報告と同じ 3 文）、TODO.html へのリンクと件数
-- 手順ごとのカード（1〜6・8・9-1・9-2）: 結果の1行（例: 「13 / 13」「要検討 0 件」「priority 7 以上 0 件」）、状態の色、
-  成果物へのリンク（`visibility-check.md`・`docs-vs-impl.md`・`site-crawl.md`・`ci-checks.md`・`install-kit.md`・`install-e2e.md`・
-  `screenshots/`）。詳細は `<details>`
+- 手順ごとのカード（1〜6・8・9-1・9-2・10-1・10-2）: 結果の1行（例: 「13 / 13」「要検討 0 件」「priority 7 以上 0 件」）、
+  状態の色、成果物へのリンク（`visibility-check.md`・`docs-vs-impl.md`・`site-crawl.md`・`ci-checks.md`・
+  `ide-plugin-nightly.md`・`ide-plugin-e2e.md`・`install-kit.md`・`install-e2e.md`・`screenshots/`）。詳細は `<details>`
 - 重要な警告（priority 7 以上）: タイトルと1〜2文。TODO.html の該当項目と同じ内容
 - 軽微な警告: 件数と、手順ごとの内訳だけ（本文は各成果物へ）
 - 数字や件数はチェックリストと同じものを使う（2箇所で数え直さない。チェックリストが SSoT）

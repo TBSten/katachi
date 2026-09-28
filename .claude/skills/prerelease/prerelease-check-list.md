@@ -106,6 +106,21 @@
 
 </details>
 
+## 10. IDE プラグインの nightly 相当のチェックと E2E
+
+- [ ] 10-1 通った: {TODO}（`run-ide-plugin-nightly.py`）
+- [ ] 10-1 seed / scale: {TODO}
+- [ ] 10-1 結果: {TODO file://.local/release-v0.0.0/ide-plugin-nightly.md の絶対パス}
+- [ ] 10-2 通った: {TODO}（`run-ide-plugin-e2e.py`）
+- [ ] 10-2 結果: {TODO file://.local/release-v0.0.0/ide-plugin-e2e.md の絶対パス}
+
+<details>
+    <summary>memo</summary>
+
+    {TODO}
+
+</details>
+
 ## そのほか
 
 <details>
