@@ -1,6 +1,7 @@
 package me.tbsten.katachi.intellij.presentation
 
 import me.tbsten.katachi.intellij.data.generate.EntryGenerationFailure
+import me.tbsten.katachi.intellij.data.generate.EntryGenerationRefusal
 import me.tbsten.katachi.intellij.data.generate.OpenAfterGeneration
 import me.tbsten.katachi.intellij.model.ConflictChoice
 import me.tbsten.katachi.intellij.model.ConflictQuestion
@@ -53,8 +54,8 @@ internal interface IdeEffects {
     fun copyToClipboard(text: String)
 
     // Generating one file from the editor notification or the New menu (SingleFileGeneration, E3).
-    // Defaults do nothing so that the tool window's fakes need not know them. TODO(E3): IdeEffectsImpl
-    // overrides every one, in a write action where it writes, through sdkCall.
+    // Defaults do nothing so that the tool window's fakes need not know them. IdeEffectsImpl overrides
+    // every one, in a write action where it writes, through sdkCall.
 
     /** Creates [directory] and its missing parents; `false` when the IDE could not. */
     suspend fun createDirectories(directory: Path): Boolean = false
@@ -85,4 +86,13 @@ internal interface IdeEffects {
 
     /** A balloon: why a generation from an entry failed (decision 2). */
     fun notifyEntryGenerationFailed(failure: EntryGenerationFailure) = Unit
+
+    /** A balloon: why a generation from an entry did not start once its dialog had closed (issue 6). */
+    fun notifyEntryGenerationRefused(refusal: EntryGenerationRefusal) = Unit
+
+    /**
+     * The notice the provisional file carries above the command, in the IDE's language: that katachi is
+     * generating it from [templateTitle], and what to run if it stays so. May span lines.
+     */
+    fun provisionalNotice(templateTitle: String): String = "katachi: generating this file from the template $templateTitle\nIf it stays like this, run:"
 }
