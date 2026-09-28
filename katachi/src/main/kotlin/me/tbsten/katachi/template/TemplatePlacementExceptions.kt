@@ -78,6 +78,10 @@ public class KatachiNoTemplatePlacementException internal constructor(
  * is a question only a walk of the project answers, so the flattened entry keeps the `*` standing
  * where a module name would be -- and katachi will not pick one of them to generate into.
  *
+ * Naming the wildcard is what lets a run pick: `capture("feature")` for a directory level, or
+ * `":feature:*".module(capture = "feature") { }` for a module, and `--arg feature=home` then says
+ * which one. Only a wildcard left without a name ends here.
+ *
  * ## Example 1: catch a role whose only place is a wildcard module
  * ```kt
  * import io.kotest.assertions.throwables.shouldThrow
@@ -122,13 +126,13 @@ public class KatachiWildcardTemplatePlacementException internal constructor(
         appendLine("Every pattern of that role accepting this name still holds a wildcard:")
         for (pattern in patterns) appendLine("  $pattern")
         appendLine(
-            "A wildcard there stands for the modules the project happens to have, which is not " +
-                "something a declaration says -- so katachi cannot choose one of them to write " +
-                "into without inventing the answer.",
+            "A wildcard there stands for the directories or modules the project happens to have, " +
+                "which is not something a declaration says -- so katachi cannot choose one of them " +
+                "to write into without inventing the answer.",
         )
         append(
-            "Declare the template on a role whose layout { } names one module, or name that " +
-                "module in a layout { } block of its own.",
+            "Name the wildcard with capture(\"name\") -- or .module(capture = \"name\") for a " +
+                "module key -- and pass --arg name=<value> to choose the directory.",
         )
     },
 )

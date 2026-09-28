@@ -1,9 +1,11 @@
 package me.tbsten.katachi.dsl.gradle
 
 import me.tbsten.katachi.KatachiDeclarationException
+import me.tbsten.katachi.dsl.DeclarationSite
 import me.tbsten.katachi.dsl.LayoutDirectoryScope
 import me.tbsten.katachi.dsl.LayoutModule
 import me.tbsten.katachi.dsl.LayoutScope
+import me.tbsten.katachi.dsl.internal.captureDeclarationSite
 
 /**
  * Declares a Gradle module, by its module path.
@@ -78,6 +80,65 @@ public fun String.module(block: LayoutDirectoryScope.() -> Unit): LayoutModule =
     layoutScope.expandModulePath(this, block)
 
 /**
+ * Declares a Gradle module whose `*`s have names, one per `*` in order.
+ *
+ * The check reads it exactly as the same key without names. The names are what a template fills
+ * in: generating a file for the role takes the module from `--arg feature=...`. Inside the block,
+ * [wildcard] reads a value by its name, and [wildcards] still reads them all by position.
+ *
+ * A `**` is not counted and cannot be named, because how many levels it stands for is not fixed:
+ * `":feature:*:**".module("feature") { }` names the `*` and leaves the `**` as it is.
+ *
+ * This overload takes the one name of a key with a single `*`, so that it can be written as
+ * `capture = "..."`; a key with more `*`s passes its names positionally to the other one.
+ *
+ * ## Example 1: Name the feature a module key stands for
+ * ```kt
+ * import me.tbsten.katachi.dsl.gradle.*
+ * import me.tbsten.katachi.dsl.kotlin.ktFile
+ * import me.tbsten.katachi.dsl.pascalCase
+ *
+ * ":feature:*".module(capture = "feature") {
+ *     mainSourceSet / kotlin / "${wildcard("feature").pascalCase}Screen".ktFile()
+ * }
+ * ```
+ *
+ * @param capture the name of the module path's one `*`, following the same rule as a role name.
+ * @throws me.tbsten.katachi.dsl.KatachiInvalidIdentifierException when the name is not an identifier.
+ * @throws me.tbsten.katachi.dsl.KatachiCaptureCountMismatchException when the module path does not
+ *   hold exactly one `*`.
+ */
+context(layoutScope: LayoutScope)
+public fun String.module(capture: String, block: LayoutDirectoryScope.() -> Unit): LayoutModule =
+    layoutScope.expandModulePath(this, listOf(capture), block)
+
+/**
+ * Declares a Gradle module whose `*`s have names: [captures] names them one by one, in order.
+ *
+ * The same as the single-name overload of `module` for a key with several `*`s. A `**` is not
+ * counted and cannot be named.
+ *
+ * ## Example 1: Name two levels of a module key
+ * ```kt
+ * import me.tbsten.katachi.dsl.gradle.*
+ * import me.tbsten.katachi.dsl.kotlin.ktFile
+ *
+ * ":feature:*:*".module("feature", "layer") {
+ *     "${wildcard("layer")}.kt".ktFile()
+ * }
+ * ```
+ *
+ * @param captures one name per `*` of the module path, following the same rule as a role name.
+ * @throws me.tbsten.katachi.dsl.KatachiInvalidIdentifierException when a name is not an identifier.
+ * @throws me.tbsten.katachi.dsl.KatachiCaptureCountMismatchException when there is not exactly
+ *   one name per `*`.
+ * @throws me.tbsten.katachi.dsl.KatachiDuplicateCaptureException when a name is given twice.
+ */
+context(layoutScope: LayoutScope)
+public fun String.module(vararg captures: String, block: LayoutDirectoryScope.() -> Unit): LayoutModule =
+    layoutScope.expandModulePath(this, captures.toList(), block)
+
+/**
  * `wildcards` was read outside a `module { }` block.
  *
  * ## Example 1: catch a `wildcards` read that has no module to read from
@@ -119,3 +180,78 @@ public class KatachiWildcardsOutsideModuleException internal constructor() :
 context(layoutScope: LayoutScope)
 public val wildcards: List<String>
     get() = layoutScope.currentWildcards ?: throw KatachiWildcardsOutsideModuleException()
+
+/**
+ * What the module path's `*` named [name] captured, for the module being evaluated.
+ *
+ * The same value as the matching element of [wildcards]; the name only saves counting positions.
+ * Names are given with `"...".module(capture = ...)`.
+ *
+ * ## Example 1: Build a file name from a named wildcard
+ * ```kt
+ * import me.tbsten.katachi.dsl.gradle.*
+ * import me.tbsten.katachi.dsl.kotlin.ktFile
+ * import me.tbsten.katachi.dsl.pascalCase
+ *
+ * ":feature:*".module(capture = "feature") {
+ *     "${wildcard("feature").pascalCase}Screen".ktFile()
+ * }
+ * ```
+ *
+ * @throws KatachiWildcardsOutsideModuleException when called outside a `module { }` block.
+ * @throws KatachiUnknownCaptureException when the module key gave no wildcard that name.
+ */
+context(layoutScope: LayoutScope)
+public fun wildcard(name: String): String {
+    if (layoutScope.currentWildcards == null) throw KatachiWildcardsOutsideModuleException()
+    val captures = layoutScope.currentCaptures.orEmpty()
+    return captures[name] ?: throw KatachiUnknownCaptureException(
+        name = name,
+        modulePath = layoutScope.currentModulePath.orEmpty(),
+        knownNames = captures.keys.toList(),
+        declaredAt = captureDeclarationSite(),
+    )
+}
+
+/**
+ * `wildcard(name)` asked for a name the module key did not give: the key named nothing, or named
+ * its wildcards differently.
+ *
+ * ## Example 1: catch a named read inside a module key that named nothing
+ * ```kt
+ * shouldThrow<KatachiUnknownCaptureException> {
+ *     architecture {
+ *         "ui".group {
+ *             "Screen" { layout { ":feature:*".module { wildcard("feature") } } }
+ *         }
+ *     }.flattenLayout()
+ * }.knownNames shouldBe emptyList()
+ * ```
+ *
+ * @property name the name that was asked for.
+ * @property modulePath the module the block was being evaluated for.
+ * @property knownNames the names the module key did give; empty when it named nothing.
+ * @property declaredAt where `wildcard(name)` was called.
+ */
+public class KatachiUnknownCaptureException internal constructor(
+    public val name: String,
+    public val modulePath: String,
+    public val knownNames: List<String>,
+    public val declaredAt: DeclarationSite,
+) : KatachiDeclarationException(
+    message = buildString {
+        appendLine("`wildcard(\"$name\")` at $declaredAt has no wildcard of that name to read, in `$modulePath`.")
+        if (knownNames.isEmpty()) {
+            append(
+                "The module key gave its wildcards no names. Name them with " +
+                    "`.module(capture = \"$name\") { }`, one name per `*`, or read them by position " +
+                    "with `wildcards[i]`.",
+            )
+        } else {
+            append(
+                "The names this module key gave are ${knownNames.joinToString { "\"$it\"" }}. " +
+                    "Use one of them, or rename the capture in `.module(capture = ...)`.",
+            )
+        }
+    },
+)

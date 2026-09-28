@@ -15,9 +15,10 @@ package me.tbsten.katachi.dsl
  *
  * ## The vocabulary this interface does not hold
  *
- * What is declared here is the whole of the core: a directory, a file, `/`, and stopping the
- * check. Everything else katachi offers — `"...".ktFile()`, and the Gradle vocabulary
- * (`"...".module { }`, `mainSourceSet`, `kotlin`, `modulePackage`, `wildcards`) — is written
+ * What is declared here is the whole of the core: a directory, a file, `/`, stopping the
+ * check, and a named wildcard (`capture("...")`). Everything else katachi offers —
+ * `"...".ktFile()`, and the Gradle vocabulary (`"...".module { }`, `mainSourceSet`, `kotlin`,
+ * `modulePackage`, `wildcards`, `wildcard("...")`) — is written
  * *on top of* it, as functions that take this scope as a context parameter:
  *
  * ```kt
@@ -185,6 +186,54 @@ public sealed interface LayoutScope : FileConstraintScope {
      * ```
      */
     public operator fun LayoutDirectory.invoke(block: LayoutDirectoryScope.() -> Unit): LayoutDirectory
+
+    /**
+     * Declares a directory level that is a `*` with a name.
+     *
+     * The check reads it exactly as `"*"`: one whole level, one character or more, never
+     * crossing a `/`. Replacing `capture("feature")` with `"*"` changes nothing about what is
+     * checked. The name is what a template fills in: generating a file for the role takes the
+     * level's value from `--arg feature=...`.
+     *
+     * Only a whole level can be named. A partial wildcard such as `feature-*`, and a `**`, stay
+     * as they are written. The same name may appear once along one path; a different path of
+     * the same role may reuse it, and then the two share the one parameter.
+     *
+     * ## Example 1: Naming the feature level a template generates into
+     * ```kt
+     * layout {
+     *   "feature" / capture("feature") / "src" / "main" / "kotlin" / "*ViewModel".ktFile()
+     *   capture("sample") { "README.md".file() }
+     * }
+     * ```
+     *
+     * @param name the parameter name, following the same rule as a role name
+     *   (`[A-Za-z][A-Za-z0-9_-]*`).
+     * @throws KatachiInvalidIdentifierException when [name] is not an identifier.
+     * @throws KatachiDuplicateCaptureException when [name] is already used along the same path,
+     *   noticed when the layout is flattened.
+     */
+    public fun capture(name: String): LayoutDirectory
+
+    /**
+     * [capture] opened as a block: `capture("feature") { ... }` is `capture("feature").invoke { ... }`.
+     *
+     * A separate overload because a trailing lambda right after `capture("...")` is read as an
+     * argument of the call, not as an `invoke` on what it returns.
+     *
+     * ## Example 1: Declaring several files below a named level
+     * ```kt
+     * layout {
+     *   "feature" {
+     *     capture("feature") {
+     *       "build.gradle.kts".file()
+     *       "src" / "main" / "kotlin" / "*ViewModel".ktFile()
+     *     }
+     *   }
+     * }
+     * ```
+     */
+    public fun capture(name: String, block: LayoutDirectoryScope.() -> Unit): LayoutDirectory
 }
 
 /**

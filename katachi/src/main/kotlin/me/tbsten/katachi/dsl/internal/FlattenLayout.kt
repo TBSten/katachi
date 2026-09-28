@@ -4,6 +4,7 @@ import me.tbsten.katachi.InternalKatachiApi
 import me.tbsten.katachi.dsl.Architecture
 import me.tbsten.katachi.dsl.DeclarationSite
 import me.tbsten.katachi.dsl.FileConstraintRange
+import me.tbsten.katachi.dsl.KatachiDuplicateCaptureException
 import me.tbsten.katachi.dsl.KatachiFileConstraintDirectOnlyCoversNothingException
 import me.tbsten.katachi.dsl.KatachiGlobSyntaxException
 import me.tbsten.katachi.dsl.LayoutEntry
@@ -154,7 +155,16 @@ internal fun Role.evaluateLayout(moduleIndex: ModuleIndex): LayoutEvaluation {
         // Directly under `layout { }` there is no directory block to close the site, so the
         // root closes it: such a constraint owns that one block and not the role's others.
         scope.closeSite(owned = listOf(root), anchor = null)
-        collectInto(entries, root, emptyList(), this, byNode, modulePath = null, inModule = emptyList())
+        collectInto(
+            entries = entries,
+            node = root,
+            prefix = emptyList(),
+            role = this,
+            byNode = byNode,
+            modulePath = null,
+            inModule = emptyList(),
+            captures = CaptureTrail.EMPTY,
+        )
         roots += root
     }
 
@@ -194,6 +204,47 @@ private data class EntryKey(val path: String, val kind: LayoutEntryKind)
  */
 private const val MODULE_PACKAGE_PLACEHOLDER: String = "**"
 
+/**
+ * The capture names seen from the root down to the node being flattened, and where each was
+ * written, so that one name used twice along a path is caught where the second one appears.
+ */
+private class CaptureTrail(
+    val pathCaptures: List<PathCapture>,
+    val moduleCapture: ModuleCapture?,
+    val declaredAt: Map<String, DeclarationSite>,
+) {
+    fun toCaptures(): LayoutCaptures? =
+        LayoutCaptures(pathCaptures, moduleCapture).takeUnless { it.isEmpty }
+
+    companion object {
+        val EMPTY: CaptureTrail = CaptureTrail(emptyList(), null, emptyMap())
+    }
+}
+
+/** [trail] extended with what [child], the [segmentIndex]-th level of its path, names. */
+private fun CaptureTrail.enter(child: LayoutNode, segmentIndex: Int, role: Role, path: String): CaptureTrail {
+    val moduleNames = child.moduleCaptureNames
+    val pattern = child.moduleCapturePattern
+    val pathName = child.layoutCaptureName
+    if (moduleNames == null && pathName == null) return this
+    val newNames = moduleNames.orEmpty() + listOfNotNull(pathName)
+    for (name in newNames) {
+        val first = declaredAt[name] ?: continue
+        throw KatachiDuplicateCaptureException(
+            name = name,
+            role = role.qualifiedName,
+            path = path,
+            firstDeclaredAt = first,
+            declaredAt = child.declaredAt,
+        )
+    }
+    return CaptureTrail(
+        pathCaptures = pathCaptures + listOfNotNull(pathName?.let { PathCapture(segmentIndex, it) }),
+        moduleCapture = if (moduleNames != null && pattern != null) ModuleCapture(pattern, moduleNames) else moduleCapture,
+        declaredAt = declaredAt + newNames.associateWith { child.declaredAt },
+    )
+}
+
 private fun collectInto(
     entries: MutableMap<EntryKey, LayoutEntry>,
     node: LayoutNode,
@@ -202,9 +253,11 @@ private fun collectInto(
     byNode: MutableMap<LayoutNode, EntryKey>,
     modulePath: String?,
     inModule: List<String>,
+    captures: CaptureTrail,
 ) {
     for (child in node.children) {
         val segments = prefix + child.segment
+        val childCaptures = captures.enter(child, prefix.size, role, segments.joinToString("/"))
         val childModulePath = child.modulePath ?: modulePath
         val childInModule = when {
             // The directory a module key opened is the module itself, so the path inside it
@@ -226,11 +279,12 @@ private fun collectInto(
             role = role,
             modulePath = childModulePath,
             pathInModule = childInModule.joinToString("/"),
+            captures = childCaptures.toCaptures(),
         )
         val key = EntryKey(entry.path, entry.kind)
         entries[key] = entries[key]?.mergedWith(entry) ?: entry
         byNode[child] = key
-        collectInto(entries, child, segments, role, byNode, childModulePath, childInModule)
+        collectInto(entries, child, segments, role, byNode, childModulePath, childInModule, childCaptures)
     }
 }
 
@@ -367,6 +421,7 @@ private fun LayoutNode.toEntry(
     role: Role,
     modulePath: String?,
     pathInModule: String,
+    captures: LayoutCaptures?,
 ): LayoutEntry {
     val kind = when {
         isFile -> LayoutEntryKind.File
@@ -389,6 +444,7 @@ private fun LayoutNode.toEntry(
         place = place,
         modulePath = modulePath,
         pathInModule = pathInModule,
+        captureVariants = listOfNotNull(captures),
     )
 }
 
@@ -434,4 +490,15 @@ private fun LayoutEntry.mergedWith(other: LayoutEntry): LayoutEntry = LayoutEntr
     // was written once in each of them, and the first one is the one a report already points at.
     modulePath = modulePath ?: other.modulePath,
     pathInModule = pathInModule,
+    captureVariants = mergedCaptureVariants(captureVariants, other.captureVariants),
 )
+
+/**
+ * Every distinct way the declarations of one path named its wildcards. A declaration that named
+ * nothing is kept as [LayoutCaptures.NONE] once another did name something, so that template
+ * generation can still see there was a declaration leaving its `*` unnamed.
+ */
+private fun mergedCaptureVariants(first: List<LayoutCaptures>, second: List<LayoutCaptures>): List<LayoutCaptures> {
+    if (first.isEmpty() && second.isEmpty()) return emptyList()
+    return (first.ifEmpty { listOf(LayoutCaptures.NONE) } + second.ifEmpty { listOf(LayoutCaptures.NONE) }).distinct()
+}

@@ -217,6 +217,34 @@ public sealed interface TemplateScope {
     public fun <E : Enum<E>> enumParameter(default: E): TemplateParameter<E>
 
     /**
+     * Reads the value of the role's named wildcard [name]: a `capture("...")` level of its
+     * `layout { }`, or a name `"...".module(capture = "...")` gave a module wildcard.
+     *
+     * It arrives as `--arg <name>=<value>`, the same value that decides the directory the files
+     * are generated into, so the package or a class name built from it cannot disagree with where
+     * the file lands. It is read only, not declared: the layout already declares it, and a
+     * parameter of the same name is refused as a conflict. Read by its name as a string rather than
+     * through a property because a capture name may hold a `-`, which a property name cannot.
+     *
+     * ## Example 1: build the package from the module the file is generated into
+     * ```kt
+     * "Screen" {
+     *     layout { ":feature:*".module(capture = "feature") { "*Screen.kt".file() } }
+     *     template {
+     *         val name by stringParameter()
+     *         val feature = captureValue("feature") // --arg feature=home
+     *
+     *         file("${name}Screen.kt") { "package com.example.feature.$feature" }
+     *     }
+     * }
+     * ```
+     *
+     * @throws KatachiUnknownTemplateCaptureException when the role's `layout { }` names no
+     *   wildcard [name].
+     */
+    public fun captureValue(name: String): String
+
+    /**
      * Declares one file this template produces, and how to fill it in.
      *
      * [name] is a file name with its extension, such as `"${name}UseCase.kt"` — not a path.

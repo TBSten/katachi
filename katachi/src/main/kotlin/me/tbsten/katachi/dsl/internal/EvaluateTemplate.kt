@@ -1,5 +1,6 @@
 package me.tbsten.katachi.dsl.internal
 
+import me.tbsten.katachi.dsl.DeclarationSite
 import me.tbsten.katachi.dsl.TemplateScopeImpl
 import me.tbsten.katachi.internal.catching
 
@@ -18,8 +19,9 @@ internal fun evaluateTemplate(
     declaration: TemplateDeclaration,
     roleName: String,
     values: Map<String, String>,
+    captureNames: Set<String> = emptySet(),
 ): TemplateEvaluation {
-    val scope = TemplateScopeImpl(roleName = roleName, values = values)
+    val scope = TemplateScopeImpl(roleName = roleName, values = values, captureNames = captureNames)
     var failure = catching { declaration.block(scope) }.exceptionOrNull()
     if (failure == null) failure = catching { scope.render() }.exceptionOrNull()
     scope.requireEveryParameterNamed(declaration.declaredAt)
@@ -44,11 +46,13 @@ internal fun templateParameterNames(
     declaration: TemplateDeclaration,
     roleName: String,
     values: Map<String, String>,
+    captureNames: Set<String> = emptySet(),
 ): TemplateParameterNames {
-    val scope = TemplateScopeImpl(roleName = roleName, values = values)
+    val scope = TemplateScopeImpl(roleName = roleName, values = values, captureNames = captureNames)
     val failed = catching { declaration.block(scope) }.isFailure
     return TemplateParameterNames(
         declared = scope.parameterNames(),
+        origins = scope.parameterOrigins(),
         isUnreliable = failed || scope.branchedOnStandIn(),
     )
 }
@@ -65,7 +69,12 @@ internal fun templateParameterNames(
  */
 internal class TemplateParameterNames(
     val declared: Set<String>,
+    /** Where and how each of [declared] was declared. */
+    val origins: Map<String, TemplateParameterOrigin>,
     val isUnreliable: Boolean,
 ) {
     override fun toString(): String = "TemplateParameterNames($declared, unreliable=$isUnreliable)"
 }
+
+/** Where a template parameter was declared, and with which of `stringParameter()` and its siblings. */
+internal class TemplateParameterOrigin(val declaredAt: DeclarationSite, val declaredWith: String)

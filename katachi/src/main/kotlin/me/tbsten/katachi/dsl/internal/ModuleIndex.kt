@@ -38,6 +38,11 @@ internal class ModuleTarget(
     val directory: String,
     /** What `wildcards` reads as inside the block. */
     val wildcards: List<String>,
+    /**
+     * The names the key gave its `*`s, as [ModuleIndex.targetsOf] was handed them, or `null` for
+     * a key written without names.
+     */
+    val captureNames: List<String>? = null,
 )
 
 /**
@@ -78,6 +83,11 @@ public class ModuleIndex internal constructor(
      * depends on [discovered]. See [reportingWildcardKeys].
      */
     private val onWildcardKey: (() -> Unit)? = null,
+    /**
+     * The capture values a template generation fills named wildcard keys in with, or `null` for
+     * every other reader. See [boundTo].
+     */
+    private val binding: ModuleBinding? = null,
 ) {
     /**
      * Every module found below the project root, outermost first and siblings by name. Empty
@@ -141,14 +151,16 @@ public class ModuleIndex internal constructor(
      * The check never takes that branch. It builds its index by walking the project, so a
      * wildcard key expands to the modules that exist, down to none of them.
      */
-    internal fun targetsOf(pattern: ModulePattern): List<ModuleTarget> {
+    internal fun targetsOf(pattern: ModulePattern, captureNames: List<String>? = null): List<ModuleTarget> {
         if (pattern.hasWildcard) onWildcardKey?.invoke()
+        if (binding != null && pattern.hasWildcard) return boundTargetsOf(binding, pattern, captureNames)
         return if (pattern.hasWildcard && discovered == null) {
             listOf(
                 ModuleTarget(
                     modulePath = pattern.pattern,
                     directory = pattern.conventionalDirectory,
                     wildcards = pattern.wildcardPlaceholders,
+                    captureNames = captureNames,
                 ),
             )
         } else {
@@ -157,10 +169,66 @@ public class ModuleIndex internal constructor(
                     modulePath = module.path.value,
                     directory = module.directory,
                     wildcards = module.wildcards,
+                    captureNames = captureNames,
                 )
             }
         }
     }
+
+    /**
+     * A wildcard key read against [binding]: the one existing module its named `*`s' values
+     * pick, or the key kept as itself when it is unnamed or a value is missing -- exactly as an
+     * [unresolved] index keeps it, so that such a key still names no single directory.
+     */
+    private fun boundTargetsOf(
+        binding: ModuleBinding,
+        pattern: ModulePattern,
+        captureNames: List<String>?,
+    ): List<ModuleTarget> {
+        val values = captureNames?.map { binding.values[it] ?: return keptAsPattern(pattern, captureNames) }
+            ?: return keptAsPattern(pattern, captureNames)
+        val matching = matching(pattern)
+        // `**` may only be the last level, so the `*`s the names belong to are the first captures.
+        val picked = matching.filter { it.wildcards.take(values.size) == values }
+        if (picked.isEmpty()) {
+            binding.misses += ModuleMiss(
+                modulePattern = pattern.pattern,
+                captureNames = captureNames.orEmpty(),
+                modulePath = pattern.filledIn(values),
+                existing = matching.map { it.path.value },
+                existingValues = matching.map { it.wildcards.take(values.size) },
+            )
+        }
+        return picked.map { module ->
+            ModuleTarget(
+                modulePath = module.path.value,
+                directory = module.directory,
+                wildcards = module.wildcards,
+                captureNames = captureNames,
+            )
+        }
+    }
+
+    private fun keptAsPattern(pattern: ModulePattern, captureNames: List<String>?): List<ModuleTarget> = listOf(
+        ModuleTarget(
+            modulePath = pattern.pattern,
+            directory = pattern.conventionalDirectory,
+            wildcards = pattern.wildcardPlaceholders,
+            captureNames = captureNames,
+        ),
+    )
+
+    /**
+     * This index read by template generation: a key whose `*`s are named, and whose names all
+     * have a value in [values], stands for the one existing module those values pick. Every other
+     * wildcard key is kept as itself, as an [unresolved] index keeps it.
+     *
+     * A value naming no existing module leaves that key with no module at all and is noted in
+     * [misses] instead of being refused here: which role asked, and whether another of its places
+     * still takes the file, is only known to the caller.
+     */
+    internal fun boundTo(values: Map<String, String>, misses: MutableList<ModuleMiss>): ModuleIndex =
+        ModuleIndex(resolver = resolver, discovered = discovered, binding = ModuleBinding(values, misses))
 
     /**
      * This index, telling [onWildcardKey] each time a layout key with a wildcard is expanded.
@@ -171,7 +239,7 @@ public class ModuleIndex internal constructor(
      * [me.tbsten.katachi.processor.ArchitectureProcessContext.declaredEntries] and the walk.
      */
     internal fun reportingWildcardKeys(onWildcardKey: () -> Unit): ModuleIndex =
-        ModuleIndex(resolver = resolver, discovered = discovered, onWildcardKey = onWildcardKey)
+        ModuleIndex(resolver = resolver, discovered = discovered, onWildcardKey = onWildcardKey, binding = binding)
 
     override fun toString(): String = when (discovered) {
         null -> "ModuleIndex(unresolved, $resolver)"
@@ -200,3 +268,23 @@ public class ModuleIndex internal constructor(
  */
 private fun normalizeDirectory(directory: String): String =
     directory.split('/', '\\').filter { it.isNotEmpty() && it != "." }.joinToString("/")
+
+/** What [ModuleIndex.boundTo] fills named wildcard keys in with, and where it notes a value that picks nothing. */
+internal class ModuleBinding(
+    val values: Map<String, String>,
+    val misses: MutableList<ModuleMiss>,
+)
+
+/** A named wildcard key whose values picked no existing module. */
+internal data class ModuleMiss(
+    /** The key as written, `":feature:*"`. */
+    val modulePattern: String,
+    /** The names the key gives its `*`s, in order. */
+    val captureNames: List<String>,
+    /** The key with the values put in, `":feature:hoem"`. */
+    val modulePath: String,
+    /** Every existing module the key matches, whatever the values. */
+    val existing: List<String>,
+    /** For each of [existing], the values of [captureNames] that pick it. */
+    val existingValues: List<List<String>>,
+)

@@ -5,2100 +5,2400 @@
       "title": "テンプレート 000",
       "summary": "000 番目の合成テンプレート",
       "parameterNames": ["name"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "g0/T010",
       "title": "テンプレート 010",
       "summary": "010 番目の合成テンプレート",
       "parameterNames": ["name", "enabled"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "g0/T020",
       "title": "テンプレート 020",
       "summary": "020 番目の合成テンプレート",
       "parameterNames": ["name", "enabled", "size"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "g0/T030",
       "title": "テンプレート 030",
       "summary": "030 番目の合成テンプレート",
       "parameterNames": ["name"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "g0/T040",
       "title": "テンプレート 040",
       "summary": "040 番目の合成テンプレート",
       "parameterNames": ["name", "enabled"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "g0/T050",
       "title": "テンプレート 050",
       "summary": "050 番目の合成テンプレート",
       "parameterNames": ["name", "enabled", "size"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "g0/T060",
       "title": "テンプレート 060",
       "summary": "060 番目の合成テンプレート",
       "parameterNames": ["name"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "g0/T070",
       "title": "テンプレート 070",
       "summary": "070 番目の合成テンプレート",
       "parameterNames": ["name", "enabled"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "g0/T080",
       "title": "テンプレート 080",
       "summary": "080 番目の合成テンプレート",
       "parameterNames": ["name", "enabled", "size"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "g0/T090",
       "title": "テンプレート 090",
       "summary": "090 番目の合成テンプレート",
       "parameterNames": ["name"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "g0/T100",
       "title": "テンプレート 100",
       "summary": "100 番目の合成テンプレート",
       "parameterNames": ["name", "enabled"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "g0/T110",
       "title": "テンプレート 110",
       "summary": "110 番目の合成テンプレート",
       "parameterNames": ["name", "enabled", "size"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "g0/T120",
       "title": "テンプレート 120",
       "summary": "120 番目の合成テンプレート",
       "parameterNames": ["name"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "g0/T130",
       "title": "テンプレート 130",
       "summary": "130 番目の合成テンプレート",
       "parameterNames": ["name", "enabled"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "g0/T140",
       "title": "テンプレート 140",
       "summary": "140 番目の合成テンプレート",
       "parameterNames": ["name", "enabled", "size"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "g0/T150",
       "title": "テンプレート 150",
       "summary": "150 番目の合成テンプレート",
       "parameterNames": ["name"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "g0/T160",
       "title": "テンプレート 160",
       "summary": "160 番目の合成テンプレート",
       "parameterNames": ["name", "enabled"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "g0/T170",
       "title": "テンプレート 170",
       "summary": "170 番目の合成テンプレート",
       "parameterNames": ["name", "enabled", "size"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "g0/T180",
       "title": "テンプレート 180",
       "summary": "180 番目の合成テンプレート",
       "parameterNames": ["name"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "g0/T190",
       "title": "テンプレート 190",
       "summary": "190 番目の合成テンプレート",
       "parameterNames": ["name", "enabled"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "g0/T200",
       "title": "テンプレート 200",
       "summary": "200 番目の合成テンプレート",
       "parameterNames": ["name", "enabled", "size"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "g0/T210",
       "title": "テンプレート 210",
       "summary": "210 番目の合成テンプレート",
       "parameterNames": ["name"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "g0/T220",
       "title": "テンプレート 220",
       "summary": "220 番目の合成テンプレート",
       "parameterNames": ["name", "enabled"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "g0/T230",
       "title": "テンプレート 230",
       "summary": "230 番目の合成テンプレート",
       "parameterNames": ["name", "enabled", "size"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "g0/T240",
       "title": "テンプレート 240",
       "summary": "240 番目の合成テンプレート",
       "parameterNames": ["name"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "g0/T250",
       "title": "テンプレート 250",
       "summary": "250 番目の合成テンプレート",
       "parameterNames": ["name", "enabled"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "g0/T260",
       "title": "テンプレート 260",
       "summary": "260 番目の合成テンプレート",
       "parameterNames": ["name", "enabled", "size"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "g0/T270",
       "title": "テンプレート 270",
       "summary": "270 番目の合成テンプレート",
       "parameterNames": ["name"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "g0/T280",
       "title": "テンプレート 280",
       "summary": "280 番目の合成テンプレート",
       "parameterNames": ["name", "enabled"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "g0/T290",
       "title": "テンプレート 290",
       "summary": "290 番目の合成テンプレート",
       "parameterNames": ["name", "enabled", "size"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "g1/T001",
       "title": null,
       "summary": null,
       "parameterNames": ["name", "enabled"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "g1/T011",
       "title": null,
       "summary": null,
       "parameterNames": ["name", "enabled", "size"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "g1/T021",
       "title": null,
       "summary": null,
       "parameterNames": ["name"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "g1/T031",
       "title": null,
       "summary": null,
       "parameterNames": ["name", "enabled"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "g1/T041",
       "title": null,
       "summary": null,
       "parameterNames": ["name", "enabled", "size"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "g1/T051",
       "title": null,
       "summary": null,
       "parameterNames": ["name"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "g1/T061",
       "title": null,
       "summary": null,
       "parameterNames": ["name", "enabled"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "g1/T071",
       "title": null,
       "summary": null,
       "parameterNames": ["name", "enabled", "size"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "g1/T081",
       "title": null,
       "summary": null,
       "parameterNames": ["name"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "g1/T091",
       "title": null,
       "summary": null,
       "parameterNames": ["name", "enabled"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "g1/T101",
       "title": null,
       "summary": null,
       "parameterNames": ["name", "enabled", "size"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "g1/T111",
       "title": null,
       "summary": null,
       "parameterNames": ["name"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "g1/T121",
       "title": null,
       "summary": null,
       "parameterNames": ["name", "enabled"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "g1/T131",
       "title": null,
       "summary": null,
       "parameterNames": ["name", "enabled", "size"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "g1/T141",
       "title": null,
       "summary": null,
       "parameterNames": ["name"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "g1/T151",
       "title": null,
       "summary": null,
       "parameterNames": ["name", "enabled"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "g1/T161",
       "title": null,
       "summary": null,
       "parameterNames": ["name", "enabled", "size"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "g1/T171",
       "title": null,
       "summary": null,
       "parameterNames": ["name"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "g1/T181",
       "title": null,
       "summary": null,
       "parameterNames": ["name", "enabled"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "g1/T191",
       "title": null,
       "summary": null,
       "parameterNames": ["name", "enabled", "size"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "g1/T201",
       "title": null,
       "summary": null,
       "parameterNames": ["name"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "g1/T211",
       "title": null,
       "summary": null,
       "parameterNames": ["name", "enabled"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "g1/T221",
       "title": null,
       "summary": null,
       "parameterNames": ["name", "enabled", "size"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "g1/T231",
       "title": null,
       "summary": null,
       "parameterNames": ["name"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "g1/T241",
       "title": null,
       "summary": null,
       "parameterNames": ["name", "enabled"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "g1/T251",
       "title": null,
       "summary": null,
       "parameterNames": ["name", "enabled", "size"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "g1/T261",
       "title": null,
       "summary": null,
       "parameterNames": ["name"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "g1/T271",
       "title": null,
       "summary": null,
       "parameterNames": ["name", "enabled"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "g1/T281",
       "title": null,
       "summary": null,
       "parameterNames": ["name", "enabled", "size"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "g1/T291",
       "title": null,
       "summary": null,
       "parameterNames": ["name"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "g2/T002",
       "title": "テンプレート 002",
       "summary": null,
       "parameterNames": ["name", "enabled", "size"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "g2/T012",
       "title": "テンプレート 012",
       "summary": null,
       "parameterNames": ["name"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "g2/T022",
       "title": "テンプレート 022",
       "summary": null,
       "parameterNames": ["name", "enabled"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "g2/T032",
       "title": "テンプレート 032",
       "summary": null,
       "parameterNames": ["name", "enabled", "size"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "g2/T042",
       "title": "テンプレート 042",
       "summary": null,
       "parameterNames": ["name"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "g2/T052",
       "title": "テンプレート 052",
       "summary": null,
       "parameterNames": ["name", "enabled"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "g2/T062",
       "title": "テンプレート 062",
       "summary": null,
       "parameterNames": ["name", "enabled", "size"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "g2/T072",
       "title": "テンプレート 072",
       "summary": null,
       "parameterNames": ["name"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "g2/T082",
       "title": "テンプレート 082",
       "summary": null,
       "parameterNames": ["name", "enabled"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "g2/T092",
       "title": "テンプレート 092",
       "summary": null,
       "parameterNames": ["name", "enabled", "size"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "g2/T102",
       "title": "テンプレート 102",
       "summary": null,
       "parameterNames": ["name"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "g2/T112",
       "title": "テンプレート 112",
       "summary": null,
       "parameterNames": ["name", "enabled"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "g2/T122",
       "title": "テンプレート 122",
       "summary": null,
       "parameterNames": ["name", "enabled", "size"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "g2/T132",
       "title": "テンプレート 132",
       "summary": null,
       "parameterNames": ["name"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "g2/T142",
       "title": "テンプレート 142",
       "summary": null,
       "parameterNames": ["name", "enabled"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "g2/T152",
       "title": "テンプレート 152",
       "summary": null,
       "parameterNames": ["name", "enabled", "size"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "g2/T162",
       "title": "テンプレート 162",
       "summary": null,
       "parameterNames": ["name"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "g2/T172",
       "title": "テンプレート 172",
       "summary": null,
       "parameterNames": ["name", "enabled"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "g2/T182",
       "title": "テンプレート 182",
       "summary": null,
       "parameterNames": ["name", "enabled", "size"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "g2/T192",
       "title": "テンプレート 192",
       "summary": null,
       "parameterNames": ["name"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "g2/T202",
       "title": "テンプレート 202",
       "summary": null,
       "parameterNames": ["name", "enabled"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "g2/T212",
       "title": "テンプレート 212",
       "summary": null,
       "parameterNames": ["name", "enabled", "size"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "g2/T222",
       "title": "テンプレート 222",
       "summary": null,
       "parameterNames": ["name"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "g2/T232",
       "title": "テンプレート 232",
       "summary": null,
       "parameterNames": ["name", "enabled"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "g2/T242",
       "title": "テンプレート 242",
       "summary": null,
       "parameterNames": ["name", "enabled", "size"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "g2/T252",
       "title": "テンプレート 252",
       "summary": null,
       "parameterNames": ["name"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "g2/T262",
       "title": "テンプレート 262",
       "summary": null,
       "parameterNames": ["name", "enabled"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "g2/T272",
       "title": "テンプレート 272",
       "summary": null,
       "parameterNames": ["name", "enabled", "size"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "g2/T282",
       "title": "テンプレート 282",
       "summary": null,
       "parameterNames": ["name"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "g2/T292",
       "title": "テンプレート 292",
       "summary": null,
       "parameterNames": ["name", "enabled"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "g3/T003",
       "title": null,
       "summary": null,
       "parameterNames": ["name"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "g3/T013",
       "title": null,
       "summary": null,
       "parameterNames": ["name", "enabled"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "g3/T023",
       "title": null,
       "summary": null,
       "parameterNames": ["name", "enabled", "size"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "g3/T033",
       "title": null,
       "summary": null,
       "parameterNames": ["name"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "g3/T043",
       "title": null,
       "summary": null,
       "parameterNames": ["name", "enabled"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "g3/T053",
       "title": null,
       "summary": null,
       "parameterNames": ["name", "enabled", "size"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "g3/T063",
       "title": null,
       "summary": null,
       "parameterNames": ["name"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "g3/T073",
       "title": null,
       "summary": null,
       "parameterNames": ["name", "enabled"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "g3/T083",
       "title": null,
       "summary": null,
       "parameterNames": ["name", "enabled", "size"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "g3/T093",
       "title": null,
       "summary": null,
       "parameterNames": ["name"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "g3/T103",
       "title": null,
       "summary": null,
       "parameterNames": ["name", "enabled"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "g3/T113",
       "title": null,
       "summary": null,
       "parameterNames": ["name", "enabled", "size"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "g3/T123",
       "title": null,
       "summary": null,
       "parameterNames": ["name"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "g3/T133",
       "title": null,
       "summary": null,
       "parameterNames": ["name", "enabled"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "g3/T143",
       "title": null,
       "summary": null,
       "parameterNames": ["name", "enabled", "size"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "g3/T153",
       "title": null,
       "summary": null,
       "parameterNames": ["name"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "g3/T163",
       "title": null,
       "summary": null,
       "parameterNames": ["name", "enabled"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "g3/T173",
       "title": null,
       "summary": null,
       "parameterNames": ["name", "enabled", "size"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "g3/T183",
       "title": null,
       "summary": null,
       "parameterNames": ["name"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "g3/T193",
       "title": null,
       "summary": null,
       "parameterNames": ["name", "enabled"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "g3/T203",
       "title": null,
       "summary": null,
       "parameterNames": ["name", "enabled", "size"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "g3/T213",
       "title": null,
       "summary": null,
       "parameterNames": ["name"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "g3/T223",
       "title": null,
       "summary": null,
       "parameterNames": ["name", "enabled"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "g3/T233",
       "title": null,
       "summary": null,
       "parameterNames": ["name", "enabled", "size"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "g3/T243",
       "title": null,
       "summary": null,
       "parameterNames": ["name"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "g3/T253",
       "title": null,
       "summary": null,
       "parameterNames": ["name", "enabled"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "g3/T263",
       "title": null,
       "summary": null,
       "parameterNames": ["name", "enabled", "size"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "g3/T273",
       "title": null,
       "summary": null,
       "parameterNames": ["name"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "g3/T283",
       "title": null,
       "summary": null,
       "parameterNames": ["name", "enabled"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "g3/T293",
       "title": null,
       "summary": null,
       "parameterNames": ["name", "enabled", "size"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "g4/T004",
       "title": "テンプレート 004",
       "summary": null,
       "parameterNames": ["name", "enabled"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "g4/T014",
       "title": "テンプレート 014",
       "summary": null,
       "parameterNames": ["name", "enabled", "size"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "g4/T024",
       "title": "テンプレート 024",
       "summary": null,
       "parameterNames": ["name"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "g4/T034",
       "title": "テンプレート 034",
       "summary": null,
       "parameterNames": ["name", "enabled"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "g4/T044",
       "title": "テンプレート 044",
       "summary": null,
       "parameterNames": ["name", "enabled", "size"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "g4/T054",
       "title": "テンプレート 054",
       "summary": null,
       "parameterNames": ["name"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "g4/T064",
       "title": "テンプレート 064",
       "summary": null,
       "parameterNames": ["name", "enabled"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "g4/T074",
       "title": "テンプレート 074",
       "summary": null,
       "parameterNames": ["name", "enabled", "size"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "g4/T084",
       "title": "テンプレート 084",
       "summary": null,
       "parameterNames": ["name"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "g4/T094",
       "title": "テンプレート 094",
       "summary": null,
       "parameterNames": ["name", "enabled"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "g4/T104",
       "title": "テンプレート 104",
       "summary": null,
       "parameterNames": ["name", "enabled", "size"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "g4/T114",
       "title": "テンプレート 114",
       "summary": null,
       "parameterNames": ["name"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "g4/T124",
       "title": "テンプレート 124",
       "summary": null,
       "parameterNames": ["name", "enabled"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "g4/T134",
       "title": "テンプレート 134",
       "summary": null,
       "parameterNames": ["name", "enabled", "size"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "g4/T144",
       "title": "テンプレート 144",
       "summary": null,
       "parameterNames": ["name"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "g4/T154",
       "title": "テンプレート 154",
       "summary": null,
       "parameterNames": ["name", "enabled"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "g4/T164",
       "title": "テンプレート 164",
       "summary": null,
       "parameterNames": ["name", "enabled", "size"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "g4/T174",
       "title": "テンプレート 174",
       "summary": null,
       "parameterNames": ["name"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "g4/T184",
       "title": "テンプレート 184",
       "summary": null,
       "parameterNames": ["name", "enabled"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "g4/T194",
       "title": "テンプレート 194",
       "summary": null,
       "parameterNames": ["name", "enabled", "size"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "g4/T204",
       "title": "テンプレート 204",
       "summary": null,
       "parameterNames": ["name"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "g4/T214",
       "title": "テンプレート 214",
       "summary": null,
       "parameterNames": ["name", "enabled"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "g4/T224",
       "title": "テンプレート 224",
       "summary": null,
       "parameterNames": ["name", "enabled", "size"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "g4/T234",
       "title": "テンプレート 234",
       "summary": null,
       "parameterNames": ["name"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "g4/T244",
       "title": "テンプレート 244",
       "summary": null,
       "parameterNames": ["name", "enabled"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "g4/T254",
       "title": "テンプレート 254",
       "summary": null,
       "parameterNames": ["name", "enabled", "size"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "g4/T264",
       "title": "テンプレート 264",
       "summary": null,
       "parameterNames": ["name"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "g4/T274",
       "title": "テンプレート 274",
       "summary": null,
       "parameterNames": ["name", "enabled"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "g4/T284",
       "title": "テンプレート 284",
       "summary": null,
       "parameterNames": ["name", "enabled", "size"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "g4/T294",
       "title": "テンプレート 294",
       "summary": null,
       "parameterNames": ["name"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "g5/T005",
       "title": null,
       "summary": "005 番目の合成テンプレート",
       "parameterNames": ["name", "enabled", "size"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "g5/T015",
       "title": null,
       "summary": "015 番目の合成テンプレート",
       "parameterNames": ["name"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "g5/T025",
       "title": null,
       "summary": "025 番目の合成テンプレート",
       "parameterNames": ["name", "enabled"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "g5/T035",
       "title": null,
       "summary": "035 番目の合成テンプレート",
       "parameterNames": ["name", "enabled", "size"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "g5/T045",
       "title": null,
       "summary": "045 番目の合成テンプレート",
       "parameterNames": ["name"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "g5/T055",
       "title": null,
       "summary": "055 番目の合成テンプレート",
       "parameterNames": ["name", "enabled"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "g5/T065",
       "title": null,
       "summary": "065 番目の合成テンプレート",
       "parameterNames": ["name", "enabled", "size"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "g5/T075",
       "title": null,
       "summary": "075 番目の合成テンプレート",
       "parameterNames": ["name"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "g5/T085",
       "title": null,
       "summary": "085 番目の合成テンプレート",
       "parameterNames": ["name", "enabled"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "g5/T095",
       "title": null,
       "summary": "095 番目の合成テンプレート",
       "parameterNames": ["name", "enabled", "size"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "g5/T105",
       "title": null,
       "summary": "105 番目の合成テンプレート",
       "parameterNames": ["name"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "g5/T115",
       "title": null,
       "summary": "115 番目の合成テンプレート",
       "parameterNames": ["name", "enabled"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "g5/T125",
       "title": null,
       "summary": "125 番目の合成テンプレート",
       "parameterNames": ["name", "enabled", "size"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "g5/T135",
       "title": null,
       "summary": "135 番目の合成テンプレート",
       "parameterNames": ["name"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "g5/T145",
       "title": null,
       "summary": "145 番目の合成テンプレート",
       "parameterNames": ["name", "enabled"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "g5/T155",
       "title": null,
       "summary": "155 番目の合成テンプレート",
       "parameterNames": ["name", "enabled", "size"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "g5/T165",
       "title": null,
       "summary": "165 番目の合成テンプレート",
       "parameterNames": ["name"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "g5/T175",
       "title": null,
       "summary": "175 番目の合成テンプレート",
       "parameterNames": ["name", "enabled"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "g5/T185",
       "title": null,
       "summary": "185 番目の合成テンプレート",
       "parameterNames": ["name", "enabled", "size"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "g5/T195",
       "title": null,
       "summary": "195 番目の合成テンプレート",
       "parameterNames": ["name"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "g5/T205",
       "title": null,
       "summary": "205 番目の合成テンプレート",
       "parameterNames": ["name", "enabled"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "g5/T215",
       "title": null,
       "summary": "215 番目の合成テンプレート",
       "parameterNames": ["name", "enabled", "size"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "g5/T225",
       "title": null,
       "summary": "225 番目の合成テンプレート",
       "parameterNames": ["name"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "g5/T235",
       "title": null,
       "summary": "235 番目の合成テンプレート",
       "parameterNames": ["name", "enabled"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "g5/T245",
       "title": null,
       "summary": "245 番目の合成テンプレート",
       "parameterNames": ["name", "enabled", "size"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "g5/T255",
       "title": null,
       "summary": "255 番目の合成テンプレート",
       "parameterNames": ["name"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "g5/T265",
       "title": null,
       "summary": "265 番目の合成テンプレート",
       "parameterNames": ["name", "enabled"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "g5/T275",
       "title": null,
       "summary": "275 番目の合成テンプレート",
       "parameterNames": ["name", "enabled", "size"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "g5/T285",
       "title": null,
       "summary": "285 番目の合成テンプレート",
       "parameterNames": ["name"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "g5/T295",
       "title": null,
       "summary": "295 番目の合成テンプレート",
       "parameterNames": ["name", "enabled"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "g6/T006",
       "title": "テンプレート 006",
       "summary": null,
       "parameterNames": ["name"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "g6/T016",
       "title": "テンプレート 016",
       "summary": null,
       "parameterNames": ["name", "enabled"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "g6/T026",
       "title": "テンプレート 026",
       "summary": null,
       "parameterNames": ["name", "enabled", "size"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "g6/T036",
       "title": "テンプレート 036",
       "summary": null,
       "parameterNames": ["name"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "g6/T046",
       "title": "テンプレート 046",
       "summary": null,
       "parameterNames": ["name", "enabled"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "g6/T056",
       "title": "テンプレート 056",
       "summary": null,
       "parameterNames": ["name", "enabled", "size"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "g6/T066",
       "title": "テンプレート 066",
       "summary": null,
       "parameterNames": ["name"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "g6/T076",
       "title": "テンプレート 076",
       "summary": null,
       "parameterNames": ["name", "enabled"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "g6/T086",
       "title": "テンプレート 086",
       "summary": null,
       "parameterNames": ["name", "enabled", "size"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "g6/T096",
       "title": "テンプレート 096",
       "summary": null,
       "parameterNames": ["name"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "g6/T106",
       "title": "テンプレート 106",
       "summary": null,
       "parameterNames": ["name", "enabled"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "g6/T116",
       "title": "テンプレート 116",
       "summary": null,
       "parameterNames": ["name", "enabled", "size"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "g6/T126",
       "title": "テンプレート 126",
       "summary": null,
       "parameterNames": ["name"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "g6/T136",
       "title": "テンプレート 136",
       "summary": null,
       "parameterNames": ["name", "enabled"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "g6/T146",
       "title": "テンプレート 146",
       "summary": null,
       "parameterNames": ["name", "enabled", "size"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "g6/T156",
       "title": "テンプレート 156",
       "summary": null,
       "parameterNames": ["name"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "g6/T166",
       "title": "テンプレート 166",
       "summary": null,
       "parameterNames": ["name", "enabled"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "g6/T176",
       "title": "テンプレート 176",
       "summary": null,
       "parameterNames": ["name", "enabled", "size"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "g6/T186",
       "title": "テンプレート 186",
       "summary": null,
       "parameterNames": ["name"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "g6/T196",
       "title": "テンプレート 196",
       "summary": null,
       "parameterNames": ["name", "enabled"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "g6/T206",
       "title": "テンプレート 206",
       "summary": null,
       "parameterNames": ["name", "enabled", "size"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "g6/T216",
       "title": "テンプレート 216",
       "summary": null,
       "parameterNames": ["name"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "g6/T226",
       "title": "テンプレート 226",
       "summary": null,
       "parameterNames": ["name", "enabled"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "g6/T236",
       "title": "テンプレート 236",
       "summary": null,
       "parameterNames": ["name", "enabled", "size"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "g6/T246",
       "title": "テンプレート 246",
       "summary": null,
       "parameterNames": ["name"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "g6/T256",
       "title": "テンプレート 256",
       "summary": null,
       "parameterNames": ["name", "enabled"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "g6/T266",
       "title": "テンプレート 266",
       "summary": null,
       "parameterNames": ["name", "enabled", "size"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "g6/T276",
       "title": "テンプレート 276",
       "summary": null,
       "parameterNames": ["name"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "g6/T286",
       "title": "テンプレート 286",
       "summary": null,
       "parameterNames": ["name", "enabled"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "g6/T296",
       "title": "テンプレート 296",
       "summary": null,
       "parameterNames": ["name", "enabled", "size"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "nested/g7/T007",
       "title": null,
       "summary": null,
       "parameterNames": ["name", "enabled"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "nested/g7/T017",
       "title": null,
       "summary": null,
       "parameterNames": ["name", "enabled", "size"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "nested/g7/T027",
       "title": null,
       "summary": null,
       "parameterNames": ["name"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "nested/g7/T037",
       "title": null,
       "summary": null,
       "parameterNames": ["name", "enabled"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "nested/g7/T047",
       "title": null,
       "summary": null,
       "parameterNames": ["name", "enabled", "size"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "nested/g7/T057",
       "title": null,
       "summary": null,
       "parameterNames": ["name"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "nested/g7/T067",
       "title": null,
       "summary": null,
       "parameterNames": ["name", "enabled"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "nested/g7/T077",
       "title": null,
       "summary": null,
       "parameterNames": ["name", "enabled", "size"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "nested/g7/T087",
       "title": null,
       "summary": null,
       "parameterNames": ["name"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "nested/g7/T097",
       "title": null,
       "summary": null,
       "parameterNames": ["name", "enabled"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "nested/g7/T107",
       "title": null,
       "summary": null,
       "parameterNames": ["name", "enabled", "size"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "nested/g7/T117",
       "title": null,
       "summary": null,
       "parameterNames": ["name"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "nested/g7/T127",
       "title": null,
       "summary": null,
       "parameterNames": ["name", "enabled"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "nested/g7/T137",
       "title": null,
       "summary": null,
       "parameterNames": ["name", "enabled", "size"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "nested/g7/T147",
       "title": null,
       "summary": null,
       "parameterNames": ["name"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "nested/g7/T157",
       "title": null,
       "summary": null,
       "parameterNames": ["name", "enabled"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "nested/g7/T167",
       "title": null,
       "summary": null,
       "parameterNames": ["name", "enabled", "size"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "nested/g7/T177",
       "title": null,
       "summary": null,
       "parameterNames": ["name"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "nested/g7/T187",
       "title": null,
       "summary": null,
       "parameterNames": ["name", "enabled"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "nested/g7/T197",
       "title": null,
       "summary": null,
       "parameterNames": ["name", "enabled", "size"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "nested/g7/T207",
       "title": null,
       "summary": null,
       "parameterNames": ["name"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "nested/g7/T217",
       "title": null,
       "summary": null,
       "parameterNames": ["name", "enabled"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "nested/g7/T227",
       "title": null,
       "summary": null,
       "parameterNames": ["name", "enabled", "size"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "nested/g7/T237",
       "title": null,
       "summary": null,
       "parameterNames": ["name"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "nested/g7/T247",
       "title": null,
       "summary": null,
       "parameterNames": ["name", "enabled"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "nested/g7/T257",
       "title": null,
       "summary": null,
       "parameterNames": ["name", "enabled", "size"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "nested/g7/T267",
       "title": null,
       "summary": null,
       "parameterNames": ["name"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "nested/g7/T277",
       "title": null,
       "summary": null,
       "parameterNames": ["name", "enabled"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "nested/g7/T287",
       "title": null,
       "summary": null,
       "parameterNames": ["name", "enabled", "size"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "nested/g7/T297",
       "title": null,
       "summary": null,
       "parameterNames": ["name"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "nested/deeper/g8/T008",
       "title": "テンプレート 008",
       "summary": null,
       "parameterNames": ["name", "enabled", "size"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "nested/deeper/g8/T018",
       "title": "テンプレート 018",
       "summary": null,
       "parameterNames": ["name"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "nested/deeper/g8/T028",
       "title": "テンプレート 028",
       "summary": null,
       "parameterNames": ["name", "enabled"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "nested/deeper/g8/T038",
       "title": "テンプレート 038",
       "summary": null,
       "parameterNames": ["name", "enabled", "size"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "nested/deeper/g8/T048",
       "title": "テンプレート 048",
       "summary": null,
       "parameterNames": ["name"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "nested/deeper/g8/T058",
       "title": "テンプレート 058",
       "summary": null,
       "parameterNames": ["name", "enabled"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "nested/deeper/g8/T068",
       "title": "テンプレート 068",
       "summary": null,
       "parameterNames": ["name", "enabled", "size"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "nested/deeper/g8/T078",
       "title": "テンプレート 078",
       "summary": null,
       "parameterNames": ["name"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "nested/deeper/g8/T088",
       "title": "テンプレート 088",
       "summary": null,
       "parameterNames": ["name", "enabled"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "nested/deeper/g8/T098",
       "title": "テンプレート 098",
       "summary": null,
       "parameterNames": ["name", "enabled", "size"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "nested/deeper/g8/T108",
       "title": "テンプレート 108",
       "summary": null,
       "parameterNames": ["name"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "nested/deeper/g8/T118",
       "title": "テンプレート 118",
       "summary": null,
       "parameterNames": ["name", "enabled"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "nested/deeper/g8/T128",
       "title": "テンプレート 128",
       "summary": null,
       "parameterNames": ["name", "enabled", "size"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "nested/deeper/g8/T138",
       "title": "テンプレート 138",
       "summary": null,
       "parameterNames": ["name"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "nested/deeper/g8/T148",
       "title": "テンプレート 148",
       "summary": null,
       "parameterNames": ["name", "enabled"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "nested/deeper/g8/T158",
       "title": "テンプレート 158",
       "summary": null,
       "parameterNames": ["name", "enabled", "size"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "nested/deeper/g8/T168",
       "title": "テンプレート 168",
       "summary": null,
       "parameterNames": ["name"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "nested/deeper/g8/T178",
       "title": "テンプレート 178",
       "summary": null,
       "parameterNames": ["name", "enabled"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "nested/deeper/g8/T188",
       "title": "テンプレート 188",
       "summary": null,
       "parameterNames": ["name", "enabled", "size"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "nested/deeper/g8/T198",
       "title": "テンプレート 198",
       "summary": null,
       "parameterNames": ["name"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "nested/deeper/g8/T208",
       "title": "テンプレート 208",
       "summary": null,
       "parameterNames": ["name", "enabled"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "nested/deeper/g8/T218",
       "title": "テンプレート 218",
       "summary": null,
       "parameterNames": ["name", "enabled", "size"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "nested/deeper/g8/T228",
       "title": "テンプレート 228",
       "summary": null,
       "parameterNames": ["name"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "nested/deeper/g8/T238",
       "title": "テンプレート 238",
       "summary": null,
       "parameterNames": ["name", "enabled"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "nested/deeper/g8/T248",
       "title": "テンプレート 248",
       "summary": null,
       "parameterNames": ["name", "enabled", "size"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "nested/deeper/g8/T258",
       "title": "テンプレート 258",
       "summary": null,
       "parameterNames": ["name"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "nested/deeper/g8/T268",
       "title": "テンプレート 268",
       "summary": null,
       "parameterNames": ["name", "enabled"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "nested/deeper/g8/T278",
       "title": "テンプレート 278",
       "summary": null,
       "parameterNames": ["name", "enabled", "size"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "nested/deeper/g8/T288",
       "title": "テンプレート 288",
       "summary": null,
       "parameterNames": ["name"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "nested/deeper/g8/T298",
       "title": "テンプレート 298",
       "summary": null,
       "parameterNames": ["name", "enabled"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "nested/deeper/g9/T009",
       "title": null,
       "summary": null,
       "parameterNames": ["name"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "nested/deeper/g9/T019",
       "title": null,
       "summary": null,
       "parameterNames": ["name", "enabled"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "nested/deeper/g9/T029",
       "title": null,
       "summary": null,
       "parameterNames": ["name", "enabled", "size"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "nested/deeper/g9/T039",
       "title": null,
       "summary": null,
       "parameterNames": ["name"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "nested/deeper/g9/T049",
       "title": null,
       "summary": null,
       "parameterNames": ["name", "enabled"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "nested/deeper/g9/T059",
       "title": null,
       "summary": null,
       "parameterNames": ["name", "enabled", "size"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "nested/deeper/g9/T069",
       "title": null,
       "summary": null,
       "parameterNames": ["name"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "nested/deeper/g9/T079",
       "title": null,
       "summary": null,
       "parameterNames": ["name", "enabled"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "nested/deeper/g9/T089",
       "title": null,
       "summary": null,
       "parameterNames": ["name", "enabled", "size"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "nested/deeper/g9/T099",
       "title": null,
       "summary": null,
       "parameterNames": ["name"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "nested/deeper/g9/T109",
       "title": null,
       "summary": null,
       "parameterNames": ["name", "enabled"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "nested/deeper/g9/T119",
       "title": null,
       "summary": null,
       "parameterNames": ["name", "enabled", "size"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "nested/deeper/g9/T129",
       "title": null,
       "summary": null,
       "parameterNames": ["name"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "nested/deeper/g9/T139",
       "title": null,
       "summary": null,
       "parameterNames": ["name", "enabled"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "nested/deeper/g9/T149",
       "title": null,
       "summary": null,
       "parameterNames": ["name", "enabled", "size"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "nested/deeper/g9/T159",
       "title": null,
       "summary": null,
       "parameterNames": ["name"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "nested/deeper/g9/T169",
       "title": null,
       "summary": null,
       "parameterNames": ["name", "enabled"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "nested/deeper/g9/T179",
       "title": null,
       "summary": null,
       "parameterNames": ["name", "enabled", "size"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "nested/deeper/g9/T189",
       "title": null,
       "summary": null,
       "parameterNames": ["name"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "nested/deeper/g9/T199",
       "title": null,
       "summary": null,
       "parameterNames": ["name", "enabled"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "nested/deeper/g9/T209",
       "title": null,
       "summary": null,
       "parameterNames": ["name", "enabled", "size"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "nested/deeper/g9/T219",
       "title": null,
       "summary": null,
       "parameterNames": ["name"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "nested/deeper/g9/T229",
       "title": null,
       "summary": null,
       "parameterNames": ["name", "enabled"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "nested/deeper/g9/T239",
       "title": null,
       "summary": null,
       "parameterNames": ["name", "enabled", "size"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "nested/deeper/g9/T249",
       "title": null,
       "summary": null,
       "parameterNames": ["name"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "nested/deeper/g9/T259",
       "title": null,
       "summary": null,
       "parameterNames": ["name", "enabled"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "nested/deeper/g9/T269",
       "title": null,
       "summary": null,
       "parameterNames": ["name", "enabled", "size"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "nested/deeper/g9/T279",
       "title": null,
       "summary": null,
       "parameterNames": ["name"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "nested/deeper/g9/T289",
       "title": null,
       "summary": null,
       "parameterNames": ["name", "enabled"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "nested/deeper/g9/T299",
       "title": null,
       "summary": null,
       "parameterNames": ["name", "enabled", "size"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     }
   ],
   "details": [
@@ -2127,7 +2427,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g0/T000 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g0/T000 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "g0/T010",
@@ -2164,7 +2465,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g0/T010 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g0/T010 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "g0/T020",
@@ -2211,7 +2513,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g0/T020 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g0/T020 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "g0/T030",
@@ -2238,7 +2541,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g0/T030 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g0/T030 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "g0/T040",
@@ -2275,7 +2579,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g0/T040 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g0/T040 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "g0/T050",
@@ -2322,7 +2627,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g0/T050 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g0/T050 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "g0/T060",
@@ -2349,7 +2655,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g0/T060 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g0/T060 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "g0/T070",
@@ -2386,7 +2693,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g0/T070 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g0/T070 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "g0/T080",
@@ -2433,7 +2741,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g0/T080 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g0/T080 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "g0/T090",
@@ -2460,7 +2769,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g0/T090 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g0/T090 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "g0/T100",
@@ -2497,7 +2807,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g0/T100 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g0/T100 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "g0/T110",
@@ -2544,7 +2855,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g0/T110 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g0/T110 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "g0/T120",
@@ -2571,7 +2883,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g0/T120 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g0/T120 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "g0/T130",
@@ -2608,7 +2921,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g0/T130 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g0/T130 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "g0/T140",
@@ -2655,7 +2969,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g0/T140 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g0/T140 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "g0/T150",
@@ -2682,7 +2997,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g0/T150 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g0/T150 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "g0/T160",
@@ -2719,7 +3035,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g0/T160 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g0/T160 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "g0/T170",
@@ -2766,7 +3083,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g0/T170 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g0/T170 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "g0/T180",
@@ -2793,7 +3111,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g0/T180 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g0/T180 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "g0/T190",
@@ -2830,7 +3149,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g0/T190 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g0/T190 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "g0/T200",
@@ -2877,7 +3197,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g0/T200 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g0/T200 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "g0/T210",
@@ -2904,7 +3225,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g0/T210 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g0/T210 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "g0/T220",
@@ -2941,7 +3263,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g0/T220 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g0/T220 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "g0/T230",
@@ -2988,7 +3311,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g0/T230 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g0/T230 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "g0/T240",
@@ -3015,7 +3339,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g0/T240 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g0/T240 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "g0/T250",
@@ -3052,7 +3377,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g0/T250 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g0/T250 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "g0/T260",
@@ -3099,7 +3425,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g0/T260 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g0/T260 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "g0/T270",
@@ -3126,7 +3453,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g0/T270 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g0/T270 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "g0/T280",
@@ -3163,7 +3491,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g0/T280 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g0/T280 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "g0/T290",
@@ -3210,7 +3539,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g0/T290 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g0/T290 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "g1/T001",
@@ -3247,7 +3577,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g1/T001 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g1/T001 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "g1/T011",
@@ -3294,7 +3625,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g1/T011 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g1/T011 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "g1/T021",
@@ -3321,7 +3653,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g1/T021 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g1/T021 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "g1/T031",
@@ -3358,7 +3691,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g1/T031 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g1/T031 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "g1/T041",
@@ -3405,7 +3739,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g1/T041 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g1/T041 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "g1/T051",
@@ -3432,7 +3767,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g1/T051 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g1/T051 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "g1/T061",
@@ -3469,7 +3805,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g1/T061 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g1/T061 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "g1/T071",
@@ -3516,7 +3853,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g1/T071 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g1/T071 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "g1/T081",
@@ -3543,7 +3881,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g1/T081 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g1/T081 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "g1/T091",
@@ -3580,7 +3919,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g1/T091 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g1/T091 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "g1/T101",
@@ -3627,7 +3967,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g1/T101 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g1/T101 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "g1/T111",
@@ -3654,7 +3995,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g1/T111 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g1/T111 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "g1/T121",
@@ -3691,7 +4033,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g1/T121 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g1/T121 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "g1/T131",
@@ -3738,7 +4081,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g1/T131 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g1/T131 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "g1/T141",
@@ -3765,7 +4109,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g1/T141 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g1/T141 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "g1/T151",
@@ -3802,7 +4147,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g1/T151 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g1/T151 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "g1/T161",
@@ -3849,7 +4195,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g1/T161 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g1/T161 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "g1/T171",
@@ -3876,7 +4223,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g1/T171 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g1/T171 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "g1/T181",
@@ -3913,7 +4261,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g1/T181 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g1/T181 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "g1/T191",
@@ -3960,7 +4309,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g1/T191 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g1/T191 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "g1/T201",
@@ -3987,7 +4337,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g1/T201 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g1/T201 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "g1/T211",
@@ -4024,7 +4375,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g1/T211 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g1/T211 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "g1/T221",
@@ -4071,7 +4423,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g1/T221 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g1/T221 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "g1/T231",
@@ -4098,7 +4451,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g1/T231 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g1/T231 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "g1/T241",
@@ -4135,7 +4489,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g1/T241 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g1/T241 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "g1/T251",
@@ -4182,7 +4537,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g1/T251 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g1/T251 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "g1/T261",
@@ -4209,7 +4565,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g1/T261 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g1/T261 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "g1/T271",
@@ -4246,7 +4603,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g1/T271 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g1/T271 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "g1/T281",
@@ -4293,7 +4651,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g1/T281 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g1/T281 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "g1/T291",
@@ -4320,7 +4679,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g1/T291 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g1/T291 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "g2/T002",
@@ -4367,7 +4727,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g2/T002 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g2/T002 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "g2/T012",
@@ -4394,7 +4755,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g2/T012 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g2/T012 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "g2/T022",
@@ -4431,7 +4793,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g2/T022 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g2/T022 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "g2/T032",
@@ -4478,7 +4841,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g2/T032 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g2/T032 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "g2/T042",
@@ -4505,7 +4869,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g2/T042 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g2/T042 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "g2/T052",
@@ -4542,7 +4907,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g2/T052 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g2/T052 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "g2/T062",
@@ -4589,7 +4955,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g2/T062 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g2/T062 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "g2/T072",
@@ -4616,7 +4983,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g2/T072 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g2/T072 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "g2/T082",
@@ -4653,7 +5021,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g2/T082 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g2/T082 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "g2/T092",
@@ -4700,7 +5069,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g2/T092 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g2/T092 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "g2/T102",
@@ -4727,7 +5097,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g2/T102 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g2/T102 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "g2/T112",
@@ -4764,7 +5135,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g2/T112 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g2/T112 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "g2/T122",
@@ -4811,7 +5183,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g2/T122 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g2/T122 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "g2/T132",
@@ -4838,7 +5211,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g2/T132 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g2/T132 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "g2/T142",
@@ -4875,7 +5249,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g2/T142 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g2/T142 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "g2/T152",
@@ -4922,7 +5297,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g2/T152 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g2/T152 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "g2/T162",
@@ -4949,7 +5325,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g2/T162 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g2/T162 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "g2/T172",
@@ -4986,7 +5363,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g2/T172 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g2/T172 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "g2/T182",
@@ -5033,7 +5411,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g2/T182 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g2/T182 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "g2/T192",
@@ -5060,7 +5439,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g2/T192 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g2/T192 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "g2/T202",
@@ -5097,7 +5477,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g2/T202 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g2/T202 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "g2/T212",
@@ -5144,7 +5525,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g2/T212 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g2/T212 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "g2/T222",
@@ -5171,7 +5553,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g2/T222 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g2/T222 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "g2/T232",
@@ -5208,7 +5591,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g2/T232 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g2/T232 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "g2/T242",
@@ -5255,7 +5639,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g2/T242 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g2/T242 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "g2/T252",
@@ -5282,7 +5667,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g2/T252 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g2/T252 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "g2/T262",
@@ -5319,7 +5705,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g2/T262 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g2/T262 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "g2/T272",
@@ -5366,7 +5753,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g2/T272 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g2/T272 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "g2/T282",
@@ -5393,7 +5781,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g2/T282 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g2/T282 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "g2/T292",
@@ -5430,7 +5819,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g2/T292 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g2/T292 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "g3/T003",
@@ -5457,7 +5847,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g3/T003 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g3/T003 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "g3/T013",
@@ -5494,7 +5885,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g3/T013 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g3/T013 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "g3/T023",
@@ -5541,7 +5933,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g3/T023 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g3/T023 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "g3/T033",
@@ -5568,7 +5961,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g3/T033 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g3/T033 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "g3/T043",
@@ -5605,7 +5999,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g3/T043 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g3/T043 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "g3/T053",
@@ -5652,7 +6047,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g3/T053 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g3/T053 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "g3/T063",
@@ -5679,7 +6075,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g3/T063 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g3/T063 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "g3/T073",
@@ -5716,7 +6113,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g3/T073 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g3/T073 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "g3/T083",
@@ -5763,7 +6161,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g3/T083 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g3/T083 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "g3/T093",
@@ -5790,7 +6189,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g3/T093 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g3/T093 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "g3/T103",
@@ -5827,7 +6227,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g3/T103 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g3/T103 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "g3/T113",
@@ -5874,7 +6275,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g3/T113 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g3/T113 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "g3/T123",
@@ -5901,7 +6303,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g3/T123 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g3/T123 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "g3/T133",
@@ -5938,7 +6341,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g3/T133 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g3/T133 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "g3/T143",
@@ -5985,7 +6389,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g3/T143 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g3/T143 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "g3/T153",
@@ -6012,7 +6417,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g3/T153 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g3/T153 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "g3/T163",
@@ -6049,7 +6455,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g3/T163 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g3/T163 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "g3/T173",
@@ -6096,7 +6503,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g3/T173 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g3/T173 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "g3/T183",
@@ -6123,7 +6531,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g3/T183 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g3/T183 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "g3/T193",
@@ -6160,7 +6569,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g3/T193 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g3/T193 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "g3/T203",
@@ -6207,7 +6617,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g3/T203 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g3/T203 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "g3/T213",
@@ -6234,7 +6645,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g3/T213 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g3/T213 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "g3/T223",
@@ -6271,7 +6683,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g3/T223 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g3/T223 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "g3/T233",
@@ -6318,7 +6731,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g3/T233 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g3/T233 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "g3/T243",
@@ -6345,7 +6759,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g3/T243 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g3/T243 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "g3/T253",
@@ -6382,7 +6797,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g3/T253 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g3/T253 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "g3/T263",
@@ -6429,7 +6845,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g3/T263 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g3/T263 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "g3/T273",
@@ -6456,7 +6873,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g3/T273 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g3/T273 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "g3/T283",
@@ -6493,7 +6911,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g3/T283 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g3/T283 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "g3/T293",
@@ -6540,7 +6959,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g3/T293 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g3/T293 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "g4/T004",
@@ -6577,7 +6997,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g4/T004 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g4/T004 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "g4/T014",
@@ -6624,7 +7045,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g4/T014 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g4/T014 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "g4/T024",
@@ -6651,7 +7073,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g4/T024 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g4/T024 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "g4/T034",
@@ -6688,7 +7111,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g4/T034 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g4/T034 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "g4/T044",
@@ -6735,7 +7159,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g4/T044 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g4/T044 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "g4/T054",
@@ -6762,7 +7187,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g4/T054 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g4/T054 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "g4/T064",
@@ -6799,7 +7225,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g4/T064 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g4/T064 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "g4/T074",
@@ -6846,7 +7273,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g4/T074 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g4/T074 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "g4/T084",
@@ -6873,7 +7301,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g4/T084 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g4/T084 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "g4/T094",
@@ -6910,7 +7339,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g4/T094 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g4/T094 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "g4/T104",
@@ -6957,7 +7387,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g4/T104 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g4/T104 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "g4/T114",
@@ -6984,7 +7415,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g4/T114 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g4/T114 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "g4/T124",
@@ -7021,7 +7453,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g4/T124 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g4/T124 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "g4/T134",
@@ -7068,7 +7501,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g4/T134 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g4/T134 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "g4/T144",
@@ -7095,7 +7529,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g4/T144 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g4/T144 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "g4/T154",
@@ -7132,7 +7567,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g4/T154 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g4/T154 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "g4/T164",
@@ -7179,7 +7615,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g4/T164 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g4/T164 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "g4/T174",
@@ -7206,7 +7643,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g4/T174 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g4/T174 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "g4/T184",
@@ -7243,7 +7681,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g4/T184 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g4/T184 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "g4/T194",
@@ -7290,7 +7729,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g4/T194 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g4/T194 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "g4/T204",
@@ -7317,7 +7757,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g4/T204 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g4/T204 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "g4/T214",
@@ -7354,7 +7795,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g4/T214 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g4/T214 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "g4/T224",
@@ -7401,7 +7843,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g4/T224 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g4/T224 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "g4/T234",
@@ -7428,7 +7871,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g4/T234 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g4/T234 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "g4/T244",
@@ -7465,7 +7909,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g4/T244 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g4/T244 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "g4/T254",
@@ -7512,7 +7957,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g4/T254 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g4/T254 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "g4/T264",
@@ -7539,7 +7985,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g4/T264 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g4/T264 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "g4/T274",
@@ -7576,7 +8023,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g4/T274 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g4/T274 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "g4/T284",
@@ -7623,7 +8071,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g4/T284 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g4/T284 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "g4/T294",
@@ -7650,7 +8099,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g4/T294 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g4/T294 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "g5/T005",
@@ -7697,7 +8147,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g5/T005 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g5/T005 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "g5/T015",
@@ -7724,7 +8175,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g5/T015 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g5/T015 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "g5/T025",
@@ -7761,7 +8213,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g5/T025 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g5/T025 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "g5/T035",
@@ -7808,7 +8261,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g5/T035 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g5/T035 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "g5/T045",
@@ -7835,7 +8289,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g5/T045 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g5/T045 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "g5/T055",
@@ -7872,7 +8327,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g5/T055 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g5/T055 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "g5/T065",
@@ -7919,7 +8375,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g5/T065 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g5/T065 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "g5/T075",
@@ -7946,7 +8403,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g5/T075 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g5/T075 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "g5/T085",
@@ -7983,7 +8441,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g5/T085 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g5/T085 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "g5/T095",
@@ -8030,7 +8489,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g5/T095 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g5/T095 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "g5/T105",
@@ -8057,7 +8517,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g5/T105 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g5/T105 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "g5/T115",
@@ -8094,7 +8555,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g5/T115 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g5/T115 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "g5/T125",
@@ -8141,7 +8603,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g5/T125 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g5/T125 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "g5/T135",
@@ -8168,7 +8631,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g5/T135 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g5/T135 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "g5/T145",
@@ -8205,7 +8669,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g5/T145 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g5/T145 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "g5/T155",
@@ -8252,7 +8717,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g5/T155 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g5/T155 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "g5/T165",
@@ -8279,7 +8745,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g5/T165 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g5/T165 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "g5/T175",
@@ -8316,7 +8783,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g5/T175 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g5/T175 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "g5/T185",
@@ -8363,7 +8831,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g5/T185 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g5/T185 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "g5/T195",
@@ -8390,7 +8859,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g5/T195 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g5/T195 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "g5/T205",
@@ -8427,7 +8897,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g5/T205 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g5/T205 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "g5/T215",
@@ -8474,7 +8945,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g5/T215 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g5/T215 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "g5/T225",
@@ -8501,7 +8973,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g5/T225 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g5/T225 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "g5/T235",
@@ -8538,7 +9011,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g5/T235 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g5/T235 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "g5/T245",
@@ -8585,7 +9059,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g5/T245 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g5/T245 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "g5/T255",
@@ -8612,7 +9087,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g5/T255 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g5/T255 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "g5/T265",
@@ -8649,7 +9125,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g5/T265 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g5/T265 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "g5/T275",
@@ -8696,7 +9173,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g5/T275 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g5/T275 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "g5/T285",
@@ -8723,7 +9201,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g5/T285 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g5/T285 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "g5/T295",
@@ -8760,7 +9239,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g5/T295 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g5/T295 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "g6/T006",
@@ -8787,7 +9267,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g6/T006 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g6/T006 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "g6/T016",
@@ -8824,7 +9305,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g6/T016 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g6/T016 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "g6/T026",
@@ -8871,7 +9353,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g6/T026 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g6/T026 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "g6/T036",
@@ -8898,7 +9381,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g6/T036 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g6/T036 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "g6/T046",
@@ -8935,7 +9419,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g6/T046 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g6/T046 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "g6/T056",
@@ -8982,7 +9467,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g6/T056 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g6/T056 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "g6/T066",
@@ -9009,7 +9495,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g6/T066 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g6/T066 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "g6/T076",
@@ -9046,7 +9533,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g6/T076 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g6/T076 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "g6/T086",
@@ -9093,7 +9581,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g6/T086 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g6/T086 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "g6/T096",
@@ -9120,7 +9609,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g6/T096 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g6/T096 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "g6/T106",
@@ -9157,7 +9647,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g6/T106 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g6/T106 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "g6/T116",
@@ -9204,7 +9695,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g6/T116 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g6/T116 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "g6/T126",
@@ -9231,7 +9723,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g6/T126 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g6/T126 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "g6/T136",
@@ -9268,7 +9761,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g6/T136 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g6/T136 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "g6/T146",
@@ -9315,7 +9809,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g6/T146 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g6/T146 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "g6/T156",
@@ -9342,7 +9837,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g6/T156 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g6/T156 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "g6/T166",
@@ -9379,7 +9875,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g6/T166 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g6/T166 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "g6/T176",
@@ -9426,7 +9923,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g6/T176 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g6/T176 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "g6/T186",
@@ -9453,7 +9951,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g6/T186 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g6/T186 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "g6/T196",
@@ -9490,7 +9989,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g6/T196 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g6/T196 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "g6/T206",
@@ -9537,7 +10037,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g6/T206 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g6/T206 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "g6/T216",
@@ -9564,7 +10065,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g6/T216 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g6/T216 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "g6/T226",
@@ -9601,7 +10103,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g6/T226 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g6/T226 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "g6/T236",
@@ -9648,7 +10151,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g6/T236 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g6/T236 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "g6/T246",
@@ -9675,7 +10179,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g6/T246 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g6/T246 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "g6/T256",
@@ -9712,7 +10217,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g6/T256 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g6/T256 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "g6/T266",
@@ -9759,7 +10265,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g6/T266 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g6/T266 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "g6/T276",
@@ -9786,7 +10293,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g6/T276 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g6/T276 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "g6/T286",
@@ -9823,7 +10331,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g6/T286 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g6/T286 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "g6/T296",
@@ -9870,7 +10379,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g6/T296 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=g6/T296 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "nested/g7/T007",
@@ -9907,7 +10417,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=nested/g7/T007 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=nested/g7/T007 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "nested/g7/T017",
@@ -9954,7 +10465,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=nested/g7/T017 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=nested/g7/T017 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "nested/g7/T027",
@@ -9981,7 +10493,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=nested/g7/T027 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=nested/g7/T027 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "nested/g7/T037",
@@ -10018,7 +10531,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=nested/g7/T037 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=nested/g7/T037 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "nested/g7/T047",
@@ -10065,7 +10579,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=nested/g7/T047 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=nested/g7/T047 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "nested/g7/T057",
@@ -10092,7 +10607,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=nested/g7/T057 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=nested/g7/T057 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "nested/g7/T067",
@@ -10129,7 +10645,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=nested/g7/T067 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=nested/g7/T067 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "nested/g7/T077",
@@ -10176,7 +10693,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=nested/g7/T077 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=nested/g7/T077 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "nested/g7/T087",
@@ -10203,7 +10721,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=nested/g7/T087 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=nested/g7/T087 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "nested/g7/T097",
@@ -10240,7 +10759,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=nested/g7/T097 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=nested/g7/T097 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "nested/g7/T107",
@@ -10287,7 +10807,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=nested/g7/T107 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=nested/g7/T107 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "nested/g7/T117",
@@ -10314,7 +10835,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=nested/g7/T117 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=nested/g7/T117 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "nested/g7/T127",
@@ -10351,7 +10873,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=nested/g7/T127 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=nested/g7/T127 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "nested/g7/T137",
@@ -10398,7 +10921,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=nested/g7/T137 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=nested/g7/T137 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "nested/g7/T147",
@@ -10425,7 +10949,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=nested/g7/T147 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=nested/g7/T147 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "nested/g7/T157",
@@ -10462,7 +10987,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=nested/g7/T157 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=nested/g7/T157 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "nested/g7/T167",
@@ -10509,7 +11035,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=nested/g7/T167 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=nested/g7/T167 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "nested/g7/T177",
@@ -10536,7 +11063,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=nested/g7/T177 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=nested/g7/T177 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "nested/g7/T187",
@@ -10573,7 +11101,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=nested/g7/T187 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=nested/g7/T187 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "nested/g7/T197",
@@ -10620,7 +11149,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=nested/g7/T197 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=nested/g7/T197 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "nested/g7/T207",
@@ -10647,7 +11177,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=nested/g7/T207 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=nested/g7/T207 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "nested/g7/T217",
@@ -10684,7 +11215,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=nested/g7/T217 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=nested/g7/T217 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "nested/g7/T227",
@@ -10731,7 +11263,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=nested/g7/T227 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=nested/g7/T227 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "nested/g7/T237",
@@ -10758,7 +11291,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=nested/g7/T237 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=nested/g7/T237 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "nested/g7/T247",
@@ -10795,7 +11329,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=nested/g7/T247 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=nested/g7/T247 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "nested/g7/T257",
@@ -10842,7 +11377,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=nested/g7/T257 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=nested/g7/T257 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "nested/g7/T267",
@@ -10869,7 +11405,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=nested/g7/T267 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=nested/g7/T267 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "nested/g7/T277",
@@ -10906,7 +11443,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=nested/g7/T277 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=nested/g7/T277 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "nested/g7/T287",
@@ -10953,7 +11491,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=nested/g7/T287 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=nested/g7/T287 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "nested/g7/T297",
@@ -10980,7 +11519,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=nested/g7/T297 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=nested/g7/T297 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "nested/deeper/g8/T008",
@@ -11027,7 +11567,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=nested/deeper/g8/T008 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=nested/deeper/g8/T008 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "nested/deeper/g8/T018",
@@ -11054,7 +11595,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=nested/deeper/g8/T018 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=nested/deeper/g8/T018 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "nested/deeper/g8/T028",
@@ -11091,7 +11633,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=nested/deeper/g8/T028 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=nested/deeper/g8/T028 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "nested/deeper/g8/T038",
@@ -11138,7 +11681,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=nested/deeper/g8/T038 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=nested/deeper/g8/T038 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "nested/deeper/g8/T048",
@@ -11165,7 +11709,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=nested/deeper/g8/T048 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=nested/deeper/g8/T048 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "nested/deeper/g8/T058",
@@ -11202,7 +11747,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=nested/deeper/g8/T058 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=nested/deeper/g8/T058 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "nested/deeper/g8/T068",
@@ -11249,7 +11795,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=nested/deeper/g8/T068 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=nested/deeper/g8/T068 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "nested/deeper/g8/T078",
@@ -11276,7 +11823,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=nested/deeper/g8/T078 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=nested/deeper/g8/T078 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "nested/deeper/g8/T088",
@@ -11313,7 +11861,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=nested/deeper/g8/T088 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=nested/deeper/g8/T088 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "nested/deeper/g8/T098",
@@ -11360,7 +11909,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=nested/deeper/g8/T098 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=nested/deeper/g8/T098 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "nested/deeper/g8/T108",
@@ -11387,7 +11937,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=nested/deeper/g8/T108 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=nested/deeper/g8/T108 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "nested/deeper/g8/T118",
@@ -11424,7 +11975,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=nested/deeper/g8/T118 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=nested/deeper/g8/T118 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "nested/deeper/g8/T128",
@@ -11471,7 +12023,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=nested/deeper/g8/T128 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=nested/deeper/g8/T128 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "nested/deeper/g8/T138",
@@ -11498,7 +12051,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=nested/deeper/g8/T138 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=nested/deeper/g8/T138 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "nested/deeper/g8/T148",
@@ -11535,7 +12089,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=nested/deeper/g8/T148 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=nested/deeper/g8/T148 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "nested/deeper/g8/T158",
@@ -11582,7 +12137,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=nested/deeper/g8/T158 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=nested/deeper/g8/T158 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "nested/deeper/g8/T168",
@@ -11609,7 +12165,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=nested/deeper/g8/T168 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=nested/deeper/g8/T168 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "nested/deeper/g8/T178",
@@ -11646,7 +12203,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=nested/deeper/g8/T178 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=nested/deeper/g8/T178 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "nested/deeper/g8/T188",
@@ -11693,7 +12251,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=nested/deeper/g8/T188 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=nested/deeper/g8/T188 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "nested/deeper/g8/T198",
@@ -11720,7 +12279,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=nested/deeper/g8/T198 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=nested/deeper/g8/T198 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "nested/deeper/g8/T208",
@@ -11757,7 +12317,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=nested/deeper/g8/T208 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=nested/deeper/g8/T208 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "nested/deeper/g8/T218",
@@ -11804,7 +12365,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=nested/deeper/g8/T218 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=nested/deeper/g8/T218 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "nested/deeper/g8/T228",
@@ -11831,7 +12393,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=nested/deeper/g8/T228 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=nested/deeper/g8/T228 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "nested/deeper/g8/T238",
@@ -11868,7 +12431,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=nested/deeper/g8/T238 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=nested/deeper/g8/T238 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "nested/deeper/g8/T248",
@@ -11915,7 +12479,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=nested/deeper/g8/T248 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=nested/deeper/g8/T248 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "nested/deeper/g8/T258",
@@ -11942,7 +12507,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=nested/deeper/g8/T258 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=nested/deeper/g8/T258 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "nested/deeper/g8/T268",
@@ -11979,7 +12545,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=nested/deeper/g8/T268 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=nested/deeper/g8/T268 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "nested/deeper/g8/T278",
@@ -12026,7 +12593,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=nested/deeper/g8/T278 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=nested/deeper/g8/T278 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "nested/deeper/g8/T288",
@@ -12053,7 +12621,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=nested/deeper/g8/T288 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=nested/deeper/g8/T288 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "nested/deeper/g8/T298",
@@ -12090,7 +12659,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=nested/deeper/g8/T298 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=nested/deeper/g8/T298 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "nested/deeper/g9/T009",
@@ -12117,7 +12687,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=nested/deeper/g9/T009 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=nested/deeper/g9/T009 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "nested/deeper/g9/T019",
@@ -12154,7 +12725,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=nested/deeper/g9/T019 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=nested/deeper/g9/T019 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "nested/deeper/g9/T029",
@@ -12201,7 +12773,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=nested/deeper/g9/T029 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=nested/deeper/g9/T029 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "nested/deeper/g9/T039",
@@ -12228,7 +12801,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=nested/deeper/g9/T039 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=nested/deeper/g9/T039 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "nested/deeper/g9/T049",
@@ -12265,7 +12839,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=nested/deeper/g9/T049 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=nested/deeper/g9/T049 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "nested/deeper/g9/T059",
@@ -12312,7 +12887,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=nested/deeper/g9/T059 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=nested/deeper/g9/T059 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "nested/deeper/g9/T069",
@@ -12339,7 +12915,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=nested/deeper/g9/T069 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=nested/deeper/g9/T069 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "nested/deeper/g9/T079",
@@ -12376,7 +12953,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=nested/deeper/g9/T079 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=nested/deeper/g9/T079 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "nested/deeper/g9/T089",
@@ -12423,7 +13001,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=nested/deeper/g9/T089 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=nested/deeper/g9/T089 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "nested/deeper/g9/T099",
@@ -12450,7 +13029,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=nested/deeper/g9/T099 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=nested/deeper/g9/T099 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "nested/deeper/g9/T109",
@@ -12487,7 +13067,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=nested/deeper/g9/T109 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=nested/deeper/g9/T109 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "nested/deeper/g9/T119",
@@ -12534,7 +13115,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=nested/deeper/g9/T119 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=nested/deeper/g9/T119 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "nested/deeper/g9/T129",
@@ -12561,7 +13143,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=nested/deeper/g9/T129 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=nested/deeper/g9/T129 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "nested/deeper/g9/T139",
@@ -12598,7 +13181,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=nested/deeper/g9/T139 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=nested/deeper/g9/T139 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "nested/deeper/g9/T149",
@@ -12645,7 +13229,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=nested/deeper/g9/T149 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=nested/deeper/g9/T149 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "nested/deeper/g9/T159",
@@ -12672,7 +13257,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=nested/deeper/g9/T159 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=nested/deeper/g9/T159 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "nested/deeper/g9/T169",
@@ -12709,7 +13295,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=nested/deeper/g9/T169 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=nested/deeper/g9/T169 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "nested/deeper/g9/T179",
@@ -12756,7 +13343,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=nested/deeper/g9/T179 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=nested/deeper/g9/T179 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "nested/deeper/g9/T189",
@@ -12783,7 +13371,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=nested/deeper/g9/T189 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=nested/deeper/g9/T189 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "nested/deeper/g9/T199",
@@ -12820,7 +13409,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=nested/deeper/g9/T199 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=nested/deeper/g9/T199 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "nested/deeper/g9/T209",
@@ -12867,7 +13457,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=nested/deeper/g9/T209 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=nested/deeper/g9/T209 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "nested/deeper/g9/T219",
@@ -12894,7 +13485,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=nested/deeper/g9/T219 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=nested/deeper/g9/T219 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "nested/deeper/g9/T229",
@@ -12931,7 +13523,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=nested/deeper/g9/T229 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=nested/deeper/g9/T229 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "nested/deeper/g9/T239",
@@ -12978,7 +13571,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=nested/deeper/g9/T239 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=nested/deeper/g9/T239 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "nested/deeper/g9/T249",
@@ -13005,7 +13599,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=nested/deeper/g9/T249 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=nested/deeper/g9/T249 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "nested/deeper/g9/T259",
@@ -13042,7 +13637,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=nested/deeper/g9/T259 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=nested/deeper/g9/T259 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "nested/deeper/g9/T269",
@@ -13089,7 +13685,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=nested/deeper/g9/T269 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=nested/deeper/g9/T269 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "nested/deeper/g9/T279",
@@ -13116,7 +13713,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=nested/deeper/g9/T279 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=nested/deeper/g9/T279 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "nested/deeper/g9/T289",
@@ -13153,7 +13751,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=nested/deeper/g9/T289 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=nested/deeper/g9/T289 --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "nested/deeper/g9/T299",
@@ -13200,7 +13799,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=nested/deeper/g9/T299 --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=nested/deeper/g9/T299 --arg name=Name",
+      "captures": []
     }
   ]
 }

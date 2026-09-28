@@ -1,6 +1,8 @@
 package me.tbsten.katachi.template.internal
 
 import me.tbsten.katachi.template.PreviewValueSource
+import me.tbsten.katachi.template.TemplateCaptureKind
+import me.tbsten.katachi.template.TemplateCapturePreview
 import me.tbsten.katachi.template.TemplateDetail
 import me.tbsten.katachi.template.TemplateFilePreview
 import me.tbsten.katachi.template.TemplateList
@@ -24,6 +26,9 @@ internal fun templateListLines(list: TemplateList): List<String> = buildList {
         template.summary?.let { add("    $it") }
         val parameters = template.parameterNames.ifEmpty { listOf("(none)") }
         add("    parameters: ${parameters.joinToString(", ")}")
+        if (template.captures.isNotEmpty()) {
+            add("    captures: ${template.captures.map { it.name }.distinct().joinToString(", ")}")
+        }
         add("    files: ${template.fileCount ?: "(the preview failed; see katachiTemplates --arg roleName=${template.roleName})"}")
     }
     add(
@@ -43,6 +48,12 @@ internal fun templateDetailLines(detail: TemplateDetail): List<String> = buildLi
     } else {
         add("Parameters:")
         detail.parameters.forEach { add("  ${parameterLine(it)}") }
+    }
+
+    if (detail.captures.isNotEmpty()) {
+        add("")
+        add("Captures (--arg values that choose the directory):")
+        detail.captures.forEach { add("  ${captureLine(it)}") }
     }
 
     add("")
@@ -88,6 +99,13 @@ private fun parameterLine(parameter: TemplateParameterPreview): String = buildSt
     }
 }
 
+/** A path capture as `feature: level 2 of <file pattern>`, a module capture as `feature: wildcard 1 of module :feature:*, ...`. */
+private fun captureLine(capture: TemplateCapturePreview): String = when (capture.kind) {
+    TemplateCaptureKind.PathCapture -> "${capture.name}: level ${capture.position + 1} of ${capture.pattern}"
+    TemplateCaptureKind.ModuleCapture ->
+        "${capture.name}: wildcard ${capture.position + 1} of module ${capture.pattern}, an existing module"
+}
+
 /** `name=${name} (placeholder), withImpl=true (default)`. */
 private fun previewValuesLine(parameters: List<TemplateParameterPreview>): String {
     if (parameters.isEmpty()) return "no parameters"
@@ -107,8 +125,9 @@ private fun fileLines(file: TemplateFilePreview): List<String> = buildList {
         add("  $path")
     } else {
         add(
-            "  ${file.fileName} -- no single directory: the module is a wildcard in " +
-                "${file.unresolvedPatterns.joinToString(", ")}, so katachiTemplate cannot write it",
+            "  ${file.fileName} -- no single directory in the preview: " +
+                "${file.unresolvedPatterns.joinToString(", ")} has a wildcard only a run's " +
+                "capture value, or nothing, can fill in",
         )
     }
     for (line in file.content.trimEnd('\n').lines()) add("    | $line")

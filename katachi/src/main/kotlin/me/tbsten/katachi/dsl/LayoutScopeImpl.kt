@@ -11,6 +11,7 @@ import me.tbsten.katachi.dsl.internal.captureDeclarationSite
 import me.tbsten.katachi.dsl.internal.chainUnder
 import me.tbsten.katachi.dsl.internal.fileConstraintDeclarationOf
 import me.tbsten.katachi.dsl.internal.markSynthetic
+import me.tbsten.katachi.dsl.internal.requireValidIdentifier
 import me.tbsten.katachi.dsl.kotlin.ktsFile
 
 /**
@@ -60,6 +61,9 @@ internal class LayoutScopeImpl(
 
     override val currentWildcards: List<String>?
         get() = moduleContext?.wildcards
+
+    override val currentCaptures: Map<String, String>?
+        get() = moduleContext?.let { context -> context.captureNames?.let { context.captures } }
 
     override var description: String?
         get() = container.description
@@ -154,14 +158,37 @@ internal class LayoutScopeImpl(
         return this
     }
 
+    override fun capture(name: String): LayoutDirectory {
+        val declaredAt = siteHere()
+        requireValidIdentifier(name, DeclarationKind.Capture, declaredAt)
+        // The same node `"*"` would make, so that flattening and the check cannot tell them apart;
+        // only the name rides along for template generation.
+        val chain = chainUnder(container, WHOLE_LEVEL_WILDCARD, isFile = false, declaredAt = declaredAt)
+        chain.leaf.layoutCaptureName = name
+        return LayoutDirectory(top = chain.top, leaf = chain.leaf)
+    }
+
+    override fun capture(name: String, block: LayoutDirectoryScope.() -> Unit): LayoutDirectory =
+        capture(name).invoke(block)
+
     /** See [me.tbsten.katachi.dsl.gradle.expandModulePath], the opt-in API this backs. */
-    override fun expandModulePath(modulePath: String, block: LayoutDirectoryScope.() -> Unit): LayoutModule {
+    override fun expandModulePath(modulePath: String, block: LayoutDirectoryScope.() -> Unit): LayoutModule =
+        expandModulePath(modulePath, captures = emptyList(), block = block)
+
+    /** See [me.tbsten.katachi.dsl.gradle.expandModulePath], the opt-in API this backs. */
+    override fun expandModulePath(
+        modulePath: String,
+        captures: List<String>,
+        block: LayoutDirectoryScope.() -> Unit,
+    ): LayoutModule {
         val declaredAt = siteHere()
         requireLayoutRoot(modulePath, declaredAt)
         val pattern = compileModulePath(modulePath, declaredAt)
+        val captureNames = captures.takeIf { it.isNotEmpty() }
+        if (captureNames != null) requireModuleCaptures(pattern, captureNames, declaredAt)
         // Not `expand`: a wildcard key against an index that has not listed the project stands
         // for itself rather than for nothing. See `ModuleIndex.targetsOf`.
-        val declared = moduleIndex.targetsOf(pattern).flatMap { target ->
+        val declared = moduleIndex.targetsOf(pattern, captureNames).flatMap { target ->
             // The root project resolves to the project root itself, which is this scope's
             // own container: an empty directory name would otherwise become an empty level.
             val directory = target.directory
@@ -176,13 +203,15 @@ internal class LayoutScopeImpl(
                     .also {
                         it.place = true
                         it.modulePath = target.modulePath
+                        it.moduleCaptureNames = target.captureNames
+                        it.moduleCapturePattern = target.captureNames?.let { pattern.pattern }
                     }
             }
             val before = moduleDirectory.children.size
             val scope = LayoutScopeImpl(
                 container = moduleDirectory,
                 moduleIndex = moduleIndex,
-                moduleContext = ModuleContext(target.modulePath, target.wildcards),
+                moduleContext = ModuleContext(target.modulePath, target.wildcards, target.captureNames),
                 sites = sites,
                 pinnedSite = pinnedSite,
             )
@@ -256,6 +285,33 @@ internal class LayoutScopeImpl(
         if (container.parent == null && moduleContext == null) return
         throw KatachiModuleOutsideLayoutRootException(modulePath = key, declaredAt = declaredAt)
     }
+}
+
+/** What `capture("...")` declares in place of the level: the same thing `"*"` does. */
+private const val WHOLE_LEVEL_WILDCARD: String = "*"
+
+/**
+ * Checks the names a module key gave its `*`s: each is an identifier, there is one per `*`
+ * (`**` takes none), and none is given twice.
+ */
+private fun requireModuleCaptures(pattern: ModulePattern, names: List<String>, declaredAt: DeclarationSite) {
+    names.forEach { requireValidIdentifier(it, DeclarationKind.Capture, declaredAt) }
+    if (names.size != pattern.singleWildcardCount) {
+        throw KatachiCaptureCountMismatchException(
+            modulePath = pattern.pattern,
+            captures = names,
+            wildcardCount = pattern.singleWildcardCount,
+            declaredAt = declaredAt,
+        )
+    }
+    val duplicate = names.groupingBy { it }.eachCount().entries.firstOrNull { it.value > 1 } ?: return
+    throw KatachiDuplicateCaptureException(
+        name = duplicate.key,
+        role = null,
+        path = pattern.pattern,
+        firstDeclaredAt = declaredAt,
+        declaredAt = declaredAt,
+    )
 }
 
 /**

@@ -6,6 +6,7 @@ import me.tbsten.katachi.dsl.internal.ParsedArgValue
 import me.tbsten.katachi.dsl.internal.RenderedTemplateFile
 import me.tbsten.katachi.dsl.internal.TemplateEvaluation
 import me.tbsten.katachi.dsl.internal.TemplateParameterBinder
+import me.tbsten.katachi.dsl.internal.TemplateParameterOrigin
 import me.tbsten.katachi.dsl.internal.TemplateParameterType
 import me.tbsten.katachi.dsl.internal.captureDeclarationSite
 
@@ -27,6 +28,8 @@ private class TemplateFileDeclaration(
 internal class TemplateScopeImpl(
     private val roleName: String,
     private val values: Map<String, String>,
+    /** The names the role's `layout { }` gave its wildcards, which [captureValue] may read. */
+    private val captureNames: Set<String> = emptySet(),
 ) : TemplateScope, TemplateParameterBinder {
     /** Every parameter handed out, named or not. The unnamed ones are the mistake to report. */
     private val created = mutableListOf<TemplateParameter<*>>()
@@ -38,6 +41,12 @@ internal class TemplateScopeImpl(
 
     /** Names read during this replay that had nothing to read. */
     private val missing = linkedSetOf<String>()
+
+    /**
+     * Capture names read during this replay that the run gave no value. Kept apart from [missing]
+     * because a capture is a String and never decides a branch, see [branchedOnStandIn].
+     */
+    private val missingCaptures = linkedSetOf<String>()
 
     /** Values this run passed that their parameter could not read, by name, in declaration order. */
     private val invalid = linkedMapOf<String, InvalidTemplateValue>()
@@ -76,6 +85,20 @@ internal class TemplateScopeImpl(
             default = default,
             declaredAt = captureDeclarationSite(),
         ).also { created += it }
+
+    override fun captureValue(name: String): String {
+        if (name !in captureNames) {
+            throw KatachiUnknownTemplateCaptureException(
+                role = roleName,
+                name = name,
+                knownNames = captureNames.sorted(),
+                declaredAt = captureDeclarationSite(),
+            )
+        }
+        values[name]?.let { return it }
+        missingCaptures += name
+        return TemplateParameterType.StringType.standIn(name)
+    }
 
     override fun file(name: String, content: () -> String) {
         val declaredAt = captureDeclarationSite()
@@ -149,6 +172,10 @@ internal class TemplateScopeImpl(
     /** The names declared so far, which is what a caller asks for before a run. */
     fun parameterNames(): Set<String> = named.keys.toSet()
 
+    /** Where and how each named parameter was declared, which a capture conflicting with it points at. */
+    fun parameterOrigins(): Map<String, TemplateParameterOrigin> =
+        named.mapValues { TemplateParameterOrigin(it.value.declaredAt, it.value.type.declaredWith) }
+
     /** The named parameters declared so far, in declaration order, types and defaults included. */
     fun parameters(): List<TemplateParameter<*>> = named.values.toList()
 
@@ -185,7 +212,7 @@ internal class TemplateScopeImpl(
      */
     fun requireEveryValueReadable(declaredAt: DeclarationSite, cause: Throwable?) {
         if (invalid.isEmpty()) return
-        val missingNames = missing.sorted()
+        val missingNames = (missing + missingCaptures).sorted()
         throw KatachiInvalidTemplateParameterValueException(
             role = roleName,
             names = invalid.keys.toList(),
@@ -199,8 +226,8 @@ internal class TemplateScopeImpl(
 
     /** Reports every value the run was missing at once, rather than one per attempt. */
     fun requireEveryValuePresent(declaredAt: DeclarationSite, cause: Throwable?) {
-        if (missing.isEmpty()) return
-        val names = missing.sorted()
+        if (missing.isEmpty() && missingCaptures.isEmpty()) return
+        val names = (missing + missingCaptures).sorted()
         throw KatachiMissingTemplateParameterException(
             role = roleName,
             names = names,

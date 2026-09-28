@@ -24,6 +24,8 @@ public enum class DeclarationKind(
     internal val label: String,
     /** The rule the last line of a duplicate declaration message states. */
     internal val uniquenessRule: String,
+    /** The last line of an invalid name message: what to do when the name wanted is not an identifier. */
+    internal val invalidNameHint: String = "Use `title` for a human readable display name.",
 ) {
     /**
      * A `"...".group { }` declaration.
@@ -57,10 +59,33 @@ public enum class DeclarationKind(
         uniquenessRule = "Role names must be unique within a group. The same name may be reused " +
             "in a different group.",
     ),
+
+    /**
+     * A `capture("...")` in a `layout { }`, or a name given to `"...".module(capture = ...)`.
+     *
+     * ## Example 1: match on a rejected capture name
+     * ```kt
+     * val thrown = shouldThrow<KatachiInvalidIdentifierException> {
+     *     architecture {
+     *         "ui".group {
+     *             "Screen" { layout { "feature" / capture("1feature") / "*Screen".ktFile() } }
+     *         }
+     *     }.flattenLayout()
+     * }
+     * thrown.kind shouldBe DeclarationKind.Capture
+     * ```
+     */
+    Capture(
+        label = "capture",
+        uniquenessRule = "Capture names must be unique along one path. The same name may be reused " +
+            "on a different path of the same role.",
+        invalidNameHint = "The name is also the `--arg` name a template takes the value by, " +
+            "so it follows the same rule as a role name.",
+    ),
 }
 
 /**
- * A group name or a role name is not a valid identifier.
+ * A group name, a role name or a capture name is not a valid identifier.
  *
  * ## Example 1: catch an invalid name
  * ```kt
@@ -69,7 +94,7 @@ public enum class DeclarationKind(
  * }.name shouldBe "use case"
  * ```
  *
- * @property kind whether the rejected name was a group's or a role's.
+ * @property kind whether the rejected name was a group's, a role's or a capture's.
  * @property name the rejected name, as written.
  * @property declaredAt where it was written.
  */
@@ -84,7 +109,7 @@ public class KatachiInvalidIdentifierException internal constructor(
             "Names must match [A-Za-z][A-Za-z0-9_-]*: start with an ASCII letter, " +
                 "then ASCII letters, digits, '_' or '-'.",
         )
-        append("Use `title` for a human readable display name.")
+        append(kind.invalidNameHint)
     },
 )
 

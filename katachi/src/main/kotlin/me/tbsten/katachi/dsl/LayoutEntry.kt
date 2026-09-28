@@ -3,6 +3,7 @@ package me.tbsten.katachi.dsl
 import me.tbsten.katachi.ExperimentalKatachiApi
 import me.tbsten.katachi.InternalKatachiApi
 import me.tbsten.katachi.dsl.internal.Glob
+import me.tbsten.katachi.dsl.internal.LayoutCaptures
 
 /**
  * What a flattened layout entry declares about the path it names.
@@ -235,6 +236,17 @@ public class LayoutEntry internal constructor(
      * string cannot say which of its levels the user wrote.
      */
     internal val pathInModule: String,
+    /**
+     * The names each declaration of this path gave its wildcards — `capture("...")` levels and
+     * `"...".module(capture = ...)` names — one variant per distinct declaration. Empty when no
+     * declaration named anything; once one did, a declaration that named nothing is kept as
+     * [me.tbsten.katachi.dsl.internal.LayoutCaptures.NONE] beside it.
+     *
+     * Internal: it exists for template generation to fill the named levels in, not for the
+     * check, which reads a named wildcard exactly as a plain `*`. More than one variant is
+     * possible because the same path declared twice folds into one entry.
+     */
+    internal val captureVariants: List<LayoutCaptures> = emptyList(),
 ) {
     override fun toString(): String =
         "LayoutEntry($path, $kind, ${role.qualifiedName}${if (required) ", required" else ""})"

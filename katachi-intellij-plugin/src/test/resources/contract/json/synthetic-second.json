@@ -5,42 +5,48 @@
       "title": "全部の型（2つ目）",
       "summary": null,
       "parameterNames": ["name", "label", "enabled", "verbose", "count", "pageSize", "mode", "fallbackMode"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "SecondRoot",
       "title": null,
       "summary": "2つ目のルート直下",
       "parameterNames": ["name"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "Counter",
       "title": "カウンター",
       "summary": null,
       "parameterNames": ["name"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "a/Shallow",
       "title": "浅い（2つ目）",
       "summary": null,
       "parameterNames": ["name", "withImpl"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "second/OnlyHere",
       "title": "2つ目だけ",
       "summary": null,
       "parameterNames": ["name"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "second/AlsoOnlyHere",
       "title": null,
       "summary": null,
       "parameterNames": ["name", "count"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     }
   ],
   "details": [
@@ -139,7 +145,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=AllTypes --arg name=Name --arg enabled=true --arg count=0 --arg mode=Compact"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=AllTypes --arg name=Name --arg enabled=true --arg count=0 --arg mode=Compact",
+      "captures": []
     },
     {
       "roleName": "SecondRoot",
@@ -166,7 +173,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=SecondRoot --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=SecondRoot --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "Counter",
@@ -193,7 +201,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=Counter --arg name=0"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=Counter --arg name=0",
+      "captures": []
     },
     {
       "roleName": "a/Shallow",
@@ -230,7 +239,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=a/Shallow --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=a/Shallow --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "second/OnlyHere",
@@ -257,7 +267,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=second/OnlyHere --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=second/OnlyHere --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "second/AlsoOnlyHere",
@@ -294,7 +305,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=second/AlsoOnlyHere --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=second/AlsoOnlyHere --arg name=Name",
+      "captures": []
     }
   ]
 }

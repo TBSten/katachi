@@ -41,6 +41,14 @@ internal class ModulePattern private constructor(
         get() = glob?.groupKinds.orEmpty().map { WILDCARD_PLACEHOLDER }
 
     /**
+     * How many `*`s the pattern holds, `**` not counted: the number of names
+     * `"...".module(capture = ...)` has to give. A `**` cannot be named, because how many levels
+     * it stands for is not fixed.
+     */
+    val singleWildcardCount: Int
+        get() = glob?.groupKinds.orEmpty().count { it == GlobGroupKind.Single }
+
+    /**
      * The pattern as a directory, by the same convention [ModuleResolver.Conventional] maps a
      * module with: every `:` becomes a path separator, so `":core:data"` reads as `core/data`
      * and `":feature:*"` reads as a `feature` directory with a `*` level below it.
@@ -56,6 +64,34 @@ internal class ModulePattern private constructor(
         get() = pattern
             .removePrefix(Glob.MODULE_SEPARATOR.toString())
             .replace(Glob.MODULE_SEPARATOR, Glob.PATH_SEPARATOR)
+
+    /**
+     * The pattern with its `*`s replaced by [values], in order: `":feature:*"` with `home` reads
+     * `":feature:home"`. A `**`, an escaped `\*` and a `*` left without a value stay as written.
+     * For a message, which names the module a template run asked for.
+     */
+    fun filledIn(values: List<String>): String = buildString {
+        var next = 0
+        var index = 0
+        while (index < pattern.length) {
+            val character = pattern[index]
+            when {
+                character == '\\' && index + 1 < pattern.length -> {
+                    append(character).append(pattern[index + 1])
+                    index += 2
+                    continue
+                }
+                character == '*' && pattern.getOrNull(index + 1) == '*' -> {
+                    append("**")
+                    index += 2
+                    continue
+                }
+                character == '*' && next < values.size -> append(values[next++])
+                else -> append(character)
+            }
+            index++
+        }
+    }
 
     /** Whether [module] is one of the modules this pattern names. */
     fun matches(module: ModulePath): Boolean = match(module) != null

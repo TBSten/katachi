@@ -30,7 +30,8 @@ import me.tbsten.katachi.template.internal.writeTemplateDescriptionJson
  * Without `--arg roleName=`, every role that declares a `template { }`: its qualified name,
  * title and summary, the names of its parameters and how many files it produces. With
  * `--arg roleName=`, that role's template in full: each parameter's type, default, accepted
- * values and whether it is required; each file's path, as the role's `layout { }` decides it,
+ * values and whether it is required; the wildcards its `layout { }` names with `capture(...)`,
+ * which a run also takes as `--arg`; each file's path, as the role's `layout { }` decides it,
  * and its contents; the other Boolean and enum values that change which files are produced; and a
  * `katachiTemplate` command to paste.
  *
@@ -41,7 +42,9 @@ import me.tbsten.katachi.template.internal.writeTemplateDescriptionJson
  * value goes. A Boolean, Int or enum parameter cannot hold one, so it is given its default, or
  * `true`, `0` or its first entry when it has none -- and the output says which it was. Only the
  * branch those values take is rendered; every other value of a Boolean or an enum is tried one
- * parameter at a time, and those that change the set of files are listed.
+ * parameter at a time, and those that change the set of files are listed. A capture reads as
+ * `${name}` too, in a path as in the contents -- except a module capture, whose module only the
+ * modules that exist could pick, so such a file is shown without a path.
  *
  * It reads nothing but the declarations, and writes nothing unless `--arg format=json` asks it
  * to.
@@ -95,7 +98,8 @@ public object DescribeTemplates : ArchitectureProcessor<DescribeTemplates.Args, 
                 writeJson(context, output)
             } else if (roleName == null) {
                 val list = TemplateList(
-                    templates = context.roles.filter { it.templates.isNotEmpty() }.map(::templateSummaryOf),
+                    templates = context.roles.filter { it.templates.isNotEmpty() }
+                        .map { templateSummaryOf(it, context.declaredEntries) },
                 )
                 templateListLines(list).forEach(context::log)
                 list
@@ -110,7 +114,7 @@ public object DescribeTemplates : ArchitectureProcessor<DescribeTemplates.Args, 
     /** Lists every template, and writes them with their details as JSON to [output]. */
     private fun writeJson(context: ArchitectureProcessContext<Args>, output: String): TemplateList {
         val roles = context.roles.filter { it.templates.isNotEmpty() }
-        val list = TemplateList(templates = roles.map(::templateSummaryOf))
+        val list = TemplateList(templates = roles.map { templateSummaryOf(it, context.declaredEntries) })
         templateListLines(list).forEach(context::log)
         // One template that cannot be previewed must not cost the IDE every other one. It is
         // still listed, with `fileCount: null`, as the text list already shows it.

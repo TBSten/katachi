@@ -201,14 +201,16 @@ private val CONTRACT_JSON: String = """
           "title": "リポジトリ",
           "summary": "データの取得口",
           "parameterNames": ["name", "withImpl", "visibility", "implSuffix"],
-          "fileCount": 2
+          "fileCount": 2,
+          "captures": []
         },
         {
           "roleName": "misc/Broken",
           "title": null,
           "summary": null,
           "parameterNames": ["name"],
-          "fileCount": null
+          "fileCount": null,
+          "captures": []
         }
       ],
       "details": [
@@ -282,7 +284,8 @@ private val CONTRACT_JSON: String = """
               "removedParameters": ["implSuffix"]
             }
           ],
-          "exampleCommand": "./gradlew katachiTemplate --arg roleName=data/Repository --arg name=Name"
+          "exampleCommand": "./gradlew katachiTemplate --arg roleName=data/Repository --arg name=Name",
+          "captures": []
         }
       ]
     }

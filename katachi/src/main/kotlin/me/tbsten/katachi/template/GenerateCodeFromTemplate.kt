@@ -14,17 +14,13 @@ import me.tbsten.katachi.internal.runProcessorCatching
 import me.tbsten.katachi.processor.ArchitectureProcessContext
 import me.tbsten.katachi.processor.ArchitectureProcessor
 import me.tbsten.katachi.processor.internal.fileSystem
+import me.tbsten.katachi.template.internal.ROLE_NAME_ARG
+import me.tbsten.katachi.template.internal.captureNamesOf
+import me.tbsten.katachi.template.internal.requireNoCaptureConflicts
 import me.tbsten.katachi.template.internal.templateFiles
 import me.tbsten.katachi.template.internal.templateOf
 import me.tbsten.katachi.template.internal.templateRoleOf
 import me.tbsten.katachi.template.internal.writeTemplateFiles
-
-/**
- * The `--arg` name that says which role to run. Spelled once, because
- * [GenerateCodeFromTemplate.undeclaredArgNames] has to read it out of the raw arguments before
- * anything has decoded [GenerateCodeFromTemplate.Args].
- */
-private const val ROLE_NAME_ARG: String = "roleName"
 
 /**
  * Writes the files a role's `template { }` produces into the project.
@@ -91,6 +87,17 @@ private const val ROLE_NAME_ARG: String = "roleName"
  *     --arg roleName=UseCase --arg name=GetUser
  * ```
  *
+ * ## Example 4: generate below a wildcard, named with `capture()`
+ *
+ * A `*` in the directory names no single place, so the layout names it and the run gives its
+ * value. A module capture has to name a module that exists.
+ * ```sh
+ * # layout { "feature" / capture("feature") / "*ViewModel".ktFile() }
+ * # layout { ":feature:*".module(capture = "feature") { "*Screen".ktFile() } }
+ * ./gradlew :architecture-test:katachiTemplate \
+ *     --arg roleName=ViewModel --arg feature=home --arg name=Home
+ * ```
+ *
  * @see Args
  * @see OnExisting
  * @see KatachiExistingTemplateFileException
@@ -123,8 +130,9 @@ public object GenerateCodeFromTemplate : ArchitectureProcessor<GenerateCodeFromT
     /**
      * The parameters `--arg roleName=` named, so that the run's own check knows them.
      *
-     * Exactly the names that role's `template { }` declared for this run's values -- not
-     * "anything", which is what would put a hole in the check this answers for. Reading nothing
+     * Exactly the names that role's `template { }` declared for this run's values, and the names
+     * its `layout { }` gave its wildcards with `capture(...)` -- not "anything", which is what
+     * would put a hole in the check this answers for. Reading nothing
      * off disk is what keeps deciding "is this key a typo" free of a project walk: [templateRoleOf]
      * and [me.tbsten.katachi.dsl.internal.templateParameterNames] both work from the declarations
      * alone.
@@ -142,7 +150,10 @@ public object GenerateCodeFromTemplate : ArchitectureProcessor<GenerateCodeFromT
         // is the one worth saying: templateRoleOf lists the roles that do have a template.
         val role = templateRoleOf(context.roles, roleName)
         val template = templateOf(role)
-        val names = templateParameterNames(template, role.qualifiedName, context.rawArgs)
+        val entries = context.declaredEntries.filter { it.role === role }
+        val captureNames = captureNamesOf(entries)
+        val names = templateParameterNames(template, role.qualifiedName, context.rawArgs, captureNames)
+        requireNoCaptureConflicts(role, entries, template, context.rawArgs)
         if (names.isUnreliable) {
             // A value that decides a branch could not be read or was missing, so the names above
             // may belong to a branch the real run does not take: judging by them would report a
@@ -151,9 +162,9 @@ public object GenerateCodeFromTemplate : ArchitectureProcessor<GenerateCodeFromT
             // through a typo meant for another processor of it, which would then run on a default.
             // The render of the same values is certain to fail with the real cause, and it touches
             // no disk, so it is thrown here, before any processor runs -- like a roleName above.
-            evaluateTemplate(template, role.qualifiedName, context.rawArgs)
+            evaluateTemplate(template, role.qualifiedName, context.rawArgs, captureNames)
         }
-        return names.declared
+        return names.declared + captureNames
     }
 
     /**

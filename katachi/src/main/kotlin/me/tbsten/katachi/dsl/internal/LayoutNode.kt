@@ -88,6 +88,22 @@ internal class LayoutNode(
      */
     var modulePackage: Boolean = false
 
+    /**
+     * The name `capture("...")` gave this level, or `null` for any other node. The segment itself
+     * is a plain `*`, so the check reads the node exactly as it reads `"*"`.
+     */
+    var layoutCaptureName: String? = null
+
+    /**
+     * The names `"...".module(capture = ...)` gave the wildcards of [moduleCapturePattern], in
+     * order. Only the directory a named module key opened carries it; `null` everywhere else,
+     * including a module key written without names.
+     */
+    var moduleCaptureNames: List<String>? = null
+
+    /** The module key [moduleCaptureNames] belong to, as katachi prints it (`":feature:*"`). */
+    var moduleCapturePattern: String? = null
+
     fun add(child: LayoutNode) {
         child.parent?.children?.remove(child)
         child.parent = this

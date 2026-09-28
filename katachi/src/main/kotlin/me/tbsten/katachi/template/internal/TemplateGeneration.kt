@@ -1,9 +1,14 @@
 package me.tbsten.katachi.template.internal
 
+import me.tbsten.katachi.check.internal.moduleIndex
 import me.tbsten.katachi.dsl.LayoutEntry
-import me.tbsten.katachi.dsl.Role
+import me.tbsten.katachi.dsl.files.internal.findProjectRoot
+import me.tbsten.katachi.dsl.internal.ModuleIndex
+import me.tbsten.katachi.dsl.internal.ModuleMiss
 import me.tbsten.katachi.dsl.internal.evaluateTemplate
+import me.tbsten.katachi.dsl.internal.flattenLayout
 import me.tbsten.katachi.processor.ArchitectureProcessContext
+import me.tbsten.katachi.processor.internal.fileSystem
 
 /**
  * What running [roleName]'s template with [values] would put in the project: path to contents.
@@ -14,32 +19,37 @@ import me.tbsten.katachi.processor.ArchitectureProcessContext
  * spec comparing two maps. [writeTemplateFiles] adds the one thing a spec cannot compare.
  *
  * Paths are relative to the **project root**, `/` separated, which is what a `layout { }`
- * declares. Nothing here reads the file system, the search for the project root included.
+ * declares. The file system is read only when [values] fill in a module capture: which modules
+ * exist is what such a value is checked against, and [modules] is asked for them then, once --
+ * after every problem the declarations alone can show has been reported.
  */
 internal fun templateFiles(
     context: ArchitectureProcessContext<*>,
     roleName: String,
     values: Map<String, String>,
+    modules: () -> ModuleIndex = {
+        moduleIndex(context.fileSystem, findProjectRoot(context.fileSystem).path, context.architecture.moduleResolver)
+    },
 ): Map<String, String> {
     val role = templateRoleOf(context.roles, roleName)
-    return templateFilesOf(role, context.declaredEntries, values)
-}
+    val entries = context.declaredEntries.filter { it.role === role }
+    val template = templateOf(role)
+    val captureNames = captureNamesOf(entries)
+    requireNoCaptureConflicts(role, entries, template, values)
+    requireValidCaptureValues(role, entries, values)
 
-/** [templateFiles] once the role has been resolved. */
-private fun templateFilesOf(
-    role: Role,
-    declaredEntries: List<LayoutEntry>,
-    values: Map<String, String>,
-): Map<String, String> {
     val evaluation = evaluateTemplate(
-        declaration = templateOf(role),
+        declaration = template,
         roleName = role.qualifiedName,
         values = values,
+        captureNames = captureNames,
     )
-
-    // Narrowed once rather than per file: a definition of any size holds far more entries than
-    // one template holds files, and the answer is the same for every one of them.
-    val entries = declaredEntries.filter { it.role === role }
+    val layout = if (fillsModuleCapture(entries, values)) {
+        val misses = mutableListOf<ModuleMiss>()
+        PlacementLayout(role.flattenLayout(modules().boundTo(values, misses)), misses)
+    } else {
+        PlacementLayout(entries)
+    }
 
     // Declaration order, so the log reads the way the template does. Two files of one template
     // cannot collide: their names differ -- `file(...)` refuses a repeat -- and a name decides
@@ -48,14 +58,21 @@ private fun templateFilesOf(
     for (file in evaluation.files) {
         val path = placeTemplateFile(
             role = role,
-            entries = entries,
+            layout = layout,
             fileName = file.fileName,
             declaredAt = file.declaredAt,
+            values = values,
         )
         files[path] = file.content.withFinalNewline()
     }
     return files
 }
+
+/** Whether [values] give every name of some module capture of [entries], which only the modules that exist can place. */
+private fun fillsModuleCapture(entries: List<LayoutEntry>, values: Map<String, String>): Boolean =
+    entries.any { entry ->
+        entry.captureVariants.any { variant -> variant.moduleCapture?.names?.all { it in values } == true }
+    }
 
 /**
  * [this] as a text file's contents: ending in a newline, the way every other file in the tree does.

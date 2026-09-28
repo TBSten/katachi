@@ -79,6 +79,8 @@ public class TemplateSummary internal constructor(
      * files depend on a Boolean or an enum may produce a different number with other values.
      */
     public val fileCount: Int?,
+    /** The role's named wildcards, which a run also takes as `--arg`. See [TemplateCapturePreview]. */
+    public val captures: List<TemplateCapturePreview>,
 ) {
     override fun toString(): String = "TemplateSummary($roleName)"
 }
@@ -134,6 +136,11 @@ public class TemplateDetail internal constructor(
     public val branches: List<TemplateBranch>,
     /** A `./gradlew katachiTemplate ...` command that generates this template, ready to paste. */
     public val exampleCommand: String,
+    /**
+     * The role's named wildcards, which a run also takes as `--arg`. Kept apart from [parameters]:
+     * the template does not declare them, and their value picks a directory.
+     */
+    public val captures: List<TemplateCapturePreview>,
 ) : TemplateDescription {
     override fun toString(): String =
         "Template $roleName: ${parameters.size} parameters, ${files.size} files"
@@ -174,6 +181,66 @@ public class TemplateParameterPreview internal constructor(
     public val previewValueSource: PreviewValueSource,
 ) {
     override fun toString(): String = "TemplateParameterPreview($name: $typeName = $previewValue)"
+}
+
+/**
+ * One named wildcard of a role, as a template run takes it: a `capture("...")` level of a file
+ * pattern, or a name `"...".module(capture = ...)` gave a module wildcard.
+ *
+ * A name used in several places is listed once per place, so that where a value lands can be
+ * read from the list. Its preview value, where one appears in [TemplateDetail.files], is
+ * `${name}`, as a String parameter's is.
+ *
+ * ## Example 1: the `--arg` names a run has to add for the directories
+ * ```kt
+ * val detail = projectArchitecture.process(
+ *     DescribeTemplates,
+ *     DescribeTemplates.Args(roleName = "ViewModel"),
+ * ).getOrThrow()
+ * (detail as? TemplateDetail)?.captures.orEmpty().map { it.name }.distinct()
+ * ```
+ *
+ * @see TemplateDetail
+ * @see TemplateSummary
+ */
+@ExperimentalKatachiApi
+@Serializable
+public class TemplateCapturePreview internal constructor(
+    /** The name, which is also its `--arg` name. */
+    public val name: String,
+    /** Whether it names a directory level or a module wildcard. */
+    public val kind: TemplateCaptureKind,
+    /**
+     * Where it sits: for a [TemplateCaptureKind.PathCapture], the flattened file pattern it is a
+     * level of, with a `*` standing for it; for a [TemplateCaptureKind.ModuleCapture], the module
+     * key (`:feature:*`).
+     */
+    public val pattern: String,
+    /**
+     * Which level of [pattern] it is, 0-based: the `/`-separated level of a file pattern, or the
+     * position among the `*`s of a module key.
+     */
+    public val position: Int,
+) {
+    override fun toString(): String = "TemplateCapturePreview($name at $pattern[$position])"
+}
+
+/**
+ * Which kind of named wildcard a [TemplateCapturePreview] is.
+ *
+ * ## Example 1: the captures that have to name an existing module
+ * ```kt
+ * detail.captures.filter { it.kind == TemplateCaptureKind.ModuleCapture }
+ * ```
+ */
+@ExperimentalKatachiApi
+@Serializable
+public enum class TemplateCaptureKind {
+    /** `capture("...")`: a directory level, which a run may create. */
+    PathCapture,
+
+    /** `"...".module(capture = ...)`: a module wildcard, which has to name a module that exists. */
+    ModuleCapture,
 }
 
 /**
@@ -241,7 +308,8 @@ public class TemplateFilePreview internal constructor(
     /**
      * Where the file would land, relative to the project root, or `null` when the layout does
      * not decide it: every pattern that accepts the name still has a wildcard in its directory,
-     * such as a module written `:feature:*`. `katachiTemplate` refuses such a file.
+     * such as a module written `:feature:*`, or a module capture whose module only a run's value
+     * picks. A directory `capture("...")` names is shown as `${name}`.
      */
     public val path: String?,
     /** When [path] is `null`, the patterns that accept the name. Empty otherwise. */

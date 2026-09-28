@@ -5,49 +5,56 @@
       "title": "全部の型",
       "summary": "string / boolean / int / enum を既定値あり・なしで1つずつ持つ",
       "parameterNames": ["name", "label", "enabled", "verbose", "count", "pageSize", "mode", "fallbackMode"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "Counter",
       "title": "カウンター",
       "summary": null,
       "parameterNames": ["name"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     },
     {
       "roleName": "a/Shallow",
       "title": "浅い",
       "summary": "Boolean と enum の分岐で引数とファイルが増減する",
       "parameterNames": ["name", "withImpl", "withTest", "style", "implSuffix"],
-      "fileCount": 2
+      "fileCount": 2,
+      "captures": []
     },
     {
       "roleName": "a/b/Middle",
       "title": "Middle",
       "summary": null,
       "parameterNames": ["name"],
-      "fileCount": null
+      "fileCount": null,
+      "captures": []
     },
     {
       "roleName": "a/b/c/Deep",
       "title": null,
       "summary": null,
       "parameterNames": ["name", "itemName"],
-      "fileCount": 4
+      "fileCount": 4,
+      "captures": []
     },
     {
       "roleName": "other/Broken",
       "title": "壊れたテンプレート",
       "summary": null,
       "parameterNames": ["name"],
-      "fileCount": null
+      "fileCount": null,
+      "captures": []
     },
     {
       "roleName": "other/Wildcard",
       "title": null,
       "summary": "生成先のモジュールが決まらない",
       "parameterNames": ["name"],
-      "fileCount": 1
+      "fileCount": 1,
+      "captures": []
     }
   ],
   "details": [
@@ -146,7 +153,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=AllTypes --arg name=Name --arg enabled=true --arg count=0 --arg mode=Compact"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=AllTypes --arg name=Name --arg enabled=true --arg count=0 --arg mode=Compact",
+      "captures": []
     },
     {
       "roleName": "Counter",
@@ -173,7 +181,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=Counter --arg name=0"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=Counter --arg name=0",
+      "captures": []
     },
     {
       "roleName": "a/Shallow",
@@ -293,7 +302,8 @@
           "removedParameters": []
         }
       ],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=a/Shallow --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=a/Shallow --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "a/b/c/Deep",
@@ -348,7 +358,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=a/b/c/Deep --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=a/b/c/Deep --arg name=Name",
+      "captures": []
     },
     {
       "roleName": "other/Wildcard",
@@ -375,7 +386,8 @@
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=other/Wildcard --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=other/Wildcard --arg name=Name",
+      "captures": []
     }
   ]
 }

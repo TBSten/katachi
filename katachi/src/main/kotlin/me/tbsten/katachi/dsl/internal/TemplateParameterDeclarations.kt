@@ -29,8 +29,9 @@ internal fun declaredTemplateParameters(
     declaration: TemplateDeclaration,
     roleName: String,
     values: Map<String, String>,
+    captureNames: Set<String> = emptySet(),
 ): List<DeclaredTemplateParameter> {
-    val scope = TemplateScopeImpl(roleName = roleName, values = values)
+    val scope = TemplateScopeImpl(roleName = roleName, values = values, captureNames = captureNames)
     catching { declaration.block(scope) }
     return scope.parameters().mapNotNull { parameter ->
         val name = parameter.name ?: return@mapNotNull null
