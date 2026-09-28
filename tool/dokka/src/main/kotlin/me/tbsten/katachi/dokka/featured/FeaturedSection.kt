@@ -1,5 +1,6 @@
 package me.tbsten.katachi.dokka.featured
 
+import me.tbsten.katachi.dokka.internal.fragment.SummarySegment
 import org.jetbrains.dokka.DokkaConfiguration.DokkaSourceSet
 import org.jetbrains.dokka.base.translators.documentables.PageContentBuilder
 import org.jetbrains.dokka.links.DRI

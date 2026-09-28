@@ -1,4 +1,4 @@
-package me.tbsten.katachi.dokka.featured
+package me.tbsten.katachi.dokka.internal.featured
 
 import me.tbsten.katachi.dokka.KatachiDokkaConfiguration
 import org.jetbrains.dokka.DokkaConfiguration.DokkaSourceSet
@@ -29,7 +29,7 @@ internal val KatachiDokkaConfiguration.htmlFeaturedTitle: String
  * One `@featured` declaration of a module, as the sidebar, the llms files and the fragment need it.
  *
  * [summary] is the paragraph shown next to it: the text after the tag, or the summary of
- * `me.tbsten.katachi.dokka.llms.summary.Summaries`.
+ * `me.tbsten.katachi.dokka.internal.summary.Summaries`.
  */
 internal data class FeaturedEntry(
     val name: String,

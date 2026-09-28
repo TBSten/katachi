@@ -1,6 +1,4 @@
-package me.tbsten.katachi.dokka.fragment
-
-import me.tbsten.katachi.dokka.featured.SummarySegment
+package me.tbsten.katachi.dokka.internal.fragment
 
 /** The file a module's run leaves next to its output for the aggregating run to collect. */
 internal const val FRAGMENT_FILE: String = "katachi-dokka-fragment.json"

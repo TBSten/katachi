@@ -1,5 +1,7 @@
 package me.tbsten.katachi.dokka.featured
 
+import me.tbsten.katachi.dokka.internal.featured.FeaturedCollector
+import me.tbsten.katachi.dokka.internal.featured.htmlFeaturedTitle
 import me.tbsten.katachi.dokka.katachiConfiguration
 import org.jetbrains.dokka.base.DokkaBase
 import org.jetbrains.dokka.base.translators.documentables.PageContentBuilder

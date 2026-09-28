@@ -1,10 +1,15 @@
 package me.tbsten.katachi.dokka.llms
 
-import me.tbsten.katachi.dokka.LLMS_FILE
-import me.tbsten.katachi.dokka.LLMS_FULL_FILE
+import me.tbsten.katachi.dokka.internal.link.LinkBase
+import me.tbsten.katachi.dokka.internal.link.LinkedPage
+import me.tbsten.katachi.dokka.internal.link.LlmsLinkStyle
+import me.tbsten.katachi.dokka.internal.link.LlmsLinks
+import me.tbsten.katachi.dokka.internal.link.directoryOf
+import me.tbsten.katachi.dokka.internal.link.joinPath
+import me.tbsten.katachi.dokka.internal.link.markdownPathOf
+import me.tbsten.katachi.dokka.internal.page.PageMarkdown
+import me.tbsten.katachi.dokka.internal.page.PageMarkdownWriter
 import me.tbsten.katachi.dokka.katachiConfiguration
-import me.tbsten.katachi.dokka.llms.page.PageMarkdown
-import me.tbsten.katachi.dokka.llms.page.PageMarkdownWriter
 import org.jetbrains.dokka.base.DokkaBase
 import org.jetbrains.dokka.links.DRI
 import org.jetbrains.dokka.model.withDescendants

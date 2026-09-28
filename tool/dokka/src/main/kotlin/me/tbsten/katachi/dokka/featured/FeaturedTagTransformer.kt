@@ -1,5 +1,8 @@
 package me.tbsten.katachi.dokka.featured
 
+import me.tbsten.katachi.dokka.internal.featured.FEATURED_TAG
+import me.tbsten.katachi.dokka.internal.featured.FeaturedMarker
+import me.tbsten.katachi.dokka.internal.featured.hasText
 import org.jetbrains.dokka.DokkaConfiguration.DokkaSourceSet
 import org.jetbrains.dokka.model.DAnnotation
 import org.jetbrains.dokka.model.DClass

@@ -1,4 +1,4 @@
-package me.tbsten.katachi.dokka.fragment
+package me.tbsten.katachi.dokka.internal.fragment
 
 import me.tbsten.katachi.dokka.KatachiDokkaPlugin
 import org.jetbrains.dokka.DokkaConfiguration.DokkaModuleDescription

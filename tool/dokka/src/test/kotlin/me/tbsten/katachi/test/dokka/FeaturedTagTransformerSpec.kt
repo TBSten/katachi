@@ -5,8 +5,8 @@ import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotest.matchers.collections.shouldNotContain
 import io.kotest.matchers.maps.shouldBeEmpty
 import io.kotest.matchers.shouldBe
-import me.tbsten.katachi.dokka.featured.FeaturedMarker
-import me.tbsten.katachi.dokka.featured.featuredMarker
+import me.tbsten.katachi.dokka.internal.featured.FeaturedMarker
+import me.tbsten.katachi.dokka.internal.featured.featuredMarker
 import org.jetbrains.dokka.model.Documentable
 import org.jetbrains.dokka.model.doc.Text
 import org.jetbrains.dokka.model.properties.WithExtraProperties

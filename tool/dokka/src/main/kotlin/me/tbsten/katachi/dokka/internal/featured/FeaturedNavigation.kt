@@ -1,4 +1,4 @@
-package me.tbsten.katachi.dokka.featured
+package me.tbsten.katachi.dokka.internal.featured
 
 import org.jetbrains.dokka.base.renderers.html.NavigationNode
 import org.jetbrains.dokka.base.renderers.html.NavigationNodeIcon

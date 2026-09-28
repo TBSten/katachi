@@ -1,8 +1,8 @@
 package me.tbsten.katachi.dokka.navigation
 
-import me.tbsten.katachi.dokka.featured.FeaturedCollector
-import me.tbsten.katachi.dokka.featured.FeaturedNavigation
-import me.tbsten.katachi.dokka.featured.htmlFeaturedTitle
+import me.tbsten.katachi.dokka.internal.featured.FeaturedCollector
+import me.tbsten.katachi.dokka.internal.featured.FeaturedNavigation
+import me.tbsten.katachi.dokka.internal.featured.htmlFeaturedTitle
 import me.tbsten.katachi.dokka.katachiConfiguration
 import org.jetbrains.dokka.base.renderers.html.NavigationNode
 import org.jetbrains.dokka.base.renderers.html.NavigationPage

@@ -1,11 +1,11 @@
 package me.tbsten.katachi.dokka
 
+import me.tbsten.katachi.dokka.featured.AllModulesPageFeaturedInstaller
 import me.tbsten.katachi.dokka.featured.FeaturedTagTransformer
 import me.tbsten.katachi.dokka.featured.ModulePageFeaturedTransformer
-import me.tbsten.katachi.dokka.fragment.AllModulesPageFeaturedInstaller
-import me.tbsten.katachi.dokka.fragment.ModuleFragmentInstaller
-import me.tbsten.katachi.dokka.fragment.ModuleFragmentRegistry
-import me.tbsten.katachi.dokka.fragment.ModuleFragmentStrategy
+import me.tbsten.katachi.dokka.internal.fragment.ModuleFragmentInstaller
+import me.tbsten.katachi.dokka.internal.fragment.ModuleFragmentRegistry
+import me.tbsten.katachi.dokka.internal.fragment.ModuleFragmentStrategy
 import me.tbsten.katachi.dokka.llms.LlmsIndexInstaller
 import me.tbsten.katachi.dokka.llms.LlmsModuleFileStrategy
 import me.tbsten.katachi.dokka.llms.LlmsModuleInstaller
@@ -61,6 +61,9 @@ import org.jetbrains.dokka.templates.TemplatingPlugin
  *     dokkaHtmlPlugin(project(":tool:dokka"))
  * }
  * ```
+ *
+ * Public because Dokka finds it by `ServiceLoader` (see `META-INF/services`), which needs a
+ * public no-arg constructor it can call by reflection.
  */
 public class KatachiDokkaPlugin : DokkaPlugin() {
     private val dokkaBase by lazy { plugin<DokkaBase>() }

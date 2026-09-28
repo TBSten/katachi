@@ -1,4 +1,4 @@
-package me.tbsten.katachi.dokka.llms
+package me.tbsten.katachi.dokka.internal.link
 
 import org.jetbrains.dokka.base.templating.parseJson
 import org.jetbrains.dokka.base.templating.toJsonString

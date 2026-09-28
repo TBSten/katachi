@@ -1,5 +1,7 @@
 package me.tbsten.katachi.dokka
 
+import me.tbsten.katachi.dokka.llms.LLMS_FILE
+import me.tbsten.katachi.dokka.llms.LLMS_FULL_FILE
 import me.tbsten.katachi.dokka.navigation.PackageNavigation
 import org.jetbrains.dokka.plugability.ConfigurableBlock
 import org.jetbrains.dokka.plugability.DokkaContext
@@ -9,6 +11,10 @@ import org.jetbrains.dokka.plugability.configuration
  * The settings of [KatachiDokkaPlugin], read from Dokka's `pluginsConfiguration` as JSON.
  *
  * Every property has a default, so the plugin works without any configuration at all.
+ *
+ * Public because it is the type argument of `pluginsConfiguration`'s
+ * `configuration<KatachiDokkaPlugin, KatachiDokkaConfiguration>()` read, deserialized by Dokka
+ * from a different module.
  *
  * ## Example
  *
@@ -24,7 +30,7 @@ import org.jetbrains.dokka.plugability.configuration
  *
  * @property featuredTitle The name of the sidebar node and the heading of the llms files' section
  *   that lists the `@featured` declarations. HTML shows it with a star in front (see
- *   `me.tbsten.katachi.dokka.featured.htmlFeaturedTitle`); the llms files and the per-page
+ *   `me.tbsten.katachi.dokka.internal.featured.htmlFeaturedTitle`); the llms files and the per-page
  *   Markdown keep it plain.
  * @property llms Whether each module gets an [LLMS_FILE], and the aggregated output an index of
  *   them.
@@ -63,16 +69,6 @@ public data class KatachiDokkaConfiguration(
     val optionalPackagePatterns: List<String> = listOf(".*\\.internal(\\..*)?", ".*\\.impl(\\..*)?"),
     val packageNavigation: String = "hierarchical-module-link",
 ) : ConfigurableBlock
-
-/** The llms.txt index of a module, or of the aggregated output: see https://llmstxt.org/. */
-internal const val LLMS_FILE: String = "llms.txt"
-
-/** The whole API reference of a module in one Markdown file, for tools that read everything. */
-internal const val LLMS_FULL_FILE: String = "llms-full.txt"
-
-/** The llms files this configuration asks each module for, in the order they are listed. */
-internal val KatachiDokkaConfiguration.llmsFiles: List<String>
-    get() = listOfNotNull(LLMS_FILE.takeIf { llms }, LLMS_FULL_FILE.takeIf { llmsFull })
 
 /**
  * Reads the configuration of this run, falling back to the defaults when none was given.

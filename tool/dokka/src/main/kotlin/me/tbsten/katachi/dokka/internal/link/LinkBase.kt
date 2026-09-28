@@ -1,4 +1,4 @@
-package me.tbsten.katachi.dokka.llms
+package me.tbsten.katachi.dokka.internal.link
 
 /**
  * Turns a path relative to the published output root into the link written in an llms file.

@@ -1,8 +1,9 @@
 package me.tbsten.katachi.dokka.llms
 
-import me.tbsten.katachi.dokka.featured.FeaturedCollector
-import me.tbsten.katachi.dokka.featured.FeaturedDeclarationKind
-import me.tbsten.katachi.dokka.llms.markdown.SignatureText
+import me.tbsten.katachi.dokka.internal.featured.FeaturedCollector
+import me.tbsten.katachi.dokka.internal.featured.FeaturedDeclarationKind
+import me.tbsten.katachi.dokka.internal.markdown.SignatureText
+import me.tbsten.katachi.dokka.internal.summary.documentationOf
 import org.jetbrains.dokka.base.signatures.SignatureProvider
 import org.jetbrains.dokka.links.DRI
 import org.jetbrains.dokka.model.Annotations
@@ -12,7 +13,6 @@ import org.jetbrains.dokka.model.DModule
 import org.jetbrains.dokka.model.DPackage
 import org.jetbrains.dokka.model.DProperty
 import org.jetbrains.dokka.model.Documentable
-import org.jetbrains.dokka.model.doc.DocumentationNode
 import org.jetbrains.dokka.model.properties.WithExtraProperties
 import org.jetbrains.dokka.pages.ClasslikePageNode
 import org.jetbrains.dokka.pages.MemberPageNode
@@ -101,10 +101,4 @@ internal class LlmsModelFactory(
     private companion object {
         val DEPRECATED = setOf(DRI("kotlin", "Deprecated"), DRI("java.lang", "Deprecated"))
     }
-}
-
-/** The KDoc of the source set Dokka shows first: the `expect` one, else the first. */
-internal fun documentationOf(documentable: Documentable): DocumentationNode? {
-    val preferred = documentable.expectPresentInSet ?: documentable.sourceSets.firstOrNull()
-    return documentable.documentation[preferred] ?: documentable.documentation.values.firstOrNull()
 }

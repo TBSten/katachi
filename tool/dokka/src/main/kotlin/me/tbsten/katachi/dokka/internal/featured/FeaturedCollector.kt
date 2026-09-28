@@ -1,7 +1,7 @@
-package me.tbsten.katachi.dokka.featured
+package me.tbsten.katachi.dokka.internal.featured
 
-import me.tbsten.katachi.dokka.llms.documentationOf
-import me.tbsten.katachi.dokka.llms.summary.Summaries
+import me.tbsten.katachi.dokka.internal.summary.Summaries
+import me.tbsten.katachi.dokka.internal.summary.documentationOf
 import org.jetbrains.dokka.base.translators.documentables.firstParagraphBrief
 import org.jetbrains.dokka.model.DModule
 import org.jetbrains.dokka.model.Documentable

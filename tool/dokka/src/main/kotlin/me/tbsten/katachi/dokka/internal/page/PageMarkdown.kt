@@ -1,14 +1,14 @@
-package me.tbsten.katachi.dokka.llms.page
+package me.tbsten.katachi.dokka.internal.page
 
-import me.tbsten.katachi.dokka.featured.FeaturedDeclarationKind
-import me.tbsten.katachi.dokka.featured.FeaturedEntry
+import me.tbsten.katachi.dokka.internal.featured.FeaturedDeclarationKind
+import me.tbsten.katachi.dokka.internal.featured.FeaturedEntry
+import me.tbsten.katachi.dokka.internal.link.LlmsLinks
+import me.tbsten.katachi.dokka.internal.summary.Summaries
 import me.tbsten.katachi.dokka.llms.LlmsDeclaration
-import me.tbsten.katachi.dokka.llms.LlmsLinks
 import me.tbsten.katachi.dokka.llms.LlmsModule
 import me.tbsten.katachi.dokka.llms.LlmsPackage
 import me.tbsten.katachi.dokka.llms.LlmsScope
 import me.tbsten.katachi.dokka.llms.LlmsTxtWriter
-import me.tbsten.katachi.dokka.llms.summary.Summaries
 
 /**
  * The Markdown version of one HTML page: a module, a package, a type or a member.

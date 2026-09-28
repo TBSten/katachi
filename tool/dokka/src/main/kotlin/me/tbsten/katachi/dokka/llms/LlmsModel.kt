@@ -1,7 +1,7 @@
 package me.tbsten.katachi.dokka.llms
 
-import me.tbsten.katachi.dokka.featured.FeaturedEntry
-import me.tbsten.katachi.dokka.llms.summary.Summaries
+import me.tbsten.katachi.dokka.internal.featured.FeaturedEntry
+import me.tbsten.katachi.dokka.internal.summary.Summaries
 import org.jetbrains.dokka.DokkaConfiguration.DokkaSourceSet
 import org.jetbrains.dokka.links.DRI
 import org.jetbrains.dokka.model.doc.Description

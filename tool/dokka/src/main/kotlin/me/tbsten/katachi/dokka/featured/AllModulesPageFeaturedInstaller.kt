@@ -1,11 +1,7 @@
-package me.tbsten.katachi.dokka.fragment
+package me.tbsten.katachi.dokka.featured
 
 import me.tbsten.katachi.dokka.KatachiDokkaPlugin
-import me.tbsten.katachi.dokka.featured.FeaturedRow
-import me.tbsten.katachi.dokka.featured.FeaturedRowSummary
-import me.tbsten.katachi.dokka.featured.FeaturedSection
-import me.tbsten.katachi.dokka.featured.FeaturedTarget
-import me.tbsten.katachi.dokka.featured.htmlFeaturedTitle
+import me.tbsten.katachi.dokka.internal.featured.htmlFeaturedTitle
 import me.tbsten.katachi.dokka.katachiConfiguration
 import org.jetbrains.dokka.base.DokkaBase
 import org.jetbrains.dokka.base.translators.documentables.PageContentBuilder

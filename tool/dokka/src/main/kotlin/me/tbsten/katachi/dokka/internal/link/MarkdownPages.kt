@@ -1,4 +1,4 @@
-package me.tbsten.katachi.dokka.llms
+package me.tbsten.katachi.dokka.internal.link
 
 /** What is appended to a page's URL for its Markdown version, as https://llmstxt.org/ proposes. */
 internal const val MARKDOWN_SUFFIX: String = ".md"

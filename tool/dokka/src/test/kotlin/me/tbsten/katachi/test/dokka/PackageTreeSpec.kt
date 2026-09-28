@@ -6,9 +6,9 @@ import io.kotest.matchers.collections.shouldContainExactly
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
 import io.kotest.matchers.types.shouldBeSameInstanceAs
-import me.tbsten.katachi.dokka.featured.FeaturedDeclarationKind
-import me.tbsten.katachi.dokka.featured.FeaturedEntry
-import me.tbsten.katachi.dokka.featured.FeaturedNavigation
+import me.tbsten.katachi.dokka.internal.featured.FeaturedDeclarationKind
+import me.tbsten.katachi.dokka.internal.featured.FeaturedEntry
+import me.tbsten.katachi.dokka.internal.featured.FeaturedNavigation
 import me.tbsten.katachi.dokka.navigation.KatachiDokkaDuplicatePackageNodeException
 import me.tbsten.katachi.dokka.navigation.KatachiDokkaPackageNavigationException
 import me.tbsten.katachi.dokka.navigation.PackageNavigation

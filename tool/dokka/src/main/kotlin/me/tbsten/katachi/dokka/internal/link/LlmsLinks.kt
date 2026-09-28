@@ -1,7 +1,8 @@
-package me.tbsten.katachi.dokka.llms
+package me.tbsten.katachi.dokka.internal.link
 
-import me.tbsten.katachi.dokka.llms.markdown.DocTagMarkdown
-import me.tbsten.katachi.dokka.llms.markdown.DocumentationMarkdown
+import me.tbsten.katachi.dokka.internal.markdown.DocTagMarkdown
+import me.tbsten.katachi.dokka.internal.markdown.DocumentationMarkdown
+import me.tbsten.katachi.dokka.llms.LlmsTarget
 import org.jetbrains.dokka.DokkaConfiguration.DokkaSourceSet
 import org.jetbrains.dokka.links.DRI
 import org.jetbrains.dokka.links.PointingToCallableParameters

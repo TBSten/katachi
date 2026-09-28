@@ -1,4 +1,4 @@
-package me.tbsten.katachi.dokka.featured
+package me.tbsten.katachi.dokka.internal.featured
 
 import org.jetbrains.dokka.DokkaConfiguration.DokkaSourceSet
 import org.jetbrains.dokka.model.Documentable

@@ -6,7 +6,7 @@ import io.kotest.matchers.collections.shouldContainExactly
 import io.kotest.matchers.collections.shouldNotContain
 import io.kotest.matchers.ints.shouldBeGreaterThanOrEqual
 import io.kotest.matchers.shouldBe
-import me.tbsten.katachi.dokka.fragment.FRAGMENT_FILE
+import me.tbsten.katachi.dokka.internal.fragment.FRAGMENT_FILE
 import java.io.File
 
 class AllModulesFeaturedSidebarSpec : FreeSpec({

@@ -1,11 +1,10 @@
-package me.tbsten.katachi.dokka.fragment
+package me.tbsten.katachi.dokka.internal.fragment
 
-import me.tbsten.katachi.dokka.featured.FeaturedCollector
-import me.tbsten.katachi.dokka.featured.toSummarySegments
+import me.tbsten.katachi.dokka.internal.featured.FeaturedCollector
+import me.tbsten.katachi.dokka.internal.summary.Summaries
+import me.tbsten.katachi.dokka.internal.summary.documentationOf
 import me.tbsten.katachi.dokka.katachiConfiguration
-import me.tbsten.katachi.dokka.llms.documentationOf
-import me.tbsten.katachi.dokka.llms.summary.Summaries
-import me.tbsten.katachi.dokka.llmsFiles
+import me.tbsten.katachi.dokka.llms.llmsFiles
 import org.jetbrains.dokka.base.templating.toJsonString
 import org.jetbrains.dokka.model.DModule
 import org.jetbrains.dokka.model.toDisplaySourceSets

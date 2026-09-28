@@ -40,12 +40,18 @@ fun DeclarationContainerScope.dokkaPlugin() = "DokkaPlugin" {
             publicDeclarationsKeepTagsLast()
             mainSourceSet / kotlin / mainPackage / "*".ktFile()
             mainSourceSet / kotlin / mainPackage / "featured" / "*".ktFile()
-            mainSourceSet / kotlin / mainPackage / "fragment" / "*".ktFile()
             mainSourceSet / kotlin / mainPackage / "llms" / "*".ktFile()
-            mainSourceSet / kotlin / mainPackage / "llms" / "markdown" / "*".ktFile()
-            mainSourceSet / kotlin / mainPackage / "llms" / "page" / "*".ktFile()
-            mainSourceSet / kotlin / mainPackage / "llms" / "summary" / "*".ktFile()
             mainSourceSet / kotlin / mainPackage / "navigation" / "*".ktFile()
+            // Implementation parts shared across features (collected here rather than under
+            // whichever feature happened to introduce them first): "internal" is this module's
+            // own domain split, not katachi's `.internal`-for-internal-declarations convention
+            // (see `publicDeclarationsKeepTagsLast` — that convention does not apply here).
+            mainSourceSet / kotlin / mainPackage / "internal" / "featured" / "*".ktFile()
+            mainSourceSet / kotlin / mainPackage / "internal" / "fragment" / "*".ktFile()
+            mainSourceSet / kotlin / mainPackage / "internal" / "link" / "*".ktFile()
+            mainSourceSet / kotlin / mainPackage / "internal" / "markdown" / "*".ktFile()
+            mainSourceSet / kotlin / mainPackage / "internal" / "page" / "*".ktFile()
+            mainSourceSet / kotlin / mainPackage / "internal" / "summary" / "*".ktFile()
             // How Dokka finds the plugin: `ServiceLoader` over the plugin classpath.
             mainSourceSet / "resources" / "META-INF/services" / "org.jetbrains.dokka.plugability.DokkaPlugin".file()
         }

@@ -3,7 +3,7 @@ package me.tbsten.katachi.test.dokka
 import io.kotest.core.spec.style.FreeSpec
 import io.kotest.matchers.nulls.shouldBeNull
 import io.kotest.matchers.shouldBe
-import me.tbsten.katachi.dokka.llms.markdown.SignatureText
+import me.tbsten.katachi.dokka.internal.markdown.SignatureText
 import org.jetbrains.dokka.links.DRI
 import org.jetbrains.dokka.model.properties.PropertyContainer
 import org.jetbrains.dokka.pages.ContentBreakLine

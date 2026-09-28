@@ -1,7 +1,12 @@
 package me.tbsten.katachi.dokka.llms
 
-import me.tbsten.katachi.dokka.LLMS_FILE
-import me.tbsten.katachi.dokka.LLMS_FULL_FILE
+import me.tbsten.katachi.dokka.internal.link.DeferredLinks
+import me.tbsten.katachi.dokka.internal.link.LinkBase
+import me.tbsten.katachi.dokka.internal.link.MARKDOWN_SUFFIX
+import me.tbsten.katachi.dokka.internal.link.ModuleLinkResolver
+import me.tbsten.katachi.dokka.internal.link.directoryIn
+import me.tbsten.katachi.dokka.internal.link.directoryOf
+import me.tbsten.katachi.dokka.internal.link.joinPath
 import me.tbsten.katachi.dokka.katachiConfiguration
 import org.jetbrains.dokka.DokkaConfiguration.DokkaModuleDescription
 import org.jetbrains.dokka.plugability.DokkaContext

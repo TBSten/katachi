@@ -1,4 +1,4 @@
-package me.tbsten.katachi.dokka.llms.markdown
+package me.tbsten.katachi.dokka.internal.markdown
 
 import org.jetbrains.dokka.pages.ContentBreakLine
 import org.jetbrains.dokka.pages.ContentKind

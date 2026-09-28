@@ -1,4 +1,4 @@
-package me.tbsten.katachi.dokka.fragment
+package me.tbsten.katachi.dokka.internal.fragment
 
 import java.util.concurrent.ConcurrentHashMap
 

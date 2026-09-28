@@ -1,7 +1,9 @@
 package me.tbsten.katachi.dokka.llms
 
-import me.tbsten.katachi.dokka.featured.FeaturedDeclarationKind
-import me.tbsten.katachi.dokka.featured.FeaturedEntry
+import me.tbsten.katachi.dokka.internal.featured.FeaturedDeclarationKind
+import me.tbsten.katachi.dokka.internal.featured.FeaturedEntry
+import me.tbsten.katachi.dokka.internal.link.LlmsLinks
+import me.tbsten.katachi.dokka.internal.link.listItem
 
 /**
  * Writes the `llms.txt` of a module, a package or a type, in the format of https://llmstxt.org/:

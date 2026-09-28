@@ -1,7 +1,8 @@
-package me.tbsten.katachi.dokka.llms.summary
+package me.tbsten.katachi.dokka.internal.summary
 
-import me.tbsten.katachi.dokka.featured.hasText
+import me.tbsten.katachi.dokka.internal.featured.hasText
 import org.jetbrains.dokka.base.translators.documentables.firstParagraphBrief
+import org.jetbrains.dokka.model.Documentable
 import org.jetbrains.dokka.model.doc.CustomTagWrapper
 import org.jetbrains.dokka.model.doc.Description
 import org.jetbrains.dokka.model.doc.DocTag
@@ -42,6 +43,12 @@ internal object Summaries {
 
     /** The first summary among [documentations], for a page that shows several declarations. */
     fun firstOf(documentations: List<DocumentationNode?>): DocTag? = documentations.firstNotNullOfOrNull(::of)
+}
+
+/** The KDoc of the source set Dokka shows first: the `expect` one, else the first. */
+internal fun documentationOf(documentable: Documentable): DocumentationNode? {
+    val preferred = documentable.expectPresentInSet ?: documentable.sourceSets.firstOrNull()
+    return documentable.documentation[preferred] ?: documentable.documentation.values.firstOrNull()
 }
 
 /**

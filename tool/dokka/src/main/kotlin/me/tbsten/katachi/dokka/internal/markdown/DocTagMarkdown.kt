@@ -1,4 +1,4 @@
-package me.tbsten.katachi.dokka.llms.markdown
+package me.tbsten.katachi.dokka.internal.markdown
 
 import org.jetbrains.dokka.base.translators.documentables.firstParagraphBrief
 import org.jetbrains.dokka.links.DRI

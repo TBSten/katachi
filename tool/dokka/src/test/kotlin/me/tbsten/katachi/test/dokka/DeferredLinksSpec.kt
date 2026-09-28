@@ -3,8 +3,8 @@ package me.tbsten.katachi.test.dokka
 import io.kotest.core.spec.style.FreeSpec
 import io.kotest.matchers.collections.shouldContainExactly
 import io.kotest.matchers.shouldBe
-import me.tbsten.katachi.dokka.llms.DeferredLinks
-import me.tbsten.katachi.dokka.llms.LinkedPage
+import me.tbsten.katachi.dokka.internal.link.DeferredLinks
+import me.tbsten.katachi.dokka.internal.link.LinkedPage
 import org.jetbrains.dokka.links.Callable
 import org.jetbrains.dokka.links.DRI
 import org.jetbrains.dokka.links.TypeConstructor

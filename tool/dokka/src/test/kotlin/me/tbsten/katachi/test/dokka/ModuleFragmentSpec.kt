@@ -6,9 +6,9 @@ import io.kotest.matchers.collections.shouldBeIn
 import io.kotest.matchers.collections.shouldContainExactly
 import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
-import me.tbsten.katachi.dokka.fragment.FRAGMENT_FILE
-import me.tbsten.katachi.dokka.fragment.FRAGMENT_SCHEMA_VERSION
-import me.tbsten.katachi.dokka.fragment.ModuleFragment
+import me.tbsten.katachi.dokka.internal.fragment.FRAGMENT_FILE
+import me.tbsten.katachi.dokka.internal.fragment.FRAGMENT_SCHEMA_VERSION
+import me.tbsten.katachi.dokka.internal.fragment.ModuleFragment
 import org.jetbrains.dokka.base.templating.parseJson
 
 class ModuleFragmentSpec : FreeSpec({

@@ -2,8 +2,8 @@ package me.tbsten.katachi.test.dokka
 
 import io.kotest.core.spec.style.FreeSpec
 import io.kotest.matchers.shouldBe
-import me.tbsten.katachi.dokka.llms.markdown.DocTagMarkdown
-import me.tbsten.katachi.dokka.llms.markdown.DocumentationMarkdown
+import me.tbsten.katachi.dokka.internal.markdown.DocTagMarkdown
+import me.tbsten.katachi.dokka.internal.markdown.DocumentationMarkdown
 import org.jetbrains.dokka.links.DRI
 import org.jetbrains.dokka.model.doc.A
 import org.jetbrains.dokka.model.doc.B

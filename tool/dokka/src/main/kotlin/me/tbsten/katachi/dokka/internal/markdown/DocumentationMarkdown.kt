@@ -1,7 +1,7 @@
-package me.tbsten.katachi.dokka.llms.markdown
+package me.tbsten.katachi.dokka.internal.markdown
 
-import me.tbsten.katachi.dokka.featured.FEATURED_TAG
-import me.tbsten.katachi.dokka.llms.summary.LLM_TAG
+import me.tbsten.katachi.dokka.internal.featured.FEATURED_TAG
+import me.tbsten.katachi.dokka.internal.summary.LLM_TAG
 import org.jetbrains.dokka.model.doc.Author
 import org.jetbrains.dokka.model.doc.Constructor
 import org.jetbrains.dokka.model.doc.CustomTagWrapper

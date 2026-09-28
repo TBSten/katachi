@@ -1,10 +1,11 @@
 package me.tbsten.katachi.dokka.llms
 
+import me.tbsten.katachi.dokka.internal.link.LlmsLinks
+import me.tbsten.katachi.dokka.internal.markdown.SignatureText
 import me.tbsten.katachi.dokka.llms.LlmsTxtWriter.Companion.featuredItems
 import me.tbsten.katachi.dokka.llms.LlmsTxtWriter.Companion.header
 import me.tbsten.katachi.dokka.llms.LlmsTxtWriter.Companion.item
 import me.tbsten.katachi.dokka.llms.LlmsTxtWriter.Companion.summaryOf
-import me.tbsten.katachi.dokka.llms.markdown.SignatureText
 
 /**
  * Writes the `llms-full.txt` of a module, a package or a type: the same index as its `llms.txt`,

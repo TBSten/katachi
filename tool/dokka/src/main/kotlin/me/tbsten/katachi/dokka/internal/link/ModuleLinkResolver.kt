@@ -1,4 +1,4 @@
-package me.tbsten.katachi.dokka.llms
+package me.tbsten.katachi.dokka.internal.link
 
 import org.jetbrains.dokka.DokkaConfiguration.DokkaModuleDescription
 import org.jetbrains.dokka.base.DokkaBase

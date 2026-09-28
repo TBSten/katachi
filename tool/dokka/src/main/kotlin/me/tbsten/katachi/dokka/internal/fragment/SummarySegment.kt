@@ -1,4 +1,4 @@
-package me.tbsten.katachi.dokka.featured
+package me.tbsten.katachi.dokka.internal.fragment
 
 import org.jetbrains.dokka.base.translators.documentables.firstParagraphBrief
 import org.jetbrains.dokka.model.doc.Br

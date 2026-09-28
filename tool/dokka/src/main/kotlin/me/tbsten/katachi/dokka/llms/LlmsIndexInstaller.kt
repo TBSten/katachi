@@ -1,10 +1,12 @@
 package me.tbsten.katachi.dokka.llms
 
 import me.tbsten.katachi.dokka.KatachiDokkaPlugin
-import me.tbsten.katachi.dokka.LLMS_FILE
-import me.tbsten.katachi.dokka.LLMS_FULL_FILE
-import me.tbsten.katachi.dokka.fragment.FragmentEntry
-import me.tbsten.katachi.dokka.fragment.ModuleFragment
+import me.tbsten.katachi.dokka.internal.fragment.FragmentEntry
+import me.tbsten.katachi.dokka.internal.fragment.ModuleFragment
+import me.tbsten.katachi.dokka.internal.link.LinkBase
+import me.tbsten.katachi.dokka.internal.link.directoryOf
+import me.tbsten.katachi.dokka.internal.link.listItem
+import me.tbsten.katachi.dokka.internal.link.markdownPathOf
 import me.tbsten.katachi.dokka.katachiConfiguration
 import org.jetbrains.dokka.base.DokkaBase
 import org.jetbrains.dokka.model.withDescendants

@@ -5,10 +5,10 @@ import io.kotest.matchers.collections.shouldBeEmpty
 import io.kotest.matchers.collections.shouldContainExactly
 import io.kotest.matchers.nulls.shouldBeNull
 import io.kotest.matchers.shouldBe
-import me.tbsten.katachi.dokka.featured.FeaturedCollector
-import me.tbsten.katachi.dokka.featured.FeaturedDeclarationKind
-import me.tbsten.katachi.dokka.featured.FeaturedEntry
-import me.tbsten.katachi.dokka.featured.toSummarySegments
+import me.tbsten.katachi.dokka.internal.featured.FeaturedCollector
+import me.tbsten.katachi.dokka.internal.featured.FeaturedDeclarationKind
+import me.tbsten.katachi.dokka.internal.featured.FeaturedEntry
+import me.tbsten.katachi.dokka.internal.fragment.toSummarySegments
 
 class FeaturedCollectorSpec : FreeSpec({
     val entries by lazy { FeaturedCollector.collect(DokkaRunner.run(FeaturedSources.ALL_KINDS).module) }
