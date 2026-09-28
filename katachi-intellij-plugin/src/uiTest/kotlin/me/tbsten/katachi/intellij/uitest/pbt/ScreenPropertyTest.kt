@@ -50,6 +50,21 @@ class ScreenPropertyTest {
         report("with rendering", started, renders)
     }
 
+    // covers: 検証の計画 ジャンプ・強調
+    @Test
+    fun `通知からのテンプレートを見るを混ぜた操作の列でも強調は1行だけで頼んだ行が一覧に出て各状態を描ける`() = runBlocking {
+        val started = System.nanoTime()
+        var renders = 0
+        checkAll(config(defaultIterations = 60), catalogArb(), opsArb(1..30, stepWithRevealArb)) { catalog, ops ->
+            ScreenMachine(catalog, render = true).use { machine ->
+                machine.run(ops)
+                machine.collect()
+                renders += machine.renders
+            }
+        }
+        report("with [View template]", started, renders)
+    }
+
     @Test
     fun `描かずに長い操作の列を多く流しても仕様の状態に留まる`() = runBlocking {
         val started = System.nanoTime()

@@ -24,8 +24,9 @@ internal sealed interface KatachiIntent {
     data object EnsureLoaded : KatachiIntent
 
     /**
-     * [View template] of an editor notification: select and highlight [templateId], unfold its group
-     * and module, and scroll its row into view (C2). TODO(C2)
+     * [View template] of an editor notification: highlight [templateId], unfold its module, clear a
+     * search that hides it, and scroll its row into view (C2, [revealTemplate]). Works before the
+     * list is loaded and before the tool window exists: the row shows highlighted when it comes.
      */
     data class RevealTemplate(val templateId: TemplateId) : KatachiIntent
 

@@ -98,6 +98,7 @@ internal class ScreenMachine(private val catalog: Catalog, private val render: B
                 listOf(KatachiIntent.SyncCompleted)
             }
             Op.DefinitionChanged -> listOf(KatachiIntent.DefinitionChanged)
+            is Op.Reveal -> listOf(KatachiIntent.RevealTemplate(revealTargetOf(op.pick, before, harness.arch)))
             is Op.NextLoad -> emptyList<KatachiIntent>().also { nextLoad = op.outcome }
             is Op.NextRun -> emptyList<KatachiIntent>().also { nextRun = op.outcome }
             is Op.ConflictAnswer -> emptyList<KatachiIntent>().also {
@@ -120,6 +121,10 @@ internal class ScreenMachine(private val catalog: Catalog, private val render: B
         dispatcher.runAll()
         val after = harness.state
         countReached(intents, after)
+        if (intents.any { it is KatachiIntent.RevealTemplate }) {
+            if (before.searchQuery.isNotBlank() && after.searchQuery.isBlank()) reached.merge("[View template] cleared the search", 1, Int::plus)
+            if ((before.view.collapsedModules - after.view.collapsedModules).isNotEmpty()) reached.merge("[View template] unfolded a module", 1, Int::plus)
+        }
         val found = buildList {
             escaped.forEach { add("an exception escaped a coroutine: $it") }
             addAll(runViolations)
@@ -133,7 +138,7 @@ internal class ScreenMachine(private val catalog: Catalog, private val render: B
         } catch (e: Exception) {
             fail("uiStateOf threw $e", after, null)
         }
-        val problems = found + uiViolationsOf(after, ui)
+        val problems = found + uiViolationsOf(after, ui) + revealViolationsOf(after, intents, ui)
         if (problems.isNotEmpty()) fail(problems.joinToString("\n  "), after, ui)
         if (render && ui != lastDrawn) {
             for (size in DockSize.entries) {
@@ -162,6 +167,7 @@ internal class ScreenMachine(private val catalog: Catalog, private val render: B
         if (after.loadErrorBanner != null) count("load error banner")
         if (after.modules.size >= 2) count("two or more modules")
         if (after.searchQuery.isNotBlank()) count("searching")
+        if (after.view.highlight != null && after.rows.any { it.id == after.view.highlight?.templateId }) count("highlighted row in the list")
     }
 
     /** Typing into a field of an editable form reaches the state as typed. */
