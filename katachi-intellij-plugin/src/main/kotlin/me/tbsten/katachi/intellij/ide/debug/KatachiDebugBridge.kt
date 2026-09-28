@@ -4,6 +4,7 @@ import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.project.Project
 import me.tbsten.katachi.intellij.ide.KatachiProjectService
+import me.tbsten.katachi.intellij.ide.dialog.GenerateDialogs
 import me.tbsten.katachi.intellij.presentation.FieldId
 import me.tbsten.katachi.intellij.presentation.GenerationState
 import me.tbsten.katachi.intellij.presentation.KatachiIntent
@@ -52,6 +53,28 @@ internal class KatachiDebugBridge(private val project: Project) {
                     generation.report.items.forEach { item -> item.templateIds.forEach { add("result=${it.template}:${item.result}") } }
                 }
             }
+        }.joinToString("\n")
+    }
+
+    /**
+     * The generate dialog on screen as `key=value` lines, or `dialog=none`: `dialog=open`, `title`, `template`
+     * (its complete specifier), `definition`, one `field` per input (`name=value`), `target`, `canGenerate`,
+     * `okEnabled` and `refusal`. Reads state only, so it works while the modal dialog blocks the EDT.
+     */
+    fun describeDialog(): String {
+        check(System.getProperty(ENABLED_PROPERTY) == "true") { "The katachi debug bridge is off; start the IDE with -D$ENABLED_PROPERTY=true." }
+        val dialog = GenerateDialogs.showing ?: return "dialog=none"
+        val state = dialog.viewModel.state.value
+        return buildList {
+            add("dialog=open")
+            add("title=${dialog.title}")
+            add("template=${state.selected?.template?.template}")
+            state.selectedDefinition?.let { id -> add("definition=${state.definitions.firstOrNull { it.id == id }?.gradlePath}") }
+            state.fields.forEach { add("field=${it.name}=${it.value.orEmpty()}") }
+            add("target=${state.targetPath}")
+            add("canGenerate=${state.canGenerate}")
+            add("okEnabled=${dialog.isOKActionEnabled}")
+            dialog.refusal?.let { add("refusal=$it") }
         }.joinToString("\n")
     }
 
