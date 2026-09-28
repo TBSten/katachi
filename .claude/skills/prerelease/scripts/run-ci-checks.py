@@ -22,7 +22,9 @@ from pathlib import Path
 sys.dont_write_bytecode = True
 
 JOBS = ("check", "docs", "ide-plugin")
-GRADLE_FLAGS = ["--no-daemon", "--console=plain", "--project-cache-dir", ".local/tmp/gradle-cache/prerelease-ci"]
+# Absolute, so that a step run inside a subdirectory (katachi-intellij-plugin) still puts the cache
+# under the repository's .local/tmp/ rather than <subdirectory>/.local/.
+GRADLE_FLAGS = ["--no-daemon", "--console=plain", "--project-cache-dir", str(Path(__file__).resolve().parents[4] / ".local/tmp/gradle-cache/prerelease-ci")]
 
 
 def repo_root():

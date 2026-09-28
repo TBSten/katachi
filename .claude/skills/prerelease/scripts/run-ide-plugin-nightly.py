@@ -29,7 +29,9 @@ sys.dont_write_bytecode = True
 WORKFLOW = Path(".github/workflows/ide-plugin-nightly.yml")
 JOB = "pbt"
 STEP_NAME = "Run uiTest"
-GRADLE_FLAGS = ["--no-daemon", "--project-cache-dir", ".local/tmp/gradle-cache/prerelease-ide-plugin-nightly"]
+# Absolute, so that a step run inside a subdirectory (katachi-intellij-plugin) still puts the cache
+# under the repository's .local/tmp/ rather than <subdirectory>/.local/.
+GRADLE_FLAGS = ["--no-daemon", "--project-cache-dir", str(Path(__file__).resolve().parents[4] / ".local/tmp/gradle-cache/prerelease-ide-plugin-nightly")]
 
 
 def repo_root():
