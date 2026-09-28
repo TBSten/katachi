@@ -6,7 +6,28 @@
  */
 import Default from '@astrojs/starlight/components/PageTitle.astro';
 import DifficultyTag from './DifficultyTag.astro';
+import AskAboutPage from './AskAboutPage.astro';
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+const path = Astro.url.pathname.replace(/\/$/, '');
+const isDocsPage = path !== base && path !== `${base}/ja` && !!Astro.locals.starlightRoute?.entry?.id;
 ---
 
-<DifficultyTag />
+{isDocsPage ? (
+	<div class="page-title-meta">
+		<DifficultyTag />
+		<AskAboutPage />
+	</div>
+) : <DifficultyTag />}
 <Default><slot /></Default>
+
+<style>
+	.page-title-meta {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		justify-content: space-between;
+		gap: 0.5rem 1rem;
+		margin-bottom: 0.5rem;
+	}
+	.page-title-meta :global(.katachi-difficulty-tags) { margin: 0; }
+</style>
