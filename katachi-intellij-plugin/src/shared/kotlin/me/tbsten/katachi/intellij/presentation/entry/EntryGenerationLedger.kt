@@ -51,7 +51,8 @@ internal class EntryGenerationLedger {
     fun markSucceeded(file: Path, template: TemplateId) = put(file, LedgerEntry.Succeeded(template))
 
     /** Forgets [file], as when the user deletes it or generates it again. */
-    fun clear(file: Path) = mutableEntries.update { it - file }
+    // A set, not the path itself: a Path is an Iterable<Path>, so `map - path` would remove its name segments.
+    fun clear(file: Path) = mutableEntries.update { it - setOf(file) }
 
     private fun put(file: Path, entry: LedgerEntry) = mutableEntries.update { it + (file to entry) }
 }
