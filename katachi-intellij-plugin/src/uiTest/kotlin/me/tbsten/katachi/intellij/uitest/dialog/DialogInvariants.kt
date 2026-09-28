@@ -9,6 +9,7 @@ import me.tbsten.katachi.intellij.presentation.dialog.TargetNotice
 import me.tbsten.katachi.intellij.presentation.dialog.dialogUiStateOf
 import me.tbsten.katachi.intellij.presentation.entry.EntryOrigin
 import me.tbsten.katachi.intellij.presentation.validateField
+import me.tbsten.katachi.intellij.ui.dialog.PropertiesGenerateDialogStrings
 import me.tbsten.katachi.intellij.uitest.pbt.DiskKind
 import java.nio.file.Path
 
@@ -43,7 +44,7 @@ internal fun stateProblemsOf(view: DialogView): List<String> {
     // The select boxes: every candidate of the definition, one is enough for a select box, two definitions or more for that box.
     val expectedCandidates = usable.filter { it.module.id == s.selectedTemplate.module }.map { it.id }
     if (s.candidates.map { it.id } != expectedCandidates) problems += "candidates ${s.candidates.map { it.id.template }} != the usable templates of the selected definition ${expectedCandidates.map { it.template }}"
-    val ui = dialogUiStateOf(s)
+    val ui = dialogUiStateOf(s, PropertiesGenerateDialogStrings.english())
     if (ui.templateOptions.size != s.candidates.size) problems += "the template select box lists ${ui.templateOptions.size} for ${s.candidates.size} candidates"
     if (s.candidates.isNotEmpty() && s.selected == null) problems += "candidates but none selected"
     if (s.selected != null && s.candidates.getOrNull(ui.selectedTemplate)?.id != s.selectedTemplate) problems += "the select box points at ${ui.selectedTemplate}, not at the selected template"
