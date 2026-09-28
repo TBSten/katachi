@@ -226,6 +226,11 @@ public sealed interface TemplateScope {
      * parameter of the same name is refused as a conflict. Read by its name as a string rather than
      * through a property because a capture name may hold a `-`, which a property name cannot.
      *
+     * A run that gives no value fails the same way as one whose file's place needs it, with
+     * `KatachiMissingTemplateCaptureException`. A preview (`katachiTemplates`) reads it as the
+     * string `${name}`. The value is checked as one directory level and nothing more, so a template
+     * that puts it into a package or a class name tidies or refuses a `-` itself.
+     *
      * ## Example 1: build the package from the module the file is generated into
      * ```kt
      * "Screen" {

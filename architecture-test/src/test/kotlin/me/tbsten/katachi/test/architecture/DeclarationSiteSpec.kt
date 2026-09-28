@@ -128,6 +128,7 @@ internal val gradleOwnDeclarations = setOf(
     "Gradle/BuildScript",
     "Gradle/GradleProperties",
     "Gradle/VersionCatalog",
+    "Gradle/DaemonJvmProperties",
 )
 
 /** Cached so that reading a source file once per declaration does not hit the disk again. */

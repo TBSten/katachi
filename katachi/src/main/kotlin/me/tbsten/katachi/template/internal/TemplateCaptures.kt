@@ -5,6 +5,8 @@ import me.tbsten.katachi.dsl.KatachiTemplateParameterConflictException
 import me.tbsten.katachi.dsl.LayoutEntry
 import me.tbsten.katachi.dsl.LayoutEntryKind
 import me.tbsten.katachi.dsl.Role
+import me.tbsten.katachi.dsl.internal.LayoutCaptures
+import me.tbsten.katachi.dsl.internal.ModulePattern
 import me.tbsten.katachi.dsl.internal.PathCapture
 import me.tbsten.katachi.dsl.internal.TemplateDeclaration
 import me.tbsten.katachi.template.KatachiInvalidTemplateCaptureValueException
@@ -75,8 +77,12 @@ internal fun requireNoCaptureConflicts(
     }
 }
 
-/** Refuses a value [values] gives a capture of [entries] that cannot be one directory level. */
+/**
+ * Refuses a value [values] gives a capture of [entries] that cannot be one directory level -- or,
+ * for a module capture, one level of the module path.
+ */
 internal fun requireValidCaptureValues(role: Role, entries: List<LayoutEntry>, values: Map<String, String>) {
+    val moduleCaptureNames = moduleCaptureNamesOf(entries)
     for ((name, site) in captureSitesOf(entries)) {
         val value = values[name] ?: continue
         val problem = captureValueProblemOf(value) ?: continue
@@ -86,19 +92,48 @@ internal fun requireValidCaptureValues(role: Role, entries: List<LayoutEntry>, v
             value = value,
             problem = problem,
             captureDeclaredAt = site,
+            isModuleCapture = name in moduleCaptureNames,
         )
     }
 }
 
+/** The names [entries] give the `*`s of a module key, as opposed to a `capture("...")` level. */
+internal fun moduleCaptureNamesOf(entries: List<LayoutEntry>): Set<String> =
+    entries.flatMapTo(LinkedHashSet()) { entry -> entry.captureVariants.flatMap { it.moduleCapture?.names.orEmpty() } }
+
+/**
+ * The device names Windows reserves in every directory, whatever the extension: `CON` and
+ * `con.txt` alike open the console rather than a file.
+ */
+private val WINDOWS_RESERVED_NAMES: Set<String> =
+    setOf("CON", "PRN", "AUX", "NUL") + (1..9).flatMap { listOf("COM$it", "LPT$it") }
+
 private fun captureValueProblemOf(value: String): KatachiInvalidTemplateCaptureValueException.Problem? = when {
     value.isEmpty() -> KatachiInvalidTemplateCaptureValueException.Problem.Empty
+    value.isBlank() -> KatachiInvalidTemplateCaptureValueException.Problem.Blank
     value == "." || value == ".." -> KatachiInvalidTemplateCaptureValueException.Problem.DotSegment
     value.any { it == '/' || it == '\\' } -> KatachiInvalidTemplateCaptureValueException.Problem.Separator
-    value.any { it in UNCREATABLE_CHARACTERS || it < ' ' } ->
-        KatachiInvalidTemplateCaptureValueException.Problem.UncreatableCharacter
+    value.any(::isUncreatableInName) -> KatachiInvalidTemplateCaptureValueException.Problem.UncreatableCharacter
+    value.first().isWhitespace() || value.last().isWhitespace() ->
+        KatachiInvalidTemplateCaptureValueException.Problem.SurroundingWhitespace
+    value.last() == '.' -> KatachiInvalidTemplateCaptureValueException.Problem.TrailingDot
+    value.substringBefore('.').uppercase() in WINDOWS_RESERVED_NAMES ->
+        KatachiInvalidTemplateCaptureValueException.Problem.ReservedName
 
     else -> null
 }
+
+/**
+ * Whether [character] may not be part of a directory name katachi creates: one of
+ * [UNCREATABLE_CHARACTERS], or a character that is not printed as itself on one line -- a control
+ * character (DEL and the C1 range included) or a line or paragraph separator such as U+2028.
+ */
+internal fun isUncreatableInName(character: Char): Boolean =
+    character in UNCREATABLE_CHARACTERS ||
+        Character.isISOControl(character) ||
+        Character.getType(character).let {
+            it == Character.LINE_SEPARATOR.toInt() || it == Character.PARAGRAPH_SEPARATOR.toInt()
+        }
 
 /** [path] with each of [captures] replaced by its value in [values]; the caller made sure every value is there. */
 internal fun fillCaptures(path: String, captures: List<PathCapture>, values: Map<String, String>): String {
@@ -110,6 +145,30 @@ internal fun fillCaptures(path: String, captures: List<PathCapture>, values: Map
     }
     return segments.joinToString("/")
 }
+
+/**
+ * [path] with every capture of [variant] that [values] gives a value filled in: its
+ * `capture("...")` levels, and the module key's `*`s when [path] still starts with the key itself.
+ *
+ * The second only happens to an entry flattened without the modules -- the declarations alone, as
+ * a preview or a message reads them. There the key is kept as its conventional directory -- a
+ * `feature` directory with a `*` level below it, for `":feature:*"` -- and filling it in the same
+ * way gives the directory the value would pick. An entry flattened against a module the values
+ * picked already starts with that module's directory and is left as it is.
+ */
+internal fun fillCapturedPath(path: String, variant: LayoutCaptures, values: Map<String, String>): String {
+    val filled = fillCaptures(path, variant.pathCaptures, values)
+    val module = variant.moduleCapture ?: return filled
+    val moduleValues = module.names.map { values[it] ?: return filled }
+    val prefix = conventionalDirectoryOf(module.modulePattern)
+    if (filled != prefix && !filled.startsWith("$prefix/")) return filled
+    val pattern = ModulePattern.compile(module.modulePattern)
+    return conventionalDirectoryOf(pattern.filledIn(moduleValues)) + filled.removePrefix(prefix)
+}
+
+/** [modulePattern] as [ModulePattern.conventionalDirectory] spells it, without compiling it again. */
+private fun conventionalDirectoryOf(modulePattern: String): String =
+    modulePattern.removePrefix(":").replace(':', '/')
 
 /**
  * The captures of one role as `DescribeTemplates` lists them: one per module wildcard and one

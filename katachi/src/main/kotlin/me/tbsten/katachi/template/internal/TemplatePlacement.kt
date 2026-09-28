@@ -8,7 +8,6 @@ import me.tbsten.katachi.dsl.internal.Glob
 import me.tbsten.katachi.dsl.internal.LayoutCaptures
 import me.tbsten.katachi.dsl.internal.ModuleMiss
 import me.tbsten.katachi.template.KatachiAmbiguousTemplatePlacementException
-import me.tbsten.katachi.template.KatachiMissingTemplateCaptureException
 import me.tbsten.katachi.template.KatachiNoTemplatePlacementException
 import me.tbsten.katachi.template.KatachiTemplateModuleNotFoundException
 import me.tbsten.katachi.template.KatachiTemplatePathOutsideProjectException
@@ -49,10 +48,17 @@ internal class PlacementLayout(
  * the answer. Nothing is invented -- a name no pattern accepts has no place to go, and a name two
  * different directories accept is a question katachi refuses to answer on the user's behalf.
  *
- * A directory named with `capture("...")` is filled in from [values]; one whose value is missing,
- * and one that is a `*` without a name, name no single directory and are not a place. A module
- * capture whose value picks no existing module ([PlacementLayout.misses]) fails the file whatever
- * else would take it.
+ * A directory named with `capture("...")` is filled in from [values]; one that is a `*` without a
+ * name names no single directory and is not a place. The captures decide between places as well:
+ *
+ * - a place reached through a capture the run gave a value wins over the places that name no
+ *   capture -- `--arg x=login` asked for `scenario/login/`, not for a `scenario/common/` beside it;
+ * - a place that needs a capture the run gave no value fails the file, even when a place without
+ *   captures would take it: writing to that one instead would drop the forgotten `--arg` without
+ *   a word ([missingCaptures] builds the exception).
+ *
+ * A module capture whose value picks no existing module ([PlacementLayout.misses]) fails the file
+ * whatever else would take it.
  */
 internal fun placeTemplateFile(
     role: Role,
@@ -60,6 +66,9 @@ internal fun placeTemplateFile(
     fileName: String,
     declaredAt: DeclarationSite,
     values: Map<String, String> = emptyMap(),
+    missingCaptures: (names: List<String>) -> Throwable = { names ->
+        missingCaptureException(role, layout.entries, names, declaredAt, fileName)
+    },
 ): String {
     requireCreatableFileName(role, fileName, declaredAt)
 
@@ -69,8 +78,8 @@ internal fun placeTemplateFile(
         // A module capture without its value leaves the names a layout builds out of
         // `wildcard(...)` as placeholders, which no real name matches: the value is what is wrong.
         val unfilled = unfilledModuleCaptures(role, layout.entries, values)
-        if (unfilled.isNotEmpty()) throw KatachiMissingTemplateCaptureException(role.qualifiedName, fileName, unfilled, declaredAt)
-        layout.misses.firstOrNull()?.let { throw moduleNotFound(role, it, declaredAt) }
+        if (unfilled.isNotEmpty()) throw missingCaptures(unfilled)
+        layout.misses.firstOrNull()?.let { throw moduleNotFound(role, it, fileName, declaredAt) }
         throw KatachiNoTemplatePlacementException(
             role = role.qualifiedName,
             fileName = fileName,
@@ -79,37 +88,46 @@ internal fun placeTemplateFile(
         )
     }
 
-    val candidates = LinkedHashSet<String>()
-    val missing = LinkedHashMap<String, MutableSet<String>>()
-    val unnamed = mutableListOf<String>()
+    // Places reached through a capture the run gave a value, and places that name none.
+    val captured = LinkedHashSet<String>()
+    val plain = LinkedHashSet<String>()
+    val missing = LinkedHashSet<String>()
+    val unnamed = LinkedHashSet<String>()
     for (place in matching) {
         for (variant in place.entry.captureVariants.ifEmpty { listOf(LayoutCaptures.NONE) }) {
             val needed = variant.names.filter { it !in values }
             if (needed.isNotEmpty()) {
-                missing.getOrPut(place.entry.path) { LinkedHashSet() } += needed
+                missing += needed
                 continue
             }
-            val directory = fillCaptures(place.entry.path, variant.pathCaptures, values)
-                .substringBeforeLast('/', missingDelimiterValue = "")
+            val filled = fillCapturedPath(place.entry.path, variant, values)
+            val directory = filled.substringBeforeLast('/', missingDelimiterValue = "")
             // Such an entry says where a *kind* of directory keeps this role, not where one file
             // goes: which ones exist is a question only a walk of the project can answer.
             if (directory.isNotEmpty() && Glob.compile(directory, Glob.PATH_SEPARATOR).hasWildcard) {
-                unnamed += place.entry.path
+                unnamed += filled
                 continue
             }
-            candidates += if (directory.isEmpty()) fileName else "$directory/$fileName"
+            val path = if (directory.isEmpty()) fileName else "$directory/$fileName"
+            if (variant.names.isEmpty()) plain += path else captured += path
         }
     }
 
     // A value the run gave a module capture that picks no module is refused even when another
     // place still takes the file: the value was passed on purpose, and generating somewhere else
     // would drop it without a word -- `--arg feature=hoem` landing in `:app` instead of failing.
-    layout.misses.firstOrNull()?.let { throw moduleNotFound(role, it, declaredAt) }
+    layout.misses.firstOrNull()?.let { throw moduleNotFound(role, it, fileName, declaredAt) }
+
+    val chosen = when {
+        captured.isNotEmpty() -> captured
+        missing.isNotEmpty() -> throw missingCaptures(missing.toList())
+        else -> plain
+    }
 
     // Two entries that resolve to the same path are one place said twice -- a role may declare
     // `useCase/*.kt` and `useCase/*UseCase.kt` and mean one directory. Only two *different*
     // directories are a question.
-    val paths = candidates.sorted()
+    val paths = chosen.sorted()
     if (paths.size > 1) {
         throw KatachiAmbiguousTemplatePlacementException(
             role = role.qualifiedName,
@@ -124,41 +142,33 @@ internal fun placeTemplateFile(
         return path
     }
 
-    if (missing.isNotEmpty()) {
-        throw KatachiMissingTemplateCaptureException(
-            role = role.qualifiedName,
-            fileName = fileName,
-            missing = missing.mapValues { it.value.toList() },
-            declaredAt = declaredAt,
-        )
-    }
     throw KatachiWildcardTemplatePlacementException(
         role = role.qualifiedName,
         fileName = fileName,
-        patterns = unnamed.distinct().sorted(),
+        patterns = unnamed.sorted(),
         declaredAt = declaredAt,
     )
 }
 
-/** The file patterns of [role] under a module capture, with the names [values] gives no value. */
+/** The names of module captures of [role]'s file patterns that [values] gives no value, in declaration order. */
 private fun unfilledModuleCaptures(
     role: Role,
     entries: List<LayoutEntry>,
     values: Map<String, String>,
-): Map<String, List<String>> {
-    val unfilled = LinkedHashMap<String, List<String>>()
+): List<String> {
+    val unfilled = LinkedHashSet<String>()
     for (place in filePlacesOf(role, entries)) {
         for (variant in place.entry.captureVariants) {
-            val needed = variant.moduleCapture?.names.orEmpty().filter { it !in values }
-            if (needed.isNotEmpty()) unfilled.putIfAbsent(place.entry.path, needed)
+            unfilled += variant.moduleCapture?.names.orEmpty().filter { it !in values }
         }
     }
-    return unfilled
+    return unfilled.toList()
 }
 
-private fun moduleNotFound(role: Role, miss: ModuleMiss, declaredAt: DeclarationSite) =
+private fun moduleNotFound(role: Role, miss: ModuleMiss, fileName: String, declaredAt: DeclarationSite) =
     KatachiTemplateModuleNotFoundException(
         role = role.qualifiedName,
+        fileName = fileName,
         modulePattern = miss.modulePattern,
         captureNames = miss.captureNames,
         modulePath = miss.modulePath,
@@ -196,7 +206,8 @@ private fun filePlacesOf(role: Role, entries: List<LayoutEntry>): List<FilePlace
  * `*`, `?`, `[`, `]`, `{` and `}` are katachi's glob metacharacters or the ones it rejects, so a
  * name holding them would be compared against the layout as a literal and then created on disk as
  * a file nothing can name back. The rest are what Windows refuses outright; katachi's own check
- * has to give the same answer on every platform, so they are refused everywhere.
+ * has to give the same answer on every platform, so they are refused everywhere. Control characters
+ * and line separators are refused beside these, by [isUncreatableInName].
  *
  * `/`, `\`, a newline and a NUL are not listed because `TemplateScope.file` already refuses them:
  * the string is interpolated before `file(...)` sees it, so that check reads the finished name.
@@ -205,7 +216,7 @@ internal const val UNCREATABLE_CHARACTERS: String = "*?[]{}:\"<>|"
 
 /** Refuses a rendered name that cannot safely become a file. */
 private fun requireCreatableFileName(role: Role, fileName: String, declaredAt: DeclarationSite) {
-    val offending = fileName.filter { it in UNCREATABLE_CHARACTERS || it < ' ' }.toSet()
+    val offending = fileName.filter(::isUncreatableInName).toSet()
     if (offending.isEmpty()) return
     throw KatachiUnsafeTemplateFileNameException(
         role = role.qualifiedName,

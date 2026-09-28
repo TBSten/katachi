@@ -39,7 +39,8 @@ public class KatachiDuplicateCaptureException internal constructor(
 ) : KatachiDeclarationException(
     message = buildString {
         val where = if (role == null) "`$path`" else "`$path` of role \"$role\""
-        appendLine("Capture \"$name\" is used twice on $where, at $declaredAt (first at $firstDeclaredAt).")
+        val at = if (firstDeclaredAt == declaredAt) "at $declaredAt" else "at $declaredAt (first at $firstDeclaredAt)"
+        appendLine("Capture \"$name\" is used twice on $where, $at.")
         appendLine(
             "A template takes one value for it from `--arg $name=...`, so the two levels could " +
                 "never hold different directories.",
@@ -82,9 +83,24 @@ public class KatachiCaptureCountMismatchException internal constructor(
     public val declaredAt: DeclarationSite,
 ) : KatachiDeclarationException(
     message = buildString {
+        val call = if (captures.size == 1) {
+            "\"$modulePath\".module(capture = \"${captures.single()}\")"
+        } else {
+            "\"$modulePath\".module(${captures.joinToString { "\"$it\"" }})"
+        }
+        if (wildcardCount == 0 && "**" in modulePath) {
+            appendLine(
+                "`$call` at $declaredAt names a `**`, which cannot be named: how many levels it " +
+                    "stands for is not fixed, so no one value could fill it in.",
+            )
+            append(
+                "Name a `*` level instead -- `${modulePath.replace("**", "*")}` stands for one level -- " +
+                    "or drop the name and read what the `**` matched through `wildcards`.",
+            )
+            return@buildString
+        }
         appendLine(
-            "`$modulePath`.module(capture = ${captures.joinToString { "\"$it\"" }}) at $declaredAt " +
-                "gives ${captures.size} name(s), but the module path has $wildcardCount `*`.",
+            "`$call` at $declaredAt gives ${captures.size} name(s), but the module path has $wildcardCount `*`.",
         )
         appendLine("The names are matched to the `*`s one for one, in order, so the two counts have to agree.")
         append(

@@ -20,7 +20,7 @@ Screen が大きくなってきたときに切り出す、その画面専用の�
 
 | Module | Path | When to use |
 |---|---|---|
-| `:feature:*` | `src/commonMain/kotlin/**/component/<name>*.kt` |  |
+| `:feature:*` | `src/commonMain/kotlin/**/component/<feature>*.kt` |  |
 
 ## Examples
 

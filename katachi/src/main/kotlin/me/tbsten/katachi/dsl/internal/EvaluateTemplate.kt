@@ -14,19 +14,28 @@ import me.tbsten.katachi.internal.catching
  * known before anything is said about any of them. A failure raised by the user's own code is
  * held back for the same reason: when values were missing or unreadable, that is almost always
  * why it failed, and the values are the more useful thing to say.
+ *
+ * A capture read with `captureValue(...)` that the run gave no value is handed to
+ * [onMissingCaptures] once every parameter has a value, so that the caller reports it the same way
+ * it reports a capture a file's place needs. Without one it is reported with the parameters.
  */
 internal fun evaluateTemplate(
     declaration: TemplateDeclaration,
     roleName: String,
     values: Map<String, String>,
     captureNames: Set<String> = emptySet(),
+    onMissingCaptures: ((names: List<String>, declaredAt: DeclarationSite, cause: Throwable?) -> Nothing)? = null,
 ): TemplateEvaluation {
     val scope = TemplateScopeImpl(roleName = roleName, values = values, captureNames = captureNames)
     var failure = catching { declaration.block(scope) }.exceptionOrNull()
     if (failure == null) failure = catching { scope.render() }.exceptionOrNull()
     scope.requireEveryParameterNamed(declaration.declaredAt)
     scope.requireEveryValueReadable(declaration.declaredAt, failure)
-    scope.requireEveryValuePresent(declaration.declaredAt, failure)
+    scope.requireEveryValuePresent(declaration.declaredAt, failure, capturesApart = onMissingCaptures != null)
+    val missingCaptures = scope.missingCaptureNames()
+    if (onMissingCaptures != null && missingCaptures.isNotEmpty()) {
+        onMissingCaptures(missingCaptures, declaration.declaredAt, failure)
+    }
     failure?.let { throw it }
     scope.requireAtLeastOneFile(declaration.declaredAt)
     return scope.evaluation()

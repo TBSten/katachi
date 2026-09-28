@@ -1,9 +1,11 @@
 package me.tbsten.katachi.test.dsl
 
 import io.kotest.assertions.throwables.shouldThrow
+import io.kotest.assertions.withClue
 import io.kotest.core.spec.style.FreeSpec
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
+import io.kotest.matchers.string.shouldNotContain
 import me.tbsten.katachi.dsl.DeclarationKind
 import me.tbsten.katachi.dsl.KatachiCaptureCountMismatchException
 import me.tbsten.katachi.dsl.KatachiDuplicateCaptureException
@@ -94,7 +96,19 @@ class LayoutModuleCaptureSpec : FreeSpec({
             }
 
             failure.wildcardCount shouldBe 0
-            failure.message!! shouldContain "`**` cannot be named"
+            withClue("1行目から ** に名前は付けられないと言い、* の数の話をしない") {
+                failure.message!!.lines().first() shouldContain "names a `**`, which cannot be named"
+                failure.message!! shouldNotContain "has 0 `*`"
+            }
+        }
+
+        "名前が2つ以上のときは書ける形 .module(\"a\", \"b\") で表示する" {
+            val failure = shouldThrow<KatachiCaptureCountMismatchException> {
+                layoutOf { ":feature:*".module("feature", "layer") { } }
+            }
+
+            failure.message!! shouldContain "`\":feature:*\".module(\"feature\", \"layer\")`"
+            failure.message!! shouldNotContain "capture = \"feature\", \"layer\""
         }
 
         "名前の数の検査はプロジェクトにマッチするモジュールが無くても行われる" {
@@ -111,6 +125,7 @@ class LayoutModuleCaptureSpec : FreeSpec({
             failure.name shouldBe "x"
             failure.path shouldBe ":core:*:*"
             failure.role shouldBe null
+            withClue("同じ位置を2回言わない") { failure.message!! shouldNotContain "(first at" }
         }
 
         "名前が識別子でないと KatachiInvalidIdentifierException" {
@@ -133,14 +148,14 @@ class LayoutModuleCaptureSpec : FreeSpec({
             captured shouldBe listOf("home" to "home", "settings" to "settings")
         }
 
-        "wildcard(name) は プロジェクトを見ていないインデックスではプレースホルダを返す" {
+        "wildcard(name) は プロジェクトを見ていないインデックスでは capture の名前のプレースホルダを返す" {
             val captured = mutableListOf<Pair<String, String>>()
 
             layoutOf {
                 ":feature:*".module(capture = "feature") { captured += wildcard("feature") to wildcards[0] }
             }
 
-            captured shouldBe listOf("<name>" to "<name>")
+            captured shouldBe listOf("<feature>" to "<feature>")
         }
 
         "名前の無い module の中で wildcard(name) を呼ぶと KatachiUnknownCaptureException" {
@@ -163,10 +178,16 @@ class LayoutModuleCaptureSpec : FreeSpec({
             failure.message!! shouldContain "\"feature\""
         }
 
-        "module の外で wildcard(name) を呼ぶと KatachiWildcardsOutsideModuleException" {
-            shouldThrow<KatachiWildcardsOutsideModuleException> {
+        "module の外で wildcard(name) を呼ぶと、名前と宣言位置と書く場所を示す KatachiWildcardsOutsideModuleException" {
+            val failure = shouldThrow<KatachiWildcardsOutsideModuleException> {
                 layoutOf { wildcard("feature") }
             }
+
+            failure.name shouldBe "feature"
+            failure.declaredAt?.fileName shouldBe "LayoutModuleCaptureSpec.kt"
+            failure.message!! shouldContain "`wildcard(\"feature\")` at LayoutModuleCaptureSpec.kt:"
+            failure.message!! shouldContain "Call it inside `\":feature:*\".module(capture = \"feature\") { }`"
+            failure.message!! shouldNotContain "`wildcards` can only"
         }
 
         "名前付き module でも wildcards はそのまま読める" {
@@ -188,7 +209,8 @@ class LayoutModuleCaptureSpec : FreeSpec({
                 val named = if (index == null) layoutOf(byName) else layoutOf(index, byName)
                 val positional = if (index == null) layoutOf(byPosition) else layoutOf(index, byPosition)
 
-                named.shape() shouldBe positional.shape()
+                // 見ていないインデックスでは、名前付きの * は <feature>、名前の無い * は <name> と読む。
+                named.shape() shouldBe positional.shape().map { it.replace("<name>", "<feature>") }
             }
         }
     }

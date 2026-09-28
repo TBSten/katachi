@@ -122,15 +122,22 @@ public class KatachiTemplateParameterConflictException internal constructor(
     message = buildString {
         append("""Capture "$name" of role "$role" declared at $captureDeclaredAt is also the name of """)
         append(conflictsWith)
-        parameterDeclaredAt?.let { append(" declared at ").append(it) }
+        parameterDeclaredAt?.let { append(" at ").append(it) }
         appendLine(".")
         appendLine(
             "Both would receive their value as --arg $name=..., so one run could not give them " +
                 "different values, and nothing would say which of them a value was meant for.",
         )
-        append(
-            "Rename the capture or the parameter. To use the capture's value inside the template, " +
-                "read it with captureValue(\"$name\") instead of declaring a parameter for it.",
-        )
+        if (parameterDeclaredAt == null) {
+            append(
+                "Rename the capture: $name is an argument of the template processor itself, and " +
+                    "keeps its name.",
+            )
+        } else {
+            append(
+                "Rename the capture or the parameter. To use the capture's value inside the template, " +
+                    "read it with captureValue(\"$name\") instead of declaring a parameter for it.",
+            )
+        }
     },
 )

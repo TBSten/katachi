@@ -77,6 +77,9 @@ private fun treeOf(files: Set<String>): FakeFileSystem = repositoryOf {
 private fun List<Violation>.reported(): List<String> =
     map { "${it.kind} ${it.severity} [${it.label}] ${it.path} ${it.details}" }.sorted()
 
+/** What a `*` a module key named reads as without the modules: `<feature>`, `<picked>` and so on. */
+private val NAMED_PLACEHOLDER = Regex("<[A-Za-z][A-Za-z0-9_-]*>")
+
 /** A result's value, or the exception's class when it failed: two spellings must fail the same way. */
 private fun <T> outcome(block: () -> T): Any = runCatching(block).fold({ it as Any }, { "threw ${it::class.qualifiedName}" })
 
@@ -88,7 +91,11 @@ private fun checkSame(trial: Trial) {
     val index = moduleIndex(tree, FsPath.of("/repo"), ModuleResolver.Conventional)
 
     val comparisons = listOf(
-        "flattened (unresolved index)" to { f: me.tbsten.katachi.dsl.LayoutScope.() -> Unit -> outcome { layoutOf(f).shape() } },
+        // Without the modules, a named `*` of a module key reads as `<its name>` rather than
+        // `<name>` -- a placeholder only, the one difference naming is meant to make there.
+        "flattened (unresolved index)" to { f: me.tbsten.katachi.dsl.LayoutScope.() -> Unit ->
+            outcome { layoutOf(f).shape().map { it.replace(NAMED_PLACEHOLDER, "<name>") } }
+        },
         "flattened (the tree's modules)" to { f: me.tbsten.katachi.dsl.LayoutScope.() -> Unit -> outcome { layoutOf(index, f).shape() } },
         "violations" to { f: me.tbsten.katachi.dsl.LayoutScope.() -> Unit ->
             outcome { layoutArchitecture(block = f).validate(tree).reported() }

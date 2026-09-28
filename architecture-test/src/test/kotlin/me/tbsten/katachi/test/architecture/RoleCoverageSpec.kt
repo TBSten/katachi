@@ -44,8 +44,9 @@ class RoleCoverageSpec : FreeSpec({
                     .filterNot { it.required }
                     // `gradle()`'s own roles declare both the Kotlin and the Groovy spelling of
                     // `settings.gradle(.kts)` and `build.gradle(.kts)`, each optional so either
-                    // may be the one a build actually uses. This repository writes every script
-                    // in Kotlin, so the Groovy half is optional-and-unmatched by design, not a
+                    // may be the one a build actually uses, and `gradle/gradle-daemon-jvm.properties`
+                    // for the builds that pin a daemon JVM. This repository writes every script
+                    // in Kotlin and pins none, so those are optional-and-unmatched by design, not a
                     // hole in this project's coverage — `gradleOwnDeclarations` is the same set
                     // `DeclarationSiteSpec` carves out, for a different reason: there, because
                     // the declaration site is katachi's; here, because the declaration itself is.

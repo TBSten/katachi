@@ -224,9 +224,10 @@ private fun kindOf(type: TemplateParameterType<*>): TemplateParameterKind = when
  *
  * The name still holds `${name}`, whose `$`, `{` and `}` generation would refuse as a file name.
  * So the layout is asked about the name with each placeholder spelt as a plain word, and the
- * directory it answers is put in front of the name as the preview spells it. A directory
- * capture is filled in the same way and spelt back as `${name}`; a module capture is left
- * unfilled, since only the modules that exist could say which one a value picks.
+ * directory it answers is put in front of the name as the preview spells it. Every capture is
+ * filled in the same way and spelt back as `${name}` -- a module capture too, as the directory the
+ * module key's own convention gives it (`${feature}` below `feature/` for `":feature:*"`), since
+ * which module a value picks is only known once the modules have been listed.
  */
 private fun filePreviewOf(
     role: Role,
@@ -241,8 +242,7 @@ private fun filePreviewOf(
     for (name in stringNames) {
         plainName = plainName.replace(placeholderOf(name), name.replaceFirstChar(Char::uppercaseChar))
     }
-    val moduleCaptureNames = entries.flatMap { entry -> entry.captureVariants.flatMap { it.moduleCapture?.names.orEmpty() } }.toSet()
-    val tokens = (captureNames - moduleCaptureNames).withIndex().associate { (index, name) -> name to "$CAPTURE_TOKEN$index" }
+    val tokens = captureNames.withIndex().associate { (index, name) -> name to "$CAPTURE_TOKEN$index" }
     return try {
         var placed = placeTemplateFile(role, PlacementLayout(entries), plainName, declaredAt, tokens)
         for ((name, token) in tokens) placed = placed.replace(token, placeholderOf(name))
@@ -257,7 +257,9 @@ private fun filePreviewOf(
         TemplateFilePreview(
             fileName = fileName,
             path = null,
-            unresolvedPatterns = wildcard.patterns,
+            unresolvedPatterns = wildcard.patterns.map { pattern ->
+                tokens.entries.fold(pattern) { spelt, (name, token) -> spelt.replace(token, placeholderOf(name)) }
+            },
             content = content,
         )
     } catch (unfilled: KatachiMissingTemplateCaptureException) {
@@ -323,11 +325,14 @@ private fun branchesOf(
 }
 
 /**
- * A `katachiTemplate` command for [roleName] that runs as pasted: every capture and every required
- * parameter is given a value -- a capture its own name, as a directory is usually spelt, and a
- * String parameter its own name with the first letter upper-cased.
+ * A `katachiTemplate` command for [roleName] with every capture and every required parameter given
+ * a value -- a String parameter its own name with the first letter upper-cased, and a capture
+ * `<name>`.
  *
- * Not `<name>`: a shell reads `<` as a redirection, and the command is meant to be pasted.
+ * A capture is left as a slot on purpose. Its value is a directory or a module of the user's own
+ * project, and no word the preview could make up is one: a command that ran as pasted would
+ * generate into a directory nobody asked for. A shell refuses the `<`, so the slot has to be
+ * filled before the command runs at all.
  */
 private fun exampleCommandOf(
     roleName: String,
@@ -336,7 +341,7 @@ private fun exampleCommandOf(
 ): String =
     buildString {
         append("./gradlew katachiTemplate --arg roleName=").append(roleName)
-        for (name in captureNames) append(" --arg ").append(name).append('=').append(name)
+        for (name in captureNames) append(" --arg ").append(name).append("=<").append(name).append('>')
         for (parameter in parameters) {
             if (parameter.default != null) continue
             val value = when (parameter.type) {

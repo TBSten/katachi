@@ -139,7 +139,12 @@ public fun String.module(vararg captures: String, block: LayoutDirectoryScope.()
     layoutScope.expandModulePath(this, captures.toList(), block)
 
 /**
- * `wildcards` was read outside a `module { }` block.
+ * `wildcards` was read, or `wildcard(name)` called, outside a `module { }` block.
+ *
+ * Both read what a module key's `*`s captured for the module being evaluated. Directly under
+ * `layout { }`, or inside a plain directory block, there is no module key to have captured
+ * anything -- a `capture("...")` level names a directory, and its value is read by the template
+ * with `captureValue(...)`, not by the layout.
  *
  * ## Example 1: catch a `wildcards` read that has no module to read from
  * ```kt
@@ -147,14 +152,35 @@ public fun String.module(vararg captures: String, block: LayoutDirectoryScope.()
  *     layout { wildcards }
  * }
  * ```
+ *
+ * @property name the name `wildcard(name)` was called with, or `null` for a read of `wildcards`.
+ * @property declaredAt where it was read.
  */
-public class KatachiWildcardsOutsideModuleException internal constructor() :
-    KatachiDeclarationException(
-        message = "`wildcards` can only be read inside a `module { }` block. It holds what the " +
-            "module path's `*` and `**` captured for the module being evaluated, and " +
-            "directly under `layout { }`, or inside a plain directory block, there is no " +
-            "module path to have captured anything.",
-    )
+public class KatachiWildcardsOutsideModuleException internal constructor(
+    public val name: String? = null,
+    public val declaredAt: DeclarationSite? = null,
+) : KatachiDeclarationException(
+    message = buildString {
+        val read = if (name == null) "`wildcards`" else "`wildcard(\"$name\")`"
+        append(read)
+        declaredAt?.let { append(" at ").append(it) }
+        appendLine(" is read outside a `module { }` block.")
+        appendLine(
+            "It reads what a module key's `*` captured for the module being evaluated, and directly " +
+                "under `layout { }`, or inside a plain directory block, there is no module key to have " +
+                "captured anything.",
+        )
+        if (name == null) {
+            append("Read it inside the block of a module key with a wildcard, such as `\":feature:*\".module { }`.")
+        } else {
+            append(
+                "Call it inside `\":feature:*\".module(capture = \"$name\") { }`, the module key whose `*` " +
+                    "is named \"$name\". For a directory named with capture(\"$name\"), the template reads " +
+                    "the value with captureValue(\"$name\").",
+            )
+        }
+    },
+)
 
 /**
  * What the module path's wildcards captured, for the module being evaluated.
@@ -179,7 +205,8 @@ public class KatachiWildcardsOutsideModuleException internal constructor() :
  */
 context(layoutScope: LayoutScope)
 public val wildcards: List<String>
-    get() = layoutScope.currentWildcards ?: throw KatachiWildcardsOutsideModuleException()
+    get() = layoutScope.currentWildcards
+        ?: throw KatachiWildcardsOutsideModuleException(declaredAt = captureDeclarationSite())
 
 /**
  * What the module path's `*` named [name] captured, for the module being evaluated.
@@ -203,7 +230,9 @@ public val wildcards: List<String>
  */
 context(layoutScope: LayoutScope)
 public fun wildcard(name: String): String {
-    if (layoutScope.currentWildcards == null) throw KatachiWildcardsOutsideModuleException()
+    if (layoutScope.currentWildcards == null) {
+        throw KatachiWildcardsOutsideModuleException(name = name, declaredAt = captureDeclarationSite())
+    }
     val captures = layoutScope.currentCaptures.orEmpty()
     return captures[name] ?: throw KatachiUnknownCaptureException(
         name = name,

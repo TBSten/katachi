@@ -116,43 +116,79 @@ private fun architectureOf(trial: Trial): Architecture = architecture {
 private fun globMatches(pattern: String, name: String): Boolean =
     Regex(pattern.split('*').joinToString("[^/]+") { Regex.escape(it) }).matches(name)
 
+/** One level of a declared path as the model reads it. */
+private sealed interface Level {
+    /** A literal level, or a capture the run gave [name] for. */
+    data class Named(val name: String, val byCapture: Boolean) : Level
+
+    /** A capture the run gave no value. */
+    data object Missing : Level
+
+    /** A `*` without a name, or anything else that names no single directory. */
+    data object Unnamed : Level
+}
+
 /**
- * Where the model says [fileName] goes: every declared file pattern that accepts the name and
- * whose directories are all literal or filled-in captures. `null` when a module value picks no
- * module, which fails the run whatever else takes the file.
+ * Where the model says [fileName] goes, or `null` when the run has to fail.
+ *
+ * Every declared file pattern that accepts the name is a place, and the places are narrowed the
+ * way the design says: places reached through a capture the run gave a value win over the rest;
+ * without one, a place that needs a capture the run did not give fails the run; otherwise every
+ * place whose directories are all literal is a candidate. A module value that picks no module
+ * fails the run whatever else takes the file.
  */
 private fun expectedPlaces(trial: Trial, fileName: String): Set<String>? {
-    val places = linkedSetOf<String>()
+    val captured = linkedSetOf<String>()
+    val plain = linkedSetOf<String>()
+    var missing = false
     var missesModule = false
-    fun walk(list: List<RNode>, prefix: List<String?>, moduleValue: String?) {
+    fun walk(list: List<RNode>, prefix: List<Level>, moduleValue: String?) {
         for (node in list) {
             when (node) {
                 is RNode.Dir -> walk(node.children, prefix + node.segs.map { level(it, trial.values) }, moduleValue)
                 is RNode.File -> {
                     val dirs = prefix + node.dirs.map { level(it, trial.values) }
                     val pattern = if ("{W}" in node.name) moduleValue?.let { node.name.replace("{W}", it) } else node.name
-                    if (pattern == null || !globMatches(pattern, fileName) || dirs.any { it == null }) continue
-                    places += (dirs + fileName).joinToString("/")
+                    if (pattern == null || !globMatches(pattern, fileName)) continue
+                    when {
+                        dirs.any { it == Level.Missing } -> missing = true
+                        dirs.any { it == Level.Unnamed } -> Unit
+                        else -> {
+                            val named = dirs.filterIsInstance<Level.Named>()
+                            val path = (named.map { it.name } + fileName).joinToString("/")
+                            if (named.any { it.byCapture }) captured += path else plain += path
+                        }
+                    }
                 }
 
                 is RNode.Module -> {
                     val value = node.captureName?.let { trial.values[it] }
                     if (value != null && value !in EXISTING_MODULES) missesModule = true
                     val bound = value?.takeIf { it in EXISTING_MODULES }
-                    walk(node.children, listOf("feature", bound), bound)
+                    val moduleLevel = when {
+                        bound != null -> Level.Named(bound, byCapture = true)
+                        node.captureName != null && value == null -> Level.Missing
+                        else -> Level.Unnamed
+                    }
+                    walk(node.children, listOf(Level.Named("feature", byCapture = false), moduleLevel), bound)
                 }
             }
         }
     }
     walk(trial.layout, emptyList(), null)
-    return if (missesModule) null else places
+    return when {
+        missesModule -> null
+        captured.isNotEmpty() -> captured
+        missing -> null
+        else -> plain
+    }
 }
 
-/** A level as the directory it names, or `null` when it names no single directory. */
-private fun level(seg: RSeg, values: Map<String, String>): String? = when (seg) {
-    is RSeg.Lit -> seg.name
-    is RSeg.Capture -> values[seg.name]
-    else -> null
+/** A level as the model reads it. */
+private fun level(seg: RSeg, values: Map<String, String>): Level = when (seg) {
+    is RSeg.Lit -> Level.Named(seg.name, byCapture = false)
+    is RSeg.Capture -> values[seg.name]?.let { Level.Named(it, byCapture = true) } ?: Level.Missing
+    else -> Level.Unnamed
 }
 
 private fun modules(): ModuleIndex = moduleIndexOf(*EXISTING_MODULES.map { "feature/$it" }.toTypedArray())

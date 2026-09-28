@@ -224,18 +224,27 @@ internal class TemplateScopeImpl(
         )
     }
 
-    /** Reports every value the run was missing at once, rather than one per attempt. */
-    fun requireEveryValuePresent(declaredAt: DeclarationSite, cause: Throwable?) {
-        if (missing.isEmpty() && missingCaptures.isEmpty()) return
-        val names = (missing + missingCaptures).sorted()
+    /**
+     * Reports every value the run was missing at once, rather than one per attempt.
+     *
+     * With [capturesApart], only the parameters: the captures are named in the message as missing
+     * too, and are the caller's to report once every parameter has a value.
+     */
+    fun requireEveryValuePresent(declaredAt: DeclarationSite, cause: Throwable?, capturesApart: Boolean = false) {
+        if (missing.isEmpty() && (capturesApart || missingCaptures.isEmpty())) return
+        val names = (if (capturesApart) missing else missing + missingCaptures).sorted()
         throw KatachiMissingTemplateParameterException(
             role = roleName,
             names = names,
             accepted = acceptedDescriptionsOf(names),
             declaredAt = declaredAt,
             cause = cause,
+            missingCaptures = if (capturesApart) missingCaptures.sorted() else emptyList(),
         )
     }
+
+    /** The capture names read during this replay that the run gave no value, in the order they were read. */
+    fun missingCaptureNames(): List<String> = missingCaptures.toList()
 
     /** What each of [names] accepts, for the ones that do not accept anything. */
     private fun acceptedDescriptionsOf(names: List<String>): Map<String, String> =

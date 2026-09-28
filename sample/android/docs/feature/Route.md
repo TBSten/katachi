@@ -22,7 +22,7 @@ import することはない。
 
 | Module | Path | When to use |
 |---|---|---|
-| `:feature:*` | `src/main/kotlin/**/<name>Route.kt` |  |
+| `:feature:*` | `src/main/kotlin/**/<feature>Route.kt` |  |
 
 ## Examples
 

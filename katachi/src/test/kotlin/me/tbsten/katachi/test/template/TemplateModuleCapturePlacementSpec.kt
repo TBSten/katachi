@@ -1,6 +1,7 @@
 package me.tbsten.katachi.test.template
 
 import io.kotest.assertions.throwables.shouldThrow
+import io.kotest.assertions.withClue
 import io.kotest.core.spec.style.FreeSpec
 import io.kotest.matchers.collections.shouldBeEmpty
 import io.kotest.matchers.collections.shouldContainExactly
@@ -104,6 +105,8 @@ class TemplateModuleCapturePlacementSpec : FreeSpec({
             thrown.modulePath shouldBe ":feature:hoem"
             thrown.existing shouldContainExactly listOf(":feature:home", ":feature:settings")
             thrown.message.orEmpty() shouldContain "[UnexpectedDirectory]"
+            thrown.fileName shouldBe "HoemListScreen.kt"
+            thrown.message.orEmpty() shouldContain "Template file \"HoemListScreen.kt\" declared at"
         }
 
         "実在しないモジュールの案内は、モジュールパスではなく --arg に渡す値の形で出す" {
@@ -164,6 +167,17 @@ class TemplateModuleCapturePlacementSpec : FreeSpec({
                 }.name shouldBe "feature"
             }
             scans shouldBe 0
+        }
+
+        "モジュールの capture にモジュールパスを渡すと、モジュールパスの1段と言い、渡す値を案内する" {
+            val thrown = shouldThrow<KatachiInvalidTemplateCaptureValueException> {
+                screenArchitecture().generatedWith("Screen", mapOf("feature" to ":feature:home", "name" to "List"), features)
+            }
+
+            thrown.isModuleCapture shouldBe true
+            thrown.message.orEmpty() shouldContain "which is not one level of the module path"
+            thrown.message.orEmpty() shouldContain "Pass `home`, not `:feature:home`: --arg feature=home."
+            thrown.message.orEmpty() shouldNotContain "directory level"
         }
 
         "部分一致のモジュールキーにも名前を付けられ、値は * の部分だけを受け取る" {
@@ -229,7 +243,7 @@ class TemplateModuleCapturePlacementSpec : FreeSpec({
                 setOf("core/data/remote/UserApi.kt")
         }
 
-        "capture の値が無いと、モジュールを探さずに KatachiMissingTemplateCaptureException" {
+        "capture の値が無いと KatachiMissingTemplateCaptureException で、今あるモジュールの値を並べる" {
             var scans = 0
             val arch = architecture {
                 "Screen" {
@@ -246,8 +260,10 @@ class TemplateModuleCapturePlacementSpec : FreeSpec({
                 }
             }
 
-            thrown.missing.values.flatten() shouldBe listOf("feature")
-            scans shouldBe 0
+            thrown.names shouldBe listOf("feature")
+            thrown.existingValues shouldBe mapOf("feature" to listOf("home", "settings"))
+            thrown.message.orEmpty() shouldContain "--arg feature=<feature>, such as --arg feature=home"
+            withClue("モジュールを読むのは、失敗が決まってから今ある値を並べるための1回だけ") { scans shouldBe 1 }
         }
 
         "名前の無い module キーは今までどおり KatachiWildcardTemplatePlacementException" {

@@ -163,3 +163,39 @@ public class KatachiEntryPointNotFoundException internal constructor(
     },
     cause = cause,
 )
+
+/**
+ * A processor of the run was not run, because another one could not say which `--arg` names it
+ * takes.
+ *
+ * Every `--arg` of a run is checked against what all of its processors accept before any of them
+ * runs, so that a misspelt name is refused rather than silently left to a default. A processor
+ * whose [ArchitectureProcessor.undeclaredArgNames] threw leaves that check without an answer, and
+ * running the others anyway could run them on a typo. That processor is reported with what it
+ * threw; the others with this.
+ *
+ * ## Example 1: two processors, one of which cannot read its template
+ * ```kt
+ * // ./gradlew katachiRun --processor=docs,template --arg roleName=Broken
+ * // [FAILED] docs
+ * //   Processor "docs" was not run: template failed before any processor ran, ...
+ * // [FAILED] template
+ * //   (what template's undeclaredArgNames threw)
+ * ```
+ *
+ * @property key the processor that was not run.
+ * @property failed the processors whose `undeclaredArgNames` threw, in the order they were selected.
+ */
+@ExperimentalKatachiApi
+public class KatachiProcessorNotRunException internal constructor(
+    public val key: String,
+    public val failed: List<String>,
+) : KatachiDeclarationException(
+    message = buildString {
+        appendLine(
+            "Processor \"$key\" was not run: ${failed.joinToString(", ")} failed before any processor ran, " +
+                "so the --arg names of this run could not be checked.",
+        )
+        append("Fix what ${failed.joinToString(", ")} reported, and run again.")
+    },
+)

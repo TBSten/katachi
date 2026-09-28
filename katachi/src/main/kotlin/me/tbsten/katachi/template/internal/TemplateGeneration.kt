@@ -38,11 +38,20 @@ internal fun templateFiles(
     requireNoCaptureConflicts(role, entries, template, values)
     requireValidCaptureValues(role, entries, values)
 
+    val existingValues = existingCaptureValues(
+        entries = entries,
+        fileSystem = context.fileSystem,
+        projectRoot = { findProjectRoot(context.fileSystem).path },
+        modules = modules,
+    )
     val evaluation = evaluateTemplate(
         declaration = template,
         roleName = role.qualifiedName,
         values = values,
         captureNames = captureNames,
+        onMissingCaptures = { names, declaredAt, cause ->
+            throw missingCaptureException(role, entries, names, declaredAt, fileName = null, existingValues, cause)
+        },
     )
     val layout = if (fillsModuleCapture(entries, values)) {
         val misses = mutableListOf<ModuleMiss>()
@@ -62,6 +71,9 @@ internal fun templateFiles(
             fileName = file.fileName,
             declaredAt = file.declaredAt,
             values = values,
+            missingCaptures = { names ->
+                missingCaptureException(role, entries, names, file.declaredAt, file.fileName, existingValues)
+            },
         )
         files[path] = file.content.withFinalNewline()
     }

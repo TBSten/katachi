@@ -18,7 +18,7 @@ feature モジュールごと分ける。
 
 | Module | Path | When to use |
 |---|---|---|
-| `:feature:*` | `src/main/kotlin/**/<name>Screen.kt` |  |
+| `:feature:*` | `src/main/kotlin/**/<feature>Screen.kt` |  |
 
 ## Examples
 

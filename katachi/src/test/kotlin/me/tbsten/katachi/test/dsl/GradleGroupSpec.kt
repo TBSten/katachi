@@ -117,15 +117,20 @@ class GradleGroupSpec : FreeSpec({
         }
 
         "block で足した役割はそのファイルを許可する" {
-            val build = kotlinDslBuild { "gradle" { "gradle-daemon-jvm.properties"() } }
+            val build = kotlinDslBuild { "gradle" { "verification-metadata.xml"() } }
             architectureOf {
                 gradle {
-                    "DaemonJvmProperties" {
+                    "DependencyVerification" {
                         documented = false
-                        layout { "gradle/gradle-daemon-jvm.properties".file() }
+                        layout { "gradle/verification-metadata.xml".file() }
                     }
                 }
             }.validate(build).labels().shouldBeEmpty()
+        }
+
+        "daemon JVM toolchain の設定ファイル（Gradle 8.8 以降）は gradle() が許可する" {
+            val build = kotlinDslBuild { "gradle" { "gradle-daemon-jvm.properties"() } }
+            architectureOf { gradle() }.validate(build).labels().shouldBeEmpty()
         }
     }
 
@@ -184,6 +189,7 @@ class GradleGroupSpec : FreeSpec({
                 "Gradle/BuildScript",
                 "Gradle/GradleProperties",
                 "Gradle/VersionCatalog",
+                "Gradle/DaemonJvmProperties",
                 "Gradle/GradleWrapper/LauncherScript",
                 "Gradle/GradleWrapper/WrapperJar",
                 "Gradle/GradleWrapper/WrapperProperties",

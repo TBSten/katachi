@@ -114,6 +114,12 @@ public class ModuleIndex internal constructor(
         modules.mapNotNull { module -> pattern.match(module)?.let { resolve(module, it) } }
 
     /**
+     * Every existing module [pattern] matches, with what its wildcards captured: which values a
+     * module capture of that key could be given. Empty for an [unresolved] index.
+     */
+    internal fun matchingModules(pattern: ModulePattern): List<ResolvedModule> = matching(pattern)
+
+    /**
      * The modules a layout key stands for.
      *
      * A key with a wildcard stands for the modules that exist and match, and for nothing at
@@ -159,7 +165,7 @@ public class ModuleIndex internal constructor(
                 ModuleTarget(
                     modulePath = pattern.pattern,
                     directory = pattern.conventionalDirectory,
-                    wildcards = pattern.wildcardPlaceholders,
+                    wildcards = pattern.wildcardPlaceholders(captureNames),
                     captureNames = captureNames,
                 ),
             )
@@ -213,7 +219,7 @@ public class ModuleIndex internal constructor(
         ModuleTarget(
             modulePath = pattern.pattern,
             directory = pattern.conventionalDirectory,
-            wildcards = pattern.wildcardPlaceholders,
+            wildcards = pattern.wildcardPlaceholders(captureNames),
             captureNames = captureNames,
         ),
     )

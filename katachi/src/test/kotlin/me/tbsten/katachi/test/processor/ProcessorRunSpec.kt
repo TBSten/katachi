@@ -28,6 +28,7 @@ import me.tbsten.katachi.processor.KatachiProcessorTypeException
 import me.tbsten.katachi.processor.KatachiUnknownProcessorArgException
 import me.tbsten.katachi.processor.internal.instantiateProcessor
 import me.tbsten.katachi.processor.internal.runProcessors
+import me.tbsten.katachi.template.GenerateCodeFromTemplate
 import me.tbsten.katachi.test.check.architectureOf
 
 class ProcessorRunSpec : FreeSpec({
@@ -369,8 +370,85 @@ class ProcessorRunSpec : FreeSpec({
                 listCallsFor(mapOf("a" to emptyMap())) shouldBe listCallsFor(emptyMap())
             }
         }
+
+        "undeclaredArgNames で投げた processor は [FAILED] の整形で出て、残りは走らせずに理由を出す" {
+            val lines = mutableListOf<String>()
+
+            val summary = runProcessors(
+                architecture = definition,
+                registry = mapOf("a" to ObjectProcessor::class.java, "broken" to UndeclaredNamesBoomProcessor::class.java),
+                processorKeys = listOf("a", "broken"),
+                rawArgs = emptyMap(),
+                out = lines::add,
+            )
+
+            summary.succeeded shouldBe 0
+            summary.failed shouldBe 2
+            lines shouldContain "[FAILED] broken"
+            lines shouldContain "  undeclared names boom"
+            lines shouldContain "[FAILED] a"
+            lines.single { it.startsWith("  Processor \"a\" was not run") } shouldContain "broken failed before any processor ran"
+        }
+
+        "テンプレートの引数の検査で投げた例外（capture とパラメータの衝突）も生のスタックトレースにせず [FAILED] template で出す" {
+            val lines = mutableListOf<String>()
+            val arch = architecture {
+                "Screen" {
+                    layout { "feature" / capture("name") / "*Screen.kt".file() }
+                    template {
+                        val name by stringParameter()
+                        file("${name}Screen.kt") { "" }
+                    }
+                }
+            }
+
+            val summary = runProcessors(
+                architecture = arch,
+                registry = mapOf("template" to GenerateCodeFromTemplate::class.java),
+                processorKeys = listOf("template"),
+                rawArgs = mapOf("roleName" to "Screen", "name" to "Home"),
+                out = lines::add,
+            )
+
+            summary.failed shouldBe 1
+            lines shouldContain "[FAILED] template"
+            lines.any { it.startsWith("  Capture \"name\" of role \"Screen\"") } shouldBe true
+        }
+
+        "テンプレートの中で投げた例外も [FAILED] template で出す" {
+            val lines = mutableListOf<String>()
+            val arch = architecture {
+                "Screen" {
+                    layout { "feature" / "*Screen.kt".file() }
+                    template {
+                        val mode by booleanParameter()
+                        check(false) { "template says no" }
+                        file("${mode}Screen.kt") { "" }
+                    }
+                }
+            }
+
+            val summary = runProcessors(
+                architecture = arch,
+                registry = mapOf("template" to GenerateCodeFromTemplate::class.java),
+                processorKeys = listOf("template"),
+                rawArgs = mapOf("roleName" to "Screen", "mode" to "true"),
+                out = lines::add,
+            )
+
+            summary.failed shouldBe 1
+            lines shouldContain "[FAILED] template"
+            lines shouldContain "  template says no"
+        }
     }
 })
+
+private object UndeclaredNamesBoomProcessor : ArchitectureProcessorNoArg<Unit> {
+    override fun process(context: ArchitectureProcessNoArgContext): Result<Unit> = runCatching { }
+
+    override fun undeclaredArgNames(context: ArchitectureProcessContext<*>): Set<String> =
+        throw IllegalStateException("undeclared names boom")
+}
 
 private fun ArchitectureProcessor<*, *>.shouldBeInstanceOfNoArgClassProcessor() {
     this shouldBe NoArgClassProcessor()

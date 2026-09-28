@@ -1,5 +1,6 @@
 package me.tbsten.katachi.processor.internal
 
+import me.tbsten.katachi.internal.catching
 import me.tbsten.katachi.processor.ArchitectureProcessContext
 import me.tbsten.katachi.processor.ArchitectureProcessor
 import me.tbsten.katachi.processor.KatachiUnknownProcessorArgException
@@ -27,12 +28,13 @@ internal fun declaredArgNames(processor: ArchitectureProcessor<*, *>): Set<Strin
 private fun acceptedArgNames(
     selected: List<Pair<String, ArchitectureProcessor<*, *>>>,
     contexts: Map<String, ArchitectureProcessContext<*>>,
+    answered: Map<String, Set<String>>?,
 ): AcceptedArgNames {
     val names = mutableSetOf<String>()
     var dependsOnValues = false
     for ((key, processor) in selected) {
         names += declaredArgNames(processor)
-        val undeclared = processor.undeclaredArgNames(contexts.getValue(key))
+        val undeclared = answered?.get(key) ?: processor.undeclaredArgNames(contexts.getValue(key))
         if (undeclared.isNotEmpty()) dependsOnValues = true
         names += undeclared
     }
@@ -56,22 +58,40 @@ private class AcceptedArgNames(val names: Set<String>, val dependsOnValues: Bool
  * given it -- the same answer a run of that processor by itself would give.
  *
  * @param contexts each selected processor's context, by key, carrying the values it is given.
+ * @param answered each processor's [ArchitectureProcessor.undeclaredArgNames], by key, when the
+ *   caller has already asked -- see [undeclaredArgNamesOf]. Asked here when `null`.
  */
 internal fun checkNoUnknownArgs(
     selected: List<Pair<String, ArchitectureProcessor<*, *>>>,
     contexts: Map<String, ArchitectureProcessContext<*>>,
     values: Map<String, String>,
     argsFor: Map<String, Map<String, String>> = emptyMap(),
+    answered: Map<String, Set<String>>? = null,
 ) {
-    val accepted = acceptedArgNames(selected, contexts)
+    val accepted = acceptedArgNames(selected, contexts, answered)
     throwIfUnknown(values.keys - accepted.names, accepted)
 
     for (entry in selected) {
         val own = argsFor[entry.first] ?: continue
-        val acceptedByOne = acceptedArgNames(listOf(entry), contexts)
+        val acceptedByOne = acceptedArgNames(listOf(entry), contexts, answered)
         throwIfUnknown(own.keys - values.keys - acceptedByOne.names, acceptedByOne)
     }
 }
+
+/**
+ * Asks every processor of [selected] for its [ArchitectureProcessor.undeclaredArgNames] once, by key.
+ *
+ * A processor that throws answers with its failure rather than failing the run from here: what it
+ * threw is the processor's own problem -- a template that cannot be read, a capture named like a
+ * parameter -- and the run reports it as that processor's `[FAILED]`, not as a stack trace.
+ */
+internal fun undeclaredArgNamesOf(
+    selected: List<Pair<String, ArchitectureProcessor<*, *>>>,
+    contexts: Map<String, ArchitectureProcessContext<*>>,
+): Map<String, Result<Set<String>>> =
+    selected.associate { (key, processor) ->
+        key to catching { processor.undeclaredArgNames(contexts.getValue(key)) }
+    }
 
 /** [checkNoUnknownArgs] for a run in which every processor reads the same [context]. */
 internal fun checkNoUnknownArgs(

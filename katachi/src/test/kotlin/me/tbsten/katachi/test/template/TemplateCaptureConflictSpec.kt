@@ -1,6 +1,7 @@
 package me.tbsten.katachi.test.template
 
 import io.kotest.assertions.throwables.shouldThrow
+import io.kotest.assertions.withClue
 import io.kotest.core.spec.style.FreeSpec
 import io.kotest.matchers.nulls.shouldBeNull
 import io.kotest.matchers.collections.shouldContainExactly
@@ -68,6 +69,10 @@ class TemplateCaptureConflictSpec : FreeSpec({
         thrown.captureDeclaredAt.fileName shouldBe "TemplateCaptureConflictSpec.kt"
         thrown.parameterDeclaredAt?.fileName shouldBe "TemplateCaptureConflictSpec.kt"
         thrown.message.orEmpty() shouldContain "captureValue(\"feature\")"
+        withClue("declared を2回言わない") {
+            thrown.message.orEmpty() shouldContain "declared with stringParameter() at TemplateCaptureConflictSpec.kt:"
+            thrown.message.orEmpty() shouldNotContain "declared at TemplateCaptureConflictSpec.kt:${thrown.parameterDeclaredAt?.lineNumber}."
+        }
     }
 
     "booleanParameter / intParameter / enumParameter の名前とも同じく落ちる" - {
@@ -101,6 +106,10 @@ class TemplateCaptureConflictSpec : FreeSpec({
                 }
                 thrown.conflictsWith shouldBe "GenerateCodeFromTemplate.Args.$name"
                 thrown.parameterDeclaredAt.shouldBeNull()
+                withClue("processor の引数は改名できないので、capture の改名だけを案内する") {
+                    thrown.message.orEmpty() shouldContain "Rename the capture: $name is an argument of the template processor itself"
+                    thrown.message.orEmpty() shouldNotContain "or the parameter"
+                }
             }
         }
     }

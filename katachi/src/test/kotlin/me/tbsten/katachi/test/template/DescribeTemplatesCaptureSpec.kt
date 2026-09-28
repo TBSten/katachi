@@ -1,5 +1,6 @@
 package me.tbsten.katachi.test.template
 
+import io.kotest.assertions.withClue
 import io.kotest.core.spec.style.FreeSpec
 import io.kotest.matchers.collections.shouldBeEmpty
 import io.kotest.matchers.collections.shouldContain
@@ -97,7 +98,7 @@ class DescribeTemplatesCaptureSpec : FreeSpec({
 
     "exampleCommand に capture の --arg が入る" {
         captureArchitecture().detail("ViewModel").first.exampleCommand shouldBe
-            "./gradlew katachiTemplate --arg roleName=feature/ViewModel --arg feature=feature --arg name=Name"
+            "./gradlew katachiTemplate --arg roleName=feature/ViewModel --arg feature=<feature> --arg name=Name"
     }
 
     "パスの capture のプレビューは \${name} でパスを出し、中身でも同じ値を読む" {
@@ -107,11 +108,42 @@ class DescribeTemplatesCaptureSpec : FreeSpec({
         file.content shouldBe "package com.example.\${feature}"
     }
 
-    "モジュールの capture はパスを決めず unresolvedPatterns に回る" {
-        val file = captureArchitecture().detail("Screen").first.files.single()
+    "モジュールの capture もモジュールキーの慣習のディレクトリで \${name} と埋めてパスを出す" {
+        val (detail, logs) = captureArchitecture().detail("Screen")
+        val file = detail.files.single()
 
-        file.path.shouldBeNull()
-        file.unresolvedPatterns shouldContainExactly listOf("feature/*/*Screen.kt")
+        file.path shouldBe "feature/\${module}/\${name}Screen.kt"
+        file.unresolvedPatterns.shouldBeEmpty()
+        withClue("生成できる役割なので、生成のコマンドを出す") {
+            logs shouldContain "  ${detail.exampleCommand}"
+        }
+    }
+
+    "名前の無い * が残って本当に置けない役割は、コマンドの代わりに理由と直し方を出す" {
+        val arch = architecture {
+            "Screen" {
+                layout { ":feature:*".module { "*Screen.kt".file() } }
+                template { file("HomeScreen.kt") { "" } }
+            }
+        }
+        val (detail, logs) = arch.detail("Screen")
+
+        detail.files.single().path.shouldBeNull()
+        logs.none { it.startsWith("Generate it with") } shouldBe true
+        logs shouldContain "It cannot be generated as the layout is declared: HomeScreen.kt has no single directory (above)."
+        logs.any { it.startsWith("Name every * left in the directory with capture(") } shouldBe true
+    }
+
+    "** が残る役割は ** の無いパスを別に書くよう案内する" {
+        val arch = architecture {
+            "Screen" {
+                layout { "app" / "**" / "*Screen.kt".file() }
+                template { file("HomeScreen.kt") { "" } }
+            }
+        }
+        val (_, logs) = arch.detail("Screen")
+
+        logs.any { it.startsWith("A ** cannot be named: declare the directory") } shouldBe true
     }
 
     "Text 出力に Captures の節が出る" {

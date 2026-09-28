@@ -76,6 +76,7 @@ class ProjectArchitectureSpec : FreeSpec({
             "Gradle/BuildScript",
             "Gradle/GradleProperties",
             "Gradle/VersionCatalog",
+            "Gradle/DaemonJvmProperties",
             "Gradle/GradleWrapper/LauncherScript",
             "Gradle/GradleWrapper/WrapperJar",
             "Gradle/GradleWrapper/WrapperProperties",

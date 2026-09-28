@@ -191,6 +191,12 @@ public class KatachiMissingTemplateParameterException internal constructor(
     /** Where `template { }` was written. */
     public val declaredAt: DeclarationSite,
     cause: Throwable?,
+    /**
+     * The captures the template read with `captureValue(...)` that the run gave no value either,
+     * sorted. They are not in [names]: a capture is not a parameter, and is reported on its own
+     * once every parameter has a value.
+     */
+    public val missingCaptures: List<String> = emptyList(),
 ) : KatachiDeclarationException(
     message = buildString {
         appendLine(
@@ -203,6 +209,14 @@ public class KatachiMissingTemplateParameterException internal constructor(
                 argPlaceholders(names) + ".",
         )
         acceptedLine(names, accepted)?.let { append("\n").append(it) }
+        if (missingCaptures.isNotEmpty()) {
+            append("\n")
+            append(
+                "The run gave no value for capture ${missingCaptures.joinToString(", ")} either, which " +
+                    "the layout names and the template reads: pass " +
+                    missingCaptures.joinToString(" ") { "--arg $it=<$it>" } + " as well.",
+            )
+        }
     },
     cause = cause,
 )

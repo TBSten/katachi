@@ -16,6 +16,7 @@ import me.tbsten.katachi.processor.ArchitectureProcessor
 import me.tbsten.katachi.processor.internal.fileSystem
 import me.tbsten.katachi.template.internal.ROLE_NAME_ARG
 import me.tbsten.katachi.template.internal.captureNamesOf
+import me.tbsten.katachi.template.internal.missingCaptureException
 import me.tbsten.katachi.template.internal.requireNoCaptureConflicts
 import me.tbsten.katachi.template.internal.templateFiles
 import me.tbsten.katachi.template.internal.templateOf
@@ -162,7 +163,9 @@ public object GenerateCodeFromTemplate : ArchitectureProcessor<GenerateCodeFromT
             // through a typo meant for another processor of it, which would then run on a default.
             // The render of the same values is certain to fail with the real cause, and it touches
             // no disk, so it is thrown here, before any processor runs -- like a roleName above.
-            evaluateTemplate(template, role.qualifiedName, context.rawArgs, captureNames)
+            evaluateTemplate(template, role.qualifiedName, context.rawArgs, captureNames) { missing, declaredAt, cause ->
+                throw missingCaptureException(role, entries, missing, declaredAt, fileName = null, cause = cause)
+            }
         }
         return names.declared + captureNames
     }

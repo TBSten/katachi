@@ -85,8 +85,43 @@ internal fun templateDetailLines(detail: TemplateDetail): List<String> = buildLi
     }
 
     add("")
-    add("Generate it with:")
-    add("  ${detail.exampleCommand}")
+    val unplaced = detail.files.filter { it.path == null }
+    if (unplaced.isEmpty()) {
+        add(
+            if (detail.captures.isEmpty()) {
+                "Generate it with:"
+            } else {
+                "Generate it with, putting the directory or module each <capture> stands for in its place:"
+            },
+        )
+        add("  ${detail.exampleCommand}")
+    } else {
+        addAll(unplacedLines(unplaced))
+    }
+}
+
+/**
+ * Why a template with [unplaced] files cannot be generated as its role is declared, and what to
+ * change: said instead of a command that would only fail.
+ */
+private fun unplacedLines(unplaced: List<TemplateFilePreview>): List<String> = buildList {
+    add(
+        "It cannot be generated as the layout is declared: ${unplaced.joinToString(", ") { it.fileName }} " +
+            "${if (unplaced.size == 1) "has" else "have"} no single directory (above).",
+    )
+    val patterns = unplaced.flatMap { it.unresolvedPatterns }.map { it.substringBeforeLast('/', missingDelimiterValue = "") }
+    if (patterns.any { directory -> directory.split('/').any { '*' in it && it != "**" } }) {
+        add(
+            "Name every * left in the directory with capture(\"...\") -- or .module(capture = \"...\") for a " +
+                "module key -- so that a run can choose it with --arg.",
+        )
+    }
+    if (patterns.any { directory -> directory.split('/').any { it == "**" } }) {
+        add(
+            "A ** cannot be named: declare the directory the template writes into as a path of its own, " +
+                "without the **, next to the one that has it.",
+        )
+    }
 }
 
 /** `name: String, required` / `withImpl: Boolean, default true, accepts true or false`. */
@@ -124,11 +159,7 @@ private fun fileLines(file: TemplateFilePreview): List<String> = buildList {
     if (path != null) {
         add("  $path")
     } else {
-        add(
-            "  ${file.fileName} -- no single directory in the preview: " +
-                "${file.unresolvedPatterns.joinToString(", ")} has a wildcard only a run's " +
-                "capture value, or nothing, can fill in",
-        )
+        add("  ${file.fileName} -- no single directory: ${file.unresolvedPatterns.joinToString(", ")}")
     }
     for (line in file.content.trimEnd('\n').lines()) add("    | $line")
 }

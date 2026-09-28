@@ -43,10 +43,10 @@ feature を消すときに他の feature を読み直さなくて済む。
 ```
 :feature:*
   src/main/kotlin/**/
-    <name>Screen.kt                    Screen
-    <name>ViewModel.kt                 ViewModel
-    <name>Route.kt                     Route
-    component/<name>*.kt               画面の部品
+    <feature>Screen.kt                 Screen
+    <feature>ViewModel.kt              ViewModel
+    <feature>Route.kt                  Route
+    component/<feature>*.kt            画面の部品
 
 :feature:home
   src/test/kotlin/**/Home*Test.kt      画面のテスト

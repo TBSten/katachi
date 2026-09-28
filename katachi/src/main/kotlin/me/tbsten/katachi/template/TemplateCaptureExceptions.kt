@@ -5,11 +5,16 @@ import me.tbsten.katachi.KatachiDeclarationException
 import me.tbsten.katachi.dsl.DeclarationSite
 
 /**
- * The only places accepting a generated file name are named wildcards the run gave no value.
+ * A run gave no value for a capture its role's template needs.
  *
  * `capture("feature")` in a role's `layout { }` stands for a directory that template generation
- * fills in from `--arg feature=...`. Without the value there is no directory, and choosing one
- * would be inventing the answer.
+ * fills in from `--arg feature=...`, and `":feature:*".module(capture = "feature") { }` for a module.
+ * Without the value there is no directory, and choosing one would be inventing the answer.
+ *
+ * The same exception, with the same message, whichever way the capture was needed: a file whose
+ * place names it, or a template that reads it with `captureValue(...)`. A place that needs it fails
+ * the file even when a place without captures would take it: writing there instead would drop the
+ * forgotten `--arg` without a word.
  *
  * ## Example 1: catch a run that did not say which feature to generate into
  * ```kt
@@ -31,44 +36,80 @@ import me.tbsten.katachi.dsl.DeclarationSite
  * val thrown = shouldThrow<KatachiMissingTemplateCaptureException> {
  *     arch.process(GenerateCodeFromTemplate, GenerateCodeFromTemplate.Args(roleName = "ViewModel")).getOrThrow()
  * }
- * thrown.missing.values.flatten() shouldBe listOf("feature")
+ * thrown.names shouldBe listOf("feature")
  * ```
  *
  * @see GenerateCodeFromTemplate
  */
 public class KatachiMissingTemplateCaptureException internal constructor(
-    /** The role whose template produced the file, qualified. */
+    /** The role whose template needs the values, qualified. */
     public val role: String,
-    /** The generated file name, after the template's parameters were filled in. */
-    public val fileName: String,
-    /** Each layout pattern accepting the name, and the capture names it still needs a value for. */
+    /** The generated file name that could not be placed, or `null` when `captureValue(...)` read the capture. */
+    public val fileName: String?,
+    /** The capture names without a value, in declaration order. */
+    public val names: List<String>,
+    /**
+     * Each layout pattern naming one of [names], with every capture of it written as `<name>` in
+     * place of its `*`, and the names of [names] it holds.
+     */
     public val missing: Map<String, List<String>>,
-    /** Where the `file(...)` that produced the name was written. */
+    /** For each of [names], where the layout declares it. */
+    public val captureDeclaredAt: Map<String, DeclarationSite>,
+    /**
+     * For each of [names], the values that pick a directory or a module that exists now, sorted.
+     * Empty when none could be listed -- the directory above the capture holds a wildcard of its
+     * own, or the project could not be read.
+     */
+    public val existingValues: Map<String, List<String>>,
+    /** How each of [names] is declared: `capture("feature")` or `":feature:*".module(capture = "feature")`. */
+    internal val declaredWith: Map<String, String>,
+    /** Where the `file(...)` that could not be placed, or the `template { }` that read the capture, was written. */
     public val declaredAt: DeclarationSite,
+    cause: Throwable? = null,
 ) : KatachiDeclarationException(
     message = buildString {
-        val names = missing.values.flatten().distinct().sorted()
         appendLine(
-            """Template file "$fileName" declared at $declaredAt needs a value for """ +
-                """${names.joinToString(", ")} to find its directory in role "$role".""",
+            """The run gave no value for capture ${names.joinToString(", ")}, which the template of """ +
+                """role "$role" needs at $declaredAt.""",
         )
-        appendLine("These patterns accept the name, and each names a directory by capture:")
-        for ((pattern, needed) in missing) appendLine("  $pattern (needs ${needed.joinToString(", ")})")
+        appendLine("A capture is a level of the path the layout names, and each run chooses it with --arg:")
+        for (name in names) {
+            val pattern = missing.entries.firstOrNull { name in it.value }?.key
+            append("  $name: ${declaredWith[name] ?: "capture(\"$name\")"}")
+            captureDeclaredAt[name]?.let { append(" declared at $it") }
+            pattern?.let { append(", in $it") }
+            appendLine()
+        }
         appendLine(
-            "A capture stands for a directory the run chooses, so without its value the file " +
-                "has nowhere to go.",
+            "Without the value there is no directory to write into, and katachi does not pick one " +
+                "-- not even another place of the role that names no capture.",
         )
-        append("Pass ${names.joinToString(" ") { "--arg $it=<value>" }}.")
+        val existing = names.filter { existingValues[it].orEmpty().isNotEmpty() }
+        if (existing.isNotEmpty()) {
+            appendLine("Values that exist now:")
+            for (name in existing) appendLine("  $name: ${existingValues.getValue(name).joinToString(", ")}")
+        }
+        append("Pass ")
+        append(names.joinToString(" ") { "--arg $it=<$it>" })
+        val example = names.mapNotNull { name -> existingValues[name]?.firstOrNull()?.let { "--arg $name=$it" } }
+        if (example.size == names.size) append(", such as ${example.joinToString(" ")}")
+        append(".")
     },
+    cause = cause,
 )
 
 /**
  * A capture was given a value that cannot be one directory level.
  *
- * A capture is one level of a path, exactly like the `*` it replaces. A value that is empty,
- * that climbs (`.` or `..`), that holds a separator, or that holds a character no file name may
- * hold would make generation write somewhere the layout does not describe -- or outside the
- * project.
+ * A capture is one level of a path, exactly like the `*` it replaces. A value that is empty or
+ * blank, that climbs (`.` or `..`), that holds a separator, or that holds a character no file name
+ * may hold would make generation write somewhere the layout does not describe -- or outside the
+ * project. What Windows refuses or silently changes is refused on every platform, so that a value
+ * means the same directory wherever the run happens: a trailing `.` or space (Windows drops it,
+ * and `home.` would land in `home`) and a reserved device name such as `CON`.
+ *
+ * A module capture's value is one level of the module path -- `home` of `:feature:home` -- and is
+ * checked by the same rule.
  *
  * ## Example 1: catch a value that spans two levels
  * ```kt
@@ -93,17 +134,30 @@ public class KatachiInvalidTemplateCaptureValueException internal constructor(
     public val problem: Problem,
     /** Where a layout path naming the capture was declared. */
     public val captureDeclaredAt: DeclarationSite,
+    /** Whether the capture names a `*` of a module key rather than a directory level. */
+    public val isModuleCapture: Boolean = false,
 ) : KatachiDeclarationException(
     message = buildString {
+        val level = if (isModuleCapture) "one level of the module path" else "one directory level"
         appendLine(
             """Capture "$name" of role "$role" declared at $captureDeclaredAt was given "$value", """ +
-                "which is not one directory level: ${problem.description}.",
+                "which is not $level: ${problem.description}.",
         )
-        appendLine(
-            "A capture stands for exactly one level of the path, as the * it names does; " +
-                "several levels cannot be given as one value.",
-        )
-        append("Pass a single directory name, such as --arg $name=home.")
+        val lastLevel = value.split(':', '/', '\\').lastOrNull { it.isNotBlank() }
+        when {
+            isModuleCapture && ':' in value && lastLevel != null -> append(
+                "A module capture is given the one level of the module path its * stands for, not the " +
+                    "module path. Pass `$lastLevel`, not `$value`: --arg $name=$lastLevel.",
+            )
+            problem == Problem.Separator -> {
+                appendLine(
+                    "A capture stands for exactly one level of the path, as the * it names does; " +
+                        "several levels cannot be given as one value.",
+                )
+                append("Pass a single directory name, such as --arg $name=${lastLevel ?: "home"}.")
+            }
+            else -> append(problem.fix(name))
+        }
     },
 ) {
     /**
@@ -121,14 +175,40 @@ public class KatachiInvalidTemplateCaptureValueException internal constructor(
         /** The value is empty. */
         Empty("it is empty"),
 
+        /** The value holds nothing but whitespace. */
+        Blank("it holds nothing but whitespace"),
+
         /** The value is `.` or `..`, which name the directory itself or its parent. */
         DotSegment("`.` and `..` name an existing directory, not a new level"),
 
         /** The value holds `/` or `\`. */
         Separator("it holds a path separator"),
 
-        /** The value holds a character no file name may hold, such as `*`, `:` or a control character. */
+        /**
+         * The value holds a character no file name may hold: `*`, `:` and the rest Windows refuses,
+         * a control character (DEL included) or a line separator such as U+2028.
+         */
         UncreatableCharacter("it holds a character a directory name cannot hold"),
+
+        /** The value starts or ends with whitespace, which a directory name would keep but no one could see. */
+        SurroundingWhitespace("it starts or ends with whitespace"),
+
+        /** The value ends with `.`, which Windows drops from a directory name without a word. */
+        TrailingDot("it ends with `.`, which Windows drops from a directory name"),
+
+        /** The value is a device name Windows reserves, such as `CON` or `nul.txt`. */
+        ReservedName("Windows reserves it as a device name (CON, PRN, AUX, NUL, COM1-9, LPT1-9)"),
+        ;
+
+        internal fun fix(name: String): String = when (this) {
+            Empty, Blank -> "Pass the name of the directory, such as --arg $name=home."
+            DotSegment -> "Pass the name of the directory the file goes into, such as --arg $name=home."
+            SurroundingWhitespace -> "Pass the name without the surrounding whitespace, such as --arg $name=home."
+            TrailingDot -> "Pass the name without the trailing `.`, such as --arg $name=home."
+            ReservedName -> "Pick another name: no directory of this name can be created on Windows."
+            Separator, UncreatableCharacter ->
+                "Pass a name of letters, digits, `-` and `_`, such as --arg $name=home."
+        }
     }
 }
 
@@ -160,6 +240,8 @@ public class KatachiInvalidTemplateCaptureValueException internal constructor(
 public class KatachiTemplateModuleNotFoundException internal constructor(
     /** The role whose template produced the file, qualified. */
     public val role: String,
+    /** The generated file name, after the template's parameters were filled in. */
+    public val fileName: String,
     /** The module key as written in the layout, `":feature:*"`. */
     public val modulePattern: String,
     /** The names the key gives its `*`s, in order, which are also their `--arg` names. */
@@ -178,7 +260,7 @@ public class KatachiTemplateModuleNotFoundException internal constructor(
 ) : KatachiCheckException(
     message = buildString {
         appendLine(
-            """Template file declared at $declaredAt would go into module $modulePath of role "$role", """ +
+            """Template file "$fileName" declared at $declaredAt would go into module $modulePath of role "$role", """ +
                 "which does not exist.",
         )
         appendLine(

@@ -9,6 +9,8 @@ Gradle/BuildScript	architecture-test/build.gradle.kts	File	optional
 Gradle/BuildScript	build	Ignore	optional
 Gradle/BuildScript	build.gradle	File	optional
 Gradle/BuildScript	build.gradle.kts	File	optional
+Gradle/DaemonJvmProperties	gradle	Directory	optional
+Gradle/DaemonJvmProperties	gradle/gradle-daemon-jvm.properties	File	optional
 Gradle/GradleProperties	gradle.properties	File	optional
 Gradle/GradleWrapper/LauncherScript	gradlew	File	required
 Gradle/GradleWrapper/LauncherScript	gradlew.bat	File	required

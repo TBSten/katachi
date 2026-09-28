@@ -44,6 +44,7 @@ private fun Random.value(): String = when (nextInt(20)) {
     0 -> ""
     1 -> "."
     2 -> ".."
+    3 -> listOf("CON", "nul", "Com1", "lpt9.txt", "aux.kt", "console").random(this)
     else -> String(CharArray(nextInt(1, 7)) { ALPHABET.random(this) })
 }
 
@@ -53,8 +54,13 @@ private fun Random.value(): String = when (nextInt(20)) {
  * values it accepted, so a value the design would refuse cannot slip through unnoticed.
  */
 private fun mustBeRefused(value: String): Boolean =
-    value.isEmpty() || value == "." || value == ".." ||
-        value.any { it == '/' || it == '\\' || it < ' ' || it in "*?[]{}:\"<>|" }
+    value.isBlank() || value == "." || value == ".." ||
+        value.any { it == '/' || it == '\\' || it < ' ' || it in '\u007f'..'\u009f' || it in "*?[]{}:\"<>|\u2028\u2029" } ||
+        value.first().isWhitespace() || value.last().isWhitespace() || value.last() == '.' ||
+        value.substringBefore('.').uppercase() in WINDOWS_RESERVED
+
+/** The device names Windows reserves, which no directory may be named whatever its extension. */
+private val WINDOWS_RESERVED: Set<String> = setOf("CON", "PRN", "AUX", "NUL") + (1..9).flatMap { listOf("COM$it", "LPT$it") }
 
 private fun pathArchitecture(): Architecture = architecture {
     "ViewModel" {

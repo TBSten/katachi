@@ -16,6 +16,7 @@ import me.tbsten.katachi.dsl.internal.markSynthetic
  * | `Gradle/BuildScript` | `build.gradle.kts` or `build.gradle` of every module, the root project included |
  * | `Gradle/GradleProperties` | `gradle.properties` |
  * | `Gradle/VersionCatalog` | `*.versions.toml` directly inside `gradle` |
+ * | `Gradle/DaemonJvmProperties` | `gradle/gradle-daemon-jvm.properties`, the daemon JVM toolchain of Gradle 8.8 and later |
  *
  * Only the four wrapper files are required, because `gradle wrapper` writes them as one set
  * and a `*.jar` line in `.gitignore` silently leaving the jar out is exactly what a missing
@@ -42,9 +43,9 @@ import me.tbsten.katachi.dsl.internal.markSynthetic
  *
  * val arch = architecture {
  *     gradle {
- *         "DaemonJvmProperties" {
+ *         "DependencyVerification" {
  *             documented = false
- *             layout { "gradle/gradle-daemon-jvm.properties".file() }
+ *             layout { "gradle/verification-metadata.xml".file() }
  *         }
  *     }
  * }
@@ -93,6 +94,9 @@ public fun DeclarationContainerScope.gradle(
     }
     gradleRole("VersionCatalog", "The versions of the build's dependencies and plugins") {
         "gradle" / "*.versions.toml".file().optional()
+    }
+    gradleRole("DaemonJvmProperties", "Which JVM the Gradle daemon runs on (Gradle 8.8 and later)") {
+        "gradle/gradle-daemon-jvm.properties".file().optional()
     }
 
     block()

@@ -41,6 +41,17 @@ internal class ModulePattern private constructor(
         get() = glob?.groupKinds.orEmpty().map { WILDCARD_PLACEHOLDER }
 
     /**
+     * [wildcardPlaceholders], with each `*` the key named written as `<name>` instead:
+     * `":feature:*".module(capture = "feature")` reads as `["<feature>"]`, so a message or a
+     * preview built out of it says which `--arg` fills it in. The names belong to the `*`s in
+     * order, and a `**` -- always last, never named -- keeps [WILDCARD_PLACEHOLDER].
+     */
+    fun wildcardPlaceholders(captureNames: List<String>?): List<String> =
+        wildcardPlaceholders.mapIndexed { index, placeholder ->
+            captureNames?.getOrNull(index)?.let { "<$it>" } ?: placeholder
+        }
+
+    /**
      * How many `*`s the pattern holds, `**` not counted: the number of names
      * `"...".module(capture = ...)` has to give. A `**` cannot be named, because how many levels
      * it stands for is not fixed.

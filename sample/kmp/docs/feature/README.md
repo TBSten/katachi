@@ -37,10 +37,10 @@ ui group と分けてあるのは、増え方が違うからです。feature は
 ```
 :feature:*
   src/commonMain/kotlin/**/
-    <name>Screen.kt       画面
-    <name>ViewModel.kt    ViewModel
-    <name>Route.kt        ルート
-    component/<name>*.kt  画面の部品
+    <feature>Screen.kt       画面
+    <feature>ViewModel.kt    ViewModel
+    <feature>Route.kt        ルート
+    component/<feature>*.kt  画面の部品
 ```
 
 ## 置いてはいけないもの

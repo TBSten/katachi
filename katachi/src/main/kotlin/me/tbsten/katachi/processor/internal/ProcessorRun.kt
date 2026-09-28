@@ -19,6 +19,7 @@ import me.tbsten.katachi.processor.ArchitectureProcessContext
 import me.tbsten.katachi.processor.ArchitectureProcessor
 import me.tbsten.katachi.processor.KatachiProcessorNotFoundException
 import me.tbsten.katachi.processor.KatachiProcessorNotInstantiableException
+import me.tbsten.katachi.processor.KatachiProcessorNotRunException
 import me.tbsten.katachi.processor.KatachiProcessorTypeException
 import me.tbsten.katachi.processor.decodeFromStringMap
 
@@ -113,11 +114,23 @@ internal fun runProcessors(
         key to if (own.isNullOrEmpty()) base else RealArchitectureProcessContext(base.walk, Unit, base.onLog, own + rawArgs)
     }
 
-    checkNoUnknownArgs(selected, contexts, rawArgs, argsFor)
+    // Asked once, and a processor that cannot answer is that processor's failure: its message is
+    // printed under `[FAILED]` like any other, rather than ending the JVM with a stack trace. The
+    // run's `--arg` names cannot be judged without every answer, so nothing runs then.
+    val answers = undeclaredArgNamesOf(selected, contexts)
+    val unanswered = answers.filterValues { it.isFailure }.keys
+    if (unanswered.isEmpty()) {
+        checkNoUnknownArgs(selected, contexts, rawArgs, argsFor, answers.mapValues { it.value.getOrThrow() })
+    }
 
     data class Entry(val key: String, val result: Result<Any?>)
 
     val outcomes = selected.map { (key, processor) ->
+        if (unanswered.isNotEmpty()) {
+            val failure = answers.getValue(key).exceptionOrNull()
+                ?: KatachiProcessorNotRunException(key, unanswered.toList())
+            return@map Entry(key, Result.failure(failure))
+        }
         val context = contexts.getValue(key)
         // A throw and a `Result.failure` land in the same place: on the command line, "could
         // not do the job" and "did the job, and the answer is no" both fail the run.

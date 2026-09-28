@@ -38,6 +38,8 @@ Gradle/BuildScript	ui	Directory	optional
 Gradle/BuildScript	ui/build	Ignore	optional
 Gradle/BuildScript	ui/build.gradle	File	optional
 Gradle/BuildScript	ui/build.gradle.kts	File	optional
+Gradle/DaemonJvmProperties	gradle	Directory	optional
+Gradle/DaemonJvmProperties	gradle/gradle-daemon-jvm.properties	File	optional
 Gradle/GradleProperties	gradle.properties	File	optional
 Gradle/GradleWrapper/LauncherScript	gradlew	File	required
 Gradle/GradleWrapper/LauncherScript	gradlew.bat	File	required

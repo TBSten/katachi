@@ -35,17 +35,17 @@ layout はどれもモジュールパスから始まり、その下の package �
 :ui
   src/commonMain/kotlin/**/
     component/
-      *.kt                                    共通コンポーネント
-      *Preview.kt                             プレビュー
-    theme/*.kt                                テーマ
-    core/*.kt                                 UI 基盤
-    preview/PreviewRoot.kt                    プレビューの土台
+      *.kt                                       共通コンポーネント
+      *Preview.kt                                プレビュー
+    theme/*.kt                                   テーマ
+    core/*.kt                                    UI 基盤
+    preview/PreviewRoot.kt                       プレビューの土台
 
 :feature:*
-  src/commonMain/kotlin/**/<name>*Preview.kt  プレビュー
+  src/commonMain/kotlin/**/<feature>*Preview.kt  プレビュー
 
 :navigation
-  src/commonMain/kotlin/**/*.kt               ナビゲーション
+  src/commonMain/kotlin/**/*.kt                  ナビゲーション
 ```
 
 ## 置いてはいけないもの
