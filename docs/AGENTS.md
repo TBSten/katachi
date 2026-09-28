@@ -103,6 +103,14 @@ title: ...
 - **存在しないページにリンクするとビルドが落ちる。** 書けるページから順に出す
 - **`@ExperimentalKatachiApi` が要る API を使う箇所に「`@OptIn(ExperimentalKatachiApi::class)` が必要です」と書かない。**
   opt-in が無ければコンパイラがそう言うので、エラーメッセージから直せる。本文とコード例が注記で重くなるだけ
+- **コード例で `.template { }` を書くときは、ファイルの宣言と `.template` の間で必ず改行する。**
+  `.template` がどのファイルの宣言に付いているのかを、1行目で読めるようにするため。
+  ```kotlin
+  "feature" / capture("feature") / "${capture("name")}Screen".ktFile()
+      .template {
+          // ...
+      }
+  ```
 - **節の索引ページは `<SectionIndex dir="..." />` で出す。** ページの集合は content
   collection から、並び順はサイドバーから採る。カードを手で並べない
 
