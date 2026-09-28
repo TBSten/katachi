@@ -35,7 +35,7 @@ ui group と分けてあるのは、増え方が違うからです。feature は
 ## Placement in this group
 
 ```
-:feature:*
+:feature:<feature>
   src/commonMain/kotlin/**/
     <feature>Screen.kt       画面
     <feature>ViewModel.kt    ViewModel

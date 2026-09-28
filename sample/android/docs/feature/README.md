@@ -41,7 +41,7 @@ feature を消すときに他の feature を読み直さなくて済む。
 ## Placement in this group
 
 ```
-:feature:*
+:feature:<feature>
   src/main/kotlin/**/
     <feature>Screen.kt                 Screen
     <feature>ViewModel.kt              ViewModel

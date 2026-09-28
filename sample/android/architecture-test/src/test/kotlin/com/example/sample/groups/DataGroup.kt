@@ -30,8 +30,14 @@ fun DeclarationContainerScope.dataGroup() = "data".group {
  * Read twice, so the list is written once. The Repository role's `layout { }` declares one
  * package per entry, and requires every file in it to start with that entry's name
  * (`user/User*Repository.kt`); the Repository and Fake templates take it as `--arg domain=User`.
- * The prefix is what gives a generated file a single place: `UserProfileRepository.kt` fits the
- * `user` package and no other, where a bare `*Repository.kt` would fit both.
+ *
+ * A fixed list rather than a directory `capture(...)` is what lets `layout { }` require that:
+ * unlike a module key, whose `wildcard(...)` a layout can read back while it is still being
+ * declared, a directory capture's value is not something the layout itself can read -- there is
+ * no equivalent for a `capture(...)` level, only for a module's own `*`. So "every file below
+ * `user/` starts with `User`" cannot be written as one pattern parameterised by a capture; each
+ * domain's own literal package and prefix has to be written out. Choosing where a generated file
+ * goes, rather than constraining its name, is the one thing a plain `capture(...)` would still do.
  */
 enum class DataDomain {
     User,

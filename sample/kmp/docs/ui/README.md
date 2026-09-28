@@ -41,7 +41,7 @@ layout はどれもモジュールパスから始まり、その下の package �
     core/*.kt                                    UI 基盤
     preview/PreviewRoot.kt                       プレビューの土台
 
-:feature:*
+:feature:<feature>
   src/commonMain/kotlin/**/<feature>*Preview.kt  プレビュー
 
 :navigation

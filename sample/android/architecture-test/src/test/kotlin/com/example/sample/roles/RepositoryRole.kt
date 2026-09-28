@@ -40,8 +40,10 @@ fun DeclarationContainerScope.repository() = "Repository" {
     // the same package, so `description` is what tells the two apart — which is the
     // question it exists to answer.
     //
-    // One package per DataDomain, and a file name has to start with that domain's
-    // name: that is what gives a generated `UserProfileRepository.kt` one package.
+    // One package per DataDomain, and a file name has to start with that domain's name: a
+    // directory `capture(...)` has no value the layout could read back to write that requirement
+    // once, so it is written out per domain instead (see DataDomain's KDoc). `capture(...)`
+    // would still be enough to just choose which package a generated file goes in.
     // Written twice because katachi's `*` matches one character or more, so
     // `User*Repository` alone would not accept `UserRepository` itself.
     layout {

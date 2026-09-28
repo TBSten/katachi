@@ -22,7 +22,7 @@ IDE の補完で後者を足してしまうと iOS ターゲットが解決で�
 
 | Module | Path | When to use |
 |---|---|---|
-| `:feature:*` | `src/commonMain/kotlin/**/<feature>*Preview.kt` | 画面のプレビュー。その画面を持つ feature モジュールに置く |
+| `:feature:<feature>` | `src/commonMain/kotlin/**/<feature>*Preview.kt` | 画面のプレビュー。その画面を持つ feature モジュールに置く |
 | `:ui` | `src/commonMain/kotlin/**/component/*Preview.kt` | 部品のプレビュー。どの画面にも属さないので :ui に置く |
 
 ## Examples

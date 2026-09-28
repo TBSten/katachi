@@ -19,7 +19,7 @@ Repository は引数で受け取るだけで、自分では作りません。作
 
 | Module | Path | When to use |
 |---|---|---|
-| `:feature:*` | `src/commonMain/kotlin/**/<feature>ViewModel.kt` |  |
+| `:feature:<feature>` | `src/commonMain/kotlin/**/<feature>ViewModel.kt` |  |
 
 ## Examples
 

@@ -18,6 +18,7 @@ katachi はリポジトリのソースから `includeBuild("../..")` で取り�
 |----------------------------------------------------------------------------------------------------------|----------------------------------------------------------------------------------------------------------------|
 | [`ProjectArchitecture.kt`](architecture-test/src/test/kotlin/com/example/ProjectArchitecture.kt)         | `architecture { }` の本体。7 つの group を呼んでいるだけで、役割は `roles/` に1ファイル1役割で置いてある       |
 | [`roles/ServiceRole.kt`](architecture-test/src/test/kotlin/com/example/roles/ServiceRole.kt)             | `layout { }` に加えて `konsist { }` で制約を書いた役割。`template { }` で `*Service.kt` を生成する見本も兼ねる |
+| [`roles/ControllerRole.kt`](architecture-test/src/test/kotlin/com/example/roles/ControllerRole.kt)       | `capture("resource")` でディレクトリの `*` に名前を付け、`template { }` から `captureValue("resource")` で読み返す見本。package にそのまま使う値なので `require(...)` で弾いている |
 | [`roles/ArchitectureDefinitionRole.kt`](architecture-test/src/test/kotlin/com/example/roles/ArchitectureDefinitionRole.kt) | `konsist(scope = DirectOnly)` の例。`com/example` 直下にだけ効き、`groups/`・`roles/` には降りない制約 |
 | [`ProjectArchitectureTest.kt`](architecture-test/src/test/kotlin/com/example/ProjectArchitectureTest.kt) | 利用者が書くテストはこれ1つ。`konsist { }` も評価するために `assert(FileConstraintCheck())` を呼んでいる              |
 | [`processors/RoleNames.kt`](architecture-test/src/test/kotlin/com/example/processors/RoleNames.kt)       | `--arg` で引数を受け取る自作 processor の最小例                                                                |

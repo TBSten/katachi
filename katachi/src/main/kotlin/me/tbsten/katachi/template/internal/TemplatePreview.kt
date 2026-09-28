@@ -228,6 +228,22 @@ private fun kindOf(type: TemplateParameterType<*>): TemplateParameterKind = when
  * filled in the same way and spelt back as `${name}` -- a module capture too, as the directory the
  * module key's own convention gives it (`${feature}` below `feature/` for `":feature:*"`), since
  * which module a value picks is only known once the modules have been listed.
+ *
+ * A capture used inside a file name, not only a directory (`"${wildcard("feature").pascalCase}*"`),
+ * needs the same plain word on the layout's side of the match too: `wildcard(...)` reads a capture
+ * with no module bound as `<name>`, which a naming conversion leaves unchanged the same way it
+ * leaves a [CAPTURE_TOKEN] unchanged, but the two spellings are not each other, so the plain word
+ * this candidate name uses has to replace the layout's `<name>` as well -- [placeTemplateFile]'s
+ * `patternNameRewrite` is where that happens. Without it, a role that reads a capture back with
+ * `captureValue(...)` to name a file the same way its `layout { }` names the directory would never
+ * match its own pattern.
+ *
+ * `<name>` can also turn up **inside** a directory, not only in a file name: a `ModulePackage`
+ * derives its directory straight from the module path text
+ * ([me.tbsten.katachi.dsl.internal.ModuleTarget.modulePath]), which an unresolved wildcard key
+ * carries the same placeholder in. Left alone that reads as an ordinary, unnamed `*` -- a
+ * directory no run could ever pick -- so the restore below turns every `<name>` back into
+ * `${name}` too, next to the token.
  */
 private fun filePreviewOf(
     role: Role,
@@ -238,14 +254,30 @@ private fun filePreviewOf(
     content: String,
     declaredAt: DeclarationSite,
 ): TemplateFilePreview {
+    val tokens = captureNames.withIndex().associate { (index, name) -> name to "$CAPTURE_TOKEN$index" }
     var plainName = fileName
     for (name in stringNames) {
-        plainName = plainName.replace(placeholderOf(name), name.replaceFirstChar(Char::uppercaseChar))
+        val standIn = tokens[name] ?: name.replaceFirstChar(Char::uppercaseChar)
+        plainName = plainName.replace(placeholderOf(name), standIn)
     }
-    val tokens = captureNames.withIndex().associate { (index, name) -> name to "$CAPTURE_TOKEN$index" }
     return try {
-        var placed = placeTemplateFile(role, PlacementLayout(entries), plainName, declaredAt, tokens)
-        for ((name, token) in tokens) placed = placed.replace(token, placeholderOf(name))
+        var placed = placeTemplateFile(
+            role,
+            PlacementLayout(entries),
+            plainName,
+            declaredAt,
+            tokens,
+            patternNameRewrite = { segment ->
+                tokens.entries.fold(segment) { spelt, (name, token) -> spelt.replace("<$name>", token) }
+            },
+        )
+        for ((name, token) in tokens) {
+            // The token stands for a file-name occurrence of the capture (`patternNameRewrite`,
+            // above), and `<name>` for a directory built straight out of the module path itself
+            // -- `ModulePackage` does this, splitting it on `:` before any capture gets to fill
+            // a `*` in. Both read back as the same `${name}` a preview shows everywhere else.
+            placed = placed.replace(token, placeholderOf(name)).replace("<$name>", placeholderOf(name))
+        }
         val directory = placed.substringBeforeLast('/', missingDelimiterValue = "")
         TemplateFilePreview(
             fileName = fileName,
@@ -273,8 +305,9 @@ private fun filePreviewOf(
 }
 
 /**
- * What a directory capture is spelt as while a preview asks the layout about it: a plain word no
- * glob reads as anything, numbered per capture, and swapped back for `${name}` afterwards.
+ * What a capture is spelt as while a preview asks the layout about it, whether it names a
+ * directory or is read back into a file name with `captureValue(...)`: a plain word no glob reads
+ * as anything, numbered per capture, and swapped back for `${name}` afterwards.
  */
 private const val CAPTURE_TOKEN: String = "katachiCapturePreview"
 

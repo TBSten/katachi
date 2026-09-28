@@ -145,14 +145,17 @@ public class ModuleIndex internal constructor(
      * declarations — documentation generation,
      * [me.tbsten.katachi.processor.ArchitectureProcessContext.declaredEntries] — would quietly lose every
      * declaration such a key makes. So an unresolved index keeps the key as itself: one
-     * target whose directory is [ModulePattern.conventionalDirectory], the pattern with its
-     * wildcards still in it, and whose wildcards are [ModulePattern.wildcardPlaceholders].
+     * target whose directory is [ModulePattern.conventionalDirectory], whose wildcards are
+     * [ModulePattern.wildcardPlaceholders], and whose [ModuleTarget.modulePath] is the pattern
+     * unchanged when nothing named its `*`s, or with each `*` swapped for its own placeholder
+     * otherwise (see [unresolvedModulePath]).
      *
-     * The two are deliberately spelled differently. The directory keeps the real `*`, because
-     * it names levels that exist and because a path holding a wildcard is what keeps every
-     * declaration below it from being [me.tbsten.katachi.dsl.LayoutEntry.required]. A name a
-     * block *builds* out of a capture has nothing to match against, so it gets a placeholder
-     * instead — one that no amount of string building can turn into a broken glob.
+     * The directory and the module path are deliberately spelled differently. The directory keeps
+     * the real `*`, because it names levels that exist and because a path holding a wildcard is
+     * what keeps every declaration below it from being [me.tbsten.katachi.dsl.LayoutEntry.required].
+     * A name a block *builds* out of a capture -- `wildcard(...)`, or a directory `ModulePackage`
+     * derives from [ModuleTarget.modulePath] itself -- has nothing to match against, so it gets a
+     * placeholder instead: one that no amount of string building can turn into a broken glob.
      *
      * The check never takes that branch. It builds its index by walking the project, so a
      * wildcard key expands to the modules that exist, down to none of them.
@@ -163,7 +166,7 @@ public class ModuleIndex internal constructor(
         return if (pattern.hasWildcard && discovered == null) {
             listOf(
                 ModuleTarget(
-                    modulePath = pattern.pattern,
+                    modulePath = pattern.unresolvedModulePath(captureNames),
                     directory = pattern.conventionalDirectory,
                     wildcards = pattern.wildcardPlaceholders(captureNames),
                     captureNames = captureNames,
@@ -217,7 +220,7 @@ public class ModuleIndex internal constructor(
 
     private fun keptAsPattern(pattern: ModulePattern, captureNames: List<String>?): List<ModuleTarget> = listOf(
         ModuleTarget(
-            modulePath = pattern.pattern,
+            modulePath = pattern.unresolvedModulePath(captureNames),
             directory = pattern.conventionalDirectory,
             wildcards = pattern.wildcardPlaceholders(captureNames),
             captureNames = captureNames,
@@ -274,6 +277,22 @@ public class ModuleIndex internal constructor(
  */
 private fun normalizeDirectory(directory: String): String =
     directory.split('/', '\\').filter { it.isNotEmpty() && it != "." }.joinToString("/")
+
+/**
+ * [ModulePattern.pattern] as [ModuleTarget.modulePath] reads it for a wildcard key nobody has
+ * resolved: the pattern as written when nothing named its `*`s ([captureNames] `null`), or with
+ * each named `*` swapped for [ModulePattern.wildcardPlaceholders] otherwise.
+ *
+ * The swap matters to code that builds a directory out of the whole module path rather than out
+ * of [ModuleTarget.wildcards] alone -- `ModulePackage`'s strategies split [ModulePattern.pattern]
+ * on `:`, so a plain `*` there would read as an ordinary, unnamed wildcard and make every path
+ * below it look like one katachi can never place, even though the same `*` already has a name one
+ * level up. The placeholder survives the split (and every naming conversion) exactly as
+ * [ModulePattern.wildcardPlaceholders] itself does, so text built from it is not a glob wildcard
+ * at all -- only a real value, bound later, ever is.
+ */
+private fun ModulePattern.unresolvedModulePath(captureNames: List<String>?): String =
+    if (captureNames == null) pattern else filledIn(wildcardPlaceholders(captureNames))
 
 /** What [ModuleIndex.boundTo] fills named wildcard keys in with, and where it notes a value that picks nothing. */
 internal class ModuleBinding(

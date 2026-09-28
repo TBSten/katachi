@@ -15,6 +15,8 @@ HTTP とアプリケーションの中身との境目です。パスとメソッ
 
 テンプレートから生成できます。リソースの package の階層に `resource` と名前を付けてあるので、
 `--arg resource=user --arg name=User` で `controller/user/UserController.kt` ができます。
+`resource` は package にそのまま入るので、テンプレートは英数字だけの値しか受け付けません
+（`--arg resource=user-profile` のような値は弾きます）。
 
 ## Placement
 

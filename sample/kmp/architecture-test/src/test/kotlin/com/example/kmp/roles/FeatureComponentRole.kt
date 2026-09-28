@@ -69,10 +69,10 @@ fun DeclarationContainerScope.featureComponent() = "FeatureComponent" {
                 /** Part of the $feature screen that no other screen uses. */
                 @Composable
                 internal fun $component(
-                    title: String,
+                    name: String,
                     modifier: Modifier = Modifier,
                 ) {
-                    Text(text = title, modifier = modifier)
+                    Text(text = name, modifier = modifier)
                 }
             """.trimIndent() + "\n"
         }

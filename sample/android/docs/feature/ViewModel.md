@@ -22,7 +22,7 @@ Repository はコンストラクタ引数で受け取り、既定値に本番実
 
 | Module | Path | When to use |
 |---|---|---|
-| `:feature:*` | `src/main/kotlin/**/<feature>ViewModel.kt` |  |
+| `:feature:<feature>` | `src/main/kotlin/**/<feature>ViewModel.kt` |  |
 
 ## Examples
 

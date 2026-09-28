@@ -59,6 +59,14 @@ internal class PlacementLayout(
  *
  * A module capture whose value picks no existing module ([PlacementLayout.misses]) fails the file
  * whatever else would take it.
+ *
+ * @param patternNameRewrite How the last segment of a declared pattern reads before it is
+ *   compiled as a glob. Identity for a real run, where the declared text is already what a real
+ *   module's `wildcard(...)` built it out of. A preview passes one instead: its own candidate
+ *   name and the declared pattern spell the same capture two different ways -- `wildcard(...)`
+ *   as `<name>`, `captureValue(...)` as its own placeholder -- and neither survives being
+ *   compared to the other as text. Rewriting both to the same glob-safe token first lets the
+ *   match run as if one real value had picked both.
  */
 internal fun placeTemplateFile(
     role: Role,
@@ -69,10 +77,11 @@ internal fun placeTemplateFile(
     missingCaptures: (names: List<String>) -> Throwable = { names ->
         missingCaptureException(role, layout.entries, names, declaredAt, fileName)
     },
+    patternNameRewrite: (String) -> String = { it },
 ): String {
     requireCreatableFileName(role, fileName, declaredAt)
 
-    val places = filePlacesOf(role, layout.entries)
+    val places = filePlacesOf(role, layout.entries, patternNameRewrite)
     val matching = places.filter { it.nameGlob.matches(fileName) }
     if (matching.isEmpty()) {
         // A module capture without its value leaves the names a layout builds out of
@@ -191,12 +200,16 @@ private fun moduleNotFound(role: Role, miss: ModuleMiss, fileName: String, decla
  * Identity comparison on the role, the way `ProjectWalk` does it: [Role] declares no `equals`, so
  * two roles are the same role only when they are the same object.
  */
-private fun filePlacesOf(role: Role, entries: List<LayoutEntry>): List<FilePlace> = entries
+private fun filePlacesOf(
+    role: Role,
+    entries: List<LayoutEntry>,
+    patternNameRewrite: (String) -> String = { it },
+): List<FilePlace> = entries
     .filter { it.role === role && it.kind == LayoutEntryKind.File && !it.synthetic }
     .map { entry ->
         FilePlace(
             entry = entry,
-            nameGlob = Glob.compile(entry.path.substringAfterLast('/'), Glob.PATH_SEPARATOR),
+            nameGlob = Glob.compile(patternNameRewrite(entry.path.substringAfterLast('/')), Glob.PATH_SEPARATOR),
         )
     }
 

@@ -21,7 +21,7 @@ PlatformImplementation（expect/actual）に降ろしてください。
 
 | Module | Path | When to use |
 |---|---|---|
-| `:feature:*` | `src/commonMain/kotlin/**/<feature>Screen.kt` |  |
+| `:feature:<feature>` | `src/commonMain/kotlin/**/<feature>Screen.kt` |  |
 
 ## Examples
 

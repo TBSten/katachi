@@ -13,6 +13,8 @@ import java.io.File
 import me.tbsten.katachi.dsl.Architecture
 import me.tbsten.katachi.dsl.architecture
 import me.tbsten.katachi.dsl.gradle.module
+import me.tbsten.katachi.dsl.gradle.wildcard
+import me.tbsten.katachi.dsl.pascalCase
 import me.tbsten.katachi.processor.internal.FakeArchitectureProcessContext
 import me.tbsten.katachi.template.DescribeTemplates
 import me.tbsten.katachi.template.DescribeTemplatesFormat
@@ -40,6 +42,28 @@ private fun captureArchitecture(): Architecture = architecture {
         "Plain" {
             layout { "plain" / "*.kt".file() }
             template { file("Plain.kt") { "" } }
+        }
+    }
+}
+
+/**
+ * Reproduces `FeatureComponent` (sample/kmp, sample/android): the layout reads a module capture
+ * with `wildcard(name).pascalCase` to name the head of the file, and the template reads the same
+ * capture back with `captureValue(name).pascalCase`. A preview's stand-in value for the two spells
+ * differently -- `<feature>` on the layout's side, `${feature}` on the template's -- and used to
+ * fail to match its own pattern (`KatachiNoTemplatePlacementException`) even though real generation,
+ * which reads one real value for both, always worked.
+ */
+private fun featureComponentLikeArchitecture(): Architecture = architecture {
+    "FeatureComponent" {
+        layout {
+            ":feature:*".module(capture = "feature") {
+                "${wildcard("feature").pascalCase}Screen.kt".file()
+            }
+        }
+        template {
+            val feature = captureValue("feature")
+            file("${feature.pascalCase}Screen.kt") { "package com.example.feature.$feature" }
         }
     }
 }
@@ -132,6 +156,35 @@ class DescribeTemplatesCaptureSpec : FreeSpec({
         logs.none { it.startsWith("Generate it with") } shouldBe true
         logs shouldContain "It cannot be generated as the layout is declared: HomeScreen.kt has no single directory (above)."
         logs.any { it.startsWith("Name every * left in the directory with capture(") } shouldBe true
+    }
+
+    "wildcard(name).pascalCase でファイル名を組む役割でも、captureValue(name).pascalCase の候補が生成先を出す" {
+        val (detail, logs) = featureComponentLikeArchitecture().detail("FeatureComponent")
+        val file = detail.files.single()
+
+        file.path shouldBe "feature/\${feature}/\${feature}Screen.kt"
+        file.content shouldBe "package com.example.feature.\${feature}"
+        file.unresolvedPatterns.shouldBeEmpty()
+        withClue("生成できる役割なので、生成のコマンドを出す") {
+            logs shouldContain "  ${detail.exampleCommand}"
+        }
+    }
+
+    "wildcard(name).pascalCase でファイル名を組む役割は JSON でも path が出る" {
+        withTempProject { root ->
+            val output = File(root, "templateDescription.json")
+            DescribeTemplates.process(
+                FakeArchitectureProcessContext(
+                    architecture = featureComponentLikeArchitecture(),
+                    args = DescribeTemplates.Args(format = DescribeTemplatesFormat.Json, output = output.path),
+                    fileSystem = ForbiddenFileSystem,
+                ),
+            ).getOrThrow()
+
+            val json = output.readText()
+            json shouldContain "\"path\": \"feature/\${feature}/\${feature}Screen.kt\""
+            json shouldContain "\"fileCount\": 1"
+        }
     }
 
     "** が残る役割は ** の無いパスを別に書くよう案内する" {

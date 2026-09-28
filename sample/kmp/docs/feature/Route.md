@@ -20,7 +20,7 @@ HomeViewModel という型の存在を知らずに画面を出せます。依存
 
 | Module | Path | When to use |
 |---|---|---|
-| `:feature:*` | `src/commonMain/kotlin/**/<feature>Route.kt` |  |
+| `:feature:<feature>` | `src/commonMain/kotlin/**/<feature>Route.kt` |  |
 
 ## Examples
 

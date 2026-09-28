@@ -31,6 +31,8 @@ fun DeclarationContainerScope.controller() = "Controller" {
 
         テンプレートから生成できます。リソースの package の階層に `resource` と名前を付けてあるので、
         `--arg resource=user --arg name=User` で `controller/user/UserController.kt` ができます。
+        `resource` は package にそのまま入るので、テンプレートは英数字だけの値しか受け付けません
+        （`--arg resource=user-profile` のような値は弾きます）。
     """.trimIndent()
     allowedContents = """
         置いてよいのは Ktor の `Route` に対する登録と、受け渡しのための変換だけです。
@@ -61,6 +63,12 @@ fun DeclarationContainerScope.controller() = "Controller" {
     //       --arg roleName=Controller --arg resource=user --arg name=User
     template {
         val resource = captureValue("resource")
+        // `resource` goes straight into the package below, so a value with characters a package
+        // segment cannot hold (`user-profile`) would compile-fail rather than be caught here.
+        // `${` is the placeholder katachiTemplates previews the capture with, and has to pass.
+        require(resource.all { it.isLetterOrDigit() } || resource.startsWith("\${")) {
+            "--arg resource=$resource: use letters and digits only"
+        }
         val name by stringParameter()
 
         file("${name}Controller.kt") {
