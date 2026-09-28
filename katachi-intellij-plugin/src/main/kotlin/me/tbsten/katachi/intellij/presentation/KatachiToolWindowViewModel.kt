@@ -38,6 +38,7 @@ import me.tbsten.katachi.intellij.model.ModuleId
 import me.tbsten.katachi.intellij.model.ModuleTemplate
 import me.tbsten.katachi.intellij.model.TemplateId
 import java.nio.file.Path
+import java.util.concurrent.ConcurrentHashMap
 
 /**
  * Holds the tool window's [state] and carries out [KatachiIntent]s: pure ones through
@@ -46,7 +47,12 @@ import java.nio.file.Path
  * All work runs in [scope], which the project service owns: closing the project cancels it, and
  * with it the running Gradle build (E-49). [dispatch] is called on the EDT; the work it starts runs
  * in the background, so every state change goes through `update`, and the synced data and the cached
- * JSON are read on [ioDispatcher]. Gradle runs one build at a time ([SerialGradleTaskRunner]).
+ * JSON are read on [ioDispatcher]. Gradle runs one build at a time ([SerialGradleTaskRunner]): the
+ * project service hands in its one serial runner, shared with the entries (issue 11); any other
+ * runner is wrapped in one here.
+ *
+ * The list is loaded once per session, by whichever asks first: the tool window ([KatachiIntent.Opened])
+ * or the New menu and the editor notification ([KatachiIntent.EnsureLoaded], issues 11, 18).
  */
 internal class KatachiToolWindowViewModel(
     private val scope: CoroutineScope,
@@ -57,11 +63,16 @@ internal class KatachiToolWindowViewModel(
     /** What the project remembers (the "existing files" combo, folded modules) before anything loads. */
     initial: KatachiScreenState = KatachiScreenState(),
     private val ioDispatcher: CoroutineDispatcher = Dispatchers.IO,
+    /**
+     * Whether [KatachiIntent.EnsureLoaded] may run Gradle (the setting "load without a user action",
+     * decision 16); read at each one. When not, it only detects and shows the cached JSON.
+     */
+    private val loadsWithoutUser: () -> Boolean = { true },
 ) {
     private val mutableState = MutableStateFlow(initial)
     val state: StateFlow<KatachiScreenState> = mutableState.asStateFlow()
 
-    private val runner: GradleTaskRunner = SerialGradleTaskRunner(runner)
+    private val runner: GradleTaskRunner = runner as? SerialGradleTaskRunner ?: SerialGradleTaskRunner(runner)
     private val loader = TemplateDescriptionLoader(this.runner, fileSystem)
 
     // Written on the EDT or in the background, read on the other.
@@ -78,14 +89,37 @@ internal class KatachiToolWindowViewModel(
     /** The files the latest generation writes or may write, absolute (E-44: not a definition change). */
     @Volatile private var ownWrites: Set<Path> = emptySet()
 
+    /** The files an entry's generation writes (E3), kept for the session: never a definition change. */
+    private val entryOwnWrites: MutableSet<Path> = ConcurrentHashMap.newKeySet()
+
     private var opened = false
+
+    /** EnsureLoaded ran with loading turned off: the synced data was read, and is read again after a sync. */
+    private var detectedForEntries = false
+
+    private val mutableLoadStarted = MutableStateFlow(false)
+
+    /**
+     * Whether a load of the list started in this session, from the tool window, an entry, ⟳ or a
+     * generation. Only then does a sync or a definition change load again (decision 16).
+     */
+    val loadStarted: StateFlow<Boolean> = mutableLoadStarted.asStateFlow()
+
+    /** Whether a detection or a load is running or queued; tests wait for it to end. */
+    val isLoadRunning: Boolean get() = loadJob?.isActive == true
+
     private val ideIntents = IdeIntentHandler(scope, this.runner, fileSystem, effects, { mutableState.value }, { mutableState.update(it) })
 
     /** The definition modules found by the latest detection, for watching their files (E-44). */
     val definitionModules: List<KatachiModule> get() = mutableState.value.modules
 
     /** Whether [path] is a file the latest generation writes, whose VFS event is not a definition change. */
-    fun isOwnWrite(path: Path): Boolean = path in ownWrites
+    fun isOwnWrite(path: Path): Boolean = path in ownWrites || path in entryOwnWrites
+
+    /** [path] is about to be written by an entry's generation: not a definition change (E-44). */
+    fun registerOwnWrite(path: Path) {
+        entryOwnWrites.add(path)
+    }
 
     fun dispatch(intent: KatachiIntent) {
         var applied = false
@@ -100,11 +134,14 @@ internal class KatachiToolWindowViewModel(
         when (intent) {
             KatachiIntent.Opened -> if (!opened) {
                 opened = true
-                detectAndLoad()
+                // An entry may have loaded the list already: the tool window shows it as it is (issue 11).
+                startLoad()
             }
-            // Only after the tool window was shown: a sync alone never runs Gradle for someone who does not look (spec 04).
-            KatachiIntent.SyncCompleted -> if (opened) {
-                if (mutableState.value.phase !is ScreenPhase.Ready) detectAndLoad() else redetectAfterSync()
+            KatachiIntent.EnsureLoaded -> ensureLoaded()
+            // Only after a load: a sync alone never runs Gradle for someone who does not look (spec 04, decision 16).
+            KatachiIntent.SyncCompleted -> when {
+                mutableLoadStarted.value -> if (mutableState.value.phase !is ScreenPhase.Ready) detectAndLoad() else redetectAfterSync()
+                detectedForEntries -> detectOnly()
             }
             KatachiIntent.Reload -> reload()
             KatachiIntent.CancelLoad -> loadJob?.cancel()
@@ -121,7 +158,63 @@ internal class KatachiToolWindowViewModel(
     private fun reload() {
         val current = mutableState.value
         if (current.generation is GenerationState.Running || loadJob?.isActive == true) return
+        mutableLoadStarted.value = true
         launchLoad(detect = true)
+    }
+
+    /** The first load of the session; after a detection of [detectOnly] that may still run. */
+    private fun startLoad() {
+        if (mutableLoadStarted.value) return
+        mutableLoadStarted.value = true
+        launchLoad(detect = true, after = loadJob)
+    }
+
+    /**
+     * An entry needs the list (issues 11, 18): the first load, unless one started already. With
+     * loading turned off, only the synced data and the cached JSON are read (decision 16).
+     */
+    private fun ensureLoaded() {
+        if (mutableLoadStarted.value) return
+        if (loadsWithoutUser()) {
+            startLoad()
+        } else if (!detectedForEntries) {
+            detectedForEntries = true
+            detectOnly()
+        }
+    }
+
+    /** Reads the synced data and shows the cached list, without Gradle. */
+    private fun detectOnly() {
+        if (loadJob?.isActive == true) return
+        loadJob = scope.launch {
+            try {
+                detect()
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                LOG.warn("Reading the katachi definition modules failed unexpectedly", e)
+            }
+        }
+    }
+
+    /**
+     * Re-reads [module]'s templates for a generation from an entry and puts them in [state] before
+     * returning (decision 1), after the load that is running, if any. The other modules' lists stay.
+     * A failure leaves the list as it was: the generation reports it.
+     */
+    suspend fun reloadForGeneration(module: KatachiModule): LoadResult {
+        loadJob?.join()
+        mutableLoadStarted.value = true
+        effects.saveAllDocuments()
+        val result = loader.load(listOf(module), versions(), object : GradleRunListener {})
+        if (result is LoadResult.Loaded) {
+            mutableState.update { state ->
+                val others = state.snapshots.filter { snapshot -> result.snapshots.none { it.module.id == snapshot.module.id } }
+                val modules = if (state.modules.any { it.id == module.id }) state.modules else state.modules + module
+                applyLoaded(state.copy(modules = modules), (others + result.snapshots).sortedBy { snapshot -> modules.indexOfFirst { it.id == snapshot.module.id } })
+            }
+        }
+        return result
     }
 
     /**
@@ -139,9 +232,10 @@ internal class KatachiToolWindowViewModel(
     }
 
     /** Detects first when [detect], then loads. Whatever goes wrong, `loading` does not stay set. */
-    private fun launchLoad(detect: Boolean, onlyWhenModulesChanged: Boolean = false) {
+    private fun launchLoad(detect: Boolean, onlyWhenModulesChanged: Boolean = false, after: Job? = null) {
         loadJob = scope.launch {
             try {
+                after?.join()
                 if (detect && !detect(onlyWhenModulesChanged)) return@launch
                 load()
             } catch (e: CancellationException) {
