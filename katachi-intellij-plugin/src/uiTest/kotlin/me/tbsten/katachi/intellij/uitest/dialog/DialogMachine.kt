@@ -46,7 +46,11 @@ private val otherValuePool = listOf("Home", "profile", "日本語", "Ab1", "user
  * DialogMachine(scenario).use { it.run() }
  * ```
  */
-internal class DialogMachine(private val scenario: DialogScenario) : AutoCloseable {
+internal class DialogMachine(
+    private val scenario: DialogScenario,
+    /** Called with the step's name and the view once the step's checks passed (the opening is step `opened`): D3b draws here. */
+    private val onSettled: (step: String, view: DialogView) -> Unit = { _, _ -> },
+) : AutoCloseable {
     private val edt = ManualDispatcher()
     private val background = ManualDispatcher()
     private val escaped = mutableListOf<Throwable>()
@@ -248,6 +252,7 @@ internal class DialogMachine(private val scenario: DialogScenario) : AutoCloseab
         current.selected?.let { lastShown = LastShown(it, current.values) }
         if (problems.isNotEmpty()) fail(step, problems)
         recordReach(current)
+        onSettled(step, current)
     }
 
     private fun fail(step: String, problems: List<String>): Nothing {
