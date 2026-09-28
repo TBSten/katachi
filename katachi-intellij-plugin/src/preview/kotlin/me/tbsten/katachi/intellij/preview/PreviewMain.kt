@@ -65,16 +65,18 @@ fun main(args: Array<String>) {
     PreviewChecks.cleanManagedOutputs(outDir)
     outDir.mkdirs()
 
-    val expected = renders.flatMap { r -> themes.map { (theme, _) -> fileNameOf(r, theme) } }.toSet()
+    val expected = renders.flatMap { r -> themes.map { (theme, _) -> fileNameOf(r, theme) } }.toSet() + expectedDialogFiles()
     for (render in renders) {
         for ((theme, dark) in themes) {
             renderScenario(render, dark, File(outDir, fileNameOf(render, theme)))
         }
     }
+    val dialogs = renderDialogScenarios(outDir)
     writeGallery(outDir, expected.sorted())
 
     // Mechanical gates, so that eyeballing the PNGs is not the only check.
     val gateFailures = buildList {
+        addAll(dialogs.gateFailures)
         addAll(PreviewChecks.unexpectedFileSet(outDir, expected))
         addAll(
             PreviewChecks.transparentCornerPngs(expected.sorted().map { File(outDir, it) }).map {

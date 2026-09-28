@@ -7,8 +7,11 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import me.tbsten.katachi.intellij.presentation.FieldId
+import me.tbsten.katachi.intellij.presentation.FocusTarget
 import me.tbsten.katachi.intellij.presentation.FormUi
 import me.tbsten.katachi.intellij.presentation.KatachiIntent
 import me.tbsten.katachi.intellij.presentation.ListUi
@@ -31,7 +34,19 @@ internal fun InlineForm(form: FormUi, list: ListUi, focus: ListFocusController, 
         }
         Column(Modifier.widthIn(max = FormMaxWidth).padding(vertical = 2.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
             form.summary?.let { Text(it, color = faintText) }
-            form.fields.forEach { field -> ParameterField(field, labelWidth, list, focus, onIntent) }
+            val callbacks = remember(onIntent) { toolWindowFieldCallbacks(onIntent) }
+            form.fields.forEach { field ->
+                ParameterField(field, labelWidth, callbacks, Modifier.listFocus(FocusTarget.Field(field.id), focus, list, onIntent))
+            }
         }
     }
+}
+
+/** The tool window's fields: each report is one of its [KatachiIntent]s. */
+private fun toolWindowFieldCallbacks(onIntent: (KatachiIntent) -> Unit) = object : ParameterFieldCallbacks {
+    override fun onInput(field: FieldId, value: String) = onIntent(KatachiIntent.Input(field, value))
+
+    override fun onToggleMultiline(field: FieldId) = onIntent(KatachiIntent.ToggleMultiline(field))
+
+    override fun onRelink(field: FieldId) = onIntent(KatachiIntent.Relink(field))
 }

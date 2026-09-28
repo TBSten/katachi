@@ -1,5 +1,7 @@
 package me.tbsten.katachi.intellij.ui.dialog
 
+import me.tbsten.katachi.intellij.presentation.ValidationStrings
+
 /**
  * The generate dialog's texts, in English by default and in Japanese for the Japanese language pack
  * (issue 8). The dialog is new, so unlike the tool window's `KatachiStrings` it is bilingual from the
@@ -11,7 +13,7 @@ package me.tbsten.katachi.intellij.ui.dialog
  * Text(strings.templateLabel)
  * ```
  */
-internal interface GenerateDialogStrings {
+internal interface GenerateDialogStrings : ValidationStrings {
     val title: String
 
     /** The template select box's label. */
@@ -41,20 +43,18 @@ internal interface GenerateDialogStrings {
     /** The existing-file notice: a file with content is there, so nothing is created. */
     val targetHasContent: String
 
-    /** The validation errors of a field (issue 15), the same set as the tool window's. */
+    /** The placeholder of a select box without a value yet. */
     val chooseOne: String
-    val requiredError: String
 
-    fun notAnInt(min: Int, max: Int): String
-
-    val notAccepted: String
-    val captureSeparatorError: String
-    val captureDotError: String
+    // The validation errors of a field (issue 15) are [ValidationStrings]: the same set as the tool window's.
 
     /** The note under a capture's field: where its value goes. [markedPattern] has the capture written `<name>`. */
     fun capturePathHint(name: String, markedPattern: String): String
 
     fun captureModuleHint(name: String, markedPattern: String): String
+
+    /** The grey line of a parameter whose branch is not taken: [name] applies when [controller] is [value]. */
+    fun collapsedField(name: String, controller: String, value: String): String
 
     /** The reason shown in the dialog when the pre-check refuses to generate. */
     fun generateRefused(reason: String): String
