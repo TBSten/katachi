@@ -10,6 +10,9 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
@@ -17,13 +20,23 @@ import kotlinx.coroutines.withContext
 import me.tbsten.katachi.intellij.data.NioProjectFileSystem
 import me.tbsten.katachi.intellij.data.ProjectFileSystem
 import me.tbsten.katachi.intellij.data.detect.SyncedProjectSource
+import me.tbsten.katachi.intellij.data.generate.GenerationCatalogPort
+import me.tbsten.katachi.intellij.data.generate.GenerationCatalogReload
 import me.tbsten.katachi.intellij.data.gradle.GradleTaskRunner
+import me.tbsten.katachi.intellij.data.gradle.SerialGradleTaskRunner
+import me.tbsten.katachi.intellij.data.placement.PlacementIndexState
+import me.tbsten.katachi.intellij.data.placement.TemplatePlacementIndex
+import me.tbsten.katachi.intellij.ide.entry.EntryEffectsImpl
+import me.tbsten.katachi.intellij.model.KatachiModule
 import me.tbsten.katachi.intellij.presentation.FormState
 import me.tbsten.katachi.intellij.presentation.IdeEffects
 import me.tbsten.katachi.intellij.presentation.KatachiIntent
 import me.tbsten.katachi.intellij.presentation.KatachiScreenState
 import me.tbsten.katachi.intellij.presentation.KatachiToolWindowViewModel
 import me.tbsten.katachi.intellij.presentation.ViewState
+import me.tbsten.katachi.intellij.presentation.entry.EntryEffects
+import me.tbsten.katachi.intellij.presentation.entry.EntryGenerationLedger
+import java.nio.file.Path
 
 /** The ports the ViewModel runs on. Tests swap the synced data and Gradle for fakes. */
 internal data class KatachiPorts(
@@ -31,6 +44,8 @@ internal data class KatachiPorts(
     val runner: GradleTaskRunner,
     val fileSystem: ProjectFileSystem,
     val effects: IdeEffects,
+    /** `null`: the real [EntryEffectsImpl]. Tests of the notification and the New menu pass a fake. */
+    val entryEffects: EntryEffects? = null,
 ) {
     companion object {
         fun of(project: Project): KatachiPorts = KatachiPorts(
@@ -48,22 +63,45 @@ internal data class KatachiPorts(
  * so a running Gradle build is cancelled too (E-49).
  *
  * Created the first time the tool window is shown, so a project nobody looks at never runs Gradle.
+ * The New menu and the editor notification create it too, but only when the synced data has a
+ * definition module (issue 11, decision 17); they share its list through [placementIndex].
  */
 @Service(Service.Level.PROJECT)
 internal class KatachiProjectService(
     private val project: Project,
     val scope: CoroutineScope,
     ports: KatachiPorts,
-) : Disposable {
+) : Disposable, GenerationCatalogPort {
     @Suppress("unused") // Called by the platform.
     constructor(project: Project, scope: CoroutineScope) : this(project, scope, KatachiPorts.of(project))
 
     private val settings: KatachiSettings? = sdkCall("read the katachi settings") { KatachiSettings.getInstance(project) }.getOrNull()
 
+    /**
+     * The project's one Gradle runner: the tool window, the entries and the generation from an entry
+     * all run through it, one build at a time, so they never fight over the same `build/`.
+     * TODO(C1): the ViewModel still wraps it in a serial runner of its own; take that one out.
+     */
+    val gradleRunner: GradleTaskRunner = SerialGradleTaskRunner(ports.runner)
+
+    /** The generations started from the entries (E3 writes, E1 reads). Memory only. */
+    val ledger: EntryGenerationLedger = EntryGenerationLedger()
+
+    /** What the notification's links and the New menu's items ask of the IDE. */
+    val entryEffects: EntryEffects = ports.entryEffects ?: EntryEffectsImpl(project)
+
+    private val mutablePlacementIndex = MutableStateFlow<PlacementIndexState>(PlacementIndexState.NotLoaded)
+
+    /**
+     * The placement index of the loaded list, built off the EDT from [viewModel]'s state, the one
+     * source of the list (issues 4, 11). TODO(C1): rebuild it and update the notifications on change.
+     */
+    val placementIndex: StateFlow<PlacementIndexState> = mutablePlacementIndex.asStateFlow()
+
     val viewModel: KatachiToolWindowViewModel = KatachiToolWindowViewModel(
         scope = scope,
         syncedProject = ports.syncedProject,
-        runner = ports.runner,
+        runner = gradleRunner,
         fileSystem = ports.fileSystem,
         effects = ports.effects,
         initial = KatachiScreenState(
@@ -113,6 +151,23 @@ internal class KatachiProjectService(
             withContext(Dispatchers.EDT) { viewModel.dispatch(KatachiIntent.Reload) }
         }
     }
+
+    /**
+     * Starts detecting and loading the list if nothing did yet (issues 11, 18). Callable from any
+     * thread any number of times (a read action that restarts calls it again): it hops to the EDT
+     * and loads once, and never waits. TODO(C1)
+     */
+    fun ensureLoaded() = Unit
+
+    /** [path] is about to be written by this plugin: not a definition change (E-44). TODO(C1) */
+    override fun registerOwnWrite(path: Path) = Unit
+
+    /**
+     * Re-reads [module]'s templates for a generation through [gradleRunner] and publishes them to
+     * the tool window and [placementIndex] before returning (decision 1). TODO(C1)
+     */
+    override suspend fun reloadForGeneration(module: KatachiModule): GenerationCatalogReload =
+        GenerationCatalogReload.Reloaded(emptyList(), TemplatePlacementIndex.EMPTY)
 
     /** The ViewModel is driven from the EDT only; IDE listeners call from anywhere. */
     private fun dispatchOnEdt(intent: KatachiIntent) {

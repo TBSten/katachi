@@ -15,6 +15,18 @@ internal sealed interface KatachiIntent {
     /** ■ while loading. */
     data object CancelLoad : KatachiIntent
 
+    /**
+     * The New menu or an editor notification needs the list (issues 11, 18): detect and load once,
+     * as [Opened] does, without the tool window. Nothing when loaded or loading. TODO(C1)
+     */
+    data object EnsureLoaded : KatachiIntent
+
+    /**
+     * [View template] of an editor notification: select and highlight [templateId], unfold its group
+     * and module, and scroll its row into view (C2). TODO(C2)
+     */
+    data class RevealTemplate(val templateId: TemplateId) : KatachiIntent
+
     /** A Gradle sync finished: detect again when nothing was found before (E-03). */
     data object SyncCompleted : KatachiIntent
 

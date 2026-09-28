@@ -1,5 +1,6 @@
 package me.tbsten.katachi.intellij.presentation
 
+import me.tbsten.katachi.intellij.data.generate.EntryGenerationFailure
 import me.tbsten.katachi.intellij.data.generate.OpenAfterGeneration
 import me.tbsten.katachi.intellij.model.ConflictChoice
 import me.tbsten.katachi.intellij.model.ConflictQuestion
@@ -50,4 +51,38 @@ internal interface IdeEffects {
     fun openDocs(page: DocsPage)
 
     fun copyToClipboard(text: String)
+
+    // Generating one file from the editor notification or the New menu (SingleFileGeneration, E3).
+    // Defaults do nothing so that the tool window's fakes need not know them. TODO(E3): IdeEffectsImpl
+    // overrides every one, in a write action where it writes, through sdkCall.
+
+    /** Creates [directory] and its missing parents; `false` when the IDE could not. */
+    suspend fun createDirectories(directory: Path): Boolean = false
+
+    /**
+     * Writes [text] to [path] (creating or replacing the file), saves it and opens it in an editor
+     * (issue 16: the provisional file); `false` when it was not written.
+     */
+    suspend fun writeProvisionalFile(path: Path, text: String): Boolean = false
+
+    /** The text the user sees: the open Document's, unsaved edits included, else the disk's; `null` when there is no file. */
+    suspend fun currentText(path: Path): CharSequence? = null
+
+    /** Whether [path]'s Document has edits not saved to disk. */
+    suspend fun hasUnsavedChanges(path: Path): Boolean = false
+
+    /** Saves [path]'s Document; `false` when it could not. */
+    suspend fun saveDocument(path: Path): Boolean = false
+
+    /**
+     * The package of [directory] without PSI: the package of its nearest existing ancestor in a
+     * source root plus the remaining segments; `null` outside source roots.
+     */
+    suspend fun packageNameOf(directory: Path): String? = null
+
+    /** Reloads the open Documents of [paths] from disk after Gradle overwrote them. */
+    suspend fun reloadFromDisk(paths: List<Path>) = Unit
+
+    /** A balloon: why a generation from an entry failed (decision 2). */
+    fun notifyEntryGenerationFailed(failure: EntryGenerationFailure) = Unit
 }
