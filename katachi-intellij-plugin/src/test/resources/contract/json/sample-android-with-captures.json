@@ -58,6 +58,51 @@
   ],
   "details": [
     {
+      "roleName": "feature/FeatureComponent",
+      "title": "画面の部品",
+      "summary": "1つの画面でしか使わない @Composable。:feature:<name> の component package に <Name>*.kt で置く",
+      "parameters": [
+        {
+          "name": "name",
+          "kind": "StringParameter",
+          "typeName": "String",
+          "default": null,
+          "acceptedValues": [],
+          "isRequired": true,
+          "previewValue": "${name}",
+          "previewValueSource": "Placeholder"
+        },
+        {
+          "name": "withPreview",
+          "kind": "BooleanParameter",
+          "typeName": "Boolean",
+          "default": "true",
+          "acceptedValues": ["true", "false"],
+          "isRequired": false,
+          "previewValue": "true",
+          "previewValueSource": "Default"
+        }
+      ],
+      "files": [
+        {
+          "fileName": "${feature}${name}.kt",
+          "path": "feature/${feature}/src/main/kotlin/com/example/sample/feature/${feature}/component/${feature}${name}.kt",
+          "unresolvedPatterns": [],
+          "content": "package com.example.sample.feature.${feature}.component\n\nimport androidx.compose.foundation.layout.Arrangement\nimport androidx.compose.foundation.layout.Column\nimport androidx.compose.material3.MaterialTheme\nimport androidx.compose.material3.Text\nimport androidx.compose.runtime.Composable\nimport androidx.compose.ui.Modifier\nimport androidx.compose.ui.unit.dp\nimport androidx.compose.ui.tooling.preview.Preview\nimport com.example.sample.ui.preview.PreviewRoot\n\n/** Part of the ${feature} screen that no other screen uses. */\n@Composable\ninternal fun ${feature}${name}(\n    title: String,\n    modifier: Modifier = Modifier,\n) {\n    Column(\n        modifier = modifier,\n        verticalArrangement = Arrangement.spacedBy(8.dp),\n    ) {\n        Text(text = title, style = MaterialTheme.typography.titleMedium)\n    }\n}\n\n@Preview(showBackground = true)\n@Composable\nprivate fun ${feature}${name}Preview() = PreviewRoot {\n    ${feature}${name}(title = \"${name}\")\n}"
+        }
+      ],
+      "branches": [],
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=feature/FeatureComponent --arg feature=<feature> --arg name=Name",
+      "captures": [
+        {
+          "name": "feature",
+          "kind": "ModuleCapture",
+          "pattern": ":feature:*",
+          "position": 0
+        }
+      ]
+    },
+    {
       "roleName": "feature/FeatureTest",
       "title": "画面のテスト",
       "summary": ":feature:<name> の src/test に置く、ViewModel を :testing のフェイクで動かすテスト",

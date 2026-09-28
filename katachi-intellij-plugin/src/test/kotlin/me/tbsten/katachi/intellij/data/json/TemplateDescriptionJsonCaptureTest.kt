@@ -2,7 +2,6 @@ package me.tbsten.katachi.intellij.data.json
 
 import me.tbsten.katachi.intellij.model.CapturePlace
 import me.tbsten.katachi.intellij.model.ParameterModel
-import me.tbsten.katachi.intellij.model.TemplateUnavailability
 import me.tbsten.katachi.intellij.model.allParametersOf
 import me.tbsten.katachi.intellij.testing.ContractFixtures
 import org.junit.Assert.assertEquals
@@ -98,17 +97,16 @@ class TemplateDescriptionJsonCaptureTest {
     }
 
     /*
-     * The real outputs of sample/android and sample/kmp list FeatureComponent's capture, but katachi
-     * leaves the role out of details[]: its preview fails there (the file name the template builds
-     * from captureValue("feature") does not match the `<feature>*.kt` of its layout). The IDE shows
-     * such a row as "could not preview" (E-07) until katachi describes it.
+     * The real outputs of sample/android and sample/kmp list FeatureComponent's capture. katachi
+     * (58cec87) now matches the layout's `<feature>*.kt` and the template's captureValue("feature")
+     * with the same stand-in value, so the preview succeeds and the role gets a details[] entry.
      */
     @Test
-    fun `sample-kmpとsample-androidのFeatureComponentはcaptureが一覧にだけ出てプレビューに失敗した行になる`() {
+    fun `sample-kmpとsample-androidのFeatureComponentはcaptureが一覧に出てプレビューに失敗しない`() {
         for (fixture in listOf("sample-kmp-with-captures", "sample-android-with-captures")) {
             val component = ContractFixtures.templates(fixture).single { it.roleName == "feature/FeatureComponent" }
             assertEquals(fixture, listOf("feature"), component.summary.captureNames)
-            assertEquals(fixture, TemplateUnavailability.PreviewFailed, component.unavailability)
+            assertNull(fixture, component.unavailability)
         }
     }
 }
