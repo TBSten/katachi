@@ -17,7 +17,9 @@ internal sealed interface KatachiIntent {
 
     /**
      * The New menu or an editor notification needs the list (issues 11, 18): detect and load once,
-     * as [Opened] does, without the tool window. Nothing when loaded or loading. TODO(C1)
+     * as [Opened] does, without the tool window. Nothing when loaded or loading. With loading without
+     * the user turned off, only the synced data and the cached JSON are read (decision 16).
+     * Sent through `KatachiProjectService.ensureLoaded()`, which hops to the EDT.
      */
     data object EnsureLoaded : KatachiIntent
 
