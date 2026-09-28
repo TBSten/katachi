@@ -69,7 +69,7 @@ class DuplicateDeclarationSpec : FreeSpec({
         }
 
         arch.allGroups.map { it.qualifiedName } shouldContainExactly
-            listOf("domain", "domain/model", "data", "data/model")
+            listOf("domain", "domain.model", "data", "data.model")
     }
 
     "同じ group 内に同名の役割を2回宣言するとエラーになる" {
@@ -91,7 +91,7 @@ class DuplicateDeclarationSpec : FreeSpec({
         }
 
         arch.allRoles.map { it.qualifiedName } shouldContainExactly
-            listOf("domain/Repository", "data/Repository")
+            listOf("domain.Repository", "data.Repository")
     }
 
     // group と役割は同じ名前空間を共有する。ルート直下だけの規則ではなく、どの深さの
@@ -111,7 +111,7 @@ class DuplicateDeclarationSpec : FreeSpec({
         thrown.name shouldBe "domain"
         thrown.kind shouldBe DeclarationKind.Role
         thrown.firstKind shouldBe DeclarationKind.Group
-        thrown.scope shouldBe "group \"x/y\""
+        thrown.scope shouldBe "group \"x.y\""
     }
 
     "group の中の group と役割の衝突も、ルート直下と同じ形の文面になる" {
@@ -153,8 +153,8 @@ class DuplicateDeclarationSpec : FreeSpec({
             "b".group { "domain" { } }
         }
 
-        arch.allGroups.map { it.qualifiedName } shouldContainExactly listOf("a", "a/domain", "b")
-        arch.allRoles.map { it.qualifiedName } shouldContainExactly listOf("b/domain")
+        arch.allGroups.map { it.qualifiedName } shouldContainExactly listOf("a", "a.domain", "b")
+        arch.allRoles.map { it.qualifiedName } shouldContainExactly listOf("b.domain")
     }
 
     "親子の group が同名でも衝突しない" {
@@ -162,7 +162,7 @@ class DuplicateDeclarationSpec : FreeSpec({
             "model".group { "model".group { } }
         }
 
-        arch.allGroups.map { it.qualifiedName } shouldContainExactly listOf("model", "model/model")
+        arch.allGroups.map { it.qualifiedName } shouldContainExactly listOf("model", "model.model")
     }
 
     "KatachiDuplicateDeclarationException は KatachiDeclarationException として捕捉できる" {

@@ -175,7 +175,7 @@ class ProcessorArgsSpec : FreeSpec({
             // undeclaredArgNames の KDoc に載っている例そのもの。
             check(
                 selected = listOf("annotate" to AnnotateRoles),
-                values = mapOf("domain/UseCase" to "owned by the platform team"),
+                values = mapOf("domain.UseCase" to "owned by the platform team"),
                 architecture = oneRoleArchitecture(),
             )
 
@@ -183,10 +183,10 @@ class ProcessorArgsSpec : FreeSpec({
                 shouldThrow<KatachiUnknownProcessorArgException> {
                     check(
                         selected = listOf("annotate" to AnnotateRoles),
-                        values = mapOf("domain/Nope" to "x"),
+                        values = mapOf("domain.Nope" to "x"),
                         architecture = oneRoleArchitecture(),
                     )
-                }.unknown shouldBe setOf("domain/Nope")
+                }.unknown shouldBe setOf("domain.Nope")
             }
         }
 

@@ -92,7 +92,7 @@ class AmbiguousLayoutCheckSpec : FreeSpec({
 
             warnings.map { it.path } shouldBe listOf("home/HomeViewModel.kt")
             warnings.single().claims.map { it.role.qualifiedName } shouldBe
-                listOf("ui/Component", "ui/ViewModel")
+                listOf("ui.Component", "ui.ViewModel")
         }
 
         "重なったファイルが何件あっても警告は1件で、overlappingFiles が全部を持つ" {
@@ -181,8 +181,8 @@ class AmbiguousLayoutCheckSpec : FreeSpec({
                   2 roles declare this path, so a file here belongs to all of them.
 
                   Declared by:
-                    group/RoleA $siteA
-                    group/RoleB $siteB
+                    group.RoleA $siteA
+                    group.RoleB $siteB
 
                   How to fix:
                     - Keep the path in the role its files belong to, and remove it from the other
@@ -230,8 +230,8 @@ class AmbiguousLayoutCheckSpec : FreeSpec({
                   Every constraint those roles declare is checked against it.
 
                   Declared by:
-                    ui/Component $siteA
-                    ui/ViewModel $siteB
+                    ui.Component $siteA
+                    ui.ViewModel $siteB
 
                   How to fix:
                     - Narrow one of the two declarations so that each of these files is claimed by one role

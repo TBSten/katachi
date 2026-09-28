@@ -154,7 +154,7 @@ class KonsistScopeSpec : FreeSpec({
             rejected.declaration shouldBe "PublicThing"
             rejected.line shouldBe 3
             rejected.constraintName shouldBe "規約"
-            rejected.role.qualifiedName shouldBe "domain/UseCase"
+            rejected.role.qualifiedName shouldBe "domain.UseCase"
         }
 
         "declarations().must { } が書けて、落ちた宣言が報告される" {

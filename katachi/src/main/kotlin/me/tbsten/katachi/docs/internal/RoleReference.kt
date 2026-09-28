@@ -123,7 +123,7 @@ private fun Documents.putGroup(
     // A group that opted out takes its subtree with it. Its directory is never created, so a page
     // written inside it would sit somewhere nothing links to.
     if (!group.isDocumented) return
-    val directory = "${group.qualifiedName}/"
+    val directory = "${group.directoryPath()}/"
     put(
         path = "$directory$README",
         owner = Owner("Group \"${group.qualifiedName}\"", group.declaredAt),
@@ -189,7 +189,7 @@ private fun Documents.putRole(
 
 /** What produced a page, for the collision messages to name. */
 private class Owner(val label: String, val declaredAt: DeclarationSite) {
-    /** `Role "domain/UseCase" at ProjectArchitecture.kt:42`, as a message writes it out. */
+    /** `Role "domain.UseCase" at ProjectArchitecture.kt:42`, as a message writes it out. */
     fun describe(): String = label + writtenAt(declaredAt)
 }
 

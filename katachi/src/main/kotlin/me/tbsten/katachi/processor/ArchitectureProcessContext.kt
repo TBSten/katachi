@@ -30,7 +30,7 @@ import me.tbsten.katachi.dsl.Role
  *         runCatching { context.roles.map { it.qualifiedName } }
  * }
  *
- * projectArchitecture.process(RoleNames).getOrThrow() shouldContain "domain/UseCase"
+ * projectArchitecture.process(RoleNames).getOrThrow() shouldContain "domain.UseCase"
  * ```
  *
  * @see ArchitectureProcessor
@@ -115,7 +115,7 @@ public interface ArchitectureProcessContext<out Args> {
      *     "domain".group { "model".group { "Entity" { } } }
      * }
      * arch.process { context -> context.groups.map { it.qualifiedName } } shouldContainExactly
-     *     listOf("domain", "domain/model")
+     *     listOf("domain", "domain.model")
      * ```
      */
     public val groups: List<Group>
@@ -125,8 +125,10 @@ public interface ArchitectureProcessContext<out Args> {
      * order.
      *
      * A role that sits in no group carries an empty [Role.groupPath], and its
-     * [Role.qualifiedName] is its own name. A processor that turns the path into a directory
-     * therefore writes such a role at the top of its output rather than below a group.
+     * [Role.qualifiedName] is its own name. A processor that turns a role into a directory
+     * therefore writes such a role at the top of its output rather than below a group -- and
+     * joins [Role.groupPath] (not [Role.qualifiedName], which is `.` separated for reading and
+     * comparing, not for paths) with `/` to get there.
      *
      * ## Example 1: pick the roles a processor cares about
      * ```kt
@@ -135,7 +137,7 @@ public interface ArchitectureProcessContext<out Args> {
      *     "data".group { "Repository" { } }
      * }
      * arch.process { context -> context.roles.map { it.qualifiedName } } shouldContainExactly
-     *     listOf("domain/UseCase", "data/Repository")
+     *     listOf("domain.UseCase", "data.Repository")
      * ```
      *
      * ## Example 2: a role declared at the root is one of them
@@ -145,7 +147,7 @@ public interface ArchitectureProcessContext<out Args> {
      *     "domain".group { "UseCase" { } }
      * }
      * arch.process { context -> context.roles.map { it.qualifiedName } } shouldContainExactly
-     *     listOf("Readme", "domain/UseCase")
+     *     listOf("Readme", "domain.UseCase")
      * ```
      */
     public val roles: List<Role>

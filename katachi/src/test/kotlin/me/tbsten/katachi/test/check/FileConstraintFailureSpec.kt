@@ -168,7 +168,7 @@ class FileConstraintFailureSpec : FreeSpec({
             unchecked.reason shouldBe UncheckedFileConstraintReason.Failed
             val cause = unchecked.cause.shouldBeInstanceOf<KatachiFileConstraintSubjectException>()
             cause.outside shouldBe listOf("build.gradle.kts")
-            cause.role shouldBe "domain/UseCase"
+            cause.role shouldBe "domain.UseCase"
             cause.constraintName shouldBe "no outsiders"
         }
 
@@ -192,7 +192,7 @@ class FileConstraintFailureSpec : FreeSpec({
             // 件数が先、名前は3件まで。残りは "..." に畳まれるが、件数は畳まれない。
             violations.report() shouldContain
                 "Cause: me.tbsten.katachi.check.KatachiFileConstraintSubjectException: " +
-                "File constraint \"no outsiders\" of role \"domain/UseCase\" answered about 4 files " +
+                "File constraint \"no outsiders\" of role \"domain.UseCase\" answered about 4 files " +
                 "it was not asked about: file:///repo/a.kt, file:///repo/b.kt, file:///repo/c.kt, ..."
         }
     }

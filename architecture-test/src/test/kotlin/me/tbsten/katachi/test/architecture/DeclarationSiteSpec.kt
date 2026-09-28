@@ -31,7 +31,7 @@ import me.tbsten.katachi.dsl.pascalCase
  * `groups/GradleGroup.kt`. Every one of those collapses onto that single line, which is
  * exactly what `Gradle は gradle() を呼んだ1箇所にまとめて宣言されている` below checks.
  *
- * `Gradle/BuildLogic` is declared inside the same `gradle { }` block but is not one of
+ * `Gradle.BuildLogic` is declared inside the same `gradle { }` block but is not one of
  * those: `buildLogic()` is a plain call to a function written in `roles/BuildLogicRole.kt`, and
  * the role itself -- `"BuildLogic" { }` -- is literally written there, so its own frame is
  * outside katachi already and the walk never reaches `groups/GradleGroup.kt` at all. It is
@@ -100,12 +100,12 @@ class DeclarationSiteSpec : FreeSpec({
         source[gradleGroup.declaredAt.lineNumber - 1] shouldContain "gradle {"
     }
 
-    "Gradle/BuildLogic は gradle() の内側から buildLogic() で足されるが、宣言位置は自分のファイル" {
+    "Gradle.BuildLogic は gradle() の内側から buildLogic() で足されるが、宣言位置は自分のファイル" {
         // block() に渡した buildLogic() 自体はこの project の groups/GradleGroup.kt から
         // 呼ばれるが、"BuildLogic" { } という呼び出しそのものは roles/BuildLogicRole.kt に
         // 書かれているので、宣言位置はそちらに残る。gradle() が内部で持つ役割と違って、
         // katachi のフレームを一切経由しない。
-        val buildLogic = projectArchitecture.allRoles.single { it.qualifiedName == "Gradle/BuildLogic" }
+        val buildLogic = projectArchitecture.allRoles.single { it.qualifiedName == "Gradle.BuildLogic" }
         buildLogic.declaredAt.fileName shouldBe "BuildLogicRole.kt"
     }
 })
@@ -113,22 +113,22 @@ class DeclarationSiteSpec : FreeSpec({
 /**
  * The groups and roles `gradle()` declares from inside itself -- everything
  * whose declaration site collapses onto the single `gradle { }` call in `groups/GradleGroup.kt`
- * of this project. `Gradle/BuildLogic` is deliberately not in this set; see the class KDoc.
+ * of this project. `Gradle.BuildLogic` is deliberately not in this set; see the class KDoc.
  *
  * `internal` rather than `private`: `RoleCoverageSpec` reads it too, to carve the same roles
  * out of its own check for a different reason -- see the comment there.
  */
 internal val gradleOwnDeclarations = setOf(
     "Gradle",
-    "Gradle/GradleWrapper",
-    "Gradle/GradleWrapper/LauncherScript",
-    "Gradle/GradleWrapper/WrapperJar",
-    "Gradle/GradleWrapper/WrapperProperties",
-    "Gradle/SettingsScript",
-    "Gradle/BuildScript",
-    "Gradle/GradleProperties",
-    "Gradle/VersionCatalog",
-    "Gradle/DaemonJvmProperties",
+    "Gradle.GradleWrapper",
+    "Gradle.GradleWrapper.LauncherScript",
+    "Gradle.GradleWrapper.WrapperJar",
+    "Gradle.GradleWrapper.WrapperProperties",
+    "Gradle.SettingsScript",
+    "Gradle.BuildScript",
+    "Gradle.GradleProperties",
+    "Gradle.VersionCatalog",
+    "Gradle.DaemonJvmProperties",
 )
 
 /** Cached so that reading a source file once per declaration does not hit the disk again. */

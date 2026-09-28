@@ -22,7 +22,7 @@ import me.tbsten.katachi.dsl.Role
  *
  * shouldThrow<KatachiUnknownRoleException> {
  *     one.process { context -> context.filesOf(other.allRoles.single()) }
- * }.role.qualifiedName shouldBe "domain/UseCase"
+ * }.role.qualifiedName shouldBe "domain.UseCase"
  * ```
  *
  * @property role the role that was passed in.

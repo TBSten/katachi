@@ -108,7 +108,7 @@ public class Architecture internal constructor(
      *     }
      * }
      * arch.allGroups.map { it.qualifiedName } shouldContainExactly
-     *     listOf("domain", "domain/model", "domain/model/value")
+     *     listOf("domain", "domain.model", "domain.model.value")
      * ```
      */
     public val allGroups: List<Group> = groups.flatMap { it.selfAndDescendants() }
@@ -126,7 +126,7 @@ public class Architecture internal constructor(
      *     "data".group { "Repository" { } }
      * }
      * arch.allRoles.map { it.qualifiedName } shouldContainExactly
-     *     listOf("domain/Repository", "data/Repository")
+     *     listOf("domain.Repository", "data.Repository")
      * ```
      *
      * ## Example 2: a role declared at the root is one of them
@@ -136,7 +136,7 @@ public class Architecture internal constructor(
      *     "domain".group { "UseCase" { } }
      * }
      * arch.allRoles.map { it.qualifiedName } shouldContainExactly
-     *     listOf("Readme", "domain/UseCase")
+     *     listOf("Readme", "domain.UseCase")
      * ```
      */
     public val allRoles: List<Role> = roles + allGroups.flatMap { it.roles }

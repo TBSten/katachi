@@ -51,7 +51,7 @@ class RootRoleSpec : FreeSpec({
             arch.roles.map { it.name } shouldContainExactly listOf("Readme", "Gitignore")
             arch.groups.map { it.name } shouldContainExactly listOf("domain")
             arch.allRoles.map { it.qualifiedName } shouldContainExactly
-                listOf("Readme", "Gitignore", "domain/UseCase", "domain/model/Entity")
+                listOf("Readme", "Gitignore", "domain.UseCase", "domain.model.Entity")
         }
 
         "group を1つも持たない定義でも役割を宣言できる" {
@@ -100,7 +100,7 @@ class RootRoleSpec : FreeSpec({
             }
 
             arch.flattenLayout().map { it.role.qualifiedName to it.path } shouldContainExactly
-                listOf("Gitignore" to ".gitignore", "domain/UseCase" to "useCase")
+                listOf("Gitignore" to ".gitignore", "domain.UseCase" to "useCase")
         }
 
         "processor のモデルからもルート直下の役割とそのエントリが見える" {
@@ -211,7 +211,7 @@ class RootRoleSpec : FreeSpec({
             }
 
             arch.allRoles.map { it.qualifiedName } shouldContainExactly
-                listOf("UseCase", "domain/UseCase")
+                listOf("UseCase", "domain.UseCase")
         }
     }
 })

@@ -20,7 +20,7 @@ package me.tbsten.katachi.dsl
  *         "UseCase" { }
  *     }
  * }
- * arch.allRoles.map { it.qualifiedName } shouldContainExactly listOf("Readme", "domain/UseCase")
+ * arch.allRoles.map { it.qualifiedName } shouldContainExactly listOf("Readme", "domain.UseCase")
  * ```
  *
  * ## Example 2: collect declarations in an ArchitectureScope extension function

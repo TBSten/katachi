@@ -62,7 +62,7 @@ class AmbiguousLayoutSpec : FreeSpec({
 
             val claims = ambiguousLayoutsOf(entries).filterIsInstance<AmbiguousLayout>().single().claims
 
-            claims.map { it.role.qualifiedName } shouldBe listOf("group/RoleA", "group/RoleB")
+            claims.map { it.role.qualifiedName } shouldBe listOf("group.RoleA", "group.RoleB")
         }
 
         "3つ以上の役割が同じ path を宣言すると claims が3件になる" {
@@ -74,7 +74,7 @@ class AmbiguousLayoutSpec : FreeSpec({
 
             val claims = ambiguousLayoutsOf(entries).filterIsInstance<AmbiguousLayout>().single().claims
 
-            claims.map { it.role.qualifiedName } shouldBe listOf("group/RoleA", "group/RoleB", "group/RoleC")
+            claims.map { it.role.qualifiedName } shouldBe listOf("group.RoleA", "group.RoleB", "group.RoleC")
         }
 
         "1つの役割しか宣言していなければ警告にならない" {

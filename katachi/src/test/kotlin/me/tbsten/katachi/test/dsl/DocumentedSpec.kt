@@ -62,7 +62,7 @@ class DocumentedSpec : FreeSpec({
         }
 
         arch.allGroups.map { it.qualifiedName to (it[Documented] ?: true) } shouldBe
-            listOf("domain" to false, "domain/model" to true)
+            listOf("domain" to false, "domain.model" to true)
     }
 
     "documented = true を明示した宣言は、書いたとおり Documented に残る" {

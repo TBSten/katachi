@@ -63,7 +63,7 @@ class FileConstraintReportSpec : FreeSpec({
                 Katachi check failed: 1 violation (FileConstraint: 1)
 
                 [UnsatisfiedFileConstraint] alpha/Helper.kt
-                  Role: domain/UseCase / FileConstraint: "no helper"
+                  Role: domain.UseCase / FileConstraint: "no helper"
                   Declaration: Helper (line 12)
                   Declared at: ProjectArchitecture.kt:61 (layout of alpha)
                 """.trimIndent()
@@ -88,7 +88,7 @@ class FileConstraintReportSpec : FreeSpec({
                 Katachi check failed: 1 violation (FileConstraint: 1)
 
                 [UnsatisfiedFileConstraint] alpha/Helper.kt
-                  Role: domain/UseCase
+                  Role: domain.UseCase
                   Declared at: ProjectArchitecture.kt:61
                 """.trimIndent()
         }
@@ -165,7 +165,7 @@ class FileConstraintReportSpec : FreeSpec({
 
                 [UncheckedFileConstraint] alpha
                   Nothing evaluated this constraint, so nothing is known about it.
-                  Role: domain/UseCase / FileConstraint: "invoke"
+                  Role: domain.UseCase / FileConstraint: "invoke"
                   Declared at: ProjectArchitecture.kt:61 (layout of alpha)
 
                   How to fix:
@@ -200,7 +200,7 @@ class FileConstraintReportSpec : FreeSpec({
 
                 [UncheckedFileConstraint] alpha
                   Katachi failed while evaluating this constraint, so nothing is known about it.
-                  Role: domain/UseCase / FileConstraint: "invoke"
+                  Role: domain.UseCase / FileConstraint: "invoke"
                   Declared at: ProjectArchitecture.kt:61 (layout of alpha)
                   Cause: java.lang.IllegalStateException: boom
 
@@ -272,7 +272,7 @@ class FileConstraintReportSpec : FreeSpec({
                 Katachi check failed: 1 violation (FileConstraint: 1)
 
                 [UnsatisfiedFileConstraint] file:///repo/alpha/Helper.kt
-                  Role: domain/UseCase / FileConstraint: "no helper"
+                  Role: domain.UseCase / FileConstraint: "no helper"
                   Declaration: Helper (line 12)
                   Declared at: ProjectArchitecture.kt:61 (layout of file:///repo/alpha)
                 """.trimIndent()

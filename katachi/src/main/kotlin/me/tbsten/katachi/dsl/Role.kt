@@ -3,7 +3,6 @@ package me.tbsten.katachi.dsl
 import me.tbsten.katachi.ExperimentalKatachiApi
 import me.tbsten.katachi.dsl.internal.FileConstraintDeclaration
 import me.tbsten.katachi.dsl.internal.MetadataValues
-import me.tbsten.katachi.dsl.internal.TemplateDeclaration
 import me.tbsten.katachi.dsl.internal.get
 
 /**
@@ -69,14 +68,6 @@ public class Role internal constructor(
      */
     internal val fileConstraints: List<FileConstraintDeclaration>,
     /**
-     * The `template { }` of this role, in declaration order. At most one is ever kept -- the
-     * list is what makes the second one a refusal rather than a replacement.
-     *
-     * Internal for the reason [fileConstraints] is: a template says nothing until it has been
-     * replayed with the values of one run.
-     */
-    internal val templates: List<TemplateDeclaration>,
-    /**
      * Names of the groups this role sits in, outermost first.
      *
      * ## Example 1: read the group path of a nested role
@@ -114,7 +105,7 @@ public class Role internal constructor(
     public val declaredAt: DeclarationSite,
 ) {
     /**
-     * [groupPath] and [name] joined with `/`, e.g. `domain/UseCase`.
+     * [groupPath] and [name] joined with `.`, e.g. `domain.UseCase`.
      *
      * ## Example 1: read the qualified name of a nested role
      * ```kt
@@ -123,7 +114,7 @@ public class Role internal constructor(
      *         "model".group { "Entity" { } }
      *     }
      * }
-     * arch.allRoles.single().qualifiedName shouldBe "domain/model/Entity"
+     * arch.allRoles.single().qualifiedName shouldBe "domain.model.Entity"
      * ```
      *
      * ## Example 2: a role declared at the root is qualified by its name alone
@@ -132,7 +123,7 @@ public class Role internal constructor(
      * arch.allRoles.single().qualifiedName shouldBe "Readme"
      * ```
      */
-    public val qualifiedName: String = (groupPath + name).joinToString("/")
+    public val qualifiedName: String = (groupPath + name).joinToString(".")
 
     /**
      * The value written under [key], or `null` when this role does not carry that key.

@@ -23,7 +23,7 @@ class ArchitectureProcessorSpec : FreeSpec({
     "書き方" - {
         "クラスとして書いた processor を渡せる" {
             definition.process(RoleNames, ForbiddenFileSystem).getOrThrow() shouldBe
-                listOf("domain/UseCase", "domain/Repository")
+                listOf("domain.UseCase", "domain.Repository")
         }
 
         "ラムダとして書いた processor でも同じ結果になる" {
@@ -37,7 +37,7 @@ class ArchitectureProcessorSpec : FreeSpec({
 
             definition.process(CollectRoleNames(write = { written += it }), ForbiddenFileSystem).getOrThrow()
 
-            written shouldBe listOf("domain/UseCase", "domain/Repository")
+            written shouldBe listOf("domain.UseCase", "domain.Repository")
         }
 
         "object として書いた processor と引数なし class の processor は同じ結果になる" {
@@ -52,7 +52,7 @@ class ArchitectureProcessorSpec : FreeSpec({
 
             layoutArchitecture { "useCase" / "*UseCase".ktFile() }
                 .process(FilesOfEveryRole(), tree).getOrThrow() shouldBe
-                mapOf("app/Role" to listOf("useCase/GetUserUseCase.kt"))
+                mapOf("app.Role" to listOf("useCase/GetUserUseCase.kt"))
         }
     }
 })

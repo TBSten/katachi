@@ -177,6 +177,6 @@ class RoleSpec : FreeSpec({
 
         val role = arch.allRoles.single()
         role.groupPath shouldContainExactly listOf("domain", "model")
-        role.qualifiedName shouldBe "domain/model/Entity"
+        role.qualifiedName shouldBe "domain.model.Entity"
     }
 })

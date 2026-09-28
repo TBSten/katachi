@@ -41,7 +41,7 @@ class KonsistFileConstraintSpec : FreeSpec({
         // With one, the first line is a file:// URI a reader -- or an agent -- can open as written.
         violations.report(projectRoot = FsPath.of("/repo")) shouldContain
             "[UnsatisfiedFileConstraint] file:///repo/src/PublicThing.kt"
-        report shouldContain "Role: domain/UseCase / FileConstraint: \"規約\""
+        report shouldContain "Role: domain.UseCase / FileConstraint: \"規約\""
         report shouldContain "Declaration: PublicThing (line 3)"
         report shouldContain "(layout of src)"
         // A constraint block never offers a way to fix itself: what would satisfy an arbitrary
@@ -60,7 +60,7 @@ class KonsistFileConstraintSpec : FreeSpec({
         val unchecked = violations.filterIsInstance<UncheckedFileConstraint>().single()
         unchecked.reason shouldBe UncheckedFileConstraintReason.Failed
         unchecked.cause.shouldBeInstanceOf<KatachiKonsistNoExpectationException>()
-            .role shouldBe "domain/UseCase"
+            .role shouldBe "domain.UseCase"
 
         val report = violations.report()
         report shouldContain "[UncheckedFileConstraint] src"

@@ -36,7 +36,7 @@ public class KatachiFileConstraintSubjectException internal constructor(
      *
      * ## Example 1: read back which role's constraint misbehaved
      * ```kt
-     * cause.shouldBeInstanceOf<KatachiFileConstraintSubjectException>().role shouldBe "domain/UseCase"
+     * cause.shouldBeInstanceOf<KatachiFileConstraintSubjectException>().role shouldBe "domain.UseCase"
      * ```
      */
     public val role: String,

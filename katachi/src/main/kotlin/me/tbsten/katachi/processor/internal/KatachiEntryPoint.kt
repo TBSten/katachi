@@ -60,7 +60,7 @@ public interface KatachiEntryPoint {
      *     )
      * }
      *
-     * MyEntryPoint.architecture.allRoles.map { it.qualifiedName } shouldContain "domain/UseCase"
+     * MyEntryPoint.architecture.allRoles.map { it.qualifiedName } shouldContain "domain.UseCase"
      * ```
      */
     public val architecture: Architecture

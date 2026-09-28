@@ -185,14 +185,14 @@ class GradleGroupSpec : FreeSpec({
     "宣言の形" - {
         "1つの group の下に、ファイルの種類ごとに1つの役割が並ぶ" {
             architecture { gradle() }.allRoles.map { it.qualifiedName } shouldContainExactly listOf(
-                "Gradle/SettingsScript",
-                "Gradle/BuildScript",
-                "Gradle/GradleProperties",
-                "Gradle/VersionCatalog",
-                "Gradle/DaemonJvmProperties",
-                "Gradle/GradleWrapper/LauncherScript",
-                "Gradle/GradleWrapper/WrapperJar",
-                "Gradle/GradleWrapper/WrapperProperties",
+                "Gradle.SettingsScript",
+                "Gradle.BuildScript",
+                "Gradle.GradleProperties",
+                "Gradle.VersionCatalog",
+                "Gradle.DaemonJvmProperties",
+                "Gradle.GradleWrapper.LauncherScript",
+                "Gradle.GradleWrapper.WrapperJar",
+                "Gradle.GradleWrapper.WrapperProperties",
             )
         }
 

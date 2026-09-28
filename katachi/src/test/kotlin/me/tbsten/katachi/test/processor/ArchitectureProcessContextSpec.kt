@@ -32,7 +32,7 @@ class ArchitectureProcessContextSpec : FreeSpec({
                 context.groups.map { it.qualifiedName } +
                     context.roles.map { it.qualifiedName } +
                     context.declaredEntries.map { it.path }
-            } shouldBe listOf("domain", "domain/UseCase", "useCase", "useCase/*UseCase.kt")
+            } shouldBe listOf("domain", "domain.UseCase", "useCase", "useCase/*UseCase.kt")
         }
 
         "filesOf を呼んだときに初めてファイルシステムに触る" {
@@ -74,8 +74,8 @@ class ArchitectureProcessContextSpec : FreeSpec({
             definition.process(repositoryOf { "core" { "GetUser.kt"(); "UserApi.kt"() } }) { context ->
                 context.roles.associate { it.qualifiedName to context.filesOf(it) }
             } shouldBe mapOf(
-                "domain/UseCase" to listOf("core/GetUser.kt", "core/UserApi.kt"),
-                "domain/Api" to listOf("core/UserApi.kt"),
+                "domain.UseCase" to listOf("core/GetUser.kt", "core/UserApi.kt"),
+                "domain.Api" to listOf("core/UserApi.kt"),
             )
         }
 
@@ -137,7 +137,7 @@ class ArchitectureProcessContextSpec : FreeSpec({
                 }
             }
 
-            thrown.role.qualifiedName shouldBe "app/Role"
+            thrown.role.qualifiedName shouldBe "app.Role"
         }
 
         "落ちる前にファイルシステムには触らない" {

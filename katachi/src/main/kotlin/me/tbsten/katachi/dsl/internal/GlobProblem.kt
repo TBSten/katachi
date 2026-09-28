@@ -255,7 +255,7 @@ internal sealed interface GlobProblem {
  *     }
  * }
  * shouldThrow<KatachiGlobSyntaxException> { arch.flattenLayout() }
- *     .message.shouldNotBeNull() shouldContain "Role group/Role declares the layout path"
+ *     .message.shouldNotBeNull() shouldContain "Role group.Role declares the layout path"
  * ```
  */
 internal sealed interface GlobContext {
@@ -271,7 +271,7 @@ internal sealed interface GlobContext {
      * }
      * val context = shouldThrow<KatachiGlobSyntaxException> { arch.flattenLayout() }
      *     .context.shouldBeInstanceOf<GlobContext.RoleLayoutPath>()
-     * context.describe() shouldContain "Role group/Role declares the layout path"
+     * context.describe() shouldContain "Role group.Role declares the layout path"
      * ```
      */
     fun describe(): String
@@ -288,7 +288,7 @@ internal sealed interface GlobContext {
      * }
      * val context = shouldThrow<KatachiGlobSyntaxException> { arch.flattenLayout() }
      *     .context.shouldBeInstanceOf<GlobContext.RoleLayoutPath>()
-     * context.role.qualifiedName shouldBe "group/Role"
+     * context.role.qualifiedName shouldBe "group.Role"
      * context.path shouldBe "{a,b}"
      * ```
      */

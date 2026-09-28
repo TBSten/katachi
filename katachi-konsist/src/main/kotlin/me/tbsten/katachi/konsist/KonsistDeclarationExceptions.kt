@@ -32,7 +32,7 @@ public class KatachiKonsistNoExpectationException internal constructor(
      *
      * ## Example 1: read back which role holds the empty block
      * ```kt
-     * cause.shouldBeInstanceOf<KatachiKonsistNoExpectationException>().role shouldBe "domain/UseCase"
+     * cause.shouldBeInstanceOf<KatachiKonsistNoExpectationException>().role shouldBe "domain.UseCase"
      * ```
      */
     public val role: String,
@@ -99,7 +99,7 @@ public class KatachiKonsistNoKotlinFilesException internal constructor(
      *
      * ## Example 1: read back the role with nothing parseable under it
      * ```kt
-     * cause.shouldBeInstanceOf<KatachiKonsistNoKotlinFilesException>().role shouldBe "build/Script"
+     * cause.shouldBeInstanceOf<KatachiKonsistNoKotlinFilesException>().role shouldBe "build.Script"
      * ```
      */
     public val role: String,

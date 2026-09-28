@@ -28,7 +28,7 @@ class ArchitectureSpec : FreeSpec({
 
         arch.groups.map { it.name } shouldContainExactly listOf("domain")
         arch.allRoles.map { it.qualifiedName } shouldContainExactly
-            listOf("domain/UseCase", "domain/Repository")
+            listOf("domain.UseCase", "domain.Repository")
     }
 
     "ArchitectureScope の拡張関数を別ファイルに定義し、ルートブロックから呼んで役割を登録できる" {
@@ -38,9 +38,9 @@ class ArchitectureSpec : FreeSpec({
         }
 
         arch.allGroups.map { it.qualifiedName } shouldContainExactly
-            listOf("domain", "domain/model", "data")
+            listOf("domain", "domain.model", "data")
         arch.allRoles.map { it.qualifiedName } shouldContainExactly
-            listOf("domain/UseCase", "domain/model/Entity", "data/Repository")
+            listOf("domain.UseCase", "domain.model.Entity", "data.Repository")
     }
 
     "拡張関数を呼ばなかった場合、その group と役割はモデルに含まれない" {
@@ -49,7 +49,7 @@ class ArchitectureSpec : FreeSpec({
             // dataRoles() を呼ばない
         }
 
-        arch.allGroups.map { it.qualifiedName } shouldContainExactly listOf("domain", "domain/model")
+        arch.allGroups.map { it.qualifiedName } shouldContainExactly listOf("domain", "domain.model")
         arch.allRoles.none { it.name == "Repository" } shouldBe true
     }
 
@@ -71,12 +71,12 @@ class ArchitectureSpec : FreeSpec({
 
         val model = domain.groups.single()
         model.path shouldContainExactly listOf("domain", "model")
-        model.groups.single().qualifiedName shouldBe "domain/model/value"
+        model.groups.single().qualifiedName shouldBe "domain.model.value"
 
         arch.allGroups.map { it.qualifiedName } shouldContainExactly
-            listOf("domain", "domain/model", "domain/model/value")
+            listOf("domain", "domain.model", "domain.model.value")
         arch.allRoles.map { it.qualifiedName } shouldContainExactly
-            listOf("domain/UseCase", "domain/model/value/ValueObject")
+            listOf("domain.UseCase", "domain.model.value.ValueObject")
     }
 
     "同じ役割名でも group が違えば両方がモデルに残る" {
@@ -86,6 +86,6 @@ class ArchitectureSpec : FreeSpec({
         }
 
         arch.allRoles.map { it.qualifiedName } shouldContainExactly
-            listOf("domain/Repository", "data/Repository")
+            listOf("domain.Repository", "data.Repository")
     }
 })

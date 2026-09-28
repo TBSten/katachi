@@ -82,4 +82,4 @@ internal fun requireNameIsFree(
 
 /** The scope a duplicate collided in: the architecture itself, or one named group. */
 private fun scopeOf(path: List<String>): String =
-    if (path.isEmpty()) "the root of architecture { }" else "group \"${path.joinToString("/")}\""
+    if (path.isEmpty()) "the root of architecture { }" else "group \"${path.joinToString(".")}\""

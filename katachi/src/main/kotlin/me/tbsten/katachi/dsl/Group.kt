@@ -103,7 +103,7 @@ public class Group internal constructor(
     public val declaredAt: DeclarationSite,
 ) {
     /**
-     * [path] joined with `/`, e.g. `domain/model`.
+     * [path] joined with `.`, e.g. `domain.model`.
      *
      * ## Example 1: read the qualified name of a nested group
      * ```kt
@@ -112,10 +112,10 @@ public class Group internal constructor(
      *         "model".group { }
      *     }
      * }
-     * arch.groups.single().groups.single().qualifiedName shouldBe "domain/model"
+     * arch.groups.single().groups.single().qualifiedName shouldBe "domain.model"
      * ```
      */
-    public val qualifiedName: String = path.joinToString("/")
+    public val qualifiedName: String = path.joinToString(".")
 
     /**
      * The value written under [key], or `null` when this group does not carry that key.

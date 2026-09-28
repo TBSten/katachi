@@ -35,8 +35,8 @@ class ViolationReportSpec : FreeSpec({
                   No role is defined for this file.
 
                   Nearby locations:
-                    domain/UseCase    core/domain/useCase/
-                    domain/Repository core/domain/repository/
+                    domain.UseCase    core/domain/useCase/
+                    domain.Repository core/domain/repository/
 
                   How to fix:
                     - Move it to one of the locations above
@@ -60,8 +60,8 @@ class ViolationReportSpec : FreeSpec({
                   No role is defined for this file.
 
                   Nearby locations:
-                    domain/UseCase    file:///repo/core/domain/useCase/
-                    domain/Repository file:///repo/core/domain/repository/
+                    domain.UseCase    file:///repo/core/domain/useCase/
+                    domain.Repository file:///repo/core/domain/repository/
 
                   How to fix:
                     - Move it to one of the locations above
@@ -172,7 +172,7 @@ class ViolationReportSpec : FreeSpec({
                 Katachi check failed: 1 violation (Missing: 1)
 
                 [MissingFile] gradle/libs.versions.toml
-                  No file has been created yet for role tool/VersionCatalog.
+                  No file has been created yet for role tool.VersionCatalog.
                   Declared at: $declaredAt
 
                   How to fix:

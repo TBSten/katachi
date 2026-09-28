@@ -176,7 +176,7 @@ public class UncheckedFileConstraint internal constructor(
      * ## Example 1: say which role lost a rule
      * ```kt
      * violations.filterIsInstance<UncheckedFileConstraint>().single().role.qualifiedName shouldBe
-     *     "domain/UseCase"
+     *     "domain.UseCase"
      * ```
      */
     public val role: Role,

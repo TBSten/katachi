@@ -61,7 +61,7 @@ class BaselineLedgerSpec : FreeSpec({
                 check = "c.FileConstraintCheck",
                 rule = "UnsatisfiedFileConstraint",
                 path = "core/Helper.kt",
-                role = "domain/UseCase",
+                role = "domain.UseCase",
                 constraint = "is public",
                 declaration = "Helper",
             )
@@ -186,7 +186,7 @@ class BaselineLedgerSpec : FreeSpec({
                 check = "me.tbsten.katachi.check.FileConstraintCheck",
                 rule = "UnsatisfiedFileConstraint",
                 path = "core/domain/useCase/Helper.kt",
-                role = "domain/UseCase",
+                role = "domain.UseCase",
                 constraint = "is public",
                 declaration = "Helper",
             ) to 1,
@@ -196,7 +196,7 @@ class BaselineLedgerSpec : FreeSpec({
               "version": 1,
               "checks": {
                 "me.tbsten.katachi.check.FileConstraintCheck": [
-                  {"rule": "UnsatisfiedFileConstraint", "path": "core/domain/useCase/Helper.kt", "role": "domain/UseCase", "constraint": "is public", "declaration": "Helper"}
+                  {"rule": "UnsatisfiedFileConstraint", "path": "core/domain/useCase/Helper.kt", "role": "domain.UseCase", "constraint": "is public", "declaration": "Helper"}
                 ],
                 "me.tbsten.katachi.check.LayoutCheck": [
                   {"rule": "UnexpectedFile", "path": "app/src/main/kotlin/Util.kt", "count": 2},

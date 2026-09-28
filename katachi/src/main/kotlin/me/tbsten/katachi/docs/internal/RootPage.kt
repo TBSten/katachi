@@ -146,10 +146,10 @@ private fun roleSummary(role: Role): String =
     role[Summary]?.takeIf { it.isNotBlank() }?.let { SUMMARY_SEPARATOR + oneLine(it) }.orEmpty()
 
 /** A link from the root to one role's page. Every path here is written from the root. */
-private fun roleLink(role: Role): String = link(role.displayName, "${role.qualifiedName}$PAGE_EXTENSION")
+private fun roleLink(role: Role): String = link(role.displayName, "${role.pagePath()}$PAGE_EXTENSION")
 
 /** A link from the root to one group's `README.md`. */
-private fun groupLink(group: Group): String = link(group.displayName, "${group.qualifiedName}/$README")
+private fun groupLink(group: Group): String = link(group.displayName, "${group.directoryPath()}/$README")
 
 private fun Group.documentedRoles(): List<Role> = roles.filter { it.isDocumented }
 

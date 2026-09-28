@@ -159,7 +159,7 @@ class MissingDescriptionCheckSpec : FreeSpec({
                 Katachi check found 1 warning. Warnings never fail the check.
 
                 [MissingDescription] core/domain
-                  Role group/Role may live in 2 places, and this one does not say when to use it.
+                  Role group.Role may live in 2 places, and this one does not say when to use it.
                   Other place: feature/home
                   Declared at: $site
 
@@ -172,14 +172,14 @@ class MissingDescriptionCheckSpec : FreeSpec({
         "配置場所が3つ — Other places は複数形で件数も増える" {
             val report = warningsAcross(":core:domain", ":feature:home", ":tool:cli").take(1).report()
 
-            report shouldContain "Role group/Role may live in 3 places, and this one does not say when to use it."
+            report shouldContain "Role group.Role may live in 3 places, and this one does not say when to use it."
             report shouldContain "Other places: feature/home, tool/cli"
         }
 
         "配置場所が5つ — Other places は3件で打ち切り、残りは件数だけ" {
             val report = warningsAcross(":a", ":b", ":c", ":d", ":e").take(1).report()
 
-            report shouldContain "Role group/Role may live in 5 places, and this one does not say when to use it."
+            report shouldContain "Role group.Role may live in 5 places, and this one does not say when to use it."
             report shouldContain "Other places: b, c, d, and 1 more"
         }
     }

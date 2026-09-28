@@ -173,7 +173,7 @@ class FileConstraintCheckSpec : FreeSpec({
 
             val subject = recording.subjects.single()
             subject.files shouldBe listOf("alpha/A.kt", "alpha/B.kt")
-            subject.role.qualifiedName shouldBe "domain/UseCase"
+            subject.role.qualifiedName shouldBe "domain.UseCase"
             subject.name shouldBe "alpha only"
             subject.paths shouldBe listOf("alpha")
             subject.projectRoot shouldBe "/repo"
