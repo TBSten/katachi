@@ -22,6 +22,7 @@ import me.tbsten.katachi.intellij.testing.newMenuDirectory
 import me.tbsten.katachi.intellij.testing.stringParam
 import me.tbsten.katachi.intellij.testing.template
 import me.tbsten.katachi.intellij.testing.underRoot
+import me.tbsten.katachi.intellij.ui.dialog.PropertiesGenerateDialogStrings
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
@@ -137,13 +138,13 @@ class GenerateDialogViewModelTest {
 
         assertEquals(listOf(screen.id, viewModel.id, repository.id), state.candidates.map { it.id })
         assertEquals(viewModel.id, state.selectedTemplate)
-        assertEquals(1, dialogUiStateOf(state).selectedTemplate)
+        assertEquals(1, dialogUiStateOf(state, PropertiesGenerateDialogStrings.english()).selectedTemplate)
     }
 
     // covers: 論点0
     @Test
     fun `候補が1つでもテンプレートのセレクトボックスに1つ並ぶ`() {
-        val ui = dialogUiStateOf(dialog(templates = listOf(screen)).state.value)
+        val ui = dialogUiStateOf(dialog(templates = listOf(screen)).state.value, PropertiesGenerateDialogStrings.english())
 
         assertEquals(listOf(screen.template.title), ui.templateOptions)
         assertEquals(0, ui.selectedTemplate)
@@ -156,7 +157,7 @@ class GenerateDialogViewModelTest {
 
         assertTrue(state.definitions.isEmpty())
         assertNull(state.selectedDefinition)
-        assertTrue(dialogUiStateOf(state).definitionOptions.isEmpty())
+        assertTrue(dialogUiStateOf(state, PropertiesGenerateDialogStrings.english()).definitionOptions.isEmpty())
     }
 
     // covers: 論点7
@@ -165,7 +166,7 @@ class GenerateDialogViewModelTest {
         val vm = dialog(initial = otherScreen, origin = newMenuDirectory("app"), initialSeeds = emptyMap(), templates = listOf(screen, repository, otherScreen))
         assertEquals(archB.id, vm.state.value.selectedDefinition)
         assertEquals(listOf(otherScreen.id), vm.state.value.candidates.map { it.id })
-        assertEquals(listOf(":arch-a", ":arch-b"), dialogUiStateOf(vm.state.value).definitionOptions)
+        assertEquals(listOf(":arch-a", ":arch-b"), dialogUiStateOf(vm.state.value, PropertiesGenerateDialogStrings.english()).definitionOptions)
 
         vm.dispatch(GenerateDialogIntent.SelectDefinition(archA.id))
 

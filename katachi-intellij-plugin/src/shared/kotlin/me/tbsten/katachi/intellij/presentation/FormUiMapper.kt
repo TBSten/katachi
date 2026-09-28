@@ -137,9 +137,17 @@ internal fun fieldErrorText(error: FieldError, strings: ValidationStrings): Stri
 
 /** Every place [capture] sits, its `*` written `<name>`; a module capture says it names a module. */
 internal fun captureHintOf(capture: ParameterModel.CaptureParam, strings: KatachiStrings): String? =
+    captureHintOf(capture, strings::capturePathHint, strings::captureModuleHint)
+
+/** [captureHintOf] over the two wordings, so that the generate dialog words it from its own strings. */
+internal fun captureHintOf(
+    capture: ParameterModel.CaptureParam,
+    pathHint: (name: String, markedPattern: String) -> String,
+    moduleHint: (name: String, markedPattern: String) -> String,
+): String? =
     capture.places.map { place ->
         val marked = markedPatternOf(capture.name, place)
-        if (place.isModule) strings.captureModuleHint(capture.name, marked) else strings.capturePathHint(capture.name, marked)
+        if (place.isModule) moduleHint(capture.name, marked) else pathHint(capture.name, marked)
     }.distinct().joinToString(" / ").ifEmpty { null }
 
 /**

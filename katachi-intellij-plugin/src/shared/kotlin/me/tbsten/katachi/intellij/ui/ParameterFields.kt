@@ -23,11 +23,9 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import me.tbsten.katachi.intellij.presentation.FieldId
 import me.tbsten.katachi.intellij.presentation.FieldUi
-import me.tbsten.katachi.intellij.presentation.FocusTarget
-import me.tbsten.katachi.intellij.presentation.KatachiIntent
 import me.tbsten.katachi.intellij.presentation.LinkUi
-import me.tbsten.katachi.intellij.presentation.ListUi
 import org.jetbrains.jewel.ui.Outline
 import org.jetbrains.jewel.ui.component.Checkbox
 import org.jetbrains.jewel.ui.component.Icon
@@ -52,18 +50,46 @@ private val MultilineMaxHeight = 160.dp
 /** 🔗 / unlink always takes this slot, so linked and unlinked fields line up. */
 private val LinkSlot = 18.dp
 
+/** What a field keeps free at its right edge (the ▸ and 🔗 slots); a form's other rows keep it too, to line up. */
+internal val FieldTrailingWidth = ToggleSlot + LinkSlot
+
 /**
- * One line of the inline form: label (with `*` when required), the widget of its type, 🔗, and
- * under it the error (spec 03 "入力部品は型で決める").
+ * What a field reports. The tool window turns each call into its `KatachiIntent`, the generate
+ * dialog into its `GenerateDialogIntent`; the field itself knows neither, nor the list's focus.
+ *
+ * ```kotlin
+ * val callbacks = object : ParameterFieldCallbacks {
+ *     override fun onInput(field: FieldId, value: String) = viewModel.dispatch(Input(field.parameterName, value))
+ *     override fun onToggleMultiline(field: FieldId) = Unit
+ *     override fun onRelink(field: FieldId) = Unit
+ * }
+ * ```
+ */
+internal interface ParameterFieldCallbacks {
+    fun onInput(field: FieldId, value: String)
+
+    fun onToggleMultiline(field: FieldId)
+
+    fun onRelink(field: FieldId)
+}
+
+/**
+ * One line of the form: label (with `*` when required), the widget of its type, 🔗, and under it
+ * the error (spec 03 "入力部品は型で決める"). [fieldModifier] is the host's focus and key handling
+ * of the widget: the tool window's `Modifier.listFocus(...)`, the dialog's `FocusRequester`.
+ *
+ * ```kotlin
+ * ParameterField(field, labelWidth = 120.dp, callbacks, fieldModifier = Modifier.focusRequester(requester))
+ * ```
  */
 @Composable
-internal fun ParameterField(field: FieldUi, labelWidth: Dp?, list: ListUi, focus: ListFocusController, onIntent: (KatachiIntent) -> Unit) {
+internal fun ParameterField(field: FieldUi, labelWidth: Dp?, callbacks: ParameterFieldCallbacks, fieldModifier: Modifier = Modifier) {
     if (field is FieldUi.Collapsed) {
         CollapsedField(field)
         return
     }
     val label = if (field.isRequired) "${field.label} *" else field.label
-    val focusModifier = Modifier.listFocus(FocusTarget.Field(field.id), focus, list, onIntent).testTag(KatachiTestTags.field(field.id))
+    val focusModifier = fieldModifier.testTag(KatachiTestTags.field(field.id))
     val below: @Composable () -> Unit = {
         (field as? FieldUi.Text)?.hint?.let { Text(it, color = faintText, modifier = Modifier.testTag(KatachiTestTags.hint(field.id))) }
         errorOf(field)?.let { Text(it, color = errorText) }
@@ -74,14 +100,14 @@ internal fun ParameterField(field: FieldUi, labelWidth: Dp?, list: ListUi, focus
         Row(verticalAlignment = Alignment.Top) {
             Text(label, maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.width(sideWidth).padding(top = 6.dp, end = 6.dp))
             Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
-                FieldWidget(field, focusModifier, onIntent)
+                FieldWidget(field, focusModifier, callbacks)
                 below()
             }
         }
     } else {
         Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
             Text(label, maxLines = 2, overflow = TextOverflow.Ellipsis)
-            FieldWidget(field, focusModifier, onIntent)
+            FieldWidget(field, focusModifier, callbacks)
             below()
         }
     }
@@ -102,28 +128,28 @@ private fun linkOf(field: FieldUi): LinkUi = when (field) {
 
 /** The widget and the link slot on one line. */
 @Composable
-private fun FieldWidget(field: FieldUi, focusModifier: Modifier, onIntent: (KatachiIntent) -> Unit) {
+private fun FieldWidget(field: FieldUi, focusModifier: Modifier, callbacks: ParameterFieldCallbacks) {
     Row(verticalAlignment = Alignment.CenterVertically) {
         Box(Modifier.weight(1f)) {
             when (field) {
-                is FieldUi.Text -> TextInput(field, focusModifier, onIntent)
+                is FieldUi.Text -> TextInput(field, focusModifier, callbacks)
                 is FieldUi.Bool -> Checkbox(
                     checked = field.checked,
-                    onCheckedChange = { onIntent(KatachiIntent.Input(field.id, it.toString())) },
+                    onCheckedChange = { callbacks.onInput(field.id, it.toString()) },
                     modifier = focusModifier,
                 )
-                is FieldUi.Choice -> ChoiceInput(field, focusModifier, onIntent)
+                is FieldUi.Choice -> ChoiceInput(field, focusModifier, callbacks)
                 is FieldUi.Collapsed -> Unit
             }
         }
-        if (field !is FieldUi.Bool) MultilineToggle(field, onIntent)
-        LinkIcon(linkOf(field), onIntent)
+        if (field !is FieldUi.Bool) MultilineToggle(field, callbacks)
+        LinkIcon(field.id, linkOf(field), callbacks)
     }
 }
 
 @Composable
-private fun TextInput(field: FieldUi.Text, focusModifier: Modifier, onIntent: (KatachiIntent) -> Unit) {
-    val state = rememberSyncedTextFieldState(field.value) { onIntent(KatachiIntent.Input(field.id, it)) }
+private fun TextInput(field: FieldUi.Text, focusModifier: Modifier, callbacks: ParameterFieldCallbacks) {
+    val state = rememberSyncedTextFieldState(field.value) { callbacks.onInput(field.id, it) }
     val outline = if (field.error != null) Outline.Error else Outline.None
     val placeholder: (@Composable () -> Unit)? = field.placeholder?.let { text -> { Text(text, color = faintText, maxLines = 1) } }
     Row(verticalAlignment = Alignment.Top) {
@@ -148,7 +174,7 @@ private fun TextInput(field: FieldUi.Text, focusModifier: Modifier, onIntent: (K
  * an empty slot for the other types.
  */
 @Composable
-private fun MultilineToggle(field: FieldUi, onIntent: (KatachiIntent) -> Unit) {
+private fun MultilineToggle(field: FieldUi, callbacks: ParameterFieldCallbacks) {
     Box(Modifier.width(ToggleSlot), contentAlignment = Alignment.Center) {
         val text = field as? FieldUi.Text ?: return@Box
         val multiline = text.isMultiline ?: return@Box
@@ -156,14 +182,14 @@ private fun MultilineToggle(field: FieldUi, onIntent: (KatachiIntent) -> Unit) {
             Icon(
                 if (multiline) AllIconsKeys.General.ChevronDown else AllIconsKeys.General.ChevronRight,
                 contentDescription = text.multilineTooltip,
-                modifier = Modifier.size(14.dp).clickable { onIntent(KatachiIntent.ToggleMultiline(field.id)) }.testTag(KatachiTestTags.multiline(field.id)),
+                modifier = Modifier.size(14.dp).clickable { callbacks.onToggleMultiline(field.id) }.testTag(KatachiTestTags.multiline(field.id)),
             )
         }
     }
 }
 
 @Composable
-private fun ChoiceInput(field: FieldUi.Choice, focusModifier: Modifier, onIntent: (KatachiIntent) -> Unit) {
+private fun ChoiceInput(field: FieldUi.Choice, focusModifier: Modifier, callbacks: ParameterFieldCallbacks) {
     // Without a value the combo starts on "choose one", which disappears once a value is picked.
     val hasValue = field.selectedIndex >= 0
     val items = if (hasValue) field.options else listOf(field.placeholder) + field.options
@@ -172,7 +198,7 @@ private fun ChoiceInput(field: FieldUi.Choice, focusModifier: Modifier, onIntent
         selectedIndex = if (hasValue) field.selectedIndex else 0,
         onSelectedItemChange = { index ->
             val value = if (hasValue) field.options.getOrNull(index) else field.options.getOrNull(index - 1)
-            value?.let { onIntent(KatachiIntent.Input(field.id, it)) }
+            value?.let { callbacks.onInput(field.id, it) }
         },
         modifier = focusModifier.fillMaxWidth(),
         outline = if (field.error != null) Outline.Error else Outline.None,
@@ -180,12 +206,12 @@ private fun ChoiceInput(field: FieldUi.Choice, focusModifier: Modifier, onIntent
 }
 
 @Composable
-private fun LinkIcon(link: LinkUi, onIntent: (KatachiIntent) -> Unit) {
+private fun LinkIcon(id: FieldId, link: LinkUi, callbacks: ParameterFieldCallbacks) {
     Box(Modifier.width(LinkSlot), contentAlignment = Alignment.CenterEnd) {
         when (link) {
             LinkUi.None -> Spacer(Modifier.size(14.dp))
             LinkUi.Linked -> LinkGlyph(linked = true)
-            is LinkUi.Unlinked -> LinkGlyph(linked = false, modifier = Modifier.clickable { onIntent(link.relink) })
+            is LinkUi.Unlinked -> LinkGlyph(linked = false, modifier = Modifier.clickable { callbacks.onRelink(id) })
         }
     }
 }

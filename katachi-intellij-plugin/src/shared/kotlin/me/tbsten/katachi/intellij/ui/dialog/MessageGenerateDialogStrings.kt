@@ -32,5 +32,6 @@ internal abstract class MessageGenerateDialogStrings : GenerateDialogStrings {
     override val captureDotError get() = message("dialog.field.captureDot")
     override fun capturePathHint(name: String, markedPattern: String) = message("dialog.field.capturePathHint", name, markedPattern)
     override fun captureModuleHint(name: String, markedPattern: String) = message("dialog.field.captureModuleHint", name, markedPattern)
+    override fun collapsedField(name: String, controller: String, value: String) = message("dialog.field.collapsed", name, controller, value)
     override fun generateRefused(reason: String) = message("dialog.generateRefused", reason)
 }

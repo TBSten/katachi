@@ -52,6 +52,64 @@ object PreviewChecks {
         xs.any { x -> ys.any { y -> (img.getRGB(x, y) ushr 24) != 0xFF } }
     }
 
+    /**
+     * One part of a rendered dialog, in pixels of the image. [scrolled] parts sit in the scrolling
+     * form and may run past the bottom edge (they scroll into view); [textCut] says the text of the
+     * part did not fit (an ellipsis or an overflow). An [overlay] (an opened select box) is drawn over
+     * the rest by design, so it only has to fit the window.
+     */
+    data class LayoutNode(
+        val name: String,
+        val left: Int,
+        val top: Int,
+        val right: Int,
+        val bottom: Int,
+        val scrolled: Boolean = false,
+        val textCut: Boolean = false,
+        val overlay: Boolean = false,
+    ) {
+        fun overlaps(other: LayoutNode): Boolean = left < other.right && other.left < right && top < other.bottom && other.top < bottom
+
+        fun contains(other: LayoutNode): Boolean = left <= other.left && top <= other.top && right >= other.right && bottom >= other.bottom
+    }
+
+    /**
+     * The overflow and cut-off gate of a rendered dialog of [width] x [height]. Returns readable
+     * problems; empty means OK:
+     * - a part sticks out of the window on the left, right or top, or below it unless it [scrolled]
+     * - a part has no size
+     * - two parts overlap (a part inside another is fine; a scrolled part is only compared with the
+     *   scrolled ones, as it may be scrolled out from under the fixed parts, whose own box is the form)
+     * - a text was cut
+     */
+    fun layoutProblems(width: Int, height: Int, nodes: List<LayoutNode>): List<String> = buildList {
+        for (n in nodes) {
+            if (n.right <= n.left || n.bottom <= n.top) add("${n.name} has no size")
+            if (n.left < 0 || n.right > width) add("${n.name} sticks out of the window horizontally (${n.left}..${n.right} of $width)")
+            if (n.top < 0) add("${n.name} sticks out above the window (top ${n.top})")
+            if (!n.scrolled && n.bottom > height) add("${n.name} sticks out below the window (bottom ${n.bottom} of $height)")
+            if (n.textCut) add("${n.name} is cut")
+        }
+        for (i in nodes.indices) for (j in i + 1 until nodes.size) {
+            val a = nodes[i]
+            val b = nodes[j]
+            if (!a.overlay && !b.overlay && a.scrolled == b.scrolled && a.overlaps(b) && !a.contains(b) && !b.contains(a)) add("${a.name} overlaps ${b.name}")
+        }
+    }
+
+    /**
+     * True when something is drawn on the outermost pixel ring of [png] (it differs from the corner):
+     * a part that reaches the window edge was cut there. The dialog keeps a margin all around.
+     */
+    fun edgeTouched(png: File): Boolean {
+        val img = ImageIO.read(png) ?: return true
+        val corner = img.getRGB(0, 0)
+        val last = img.width - 1
+        val bottom = img.height - 1
+        return (0..last).any { img.getRGB(it, 0) != corner || img.getRGB(it, bottom) != corner } ||
+            (0..bottom).any { img.getRGB(0, it) != corner || img.getRGB(last, it) != corner }
+    }
+
     /** The result of verify: changed = bytes differ, new = not in the golden, missing = only in the golden. */
     data class GoldenDiff(
         val changed: List<String>,
