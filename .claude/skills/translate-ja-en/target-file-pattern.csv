@@ -5,3 +5,4 @@ docs/src/content/docs/ja/**/*.md,docs/src/content/docs/**/*.md,
 docs/public/install/ja/**/*.md,docs/public/install/en/**/*.md,
 docs/public/install/ja/**/*.html,docs/public/install/en/**/*.html,
 CONTRIBUTING.ja.md,CONTRIBUTING.md,
+katachi-intellij-plugin/src/main/resources/messages/KatachiBundle_ja.properties,katachi-intellij-plugin/src/main/resources/messages/KatachiBundle.properties,IDE プラグインの文言。ロケール無しの既定ファイルが英語の訳。キーは変えず値だけ訳す
