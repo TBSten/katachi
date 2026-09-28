@@ -161,6 +161,25 @@ internal val listScenarios: List<Scenario> = listOf(
         ),
         narrowHeight = 720,
     ),
+    // Captures come first, a String field each with where its value goes; same-named ones link.
+    Scenario(
+        "form-captures",
+        ready(snapshot(arch, featureComponent, featureViewModel, service)).then(
+            check(featureComponent),
+            input(featureComponent, "feature", "home"),
+            input(featureComponent, "name", "UserCard"),
+            check(featureViewModel),
+        ),
+        narrowHeight = 720,
+    ),
+    Scenario(
+        "form-capture-error",
+        ready(snapshot(arch, featureViewModel, service)).then(
+            check(featureViewModel),
+            input(featureViewModel, "feature", "home/list"),
+            input(featureViewModel, "name", "Home"),
+        ),
+    ),
     Scenario(
         "form-conditional",
         ready(snapshot(arch, repository, component)).then(

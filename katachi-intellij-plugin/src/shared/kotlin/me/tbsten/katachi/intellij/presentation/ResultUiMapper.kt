@@ -143,6 +143,7 @@ private fun reasonOf(blocker: GenerateBlocker, state: KatachiScreenState, string
             FieldError.Required -> strings.reasonRequired(role(blocker.templateId), blocker.parameterName)
             is FieldError.NotAnInt -> strings.reasonNotAnInt(role(blocker.templateId), blocker.parameterName)
             is FieldError.NotAcceptedValue -> strings.reasonNotAccepted(role(blocker.templateId), blocker.parameterName)
+            is FieldError.InvalidCapture -> strings.reasonInvalidCapture(role(blocker.templateId), blocker.parameterName)
         }
         is GenerateBlocker.UnresolvedPath -> strings.reasonUnresolved(role(blocker.templateId), blocker.fileName)
         GenerateBlocker.Generating -> strings.reasonGenerating

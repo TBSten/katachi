@@ -116,6 +116,20 @@ class RealKatachiContractTest {
         assertEquals("withImpl" to "false", changed.last())
     }
 
+    @Test
+    fun `sample-jvmのcaptureを持つ役割はJSONの生成コマンドと同じ--argを組み値の入った生成先を予想する`() {
+        val controller = detailOf("sample-jvm-with-captures", "api/Controller")
+        val inputs = mapOf("resource" to "user", "name" to "User")
+
+        val args = templateArgsOf("api/Controller", controller, inputs, OnExistingChoice.Fail)
+        val exampleArgNames = Regex("""--arg (\w+)=""").findAll(controller.exampleCommand).map { it.groupValues[1] }.toList()
+        assertEquals(exampleArgNames, (args - ("onExisting" to "fail")).map { it.first })
+        assertEquals(
+            ExpectedLocation.Known("src/main/kotlin/com/example/controller/user/UserController.kt"),
+            expectedFilesOf(controller, inputs).single().location,
+        )
+    }
+
     // ---- katachiInternalTemplatesJson ----
 
     @Test

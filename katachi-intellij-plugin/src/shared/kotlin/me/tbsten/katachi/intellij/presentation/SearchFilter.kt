@@ -12,7 +12,7 @@ internal data class SearchHit(
 
 /**
  * The rows to show for [query]: a case-insensitive substring of the role name (simple or
- * qualified), title, summary or a parameter name. A checked row always stays, so that nothing
+ * qualified), title, summary, a parameter name or a capture name. A checked row always stays, so that nothing
  * invisible is generated.
  */
 internal fun searchTemplates(rows: List<ModuleTemplate>, query: String, form: FormState): List<SearchHit> {
@@ -29,8 +29,8 @@ internal fun searchTemplates(rows: List<ModuleTemplate>, query: String, form: Fo
 
 private fun matches(template: TemplateModel, needle: String): Boolean {
     val summary = template.summary
-    val detailNames = template.detail?.parameters?.map { it.name }.orEmpty()
+    val detailNames = template.detail?.let { detail -> detail.parameters.map { it.name } + detail.captures.map { it.name } }.orEmpty()
     val haystack = sequenceOf(summary.roleName, summary.title, summary.summary) +
-        summary.parameterNames.asSequence() + detailNames.asSequence()
+        summary.parameterNames.asSequence() + summary.captureNames.asSequence() + detailNames.asSequence()
     return haystack.any { it != null && it.contains(needle, ignoreCase = true) }
 }

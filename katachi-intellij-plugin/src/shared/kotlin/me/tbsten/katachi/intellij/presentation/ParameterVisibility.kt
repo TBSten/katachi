@@ -42,7 +42,8 @@ internal fun activeBranchesOf(detail: TemplateDetailModel, inputs: Map<String, S
 }
 
 /**
- * The form's lines in order: the preview's parameters, each followed by the parameters its branches
+ * The form's lines in order: the captures first, since they decide where the files go (a capture
+ * is never in a branch), then the preview's parameters, each followed by the parameters its branches
  * take away and then those they add, so that what an `if` holds sits under the field that controls
  * it (katachi lists a parameter declared in an `if` the preview takes at the end). A parameter a
  * taken branch removes, and one an untaken branch adds, is [FieldSlot.Collapsed].
@@ -69,6 +70,9 @@ internal fun fieldSlotsOf(detail: TemplateDetailModel, inputs: Map<String, Strin
 
     val slots = mutableListOf<FieldSlot>()
     val emitted = HashSet<String>()
+    for (capture in detail.captures) {
+        if (emitted.add(capture.name)) slots += FieldSlot.Shown(capture)
+    }
     fun emit(parameter: ParameterModel) {
         if (!emitted.add(parameter.name)) return
         val remover = removedBy[parameter.name]

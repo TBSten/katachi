@@ -17,6 +17,11 @@ import java.nio.file.Paths
  * console output of sample/jvm's `katachiTemplate` and `katachiInternalTemplatesJson`); refresh
  * them from the samples whenever katachi's output changes. Output files write the project root as
  * `file:///__ROOT__`.
+ *
+ * `json/sample-{jvm,android,kmp}.json` hold one role each and predate `captures`, so they also stand
+ * for the JSON of a katachi before `capture()`. `json/sample-*-with-captures.json` are the whole,
+ * unedited outputs of a katachi that writes `captures`; `json/capture.json` is hand-written for the
+ * shapes the samples lack (several captures, one name in two places, a role without the key).
  */
 internal object ContractFixtures {
     const val ROOT_TOKEN: String = "file:///__ROOT__"

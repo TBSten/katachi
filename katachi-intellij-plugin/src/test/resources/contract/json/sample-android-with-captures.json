@@ -1,0 +1,311 @@
+{
+  "templates": [
+    {
+      "roleName": "feature/FeatureComponent",
+      "title": "画面の部品",
+      "summary": "1つの画面でしか使わない @Composable。:feature:<name> の component package に <Name>*.kt で置く",
+      "parameterNames": ["name", "withPreview"],
+      "fileCount": 1,
+      "captures": [
+        {
+          "name": "feature",
+          "kind": "ModuleCapture",
+          "pattern": ":feature:*",
+          "position": 0
+        }
+      ]
+    },
+    {
+      "roleName": "feature/FeatureTest",
+      "title": "画面のテスト",
+      "summary": ":feature:<name> の src/test に置く、ViewModel を :testing のフェイクで動かすテスト",
+      "parameterNames": ["screen", "name"],
+      "fileCount": 1,
+      "captures": []
+    },
+    {
+      "roleName": "ui/Component",
+      "title": "共通コンポーネント",
+      "summary": ":ui モジュールの component package に置く、feature をまたいで使う部品",
+      "parameterNames": ["name", "previewText"],
+      "fileCount": 1,
+      "captures": []
+    },
+    {
+      "roleName": "data/Repository",
+      "title": "リポジトリ",
+      "summary": "データの取得と保存。インターフェースと実装を :data の、扱う対象ごとの package （user / settings）に並べて置く",
+      "parameterNames": ["domain", "name", "withImpl"],
+      "fileCount": 2,
+      "captures": []
+    },
+    {
+      "roleName": "testing/Fake",
+      "title": "フェイク",
+      "summary": ":testing に置く、他モジュールのテストから使う偽の実装",
+      "parameterNames": ["domain", "name"],
+      "fileCount": 1,
+      "captures": []
+    },
+    {
+      "roleName": "testing/ArchitectureDefinition",
+      "title": "アーキテクチャ定義",
+      "summary": "katachi の DSL で書かれた役割の定義。どのレイヤーにも属さない",
+      "parameterNames": ["name", "kind"],
+      "fileCount": 1,
+      "captures": []
+    }
+  ],
+  "details": [
+    {
+      "roleName": "feature/FeatureTest",
+      "title": "画面のテスト",
+      "summary": ":feature:<name> の src/test に置く、ViewModel を :testing のフェイクで動かすテスト",
+      "parameters": [
+        {
+          "name": "screen",
+          "kind": "EnumParameter",
+          "typeName": "FeatureModule",
+          "default": null,
+          "acceptedValues": ["Home", "Settings"],
+          "isRequired": true,
+          "previewValue": "Home",
+          "previewValueSource": "StandIn"
+        },
+        {
+          "name": "name",
+          "kind": "StringParameter",
+          "typeName": "String",
+          "default": "ViewModel",
+          "acceptedValues": [],
+          "isRequired": false,
+          "previewValue": "${name}",
+          "previewValueSource": "Placeholder"
+        }
+      ],
+      "files": [
+        {
+          "fileName": "Home${name}Test.kt",
+          "path": "feature/home/src/test/kotlin/com/example/sample/feature/home/Home${name}Test.kt",
+          "unresolvedPatterns": [],
+          "content": "package com.example.sample.feature.home\n\nimport com.example.sample.testing.FakeUserRepository\nimport com.example.sample.ui.core.UiState\nimport org.junit.Assert.assertEquals\nimport org.junit.Test\n\nclass Home${name}Test {\n    @Test\n    fun `リポジトリから読んだ値を Content として公開する`() {\n        val viewModel = HomeViewModel(userRepository = FakeUserRepository(userName = \"katachi\"))\n\n        assertEquals(UiState.Content(HomeContent(userName = \"katachi\", visitCount = 1)), viewModel.uiState.value)\n    }\n}"
+        }
+      ],
+      "branches": [
+        {
+          "parameterName": "screen",
+          "value": "Settings",
+          "addedFiles": ["Settings${name}Test.kt"],
+          "removedFiles": ["Home${name}Test.kt"],
+          "addedParameters": [],
+          "removedParameters": []
+        }
+      ],
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=feature/FeatureTest --arg screen=Home",
+      "captures": []
+    },
+    {
+      "roleName": "ui/Component",
+      "title": "共通コンポーネント",
+      "summary": ":ui モジュールの component package に置く、feature をまたいで使う部品",
+      "parameters": [
+        {
+          "name": "name",
+          "kind": "StringParameter",
+          "typeName": "String",
+          "default": null,
+          "acceptedValues": [],
+          "isRequired": true,
+          "previewValue": "${name}",
+          "previewValueSource": "Placeholder"
+        },
+        {
+          "name": "previewText",
+          "kind": "StringParameter",
+          "typeName": "String",
+          "default": "${name}",
+          "acceptedValues": [],
+          "isRequired": false,
+          "previewValue": "${previewText}",
+          "previewValueSource": "Placeholder"
+        }
+      ],
+      "files": [
+        {
+          "fileName": "App${name}.kt",
+          "path": "ui/src/main/kotlin/com/example/sample/ui/component/App${name}.kt",
+          "unresolvedPatterns": [],
+          "content": "package com.example.sample.ui.component\n\nimport androidx.compose.material3.Text\nimport androidx.compose.runtime.Composable\nimport androidx.compose.ui.Modifier\nimport androidx.compose.ui.tooling.preview.Preview\nimport com.example.sample.ui.preview.PreviewRoot\n\n/** Shared ${name}, called by feature modules instead of Material's own. */\n@Composable\nfun App${name}(\n    text: String,\n    modifier: Modifier = Modifier,\n) {\n    Text(text = text, modifier = modifier)\n}\n\n@Preview(showBackground = true)\n@Composable\nprivate fun App${name}Preview() = PreviewRoot {\n    App${name}(text = \"${previewText}\")\n}\n"
+        }
+      ],
+      "branches": [],
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=ui/Component --arg name=Name",
+      "captures": []
+    },
+    {
+      "roleName": "data/Repository",
+      "title": "リポジトリ",
+      "summary": "データの取得と保存。インターフェースと実装を :data の、扱う対象ごとの package （user / settings）に並べて置く",
+      "parameters": [
+        {
+          "name": "domain",
+          "kind": "EnumParameter",
+          "typeName": "DataDomain",
+          "default": null,
+          "acceptedValues": ["User", "Settings"],
+          "isRequired": true,
+          "previewValue": "User",
+          "previewValueSource": "StandIn"
+        },
+        {
+          "name": "name",
+          "kind": "StringParameter",
+          "typeName": "String",
+          "default": null,
+          "acceptedValues": [],
+          "isRequired": true,
+          "previewValue": "${name}",
+          "previewValueSource": "Placeholder"
+        },
+        {
+          "name": "withImpl",
+          "kind": "BooleanParameter",
+          "typeName": "Boolean",
+          "default": "true",
+          "acceptedValues": ["true", "false"],
+          "isRequired": false,
+          "previewValue": "true",
+          "previewValueSource": "Default"
+        }
+      ],
+      "files": [
+        {
+          "fileName": "User${name}Repository.kt",
+          "path": "data/src/main/kotlin/com/example/sample/data/user/User${name}Repository.kt",
+          "unresolvedPatterns": [],
+          "content": "package com.example.sample.data.user\n\n/** Reads ${name} data. */\ninterface User${name}Repository {\n    // TODO: replace with what this repository actually reads and writes.\n    fun load(): String\n}"
+        },
+        {
+          "fileName": "User${name}RepositoryImpl.kt",
+          "path": "data/src/main/kotlin/com/example/sample/data/user/User${name}RepositoryImpl.kt",
+          "unresolvedPatterns": [],
+          "content": "package com.example.sample.data.user\n\n/** Production implementation of [User${name}Repository]. */\nclass User${name}RepositoryImpl : User${name}Repository {\n    override fun load(): String = \"\"\n}"
+        }
+      ],
+      "branches": [
+        {
+          "parameterName": "domain",
+          "value": "Settings",
+          "addedFiles": ["Settings${name}Repository.kt", "Settings${name}RepositoryImpl.kt"],
+          "removedFiles": ["User${name}Repository.kt", "User${name}RepositoryImpl.kt"],
+          "addedParameters": [],
+          "removedParameters": []
+        },
+        {
+          "parameterName": "withImpl",
+          "value": "false",
+          "addedFiles": [],
+          "removedFiles": ["User${name}RepositoryImpl.kt"],
+          "addedParameters": [],
+          "removedParameters": []
+        }
+      ],
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=data/Repository --arg domain=User --arg name=Name",
+      "captures": []
+    },
+    {
+      "roleName": "testing/Fake",
+      "title": "フェイク",
+      "summary": ":testing に置く、他モジュールのテストから使う偽の実装",
+      "parameters": [
+        {
+          "name": "domain",
+          "kind": "EnumParameter",
+          "typeName": "DataDomain",
+          "default": null,
+          "acceptedValues": ["User", "Settings"],
+          "isRequired": true,
+          "previewValue": "User",
+          "previewValueSource": "StandIn"
+        },
+        {
+          "name": "name",
+          "kind": "StringParameter",
+          "typeName": "String",
+          "default": null,
+          "acceptedValues": [],
+          "isRequired": true,
+          "previewValue": "${name}",
+          "previewValueSource": "Placeholder"
+        }
+      ],
+      "files": [
+        {
+          "fileName": "FakeUser${name}Repository.kt",
+          "path": "testing/src/main/kotlin/com/example/sample/testing/FakeUser${name}Repository.kt",
+          "unresolvedPatterns": [],
+          "content": "package com.example.sample.testing\n\nimport com.example.sample.data.user.User${name}Repository\n\n/** In-memory [User${name}Repository] for tests of other modules. */\nclass FakeUser${name}Repository(\n    private var value: String = \"\",\n) : User${name}Repository {\n    override fun load(): String = value\n}"
+        }
+      ],
+      "branches": [
+        {
+          "parameterName": "domain",
+          "value": "Settings",
+          "addedFiles": ["FakeSettings${name}Repository.kt"],
+          "removedFiles": ["FakeUser${name}Repository.kt"],
+          "addedParameters": [],
+          "removedParameters": []
+        }
+      ],
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=testing/Fake --arg domain=User --arg name=Name",
+      "captures": []
+    },
+    {
+      "roleName": "testing/ArchitectureDefinition",
+      "title": "アーキテクチャ定義",
+      "summary": "katachi の DSL で書かれた役割の定義。どのレイヤーにも属さない",
+      "parameters": [
+        {
+          "name": "name",
+          "kind": "StringParameter",
+          "typeName": "String",
+          "default": null,
+          "acceptedValues": [],
+          "isRequired": true,
+          "previewValue": "${name}",
+          "previewValueSource": "Placeholder"
+        },
+        {
+          "name": "kind",
+          "kind": "EnumParameter",
+          "typeName": "DeclarationKind",
+          "default": "Role",
+          "acceptedValues": ["Role", "Group"],
+          "isRequired": false,
+          "previewValue": "Role",
+          "previewValueSource": "Default"
+        }
+      ],
+      "files": [
+        {
+          "fileName": "${name}Role.kt",
+          "path": "architecture-test/src/test/kotlin/com/example/sample/roles/${name}Role.kt",
+          "unresolvedPatterns": [],
+          "content": "package com.example.sample.roles\n\nimport me.tbsten.katachi.dsl.DeclarationContainerScope\n\n// TODO: call ${name}() from the group this role belongs to.\n/** TODO: say what a file of the ${name} role is. */\nfun DeclarationContainerScope.${name}() = \"${name}\" {\n    title = \"${name}\"\n    summary = \"TODO: この役割のファイルが何か\"\n    // TODO: declare where its files live.\n    layout { }\n}"
+        }
+      ],
+      "branches": [
+        {
+          "parameterName": "kind",
+          "value": "Group",
+          "addedFiles": ["${name}Group.kt"],
+          "removedFiles": ["${name}Role.kt"],
+          "addedParameters": [],
+          "removedParameters": []
+        }
+      ],
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=testing/ArchitectureDefinition --arg name=Name",
+      "captures": []
+    }
+  ]
+}

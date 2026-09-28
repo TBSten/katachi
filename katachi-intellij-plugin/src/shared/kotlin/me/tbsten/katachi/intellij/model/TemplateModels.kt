@@ -12,6 +12,8 @@ internal data class TemplateSummaryModel(
     val parameterNames: List<String>,
     /** Files with the preview values; `null` when katachi could not preview the template. */
     val fileCount: Int?,
+    /** The names of the role's captures, each once; empty for a katachi that does not list them. */
+    val captureNames: List<String> = emptyList(),
 )
 
 /** One entry of `details[]`: the parameters, files and branches of a template that previewed. */
@@ -23,6 +25,11 @@ internal data class TemplateDetailModel(
     val files: List<FilePreviewModel>,
     val branches: List<BranchModel>,
     val exampleCommand: String,
+    /**
+     * The role's named wildcards (`captures` of the JSON, kept apart from [parameters] there), one
+     * per name. Empty for a katachi that does not list them.
+     */
+    val captures: List<ParameterModel.CaptureParam> = emptyList(),
 )
 
 /**
@@ -83,6 +90,22 @@ internal sealed interface ParameterModel {
         override val kindName: String get() = KIND_ENUM
     }
 
+    /**
+     * A named wildcard of the role's layout (`capture("feature")`, `":feature:*".module(capture = ...)`).
+     * The template does not declare it, but a run takes it as `--arg` like a String parameter: it
+     * is always required and has no default. [places] lists where it sits, in the JSON's order.
+     */
+    data class CaptureParam(
+        override val name: String,
+        val places: List<CapturePlace>,
+    ) : ParameterModel {
+        override val typeName: String get() = "String"
+        override val default: String? get() = null
+        override val isRequired: Boolean get() = true
+        override val previewValue: String get() = "\${$name}"
+        override val kindName: String get() = KIND_CAPTURE
+    }
+
     data class UnknownParam(
         override val name: String,
         override val typeName: String,
@@ -97,6 +120,28 @@ internal sealed interface ParameterModel {
         const val KIND_BOOLEAN: String = "BooleanParameter"
         const val KIND_INT: String = "IntParameter"
         const val KIND_ENUM: String = "EnumParameter"
+
+        /** Not a JSON `kind` of a parameter: the link key of captures, which only link to captures. */
+        const val KIND_CAPTURE: String = "Capture"
+    }
+}
+
+/**
+ * One place a capture sits. [pattern] is the flattened file pattern with a `*` for each wildcard
+ * level, or a module key such as `:feature:*`; [position] is the capture's `/`-separated level of
+ * the file pattern, or which `*` of the module key it is.
+ */
+internal data class CapturePlace(
+    /** The JSON `kind`: `PathCapture`, `ModuleCapture`, or one a newer katachi added. */
+    val kindName: String,
+    val pattern: String,
+    val position: Int,
+) {
+    val isModule: Boolean get() = kindName == KIND_MODULE
+
+    companion object {
+        const val KIND_PATH: String = "PathCapture"
+        const val KIND_MODULE: String = "ModuleCapture"
     }
 }
 
@@ -152,11 +197,12 @@ internal data class TemplateModel(
 }
 
 /**
- * Every parameter [detail] can show: the preview's own, then those that only branches add, each
- * name once.
+ * Every field [detail] can show: its captures first (they decide where the files go), then the
+ * preview's own parameters, then those that only branches add, each name once.
  */
 internal fun allParametersOf(detail: TemplateDetailModel): List<ParameterModel> {
     val byName = LinkedHashMap<String, ParameterModel>()
+    for (capture in detail.captures) byName.putIfAbsent(capture.name, capture)
     for (parameter in detail.parameters) byName.putIfAbsent(parameter.name, parameter)
     for (branch in detail.branches) {
         for (parameter in branch.addedParameters) byName.putIfAbsent(parameter.name, parameter)

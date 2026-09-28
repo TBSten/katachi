@@ -1,0 +1,102 @@
+{
+  "templates": [
+    {
+      "roleName": "api/Controller",
+      "title": "コントローラ",
+      "summary": "HTTP のリクエストを1つ受け取り、対応する Service を呼んで結果を返す",
+      "parameterNames": ["name"],
+      "fileCount": 1,
+      "captures": [
+        {
+          "name": "resource",
+          "kind": "PathCapture",
+          "pattern": "src/main/kotlin/com/example/controller/*/*Controller.kt",
+          "position": 6
+        }
+      ]
+    },
+    {
+      "roleName": "domain/Service",
+      "title": "サービス",
+      "summary": "アプリ固有の振る舞いを1つ持ち、Repository を組み合わせて実現する",
+      "parameterNames": ["name", "kdoc"],
+      "fileCount": 1,
+      "captures": []
+    }
+  ],
+  "details": [
+    {
+      "roleName": "api/Controller",
+      "title": "コントローラ",
+      "summary": "HTTP のリクエストを1つ受け取り、対応する Service を呼んで結果を返す",
+      "parameters": [
+        {
+          "name": "name",
+          "kind": "StringParameter",
+          "typeName": "String",
+          "default": null,
+          "acceptedValues": [],
+          "isRequired": true,
+          "previewValue": "${name}",
+          "previewValueSource": "Placeholder"
+        }
+      ],
+      "files": [
+        {
+          "fileName": "${name}Controller.kt",
+          "path": "src/main/kotlin/com/example/controller/${resource}/${name}Controller.kt",
+          "unresolvedPatterns": [],
+          "content": "package com.example.controller.${resource}\n\nimport io.ktor.server.response.respondText\nimport io.ktor.server.routing.Route\nimport io.ktor.server.routing.get\n\n/** Maps `GET /${resource}`. */\nclass ${name}Controller {\n    fun register(route: Route) {\n        route.get(\"/${resource}\") {\n            call.respondText(\"TODO: ${name}Controller\")\n        }\n    }\n}\n"
+        }
+      ],
+      "branches": [],
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=api/Controller --arg resource=<resource> --arg name=Name",
+      "captures": [
+        {
+          "name": "resource",
+          "kind": "PathCapture",
+          "pattern": "src/main/kotlin/com/example/controller/*/*Controller.kt",
+          "position": 6
+        }
+      ]
+    },
+    {
+      "roleName": "domain/Service",
+      "title": "サービス",
+      "summary": "アプリ固有の振る舞いを1つ持ち、Repository を組み合わせて実現する",
+      "parameters": [
+        {
+          "name": "name",
+          "kind": "StringParameter",
+          "typeName": "String",
+          "default": null,
+          "acceptedValues": [],
+          "isRequired": true,
+          "previewValue": "${name}",
+          "previewValueSource": "Placeholder"
+        },
+        {
+          "name": "kdoc",
+          "kind": "StringParameter",
+          "typeName": "String",
+          "default": "${name} に関するアプリ固有の振る舞い。",
+          "acceptedValues": [],
+          "isRequired": false,
+          "previewValue": "${kdoc}",
+          "previewValueSource": "Placeholder"
+        }
+      ],
+      "files": [
+        {
+          "fileName": "${name}Service.kt",
+          "path": "src/main/kotlin/com/example/service/${name}Service.kt",
+          "unresolvedPatterns": [],
+          "content": "package com.example.service\n\n/** ${kdoc} */\nclass ${name}Service {\n    fun execute(): String = TODO(\"${name}Service の実装\")\n}\n"
+        }
+      ],
+      "branches": [],
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=domain/Service --arg name=Name",
+      "captures": []
+    }
+  ]
+}

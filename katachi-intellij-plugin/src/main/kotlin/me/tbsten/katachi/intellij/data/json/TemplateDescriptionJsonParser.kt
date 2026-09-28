@@ -1,6 +1,7 @@
 package me.tbsten.katachi.intellij.data.json
 
 import me.tbsten.katachi.intellij.model.BranchModel
+import me.tbsten.katachi.intellij.model.CapturePlace
 import me.tbsten.katachi.intellij.model.FilePreviewModel
 import me.tbsten.katachi.intellij.model.ParameterModel
 import me.tbsten.katachi.intellij.model.TemplateDetailModel
@@ -13,7 +14,8 @@ import java.nio.file.Path
  * into the list's templates, in `templates[]` order.
  *
  * Unknown keys are ignored. Every key of the contract is required, `null` only where the contract
- * allows it. A `kind` this plugin does not know makes that parameter an [ParameterModel.UnknownParam]
+ * allows it -- except `captures`, which a katachi from before `capture()` does not write: its
+ * absence reads as no captures. A `kind` this plugin does not know makes that parameter an [ParameterModel.UnknownParam]
  * instead of failing the whole file (E-36). A `details[]` entry whose role is not in `templates[]`
  * is dropped, and a repeated role name keeps its first entry.
  *
@@ -58,6 +60,18 @@ private class JsonReader(private val value: JsonValue, private val location: Str
         }
     }
 
+    /** [array] of [key], or empty when the object has no such key (a key added to the contract later). */
+    fun optionalArray(key: String): List<JsonReader> {
+        val obj = value as? JsonValue.JsonObject ?: throw mismatch(location, "object", value)
+        return if (key in obj.members) array(key) else emptyList()
+    }
+
+    fun int(key: String): Int {
+        val child = member(key)
+        val number = child.value as? JsonValue.JsonNumber ?: throw mismatch(child.location, "integer", child.value)
+        return number.text.toIntOrNull() ?: throw mismatch(child.location, "integer", number)
+    }
+
     fun array(key: String): List<JsonReader> {
         val child = member(key)
         val array = child.value as? JsonValue.JsonArray ?: throw mismatch(child.location, "array", child.value)
@@ -74,6 +88,7 @@ private class JsonReader(private val value: JsonValue, private val location: Str
         summary = nullableString("summary"),
         parameterNames = strings("parameterNames"),
         fileCount = nullableInt("fileCount"),
+        captureNames = optionalArray("captures").map { it.string("name") }.distinct(),
     )
 
     fun detail(): TemplateDetailModel = TemplateDetailModel(
@@ -84,7 +99,18 @@ private class JsonReader(private val value: JsonValue, private val location: Str
         files = array("files").map { it.file() },
         branches = array("branches").map { it.branch() },
         exampleCommand = string("exampleCommand"),
+        captures = captures(),
     )
+
+    /** `captures`, one [ParameterModel.CaptureParam] per name: katachi lists a name once per place. */
+    private fun captures(): List<ParameterModel.CaptureParam> {
+        val places = LinkedHashMap<String, MutableList<CapturePlace>>()
+        for (capture in optionalArray("captures")) {
+            val place = CapturePlace(kindName = capture.string("kind"), pattern = capture.string("pattern"), position = capture.int("position"))
+            places.getOrPut(capture.string("name")) { mutableListOf() } += place
+        }
+        return places.map { (name, list) -> ParameterModel.CaptureParam(name, list.distinct()) }
+    }
 
     fun parameter(): ParameterModel {
         val name = string("name")

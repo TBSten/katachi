@@ -8,6 +8,7 @@ import io.kotest.property.arbitrary.enum
 import io.kotest.property.arbitrary.int
 import io.kotest.property.arbitrary.list
 import me.tbsten.katachi.intellij.model.BranchModel
+import me.tbsten.katachi.intellij.model.CapturePlace
 import me.tbsten.katachi.intellij.model.FilePreviewModel
 import me.tbsten.katachi.intellij.model.KatachiModule
 import me.tbsten.katachi.intellij.model.ParameterModel
@@ -21,7 +22,9 @@ import me.tbsten.katachi.intellij.testing.module
  * Definitions built from structure rather than taken from a sample: nested groups (0-3 levels),
  * roles at the root, every parameter type with and without a default, parameters inside `if`,
  * several files, a target that is not decided, same-named parameters of the same and of different
- * types, previews that failed, parameter kinds the plugin does not know, and several modules.
+ * types, previews that failed, parameter kinds the plugin does not know, captures of a path and of
+ * a module (named apart from the parameters, as katachi requires) shared between templates, and
+ * several modules.
  * The specs stay small so that a shrunk counterexample reads as a sentence.
  */
 
@@ -36,6 +39,11 @@ internal enum class BranchKind { None, BoolRemoves, BoolAdds, EnumAdds }
 
 internal enum class TitleKind { None, Short, Long }
 
+/** A `capture("name")` level of the file's directory, or with [module] the `*` of `:feature:*`. */
+internal data class CaptureSpec(val name: String, val module: Boolean) {
+    override fun toString(): String = if (module) ":$name" else "/$name"
+}
+
 internal data class TemplateSpec(
     val group: String,
     val params: List<ParamSpec>,
@@ -44,9 +52,11 @@ internal data class TemplateSpec(
     val unresolved: Boolean,
     val previewFailed: Boolean,
     val title: TitleKind,
+    val captures: List<CaptureSpec> = emptyList(),
 ) {
     override fun toString(): String = buildString {
         append("T(${group.ifEmpty { "<root>" }} $params")
+        if (captures.isNotEmpty()) append(" captures=$captures")
         if (branch != BranchKind.None) append(" if=$branch")
         append(" files=$files")
         if (unresolved) append(" wildcard")
@@ -98,6 +108,13 @@ private val GROUPS = listOf("", "", "a", "a/b", "a/b/c", "data", "domain/model")
 private val PARAM_NAMES = listOf("name", "item", "count", "kind", "flag", "label")
 private val MODULE_PATHS = listOf(":m0", ":m1", ":m2")
 
+/** Never one of [PARAM_NAMES]: katachi refuses a capture named like a parameter. */
+private val CAPTURE_NAMES = listOf("feature", "area")
+
+internal val captureSpecArb: Arb<CaptureSpec> = arbitrary {
+    CaptureSpec(name = Arb.element(CAPTURE_NAMES).bind(), module = Arb.int(0..3).bind() == 0)
+}
+
 internal val paramSpecArb: Arb<ParamSpec> = arbitrary {
     ParamSpec(
         name = Arb.element(PARAM_NAMES).bind(),
@@ -115,6 +132,8 @@ internal val templateSpecArb: Arb<TemplateSpec> = arbitrary {
         unresolved = Arb.int(0..9).bind() == 0,
         previewFailed = Arb.int(0..9).bind() == 0,
         title = Arb.enum<TitleKind>().bind(),
+        // Most templates have none, as in a real definition.
+        captures = if (Arb.int(0..2).bind() == 0) Arb.list(captureSpecArb, 1..2).bind().distinctBy { it.name } else emptyList(),
     )
 }
 
@@ -196,10 +215,12 @@ internal fun templateOf(index: Int, spec: TemplateSpec): TemplateModel {
     val simpleName = "R$index"
     val roleName = if (spec.group.isEmpty()) simpleName else "${spec.group}/$simpleName"
     val parameters = spec.params.map(::parameterOf)
+    val captures = spec.captures.map(::captureOf)
     val stem = if (spec.params.any { it.name == "name" }) "\${name}" else simpleName
+    val captureDirs = spec.captures.joinToString("") { "/\${${it.name}}" }
     val files = (0 until spec.files).map { i ->
         val fileName = "${stem}F$i.kt"
-        val directory = "mod/src/${spec.group.ifEmpty { "root" }}"
+        val directory = "mod/src/${spec.group.ifEmpty { "root" }}$captureDirs"
         if (i == 0 && spec.unresolved) {
             FilePreviewModel(fileName, null, listOf("mod/src/**/$fileName"), "// $fileName")
         } else {
@@ -211,7 +232,7 @@ internal fun templateOf(index: Int, spec: TemplateSpec): TemplateModel {
         TitleKind.Short -> "タイトル$index"
         TitleKind.Long -> "とても長いタイトル".repeat(6) + index
     }
-    val summary = TemplateSummaryModel(roleName, title, null, parameters.map { it.name }, if (spec.previewFailed) null else files.size)
+    val summary = TemplateSummaryModel(roleName, title, null, parameters.map { it.name }, if (spec.previewFailed) null else files.size, captures.map { it.name })
     if (spec.previewFailed) return TemplateModel(summary, detail = null)
     val detail = TemplateDetailModel(
         roleName = roleName,
@@ -221,9 +242,22 @@ internal fun templateOf(index: Int, spec: TemplateSpec): TemplateModel {
         files = files,
         branches = listOfNotNull(branchOf(spec, parameters, files)),
         exampleCommand = "./gradlew katachiTemplate --arg roleName=$roleName",
+        captures = captures,
     )
     return TemplateModel(summary, detail)
 }
+
+/** Where [spec] sits: its own directory level under the group's, or the `*` of `:feature:*`. */
+private fun captureOf(spec: CaptureSpec): ParameterModel.CaptureParam = ParameterModel.CaptureParam(
+    spec.name,
+    listOf(
+        if (spec.module) {
+            CapturePlace(CapturePlace.KIND_MODULE, ":feature:*", 0)
+        } else {
+            CapturePlace(CapturePlace.KIND_PATH, "mod/src/*/*/*.kt", 2)
+        },
+    ),
+)
 
 private fun branchOf(spec: TemplateSpec, parameters: List<ParameterModel>, files: List<FilePreviewModel>): BranchModel? = when (spec.branch) {
     BranchKind.None -> null

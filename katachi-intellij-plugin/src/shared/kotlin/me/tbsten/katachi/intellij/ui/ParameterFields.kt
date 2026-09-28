@@ -65,6 +65,7 @@ internal fun ParameterField(field: FieldUi, labelWidth: Dp?, list: ListUi, focus
     val label = if (field.isRequired) "${field.label} *" else field.label
     val focusModifier = Modifier.listFocus(FocusTarget.Field(field.id), focus, list, onIntent).testTag(KatachiTestTags.field(field.id))
     val below: @Composable () -> Unit = {
+        (field as? FieldUi.Text)?.hint?.let { Text(it, color = faintText, modifier = Modifier.testTag(KatachiTestTags.hint(field.id))) }
         errorOf(field)?.let { Text(it, color = errorText) }
     }
     // A name longer than the label column goes above its field rather than being cut.

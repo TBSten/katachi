@@ -79,6 +79,16 @@ internal interface KatachiStrings {
     val requiredError: String
     fun notAnInt(min: Int, max: Int): String
     val notAccepted: String
+
+    /**
+     * The note under a capture's field: where its value goes. [markedPattern] is the pattern with
+     * the capture's `*` written `<name>`. English, for stage 3: "The directory for <name> in
+     * [markedPattern]" / "The existing module for <name> in [markedPattern]".
+     */
+    fun capturePathHint(name: String, markedPattern: String): String
+    fun captureModuleHint(name: String, markedPattern: String): String
+    val captureSeparatorError: String
+    val captureDotError: String
     val multilineOn: String
     val multilineOff: String
     val alreadyExists: String
@@ -88,6 +98,7 @@ internal interface KatachiStrings {
     fun reasonRequired(role: String, parameter: String): String
     fun reasonNotAnInt(role: String, parameter: String): String
     fun reasonNotAccepted(role: String, parameter: String): String
+    fun reasonInvalidCapture(role: String, capture: String): String
     fun reasonUnavailable(role: String): String
     fun reasonUnresolved(role: String, fileName: String): String
     val reasonGenerating: String

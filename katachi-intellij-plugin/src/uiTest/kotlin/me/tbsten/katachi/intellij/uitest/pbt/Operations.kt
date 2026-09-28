@@ -68,8 +68,11 @@ internal sealed interface Op {
 /** How a scripted Gradle run ends. */
 internal enum class RunOutcome { Normal, Fails, Waits }
 
-/** Values typed into text fields: empty, blank, names, numbers, a line break, Japanese. */
-internal val TYPED_VALUES = listOf("", "User", "Order", " ", "3", "abc", "x\ny", "日本語", "12345678901", "-1")
+/**
+ * Values typed into text fields: empty, blank, names, numbers, a line break, Japanese, and what a
+ * capture refuses (two levels, climbing).
+ */
+internal val TYPED_VALUES = listOf("", "User", "Order", " ", "3", "abc", "x\ny", "日本語", "12345678901", "-1", "home/list", "..")
 
 /** Queries typed into the search field. */
 internal val QUERIES = listOf("", "r", "R1", "zzz", " ", "a/b", "タイトル", "NAME")

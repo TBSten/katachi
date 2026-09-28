@@ -18,6 +18,7 @@ internal fun contractJsonOf(templates: List<TemplateModel>): String = obj(
             "summary" to str(summary.summary),
             "parameterNames" to array(summary.parameterNames.map(::str)),
             "fileCount" to (summary.fileCount?.toString() ?: "null"),
+            "captures" to array(template.detail?.captures.orEmpty().flatMap(::captureJson)),
         )
     }),
     "details" to array(templates.mapNotNull { it.detail }.map { detail ->
@@ -29,6 +30,7 @@ internal fun contractJsonOf(templates: List<TemplateModel>): String = obj(
             "files" to array(detail.files.map(::fileJson)),
             "branches" to array(detail.branches.map(::branchJson)),
             "exampleCommand" to str(detail.exampleCommand),
+            "captures" to array(detail.captures.flatMap(::captureJson)),
         )
     }),
 )
@@ -49,6 +51,16 @@ private fun parameterJson(parameter: ParameterModel): String = obj(
     "previewValue" to str(parameter.previewValue),
     "previewValueSource" to str(if (parameter is ParameterModel.StringParam) "Placeholder" else "StandIn"),
 )
+
+/** One entry per place, as katachi lists a capture used in several. */
+private fun captureJson(capture: ParameterModel.CaptureParam): List<String> = capture.places.map { place ->
+    obj(
+        "name" to str(capture.name),
+        "kind" to str(place.kindName),
+        "pattern" to str(place.pattern),
+        "position" to place.position.toString(),
+    )
+}
 
 private fun fileJson(file: FilePreviewModel): String = obj(
     "fileName" to str(file.fileName),

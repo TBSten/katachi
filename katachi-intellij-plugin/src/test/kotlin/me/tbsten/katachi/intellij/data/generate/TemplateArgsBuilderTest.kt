@@ -91,4 +91,31 @@ class TemplateArgsBuilderTest {
             templateArgsOf("domain/Service", service, mapOf("name" to "Order"), OnExistingChoice.Skip),
         )
     }
+
+    @Test
+    fun `captureの値はパラメータより前に入力のまま送る`() {
+        val viewModel = rowsOf("capture").row("feature/ViewModel").template.detail ?: throw AssertionError()
+        assertEquals(
+            listOf("roleName" to "feature/ViewModel", "onExisting" to "fail", "feature" to "home", "name" to "User"),
+            templateArgsOf("feature/ViewModel", viewModel, mapOf("name" to "User", "feature" to "home"), OnExistingChoice.Fail),
+        )
+    }
+
+    @Test
+    fun `複数のcaptureはJSONの順に1つずつ送る`() {
+        val deep = rowsOf("capture").row("feature/Deep").template.detail ?: throw AssertionError()
+        assertEquals(
+            listOf("roleName" to "feature/Deep", "onExisting" to "fail", "area" to "app", "feature" to "home"),
+            templateArgsOf("feature/Deep", deep, mapOf("feature" to "home", "area" to "app", "name" to ""), OnExistingChoice.Fail),
+        )
+    }
+
+    @Test
+    fun `sample-jvmの実出力のcaptureも--argに入る`() {
+        val controller = rowsOf("sample-jvm-with-captures").row("api/Controller").template.detail ?: throw AssertionError()
+        assertEquals(
+            listOf("roleName" to "api/Controller", "onExisting" to "fail", "resource" to "user", "name" to "User"),
+            templateArgsOf("api/Controller", controller, mapOf("resource" to "user", "name" to "User"), OnExistingChoice.Fail),
+        )
+    }
 }

@@ -1,6 +1,7 @@
 package me.tbsten.katachi.intellij.testing
 
 import me.tbsten.katachi.intellij.model.BranchModel
+import me.tbsten.katachi.intellij.model.CapturePlace
 import me.tbsten.katachi.intellij.model.FilePreviewModel
 import me.tbsten.katachi.intellij.model.KatachiModule
 import me.tbsten.katachi.intellij.model.ModuleTemplate
@@ -20,6 +21,10 @@ internal fun booleanParam(name: String, default: String? = "true") =
 
 internal fun enumParam(name: String, values: List<String>, default: String? = values.first(), typeName: String = "Kind") =
     ParameterModel.EnumParam(name, typeName, default, default == null, default ?: values.first(), values)
+
+/** A capture at one place: a `/` level of a file pattern, or with [module] the `*` of a module key. */
+internal fun capture(name: String, pattern: String = "feature/*/*.kt", position: Int = 1, module: Boolean = false) =
+    ParameterModel.CaptureParam(name, listOf(CapturePlace(if (module) CapturePlace.KIND_MODULE else CapturePlace.KIND_PATH, pattern, position)))
 
 internal fun file(fileName: String, path: String? = "src/$fileName", content: String = "", patterns: List<String> = emptyList()) =
     FilePreviewModel(fileName, path, patterns, content)
@@ -41,9 +46,10 @@ internal fun template(
     title: String? = null,
     summary: String? = null,
     fileCount: Int? = files.size,
+    captures: List<ParameterModel.CaptureParam> = emptyList(),
 ): TemplateModel = TemplateModel(
-    summary = TemplateSummaryModel(roleName, title, summary, parameters.map { it.name }, fileCount),
-    detail = TemplateDetailModel(roleName, title, summary, parameters, files, branches, "./gradlew katachiTemplate --arg roleName=$roleName"),
+    summary = TemplateSummaryModel(roleName, title, summary, parameters.map { it.name }, fileCount, captures.map { it.name }),
+    detail = TemplateDetailModel(roleName, title, summary, parameters, files, branches, "./gradlew katachiTemplate --arg roleName=$roleName", captures),
 )
 
 internal fun previewFailed(roleName: String): TemplateModel =

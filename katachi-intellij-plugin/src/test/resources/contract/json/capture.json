@@ -1,0 +1,108 @@
+{
+  "templates": [
+    {
+      "roleName": "feature/ViewModel",
+      "title": "ViewModel",
+      "summary": "feature/<feature>/src に置く",
+      "parameterNames": ["name"],
+      "fileCount": 1,
+      "captures": [
+        {"name": "feature", "kind": "PathCapture", "pattern": "feature/*/src/*ViewModel.kt", "position": 1}
+      ]
+    },
+    {
+      "roleName": "feature/Screen",
+      "title": "画面",
+      "summary": ":feature:<feature> に置く",
+      "parameterNames": ["name"],
+      "fileCount": 1,
+      "captures": [
+        {"name": "feature", "kind": "ModuleCapture", "pattern": ":feature:*", "position": 0}
+      ]
+    },
+    {
+      "roleName": "feature/Deep",
+      "title": null,
+      "summary": null,
+      "parameterNames": ["name"],
+      "fileCount": 1,
+      "captures": [
+        {"name": "area", "kind": "PathCapture", "pattern": "app/*/*/*Deep.kt", "position": 1},
+        {"name": "feature", "kind": "PathCapture", "pattern": "app/*/*/*Deep.kt", "position": 2},
+        {"name": "feature", "kind": "PathCapture", "pattern": "test/*/*DeepTest.kt", "position": 1}
+      ]
+    },
+    {
+      "roleName": "misc/Plain",
+      "title": null,
+      "summary": null,
+      "parameterNames": ["name"],
+      "fileCount": 1
+    }
+  ],
+  "details": [
+    {
+      "roleName": "feature/ViewModel",
+      "title": "ViewModel",
+      "summary": "feature/<feature>/src に置く",
+      "parameters": [
+        {"name": "name", "kind": "StringParameter", "typeName": "String", "default": null, "acceptedValues": [], "isRequired": true, "previewValue": "${name}", "previewValueSource": "Placeholder"}
+      ],
+      "files": [
+        {"fileName": "${name}ViewModel.kt", "path": "feature/${feature}/src/${name}ViewModel.kt", "unresolvedPatterns": [], "content": "package com.example.${feature}"}
+      ],
+      "branches": [],
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=feature/ViewModel --arg feature=<feature> --arg name=Name",
+      "captures": [
+        {"name": "feature", "kind": "PathCapture", "pattern": "feature/*/src/*ViewModel.kt", "position": 1}
+      ]
+    },
+    {
+      "roleName": "feature/Screen",
+      "title": "画面",
+      "summary": ":feature:<feature> に置く",
+      "parameters": [
+        {"name": "name", "kind": "StringParameter", "typeName": "String", "default": null, "acceptedValues": [], "isRequired": true, "previewValue": "${name}", "previewValueSource": "Placeholder"}
+      ],
+      "files": [
+        {"fileName": "${name}Screen.kt", "path": "feature/${feature}/${name}Screen.kt", "unresolvedPatterns": [], "content": ""}
+      ],
+      "branches": [],
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=feature/Screen --arg feature=<feature> --arg name=Name",
+      "captures": [
+        {"name": "feature", "kind": "ModuleCapture", "pattern": ":feature:*", "position": 0}
+      ]
+    },
+    {
+      "roleName": "feature/Deep",
+      "title": null,
+      "summary": null,
+      "parameters": [
+        {"name": "name", "kind": "StringParameter", "typeName": "String", "default": "Deep", "acceptedValues": [], "isRequired": false, "previewValue": "${name}", "previewValueSource": "Placeholder"}
+      ],
+      "files": [
+        {"fileName": "${name}Deep.kt", "path": "app/${area}/${feature}/${name}Deep.kt", "unresolvedPatterns": [], "content": ""}
+      ],
+      "branches": [],
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=feature/Deep --arg area=<area> --arg feature=<feature>",
+      "captures": [
+        {"name": "area", "kind": "PathCapture", "pattern": "app/*/*/*Deep.kt", "position": 1},
+        {"name": "feature", "kind": "PathCapture", "pattern": "app/*/*/*Deep.kt", "position": 2},
+        {"name": "feature", "kind": "PathCapture", "pattern": "test/*/*DeepTest.kt", "position": 1}
+      ]
+    },
+    {
+      "roleName": "misc/Plain",
+      "title": null,
+      "summary": null,
+      "parameters": [
+        {"name": "name", "kind": "StringParameter", "typeName": "String", "default": null, "acceptedValues": [], "isRequired": true, "previewValue": "${name}", "previewValueSource": "Placeholder"}
+      ],
+      "files": [
+        {"fileName": "${name}.kt", "path": "misc/${name}.kt", "unresolvedPatterns": [], "content": ""}
+      ],
+      "branches": [],
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=misc/Plain --arg name=Name"
+    }
+  ]
+}

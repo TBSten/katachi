@@ -7,6 +7,8 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import me.tbsten.katachi.intellij.data.gradle.GradleRunOutcome
 import me.tbsten.katachi.intellij.model.ConflictChoice
+import me.tbsten.katachi.intellij.model.KatachiModule
+import me.tbsten.katachi.intellij.presentation.FieldId
 import me.tbsten.katachi.intellij.presentation.GenerationState
 import me.tbsten.katachi.intellij.presentation.JapaneseKatachiStrings
 import me.tbsten.katachi.intellij.presentation.KatachiIntent
@@ -192,6 +194,7 @@ internal class ScreenMachine(private val catalog: Catalog, private val render: B
         } else if (running.rows.none { it.roleName == roleName }) {
             runViolations += "katachiTemplate ran for $roleName, which is not among the generating rows ${running.rows.map { it.roleName }}"
         }
+        captureViolationOf(roleName, args)?.let { runViolations += it }
         val runs = runsOfGeneration.getOrPut("${harness.katachi.currentTaskPath} $roleName") { mutableListOf() }
         runs += args.getValue("onExisting")
         if (runs.size > 2 || (runs.size == 2 && runs[1] != "overwrite")) {
@@ -203,6 +206,25 @@ internal class ScreenMachine(private val catalog: Catalog, private val render: B
             RunOutcome.Fails -> FakeRun(ContractFixtures.outputLines("unknown-arg", ROOT), GradleRunOutcome.Failed)
             RunOutcome.Waits -> FakeRun(gate = gate())
         }
+    }
+
+    /**
+     * Every capture of the running template reaches the run as `--arg`, with the value its field
+     * holds, and only a value that is one directory level: whichever order the fields were filled in.
+     */
+    private fun captureViolationOf(roleName: String, args: Map<String, String>): String? {
+        val row = harness.state.rows.firstOrNull {
+            it.template.roleName == roleName && it.module.taskPath(KatachiModule.TEMPLATE_TASK) == harness.katachi.currentTaskPath
+        } ?: return null
+        for (capture in row.template.detail?.captures.orEmpty()) {
+            val sent = args[capture.name] ?: return "katachiTemplate ran for $roleName without its capture ${capture.name}: $args"
+            val typed = harness.state.form.inputOf(FieldId(row.id, capture.name))
+            if (sent != typed) return "katachiTemplate ran for $roleName with ${capture.name}=\"$sent\", the field holds \"$typed\""
+            if (sent.isBlank() || '/' in sent || '\\' in sent || sent.trim() == "." || sent.trim() == "..") {
+                return "katachiTemplate ran for $roleName with ${capture.name}=\"$sent\", which is not one directory level"
+            }
+        }
+        return null
     }
 
     private fun gate(): CompletableDeferred<Unit> = CompletableDeferred<Unit>().also { gates += it }

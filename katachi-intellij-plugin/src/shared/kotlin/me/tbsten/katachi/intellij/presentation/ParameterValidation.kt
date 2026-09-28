@@ -12,6 +12,28 @@ internal sealed interface FieldError {
 
     /** Not one of the enum's entries (E-12). */
     data class NotAcceptedValue(val value: String, val acceptedValues: List<String>) : FieldError
+
+    /**
+     * A capture value that cannot be one directory level. Only the plain cases are caught here;
+     * katachi checks the rest (a trailing `.`, a reserved name, ...) and its error shows as a failure.
+     */
+    data class InvalidCapture(val problem: CaptureProblem) : FieldError
+}
+
+/** Why a capture value is not one level: katachi's rule, the part the IDE checks before a run. */
+internal enum class CaptureProblem {
+    /** Holds `/` or `\`: several levels. */
+    Separator,
+
+    /** `.` or `..`: climbs instead of naming a level. */
+    Dot,
+}
+
+/** The problem of a non-blank capture [value], or `null` when the IDE lets katachi judge it. */
+internal fun captureProblemOf(value: String): CaptureProblem? = when {
+    '/' in value || '\\' in value -> CaptureProblem.Separator
+    value.trim() == "." || value.trim() == ".." -> CaptureProblem.Dot
+    else -> null
 }
 
 // ASCII digits only: Kotlin's toIntOrNull also takes full-width digits, which katachi may not (E-11).
@@ -26,6 +48,10 @@ internal fun validateField(parameter: ParameterModel, input: String?): FieldErro
     return when (parameter) {
         is ParameterModel.BooleanParam, is ParameterModel.UnknownParam -> null
         is ParameterModel.StringParam -> if (text.isEmpty() && parameter.default == null) FieldError.Required else null
+        is ParameterModel.CaptureParam -> when {
+            text.isEmpty() -> FieldError.Required
+            else -> captureProblemOf(input.orEmpty())?.let(FieldError::InvalidCapture)
+        }
         is ParameterModel.IntParam -> when {
             text.isEmpty() -> if (parameter.default == null) FieldError.Required else null
             normalizedInt(text) == null -> FieldError.NotAnInt()

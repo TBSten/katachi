@@ -1,0 +1,92 @@
+{
+  "templates": [
+    {
+      "roleName": "feature/FeatureComponent",
+      "title": "画面の部品",
+      "summary": "1つの画面でしか使わない @Composable。:feature:<name> の commonMain の component package に <Name>*.kt で置く",
+      "parameterNames": ["name"],
+      "fileCount": 1,
+      "captures": [
+        {
+          "name": "feature",
+          "kind": "ModuleCapture",
+          "pattern": ":feature:*",
+          "position": 0
+        }
+      ]
+    },
+    {
+      "roleName": "data/Repository",
+      "title": "リポジトリ",
+      "summary": ":data モジュールの user package。データの取得口で、インターフェースと実装の2つの置き方を持つ",
+      "parameterNames": ["name", "item", "withImpl"],
+      "fileCount": 2,
+      "captures": []
+    }
+  ],
+  "details": [
+    {
+      "roleName": "data/Repository",
+      "title": "リポジトリ",
+      "summary": ":data モジュールの user package。データの取得口で、インターフェースと実装の2つの置き方を持つ",
+      "parameters": [
+        {
+          "name": "name",
+          "kind": "StringParameter",
+          "typeName": "String",
+          "default": null,
+          "acceptedValues": [],
+          "isRequired": true,
+          "previewValue": "${name}",
+          "previewValueSource": "Placeholder"
+        },
+        {
+          "name": "item",
+          "kind": "StringParameter",
+          "typeName": "String",
+          "default": "String",
+          "acceptedValues": [],
+          "isRequired": false,
+          "previewValue": "${item}",
+          "previewValueSource": "Placeholder"
+        },
+        {
+          "name": "withImpl",
+          "kind": "BooleanParameter",
+          "typeName": "Boolean",
+          "default": "true",
+          "acceptedValues": ["true", "false"],
+          "isRequired": false,
+          "previewValue": "true",
+          "previewValueSource": "Default"
+        }
+      ],
+      "files": [
+        {
+          "fileName": "${name}Repository.kt",
+          "path": "data/src/commonMain/kotlin/com/example/kmp/data/user/${name}Repository.kt",
+          "unresolvedPatterns": [],
+          "content": "package com.example.kmp.data.user\n\n/** Reads ${name} data. */\ninterface ${name}Repository {\n    fun items(): List<${item}>\n}\n"
+        },
+        {
+          "fileName": "${name}RepositoryImpl.kt",
+          "path": "data/src/commonMain/kotlin/com/example/kmp/data/user/${name}RepositoryImpl.kt",
+          "unresolvedPatterns": [],
+          "content": "package com.example.kmp.data.user\n\n/** The real implementation. A stub, like [UserRepositoryImpl]. */\nclass ${name}RepositoryImpl : ${name}Repository {\n    override fun items(): List<${item}> = emptyList()\n}\n"
+        }
+      ],
+      "branches": [
+        {
+          "parameterName": "withImpl",
+          "value": "false",
+          "addedFiles": [],
+          "removedFiles": ["${name}RepositoryImpl.kt"],
+          "addedParameters": [],
+          "removedParameters": []
+        }
+      ],
+      "exampleCommand": "./gradlew katachiTemplate --arg roleName=data/Repository --arg name=Name",
+      "captures": []
+    }
+  ]
+}

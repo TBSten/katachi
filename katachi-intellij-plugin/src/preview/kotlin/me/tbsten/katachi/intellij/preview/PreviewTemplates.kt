@@ -1,6 +1,7 @@
 package me.tbsten.katachi.intellij.preview
 
 import me.tbsten.katachi.intellij.model.BranchModel
+import me.tbsten.katachi.intellij.model.CapturePlace
 import me.tbsten.katachi.intellij.model.DescriptionSnapshot
 import me.tbsten.katachi.intellij.model.FilePreviewModel
 import me.tbsten.katachi.intellij.model.KatachiModule
@@ -48,9 +49,16 @@ internal fun template(
     branches: List<BranchModel> = emptyList(),
     summary: String? = null,
     fileCount: Int? = files.size,
+    captures: List<ParameterModel.CaptureParam> = emptyList(),
 ) = TemplateModel(
-    TemplateSummaryModel(roleName, title, summary, parameters.map { it.name }, fileCount),
-    TemplateDetailModel(roleName, title, summary, parameters, files, branches, "./gradlew katachiTemplate --arg roleName=$roleName"),
+    TemplateSummaryModel(roleName, title, summary, parameters.map { it.name }, fileCount, captures.map { it.name }),
+    TemplateDetailModel(roleName, title, summary, parameters, files, branches, "./gradlew katachiTemplate --arg roleName=$roleName", captures),
+)
+
+/** A capture at one place: a `/` level of a file pattern, or with [module] a `*` of a module key. */
+internal fun capture(name: String, pattern: String, position: Int, module: Boolean = false) = ParameterModel.CaptureParam(
+    name,
+    listOf(CapturePlace(if (module) CapturePlace.KIND_MODULE else CapturePlace.KIND_PATH, pattern, position)),
 )
 
 private const val DATA_DIR = "data/src/main/kotlin/com/example/data/user"
@@ -123,6 +131,25 @@ internal val futureTemplate = template(
 
 /** `name: Int` in another module: same name, other type, so it never links (E-15). */
 internal val pagedList = template("ui/PagedList", "ページ付きリスト", listOf(int("name", default = "20")), listOf(kt(UI_DIR, "PagedList.kt")))
+
+/** The sample's FeatureComponent: `:feature:*` named `feature` with `module(capture = ...)`. */
+internal val featureComponent = template(
+    "feature/FeatureComponent",
+    "画面の部品",
+    listOf(str("name"), bool("withPreview")),
+    listOf(kt("feature/\${feature}/src/main/kotlin/com/example/feature/\${feature}/component", "\${name}.kt")),
+    summary = "1つの画面でしか使わない @Composable",
+    captures = listOf(capture("feature", ":feature:*", 0, module = true)),
+)
+
+/** A directory level named with `capture("feature")`. */
+internal val featureViewModel = template(
+    "feature/ViewModel",
+    "ViewModel",
+    listOf(str("name")),
+    listOf(kt("app/src/main/kotlin/com/example/feature/\${feature}", "\${name}ViewModel.kt")),
+    captures = listOf(capture("feature", "app/src/main/kotlin/com/example/feature/*/*ViewModel.kt", 7)),
+)
 
 internal fun snapshot(module: KatachiModule, vararg templates: TemplateModel, loadedAt: Instant = PREVIEW_NOW.minusSeconds(600)) =
     DescriptionSnapshot(module, "0.3.0", templates.toList(), loadedAt)

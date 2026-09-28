@@ -1,5 +1,6 @@
 package me.tbsten.katachi.intellij.presentation
 
+import me.tbsten.katachi.intellij.model.CapturePlace
 import me.tbsten.katachi.intellij.model.ModuleTemplate
 import me.tbsten.katachi.intellij.model.ParameterModel
 import me.tbsten.katachi.intellij.model.TemplateDetailModel
@@ -55,6 +56,21 @@ private fun fieldUiOf(
             error = error,
             link = link,
         )
+        // The same field as a String parameter's, with a note on where the value goes; never
+        // multi-line, as a value is one directory level.
+        is ParameterModel.CaptureParam -> FieldUi.Text(
+            id = id,
+            label = parameter.name,
+            isRequired = true,
+            value = input.orEmpty(),
+            placeholder = null,
+            isNumber = false,
+            error = error,
+            link = link,
+            isMultiline = null,
+            multilineTooltip = null,
+            hint = captureHintOf(parameter, strings),
+        )
         is ParameterModel.StringParam, is ParameterModel.IntParam, is ParameterModel.UnknownParam -> {
             val multiline = if (parameter is ParameterModel.StringParam) id in state.view.multilineFields else null
             FieldUi.Text(
@@ -77,4 +93,31 @@ internal fun fieldErrorText(error: FieldError, strings: KatachiStrings): String 
     FieldError.Required -> strings.requiredError
     is FieldError.NotAnInt -> strings.notAnInt(error.min, error.max)
     is FieldError.NotAcceptedValue -> strings.notAccepted
+    is FieldError.InvalidCapture -> when (error.problem) {
+        CaptureProblem.Separator -> strings.captureSeparatorError
+        CaptureProblem.Dot -> strings.captureDotError
+    }
+}
+
+/** Every place [capture] sits, its `*` written `<name>`; a module capture says it names a module. */
+internal fun captureHintOf(capture: ParameterModel.CaptureParam, strings: KatachiStrings): String? =
+    capture.places.map { place ->
+        val marked = markedPatternOf(capture.name, place)
+        if (place.isModule) strings.captureModuleHint(capture.name, marked) else strings.capturePathHint(capture.name, marked)
+    }.distinct().joinToString(" / ").ifEmpty { null }
+
+/**
+ * [place]'s pattern with the capture's own `*` replaced by `<name>`: the `position`-th `/` level of
+ * a file pattern, or the `position`-th `*` of a module key. A position out of range leaves it as it is.
+ */
+internal fun markedPatternOf(name: String, place: CapturePlace): String {
+    val mark = "<$name>"
+    if (place.isModule) {
+        val parts = place.pattern.split('*')
+        if (place.position !in 0 until parts.size - 1) return place.pattern
+        return parts.mapIndexed { index, part -> if (index == 0) part else (if (index - 1 == place.position) mark else "*") + part }.joinToString("")
+    }
+    val levels = place.pattern.split('/')
+    if (place.position !in levels.indices) return place.pattern
+    return levels.mapIndexed { index, level -> if (index == place.position) level.replace("*", mark) else level }.joinToString("/")
 }

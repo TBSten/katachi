@@ -181,6 +181,8 @@ internal sealed interface FieldUi {
         val isMultiline: Boolean?,
         /** What the `>` next to the field does: "enter on several lines" / "back to one line". */
         val multilineTooltip: String?,
+        /** A faint note under the field; a capture's says where its value goes. */
+        val hint: String? = null,
     ) : FieldUi
 
     data class Bool(
