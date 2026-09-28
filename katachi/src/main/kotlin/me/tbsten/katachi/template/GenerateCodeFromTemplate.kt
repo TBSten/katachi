@@ -153,7 +153,13 @@ public object GenerateCodeFromTemplate : ArchitectureProcessor<GenerateCodeFromT
         val template = templateOf(role)
         val entries = context.declaredEntries.filter { it.role === role }
         val captureNames = captureNamesOf(entries)
-        val names = templateParameterNames(template, role.qualifiedName, context.rawArgs, captureNames)
+        val names = templateParameterNames(
+            template,
+            role.qualifiedName,
+            context.rawArgs,
+            captureNames,
+            isPreview = false,
+        )
         requireNoCaptureConflicts(role, entries, template, context.rawArgs)
         if (names.isUnreliable) {
             // A value that decides a branch could not be read or was missing, so the names above
@@ -163,7 +169,13 @@ public object GenerateCodeFromTemplate : ArchitectureProcessor<GenerateCodeFromT
             // through a typo meant for another processor of it, which would then run on a default.
             // The render of the same values is certain to fail with the real cause, and it touches
             // no disk, so it is thrown here, before any processor runs -- like a roleName above.
-            evaluateTemplate(template, role.qualifiedName, context.rawArgs, captureNames) { missing, declaredAt, cause ->
+            evaluateTemplate(
+                template,
+                role.qualifiedName,
+                context.rawArgs,
+                captureNames,
+                isPreview = false,
+            ) { missing, declaredAt, cause ->
                 throw missingCaptureException(role, entries, missing, declaredAt, fileName = null, cause = cause)
             }
         }

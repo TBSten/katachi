@@ -55,7 +55,7 @@ internal fun templateSummaryOf(role: Role, entries: List<LayoutEntry>): Template
     val preview = previewValuesOf(template, role.qualifiedName, captureNames)
     val fileCount = catching {
         requireNoCaptureConflicts(role, roleEntries, template, preview.values)
-        evaluateTemplate(template, role.qualifiedName, preview.values, captureNames)
+        evaluateTemplate(template, role.qualifiedName, preview.values, captureNames, isPreview = true)
     }.getOrNull()?.files?.size
     return TemplateSummary(
         roleName = role.qualifiedName,
@@ -78,7 +78,7 @@ internal fun templateDetailOf(role: Role, entries: List<LayoutEntry>): TemplateD
     val captureNames = captureNamesOf(roleEntries)
     val preview = previewValuesOf(template, role.qualifiedName, captureNames)
     requireNoCaptureConflicts(role, roleEntries, template, preview.values)
-    val evaluation = evaluateTemplate(template, role.qualifiedName, preview.values, captureNames)
+    val evaluation = evaluateTemplate(template, role.qualifiedName, preview.values, captureNames, isPreview = true)
     val stringNames = preview.parameters
         .filter { it.type == TemplateParameterType.StringType }
         .map { it.name } + captureNames
@@ -111,7 +111,7 @@ private fun previewValuesOf(
 ): PreviewValues {
     val base = captureNames.associateWith(::placeholderOf) + fixed
     var values = base
-    var parameters = declaredTemplateParameters(template, roleName, values, captureNames)
+    var parameters = declaredTemplateParameters(template, roleName, values, captureNames, isPreview = true)
     repeat(MAX_REPLAYS) {
         val next = LinkedHashMap(base)
         for (parameter in parameters) {
@@ -119,7 +119,7 @@ private fun previewValuesOf(
         }
         if (next == values) return PreviewValues(parameters, values)
         values = next
-        parameters = declaredTemplateParameters(template, roleName, values, captureNames)
+        parameters = declaredTemplateParameters(template, roleName, values, captureNames, isPreview = true)
     }
     return PreviewValues(parameters, values)
 }
@@ -149,7 +149,8 @@ internal fun parameterOriginsOnEveryBranch(
 ): Map<String, TemplateParameterOrigin> {
     val origins = LinkedHashMap<String, TemplateParameterOrigin>()
     fun collect(replayed: Map<String, String>) {
-        for ((name, origin) in templateParameterNames(template, roleName, replayed, captureNames).origins) {
+        val names = templateParameterNames(template, roleName, replayed, captureNames, isPreview = true)
+        for ((name, origin) in names.origins) {
             origins.putIfAbsent(name, origin)
         }
     }
@@ -335,8 +336,9 @@ private fun branchesOf(
         for (value in parameter.type.acceptedValues) {
             if (value == used) continue
             val variant = previewValuesOf(template, roleName, captureNames, fixed = mapOf(parameter.name to value))
-            val files = catching { evaluateTemplate(template, roleName, variant.values, captureNames) }
-                .getOrNull()?.files?.map { it.fileName } ?: continue
+            val files = catching {
+                evaluateTemplate(template, roleName, variant.values, captureNames, isPreview = true)
+            }.getOrNull()?.files?.map { it.fileName } ?: continue
             val added = files - baseFiles.toSet()
             val removed = baseFiles - files.toSet()
             val addedParameters = variant.parameters.filter { it.name !in baseParameters }

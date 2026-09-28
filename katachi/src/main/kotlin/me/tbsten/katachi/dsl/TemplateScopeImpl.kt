@@ -30,6 +30,7 @@ internal class TemplateScopeImpl(
     private val values: Map<String, String>,
     /** The names the role's `layout { }` gave its wildcards, which [captureValue] may read. */
     private val captureNames: Set<String> = emptySet(),
+    override val isPreview: Boolean = false,
 ) : TemplateScope, TemplateParameterBinder {
     /** Every parameter handed out, named or not. The unnamed ones are the mistake to report. */
     private val created = mutableListOf<TemplateParameter<*>>()

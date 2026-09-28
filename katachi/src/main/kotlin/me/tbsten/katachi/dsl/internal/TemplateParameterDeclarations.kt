@@ -24,14 +24,23 @@ internal class DeclaredTemplateParameter(
  * The same names-only replay as [templateParameterNames] -- no `file { }` body runs -- with each
  * parameter's type and default kept. Like it, this never throws: a block that fails part way
  * answers with the parameters it declared before failing.
+ *
+ * [isPreview] is threaded to [me.tbsten.katachi.dsl.TemplateScope.isPreview] the same way
+ * [evaluateTemplate]'s is.
  */
 internal fun declaredTemplateParameters(
     declaration: TemplateDeclaration,
     roleName: String,
     values: Map<String, String>,
     captureNames: Set<String> = emptySet(),
+    isPreview: Boolean = false,
 ): List<DeclaredTemplateParameter> {
-    val scope = TemplateScopeImpl(roleName = roleName, values = values, captureNames = captureNames)
+    val scope = TemplateScopeImpl(
+        roleName = roleName,
+        values = values,
+        captureNames = captureNames,
+        isPreview = isPreview,
+    )
     catching { declaration.block(scope) }
     return scope.parameters().mapNotNull { parameter ->
         val name = parameter.name ?: return@mapNotNull null

@@ -250,6 +250,32 @@ public sealed interface TemplateScope {
     public fun captureValue(name: String): String
 
     /**
+     * Whether this replay is a preview (`katachiTemplates` / `DescribeTemplates`) rather than an
+     * actual run (`katachiTemplate` / [me.tbsten.katachi.template.GenerateCodeFromTemplate]).
+     *
+     * A preview replays the block with every parameter and [captureValue] read as a stand-in
+     * string, `${name}`, rather than a value someone actually passed. A template that checks such
+     * a value -- refusing one that is not alphanumeric, say -- would refuse the stand-in the same
+     * way it refuses a bad one from a real run, and so could never be previewed. `isPreview` is how
+     * such a check tells the two apart, without the preview passing a value of its own that a real
+     * run could accidentally match.
+     *
+     * ## Example 1: let the stand-in through, and only judge the value on a real run
+     * ```kt
+     * template {
+     *     val name by stringParameter()
+     *     val resource = captureValue("resource") // "${resource}" while previewing
+     *
+     *     require(isPreview || resource.all { it.isLetterOrDigit() }) {
+     *         "resource must be alphanumeric, was $resource"
+     *     }
+     *     file("${name}.kt") { "// $resource" }
+     * }
+     * ```
+     */
+    public val isPreview: Boolean
+
+    /**
      * Declares one file this template produces, and how to fill it in.
      *
      * [name] is a file name with its extension, such as `"${name}UseCase.kt"` — not a path.

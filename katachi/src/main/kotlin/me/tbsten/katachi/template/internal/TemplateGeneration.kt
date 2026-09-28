@@ -49,6 +49,7 @@ internal fun templateFiles(
         roleName = role.qualifiedName,
         values = values,
         captureNames = captureNames,
+        isPreview = false,
         onMissingCaptures = { names, declaredAt, cause ->
             throw missingCaptureException(role, entries, names, declaredAt, fileName = null, existingValues, cause)
         },

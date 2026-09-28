@@ -18,15 +18,24 @@ import me.tbsten.katachi.internal.catching
  * A capture read with `captureValue(...)` that the run gave no value is handed to
  * [onMissingCaptures] once every parameter has a value, so that the caller reports it the same way
  * it reports a capture a file's place needs. Without one it is reported with the parameters.
+ *
+ * [isPreview] is what [me.tbsten.katachi.dsl.TemplateScope.isPreview] reads as for this replay --
+ * `true` for `katachiTemplates` / `DescribeTemplates`, `false` for an actual run.
  */
 internal fun evaluateTemplate(
     declaration: TemplateDeclaration,
     roleName: String,
     values: Map<String, String>,
     captureNames: Set<String> = emptySet(),
+    isPreview: Boolean = false,
     onMissingCaptures: ((names: List<String>, declaredAt: DeclarationSite, cause: Throwable?) -> Nothing)? = null,
 ): TemplateEvaluation {
-    val scope = TemplateScopeImpl(roleName = roleName, values = values, captureNames = captureNames)
+    val scope = TemplateScopeImpl(
+        roleName = roleName,
+        values = values,
+        captureNames = captureNames,
+        isPreview = isPreview,
+    )
     var failure = catching { declaration.block(scope) }.exceptionOrNull()
     if (failure == null) failure = catching { scope.render() }.exceptionOrNull()
     scope.requireEveryParameterNamed(declaration.declaredAt)
@@ -50,14 +59,23 @@ internal fun evaluateTemplate(
  *
  * It never throws: a template that cannot answer answers with what it managed to name, and says
  * the answer is not to be trusted. Refusing here would fail a run over a template nobody selected.
+ *
+ * [isPreview] is threaded to [me.tbsten.katachi.dsl.TemplateScope.isPreview] the same way
+ * [evaluateTemplate]'s is.
  */
 internal fun templateParameterNames(
     declaration: TemplateDeclaration,
     roleName: String,
     values: Map<String, String>,
     captureNames: Set<String> = emptySet(),
+    isPreview: Boolean = false,
 ): TemplateParameterNames {
-    val scope = TemplateScopeImpl(roleName = roleName, values = values, captureNames = captureNames)
+    val scope = TemplateScopeImpl(
+        roleName = roleName,
+        values = values,
+        captureNames = captureNames,
+        isPreview = isPreview,
+    )
     val failed = catching { declaration.block(scope) }.isFailure
     return TemplateParameterNames(
         declared = scope.parameterNames(),

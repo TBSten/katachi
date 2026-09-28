@@ -4,7 +4,10 @@ import com.example.allowedContents
 import com.example.forbiddenContents
 import com.example.modulePackage
 import me.tbsten.katachi.dsl.DeclarationContainerScope
-import me.tbsten.katachi.dsl.gradle.*
+import me.tbsten.katachi.dsl.gradle.div
+import me.tbsten.katachi.dsl.gradle.kotlin
+import me.tbsten.katachi.dsl.gradle.mainSourceSet
+import me.tbsten.katachi.dsl.gradle.module
 import me.tbsten.katachi.dsl.kotlin.ktFile
 
 /**
@@ -55,7 +58,7 @@ fun DeclarationContainerScope.controller() = "Controller" {
         // `capture("resource")` is a `*` with a name: one package level per resource.
         ":".module {
             mainSourceSet / kotlin / modulePackage / "controller" / capture("resource") /
-                "*Controller".ktFile()
+                    "*Controller".ktFile()
         }
     }
     // The directory comes from the layout: `--arg resource=...` fills in `capture("resource")`.
@@ -65,8 +68,9 @@ fun DeclarationContainerScope.controller() = "Controller" {
         val resource = captureValue("resource")
         // `resource` goes straight into the package below, so a value with characters a package
         // segment cannot hold (`user-profile`) would compile-fail rather than be caught here.
-        // `${` is the placeholder katachiTemplates previews the capture with, and has to pass.
-        require(resource.all { it.isLetterOrDigit() } || resource.startsWith("\${")) {
+        // While previewing (katachiTemplates), `resource` is the placeholder `${resource}`, which
+        // is never alphanumeric, so `isPreview` lets it through instead of failing every preview.
+        require(isPreview || resource.all { it.isLetterOrDigit() }) {
             "--arg resource=$resource: use letters and digits only"
         }
         val name by stringParameter()
