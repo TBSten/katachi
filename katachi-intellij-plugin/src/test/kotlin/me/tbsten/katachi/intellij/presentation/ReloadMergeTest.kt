@@ -9,8 +9,8 @@ import org.junit.Test
 
 class ReloadMergeTest {
     private val before = rows(
-        template("data/Repository", parameters = listOf(stringParam("name"), stringParam("item", "String"))),
-        template("domain/Service"),
+        template("data.Repository", parameters = listOf(stringParam("name"), stringParam("item", "String"))),
+        template("domain.Service"),
     )
     private val repository = before[0].id
     private val service = before[1].id
@@ -31,7 +31,7 @@ class ReloadMergeTest {
 
     @Test
     fun `消えたパラメータの入力と連動の切断だけを捨てる`() {
-        val after = rows(template("data/Repository", parameters = listOf(stringParam("name"))), template("domain/Service"))
+        val after = rows(template("data.Repository", parameters = listOf(stringParam("name"))), template("domain.Service"))
         val result = mergeAfterReload(form, after)
         assertEquals(mapOf("name" to "User"), result.form.inputsOf(repository))
         assertEquals(emptySet<FieldId>(), result.form.unlinked)
@@ -48,7 +48,7 @@ class ReloadMergeTest {
 
     @Test
     fun `プレビューに失敗するようになったテンプレートもチェックを外す`() {
-        val result = mergeAfterReload(form, rows(before[0].template, previewFailed("domain/Service")))
+        val result = mergeAfterReload(form, rows(before[0].template, previewFailed("domain.Service")))
         assertEquals(listOf(service), result.removedTemplates)
     }
 

@@ -24,7 +24,7 @@ class IdeIntentHandlerTest {
     private val fs = FakeFileSystem()
     private val effects = FakeIdeEffects()
     private val arch = module(":arch-a")
-    private val repository = TemplateId(arch.id, "data/Repository")
+    private val repository = TemplateId(arch.id, "data.Repository")
     private val synced = SyncedProject.Synced(
         listOf(SyncedRoot(ROOT, "project", listOf(SyncedModule(":arch-a", arch.directory, setOf(KatachiModule.TEMPLATES_JSON_TASK), "0.3.0")))),
     )
@@ -54,20 +54,20 @@ class IdeIntentHandlerTest {
         viewModel.dispatch(KatachiIntent.CopyCommand(repository))
 
         val command = effects.clipboard.single()
-        assertTrue(command, command.startsWith("./gradlew :arch-a:katachiTemplate --arg roleName=data/Repository"))
+        assertTrue(command, command.startsWith("./gradlew :arch-a:katachiTemplate --arg template=data.Repository"))
         assertTrue(command, "--arg name=User" in command)
         assertTrue(command, "--arg onExisting=fail" in command)
     }
 
     @Test
-    fun `原因を見るは katachiTemplates を roleName つきで走らせ、Gradle の行を除いた本文を行の下に出す`() = runBlocking {
+    fun `原因を見るは katachiTemplates を template つきで走らせ、Gradle の行を除いた本文を行の下に出す`() = runBlocking {
         val viewModel = loaded()
 
         viewModel.dispatch(KatachiIntent.ShowCause(repository))
 
         val state = withTimeout(5_000) { viewModel.state.first { it.view.causes[repository] is CauseState.Loaded } }
         assertEquals(CauseState.Loaded(listOf("[FAILED] template", "  Parameter `name` is missing")), state.view.causes[repository])
-        assertEquals(listOf(":arch-a:katachiTemplates", "--arg", "roleName=data/Repository"), runner.requests.last().taskNames)
+        assertEquals(listOf(":arch-a:katachiTemplates", "--arg", "template=data.Repository"), runner.requests.last().taskNames)
     }
 
     @Test

@@ -4,6 +4,7 @@ import kotlinx.coroutines.runBlocking
 import me.tbsten.katachi.intellij.data.generate.GenerationItem
 import me.tbsten.katachi.intellij.data.generate.GenerationListener
 import me.tbsten.katachi.intellij.data.generate.GenerationSession
+import me.tbsten.katachi.intellij.data.generate.TemplateArgsEntry
 import me.tbsten.katachi.intellij.data.generate.TemplateRunStatus
 import me.tbsten.katachi.intellij.data.generate.parseTemplateOutput
 import me.tbsten.katachi.intellij.data.generate.templateArgsOf
@@ -18,7 +19,6 @@ import me.tbsten.katachi.intellij.model.GenerationFailure
 import me.tbsten.katachi.intellij.model.GenerationItemResult
 import me.tbsten.katachi.intellij.model.GradleFailure
 import me.tbsten.katachi.intellij.model.KatachiModule
-import me.tbsten.katachi.intellij.model.ParameterModel
 import me.tbsten.katachi.intellij.model.TemplateDetailModel
 import me.tbsten.katachi.intellij.model.TemplateId
 import me.tbsten.katachi.intellij.model.WrittenKind
@@ -53,6 +53,10 @@ class RealKatachiContractTest {
     private fun detailOf(fixture: String, roleName: String): TemplateDetailModel =
         ContractFixtures.templates(fixture).single { it.roleName == roleName }.detail ?: throw AssertionError("$roleName has no detail")
 
+    /** [detailOf], but by the complete specifier: needed once a role has more than one template. */
+    private fun detailByTemplate(fixture: String, template: String): TemplateDetailModel =
+        ContractFixtures.templates(fixture).single { it.template == template }.detail ?: throw AssertionError("$template has no detail")
+
     private fun realOutput(name: String): List<String> = ContractFixtures.outputLines("real-jvm-$name", root)
 
     private fun outcomeOf(name: String): GradleRunOutcome =
@@ -62,7 +66,7 @@ class RealKatachiContractTest {
 
     @Test
     fun `sample-jvmのJSONから予想したパスが実際に書かれたパスと一致する`() {
-        val service = detailOf("sample-jvm", "domain/Service")
+        val service = detailOf("sample-jvm", "domain.Service")
         val expected = expectedFilesOf(service, mapOf("name" to "IdePluginProbe")).single()
         val location = expected.location as? ExpectedLocation.Known ?: throw AssertionError("${expected.location}")
 
@@ -71,57 +75,68 @@ class RealKatachiContractTest {
 
     @Test
     fun `sample-jvmのJSONから組んだ引数は実際に通した引数と同じになる`() {
-        val service = detailOf("sample-jvm", "domain/Service")
-        val args = templateArgsOf("domain/Service", service, mapOf("name" to "IdePluginProbe", "kdoc" to ""), OnExistingChoice.Fail)
-        assertEquals(listOf("roleName" to "domain/Service", "onExisting" to "fail", "name" to "IdePluginProbe"), args)
+        val service = detailOf("sample-jvm", "domain.Service")
+        val args = templateArgsOf("domain.Service", service, mapOf("name" to "IdePluginProbe", "kdoc" to ""), OnExistingChoice.Fail)
+        assertEquals(listOf("template" to "domain.Service", "onExisting" to "fail", "name" to "IdePluginProbe"), args)
     }
 
     @Test
     fun `sample-androidのJSONは他のパラメータを読む既定値をそのまま持ち空なら送らない`() {
-        val component = detailOf("sample-android", "ui/Component")
-        assertEquals(listOf("name", "previewText"), component.parameters.map { it.name })
-        assertEquals("\${name}", component.parameters[1].default)
-        assertTrue(component.parameters[0].isRequired)
+        val component = detailOf("sample-android", "ui.Component")
+        // "name" is now a capture (the file name is `${name}.kt` directly, no more "App" prefix
+        // katachi added inside the template), so it is no longer among `parameters`.
+        assertEquals(listOf("previewText"), component.parameters.map { it.name })
+        assertEquals("\${name}", component.parameters[0].default)
+        assertEquals(listOf("name"), component.captures.map { it.name })
+        assertTrue(component.captures.single().isRequired)
         val files = expectedFilesOf(component, mapOf("name" to "Button"))
-        assertEquals(ExpectedLocation.Known("ui/src/main/kotlin/com/example/sample/ui/component/AppButton.kt"), files.single().location)
-        val args = templateArgsOf("ui/Component", component, mapOf("name" to "Button"), OnExistingChoice.Fail)
-        assertEquals(listOf("roleName", "onExisting", "name"), args.map { it.first })
+        assertEquals(ExpectedLocation.Known("ui/src/main/kotlin/com/example/sample/ui/component/Button.kt"), files.single().location)
+        val args = templateArgsOf("ui.Component", component, mapOf("name" to "Button"), OnExistingChoice.Fail)
+        assertEquals(listOf("template", "onExisting", "name"), args.map { it.first })
     }
 
     @Test
-    fun `sample-kmpのJSONは2ファイルとBooleanの分岐で1ファイルに減る`() {
-        val template = ContractFixtures.templates("sample-kmp").single()
-        val repository = template.detail ?: throw AssertionError("no detail")
-        assertEquals(2, template.summary.fileCount)
-        val withImpl = repository.parameters.single { it.name == "withImpl" }
-        assertTrue(withImpl is ParameterModel.BooleanParam)
-        assertEquals("true", withImpl.default)
+    fun `sample-kmpのJSONはrepositoryとrepositoryImplの2つのテンプレートに分かれそれぞれ1ファイルを生成する`() {
+        // The old single "data/Repository" role with a `withImpl` branch (2 files collapsing to 1)
+        // is gone: the pair is now two templates of one role, each writing its own one file, chosen
+        // together by `--arg template=data.Repository.repository,data.Repository.repositoryImpl`
+        // (design draft section 6, "IDE の複数選択").
+        val repository = detailByTemplate("sample-kmp-with-captures", "data.Repository.repository")
+        val repositoryImpl = detailByTemplate("sample-kmp-with-captures", "data.Repository.repositoryImpl")
+        assertEquals(listOf("item"), repository.parameters.map { it.name })
+        assertEquals(listOf("name"), repository.captures.map { it.name })
 
-        val both = expectedFilesOf(repository, mapOf("name" to "User"))
-        assertEquals(listOf("UserRepository.kt", "UserRepositoryImpl.kt"), both.map { it.fileName })
+        assertEquals(
+            ExpectedLocation.Known("data/src/commonMain/kotlin/com/example/kmp/data/user/UserRepository.kt"),
+            expectedFilesOf(repository, mapOf("name" to "User")).single().location,
+        )
         assertEquals(
             ExpectedLocation.Known("data/src/commonMain/kotlin/com/example/kmp/data/user/UserRepositoryImpl.kt"),
-            both[1].location,
+            expectedFilesOf(repositoryImpl, mapOf("name" to "User")).single().location,
         )
-        val interfaceOnly = expectedFilesOf(repository, mapOf("name" to "User", "withImpl" to "false"))
-        assertEquals(listOf("UserRepository.kt"), interfaceOnly.map { it.fileName })
+
+        val entries = listOf(
+            TemplateArgsEntry("data.Repository.repository", repository, mapOf("name" to "User")),
+            TemplateArgsEntry("data.Repository.repositoryImpl", repositoryImpl, mapOf("name" to "User")),
+        )
+        assertEquals("template" to "data.Repository.repository,data.Repository.repositoryImpl", templateArgsOf(entries, OnExistingChoice.Fail).first())
     }
 
     @Test
-    fun `sample-kmpで既定値のままのBooleanは送らず変えたら送る`() {
-        val repository = detailOf("sample-kmp", "data/Repository")
-        val untouched = templateArgsOf("data/Repository", repository, mapOf("name" to "User"), OnExistingChoice.Fail)
-        assertEquals(listOf("roleName", "onExisting", "name"), untouched.map { it.first })
-        val changed = templateArgsOf("data/Repository", repository, mapOf("name" to "User", "withImpl" to "false"), OnExistingChoice.Fail)
-        assertEquals("withImpl" to "false", changed.last())
+    fun `sample-kmpで既定値のままのパラメータは送らず変えたら送る`() {
+        val repository = detailOf("sample-kmp", "data.Repository")
+        val untouched = templateArgsOf("data.Repository.repository", repository, mapOf("name" to "User"), OnExistingChoice.Fail)
+        assertEquals(listOf("template", "onExisting", "name"), untouched.map { it.first })
+        val changed = templateArgsOf("data.Repository.repository", repository, mapOf("name" to "User", "item" to "Int"), OnExistingChoice.Fail)
+        assertEquals("item" to "Int", changed.last())
     }
 
     @Test
     fun `sample-jvmのcaptureを持つ役割はJSONの生成コマンドと同じ--argを組み値の入った生成先を予想する`() {
-        val controller = detailOf("sample-jvm-with-captures", "api/Controller")
+        val controller = detailOf("sample-jvm-with-captures", "api.Controller")
         val inputs = mapOf("resource" to "user", "name" to "User")
 
-        val args = templateArgsOf("api/Controller", controller, inputs, OnExistingChoice.Fail)
+        val args = templateArgsOf("api.Controller", controller, inputs, OnExistingChoice.Fail)
         val exampleArgNames = Regex("""--arg (\w+)=""").findAll(controller.exampleCommand).map { it.groupValues[1] }.toList()
         assertEquals(exampleArgNames, (args - ("onExisting" to "fail")).map { it.first })
         assertEquals(
@@ -143,7 +158,7 @@ class RealKatachiContractTest {
         val result = TemplateDescriptionLoader(runner, fs).load(listOf(definition), emptyMap(), object : GradleRunListener {})
 
         val loaded = result as? LoadResult.Loaded ?: throw AssertionError("$result")
-        assertEquals(listOf("domain/Service"), loaded.snapshots.single().templates.map { it.roleName })
+        assertEquals(listOf("domain.Service"), loaded.snapshots.single().templates.map { it.template })
         assertEquals(listOf(":architecture-test:katachiInternalTemplatesJson"), runner.requests.single().taskNames)
     }
 
@@ -181,23 +196,36 @@ class RealKatachiContractTest {
 
     @Test
     fun `実際の必須引数の欠落はkatachiの失敗本文として読み衝突にしない`() {
+        // "name" moved from a required parameter to a required capture (design draft section 1),
+        // so the missing-value message is now about a capture, not a parameter.
         val status = parseTemplateOutput(realOutput("missing-required-arg")).status as? TemplateRunStatus.Failed ?: throw AssertionError()
         assertNull(status.conflicting)
-        assertTrue(status.body.first(), status.body.first().startsWith("Template of role \"domain/Service\""))
-        assertTrue(status.body.any { "--arg name=<value>" in it })
+        assertTrue(status.body.first(), status.body.first().startsWith("The run gave no value for capture name"))
+        assertTrue(status.body.any { "--arg name=<name>" in it })
     }
 
     @Test
-    fun `実際の知らないroleはkatachiのまとめまで届かずプロセッサの拒否に分類する`() = runBlocking {
-        val output = parseTemplateOutput(realOutput("unknown-role"))
+    fun `実際の知らないarg名はkatachiのまとめまで届かずプロセッサの拒否に分類する`() = runBlocking {
+        // An unknown `--arg template=` specifier is now caught and reported as this processor's
+        // own `[FAILED]` (undeclaredArgNamesOf), not an uncaught crash -- so the "unreached katachi"
+        // scenario is reproduced with the old, now-removed `roleName` key instead: a genuinely
+        // unrecognised `--arg` name still crashes before any processor runs (checkNoUnknownArgs).
+        //
+        // TODO(template-per-file #19): this reuses the removed `roleName=` key to reach that crash,
+        // which the IDE itself never sends any more -- it is not representative of what a real IDE
+        // run can still hit (e.g. `--arg template=` naming a template a stale definition dropped).
+        // A `real-jvm-*` fixture for that scenario still needs recording; left as a TODO since it
+        // needs a real `katachiTemplate` run against a definition edited between two loads, which
+        // this pass did not have the fixture-recording time for.
+        val output = parseTemplateOutput(realOutput("unknown-arg"))
         assertFalse(output.reachedKatachi)
         assertEquals(TemplateRunStatus.Missing, output.status)
 
-        val result = runOne("unknown-role")
+        val result = runOne("unknown-arg")
         val failure = ((result as? GenerationItemResult.Failed)?.failure as? GenerationFailure.NotReached)?.failure
         val rejected = failure as? GradleFailure.ProcessorRejected ?: throw AssertionError("$result")
-        assertEquals("me.tbsten.katachi.template.KatachiUnknownTemplateRoleException", rejected.exceptionClassName)
-        assertTrue(rejected.details.first().startsWith("Unknown role \"domain/NoSuchRole\""))
+        assertEquals("me.tbsten.katachi.processor.KatachiUnknownProcessorArgException", rejected.exceptionClassName)
+        assertTrue(rejected.details.first().startsWith("Unknown processor argument(s): name, roleName."))
     }
 
     // ---- the whole generation over real outputs ----
@@ -230,13 +258,13 @@ class RealKatachiContractTest {
     fun `実際の必須引数の欠落で生成セッションはkatachiの失敗として止まる`() = runBlocking {
         val result = runOne("missing-required-arg") as? GenerationItemResult.Failed ?: throw AssertionError()
         val body = (result.failure as? GenerationFailure.Katachi)?.body ?: throw AssertionError("${result.failure}")
-        assertTrue(body.first().contains("was run without values for: name."))
+        assertTrue(body.first().contains("The run gave no value for capture name"))
     }
 
     private fun probeItem() = GenerationItem(
-        templateId = TemplateId(definition.id, "domain/Service"),
+        templateIds = listOf(TemplateId(definition.id, "domain.Service")),
         module = definition,
-        args = listOf("roleName" to "domain/Service", "name" to "IdePluginProbe"),
+        args = listOf("template" to "domain.Service", "name" to "IdePluginProbe"),
         expectedPaths = listOf(probeService),
     )
 

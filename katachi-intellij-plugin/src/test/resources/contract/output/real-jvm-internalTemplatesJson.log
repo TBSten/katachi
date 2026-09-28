@@ -1,57 +1,31 @@
 To honour the JVM settings for this build a single-use Daemon process will be forked. For more on this, please refer to https://docs.gradle.org/9.6.0/userguide/gradle_daemon.html#sec:disabling_the_daemon in the Gradle documentation.
 Daemon will be stopped at the end of the build 
-Calculating task graph as no cached configuration is available for tasks: katachiInternalTemplatesJson
-> Task :ide-plugin:buildSrc:checkKotlinGradlePluginConfigurationErrors SKIPPED
-> Task :ide-plugin:buildSrc:generateExternalPluginSpecBuilders FROM-CACHE
-> Task :ide-plugin:buildSrc:extractPrecompiledScriptPluginPlugins FROM-CACHE
-> Task :ide-plugin:buildSrc:compilePluginsBlocks FROM-CACHE
-> Task :ide-plugin:buildSrc:generatePrecompiledScriptPluginAccessors FROM-CACHE
-> Task :ide-plugin:buildSrc:generateScriptPluginAdapters FROM-CACHE
-> Task :ide-plugin:buildSrc:compileKotlin FROM-CACHE
-> Task :ide-plugin:buildSrc:compileJava NO-SOURCE
-> Task :ide-plugin:buildSrc:compileGroovy NO-SOURCE
-> Task :ide-plugin:buildSrc:pluginDescriptors
-> Task :ide-plugin:buildSrc:processResources
-> Task :ide-plugin:buildSrc:classes
-> Task :ide-plugin:buildSrc:jar
-> Task :ide-plugin:katachi-gradle-plugin:compileJava FROM-CACHE
-> Task :ide-plugin:katachi-gradle-plugin:pluginDescriptors
-> Task :ide-plugin:katachi-gradle-plugin:processResources
-> Task :ide-plugin:katachi-gradle-plugin:classes
-> Task :ide-plugin:katachi-gradle-plugin:jar
-> Task :ide-plugin:katachi:checkKotlinGradlePluginConfigurationErrors SKIPPED
-> Task :ide-plugin:katachi-konsist:checkKotlinGradlePluginConfigurationErrors SKIPPED
+Reusing configuration cache.
 > Task :architecture-test:checkKotlinGradlePluginConfigurationErrors SKIPPED
-> Task :ide-plugin:katachi:processResources NO-SOURCE
-> Task :ide-plugin:katachi-konsist:processResources NO-SOURCE
+> Task :katachi:katachi-konsist:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :katachi:katachi:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :katachi:katachi-konsist:processResources NO-SOURCE
 > Task :architecture-test:processResources NO-SOURCE
 > Task :architecture-test:processTestResources NO-SOURCE
+> Task :katachi:katachi:processResources NO-SOURCE
 > Task :architecture-test:compileKotlin NO-SOURCE
 > Task :architecture-test:compileJava NO-SOURCE
 > Task :architecture-test:classes UP-TO-DATE
-> Task :architecture-test:generateKatachiEntryPoint
-> Task :architecture-test:jar
-> Task :ide-plugin:katachi:compileKotlin FROM-CACHE
-> Task :ide-plugin:katachi:compileJava NO-SOURCE
-> Task :ide-plugin:katachi:classes UP-TO-DATE
-> Task :ide-plugin:katachi:jar
-> Task :ide-plugin:katachi-konsist:compileKotlin FROM-CACHE
-> Task :ide-plugin:katachi-konsist:compileJava NO-SOURCE
-> Task :ide-plugin:katachi-konsist:classes UP-TO-DATE
-> Task :ide-plugin:katachi-konsist:jar
-> Task :architecture-test:compileTestKotlin FROM-CACHE
+> Task :architecture-test:generateKatachiEntryPoint UP-TO-DATE
+> Task :architecture-test:jar UP-TO-DATE
+> Task :katachi:katachi:compileKotlin UP-TO-DATE
+> Task :katachi:katachi:compileJava NO-SOURCE
+> Task :katachi:katachi:classes UP-TO-DATE
+> Task :katachi:katachi:jar UP-TO-DATE
+> Task :katachi:katachi-konsist:compileKotlin UP-TO-DATE
+> Task :katachi:katachi-konsist:compileJava NO-SOURCE
+> Task :katachi:katachi-konsist:classes UP-TO-DATE
+> Task :katachi:katachi-konsist:jar UP-TO-DATE
+> Task :architecture-test:compileTestKotlin UP-TO-DATE
 > Task :architecture-test:compileTestJava NO-SOURCE
 > Task :architecture-test:testClasses UP-TO-DATE
 > Task :architecture-test:katachiInternalTemplatesJson FROM-CACHE
 
-[Incubating] Problems report is available at: file:///__ROOT__/build/reports/problems/problems-report.html
-
-Deprecated Gradle features were used in this build, making it incompatible with Gradle 10.
-
-You can use '--warning-mode all' to show the individual deprecation warnings and determine if they come from your own scripts or plugins.
-
-For more on this, please refer to https://docs.gradle.org/9.6.0/userguide/command_line_interface.html#sec:command_line_warnings in the Gradle documentation.
-
-BUILD SUCCESSFUL in 10s
-21 actionable tasks: 10 executed, 11 from cache
-Configuration cache entry stored.
+BUILD SUCCESSFUL in 3s
+8 actionable tasks: 1 from cache, 7 up-to-date
+Configuration cache entry reused.

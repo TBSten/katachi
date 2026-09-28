@@ -16,7 +16,10 @@ internal sealed interface ExpectedLocation {
     /** Relative to the project root, placeholders replaced as far as the inputs allow. */
     data class Known(val path: String) : ExpectedLocation
 
-    /** `path == null` in the JSON: a wildcard target. Blocks generation while checked (E-27). */
+    /**
+     * `path == null` in the JSON: a wildcard target. Blocks generation while checked (E-27).
+     * [patterns] is the declared pattern, in a list for the same shape the old, per-role JSON gave.
+     */
     data class Unresolved(val patterns: List<String>) : ExpectedLocation
 
     /** A file only a branch adds: the JSON has its name but not its path. */
@@ -40,7 +43,7 @@ internal fun expectedFilesOf(detail: TemplateDetailModel, inputs: Map<String, St
         ExpectedFile(
             fileName = expectedTextOf(file.fileName, detail, inputs),
             location = if (path == null) {
-                ExpectedLocation.Unresolved(file.unresolvedPatterns)
+                ExpectedLocation.Unresolved(listOf(file.pattern))
             } else {
                 ExpectedLocation.Known(expectedTextOf(path, detail, inputs))
             },

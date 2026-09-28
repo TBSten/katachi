@@ -47,8 +47,8 @@ internal fun listItemsOf(state: KatachiScreenState, strings: KatachiStrings): Li
     }
 }
 
-/** `domain/model` as `domain › model`: where a nested group sits, without indenting it. */
-internal fun groupTitleOf(groupPath: String): String = groupPath.split('/').joinToString(" › ")
+/** `domain.model` as `domain › model`: where a nested group sits, without indenting it. */
+internal fun groupTitleOf(groupPath: String): String = groupPath.split('.').joinToString(" › ")
 
 private fun moduleTitleOf(module: KatachiModule, showRoot: Boolean): String =
     if (showRoot) "${module.rootName} › ${module.gradlePath}" else module.gradlePath
@@ -61,7 +61,7 @@ private fun rowUiOf(hit: SearchHit, state: KatachiScreenState, strings: KatachiS
         null -> base
         is GenerationState.Running -> if (row.id in generation.rows) runningRowOf(base, row, generation, state, strings) else base.frozen()
         is GenerationState.Finished -> {
-            val item = generation.report.items.firstOrNull { it.templateId == row.id }
+            val item = generation.report.items.firstOrNull { row.id in it.templateIds }
             if (item == null) base.frozen() else resultRowOf(base, row, item.result, generation, state, strings)
         }
     }
@@ -86,8 +86,10 @@ private fun baseRowOf(hit: SearchHit, state: KatachiScreenState, strings: Katach
     val cause = state.view.causes[row.id]
     return TemplateRowUi(
         id = row.id,
-        name = template.simpleName,
-        title = template.summary.title,
+        // The row's name is the template's own title (design draft section 6); nothing further
+        // qualifies it in the header, so the subtitle carries none.
+        name = template.title,
+        title = null,
         tooltip = template.summary.summary,
         lead = RowLeadUi.Check(checked = checked, enabled = unavailability == null),
         marker = when {

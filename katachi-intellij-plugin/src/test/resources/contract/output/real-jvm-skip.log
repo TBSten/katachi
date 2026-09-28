@@ -1,44 +1,44 @@
 To honour the JVM settings for this build a single-use Daemon process will be forked. For more on this, please refer to https://docs.gradle.org/9.6.0/userguide/gradle_daemon.html#sec:disabling_the_daemon in the Gradle documentation.
 Daemon will be stopped at the end of the build 
-Calculating task graph as no cached configuration is available for tasks: :architecture-test:katachiTemplate --arg roleName=domain/Service --arg name=IdePluginProbe --arg onExisting=skip
-> Task :ide-katachi:buildSrc:checkKotlinGradlePluginConfigurationErrors SKIPPED
-> Task :ide-katachi:buildSrc:generateExternalPluginSpecBuilders UP-TO-DATE
-> Task :ide-katachi:buildSrc:extractPrecompiledScriptPluginPlugins UP-TO-DATE
-> Task :ide-katachi:buildSrc:compilePluginsBlocks UP-TO-DATE
-> Task :ide-katachi:buildSrc:generatePrecompiledScriptPluginAccessors UP-TO-DATE
-> Task :ide-katachi:buildSrc:generateScriptPluginAdapters UP-TO-DATE
-> Task :ide-katachi:buildSrc:compileKotlin UP-TO-DATE
-> Task :ide-katachi:buildSrc:compileJava NO-SOURCE
-> Task :ide-katachi:buildSrc:compileGroovy NO-SOURCE
-> Task :ide-katachi:buildSrc:pluginDescriptors UP-TO-DATE
-> Task :ide-katachi:buildSrc:processResources UP-TO-DATE
-> Task :ide-katachi:buildSrc:classes UP-TO-DATE
-> Task :ide-katachi:buildSrc:jar UP-TO-DATE
-> Task :ide-katachi:katachi-gradle-plugin:compileJava UP-TO-DATE
-> Task :ide-katachi:katachi-gradle-plugin:pluginDescriptors UP-TO-DATE
-> Task :ide-katachi:katachi-gradle-plugin:processResources UP-TO-DATE
-> Task :ide-katachi:katachi-gradle-plugin:classes UP-TO-DATE
-> Task :ide-katachi:katachi-gradle-plugin:jar UP-TO-DATE
-> Task :ide-katachi:katachi:checkKotlinGradlePluginConfigurationErrors SKIPPED
-> Task :ide-katachi:katachi-konsist:checkKotlinGradlePluginConfigurationErrors SKIPPED
+Calculating task graph as no cached configuration is available for tasks: :architecture-test:katachiTemplate --arg template=domain.Service --arg name=IdePluginProbe --arg onExisting=skip
+> Task :katachi:buildSrc:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :katachi:buildSrc:generateExternalPluginSpecBuilders UP-TO-DATE
+> Task :katachi:buildSrc:extractPrecompiledScriptPluginPlugins UP-TO-DATE
+> Task :katachi:buildSrc:compilePluginsBlocks UP-TO-DATE
+> Task :katachi:buildSrc:generatePrecompiledScriptPluginAccessors UP-TO-DATE
+> Task :katachi:buildSrc:generateScriptPluginAdapters UP-TO-DATE
+> Task :katachi:buildSrc:compileKotlin UP-TO-DATE
+> Task :katachi:buildSrc:compileJava NO-SOURCE
+> Task :katachi:buildSrc:compileGroovy NO-SOURCE
+> Task :katachi:buildSrc:pluginDescriptors UP-TO-DATE
+> Task :katachi:buildSrc:processResources UP-TO-DATE
+> Task :katachi:buildSrc:classes UP-TO-DATE
+> Task :katachi:buildSrc:jar UP-TO-DATE
+> Task :katachi:katachi-gradle-plugin:compileJava UP-TO-DATE
+> Task :katachi:katachi-gradle-plugin:pluginDescriptors UP-TO-DATE
+> Task :katachi:katachi-gradle-plugin:processResources UP-TO-DATE
+> Task :katachi:katachi-gradle-plugin:classes UP-TO-DATE
+> Task :katachi:katachi-gradle-plugin:jar UP-TO-DATE
+> Task :katachi:katachi:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :katachi:katachi-konsist:checkKotlinGradlePluginConfigurationErrors SKIPPED
 > Task :architecture-test:checkKotlinGradlePluginConfigurationErrors SKIPPED
-> Task :ide-katachi:katachi-konsist:processResources NO-SOURCE
-> Task :ide-katachi:katachi:processResources NO-SOURCE
 > Task :architecture-test:processResources NO-SOURCE
-> Task :architecture-test:processTestResources NO-SOURCE
 > Task :architecture-test:generateKatachiEntryPoint UP-TO-DATE
+> Task :architecture-test:processTestResources NO-SOURCE
+> Task :katachi:katachi-konsist:processResources NO-SOURCE
+> Task :katachi:katachi:processResources NO-SOURCE
 > Task :architecture-test:compileKotlin NO-SOURCE
 > Task :architecture-test:compileJava NO-SOURCE
 > Task :architecture-test:classes UP-TO-DATE
 > Task :architecture-test:jar UP-TO-DATE
-> Task :ide-katachi:katachi:compileKotlin UP-TO-DATE
-> Task :ide-katachi:katachi:compileJava NO-SOURCE
-> Task :ide-katachi:katachi:classes UP-TO-DATE
-> Task :ide-katachi:katachi:jar UP-TO-DATE
-> Task :ide-katachi:katachi-konsist:compileKotlin UP-TO-DATE
-> Task :ide-katachi:katachi-konsist:compileJava NO-SOURCE
-> Task :ide-katachi:katachi-konsist:classes UP-TO-DATE
-> Task :ide-katachi:katachi-konsist:jar UP-TO-DATE
+> Task :katachi:katachi:compileKotlin UP-TO-DATE
+> Task :katachi:katachi:compileJava NO-SOURCE
+> Task :katachi:katachi:classes UP-TO-DATE
+> Task :katachi:katachi:jar UP-TO-DATE
+> Task :katachi:katachi-konsist:compileKotlin UP-TO-DATE
+> Task :katachi:katachi-konsist:compileJava NO-SOURCE
+> Task :katachi:katachi-konsist:classes UP-TO-DATE
+> Task :katachi:katachi-konsist:jar UP-TO-DATE
 > Task :architecture-test:compileTestKotlin UP-TO-DATE
 > Task :architecture-test:compileTestJava NO-SOURCE
 > Task :architecture-test:testClasses UP-TO-DATE
@@ -65,6 +65,6 @@ You can use '--warning-mode all' to show the individual deprecation warnings and
 
 For more on this, please refer to https://docs.gradle.org/9.6.0/userguide/command_line_interface.html#sec:command_line_warnings in the Gradle documentation.
 
-BUILD SUCCESSFUL in 8s
+BUILD SUCCESSFUL in 10s
 21 actionable tasks: 1 executed, 20 up-to-date
 Configuration cache entry stored.

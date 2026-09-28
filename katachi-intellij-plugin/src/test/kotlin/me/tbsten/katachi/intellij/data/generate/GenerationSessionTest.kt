@@ -29,9 +29,9 @@ class GenerationSessionTest {
     private val data = ROOT.resolve("data/src/main/kotlin/com/example/data")
 
     private fun item(name: String) = GenerationItem(
-        templateId = TemplateId(arch.id, "data/$name"),
+        templateIds = listOf(TemplateId(arch.id, "data.$name")),
         module = arch,
-        args = listOf("roleName" to "data/$name", "onExisting" to "fail", "name" to "User"),
+        args = listOf("template" to "data.$name", "onExisting" to "fail", "name" to "User"),
         expectedPaths = listOf(data.resolve("User$name.kt")),
     )
 
@@ -48,14 +48,14 @@ class GenerationSessionTest {
     private val silent = object : GenerationListener {}
 
     private fun roleNames(runner: FakeGradleTaskRunner) =
-        runner.requests.map { request -> request.tasks.single().args.first { it.first == "roleName" }.second }
+        runner.requests.map { request -> request.tasks.single().args.first { it.first == "template" }.second }
 
     @Test
     fun `一覧の順に1件ずつそのモジュールのkatachiTemplateを実行する`() = runBlocking {
         val runner = FakeGradleTaskRunner(fs) { _, _ -> output("new") }
         val report = session(runner).run(items, OnExistingChoice.Fail, silent)
 
-        assertEquals(listOf("data/Repository", "data/Service", "data/UseCase"), roleNames(runner))
+        assertEquals(listOf("data.Repository", "data.Service", "data.UseCase"), roleNames(runner))
         assertTrue(runner.requests.all { it.tasks.single().taskPath == ":arch-a:katachiTemplate" && it.linkedRootPath == ROOT })
         assertTrue(report.isComplete)
         val first = report.items.first().result as? GenerationItemResult.Generated
@@ -63,10 +63,10 @@ class GenerationSessionTest {
     }
 
     @Test
-    fun `onExistingは選んだ値をroleNameの次に入れる`() = runBlocking {
+    fun `onExistingは選んだ値をtemplateの次に入れる`() = runBlocking {
         val runner = FakeGradleTaskRunner(fs) { _, _ -> output("skip") }
         session(runner).run(listOf(item("Repository")), OnExistingChoice.Skip, silent)
-        assertEquals(listOf("roleName", "onExisting", "name"), runner.requests.single().tasks.single().args.map { it.first })
+        assertEquals(listOf("template", "onExisting", "name"), runner.requests.single().tasks.single().args.map { it.first })
         assertEquals("skip", runner.requests.single().tasks.single().args[1].second)
     }
 
@@ -92,9 +92,9 @@ class GenerationSessionTest {
         val questions = mutableListOf<ConflictQuestion>()
         val report = session(runner) { questions += it; ConflictChoice.Overwrite }.run(items.take(2), OnExistingChoice.Fail, silent)
 
-        assertEquals(listOf("data/Repository", "data/Repository", "data/Service"), roleNames(runner))
+        assertEquals(listOf("data.Repository", "data.Repository", "data.Service"), roleNames(runner))
         assertEquals("overwrite", runner.requests[1].tasks.single().args.first { it.first == "onExisting" }.second)
-        assertEquals(ConflictQuestion(items[0].templateId, 0, 2, listOf(data.resolve("UserRepository.kt"))), questions.single())
+        assertEquals(ConflictQuestion(items[0].templateIds, 0, 2, listOf(data.resolve("UserRepository.kt"))), questions.single())
         assertTrue(report.isComplete)
     }
 
@@ -102,7 +102,7 @@ class GenerationSessionTest {
     fun `衝突で書かずに次へを選ぶと再実行せずスキップにする`() = runBlocking {
         val runner = FakeGradleTaskRunner(fs) { _, index -> if (index == 0) failed("conflict") else output("new") }
         val report = session(runner) { ConflictChoice.SkipAndContinue }.run(items.take(2), OnExistingChoice.Fail, silent)
-        assertEquals(listOf("data/Repository", "data/Service"), roleNames(runner))
+        assertEquals(listOf("data.Repository", "data.Service"), roleNames(runner))
         assertEquals(GenerationItemResult.Skipped(listOf(data.resolve("UserRepository.kt"))), report.items[0].result)
     }
 
@@ -113,7 +113,7 @@ class GenerationSessionTest {
         assertEquals(2, runner.requests.size)
         assertTrue(report.items[1].result is GenerationItemResult.StoppedAtConflict)
         assertEquals(GenerationItemResult.NotRun, report.items[2].result)
-        assertEquals(listOf(items[1].templateId, items[2].templateId), report.retryTargets)
+        assertEquals(items[1].templateIds + items[2].templateIds, report.retryTargets)
     }
 
     @Test
@@ -123,7 +123,7 @@ class GenerationSessionTest {
         assertEquals(2, runner.requests.size)
         assertEquals(1, report.succeededCount)
         val failure = report.items[1].result as? GenerationItemResult.Failed
-        assertTrue((failure?.failure as? GenerationFailure.Katachi)?.body?.first().orEmpty().startsWith("The template data/Repository"))
+        assertTrue((failure?.failure as? GenerationFailure.Katachi)?.body?.first().orEmpty().startsWith("The template data.Repository"))
         assertEquals(GenerationItemResult.NotRun, report.items[2].result)
         assertEquals(2, report.writtenFiles.size)
     }
@@ -135,7 +135,7 @@ class GenerationSessionTest {
         val failure = (report.items[0].result as? GenerationItemResult.Failed)?.failure as? GenerationFailure.NotReached
         assertTrue(failure?.failure is GradleFailure.ProcessorRejected)
         assertEquals(0, report.writtenFiles.size)
-        assertEquals(items.map { it.templateId }, report.retryTargets)
+        assertEquals(items.flatMap { it.templateIds }, report.retryTargets)
     }
 
     @Test
@@ -220,5 +220,45 @@ class GenerationSessionTest {
             },
         )
         assertEquals(listOf("start 0", ":arch-a:katachiTemplate", "finish 0", "start 1", ":arch-a:katachiTemplate", "finish 1"), events)
+    }
+
+    // -- One item covering several checked rows of the same module (design draft section 6, "IDE の複数選択"). --
+
+    private fun multiItem() = GenerationItem(
+        templateIds = listOf(TemplateId(arch.id, "data.Repository"), TemplateId(arch.id, "data.RepositoryImpl")),
+        module = arch,
+        args = listOf("template" to "data.Repository,data.RepositoryImpl", "onExisting" to "fail", "name" to "User"),
+        expectedPaths = listOf(data.resolve("UserRepository.kt"), data.resolve("UserRepositoryImpl.kt")),
+    )
+
+    @Test
+    fun `1つのitemに複数のtemplateIdsをまとめれば実行は1回だけで両方の行に結果が届く`() = runBlocking {
+        val runner = FakeGradleTaskRunner(fs) { _, _ -> output("new") }
+        val multi = multiItem()
+        val report = session(runner).run(listOf(multi), OnExistingChoice.Fail, silent)
+        assertEquals(1, runner.requests.size)
+        val item = report.items.single()
+        assertEquals(multi.templateIds, item.templateIds)
+        val result = item.result as? GenerationItemResult.Generated ?: throw AssertionError("${item.result}")
+        assertEquals(2, result.files.size)
+    }
+
+    @Test
+    fun `複数templateIdsのitemの衝突の質問は1回だけで両方をまとめて示す`() = runBlocking {
+        val runner = FakeGradleTaskRunner(fs) { _, index -> if (index == 0) failed("conflict") else output("overwrite") }
+        val multi = multiItem()
+        val questions = mutableListOf<ConflictQuestion>()
+        session(runner) { questions += it; ConflictChoice.Overwrite }.run(listOf(multi), OnExistingChoice.Fail, silent)
+        assertEquals(1, questions.size)
+        assertEquals(multi.templateIds, questions.single().templateIds)
+    }
+
+    @Test
+    fun `別モジュールのitemはそれぞれ別々にkatachiTemplateを実行する`() = runBlocking {
+        val archB = module(":arch-b")
+        val runner = FakeGradleTaskRunner(fs) { _, _ -> output("new") }
+        val itemB = item("Service").let { it.copy(module = archB, templateIds = listOf(TemplateId(archB.id, "data.Service"))) }
+        session(runner).run(listOf(item("Repository"), itemB), OnExistingChoice.Fail, silent)
+        assertEquals(listOf(":arch-a:katachiTemplate", ":arch-b:katachiTemplate"), runner.requests.map { it.tasks.single().taskPath })
     }
 }

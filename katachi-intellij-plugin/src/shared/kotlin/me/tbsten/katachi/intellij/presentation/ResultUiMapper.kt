@@ -93,8 +93,8 @@ internal fun footerUiOf(state: KatachiScreenState, strings: KatachiStrings): Foo
                 report.isComplete -> strings.resultAll(report.succeededCount)
                 // An interrupted run may have written, so only a report without either says "nothing".
                 report.succeededCount == 0 && report.items.none { it.result is GenerationItemResult.Interrupted } ->
-                    strings.resultNothingWritten(report.items.size)
-                else -> strings.resultPartial(report.succeededCount, report.items.size)
+                    strings.resultNothingWritten(report.templateIds.size)
+                else -> strings.resultPartial(report.succeededCount, report.templateIds.size)
             },
             isComplete = report.isComplete,
             undo = generation.localHistoryLabel?.let(strings::undoHint),
@@ -135,7 +135,7 @@ private fun formFooterOf(state: KatachiScreenState, strings: KatachiStrings): Fo
 
 private fun reasonOf(blocker: GenerateBlocker, state: KatachiScreenState, strings: KatachiStrings): String {
     fun role(id: TemplateId) =
-        state.rows.firstOrNull { it.id == id }?.template?.simpleName ?: id.roleName.substringAfterLast('/')
+        state.rows.firstOrNull { it.id == id }?.template?.title ?: id.template.substringAfterLast('.')
     return when (blocker) {
         GenerateBlocker.NothingSelected -> strings.nothingSelected
         is GenerateBlocker.Unavailable -> strings.reasonUnavailable(role(blocker.templateId))

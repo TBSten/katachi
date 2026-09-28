@@ -36,7 +36,7 @@ class TemplateDescriptionLoaderTest {
         assertEquals(listOf(":arch-a:katachiInternalTemplatesJson", ":arch-b:katachiInternalTemplatesJson"), runner.requests.single().taskNames)
         val loaded = result as? LoadResult.Loaded ?: throw AssertionError("$result")
         assertEquals(listOf(":arch-a", ":arch-b"), loaded.snapshots.map { it.module.gradlePath })
-        assertEquals("data/Repository", loaded.snapshots[1].templates.single().roleName)
+        assertEquals("data.Repository", loaded.snapshots[1].templates.single().roleName)
     }
 
     @Test

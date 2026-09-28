@@ -99,9 +99,9 @@ internal class FakeIdeEffects(
         log += "save"
     }
 
-    override suspend fun putLocalHistoryLabel(roleNames: List<String>): String? {
+    override suspend fun putLocalHistoryLabel(titles: List<String>): String? {
         log += "label"
-        return "katachi: before generating (${roleNames.joinToString(", ")})".takeIf { labelPut }
+        return "katachi: before generating (${titles.joinToString(", ")})".takeIf { labelPut }
     }
 
     override suspend fun refreshFiles(paths: List<Path>) {

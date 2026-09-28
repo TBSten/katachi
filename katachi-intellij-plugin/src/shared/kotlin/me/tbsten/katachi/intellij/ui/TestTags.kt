@@ -11,11 +11,11 @@ internal object KatachiTestTags {
     const val SEARCH: String = "katachi.search"
     const val GENERATE: String = "katachi.generate"
 
-    fun check(id: TemplateId): String = "katachi.check:${id.module.gradlePath}:${id.roleName}"
+    fun check(id: TemplateId): String = "katachi.check:${id.module.gradlePath}:${id.template}"
 
-    fun field(id: FieldId): String = "katachi.field:${id.templateId.module.gradlePath}:${id.templateId.roleName}:${id.parameterName}"
+    fun field(id: FieldId): String = "katachi.field:${id.templateId.module.gradlePath}:${id.templateId.template}:${id.parameterName}"
 
-    fun hint(id: FieldId): String = "katachi.hint:${id.templateId.module.gradlePath}:${id.templateId.roleName}:${id.parameterName}"
+    fun hint(id: FieldId): String = "katachi.hint:${id.templateId.module.gradlePath}:${id.templateId.template}:${id.parameterName}"
 
-    fun multiline(id: FieldId): String = "katachi.multiline:${id.templateId.module.gradlePath}:${id.templateId.roleName}:${id.parameterName}"
+    fun multiline(id: FieldId): String = "katachi.multiline:${id.templateId.module.gradlePath}:${id.templateId.template}:${id.parameterName}"
 }

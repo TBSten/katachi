@@ -24,14 +24,14 @@ class UiStateMapperTest {
     private val now = Instant.parse("2026-09-27T10:00:00Z")
     private val arch = module(":arch")
     private val repository = template(
-        "data/Repository",
+        "data.Repository",
         parameters = listOf(stringParam("name"), booleanParam("withImpl"), stringParam("implSuffix", default = "Impl")),
         files = listOf(file("\${name}Repository.kt"), file("\${name}Repository\${implSuffix}.kt")),
         branches = listOf(branch("withImpl", "false", removedFiles = listOf("\${name}Repository\${implSuffix}.kt"), removedParameters = listOf("implSuffix"))),
         title = "リポジトリ",
     )
-    private val service = template("domain/Service", files = listOf(file("\${name}Service.kt")))
-    private val broken = previewFailed("data/Cache")
+    private val service = template("domain.Service", files = listOf(file("\${name}Service.kt")))
+    private val broken = previewFailed("data.Cache")
 
     private fun ready(vararg modules: Pair<KatachiModule, List<TemplateModel>>) = KatachiScreenState(
         phase = ScreenPhase.Ready,
@@ -41,7 +41,7 @@ class UiStateMapperTest {
 
     private fun KatachiScreenState.then(vararg intents: KatachiIntent) = intents.fold(this) { s, i -> applyFormIntent(s, i)!! }
 
-    private fun id(template: TemplateModel, module: KatachiModule = arch) = TemplateId(module.id, template.roleName)
+    private fun id(template: TemplateModel, module: KatachiModule = arch) = TemplateId(module.id, template.template)
 
     private fun check(template: TemplateModel) = KatachiIntent.ToggleCheck(id(template))
 
@@ -52,7 +52,7 @@ class UiStateMapperTest {
     private fun list(state: KatachiScreenState): ListUi = (ui(state).body as? BodyUi.Listing)?.list ?: error("not a list: ${ui(state).body}")
 
     private fun ListUi.row(template: TemplateModel): TemplateRowUi =
-        items.firstNotNullOf { (it as? ListItemUi.Row)?.row?.takeIf { row -> row.id.roleName == template.roleName } }
+        items.firstNotNullOf { (it as? ListItemUi.Row)?.row?.takeIf { row -> row.id.template == template.template } }
 
     private fun TemplateRowUi.form(): FormUi = (body as? RowBodyUi.Form)?.form ?: error("no form: $body")
 
@@ -141,7 +141,7 @@ class UiStateMapperTest {
 
     @Test
     fun `同名同型の欄は連動の印を出し、別の値に書き換えた欄は連動を戻す操作を持つ`() {
-        val useCase = template("domain/UseCase")
+        val useCase = template("domain.UseCase")
         val state = ready(arch to listOf(repository, service, useCase))
             .then(check(repository), check(service), check(useCase), input(repository, "name", "User"), input(service, "name", "Account"))
         val rows = list(state)
@@ -154,7 +154,7 @@ class UiStateMapperTest {
     @Test
     fun `押せない理由をフッターに出し、押すとその欄を開く対象を持つ`() {
         val footer = list(ready(arch to listOf(repository)).then(check(repository))).footer.cast<FooterUi.Form>()
-        assertEquals("Repository: name が未入力です", footer.reason)
+        assertEquals("リポジトリ: name が未入力です", footer.reason)
         assertEquals(FieldId(id(repository), "name"), footer.reasonTarget)
         assertEquals(false, footer.generateEnabled)
     }

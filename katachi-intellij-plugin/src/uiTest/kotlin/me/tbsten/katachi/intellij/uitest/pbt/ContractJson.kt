@@ -13,18 +13,22 @@ internal fun contractJsonOf(templates: List<TemplateModel>): String = obj(
     "templates" to array(templates.map { template ->
         val summary = template.summary
         obj(
-            "roleName" to str(summary.roleName),
+            "template" to str(summary.template),
+            "id" to str(summary.id),
             "title" to str(summary.title),
+            "roleName" to str(summary.roleName),
             "summary" to str(summary.summary),
             "parameterNames" to array(summary.parameterNames.map(::str)),
-            "fileCount" to (summary.fileCount?.toString() ?: "null"),
+            "conflict" to summary.conflict.toString(),
             "captures" to array(template.detail?.captures.orEmpty().flatMap(::captureJson)),
         )
     }),
     "details" to array(templates.mapNotNull { it.detail }.map { detail ->
         obj(
-            "roleName" to str(detail.roleName),
+            "template" to str(detail.template),
+            "id" to str(detail.id),
             "title" to str(detail.title),
+            "roleName" to str(detail.roleName),
             "summary" to str(detail.summary),
             "parameters" to array(detail.parameters.map(::parameterJson)),
             "files" to array(detail.files.map(::fileJson)),
@@ -58,14 +62,17 @@ private fun captureJson(capture: ParameterModel.CaptureParam): List<String> = ca
         "name" to str(capture.name),
         "kind" to str(place.kindName),
         "pattern" to str(place.pattern),
+        "segment" to str(place.segment),
         "position" to place.position.toString(),
     )
 }
 
 private fun fileJson(file: FilePreviewModel): String = obj(
+    "pattern" to str(file.pattern),
     "fileName" to str(file.fileName),
     "path" to str(file.path),
-    "unresolvedPatterns" to array(file.unresolvedPatterns.map(::str)),
+    "captures" to array(file.captures.map(::str)),
+    "parameters" to array(file.parameters.map(::str)),
     "content" to str(file.content),
 )
 

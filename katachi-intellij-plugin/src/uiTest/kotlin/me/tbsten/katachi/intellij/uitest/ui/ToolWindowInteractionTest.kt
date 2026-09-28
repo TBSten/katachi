@@ -58,8 +58,8 @@ import org.junit.Test
 @OptIn(ExperimentalTestApi::class)
 class ToolWindowInteractionTest {
     private val arch = module(":arch-a")
-    private val repository = TemplateId(arch.id, "data/Repository")
-    private val useCase = TemplateId(arch.id, "domain/UseCase")
+    private val repository = TemplateId(arch.id, "data.Repository")
+    private val useCase = TemplateId(arch.id, "domain.UseCase")
     private val repositoryName = FieldId(repository, "name")
 
     /** Holds the state as the ViewModel would for the intents that need no Gradle, and records every intent. */
@@ -91,7 +91,7 @@ class ToolWindowInteractionTest {
 
     private fun Host.shownRoles(): List<String> {
         val list = (uiStateOf(state, JapaneseKatachiStrings, ScenarioHarness.NOW).body as BodyUi.Listing).list
-        return list.items.mapNotNull { (it as? ListItemUi.Row)?.row?.id?.roleName }
+        return list.items.mapNotNull { (it as? ListItemUi.Row)?.row?.id?.template }
     }
 
     @Test
@@ -102,14 +102,14 @@ class ToolWindowInteractionTest {
         onNodeWithTag(KatachiTestTags.SEARCH).performTextInput("repo")
         waitForIdle()
         assertEquals("repo", host.state.searchQuery)
-        assertEquals(listOf("data/Repository"), host.shownRoles())
-        onNodeWithText("UseCase").assertDoesNotExist()
+        assertEquals(listOf("data.Repository"), host.shownRoles())
+        onNodeWithText("ユースケース").assertDoesNotExist()
 
         onNodeWithTag(KatachiTestTags.SEARCH).performTextClearance()
         waitForIdle()
         assertEquals("", host.state.searchQuery)
         assertEquals(all, host.shownRoles())
-        onNodeWithText("UseCase").assertExists()
+        onNodeWithText("ユースケース").assertExists()
         onNodeWithTag(KatachiTestTags.SEARCH).assertEditableText("")
     }
 
@@ -138,7 +138,7 @@ class ToolWindowInteractionTest {
         waitForIdle()
         assertEquals(KatachiIntent.Search(""), host.sent.last())
         onNodeWithTag(KatachiTestTags.SEARCH).assertEditableText("")
-        onNodeWithText("Repository").assertExists()
+        onNodeWithText("リポジトリ").assertExists()
     }
 
     @Test

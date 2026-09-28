@@ -1,67 +1,106 @@
 {
   "templates": [
     {
-      "roleName": "AllTypes",
+      "template": "AllTypes",
+      "id": null,
       "title": "全部の型",
-      "summary": "string / boolean / int / enum を既定値あり・なしで1つずつ持つ",
+      "roleName": "AllTypes",
+      "summary": "string / boolean / int / enum を既定値ありなしで1つずつ持つ",
       "parameterNames": ["name", "label", "enabled", "verbose", "count", "pageSize", "mode", "fallbackMode"],
-      "fileCount": 1,
-      "captures": []
+      "captures": [],
+      "conflict": false
     },
     {
-      "roleName": "Counter",
+      "template": "Counter",
+      "id": null,
       "title": "カウンター",
+      "roleName": "Counter",
       "summary": null,
       "parameterNames": ["name"],
-      "fileCount": 1,
-      "captures": []
+      "captures": [],
+      "conflict": false
     },
     {
-      "roleName": "a/Shallow",
+      "template": "a.Shallow",
+      "id": null,
       "title": "浅い",
-      "summary": "Boolean と enum の分岐で引数とファイルが増減する",
+      "roleName": "a.Shallow",
+      "summary": "Boolean と enum の分岐で引数が増減する",
       "parameterNames": ["name", "withImpl", "withTest", "style", "implSuffix"],
-      "fileCount": 2,
-      "captures": []
+      "captures": [],
+      "conflict": false
     },
     {
-      "roleName": "a/b/Middle",
+      "template": "a.b.Middle",
+      "id": null,
       "title": "Middle",
+      "roleName": "a.b.Middle",
       "summary": null,
       "parameterNames": ["name"],
-      "fileCount": null,
-      "captures": []
+      "captures": [
+        {
+          "name": "name",
+          "kind": "PathCapture",
+          "pattern": "src/main/kotlin/a/b/*",
+          "position": 5,
+          "segment": "${name}"
+        }
+      ],
+      "conflict": true
     },
     {
-      "roleName": "a/b/c/Deep",
-      "title": null,
+      "template": "a.b.c.Deep",
+      "id": null,
+      "title": "a.b.c.Deep",
+      "roleName": "a.b.c.Deep",
       "summary": null,
       "parameterNames": ["name", "itemName"],
-      "fileCount": 4,
-      "captures": []
+      "captures": [],
+      "conflict": false
     },
     {
-      "roleName": "other/Broken",
+      "template": "other.Broken",
+      "id": null,
       "title": "壊れたテンプレート",
+      "roleName": "other.Broken",
       "summary": null,
       "parameterNames": ["name"],
-      "fileCount": null,
-      "captures": []
+      "captures": [],
+      "conflict": true
     },
     {
-      "roleName": "other/Wildcard",
-      "title": null,
+      "template": "other.Wildcard",
+      "id": null,
+      "title": "other.Wildcard",
+      "roleName": "other.Wildcard",
       "summary": "生成先のモジュールが決まらない",
-      "parameterNames": ["name"],
-      "fileCount": 1,
-      "captures": []
+      "parameterNames": [],
+      "captures": [
+        {
+          "name": "feature",
+          "kind": "ModuleCapture",
+          "pattern": ":feature:*",
+          "position": 0,
+          "segment": ":feature:${feature}"
+        },
+        {
+          "name": "name",
+          "kind": "PathCapture",
+          "pattern": "feature/*/src/main/kotlin/*Screen.kt",
+          "position": 5,
+          "segment": "${name}Screen.kt"
+        }
+      ],
+      "conflict": false
     }
   ],
   "details": [
     {
-      "roleName": "AllTypes",
+      "template": "AllTypes",
+      "id": null,
       "title": "全部の型",
-      "summary": "string / boolean / int / enum を既定値あり・なしで1つずつ持つ",
+      "roleName": "AllTypes",
+      "summary": "string / boolean / int / enum を既定値ありなしで1つずつ持つ",
       "parameters": [
         {
           "name": "name",
@@ -146,19 +185,56 @@
       ],
       "files": [
         {
-          "fileName": "${name}.kt",
-          "path": "src/main/kotlin/allTypes/${name}.kt",
-          "unresolvedPatterns": [],
+          "pattern": "src/main/kotlin/allTypes/AllTypes.kt",
+          "fileName": "AllTypes.kt",
+          "path": "src/main/kotlin/allTypes/AllTypes.kt",
+          "captures": [],
+          "parameters": ["name", "label", "enabled", "verbose", "count", "pageSize", "mode", "fallbackMode"],
           "content": "// ${label} true false 0 20 Compact Compact\nclass ${name}\n"
         }
       ],
-      "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=AllTypes --arg name=Name --arg enabled=true --arg count=0 --arg mode=Compact",
+      "branches": [
+        {
+          "parameterName": "enabled",
+          "value": "false",
+          "addedFiles": [],
+          "removedFiles": [],
+          "addedParameters": [],
+          "removedParameters": []
+        },
+        {
+          "parameterName": "verbose",
+          "value": "true",
+          "addedFiles": [],
+          "removedFiles": [],
+          "addedParameters": [],
+          "removedParameters": []
+        },
+        {
+          "parameterName": "mode",
+          "value": "Expanded",
+          "addedFiles": [],
+          "removedFiles": [],
+          "addedParameters": [],
+          "removedParameters": []
+        },
+        {
+          "parameterName": "fallbackMode",
+          "value": "Expanded",
+          "addedFiles": [],
+          "removedFiles": [],
+          "addedParameters": [],
+          "removedParameters": []
+        }
+      ],
+      "exampleCommand": "./gradlew katachiTemplate --arg template=AllTypes --arg name=Name --arg enabled=true --arg count=0 --arg mode=Compact",
       "captures": []
     },
     {
-      "roleName": "Counter",
+      "template": "Counter",
+      "id": null,
       "title": "カウンター",
+      "roleName": "Counter",
       "summary": null,
       "parameters": [
         {
@@ -174,20 +250,24 @@
       ],
       "files": [
         {
-          "fileName": "Counter0.kt",
-          "path": "src/main/kotlin/counter/Counter0.kt",
-          "unresolvedPatterns": [],
+          "pattern": "src/main/kotlin/counter/Counter.kt",
+          "fileName": "Counter.kt",
+          "path": "src/main/kotlin/counter/Counter.kt",
+          "captures": [],
+          "parameters": ["name"],
           "content": "const val COUNTER: Int = 0\n"
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=Counter --arg name=0",
+      "exampleCommand": "./gradlew katachiTemplate --arg template=Counter --arg name=0",
       "captures": []
     },
     {
-      "roleName": "a/Shallow",
+      "template": "a.Shallow",
+      "id": null,
       "title": "浅い",
-      "summary": "Boolean と enum の分岐で引数とファイルが増減する",
+      "roleName": "a.Shallow",
+      "summary": "Boolean と enum の分岐で引数が増減する",
       "parameters": [
         {
           "name": "name",
@@ -242,16 +322,12 @@
       ],
       "files": [
         {
-          "fileName": "${name}.kt",
-          "path": "src/main/kotlin/a/${name}.kt",
-          "unresolvedPatterns": [],
-          "content": "interface ${name}\n"
-        },
-        {
-          "fileName": "${name}${implSuffix}.kt",
-          "path": "src/main/kotlin/a/${name}${implSuffix}.kt",
-          "unresolvedPatterns": [],
-          "content": "class ${name}${implSuffix} : ${name}\n"
+          "pattern": "src/main/kotlin/a/Shallow.kt",
+          "fileName": "Shallow.kt",
+          "path": "src/main/kotlin/a/Shallow.kt",
+          "captures": [],
+          "parameters": ["name", "withImpl", "withTest", "style", "implSuffix"],
+          "content": "interface ${name}\nclass ${name}${implSuffix} : ${name}\n"
         }
       ],
       "branches": [
@@ -259,14 +335,14 @@
           "parameterName": "withImpl",
           "value": "false",
           "addedFiles": [],
-          "removedFiles": ["${name}${implSuffix}.kt"],
+          "removedFiles": [],
           "addedParameters": [],
           "removedParameters": ["implSuffix"]
         },
         {
           "parameterName": "withTest",
           "value": "true",
-          "addedFiles": ["${testName}.kt"],
+          "addedFiles": [],
           "removedFiles": [],
           "addedParameters": [
             {
@@ -285,7 +361,7 @@
         {
           "parameterName": "style",
           "value": "Fancy",
-          "addedFiles": ["${name}Decoration.kt"],
+          "addedFiles": [],
           "removedFiles": [],
           "addedParameters": [
             {
@@ -302,12 +378,14 @@
           "removedParameters": []
         }
       ],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=a/Shallow --arg name=Name",
+      "exampleCommand": "./gradlew katachiTemplate --arg template=a.Shallow --arg name=Name",
       "captures": []
     },
     {
-      "roleName": "a/b/c/Deep",
-      "title": null,
+      "template": "a.b.c.Deep",
+      "id": null,
+      "title": "a.b.c.Deep",
+      "roleName": "a.b.c.Deep",
       "summary": null,
       "parameters": [
         {
@@ -333,61 +411,53 @@
       ],
       "files": [
         {
-          "fileName": "${name}.kt",
-          "path": "src/main/kotlin/a/b/c/${name}.kt",
-          "unresolvedPatterns": [],
-          "content": "class ${name}\n"
-        },
-        {
-          "fileName": "${itemName}.kt",
-          "path": "src/main/kotlin/a/b/c/${itemName}.kt",
-          "unresolvedPatterns": [],
-          "content": "class ${itemName}\n"
-        },
-        {
-          "fileName": "${name}Repository.kt",
-          "path": "src/main/kotlin/a/b/c/${name}Repository.kt",
-          "unresolvedPatterns": [],
-          "content": "interface ${name}Repository\n"
-        },
-        {
-          "fileName": "${name}ViewModel.kt",
-          "path": "src/main/kotlin/a/b/c/${name}ViewModel.kt",
-          "unresolvedPatterns": [],
-          "content": "class ${name}ViewModel\n"
+          "pattern": "src/main/kotlin/a/b/c/Deep.kt",
+          "fileName": "Deep.kt",
+          "path": "src/main/kotlin/a/b/c/Deep.kt",
+          "captures": [],
+          "parameters": ["name", "itemName"],
+          "content": "class ${name}\nclass ${itemName}\n"
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=a/b/c/Deep --arg name=Name",
+      "exampleCommand": "./gradlew katachiTemplate --arg template=a.b.c.Deep --arg name=Name",
       "captures": []
     },
     {
-      "roleName": "other/Wildcard",
-      "title": null,
+      "template": "other.Wildcard",
+      "id": null,
+      "title": "other.Wildcard",
+      "roleName": "other.Wildcard",
       "summary": "生成先のモジュールが決まらない",
-      "parameters": [
-        {
-          "name": "name",
-          "kind": "StringParameter",
-          "typeName": "String",
-          "default": null,
-          "acceptedValues": [],
-          "isRequired": true,
-          "previewValue": "${name}",
-          "previewValueSource": "Placeholder"
-        }
-      ],
+      "parameters": [],
       "files": [
         {
+          "pattern": "feature/${feature}/src/main/kotlin/${name}Screen.kt",
           "fileName": "${name}Screen.kt",
           "path": null,
-          "unresolvedPatterns": ["feature/*/src/main/kotlin/*Screen.kt"],
+          "captures": ["feature", "name"],
+          "parameters": [],
           "content": "fun ${name}Screen() {}\n"
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=other/Wildcard --arg name=Name",
-      "captures": []
+      "exampleCommand": "./gradlew katachiTemplate --arg template=other.Wildcard --arg feature=<feature> --arg name=<name>",
+      "captures": [
+        {
+          "name": "feature",
+          "kind": "ModuleCapture",
+          "pattern": ":feature:*",
+          "position": 0,
+          "segment": ":feature:${feature}"
+        },
+        {
+          "name": "name",
+          "kind": "PathCapture",
+          "pattern": "feature/*/src/main/kotlin/*Screen.kt",
+          "position": 5,
+          "segment": "${name}Screen.kt"
+        }
+      ]
     }
   ]
 }

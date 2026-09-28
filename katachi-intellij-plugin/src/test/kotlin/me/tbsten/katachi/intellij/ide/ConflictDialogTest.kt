@@ -12,7 +12,7 @@ import java.nio.file.Path
 internal class ConflictDialogTest : AnalysisTestBase() {
     private val root = Path.of("/work/project")
     private val question = ConflictQuestion(
-        templateId = TemplateId(ModuleId(root, ":arch-a"), "data/Repository"),
+        templateIds = listOf(TemplateId(ModuleId(root, ":arch-a"), "data.Repository")),
         index = 1,
         total = 3,
         existing = listOf(root.resolve("data/src/main/kotlin/com/example/data/UserRepository.kt")),

@@ -74,7 +74,7 @@ private fun bannersOf(state: KatachiScreenState, strings: KatachiStrings): List<
     BannerUi(BannerKind.Info, strings.definitionChanged, listOf(ActionUi(strings.reload, KatachiIntent.Reload)), KatachiIntent.DismissDefinitionChanged)
         .takeIf { state.view.definitionChanged },
     state.removedTemplates.takeIf { it.isNotEmpty() }?.let { removed ->
-        BannerUi(BannerKind.Warning, strings.removedTemplates(removed.map { it.roleName.substringAfterLast('/') }), emptyList(), KatachiIntent.DismissRemovedTemplates)
+        BannerUi(BannerKind.Warning, strings.removedTemplates(removed.map { it.template.substringAfterLast('.') }), emptyList(), KatachiIntent.DismissRemovedTemplates)
     },
 )
 

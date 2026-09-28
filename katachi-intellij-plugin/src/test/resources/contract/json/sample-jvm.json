@@ -1,29 +1,34 @@
 {
   "templates": [
     {
-      "roleName": "domain/Service",
+      "template": "domain.Service",
+      "id": null,
       "title": "サービス",
+      "roleName": "domain.Service",
       "summary": "アプリ固有の振る舞いを1つ持ち、Repository を組み合わせて実現する",
-      "parameterNames": ["name", "kdoc"],
-      "fileCount": 1
+      "parameterNames": [
+        "kdoc"
+      ],
+      "captures": [
+        {
+          "name": "name",
+          "kind": "PathCapture",
+          "pattern": "src/main/kotlin/com/example/service/*Service.kt",
+          "position": 6,
+          "segment": "${name}Service.kt"
+        }
+      ],
+      "conflict": false
     }
   ],
   "details": [
     {
-      "roleName": "domain/Service",
+      "template": "domain.Service",
+      "id": null,
       "title": "サービス",
+      "roleName": "domain.Service",
       "summary": "アプリ固有の振る舞いを1つ持ち、Repository を組み合わせて実現する",
       "parameters": [
-        {
-          "name": "name",
-          "kind": "StringParameter",
-          "typeName": "String",
-          "default": null,
-          "acceptedValues": [],
-          "isRequired": true,
-          "previewValue": "${name}",
-          "previewValueSource": "Placeholder"
-        },
         {
           "name": "kdoc",
           "kind": "StringParameter",
@@ -37,14 +42,29 @@
       ],
       "files": [
         {
+          "pattern": "src/main/kotlin/com/example/service/${name}Service.kt",
           "fileName": "${name}Service.kt",
           "path": "src/main/kotlin/com/example/service/${name}Service.kt",
-          "unresolvedPatterns": [],
+          "captures": [
+            "name"
+          ],
+          "parameters": [
+            "kdoc"
+          ],
           "content": "package com.example.service\n\n/** ${kdoc} */\nclass ${name}Service {\n    fun execute(): String = TODO(\"${name}Service の実装\")\n}\n"
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=domain/Service --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg template=domain.Service --arg name=<name>",
+      "captures": [
+        {
+          "name": "name",
+          "kind": "PathCapture",
+          "pattern": "src/main/kotlin/com/example/service/*Service.kt",
+          "position": 6,
+          "segment": "${name}Service.kt"
+        }
+      ]
     }
   ]
 }

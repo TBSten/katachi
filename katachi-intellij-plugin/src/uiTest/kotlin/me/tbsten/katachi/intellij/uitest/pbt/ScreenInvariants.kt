@@ -66,7 +66,7 @@ internal fun keptViolationsOf(before: KatachiScreenState, intents: List<KatachiI
         if (after.form.isSelected(id)) continue
         val row = afterRows[id]
         val explained = KatachiIntent.ToggleCheck(id) in intents || row == null || !row.template.isAvailable
-        if (!explained) add("the check of ${id.roleName} (${id.module.gradlePath}) went away")
+        if (!explained) add("the check of ${id.template} (${id.module.gradlePath}) went away")
     }
     val typedNames = intents.mapNotNull {
         when (it) {
@@ -81,7 +81,7 @@ internal fun keptViolationsOf(before: KatachiScreenState, intents: List<KatachiI
         for ((name, value) in inputs) {
             if (value.isBlank() || after.form.inputOf(FieldId(id, name)) == value) continue
             val explained = name in typedNames || name !in names || KatachiIntent.ToggleCheck(id) in intents
-            if (!explained) add("the input $name=\"$value\" of ${id.roleName} changed to \"${after.form.inputOf(FieldId(id, name))}\"")
+            if (!explained) add("the input $name=\"$value\" of ${id.template} changed to \"${after.form.inputOf(FieldId(id, name))}\"")
         }
     }
 }
@@ -105,7 +105,7 @@ private fun unexpectedFailureOf(state: KatachiScreenState): String? {
     for (item in report.items) {
         val failure = (item.result as? GenerationItemResult.Failed)?.failure as? GenerationFailure.NotReached ?: continue
         val other = failure.failure as? GradleFailure.Other ?: continue
-        thrown(other.details)?.let { return "generating ${item.templateId.roleName} failed unexpectedly: $it" }
+        thrown(other.details)?.let { return "generating ${item.templateIds.joinToString(", ") { it.template }} failed unexpectedly: $it" }
     }
     return null
 }

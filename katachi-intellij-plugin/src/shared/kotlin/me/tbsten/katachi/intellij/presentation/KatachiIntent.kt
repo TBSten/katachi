@@ -81,7 +81,7 @@ internal sealed interface KatachiIntent {
 
     data class OpenFile(val path: Path) : KatachiIntent
 
-    /** Runs `katachiTemplates --arg roleName=X` for a row whose preview failed (E-07). */
+    /** Runs `katachiTemplates --arg template=X` for a row whose preview failed (E-07). */
     data class ShowCause(val templateId: TemplateId) : KatachiIntent
 
     data class CopyCommand(val templateId: TemplateId) : KatachiIntent

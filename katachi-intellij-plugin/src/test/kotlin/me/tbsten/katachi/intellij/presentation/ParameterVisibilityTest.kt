@@ -12,8 +12,8 @@ import org.junit.Test
 
 class ParameterVisibilityTest {
     private val rows = rowsOf("arch-a")
-    private val repository = rows.row("data/Repository").template.detail ?: throw AssertionError()
-    private val useCase = rows.row("domain/UseCase").template.detail ?: throw AssertionError()
+    private val repository = rows.row("data.Repository").template.detail ?: throw AssertionError()
+    private val useCase = rows.row("domain.UseCase").template.detail ?: throw AssertionError()
 
     private fun describe(slots: List<FieldSlot>) = slots.map {
         when (it) {

@@ -23,10 +23,10 @@ import java.time.Instant
 class GenerationUiMapperTest {
     private val now = Instant.parse("2026-09-27T10:00:00Z")
     private val arch = module(":arch")
-    private val repository = template("data/Repository", title = "リポジトリ")
-    private val service = template("domain/Service")
-    private val useCase = template("domain/UseCase")
-    private val ids = listOf(repository, service, useCase).map { TemplateId(arch.id, it.roleName) }
+    private val repository = template("data.Repository", title = "リポジトリ")
+    private val service = template("domain.Service")
+    private val useCase = template("domain.UseCase")
+    private val ids = listOf(repository, service, useCase).map { TemplateId(arch.id, it.template) }
     private val repositoryId = ids[0]
     private val serviceId = ids[1]
     private val useCaseId = ids[2]
@@ -37,7 +37,7 @@ class GenerationUiMapperTest {
             modules = listOf(arch),
             snapshots = listOf(DescriptionSnapshot(arch, "0.3.0", listOf(repository, service, useCase), now)),
         ),
-    ) { state, template -> applyFormIntent(state, KatachiIntent.ToggleCheck(TemplateId(arch.id, template.roleName)))!! }
+    ) { state, template -> applyFormIntent(state, KatachiIntent.ToggleCheck(TemplateId(arch.id, template.template)))!! }
         .let { applyFormIntent(it, KatachiIntent.Input(FieldId(repositoryId, "name"), "User"))!! }
 
     private fun list(state: KatachiScreenState): ListUi = uiStateOf(state, JapaneseKatachiStrings, now).body.cast<BodyUi.Listing>().list
@@ -49,7 +49,7 @@ class GenerationUiMapperTest {
 
     /** Opened as the default setting does: the first written file. */
     private fun finished(vararg results: GenerationItemResult): KatachiScreenState {
-        val report = GenerationReport(ids.zip(results.toList()) { id, r -> GenerationItemReport(id, r) })
+        val report = GenerationReport(ids.zip(results.toList()) { id, r -> GenerationItemReport(listOf(id), r) })
         return base.copy(
             generation = GenerationState.Finished(report, "katachi: 生成前（Repository, Service, UseCase）", report.writtenFiles.take(1).map { it.path }),
         )
@@ -82,7 +82,7 @@ class GenerationUiMapperTest {
             generation = GenerationState.Running(
                 ids,
                 mapOf(repositoryId to GenerationRowStatus.AwaitingConflict),
-                conflict = ConflictQuestion(repositoryId, 1, 3, listOf(written.path)),
+                conflict = ConflictQuestion(listOf(repositoryId), 1, 3, listOf(written.path)),
             ),
         )
         val rows = list(state)

@@ -1,80 +1,118 @@
 {
   "templates": [
     {
-      "roleName": "feature/FeatureComponent",
+      "template": "feature.FeatureComponent",
+      "id": null,
       "title": "画面の部品",
+      "roleName": "feature.FeatureComponent",
       "summary": "1つの画面でしか使わない @Composable。:feature:<name> の commonMain の component package に <Name>*.kt で置く",
-      "parameterNames": ["name"],
-      "fileCount": 1,
+      "parameterNames": [],
       "captures": [
         {
           "name": "feature",
           "kind": "ModuleCapture",
           "pattern": ":feature:*",
-          "position": 0
+          "position": 0,
+          "segment": ":feature:${feature}"
+        },
+        {
+          "name": "name",
+          "kind": "PathCapture",
+          "pattern": "feature/*/src/commonMain/kotlin/com/example/kmp/feature/<feature>/component/<feature>*.kt",
+          "position": 11,
+          "segment": "<feature>${name}.kt"
         }
-      ]
+      ],
+      "conflict": false
     },
     {
-      "roleName": "data/Repository",
-      "title": "リポジトリ",
+      "template": "data.Repository.repository",
+      "id": "repository",
+      "title": "repository",
+      "roleName": "data.Repository",
       "summary": ":data モジュールの user package。データの取得口で、インターフェースと実装の2つの置き方を持つ",
-      "parameterNames": ["name", "item", "withImpl"],
-      "fileCount": 2,
-      "captures": []
+      "parameterNames": [
+        "item"
+      ],
+      "captures": [
+        {
+          "name": "name",
+          "kind": "PathCapture",
+          "pattern": "data/src/commonMain/kotlin/com/example/kmp/data/user/*Repository.kt",
+          "position": 9,
+          "segment": "${name}Repository.kt"
+        }
+      ],
+      "conflict": false
+    },
+    {
+      "template": "data.Repository.repositoryImpl",
+      "id": "repositoryImpl",
+      "title": "repositoryImpl",
+      "roleName": "data.Repository",
+      "summary": ":data モジュールの user package。データの取得口で、インターフェースと実装の2つの置き方を持つ",
+      "parameterNames": [
+        "item"
+      ],
+      "captures": [
+        {
+          "name": "name",
+          "kind": "PathCapture",
+          "pattern": "data/src/commonMain/kotlin/com/example/kmp/data/user/*RepositoryImpl.kt",
+          "position": 9,
+          "segment": "${name}RepositoryImpl.kt"
+        }
+      ],
+      "conflict": false
     }
   ],
   "details": [
     {
-      "roleName": "feature/FeatureComponent",
+      "template": "feature.FeatureComponent",
+      "id": null,
       "title": "画面の部品",
+      "roleName": "feature.FeatureComponent",
       "summary": "1つの画面でしか使わない @Composable。:feature:<name> の commonMain の component package に <Name>*.kt で置く",
-      "parameters": [
-        {
-          "name": "name",
-          "kind": "StringParameter",
-          "typeName": "String",
-          "default": null,
-          "acceptedValues": [],
-          "isRequired": true,
-          "previewValue": "${name}",
-          "previewValueSource": "Placeholder"
-        }
-      ],
+      "parameters": [],
       "files": [
         {
-          "fileName": "${feature}${name}.kt",
-          "path": "feature/${feature}/src/commonMain/kotlin/com/example/kmp/feature/${feature}/component/${feature}${name}.kt",
-          "unresolvedPatterns": [],
+          "pattern": "feature/${feature}/src/commonMain/kotlin/com/example/kmp/feature/<feature>/component/<feature>${name}.kt",
+          "fileName": "<feature>${name}.kt",
+          "path": null,
+          "captures": [
+            "feature",
+            "name"
+          ],
+          "parameters": [],
           "content": "package com.example.kmp.feature.${feature}.component\n\nimport androidx.compose.material3.Text\nimport androidx.compose.runtime.Composable\nimport androidx.compose.ui.Modifier\n\n/** Part of the ${feature} screen that no other screen uses. */\n@Composable\ninternal fun ${feature}${name}(\n    name: String,\n    modifier: Modifier = Modifier,\n) {\n    Text(text = name, modifier = modifier)\n}\n"
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=feature/FeatureComponent --arg feature=<feature> --arg name=Name",
+      "exampleCommand": "./gradlew katachiTemplate --arg template=feature.FeatureComponent --arg feature=<feature> --arg name=<name>",
       "captures": [
         {
           "name": "feature",
           "kind": "ModuleCapture",
           "pattern": ":feature:*",
-          "position": 0
+          "position": 0,
+          "segment": ":feature:${feature}"
+        },
+        {
+          "name": "name",
+          "kind": "PathCapture",
+          "pattern": "feature/*/src/commonMain/kotlin/com/example/kmp/feature/<feature>/component/<feature>*.kt",
+          "position": 11,
+          "segment": "<feature>${name}.kt"
         }
       ]
     },
     {
-      "roleName": "data/Repository",
-      "title": "リポジトリ",
+      "template": "data.Repository.repository",
+      "id": "repository",
+      "title": "repository",
+      "roleName": "data.Repository",
       "summary": ":data モジュールの user package。データの取得口で、インターフェースと実装の2つの置き方を持つ",
       "parameters": [
-        {
-          "name": "name",
-          "kind": "StringParameter",
-          "typeName": "String",
-          "default": null,
-          "acceptedValues": [],
-          "isRequired": true,
-          "previewValue": "${name}",
-          "previewValueSource": "Placeholder"
-        },
         {
           "name": "item",
           "kind": "StringParameter",
@@ -84,44 +122,77 @@
           "isRequired": false,
           "previewValue": "${item}",
           "previewValueSource": "Placeholder"
-        },
-        {
-          "name": "withImpl",
-          "kind": "BooleanParameter",
-          "typeName": "Boolean",
-          "default": "true",
-          "acceptedValues": ["true", "false"],
-          "isRequired": false,
-          "previewValue": "true",
-          "previewValueSource": "Default"
         }
       ],
       "files": [
         {
+          "pattern": "data/src/commonMain/kotlin/com/example/kmp/data/user/${name}Repository.kt",
           "fileName": "${name}Repository.kt",
           "path": "data/src/commonMain/kotlin/com/example/kmp/data/user/${name}Repository.kt",
-          "unresolvedPatterns": [],
+          "captures": [
+            "name"
+          ],
+          "parameters": [
+            "item"
+          ],
           "content": "package com.example.kmp.data.user\n\n/** Reads ${name} data. */\ninterface ${name}Repository {\n    fun items(): List<${item}>\n}\n"
-        },
+        }
+      ],
+      "branches": [],
+      "exampleCommand": "./gradlew katachiTemplate --arg template=data.Repository.repository --arg name=<name>",
+      "captures": [
         {
+          "name": "name",
+          "kind": "PathCapture",
+          "pattern": "data/src/commonMain/kotlin/com/example/kmp/data/user/*Repository.kt",
+          "position": 9,
+          "segment": "${name}Repository.kt"
+        }
+      ]
+    },
+    {
+      "template": "data.Repository.repositoryImpl",
+      "id": "repositoryImpl",
+      "title": "repositoryImpl",
+      "roleName": "data.Repository",
+      "summary": ":data モジュールの user package。データの取得口で、インターフェースと実装の2つの置き方を持つ",
+      "parameters": [
+        {
+          "name": "item",
+          "kind": "StringParameter",
+          "typeName": "String",
+          "default": "String",
+          "acceptedValues": [],
+          "isRequired": false,
+          "previewValue": "${item}",
+          "previewValueSource": "Placeholder"
+        }
+      ],
+      "files": [
+        {
+          "pattern": "data/src/commonMain/kotlin/com/example/kmp/data/user/${name}RepositoryImpl.kt",
           "fileName": "${name}RepositoryImpl.kt",
           "path": "data/src/commonMain/kotlin/com/example/kmp/data/user/${name}RepositoryImpl.kt",
-          "unresolvedPatterns": [],
+          "captures": [
+            "name"
+          ],
+          "parameters": [
+            "item"
+          ],
           "content": "package com.example.kmp.data.user\n\n/** The real implementation. A stub, like [UserRepositoryImpl]. */\nclass ${name}RepositoryImpl : ${name}Repository {\n    override fun items(): List<${item}> = emptyList()\n}\n"
         }
       ],
-      "branches": [
+      "branches": [],
+      "exampleCommand": "./gradlew katachiTemplate --arg template=data.Repository.repositoryImpl --arg name=<name>",
+      "captures": [
         {
-          "parameterName": "withImpl",
-          "value": "false",
-          "addedFiles": [],
-          "removedFiles": ["${name}RepositoryImpl.kt"],
-          "addedParameters": [],
-          "removedParameters": []
+          "name": "name",
+          "kind": "PathCapture",
+          "pattern": "data/src/commonMain/kotlin/com/example/kmp/data/user/*RepositoryImpl.kt",
+          "position": 9,
+          "segment": "${name}RepositoryImpl.kt"
         }
-      ],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=data/Repository --arg name=Name",
-      "captures": []
+      ]
     }
   ]
 }

@@ -97,7 +97,7 @@ internal sealed interface ListItemUi {
     data class GroupHeader(override val key: String, val title: String) : ListItemUi
 
     data class Row(val row: TemplateRowUi) : ListItemUi {
-        override val key: String get() = "row:${row.id.module.linkedRootPath}:${row.id.module.gradlePath}:${row.id.roleName}"
+        override val key: String get() = "row:${row.id.module.linkedRootPath}:${row.id.module.gradlePath}:${row.id.template}"
     }
 }
 

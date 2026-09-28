@@ -2,8 +2,10 @@
   "schemaHint": "unknown keys are ignored",
   "templates": [
     {
-      "roleName": "data/Repository",
+      "template": "data.Repository",
+      "id": null,
       "title": "リポジトリ",
+      "roleName": "data.Repository",
       "summary": "データの取得口",
       "parameterNames": [
         "name",
@@ -11,11 +13,13 @@
         "withImpl",
         "implSuffix"
       ],
-      "fileCount": 2
+      "conflict": false
     },
     {
-      "roleName": "domain/UseCase",
+      "template": "domain.UseCase",
+      "id": null,
       "title": "ユースケース",
+      "roleName": "domain.UseCase",
       "summary": null,
       "parameterNames": [
         "name",
@@ -23,57 +27,69 @@
         "retries",
         "withTest"
       ],
-      "fileCount": 1
+      "conflict": false
     },
     {
-      "roleName": "ui/Screen",
-      "title": null,
+      "template": "ui.Screen",
+      "id": null,
+      "title": "Screen",
+      "roleName": "ui.Screen",
       "summary": "画面",
       "parameterNames": [
         "name"
       ],
-      "fileCount": 1
+      "conflict": false
     },
     {
-      "roleName": "misc/Broken",
-      "title": null,
+      "template": "misc.Broken",
+      "id": null,
+      "title": "Broken",
+      "roleName": "misc.Broken",
       "summary": null,
       "parameterNames": [
         "name"
       ],
-      "fileCount": null
+      "conflict": true
     },
     {
-      "roleName": "misc/Future",
+      "template": "misc.Future",
+      "id": null,
       "title": "未来の型",
+      "roleName": "misc.Future",
       "summary": null,
       "parameterNames": [
         "items"
       ],
-      "fileCount": 1
+      "conflict": false
     },
     {
-      "roleName": "misc/NoArgs",
-      "title": null,
+      "template": "misc.NoArgs",
+      "id": null,
+      "title": "NoArgs",
+      "roleName": "misc.NoArgs",
       "summary": null,
       "parameterNames": [],
-      "fileCount": 1
+      "conflict": false
     },
     {
-      "roleName": "misc/Label",
+      "template": "misc.Label",
+      "id": null,
       "title": "ラベル \"引用\"\n改行",
+      "roleName": "misc.Label",
       "summary": "C:\\path\\to\t/タブ",
       "parameterNames": [
         "name",
         "alias"
       ],
-      "fileCount": 1
+      "conflict": false
     }
   ],
   "details": [
     {
-      "roleName": "data/Repository",
+      "template": "data.Repository",
+      "id": null,
       "title": "リポジトリ",
+      "roleName": "data.Repository",
       "summary": "データの取得口",
       "parameters": [
         {
@@ -123,15 +139,29 @@
       ],
       "files": [
         {
+          "pattern": "data/src/main/kotlin/com/example/data/${name}Repository.kt",
           "fileName": "${name}Repository.kt",
           "path": "data/src/main/kotlin/com/example/data/${name}Repository.kt",
-          "unresolvedPatterns": [],
+          "captures": [],
+          "parameters": [
+            "name",
+            "item",
+            "withImpl",
+            "implSuffix"
+          ],
           "content": "package com.example.data\n\ninterface ${name}Repository\n"
         },
         {
+          "pattern": "data/src/main/kotlin/com/example/data/${name}Repository${implSuffix}.kt",
           "fileName": "${name}Repository${implSuffix}.kt",
           "path": "data/src/main/kotlin/com/example/data/${name}Repository${implSuffix}.kt",
-          "unresolvedPatterns": [],
+          "captures": [],
+          "parameters": [
+            "name",
+            "item",
+            "withImpl",
+            "implSuffix"
+          ],
           "content": "package com.example.data\n\nclass ${name}Repository${implSuffix} : ${name}Repository\n"
         }
       ],
@@ -149,11 +179,13 @@
           ]
         }
       ],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=data/Repository --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg template=data.Repository --arg name=Name"
     },
     {
-      "roleName": "domain/UseCase",
+      "template": "domain.UseCase",
+      "id": null,
       "title": "ユースケース",
+      "roleName": "domain.UseCase",
       "summary": null,
       "parameters": [
         {
@@ -205,23 +237,20 @@
       ],
       "files": [
         {
+          "pattern": "domain/src/main/kotlin/com/example/domain/${name}UseCase.kt",
           "fileName": "${name}UseCase.kt",
           "path": "domain/src/main/kotlin/com/example/domain/${name}UseCase.kt",
-          "unresolvedPatterns": [],
+          "captures": [],
+          "parameters": [
+            "name",
+            "visibility",
+            "retries",
+            "withTest"
+          ],
           "content": "class ${name}UseCase\n"
         }
       ],
       "branches": [
-        {
-          "parameterName": "visibility",
-          "value": "Internal",
-          "addedFiles": [
-            "${name}InternalApi.kt"
-          ],
-          "removedFiles": [],
-          "addedParameters": [],
-          "removedParameters": []
-        },
         {
           "parameterName": "withTest",
           "value": "true",
@@ -244,11 +273,13 @@
           "removedParameters": []
         }
       ],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=domain/UseCase --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg template=domain.UseCase --arg name=Name"
     },
     {
-      "roleName": "ui/Screen",
-      "title": null,
+      "template": "ui.Screen",
+      "id": null,
+      "title": "Screen",
+      "roleName": "ui.Screen",
       "summary": "画面",
       "parameters": [
         {
@@ -264,20 +295,24 @@
       ],
       "files": [
         {
+          "pattern": "ui/src/main/kotlin/**/${name}Screen.kt",
           "fileName": "${name}Screen.kt",
           "path": null,
-          "unresolvedPatterns": [
-            "ui/src/main/kotlin/**/${name}Screen.kt"
+          "captures": [],
+          "parameters": [
+            "name"
           ],
           "content": "fun ${name}Screen() = \"quoted\"\n"
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=ui/Screen --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg template=ui.Screen --arg name=Name"
     },
     {
-      "roleName": "misc/Future",
+      "template": "misc.Future",
+      "id": null,
       "title": "未来の型",
+      "roleName": "misc.Future",
       "summary": null,
       "parameters": [
         {
@@ -293,34 +328,44 @@
       ],
       "files": [
         {
+          "pattern": "Future.kt",
           "fileName": "Future.kt",
           "path": "Future.kt",
-          "unresolvedPatterns": [],
+          "captures": [],
+          "parameters": [
+            "items"
+          ],
           "content": ""
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=misc/Future"
+      "exampleCommand": "./gradlew katachiTemplate --arg template=misc.Future"
     },
     {
-      "roleName": "misc/NoArgs",
-      "title": null,
+      "template": "misc.NoArgs",
+      "id": null,
+      "title": "NoArgs",
+      "roleName": "misc.NoArgs",
       "summary": null,
       "parameters": [],
       "files": [
         {
+          "pattern": "README.md",
           "fileName": "README.md",
           "path": "README.md",
-          "unresolvedPatterns": [],
+          "captures": [],
+          "parameters": [],
           "content": "# 見出し\n"
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=misc/NoArgs"
+      "exampleCommand": "./gradlew katachiTemplate --arg template=misc.NoArgs"
     },
     {
-      "roleName": "misc/Label",
+      "template": "misc.Label",
+      "id": null,
       "title": "ラベル \"引用\"\n改行",
+      "roleName": "misc.Label",
       "summary": "C:\\path\\to\t/タブ",
       "parameters": [
         {
@@ -346,18 +391,25 @@
       ],
       "files": [
         {
+          "pattern": "labels/${alias}.txt",
           "fileName": "${alias}.txt",
           "path": "labels/${alias}.txt",
-          "unresolvedPatterns": [],
+          "captures": [],
+          "parameters": [
+            "name",
+            "alias"
+          ],
           "content": "say \"${name}\"\n\\end\u0001\n"
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=misc/Label --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg template=misc.Label --arg name=Name"
     },
     {
-      "roleName": "ghost/Orphan",
-      "title": null,
+      "template": "ghost.Orphan",
+      "id": null,
+      "title": "Orphan",
+      "roleName": "ghost.Orphan",
       "summary": null,
       "parameters": [],
       "files": [],

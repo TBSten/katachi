@@ -113,9 +113,13 @@ internal fun leaveResult(state: KatachiScreenState, form: FormState): KatachiScr
     view = state.view.copy(openDetails = state.view.openDetails.filterNotTo(LinkedHashSet()) { it is DetailsKey.ResultRow }),
 )
 
-internal fun updateGenerationRow(state: KatachiScreenState, id: TemplateId, status: GenerationRowStatus): KatachiScreenState {
+internal fun updateGenerationRow(state: KatachiScreenState, id: TemplateId, status: GenerationRowStatus): KatachiScreenState =
+    updateGenerationRow(state, listOf(id), status)
+
+/** [updateGenerationRow] for every row of one run at once (design draft section 6 "IDE の複数選択"). */
+internal fun updateGenerationRow(state: KatachiScreenState, ids: List<TemplateId>, status: GenerationRowStatus): KatachiScreenState {
     val running = state.generation as? GenerationState.Running ?: return state
-    return state.copy(generation = running.copy(statuses = running.statuses + (id to status), waitingForLoad = false))
+    return state.copy(generation = running.copy(statuses = running.statuses + ids.associateWith { status }, waitingForLoad = false))
 }
 
 /**
@@ -136,7 +140,8 @@ internal fun abortGeneration(state: KatachiScreenState, failure: GenerationFailu
                 GenerationItemResult.Failed(failure, emptyList())
             }
         }
-        GenerationItemReport(id, result)
+        // One row per report: the runs Gradle would have batched together are not tracked here.
+        GenerationItemReport(listOf(id), result)
     }
     return state.copy(generation = GenerationState.Finished(GenerationReport(items), localHistoryLabel))
 }

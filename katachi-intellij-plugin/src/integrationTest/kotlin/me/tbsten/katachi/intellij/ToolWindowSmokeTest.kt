@@ -27,7 +27,7 @@ import kotlin.time.Duration.Companion.seconds
 interface KatachiDebugBridgeRef {
     fun describeState(): String
 
-    fun checkAndFill(roleName: String, args: String): Boolean
+    fun checkAndFill(template: String, args: String): Boolean
 
     fun generate()
 }
@@ -35,7 +35,7 @@ interface KatachiDebugBridgeRef {
 /**
  * The Driver smoke (channel D): a real IntelliJ IDEA with the built plugin opens a copy of
  * sample/jvm, imports it with Gradle, opens the `katachi` tool window, sees the template list, checks
- * `domain/Service`, fills `name`, generates, and finds the written file open in the editor.
+ * `domain.Service`, fills `name`, generates, and finds the written file open in the editor.
  *
  * The rows and fields live in one `ComposePanel` that Driver's Swing tree cannot see, so everything
  * after opening the tool window goes through the plugin's debug bridge, which sends the intents a
@@ -76,10 +76,10 @@ class ToolWindowSmokeTest {
                 timeout = 10.minutes,
                 interval = 2.seconds,
                 errorMessage = { bridge.describeState() }) {
-                "template=domain/Service" in bridge.describeState()
+                "template=domain.Service" in bridge.describeState()
             }
 
-            assertTrue(bridge.checkAndFill("domain/Service", "name=SmokeProbe"), bridge.describeState())
+            assertTrue(bridge.checkAndFill("domain.Service", "name=SmokeProbe"), bridge.describeState())
             bridge.generate()
             waitFor(
                 "the generation to finish",
@@ -89,7 +89,7 @@ class ToolWindowSmokeTest {
                 "generation=finished" in bridge.describeState()
             }
             val state = bridge.describeState()
-            assertTrue("result=domain/Service:Generated" in state, state)
+            assertTrue("result=domain.Service:Generated" in state, state)
 
             val written = project.resolve("sample/jvm/src/main/kotlin/com/example/service/SmokeProbeService.kt")
             assertTrue(Files.isRegularFile(written), "$written was not written")

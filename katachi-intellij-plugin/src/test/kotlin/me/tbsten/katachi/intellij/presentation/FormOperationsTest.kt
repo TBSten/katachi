@@ -52,9 +52,9 @@ class FormOperationsTest {
 
     private val report = GenerationReport(
         listOf(
-            GenerationItemReport(one, GenerationItemResult.Generated(emptyList())),
-            GenerationItemReport(two, GenerationItemResult.Failed(GenerationFailure.Katachi(listOf("boom")), emptyList())),
-            GenerationItemReport(three, GenerationItemResult.NotRun),
+            GenerationItemReport(listOf(one), GenerationItemResult.Generated(emptyList())),
+            GenerationItemReport(listOf(two), GenerationItemResult.Failed(GenerationFailure.Katachi(listOf("boom")), emptyList())),
+            GenerationItemReport(listOf(three), GenerationItemResult.NotRun),
         ),
     )
     private val afterGeneration = FormState(
@@ -74,7 +74,7 @@ class FormOperationsTest {
 
     @Test
     fun `スキップした行もやり直しの対象から外す`() {
-        val skipped = GenerationReport(listOf(GenerationItemReport(one, GenerationItemResult.Skipped(emptyList()))))
+        val skipped = GenerationReport(listOf(GenerationItemReport(listOf(one), GenerationItemResult.Skipped(emptyList()))))
         assertEquals(emptyList<Any>(), retryRemaining(FormState(selected = listOf(one)), skipped).selected)
     }
 
@@ -97,8 +97,8 @@ class FormOperationsTest {
         val a = rowsOf("arch-a", module(":arch-a"))
         val b = rowsOf("arch-b", module(":arch-b"))
         val all = a + b
-        val inA = all.first { it.template.roleName == "data/Repository" }.id
-        val inB = all.last { it.template.roleName == "data/Repository" }.id
+        val inA = all.first { it.template.roleName == "data.Repository" }.id
+        val inB = all.last { it.template.roleName == "data.Repository" }.id
         assertTrue(inA != inB)
         assertEquals(listOf(inB), toggleCheck(FormState(), all, inB).selected)
     }

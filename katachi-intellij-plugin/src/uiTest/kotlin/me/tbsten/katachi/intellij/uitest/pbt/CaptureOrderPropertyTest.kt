@@ -36,7 +36,7 @@ class CaptureOrderPropertyTest {
     private val seed = System.getProperty("katachi.pbt.seed")?.toLong() ?: 20260928L
     private val scale = System.getProperty("katachi.pbt.scale")?.toDouble() ?: 1.0
 
-    private val deep = TemplateId(module(":arch-a").id, "feature/Deep")
+    private val deep = TemplateId(module(":arch-a").id, "feature.Deep")
     private val fieldOrder = listOf("area", "feature", "name")
 
     /** One step: a value typed into a field, or a move that must keep every value. */
@@ -109,7 +109,7 @@ class CaptureOrderPropertyTest {
             send(KatachiIntent.Generate)
             assertTrue("$steps", s.state.generation is GenerationState.Finished)
 
-            val expected = listOf("roleName" to "feature/Deep", "onExisting" to "fail") +
+            val expected = listOf("template" to "feature.Deep", "onExisting" to "fail") +
                 fieldOrder.mapNotNull { name -> last.getValue(name).takeIf { it.isNotBlank() }?.let { name to it } }
             assertEquals("$steps", expected.toMap(), s.katachi.runs.single())
             assertEquals("$steps", expected.map { it.first }, s.katachi.runs.single().keys.toList())

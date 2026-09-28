@@ -44,7 +44,7 @@ internal class IdeIntentHandler(
         return true
     }
 
-    /** Runs `katachiTemplates --arg roleName=X` and shows its text under the row (E-07). */
+    /** Runs `katachiTemplates --arg template=X` and shows its text under the row (E-07). */
     private fun showCause(id: TemplateId) {
         val row = rowOf(id) ?: return
         if (state().view.causes[id] is CauseState.Loading) return
@@ -53,7 +53,7 @@ internal class IdeIntentHandler(
             val lines = mutableListOf<String>()
             val request = GradleRunRequest(
                 row.module.linkedRootPath,
-                listOf(GradleTaskInvocation(row.module.taskPath(KatachiModule.DESCRIBE_TEMPLATES_TASK), listOf("roleName" to row.template.roleName))),
+                listOf(GradleTaskInvocation(row.module.taskPath(KatachiModule.DESCRIBE_TEMPLATES_TASK), listOf("template" to row.template.template))),
             )
             try {
                 runner.run(request, object : GradleRunListener {
@@ -77,7 +77,7 @@ internal class IdeIntentHandler(
 /** "Copy command": the `./gradlew` line that generates [row] with the current inputs. */
 internal fun commandLineOf(row: ModuleTemplate, form: FormState): String {
     val detail = row.template.detail ?: return ""
-    val args = templateArgsOf(row.template.roleName, detail, form.inputsOf(row.id), form.onExisting)
+    val args = templateArgsOf(row.template.template, detail, form.inputsOf(row.id), form.onExisting)
     val invocation = GradleTaskInvocation(row.module.taskPath(KatachiModule.TEMPLATE_TASK), args)
     return GradleRunRequest(row.module.linkedRootPath, listOf(invocation)).commandLine
 }

@@ -15,7 +15,7 @@ import java.nio.file.Path
 /** The paths a template may write: never shown, but behind E-27, E-44 and the result's fallbacks. */
 class ExpectedFilesTest {
     private val rows = rowsOf("arch-a")
-    private val repository = rows.row("data/Repository").template.detail ?: throw AssertionError()
+    private val repository = rows.row("data.Repository").template.detail ?: throw AssertionError()
 
     @Test
     fun `パスとファイル名を入力値で置き換える`() {
@@ -32,7 +32,7 @@ class ExpectedFilesTest {
 
     @Test
     fun `分岐で増えたファイルは宣言順の末尾に足しパスは分からないとする`() {
-        val useCase = rows.row("domain/UseCase").template.detail ?: throw AssertionError()
+        val useCase = rows.row("domain.UseCase").template.detail ?: throw AssertionError()
         val files = expectedFilesOf(useCase, mapOf("name" to "Login", "withTest" to "true"))
         assertEquals(listOf("LoginUseCase.kt", "LoginUseCaseTest.kt"), files.map { it.fileName })
         assertEquals(ExpectedLocation.FromBranch, files.last().location)
@@ -52,7 +52,7 @@ class ExpectedFilesTest {
 
     @Test
     fun `生成先が決まらないファイルは候補パターンを持つ`() {
-        val screen = rows.row("ui/Screen").template.detail ?: throw AssertionError()
+        val screen = rows.row("ui.Screen").template.detail ?: throw AssertionError()
         val files = expectedFilesOf(screen, mapOf("name" to "Home"))
         assertEquals(ExpectedLocation.Unresolved(listOf("ui/src/main/kotlin/**/\${name}Screen.kt")), files.single().location)
     }

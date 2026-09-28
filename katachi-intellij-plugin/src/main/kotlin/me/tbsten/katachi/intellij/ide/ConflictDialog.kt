@@ -32,7 +32,7 @@ internal class ConflictDialog(
     private lateinit var skipButton: JBRadioButton
 
     init {
-        title = KatachiBundle.message("conflict.title", question.index + 1, question.total, question.templateId.roleName.substringAfterLast('/'))
+        title = KatachiBundle.message("conflict.title", question.index + 1, question.total, conflictNameOf(question))
         setOKButtonText(KatachiBundle.message("conflict.continue"))
         setCancelButtonText(KatachiBundle.message("conflict.stop"))
         init()
@@ -78,11 +78,15 @@ internal fun conflictChoiceOf(continued: Boolean, overwrite: Boolean): ConflictC
     else -> ConflictChoice.SkipAndContinue
 }
 
-/** The path shown in the dialog: relative to the template's linked root when inside it. */
+/** The path shown in the dialog: relative to the run's (shared, E-05) linked root when inside it. */
 private fun displayPathOf(path: java.nio.file.Path, question: ConflictQuestion): String {
-    val root = question.templateId.module.linkedRootPath
+    val root = question.templateIds.first().module.linkedRootPath
     return if (path.startsWith(root)) root.relativize(path).toString().replace('\\', '/') else path.toString()
 }
+
+/** The dialog's title names every template the run covers, its own last segment each. */
+private fun conflictNameOf(question: ConflictQuestion): String =
+    question.templateIds.joinToString(", ") { it.template.substringAfterLast('.') }
 
 /**
  * Shows [ConflictDialog], or answers with the test hook when one is set, as `TestDialogManager` does
@@ -97,7 +101,7 @@ internal object ConflictDialogs {
      */
     fun ask(project: Project, question: ConflictQuestion): ConflictChoice {
         testAnswer?.let { return it(question) }
-        return sdkCall("ask about the existing files of ${question.templateId.roleName}") {
+        return sdkCall("ask about the existing files of ${question.templateIds.joinToString(", ") { it.template }}") {
             val dialog = ConflictDialog(project, question)
             dialog.show()
             dialog.choice

@@ -32,7 +32,7 @@ internal class KatachiToolWindowFactoryTest : KatachiIdeTestBase() {
         assertEquals(1, toolWindow.contentManager.contentCount)
         val state = viewModel.waitFor("loaded") { it.phase == ScreenPhase.Ready && it.loading == null }
         assertEquals(listOf(":arch-a"), state.modules.map { it.gradlePath })
-        assertTrue(state.rows.any { it.template.roleName == "data/Repository" })
+        assertTrue(state.rows.any { it.template.roleName == "data.Repository" })
         assertEquals(listOf(":arch-a:${KatachiModule.TEMPLATES_JSON_TASK}"), gradle.requests.single().taskNames)
     }
 

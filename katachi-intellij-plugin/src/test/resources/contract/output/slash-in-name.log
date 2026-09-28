@@ -6,7 +6,7 @@
 [3/3] Katachi processor run: 0 succeeded, 1 failed
 
 [FAILED] template
-  The template data/Repository would write data/src/main/kotlin/com/example/data/a/../../../../../../outside/xRepository.kt, which is outside the project root file:///__ROOT__.
+  The template data.Repository would write data/src/main/kotlin/com/example/data/a/../../../../../../outside/xRepository.kt, which is outside the project root file:///__ROOT__.
   Check the values passed with --arg: a "/" or ".." in a name becomes part of the path.
 
 ========================================

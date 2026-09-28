@@ -5,29 +5,40 @@ package me.tbsten.katachi.intellij.model
  * preview failed.
  */
 internal data class TemplateSummaryModel(
-    /** Qualified role name such as `data/Repository`; the group is everything before the last `/`. */
+    /** The complete specifier `--arg template=` accepts, `data.Repository.repositoryImpl`; the element's key. */
+    val template: String,
+    /** This template's own `id`, or `null` for the one template of a role that declares no other. */
+    val id: String?,
+    /** `.template { }`'s own title, falling back to [id], then to the role's title; never blank. */
+    val title: String,
+    /** The role this template belongs to, qualified, `.` separated; the group is everything before the last segment. */
     val roleName: String,
-    val title: String?,
     val summary: String?,
     val parameterNames: List<String>,
-    /** Files with the preview values; `null` when katachi could not preview the template. */
-    val fileCount: Int?,
-    /** The names of the role's captures, each once; empty for a katachi that does not list them. */
+    /**
+     * Whether this template's preview could not be built. Still listed (E-07): a template that
+     * cannot be previewed is not one that cannot be run.
+     */
+    val conflict: Boolean,
+    /** The names of this template's captures, each once; empty for a katachi that does not list them. */
     val captureNames: List<String> = emptyList(),
 )
 
-/** One entry of `details[]`: the parameters, files and branches of a template that previewed. */
+/** One entry of `details[]`: the parameters, file and branches of a template that previewed. */
 internal data class TemplateDetailModel(
+    val template: String,
+    val id: String?,
+    val title: String,
     val roleName: String,
-    val title: String?,
     val summary: String?,
     val parameters: List<ParameterModel>,
+    /** This template's one file, in a list for the JSON's sake. */
     val files: List<FilePreviewModel>,
     val branches: List<BranchModel>,
     val exampleCommand: String,
     /**
-     * The role's named wildcards (`captures` of the JSON, kept apart from [parameters] there), one
-     * per name. Empty for a katachi that does not list them.
+     * This template's named wildcards (`captures` of the JSON, kept apart from [parameters] there),
+     * one per name. Empty for a katachi that does not list them.
      */
     val captures: List<ParameterModel.CaptureParam> = emptyList(),
 )
@@ -129,13 +140,15 @@ internal sealed interface ParameterModel {
 /**
  * One place a capture sits. [pattern] is the flattened file pattern with a `*` for each wildcard
  * level, or a module key such as `:feature:*`; [position] is the capture's `/`-separated level of
- * the file pattern, or which `*` of the module key it is.
+ * the file pattern, or which `*` of the module key it is; [segment] is the pattern of the one
+ * segment this capture sits in, `${fileName}` in place of every capture that segment holds.
  */
 internal data class CapturePlace(
     /** The JSON `kind`: `PathCapture`, `ModuleCapture`, or one a newer katachi added. */
     val kindName: String,
     val pattern: String,
     val position: Int,
+    val segment: String,
 ) {
     val isModule: Boolean get() = kindName == KIND_MODULE
 
@@ -145,12 +158,17 @@ internal data class CapturePlace(
     }
 }
 
-/** A file the template produces with the preview values, `${name}` placeholders included. */
+/** The one file the template produces with the preview values, `${name}` placeholders included. */
 internal data class FilePreviewModel(
+    /** The declared pattern, `/` separated, with every capture written as `${name}`. */
+    val pattern: String,
     val fileName: String,
     /** Relative to the project root, `/` separated; `null` when the target is not decided (a wildcard). */
     val path: String?,
-    val unresolvedPatterns: List<String>,
+    /** This template's captures that appear on [pattern], by name. */
+    val captures: List<String>,
+    /** This template's parameters, by name. */
+    val parameters: List<String>,
     val content: String,
 )
 
@@ -166,7 +184,7 @@ internal data class BranchModel(
 
 /** Why a template row cannot be checked. */
 internal sealed interface TemplateUnavailability {
-    /** `details[]` has no entry: katachi could not preview it (E-07). */
+    /** `conflict: true` in the summary and no matching entry in `details[]`: the preview failed (E-07). */
     data object PreviewFailed : TemplateUnavailability
 
     /** A parameter has a `kind` this plugin does not know (E-36). */
@@ -178,17 +196,19 @@ internal data class TemplateModel(
     val summary: TemplateSummaryModel,
     val detail: TemplateDetailModel?,
 ) {
+    /** The complete specifier `--arg template=` accepts for this template. */
+    val template: String get() = summary.template
     val roleName: String get() = summary.roleName
 
-    /** The last segment of [roleName], shown as the row's name. */
-    val simpleName: String get() = roleName.substringAfterLast('/')
+    /** `.template { }`'s own title, falling back to `id`, then to the role's title: the row's name. */
+    val title: String get() = summary.title
 
-    /** Everything before the last `/` of [roleName]; empty for a top level role. */
-    val groupPath: String get() = roleName.substringBeforeLast('/', missingDelimiterValue = "")
+    /** Everything before the last `.` of [roleName]; empty for a top level role. */
+    val groupPath: String get() = roleName.substringBeforeLast('.', missingDelimiterValue = "")
 
     val unavailability: TemplateUnavailability?
         get() {
-            val detail = detail ?: return TemplateUnavailability.PreviewFailed
+            if (summary.conflict || detail == null) return TemplateUnavailability.PreviewFailed
             val unknown = allParametersOf(detail).filterIsInstance<ParameterModel.UnknownParam>()
             return if (unknown.isEmpty()) null else TemplateUnavailability.UnknownParameterKind(unknown.map { it.kindName }.distinct())
         }

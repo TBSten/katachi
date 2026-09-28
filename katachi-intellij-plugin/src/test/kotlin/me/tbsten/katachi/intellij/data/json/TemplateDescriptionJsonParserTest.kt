@@ -4,6 +4,7 @@ import me.tbsten.katachi.intellij.model.ParameterModel
 import me.tbsten.katachi.intellij.model.TemplateUnavailability
 import me.tbsten.katachi.intellij.testing.ContractFixtures
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertThrows
 import org.junit.Assert.assertTrue
@@ -19,12 +20,14 @@ class TemplateDescriptionJsonParserTest {
     fun `sample-jvm の実出力を読める`() {
         val templates = ContractFixtures.templates("sample-jvm")
         val service = templates.single()
-        assertEquals("domain/Service", service.roleName)
+        assertEquals("domain.Service", service.template)
+        assertEquals("domain.Service", service.roleName)
         assertEquals("サービス", service.summary.title)
-        assertEquals(1, service.summary.fileCount)
+        assertFalse(service.summary.conflict)
+        assertEquals(listOf("name"), service.summary.captureNames)
         val detail = service.detail ?: throw AssertionError("detail missing")
-        assertEquals(listOf("name", "kdoc"), detail.parameters.map { it.name })
-        assertEquals("\${name} に関するアプリ固有の振る舞い。", detail.parameters[1].default)
+        assertEquals(listOf("kdoc"), detail.parameters.map { it.name })
+        assertEquals("\${name} に関するアプリ固有の振る舞い。", detail.parameters[0].default)
         assertTrue(detail.files.single().content.contains("TODO(\"\${name}Service の実装\")"))
     }
 
@@ -32,7 +35,7 @@ class TemplateDescriptionJsonParserTest {
     fun `契約の全部の型を読みtemplatesの順に並べる`() {
         val templates = ContractFixtures.templates("arch-a")
         assertEquals(
-            listOf("data/Repository", "domain/UseCase", "ui/Screen", "misc/Broken", "misc/Future", "misc/NoArgs", "misc/Label"),
+            listOf("data.Repository", "domain.UseCase", "ui.Screen", "misc.Broken", "misc.Future", "misc.NoArgs", "misc.Label"),
             templates.map { it.roleName },
         )
         val useCase = templates[1].detail ?: throw AssertionError("detail missing")
@@ -59,8 +62,8 @@ class TemplateDescriptionJsonParserTest {
 
     @Test
     fun `プレビューに失敗したテンプレートはdetailが無くチェックできない`() {
-        val broken = ContractFixtures.templates("arch-a").single { it.roleName == "misc/Broken" }
-        assertNull(broken.summary.fileCount)
+        val broken = ContractFixtures.templates("arch-a").single { it.roleName == "misc.Broken" }
+        assertTrue(broken.summary.conflict)
         assertNull(broken.detail)
         assertEquals(TemplateUnavailability.PreviewFailed, broken.unavailability)
     }
@@ -68,44 +71,44 @@ class TemplateDescriptionJsonParserTest {
     @Test
     fun `知らないkindはその1件だけ使えなくし残りは読む`() {
         val templates = ContractFixtures.templates("arch-a")
-        val future = templates.single { it.roleName == "misc/Future" }
+        val future = templates.single { it.roleName == "misc.Future" }
         assertEquals(TemplateUnavailability.UnknownParameterKind(listOf("ListParameter")), future.unavailability)
-        assertTrue(templates.single { it.roleName == "data/Repository" }.isAvailable)
+        assertTrue(templates.single { it.roleName == "data.Repository" }.isAvailable)
     }
 
     @Test
     fun `知らないキーと知らないpreviewValueSourceは無視する`() {
-        val future = ContractFixtures.templates("arch-a").single { it.roleName == "misc/Future" }
+        val future = ContractFixtures.templates("arch-a").single { it.roleName == "misc.Future" }
         assertEquals("items", future.detail?.parameters?.single()?.name)
     }
 
     @Test
     fun `日本語と改行と引用符とバックスラッシュと制御文字をそのまま戻す`() {
-        val label = ContractFixtures.templates("arch-a").single { it.roleName == "misc/Label" }
+        val label = ContractFixtures.templates("arch-a").single { it.roleName == "misc.Label" }
         assertEquals("ラベル \"引用\"\n改行", label.summary.title)
         assertEquals("C:\\path\\to\t/タブ", label.summary.summary)
         assertEquals("say \"\${name}\"\n\\end\u0001\n", label.detail?.files?.single()?.content)
     }
 
     @Test
-    fun `生成先が決まらないファイルはpathがnullで候補パターンを持つ`() {
-        val screen = ContractFixtures.templates("arch-a").single { it.roleName == "ui/Screen" }.detail?.files?.single()
+    fun `生成先が決まらないファイルはpathがnullで宣言のパターンを持つ`() {
+        val screen = ContractFixtures.templates("arch-a").single { it.roleName == "ui.Screen" }.detail?.files?.single()
         assertNull(screen?.path)
-        assertEquals(listOf("ui/src/main/kotlin/**/\${name}Screen.kt"), screen?.unresolvedPatterns)
+        assertEquals("ui/src/main/kotlin/**/\${name}Screen.kt", screen?.pattern)
     }
 
     @Test
-    fun `templatesに無いroleNameのdetailは捨てる`() {
-        assertTrue(ContractFixtures.templates("arch-a").none { it.roleName == "ghost/Orphan" })
+    fun `templatesに無いtemplateのdetailは捨てる`() {
+        assertTrue(ContractFixtures.templates("arch-a").none { it.template == "ghost.Orphan" })
     }
 
     @Test
-    fun `同じroleNameが2回出たら後のものを捨てる`() {
+    fun `同じtemplateが2回出たら後のものを捨てる`() {
         val templates = parse(
             """
             {"templates": [
-              {"roleName": "a/X", "title": "first", "summary": null, "parameterNames": [], "fileCount": 0},
-              {"roleName": "a/X", "title": "second", "summary": null, "parameterNames": [], "fileCount": 0}
+              {"template": "a.X", "id": null, "title": "first", "roleName": "a.X", "summary": null, "parameterNames": [], "conflict": false},
+              {"template": "a.X", "id": null, "title": "second", "roleName": "a.X", "summary": null, "parameterNames": [], "conflict": false}
             ], "details": []}
             """.trimIndent(),
         )
@@ -120,35 +123,35 @@ class TemplateDescriptionJsonParserTest {
     @Test
     fun `必須のキーが無ければ場所を名指しして版の不一致にする`() {
         val error = assertThrows(KatachiIncompatibleTemplateJsonException::class.java) {
-            parse("""{"templates": [{"roleName": "a/X", "title": null, "summary": null, "parameterNames": []}], "details": []}""")
+            parse("""{"templates": [{"template": "a.X", "id": null, "title": "X", "roleName": "a.X", "summary": null, "parameterNames": []}], "details": []}""")
         }
-        assertEquals("$.templates[0].fileCount", error.location)
+        assertEquals("$.templates[0].conflict", error.location)
         assertNull(error.actual)
-        assertTrue(error.message.orEmpty().contains("Missing key $.templates[0].fileCount"))
+        assertTrue(error.message.orEmpty().contains("Missing key $.templates[0].conflict"))
     }
 
     @Test
     fun `型が違えば期待した型と実際の型を名指しする`() {
         val error = assertThrows(KatachiIncompatibleTemplateJsonException::class.java) {
-            parse("""{"templates": [{"roleName": "a/X", "title": 3, "summary": null, "parameterNames": [], "fileCount": 1}], "details": []}""")
+            parse("""{"templates": [{"template": "a.X", "id": null, "title": 3, "roleName": "a.X", "summary": null, "parameterNames": [], "conflict": false}], "details": []}""")
         }
         assertEquals("$.templates[0].title", error.location)
-        assertEquals("string or null", error.expected)
+        assertEquals("string", error.expected)
         assertEquals("number", error.actual)
     }
 
     @Test
     fun `nullを許さないキーがnullなら版の不一致にする`() {
         val error = assertThrows(KatachiIncompatibleTemplateJsonException::class.java) {
-            parse("""{"templates": [{"roleName": null, "title": null, "summary": null, "parameterNames": [], "fileCount": 1}], "details": []}""")
+            parse("""{"templates": [{"template": null, "id": null, "title": "X", "roleName": "a.X", "summary": null, "parameterNames": [], "conflict": false}], "details": []}""")
         }
         assertEquals("null", error.actual)
     }
 
     @Test
-    fun `fileCountが整数でなければ版の不一致にする`() {
+    fun `conflictが真偽値でなければ版の不一致にする`() {
         assertThrows(KatachiIncompatibleTemplateJsonException::class.java) {
-            parse("""{"templates": [{"roleName": "a/X", "title": null, "summary": null, "parameterNames": [], "fileCount": 1.5}], "details": []}""")
+            parse("""{"templates": [{"template": "a.X", "id": null, "title": "X", "roleName": "a.X", "summary": null, "parameterNames": [], "conflict": "yes"}], "details": []}""")
         }
     }
 
@@ -196,13 +199,13 @@ class TemplateDescriptionJsonParserTest {
     @Test
     fun `整形に頼らず1行のJSONも読む`() {
         val oneLine = ContractFixtures.json("arch-b").replace(Regex("""\n\s*"""), "")
-        assertEquals("data/Repository", parse(oneLine).single().roleName)
+        assertEquals("data.Repository", parse(oneLine).single().roleName)
     }
 
     @Test
     fun `ユニコードエスケープを戻す`() {
         val templates = parse(
-            """{"templates": [{"roleName": "a/X", "title": "\u30ea\u30dd\u0001\/", "summary": null, "parameterNames": [], "fileCount": 0}], "details": []}""",
+            """{"templates": [{"template": "a.X", "id": null, "title": "\u30ea\u30dd\u0001\/", "roleName": "a.X", "summary": null, "parameterNames": [], "conflict": false}], "details": []}""",
         )
         assertEquals("リポ\u0001/", templates.single().summary.title)
     }

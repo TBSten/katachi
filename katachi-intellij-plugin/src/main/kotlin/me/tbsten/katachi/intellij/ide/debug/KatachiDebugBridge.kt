@@ -20,7 +20,7 @@ import me.tbsten.katachi.intellij.presentation.KatachiToolWindowViewModel
  * Example, from a Driver test:
  * ```kotlin
  * val bridge = driver.service(KatachiDebugBridgeRef::class, project)
- * bridge.checkAndFill("domain/Service", "name=Probe")
+ * bridge.checkAndFill("domain.Service", "name=Probe")
  * bridge.generate()
  * ```
  */
@@ -34,7 +34,7 @@ internal class KatachiDebugBridge(private val project: Project) {
 
     /**
      * The state as `key=value` lines: `phase`, one `module` per definition module (its Gradle path),
-     * one `template` per row (its roleName), `blocker` and
+     * one `template` per row (its complete specifier), `blocker` and
      * `generation` (`running`, or `finished` followed by one `result` line per template).
      */
     fun describeState(): String {
@@ -42,25 +42,25 @@ internal class KatachiDebugBridge(private val project: Project) {
         return buildList {
             add("phase=${state.phase.toString().take(PHASE_TEXT_LIMIT)}")
             state.modules.forEach { add("module=${it.gradlePath}") }
-            state.rows.forEach { add("template=${it.template.roleName}") }
+            state.rows.forEach { add("template=${it.template.template}") }
             state.generateBlocker?.let { add("blocker=$it") }
             when (val generation = state.generation) {
                 null -> Unit
                 is GenerationState.Running -> add("generation=running")
                 is GenerationState.Finished -> {
                     add("generation=finished")
-                    generation.report.items.forEach { add("result=${it.templateId.roleName}:${it.result}") }
+                    generation.report.items.forEach { item -> item.templateIds.forEach { add("result=${it.template}:${item.result}") } }
                 }
             }
         }.joinToString("\n")
     }
 
     /**
-     * Checks the first row whose roleName is [roleName] and types [args] into its fields, one
-     * `name=value` per line. `false` when no row has that roleName.
+     * Checks the first row whose complete specifier is [template] and types [args] into its
+     * fields, one `name=value` per line. `false` when no row has that specifier.
      */
-    fun checkAndFill(roleName: String, args: String): Boolean {
-        val row = viewModel.state.value.rows.firstOrNull { it.template.roleName == roleName } ?: return false
+    fun checkAndFill(template: String, args: String): Boolean {
+        val row = viewModel.state.value.rows.firstOrNull { it.template.template == template } ?: return false
         val inputs = args.lines().filter { it.isNotBlank() }.map { line -> line.substringBefore('=') to line.substringAfter('=') }
         onEdt {
             viewModel.dispatch(KatachiIntent.ToggleCheck(row.id))

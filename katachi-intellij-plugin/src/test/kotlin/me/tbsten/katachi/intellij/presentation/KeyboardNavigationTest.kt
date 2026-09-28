@@ -14,12 +14,12 @@ import java.time.Instant
 
 class KeyboardNavigationTest {
     private val arch = module(":arch")
-    private val repository = template("data/Repository", parameters = listOf(stringParam("item", default = "String"), stringParam("name")))
-    private val broken = previewFailed("data/Cache")
-    private val service = template("domain/Service")
-    private val repositoryId = TemplateId(arch.id, repository.roleName)
-    private val brokenId = TemplateId(arch.id, broken.roleName)
-    private val serviceId = TemplateId(arch.id, service.roleName)
+    private val repository = template("data.Repository", parameters = listOf(stringParam("item", default = "String"), stringParam("name")))
+    private val broken = previewFailed("data.Cache")
+    private val service = template("domain.Service")
+    private val repositoryId = TemplateId(arch.id, repository.template)
+    private val brokenId = TemplateId(arch.id, broken.template)
+    private val serviceId = TemplateId(arch.id, service.template)
 
     private val base = KatachiScreenState(
         phase = ScreenPhase.Ready,

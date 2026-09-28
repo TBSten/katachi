@@ -45,33 +45,40 @@ internal class FakeKatachi(
         runs += args
         currentTaskPath = request.tasks.single().taskPath
         override(args, index)?.let { return it }
-        val roleName = args.getValue("roleName")
+        // Several checked rows of the same module run together, `--arg template=` comma joined
+        // (design draft section 6, "IDE の複数選択"): every one of them contributes its own files.
+        val template = args.getValue("template")
         val taskPath = request.tasks.single().taskPath
-        val row = rows().firstOrNull { it.template.roleName == roleName && it.module.taskPath(KatachiModule.TEMPLATE_TASK) == taskPath }
-            ?: return FakeRun(listOf("> Task ${request.tasks.single().taskPath} FAILED", "No template $roleName"), GradleRunOutcome.Failed)
-        val detail = row.template.detail ?: return FakeRun(emptyList(), GradleRunOutcome.Failed)
-        val paths = expectedFilesOf(detail, args - "roleName" - "onExisting")
-            .mapNotNull { (it.location as? ExpectedLocation.Known)?.path }
-            .mapNotNull { resolveExpectedPath(root, it) }
+        val specifiers = template.split(",")
+        val available = rows().filter { it.module.taskPath(KatachiModule.TEMPLATE_TASK) == taskPath }
+        val matched = specifiers.map { specifier -> available.firstOrNull { it.template.template == specifier } }
+        if (matched.any { it == null }) {
+            return FakeRun(listOf("> Task ${request.tasks.single().taskPath} FAILED", "No template $template"), GradleRunOutcome.Failed)
+        }
+        val inputs = args - "template" - "onExisting"
+        val paths = matched.filterNotNull().flatMap { row ->
+            val detail = row.template.detail ?: return FakeRun(emptyList(), GradleRunOutcome.Failed)
+            expectedFilesOf(detail, inputs).mapNotNull { (it.location as? ExpectedLocation.Known)?.path }.mapNotNull { resolveExpectedPath(root, it) }
+        }
         val existing = paths.filter(fs::exists)
         return when {
-            existing.isEmpty() -> written(paths, emptyList(), roleName)
+            existing.isEmpty() -> written(paths, emptyList(), template)
             args["onExisting"] == "skip" -> FakeRun(
                 head(paths) + log("Wrote nothing: ${existing.size} of ${paths.size} files are already there (${existing.joinToString(", ") { uri(it) }}).") + ok(),
             )
-            args["onExisting"] == "overwrite" -> written(paths, existing, roleName)
+            args["onExisting"] == "overwrite" -> written(paths, existing, template)
             else -> FakeRun(head(paths) + conflict(existing, paths.size), GradleRunOutcome.Failed)
         }
     }
 
-    private fun written(paths: List<Path>, overwritten: List<Path>, roleName: String): FakeRun {
+    private fun written(paths: List<Path>, overwritten: List<Path>, template: String): FakeRun {
         val overwriting = if (overwritten.isEmpty()) {
             emptyList()
         } else {
             log("Overwriting ${overwritten.size} of ${paths.size} files: ${overwritten.joinToString(", ") { uri(it) }}")
         }
         val lines = head(paths) + overwriting + paths.flatMap { log("Wrote ${uri(it)}") } + ok()
-        return FakeRun(lines, writes = paths.associateWith { "// $roleName" })
+        return FakeRun(lines, writes = paths.associateWith { "// $template" })
     }
 
     private fun head(paths: List<Path>) =

@@ -20,7 +20,7 @@ internal interface IdeEffects {
      * A Local History label before generating (E-47); returns the label's name for the result
      * footer, or `null` when the IDE could not put it, so that the footer names no label to undo to.
      */
-    suspend fun putLocalHistoryLabel(roleNames: List<String>): String?
+    suspend fun putLocalHistoryLabel(titles: List<String>): String?
 
     /** Makes the VFS see files Gradle wrote behind its back; reloads open editors of overwritten ones. */
     suspend fun refreshFiles(paths: List<Path>)

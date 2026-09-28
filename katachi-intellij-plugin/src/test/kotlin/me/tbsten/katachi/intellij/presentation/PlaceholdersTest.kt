@@ -1,5 +1,6 @@
 package me.tbsten.katachi.intellij.presentation
 
+import me.tbsten.katachi.intellij.model.allParametersOf
 import me.tbsten.katachi.intellij.testing.ContractFixtures
 import me.tbsten.katachi.intellij.testing.row
 import me.tbsten.katachi.intellij.testing.rowsOf
@@ -9,7 +10,7 @@ import org.junit.Assert.assertEquals
 import org.junit.Test
 
 class PlaceholdersTest {
-    private val repository = rowsOf("arch-a").row("data/Repository").template.detail ?: throw AssertionError()
+    private val repository = rowsOf("arch-a").row("data.Repository").template.detail ?: throw AssertionError()
 
     @Test
     fun `入力値でプレースホルダを置き換える`() {
@@ -31,7 +32,10 @@ class PlaceholdersTest {
     fun `他のパラメータを読む既定値は入力に合わせて置き換える`() {
         val service = ContractFixtures.templates("sample-jvm").single().detail ?: throw AssertionError()
         val kdoc = service.parameters.single { it.name == "kdoc" }
-        val parameters = service.parameters.associateBy { it.name }
+        // "name" is a capture, not a parameter (design draft: name moved off `Service`'s parameters
+        // and onto the layout's `capture("name")`), so the lookup default reads from must include
+        // captures too -- exactly what `allParametersOf` gives a processor's own capture reads.
+        val parameters = allParametersOf(service).associateBy { it.name }
         assertEquals("Order に関するアプリ固有の振る舞い。", expectedValueOf(kdoc, mapOf("name" to "Order"), parameters))
         assertEquals("\${name} に関するアプリ固有の振る舞い。", expectedValueOf(kdoc, emptyMap(), parameters))
     }

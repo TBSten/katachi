@@ -48,7 +48,7 @@ class TemplateOutputParserTest {
     fun `衝突でない失敗は本文を字下げを外して持ち既存ファイルを持たない`() {
         val status = parse("slash-in-name").status as? TemplateRunStatus.Failed ?: throw AssertionError()
         assertNull(status.conflicting)
-        assertTrue(status.body.first().startsWith("The template data/Repository would write"))
+        assertTrue(status.body.first().startsWith("The template data.Repository would write"))
         assertEquals(2, status.body.size)
     }
 

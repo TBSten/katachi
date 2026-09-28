@@ -12,16 +12,17 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 
 /**
- * The tool window over `synthetic-*.json`, which :katachi's IdePluginSyntheticJsonSpec writes from
- * definitions built to cover every shape a template can take. When katachi's JSON changes shape,
- * that spec fails until the fixtures are written again, and then these read the new shape.
+ * The tool window over `synthetic-*.json`, hand-written to the design draft section 6 shape
+ * (`template`/`id`/`title`/`conflict`, `pattern`/`captures`/`parameters` on `files[]`) to cover
+ * every shape a template can take: nested groups, a blocked role, a wildcard target, linked and
+ * unlinked same-named fields, a 300-row list, and two definition modules.
  */
 class SyntheticDefinitionScenarioTest {
-    private fun ScenarioHarness.id(roleName: String) = TemplateId(arch.id, roleName)
+    private fun ScenarioHarness.id(template: String) = TemplateId(arch.id, template)
 
     private fun ScenarioHarness.groupTitles() = ui().items.filterIsInstance<ListItemUi.GroupHeader>().map { it.title }
 
-    private fun ScenarioHarness.fieldsOf(roleName: String) = form(id(roleName)).fields
+    private fun ScenarioHarness.fieldsOf(template: String) = form(id(template)).fields
 
     @Test
     fun `ルート直下の役割が先で入れ子のグループは親の直下に子が並び見出しはパス全体になる`() = runBlocking {
@@ -29,13 +30,13 @@ class SyntheticDefinitionScenarioTest {
         s.loadJson = ContractFixtures.json("synthetic-structure")
         s.open()
         assertEquals(
-            listOf("AllTypes", "Counter", "a/Shallow", "a/b/Middle", "a/b/c/Deep", "other/Broken", "other/Wildcard"),
-            s.rowIds().map { it.roleName },
+            listOf("AllTypes", "Counter", "a.Shallow", "a.b.Middle", "a.b.c.Deep", "other.Broken", "other.Wildcard"),
+            s.rowIds().map { it.template },
         )
         assertEquals(listOf("a", "a › b", "a › b › c", "other"), s.groupTitles())
-        assertEquals(RowMarker.Blocked, s.row(s.id("a/b/Middle")).marker)
-        assertEquals(RowMarker.Blocked, s.row(s.id("other/Broken")).marker)
-        assertEquals(RowMarker.Warning, s.row(s.id("other/Wildcard")).marker)
+        assertEquals(RowMarker.Blocked, s.row(s.id("a.b.Middle")).marker)
+        assertEquals(RowMarker.Blocked, s.row(s.id("other.Broken")).marker)
+        assertEquals(RowMarker.Warning, s.row(s.id("other.Wildcard")).marker)
         assertTrue(s.rowIds().all { s.row(it).trailing.isEmpty() })
     }
 
@@ -60,13 +61,15 @@ class SyntheticDefinitionScenarioTest {
         assertEquals(listOf("Compact", "Expanded"), mode.options)
         assertEquals(-1, mode.selectedIndex)
         assertEquals(0, fields.getValue("fallbackMode").cast<FieldUi.Choice>().selectedIndex)
-        assertEquals("AllTypes: name が未入力です", s.formFooter().reason)
+        // The row's name is now the template's own title (design draft section 6), so the reason
+        // line names it in Japanese, not by the bare specifier.
+        assertEquals("全部の型: name が未入力です", s.formFooter().reason)
 
         s.input(s.id("AllTypes"), "name", "User")
         s.input(s.id("AllTypes"), "count", "3")
         s.input(s.id("AllTypes"), "mode", "Expanded")
         s.generate()
-        assertEquals(mapOf("roleName" to "AllTypes", "onExisting" to "fail", "name" to "User", "enabled" to "true", "count" to "3", "mode" to "Expanded"), s.lastArgs())
+        assertEquals(mapOf("template" to "AllTypes", "onExisting" to "fail", "name" to "User", "enabled" to "true", "count" to "3", "mode" to "Expanded"), s.lastArgs())
     }
 
     @Test
@@ -74,9 +77,9 @@ class SyntheticDefinitionScenarioTest {
         val s = ScenarioHarness(this)
         s.loadJson = ContractFixtures.json("synthetic-structure")
         s.open()
-        val shallow = s.id("a/Shallow")
+        val shallow = s.id("a.Shallow")
         s.check(shallow)
-        fun slots() = s.fieldsOf("a/Shallow").map { if (it is FieldUi.Collapsed) "(${it.id.parameterName})" else it.id.parameterName }
+        fun slots() = s.fieldsOf("a.Shallow").map { if (it is FieldUi.Collapsed) "(${it.id.parameterName})" else it.id.parameterName }
         assertEquals(listOf("name", "withImpl", "implSuffix", "withTest", "(testName)", "style", "(decoration)"), slots())
 
         s.input(shallow, "withImpl", "false")
@@ -88,7 +91,7 @@ class SyntheticDefinitionScenarioTest {
         assertEquals("LoginTest", s.textField(shallow, "testName").placeholder)
 
         s.generate()
-        assertEquals(setOf("roleName", "onExisting", "name", "withImpl", "withTest", "style"), s.lastArgs().keys)
+        assertEquals(setOf("template", "onExisting", "name", "withImpl", "withTest", "style"), s.lastArgs().keys)
     }
 
     @Test
@@ -97,14 +100,14 @@ class SyntheticDefinitionScenarioTest {
         s.loadJson = ContractFixtures.json("synthetic-structure")
         s.open()
         s.check(s.id("AllTypes"))
-        s.check(s.id("a/b/c/Deep"))
+        s.check(s.id("a.b.c.Deep"))
         s.check(s.id("Counter"))
         s.input(s.id("AllTypes"), "name", "User")
-        assertEquals("User", s.textField(s.id("a/b/c/Deep"), "name").value)
-        assertEquals(LinkUi.Linked, s.textField(s.id("a/b/c/Deep"), "name").link)
+        assertEquals("User", s.textField(s.id("a.b.c.Deep"), "name").value)
+        assertEquals(LinkUi.Linked, s.textField(s.id("a.b.c.Deep"), "name").link)
         assertEquals("", s.textField(s.id("Counter"), "name").value)
         assertEquals(LinkUi.None, s.textField(s.id("Counter"), "name").link)
-        assertEquals("UserItem", s.textField(s.id("a/b/c/Deep"), "itemName").placeholder)
+        assertEquals("UserItem", s.textField(s.id("a.b.c.Deep"), "itemName").placeholder)
     }
 
     @Test
@@ -112,10 +115,15 @@ class SyntheticDefinitionScenarioTest {
         val s = ScenarioHarness(this)
         s.loadJson = ContractFixtures.json("synthetic-structure")
         s.open()
-        s.check(s.id("other/Wildcard"))
-        s.input(s.id("other/Wildcard"), "name", "Home")
+        s.check(s.id("other.Wildcard"))
+        // "feature" is the module's own capture -- required like any other field, and filling it
+        // does not resolve the path: the module capture itself is what keeps `path` null.
+        s.input(s.id("other.Wildcard"), "feature", "home")
+        s.input(s.id("other.Wildcard"), "name", "Home")
         assertFalse(s.formFooter().generateEnabled)
-        assertEquals("Wildcard: HomeScreen.kt の生成先が決まりません", s.formFooter().reason)
+        // Neither the template nor its role sets a title, so it falls back to the full
+        // specifier (`template`), not the bare role name.
+        assertEquals("other.Wildcard: HomeScreen.kt の生成先が決まりません", s.formFooter().reason)
     }
 
     @Test
@@ -126,11 +134,11 @@ class SyntheticDefinitionScenarioTest {
         assertEquals(300, s.rowIds().size)
         assertEquals(listOf("g0", "g1", "g2", "g3", "g4", "g5", "g6", "nested › g7", "nested › deeper › g8", "nested › deeper › g9"), s.groupTitles())
         s.dispatch(KatachiIntent.Search("T299"))
-        assertEquals(listOf("nested/deeper/g9/T299"), s.rowIds().map { it.roleName })
-        s.check(s.id("nested/deeper/g9/T299"))
-        s.input(s.id("nested/deeper/g9/T299"), "name", "Last")
+        assertEquals(listOf("nested.deeper.g9.T299"), s.rowIds().map { it.template })
+        s.check(s.id("nested.deeper.g9.T299"))
+        s.input(s.id("nested.deeper.g9.T299"), "name", "Last")
         s.generate()
-        assertEquals("nested/deeper/g9/T299", s.lastArgs()["roleName"])
+        assertEquals("nested.deeper.g9.T299", s.lastArgs()["template"])
     }
 
     @Test
@@ -154,7 +162,7 @@ class SyntheticDefinitionScenarioTest {
         s.input(otherAllTypes, "count", "2")
         s.input(otherAllTypes, "mode", "Compact")
         val result = s.generate()
-        assertEquals(listOf(s.id("AllTypes"), otherAllTypes), result.report.items.map { it.templateId })
+        assertEquals(listOf(s.id("AllTypes"), otherAllTypes), result.report.templateIds)
         assertEquals(listOf("1", "2"), s.katachi.runs.map { it["count"] })
     }
 }

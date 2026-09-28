@@ -23,11 +23,14 @@ internal fun enumParam(name: String, values: List<String>, default: String? = va
     ParameterModel.EnumParam(name, typeName, default, default == null, default ?: values.first(), values)
 
 /** A capture at one place: a `/` level of a file pattern, or with [module] the `*` of a module key. */
-internal fun capture(name: String, pattern: String = "feature/*/*.kt", position: Int = 1, module: Boolean = false) =
-    ParameterModel.CaptureParam(name, listOf(CapturePlace(if (module) CapturePlace.KIND_MODULE else CapturePlace.KIND_PATH, pattern, position)))
+internal fun capture(name: String, pattern: String = "feature/*/*.kt", position: Int = 1, module: Boolean = false, segment: String = "\${$name}") =
+    ParameterModel.CaptureParam(
+        name,
+        listOf(CapturePlace(if (module) CapturePlace.KIND_MODULE else CapturePlace.KIND_PATH, pattern, position, segment)),
+    )
 
-internal fun file(fileName: String, path: String? = "src/$fileName", content: String = "", patterns: List<String> = emptyList()) =
-    FilePreviewModel(fileName, path, patterns, content)
+internal fun file(fileName: String, path: String? = "src/$fileName", content: String = "", pattern: String = path ?: fileName, captures: List<String> = emptyList(), parameters: List<String> = emptyList()) =
+    FilePreviewModel(pattern, fileName, path, captures, parameters, content)
 
 internal fun branch(
     parameterName: String,
@@ -38,6 +41,10 @@ internal fun branch(
     removedParameters: List<String> = emptyList(),
 ) = BranchModel(parameterName, value, addedFiles, removedFiles, addedParameters, removedParameters)
 
+/**
+ * A template of role [roleName], selected by [template] (defaults to the role name alone, as a
+ * role with one template needs no `id`).
+ */
 internal fun template(
     roleName: String,
     parameters: List<ParameterModel> = listOf(stringParam("name")),
@@ -45,15 +52,33 @@ internal fun template(
     branches: List<BranchModel> = emptyList(),
     title: String? = null,
     summary: String? = null,
-    fileCount: Int? = files.size,
+    id: String? = null,
+    template: String = id?.let { "$roleName.$it" } ?: roleName,
+    conflict: Boolean = false,
     captures: List<ParameterModel.CaptureParam> = emptyList(),
-): TemplateModel = TemplateModel(
-    summary = TemplateSummaryModel(roleName, title, summary, parameters.map { it.name }, fileCount, captures.map { it.name }),
-    detail = TemplateDetailModel(roleName, title, summary, parameters, files, branches, "./gradlew katachiTemplate --arg roleName=$roleName", captures),
-)
+): TemplateModel {
+    val shownTitle = title ?: id ?: roleName
+    return TemplateModel(
+        summary = TemplateSummaryModel(template, id, shownTitle, roleName, summary, parameters.map { it.name }, conflict, captures.map { it.name }),
+        detail = TemplateDetailModel(
+            template,
+            id,
+            shownTitle,
+            roleName,
+            summary,
+            parameters,
+            files,
+            branches,
+            "./gradlew katachiTemplate --arg template=$template",
+            captures,
+        ),
+    )
+}
 
-internal fun previewFailed(roleName: String): TemplateModel =
-    TemplateModel(TemplateSummaryModel(roleName, null, null, listOf("name"), null), detail = null)
+internal fun previewFailed(roleName: String, id: String? = null): TemplateModel {
+    val template = id?.let { "$roleName.$it" } ?: roleName
+    return TemplateModel(TemplateSummaryModel(template, id, id ?: roleName, roleName, null, listOf("name"), conflict = true), detail = null)
+}
 
 internal fun rows(vararg templates: TemplateModel, module: KatachiModule = module()): List<ModuleTemplate> =
     templates.map { ModuleTemplate(module, it) }

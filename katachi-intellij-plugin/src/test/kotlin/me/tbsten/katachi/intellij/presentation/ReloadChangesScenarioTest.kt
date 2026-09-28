@@ -28,10 +28,10 @@ class ReloadChangesScenarioTest {
     ).also { check(it != base) { "the fixture's item parameter moved" } }
 
     /** arch-a without `misc/NoArgs`. */
-    private val withoutNoArgs = withoutTemplate(withoutTemplate(base, "misc/NoArgs"), "misc/NoArgs")
+    private val withoutNoArgs = withoutTemplate(withoutTemplate(base, "misc.NoArgs"), "misc.NoArgs")
 
     private val archB = module(":arch-b")
-    private val archBRepository = TemplateId(archB.id, "data/Repository")
+    private val archBRepository = TemplateId(archB.id, "data.Repository")
 
     @Test
     fun `2回目の生成の前に再読み込みで引数の型が文字列から整数に変わると残った入力は欄の下で誤りになり直すまで生成できない`() = runBlocking {
@@ -52,7 +52,7 @@ class ReloadChangesScenarioTest {
         assertEquals("Long", item.value)
         assertTrue(item.error.orEmpty().startsWith("整数で入力してください"))
         assertFalse(s.formFooter().generateEnabled)
-        assertEquals("Repository: item は整数で入力してください", s.formFooter().reason)
+        assertEquals("リポジトリ: item は整数で入力してください", s.formFooter().reason)
 
         s.input(s.repository, "item", "3")
         s.generate()
@@ -83,7 +83,7 @@ class ReloadChangesScenarioTest {
         assertEquals(LinkUi.None, s.textField(archBRepository, "name").link)
         s.input(archBRepository, "name", "2")
         val result = s.generate()
-        assertEquals(listOf(s.repository, archBRepository), result.report.items.map { it.templateId })
+        assertEquals(listOf(s.repository, archBRepository), result.report.templateIds)
     }
 
     @Test
@@ -126,7 +126,7 @@ class ReloadChangesScenarioTest {
         assertTrue(runningRows.isNotEmpty())
         assertTrue(runningRows.toString(), runningRows.all { it == listOf(s.repository) })
         val result = s.state.generation.cast<GenerationState.Finished>()
-        assertEquals(listOf(s.repository), result.report.items.map { it.templateId })
+        assertEquals(listOf(s.repository), result.report.templateIds)
     }
 
     @Test

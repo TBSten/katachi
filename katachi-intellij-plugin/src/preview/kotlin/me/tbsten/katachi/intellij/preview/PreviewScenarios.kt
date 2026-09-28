@@ -57,8 +57,8 @@ internal val sampleList: KatachiScreenState =
     ready(snapshot(arch, dataSource, repository, useCase, service))
         .then(check(repository), input(repository, "name", "User"), check(service))
 
-/** A template the last reload dropped: "Cache is gone" (E-45). */
-private val previewRemoved = template("data/Cache", null, emptyList(), emptyList())
+/** A template the last reload dropped: "Cache is gone" (E-45). Never rendered, so no file is needed. */
+private val previewRemoved = template("data.Cache", null, emptyList(), emptyList())
 
 private val compileErrorDetails = listOf(
     "e: file:///Users/dev/project/architecture-test/src/test/kotlin/RepositoryRole.kt:57:13 Unresolved reference 'implSufix'.",
@@ -225,11 +225,11 @@ internal val listScenarios: List<Scenario> = listOf(
             snapshot(
                 arch,
                 template("Readme", null, emptyList(), listOf(kt("", "README.md"))),
-                template("domain/UseCase", "ユースケース", listOf(str("name")), listOf(kt("domain", "\${name}UseCase.kt"))),
-                template("domain/model/Entity", "エンティティ", listOf(str("name")), listOf(kt("domain/model", "\${name}.kt"))),
-                template("domain/model/value/Id", null, listOf(str("name")), listOf(kt("domain/model/value", "\${name}Id.kt"))),
-                template("domain/Service", "サービス", listOf(str("name")), listOf(kt("domain", "\${name}Service.kt"))),
-                template("feature/home/Screen", "画面", listOf(str("name")), listOf(kt("feature/home", "\${name}Screen.kt"))),
+                template("domain.UseCase", "ユースケース", listOf(str("name")), listOf(kt("domain", "\${name}UseCase.kt"))),
+                template("domain.model.Entity", "エンティティ", listOf(str("name")), listOf(kt("domain/model", "\${name}.kt"))),
+                template("domain.model.value.Id", null, listOf(str("name")), listOf(kt("domain/model/value", "\${name}Id.kt"))),
+                template("domain.Service", "サービス", listOf(str("name")), listOf(kt("domain", "\${name}Service.kt"))),
+                template("feature.home.Screen", "画面", listOf(str("name")), listOf(kt("feature/home", "\${name}Screen.kt"))),
             ),
         ),
         narrowHeight = 480,
@@ -246,7 +246,7 @@ internal val listScenarios: List<Scenario> = listOf(
                 view = it.view.copy(
                     causes = mapOf(
                         idOf(arch, brokenTemplate) to CauseState.Loaded(
-                            listOf("[FAILED] data/Cache", "  Unresolved placeholder \${entity} in path", "  at CacheRole.kt:22"),
+                            listOf("[FAILED] data.Cache", "  Unresolved placeholder \${entity} in path", "  at CacheRole.kt:22"),
                         ),
                     ),
                 ),

@@ -36,8 +36,8 @@ class KatachiToolWindowViewModelTest {
     private val effects = FakeIdeEffects()
     private val arch = module(":arch-a")
     private val json = arch.templateDescriptionJson
-    private val repository = TemplateId(arch.id, "data/Repository")
-    private val useCase = TemplateId(arch.id, "domain/UseCase")
+    private val repository = TemplateId(arch.id, "data.Repository")
+    private val useCase = TemplateId(arch.id, "domain.UseCase")
     private val data = ROOT.resolve("data/src/main/kotlin/com/example/data")
 
     private var synced: SyncedProject = SyncedProject.Synced(
@@ -104,7 +104,7 @@ class KatachiToolWindowViewModelTest {
         val vm = viewModel()
         vm.dispatch(KatachiIntent.Opened)
         val refreshing = vm.await { it.loading != null }
-        assertEquals(listOf("data/Repository"), refreshing.rows.map { it.template.roleName })
+        assertEquals(listOf("data.Repository"), refreshing.rows.map { it.template.roleName })
         assertEquals(false, refreshing.loading?.isInitial)
         assertEquals(ScreenPhase.Ready, refreshing.phase)
 
@@ -137,7 +137,7 @@ class KatachiToolWindowViewModelTest {
         vm.fillRepository()
         vm.dispatch(KatachiIntent.ToggleCheck(useCase))
 
-        loadJson = ContractFixtures.json("arch-a").replace("\"domain/UseCase\"", "\"domain/Renamed\"")
+        loadJson = ContractFixtures.json("arch-a").replace("\"domain.UseCase\"", "\"domain.Renamed\"")
         vm.dispatch(KatachiIntent.Reload)
         val reloaded = vm.await { it.removedTemplates.isNotEmpty() }
         assertEquals(listOf(useCase), reloaded.removedTemplates)
@@ -154,12 +154,12 @@ class KatachiToolWindowViewModelTest {
         vm.dispatch(KatachiIntent.Generate)
         val finished = vm.finished()
 
-        assertEquals("katachi: before generating (Repository)", finished.localHistoryLabel)
+        assertEquals("katachi: before generating (リポジトリ)", finished.localHistoryLabel)
         assertEquals(listOf("save", "save", "label", "refresh", "open", "notifyGenerated"), effects.log)
         assertEquals(listOf(data.resolve("UserRepository.kt")), effects.opened)
         assertEquals(2, effects.refreshed.size)
         val args = runner.requests.last().tasks.single().args
-        assertEquals(listOf("roleName" to "data/Repository", "onExisting" to "fail", "name" to "User"), args)
+        assertEquals(listOf("template" to "data.Repository", "onExisting" to "fail", "name" to "User"), args)
     }
 
     @Test
@@ -215,28 +215,30 @@ class KatachiToolWindowViewModelTest {
 
         val running = seenWhileAsking?.generation as? GenerationState.Running ?: throw AssertionError()
         assertEquals(GenerationRowStatus.AwaitingConflict, running.statuses[repository])
-        assertEquals(repository, running.conflict?.templateId)
+        assertEquals(listOf(repository), running.conflict?.templateIds)
         assertTrue(finished.report.isComplete)
         assertEquals(3, runner.requests.size)
     }
 
     @Test
-    fun `途中で失敗したら結果を出し残りをやり直すで失敗と未実行の行だけ残す`() = runBlocking {
-        generate = { index -> if (index == 0) FakeRun(ContractFixtures.outputLines("new", ROOT)) else FakeRun(ContractFixtures.outputLines("unknown-arg", ROOT), GradleRunOutcome.Failed) }
+    fun `失敗したら結果を出し残りをやり直すで両方の行を残す`() = runBlocking {
+        // Both rows share the module (:arch-a), so they now run together as one item (design draft
+        // section 6): the whole build succeeds or fails as one, not "row 0 then row 1".
+        generate = { FakeRun(ContractFixtures.outputLines("unknown-arg", ROOT), GradleRunOutcome.Failed) }
         val vm = viewModel()
         vm.loaded()
         vm.fillRepository()
         vm.dispatch(KatachiIntent.ToggleCheck(useCase))
         vm.dispatch(KatachiIntent.Generate)
         val finished = vm.finished()
-        val failure = finished.report.items[1].result as? GenerationItemResult.Failed
+        val failure = finished.report.items.single().result as? GenerationItemResult.Failed
         assertTrue(failure != null)
 
         vm.dispatch(KatachiIntent.RetryRemaining)
         val back = vm.state.value
         assertNull(back.generation)
-        assertEquals(listOf(useCase), back.form.selected)
-        assertEquals("User", back.form.inputOf(FieldId(useCase, "name")))
+        assertEquals(setOf(repository, useCase), back.form.selected.toSet())
+        assertEquals("User", back.form.inputOf(FieldId(repository, "name")))
     }
 
     @Test
@@ -409,7 +411,7 @@ class KatachiToolWindowViewModelTest {
         val finished = vm.finished()
         val failed = finished.report.items.single().result as? GenerationItemResult.Failed
         assertEquals(GenerationFailure.NotReached(GradleFailure.Other(listOf("IllegalStateException: boom"))), failed?.failure)
-        assertEquals("katachi: before generating (Repository)", finished.localHistoryLabel)
+        assertEquals("katachi: before generating (リポジトリ)", finished.localHistoryLabel)
     }
 
     @Test

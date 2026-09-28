@@ -35,7 +35,7 @@ import kotlin.time.Duration.Companion.seconds
 interface GenerationBridgeRef {
     fun describeState(): String
 
-    fun checkAndFill(roleName: String, args: String): Boolean
+    fun checkAndFill(template: String, args: String): Boolean
 
     fun generate()
 
@@ -52,9 +52,9 @@ interface GenerationBridgeRef {
  * `ExternalSystemRunConfiguration.foldGreetingOrFarewell`). The generation itself succeeds, so
  * only the IDE's log shows it.
  *
- * sample/jvm has one template, so the copy it runs on gets two more (on the Repository and
- * Controller roles), and the generation is repeated, as the error depends on the order in which the
- * EDT runs things.
+ * sample/jvm already has two templates (Service, Controller), so the copy it runs on gets one more
+ * (on the Repository role, [addTemplates]) to make three, and the generation is repeated, as the
+ * error depends on the order in which the EDT runs things.
  */
 class GenerationIdeErrorsTest {
     private val sample: Path = Paths.get(System.getProperty("katachi.smoke.sampleProject"))
@@ -107,35 +107,30 @@ class GenerationIdeErrorsTest {
     }
 
     /**
-     * Gives the Repository and Controller roles of the copied sample a template each, so that one
-     * Generate runs three builds in a row.
+     * Gives the sample's Repository role a `.template { }` of its own -- of these three, the only
+     * one with no template yet (Service and Controller already have one) -- so that one Generate
+     * runs three builds in a row: `.template(id, title) { }` attaches to one of the role's own
+     * `layout { }` file declarations (design draft section 1), so this swaps the role's one
+     * unnamed-wildcard file declaration for the same file named with `capture("name")` and templated.
      */
     private fun addTemplates(sampleJvm: Path) {
-        val roles = sampleJvm.resolve("architecture-test/src/test/kotlin/com/example/roles")
-        addTemplate(roles.resolve("RepositoryRole.kt"), "    example(\"HealthRepository\", \"稼働状態の取得元\")\n", "repository", "Repository")
-        addTemplate(roles.resolve("ControllerRole.kt"), "    example(\"HealthController\", \"ヘルスチェックの受け口\")\n", "controller", "Controller")
-    }
-
-    /** Adds a template writing `<name><suffix>.kt` in [packageName] after [anchor], a line of [role]. */
-    private fun addTemplate(role: Path, anchor: String, packageName: String, suffix: String) {
+        val role = sampleJvm.resolve("architecture-test/src/test/kotlin/com/example/roles/RepositoryRole.kt")
+        val existing = "\"*Repository\".ktFile()"
         val source = role.readText()
-        check(anchor in source) { "$role no longer has the line the test adds the template after" }
-        val template = """
-            |    template {
-            |        val name by stringParameter()
-            |        file("${'$'}{name}$suffix.kt") {
-            |            "package com.example.$packageName\n\nclass ${'$'}{name}$suffix\n"
-            |        }
-            |    }
-            |
+        check(existing in source) { "$role no longer declares the Repository file the way this test expects" }
+        val replacement = """
+            |"${'$'}{capture("name")}Repository".ktFile().template {
+            |                val name = captureValue("name")
+            |                "package com.example.repository\n\nclass ${'$'}{name}Repository\n"
+            |            }
         """.trimMargin()
-        role.writeText(source.replace(anchor, anchor + template))
+        role.writeText(source.replace(existing, replacement))
     }
 
     private companion object {
-        const val SERVICE_TEMPLATE = "domain/Service"
-        const val REPOSITORY_TEMPLATE = "data/Repository"
-        const val CONTROLLER_TEMPLATE = "api/Controller"
+        const val SERVICE_TEMPLATE = "domain.Service"
+        const val REPOSITORY_TEMPLATE = "data.Repository"
+        const val CONTROLLER_TEMPLATE = "api.Controller"
         val TEMPLATES = listOf(SERVICE_TEMPLATE, REPOSITORY_TEMPLATE, CONTROLLER_TEMPLATE)
 
         /** The error depends on how the EDT orders things, so the builds run back to back many times. */

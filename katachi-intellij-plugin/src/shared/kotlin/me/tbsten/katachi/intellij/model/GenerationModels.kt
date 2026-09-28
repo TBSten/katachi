@@ -44,12 +44,19 @@ internal sealed interface GenerationItemResult {
     data object NotRun : GenerationItemResult
 }
 
-/** One row of a finished generation. */
-internal data class GenerationItemReport(val templateId: TemplateId, val result: GenerationItemResult)
+/**
+ * One `katachiTemplate` run: every checked row it covered ([templateIds], several when they share
+ * a module, design draft section 6 "IDE の複数選択") and how it ended, shared by all of them.
+ */
+internal data class GenerationItemReport(val templateIds: List<TemplateId>, val result: GenerationItemResult)
 
-/** Every checked template in list order, with how it ended. */
+/** Every run of a generation, in list order, with how it ended. */
 internal data class GenerationReport(val items: List<GenerationItemReport>) {
-    val succeededCount: Int get() = items.count { it.result is GenerationItemResult.Generated }
+    /** Every checked template across every run, in list order. */
+    val templateIds: List<TemplateId> get() = items.flatMap { it.templateIds }
+
+    val succeededCount: Int
+        get() = items.sumOf { if (it.result is GenerationItemResult.Generated) it.templateIds.size else 0 }
 
     val isComplete: Boolean
         get() = items.all { it.result is GenerationItemResult.Generated || it.result is GenerationItemResult.Skipped }
@@ -58,7 +65,7 @@ internal data class GenerationReport(val items: List<GenerationItemReport>) {
     val retryTargets: List<TemplateId>
         get() = items.filter {
             it.result !is GenerationItemResult.Generated && it.result !is GenerationItemResult.Skipped
-        }.map { it.templateId }
+        }.flatMap { it.templateIds }
 
     /** Every written file, in list order and then output order. */
     val writtenFiles: List<GeneratedFile>
@@ -68,9 +75,9 @@ internal data class GenerationReport(val items: List<GenerationItemReport>) {
 /** The user's answer in the conflict dialog. */
 internal enum class ConflictChoice { Overwrite, SkipAndContinue, Stop }
 
-/** What the conflict dialog shows: which template (k of n) and the files already there. */
+/** What the conflict dialog shows: which run (k of n), every row it covers, and the files already there. */
 internal data class ConflictQuestion(
-    val templateId: TemplateId,
+    val templateIds: List<TemplateId>,
     val index: Int,
     val total: Int,
     val existing: List<Path>,

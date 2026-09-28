@@ -10,23 +10,24 @@ import me.tbsten.katachi.intellij.model.TemplateSummaryModel
 import java.nio.file.Path
 
 /**
- * Reads `templateDescription.json` (the contract in `.local/ide-plugin-impl/plan.md`, "JSON の契約")
- * into the list's templates, in `templates[]` order.
+ * Reads `templateDescription.json` (design draft section 6, "`DescribeTemplates` / `katachiTemplates`
+ * の出力と IDE の JSON") into the list's templates, in `templates[]` order, one entry per template
+ * (not per role: a role with two templates is two entries sharing a `roleName`).
  *
  * Unknown keys are ignored. Every key of the contract is required, `null` only where the contract
  * allows it -- except `captures`, which a katachi from before `capture()` does not write: its
  * absence reads as no captures. A `kind` this plugin does not know makes that parameter an [ParameterModel.UnknownParam]
- * instead of failing the whole file (E-36). A `details[]` entry whose role is not in `templates[]`
- * is dropped, and a repeated role name keeps its first entry.
+ * instead of failing the whole file (E-36). A `details[]` entry whose `template` is not in
+ * `templates[]` is dropped, and a repeated `template` keeps its first entry.
  *
  * @throws KatachiMalformedTemplateJsonException when [text] is not JSON (E-37).
  * @throws KatachiIncompatibleTemplateJsonException when a required key is missing or mistyped (E-35).
  */
 internal fun parseTemplateDescriptionJson(text: String, file: Path): List<TemplateModel> {
     val root = JsonReader(parseJsonText(text, file), "$", file)
-    val summaries = root.array("templates").map { it.summary() }.distinctBy { it.roleName }
-    val details = root.array("details").map { it.detail() }.distinctBy { it.roleName }.associateBy { it.roleName }
-    return summaries.map { TemplateModel(summary = it, detail = details[it.roleName]) }
+    val summaries = root.array("templates").map { it.summary() }.distinctBy { it.template }
+    val details = root.array("details").map { it.detail() }.distinctBy { it.template }.associateBy { it.template }
+    return summaries.map { TemplateModel(summary = it, detail = details[it.template]) }
 }
 
 /** A value at [location] in the document, read with the contract's types. */
@@ -51,15 +52,6 @@ private class JsonReader(private val value: JsonValue, private val location: Str
 
     fun boolean(key: String): Boolean = member(key).let { it.value as? JsonValue.JsonBoolean ?: throw mismatch(it.location, "boolean", it.value) }.value
 
-    fun nullableInt(key: String): Int? {
-        val child = member(key)
-        return when (val v = child.value) {
-            JsonValue.JsonNull -> null
-            is JsonValue.JsonNumber -> v.text.toIntOrNull() ?: throw mismatch(child.location, "integer or null", v)
-            else -> throw mismatch(child.location, "integer or null", v)
-        }
-    }
-
     /** [array] of [key], or empty when the object has no such key (a key added to the contract later). */
     fun optionalArray(key: String): List<JsonReader> {
         val obj = value as? JsonValue.JsonObject ?: throw mismatch(location, "object", value)
@@ -83,17 +75,21 @@ private class JsonReader(private val value: JsonValue, private val location: Str
     }.map { it.value }
 
     fun summary(): TemplateSummaryModel = TemplateSummaryModel(
+        template = string("template"),
+        id = nullableString("id"),
+        title = string("title"),
         roleName = string("roleName"),
-        title = nullableString("title"),
         summary = nullableString("summary"),
         parameterNames = strings("parameterNames"),
-        fileCount = nullableInt("fileCount"),
+        conflict = boolean("conflict"),
         captureNames = optionalArray("captures").map { it.string("name") }.distinct(),
     )
 
     fun detail(): TemplateDetailModel = TemplateDetailModel(
+        template = string("template"),
+        id = nullableString("id"),
+        title = string("title"),
         roleName = string("roleName"),
-        title = nullableString("title"),
         summary = nullableString("summary"),
         parameters = array("parameters").map { it.parameter() },
         files = array("files").map { it.file() },
@@ -106,7 +102,12 @@ private class JsonReader(private val value: JsonValue, private val location: Str
     private fun captures(): List<ParameterModel.CaptureParam> {
         val places = LinkedHashMap<String, MutableList<CapturePlace>>()
         for (capture in optionalArray("captures")) {
-            val place = CapturePlace(kindName = capture.string("kind"), pattern = capture.string("pattern"), position = capture.int("position"))
+            val place = CapturePlace(
+                kindName = capture.string("kind"),
+                pattern = capture.string("pattern"),
+                position = capture.int("position"),
+                segment = capture.string("segment"),
+            )
             places.getOrPut(capture.string("name")) { mutableListOf() } += place
         }
         return places.map { (name, list) -> ParameterModel.CaptureParam(name, list.distinct()) }
@@ -132,9 +133,11 @@ private class JsonReader(private val value: JsonValue, private val location: Str
     }
 
     fun file(): FilePreviewModel = FilePreviewModel(
+        pattern = string("pattern"),
         fileName = string("fileName"),
         path = nullableString("path"),
-        unresolvedPatterns = strings("unresolvedPatterns"),
+        captures = strings("captures"),
+        parameters = strings("parameters"),
         content = string("content"),
     )
 

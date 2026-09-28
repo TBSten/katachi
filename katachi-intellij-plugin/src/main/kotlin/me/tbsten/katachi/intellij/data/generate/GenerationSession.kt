@@ -27,9 +27,12 @@ import me.tbsten.katachi.intellij.model.WrittenKind
 import me.tbsten.katachi.intellij.presentation.OnExistingChoice
 import java.nio.file.Path
 
-/** One checked template, ready to run. */
+/**
+ * One `katachiTemplate` run, ready to go: every checked row it covers ([templateIds], several when
+ * they share a module, design draft section 6 "IDE の複数選択"), combined into one build.
+ */
 internal data class GenerationItem(
-    val templateId: TemplateId,
+    val templateIds: List<TemplateId>,
     val module: KatachiModule,
     /** Every `--arg` except `onExisting`, which the session sets per attempt. */
     val args: List<Pair<String, String>>,
@@ -45,9 +48,10 @@ internal interface GenerationListener : GradleRunListener {
 }
 
 /**
- * Runs the checked templates one by one, in list order, each as its own `katachiTemplate` build
- * (spec 06). Stops at the first failure; a conflict under `fail` asks [askConflict] whether to
- * overwrite (run the same one again), skip it (without running again) or stop.
+ * Runs [items] one by one, in list order, each as its own `katachiTemplate` build -- one item may
+ * cover several checked rows that share a module (design draft section 6). Stops at the first
+ * failure; a conflict under `fail` asks [askConflict] whether to overwrite (run the same one again),
+ * skip it (without running again) or stop.
  *
  * [cancel] stops the running build and runs nothing after it: the running one becomes
  * [GenerationItemResult.Interrupted], the rest [GenerationItemResult.NotRun] (E-21).
@@ -79,7 +83,7 @@ internal class GenerationSession(
             listener.onItemFinished(index, result)
             if (result !is GenerationItemResult.Generated && result !is GenerationItemResult.Skipped) break
         }
-        return GenerationReport(items.mapIndexed { index, item -> GenerationItemReport(item.templateId, results[index]) })
+        return GenerationReport(items.mapIndexed { index, item -> GenerationItemReport(item.templateIds, results[index]) })
     }
 
     private suspend fun runItem(
@@ -91,7 +95,7 @@ internal class GenerationSession(
     ): GenerationItemResult {
         val first = attempt(item, onExisting, listener) ?: return interrupted(item)
         if (first !is Attempt.Conflict) return first.result
-        return when (askConflict(ConflictQuestion(item.templateId, index, total, first.existing))) {
+        return when (askConflict(ConflictQuestion(item.templateIds, index, total, first.existing))) {
             ConflictChoice.Overwrite -> (attempt(item, OnExistingChoice.Overwrite, listener) ?: return interrupted(item)).result
             // katachi would write nothing under skip, so running again would only cost a build.
             ConflictChoice.SkipAndContinue -> GenerationItemResult.Skipped(first.existing)
@@ -173,6 +177,6 @@ internal class GenerationSession(
 
 private fun List<Pair<String, String>>.withOnExisting(choice: OnExistingChoice): List<Pair<String, String>> {
     val rest = filter { it.first != "onExisting" }
-    val roleName = rest.filter { it.first == "roleName" }
-    return roleName + ("onExisting" to choice.argValue) + rest.filter { it.first != "roleName" }
+    val template = rest.filter { it.first == "template" }
+    return template + ("onExisting" to choice.argValue) + rest.filter { it.first != "template" }
 }

@@ -49,8 +49,8 @@ import org.junit.Test
 @OptIn(ExperimentalTestApi::class)
 class CaptureInteractionTest {
     private val arch = module(":arch-a")
-    private val viewModel = TemplateId(arch.id, "feature/ViewModel")
-    private val screen = TemplateId(arch.id, "feature/Screen")
+    private val viewModel = TemplateId(arch.id, "feature.ViewModel")
+    private val screen = TemplateId(arch.id, "feature.Screen")
     private val feature = FieldId(viewModel, "feature")
     private val name = FieldId(viewModel, "name")
 
@@ -82,7 +82,7 @@ class CaptureInteractionTest {
 
     private fun Host.argsOf(id: TemplateId): List<Pair<String, String>> {
         val detail = state.rows.single { it.id == id }.template.detail ?: throw AssertionError("no detail")
-        return templateArgsOf(id.roleName, detail, state.form.inputsOf(id), state.form.onExisting)
+        return templateArgsOf(id.template, detail, state.form.inputsOf(id), state.form.onExisting)
     }
 
     @Test
@@ -122,7 +122,7 @@ class CaptureInteractionTest {
         waitForIdle()
         assertEquals(KatachiIntent.Generate, host.sent.last())
         assertEquals(
-            listOf("roleName" to "feature/ViewModel", "onExisting" to "fail", "feature" to "home", "name" to "User"),
+            listOf("template" to "feature.ViewModel", "onExisting" to "fail", "feature" to "home", "name" to "User"),
             host.argsOf(viewModel),
         )
     }

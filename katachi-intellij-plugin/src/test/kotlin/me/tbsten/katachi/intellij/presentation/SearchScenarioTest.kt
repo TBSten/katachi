@@ -13,9 +13,9 @@ import org.junit.Test
  * generations (spec 02 "検索", spec 04 "検索で絞ったとき"). Linked fields across two generations too.
  */
 class SearchScenarioTest {
-    private val all = listOf("data/Repository", "domain/UseCase", "ui/Screen", "misc/Broken", "misc/Future", "misc/NoArgs", "misc/Label")
+    private val all = listOf("data.Repository", "domain.UseCase", "ui.Screen", "misc.Broken", "misc.Future", "misc.NoArgs", "misc.Label")
 
-    private fun ScenarioHarness.shownRoles() = rowIds().map { it.roleName }
+    private fun ScenarioHarness.shownRoles() = rowIds().map { it.template }
 
     /** Types [text] one character at a time, as the search field reports it. */
     private fun ScenarioHarness.type(text: String, from: String = state.searchQuery) {
@@ -28,7 +28,7 @@ class SearchScenarioTest {
         s.open()
         assertEquals(all, s.shownRoles())
         s.type("repo")
-        assertEquals(listOf("data/Repository"), s.shownRoles())
+        assertEquals(listOf("data.Repository"), s.shownRoles())
         assertEquals("repo", s.ui().search.query)
 
         s.dispatch(KatachiIntent.Search(""))
@@ -73,15 +73,15 @@ class SearchScenarioTest {
         assertEquals("   ", s.ui().search.query)
 
         s.dispatch(KatachiIntent.Search("  REPOSITORY "))
-        assertEquals(listOf("data/Repository"), s.shownRoles())
+        assertEquals(listOf("data.Repository"), s.shownRoles())
         s.dispatch(KatachiIntent.Search("リポジトリ"))
-        assertEquals(listOf("data/Repository"), s.shownRoles())
+        assertEquals(listOf("data.Repository"), s.shownRoles())
         s.dispatch(KatachiIntent.Search("画面"))
-        assertEquals(listOf("ui/Screen"), s.shownRoles())
+        assertEquals(listOf("ui.Screen"), s.shownRoles())
         s.dispatch(KatachiIntent.Search("withimpl"))
-        assertEquals(listOf("data/Repository"), s.shownRoles())
+        assertEquals(listOf("data.Repository"), s.shownRoles())
         s.dispatch(KatachiIntent.Search("ユースケース"))
-        assertEquals(listOf("domain/UseCase"), s.shownRoles())
+        assertEquals(listOf("domain.UseCase"), s.shownRoles())
     }
 
     @Test
@@ -92,7 +92,7 @@ class SearchScenarioTest {
         s.check(s.repository)
         s.input(s.repository, "name", "User")
         s.dispatch(KatachiIntent.Search("usecase"))
-        assertEquals(listOf("data/Repository", "domain/UseCase"), s.shownRoles())
+        assertEquals(listOf("data.Repository", "domain.UseCase"), s.shownRoles())
         assertEquals("検索外・選択中", s.row(s.repository).note)
         assertNull(s.row(s.repository).body)
         assertNull(s.formFooter().reason)
@@ -109,12 +109,12 @@ class SearchScenarioTest {
         val s = ScenarioHarness(this)
         s.open()
         s.type("misc")
-        s.reload(ContractFixtures.json("arch-a").replace("\"misc/Label\"", "\"misc/Renamed\""))
+        s.reload(ContractFixtures.json("arch-a").replace("\"misc.Label\"", "\"misc.Renamed\""))
         assertEquals("misc", s.ui().search.query)
-        assertEquals(listOf("misc/Broken", "misc/Future", "misc/NoArgs", "misc/Renamed"), s.shownRoles())
+        assertEquals(listOf("misc.Broken", "misc.Future", "misc.NoArgs", "misc.Renamed"), s.shownRoles())
 
         s.dispatch(KatachiIntent.Search(""))
-        assertEquals(all.dropLast(1) + "misc/Renamed", s.shownRoles())
+        assertEquals(all.dropLast(1) + "misc.Renamed", s.shownRoles())
     }
 
     @Test
@@ -126,7 +126,7 @@ class SearchScenarioTest {
         s.type("usecase", from = "")
         s.generate()
         assertEquals(false, s.ui().search.enabled)
-        assertEquals(listOf("data/Repository", "domain/UseCase"), s.shownRoles())
+        assertEquals(listOf("data.Repository", "domain.UseCase"), s.shownRoles())
         assertEquals(RowLeadUi.Status(RowStatus.Done), s.row(s.repository).lead)
 
         s.dispatch(KatachiIntent.ContinueGenerating)
@@ -144,14 +144,14 @@ class SearchScenarioTest {
         s.input(s.repository, "name", "User")
         s.check(s.useCase)
         s.type("repo", from = "")
-        assertEquals(listOf("data/Repository", "domain/UseCase"), s.shownRoles())
+        assertEquals(listOf("data.Repository", "domain.UseCase"), s.shownRoles())
         s.generate()
 
         // "Generate more": both stay checked; the one outside the search keeps its note and no form.
         s.dispatch(KatachiIntent.ContinueGenerating)
         assertEquals("repo", s.ui().search.query)
         assertEquals(true, s.ui().search.enabled)
-        assertEquals(listOf("data/Repository", "domain/UseCase"), s.shownRoles())
+        assertEquals(listOf("data.Repository", "domain.UseCase"), s.shownRoles())
         assertTrue(s.row(s.repository).body is RowBodyUi.Form)
         assertEquals("検索外・選択中", s.row(s.useCase).note)
         assertNull(s.row(s.useCase).body)
@@ -163,7 +163,7 @@ class SearchScenarioTest {
         // "Uncheck all": nothing is checked, so only what the search matches is left.
         s.dispatch(KatachiIntent.UncheckAll)
         assertEquals("repo", s.ui().search.query)
-        assertEquals(listOf("data/Repository"), s.shownRoles())
+        assertEquals(listOf("data.Repository"), s.shownRoles())
         assertEquals(RowLeadUi.Check(checked = false, enabled = true), s.row(s.repository).lead)
         assertEquals(false, s.formFooter().generateEnabled)
     }
@@ -175,11 +175,11 @@ class SearchScenarioTest {
         s.check(s.repository)
         s.input(s.repository, "name", "User")
         s.type("zzz", from = "")
-        assertEquals(listOf("data/Repository"), s.shownRoles())
+        assertEquals(listOf("data.Repository"), s.shownRoles())
         s.generate()
 
         s.dispatch(KatachiIntent.ContinueGenerating)
-        assertEquals(listOf("data/Repository"), s.shownRoles())
+        assertEquals(listOf("data.Repository"), s.shownRoles())
         assertNull(s.ui().emptySearch)
         s.input(s.repository, "name", "Order")
         s.generate()
@@ -189,7 +189,7 @@ class SearchScenarioTest {
     }
 
     @Test
-    fun `同名の欄を連動させたまま2回生成すると2回目も両方に同じ名前が入る`() = runBlocking {
+    fun `同名の欄を連動させたまま2回生成すると2回目も1回の実行の1つの値になる`() = runBlocking {
         val s = ScenarioHarness(this)
         s.open()
         s.check(s.repository)
@@ -197,7 +197,10 @@ class SearchScenarioTest {
         s.input(s.repository, "name", "User")
         assertEquals(LinkUi.Linked, s.textField(s.useCase, "name").link)
         s.generate()
-        assertEquals(listOf("User", "User"), s.katachi.runs.map { it["name"] })
+        // Both rows share the module, so they run together (design draft section 6): one build,
+        // the linked (and so already equal) value sent once.
+        assertEquals(1, s.katachi.runs.size)
+        assertEquals("User", s.lastArgs()["name"])
 
         s.dispatch(KatachiIntent.ContinueGenerating)
         assertEquals("", s.textField(s.useCase, "name").value)
@@ -205,11 +208,12 @@ class SearchScenarioTest {
         assertEquals("Order", s.textField(s.repository, "name").value)
         assertEquals(LinkUi.Linked, s.textField(s.repository, "name").link)
         s.generate()
-        assertEquals(listOf("Order", "Order"), s.katachi.runs.drop(2).map { it["name"] })
+        assertEquals(1, s.katachi.runs.drop(1).size)
+        assertEquals("Order", s.katachi.runs.last()["name"])
     }
 
     @Test
-    fun `連動を切ったまま2回生成すると2回目も切れたままでそれぞれの名前を送る`() = runBlocking {
+    fun `連動を切っても同じモジュールでは1回の実行にまとまり先に並ぶ行の値を送る`() = runBlocking {
         val s = ScenarioHarness(this)
         s.open()
         s.check(s.repository)
@@ -218,7 +222,10 @@ class SearchScenarioTest {
         s.input(s.useCase, "name", "GetUser")
         assertTrue(s.textField(s.useCase, "name").link is LinkUi.Unlinked)
         s.generate()
-        assertEquals(listOf("User", "GetUser"), s.katachi.runs.map { it["name"] })
+        // The unlinked field keeps its own text in the form, but a combined run can only carry one
+        // value for a shared name: the row that comes first (repository, list order) wins.
+        assertEquals(1, s.katachi.runs.size)
+        assertEquals("User", s.lastArgs()["name"])
 
         s.dispatch(KatachiIntent.ContinueGenerating)
         s.input(s.repository, "name", "Order")
@@ -227,7 +234,7 @@ class SearchScenarioTest {
         assertTrue(s.textField(s.useCase, "name").link is LinkUi.Unlinked)
         s.input(s.useCase, "name", "GetOrder")
         s.generate()
-        assertEquals(listOf("Order", "GetOrder"), s.katachi.runs.drop(2).map { it["name"] })
+        assertEquals("Order", s.katachi.runs.last()["name"])
 
         s.dispatch(KatachiIntent.ContinueGenerating)
         val relink = s.textField(s.useCase, "name").link.let { it as LinkUi.Unlinked }.relink

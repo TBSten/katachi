@@ -7,13 +7,13 @@ import java.nio.file.Paths
 class GradleRunRequestTest {
     private val request = GradleRunRequest(
         Paths.get("/work/project"),
-        listOf(GradleTaskInvocation(":arch:katachiTemplate", listOf("roleName" to "data/Repository", "name" to "My User's \"Repo\""))),
+        listOf(GradleTaskInvocation(":arch:katachiTemplate", listOf("template" to "data.Repository", "name" to "My User's \"Repo\""))),
     )
 
     @Test
     fun `taskNamesはタスクパスとargとkey=valueを別々の要素に並べる`() {
         assertEquals(
-            listOf(":arch:katachiTemplate", "--arg", "roleName=data/Repository", "--arg", "name=My User's \"Repo\""),
+            listOf(":arch:katachiTemplate", "--arg", "template=data.Repository", "--arg", "name=My User's \"Repo\""),
             request.taskNames,
         )
     }
@@ -21,7 +21,7 @@ class GradleRunRequestTest {
     @Test
     fun `コピー用のコマンドは必要な語だけシングルクォートで囲む`() {
         assertEquals(
-            """./gradlew :arch:katachiTemplate --arg roleName=data/Repository --arg 'name=My User'\''s "Repo"'""",
+            """./gradlew :arch:katachiTemplate --arg template=data.Repository --arg 'name=My User'\''s "Repo"'""",
             request.commandLine,
         )
     }

@@ -14,9 +14,9 @@ import org.junit.Test
 
 class GenerateEnablementTest {
     private val rows = rowsOf("arch-a")
-    private val repository = rows.row("data/Repository").id
-    private val useCase = rows.row("domain/UseCase").id
-    private val screen = rows.row("ui/Screen").id
+    private val repository = rows.row("data.Repository").id
+    private val useCase = rows.row("domain.UseCase").id
+    private val screen = rows.row("ui.Screen").id
 
     private fun form(vararg checked: Pair<TemplateId, Map<String, String>>) = FormState(
         selected = checked.map { it.first },
@@ -83,7 +83,7 @@ class GenerateEnablementTest {
 
     @Test
     fun `使えなくなった行がチェックに残っていれば押せない`() {
-        val broken = rows.row("misc/Broken").id
+        val broken = rows.row("misc.Broken").id
         assertEquals(GenerateBlocker.Unavailable(broken), generateBlockerOf(rows, form(broken to emptyMap()), BusyState.Idle))
     }
 }

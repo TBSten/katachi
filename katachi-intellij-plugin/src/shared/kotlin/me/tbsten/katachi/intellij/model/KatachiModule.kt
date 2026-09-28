@@ -35,12 +35,12 @@ internal data class KatachiModule(
     }
 }
 
-/** A template row. The same role name may appear in two modules, and those are two rows (E-05). */
-internal data class TemplateId(val module: ModuleId, val roleName: String)
+/** A template row, identified by its complete specifier. The same one may appear in two modules, and those are two rows (E-05). */
+internal data class TemplateId(val module: ModuleId, val template: String)
 
 /** A template together with the module it came from. */
 internal data class ModuleTemplate(val module: KatachiModule, val template: TemplateModel) {
-    val id: TemplateId get() = TemplateId(module.id, template.roleName)
+    val id: TemplateId get() = TemplateId(module.id, template.template)
 }
 
 /** What one module's JSON said, and when that JSON was written. */
@@ -66,7 +66,7 @@ internal fun templatesOf(snapshots: List<DescriptionSnapshot>): List<ModuleTempl
  * root first, then every group in the order it first appears, its own roles before its child
  * groups (parents before children, as katachi lists groups). Declaration order stays within a
  * group. Provisional: the spec's "JSON order" assumed a group's roles are contiguous, which nested
- * groups break (`domain/UseCase`, `domain/model/Entity`, `domain/Service`).
+ * groups break (`domain.UseCase`, `domain.model.Entity`, `domain.Service`).
  */
 internal fun groupOrderOf(templates: List<TemplateModel>): List<TemplateModel> {
     val roles = LinkedHashMap<String, MutableList<TemplateModel>>()
@@ -75,7 +75,7 @@ internal fun groupOrderOf(templates: List<TemplateModel>): List<TemplateModel> {
         roles.getOrPut(template.groupPath) { mutableListOf() } += template
         var path = template.groupPath
         while (path.isNotEmpty()) {
-            val parent = path.substringBeforeLast('/', missingDelimiterValue = "")
+            val parent = path.substringBeforeLast('.', missingDelimiterValue = "")
             children.getOrPut(parent) { LinkedHashSet() } += path
             path = parent
         }

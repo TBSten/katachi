@@ -13,6 +13,7 @@ import me.tbsten.katachi.intellij.testing.FakeRun
 import me.tbsten.katachi.intellij.testing.ROOT
 import me.tbsten.katachi.intellij.testing.cast
 import me.tbsten.katachi.intellij.testing.ScenarioHarness
+import me.tbsten.katachi.intellij.testing.module
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
@@ -47,7 +48,7 @@ class GenerationScenarioTest {
         assertNull(s.state.generation)
         assertEquals("", s.textField(s.repository, "name").value)
         assertEquals(false, s.formFooter().generateEnabled)
-        assertEquals("Repository: name が未入力です", s.formFooter().reason)
+        assertEquals("リポジトリ: name が未入力です", s.formFooter().reason)
 
         s.input(s.repository, "name", "User")
 
@@ -102,8 +103,8 @@ class GenerationScenarioTest {
         s.check(s.useCase)
         s.input(s.useCase, "name", "Get")
         s.generate()
-        assertEquals(listOf("roleName" to "domain/UseCase"), s.lastArgs().filterKeys { it == "roleName" }.toList())
-        assertEquals(listOf(s.useCase), s.state.generation.cast<GenerationState.Finished>().report.items.map { it.templateId })
+        assertEquals(listOf("template" to "domain.UseCase"), s.lastArgs().filterKeys { it == "template" }.toList())
+        assertEquals(listOf(s.useCase), s.state.generation.cast<GenerationState.Finished>().report.templateIds)
         assertEquals(RowLeadUi.Check(checked = false, enabled = false), s.row(s.repository).lead)
         assertNull(s.row(s.repository).body)
         assertEquals(listOf("GetUseCase.kt 新規 ← Opened"), s.resultFileNames(s.useCase))
@@ -117,34 +118,39 @@ class GenerationScenarioTest {
     @Test
     fun `途中で失敗して残りをやり直し成功したあと続けてもう一度生成できる`() = runBlocking {
         val s = ScenarioHarness(this)
+        // A row of a second module (design draft section 6): same-module rows now run together in
+        // one build, so "one item succeeds, the other fails" needs two separate modules.
+        val archB = module(":arch-b")
+        s.addModule(archB, ContractFixtures.json("arch-b"))
         s.open()
         s.fillRepository()
-        s.check(s.useCase)
-        assertEquals("User", s.inputOf(s.useCase, "name"))
+        val archBRepository = TemplateId(archB.id, "data.Repository")
+        s.check(archBRepository)
+        s.input(archBRepository, "name", "3")
         s.katachi.override = { args, index ->
             if (index == 1) FakeRun(ContractFixtures.outputLines("unknown-arg", ROOT), GradleRunOutcome.Failed) else null
         }
         s.generate()
         assertEquals(RowLeadUi.Status(RowStatus.Done), s.row(s.repository).lead)
-        assertEquals(RowLeadUi.Status(RowStatus.Failed), s.row(s.useCase).lead)
+        assertEquals(RowLeadUi.Status(RowStatus.Failed), s.row(archBRepository).lead)
         assertEquals(listOf("残りをやり直す", "続けて生成", "チェックを外す"), s.resultFooter().actions.map { it.label })
 
         s.dispatch(KatachiIntent.RetryRemaining)
-        assertEquals(listOf(s.useCase), s.state.form.selected)
+        assertEquals(listOf(archBRepository), s.state.form.selected)
         assertEquals(RowLeadUi.Check(checked = false, enabled = true), s.row(s.repository).lead)
-        assertEquals("User", s.textField(s.useCase, "name").value)
+        assertEquals("3", s.textField(archBRepository, "name").value)
         assertEquals(true, s.formFooter().generateEnabled)
 
         s.generate()
-        assertEquals(listOf(s.useCase), s.state.generation.cast<GenerationState.Finished>().report.items.map { it.templateId })
+        assertEquals(listOf(archBRepository), s.state.generation.cast<GenerationState.Finished>().report.templateIds)
         assertEquals("1 件を生成しました", s.resultFooter().summary)
         assertFalse(s.resultFooter().actions.any { it.label == "残りをやり直す" })
 
         s.dispatch(KatachiIntent.ContinueGenerating)
-        s.input(s.useCase, "name", "Order")
+        s.input(archBRepository, "name", "5")
         s.generate()
-        assertEquals("Order", s.lastArgs()["name"])
-        assertEquals(listOf("OrderUseCase.kt 新規 ← Opened"), s.resultFileNames(s.useCase))
+        assertEquals("5", s.lastArgs()["name"])
+        assertEquals(listOf("Repository5.kt 新規 ← Opened"), s.resultFileNames(archBRepository))
     }
 
     @Test
@@ -254,21 +260,27 @@ class GenerationScenarioTest {
     @Test
     fun `衝突でここで止めたあと残りをやり直すと同じ行がもう一度衝突を聞き上書きできる`() = runBlocking {
         val s = ScenarioHarness(this)
+        // A row of a second module (design draft section 6): same-module rows now run together, so
+        // "one item stops at a conflict, the other is deferred without one" needs two modules.
+        val archB = module(":arch-b")
+        s.addModule(archB, ContractFixtures.json("arch-b"))
         s.fs.write(ROOT.resolve("data/src/main/kotlin/com/example/data/UserRepository.kt"), "// mine")
         s.open()
         s.fillRepository()
-        s.check(s.noArgs)
+        val archBRepository = TemplateId(archB.id, "data.Repository")
+        s.check(archBRepository)
+        s.input(archBRepository, "name", "3")
         val answers = ArrayDeque(listOf(ConflictChoice.Stop, ConflictChoice.Overwrite))
         s.effects.conflictAnswer = { answers.removeFirst() }
         s.generate()
         assertEquals(RowLeadUi.Status(RowStatus.Stopped), s.row(s.repository).lead)
-        assertEquals(RowLeadUi.Status(RowStatus.NotRun), s.row(s.noArgs).lead)
+        assertEquals(RowLeadUi.Status(RowStatus.NotRun), s.row(archBRepository).lead)
 
         s.dispatch(KatachiIntent.RetryRemaining)
-        assertEquals(setOf(s.repository, s.noArgs), s.state.form.selected.toSet())
+        assertEquals(setOf(s.repository, archBRepository), s.state.form.selected.toSet())
         s.generate()
         assertEquals(RowLeadUi.Status(RowStatus.Done), s.row(s.repository).lead)
-        assertEquals(RowLeadUi.Status(RowStatus.Done), s.row(s.noArgs).lead)
+        assertEquals(RowLeadUi.Status(RowStatus.Done), s.row(archBRepository).lead)
         assertEquals("2 件を生成しました", s.resultFooter().summary)
         assertTrue(answers.isEmpty())
     }

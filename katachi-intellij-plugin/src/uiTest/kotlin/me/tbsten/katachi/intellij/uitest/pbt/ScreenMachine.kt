@@ -187,18 +187,24 @@ internal class ScreenMachine(private val catalog: Catalog, private val render: B
      * a second time only to overwrite after the conflict dialog.
      */
     private fun templateRun(args: Map<String, String>): FakeRun? {
-        val roleName = args.getValue("roleName")
+        // Several checked rows of the same module run together, `--arg template=` comma joined
+        // (design draft section 6, "IDE の複数選択").
+        val template = args.getValue("template")
+        val specifiers = template.split(",")
         val running = harness.state.generation as? GenerationState.Running
         if (running == null) {
-            runViolations += "katachiTemplate ran for $roleName without a generation on screen"
-        } else if (running.rows.none { it.roleName == roleName }) {
-            runViolations += "katachiTemplate ran for $roleName, which is not among the generating rows ${running.rows.map { it.roleName }}"
+            runViolations += "katachiTemplate ran for $template without a generation on screen"
+        } else {
+            val runningSpecifiers = running.rows.map { it.template }.toSet()
+            if (specifiers.any { it !in runningSpecifiers }) {
+                runViolations += "katachiTemplate ran for $template, which is not among the generating rows ${running.rows.map { it.template }}"
+            }
         }
-        captureViolationOf(roleName, args)?.let { runViolations += it }
-        val runs = runsOfGeneration.getOrPut("${harness.katachi.currentTaskPath} $roleName") { mutableListOf() }
+        for (specifier in specifiers) captureViolationOf(specifier, args)?.let { runViolations += it }
+        val runs = runsOfGeneration.getOrPut("${harness.katachi.currentTaskPath} $template") { mutableListOf() }
         runs += args.getValue("onExisting")
         if (runs.size > 2 || (runs.size == 2 && runs[1] != "overwrite")) {
-            runViolations += "katachiTemplate ran for $roleName $runs in one generation"
+            runViolations += "katachiTemplate ran for $template $runs in one generation"
         }
         val outcome = nextRun.also { nextRun = RunOutcome.Normal }
         return when (outcome) {
@@ -212,16 +218,16 @@ internal class ScreenMachine(private val catalog: Catalog, private val render: B
      * Every capture of the running template reaches the run as `--arg`, with the value its field
      * holds, and only a value that is one directory level: whichever order the fields were filled in.
      */
-    private fun captureViolationOf(roleName: String, args: Map<String, String>): String? {
+    private fun captureViolationOf(template: String, args: Map<String, String>): String? {
         val row = harness.state.rows.firstOrNull {
-            it.template.roleName == roleName && it.module.taskPath(KatachiModule.TEMPLATE_TASK) == harness.katachi.currentTaskPath
+            it.template.template == template && it.module.taskPath(KatachiModule.TEMPLATE_TASK) == harness.katachi.currentTaskPath
         } ?: return null
         for (capture in row.template.detail?.captures.orEmpty()) {
-            val sent = args[capture.name] ?: return "katachiTemplate ran for $roleName without its capture ${capture.name}: $args"
+            val sent = args[capture.name] ?: return "katachiTemplate ran for $template without its capture ${capture.name}: $args"
             val typed = harness.state.form.inputOf(FieldId(row.id, capture.name))
-            if (sent != typed) return "katachiTemplate ran for $roleName with ${capture.name}=\"$sent\", the field holds \"$typed\""
+            if (sent != typed) return "katachiTemplate ran for $template with ${capture.name}=\"$sent\", the field holds \"$typed\""
             if (sent.isBlank() || '/' in sent || '\\' in sent || sent.trim() == "." || sent.trim() == "..") {
-                return "katachiTemplate ran for $roleName with ${capture.name}=\"$sent\", which is not one directory level"
+                return "katachiTemplate ran for $template with ${capture.name}=\"$sent\", which is not one directory level"
             }
         }
         return null
@@ -239,7 +245,7 @@ internal class ScreenMachine(private val catalog: Catalog, private val render: B
                 appendLine("after these steps:")
                 trace.forEachIndexed { index, step -> appendLine("  ${index + 1}. $step") }
                 appendLine("state: phase=${state.phase} loading=${state.loading} generation=${state.generation}")
-                appendLine("form: selected=${state.form.selected.map { it.roleName }} inputs=${state.form.inputs.mapKeys { it.key.roleName }}")
+                appendLine("form: selected=${state.form.selected.map { it.template }} inputs=${state.form.inputs.mapKeys { it.key.template }}")
                 picture?.let { appendLine("screen: $it") }
             },
         )

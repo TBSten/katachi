@@ -30,8 +30,8 @@ private const val LABEL = "katachi: 生成前（Repository, UseCase, Service）"
 
 private fun written(dir: String, name: String, kind: WrittenKind = WrittenKind.New) = GeneratedFile(Path.of(dir, name), kind)
 
-private val repositoryDone = GenerationItemResult.Generated(listOf(written(DATA, "UserRepository.kt"), written(DATA, "UserRepositoryImpl.kt", WrittenKind.Overwritten)))
-private val useCaseDone = GenerationItemResult.Generated(listOf(written(DOMAIN, "UserUseCase.kt"), written(DOMAIN, "UserUseCaseImpl.kt")))
+private val repositoryDone = GenerationItemResult.Generated(listOf(written(DATA, "UserRepository.kt", WrittenKind.Overwritten)))
+private val useCaseDone = GenerationItemResult.Generated(listOf(written(DOMAIN, "UserUseCase.kt")))
 private val serviceDone = GenerationItemResult.Generated(listOf(written(DOMAIN, "UserService.kt")))
 
 private val slashFailure = GenerationItemResult.Failed(
@@ -39,7 +39,7 @@ private val slashFailure = GenerationItemResult.Failed(
     output = listOf(
         "> Task :architecture-test:katachiTemplate",
         "[1/3] Loading architecture...",
-        "[2/3] Running template data/Repository...",
+        "[2/3] Running template data.Repository...",
         "[FAILED] template",
         "  ファイル名に使えない文字「/」が含まれています: User/Admin",
         "BUILD FAILED in 3s",
@@ -51,7 +51,7 @@ private fun running(statuses: Map<TemplateId, GenerationRowStatus>, conflict: Co
 
 /** The default "open the first file" setting: the first written file carries "← opened". */
 private fun finished(vararg results: GenerationItemResult, view: ViewState = threeChecked.view): KatachiScreenState {
-    val report = GenerationReport(order.zip(results.toList()) { id, r -> GenerationItemReport(id, r) })
+    val report = GenerationReport(order.zip(results.toList()) { id, r -> GenerationItemReport(listOf(id), r) })
     return threeChecked.copy(
         generation = GenerationState.Finished(report, LABEL, openedFiles = report.writtenFiles.take(1).map { it.path }),
         view = view,
@@ -77,7 +77,7 @@ internal val generationScenarios: List<Scenario> = listOf(
                 useCaseId to GenerationRowStatus.AwaitingConflict,
                 serviceId to GenerationRowStatus.Waiting,
             ),
-            conflict = ConflictQuestion(useCaseId, 2, 3, listOf(Path.of(DOMAIN, "UserUseCase.kt"))),
+            conflict = ConflictQuestion(listOf(useCaseId), 2, 3, listOf(Path.of(DOMAIN, "UserUseCase.kt"))),
         ),
     ),
     Scenario("result-success", finished(repositoryDone, useCaseDone, serviceDone)),
@@ -97,7 +97,7 @@ internal val generationScenarios: List<Scenario> = listOf(
     Scenario(
         "second-run-stopped",
         finished(
-            GenerationItemResult.StoppedAtConflict(listOf(Path.of(DATA, "UserRepository.kt"), Path.of(DATA, "UserRepositoryImpl.kt"))),
+            GenerationItemResult.StoppedAtConflict(listOf(Path.of(DATA, "UserRepository.kt"))),
             GenerationItemResult.NotRun,
             GenerationItemResult.NotRun,
         ),
@@ -116,7 +116,7 @@ internal val generationScenarios: List<Scenario> = listOf(
 private val longTemplates = buildList {
     add(
         template(
-            "feature/authentication/presentation/TwoFactorAuthenticationVerificationScreenStateHolder",
+            "feature.authentication.presentation.TwoFactorAuthenticationVerificationScreenStateHolder",
             "二要素認証の確認画面の状態を保持するクラスとその初期化処理（長いタイトル）",
             listOf(str("featureNameUsedInEveryGeneratedFileName"), bool("generateAccompanyingComposePreviewFunctions")),
             listOf(
@@ -128,7 +128,7 @@ private val longTemplates = buildList {
             summary = "長い説明文。".repeat(6),
         ),
     )
-    repeat(199) { index -> add(template("group${index / 10}/Role$index", "テンプレート $index", listOf(str("name")), listOf(kt("module/src", "\${name}$index.kt")))) }
+    repeat(199) { index -> add(template("group${index / 10}.Role$index", "テンプレート $index", listOf(str("name")), listOf(kt("module/src", "\${name}$index.kt")))) }
 }
 
 private val longFirst = longTemplates.first()

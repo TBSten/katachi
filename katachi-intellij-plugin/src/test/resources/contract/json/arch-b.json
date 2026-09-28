@@ -1,19 +1,23 @@
 {
   "templates": [
     {
-      "roleName": "data/Repository",
-      "title": null,
+      "template": "data.Repository",
+      "id": null,
+      "title": "Repository",
+      "roleName": "data.Repository",
       "summary": null,
       "parameterNames": [
         "name"
       ],
-      "fileCount": 1
+      "conflict": false
     }
   ],
   "details": [
     {
-      "roleName": "data/Repository",
-      "title": null,
+      "template": "data.Repository",
+      "id": null,
+      "title": "Repository",
+      "roleName": "data.Repository",
       "summary": null,
       "parameters": [
         {
@@ -29,14 +33,18 @@
       ],
       "files": [
         {
+          "pattern": "b/Repository${name}.kt",
           "fileName": "Repository${name}.kt",
           "path": "b/Repository${name}.kt",
-          "unresolvedPatterns": [],
+          "captures": [],
+          "parameters": [
+            "name"
+          ],
           "content": ""
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=data/Repository --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg template=data.Repository --arg name=Name"
     }
   ]
 }

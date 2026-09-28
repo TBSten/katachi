@@ -1,26 +1,26 @@
 To honour the JVM settings for this build a single-use Daemon process will be forked. For more on this, please refer to https://docs.gradle.org/9.6.0/userguide/gradle_daemon.html#sec:disabling_the_daemon in the Gradle documentation.
 Daemon will be stopped at the end of the build 
 Reusing configuration cache.
-> Task :ide-katachi:katachi:checkKotlinGradlePluginConfigurationErrors SKIPPED
-> Task :ide-katachi:katachi-konsist:checkKotlinGradlePluginConfigurationErrors SKIPPED
 > Task :architecture-test:checkKotlinGradlePluginConfigurationErrors SKIPPED
-> Task :ide-katachi:katachi-konsist:processResources NO-SOURCE
+> Task :katachi:katachi:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :katachi:katachi-konsist:checkKotlinGradlePluginConfigurationErrors SKIPPED
 > Task :architecture-test:processTestResources NO-SOURCE
 > Task :architecture-test:processResources NO-SOURCE
-> Task :ide-katachi:katachi:processResources NO-SOURCE
+> Task :katachi:katachi-konsist:processResources NO-SOURCE
+> Task :katachi:katachi:processResources NO-SOURCE
 > Task :architecture-test:compileKotlin NO-SOURCE
 > Task :architecture-test:compileJava NO-SOURCE
 > Task :architecture-test:classes UP-TO-DATE
 > Task :architecture-test:generateKatachiEntryPoint UP-TO-DATE
 > Task :architecture-test:jar UP-TO-DATE
-> Task :ide-katachi:katachi:compileKotlin UP-TO-DATE
-> Task :ide-katachi:katachi:compileJava NO-SOURCE
-> Task :ide-katachi:katachi:classes UP-TO-DATE
-> Task :ide-katachi:katachi:jar UP-TO-DATE
-> Task :ide-katachi:katachi-konsist:compileKotlin UP-TO-DATE
-> Task :ide-katachi:katachi-konsist:compileJava NO-SOURCE
-> Task :ide-katachi:katachi-konsist:classes UP-TO-DATE
-> Task :ide-katachi:katachi-konsist:jar UP-TO-DATE
+> Task :katachi:katachi:compileKotlin UP-TO-DATE
+> Task :katachi:katachi:compileJava NO-SOURCE
+> Task :katachi:katachi:classes UP-TO-DATE
+> Task :katachi:katachi:jar UP-TO-DATE
+> Task :katachi:katachi-konsist:compileKotlin UP-TO-DATE
+> Task :katachi:katachi-konsist:compileJava NO-SOURCE
+> Task :katachi:katachi-konsist:classes UP-TO-DATE
+> Task :katachi:katachi-konsist:jar UP-TO-DATE
 > Task :architecture-test:compileTestKotlin UP-TO-DATE
 > Task :architecture-test:compileTestJava NO-SOURCE
 > Task :architecture-test:testClasses UP-TO-DATE
@@ -46,7 +46,7 @@ FAILURE: Build failed with an exception.
 
 * What went wrong:
 Execution failed for task ':architecture-test:katachiTemplate' (registered by plugin 'me.tbsten.katachi').
-> Process 'command '/home/user/.gradle/jdks/eclipse_adoptium-17-aarch64-os_x.2/jdk-17.0.17+10/Contents/Home/bin/java'' finished with non-zero exit value 1
+> Process 'command '/Users/tbsten/.gradle/jdks/eclipse_adoptium-17-aarch64-os_x.2/jdk-17.0.17+10/Contents/Home/bin/java'' finished with non-zero exit value 1
 
 * Try:
 > Run with --stacktrace option to get the stack trace.

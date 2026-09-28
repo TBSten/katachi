@@ -18,6 +18,7 @@ import me.tbsten.katachi.intellij.data.detect.detectDefinitionModules
 import me.tbsten.katachi.intellij.data.generate.GenerationItem
 import me.tbsten.katachi.intellij.data.generate.GenerationListener
 import me.tbsten.katachi.intellij.data.generate.GenerationSession
+import me.tbsten.katachi.intellij.data.generate.TemplateArgsEntry
 import me.tbsten.katachi.intellij.data.generate.filesToOpen
 import me.tbsten.katachi.intellij.data.generate.templateArgsOf
 import me.tbsten.katachi.intellij.data.gradle.GradleRunListener
@@ -244,25 +245,25 @@ internal class KatachiToolWindowViewModel(
         }
     }
 
-    /** A session that marks the row waiting for the conflict dialog while it asks. */
+    /** A session that marks every row of the asking run waiting for the conflict dialog while it asks. */
     private fun newSession(): GenerationSession = GenerationSession(runner, fileSystem) { question ->
-        val id = question.templateId
-        mutableState.update { updateGenerationRow(it, id, GenerationRowStatus.AwaitingConflict).withConflict(question) }
+        val ids = question.templateIds
+        mutableState.update { updateGenerationRow(it, ids, GenerationRowStatus.AwaitingConflict).withConflict(question) }
         try {
             effects.askConflict(question)
         } finally {
-            mutableState.update { updateGenerationRow(it, id, GenerationRowStatus.Running(null)).withConflict(null) }
+            mutableState.update { updateGenerationRow(it, ids, GenerationRowStatus.Running(null)).withConflict(null) }
         }
     }
 
     private suspend fun runGeneration(state: KatachiScreenState, session: GenerationSession) {
         val rows = state.rows.filter { state.form.isSelected(it.id) }
-        val items = rows.mapNotNull { generationItemOf(it, state.form) }
+        val items = generationItemsOf(rows, state.form)
         ownWrites = items.flatMap { it.expectedPaths }.toSet()
         // From here on "cancel" reaches the session, also while saving and labelling (E-21).
         this.session = session
         effects.saveAllDocuments()
-        val label = effects.putLocalHistoryLabel(rows.map { it.template.simpleName })
+        val label = effects.putLocalHistoryLabel(rows.map { it.template.title })
         generationLabel = label
         if (session.isCancelRequested) {
             // Cancelled before any build ran: back to the form, as if Generate had not been pressed.
@@ -270,21 +271,21 @@ internal class KatachiToolWindowViewModel(
             return
         }
         val listener = object : GenerationListener {
-            private var current: TemplateId? = null
+            private var current: List<TemplateId> = emptyList()
 
             override fun onItemStarted(index: Int) {
-                val id = items[index].templateId
-                current = id
-                mutableState.update { updateGenerationRow(it, id, GenerationRowStatus.Running(null)) }
+                val ids = items[index].templateIds
+                current = ids
+                mutableState.update { updateGenerationRow(it, ids, GenerationRowStatus.Running(null)) }
             }
 
             override fun onTask(taskPath: String) {
-                val id = current ?: return
-                mutableState.update { updateGenerationRow(it, id, GenerationRowStatus.Running(taskPath)) }
+                if (current.isEmpty()) return
+                mutableState.update { updateGenerationRow(it, current, GenerationRowStatus.Running(taskPath)) }
             }
 
             override fun onItemFinished(index: Int, result: GenerationItemResult) {
-                mutableState.update { updateGenerationRow(it, items[index].templateId, GenerationRowStatus.Finished(result)) }
+                mutableState.update { updateGenerationRow(it, items[index].templateIds, GenerationRowStatus.Finished(result)) }
             }
         }
         val report = session.run(items, state.form.onExisting, listener)
@@ -318,17 +319,27 @@ internal class KatachiToolWindowViewModel(
         mutableState.update { leaveResult(it, next(it, finished.report)) }
     }
 
-    private fun generationItemOf(row: ModuleTemplate, form: FormState): GenerationItem? {
-        val detail = row.template.detail ?: return null
-        val inputs = form.inputsOf(row.id)
-        val expected = expectedFilesOf(detail, inputs).mapNotNull { (it.location as? ExpectedLocation.Known)?.path }
-        return GenerationItem(
-            templateId = row.id,
-            module = row.module,
-            args = templateArgsOf(row.template.roleName, detail, inputs, form.onExisting),
-            expectedPaths = expected.mapNotNull { resolveExpectedPath(row.module.linkedRootPath, it) },
-        )
-    }
+    /**
+     * [rows] as the runs a generation makes: one [GenerationItem] per module, covering every
+     * checked row of that module in one `katachiTemplate` build (design draft section 6 "IDE の複数選択").
+     * A row whose preview failed is left out (it cannot be checked in the first place).
+     */
+    private fun generationItemsOf(rows: List<ModuleTemplate>, form: FormState): List<GenerationItem> =
+        rows.groupBy { it.module.id }.values.mapNotNull { group ->
+            val checked = group.mapNotNull { row -> row.template.detail?.let { row to it } }
+            if (checked.isEmpty()) return@mapNotNull null
+            val entries = checked.map { (row, detail) -> TemplateArgsEntry(row.template.template, detail, form.inputsOf(row.id)) }
+            val expected = checked.flatMap { (row, detail) ->
+                expectedFilesOf(detail, form.inputsOf(row.id)).mapNotNull { (it.location as? ExpectedLocation.Known)?.path }
+                    .mapNotNull { resolveExpectedPath(row.module.linkedRootPath, it) }
+            }
+            GenerationItem(
+                templateIds = checked.map { (row, _) -> row.id },
+                module = checked.first().first.module,
+                args = templateArgsOf(entries, form.onExisting),
+                expectedPaths = expected,
+            )
+        }
 
     private fun versions(): Map<ModuleId, String> = (detection as? DetectionResult.Found)?.katachiVersions.orEmpty()
 

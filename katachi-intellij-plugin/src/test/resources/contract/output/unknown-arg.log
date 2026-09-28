@@ -3,7 +3,7 @@
 > Task :arch-a:katachiTemplate
 Exception in thread "main" me.tbsten.katachi.processor.KatachiUnknownProcessorArgException: Unknown processor argument(s): implSuffix.
 None of the selected processors declare a field of that name, so passing it silently -- rather than failing -- would let a misspelled --arg key run as if it had never been given, with the field's default value instead.
-Known arguments: item, name, onExisting, roleName, withImpl.
+Known arguments: item, name, onExisting, template, withImpl.
 	at me.tbsten.katachi.processor.internal.ProcessorRunKt.checkNoUnknownArgs(ProcessorRun.kt:201)
 	at me.tbsten.katachi.processor.internal.MainKt.main(Main.kt:48)
 

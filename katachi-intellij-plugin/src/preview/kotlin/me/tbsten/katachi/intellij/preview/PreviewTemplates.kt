@@ -15,7 +15,8 @@ import java.time.Instant
 
 /*
  * The templates the preview scenarios show: shaped after the samples (Repository with `withImpl`,
- * UseCase, Service) plus the edge cases of the spec. Only the preview uses them.
+ * UseCase, Service) plus the edge cases of the spec. Only the preview uses them. One template one
+ * file, as design draft section 6 has it.
  */
 
 /** Every scenario renders "now" as this, so relative times ("10 minutes ago") stay fixed. */
@@ -38,8 +39,8 @@ internal fun bool(name: String, default: String? = "true") =
 internal fun enum(name: String, values: List<String>, default: String? = null) =
     ParameterModel.EnumParam(name, "Kind", default, default == null, default ?: values.first(), values)
 
-internal fun kt(dir: String, name: String, path: Boolean = true) =
-    FilePreviewModel(name, if (path) "$dir/$name" else null, if (path) emptyList() else listOf("$dir/**/$name"), "")
+internal fun kt(dir: String, name: String, path: Boolean = true, captures: List<String> = emptyList(), parameters: List<String> = emptyList()) =
+    FilePreviewModel(if (path) "$dir/$name" else "$dir/**/$name", name, if (path) "$dir/$name" else null, captures, parameters, "")
 
 internal fun template(
     roleName: String,
@@ -48,53 +49,66 @@ internal fun template(
     files: List<FilePreviewModel>,
     branches: List<BranchModel> = emptyList(),
     summary: String? = null,
-    fileCount: Int? = files.size,
+    id: String? = null,
     captures: List<ParameterModel.CaptureParam> = emptyList(),
-) = TemplateModel(
-    TemplateSummaryModel(roleName, title, summary, parameters.map { it.name }, fileCount, captures.map { it.name }),
-    TemplateDetailModel(roleName, title, summary, parameters, files, branches, "./gradlew katachiTemplate --arg roleName=$roleName", captures),
-)
+): TemplateModel {
+    val specifier = id?.let { "$roleName.$it" } ?: roleName
+    val shownTitle = title ?: id ?: roleName
+    return TemplateModel(
+        TemplateSummaryModel(specifier, id, shownTitle, roleName, summary, parameters.map { it.name }, conflict = false, captures.map { it.name }),
+        TemplateDetailModel(
+            specifier,
+            id,
+            shownTitle,
+            roleName,
+            summary,
+            parameters,
+            files,
+            branches,
+            "./gradlew katachiTemplate --arg template=$specifier",
+            captures,
+        ),
+    )
+}
+
+internal fun previewFailedTemplate(roleName: String, title: String?): TemplateModel =
+    TemplateModel(TemplateSummaryModel(roleName, null, title ?: roleName, roleName, null, listOf("name"), conflict = true), detail = null)
 
 /** A capture at one place: a `/` level of a file pattern, or with [module] a `*` of a module key. */
-internal fun capture(name: String, pattern: String, position: Int, module: Boolean = false) = ParameterModel.CaptureParam(
+internal fun capture(name: String, pattern: String, position: Int, module: Boolean = false, segment: String = "\${$name}") = ParameterModel.CaptureParam(
     name,
-    listOf(CapturePlace(if (module) CapturePlace.KIND_MODULE else CapturePlace.KIND_PATH, pattern, position)),
+    listOf(CapturePlace(if (module) CapturePlace.KIND_MODULE else CapturePlace.KIND_PATH, pattern, position, segment)),
 )
 
 private const val DATA_DIR = "data/src/main/kotlin/com/example/data/user"
 private const val DOMAIN_DIR = "domain/src/main/kotlin/com/example/domain/user"
 private const val UI_DIR = "ui/src/main/kotlin/com/example/ui/user"
 
-internal val dataSource = template("data/DataSource", "データソース", listOf(str("name")), listOf(kt(DATA_DIR, "\${name}DataSource.kt")))
+internal val dataSource = template("data.DataSource", "データソース", listOf(str("name")), listOf(kt(DATA_DIR, "\${name}DataSource.kt")))
 
 internal val repository = template(
-    "data/Repository",
+    "data.Repository",
     "リポジトリ",
     listOf(str("name"), str("item", default = "String"), bool("withImpl"), str("implSuffix", default = "Impl")),
-    listOf(kt(DATA_DIR, "\${name}Repository.kt"), kt(DATA_DIR, "\${name}Repository\${implSuffix}.kt")),
+    listOf(kt(DATA_DIR, "\${name}Repository.kt")),
     branches = listOf(
-        BranchModel("withImpl", "false", emptyList(), listOf("\${name}Repository\${implSuffix}.kt"), emptyList(), listOf("implSuffix")),
+        BranchModel("withImpl", "false", emptyList(), emptyList(), emptyList(), listOf("implSuffix")),
     ),
-    summary = "データ層の Repository と、その実装",
+    summary = "データ層の Repository",
 )
 
-internal val useCase = template(
-    "domain/UseCase",
-    "ユースケース",
-    listOf(str("name")),
-    listOf(kt(DOMAIN_DIR, "\${name}UseCase.kt"), kt(DOMAIN_DIR, "\${name}UseCaseImpl.kt")),
-)
+internal val useCase = template("domain.UseCase", "ユースケース", listOf(str("name")), listOf(kt(DOMAIN_DIR, "\${name}UseCase.kt")))
 
-internal val service = template("domain/Service", "サービス", listOf(str("name")), listOf(kt(DOMAIN_DIR, "\${name}Service.kt")))
+internal val service = template("domain.Service", "サービス", listOf(str("name")), listOf(kt(DOMAIN_DIR, "\${name}Service.kt")))
 
 /** Every input type: String (required / `${name}` default), Int, enum without default, Boolean. */
 internal val component = template(
-    "ui/Component",
+    "ui.Component",
     "画面の部品",
     listOf(str("name"), str("label", default = "\${name}"), int("columns", default = "2"), enum("kind", listOf("Compose", "View", "Internal")), bool("preview")),
     listOf(kt(UI_DIR, "\${name}Component.kt")),
     branches = listOf(
-        BranchModel("kind", "Internal", listOf("\${name}Internal.kt"), emptyList(), listOf(str("internalName", default = "\${name}Internal")), emptyList()),
+        BranchModel("kind", "Internal", emptyList(), emptyList(), listOf(str("internalName", default = "\${name}Internal")), emptyList()),
         BranchModel("preview", "false", emptyList(), emptyList(), emptyList(), emptyList()),
     ),
     summary = "Compose の画面部品",
@@ -102,56 +116,56 @@ internal val component = template(
 
 /** Two branches differing at once make the footer count approximate (E-09). */
 internal val screen = template(
-    "ui/Screen",
+    "ui.Screen",
     "画面",
     listOf(str("name"), bool("withViewModel"), bool("withPreview")),
-    listOf(kt(UI_DIR, "\${name}Screen.kt"), kt(UI_DIR, "\${name}ViewModel.kt"), kt(UI_DIR, "\${name}Preview.kt")),
+    listOf(kt(UI_DIR, "\${name}Screen.kt")),
     branches = listOf(
-        BranchModel("withViewModel", "false", emptyList(), listOf("\${name}ViewModel.kt"), emptyList(), emptyList()),
-        BranchModel("withPreview", "false", emptyList(), listOf("\${name}Preview.kt"), emptyList(), emptyList()),
+        BranchModel("withViewModel", "false", emptyList(), emptyList(), emptyList(), emptyList()),
+        BranchModel("withPreview", "false", emptyList(), emptyList(), emptyList(), emptyList()),
     ),
 )
 
-/** A detail whose summary has no count: the footer shows "N+" (E-09). */
-internal val navigation = template("ui/Navigation", "ナビゲーション", listOf(str("name")), listOf(kt(UI_DIR, "\${name}Route.kt")), fileCount = null)
+/** A detail with no id, one file, no special counting: the plain per-template shape. */
+internal val navigation = template("ui.Navigation", "ナビゲーション", listOf(str("name")), listOf(kt(UI_DIR, "\${name}Route.kt")))
 
 /** A file whose target is a wildcard (E-27). */
-internal val mapper = template("data/Mapper", "マッパー", listOf(str("name")), listOf(kt("data/src/main/kotlin", "\${name}Mapper.kt", path = false)))
+internal val mapper = template("data.Mapper", "マッパー", listOf(str("name")), listOf(kt("data/src/main/kotlin", "\${name}Mapper.kt", path = false)))
 
 /** katachi could not preview it: summary only (E-07). */
-internal val brokenTemplate = TemplateModel(TemplateSummaryModel("data/Cache", "キャッシュ", null, listOf("name"), null), detail = null)
+internal val brokenTemplate = previewFailedTemplate("data.Cache", "キャッシュ")
 
 /** A parameter of a kind this plugin does not know (E-36). */
 internal val futureTemplate = template(
-    "data/Remote",
+    "data.Remote",
     "リモート",
     listOf(str("name"), ParameterModel.UnknownParam("timeout", "Duration", null, true, "1s", "DurationParameter")),
     listOf(kt(DATA_DIR, "\${name}Remote.kt")),
 )
 
 /** `name: Int` in another module: same name, other type, so it never links (E-15). */
-internal val pagedList = template("ui/PagedList", "ページ付きリスト", listOf(int("name", default = "20")), listOf(kt(UI_DIR, "PagedList.kt")))
+internal val pagedList = template("ui.PagedList", "ページ付きリスト", listOf(int("name", default = "20")), listOf(kt(UI_DIR, "PagedList.kt")))
 
-/** The sample's FeatureComponent: `:feature:*` named `feature` with `module(capture = ...)`. */
+/** The sample's FeatureComponent: `:feature:*` named `feature` with a module key capture. */
 internal val featureComponent = template(
-    "feature/FeatureComponent",
+    "feature.FeatureComponent",
     "画面の部品",
     listOf(str("name"), bool("withPreview")),
-    listOf(kt("feature/\${feature}/src/main/kotlin/com/example/feature/\${feature}/component", "\${name}.kt")),
+    listOf(kt("feature/\${feature}/src/main/kotlin/com/example/feature/\${feature}/component", "\${name}.kt", captures = listOf("feature"), parameters = listOf("name", "withPreview"))),
     summary = "1つの画面でしか使わない @Composable",
     captures = listOf(capture("feature", ":feature:*", 0, module = true)),
 )
 
 /** A directory level named with `capture("feature")`. */
 internal val featureViewModel = template(
-    "feature/ViewModel",
+    "feature.ViewModel",
     "ViewModel",
     listOf(str("name")),
-    listOf(kt("app/src/main/kotlin/com/example/feature/\${feature}", "\${name}ViewModel.kt")),
+    listOf(kt("app/src/main/kotlin/com/example/feature/\${feature}", "\${name}ViewModel.kt", captures = listOf("feature"), parameters = listOf("name"))),
     captures = listOf(capture("feature", "app/src/main/kotlin/com/example/feature/*/*ViewModel.kt", 7)),
 )
 
 internal fun snapshot(module: KatachiModule, vararg templates: TemplateModel, loadedAt: Instant = PREVIEW_NOW.minusSeconds(600)) =
     DescriptionSnapshot(module, "0.3.0", templates.toList(), loadedAt)
 
-internal fun idOf(module: KatachiModule, template: TemplateModel) = TemplateId(module.id, template.roleName)
+internal fun idOf(module: KatachiModule, template: TemplateModel) = TemplateId(module.id, template.template)

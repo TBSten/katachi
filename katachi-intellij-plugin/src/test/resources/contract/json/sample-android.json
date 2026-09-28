@@ -1,29 +1,34 @@
 {
   "templates": [
     {
-      "roleName": "ui/Component",
+      "template": "ui.Component",
+      "id": null,
       "title": "共通コンポーネント",
+      "roleName": "ui.Component",
       "summary": ":ui モジュールの component package に置く、feature をまたいで使う部品",
-      "parameterNames": ["name", "previewText"],
-      "fileCount": 1
+      "parameterNames": [
+        "previewText"
+      ],
+      "captures": [
+        {
+          "name": "name",
+          "kind": "PathCapture",
+          "pattern": "ui/src/main/kotlin/com/example/sample/ui/component/*.kt",
+          "position": 9,
+          "segment": "${name}.kt"
+        }
+      ],
+      "conflict": false
     }
   ],
   "details": [
     {
-      "roleName": "ui/Component",
+      "template": "ui.Component",
+      "id": null,
       "title": "共通コンポーネント",
+      "roleName": "ui.Component",
       "summary": ":ui モジュールの component package に置く、feature をまたいで使う部品",
       "parameters": [
-        {
-          "name": "name",
-          "kind": "StringParameter",
-          "typeName": "String",
-          "default": null,
-          "acceptedValues": [],
-          "isRequired": true,
-          "previewValue": "${name}",
-          "previewValueSource": "Placeholder"
-        },
         {
           "name": "previewText",
           "kind": "StringParameter",
@@ -37,14 +42,29 @@
       ],
       "files": [
         {
-          "fileName": "App${name}.kt",
-          "path": "ui/src/main/kotlin/com/example/sample/ui/component/App${name}.kt",
-          "unresolvedPatterns": [],
-          "content": "package com.example.sample.ui.component\n\nimport androidx.compose.material3.Text\nimport androidx.compose.runtime.Composable\nimport androidx.compose.ui.Modifier\nimport androidx.compose.ui.tooling.preview.Preview\nimport com.example.sample.ui.preview.PreviewRoot\n\n/** Shared ${name}, called by feature modules instead of Material's own. */\n@Composable\nfun App${name}(\n    text: String,\n    modifier: Modifier = Modifier,\n) {\n    Text(text = text, modifier = modifier)\n}\n\n@Preview(showBackground = true)\n@Composable\nprivate fun App${name}Preview() = PreviewRoot {\n    App${name}(text = \"${previewText}\")\n}\n"
+          "pattern": "ui/src/main/kotlin/com/example/sample/ui/component/${name}.kt",
+          "fileName": "${name}.kt",
+          "path": "ui/src/main/kotlin/com/example/sample/ui/component/${name}.kt",
+          "captures": [
+            "name"
+          ],
+          "parameters": [
+            "previewText"
+          ],
+          "content": "package com.example.sample.ui.component\n\nimport androidx.compose.material3.Text\nimport androidx.compose.runtime.Composable\nimport androidx.compose.ui.Modifier\nimport androidx.compose.ui.tooling.preview.Preview\nimport com.example.sample.ui.preview.PreviewRoot\n\n/** Shared ${name}, called by feature modules instead of Material's own. */\n@Composable\nfun ${name}(\n    text: String,\n    modifier: Modifier = Modifier,\n) {\n    Text(text = text, modifier = modifier)\n}\n\n@Preview(showBackground = true)\n@Composable\nprivate fun ${name}Preview() = PreviewRoot {\n    ${name}(text = \"${previewText}\")\n}\n"
         }
       ],
       "branches": [],
-      "exampleCommand": "./gradlew katachiTemplate --arg roleName=ui/Component --arg name=Name"
+      "exampleCommand": "./gradlew katachiTemplate --arg template=ui.Component --arg name=<name>",
+      "captures": [
+        {
+          "name": "name",
+          "kind": "PathCapture",
+          "pattern": "ui/src/main/kotlin/com/example/sample/ui/component/*.kt",
+          "position": 9,
+          "segment": "${name}.kt"
+        }
+      ]
     }
   ]
 }

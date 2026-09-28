@@ -23,17 +23,17 @@ class SearchFilterTest {
 
     @Test
     fun `役割名と修飾名とtitleとsummaryとパラメータ名に大文字小文字を無視して部分一致する`() {
-        assertEquals(listOf("data/Repository"), names("REPO"))
-        assertEquals(listOf("domain/UseCase"), names("domain/"))
-        assertEquals(listOf("domain/UseCase"), names("ユースケース"))
-        assertEquals(listOf("ui/Screen"), names("画面"))
-        assertEquals(listOf("data/Repository"), names("implSuffix"))
+        assertEquals(listOf("data.Repository"), names("REPO"))
+        assertEquals(listOf("domain.UseCase"), names("domain."))
+        assertEquals(listOf("domain.UseCase"), names("ユースケース"))
+        assertEquals(listOf("ui.Screen"), names("画面"))
+        assertEquals(listOf("data.Repository"), names("implSuffix"))
     }
 
     @Test
     fun `チェック中の行は一致しなくても検索外として残す`() {
-        val form = FormState(selected = listOf(rows.row("ui/Screen").id))
-        assertEquals(listOf("data/Repository", "ui/Screen (outside)"), names("repo", form))
+        val form = FormState(selected = listOf(rows.row("ui.Screen").id))
+        assertEquals(listOf("data.Repository", "ui.Screen (outside)"), names("repo", form))
     }
 
     @Test
@@ -47,7 +47,7 @@ class SearchFilterTest {
             (0 until 20).map { t ->
                 ModuleTemplate(
                     module(":arch$m"),
-                    template("group$t/Role${m}x$t", parameters = listOf(stringParam("name"), stringParam("item", "\${name}Item")), title = "タイトル$t"),
+                    template("group$t.Role${m}x$t", parameters = listOf(stringParam("name"), stringParam("item", "\${name}Item")), title = "タイトル$t"),
                 )
             }
         }

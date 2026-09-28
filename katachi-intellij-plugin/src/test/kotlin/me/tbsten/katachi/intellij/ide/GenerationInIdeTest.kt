@@ -24,7 +24,7 @@ import java.util.Collections
 
 /** Generating through the real IDE effects: VFS, editors, Local History, the conflict dialog, notifications. */
 internal class GenerationInIdeTest : KatachiIdeTestBase() {
-    private val repository get() = TemplateId(ModuleId(root, ":arch-a"), "data/Repository")
+    private val repository get() = TemplateId(ModuleId(root, ":arch-a"), "data.Repository")
     private val dataDir get() = root.resolve("data/src/main/kotlin/com/example/data")
     private val questions = Collections.synchronizedList(mutableListOf<ConflictQuestion>())
 
@@ -50,7 +50,7 @@ internal class GenerationInIdeTest : KatachiIdeTestBase() {
     }
 
     private fun resultOfRepository(finished: GenerationState.Finished): GenerationItemResult =
-        finished.report.items.single { it.templateId == repository }.result
+        finished.report.items.single { repository in it.templateIds }.result
 
     fun `test 生成したファイルが VFS に載り、最初の1ファイルがエディタで開く`() {
         val viewModel = loadedViewModel()
@@ -69,7 +69,8 @@ internal class GenerationInIdeTest : KatachiIdeTestBase() {
 
         val finished = viewModel.generateAndWait()
 
-        assertEquals(KatachiBundle.message("localHistory.label", "Repository"), finished.localHistoryLabel)
+        // The label names the row's title (design draft section 6), which arch-a.json gives in Japanese.
+        assertEquals(KatachiBundle.message("localHistory.label", "リポジトリ"), finished.localHistoryLabel)
     }
 
     fun `test 設定で開かないを選ぶと生成してもファイルを開かない`() {

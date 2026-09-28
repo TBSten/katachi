@@ -42,8 +42,8 @@ internal class IdeEffectsImpl(private val project: Project) : IdeEffects {
         onEdt { sdkCall("save all documents") { writeIntentReadAction { FileDocumentManager.getInstance().saveAllDocuments() } } }
     }
 
-    override suspend fun putLocalHistoryLabel(roleNames: List<String>): String? {
-        val name = KatachiBundle.message("localHistory.label", roleNames.joinToString(", "))
+    override suspend fun putLocalHistoryLabel(titles: List<String>): String? {
+        val name = KatachiBundle.message("localHistory.label", titles.joinToString(", "))
         val put = onEdt { sdkCall("put the Local History label \"$name\"") { LocalHistory.getInstance().putSystemLabel(project, name) } }
         return name.takeIf { put?.isSuccess == true }
     }

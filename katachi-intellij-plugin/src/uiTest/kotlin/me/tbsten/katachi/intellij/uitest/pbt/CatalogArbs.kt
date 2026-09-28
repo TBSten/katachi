@@ -104,7 +104,7 @@ internal data class Catalog(val worlds: List<World>) {
     override fun toString(): String = worlds.joinToString(prefix = "Catalog(", postfix = ")", separator = " / ")
 }
 
-private val GROUPS = listOf("", "", "a", "a/b", "a/b/c", "data", "domain/model")
+private val GROUPS = listOf("", "", "a", "a.b", "a.b.c", "data", "domain.model")
 private val PARAM_NAMES = listOf("name", "item", "count", "kind", "flag", "label")
 private val MODULE_PATHS = listOf(":m0", ":m1", ":m2")
 
@@ -210,21 +210,28 @@ private fun parameterOf(spec: ParamSpec): ParameterModel {
     }
 }
 
-/** The template [spec] describes, as katachi would list it. */
+/**
+ * The template [spec] describes, as katachi would list it. A real katachi lists exactly one file
+ * per template; [spec.files] still varies the count here, since the plugin's own model does not
+ * enforce that (nothing in [FilePreviewModel] or the code that reads `files[]` assumes one), and
+ * exercising several keeps this PBT's coverage of that generic list-handling code.
+ */
 internal fun templateOf(index: Int, spec: TemplateSpec): TemplateModel {
     val simpleName = "R$index"
-    val roleName = if (spec.group.isEmpty()) simpleName else "${spec.group}/$simpleName"
+    val roleName = if (spec.group.isEmpty()) simpleName else "${spec.group}.$simpleName"
     val parameters = spec.params.map(::parameterOf)
     val captures = spec.captures.map(::captureOf)
     val stem = if (spec.params.any { it.name == "name" }) "\${name}" else simpleName
     val captureDirs = spec.captures.joinToString("") { "/\${${it.name}}" }
+    val parameterNames = parameters.map { it.name }
+    val captureNames = captures.map { it.name }
     val files = (0 until spec.files).map { i ->
         val fileName = "${stem}F$i.kt"
         val directory = "mod/src/${spec.group.ifEmpty { "root" }}$captureDirs"
         if (i == 0 && spec.unresolved) {
-            FilePreviewModel(fileName, null, listOf("mod/src/**/$fileName"), "// $fileName")
+            FilePreviewModel("mod/src/**/$fileName", fileName, null, captureNames, parameterNames, "// $fileName")
         } else {
-            FilePreviewModel(fileName, "$directory/$fileName", emptyList(), "// $fileName")
+            FilePreviewModel("$directory/$fileName", fileName, "$directory/$fileName", captureNames, parameterNames, "// $fileName")
         }
     }
     val title = when (spec.title) {
@@ -232,16 +239,19 @@ internal fun templateOf(index: Int, spec: TemplateSpec): TemplateModel {
         TitleKind.Short -> "タイトル$index"
         TitleKind.Long -> "とても長いタイトル".repeat(6) + index
     }
-    val summary = TemplateSummaryModel(roleName, title, null, parameters.map { it.name }, if (spec.previewFailed) null else files.size, captures.map { it.name })
+    val shownTitle = title ?: roleName
+    val summary = TemplateSummaryModel(roleName, null, shownTitle, roleName, null, parameterNames, spec.previewFailed, captureNames)
     if (spec.previewFailed) return TemplateModel(summary, detail = null)
     val detail = TemplateDetailModel(
+        template = roleName,
+        id = null,
+        title = shownTitle,
         roleName = roleName,
-        title = title,
         summary = null,
         parameters = parameters,
         files = files,
         branches = listOfNotNull(branchOf(spec, parameters, files)),
-        exampleCommand = "./gradlew katachiTemplate --arg roleName=$roleName",
+        exampleCommand = "./gradlew katachiTemplate --arg template=$roleName",
         captures = captures,
     )
     return TemplateModel(summary, detail)
@@ -252,9 +262,9 @@ private fun captureOf(spec: CaptureSpec): ParameterModel.CaptureParam = Paramete
     spec.name,
     listOf(
         if (spec.module) {
-            CapturePlace(CapturePlace.KIND_MODULE, ":feature:*", 0)
+            CapturePlace(CapturePlace.KIND_MODULE, ":feature:*", 0, "\${${spec.name}}")
         } else {
-            CapturePlace(CapturePlace.KIND_PATH, "mod/src/*/*/*.kt", 2)
+            CapturePlace(CapturePlace.KIND_PATH, "mod/src/*/*/*.kt", 2, "\${${spec.name}}")
         },
     ),
 )

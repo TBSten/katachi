@@ -28,23 +28,26 @@ class ReloadScenarioTest {
                 "\"acceptedValues\": [], \"isRequired\": true, \"previewValue\": \"\${entity}\", \"previewValueSource\": \"Placeholder\"}, ",
         )
 
-    /** arch-a with a template `misc/Added` at the end of the list. */
+    /** arch-a with a template `misc.Added` at the end of the list. */
     private val withAdded = base
-        .replaceFirst("\"templates\": [", "\"templates\": [{\"roleName\": \"misc/Added\", \"title\": null, \"summary\": null, \"parameterNames\": [], \"fileCount\": 1}, ")
+        .replaceFirst(
+            "\"templates\": [",
+            "\"templates\": [{\"template\": \"misc.Added\", \"id\": null, \"title\": \"Added\", \"roleName\": \"misc.Added\", \"summary\": null, \"parameterNames\": [], \"conflict\": false}, ",
+        )
         .replaceFirst(
             "\"details\": [",
-            "\"details\": [{\"roleName\": \"misc/Added\", \"title\": null, \"summary\": null, \"parameters\": [], " +
-                "\"files\": [{\"fileName\": \"Added.kt\", \"path\": \"Added.kt\", \"unresolvedPatterns\": [], \"content\": \"\"}], \"branches\": [], \"exampleCommand\": \"x\"}, ",
+            "\"details\": [{\"template\": \"misc.Added\", \"id\": null, \"title\": \"Added\", \"roleName\": \"misc.Added\", \"summary\": null, \"parameters\": [], " +
+                "\"files\": [{\"pattern\": \"Added.kt\", \"fileName\": \"Added.kt\", \"path\": \"Added.kt\", \"captures\": [], \"parameters\": [], \"content\": \"\"}], \"branches\": [], \"exampleCommand\": \"x\"}, ",
         )
 
-    /** arch-a where `misc/Broken`'s preview works now. */
+    /** arch-a where `misc.Broken`'s preview works now. */
     private val brokenFixed = base
-        .replace("\"fileCount\": null", "\"fileCount\": 1")
+        .replace("\"conflict\": true", "\"conflict\": false")
         .replaceFirst(
             "\"details\": [",
-            "\"details\": [{\"roleName\": \"misc/Broken\", \"title\": null, \"summary\": null, \"parameters\": [{\"name\": \"name\", \"kind\": \"StringParameter\", " +
+            "\"details\": [{\"template\": \"misc.Broken\", \"id\": null, \"title\": \"Broken\", \"roleName\": \"misc.Broken\", \"summary\": null, \"parameters\": [{\"name\": \"name\", \"kind\": \"StringParameter\", " +
                 "\"typeName\": \"String\", \"default\": null, \"acceptedValues\": [], \"isRequired\": true, \"previewValue\": \"\${name}\", \"previewValueSource\": \"Placeholder\"}], " +
-                "\"files\": [{\"fileName\": \"\${name}Broken.kt\", \"path\": \"misc/\${name}Broken.kt\", \"unresolvedPatterns\": [], \"content\": \"\"}], \"branches\": [], \"exampleCommand\": \"x\"}, ",
+                "\"files\": [{\"pattern\": \"misc/\${name}Broken.kt\", \"fileName\": \"\${name}Broken.kt\", \"path\": \"misc/\${name}Broken.kt\", \"captures\": [], \"parameters\": [\"name\"], \"content\": \"\"}], \"branches\": [], \"exampleCommand\": \"x\"}, ",
         )
 
     private fun ScenarioHarness.fillRepository() {
@@ -67,7 +70,7 @@ class ReloadScenarioTest {
         s.dispatch(KatachiIntent.ContinueGenerating)
         assertEquals(listOf("entity", "name", "item", "withImpl", "implSuffix"), s.form(s.repository).fields.map { it.id.parameterName })
         s.input(s.repository, "name", "Order")
-        assertEquals("Repository: entity が未入力です", s.formFooter().reason)
+        assertEquals("リポジトリ: entity が未入力です", s.formFooter().reason)
         s.input(s.repository, "entity", "Order")
         s.generate()
         assertEquals("Order", s.lastArgs()["entity"])
@@ -154,18 +157,17 @@ class ReloadScenarioTest {
         s.open()
         s.fillRepository()
         s.check(s.useCase)
-        s.katachi.override = { args, _ ->
-            if (args["roleName"] == "domain/UseCase") FakeRun(ContractFixtures.outputLines("unknown-arg", ROOT), GradleRunOutcome.Failed) else null
-        }
+        // Both rows share the module, so they run and fail together (design draft section 6).
+        s.katachi.override = { _, _ -> FakeRun(ContractFixtures.outputLines("unknown-arg", ROOT), GradleRunOutcome.Failed) }
         s.generate()
-        s.reload(base.replace("\"domain/UseCase\"", "\"domain/Renamed\""))
+        s.reload(base.replace("\"domain.UseCase\"", "\"domain.Renamed\""))
         assertEquals(listOf(s.useCase), s.state.removedTemplates)
         assertFalse(s.rowIds().contains(s.useCase))
 
         s.dispatch(KatachiIntent.RetryRemaining)
-        assertTrue(s.state.form.selected.isEmpty())
-        assertTrue(s.state.form.expanded.isEmpty())
-        assertEquals(false, s.formFooter().generateEnabled)
+        // Repository failed too and is still in the list, so it stays checked; useCase is gone.
+        assertEquals(listOf(s.repository), s.state.form.selected)
+        assertEquals(true, s.formFooter().generateEnabled)
     }
 
     @Test
@@ -175,7 +177,7 @@ class ReloadScenarioTest {
         s.fillRepository()
         s.generate()
         s.reload(withAdded)
-        val added = TemplateId(s.arch.id, "misc/Added")
+        val added = TemplateId(s.arch.id, "misc.Added")
         assertEquals(RowLeadUi.Check(checked = false, enabled = false), s.row(added).lead)
 
         s.dispatch(KatachiIntent.UncheckAll)
@@ -189,7 +191,7 @@ class ReloadScenarioTest {
     fun `原因を見た壊れたテンプレートが再読み込みで直ったらチェックすると原因ではなくフォームを出す`() = runBlocking {
         val s = ScenarioHarness(this)
         s.open()
-        val broken = TemplateId(s.arch.id, "misc/Broken")
+        val broken = TemplateId(s.arch.id, "misc.Broken")
         assertEquals(RowMarker.Blocked, s.row(broken).marker)
         s.dispatch(KatachiIntent.ShowCause(broken))
         s.await { it.view.causes[broken] is CauseState.Loaded }

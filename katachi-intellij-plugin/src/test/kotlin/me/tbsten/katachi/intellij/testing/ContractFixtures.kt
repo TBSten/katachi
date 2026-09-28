@@ -10,18 +10,23 @@ import java.nio.file.Paths
 /**
  * The contract goldens under `src/test/resources/contract/`.
  *
- * `json/arch-a.json`, `json/arch-b.json` and `output/` are hand-written from the contract in
- * `.local/ide-plugin-impl/plan.md` until `scripts/refresh-contract-fixtures.sh` produces real
- * ones. The real ones, left unedited apart from the project root, are `json/sample-{jvm,android,kmp}.json`
- * (`katachiInternalTemplatesJson` of each sample) and `output/real-jvm-*.log` (Gradle's whole
- * console output of sample/jvm's `katachiTemplate` and `katachiInternalTemplatesJson`); refresh
- * them from the samples whenever katachi's output changes. Output files write the project root as
+ * `json/arch-a.json`, `json/arch-b.json` and `output/` (other than `output/real-jvm-*.log`) are
+ * hand-written from the contract in `.local/ide-plugin-impl/plan.md`. The real ones, left unedited
+ * apart from the project root, are `json/sample-{jvm,android,kmp}.json` and
+ * `json/sample-{jvm,android,kmp}-with-captures.json` (`katachiInternalTemplatesJson` of each
+ * sample) and `output/real-jvm-*.log` (Gradle's whole console output of sample/jvm's
+ * `katachiTemplate` and `katachiInternalTemplatesJson`); refresh them from the samples whenever
+ * katachi's output changes (design draft's step 10, stage I-2: run
+ * `:architecture-test:katachiInternalTemplatesJson` under each sample, and `katachiTemplate` under
+ * sample/jvm for the `real-jvm-*` scenarios). Output files write the project root as
  * `file:///__ROOT__`.
  *
- * `json/sample-{jvm,android,kmp}.json` hold one role each and predate `captures`, so they also stand
- * for the JSON of a katachi before `capture()`. `json/sample-*-with-captures.json` are the whole,
- * unedited outputs of a katachi that writes `captures`; `json/capture.json` is hand-written for the
- * shapes the samples lack (several captures, one name in two places, a role without the key).
+ * `json/sample-{jvm,android,kmp}.json` hold one template each -- a `capture()` reaches almost every
+ * file's name now, so unlike before the template-per-file redesign there is no longer a real
+ * template without one; `arch-a.json` stands in for that shape instead (hand-written, no `captures`
+ * key at all). `json/sample-*-with-captures.json` are the whole, unedited outputs of the sample;
+ * `json/capture.json` is hand-written for the shapes the samples lack (several captures, one name
+ * in two places, a template without the key).
  */
 internal object ContractFixtures {
     const val ROOT_TOKEN: String = "file:///__ROOT__"
@@ -59,3 +64,7 @@ internal fun rowsOf(fixture: String, module: KatachiModule = module()): List<Mod
 
 internal fun List<ModuleTemplate>.row(roleName: String): ModuleTemplate =
     firstOrNull { it.template.roleName == roleName } ?: throw IllegalArgumentException("No row $roleName")
+
+/** [row], but by the complete specifier: needed once a role has more than one template. */
+internal fun List<ModuleTemplate>.rowOfTemplate(template: String): ModuleTemplate =
+    firstOrNull { it.template.template == template } ?: throw IllegalArgumentException("No row $template")

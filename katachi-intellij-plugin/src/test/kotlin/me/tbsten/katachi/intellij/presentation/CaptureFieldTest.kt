@@ -48,21 +48,28 @@ class CaptureFieldTest {
 
     @Test
     fun `パスのcaptureは自分の階層の星だけを名前で示す`() {
-        val place = CapturePlace(CapturePlace.KIND_PATH, "feature/*/src/*ViewModel.kt", 1)
+        val place = CapturePlace(CapturePlace.KIND_PATH, "feature/*/src/*ViewModel.kt", 1, "\${feature}")
         assertEquals("feature/<feature>/src/*ViewModel.kt", markedPatternOf("feature", place))
-        assertEquals("app/*/<area>/x.kt", markedPatternOf("area", CapturePlace(CapturePlace.KIND_PATH, "app/*/*/x.kt", 2)))
+        assertEquals("app/*/<area>/x.kt", markedPatternOf("area", CapturePlace(CapturePlace.KIND_PATH, "app/*/*/x.kt", 2, "\${area}")))
+    }
+
+    @Test
+    fun `同じ階層に複数のcaptureがあるときは自分の名前の場所だけ印し他はそのまま名前で示す`() {
+        val place = CapturePlace(CapturePlace.KIND_PATH, "feature/*-*.kt", 1, "\${a}-\${b}.kt")
+        assertEquals("feature/<a>-\${b}.kt", markedPatternOf("a", place))
+        assertEquals("feature/\${a}-<b>.kt", markedPatternOf("b", place))
     }
 
     @Test
     fun `モジュールのcaptureは何番目の星かで示す`() {
-        assertEquals(":feature:<feature>", markedPatternOf("feature", CapturePlace(CapturePlace.KIND_MODULE, ":feature:*", 0)))
-        assertEquals(":*:<leaf>", markedPatternOf("leaf", CapturePlace(CapturePlace.KIND_MODULE, ":*:*", 1)))
+        assertEquals(":feature:<feature>", markedPatternOf("feature", CapturePlace(CapturePlace.KIND_MODULE, ":feature:*", 0, "")))
+        assertEquals(":*:<leaf>", markedPatternOf("leaf", CapturePlace(CapturePlace.KIND_MODULE, ":*:*", 1, "")))
     }
 
     @Test
     fun `範囲外の位置はパターンをそのまま出す`() {
-        assertEquals("a/*.kt", markedPatternOf("x", CapturePlace(CapturePlace.KIND_PATH, "a/*.kt", 5)))
-        assertEquals(":feature:*", markedPatternOf("x", CapturePlace(CapturePlace.KIND_MODULE, ":feature:*", 1)))
+        assertEquals("a/*.kt", markedPatternOf("x", CapturePlace(CapturePlace.KIND_PATH, "a/*.kt", 5, "")))
+        assertEquals(":feature:*", markedPatternOf("x", CapturePlace(CapturePlace.KIND_MODULE, ":feature:*", 1, "")))
     }
 
     @Test
@@ -70,7 +77,7 @@ class CaptureFieldTest {
         val screen = capture("feature", ":feature:*", 0, module = true)
         assertEquals("モジュール :feature:<feature> の <feature> に入る、既存のモジュール名", captureHintOf(screen, JapaneseKatachiStrings))
 
-        val deep = rowsOf("capture").row("feature/Deep").template.detail?.captures?.last() ?: throw AssertionError()
+        val deep = rowsOf("capture").row("feature.Deep").template.detail?.captures?.last() ?: throw AssertionError()
         assertEquals(
             "生成先 app/*/<feature>/*Deep.kt の <feature> に入るディレクトリ名 / 生成先 test/<feature>/*DeepTest.kt の <feature> に入るディレクトリ名",
             captureHintOf(deep, JapaneseKatachiStrings),
@@ -95,7 +102,7 @@ class CaptureFieldTest {
 
     @Test
     fun `予想する生成先にcaptureの値が入る`() {
-        val detail = rowsOf("capture").row("feature/Screen").template.detail ?: throw AssertionError()
+        val detail = rowsOf("capture").row("feature.Screen").template.detail ?: throw AssertionError()
         assertEquals(
             ExpectedLocation.Known("feature/home/UserScreen.kt"),
             expectedFilesOf(detail, mapOf("feature" to "home", "name" to "User")).single().location,
@@ -109,7 +116,7 @@ class CaptureFieldTest {
     @Test
     fun `未入力のcaptureは生成ボタンを止める理由になりパラメータより先に出る`() {
         val rows = rowsOf("capture")
-        val viewModel = rows.row("feature/ViewModel")
+        val viewModel = rows.row("feature.ViewModel")
         val form = FormState(selected = listOf(viewModel.id))
 
         assertEquals(
@@ -142,7 +149,7 @@ class CaptureFieldTest {
     @Test
     fun `続けて生成でもcaptureの値は残し名前だけ空にする`() {
         val list = rowsOf("capture")
-        val viewModel = list.row("feature/ViewModel").id
+        val viewModel = list.row("feature.ViewModel").id
         val form = toggleCheck(FormState(), list, viewModel)
             .withInput(FieldId(viewModel, "feature"), "home")
             .withInput(FieldId(viewModel, "name"), "User")

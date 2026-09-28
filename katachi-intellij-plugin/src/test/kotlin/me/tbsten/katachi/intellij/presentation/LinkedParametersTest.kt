@@ -14,9 +14,9 @@ import org.junit.Test
 
 class LinkedParametersTest {
     private val list: List<ModuleTemplate> = rows(
-        template("data/Repository", parameters = listOf(stringParam("name"), stringParam("item", "String"))),
-        template("domain/Service", parameters = listOf(stringParam("name"))),
-        template("domain/UseCase", parameters = listOf(stringParam("name"))),
+        template("data.Repository", parameters = listOf(stringParam("name"), stringParam("item", "String"))),
+        template("domain.Service", parameters = listOf(stringParam("name"))),
+        template("domain.UseCase", parameters = listOf(stringParam("name"))),
     )
     private val repository = list[0].id
     private val service = list[1].id
@@ -100,8 +100,8 @@ class LinkedParametersTest {
         val a = rowsOf("arch-a", module(":arch-a"))
         val b = rowsOf("arch-b", module(":arch-b"))
         val all = a + b
-        val stringName = FieldId(a.row("data/Repository").id, "name")
-        val intName = FieldId(b.row("data/Repository").id, "name")
+        val stringName = FieldId(a.row("data.Repository").id, "name")
+        val intName = FieldId(b.row("data.Repository").id, "name")
         var form = toggleCheck(FormState(), all, stringName.templateId)
         form = toggleCheck(form, all, intName.templateId)
         form = inputField(form, all, stringName, "User")
@@ -111,8 +111,8 @@ class LinkedParametersTest {
 
     @Test
     fun `モジュールが違っても同名同型なら連動する`() {
-        val a = rows(template("data/Repository"), module = module(":arch-a"))
-        val b = rows(template("data/Repository"), module = module(":arch-b"))
+        val a = rows(template("data.Repository"), module = module(":arch-a"))
+        val b = rows(template("data.Repository"), module = module(":arch-b"))
         val all = a + b
         var form = toggleCheck(FormState(), all, a[0].id)
         form = toggleCheck(form, all, b[0].id)

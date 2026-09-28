@@ -109,6 +109,11 @@ internal fun captureHintOf(capture: ParameterModel.CaptureParam, strings: Katach
 /**
  * [place]'s pattern with the capture's own `*` replaced by `<name>`: the `position`-th `/` level of
  * a file pattern, or the `position`-th `*` of a module key. A position out of range leaves it as it is.
+ *
+ * A file level can hold more than one capture (`"${capture("a")}-${capture("b")}"`), so [place.pattern]'s
+ * generic `*`s at that level cannot tell them apart -- replacing every `*` there would mark both as the
+ * same name. [place.segment] already names every capture on that one level (`${a}-${b}`), so the path
+ * branch marks only this capture's own placeholder in it and leaves the others as their own name.
  */
 internal fun markedPatternOf(name: String, place: CapturePlace): String {
     val mark = "<$name>"
@@ -119,5 +124,6 @@ internal fun markedPatternOf(name: String, place: CapturePlace): String {
     }
     val levels = place.pattern.split('/')
     if (place.position !in levels.indices) return place.pattern
-    return levels.mapIndexed { index, level -> if (index == place.position) level.replace("*", mark) else level }.joinToString("/")
+    val markedLevel = place.segment.replace("\${$name}", mark)
+    return levels.mapIndexed { index, level -> if (index == place.position) markedLevel else level }.joinToString("/")
 }

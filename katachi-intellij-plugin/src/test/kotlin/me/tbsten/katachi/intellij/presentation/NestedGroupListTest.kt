@@ -13,7 +13,7 @@ import java.time.Instant
 
 /**
  * Nested groups (`"domain".group { "model".group { ... } }`): katachi's roleName is the group path
- * joined by `/` and the role's name, and the JSON lists roles in declaration order, so a child
+ * joined by `.` and the role's name, and the JSON lists roles in declaration order, so a child
  * group can sit between two roles of its parent and a root role can come after a group.
  */
 class NestedGroupListTest {
@@ -24,14 +24,14 @@ class NestedGroupListTest {
     /** Declaration order of an architecture mixing root roles, parents' roles and child groups. */
     private val declared = listOf(
         "Readme",
-        "domain/UseCase",
-        "domain/model/Entity",
-        "domain/model/value/Id",
-        "domain/Service",
-        "data/Repository",
-        "domain/model/Mapper",
+        "domain.UseCase",
+        "domain.model.Entity",
+        "domain.model.value.Id",
+        "domain.Service",
+        "data.Repository",
+        "domain.model.Mapper",
         "Changelog",
-        "feature/home/Screen",
+        "feature.home.Screen",
     ).map { template(it) }
 
     private fun ready(vararg modules: Pair<KatachiModule, List<TemplateModel>>) = KatachiScreenState(
@@ -42,12 +42,12 @@ class NestedGroupListTest {
 
     private fun list(state: KatachiScreenState): ListUi = uiStateOf(state, JapaneseKatachiStrings, now).body.cast<BodyUi.Listing>().list
 
-    /** Headers as `# title`, rows as their role name, module bands as `== path`. */
+    /** Headers as `# title`, rows as their complete specifier, module bands as `== path`. */
     private fun outline(state: KatachiScreenState): List<String> = list(state).items.map { item ->
         when (item) {
             is ListItemUi.ModuleHeader -> "== ${item.title} ${item.counter}"
             is ListItemUi.GroupHeader -> "# ${item.title}"
-            is ListItemUi.Row -> item.row.id.roleName
+            is ListItemUi.Row -> item.row.id.template
         }
     }
 
@@ -58,17 +58,17 @@ class NestedGroupListTest {
                 "Readme",
                 "Changelog",
                 "# domain",
-                "domain/UseCase",
-                "domain/Service",
+                "domain.UseCase",
+                "domain.Service",
                 "# domain › model",
-                "domain/model/Entity",
-                "domain/model/Mapper",
+                "domain.model.Entity",
+                "domain.model.Mapper",
                 "# domain › model › value",
-                "domain/model/value/Id",
+                "domain.model.value.Id",
                 "# data",
-                "data/Repository",
+                "data.Repository",
                 "# feature › home",
-                "feature/home/Screen",
+                "feature.home.Screen",
             ),
             outline(ready(arch to declared)),
         )
@@ -91,7 +91,7 @@ class NestedGroupListTest {
     fun `検索で絞ると一致した行のグループの見出しだけを残す`() {
         val state = ready(arch to declared).let { applyFormIntent(it, KatachiIntent.Search("e"))!! }
         val hits = applyFormIntent(ready(arch to declared), KatachiIntent.Search("mapper"))!!
-        assertEquals(listOf("# domain › model", "domain/model/Mapper"), outline(hits))
+        assertEquals(listOf("# domain › model", "domain.model.Mapper"), outline(hits))
         // Every header left has a row under it.
         val lines = outline(state)
         lines.withIndex().filter { it.value.startsWith("#") }.forEach { (index, _) ->
@@ -101,22 +101,32 @@ class NestedGroupListTest {
 
     @Test
     fun `検索外の選択中の行も自分のグループの見出しの下に出る`() {
-        val entity = TemplateId(arch.id, "domain/model/Entity")
+        val entity = TemplateId(arch.id, "domain.model.Entity")
         val state = ready(arch to declared)
             .let { applyFormIntent(it, KatachiIntent.ToggleCheck(entity))!! }
             .let { applyFormIntent(it, KatachiIntent.Search("repository"))!! }
-        assertEquals(listOf("# domain › model", "domain/model/Entity", "# data", "data/Repository"), outline(state))
+        assertEquals(listOf("# domain › model", "domain.model.Entity", "# data", "data.Repository"), outline(state))
     }
 
     @Test
     fun `モジュールが2つなら帯の中で入れ子を並べ折りたたみと件数は入れ子でも数える`() {
-        val state = ready(arch to declared, other to listOf(template("x/y/Z"), template("Top")))
-            .let { applyFormIntent(it, KatachiIntent.ToggleCheck(TemplateId(arch.id, "domain/model/value/Id")))!! }
+        val state = ready(arch to declared, other to listOf(template("x.y.Z"), template("Top")))
+            .let { applyFormIntent(it, KatachiIntent.ToggleCheck(TemplateId(arch.id, "domain.model.value.Id")))!! }
         val lines = outline(state)
         assertEquals("== :arch 1/9", lines.first())
-        assertEquals(listOf("== :other 0/2", "Top", "# x › y", "x/y/Z"), lines.dropWhile { !it.startsWith("== :other") })
+        assertEquals(listOf("== :other 0/2", "Top", "# x › y", "x.y.Z"), lines.dropWhile { !it.startsWith("== :other") })
 
         val folded = applyFormIntent(state, KatachiIntent.ToggleModule(arch.id))!!
-        assertEquals(listOf("== :arch 1/9", "== :other 0/2", "Top", "# x › y", "x/y/Z"), outline(folded))
+        assertEquals(listOf("== :arch 1/9", "== :other 0/2", "Top", "# x › y", "x.y.Z"), outline(folded))
+    }
+
+    @Test
+    fun `テンプレートが2つの役割は見出しの下に2行title順で並ぶ`() {
+        val repository = template("data.Repository", id = "repository", title = "リポジトリ")
+        val repositoryImpl = template("data.Repository", id = "repositoryImpl", title = "実装")
+        val state = ready(arch to listOf(repository, repositoryImpl))
+        val rows = list(state).items.filterIsInstance<ListItemUi.Row>().map { it.row }
+        assertEquals(listOf("data.Repository.repository", "data.Repository.repositoryImpl"), rows.map { it.id.template })
+        assertEquals(listOf("リポジトリ", "実装"), rows.map { it.name })
     }
 }
