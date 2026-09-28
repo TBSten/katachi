@@ -99,6 +99,76 @@ template {
 
 default の無い enum パラメータは `val visibility by enumParameter(Visibility.entries)` と書きます。
 
+## 生成先にワイルドカードがあるときは、名前を付けて値を渡す
+
+テンプレートが言うのはファイル名だけで、ディレクトリは `layout { }` が決めます。では `layout { }` に `:feature:*` のようなワイルドカードがあるとき、どのモジュールに作るのか。**そのワイルドカードに [`capture()`](/katachi/ja/guides/layout/#ワイルドカードに名前を付ける) で名前を付け、`--arg` で値を渡します。**
+
+```kt {3,9} nocollapse
+"FeatureComponent" {
+    layout {
+        ":feature:*".module(capture = "feature") {
+            "commonMain".sourceSet / kotlin / modulePackage / "component" /
+                "${wildcard("feature").pascalCase}*".ktFile()
+        }
+    }
+    template {
+        val feature = captureValue("feature")
+        val name by stringParameter()
+        val component = "${feature.pascalCase}$name"
+
+        file("$component.kt") {
+            """
+                package com.example.kmp.feature.$feature.component
+
+                @Composable
+                internal fun $component(title: String) {
+                    Text(text = title)
+                }
+            """.trimIndent()
+        }
+    }
+}
+```
+
+```shell
+./gradlew katachiTemplate \
+    --arg "roleName=FeatureComponent" --arg "feature=home" --arg "name=UserCard"
+```
+
+`--arg feature=home` が `:feature:*` の `*` を `home` に決めるので、`HomeUserCard.kt` は `:feature:home` の `component/` に入ります。
+
+**capture の名前は、そのまま `--arg` の名前になります。** テンプレートの中では、同じ値を `captureValue("feature")` で読めます。上の例ではパッケージ名とファイル名に使っています。`by stringParameter()` で宣言し直す必要はありません。宣言すると同じ名前を2か所から受け取ることになり、`katachiTemplate` / `katachiTemplates --arg roleName=...` を実行した時点でエラーになります（`./gradlew test` の検査はテンプレートを走らせないので、そこでは見つかりません）。`if (withTest) { }` のような分岐の中だけで宣言したパラメータも、その分岐を通らない実行で見つかります。`roleName` と `onExisting` も、同じ理由で capture の名前には使えません。
+
+ディレクトリの `capture()` も同じ使い方です。
+
+```kt
+layout {
+    ":".module {
+        mainSourceSet / kotlin / modulePackage / "controller" / capture("resource") / "*Controller".ktFile()
+    }
+}
+```
+
+`--arg resource=user --arg name=User` で `controller/user/UserController.kt` ができます。`controller/user/` がまだ無ければ作ります。
+
+<Aside>
+**モジュールの capture に渡せるのは、実在するモジュールだけです。** `:feature:*` は「今あるモジュール」を指す宣言なので、無いモジュールに書いたファイルは次の検査で違反になります。先に `settings.gradle.kts` にモジュールを足してください。ディレクトリの capture にはこの制約はありません。
+</Aside>
+
+### 生成先がちょうど1つに決まるときだけ書く
+
+katachi は Role の `layout { }` の各パスについて、capture を `--arg` の値で埋めます。そのうえで、ディレクトリにワイルドカードが残らず、ファイル名がファイルのパターンに合うパスを生成先の候補にします。**候補がちょうど1つのときだけ書き込みます。**
+
+| 状況 | どうなるか |
+| --- | --- |
+| capture の値を渡していない | 足りない `--arg` を名指しして失敗します |
+| 候補が2つ以上ある | 候補のパスを並べて失敗します。katachi はどれかを勝手に選びません |
+| ディレクトリに名前の無い `*` が残る | そのパスは候補になりません。どのパスもそうなら、`capture()` で名前を付けるよう案内して失敗します |
+| 値が1つのディレクトリ名にならない | 空・`.`・`..`・`/` や `\` を含む値、ファイル名に使えない文字を含む値は失敗します |
+| モジュールが無い | 今あるモジュールと、それぞれを選ぶ `--arg` を並べて失敗します。ほかのパスがファイルを受け取れても書き込みません |
+
+ディレクトリの部分一致（`feature-*`）と `**` には名前を付けられません。生成先がそういうパスしか無い Role は、テンプレートで生成できません。モジュールキーの `*` は、`":feature:*-impl".module(capture = "feature")` のような部分一致でも名前を付けられます（値は `*` の部分、`--arg feature=home` で `:feature:home-impl`）。
+
 ## 既にファイルがあるとき
 
 生成先に既にファイルがある場合の振る舞いは `--arg onExisting=` で選べます。**既定は `fail` です。**
@@ -152,11 +222,22 @@ katachi {
   [templates]   --arg withImpl=false: leaves out ${name}RepositoryImpl.kt
 ```
 
+生成先にワイルドカードの名前がある Role では、`Captures` の節も出ます。どの `--arg` がどのディレクトリを選ぶかが分かります。
+
+```
+  [templates] Captures (--arg values that choose the directory):
+  [templates]   resource: level 7 of src/main/kotlin/com/example/controller/*/*Controller.kt
+  ...
+  [templates] Generate it with:
+  [templates]   ./gradlew katachiTemplate --arg roleName=api/Controller --arg resource=resource --arg name=Name
+```
+
 ## まとめ
 
 - **`template { }`** をアーキテクチャ定義に追加すると、**`katachiTemplate` task** でテンプレートからコードを生成できます。
 - **`katachiTemplates` task** で、テンプレートの一覧と、パラメータ・生成されるファイルの詳細を確かめられます。
 - **生成先は `layout { }` が決めます。** テンプレートはファイル名だけを言うので、配置の定義と生成が食い違うことはありません。
+- 生成先に **ワイルドカードがあるときは、`capture()` で名前を付けて `--arg` で値を渡します。** 生成先がちょうど1つに決まらなければ、何も書かずに失敗します。
 
 ## 次のステップ
 

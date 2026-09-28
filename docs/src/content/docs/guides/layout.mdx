@@ -123,6 +123,60 @@ These are **escape hatches from deny by default**. Wherever you use them, checki
 If you overuse `ignore()` and `anyFile()` just because "declaring it is a hassle," you undermine the point of adopting katachi. Use them only for **things a machine generates** or **things whose structure is decided by another tool**.
 </Aside>
 
+## Naming a wildcard
+
+`*` matches any name for one level. Write `"feature" / "*" / "src"` and both `feature/home/src` and `feature/settings/src` are allowed.
+
+`capture()` gives that `*` a name.
+
+```kt {2}
+layout {
+    "feature" / capture("feature") / "src" / "main" / "kotlin" / "*ViewModel".ktFile()
+}
+```
+
+**As far as checking goes, it's exactly the same as `*`.** Rewriting `capture("feature")` as `"*"` doesn't change which files are allowed, not even one.
+
+The only difference is that it has a name. This name is used when deciding [a template's destination](/katachi/guides/generate-code-from-template/#when-the-destination-has-a-wildcard-name-it-and-pass-a-value). Left as `*`, a template can't tell whether to generate into `feature/home` or `feature/settings`. Name it, and you can choose with `--arg feature=home`. For a Role with no template, `*` on its own is fine.
+
+`capture()` can also be written midway through a `/` chain, or in a block.
+
+```kt
+layout {
+    "feature" {
+        capture("feature") {
+            "build.gradle.kts".file()
+            "src" / "main" / "kotlin" / "*ViewModel".ktFile()
+        }
+    }
+}
+```
+
+### Only a `*` that fills a whole segment can be named
+
+What `capture()` replaces is a `*` that occupies one whole level. The rules:
+
+- **It can't be used for a partial match.** Write a glob like `feature-*` as `*`, unchanged
+- **It can't be used on `**`.** How many levels of directory to create isn't decided
+- A name follows the same rule as a Role name (starts with a letter, followed by letters, digits, `_`, `-`)
+- **Using the same name twice in one path fails at declaration time.** Using the same name in a different path of the same Role is fine — the two paths then share one value
+
+### Module wildcards can be named too
+
+The `*` in `":feature:*".module { }` is named with the `capture` argument.
+
+```kt {1-2}
+":feature:*".module(capture = "feature") {
+    mainSourceSet / kotlin / "${wildcard("feature").pascalCase}Screen".ktFile()
+}
+```
+
+Inside the block, `wildcard("feature")` returns the value of the module currently being evaluated. For `:feature:home`, that's `home`, so the file the declaration above requires is `HomeScreen.kt`.
+
+When there's more than one `*`, pass the names in order, as in `":feature:*:*".module("feature", "layer") { }`. If the number of names doesn't match the number of `*`, it fails at declaration time. Naming it doesn't change the check's result from the unnamed `":feature:*".module { }`.
+
+In a module key, even a partial match like `":feature:*-impl".module(capture = "feature")` can be named. The value is the part matched by `*` (`home` for `:feature:home-impl`).
+
 ## Best practices
 
 Writing out every directory for every Role is inefficient.
@@ -145,6 +199,7 @@ architecture {
 - `layout { }` declares **where a Role's files may appear**. A file in an undeclared location is a violation.
 - There are two ways to write it — chaining with `/` or wrapping in a block — and **they declare the same thing**. Pick whichever is more readable.
 - `anyFile()` and `ignore()` are **escape hatches from deny by default**. Checking stops applying wherever you use them.
+- `capture("name")` is **a named `*`**. It checks the same as `*`; the name is used when choosing a template's destination.
 - Paths **can be extracted into constants**. This keeps the definition from becoming a copy of your directory structure.
 
 ## Next steps

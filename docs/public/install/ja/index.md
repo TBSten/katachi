@@ -613,18 +613,21 @@ sh $CLI summary
 
 材料はステップ 1 のレポートの `roles` です（`sh $CLI data get report`）。**向いているのは、同じ形のファイルが何本もある役割**です（UseCase、ViewModel、Screen、Repository など）。`count` が小さい役割や、1本ごとに形が違う役割には提案しないこと。
 
+**`:feature:*` のように、生成先のディレクトリやモジュールがワイルドカードの役割も対象です**（ViewModel、Screen はたいていこの形です）。その `*` に `capture("feature")` / `.module(capture = "feature")` で名前を付ければ、`--arg feature=home` で生成先を選べます（6-D の手順 2）。名前を付けられないのはディレクトリの部分一致（`feature-*`）と `**` だけで、生成先がそれしか無い役割には提案しないこと。
+
 役割ごとに次を決め、`add template` で記録します。
 
 | 項目 | 中身 |
 |---|---|
 | `--role` | 役割の名前（`architecture { }` に書いた名前） |
 | `--files` | 作るファイル名。**複数回渡せる。** `${name}UseCase.kt` のように、パラメータを埋め込んだ形で書く（例: interface と実装の2つ） |
-| `--params` | `stringParameter()` などの `*Parameter()` で受けるパラメータ名。複数回渡せる |
+| `--params` | `stringParameter()` などの `*Parameter()` で受けるパラメータ名と、生成先のワイルドカードに付ける名前（例: `feature`）。複数回渡せる |
 | `--basedOn` | 雛形の元にする既存ファイル（`roles[].examples` の1本） |
 | `--reason` | その役割に当てる理由（件数と、形が揃っていること） |
 
 ```sh
 sh $CLI add template --role UseCase --files '${name}UseCase.kt' --files '${name}UseCaseImpl.kt' --params name --basedOn "domain/src/main/kotlin/com/example/app/domain/useCase/GetUserUseCase.kt" --reason "18 件がすべて interface と Impl の2ファイルで、形が揃っている"
+sh $CLI add template --role ViewModel --files '${name}ViewModel.kt' --params feature --params name --basedOn "feature/home/src/main/kotlin/com/example/app/feature/home/HomeViewModel.kt" --reason "12 件が :feature:* の各モジュールに1本ずつあり、形が揃っている。:feature:* の * に feature と名前を付けて生成先を選ぶ"
 ```
 
 当てられる役割が無いと判断したら、何も記録しなくて構いません。記録したものは `summary` の「Next action」とレポートの「テンプレートの提案」に出ます。**`template { }` をここで書かないこと。** 書くのはユーザが同意した後の 6-D です。
@@ -780,12 +783,45 @@ Pull request 作成時・Merge request 作成時・pre-push hook など スト�
    }
    ```
 
-   使えるのは `stringParameter()` / `booleanParameter()` / `intParameter()`（`default = ...` も可）、`enumParameter()`（`entries` か既定値を渡す）と `file("...") { "中身" }` だけです。これ以外の語を推測で足さないこと。
-3. テンプレート独自のパラメータ（`--arg name=...`）は、モジュール側の設定なしにそのまま渡せる。受け付けるのは、名指しした役割の `template { }` が宣言した名前だけで、打ち間違いはこれまでどおり `Unknown processor argument(s): ...` で落ちる。
+   **生成先のディレクトリやモジュールにワイルドカード（`*`）がある役割は、その `*` に名前を付ける。** 検査の結果は変わらない。値はテンプレートの中で `captureValue("名前")` で読む（`stringParameter()` で宣言し直さないこと。名前がぶつかって落ちる）
+
+   ```kt
+   "ViewModel" {
+       layout {
+           ":feature:*".module(capture = "feature") {   // 元は ":feature:*".module {
+               /* 中は既存のまま */
+           }
+       }
+       template {
+           val feature = captureValue("feature")   // --arg feature=home なら "home"
+           val name by stringParameter()
+
+           file("${name}ViewModel.kt") {
+               """
+                   package com.example.app.feature.$feature
+
+                   class ${name}ViewModel
+               """.trimIndent()
+           }
+       }
+   }
+   ```
+
+   ディレクトリの `*` なら、`"feature" / "*" / ...` の `"*"` を `capture("feature")` に書き換える。`*` が複数あるモジュールは `.module("feature", "layer")` のように順に名前を渡す。
+
+   使えるのは `stringParameter()` / `booleanParameter()` / `intParameter()`（`default = ...` も可）、`enumParameter()`（`entries` か既定値を渡す）と `file("...") { "中身" }`、それに生成先のワイルドカードに名前を付ける `capture("名前")` / `.module(capture = "名前")` と、その値を読む `captureValue("名前")`（template の中）/ `wildcard("名前")`（layout のモジュールブロックの中）だけです。これ以外の語を推測で足さないこと。
+3. テンプレート独自のパラメータ（`--arg name=...`）は、モジュール側の設定なしにそのまま渡せる。受け付けるのは、名指しした役割の `template { }` が宣言した名前と、`layout { }` のワイルドカードに付けた名前だけで、打ち間違いはこれまでどおり `Unknown processor argument(s): ...` で落ちる。
 4. 1本生成し、**直後に検査が通ること**を確かめる。
 
    ```sh
    ./gradlew :architecture-test:katachiTemplate --arg roleName=UseCase --arg name=Sample
+   ./gradlew :architecture-test:test
+   ```
+
+   ワイルドカードに名前を付けた役割は、その値も渡す。**モジュールの値は実在するモジュールだけ**（無いモジュールを渡すと、今あるモジュールを並べて失敗する）。
+
+   ```sh
+   ./gradlew :architecture-test:katachiTemplate --arg roleName=ViewModel --arg feature=home --arg name=Sample
    ./gradlew :architecture-test:test
    ```
 
