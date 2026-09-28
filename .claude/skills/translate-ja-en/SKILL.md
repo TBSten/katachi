@@ -34,6 +34,20 @@ description: >-
 対象にしないもの: `docs/public/ja/api-docs/index.html`（訳ではなく、日本語ページから API リファレンスへ送るリダイレクト1枚。どの組にも当たらないので
 CSV には書かない）。
 
+### トップページの文言（CSV の組にしない）
+
+トップページ（`/katachi/`・`/katachi/ja/`）は content collection の MDX ではなく、`docs/src/pages/` の `.astro`
+で、文言は **`docs/src/components/home/strings.ts` の1ファイルに `ja`（原本）と `en`（訳）が並んでいる。**
+原本と訳が別ファイルではないので、`target-file-pattern.csv` の組にはしない（`list-targets.py` にも出ない）。
+
+- `strings.ts` の `ja` が変わっていたら、同じキーの `en` をその場で訳す。変わったかどうかは
+  `git diff -- docs/src/components/home/strings.ts` と `git log -1 -- docs/src/components/home/strings.ts` で見る
+- `en` の型は `ja` から決まる（`const en: HomeStrings`）。`ja` にだけキーを足すと型検査で落ちるので、キーの取りこぼしは起きない。
+  中身の訳し漏れは目で確かめる
+- `Html` で終わるキーの HTML タグ（`<br />`・`<code dir="auto">` など）は写す。サイト内リンクは locale の付かない形
+  （`guides/document-generation/`）のままで、`/katachi/ja/` → `/katachi/` の書き換えは要らない
+- ページの構造（`docs/src/components/home/Home.astro`）は1か所しかないので訳す対象ではない
+
 ## ワークフロー
 
 ### 1. 対象ファイルをコマンドで列挙

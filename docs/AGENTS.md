@@ -8,9 +8,26 @@ astro dev --background
 
 Manage the background server with `astro dev stop`, `astro dev status`, and `astro dev logs`.
 
-## サイドバーの構成
+## トップページ
 
-`index`（トップページ）は**サイドバーに出さない**。サイトタイトル / ロゴから辿れるので十分。
+トップページ（`/katachi/` と `/katachi/ja/`）は **content collection の MDX ではなく、`src/pages/` の `.astro`**。
+中身のほとんどが HTML の構造で、MDX にすると同じ構造を日英の2ファイルに書くことになるため。
+
+| ファイル | 中身 |
+|---|---|
+| `src/components/home/Home.astro` | ページの構造（1か所だけ）。「このページの目的」のコメントも frontmatter の中にある |
+| `src/components/home/strings.ts` | 文言の辞書。`ja` が原本、`en` が訳。**文言を直すときはここだけを直す** |
+| `src/pages/index.astro` / `src/pages/ja/index.astro` | `<Home lang="en" />` / `<Home lang="ja" />` を呼ぶだけ |
+| `src/styles/home.css` | 見た目（`customCss` で読む） |
+
+- Starlight の見た目（ヘッダ・検索・言語の切り替え・splash）は `StarlightPage` で保っている。title / description は辞書から渡す
+- コードブロックは `<Code>`（expressive-code）。`<Code>` は JSON にできない Expressive Code の設定があると描画できないので、
+  設定は `ec.config.mjs` に置く（`astro.config.mjs` 側は `expressiveCode: true` だけ）
+- content collection の外なので、`starlight-links-validator` は `/katachi/` と `/katachi/ja/` を知らない。
+  `exclude` で外してある。**トップページはサイドバーに出さない**（サイトタイトル / ロゴから辿れるので十分）
+- `llms-full.txt` / `llms-small.txt` にトップページの文言は入らない（content collection しか読まないため）
+
+## サイドバーの構成
 
 **ドキュメントの本文は人が書く。** エージェントが用意してよいのは、サイドバーの配線と
 空ページ（frontmatter だけ）まで。

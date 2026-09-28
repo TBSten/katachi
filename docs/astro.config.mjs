@@ -3,7 +3,6 @@ import { defineConfig } from 'astro/config';
 import starlight from '@astrojs/starlight';
 import starlightThemeNova from 'starlight-theme-nova';
 import mermaid from 'astro-mermaid';
-import { pluginCollapsible } from 'expressive-code-collapsible';
 import starlightLlmsTxt from 'starlight-llms-txt';
 // 内部リンクの切れをビルドで落とす。腐ったリンクを公開しないための歯止め。
 import starlightLinksValidator from 'starlight-links-validator';
@@ -76,22 +75,18 @@ export default defineConfig({
 				starlightLlmsTxt(),
 				// 内部リンクが切れていたらビルドを落とす。腐ったリンクを公開しないための歯止め。
 				// 相対リンクも許す（public/ のスライドへは ../../slides/... で張っている）。
-				starlightLinksValidator({ errorOnRelativeLinks: false }),
+				// トップページは content collection ではなく src/pages/ の .astro なので、validator は
+				// 存在を知らず「custom page への不正なリンク」として落とす。そこだけ検査から外す。
+				starlightLinksValidator({
+					errorOnRelativeLinks: false,
+					exclude: ['/katachi/', '/katachi/ja/'],
+				}),
 			],
-			// 長いコードブロックを畳む。手触りの検証中で、しきい値は暫定。
-			expressiveCode: {
-				plugins: [
-					// ボタンの文言は指定しない。プラグインは i18n に対応しておらず
-					// 全ロケールに同じ文字列が出るため、日本語を入れると英語版
-					// （既定ロケール）にも日本語のボタンが出る。llms-full.txt にも
-					// そのまま混入していた（英語版に43箇所）。既定は Show more / Show less。
-					pluginCollapsible({
-						lineThreshold: 15,
-						previewLines: 8,
-						defaultCollapsed: true,
-					}),
-				],
-			},
+			// Expressive Code の設定（長いコードブロックを畳むプラグイン）は ec.config.mjs にある。
+			// トップページ（src/components/home/Home.astro）が使う `<Code>` コンポーネントは、ここに
+			// JSON にできないオプション（プラグインの関数）があると描画できないため、外へ出した。
+			// `true` は消さないこと。starlight-theme-nova は未指定だと Expressive Code を切る。
+			expressiveCode: true,
 			// CodeComparison のレイアウト。scoped style だとドット記法のコンポーネントに
 			// スタイルが伝播しないため、ここでグローバルに読ませている。
 			customCss: [

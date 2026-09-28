@@ -1,0 +1,118 @@
+---
+/*
+  このページの目的: katachi を初めて見た人に「宣言にないファイルは存在できない（deny by default）」を
+  一目で伝え、「初めての定義」か「モチベーション」へ送り出す入口。機能の説明はガイドに任せ、ここでは書かない。
+
+  トップページの構造はこのファイルの1か所だけに書く。src/pages/index.astro（英語）と
+  src/pages/ja/index.astro（日本語）はこれを呼ぶだけ。**文言は ./strings.ts を直す**（日本語が原本）。
+  見た目は src/styles/home.css（astro.config.mjs の customCss で読む）。
+*/
+import StarlightPage from '@astrojs/starlight/components/StarlightPage.astro';
+import AnchorHeading from '@astrojs/starlight/components/AnchorHeading.astro';
+import { Code } from '@astrojs/starlight/components';
+import HomePillarScroll from '../HomePillarScroll.astro';
+import { homeStrings, type HomeLang } from './strings';
+
+interface Props {
+	lang: HomeLang;
+}
+
+const { lang } = Astro.props;
+const t = homeStrings[lang];
+
+// 英語が root（/katachi/）、日本語が /katachi/ja/。
+const localePrefix = `${import.meta.env.BASE_URL.replace(/\/$/, '')}${lang === 'ja' ? '/ja' : ''}/`;
+const page = (slug: string) => `${localePrefix}${slug}`;
+const githubUrl = 'https://github.com/tbsten/katachi';
+---
+
+<StarlightPage frontmatter={{ title: t.title, description: t.description, template: 'splash' }}>
+	<div class="katachi-home">
+		<section class="katachi-home__hero" aria-labelledby="katachi-home-title">
+			<p class="katachi-home__eyebrow">{t.hero.eyebrow}</p>
+			<AnchorHeading level={1} id="deny-by-default"><span id="katachi-home-title"><span class="katachi-home__hero-line">Deny</span> <span class="katachi-home__hero-line">by default</span></span></AnchorHeading>
+			<div class="katachi-home__accent" aria-hidden="true"></div>
+			<p class="katachi-home__lead" set:html={t.hero.leadHtml} />
+			<p class="katachi-home__intro">{t.hero.intro}</p>
+			<nav class="katachi-home__hero-actions" aria-label={t.hero.actionsLabel}>
+				<p><a href={page('get-started/first-architecture/')}>{t.hero.getStarted}</a></p>
+				<p><a href={githubUrl}>{t.hero.github}</a></p>
+			</nav>
+			<div class="katachi-home__hero-code">
+				<Code locale={lang} code={t.hero.code} lang="kt" title={t.hero.codeTitle} />
+			</div>
+		</section>
+
+		<section class="katachi-home__split" aria-labelledby="katachi-home-problem">
+			<div class="katachi-home__split-copy">
+				<AnchorHeading level={2} id="problem"><span id="katachi-home-problem" set:html={t.problem.titleHtml} /></AnchorHeading>
+				<p>{t.problem.body}</p>
+				<p><strong>{t.problem.emphasis}</strong></p>
+			</div>
+			<div class="katachi-home__tree" aria-label={t.problem.treeLabel}>
+				<p>{t.problem.treeCaption}</p>
+				<Code locale={lang} code={t.problem.tree} lang="text" />
+				<small>{t.problem.treeNote}</small>
+			</div>
+		</section>
+
+		<section class="katachi-home__split katachi-home__split--reverse" aria-labelledby="katachi-home-solution">
+			<div class="katachi-home__tree katachi-home__tree--allowed" aria-label={t.solution.treeLabel}>
+				<p>{t.solution.treeCaption}</p>
+				<Code locale={lang} code={t.solution.tree} lang="text" />
+				<small set:html={t.solution.treeLegendHtml} />
+			</div>
+			<div class="katachi-home__split-copy">
+				<AnchorHeading level={2} id="solution"><span id="katachi-home-solution" set:html={t.solution.titleHtml} /></AnchorHeading>
+				<p>{t.solution.body}</p>
+				<p><strong>{t.solution.emphasis}</strong></p>
+			</div>
+		</section>
+
+		<section class="katachi-home__pillars" aria-label={t.pillars.label} data-katachi-pillars data-active-pillar="0">
+			<div class="katachi-home__pillar-list">
+				<article class="katachi-home__pillar" data-katachi-pillar>
+					<AnchorHeading level={3} id="pillar-deny"><Fragment set:html={t.pillars.deny.titleHtml} /></AnchorHeading>
+					<p set:html={t.pillars.deny.bodyHtml} />
+					<Code locale={lang} code={t.pillars.deny.code} lang="kt" />
+				</article>
+				<article class="katachi-home__pillar" data-katachi-pillar>
+					<AnchorHeading level={3} id="pillar-role"><Fragment set:html={t.pillars.role.titleHtml} /></AnchorHeading>
+					<p set:html={t.pillars.role.bodyHtml} />
+					<Code locale={lang} code={t.pillars.role.code} lang="kt" />
+				</article>
+				<article class="katachi-home__pillar" data-katachi-pillar>
+					<AnchorHeading level={3} id="pillar-docs"><Fragment set:html={t.pillars.docs.titleHtml} /></AnchorHeading>
+					<p><Fragment set:html={t.pillars.docs.bodyBeforeLinkHtml} /><a href={page(t.pillars.docs.link)}>{t.pillars.docs.linkText}</a><Fragment set:html={t.pillars.docs.bodyAfterLinkHtml} /></p>
+					<Code locale={lang} code={t.pillars.docs.code} lang="kt" />
+				</article>
+			</div>
+			<div class="katachi-home__pillar-words" aria-hidden="true">
+				<span>Deny.</span>
+				<span>Role.</span>
+				<span>Docs.</span>
+			</div>
+		</section>
+
+		<HomePillarScroll />
+
+		<section class="katachi-home__agents" aria-labelledby="katachi-home-agents">
+			<div class="katachi-home__agents-inner">
+				<AnchorHeading level={2} id="agents"><span id="katachi-home-agents" set:html={t.agents.titleHtml} /></AnchorHeading>
+				<p set:html={t.agents.bodyHtml} />
+			</div>
+		</section>
+
+		{/* TODO: 「あなたのプロジェクトの形を、宣言してみる。」の上に、実際の宣言例のセクションを載せる */}
+
+		<section class="katachi-home__cta" aria-labelledby="katachi-home-cta">
+			<AnchorHeading level={2} id="get-started"><span id="katachi-home-cta">{t.cta.title}</span></AnchorHeading>
+			<p>{t.cta.body}</p>
+			<div class="katachi-home__cards">
+				<p><a href={page('get-started/first-architecture/')}><strong>{t.cta.getStarted.title} <span>→</span></strong><small>{t.cta.getStarted.note}</small></a></p>
+				<p><a href={page('get-started/motivation/')}><strong>{t.cta.motivation.title} <span>→</span></strong><small>{t.cta.motivation.note}</small></a></p>
+				<p><a href={githubUrl}><strong>{t.cta.github.title} <span>↗</span></strong><small>{t.cta.github.note}</small></a></p>
+			</div>
+		</section>
+	</div>
+</StarlightPage>
