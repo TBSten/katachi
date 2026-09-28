@@ -160,6 +160,7 @@ layout {
 - **部分一致には付けられません。** `feature-*` のような glob は `*` のまま書きます
 - **`**` には付けられません。** 何階層ぶんのディレクトリを作ればよいかが決まらないためです
 - 名前は Role 名と同じ規則で書きます（英字で始まり、英数字・`_`・`-` が続く）
+- **テンプレートのパラメータと同じ名前は付けられません。** 名前はそのまま `--arg` の名前になるので、`val name by stringParameter()` を持つテンプレートの Role で `capture("name")` と書くと、`katachiTemplate` / `katachiTemplates` を実行した時点でエラーになります。`roleName` と `onExisting` も使えません。`feature` や `screen` のように、その階層が何を表すかで名前を付けてください
 - **1つのパスの中で同じ名前を2回使うと、宣言した時点でエラーになります。** 同じ Role の別のパスで同じ名前を使うのは構いません。そのときは2つのパスが1つの値を共有します
 
 ### モジュールのワイルドカードにも名前を付けられる
@@ -174,7 +175,19 @@ layout {
 
 ブロックの中では、`wildcard("feature")` がいま評価しているモジュールの値を返します。`:feature:home` なら `home` なので、上の宣言が求めるファイルは `HomeScreen.kt` です。
 
-`*` が複数あるときは、`":feature:*:*".module("feature", "layer") { }` のように前から順に名前を渡します。名前の数と `*` の数が合わなければ、宣言した時点でエラーになります。名前を付けても、検査の結果は名前の無い `":feature:*".module { }` と変わりません。
+`wildcard("feature")` を呼べるのは、その名前を付けた `.module(capture = "feature") { }` のブロックの中だけです。モジュールの外（`layout { }` の直下や、ふつうのディレクトリのブロック）で呼ぶと、呼んだ位置を示してエラーになります。ディレクトリの `capture("feature")` の値は layout からは読めません。テンプレートの中で `captureValue("feature")` で読みます。
+
+プロジェクトのモジュールを見ずに定義を読むとき（ドキュメント生成や `katachiTemplates`）は、`wildcard("feature")` は `<feature>` という置き場所の文字列を返します。
+
+生成先のディレクトリに、モジュールの `*` とディレクトリの `*` の両方が残るなら、**両方に名前を付けます**。パッケージのディレクトリがモジュール名と違う（`:feature:appConfig` のパッケージが `appconfig/`）ときも、パッケージのディレクトリの `*` に別の名前を付けます。
+
+```kt
+":feature:*".module(capture = "feature") {
+    mainSourceSet / kotlin / "com/example/feature" / capture("featurePackage") / "*ViewModel".ktFile()
+}
+```
+
+`*` が複数あるときは、`":feature:*:*".module("feature", "layer") { }` のように前から順に名前を渡します。名前の数と `*` の数が合わなければ、宣言した時点でエラーになります。`":feature:**".module(capture = "feature")` のように `**` に名前を付けることもできません（何階層ぶんかが決まらないため）。名前を付けても、検査の結果は名前の無い `":feature:*".module { }` と変わりません。
 
 モジュールキーでは、`":feature:*-impl".module(capture = "feature")` のような部分一致の `*` にも名前を付けられます。値は `*` に当たる部分（`:feature:home-impl` なら `home`）です。
 

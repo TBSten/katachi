@@ -39,6 +39,7 @@
 | `KatachiCheckException` | 検査の実行中。定義は正しいが走らせられない | **環境**（git が無い、プロジェクトルートが見つからない） |
 | `KatachiInternalException` | katachi 自身の前提が崩れた | **何も直せない。バグとして報告してもらう** |
 | `KatachiArchitectureAssertionError` | 検査が完了し、違反が見つかった | **ファイルの配置**、または定義 |
+| （実行時の引数の誤り）`KatachiDeclarationException` / `KatachiCheckException` | `katachiTemplate` などの実行に渡した `--arg` の値が悪い。値の形が悪い・足りない（`KatachiInvalidTemplateCaptureValueException`、`KatachiMissingTemplateCaptureException`）は定義に照らせば決まるので Declaration。形は正しいがプロジェクトに無い（`KatachiTemplateModuleNotFoundException`）は Check | **渡す値**。Check の側は**プロジェクト**（モジュールを作る）か値の選び直し |
 
 継承元は行動の分類から決まる。
 
