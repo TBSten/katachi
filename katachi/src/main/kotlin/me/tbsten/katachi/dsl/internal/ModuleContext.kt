@@ -7,15 +7,19 @@ internal class ModuleContext(
     /** What the key's wildcards captured for this module. */
     val wildcards: List<String>,
     /**
-     * The names the key gave its `*`s, in order, or `null` for a key written without names.
-     * See `"...".module(capture = ...)`.
+     * The names the key's `capture("...")` tokens gave its `*`s, in order, or `null` for a key
+     * that named none of them. An entry may itself be `null` when only some of the key's `*`s
+     * were named.
      */
-    val captureNames: List<String>? = null,
+    val captureNames: List<String?>? = null,
 ) {
     /**
      * [wildcards] by name. Only the `*`s are named, and a trailing `**` is the last wildcard, so
-     * the first names line up with the first values one for one.
+     * the first names line up with the first values one for one; a `*` left unnamed contributes
+     * no entry.
      */
     val captures: Map<String, String>
-        get() = captureNames.orEmpty().zip(wildcards).toMap()
+        get() = captureNames.orEmpty().zip(wildcards)
+            .mapNotNull { (name, value) -> name?.let { it to value } }
+            .toMap()
 }

@@ -89,25 +89,64 @@ internal class LayoutNode(
     var modulePackage: Boolean = false
 
     /**
-     * The name `capture("...")` gave this level, or `null` for any other node. The segment itself
-     * is a plain `*`, so the check reads the node exactly as it reads `"*"`.
+     * The `capture("...")` token(s) this segment embedded, or `null` when it holds none. The
+     * node's own [segment] already has every token replaced by a plain `*` -- this is only
+     * template generation's way back to which `*` a `--arg` value fills in, and under what name;
+     * the check reads [segment] exactly as it would read the same text without any captures.
      */
-    var layoutCaptureName: String? = null
+    var captureSegment: CaptureSegment? = null
 
     /**
-     * The names `"...".module(capture = ...)` gave the wildcards of [moduleCapturePattern], in
-     * order. Only the directory a named module key opened carries it; `null` everywhere else,
-     * including a module key written without names.
+     * The names the module key's `capture("...")` tokens gave the wildcards of
+     * [moduleCapturePattern], in order. Only the directory a named module key opened carries
+     * it; `null` everywhere else, including a module key that named none of its wildcards. An
+     * entry may itself be `null` when only some of the key's `*`s were named.
      */
-    var moduleCaptureNames: List<String>? = null
+    var moduleCaptureNames: List<String?>? = null
 
     /** The module key [moduleCaptureNames] belong to, as katachi prints it (`":feature:*"`). */
     var moduleCapturePattern: String? = null
+
+    /**
+     * Identity shared by every node one `":...".module { }` key's wildcard expanded to -- set
+     * once, on the directory the key opened (see [me.tbsten.katachi.dsl.LayoutScopeImpl.expandModulePath]),
+     * and carried down to every node [add] parents below it. `null` for a node that was never
+     * inside a module wildcard's expansion.
+     *
+     * This is what tells apart the two ways one source line can run more than once: a wildcard
+     * module key's `block` replays for every module it matches (same declaration, same
+     * [LayoutTemplate.id] expected), while a plain user loop that happens to call `.template { }`
+     * from the same line -- `DataDomain.entries.forEach { ... .template(id = id) { } }` -- is not
+     * inside any `module { }` expansion, so every one of its nodes keeps this `null` and
+     * [LayoutTemplate] falls back to comparing by identity instead of by where it was written.
+     * See [LayoutTemplate.equals].
+     */
+    var moduleExpansionGroup: Any? = null
+
+    /**
+     * What `.metadata { }` wrote on this declaration. Built once, at flattening, from
+     * [me.tbsten.katachi.dsl.internal.MetadataBuilder]'s own `build()`; the builder itself is
+     * kept here because more than one `.metadata { }` call may write into it before that happens.
+     */
+    val metadata: MetadataBuilder = MetadataBuilder()
+
+    /**
+     * A second `.template { }` written on this same node, kept only to report
+     * [me.tbsten.katachi.dsl.KatachiDuplicateTemplateException] once the role evaluating this
+     * node is known -- see [me.tbsten.katachi.dsl.internal.toEntry], which is where that
+     * happens. `null` while at most one has been written.
+     */
+    var duplicateTemplateAttempt: LayoutTemplate? = null
 
     fun add(child: LayoutNode) {
         child.parent?.children?.remove(child)
         child.parent = this
         children += child
+        // A child never overrides a group it already carries (it may be a whole chain built
+        // elsewhere and re-parented here, e.g. `"a" / capture("x") { }`'s block) -- it only
+        // picks up this node's, so a subtree entirely inside one module wildcard expansion
+        // stays tagged with that expansion's identity all the way down.
+        child.moduleExpansionGroup = child.moduleExpansionGroup ?: moduleExpansionGroup
     }
 
     /** Marks every file at or below this node optional. See [me.tbsten.katachi.dsl.LayoutModule.optional]. */
@@ -188,14 +227,16 @@ internal fun chainUnder(
     val segments = splitKey(key)
     var current = parent
     var top: LayoutNode? = null
-    segments.forEachIndexed { index, segment ->
+    segments.forEachIndexed { index, rawSegment ->
+        val captureSegment = parseCaptureSegment(rawSegment, declaredAt)
         // Only the last level of a file key is the file itself; the levels above it are the
         // directories that hold it.
         val node = LayoutNode(
-            segment = segment,
+            segment = captureSegment?.globSegment ?: rawSegment,
             declaredAt = declaredAt,
             isFile = isFile && index == segments.lastIndex,
         )
+        node.captureSegment = captureSegment
         current.add(node)
         if (top == null) top = node
         current = node

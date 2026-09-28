@@ -49,3 +49,30 @@ public class KatachiEmptyLayoutChainException internal constructor(
         this. Please report it at https://github.com/TBSten/katachi/issues.
     """.trimIndent(),
 )
+
+/**
+ * A node recorded a second `.template { }` without a first one on record to compare it against.
+ *
+ * ## Example 1: report it instead of treating it as a bad definition
+ * ```kt
+ * try {
+ *     projectArchitecture.assert()
+ * } catch (cause: KatachiMissingFirstTemplateException) {
+ *     println("katachi bug, path was `${cause.path}`. Please report it.")
+ * }
+ * ```
+ *
+ * @property path the declared path of the node this was noticed on.
+ * @property role the role evaluating that node, qualified.
+ */
+public class KatachiMissingFirstTemplateException internal constructor(
+    public val path: String,
+    public val role: String,
+) : KatachiInternalException(
+    message = """
+        Path "$path" of role "$role" recorded a second `.template { }` to reject, but the first
+        one it was meant to conflict with is gone. `.template { }` only ever records a conflict
+        after finding a first template already on the same node, so a layout cannot cause this.
+        Please report it at https://github.com/TBSten/katachi/issues.
+    """.trimIndent(),
+)

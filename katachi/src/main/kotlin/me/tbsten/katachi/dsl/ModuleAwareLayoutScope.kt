@@ -43,7 +43,7 @@ internal interface ModuleAwareLayoutScope : LayoutScope {
 
     /**
      * [currentWildcards] by the names the module key gave them, or `null` outside a module block
-     * and inside one whose key named nothing. See `"...".module(capture = ...)`.
+     * and inside one whose key named nothing. See `":...:${capture("...")}".module { }`.
      */
     val currentCaptures: Map<String, String>?
 
@@ -62,18 +62,4 @@ internal interface ModuleAwareLayoutScope : LayoutScope {
      *   around it would quietly be prepended to the answer.
      */
     fun expandModulePath(modulePath: String, block: LayoutDirectoryScope.() -> Unit): LayoutModule
-
-    /**
-     * [expandModulePath], with a name for each `*` of [modulePath], in order. An empty [captures]
-     * is the same as naming nothing.
-     *
-     * @throws KatachiInvalidIdentifierException when a name is not an identifier.
-     * @throws KatachiCaptureCountMismatchException when there is not exactly one name per `*`.
-     * @throws KatachiDuplicateCaptureException when a name is given twice.
-     */
-    fun expandModulePath(
-        modulePath: String,
-        captures: List<String>,
-        block: LayoutDirectoryScope.() -> Unit,
-    ): LayoutModule
 }

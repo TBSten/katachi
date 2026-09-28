@@ -124,38 +124,6 @@ public fun LayoutScope.expandModulePath(
 ): LayoutModule = moduleAware().expandModulePath(modulePath, block)
 
 /**
- * [expandModulePath], with a name for each `*` of [modulePath], in order: what
- * `"...".module(capture = ...)` does.
- *
- * ## Example 1: Write your own alias for a named `.module { }`
- * ```kt
- * import me.tbsten.katachi.ExperimentalKatachiApi
- * import me.tbsten.katachi.dsl.LayoutDirectoryScope
- * import me.tbsten.katachi.dsl.LayoutModule
- * import me.tbsten.katachi.dsl.LayoutScope
- * import me.tbsten.katachi.dsl.gradle.expandModulePath
- *
- * @OptIn(ExperimentalKatachiApi::class)
- * context(layoutScope: LayoutScope)
- * public fun featureModule(block: LayoutDirectoryScope.() -> Unit): LayoutModule =
- *     layoutScope.expandModulePath(":feature:*", listOf("feature"), block)
- * ```
- *
- * @param modulePath a Gradle module path, possibly holding `*` or `**`.
- * @param captures one name per `*` of [modulePath]; empty to name nothing.
- * @throws me.tbsten.katachi.dsl.KatachiInvalidIdentifierException when a name is not an identifier.
- * @throws me.tbsten.katachi.dsl.KatachiCaptureCountMismatchException when there is not exactly
- *   one name per `*`.
- * @throws me.tbsten.katachi.dsl.KatachiDuplicateCaptureException when a name is given twice.
- */
-@ExperimentalKatachiApi
-public fun LayoutScope.expandModulePath(
-    modulePath: String,
-    captures: List<String>,
-    block: LayoutDirectoryScope.() -> Unit,
-): LayoutModule = moduleAware().expandModulePath(modulePath, captures, block)
-
-/**
  * The scope seen as what it knows, which is what this package is written against.
  *
  * Every scope katachi hands to a `layout { }` block implements [ModuleAwareLayoutScope], so

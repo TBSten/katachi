@@ -9,46 +9,34 @@ import me.tbsten.katachi.dsl.KatachiEmptyEnumTemplateParameterException
 import me.tbsten.katachi.dsl.KatachiInvalidTemplateParameterValueException
 import me.tbsten.katachi.dsl.KatachiMissingTemplateParameterException
 
-/** Where [architectureWithTemplate] writes `template { }`, as every message below prints it. */
-private const val TEMPLATE_SITE: String = "TemplateDslSpecSupport.kt:15"
+/** Where [architectureWithTemplate] writes `.template { }`, as every message below prints it. */
+private const val TEMPLATE_SITE: String = "TemplateDslSpecSupport.kt:20"
 
 class TemplateTypedParameterSpec : FreeSpec({
     "booleanParameter" - {
         "true / false を Boolean として読める" {
             val arch = architectureWithTemplate {
                 val withImpl by booleanParameter()
-                file("A.kt") { "$withImpl:${withImpl::class.simpleName}" }
+                "$withImpl:${withImpl::class.simpleName}"
             }
 
-            arch.render(mapOf("withImpl" to "true")) shouldBe mapOf("A.kt" to "true:Boolean")
-            arch.render(mapOf("withImpl" to "false")) shouldBe mapOf("A.kt" to "false:Boolean")
-        }
-
-        "--arg withImpl=false なら if の中の file は生成されない" {
-            val arch = architectureWithTemplate {
-                val withImpl by booleanParameter(default = true)
-                file("Repository.kt") { "" }
-                if (withImpl) file("RepositoryImpl.kt") { "" }
-            }
-
-            arch.render(mapOf("withImpl" to "false")).keys shouldBe setOf("Repository.kt")
-            arch.render(mapOf("withImpl" to "true")).keys shouldBe
-                setOf("Repository.kt", "RepositoryImpl.kt")
+            arch.render(mapOf("withImpl" to "true")) shouldBe "true:Boolean"
+            arch.render(mapOf("withImpl" to "false")) shouldBe "false:Boolean"
         }
 
         "渡さなければ default が使われる" {
             val arch = architectureWithTemplate {
                 val withImpl by booleanParameter(default = true)
-                file("A.kt") { "$withImpl" }
+                "$withImpl"
             }
 
-            arch.render() shouldBe mapOf("A.kt" to "true")
+            arch.render() shouldBe "true"
         }
 
         "True・TRUE・yes・1 は読めずに落ち、Accepted values: true, false が文面に出る" {
             val arch = architectureWithTemplate {
                 val withImpl by booleanParameter(default = true)
-                file("A.kt") { "$withImpl" }
+                "$withImpl"
             }
 
             for (raw in listOf("True", "TRUE", "yes", "1")) {
@@ -62,7 +50,7 @@ class TemplateTypedParameterSpec : FreeSpec({
                 arch.render(mapOf("withImpl" to "yes"))
             }.message shouldBe """
                 Template of role "UseCase" declared at $TEMPLATE_SITE was given values it cannot read: withImpl.
-                  withImpl="yes": withImpl is a booleanParameter() declared at TemplateTypedParameterSpec.kt:50. Accepted values: true, false.
+                  withImpl="yes": withImpl is a booleanParameter() declared at TemplateTypedParameterSpec.kt:38. Accepted values: true, false.
                 Each parameter is read as the type it was declared with, and a value that does not fit is refused rather than guessed at.
                 Pass a value it accepts as --arg, on the command line or in processors { args("template") { } }, e.g. --arg withImpl=true.
             """.trimIndent()
@@ -71,7 +59,7 @@ class TemplateTypedParameterSpec : FreeSpec({
         "空文字は false ではなく読めない値として落ちる" {
             val arch = architectureWithTemplate {
                 val withImpl by booleanParameter()
-                file("A.kt") { "$withImpl" }
+                "$withImpl"
             }
 
             shouldThrow<KatachiInvalidTemplateParameterValueException> {
@@ -82,7 +70,7 @@ class TemplateTypedParameterSpec : FreeSpec({
         "末尾に空白のある値は落ち、文面で値が引用符に囲まれて空白が見える" {
             val arch = architectureWithTemplate {
                 val withImpl by booleanParameter()
-                file("A.kt") { "$withImpl" }
+                "$withImpl"
             }
 
             shouldThrow<KatachiInvalidTemplateParameterValueException> {
@@ -93,7 +81,7 @@ class TemplateTypedParameterSpec : FreeSpec({
         "default があっても、読めない値は黙って default にならない" {
             val arch = architectureWithTemplate {
                 val withImpl by booleanParameter(default = false)
-                file("A.kt") { "$withImpl" }
+                "$withImpl"
             }
 
             shouldThrow<KatachiInvalidTemplateParameterValueException> {
@@ -105,7 +93,7 @@ class TemplateTypedParameterSpec : FreeSpec({
             val arch = architectureWithTemplate {
                 val name by stringParameter()
                 val withImpl by booleanParameter()
-                file("$name.kt") { "$withImpl" }
+                "$name $withImpl"
             }
 
             val thrown = shouldThrow<KatachiMissingTemplateParameterException> { arch.render() }
@@ -123,17 +111,17 @@ class TemplateTypedParameterSpec : FreeSpec({
         "負の数と + 付きの数を読める" {
             val arch = architectureWithTemplate {
                 val pageSize by intParameter()
-                file("A.kt") { "${pageSize + 1}" }
+                "${pageSize + 1}"
             }
 
-            arch.render(mapOf("pageSize" to "-1")) shouldBe mapOf("A.kt" to "0")
-            arch.render(mapOf("pageSize" to "+3")) shouldBe mapOf("A.kt" to "4")
+            arch.render(mapOf("pageSize" to "-1")) shouldBe "0"
+            arch.render(mapOf("pageSize" to "+3")) shouldBe "4"
         }
 
         "小数・16進・アンダースコア付きは読めずに落ちる" {
             val arch = architectureWithTemplate {
                 val pageSize by intParameter()
-                file("A.kt") { "$pageSize" }
+                "$pageSize"
             }
 
             for (raw in listOf("3.5", "0x10", "1_000", "")) {
@@ -146,14 +134,14 @@ class TemplateTypedParameterSpec : FreeSpec({
         "Int の範囲外は範囲外だと言い分けて落ちる" {
             val arch = architectureWithTemplate {
                 val pageSize by intParameter(default = 20)
-                file("A.kt") { "$pageSize" }
+                "$pageSize"
             }
 
             shouldThrow<KatachiInvalidTemplateParameterValueException> {
                 arch.render(mapOf("pageSize" to "99999999999"))
             }.message shouldBe """
                 Template of role "UseCase" declared at $TEMPLATE_SITE was given values it cannot read: pageSize.
-                  pageSize="99999999999": pageSize is an intParameter() declared at TemplateTypedParameterSpec.kt:148, and that number is outside -2147483648..2147483647.
+                  pageSize="99999999999": pageSize is an intParameter() declared at TemplateTypedParameterSpec.kt:136, and that number is outside -2147483648..2147483647.
                 Each parameter is read as the type it was declared with, and a value that does not fit is refused rather than guessed at.
                 Pass a value it accepts as --arg, on the command line or in processors { args("template") { } }, e.g. --arg pageSize=20.
             """.trimIndent()
@@ -165,7 +153,7 @@ class TemplateTypedParameterSpec : FreeSpec({
         "全角数字の桁あふれも範囲外として言い分けられる" {
             val arch = architectureWithTemplate {
                 val pageSize by intParameter()
-                file("A.kt") { "$pageSize" }
+                "$pageSize"
             }
 
             shouldThrow<KatachiInvalidTemplateParameterValueException> {
@@ -176,11 +164,11 @@ class TemplateTypedParameterSpec : FreeSpec({
         "Int だけが読めないときも e.g. に具体的な値が出る（default があればその値）" {
             val withDefault = architectureWithTemplate {
                 val pageSize by intParameter(default = 20)
-                file("A.kt") { "$pageSize" }
+                "$pageSize"
             }
             val withoutDefault = architectureWithTemplate {
                 val pageSize by intParameter()
-                file("A.kt") { "$pageSize" }
+                "$pageSize"
             }
 
             val withDefaultMessage = shouldThrow<KatachiInvalidTemplateParameterValueException> {
@@ -200,10 +188,10 @@ class TemplateTypedParameterSpec : FreeSpec({
                 val name by stringParameter()
                 val withImpl by booleanParameter(default = name.endsWith("Admin"))
                 val pageSize by intParameter(default = name.length)
-                file("A.kt") { "$withImpl $pageSize" }
+                "$withImpl $pageSize"
             }
 
-            arch.render(mapOf("name" to "UserAdmin")) shouldBe mapOf("A.kt" to "true 9")
+            arch.render(mapOf("name" to "UserAdmin")) shouldBe "true 9"
         }
     }
 
@@ -211,23 +199,23 @@ class TemplateTypedParameterSpec : FreeSpec({
         "エントリの名前で読める" {
             val arch = architectureWithTemplate {
                 val visibility by enumParameter(Visibility.entries)
-                file("A.kt") { "${visibility == Visibility.Internal}" }
+                "${visibility == Visibility.Internal}"
             }
 
-            arch.render(mapOf("visibility" to "Internal")) shouldBe mapOf("A.kt" to "true")
+            arch.render(mapOf("visibility" to "Internal")) shouldBe "true"
         }
 
         "大文字小文字が違うと読めず、Accepted values にエントリ名が並ぶ" {
             val arch = architectureWithTemplate {
                 val visibility by enumParameter(default = Visibility.Public)
-                file("A.kt") { "$visibility" }
+                "$visibility"
             }
 
             shouldThrow<KatachiInvalidTemplateParameterValueException> {
                 arch.render(mapOf("visibility" to "internal"))
             }.message shouldBe """
                 Template of role "UseCase" declared at $TEMPLATE_SITE was given values it cannot read: visibility.
-                  visibility="internal": visibility is an enumParameter() of Visibility declared at TemplateTypedParameterSpec.kt:222 and takes an entry name spelled exactly as declared. Accepted values: Public, Internal.
+                  visibility="internal": visibility is an enumParameter() of Visibility declared at TemplateTypedParameterSpec.kt:210 and takes an entry name spelled exactly as declared. Accepted values: Public, Internal.
                 Each parameter is read as the type it was declared with, and a value that does not fit is refused rather than guessed at.
                 Pass a value it accepts as --arg, on the command line or in processors { args("template") { } }, e.g. --arg visibility=Public.
             """.trimIndent()
@@ -236,7 +224,7 @@ class TemplateTypedParameterSpec : FreeSpec({
         "知らない名前は読めずに落ちる" {
             val arch = architectureWithTemplate {
                 val visibility by enumParameter(Visibility.entries)
-                file("A.kt") { "$visibility" }
+                "$visibility"
             }
 
             shouldThrow<KatachiInvalidTemplateParameterValueException> {
@@ -247,36 +235,36 @@ class TemplateTypedParameterSpec : FreeSpec({
         "文字列テンプレートに埋めるとエントリの名前になる" {
             val arch = architectureWithTemplate {
                 val visibility by enumParameter(Visibility.entries)
-                file("A.kt") { "$visibility" }
+                "$visibility"
             }
 
-            arch.render(mapOf("visibility" to "Public")) shouldBe mapOf("A.kt" to "Public")
+            arch.render(mapOf("visibility" to "Public")) shouldBe "Public"
         }
 
         "default つきの形と entries の形は同じように読める" {
             val required = architectureWithTemplate {
                 val visibility by enumParameter(Visibility.entries)
-                file("A.kt") { visibility.name }
+                visibility.name
             }
             val withDefault = architectureWithTemplate {
                 val visibility by enumParameter(default = Visibility.Public)
-                file("A.kt") { visibility.name }
+                visibility.name
             }
 
             for (raw in listOf("Public", "Internal")) {
                 required.render(mapOf("visibility" to raw)) shouldBe
                     withDefault.render(mapOf("visibility" to raw))
             }
-            withDefault.render() shouldBe mapOf("A.kt" to "Public")
+            withDefault.render() shouldBe "Public"
         }
 
         "エントリ本体を持つ enum でも default つきの形でエントリを取れる" {
             val arch = architectureWithTemplate {
                 val shape by enumParameter(default = Shape.Circle)
-                file("A.kt") { shape.name }
+                shape.name
             }
 
-            arch.render(mapOf("shape" to "Square")) shouldBe mapOf("A.kt" to "Square")
+            arch.render(mapOf("shape" to "Square")) shouldBe "Square"
             shouldThrow<KatachiInvalidTemplateParameterValueException> {
                 arch.render(mapOf("shape" to "Triangle"))
             }.message.orEmpty() shouldContain "enumParameter() of Shape declared at"
@@ -286,13 +274,13 @@ class TemplateTypedParameterSpec : FreeSpec({
             val arch = architectureWithTemplate {
                 @Suppress("UNUSED_VARIABLE")
                 val nothing by enumParameter(Nothingness.entries)
-                file("A.kt") { "" }
+                ""
             }
 
             val thrown = shouldThrow<KatachiEmptyEnumTemplateParameterException> { arch.render() }
             thrown.role shouldBe TEMPLATE_ROLE
             thrown.message shouldBe """
-                enumParameter() of role "UseCase" declared at TemplateTypedParameterSpec.kt:288 was given an enum with no entries.
+                enumParameter() of role "UseCase" declared at TemplateTypedParameterSpec.kt:276 was given an enum with no entries.
                 No --arg value could ever be read as it, so every run of this template would fail.
                 Give the enum at least one entry, or declare the parameter with stringParameter().
             """.trimIndent()

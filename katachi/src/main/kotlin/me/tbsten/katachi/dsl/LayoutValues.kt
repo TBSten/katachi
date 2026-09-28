@@ -1,6 +1,8 @@
 package me.tbsten.katachi.dsl
 
+import me.tbsten.katachi.ExperimentalKatachiApi
 import me.tbsten.katachi.dsl.internal.LayoutNode
+import me.tbsten.katachi.dsl.internal.attachMetadata
 
 /**
  * A directory declared in a `layout { }` block.
@@ -22,6 +24,30 @@ public class LayoutDirectory internal constructor(
     /** Innermost node; where the next level attaches. */
     internal val leaf: LayoutNode,
 ) {
+    /**
+     * Attaches metadata to this directory, the same way `owner = "..."` attaches it to a role.
+     * See [LayoutDeclarationScope].
+     *
+     * Written on the value a key returned: `"..." { }`'s block does not see this directory as a
+     * receiver, so metadata cannot be attached from inside it -- only from outside, where the
+     * value is in hand.
+     *
+     * ## Example 1: attach metadata to a declared directory
+     * ```kt
+     * val Obsolete: MetadataKey<Boolean> = metadata()
+     * var MetadataScope.obsolete: Boolean? by Obsolete
+     *
+     * layout {
+     *   "legacy" { }.metadata { obsolete = true } / "*.kt".file()
+     * }
+     * ```
+     */
+    @ExperimentalKatachiApi
+    public fun metadata(block: LayoutDeclarationScope.() -> Unit): LayoutDirectory {
+        leaf.attachMetadata(block)
+        return this
+    }
+
     override fun toString(): String = "LayoutDirectory(${leaf.pathFromDeclaration()})"
 }
 
@@ -57,6 +83,29 @@ public class LayoutFile internal constructor(
         return this
     }
 
+    /**
+     * Attaches metadata to this file, the same way `owner = "..."` attaches it to a role. See
+     * [LayoutDeclarationScope].
+     *
+     * `.template { }` is the one katachi ships this way itself: `"...".ktFile().template { }`
+     * is sugar over `"...".ktFile().metadata { }` writing a key katachi does not expose.
+     *
+     * ## Example 1: attach metadata to a declared file
+     * ```kt
+     * val Obsolete: MetadataKey<Boolean> = metadata()
+     * var MetadataScope.obsolete: Boolean? by Obsolete
+     *
+     * layout {
+     *   "legacy" / "*Dao".ktFile().metadata { obsolete = true }
+     * }
+     * ```
+     */
+    @ExperimentalKatachiApi
+    public fun metadata(block: LayoutDeclarationScope.() -> Unit): LayoutFile {
+        leaf.attachMetadata(block)
+        return this
+    }
+
     override fun toString(): String = "LayoutFile(${leaf.pathFromDeclaration()})"
 }
 
@@ -76,7 +125,44 @@ public class LayoutFile internal constructor(
 public class LayoutModule internal constructor(
     /** The nodes the declaration added, one group per module it expanded to. */
     internal val declared: List<LayoutNode>,
+    /**
+     * The directory node of each expansion, one per module the key stood for -- what
+     * [metadata] writes into. Empty when the key was `":".module { }`: the root project has
+     * no directory of its own, only the layout root every other block shares, so there is
+     * nowhere for a value written here to attach that would not also describe everything else.
+     */
+    internal val moduleDirectories: List<LayoutNode> = emptyList(),
 ) {
+    /**
+     * Attaches metadata to every module this declaration expanded to, the same way `owner =
+     * "..."` attaches it to a role. See [LayoutDeclarationScope].
+     *
+     * Written once, read many: a wildcard key such as `":feature:*".module { }` may stand for
+     * several modules, and every one of them gets the same value, the same way [optional] marks
+     * every one of them.
+     *
+     * ## Example 1: attach the same metadata to every module a wildcard key expanded to
+     * ```kt
+     * val Owner: MetadataKey<String> = metadata()
+     * var MetadataScope.owner: String? by Owner
+     *
+     * layout {
+     *   ":feature:*".module { }.metadata { owner = "mobile" }
+     * }
+     * ```
+     *
+     * @throws KatachiMetadataWithoutEntryException when called on `":".module { }`: the root
+     *   project has no directory of its own for a value to attach to.
+     */
+    @ExperimentalKatachiApi
+    public fun metadata(block: LayoutDeclarationScope.() -> Unit): LayoutModule {
+        if (moduleDirectories.isEmpty()) {
+            throw KatachiMetadataWithoutEntryException(modulePath = ":")
+        }
+        moduleDirectories.forEach { it.attachMetadata(block) }
+        return this
+    }
+
     /**
      * Stops everything this module declared from being reported as missing.
      *

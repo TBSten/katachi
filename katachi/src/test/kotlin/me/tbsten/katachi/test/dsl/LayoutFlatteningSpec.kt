@@ -163,7 +163,7 @@ class LayoutFlatteningSpec : FreeSpec({
         "展開結果は宣言した役割を指す" {
             val entries = layoutOf { ".gitignore".file() }
 
-            entries.single().role.qualifiedName shouldBe "group/Role"
+            entries.single().role.qualifiedName shouldBe "group.Role"
         }
 
         "同じ役割が同じパスを2回宣言しても1件になる" {
@@ -187,7 +187,7 @@ class LayoutFlatteningSpec : FreeSpec({
             }.flattenLayout()
 
             entries.filter { it.path == "core/domain" }.map { it.role.qualifiedName } shouldBe
-                listOf("domain/UseCase", "domain/Repository")
+                listOf("domain.UseCase", "domain.Repository")
         }
 
         "1つの役割が複数の layout ブロックを持てる" {
@@ -216,7 +216,7 @@ class LayoutFlatteningSpec : FreeSpec({
                 "b".group { "Second" { layout { "two.txt".file() } } }
             }.flattenLayout()
 
-            entries.map { it.role.qualifiedName } shouldBe listOf("a/First", "b/Second")
+            entries.map { it.role.qualifiedName } shouldBe listOf("a.First", "b.Second")
         }
     }
 
@@ -247,7 +247,7 @@ class LayoutFlatteningSpec : FreeSpec({
                 layoutOf { "{a,b}".file() }
             }
 
-            failure.message!! shouldContain "group/Role"
+            failure.message!! shouldContain "group.Role"
             failure.message!! shouldContain "LayoutFlatteningSpec.kt"
         }
     }

@@ -5,6 +5,7 @@ import io.kotest.matchers.collections.shouldContainExactly
 import io.kotest.matchers.shouldBe
 import me.tbsten.katachi.check.internal.discoverModules
 import me.tbsten.katachi.check.internal.moduleIndex
+import me.tbsten.katachi.dsl.DeclarationSite
 import me.tbsten.katachi.dsl.ModulePath
 import me.tbsten.katachi.dsl.ModuleResolver
 import me.tbsten.katachi.dsl.files.FsPath
@@ -50,7 +51,7 @@ class ModuleResolverSpec : FreeSpec({
 
     fun index(): ModuleIndex = moduleIndex(sampleTree(), root)
 
-    fun expand(key: String) = index().expand(ModulePattern.compile(key))
+    fun expand(key: String) = index().expand(ModulePattern.compile(key, DeclarationSite.Unknown))
 
     "規約ベースの解決" - {
         "\":core:data\" は core/data になる" {

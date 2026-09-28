@@ -5,10 +5,12 @@ import me.tbsten.katachi.dsl.TemplateScopeImpl
 import me.tbsten.katachi.internal.catching
 
 /**
- * Replays [declaration] with [values] bound and produces its files.
+ * Replays [template] with [values] bound and produces the content of the one file it describes.
  *
- * Every `file { }` body is invoked, and a parameter with neither a value nor a default is
- * collected so that the whole set can be reported at once.
+ * The block's return value is that content, so nothing here decides *whether* to produce it the
+ * way the old `file { }` calls did -- only whether the values needed to build it were all there.
+ * A parameter with neither a value nor a default is collected so that the whole set can be
+ * reported at once.
  *
  * The block runs first and is only then judged, so that every missing or unreadable value is
  * known before anything is said about any of them. A failure raised by the user's own code is
@@ -23,35 +25,36 @@ import me.tbsten.katachi.internal.catching
  * `true` for `katachiTemplates` / `DescribeTemplates`, `false` for an actual run.
  */
 internal fun evaluateTemplate(
-    declaration: TemplateDeclaration,
+    template: LayoutTemplate,
     roleName: String,
     values: Map<String, String>,
     captureNames: Set<String> = emptySet(),
     isPreview: Boolean = false,
     onMissingCaptures: ((names: List<String>, declaredAt: DeclarationSite, cause: Throwable?) -> Nothing)? = null,
-): TemplateEvaluation {
+): String {
     val scope = TemplateScopeImpl(
         roleName = roleName,
         values = values,
         captureNames = captureNames,
         isPreview = isPreview,
     )
-    var failure = catching { declaration.block(scope) }.exceptionOrNull()
-    if (failure == null) failure = catching { scope.render() }.exceptionOrNull()
-    scope.requireEveryParameterNamed(declaration.declaredAt)
-    scope.requireEveryValueReadable(declaration.declaredAt, failure)
-    scope.requireEveryValuePresent(declaration.declaredAt, failure, capturesApart = onMissingCaptures != null)
+    var content: String? = null
+    val failure = catching { content = template.block(scope) }.exceptionOrNull()
+    scope.requireEveryParameterNamed(template.declaredAt)
+    scope.requireEveryValueReadable(template.declaredAt, failure)
+    scope.requireEveryValuePresent(template.declaredAt, failure, capturesApart = onMissingCaptures != null)
     val missingCaptures = scope.missingCaptureNames()
     if (onMissingCaptures != null && missingCaptures.isNotEmpty()) {
-        onMissingCaptures(missingCaptures, declaration.declaredAt, failure)
+        onMissingCaptures(missingCaptures, template.declaredAt, failure)
     }
     failure?.let { throw it }
-    scope.requireAtLeastOneFile(declaration.declaredAt)
-    return scope.evaluation()
+    val result = content.orEmpty()
+    requireNoCaptureToken(result, where = "a template's returned content", declaredAt = template.declaredAt)
+    return result
 }
 
 /**
- * The `--arg` names [declaration] declares for a run given [values], without rendering anything.
+ * The `--arg` names [template] declares for a run given [values], without rendering anything.
  *
  * Asked before any processor runs, to decide which arguments of that run are known. The run's
  * own [values] are bound, because a parameter declared inside `if (withImpl) { }` is declared
@@ -64,7 +67,7 @@ internal fun evaluateTemplate(
  * [evaluateTemplate]'s is.
  */
 internal fun templateParameterNames(
-    declaration: TemplateDeclaration,
+    template: LayoutTemplate,
     roleName: String,
     values: Map<String, String>,
     captureNames: Set<String> = emptySet(),
@@ -76,7 +79,7 @@ internal fun templateParameterNames(
         captureNames = captureNames,
         isPreview = isPreview,
     )
-    val failed = catching { declaration.block(scope) }.isFailure
+    val failed = catching { template.block(scope) }.isFailure
     return TemplateParameterNames(
         declared = scope.parameterNames(),
         origins = scope.parameterOrigins(),
@@ -103,5 +106,18 @@ internal class TemplateParameterNames(
     override fun toString(): String = "TemplateParameterNames($declared, unreliable=$isUnreliable)"
 }
 
-/** Where a template parameter was declared, and with which of `stringParameter()` and its siblings. */
-internal class TemplateParameterOrigin(val declaredAt: DeclarationSite, val declaredWith: String)
+/**
+ * Where a template parameter was declared, and its full signature: which of `stringParameter()`
+ * and its siblings ([declaredWith]), its type told apart even between two different enums
+ * ([label], `TemplateParameterType.label` -- `declaredWith` alone reads `enumParameter()` for
+ * every one of them), and its default ([default]). What
+ * [me.tbsten.katachi.template.internal.requireNoConflicts] compares two declarations of the same
+ * name by, since the design draft's "type or default differs" -- section 2, "複数指定のとき" --
+ * means both, not [declaredWith] alone.
+ */
+internal class TemplateParameterOrigin(
+    val declaredAt: DeclarationSite,
+    val declaredWith: String,
+    val label: String,
+    val default: Any?,
+)

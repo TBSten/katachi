@@ -98,7 +98,8 @@ private fun LayoutScope.declare(node: RNode, named: Boolean, moduleCapture: Stri
             if (name == null) {
                 RANDOM_MODULE_KEY.module { node.children.forEach { declare(it, named, moduleCapture = null) } }
             } else {
-                RANDOM_MODULE_KEY.module(capture = name) { node.children.forEach { declare(it, named, name) } }
+                val key = RANDOM_MODULE_KEY.replaceFirst("*", capture(name))
+                key.module { node.children.forEach { declare(it, named, name) } }
             }
         }
     }
@@ -174,8 +175,8 @@ internal fun renderDsl(nodes: List<RNode>, named: Boolean): String = buildString
 
             is RNode.Module -> {
                 val name = n.captureName ?: NAMED_CAPTURE.takeIf { named && n.chosen }
-                val call = if (name == null) "module" else "module(capture = \"$name\")"
-                line(indent, "\"$RANDOM_MODULE_KEY\".$call {")
+                val key = if (name == null) RANDOM_MODULE_KEY else RANDOM_MODULE_KEY.replaceFirst("*", "\${capture(\"$name\")}")
+                line(indent, "\"$key\".module {")
                 n.children.forEach { node(it, indent + 1, name) }
                 line(indent, "}")
             }

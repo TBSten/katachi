@@ -19,17 +19,17 @@ internal class DeclaredTemplateParameter(
 }
 
 /**
- * The parameters [declaration] declares for a run given [values], in declaration order.
+ * The parameters [template] declares for a run given [values], in declaration order.
  *
- * The same names-only replay as [templateParameterNames] -- no `file { }` body runs -- with each
- * parameter's type and default kept. Like it, this never throws: a block that fails part way
- * answers with the parameters it declared before failing.
+ * The same names-only replay as [templateParameterNames] -- the block runs but its return value
+ * is not read -- with each parameter's type and default kept. Like it, this never throws: a
+ * block that fails part way answers with the parameters it declared before failing.
  *
  * [isPreview] is threaded to [me.tbsten.katachi.dsl.TemplateScope.isPreview] the same way
  * [evaluateTemplate]'s is.
  */
 internal fun declaredTemplateParameters(
-    declaration: TemplateDeclaration,
+    template: LayoutTemplate,
     roleName: String,
     values: Map<String, String>,
     captureNames: Set<String> = emptySet(),
@@ -41,7 +41,7 @@ internal fun declaredTemplateParameters(
         captureNames = captureNames,
         isPreview = isPreview,
     )
-    catching { declaration.block(scope) }
+    catching { template.block(scope) }
     return scope.parameters().mapNotNull { parameter ->
         val name = parameter.name ?: return@mapNotNull null
         DeclaredTemplateParameter(name = name, type = parameter.type, default = parameter.default)

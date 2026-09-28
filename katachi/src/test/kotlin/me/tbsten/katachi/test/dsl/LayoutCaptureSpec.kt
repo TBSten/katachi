@@ -6,15 +6,21 @@ import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
 import me.tbsten.katachi.dsl.DeclarationKind
+import me.tbsten.katachi.dsl.KatachiAdjacentCaptureException
 import me.tbsten.katachi.dsl.KatachiDuplicateCaptureException
 import me.tbsten.katachi.dsl.KatachiInvalidIdentifierException
+import me.tbsten.katachi.dsl.KatachiStrayCaptureTokenException
 import me.tbsten.katachi.dsl.LayoutEntry
 import me.tbsten.katachi.dsl.architecture
 import me.tbsten.katachi.dsl.gradle.*
 import me.tbsten.katachi.dsl.internal.LayoutCaptures
 import me.tbsten.katachi.dsl.internal.PathCapture
+import me.tbsten.katachi.dsl.internal.captureToken
 import me.tbsten.katachi.dsl.internal.flattenLayout
 import me.tbsten.katachi.dsl.kotlin.ktFile
+import me.tbsten.katachi.dsl.template
+import me.tbsten.katachi.test.check.architectureOf
+import me.tbsten.katachi.test.template.generated
 
 /** The entry at [path], which the spec expects to exist exactly once. */
 private fun List<LayoutEntry>.at(path: String): LayoutEntry = single { it.path == path }
@@ -134,9 +140,20 @@ class LayoutCaptureSpec : FreeSpec({
             }
 
             failure.name shouldBe "x"
-            failure.role shouldBe "group/Role"
+            failure.role shouldBe "group.Role"
             failure.path shouldBe "*/a/*"
             failure.message!! shouldContain "--arg x="
+        }
+
+        "同じセグメントの中で同じ名前を2回使っても KatachiDuplicateCaptureException" {
+            // レビューで見つかったバグの再現: CaptureTrail.enter は上の階層から集めた declaredAt
+            // としか照らしていなかったので、newNames 自身の中の重複（同じセグメントの部分一致）は
+            // 素通りしていた。
+            val failure = shouldThrow<KatachiDuplicateCaptureException> {
+                layoutOf { "${capture("a")}-${capture("a")}.kt".file() }
+            }
+
+            failure.name shouldBe "a"
         }
 
         "ブロックをまたいだ入れ子でも同じパスなら KatachiDuplicateCaptureException" {
@@ -147,7 +164,7 @@ class LayoutCaptureSpec : FreeSpec({
 
         "モジュールの capture とパスの capture が同名でも KatachiDuplicateCaptureException" {
             shouldThrow<KatachiDuplicateCaptureException> {
-                layoutOf { ":feature:*".module(capture = "feature") { capture("feature") / "a.kt".file() } }
+                layoutOf { ":feature:${capture("feature")}".module { capture("feature") / "a.kt".file() } }
             }.name shouldBe "feature"
         }
 
@@ -189,6 +206,72 @@ class LayoutCaptureSpec : FreeSpec({
 
             entries.at("*/a.kt").captureVariants.single().names shouldBe listOf("x")
             entries.at("*/b.kt").captureVariants.single().names shouldBe listOf("x")
+        }
+    }
+
+    "隣り合う capture" - {
+        "capture 同士が間に文字を挟まず並ぶと KatachiAdjacentCaptureException" {
+            val failure = shouldThrow<KatachiAdjacentCaptureException> {
+                layoutOf { "${capture("a")}${capture("b")}".file() }
+            }
+
+            failure.names shouldBe listOf("a", "b")
+        }
+
+        "capture の直前が名前の無い * だと KatachiAdjacentCaptureException" {
+            val failure = shouldThrow<KatachiAdjacentCaptureException> {
+                layoutOf { "*${capture("a")}".file() }
+            }
+
+            failure.names shouldBe listOf("a")
+        }
+
+        "capture の直後が名前の無い * だと KatachiAdjacentCaptureException" {
+            val failure = shouldThrow<KatachiAdjacentCaptureException> {
+                layoutOf { "${capture("a")}*".file() }
+            }
+
+            failure.names shouldBe listOf("a")
+        }
+
+        "間に文字を1つでも挟めば通る" {
+            layoutOf { "${capture("a")}-${capture("b")}".file() }.at("*-*").captureVariants
+                .single().names shouldBe listOf("a", "b")
+        }
+    }
+
+    "layout のキー以外に埋め込んだ capture" - {
+        "description に埋め込むと KatachiStrayCaptureTokenException" {
+            val failure = shouldThrow<KatachiStrayCaptureTokenException> {
+                layoutOf { "dir" { description = capture("x") } }
+            }
+
+            failure.name shouldBe "x"
+            failure.where shouldBe "a description"
+        }
+
+        "fileConstraint の名前に埋め込んでも KatachiStrayCaptureTokenException" {
+            val failure = shouldThrow<KatachiStrayCaptureTokenException> {
+                layoutOf { fileConstraint(capture("x"), check = silent()) }
+            }
+
+            failure.name shouldBe "x"
+        }
+
+        "テンプレートの戻り値に紛れ込んでも KatachiStrayCaptureTokenException" {
+            // capture(...) のトークンは layout のキーだけが読み戻す。この token が、たとえば
+            // 外側の capture() を明示的な receiver 経由で呼ぶなどしてファイルの中身に紛れ込んでも、
+            // layout のキーには戻らないので同じ例外になる。
+            val arch = architectureOf {
+                "domain".group {
+                    "UseCase" {
+                        layout { "UseCase.kt".file().template { captureToken("leak") } }
+                    }
+                }
+            }
+
+            val failure = shouldThrow<KatachiStrayCaptureTokenException> { arch.generated("UseCase") }
+            failure.name shouldBe "leak"
         }
     }
 

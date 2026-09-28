@@ -3,27 +3,18 @@ package me.tbsten.katachi.dsl
 import kotlin.enums.EnumEntries
 import me.tbsten.katachi.dsl.internal.InvalidTemplateValue
 import me.tbsten.katachi.dsl.internal.ParsedArgValue
-import me.tbsten.katachi.dsl.internal.RenderedTemplateFile
-import me.tbsten.katachi.dsl.internal.TemplateEvaluation
 import me.tbsten.katachi.dsl.internal.TemplateParameterBinder
 import me.tbsten.katachi.dsl.internal.TemplateParameterOrigin
 import me.tbsten.katachi.dsl.internal.TemplateParameterType
 import me.tbsten.katachi.dsl.internal.captureDeclarationSite
 
-/** One `file(...)` of a template, and what it rendered to once its body was invoked. */
-private class TemplateFileDeclaration(
-    val name: String,
-    val declaredAt: DeclarationSite,
-    val content: () -> String,
-) {
-    var rendered: String? = null
-}
-
 /**
  * Collects one replay of a `template { }` block.
  *
  * A fresh instance per replay: the values differ from run to run, and nothing a previous run
- * bound may leak into the next one.
+ * bound may leak into the next one. Unlike the parameters and captures it tracks, the block's
+ * return value -- the file's content -- is not collected here: [me.tbsten.katachi.dsl.internal.evaluateTemplate]
+ * reads it straight off the call that runs the block against this scope.
  */
 internal class TemplateScopeImpl(
     private val roleName: String,
@@ -37,8 +28,6 @@ internal class TemplateScopeImpl(
 
     /** The named ones, in declaration order. */
     private val named = linkedMapOf<String, TemplateParameter<*>>()
-
-    private val files = mutableListOf<TemplateFileDeclaration>()
 
     /** Names read during this replay that had nothing to read. */
     private val missing = linkedSetOf<String>()
@@ -101,27 +90,6 @@ internal class TemplateScopeImpl(
         return TemplateParameterType.StringType.standIn(name)
     }
 
-    override fun file(name: String, content: () -> String) {
-        val declaredAt = captureDeclarationSite()
-        if (!isPlainFileName(name)) {
-            throw KatachiInvalidTemplateFileNameException(
-                role = roleName,
-                fileName = name,
-                declaredAt = declaredAt,
-            )
-        }
-        val first = files.firstOrNull { it.name == name }
-        if (first != null) {
-            throw KatachiDuplicateTemplateFileException(
-                role = roleName,
-                fileName = name,
-                firstDeclaredAt = first.declaredAt,
-                declaredAt = declaredAt,
-            )
-        }
-        files += TemplateFileDeclaration(name = name, declaredAt = declaredAt, content = content)
-    }
-
     override fun bind(parameter: TemplateParameter<*>) {
         val name = parameter.name ?: return
         val first = named[name]
@@ -165,17 +133,19 @@ internal class TemplateScopeImpl(
         return parameter.type.standIn(name)
     }
 
-    /** Invokes every `file { }` body. Reads inside them are what fill [missing]. */
-    fun render() {
-        for (file in files) file.rendered = file.content()
-    }
-
     /** The names declared so far, which is what a caller asks for before a run. */
     fun parameterNames(): Set<String> = named.keys.toSet()
 
     /** Where and how each named parameter was declared, which a capture conflicting with it points at. */
     fun parameterOrigins(): Map<String, TemplateParameterOrigin> =
-        named.mapValues { TemplateParameterOrigin(it.value.declaredAt, it.value.type.declaredWith) }
+        named.mapValues {
+            TemplateParameterOrigin(
+                declaredAt = it.value.declaredAt,
+                declaredWith = it.value.type.declaredWith,
+                label = it.value.type.label,
+                default = it.value.default,
+            )
+        }
 
     /** The named parameters declared so far, in declaration order, types and defaults included. */
     fun parameters(): List<TemplateParameter<*>> = named.values.toList()
@@ -253,32 +223,4 @@ internal class TemplateScopeImpl(
             named[name]?.type?.acceptedDescription?.let { name to it }
         }.toMap()
 
-    /** Refuses a template that produces nothing: there would be no reason to run it. */
-    fun requireAtLeastOneFile(declaredAt: DeclarationSite) {
-        if (files.isNotEmpty()) return
-        throw KatachiEmptyTemplateException(role = roleName, declaredAt = declaredAt)
-    }
-
-    fun evaluation(): TemplateEvaluation = TemplateEvaluation(
-        files = files.map {
-            RenderedTemplateFile(
-                fileName = it.name,
-                content = it.rendered.orEmpty(),
-                declaredAt = it.declaredAt,
-            )
-        },
-    )
 }
-
-/**
- * Whether [name] is a file name rather than a path.
- *
- * Nothing that could climb out of the directory the layout chose is a file name: this is the
- * one place a template could otherwise reach a path of its own choosing, and the files it
- * writes land in the user's own source tree.
- */
-private fun isPlainFileName(name: String): Boolean =
-    name.isNotBlank() &&
-        name != "." &&
-        name != ".." &&
-        name.none { it == '/' || it == '\\' || it == '\n' || it == '\r' || it == '\u0000' }

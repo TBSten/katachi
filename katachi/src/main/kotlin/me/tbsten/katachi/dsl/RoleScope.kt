@@ -2,7 +2,6 @@ package me.tbsten.katachi.dsl
 
 import me.tbsten.katachi.dsl.internal.FileConstraintDeclaration
 import me.tbsten.katachi.dsl.internal.MetadataBuilder
-import me.tbsten.katachi.dsl.internal.TemplateDeclaration
 import me.tbsten.katachi.dsl.internal.captureDeclarationSite
 import me.tbsten.katachi.dsl.internal.fileConstraintDeclarationOf
 
@@ -141,43 +140,11 @@ public sealed interface RoleScope : MetadataScope, FileConstraintScope {
      * @featured
      */
     public fun layout(block: LayoutScope.() -> Unit)
-
-    /**
-     * Declares how a file of this role is written from scratch. Call it at most once.
-     *
-     * The block is stored, not evaluated, like [layout]: it is replayed with the values of one
-     * run when `katachiTemplate` asks it for files. What it names are file names; where
-     * they land comes from this role's [layout].
-     *
-     * ## Example 1: declare a template on a role
-     * ```kt
-     * val arch = architecture {
-     *     "domain".group {
-     *         "UseCase" {
-     *             layout { "useCase" / "*UseCase.kt".file() }
-     *             template {
-     *                 val name by stringParameter()
-     *                 file("${name}UseCase.kt") { "interface ${name}UseCase" }
-     *             }
-     *         }
-     *     }
-     * }
-     * arch.allRoles.single().name shouldBe "UseCase"
-     * ```
-     *
-     * @throws KatachiDuplicateTemplateException when this role already declared one.
-     * @see TemplateScope
-     * @featured
-     */
-    public fun template(block: TemplateScope.() -> Unit)
 }
 
 internal class RoleScopeImpl(private val roleName: String) : RoleScope {
     val metadata = MetadataBuilder()
     val layouts = mutableListOf<LayoutDeclaration>()
-
-    /** Held as a list although at most one may be declared: the second is what gets refused. */
-    val templates = mutableListOf<TemplateDeclaration>()
 
     /**
      * Constraints written straight on the role, which cover the union of every `layout { }`
@@ -220,19 +187,6 @@ internal class RoleScopeImpl(private val roleName: String) : RoleScope {
 
     override fun layout(block: LayoutScope.() -> Unit) {
         layouts += LayoutDeclaration(declaredAt = captureDeclarationSite(), block = block)
-    }
-
-    override fun template(block: TemplateScope.() -> Unit) {
-        val declaredAt = captureDeclarationSite()
-        val first = templates.firstOrNull()
-        if (first != null) {
-            throw KatachiDuplicateTemplateException(
-                role = roleName,
-                firstDeclaredAt = first.declaredAt,
-                declaredAt = declaredAt,
-            )
-        }
-        templates += TemplateDeclaration(declaredAt = declaredAt, block = block)
     }
 
     override fun fileConstraint(

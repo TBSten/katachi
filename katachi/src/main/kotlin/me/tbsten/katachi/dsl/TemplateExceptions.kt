@@ -3,195 +3,198 @@ package me.tbsten.katachi.dsl
 import me.tbsten.katachi.KatachiDeclarationException
 
 /**
- * A role declared `template { }` more than once.
+ * `.template { }` was attached to the same file declaration twice: once directly, by calling it
+ * twice on the same value, or once each on two declarations of the same path.
  *
- * A role has one template so that `katachiTemplate --arg roleName=UseCase` never has to be
- * told which of them was meant. A role that really produces several files says so with several
- * `file(...)` calls inside the one template.
+ * A file has one template so that `--arg template=` never has to be told which of them was
+ * meant. Two file names built to differ -- Repository.kt and RepositoryImpl.kt -- are two
+ * declarations, each with its own `.template { }`; a role that really wants two ways to fill
+ * in the *same* path has nowhere for the second to go.
  *
- * ## Example 1: catch a role that declares two templates
+ * ## Example 1: catch a file declaration that attached two templates
  * ```kt
  * val thrown = shouldThrow<KatachiDuplicateTemplateException> {
  *     architecture {
  *         "domain".group {
  *             "UseCase" {
- *                 template { file("A.kt") { "" } }
- *                 template { file("B.kt") { "" } }
+ *                 layout { "useCase" / "*UseCase.kt".file().template { "a" }.template { "b" } }
  *             }
  *         }
- *     }
+ *     }.flattenLayout()
  * }
  * thrown.role shouldBe "UseCase"
  * ```
  *
- * @see RoleScope.template
+ * @see LayoutFile.template
  */
 public class KatachiDuplicateTemplateException internal constructor(
-    /** The role that declared both. */
+    /** The role that declared both, qualified. */
     public val role: String,
+    /** The path the two attachments claim. */
+    public val path: String,
     /** Where the template it already had was written. */
     public val firstDeclaredAt: DeclarationSite,
-    /** Where the refused second `template { }` was written. */
-    public val declaredAt: DeclarationSite,
-) : KatachiDeclarationException(
-    message = buildString {
-        appendLine("""Role "$role" declares a second template at $declaredAt.""")
-        appendLine(
-            "It already declared one at $firstDeclaredAt, and a role has one template so that " +
-                "running it never has to be told which of them was meant.",
-        )
-        append("Merge the two into one template { }, with one file(...) per file it produces.")
-    },
-)
-
-/**
- * `file(...)` was given something other than a plain file name.
- *
- * A template names files; the role's `layout { }` names directories. Keeping it that way is
- * what stops a template from choosing a path of its own — these files are written into the
- * user's own source tree, not below `build/`.
- *
- * ## Example 1: catch a file name that is really a path
- * ```kt
- * import io.kotest.assertions.throwables.shouldThrow
- * import me.tbsten.katachi.dsl.architecture
- * import me.tbsten.katachi.processor.process
- * import me.tbsten.katachi.template.GenerateCodeFromTemplate
- *
- * val arch = architecture {
- *     "domain".group {
- *         "UseCase" { template { file("useCase/GetUserUseCase.kt") { "" } } }
- *     }
- * }
- *
- * // architecture { } keeps the template's block rather than running it -- the names it
- * // declares are read when the template runs, which is here.
- * val thrown = shouldThrow<KatachiInvalidTemplateFileNameException> {
- *     arch.process(
- *         GenerateCodeFromTemplate,
- *         GenerateCodeFromTemplate.Args(roleName = "UseCase"),
- *     ).getOrThrow()
- * }
- * thrown.fileName shouldBe "useCase/GetUserUseCase.kt"
- * ```
- *
- * @see TemplateScope.file
- */
-public class KatachiInvalidTemplateFileNameException internal constructor(
-    /** The role whose template wrote it. */
-    public val role: String,
-    /** The rejected name, as written. */
-    public val fileName: String,
-    /** Where `file(...)` was called. */
+    /** Where the refused second `.template { }` was written. */
     public val declaredAt: DeclarationSite,
 ) : KatachiDeclarationException(
     message = buildString {
         appendLine(
-            """Invalid template file name "$fileName" declared at $declaredAt, """ +
-                """in role "$role".""",
+            """"$path" of role "$role" is given a second `.template { }` at $declaredAt.""",
         )
         appendLine(
-            """file() takes a file name with its extension, such as "GetUserUseCase.kt". The """ +
-                "directory it lands in comes from that role's layout { }, so spelling it here " +
-                "would be the same thing said in two places that can disagree.",
+            "It already has one, written at $firstDeclaredAt, and a declared file has one " +
+                "template so that `--arg template=` never has to be told which of them was meant.",
         )
-        append("Give file() a plain file name, and declare where it lives in layout { }.")
+        append(
+            "Merge the two blocks into one `.template { }`, or, if they are meant to produce " +
+                "different files, declare a second path for the other one.",
+        )
     },
 )
 
 /**
- * One template declared two files of the same name.
+ * `.template(id = "...")` was given an id already used by another template of the same role.
  *
- * The second would decide what the first wrote, so what ends up on disk would depend on the
- * order the two lines happen to be in.
+ * `--arg template=` selects by `role.id`, so two templates answering to the same id could never
+ * be told apart. The same [LayoutTemplate] instance repeated by a wildcard module key's
+ * expansion is not a duplicate: every module gets one template with the same id, by design.
  *
- * ## Example 1: catch a file name declared twice in one template
+ * ## Example 1: catch two templates of one role sharing an id
  * ```kt
- * import io.kotest.assertions.throwables.shouldThrow
- * import me.tbsten.katachi.dsl.architecture
- * import me.tbsten.katachi.processor.process
- * import me.tbsten.katachi.template.GenerateCodeFromTemplate
- *
- * val arch = architecture {
- *     "domain".group {
- *         "UseCase" {
- *             template {
- *                 file("GetUserUseCase.kt") { "" }
- *                 file("GetUserUseCase.kt") { "" }
+ * val thrown = shouldThrow<KatachiDuplicateTemplateIdException> {
+ *     architecture {
+ *         "data".group {
+ *             "Repository" {
+ *                 layout {
+ *                     "repository" / "*Repository.kt".file().template(id = "repository") { "" }
+ *                     "repository" / "*RepositoryImpl.kt".file().template(id = "repository") { "" }
+ *                 }
  *             }
  *         }
- *     }
+ *     }.flattenLayout()
  * }
- *
- * // The repeat is found when the template runs, not when the definition is written: the
- * // block above is kept and called then.
- * val thrown = shouldThrow<KatachiDuplicateTemplateFileException> {
- *     arch.process(
- *         GenerateCodeFromTemplate,
- *         GenerateCodeFromTemplate.Args(roleName = "UseCase"),
- *     ).getOrThrow()
- * }
- * thrown.fileName shouldBe "GetUserUseCase.kt"
+ * thrown.id shouldBe "repository"
  * ```
  *
- * @see TemplateScope.file
+ * @see LayoutFile.template
  */
-public class KatachiDuplicateTemplateFileException internal constructor(
-    /** The role whose template declared both. */
+public class KatachiDuplicateTemplateIdException internal constructor(
+    /** The role both templates belong to, qualified. */
     public val role: String,
-    /** The name declared twice. */
-    public val fileName: String,
-    /** Where the first `file(...)` of that name was written. */
+    /** The id claimed twice. */
+    public val id: String,
+    /** Where the template that took the id first was written. */
     public val firstDeclaredAt: DeclarationSite,
     /** Where the refused second one was written. */
     public val declaredAt: DeclarationSite,
 ) : KatachiDeclarationException(
     message = buildString {
         appendLine(
-            """Duplicate template file "$fileName" declared at $declaredAt, in role "$role".""",
+            """Duplicate template id "$id" declared at $declaredAt, in role "$role".""",
         )
         appendLine(
-            "A file of that name was already declared at $firstDeclaredAt, and the second one " +
-                "would decide what the first wrote.",
+            "It was already given to another template at $firstDeclaredAt, and --arg " +
+                "template=$role.$id could never say which of them was meant.",
+        )
+        append("Give one of them a different id.")
+    },
+)
+
+/**
+ * A role's second `.template { }` left out `id`, when its first one did too.
+ *
+ * An id may be left out only while a role has one template, where `--arg template=$role` needs
+ * no further choosing. The moment a second template joins it, every template of that role has
+ * to be reachable by id, so the one that omitted it is refused -- pointing at the declaration
+ * that made the omission ambiguous, not at the role's first template, which was fine on its own.
+ *
+ * ## Example 1: catch a role whose second template left out `id`
+ * ```kt
+ * val thrown = shouldThrow<KatachiMissingTemplateIdException> {
+ *     architecture {
+ *         "data".group {
+ *             "Repository" {
+ *                 layout {
+ *                     "repository" / "*Repository.kt".file().template { "" }
+ *                     "repository" / "*RepositoryImpl.kt".file().template(id = "impl") { "" }
+ *                 }
+ *             }
+ *         }
+ *     }.flattenLayout()
+ * }
+ * thrown.role shouldBe "Repository"
+ * ```
+ *
+ * @see LayoutFile.template
+ */
+public class KatachiMissingTemplateIdException internal constructor(
+    /** The role with more than one template, qualified. */
+    public val role: String,
+    /** Where the template that left out `id` was written. */
+    public val declaredAt: DeclarationSite,
+    /** The ids the role's other templates were given. */
+    public val otherIds: List<String>,
+) : KatachiDeclarationException(
+    message = buildString {
+        appendLine(
+            """Template of role "$role" declared at $declaredAt has no id, but the role has """ +
+                "more than one template.",
+        )
+        appendLine(
+            "An id may be left out only while a role has one template. Once a second one joins " +
+                "it, --arg template=$role alone could not say which was meant.",
         )
         append(
-            "Rename one of them, or build the name from a parameter so that the two differ.",
+            "Give it an id, such as .template(id = \"...\") { }. The role's other id(s): " +
+                otherIds.joinToString(", ") { "\"$it\"" } + ".",
         )
     },
 )
 
 /**
- * A `template { }` that declares no file.
+ * `.template { }` was attached to a declaration whose path still holds a `*` or a `**` that no
+ * `capture("...")` names.
  *
- * Running it would report success and write nothing, which is the shape of failure katachi
- * exists to remove.
+ * Generating a file needs a value for every level its path leaves open, and an unnamed wildcard
+ * has nowhere for that value to come from: no `--arg` name reaches it.
  *
- * It is raised when the template is replayed rather than where it was written, because the
- * block is stored and only runs when something asks it for files.
- *
- * ## Example 1: declare a template that produces nothing
+ * ## Example 1: catch a template on a path with an unnamed wildcard
  * ```kt
- * val arch = architecture {
- *     "domain".group { "UseCase" { template { } } }
+ * val thrown = shouldThrow<KatachiTemplateOnWildcardException> {
+ *     architecture {
+ *         "data".group {
+ *             "Repository" {
+ *                 layout { "repository" / "*Repository.kt".file().template { "" } }
+ *             }
+ *         }
+ *     }.flattenLayout()
  * }
- * // Declaring it is fine; `katachiTemplate --arg roleName=UseCase` is what refuses it.
- * arch.allRoles.single().name shouldBe "UseCase"
+ * thrown.role shouldBe "Repository"
  * ```
  *
- * @see TemplateScope.file
+ * @see LayoutFile.template
  */
-public class KatachiEmptyTemplateException internal constructor(
-    /** The role whose template produces nothing. */
+public class KatachiTemplateOnWildcardException internal constructor(
+    /** The role whose declaration this is, qualified. */
     public val role: String,
-    /** Where `template { }` was written. */
+    /** The declared path, with every named level shown as `${capture("name")}`. */
+    public val path: String,
+    /** Where `.template { }` was written. */
     public val declaredAt: DeclarationSite,
 ) : KatachiDeclarationException(
     message = buildString {
-        appendLine("""Template of role "$role" declared at $declaredAt produces no file.""")
         appendLine(
-            "A template exists to write files and this one calls file() no times, so running " +
-                "it would report success and write nothing.",
+            """`.template { }` at $declaredAt is attached to "$path" of role "$role", whose """ +
+                "path still holds an unnamed wildcard.",
         )
-        append("""Declare at least one file("...") { } in it.""")
+        appendLine(
+            "Generating a file needs a value for every level the path leaves open, and an " +
+                "unnamed * or ** has no --arg name for that value to arrive as.",
+        )
+        append(
+            "Name every remaining wildcard with capture(\"...\"), such as " +
+                "\"\${capture(\"name\")}Repository.kt\".file(), or drop the ones that stay a `*` " +
+                "into a level of their own so the file this template describes has a single path.",
+        )
     },
 )

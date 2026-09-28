@@ -78,7 +78,7 @@ class MetadataSpec : FreeSpec({
         }
 
         arch.allGroups.map { it.qualifiedName to it[Owner] } shouldContainExactly
-            listOf("domain" to "platform", "domain/model" to null)
+            listOf("domain" to "platform", "domain.model" to null)
     }
 
     "同じ型の別のキーは別の値を持つ" {

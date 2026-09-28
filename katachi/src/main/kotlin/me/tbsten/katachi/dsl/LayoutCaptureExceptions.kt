@@ -5,7 +5,7 @@ import me.tbsten.katachi.KatachiDeclarationException
 /**
  * The same capture name was used twice along one path of a `layout { }`: two `capture("x")`
  * levels, a `capture("x")` below a module key that named a wildcard `x` too, or one
- * `"...".module(capture = ...)` giving the same name twice.
+ * `":...:${capture("x")}".module { }` key giving the same name twice.
  *
  * A template takes the value of a name from one `--arg`, so two levels sharing a name could never
  * hold two different directories. The same name on two *different* paths of a role is fine:
@@ -53,59 +53,90 @@ public class KatachiDuplicateCaptureException internal constructor(
 )
 
 /**
- * `"...".module(capture = ...)` was given a different number of names than its module path has
- * `*`s.
+ * Two `capture(...)` tokens sit next to each other with no literal between them, or one sits
+ * next to a plain `*`.
  *
- * The names are matched to the `*`s one for one, in the order they are written. A `**` is not
- * counted and cannot be named: how many levels it stands for is not fixed, so no one value could
- * fill it in.
+ * A capture is checked as a plain `*`, so two of them touching would substitute to `**` --
+ * which the glob compiler reads as the unrelated "match any depth" wildcard rather than as two
+ * single levels next to each other. There would also be no way to tell, from a matched path,
+ * where one capture's value ends and the next begins.
  *
- * ## Example 1: catch a name given to a `**`
+ * ## Example 1: catch two captures written back to back
  * ```kt
- * shouldThrow<KatachiCaptureCountMismatchException> {
+ * shouldThrow<KatachiAdjacentCaptureException> {
  *     architecture {
  *         "ui".group {
- *             "Screen" { layout { ":feature:**".module(capture = "feature") { } } }
+ *             "Screen" {
+ *                 layout { "${capture("a")}${capture("b")}Screen".ktFile() }
+ *             }
  *         }
  *     }.flattenLayout()
- * }.wildcardCount shouldBe 0
+ * }.names shouldBe listOf("a", "b")
  * ```
  *
- * @property modulePath the module path, as katachi prints it (`":feature:*"`).
- * @property captures the names that were given.
- * @property wildcardCount how many `*`s the module path holds, `**` not counted.
- * @property declaredAt where the module key was written.
+ * @property key the segment the tokens were found in, with each shown as `${capture("name")}`.
+ * @property names the capture names involved, in the order they appear: both, for two captures
+ *   touching, or the one, for a capture touching a plain `*`.
+ * @property declaredAt where the segment was written.
  */
-public class KatachiCaptureCountMismatchException internal constructor(
-    public val modulePath: String,
-    public val captures: List<String>,
-    public val wildcardCount: Int,
+public class KatachiAdjacentCaptureException internal constructor(
+    public val key: String,
+    public val names: List<String>,
     public val declaredAt: DeclarationSite,
 ) : KatachiDeclarationException(
     message = buildString {
-        val call = if (captures.size == 1) {
-            "\"$modulePath\".module(capture = \"${captures.single()}\")"
-        } else {
-            "\"$modulePath\".module(${captures.joinToString { "\"$it\"" }})"
-        }
-        if (wildcardCount == 0 && "**" in modulePath) {
-            appendLine(
-                "`$call` at $declaredAt names a `**`, which cannot be named: how many levels it " +
-                    "stands for is not fixed, so no one value could fill it in.",
-            )
-            append(
-                "Name a `*` level instead -- `${modulePath.replace("**", "*")}` stands for one level -- " +
-                    "or drop the name and read what the `**` matched through `wildcards`.",
-            )
-            return@buildString
-        }
+        appendLine("""Adjacent captures in "$key" at $declaredAt: ${names.joinToString(", ")}.""")
         appendLine(
-            "`$call` at $declaredAt gives ${captures.size} name(s), but the module path has $wildcardCount `*`.",
+            "A capture is checked as a plain *, so two of them touching would read as ** -- the " +
+                "unrelated \"any depth\" wildcard -- and there would be no way to tell where one " +
+                "capture's value ends and the next begins.",
         )
-        appendLine("The names are matched to the `*`s one for one, in order, so the two counts have to agree.")
-        append(
-            "A `**` cannot be named: how many levels it stands for is not fixed. Read what it " +
-                "matched through `wildcards` instead.",
+        append("Put a literal character between them, such as a `-` or a `/`.")
+    },
+)
+
+/**
+ * A `capture(...)` token was found somewhere other than a layout key: in a `description`, a
+ * `fileConstraint` name, or the string a `.template { }` block returned.
+ *
+ * `capture(...)` hands back a token meant to be read by the layout DSL, which strips it back out
+ * before the key reaches the glob compiler. Nothing else in katachi knows to do that, so the
+ * token would otherwise leak into text a person reads as the private-use characters it is made
+ * of.
+ *
+ * ## Example 1: catch a capture read outside a layout key
+ * ```kt
+ * shouldThrow<KatachiStrayCaptureTokenException> {
+ *     architecture {
+ *         "ui".group {
+ *             "Screen" {
+ *                 layout {
+ *                     "feature" / capture("feature") / "*Screen".ktFile()
+ *                     description = "for ${capture("feature")}"
+ *                 }
+ *             }
+ *         }
+ *     }.flattenLayout()
+ * }.name shouldBe "feature"
+ * ```
+ *
+ * @property where what the token was found in: `"description"`, `"fileConstraint name"`, or
+ *   `"template"`.
+ * @property name the capture name the stray token carried.
+ * @property declaredAt where the text holding it was written.
+ */
+public class KatachiStrayCaptureTokenException internal constructor(
+    public val where: String,
+    public val name: String,
+    public val declaredAt: DeclarationSite,
+) : KatachiDeclarationException(
+    message = buildString {
+        appendLine("""capture("$name") was read into $where at $declaredAt, not into a layout key.""")
+        appendLine(
+            "capture(...) returns a token meant for a layout key -- a directory, a file name or " +
+                "a module path -- which reads it back out before the check ever sees it. Nothing " +
+                "else does that, so it would otherwise show up as itself.",
         )
+        append("Read the value instead, with captureValue(\"$name\") inside a .template { } block.")
     },
 )

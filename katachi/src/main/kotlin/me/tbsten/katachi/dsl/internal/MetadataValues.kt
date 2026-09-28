@@ -3,6 +3,8 @@ package me.tbsten.katachi.dsl.internal
 import me.tbsten.katachi.dsl.ArchitectureScopeImpl
 import me.tbsten.katachi.dsl.DocumentSection
 import me.tbsten.katachi.dsl.GroupScopeImpl
+import me.tbsten.katachi.dsl.LayoutDeclarationScope
+import me.tbsten.katachi.dsl.LayoutDeclarationScopeImpl
 import me.tbsten.katachi.dsl.MetadataKey
 import me.tbsten.katachi.dsl.MetadataScope
 import me.tbsten.katachi.dsl.RoleScopeImpl
@@ -15,7 +17,13 @@ import me.tbsten.katachi.dsl.RoleScopeImpl
  * `group[Documented] ?: true` are that decision, made where it belongs. Giving [MetadataKey]
  * a default would split keys into two kinds and move those decisions into the mechanism.
  */
-internal class MetadataValues(private val values: Map<MetadataKey<*>, Any>) {
+internal class MetadataValues(
+    /**
+     * Internal, not private: [me.tbsten.katachi.dsl.internal.mergedWith] walks both sides of a
+     * merge key by key, which `get` alone cannot do without knowing every key in advance.
+     */
+    internal val values: Map<MetadataKey<*>, Any>,
+) {
     operator fun <T : Any> get(key: MetadataKey<T>): T? = values[key]?.let { key.valueOf(it) }
 
     /**
@@ -28,6 +36,11 @@ internal class MetadataValues(private val values: Map<MetadataKey<*>, Any>) {
     fun writtenValues(): List<Any> = values.values.toList()
 
     override fun toString(): String = "MetadataValues(${values.size})"
+
+    companion object {
+        /** The empty instance, for a [me.tbsten.katachi.dsl.LayoutEntry] nothing was ever attached to. */
+        val EMPTY: MetadataValues = MetadataValues(emptyMap())
+    }
 }
 
 /**
@@ -58,4 +71,42 @@ internal fun MetadataScope.metadataBuilder(): MetadataBuilder = when (this) {
     is RoleScopeImpl -> metadata
     is GroupScopeImpl -> metadata
     is ArchitectureScopeImpl -> metadata
+    is LayoutDeclarationScopeImpl -> metadata
+}
+
+/**
+ * Runs [block] as `.metadata { }` on this node's own builder. Shared by [me.tbsten.katachi.dsl.LayoutFile],
+ * [me.tbsten.katachi.dsl.LayoutDirectory] and [me.tbsten.katachi.dsl.LayoutModule], which all attach to a
+ * node's [LayoutNode.metadata] the same way.
+ */
+internal fun LayoutNode.attachMetadata(block: LayoutDeclarationScope.() -> Unit) {
+    LayoutDeclarationScopeImpl(metadata).block()
+}
+
+/**
+ * Merges the metadata of two declarations that turned out to be the same [me.tbsten.katachi.dsl.LayoutEntry]:
+ * a role that declared one path twice, whether as two `/` chains that happen to share it or as
+ * the same key written in two `layout { }` blocks.
+ *
+ * A key present on only one side is kept as is. A key present on both is kept once when the two
+ * values are `==`, and is a declaration error otherwise -- [onConflict] decides what that error
+ * is, since the caller knows the path, the role and where each declaration was written and this
+ * function does not.
+ */
+internal inline fun MetadataValues.mergedWith(
+    other: MetadataValues,
+    onConflict: (key: MetadataKey<*>, first: Any, second: Any) -> Nothing,
+): MetadataValues {
+    if (other.values.isEmpty()) return this
+    if (values.isEmpty()) return other
+    val merged = LinkedHashMap<MetadataKey<*>, Any>(values)
+    for ((key, secondValue) in other.values) {
+        val firstValue = merged[key]
+        when {
+            firstValue == null -> merged[key] = secondValue
+            firstValue == secondValue -> Unit
+            else -> onConflict(key, firstValue, secondValue)
+        }
+    }
+    return MetadataValues(merged)
 }

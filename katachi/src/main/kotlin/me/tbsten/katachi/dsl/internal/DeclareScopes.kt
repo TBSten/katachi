@@ -77,7 +77,6 @@ internal fun declareRole(
         metadata = scope.metadata.build(),
         layouts = scope.layouts.toList(),
         fileConstraints = scope.fileConstraints.toList(),
-        templates = scope.templates.toList(),
         groupPath = groupPath,
         declaredAt = declaredAt,
     )

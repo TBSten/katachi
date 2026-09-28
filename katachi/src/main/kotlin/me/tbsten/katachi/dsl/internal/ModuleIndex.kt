@@ -39,10 +39,10 @@ internal class ModuleTarget(
     /** What `wildcards` reads as inside the block. */
     val wildcards: List<String>,
     /**
-     * The names the key gave its `*`s, as [ModuleIndex.targetsOf] was handed them, or `null` for
-     * a key written without names.
+     * The names the key's `capture("...")` tokens gave its `*`s, as [ModuleIndex.targetsOf]
+     * read them off [ModulePattern.wildcardNames], or `null` for a key that named none of them.
      */
-    val captureNames: List<String>? = null,
+    val captureNames: List<String?>? = null,
 )
 
 /**
@@ -160,7 +160,11 @@ public class ModuleIndex internal constructor(
      * The check never takes that branch. It builds its index by walking the project, so a
      * wildcard key expands to the modules that exist, down to none of them.
      */
-    internal fun targetsOf(pattern: ModulePattern, captureNames: List<String>? = null): List<ModuleTarget> {
+    internal fun targetsOf(pattern: ModulePattern): List<ModuleTarget> {
+        // `null` once nothing was named at all, so downstream code can keep asking "did this key
+        // name anything?" with one null check, exactly as it could when a name list was a
+        // separate, all-or-nothing argument.
+        val captureNames = pattern.wildcardNames.takeIf { it.any { name -> name != null } }
         if (pattern.hasWildcard) onWildcardKey?.invoke()
         if (binding != null && pattern.hasWildcard) return boundTargetsOf(binding, pattern, captureNames)
         return if (pattern.hasWildcard && discovered == null) {
@@ -192,9 +196,13 @@ public class ModuleIndex internal constructor(
     private fun boundTargetsOf(
         binding: ModuleBinding,
         pattern: ModulePattern,
-        captureNames: List<String>?,
+        captureNames: List<String?>?,
     ): List<ModuleTarget> {
-        val values = captureNames?.map { binding.values[it] ?: return keptAsPattern(pattern, captureNames) }
+        // A value can only be picked by name, so a `*` left unnamed -- whether the whole key
+        // named nothing, or only some of its `*`s did -- falls back to keeping the key as a
+        // pattern, exactly as an entirely unnamed key already does.
+        val names = captureNames?.takeIf { it.all { name -> name != null } }?.filterNotNull()
+        val values = names?.map { binding.values[it] ?: return keptAsPattern(pattern, captureNames) }
             ?: return keptAsPattern(pattern, captureNames)
         val matching = matching(pattern)
         // `**` may only be the last level, so the `*`s the names belong to are the first captures.
@@ -202,7 +210,7 @@ public class ModuleIndex internal constructor(
         if (picked.isEmpty()) {
             binding.misses += ModuleMiss(
                 modulePattern = pattern.pattern,
-                captureNames = captureNames.orEmpty(),
+                captureNames = names,
                 modulePath = pattern.filledIn(values),
                 existing = matching.map { it.path.value },
                 existingValues = matching.map { it.wildcards.take(values.size) },
@@ -218,7 +226,7 @@ public class ModuleIndex internal constructor(
         }
     }
 
-    private fun keptAsPattern(pattern: ModulePattern, captureNames: List<String>?): List<ModuleTarget> = listOf(
+    private fun keptAsPattern(pattern: ModulePattern, captureNames: List<String?>?): List<ModuleTarget> = listOf(
         ModuleTarget(
             modulePath = pattern.unresolvedModulePath(captureNames),
             directory = pattern.conventionalDirectory,
@@ -291,7 +299,7 @@ private fun normalizeDirectory(directory: String): String =
  * [ModulePattern.wildcardPlaceholders] itself does, so text built from it is not a glob wildcard
  * at all -- only a real value, bound later, ever is.
  */
-private fun ModulePattern.unresolvedModulePath(captureNames: List<String>?): String =
+private fun ModulePattern.unresolvedModulePath(captureNames: List<String?>?): String =
     if (captureNames == null) pattern else filledIn(wildcardPlaceholders(captureNames))
 
 /** What [ModuleIndex.boundTo] fills named wildcard keys in with, and where it notes a value that picks nothing. */

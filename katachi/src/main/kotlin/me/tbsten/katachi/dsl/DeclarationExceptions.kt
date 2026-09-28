@@ -61,7 +61,7 @@ public enum class DeclarationKind(
     ),
 
     /**
-     * A `capture("...")` in a `layout { }`, or a name given to `"...".module(capture = ...)`.
+     * A `capture("...")` in a `layout { }`, or a name given to `":...:${capture("...")}".module { }`.
      *
      * ## Example 1: match on a rejected capture name
      * ```kt
@@ -81,6 +81,28 @@ public enum class DeclarationKind(
             "on a different path of the same role.",
         invalidNameHint = "The name is also the `--arg` name a template takes the value by, " +
             "so it follows the same rule as a role name.",
+    ),
+
+    /**
+     * The `id` of a `.template(id = "...") { }`.
+     *
+     * ## Example 1: match on a rejected template id
+     * ```kt
+     * val thrown = shouldThrow<KatachiInvalidIdentifierException> {
+     *     architecture {
+     *         "domain".group {
+     *             "UseCase" { layout { "*UseCase.kt".file().template(id = "not valid") { "" } } }
+     *         }
+     *     }
+     * }
+     * thrown.kind shouldBe DeclarationKind.TemplateId
+     * ```
+     */
+    TemplateId(
+        label = "template id",
+        uniquenessRule = "A template id must be unique within its role. See KatachiDuplicateTemplateIdException.",
+        invalidNameHint = "It is also what `--arg template=role.id` selects it by, so it follows " +
+            "the same rule as a role name.",
     ),
 }
 

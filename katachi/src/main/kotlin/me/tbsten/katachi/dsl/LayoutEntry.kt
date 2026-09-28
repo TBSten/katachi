@@ -4,6 +4,7 @@ import me.tbsten.katachi.ExperimentalKatachiApi
 import me.tbsten.katachi.InternalKatachiApi
 import me.tbsten.katachi.dsl.internal.Glob
 import me.tbsten.katachi.dsl.internal.LayoutCaptures
+import me.tbsten.katachi.dsl.internal.MetadataValues
 
 /**
  * What a flattened layout entry declares about the path it names.
@@ -95,8 +96,8 @@ public enum class LayoutEntryKind {
  * arch.process { context ->
  *     context.declaredEntries.map { "${it.role.qualifiedName} ${it.path} ${it.kind}" }
  * } shouldContainExactly listOf(
- *     "domain/UseCase useCase Directory",
- *     "domain/UseCase useCase/GetUserUseCase.kt File",
+ *     "domain.UseCase useCase Directory",
+ *     "domain.UseCase useCase/GetUserUseCase.kt File",
  * )
  * ```
  */
@@ -161,7 +162,7 @@ public class LayoutEntry internal constructor(
      * }
      * arch.process { context ->
      *     context.declaredEntries.groupBy({ it.role.qualifiedName }, { it.path })
-     * } shouldBe mapOf("domain/UseCase" to listOf("useCase", "useCase/GetUserUseCase.kt"))
+     * } shouldBe mapOf("domain.UseCase" to listOf("useCase", "useCase/GetUserUseCase.kt"))
      * ```
      */
     public val role: Role,
@@ -238,7 +239,7 @@ public class LayoutEntry internal constructor(
     internal val pathInModule: String,
     /**
      * The names each declaration of this path gave its wildcards — `capture("...")` levels and
-     * `"...".module(capture = ...)` names — one variant per distinct declaration. Empty when no
+     * `":...:${capture("...")}".module { }` names — one variant per distinct declaration. Empty when no
      * declaration named anything; once one did, a declaration that named nothing is kept as
      * [me.tbsten.katachi.dsl.internal.LayoutCaptures.NONE] beside it.
      *
@@ -247,7 +248,49 @@ public class LayoutEntry internal constructor(
      * possible because the same path declared twice folds into one entry.
      */
     internal val captureVariants: List<LayoutCaptures> = emptyList(),
+    /**
+     * The one variant of [captureVariants] the declaration `.template { }` was actually attached
+     * to, or `null` while none of this path's declarations carries a template.
+     *
+     * A path can fold two declarations into one entry (the same doc [captureVariants] describes),
+     * and only one of them may ever carry `.template { }` -- design draft section 7. When the
+     * other declaration named nothing (`"*.kt".file()` merged with
+     * `capture("name").ktFile().template { }`), [captureVariants] holds `[NONE, {name}]` in
+     * whichever order the two declarations were written in, and reading `.firstOrNull()` off it
+     * would silently pick the untemplated one on the wrong order. Template generation and preview
+     * read this instead of guessing at [captureVariants]'s order.
+     */
+    internal val templateCaptures: LayoutCaptures? = null,
+    /**
+     * What `.metadata { }` — including the `.template { }` sugar over it — wrote on the
+     * declaration this entry came from. Read with [get], the same way [Role]'s own metadata is.
+     */
+    internal val metadata: MetadataValues = MetadataValues.EMPTY,
 ) {
+    /**
+     * The value written under [key] with `.metadata { }`, or `null` when this declaration does
+     * not carry that key.
+     *
+     * The declared value, as written: a directory's metadata is not inherited by the entries
+     * below it, and two declarations of the same path that wrote the same value under a key
+     * keep it once, so which of them "wins" is never a question a reader has to ask.
+     *
+     * ## Example 1: read metadata a definition attached to one of its declared files
+     * ```kt
+     * val Obsolete: MetadataKey<Boolean> = metadata()
+     * var MetadataScope.obsolete: Boolean? by Obsolete
+     *
+     * val arch = architecture {
+     *     "legacy".group {
+     *         "Dao" { layout { "legacy" / "*Dao".ktFile().metadata { obsolete = true } } }
+     *     }
+     * }
+     * arch.flattenLayout().single { it.kind == LayoutEntryKind.File }[Obsolete] shouldBe true
+     * ```
+     */
+    @ExperimentalKatachiApi
+    public operator fun <T : Any> get(key: MetadataKey<T>): T? = metadata[key]
+
     override fun toString(): String =
         "LayoutEntry($path, $kind, ${role.qualifiedName}${if (required) ", required" else ""})"
 }

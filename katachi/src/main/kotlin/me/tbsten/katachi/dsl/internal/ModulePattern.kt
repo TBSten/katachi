@@ -1,5 +1,6 @@
 package me.tbsten.katachi.dsl.internal
 
+import me.tbsten.katachi.dsl.DeclarationSite
 import me.tbsten.katachi.dsl.KatachiGlobSyntaxException
 import me.tbsten.katachi.dsl.ModulePath
 import me.tbsten.katachi.dsl.ModuleResolver
@@ -10,14 +11,22 @@ import me.tbsten.katachi.dsl.ModuleResolver
  * It is the module-path half of [Glob] — the same translation to a regular expression, with
  * `:` for a separator instead of `/`, so `*` and `**` cannot come to mean two different
  * things on the two sides of the DSL. On top of the glob it adds what only a module path
- * needs: a leading `:` is optional, `":"` names the root project, and `**` is restricted to
- * the last segment so that the index of every captured wildcard is the same for every match.
+ * needs: a leading `:` is optional, `":"` names the root project, `**` is restricted to
+ * the last segment so that the index of every captured wildcard is the same for every match,
+ * and a `capture("...")` token embedded in the key -- `":feature:${capture("feature")}"` --
+ * is read and named the same way [parseCaptureSegment] reads one out of a file path.
  */
 internal class ModulePattern private constructor(
-    /** The pattern with its leading `:` filled in, e.g. `":feature:*"`. */
+    /** The pattern with its leading `:` filled in and every capture token read as `*`, e.g. `":feature:*"`. */
     val pattern: String,
     /** `null` for `":"`, which names the root project and matches nothing else. */
     private val glob: Glob?,
+    /**
+     * One entry per `*` in [pattern] (`**` not counted), in the order they appear: the name a
+     * `capture("...")` token gave it, or `null` for a plain, unnamed `*`. Empty when the
+     * pattern holds no `*` at all.
+     */
+    val wildcardNames: List<String?> = emptyList(),
 ) {
     /** Whether the pattern holds a `*` or a `**`, which is what makes a declaration optional. */
     val hasWildcard: Boolean get() = glob?.hasWildcard == true
@@ -41,19 +50,19 @@ internal class ModulePattern private constructor(
         get() = glob?.groupKinds.orEmpty().map { WILDCARD_PLACEHOLDER }
 
     /**
-     * [wildcardPlaceholders], with each `*` the key named written as `<name>` instead:
-     * `":feature:*".module(capture = "feature")` reads as `["<feature>"]`, so a message or a
-     * preview built out of it says which `--arg` fills it in. The names belong to the `*`s in
-     * order, and a `**` -- always last, never named -- keeps [WILDCARD_PLACEHOLDER].
+     * [wildcardPlaceholders], with each `*` [wildcardNames] gave a name written as `<name>`
+     * instead: `":feature:${capture("feature")}"` reads as `["<feature>"]`, so a message or a
+     * preview built out of it says which `--arg` fills it in. A `**` -- always last, never
+     * named -- keeps [WILDCARD_PLACEHOLDER].
      */
-    fun wildcardPlaceholders(captureNames: List<String>?): List<String> =
+    fun wildcardPlaceholders(captureNames: List<String?>? = wildcardNames): List<String> =
         wildcardPlaceholders.mapIndexed { index, placeholder ->
             captureNames?.getOrNull(index)?.let { "<$it>" } ?: placeholder
         }
 
     /**
      * How many `*`s the pattern holds, `**` not counted: the number of names
-     * `"...".module(capture = ...)` has to give. A `**` cannot be named, because how many levels
+     * `":...:${capture("...")}".module { }` has to give. A `**` cannot be named, because how many levels
      * it stands for is not fixed.
      */
     val singleWildcardCount: Int
@@ -150,21 +159,50 @@ internal class ModulePattern private constructor(
         const val WILDCARD_PLACEHOLDER: String = "<name>"
 
         /**
-         * Translates [raw] into a pattern, filling in the leading `:` when it was left out.
+         * Translates [raw] into a pattern, filling in the leading `:` when it was left out and
+         * reading every `capture("...")` token embedded in it back into [wildcardNames].
          *
          * @throws KatachiGlobSyntaxException when [raw] is empty or cannot be read as a glob,
          *   or when it uses `**` anywhere but as its last segment, or more than once.
+         * @throws me.tbsten.katachi.dsl.KatachiAdjacentCaptureException when a token in [raw]
+         *   touches another wildcard with no literal between them.
          */
-        fun compile(raw: String): ModulePattern {
+        fun compile(raw: String, declaredAt: DeclarationSite): ModulePattern {
             if (raw.isEmpty()) throw KatachiGlobSyntaxException(raw, GlobProblem.EmptyModulePath)
             val normalized = if (raw.startsWith(Glob.MODULE_SEPARATOR)) raw else "${Glob.MODULE_SEPARATOR}$raw"
             // `":"` is the root project. It is not a glob — `Glob.compile` would read the
             // separator as the start of an empty segment.
             if (normalized == Glob.MODULE_SEPARATOR.toString()) return ModulePattern(normalized, null)
-            val glob = Glob.compile(normalized, Glob.MODULE_SEPARATOR)
+            val names = mutableListOf<String?>()
+            val globSegments = normalized.substring(1).split(Glob.MODULE_SEPARATOR).map { segment ->
+                if (segment == RECURSIVE_WILDCARD) {
+                    // `**` cannot be named -- there is nothing to attach a token to.
+                    segment
+                } else {
+                    val captureSegment = parseCaptureSegment(segment, declaredAt)
+                    when {
+                        captureSegment != null -> {
+                            names += captureSegment.names
+                            captureSegment.globSegment
+                        }
+
+                        segment == SINGLE_WILDCARD -> {
+                            names += null
+                            segment
+                        }
+
+                        else -> segment
+                    }
+                }
+            }
+            val globPattern = Glob.MODULE_SEPARATOR + globSegments.joinToString(Glob.MODULE_SEPARATOR.toString())
+            val glob = Glob.compile(globPattern, Glob.MODULE_SEPARATOR)
             glob.requireAtMostOneTrailingDoubleStar()
-            return ModulePattern(normalized, glob)
+            return ModulePattern(globPattern, glob, names.toList())
         }
+
+        private const val SINGLE_WILDCARD: String = "*"
+        private const val RECURSIVE_WILDCARD: String = "**"
 
         /** Drops the backslashes the glob compiler would have read as escapes. */
         private fun unescape(pattern: String): String {

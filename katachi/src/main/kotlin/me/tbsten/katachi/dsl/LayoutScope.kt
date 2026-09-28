@@ -188,22 +188,26 @@ public sealed interface LayoutScope : FileConstraintScope {
     public operator fun LayoutDirectory.invoke(block: LayoutDirectoryScope.() -> Unit): LayoutDirectory
 
     /**
-     * Declares a directory level that is a `*` with a name.
+     * Names a wildcard: a marker `capture("feature")` embeds in a layout key, read back out
+     * wherever the key is used and replaced with a plain `*` before the check ever sees it.
      *
-     * The check reads it exactly as `"*"`: one whole level, one character or more, never
-     * crossing a `/`. Replacing `capture("feature")` with `"*"` changes nothing about what is
-     * checked. The name is what a template fills in: generating a file for the role takes the
-     * level's value from `--arg feature=...`.
+     * Substituting `"*"` for every `capture(...)` in a definition changes nothing about what is
+     * checked or about the flattened layout -- the name is only what a template fills in,
+     * generating a file for the role from the level's value at `--arg feature=...`. Because it
+     * is an ordinary `String`, it can name a whole level (`capture("feature")`) or part of one:
+     * `"${capture("fileName")}Screen".ktFile()` and `"feature-${capture("x")}"` both work, with
+     * no overload of their own.
      *
-     * Only a whole level can be named. A partial wildcard such as `feature-*`, and a `**`, stay
-     * as they are written. The same name may appear once along one path; a different path of
-     * the same role may reuse it, and then the two share the one parameter.
+     * The same name may appear once along one path; a different path of the same role may reuse
+     * it, and then the two share the one parameter. Two captures may not sit directly next to
+     * each other with nothing between them -- see [KatachiAdjacentCaptureException] -- and a
+     * name written where no layout key ever reads it is refused too, see
+     * [KatachiStrayCaptureTokenException].
      *
-     * ## Example 1: Naming the feature level a template generates into
+     * ## Example 1: Naming a whole level, and part of one
      * ```kt
      * layout {
-     *   "feature" / capture("feature") / "src" / "main" / "kotlin" / "*ViewModel".ktFile()
-     *   capture("sample") { "README.md".file() }
+     *   "feature" / capture("feature") / "src" / "main" / "kotlin" / "${capture("fileName")}ViewModel.kt".file()
      * }
      * ```
      *
@@ -212,11 +216,14 @@ public sealed interface LayoutScope : FileConstraintScope {
      * @throws KatachiInvalidIdentifierException when [name] is not an identifier.
      * @throws KatachiDuplicateCaptureException when [name] is already used along the same path,
      *   noticed when the layout is flattened.
+     * @throws KatachiAdjacentCaptureException when this token ends up touching another wildcard
+     *   with nothing literal between them, noticed when the layout is flattened.
      */
-    public fun capture(name: String): LayoutDirectory
+    public fun capture(name: String): String
 
     /**
-     * [capture] opened as a block: `capture("feature") { ... }` is `capture("feature").invoke { ... }`.
+     * [capture] opened as a block: `capture("feature") { ... }` is
+     * `capture("feature").invoke { ... }`, the same `String.invoke` a whole-level key opens with.
      *
      * A separate overload because a trailing lambda right after `capture("...")` is read as an
      * argument of the call, not as an `invoke` on what it returns.

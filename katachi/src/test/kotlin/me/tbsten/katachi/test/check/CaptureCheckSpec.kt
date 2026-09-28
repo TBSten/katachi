@@ -59,7 +59,7 @@ class CaptureCheckSpec : FreeSpec({
 
         "モジュールの capture（wildcard(name) と wildcards[0] が同じファイル名を作る）" {
             val named = violationsOf {
-                ":feature:*".module(capture = "feature") {
+                ":feature:${capture("feature")}".module {
                     "src" / "${wildcard("feature").replaceFirstChar(Char::uppercaseChar)}ViewModel".ktFile()
                 }
             }

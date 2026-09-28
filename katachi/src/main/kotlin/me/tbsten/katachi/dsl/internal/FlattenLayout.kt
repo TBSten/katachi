@@ -4,12 +4,19 @@ import me.tbsten.katachi.InternalKatachiApi
 import me.tbsten.katachi.dsl.Architecture
 import me.tbsten.katachi.dsl.DeclarationSite
 import me.tbsten.katachi.dsl.FileConstraintRange
+import me.tbsten.katachi.dsl.KatachiConflictingLayoutMetadataException
 import me.tbsten.katachi.dsl.KatachiDuplicateCaptureException
+import me.tbsten.katachi.dsl.KatachiDuplicateTemplateException
+import me.tbsten.katachi.dsl.KatachiDuplicateTemplateIdException
 import me.tbsten.katachi.dsl.KatachiFileConstraintDirectOnlyCoversNothingException
 import me.tbsten.katachi.dsl.KatachiGlobSyntaxException
+import me.tbsten.katachi.dsl.KatachiMissingFirstTemplateException
+import me.tbsten.katachi.dsl.KatachiMissingTemplateIdException
+import me.tbsten.katachi.dsl.KatachiTemplateOnWildcardException
 import me.tbsten.katachi.dsl.LayoutEntry
 import me.tbsten.katachi.dsl.LayoutEntryKind
 import me.tbsten.katachi.dsl.LayoutScopeImpl
+import me.tbsten.katachi.dsl.MetadataKey
 import me.tbsten.katachi.dsl.ModuleResolver
 import me.tbsten.katachi.dsl.Role
 
@@ -168,6 +175,8 @@ internal fun Role.evaluateLayout(moduleIndex: ModuleIndex): LayoutEvaluation {
         roots += root
     }
 
+    requireTemplatesAreWellFormed(this, byNode.keys)
+
     return LayoutEvaluation(
         entries = entries.values.toList(),
         fileConstraints = buildList {
@@ -223,23 +232,31 @@ private class CaptureTrail(
 
 /** [trail] extended with what [child], the [segmentIndex]-th level of its path, names. */
 private fun CaptureTrail.enter(child: LayoutNode, segmentIndex: Int, role: Role, path: String): CaptureTrail {
-    val moduleNames = child.moduleCaptureNames
+    val moduleNames = child.moduleCaptureNames?.filterNotNull()
     val pattern = child.moduleCapturePattern
-    val pathName = child.layoutCaptureName
-    if (moduleNames == null && pathName == null) return this
-    val newNames = moduleNames.orEmpty() + listOfNotNull(pathName)
+    val pathNames = child.captureSegment?.names.orEmpty()
+    if (moduleNames == null && pathNames.isEmpty()) return this
+    val newNames = moduleNames.orEmpty() + pathNames
+    // Checked against the trail from above *and* against names this same call already added --
+    // `newNames` alone can repeat one name, e.g. two capture("a") tokens in one segment
+    // (`"${capture("a")}-${capture("a")}.kt"`), which the trail (still the parent's) would not
+    // catch on its own.
+    val seenHere = mutableSetOf<String>()
     for (name in newNames) {
-        val first = declaredAt[name] ?: continue
-        throw KatachiDuplicateCaptureException(
-            name = name,
-            role = role.qualifiedName,
-            path = path,
-            firstDeclaredAt = first,
-            declaredAt = child.declaredAt,
-        )
+        val first = declaredAt[name] ?: if (name in seenHere) child.declaredAt else null
+        if (first != null) {
+            throw KatachiDuplicateCaptureException(
+                name = name,
+                role = role.qualifiedName,
+                path = path,
+                firstDeclaredAt = first,
+                declaredAt = child.declaredAt,
+            )
+        }
+        seenHere += name
     }
     return CaptureTrail(
-        pathCaptures = pathCaptures + listOfNotNull(pathName?.let { PathCapture(segmentIndex, it) }),
+        pathCaptures = pathCaptures + pathNames.map { PathCapture(segmentIndex, it) },
         moduleCapture = if (moduleNames != null && pattern != null) ModuleCapture(pattern, moduleNames) else moduleCapture,
         declaredAt = declaredAt + newNames.associateWith { child.declaredAt },
     )
@@ -432,6 +449,16 @@ private fun LayoutNode.toEntry(
         else -> LayoutEntryKind.Directory
     }
     val glob = compilePath(path, role, declaredAt)
+    duplicateTemplateAttempt?.let { second ->
+        val first = metadata[Template]
+            ?: throw KatachiMissingFirstTemplateException(path = path, role = role.qualifiedName)
+        throw KatachiDuplicateTemplateException(
+            role = role.qualifiedName,
+            path = path,
+            firstDeclaredAt = first.declaredAt,
+            declaredAt = second.declaredAt,
+        )
+    }
     return LayoutEntry(
         path = path,
         glob = glob,
@@ -445,6 +472,8 @@ private fun LayoutNode.toEntry(
         modulePath = modulePath,
         pathInModule = pathInModule,
         captureVariants = listOfNotNull(captures),
+        templateCaptures = captures.takeIf { metadata[Template] != null },
+        metadata = metadata.build(),
     )
 }
 
@@ -491,7 +520,40 @@ private fun LayoutEntry.mergedWith(other: LayoutEntry): LayoutEntry = LayoutEntr
     modulePath = modulePath ?: other.modulePath,
     pathInModule = pathInModule,
     captureVariants = mergedCaptureVariants(captureVariants, other.captureVariants),
+    // At most one side ever carries a template -- mergedMetadata already turned two into
+    // KatachiDuplicateTemplateException -- so whichever side is non-null is templateCaptures
+    // itself, not a guess at captureVariants's order. See LayoutEntry.templateCaptures.
+    templateCaptures = templateCaptures ?: other.templateCaptures,
+    metadata = mergedMetadata(this, other),
 )
+
+/**
+ * Merges the metadata of two declarations of the same path. `Template` is compared by identity
+ * -- see [me.tbsten.katachi.dsl.internal.Template] -- so two `.template { }` on different
+ * declarations of one path collide as [KatachiDuplicateTemplateException], the same exception a
+ * `.template { }` written twice on one declaration raises; every other key collides as
+ * [KatachiConflictingLayoutMetadataException].
+ */
+private fun mergedMetadata(first: LayoutEntry, second: LayoutEntry): MetadataValues =
+    first.metadata.mergedWith(second.metadata) { key, firstValue, secondValue ->
+        if (key === Template) {
+            val firstTemplate = Template.valueOf(firstValue)
+            val secondTemplate = Template.valueOf(secondValue)
+            throw KatachiDuplicateTemplateException(
+                role = first.role.qualifiedName,
+                path = first.path,
+                firstDeclaredAt = firstTemplate.declaredAt,
+                declaredAt = secondTemplate.declaredAt,
+            )
+        }
+        throw KatachiConflictingLayoutMetadataException(
+            role = first.role.qualifiedName,
+            path = first.path,
+            key = key.toString(),
+            firstDeclaredAt = first.declaredAt,
+            declaredAt = second.declaredAt,
+        )
+    }
 
 /**
  * Every distinct way the declarations of one path named its wildcards. A declaration that named
@@ -501,4 +563,127 @@ private fun LayoutEntry.mergedWith(other: LayoutEntry): LayoutEntry = LayoutEntr
 private fun mergedCaptureVariants(first: List<LayoutCaptures>, second: List<LayoutCaptures>): List<LayoutCaptures> {
     if (first.isEmpty() && second.isEmpty()) return emptyList()
     return (first.ifEmpty { listOf(LayoutCaptures.NONE) } + second.ifEmpty { listOf(LayoutCaptures.NONE) }).distinct()
+}
+
+/**
+ * Everything a `.template { }` can get wrong that is visible without running it, checked once
+ * per role: every path it is attached to is fully named, and its `id`s -- among the role's
+ * distinct templates, a wildcard module key's repeats of one `LayoutTemplate` instance counted
+ * once -- are neither missing nor duplicated.
+ *
+ * Checked here, once flattening has walked every node of every `layout { }` block, rather than
+ * where `.template { }` is called: an id collision may only exist between two declarations that
+ * are both still being built when either of them runs, and whether a wildcard is named or not
+ * can only be answered once the node it sits on has its final [LayoutNode.captureSegment].
+ */
+private fun requireTemplatesAreWellFormed(role: Role, nodes: Set<LayoutNode>) {
+    for (node in nodes) {
+        val template = node.metadata[Template] ?: continue
+        if (node.hasUnnamedWildcardInChain()) {
+            throw KatachiTemplateOnWildcardException(
+                role = role.qualifiedName,
+                path = node.pathWithCaptureNames(),
+                declaredAt = template.declaredAt,
+            )
+        }
+    }
+    // Every node a wildcard module key's expansion attached a template to -- distinct
+    // `LayoutTemplate` instances that share a `moduleExpansionGroup` -- is one template, not
+    // several: see `LayoutTemplate.equals`.
+    val templates = nodes.mapNotNull { it.metadata[Template] }.distinct()
+    if (templates.size <= 1) return
+    val missing = templates.filter { it.id == null }
+    if (missing.isNotEmpty()) {
+        val first = missing.first()
+        throw KatachiMissingTemplateIdException(
+            role = role.qualifiedName,
+            declaredAt = first.declaredAt,
+            otherIds = (templates - first).mapNotNull { it.id },
+        )
+    }
+    // Every template has an id past this point, so pairing each with its own id (rather than
+    // grouping by the nullable `LayoutTemplate.id` directly) is what lets the duplicate below be
+    // reported with a non-null one.
+    val byId: Map<String, List<LayoutTemplate>> = templates
+        .mapNotNull { template -> template.id?.let { it to template } }
+        .groupBy({ it.first }, { it.second })
+    val duplicate = byId.entries.firstOrNull { it.value.size > 1 } ?: return
+    throw KatachiDuplicateTemplateIdException(
+        role = role.qualifiedName,
+        id = duplicate.key,
+        firstDeclaredAt = duplicate.value[0].declaredAt,
+        declaredAt = duplicate.value[1].declaredAt,
+    )
+}
+
+/**
+ * Whether [this] or any of its ancestors, up to the root, holds a `*` or `**` no capture names.
+ *
+ * A module key's wildcard is checked separately from an ordinary segment's: by the time its
+ * directory reaches [LayoutNode.segment], every capture token in it -- named or not -- has
+ * already been read and replaced with a plain `*` by [me.tbsten.katachi.dsl.internal.ModulePattern.compile],
+ * so [LayoutNode.captureSegment] is always `null` there and cannot answer "was this one named".
+ * [LayoutNode.moduleCaptureNames], set once on the directory a module key opened (see
+ * [LayoutScopeImpl.expandModulePath]), is what still carries that answer.
+ */
+private fun LayoutNode.hasUnnamedWildcardInChain(): Boolean {
+    var current: LayoutNode? = this
+    while (current != null) {
+        val unnamed = if (current.place) {
+            '*' in current.segment && current.moduleCaptureNames.let { it == null || it.any { name -> name == null } }
+        } else {
+            current.hasOwnUnnamedWildcard()
+        }
+        if (unnamed) return true
+        current = current.parent
+    }
+    return false
+}
+
+/**
+ * Whether this one node's own [LayoutNode.segment] holds a `*` [LayoutNode.captureSegment] does
+ * not account for: a plain `**` (never nameable), or more `*` characters than there are names.
+ *
+ * The count, not an exact character-by-character match, is what keeps this simple for the common
+ * case -- a whole node either has one `*` (named or not) or is built entirely from tokens -- while
+ * still catching a plain, un-captured `*` written alongside a capture in one segment. See
+ * [me.tbsten.katachi.dsl.internal.CaptureSegment].
+ */
+private fun LayoutNode.hasOwnUnnamedWildcard(): Boolean {
+    if (segment == "**") return true
+    val starCount = segment.countUnescapedWildcards()
+    val namedCount = captureSegment?.names?.size ?: 0
+    return starCount > namedCount
+}
+
+/**
+ * The `*`s of [this] that [Glob] would read as a wildcard -- every `*` except one written
+ * `\*`, which [Glob]'s own escaping (`GLOB_ESCAPABLE`) reads as the literal character instead.
+ * A plain `segment.count { it == '*' }` would count that one too and report an unnamed wildcard
+ * that is not there.
+ */
+private fun String.countUnescapedWildcards(): Int {
+    var count = 0
+    var index = 0
+    while (index < length) {
+        when (this[index]) {
+            '\\' -> index += 2
+            '*' -> {
+                count++
+                index++
+            }
+            else -> index++
+        }
+    }
+    return count
+}
+
+/** [LayoutNode.pathFromDeclaration], with every capture shown as `${capture("name")}` instead of `*`. */
+private fun LayoutNode.pathWithCaptureNames(): String {
+    val segments = generateSequence(this) { it.parent }
+        .map { it.captureSegment?.display() ?: it.segment }
+        .filter { it.isNotEmpty() }
+        .toList()
+        .asReversed()
+    return segments.joinToString("/")
 }

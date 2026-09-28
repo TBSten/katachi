@@ -166,15 +166,17 @@ public class KatachiTemplateParameterReusedException internal constructor(
  * val arch = architecture {
  *     "domain".group {
  *         "UseCase" {
- *             template {
- *                 val name by stringParameter()
- *                 file("${name}UseCase.kt") { "interface ${name}UseCase" }
+ *             layout {
+ *                 "useCase" / "UseCase.kt".file().template {
+ *                     val name by stringParameter()
+ *                     "interface ${name}UseCase"
+ *                 }
  *             }
  *         }
  *     }
  * }
- * // `katachiTemplate --arg roleName=UseCase` with no `--arg name=...` is refused with
- * // `Template of role "UseCase" declared at ProjectArchitecture.kt:5 was run without values
+ * // `katachiTemplate --arg template=UseCase` with no `--arg name=...` is refused with
+ * // `Template of role "UseCase" declared at ProjectArchitecture.kt:6 was run without values
  * // for: name.`
  * arch.allRoles.single().name shouldBe "UseCase"
  * ```
@@ -233,16 +235,17 @@ public class KatachiMissingTemplateParameterException internal constructor(
  * val arch = architecture {
  *     "data".group {
  *         "Repository" {
- *             template {
- *                 val name by stringParameter()
- *                 val withImpl by booleanParameter(default = true)
- *                 file("${name}Repository.kt") { "interface ${name}Repository" }
- *                 if (withImpl) file("${name}RepositoryImpl.kt") { "class ${name}RepositoryImpl" }
+ *             layout {
+ *                 "repository" / "Repository.kt".file().template {
+ *                     val name by stringParameter()
+ *                     val withImpl by booleanParameter(default = true)
+ *                     "interface ${name}Repository // withImpl=$withImpl"
+ *                 }
  *             }
  *         }
  *     }
  * }
- * // `katachiTemplate --arg roleName=Repository --arg name=User --arg withImpl=yes` is
+ * // `katachiTemplate --arg template=Repository --arg name=User --arg withImpl=yes` is
  * // refused with `withImpl="yes": withImpl is a booleanParameter() declared at ...
  * // Accepted values: true, false.`
  * arch.allRoles.single().name shouldBe "Repository"

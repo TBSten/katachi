@@ -6,12 +6,13 @@ import kotlin.enums.EnumEntries
 import kotlin.reflect.KProperty
 
 /**
- * Receiver of `template { }`: the parameters a generated file is filled in from, and the files
- * it produces.
+ * Receiver of `.template(id, title) { -> String }`: the parameters a generated file is filled
+ * in from, and the block's return value, which is that file's content.
  *
- * A template is written where the role is declared, because the role already says where its
- * files may live. `file(...)` therefore names a **file**, never a path: the directory it lands
- * in is read back out of that role's `layout { }`, which is the one place that knows it.
+ * A template is attached to the file declaration itself, because that declaration already says
+ * where the file lands: `layout { "useCase" / "*UseCase.kt".file().template { ... } }` needs no
+ * `file(...)` call of its own to name the file a second time, the way the old, role-level
+ * `template { }` did.
  *
  * The block is stored, not evaluated, exactly like [RoleScope.layout] — `architecture { }` runs
  * long before anyone passes `--arg`. It is replayed once per run, with the values of that run
@@ -22,17 +23,15 @@ import kotlin.reflect.KProperty
  * fit the type, and a value that is missing, are not reported where the parameter is declared:
  * they are collected over the whole replay and reported together once it ends.
  *
- * ## Example 1: declare a template on a role
+ * ## Example 1: declare a template on a file declaration
  * ```kt
  * val arch = architecture {
  *     "domain".group {
  *         "UseCase" {
- *             layout { "useCase" / "*UseCase.kt".file() }
- *             template {
- *                 val name by stringParameter()
- *                 val implBody by stringParameter(default = """TODO("not implemented")""")
- *
- *                 file("${name}UseCase.kt") {
+ *             layout {
+ *                 "useCase" / "*UseCase.kt".file().template {
+ *                     val name by stringParameter()
+ *                     val implBody by stringParameter(default = """TODO("not implemented")""")
  *                     """
  *                     interface ${name}UseCase {
  *                         suspend operator fun invoke()
@@ -52,25 +51,7 @@ import kotlin.reflect.KProperty
  * arch.allRoles.single().name shouldBe "UseCase"
  * ```
  *
- * ## Example 2: keep the template out of the definition, in an extension function
- * ```kt
- * private fun RoleScope.useCaseTemplate() = template {
- *     val name by stringParameter()
- *     file("${name}UseCase.kt") { "interface ${name}UseCase" }
- * }
- *
- * val arch = architecture {
- *     "domain".group {
- *         "UseCase" {
- *             layout { "useCase" / "*UseCase.kt".file() }
- *             useCaseTemplate()
- *         }
- *     }
- * }
- * arch.allRoles.single().name shouldBe "UseCase"
- * ```
- *
- * ## Example 3: choose which files to produce, and what goes in them, from typed parameters
+ * ## Example 2: two file declarations, each with its own id, choosing what goes in them from typed parameters
  * ```kt
  * enum class Visibility { Public, Internal } // an enum class cannot be local: declare it at the top level
  *
@@ -78,26 +59,19 @@ import kotlin.reflect.KProperty
  *     "data".group {
  *         "Repository" {
  *             layout {
- *                 "repository" / "*Repository.kt".file()
- *                 "repository" / "*RepositoryImpl.kt".file()
- *             }
- *             template {
- *                 val name by stringParameter()
- *                 val withImpl by booleanParameter(default = true)
- *                 val pageSize by intParameter(default = 20)
- *                 val visibility by enumParameter(default = Visibility.Public)
- *                 val modifier = visibility.name.lowercase()
- *
  *                 // ./gradlew :architecture-test:katachiTemplate \
- *                 //   --arg roleName=Repository --arg name=User \
- *                 //   --arg withImpl=false --arg pageSize=50 --arg visibility=Internal
- *                 file("${name}Repository.kt") {
- *                     "$modifier interface ${name}Repository { val pageSize: Int get() = $pageSize }"
+ *                 //   --arg template=data.Repository.repository,data.Repository.repositoryImpl \
+ *                 //   --arg name=User --arg pageSize=50 --arg visibility=Internal
+ *                 "repository" / "*Repository.kt".file().template(id = "repository") {
+ *                     val name by stringParameter()
+ *                     val pageSize by intParameter(default = 20)
+ *                     val visibility by enumParameter(default = Visibility.Public)
+ *                     "${visibility.name.lowercase()} interface ${name}Repository { val pageSize: Int get() = $pageSize }"
  *                 }
- *                 if (withImpl) {
- *                     file("${name}RepositoryImpl.kt") {
- *                         "$modifier class ${name}RepositoryImpl : ${name}Repository"
- *                     }
+ *                 "repository" / "*RepositoryImpl.kt".file().template(id = "repositoryImpl") {
+ *                     val name by stringParameter()
+ *                     val visibility by enumParameter(default = Visibility.Public)
+ *                     "${visibility.name.lowercase()} class ${name}RepositoryImpl : ${name}Repository"
  *                 }
  *             }
  *         }
@@ -106,7 +80,7 @@ import kotlin.reflect.KProperty
  * arch.allRoles.single().name shouldBe "Repository"
  * ```
  *
- * @see RoleScope.template
+ * @see LayoutFile.template
  * @see TemplateParameter
  */
 @KatachiDsl
@@ -125,13 +99,12 @@ public sealed interface TemplateScope {
      *
      * ## Example 1: declare a required parameter and one with a default
      * ```kt
-     * template {
+     * "useCase" / "*UseCase.kt".file().template {
      *     val name by stringParameter()
      *     val implBody by stringParameter(default = """TODO("not implemented")""")
      *
-     *     // ./gradlew katachiTemplate --arg roleName=UseCase \
-     *     //   --arg name=GetUser
-     *     file("${name}UseCase.kt") { "// $implBody" }
+     *     // ./gradlew katachiTemplate --arg template=UseCase --arg name=GetUser
+     *     "// $implBody"
      * }
      * ```
      */
@@ -142,14 +115,13 @@ public sealed interface TemplateScope {
      *
      * `true` or `false`, in lower case. Any other word is refused, never read as `false`.
      *
-     * ## Example 1: produce a file only when asked to
+     * ## Example 1: change the content on a Boolean flag
      * ```kt
-     * template {
+     * "repository" / "*Repository.kt".file().template {
      *     val name by stringParameter()
-     *     val withImpl by booleanParameter(default = true) // --arg withImpl=false
-     *
-     *     file("${name}Repository.kt") { "interface ${name}Repository" }
-     *     if (withImpl) file("${name}RepositoryImpl.kt") { "class ${name}RepositoryImpl" }
+     *     val suspending by booleanParameter(default = true) // --arg suspending=false
+     *     val modifier = if (suspending) "suspend " else ""
+     *     "interface ${name}Repository { ${modifier}fun all(): List<$name> }"
      * }
      * ```
      */
@@ -162,11 +134,10 @@ public sealed interface TemplateScope {
      *
      * ## Example 1: put a number into the generated code
      * ```kt
-     * template {
+     * "*Pager.kt".file().template {
      *     val name by stringParameter()
      *     val pageSize by intParameter(default = 20) // --arg pageSize=50
-     *
-     *     file("${name}Pager.kt") { "const val PAGE_SIZE: Int = $pageSize" }
+     *     "const val ${name}_PAGE_SIZE: Int = $pageSize"
      * }
      * ```
      */
@@ -183,11 +154,10 @@ public sealed interface TemplateScope {
      * ```kt
      * enum class Visibility { Public, Internal }
      *
-     * template {
+     * "*.kt".file().template {
      *     val name by stringParameter()
      *     val visibility by enumParameter(Visibility.entries) // --arg visibility=Internal
-     *
-     *     file("${name}.kt") { "${visibility.name.lowercase()} class $name" }
+     *     "${visibility.name.lowercase()} class $name"
      * }
      * ```
      *
@@ -206,22 +176,21 @@ public sealed interface TemplateScope {
      * ```kt
      * enum class Visibility { Public, Internal }
      *
-     * template {
+     * "*.kt".file().template {
      *     val name by stringParameter()
      *     val visibility by enumParameter(default = Visibility.Public) // --arg visibility=Internal
-     *
-     *     file("${name}.kt") { "${visibility.name.lowercase()} class $name" }
+     *     "${visibility.name.lowercase()} class $name"
      * }
      * ```
      */
     public fun <E : Enum<E>> enumParameter(default: E): TemplateParameter<E>
 
     /**
-     * Reads the value of the role's named wildcard [name]: a `capture("...")` level of its
-     * `layout { }`, or a name `"...".module(capture = "...")` gave a module wildcard.
+     * Reads the value of this declaration's named wildcard [name]: a `capture("...")` level of
+     * the path it sits on, whether part of a directory, a file name, or the module key.
      *
-     * It arrives as `--arg <name>=<value>`, the same value that decides the directory the files
-     * are generated into, so the package or a class name built from it cannot disagree with where
+     * It arrives as `--arg <name>=<value>`, the same value that decides the directory the file
+     * is generated into, so the package or a class name built from it cannot disagree with where
      * the file lands. It is read only, not declared: the layout already declares it, and a
      * parameter of the same name is refused as a conflict. Read by its name as a string rather than
      * through a property because a capture name may hold a `-`, which a property name cannot.
@@ -234,18 +203,20 @@ public sealed interface TemplateScope {
      * ## Example 1: build the package from the module the file is generated into
      * ```kt
      * "Screen" {
-     *     layout { ":feature:*".module(capture = "feature") { "*Screen.kt".file() } }
-     *     template {
-     *         val name by stringParameter()
-     *         val feature = captureValue("feature") // --arg feature=home
-     *
-     *         file("${name}Screen.kt") { "package com.example.feature.$feature" }
+     *     layout {
+     *         ":feature:${capture("feature")}".module {
+     *             "*Screen.kt".file().template {
+     *                 val name by stringParameter()
+     *                 val feature = captureValue("feature") // --arg feature=home
+     *                 "package com.example.feature.$feature"
+     *             }
+     *         }
      *     }
      * }
      * ```
      *
-     * @throws KatachiUnknownTemplateCaptureException when the role's `layout { }` names no
-     *   wildcard [name].
+     * @throws KatachiUnknownTemplateCaptureException when this declaration names no wildcard
+     *   [name].
      */
     public fun captureValue(name: String): String
 
@@ -262,42 +233,16 @@ public sealed interface TemplateScope {
      *
      * ## Example 1: let the stand-in through, and only judge the value on a real run
      * ```kt
-     * template {
-     *     val name by stringParameter()
+     * "*.kt".file().template {
      *     val resource = captureValue("resource") // "${resource}" while previewing
-     *
      *     require(isPreview || resource.all { it.isLetterOrDigit() }) {
      *         "resource must be alphanumeric, was $resource"
      *     }
-     *     file("${name}.kt") { "// $resource" }
+     *     "// $resource"
      * }
      * ```
      */
     public val isPreview: Boolean
-
-    /**
-     * Declares one file this template produces, and how to fill it in.
-     *
-     * [name] is a file name with its extension, such as `"${name}UseCase.kt"` — not a path.
-     * A separator in it is refused: the directory is derived from the role's `layout { }`, and
-     * spelling it here would be the same thing said twice, in two places that can disagree.
-     *
-     * ## Example 1: produce two files whose names are built from one parameter
-     * ```kt
-     * template {
-     *     val name by stringParameter()
-     *
-     *     file("${name}UseCase.kt") { "interface ${name}UseCase" }
-     *     file("${name}UseCaseImpl.kt") { "class ${name}UseCaseImpl : ${name}UseCase" }
-     * }
-     * ```
-     *
-     * @throws KatachiInvalidTemplateFileNameException when [name] is blank or is not a plain
-     *   file name.
-     * @throws KatachiDuplicateTemplateFileException when this template already produces a file
-     *   of that name.
-     */
-    public fun file(name: String, content: () -> String)
 }
 
 /**

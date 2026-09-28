@@ -32,7 +32,7 @@ internal data class LayoutCaptures(
 /** A `capture(name)` level: the [segmentIndex]-th level (0-based) of the entry's path is a `*` named [name]. */
 internal data class PathCapture(val segmentIndex: Int, val name: String)
 
-/** The names a `"...".module(capture = ...)` key gave its `*`s, in order. */
+/** The names a `":...:${capture("...")}".module { }` key gave its `*`s, in order. */
 internal data class ModuleCapture(
     /** The key as katachi prints it, `":feature:*"`. */
     val modulePattern: String,
