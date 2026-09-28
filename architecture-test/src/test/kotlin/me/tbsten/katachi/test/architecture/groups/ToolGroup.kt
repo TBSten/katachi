@@ -6,6 +6,7 @@ import me.tbsten.katachi.test.architecture.roles.benchmark
 import me.tbsten.katachi.test.architecture.roles.ci
 import me.tbsten.katachi.test.architecture.roles.dokkaPlugin
 import me.tbsten.katachi.test.architecture.roles.git
+import me.tbsten.katachi.test.architecture.roles.ideRunConfiguration
 
 /**
  * The roles of the tooling around the project that is not the build itself.
@@ -35,6 +36,7 @@ fun DeclarationContainerScope.toolGroup() = "tool".group {
     ci()
     agentRule()
     git()
+    ideRunConfiguration()
     dokkaPlugin()
     benchmark()
 }

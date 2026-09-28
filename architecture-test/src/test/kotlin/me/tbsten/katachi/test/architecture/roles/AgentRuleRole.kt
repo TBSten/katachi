@@ -22,6 +22,8 @@ fun DeclarationContainerScope.agentRule() = "AgentRule" {
             "skills" / "*" / "scripts" / "*".file()
             // The details of each step, split out so that SKILL.md stays a short outline.
             "skills" / "*" / "references" / "*.md".file()
+            // The HTML a skill fills in for its report, such as prerelease's index.html and TODO.html.
+            "skills" / "*" / "templates" / "*.html".file()
         }
     }
 }
