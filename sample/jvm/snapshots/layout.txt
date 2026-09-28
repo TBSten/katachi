@@ -30,7 +30,8 @@ api/Controller	src/main/kotlin	Directory	optional
 api/Controller	src/main/kotlin/com	Directory	optional
 api/Controller	src/main/kotlin/com/example	Directory	optional
 api/Controller	src/main/kotlin/com/example/controller	Directory	optional
-api/Controller	src/main/kotlin/com/example/controller/*Controller.kt	File	optional
+api/Controller	src/main/kotlin/com/example/controller/*	Directory	optional
+api/Controller	src/main/kotlin/com/example/controller/*/*Controller.kt	File	optional
 api/KtorPlugin	build	Ignore	optional
 api/KtorPlugin	build.gradle.kts	File	required
 api/KtorPlugin	src	Directory	optional

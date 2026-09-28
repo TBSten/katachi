@@ -40,6 +40,7 @@ class ProjectArchitectureSpec : FreeSpec({
                 "feature/Screen",
                 "feature/ViewModel",
                 "feature/Route",
+                "feature/FeatureComponent",
                 "ui/Component",
                 "ui/Theme",
                 "ui/UiCore",

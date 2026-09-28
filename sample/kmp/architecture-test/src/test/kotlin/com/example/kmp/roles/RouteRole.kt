@@ -11,7 +11,7 @@ import me.tbsten.katachi.dsl.pascalCase
  * What binds a screen to a navigation destination, named after its feature module.
  *
  * The third of the three files a feature module is required to hold, and the third place
- * `wildcards[0]` ties a file name to the module it sits in.
+ * `wildcard("feature")` ties a file name to the module it sits in.
  */
 fun DeclarationContainerScope.route() = "Route" {
     title = "ルート"
@@ -37,9 +37,9 @@ fun DeclarationContainerScope.route() = "Route" {
     example("HomeRoute", "ホーム画面の遷移先")
     example("SettingsRoute", "設定画面の遷移先")
     layout {
-        ":feature:*".module {
+        ":feature:*".module(capture = "feature") {
             "commonMain".sourceSet / kotlin / modulePackage /
-                "${wildcards[0].pascalCase}Route".ktFile()
+                "${wildcard("feature").pascalCase}Route".ktFile()
         }
     }
 }

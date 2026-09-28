@@ -14,7 +14,9 @@ feature モジュールの `build.gradle.kts` が `testImplementation(project(":
 持つのはこのため。
 
 テンプレートから、その feature の ViewModel をフェイクで組み立てるテストを生成できる。
-`--arg feature=Home --arg name=ViewModel` で `HomeViewModelTest.kt` になる。
+`--arg screen=Home --arg name=ViewModel` で `HomeViewModelTest.kt` になる。
+画面部品（FeatureComponent）の `--arg feature=home` はモジュール名そのものを受け取るが、
+こちらの `screen` は画面ごとに中身を切り替えるための enum なので、`Home` のように大文字で始める。
 
 ## Placement
 

@@ -1,6 +1,6 @@
 package com.example.plugin
 
-import com.example.controller.HealthController
+import com.example.controller.health.HealthController
 import io.ktor.server.application.*
 import io.ktor.server.routing.*
 

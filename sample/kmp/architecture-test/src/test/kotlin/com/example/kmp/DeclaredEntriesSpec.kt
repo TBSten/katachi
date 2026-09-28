@@ -19,7 +19,7 @@ import me.tbsten.katachi.processor.process
  *   alone. They used to be `@InternalKatachiApi`, which made `context.declaredEntries` an API
  *   member whose elements nobody outside katachi was allowed to touch.
  * - `declaredEntries` and `filesOf` answer different questions, and a wildcard module key is
- *   where that shows. This sample writes `":feature:*".module { }` in four places, so it is the
+ *   where that shows. This sample writes `":feature:*".module(...) { }` in five places, so it is the
  *   one that can say so against a real checkout instead of against an invented tree.
  */
 @OptIn(ExperimentalKatachiApi::class)

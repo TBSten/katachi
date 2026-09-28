@@ -36,8 +36,8 @@ fun DeclarationContainerScope.viewModel() = "ViewModel" {
     example("HomeViewModel", "ホーム画面の状態")
     example("SettingsViewModel", "設定画面の状態")
     layout {
-        ":feature:*".module {
-            featureSources() / "${wildcards[0].pascalCase}ViewModel".ktFile()
+        ":feature:*".module(capture = "feature") {
+            featureSources() / "${wildcard("feature").pascalCase}ViewModel".ktFile()
         }
     }
 }

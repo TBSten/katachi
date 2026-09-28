@@ -11,7 +11,7 @@ import me.tbsten.katachi.dsl.pascalCase
 /**
  * The role of one screen's UI: the `@Composable` its feature module is named after.
  *
- * `wildcards[0]` is what `:feature:*` matched — `home` for `:feature:home` — so the file
+ * `wildcard("feature")` is what `:feature:*` matched — `home` for `:feature:home` — so the file
  * required of that module is `HomeScreen.kt` and nothing else: a `ProfileScreen.kt` under
  * `:feature:home` is an `[UnexpectedFile]`, and it is `[MissingFile]` that reports a feature
  * whose screen was renamed. Written as a plain `*Screen.kt` glob the check would have accepted
@@ -46,9 +46,9 @@ fun DeclarationContainerScope.screen() = "Screen" {
     example("HomeScreen", "ホーム画面")
     example("SettingsScreen", "設定画面")
     layout {
-        ":feature:*".module {
+        ":feature:*".module(capture = "feature") {
             "commonMain".sourceSet / kotlin / modulePackage /
-                "${wildcards[0].pascalCase}Screen".ktFile()
+                "${wildcard("feature").pascalCase}Screen".ktFile()
         }
     }
 }

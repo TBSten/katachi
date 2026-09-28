@@ -30,7 +30,8 @@ katachi は重なりを `[AmbiguousLayout]` として報告します。これは
 
 ## 置いてはいけないもの
 
-- 1つの画面でしか使わない部品。その feature モジュールの Screen に `internal` で書きます
+- 1つの画面でしか使わない部品。その feature モジュールの画面の部品（feature/FeatureComponent）に
+  `internal` で書きます
 - `UiState` や ViewModel を引数に取る部品。`:ui` は feature 側を知らない側なので、
   ここが画面の状態を知ると依存が逆流します
 - `androidMain` 向けの実装。Android 専用の View が要る話になったら、それは

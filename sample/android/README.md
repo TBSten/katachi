@@ -40,6 +40,10 @@ cd sample/android
 
 # Component のテンプレートから :ui の component package に AppLabel.kt を生成する
 ./gradlew :architecture-test:katachiTemplate --arg roleName=Component --arg name=Label
+
+# FeatureComponent のテンプレートから :feature:home の component package に HomeUserCard.kt を生成する
+# （feature は layout で :feature:* に付けた名前。どのモジュールに生成するかをこれで選ぶ）
+./gradlew :architecture-test:katachiTemplate --arg roleName=FeatureComponent --arg feature=home --arg name=UserCard
 ```
 
 リポジトリのルートからは、CI と同じ一式（テンプレートから生成 → 検査 → 生成物を削除、まで含む）を1コマンドで回せます。

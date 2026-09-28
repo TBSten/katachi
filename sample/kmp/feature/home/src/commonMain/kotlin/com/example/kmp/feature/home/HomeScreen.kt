@@ -10,6 +10,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import com.example.kmp.feature.home.component.HomeUserCard
 import com.example.kmp.ui.component.PrimaryButton
 import com.example.kmp.ui.core.UiState
 import com.example.kmp.ui.theme.AppSpacing
@@ -45,7 +46,7 @@ internal fun HomeContent(
         when (state) {
             is UiState.Loading -> CircularProgressIndicator()
             is UiState.Failed -> Text(text = state.message)
-            is UiState.Loaded -> state.value.forEach { name -> Text(text = name) }
+            is UiState.Loaded -> state.value.forEach { name -> HomeUserCard(name = name) }
         }
         PrimaryButton(label = "再読み込み", onClick = onReload)
     }

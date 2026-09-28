@@ -11,8 +11,12 @@ import me.tbsten.katachi.dsl.kotlin.ktFile
 /**
  * The role of a feature module's own unit tests, which stand the ViewModel on `:testing`'s fakes.
  *
- * Named module by module through [FeatureModule], like FeatureComponent, so that the template can
- * write into one of them: `HomeViewModelTest.kt` fits only `:feature:home`'s pattern.
+ * Named module by module through [FeatureModule], so that the template can write into one of
+ * them: `HomeViewModelTest.kt` fits only `:feature:home`'s pattern.
+ *
+ * Not `":feature:*".module(capture = "feature")` like FeatureComponent, because what the test
+ * arranges differs per screen: the template is a `when` over [FeatureModule], which a new
+ * module cannot slip past, while a captured value is only a string.
  */
 fun DeclarationContainerScope.featureTest() = "FeatureTest" {
     title = "画面のテスト"
@@ -28,7 +32,9 @@ fun DeclarationContainerScope.featureTest() = "FeatureTest" {
         持つのはこのため。
 
         テンプレートから、その feature の ViewModel をフェイクで組み立てるテストを生成できる。
-        `--arg feature=Home --arg name=ViewModel` で `HomeViewModelTest.kt` になる。
+        `--arg screen=Home --arg name=ViewModel` で `HomeViewModelTest.kt` になる。
+        画面部品（FeatureComponent）の `--arg feature=home` はモジュール名そのものを受け取るが、
+        こちらの `screen` は画面ごとに中身を切り替えるための enum なので、`Home` のように大文字で始める。
     """.trimIndent()
     forbiddenContents = """
         - 本物の Repository（`*RepositoryImpl`）。差し替えは `:testing` のフェイクで行う
@@ -43,14 +49,17 @@ fun DeclarationContainerScope.featureTest() = "FeatureTest" {
     }
     // What the test arranges differs per screen, so it is a `when` over the modules: adding a
     // FeatureModule entry makes this fail to compile until the new screen is taught here.
+    // Named `screen`, not `feature`: FeatureComponent's `feature` is a capture taking the module
+    // name as it is (`home`), while this is an enum spelt by its entry (`Home`), and one name
+    // meaning two spellings in one sample is a trap to copy.
     //   ./gradlew :architecture-test:katachiTemplate \
-    //       --arg roleName=FeatureTest --arg feature=Home --arg name=ViewModel
+    //       --arg roleName=FeatureTest --arg screen=Home --arg name=ViewModel
     template {
-        val feature by enumParameter(FeatureModule.entries)
+        val screen by enumParameter(FeatureModule.entries)
         val name by stringParameter(default = "ViewModel")
-        val testClass = "${feature.name}${name}Test"
-        val viewModel = "${feature.name}ViewModel"
-        val (fake, arrange, expected) = when (feature) {
+        val testClass = "${screen.name}${name}Test"
+        val viewModel = "${screen.name}ViewModel"
+        val (fake, arrange, expected) = when (screen) {
             FeatureModule.Home -> Triple(
                 "FakeUserRepository",
                 "userRepository = FakeUserRepository(userName = \"katachi\")",
@@ -65,7 +74,7 @@ fun DeclarationContainerScope.featureTest() = "FeatureTest" {
 
         file("$testClass.kt") {
             """
-                package com.example.sample.feature.${feature.name.lowercase()}
+                package com.example.sample.feature.${screen.name.lowercase()}
 
                 import com.example.sample.testing.$fake
                 import com.example.sample.ui.core.UiState

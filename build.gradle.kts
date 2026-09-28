@@ -295,6 +295,13 @@ val sampleBuilds = listOf(
                     args = listOf("roleName=Service", "name=KatachiSmoke"),
                     generatedFiles = listOf("src/main/kotlin/com/example/service/KatachiSmokeService.kt"),
                 ),
+                // `resource` is the layout's `capture("resource")`: it picks the directory.
+                SampleTemplateRun(
+                    args = listOf("roleName=Controller", "resource=health", "name=KatachiSmoke"),
+                    generatedFiles = listOf(
+                        "src/main/kotlin/com/example/controller/health/KatachiSmokeController.kt",
+                    ),
+                ),
             ),
             verifyTasks = listOf(
                 ":architecture-test:test",
@@ -315,8 +322,9 @@ val sampleBuilds = listOf(
                     args = listOf("roleName=Component", "name=KatachiSmoke"),
                     generatedFiles = listOf("ui/src/main/kotlin/com/example/sample/ui/component/AppKatachiSmoke.kt"),
                 ),
+                // `feature` is the name the layout gave `:feature:*`: it picks the module.
                 SampleTemplateRun(
-                    args = listOf("roleName=FeatureComponent", "feature=Home", "name=KatachiSmoke"),
+                    args = listOf("roleName=FeatureComponent", "feature=home", "name=KatachiSmoke"),
                     generatedFiles = listOf(
                         "feature/home/src/main/kotlin/com/example/sample/feature/home/component/HomeKatachiSmoke.kt",
                     ),
@@ -324,7 +332,7 @@ val sampleBuilds = listOf(
                 SampleTemplateRun(
                     args = listOf(
                         "roleName=FeatureComponent",
-                        "feature=Settings",
+                        "feature=settings",
                         "name=KatachiSmoke",
                         "withPreview=false",
                     ),
@@ -334,13 +342,13 @@ val sampleBuilds = listOf(
                     ),
                 ),
                 SampleTemplateRun(
-                    args = listOf("roleName=FeatureTest", "feature=Home", "name=KatachiSmoke"),
+                    args = listOf("roleName=FeatureTest", "screen=Home", "name=KatachiSmoke"),
                     generatedFiles = listOf(
                         "feature/home/src/test/kotlin/com/example/sample/feature/home/HomeKatachiSmokeTest.kt",
                     ),
                 ),
                 SampleTemplateRun(
-                    args = listOf("roleName=FeatureTest", "feature=Settings", "name=KatachiSmoke"),
+                    args = listOf("roleName=FeatureTest", "screen=Settings", "name=KatachiSmoke"),
                     generatedFiles = listOf(
                         "feature/settings/src/test/kotlin/com/example/sample/feature/settings/" +
                                 "SettingsKatachiSmokeTest.kt",
@@ -409,12 +417,20 @@ val sampleBuilds = listOf(
                         "data/src/commonMain/kotlin/com/example/kmp/data/user/KatachiSmokeRepositoryImpl.kt",
                     ),
                 ),
+                // `feature` is the name the layout gave `:feature:*`: it picks the module.
+                SampleTemplateRun(
+                    args = listOf("roleName=FeatureComponent", "feature=home", "name=KatachiSmoke"),
+                    generatedFiles = listOf(
+                        "feature/home/src/commonMain/kotlin/com/example/kmp/feature/home/component/HomeKatachiSmoke.kt",
+                    ),
+                ),
             ),
             verifyTasks = listOf(
                 ":architecture-test:test",
                 "--tests",
                 "com.example.kmp.ProjectArchitectureTest",
                 ":data:compileAndroidMain",
+                ":feature:home:compileAndroidMain",
             ),
         ),
         baseline = SampleBaseline(":architecture-test:test", "com.example.kmp.ProjectArchitectureTest", heldBack = 1),

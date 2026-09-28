@@ -41,6 +41,10 @@ cd sample/jvm
 
 # Service のテンプレートから src/main/kotlin/com/example/service/GreetingService.kt を生成する
 ./gradlew :architecture-test:katachiTemplate --arg roleName=Service --arg name=Greeting
+
+# Controller のテンプレートから src/main/kotlin/com/example/controller/greeting/GreetingController.kt を生成する
+# （resource は layout で capture("resource") と名前を付けた階層。どのディレクトリに生成するかをこれで選ぶ）
+./gradlew :architecture-test:katachiTemplate --arg roleName=Controller --arg resource=greeting --arg name=Greeting
 ```
 
 リポジトリのルートからは、CI と同じ一式（テンプレートから生成 → 検査 → 生成物を削除、まで含む）を1コマンドで回せます。

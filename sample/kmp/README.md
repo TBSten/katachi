@@ -41,6 +41,10 @@ cd sample/kmp
 
 # Repository のテンプレートから :data の user package に ProfileRepository.kt と ProfileRepositoryImpl.kt を生成する
 ./gradlew :architecture-test:katachiTemplate --arg roleName=Repository --arg name=Profile
+
+# FeatureComponent のテンプレートから :feature:settings の component package に SettingsToggleRow.kt を生成する
+# （feature は layout で :feature:* に付けた名前。どのモジュールに生成するかをこれで選ぶ）
+./gradlew :architecture-test:katachiTemplate --arg roleName=FeatureComponent --arg feature=settings --arg name=ToggleRow
 ```
 
 タスクは `:architecture-test:test` のように**モジュールのパスまで書いてください。**`test` とだけ書くと

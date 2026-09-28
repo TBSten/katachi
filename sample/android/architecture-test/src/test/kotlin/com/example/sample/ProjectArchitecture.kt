@@ -52,11 +52,12 @@ val modulePackage: ModulePackage = capitalizedModuleNamePackage("com.example.sam
  * twenty-nine files; [ProjectArchitectureSpec] is what actually holds the line.
  *
  * Every `layout { }` is written in terms of Gradle: a place is named by the module path it
- * belongs to (`":feature:*".module { }`), the source set inside it (`mainSourceSet`) and
- * [modulePackage], rather than by spelling the directories out. `:feature:*` is the one to
- * read first — it is matched against the modules that exist, and what the `*` captured is
- * read back as `wildcards[0]`, which is what ties a module's name to the names of the files
- * in it.
+ * belongs to (`":feature:*".module(capture = "feature") { }`), the source set inside it
+ * (`mainSourceSet`) and [modulePackage], rather than by spelling the directories out.
+ * `:feature:*` is the one to read first — it is matched against the modules that exist, and
+ * what the `*` captured is read back by its name as `wildcard("feature")`, which is what ties a
+ * module's name to the names of the files in it. The same name is what a template is given
+ * (`--arg feature=home`) to pick the module it generates into.
  *
  * Building this value reads nothing from disk — the `layout { }` blocks are deferred until
  * a check runs — so it is safe to hold in a top level `val`.

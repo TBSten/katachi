@@ -1,4 +1,4 @@
-package com.example.controller
+package com.example.controller.health
 
 import com.example.service.HealthService
 import io.ktor.server.response.respond

@@ -11,9 +11,9 @@ import me.tbsten.katachi.dsl.pascalCase
 /**
  * The role of one screen's UI: the `@Composable` its feature module is named after.
  *
- * `wildcards[0]` is the module's own name, so a file is not merely allowed to be *a* screen
- * but has to be **that module's** screen: `:feature:home` may hold `HomeScreen.kt` and nothing
- * else called `*Screen.kt`.
+ * `wildcard("feature")` is the module's own name, so a file is not merely allowed to be *a*
+ * screen but has to be **that module's** screen: `:feature:home` may hold `HomeScreen.kt` and
+ * nothing else called `*Screen.kt`.
  */
 fun DeclarationContainerScope.screen() = "Screen" {
     title = "Screen"
@@ -44,8 +44,8 @@ fun DeclarationContainerScope.screen() = "Screen" {
     example("HomeScreen", "ホーム画面")
     example("SettingsScreen", "設定画面")
     layout {
-        ":feature:*".module {
-            featureSources() / "${wildcards[0].pascalCase}Screen".ktFile()
+        ":feature:*".module(capture = "feature") {
+            featureSources() / "${wildcard("feature").pascalCase}Screen".ktFile()
         }
     }
 }

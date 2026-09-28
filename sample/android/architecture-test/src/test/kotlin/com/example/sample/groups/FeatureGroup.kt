@@ -17,14 +17,14 @@ import me.tbsten.katachi.dsl.gradle.*
  *
  * Kept apart from [uiGroup] because the two differ in how they grow. A feature module is a
  * place where things are *expected* to multiply — it is written as `":feature:*"` and reads
- * the matched name back out of `wildcards` — while `:ui` and `:navigation` are shared
+ * the matched name back as `wildcard("feature")` — while `:ui` and `:navigation` are shared
  * modules where adding something is a design decision. Folding both into one group would
  * hide that difference in the generated documentation, and would mix two shapes of `layout`
  * inside a single group.
  *
  * This is the group where the module path earns its keep twice over. `":feature:*"` stands
  * for the feature modules that exist, so adding `:feature:profile` to `settings.gradle.kts`
- * needs no edit here; and `wildcards[0]` is that module's own name, so a file is not merely
+ * needs no edit here; and `wildcard("feature")` is that module's own name, so a file is not merely
  * allowed to be *a* screen but has to be **that module's** screen. `:feature:home` may hold
  * `HomeScreen.kt` and nothing else called `*Screen.kt`: a `ProfileScreen.kt` left behind
  * there is reported, and a missing `HomeScreen.kt` is reported too, which a `*Screen.kt`
@@ -58,8 +58,10 @@ fun DeclarationContainerScope.featureGroup() = "feature".group {
 
         画面の部品とテストは、1つの feature の中で数が増えていく。どちらもファイル名を
         モジュール名で始め（`HomeUserCard.kt`、`HomeViewModelTest.kt`）、テンプレートから
-        生成できる。この2つの役割だけは `":feature:*"` ではなくモジュールを1つずつ名指しして
-        あるので、feature を足したら `FeatureModule` にも1行足す。
+        生成できる。画面の部品は `":feature:*"` の `*` に `feature` と名前を付けてあり、
+        `--arg feature=home` で生成先のモジュールを選ぶので、feature を足してもこの定義は
+        触らなくてよい。テストだけはテンプレートの中身が画面ごとに違うのでモジュールを
+        1つずつ名指ししてあり、feature を足したら `FeatureModule` にも1行足す。
     """.trimIndent()
 
     screen()
@@ -96,17 +98,16 @@ internal fun featureSources(): LayoutDirectory = with(layoutScope) {
 /**
  * The feature modules this project has, by name: `Home` is `:feature:home`.
  *
- * `":feature:*"` is enough for a role that only has to be *checked*, and Screen, ViewModel and
- * Route stay written that way. A role with a `template { }` needs more: katachi places a
- * generated file by the role's `layout { }` alone, before anything is read from disk, so a
- * layout under a wildcard module key has no single directory to write into. The roles that
- * generate into a feature module therefore name each module through this enum instead
- * ([eachFeatureModule]), and the template reads the same enum as a parameter
- * (`--arg feature=Home`), so the list of modules is written once.
+ * Only for a template whose *content* differs per module. Choosing the module a file is
+ * generated into needs no list: `":feature:*".module(capture = "feature")` names the wildcard,
+ * and `--arg feature=home` binds it to a module that exists — which is how FeatureComponent is
+ * written. FeatureTest arranges a different fake for each screen, so its template is a `when`
+ * over this enum (`--arg screen=Home`) and [eachFeatureModule] declares its layout module by
+ * module; a new module fails to compile there until the new screen is taught to it.
  *
  * The check keeps it honest in one direction: an entry whose module was deleted is reported
  * as that module's missing `build.gradle.kts`. A new module missing from it is not reported
- * until a file of one of those roles is put there, which then shows up as `[UnexpectedFile]`
+ * until a file of that role is put there, which then shows up as `[UnexpectedFile]`
  * — add the entry when adding the module to `settings.gradle.kts`.
  */
 enum class FeatureModule {
@@ -121,9 +122,9 @@ enum class FeatureModule {
 /**
  * Declares [block] once for every [FeatureModule], inside that module.
  *
- * The concrete counterpart of `":feature:*".module { }`: what `wildcards[0]` would have
- * captured arrives as the [FeatureModule] instead. A role that writes its file names from it
- * (`"${feature.name}*"`) is what lets a template pick the module by the file name alone.
+ * The concrete counterpart of `":feature:*".module(capture = "feature") { }`: what
+ * `wildcard("feature")` would have read arrives as the [FeatureModule] instead, for a template
+ * that branches on it. A role that only picks the module should use the capture.
  */
 context(layoutScope: LayoutScope)
 internal fun eachFeatureModule(block: LayoutDirectoryScope.(FeatureModule) -> Unit) {

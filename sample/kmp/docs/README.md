@@ -9,6 +9,7 @@
 - [画面](./feature/Screen.md)
 - [ViewModel](./feature/ViewModel.md)
 - [ルート](./feature/Route.md)
+- [画面の部品](./feature/FeatureComponent.md)
 
 ### [UI](./ui/README.md)
 
@@ -54,6 +55,7 @@ Gradle がビルドする Android アプリと、Xcode がビルドする iOS �
 - [画面](./feature/Screen.md) ... 1つの画面の @Composable。ViewModel の StateFlow を購読し、Component を組み合わせて描く
 - [ViewModel](./feature/ViewModel.md) ... 画面の状態を持つ androidx.lifecycle.ViewModel。Repository から取得した値を UiState に変換し、StateFlow で公開する
 - [ルート](./feature/Route.md) ... 画面を navigation の Destination に結びつけ、ViewModel の生成も引き受ける
+- [画面の部品](./feature/FeatureComponent.md) ... 1つの画面でしか使わない @Composable。:feature:<name> の commonMain の component package に <Name>*.kt で置く
 
 ## UI
 

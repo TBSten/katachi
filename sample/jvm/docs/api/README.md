@@ -26,8 +26,8 @@ Application 全体に一度だけ効く設定と、どの Controller を routing
 ```
 :
   src/main/kotlin/**/
-    controller/*Controller.kt  コントローラ
-    plugin/*.kt                Ktor プラグイン設定
+    controller/*/*Controller.kt  コントローラ
+    plugin/*.kt                  Ktor プラグイン設定
 ```
 
 ## 置いてはいけないもの

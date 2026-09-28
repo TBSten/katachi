@@ -25,8 +25,10 @@ feature を消すときに他の feature を読み直さなくて済む。
 
 画面の部品とテストは、1つの feature の中で数が増えていく。どちらもファイル名を
 モジュール名で始め（`HomeUserCard.kt`、`HomeViewModelTest.kt`）、テンプレートから
-生成できる。この2つの役割だけは `":feature:*"` ではなくモジュールを1つずつ名指しして
-あるので、feature を足したら `FeatureModule` にも1行足す。
+生成できる。画面の部品は `":feature:*"` の `*` に `feature` と名前を付けてあり、
+`--arg feature=home` で生成先のモジュールを選ぶので、feature を足してもこの定義は
+触らなくてよい。テストだけはテンプレートの中身が画面ごとに違うのでモジュールを
+1つずつ名指ししてあり、feature を足したら `FeatureModule` にも1行足す。
 
 | Role | Summary |
 |---|---|
@@ -41,17 +43,14 @@ feature を消すときに他の feature を読み直さなくて済む。
 ```
 :feature:*
   src/main/kotlin/**/
-    <name>Screen.kt                        Screen
-    <name>ViewModel.kt                     ViewModel
-    <name>Route.kt                         Route
+    <name>Screen.kt                    Screen
+    <name>ViewModel.kt                 ViewModel
+    <name>Route.kt                     Route
+    component/<name>*.kt               画面の部品
 
 :feature:home
-  src/
-    main/kotlin/**/component/Home*.kt      画面の部品
-    test/kotlin/**/Home*Test.kt            画面のテスト
+  src/test/kotlin/**/Home*Test.kt      画面のテスト
 
 :feature:settings
-  src/
-    main/kotlin/**/component/Settings*.kt  画面の部品
-    test/kotlin/**/Settings*Test.kt        画面のテスト
+  src/test/kotlin/**/Settings*Test.kt  画面のテスト
 ```

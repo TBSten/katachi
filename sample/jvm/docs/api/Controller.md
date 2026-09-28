@@ -7,16 +7,20 @@ HTTP のリクエストを1つ受け取り、対応する Service を呼んで�
 HTTP とアプリケーションの中身との境目です。パスとメソッドの登録、リクエストからの値の
 取り出し、Service が返した値を応答にするところまでを持ちます。
 
-1ファイル1コントローラで、ファイル名は `*Controller.kt`。ファイル名がそのまま
+1ファイル1コントローラで、ファイル名は `*Controller.kt`。リソースごとに
+`controller/health/` のような package を1つ切り、その中に置きます。ファイル名がそのまま
 エンドポイントのまとまりを表すので、新しいパスを既存のファイルに足すのか新しく作るのかを
 名前だけで判断できます。なお `layout { }` が見ているのは置き場所と名前までで、
 「置いてはいけないもの」を機械的に弾いてはいません。
+
+テンプレートから生成できます。リソースの package の階層に `resource` と名前を付けてあるので、
+`--arg resource=user --arg name=User` で `controller/user/UserController.kt` ができます。
 
 ## Placement
 
 | Module | Path | When to use |
 |---|---|---|
-| `:` | `src/main/kotlin/**/controller/*Controller.kt` |  |
+| `:` | `src/main/kotlin/**/controller/*/*Controller.kt` |  |
 
 ## Examples
 

@@ -12,15 +12,15 @@ Screen が大きくなってきたときに切り出す、その画面専用の�
 `:ui` の component package へ移して `App*` にする。feature 同士は互いに依存しないので、
 ここに置いたままでは他の feature からは呼べない。
 
-ファイル名の頭をモジュール名にそろえるのは、テンプレートが生成先を選べるようにするため。
-`--arg feature=Home --arg name=UserCard` で `HomeUserCard.kt` が `:feature:home` に入る。
+テンプレートから生成できる。`:feature:*` の `*` に `feature` と名前を付けてあるので、
+`--arg feature=home --arg name=UserCard` で `HomeUserCard.kt` が `:feature:home` に入る。
+`feature` に渡せるのは実在する feature モジュールの名前だけ。
 
 ## Placement
 
 | Module | Path | When to use |
 |---|---|---|
-| `:feature:home` | `src/main/kotlin/**/component/Home*.kt` | `:feature:home` の分。ファイル名は `Home` で始める |
-| `:feature:settings` | `src/main/kotlin/**/component/Settings*.kt` | `:feature:settings` の分。ファイル名は `Settings` で始める |
+| `:feature:*` | `src/main/kotlin/**/component/<name>*.kt` |  |
 
 ## Examples
 
