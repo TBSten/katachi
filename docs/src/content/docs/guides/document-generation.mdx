@@ -168,14 +168,6 @@ By default the documentation is generated under `build/katachi/docs/`.
 
 The destination can be changed by setting `katachi.processors.docs.outputDir` in `build.gradle.kts`.
 
-{/* TODO: With the destination outside `build/`, `gitTracked()` picks up the generated files and
-    the check fails on them as "files no role declares". They have to be **declared as a role**.
-    sample/<name>/docs is exactly that setup, so point to it as the real-world example */}
-
-{/* TODO: There is no section on `--arg mode=check`. It writes nothing, compares against what is on disk, and fails on any mismatch.
-    It is how CI checks "is it up to date" when the generated files are committed, and it is the most in-demand use.
-    It reports all three kinds -- missing / different content / extra -- together in one exception */}
-
 ```kt {5-7}
 katachi {
     architecture = "com.example.projectArchitecture"

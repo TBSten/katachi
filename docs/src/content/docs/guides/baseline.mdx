@@ -1,6 +1,6 @@
 ---
 title: Temporarily disable existing violations with baseline
-description: How to record the current violations in a ledger file when adding katachi to an existing project, setting them aside so only newly added violations fail the test.
+description: How to record the current violations in a baseline file when adding katachi to an existing project, tolerating them for now so only newly added violations, and entries still in the baseline file after they were fixed, fail the test.
 tags:
   - intermediate
 ---
@@ -11,13 +11,13 @@ tags:
 
 Adding katachi to an existing project means that on the first run, **every undeclared file comes out as a violation.** The basic approach is to work through the reported paths one by one — adding them to the definition, moving them, or deleting them — but when there are a lot of them, you can't clear them all right away.
 
-baseline is a feature that temporarily suppresses existing violations, so that only new violations fail the test.
+baseline is a feature that **temporarily suppresses existing violations, so that only new violations fail the test**.
 
 ## Setting it up
 
 ### 1. Write `baseline()` in the definition
 
-```kt title="ProjectArchitecture.kt (excerpt)" {1,5}
+```kt title="ProjectArchitecture.kt (excerpt)" {1,4}
 @OptIn(ExperimentalKatachiApi::class)
 val projectArchitecture: Architecture = architecture {
     // ...
@@ -27,9 +27,7 @@ val projectArchitecture: Architecture = architecture {
 }
 ```
 
-When you set baseline, by default the project root's `katachi-baseline.json` is used as the baseline file. The file is created and the baseline contents are written when you run it with `-Dkatachi.baseline.update=true`, as in step 3.
-
-To change the location, set it like `baseline("config/katachi-baseline.json")`.
+When you set baseline, by default the project root's `katachi-baseline.json` is used as the baseline file.
 
 ### 2. Declare the baseline file itself with `layout { }`
 
@@ -75,12 +73,24 @@ Katachi baseline file:///path/to/project/katachi-baseline.json: 2 violations rec
 
 It's recommended to commit the created/updated file.
 
+## After you fix a tolerated violation
+
+When you fix a violation that had been tolerated, the baseline file is left with a record of a violation that no longer exists. If left alone, a different file placed at the same path later would pass silently, so katachi reports these leftovers as `[StaleBaselineEntry]` and **fails the test.**
+
+To shrink the baseline file, run the architecture test again with `-Dkatachi.baseline.prune=true`.
+
+```shell
+./gradlew :architecture-test:test -Dkatachi.baseline.prune=true
+```
+
+prune only **reduces** the number of records. It never adds new violations to the baseline file (that is the job of `-Dkatachi.baseline.update=true`). Commit the baseline file again once its violations have gone down.
+
 ## Summary
 
 - baseline is a feature that records existing violations in the baseline file and temporarily suppresses them, so that only **newly added violations** fail the test.
-- To use it, write `baseline()` in the definition, and declare the baseline file itself as a role in `layout { }`.
 - The baseline file is created and updated by running the architecture test with `-Dkatachi.baseline.update=true`. Commit the resulting file.
+- When you fix a tolerated violation, the entries left in the baseline file fail the test as `[StaleBaselineEntry]`. `-Dkatachi.baseline.prune=true` removes the violations you have fixed.
 
 ## Next steps
 
-- [Your first architecture definition](/katachi/get-started/first-architecture/) ... How to write your first definition, before setting anything aside in the ledger.
+- [Your first architecture definition](/katachi/get-started/first-architecture/) ... How to write your first definition, before tolerating any existing violations with a baseline.

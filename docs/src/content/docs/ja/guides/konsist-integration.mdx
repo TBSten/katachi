@@ -9,7 +9,7 @@ tags:
   このページの目的: katachi のなかで konsist を活用する方法を紹介する。
 */}
 
-import { Aside, LinkCard } from '@astrojs/starlight/components';
+import { LinkCard } from '@astrojs/starlight/components';
 
 katachi のコア API は、ディレクトリ構造やファイルの位置に着目して検証します。`"...".konsist { }` を使うと、Konsist の API で **ファイル内の宣言を検証** できます。
 
@@ -17,17 +17,6 @@ katachi のコア API は、ディレクトリ構造やファイルの位置に�
 
 `"...".konsist { }` はオプション機能として別モジュールに切り出してあるため、別途インストールが必要です。
 `build.gradle.kts` に以下を追加してください。
-
-<table>
-  <tr>
-    <td>バージョン</td>
-    <td>`katachi` 本体と同じもの。2つの artifact は常に同じバージョンで公開されます</td>
-  </tr>
-  <tr>
-    <td>同梱する Konsist</td>
-    <td>0.17.3</td>
-  </tr>
-</table>
 
 Konsist との統合は別アーティファクト `me.tbsten.katachi:katachi-konsist` に公開されているため、別途依存に追加する必要があります。
 
@@ -52,7 +41,7 @@ fun `アーキテクチャに沿ったファイル配置になっている`() {
 
 Role の中で、その Role のファイルにどういう宣言があるのかを定義します。
 
-```kt
+```kt {7-9}
 architecture {
   "UseCase" {
     layout {
@@ -67,38 +56,6 @@ architecture {
 ```
 
 制約の対象は、その Role の `layout { }` に当てはまったファイルです。`layout { }` の無い Role に制約を書くと、定義を評価した時点で `KatachiFileConstraintWithoutLayoutException` になります。
-
-## ディレクトリごとに制約をかける
-
-`konsist { }` は `layout { }` の中のディレクトリブロックにも書けます。そのときの対象は、**そのブロックの下（サブツリー全体）で宣言したファイル**です。
-
-`util/` には Kotlin の標準ライブラリだけ、`util/ksp/` では KSP の API も使ってよい、のように**親と子で制約が違う**ときは、`scope = DirectOnly` を付けます。対象が**そのブロックの直下で宣言したファイル**だけになり、子ディレクトリには降りません。
-
-```kt {1,6}
-import me.tbsten.katachi.dsl.FileConstraintRange.DirectOnly
-
-"Util" {
-  layout {
-    "src/main/kotlin/com/example/util" {
-      "KSP の API を使わないこと".konsist(scope = DirectOnly) {
-        files.must { file -> file.imports.none { it.name.startsWith("com.google.devtools.ksp") } }
-      }
-      "*".ktFile()           // 対象になる
-      "ksp" { "*".ktFile() } // 対象にならない
-    }
-  }
-}
-```
-
-- 「直下」は宣言の形で決まります。`"ksp" / "*".ktFile()` のように `/` で1段下に書いたものも、`"**/*.md".file()` のように `**` を含むものも、対象になりません。ブロック自身の `anyFile()` は対象になります。
-- `scope` の型は列挙型 `FileConstraintRange` です。値の import を書かない場合は `scope = FileConstraintRange.DirectOnly` と書きます。
-- 名前の無い `konsist(scope = DirectOnly) { }` と、実験的な API の `fileConstraint(name, scope = DirectOnly) { }` も同じです。
-- 何も付けなければ（既定値の `Subtree`）、これまでどおりサブツリー全体が対象です。
-
-<Aside type="caution" title="DirectOnly を書けない場所">
-  - **Role の直下・`layout { }` の直下・`":".module { }` の中**には書けません。「直下」を決めるディレクトリが無いためで、`KatachiFileConstraintDirectOnlyWithoutDirectoryException` になります。
-  - **直下にファイルを1つも宣言していないブロック**に書くと、`KatachiFileConstraintDirectOnlyCoversNothingException` になります。何も検査しない制約が通ってしまうのを防ぐためです。`.module { }` が自動で足す `build.gradle.kts` は数えません。
-</Aside>
 
 ## エラーの例
 
@@ -126,15 +83,9 @@ Katachi check failed: 1 violation (FileConstraint: 1)
 
 katachi が足しているのは `must` / `mustNot` / `mustBeEmpty` の3つで、Konsist の `assertTrue` などのアサーションはコンパイルエラーで塞いでいます。対象を絞るまでの書き方は Konsist のものがそのまま使えます。
 
-<Aside type="caution" title="このブロックで使えないもの">
-  - **`.kts` のファイルは対象になりません。** Konsist が `.kt` のファイルしか読まないためです。`build.gradle.kts` などの規則は `konsist { }` では書けません。ファイルの中身を自分で読む `fileConstraint(name) { subject -> ... }`（実験的な API）で書いてください。
-  - **`projectPath` / `moduleName` は当てにしないでください。** katachi が歩いたプロジェクトではなく、Konsist が推測したルートを基準にした値になります。
-</Aside>
-
 ## まとめ
 
-- `layout { }` が **どこに置いてよいか**、`konsist { }` が **中身がどうあるべきか** を担当します。
-- ディレクトリブロックに書いた `konsist { }` はサブツリー全体が対象です。直下だけにしたいときは `scope = DirectOnly` を付けます。
+- `layout { }` が **ファイルをどこに置いてよいか**、`konsist { }` が **ファイルの中身がどうあるべきか** を担当します。
 - `katachi-konsist` は**任意のモジュール**です。依存の追加と `assert(FileConstraintCheck())` の設定が必要です。
 - **制約名がそのまま違反レポートに出ます。** 名前は「満たすべきこと」の形で書いてください。
 - `assertTrue` 系は**コンパイルエラーになります**。その場で例外を投げてしまい、1回の実行で全違反を集める設計と噛み合わないためです。

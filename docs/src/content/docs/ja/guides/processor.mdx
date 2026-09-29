@@ -34,8 +34,8 @@ public interface ArchitectureProcessor<Args, R> {
 
 | 戻り値 | 意味 | Gradle タスクでの扱い |
 | --- | --- | --- |
-| Result.success | run は通る | `[OK]` |
-| Result.failure | run は通らない <br/> （違反が見つかった、ドキュメントが古い、処理ができなかった など） | `[FAILED]`。例外のメッセージを表示し、exit が非ゼロになる |
+| Result.success | 成功 | `[OK]` |
+| Result.failure | 失敗 <br/> （違反が見つかった、ドキュメントが古い、処理ができなかった など） | `[FAILED]`。例外のメッセージを表示し、exit が非ゼロになる |
 
 ## katachi の 2 要素
 
@@ -89,12 +89,12 @@ katachi は 5 つの ArchitectureProcessor を提供しています。
         </tr>
         <tr>
             <td><code>GenerateCodeFromTemplate</code></td>
-            <td>プロジェクト定義内の <code>{"template { }"}</code> ブロックの内容をもとにファイルを生成します。</td>
+            <td>layout のファイルの宣言に付けた <code>{".template { }"}</code> の内容をもとにファイルを生成します。</td>
             <td><a href="/katachi/ja/guides/generate-code-from-template/">テンプレートからのコード生成</a></td>
         </tr>
         <tr>
             <td><code>DescribeTemplates</code></td>
-            <td><code>{"template { }"}</code> を持つ役割の一覧や、1つのテンプレートのパラメータと生成されるファイルを表示します。ファイルは書きません。</td>
+            <td><code>{".template { }"}</code> を持つ宣言の一覧や、1つのテンプレートのパラメータと生成されるファイルを表示します。ファイルは書きません。</td>
             <td><a href="/katachi/ja/guides/generate-code-from-template/">テンプレートからのコード生成</a></td>
         </tr>
     </tbody>
@@ -140,12 +140,12 @@ katachi {
 ```kts title="architecture-test/build.gradle.kts"
 katachi {
     processors {
-        // 登録と同時に既定値を書く
+        // 登録と同時にデフォルト値を書く
         register("someProcessor", "com.example.SomeProcessor") {
             arg("someArg1", "someValue1")
         }
 
-        // 既に登録されている processor に既定値だけ足す
+        // 既に登録されている processor にデフォルト値だけ足す
         args("docs") {
             arg("mode", "check")
         }
@@ -172,8 +172,6 @@ $ ./gradlew katachiSomeProcessor
 ========================================
 ```
 
-`process` の `runCatching { }` の中で例外が投げられると、表示は `[FAILED] docs` になり、`1 succeeded, 0 failed` の数も変わって、タスクの exit が非ゼロになります。processor の戻り値が `Collection` の場合は 1 要素 1 行で出力されます。
-
     </TabItem>
 </Tabs>
 
@@ -199,6 +197,10 @@ process メソッドに渡される `context` には、アーキテクチャ定�
 
 <Tabs>
     <TabItem label="引数なし">
+        引数が必要ない ArchitectureProcessor の場合は `ArchitectureProcessorNoArg` interface を実装してください。
+
+        型引数には実行時の戻り値の型を指定します。
+
         ```kt {3,4}
         // ArchitectureProcessorNoArg を実装した object を定義
         @OptIn(ExperimentalKatachiApi::class)
@@ -227,6 +229,10 @@ process メソッドに渡される `context` には、アーキテクチャ定�
             kotlin("plugin.serialization") version "<kotlin-version>"
         }
         ```        
+
+        引数が必要な ArchitectureProcessor の場合は `ArchitectureProcessor` interface を実装してください。
+
+        第1型引数に引数の型、第2型引数に戻り値の型を指定します。
 
         ```kt {2, 4, 6, 17-18} nocollapse
         @OptIn(ExperimentalKatachiApi::class)
@@ -257,38 +263,36 @@ process メソッドに渡される `context` には、アーキテクチャ定�
 
 
 <details>
-<summary>Role の metadata</summary>
+    <summary>Role の metadata</summary>
 
-場合によっては、ArchitectureProcessor の側で、アーキテクチャ定義に独自のプロパティを指定してほしくなるかもしれません。
-その場合は **Role の metadata** を使えます。
+    場合によっては、ArchitectureProcessor の側で、アーキテクチャ定義に独自のプロパティを指定してほしくなるかもしれません。
+    その場合は **Role の metadata** を使えます。
 
-例えば、すでに非推奨なのに過去の遺産として残ってしまっている Role を Obsolete としてマークしたいなら、以下のように Obsolete という metadata を定義して設定できます。
+    例えば、すでに非推奨なのに過去の遺産として残ってしまっている Role を Obsolete としてマークしたいなら、以下のように Obsolete という metadata を定義して設定できます。
 
-```kt nocollapse
-// metadata のキー
-@OptIn(ExperimentalKatachiApi::class)
-val Obsolete: MetadataKey<Boolean> = metadata()
+    ```kt nocollapse
+    // metadata のキー
+    @OptIn(ExperimentalKatachiApi::class)
+    val Obsolete: MetadataKey<Boolean> = metadata()
 
-@OptIn(ExperimentalKatachiApi::class)
-var MetadataScope.obsolete: Boolean? by Obsolete
+    @OptIn(ExperimentalKatachiApi::class)
+    var MetadataScope.obsolete: Boolean? by Obsolete
 
-// Processor 側
-@OptIn(ExperimentalKatachiApi::class)
-object ObsoleteRoles : ArchitectureProcessorNoArg<List<String>> {
-    override fun process(context: ArchitectureProcessNoArgContext): Result<List<String>> = runCatching {
-        context.roles.filter { it[Obsolete] == true }.map { it.name }
+    // Processor 側
+    @OptIn(ExperimentalKatachiApi::class)
+    object ObsoleteRoles : ArchitectureProcessorNoArg<List<String>> {
+        override fun process(context: ArchitectureProcessNoArgContext): Result<List<String>> = runCatching {
+            context.roles.filter { it[Obsolete] == true }.map { it.name }
+        }
     }
-}
 
-// 利用側
-architecture {
-   "UseCase" {
-      obsolete = true
-   }
-}
-```
-
-`metadata<T>()` と `MetadataKey` は `@ExperimentalKatachiApi` です。書いていない metadata は **既定値を持たず「無い」** ので、読む側が「無いときどうするか」を決めます。
+    // 利用側
+    architecture {
+    "UseCase" {
+        obsolete = true
+    }
+    }
+    ```
 
 </details>
 
@@ -308,6 +312,8 @@ architecture {
         fun Architecture.countFilesPerRole(): Map<String, Int> = process(CountFilesPerRole, CountFilesPerRole.Args()).getOrThrow()
         ```
 
+        引数なしの定義の場合は、`process(CountFilesPerRole)` と書きます。
+
         利用者は processor の存在を知らず用意された API を呼び出すことができます。
 
         ```kt
@@ -319,7 +325,7 @@ architecture {
     <TabItem label="Gradle タスクから実行する">
 
         `katachi.processors.register` に登録すると、登録したキーから決まる名前の Gradle タスクとして呼べるようになります。
-        
+
         （例: `countFilesPerRole` → `katachiCountFilesPerRole`）
 
         ```kts title="architecture-test/build.gradle.kts"
@@ -337,7 +343,7 @@ architecture {
         <details>
             <summary>`--arg` の値の読まれ方</summary>
 
-            `--arg` の値は文字列として渡り、`Args` のフィールドの型に合わせて読まれます。
+            `--arg` の値は文字列として渡り、`Args` のフィールドの型に合わせてパースされます。
 
             | フィールドの型 | 渡し方 |
             | --- | --- |
@@ -359,11 +365,12 @@ architecture {
 ## まとめ
 
 - **`assert()` もドキュメント・テンプレート生成も ArchitectureProcessor** です。
-- 同じ仕組みに乗せて、カスタムの ArchitectureProcessor を作ることができます。
+- 標準の ArchitectureProcessor が使う仕組みと同じ仕組みに則って、カスタムの ArchitectureProcessor を作ることができます。
 
 ## 次のステップ
 
+- [ArchitectureProcessor の API リファレンス](/katachi/api-docs/katachi/me.tbsten.katachi.processor/-architecture-processor/index.html) ... `ArchitectureProcessor` の型と、`process` で使える API の一覧です。
 - [ドキュメント生成](/katachi/ja/guides/document-generation/) ... 同じ仕組みに乗っている、いちばん大きなビルトイン processor です。
     - ドキュメント生成の ArchitectureProcessor の [KDoc](https://tbsten.github.io/katachi/api-docs/katachi/me.tbsten.katachi.docs/-generate-documentation/index.html), [ソースコード](https://github.com/TBSten/katachi/blob/main/katachi/src/main/kotlin/me/tbsten/katachi/docs/GenerateDocumentation.kt#L88) も確認してください。
 - [テンプレートからコード生成](/katachi/ja/guides/generate-code-from-template/) ... 定義からコードを出す processor です。
-    - テンプレートからコード生成の ArchitectureProcessor の [KDoc](https://tbsten.github.io/katachi/api-docs/katachi/me.tbsten.katachi.template/-generate-code-from-template/index.html), [ソースコード](https://github.com/TBSten/katachi/blob/main/katachi/src/main/kotlin/me/tbsten/katachi/template/GenerateCodeFromTemplate.kt#L99) も確認してください。
+    - テンプレートからコード生成の ArchitectureProcessor の [KDoc](https://tbsten.github.io/katachi/api-docs/katachi/me.tbsten.katachi.template/-generate-code-from-template/index.html), [ソースコード](https://github.com/TBSten/katachi/blob/main/katachi/src/main/kotlin/me/tbsten/katachi/template/GenerateCodeFromTemplate.kt#L114) も確認してください。

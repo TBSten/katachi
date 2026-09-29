@@ -5,6 +5,10 @@ tags:
   - advanced
 ---
 
+{/*
+  The purpose of this page: to understand how the architecture definition and ArchitectureProcessor work, and how to write and run your own ArchitectureProcessor.
+*/}
+
 import { Aside, Tabs, TabItem, LinkCard } from "@astrojs/starlight/components"
 
 This page aims to deepen your understanding of katachi by explaining ArchitectureProcessor, one of katachi's key elements.
@@ -13,7 +17,7 @@ The latter half explains how to write and run your own ArchitectureProcessor.
 
 ## What is ArchitectureProcessor
 
-katachi's `ArchitectureProcessor` class is an interface that does something based on an architecture definition.
+katachi's `ArchitectureProcessor` is an interface that does something based on an architecture definition.
 
 ```kt
 @ExperimentalKatachiApi
@@ -23,19 +27,15 @@ public interface ArchitectureProcessor<Args, R> {
 
     // Does something
     public fun process(context: ArchitectureProcessContext<Args>): Result<R>
-
-    // (Excerpt. Members with a default implementation, such as undeclaredArgNames, are omitted)
 }
 ```
 
-`ArchitectureProcessor` is `@ExperimentalKatachiApi`.
-
-Wrap the body of `process` in `runCatching { }`. **To answer "this run does not pass", throw inside it.**
+Wrap the body of `process` in `runCatching { }` (or the `runCatchingScoped` utility).
 
 | Return value | Meaning | Handling in the Gradle task |
 | --- | --- | --- |
-| Result.success | The run passes | `[OK]` |
-| Result.failure | The run does not pass (violations found, documentation out of date, the job could not be done, and so on) | `[FAILED]`. The exception's message is printed and the exit code is non-zero |
+| Result.success | Success | `[OK]` |
+| Result.failure | Failure <br/> (violations found, documentation out of date, the job could not be done, and so on) | `[FAILED]`. The exception's message is printed and the exit code is non-zero |
 
 ## katachi's two elements
 
@@ -63,15 +63,44 @@ The architecture definition itself doesn't execute anything. **It's `Architectur
 
 katachi ships with five ArchitectureProcessors.
 
-| Processor | What it does | Documentation |
-| --- | --- | --- |
-| `projectArchitecture.assert()` (`LayoutCheck`) | Validates whether files are placed according to the architecture definition, and throws an assertion exception if there are errors. |  |
-| `FileConstraintCheck` | Evaluates the constraints written in `konsist { }`. Passed as `projectArchitecture.assert(FileConstraintCheck())`. | [Konsist integration](/katachi/guides/konsist-integration/) |
-| `GenerateDocumentation` | Generates documentation from properties such as summary and description written in the project definition. | [Document generation](/katachi/guides/document-generation/) |
-| `GenerateCodeFromTemplate` | Generates files based on the contents of `template { }` blocks in the project definition. | [Generating code from a template](/katachi/guides/generate-code-from-template/) |
-| `DescribeTemplates` | Lists the roles that have a `template { }`, or shows one template's parameters and the files it produces, without writing anything. | [Generating code from a template](/katachi/guides/generate-code-from-template/) |
+<table>
+    <thead>
+        <tr>
+            <th>Processor</th>
+            <th style="min-width: 12rem;">What it does</th>
+            <th style="min-width: 10rem;">Documentation</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td><code>projectArchitecture.assert()</code><br />(<code>LayoutCheck</code>)</td>
+            <td>Validates whether files are placed according to the architecture definition, and throws an assertion exception if there are errors.</td>
+            <td></td>
+        </tr>
+        <tr>
+            <td><code>FileConstraintCheck</code></td>
+            <td>Evaluates the constraints written in <code>{"konsist { }"}</code>. Passed as <code>projectArchitecture.assert(FileConstraintCheck())</code>.</td>
+            <td><a href="/katachi/guides/konsist-integration/">Konsist integration</a></td>
+        </tr>
+        <tr>
+            <td><code>GenerateDocumentation</code></td>
+            <td>Generates documentation from properties such as summary and description written in the project definition.</td>
+            <td><a href="/katachi/guides/document-generation/">Document generation</a></td>
+        </tr>
+        <tr>
+            <td><code>GenerateCodeFromTemplate</code></td>
+            <td>Generates files based on the contents of the <code>{".template { }"}</code> attached to layout file declarations.</td>
+            <td><a href="/katachi/guides/generate-code-from-template/">Generating code from a template</a></td>
+        </tr>
+        <tr>
+            <td><code>DescribeTemplates</code></td>
+            <td>Lists the declarations that have a <code>{".template { }"}</code>, or shows one template's parameters and the files it produces. It writes no files.</td>
+            <td><a href="/katachi/guides/generate-code-from-template/">Generating code from a template</a></td>
+        </tr>
+    </tbody>
+</table>
 
-Each of them takes the project's architecture definition and puts it to use, either for checking (`LayoutCheck` / `FileConstraintCheck`) or for generating (`GenerateDocumentation` / `GenerateCodeFromTemplate`).
+All of them take the project's architecture definition and use it for validation or generation.
 
 ## Running an ArchitectureProcessor
 
@@ -124,57 +153,25 @@ katachi {
 }
 ```
 
-<details>
-    <summary>ArchitectureProcessors registered by default</summary>
-
-    `docs` (documentation generation), `template` (code generation from a template) and `templates` (listing and describing templates) are registered by default because they're common use cases.
-    You don't need to register these ArchitectureProcessors in `katachi.processors` to run them.
-
-    Besides these, `internalTemplatesJson` (task `katachiInternalTemplatesJson`), which the IDE plugin uses, is registered as well. It exists for the IDE plugin, so you don't need to run it yourself.
-
-    ```kts title="architecture-test/build.gradle.kts" {5-8}
-    katachi {
-        architecture = "com.example.projectArchitecture"
-
-        processors {
-            // ⭐️ These are unnecessary
-            register("docs", "me.tbsten.katachi.docs.GenerateDocumentation")
-            register("template", "me.tbsten.katachi.template.GenerateCodeFromTemplate")
-            register("templates", "me.tbsten.katachi.template.DescribeTemplates")
-        }
-    }
-    ```
-
-</details>
-
 A Gradle task is provided for each registered processor.
 
 The task name is `katachi` plus the registered key with its first letter capitalized (for example, `register("someProcessor", ...)` becomes `katachiSomeProcessor`).
 
-Example output:
+Example run:
 
 ```
-[1/3] Processors: docs
+$ ./gradlew katachiSomeProcessor
+[1/3] Processors: someProcessor
 
 [2/3] Processing...
-  [docs] Writing 18 pages to file:///path/to/sample/jvm/docs
-  [docs] README.md
-  [docs] api/
-  [docs]   README.md
-  [docs]   Controller.md
-  [docs] domain/
-  [docs]   README.md
-  [docs]   Service.md
 
 ========================================
 [3/3] Katachi processor run: 1 succeeded, 0 failed
 
-[OK] docs
+[OK] someProcessor
 
 ========================================
 ```
-
-When an exception is thrown inside `process`'s `runCatching { }`, the display becomes `[FAILED] docs`, the `1 succeeded, 0 failed` counts change too, and the task's exit code becomes non-zero. When the processor's return value is a `Collection`, each element is printed on its own line.
 
     </TabItem>
 </Tabs>
@@ -195,12 +192,16 @@ The sample/custom-processor module in the GitHub repository has examples of cust
 
 ### 1. Implement ArchitectureProcessor
 
-Prepare a class that implements ArchitectureProcessor and implement the `process` method.
+Prepare a class that implements ArchitectureProcessorNoArg or ArchitectureProcessor, and implement the `process` method.
 
 The `context` passed as the argument to the `process` method holds the architecture definition, arguments, and so on, so refer to these as needed to implement your ArchitectureProcessor's logic.
 
 <Tabs>
     <TabItem label="No arguments">
+        If your ArchitectureProcessor needs no arguments, implement the `ArchitectureProcessorNoArg` interface.
+
+        Specify the return type at run time as the type argument.
+
         ```kt {3,4}
         // Define an object that implements ArchitectureProcessorNoArg
         @OptIn(ExperimentalKatachiApi::class)
@@ -221,7 +222,7 @@ The `context` passed as the argument to the `process` method holds the architect
 
     </TabItem>
     <TabItem label="With arguments">
-        To build an ArchitectureProcessor that takes arguments, use [kotlinx.serialization](https://github.com/kotlin/kotlinx.serialization) to parse them.
+        katachi uses [kotlinx.serialization](https://github.com/kotlin/kotlinx.serialization) to parse arguments, so add a kotlinx.serialization dependency to your project.
 
         ```kts {3} title="architecture-test/build.gradle.kts" 
         plugins {
@@ -230,9 +231,11 @@ The `context` passed as the argument to the `process` method holds the architect
         }
         ```        
 
-        `kotlin("plugin.serialization")` is all you need. katachi exposes `kotlinx-serialization-core` as a dependency, so as long as you depend on katachi, `KSerializer` and `@Serializable` are available as they are.
+        If your ArchitectureProcessor needs arguments, implement the `ArchitectureProcessor` interface.
 
-        ```kt {2, 4, 6, 18} nocollapse
+        Specify the argument type as the first type argument and the return type as the second.
+
+        ```kt {2, 4, 6, 17-18} nocollapse
         @OptIn(ExperimentalKatachiApi::class)
         object CountFilesPerRole : ArchitectureProcessor<CountFilesPerRole.Args, Map<String, Int>> {
             // Pass the type of the value received via --arg, and how to read it
@@ -291,8 +294,6 @@ architecture {
 }
 ```
 
-`metadata<T>()` and `MetadataKey` are `@ExperimentalKatachiApi`. Metadata that hasn't been written **has no default value — it's simply "absent,"** so it's up to the reader to decide what to do when it's absent.
-
 </details>
 
 ### 2. Provide a way to run ArchitectureProcessor
@@ -310,6 +311,8 @@ If you want it runnable from a program as an API, providing an API is recommende
         @OptIn(ExperimentalKatachiApi::class)
         fun Architecture.countFilesPerRole(): Map<String, Int> = process(CountFilesPerRole, CountFilesPerRole.Args()).getOrThrow()
         ```
+
+        For a definition without arguments, write `process(CountFilesPerRole)`.
 
         Users can call the provided API without needing to know the processor exists.
 
@@ -334,39 +337,6 @@ If you want it runnable from a program as an API, providing an API is recommende
         ./gradlew katachiCountFilesPerRole
         ```
 
-        If you want to receive arguments via `--arg`, declare a `@Serializable` class as `Args` and return its `argsSerializer`.
-
-        Implement `ArchitectureProcessor<Args, R>` rather than `ArchitectureProcessorNoArg`.
-
-        ```kt
-        @OptIn(ExperimentalKatachiApi::class)
-        object RoleNames : ArchitectureProcessor<RoleNames.Args, List<String>> {
-            override val argsSerializer: KSerializer<Args> = Args.serializer()
-
-            override fun process(context: ArchitectureProcessContext<Args>): Result<List<String>> = runCatching {
-                context.log("Listing roles with prefix=${context.args.prefix}")
-                context.roles.map { it.qualifiedName }.filter { it.startsWith(context.args.prefix) }
-            }
-
-            @Serializable
-            data class Args(val prefix: String = "")
-        }
-        ```
-
-        ```kts title="architecture-test/build.gradle.kts"
-        katachi {
-            processors {
-                register("roleNames", "com.example.processors.RoleNames")
-            }
-        }
-        ```
-
-        ```shell
-        ./gradlew katachiRoleNames --arg prefix=domain/
-        ```
-
-        Having `Args` means that module needs `kotlin("plugin.serialization")`. A processor that takes no arguments doesn't need it.
-
         <details>
             <summary>How `--arg` values are read</summary>
 
@@ -387,16 +357,17 @@ If you want it runnable from a program as an API, providing an API is recommende
 
 ---
 
-**Provide the way to run it as documentation, such as in the processor's KDoc, so users learn the whole way to run it.**
+**Provide the way to run it as documentation, such as in the processor's KDoc, so that users are told how to run it as well.**
 
 ## Summary
 
 - **`assert()`, as well as documentation and template generation, are all ArchitectureProcessors.**
-- You can build your own custom ArchitectureProcessor on top of the same mechanism.
+- You can build a custom ArchitectureProcessor following the same mechanism the standard ArchitectureProcessors use.
 
 ## Next steps
 
+- [ArchitectureProcessor API reference](/katachi/api-docs/katachi/me.tbsten.katachi.processor/-architecture-processor/index.html) ... The `ArchitectureProcessor` type and the APIs you can use in `process`.
 - [Document generation](/katachi/guides/document-generation/) ... The biggest built-in processor built on the same mechanism.
     - See also the [KDoc](https://tbsten.github.io/katachi/api-docs/katachi/me.tbsten.katachi.docs/-generate-documentation/index.html) and [source code](https://github.com/TBSten/katachi/blob/main/katachi/src/main/kotlin/me/tbsten/katachi/docs/GenerateDocumentation.kt#L88) of the document generation ArchitectureProcessor.
 - [Generating code from a template](/katachi/guides/generate-code-from-template/) ... The processor that produces code from the definition.
-    - See also the [KDoc](https://tbsten.github.io/katachi/api-docs/katachi/me.tbsten.katachi.template/-generate-code-from-template/index.html) and [source code](https://github.com/TBSten/katachi/blob/main/katachi/src/main/kotlin/me/tbsten/katachi/template/GenerateCodeFromTemplate.kt#L99) of the code-from-template ArchitectureProcessor.
+    - See also the [KDoc](https://tbsten.github.io/katachi/api-docs/katachi/me.tbsten.katachi.template/-generate-code-from-template/index.html) and [source code](https://github.com/TBSten/katachi/blob/main/katachi/src/main/kotlin/me/tbsten/katachi/template/GenerateCodeFromTemplate.kt#L114) of the code-from-template ArchitectureProcessor.

@@ -1,6 +1,6 @@
 ---
 title: Baseline で既存の違反を一時的に無効化する
-description: 既存のプロジェクトに katachi を入れたときに、今ある違反を台帳のファイルに記録して棚上げし、新しく増えた違反だけでテストを落とす方法。
+description: 既存のプロジェクトに katachi を入れたときに、今ある違反を baseline のファイルに記録してとりあえず許容し、新しく増えた違反と、直したのに baseline のファイルに残っている分でだけテストを落とす方法。
 tags:
   - intermediate
 ---
@@ -11,15 +11,15 @@ tags:
 
 import { Aside } from '@astrojs/starlight/components';
 
-既存のプロジェクトに katachi を入れると、最初の実行で **宣言していないファイルがすべて違反として出ます。** 出てきたパスを定義に足すか・移すか・消すかで片付けていくのが基本ですが、数が多いとすぐには片付けきれません。
+既存のプロジェクトに katachi を入れると、最初の実行で **宣言していないファイルがすべて違反として出ます。** 出てきたパスを定義に足すか・移すか・消すかで片付けていくのが基本ですが、数が多いとすぐには片付けきれないでしょう。
 
-baseline は 既存の違反を一時的に抑制して、新しい違反だけをテストでエラーにする機能です。
+**baseline は 既存の違反を一時的に抑制して、新しい違反だけをテストでエラーにする**機能です。
 
 ## 設定する
 
 ### 1. 定義に `baseline()` を書く
 
-```kt title="ProjectArchitecture.kt（抜粋）" {1,5}
+```kt title="ProjectArchitecture.kt（抜粋）" {1,4}
 @OptIn(ExperimentalKatachiApi::class)
 val projectArchitecture: Architecture = architecture {
     // ...
@@ -29,9 +29,7 @@ val projectArchitecture: Architecture = architecture {
 }
 ```
 
-baseline を設定すると、デフォルトではプロジェクトルートの `katachi-baseline.json` が Baseline ファイルとして使われます。ファイルが作られ baseline の内容が書き込まれるのは、手順3のように `-Dkatachi.baseline.update=true` を付けて実行したときです。
-
-位置を変更したい場合は `baseline("config/katachi-baseline.json")` のように設定してください。
+baseline を設定すると、デフォルトではプロジェクトルートの `katachi-baseline.json` が Baseline ファイルとして使われます。
 
 ### 2. Baseline ファイル自身を `layout { }` で宣言する
 
@@ -75,14 +73,26 @@ fun DeclarationContainerScope.baselineFile() = "BaselineFile" {
 Katachi baseline file:///path/to/project/katachi-baseline.json: 2 violations recorded in 2 entries (+2, -0).
 ```
 
-作成・更新されたファイルはコミットされるのが推奨です。
+作成・更新されたファイルはコミットするのが推奨です。
+
+## 許容していた違反を直したあと
+
+許容されていた違反を直すと、Baseline ファイルにはもう存在しない違反の記録が残ります。放っておくと、あとで同じパスに置かれた別のファイルが黙って通ってしまうので、katachi はこの残りを `[StaleBaselineEntry]` として報告し、**テストを落とします。**
+
+baseline のファイルを縮めるには、`-Dkatachi.baseline.prune=true` を付けて、もう一度アーキテクチャテストを実行します。
+
+```shell
+./gradlew :architecture-test:test -Dkatachi.baseline.prune=true
+```
+
+prune は、記録の件数を**減らすだけ**です。新しい違反を baseline のファイルに足すことはありません（足すのは `-Dkatachi.baseline.update=true` の役目です）。違反が減った Baseline ファイルは再度コミットしてください。
 
 ## まとめ
 
 - baseline は、既存の違反を Baseline ファイルに記録して一時的に抑制し、**新しく増えた違反だけ**でテストを落とすための機能です。
-- 使うには、定義に `baseline()` を書き、Baseline ファイル自身も Role として `layout { }` に宣言します。
 - Baseline ファイルは `-Dkatachi.baseline.update=true` を付けてアーキテクチャテストを実行すると作成・更新されます。できたファイルはコミットしておきましょう。
+- 許容していた違反を直すと、baseline のファイルに残った分が `[StaleBaselineEntry]` でテストを落とします。`-Dkatachi.baseline.prune=true` で修正した違反を削除します。
 
 ## 次のステップ
 
-- [初めてのアーキテクチャ定義](/katachi/ja/get-started/first-architecture/) ... 台帳に棚上げする前の、最初の定義の書き方です。
+- [初めてのアーキテクチャ定義](/katachi/ja/get-started/first-architecture/) ... baseline で許容する前の、最初の定義の書き方です。
