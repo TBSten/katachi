@@ -1,6 +1,6 @@
 ---
 /**
- * Starlight の LinkCard に、右側の OGP 画像（正方形・object-fit: contain）を足したもの。
+ * Starlight の LinkCard に、右側の OGP 画像（正方形・object-fit: cover）を足したもの。
  * MDX の `import { LinkCard } from '@astrojs/starlight/components'` はそのまま使える
  * （astro.config.mjs の Vite プラグインが、この部品に差し替える）。
  *
@@ -101,7 +101,7 @@ const image = await getLinkOgImage(attributes.href as string | undefined);
 		box-sizing: border-box;
 		width: 5rem;
 		height: 5rem;
-		object-fit: contain;
+		object-fit: cover;
 		border: 1px solid var(--sl-color-gray-5);
 		border-radius: 0.375rem;
 		/* White in both themes: OGP images (logos on transparent PNGs) are drawn for a light page. */
