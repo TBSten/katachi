@@ -1,6 +1,6 @@
 ---
 title: テンプレートからコード生成
-description: アーキテクチャ定義に template { } を追加して、コードを生成する方法を説明します。
+description: layout の宣言に .template { } を追加して、コードを生成する方法を説明します。
 tags:
   - beginner
 ---
@@ -9,84 +9,93 @@ tags:
   このページの目的: katachi のテンプレート生成機能について深く網羅的に理解してもらうこと。
 */}
 
-{/* TODO: AI が生成した文章を含むため、レビューし直す必要がある */}
 
-import { Aside } from "@astrojs/starlight/components"
+layout の宣言に `.template { }` を追加すると、そのファイルをコードとして生成できます。
 
-アーキテクチャ定義に `template { }` を追加すると、その定義からコードを生成できます。
-
-```kt {14} nocollapse
+```kt {7-8,26-27} nocollapse
 val modulePackage = capitalizedModuleNamePackage("com.example")
 
 "UseCase" {
     layout {
         ":core:domain".module {
-            mainSourceSet / kotlin / modulePackage / "useCase" / "*UseCase".ktFile()
-            mainSourceSet / kotlin / modulePackage / "useCase" / "*UseCaseImpl".ktFile()
+            mainSourceSet / kotlin / modulePackage / "useCase" /
+                "${capture("name")}UseCase".ktFile()
+                    .template {
+                        val name = captureValue("name")
+                        """
+                            package com.example.core.domain.useCase
+
+                            interface ${name}UseCase {
+                                suspend operator fun invoke()
+                            }
+                        """.trimIndent()
+                    }
         }
     }
-
-    useCaseTemplate()
 }
 
-private fun RoleScope.useCaseTemplate() = template {
-    // テンプレートに使用する引数を定義できます
-    val name by stringParameter()
-    val implBody by stringParameter(default = """TODO("${name}UseCase の実装")""")
+"UseCaseImplementation" {
+    layout {
+        ":core:domain".module {
+            mainSourceSet / kotlin / modulePackage / "useCase" /
+                "${capture("name")}UseCaseImpl".ktFile()
+                    .template {
+                        val name = captureValue("name")
+                        val implBody by stringParameter(default = """TODO("${name}UseCase の実装")""")
+                        """
+                            package com.example.core.domain.useCase
 
-    // file() で、この template が生成するファイルを1つ宣言します
-    file("${name}UseCase.kt") {
-        """
-            package com.example.core.domain.useCase
-
-            interface ${name}UseCase {
-                suspend operator fun invoke()
-            }
-        """.trimIndent()
-    }
-
-    file("${name}UseCaseImpl.kt") {
-        """
-            package com.example.core.domain.useCase
-
-            class ${name}UseCaseImpl : ${name}UseCase {
-                override suspend fun invoke() {
-                    $implBody
-                }
-            }
-        """.trimIndent()
+                            class ${name}UseCaseImpl : ${name}UseCase {
+                                override suspend fun invoke() {
+                                    $implBody
+                                }
+                            }
+                        """.trimIndent()
+                    }
+        }
     }
 }
 ```
 
 ```shell
-# テンプレート生成を実行する
+# UseCase と UseCaseImplementation の両方を一度に生成する
 ./gradlew katachiTemplate \
-    --arg "roleName=UseCase" --arg "name=GetItemList"
+    --arg "template=UseCase,UseCaseImplementation" --arg "name=GetItemList"
 ```
 
-`--arg roleName="<Roleの名前>"` と 各テンプレートに設定された引数を設定して呼び出す必要があります。
+`--arg template=<指定>` に、どのテンプレートを生成するかを書きます。
+
+## テンプレートの指定 — `--arg template=`
+
+1つのテンプレートは `group名.役割名.id` で指定します。group が無ければ役割名から、id が省略できるのはその役割のテンプレートが1つだけのときです。
+
+| 書いたもの | 意味 |
+| --- | --- |
+| `Controller` | group に入っていない役割 `Controller` の、ただ1つのテンプレート |
+| `feature.Screen` | group `feature` の役割 `Screen` の、ただ1つのテンプレート |
+| `RepositoryInterface.settings` | group を省いた指定。役割名 `RepositoryInterface` がアーキテクチャ全体で1つだけなら使えます |
+
+役割名で選べるのはテンプレートが1つの役割だけです。2つ以上あれば、書ける指定を並べて失敗します。知らない指定も同様に、書ける指定の一覧を並べて失敗します。
 
 ## パラメータ
 
-コード生成時に `--arg` で渡せるパラメータを定義できます。
+コード生成時に `--arg` で渡せるパラメータを、テンプレートのブロックの中で宣言します。
 
-```kt
-template {
-    val name by stringParameter()
-    val implBody by stringParameter(default = """TODO("${name}UseCase の実装")""")
+```kt {4}
+"${capture("name")}UseCaseImpl".ktFile()
+    .template {
+        val name = captureValue("name")
+        val implBody by stringParameter(default = """TODO("${name}UseCase の実装")""")
 
-    // ...
-}
+        // ...
+    }
 ```
 
-**プロパティの名前がそのままパラメータの名前になります。** `val name by stringParameter()` は `--arg name=...` で渡すパラメータを宣言します。
-
-`default` 引数にデフォルト値を設定することで引数が設定されなかった際のデフォルト値を設定できます。
+**プロパティの名前がそのままパラメータの名前になります。** `val implBody by stringParameter(default = ...)` は `--arg implBody=...` で渡すパラメータを宣言します。
 
 ```shell
 ./gradlew katachiTemplate \
-    --arg "roleName=UseCase" \
+    --arg "template=UseCaseImplementation" \
     --arg "name=GetItemList" --arg 'implBody=println("Hello World")'
 ```
 
@@ -99,34 +108,44 @@ template {
 | `val pageSize by intParameter(default = 20)` | `--arg pageSize=50` | 整数 |
 | `val visibility by enumParameter(default = Visibility.Public)` | `--arg visibility=Internal` | enum のエントリ名 |
 
-default の無い enum パラメータは `val visibility by enumParameter(Visibility.entries)` と書きます。
+**capture とパラメータは、1回の実行で生成するテンプレート全部の中で名前ごとに1つです。** 2つのテンプレートに同じ `capture("name")` があれば、`--arg name=User` の1回で両方に効きます。パラメータの**型かデフォルト値**が食い違っていると、エラーになります。
 
 ## 生成先にワイルドカードがあるときは、名前を付けて値を渡す
 
-テンプレートが言うのはファイル名だけで、ディレクトリは `layout { }` が決めます。では `layout { }` に `:feature:*` のようなワイルドカードがあるとき、どのモジュールに作るのか。**そのワイルドカードに [`capture()`](/katachi/ja/guides/layout/#ワイルドカードに名前を付ける) で名前を付け、`--arg` で値を渡します。**
+`*` に名前を付けるのが `capture()` です。`capture()` は宣言を作らず、名前を埋め込んだ文字列を返すだけなので、Kotlin の文字列テンプレートの中にそのまま書けます。
 
-```kt {3,9} nocollapse
+```kt {2}
+layout {
+    "feature" / capture("feature") / "src" / "main" / "kotlin" / "*ViewModel".ktFile()
+}
+```
+
+**検査の上では `*` とまったく同じです。** `capture("feature")` を `"*"` に書き換えても、許されるファイルは1つも変わりません。
+
+名前は `--arg` で値を渡すときに使います。`*` のままだと、テンプレートは `feature/home` と `feature/settings` のどちらに作ればよいかを決められません。名前を付けておけば、`--arg feature=home` で選べます。テンプレートを持たない Role なら、`*` のままで構いません。
+
+`.template { }` はファイルの宣言そのものに付くので、生成先のパスは `layout { }` の宣言と1つに決まります。そのパスに `capture()` で名前の付いていない `*` や `**` が残っていると、値の渡しようが無いので、**`.template { }` を付けた時点でエラーになります**。
+
+```kt {3,5-8} nocollapse
 "FeatureComponent" {
     layout {
-        ":feature:*".module(capture = "feature") {
+        ":feature:${capture("feature")}".module {
             "commonMain".sourceSet / kotlin / modulePackage / "component" /
-                "${wildcard("feature").pascalCase}*".ktFile()
-        }
-    }
-    template {
-        val feature = captureValue("feature")
-        val name by stringParameter()
-        val component = "${feature.pascalCase}$name"
+                "${wildcard("feature").pascalCase}${capture("name")}".ktFile()
+                    .template {
+                        val feature = captureValue("feature")
+                        val name = captureValue("name")
+                        val component = "${feature.pascalCase}$name"
 
-        file("$component.kt") {
-            """
-                package com.example.kmp.feature.$feature.component
+                        """
+                            package com.example.kmp.feature.$feature.component
 
-                @Composable
-                internal fun $component(title: String) {
-                    Text(text = title)
-                }
-            """.trimIndent()
+                            @Composable
+                            internal fun $component(title: String) {
+                                Text(text = title)
+                            }
+                        """.trimIndent()
+                    }
         }
     }
 }
@@ -134,104 +153,36 @@ default の無い enum パラメータは `val visibility by enumParameter(Visib
 
 ```shell
 ./gradlew katachiTemplate \
-    --arg "roleName=FeatureComponent" --arg "feature=home" --arg "name=UserCard"
+    --arg "template=FeatureComponent" --arg "feature=home" --arg "name=UserCard"
 ```
 
-`--arg feature=home` が `:feature:*` の `*` を `home` に決めるので、`HomeUserCard.kt` は `:feature:home` の `component/` に入ります。
+`--arg feature=home` が `:feature:${capture("feature")}` の `*` を `home` に決めるので、`HomeUserCard.kt` は `:feature:home` の `component/` に入ります。
 
-**capture の名前は、そのまま `--arg` の名前になります。** テンプレートの中では、同じ値を `captureValue("feature")` で読めます。上の例ではパッケージ名とファイル名に使っています。値を渡し忘れたときは、生成先で使う場合も `captureValue` で読む場合も同じエラーになり、capture の宣言位置と、今あるディレクトリ・モジュールの値が並びます。`by stringParameter()` で宣言し直す必要はありません。宣言すると同じ名前を2か所から受け取ることになり、`katachiTemplate` / `katachiTemplates --arg roleName=...` を実行した時点でエラーになります（`./gradlew test` の検査はテンプレートを走らせないので、そこでは見つかりません）。`if (withTest) { }` のような分岐の中だけで宣言したパラメータも、その分岐を通らない実行で見つかります。`roleName` と `onExisting` も、同じ理由で capture の名前には使えません。
+**capture の名前は、そのまま `--arg` の引数名になります。** テンプレートの中では、同じ値を `captureValue("feature")` で読めます。
 
-ディレクトリの `capture()` も同じ使い方です。
+### 名前の付け方の決まり
 
-```kt
-layout {
-    ":".module {
-        mainSourceSet / kotlin / modulePackage / "controller" / capture("resource") / "*Controller".ktFile()
-    }
-}
-```
-
-`--arg resource=user --arg name=User` で `controller/user/UserController.kt` ができます。`controller/user/` がまだ無ければ作ります。
-
-**生成先のディレクトリに `*` が2つ以上あるなら、全部に名前を付けます。** モジュールの `*` とパッケージのディレクトリの `*` の両方が残るなら、`.module(capture = ...)` と `capture(...)` の両方が要ります。1つでも名前の無い `*` が残ると、そのパスは生成先になりません。
-
-**パッケージのディレクトリ名がモジュール名と違うなら、そのディレクトリにも別の capture を付けます。** たとえばモジュール `:feature:appConfig` のパッケージが `appconfig/` なら、`captureValue("feature")`（`appConfig`）を package に入れると、ディレクトリと食い違う package が書かれます。検査もコンパイルも通るので気づけません。パッケージのディレクトリの `*` に `capture("featurePackage")` のような名前を付け、package にはその `captureValue("featurePackage")` を使ってください。
-
-```kt
-layout {
-    ":feature:*".module(capture = "feature") {
-        mainSourceSet / kotlin / "com/example/feature" / capture("featurePackage") / "*ViewModel".ktFile()
-    }
-}
-```
-
-**`captureValue()` を package やクラス名に使うなら、値を整えるか弾きます。** capture の値はディレクトリ名として正しいかだけを検査するので、`--arg feature=user-profile` のような `-` を含む値も通ります。そのまま package に入れると、コンパイルできないファイルができます。テンプレートの中で `.replace("-", "")` のように整えるか、`require(...)` で弾いてください。
-
-```kt
-template {
-    val feature = captureValue("feature")
-    require(feature.all { it.isLetterOrDigit() }) { "--arg feature=$feature: use letters and digits only" }
-    // ...
-}
-```
-
-`katachiTemplates` のプレビューでは、capture の値は `${feature}` という文字列で走ります。`require(...)` で値を検査するなら、プレビューでは通るように `${` で始まる値を見逃すか、`katachiTemplate` で実際に渡したときだけ効く書き方にしてください。
-
-<Aside>
-**モジュールの capture に渡せるのは、実在するモジュールだけです。** `:feature:*` は「今あるモジュール」を指す宣言なので、無いモジュールに書いたファイルは次の検査で違反になります。先に `settings.gradle.kts` にモジュールを足してください。ディレクトリの capture にはこの制約はありません。
-</Aside>
-
-### 生成先がちょうど1つに決まるときだけ書く
-
-katachi は Role の `layout { }` の各パスについて、capture を `--arg` の値で埋めます。そのうえで、ディレクトリにワイルドカードが残らず、ファイル名がファイルのパターンに合うパスを生成先の候補にします。**`--arg` で値を渡した capture を含むパスが候補にあれば、それだけに絞ります。** そのうえで**候補がちょうど1つのときだけ書き込みます。**
-
-たとえば `scenario/common/*Scn.kt` と `scenario/capture("x")/*Scn.kt` の両方を持つ Role に `--arg x=login` を渡すと、`scenario/login/` に書きます（`common` は候補から外れます）。`x` を渡さなければ、`common` に書かずに「`x` が足りない」と失敗します。
-
-| 状況 | どうなるか |
-| --- | --- |
-| 値を渡した capture を含むパスがある | そのパスだけを候補にします。capture の無いパスは候補から外れます |
-| capture の値を渡していない | ファイル名が合うパスが capture を持つなら、足りない `--arg` を名指しして失敗します。**capture の無いパスが別にあっても、そちらに書きません**。今あるディレクトリ・モジュールの値も並べます |
-| 候補が2つ以上ある | 候補のパスを並べて失敗します。katachi はどれかを勝手に選びません。候補どうしが1つの階層だけ違うなら、その階層を示して「そこを `capture()` にする」よう案内します |
-| ディレクトリに名前の無い `*` が残る | そのパスは候補になりません。どのパスもそうなら、`capture()` で名前を付けるよう案内して失敗します |
-| ディレクトリに `**` が残る | そのパスは候補になりません。どのパスもそうなら、`**` の無いパスを別に書くよう案内して失敗します |
-| 値が1つのディレクトリ名にならない | 空・空白だけ・`.`・`..`・`/` や `\` を含む値、ファイル名に使えない文字や制御文字を含む値は失敗します。Windows が黙って変える・拒む値（前後の空白、末尾の `.`、`CON` / `NUL` / `COM1` などの予約名）も、どの OS でも失敗します |
-| モジュールが無い | 今あるモジュールと、それぞれを選ぶ `--arg` を並べて失敗します。ほかのパスがファイルを受け取れても書き込みません |
-
-具体的なパスだけを持つ Role（capture の無い Role）の動きは、この絞り込みで変わりません。
-
-ディレクトリの部分一致（`feature-*`）と `**` には名前を付けられません。生成先がそういうパスしか無い Role は、そのままではテンプレートで生成できません。`**` の場合は、テンプレートが書き込むディレクトリを `**` の無いパスとして別に宣言してください（検査は両方を受け付け、生成は `**` の無い方を使います）。
-
-```kt
-layout {
-    ":*".module(capture = "app") {
-        capture("recipe") {
-            "*Activity".ktFile()          // 生成先はこちら
-            "**" / "*Activity".ktFile()   // 検査では深い階層も受け付ける
-        }
-    }
-}
-```
-
-固定のリスト（`for (m in recipeApps) { m { ... } }`）で書いたディレクトリは、1つずつ具体的なパスになるので、候補が複数になります。生成先として選びたいなら、その階層を `*` にして `capture()` で名前を付けてください。モジュールキーの `*` は、`":feature:*-impl".module(capture = "feature")` のような部分一致でも名前を付けられます（値は `*` の部分、`--arg feature=home` で `:feature:home-impl`）。
+- **`**` には付けられません。** 何階層ぶんのディレクトリを作ればよいかが決まらないためです
+- 名前は Role 名と同じ規則で書きます（英字で始まり、英数字・`_`・`-` が続く）
 
 ## 既にファイルがあるとき
 
-生成先に既にファイルがある場合の振る舞いは `--arg onExisting=` で選べます。**既定は `fail` です。**
+生成先に既にファイルがある場合の振る舞いは `--arg onExisting=` で選べます。**デフォルトは `fail` です。** 複数のテンプレートを一度に生成するときは、`onExisting` は組全体に効きます。
 
 | 値 | 振る舞い |
 | --- | --- |
-| `fail` (既定) | 1つでも既にあれば**1つも書かずに**失敗します |
+| `fail` (デフォルト) | 1つでも既にあれば**1つも書かずに**失敗します |
 | `skip` | 1つでも既にあれば**1つも書かず**、失敗もしません |
 | `overwrite` | 既存を置き換えます |
 
 ```shell
 ./gradlew katachiTemplate \
-    --arg "roleName=UseCase" --arg "name=GetItemList" --arg "onExisting=overwrite"
+    --arg "template=UseCase" --arg "name=GetItemList" --arg "onExisting=overwrite"
 ```
 
-既定値は build.gradle.kts で設定することもできます。
+デフォルト値は build.gradle.kts で設定することもできます。
 
-```kts title="architecture-test/build.gradle.kts"
+```kts {6} title="architecture-test/build.gradle.kts"
 import me.tbsten.katachi.gradle.KatachiOnExisting
 
 katachi {
@@ -245,55 +196,30 @@ katachi {
 
 ## テンプレートの一覧と詳細を見る
 
-どの役割がテンプレートを持ち、何を渡せば何が生成されるかは **`katachiTemplates` task** で確かめられます。
+どのテンプレートがあり、何を渡せば何が生成されるかは **`katachiTemplates` task** で確認できます。
 
 ```shell
-# テンプレートを持つ役割の一覧（title / summary、パラメータ名、生成するファイルの数）
+# テンプレートの一覧（title / summary、パラメータ名、`--arg template=` に書ける指定）
 ./gradlew katachiTemplates
 
-# 1つの役割のテンプレートの詳細
-./gradlew katachiTemplates --arg "roleName=Repository"
+# 1つのテンプレートの詳細
+./gradlew katachiTemplates --arg "template=data.RepositoryInterface.user"
 ```
 
-詳細には、パラメータの一覧（型・既定値・受け付ける値・必須かどうか）、生成先のパスとファイルの中身、`katachiTemplate` のコマンドが出ます。
+詳細には、パラメータの一覧、生成先のパスとファイルの中身、`katachiTemplate` のコマンドが表示されます。
 
 ```
-  [templates] Previewed with: name=${name} (placeholder), item=${item} (placeholder), withImpl=true (default)
-  [templates] Files (paths relative to the project root):
+  [templates] Previewed with: item=${item} (placeholder)
+  [templates] File (path relative to the project root):
   [templates]   data/src/commonMain/kotlin/com/example/kmp/data/user/${name}Repository.kt
   [templates]     | interface ${name}Repository {
   ...
-  [templates] Other values change which files are produced:
-  [templates]   --arg withImpl=false: leaves out ${name}RepositoryImpl.kt
 ```
-
-生成先にワイルドカードの名前がある Role では、`Captures` の節も出ます。どの `--arg` がどのディレクトリを選ぶかが分かります。生成先のパスでは、capture の部分が `${resource}` のように出ます。モジュールの capture も、`:feature:*` なら `feature/${feature}/...` のように出ます。
-
-```
-  [templates] Captures (--arg values that choose the directory):
-  [templates]   resource: level 7 of src/main/kotlin/com/example/controller/*/*Controller.kt
-  ...
-  [templates] Generate it with, putting the directory or module each <capture> stands for in its place:
-  [templates]   ./gradlew katachiTemplate --arg roleName=api/Controller --arg resource=<resource> --arg name=Name
-```
-
-コマンドの capture の値は `<resource>` のような置き場所です。そのままでは実行できないので、生成したいディレクトリやモジュールの値に書き換えてから実行してください。
-
-生成先にワイルドカードが残って本当に置けない Role（名前の無い `*` や `**` しか無い Role）には、コマンドの代わりに理由と直し方が出ます。
-
-```
-  [templates] It cannot be generated as the layout is declared: HomeScreen.kt has no single directory (above).
-  [templates] Name every * left in the directory with capture("...") -- or .module(capture = "...") for a module key -- so that a run can choose it with --arg.
-```
-
-プレビューでは、パラメータと同じく capture の値も `${feature}` という文字列で走ります。テンプレートの中で値を検査していると、プレビューだけ失敗することがあります。
 
 ## まとめ
 
-- **`template { }`** をアーキテクチャ定義に追加すると、**`katachiTemplate` task** でテンプレートからコードを生成できます。
-- **`katachiTemplates` task** で、テンプレートの一覧と、パラメータ・生成されるファイルの詳細を確かめられます。
-- **生成先は `layout { }` が決めます。** テンプレートはファイル名だけを言うので、配置の定義と生成が食い違うことはありません。
-- 生成先に **ワイルドカードがあるときは、`capture()` で名前を付けて `--arg` で値を渡します。** 生成先がちょうど1つに決まらなければ、何も書かずに失敗します。
+- **`.template { }`** をファイルの宣言に追加すると、**`katachiTemplate` task** でそのファイルをコードとして生成できます。
+- **`katachiTemplates` task** で、テンプレートの一覧と、パラメータ・生成先のパスの詳細を確かめられます。
 
 ## 次のステップ
 

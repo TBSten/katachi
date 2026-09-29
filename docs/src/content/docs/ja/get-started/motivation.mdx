@@ -132,7 +132,12 @@ Katachi check failed: 1 violation (Unexpected: 1)
 
 </details>
 
-## ドキュメントを生成する
+## katachi による自動生成
+
+katachi ではアーキテクチャ定義から様々な物を生成することができます。
+
+<details>
+<summary>ドキュメントを生成する</summary>
 
 katachi で書いたプロジェクト構造の定義から、markdown のドキュメントを生成できます。
 
@@ -147,20 +152,40 @@ Gradle plugin の `katachi { architecture = "..." }` で定義の場所を指定
     ```kt title="ProjectArchitecture.kt"
     val projectArchitecture = architecture {
       "UseCase" {
-        title = "ユースケース"
-        summary = "各画面で発生するアプリ固有の1つの振る舞い"
-
-        example("GetUserUseCase", "ユーザーを取得する")
-        example("UpdateUserUseCase", "ユーザーを更新する")
-
         layout {
-          "src/main/kotlin/com/example/project/useCase" {
-            description = "複数の画面から使われるもの"
-            "*UseCase".ktFile()
-          }
+          "src/main/kotlin/com/example/project/useCase" /
+            "${capture("name")}UseCase".ktFile()
+                .template {
+                  val name = captureValue("name")
+                  """
+                    package com.example.project.useCase
+
+                    interface ${name}UseCase {
+                      suspend operator fun invoke()
+                    }
+                  """.trimIndent()
+                }
         }
       }
 
+      "UseCaseImplementation" {
+        layout {
+          "src/main/kotlin/com/example/project/useCase" /
+            "${capture("name")}UseCaseImpl".ktFile()
+                .template {
+                  val name = captureValue("name")
+                  """
+                    package com.example.project.useCase
+
+                    class ${name}UseCaseImpl : ${name}UseCase {
+                      override suspend fun invoke() {
+                        // ここに振る舞いを書く
+                      }
+                    }
+                  """.trimIndent()
+                }
+        }
+      }
       // ...
     }
     ```
@@ -200,12 +225,15 @@ katachi で定義したプロジェクト構造を SSoT にして、人間も AI
     href="/katachi/ja/guides/document-generation/"
 />
 
-## テンプレートからコード生成する
+</details>
 
-アーキテクチャ定義内に典型的なソースコードのテンプレートを埋め込むと、その役割のファイルをコマンド1つで生成できます。
+<details>
+<summary>テンプレートからコード生成する</summary>
+
+アーキテクチャ定義の、ファイルの宣言そのものに典型的なソースコードのテンプレートを付けると、そのファイルをコマンド1つで生成できます。
 
 ```shell
-$ ./gradlew katachiTemplate --arg roleName=UseCase --arg name=GetUser
+$ ./gradlew katachiTemplate --arg template=UseCase,UseCaseImplementation --arg name=GetUser
 ```
 
 <CodeComparison>
@@ -215,34 +243,31 @@ $ ./gradlew katachiTemplate --arg roleName=UseCase --arg name=GetUser
       "UseCase" {
         layout {
           "src/main/kotlin/com/example/project/useCase" {
-            "*UseCase".ktFile()
-            "*UseCaseImpl".ktFile()
-          }
-        }
+            "${capture("name")}UseCase".ktFile()
+                .template(id = "useCase") {
+              val name = captureValue("name")
+              """
+                package com.example.project.useCase
 
-        template {
-          val name by stringParameter()
-
-          file("${name}UseCase.kt") {
-            """
-              package com.example.project.useCase
-
-              interface ${name}UseCase {
-                suspend operator fun invoke()
-              }
-            """.trimIndent()
-          }
-
-          file("${name}UseCaseImpl.kt") {
-            """
-              package com.example.project.useCase
-
-              class ${name}UseCaseImpl : ${name}UseCase {
-                override suspend fun invoke() {
-                  // ここに振る舞いを書く
+                interface ${name}UseCase {
+                  suspend operator fun invoke()
                 }
-              }
-            """.trimIndent()
+              """.trimIndent()
+            }
+
+            "${capture("name")}UseCaseImpl".ktFile()
+                .template(id = "useCaseImpl") {
+              val name = captureValue("name")
+              """
+                package com.example.project.useCase
+
+                class ${name}UseCaseImpl : ${name}UseCase {
+                  override suspend fun invoke() {
+                    // ここに振る舞いを書く
+                  }
+                }
+              """.trimIndent()
+            }
           }
         }
       }
@@ -255,7 +280,7 @@ $ ./gradlew katachiTemplate --arg roleName=UseCase --arg name=GetUser
   <CodeComparison.Panel label="生成するコマンドと生成されたソースコード" labelVariant="success">
 
     ```shell
-    $ ./gradlew katachiTemplate --arg roleName=UseCase --arg name=GetUser
+    $ ./gradlew katachiTemplate --arg template=UseCase,UseCaseImplementation --arg name=GetUser
     [1/3] Processors: template
 
     [2/3] Processing...
@@ -285,9 +310,11 @@ $ ./gradlew katachiTemplate --arg roleName=UseCase --arg name=GetUser
 
 <LinkCard
     title="テンプレートからコード生成"
-    description="template { } の書き方と、パラメータ・既存ファイルがあるときの扱い。"
+    description=".template { } の書き方と、パラメータ・既存ファイルがあるときの扱い。"
     href="/katachi/ja/guides/generate-code-from-template/"
 />
+
+</details>
 
 ## katachi と Konsist
 
