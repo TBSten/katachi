@@ -91,7 +91,8 @@ public enum class DeclarationKind(
      * val thrown = shouldThrow<KatachiInvalidIdentifierException> {
      *     architecture {
      *         "domain".group {
-     *             "UseCase" { layout { "*UseCase.kt".file().template(id = "not valid") { "" } } }
+     *             "UseCase" { layout { "*UseCase.kt".file()
+     *                 .template(id = "not valid") { "" } } }
      *         }
      *     }
      * }

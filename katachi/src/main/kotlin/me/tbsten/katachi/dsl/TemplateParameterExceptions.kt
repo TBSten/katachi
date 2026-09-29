@@ -167,7 +167,8 @@ public class KatachiTemplateParameterReusedException internal constructor(
  *     "domain".group {
  *         "UseCase" {
  *             layout {
- *                 "useCase" / "UseCase.kt".file().template {
+ *                 "useCase" / "UseCase.kt".file()
+ *                     .template {
  *                     val name by stringParameter()
  *                     "interface ${name}UseCase"
  *                 }
@@ -236,7 +237,8 @@ public class KatachiMissingTemplateParameterException internal constructor(
  *     "data".group {
  *         "Repository" {
  *             layout {
- *                 "repository" / "Repository.kt".file().template {
+ *                 "repository" / "Repository.kt".file()
+ *                     .template {
  *                     val name by stringParameter()
  *                     val withImpl by booleanParameter(default = true)
  *                     "interface ${name}Repository // withImpl=$withImpl"

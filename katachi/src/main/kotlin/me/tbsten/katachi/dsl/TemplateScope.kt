@@ -29,7 +29,8 @@ import kotlin.reflect.KProperty
  *     "domain".group {
  *         "UseCase" {
  *             layout {
- *                 "useCase" / "*UseCase.kt".file().template {
+ *                 "useCase" / "*UseCase.kt".file()
+ *                     .template {
  *                     val name by stringParameter()
  *                     val implBody by stringParameter(default = """TODO("not implemented")""")
  *                     """
@@ -62,13 +63,15 @@ import kotlin.reflect.KProperty
  *                 // ./gradlew :architecture-test:katachiTemplate \
  *                 //   --arg template=data.Repository.repository,data.Repository.repositoryImpl \
  *                 //   --arg name=User --arg pageSize=50 --arg visibility=Internal
- *                 "repository" / "*Repository.kt".file().template(id = "repository") {
+ *                 "repository" / "*Repository.kt".file()
+ *                     .template(id = "repository") {
  *                     val name by stringParameter()
  *                     val pageSize by intParameter(default = 20)
  *                     val visibility by enumParameter(default = Visibility.Public)
  *                     "${visibility.name.lowercase()} interface ${name}Repository { val pageSize: Int get() = $pageSize }"
  *                 }
- *                 "repository" / "*RepositoryImpl.kt".file().template(id = "repositoryImpl") {
+ *                 "repository" / "*RepositoryImpl.kt".file()
+ *                     .template(id = "repositoryImpl") {
  *                     val name by stringParameter()
  *                     val visibility by enumParameter(default = Visibility.Public)
  *                     "${visibility.name.lowercase()} class ${name}RepositoryImpl : ${name}Repository"
@@ -99,7 +102,8 @@ public sealed interface TemplateScope {
      *
      * ## Example 1: declare a required parameter and one with a default
      * ```kt
-     * "useCase" / "*UseCase.kt".file().template {
+     * "useCase" / "*UseCase.kt".file()
+     *     .template {
      *     val name by stringParameter()
      *     val implBody by stringParameter(default = """TODO("not implemented")""")
      *
@@ -117,7 +121,8 @@ public sealed interface TemplateScope {
      *
      * ## Example 1: change the content on a Boolean flag
      * ```kt
-     * "repository" / "*Repository.kt".file().template {
+     * "repository" / "*Repository.kt".file()
+     *     .template {
      *     val name by stringParameter()
      *     val suspending by booleanParameter(default = true) // --arg suspending=false
      *     val modifier = if (suspending) "suspend " else ""
@@ -134,7 +139,8 @@ public sealed interface TemplateScope {
      *
      * ## Example 1: put a number into the generated code
      * ```kt
-     * "*Pager.kt".file().template {
+     * "*Pager.kt".file()
+     *     .template {
      *     val name by stringParameter()
      *     val pageSize by intParameter(default = 20) // --arg pageSize=50
      *     "const val ${name}_PAGE_SIZE: Int = $pageSize"
@@ -154,7 +160,8 @@ public sealed interface TemplateScope {
      * ```kt
      * enum class Visibility { Public, Internal }
      *
-     * "*.kt".file().template {
+     * "*.kt".file()
+     *     .template {
      *     val name by stringParameter()
      *     val visibility by enumParameter(Visibility.entries) // --arg visibility=Internal
      *     "${visibility.name.lowercase()} class $name"
@@ -176,7 +183,8 @@ public sealed interface TemplateScope {
      * ```kt
      * enum class Visibility { Public, Internal }
      *
-     * "*.kt".file().template {
+     * "*.kt".file()
+     *     .template {
      *     val name by stringParameter()
      *     val visibility by enumParameter(default = Visibility.Public) // --arg visibility=Internal
      *     "${visibility.name.lowercase()} class $name"
@@ -205,7 +213,8 @@ public sealed interface TemplateScope {
      * "Screen" {
      *     layout {
      *         ":feature:${capture("feature")}".module {
-     *             "*Screen.kt".file().template {
+     *             "*Screen.kt".file()
+     *                 .template {
      *                 val name by stringParameter()
      *                 val feature = captureValue("feature") // --arg feature=home
      *                 "package com.example.feature.$feature"
@@ -233,7 +242,8 @@ public sealed interface TemplateScope {
      *
      * ## Example 1: let the stand-in through, and only judge the value on a real run
      * ```kt
-     * "*.kt".file().template {
+     * "*.kt".file()
+     *     .template {
      *     val resource = captureValue("resource") // "${resource}" while previewing
      *     require(isPreview || resource.all { it.isLetterOrDigit() }) {
      *         "resource must be alphanumeric, was $resource"

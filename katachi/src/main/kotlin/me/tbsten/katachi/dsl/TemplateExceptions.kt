@@ -17,7 +17,8 @@ import me.tbsten.katachi.KatachiDeclarationException
  *     architecture {
  *         "domain".group {
  *             "UseCase" {
- *                 layout { "useCase" / "*UseCase.kt".file().template { "a" }.template { "b" } }
+ *                 layout { "useCase" / "*UseCase.kt".file()
+ *                     .template { "a" }.template { "b" } }
  *             }
  *         }
  *     }.flattenLayout()
@@ -66,8 +67,10 @@ public class KatachiDuplicateTemplateException internal constructor(
  *         "data".group {
  *             "Repository" {
  *                 layout {
- *                     "repository" / "*Repository.kt".file().template(id = "repository") { "" }
- *                     "repository" / "*RepositoryImpl.kt".file().template(id = "repository") { "" }
+ *                     "repository" / "*Repository.kt".file()
+ *                         .template(id = "repository") { "" }
+ *                     "repository" / "*RepositoryImpl.kt".file()
+ *                         .template(id = "repository") { "" }
  *                 }
  *             }
  *         }
@@ -115,8 +118,10 @@ public class KatachiDuplicateTemplateIdException internal constructor(
  *         "data".group {
  *             "Repository" {
  *                 layout {
- *                     "repository" / "*Repository.kt".file().template { "" }
- *                     "repository" / "*RepositoryImpl.kt".file().template(id = "impl") { "" }
+ *                     "repository" / "*Repository.kt".file()
+ *                         .template { "" }
+ *                     "repository" / "*RepositoryImpl.kt".file()
+ *                         .template(id = "impl") { "" }
  *                 }
  *             }
  *         }
@@ -164,7 +169,8 @@ public class KatachiMissingTemplateIdException internal constructor(
  *     architecture {
  *         "data".group {
  *             "Repository" {
- *                 layout { "repository" / "*Repository.kt".file().template { "" } }
+ *                 layout { "repository" / "*Repository.kt".file()
+ *                     .template { "" } }
  *             }
  *         }
  *     }.flattenLayout()

@@ -22,7 +22,8 @@ import me.tbsten.katachi.dsl.DeclarationSite
  * val arch = architecture {
  *     "domain".group {
  *         "UseCase" {
- *             layout { ".." / "GetUserUseCase.kt".file().template { "// a use case" } }
+ *             layout { ".." / "GetUserUseCase.kt".file()
+ *                 .template { "// a use case" } }
  *         }
  *     }
  * }

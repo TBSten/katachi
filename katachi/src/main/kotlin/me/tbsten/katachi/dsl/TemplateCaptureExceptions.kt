@@ -92,7 +92,8 @@ public class KatachiUnknownTemplateCaptureException internal constructor(
  *     "feature".group {
  *         "ViewModel" {
  *             layout {
- *                 "feature" / capture("feature") / "ViewModel.kt".file().template {
+ *                 "feature" / capture("feature") / "ViewModel.kt".file()
+ *                     .template {
  *                     val feature by stringParameter()
  *                     "package $feature"
  *                 }
@@ -172,10 +173,12 @@ public class KatachiTemplateParameterConflictException internal constructor(
  *
  * val arch = architecture {
  *     "a".group {
- *         "A" { layout { "a" / "A.kt".file().template { val name by stringParameter(); "// $name" } } }
+ *         "A" { layout { "a" / "A.kt".file()
+ *             .template { val name by stringParameter(); "// $name" } } }
  *     }
  *     "b".group {
- *         "B" { layout { "b" / "B.kt".file().template { val name by intParameter(); "// $name" } } }
+ *         "B" { layout { "b" / "B.kt".file()
+ *             .template { val name by intParameter(); "// $name" } } }
  *     }
  * }
  * val thrown = shouldThrow<KatachiTemplateParameterTypeConflictException> {

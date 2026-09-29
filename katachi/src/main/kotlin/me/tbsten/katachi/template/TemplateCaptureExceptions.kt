@@ -29,7 +29,8 @@ import me.tbsten.katachi.dsl.DeclarationSite
  *     "feature".group {
  *         "ViewModel" {
  *             layout {
- *                 "feature" / capture("feature") / "ViewModel.kt".file().template { "class ViewModel" }
+ *                 "feature" / capture("feature") / "ViewModel.kt".file()
+ *                     .template { "class ViewModel" }
  *             }
  *         }
  *     }

@@ -26,7 +26,8 @@ import me.tbsten.katachi.dsl.internal.requireValidIdentifier
  *     "domain".group {
  *         "UseCase" {
  *             layout {
- *                 "useCase" / "*UseCase.kt".file().template {
+ *                 "useCase" / "*UseCase.kt".file()
+ *                     .template {
  *                     val name by stringParameter()
  *                     "interface ${name}UseCase"
  *                 }
