@@ -43,6 +43,8 @@
         <vfs.asyncListener implementation="me.tbsten.katachi.intellij.ide.DefinitionChangeWatcher"/>
         <!-- The editor notification on files a template fits (design section 1). -->
         <editorNotificationProvider implementation="me.tbsten.katachi.intellij.ide.notification.KatachiEditorNotificationProvider"/>
+        <!-- The content of .ktFile().template { } / .ktsFile().template { } highlighted as Kotlin / Kotlin script. -->
+        <multiHostInjector implementation="me.tbsten.katachi.intellij.ide.injection.KatachiTemplateInjector"/>
     </extensions>
 
     <actions>
