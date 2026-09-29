@@ -36,6 +36,21 @@ const publicDirectoryIndex = {
 	},
 };
 
+// MDX の `import { LinkCard } from '@astrojs/starlight/components'` を、OGP 画像つきの
+// src/components/LinkCard.astro に差し替える。本文（MDX）を書き換えずに済み、dev でも build でも効く。
+// 入口の starlight-components.ts と LinkCard.astro 自身が読む元の入口は差し替えない（無限ループ回避）。
+const linkCardEntry = fileURLToPath(new URL('./src/components/starlight-components.ts', import.meta.url));
+const linkCardImpl = fileURLToPath(new URL('./src/components/LinkCard.astro', import.meta.url));
+const katachiLinkCardOverride = {
+	name: 'katachi-link-card-override',
+	enforce: 'pre',
+	resolveId(source, importer) {
+		if (source !== '@astrojs/starlight/components') return null;
+		if (importer && [linkCardEntry, linkCardImpl].includes(importer.split('?')[0])) return null;
+		return linkCardEntry;
+	},
+};
+
 // https://astro.build/config
 export default defineConfig({
 	// GitHub Pages の project site として公開する: https://tbsten.github.io/katachi/
@@ -204,7 +219,7 @@ export default defineConfig({
 		}),
 	],
 	vite: {
-		plugins: [publicDirectoryIndex],
+		plugins: [publicDirectoryIndex, katachiLinkCardOverride],
 		build: {
 			// 500 kB を超えるのは Mermaid の描画コードのチャンク（最大 1.5 MB）。astro-mermaid が
 			// 図のあるページでだけ動的に読むので、ほかのページの読み込みは重くならない。
