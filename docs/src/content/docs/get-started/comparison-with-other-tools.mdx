@@ -5,7 +5,10 @@ tags:
   - beginner
 ---
 
-import { Aside } from '@astrojs/starlight/components';
+{/*
+  Purpose of this page: to help users who already know about other tools understand how the scope of katachi differs from theirs.
+*/}
+
 
 Tools similar to katachi include Konsist, ArchUnit, and others.
 They are **not necessarily exclusive with katachi**.
@@ -61,16 +64,13 @@ Write `konsist { }` inside a role and call `assert(FileConstraintCheck())` in th
 
 ### Ideas
 
-You can turn the nature of a role directly into a constraint. The samples include one.
+You can turn the nature of a role directly into a constraint.
 
 - **A `UseCase` has exactly one `invoke` function** — the definition of the role itself
 - **A `Repository` is declared as an interface** — effective in a layer built around swappable implementations
 - **A role's files are visible from the outside** — `classes().must { it.hasPublicOrDefaultModifier }`
 - **A `ViewModel` does not reference Android view types** — stop layer leaks from the contents side
 - **Classes in the `data` layer carry a particular annotation** — keep serializable types from being missed
-
-When in doubt, the rule of thumb is **"would moving the file fix it?"**
-If it would, it belongs in katachi's `layout { }`; if it would not, it belongs in `konsist { }`.
 
 ## katachi and detekt
 
@@ -86,12 +86,7 @@ Write your own rules and it can check project-specific conventions too.
 **Its unit of attention is the contents of a file, so it does not clash with katachi.**
 katachi decides "this file may live here"; detekt looks at "how the contents are written".
 
-<Aside>
-**katachi has no detekt integration.** The only integration it ships is with Konsist.
-
-That said, `konsist { }` is only a thin layer on top of `fileConstraint()`, a **tool-agnostic hook**,
-so structurally a detekt-backed implementation is possible. It just does not exist today.
-</Aside>
+katachi has no detekt integration, but the division of roles works fine as it is.
 
 ### Ideas
 
@@ -119,5 +114,5 @@ What detekt is good at:
 ## Next steps
 
 - [Konsist integration](/katachi/guides/konsist-integration/) ... Learn how to write `konsist { }` and how placement violations and content violations end up in one report.
-- [FAQ](/katachi/get-started/faq/) ... Understand the design thinking behind why a tool that walks the whole project is needed.
+- [FAQ](/katachi/get-started/faq/) ... Understand the design thinking behind why a tool that checks every file in the project against the declaration is needed.
 - [Your first architecture definition](/katachi/get-started/first-architecture/) ... Add katachi to your project and try the split in practice.

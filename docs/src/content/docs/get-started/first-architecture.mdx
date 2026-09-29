@@ -5,6 +5,10 @@ tags:
   - beginner
 ---
 
+{/*
+  Purpose of this page: to let a user who understands katachi's motivation add katachi to their own project. That includes configuring the Gradle module and the surrounding setup.
+*/}
+
 import { Aside, Tabs, TabItem, Steps, Badge } from '@astrojs/starlight/components';
 
 <Aside>
@@ -194,7 +198,7 @@ If you are not yet convinced that you need katachi, read [Motivation](/katachi/g
 
         Gradle's files (the wrapper, `settings.gradle.kts`, build scripts, `gradle.properties` and the version catalog) are declared by the single `gradle()` line in step 3. If you have `buildSrc` or convention plugins, see the [Gradle recipe](/katachi/recipes/gradle/).
 
-        If there are too many existing violations to clear up right away, the experimental baseline feature lets you set the current violations aside in a ledger file (`katachi-baseline.json` by default) so that only new violations fail the test. Write `architecture { baseline() }`, then run the test once with `-Dkatachi.baseline.update=true` to create the ledger. Once you fix a violation that was set aside, the test keeps failing until you remove it from the ledger with `-Dkatachi.baseline.prune=true`. Declare the ledger file itself in `layout { }` too. See [Baseline](/katachi/guides/baseline/) for details.
+        If there are too many existing violations to clear up right away, the experimental baseline feature lets you tolerate the existing violations for now and fail only on new ones. The existing violations are recorded in a baseline file (`katachi-baseline.json` by default). Write `architecture { baseline() }`, then run the test once with `-Dkatachi.baseline.update=true` to create the baseline file. Once you fix a violation that had been tolerated, the test keeps failing until you remove it from the baseline file with `-Dkatachi.baseline.prune=true`. Declare the baseline file itself in `layout { }` too. See [Baseline](/katachi/guides/baseline/) for details.
 
     </Steps>
   </TabItem>

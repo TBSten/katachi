@@ -9,7 +9,6 @@ tags:
   このページの目的: すでに他ツールの存在を知っているユーザが katachi と他ツールとの守備範囲の違いを理解できるようにすること。
 */}
 
-import { Aside } from '@astrojs/starlight/components';
 
 katachi に似たツールとして、Konsist や ArchUnit などがあります。
 これらは **katachi と排他的とは限りません**。
@@ -65,16 +64,13 @@ katachi は `katachi-konsist` という任意モジュールでこの2つを繋�
 
 ### アイデア
 
-役割の性質をそのまま制約にできます。サンプルでも1つ書いています。
+役割の性質をそのまま制約にできます。
 
 - **`UseCase` は `invoke` 関数を1つだけ持つ** — 役割の定義そのもの
 - **`Repository` は interface として宣言される** — 実装の差し替えを前提にした層で効く
 - **役割のファイルは外から使える可視性を持つ** — `classes().must { it.hasPublicOrDefaultModifier }`
 - **`ViewModel` は Android の View 型を参照しない** — 層の漏れを中身の側から止める
 - **`data` 層のクラスは特定のアノテーションを持つ** — シリアライズ対象の取りこぼしを防ぐ
-
-迷ったときの目安は、**「配置を変えれば直るか」** です。
-直るなら katachi の `layout { }`、直らないなら `konsist { }` の側です。
 
 ## katachi と detekt
 
@@ -90,12 +86,7 @@ detekt は Kotlin のソースを静的解析して、コードスメルやス�
 **見ている単位がファイルの中身なので、katachi とは衝突しません。**
 katachi が「このファイルはここに置いてよい」を決め、detekt が「その中身がどう書かれているか」を見ます。
 
-<Aside>
-**katachi は detekt との統合を持っていません。** 用意しているのは Konsist との統合だけです。
-
-ただし `konsist { }` は `fileConstraint()` という**ツールに依存しない口**の上に薄く乗っているだけなので、
-構造としては detekt を使ったバックエンドも作れます。いまは無い、というだけです。
-</Aside>
+katachi は detekt との統合を持っていませんが、役割分担としては問題なく機能します。
 
 ### アイデア
 
@@ -123,5 +114,5 @@ detekt が向いているもの:
 ## 次のステップ
 
 - [Konsist との統合](/katachi/ja/guides/konsist-integration/) ... `konsist { }` の書き方と、配置の違反と中身の違反が1つのレポートにまとまる仕組みを学びましょう。
-- [FAQ](/katachi/ja/get-started/faq/) ... なぜプロジェクト全体を歩く道具が必要なのか、設計の考え方を理解しましょう。
+- [FAQ](/katachi/ja/get-started/faq/) ... なぜプロジェクトのファイルを全部見て宣言と照らし合わせる道具が必要なのか、設計の考え方を理解しましょう。
 - [初めてのアーキテクチャ定義](/katachi/ja/get-started/first-architecture/) ... あなたのプロジェクトに katachi を導入して、実際の使い分けを試してみましょう。

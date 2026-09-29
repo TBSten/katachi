@@ -5,6 +5,10 @@ tags:
   - beginner
 ---
 
+{/*
+  Purpose of this page: to help readers who have read the motivation page understand katachi's design philosophy more deeply.
+*/}
+
 import { Aside, LinkCard, CardGrid, FileTree } from '@astrojs/starlight/components';
 
 This page answers **why katachi has the shape it does**.
@@ -64,12 +68,12 @@ You will work through the reported paths one at a time, adding each to the defin
 moving it, or deleting it. That is itself **the team agreeing on its architecture again.**
 
 If you cannot clear them all up right away, the experimental baseline feature (`architecture { baseline() }`)
-lets you set the current violations aside in a ledger file so that only new violations fail the test.
-Setting them aside is temporary: you remove each violation from the ledger once you fix it. See [Baseline](/katachi/guides/baseline/) for how to write it.
+lets you tolerate the existing violations for now and fail only on new ones.
+Tolerating them is temporary: you remove each violation from the baseline file once you fix it. See [Baseline](/katachi/guides/baseline/) for how to write it.
 
 ## Konsist and ArchUnit exist — why does anything else need to?
 
-**They look at a different range.**
+**katachi and Konsist / ArchUnit look at different ranges.**
 
 Konsist and ArchUnit are tools for **narrowing down a target and then checking its contents**.
 
@@ -115,7 +119,7 @@ To find "something is here that should not be", you need **a tool that looks at 
 
 ## So does Konsist become unnecessary?
 
-No, **you use both. They do different jobs.**
+No, **using both together is the recommended way. katachi and Konsist do different jobs.**
 
 | | What it looks at |
 |---|---|
