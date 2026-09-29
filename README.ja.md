@@ -124,7 +124,7 @@ class ProjectArchitectureTest {
 | 置き場所の書き方 | [Layout](https://tbsten.github.io/katachi/ja/guides/layout/) |
 | ファイルの中身も検査する | [Konsist との統合](https://tbsten.github.io/katachi/ja/guides/konsist-integration/) |
 | ドキュメント・コードを生成する | [ドキュメント生成](https://tbsten.github.io/katachi/ja/guides/document-generation/)、[テンプレートからコード生成](https://tbsten.github.io/katachi/ja/guides/generate-code-from-template/) |
-| 既存の違反を棚上げして導入する | [baseline](https://tbsten.github.io/katachi/ja/guides/baseline/) |
+| 既存の違反を許容して導入する | [baseline](https://tbsten.github.io/katachi/ja/guides/baseline/) |
 | 実際の定義を見る | [サンプル](CONTRIBUTING.ja.md#サンプル)、[レシピ](https://tbsten.github.io/katachi/ja/recipes/) |
 
 ## モジュール

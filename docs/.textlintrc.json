@@ -1,0 +1,10 @@
+{
+  "plugins": {
+    "mdx": true
+  },
+  "rules": {
+    "prh": {
+      "rulePaths": ["./prh.yml"]
+    }
+  }
+}

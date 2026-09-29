@@ -1,0 +1,68 @@
+# 言い換え辞書（日本語のページが対象）。唯一の置き場。
+# 新しく見つけた言い換えはここに足す。検査は `pnpm run lint:text`。
+# 文脈で正しくも誤りにもなるもの（例: 概念の「役割」→「Role」）は入れない（AGENTS.md に書く）。
+version: 1
+rules:
+  # 「既定」は硬い。デフォルトに統一する。「既定値」を先に書き、長い方を優先する。
+  - expected: デフォルト値
+    pattern: 既定値
+    specs:
+      - from: 既定値は 5 です
+        to: デフォルト値は 5 です
+  - expected: デフォルト
+    pattern: 既定
+    specs:
+      - from: 既定の設定
+        to: デフォルトの設定
+      - from: 既定では無効です
+        to: デフォルトでは無効です
+
+  # baseline の文脈。今ある違反を許容し、新しい違反だけをエラーにする、という意味。
+  - expected: 許容
+    pattern: 棚上げ
+    specs:
+      - from: 今ある違反を棚上げする
+        to: 今ある違反を許容する
+
+  # 「台帳」は比喩で伝わりにくい。実体（ファイル）を書く。
+  - expected: baseline のファイル
+    pattern: 台帳
+    specs:
+      - from: 台帳に記録する
+        to: baseline のファイルに記録する
+
+  # 検出だけ（機械で置き換えにくい）。言い換えの案: 「プロジェクト全体を走査する」「プロジェクト内のすべてのファイルを調べる」
+  # expected は案の1つ（自動修正はしない。文脈に合わせて直す）。
+  - expected: プロジェクト全体を走査する
+    pattern: プロジェクト全体を歩く
+    prh: 「プロジェクト全体を走査する」「プロジェクト内のすべてのファイルを調べる」などに言い換える
+
+  - expected: リファレンス
+    pattern: レファレンス
+    specs:
+      - from: API レファレンス
+        to: API リファレンス
+
+  # 検出だけ（baseline のファイルを「縮める」）。言い換えの案: 「修正した違反を baseline のファイルから削除します」
+  # expected は案の1つ（自動修正はしない。文脈に合わせて直す）。
+  - expected: 修正した違反を削除します
+    pattern: 縮めます
+    prh: 「修正した違反を削除します」などに言い換える
+
+  - expected: RepositoryInterface
+    pattern: /Repository-interface/
+    specs:
+      - from: Repository-interface
+        to: RepositoryInterface
+  - expected: RepositoryImplementation
+    pattern: /Repository-implementation/
+    specs:
+      - from: Repository-implementation
+        to: RepositoryImplementation
+
+  # IDE のエディタに出る通知のこと。「帯」では何のことか伝わらない。
+  - expected: エディタの通知
+    pattern: 帯
+    specs:
+      - from: 帯が出る
+        to: エディタの通知が出る

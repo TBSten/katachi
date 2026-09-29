@@ -7,6 +7,11 @@
 **直さず報告する。**Gradle を使わず、ファイルも書き換えないので、ほかの手順と待ち合わせなくてよい。
 対象は日本語の原本だけ（英語は訳で、手順 2 が原本に揃える。原本が直れば訳も直る）。
 
+## 最初に `lint:text` を回す
+
+手順の最初に `cd docs && pnpm run lint:text` を回す（`docs/prh.yml` の言い換え辞書による機械の検査）。
+落ちたら、その内容（ファイルと行・語）を結果の冒頭に書いて報告に入れる（直さない）。通ったことも書く。
+
 ## 対象
 
 - 検査される側: `docs/src/content/docs/ja/` の全ページ（get-started / guides / recipes / roadmap）、`README.ja.md`、
@@ -23,7 +28,7 @@
 
 - `docs/src/content/docs/ja/guides/` のほかのガイド（`generate-code-from-template.mdx`・`processor.mdx`・`baseline.mdx`・
   `document-generation.mdx` など）
-- `docs/AGENTS.md`（`docs/CLAUDE.md` は同じ内容）: コード例の書き方・用語・節の作り方の決まり
+- `docs/AGENTS.md`（`docs/CLAUDE.md` は同じ内容）: コード例の書き方・用語・節の作り方の決まり。とくに「文章の方針」の節（原則・理由・🆖/🆗 の例）は、機械（`lint:text`）では拾えない判断の要る決まりなので、必ずチェックリストに入れ、例に似た別の場面にも当てはめて照合する
 - `docs/src/content/docs/ja/recipes/` のうち、自分でルールを述べているもの
 
 確認には `grep -n -E "推奨|ベストプラクティス|既定|しない|避け|逃げ道|良い|悪い|注意" <ファイル>` が使える。

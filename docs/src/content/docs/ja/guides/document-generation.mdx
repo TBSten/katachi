@@ -222,7 +222,7 @@ group は入れ子にでき、入れ子の group はその親の group のディ
 
 | プロパティ | 生成されるドキュメントでの役割 | 使用されるページ |
 |---|---|---|
-| [`title`](/katachi/api-docs/katachi/me.tbsten.katachi.dsl/-role-scope/title.html) | 役割ページの見出し。既定は役割の識別子 | `<Role名>.md`、および索引・一覧のリンク文字列 |
+| [`title`](/katachi/api-docs/katachi/me.tbsten.katachi.dsl/-role-scope/title.html) | 役割ページの見出し。デフォルトは役割の識別子 | `<Role名>.md`、および索引・一覧のリンク文字列 |
 | [`summary`](/katachi/api-docs/katachi/me.tbsten.katachi.dsl/-role-scope/summary.html) | 一覧の表に入る1行 | `<Role名>.md`、親の `README.md` |
 | [`description`](/katachi/api-docs/katachi/me.tbsten.katachi.dsl/-role-scope/description.html) | 役割ページの本文。書いた Markdown が改行も含めてそのまま入ります。katachi は構造を足さないので、**中の見出しは書き手が決めます** | `<Role名>.md` |
 | [`example(name, description)`](/katachi/api-docs/katachi/me.tbsten.katachi.dsl/-role-scope/example.html) | 具体例。1つの例につき1回呼びます。**呼んだ順**に並びます | `<Role名>.md` の `## Examples` |
@@ -284,7 +284,7 @@ group に設定できるのは Role と同じ4つです。**`example()` だけ�
 
 | プロパティ | 生成されるドキュメントでの役割 | 使用されるページ |
 |---|---|---|
-| [`title`](/katachi/api-docs/katachi/me.tbsten.katachi.dsl/-group-scope/title.html) | group の README の見出し。既定は group の識別子 | `README.md`, `<グループ名>/README.md` |
+| [`title`](/katachi/api-docs/katachi/me.tbsten.katachi.dsl/-group-scope/title.html) | group の README の見出し。デフォルトは group の識別子 | `README.md`, `<グループ名>/README.md` |
 | [`summary`](/katachi/api-docs/katachi/me.tbsten.katachi.dsl/-group-scope/summary.html) | 親の Document map と group の節に出る1行 | `README.md`, `<グループ名>/README.md` |
 | [`description`](/katachi/api-docs/katachi/me.tbsten.katachi.dsl/-group-scope/description.html) | group の README の本文。 | `<グループ名>/README.md` |
 | [`documented`](/katachi/api-docs/katachi/me.tbsten.katachi.dsl/-group-scope/documented.html) | `false` にすると group ごとドキュメントに出ません。検査には参加します | --- |

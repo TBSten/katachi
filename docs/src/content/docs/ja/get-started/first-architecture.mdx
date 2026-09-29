@@ -198,7 +198,7 @@ katachi が必要かどうか疑問がある場合は、先に [モチベーシ�
 
         Gradle のファイル（wrapper・`settings.gradle.kts`・build スクリプト・`gradle.properties`・version catalog）は、手順3の `gradle()` の1行で宣言できます。`buildSrc` や convention plugin がある場合は [Gradle 周辺のレシピ](/katachi/ja/recipes/gradle/) を参照してください。
 
-        既存の違反が多くてすぐには片付けられない場合は、実験的な機能の baseline で今ある違反をとりあえず許容し、新しい違反だけをエラーにすることもできます。今ある違反は baseline のファイル（既定は `katachi-baseline.json`）に記録します。`architecture { baseline() }` と書き、最初に `-Dkatachi.baseline.update=true` を付けて実行して baseline のファイルを作ります。許容していた違反を直したら、`-Dkatachi.baseline.prune=true` で baseline のファイルから消すまでテストは落ちます。baseline のファイル自身も `layout { }` で宣言します。詳しくは [baseline](/katachi/ja/guides/baseline/) を参照してください。
+        既存の違反が多くてすぐには片付けられない場合は、実験的な機能の baseline で今ある違反をとりあえず許容し、新しい違反だけをエラーにすることもできます。今ある違反は baseline のファイル（デフォルトは `katachi-baseline.json`）に記録します。`architecture { baseline() }` と書き、最初に `-Dkatachi.baseline.update=true` を付けて実行して baseline のファイルを作ります。許容していた違反を直したら、`-Dkatachi.baseline.prune=true` で baseline のファイルから消すまでテストは落ちます。baseline のファイル自身も `layout { }` で宣言します。詳しくは [baseline](/katachi/ja/guides/baseline/) を参照してください。
 
     </Steps>
   </TabItem>

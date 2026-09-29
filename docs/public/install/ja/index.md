@@ -87,7 +87,7 @@ sh /tmp/katachi-install.sh doctor --lang ja
 sh /tmp/katachi-install.sh init --lang ja
 ```
 
-`--lang ja` は、チェックリストとレポートを日本語で取得し、**スクリプトの出力（`summary` の文面を含む）も日本語にする**ための指定です。**省略すると英語になります**（サイトの既定が英語のため）。一度指定すれば作業用ディレクトリに記録されるので、以降のコマンドでは要りません。
+`--lang ja` は、チェックリストとレポートを日本語で取得し、**スクリプトの出力（`summary` の文面を含む）も日本語にする**ための指定です。**省略すると英語になります**（サイトのデフォルトが英語のため）。一度指定すれば作業用ディレクトリに記録されるので、以降のコマンドでは要りません。
 
 スクリプトは 0-1 で取得済みです。**`curl` は手順全体で1回だけ**で、`init` が自分自身を作業用ディレクトリにコピーするので、以降のコマンドはそちらを使います。
 
@@ -324,7 +324,7 @@ sh $CLI scaffold --package com.example.app
 
 例外は、生成されたファイルを変えないとビルドがそもそも動かない場合だけです。これは上のルールより優先します。ただしその場合はスクリプト側のバグなので、`add changed` に理由を書いて記録し、`questions` にも登録してください。
 
-`konsist { }` を使わない方針が決まっている場合だけ `--no-konsist` を付ける。決まっていなければ既定のままでよい。
+`konsist { }` を使わない方針が決まっている場合だけ `--no-konsist` を付ける。決まっていなければデフォルトのままでよい。
 
 作成できたら、この時点で一度動かす。
 
@@ -345,7 +345,7 @@ Katachi check failed: 4 violations (Unexpected: 4)
         "BuildGradle" { ... }
 ```
 
-違反の表示件数は既定では 10 件ですが、**`scaffold` が生成するテストは `maxViolations = 200` にしてあります**（導入中は数十〜百件出るため）。`TODO` コメントが付いているので、ステップ 4 で外します。
+違反の表示件数はデフォルトでは 10 件ですが、**`scaffold` が生成するテストは `maxViolations = 200` にしてあります**（導入中は数十〜百件出るため）。`TODO` コメントが付いているので、ステップ 4 で外します。
 
 **この形で落ちていれば配線は正しい**ということです。`Unexpected` 以外のエラー、たとえばコンパイルエラー、依存の解決失敗、`Could not start Gradle Test Executor` のようなものが出た場合だけが問題です。
 
@@ -379,7 +379,7 @@ sh $CLI docs --api
 
 1本目はガイド全体が1つのテキストにまとまったものを、2本目は API リファレンス（Dokka）のルート索引を取得する。**ページを1つずつ開かないこと。** どちらもすでに取得済みなら取り直さない。ガイドの分量が問題になる場合は `--small` を付ける。
 
-**取得されるのは英語版です。** ドキュメントサイトの既定ロケールが英語で、この形式は既定ロケールのぶんしか生成されないため。DSL の API 名は言語に依らないので、定義を書くうえでは差し支えない。
+**取得されるのは英語版です。** ドキュメントサイトのデフォルトロケールが英語で、この形式はデフォルトロケールのぶんしか生成されないため。DSL の API 名は言語に依らないので、定義を書くうえでは差し支えない。
 
 読み終えたら `sh $CLI check 3-1`。
 
@@ -567,13 +567,13 @@ sh $CLI compare-violations
 
 **緑になったら `ProjectArchitectureTest.kt` の `maxViolations` を外してください。** `scaffold` が導入中の見通しのために入れた一時設定で、`TODO` コメントが目印です。外したあとにもう一度 `./gradlew :architecture-test:test` を実行し、結果が変わらないことを確かめます。違反を残す場合、残した違反が 10 件を超えるなら `maxViolations` は外さずに残してかまいません（外すと 10 件しか表示されません）。残したときは、その旨を `violations` に書いてください。
 
-**残す違反が多く、ユーザが「今ある違反は棚上げして、新しい違反だけで落としたい」と望む場合は、baseline を提案できます。** 実験的な機能（`@ExperimentalKatachiApi`）なので、使うかどうかは `questions` でユーザに確認してから入れてください。使う場合の手順は次のとおりです。
+**残す違反が多く、ユーザが「今ある違反は許容して、新しい違反だけで落としたい」と望む場合は、baseline を提案できます。** 実験的な機能（`@ExperimentalKatachiApi`）なので、使うかどうかは `questions` でユーザに確認してから入れてください。使う場合の手順は次のとおりです。
 
-- `ProjectArchitecture.kt` の `architecture { }` に `baseline()` を書き、`val projectArchitecture` に `@OptIn(ExperimentalKatachiApi::class)` を付ける。台帳のファイルは既定で `katachi-baseline.json`（プロジェクトルート）
-- 台帳のファイルも検査の対象なので、役割を1つ足して `layout { }` で宣言する（例: `"BaselineFile" { layout { "katachi-baseline.json".file() } }`）。宣言しないと台帳自身が `[UnexpectedFile]` になり、これは棚上げできない
-- `./gradlew :architecture-test:test -Dkatachi.baseline.update=true` で、今ある違反を台帳に書き出す。以降は台帳に無い違反だけでテストが落ちる。違反を直すと、その項目が `[StaleBaselineEntry]` で落ちるので、`-Dkatachi.baseline.prune=true` で消す（CI（`CI=true`）では update も prune も拒否される）
+- `ProjectArchitecture.kt` の `architecture { }` に `baseline()` を書き、`val projectArchitecture` に `@OptIn(ExperimentalKatachiApi::class)` を付ける。baseline のファイルはデフォルトで `katachi-baseline.json`（プロジェクトルート）
+- baseline のファイルも検査の対象なので、役割を1つ足して `layout { }` で宣言する（例: `"BaselineFile" { layout { "katachi-baseline.json".file() } }`）。宣言しないと baseline のファイル自身が `[UnexpectedFile]` になり、これは baseline に入れられない
+- `./gradlew :architecture-test:test -Dkatachi.baseline.update=true` で、今ある違反を baseline のファイルに書き出す。以降は baseline のファイルに無い違反だけでテストが落ちる。違反を直すと、その項目が `[StaleBaselineEntry]` で落ちるので、`-Dkatachi.baseline.prune=true` で消す（CI（`CI=true`）では update も prune も拒否される）
 
-棚上げした違反も `violations` に書いてください。台帳に入れても、違反が消えたわけではありません。
+許容した違反も `violations` に書いてください。baseline のファイルに入れても、違反が消えたわけではありません。
 
 違反を残した場合は `sh $CLI warn 4 "..."` で何を残したかを1行書く。
 
@@ -720,7 +720,7 @@ Pull request 作成時・Merge request 作成時・pre-push hook など スト�
 
 1. `architecture { }` の先頭に `title = "..."` と `description = "..."` を書く（3-2 で書いていれば飛ばす）。ルートページの見出しと本文になる。
 2. `./gradlew :architecture-test:katachiDocs` で生成し、`architecture-test/build/katachi/docs/` を確かめる。
-3. **生成物をコミットするかをユーザに提案する。** 既定の出力先は `build/` の下なのでコミットされない。コミットするなら次の3つを揃える。1つでも欠けると、テストか CI が落ちるか、ドキュメントが黙って古くなる。
+3. **生成物をコミットするかをユーザに提案する。** デフォルトの出力先は `build/` の下なのでコミットされない。コミットするなら次の3つを揃える。1つでも欠けると、テストか CI が落ちるか、ドキュメントが黙って古くなる。
    - `architecture-test/build.gradle.kts` の `katachi { }` に出力先を書く（`architecture = ...` の行はそのまま）
 
      ```kts
@@ -819,7 +819,7 @@ Pull request 作成時・Merge request 作成時・pre-push hook など スト�
 
    **1つの役割に2つ以上の `.template { }` があるときは、`.template(id = "名前")` で見分ける。** 役割のテンプレートが1つだけなら `id` は省略できる。
 
-   使えるのは `stringParameter()` / `booleanParameter()` / `intParameter()`（`default = ...` も可）、`enumParameter()`（`entries` か既定値を渡す）、それに生成先のワイルドカードに名前を付ける `capture("名前")`（layout のディレクトリ・ファイル名・モジュールキーのどこにでも埋め込める）と、その値を読む `captureValue("名前")`（template の中）/ `wildcard("名前")`（layout のモジュールブロックの中）だけです。これ以外の語を推測で足さないこと。
+   使えるのは `stringParameter()` / `booleanParameter()` / `intParameter()`（`default = ...` も可）、`enumParameter()`（`entries` かデフォルト値を渡す）、それに生成先のワイルドカードに名前を付ける `capture("名前")`（layout のディレクトリ・ファイル名・モジュールキーのどこにでも埋め込める）と、その値を読む `captureValue("名前")`（template の中）/ `wildcard("名前")`（layout のモジュールブロックの中）だけです。これ以外の語を推測で足さないこと。
 3. テンプレート独自のパラメータ（`--arg name=...`）は、モジュール側の設定なしにそのまま渡せる。受け付けるのは、名指しした役割の `.template { }` が宣言した名前と、`layout { }` のワイルドカードに付けた名前だけで、打ち間違いはこれまでどおり `Unknown processor argument(s): ...` で落ちる。
 4. 1本生成し、**直後に検査が通ること**を確かめる。`--arg template=` には、group があれば `group名.役割名`、無ければ役割名を書く。テンプレートが2つ以上ある役割は `.id` を続ける（`domain.UseCase.useCase` のように）。
 

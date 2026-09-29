@@ -64,6 +64,10 @@ jobs:
         working-directory: docs
         run: pnpm install --frozen-lockfile
 
+      - name: Lint text (docs/prh.yml)
+        working-directory: docs
+        run: pnpm run lint:text
+
       - name: Build
         working-directory: docs
         run: pnpm run build

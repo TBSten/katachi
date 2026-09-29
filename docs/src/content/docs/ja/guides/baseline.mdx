@@ -67,7 +67,7 @@ fun DeclarationContainerScope.baselineFile() = "BaselineFile" {
 ./gradlew :architecture-test:test -Dkatachi.baseline.update=true
 ```
 
-何件記録したかは、次の1行で報告されます。この行はテストの標準エラー出力に出るので、Gradle の既定の設定ではコンソールに出ません。
+何件記録したかは、次の1行で報告されます。この行はテストの標準エラー出力に出るので、Gradle のデフォルトの設定ではコンソールに出ません。
 
 ```
 Katachi baseline file:///path/to/project/katachi-baseline.json: 2 violations recorded in 2 entries (+2, -0).

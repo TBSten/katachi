@@ -11,7 +11,8 @@
     "start": "astro dev",
     "build": "astro build",
     "preview": "astro preview",
-    "astro": "astro"
+    "astro": "astro",
+    "lint:text": "textlint \"src/content/docs/ja/**/*.mdx\" \"../README.ja.md\" \"public/install/ja/index.md\""
   },
   "dependencies": {
     "@astrojs/starlight": "^0.42.2",
@@ -27,6 +28,9 @@
     "starlight-theme-nova": "^0.12.3"
   },
   "devDependencies": {
-    "@types/js-yaml": "^4.0.9"
+    "@types/js-yaml": "^4.0.9",
+    "textlint": "^15.8.0",
+    "textlint-plugin-mdx": "^1.1.0",
+    "textlint-rule-prh": "^6.1.0"
   }
 }
