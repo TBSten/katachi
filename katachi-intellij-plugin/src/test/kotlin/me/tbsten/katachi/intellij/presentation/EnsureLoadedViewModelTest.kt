@@ -161,6 +161,23 @@ class EnsureLoadedViewModelTest {
     }
 
     // covers: 論点11
+    // The entries' half of V2 M3: they must send EnsureLoaded again while the index says
+    // LoadingWithoutUserDisabled, and the ViewModel then loads with the setting turned back on.
+    @Test
+    fun `OFF で探しただけの後に ON へ戻せば次の EnsureLoaded で読み込んで索引が使えるようになる`() {
+        autoLoad = false
+        send(KatachiIntent.EnsureLoaded)
+        assertEquals(PlacementIndexState.Unavailable(PlacementUnavailableReason.LoadingWithoutUserDisabled), indexState())
+
+        autoLoad = true
+        send(KatachiIntent.EnsureLoaded)
+
+        assertEquals(1, runner.requests.size)
+        assertTrue(vm.loadStarted.value)
+        assertTrue(indexState() is PlacementIndexState.Ready)
+    }
+
+    // covers: 論点11
     @Test
     fun `一度読み込んだ後の同期の完了で定義モジュールが増えていれば読み直す`() {
         send(KatachiIntent.EnsureLoaded)
