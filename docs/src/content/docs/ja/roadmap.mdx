@@ -5,47 +5,44 @@ tags:
   - advanced
 ---
 
+{/*
+  このページの目的: katachi のバージョンごとの計画と、いま何が入っていて何が先送りかを示すこと。機能の使い方は各ガイドに任せる。
+*/}
+
 import { Steps } from '@astrojs/starlight/components';
 
 ## 全体像
 
-| バージョン | テーマ | 完了と言える条件 |
-|---|---|---|
-| **v0.1** | DSL + 検査 + `konsist { }` | 大規模なプロジェクトを表現でき、検査が通る |
-| **v0.2** | Gradle plugin + ドキュメント生成 + テンプレート + baseline | `./gradlew katachiDocs` でドキュメントが出る。既存の違反を baseline に棚上げした状態で、新しい違反と、直したのに台帳に残っている項目でだけテストが落ちる |
-| **v0.3 以降** | `declarations { }` / レポート出力 / 語彙数の計測 | **既存プロジェクト**に導入できる。v0.1 で書いた `konsist { }` の大半を `declarations { }` で置き換えられる |
-
-## v0.2 — Gradle plugin・ドキュメント生成・テンプレート・baseline
-
-katachi の売りが揃う段階で、**0.2.0 としてリリースしました**。Gradle plugin の足場と、その上で処理を走らせる仕組み（processor）、**ドキュメント生成**、テンプレートからのコード生成、baseline（実験的）が入っています。v0.2 の計画にあった `dependsOnlyOn` は 0.2.0 に間に合わず、下の v0.3 以降の表へ回しました。
-
-```shell
-./gradlew katachiDocs
-```
-
-プラグインを適用し、`katachi { architecture = "..." }` で定義を指せば、**テストと同じ定義から** Markdown を 2 軸で生成できます。
-
-- **役割リファレンス** — この役割は何で、どこに置くか
-- **ディレクトリ構成** — このディレクトリに何が置けるか
-
-両方が同じモデルから導かれるので、**互いに矛盾しません。** 生成したあとのリンク切れも機械的に検査します。
-
-出力の形は [ドキュメント生成](/katachi/ja/guides/document-generation/) に、走らせる仕組みは [ArchitectureProcessor とそのカスタマイズ](/katachi/ja/guides/processor/) に書いてあります。ドキュメント生成は processor の1つにすぎず、利用者が書いた処理も同じタスクから呼べます。
-
-### そのほか v0.2 に入ったもの
-
-| 機能 | 何ができるか |
-|---|---|
-| [`template { }`](/katachi/ja/guides/generate-code-from-template/) | 役割に適合するファイルをテンプレートから生成する。引数は型付きで受けられる（`stringParameter()` / `booleanParameter()` / `intParameter()` / `enumParameter()`）。`katachiTemplates` でテンプレートの一覧と詳細を確かめられる |
-| [**baseline**](/katachi/ja/guides/baseline/)（実験的） | 既存の違反を台帳のファイルに記録し、**新しく増えた分だけ**で落とす。`architecture { baseline() }` と書き、台帳のファイル自身も `layout { }` で宣言する。`-Dkatachi.baseline.update=true` で記録、`-Dkatachi.baseline.prune=true` で直した分を台帳から消す |
-| [名前付きワイルドカード `capture()`](/katachi/ja/guides/layout/) | layout の `*` に名前を付け、テンプレートの生成先をその値で決める。`"feature" / capture("feature") / ...` や `":feature:*".module(capture = "feature") { }` と書き、`--arg feature=home` で値を渡す。画面ごとのディレクトリや `:feature:*` モジュールにある ViewModel / Screen もテンプレートで作れる。検査の上では `*` と同じ |
-| [`gradle()`](/katachi/ja/recipes/gradle/) | wrapper・settings・build スクリプト・`gradle.properties`・version catalog など、どのプロジェクトにもある Gradle のファイルを1行で宣言する |
-| [ディレクトリの `konsist { }` の直下限定](/katachi/ja/guides/konsist-integration/#ディレクトリごとに制約をかける) | ディレクトリブロックに書いた `konsist { }` を、サブツリー全体ではなく直下のファイルだけに効かせる。`konsist(scope = DirectOnly)` と書く。親と子で制約が違う構成（`util/` と `util/ksp/` など）に使う |
-| IDE プラグイン（**未公開**） | IntelliJ IDEA / Android Studio のツールウィンドウからテンプレートを選び、引数を埋めてコードを生成する。katachi 本体の版とは別に進めていて、まだ公開していない |
+<table>
+    <thead>
+        <tr>
+            <th style="min-width: 6rem;">バージョン</th>
+            <th style="min-width: 12rem;">テーマ</th>
+            <th style="min-width: 36rem;">完了と言える条件</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td><strong>v0.1</strong></td>
+            <td>DSL + 検査 + <code>konsist &#123; &#125;</code></td>
+            <td>大規模なプロジェクトを表現でき、検査が通る</td>
+        </tr>
+        <tr>
+            <td><strong>v0.2</strong></td>
+            <td>Gradle plugin + ドキュメント生成 + テンプレート + baseline</td>
+            <td><code>./gradlew katachiDocs</code> でドキュメントが出る。既存の違反を baseline で許容した状態で、新しい違反と、直したのに baseline のファイルに残っている項目でだけテストが落ちる</td>
+        </tr>
+        <tr>
+            <td><strong>v0.3 以降</strong></td>
+            <td><code>declarations &#123; &#125;</code> / レポート出力 / 語彙数の計測</td>
+            <td><strong>既存プロジェクト</strong>に導入できる。v0.1 で書いた <code>konsist &#123; &#125;</code> の大半を <code>declarations &#123; &#125;</code> で置き換えられる</td>
+        </tr>
+    </tbody>
+</table>
 
 ## v0.3 以降 — 既存プロジェクトへの導入と `declarations { }`
 
-既存プロジェクトに入れやすくするのが v0.3 以降の主題です。今ある違反を棚上げする baseline だけは、実験的な機能として v0.2 に先に入りました。
+既存プロジェクトに入れやすくするのが v0.3 以降の主題です。今ある違反をとりあえず許容し、新しい違反だけをエラーにする baseline だけは、実験的な機能として v0.2 に先に入りました。
 
 | 機能 | 何ができるか |
 |---|---|
@@ -72,7 +69,7 @@ v0.1 の `konsist { }` は、言ってしまえば**逃げ道**です。「`*Use
 }
 ```
 
-同じ規則が、こう読めるようにしたい。
+同じ規則が、こう読めるようにすべきでしょう。v0.3 以降でこれを叶える予定です。
 
 ```kt
 "UseCase" {
@@ -83,23 +80,6 @@ v0.1 の `konsist { }` は、言ってしまえば**逃げ道**です。「`*Use
 }
 ```
 
-列挙していない top-level 宣言は書けません。2つめのクラスも、トップレベルの拡張関数も、置き忘れた `typealias` も。`layout { }` が配置の allow list であるのと同じ意味で、このブロックが中身の allow list になります。
+列挙していない top-level 宣言は書けません。`layout { }` が配置の allow list であるのと同じ意味で、このブロックが中身の allow list になります。
 
-katachi は「何が期待されていたか」を知っています。だから違反のときに、「制約が落ちた」以上のことを言えます。
-
-```
-[UnsatisfiedFileConstraint] core/domain/.../GetUserUseCase.kt
-  The top-level declarations do not match what role UseCase allows.
-  Expected: interface *UseCase, class Default*UseCase
-  Actual:   interface GetUserUseCase, class GetUserUseCaseImpl, object Factory
-  How to fix:
-    - Rename GetUserUseCaseImpl to DefaultGetUserUseCase
-    - Delete object Factory, or move it to another file
-```
-
-**上の形は素案で、確定ではありません。** 何を昇格させるかは、v0.1 を実プロジェクトで使って**溜まった `konsist { }` を見てから**決めます。材料を集める時間をとるため、v0.2 からこちらへ移しました。
-
-## 次のステップ
-
-- [モチベーションと katachi の立ち位置](/katachi/ja/get-started/motivation/) ... なぜこの順番なのかは、そもそも何を解こうとしているかに紐づいています。
-- [初めてのアーキテクチャ定義](/katachi/ja/get-started/first-architecture/) ... いま動く範囲を実際に触ってみましょう。
+まだ API の設計段階ですが、v0.3 以降で高い確率で実装されるでしょう。

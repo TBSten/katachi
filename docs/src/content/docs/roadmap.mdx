@@ -5,47 +5,44 @@ tags:
   - advanced
 ---
 
+{/*
+  The purpose of this page: to show katachi's plans by version, and what is in now versus what has been put off. How to use each feature is left to the individual guides.
+*/}
+
 import { Steps } from '@astrojs/starlight/components';
 
 ## Overview
 
-| Version | Theme | Definition of done |
-|---|---|---|
-| **v0.1** | DSL + checks + `konsist { }` | Can express a large project, and checks pass |
-| **v0.2** | Gradle plugin + documentation generation + templates + baseline | `./gradlew katachiDocs` produces documentation. With existing violations set aside in a baseline, the test fails only on new violations and on entries still in the ledger after they were fixed |
-| **v0.3 and beyond** | `declarations { }` / report output / vocabulary-size measurement | Can be adopted in an **existing project**. Most of the `konsist { }` written in v0.1 can be replaced with `declarations { }` |
-
-## v0.2 — Gradle plugin, documentation generation, templates and baseline
-
-This is the stage where katachi's selling points all come together, and it **has been released as 0.2.0.** It includes the Gradle plugin scaffolding, the mechanism that runs work on top of it (processors), **documentation generation**, code generation from templates and baseline (experimental). `dependsOnlyOn`, which was planned for v0.2, did not make it into 0.2.0 and has been moved to the v0.3-and-beyond table below.
-
-```shell
-./gradlew katachiDocs
-```
-
-Apply the plugin and point it at your definition with `katachi { architecture = "..." }`, and you can generate Markdown along two axes **from the same definition as the tests.**
-
-- **Role reference** — what this role is, and where it goes
-- **Directory structure** — what can go in this directory
-
-Since both are derived from the same model, **they can never contradict each other.** Broken links in the generated output are checked mechanically afterwards, too.
-
-The shape of the output is described in [Document generation](/katachi/guides/document-generation/), and the mechanism that runs it in [ArchitectureProcessor and customizing it](/katachi/guides/processor/). Documentation generation is just one processor; a processor you write yourself is invoked through the same task.
-
-### Also included in v0.2
-
-| Feature | What it enables |
-|---|---|
-| [`template { }`](/katachi/guides/generate-code-from-template/) | Generates a file that conforms to a role from a template. Arguments can be typed (`stringParameter()` / `booleanParameter()` / `intParameter()` / `enumParameter()`). `katachiTemplates` shows the list of templates and their details |
-| [**baseline**](/katachi/guides/baseline/) (experimental) | Records existing violations in a ledger file and fails only on **newly added** ones. Write `architecture { baseline() }` and declare the ledger file itself in `layout { }` too. Record with `-Dkatachi.baseline.update=true`, and drop what you fixed from the ledger with `-Dkatachi.baseline.prune=true` |
-| [Named wildcards with `capture()`](/katachi/guides/layout/) | Names a `*` in the layout and lets the template's destination be decided by its value. Write `"feature" / capture("feature") / ...` or `":feature:*".module(capture = "feature") { }` and pass the value with `--arg feature=home`. ViewModels and Screens living in a directory per screen or in `:feature:*` modules can now be generated from a template too. For the check it is the same as `*` |
-| [`gradle()`](/katachi/recipes/gradle/) | Declares, in one line, the Gradle files every project has: the wrapper, settings, build scripts, `gradle.properties` and the version catalog |
-| [Limiting a directory's `konsist { }` to direct children](/katachi/guides/konsist-integration/#constraining-one-directory) | Makes a `konsist { }` written in a directory block apply only to the files directly in it, rather than to its whole subtree. Written as `konsist(scope = DirectOnly)`. For layouts where a parent and its child need different rules (such as `util/` and `util/ksp/`) |
-| IDE plugin (**unpublished**) | Pick a template from a tool window in IntelliJ IDEA / Android Studio, fill in its arguments and generate the code. It is developed separately from katachi's own versions and has not been published yet |
+<table>
+    <thead>
+        <tr>
+            <th style="min-width: 6rem;">Version</th>
+            <th style="min-width: 12rem;">Theme</th>
+            <th style="min-width: 36rem;">Definition of done</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td><strong>v0.1</strong></td>
+            <td>DSL + checks + <code>konsist &#123; &#125;</code></td>
+            <td>Can express a large project, and checks pass</td>
+        </tr>
+        <tr>
+            <td><strong>v0.2</strong></td>
+            <td>Gradle plugin + documentation generation + templates + baseline</td>
+            <td><code>./gradlew katachiDocs</code> produces documentation. With existing violations tolerated by a baseline, the test fails only on new violations and on entries still in the baseline file after they were fixed</td>
+        </tr>
+        <tr>
+            <td><strong>v0.3 and beyond</strong></td>
+            <td><code>declarations &#123; &#125;</code> / report output / vocabulary-size measurement</td>
+            <td>Can be adopted in an <strong>existing project</strong>. Most of the <code>konsist &#123; &#125;</code> written in v0.1 can be replaced with <code>declarations &#123; &#125;</code></td>
+        </tr>
+    </tbody>
+</table>
 
 ## v0.3 and beyond — Adoption in existing projects and `declarations { }`
 
-Making katachi easier to adopt in existing projects is the theme of v0.3 and beyond. Only baseline, which sets the current violations aside, has already landed in v0.2 as an experimental feature.
+Making katachi easier to adopt in existing projects is the theme of v0.3 and beyond. Only baseline, which tolerates the existing violations for now and fails only on new ones, has already landed in v0.2 as an experimental feature.
 
 | Feature | What it enables |
 |---|---|
@@ -72,7 +69,7 @@ v0.1's `konsist { }` is, frankly, **an escape hatch.** Something almost every ro
 }
 ```
 
-The aim is for the same rule to read like this.
+The same rule should read like this. The plan is to make that happen in v0.3 and beyond.
 
 ```kt
 "UseCase" {
@@ -83,23 +80,6 @@ The aim is for the same rule to read like this.
 }
 ```
 
-Top-level declarations that aren't enumerated may not appear — a second class, a top-level extension function, a stray `typealias` — because the block is the allow list for contents, in the same way `layout { }` is the allow list for placement.
+Top-level declarations that aren't enumerated may not appear. The block is the allow list for contents, in the same way `layout { }` is the allow list for placement.
 
-And the violation can say more than "a constraint failed", because katachi knows what was expected:
-
-```
-[UnsatisfiedFileConstraint] core/domain/.../GetUserUseCase.kt
-  The top-level declarations do not match what role UseCase allows.
-  Expected: interface *UseCase, class Default*UseCase
-  Actual:   interface GetUserUseCase, class GetUserUseCaseImpl, object Factory
-  How to fix:
-    - Rename GetUserUseCaseImpl to DefaultGetUserUseCase
-    - Delete object Factory, or move it to another file
-```
-
-**The shape above is a sketch, not a commitment.** What to promote will be decided **after looking at the `konsist { }` that has accumulated** from using v0.1 on real projects. It was moved here from v0.2 to leave time to gather that material.
-
-## Next steps
-
-- [Motivation and where katachi fits](/katachi/get-started/motivation/) ... Why this order? It's tied to what katachi is trying to solve in the first place.
-- [Your first architecture definition](/katachi/get-started/first-architecture/) ... Try out what works today.
+The API is still at the design stage, but it will very likely be implemented in v0.3 and beyond.
