@@ -42,16 +42,6 @@ layout {
 }
 ```
 
-ディレクトリだけを宣言することもできます。
-
-```kt
-layout {
-    "app" / "ios"
-}
-```
-
-この場合、存在を許されるのは `app/ios` というディレクトリだけです。Deny by default の原則により、それ以上のこと (app/ios の中にファイルを置くこと) は許されません。
-
 ### ブロックで囲む
 
 同じディレクトリに複数のものを置くときは、ブロックで囲みます。
@@ -89,7 +79,7 @@ layout {
 }
 ```
 
-**サブディレクトリは許されません。** 1階層下にファイルがあれば、それは違反のまま報告されます。
+**この例ではサブディレクトリは許されません。** 1階層下にファイルがあれば、それは違反のまま報告されます。
 
 ### `ignore()` — 以下すべての検査をやめる
 
@@ -97,28 +87,14 @@ layout {
 
 ```kt
 layout {
-    "build" { ignore() }
+    "build".ignore()
 }
 ```
 
-`"build".ignore()` と短く書くこともできます。
-
-### 空のブロックは逆の意味です
-
-見た目が似ているので、いちばん間違えやすいところです。
-
-| 書き方 | 意味 |
-|---|---|
-| `"generated" { }` | **何も置けない。** 中にファイルがあれば違反 |
-| `"generated" { anyFile() }` | 直下ならどんなファイルでもよい |
-| `"generated" { ignore() }` | 以下すべて検査しない |
-
-**「何も置かない」つもりでないなら、空のブロックにしないでください。** 
-
-通常、ディレクトリ宣言のブロックを空にするのはおすすめしません。そのディレクトリは、中に何も置けない空のディレクトリとしてしか存在を許されなくなるためです。
+`"build" { ignore() }` とブロックの中に書くこともできます。
 
 <Aside type="caution">
-これらは **deny by default の逃げ道** です。使った範囲だけ検査が効かなくなります。
+`anyFile()` と `ignore()` は任意のファイルの配置を許可することができますが、これは **deny by default の逃げ道** です。注意して使ってください。
 
 「宣言するのが面倒だから」で ignore, anyFile を乱用すると katachi を入れた意味が薄れます。
 **機械的に生成されるもの** や、 **別のツールが構成を決めているもの** に限って使ってください。
@@ -126,70 +102,7 @@ layout {
 
 ## ワイルドカードに名前を付ける
 
-`*` は1階層ぶんのどんな名前にもマッチします。`"feature" / "*" / "src"` と書けば、`feature/home/src` も `feature/settings/src` も許されます。
-
-この `*` に名前を付けるのが `capture()` です。
-
-```kt {2}
-layout {
-    "feature" / capture("feature") / "src" / "main" / "kotlin" / "*ViewModel".ktFile()
-}
-```
-
-**検査の上では `*` とまったく同じです。** `capture("feature")` を `"*"` に書き換えても、許されるファイルは1つも変わりません。
-
-違うのは名前を持つことだけです。この名前は [テンプレートの生成先](/katachi/ja/guides/generate-code-from-template/#生成先にワイルドカードがあるときは名前を付けて値を渡す) を決めるときに使います。`*` のままだと、テンプレートは `feature/home` と `feature/settings` のどちらに作ればよいかを決められません。名前を付けておけば、`--arg feature=home` で選べます。テンプレートを持たない Role なら、`*` のままで構いません。
-
-`capture()` は `/` の途中にも、ブロックにも書けます。
-
-```kt
-layout {
-    "feature" {
-        capture("feature") {
-            "build.gradle.kts".file()
-            "src" / "main" / "kotlin" / "*ViewModel".ktFile()
-        }
-    }
-}
-```
-
-### 名前を付けられるのは、1階層まるごとの `*` だけ
-
-`capture()` が置き換えるのは、1つの階層全体を占める `*` です。次の決まりがあります。
-
-- **部分一致には付けられません。** `feature-*` のような glob は `*` のまま書きます
-- **`**` には付けられません。** 何階層ぶんのディレクトリを作ればよいかが決まらないためです
-- 名前は Role 名と同じ規則で書きます（英字で始まり、英数字・`_`・`-` が続く）
-- **テンプレートのパラメータと同じ名前は付けられません。** 名前はそのまま `--arg` の名前になるので、`val name by stringParameter()` を持つテンプレートの Role で `capture("name")` と書くと、`katachiTemplate` / `katachiTemplates` を実行した時点でエラーになります。`roleName` と `onExisting` も使えません。`feature` や `screen` のように、その階層が何を表すかで名前を付けてください
-- **1つのパスの中で同じ名前を2回使うと、宣言した時点でエラーになります。** 同じ Role の別のパスで同じ名前を使うのは構いません。そのときは2つのパスが1つの値を共有します
-
-### モジュールのワイルドカードにも名前を付けられる
-
-`":feature:*".module { }` の `*` には、`capture` 引数で名前を付けます。
-
-```kt {1-2}
-":feature:*".module(capture = "feature") {
-    mainSourceSet / kotlin / "${wildcard("feature").pascalCase}Screen".ktFile()
-}
-```
-
-ブロックの中では、`wildcard("feature")` がいま評価しているモジュールの値を返します。`:feature:home` なら `home` なので、上の宣言が求めるファイルは `HomeScreen.kt` です。
-
-`wildcard("feature")` を呼べるのは、その名前を付けた `.module(capture = "feature") { }` のブロックの中だけです。モジュールの外（`layout { }` の直下や、ふつうのディレクトリのブロック）で呼ぶと、呼んだ位置を示してエラーになります。ディレクトリの `capture("feature")` の値は layout からは読めません。テンプレートの中で `captureValue("feature")` で読みます。
-
-プロジェクトのモジュールを見ずに定義を読むとき（ドキュメント生成や `katachiTemplates`）は、`wildcard("feature")` は `<feature>` という置き場所の文字列を返します。
-
-生成先のディレクトリに、モジュールの `*` とディレクトリの `*` の両方が残るなら、**両方に名前を付けます**。パッケージのディレクトリがモジュール名と違う（`:feature:appConfig` のパッケージが `appconfig/`）ときも、パッケージのディレクトリの `*` に別の名前を付けます。
-
-```kt
-":feature:*".module(capture = "feature") {
-    mainSourceSet / kotlin / "com/example/feature" / capture("featurePackage") / "*ViewModel".ktFile()
-}
-```
-
-`*` が複数あるときは、`":feature:*:*".module("feature", "layer") { }` のように前から順に名前を渡します。名前の数と `*` の数が合わなければ、宣言した時点でエラーになります。`":feature:**".module(capture = "feature")` のように `**` に名前を付けることもできません（何階層ぶんかが決まらないため）。名前を付けても、検査の結果は名前の無い `":feature:*".module { }` と変わりません。
-
-モジュールキーでは、`":feature:*-impl".module(capture = "feature")` のような部分一致の `*` にも名前を付けられます。値は `*` に当たる部分（`:feature:home-impl` なら `home`）です。
+生成先のワイルドカードに名前を付ける `capture()` は、テンプレートと一緒に使います。layout の検査だけなら `capture()` は要らず、`*` のままで構いません。書き方は [テンプレートからコード生成](/katachi/ja/guides/generate-code-from-template/#生成先にワイルドカードがあるときは名前を付けて値を渡す) を参照してください。
 
 ## ベストプラクティス
 
@@ -211,10 +124,48 @@ architecture {
 ## まとめ
 
 - `layout { }` は **Role のファイルが現れてよい場所** を宣言します。宣言していない場所のファイルは違反になります。
-- 書き方は `/` で繋ぐ形とブロックで囲む形の2つあり、**同じ宣言になります**。読みやすいほうを選んでください。
-- `anyFile()` と `ignore()` は **deny by default の逃げ道** です。使った範囲だけ検査が効かなくなります。
-- `capture("name")` は **名前付きの `*`** です。検査は `*` と同じで、名前はテンプレートの生成先を選ぶときに使います。
-- パスは **定数に切り出せます**。定義がディレクトリ構造のコピーになるのを防げます。
+- `anyFile()` と `ignore()` は任意のファイルの配置を許可することができますが、これは **deny by default の逃げ道** です。注意して使ってください。
+- 生成先のワイルドカードに名前を付ける `capture()` は、テンプレートと一緒に使います（[テンプレートからコード生成](/katachi/ja/guides/generate-code-from-template/#生成先にワイルドカードがあるときは名前を付けて値を渡す)）。layout の検査だけなら `*` のままで構いません。
+
+```kt {1,6-11}
+val useCasePackage = "src/main/kotlin/com/example/useCase"  // パスは定数に切り出せる
+
+architecture {
+    "UseCase" {
+        layout {
+            useCasePackage / "*UseCase".ktFile()          // "/" でつないで置き場所を宣言する
+            "src/main/kotlin/com/example" {               // ブロックで囲んでも同じ宣言になる
+                "legacy" / "*UseCase".ktFile()
+            }
+            "generated" { anyFile() }                     // 直下ならどんなファイルでもよい
+            "build".ignore()                              // それより下は検査しない
+        }
+    }
+}
+```
+
+```kt
+// パスは定数に切り出せる
+val appPackageDir = "src/main/kotlin/com/example"
+
+architecture {
+    "UseCase" {
+        layout {
+            // "/" で繋ぐ: useCase/ の直下の *UseCase.kt だけ置ける（* は任意の文字列）
+            appPackageDir / "useCase" / "*UseCase".ktFile()
+
+            // ブロックで囲む: 同じディレクトリに複数のものを置く
+            appPackageDir / "useCaseImpl" {
+                "*UseCaseImpl".ktFile()   // Kotlin ファイル
+                "README.md".file()        // 名前の決まった、種類を問わないファイル
+            }
+
+            "generated" { anyFile() }     // 直下ならどんなファイルでもよい（サブディレクトリは不可）
+            "build".ignore()              // 以下すべて検査しない
+        }
+    }
+}
+```
 
 ## 次のステップ
 

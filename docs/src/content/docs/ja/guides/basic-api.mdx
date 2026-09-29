@@ -1,6 +1,6 @@
 ---
 title: 基本的な API
-description: 覚えるのは6つだけ。architecture / group / 役割 / layout / konsist / assert。
+description: 覚えるのは6つだけ。architecture / group / Role / layout / konsist / assert。
 tags:
   - beginner
 ---
@@ -12,19 +12,19 @@ tags:
 import { FileTree } from '@astrojs/starlight/components';
 
 katachi の主要な API を紹介します。
-ここに挙げる API を覚えれば、katachi の基本的な使い方は分かるはずです。
+ここに挙げる API を覚えれば、katachi の基本的な使い方を理解できるはずです。
 
 ## 1. `architecture { }`
 
 `architecture { }` はプロジェクト全体のアーキテクチャを定義するエントリーポイントです。
-このブロックの中に、プロジェクトにあるファイルの役割を書きます。
+このブロックの中に、プロジェクトにあるファイルの Role を書きます。
 
 ```kt
 architecture {
   "UseCase" { /* ... */ }
-  "Repository-interface" { /* ... */ }
+  "RepositoryInterface" { /* ... */ }
 }
-// このプロジェクトには `UseCase` と `Repository-interface` という2つの役割がある
+// このプロジェクトには `UseCase` と `RepositoryInterface` という2つの Role がある
 ```
 
 アーキテクチャを構成する要素 (Role) は、後のセクションで詳しく説明します。
@@ -36,7 +36,7 @@ architecture {
 ```kt {8}
 val projectArchitecture = architecture {
   "UseCase" { /* ... */ }
-  "Repository-interface" { /* ... */ }
+  "RepositoryInterface" { /* ... */ }
 }
 
 @Test
@@ -53,17 +53,17 @@ fun `アーキテクチャに沿ったファイル配置になっている`() {
 architecture {
   "UseCase" { /* ... */ }
 
-  "Repository-interface" { /* ... */ }
+  "RepositoryInterface" { /* ... */ }
 }
 ```
 
-`architecture { }` ブロックの中に `"名前" { }` を書くと、プロジェクトに登場するファイルの役割を定義できます。
+`architecture { }` ブロックの中に `"名前" { }` を書くと、プロジェクトに登場するファイルの Role を定義できます。
 
 ### Role の例
 
-よく知られたアーキテクチャを採用しているなら、役割はたとえば次のようになるでしょう。
+よく知られたアーキテクチャを採用しているなら、Role はたとえば次のようになるでしょう。
 
-| Group | Role |
+| アーキテクチャ | Role |
 |---|---|
 | MVC | `Controller` |
 | | `View` |
@@ -73,7 +73,7 @@ architecture {
 | Clean architecture | `Service` |
 | | `UseCase` |
 | | `Entity` |
-| | `Repository-interface`, `Repository-implementation` |
+| | `RepositoryInterface`, `RepositoryImplementation` |
 
 ### Deny by default
 
@@ -89,18 +89,18 @@ Role については [Role 定義の詳細](/katachi/ja/guides/role/) も参照�
 
 `"名前".group { }` は Role をまとめるためのブロックです。
 
-例えば Clean architecture では、`UseCase` と `Repository-interface` は **同じドメインレイヤーの役割** です。
+例えば Clean architecture では、`UseCase` と `RepositoryInterface` は **同じドメインレイヤーの Role** です。
 
 ```kt {2}
 architecture {
   "domain".group {
     "UseCase" { /* ... */ }
-    "Repository-interface" { /* ... */ }
+    "RepositoryInterface" { /* ... */ }
   }
 }
 ```
 
-ドメインレイヤーという役割のグループを DSL で表すと、役割同士の関係や階層構造がより明確になります。分かりやすいアーキテクチャ定義を作るには、分かりやすい粒度で Role をグループ化することが大切です。
+ドメインレイヤーという Role のグループを DSL で表すと、Role 同士の関係や階層構造がより明確になります。分かりやすいアーキテクチャ定義を作るには、分かりやすい粒度で Role をグループ化することが大切です。
 
 ### 関連ドキュメント
 
@@ -193,7 +193,7 @@ architecture {
       }
       ```
 
-      - 意味: このプロジェクトには `UseCase` という役割がある
+      - 意味: このプロジェクトには `UseCase` という Role がある
     </td>
   </tr>
 
@@ -234,7 +234,7 @@ architecture {
       }
       ```
 
-      - 意味: `UseCase` という役割がある。宣言していない役割のファイルは置けない
+      - 意味: `UseCase` という Role がある。宣言していない Role のファイルは置けない
     </td>
   </tr>
 
@@ -254,7 +254,7 @@ architecture {
       }
       ```
 
-      - 意味: `UseCase` は domain レイヤーの役割。修飾名は `domain/UseCase` になる
+      - 意味: `UseCase` は domain レイヤーの Role。修飾名は `domain.UseCase` になる
     </td>
   </tr>
 
@@ -303,5 +303,5 @@ architecture {
 ## 次のステップ
 
 - [初めてのアーキテクチャ定義](/katachi/ja/get-started/first-architecture/) ... あなたのプロジェクトに katachi を導入して、この6つを実際に書いてみましょう。
-- [Role](/katachi/ja/guides/role/) ... 役割に説明を書く方法と、定義がディレクトリ構造のコピーにならないようにする考え方を学びましょう。
+- [Role](/katachi/ja/guides/role/) ... Role に説明を書く方法と、定義がディレクトリ構造のコピーにならないようにする考え方を学びましょう。
 - [Layout](/katachi/ja/guides/layout/) ... 置き場所の書き分けと、`anyFile()` / `ignore()` という deny by default の逃げ道の使いどころを学びましょう。

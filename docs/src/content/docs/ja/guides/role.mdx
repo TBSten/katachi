@@ -14,10 +14,10 @@ import CodeComparison from "../../../../components/CodeComparison";
 
 ## Role を定義する
 
-アーキテクチャ定義に従ったアプリには、固有の役割を持つファイルがあります。
+アーキテクチャ定義に従ったアプリには、固有の役割（Role）を持つファイルがあります。
 例えば `UseCase`, `Repository`, `Controller`, `ViewModel` などです。
 
-どんな役割があるのかは、`architecture { }` の中で定義します。
+どんな Role があるのかは、`architecture { }` の中で定義します。
 
 ```kt {2-5}
 architecture {
@@ -28,7 +28,7 @@ architecture {
 }
 ```
 
-役割の詳細は、Role を起点にして書きます。
+Role の説明・置き場所・制約は、その Role のブロックの中に書きます。
 
 - `title`, `summary`, `description`, etc. ... そのRoleの説明です。ドキュメント生成に使われます。
 - `layout { }` ... そのRoleのファイルをどこに置けるかを定義します。
@@ -244,7 +244,7 @@ architecture {
             // ...
         }
 
-        "Repository-interface" {
+        "RepositoryInterface" {
             // ...
         }
     }
@@ -258,6 +258,50 @@ architecture {
 **アプリに機能を足すたびに `architecture { }` を書き換える必要があるなら、その `architecture { }` の定義は悪い設計です。**
 
 `architecture { }` がディレクトリ構造の写しになって二度手間にならないよう、`*` や `**` といったワイルドカードをうまく使ってください。
+
+### 1つの Role には1種類のファイルだけを入れる
+
+**1つの Role は、1種類のファイルだけを表すようにしてください。**
+たとえば Repository の interface と実装は、名前は似ていても別の種類のファイルです。1つの Role にまとめると、説明・制約・テンプレートが「どちらのファイルの話か」で分かれてしまい、`konsist { }` の制約にも「interface なら…、実装なら…」という条件分岐が入ります。
+種類ごとに Role を分ければ、説明も制約もその種類のファイルだけを相手にでき、生成されるドキュメントも種類ごとのページになります。
+
+<CodeComparison>
+    <CodeComparison.Panel label="🆖 2種類のファイルを1つの Role に" labelVariant="danger">
+
+    ```kt {4-5,7-9} nocollapse
+    "Repository" {
+        summary = "データの取得と保存"
+        layout {
+            "repository" / "*Repository".ktFile()      // interface
+            "repository" / "*RepositoryImpl".ktFile()  // 実装
+        }
+        "interface なら宣言だけ、実装なら…".konsist {
+            // どちらのファイルかで制約を分ける必要がある
+        }
+    }
+    ```
+
+    </CodeComparison.Panel>
+
+    <CodeComparison.Panel label="🆗 種類ごとに Role を分ける" labelVariant="success">
+
+    ```kt {1,3,9,11} nocollapse
+    "RepositoryInterface" {
+        summary = "データの取得と保存の窓口"
+        layout { "repository" / "*Repository".ktFile() }
+        "interface だけを置くこと".konsist {
+            classes().mustBeEmpty()
+        }
+    }
+
+    "RepositoryImplementation" {
+        summary = "RepositoryInterface の実装"
+        layout { "repository" / "*RepositoryImpl".ktFile() }
+    }
+    ```
+
+    </CodeComparison.Panel>
+</CodeComparison>
 
 ## Role 定義を分割する
 
@@ -287,7 +331,7 @@ Role ごとに拡張関数に切り出しましょう。
             // ...
         }
 
-        "Repository-interface" {
+        "RepositoryInterface" {
             layout { 
                 "src/main/kotlin/com/example/project/repository" / "*Repository".ktFile()
             }
@@ -335,7 +379,7 @@ Role ごとに拡張関数に切り出しましょう。
     ```
 
     ```kt title=domain/RepositoryInterfaceRole.kt
-    fun DeclarationContainerScope.repositoryInterface() = "Repository-interface" {
+    fun DeclarationContainerScope.repositoryInterface() = "RepositoryInterface" {
         layout {
             "src/main/kotlin/com/example/project/repository" / "*Repository".ktFile()
         }
@@ -394,8 +438,6 @@ Role 定義の中でも、特に `"...".konsist { }` は、制約が多かった
 
 - Role は **プロジェクトの中に現れてよいファイルの種類** です。パッケージやモジュールとは独立しています。
 - 1つのRoleに、説明（`title` / `summary`）・置き場所（`layout { }`）・制約（`konsist { }`）が **まとまります**。
-- 同じRoleが複数の場所に置かれても、**説明は1箇所のまま** です。
-- `group` で束ねると、Roleは `domain/UseCase` という **修飾名** を持ちます。
 - **Role 定義はすぐに肥大化します。** `architecture { }` や Role 定義が膨らまないよう、拡張関数を使って適切に分割しましょう。
 
 ```kt

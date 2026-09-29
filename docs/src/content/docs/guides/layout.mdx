@@ -42,16 +42,6 @@ layout {
 }
 ```
 
-You can also declare just a directory.
-
-```kt
-layout {
-    "app" / "ios"
-}
-```
-
-In this case, only the directory `app/ios` is allowed to exist. Under the Deny by default principle, anything beyond that — such as placing files inside `app/ios` — isn't allowed.
-
 ### Wrapping in a block
 
 When you want to place multiple things in the same directory, wrap them in a block.
@@ -89,7 +79,7 @@ layout {
 }
 ```
 
-**Subdirectories aren't allowed.** A file one level deeper is still reported as a violation.
+**In this example, subdirectories aren't allowed.** A file one level deeper is still reported as a violation.
 
 ### `ignore()` — stop checking everything below
 
@@ -97,98 +87,21 @@ Stops checking everything below that directory, **at any depth**.
 
 ```kt
 layout {
-    "build" { ignore() }
+    "build".ignore()
 }
 ```
 
-You can also write it more concisely as `"build".ignore()`.
-
-### An empty block means the opposite
-
-This is the easiest thing to get wrong, since they look similar.
-
-| Syntax | Meaning |
-|---|---|
-| `"generated" { }` | **Nothing can be placed.** Any file inside is a violation |
-| `"generated" { anyFile() }` | Any file is fine, directly inside |
-| `"generated" { ignore() }` | Nothing below is checked |
-
-**Don't leave a block empty unless you really mean "nothing goes here."**
-
-As a rule, an empty block for a directory declaration isn't recommended, because it permits the directory to exist as an empty directory whose contents can never hold anything.
+You can also write it inside a block as `"build" { ignore() }`.
 
 <Aside type="caution">
-These are **escape hatches from deny by default**. Wherever you use them, checking stops applying to that scope.
+`anyFile()` and `ignore()` let you allow files of any kind to be placed, but they are **escape hatches from deny by default**. Use them with care.
 
 If you overuse `ignore()` and `anyFile()` just because "declaring it is a hassle," you undermine the point of adopting katachi. Use them only for **things a machine generates** or **things whose structure is decided by another tool**.
 </Aside>
 
 ## Naming a wildcard
 
-`*` matches any name for one level. Write `"feature" / "*" / "src"` and both `feature/home/src` and `feature/settings/src` are allowed.
-
-`capture()` gives that `*` a name.
-
-```kt {2}
-layout {
-    "feature" / capture("feature") / "src" / "main" / "kotlin" / "*ViewModel".ktFile()
-}
-```
-
-**As far as checking goes, it's exactly the same as `*`.** Rewriting `capture("feature")` as `"*"` doesn't change which files are allowed, not even one.
-
-The only difference is that it has a name. This name is used when deciding [a template's destination](/katachi/guides/generate-code-from-template/#when-the-destination-has-a-wildcard-name-it-and-pass-a-value). Left as `*`, a template can't tell whether to generate into `feature/home` or `feature/settings`. Name it, and you can choose with `--arg feature=home`. For a Role with no template, `*` on its own is fine.
-
-`capture()` can also be written midway through a `/` chain, or in a block.
-
-```kt
-layout {
-    "feature" {
-        capture("feature") {
-            "build.gradle.kts".file()
-            "src" / "main" / "kotlin" / "*ViewModel".ktFile()
-        }
-    }
-}
-```
-
-### Only a `*` that fills a whole segment can be named
-
-What `capture()` replaces is a `*` that occupies one whole level. The rules:
-
-- **It can't be used for a partial match.** Write a glob like `feature-*` as `*`, unchanged
-- **It can't be used on `**`.** How many levels of directory to create isn't decided
-- A name follows the same rule as a Role name (starts with a letter, followed by letters, digits, `_`, `-`)
-- **It can't share a name with a template parameter.** The name becomes the `--arg` name as is, so writing `capture("name")` on a Role whose template has `val name by stringParameter()` fails as soon as you run `katachiTemplate` / `katachiTemplates`. `roleName` and `onExisting` can't be used either. Name it for what that level represents, like `feature` or `screen`
-- **Using the same name twice in one path fails at declaration time.** Using the same name in a different path of the same Role is fine — the two paths then share one value
-
-### Module wildcards can be named too
-
-The `*` in `":feature:*".module { }` is named with the `capture` argument.
-
-```kt {1-2}
-":feature:*".module(capture = "feature") {
-    mainSourceSet / kotlin / "${wildcard("feature").pascalCase}Screen".ktFile()
-}
-```
-
-Inside the block, `wildcard("feature")` returns the value of the module currently being evaluated. For `:feature:home`, that's `home`, so the file the declaration above requires is `HomeScreen.kt`.
-
-`wildcard("feature")` can only be called inside the `.module(capture = "feature") { }` block that gave it that name. Calling it outside a module — directly under `layout { }`, or in an ordinary directory block — fails, naming where it was called. A directory's `capture("feature")` value can't be read from layout; read it with `captureValue("feature")` inside a template.
-
-When reading the definition without looking at the project's modules (document generation, or `katachiTemplates`), `wildcard("feature")` returns the placeholder string `<feature>`.
-
-If both a module's `*` and a directory's `*` remain in the destination, **name both**. When the package directory differs from the module name (`:feature:appConfig`'s package is `appconfig/`), give the package directory's `*` a separate name too.
-
-```kt
-":feature:*".module(capture = "feature") {
-    mainSourceSet / kotlin / "com/example/feature" / capture("featurePackage") / "*ViewModel".ktFile()
-}
-```
-
-When there's more than one `*`, pass the names in order, as in `":feature:*:*".module("feature", "layer") { }`. If the number of names doesn't match the number of `*`, it fails at declaration time. `**` can't be named either, as in `":feature:**".module(capture = "feature")` — how many levels it stands for isn't decided. Naming it doesn't change the check's result from the unnamed `":feature:*".module { }`.
-
-In a module key, even a partial match like `":feature:*-impl".module(capture = "feature")` can be named. The value is the part matched by `*` (`home` for `:feature:home-impl`).
+`capture()`, which names a wildcard in a destination, is used together with templates. For checking layout alone you don't need `capture()`; a plain `*` is fine. See [Generating code from a template](/katachi/guides/generate-code-from-template/#when-the-destination-has-a-wildcard-name-it-and-pass-a-value) for how to write it.
 
 ## Best practices
 
@@ -210,10 +123,48 @@ architecture {
 ## Summary
 
 - `layout { }` declares **where a Role's files may appear**. A file in an undeclared location is a violation.
-- There are two ways to write it — chaining with `/` or wrapping in a block — and **they declare the same thing**. Pick whichever is more readable.
-- `anyFile()` and `ignore()` are **escape hatches from deny by default**. Checking stops applying wherever you use them.
-- `capture("name")` is **a named `*`**. It checks the same as `*`; the name is used when choosing a template's destination.
-- Paths **can be extracted into constants**. This keeps the definition from becoming a copy of your directory structure.
+- `anyFile()` and `ignore()` let you allow files of any kind to be placed, but they are **escape hatches from deny by default**. Use them with care.
+- `capture()`, which names a wildcard in a destination, is used together with templates ([Generating code from a template](/katachi/guides/generate-code-from-template/#when-the-destination-has-a-wildcard-name-it-and-pass-a-value)). For checking layout alone, a plain `*` is fine.
+
+```kt {1,6-11}
+val useCasePackage = "src/main/kotlin/com/example/useCase"  // paths can be pulled out into constants
+
+architecture {
+    "UseCase" {
+        layout {
+            useCasePackage / "*UseCase".ktFile()          // join with "/" to declare where files go
+            "src/main/kotlin/com/example" {               // wrapping in a block declares the same thing
+                "legacy" / "*UseCase".ktFile()
+            }
+            "generated" { anyFile() }                     // any file directly inside is allowed
+            "build".ignore()                              // nothing below is checked
+        }
+    }
+}
+```
+
+```kt
+// A path can be pulled out into a constant
+val appPackageDir = "src/main/kotlin/com/example"
+
+architecture {
+    "UseCase" {
+        layout {
+            // Chain with "/": only *UseCase.kt directly inside useCase/ may be placed (* matches any string)
+            appPackageDir / "useCase" / "*UseCase".ktFile()
+
+            // Wrap in a block: put several things in the same directory
+            appPackageDir / "useCaseImpl" {
+                "*UseCaseImpl".ktFile()   // a Kotlin file
+                "README.md".file()        // a file with a fixed name, of any kind
+            }
+
+            "generated" { anyFile() }     // any file directly inside is fine (no subdirectories)
+            "build".ignore()              // stop checking everything below
+        }
+    }
+}
+```
 
 ## Next steps
 

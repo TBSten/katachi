@@ -1,9 +1,13 @@
 ---
 title: Basic API
-description: Just six things to remember. architecture / group / role / layout / konsist / assert.
+description: Just six things to remember. architecture / group / Role / layout / konsist / assert.
 tags:
   - beginner
 ---
+
+{/*
+  Purpose of this page: to help users understand katachi's basic API well enough to define their own project's architecture. To give them the big picture of the API katachi provides.
+*/}
 
 import { FileTree } from '@astrojs/starlight/components';
 
@@ -18,9 +22,9 @@ Inside it, you write the roles of the files that exist in your project.
 ```kt
 architecture {
   "UseCase" { /* ... */ }
-  "Repository-interface" { /* ... */ }
+  "RepositoryInterface" { /* ... */ }
 }
-// This project has two roles: `UseCase` and `Repository-interface`
+// This project has two roles: `UseCase` and `RepositoryInterface`
 ```
 
 The elements inside an architecture (Role) are covered in more depth in a later section.
@@ -32,7 +36,7 @@ The elements inside an architecture (Role) are covered in more depth in a later 
 ```kt {8}
 val projectArchitecture = architecture {
   "UseCase" { /* ... */ }
-  "Repository-interface" { /* ... */ }
+  "RepositoryInterface" { /* ... */ }
 }
 
 @Test
@@ -49,7 +53,7 @@ fun `files are placed according to the architecture`() {
 architecture {
   "UseCase" { /* ... */ }
 
-  "Repository-interface" { /* ... */ }
+  "RepositoryInterface" { /* ... */ }
 }
 ```
 
@@ -59,7 +63,7 @@ Writing `"Name" { }` inside an `architecture { }` block lets you declare the rol
 
 If you're using a well-known architecture, roles typically look something like this.
 
-| Group | Role |
+| Architecture | Role |
 |---|---|
 | MVC | `Controller` |
 | | `View` |
@@ -69,7 +73,7 @@ If you're using a well-known architecture, roles typically look something like t
 | Clean architecture | `Service` |
 | | `UseCase` |
 | | `Entity` |
-| | `Repository-interface`, `Repository-implementation` |
+| | `RepositoryInterface`, `RepositoryImplementation` |
 
 ### Deny by default
 
@@ -85,13 +89,13 @@ For Role, also see [Role definitions in depth](/katachi/guides/role/).
 
 `"Name".group { }` is a block for grouping Roles together.
 
-For example, in Clean architecture, `UseCase` and `Repository-interface` are both **roles in the same domain layer**.
+For example, in Clean architecture, `UseCase` and `RepositoryInterface` are both **roles in the same domain layer**.
 
 ```kt {2}
 architecture {
   "domain".group {
     "UseCase" { /* ... */ }
-    "Repository-interface" { /* ... */ }
+    "RepositoryInterface" { /* ... */ }
   }
 }
 ```
@@ -141,7 +145,7 @@ For `layout { }`, also see [Layout definitions in depth](/katachi/guides/layout/
 
 You can set constraints on the files of a declared Role using [Konsist](https://docs.konsist.lemonappdev.com/).
 
-```kt {8}
+```kt {7}
 architecture {
   "UseCase" {
     layout {
@@ -155,7 +159,7 @@ architecture {
 }
 ```
 
-You can set constraints on the files matched by `layout { }` using the Konsist API.
+The constraints apply to the files specified in `layout { }`, and the constraints themselves are written with the Konsist API.
 
 To check the constraints, call `assert(FileConstraintCheck())` instead of `assert()` in the test. With `assert()` alone the constraints are not evaluated, and the test fails with `[UncheckedFileConstraint]`.
 
@@ -249,7 +253,7 @@ For `"...".konsist { }`, also see the [Konsist integration guide](/katachi/guide
       }
       ```
 
-      - Meaning: `UseCase` is a role in the domain layer. Its qualified name becomes `domain/UseCase`
+      - Meaning: `UseCase` is a role in the domain layer. Its qualified name becomes `domain.UseCase`
     </td>
   </tr>
 

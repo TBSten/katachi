@@ -5,15 +5,19 @@ tags:
   - intermediate
 ---
 
+{/*
+  The purpose of this page: to gain a deep, comprehensive understanding of how to use Role, an important element of katachi's architecture definitions.
+*/}
+
 import { FileTree } from "@astrojs/starlight/components";
 import CodeComparison from "../../../components/CodeComparison";
 
 ## Declaring a Role
 
-An app that follows an architecture definition has files with specific roles.
+An app that follows an architecture definition has files with specific roles (Roles).
 For example `UseCase`, `Repository`, `Controller`, or `ViewModel`.
 
-You define what roles exist inside `architecture { }`.
+You define what Roles exist inside `architecture { }`.
 
 ```kt {2-5}
 architecture {
@@ -24,7 +28,7 @@ architecture {
 }
 ```
 
-Starting from a Role, you describe the details of that role.
+You write a Role's description, placement, and constraints inside that Role's block.
 
 - `title`, `summary`, `description`, etc. ... The description of the Role. Used when generating documentation.
 - `layout { }` ... Defines where the files for that Role may be placed.
@@ -240,7 +244,7 @@ architecture {
             // ...
         }
 
-        "Repository-interface" {
+        "RepositoryInterface" {
             // ...
         }
     }
@@ -254,6 +258,50 @@ architecture {
 **If you have to rewrite `architecture { }` every time you add a feature to the app, that `architecture { }` definition is poorly designed.**
 
 Make good use of wildcards like `*` and `**` so that `architecture { }` doesn't end up as a duplicate of your directory structure, requiring double the work to maintain.
+
+### Put only one kind of file in a Role
+
+**Make each Role stand for exactly one kind of file.**
+For example, a Repository interface and its implementation have similar names but are different kinds of file. If you put both in one Role, its description, constraints, and templates split by "which of the two files this is about", and your `konsist { }` constraints end up with branches like "if it is the interface…, if it is the implementation…".
+With one Role per kind, the description and constraints only deal with that kind of file, and the generated documentation gets one page per kind.
+
+<CodeComparison>
+    <CodeComparison.Panel label="🆖 Two kinds of file in one Role" labelVariant="danger">
+
+    ```kt {4-5,7-9} nocollapse
+    "Repository" {
+        summary = "Loads and saves data"
+        layout {
+            "repository" / "*Repository".ktFile()      // interface
+            "repository" / "*RepositoryImpl".ktFile()  // implementation
+        }
+        "Declarations only for the interface, and for the implementation…".konsist {
+            // the constraint has to branch on which file it is
+        }
+    }
+    ```
+
+    </CodeComparison.Panel>
+
+    <CodeComparison.Panel label="🆗 One Role per kind" labelVariant="success">
+
+    ```kt {1,3,9,11} nocollapse
+    "RepositoryInterface" {
+        summary = "The entry point for loading and saving data"
+        layout { "repository" / "*Repository".ktFile() }
+        "Put only interfaces here".konsist {
+            classes().mustBeEmpty()
+        }
+    }
+
+    "RepositoryImplementation" {
+        summary = "The implementation of RepositoryInterface"
+        layout { "repository" / "*RepositoryImpl".ktFile() }
+    }
+    ```
+
+    </CodeComparison.Panel>
+</CodeComparison>
 
 ## Splitting Role definitions
 
@@ -271,10 +319,6 @@ Factor each Role out into its own extension function.
 <CodeComparison>
     <CodeComparison.Panel label="Before">
 
-    <FileTree>
-        - ProjectArchitecture.kt
-    </FileTree>
-
     ```kt title=ProjectArchitecture.kt nocollapse
     architecture {
         "UseCase" {
@@ -287,7 +331,7 @@ Factor each Role out into its own extension function.
             // ...
         }
 
-        "Repository-interface" {
+        "RepositoryInterface" {
             layout { 
                 "src/main/kotlin/com/example/project/repository" / "*Repository".ktFile()
             }
@@ -307,7 +351,7 @@ Factor each Role out into its own extension function.
 
     <FileTree>
         - ProjectArchitecture.kt
-        - **roles/**
+        - **domain/**
             - UseCaseRole.kt
             - RepositoryInterfaceRole.kt
     </FileTree>
@@ -321,7 +365,7 @@ Factor each Role out into its own extension function.
     }
     ```
 
-    ```kt title=roles/UseCaseRole.kt
+    ```kt title=domain/UseCaseRole.kt
     // hint: DeclarationContainerScope is the receiver of architecture { } and "...".group { }.
     fun DeclarationContainerScope.useCase() = "UseCase" {
         layout {
@@ -334,8 +378,8 @@ Factor each Role out into its own extension function.
     }
     ```
 
-    ```kt title=roles/RepositoryInterfaceRole.kt
-    fun DeclarationContainerScope.repositoryInterface() = "Repository-interface" {
+    ```kt title=domain/RepositoryInterfaceRole.kt
+    fun DeclarationContainerScope.repositoryInterface() = "RepositoryInterface" {
         layout {
             "src/main/kotlin/com/example/project/repository" / "*Repository".ktFile()
         }
@@ -394,8 +438,6 @@ Don't hesitate to factor `"...".konsist { }` out into private extension function
 
 - A Role is **a kind of file that's allowed to appear in the project**. It's independent of packages and modules.
 - A single Role **brings together** its description (`title` / `summary`), placement (`layout { }`), and constraints (`konsist { }`).
-- Even if the same Role is placed in multiple locations, **its description stays in one place**.
-- When bundled with `group`, a Role gets a **qualified name** like `domain/UseCase`.
 - **Role definitions bloat easily.** To keep `architecture { }` and Role definitions from bloating, make good use of extension functions to split them appropriately.
 
 ```kt
