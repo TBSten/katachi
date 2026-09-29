@@ -28,6 +28,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import me.tbsten.katachi.intellij.data.generate.SingleFileGenerationRequest
 import me.tbsten.katachi.intellij.data.generate.TargetState
+import me.tbsten.katachi.intellij.ide.SDK_CALL_LOG
 import me.tbsten.katachi.intellij.ide.sdkCall
 import me.tbsten.katachi.intellij.presentation.dialog.GenerateDialogIntent
 import me.tbsten.katachi.intellij.presentation.dialog.GenerateDialogViewModel
@@ -82,6 +83,7 @@ internal class KatachiGenerateDialog(
         rootOf = environment.rootOf,
         checkContext = checkContext,
         settle = settle,
+        onUnexpectedCheckFailure = { SDK_CALL_LOG.warn("Checking the target of the generate dialog failed unexpectedly", it) },
     )
 
     private val refusalState = MutableStateFlow<String?>(null)

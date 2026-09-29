@@ -18,6 +18,10 @@ fun DeclarationContainerScope.idePluginTest() = "IdePluginTest" {
             "kotlin" / "me/tbsten/katachi/intellij" / "**" {
                 "*Test".ktFile()
                 "*TestBase".ktFile()
+                // What the tests share within a folder: their world, fixtures, and helpers.
+                "*Support".ktFile()
+                "*Fixtures".ktFile()
+                "DiskGradleRunner".ktFile()
             }
             // Fakes of the ports and builders of test data, shared by the tests.
             "kotlin" / "me/tbsten/katachi/intellij" / "testing" / "*".ktFile()

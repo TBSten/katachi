@@ -1,6 +1,5 @@
 package me.tbsten.katachi.intellij.presentation.dialog
 
-import com.intellij.openapi.diagnostic.logger
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -69,6 +68,8 @@ internal class GenerateDialogViewModel(
     private val rootOf: (KatachiModule) -> Path,
     private val checkContext: CoroutineContext = Dispatchers.Default,
     private val settle: suspend () -> Unit = { delay(CHECK_DEBOUNCE_MILLIS) },
+    /** Told when checking the target failed unexpectedly (the frame logs it; the ViewModel knows no logger of the IDE). */
+    private val onUnexpectedCheckFailure: (Throwable) -> Unit = {},
 ) {
     private var core: DialogCore = initialCoreOf(usableTemplatesOf(candidates), request.initialTemplate, ::seedsOf)
     private var checked: Pair<Path, TargetState>? = null
@@ -132,7 +133,7 @@ internal class GenerateDialogViewModel(
                     throw e
                 } catch (e: Exception) {
                     // Unknown: [Generate] checks again before writing (E3), and says why it stops.
-                    LOG.warn("Checking the target of the generate dialog failed unexpectedly", e)
+                    onUnexpectedCheckFailure(e)
                     null
                 }
             } ?: return@launch
@@ -144,7 +145,5 @@ internal class GenerateDialogViewModel(
     companion object {
         /** How long typing must pause before the target is checked. */
         const val CHECK_DEBOUNCE_MILLIS: Long = 300
-
-        private val LOG = logger<GenerateDialogViewModel>()
     }
 }

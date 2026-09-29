@@ -59,6 +59,8 @@ private val FILES_WITHOUT_SDK_CALLS: Map<String, String> = mapOf(
     "KatachiBundle" to "lookups of the plugin's own keys; a missing key shows as !key!, it does not throw",
     "KatachiSettings" to "persisted state; every caller calls getInstance() inside sdkCall",
     "KatachiDebugBridge" to "driven by the Driver smoke only, where an exception is meant to reach the test",
+    "EntryGenerationSupport" to "packageOfDirectory is called only inside sdkCall { readAction { } } (IdeEffectsImpl); the rest is text",
+    "KatachiNotificationPanel" to "builds Swing components; its only caller wraps the build in sdkCall (KatachiEditorNotificationProvider)",
     "KatachiToolWindowViewModel" to "calls nothing of the SDK but its Logger",
 )
 
