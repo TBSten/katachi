@@ -18,7 +18,7 @@ internal data class GradleRunRequest(
 ) {
     /**
      * What goes into `ExternalSystemTaskExecutionSettings.taskNames`: each task path followed by
-     * `--arg` and `key=value` as separate elements, so no value needs quoting (spike S-2, S-3).
+     * `--arg` and `key=value` as separate elements, quoted only where it reaches the platform, which splits on spaces again (ExternalSystemGradleTaskRunner).
      */
     val taskNames: List<String>
         get() = tasks.flatMap { task ->
