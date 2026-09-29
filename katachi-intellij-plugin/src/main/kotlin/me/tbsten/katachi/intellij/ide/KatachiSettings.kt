@@ -110,9 +110,9 @@ internal class KatachiSettings : SimplePersistentStateComponent<KatachiSettingsS
     var collapsedModules: Set<ModuleId>
         get() = state.collapsedModules.mapNotNull(::moduleIdOf).toSet()
         set(value) {
-            state.collapsedModules.clear()
-            state.collapsedModules.addAll(value.map { "${it.linkedRootPath}$SEPARATOR${it.gradlePath}" })
-            state.intIncrementModificationCount()
+            // Assigned whole rather than changed in place: the state's setter copies the elements in
+            // and counts the modification, which clear() / addAll() on the set would not.
+            state.collapsedModules = value.mapTo(mutableSetOf()) { "${it.linkedRootPath}$SEPARATOR${it.gradlePath}" }
         }
 
     companion object {

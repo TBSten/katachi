@@ -18,7 +18,12 @@ group = "me.tbsten.katachi.intellij"
 version = "0.1.0"
 
 // JBR 21, which the 261 platform runs on.
-kotlin { jvmToolchain(21) }
+kotlin {
+    jvmToolchain(21)
+    // Every compiler warning fails the build, in every source set (main, test, preview, uiTest,
+    // integrationTest): a warning is fixed, or suppressed at the one place with the reason next to it.
+    compilerOptions { allWarningsAsErrors.set(true) }
+}
 
 // The UI Composables in src/shared/kotlin are compiled twice: into the plugin against the IDE's
 // bundled Jewel, and into `preview` against standalone Jewel, so the headless PNGs show what ships.
@@ -85,15 +90,21 @@ intellijPlatform {
     // rather than renaming the ID, which is unrelated to and out of scope for this task.
     pluginVerification {
         freeArgs = listOf("-mute", "TemplateWordInPluginId")
-        // Fail on what breaks users (binary incompatibility, removal-scheduled or misused API), not
-        // on INTERNAL_API_USAGES: the one hit today is BaseState.intIncrementModificationCount()
-        // that the `by stringSet()` state delegate compiles into KatachiSettings. Every IDE
-        // (IDEA 261/262/263 and Android Studio) reports it as "Compatible".
-        // TODO: remove the internal-API call from KatachiSettings, then drop this override.
+        // Besides what breaks users (binary incompatibility, misused API), the verifier's warnings
+        // fail too, as a compiler warning does: deprecated, removal-scheduled or internal API, and
+        // the structure and dependency warnings. Two levels stay allowed. EXPERIMENTAL_API_USAGES:
+        // katachi needs the write-intent lock on the EDT, and every way to take it in 261
+        // (writeIntentReadAction, WriteIntentReadAction) is experimental. NOT_DYNAMIC: whether the
+        // plugin can be loaded without a restart is a property of the plugin, not a warning.
         failureLevel = listOf(
             FailureLevel.COMPATIBILITY_PROBLEMS,
+            FailureLevel.COMPATIBILITY_WARNINGS,
             FailureLevel.INVALID_PLUGIN,
+            FailureLevel.PLUGIN_STRUCTURE_WARNINGS,
+            FailureLevel.MISSING_DEPENDENCIES,
+            FailureLevel.DEPRECATED_API_USAGES,
             FailureLevel.SCHEDULED_FOR_REMOVAL_API_USAGES,
+            FailureLevel.INTERNAL_API_USAGES,
             FailureLevel.OVERRIDE_ONLY_API_USAGES,
             FailureLevel.NON_EXTENDABLE_API_USAGES,
         )

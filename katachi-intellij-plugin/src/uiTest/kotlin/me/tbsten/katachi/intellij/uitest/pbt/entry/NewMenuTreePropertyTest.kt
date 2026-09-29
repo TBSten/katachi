@@ -1,7 +1,8 @@
 package me.tbsten.katachi.intellij.uitest.pbt.entry
 
 import io.kotest.property.Arb
-import io.kotest.property.PropTestConfig
+import io.kotest.property.PropTest
+import io.kotest.property.toPropTestConfig
 import io.kotest.property.ShrinkingMode
 import io.kotest.property.arbitrary.arbitrary
 import io.kotest.property.checkAll
@@ -26,7 +27,7 @@ class NewMenuTreePropertyTest {
     private val seed = System.getProperty("katachi.pbt.seed")?.toLong() ?: 20260929L
     private val scale = System.getProperty("katachi.pbt.scale")?.toDouble() ?: 1.0
 
-    private fun config(iterations: Int) = PropTestConfig(seed = seed, iterations = (iterations * scale).toInt().coerceAtLeast(1), shrinkingMode = ShrinkingMode.Bounded(400))
+    private fun config(iterations: Int) = PropTest(seed = seed, iterations = (iterations * scale).toInt().coerceAtLeast(1), shrinkingMode = ShrinkingMode.Bounded(400)).toPropTestConfig()
 
     private val definitions = listOf(module(":arch-a"), module(":arch-b"))
     private val groupNames = listOf("data", "domain", "model", "ui", "value")

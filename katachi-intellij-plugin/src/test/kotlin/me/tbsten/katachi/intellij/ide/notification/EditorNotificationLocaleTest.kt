@@ -54,9 +54,11 @@ internal class EditorNotificationLocaleTest : EditorNotificationTestBase() {
         DynamicBundle.LanguageBundleEP.EP_NAME.point.registerExtension(pack, testRootDisposable)
     }
 
-    /** The platform's bundle cache, and the bundle [KatachiBundle] holds on to itself. */
+    /**
+     * The platform's bundle cache. [KatachiBundle] checks its own bundle against this cache for the
+     * current locale, so clearing it is enough for the next message to follow the new language.
+     */
     private fun clearBundleCaches() {
         DynamicBundle.clearCache()
-        KatachiBundle.clearLocaleCache()
     }
 }

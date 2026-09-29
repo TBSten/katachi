@@ -15,7 +15,7 @@ internal fun spike(key: String, value: Any?) {
 
 /** Runs [block] on a pooled thread inside a read action, as the platform calls BGT code, and waits pumping the EDT. */
 internal fun <T> onBgtWithReadLock(block: () -> T): T {
-    val future: Future<T> = ApplicationManager.getApplication().executeOnPooledThread<T> { ReadAction.compute<T, Throwable> { block() } }
+    val future: Future<T> = ApplicationManager.getApplication().executeOnPooledThread<T> { ReadAction.computeBlocking<T, Throwable> { block() } }
     PlatformTestUtil.waitWithEventsDispatching("bgt", { future.isDone }, 10)
     return future.get()
 }

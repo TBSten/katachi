@@ -8,6 +8,7 @@ import com.intellij.toolWindow.ToolWindowHeadlessManagerImpl
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.Deferred
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 import me.tbsten.katachi.intellij.data.generate.GenerationCatalogReload
@@ -63,6 +64,7 @@ internal class SharedGradleRunnerTest : EntryServiceTestBase() {
         return runner to gate
     }
 
+    @OptIn(ExperimentalCoroutinesApi::class)
     private fun <T> Deferred<T>.awaitPumping(): T {
         PlatformTestUtil.waitWithEventsDispatching({ "finished" }, { isCompleted }, 10)
         return getCompleted()

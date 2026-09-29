@@ -1,6 +1,7 @@
 package me.tbsten.katachi.intellij.uitest.dialog
 
-import io.kotest.property.PropTestConfig
+import io.kotest.property.PropTest
+import io.kotest.property.toPropTestConfig
 import io.kotest.property.ShrinkingMode
 import io.kotest.property.arbitrary.take
 import io.kotest.property.Arb
@@ -28,11 +29,11 @@ class DialogPropertyTest {
     private val seed = System.getProperty("katachi.pbt.seed")?.toLong() ?: 20260929L
     private val scale = System.getProperty("katachi.pbt.scale")?.toDouble() ?: 1.0
 
-    private fun config(defaultIterations: Int) = PropTestConfig(
+    private fun config(defaultIterations: Int) = PropTest(
         seed = seed,
         iterations = (defaultIterations * scale).toInt().coerceAtLeast(1),
         shrinkingMode = ShrinkingMode.Bounded(400),
-    )
+    ).toPropTestConfig()
 
     private val reached = sortedMapOf<String, Int>()
 

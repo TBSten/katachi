@@ -12,7 +12,7 @@ internal class KatachiConfigurableTest : AnalysisTestBase() {
     override fun setUp() {
         super.setUp()
         configurable = KatachiConfigurable(project)
-        panel = configurable.createComponent()!!
+        panel = configurable.createComponent()
         configurable.reset()
     }
 

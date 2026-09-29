@@ -14,7 +14,7 @@ private const val BUNDLE = "messages.KatachiBundle"
  * val title = KatachiBundle.message("conflict.title", 2, 3, "Repository")
  * ```
  */
-internal object KatachiBundle : DynamicBundle(BUNDLE) {
+internal object KatachiBundle : DynamicBundle(KatachiBundle::class.java, BUNDLE) {
     @Nls
     fun message(@PropertyKey(resourceBundle = BUNDLE) key: String, vararg params: Any): String = getMessage(key, *params)
 }

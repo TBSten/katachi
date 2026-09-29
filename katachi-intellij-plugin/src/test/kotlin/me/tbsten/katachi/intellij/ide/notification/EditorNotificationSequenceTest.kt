@@ -36,7 +36,7 @@ internal class EditorNotificationSequenceTest : EditorNotificationTestBase() {
         assertNotNull(panelOf(editor))
         val configurable = KatachiConfigurable(project)
         try {
-            val component = configurable.createComponent()!!
+            val component = configurable.createComponent()
             configurable.reset()
             val text = KatachiBundle.message("settings.editorNotification.enabled")
             UIUtil.findComponentsOfType(component, JBCheckBox::class.java).single { it.text == text }.doClick()

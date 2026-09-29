@@ -5,7 +5,6 @@ import com.intellij.openapi.application.ReadAction
 import com.intellij.openapi.progress.ProcessCanceledException
 import com.intellij.testFramework.DumbModeTestUtils
 import com.intellij.testFramework.PlatformTestUtil
-import com.intellij.ui.EditorNotificationProvider
 import kotlinx.coroutines.CompletableDeferred
 import me.tbsten.katachi.intellij.data.detect.SyncedModule
 import me.tbsten.katachi.intellij.data.detect.SyncedProject
@@ -127,7 +126,7 @@ internal class EditorNotificationAvailabilityTest : EditorNotificationTestBase()
 
         val file = write("feature/a/ui/Home.kt", "")
 
-        assertSame(EditorNotificationProvider.CONST_NULL, inReadAction { provider.collectNotificationData(project, file) })
+        assertNull(inReadAction { provider.collectNotificationData(project, file) })
         assertNull(panelOf(open(file)))
     }
 
@@ -149,7 +148,7 @@ internal class EditorNotificationAvailabilityTest : EditorNotificationTestBase()
 
         val workers: List<Future<*>> = List(4) {
             ApplicationManager.getApplication().executeOnPooledThread {
-                repeat(25) { ReadAction.run<Throwable> { provider.collectNotificationData(project, file) } }
+                repeat(25) { ReadAction.runBlocking<Throwable> { provider.collectNotificationData(project, file) } }
             }
         }
         PlatformTestUtil.waitWithEventsDispatching("the reads", { workers.all { it.isDone } }, 10)
@@ -164,7 +163,7 @@ internal class EditorNotificationAvailabilityTest : EditorNotificationTestBase()
     /** Runs [block] on a pooled thread under a read lock, as the platform calls the provider; what it threw is rethrown here. */
     private fun <T> inReadAction(block: () -> T): T {
         // Caught inside: the pooled thread's wrapper swallows a ProcessCanceledException.
-        val future = ApplicationManager.getApplication().executeOnPooledThread<Result<T>> { runCatching { ReadAction.compute<T, Throwable> { block() } } }
+        val future = ApplicationManager.getApplication().executeOnPooledThread<Result<T>> { runCatching { ReadAction.computeBlocking<T, Throwable> { block() } } }
         PlatformTestUtil.waitWithEventsDispatching("read action", { future.isDone }, 10)
         return future.get().getOrThrow()
     }

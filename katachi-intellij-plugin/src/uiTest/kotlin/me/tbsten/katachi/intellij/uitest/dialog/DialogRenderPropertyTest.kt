@@ -1,7 +1,8 @@
 package me.tbsten.katachi.intellij.uitest.dialog
 
 import io.kotest.property.Arb
-import io.kotest.property.PropTestConfig
+import io.kotest.property.PropTest
+import io.kotest.property.toPropTestConfig
 import io.kotest.property.ShrinkingMode
 import io.kotest.property.arbitrary.arbitrary
 import io.kotest.property.arbitrary.choose
@@ -40,11 +41,11 @@ class DialogRenderPropertyTest {
     private val scale = System.getProperty("katachi.pbt.scale")?.toDouble() ?: 1.0
     private val outDir = File(System.getProperty("katachi.pbt.outDir") ?: "build/uiTest-failures")
 
-    private fun config(defaultIterations: Int) = PropTestConfig(
+    private fun config(defaultIterations: Int) = PropTest(
         seed = seed,
         iterations = (defaultIterations * scale).toInt().coerceAtLeast(1),
         shrinkingMode = ShrinkingMode.Bounded(300),
-    )
+    ).toPropTestConfig()
 
     private val reached = sortedMapOf<String, Int>()
     private var renders = 0

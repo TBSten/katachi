@@ -1,7 +1,8 @@
 package me.tbsten.katachi.intellij.uitest.pbt
 
 import io.kotest.property.Arb
-import io.kotest.property.PropTestConfig
+import io.kotest.property.PropTest
+import io.kotest.property.toPropTestConfig
 import io.kotest.property.ShrinkingMode
 import io.kotest.property.arbitrary.constant
 import io.kotest.property.checkAll
@@ -20,11 +21,11 @@ class ScreenPropertyTest {
     private val seed = System.getProperty("katachi.pbt.seed")?.toLong() ?: 20260927L
     private val scale = System.getProperty("katachi.pbt.scale")?.toDouble() ?: 1.0
 
-    private fun config(defaultIterations: Int) = PropTestConfig(
+    private fun config(defaultIterations: Int) = PropTest(
         seed = seed,
         iterations = (defaultIterations * scale).toInt().coerceAtLeast(1),
         shrinkingMode = ShrinkingMode.Bounded(400),
-    )
+    ).toPropTestConfig()
 
     private val reached = sortedMapOf<String, Int>()
 

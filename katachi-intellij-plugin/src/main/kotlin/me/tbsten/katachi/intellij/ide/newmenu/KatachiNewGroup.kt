@@ -4,7 +4,6 @@ import com.intellij.openapi.actionSystem.ActionGroup
 import com.intellij.openapi.actionSystem.ActionUpdateThread
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
-import com.intellij.openapi.actionSystem.DynamicActionGroup
 import com.intellij.openapi.actionSystem.LangDataKeys
 import com.intellij.openapi.project.DumbAware
 import com.intellij.openapi.project.Project
@@ -35,7 +34,7 @@ import java.nio.file.Path
  */
 internal class KatachiNewGroup(
     private val portsOf: (Project) -> NotificationPorts,
-) : ActionGroup(), DynamicActionGroup, DumbAware {
+) : ActionGroup(), DumbAware {
     @Suppress("unused") // Created by the platform from plugin.xml.
     constructor() : this(NotificationPorts::of)
 

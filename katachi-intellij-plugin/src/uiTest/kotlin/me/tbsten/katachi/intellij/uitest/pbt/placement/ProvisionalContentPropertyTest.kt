@@ -1,7 +1,8 @@
 package me.tbsten.katachi.intellij.uitest.pbt.placement
 
 import io.kotest.property.Arb
-import io.kotest.property.PropTestConfig
+import io.kotest.property.PropTest
+import io.kotest.property.toPropTestConfig
 import io.kotest.property.arbitrary.arbitrary
 import io.kotest.property.arbitrary.element
 import io.kotest.property.arbitrary.int
@@ -34,7 +35,7 @@ import org.junit.Test
 class ProvisionalContentPropertyTest {
     private val seed = System.getProperty("katachi.pbt.seed")?.toLong() ?: 20260929L
     private val scale = System.getProperty("katachi.pbt.scale")?.toDouble() ?: 1.0
-    private fun config() = PropTestConfig(seed = seed, iterations = (300 * scale).toInt().coerceAtLeast(1))
+    private fun config() = PropTest(seed = seed, iterations = (300 * scale).toInt().coerceAtLeast(1)).toPropTestConfig()
 
     private val tokens = listOf(
         "*/", "/*", "//", "-->", "--", "<!--", "--!>", "#", "'", "\"", "$", "`", " ", "\t", "\n", "\r\n", "\r", "\u2028",

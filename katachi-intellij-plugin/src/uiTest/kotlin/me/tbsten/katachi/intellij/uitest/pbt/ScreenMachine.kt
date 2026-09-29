@@ -168,7 +168,7 @@ internal class ScreenMachine(private val catalog: Catalog, private val render: B
         if (after.loadErrorBanner != null) count("load error banner")
         if (after.modules.size >= 2) count("two or more modules")
         if (after.searchQuery.isNotBlank()) count("searching")
-        if (after.view.highlight != null && after.rows.any { it.id == after.view.highlight?.templateId }) count("highlighted row in the list")
+        if (after.view.highlight != null && after.rows.any { it.id == after.view.highlight.templateId }) count("highlighted row in the list")
     }
 
     /** Typing into a field of an editable form reaches the state as typed. */

@@ -1,7 +1,8 @@
 package me.tbsten.katachi.intellij.uitest.pbt
 
 import io.kotest.property.Arb
-import io.kotest.property.PropTestConfig
+import io.kotest.property.PropTest
+import io.kotest.property.toPropTestConfig
 import io.kotest.property.arbitrary.arbitrary
 import io.kotest.property.arbitrary.element
 import io.kotest.property.arbitrary.int
@@ -14,7 +15,6 @@ import kotlinx.coroutines.cancel
 import kotlinx.coroutines.runBlocking
 import me.tbsten.katachi.intellij.model.TemplateId
 import me.tbsten.katachi.intellij.presentation.FieldId
-import me.tbsten.katachi.intellij.presentation.FooterUi
 import me.tbsten.katachi.intellij.presentation.GenerationState
 import me.tbsten.katachi.intellij.presentation.KatachiIntent
 import me.tbsten.katachi.intellij.testing.ContractFixtures
@@ -66,7 +66,7 @@ class CaptureOrderPropertyTest {
 
     @Test
     fun `captureとパラメータをどの順に入れても生成の--argは各欄の最後の値でcaptureが先`() = runBlocking {
-        val config = PropTestConfig(seed = seed, iterations = (200 * scale).toInt().coerceAtLeast(1))
+        val config = PropTest(seed = seed, iterations = (200 * scale).toInt().coerceAtLeast(1)).toPropTestConfig()
         checkAll(config, stepsArb) { steps -> play(steps) }
         Unit
     }
@@ -105,7 +105,7 @@ class CaptureOrderPropertyTest {
                 assertTrue("$steps: nothing may run", s.katachi.runs.isEmpty())
                 return
             }
-            assertTrue("$steps", footer is FooterUi.Form && footer.generateEnabled)
+            assertTrue("$steps", footer.generateEnabled)
             send(KatachiIntent.Generate)
             assertTrue("$steps", s.state.generation is GenerationState.Finished)
 

@@ -72,8 +72,7 @@ internal class ScenarioHarness(scope: CoroutineScope, ioDispatcher: CoroutineDis
     var loads = 0
         private set
 
-    lateinit var vm: KatachiToolWindowViewModel
-        private set
+    val vm: KatachiToolWindowViewModel
 
     val katachi = FakeKatachi(fs, ROOT) { vm.state.value.rows }
     val runner = FakeGradleTaskRunner(fs) { request, _ -> answer(request) }

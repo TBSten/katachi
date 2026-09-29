@@ -1,7 +1,8 @@
 package me.tbsten.katachi.intellij.uitest.pbt.placement
 
 import io.kotest.property.Arb
-import io.kotest.property.PropTestConfig
+import io.kotest.property.PropTest
+import io.kotest.property.toPropTestConfig
 import io.kotest.property.arbitrary.arbitrary
 import io.kotest.property.arbitrary.element
 import io.kotest.property.arbitrary.int
@@ -26,7 +27,7 @@ import java.nio.file.Path
 class PlacementIndexPropertyTest {
     private val seed = System.getProperty("katachi.pbt.seed")?.toLong() ?: 20260929L
     private val scale = System.getProperty("katachi.pbt.scale")?.toDouble() ?: 1.0
-    private val config get() = PropTestConfig(seed = seed, iterations = (200 * scale).toInt().coerceAtLeast(1))
+    private val config get() = PropTest(seed = seed, iterations = (200 * scale).toInt().coerceAtLeast(1)).toPropTestConfig()
 
     /** One pattern with its values, in [definitions] definitions of their own roots, each holding [templates]. */
     private data class Scenario(val spec: PatternSpec, val filling: Filling, val definitions: Int) {

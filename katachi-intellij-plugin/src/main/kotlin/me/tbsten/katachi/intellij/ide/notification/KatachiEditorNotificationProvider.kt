@@ -30,8 +30,7 @@ import javax.swing.JComponent
  * [collectNotificationData] runs in the background under a read lock (`@RequiresReadLock` in 261), so
  * the whole decision is made there: settings, the index state, the matches, the empty-file rule over
  * the cached Document or the disk, the memory and the ledger, then `decideNotification`. It returns
- * [EditorNotificationProvider.CONST_NULL] for no notification. The returned function only builds the
- * panel on the EDT. Without an index it calls `KatachiProjectService.ensureLoaded()` and shows nothing.
+ * `null` for no notification. The returned function only builds the panel on the EDT. Without an index it calls `KatachiProjectService.ensureLoaded()` and shows nothing.
  *
  * A project whose synced data has no katachi definition module gets no project service at all
  * (decision 17). Whatever an SDK call throws on the way means no notification, never an IDE error;
@@ -49,9 +48,9 @@ internal class KatachiEditorNotificationProvider(
 
     override fun collectNotificationData(project: Project, file: VirtualFile): Function<in FileEditor, out JComponent?>? {
         val path = sdkCall("find the path of ${file.name}") { file.fileSystem.getNioPath(file) }.getOrNull()
-            ?: return EditorNotificationProvider.CONST_NULL
+            ?: return null
         val decided = sdkCall("decide the katachi notification of $path") { decide(project, file, path) }.getOrNull()
-            ?: return EditorNotificationProvider.CONST_NULL
+            ?: return null
         // A panel the IDE fails to build is no panel, not an IDE error.
         return Function { editor ->
             sdkCall("build the katachi notification of $path") { katachiNotificationPanel(editor, decided.decision, decided.actionsFor(project, file, path)) }.getOrNull()

@@ -45,7 +45,7 @@ internal class ProjectDataModuleSourceTest : AnalysisTestBase() {
         } else {
             this
         }
-        owner.createChild(ProjectKeys.LIBRARY_DEPENDENCY, LibraryDependencyData(owner.data as ModuleData, library, LibraryLevel.PROJECT))
+        owner.createChild(ProjectKeys.LIBRARY_DEPENDENCY, LibraryDependencyData(owner.data, library, LibraryLevel.PROJECT))
     }
 
     fun `test 同期データのモジュールから Gradle パス・ディレクトリ・タスク名・katachi の版を取り出す`() {
