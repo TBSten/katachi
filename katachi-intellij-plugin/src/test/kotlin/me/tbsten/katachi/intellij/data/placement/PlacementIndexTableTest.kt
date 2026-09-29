@@ -376,6 +376,31 @@ class PlacementIndexTableTest {
 
     // covers: 論点1
     @Test
+    fun `seedsForは同じ起点に当たる複数のテンプレートからそれぞれ自分の決まる値を返す`() {
+        // Several templates fit one directory, each deciding a capture of its own name: switching
+        // templates in the dialog must seed the new template's captures, not the first match's.
+        val index = indexOf(
+            snapshotOf(
+                module(":arch"),
+                listOf(
+                    patternTemplate("ui.Screen", "feature/\${feature}/ui/\${screen}Screen.kt"),
+                    patternTemplate("data.Repository", "feature/\${name}/data/\${entity}Repository.kt"),
+                    patternTemplate("app.Main", "app/\${main}.kt"),
+                ),
+            ),
+        )
+        val directory = me.tbsten.katachi.intellij.presentation.entry.EntryOrigin.NewMenuDirectory(ROOT.resolve("feature/profile"))
+        val byRole = index.matchesForDirectory(ROOT.resolve("feature/profile")).associate { it.template.template.roleName to it.id }
+        assertEquals(setOf("ui.Screen", "data.Repository"), byRole.keys)
+
+        assertEquals(mapOf("feature" to "profile"), index.seedsFor(directory, byRole.getValue("ui.Screen")))
+        assertEquals(mapOf("name" to "profile"), index.seedsFor(directory, byRole.getValue("data.Repository")))
+        val main = index.matchesForFile(ROOT.resolve("app/Main.kt")).single().id
+        assertEquals(emptyMap<String, String>(), index.seedsFor(directory, main))
+    }
+
+    // covers: 論点1
+    @Test
     fun `パターンの起点はwrapperかgitのある最初の上のディレクトリで無ければリンクしたルート`() {
         val fs = FakeFileSystem()
         val nested = module(":arch").copy(directory = ROOT.resolve("sample/android/arch"))
