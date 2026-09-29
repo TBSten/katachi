@@ -191,7 +191,7 @@ internal abstract class EditorNotificationTestBase : EntryServiceTestBase() {
     fun path(relative: String): Path = root.resolve(relative)
 }
 
-/** The links of the panel ([Create] or [View Templates]); ⚙ and × are buttons, not links. */
+/** The links of the panel ([Create] or [View Template]); ⚙ and × are buttons, not links. */
 internal val EditorNotificationPanel.links: List<HyperlinkLabel> get() = UIUtil.findComponentsOfType(this, HyperlinkLabel::class.java)
 
 internal fun EditorNotificationPanel.link(key: String): HyperlinkLabel =

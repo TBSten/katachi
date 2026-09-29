@@ -133,13 +133,19 @@ internal class SingleFileGeneration(
     private val provisionals = ConcurrentHashMap<Path, String>()
 
     /**
+     * The targets a [run] is on, from its first check: the ledger says "generating" only after the
+     * provisional file is written, and a second entry must not slip in before that (V2 L6).
+     */
+    private val running: MutableSet<Path> = ConcurrentHashMap.newKeySet()
+
+    /**
      * The state of [target], unsaved Documents first (decision 12). The dialog's notice (D1) and [run]
      * call the same check. A target a generation is running on counts as content: one generation per file.
      */
     suspend fun checkTarget(target: Path?): TargetState {
         if (target == null) return TargetState.Undecided
         val entry = ledger.entryOf(target)
-        if (entry is LedgerEntry.Generating) return TargetState.HasContent
+        if (entry is LedgerEntry.Generating || target in running) return TargetState.HasContent
         val text = effects.currentText(target) ?: return TargetState.Absent
         val provisional = provisionals[target]
         if (entry is LedgerEntry.Failed && provisional != null && ProvisionalContent.isStillProvisional(text, provisional)) {
@@ -151,7 +157,17 @@ internal class SingleFileGeneration(
     /** Runs the whole flow; cancelling the caller (the project closing) stops Gradle. */
     suspend fun run(request: SingleFileGenerationRequest): SingleFileGenerationResult {
         val target = request.target ?: return runUndecided(request)
-        if (checkTarget(target) == TargetState.HasContent) return SingleFileGenerationResult.Refused(EntryGenerationRefusal.TargetHasContent(target))
+        if (checkTarget(target) == TargetState.HasContent || !running.add(target)) {
+            return SingleFileGenerationResult.Refused(EntryGenerationRefusal.TargetHasContent(target))
+        }
+        try {
+            return runOn(request, target)
+        } finally {
+            running.remove(target)
+        }
+    }
+
+    private suspend fun runOn(request: SingleFileGenerationRequest, target: Path): SingleFileGenerationResult {
         missingModuleOf(request.template, target, fileSystem)?.let { return SingleFileGenerationResult.Refused(EntryGenerationRefusal.ModuleMissing(it)) }
 
         val args = entryArgsOf(request)

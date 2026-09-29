@@ -82,6 +82,24 @@ internal class EditorNotificationAvailabilityTest : EditorNotificationTestBase()
     }
 
     // covers: 論点3
+    fun `test 操作なしの読み込みを OFF から ON に戻すと次の判定で読み込みを始め通知が出る`() {
+        setAutoLoad(false)
+        gradle.loads += LoadAnswer(NOTIFICATION_JSON)
+        val editor = open("feature/a/ui/Home.kt", "")
+        settleNotifications()
+        waitForIndex("unavailable") { it == PlacementIndexState.Unavailable(PlacementUnavailableReason.LoadingWithoutUserDisabled) }
+        settle()
+        assertNull(panelOf(editor))
+
+        setAutoLoad(true)
+        updateAll()
+
+        waitForIndex("ready") { it is PlacementIndexState.Ready }
+        PlatformTestUtil.waitWithEventsDispatching({ "no panel after the load" }, { panelOf(editor) != null }, 10)
+        assertEquals(1, gradle.loadRequests.size)
+    }
+
+    // covers: 論点3
     fun `test 索引が無いときに開くと読み込みを始め終わると通知が出る`() {
         gradle.loads += LoadAnswer(NOTIFICATION_JSON)
 

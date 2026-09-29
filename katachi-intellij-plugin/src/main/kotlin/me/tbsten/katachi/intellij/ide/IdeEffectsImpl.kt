@@ -201,9 +201,9 @@ internal class IdeEffectsImpl(
     override suspend fun reloadFromDisk(paths: List<Path>) {
         if (paths.isEmpty()) return
         onEdt {
-            val documents = FileDocumentManager.getInstance()
             for (path in paths) {
                 sdkCall("reload $path from disk") {
+                    val documents = FileDocumentManager.getInstance()
                     val document = cachedDocumentOf(path) ?: return@sdkCall
                     val disk = NioProjectFileSystem.readText(path) ?: return@sdkCall
                     if (!documents.isDocumentUnsaved(document) && !document.immutableCharSequence.contentEquals(disk)) {

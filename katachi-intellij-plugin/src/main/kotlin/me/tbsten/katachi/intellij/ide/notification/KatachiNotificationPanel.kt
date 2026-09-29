@@ -16,7 +16,7 @@ internal class NotificationPanelActions(
 )
 
 /**
- * The panel of a katachi notification: its text, at most one link ([Create] or [View Templates]),
+ * The panel of a katachi notification: its text, at most one link ([Create] or [View Template]),
  * then ⚙ and ×, both [InplaceButton]s told apart by their tooltips. Built on the EDT from a
  * decision made in the background; it decides nothing itself.
  *
