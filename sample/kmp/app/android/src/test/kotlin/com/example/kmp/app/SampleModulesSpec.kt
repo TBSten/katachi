@@ -19,32 +19,32 @@ import io.kotest.matchers.shouldBe
  * Compose test runtime, which is outside what this sample is for.
  */
 class SampleModulesSpec : FreeSpec({
-    "Navigator は初期状態でホームを指す" {
+    "Navigator starts at home" {
         Navigator().current.value shouldBe Destination.Home
     }
 
-    "navigateTo で現在地が変わる" {
+    "navigateTo changes the current destination" {
         val navigator = Navigator()
         navigator.navigateTo(Destination.Settings)
         navigator.current.value shouldBe Destination.Settings
     }
 
-    "route 文字列から Destination を引ける" {
+    "Destination can be looked up from a route string" {
         Destination.ofRoute("settings") shouldBe Destination.Settings
         Destination.ofRoute("unknown") shouldBe null
     }
 
-    "ナビゲーションバーに出す遷移先は宣言順" {
+    "Destinations shown in the navigation bar follow declaration order" {
         Destination.topLevel.map { it.route } shouldContainExactly listOf("home", "settings")
     }
 
-    "UiState.valueOrNull は Loaded のときだけ値を返す" {
+    "UiState.valueOrNull returns a value only when Loaded" {
         UiState.Loaded("x").valueOrNull() shouldBe "x"
         UiState.Loading.valueOrNull() shouldBe null
         UiState.Failed("boom").valueOrNull() shouldBe null
     }
 
-    "テスト用のフェイクが :data のインターフェースを満たす" {
+    "The test fake satisfies the :data interface" {
         FakeUserRepository(listOf("alice")).names() shouldContainExactly listOf("alice")
     }
 })

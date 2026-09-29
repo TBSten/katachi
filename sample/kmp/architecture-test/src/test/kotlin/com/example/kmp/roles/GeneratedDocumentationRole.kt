@@ -12,46 +12,47 @@ import me.tbsten.katachi.dsl.DeclarationContainerScope
  * repository, where a reader finds them without running anything.
  */
 fun DeclarationContainerScope.generatedDocumentation() = "GeneratedDocumentation" {
-    title = "生成ドキュメント"
-    summary = "この定義から書き出され、リポジトリにコミットされる Markdown"
+    title = "Generated documentation"
+    summary = "Markdown written from this definition and committed to the repository"
     description = """
-        `./gradlew :architecture-test:katachiDocs` が、この定義そのものから
-        書き出す Markdown です。出力先は `katachi { processors { docs { outputDir } } }` で
-        `sample/kmp/docs` に向けてあります。
+        The Markdown that `./gradlew :architecture-test:katachiDocs` writes out of this very
+        definition. The output goes to `sample/kmp/docs` through
+        `katachi { processors { docs { outputDir } } }`.
 
-        これは手で書かない。`katachiDocs` が書く。ここに書き足した文章は次の生成で消えます。
-        直す場所は常に定義側で、役割や group の `title` `summary` `description` `example` が
-        そのままページになります。
+        Do not write it by hand; `katachiDocs` writes it. Text added here is erased by the next
+        generation. The place to fix is always the definition: the `title`, `summary`,
+        `description` and `example` of a role or group become the page as they are.
 
-        生成物なのに `build/` の外に置いているのは、リポジトリを開いた人がそのまま読めるように
-        するためです。`.gitignore` が `build/` を落としているので、`build/` に出している限り
-        ページは誰の目にも触れません。外に出した代わりに `files = gitTracked()` の検査対象に
-        入るので、この役割が要ります。役割を消すと `[UnexpectedDirectory] docs` で
-        `:architecture-test:test` が落ちます。
+        It sits outside `build/` even though it is generated, so that someone who opens the
+        repository can read it as it is. `.gitignore` drops `build/`, so pages written to
+        `build/` would never be seen by anyone. In exchange for being outside, it falls under
+        the `files = gitTracked()` check, which is why this role is needed. Deleting the role
+        makes `:architecture-test:test` fail with `[UnexpectedDirectory] docs`.
 
-        古くなっていないかは CI が `--arg mode=check` で見ています。`mode=check` は何も書かずに
-        ディスク上の内容と突き合わせ、食い違えば例外で落ちるので、定義を変えて生成し忘れたまま
-        push するとリポジトリルートの `checkSampleKmp` が赤くなります。手元で直すには
-        `katachiDocs` をもう一度走らせるだけです（`mode` を付けなければ書き込みです）。
+        CI checks whether it is stale with `--arg mode=check`. `mode=check` writes nothing,
+        compares against what is on disk and throws on a mismatch, so changing the definition and
+        pushing without regenerating turns `checkSampleKmp` at the repository root red. To fix it
+        locally, just run `katachiDocs` again (without `mode` it writes).
 
-        `documented = true` にしてあります。生成物であっても一覧に出ないと、この `docs/` が
-        何なのかがどこにも書かれていないことになるからです。この役割自身のページ
-        （`docs/testing/GeneratedDocumentation.md`）も生成されます。
+        It is `documented = true`. If a generated role did not show in the list, nothing would
+        say what this `docs/` is. The page of this role itself
+        (`docs/testing/GeneratedDocumentation.md`) is generated too.
 
-        `layout { }` の `**` は0段以上に一致するので、索引の `docs/README.md` も
-        `docs/<group>/README.md` も `docs/<group>/<役割>.md` も1行で覆えます。group を入れ子に
-        してもこの行は変わりません。索引だけワイルドカード無しで別に書いてあり、そちらは
-        `required` です。1度も生成していない状態がそこで見つかります。
+        `**` in `layout { }` matches zero or more levels, so the index `docs/README.md`,
+        `docs/<group>/README.md` and `docs/<group>/<role>.md` are all covered by one line. That
+        line does not change even if groups are nested. Only the index is written separately
+        without a wildcard, and it is `required`, so a state where nothing was ever generated is
+        found there.
     """.trimIndent()
     forbiddenContents = """
-        - 手書きのドキュメント。`docs/` 配下の `*.md` は生成のたびに作り直され、この定義が
-          作らないページは削除されます
-        - `.md` 以外の資源。いまの `layout { }` は `*.md` しか認めていないので、画像を足すなら
-          役割を書き換えるところから始まります
+        - Handwritten documents. The `*.md` under `docs/` are recreated on every generation,
+          and pages this definition does not produce are deleted
+        - Resources other than `.md`. The current `layout { }` allows only `*.md`, so adding an
+          image starts with rewriting the role
     """.trimIndent()
-    example("docs/README.md", "全ページの索引と、group ごとの一覧")
-    example("docs/ui/Component.md", "役割1つのページ")
-    example("docs/ui/README.md", "group 1つのページ")
+    example("docs/README.md", "The index of all pages and the list per group")
+    example("docs/ui/Component.md", "The page of one role")
+    example("docs/ui/README.md", "The page of one group")
     layout {
         "docs" {
             // The index, written on every run, so it is the one entry without a wildcard --

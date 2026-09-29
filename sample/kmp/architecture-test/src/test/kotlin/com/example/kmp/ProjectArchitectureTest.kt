@@ -18,7 +18,7 @@ import org.junit.jupiter.api.Test
  */
 class ProjectArchitectureTest {
     @Test
-    fun `プロジェクトの構成が定義どおりになっている`() {
+    fun `the project layout matches the definition`() {
         projectArchitecture.assert()
     }
 }

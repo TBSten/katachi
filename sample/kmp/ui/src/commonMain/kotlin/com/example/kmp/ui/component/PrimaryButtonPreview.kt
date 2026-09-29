@@ -16,7 +16,7 @@ import com.example.kmp.ui.preview.PreviewRoot
 @Composable
 private fun PrimaryButtonPreview() {
     PreviewRoot {
-        PrimaryButton(label = "保存", onClick = {})
+        PrimaryButton(label = "Save", onClick = {})
     }
 }
 
@@ -24,6 +24,6 @@ private fun PrimaryButtonPreview() {
 @Composable
 private fun PrimaryButtonDisabledPreview() {
     PreviewRoot {
-        PrimaryButton(label = "保存", onClick = {}, enabled = false)
+        PrimaryButton(label = "Save", onClick = {}, enabled = false)
     }
 }

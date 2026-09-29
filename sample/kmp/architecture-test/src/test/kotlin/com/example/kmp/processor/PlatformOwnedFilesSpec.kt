@@ -28,19 +28,19 @@ import me.tbsten.katachi.processor.process
  */
 @OptIn(ExperimentalKatachiApi::class)
 class PlatformOwnedFilesSpec : FreeSpec({
-    "owner = \"platform\" が付いた役割のファイルをすべて集める" {
+    "collects every file of the roles tagged owner = \"platform\"" {
         val files = projectArchitecture.process(PlatformOwnedFilesProcessor(owner = "platform")).getOrThrow()
 
         files shouldContainExactlyInAnyOrder (platformOwnedFilesWithoutGit + ".gitignore")
     }
 
-    "owner タグを外した役割からはファイルが集まらない（空振り防止）" {
-        // tool/Git と同じ layout を持つが owner を書かない役割で組み直した定義。本物の
-        // toolGroup() との違いはこの1タグだけなので、processor が実際には Owner を
-        // 読まずに全ファイルを返しているだけなら、ここでも .gitignore が混ざる。
+    "no files are collected from a role without the owner tag (guards against a vacuous pass)" {
+        // A definition rebuilt with a role that has the same layout as tool/Git but no owner. The only
+        // difference from the real toolGroup() is this one tag, so if the processor returned every file
+        // without actually reading Owner, .gitignore would show up here too.
         //
-        // ここだけは git() を呼ばずに手で書き写している。呼べば owner が付いて、
-        // このテストが確かめたいこと（タグの有無で結果が変わる）が消えるため。
+        // This one is copied by hand instead of calling git(): calling it would add the owner,
+        // and the point of this test (the result changes with the tag) would be lost.
         val architectureWithUntaggedGit = architecture {
             featureGroup()
             uiGroup()
@@ -50,12 +50,12 @@ class PlatformOwnedFilesSpec : FreeSpec({
             gradleGroup()
             "tool".group {
                 documented = false
-                title = "ツール"
+                title = "Tool"
 
                 "Git" {
-                    summary = ".gitignore など"
+                    summary = ".gitignore and the like"
                     documented = false
-                    example(".gitignore", "生成物を Git の管理から外す")
+                    example(".gitignore", "Keeps generated files out of Git")
                     layout {
                         ".gitignore".file()
                     }

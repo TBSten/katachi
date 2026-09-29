@@ -1,26 +1,26 @@
 [katachi-sample-kmp](../README.md)
 
-# データ
+# Data
 
-:data モジュール。データの取得口と、プラットフォームで実装が変わる部分
+The :data module. The way into data, and the parts whose implementation differs per platform
 
-`:data` 1モジュールを package で割った層です。`user` にリポジトリ、`platform` に
-expect/actual の組が入ります。`:ui` と同じく、モジュールではなく package で分けた形です。
+One `:data` module split into packages. `user` holds the repositories and `platform` the
+expect/actual pair. Like `:ui`, it is split by package, not by module.
 
-2つの役割を同じ group に置いているのは、どちらも「アプリの外から値を持ってくる口」
-だからです。`UserRepository` はデータの取得口、`platformName()` は実行環境という
-外側の情報の取得口で、呼ぶ側（ViewModel）から見ればどちらも同じ `:data` への1本の依存に
-見えます。
+Both roles sit in the same group because both are "a way to bring in values from outside
+the app". `UserRepository` is the way into data and `platformName()` the way into
+outside information about the runtime, and to the caller (the ViewModel) both look like a
+single dependency on `:data`.
 
-KMP のプラットフォーム差をこの group に閉じ込めているのが、このサンプルの設計です。
-`androidMain` / `iosMain` を持つのは `:data` だけで、UI 側（`:ui` と feature）には
-`expect`/`actual` が1つもありません。プラットフォーム固有の処理が要るという話になったら、
-画面ではなくここに降ろしてください。
+Confining KMP platform differences to this group is the design of this sample. Only
+`:data` has `androidMain` / `iosMain`; the UI side (`:ui` and the features) has no
+`expect`/`actual` at all. When something platform-specific is needed, push it down here
+instead of into a screen.
 
 | Role | Summary |
 |---|---|
-| [リポジトリ](./Repository.md) | :data モジュールの user package。データの取得口で、インターフェースと実装の2つの置き方を持つ |
-| [プラットフォーム実装](./PlatformImplementation.md) | :data モジュールの platform package。commonMain の expect 宣言と、androidMain / iosMain の actual 実装が同じ package に揃う |
+| [Repository](./Repository.md) | The :data module's user package. The way into data, placed as an interface and an implementation |
+| [Platform implementation](./PlatformImplementation.md) | The :data module's platform package. The expect declaration in commonMain and the actual implementations in androidMain / iosMain sit in the same package |
 
 ## Placement in this group
 
@@ -29,15 +29,15 @@ KMP のプラットフォーム差をこの group に閉じ込めているのが
   src/
     commonMain/kotlin/**/
       user/
-        *Repository.kt                           リポジトリ
-        *RepositoryImpl.kt                       リポジトリ
-      platform/*.kt                              プラットフォーム実装
-    androidMain/kotlin/**/platform/*.android.kt  プラットフォーム実装
-    iosMain/kotlin/**/platform/*.ios.kt          プラットフォーム実装
+        *Repository.kt                           Repository
+        *RepositoryImpl.kt                       Repository
+      platform/*.kt                              Platform implementation
+    androidMain/kotlin/**/platform/*.android.kt  Platform implementation
+    iosMain/kotlin/**/platform/*.ios.kt          Platform implementation
 ```
 
-## 置いてはいけないもの
+## Forbidden contents
 
-- UI の型。`UiState` は `:ui` の core package にあり、`:data` はそれを知りません
-- テスト用の偽実装。`FakeUserRepository` は `:testing` にあります
-- `@Composable`。`:data` のビルドスクリプトに Compose のプラグインは入っていません
+- UI types. `UiState` lives in the core package of `:ui`, and `:data` does not know about it
+- Test doubles. `FakeUserRepository` lives in `:testing`
+- `@Composable`. The `:data` build script does not apply the Compose plugin

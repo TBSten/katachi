@@ -12,32 +12,32 @@ import me.tbsten.katachi.dsl.DeclarationContainerScope
  * `ProjectArchitectureSpec` asserts it.
  */
 fun DeclarationContainerScope.git() = "Git" {
-    summary = ".gitignore。ビルド生成物と Xcode の作業ファイルを Git の管理から外す"
+    summary = ".gitignore. Keeps build outputs and Xcode working files out of Git"
     documented = false
     // Also `owner = "platform"` (see com.example.kmp.processor.Owner), this sample's own
     // metadata key -- not katachi's. `PlatformOwnedFilesSpec` builds a variant of
     // this exact role with the tag left out to prove its processor really reads it.
     owner = "platform"
     description = """
-        git に伝えることだけを持つ役割です。今あるのは `.gitignore` 1ファイルで、
-        `build/` `.gradle/` `.kotlin/` `local.properties`、それに Xcode の `xcuserdata/` と
-        `DerivedData/` を Git の管理から外しています。
+        A role that holds only what is told to git. Right now that is the single `.gitignore`,
+        which keeps `build/`, `.gradle/`, `.kotlin/`, `local.properties`, and Xcode's
+        `xcuserdata/` and `DerivedData/` out of Git.
 
-        この役割はこのサンプルの検査そのものを支えています。`files` を既定の `gitTracked()` の
-        ままにしてあるので、katachi に渡るファイルは git が追跡しているものだけです。つまり
-        `build/` のための役割を書く必要がなく、逆に `.gitignore` を緩めると、その瞬間から
-        生成物が「どの役割も名乗らないファイル」として報告され始めます。
+        This role underpins the checks of this sample itself. `files` is left at the default
+        `gitTracked()`, so only files that git tracks reach katachi. That means no role has to be
+        written for `build/`; conversely, the moment `.gitignore` is loosened, generated files
+        start to be reported as "files no role claims".
 
-        このサンプルで唯一 `title` を書いていない宣言でもあります。表示名を省いたときに何が
-        出るか（役割名がそのまま使われること）を実際に試す場所として残してあり、
-        `ProjectArchitectureSpec` がそれを固定しています。
+        It is also the only declaration in this sample without a `title`. It is left that way to
+        try out what shows when the display name is omitted (the role name is used as it is),
+        and `ProjectArchitectureSpec` pins that down.
     """.trimIndent()
     forbiddenContents = """
-        - ビルドファイル。`build.gradle.kts` や wrapper は `Gradle` group の役割です
-        - CI の設定。このサンプルは自前の `.github/` を持たず、リポジトリルートの
-          ワークフローから回されています
+        - Build files. `build.gradle.kts` and the wrapper belong to the `Gradle` group
+        - CI configuration. This sample has no `.github/` of its own; it is run from the workflow
+          at the repository root
     """.trimIndent()
-    example(".gitignore", "Git が無視するものの一覧")
+    example(".gitignore", "The list of what Git ignores")
     layout {
         ".gitignore".file()
     }

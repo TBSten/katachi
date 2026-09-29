@@ -1,20 +1,21 @@
-[katachi-sample-kmp](../README.md) / [フィーチャー](README.md)
+[katachi-sample-kmp](../README.md) / [Feature](README.md)
 
-# ルート
+# Route
 
-画面を navigation の Destination に結びつけ、ViewModel の生成も引き受ける
+Ties a screen to a navigation Destination and also takes on creating the ViewModel
 
-feature モジュールの外から触れる唯一の入口です。`object HomeRoute` が
-`destination`（この画面がどの `Destination` なのか）と `Content()`（描画の呼び出し口）を
-持ち、呼ぶ側はその2つしか知りません。
+The only entry reachable from outside a feature module. `object HomeRoute` has
+`destination` (which `Destination` this screen is) and `Content()` (the call that draws
+it), and the caller knows only those two.
 
-ViewModel の生成をここが引き受けているのが要点です。`Content()` の中で
-`viewModel { HomeViewModel(repository) }` を呼ぶので、`:app:android` の AppRoot は
-HomeViewModel という型の存在を知らずに画面を出せます。依存（今は UserRepository）は
-引数で受け取ります。このサンプルは DI コンテナを持たず、手渡しで済ませています。
+The key point is that this role takes on creating the ViewModel. `Content()` calls
+`viewModel { HomeViewModel(repository) }`, so the AppRoot of `:app:android` can show the
+screen without knowing that the type HomeViewModel exists. Dependencies (currently
+UserRepository) are received as arguments. This sample has no DI container and hands
+them over by hand.
 
-`commonMain` 固定にしてあるのは、Android の `AppRoot` からも、将来 `app/ios` が
-`ComposeUIViewController` を持ったときにも、同じ Route を呼べるようにするためです。
+It is fixed to `commonMain` so that the same Route can be called from the Android
+`AppRoot` and, later, from `app/ios` once it has a `ComposeUIViewController`.
 
 ## Placement
 
@@ -24,11 +25,11 @@ HomeViewModel という型の存在を知らずに画面を出せます。依存
 
 ## Examples
 
-- `HomeRoute` ... ホーム画面の遷移先
-- `SettingsRoute` ... 設定画面の遷移先
+- `HomeRoute` ... The destination of the home screen
+- `SettingsRoute` ... The destination of the settings screen
 
-## 置いてはいけないもの
+## Forbidden contents
 
-- 画面の中身。Compose のツリーを組むのは Screen です
-- 遷移先そのものの定義。`Destination` は `:navigation` にあり、Route はそれを指すだけです
-- 遷移の制御。今どこにいるかを持つのは `:navigation` の `Navigator` です
+- The content of the screen. Building the Compose tree is the Screen's job
+- The definition of the destination itself. `Destination` is in `:navigation`, and the Route only points at it
+- Control of navigation. Holding where we are now is the job of `Navigator` in `:navigation`

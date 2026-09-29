@@ -43,10 +43,10 @@ internal fun SettingsContent(
             is UiState.Loading -> CircularProgressIndicator()
             is UiState.Failed -> Text(text = state.message)
             is UiState.Loaded -> {
-                Text(text = "ユーザー数: ${state.value.userCount}")
-                Text(text = "プラットフォーム: ${state.value.platform}")
+                Text(text = "Users: ${state.value.userCount}")
+                Text(text = "Platform: ${state.value.platform}")
             }
         }
-        PrimaryButton(label = "再読み込み", onClick = onReload)
+        PrimaryButton(label = "Reload", onClick = onReload)
     }
 }

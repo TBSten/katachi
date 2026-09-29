@@ -8,27 +8,28 @@ import me.tbsten.katachi.dsl.kotlin.ktFile
 
 /** The `MaterialTheme` setup and the design tokens around it: the `theme` package of `:ui`. */
 fun DeclarationContainerScope.theme() = "Theme" {
-    title = "テーマ"
-    summary = ":ui モジュールの theme package。MaterialTheme の設定と、色・余白のデザイントークン"
+    title = "Theme"
+    summary = "The theme package of the :ui module. The MaterialTheme setup and the design tokens for color and spacing"
     description = """
-        アプリの見た目の素を1か所にまとめた package です。`AppTheme` がアプリ唯一のテーマで、
-        エントリポイント（`AppRoot`）と、すべてのプレビューが通る `PreviewRoot` がこれで包みます。
-        テーマが2つに割れないよう、ここ以外で `MaterialTheme { }` を直接書きません。
+        A package that gathers the raw material of the app's look in one place. `AppTheme` is the
+        app's only theme, and the entry point (`AppRoot`) and `PreviewRoot`, which every preview
+        goes through, wrap their content in it. To keep the theme from splitting in two, do not
+        write `MaterialTheme { }` directly anywhere else.
 
-        `AppSpacing` が `AppTheme` の隣にいるのは、Material 3 が余白のスキームを持たないからです。
-        色は `ColorScheme` 経由で配れますが、余白は配る仕組みが無いので、部品が直接読む
-        `object` として置いています。トークンを足すならこの package です。
+        `AppSpacing` sits next to `AppTheme` because Material 3 has no scheme for spacing.
+        Colors can be distributed through `ColorScheme`, but there is no mechanism for spacing,
+        so it is an `object` that components read directly. Tokens are added in this package.
 
-        Android の `res/values/themes.xml` ではなく Kotlin 側にテーマを持っているのは KMP だからです。
-        iOS には `res/` がないので、リソース XML に書いた見た目は共有できません。アプリ名のような
-        Android ビルドが要求するものだけが `:app:android` の AndroidResource に残ります。
+        The theme is in Kotlin, not in Android's `res/values/themes.xml`, because this is KMP.
+        iOS has no `res/`, so a look written in resource XML cannot be shared. Only what the
+        Android build requires, such as the app name, stays in AndroidResource of `:app:android`.
     """.trimIndent()
     forbiddenContents = """
-        - 1つの画面だけで使う色や寸法。それはその画面の中の定数です
-        - `@Composable` の部品。`component` package に置きます
+        - Colors and sizes used by only one screen. Those are constants inside that screen
+        - `@Composable` components. They go in the `component` package
     """.trimIndent()
-    example("AppTheme", "アプリ全体のテーマ")
-    example("AppSpacing", "余白のトークン")
+    example("AppTheme", "The theme of the whole app")
+    example("AppSpacing", "The spacing tokens")
     layout {
         ":ui".module {
             "commonMain".sourceSet / kotlin / modulePackage / "theme" / "*".ktFile()

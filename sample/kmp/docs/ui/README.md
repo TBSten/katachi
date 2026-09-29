@@ -2,32 +2,34 @@
 
 # UI
 
-:ui と :navigation。どの画面にも属さない共有の UI と、遷移先の定義
+:ui and :navigation. Shared UI that belongs to no screen, and the definition of destinations
 
-画面から使われる側の、共有モジュール2つです。特定の画面に属さないものがここに集まります。
+Two shared modules that screens draw from. Whatever belongs to no particular screen
+gathers here.
 
-`:ui` は1つのモジュールを package で割っています。`component`（部品）、`theme`（見た目）、
-`core`（画面の状態の型）、`preview`（プレビューの土台）の4つで、それぞれが役割1つです。
-以前は `:ui:component` のような別モジュールでしたが、統合して package にしました。
-「この役割はこのモジュールのこの package」と言えることが katachi に要る形だからで、
-実際の現場でもこちらの方がよく見ます。
+`:ui` is one module split into packages: `component` (parts), `theme` (appearance),
+`core` (the types for screen state) and `preview` (the base for previews), each one role.
+They used to be separate modules such as `:ui:component`, but were merged into packages.
+katachi needs to be able to say "this role is this package of this module", and it is
+also the shape more often seen in real projects.
 
-`:navigation` は同じ group にいますが Compose に依存しません。遷移先の一覧と現在地だけを
-持ち、それをどう見せるかは `:app:android` の `AppRoot` の仕事です。画面から使われる側で
-あることは `:ui` と同じなので、この group に置いています。
+`:navigation` sits in the same group but does not depend on Compose. It holds only the
+list of destinations and the current location; how to show them is the job of `AppRoot`
+in `:app:android`. It is on the side that screens draw from, like `:ui`, so it is placed
+in this group.
 
-layout はどれもモジュールパスから始まり、その下の package は `modulePackage` から
-導きます。ディレクトリ名を書き写すのではなく、ビルドが言っていることをそのまま書く、
-というのがこのサンプル全体の方針です。
+Every layout starts from a module path, and the package below it is derived from
+`modulePackage`. Instead of copying directory names, the policy of the whole
+sample is to write exactly what the build says.
 
 | Role | Summary |
 |---|---|
-| [共通コンポーネント](./Component.md) | :ui モジュールの component package。複数の画面から使われる @Composable 部品 |
-| [テーマ](./Theme.md) | :ui モジュールの theme package。MaterialTheme の設定と、色・余白のデザイントークン |
-| [UI 基盤](./UiCore.md) | :ui モジュールの core package。画面に依存しない UI の土台。UiState など |
-| [プレビュー](./Preview.md) | @Preview を付けた private @Composable。対象の Composable と同じ package の <対象>Preview.kt に置き、中身は PreviewRoot で包む |
-| [プレビューの土台](./PreviewRoot.md) | :ui モジュールの preview package。@Preview の中身を AppTheme と Surface で包む |
-| [ナビゲーション](./Navigation.md) | 遷移先の定義と、現在地を持つ Navigator |
+| [Shared component](./Component.md) | The component package of the :ui module. @Composable parts used by several screens |
+| [Theme](./Theme.md) | The theme package of the :ui module. The MaterialTheme setup and the design tokens for color and spacing |
+| [UI core](./UiCore.md) | The core package of the :ui module. The screen-independent foundation of the UI, such as UiState |
+| [Preview](./Preview.md) | A private @Composable annotated with @Preview. Placed in <Target>Preview.kt in the same package as the target Composable, with the content wrapped in PreviewRoot |
+| [Preview root](./PreviewRoot.md) | The preview package of the :ui module. Wraps the content of a @Preview in AppTheme and Surface |
+| [Navigation](./Navigation.md) | The definition of destinations, and the Navigator that holds the current location |
 
 ## Placement in this group
 
@@ -35,21 +37,22 @@ layout はどれもモジュールパスから始まり、その下の package �
 :ui
   src/commonMain/kotlin/**/
     component/
-      *.kt                                       共通コンポーネント
-      *Preview.kt                                プレビュー
-    theme/*.kt                                   テーマ
-    core/*.kt                                    UI 基盤
-    preview/PreviewRoot.kt                       プレビューの土台
+      *.kt                                       Shared component
+      *Preview.kt                                Preview
+    theme/*.kt                                   Theme
+    core/*.kt                                    UI core
+    preview/PreviewRoot.kt                       Preview root
 
 :feature:<feature>
-  src/commonMain/kotlin/**/<feature>*Preview.kt  プレビュー
+  src/commonMain/kotlin/**/<feature>*Preview.kt  Preview
 
 :navigation
-  src/commonMain/kotlin/**/*.kt                  ナビゲーション
+  src/commonMain/kotlin/**/*.kt                  Navigation
 ```
 
-## 置いてはいけないもの
+## Forbidden contents
 
-- 画面ごとの Screen / ViewModel / Route。それは feature group です
-- feature モジュールへの依存。依存は常に feature から `:ui` / `:navigation` へ向きます。
-  逆向きの参照が1つ入ると、画面を足すたびに共有モジュールが太ります
+- Per-screen Screen / ViewModel / Route. Those belong to the feature group
+- Dependencies on feature modules. Dependencies always point from a feature to `:ui` /
+  `:navigation`; a single reference the other way makes the shared modules grow with every
+  screen added

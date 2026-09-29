@@ -1,51 +1,50 @@
 # app/ios
 
-このディレクトリは **Gradle モジュールではありません**。Xcode プロジェクトの置き場所で、
-`settings.gradle.kts` からは意図的に見えないようにしてあります。
+This directory is **not a Gradle module**. It is the place for the Xcode project, and it is
+deliberately made invisible to `settings.gradle.kts`.
 
-それがこのディレクトリを置いている理由です。実際の KMP リポジトリには Gradle が管理するディレクトリと
-管理しないディレクトリが混ざっていて、katachi はその両方を書けなければなりません。このディレクトリを
-受け持つのは役割 `app/XcodeProject`
-（[`architecture-test/src/test/kotlin/com/example/kmp/roles/XcodeProjectRole.kt`](../../architecture-test/src/test/kotlin/com/example/kmp/roles/XcodeProjectRole.kt)）で、
-`"app/ios" { ignore() }` と宣言して中の検査を止めています。中身を決めるのは katachi ではなく Xcode だからです。
+That is the reason this directory exists. A real KMP repository mixes directories Gradle manages with
+directories it does not, and katachi has to be able to write both. The role that owns this directory is
+`app/XcodeProject`
+([`architecture-test/src/test/kotlin/com/example/kmp/roles/XcodeProjectRole.kt`](../../architecture-test/src/test/kotlin/com/example/kmp/roles/XcodeProjectRole.kt)),
+which declares `"app/ios" { ignore() }` to stop the check inside it. What goes in it is decided by Xcode, not by katachi.
 
-## コミットしているもの・していないもの
+## What is committed and what is not
 
-コミットしているのは、いくつかの Swift ファイルと `Info.plist`、つまり iOS アプリの**形**だけです。
+Committed are a few Swift files and `Info.plist`: only the **shape** of an iOS app.
 
-`iosApp.xcodeproj/` はコミットしていません。手書きの `project.pbxproj` は Xcode が開けない壊れ方をするうえ、
-このサンプルは iOS 向けにビルドしないので、置いても死荷重になります。実際にアプリを動かしたいときは
-Xcode で作ってください。
+`iosApp.xcodeproj/` is not committed. A handwritten `project.pbxproj` breaks in ways Xcode cannot open,
+and since this sample does not build for iOS, it would be dead weight anyway. When you want to run the app,
+create the project in Xcode.
 
 ```
 app/ios/
   README.md
   iosApp/
-    iosApp.xcodeproj/        # コミットしていない。Xcode で作る
+    iosApp.xcodeproj/        # not committed; create it in Xcode
     iosApp/
       iosAppApp.swift
       ContentView.swift
       Info.plist
 ```
 
-## CI で iOS をビルドしない理由
+## Why CI does not build iOS
 
-katachi は JVM のライブラリなので、katachi のテストは iOS の上では走りません。定義を素の `kotlin("jvm")`
-モジュールである `:architecture-test` に置いているのはそのためで、ほかのモジュールには定義を置ける
-JVM ターゲットがありません。KMP モジュールには Kotlin の iOS ターゲット（`iosArm64()` /
-`iosSimulatorArm64()`）を宣言してあり、モジュールの構成は現実的な形にしてあります。ただし Linux の
-CI ランナーではコンパイルできず、まっさらな macOS ランナーでもまず Kotlin/Native の配布物を
-ダウンロードすることになります。UI のモジュールは Compose Multiplatform を使っているので、iOS 向けに
-コンパイルすると Compose の Kotlin/Native klib までコンパイルすることになり、さらに遅くなります。
+katachi is a JVM library, so katachi's tests do not run on iOS. That is why the definition lives in
+`:architecture-test`, a plain `kotlin("jvm")` module; no other module has a JVM target that could hold it.
+The KMP modules declare the Kotlin iOS targets (`iosArm64()` / `iosSimulatorArm64()`), so the module
+structure is realistic. However, they cannot be compiled on a Linux CI runner, and even a clean macOS runner
+would first have to download the Kotlin/Native distribution. The UI modules use Compose Multiplatform, so
+compiling for iOS would also compile the Compose Kotlin/Native klibs, which is slower still.
 
-そのため CI（ルートの `./gradlew checkSampleKmp`）が回すのは、`:architecture-test:test`（katachi の検査）、
-`:app:android:testDebugUnitTest`（サンプル自身のユニットテスト）、`:architecture-test:katachiLayout`（配置の検査）と
-`:architecture-test:katachiDocs --arg mode=check`（生成ドキュメントが最新か）、
-それにテンプレートからの生成と baseline の確認です。どれも iOS のタスクには届きません。`check` のような
-lifecycle タスクは iOS のタスクまで引き込むので使っていません。
+So what CI (`./gradlew checkSampleKmp` at the root) runs is `:architecture-test:test` (the katachi check),
+`:app:android:testDebugUnitTest` (the sample's own unit tests), `:architecture-test:katachiLayout` (the layout check) and
+`:architecture-test:katachiDocs --arg mode=check` (whether the generated documents are up to date),
+plus generating from templates and checking the baseline. None of them reaches an iOS task. Lifecycle tasks such as `check`
+pull in iOS tasks, so they are not used.
 
-## 共有コードをつなぐなら（まだしていない）
+## If you wire up the shared code (not done yet)
 
-`:data` のようなモジュールに `binaries.framework { baseName = "Shared" }` を足し、Xcode の Run Script
-phase から `./gradlew :data:embedAndSignAppleFrameworkForXcode` を呼びます。このサンプルは iOS 向けに
-ビルドしないので、設定はしていません。
+Add `binaries.framework { baseName = "Shared" }` to a module such as `:data`, and call
+`./gradlew :data:embedAndSignAppleFrameworkForXcode` from the Run Script phase of Xcode. This sample does
+not build for iOS, so it is not set up.

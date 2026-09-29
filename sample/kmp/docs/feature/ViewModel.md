@@ -1,19 +1,19 @@
-[katachi-sample-kmp](../README.md) / [フィーチャー](README.md)
+[katachi-sample-kmp](../README.md) / [Feature](README.md)
 
 # ViewModel
 
-画面の状態を持つ androidx.lifecycle.ViewModel。Repository から取得した値を UiState に変換し、StateFlow で公開する
+An androidx.lifecycle.ViewModel that holds screen state. Converts values fetched from the Repository into a UiState and exposes it as a StateFlow
 
-画面の状態を持つ場所です。`:feature:<name>` の `commonMain` に `<Name>ViewModel.kt` を
-1ファイル。Screen と同じくファイル名がモジュール名に縛られるので、1つの feature モジュールに
-ViewModel が2つ並ぶことはありません。
+The place that holds screen state. One file, `<Name>ViewModel.kt`, in the `commonMain` of
+`:feature:<name>`. As with Screen, the file name is bound to the module name, so two
+ViewModels never sit side by side in one feature module.
 
-`androidx.lifecycle.ViewModel` を継承していますが、これは Compose Multiplatform 版
-（`org.jetbrains.androidx.lifecycle`）の実体なので `commonMain` に書けて iOS でも動きます。
-パッケージ名が `androidx` で始まるからといって Android 専用ではない、というのが
-KMP で引っかかりやすいところです。
+It extends `androidx.lifecycle.ViewModel`, which is the Compose Multiplatform version
+(`org.jetbrains.androidx.lifecycle`), so it can be written in `commonMain` and works on
+iOS too. A package name starting with `androidx` does not make it Android-only, and this
+is an easy place to trip in KMP.
 
-Repository は引数で受け取るだけで、自分では作りません。作るのは Route の役目です。
+It only receives the Repository as an argument and never creates it. Creating it is the Route's job.
 
 ## Placement
 
@@ -23,19 +23,19 @@ Repository は引数で受け取るだけで、自分では作りません。作
 
 ## Examples
 
-- `HomeViewModel` ... ホーム画面の状態
-- `SettingsViewModel` ... 設定画面の状態
+- `HomeViewModel` ... The state of the home screen
+- `SettingsViewModel` ... The state of the settings screen
 
-## 置いてよいもの
+## Allowed contents
 
-- `private val mutableState = MutableStateFlow(...)` と、それを `asStateFlow()` で
-  公開する `val state: StateFlow<UiState<...>>`
-- 画面から呼ばれる操作（`reload()` など）と、`viewModelScope` を使った読み込み
-- 画面に出す形にまとめた data class（`SettingsUi` のように、同じファイル内で構わない）
+- `private val mutableState = MutableStateFlow(...)` and a `val state: StateFlow<UiState<...>>`
+  that exposes it with `asStateFlow()`
+- Operations called from the screen (such as `reload()`) and loading with `viewModelScope`
+- A data class shaped for display (like `SettingsUi`; it may live in the same file)
 
-## 置いてはいけないもの
+## Forbidden contents
 
-- `@Composable`。描くのは Screen の仕事です
-- `android.*` の import と `Context`。これが要る処理は `:data` の PlatformImplementation
-  （expect/actual）に降ろします。ここに書くと `commonMain` がコンパイルできません
-- 他の feature の ViewModel への依存
+- `@Composable`. Drawing is the Screen's job
+- `android.*` imports and `Context`. Push whatever needs them down to PlatformImplementation
+  (expect/actual) in `:data`; written here, `commonMain` would not compile
+- Dependencies on the ViewModel of another feature

@@ -1,64 +1,64 @@
 [katachi-sample-kmp](../README.md)
 
-# テスト支援
+# Testing support
 
-テストダブル、テストコード本体、katachi のアーキテクチャ定義、そこから書き出されるドキュメントとスナップショット、棚上げした違反の台帳
+Test doubles, the test code itself, the katachi architecture definition, the documents and snapshot written from it, and the ledger of shelved violations
 
-テストにまつわる6つの役割です。Fake（`:testing` の commonMain）、Test（各モジュールの
-テスト）、ArchitectureDefinition（`:architecture-test`）、GeneratedDocumentation
-（ルート直下の `docs/`）、LayoutSnapshot（ルート直下の `snapshots/`）、BaselineFile
-（ルート直下の `katachi-baseline.json`。棚上げした違反の台帳）。
+Six roles around testing: Fake (commonMain of `:testing`), Test (the tests of each
+module), ArchitectureDefinition (`:architecture-test`), GeneratedDocumentation (`docs/`
+at the root), LayoutSnapshot (`snapshots/` at the root) and BaselineFile (`katachi-baseline.json`
+at the root, the ledger of shelved violations).
 
-ArchitectureDefinition を Test と分けてあるのが、この group でいちばん言いたいことです。
-アーキテクチャ定義はテストコードではありません。プロジェクトの形を説明するのが仕事で、
-それを実際のディレクトリと突き合わせるテストは1行しかない。役割を与えておかないと、
-`:architecture-test` が誰も宣言していないディレクトリになります。
+Keeping ArchitectureDefinition apart from Test is the main point of this group. The
+architecture definition is not test code. Its job is to describe the shape of the project,
+and the test that checks it against the real directories is a single line. Without giving
+it a role, `:architecture-test` would be a directory nobody declared.
 
-Fake が `commonTest` ではなく `commonMain` にいるのも、この group が見せている形です。
-テスト source set は他のモジュールから参照できないので、テストのためのコードでも
-production の source set に置かざるをえないことがあります。`:testing` はそのために
-切られた、アプリ本体から誰も依存しないモジュールです。
+Fake living in `commonMain` instead of `commonTest` is also a shape this group shows.
+A test source set cannot be referenced from other modules, so code written for tests
+sometimes has to sit in a production source set. `:testing` is a module cut out for that
+purpose, and nothing in the app itself depends on it.
 
-GeneratedDocumentation と LayoutSnapshot を ArchitectureDefinition と分けてあるのも
-同じ理由です。定義は人が書き、`docs/` は `katachiDocs` が、`snapshots/` は
-`:architecture-test:test` が書く。手を入れてよい場所が逆なので、1つの役割にまとめると
-「どちらを直せばいいのか」が言えなくなります。`build/` の外に置いた生成物にも役割が
-要る、という例にもなっています。
+GeneratedDocumentation and LayoutSnapshot are separate from ArchitectureDefinition for the
+same reason. A person writes the definition, `katachiDocs` writes `docs/`, and
+`:architecture-test:test` writes `snapshots/`. The places where you may edit by hand are
+opposite, so merging them into one role would make it impossible to say which one to fix.
+It is also an example of generated output outside `build/` still needing a role.
 
-書き出されたもの同士も分けてあります。読み手が違うからです。`docs/` は定義を読みに
-来た人が開くページ、`snapshots/` は定義を書き換えた差分をレビューする人が見る
-テキストです。
+The generated files are kept apart from each other too, because their readers differ.
+`docs/` is the page opened by someone who came to read the definition, and `snapshots/`
+is the text seen by whoever reviews the diff of a changed definition.
 
 | Role | Summary |
 |---|---|
-| [フェイク](./Fake.md) | :testing の commonMain に置く偽の実装。他モジュールのテストから使う |
-| [テストコード](./Test.md) | 各モジュールのテスト。KMP モジュールは commonTest、純 Android / 純 JVM モジュールは src/test |
-| [アーキテクチャ定義](./ArchitectureDefinition.md) | :architecture-test モジュールの src/test。katachi の DSL で書いたこのプロジェクトの定義。どのレイヤーにも属さないので専用モジュールに置く |
-| [生成ドキュメント](./GeneratedDocumentation.md) | この定義から書き出され、リポジトリにコミットされる Markdown |
-| [レイアウトのスナップショット](./LayoutSnapshot.md) | この定義を平坦化して全行書き出した記録。定義の変化を人が差分でレビューするためにある |
-| [baseline（棚上げした違反の台帳）](./BaselineFile.md) | katachi を入れた時点ですでにあった違反を記録し、テストを落とさずに棚上げしておく台帳 |
+| [Fake](./Fake.md) | Fake implementations in the commonMain of :testing, used from the tests of other modules |
+| [Test code](./Test.md) | The tests of each module. commonTest for KMP modules, src/test for pure Android / pure JVM modules |
+| [Architecture definition](./ArchitectureDefinition.md) | src/test of the :architecture-test module. This project's definition, written in the katachi DSL. It belongs to no layer, so it lives in a dedicated module |
+| [Generated documentation](./GeneratedDocumentation.md) | Markdown written from this definition and committed to the repository |
+| [Layout snapshot](./LayoutSnapshot.md) | A record of this definition, flattened and written out in full. It exists so a person can review changes to the definition as a diff |
+| [Baseline (ledger of shelved violations)](./BaselineFile.md) | A ledger that records violations already present when katachi was introduced, shelving them without failing the tests |
 
 ## Placement in this group
 
 ```
 :testing
-  src/commonMain/kotlin/**/Fake*.kt             フェイク
+  src/commonMain/kotlin/**/Fake*.kt             Fake
 
 :app:android
-  src/test/kotlin/com/example/kmp/app/*Spec.kt  テストコード
+  src/test/kotlin/com/example/kmp/app/*Spec.kt  Test code
 
 :architecture-test
   src/test/kotlin/com/example/kmp/
-    *.kt                                        アーキテクチャ定義
-    */*.kt                                      アーキテクチャ定義
+    *.kt                                        Architecture definition
+    */*.kt                                      Architecture definition
 
 docs/
-  README.md                                     生成ドキュメント
-  **/*.md                                       生成ドキュメント
-snapshots/layout.txt                            レイアウトのスナップショット
-katachi-baseline.json                           baseline（棚上げした違反の台帳）
+  README.md                                     Generated documentation
+  **/*.md                                       Generated documentation
+snapshots/layout.txt                            Layout snapshot
+katachi-baseline.json                           Baseline (ledger of shelved violations)
 ```
 
-## 置いてはいけないもの
+## Forbidden contents
 
-- アプリ本体のコード。ここにあるのは「テストのための」コードと、プロジェクトの説明です
+- The code of the app itself. What is here is code "for tests" and the description of the project

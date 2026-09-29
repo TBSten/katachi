@@ -48,6 +48,6 @@ internal fun HomeContent(
             is UiState.Failed -> Text(text = state.message)
             is UiState.Loaded -> state.value.forEach { name -> HomeUserCard(name = name) }
         }
-        PrimaryButton(label = "再読み込み", onClick = onReload)
+        PrimaryButton(label = "Reload", onClick = onReload)
     }
 }

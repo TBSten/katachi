@@ -9,33 +9,34 @@ import me.tbsten.katachi.dsl.kotlin.ktFile
 
 /** The whole of the `:navigation` module: where a screen can be reached from, and from where. */
 fun DeclarationContainerScope.navigation() = "Navigation" {
-    title = "ナビゲーション"
-    summary = "遷移先の定義と、現在地を持つ Navigator"
+    title = "Navigation"
+    summary = "The definition of destinations, and the Navigator that holds the current location"
     description = """
-        `:navigation` モジュール丸ごとで1つの役割です。package を切っていないので、
-        `commonMain` のモジュール package 直下がそのまま範囲になります。`Destination` が
-        遷移先の一覧、`Navigator` が現在地を `StateFlow` で持ちます。
+        The whole `:navigation` module is one role. No packages are cut, so the module package
+        directly under `commonMain` is the whole scope. `Destination` is the list of destinations
+        and `Navigator` holds the current location as a `StateFlow`.
 
-        Compose に依存しません。ビルドスクリプトに Compose プラグインを入れていないので、
-        ここに `@Composable` を書くとコンパイルが通りません。遷移先をどう見せるか
-        （ナビゲーションバーの並べ方）は `:app:android` の `AppRoot` の仕事で、この役割は
-        「どこがあるか」と「今どこか」だけを持ちます。
+        It does not depend on Compose. The build script does not apply the Compose plugin, so a
+        `@Composable` written here would not compile. How to show the destinations (how the
+        navigation bar is laid out) is the job of `AppRoot` in `:app:android`; this role holds
+        only "what places exist" and "where we are now".
 
-        ナビゲーションライブラリを入れず自前で持っているのは意図的です。ライブラリを入れると
-        グラフの定義という置き場所がもう1つ増えて、このサンプルが見せたい「どこに何を置くか」が
-        ぼやけます。
+        Keeping its own navigation instead of adding a navigation library is intentional. A
+        library would add one more place, the graph definition, and blur the "what goes where"
+        that this sample wants to show.
     """.trimIndent()
     allowedContents = """
-        - 遷移先の型と、その一覧（`Destination.topLevel`）や route 文字列からの引き当て
-        - 現在地を持ち、変える手段
+        - The type of destinations, their list (`Destination.topLevel`) and lookup from a route string
+        - Holding the current location and a way to change it
     """.trimIndent()
     forbiddenContents = """
-        - `@Composable` と画面そのもの
-        - feature モジュールへの依存。依存は逆向きで、各 feature の Route が `:navigation` を
-          読みます。ここが feature を知ると、画面を1つ足すたびにこのモジュールが太ります
+        - `@Composable` and the screens themselves
+        - Dependencies on feature modules. The dependency points the other way: the Route of each
+          feature reads `:navigation`. If this module knew the features, it would grow with every
+          screen added
     """.trimIndent()
-    example("Destination", "遷移先の一覧")
-    example("Navigator", "現在の遷移先を持つ型")
+    example("Destination", "The list of destinations")
+    example("Navigator", "The type that holds the current destination")
     layout {
         ":navigation".module {
             "commonMain".sourceSet / kotlin / modulePackage / "*".ktFile()

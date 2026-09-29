@@ -8,34 +8,34 @@ import me.tbsten.katachi.dsl.kotlin.ktFile
 
 /** Where the Android application starts, and the composable it hands the whole screen to. */
 fun DeclarationContainerScope.entrypoint() = "Entrypoint" {
-    title = "エントリポイント"
-    summary = "Android アプリの起動点。ComponentActivity と、そこから setContent で呼ぶアプリ全体の @Composable"
+    title = "Entrypoint"
+    summary = "The starting point of the Android app: a ComponentActivity and the whole-app @Composable it calls via setContent"
     description = """
-        Android アプリが動き出す場所です。`:app:android` の `src/main` に置きます。
-        KMP モジュールの `commonMain` ではありません。`:app:android` は Android の application
-        モジュールなので、ソースの置き場は他の Android モジュールと同じ `src/main` です。
+        Where the Android app starts running. It goes in `src/main` of `:app:android`, not in the
+        `commonMain` of a KMP module. `:app:android` is an Android application module, so its
+        sources sit in `src/main` like any other Android module.
 
-        中身は2段に分かれています。`MainActivity` は配線だけ、つまり `UserRepositoryImpl` を
-        作って `setContent { AppRoot(...) }` を呼ぶだけです。テーマ・ナビゲーションバー・
-        現在の遷移先に対応する Route の組み立ては `AppRoot` が持ちます。分けてあるのは、
-        `app/ios` が `ComposeUIViewController` を持つようになったときに共有できるのが
-        `AppRoot` 側だからです。Activity は Android 固有のまま残ります。
+        The content has two levels. `MainActivity` is wiring only: it creates
+        `UserRepositoryImpl` and calls `setContent { AppRoot(...) }`. Assembling the theme, the
+        navigation bar and the Route for the current destination is `AppRoot`'s job. They are
+        split because `AppRoot` is the part that can be shared once `app/ios` gets a
+        `ComposeUIViewController`. The Activity stays Android-specific.
 
-        このモジュールの package は `com.example.kmp.app` で、モジュールパス `:app:android` からは
-        導けません。だから layout は `modulePackage` を使わず package を直書きしています。
-        規則に従わないものは、従わないと書く方が正直です。
+        The package of this module is `com.example.kmp.app`, which cannot be derived from the
+        module path `:app:android`. That is why the layout writes the package out instead of
+        using `modulePackage`. When something breaks the rule, it is more honest to say so.
     """.trimIndent()
     allowedContents = """
-        - プラットフォームの起動点（`ComponentActivity`）と、その最小限の配線
-        - アプリ全体を組み立てる `@Composable`
+        - The platform entry point (`ComponentActivity`) and its minimal wiring
+        - The `@Composable` that assembles the whole app
     """.trimIndent()
     forbiddenContents = """
-        - 画面そのもの。画面は feature モジュールにあり、ここは Route を呼ぶだけです
-        - 状態。画面の状態は ViewModel、現在地は `:navigation` の `Navigator` が持ちます
-        - 共有できる部品。ここに書いたものは iOS から見えません
+        - The screens themselves. Screens live in the feature modules; this role only calls a Route
+        - State. Screen state belongs to the ViewModel and the current location to `Navigator` in `:navigation`
+        - Parts meant to be shared. Anything written here is invisible to iOS
     """.trimIndent()
-    example("MainActivity", "起動時に表示される Activity")
-    example("AppRoot", "アプリ全体を組み立てる Composable")
+    example("MainActivity", "The Activity shown at launch")
+    example("AppRoot", "The Composable that assembles the whole app")
     // `mainSourceSet`, not `"commonMain".sourceSet`: `:app:android` is the Android
     // application module, and its code lives in `src/main` like any Android module's.
     layout {

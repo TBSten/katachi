@@ -9,12 +9,12 @@ sealed interface Destination {
 
     data object Home : Destination {
         override val route: String = "home"
-        override val label: String = "ホーム"
+        override val label: String = "Home"
     }
 
     data object Settings : Destination {
         override val route: String = "settings"
-        override val label: String = "設定"
+        override val label: String = "Settings"
     }
 
     companion object {

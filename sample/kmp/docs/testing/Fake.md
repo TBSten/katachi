@@ -1,19 +1,19 @@
-[katachi-sample-kmp](../README.md) / [テスト支援](README.md)
+[katachi-sample-kmp](../README.md) / [Testing support](README.md)
 
-# フェイク
+# Fake
 
-:testing の commonMain に置く偽の実装。他モジュールのテストから使う
+Fake implementations in the commonMain of :testing, used from the tests of other modules
 
-他のモジュールのテストが使うテストダブルを `:testing` に集めた役割です。ファイル名は
-`Fake*.kt` に限られるので、`StubUserRepository.kt` や `TestUserRepository.kt` は
-通りません。呼び名を1つに固定しておくと、テストコードを読むときに「これは偽物だ」が
-名前だけで分かります。
+The role that gathers, in `:testing`, the test doubles other modules' tests use. File
+names are limited to `Fake*.kt`, so `StubUserRepository.kt` and `TestUserRepository.kt`
+do not pass. Fixing on one name lets a reader of test code see "this is a fake" from the
+name alone.
 
-`commonTest` ではなく `commonMain`、つまり production の source set に置いてあるのが
-この役割の要点です。テスト source set は他のモジュールから参照できないので、
-`:app:android` のテストから使いたければ production 側に出すしかありません。
-`:testing` は `api(project(":data"))` だけに依存する、アプリ本体から誰も依存しない
-モジュールとして切ってあります。
+The point of this role is that it sits in `commonMain`, a production source set, not in
+`commonTest`. A test source set cannot be referenced from other modules, so to use a fake
+from the tests of `:app:android` it has to go on the production side. `:testing` is cut out
+as a module that depends only on `api(project(":data"))` and that nothing in the app
+itself depends on.
 
 ## Placement
 
@@ -23,16 +23,16 @@
 
 ## Examples
 
-- `FakeUserRepository` ... UserRepository の偽実装
+- `FakeUserRepository` ... A fake implementation of UserRepository
 
-## 置いてよいもの
+## Allowed contents
 
-- `:data` のインターフェースを満たす偽実装。返す値はコンストラクタで差し替えられる形に
-  しておきます（`FakeUserRepository(listOf("alice"))` のように）
+- Fake implementations that satisfy an interface of `:data`. Keep the returned values
+  replaceable through the constructor (like `FakeUserRepository(listOf("alice"))`)
 
-## 置いてはいけないもの
+## Forbidden contents
 
-- テストそのもの。`*Spec.kt` は Test の役割です
-- production から呼ばれる実装。本物は `:data` の `*Impl` です
-- kotest などテストフレームワークへの依存。ここは production の source set なので、
-  持ち込むとアプリ本体のビルドに紛れ込みます
+- Tests themselves. `*Spec.kt` belongs to the Test role
+- Implementations called from production. The real ones are the `*Impl` in `:data`
+- Dependencies on test frameworks such as kotest. This is a production source set, so
+  bringing one in would leak into the build of the app itself

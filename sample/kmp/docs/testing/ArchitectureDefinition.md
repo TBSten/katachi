@@ -1,26 +1,27 @@
-[katachi-sample-kmp](../README.md) / [テスト支援](README.md)
+[katachi-sample-kmp](../README.md) / [Testing support](README.md)
 
-# アーキテクチャ定義
+# Architecture definition
 
-:architecture-test モジュールの src/test。katachi の DSL で書いたこのプロジェクトの定義。どのレイヤーにも属さないので専用モジュールに置く
+src/test of the :architecture-test module. This project's definition, written in the katachi DSL. It belongs to no layer, so it lives in a dedicated module
 
-katachi でこのプロジェクトの形を書いたコードです。いま読んでいるファイルもこの役割に
-属します。テストコードとは分けてあります。定義の仕事はプロジェクトを説明することで、
-それを実際のディレクトリと突き合わせるテスト（`ProjectArchitectureTest`）は1行しかありません。
+The code that describes the shape of this project with katachi. The file you are reading
+belongs to this role too. It is kept apart from test code: the definition's job is to
+describe the project, and the test that checks it against the real directories
+(`ProjectArchitectureTest`) is a single line.
 
-専用の `:architecture-test` モジュールに置いているのは KMP だからです。katachi は JVM の
-ライブラリで、このビルドの他のモジュールは Android と iOS だけを持つ KMP なので、
-定義を置ける `commonTest` がどこにもありません。1つだけ `kotlin("jvm")` のモジュールを
-用意する、というのが katachi の推奨する形でもあります。
+It sits in a dedicated `:architecture-test` module because this is KMP. katachi is a JVM
+library, and the other modules of this build are KMP with only Android and iOS, so there
+is no `commonTest` anywhere to hold the definition. Preparing one `kotlin("jvm")` module
+is also the shape katachi recommends.
 
-宣言1つにつきファイル1つ、という規則で並べます。役割 `"UiCore"` は
-`roles/UiCoreRole.kt`、group `"app"` は `groups/AppGroup.kt`。
-`ProjectArchitectureSpec` はその規則自体を検査していて、宣言位置をソースから読み戻すので、
-group / role の関数に `inline` が付くと落ちます。
+The files follow the rule of one file per declaration: the role `"UiCore"` is in
+`roles/UiCoreRole.kt`, and the group `"app"` in `groups/AppGroup.kt`.
+`ProjectArchitectureSpec` checks that rule itself by reading declaration sites back from
+the source, so it fails if `inline` is added to a group / role function.
 
-layout はわざと緩く、package の1段を `*` で受けています。`roles` に新しいファイルを
-足しても定義を触らずに通る、という側です。厳しく package 名まで書く形は
-sample/android の方にあり、両方あることで選べることが見えます。
+The layout is deliberately loose and takes one package level with `*`: adding a new
+file to `roles` passes without touching the definition. A strict form that spells out
+package names is in sample/android; having both shows that you can choose.
 
 ## Placement
 
@@ -31,16 +32,16 @@ sample/android の方にあり、両方あることで選べることが見え�
 
 ## Examples
 
-- `ProjectArchitecture.kt` ... 定義の入口
-- `roles/ComponentRole.kt` ... 役割1つの宣言
+- `ProjectArchitecture.kt` ... The entry point of the definition
+- `roles/ComponentRole.kt` ... The declaration of one role
 
-## 置いてよいもの
+## Allowed contents
 
-- 定義（`groups` / `roles` package）と、その入口の `ProjectArchitecture.kt`
-- 定義とリポジトリを突き合わせる `ProjectArchitectureTest.kt`（利用者が書く唯一のテスト）
-- 定義を検査する `*Spec.kt`
-- `processor` package の自作プロセッサ（`owner` のような独自メタデータを読むもの）
+- The definition (the `groups` / `roles` packages) and its entry point `ProjectArchitecture.kt`
+- `ProjectArchitectureTest.kt`, which checks the definition against the repository (the only test a user writes)
+- `*Spec.kt`, which check the definition
+- Custom processors in the `processor` package (those that read custom metadata such as `owner`)
 
-## 置いてはいけないもの
+## Forbidden contents
 
-- アプリのコード。このモジュールはアプリのどのレイヤーにも属しません
+- App code. This module belongs to no layer of the app

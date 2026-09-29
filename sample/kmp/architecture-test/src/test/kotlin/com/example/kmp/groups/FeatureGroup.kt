@@ -25,35 +25,36 @@ import me.tbsten.katachi.dsl.DeclarationContainerScope
  * (`--arg feature=home`) to pick the module it generates into.
  */
 fun DeclarationContainerScope.featureGroup() = "feature".group {
-    title = "フィーチャー"
-    summary = "1画面につき1モジュール。:feature:<name> が Screen / ViewModel / Route を必ず持つ"
+    title = "Feature"
+    summary = "One module per screen. :feature:<name> always holds a Screen / ViewModel / Route"
     description = """
-        画面ごとに1つずつ増えていくモジュールの層です。`:feature:home` と `:feature:settings` が
-        あり、画面を足すときはモジュールを足します。
+        A layer of modules that grows by one per screen. There are `:feature:home` and
+        `:feature:settings`; adding a screen means adding a module.
 
-        Screen / ViewModel / Route の3つをここに集めたのは、どれも「1つの画面のためのもの」
-        だからです。3つとも `wildcard("feature")`、つまり `:feature:*` が捕まえたモジュール名を
-        読み戻してファイル名を決めるので、`:feature:home` には `HomeScreen.kt` /
-        `HomeViewModel.kt` / `HomeRoute.kt` が要ります。「画面が1つあればいい」ではなく
-        「その名前の画面が要る」まで言い切れるのがこの group の形です。
+        Screen / ViewModel / Route are collected here because each of them exists for a single
+        screen. All three read back the module name that `wildcard("feature")` (that is, `:feature:*`)
+        matched and use it to decide the file name, so `:feature:home` needs `HomeScreen.kt` /
+        `HomeViewModel.kt` / `HomeRoute.kt`. The shape of this group can say not just "there
+        should be a screen" but "a screen with that name is required".
 
-        ui group と分けてあるのは、増え方が違うからです。feature はモジュールが増える前提の
-        場所で、`":feature:${'$'}{capture("feature")}".module { }` という1つの宣言が何個あっても
-        足ります。一方 `:ui` や `:navigation` に何かを足すのは設計判断です。1つの group にまとめると、
-        生成されるドキュメントでその差が消えてしまいます。
+        It is separate from the ui group because the two grow differently. A feature is a place
+        where modules are expected to multiply, and one `":feature:${'$'}{capture("feature")}".module { }`
+        declaration covers any number of them. Adding something to `:ui` or `:navigation`, on the
+        other hand, is a design decision. Merging them into one group would erase that difference
+        from the generated documentation.
 
-        画面の部品（FeatureComponent）だけは1つの feature の中で数が増えていく役割で、
-        テンプレートから生成できます。`:feature:*` の `*` に `feature` と名前を付けてあるので、
-        `--arg feature=home` で生成先のモジュールを選びます。
+        Only the screen parts (FeatureComponent) grow in number inside a single feature, and they
+        can be generated from a template. The `*` of `:feature:*` is named `feature`, so
+        `--arg feature=home` picks the module to generate into.
 
-        この group の役割はすべて `commonMain` です。画面まわりに `androidMain` / `iosMain` は1つも
-        ありません。プラットフォーム差は data group の PlatformImplementation に閉じています。
+        Every role in this group is `commonMain`. There is no `androidMain` / `iosMain` around the
+        screens. Platform differences stay inside PlatformImplementation of the data group.
     """.trimIndent()
     forbiddenContents = """
-        - 複数の画面から使う部品。それは `:ui` の Component です
-        - データの取得。`:data` にあり、feature はインターフェース越しに読みます
-        - 他の feature への依存。画面どうしは直接つながらず、`:navigation` の `Destination`
-          を介します
+        - Parts used by several screens. Those are Component in `:ui`
+        - Fetching data. It lives in `:data`, and a feature reads it through an interface
+        - Dependencies on other features. Screens do not connect directly; they go through
+          `Destination` in `:navigation`
     """.trimIndent()
 
     screen()

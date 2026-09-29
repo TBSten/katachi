@@ -18,38 +18,39 @@ import me.tbsten.katachi.dsl.template
  * `platformName()`.
  */
 fun DeclarationContainerScope.repository() = "Repository" {
-    title = "リポジトリ"
-    summary = ":data モジュールの user package。データの取得口で、" +
-            "インターフェースと実装の2つの置き方を持つ"
+    title = "Repository"
+    summary = "The :data module's user package. The way into data, placed as an interface and an implementation"
     description = """
-        アプリがデータに触る入口です。`:data` の `user` package に、インターフェース
-        （`*Repository.kt`）と実装（`*RepositoryImpl.kt`）を並べて置きます。呼ぶ側
-        （ViewModel）が依存するのはインターフェースの方だけです。
+        The entry through which the app touches data. In the `user` package of `:data`, place
+        the interface (`*Repository.kt`) and the implementation (`*RepositoryImpl.kt`) side by
+        side. The caller (the ViewModel) depends only on the interface.
 
-        layout の宣言を2つに分けてあるのは、インターフェースの名前が実装のファイル名に
-        一致しないからです。部分一致の capture も `*` と同じく後ろに続く文字列を越えないので、
-        実装を拾うには実装のパターンを書く必要があります。1つのパターンで済ませようとして
-        緩めると、宣言していない形まで通ってしまいます。
+        The layout is declared in two parts because the name of an interface does not match the
+        file name of an implementation. A partial-match capture, like `*`, does not cross the
+        string that follows it, so picking up the implementation needs the implementation's own
+        pattern. Trying to loosen a single pattern to cover both would let through shapes that
+        were never declared.
 
-        インターフェースと実装、それぞれのファイルの宣言に `.template` を1つずつ付けてあります。
+        The file declarations of the interface and the implementation each carry one `.template`. Running
         `--arg template=data.Repository.repository,data.Repository.repositoryImpl --arg name=Cache`
-        で両方を1回に、`data.Repository.repository` だけを指定すればインターフェースだけを
-        作れます（実装は手で書くか、後から `data.Repository.repositoryImpl` で追加できます）。
+        creates both at once, while specifying only `data.Repository.repository` creates
+        only the interface (write the implementation by hand, or add it later with
+        `data.Repository.repositoryImpl`).
 
-        `commonMain` だけを宣言しています。プラットフォームで実装が変わるものは、この役割では
-        なく隣の PlatformImplementation（expect/actual）が引き受けます。ここに `androidMain` を
-        足すと、同じ「プラットフォーム差の吸収」が2か所に散ります。
+        Only `commonMain` is declared. What changes its implementation per platform is taken on
+        by the neighboring PlatformImplementation (expect/actual), not by this role. Adding
+        `androidMain` here would scatter the same "absorbing platform differences" over two places.
 
-        sample/android と違い、このサンプルには設定用のリポジトリがありません。設定画面は
-        `UserRepository` と `platformName()` を読むだけで足りています。使われていない package を
-        定義に書くと、実体の無いディレクトリをドキュメントが案内することになります。
+        Unlike sample/android, this sample has no repository for settings. The settings screen
+        is served by just reading `UserRepository` and `platformName()`. Writing an unused
+        package in the definition would make the documentation point at a directory that does not exist.
     """.trimIndent()
     forbiddenContents = """
-        - UI の型。`UiState` は `:ui` の core package にあり、`:data` はそれを知りません
-        - テスト用の偽実装。`FakeUserRepository` は `:testing` の Fake の役割です
+        - UI types. `UiState` lives in the core package of `:ui`, and `:data` does not know about it
+        - Fake implementations for tests. `FakeUserRepository` belongs to the Fake role of `:testing`
     """.trimIndent()
-    example("UserRepository", "ユーザーを取得するインターフェース")
-    example("UserRepositoryImpl", "UserRepository の実装")
+    example("UserRepository", "The interface that fetches users")
+    example("UserRepositoryImpl", "The implementation of UserRepository")
     // Two file declarations, not one: an interface file name does not match an implementation
     // file name, because a capture never crosses what follows it, same as `*`.
     // Each carries its own `.template`, told apart by `id` (`repository` / `repositoryImpl`).

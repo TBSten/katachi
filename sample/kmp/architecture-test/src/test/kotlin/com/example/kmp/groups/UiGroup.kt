@@ -26,28 +26,31 @@ import me.tbsten.katachi.dsl.DeclarationContainerScope
  */
 fun DeclarationContainerScope.uiGroup() = "ui".group {
     title = "UI"
-    summary = ":ui と :navigation。どの画面にも属さない共有の UI と、遷移先の定義"
+    summary = ":ui and :navigation. Shared UI that belongs to no screen, and the definition of destinations"
     description = """
-        画面から使われる側の、共有モジュール2つです。特定の画面に属さないものがここに集まります。
+        Two shared modules that screens draw from. Whatever belongs to no particular screen
+        gathers here.
 
-        `:ui` は1つのモジュールを package で割っています。`component`（部品）、`theme`（見た目）、
-        `core`（画面の状態の型）、`preview`（プレビューの土台）の4つで、それぞれが役割1つです。
-        以前は `:ui:component` のような別モジュールでしたが、統合して package にしました。
-        「この役割はこのモジュールのこの package」と言えることが katachi に要る形だからで、
-        実際の現場でもこちらの方がよく見ます。
+        `:ui` is one module split into packages: `component` (parts), `theme` (appearance),
+        `core` (the types for screen state) and `preview` (the base for previews), each one role.
+        They used to be separate modules such as `:ui:component`, but were merged into packages.
+        katachi needs to be able to say "this role is this package of this module", and it is
+        also the shape more often seen in real projects.
 
-        `:navigation` は同じ group にいますが Compose に依存しません。遷移先の一覧と現在地だけを
-        持ち、それをどう見せるかは `:app:android` の `AppRoot` の仕事です。画面から使われる側で
-        あることは `:ui` と同じなので、この group に置いています。
+        `:navigation` sits in the same group but does not depend on Compose. It holds only the
+        list of destinations and the current location; how to show them is the job of `AppRoot`
+        in `:app:android`. It is on the side that screens draw from, like `:ui`, so it is placed
+        in this group.
 
-        layout はどれもモジュールパスから始まり、その下の package は `modulePackage` から
-        導きます。ディレクトリ名を書き写すのではなく、ビルドが言っていることをそのまま書く、
-        というのがこのサンプル全体の方針です。
+        Every layout starts from a module path, and the package below it is derived from
+        `modulePackage`. Instead of copying directory names, the policy of the whole
+        sample is to write exactly what the build says.
     """.trimIndent()
     forbiddenContents = """
-        - 画面ごとの Screen / ViewModel / Route。それは feature group です
-        - feature モジュールへの依存。依存は常に feature から `:ui` / `:navigation` へ向きます。
-          逆向きの参照が1つ入ると、画面を足すたびに共有モジュールが太ります
+        - Per-screen Screen / ViewModel / Route. Those belong to the feature group
+        - Dependencies on feature modules. Dependencies always point from a feature to `:ui` /
+          `:navigation`; a single reference the other way makes the shared modules grow with every
+          screen added
     """.trimIndent()
 
     component()

@@ -14,32 +14,32 @@ import me.tbsten.katachi.dsl.DeclarationContainerScope
  * role and a summary around it, which is the only way katachi lets anything go unchecked.
  */
 fun DeclarationContainerScope.xcodeProject() = "XcodeProject" {
-    title = "Xcode プロジェクト"
-    summary = "app/ios 以下。Gradle の管理外で、検査もしない"
+    title = "Xcode project"
+    summary = "Under app/ios. Outside Gradle's management and not checked"
     description = """
-        iOS アプリの側です。`app/ios` は Gradle モジュールではありません。
-        `settings.gradle.kts` が意図的に include していないので、モジュールパスで書くことが
-        できず、`build.gradle.kts` を要求することもできません。ただのディレクトリキーとして
-        宣言し、`ignore()` で中の検査を止めています。
+        The iOS app side. `app/ios` is not a Gradle module. `settings.gradle.kts` deliberately
+        does not include it, so it cannot be written with a module path and cannot be required to
+        have a `build.gradle.kts`. It is declared as a plain directory key and `ignore()` stops
+        the check inside it.
 
-        検査しないのに宣言する、というのがこの役割の見せどころです。katachi で「ここは見ない」と
-        言う唯一の方法が、役割と summary を持つディレクトリとして宣言することだからです。
-        何も書かなければ `app/ios` 以下のすべてが「どの役割も名乗っていないファイル」になります。
+        Declaring it while not checking it is the showcase of this role. The only way to say
+        "do not look here" in katachi is to declare the directory as a role with a summary; if
+        nothing is written, everything under `app/ios` becomes "files no role claims".
 
-        中にあるのは Swift のソースと `Info.plist`、つまり iOS アプリの形だけです。
-        `iosApp.xcodeproj/` はコミットしていません。手書きの `project.pbxproj` は Xcode が
-        開けない壊れ方をするうえ、このサンプルは iOS 向けにビルドしないので置いても死荷重に
-        なります。実際に動かしたければ Xcode で作ってください。
+        Inside are the Swift sources and `Info.plist`, that is, only the shape of an iOS app.
+        `iosApp.xcodeproj/` is not committed. A handwritten `project.pbxproj` breaks in ways
+        Xcode cannot open, and since this sample does not build for iOS, it would be dead weight
+        anyway. Create one in Xcode if you want to run it.
     """.trimIndent()
     allowedContents = """
-        - Xcode が持つもの。Swift のソース、`Info.plist`、アセットカタログ
+        - What Xcode owns: Swift sources, `Info.plist` and the asset catalog
     """.trimIndent()
     forbiddenContents = """
-        - Kotlin のコード。共有したいコードは `:data` のような KMP モジュールに置き、
-          framework として渡します（このサンプルでは設定していません）
+        - Kotlin code. Put code to be shared in a KMP module such as `:data` and hand it over
+          as a framework (this sample does not set that up)
     """.trimIndent()
-    example("iosAppApp.swift", "SwiftUI のエントリポイント")
-    example("ContentView.swift", "iOS 側の画面")
+    example("iosAppApp.swift", "The SwiftUI entry point")
+    example("ContentView.swift", "The screen on the iOS side")
     layout {
         "app/ios" { ignore() }
     }

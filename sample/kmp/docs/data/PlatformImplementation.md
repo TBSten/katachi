@@ -1,24 +1,24 @@
-[katachi-sample-kmp](../README.md) / [データ](README.md)
+[katachi-sample-kmp](../README.md) / [Data](README.md)
 
-# プラットフォーム実装
+# Platform implementation
 
-:data モジュールの platform package。commonMain の expect 宣言と、androidMain / iosMain の actual 実装が同じ package に揃う
+The :data module's platform package. The expect declaration in commonMain and the actual implementations in androidMain / iosMain sit in the same package
 
-このサンプルが KMP であるからこそ存在する役割です。`commonMain` に `expect` を書き、
-`androidMain` と `iosMain` に `actual` を1つずつ置きます。3つのファイルは同じ package
-（`com.example.kmp.data.platform`）に居なければコンパイルが通らないので、package まで
-含めてこの役割の形です。
+A role that exists only because this sample is KMP. Write `expect` in `commonMain` and
+put one `actual` each in `androidMain` and `iosMain`. The three files must be in the same
+package (`com.example.kmp.data.platform`) to compile, so the package is part of the shape
+of this role.
 
-layout の3行は source set 名だけが違います。`"<名前>".sourceSet` は `src/<名前>` を
-指すだけのもので、KMP の source set はまさにそれです。ファイル名の `.android` / `.ios`
-は Kotlin の要求ではなく慣習ですが、ここでパターンに書いた以上はこのプロジェクトの規則に
-なります。
+The three lines of the layout differ only in the source set name. `"<name>".sourceSet`
+just points at `src/<name>`, which is exactly what a KMP source set is. The `.android` /
+`.ios` in the file names are a convention, not a Kotlin requirement, but once they are
+written in the pattern here they become a rule of this project.
 
-注意点として、iOS の `actual` は CI でコンパイルされません。CI が走らせるタスクは
-どれも Kotlin/Native のビルドに触らないからです（理由は `app/ios/README.md` にあります）。
-しかもこの役割の layout はどの行もワイルドカードなので、`iosMain` 側を丸ごと書き忘れても katachi は
-`[MissingFile]` を出しません。expect と actual が揃っているかを見られるのは
-コンパイラだけで、そのコンパイラが CI で動かない、という穴がここにあります。
+A caveat: the iOS `actual` is not compiled on CI, because none of the tasks CI runs
+touches a Kotlin/Native build (the reason is in `app/ios/README.md`). And every line of
+this role's layout is a wildcard, so even if the whole `iosMain` side were forgotten,
+katachi would not report `[MissingFile]`. Only the compiler can check that expect and
+actual match, and that compiler does not run on CI; that is the hole here.
 
 ## Placement
 
@@ -30,17 +30,17 @@ layout の3行は source set 名だけが違います。`"<名前>".sourceSet` �
 
 ## Examples
 
-- `PlatformInfo.kt` ... commonMain の expect 宣言
-- `PlatformInfo.android.kt` ... Android 向けの actual
-- `PlatformInfo.ios.kt` ... iOS 向けの actual
+- `PlatformInfo.kt` ... The expect declaration in commonMain
+- `PlatformInfo.android.kt` ... The actual for Android
+- `PlatformInfo.ios.kt` ... The actual for iOS
 
-## 置いてよいもの
+## Allowed contents
 
-- common からは書けないプラットフォーム API の、薄い入口
-- その入口を common 側に見せるための `expect` 宣言
+- A thin entry to a platform API that cannot be written from common
+- The `expect` declaration that shows that entry to the common side
 
-## 置いてはいけないもの
+## Forbidden contents
 
-- common で書けるもの。`expect`/`actual` は1つ増えるごとに実装を2つ書くことになり、
-  共通で済むものを持ち込むほど割に合わなくなります
-- UI に関わるもの。画面まわりのプラットフォーム差は、このサンプルでは1つもありません
+- Anything that can be written in common. Every `expect`/`actual` adds two
+  implementations to write, and the more shareable things you bring in, the less it pays off
+- Anything about UI. This sample has no platform difference around screens at all

@@ -12,32 +12,31 @@ import me.tbsten.katachi.dsl.kotlin.ktFile
  * are one role here.
  */
 fun DeclarationContainerScope.test() = "Test" {
-    title = "テストコード"
-    summary = "各モジュールのテスト。KMP モジュールは commonTest、" +
-        "純 Android / 純 JVM モジュールは src/test"
+    title = "Test code"
+    summary = "The tests of each module. commonTest for KMP modules, " +
+        "src/test for pure Android / pure JVM modules"
     description = """
-        アプリ自身のテストです。置き場所はモジュールの種類で決まります。Android モジュールは
-        `src/test`、KMP モジュールなら `commonTest`。どちらも「そのモジュールのテスト」で
-        あることは変わらないので、katachi の上では1つの役割にしています。
+        The app's own tests. Where they go depends on the kind of module: `src/test` for an
+        Android module and `commonTest` for a KMP module. Either way they are "the tests of that
+        module", so katachi treats them as one role.
 
-        いま layout に書いてあるのは `:app:android` の `testSourceSet` だけです。実際に
-        テストを持つモジュールがそこしかないからで、`commonTest` を持つモジュールが現れたら
-        そのとき1行足します。無いディレクトリを先に宣言すると、このサンプルが持っていない形を
-        持っていると言うことになります。
+        What the layout currently writes is only the `testSourceSet` of `:app:android`, because
+        that is the only module that actually has tests; when a module with `commonTest`
+        appears, one line is added then. Declaring a directory that does not exist would claim
+        this sample has a shape it does not have.
 
-        テストが `:app:android` に集まっているのは KMP ゆえの事情です。他のモジュールは
-        Android と iOS だけを持つ KMP で JVM ターゲットがないので、Compose を使わない部分
-        （`Navigator`、`UiState`、`FakeUserRepository`）を回せる JVM のテストがここしか
-        ありません。
+        Tests gather in `:app:android` because of KMP. The other modules are KMP with only
+        Android and iOS and no JVM target, so this is the only place with JVM tests that can
+        exercise the parts that do not use Compose (`Navigator`, `UiState`, `FakeUserRepository`).
 
-        画面の `@Composable` はテストしていません。Compose のテストランタイムが要る話になり、
-        このサンプルが見せたい範囲の外です。
+        The `@Composable` of screens is not tested. That would need the Compose test runtime,
+        which is outside what this sample wants to show.
     """.trimIndent()
     forbiddenContents = """
-        - アーキテクチャ定義。`:architecture-test` は ArchitectureDefinition の役割です
-        - テストダブル。`Fake*` は `:testing` の commonMain にあります
+        - The architecture definition. `:architecture-test` is the ArchitectureDefinition role
+        - Test doubles. `Fake*` live in the commonMain of `:testing`
     """.trimIndent()
-    example("SampleModulesSpec", ":app:android のユニットテスト")
+    example("SampleModulesSpec", "The unit tests of :app:android")
     // Only `:app:android` has test code of its own today, and it is an Android
     // module, so `testSourceSet` is the one place declared. A KMP module would add
     // `"commonTest".sourceSet`; no module in this sample has one yet, and a path

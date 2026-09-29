@@ -1,24 +1,24 @@
 [katachi-sample-kmp](../README.md) / [UI](README.md)
 
-# プレビューの土台
+# Preview root
 
-:ui モジュールの preview package。@Preview の中身を AppTheme と Surface で包む
+The preview package of the :ui module. Wraps the content of a @Preview in AppTheme and Surface
 
-プレビューを包む wrapper だけの package です。`PreviewRoot` は中身を `AppTheme` と
-`Surface` で包みます。`AppTheme` が本番と同じ配色を与え、`Surface` がその背景色を
-後ろに塗ります。これが無いと、すべてのプレビューが同じ2行を書き写すことになり、
-テーマに引数が増えた日に一斉に食い違います。
+A package that holds only a wrapper for previews. `PreviewRoot` wraps the content in
+`AppTheme` and `Surface`: `AppTheme` gives the same colors as production and `Surface`
+paints their background behind it. Without it, every preview would copy the same two
+lines, and they would all drift apart the day the theme gains an argument.
 
-名前が似ている ui/Preview とは別の役割です。こちらは包む側、あちらは包まれる側で、
-ここに `@Preview` を1つも書きません。逆に、プレビュー以外から `PreviewRoot` を
-呼ぶこともありません。
+It is a different role from ui/Preview, whose name is similar. This one is the wrapping
+side and that one the wrapped side; no `@Preview` is written here. Conversely, nothing
+other than previews calls `PreviewRoot`.
 
-`commonTest` ではなく `commonMain` に置いてあるのは、使う側の `@Preview` が
-feature モジュールの `commonMain` にいるからです。テスト source set は他モジュールから
-参照できないので、そこに置くと届きません。
+It sits in `commonMain`, not `commonTest`, because the `@Preview` that uses it lives in
+the `commonMain` of the feature modules. A test source set cannot be referenced from other
+modules, so it would not be reachable from there.
 
-この役割はワイルドカードを使わずファイル名を書ききっている数少ない宣言なので、
-`PreviewRoot.kt` が消えたり改名されたりすると `[MissingFile]` で報告されます。
+This role is one of the few declarations that spell out the file name without a
+wildcard, so if `PreviewRoot.kt` is deleted or renamed it is reported as `[MissingFile]`.
 
 ## Placement
 
@@ -28,4 +28,4 @@ feature モジュールの `commonMain` にいるからです。テスト source
 
 ## Examples
 
-- `PreviewRoot` ... すべての @Preview が使う wrapper
+- `PreviewRoot` ... The wrapper every @Preview uses

@@ -20,36 +20,36 @@ import me.tbsten.katachi.dsl.pascalCase
  * tells the two apart, and katachi reports `[MissingDescription]` when it does not.
  */
 fun DeclarationContainerScope.preview() = "Preview" {
-    title = "プレビュー"
-    summary = "@Preview を付けた private @Composable。対象の Composable と同じ package の " +
-        "<対象>Preview.kt に置き、中身は PreviewRoot で包む"
+    title = "Preview"
+    summary = "A private @Composable annotated with @Preview. Placed in <Target>Preview.kt in the same package as " +
+        "the target Composable, with the content wrapped in PreviewRoot"
     description = """
-        `@Preview` を付けた `private @Composable` です。描く対象と同じ package の
-        `<対象>Preview.kt` に分けて書きます。対象のファイルに同居させる書き方もありますが、
-        このサンプルはファイルを分ける方を採っています（同居する形は sample/android にあります）。
+        A `private @Composable` annotated with `@Preview`. It is written in `<Target>Preview.kt`
+        in the same package as what it draws. Keeping it in the same file as the target is also
+        possible, but this sample splits the files (the co-located form is in sample/android).
 
-        置き場所は2つあります。画面のプレビューはその画面を持つ feature モジュールに、
-        部品のプレビューはどの画面にも属さないので `:ui` に置きます。どちらも「描く対象の隣」
-        という同じ規則から出てくる2箇所です。
+        There are two places. A screen's preview goes in the feature module that holds the
+        screen, and a component's preview goes in `:ui` because it belongs to no screen. Both
+        follow from the same rule, "next to what it draws".
 
-        この `@Preview` は Compose Multiplatform の
-        `org.jetbrains.compose.ui:ui-tooling-preview` のものです。注釈の完全修飾名は
-        Android 専用の `androidx.compose.ui:ui-tooling-preview` とまったく同じなので、
-        IDE の補完で後者を足してしまうと iOS ターゲットが解決できなくなります。
-        `commonMain` でプレビューが書けているのは前者を使っているからです。
+        This `@Preview` is the one from Compose Multiplatform's
+        `org.jetbrains.compose.ui:ui-tooling-preview`. Its fully qualified annotation name is
+        exactly the same as that of the Android-only `androidx.compose.ui:ui-tooling-preview`,
+        so if IDE completion adds the latter, the iOS target can no longer be resolved.
+        Previews can be written in `commonMain` because the former is used.
     """.trimIndent()
     allowedContents = """
-        - 状態を引数で渡せる stateless な Composable のプレビュー。`HomeScreen` ではなく
-          `HomeContent` を呼ぶので、ViewModel を組み立てずに描けます
-        - 1つの対象につき状態ごとに複数。読み込み中・読み込み済み・失敗を並べて見られます
+        - Previews of stateless Composables that take state as arguments. It calls
+          `HomeContent`, not `HomeScreen`, so it can be drawn without building a ViewModel
+        - Several per target, one per state. Loading, loaded and failed can be viewed side by side
     """.trimIndent()
     forbiddenContents = """
-        - `public` なプレビュー。他から呼ぶものではないので `private` にします
-        - プレビューの中で `AppTheme { }` を直接書くこと。包むのは `PreviewRoot` の仕事です
-        - 本物の Repository やネットワークに触る処理。値はリテラルで書きます
+        - `public` previews. Nothing else calls them, so make them `private`
+        - Writing `AppTheme { }` directly in a preview. Wrapping is the job of `PreviewRoot`
+        - Anything that touches a real Repository or the network. Write values as literals
     """.trimIndent()
-    example("PrimaryButtonPreview", "PrimaryButton のプレビュー")
-    example("HomeLoadedPreview", "読み込み済みのホーム画面")
+    example("PrimaryButtonPreview", "The preview of PrimaryButton")
+    example("HomeLoadedPreview", "The home screen, loaded")
     // A preview lives beside what it renders, so this role claims a file name in two
     // different modules instead of a directory of its own. `component/*.kt` of
     // `Component` covers the same file as well: two roles may claim one path, and the
@@ -64,12 +64,12 @@ fun DeclarationContainerScope.preview() = "Preview" {
     // renders is: `:feature:home` may hold `Home*Preview.kt` and nothing else.
     layout {
         ":feature:${capture("feature")}".module {
-            description = "画面のプレビュー。その画面を持つ feature モジュールに置く"
+            description = "A screen's preview. Placed in the feature module that holds the screen"
             "commonMain".sourceSet / kotlin / modulePackage /
                 "${wildcard("feature").pascalCase}*Preview".ktFile()
         }
         ":ui".module {
-            description = "部品のプレビュー。どの画面にも属さないので :ui に置く"
+            description = "A component's preview. Placed in :ui because it belongs to no screen"
             "commonMain".sourceSet / kotlin / modulePackage / "component" / "*Preview".ktFile()
         }
     }

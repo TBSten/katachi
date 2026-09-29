@@ -1,73 +1,73 @@
 # sample/kmp
 
-## どういうサンプルか
+## What this sample is
 
-**Kotlin Multiplatform のアプリ**（Android と iOS）を、katachi で定義したサンプルです。
+A sample that defines a **Kotlin Multiplatform app** (Android and iOS) with katachi.
 
-`:feature:*`・`:ui`・`:data`・`:navigation`・`:testing`・`:app:android` の各モジュールに何を置くかを役割として宣言し、
-`assert()` でファイルの配置を検査しています。`commonMain` の `expect` と `androidMain` / `iosMain` の `actual` のように、
-**ソースセットごとに置き場所が分かれるもの**の書き方が見どころです。同じ定義から [`docs/`](docs/README.md) のドキュメントも生成しています。
+It declares as roles what goes into each of the `:feature:*`, `:ui`, `:data`, `:navigation`, `:testing` and `:app:android` modules,
+and checks the file layout with `assert()`. The highlight is how to write **things whose location differs per source set**,
+such as `expect` in `commonMain` and `actual` in `androidMain` / `iosMain`. The same definition also generates the documents in [`docs/`](docs/README.md).
 
-katachi はリポジトリのソースから `includeBuild("../..")` で取り込んでいますが、書き方は利用者と同じ
-`testImplementation(libs.katachi)` です。
+katachi is pulled in from the repository source with `includeBuild("../..")`, but it is written the same way a user would,
+with `testImplementation(libs.katachi)`.
 
-## キーとなるファイル
+## Key files
 
-| ファイル                                                                                                                       | 何が分かるか                                                                                                        |
-|--------------------------------------------------------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------------------------|
-| [`ProjectArchitecture.kt`](architecture-test/src/test/kotlin/com/example/kmp/ProjectArchitecture.kt)                           | `architecture { }` の本体。group を呼んでいるだけで、役割は `roles/` に1ファイル1役割で置いてある                   |
-| [`roles/PlatformImplementationRole.kt`](architecture-test/src/test/kotlin/com/example/kmp/roles/PlatformImplementationRole.kt) | `expect` / `actual` をソースセットごとに宣言した役割                                                                |
-| [`roles/RepositoryRole.kt`](architecture-test/src/test/kotlin/com/example/kmp/roles/RepositoryRole.kt)                         | 2つのファイル宣言にそれぞれ `.template(id = ...)` を付け、インターフェースと実装を別々に（または `--arg template=a,b` でまとめて）生成できる役割 |
-| [`roles/FeatureComponentRole.kt`](architecture-test/src/test/kotlin/com/example/kmp/roles/FeatureComponentRole.kt)             | `":feature:${capture("feature")}".module { }` の見本。`wildcard("feature")` で置き場所を、`captureValue("feature")` でテンプレートの中身を、同じ capture から決める |
-| [`ProjectArchitectureTest.kt`](architecture-test/src/test/kotlin/com/example/kmp/ProjectArchitectureTest.kt)                   | 利用者が書くテストはこれ1つ。`projectArchitecture.assert()` を呼ぶだけ                                              |
-| [`katachi-baseline.json`](katachi-baseline.json) | baseline の台帳。`:data` の `androidMain` にある `user/` の1件を意図的に残して棚上げしている（[`../README.md`](../README.md#baseline)） |
+| File | What it shows |
+|---|---|
+| [`ProjectArchitecture.kt`](architecture-test/src/test/kotlin/com/example/kmp/ProjectArchitecture.kt) | The body of `architecture { }`. It only calls the groups; each role is in `roles/`, one role per file |
+| [`roles/PlatformImplementationRole.kt`](architecture-test/src/test/kotlin/com/example/kmp/roles/PlatformImplementationRole.kt) | A role that declares `expect` / `actual` per source set |
+| [`roles/RepositoryRole.kt`](architecture-test/src/test/kotlin/com/example/kmp/roles/RepositoryRole.kt) | A role whose two file declarations each carry `.template(id = ...)`, so the interface and the implementation can be generated separately (or together with `--arg template=a,b`) |
+| [`roles/FeatureComponentRole.kt`](architecture-test/src/test/kotlin/com/example/kmp/roles/FeatureComponentRole.kt) | An example of `":feature:${capture("feature")}".module { }`. The same capture decides the location with `wildcard("feature")` and the template content with `captureValue("feature")` |
+| [`ProjectArchitectureTest.kt`](architecture-test/src/test/kotlin/com/example/kmp/ProjectArchitectureTest.kt) | The only test a user writes. It just calls `projectArchitecture.assert()` |
+| [`katachi-baseline.json`](katachi-baseline.json) | The baseline ledger. It deliberately leaves one entry, `user/` in the `androidMain` of `:data`, shelved ([`../README.md`](../README.md#baseline)) |
 
-## 実行方法
+## How to run
 
-**Android SDK が必要です。**`ANDROID_HOME` を設定するか、`local.properties` に `sdk.dir` を書いてください。
+**The Android SDK is required.** Set `ANDROID_HOME`, or write `sdk.dir` in `local.properties`.
 
 ```sh
-# リポジトリのルートで
+# at the repository root
 echo "sdk.dir=$HOME/Library/Android/sdk" > sample/kmp/local.properties
 ```
 
 ```sh
 cd sample/kmp
 
-# ファイルの配置を検査する
+# Check the file layout
 ./gradlew :architecture-test:test
 
-# 定義からドキュメントを docs/ に生成する
+# Generate the documents into docs/ from the definition
 ./gradlew :architecture-test:katachiDocs
 
-# Repository のテンプレートから :data の user package に ProfileRepository.kt と ProfileRepositoryImpl.kt を生成する
-# （2つの id をカンマ区切りでまとめて指定。片方だけなら data.Repository.repository だけを渡す）
+# Generate ProfileRepository.kt and ProfileRepositoryImpl.kt into the user package of :data from the Repository template
+# (give the two ids together, comma-separated; pass only data.Repository.repository for just one)
 ./gradlew :architecture-test:katachiTemplate --arg template=data.Repository.repository,data.Repository.repositoryImpl --arg name=Profile
 
-# FeatureComponent のテンプレートから :feature:settings の component package に SettingsToggleRow.kt を生成する
-# （feature は layout で :feature:* に付けた名前。どのモジュールに生成するかをこれで選ぶ）
+# Generate SettingsToggleRow.kt into the component package of :feature:settings from the FeatureComponent template
+# (feature is the name given to :feature:* in the layout; it picks the module to generate into)
 ./gradlew :architecture-test:katachiTemplate --arg template=feature.FeatureComponent --arg feature=settings --arg name=ToggleRow
 ```
 
-タスクは `:architecture-test:test` のように**モジュールのパスまで書いてください。**`test` とだけ書くと
-iOS のモジュールのタスクまで対象になり、macOS と Xcode が必要になります。
+**Write the task with the module path**, as in `:architecture-test:test`. Writing just `test`
+also targets the tasks of the iOS modules, which needs macOS and Xcode.
 
-リポジトリのルートからは、CI と同じ一式（テンプレートから生成 → 検査 → 生成物を削除、まで含む）を1コマンドで回せます。
+From the repository root, one command runs the same set as CI (including generating from templates, checking, and deleting the generated files).
 
 ```sh
 ./gradlew checkSampleKmp
 ```
 
-## `checkSampleKmp` の既定タスクについて
+## The default tasks of `checkSampleKmp`
 
-`checkSampleKmp` は他のサンプルと違い、既定タスクが `check` ではない。`check` を使わないのは、
-KMP モジュールが iOS ターゲットを宣言していて、`check` が `compileKotlinIosArm64` と Kotlin/Native
-ツールチェーンのダウンロードを task graph に入れてしまうため。
+Unlike the other samples, the default task of `checkSampleKmp` is not `check`. `check` is not used because
+the KMP modules declare iOS targets, and `check` would pull `compileKotlinIosArm64` and the download of
+the Kotlin/Native toolchain into the task graph.
 
-代わりに `:architecture-test:test`（katachi の検証）と `:app:android:testDebugUnitTest`（サンプルが
-KMP プロジェクトとしてコンパイルできることの検証）の両方を回す。`:architecture-test` は素の JVM
-モジュールで `:ui` / `:data` / `:feature:*` を一切参照しないので、片方だけでは足りない。これに加えて
-`:architecture-test:katachiLayout`（processor 経由の配置の検査）と
-`:architecture-test:katachiDocs --arg mode=check`（生成ドキュメントが最新か）が続く。layout の
-スナップショット（`snapshots/layout.txt`）は `:architecture-test:test` の中で `LayoutSnapshotSpec` が確かめる。既定値の正確な中身はルートの
-`build.gradle.kts` の `sampleBuilds` を参照。
+Instead it runs both `:architecture-test:test` (verifying katachi) and `:app:android:testDebugUnitTest` (verifying
+that the sample compiles as a KMP project). `:architecture-test` is a plain JVM module that references
+none of `:ui` / `:data` / `:feature:*`, so one of the two alone is not enough. These are followed by
+`:architecture-test:katachiLayout` (the layout check via the processor) and
+`:architecture-test:katachiDocs --arg mode=check` (whether the generated documents are up to date). The layout
+snapshot (`snapshots/layout.txt`) is checked by `LayoutSnapshotSpec` inside `:architecture-test:test`. For the exact default values, see `sampleBuilds` in the root
+`build.gradle.kts`.

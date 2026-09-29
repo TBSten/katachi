@@ -30,7 +30,7 @@ import me.tbsten.katachi.dsl.architecture
  */
 @OptIn(InternalKatachiApi::class)
 class OmittedRoleSelfCheckSpec : FreeSpec({
-    "役割を落とすと、その役割だけが引き受けていたファイルが Unexpected になる" {
+    "dropping a role makes the files only that role covered Unexpected" {
         // `tool` owns exactly two files, both at the root -- `.gitignore` and `README.md` --
         // and no other role claims either, so leaving `toolGroup()` out removes exactly those
         // two homes and the expectation can be written out in full.
@@ -53,7 +53,7 @@ class OmittedRoleSelfCheckSpec : FreeSpec({
             )
     }
 
-    "未知のディレクトリは1件だけ報告され、その配下は掘られない" {
+    "an unknown directory is reported once and its contents are not descended into" {
         // The `data` group is what claims everything under `data/src`. Without it that
         // directory has no role, and the six files below it are *not* reported one by one:
         // the one directory that has to be explained is, and the walk stops there.

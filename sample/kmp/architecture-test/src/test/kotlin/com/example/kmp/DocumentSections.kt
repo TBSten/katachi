@@ -14,13 +14,13 @@ import org.intellij.lang.annotations.Language
  * and may not sit inside it are pulled out into their own sections instead, so a reader can scan
  * them without wading through the paragraphs around them.
  */
-val AllowedContents = documentSection("置いてよいもの")
+val AllowedContents = documentSection("Allowed contents")
 @get:Language("markdown")
 @set:Language("markdown")
 var MetadataScope.allowedContents by AllowedContents
 
 /** The sibling of [AllowedContents]: what must not be placed in this role or group. */
-val ForbiddenContents = documentSection("置いてはいけないもの")
+val ForbiddenContents = documentSection("Forbidden contents")
 @get:Language("markdown")
 @set:Language("markdown")
 var MetadataScope.forbiddenContents by ForbiddenContents

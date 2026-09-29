@@ -1,20 +1,20 @@
 [katachi-sample-kmp](../README.md) / [UI](README.md)
 
-# UI 基盤
+# UI core
 
-:ui モジュールの core package。画面に依存しない UI の土台。UiState など
+The core package of the :ui module. The screen-independent foundation of the UI, such as UiState
 
-UI 層の語彙のうち、見た目でも部品でもないものを置く package です。今あるのは `UiState`
-だけで、「読み込み中 / 読み込み済み / 失敗」という、どの画面にも共通する3状態を表す
-sealed interface です。
+A package for the vocabulary of the UI layer that is neither look nor component. Right now
+it holds only `UiState`, a sealed interface for the three states every screen shares:
+loading, loaded and failed.
 
-`UiState` はわざと Compose に依存させていません。ViewModel が作って `@Composable` が
-読むという両端の型なので、素の Kotlin にしておけば Compose ランタイム無しで両側を
-テストできます。実際 `:app:android` の `SampleModulesSpec` は Compose を起動せずに
-`valueOrNull()` の挙動を確かめています。
+`UiState` deliberately does not depend on Compose. It is the type at both ends, created by
+the ViewModel and read by the `@Composable`, so keeping it plain Kotlin lets both sides
+be tested without the Compose runtime. In fact `SampleModulesSpec` of `:app:android`
+checks the behavior of `valueOrNull()` without starting Compose.
 
-`core` という名前は「基盤」以上のことを言っていないので、なんでも入る置き場になりがちです。
-「画面を知らない」「Compose を知らない」の2つを満たすかどうかで判断してください。
+The name `core` says nothing beyond "foundation", so it tends to become a place where
+anything goes. Judge by whether it satisfies both "knows no screen" and "knows no Compose".
 
 ## Placement
 
@@ -24,16 +24,16 @@ sealed interface です。
 
 ## Examples
 
-- `UiState` ... 画面の状態を表す型
-- `valueOrNull` ... 値を取り出す拡張関数
+- `UiState` ... The type that represents screen state
+- `valueOrNull` ... The extension function that extracts the value
 
-## 置いてよいもの
+## Allowed contents
 
-- 画面の状態を表す型と、その小さな拡張関数
-- 複数の画面が共通で使う、UI 側だけの語彙
+- Types that represent screen state, and their small extension functions
+- Vocabulary used in common by several screens, on the UI side only
 
-## 置いてはいけないもの
+## Forbidden contents
 
-- `@Composable`。部品は `component`、見た目は `theme` です
-- ドメインの型。ユーザーやその一覧は `:data` の持ち物で、`UiState` はそれを包むだけです
-- 特定の画面でしか意味を持たない状態。それは feature モジュール側に書きます
+- `@Composable`. Components go in `component` and the look in `theme`
+- Domain types. Users and their lists belong to `:data`, and `UiState` only wraps them
+- State meaningful to only one screen. Write it on the feature module side

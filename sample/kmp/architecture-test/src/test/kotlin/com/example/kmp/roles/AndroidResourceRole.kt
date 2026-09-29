@@ -6,30 +6,30 @@ import me.tbsten.katachi.dsl.gradle.*
 
 /** What the Android build needs beside the Kotlin sources of `:app:android`. */
 fun DeclarationContainerScope.androidResource() = "AndroidResource" {
-    title = "Android リソース"
-    summary = "AndroidManifest.xml と res/ 以下のリソース XML。:app:android だけが持つ"
+    title = "Android resources"
+    summary = "AndroidManifest.xml and the resource XML under res/. Only :app:android has them"
     description = """
-        Kotlin のソース以外で Android のビルドが要求するものです。`AndroidManifest.xml` と
-        `res/` 以下のリソース XML で、このサンプルでは `:app:android` にしかありません。
+        What the Android build requires besides Kotlin sources: `AndroidManifest.xml` and the
+        resource XML under `res/`. In this sample only `:app:android` has them.
 
-        `res/*/` の `*` はリソース修飾子のディレクトリ（`values`、`drawable`、`mipmap-hdpi` …）
-        です。どんな名前がありうるかを決めるのは Android で、このプロジェクトではないので、
-        階層だけを宣言して個々のディレクトリ名は書いていません。
+        The `*` in `res/*/` is a resource-qualifier directory (`values`, `drawable`,
+        `mipmap-hdpi` ...). Android, not this project, decides which names can exist, so only the
+        hierarchy is declared and individual directory names are not written.
 
-        ライブラリモジュール（`:ui` など）はリソースを持ちません。色も余白も `:ui` の theme
-        package に Kotlin で置いてあり、`res/values/` に相当するものがありません。Android 専用の
-        置き場を使わないことが、そのまま iOS と共有できることになります。
+        Library modules (such as `:ui`) have no resources. Colors and spacing are written in
+        Kotlin in the theme package of `:ui`, and nothing corresponds to `res/values/`. Not using
+        an Android-only place is what makes them shareable with iOS.
     """.trimIndent()
     forbiddenContents = """
-        - Kotlin のコード。`src/main/kotlin` 側は Entrypoint の役割です
-        - iOS 側のリソース。`app/ios` の中身は Xcode の領分です
-        - 画面に出す文言。KMP では iOS から `res/` が読めないので、共有したい文字列を
-          `strings.xml` に書くと Android でしか使えないものになります。実際このサンプルでは
-          遷移先のラベルもボタンの文字も Compose 側（`commonMain`）に直接書いていて、
-          `strings.xml` にあるのはアプリ名だけです
+        - Kotlin code. `src/main/kotlin` is the Entrypoint role
+        - iOS resources. What is inside `app/ios` is Xcode's territory
+        - Text shown on screens. In KMP, iOS cannot read `res/`, so a string meant to be shared
+          and written in `strings.xml` becomes usable only on Android. This sample writes even the
+          destination labels and the button text directly on the Compose side (`commonMain`), and
+          `strings.xml` holds only the app name
     """.trimIndent()
-    example("AndroidManifest.xml", "アプリのマニフェスト")
-    example("res/values/strings.xml", "文字列リソース")
+    example("AndroidManifest.xml", "The app manifest")
+    example("res/values/strings.xml", "String resources")
     // `res/*/` is the resource qualifier directory (`values`, `drawable`,
     // `mipmap-hdpi`, ...). Android decides those names, so the layout names the
     // level rather than each directory.

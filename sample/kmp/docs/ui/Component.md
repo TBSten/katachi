@@ -1,17 +1,17 @@
 [katachi-sample-kmp](../README.md) / [UI](README.md)
 
-# 共通コンポーネント
+# Shared component
 
-:ui モジュールの component package。複数の画面から使われる @Composable 部品
+The component package of the :ui module. @Composable parts used by several screens
 
-複数の画面から使われる `@Composable` の部品です。`:ui` モジュールの `component` package に
-置きます。`:ui` は Compose Multiplatform のモジュールで `commonMain` しか持たないので、
-Android と iOS のどちらからも同じ部品が使われます。
+`@Composable` parts used by several screens. They go in the `component` package of the
+`:ui` module. `:ui` is a Compose Multiplatform module with only `commonMain`, so both
+Android and iOS use the same parts.
 
-部品が増えたらまずここに1ファイル足します。プレビューは同じ package の
-`<部品名>Preview.kt`（ui/Preview の役割）に分けて書くので、この役割のファイルに
-`@Preview` は入りません。`component/*.kt` は `*Preview.kt` にも一致するため、
-katachi は重なりを `[AmbiguousLayout]` として報告します。これは承知の上の形です。
+When a part is added, add one file here first. Previews are written separately in
+`<PartName>Preview.kt` in the same package (the ui/Preview role), so no `@Preview` goes
+into this role's files. Because `component/*.kt` also matches `*Preview.kt`, katachi
+reports the overlap as `[AmbiguousLayout]`. This is a known and accepted shape.
 
 ## Placement
 
@@ -21,18 +21,18 @@ katachi は重なりを `[AmbiguousLayout]` として報告します。これは
 
 ## Examples
 
-- `PrimaryButton` ... 主要な操作のボタン
+- `PrimaryButton` ... The button for the main action
 
-## 置いてよいもの
+## Allowed contents
 
-- 画面を知らない部品。`label` や `onClick` のような素の引数だけを受け取り、状態は持ちません
-- `theme` package のトークン（`AppSpacing` など）を読むこと
+- Parts that know nothing about screens. They take only plain arguments such as `label` and `onClick` and hold no state
+- Reading tokens from the `theme` package (such as `AppSpacing`)
 
-## 置いてはいけないもの
+## Forbidden contents
 
-- 1つの画面でしか使わない部品。その feature モジュールの画面の部品（feature/FeatureComponent）に
-  `internal` で書きます
-- `UiState` や ViewModel を引数に取る部品。`:ui` は feature 側を知らない側なので、
-  ここが画面の状態を知ると依存が逆流します
-- `androidMain` 向けの実装。Android 専用の View が要る話になったら、それは
-  `:data` の PlatformImplementation と同じく expect/actual で解く問題です
+- Parts used by only one screen. Write them as `internal` in the screen parts of that
+  feature module (feature/FeatureComponent)
+- Parts that take `UiState` or a ViewModel. `:ui` does not know about the feature side, so
+  if this role knew screen state the dependency would flow backwards
+- Implementations for `androidMain`. If an Android-only View is needed, solve it with
+  expect/actual, like PlatformImplementation in `:data`

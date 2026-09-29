@@ -24,7 +24,7 @@ import me.tbsten.katachi.processor.process
  */
 @OptIn(ExperimentalKatachiApi::class)
 class DeclaredEntriesSpec : FreeSpec({
-    "宣言しか見ない processor が declaredEntries からパスを読める" {
+    "a processor that only looks at declarations can read paths from declaredEntries" {
         val paths = projectArchitecture.process { context -> context.declaredEntries.map { it.path } }
 
         // Declared directly under `layout { }` by Gradle/SettingsScript, so no module key is
@@ -32,10 +32,10 @@ class DeclaredEntriesSpec : FreeSpec({
         paths shouldContain "settings.gradle.kts"
     }
 
-    "ワイルドカードの module キーは declaredEntries にはパターンのまま、filesOf には展開されて現れる" {
-        // 1つの Context から両方を読む。別々に process すると「モデルが2つあるから
-        // 答えが違う」と読めてしまい、固定したいこと（同じモデルの2つのメンバが違う答えを
-        // 返す）がぼやける。
+    "a wildcard module key appears as the pattern in declaredEntries and expanded in filesOf" {
+        // Read both from a single Context. Processing separately could be read as "the answers differ
+        // because there are two models", which blurs what we want to pin down (two members of the
+        // same model returning different answers.)
         val (declaredFeaturePaths, walkedFeatureFiles) = projectArchitecture.process { context ->
             val declared = context.declaredEntries.map { it.path }.filter { it.startsWith("feature/") }
             val walked = context.filesOf(context.roles.single { it.qualifiedName == "feature.Screen" })

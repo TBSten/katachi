@@ -19,36 +19,36 @@ import me.tbsten.katachi.dsl.DeclarationContainerScope
  * declared.
  */
 fun DeclarationContainerScope.testingGroup() = "testing".group {
-    title = "テスト支援"
-    summary = "テストダブル、テストコード本体、katachi のアーキテクチャ定義、そこから書き出されるドキュメントとスナップショット、棚上げした違反の台帳"
+    title = "Testing support"
+    summary = "Test doubles, the test code itself, the katachi architecture definition, the documents and snapshot written from it, and the ledger of shelved violations"
     description = """
-        テストにまつわる6つの役割です。Fake（`:testing` の commonMain）、Test（各モジュールの
-        テスト）、ArchitectureDefinition（`:architecture-test`）、GeneratedDocumentation
-        （ルート直下の `docs/`）、LayoutSnapshot（ルート直下の `snapshots/`）、BaselineFile
-        （ルート直下の `katachi-baseline.json`。棚上げした違反の台帳）。
+        Six roles around testing: Fake (commonMain of `:testing`), Test (the tests of each
+        module), ArchitectureDefinition (`:architecture-test`), GeneratedDocumentation (`docs/`
+        at the root), LayoutSnapshot (`snapshots/` at the root) and BaselineFile (`katachi-baseline.json`
+        at the root, the ledger of shelved violations).
 
-        ArchitectureDefinition を Test と分けてあるのが、この group でいちばん言いたいことです。
-        アーキテクチャ定義はテストコードではありません。プロジェクトの形を説明するのが仕事で、
-        それを実際のディレクトリと突き合わせるテストは1行しかない。役割を与えておかないと、
-        `:architecture-test` が誰も宣言していないディレクトリになります。
+        Keeping ArchitectureDefinition apart from Test is the main point of this group. The
+        architecture definition is not test code. Its job is to describe the shape of the project,
+        and the test that checks it against the real directories is a single line. Without giving
+        it a role, `:architecture-test` would be a directory nobody declared.
 
-        Fake が `commonTest` ではなく `commonMain` にいるのも、この group が見せている形です。
-        テスト source set は他のモジュールから参照できないので、テストのためのコードでも
-        production の source set に置かざるをえないことがあります。`:testing` はそのために
-        切られた、アプリ本体から誰も依存しないモジュールです。
+        Fake living in `commonMain` instead of `commonTest` is also a shape this group shows.
+        A test source set cannot be referenced from other modules, so code written for tests
+        sometimes has to sit in a production source set. `:testing` is a module cut out for that
+        purpose, and nothing in the app itself depends on it.
 
-        GeneratedDocumentation と LayoutSnapshot を ArchitectureDefinition と分けてあるのも
-        同じ理由です。定義は人が書き、`docs/` は `katachiDocs` が、`snapshots/` は
-        `:architecture-test:test` が書く。手を入れてよい場所が逆なので、1つの役割にまとめると
-        「どちらを直せばいいのか」が言えなくなります。`build/` の外に置いた生成物にも役割が
-        要る、という例にもなっています。
+        GeneratedDocumentation and LayoutSnapshot are separate from ArchitectureDefinition for the
+        same reason. A person writes the definition, `katachiDocs` writes `docs/`, and
+        `:architecture-test:test` writes `snapshots/`. The places where you may edit by hand are
+        opposite, so merging them into one role would make it impossible to say which one to fix.
+        It is also an example of generated output outside `build/` still needing a role.
 
-        書き出されたもの同士も分けてあります。読み手が違うからです。`docs/` は定義を読みに
-        来た人が開くページ、`snapshots/` は定義を書き換えた差分をレビューする人が見る
-        テキストです。
+        The generated files are kept apart from each other too, because their readers differ.
+        `docs/` is the page opened by someone who came to read the definition, and `snapshots/`
+        is the text seen by whoever reviews the diff of a changed definition.
     """.trimIndent()
     forbiddenContents = """
-        - アプリ本体のコード。ここにあるのは「テストのための」コードと、プロジェクトの説明です
+        - The code of the app itself. What is here is code "for tests" and the description of the project
     """.trimIndent()
 
     fake()

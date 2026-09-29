@@ -1,36 +1,37 @@
-[katachi-sample-kmp](../README.md) / [テスト支援](README.md)
+[katachi-sample-kmp](../README.md) / [Testing support](README.md)
 
-# レイアウトのスナップショット
+# Layout snapshot
 
-この定義を平坦化して全行書き出した記録。定義の変化を人が差分でレビューするためにある
+A record of this definition, flattened and written out in full. It exists so a person can review changes to the definition as a diff
 
-`:architecture-test:test` が、この定義を平坦化した結果を1行1エントリで書き出したものです。
-1行は `<役割の qualifiedName>` `<パス>` `<種別>` `<required|optional>` の4つ組で、
-`layout { }` が最終的に何を許しているのかがそのまま並びます。
+What `:architecture-test:test` writes when it flattens this definition, one entry per
+line. A line is a quadruple of `<role qualifiedName>`, `<path>`, `<kind>` and
+`<required|optional>`, so what `layout { }` ends up allowing is laid out as it is.
 
-これは手で編集しない。`LayoutSnapshotSpec` が書きます。更新するには
-`./gradlew :architecture-test:test -Dkatachi.snapshot.update=true` を走らせるだけです。
+Do not edit it by hand; `LayoutSnapshotSpec` writes it. To update it, just run
+`./gradlew :architecture-test:test -Dkatachi.snapshot.update=true`.
 
-何のためにあるのかというと、定義の変化を人が差分でレビューするためです。このサンプルは
-`":feature:*".module { }` のようなワイルドカードのモジュールキーや sourceSet の糖衣を
-いちばん多く使っていて、書き換えたときに読みやすくなっただけなのか、検査する木そのものが
-変わってしまったのかは、定義のコードを眺めても分かりません。平坦化した結果をコミット済みの
-テキストにしておけば、`git diff` の行数がそのまま答えになります。1行も動かなければ
-書き換えは等価、動いたなら何がどう変わったのかがその行に出ています。
+It exists so a person can review changes to the definition as a diff. This sample uses
+wildcard module keys such as `":feature:*".module { }` and sourceSet sugar more than
+anything, and looking at the definition code alone does not tell you whether a rewrite
+only made it easier to read or changed the checked tree itself. If the flattened result is
+committed as text, the number of lines in `git diff` is the answer: if no line moves, the
+rewrite is equivalent, and if one moves, that line shows what changed and how.
 
-これは katachi 自身の検証のために置いてあるもので、katachi を導入するときに書くもの
-ではありません。サンプルの定義に手を入れたときに意味が変わっていないことを、katachi の
-開発側が確かめるための記録です。
+It is here for katachi's own verification, not something you write when adopting
+katachi. It is a record with which katachi's developers confirm that the meaning has not
+changed when the sample's definition is touched.
 
-生成物なのに `build/` の外に置いているのは、差分で見せるのが仕事だからです。`.gitignore` が
-`build/` を落としている以上、そこに書いた記録は誰のレビューにも出てきません。外に出した
-代わりに既定の `files = gitTracked()` の検査対象に入るので、この役割が要ります。役割を
-消すと `[UnexpectedDirectory] snapshots` で `:architecture-test:test` が落ちます。
+It sits outside `build/` even though it is generated, because its job is to show up in
+diffs. Since `.gitignore` drops `build/`, a record written there would appear in nobody's
+review. In exchange for being outside, it falls under the default `files = gitTracked()`
+check, which is why this role is needed. Deleting the role makes
+`:architecture-test:test` fail with `[UnexpectedDirectory] snapshots`.
 
-`documented` は書いていません（既定の `true`）。この `snapshots/` が何なのかを説明する
-場所は他に無く、一覧から外すとリポジトリを開いた人には由来の分からない `.txt` が
-1つ残るだけになるからです。この役割自身のページ（`docs/testing/LayoutSnapshot.md`）も
-生成されます。
+`documented` is not written (the default `true`). Nothing else explains what this
+`snapshots/` is, and leaving it out of the list would leave one `.txt` whose origin a
+reader of the repository cannot tell. The page of this role itself
+(`docs/testing/LayoutSnapshot.md`) is generated too.
 
 ## Placement
 
@@ -40,10 +41,10 @@
 
 ## Examples
 
-- `snapshots/layout.txt` ... 平坦化した layout の全行
+- `snapshots/layout.txt` ... Every line of the flattened layout
 
-## 置いてはいけないもの
+## Forbidden contents
 
-- 手書きのメモ。次の `-Dkatachi.snapshot.update=true` で丸ごと上書きされます
-- 別の種類の記録。いまの `layout { }` は `snapshots/layout.txt` の1ファイルしか
-  認めていないので、足すなら役割を書き換えるところから始まります
+- Handwritten notes. The next `-Dkatachi.snapshot.update=true` overwrites everything
+- Other kinds of records. The current `layout { }` allows only the one file
+  `snapshots/layout.txt`, so adding one starts with rewriting the role

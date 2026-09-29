@@ -31,6 +31,6 @@ private fun HomeLoadingPreview() {
 @Composable
 private fun HomeFailedPreview() {
     PreviewRoot {
-        HomeContent(state = UiState.Failed("読み込みに失敗しました"), onReload = {})
+        HomeContent(state = UiState.Failed("Failed to load"), onReload = {})
     }
 }
