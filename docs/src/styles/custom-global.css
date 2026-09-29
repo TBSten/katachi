@@ -36,6 +36,12 @@ starlight-tabs .tab > [role='tab'] {
   padding-top: 1.5rem;
 }
 
+/* The first h2 of a page needs no divider: nothing above it to separate from. */
+.sl-heading-wrapper.level-h2:not(.sl-heading-wrapper.level-h2 ~ .sl-heading-wrapper.level-h2) {
+  border-top: none;
+  padding-top: 0;
+}
+
 .sl-heading-wrapper.level-h3 {
   margin-top: 2.5rem;
 }
