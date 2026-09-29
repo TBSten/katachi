@@ -1,41 +1,41 @@
 # sample/custom-processor
 
-## どういうサンプルか
+## What this sample is
 
-**ArchitectureProcessor を自分で書く方法**だけを見せるサンプルです。
+A sample that shows **only how to write your own ArchitectureProcessor**.
 
-ほかの3つのサンプルは「プロジェクトを katachi でどう定義するか」を見せます。こちらは「定義を読んで何かをする processor をどう書くか」を見せます。
-そのためアプリ本体は、processor が読む対象として置いてあるだけの小さなものです。読む価値があるのは
-`architecture-test/src/test/kotlin/com/example/processors/` の 3 本と、その登録です。
+The other three samples show how to define a project with katachi. This one shows how to write a processor that reads a definition and does something with it.
+The application itself is therefore just a small thing placed there for the processors to read. What is worth reading is the three files in
+`architecture-test/src/test/kotlin/com/example/processors/` and their registration.
 
-## キーとなるファイル
+## Key files
 
-| ファイル                                                                                                       | 何が分かるか                                                                       |
-|----------------------------------------------------------------------------------------------------------------|------------------------------------------------------------------------------------|
-| [`processors/RoleFileCount.kt`](architecture-test/src/test/kotlin/com/example/processors/RoleFileCount.kt)     | 引数を取らない、いちばん単純な processor。役割ごとのファイル数を数える             |
-| [`processors/RoleTable.kt`](architecture-test/src/test/kotlin/com/example/processors/RoleTable.kt)             | `--arg` で型のついた引数（`String` / `List` / `Int` / `enum`）を受け取る processor |
-| [`processors/RoleDocCoverage.kt`](architecture-test/src/test/kotlin/com/example/processors/RoleDocCoverage.kt) | 検査する processor。`summary` か `example` の無い役割があると run を失敗させる     |
-| [`architecture-test/build.gradle.kts`](architecture-test/build.gradle.kts)                                     | 3 本の登録と、モジュールの既定引数 `arg("sortBy", "Name")`                         |
+| File | What it shows |
+|------|---------------|
+| [`processors/RoleFileCount.kt`](architecture-test/src/test/kotlin/com/example/processors/RoleFileCount.kt) | The simplest processor, taking no arguments. Counts the files of each role |
+| [`processors/RoleTable.kt`](architecture-test/src/test/kotlin/com/example/processors/RoleTable.kt) | A processor that receives typed arguments (`String` / `List` / `Int` / `enum`) through `--arg` |
+| [`processors/RoleDocCoverage.kt`](architecture-test/src/test/kotlin/com/example/processors/RoleDocCoverage.kt) | A checking processor. Fails the run when a role has no `summary` or `example` |
+| [`architecture-test/build.gradle.kts`](architecture-test/build.gradle.kts) | The registration of the three, and the module's default argument `arg("sortBy", "Name")` |
 
-## 実行方法
+## How to run
 
-Android SDK は要りません。JDK 17 だけで動きます。
+No Android SDK is needed. JDK 17 is enough.
 
 ```sh
 cd sample/custom-processor
 
-# ファイルの配置を検査する
+# Check the file layout
 ./gradlew :architecture-test:test
 
-# 自作の processor を1つずつ実行する
+# Run the processors of your own one at a time
 ./gradlew :architecture-test:katachiRoleFileCount
 ./gradlew :architecture-test:katachiRoleTable --arg groups=core,testing --arg sortBy=Declaration
 ./gradlew :architecture-test:katachiRoleDocCoverage
 ```
 
-`--arg sortBy=Declaration` は、`build.gradle.kts` に書いた既定値 `Name` より優先されます。
+`--arg sortBy=Declaration` takes precedence over the default `Name` written in `build.gradle.kts`.
 
-リポジトリのルートからは、CI と同じ一式を1コマンドで回せます。
+From the repository root, the same set as CI runs with one command.
 
 ```sh
 ./gradlew checkSampleCustomProcessor

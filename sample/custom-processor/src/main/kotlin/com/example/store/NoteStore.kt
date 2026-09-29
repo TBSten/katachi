@@ -12,8 +12,8 @@ import com.example.model.Note
  */
 class NoteStore {
     private val notes = listOf(
-        Note(title = "買い物", body = "牛乳とコーヒー豆"),
-        Note(title = "読書", body = "katachi の README を読む"),
+        Note(title = "Groceries", body = "Milk and coffee beans"),
+        Note(title = "Reading", body = "Read the katachi README"),
     )
 
     /** Every note, in the order they were added. */

@@ -1,29 +1,31 @@
-[自作プロセッサのサンプル](../README.md) / [定義とプロセッサ](README.md)
+[Custom processor sample](../README.md) / [Definition and processors](README.md)
 
-# プロセッサ
+# Processor
 
-このプロジェクトが自分で書いた ArchitectureProcessor。定義を読んで何かを作る
+The ArchitectureProcessor implementations this project wrote itself. They read the definition and produce something
 
-katachi の定義を読んで何かを作る、このプロジェクト自身のコードです。このサンプルが
-見せたいのはここ1つで、`src/main/kotlin` にある本体はこれらが読む対象を用意するために
-だけ置いてあります。
+This project's own code that reads a katachi definition and produces something. It is the one
+thing this sample wants to show; the application under `src/main/kotlin` is there only to
+provide what these read.
 
-3本あり、それぞれ違う形です。
+There are three, each of a different shape.
 
-- `RoleFileCount` — 引数なし。`ArchitectureProcessorNoArg` を `object` で実装し、
-  `context.roles` と `context.filesOf(role)` からファイル数を数える
-- `RoleTable` — 型付きの引数。`@Serializable data class Args` を持ち、`--arg` から
-  `String` / `List<String>` / `Int` / enum を受ける
-- `RoleDocCoverage` — 検査。`List<Violation>` ではなく自前の `Report` を答えにし、
-  問題があれば `Result.failure` を返して `katachiRoleDocCoverage` を落とす
+- `RoleFileCount` - no arguments. Implements `ArchitectureProcessorNoArg` as an `object` and
+  counts files from `context.roles` and `context.filesOf(role)`
+- `RoleTable` - typed arguments. Has a `@Serializable data class Args` and receives
+  `String` / `List<String>` / `Int` / enum from `--arg`
+- `RoleDocCoverage` - a check. Its answer is its own `Report` rather than `List<Violation>`,
+  and when there is a problem it returns `Result.failure` to fail `katachiRoleDocCoverage`
 
-`architecture-test/build.gradle.kts` の `katachi { processors { register(...) } }` に
-3本とも登録してあり、登録キーごとの `katachi<Key>` タスク（`katachiRoleTable` など）で実行できます。登録を忘れた processor は
-コマンドラインからは呼べませんが、テストから `projectArchitecture.process(...)` で
-呼ぶぶんには登録は要りません。
+All three are registered in `katachi { processors { register(...) } }` of
+`architecture-test/build.gradle.kts` and can be run with the `katachi<Key>` task of each
+registered key (`katachiRoleTable` and so on). A processor whose registration was forgotten
+cannot be called from the command line, but calling it from a test with
+`projectArchitecture.process(...)` needs no registration.
 
-`layout { }` は `processors` パッケージ直下の `.kt` を認めます。ファイル名は
-縛っていません（1ファイル1 processor はこの文章にある約束で、機械的には弾かれません）。
+`layout { }` allows the `.kt` files directly in the `processors` package. File names are not
+restricted (one processor per file is a convention written in this text, not something that is
+rejected mechanically).
 
 ## Placement
 
@@ -33,16 +35,17 @@ katachi の定義を読んで何かを作る、このプロジェクト自身の
 
 ## Examples
 
-- `RoleFileCount` ... 引数なしの最小形
-- `RoleTable` ... 型付き引数を取る形
-- `RoleDocCoverage` ... Result.failure で run を落とす検査
+- `RoleFileCount` ... The smallest form, without arguments
+- `RoleTable` ... A form that takes typed arguments
+- `RoleDocCoverage` ... A check that fails the run with Result.failure
 
-## 置いてよいもの
+## Allowed contents
 
-置いてよいのは `ArchitectureProcessor` の実装と、その引数・結果の型だけです。
+Only implementations of `ArchitectureProcessor` and the types of their arguments and results belong here.
 
-## 置いてはいけないもの
+## Forbidden contents
 
-- 役割や group の宣言。それらはアーキテクチャ定義の役割です。定義は形を書くもの、
-  processor はその形を読むもので、混ぜると「どちらが先に決まるのか」が読めなくなります
-- アプリのコード。processor はビルド時に走るもので、`main()` からは呼ばれません
+- Declarations of roles or groups. Those belong to the architecture definition role. A
+  definition writes a shape and a processor reads it, and mixing them makes "which one is
+  decided first?" unreadable
+- Application code. A processor runs at build time and is never called from `main()`

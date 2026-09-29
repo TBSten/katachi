@@ -1,52 +1,52 @@
-[自作プロセッサのサンプル](../README.md)
+[Custom processor sample](../README.md)
 
-# 定義とプロセッサ
+# Definition and processors
 
-katachi の定義、それを読む自作プロセッサ3本、そして生成されたドキュメント
+The katachi definition, the three processors of your own that read it, and the generated documentation
 
-このサンプルの本題が置かれている場所です。アプリのレイヤーではなく、プロジェクトを
-支えているコードを集めてあります。
+The place where this sample's subject lives. It collects the code that supports the project
+rather than a layer of the application.
 
-役割を分けているのは、読む向きが違うからです。アーキテクチャ定義は形を記述し、
-プロセッサはその形を読んで何かを作り、生成ドキュメントとレイアウトスナップショットは
-書き出された結果です。`processors/` を定義の役割に含めてしまうと、このサンプルが
-何を見せたいのかが `docs/` からも `RoleFileCount` の出力からも消えてしまいます。
+The roles are separate because they read in different directions. The architecture definition
+describes a shape, a processor reads that shape and produces something, and the generated
+documentation and the layout snapshot are what was written out. If `processors/` were included
+in the definition role, what this sample wants to show would vanish from both `docs/` and the
+output of `RoleFileCount`.
 
-プロセッサの3本は、引数なし・型付き引数・検査（`Result.failure` で落とす）という
-3つの形を1本ずつ受け持ちます。どれも `object` で、katachi 側に継承すべき基底クラスは
-ありません。
+The three processors each take one shape: no arguments, typed arguments, and a check (failing
+with `Result.failure`). All of them are `object`s; katachi has no base class to inherit from.
 
-生成物の2つも役割が別です。`docs/` は `katachiDocs` が読む人のために書くもの、
-`snapshots/` は `LayoutSnapshotSpec` が katachi 自身のために書くもので、
-更新の仕方も消したときに困る相手も違います。
+The two generated outputs are also separate roles. `docs/` is written by `katachiDocs` for
+readers, and `snapshots/` is written by `LayoutSnapshotSpec` for katachi itself, so they differ
+in how they are updated and in who is troubled when one is deleted.
 
 | Role | Summary |
 |---|---|
-| [アーキテクチャ定義](./ArchitectureDefinition.md) | katachi の DSL で書かれた役割の定義と、それを assert するテスト |
-| [プロセッサ](./Processor.md) | このプロジェクトが自分で書いた ArchitectureProcessor。定義を読んで何かを作る |
-| [生成ドキュメント](./GeneratedDocumentation.md) | この定義から書き出され、リポジトリにコミットされる Markdown |
-| [レイアウトスナップショット](./LayoutSnapshot.md) | `layout { }` を平坦化した結果を記録したテキスト。katachi 自身の自己検証用 |
+| [Architecture definition](./ArchitectureDefinition.md) | Role definitions written in the katachi DSL, and the tests that assert them |
+| [Processor](./Processor.md) | The ArchitectureProcessor implementations this project wrote itself. They read the definition and produce something |
+| [Generated documentation](./GeneratedDocumentation.md) | Markdown written out of this definition and committed to the repository |
+| [Layout snapshot](./LayoutSnapshot.md) | Text recording the flattened result of `layout { }`, for katachi's own self-verification |
 
 ## Placement in this group
 
 ```
 :architecture-test
   src/test/kotlin/com/example/
-    ProjectArchitecture.kt      アーキテクチャ定義
-    DocumentSections.kt         アーキテクチャ定義
-    ProjectArchitectureTest.kt  アーキテクチャ定義
-    *Spec.kt                    アーキテクチャ定義
-    groups/*.kt                 アーキテクチャ定義
-    roles/*.kt                  アーキテクチャ定義
-    processors/*.kt             プロセッサ
+    ProjectArchitecture.kt      Architecture definition
+    DocumentSections.kt         Architecture definition
+    ProjectArchitectureTest.kt  Architecture definition
+    *Spec.kt                    Architecture definition
+    groups/*.kt                 Architecture definition
+    roles/*.kt                  Architecture definition
+    processors/*.kt             Processor
 
 docs/
-  README.md                     生成ドキュメント
-  **/*.md                       生成ドキュメント
-snapshots/layout.txt            レイアウトスナップショット
+  README.md                     Generated documentation
+  **/*.md                       Generated documentation
+snapshots/layout.txt            Layout snapshot
 ```
 
-## 置いてはいけないもの
+## Forbidden contents
 
-ここに置いてはいけないのは、アプリの本体コードです。`:architecture-test` は
-main ソースセットを持ちません。
+The main code of the application must not be placed here. `:architecture-test` has no main
+source set.

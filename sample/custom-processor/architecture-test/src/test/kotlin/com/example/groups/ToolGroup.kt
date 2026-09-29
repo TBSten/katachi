@@ -11,19 +11,20 @@ import me.tbsten.katachi.dsl.DeclarationContainerScope
  */
 fun DeclarationContainerScope.toolGroup() = "tool".group {
     documented = false
-    title = "ツール設定"
-    summary = "ビルドでもアプリでもない、リポジトリ周辺のもの"
+    title = "Tool configuration"
+    summary = "Things around the repository that are neither the build nor the app"
 
     description = """
-        リポジトリに置かれて開発を支える、ビルド以外のものです。いまは Git 設定（`.gitignore`）と
-        手書きのドキュメント（`README.md`）の2つが入っています。
+        Things other than the build that sit in the repository and support development. Right now it
+        holds two: Git configuration (`.gitignore`) and handwritten documentation (`README.md`).
 
-        `Gradle` グループと同じく `documented = false` で、チェックはするが生成ドキュメントには出しません。
-        `README.md` を `docs/` に出さないのは、それが `docs/` の内容と重なるからです。読む人が
-        最初に開くのはルートの `README.md` で、生成ページの索引はその中からリンクします。
+        As with the `Gradle` group, `documented = false` means they are checked but not shown in the
+        generated documentation. `README.md` is not put in `docs/` because it overlaps with the
+        content of `docs/`. What a reader opens first is the root `README.md`, and the index of the
+        generated pages is linked from inside it.
 
-        エディタや CI の設定ファイルが増えたときは `.gitignore` の役割に混ぜず、このグループに
-        役割を1つ足すのが想定している育て方です。
+        When editor or CI configuration files appear, the intended way to grow is to add one role to
+        this group rather than mixing them into the `.gitignore` role.
     """.trimIndent()
 
     git()

@@ -25,16 +25,16 @@ import me.tbsten.katachi.processor.ArchitectureProcessorNoArg
  * ## Example 1: run it from a test, through the API
  * ```kt
  * val lines = projectArchitecture.process(RoleFileCount).getOrThrow()
- * lines shouldContain "core/Model: 1 件"
+ * lines shouldContain "core.Model: 1 file(s)"
  * ```
  *
  * @see RoleTable for the same shape with typed arguments.
  */
 object RoleFileCount : ArchitectureProcessorNoArg<List<String>> {
     override fun process(context: ArchitectureProcessNoArgContext): Result<List<String>> = runCatching {
-        context.log("${context.roles.size} 個の役割が覆うファイルを数えます")
+        context.log("Counting the files covered by ${context.roles.size} roles")
         context.roles.map { role ->
-            "${role.qualifiedName}: ${context.filesOf(role).size} 件"
+            "${role.qualifiedName}: ${context.filesOf(role).size} file(s)"
         }
     }
 }

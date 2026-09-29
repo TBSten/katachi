@@ -1,15 +1,16 @@
-[自作プロセッサのサンプル](../README.md) / [本体](README.md)
+[Custom processor sample](../README.md) / [Application](README.md)
 
-# 保管庫
+# Store
 
-値がどこから来るかを引き受ける。いまはメモリ上の固定値
+Takes responsibility for where values come from. For now, fixed values in memory
 
-モデルをどこから持ってくるかを引き受ける場所です。`NoteStore` は決め打ちの2件を
-返すだけですが、保存先がファイルやデータベースに変わってもエントリポイントと
-モデルは書き換わらない、という境界をここに引いています。
+The place that takes responsibility for where models are fetched from. `NoteStore` only
+returns two fixed notes, but it draws the boundary that the entrypoint and the model do not
+change even if the storage becomes a file or a database.
 
-`layout { }` は `store` パッケージ直下の `.kt` を認めます。ファイル名は縛っていないので、
-`*Store` という約束はこの文章にあるだけで、機械的には弾かれません。
+`layout { }` allows the `.kt` files directly in the `store` package. File names are not
+restricted, so the `*Store` convention exists only in this text and is not rejected
+mechanically.
 
 ## Placement
 
@@ -19,15 +20,15 @@
 
 ## Examples
 
-- `NoteStore` ... メモリ上のノート一覧
+- `NoteStore` ... The list of notes in memory
 
-## 置いてよいもの
+## Allowed contents
 
-置いてよいのは取得と保存、そして取得元の詳細（接続、パス、シリアライズ）です。
-名前は `*Store` で揃え、`store` パッケージ直下に置きます。
+Fetching and saving, and the details of the source (connection, path, serialization), belong
+here. Names are aligned as `*Store` and placed directly in the `store` package.
 
-## 置いてはいけないもの
+## Forbidden contents
 
-- 出力。`println` はエントリポイントの仕事です。保管庫が表示まで持つと、
-  テストで差し替える先が無くなります
-- 値の定義。`Note` はモデルの役割です
+- Output. `println` is the entrypoint's job. If the store also handled display, there would be
+  nothing to swap in a test
+- Definitions of values. `Note` belongs to the model role

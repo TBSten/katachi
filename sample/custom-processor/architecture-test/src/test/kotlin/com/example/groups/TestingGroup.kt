@@ -16,30 +16,30 @@ import me.tbsten.katachi.dsl.DeclarationContainerScope
  * and `snapshots/` are what was written out of it.
  */
 fun DeclarationContainerScope.testingGroup() = "testing".group {
-    title = "定義とプロセッサ"
-    summary = "katachi の定義、それを読む自作プロセッサ3本、そして生成されたドキュメント"
+    title = "Definition and processors"
+    summary = "The katachi definition, the three processors of your own that read it, and the generated documentation"
 
     description = """
-        このサンプルの本題が置かれている場所です。アプリのレイヤーではなく、プロジェクトを
-        支えているコードを集めてあります。
+        The place where this sample's subject lives. It collects the code that supports the project
+        rather than a layer of the application.
 
-        役割を分けているのは、読む向きが違うからです。アーキテクチャ定義は形を記述し、
-        プロセッサはその形を読んで何かを作り、生成ドキュメントとレイアウトスナップショットは
-        書き出された結果です。`processors/` を定義の役割に含めてしまうと、このサンプルが
-        何を見せたいのかが `docs/` からも `RoleFileCount` の出力からも消えてしまいます。
+        The roles are separate because they read in different directions. The architecture definition
+        describes a shape, a processor reads that shape and produces something, and the generated
+        documentation and the layout snapshot are what was written out. If `processors/` were included
+        in the definition role, what this sample wants to show would vanish from both `docs/` and the
+        output of `RoleFileCount`.
 
-        プロセッサの3本は、引数なし・型付き引数・検査（`Result.failure` で落とす）という
-        3つの形を1本ずつ受け持ちます。どれも `object` で、katachi 側に継承すべき基底クラスは
-        ありません。
+        The three processors each take one shape: no arguments, typed arguments, and a check (failing
+        with `Result.failure`). All of them are `object`s; katachi has no base class to inherit from.
 
-        生成物の2つも役割が別です。`docs/` は `katachiDocs` が読む人のために書くもの、
-        `snapshots/` は `LayoutSnapshotSpec` が katachi 自身のために書くもので、
-        更新の仕方も消したときに困る相手も違います。
+        The two generated outputs are also separate roles. `docs/` is written by `katachiDocs` for
+        readers, and `snapshots/` is written by `LayoutSnapshotSpec` for katachi itself, so they differ
+        in how they are updated and in who is troubled when one is deleted.
     """.trimIndent()
 
     forbiddenContents = """
-        ここに置いてはいけないのは、アプリの本体コードです。`:architecture-test` は
-        main ソースセットを持ちません。
+        The main code of the application must not be placed here. `:architecture-test` has no main
+        source set.
     """.trimIndent()
 
     architectureDefinition()

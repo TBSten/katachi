@@ -41,7 +41,7 @@ import me.tbsten.katachi.processor.ArchitectureProcessor
  * ```kt
  * val table = projectArchitecture.process(RoleTable, RoleTable.Args(groups = listOf("core")))
  *     .getOrThrow()
- * table.first() shouldBe "| 役割 | 概要 |"
+ * table.first() shouldBe "| Role | Summary |"
  * ```
  *
  * @see RoleFileCount for the argument-free shape.
@@ -64,7 +64,7 @@ object RoleTable : ArchitectureProcessor<RoleTable.Args, List<String>> {
             SortBy.Name -> selected.sortedBy { it.qualifiedName }
         }
 
-        listOf("| ${args.title} | 概要 |", "|---|---|") +
+        listOf("| ${args.title} | Summary |", "|---|---|") +
             ordered.map { role -> "| ${role.qualifiedName} | ${role[Summary].orEmpty()} |" }
     }
 
@@ -72,7 +72,7 @@ object RoleTable : ArchitectureProcessor<RoleTable.Args, List<String>> {
     @Serializable
     data class Args(
         /** The first column's heading. A `String`, so a comma in it stays one value. */
-        val title: String = "役割",
+        val title: String = "Role",
         /** Top level groups to include, or every group when empty. A `List`, so a comma splits. */
         val groups: List<String> = emptyList(),
         /** Drop roles with fewer `example()` entries than this. */

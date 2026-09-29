@@ -6,27 +6,29 @@ import me.tbsten.katachi.dsl.DeclarationContainerScope
 
 /** The role of the prose a human writes for whoever opens this sample. */
 fun DeclarationContainerScope.documentation() = "Documentation" {
-    title = "手書きのドキュメント"
-    summary = "README.md など、このサンプルを開いた人に向けた説明"
+    title = "Handwritten documentation"
+    summary = "README.md and similar: explanations for whoever opens this sample"
     description = """
-        人が書いてコミットする散文です。いまはルートの `README.md` 1つで、このサンプルが
-        3本の processor で何を見せているのかを書いています。
+        Prose that a person writes and commits. Right now it is the single root `README.md`, which
+        explains what this sample shows with its three processors.
 
-        生成ドキュメントの役割とはちょうど裏表です。`docs/` は定義から書き出されるもので
-        手を入れると消え、`README.md` は手で書くもので生成では触られません。
+        It is the exact counterpart of the generated documentation role. `docs/` is written out of the
+        definition and loses any manual edit, while `README.md` is written by hand and never touched by
+        generation.
 
-        `layout { }` は `README.md` という名前ちょうどを要求します。消したり名前を変えたりすれば
-        違反になります。
+        `layout { }` requires exactly the name `README.md`. Deleting or renaming it is a violation.
     """.trimIndent()
     allowedContents = """
-        置いてよいのは、定義からは出てこないことだけです。役割の説明は `description` に
-        書けば `docs/` に出るので、README には書かない。写しを置けば必ず片方が古くなります。
+        Only what cannot come out of the definition belongs here. An explanation of a role goes in its
+        `description`, which appears in `docs/`, so it is not repeated in the README. A copy would
+        always leave one of the two stale.
     """.trimIndent()
     forbiddenContents = """
-        - 役割や group の説明の写し。出どころは定義側の `description` ひとつです
-        - `docs/` に入るべきページ。生成物は生成ドキュメントの役割の担当です
+        - Copies of the explanation of a role or a group. The single source is the `description` on the
+          definition side
+        - Pages that should be in `docs/`. Generated output belongs to the generated documentation role
     """.trimIndent()
-    example("README.md", "サンプルの説明")
+    example("README.md", "An explanation of the sample")
     layout {
         "README.md".file()
     }

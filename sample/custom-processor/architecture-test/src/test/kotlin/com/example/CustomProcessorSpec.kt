@@ -26,7 +26,7 @@ import me.tbsten.katachi.processor.process
  */
 @OptIn(ExperimentalKatachiApi::class)
 class CustomProcessorSpec : FreeSpec({
-    "引数を取らない processor が、役割ごとのファイル数を返す" {
+    "a processor without arguments returns the file count of each role" {
         val lines = projectArchitecture.process(RoleFileCount).getOrThrow()
 
         withClue(lines.joinToString("\n")) {
@@ -35,35 +35,35 @@ class CustomProcessorSpec : FreeSpec({
             // `tool/Documentation` covers `README.md` and nothing else -- no `.module { }`,
             // so no `build.gradle.kts` is counted with it and the number does not move when
             // a source file is added elsewhere.
-            lines shouldContain "tool.Documentation: 1 件"
+            lines shouldContain "tool.Documentation: 1 file(s)"
         }
     }
 
-    "型付き引数を取る processor が、group で絞り込んで並べ替えた表を返す" {
+    "a processor with typed arguments returns a table narrowed by group and sorted" {
         val table = projectArchitecture.process(
             RoleTable,
             RoleTable.Args(
-                title = "役割",
+                title = "Role",
                 groups = listOf("core"),
                 sortBy = RoleTable.SortBy.Name,
             ),
         ).getOrThrow()
 
         withClue(table.joinToString("\n")) {
-            table.take(2) shouldBe listOf("| 役割 | 概要 |", "|---|---|")
+            table.take(2) shouldBe listOf("| Role | Summary |", "|---|---|")
             table.drop(2).map { it.substringAfter("| ").substringBefore(" |") } shouldBe
                 listOf("core.Entrypoint", "core.Model", "core.Store")
         }
     }
 
-    "--arg のカンマは、受け取る側が List のときだけ分割される" {
+    "a comma in --arg is split only when the receiving field is a List" {
         // The rule decodeFromStringMap documents, written out against this sample's own Args:
         // `title` is a String and keeps its comma, `groups` is a List and is split. There is
         // no escape syntax, so a String field is also the way to pass a value holding a comma.
         val args = decodeFromStringMap(
             RoleTable.Args.serializer(),
             mapOf(
-                "title" to "役割,一覧",
+                "title" to "Role,List",
                 "groups" to "core,testing",
                 "minExamples" to "2",
                 "sortBy" to "Name",
@@ -71,34 +71,34 @@ class CustomProcessorSpec : FreeSpec({
         )
 
         args shouldBe RoleTable.Args(
-            title = "役割,一覧",
+            title = "Role,List",
             groups = listOf("core", "testing"),
             minExamples = 2,
             sortBy = RoleTable.SortBy.Name,
         )
     }
 
-    "検査する processor が、この定義には問題を見つけず success を返す" {
-        // getOrThrow() が投げれば、欠けている役割の一覧がそのまま失敗メッセージになる。
+    "the checking processor finds no problem in this definition and returns success" {
+        // If getOrThrow() throws, the list of roles with gaps becomes the failure message as it is.
         val report = projectArchitecture.process(RoleDocCoverage).getOrThrow()
 
         withClue(report.toString()) {
             report.missing shouldBe emptyList()
-            // `core` と `testing` の7役割だけが対象。`Gradle` と `tool` は documented = false。
+            // Only the 7 roles of `core` and `testing` are checked. `Gradle` and `tool` are documented = false.
             report.checked shouldBe 7
         }
     }
 
-    "検査する processor が、summary と example を欠いた定義に failure を返す" {
+    "the checking processor returns failure for a definition without summary and example" {
         // Deliberately broken, and deliberately built here rather than in `ProjectArchitecture.kt`:
         // a reader looking for the definition to copy should never meet it.
         val broken = architecture {
             "core".group {
-                title = "本体"
-                summary = "壊れた定義"
+                title = "Application"
+                summary = "A broken definition"
                 "Written" {
-                    summary = "summary も example もある役割"
-                    example("Note", "見出しと本文を持つノート")
+                    summary = "A role with both a summary and an example"
+                    example("Note", "A note with a title and a body")
                 }
                 "Blank" { }
             }
@@ -113,15 +113,15 @@ class CustomProcessorSpec : FreeSpec({
         withClue(report.toString()) {
             report.checked shouldBe 2
             report.missing shouldBe listOf(
-                RoleDocCoverage.Missing(role = "core.Blank", reason = "summary が無い"),
-                RoleDocCoverage.Missing(role = "core.Blank", reason = "example が1つも無い"),
+                RoleDocCoverage.Missing(role = "core.Blank", reason = "no summary"),
+                RoleDocCoverage.Missing(role = "core.Blank", reason = "no example"),
             )
             // A `katachi<Key>` task prints the message under `[FAILED]`, so it is the report.
             failure.message shouldBe report.toString()
         }
     }
 
-    "documented = false の group の役割は、検査する processor の対象から外れる" {
+    "roles in a group with documented = false are left out of the checking processor" {
         // Metadata is not inherited, so walking up `groupPath` is the processor's own doing.
         // The role below writes neither `summary` nor `example` and is still not reported.
         val silent = architecture {

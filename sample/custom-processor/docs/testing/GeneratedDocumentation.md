@@ -1,34 +1,36 @@
-[自作プロセッサのサンプル](../README.md) / [定義とプロセッサ](README.md)
+[Custom processor sample](../README.md) / [Definition and processors](README.md)
 
-# 生成ドキュメント
+# Generated documentation
 
-この定義から書き出され、リポジトリにコミットされる Markdown
+Markdown written out of this definition and committed to the repository
 
-`./gradlew :architecture-test:katachiDocs` が、この定義そのものから
-書き出す Markdown です。出力先は `katachi { processors { docs { outputDir } } }` で
-`sample/custom-processor/docs` に向けてあります。
+Markdown that `./gradlew :architecture-test:katachiDocs` writes out of this very definition.
+The output directory is pointed at `sample/custom-processor/docs` by
+`katachi { processors { docs { outputDir } } }`.
 
-`docs` は katachi が最初から登録している processor で、このサンプルが書いた3本とは
-出どころが違います。同じ形の `katachi<Key>` タスクで呼べるのは、自作でも katachi のものでも
-`ArchitectureProcessor` としては同じだからです。
+`docs` is a processor katachi registers from the start, so it comes from a different place
+than the three this sample wrote. It can be called through a `katachi<Key>` task of the same
+shape because, as an `ArchitectureProcessor`, a processor of your own and one of katachi's are
+the same thing.
 
-これは手で書かない。`katachiDocs` が書く。ここに書き足した文章は次の生成で消えます。
-直す場所は常に定義側で、役割や group の `title` `summary` `description` `example` が
-そのままページになります。
+Never write this by hand; `katachiDocs` writes it. Prose added here disappears on the next
+generation. The place to fix is always the definition: the `title`, `summary`, `description`
+and `example` of a role or a group become the page as they are.
 
-生成物なのに `build/` の外に置いているのは、リポジトリを開いた人がそのまま読めるように
-するためです。その代わり既定の `files = gitTracked()` の検査対象に入るので、この役割が
-要ります。役割を消すと `[UnexpectedDirectory] docs` で `:architecture-test:test` が落ちます。
+It sits outside `build/` even though it is generated, so that whoever opens the repository can
+read it as it is. In exchange it falls under the default `files = gitTracked()` check, which is
+why this role is needed. Removing the role makes `:architecture-test:test` fail with
+`[UnexpectedDirectory] docs`.
 
-古くなっていないかは CI が `--arg mode=check` で見ています。`mode=check` は何も書かずに
-ディスク上の内容と突き合わせ、食い違えば例外で落ちるので、定義を変えて生成し忘れたまま
-push するとリポジトリルートの `checkSampleCustomProcessor` が赤くなります。手元で直すには
-`katachiDocs` をもう一度走らせるだけです（`mode` を付けなければ書き込みです）。
+CI checks that it is not stale with `--arg mode=check`. `mode=check` writes nothing, compares
+against what is on disk and fails with an exception on any mismatch, so pushing after changing
+the definition without regenerating turns the repository root's `checkSampleCustomProcessor`
+red. To fix it locally, just run `katachiDocs` again (without `mode` it writes).
 
-`layout { }` の `**` は0段以上に一致するので、索引の `docs/README.md` も
-`docs/<group>/README.md` も `docs/<group>/<役割>.md` も1行で覆えます。索引だけ
-ワイルドカード無しで別に書いてあり、そちらは `required` です。1度も生成していない状態が
-そこで見つかります。
+The `**` in `layout { }` matches zero or more levels, so one line covers the index
+`docs/README.md`, `docs/<group>/README.md` and `docs/<group>/<role>.md`. Only the index is
+written separately without a wildcard, and that entry is `required`. A state where nothing has
+ever been generated is found there.
 
 ## Placement
 
@@ -39,13 +41,14 @@ push するとリポジトリルートの `checkSampleCustomProcessor` が赤く
 
 ## Examples
 
-- `docs/README.md` ... 全ページの索引
-- `docs/testing/Processor.md` ... 役割1つのページ
-- `docs/core/README.md` ... group 1つのページ
+- `docs/README.md` ... The index of every page
+- `docs/testing/Processor.md` ... The page of a single role
+- `docs/core/README.md` ... The page of a single group
 
-## 置いてはいけないもの
+## Forbidden contents
 
-- 手書きのドキュメント。`docs/` 配下の `*.md` は生成のたびに作り直され、この定義が
-  作らないページは削除されます。人が書く散文はルートの `README.md` の側です
-- `.md` 以外の資源。いまの `layout { }` は `*.md` しか認めていないので、画像を足すなら
-  役割を書き換えるところから始まります
+- Handwritten documentation. The `*.md` files under `docs/` are rebuilt on every generation,
+  and pages this definition does not produce are deleted. Prose a person writes belongs in the
+  root `README.md`
+- Resources other than `.md`. The current `layout { }` allows only `*.md`, so adding an image
+  starts with rewriting the role

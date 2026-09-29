@@ -5,8 +5,8 @@ package com.example.model
  *
  * ## Example 1: build a note
  * ```kt
- * val note = Note(title = "買い物", body = "牛乳とコーヒー豆")
- * note.title shouldBe "買い物"
+ * val note = Note(title = "Groceries", body = "Milk and coffee beans")
+ * note.title shouldBe "Groceries"
  * ```
  */
 data class Note(

@@ -1,15 +1,15 @@
-[自作プロセッサのサンプル](../README.md) / [本体](README.md)
+[Custom processor sample](../README.md) / [Application](README.md)
 
-# モデル
+# Model
 
-アプリが扱う値。data class・enum・値オブジェクトを置く
+The values the application handles. Holds data classes, enums and value objects
 
-アプリが扱う値そのものです。`Note` は `title` と `body` を持つ data class で、
-`NoteStore` が作り、`main()` がそのまま出力します。
+The values the application handles. `Note` is a data class with a `title` and a `body`; the
+`NoteStore` creates it and `main()` prints it as it is.
 
-名前は「何を表す値か」そのもので、接尾辞は付けません（`NoteModel` ではなく `Note`）。
-対象は `model` パッケージ直下の `.kt` だけで、その下にディレクトリを掘っても
-この役割には入りません。
+A name says what the value is, with no suffix (`Note`, not `NoteModel`). Only the `.kt` files
+directly in the `model` package are covered; a directory dug below it does not belong to this
+role.
 
 ## Placement
 
@@ -19,14 +19,15 @@
 
 ## Examples
 
-- `Note` ... 見出しと本文を持つノート
+- `Note` ... A note with a title and a body
 
-## 置いてよいもの
+## Allowed contents
 
-置いてよいのは data class・enum・値オブジェクトと、その値に閉じた計算です。
+Data classes, enums, value objects and the computation confined to those values belong here.
 
-## 置いてはいけないもの
+## Forbidden contents
 
-- 取得や保存。I/O は保管庫の役割です。モデルが保存先を知ると、値を1つ足すだけで
-  保存の話まで読まないといけなくなります
-- 外部ライブラリへの依存。このサンプルのモデルは Kotlin の標準ライブラリしか知りません
+- Fetching or saving. I/O belongs to the store role. If a model knew where it is saved, adding
+  a single value would mean reading about saving as well
+- Dependencies on external libraries. The model in this sample knows only Kotlin's standard
+  library

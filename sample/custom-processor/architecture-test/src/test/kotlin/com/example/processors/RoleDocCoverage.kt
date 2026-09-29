@@ -60,17 +60,17 @@ object RoleDocCoverage : ArchitectureProcessorNoArg<RoleDocCoverage.Report> {
                 }
         }
         context.log(
-            "${documented.size} 個の役割を見ます" +
-                "（ドキュメントに出ない ${context.roles.size - documented.size} 個は対象外）",
+            "Checking ${documented.size} roles " +
+                "(${context.roles.size - documented.size} roles that do not reach the documentation are skipped)",
         )
 
         val missing = documented.flatMap { role ->
             buildList {
                 if (role[Summary].isNullOrBlank()) {
-                    add(Missing(role = role.qualifiedName, reason = "summary が無い"))
+                    add(Missing(role = role.qualifiedName, reason = "no summary"))
                 }
                 if (role[Examples].orEmpty().isEmpty()) {
-                    add(Missing(role = role.qualifiedName, reason = "example が1つも無い"))
+                    add(Missing(role = role.qualifiedName, reason = "no example"))
                 }
             }
         }
@@ -102,10 +102,10 @@ object RoleDocCoverage : ArchitectureProcessorNoArg<RoleDocCoverage.Report> {
     ) {
         override fun toString(): String = buildString {
             if (missing.isEmpty()) {
-                append("$checked 件すべてに summary と example がある")
+                append("All $checked roles have a summary and an example")
                 return@buildString
             }
-            append("$checked 件のうち、以下が足りない")
+            append("Of $checked roles, the following are missing something")
             missing.forEach { append("\n  - ${it.role}: ${it.reason}") }
         }
     }

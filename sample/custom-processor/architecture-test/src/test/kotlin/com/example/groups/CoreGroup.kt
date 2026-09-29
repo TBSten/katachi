@@ -15,23 +15,25 @@ import me.tbsten.katachi.dsl.DeclarationContainerScope
  * belongs.
  */
 fun DeclarationContainerScope.coreGroup() = "core".group {
-    title = "本体"
-    summary = "ノートを読み出して並べるだけの小さなアプリ。processor が読む対象"
+    title = "Application"
+    summary = "A small app that only reads notes and lists them. What the processors read"
 
     description = """
-        アプリ本体です。ノートを保管庫から読み出して標準出力に並べる、それだけのものです。
+        The application itself. All it does is read notes from a store and list them on standard
+        output.
 
-        小さいのは意図的です。このサンプルの本題は `testing` グループにある3本の processor で、
-        本体はそれらが読む対象を用意するために置いてあります。層を切るなら `sample/jvm` の
-        `api` / `domain` / `data` を見てください。
+        It is small on purpose. This sample is about the three processors in the `testing` group, and
+        the application is there to provide what they read. For layers, see `api` / `domain` / `data`
+        in `sample/jvm`.
 
-        それでも役割を3つに割ってあるのは、`RoleFileCount` の出力にも `RoleTable` の表にも
-        複数行が出てほしいからです。1つしか無いと、processor が何をしたのか出力から読み取れません。
+        The roles are still split into three because both the output of `RoleFileCount` and the table
+        of `RoleTable` should have several rows. With only one, the output would not show what a
+        processor did.
     """.trimIndent()
 
     forbiddenContents = """
-        ここに置いてはいけないのは、定義や processor のコードです。どちらも `:architecture-test`
-        にあり、`testing` グループの役割が覆います。
+        Definitions and processor code must not be placed here. Both live in `:architecture-test` and
+        are covered by the roles of the `testing` group.
     """.trimIndent()
 
     entrypoint()

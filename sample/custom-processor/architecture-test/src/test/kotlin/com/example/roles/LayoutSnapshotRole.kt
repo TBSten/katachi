@@ -11,30 +11,32 @@ import me.tbsten.katachi.dsl.DeclarationContainerScope
  * has, which is why the two sit next to each other.
  */
 fun DeclarationContainerScope.layoutSnapshot() = "LayoutSnapshot" {
-    title = "レイアウトスナップショット"
-    summary = "`layout { }` を平坦化した結果を記録したテキスト。katachi 自身の自己検証用"
+    title = "Layout snapshot"
+    summary = "Text recording the flattened result of `layout { }`, for katachi's own self-verification"
     description = """
-        この定義の `layout { }` をすべて平坦化し、「役割・パス・種別・必須かどうか」を1行1件で
-        並べたテキストです。`LayoutSnapshotSpec` が毎回作り直し、記録済みの内容と突き合わせます。
+        Text that flattens every `layout { }` of this definition and lists "role, path, kind and
+        whether it is required" one entry per line. `LayoutSnapshotSpec` rebuilds it each time and
+        compares it against the recorded content.
 
-        役割の書き方を変えたとき、検査する対象が変わっていないことを示すためのものです。
-        糖衣（`":".module { }` や `mainSourceSet`）への書き換えは、この差分が空であるかぎり
-        安全だと言えます。
+        It exists to show that what is checked has not changed when the way a role is written changes.
+        As long as this diff stays empty, rewriting to sugar (`":".module { }` or `mainSourceSet`) is
+        safe.
 
-        これは手で書かない。`LayoutSnapshotSpec` が書く。意図して変えたときの更新は
-        `./gradlew :architecture-test:test -Dkatachi.snapshot.update=true` です。
-        ファイル先頭のコメントにも同じコマンドが書いてあります。
+        Never write this by hand; `LayoutSnapshotSpec` writes it. To update it after an intended
+        change, run `./gradlew :architecture-test:test -Dkatachi.snapshot.update=true`. The same
+        command is written in the comment at the top of the file.
 
-        katachi を導入するプロジェクトには要りません。これは katachi 自身がサンプルを
-        壊していないかを見るための仕掛けで、`ProjectArchitectureTest` とは目的が違います。
+        A project adopting katachi does not need it. It is a device for katachi itself to see that it
+        has not broken the sample, and its purpose differs from that of `ProjectArchitectureTest`.
     """.trimIndent()
     forbiddenContents = """
-        - 手で書いた期待値。差分が出たときに直すのは定義側か、スナップショットの再生成の
-          どちらかで、テキストを直接編集して辻褄を合わせると番兵の意味が無くなります
-        - 別の種類の記録。いまの `layout { }` は `snapshots/layout.txt` の1ファイルしか
-          認めていないので、足すなら役割を書き換えるところから始まります
+        - Expected values written by hand. When a diff appears, the fix is either on the definition
+          side or a regeneration of the snapshot. Editing the text directly to make things agree
+          defeats the sentinel
+        - Other kinds of records. The current `layout { }` allows only the single file
+          `snapshots/layout.txt`, so adding one starts with rewriting the role
     """.trimIndent()
-    example("snapshots/layout.txt", "平坦化したレイアウトの全文")
+    example("snapshots/layout.txt", "The full text of the flattened layout")
     layout {
         "snapshots" {
             // Written out by name rather than as `*.txt`, so the entry carries no wildcard

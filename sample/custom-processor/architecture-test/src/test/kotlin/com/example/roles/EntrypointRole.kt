@@ -9,27 +9,28 @@ import me.tbsten.katachi.dsl.kotlin.ktFile
 
 /** The role of starting the process and assembling the application. */
 fun DeclarationContainerScope.entrypoint() = "Entrypoint" {
-    title = "エントリポイント"
-    summary = "プロセスの起動。`main()` を持つ唯一のファイル"
+    title = "Entrypoint"
+    summary = "Starting the process. The only file that has `main()`"
     description = """
-        `main()` が書かれる場所です。このサンプルでは `NoteStore` を作って `all()` を呼び、
-        結果を標準出力に並べるだけで、分岐も設定もありません。
+        The place where `main()` is written. In this sample it only creates a `NoteStore`, calls
+        `all()` and prints the result line by line, with no branching and no configuration.
 
-        本体をわざわざ3つの役割に割っているのは、このサンプルの本題が processor だからです。
-        役割が1つしか無いと、`RoleFileCount` が数える対象も `RoleTable` が並べる行も1件に
-        なってしまい、processor の出力から何も読み取れません。アプリの規模から必要になった
-        分割ではありません。
+        The application is deliberately split into three roles because this sample is about
+        processors. With a single role, `RoleFileCount` would count one target and `RoleTable` would
+        list one row, and nothing could be read from the processors' output. The split is not
+        something the size of the application called for.
 
-        この役割の `layout { }` にはワイルドカードが無いので、`Main.kt` が1つあることを
-        要求します。消せば `[MissingFile]` が出ます。
+        The `layout { }` of this role has no wildcard, so it requires exactly one `Main.kt`. Deleting
+        it raises `[MissingFile]`.
     """.trimIndent()
-    allowedContents = "置いてよいのは、プロセスを起動して層を組み立てるところまでです。"
+    allowedContents = "Only starting the process and assembling the layers belongs here."
     forbiddenContents = """
-        - 値そのもの。ノートの中身は保管庫の役割が持ちます。`main()` に直接書くと
-          「データがどこから来るのか」の答えがエントリポイントに移ってしまいます
-        - 値の形。`Note` の定義はモデルの役割です
+        - The values themselves. The contents of the notes belong to the store role. If they are
+          written directly in `main()`, the answer to "where does the data come from?" moves into the
+          entrypoint
+        - The shape of a value. The definition of `Note` belongs to the model role
     """.trimIndent()
-    example("Main.kt", "プロセスの起動点")
+    example("Main.kt", "Where the process starts")
     layout {
         // The application is the root project, so `":"` resolves to the repository root and
         // `modulePackage` derives `com/example` from the base package alone. No wildcard, so

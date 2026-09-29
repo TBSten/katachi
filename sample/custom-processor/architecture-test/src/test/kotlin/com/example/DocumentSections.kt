@@ -16,7 +16,7 @@ import org.intellij.lang.annotations.Language
  * whole paragraph first, and lets the sibling section [ForbiddenContents] sit right next to it in
  * the generated page.
  */
-val AllowedContents: DocumentSection = documentSection("置いてよいもの")
+val AllowedContents: DocumentSection = documentSection("Allowed contents")
 
 /** Writes the body of [AllowedContents], on a group, a role, or the root of the definition. */
 @get:Language("markdown")
@@ -29,7 +29,7 @@ var MetadataScope.allowedContents: String? by AllowedContents
  * The pair to [AllowedContents]. Where the allowed side reads as one paragraph, this one is
  * usually a list of the things a reviewer would otherwise have to remember on their own.
  */
-val ForbiddenContents: DocumentSection = documentSection("置いてはいけないもの")
+val ForbiddenContents: DocumentSection = documentSection("Forbidden contents")
 
 /** Writes the body of [ForbiddenContents], on a group, a role, or the root of the definition. */
 @get:Language("markdown")
