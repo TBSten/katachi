@@ -14,12 +14,12 @@ java {
 
 tasks.named<JavaCompile>("compileJava") {
     options.release.set(8)
-    options.compilerArgs.add("-Xlint:all,-options")
+    options.compilerArgs.addAll(listOf("-Xlint:all,-options", "-Werror"))
     options.encoding = "UTF-8"
 }
 
 tasks.named<JavaCompile>("compileTestJava") {
-    options.compilerArgs.add("-Xlint:all")
+    options.compilerArgs.addAll(listOf("-Xlint:all", "-Werror"))
     options.encoding = "UTF-8"
 }
 
