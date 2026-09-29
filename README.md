@@ -13,8 +13,10 @@ English | [日本語](./README.ja.md) ・ [Docs](https://tbsten.github.io/katach
 ```kotlin
 "UseCase" {
     summary = "A single app-specific behavior that happens on a screen"
-    layout { "domain/src/main/kotlin/com/example/useCase" / "*UseCase".ktFile() }
-    template { /* the skeleton of a new UseCase */ }
+    layout {
+        "domain/src/main/kotlin/com/example/useCase" / "${capture("name")}UseCase".ktFile()
+            .template { /* the skeleton of a new UseCase, filled in with captureValue("name") */ }
+    }
 }
 ```
 
@@ -22,7 +24,7 @@ From this one definition, you get the following three things.
 
 - **A test**: reports files that live somewhere the definition doesn't cover. Since only what you declare is allowed, the set of places files can end up doesn't quietly grow
 - **Documentation**: `./gradlew katachiDocs` writes out Markdown for each role
-- **Code scaffolding**: `./gradlew katachiTemplate --arg roleName=UseCase --arg name=GetUser` creates a file where the definition says it belongs
+- **Code scaffolding**: `./gradlew katachiTemplate --arg template=UseCase --arg name=GetUser` creates a file where the definition says it belongs
 
 You can also write rules about a file's contents — being public, for example — with `konsist { }`. How this differs from Konsist, detekt and ArchUnit is in [Comparison with other tools](https://tbsten.github.io/katachi/get-started/comparison-with-other-tools/).
 

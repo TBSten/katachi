@@ -13,8 +13,10 @@
 ```kotlin
 "UseCase" {
     summary = "各画面で発生するアプリ固有の1つの振る舞い"
-    layout { "domain/src/main/kotlin/com/example/useCase" / "*UseCase".ktFile() }
-    template { /* 新しい UseCase の雛形 */ }
+    layout {
+        "domain/src/main/kotlin/com/example/useCase" / "${capture("name")}UseCase".ktFile()
+            .template { /* 新しい UseCase の雛形。captureValue("name") で埋める */ }
+    }
 }
 ```
 
@@ -22,7 +24,7 @@
 
 - **テスト**: 定義に無い場所のファイルを報告します。定義したものだけを許す方式なので、置き場所がいつの間にか増えません
 - **ドキュメント**: `./gradlew katachiDocs` が役割ごとの Markdown を書き出します
-- **コードの雛形**: `./gradlew katachiTemplate --arg roleName=UseCase --arg name=GetUser` が、定義どおりの場所にファイルを作ります
+- **コードの雛形**: `./gradlew katachiTemplate --arg template=UseCase --arg name=GetUser` が、定義どおりの場所にファイルを作ります
 
 ファイルの中身の規則（「public であること」など）も `konsist { }` で書けます。Konsist・detekt・ArchUnit との違いは [他ツールとの比較](https://tbsten.github.io/katachi/ja/get-started/comparison-with-other-tools/) にあります。
 

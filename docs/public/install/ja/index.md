@@ -1,3 +1,5 @@
+<!-- TODO: AI が生成した文章を含むため、レビューし直す必要がある -->
+
 # katachi のインストール
 
 [katachi](https://tbsten.github.io/katachi) をインストールする手順です。
@@ -609,11 +611,11 @@ sh $CLI summary
 
 #### summary の前に — テンプレートの提案を記録する
 
-**ここはあなたが判断する箇所です。** katachi は役割ごとに `template { }` を持て、`:architecture-test:katachiTemplate` で**その役割の `layout { }` どおりの場所に**ファイルを生成できます。導入の「次にできること」として、どの役割にどんなテンプレートを当てるかを提案します。
+**ここはあなたが判断する箇所です。** katachi は `layout { }` のファイルの宣言ごとに `.template { }` を持て、`:architecture-test:katachiTemplate` で**その宣言どおりの場所に**ファイルを生成できます。導入の「次にできること」として、どの役割にどんなテンプレートを当てるかを提案します。
 
 材料はステップ 1 のレポートの `roles` です（`sh $CLI data get report`）。**向いているのは、同じ形のファイルが何本もある役割**です（UseCase、ViewModel、Screen、Repository など）。`count` が小さい役割や、1本ごとに形が違う役割には提案しないこと。
 
-**`:feature:*` のように、生成先のディレクトリやモジュールがワイルドカードの役割も対象です**（ViewModel、Screen はたいていこの形です）。その `*` に `capture("feature")` / `.module(capture = "feature")` で名前を付ければ、`--arg feature=home` で生成先を選べます（6-D の手順 2）。**生成先に残る `*` は、モジュールのものもパッケージのディレクトリのものもすべて名前が要ります。**名前を付けられないのはディレクトリの部分一致（`feature-*`）と `**` だけで、生成先がそれしか無い役割には提案しないこと。
+**`:feature:*` のように、生成先のディレクトリやモジュールがワイルドカードの役割も対象です**（ViewModel、Screen はたいていこの形です）。その `*` に `capture("feature")` で名前を付ければ（モジュールキーならキーの中に埋め込む）、`--arg feature=home` で生成先を選べます（6-D の手順 2）。**生成先に残る `*` は、モジュールのものもパッケージのディレクトリのものもすべて名前が要ります。**名前を付けられないのは `**` だけで（部分一致は `capture()` で名前を付けられます）、生成先が `**` しか無い役割には提案しないこと。
 
 役割ごとに次を決め、`add template` で記録します。
 
@@ -630,7 +632,7 @@ sh $CLI add template --role UseCase --files '${name}UseCase.kt' --files '${name}
 sh $CLI add template --role ViewModel --files '${name}ViewModel.kt' --params feature --params featurePackage --params name --basedOn "feature/home/src/main/kotlin/com/example/app/feature/home/HomeViewModel.kt" --reason "12 件が :feature:* の各モジュールに1本ずつあり、形が揃っている。:feature:* の * とパッケージのディレクトリの * に名前を付けて生成先を選ぶ"
 ```
 
-当てられる役割が無いと判断したら、何も記録しなくて構いません。記録したものは `summary` の「Next action」とレポートの「テンプレートの提案」に出ます。**`template { }` をここで書かないこと。** 書くのはユーザが同意した後の 6-D です。
+当てられる役割が無いと判断したら、何も記録しなくて構いません。記録したものは `summary` の「Next action」とレポートの「テンプレートの提案」に出ます。**`.template { }` をここで書かないこと。** 書くのはユーザが同意した後の 6-D です。
 
 未完了の項目が残っていれば失敗の形式が、すべて終わっていれば成功の形式が出ます。違反の件数、確認したいことの件数、変更したファイル数は JSON から拾われます。
 
@@ -759,18 +761,20 @@ Pull request 作成時・Merge request 作成時・pre-push hook など スト�
 
 ステップ 6 で記録した提案に、ユーザが同意した役割だけ行う。
 
-**始める前に、テンプレートからのコード生成のページを読む。**3-1 で取得した全文のうち `Generating code from a template` の節です（日本語版は https://tbsten.github.io/katachi/ja/guides/generate-code-from-template/ ）。`template { }` で書ける語（`file()` と `stringParameter()` などの `*Parameter()`）、`file()` にパスを渡せない理由、既存ファイルがあるときの扱いはここに書いてあります。シグネチャに迷ったら、推測で書かずに 3-1 の「API に迷ったら」の llms.txt を読んでください（`template { }` の入口は https://tbsten.github.io/katachi/api-docs/katachi/me.tbsten.katachi.dsl/-role-scope/template.html.md ）。
+<!-- TODO: この節の先頭にあった「> TODO(template-per-file)…」の引用（手順書を読む AI エージェントにそのまま見えていた）を消した。サンプルへの組み込みは済んでおり、docs-vs-impl でテンプレートの節の手順を sample/jvm・sample/kmp の写しで確かめた。ただし「この節どおりに最初から最後まで導入する」確認は prerelease の手順 9 の結果で代える前提。 -->
+
+**始める前に、テンプレートからのコード生成のページを読む。**3-1 で取得した全文のうち `Generating code from a template` の節です（日本語版は https://tbsten.github.io/katachi/ja/guides/generate-code-from-template/ ）。`.template { }` で書ける語（`stringParameter()` などの `*Parameter()`）、生成先のパスを書かない理由、既存ファイルがあるときの扱いはここに書いてあります。シグネチャに迷ったら、推測で書かずに 3-1 の「API に迷ったら」の llms.txt を読んでください（`.template { }` の入口は https://tbsten.github.io/katachi/api-docs/katachi/me.tbsten.katachi.dsl/template.html.md ）。
 
 1. 提案を確かめる（`sh $CLI data get report` の `templates`）。
-2. その役割に `template { }` を書く。**中身は `basedOn` のファイルを元にする。** 生成先のディレクトリは書かない（`layout { }` から決まる）。`file()` にはファイル名だけを渡す
+<!-- TODO: `.template` は拡張関数で import が要る（無いと Unresolved reference になる）ため、下のコード例の前に import の注意を足した。API リファレンスへのリンクも、存在するページ（dsl/template.html.md）に直した。 -->
+2. その役割の `layout { }` の、ファイルの宣言に `.template { }` を付ける。**`.template` は拡張関数なので、書くファイルに `import me.tbsten.katachi.dsl.template` を足す**（`captureValue()` などはブロックの中で使えるので import は要らない）。**中身は `basedOn` のファイルを元にする。** 生成先のパスは `layout { }` の宣言そのものが決めるので、テンプレート側には書かない
 
    ```kt
    "UseCase" {
-       layout { /* 既存のまま */ }
-       template {
-           val name by stringParameter()
-
-           file("${name}UseCase.kt") {
+       layout {
+           "useCase" / "${capture("name")}UseCase".ktFile()
+               .template {
+               val name = captureValue("name")
                """
                    package com.example.app.domain.useCase
 
@@ -783,54 +787,55 @@ Pull request 作成時・Merge request 作成時・pre-push hook など スト�
    }
    ```
 
-   **生成先のディレクトリやモジュールにワイルドカード（`*`）がある役割は、その `*` に名前を付ける。** 検査の結果は変わらない。値はテンプレートの中で `captureValue("名前")` で読む（`stringParameter()` で宣言し直さないこと。名前がぶつかって落ちる）
+   **生成先のディレクトリやモジュールにワイルドカード（`*`）がある役割は、その `*` に `capture()` で名前を付ける。** 検査の結果は変わらない。名前の無い `*` や `**` が残ったまま `.template { }` を付けると、layout を展開する時点（`./gradlew :architecture-test:test` の `assert()`）でエラーになる。値はテンプレートの中で `captureValue("名前")` で読む（`stringParameter()` で宣言し直さないこと。名前がぶつかって落ちる）
 
    ```kt
    "ViewModel" {
        layout {
-           ":feature:*".module(capture = "feature") {   // 元は ":feature:*".module {
+           ":feature:${capture("feature")}".module {   // 元は ":feature:*".module {
                // 元は ... / "feature" / "*" / "*ViewModel".ktFile()
-               mainSourceSet / kotlin / "com/example/app/feature" / capture("featurePackage") / "*ViewModel".ktFile()
-           }
-       }
-       template {
-           val featurePackage = captureValue("featurePackage")   // --arg featurePackage=home なら "home"
-           val name by stringParameter()
+               mainSourceSet / kotlin / "com/example/app/feature" / capture("featurePackage") /
+                   "${capture("name")}ViewModel".ktFile()
+                       .template {
+                       val featurePackage = captureValue("featurePackage")   // --arg featurePackage=home なら "home"
+                       val name = captureValue("name")                       // --arg name=Home なら "Home"
 
-           file("${name}ViewModel.kt") {
-               """
-                   package com.example.app.feature.$featurePackage
+                       """
+                           package com.example.app.feature.$featurePackage
 
-                   class ${name}ViewModel
-               """.trimIndent()
+                           class ${name}ViewModel
+                       """.trimIndent()
+                   }
            }
        }
    }
    ```
 
-   ディレクトリの `*` なら、`"feature" / "*" / ...` の `"*"` を `capture("feature")` に書き換える。`*` が複数あるモジュールは `.module("feature", "layer")` のように順に名前を渡す。
+   ディレクトリの `*` なら、`"feature" / "*" / ...` の `"*"` を `capture("feature")` に書き換える。モジュールキーの `*` が複数あれば、`":feature:${capture("feature")}:${capture("layer")}".module { }` のようにそれぞれに `capture()` を埋め込む。
 
-   **生成先のディレクトリ部分に残る `*` は、モジュールのものもディレクトリのものもすべて名前を付ける。** 上の例のようにモジュールの `*` とパッケージのディレクトリの `*` の両方があるなら、`.module(capture = ...)` と `capture(...)` の両方が要る。1つでも名前の無い `*` が残ると、そのパスは生成先にならず `katachiTemplate` が失敗する。
+   **生成先のディレクトリ部分に残る `*` は、モジュールのものもディレクトリのものもすべて名前を付ける。** 上の例のようにモジュールの `*` とパッケージのディレクトリの `*` の両方があるなら、モジュールキーの中の `capture(...)` とディレクトリの `capture(...)` の両方が要る。1つでも名前の無い `*` が残ると、`.template { }` を付けたファイルの layout を展開する時点でエラーになる（`assert()` で分かり、`katachiTemplate` の実行を待たない）。
 
    **パッケージのディレクトリ名がモジュール名と違う（モジュール `appConfig` とディレクトリ `appconfig` など）なら、そのディレクトリの `*` にもモジュールとは別の名前を付け、その `captureValue()` を package に使う。** モジュールの名前（`captureValue("feature")`）を package に入れると、ディレクトリと食い違う package が書かれ、検査もコンパイルも通るので気づけない。
 
-   使えるのは `stringParameter()` / `booleanParameter()` / `intParameter()`（`default = ...` も可）、`enumParameter()`（`entries` か既定値を渡す）と `file("...") { "中身" }`、それに生成先のワイルドカードに名前を付ける `capture("名前")` / `.module(capture = "名前")` と、その値を読む `captureValue("名前")`（template の中）/ `wildcard("名前")`（layout のモジュールブロックの中）だけです。これ以外の語を推測で足さないこと。
-3. テンプレート独自のパラメータ（`--arg name=...`）は、モジュール側の設定なしにそのまま渡せる。受け付けるのは、名指しした役割の `template { }` が宣言した名前と、`layout { }` のワイルドカードに付けた名前だけで、打ち間違いはこれまでどおり `Unknown processor argument(s): ...` で落ちる。
-4. 1本生成し、**直後に検査が通ること**を確かめる。
+   **1つの役割に2つ以上の `.template { }` があるときは、`.template(id = "名前")` で見分ける。** 役割のテンプレートが1つだけなら `id` は省略できる。
+
+   使えるのは `stringParameter()` / `booleanParameter()` / `intParameter()`（`default = ...` も可）、`enumParameter()`（`entries` か既定値を渡す）、それに生成先のワイルドカードに名前を付ける `capture("名前")`（layout のディレクトリ・ファイル名・モジュールキーのどこにでも埋め込める）と、その値を読む `captureValue("名前")`（template の中）/ `wildcard("名前")`（layout のモジュールブロックの中）だけです。これ以外の語を推測で足さないこと。
+3. テンプレート独自のパラメータ（`--arg name=...`）は、モジュール側の設定なしにそのまま渡せる。受け付けるのは、名指しした役割の `.template { }` が宣言した名前と、`layout { }` のワイルドカードに付けた名前だけで、打ち間違いはこれまでどおり `Unknown processor argument(s): ...` で落ちる。
+4. 1本生成し、**直後に検査が通ること**を確かめる。`--arg template=` には、group があれば `group名.役割名`、無ければ役割名を書く。テンプレートが2つ以上ある役割は `.id` を続ける（`domain.UseCase.useCase` のように）。
 
    ```sh
-   ./gradlew :architecture-test:katachiTemplate --arg roleName=UseCase --arg name=Sample
+   ./gradlew :architecture-test:katachiTemplate --arg template=UseCase --arg name=Sample
    ./gradlew :architecture-test:test
    ```
 
    ワイルドカードに名前を付けた役割は、その値も渡す。**モジュールの値は実在するモジュールだけ**（無いモジュールを渡すと、今あるモジュールを並べて失敗する）。
 
    ```sh
-   ./gradlew :architecture-test:katachiTemplate --arg roleName=ViewModel --arg feature=home --arg featurePackage=home --arg name=Sample
+   ./gradlew :architecture-test:katachiTemplate --arg template=ViewModel --arg feature=home --arg featurePackage=home --arg name=Sample
    ./gradlew :architecture-test:test
    ```
 
-   `test` が落ちたら、`template { }` のファイル名が `layout { }` のパターン（`"*UseCase".ktFile()` など）に合っているかを確かめる。
+   `test` が落ちたら、`.template { }` を付けたファイルの宣言のパスが正しいかを確かめる。
 5. **生成したファイルは確認用なので消す**（ユーザが残すと言った場合を除く）。消したあと、もう一度 `./gradlew :architecture-test:test` が通ることを確かめる。
 
 作成・変更したファイルを `add changed` で記録し、`sh $CLI check 6-4`。

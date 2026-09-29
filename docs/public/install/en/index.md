@@ -1,3 +1,5 @@
+<!-- TODO: Contains AI-generated text; needs to be reviewed again -->
+
 # Installing katachi
 
 These are the steps to install [katachi](https://tbsten.github.io/katachi).
@@ -85,7 +87,7 @@ Run the following **from the Gradle root directory**.
 sh /tmp/katachi-install.sh init --lang en
 ```
 
-> `--lang en` tells the script which language to fetch the checklist and report templates in, **and which language its own output (including the `summary` text) is in.** Japanese is available as `--lang ja`.
+`--lang en` specifies that the checklist and report are fetched in English, and that **the script's output (including the `summary` text) is also in English.** **If you omit it, it is English** (because the site's default is English). Once specified it is recorded in the working directory, so later commands do not need it.
 
 The script was already fetched in 0-1. **`curl` runs only once across the whole procedure** — `init` copies itself into the working directory, and every command from here on uses that copy.
 
@@ -377,6 +379,8 @@ sh $CLI docs --api
 
 The first fetches the whole guide combined into a single text; the second fetches the root index of the API reference (Dokka). **Do not open pages one by one.** Neither is re-fetched if it's already been fetched. Add `--small` to the first if the volume becomes a problem.
 
+**What is fetched is the English version.** The site's default locale is English, and this format is generated only for the default locale. DSL API names do not depend on the language, so this is no obstacle to writing the definition.
+
 Once you've finished reading, run `sh $CLI check 3-1`.
 
 #### When unsure about an API — read the API reference's llms.txt
@@ -607,11 +611,11 @@ sh $CLI summary
 
 #### Before summary — record template proposals
 
-**This is a judgment call for you.** In katachi each role can have a `template { }`, and `:architecture-test:katachiTemplate` generates files **exactly where that role's `layout { }` says they go**. As "what you can do next" after installation, propose which roles to give a template, and what it would contain.
+**This is a judgment call for you.** In katachi a `.template { }` can be attached to any file declaration in `layout { }`, and `:architecture-test:katachiTemplate` generates it **exactly where that declaration says it goes**. As "what you can do next" after installation, propose which roles to give a template, and what it would contain.
 
 Work from `roles` in the step 1 report (`sh $CLI data get report`). **The good candidates are roles with many files of the same shape** (UseCase, ViewModel, Screen, Repository, and so on). Do not propose one for a role with a small `count`, or one whose files each take a different shape.
 
-**Roles whose destination directory or module is a wildcard, like `:feature:*`, are candidates too** (ViewModel and Screen are usually shaped this way). Name that `*` with `capture("feature")` / `.module(capture = "feature")` and you can pick the destination with `--arg feature=home` (step 2 of 6-D). **Every `*` left in the destination needs a name, both the module's and the package directory's.** The only things that can't be named are a directory's partial match (`feature-*`) and `**`; don't propose one for a role whose destination is only that.
+**Roles whose destination directory or module is a wildcard, like `:feature:*`, are candidates too** (ViewModel and Screen are usually shaped this way). Name that `*` with `capture("feature")` (embedded in the module key itself, for a module wildcard) and you can pick the destination with `--arg feature=home` (step 2 of 6-D). **Every `*` left in the destination needs a name, both the module's and the package directory's.** The only thing that can't be named is `**` (a partial match can be named with `capture()`); don't propose one for a role whose destination is only that.
 
 For each role, decide the following and record it with `add template`.
 
@@ -628,7 +632,7 @@ sh $CLI add template --role UseCase --files '${name}UseCase.kt' --files '${name}
 sh $CLI add template --role ViewModel --files '${name}ViewModel.kt' --params feature --params featurePackage --params name --basedOn "feature/home/src/main/kotlin/com/example/app/feature/home/HomeViewModel.kt" --reason "12 are one each in every :feature:* module, and share one shape. Name the * in :feature:* and the * of the package directory to pick the destination"
 ```
 
-If you judge that no role suits a template, record nothing. What you record shows up in the "Next action" of `summary` and in the report's "Template proposals". **Do not write `template { }` here.** That happens in 6-D, after the user agrees.
+If you judge that no role suits a template, record nothing. What you record shows up in the "Next action" of `summary` and in the report's "Template proposals". **Do not write `.template { }` here.** That happens in 6-D, after the user agrees.
 
 If incomplete items remain, the failure format is printed; if everything is done, the success format is printed. The number of violations, the number of things to confirm, and the number of changed files are pulled from the JSON.
 
@@ -757,18 +761,20 @@ Record the files you created or changed with `add changed`, then run `sh $CLI ch
 
 Do this only for the roles, among those proposed in step 6, that the user agreed to.
 
-**Before you start, read the page on generating code from a template.** It is the `Generating code from a template` section of the full text you fetched in 3-1 (also at https://tbsten.github.io/katachi/guides/generate-code-from-template/ ). The words `template { }` offers (`file()` and the `*Parameter()` functions such as `stringParameter()`), why `file()` takes no path, and what happens when a file already exists are all there. When unsure about a signature, read the llms.txt in "When unsure about an API" in 3-1 instead of guessing (the entry point for `template { }` is https://tbsten.github.io/katachi/api-docs/katachi/me.tbsten.katachi.dsl/-role-scope/template.html.md ).
+<!-- TODO: I removed the quoted "> TODO(template-per-file)…" at the start of this section (it was visible as is to the AI agent reading this guide). Wiring into the samples is done, and I checked this section's steps against copies of sample/jvm and sample/kmp in docs-vs-impl. However, confirming "install from start to finish exactly as this section says" is assumed to be covered by the result of step 9 of prerelease. -->
+
+**Before you start, read the page on generating code from a template.** It is the `Generating code from a template` section of the full text you fetched in 3-1 (also at https://tbsten.github.io/katachi/guides/generate-code-from-template/ ). The words `.template { }` offers (the `*Parameter()` functions such as `stringParameter()`), why you don't write the destination path, and what happens when a file already exists are all there. When unsure about a signature, read the llms.txt in "When unsure about an API" in 3-1 instead of guessing (the entry point for `.template { }` is https://tbsten.github.io/katachi/api-docs/katachi/me.tbsten.katachi.dsl/template.html.md ).
 
 1. Check the proposals (`templates` in `sh $CLI data get report`).
-2. Write a `template { }` on that role. **Base its content on the `basedOn` file.** Do not write the output directory (it follows from `layout { }`). Pass only a file name to `file()`
+<!-- TODO: `.template` is an extension function and needs an import (without it, `Unresolved reference`), so I added a note about the import before the code example below. I also fixed the API reference link to a page that exists (dsl/template.html.md). -->
+2. Attach `.template { }` to a file declaration in that role's `layout { }`. **`.template` is an extension function, so add `import me.tbsten.katachi.dsl.template` to the file you write it in** (`captureValue()` and the like can be used inside the block, so they need no import). **Base its content on the `basedOn` file.** The destination path comes from the `layout { }` declaration itself, so don't write it on the template's side
 
    ```kt
    "UseCase" {
-       layout { /* unchanged */ }
-       template {
-           val name by stringParameter()
-
-           file("${name}UseCase.kt") {
+       layout {
+           "useCase" / "${capture("name")}UseCase".ktFile()
+               .template {
+               val name = captureValue("name")
                """
                    package com.example.app.domain.useCase
 
@@ -781,54 +787,55 @@ Do this only for the roles, among those proposed in step 6, that the user agreed
    }
    ```
 
-   **For a role whose destination directory or module has a wildcard (`*`), name that `*`.** The check's result doesn't change. Read the value inside the template with `captureValue("name")` (don't redeclare it with `stringParameter()` — the names collide and it fails).
+   **For a role whose destination directory or module has a wildcard (`*`), name that `*` with `capture()`.** The check's result doesn't change. Attaching `.template { }` to a path that still has an unnamed `*` or `**` fails when layout is expanded (`assert()` in `./gradlew :architecture-test:test`). Read the value inside the template with `captureValue("name")` (don't redeclare it with `stringParameter()` — the names collide and it fails).
 
    ```kt
    "ViewModel" {
        layout {
-           ":feature:*".module(capture = "feature") {   // was ":feature:*".module {
+           ":feature:${capture("feature")}".module {   // was ":feature:*".module {
                // was ... / "feature" / "*" / "*ViewModel".ktFile()
-               mainSourceSet / kotlin / "com/example/app/feature" / capture("featurePackage") / "*ViewModel".ktFile()
-           }
-       }
-       template {
-           val featurePackage = captureValue("featurePackage")   // "home" for --arg featurePackage=home
-           val name by stringParameter()
+               mainSourceSet / kotlin / "com/example/app/feature" / capture("featurePackage") /
+                   "${capture("name")}ViewModel".ktFile()
+                       .template {
+                       val featurePackage = captureValue("featurePackage")   // "home" for --arg featurePackage=home
+                       val name = captureValue("name")                       // "Home" for --arg name=Home
 
-           file("${name}ViewModel.kt") {
-               """
-                   package com.example.app.feature.$featurePackage
+                       """
+                           package com.example.app.feature.$featurePackage
 
-                   class ${name}ViewModel
-               """.trimIndent()
+                           class ${name}ViewModel
+                       """.trimIndent()
+                   }
            }
        }
    }
    ```
 
-   For a directory's `*`, rewrite the `"*"` in `"feature" / "*" / ...` as `capture("feature")`. For a module with more than one `*`, pass the names in order, as in `.module("feature", "layer")`.
+   For a directory's `*`, rewrite the `"*"` in `"feature" / "*" / ...` as `capture("feature")`. For a module key with more than one `*`, embed a `capture()` for each one, as in `":feature:${capture("feature")}:${capture("layer")}".module { }`.
 
-   **Name every `*` left in the directory part of the destination, the module's and the directories' alike.** If there is both a module `*` and a package directory `*`, as in the example above, you need both `.module(capture = ...)` and `capture(...)`. If even one unnamed `*` is left, that path is not a destination and `katachiTemplate` fails.
+   **Name every `*` left in the directory part of the destination, the module's and the directories' alike.** If there is both a module `*` and a package directory `*`, as in the example above, you need both a `capture(...)` embedded in the module key and one in the directory. If even one unnamed `*` is left, an error occurs when layout is expanded for the file with `.template { }` attached (`assert()` catches it; it doesn't wait for `katachiTemplate` to run).
 
    **If the package directory's name differs from the module's name (module `appConfig` and directory `appconfig`, for example), give that directory's `*` its own name, separate from the module's, and use its `captureValue()` in the package.** If you put the module's name (`captureValue("feature")`) in the package, you write a package that disagrees with its directory, and since both the check and the compiler pass, you won't notice.
 
-   All there is to use is `stringParameter()` / `booleanParameter()` / `intParameter()` (optionally with `default = ...`), `enumParameter()` (given `entries` or a default value), `file("...") { "content" }`, plus `capture("name")` / `.module(capture = "name")` to name a wildcard in the destination and, to read its value, `captureValue("name")` (inside the template) / `wildcard("name")` (inside a module block in layout). Do not add other words by guessing.
-3. A template's own parameters (`--arg name=...`) can be passed as-is, with no setting needed on the module side. What is accepted is exactly the set of names the named role's `template { }` declares, plus the names given to wildcards in its `layout { }`; a typo still fails, as before, with `Unknown processor argument(s): ...`
-4. Generate one file, and confirm **the check passes right after**.
+   **When a role has two or more `.template { }`, tell them apart with `.template(id = "name")`.** `id` can be left out while the role has only one.
+
+   All there is to use is `stringParameter()` / `booleanParameter()` / `intParameter()` (optionally with `default = ...`), `enumParameter()` (given `entries` or a default value), plus `capture("name")` — embeddable anywhere in a layout's directory, file name, or module key — to name a wildcard in the destination, and, to read its value, `captureValue("name")` (inside the template) / `wildcard("name")` (inside a module block in layout). Do not add other words by guessing.
+3. A template's own parameters (`--arg name=...`) can be passed as-is, with no setting needed on the module side. What is accepted is exactly the set of names the named role's `.template { }` declares, plus the names given to wildcards in its `layout { }`; a typo still fails, as before, with `Unknown processor argument(s): ...`
+4. Generate one file, and confirm **the check passes right after**. `--arg template=` takes `group.role` (or just the role name with no group); a role with two or more templates needs `.id` appended, as in `domain.UseCase.useCase`.
 
    ```sh
-   ./gradlew :architecture-test:katachiTemplate --arg roleName=UseCase --arg name=Sample
+   ./gradlew :architecture-test:katachiTemplate --arg template=UseCase --arg name=Sample
    ./gradlew :architecture-test:test
    ```
 
    For a role whose wildcard was named, pass that value too. **A module's value must be one that already exists** (passing one that doesn't fails, listing the modules that do).
 
    ```sh
-   ./gradlew :architecture-test:katachiTemplate --arg roleName=ViewModel --arg feature=home --arg featurePackage=home --arg name=Sample
+   ./gradlew :architecture-test:katachiTemplate --arg template=ViewModel --arg feature=home --arg featurePackage=home --arg name=Sample
    ./gradlew :architecture-test:test
    ```
 
-   If `test` fails, check that the file names in `template { }` match the patterns in `layout { }` (such as `"*UseCase".ktFile()`).
+   If `test` fails, check that the path of the file declaration `.template { }` is attached to is right.
 5. **Delete the generated file, since it was only for checking** (unless the user says to keep it). After deleting it, confirm `./gradlew :architecture-test:test` passes once more.
 
 Record the files you created or changed with `add changed`, then run `sh $CLI check 6-4`.
