@@ -69,6 +69,8 @@ internal class EditorNotificationRefresher(
                 val changed = (before.keys + now.keys).filter { before[it] != now[it] }
                 before = now
                 for (path in changed) {
+                    // TODO(V2 L3): "succeeded" is never cleared, so a file generated, deleted and created empty again
+                    //  gets no notification in this session; clear the ledger entry when the file is deleted.
                     if (now[path] is LedgerEntry.Succeeded) dismiss(path)
                     sdkCall("find $path for its katachi notification") { LocalFileSystem.getInstance().findFileByNioFile(path) }
                         .getOrNull()
@@ -80,7 +82,7 @@ internal class EditorNotificationRefresher(
 
     private fun onEdit(event: DocumentEvent) {
         val file = sdkCall("find the file of an edited Document") { FileDocumentManager.getInstance().getFile(event.document) }.getOrNull() ?: return
-        val path = file.fileSystem.getNioPath(file) ?: return
+        val path = sdkCall("find the path of ${file.name}") { file.fileSystem.getNioPath(file) }.getOrNull() ?: return
         if (path !in followed) return
         val job = scope.launch {
             delay(EDIT_SETTLE_MILLIS)

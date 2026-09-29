@@ -42,7 +42,7 @@ class EditorEntrySmokeTest {
         context.runIdeWithDriver(runTimeout = 40.minutes).useDriverAndCloseIde {
             waitForProjectOpen(5.minutes)
             waitForIndicators(singleProject(), 15.minutes)
-            // Do not read describeState until after View Templates: it creates the view model.
+            // Do not read describeState until after View Template: it creates the view model.
             assertFalse(getToolWindow("katachi").isVisible(), "Scenario 4 requires a never-opened tool window")
             val bridge = EditorEntryProbe(this, singleProject())
             revealAndOpenSettings(bridge)
@@ -55,17 +55,17 @@ class EditorEntrySmokeTest {
     // covers: 論点3, 9(4), 11, 13, 14, 15, 17
     private fun Driver.revealAndOpenSettings(bridge: EditorEntryProbe) {
         openFile("${EditorEntryFixture.SERVICE_DIR}/EntryExistingService.kt", waitForCodeAnalysis = false)
-        awaitEntryNotification("View Templates")
+        awaitEntryNotification("View Template")
         assertFalse(getToolWindow("katachi").isVisible())
         // The notification can be rebuilt between press and release (SmoothRobot then reports an
         // unsuccessful click), so re-look up the link and click again until the tool window opens.
         var opened = false
         repeat(6) {
             if (opened) return@repeat
-            runCatching { entryNotification().x { byVisibleText("View Templates") }.click() }
-            opened = runCatching { waitFor("View Templates opens katachi", timeout = 8.seconds) { getToolWindow("katachi").isVisible() } }.isSuccess
+            runCatching { entryNotification().x { byVisibleText("View Template") }.click() }
+            opened = runCatching { waitFor("View Template opens katachi", timeout = 8.seconds) { getToolWindow("katachi").isVisible() } }.isSuccess
         }
-        assertTrue(opened, "View Templates never opened the katachi tool window")
+        assertTrue(opened, "View Template never opened the katachi tool window")
         waitFor("revealed template loaded", timeout = 10.minutes, errorMessage = { bridge.describeState() }) {
             "template=${EditorEntryFixture.TEMPLATE}" in bridge.describeState().lines()
         }
@@ -73,7 +73,7 @@ class EditorEntrySmokeTest {
             "highlighted=${EditorEntryFixture.TEMPLATE}" in bridge.describeState().lines()
         }
         openFile("${EditorEntryFixture.SERVICE_DIR}/EntrySettingsService.kt", waitForCodeAnalysis = false)
-        awaitEntryNotification("View Templates")
+        awaitEntryNotification("View Template")
         entryNotification().x { byTooltip("Open the notification settings") }.click()
         val settings = ui.dialog(title = "Settings")
         // Page-specific controls prove that the gear selected katachi, rather than just opening Settings.

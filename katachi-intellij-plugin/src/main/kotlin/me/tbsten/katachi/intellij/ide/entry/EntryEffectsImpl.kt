@@ -5,10 +5,7 @@ import com.intellij.notification.NotificationType
 import com.intellij.openapi.options.ShowSettingsUtil
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.wm.ToolWindowManager
-import kotlinx.coroutines.launch
-import me.tbsten.katachi.intellij.data.generate.EntryGenerationRefusal
 import me.tbsten.katachi.intellij.data.generate.SingleFileGenerationRequest
-import me.tbsten.katachi.intellij.data.generate.SingleFileGenerationResult
 import me.tbsten.katachi.intellij.ide.KatachiBundle
 import me.tbsten.katachi.intellij.ide.KatachiConfigurable
 import me.tbsten.katachi.intellij.ide.KatachiNotifications
@@ -17,7 +14,8 @@ import me.tbsten.katachi.intellij.ide.KatachiToolWindowFactory
 import me.tbsten.katachi.intellij.ide.dialog.GenerateDialogEnvironment
 import me.tbsten.katachi.intellij.ide.dialog.GenerateDialogs
 import me.tbsten.katachi.intellij.ide.dialog.realGenerateDialogEnvironmentOf
-import me.tbsten.katachi.intellij.ide.dialog.singleFileGenerationOf
+import me.tbsten.katachi.intellij.ide.SDK_CALL_LOG
+import me.tbsten.katachi.intellij.ide.mustPropagate
 import me.tbsten.katachi.intellij.ide.sdkCall
 import me.tbsten.katachi.intellij.model.TemplateId
 import me.tbsten.katachi.intellij.presentation.KatachiIntent
@@ -76,24 +74,21 @@ private fun activateKatachiToolWindow(project: Project) {
     ToolWindowManager.getInstance(project).getToolWindow(KatachiToolWindowFactory.TOOL_WINDOW_ID)?.activate(null, true)
 }
 
-/** Runs the generation of [request] in the project service's scope; a refusal that only the run can tell is a balloon. */
+/**
+ * Runs [request] through the project service's one generation (`KatachiProjectService.generateFromEntry`),
+ * the same one the dialog's existing-file check asks: a retry after a failure then knows the file still
+ * holds its own provisional content (issue 16). Failures and refusals are told by the generation itself
+ * (`IdeEffects`); only something it did not foresee is told here.
+ */
 private fun startGeneration(project: Project, request: SingleFileGenerationRequest, notify: (String) -> Unit) {
     val started = sdkCall("start generating ${request.template.template.template}") {
-        val service = KatachiProjectService.getInstance(project)
-        val generation = singleFileGenerationOf(project)
-        service.scope.launch {
-            val result = sdkCall("generate ${request.template.template.template}") { generation.run(request) }
-            // Failures are told by the generation itself (IdeEffects.notifyEntryGenerationFailed).
-            result.onFailure { notify(KatachiBundle.message("entry.generateFailed", it.message.orEmpty())) }
-            (result.getOrNull() as? SingleFileGenerationResult.Refused)?.let { notify(refusalText(it.refusal)) }
+        KatachiProjectService.getInstance(project).generateFromEntry(request).invokeOnCompletion { failure ->
+            if (failure == null || failure.mustPropagate) return@invokeOnCompletion
+            SDK_CALL_LOG.warn("Could not generate ${request.template.template.template}", failure)
+            notify(KatachiBundle.message("entry.generateFailed", failure.message.orEmpty()))
         }
     }
     started.onFailure { notify(KatachiBundle.message("entry.generateFailed", it.message.orEmpty())) }
-}
-
-private fun refusalText(refusal: EntryGenerationRefusal): String = when (refusal) {
-    is EntryGenerationRefusal.TargetHasContent -> KatachiBundle.message("dialog.generateRefused", KatachiBundle.message("dialog.target.hasContent"))
-    is EntryGenerationRefusal.ModuleMissing -> KatachiBundle.message("dialog.generateRefused", KatachiBundle.message("entry.moduleMissing", refusal.directory))
 }
 
 /** A warning balloon in the `katachi` group, whether or not the tool window is shown. */

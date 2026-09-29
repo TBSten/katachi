@@ -51,7 +51,7 @@ internal class EditorNotificationMemoryService(
                     override fun fileClosed(source: FileEditorManager, file: VirtualFile) {
                         // Still open in another window or split: not closed yet.
                         if (sdkCall("ask whether ${file.path} is still open") { source.isFileOpen(file) }.getOrNull() == true) return
-                        file.fileSystem.getNioPath(file)?.let(::fileClosed)
+                        sdkCall("find the path of ${file.name}") { file.fileSystem.getNioPath(file) }.getOrNull()?.let(::fileClosed)
                     }
                 },
             )

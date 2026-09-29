@@ -48,10 +48,14 @@ internal class KatachiEditorNotificationProvider(
     constructor() : this(NotificationPorts::of)
 
     override fun collectNotificationData(project: Project, file: VirtualFile): Function<in FileEditor, out JComponent?>? {
-        val path = file.fileSystem.getNioPath(file) ?: return EditorNotificationProvider.CONST_NULL
+        val path = sdkCall("find the path of ${file.name}") { file.fileSystem.getNioPath(file) }.getOrNull()
+            ?: return EditorNotificationProvider.CONST_NULL
         val decided = sdkCall("decide the katachi notification of $path") { decide(project, file, path) }.getOrNull()
             ?: return EditorNotificationProvider.CONST_NULL
-        return Function { editor -> katachiNotificationPanel(editor, decided.decision, decided.actionsFor(project, file, path)) }
+        // A panel the IDE fails to build is no panel, not an IDE error.
+        return Function { editor ->
+            sdkCall("build the katachi notification of $path") { katachiNotificationPanel(editor, decided.decision, decided.actionsFor(project, file, path)) }.getOrNull()
+        }
     }
 
     /** `null`: no notification. Runs in the background under the read lock. */
@@ -64,13 +68,13 @@ internal class KatachiEditorNotificationProvider(
             return null
         }
         // Only a project with a definition module gets the service (decision 17).
-        val service = ports.existingService() ?: if (ports.hasDefinitionModule()) ports.service() else return null
+        val service = ports.serviceForEntries() ?: return null
         val memory = ports.memory()
         memory.followGenerations(service)
 
         val index = service.placementIndex.value
         // Read actions restart: ensureLoaded loads once however often it is called.
-        if (index is PlacementIndexState.NotLoaded) service.ensureLoaded()
+        if (shouldEnsureLoaded(index, settings.loadWithoutUser)) service.ensureLoaded()
         val matches = (index as? PlacementIndexState.Ready)?.index?.matchesForFile(path).orEmpty()
         val ledgerEntry = service.ledger.entryOf(path)
         if (matches.isEmpty() && ledgerEntry == null) {

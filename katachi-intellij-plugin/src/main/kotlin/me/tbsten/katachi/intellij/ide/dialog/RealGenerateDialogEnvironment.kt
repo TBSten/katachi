@@ -12,27 +12,12 @@ import kotlinx.coroutines.flow.conflate
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
 import me.tbsten.katachi.intellij.data.NioProjectFileSystem
-import me.tbsten.katachi.intellij.data.generate.SingleFileGeneration
 import me.tbsten.katachi.intellij.data.placement.PlacementIndexState
 import me.tbsten.katachi.intellij.data.placement.placementRootOf
-import me.tbsten.katachi.intellij.ide.IdeEffectsImpl
 import me.tbsten.katachi.intellij.ide.KatachiProjectService
 import me.tbsten.katachi.intellij.model.templatesOf
 import me.tbsten.katachi.intellij.presentation.dialog.CaptureSeedPort
 import me.tbsten.katachi.intellij.presentation.entry.GenerateDialogRequest
-
-/**
- * The generation an entry runs: the project's one Gradle runner, ledger and shared list, so it never
- * fights the tool window over `build/`.
- *
- * ```kotlin
- * singleFileGenerationOf(project).run(request)
- * ```
- */
-internal fun singleFileGenerationOf(project: Project): SingleFileGeneration {
-    val service = KatachiProjectService.getInstance(project)
-    return SingleFileGeneration(IdeEffectsImpl(project), service.gradleRunner, NioProjectFileSystem, service, service.ledger)
-}
 
 /**
  * The dialog's inputs from the project: the shared list (followed while the dialog is open), the
@@ -41,14 +26,16 @@ internal fun singleFileGenerationOf(project: Project): SingleFileGeneration {
  */
 internal fun realGenerateDialogEnvironmentOf(project: Project, request: GenerateDialogRequest): GenerateDialogEnvironment {
     val service = KatachiProjectService.getInstance(project)
-    val generation = singleFileGenerationOf(project)
     return GenerateDialogEnvironment(
         request = request,
         candidates = templatesOf(service.viewModel.state.value.snapshots),
         seeds = CaptureSeedPort { origin, template ->
             (service.placementIndex.value as? PlacementIndexState.Ready)?.index?.seedsFor(origin, template).orEmpty()
         },
-        checkTarget = generation::checkTarget,
+        // The generation the entries run: it knows the provisional content it wrote (a retry, issue 16).
+        checkTarget = service.entryGeneration::checkTarget,
+        // TODO(V2 L2): asked on the EDT at every dispatch (it looks up the root markers on disk); find each
+        //  definition's root once when the dialog opens.
         rootOf = { placementRootOf(it, NioProjectFileSystem) },
         templateChanges = service.viewModel.state.map { templatesOf(it.snapshots) }.distinctUntilChanged(),
         filesChanged = vfsChanges(),

@@ -13,6 +13,7 @@ import androidx.compose.ui.input.key.type
 import com.intellij.openapi.application.EDT
 import com.intellij.openapi.application.ModalityState
 import com.intellij.openapi.application.asContextElement
+import com.intellij.openapi.progress.ProgressManager
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.DialogWrapper
 import com.intellij.openapi.util.Disposer
@@ -123,7 +124,9 @@ internal class KatachiGenerateDialog(
 
     /** Keeps the OK button, the template list and the target check in step with the outside. */
     private fun follow() {
-        scope.launch { viewModel.state.collect { isOKActionEnabled = it.canGenerate } }
+        scope.launch {
+            viewModel.state.collect { state -> sdkCall("enable the Generate button") { isOKActionEnabled = state.canGenerate } }
+        }
         var offered = environment.candidates
         scope.launch {
             // A failing flow of the platform must not take the dialog down; control flow still propagates.
@@ -152,7 +155,7 @@ internal class KatachiGenerateDialog(
             // dialog never sees them (found by the G2 E2E): Esc is cancelled here, before the field.
             Box(
                 Modifier.onPreviewKeyEvent { event ->
-                    (event.key == Key.Escape && event.type == KeyEventType.KeyDown).also { if (it) doCancelAction() }
+                    (event.key == Key.Escape && event.type == KeyEventType.KeyDown).also { if (it) sdkCall("close the generate dialog on Esc") { doCancelAction() } }
                 },
             ) { GenerateDialogContent(ui, strings, actions) }
         }
@@ -179,11 +182,16 @@ internal class KatachiGenerateDialog(
             }
             // Unknown (the check failed): the generation checks again before writing and says why it stops.
             result = request
-            closeWithOk()
+            sdkCall("close the generate dialog") { closeWithOk() }.onFailure { result = null }
         }
     }
 
-    private fun closeWithOk() = super.doOKAction()
+    /**
+     * Closing disposes the dialog, which cancels [scope] and with it the coroutine [doOKAction] closes
+     * from. The platform's own dispose (saving the window size) then checked a cancelled job and failed
+     * with "CE must not be thrown from a dispose()" (V1 2.1), so the close is not cancellable.
+     */
+    private fun closeWithOk() = ProgressManager.getInstance().executeNonCancelableSection { super.doOKAction() }
 
     /** Presses [Generate], for tests that cannot click a modal dialog. */
     @TestOnly
