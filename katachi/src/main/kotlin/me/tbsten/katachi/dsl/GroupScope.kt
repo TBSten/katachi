@@ -5,6 +5,7 @@ import me.tbsten.katachi.dsl.internal.MetadataBuilder
 import me.tbsten.katachi.dsl.internal.captureDeclarationSite
 import me.tbsten.katachi.dsl.internal.declareGroup
 import me.tbsten.katachi.dsl.internal.declareRole
+import org.intellij.lang.annotations.Language
 
 /**
  * Receiver of `"name".group { }`. Holds nested groups and roles.
@@ -42,6 +43,8 @@ public sealed interface GroupScope : DeclarationContainerScope {
      * arch.groups.single()[Title] shouldBe "Domain"
      * ```
      */
+    @get:Language("markdown")
+    @set:Language("markdown")
     public var title: String
 
     /**
@@ -55,6 +58,8 @@ public sealed interface GroupScope : DeclarationContainerScope {
      * arch.groups.single()[Summary] shouldBe "Everything that faces HTTP"
      * ```
      */
+    @get:Language("markdown")
+    @set:Language("markdown")
     public var summary: String?
 
     /**
@@ -78,6 +83,8 @@ public sealed interface GroupScope : DeclarationContainerScope {
      * arch.groups.single()[Description].orEmpty().lines().size shouldBe 4
      * ```
      */
+    @get:Language("markdown")
+    @set:Language("markdown")
     public var description: String?
 
     /**

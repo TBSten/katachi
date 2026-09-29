@@ -27,6 +27,10 @@ kotlin {
 dependencies {
     api(libs.kotlinxSerializationCore)
 
+    // `@Language("markdown")` を DSL のプロパティに付けるためだけ。実行時には要らない注釈なので
+    // compileOnly（利用者の依存グラフには出ない）。
+    compileOnly(libs.jetbrainsAnnotations)
+
     testImplementation(libs.kotestRunnerJunit5)
     testImplementation(libs.kotestAssertionsCore)
 }

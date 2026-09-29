@@ -34,6 +34,9 @@ junit = "5.14.4"
 # me.champeau.jmh の Gradle プラグイン。公開モジュールには入らない。
 jmh = "1.37"
 jmhPlugin = "0.7.3"
+# `@Language("markdown")` だけを使う。IDE 補完・シンタックスハイライト用の注釈で実行時には
+# 要らないため、使う側は compileOnly で引く。
+jetbrainsAnnotations = "26.0.2"
 
 [libraries]
 # katachi itself. Samples depend on it as `testImplementation(libs.katachi)`; the
@@ -73,6 +76,7 @@ kotestAssertionsCore = { module = "io.kotest:kotest-assertions-core", version.re
 # Not needed on the JVM (the JUnit 5 runner pulls the engine in). Kept for non-JVM
 # targets, where the engine has to be declared explicitly.
 kotestFrameworkEngine = { module = "io.kotest:kotest-framework-engine", version.ref = "kotest" }
+jetbrainsAnnotations = { module = "org.jetbrains:annotations", version.ref = "jetbrainsAnnotations" }
 
 [plugins]
 kotlinJvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }

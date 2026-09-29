@@ -1,5 +1,7 @@
 package me.tbsten.katachi.dsl
 
+import org.intellij.lang.annotations.Language
+
 /**
  * Receiver of `layout { }`, and of every directory block inside it.
  *
@@ -276,6 +278,8 @@ public sealed interface LayoutDirectoryScope : LayoutScope {
      * }
      * ```
      */
+    @get:Language("markdown")
+    @set:Language("markdown")
     public var description: String?
 
     /**

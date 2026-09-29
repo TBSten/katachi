@@ -4,6 +4,7 @@ import me.tbsten.katachi.dsl.internal.FileConstraintDeclaration
 import me.tbsten.katachi.dsl.internal.MetadataBuilder
 import me.tbsten.katachi.dsl.internal.captureDeclarationSite
 import me.tbsten.katachi.dsl.internal.fileConstraintDeclarationOf
+import org.intellij.lang.annotations.Language
 
 /**
  * Receiver of `"RoleName" { }`.
@@ -43,6 +44,8 @@ public sealed interface RoleScope : MetadataScope, FileConstraintScope {
      * arch.allRoles.single()[Title] shouldBe "Use case"
      * ```
      */
+    @get:Language("markdown")
+    @set:Language("markdown")
     public var title: String
 
     /**
@@ -58,6 +61,8 @@ public sealed interface RoleScope : MetadataScope, FileConstraintScope {
      * arch.allRoles.single()[Summary] shouldBe "A single app-specific behavior that happens on a screen"
      * ```
      */
+    @get:Language("markdown")
+    @set:Language("markdown")
     public var summary: String?
 
     /**
@@ -85,6 +90,8 @@ public sealed interface RoleScope : MetadataScope, FileConstraintScope {
      * arch.allRoles.single()[Description].orEmpty().lines().size shouldBe 4
      * ```
      */
+    @get:Language("markdown")
+    @set:Language("markdown")
     public var description: String?
 
     /**

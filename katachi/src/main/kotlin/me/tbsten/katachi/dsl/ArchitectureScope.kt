@@ -7,6 +7,7 @@ import me.tbsten.katachi.dsl.internal.captureDeclarationSite
 import me.tbsten.katachi.dsl.internal.declareGroup
 import me.tbsten.katachi.dsl.internal.declareRole
 import me.tbsten.katachi.dsl.internal.isValidBaselinePath
+import org.intellij.lang.annotations.Language
 
 /**
  * Receiver of `architecture { }`.
@@ -43,6 +44,8 @@ public sealed interface ArchitectureScope : DeclarationContainerScope {
      * arch[Title] shouldBe "myapp"
      * ```
      */
+    @get:Language("markdown")
+    @set:Language("markdown")
     public var title: String?
 
     /**
@@ -61,6 +64,8 @@ public sealed interface ArchitectureScope : DeclarationContainerScope {
      * arch[Description] shouldBe "このリポジトリの構成。役割ごとに1ページある。"
      * ```
      */
+    @get:Language("markdown")
+    @set:Language("markdown")
     public var description: String?
 
     /**

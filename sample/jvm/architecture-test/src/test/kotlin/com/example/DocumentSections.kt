@@ -6,6 +6,7 @@ import me.tbsten.katachi.ExperimentalKatachiApi
 import me.tbsten.katachi.dsl.DocumentSection
 import me.tbsten.katachi.dsl.MetadataScope
 import me.tbsten.katachi.dsl.documentSection
+import org.intellij.lang.annotations.Language
 
 /**
  * A heading this project declared for itself: the prose that says what may be placed inside a
@@ -18,6 +19,8 @@ import me.tbsten.katachi.dsl.documentSection
 val AllowedContents: DocumentSection = documentSection("置いてよいもの")
 
 /** Writes the body of [AllowedContents], on a role, a group, or the root of the definition. */
+@get:Language("markdown")
+@set:Language("markdown")
 var MetadataScope.allowedContents: String? by AllowedContents
 
 /**
@@ -31,4 +34,6 @@ var MetadataScope.allowedContents: String? by AllowedContents
 val ForbiddenContents: DocumentSection = documentSection("置いてはいけないもの")
 
 /** Writes the body of [ForbiddenContents], on a role, a group, or the root of the definition. */
+@get:Language("markdown")
+@set:Language("markdown")
 var MetadataScope.forbiddenContents: String? by ForbiddenContents

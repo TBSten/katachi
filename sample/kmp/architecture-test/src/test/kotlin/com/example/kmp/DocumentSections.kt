@@ -5,6 +5,7 @@ package com.example.kmp
 import me.tbsten.katachi.ExperimentalKatachiApi
 import me.tbsten.katachi.dsl.MetadataScope
 import me.tbsten.katachi.dsl.documentSection
+import org.intellij.lang.annotations.Language
 
 /**
  * What a role or group's directory is meant to hold.
@@ -14,8 +15,12 @@ import me.tbsten.katachi.dsl.documentSection
  * them without wading through the paragraphs around them.
  */
 val AllowedContents = documentSection("置いてよいもの")
+@get:Language("markdown")
+@set:Language("markdown")
 var MetadataScope.allowedContents by AllowedContents
 
 /** The sibling of [AllowedContents]: what must not be placed in this role or group. */
 val ForbiddenContents = documentSection("置いてはいけないもの")
+@get:Language("markdown")
+@set:Language("markdown")
 var MetadataScope.forbiddenContents by ForbiddenContents
