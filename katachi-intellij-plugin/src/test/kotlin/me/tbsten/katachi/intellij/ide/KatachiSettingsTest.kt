@@ -41,4 +41,63 @@ internal class KatachiSettingsTest : AnalysisTestBase() {
         settings.onExisting = OnExistingChoice.Overwrite
         assertEquals(OnExistingChoice.Skip, settings.onExisting)
     }
+
+    // covers: 論点15
+    fun `test 通知と自動読み込みの5項目は既定でどれも有効`() {
+        val settings = KatachiSettings()
+        assertTrue(settings.editorNotificationEnabled)
+        assertTrue(settings.notifyOnEmptyFile)
+        assertTrue(settings.notifyOnFileWithContent)
+        assertTrue(settings.notifyOnContentOnce)
+        assertTrue(settings.autoLoadTemplates)
+    }
+
+    // covers: 論点15
+    fun `test 通知と自動読み込みの5項目を保存して読み戻せる`() {
+        val written = KatachiSettings().apply {
+            editorNotificationEnabled = false
+            notifyOnEmptyFile = false
+            notifyOnFileWithContent = false
+            notifyOnContentOnce = false
+            autoLoadTemplates = false
+        }
+
+        val read = KatachiSettings()
+        read.loadState(XmlSerializer.deserialize(XmlSerializer.serialize(written.state), KatachiSettingsState::class.java))
+
+        assertFalse(read.editorNotificationEnabled)
+        assertFalse(read.notifyOnEmptyFile)
+        assertFalse(read.notifyOnFileWithContent)
+        assertFalse(read.notifyOnContentOnce)
+        assertFalse(read.autoLoadTemplates)
+    }
+
+    // covers: 論点15
+    fun `test 閉じた記憶と最初の1回の記憶は状態に含まれず保存されない`() {
+        val written = KatachiSettings().apply {
+            editorNotificationEnabled = false
+            notifyOnEmptyFile = false
+            notifyOnFileWithContent = false
+            notifyOnContentOnce = false
+            autoLoadTemplates = false
+            autoReloadOnSave = true
+        }
+
+        val element = XmlSerializer.serialize(written.state)
+        val saved = element.children.mapNotNull { it.getAttributeValue("name") }.toSet()
+
+        assertEquals(
+            setOf(
+                "editorNotificationEnabled",
+                "notifyOnEmptyFile",
+                "notifyOnFileWithContent",
+                "notifyOnContentOnce",
+                "autoLoadTemplates",
+                "autoReloadOnSave",
+            ),
+            saved,
+        )
+        val declared = KatachiSettingsState::class.java.declaredFields.map { it.name }
+        assertFalse(declared.any { it.contains("dismiss", ignoreCase = true) || it.contains("seen", ignoreCase = true) || it.contains("closed", ignoreCase = true) })
+    }
 }

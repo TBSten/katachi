@@ -54,6 +54,12 @@ internal sealed interface Op {
     data class MessageButton(val pick: Int) : Op
 
     // What happens around the screen.
+    /**
+     * [View template] of an editor notification (C2): a template of the list by [pick], whether
+     * the screen shows it or not, or one the list does not have (a notification decided on an
+     * older list).
+     */
+    data class Reveal(val pick: Int) : Op
     /** The definition on disk becomes the catalog's world [world]; nothing reloads by itself. */
     data class Redefine(val world: Int) : Op
     data object Sync : Op

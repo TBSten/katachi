@@ -1,13 +1,20 @@
 package me.tbsten.katachi.intellij.ide
 
+import com.intellij.openapi.application.WriteAction
+import com.intellij.openapi.command.WriteCommandAction
+import com.intellij.openapi.editor.Document
+import com.intellij.openapi.fileEditor.FileDocumentManager
 import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.fileEditor.ex.FileEditorManagerEx
+import com.intellij.openapi.fileEditor.impl.FileDocumentManagerImpl
 import com.intellij.openapi.util.io.NioFiles
+import com.intellij.openapi.vfs.LocalFileSystem
+import com.intellij.openapi.vfs.VfsUtil
+import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.newvfs.impl.VfsRootAccess
 import com.intellij.testFramework.PlatformTestUtil
+import com.intellij.testFramework.PsiTestUtil
 import com.intellij.testFramework.replaceService
-import kotlinx.coroutines.CancellationException
-import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -17,17 +24,13 @@ import me.tbsten.katachi.intellij.data.NioProjectFileSystem
 import me.tbsten.katachi.intellij.data.detect.SyncedModule
 import me.tbsten.katachi.intellij.data.detect.SyncedProject
 import me.tbsten.katachi.intellij.data.detect.SyncedRoot
-import me.tbsten.katachi.intellij.data.gradle.GradleRunListener
-import me.tbsten.katachi.intellij.data.gradle.GradleRunOutcome
-import me.tbsten.katachi.intellij.data.gradle.GradleRunRequest
-import me.tbsten.katachi.intellij.data.gradle.GradleTaskRunner
 import me.tbsten.katachi.intellij.model.KatachiModule
 import me.tbsten.katachi.intellij.presentation.KatachiScreenState
 import me.tbsten.katachi.intellij.presentation.KatachiToolWindowViewModel
-import me.tbsten.katachi.intellij.testing.ContractFixtures
+import org.jetbrains.jps.model.java.JavaSourceRootType
+import org.jetbrains.jps.model.java.JpsJavaExtensionService
 import java.nio.file.Files
 import java.nio.file.Path
-import java.util.Collections
 
 /**
  * Platform tests of the IDE wiring with the real [IdeEffectsImpl] (VFS, editors, Local History,
@@ -40,6 +43,7 @@ internal abstract class KatachiIdeTestBase : AnalysisTestBase() {
     lateinit var gradle: DiskGradleRunner
     internal var synced: SyncedProject = SyncedProject.NotSynced
     protected lateinit var scope: CoroutineScope
+    private val sourceRoots = mutableListOf<VirtualFile>()
 
     override fun setUp() {
         super.setUp()
@@ -55,6 +59,8 @@ internal abstract class KatachiIdeTestBase : AnalysisTestBase() {
         try {
             scope.cancel()
             FileEditorManagerEx.getInstanceEx(project).closeAllFiles()
+            releaseSourceRoots()
+            dropUnsavedDocuments()
             NioFiles.deleteRecursively(root)
         } finally {
             super.tearDown()
@@ -89,65 +95,49 @@ internal abstract class KatachiIdeTestBase : AnalysisTestBase() {
     }
 
     protected fun openFiles(): List<Path> = FileEditorManager.getInstance(project).openFiles.mapNotNull { it.fileSystem.getNioPath(it) }
-}
 
-/**
- * A Gradle that "loads" by writing the contract JSON into the module and "generates" by writing the
- * files the contract output names, then printing that output with [root] in place of the token.
- */
-internal class DiskGradleRunner(private val root: Path) : GradleTaskRunner {
-    val requests: MutableList<GradleRunRequest> = Collections.synchronizedList(mutableListOf())
-
-    /** The contract output (`output/<name>.log`) each `katachiTemplate` run answers with, in order. */
-    val generations: MutableList<String> = Collections.synchronizedList(mutableListOf())
-
-    /** When set, a generation suspends here after printing, so a test can close the project mid-run. */
-    @Volatile var gate: CompletableDeferred<Unit>? = null
-
-    /** Completes once a generation is waiting on [gate]. */
-    val reachedGate: CompletableDeferred<Unit> = CompletableDeferred()
-
-    @Volatile var cancelled: Boolean = false
-        private set
-
-    override suspend fun run(request: GradleRunRequest, listener: GradleRunListener): GradleRunOutcome {
-        requests += request
-        val task = request.tasks.first().taskPath
-        return when {
-            task.endsWith(":${KatachiModule.TEMPLATES_JSON_TASK}") -> {
-                for (invocation in request.tasks) {
-                    val module = invocation.taskPath.substringBeforeLast(':').trim(':')
-                    val json = root.resolve(module).resolve(KatachiModule.TEMPLATE_DESCRIPTION_JSON)
-                    Files.createDirectories(json.parent)
-                    Files.writeString(json, ContractFixtures.json(module))
-                }
-                GradleRunOutcome.Succeeded
-            }
-            else -> {
-                val name = if (generations.isEmpty()) "new" else generations.removeAt(0)
-                val lines = ContractFixtures.outputLines(name, root)
-                lines.forEach(listener::onLine)
-                gate?.let { gate ->
-                    reachedGate.complete(Unit)
-                    try {
-                        gate.await()
-                    } catch (e: CancellationException) {
-                        cancelled = true
-                        throw e
-                    }
-                }
-                writeReportedFiles(lines)
-                if (ContractFixtures.exitCode(name) == 0) GradleRunOutcome.Succeeded else GradleRunOutcome.Failed
-            }
-        }
+    /**
+     * Makes [dir] (created when missing) a source root of the test module, as the notification's and the
+     * New menu's package lookup needs. Released by [releaseSourceRoots], which `tearDown` calls, so it does
+     * not stay for the next test.
+     */
+    protected fun addSourceRoot(dir: Path, packagePrefix: String = ""): VirtualFile {
+        Files.createDirectories(dir)
+        val file = LocalFileSystem.getInstance().refreshAndFindFileByNioFile(dir) ?: throw AssertionError("Not in the VFS: $dir")
+        PsiTestUtil.addSourceRoot(module, file, JavaSourceRootType.SOURCE, JpsJavaExtensionService.getInstance().createSourceRootProperties(packagePrefix))
+        sourceRoots += file
+        return file
     }
 
-    private fun writeReportedFiles(lines: List<String>) {
-        for (line in lines) {
-            val uri = line.substringAfter("[template] Wrote ", missingDelimiterValue = "").takeIf { it.startsWith("file:") } ?: continue
-            val path = Path.of(java.net.URI(uri))
-            Files.createDirectories(path.parent)
-            Files.writeString(path, "// written by the fake Gradle\n")
+    /**
+     * Removes what [addSourceRoot] added, content entries included: `removeSourceRoot` alone leaves the
+     * content root behind, which leaks into the next test (S2 (f)).
+     */
+    protected fun releaseSourceRoots() {
+        val added = sourceRoots.toList()
+        sourceRoots.clear()
+        added.filter { it.isValid }.forEach { PsiTestUtil.removeContentEntry(module, it) }
+    }
+
+    /**
+     * A file on disk with [onDisk] whose open Document holds [inMemory] instead, unsaved: the state of a
+     * user who has typed into the editor. `tearDown` drops it so it does not turn the next test's
+     * conflict into a silent one.
+     */
+    protected fun unsavedDocument(path: Path, onDisk: String, inMemory: String): Document {
+        val file = WriteAction.compute<VirtualFile, Throwable> {
+            val dir = VfsUtil.createDirectoryIfMissing(path.parent.toString()) ?: throw AssertionError("No directory: ${path.parent}")
+            val child = dir.findChild(path.fileName.toString()) ?: dir.createChildData(this, path.fileName.toString())
+            VfsUtil.saveText(child, onDisk)
+            child
         }
+        val document = FileDocumentManager.getInstance().getDocument(file) ?: throw AssertionError("No document: $path")
+        WriteCommandAction.runWriteCommandAction(project) { document.setText(inMemory) }
+        return document
+    }
+
+    private fun dropUnsavedDocuments() {
+        val documents = FileDocumentManager.getInstance()
+        if (documents.unsavedDocuments.isNotEmpty()) WriteAction.run<Throwable> { (documents as FileDocumentManagerImpl).dropAllUnsavedDocuments() }
     }
 }

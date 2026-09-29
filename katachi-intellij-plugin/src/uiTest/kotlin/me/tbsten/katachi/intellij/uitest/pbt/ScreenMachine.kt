@@ -14,6 +14,7 @@ import me.tbsten.katachi.intellij.presentation.JapaneseKatachiStrings
 import me.tbsten.katachi.intellij.presentation.KatachiIntent
 import me.tbsten.katachi.intellij.presentation.KatachiScreenState
 import me.tbsten.katachi.intellij.presentation.KatachiUiState
+import me.tbsten.katachi.intellij.presentation.shownParametersOf
 import me.tbsten.katachi.intellij.presentation.uiStateOf
 import me.tbsten.katachi.intellij.testing.ContractFixtures
 import me.tbsten.katachi.intellij.testing.FakeRun
@@ -98,6 +99,7 @@ internal class ScreenMachine(private val catalog: Catalog, private val render: B
                 listOf(KatachiIntent.SyncCompleted)
             }
             Op.DefinitionChanged -> listOf(KatachiIntent.DefinitionChanged)
+            is Op.Reveal -> listOf(KatachiIntent.RevealTemplate(revealTargetOf(op.pick, before, harness.arch)))
             is Op.NextLoad -> emptyList<KatachiIntent>().also { nextLoad = op.outcome }
             is Op.NextRun -> emptyList<KatachiIntent>().also { nextRun = op.outcome }
             is Op.ConflictAnswer -> emptyList<KatachiIntent>().also {
@@ -120,6 +122,10 @@ internal class ScreenMachine(private val catalog: Catalog, private val render: B
         dispatcher.runAll()
         val after = harness.state
         countReached(intents, after)
+        if (intents.any { it is KatachiIntent.RevealTemplate }) {
+            if (before.searchQuery.isNotBlank() && after.searchQuery.isBlank()) reached.merge("[View template] cleared the search", 1, Int::plus)
+            if ((before.view.collapsedModules - after.view.collapsedModules).isNotEmpty()) reached.merge("[View template] unfolded a module", 1, Int::plus)
+        }
         val found = buildList {
             escaped.forEach { add("an exception escaped a coroutine: $it") }
             addAll(runViolations)
@@ -133,7 +139,7 @@ internal class ScreenMachine(private val catalog: Catalog, private val render: B
         } catch (e: Exception) {
             fail("uiStateOf threw $e", after, null)
         }
-        val problems = found + uiViolationsOf(after, ui)
+        val problems = found + uiViolationsOf(after, ui) + revealViolationsOf(after, intents, ui)
         if (problems.isNotEmpty()) fail(problems.joinToString("\n  "), after, ui)
         if (render && ui != lastDrawn) {
             for (size in DockSize.entries) {
@@ -162,6 +168,7 @@ internal class ScreenMachine(private val catalog: Catalog, private val render: B
         if (after.loadErrorBanner != null) count("load error banner")
         if (after.modules.size >= 2) count("two or more modules")
         if (after.searchQuery.isNotBlank()) count("searching")
+        if (after.view.highlight != null && after.rows.any { it.id == after.view.highlight?.templateId }) count("highlighted row in the list")
     }
 
     /** Typing into a field of an editable form reaches the state as typed. */
@@ -200,7 +207,7 @@ internal class ScreenMachine(private val catalog: Catalog, private val render: B
                 runViolations += "katachiTemplate ran for $template, which is not among the generating rows ${running.rows.map { it.template }}"
             }
         }
-        for (specifier in specifiers) captureViolationOf(specifier, args)?.let { runViolations += it }
+        for (specifier in specifiers) captureViolationOf(specifier, specifiers, args)?.let { runViolations += it }
         val runs = runsOfGeneration.getOrPut("${harness.katachi.currentTaskPath} $template") { mutableListOf() }
         runs += args.getValue("onExisting")
         if (runs.size > 2 || (runs.size == 2 && runs[1] != "overwrite")) {
@@ -215,17 +222,30 @@ internal class ScreenMachine(private val catalog: Catalog, private val render: B
     }
 
     /**
-     * Every capture of the running template reaches the run as `--arg`, with the value its field
-     * holds, and only a value that is one directory level: whichever order the fields were filled in.
+     * Every capture of the running template reaches the run as `--arg`, and only a value that is one
+     * directory level: whichever order the fields were filled in.
+     *
+     * The rows of one module run together and a run carries one value per name (design draft
+     * section 6 "IDE の複数選択"), so the value is the field of the first row of the run, in list
+     * order, that shows a field of that name: the template's own field, unless the user unlinked it
+     * from a row above.
      */
-    private fun captureViolationOf(template: String, args: Map<String, String>): String? {
-        val row = harness.state.rows.firstOrNull {
-            it.template.template == template && it.module.taskPath(KatachiModule.TEMPLATE_TASK) == harness.katachi.currentTaskPath
-        } ?: return null
+    private fun captureViolationOf(template: String, specifiers: List<String>, args: Map<String, String>): String? {
+        val runRows = harness.state.rows.filter {
+            it.template.template in specifiers && it.module.taskPath(KatachiModule.TEMPLATE_TASK) == harness.katachi.currentTaskPath
+        }
+        val row = runRows.firstOrNull { it.template.template == template } ?: return null
         for (capture in row.template.detail?.captures.orEmpty()) {
             val sent = args[capture.name] ?: return "katachiTemplate ran for $template without its capture ${capture.name}: $args"
-            val typed = harness.state.form.inputOf(FieldId(row.id, capture.name))
-            if (sent != typed) return "katachiTemplate ran for $template with ${capture.name}=\"$sent\", the field holds \"$typed\""
+            val decides = runRows.firstOrNull { other ->
+                val detail = other.template.detail ?: return@firstOrNull false
+                shownParametersOf(detail, harness.state.form.inputsOf(other.id)).any { it.name == capture.name }
+            } ?: row
+            val typed = harness.state.form.inputOf(FieldId(decides.id, capture.name))
+            if (sent != typed) {
+                val whose = if (decides == row) "the field holds" else "the field of ${decides.template.template}, first in the run, holds"
+                return "katachiTemplate ran for $template with ${capture.name}=\"$sent\", $whose \"$typed\""
+            }
             if (sent.isBlank() || '/' in sent || '\\' in sent || sent.trim() == "." || sent.trim() == "..") {
                 return "katachiTemplate ran for $template with ${capture.name}=\"$sent\", which is not one directory level"
             }

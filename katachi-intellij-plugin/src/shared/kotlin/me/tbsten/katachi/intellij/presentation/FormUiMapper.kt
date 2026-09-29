@@ -89,7 +89,43 @@ private fun fieldUiOf(
     }
 }
 
-internal fun fieldErrorText(error: FieldError, strings: KatachiStrings): String = when (error) {
+/**
+ * The texts of the field errors ([FieldError]), apart from the rest of a screen's texts so that the
+ * tool window (Japanese only, `KatachiStrings`) and the generate dialog (both languages,
+ * `GenerateDialogStrings`, decision 15) word the same errors from their own strings.
+ *
+ * ```kotlin
+ * fieldErrorText(FieldError.Required, strings.validation)
+ * ```
+ */
+internal interface ValidationStrings {
+    val requiredError: String
+
+    fun notAnInt(min: Int, max: Int): String
+
+    val notAccepted: String
+    val captureSeparatorError: String
+    val captureDotError: String
+}
+
+/** The validation texts of the tool window's [KatachiStrings]. */
+internal val KatachiStrings.validation: ValidationStrings
+    get() {
+        val strings = this
+        return object : ValidationStrings {
+            override val requiredError: String get() = strings.requiredError
+
+            override fun notAnInt(min: Int, max: Int): String = strings.notAnInt(min, max)
+
+            override val notAccepted: String get() = strings.notAccepted
+            override val captureSeparatorError: String get() = strings.captureSeparatorError
+            override val captureDotError: String get() = strings.captureDotError
+        }
+    }
+
+internal fun fieldErrorText(error: FieldError, strings: KatachiStrings): String = fieldErrorText(error, strings.validation)
+
+internal fun fieldErrorText(error: FieldError, strings: ValidationStrings): String = when (error) {
     FieldError.Required -> strings.requiredError
     is FieldError.NotAnInt -> strings.notAnInt(error.min, error.max)
     is FieldError.NotAcceptedValue -> strings.notAccepted
@@ -101,9 +137,17 @@ internal fun fieldErrorText(error: FieldError, strings: KatachiStrings): String 
 
 /** Every place [capture] sits, its `*` written `<name>`; a module capture says it names a module. */
 internal fun captureHintOf(capture: ParameterModel.CaptureParam, strings: KatachiStrings): String? =
+    captureHintOf(capture, strings::capturePathHint, strings::captureModuleHint)
+
+/** [captureHintOf] over the two wordings, so that the generate dialog words it from its own strings. */
+internal fun captureHintOf(
+    capture: ParameterModel.CaptureParam,
+    pathHint: (name: String, markedPattern: String) -> String,
+    moduleHint: (name: String, markedPattern: String) -> String,
+): String? =
     capture.places.map { place ->
         val marked = markedPatternOf(capture.name, place)
-        if (place.isModule) strings.captureModuleHint(capture.name, marked) else strings.capturePathHint(capture.name, marked)
+        if (place.isModule) moduleHint(capture.name, marked) else pathHint(capture.name, marked)
     }.distinct().joinToString(" / ").ifEmpty { null }
 
 /**

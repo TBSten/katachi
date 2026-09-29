@@ -20,6 +20,7 @@ import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.layout.onPlaced
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.layout.positionInParent
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.IntOffset
 import me.tbsten.katachi.intellij.model.ModuleId
 import me.tbsten.katachi.intellij.presentation.KatachiIntent
@@ -44,10 +45,12 @@ import org.jetbrains.jewel.ui.component.VerticallyScrollableContainer
 @Composable
 internal fun ListBody(list: ListUi, focus: ListFocusController, onIntent: (KatachiIntent) -> Unit) {
     val scrollState = rememberScrollState()
+    // Created with the list: a tool window created after [View template] still scrolls to the row once.
+    val reveal = remember { RevealTracker() }
     // Where each module band sits in the content, for the pinned copy.
     val bandTops = remember { mutableStateMapOf<ModuleId, Int>() }
     Box(Modifier.fillMaxSize().clipToBounds()) {
-        VerticallyScrollableContainer(scrollState = scrollState, modifier = Modifier.fillMaxSize()) {
+        VerticallyScrollableContainer(scrollState = scrollState, modifier = Modifier.fillMaxSize().testTag(KatachiTestTags.LIST)) {
             Column(Modifier.fillMaxWidth()) {
                 list.items.forEach { item ->
                     key(item.key) {
@@ -58,7 +61,7 @@ internal fun ListBody(list: ListUi, focus: ListFocusController, onIntent: (Katac
                                 Modifier.onPlaced { bandTops[item.moduleId] = it.positionInParent().y.toInt() },
                             )
                             is ListItemUi.GroupHeader -> GroupHeader(item)
-                            is ListItemUi.Row -> TemplateRow(item.row, list, focus, onIntent)
+                            is ListItemUi.Row -> TemplateRow(item.row, list, focus, reveal, onIntent)
                         }
                     }
                 }
@@ -93,4 +96,20 @@ private fun pinnedBandOf(headers: List<ListItemUi.ModuleHeader>, tops: Map<Modul
     val index = placed.indexOfLast { (_, top) -> top < scroll }
     if (index < 0) return null
     return PinnedBand(placed[index].first, placed.getOrNull(index + 1)?.second)
+}
+
+/**
+ * The [View template] requests (their numbers) the list already scrolled to, so that a highlighted
+ * row coming back into the composition (a module band folded and unfolded) does not pull the list
+ * to it again. Not state: nothing is drawn from it.
+ */
+internal class RevealTracker {
+    private var served: Int? = null
+
+    /** Whether [request] is new; it is served from then on. */
+    fun take(request: Int): Boolean {
+        if (served == request) return false
+        served = request
+        return true
+    }
 }

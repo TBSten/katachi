@@ -32,7 +32,15 @@ internal data class ViewState(
     val definitionChanged: Boolean = false,
     /** Checked rows outside the search whose form the disabled-reason line opened anyway (E-16). */
     val revealedRows: Set<TemplateId> = emptySet(),
+    /** The row [View template] of an editor notification asked for (C2); it stays until the next one. */
+    val highlight: Highlight? = null,
 )
+
+/**
+ * The highlighted row. [sequence] counts the requests, so that asking for the same row again
+ * scrolls to it again, and a tool window created after the request still scrolls to it once.
+ */
+internal data class Highlight(val templateId: TemplateId, val sequence: Int)
 
 /** Applies an intent that only opens or closes a part of the screen; `null` for any other intent. */
 internal fun applyViewIntent(view: ViewState, intent: KatachiIntent): ViewState? = when (intent) {

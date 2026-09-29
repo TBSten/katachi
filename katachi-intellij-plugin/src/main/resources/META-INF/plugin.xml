@@ -3,7 +3,9 @@
     <name>katachi</name>
     <vendor url="https://github.com/tbsten/katachi">tbsten</vendor>
     <description><![CDATA[
-        Generate code from the templates of your katachi architecture, from a tool window.
+        Generate code from the templates of your katachi architecture.
+        Start from the katachi tool window, from New &gt; katachi in the Project tree, or from the notification
+        that appears in the editor when a template fits the file you opened (it can be turned off in Settings &gt; Tools &gt; katachi).
         Pick a template, fill in its arguments and press Generate; katachi's Gradle task writes the files.
     ]]></description>
 
@@ -39,9 +41,19 @@
                              bundle="messages.KatachiBundle" key="settings.displayName" nonDefaultProject="true"/>
         <!-- The "definition changed" banner (E-44). -->
         <vfs.asyncListener implementation="me.tbsten.katachi.intellij.ide.DefinitionChangeWatcher"/>
+        <!-- The editor notification on files a template fits (design section 1). -->
+        <editorNotificationProvider implementation="me.tbsten.katachi.intellij.ide.notification.KatachiEditorNotificationProvider"/>
+        <!-- The content of .ktFile().template { } / .ktsFile().template { } highlighted as Kotlin / Kotlin script. -->
+        <multiHostInjector implementation="me.tbsten.katachi.intellij.ide.injection.KatachiTemplateInjector"/>
     </extensions>
 
     <actions>
         <action id="katachi.GenerateFromTemplate" class="me.tbsten.katachi.intellij.ide.GenerateFromTemplateAction" icon="/icons/katachi.svg"/>
+        <!-- New > katachi (issue 12). Its text is group.katachi.NewGroup.text of the bundle; right after
+             "Directory" / "Package", before the file templates. NewDir is the platform's, so it exists in
+             Android Studio too. -->
+        <group id="katachi.NewGroup" class="me.tbsten.katachi.intellij.ide.newmenu.KatachiNewGroup" popup="true" icon="/icons/katachi.svg">
+            <add-to-group group-id="NewGroup" anchor="after" relative-to-action="NewDir"/>
+        </group>
     </actions>
 </idea-plugin>
