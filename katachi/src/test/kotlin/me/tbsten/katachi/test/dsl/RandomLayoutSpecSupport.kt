@@ -90,7 +90,7 @@ private fun LayoutScope.declare(node: RNode, named: Boolean, moduleCapture: Stri
 
         is RNode.File -> {
             val file = fileName(node.name, moduleCapture).file()
-            if (node.dirs.isEmpty()) file else attach(chain(node.dirs, named), file)
+            if (node.dirs.isNotEmpty()) attach(chain(node.dirs, named), file)
         }
 
         is RNode.Module -> {

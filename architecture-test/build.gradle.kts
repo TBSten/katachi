@@ -4,6 +4,7 @@ plugins {
     // samples write `alias(libs.plugins.kotlinJvm)` plus those settings by hand instead,
     // because they are standalone builds that cannot see this repository's buildSrc.
     id("buildsrc.convention.kotlin-jvm")
+    id("buildsrc.convention.warnings-as-errors")
 }
 
 tasks.test {

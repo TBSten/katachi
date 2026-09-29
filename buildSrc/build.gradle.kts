@@ -7,6 +7,10 @@ plugins {
 
 kotlin {
     jvmToolchain(17)
+    // buildSrc cannot use its own convention plugin, so the setting is written here.
+    compilerOptions {
+        allWarningsAsErrors.set(true)
+    }
 }
 
 dependencies {

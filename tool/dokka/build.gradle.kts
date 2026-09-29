@@ -7,6 +7,7 @@ plugins {
     // which the root build's `dokkaHtmlPlugin(project(":tool:dokka"))` would then have to
     // choose between.
     id("buildsrc.convention.kotlin-jvm")
+    id("buildsrc.convention.warnings-as-errors")
 }
 
 kotlin {

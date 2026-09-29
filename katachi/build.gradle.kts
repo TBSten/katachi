@@ -1,5 +1,6 @@
 plugins {
     id("buildsrc.convention.kotlin-jvm")
+    id("buildsrc.convention.warnings-as-errors")
     id("buildsrc.convention.katachi-kotlin-library")
     id("buildsrc.convention.katachi-publish")
     alias(libs.plugins.kotlinPluginSerialization)

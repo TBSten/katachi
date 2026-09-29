@@ -1,5 +1,6 @@
 plugins {
     id("buildsrc.convention.kotlin-jvm")
+    id("buildsrc.convention.warnings-as-errors")
     alias(libs.plugins.jmh)
 }
 
@@ -37,7 +38,7 @@ dependencies {
 // nowinandroid in the nightly workflow). A source set of its own rather than more of `jmh`:
 // it is one plain JVM run of `validate()` against a directory on disk, with no JMH harness,
 // and it must not end up in the JMH jar. Like `jmh`, nothing in `check` compiles it.
-val realProject: SourceSet by sourceSets.creating
+val realProject: SourceSet = sourceSets.create("realProject")
 
 dependencies {
     "realProjectImplementation"(project(":katachi"))
@@ -50,7 +51,7 @@ dependencies {
 // Writes github-action-benchmark's `customSmallerIsBetter` JSON to
 // build/results/real-project/<name>.json (or -PrealProject.output=<file>). The measured
 // project is only read: katachi's own violations there are expected and do not fail the run.
-val measureRealProject by tasks.registering(JavaExec::class) {
+val measureRealProject = tasks.register<JavaExec>("measureRealProject") {
     group = "benchmark"
     description = "Measures validate() on a real project checked out at -PrealProject.dir."
     classpath = realProject.runtimeClasspath
