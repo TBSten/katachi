@@ -1,68 +1,73 @@
 [katachi-sample-android](../README.md)
 
-# テスト
+# Testing
 
-アプリを確かめるためにあるもの。共有のフェイク、テスト、アーキテクチャ定義、生成ドキュメント、レイアウトのスナップショット、baseline
+What exists to verify the app: shared fakes, tests, the architecture definition, generated docs, the layout snapshot and the baseline
 
-アプリのレイヤーではなく、アプリを確かめるためにあるもの。6つ集めてある。
-フェイクは `:testing` にある差し替え用の実装、テストコードはテストそのもの、
-アーキテクチャ定義は katachi の DSL で書かれたこの定義自身、生成ドキュメントは
-その定義から `katachiDocs` が書き出す `docs/`、レイアウトのスナップショットは
-同じ定義を平坦化して `:architecture-test:test` が書き出す `snapshots/`、baseline は
-棚上げした違反の台帳 `katachi-baseline.json`。
+Not a layer of the app, but what exists to verify it. Six things are gathered here.
+Fakes are the replacement implementations in `:testing`; test code is the tests
+themselves; the architecture definition is this very definition, written in katachi's
+DSL; generated documentation is the `docs/` that `katachiDocs` writes from that
+definition; the layout snapshot is the `snapshots/` that `:architecture-test:test`
+writes by flattening the same definition; and the baseline is `katachi-baseline.json`,
+the ledger of violations held back.
 
-アーキテクチャ定義をテストコードに混ぜていないのは、2つが別のことを書いているから。
-定義は「どんな形をしているか」、テストは「どう振る舞うか」。どちらも
-`:architecture-test` にあり、ファイルの場所と名前で区別される
-（`ProjectArchitecture.kt` と `groups/` `roles/` が定義、package 直下の
-`*Spec.kt` `*Test.kt` がテスト）。定義を書き換える人とテストを足す人は
-だいたい別のことをしているので、ドキュメント上でも別項目にしてある。
+The architecture definition is not mixed into the test code because the two say
+different things. The definition says "what shape it has", the tests say "how it
+behaves". Both live in `:architecture-test` and are told apart by file location and
+name (`ProjectArchitecture.kt` plus `groups/` and `roles/` are the definition; the
+`*Spec.kt` and `*Test.kt` at the top of the package are tests). People who rewrite the
+definition and people who add tests are usually doing different things, so they are
+separate entries in the documentation too.
 
-`:testing` だけがアプリ側のモジュールで、`:data` のインターフェースを満たす `Fake*` を
-`main` ソースセットに置いて他モジュールのテストへ公開する。テスト用のコードを
-あえて製品コードとして出すのは、`src/test` が他モジュールから見えないため。
+Only `:testing` is a module on the app side: it puts `Fake*` classes that satisfy the
+interfaces of `:data` in the `main` source set and exposes them to other modules'
+tests. Shipping test code as production code is deliberate, because `src/test` is not
+visible from other modules.
 
-`:architecture-test` は `:app` と並ぶ、package がモジュールパスから導けないモジュール。
-そのまま当てると `com/example/sample/architectureTest` になるので、この group の
-定義側の2つの役割はどちらも `com/example/sample` を直接書いている。
+`:architecture-test` is, like `:app`, a module whose package cannot be derived from the
+module path. Applied as is it would be `com/example/sample/architectureTest`, so both
+definition-side roles of this group write `com/example/sample` directly.
 
-生成ドキュメントとスナップショットはモジュールの中ですらなく、ルート直下の `docs/` と
-`snapshots/` に出る。`build/` の外にある生成物にも役割が要る、という例としてここに
-置いてある。2つを1つにまとめていないのは読み手が違うからで、`docs/` は定義を読みに来た
-人が開くページ、`snapshots/` は定義を書き換えた差分をレビューする人が見るテキスト。
-人が書くルートの `README.md` はどちらとも別扱いで、`tool` グループの `Documentation`
-役割の側。
+Generated documentation and the snapshot are not even inside a module: they come out in
+`docs/` and `snapshots/` directly under the root. They are here as an example that
+generated files outside `build/` also need roles. The two are not merged because their
+readers differ: `docs/` is the page for someone who came to read the definition, and
+`snapshots/` is the text for someone reviewing the diff of a definition change. The
+hand-written `README.md` at the root is separate from both, and belongs to the
+`Documentation` role of the `tool` group.
 
-baseline は katachi を入れた時点ですでにあった違反の台帳で、そこに記録した違反は
-テストを落とさない。これもテストが書き出すファイルなので、生成物と同じくここに置いてある。
+The baseline is the ledger of violations that already existed when katachi was adopted;
+violations recorded there do not fail the test. It is also a file the test writes, so it
+sits here with the generated files.
 
 | Role | Summary |
 |---|---|
-| [フェイク](./Fake.md) | :testing に置く、他モジュールのテストから使う偽の実装 |
-| [テストコード](./Test.md) | :architecture-test の src/test/kotlin に置く、定義を検査するテスト |
-| [アーキテクチャ定義](./ArchitectureDefinition.md) | katachi の DSL で書かれた役割の定義。どのレイヤーにも属さない |
-| [生成ドキュメント](./GeneratedDocumentation.md) | この定義から書き出され、リポジトリにコミットされる Markdown |
-| [レイアウトのスナップショット](./LayoutSnapshot.md) | この定義を平坦化して全行書き出した記録。定義の変化を人が差分でレビューするためにある |
-| [baseline（棚上げした違反の台帳）](./BaselineFile.md) | katachi を入れた時点ですでにあった違反を記録し、テストを落とさずに棚上げしておく台帳 |
+| [Fake](./Fake.md) | A stand-in implementation kept in :testing, used by the tests of other modules |
+| [Test code](./Test.md) | Tests that check the definition, kept in src/test/kotlin of :architecture-test |
+| [Architecture definition](./ArchitectureDefinition.md) | The role definitions written in the katachi DSL. Belongs to no layer |
+| [Generated documentation](./GeneratedDocumentation.md) | Markdown written out from this definition and committed to the repository |
+| [Layout snapshot](./LayoutSnapshot.md) | A record of every line of this definition once flattened, so people can review changes to the definition as a diff |
+| [baseline (ledger of held-back violations)](./BaselineFile.md) | A ledger of the violations that already existed when katachi was adopted, held back so the test does not fail |
 
 ## Placement in this group
 
 ```
 :testing
-  src/main/kotlin/**/Fake*.kt  フェイク
+  src/main/kotlin/**/Fake*.kt  Fake
 
 :architecture-test
   src/test/kotlin/com/example/sample/
-    *Spec.kt                   テストコード
-    *Test.kt                   テストコード
-    ProjectArchitecture.kt     アーキテクチャ定義
-    DocumentSections.kt        アーキテクチャ定義
-    groups/*Group.kt           アーキテクチャ定義
-    roles/*Role.kt             アーキテクチャ定義
+    *Spec.kt                   Test code
+    *Test.kt                   Test code
+    ProjectArchitecture.kt     Architecture definition
+    DocumentSections.kt        Architecture definition
+    groups/*Group.kt           Architecture definition
+    roles/*Role.kt             Architecture definition
 
 docs/
-  README.md                    生成ドキュメント
-  **/*.md                      生成ドキュメント
-snapshots/layout.txt           レイアウトのスナップショット
-katachi-baseline.json          baseline（棚上げした違反の台帳）
+  README.md                    Generated documentation
+  **/*.md                      Generated documentation
+snapshots/layout.txt           Layout snapshot
+katachi-baseline.json          baseline (ledger of held-back violations)
 ```

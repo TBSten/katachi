@@ -1,23 +1,23 @@
-[katachi-sample-android](../README.md) / [UI (共通レイヤー)](README.md)
+[katachi-sample-android](../README.md) / [UI (shared layer)](README.md)
 
-# UI 基盤
+# UI foundation
 
-:ui モジュールの core package に置く、UI 層の土台になる型
+Types that form the foundation of the UI layer, kept in the core package of the :ui module
 
-UI 層が自分を組み立てるための語彙。いまは `UiState` だけで、画面の状態が
-`Loading` / `Content` / `Error` のどれであるかを表す sealed interface と、
-`Content` の中身を取り出す `contentOrNull` が入っている。ViewModel がこれを流し、
-Screen がこれを `when` で分岐する。
+The vocabulary the UI layer uses to build itself. For now it is only `UiState`: a sealed
+interface saying whether the screen state is `Loading` / `Content` / `Error`, plus
+`contentOrNull`, which takes out the content of `Content`. The ViewModel emits it and
+the Screen branches on it with `when`.
 
-`component` でも `theme` でもなく `core` にあるのは、その2つがこの語彙の上に
-書かれるから。そして意図的に Compose へ依存しない。`:feature:*` の ViewModel は
-`androidx.compose.*` を1つも import せずに `UiState` を組み立てられる。
-ここに Compose の型が入ると、その線が消える。
+It is in `core`, not `component` or `theme`, because those two are written on top of
+this vocabulary. And it deliberately does not depend on Compose: a ViewModel in
+`:feature:*` can build a `UiState` without importing a single `androidx.compose.*`. If
+Compose types came in here, that line would disappear.
 
-ファイル名は `*.kt` で、型が増えること自体は想定している。ただし足してよいのは
-「複数の画面が同じ形で使う UI の語彙」だけ。画面1つぶんの状態（`HomeContent` /
-`SettingsContent`）は、その feature の ViewModel と同じファイルに置く。
-描画に関わる部品は `component`、色や字は `theme`。
+File names are `*.kt`, and it is expected that types will increase. But only "UI
+vocabulary that several screens use in the same shape" may be added. The state of one
+screen (`HomeContent` / `SettingsContent`) goes in the same file as that feature's
+ViewModel. Rendering-related parts go in `component`, and colors and text in `theme`.
 
 ## Placement
 
@@ -27,4 +27,4 @@ Screen がこれを `when` で分岐する。
 
 ## Examples
 
-- `UiState` ... 画面状態を表す sealed interface
+- `UiState` ... The sealed interface representing screen state

@@ -4,33 +4,34 @@ import me.tbsten.katachi.dsl.DeclarationContainerScope
 
 /** The role of a `@Preview` function, which owns no file of its own. */
 fun DeclarationContainerScope.preview() = "Preview" {
-    title = "プレビュー"
-    summary = "@Preview を付けた private @Composable。対象の Composable と同じファイルに置き、" +
-        "中身は PreviewRoot で包む"
+    title = "Preview"
+    summary = "A private @Composable annotated with @Preview. Placed in the same file as its target Composable, with the body wrapped in PreviewRoot"
     description = """
-        Android Studio のプレビューに出すためだけの `private` な `@Composable`。
-        対象の Composable と**同じファイル**の末尾に置く。`:ui` の共通コンポーネントにも
-        `:feature:*` の Screen にもある。この役割だけ `layout { }` が空なのはそのためで、
-        自分のファイルを1つも持たない。置き場所は共通コンポーネント役割と Screen 役割が
-        すでに許しており、ここで重ねて書くと同じ場所を2回宣言することになる。
+        A `private` `@Composable` that exists only to appear in Android Studio's preview. It
+        goes at the end of the **same file** as the target Composable, and exists both in `:ui`
+        shared components and in `:feature:*` Screens. That is why only this role has an empty
+        `layout { }`: it owns no file of its own. Where it goes is already allowed by the shared
+        component role and the Screen role, and writing it again here would declare the same
+        place twice.
 
-        中身は必ず `:ui` の `preview` package にある `PreviewRoot { }` で包む。
-        各プレビューが `AppTheme { }` を直接書くと、背景の有無やテーマの渡し方が
-        プレビューごとにずれていく（プレビューの土台役割を参照）。
+        The body is always wrapped in `PreviewRoot { }` from the `preview` package of `:ui`. If
+        each preview wrote `AppTheme { }` directly, whether a background is laid down and how
+        the theme is passed would drift from preview to preview (see the preview base role).
 
-        渡すのは状態だけ。`HomeScreenContentPreview` は `UiState.Content(...)` を、
-        `HomeScreenLoadingPreview` は `UiState.Loading` を渡して、同じ画面の別の状態を並べる。
-        `viewModel()` を取る方のオーバーロードはプレビューしない。明暗を並べたいときは
-        `PreviewRoot(darkTheme = true)` を使う（`AppButtonFilledDarkPreview`）。
+        Pass only state. `HomeScreenContentPreview` passes `UiState.Content(...)` and
+        `HomeScreenLoadingPreview` passes `UiState.Loading`, lining up different states of the
+        same screen. The overload that takes `viewModel()` is not previewed. To show light and
+        dark side by side, use `PreviewRoot(darkTheme = true)` (`AppButtonFilledDarkPreview`).
 
-        この約束はこのサンプルでは検査していない。「private であること」「`@Composable` で
-        あること」「`PreviewRoot` で包むこと」はどれもファイルの置き場所では表せず、書くなら
-        `konsist { }` になる。ただしこの役割は自分のファイルを持たないので、制約を置くのは
-        プレビューを抱える共通コンポーネント役割と Screen 役割の側になる。このサンプルでは
-        そこまではせず、文章だけの役割にしている（`konsist { }` の見本は sample/jvm）。
+        This convention is not checked in this sample. "Is private", "is a `@Composable`" and
+        "is wrapped in `PreviewRoot`" cannot be expressed by where a file sits, and writing them
+        would take `konsist { }`. Since this role owns no file, the constraint would go on the
+        shared component role and the Screen role that hold the previews. This sample does not
+        go that far and keeps it a prose-only role (for an example of `konsist { }`, see
+        sample/jvm).
     """.trimIndent()
-    example("AppButtonFilledPreview", "AppButton のプレビュー")
-    example("HomeScreenContentPreview", "HomeScreen のプレビュー")
+    example("AppButtonFilledPreview", "The preview of AppButton")
+    example("HomeScreenContentPreview", "The preview of HomeScreen")
     // Deliberately empty. In this sample a preview is a function inside the file of
     // the Composable it previews, so it owns no path of its own: claiming one here
     // would duplicate what `Component` and `Screen` already allow.

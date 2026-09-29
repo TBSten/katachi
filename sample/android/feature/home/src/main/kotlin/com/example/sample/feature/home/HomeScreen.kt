@@ -61,14 +61,14 @@ internal fun HomeScreen(
 
             is UiState.Content -> {
                 Text(
-                    text = "こんにちは、${uiState.value.userName} さん",
+                    text = "Hello, ${uiState.value.userName}",
                     style = MaterialTheme.typography.headlineSmall,
                 )
                 Text(
-                    text = "${uiState.value.visitCount} 回目の表示です",
+                    text = "Viewed ${uiState.value.visitCount} times",
                     style = MaterialTheme.typography.bodyMedium,
                 )
-                AppButton(text = "読み直す", onClick = onRefresh)
+                AppButton(text = "Reload", onClick = onRefresh)
             }
 
             is UiState.Error -> Text(
@@ -79,7 +79,7 @@ internal fun HomeScreen(
         }
 
         AppButton(
-            text = "設定へ",
+            text = "Settings",
             onClick = onNavigateToSettings,
             emphasis = AppButtonEmphasis.Outlined,
         )

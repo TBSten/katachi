@@ -1,30 +1,30 @@
 [katachi-sample-android](../README.md)
 
-# エントリーポイントレイヤー
+# Entrypoint layer
 
-:app が持つもの。起動の入口と、Android のリソース
+What :app holds: the launch entrypoints and the Android resources
 
-`:app` モジュールそのもの。このアプリで唯一、すべての feature を知ってよいモジュールで、
-`MainActivity` の中でナビゲーショングラフを組み立てて `:feature:home` と
-`:feature:settings` をつなぐ。
+The `:app` module itself. It is the only module in this app that may know every feature:
+`MainActivity` builds the navigation graph and connects `:feature:home` and
+`:feature:settings`.
 
-集めたのは、`:app` にしか置けない2つ。Android が起動時に触る型
-（`MainActivity` / `MainApplication`）と、アプリとして必要な Kotlin 以外のファイル
-（`AndroidManifest.xml` / `res/` / `proguard-rules.pro`）。どちらも
-「アプリケーションであること」から来るもので、アプリの機能そのものではない。
+It gathers two things that can only live in `:app`. The types Android touches at launch
+(`MainActivity` / `MainApplication`), and the non-Kotlin files an application needs
+(`AndroidManifest.xml` / `res/` / `proguard-rules.pro`). Both come from "being the
+application", not from any feature of the app.
 
-画面の中身はここには無い。`:app` は依存の一番上にいて下向きにしか参照しないので、
-`:app` を丸ごと差し替えても下のモジュールは壊れない。ここに Composable が増え始めたら、
-それは feature モジュールへ引っ越すべきもの。
+Screen contents are not here. `:app` sits at the top of the dependency graph and only
+refers downward, so replacing `:app` as a whole does not break the modules below it. If
+Composables start piling up here, they should move into a feature module.
 
-`:app` は package がモジュールパスから導けない2つのモジュールのうちの1つで、
-`com/example/sample` を直接書く。アプリ本体なので、`:ui` → `com.example.sample.ui` の
-ような対応を持たないため（もう1つは `:architecture-test`）。
+`:app` is one of the two modules whose package cannot be derived from the module path,
+so it writes `com/example/sample` directly. It is the application itself and has no
+mapping like `:ui` to `com.example.sample.ui` (the other one is `:architecture-test`).
 
 | Role | Summary |
 |---|---|
-| [エントリポイント](./Entrypoint.md) | :app に置く、Android がアプリを起動するときに触る型 |
-| [Android リソース](./AndroidResource.md) | AndroidManifest.xml・res/・proguard-rules.pro |
+| [Entrypoint](./Entrypoint.md) | The types Android touches when it launches the app, kept in :app |
+| [Android resources](./AndroidResource.md) | AndroidManifest.xml, res/ and proguard-rules.pro |
 
 ## Placement in this group
 
@@ -32,10 +32,10 @@
 :app
   src/main/
     kotlin/com/example/sample/
-      MainActivity.kt     エントリポイント
-      MainApplication.kt  エントリポイント
-    AndroidManifest.xml   Android リソース
-  proguard-rules.pro      Android リソース
+      MainActivity.kt     Entrypoint
+      MainApplication.kt  Entrypoint
+    AndroidManifest.xml   Android resources
+  proguard-rules.pro      Android resources
 
-app/src/main/res/         Android リソース
+app/src/main/res/         Android resources
 ```

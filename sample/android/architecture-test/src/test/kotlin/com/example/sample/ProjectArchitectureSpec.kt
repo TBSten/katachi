@@ -45,12 +45,12 @@ import me.tbsten.katachi.dsl.pascalCase
  */
 @OptIn(InternalKatachiApi::class, ExperimentalKatachiApi::class)
 class ProjectArchitectureSpec : FreeSpec({
-    "宣言した group がすべて宣言順にモデルに含まれる" {
+    "every declared group is in the model, in declaration order" {
         projectArchitecture.allGroups.map { it.qualifiedName } shouldContainExactly
             listOf("feature", "ui", "data", "app", "testing", "Gradle", "Gradle.GradleWrapper", "tool")
     }
 
-    "宣言した役割が group ごと正しくモデルに含まれる" {
+    "every declared role is in the model under the right group" {
         projectArchitecture.allRoles.map { it.qualifiedName }.toSet() shouldBe setOf(
             "feature.Screen",
             "feature.ViewModel",
@@ -85,14 +85,14 @@ class ProjectArchitectureSpec : FreeSpec({
         )
     }
 
-    "役割の宣言位置として、その役割を書いたファイルの行番号が取れる" {
+    "a role's declaration site is a line number in the file that declares it" {
         val screen = projectArchitecture.allRoles.single { it.qualifiedName == "feature.Screen" }
         screen.declaredAt.fileName shouldBe "ScreenRole.kt"
         // The exact line churns on every edit; that it is a real line is the point.
         (screen.declaredAt.lineNumber > 0) shouldBe true
     }
 
-    "group ごとに、その group の名前から決まるファイルで宣言されている" {
+    "each group is declared in the file its name determines" {
         // The naming rule is the whole convention, so it is checked rather than listed: a
         // group named `"debug-menu"` belongs in `DebugMenuGroup.kt`, using `pascalCase` -- the
         // same conversion a layout can call explicitly on a captured wildcard
@@ -105,18 +105,18 @@ class ProjectArchitectureSpec : FreeSpec({
         }
     }
 
-    "役割ごとに、その役割の名前から決まるファイルで宣言されている" {
+    "each role is declared in the file its name determines" {
         projectArchitecture.allRoles.filterNot { it.qualifiedName.isGradleGroupSubtree() }.forEach { role ->
             role.declaredAt.fileName shouldBe "${role.name.pascalCase}Role.kt"
         }
     }
 
-    "Gradle とその配下は、gradle() を呼んだ1箇所にまとめて宣言されている" {
-        // katachi はスタックトレースを自分のフレームの外まで辿って宣言位置を捕まえるので、
-        // `gradle()` の中で書かれた `"Gradle".group { }` やその中の `name { }` はそれぞれの
-        // 行ではなく、katachi の外で最初に見つかるフレーム — `groups/GradleGroup.kt` の
-        // `gradle()` 呼び出し — に集約される。「1宣言1ファイル」規約の例外ではなく、
-        // 宣言位置が実際に1箇所しかないことの表れ。
+    "Gradle and everything under it are declared at the single place that calls gradle()" {
+        // katachi walks the stack trace past its own frames to capture the declaration site,
+        // so the `"Gradle".group { }` written inside `gradle()` and the `name { }` inside it
+        // collapse onto the first frame outside katachi -- the `gradle()` call in
+        // `groups/GradleGroup.kt` -- rather than onto their own lines. This is not an exception
+        // to the "one declaration per file" convention; it shows there really is only one site.
         val gradleGroup = projectArchitecture.allGroups.single { it.qualifiedName == "Gradle" }
         gradleGroup.declaredAt.fileName shouldBe "GradleGroup.kt"
 
@@ -129,7 +129,7 @@ class ProjectArchitectureSpec : FreeSpec({
         sites shouldBe listOf(gradleGroup.declaredAt)
     }
 
-    "宣言位置が ProjectArchitecture.kt ではなく、宣言を書いたファイルを指す" {
+    "declaration sites point at the declaring file, not at ProjectArchitecture.kt" {
         // The point of the split: neither `architecture { }` nor the extension functions are
         // `inline`, so the captured frame is the declaration's own and never the `uiGroup()`
         // call in ProjectArchitecture.kt. If katachi captured the frame one level out, every
@@ -142,12 +142,12 @@ class ProjectArchitectureSpec : FreeSpec({
         fileNames shouldNotContain "ProjectArchitecture.kt"
     }
 
-    "layout の宣言位置も、その役割を書いたファイルになる" {
+    "a layout's declaration site is also the file that declares the role" {
         val screen = projectArchitecture.allRoles.single { it.qualifiedName == "feature.Screen" }
         screen.layouts.single().declaredAt.fileName shouldBe "ScreenRole.kt"
     }
 
-    "捕捉した行番号の行に、その宣言が実際に書かれている" {
+    "the captured line number holds the declaration itself" {
         // The tests above only prove the file name and that the line is positive. This one
         // reads the source back, so a one-frame shift — landing on the `uiGroup()` call in
         // ProjectArchitecture.kt, or on the `component()` call inside `UiGroup.kt` — fails
@@ -166,8 +166,8 @@ class ProjectArchitectureSpec : FreeSpec({
         }
     }
 
-    "Gradle group と tool group だけが documented = false になっている" {
-        // 書かなかった宣言には Documented が入らない。省略を true と読むのはここ（読む側）。
+    "only the Gradle and tool groups are documented = false" {
+        // A declaration left unwritten has no Documented. Reading an omission as true happens here, on the reading side.
         val documentedByGroup =
             projectArchitecture.allGroups.associate { it.qualifiedName to (it[Documented] ?: true) }
         documentedByGroup shouldBe mapOf(
@@ -182,7 +182,7 @@ class ProjectArchitectureSpec : FreeSpec({
         )
     }
 
-    "Gradle group と tool group の役割だけが documented = false になっている" {
+    "only the roles of the Gradle and tool groups are documented = false" {
         val undocumentedGroupPaths = listOf(listOf("Gradle"), listOf("Gradle", "GradleWrapper"), listOf("tool"))
         val (undocumentedRoles, otherRoles) =
             projectArchitecture.allRoles.partition { it.groupPath in undocumentedGroupPaths }
@@ -190,29 +190,29 @@ class ProjectArchitectureSpec : FreeSpec({
         otherRoles.map { it[Documented] ?: true }.toSet() shouldBe setOf(true)
     }
 
-    "title を省略した役割は Title を持たず、役割名がそのまま表示名になる" {
+    "a role without a title has no Title, and its name is the display name" {
         val git = projectArchitecture.allRoles.single { it.qualifiedName == "tool.Git" }
         git[Title] shouldBe null
         (git[Title] ?: git.name) shouldBe "Git"
     }
 
-    "title を書いた役割はその表示名になる" {
+    "a role with a title uses it as its display name" {
         val screen = projectArchitecture.allRoles.single { it.qualifiedName == "feature.Screen" }
         screen[Title] shouldBe "Screen"
     }
 
-    "1つの役割が複数の置き場所を layout として持てる" {
+    "one role can have several places as layouts" {
         val repository = projectArchitecture.allRoles.single { it.qualifiedName == "data.Repository" }
         repository.layouts.size shouldBe 2
     }
 
-    "example は呼んだ順に保持される" {
+    "examples are kept in the order they were called" {
         val repository = projectArchitecture.allRoles.single { it.qualifiedName == "data.Repository" }
         repository[Examples].orEmpty().map { it.name } shouldContainExactly
             listOf("UserRepository", "UserRepositoryImpl")
     }
 
-    "役割を1つの group ぶん欠いた定義では、その group が覆っていたファイルだけが違反になる" {
+    "a definition missing one group's roles flags only the files that group covered" {
         // The counterpart of ProjectArchitectureTest: that one proves the definition
         // accepts the repository, this one proves the traversal actually reached it. An
         // empty result here would mean the check walked nothing and passed for free.
@@ -276,7 +276,7 @@ private fun declarationSourceLines(): Map<String, List<String>> {
     val sourceRoot = generateSequence(workingDir) { it.parentFile }
         .map { File(it, relativePath) }
         .firstOrNull { it.isDirectory }
-    requireNotNull(sourceRoot) { "$relativePath が $workingDir とその親に見つからない" }
+    requireNotNull(sourceRoot) { "$relativePath was not found in $workingDir or its parents" }
 
     return sourceRoot.walkTopDown()
         .filter { it.isFile && it.extension == "kt" }

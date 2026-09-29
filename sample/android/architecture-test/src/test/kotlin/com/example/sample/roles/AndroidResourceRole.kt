@@ -5,27 +5,28 @@ import me.tbsten.katachi.dsl.gradle.*
 
 /** The role of everything `:app` carries that is not Kotlin. */
 fun DeclarationContainerScope.androidResource() = "AndroidResource" {
-    title = "Android リソース"
-    summary = "AndroidManifest.xml・res/・proguard-rules.pro"
+    title = "Android resources"
+    summary = "AndroidManifest.xml, res/ and proguard-rules.pro"
     description = """
-        `:app` が持つ、Kotlin ではないファイル。`AndroidManifest.xml`、`res/`、
-        `proguard-rules.pro` の3つで、どれも形を決めているのは Android のビルドシステムであって
-        このプロジェクトではない。
+        What `:app` carries that is not Kotlin: `AndroidManifest.xml`, `res/` and
+        `proguard-rules.pro`. The shape of all three is decided by the Android build system, not
+        by this project.
 
-        `AndroidManifest.xml` と `proguard-rules.pro` は名指し。どちらもアプリに1つしか無いので、
-        2つ目が現れたら違反にする。
+        `AndroidManifest.xml` and `proguard-rules.pro` are named exactly. There is only one of
+        each per app, so a second one is a violation.
 
-        `res/` は `ignore()` してある。中の構成（`values/` `drawable-*/` など）は
-        Android のリソースシステムが決めた規則で、AGP がすでに検証している。
-        katachi 側でもう一度書き下すと、同じ規則の写しが2つできて、片方が必ず古くなる。
-        いま入っているのは `values/strings.xml` と `values/themes.xml`。
+        `res/` is `ignore()`d. Its inner structure (`values/`, `drawable-*/` and so on) follows
+        rules set by the Android resource system, which AGP already validates. Writing it down
+        again in katachi would make a second copy of the same rules, and one of the two would
+        always go stale. Right now it holds `values/strings.xml` and `values/themes.xml`.
 
-        リソースを持てるモジュールは `:app` だけではない（`:ui` も Android ライブラリ）が、
-        このサンプルでは `:app` 以外に `res/` が無いので、この役割は `:app` だけを見ている。
-        他のモジュールにリソースを置くなら、そのとき役割を広げる。
+
+        `:app` is not the only module that can hold resources (`:ui` is an Android library too),
+        but no module other than `:app` has a `res/` in this sample, so this role looks only at
+        `:app`. If resources are placed in another module, widen the role then.
     """.trimIndent()
-    example("AndroidManifest.xml", "アプリの構成")
-    example("res/values/strings.xml", "文字列リソース")
+    example("AndroidManifest.xml", "The app manifest")
+    example("res/values/strings.xml", "String resources")
     layout {
         ":app".module {
             "proguard-rules.pro".file()

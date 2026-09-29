@@ -11,50 +11,55 @@ import me.tbsten.katachi.dsl.DeclarationContainerScope
  * because that difference is the only thing worth knowing about either of them.
  */
 fun DeclarationContainerScope.generatedDocumentation() = "GeneratedDocumentation" {
-    title = "生成ドキュメント"
-    summary = "この定義から書き出され、リポジトリにコミットされる Markdown"
+    title = "Generated documentation"
+    summary = "Markdown written out from this definition and committed to the repository"
     description = """
-        `./gradlew :architecture-test:katachiDocs` が、この定義そのものから
-        書き出す Markdown。出力先は `katachi { processors { docs { outputDir } } }` で
-        `sample/android/docs` に向けてある。
+        The Markdown that `./gradlew :architecture-test:katachiDocs` writes out from this
+        definition itself. The output goes to `sample/android/docs`, set in `katachi {
+        processors { docs { outputDir } } }`.
 
-        これは手で書かない。`katachiDocs` が書く。ここに書き足した文章は次の生成で消える。
-        直す場所は常に定義側で、役割や group の `title` `summary` `description` `example` が
-        そのままページになる。
+        Never written by hand. `katachiDocs` writes it, and any text added here disappears at
+        the next generation. The place to fix is always the definition: the `title`, `summary`,
+        `description` and `example` of a role or group become the page as they are.
 
-        `tool` グループの `Documentation` 役割（ルートの `README.md`）とは逆側の役割。
-        あちらは人が書く散文で、定義からは出てこないこと（環境の用意、AGP を上げられない理由、
-        検査の回し方）を引き受ける。こちらは人が1文字も書かない。同じ「ドキュメント」でも、
-        書き換えてよい場所とよくない場所がまるで違うので、1つの役割にまとめていない。
+        The opposite side of the `Documentation` role of the `tool` group (the root
+        `README.md`). That one is prose people write, and takes on what does not come out of the
+        definition (preparing the environment, why AGP cannot be raised, how to run the check).
+        This one is never typed by a person. Both are "documentation", but where you may and may
+        not edit differs so much that they are not merged into one role.
 
-        生成物なのに `build/` の外に置いているのは、リポジトリを開いた人がそのまま読めるように
-        するため。その代わり既定の `files = gitTracked()` の検査対象に入るので、この役割が要る。
-        役割を消すと `[UnexpectedDirectory] docs` で `:architecture-test:test` が落ちる。
+        It is placed outside `build/` although it is generated, so that someone who opens the
+        repository can read it directly. In return it falls under the default `files =
+        gitTracked()` check, which is why this role is needed. Removing the role makes
+        `:architecture-test:test` fail with `[UnexpectedDirectory] docs`.
 
-        古くなっていないかは CI が `--arg mode=check` で見ている。`mode=check` は何も書かずに
-        ディスク上の内容と突き合わせ、食い違えば例外で落ちるので、定義を変えて生成し忘れたまま
-        push するとリポジトリルートの `checkSampleAndroid` が赤くなる。手元で直すには
-        `katachiDocs` をもう一度走らせるだけ（`mode` を付けなければ書き込み）。
+        CI checks whether it has gone stale with `--arg mode=check`. `mode=check` writes nothing
+        and compares against what is on disk, failing with an exception on any difference, so
+        pushing a definition change without regenerating turns `checkSampleAndroid` at the
+        repository root red. To fix it locally, just run `katachiDocs` again (without `mode` it
+        writes).
 
-        `documented = true`。生成物であっても一覧に出ないと、この `docs/` が何なのかが
-        どこにも書かれていないことになる。この役割自身のページ
-        （`docs/testing/GeneratedDocumentation.md`）も生成される。`Documentation` が
-        `documented = false` なのと対になっていて、同じグループに置かなかった理由でもある。
+        `documented = true`. If a generated file were missing from the list, nowhere would say
+        what this `docs/` is. The page of this role itself
+        (`docs/testing/GeneratedDocumentation.md`) is generated too. This pairs with
+        `Documentation` being `documented = false`, and is also why the two are not in the same
+        group.
 
-        `layout { }` の `**` は0段以上に一致するので、索引の `docs/README.md` も
-        `docs/<group>/README.md` も `docs/<group>/<役割>.md` も1行で覆える。group を入れ子に
-        してもこの行は変わらない。索引だけワイルドカード無しで別に書いてあり、そちらは
-        `required`。1度も生成していない状態がそこで見つかる。
+        `**` in `layout { }` matches zero or more levels, so one line covers the index
+        `docs/README.md`, `docs/<group>/README.md` and `docs/<group>/<role>.md`. The line does
+        not change if groups are nested. Only the index is written separately without a
+        wildcard, and that one is `required`, so a state where nothing has been generated yet is
+        found there.
     """.trimIndent()
     forbiddenContents = """
-        - 手書きのドキュメント。`docs/` 配下の `*.md` は生成のたびに作り直され、この定義が
-          作らないページは削除される
-        - `.md` 以外の資源。いまの `layout { }` は `*.md` しか認めていないので、画像を足すなら
-          役割を書き換えるところから始まる
+        - Hand-written documentation. The `*.md` files under `docs/` are rebuilt at every
+          generation, and pages this definition does not produce are deleted
+        - Resources other than `.md`. The current `layout { }` allows only `*.md`, so adding
+          images starts with rewriting the role
     """.trimIndent()
-    example("docs/README.md", "全ページの索引と、group ごとの一覧")
-    example("docs/feature/Screen.md", "役割1つのページ")
-    example("docs/feature/README.md", "group 1つのページ")
+    example("docs/README.md", "The index of all pages, and the list per group")
+    example("docs/feature/Screen.md", "The page of one role")
+    example("docs/feature/README.md", "The page of one group")
     layout {
         "docs" {
             // The index, written on every run, so it is the one entry without a wildcard --

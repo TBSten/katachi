@@ -10,5 +10,5 @@ package com.example.sample.feature.home
  * the test. Moving it into `component/` turns its entry stale until the baseline is pruned.
  */
 internal object HomeFormatter {
-    fun visitCountLabel(count: Int): String = "$count 回目の訪問"
+    fun visitCountLabel(count: Int): String = "Visit #$count"
 }

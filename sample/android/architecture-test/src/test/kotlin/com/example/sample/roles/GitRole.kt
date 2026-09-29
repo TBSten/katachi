@@ -6,24 +6,26 @@ import me.tbsten.katachi.dsl.DeclarationContainerScope
 fun DeclarationContainerScope.git() = "Git" {
     // No `title` here on purpose: an undocumented role has no display name to show,
     // and the sample asserts that the role name is then used as-is.
-    summary = ".gitignore など"
+    summary = ".gitignore and the like"
     documented = false
     description = """
-        git 自身が読む設定ファイル。いまはリポジトリルートの `.gitignore` 1つだけ。
+        Configuration files that git itself reads. For now only the single `.gitignore` at the
+        repository root.
 
-        katachi にとってもただの設定ファイルではない。既定の `files = gitTracked()` が
-        `git ls-files --cached --others --exclude-standard` の結果だけを検査対象にするので、
-        ここで無視されているものは最初から検査に上がってこない。各モジュールの `build/`、
-        `.gradle/`、`.kotlin/`、`local.properties` に役割を書かずに済んでいるのはそのため。
-        逆に `files = wholeTree()` に切り替えると、これらが軒並み `Unexpected` として出る。
+        It is more than a plain config file for katachi too. The default `files = gitTracked()`
+        checks only the result of `git ls-files --cached --others --exclude-standard`, so
+        whatever is ignored here never reaches the check in the first place. That is why no role
+        is needed for each module's `build/`, `.gradle/`, `.kotlin/` or `local.properties`.
+        Conversely, switching to `files = wholeTree()` would report all of them as `Unexpected`.
 
-        `.gitignore` に手を入れるときは、検査対象が動くことを意識する。無視するものを増やせば
-        検査からも消え、減らせば役割の無いファイルとして違反になる。
+        When editing `.gitignore`, be aware that the set of checked files moves. Ignoring more
+        removes files from the check, and ignoring less turns them into violations as files
+        without a role.
 
-        この役割だけ `title` を書いていない。表示名を持たない役割は役割名（`Git`）が
-        そのまま使われる、という katachi の挙動をこのサンプルが実証するため。
+        Only this role has no `title`. This sample demonstrates katachi's behavior that a role
+        without a display name uses its role name (`Git`) as is.
     """.trimIndent()
-    example(".gitignore", "git が無視するものの一覧")
+    example(".gitignore", "The list of what git ignores")
     layout {
         ".gitignore".file()
     }

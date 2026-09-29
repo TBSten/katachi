@@ -17,32 +17,34 @@ import me.tbsten.katachi.dsl.pascalCase
  */
 fun DeclarationContainerScope.screen() = "Screen" {
     title = "Screen"
-    summary = "1つの画面の UI 実装となる @Composable。:feature:<name> ごとに <Name>Screen.kt を置く"
+    summary = "A @Composable that implements the UI of one screen. One <Name>Screen.kt per :feature:<name>"
     description = """
-        画面そのものを描く `@Composable`。`:feature:home` なら `HomeScreen.kt` が1つ、という
-        対応が固定で、ファイル名はモジュール名から決まる。`:feature:home` に `ProfileScreen.kt` を
-        置くことはできず、`HomeScreen.kt` を消すこともできない。画面が2つになったら
-        feature モジュールごと分ける。
+        The `@Composable` that draws the screen itself. The correspondence is fixed:
+        `:feature:home` has exactly one `HomeScreen.kt`, and the file name is decided by the
+        module name. You cannot put a `ProfileScreen.kt` in `:feature:home`, and you cannot
+        delete `HomeScreen.kt`. When there are two screens, split them into separate feature
+        modules.
 
-        1つのファイルに `HomeScreen` を2つ重ねて置く。どちらも `internal`。ナビゲーションから
-        呼ばれる方は `viewModel()` を既定引数で受け取り、`collectAsStateWithLifecycle()` で
-        状態を集めてもう一方へ渡すだけ。もう一方は `UiState<HomeContent>` とコールバックだけを
-        受け取る状態の関数で、`@Preview` が触るのはこちら。
+        Two `HomeScreen`s sit stacked in one file, both `internal`. The one called from
+        navigation takes `viewModel()` as a default argument, collects state with
+        `collectAsStateWithLifecycle()` and just hands it to the other. The other is a stateless
+        function that takes only `UiState<HomeContent>` and callbacks, and it is what `@Preview`
+        touches.
     """.trimIndent()
     allowedContents = """
-        - 画面のレイアウトと、`UiState` の `Loading` / `Content` / `Error` の出し分け
-        - `:ui` の共通コンポーネント（`AppButton` など）と Material3 の呼び出し
-        - この画面のための `@Preview`（プレビュー役割を参照）
+        - The screen layout, and switching between `Loading` / `Content` / `Error` of `UiState`
+        - Shared components from `:ui` (such as `AppButton`) and calls to Material3
+        - The `@Preview` for this screen (see the Preview role)
     """.trimIndent()
     forbiddenContents = """
-        - 状態の組み立てと保持。ViewModel の仕事で、`HomeContent` のような状態の型も
-          ViewModel と同じファイルに置く
-        - `NavHostController` への依存。画面から出ていく遷移は、引数で受け取った
-          コールバック（`onNavigateToSettings` / `onNavigateUp`）を呼ぶだけにする
-        - 他の feature の型。feature 同士は互いを参照せず、`:app` が Route 越しにつなぐ
+        - Building and holding state. That is the ViewModel's job, and state types such as
+          `HomeContent` also go in the same file as the ViewModel
+        - Dependencies on `NavHostController`. Navigation out of a screen only calls the
+          callbacks received as arguments (`onNavigateToSettings` / `onNavigateUp`)
+        - Types of other features. Features do not refer to each other; `:app` connects them through the Route
     """.trimIndent()
-    example("HomeScreen", "ホーム画面")
-    example("SettingsScreen", "設定画面")
+    example("HomeScreen", "The home screen")
+    example("SettingsScreen", "The settings screen")
     layout {
         ":feature:${capture("feature")}".module {
             featureSources() / "${wildcard("feature").pascalCase}Screen".ktFile()

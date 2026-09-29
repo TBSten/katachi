@@ -21,27 +21,29 @@ import me.tbsten.katachi.dsl.DeclarationContainerScope
  * that package starts without any role file ever repeating `com/example/sample`.
  */
 fun DeclarationContainerScope.uiGroup() = "ui".group {
-    title = "UI (共通レイヤー)"
-    summary = "feature をまたいで共有する UI。:ui の4つの package と :navigation"
+    title = "UI (shared layer)"
+    summary = "UI shared across features: the four packages of :ui, and :navigation"
     description = """
-        どの画面からも使われる UI と、その土台。`:ui` は1つのモジュールを package で割ってあり、
-        `component`（共通部品）・`theme`（色とタイポグラフィ）・`core`（UI 層の語彙）・
-        `preview`（プレビューの土台）の4つ。`:navigation` は画面遷移の窓口だけを持つ別モジュール。
+        The UI used by every screen, and its foundation. `:ui` is one module split into
+        packages: `component` (shared parts), `theme` (colors and typography), `core` (the
+        vocabulary of the UI layer) and `preview` (the base for previews). `:navigation` is a
+        separate module that holds only the entry point for screen transitions.
 
-        `:ui` は下の層も横の feature も知らないので、`:data` や `:feature:*` への依存は入らない。
+        `:ui` knows neither the layers below nor the features beside it, so no dependency on
+        `:data` or `:feature:*` comes in.
 
-        feature 側の Screen / ViewModel / Route がここに無いのは、増え方が違うから。
-        あちらはモジュールを足せば勝手に増える場所で、こちらは1つ足すたびに
-        「全画面で使うのか」を決める場所なので、group を分けてある。
+        The feature-side Screen / ViewModel / Route are not here because they grow differently.
+        That is a place that grows just by adding a module, whereas here every addition is a
+        decision about whether every screen will use it, so the groups are separate.
 
-        `:navigation` が `:ui` と別モジュールなのは、依存の向きのため。feature は
-        `AppNavigator` インターフェースにだけ依存し、`NavHostController` には触らない。
-        画面部品を使いたいだけのコードにナビゲーションの依存を持ち込ませないためでもある。
-        グラフの組み立ては `:app` が行う。
+        `:navigation` is a separate module from `:ui` because of the direction of dependencies.
+        Features depend only on the `AppNavigator` interface and never touch
+        `NavHostController`. It also keeps code that just wants screen parts from pulling in the
+        navigation dependency. Building the graph is done by `:app`.
     """.trimIndent()
     allowedContents = """
-        ここに置いてよいのは、2つ以上の feature が使うもの、あるいは使うと決まっているもの。
-        1つの画面でしか使わないものは、その feature モジュールに置く。
+        Only what two or more features use, or are decided to use, belongs here.
+        Anything used by a single screen goes in that feature module.
     """.trimIndent()
 
     component()

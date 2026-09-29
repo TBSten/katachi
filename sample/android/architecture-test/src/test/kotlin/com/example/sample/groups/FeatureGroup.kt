@@ -35,34 +35,36 @@ import me.tbsten.katachi.dsl.gradle.*
  * [featureSources] — this project's own addition to the layout vocabulary, not katachi's.
  */
 fun DeclarationContainerScope.featureGroup() = "feature".group {
-    title = "各画面の構成"
-    summary = "画面1つぶんのモジュール。:feature:<name> ごとに Screen / ViewModel / Route を1つずつ置き、画面の部品とテストを足していく"
+    title = "Structure of each screen"
+    summary = "A module per screen. Each :feature:<name> holds one Screen / ViewModel / Route, and grows with screen parts and tests"
     description = """
-        `:feature:home` `:feature:settings` のような、画面1つぶんのモジュールの中身。
-        どのモジュールにも `<Name>Screen.kt` `<Name>ViewModel.kt` `<Name>Route.kt` が
-        1つずつあり、ファイル名はモジュール名から決まる。画面が増えるときは
-        モジュールごと増やすので、1つの feature に2つ目の画面は入らない。
+        The contents of a module that holds one screen, such as `:feature:home` or
+        `:feature:settings`. Every module has one `<Name>Screen.kt`, `<Name>ViewModel.kt` and
+        `<Name>Route.kt`, and the file names are determined by the module name. A new screen
+        means a new module, so a feature never holds a second screen.
 
-        3つに割ってあるのは、変わる理由が別々だから。Screen は見た目、ViewModel は状態、
-        Route は外とのつなぎ目で、この中で feature の外から参照されるのは Route だけ。
-        `:app` が知っているのも Route だけで、Screen と ViewModel はモジュールの中に閉じる。
+        It is split into three because they change for different reasons. The Screen is the
+        look, the ViewModel is the state, and the Route is the seam to the outside; of these,
+        only the Route is referenced from outside the feature. `:app` knows only the Route, and
+        the Screen and ViewModel stay inside the module.
 
-        共通レイヤー（`:ui` と `:navigation`）を同じ group に入れていないのは、増え方が違うから。
-        feature は「足すのが当たり前」の場所なので `":feature:*"` と書いてあり、
-        `settings.gradle.kts` に `include(":feature:profile")` を足せば、この定義を1行も
-        触らずに検査対象になる。共通レイヤーに1つ足すのは毎回が設計判断で、そちらは
-        UI (共通レイヤー) group にある。
+        The shared layers (`:ui` and `:navigation`) are not in this group because they grow
+        differently. A feature is a place where adding is the norm, so it is written as
+        `":feature:*"`: adding `include(":feature:profile")` to `settings.gradle.kts` brings it
+        under the check without touching this definition. Adding to a shared layer is a design
+        decision every time, and that lives in the UI (shared layer) group.
 
-        feature 同士は互いに依存しない。別の画面へ遷移するときも、遷移先の決定は `:app` 側にあり、
-        feature が受け取るのはコールバック1つ。つながりは `:app` の1箇所にしかないので、
-        feature を消すときに他の feature を読み直さなくて済む。
+        Features do not depend on each other. Even when navigating to another screen, the
+        destination is decided on the `:app` side, and the feature only receives one callback.
+        The connection exists in a single place in `:app`, so removing a feature does not
+        require re-reading the others.
 
-        画面の部品とテストは、1つの feature の中で数が増えていく。どちらもファイル名を
-        モジュール名で始め（`HomeUserCard.kt`、`HomeViewModelTest.kt`）、テンプレートから
-        生成できる。画面の部品は `":feature:*"` の `*` に `feature` と名前を付けてあり、
-        `--arg feature=home` で生成先のモジュールを選ぶので、feature を足してもこの定義は
-        触らなくてよい。テストだけはテンプレートの中身が画面ごとに違うのでモジュールを
-        1つずつ名指ししてあり、feature を足したら `FeatureModule` にも1行足す。
+        Screen parts and tests multiply inside one feature. Both start their file names with
+        the module name (`HomeUserCard.kt`, `HomeViewModelTest.kt`) and can be generated from
+        templates. The `*` of `":feature:*"` is named `feature` for screen parts, and
+        `--arg feature=home` picks the module to generate into, so adding a feature does not
+        touch this definition. Only tests name each module one by one, because the template
+        content differs per screen; when adding a feature, add one line to `FeatureModule` too.
     """.trimIndent()
 
     screen()
@@ -135,7 +137,7 @@ internal fun eachFeatureModule(block: LayoutDirectoryScope.(FeatureModule) -> Un
         FeatureModule.entries.forEach { feature ->
             feature.modulePath.module {
                 // Two or more places for one role want a sentence each on when to pick it.
-                description = "`${feature.modulePath}` の分。ファイル名は `${feature.name}` で始める"
+                description = "For `${feature.modulePath}`. Start the file name with `${feature.name}`"
                 block(feature)
             }
         }

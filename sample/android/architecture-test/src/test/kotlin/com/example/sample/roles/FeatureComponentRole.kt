@@ -19,32 +19,33 @@ import me.tbsten.katachi.dsl.template
  * package and the file name from it.
  */
 fun DeclarationContainerScope.featureComponent() = "FeatureComponent" {
-    title = "画面の部品"
-    summary = "1つの画面でしか使わない @Composable。:feature:<name> の component package に " +
-        "<Name>*.kt で置く"
+    title = "Screen part"
+    summary = "A @Composable used by only one screen. Placed as <Name>*.kt in the component package of :feature:<name>"
     description = """
-        Screen が大きくなってきたときに切り出す、その画面専用の部品。`:feature:home` なら
-        `component/HomeUserCard.kt` のように、feature モジュールの `component` package に置き、
-        ファイル名はモジュール名（`Home`）で始める。1つの feature に何個あってもよい。
+        A part dedicated to a screen, split out when the Screen grows large. For `:feature:home`
+        it goes in the `component` package of the feature module, like
+        `component/HomeUserCard.kt`, and the file name starts with the module name (`Home`). A
+        feature may have any number of them.
 
-        共通コンポーネント役割との違いは、使う画面の数。2つ目の feature から呼びたくなったら
-        `:ui` の component package へ移して `App*` にする。feature 同士は互いに依存しないので、
-        ここに置いたままでは他の feature からは呼べない。
+        The difference from the shared component role is the number of screens that use it. Once
+        a second feature wants to call it, move it to the component package of `:ui` and name it
+        `App*`. Features do not depend on each other, so a part left here cannot be called from
+        another feature.
 
-        テンプレートから生成できる。`:feature:*` の `*` に `feature` と名前を付けてあるので、
-        `--arg template=feature.FeatureComponent --arg feature=home --arg name=UserCard` で
-        `HomeUserCard.kt` が `:feature:home` に入る。`feature` に渡せるのは実在する
-        feature モジュールの名前だけ。
+        Can be generated from a template. The `*` of `:feature:*` is named `feature`, so `--arg
+        template=feature.FeatureComponent --arg feature=home --arg name=UserCard` puts
+        `HomeUserCard.kt` into `:feature:home`. `feature` accepts only the name of a feature
+        module that exists.
     """.trimIndent()
     allowedContents = """
-        - 値とコールバックを受け取る `internal` な `@Composable`
-        - その部品の `@Preview`（`PreviewRoot { }` で包む。プレビュー役割を参照）
+        - An `internal` `@Composable` that takes values and callbacks
+        - The `@Preview` of that part (wrapped in `PreviewRoot { }`; see the Preview role)
     """.trimIndent()
     forbiddenContents = """
-        - ViewModel への依存。状態は Screen から値で受け取る
-        - 他の feature の型、`public` な宣言。外から見えるのは Route だけ
+        - Dependencies on a ViewModel. State comes from the Screen as values
+        - Types of other features, and `public` declarations. Only the Route is visible from outside
     """.trimIndent()
-    example("HomeUserCard", "ホーム画面だけで使うカード（例）")
+    example("HomeUserCard", "A card used only by the home screen (example)")
     // The module is chosen by `--arg feature=...`, the name the layout gave `:feature:*`.
     // A module that does not exist is refused rather than created.
     //   ./gradlew :architecture-test:katachiTemplate \

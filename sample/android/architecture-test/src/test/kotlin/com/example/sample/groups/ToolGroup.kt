@@ -19,24 +19,25 @@ import me.tbsten.katachi.dsl.DeclarationContainerScope
  */
 fun DeclarationContainerScope.toolGroup() = "tool".group {
     documented = false
-    title = "ツール"
-    summary = "アプリでもビルドでもない、リポジトリが抱えている道具"
+    title = "Tools"
+    summary = "Tools the repository carries that are neither the app nor the build"
     description = """
-        リポジトリのルートに置かれる、アプリでもビルド設定でもないファイル。いまは git が読む
-        `.gitignore` と、人が読む `README.md` の2つ。CI の設定やフォーマッタの設定が増えたら、
-        役割を足してここに入れる。
+        Files at the repository root that are neither the app nor build configuration. For now
+        that is `.gitignore`, which git reads, and `README.md`, which people read. When CI
+        settings or formatter settings appear, add a role and put it here.
 
-        `Gradle` group とは別にしてある。group は1度しか宣言できないのに対し、ここにあるのは
-        それぞれ別の道具のファイルなので、「ビルド」とひとまとめにすると次のファイルを
-        どの役割に足すべきかが分からなくなる。
+        It is kept apart from the `Gradle` group. A group can be declared only once, and each
+        file here belongs to a different tool, so lumping them together as "build" would leave
+        no way to tell which role the next file belongs to.
 
-        `documented = false`。ビルド設定と同じく、このアプリが何であるかを語らないため。
+        `documented = false`, like the build configuration, because these files do not say
+        what this app is.
 
-        この group は、検査が素通りしていないことの証明にも使われている。
-        `ProjectArchitectureSpec` は `toolGroup()` だけを外した定義を組み、`.gitignore` と
-        `README.md` の2件が `[UnexpectedFile]` として増える（baseline に棚上げした違反は
-        もともと出る）ことを確かめる。group を外しても
-        違反が0件なら、検査は何も歩いていないことになる。
+        This group is also used to prove the check is not passing by accident.
+        `ProjectArchitectureSpec` builds a definition without `toolGroup()` and checks that
+        `.gitignore` and `README.md` show up as two more `[UnexpectedFile]` violations (the
+        ones held back by the baseline appear either way). If removing the group produced no
+        violations, the check would not be walking anything.
     """.trimIndent()
 
     git()

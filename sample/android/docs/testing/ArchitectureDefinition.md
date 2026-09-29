@@ -1,32 +1,34 @@
-[katachi-sample-android](../README.md) / [テスト](README.md)
+[katachi-sample-android](../README.md) / [Testing](README.md)
 
-# アーキテクチャ定義
+# Architecture definition
 
-katachi の DSL で書かれた役割の定義。どのレイヤーにも属さない
+The role definitions written in the katachi DSL. Belongs to no layer
 
-katachi の DSL で書かれた、この定義そのもの。`:architecture-test` という、
-アプリのどのレイヤーにも属さない素の `kotlin("jvm")` モジュールに置く。
-Android のモジュールではないのは、katachi が JVM のライブラリで、
-プロジェクトの種別によらず同じ形にできるから。
+This definition itself, written in the katachi DSL. It lives in `:architecture-test`, a
+plain `kotlin("jvm")` module that belongs to no layer of the app. It is not an Android
+module because katachi is a JVM library and the definition can take the same shape
+whatever the project type.
 
-1宣言1ファイルで、ファイル名がその種類を表す。`ProjectArchitecture.kt` が入口で
-group の関数を呼ぶだけ、`groups/<Name>Group.kt` が group を1つ、
-`roles/<Name>Role.kt` が役割を1つ。`groups/` と `roles/` には `*Group.kt` `*Role.kt` しか
-置けないので、共有のヘルパーが3つ目の種類として紛れ込むと `[UnexpectedFile]` になる。
-唯一の例外が `DocumentSections.kt` で、全 group・全役割が `by` で使う節の定義だけを
-1ファイルにまとめてあるので、`ProjectArchitecture.kt` と同じく名指しで許してある。
+One declaration per file, and the file name says which kind it is.
+`ProjectArchitecture.kt` is the entrypoint and only calls the group functions,
+`groups/<Name>Group.kt` holds one group, and `roles/<Name>Role.kt` holds one role. Only
+`*Group.kt` and `*Role.kt` may sit in `groups/` and `roles/`, so a shared helper
+slipping in as a third kind becomes an `[UnexpectedFile]`. The one exception is
+`DocumentSections.kt`, which gathers just the section definitions every group and role
+uses with `by`, and is allowed by name, like `ProjectArchitecture.kt`.
 
-拡張関数を `inline` にしてはいけない。katachi は宣言位置をスタックトレースから取るので、
-inline すると呼び出し元ファイルの、誰も書いていない行を指すようになる。
-`ProjectArchitectureSpec` がその行を実際に読み戻して見張っている。
+The extension functions must not be `inline`. katachi takes the declaration site from
+the stack trace, so inlining would point at a line in the caller's file that nobody
+wrote. `ProjectArchitectureSpec` guards this by reading that line back.
 
-`:architecture-test` は `:app` と並ぶ、package がモジュールパスから導けない
-モジュール。そのまま当てると `com/example/sample/architectureTest` になってしまうので、
-この役割とテストコード役割はどちらも `com/example/sample` を直接書く。
-アプリの一部ではないものに、アプリの package 規則を当てる意味がない。
+`:architecture-test`, like `:app`, is a module whose package cannot be derived from the
+module path. Applied as is it would become `com/example/sample/architectureTest`, so
+this role and the test-code role both write `com/example/sample` directly. There is no
+point applying the app's package rule to something that is not part of the app.
 
-テストと同じモジュールを共有しているが、両者は別のことを書いている。
-定義は「どんな形をしているか」、テストは「どう振る舞うか」。区別はファイルの場所と名前でつく。
+It shares a module with the tests, but the two say different things. The definition says
+"what shape it has" and the tests say "how it behaves". They are told apart by file
+location and name.
 
 ## Placement
 
@@ -39,5 +41,5 @@ inline すると呼び出し元ファイルの、誰も書いていない行を�
 
 ## Examples
 
-- `ProjectArchitecture.kt` ... 定義の入口
-- `roles/ScreenRole.kt` ... Screen の役割の宣言
+- `ProjectArchitecture.kt` ... The entrypoint of the definition
+- `roles/ScreenRole.kt` ... The declaration of the Screen role

@@ -13,42 +13,43 @@ import me.tbsten.katachi.dsl.DeclarationContainerScope
  * `files = gitTracked()`, which is why each of them needs a role of its own.
  */
 fun DeclarationContainerScope.layoutSnapshot() = "LayoutSnapshot" {
-    title = "レイアウトのスナップショット"
-    summary = "この定義を平坦化して全行書き出した記録。定義の変化を人が差分でレビューするためにある"
+    title = "Layout snapshot"
+    summary = "A record of every line of this definition once flattened, so people can review changes to the definition as a diff"
     description = """
-        `:architecture-test:test` が、この定義を平坦化した結果を1行1エントリで書き出したもの。
-        1行は `<役割の qualifiedName>` `<パス>` `<種別>` `<required|optional>` の4つ組で、
-        `layout { }` が最終的に何を許しているのかがそのまま並ぶ。
+        What `:architecture-test:test` writes out from the flattened definition, one entry per
+        line. A line is the four-tuple `<role qualifiedName>` `<path>` `<kind>`
+        `<required|optional>`, so what `layout { }` finally allows is laid out as is.
 
-        これは手で編集しない。`LayoutSnapshotSpec` が書く。更新するには
-        `./gradlew :architecture-test:test -Dkatachi.snapshot.update=true` を走らせるだけ。
+        Not edited by hand. `LayoutSnapshotSpec` writes it. To update it, just run `./gradlew
+        :architecture-test:test -Dkatachi.snapshot.update=true`.
 
-        何のためにあるかというと、定義の変化を人が差分でレビューするため。9つのモジュールに
-        散った役割を `.module { }` や `modulePackage` で書き直したとき、読みやすくなっただけ
-        なのか、検査する木そのものが変わってしまったのかは、定義のコードを眺めても分からない。
-        平坦化した結果をコミット済みのテキストにしておけば、`git diff` の行数がそのまま答えに
-        なる。1行も動かなければ書き換えは等価、動いたなら何がどう変わったのかがその行に出ている。
+        What it is for is letting people review changes to the definition as a diff. When roles
+        spread over nine modules are rewritten with `.module { }` or `modulePackage`, reading
+        the definition code does not tell you whether it just became easier to read or the tree
+        being checked itself changed. If the flattened result is kept as committed text, the
+        number of lines in `git diff` is the answer: if no line moves, the rewrite is
+        equivalent, and if one does, that line shows what changed and how.
 
-        これは katachi 自身の検証のために置いてあるもので、katachi を導入するときに書くもの
-        ではない。サンプルの定義に手を入れたときに意味が変わっていないことを、katachi の開発側が
-        確かめるための記録。
+        It exists for verifying katachi itself and is not something to write when adopting
+        katachi. It is a record for katachi's developers to confirm that the meaning did not
+        change when the sample's definition is edited.
 
-        生成物なのに `build/` の外に置いているのは、差分で見せるのが仕事だから。コミットされて
-        いない記録は誰のレビューにも出てこない。その代わり既定の `files = gitTracked()` の
-        検査対象に入るので、この役割が要る。役割を消すと `[UnexpectedDirectory] snapshots` で
-        `:architecture-test:test` が落ちる。
+        It is placed outside `build/` although it is generated, because showing a diff is its
+        job. A record that is not committed appears in nobody's review. In return it falls under
+        the default `files = gitTracked()` check, which is why this role is needed. Removing the
+        role makes `:architecture-test:test` fail with `[UnexpectedDirectory] snapshots`.
 
-        `documented` は書いていない（既定の `true`）。この `snapshots/` が何なのかを説明する
-        場所は他に無く、一覧から外すとリポジトリを開いた人には由来の分からない `.txt` が
-        1つ残るだけになる。`GeneratedDocumentation` と同じ扱いで、`tool` グループの
-        `Documentation` が `documented = false` なのとは逆側。
+        `documented` is not written (the default `true`). Nowhere else explains what this
+        `snapshots/` is, and leaving it out of the list would leave a `.txt` of unknown origin
+        for someone who opens the repository. It is treated like `GeneratedDocumentation`, the
+        opposite of `Documentation` in the `tool` group being `documented = false`.
     """.trimIndent()
     forbiddenContents = """
-        - 手書きのメモ。次の `-Dkatachi.snapshot.update=true` で丸ごと上書きされる
-        - 別の種類の記録。いまの `layout { }` は `snapshots/layout.txt` の1ファイルしか
-          認めていないので、足すなら役割を書き換えるところから始まる
+        - Handwritten notes. The next `-Dkatachi.snapshot.update=true` overwrites the whole file
+        - Other kinds of records. The current `layout { }` allows only the single file
+          `snapshots/layout.txt`, so adding one starts with rewriting the role
     """.trimIndent()
-    example("snapshots/layout.txt", "平坦化した layout の全行")
+    example("snapshots/layout.txt", "Every line of the flattened layout")
     layout {
         "snapshots" {
             // Written out by name rather than as `*.txt`, so the entry carries no wildcard

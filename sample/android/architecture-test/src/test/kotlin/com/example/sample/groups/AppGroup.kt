@@ -14,25 +14,25 @@ import me.tbsten.katachi.dsl.DeclarationContainerScope
  * has a build script, that its `build/` is not checked — still comes from `":app".module`.
  */
 fun DeclarationContainerScope.appGroup() = "app".group {
-    title = "エントリーポイントレイヤー"
-    summary = ":app が持つもの。起動の入口と、Android のリソース"
+    title = "Entrypoint layer"
+    summary = "What :app holds: the launch entrypoints and the Android resources"
     description = """
-        `:app` モジュールそのもの。このアプリで唯一、すべての feature を知ってよいモジュールで、
-        `MainActivity` の中でナビゲーショングラフを組み立てて `:feature:home` と
-        `:feature:settings` をつなぐ。
+        The `:app` module itself. It is the only module in this app that may know every feature:
+        `MainActivity` builds the navigation graph and connects `:feature:home` and
+        `:feature:settings`.
 
-        集めたのは、`:app` にしか置けない2つ。Android が起動時に触る型
-        （`MainActivity` / `MainApplication`）と、アプリとして必要な Kotlin 以外のファイル
-        （`AndroidManifest.xml` / `res/` / `proguard-rules.pro`）。どちらも
-        「アプリケーションであること」から来るもので、アプリの機能そのものではない。
+        It gathers two things that can only live in `:app`. The types Android touches at launch
+        (`MainActivity` / `MainApplication`), and the non-Kotlin files an application needs
+        (`AndroidManifest.xml` / `res/` / `proguard-rules.pro`). Both come from "being the
+        application", not from any feature of the app.
 
-        画面の中身はここには無い。`:app` は依存の一番上にいて下向きにしか参照しないので、
-        `:app` を丸ごと差し替えても下のモジュールは壊れない。ここに Composable が増え始めたら、
-        それは feature モジュールへ引っ越すべきもの。
+        Screen contents are not here. `:app` sits at the top of the dependency graph and only
+        refers downward, so replacing `:app` as a whole does not break the modules below it. If
+        Composables start piling up here, they should move into a feature module.
 
-        `:app` は package がモジュールパスから導けない2つのモジュールのうちの1つで、
-        `com/example/sample` を直接書く。アプリ本体なので、`:ui` → `com.example.sample.ui` の
-        ような対応を持たないため（もう1つは `:architecture-test`）。
+        `:app` is one of the two modules whose package cannot be derived from the module path,
+        so it writes `com/example/sample` directly. It is the application itself and has no
+        mapping like `:ui` to `com.example.sample.ui` (the other one is `:architecture-test`).
     """.trimIndent()
 
     entrypoint()

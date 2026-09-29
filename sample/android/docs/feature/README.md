@@ -1,42 +1,44 @@
 [katachi-sample-android](../README.md)
 
-# 各画面の構成
+# Structure of each screen
 
-画面1つぶんのモジュール。:feature:<name> ごとに Screen / ViewModel / Route を1つずつ置き、画面の部品とテストを足していく
+A module per screen. Each :feature:<name> holds one Screen / ViewModel / Route, and grows with screen parts and tests
 
-`:feature:home` `:feature:settings` のような、画面1つぶんのモジュールの中身。
-どのモジュールにも `<Name>Screen.kt` `<Name>ViewModel.kt` `<Name>Route.kt` が
-1つずつあり、ファイル名はモジュール名から決まる。画面が増えるときは
-モジュールごと増やすので、1つの feature に2つ目の画面は入らない。
+The contents of a module that holds one screen, such as `:feature:home` or
+`:feature:settings`. Every module has one `<Name>Screen.kt`, `<Name>ViewModel.kt` and
+`<Name>Route.kt`, and the file names are determined by the module name. A new screen
+means a new module, so a feature never holds a second screen.
 
-3つに割ってあるのは、変わる理由が別々だから。Screen は見た目、ViewModel は状態、
-Route は外とのつなぎ目で、この中で feature の外から参照されるのは Route だけ。
-`:app` が知っているのも Route だけで、Screen と ViewModel はモジュールの中に閉じる。
+It is split into three because they change for different reasons. The Screen is the
+look, the ViewModel is the state, and the Route is the seam to the outside; of these,
+only the Route is referenced from outside the feature. `:app` knows only the Route, and
+the Screen and ViewModel stay inside the module.
 
-共通レイヤー（`:ui` と `:navigation`）を同じ group に入れていないのは、増え方が違うから。
-feature は「足すのが当たり前」の場所なので `":feature:*"` と書いてあり、
-`settings.gradle.kts` に `include(":feature:profile")` を足せば、この定義を1行も
-触らずに検査対象になる。共通レイヤーに1つ足すのは毎回が設計判断で、そちらは
-UI (共通レイヤー) group にある。
+The shared layers (`:ui` and `:navigation`) are not in this group because they grow
+differently. A feature is a place where adding is the norm, so it is written as
+`":feature:*"`: adding `include(":feature:profile")` to `settings.gradle.kts` brings it
+under the check without touching this definition. Adding to a shared layer is a design
+decision every time, and that lives in the UI (shared layer) group.
 
-feature 同士は互いに依存しない。別の画面へ遷移するときも、遷移先の決定は `:app` 側にあり、
-feature が受け取るのはコールバック1つ。つながりは `:app` の1箇所にしかないので、
-feature を消すときに他の feature を読み直さなくて済む。
+Features do not depend on each other. Even when navigating to another screen, the
+destination is decided on the `:app` side, and the feature only receives one callback.
+The connection exists in a single place in `:app`, so removing a feature does not
+require re-reading the others.
 
-画面の部品とテストは、1つの feature の中で数が増えていく。どちらもファイル名を
-モジュール名で始め（`HomeUserCard.kt`、`HomeViewModelTest.kt`）、テンプレートから
-生成できる。画面の部品は `":feature:*"` の `*` に `feature` と名前を付けてあり、
-`--arg feature=home` で生成先のモジュールを選ぶので、feature を足してもこの定義は
-触らなくてよい。テストだけはテンプレートの中身が画面ごとに違うのでモジュールを
-1つずつ名指ししてあり、feature を足したら `FeatureModule` にも1行足す。
+Screen parts and tests multiply inside one feature. Both start their file names with
+the module name (`HomeUserCard.kt`, `HomeViewModelTest.kt`) and can be generated from
+templates. The `*` of `":feature:*"` is named `feature` for screen parts, and
+`--arg feature=home` picks the module to generate into, so adding a feature does not
+touch this definition. Only tests name each module one by one, because the template
+content differs per screen; when adding a feature, add one line to `FeatureModule` too.
 
 | Role | Summary |
 |---|---|
-| [Screen](./Screen.md) | 1つの画面の UI 実装となる @Composable。:feature:<name> ごとに <Name>Screen.kt を置く |
-| [ViewModel](./ViewModel.md) | 画面の状態を StateFlow で公開し、イベントを受け取る androidx.lifecycle.ViewModel |
-| [Route](./Route.md) | 画面への遷移先。feature の外に公開する唯一の入口 |
-| [画面の部品](./FeatureComponent.md) | 1つの画面でしか使わない @Composable。:feature:<name> の component package に <Name>*.kt で置く |
-| [画面のテスト](./FeatureTest.md) | :feature:<name> の src/test に置く、ViewModel を :testing のフェイクで動かすテスト |
+| [Screen](./Screen.md) | A @Composable that implements the UI of one screen. One <Name>Screen.kt per :feature:<name> |
+| [ViewModel](./ViewModel.md) | An androidx.lifecycle.ViewModel that exposes screen state as a StateFlow and receives events |
+| [Route](./Route.md) | The destination of a screen. The only entrance a feature exposes to the outside |
+| [Screen part](./FeatureComponent.md) | A @Composable used by only one screen. Placed as <Name>*.kt in the component package of :feature:<name> |
+| [Screen test](./FeatureTest.md) | A test in src/test of :feature:<name> that runs the ViewModel with fakes from :testing |
 
 ## Placement in this group
 
@@ -46,11 +48,11 @@ feature を消すときに他の feature を読み直さなくて済む。
     <feature>Screen.kt                 Screen
     <feature>ViewModel.kt              ViewModel
     <feature>Route.kt                  Route
-    component/<feature>*.kt            画面の部品
+    component/<feature>*.kt            Screen part
 
 :feature:home
-  src/test/kotlin/**/Home*Test.kt      画面のテスト
+  src/test/kotlin/**/Home*Test.kt      Screen test
 
 :feature:settings
-  src/test/kotlin/**/Settings*Test.kt  画面のテスト
+  src/test/kotlin/**/Settings*Test.kt  Screen test
 ```

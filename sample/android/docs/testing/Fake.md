@@ -1,28 +1,28 @@
-[katachi-sample-android](../README.md) / [テスト](README.md)
+[katachi-sample-android](../README.md) / [Testing](README.md)
 
-# フェイク
+# Fake
 
-:testing に置く、他モジュールのテストから使う偽の実装
+A stand-in implementation kept in :testing, used by the tests of other modules
 
-`:data` のインターフェースを、メモリ上の値だけで満たすテスト用の実装。
-`FakeUserRepository` は `UserRepository` を、`FakeSettingsRepository` は
-`SettingsRepository` を実装する。コンストラクタ引数に既定値を持たせてあるので、
-テスト側はその回に関係のある値だけを書けばよい。
+A test implementation that satisfies the interfaces of `:data` with in-memory values
+only. `FakeUserRepository` implements `UserRepository` and `FakeSettingsRepository`
+implements `SettingsRepository`. Constructor arguments have defaults, so a test writes
+only the values that matter to it.
 
-`src/test` ではなく `main` に置いてあるのがこの役割の肝。`src/test` のコードは
-同じモジュールからしか見えないので、他モジュールのテストへ渡すには
-製品コードとして公開するしかない。利用側は `testImplementation(project(":testing"))` で
-取り込む。`:testing` が `:data` に `api` で依存しているのも、取り込んだ側が
-インターフェースごと受け取れるようにするため。
+The point of this role is that fakes sit in `main`, not in `src/test`. Code in
+`src/test` is visible only to its own module, so handing it to another module's tests
+means publishing it as production code. Users pull it in with
+`testImplementation(project(":testing"))`. `:testing` depends on `:data` with `api` so
+that the consumer receives the interfaces along with it.
 
-ファイル名は `Fake*.kt`。`:testing` に置けるのは差し替え用の実装だけで、
-テストのヘルパーやカスタムアサーションを足したくなったら、まず役割を増やす。
-テストそのものは別の役割（テストコード）で、`src/test` にある。
+File names are `Fake*.kt`. Only stand-in implementations may live in `:testing`; if you
+want to add test helpers or custom assertions, add a role first. The tests themselves
+are a different role (test code) and live in `src/test`.
 
-テンプレートから生成できる。`repository` に渡すのは実装したいインターフェースの名前
-そのもの（`UserRepository`）で、`--arg template=testing.Fake --arg repository=UserRepository`
-で `FakeUserRepository.kt` ができる。どの領域の package に置くかは、名前の頭が
-`DataDomain` のどれと一致するかで決める。
+Can be generated from a template. What you pass as `repository` is the name of the
+interface to implement as is (`UserRepository`), and `--arg template=testing.Fake --arg
+repository=UserRepository` produces `FakeUserRepository.kt`. Which domain package it
+goes into is decided by which `DataDomain` the start of the name matches.
 
 ## Placement
 
@@ -32,10 +32,10 @@
 
 ## Examples
 
-- `FakeUserRepository` ... UserRepository のメモリ実装
-- `FakeSettingsRepository` ... SettingsRepository のメモリ実装
+- `FakeUserRepository` ... The in-memory implementation of UserRepository
+- `FakeSettingsRepository` ... The in-memory implementation of SettingsRepository
 
-## 置いてはいけないもの
+## Forbidden contents
 
-本番から呼ばれるコード。`:testing` に依存してよいのは
-テストのコンパイル経路だけで、`:app` や `:feature:*` の `main` からは参照しない。
+Code called from production. Only the test compile path may depend on `:testing`; the
+`main` of `:app` and `:feature:*` must not refer to it.

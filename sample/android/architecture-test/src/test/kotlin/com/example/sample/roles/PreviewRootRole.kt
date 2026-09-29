@@ -8,28 +8,28 @@ import me.tbsten.katachi.dsl.kotlin.ktFile
 
 /** The role of the single base every `@Preview` wraps its body in. */
 fun DeclarationContainerScope.previewRoot() = "PreviewRoot" {
-    title = "プレビューの土台"
-    summary = ":ui モジュールの preview package に置く、すべての @Preview が中身を包む土台。" +
-        "テーマと背景を 1 箇所で決め、darkTheme を受け取って明暗を出し分ける"
+    title = "Preview base"
+    summary = "The base every @Preview wraps its body in, kept in the preview package of :ui. Decides the theme and background in one place, and takes darkTheme to show light and dark"
     description = """
-        `PreviewRoot` ただ1つ。`AppTheme` で包み、`Surface` を敷いてプレビューの背景を決める。
-        `darkTheme` を引数で受け取って `AppTheme` にそのまま渡すので、同じ Composable の
-        明暗を2つの `@Preview` で並べられる。
+        Just `PreviewRoot`. It wraps the content in `AppTheme` and lays down a `Surface` to
+        decide the preview background. It takes `darkTheme` as an argument and passes it
+        straight to `AppTheme`, so light and dark of the same Composable can be lined up in two
+        `@Preview`s.
 
-        `@Preview` はアプリの中から呼ばれないので、上にテーマを与えるものが何も無い。
-        各プレビューが `AppTheme { }` を自分で書いても動きはするが、それだと
-        背景を敷くかどうか、`darkTheme` をどう渡すかがプレビューごとにずれていく。
-        「プレビューが何の上に載るか」を1箇所で決めるためにこの役割がある。
+        A `@Preview` is not called from inside the app, so nothing above it provides a theme.
+        Each preview could write `AppTheme { }` itself and it would work, but then whether a
+        background is laid down and how `darkTheme` is passed would drift from preview to
+        preview. This role exists to decide "what a preview sits on" in one place.
 
-        `layout` はワイルドカードではなく `PreviewRoot.kt` と名指ししてあり、消すと
-        `[MissingFile]` で検査が落ちる。すべての `@Preview` が依存する土台なので、
-        黙って消えないようにしてある。
+        The `layout` names `PreviewRoot.kt` exactly instead of using a wildcard, and removing it
+        fails the check with `[MissingFile]`. It is the base every `@Preview` depends on, so it
+        is made not to disappear silently.
     """.trimIndent()
     forbiddenContents = """
-        - 本番の画面から呼ばれるもの。実画面のテーマは `MainActivity` が `AppTheme { }` で与える
-        - プレビュー用のダミーデータ。渡す状態は各 `@Preview` がその場で書く
+        - Anything called from a production screen. The theme of the real screen is given by `MainActivity` with `AppTheme { }`
+        - Dummy data for previews. Each `@Preview` writes the state it passes on the spot
     """.trimIndent()
-    example("PreviewRoot", "プレビュー共通の土台")
+    example("PreviewRoot", "The base shared by previews")
     layout {
         ":ui".module {
             // Required, so deleting the file fails the check with `[MissingFile]`

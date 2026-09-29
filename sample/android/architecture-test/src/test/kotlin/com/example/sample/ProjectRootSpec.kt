@@ -17,7 +17,7 @@ import java.io.File
  * first instead.
  */
 class ProjectRootSpec : FreeSpec({
-    "作業ディレクトリから親へ辿ったとき、最初に見つかる gradlew がこのサンプルのものである" {
+    "the first gradlew found walking up from the working directory is this sample's own" {
         // `getProperty` is a platform type, so the contract is stated once here: the JVM
         // always defines `user.dir`.
         val workingDir = File(requireNotNull(System.getProperty("user.dir"))).absoluteFile

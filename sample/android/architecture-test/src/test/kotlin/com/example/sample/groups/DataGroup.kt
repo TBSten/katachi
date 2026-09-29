@@ -5,20 +5,21 @@ import me.tbsten.katachi.dsl.DeclarationContainerScope
 
 /** Roles of the data layer: what `:data` holds. */
 fun DeclarationContainerScope.dataGroup() = "data".group {
-    title = "データレイヤー"
-    summary = ":data が持つもの。データの取得と保存"
+    title = "Data layer"
+    summary = "What :data holds: fetching and storing data"
     description = """
-        `:data` モジュール。いまは Repository 役割1つだけで、扱う対象ごとの package
-        （`user` / `settings`）にインターフェースと実装を並べる。package は `DataDomain` の
-        1項目ずつで、対象を増やすときはそこに1行足す。
+        The `:data` module. For now it has a single Repository role, with the interface and its
+        implementation side by side in one package per subject (`user` / `settings`). Each
+        package is one entry of `DataDomain`; to add a subject, add one line there.
 
-        他のどのモジュールにも依存しない、このアプリで一番下の層。Android にも Compose にも
-        触らないので、`:ui` や `:feature:*` を持ち出さずに読める。ViewModel はここの
-        インターフェースをコンストラクタで受け取り、テストでは `:testing` のフェイクに差し替える。
+        It is the lowest layer of this app and depends on no other module. It touches neither
+        Android nor Compose, so it can be read without pulling in `:ui` or `:feature:*`. A
+        ViewModel receives the interface here through its constructor, and tests swap it for a
+        fake from `:testing`.
 
-        役割が1つしか無くても group にしてあるのは、増える場所だから。データソースや DTO を
-        分けたくなったらここに足す。いまは Repository 以外のファイルを `:data` に置くと違反になるので、
-        「置いてから考える」ができないようになっている。
+        It is a group even with one role because this is where things will grow. Data sources
+        or DTOs go here when they need to be split out. For now, any file in `:data` other than
+        a Repository is a violation, so there is no "put it down first and think later".
     """.trimIndent()
 
     repository()

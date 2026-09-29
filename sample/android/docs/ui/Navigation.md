@@ -1,23 +1,25 @@
-[katachi-sample-android](../README.md) / [UI (共通レイヤー)](README.md)
+[katachi-sample-android](../README.md) / [UI (shared layer)](README.md)
 
-# 画面遷移
+# Screen navigation
 
-:navigation に置く、画面間の移動
+Movement between screens, kept in :navigation
 
-画面を移るための窓口。`AppNavigator` インターフェースが `navigateTo(destination)` と
-`navigateUp()` の2つだけを公開し、`rememberAppNavigator(navController)` が
-`NavHostController` を包んだ実装を返す。実装クラスは private で、外からは名前も見えない。
+The entry point for moving between screens. The `AppNavigator` interface exposes only
+`navigateTo(destination)` and `navigateUp()`, and `rememberAppNavigator(navController)`
+returns an implementation wrapping `NavHostController`. The implementation class is
+private, and its name is not even visible from outside.
 
-`:feature:*` はこのインターフェースにだけ依存する。feature が `NavHostController` を
-直接持てると、どの feature からでもグラフ全体を書き換えられてしまうので、
-触れる範囲をこの2つのメソッドに絞ってある。`:ui` とは別モジュールなのも
-同じ理由で、画面部品を使いたいだけのコードにナビゲーションの依存を持ち込ませない。
+`:feature:*` depends only on this interface. If a feature could hold a
+`NavHostController` directly, any feature could rewrite the whole graph, so what it can
+touch is narrowed to these two methods. It is a separate module from `:ui` for the same
+reason: code that just wants screen parts should not pull in the navigation dependency.
 
-グラフそのものはここには無い。どの Route をどう並べるかを知っているのは `:app` の
-`AppNavHost` だけで、`:navigation` が持つのは「移る手段」に限られる。
+The graph itself is not here. Only `AppNavHost` in `:app` knows which Routes are lined
+up and how, and `:navigation` holds only the "means of moving".
 
-ファイル名は `*.kt`（モジュール直下の package）。遷移の手段に関わる型が増えるなら
-ここに足すが、特定の画面の遷移先（`HomeRoute` など）は feature 側の Route 役割に置く。
+File names are `*.kt` (in the package directly under the module). Types related to the
+means of navigation go here, but the destination of a particular screen (such as
+`HomeRoute`) belongs to the Route role on the feature side.
 
 ## Placement
 
@@ -27,4 +29,4 @@
 
 ## Examples
 
-- `AppNavigator` ... 画面遷移の窓口
+- `AppNavigator` ... The entry point for screen navigation

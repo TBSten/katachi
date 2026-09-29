@@ -1,22 +1,23 @@
-[katachi-sample-android](../README.md) / [UI (共通レイヤー)](README.md)
+[katachi-sample-android](../README.md) / [UI (shared layer)](README.md)
 
-# 共通コンポーネント
+# Shared component
 
-:ui モジュールの component package に置く、feature をまたいで使う部品
+A part in the component package of the :ui module, used across features
 
-複数の画面から呼ばれる Compose の部品。`AppButton` のように Material3 の上へ薄く被せて、
-形や強弱を変えたときに全画面へ一度に届くようにするために置く。
+A Compose part called from several screens. Like `AppButton`, it is a thin layer over
+Material3, so that a change of shape or emphasis reaches every screen at once.
 
-見た目の選び分けは、この package の中の型で表す。`AppButton` は
-`emphasis: AppButtonEmphasis` を取り、`Filled` と `Outlined` の出し分けを内側でやる。
-呼び出し側が Material3 の `Button` と `OutlinedButton` を直接使い分けなくて済むようにするのが
-この役割の狙いなので、部品と、その部品のための enum や `@Preview` は同じファイルにまとめる。
+How the look is chosen is expressed with types inside this package. `AppButton` takes an
+`emphasis: AppButtonEmphasis` and handles `Filled` versus `Outlined` internally. The aim
+of this role is that callers need not pick between Material3's `Button` and
+`OutlinedButton` themselves, so a part, the enum for it and its `@Preview` go in the
+same file.
 
-ファイル名は `*.kt` で縛っていない。部品は増えることが前提だから。
+File names are not restricted to `*.kt`, because parts are expected to multiply.
 
-テンプレートから生成できる。ファイル名まるごとが `capture("name")` なので、
-`--arg template=Component --arg name=AppLabel` で `AppLabel.kt` ができる
-（`App` から始めるのはこの役割の慣習であって、layout が強制してはいない）。
+Can be generated from a template. The whole file name is `capture("name")`, so `--arg
+template=Component --arg name=AppLabel` produces `AppLabel.kt` (starting with `App` is a
+convention of this role, not something the layout enforces).
 
 ## Placement
 
@@ -26,16 +27,17 @@
 
 ## Examples
 
-- `AppButton` ... アプリ共通のボタン
+- `AppButton` ... The app-wide button
 
-## 置いてよいもの
+## Allowed contents
 
-ここに置いてよいのは、2つ以上の feature が使うもの、あるいは使うと決まっているもの。
-1つの画面でしか使わない部品は、その feature モジュールに置く。
+Only what two or more features use, or are decided to use, belongs here. A part used by
+a single screen goes in that feature module.
 
-## 置いてはいけないもの
+## Forbidden contents
 
-- 状態の保持。値とコールバック（`text`、`onClick`）で受け渡し、`remember` で
-  抱え込まない
-- `:data` や `:feature:*` への依存。`:ui` は下の層も横の feature も知らない
-- 色やタイポグラフィの直書き。`MaterialTheme` から読む（テーマ役割を参照）
+- State held in the part. Pass values and callbacks (`text`, `onClick`) instead of
+  keeping them with `remember`
+- Dependencies on `:data` or `:feature:*`. `:ui` knows neither the layers below nor the
+  features beside it
+- Hard-coded colors or typography. Read them from `MaterialTheme` (see the Theme role)

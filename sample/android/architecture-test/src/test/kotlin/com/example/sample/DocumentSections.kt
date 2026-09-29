@@ -8,13 +8,13 @@ import me.tbsten.katachi.dsl.documentSection
 import org.intellij.lang.annotations.Language
 
 /** What may sit in this role's or group's files, kept apart from the free-form [description]. */
-val AllowedContents = documentSection("置いてよいもの")
+val AllowedContents = documentSection("Allowed contents")
 @get:Language("markdown")
 @set:Language("markdown")
 var MetadataScope.allowedContents by AllowedContents
 
 /** What must not sit in this role's or group's files, kept apart from the free-form [description]. */
-val ForbiddenContents = documentSection("置いてはいけないもの")
+val ForbiddenContents = documentSection("Forbidden contents")
 @get:Language("markdown")
 @set:Language("markdown")
 var MetadataScope.forbiddenContents by ForbiddenContents

@@ -7,7 +7,7 @@ import org.junit.Test
 
 class SettingsViewModelTest {
     @Test
-    fun `リポジトリから読んだ値を Content として公開する`() {
+    fun `exposes the value read from the repository as Content`() {
         val viewModel = SettingsViewModel(settingsRepository = FakeSettingsRepository(darkThemeEnabled = true))
 
         assertEquals(UiState.Content(SettingsContent(darkThemeEnabled = true)), viewModel.uiState.value)

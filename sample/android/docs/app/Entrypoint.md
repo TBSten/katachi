@@ -1,24 +1,24 @@
-[katachi-sample-android](../README.md) / [エントリーポイントレイヤー](README.md)
+[katachi-sample-android](../README.md) / [Entrypoint layer](README.md)
 
-# エントリポイント
+# Entrypoint
 
-:app に置く、Android がアプリを起動するときに触る型
+The types Android touches when it launches the app, kept in :app
 
-Android が起動時に最初に触る型。`:app` に `MainActivity` と `MainApplication` が
-1つずつ、名指しで置いてある。どちらかが消えると `[MissingFile]` で検査が落ちる。
-起動できないアプリが検査を通ってしまわないようにするため。
+The types Android touches first at launch. `:app` has one `MainActivity` and one
+`MainApplication`, named exactly. If either is gone, the check fails with
+`[MissingFile]`, so that an app that cannot launch never passes.
 
-`MainActivity` は `setContent { AppTheme { AppNavHost() } }` だけを書く。
-`AppNavHost` は同じファイルの private な `@Composable` で、`:feature:*` が公開する
-Route を並べてナビゲーショングラフを組み立てる。すべての feature を知ってよい
-モジュールは `:app` だけで、その知識はこのファイルの中に閉じている。
+`MainActivity` contains only `setContent { AppTheme { AppNavHost() } }`. `AppNavHost` is
+a private `@Composable` in the same file that lines up the Routes exposed by
+`:feature:*` and builds the navigation graph. `:app` is the only module allowed to know
+every feature, and that knowledge stays inside this file.
 
-`MainApplication` は `Application` を継承するだけ。DI コンテナの初期化のような
-「起動時に1回だけ」の処理を足す場所として空けてある。
+`MainApplication` only extends `Application`. It is left empty as the place to add "once
+at launch" work such as initializing a DI container.
 
-この役割の package は `modulePackage` を使わず `com/example/sample` と直接書く。
-`:app` はアプリ本体で、`:ui` → `com.example.sample.ui` のような
-モジュールパスとの対応を持たないため。
+This role writes its package directly as `com/example/sample` instead of using
+`modulePackage`. `:app` is the application itself and has no mapping to the module path
+like `:ui` to `com.example.sample.ui`.
 
 ## Placement
 
@@ -29,11 +29,10 @@ Route を並べてナビゲーショングラフを組み立てる。すべて�
 
 ## Examples
 
-- `MainActivity` ... 起動時に表示される Activity
-- `MainApplication` ... Application の実装
+- `MainActivity` ... The Activity shown at launch
+- `MainApplication` ... The Application implementation
 
-## 置いてはいけないもの
+## Forbidden contents
 
-画面の中身。`:app` は feature をつなぐだけで、
-UI は `:ui` と `:feature:*` にある。ここに Composable が増え始めたら、
-それは feature モジュールに引っ越すべきもの。
+Screen contents. `:app` only connects features; the UI lives in `:ui` and `:feature:*`.
+If Composables start piling up here, they should move into a feature module.

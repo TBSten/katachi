@@ -11,32 +11,34 @@ import me.tbsten.katachi.dsl.DeclarationContainerScope
  * check and it needs a role; without one the test fails with `[UnexpectedFile]` about it.
  */
 fun DeclarationContainerScope.baselineFile() = "BaselineFile" {
-    title = "baseline（棚上げした違反の台帳）"
-    summary = "katachi を入れた時点ですでにあった違反を記録し、テストを落とさずに棚上げしておく台帳"
+    title = "baseline (ledger of held-back violations)"
+    summary = "A ledger of the violations that already existed when katachi was adopted, held back so the test does not fail"
     description = """
-        `ProjectArchitecture.kt` の `baseline()` が指すファイル。ここに記録した
-        違反は `:architecture-test:test` を落とさず、「held back N violations」と件数だけが出る。
-        記録に無い新しい違反は、これまでどおりテストを落とす。
+        The file that `baseline()` in `ProjectArchitecture.kt` points to. Violations recorded
+        here do not fail `:architecture-test:test`; only a count such as "held back N
+        violations" is shown. A new violation that is not recorded fails the test as before.
 
-        このサンプルでは、baseline の見本として2件を意図的に残してある。
-        `:feature:home` の `HomeFormatter.kt`（feature package の直下に置けるのは
-        Route / Screen / ViewModel だけなので `[UnexpectedFile]`）と、`:data` の `legacy/`
-        （`user` と `settings` 以外の package なので、ディレクトリごと `[UnexpectedDirectory]`）。
+        This sample deliberately leaves two entries as a demo of the baseline:
+        `HomeFormatter.kt` in `:feature:home` (only Route / Screen / ViewModel may sit directly
+        in a feature package, so it is an `[UnexpectedFile]`), and `legacy/` in `:data` (a
+        package other than `user` and `settings`, so the whole directory is an
+        `[UnexpectedDirectory]`).
 
-        手では書かない。更新は次の2つで行う。
+        Not written by hand. It is updated in one of two ways.
 
-        - `./gradlew :architecture-test:test -Dkatachi.baseline.update=true` — 今ある違反で丸ごと作り直す
-        - `./gradlew :architecture-test:test -Dkatachi.baseline.prune=true` — 直した違反の項目だけを消す
+        - `./gradlew :architecture-test:test -Dkatachi.baseline.update=true` — rebuild it entirely from the violations that exist now
+        - `./gradlew :architecture-test:test -Dkatachi.baseline.prune=true` — remove only the entries whose violation has been fixed
 
-        違反を直すと、その項目は「もう無い違反を棚上げしている」として `[StaleBaselineEntry]` で
-        テストを落とす。prune で項目を消すまで落ち続けるので、棚上げの件数は減る一方になる。
-        CI（環境変数 `CI=true`）では update も prune も拒否され、突き合わせだけを行う。
+        Once a violation is fixed, its entry fails the test with `[StaleBaselineEntry]` as
+        "holding back a violation that no longer exists". It keeps failing until prune removes
+        the entry, so the number of held-back violations only goes down. In CI (environment
+        variable `CI=true`) both update and prune are refused and only the comparison runs.
     """.trimIndent()
     forbiddenContents = """
-        - 恒久的に認めたいもの。それは台帳ではなく、定義の `layout { }` に役割として書く
-        - 手で足した項目。次の update で書き戻される
+        - Anything meant to be permanent. That is not for the ledger; write it in the definition's `layout { }` as a role
+        - Entries added by hand. The next update overwrites them
     """.trimIndent()
-    example("katachi-baseline.json", "棚上げした違反の一覧")
+    example("katachi-baseline.json", "The list of held-back violations")
     layout {
         "katachi-baseline.json".file()
     }

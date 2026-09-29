@@ -46,7 +46,7 @@ enum class AppButtonEmphasis {
 @Composable
 private fun AppButtonFilledPreview() {
     PreviewRoot {
-        AppButton(text = "保存", onClick = {})
+        AppButton(text = "Save", onClick = {})
     }
 }
 
@@ -54,7 +54,7 @@ private fun AppButtonFilledPreview() {
 @Composable
 private fun AppButtonOutlinedPreview() {
     PreviewRoot {
-        AppButton(text = "キャンセル", onClick = {}, emphasis = AppButtonEmphasis.Outlined)
+        AppButton(text = "Cancel", onClick = {}, emphasis = AppButtonEmphasis.Outlined)
     }
 }
 
@@ -64,6 +64,6 @@ private fun AppButtonOutlinedPreview() {
 @Composable
 private fun AppButtonFilledDarkPreview() {
     PreviewRoot(darkTheme = true) {
-        AppButton(text = "保存", onClick = {})
+        AppButton(text = "Save", onClick = {})
     }
 }

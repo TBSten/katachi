@@ -1,22 +1,22 @@
-[katachi-sample-android](../README.md) / [各画面の構成](README.md)
+[katachi-sample-android](../README.md) / [Structure of each screen](README.md)
 
 # Route
 
-画面への遷移先。feature の外に公開する唯一の入口
+The destination of a screen. The only entrance a feature exposes to the outside
 
-feature モジュールが外に見せる唯一のもの。`HomeRoute` のような object が遷移先の
-パスを `PATH` として持ち、`NavGraphBuilder.homeScreen(...)` のような拡張関数が
-自分の画面をグラフに1つ登録する。ファイル名は `<Name>Route.kt` でモジュール名から決まる。
+The only thing a feature module shows to the outside. An object such as `HomeRoute`
+holds the destination path as `PATH`, and an extension function such as
+`NavGraphBuilder.homeScreen(...)` registers its own screen in the graph. The file name
+is `<Name>Route.kt`, decided by the module name.
 
-グラフを組み立てるのは `:app` の `AppNavHost` だけで、`:app` が触るのは
-`HomeRoute.PATH` と `homeScreen(...)` のような、この役割が公開するものに限られる。
-`HomeScreen` も `HomeViewModel` も `:app` からは呼ばれない。feature が増えても
-`:app` に増えるのは1行で済む。
+Only `AppNavHost` in `:app` builds the graph, and what `:app` touches is limited to what
+this role exposes, such as `HomeRoute.PATH` and `homeScreen(...)`. Neither `HomeScreen`
+nor `HomeViewModel` is called from `:app`. Even as features grow, one line is added to
+`:app`.
 
-画面から出ていく遷移は、この拡張関数の引数で受け取ったコールバック
-（`onNavigateToSettings` / `onNavigateUp`）を Screen に渡す形で書く。
-どの画面へ行くかを決めているのは `:app` 側で、feature が別の feature の Route を
-import することはない。
+Navigation out of a screen is written by passing the callbacks received as arguments of
+this extension function (`onNavigateToSettings` / `onNavigateUp`) to the Screen. `:app`
+decides which screen to go to, and a feature never imports another feature's Route.
 
 ## Placement
 
@@ -26,11 +26,11 @@ import することはない。
 
 ## Examples
 
-- `HomeRoute` ... ホーム画面への遷移先
-- `SettingsRoute` ... 設定画面への遷移先
+- `HomeRoute` ... The destination of the home screen
+- `SettingsRoute` ... The destination of the settings screen
 
-## 置いてはいけないもの
+## Forbidden contents
 
-- UI。`@Composable` として描くのは Screen で、ここは `composable(...)` への登録だけ
-- 他の feature の Route への参照
-- 引数の組み立て以上のロジック。遷移の判断は呼び出し元にある
+- UI. Drawing as a `@Composable` is the Screen's job; here is only the registration with `composable(...)`
+- References to another feature's Route
+- Logic beyond assembling arguments. Navigation decisions belong to the caller

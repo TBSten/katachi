@@ -7,30 +7,30 @@ import me.tbsten.katachi.dsl.kotlin.ktFile
 
 /** The role of the tests themselves, told apart from the definition by the file name. */
 fun DeclarationContainerScope.test() = "Test" {
-    title = "テストコード"
-    summary = ":architecture-test の src/test/kotlin に置く、定義を検査するテスト"
+    title = "Test code"
+    summary = "Tests that check the definition, kept in src/test/kotlin of :architecture-test"
     description = """
-        `:architecture-test` のテスト。アプリ側の各モジュールは、ここに書かれた定義を通して
-        検査される。feature モジュールが自分の ViewModel を確かめるテストは別の役割
-        （画面のテスト）で、そちらは各 feature の `src/test` にある。
+        The tests of `:architecture-test`. Every module on the app side is checked through the
+        definition written here. The tests in which a feature module checks its own ViewModel
+        are a different role (screen test) and live in each feature's `src/test`.
 
-        ファイル名が `*Spec.kt` か `*Test.kt` で、package の直下（`groups/` `roles/` の外）に
-        あるものがテスト。同じモジュールにあるアーキテクチャ定義役割とはこの2点で区別され、
-        `roles/` にテストを置けば `[UnexpectedFile]` になる。逆にテストの隣へ
-        定義のヘルパーを置くこともできない。
+        Files named `*Spec.kt` or `*Test.kt` directly under the package (outside `groups/` and
+        `roles/`) are tests. These two points tell them apart from the architecture definition
+        role in the same module: putting a test in `roles/` gives an `[UnexpectedFile]`, and
+        conversely a definition helper cannot be placed next to the tests.
 
-        いま4つある。利用者が書くのは `ProjectArchitectureTest` だけで、
-        `projectArchitecture.assert()` を呼ぶ JUnit のテスト1つ。残りは katachi 自身の検証で、
-        `ProjectArchitectureSpec` が組み上がった定義を確かめ、`LayoutSnapshotSpec` が
-        平坦化した layout をスナップショットと突き合わせ、`ProjectRootSpec` が
-        プロジェクトルートの探索結果を見張る。
+        There are four now. The only one a user writes is `ProjectArchitectureTest`, a single
+        JUnit test that calls `projectArchitecture.assert()`. The rest verify katachi itself:
+        `ProjectArchitectureSpec` checks the assembled definition, `LayoutSnapshotSpec` compares
+        the flattened layout with the snapshot, and `ProjectRootSpec` watches the result of the
+        project root lookup.
     """.trimIndent()
     forbiddenContents = """
-        テストから使う道具。他モジュールのテストへ渡す差し替え実装は
-        `:testing` のフェイク役割にあり、`src/test` からは公開できない。
+        Tools used from tests. Stand-in implementations handed to other modules' tests belong to
+        the fake role of `:testing`, and cannot be exposed from `src/test`.
     """.trimIndent()
-    example("ProjectArchitectureTest", "利用者が書く唯一のテスト")
-    example("ProjectArchitectureSpec", "この定義そのものを検証するテスト")
+    example("ProjectArchitectureTest", "The only test a user writes")
+    example("ProjectArchitectureSpec", "A test that verifies this definition itself")
     layout {
         // The app modules are checked through `:architecture-test`. The feature
         // modules' own ViewModel tests are the FeatureTest role, not this one.

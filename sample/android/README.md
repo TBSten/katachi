@@ -1,54 +1,54 @@
 # sample/android
 
-## どういうサンプルか
+## What this sample is
 
-Jetpack Compose で書いた **マルチモジュールの Android アプリ**を、katachi で定義したサンプルです。
+A sample that defines a **multi-module Android app** written in Jetpack Compose with katachi.
 
-`:feature:*`・`:ui`・`:data`・`:navigation`・`:testing`・`:app` の各モジュールに何を置くかを役割として宣言し、
-`assert()` でファイルの配置を検査しています。同じ定義から [`docs/`](docs/README.md) のドキュメントも生成しています。
+What goes in each of the modules `:feature:*`, `:ui`, `:data`, `:navigation`, `:testing` and `:app` is declared as roles,
+and `assert()` checks where the files are placed. The same definition also generates the documentation in [`docs/`](docs/README.md).
 
-katachi はリポジトリのソースから `includeBuild("../..")` で取り込んでいますが、書き方は利用者と同じ
-`testImplementation(libs.katachi)` です。
+katachi is pulled in from the repository source with `includeBuild("../..")`, but it is written the same way a user would write it:
+`testImplementation(libs.katachi)`.
 
-## キーとなるファイル
+## Key files
 
-| ファイル                                                                                                        | 何が分かるか                                                                                              |
+| File                                                                                                        | What it shows                                                                                              |
 |-----------------------------------------------------------------------------------------------------------------|-----------------------------------------------------------------------------------------------------------|
-| [`ProjectArchitecture.kt`](architecture-test/src/test/kotlin/com/example/sample/ProjectArchitecture.kt)         | `architecture { }` の本体。group を呼んでいるだけで、役割は `roles/` に1ファイル1役割で置いてある         |
-| [`roles/ComponentRole.kt`](architecture-test/src/test/kotlin/com/example/sample/roles/ComponentRole.kt)         | 役割1つの書き方。ファイル名まるごとが `capture("name")` の `.template { }` で、渡した名前そのままのファイルを生成する |
-| [`roles/FeatureComponentRole.kt`](architecture-test/src/test/kotlin/com/example/sample/roles/FeatureComponentRole.kt) | `":feature:${capture("feature")}".module { }` の見本。`wildcard("feature")` で置き場所を、`captureValue("feature")` でテンプレートの中身を、同じ capture から決める |
-| [`ProjectArchitectureTest.kt`](architecture-test/src/test/kotlin/com/example/sample/ProjectArchitectureTest.kt) | 利用者が書くテストはこれ1つ。`projectArchitecture.assert()` を呼ぶだけ                                    |
-| [`docs/README.md`](docs/README.md)                                                                              | 定義から生成したドキュメント。手では書いていない                                                          |
-| [`katachi-baseline.json`](katachi-baseline.json) | baseline の台帳。`HomeFormatter.kt` と `:data` の `legacy/` の2件を意図的に残して棚上げしている（[`../README.md`](../README.md#baseline)） |
+| [`ProjectArchitecture.kt`](architecture-test/src/test/kotlin/com/example/sample/ProjectArchitecture.kt)         | The body of `architecture { }`. It only calls the groups; roles are kept one per file in `roles/` |
+| [`roles/ComponentRole.kt`](architecture-test/src/test/kotlin/com/example/sample/roles/ComponentRole.kt)         | How to write one role. A `.template { }` whose whole file name is `capture("name")`, generating a file with exactly the name passed |
+| [`roles/FeatureComponentRole.kt`](architecture-test/src/test/kotlin/com/example/sample/roles/FeatureComponentRole.kt) | An example of `":feature:${capture("feature")}".module { }`. The same capture decides the location with `wildcard("feature")` and the template content with `captureValue("feature")` |
+| [`ProjectArchitectureTest.kt`](architecture-test/src/test/kotlin/com/example/sample/ProjectArchitectureTest.kt) | The only test a user writes. It just calls `projectArchitecture.assert()` |
+| [`docs/README.md`](docs/README.md)                                                                              | Documentation generated from the definition. Not written by hand |
+| [`katachi-baseline.json`](katachi-baseline.json) | The baseline ledger. Two violations, `HomeFormatter.kt` and `legacy/` in `:data`, are deliberately left and held back ([`../README.md`](../README.md#baseline)) |
 
-## 実行方法
+## How to run
 
-**Android SDK が必要です。**`ANDROID_HOME` を設定するか、`local.properties` に `sdk.dir` を書いてください。
+**The Android SDK is required.** Set `ANDROID_HOME`, or write `sdk.dir` in `local.properties`.
 
 ```sh
-# リポジトリのルートで
+# From the repository root
 echo "sdk.dir=$HOME/Library/Android/sdk" > sample/android/local.properties
 ```
 
 ```sh
 cd sample/android
 
-# ファイルの配置を検査する
+# Check where files are placed
 ./gradlew :architecture-test:test
 
-# 定義からドキュメントを docs/ に生成する
+# Generate the documentation into docs/ from the definition
 ./gradlew :architecture-test:katachiDocs
 
-# Component のテンプレートから :ui の component package に AppLabel.kt を生成する
-# （ファイル名まるごとが capture("name") なので、"App" が要るなら --arg name=AppLabel と渡す）
+# Generate AppLabel.kt in the component package of :ui from the Component template
+# (The whole file name is capture("name"), so pass --arg name=AppLabel if you want "App")
 ./gradlew :architecture-test:katachiTemplate --arg template=Component --arg name=AppLabel
 
-# FeatureComponent のテンプレートから :feature:home の component package に HomeUserCard.kt を生成する
-# （feature は layout で :feature:* に付けた名前。どのモジュールに生成するかをこれで選ぶ）
+# Generate HomeUserCard.kt in the component package of :feature:home from the FeatureComponent template
+# (feature is the name the layout gave :feature:*. It selects which module to generate into)
 ./gradlew :architecture-test:katachiTemplate --arg template=feature.FeatureComponent --arg feature=home --arg name=UserCard
 ```
 
-リポジトリのルートからは、CI と同じ一式（テンプレートから生成 → 検査 → 生成物を削除、まで含む）を1コマンドで回せます。
+From the repository root, one command runs the same set as CI (including generating from templates, checking, and deleting the generated files).
 
 ```sh
 ./gradlew checkSampleAndroid

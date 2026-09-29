@@ -1,49 +1,52 @@
-[katachi-sample-android](../README.md) / [データレイヤー](README.md)
+[katachi-sample-android](../README.md) / [Data layer](README.md)
 
-# リポジトリ
+# Repository
 
-データの取得と保存。インターフェースと実装を :data の、扱う対象ごとの package （user / settings）に並べて置く
+Fetching and storing data. Interfaces and implementations sit side by side in :data, in one package per subject (user / settings)
 
-データの取得と保存を引き受ける、`:data` の唯一の役割。扱う対象ごとに package を割り
-（`user` / `settings`）、その中にインターフェース（`*Repository.kt`）と実装
-（`*RepositoryImpl.kt`）を並べる。ファイル名は package の名前で始める（`user` なら
-`User*Repository.kt`）。呼び出し側が依存するのはインターフェースだけで、
-`Impl` の名前を ViewModel の引数に書くことはない。
+The only role of `:data`, taking on fetching and storing data. Packages are split per
+subject (`user` / `settings`), and the interface (`*Repository.kt`) and the
+implementation (`*RepositoryImpl.kt`) sit side by side in each. File names start with
+the package name (`User*Repository.kt` for `user`). Callers depend only on the
+interface, and the `Impl` name is never written in a ViewModel's arguments.
 
-この役割は `layout { }` を2つ持つ。置き場所は同じ package で、違うのはファイル名の
-パターンだけなので、どちらがインターフェースでどちらが実装かは `layout` の
-`description` が説明する。1つの役割が複数の置き場所を持てることの実例でもある。
+This role has two `layout { }` blocks. The place is the same package and only the file
+name pattern differs, so the `description` of each `layout` explains which is the
+interface and which is the implementation. It is also a real example of one role having
+several places.
 
-`:data` は他のモジュールに依存しない、このアプリで一番下の層。Android にも Compose にも
-触らないので、インターフェースは素の Kotlin として読める。ViewModel はコンストラクタで
-インターフェースを受け取り、テストでは `:testing` の `Fake*` に差し替える。
+`:data` depends on no other module and is the lowest layer of this app. It touches
+neither Android nor Compose, so the interfaces read as plain Kotlin. A ViewModel
+receives the interface through its constructor, and tests swap it for `Fake*` from
+`:testing`.
 
-`User*Repository.kt` / `User*RepositoryImpl.kt` の部分だけテンプレートから生成できる
-（`UserRepository.kt` / `UserRepositoryImpl.kt` 自身は各領域に最初から手書きで置いてあり、
-生成の対象ではない）。領域ごとに id を分けてあり、`--arg
-template=data.Repository.user,data.Repository.userImpl --arg name=Cache` で両方を1回に作る。
+Only the `User*Repository.kt` / `User*RepositoryImpl.kt` part can be generated from a
+template (`UserRepository.kt` / `UserRepositoryImpl.kt` themselves are handwritten in each
+domain from the start and are not generation targets). The id is split per domain, and
+`--arg template=data.Repository.user,data.Repository.userImpl --arg name=Cache` creates
+both at once.
 
 ## Placement
 
 | Module | Path | When to use |
 |---|---|---|
-| `:data` | `src/main/kotlin/**/user/UserRepository.kt` | インターフェース。呼び出し側が依存する型 |
-| `:data` | `src/main/kotlin/**/user/User*Repository.kt` | インターフェース。呼び出し側が依存する型 |
-| `:data` | `src/main/kotlin/**/settings/SettingsRepository.kt` | インターフェース。呼び出し側が依存する型 |
-| `:data` | `src/main/kotlin/**/settings/Settings*Repository.kt` | インターフェース。呼び出し側が依存する型 |
-| `:data` | `src/main/kotlin/**/user/UserRepositoryImpl.kt` | インターフェース。呼び出し側が依存する型 |
-| `:data` | `src/main/kotlin/**/user/User*RepositoryImpl.kt` | インターフェース。呼び出し側が依存する型 |
-| `:data` | `src/main/kotlin/**/settings/SettingsRepositoryImpl.kt` | インターフェース。呼び出し側が依存する型 |
-| `:data` | `src/main/kotlin/**/settings/Settings*RepositoryImpl.kt` | インターフェース。呼び出し側が依存する型 |
+| `:data` | `src/main/kotlin/**/user/UserRepository.kt` | The interface. The type callers depend on |
+| `:data` | `src/main/kotlin/**/user/User*Repository.kt` | The interface. The type callers depend on |
+| `:data` | `src/main/kotlin/**/settings/SettingsRepository.kt` | The interface. The type callers depend on |
+| `:data` | `src/main/kotlin/**/settings/Settings*Repository.kt` | The interface. The type callers depend on |
+| `:data` | `src/main/kotlin/**/user/UserRepositoryImpl.kt` | The interface. The type callers depend on |
+| `:data` | `src/main/kotlin/**/user/User*RepositoryImpl.kt` | The interface. The type callers depend on |
+| `:data` | `src/main/kotlin/**/settings/SettingsRepositoryImpl.kt` | The interface. The type callers depend on |
+| `:data` | `src/main/kotlin/**/settings/Settings*RepositoryImpl.kt` | The interface. The type callers depend on |
 
 ## Examples
 
-- `UserRepository` ... ユーザーの取得と保存のインターフェース
-- `UserRepositoryImpl` ... UserRepository の実装
+- `UserRepository` ... The interface for fetching and storing the user
+- `UserRepositoryImpl` ... The implementation of UserRepository
 
-## 置いてはいけないもの
+## Forbidden contents
 
-- 画面向けの型。`UiState` に詰め替えるのは ViewModel の仕事で、`:data` は `:ui` を知らない
-- `*Repository.kt` `*RepositoryImpl.kt` 以外のファイル。DTO やデータソースを
-  分けたくなったら、まず役割を増やす
-- 対象をまたぐ package。`user` の型が `settings` に混ざったら package を割り直す
+- Types for screens. Repacking into `UiState` is the ViewModel's job, and `:data` does not know `:ui`
+- Files other than `*Repository.kt` and `*RepositoryImpl.kt`. If you want to split out
+  DTOs or data sources, add a role first
+- Packages that span subjects. If a `user` type gets mixed into `settings`, split the packages again

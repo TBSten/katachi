@@ -1,37 +1,37 @@
-[katachi-sample-android](../README.md) / [各画面の構成](README.md)
+[katachi-sample-android](../README.md) / [Structure of each screen](README.md)
 
-# 画面のテスト
+# Screen test
 
-:feature:<name> の src/test に置く、ViewModel を :testing のフェイクで動かすテスト
+A test in src/test of :feature:<name> that runs the ViewModel with fakes from :testing
 
-feature モジュールの単体テスト。`:feature:home` なら `src/test` の同じ package に
-`HomeViewModelTest.kt` を置き、ファイル名はモジュール名（`Home`）で始めて `Test` で終える。
+Unit tests of a feature module. For `:feature:home`, put `HomeViewModelTest.kt` in the
+same package under `src/test`; the file name starts with the module name (`Home`) and
+ends with `Test`.
 
-ViewModel の Repository はコンストラクタ引数なので、テストでは `:testing` の
-`FakeUserRepository` のようなフェイクを渡して、流れてくる `UiState` を確かめる。
-Compose にも Android の実機にも触らないので、JVM の上だけで走る。
-feature モジュールの `build.gradle.kts` が `testImplementation(project(":testing"))` を
-持つのはこのため。
+A ViewModel's Repository is a constructor argument, so a test passes a fake such as
+`FakeUserRepository` from `:testing` and checks the `UiState` that flows out. It touches
+neither Compose nor a real Android device, so it runs on the JVM alone. This is why the
+feature module's `build.gradle.kts` has `testImplementation(project(":testing"))`.
 
-テンプレートから、その feature の ViewModel をフェイクで組み立てるテストを生成できる。
-画面ごとに id が分かれていて（`feature.FeatureTest.home` / `.settings`）、
-`--arg template=feature.FeatureTest.home --arg name=ViewModel` で `HomeViewModelTest.kt`
-になる。中身は画面ごとに違う（フェイクとその引数、期待する `Content`）ので、
-値は渡さず id で選ぶ。
+A template can generate a test that builds that feature's ViewModel with fakes. The id
+is split per screen (`feature.FeatureTest.home` / `.settings`), and `--arg
+template=feature.FeatureTest.home --arg name=ViewModel` produces `HomeViewModelTest.kt`.
+The content differs per screen (the fake and its arguments, the expected `Content`), so
+it is chosen by id rather than by passing values.
 
 ## Placement
 
 | Module | Path | When to use |
 |---|---|---|
-| `:feature:home` | `src/test/kotlin/**/Home*Test.kt` | `:feature:home` の分。ファイル名は `Home` で始める |
-| `:feature:settings` | `src/test/kotlin/**/Settings*Test.kt` | `:feature:settings` の分。ファイル名は `Settings` で始める |
+| `:feature:home` | `src/test/kotlin/**/Home*Test.kt` | For `:feature:home`. Start the file name with `Home` |
+| `:feature:settings` | `src/test/kotlin/**/Settings*Test.kt` | For `:feature:settings`. Start the file name with `Settings` |
 
 ## Examples
 
-- `HomeViewModelTest` ... HomeViewModel をフェイクで動かすテスト
-- `SettingsViewModelTest` ... SettingsViewModel をフェイクで動かすテスト
+- `HomeViewModelTest` ... A test that runs HomeViewModel with fakes
+- `SettingsViewModelTest` ... A test that runs SettingsViewModel with fakes
 
-## 置いてはいけないもの
+## Forbidden contents
 
-- 本物の Repository（`*RepositoryImpl`）。差し替えは `:testing` のフェイクで行う
-- 画面の描画のテスト。Compose のテストが要るなら役割を分ける
+- A real Repository (`*RepositoryImpl`). Swap in the fakes from `:testing` instead
+- Tests of screen rendering. If Compose tests are needed, split the role

@@ -61,7 +61,7 @@ internal fun SettingsScreen(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                Text(text = "ダークテーマ", style = MaterialTheme.typography.bodyLarge)
+                Text(text = "Dark theme", style = MaterialTheme.typography.bodyLarge)
                 Switch(
                     checked = uiState.value.darkThemeEnabled,
                     onCheckedChange = onDarkThemeChange,
@@ -76,7 +76,7 @@ internal fun SettingsScreen(
         }
 
         AppButton(
-            text = "戻る",
+            text = "Back",
             onClick = onNavigateUp,
             emphasis = AppButtonEmphasis.Outlined,
         )
