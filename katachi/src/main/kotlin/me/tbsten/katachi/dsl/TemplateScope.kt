@@ -10,7 +10,7 @@ import kotlin.reflect.KProperty
  * in from, and the block's return value, which is that file's content.
  *
  * A template is attached to the file declaration itself, because that declaration already says
- * where the file lands: `layout { "useCase" / "*UseCase.kt".file().template { ... } }` needs no
+ * where the file lands: `layout { "useCase" / "${capture("name")}UseCase.kt".file().template { ... } }` needs no
  * `file(...)` call of its own to name the file a second time, the way the old, role-level
  * `template { }` did.
  *
@@ -29,22 +29,22 @@ import kotlin.reflect.KProperty
  *     "domain".group {
  *         "UseCase" {
  *             layout {
- *                 "useCase" / "*UseCase.kt".file()
+ *                 "useCase" / "${capture("name")}UseCase.kt".file()
  *                     .template {
- *                     val name by stringParameter()
- *                     val implBody by stringParameter(default = """TODO("not implemented")""")
- *                     """
- *                     interface ${name}UseCase {
- *                         suspend operator fun invoke()
- *                     }
- *
- *                     class ${name}UseCaseImpl : ${name}UseCase {
- *                         override suspend fun invoke() {
- *                             $implBody
+ *                         val name = captureValue("name")
+ *                         val implBody by stringParameter(default = """TODO("not implemented")""")
+ *                         """
+ *                         interface ${name}UseCase {
+ *                             suspend operator fun invoke()
  *                         }
+ *
+ *                         class ${name}UseCaseImpl : ${name}UseCase {
+ *                             override suspend fun invoke() {
+ *                                 $implBody
+ *                             }
+ *                         }
+ *                         """.trimIndent()
  *                     }
- *                     """.trimIndent()
- *                 }
  *             }
  *         }
  *     }
@@ -63,19 +63,19 @@ import kotlin.reflect.KProperty
  *                 // ./gradlew :architecture-test:katachiTemplate \
  *                 //   --arg template=data.Repository.repository,data.Repository.repositoryImpl \
  *                 //   --arg name=User --arg pageSize=50 --arg visibility=Internal
- *                 "repository" / "*Repository.kt".file()
+ *                 "repository" / "${capture("name")}Repository.kt".file()
  *                     .template(id = "repository") {
- *                     val name by stringParameter()
- *                     val pageSize by intParameter(default = 20)
- *                     val visibility by enumParameter(default = Visibility.Public)
- *                     "${visibility.name.lowercase()} interface ${name}Repository { val pageSize: Int get() = $pageSize }"
- *                 }
- *                 "repository" / "*RepositoryImpl.kt".file()
+ *                         val name = captureValue("name")
+ *                         val pageSize by intParameter(default = 20)
+ *                         val visibility by enumParameter(default = Visibility.Public)
+ *                         "${visibility.name.lowercase()} interface ${name}Repository { val pageSize: Int get() = $pageSize }"
+ *                     }
+ *                 "repository" / "${capture("name")}RepositoryImpl.kt".file()
  *                     .template(id = "repositoryImpl") {
- *                     val name by stringParameter()
- *                     val visibility by enumParameter(default = Visibility.Public)
- *                     "${visibility.name.lowercase()} class ${name}RepositoryImpl : ${name}Repository"
- *                 }
+ *                         val name = captureValue("name")
+ *                         val visibility by enumParameter(default = Visibility.Public)
+ *                         "${visibility.name.lowercase()} class ${name}RepositoryImpl : ${name}Repository"
+ *                     }
  *             }
  *         }
  *     }
@@ -102,14 +102,14 @@ public sealed interface TemplateScope {
      *
      * ## Example 1: declare a required parameter and one with a default
      * ```kt
-     * "useCase" / "*UseCase.kt".file()
+     * "useCase" / "${capture("name")}UseCase.kt".file()
      *     .template {
-     *     val name by stringParameter()
-     *     val implBody by stringParameter(default = """TODO("not implemented")""")
+     *         val implBody by stringParameter(default = """TODO("not implemented")""")
+     *         val comment by stringParameter()
      *
-     *     // ./gradlew katachiTemplate --arg template=UseCase --arg name=GetUser
-     *     "// $implBody"
-     * }
+     *         // ./gradlew katachiTemplate --arg template=UseCase --arg name=GetUser --arg comment=hello
+     *         "// $comment: ${captureValue("name")}UseCase { $implBody }"
+     *     }
      * ```
      */
     public fun stringParameter(default: String? = null): TemplateParameter<String>
@@ -121,13 +121,13 @@ public sealed interface TemplateScope {
      *
      * ## Example 1: change the content on a Boolean flag
      * ```kt
-     * "repository" / "*Repository.kt".file()
+     * "repository" / "${capture("name")}Repository.kt".file()
      *     .template {
-     *     val name by stringParameter()
-     *     val suspending by booleanParameter(default = true) // --arg suspending=false
-     *     val modifier = if (suspending) "suspend " else ""
-     *     "interface ${name}Repository { ${modifier}fun all(): List<$name> }"
-     * }
+     *         val name = captureValue("name")
+     *         val suspending by booleanParameter(default = true) // --arg suspending=false
+     *         val modifier = if (suspending) "suspend " else ""
+     *         "interface ${name}Repository { ${modifier}fun all(): List<$name> }"
+     *     }
      * ```
      */
     public fun booleanParameter(default: Boolean? = null): TemplateParameter<Boolean>
@@ -139,12 +139,12 @@ public sealed interface TemplateScope {
      *
      * ## Example 1: put a number into the generated code
      * ```kt
-     * "*Pager.kt".file()
+     * "${capture("name")}Pager.kt".file()
      *     .template {
-     *     val name by stringParameter()
-     *     val pageSize by intParameter(default = 20) // --arg pageSize=50
-     *     "const val ${name}_PAGE_SIZE: Int = $pageSize"
-     * }
+     *         val name = captureValue("name")
+     *         val pageSize by intParameter(default = 20) // --arg pageSize=50
+     *         "const val ${name}_PAGE_SIZE: Int = $pageSize"
+     *     }
      * ```
      */
     public fun intParameter(default: Int? = null): TemplateParameter<Int>
@@ -160,12 +160,12 @@ public sealed interface TemplateScope {
      * ```kt
      * enum class Visibility { Public, Internal }
      *
-     * "*.kt".file()
+     * "${capture("name")}.kt".file()
      *     .template {
-     *     val name by stringParameter()
-     *     val visibility by enumParameter(Visibility.entries) // --arg visibility=Internal
-     *     "${visibility.name.lowercase()} class $name"
-     * }
+     *         val name = captureValue("name")
+     *         val visibility by enumParameter(Visibility.entries) // --arg visibility=Internal
+     *         "${visibility.name.lowercase()} class $name"
+     *     }
      * ```
      *
      * @throws KatachiEmptyEnumTemplateParameterException when the enum has no entries, so no
@@ -183,12 +183,12 @@ public sealed interface TemplateScope {
      * ```kt
      * enum class Visibility { Public, Internal }
      *
-     * "*.kt".file()
+     * "${capture("name")}.kt".file()
      *     .template {
-     *     val name by stringParameter()
-     *     val visibility by enumParameter(default = Visibility.Public) // --arg visibility=Internal
-     *     "${visibility.name.lowercase()} class $name"
-     * }
+     *         val name = captureValue("name")
+     *         val visibility by enumParameter(default = Visibility.Public) // --arg visibility=Internal
+     *         "${visibility.name.lowercase()} class $name"
+     *     }
      * ```
      */
     public fun <E : Enum<E>> enumParameter(default: E): TemplateParameter<E>
@@ -213,12 +213,12 @@ public sealed interface TemplateScope {
      * "Screen" {
      *     layout {
      *         ":feature:${capture("feature")}".module {
-     *             "*Screen.kt".file()
+     *             "${capture("name")}Screen.kt".file()
      *                 .template {
-     *                 val name by stringParameter()
-     *                 val feature = captureValue("feature") // --arg feature=home
-     *                 "package com.example.feature.$feature"
-     *             }
+     *                     val name = captureValue("name")
+     *                     val feature = captureValue("feature") // --arg feature=home
+     *                     "package com.example.feature.$feature\n\nfun ${name}Screen() {}"
+     *                 }
      *         }
      *     }
      * }
@@ -242,14 +242,14 @@ public sealed interface TemplateScope {
      *
      * ## Example 1: let the stand-in through, and only judge the value on a real run
      * ```kt
-     * "*.kt".file()
+     * "${capture("resource")}.kt".file()
      *     .template {
-     *     val resource = captureValue("resource") // "${resource}" while previewing
-     *     require(isPreview || resource.all { it.isLetterOrDigit() }) {
-     *         "resource must be alphanumeric, was $resource"
+     *         val resource = captureValue("resource") // "${resource}" while previewing
+     *         require(isPreview || resource.all { it.isLetterOrDigit() }) {
+     *             "resource must be alphanumeric, was $resource"
+     *         }
+     *         "// $resource"
      *     }
-     *     "// $resource"
-     * }
      * ```
      */
     public val isPreview: Boolean
@@ -264,12 +264,13 @@ public sealed interface TemplateScope {
  *
  * ## Example 1: declare two parameters, one of them with a default
  * ```kt
- * template {
- *     val name by stringParameter()
- *     val implBody by stringParameter(default = """TODO("not implemented")""")
+ * "${capture("name")}UseCase.kt".file()
+ *     .template {
+ *         val name = captureValue("name")
+ *         val implBody by stringParameter(default = """TODO("not implemented")""")
  *
- *     file("${name}UseCase.kt") { "// $implBody" }
- * }
+ *         "// ${name}UseCase: $implBody"
+ *     }
  * ```
  *
  * @see TemplateScope.stringParameter
@@ -296,13 +297,14 @@ public class TemplateParameter<out T> internal constructor(
      *
      * ## Example 1: a parameter nothing reads is still one this template accepts
      * ```kt
-     * template {
-     *     @Suppress("UNUSED_VARIABLE")
-     *     val packageName by stringParameter(default = "com.example")
-     *     val name by stringParameter()
+     * "${capture("name")}UseCase.kt".file()
+     *     .template {
+     *         @Suppress("UNUSED_VARIABLE")
+     *         val packageName by stringParameter(default = "com.example")
+     *         val name = captureValue("name")
      *
-     *     file("${name}UseCase.kt") { "interface ${name}UseCase" }
-     * }
+     *         "interface ${name}UseCase"
+     *     }
      * ```
      */
     public operator fun provideDelegate(thisRef: Any?, property: KProperty<*>): TemplateParameter<T> {
@@ -318,13 +320,14 @@ public class TemplateParameter<out T> internal constructor(
      *
      * ## Example 1: read a parameter as the `String` it stands for
      * ```kt
-     * template {
-     *     val name by stringParameter()
+     * "UseCase.kt".file()
+     *     .template {
+     *         val name by stringParameter()
      *
-     *     // `name` is an ordinary String here, so Kotlin's own string templates are the whole
-     *     // templating language.
-     *     file("${name}UseCase.kt") { "interface ${name}UseCase" }
-     * }
+     *         // `name` is an ordinary String here, so Kotlin's own string templates are the whole
+     *         // templating language.
+     *         "interface ${name}UseCase"
+     *     }
      * ```
      */
     public operator fun getValue(thisRef: Any?, property: KProperty<*>): T {

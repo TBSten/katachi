@@ -19,9 +19,12 @@ import me.tbsten.katachi.dsl.internal.TemplateParameterType
  * val arch = architecture {
  *     "domain".group {
  *         "UseCase" {
- *             template {
- *                 val name = stringParameter()
- *                 file("${name}UseCase.kt") { "" }
+ *             layout {
+ *                 "useCase" / "UseCase.kt".file()
+ *                     .template {
+ *                         val name = stringParameter()
+ *                         "interface ${name}UseCase"
+ *                     }
  *             }
  *         }
  *     }
@@ -69,10 +72,13 @@ public class KatachiUnboundTemplateParameterException internal constructor(
  * val arch = architecture {
  *     "domain".group {
  *         "UseCase" {
- *             template {
- *                 val name by stringParameter()
- *                 run { val name by stringParameter(default = "other") }
- *                 file("${name}UseCase.kt") { "" }
+ *             layout {
+ *                 "useCase" / "UseCase.kt".file()
+ *                     .template {
+ *                         val name by stringParameter()
+ *                         run { val name by stringParameter(default = "other") }
+ *                         "interface ${name}UseCase"
+ *                     }
  *             }
  *         }
  *     }
@@ -117,11 +123,14 @@ public class KatachiDuplicateTemplateParameterException internal constructor(
  * val arch = architecture {
  *     "domain".group {
  *         "UseCase" {
- *             template {
- *                 val shared = stringParameter()
- *                 val name by shared
- *                 val other by shared
- *                 file("${name}${other}UseCase.kt") { "" }
+ *             layout {
+ *                 "useCase" / "UseCase.kt".file()
+ *                     .template {
+ *                         val shared = stringParameter()
+ *                         val name by shared
+ *                         val other by shared
+ *                         "interface ${name}${other}UseCase"
+ *                     }
  *             }
  *         }
  *     }
@@ -169,9 +178,9 @@ public class KatachiTemplateParameterReusedException internal constructor(
  *             layout {
  *                 "useCase" / "UseCase.kt".file()
  *                     .template {
- *                     val name by stringParameter()
- *                     "interface ${name}UseCase"
- *                 }
+ *                         val name by stringParameter()
+ *                         "interface ${name}UseCase"
+ *                     }
  *             }
  *         }
  *     }
@@ -239,10 +248,10 @@ public class KatachiMissingTemplateParameterException internal constructor(
  *             layout {
  *                 "repository" / "Repository.kt".file()
  *                     .template {
- *                     val name by stringParameter()
- *                     val withImpl by booleanParameter(default = true)
- *                     "interface ${name}Repository // withImpl=$withImpl"
- *                 }
+ *                         val name by stringParameter()
+ *                         val withImpl by booleanParameter(default = true)
+ *                         "interface ${name}Repository // withImpl=$withImpl"
+ *                     }
  *             }
  *         }
  *     }
@@ -310,9 +319,12 @@ public class KatachiInvalidTemplateParameterValueException internal constructor(
  * val arch = architecture {
  *     "domain".group {
  *         "UseCase" {
- *             template {
- *                 val visibility by enumParameter(Visibility.entries)
- *                 file("GetUserUseCase.kt") { "${visibility.name.lowercase()} class GetUserUseCase" }
+ *             layout {
+ *                 "useCase" / "GetUserUseCase.kt".file()
+ *                     .template {
+ *                         val visibility by enumParameter(Visibility.entries)
+ *                         "${visibility.name.lowercase()} class GetUserUseCase"
+ *                     }
  *             }
  *         }
  *     }

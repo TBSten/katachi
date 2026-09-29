@@ -101,7 +101,7 @@ import me.tbsten.katachi.template.internal.writeTemplateFiles
  * A wildcard module key names no single module, so the layout names its `*`s and the run gives
  * their values.
  * ```sh
- * # layout { ":feature:${capture("feature")}".module { "*Screen.kt".file().template { ... } } }
+ * # layout { ":feature:${capture("feature")}".module { "${capture("name")}Screen.kt".file().template { ... } } }
  * ./gradlew :architecture-test:katachiTemplate \
  *     --arg template=feature.Screen --arg feature=home --arg name=Home
  * ```

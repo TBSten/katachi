@@ -94,9 +94,9 @@ public class KatachiUnknownTemplateCaptureException internal constructor(
  *             layout {
  *                 "feature" / capture("feature") / "ViewModel.kt".file()
  *                     .template {
- *                     val feature by stringParameter()
- *                     "package $feature"
- *                 }
+ *                         val feature by stringParameter()
+ *                         "package $feature"
+ *                     }
  *             }
  *         }
  *     }

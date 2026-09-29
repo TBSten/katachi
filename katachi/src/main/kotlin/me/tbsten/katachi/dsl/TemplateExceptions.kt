@@ -17,13 +17,16 @@ import me.tbsten.katachi.KatachiDeclarationException
  *     architecture {
  *         "domain".group {
  *             "UseCase" {
- *                 layout { "useCase" / "*UseCase.kt".file()
- *                     .template { "a" }.template { "b" } }
+ *                 layout {
+ *                     "useCase" / "${capture("name")}UseCase.kt".file()
+ *                         .template { "a" }
+ *                         .template { "b" }
+ *                 }
  *             }
  *         }
  *     }.flattenLayout()
  * }
- * thrown.role shouldBe "UseCase"
+ * thrown.role shouldBe "domain.UseCase"
  * ```
  *
  * @see LayoutFile.template
@@ -67,9 +70,9 @@ public class KatachiDuplicateTemplateException internal constructor(
  *         "data".group {
  *             "Repository" {
  *                 layout {
- *                     "repository" / "*Repository.kt".file()
+ *                     "repository" / "${capture("name")}Repository.kt".file()
  *                         .template(id = "repository") { "" }
- *                     "repository" / "*RepositoryImpl.kt".file()
+ *                     "repository" / "${capture("name")}RepositoryImpl.kt".file()
  *                         .template(id = "repository") { "" }
  *                 }
  *             }
@@ -118,16 +121,16 @@ public class KatachiDuplicateTemplateIdException internal constructor(
  *         "data".group {
  *             "Repository" {
  *                 layout {
- *                     "repository" / "*Repository.kt".file()
+ *                     "repository" / "${capture("name")}Repository.kt".file()
  *                         .template { "" }
- *                     "repository" / "*RepositoryImpl.kt".file()
+ *                     "repository" / "${capture("name")}RepositoryImpl.kt".file()
  *                         .template(id = "impl") { "" }
  *                 }
  *             }
  *         }
  *     }.flattenLayout()
  * }
- * thrown.role shouldBe "Repository"
+ * thrown.role shouldBe "data.Repository"
  * ```
  *
  * @see LayoutFile.template
@@ -169,13 +172,15 @@ public class KatachiMissingTemplateIdException internal constructor(
  *     architecture {
  *         "data".group {
  *             "Repository" {
- *                 layout { "repository" / "*Repository.kt".file()
- *                     .template { "" } }
+ *                 layout {
+ *                     "repository" / "*Repository.kt".file()
+ *                         .template { "" }
+ *                 }
  *             }
  *         }
  *     }.flattenLayout()
  * }
- * thrown.role shouldBe "Repository"
+ * thrown.role shouldBe "data.Repository"
  * ```
  *
  * @see LayoutFile.template
