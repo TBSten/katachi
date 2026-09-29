@@ -29,3 +29,10 @@ dependencies {
     api(sampleLibs.androidxNavigationCompose)
     implementation(sampleLibs.composeRuntime)
 }
+
+kotlin {
+    // Every compiler warning fails the build, so none accumulate unnoticed.
+    compilerOptions {
+        allWarningsAsErrors.set(true)
+    }
+}

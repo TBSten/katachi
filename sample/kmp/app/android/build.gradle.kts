@@ -31,6 +31,10 @@ android {
 
 kotlin {
     jvmToolchain(17)
+    // Every compiler warning fails the build, so none accumulate unnoticed.
+    compilerOptions {
+        allWarningsAsErrors.set(true)
+    }
 }
 
 // Required. AGP's unit test tasks default to JUnit 4, and without this kotest discovers

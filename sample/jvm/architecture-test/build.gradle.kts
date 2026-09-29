@@ -8,6 +8,10 @@ plugins {
 
 kotlin {
     jvmToolchain(17)
+    // Every compiler warning fails the build, so none accumulate unnoticed.
+    compilerOptions {
+        allWarningsAsErrors.set(true)
+    }
 }
 
 tasks.test {

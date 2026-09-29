@@ -7,6 +7,10 @@ plugins {
 
 kotlin {
     jvmToolchain(17)
+    // Every compiler warning fails the build, so none accumulate unnoticed.
+    compilerOptions {
+        allWarningsAsErrors.set(true)
+    }
 
     androidLibrary {
         namespace = "com.example.kmp.feature.home"

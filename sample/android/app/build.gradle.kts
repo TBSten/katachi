@@ -49,3 +49,10 @@ dependencies {
     implementation(sampleLibs.composeUiToolingPreview)
     debugImplementation(sampleLibs.composeUiTooling)
 }
+
+kotlin {
+    // Every compiler warning fails the build, so none accumulate unnoticed.
+    compilerOptions {
+        allWarningsAsErrors.set(true)
+    }
+}

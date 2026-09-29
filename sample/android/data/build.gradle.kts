@@ -16,3 +16,10 @@ android {
         targetCompatibility = JavaVersion.VERSION_17
     }
 }
+
+kotlin {
+    // Every compiler warning fails the build, so none accumulate unnoticed.
+    compilerOptions {
+        allWarningsAsErrors.set(true)
+    }
+}

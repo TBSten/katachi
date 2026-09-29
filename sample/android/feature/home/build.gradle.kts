@@ -40,3 +40,10 @@ dependencies {
     testImplementation(project(":testing"))
     testImplementation(sampleLibs.junit)
 }
+
+kotlin {
+    // Every compiler warning fails the build, so none accumulate unnoticed.
+    compilerOptions {
+        allWarningsAsErrors.set(true)
+    }
+}

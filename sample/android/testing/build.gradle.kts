@@ -22,3 +22,10 @@ dependencies {
     // modules that consume them need those interfaces on their compile classpath.
     api(project(":data"))
 }
+
+kotlin {
+    // Every compiler warning fails the build, so none accumulate unnoticed.
+    compilerOptions {
+        allWarningsAsErrors.set(true)
+    }
+}

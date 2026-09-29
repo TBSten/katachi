@@ -38,3 +38,10 @@ dependencies {
     // The preview renderer. Debug only: it must never ship in a release build.
     debugImplementation(sampleLibs.composeUiTooling)
 }
+
+kotlin {
+    // Every compiler warning fails the build, so none accumulate unnoticed.
+    compilerOptions {
+        allWarningsAsErrors.set(true)
+    }
+}
