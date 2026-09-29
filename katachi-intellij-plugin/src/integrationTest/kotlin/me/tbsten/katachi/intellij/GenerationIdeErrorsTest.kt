@@ -86,7 +86,7 @@ class GenerationIdeErrorsTest {
             val errorsBefore = ideErrorsUnder(testHome)
 
             repeat(ROUNDS) { round ->
-                TEMPLATES.forEach { assertTrue(bridge.checkAndFill(it, "name=ErrorProbe$round"), bridge.describeState()) }
+                TEMPLATES.forEach { assertTrue(bridge.checkAndFill(it, argsOf(it, round)), bridge.describeState()) }
                 bridge.generate()
                 waitFor("generation $round to finish", timeout = 10.minutes, interval = 1.seconds, errorMessage = { bridge.describeState() }) {
                     "generation=finished" in bridge.describeState()
@@ -124,10 +124,21 @@ class GenerationIdeErrorsTest {
             |                "package com.example.repository\n\nclass ${'$'}{name}Repository\n"
             |            }
         """.trimMargin()
-        role.writeText(source.replace(existing, replacement))
+        // `template` is an extension function, so the role needs its import to compile.
+        val anchor = "import me.tbsten.katachi.dsl.kotlin.ktFile\n"
+        check(anchor in source) { "$role no longer imports ktFile the way this test expects" }
+        val withImport = if (TEMPLATE_IMPORT in source) source else source.replace(anchor, anchor + TEMPLATE_IMPORT)
+        role.writeText(withImport.replace(existing, replacement))
+    }
+
+    /** The fields each template asks for: the Controller's package level is `capture("resource")` as well. */
+    private fun argsOf(template: String, round: Int): String = when (template) {
+        CONTROLLER_TEMPLATE -> "name=ErrorProbe$round\nresource=probe$round"
+        else -> "name=ErrorProbe$round"
     }
 
     private companion object {
+        const val TEMPLATE_IMPORT = "import me.tbsten.katachi.dsl.template\n"
         const val SERVICE_TEMPLATE = "domain.Service"
         const val REPOSITORY_TEMPLATE = "data.Repository"
         const val CONTROLLER_TEMPLATE = "api.Controller"
