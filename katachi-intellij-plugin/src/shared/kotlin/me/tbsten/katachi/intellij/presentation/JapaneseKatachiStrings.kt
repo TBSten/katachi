@@ -85,6 +85,9 @@ internal object JapaneseKatachiStrings : KatachiStrings {
     override val notAccepted = "候補から選んでください"
     override fun capturePathHint(name: String, markedPattern: String) = "生成先 $markedPattern の <$name> に入るディレクトリ名"
     override fun captureModuleHint(name: String, markedPattern: String) = "モジュール $markedPattern の <$name> に入る、既存のモジュール名"
+    override fun captureModuleTarget(path: String) = "生成先 $path"
+    override fun notAnExistingModule(existing: List<String>) =
+        if (existing.isEmpty()) "当てはまるモジュールがありません" else "今あるモジュールから選んでください（${existing.joinToString(", ")}）"
     override val captureSeparatorError = "1階層の名前にしてください（/ と \\ は使えません）"
     override val captureDotError = ". や .. は使えません"
     override val multilineOn = "複数行で入力"
@@ -96,6 +99,7 @@ internal object JapaneseKatachiStrings : KatachiStrings {
     override fun reasonNotAnInt(role: String, parameter: String) = "$role: $parameter は整数で入力してください"
     override fun reasonNotAccepted(role: String, parameter: String) = "$role: $parameter の値が候補にありません"
     override fun reasonInvalidCapture(role: String, capture: String) = "$role: $capture は1階層のディレクトリ名にしてください"
+    override fun reasonNotExistingModule(role: String, capture: String) = "$role: $capture に当たるモジュールがありません"
     override fun reasonUnavailable(role: String) = "$role は生成できません"
     override fun reasonUnresolved(role: String, fileName: String) = "$role: $fileName の生成先が決まりません"
     override val reasonGenerating = "生成しています"

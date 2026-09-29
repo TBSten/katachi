@@ -123,7 +123,15 @@ internal class DialogMachine(
         val pick = scenario.origin
         val candidates = definitions.flatMapIndexed { d, def ->
             def.pool.filter { it.isAvailable }.mapNotNull { model ->
-                val pattern = model.detail?.files?.firstOrNull()?.pattern ?: return@mapNotNull null
+                val file = model.detail?.files?.firstOrNull() ?: return@mapNotNull null
+                // Below a module capture katachi describes, a file only fits in a module that exists, at
+                // the path katachi gives it there; one of those modules, by the pick.
+                val placement = file.modulePlacement
+                val pattern = if (placement == null) {
+                    file.pattern
+                } else {
+                    placement.modules.getOrNull(pick.values % placement.modules.size.coerceAtLeast(1))?.path ?: return@mapNotNull null
+                }
                 if (PathPattern.parse(pattern) == null) null else Triple(d, model, pattern)
             }
         }

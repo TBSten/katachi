@@ -30,6 +30,8 @@ internal abstract class MessageGenerateDialogStrings : GenerateDialogStrings {
     override val notAccepted get() = message("dialog.field.notAccepted")
     override val captureSeparatorError get() = message("dialog.field.captureSeparator")
     override val captureDotError get() = message("dialog.field.captureDot")
+    override fun notAnExistingModule(existing: List<String>) =
+        if (existing.isEmpty()) message("dialog.field.noExistingModule") else message("dialog.field.notAnExistingModule", existing.joinToString(", "))
     override fun capturePathHint(name: String, markedPattern: String) = message("dialog.field.capturePathHint", name, markedPattern)
     override fun captureModuleHint(name: String, markedPattern: String) = message("dialog.field.captureModuleHint", name, markedPattern)
     override fun collapsedField(name: String, controller: String, value: String) = message("dialog.field.collapsed", name, controller, value)

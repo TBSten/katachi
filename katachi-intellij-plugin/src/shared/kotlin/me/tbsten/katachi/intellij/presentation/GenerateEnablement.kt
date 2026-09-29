@@ -13,7 +13,11 @@ internal sealed interface GenerateBlocker {
     /** Pressing the reason opens [templateId]'s form and focuses [parameterName], even outside the search. */
     data class InvalidField(val templateId: TemplateId, val parameterName: String, val error: FieldError) : GenerateBlocker
 
-    /** A checked row expects a file whose target is a wildcard (E-27). */
+    /**
+     * A checked row expects a file whose target is a wildcard (E-27), or one below a module capture
+     * from a katachi that does not say where each module puts it. A module capture katachi does
+     * describe is an [InvalidField] of its own field instead: its value is what is missing.
+     */
     data class UnresolvedPath(val templateId: TemplateId, val fileName: String) : GenerateBlocker
 
     data object Generating : GenerateBlocker
@@ -43,12 +47,31 @@ internal fun generateBlockerOf(rows: List<ModuleTemplate>, form: FormState, busy
     }
     for (row in checked) {
         val detail = row.template.detail ?: continue
-        val unresolved = expectedFilesOf(detail, form.inputsOf(row.id)).firstOrNull { it.location is ExpectedLocation.Unresolved }
-        if (unresolved != null) return GenerateBlocker.UnresolvedPath(row.id, unresolved.fileName)
+        for (file in expectedFilesOf(detail, form.inputsOf(row.id))) {
+            locationBlockerOf(row.id, file)?.let { return it }
+        }
     }
     return when (busy) {
         BusyState.Idle -> null
         BusyState.Generating -> GenerateBlocker.Generating
         BusyState.InitialLoading -> GenerateBlocker.InitialLoading
     }
+}
+
+/**
+ * What stops [file] of [templateId] from being generated, as far as its location tells, or `null`.
+ * A module capture's value that is missing or names no module is worded as its field's error --
+ * "enter feature", "choose an existing module" -- rather than as a target nobody can decide: the
+ * field check above has usually said so already, and this only covers what it cannot see (values
+ * that each name a module but together name none).
+ */
+private fun locationBlockerOf(templateId: TemplateId, file: ExpectedFile): GenerateBlocker? = when (val location = file.location) {
+    is ExpectedLocation.Unresolved -> GenerateBlocker.UnresolvedPath(templateId, file.fileName)
+    is ExpectedLocation.AwaitingModule -> GenerateBlocker.InvalidField(templateId, location.captureNames.first(), FieldError.Required)
+    is ExpectedLocation.NoSuchModule -> GenerateBlocker.InvalidField(
+        templateId,
+        location.captureNames.first(),
+        FieldError.NotAnExistingModule(location.existing.map { it.joinToString(":") }),
+    )
+    is ExpectedLocation.Known, ExpectedLocation.FromBranch -> null
 }

@@ -36,7 +36,8 @@ class SyntheticDefinitionScenarioTest {
         assertEquals(listOf("a", "a › b", "a › b › c", "other"), s.groupTitles())
         assertEquals(RowMarker.Blocked, s.row(s.id("a.b.Middle")).marker)
         assertEquals(RowMarker.Blocked, s.row(s.id("other.Broken")).marker)
-        assertEquals(RowMarker.Warning, s.row(s.id("other.Wildcard")).marker)
+        // Below a module capture, but katachi says where each module puts it: nothing to warn about.
+        assertEquals(RowMarker.None, s.row(s.id("other.Wildcard")).marker)
         assertTrue(s.rowIds().all { s.row(it).trailing.isEmpty() })
     }
 
@@ -111,9 +112,44 @@ class SyntheticDefinitionScenarioTest {
     }
 
     @Test
-    fun `生成先の決まらないファイルを持つテンプレートは入力しても生成できずその理由を出す`() = runBlocking {
+    fun `モジュールのcaptureに今あるモジュールを入れると生成先が決まり生成できる`() = runBlocking {
         val s = ScenarioHarness(this)
         s.loadJson = ContractFixtures.json("synthetic-structure")
+        s.open()
+        val wildcard = s.id("other.Wildcard")
+        s.check(wildcard)
+        assertEquals("other.Wildcard: feature が未入力です", s.formFooter().reason)
+
+        s.input(wildcard, "feature", "settings")
+        assertEquals("生成先 feature/settings/src/main/kotlin/<name>Screen.kt", s.textField(wildcard, "feature").hint)
+        s.input(wildcard, "name", "Home")
+        assertEquals("生成先 feature/settings/src/main/kotlin/HomeScreen.kt", s.textField(wildcard, "feature").hint)
+        assertTrue(s.formFooter().generateEnabled)
+
+        s.generate()
+        assertEquals(mapOf("template" to "other.Wildcard", "onExisting" to "fail", "feature" to "settings", "name" to "Home"), s.lastArgs())
+    }
+
+    @Test
+    fun `モジュールのcaptureに無いモジュールを入れると生成できず今あるモジュールを示す`() = runBlocking {
+        val s = ScenarioHarness(this)
+        s.loadJson = ContractFixtures.json("synthetic-structure")
+        s.open()
+        val wildcard = s.id("other.Wildcard")
+        s.check(wildcard)
+        s.input(wildcard, "name", "Home")
+
+        s.input(wildcard, "feature", "hoem")
+
+        assertFalse(s.formFooter().generateEnabled)
+        assertEquals("other.Wildcard: feature に当たるモジュールがありません", s.formFooter().reason)
+        assertEquals("今あるモジュールから選んでください（home, settings）", s.textField(wildcard, "feature").error)
+    }
+
+    @Test
+    fun `モジュールごとの生成先を書かない古いkatachiではモジュールのcaptureの下は入力しても生成できずその理由を出す`() = runBlocking {
+        val s = ScenarioHarness(this)
+        s.loadJson = ContractFixtures.json("synthetic-structure").withoutModulePlacements()
         s.open()
         s.check(s.id("other.Wildcard"))
         // "feature" is the module's own capture -- required like any other field, and filling it
@@ -165,4 +201,11 @@ class SyntheticDefinitionScenarioTest {
         assertEquals(listOf(s.id("AllTypes"), otherAllTypes), result.report.templateIds)
         assertEquals(listOf("1", "2"), s.katachi.runs.map { it["count"] })
     }
+}
+
+/** [this] JSON as a katachi from before `modulePlacements` writes it: the key dropped. */
+private fun String.withoutModulePlacements(): String {
+    val start = indexOf(",\n  \"modulePlacements\"")
+    check(start >= 0) { "no modulePlacements in the fixture" }
+    return substring(0, start) + "\n}\n"
 }

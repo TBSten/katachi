@@ -3,6 +3,7 @@ package me.tbsten.katachi.intellij.presentation
 import me.tbsten.katachi.intellij.testing.booleanParam
 import me.tbsten.katachi.intellij.testing.branch
 import me.tbsten.katachi.intellij.testing.file
+import me.tbsten.katachi.intellij.testing.modulePlacedTemplate
 import me.tbsten.katachi.intellij.testing.row
 import me.tbsten.katachi.intellij.testing.rowsOf
 import me.tbsten.katachi.intellij.testing.stringParam
@@ -63,5 +64,50 @@ class ExpectedFilesTest {
         assertEquals(root.resolve("data/User.kt"), resolveExpectedPath(root, "data/User.kt"))
         // NUL is refused on every platform, like `*` or `:` on Windows.
         assertNull(resolveExpectedPath(root, "data/Us\u0000er.kt"))
+    }
+
+    // ---- below a module capture (katachi's modulePlacements) ----
+
+    private val component = modulePlacedTemplate(
+        modules = mapOf(
+            "home" to ("feature/home" to "feature/home/src/home/Home\${name}.kt"),
+            // A module katachi's ModuleResolver put elsewhere: the path starts there, not at feature/settings.
+            "settings" to ("apps/settings-screen" to "apps/settings-screen/src/settings/Settings\${name}.kt"),
+        ),
+    ).detail ?: throw AssertionError()
+
+    @Test
+    fun `モジュールのcaptureに今あるモジュールを入れるとkatachiの書いたそのモジュールのパスになる`() {
+        val file = expectedFilesOf(component, mapOf("feature" to "home", "name" to "Card")).single()
+        assertEquals(ExpectedLocation.Known("feature/home/src/home/HomeCard.kt"), file.location)
+    }
+
+    @Test
+    fun `ディレクトリを変えたモジュールはkatachiの答えたディレクトリの下になる`() {
+        val file = expectedFilesOf(component, mapOf("feature" to "settings", "name" to "Card")).single()
+        assertEquals(ExpectedLocation.Known("apps/settings-screen/src/settings/SettingsCard.kt"), file.location)
+    }
+
+    @Test
+    fun `モジュールのcaptureが未入力の間はその名前を待つ`() {
+        assertEquals(ExpectedLocation.AwaitingModule(listOf("feature")), expectedFilesOf(component, mapOf("name" to "Card")).single().location)
+        assertEquals(ExpectedLocation.AwaitingModule(listOf("feature")), expectedFilesOf(component, mapOf("feature" to " ")).single().location)
+    }
+
+    @Test
+    fun `今あるモジュールに無い値は無いモジュールとして今ある値を添える`() {
+        assertEquals(
+            ExpectedLocation.NoSuchModule(listOf("feature"), listOf(listOf("home"), listOf("settings"))),
+            expectedFilesOf(component, mapOf("feature" to "hoem", "name" to "Card")).single().location,
+        )
+    }
+
+    @Test
+    fun `modulePlacementsの無いkatachiではモジュールのcaptureの下は今まで通り決まらない`() {
+        val old = component.copy(files = component.files.map { it.copy(modulePlacement = null) })
+        assertEquals(
+            ExpectedLocation.Unresolved(listOf(component.files.single().pattern)),
+            expectedFilesOf(old, mapOf("feature" to "home", "name" to "Card")).single().location,
+        )
     }
 }

@@ -40,6 +40,13 @@ internal fun entryTargetOf(template: ModuleTemplate, request: SingleFileGenerati
  */
 internal fun missingModuleOf(template: ModuleTemplate, target: Path, fileSystem: ProjectFileSystem): Path? {
     val detail = template.template.detail ?: return null
+    // The module katachi listed for the target, at the directory it gave: no guessing from the pattern.
+    val placed = detail.files.firstNotNullOfOrNull { it.modulePlacement }?.let { placement ->
+        val root = placementRootOf(template.module, fileSystem)
+        placement.modules.filter { it.directory.isNotEmpty() && target.startsWith(root.resolve(it.directory)) }
+            .maxByOrNull { it.directory.length }?.let { root.resolve(it.directory) }
+    }
+    if (placed != null) return placed.takeUnless { directory -> BUILD_SCRIPTS.any { fileSystem.exists(directory.resolve(it)) } }
     val moduleCaptures = detail.captures.filter { capture -> capture.places.any { it.isModule } }.map { it.name }
     if (moduleCaptures.isEmpty()) return null
     val segments = detail.files.firstOrNull()?.pattern?.split('/') ?: return null

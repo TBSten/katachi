@@ -10,7 +10,7 @@ import java.nio.file.Paths
 /**
  * The contract goldens under `src/test/resources/contract/`.
  *
- * `json/arch-a.json`, `json/arch-b.json` and `output/` (other than `output/real-jvm-*.log`) are
+ * `json/arch-a.json`, `json/arch-b.json` and `output/` (other than `output/real-*.log`) are
  * hand-written from the contract in `.local/ide-plugin-impl/plan.md`. The real ones, left unedited
  * apart from the project root, are `json/sample-{jvm,android,kmp}.json` and
  * `json/sample-{jvm,android,kmp}-with-captures.json` (`katachiInternalTemplatesJson` of each
@@ -18,8 +18,10 @@ import java.nio.file.Paths
  * `katachiTemplate` and `katachiInternalTemplatesJson`); refresh them from the samples whenever
  * katachi's output changes (design draft's step 10, stage I-2: run
  * `:architecture-test:katachiInternalTemplatesJson` under each sample, and `katachiTemplate` under
- * sample/jvm for the `real-jvm-*` scenarios). Output files write the project root as
- * `file:///__ROOT__`.
+ * sample/jvm for the `real-jvm-*` scenarios). `output/real-android-feature-component*.log` are
+ * `katachiTemplate --arg template=feature.FeatureComponent --arg feature=home --arg name=IdePluginProbe`
+ * in a copy of sample/android, with `onExisting=fail` and with `overwrite` over an empty file.
+ * Output files write the project root as `file:///__ROOT__`.
  *
  * `json/sample-{jvm,android,kmp}.json` hold one template each -- a `capture()` reaches almost every
  * file's name now, so unlike before the template-per-file redesign there is no longer a real

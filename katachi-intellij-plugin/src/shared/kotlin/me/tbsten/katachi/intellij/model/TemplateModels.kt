@@ -105,10 +105,15 @@ internal sealed interface ParameterModel {
      * A named wildcard of the role's layout (`capture("feature")`, `":feature:*".module(capture = ...)`).
      * The template does not declare it, but a run takes it as `--arg` like a String parameter: it
      * is always required and has no default. [places] lists where it sits, in the JSON's order.
+     *
+     * [existingModules] is set for a module capture the JSON's `modulePlacements` lists: the values
+     * it can take, one per existing module, in the JSON's order (empty when no module matches). A
+     * value outside it names no module, which katachi refuses. `null` when the JSON does not say.
      */
     data class CaptureParam(
         override val name: String,
         val places: List<CapturePlace>,
+        val existingModules: List<String>? = null,
     ) : ParameterModel {
         override val typeName: String get() = "String"
         override val default: String? get() = null
@@ -163,13 +168,49 @@ internal data class FilePreviewModel(
     /** The declared pattern, `/` separated, with every capture written as `${name}`. */
     val pattern: String,
     val fileName: String,
-    /** Relative to the project root, `/` separated; `null` when the target is not decided (a wildcard). */
+    /**
+     * Relative to the project root, `/` separated; `null` when the declarations alone do not decide
+     * it: below a module capture ([modulePlacement] then says where, module by module), or a wildcard.
+     */
     val path: String?,
     /** This template's captures that appear on [pattern], by name. */
     val captures: List<String>,
     /** This template's parameters, by name. */
     val parameters: List<String>,
     val content: String,
+    /** Where the file lands in each existing module, when [path] is `null` for a module capture; `null` otherwise. */
+    val modulePlacement: ModulePlacementModel? = null,
+)
+
+/**
+ * `modulePlacements[]` of the JSON for one template: the module key its file sits below, and every
+ * existing module that key's captures can pick, with where the file lands there.
+ */
+internal data class ModulePlacementModel(
+    /** The key, every capture written `*`: `":feature:*"`. */
+    val modulePattern: String,
+    /** The names of the key's `*`s, in order. */
+    val captureNames: List<String>,
+    /** The existing modules the key matches; empty when none does. */
+    val modules: List<ModuleChoiceModel>,
+) {
+    /** The module [inputs] pick, or `null` when a capture has no value yet or the values name no module. */
+    fun choiceFor(inputs: Map<String, String>): ModuleChoiceModel? {
+        val values = captureNames.map { inputs[it] ?: return null }
+        return modules.firstOrNull { it.values == values }
+    }
+}
+
+/** One existing module of a [ModulePlacementModel]. */
+internal data class ModuleChoiceModel(
+    /** The values of [ModulePlacementModel.captureNames] that pick it, in order. */
+    val values: List<String>,
+    /** `":feature:home"`. */
+    val modulePath: String,
+    /** Its directory relative to the project root, `/` separated (katachi's `ModuleResolver`: not always the conventional one). */
+    val directory: String,
+    /** Where the file lands in it, relative to the project root; the other captures still `${name}`. */
+    val path: String,
 )
 
 /** What changes when one parameter takes [value] instead of its preview value. */

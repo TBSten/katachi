@@ -75,8 +75,13 @@ internal fun stateProblemsOf(view: DialogView): List<String> {
     val seeded = s.fields.filter { it.seeded }.map { it.name }.toSet()
     if (seeded != seeds.keys) problems += "seeded fields $seeded != the origin's decided captures ${seeds.keys}"
 
-    // The sample path: the pattern with the inputs put in.
-    val pattern = detail.files.first().pattern
+    // The sample path: the pattern with the inputs put in -- below a module capture katachi describes,
+    // katachi's own path in the module the inputs name, once they name an existing one.
+    val file = detail.files.first()
+    val picked = file.modulePlacement?.let { placement ->
+        placement.modules.firstOrNull { module -> placement.captureNames.map { view.values[it] } == module.values }
+    }
+    val pattern = picked?.path ?: file.pattern
     val expectedPath = expectedTargetPath(pattern, { view.values[it] }, seeds, view.originSegments())
     if (s.targetPath != expectedPath) problems += "sample path '${s.targetPath}' != '$expectedPath'"
 

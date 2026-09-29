@@ -87,6 +87,12 @@ internal interface KatachiStrings {
      */
     fun capturePathHint(name: String, markedPattern: String): String
     fun captureModuleHint(name: String, markedPattern: String): String
+
+    /** The note under a module capture's field once its value picks a module: the file's path there, [path] with `<name>`s. */
+    fun captureModuleTarget(path: String): String
+
+    /** A module capture's value names no module; [existing] are the values that would (empty: none matches). */
+    fun notAnExistingModule(existing: List<String>): String
     val captureSeparatorError: String
     val captureDotError: String
     val multilineOn: String
@@ -99,6 +105,7 @@ internal interface KatachiStrings {
     fun reasonNotAnInt(role: String, parameter: String): String
     fun reasonNotAccepted(role: String, parameter: String): String
     fun reasonInvalidCapture(role: String, capture: String): String
+    fun reasonNotExistingModule(role: String, capture: String): String
     fun reasonUnavailable(role: String): String
     fun reasonUnresolved(role: String, fileName: String): String
     val reasonGenerating: String

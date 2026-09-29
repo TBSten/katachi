@@ -108,12 +108,13 @@ class PlacementIndexTableTest {
 
     // covers: 論点1
     @Test
-    fun `androidのモジュールの下ではmoduleのcaptureが決まり派生の部分は変換と照合される`() {
-        // Row 7: <feature> in the package directory is matched with 'home'.
+    fun `androidのモジュールの下ではmoduleのcaptureが決まり派生の部分もkatachiの綴りで決まる`() {
+        // Row 7: <feature> in the package directory is matched with 'home'. katachi's
+        // modulePlacements spells the rest of the path for :feature:home too, so nothing is left to katachi.
         dir(
             android,
             "feature/home/src/main/kotlin/com/example/sample/feature/home",
-            Hit("feature.FeatureComponent", mapOf("feature" to "home"), listOf("name"), "component/<feature><name>.kt", targetUndecided = true),
+            Hit("feature.FeatureComponent", mapOf("feature" to "home"), listOf("name"), "component/Home<name>.kt"),
         )
         // Row 8: <feature> in the file name is 'Home' (pascal case).
         file(
@@ -238,7 +239,7 @@ class PlacementIndexTableTest {
 
     // covers: 論点1
     @Test
-    fun `kmpは起点より下に派生の部分が残ると生成先が決まらない印が付く`() {
+    fun `kmpのモジュールの下は今あるモジュールごとの生成先で照合され派生の部分も残らない`() {
         // Row 30, 31.
         file(
             kmp,
@@ -250,7 +251,7 @@ class PlacementIndexTableTest {
         dir(
             kmp,
             "feature/settings/src/commonMain/kotlin/com/example/kmp/feature",
-            Hit("feature.FeatureComponent", mapOf("feature" to "settings"), listOf("name"), "<feature>/component/<feature><name>.kt", targetUndecided = true),
+            Hit("feature.FeatureComponent", mapOf("feature" to "settings"), listOf("name"), "settings/component/Settings<name>.kt"),
         )
         // Row 33, 34.
         dir(

@@ -3,6 +3,8 @@ package me.tbsten.katachi.intellij.data.json
 import me.tbsten.katachi.intellij.model.BranchModel
 import me.tbsten.katachi.intellij.model.CapturePlace
 import me.tbsten.katachi.intellij.model.FilePreviewModel
+import me.tbsten.katachi.intellij.model.ModuleChoiceModel
+import me.tbsten.katachi.intellij.model.ModulePlacementModel
 import me.tbsten.katachi.intellij.model.ParameterModel
 import me.tbsten.katachi.intellij.model.TemplateDetailModel
 import me.tbsten.katachi.intellij.model.TemplateModel
@@ -16,7 +18,11 @@ import java.nio.file.Path
  *
  * Unknown keys are ignored. Every key of the contract is required, `null` only where the contract
  * allows it -- except `captures`, which a katachi from before `capture()` does not write: its
- * absence reads as no captures. A `kind` this plugin does not know makes that parameter an [ParameterModel.UnknownParam]
+ * absence reads as no captures, and `modulePlacements`, which a katachi from before it does not
+ * write: its absence leaves a file below a module capture undecided, as it used to be.
+ * A `modulePlacements[]` entry goes to its template's file whose `path` is `null`
+ * ([FilePreviewModel.modulePlacement]) and to the fields of its captures
+ * ([ParameterModel.CaptureParam.existingModules]). A `kind` this plugin does not know makes that parameter an [ParameterModel.UnknownParam]
  * instead of failing the whole file (E-36). A `details[]` entry whose `template` is not in
  * `templates[]` is dropped, and a repeated `template` keeps its first entry.
  *
@@ -26,9 +32,25 @@ import java.nio.file.Path
 internal fun parseTemplateDescriptionJson(text: String, file: Path): List<TemplateModel> {
     val root = JsonReader(parseJsonText(text, file), "$", file)
     val summaries = root.array("templates").map { it.summary() }.distinctBy { it.template }
-    val details = root.array("details").map { it.detail() }.distinctBy { it.template }.associateBy { it.template }
+    val placements = root.optionalArray("modulePlacements").map { it.modulePlacement() }.distinctBy { it.first }.toMap()
+    val details = root.array("details").map { it.detail() }.distinctBy { it.template }
+        .map { detail -> placements[detail.template]?.let { detail.placedIn(it) } ?: detail }
+        .associateBy { it.template }
     return summaries.map { TemplateModel(summary = it, detail = details[it.template]) }
 }
+
+/**
+ * [this] with [placement] given to the file whose path the declarations leave open, and the values
+ * each module capture can take given to its field. A file that already has a path is left alone:
+ * the placement only answers what `path: null` asks.
+ */
+private fun TemplateDetailModel.placedIn(placement: ModulePlacementModel): TemplateDetailModel = copy(
+    files = files.map { file -> if (file.path == null) file.copy(modulePlacement = placement) else file },
+    captures = captures.map { capture ->
+        val index = placement.captureNames.indexOf(capture.name)
+        if (index < 0) capture else capture.copy(existingModules = placement.modules.mapNotNull { it.values.getOrNull(index) }.distinct())
+    },
+)
 
 /** A value at [location] in the document, read with the contract's types. */
 private class JsonReader(private val value: JsonValue, private val location: String, private val file: Path) {
@@ -139,6 +161,20 @@ private class JsonReader(private val value: JsonValue, private val location: Str
         captures = strings("captures"),
         parameters = strings("parameters"),
         content = string("content"),
+    )
+
+    /** One `modulePlacements[]` entry, keyed by its template's specifier. */
+    fun modulePlacement(): Pair<String, ModulePlacementModel> = string("template") to ModulePlacementModel(
+        modulePattern = string("modulePattern"),
+        captureNames = strings("captureNames"),
+        modules = array("modules").map { module ->
+            ModuleChoiceModel(
+                values = module.strings("values"),
+                modulePath = module.string("modulePath"),
+                directory = module.string("directory"),
+                path = module.string("path"),
+            )
+        },
     )
 
     fun branch(): BranchModel = BranchModel(

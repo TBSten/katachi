@@ -18,6 +18,13 @@ internal sealed interface FieldError {
      * katachi checks the rest (a trailing `.`, a reserved name, ...) and its error shows as a failure.
      */
     data class InvalidCapture(val problem: CaptureProblem) : FieldError
+
+    /**
+     * A module capture's value that names none of the modules that exist, which katachi refuses
+     * (it never creates a module). [existing] are the values that do, in the JSON's order; empty
+     * when no module matches the key at all.
+     */
+    data class NotAnExistingModule(val existing: List<String>) : FieldError
 }
 
 /** Why a capture value is not one level: katachi's rule, the part the IDE checks before a run. */
@@ -51,6 +58,8 @@ internal fun validateField(parameter: ParameterModel, input: String?): FieldErro
         is ParameterModel.CaptureParam -> when {
             text.isEmpty() -> FieldError.Required
             else -> captureProblemOf(input.orEmpty())?.let(FieldError::InvalidCapture)
+                // As typed, not trimmed: katachi is handed the value as typed, and looks it up as it is.
+                ?: parameter.existingModules?.takeIf { input !in it }?.let(FieldError::NotAnExistingModule)
         }
         is ParameterModel.IntParam -> when {
             text.isEmpty() -> if (parameter.default == null) FieldError.Required else null

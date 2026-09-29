@@ -69,7 +69,7 @@ private fun fieldUiOf(
             link = link,
             isMultiline = null,
             multilineTooltip = null,
-            hint = captureHintOf(parameter, strings),
+            hint = moduleTargetOf(parameter, detail, inputs)?.let(strings::captureModuleTarget) ?: captureHintOf(parameter, strings),
         )
         is ParameterModel.StringParam, is ParameterModel.IntParam, is ParameterModel.UnknownParam -> {
             val multiline = if (parameter is ParameterModel.StringParam) id in state.view.multilineFields else null
@@ -106,6 +106,9 @@ internal interface ValidationStrings {
     val notAccepted: String
     val captureSeparatorError: String
     val captureDotError: String
+
+    /** A module capture's value names no module; [existing] are the values that would (empty: none matches). */
+    fun notAnExistingModule(existing: List<String>): String
 }
 
 /** The validation texts of the tool window's [KatachiStrings]. */
@@ -120,6 +123,8 @@ internal val KatachiStrings.validation: ValidationStrings
             override val notAccepted: String get() = strings.notAccepted
             override val captureSeparatorError: String get() = strings.captureSeparatorError
             override val captureDotError: String get() = strings.captureDotError
+
+            override fun notAnExistingModule(existing: List<String>): String = strings.notAnExistingModule(existing)
         }
     }
 
@@ -133,6 +138,7 @@ internal fun fieldErrorText(error: FieldError, strings: ValidationStrings): Stri
         CaptureProblem.Separator -> strings.captureSeparatorError
         CaptureProblem.Dot -> strings.captureDotError
     }
+    is FieldError.NotAnExistingModule -> strings.notAnExistingModule(error.existing)
 }
 
 /** Every place [capture] sits, its `*` written `<name>`; a module capture says it names a module. */
@@ -149,6 +155,18 @@ internal fun captureHintOf(
         val marked = markedPatternOf(capture.name, place)
         if (place.isModule) moduleHint(capture.name, marked) else pathHint(capture.name, marked)
     }.distinct().joinToString(" / ").ifEmpty { null }
+
+/**
+ * The path [detail]'s file lands at once [capture], a module capture, picks an existing module with
+ * [inputs] -- the other captures and parameters filled in as far as typed, the rest written `<name>`
+ * as the hints write them. `null` while it picks none, or when the JSON does not say where modules put it.
+ */
+internal fun moduleTargetOf(capture: ParameterModel.CaptureParam, detail: TemplateDetailModel, inputs: Map<String, String>): String? {
+    val placement = detail.files.firstNotNullOfOrNull { file -> file.modulePlacement?.takeIf { capture.name in it.captureNames } }
+        ?: return null
+    val choice = placement.choiceFor(inputs) ?: return null
+    return replacePlaceholders(expectedTextOf(choice.path, detail, inputs)) { name -> "<$name>" }
+}
 
 /**
  * [place]'s pattern with the capture's own `*` replaced by `<name>`: the `position`-th `/` level of

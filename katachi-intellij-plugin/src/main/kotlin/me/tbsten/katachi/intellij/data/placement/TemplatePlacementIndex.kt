@@ -18,7 +18,10 @@ import java.nio.file.Path
  *
  * Left out: templates whose preview failed (`conflict: true`, no details) or that have a parameter
  * kind this plugin does not know, patterns with an unnamed `*` / `**`, templates without files.
- * Templates without captures are in, as fixed paths.
+ * Templates without captures are in, as fixed paths. A template below a module capture that katachi
+ * describes (`modulePlacements`) is matched against its path in each existing module instead of its
+ * declared pattern: a file or directory in no existing module does not fit it, and one in a module
+ * decides the module capture -- wherever katachi's `ModuleResolver` put that module.
  *
  * Matches come in index order: definitions in the order given, then JSON order within each.
  *
@@ -32,19 +35,36 @@ internal class TemplatePlacementIndex private constructor(
     val definitions: List<KatachiModule>,
     private val entries: List<Entry>,
 ) {
-    /** One indexed template: where its pattern starts and the pattern. */
-    private class Entry(val template: ModuleTemplate, val root: Path, val pattern: PathPattern)
+    /**
+     * One indexed template: where its patterns start, its declared [pattern], and -- below a module
+     * capture katachi described (`modulePlacements`) -- one pattern per existing module ([choices]),
+     * which then decide instead of [pattern]. `null` [choices] for every other template.
+     */
+    private class Entry(val template: ModuleTemplate, val root: Path, val pattern: PathPattern?, val choices: List<Choice>?)
+
+    /** One existing module a module capture can pick: its values, and the file's path there as a pattern. */
+    private class Choice(val values: Map<String, String>, val pattern: PathPattern)
 
     /** The templates [file] (absolute) is the target of. */
     fun matchesForFile(file: Path): List<PlacementMatch> = entries.mapNotNull { entry ->
         val relative = relativeSegments(entry.root, file) ?: return@mapNotNull null
-        entry.pattern.matchFile(relative)?.let { entry.toMatch(it) }
+        val choices = entry.choices ?: return@mapNotNull entry.pattern?.matchFile(relative)?.let { entry.toMatch(it) }
+        // Only a file in a module that exists, at the place katachi writes it.
+        choices.firstNotNullOfOrNull { choice -> choice.pattern.matchFile(relative)?.let { entry.toMatch(it, choice.values) } }
     }
 
     /** The templates that can create a file under [directory] (absolute), with the remaining path. */
     fun matchesForDirectory(directory: Path): List<PlacementMatch> = entries.mapNotNull { entry ->
         val relative = relativeSegments(entry.root, directory) ?: return@mapNotNull null
-        entry.pattern.matchDirectory(relative)?.let { entry.toMatch(it) }
+        val choices = entry.choices ?: return@mapNotNull entry.pattern?.matchDirectory(relative)?.let { entry.toMatch(it) }
+        val hits = choices.mapNotNull { choice -> choice.pattern.matchDirectory(relative)?.let { choice to it } }
+        when {
+            hits.isEmpty() -> null
+            // In (or on the way into) one module: that module is decided.
+            hits.size == 1 -> hits.single().let { (choice, match) -> entry.toMatch(match, choice.values) }
+            // Above the modules (`feature/`): which one is still open, as the declared pattern says.
+            else -> entry.pattern?.matchDirectory(relative)?.let { entry.toMatch(it) }
+        }
     }
 
     /**
@@ -60,10 +80,10 @@ internal class TemplatePlacementIndex private constructor(
         return matches.firstOrNull { it.id == template }?.decided.orEmpty()
     }
 
-    private fun Entry.toMatch(match: SegmentMatch): PlacementMatch = PlacementMatch(
+    private fun Entry.toMatch(match: SegmentMatch, moduleValues: Map<String, String> = emptyMap()): PlacementMatch = PlacementMatch(
         template = template,
-        decided = match.decided,
-        undecided = match.undecided,
+        decided = moduleValues + match.decided,
+        undecided = match.undecided.filter { it !in moduleValues },
         remainingPath = match.remaining.joinToString("/") { segment -> segment.parts.joinToString("") { it.shown() } },
         targetUndecided = match.remaining.any { segment -> segment.parts.any { it is PatternPart.Derived } },
     )
@@ -89,8 +109,14 @@ internal class TemplatePlacementIndex private constructor(
         private fun entryOf(template: ModuleTemplate, root: Path): Entry? {
             if (!template.template.isAvailable) return null
             val file = template.template.detail?.files?.firstOrNull() ?: return null
-            val pattern = PathPattern.parse(file.pattern) ?: return null
-            return Entry(template, root, pattern)
+            val pattern = PathPattern.parse(file.pattern)
+            val choices = file.modulePlacement?.let { placement ->
+                placement.modules.mapNotNull { module ->
+                    PathPattern.parse(module.path)?.let { Choice(placement.captureNames.zip(module.values).toMap(), it) }
+                }
+            }
+            if (pattern == null && choices.isNullOrEmpty()) return null
+            return Entry(template, root, pattern, choices)
         }
 
         /** [path]'s segments below [root], or `null` when it is [root] itself or outside it. */

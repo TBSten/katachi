@@ -72,6 +72,12 @@ internal class DiskGradleRunner(private val root: Path) : GradleTaskRunner {
      */
     val fixtureOf: MutableMap<String, String> = Collections.synchronizedMap(mutableMapOf())
 
+    /**
+     * The directory the contract output's `file:///__ROOT__` stands for: [root] unless a test's
+     * project root is below it (a copied sample in a module directory, say).
+     */
+    @Volatile var contractRoot: Path = root
+
     /** When set, a generation of [generations] suspends here after printing, so a test can close the project mid-run. */
     @Volatile var gate: CompletableDeferred<Unit>? = null
 
@@ -137,7 +143,7 @@ internal class DiskGradleRunner(private val root: Path) : GradleTaskRunner {
 
     private suspend fun runContractOutput(request: GradleRunRequest, listener: GradleRunListener): GradleRunOutcome {
         val name = synchronized(generations) { if (generations.isEmpty()) "new" else generations.removeAt(0) }
-        val lines = ContractFixtures.outputLines(name, root)
+        val lines = ContractFixtures.outputLines(name, contractRoot)
         lines.forEach(listener::onLine)
         gate?.let { gate ->
             reachedGate.complete(Unit)

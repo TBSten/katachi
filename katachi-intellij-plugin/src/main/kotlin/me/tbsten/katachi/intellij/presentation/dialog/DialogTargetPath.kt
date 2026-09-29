@@ -27,6 +27,10 @@ private val TOKEN = Regex("""\$\{([^}]*)}|<([^>/]*)>""")
 /**
  * [detail]'s file pattern with [inputs] put in (the sample path of the dialog, issue 1 and spike S1 §4).
  *
+ * Below a module capture the JSON's `modulePlacements` describes, the module the inputs pick gives
+ * the whole path instead (its directory as katachi's `ModuleResolver` answers it, the names built
+ * from the value as katachi spells them). While they pick none, the pattern is used as below.
+ *
  * A module-derived `<x>` has no value the JSON tells, so a segment holding one is taken from
  * [origin] (the origin's path relative to [root]) as long as every name that segment reads is still
  * the value [seeds] gave it: the origin is the one place whose spelling of `<x>` is known. A
@@ -44,8 +48,16 @@ internal fun dialogTargetOf(
     root: Path,
     origin: Path,
 ): DialogTarget {
-    val pattern = detail.files.firstOrNull()?.pattern ?: return DialogTarget.NONE
+    val file = detail.files.firstOrNull() ?: return DialogTarget.NONE
+    val pattern = file.pattern
     val parameters = allParametersOf(detail).associateBy { it.name }
+    // Below a module capture whose values pick an existing module, katachi said where the file lands
+    // there: the module's real directory and every name built from the value, nothing left to guess.
+    file.modulePlacement?.choiceFor(inputs)?.let { choice ->
+        val relative = replacePlaceholders(choice.path) { name -> valueOf(name, inputs, parameters) }
+        val capturesLeft = relative.contains("\${")
+        return DialogTarget(relative, absolute = if (capturesLeft) null else resolveExpectedPath(root, relative), derivedUndecided = false)
+    }
     val originSegments = if (origin.startsWith(root)) root.relativize(origin).map { it.toString() } else emptyList()
     val segments = pattern.split('/').mapIndexed { index, segment ->
         val fromOrigin = originSegments.getOrNull(index)

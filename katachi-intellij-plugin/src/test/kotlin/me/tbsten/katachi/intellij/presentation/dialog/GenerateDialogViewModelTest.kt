@@ -9,6 +9,7 @@ import me.tbsten.katachi.intellij.model.ModuleTemplate
 import me.tbsten.katachi.intellij.model.ParameterModel
 import me.tbsten.katachi.intellij.model.TemplateModel
 import me.tbsten.katachi.intellij.presentation.FieldError
+import me.tbsten.katachi.intellij.presentation.FieldUi
 import me.tbsten.katachi.intellij.presentation.entry.EntryOrigin
 import me.tbsten.katachi.intellij.presentation.entry.GenerateDialogRequest
 import me.tbsten.katachi.intellij.testing.FakeCaptureSeedPort
@@ -18,6 +19,7 @@ import me.tbsten.katachi.intellij.testing.editorFile
 import me.tbsten.katachi.intellij.testing.enumParam
 import me.tbsten.katachi.intellij.testing.file
 import me.tbsten.katachi.intellij.testing.module
+import me.tbsten.katachi.intellij.testing.modulePlacedTemplate
 import me.tbsten.katachi.intellij.testing.newMenuDirectory
 import me.tbsten.katachi.intellij.testing.stringParam
 import me.tbsten.katachi.intellij.testing.template
@@ -249,6 +251,43 @@ class GenerateDialogViewModelTest {
         assertEquals(TargetNotice.DecidedByKatachi, state.targetNotice)
         assertTrue(state.canGenerate)
         assertTrue(checks.isEmpty())
+    }
+
+    /** [component], as a katachi that writes `modulePlacements` describes it: :feature:settings lives under apps/. */
+    private val placedComponent = ModuleTemplate(
+        archA,
+        modulePlacedTemplate(
+            roleName = "ui.Component",
+            pattern = "feature/\${feature}/src/kotlin/feature/<feature>/<feature>\${name}.kt",
+            modules = mapOf(
+                "home" to ("feature/home" to "feature/home/src/kotlin/feature/home/Home\${name}.kt"),
+                "settings" to ("apps/settings-screen" to "apps/settings-screen/src/kotlin/feature/settings/Settings\${name}.kt"),
+            ),
+        ),
+    )
+
+    @Test
+    fun `モジュールの capture が今あるモジュールを選ぶと、katachi の答えたパスが見本になり生成先を確かめる`() {
+        val vm = dialog(initial = placedComponent, origin = newMenuDirectory("feature"), initialSeeds = emptyMap(), templates = listOf(placedComponent))
+
+        val state = vm.type("feature", "settings").type("name", "Card").settled()
+
+        assertEquals("apps/settings-screen/src/kotlin/feature/settings/SettingsCard.kt", state.targetPath)
+        assertEquals(underRoot("apps/settings-screen/src/kotlin/feature/settings/SettingsCard.kt"), state.target)
+        assertEquals(TargetNotice.WillCreate, state.targetNotice)
+        assertTrue(state.canGenerate)
+    }
+
+    @Test
+    fun `モジュールの capture に無いモジュールを入れると、今あるモジュールを添えたエラーで生成を押せない`() {
+        val vm = dialog(initial = placedComponent, origin = newMenuDirectory("feature"), initialSeeds = emptyMap(), templates = listOf(placedComponent))
+
+        val state = vm.type("feature", "hoem").type("name", "Card").settled()
+
+        assertEquals(FieldError.NotAnExistingModule(listOf("home", "settings")), state.field("feature").error)
+        assertEquals("Enter an existing module (home, settings)", (dialogUiStateOf(state, PropertiesGenerateDialogStrings.english()).fields.first() as FieldUi.Text).error)
+        assertNull(state.target)
+        assertFalse(state.canGenerate)
     }
 
     // covers: 論点1

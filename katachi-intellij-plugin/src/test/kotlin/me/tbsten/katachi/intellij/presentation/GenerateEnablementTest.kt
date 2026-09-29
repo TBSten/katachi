@@ -3,6 +3,7 @@ package me.tbsten.katachi.intellij.presentation
 import me.tbsten.katachi.intellij.model.TemplateId
 import me.tbsten.katachi.intellij.testing.booleanParam
 import me.tbsten.katachi.intellij.testing.branch
+import me.tbsten.katachi.intellij.testing.modulePlacedTemplate
 import me.tbsten.katachi.intellij.testing.row
 import me.tbsten.katachi.intellij.testing.rows
 import me.tbsten.katachi.intellij.testing.rowsOf
@@ -85,5 +86,52 @@ class GenerateEnablementTest {
     fun `使えなくなった行がチェックに残っていれば押せない`() {
         val broken = rows.row("misc.Broken").id
         assertEquals(GenerateBlocker.Unavailable(broken), generateBlockerOf(rows, form(broken to emptyMap()), BusyState.Idle))
+    }
+
+    // ---- below a module capture (katachi's modulePlacements) ----
+
+    private val componentRows = rows(
+        modulePlacedTemplate(modules = mapOf("home" to ("feature/home" to "feature/home/src/Home\${name}.kt"))),
+    )
+    private val component = componentRows.single().id
+
+    @Test
+    fun `モジュールのcaptureに今あるモジュールを入れると押せる`() {
+        assertNull(generateBlockerOf(componentRows, form(component to mapOf("feature" to "home", "name" to "Card")), BusyState.Idle))
+    }
+
+    @Test
+    fun `モジュールのcaptureが未入力の間は生成先ではなくその欄の入力を理由にする`() {
+        assertEquals(
+            GenerateBlocker.InvalidField(component, "feature", FieldError.Required),
+            generateBlockerOf(componentRows, form(component to mapOf("name" to "Card")), BusyState.Idle),
+        )
+    }
+
+    @Test
+    fun `今あるモジュールに無い値では押せず今ある値を理由に添える`() {
+        assertEquals(
+            GenerateBlocker.InvalidField(component, "feature", FieldError.NotAnExistingModule(listOf("home"))),
+            generateBlockerOf(componentRows, form(component to mapOf("feature" to "hoem", "name" to "Card")), BusyState.Idle),
+        )
+    }
+
+    @Test
+    fun `modulePlacementsの無いkatachiではモジュールのcaptureを入れても生成先が決まらず押せない`() {
+        val old = componentRows.map { row ->
+            val detail = row.template.detail ?: throw AssertionError()
+            row.copy(
+                template = row.template.copy(
+                    detail = detail.copy(
+                        files = detail.files.map { it.copy(modulePlacement = null) },
+                        captures = detail.captures.map { it.copy(existingModules = null) },
+                    ),
+                ),
+            )
+        }
+        assertEquals(
+            GenerateBlocker.UnresolvedPath(component, "<feature>Card.kt"),
+            generateBlockerOf(old, form(component to mapOf("feature" to "home", "name" to "Card")), BusyState.Idle),
+        )
     }
 }
