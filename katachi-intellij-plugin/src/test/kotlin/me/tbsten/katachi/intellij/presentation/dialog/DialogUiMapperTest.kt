@@ -170,7 +170,7 @@ class DialogUiMapperTest {
     @Test
     fun `定義のセレクトは2つ以上のときだけ出て、テンプレートのセレクトは1つでも出る`() {
         val single = dialogUiStateOf(dialog().state.value, english)
-        assertEquals(listOf("Component"), single.templateOptions)
+        assertEquals(listOf("ui.Component › ${component.template.title}"), single.templateOptions)
         assertTrue(single.definitionOptions.isEmpty())
 
         val two = dialogUiStateOf(dialog(listOf(component, other)).state.value, english)

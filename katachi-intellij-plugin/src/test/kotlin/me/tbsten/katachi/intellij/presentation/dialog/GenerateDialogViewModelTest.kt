@@ -148,7 +148,7 @@ class GenerateDialogViewModelTest {
     fun `候補が1つでもテンプレートのセレクトボックスに1つ並ぶ`() {
         val ui = dialogUiStateOf(dialog(templates = listOf(screen)).state.value, PropertiesGenerateDialogStrings.english())
 
-        assertEquals(listOf(screen.template.title), ui.templateOptions)
+        assertEquals(listOf("${screen.template.roleName} › ${screen.template.title}"), ui.templateOptions)
         assertEquals(0, ui.selectedTemplate)
     }
 

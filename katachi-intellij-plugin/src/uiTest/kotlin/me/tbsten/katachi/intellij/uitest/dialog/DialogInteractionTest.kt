@@ -132,15 +132,15 @@ class DialogInteractionTest {
     fun `テンプレートのセレクトを開いて選ぶと選んだものに切り替わり欄と生成先が変わる`() = runComposeUiTest {
         val host = DialogHost(listOf(screen, repository), initial = screen)
         show(host)
-        assertEquals(listOf("ui.Screen", "data.Repository"), host.ui.templateOptions)
-        pick(KatachiTestTags.DIALOG_TEMPLATE, "data.Repository")
+        assertEquals(listOf("ui.Screen › ui.Screen", "data.Repository › data.Repository"), host.ui.templateOptions)
+        pick(KatachiTestTags.DIALOG_TEMPLATE, "data.Repository › data.Repository")
         assertEquals(listOf("template:1"), host.calls)
         assertEquals(repository.id, host.viewModel.state.value.selectedTemplate)
         assertEquals("data/\${name}Repository.kt", pathText())
         onNodeWithTag(field(repository, "entity")).assertExists()
         onNodeWithTag(field(screen, "name")).assertDoesNotExist()
 
-        pick(KatachiTestTags.DIALOG_TEMPLATE, "ui.Screen")
+        pick(KatachiTestTags.DIALOG_TEMPLATE, "ui.Screen › ui.Screen")
         assertEquals(screen.id, host.viewModel.state.value.selectedTemplate)
         onNodeWithTag(field(screen, "name")).assertExists()
     }
@@ -163,12 +163,12 @@ class DialogInteractionTest {
 
         pick(KatachiTestTags.DIALOG_DEFINITION, ":arch-b")
         assertEquals(otherScreen.id, host.viewModel.state.value.selectedTemplate)
-        assertEquals(listOf("ui.Screen"), host.ui.templateOptions)
+        assertEquals(listOf("ui.Screen › ui.Screen"), host.ui.templateOptions)
         onNodeWithTag(field(otherScreen, "title")).assertExists()
         assertEquals("app/Screen.kt", pathText())
 
         pick(KatachiTestTags.DIALOG_DEFINITION, ":arch-a")
-        assertEquals(listOf("ui.Screen", "data.Repository"), host.ui.templateOptions)
+        assertEquals(listOf("ui.Screen › ui.Screen", "data.Repository › data.Repository"), host.ui.templateOptions)
         onNodeWithTag(field(otherScreen, "title")).assertDoesNotExist()
     }
 
@@ -254,7 +254,7 @@ class DialogInteractionTest {
     fun `テンプレートを選び直すとカーソルは新しいテンプレートの最初の空欄に移る`() = runComposeUiTest {
         val host = DialogHost(listOf(screen, repository), initial = screen)
         show(host)
-        pick(KatachiTestTags.DIALOG_TEMPLATE, "data.Repository")
+        pick(KatachiTestTags.DIALOG_TEMPLATE, "data.Repository › data.Repository")
         onNodeWithTag(field(repository, "name")).assertIsFocused()
     }
 
@@ -317,7 +317,7 @@ class DialogInteractionTest {
         show(host)
         onNodeWithTag(field(screen, "entity")).performTextInput("Account")
         waitForIdle()
-        pick(KatachiTestTags.DIALOG_TEMPLATE, "data.Repository")
+        pick(KatachiTestTags.DIALOG_TEMPLATE, "data.Repository › data.Repository")
         onNodeWithTag(field(repository, "entity")).assertEditableTextIs("Account")
         onNodeWithTag(field(repository, "name")).assertEditableTextIs("")
     }

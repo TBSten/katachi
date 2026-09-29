@@ -58,6 +58,21 @@ private fun choice(name: String, options: List<String>, selected: Int = -1, erro
 
 private val templateTitles = listOf("画面の部品", "画面", "リポジトリ", "ユースケース", "サービス", "ナビゲーション")
 
+/** What the select box shows for the templates of sample/android: `role › title`. */
+private val sampleAndroidTemplates = listOf(
+    "feature.FeatureComponent › 画面の部品",
+    "feature.FeatureTest › home",
+    "feature.FeatureTest › settings",
+    "ui.Component › 共通コンポーネント",
+    "data.Repository › user",
+    "data.Repository › settings",
+    "data.Repository › userImpl",
+    "data.Repository › settingsImpl",
+    "testing.Fake › フェイク",
+    "testing.ArchitectureDefinition › group",
+    "testing.ArchitectureDefinition › role",
+)
+
 private val basePath = "ui/src/main/kotlin/com/example/ui/user"
 
 private fun state(
@@ -167,6 +182,10 @@ internal val dialogScenarios: List<DialogScenario> = buildList {
     add(DialogScenario("select-open-template", state(filled, filledPath, TargetNoticeUi.WillCreate, canGenerate = true), open = OpenSelect.Template))
     add(DialogScenario("select-open-template-min", state(filled, filledPath, TargetNoticeUi.WillCreate, canGenerate = true), DialogSize.Min, open = OpenSelect.Template))
     add(DialogScenario("select-open-definition", state(filled, filledPath, TargetNoticeUi.WillCreate, canGenerate = true, definitions = definitions), open = OpenSelect.Definition))
+
+    // sample/android's 11 templates: two of them are titled `settings`, told apart by their role.
+    add(DialogScenario("select-open-same-title", state(filled, filledPath, TargetNoticeUi.WillCreate, canGenerate = true, templates = sampleAndroidTemplates, selected = 5), open = OpenSelect.Template))
+    add(DialogScenario("select-open-same-title-min", state(filled, filledPath, TargetNoticeUi.WillCreate, canGenerate = true, templates = sampleAndroidTemplates, selected = 5), DialogSize.Min, open = OpenSelect.Template))
 
     // Long paths, and captures with their notes.
     add(DialogScenario("long-path", state(filled, longPath, TargetNoticeUi.WillCreate, canGenerate = false)))
