@@ -5,6 +5,10 @@ tags:
   - intermediate
 ---
 
+{/*
+  このページの目的: Android 公式のアプリアーキテクチャガイド（UI・ドメイン・データ層）を Role と group で宣言し、命名と中身の規約まで検査する例を、コピーして使える形で示すこと。
+*/}
+
 import SnippetIsStartingPoint from '../../../../components/SnippetIsStartingPoint.astro';
 
 import { FileTree, LinkCard } from '@astrojs/starlight/components';
@@ -79,13 +83,14 @@ const val appPackageDir = "com/example/project"
 
 // roles/UiState.kt
 import me.tbsten.katachi.dsl.DeclarationContainerScope
-import me.tbsten.katachi.dsl.FileConstraintScope
+import me.tbsten.katachi.dsl.RoleScope
 import me.tbsten.katachi.dsl.gradle.kotlin
 import me.tbsten.katachi.dsl.gradle.mainSourceSet
 import me.tbsten.katachi.dsl.kotlin.ktFile
 import me.tbsten.katachi.konsist.konsist
 
 fun DeclarationContainerScope.uiState() = "UiState" {
+  summary = "画面が描画に使う状態を、変更されない値として持つ"
   layout {
     "app" / mainSourceSet / kotlin / appPackageDir / "ui/*" / "*UiState".ktFile()
   }
@@ -93,20 +98,21 @@ fun DeclarationContainerScope.uiState() = "UiState" {
   shouldBeImmutable()
 }
 
-private fun FileConstraintScope.shouldBeImmutable() =
-  "プロパティはすべて val であるべき".konsist {
+private fun RoleScope.shouldBeImmutable() =
+  "プロパティはすべて val であること".konsist {
     classes().must { klass -> klass.properties().all { it.isVal } }
   }
 
 // roles/ViewModel.kt
 import me.tbsten.katachi.dsl.DeclarationContainerScope
-import me.tbsten.katachi.dsl.FileConstraintScope
+import me.tbsten.katachi.dsl.RoleScope
 import me.tbsten.katachi.dsl.gradle.kotlin
 import me.tbsten.katachi.dsl.gradle.mainSourceSet
 import me.tbsten.katachi.dsl.kotlin.ktFile
 import me.tbsten.katachi.konsist.konsist
 
 fun DeclarationContainerScope.viewModel() = "ViewModel" {
+  summary = "画面の状態を StateFlow で公開し、画面からのイベントを受け取る"
   layout {
     "app" / mainSourceSet / kotlin / appPackageDir / "ui/*" / "*ViewModel".ktFile()
   }
@@ -116,18 +122,18 @@ fun DeclarationContainerScope.viewModel() = "ViewModel" {
   shouldUiStateFlowBePublic()
 }
 
-private fun FileConstraintScope.shouldContainsViewModelClass() =
-  "ファイル名と同じ名前のクラスを1つだけ宣言するべき".konsist {
+private fun RoleScope.shouldContainsViewModelClass() =
+  "ファイル名と同じ名前のクラスを1つだけ宣言すること".konsist {
     files.must { file -> file.classes().map { it.name } == listOf(file.name) }
   }
 
-private fun FileConstraintScope.shouldExtendsViewModel() =
-  "ViewModel を継承するべき".konsist {
+private fun RoleScope.shouldExtendsViewModel() =
+  "ViewModel を継承すること".konsist {
     classes().must { klass -> klass.parents().any { it.name == "ViewModel" } }
   }
 
-private fun FileConstraintScope.shouldUiStateFlowBePublic() =
-  "UiState の Flow を public で公開するべき".konsist {
+private fun RoleScope.shouldUiStateFlowBePublic() =
+  "UiState の Flow を public で公開すること".konsist {
     classes().must { klass ->
       klass.properties().any {
         it.hasPublicOrDefaultModifier && it.type?.name?.startsWith("StateFlow") == true
@@ -137,13 +143,14 @@ private fun FileConstraintScope.shouldUiStateFlowBePublic() =
 
 // roles/Screen.kt
 import me.tbsten.katachi.dsl.DeclarationContainerScope
-import me.tbsten.katachi.dsl.FileConstraintScope
+import me.tbsten.katachi.dsl.RoleScope
 import me.tbsten.katachi.dsl.gradle.kotlin
 import me.tbsten.katachi.dsl.gradle.mainSourceSet
 import me.tbsten.katachi.dsl.kotlin.ktFile
 import me.tbsten.katachi.konsist.konsist
 
 fun DeclarationContainerScope.screen() = "Screen" {
+  summary = "画面を描く public な Composable"
   layout {
     "app" / mainSourceSet / kotlin / appPackageDir / "ui/*" / "*Screen".ktFile()
   }
@@ -151,8 +158,8 @@ fun DeclarationContainerScope.screen() = "Screen" {
   shouldContainsPublicScreenComposable()
 }
 
-private fun FileConstraintScope.shouldContainsPublicScreenComposable() =
-  "ファイル名と同じ名前の public な Composable を宣言するべき".konsist {
+private fun RoleScope.shouldContainsPublicScreenComposable() =
+  "ファイル名と同じ名前の public な Composable を宣言すること".konsist {
     files.must { file ->
       file.functions().any {
         it.name == file.name && it.hasPublicOrDefaultModifier &&
@@ -163,13 +170,14 @@ private fun FileConstraintScope.shouldContainsPublicScreenComposable() =
 
 // roles/UseCase.kt
 import me.tbsten.katachi.dsl.DeclarationContainerScope
-import me.tbsten.katachi.dsl.FileConstraintScope
+import me.tbsten.katachi.dsl.RoleScope
 import me.tbsten.katachi.dsl.gradle.kotlin
 import me.tbsten.katachi.dsl.gradle.mainSourceSet
 import me.tbsten.katachi.dsl.kotlin.ktFile
 import me.tbsten.katachi.konsist.konsist
 
 fun DeclarationContainerScope.useCase() = "UseCase" {
+  summary = "アプリ固有の1つの振る舞いを invoke で実行する"
   layout {
     "app" / mainSourceSet / kotlin / appPackageDir / "domain/*" / "*UseCase".ktFile()
   }
@@ -178,13 +186,13 @@ fun DeclarationContainerScope.useCase() = "UseCase" {
   shouldSingleInvokePublicMethod()
 }
 
-private fun FileConstraintScope.shouldContainsUseCaseClass() =
-  "ファイル名と同じ名前のクラスを1つだけ宣言するべき".konsist {
+private fun RoleScope.shouldContainsUseCaseClass() =
+  "ファイル名と同じ名前のクラスを1つだけ宣言すること".konsist {
     files.must { file -> file.classes().map { it.name } == listOf(file.name) }
   }
 
-private fun FileConstraintScope.shouldSingleInvokePublicMethod() =
-  "public な invoke メソッドを1つだけ持つべき".konsist {
+private fun RoleScope.shouldSingleInvokePublicMethod() =
+  "public な invoke メソッドを1つだけ持つこと".konsist {
     classes().must { klass ->
       klass.functions().filter { it.hasPublicOrDefaultModifier }.map { it.name } == listOf("invoke")
     }
@@ -197,6 +205,7 @@ import me.tbsten.katachi.dsl.gradle.mainSourceSet
 import me.tbsten.katachi.dsl.kotlin.ktFile
 
 fun DeclarationContainerScope.domainModel() = "DomainModel" {
+  summary = "ドメイン層で扱う、アプリの概念を表すモデル"
   layout {
     "app" / mainSourceSet / kotlin / appPackageDir / "domain/model" / "*".ktFile()
   }
@@ -204,13 +213,14 @@ fun DeclarationContainerScope.domainModel() = "DomainModel" {
 
 // roles/RepositoryInterface.kt
 import me.tbsten.katachi.dsl.DeclarationContainerScope
-import me.tbsten.katachi.dsl.FileConstraintScope
+import me.tbsten.katachi.dsl.RoleScope
 import me.tbsten.katachi.dsl.gradle.kotlin
 import me.tbsten.katachi.dsl.gradle.mainSourceSet
 import me.tbsten.katachi.dsl.kotlin.ktFile
 import me.tbsten.katachi.konsist.konsist
 
 fun DeclarationContainerScope.repositoryInterface() = "RepositoryInterface" {
+  summary = "データの取得と保存の窓口となる interface"
   layout {
     "app" / mainSourceSet / kotlin / appPackageDir / "data/*" / "*Repository".ktFile()
   }
@@ -218,20 +228,21 @@ fun DeclarationContainerScope.repositoryInterface() = "RepositoryInterface" {
   shouldContainsRepositoryInterface()
 }
 
-private fun FileConstraintScope.shouldContainsRepositoryInterface() =
-  "ファイル名と同じ名前の interface を1つだけ宣言するべき".konsist {
+private fun RoleScope.shouldContainsRepositoryInterface() =
+  "ファイル名と同じ名前の interface を1つだけ宣言すること".konsist {
     files.must { file -> file.interfaces().map { it.name } == listOf(file.name) }
   }
 
 // roles/RepositoryImplementation.kt
 import me.tbsten.katachi.dsl.DeclarationContainerScope
-import me.tbsten.katachi.dsl.FileConstraintScope
+import me.tbsten.katachi.dsl.RoleScope
 import me.tbsten.katachi.dsl.gradle.kotlin
 import me.tbsten.katachi.dsl.gradle.mainSourceSet
 import me.tbsten.katachi.dsl.kotlin.ktFile
 import me.tbsten.katachi.konsist.konsist
 
 fun DeclarationContainerScope.repositoryImplementation() = "RepositoryImplementation" {
+  summary = "RepositoryInterface の実装"
   layout {
     "app" / mainSourceSet / kotlin / appPackageDir / "data/*" / "*RepositoryImpl".ktFile()
   }
@@ -239,20 +250,21 @@ fun DeclarationContainerScope.repositoryImplementation() = "RepositoryImplementa
   shouldContainsRepositoryImplementationClass()
 }
 
-private fun FileConstraintScope.shouldContainsRepositoryImplementationClass() =
-  "ファイル名と同じ名前のクラスを1つだけ宣言するべき".konsist {
+private fun RoleScope.shouldContainsRepositoryImplementationClass() =
+  "ファイル名と同じ名前のクラスを1つだけ宣言すること".konsist {
     files.must { file -> file.classes().map { it.name } == listOf(file.name) }
   }
 
 // roles/DataSource.kt
 import me.tbsten.katachi.dsl.DeclarationContainerScope
-import me.tbsten.katachi.dsl.FileConstraintScope
+import me.tbsten.katachi.dsl.RoleScope
 import me.tbsten.katachi.dsl.gradle.kotlin
 import me.tbsten.katachi.dsl.gradle.mainSourceSet
 import me.tbsten.katachi.dsl.kotlin.ktFile
 import me.tbsten.katachi.konsist.konsist
 
 fun DeclarationContainerScope.dataSource() = "DataSource" {
+  summary = "Repository が使う、データの取得元・保存先へのアクセス"
   layout {
     "app" / mainSourceSet / kotlin / appPackageDir / "data/*" / "*DataSource".ktFile()
   }
@@ -260,8 +272,8 @@ fun DeclarationContainerScope.dataSource() = "DataSource" {
   shouldContainsDataSourceClass()
 }
 
-private fun FileConstraintScope.shouldContainsDataSourceClass() =
-  "ファイル名と同じ名前のクラスを1つだけ宣言するべき".konsist {
+private fun RoleScope.shouldContainsDataSourceClass() =
+  "ファイル名と同じ名前のクラスを1つだけ宣言すること".konsist {
     files.must { file -> file.classes().map { it.name } == listOf(file.name) }
   }
 ```

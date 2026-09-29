@@ -9,6 +9,11 @@ import SnippetIsStartingPoint from '../../../../components/SnippetIsStartingPoin
 
 import { LinkCard } from '@astrojs/starlight/components';
 
+{/*
+  このページの目的: ktlint の設定ファイル（.editorconfig とベースライン）を Role として宣言する最小の例を示す。
+  Gradle 周辺のレシピとは別に、linter の設定という1種類のファイルの置き場所だけを扱う。
+*/}
+
 <LinkCard
   title="ktlint"
   description="Kotlin の linter / formatter。設定は .editorconfig に書く。"
@@ -35,14 +40,18 @@ import me.tbsten.katachi.dsl.DeclarationContainerScope
 fun DeclarationContainerScope.ktlint() =
     "Ktlint".group {
         "EditorConfig" {
+            title = "EditorConfig"
+            summary = "ktlint のルールを設定するファイル"
             layout {
                 "**/.editorconfig".file()
             }
         }
 
         "Baseline" {
+            title = "ktlint ベースライン"
+            summary = "既存の違反を許容するために ktlint が書き出すファイル"
             layout {
-                "ktlint-baseline.xml".file().optional()
+                "**/ktlint-baseline.xml".file()
             }
         }
     }

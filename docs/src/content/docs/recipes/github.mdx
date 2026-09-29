@@ -5,6 +5,10 @@ tags:
   - intermediate
 ---
 
+{/*
+  Purpose of this page: to show, as one copyable group, how to declare the files under `.github/` such as GitHub Actions, CODEOWNERS and community health files.
+*/}
+
 import SnippetIsStartingPoint from '../../../components/SnippetIsStartingPoint.astro';
 
 ```kt collapse
@@ -22,39 +26,49 @@ import me.tbsten.katachi.dsl.DeclarationContainerScope
 
 fun DeclarationContainerScope.github() =
     "GitHub".group {
-        "Workflow" {
-            layout {
-                ".github/workflows/*.yml".file()
-                ".github/workflows/*.yaml".file()
+        "Actions".group {
+            "Workflow" {
+                summary = "GitHub Actions workflows"
+                layout {
+                    ".github/workflows/*.yml".file()
+                    ".github/workflows/*.yaml".file()
+                }
+            }
+
+            "CompositeAction" {
+                summary = "Composite actions defined in the repository"
+                layout {
+                    ".github/actions/*/action.yml".file()
+                }
             }
         }
 
-        "CompositeAction" {
-            layout {
-                ".github/actions/*/action.yml".file()
+        "Templates".group {
+            "Issue" {
+                summary = "Templates for opening an issue"
+                layout {
+                    ".github/ISSUE_TEMPLATE/*.yml".file()
+                    ".github/ISSUE_TEMPLATE/*.md".file()
+                }
             }
-        }
 
-        "IssueTemplate" {
-            layout {
-                ".github/ISSUE_TEMPLATE/*.yml".file()
-                ".github/ISSUE_TEMPLATE/*.md".file()
-            }
-        }
-
-        "PullRequestTemplate" {
-            layout {
-                ".github/PULL_REQUEST_TEMPLATE.md".file().optional()
+            "PullRequest" {
+                summary = "The template for a pull request description"
+                layout {
+                    ".github/PULL_REQUEST_TEMPLATE.md".file().optional()
+                }
             }
         }
 
         "CodeOwners" {
+            summary = "Who reviews which paths"
             layout {
                 ".github/CODEOWNERS".file().optional()
             }
         }
 
         "Dependabot" {
+            summary = "Dependabot update configuration"
             layout {
                 ".github/dependabot.yml".file().optional()
             }
@@ -62,30 +76,35 @@ fun DeclarationContainerScope.github() =
 
         "CommunityHealth".group {
             "Contributing" {
+                summary = "How to contribute"
                 layout {
                     ".github/CONTRIBUTING.md".file().optional()
                 }
             }
 
             "CodeOfConduct" {
+                summary = "The code of conduct"
                 layout {
                     ".github/CODE_OF_CONDUCT.md".file().optional()
                 }
             }
 
             "Security" {
+                summary = "How to report a vulnerability"
                 layout {
                     ".github/SECURITY.md".file().optional()
                 }
             }
 
             "Support" {
+                summary = "Where to ask for help"
                 layout {
                     ".github/SUPPORT.md".file().optional()
                 }
             }
 
             "Funding" {
+                summary = "Sponsorship information"
                 layout {
                     ".github/FUNDING.yml".file().optional()
                 }

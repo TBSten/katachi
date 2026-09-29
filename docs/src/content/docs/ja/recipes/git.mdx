@@ -5,9 +5,13 @@ tags:
   - beginner
 ---
 
+{/*
+  このページの目的: .gitignore / .gitkeep / .gitattributes を、1種類のファイルにつき1つの Role として宣言する書き方を、コピーして使える形で示す。
+*/}
+
 import SnippetIsStartingPoint from '../../../../components/SnippetIsStartingPoint.astro';
 
-```kt collapse
+```kt collapse {6,15,23,31}
 // ProjectArchitecture.kt
 import me.tbsten.katachi.dsl.architecture
 
@@ -22,14 +26,25 @@ import me.tbsten.katachi.dsl.DeclarationContainerScope
 
 fun DeclarationContainerScope.git() =
     "Git".group {
-        "Ignore" {
+        "GitIgnore" {
+            title = "Git 無視設定"
+            summary = "Git に渡さないファイルの一覧（.gitignore）"
             layout {
                 "**/.gitignore".file()
+            }
+        }
+
+        "GitKeep" {
+            title = "Git 空ディレクトリ保持"
+            summary = "ディレクトリを残すための空ファイル（.gitkeep）"
+            layout {
                 "**/.gitkeep".file()
             }
         }
 
-        "Attributes" {
+        "GitAttributes" {
+            title = "Git 属性"
+            summary = "改行コードや diff の扱いなど、パスごとの属性（.gitattributes）"
             layout {
                 "**/.gitattributes".file()
             }

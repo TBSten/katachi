@@ -4,7 +4,6 @@ description: An example of declaring where detekt's configuration file and basel
 tags:
   - beginner
 ---
-
 import SnippetIsStartingPoint from '../../../components/SnippetIsStartingPoint.astro';
 
 import { LinkCard } from '@astrojs/starlight/components';
@@ -32,17 +31,23 @@ val projectArchitecture = architecture {
 // roles/Detekt.kt
 import me.tbsten.katachi.dsl.DeclarationContainerScope
 
+private const val detektConfigDir = "config/detekt"
+
 fun DeclarationContainerScope.detekt() =
     "Detekt".group {
         "Config" {
+            title = "detekt config file"
+            summary = "YAML that enables or disables detekt rules and sets thresholds"
             layout {
-                "config/detekt/*.yml".file()
+                detektConfigDir / "*.yml".file()
             }
         }
 
         "Baseline" {
+            title = "detekt baseline"
+            summary = "baseline.xml that tolerates existing findings (may be absent)"
             layout {
-                "config/detekt/baseline.xml".file().optional()
+                detektConfigDir / "baseline.xml".file().optional()
             }
         }
     }

@@ -7,7 +7,9 @@ tags:
 
 import SnippetIsStartingPoint from '../../../../components/SnippetIsStartingPoint.astro';
 
-複数のツールを使う場合は、`**/AGENTS.md` や `.agents/skills/**/*` のように、同じファイルを複数のツールの役割が宣言することになります。そのまま組み合わせると `[AmbiguousLayout]` の警告が出ます（テストは落ちません）。共通のファイルは、共通の役割に1度だけ書いてください。
+{/*
+  このページの目的: Claude Code / Cursor など AI コーディングツールの設定ファイルを、ツールごとの group と Role で宣言する例を示す。
+*/}
 
 ## Claude Code
 
@@ -27,6 +29,8 @@ import me.tbsten.katachi.dsl.DeclarationContainerScope
 fun DeclarationContainerScope.claudeCode() =
     "ClaudeCode".group {
         "Rules" {
+            summary = "Claude Code に読ませる指示ファイル"
+
             layout {
                 "**/CLAUDE.md".file()
                 "**/AGENTS.md".file()
@@ -35,42 +39,56 @@ fun DeclarationContainerScope.claudeCode() =
         }
 
         "Skills" {
+            summary = "Claude Code のスキル"
+
             layout {
                 ".claude/skills/**/*".file()
             }
         }
 
         "Agents" {
+            summary = "Claude Code のサブエージェント定義"
+
             layout {
                 ".claude/agents/**/*.md".file()
             }
         }
 
         "Commands" {
+            summary = "Claude Code のスラッシュコマンド"
+
             layout {
                 ".claude/commands/**/*.md".file()
             }
         }
 
         "OutputStyles" {
+            summary = "Claude Code の出力スタイル"
+
             layout {
                 ".claude/output-styles/*.md".file()
             }
         }
 
         "Hooks" {
+            summary = "Claude Code のフックスクリプト"
+
             layout {
                 ".claude/hooks/**/*".file()
             }
         }
 
         "Settings" {
+            summary = "Claude Code の設定ファイル"
+
             layout {
                 ".claude/settings.json".file().optional()
             }
         }
 
         "Mcp" {
+            summary = "Claude Code の MCP サーバー設定"
+
             layout {
                 ".mcp.json".file().optional()
             }
@@ -96,6 +114,8 @@ import me.tbsten.katachi.dsl.DeclarationContainerScope
 fun DeclarationContainerScope.cursor() =
     "Cursor".group {
         "Rules" {
+            summary = "Cursor に読ませる指示ファイル"
+
             layout {
                 ".cursor/rules/**/*.mdc".file()
                 "**/AGENTS.md".file()
@@ -103,43 +123,64 @@ fun DeclarationContainerScope.cursor() =
         }
 
         "Skills" {
+            summary = "Cursor のスキル"
+
             layout {
                 ".cursor/skills/**/*".file()
             }
         }
 
         "Agents" {
+            summary = "Cursor のサブエージェント定義"
+
             layout {
                 ".cursor/agents/*.md".file()
             }
         }
 
         "Commands" {
+            summary = "Cursor のコマンド"
+
             layout {
                 ".cursor/commands/*.md".file()
             }
         }
 
-        "Hooks" {
+        "HookConfig" {
+            summary = "Cursor のフック設定ファイル"
+
             layout {
                 ".cursor/hooks.json".file().optional()
+            }
+        }
+
+        "HookScripts" {
+            summary = "Cursor のフックスクリプト"
+
+            layout {
                 ".cursor/hooks/*.sh".file()
             }
         }
 
         "Mcp" {
+            summary = "Cursor の MCP サーバー設定"
+
             layout {
                 ".cursor/mcp.json".file().optional()
             }
         }
 
         "Environment" {
+            summary = "Cursor の実行環境の設定"
+
             layout {
                 ".cursor/environment.json".file().optional()
             }
         }
 
         "Ignore" {
+            summary = "Cursor に読ませないファイルの指定"
+
             layout {
                 ".cursorignore".file().optional()
                 ".cursorindexingignore".file().optional()
@@ -166,6 +207,8 @@ import me.tbsten.katachi.dsl.DeclarationContainerScope
 fun DeclarationContainerScope.windsurf() =
     "Windsurf".group {
         "Rules" {
+            summary = "Windsurf に読ませる指示ファイル"
+
             layout {
                 ".devin/rules/*.md".file()
                 "**/AGENTS.md".file()
@@ -173,34 +216,58 @@ fun DeclarationContainerScope.windsurf() =
         }
 
         "Skills" {
+            summary = "Windsurf のスキル"
+
             layout {
                 ".devin/skills/**/*".file()
             }
         }
 
         "Workflows" {
+            summary = "Windsurf のワークフロー"
+
             layout {
                 ".devin/workflows/*.md".file()
             }
         }
 
         "Hooks" {
+            summary = "Windsurf のフック設定ファイル"
+
             layout {
                 ".devin/hooks.json".file().optional()
             }
         }
 
         "Ignore" {
+            summary = "Windsurf に読ませないファイルの指定"
+
             layout {
                 ".devinignore".file().optional()
             }
         }
 
-        "Legacy" {
+        "LegacyRules" {
+            summary = "旧形式の Windsurf の指示ファイル"
+
             layout {
                 ".windsurfrules".file().optional()
                 ".windsurf/rules/*.md".file()
+            }
+        }
+
+        "LegacySkills" {
+            summary = "旧形式の Windsurf のスキル"
+
+            layout {
                 ".windsurf/skills/**/*".file()
+            }
+        }
+
+        "LegacyWorkflows" {
+            summary = "旧形式の Windsurf のワークフロー"
+
+            layout {
                 ".windsurf/workflows/*.md".file()
             }
         }
@@ -225,6 +292,8 @@ import me.tbsten.katachi.dsl.DeclarationContainerScope
 fun DeclarationContainerScope.githubCopilot() =
     "GitHubCopilot".group {
         "Instructions" {
+            summary = "GitHub Copilot に読ませる指示ファイル"
+
             layout {
                 ".github/copilot-instructions.md".file().optional()
                 ".github/instructions/**/*.instructions.md".file()
@@ -233,36 +302,48 @@ fun DeclarationContainerScope.githubCopilot() =
         }
 
         "Skills" {
+            summary = "GitHub Copilot のスキル"
+
             layout {
                 ".github/skills/**/*".file()
             }
         }
 
         "Agents" {
+            summary = "GitHub Copilot のカスタムエージェント定義"
+
             layout {
                 ".github/agents/*.agent.md".file()
             }
         }
 
         "Prompts" {
+            summary = "GitHub Copilot のプロンプトファイル"
+
             layout {
                 ".github/prompts/*.prompt.md".file()
             }
         }
 
         "Hooks" {
+            summary = "GitHub Copilot のフック設定ファイル"
+
             layout {
                 ".github/hooks/*.json".file()
             }
         }
 
         "Mcp" {
+            summary = "GitHub Copilot の MCP サーバー設定"
+
             layout {
                 ".vscode/mcp.json".file().optional()
             }
         }
 
         "SetupSteps" {
+            summary = "GitHub Copilot の実行環境を用意する workflow"
+
             layout {
                 // GitHub のレシピの Workflow（.github/workflows/*.yml）とも重なる
                 ".github/workflows/copilot-setup-steps.yml".file().optional()
@@ -289,6 +370,8 @@ import me.tbsten.katachi.dsl.DeclarationContainerScope
 fun DeclarationContainerScope.cline() =
     "Cline".group {
         "Rules" {
+            summary = "Cline に読ませる指示ファイル"
+
             layout {
                 ".clinerules/**/*.md".file()
                 ".cline/rules/**/*.md".file()
@@ -297,24 +380,32 @@ fun DeclarationContainerScope.cline() =
         }
 
         "Skills" {
+            summary = "Cline のスキル"
+
             layout {
                 ".cline/skills/**/*".file()
             }
         }
 
         "Agents" {
+            summary = "Cline のエージェント定義"
+
             layout {
                 ".cline/agents.yaml".file().optional()
             }
         }
 
         "Hooks" {
+            summary = "Cline のフックスクリプト"
+
             layout {
                 ".cline/hooks/**/*".file()
             }
         }
 
         "Ignore" {
+            summary = "Cline に読ませないファイルの指定"
+
             layout {
                 ".clineignore".file().optional()
             }
@@ -340,6 +431,8 @@ import me.tbsten.katachi.dsl.DeclarationContainerScope
 fun DeclarationContainerScope.junie() =
     "Junie".group {
         "Rules" {
+            summary = "Junie に読ませる指示ファイル"
+
             layout {
                 ".junie/rules/*.md".file()
                 ".junie/playbook.md".file().optional()
@@ -349,30 +442,40 @@ fun DeclarationContainerScope.junie() =
         }
 
         "Skills" {
+            summary = "Junie のスキル"
+
             layout {
                 ".junie/skills/**/*".file()
             }
         }
 
         "Commands" {
+            summary = "Junie のコマンド"
+
             layout {
                 ".junie/commands/*.md".file()
             }
         }
 
         "Mcp" {
+            summary = "Junie の MCP サーバー設定"
+
             layout {
                 ".junie/mcp/mcp.json".file().optional()
             }
         }
 
         "Config" {
+            summary = "Junie の設定ファイル"
+
             layout {
                 ".junie/config.json".file().optional()
             }
         }
 
         "Ignore" {
+            summary = "Junie に読ませないファイルの指定"
+
             layout {
                 ".aiignore".file().optional()
             }
@@ -398,30 +501,40 @@ import me.tbsten.katachi.dsl.DeclarationContainerScope
 fun DeclarationContainerScope.codex() =
     "Codex".group {
         "Rules" {
+            summary = "Codex に読ませる指示ファイル"
+
             layout {
                 "**/AGENTS.md".file()
             }
         }
 
         "Skills" {
+            summary = "Codex のスキル"
+
             layout {
                 ".agents/skills/**/*".file()
             }
         }
 
         "Config" {
+            summary = "Codex の設定ファイル"
+
             layout {
                 ".codex/config.toml".file().optional()
             }
         }
 
         "Hooks" {
+            summary = "Codex のフック設定ファイル"
+
             layout {
                 ".codex/hooks.json".file().optional()
             }
         }
 
         "SandboxRules" {
+            summary = "Codex がコマンドを実行してよいかを決めるルール"
+
             layout {
                 ".codex/rules/*.rules".file()
             }
@@ -447,6 +560,8 @@ import me.tbsten.katachi.dsl.DeclarationContainerScope
 fun DeclarationContainerScope.antigravity() =
     "Antigravity".group {
         "Rules" {
+            summary = "Antigravity に読ませる指示ファイル"
+
             layout {
                 "**/AGENTS.md".file()
                 "GEMINI.md".file().optional()
@@ -455,24 +570,32 @@ fun DeclarationContainerScope.antigravity() =
         }
 
         "Skills" {
+            summary = "Antigravity のスキル"
+
             layout {
                 ".agents/skills/**/*".file()
             }
         }
 
         "Agents" {
+            summary = "Antigravity のエージェント定義"
+
             layout {
                 ".agents/agents/**/*.md".file()
             }
         }
 
         "Mcp" {
+            summary = "Antigravity の MCP サーバー設定"
+
             layout {
                 ".agents/mcp_config.json".file().optional()
             }
         }
 
         "Hooks" {
+            summary = "Antigravity のフック設定ファイル"
+
             layout {
                 ".agents/hooks.json".file().optional()
             }
@@ -498,12 +621,16 @@ import me.tbsten.katachi.dsl.DeclarationContainerScope
 fun DeclarationContainerScope.aider() =
     "Aider".group {
         "Conventions" {
+            summary = "Aider に読ませる規約ファイル"
+
             layout {
                 "CONVENTIONS.md".file().optional()
             }
         }
 
         "Settings" {
+            summary = "Aider の設定ファイル"
+
             layout {
                 ".aider.conf.yml".file().optional()
                 ".aider.model.settings.yml".file().optional()
@@ -511,6 +638,8 @@ fun DeclarationContainerScope.aider() =
         }
 
         "Ignore" {
+            summary = "Aider に読ませないファイルの指定"
+
             layout {
                 ".aiderignore".file().optional()
             }

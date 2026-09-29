@@ -5,9 +5,11 @@ tags:
   - intermediate
 ---
 
-import SnippetIsStartingPoint from '../../../components/SnippetIsStartingPoint.astro';
+{/*
+  The purpose of this page: to show, with copy-and-paste examples, how to declare Gradle files (the wrapper, build scripts, and the version catalog) in one line with `gradle()`, and how much you have to declare yourself when you use a composite build / buildSrc.
+*/}
 
-import { Aside } from '@astrojs/starlight/components';
+import SnippetIsStartingPoint from '../../../components/SnippetIsStartingPoint.astro';
 
 ```kt title="ProjectArchitecture.kt"
 import me.tbsten.katachi.dsl.architecture
@@ -29,8 +31,10 @@ import me.tbsten.katachi.dsl.architecture
 import me.tbsten.katachi.dsl.gradle.gradle
 import me.tbsten.katachi.dsl.kotlin.ktFile
 import me.tbsten.katachi.dsl.kotlin.ktsFile
+import me.tbsten.katachi.dsl.template
 
 const val buildConventionDir = "build-logic" // Use "buildSrc" instead if you use buildSrc
+const val conventionSourceDir = "$buildConventionDir/src/main/kotlin"
 
 val architecture = architecture {
     gradle()
@@ -39,6 +43,7 @@ val architecture = architecture {
         documented = false
 
         "BuildScript" {
+            summary = "The build scripts of the included build / buildSrc itself"
             layout {
                 buildConventionDir {
                     "build.gradle".ktsFile()
@@ -47,24 +52,29 @@ val architecture = architecture {
             }
         }
 
-        "ConventionPlugins" {
+        "ConventionPluginScript" {
+            summary = "Convention plugin scripts that each module applies with plugins { id(\"...\") }"
             layout {
-                "$buildConventionDir/src/main/kotlin" {
-                    "*.gradle".ktsFile()
-                    "**" / "*".ktFile() // also allows classes in packages
+                conventionSourceDir {
+                    "${capture("name")}.gradle".ktsFile()
+                        .template {
+                            """
+                                plugins {
+                                    kotlin("jvm")
+                                }
+                            """.trimIndent()
+                        }
                 }
             }
 
-            // ./gradlew katachiTemplate --arg roleName=Build/ConventionPlugins --arg name=kotlin-library
-            template {
-                val name by stringParameter()
+            // ./gradlew katachiTemplate --arg template=Build.ConventionPluginScript --arg name=kotlin-library
+        }
 
-                file("${name}.gradle.kts") {
-                    """
-                        plugins {
-                            kotlin("jvm")
-                        }
-                    """.trimIndent()
+        "ConventionPluginSource" {
+            summary = "Helper Kotlin classes used by the convention plugin scripts"
+            layout {
+                conventionSourceDir {
+                    "**" / "*".ktFile() // also allows classes in packages
                 }
             }
         }

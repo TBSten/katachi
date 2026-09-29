@@ -4,7 +4,6 @@ description: detekt の設定ファイルとベースラインの置き場所を
 tags:
   - beginner
 ---
-
 import SnippetIsStartingPoint from '../../../../components/SnippetIsStartingPoint.astro';
 
 import { LinkCard } from '@astrojs/starlight/components';
@@ -32,17 +31,23 @@ val projectArchitecture = architecture {
 // roles/Detekt.kt
 import me.tbsten.katachi.dsl.DeclarationContainerScope
 
+private const val detektConfigDir = "config/detekt"
+
 fun DeclarationContainerScope.detekt() =
     "Detekt".group {
         "Config" {
+            title = "detekt の設定ファイル"
+            summary = "detekt のルールの有効・無効としきい値を書く YAML"
             layout {
-                "config/detekt/*.yml".file()
+                detektConfigDir / "*.yml".file()
             }
         }
 
         "Baseline" {
+            title = "detekt のベースライン"
+            summary = "既存の指摘を許容するための baseline.xml（無くてもよい）"
             layout {
-                "config/detekt/baseline.xml".file().optional()
+                detektConfigDir / "baseline.xml".file().optional()
             }
         }
     }

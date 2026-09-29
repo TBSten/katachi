@@ -5,6 +5,10 @@ tags:
   - intermediate
 ---
 
+{/*
+  このページの目的: GitHub Actions・CODEOWNERS・Community Health ファイルなど `.github/` 配下のファイルを、コピーして使える1つの group で宣言する例を示すこと。
+*/}
+
 import SnippetIsStartingPoint from '../../../../components/SnippetIsStartingPoint.astro';
 
 ```kt collapse
@@ -22,39 +26,49 @@ import me.tbsten.katachi.dsl.DeclarationContainerScope
 
 fun DeclarationContainerScope.github() =
     "GitHub".group {
-        "Workflow" {
-            layout {
-                ".github/workflows/*.yml".file()
-                ".github/workflows/*.yaml".file()
+        "Actions".group {
+            "Workflow" {
+                summary = "GitHub Actions のワークフロー"
+                layout {
+                    ".github/workflows/*.yml".file()
+                    ".github/workflows/*.yaml".file()
+                }
+            }
+
+            "CompositeAction" {
+                summary = "リポジトリ内で定義する composite action"
+                layout {
+                    ".github/actions/*/action.yml".file()
+                }
             }
         }
 
-        "CompositeAction" {
-            layout {
-                ".github/actions/*/action.yml".file()
+        "Templates".group {
+            "Issue" {
+                summary = "Issue を立てるときのテンプレート"
+                layout {
+                    ".github/ISSUE_TEMPLATE/*.yml".file()
+                    ".github/ISSUE_TEMPLATE/*.md".file()
+                }
             }
-        }
 
-        "IssueTemplate" {
-            layout {
-                ".github/ISSUE_TEMPLATE/*.yml".file()
-                ".github/ISSUE_TEMPLATE/*.md".file()
-            }
-        }
-
-        "PullRequestTemplate" {
-            layout {
-                ".github/PULL_REQUEST_TEMPLATE.md".file().optional()
+            "PullRequest" {
+                summary = "Pull Request の説明のテンプレート"
+                layout {
+                    ".github/PULL_REQUEST_TEMPLATE.md".file().optional()
+                }
             }
         }
 
         "CodeOwners" {
+            summary = "パスごとのレビュー担当者の宣言"
             layout {
                 ".github/CODEOWNERS".file().optional()
             }
         }
 
         "Dependabot" {
+            summary = "Dependabot の更新設定"
             layout {
                 ".github/dependabot.yml".file().optional()
             }
@@ -62,30 +76,35 @@ fun DeclarationContainerScope.github() =
 
         "CommunityHealth".group {
             "Contributing" {
+                summary = "コントリビュートの手順"
                 layout {
                     ".github/CONTRIBUTING.md".file().optional()
                 }
             }
 
             "CodeOfConduct" {
+                summary = "行動規範"
                 layout {
                     ".github/CODE_OF_CONDUCT.md".file().optional()
                 }
             }
 
             "Security" {
+                summary = "脆弱性の報告方法"
                 layout {
                     ".github/SECURITY.md".file().optional()
                 }
             }
 
             "Support" {
+                summary = "質問や助けを求める先"
                 layout {
                     ".github/SUPPORT.md".file().optional()
                 }
             }
 
             "Funding" {
+                summary = "スポンサーシップの案内"
                 layout {
                     ".github/FUNDING.yml".file().optional()
                 }
