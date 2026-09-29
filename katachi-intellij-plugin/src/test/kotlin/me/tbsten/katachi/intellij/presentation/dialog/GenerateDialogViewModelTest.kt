@@ -345,4 +345,44 @@ class GenerateDialogViewModelTest {
         assertEquals(TargetNotice.WillOverwriteEmpty, vm.settled().targetNotice)
         assertEquals(listOf<Path?>(target, target, target), checks)
     }
+
+    // covers: 論点4
+    @Test
+    fun `パターンの起点は入力のたびに求め直さず定義ごとに1回だけ求め、一覧の変化と外からの書き込みで求め直す`() {
+        // The real rootOf walks up the directories checking wrapper / .git markers, on the EDT.
+        val asked = mutableListOf<String>()
+        val vm = GenerateDialogViewModel(
+            scope = CoroutineScope(edt + Job()),
+            request = GenerateDialogRequest(newMenuDirectory("feature/home/ui"), screen.id, mapOf("feature" to "home")),
+            candidates = listOf(screen, viewModel, repository, otherScreen),
+            seeds = seeds,
+            checkTarget = { TargetState.Absent },
+            rootOf = { module: KatachiModule ->
+                asked += module.gradlePath
+                module.linkedRootPath
+            },
+            checkContext = background,
+            settle = { settle() },
+        )
+        for (prefix in listOf("P", "Pr", "Pro", "Prof", "Profi", "Profil", "Profile")) vm.type("name", prefix)
+        vm.dispatch(GenerateDialogIntent.SelectTemplate(viewModel.id))
+        vm.type("name", "Home")
+        vm.settled()
+        assertEquals(listOf(":arch-a"), asked)
+
+        vm.dispatch(GenerateDialogIntent.SelectDefinition(archB.id))
+        vm.type("name", "Other").type("name", "Others")
+        vm.settled()
+        assertEquals(listOf(":arch-a", ":arch-b"), asked)
+
+        // A wrapper or .git may have appeared, or the definitions changed: asked again, once each.
+        vm.dispatch(GenerateDialogIntent.FilesChangedOutside)
+        vm.type("name", "Another")
+        vm.settled()
+        assertEquals(listOf(":arch-a", ":arch-b", ":arch-b"), asked)
+        vm.dispatch(GenerateDialogIntent.ListChanged(listOf(screen, viewModel, repository, otherScreen)))
+        vm.type("name", "Yet")
+        vm.settled()
+        assertEquals(listOf(":arch-a", ":arch-b", ":arch-b", ":arch-b"), asked)
+    }
 }

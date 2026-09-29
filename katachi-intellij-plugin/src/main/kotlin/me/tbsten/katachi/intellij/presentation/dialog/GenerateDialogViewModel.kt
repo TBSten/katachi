@@ -15,6 +15,7 @@ import me.tbsten.katachi.intellij.data.generate.SingleFileGenerationRequest
 import me.tbsten.katachi.intellij.data.generate.TargetState
 import me.tbsten.katachi.intellij.data.generate.templateArgsOf
 import me.tbsten.katachi.intellij.model.KatachiModule
+import me.tbsten.katachi.intellij.model.ModuleId
 import me.tbsten.katachi.intellij.model.ModuleTemplate
 import me.tbsten.katachi.intellij.model.TemplateId
 import me.tbsten.katachi.intellij.presentation.OnExistingChoice
@@ -60,7 +61,11 @@ internal class GenerateDialogViewModel(
     private val seeds: CaptureSeedPort,
     /** `SingleFileGeneration.checkTarget`: the same check [Generate] runs (issue 6). */
     private val checkTarget: suspend (Path?) -> TargetState,
-    /** The directory a definition's patterns are relative to (`placementRootOf`). */
+    /**
+     * The directory a definition's patterns are relative to (`placementRootOf`, which checks files).
+     * Asked once per definition, not on every keystroke, and again after a list change or an
+     * outside write (a wrapper or `.git` may have appeared).
+     */
     private val rootOf: (KatachiModule) -> Path,
     private val checkContext: CoroutineContext = Dispatchers.Default,
     private val settle: suspend () -> Unit = { delay(CHECK_DEBOUNCE_MILLIS) },
@@ -69,6 +74,7 @@ internal class GenerateDialogViewModel(
     private var checked: Pair<Path, TargetState>? = null
     private var checking: Job? = null
     private var checkingTarget: Path? = null
+    private val roots = HashMap<ModuleId, Path>()
 
     private val mutableState = MutableStateFlow(stateOf())
 
@@ -79,6 +85,7 @@ internal class GenerateDialogViewModel(
     }
 
     fun dispatch(intent: GenerateDialogIntent) {
+        if (intent is GenerateDialogIntent.ListChanged || intent == GenerateDialogIntent.FilesChangedOutside) roots.clear()
         core = when (intent) {
             is GenerateDialogIntent.SelectTemplate -> selectTemplate(core, intent.template, ::seedsOf)
             is GenerateDialogIntent.SelectDefinition -> selectDefinition(core, intent.definition, ::seedsOf)
@@ -105,7 +112,9 @@ internal class GenerateDialogViewModel(
     private fun seedsOf(template: TemplateId): Map<String, String> =
         if (template == request.initialTemplate) request.seeds else seeds.seedsFor(request.origin, template)
 
-    private fun stateOf(): GenerateDialogState = dialogStateOf(core, request, rootOf, checked)
+    private fun rootOfCached(module: KatachiModule): Path = roots.getOrPut(module.id) { rootOf(module) }
+
+    private fun stateOf(): GenerateDialogState = dialogStateOf(core, request, ::rootOfCached, checked)
 
     /** Starts the existing-file check when the target is not the one checked (or being checked), or when [force]d. */
     private fun recheckIfMoved(force: Boolean) {
