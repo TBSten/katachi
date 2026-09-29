@@ -25,6 +25,7 @@ flowchart LR
     P --> R["4. リリースノート<br/>release-note-material.py"]
     P --> D["5. 実装とドキュメント<br/>check-docs-against-impl"]
     P --> CI["8. CI と同等のチェック<br/>run-ci-checks.py"]
+    P --> DR["11. ドキュメントのルール適合<br/>チェックリスト → ページ群ごとに照合"]
     V --> V1["public"] & V2["@InternalKatachiApi"] & V3["@ExperimentalKatachiApi"]
     T --> B["6-1. ビルドと配信<br/>generateApiDocs → pnpm build → pnpm preview"]
     B --> C1["6. 巡回 en"] & C2["6. 巡回 ja"] & C3["6. 巡回 api-docs"]
@@ -33,15 +34,17 @@ flowchart LR
     E2 -- " Gradle を空ける " --> D & B
     B -- " Gradle を空ける " --> IK["9-1. インストールキット<br/>check-install-kit.sh"]
     IK --> IE["9-2. 統合テスト<br/>手順書どおりに導入 ja / en<br/>＋手順書のレビュー"]
-    V1 & V2 & V3 & R & D & C1 & C2 & C3 & CI & N & E2 & IE --> Rep["7. 報告"]
+    V1 & V2 & V3 & R & D & DR & C1 & C2 & C3 & CI & N & E2 & IE --> Rep["7. 報告"]
 ```
 
-- 1 が通ったら、2・3・4・8 を並列に始める。3 と 6 の中は、区分ごとの subagent をさらに並列にする。
+- 1 が通ったら、2・3・4・8・11 を並列に始める。3 と 6 の中は、区分ごとの subagent をさらに並列にする。
 - 8 は Gradle を長く使う（10〜20 分）。8 が終わったら続けて 10-1（IDE プラグインの nightly 相当。既定 scale 20 で
   約18分）、そのあと 10-2（IDE プラグインの E2E。実 IDE を起動するテスト2本、1本あたり起動込みで2分半〜3分が目安）を
   走らせる。5 のサンプルを動かす作業と 6-1 は、10-2 が終わってから始める。
 - 9 も Gradle を長く使う（15〜20 分）。6-1 の `generateApiDocs` が終わってから始める（巡回を先に始めたいので 6-1 を先にする）。
   5 のサンプルを動かす作業とは、どちらかが終わるのを待って重ねない。
+- 11 は Gradle を使わず、日本語の原本だけを読んでファイルを書き換えないので、2 を待たず、Gradle を使う作業とも重ねてよい
+  （subagent が主で、オーケストレータの手はほぼ要らない）。
 - 6 は 2 を待つ。英語のページを訳し直してからビルドしないと、古い英語を巡回することになる。
 - 5 は日本語の原本だけを見るので、2 を待たない。3・4・5 はどれもファイルを書き換えないので、互いに待たない。
 - **Gradle を使う作業は同時に1つだけ。**8、10-1、10-2、9、5 がサンプルを動かす作業、6-1 の `generateApiDocs` は互いに
@@ -62,6 +65,7 @@ flowchart LR
 | `release-note.md`                | 4        |
 | `docs-vs-impl.md`                | 5        |
 | `site-crawl.md`・`screenshots/`  | 6        |
+| `docs-rules.md`                  | 11       |
 | `ci-checks.md`                   | 8        |
 | `ide-plugin-nightly.md`          | 10-1     |
 | `ide-plugin-e2e.md`              | 10-2     |
@@ -72,7 +76,7 @@ flowchart LR
 
 ログ・材料・中間ファイルはすべて `.local/release-v<版>/tmp/` の下に置く。例: `tmp/release-note-material.txt`、
 `tmp/ci-checks/`（コマンドごとのログ）、`tmp/ide-plugin-nightly/`（uiTest のログ）、`tmp/ide-plugin-e2e/`
-（integrationTest のログ）、`tmp/install-kit/`（fixture とログ）、`tmp/pages-<区分>.txt`、`tmp/crawl/`
+（integrationTest のログ）、`tmp/install-kit/`（fixture とログ）、`tmp/docs-rules/`（ルールのチェックリストと `part-*.md`）、`tmp/pages-<区分>.txt`、`tmp/crawl/`
 （巡回の生データ）、`tmp/logs/`（pnpm や gradle のログ）、`tmp/visibility-<区分>.md`（区分ごとの一覧）、subagent の
 `part-*.md` などの下書き。subagent に任せるときも、この置き場所を渡す。
 
@@ -137,6 +141,15 @@ priority 10 の警告。結果は `ci-checks.md`、ログは `tmp/ci-checks/`。
   6-1 の配信を配信元に使うので、9-2 が終わるまで配信を止めない。
 
 詳細: [references/install-kit.md](references/install-kit.md)
+
+## 11. ドキュメントがガイドのルールに沿っているか
+
+日本語の全ページ・README.ja.md・`docs/public/install/ja/` のコード例と本文が、ガイドに書かれたルール・ベストプラクティスに
+沿っているかを確かめる（直さず報告する）。ルールの出どころは既定で `docs/src/content/docs/ja/guides/` の basic-api・role・
+layout・konsist-integration。**チェックの前に**、ほかのガイド（generate-code-from-template・processor・baseline など）と
+`docs/AGENTS.md` にもルールがあるかを確かめ、あれば対象に足して、何をどこから拾ったかを結果に書く。
+1体目がチェックリストを作り、ページのまとまりごとの subagent が並列に照合する。結果は `docs-rules.md`、中間物は `tmp/docs-rules/`。
+詳細: [references/docs-rules.md](references/docs-rules.md)
 
 ## 7. 報告
 

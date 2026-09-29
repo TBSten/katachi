@@ -121,6 +121,19 @@
 
 </details>
 
+## 11. ドキュメントのルール適合
+
+- [ ] ルールの出どころに足したページ: {TODO ページ名（既定の4ページ以外）}
+- [ ] 違反: {TODO} 件（priority 7 以上: {TODO} 件）
+- [ ] 結果: {TODO file://.local/release-v0.0.0/docs-rules.md の絶対パス}
+
+<details>
+    <summary>memo</summary>
+
+    {TODO}
+
+</details>
+
 ## そのほか
 
 <details>
