@@ -17402,5 +17402,6 @@
       "exampleCommand": "./gradlew katachiTemplate --arg template=nested.deeper.g9.T299 --arg name=Name",
       "captures": []
     }
-  ]
+  ],
+  "modulePlacements": []
 }

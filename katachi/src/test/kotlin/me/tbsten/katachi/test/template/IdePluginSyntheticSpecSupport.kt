@@ -40,7 +40,9 @@ internal enum class SyntheticStyle { Plain, Fancy, Minimal }
  * - `other.Broken`: throws for a placeholder, so it is not in `details` and its `conflict` is
  *   `true`.
  * - `other.Wildcard`: its module is `:feature:${capture("feature")}`, so with no module resolved
- *   the file's `path` is `null`. Its file name is `${capture("name")}Screen` (a capture, not a
+ *   the file's `path` is `null`; `modulePlacements` gives its path in each of the project's two
+ *   feature modules, `feature/home` and `feature/settings` (IdePluginSyntheticJsonSpec's
+ *   project). Its file name is `${capture("name")}Screen` (a capture, not a
  *   parameter, since only a capture can move a file), so the IDE plugin's own placeholder
  *   substitution (captures fold into the same lookup as parameters) still fills it in from the
  *   `name` field, `HomeScreen.kt` once typed `Home`.

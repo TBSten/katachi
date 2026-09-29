@@ -6,9 +6,7 @@
       "title": "画面の部品",
       "roleName": "feature.FeatureComponent",
       "summary": "1つの画面でしか使わない @Composable。:feature:<name> の component package に <Name>*.kt で置く",
-      "parameterNames": [
-        "withPreview"
-      ],
+      "parameterNames": ["withPreview"],
       "captures": [
         {
           "name": "feature",
@@ -69,9 +67,7 @@
       "title": "共通コンポーネント",
       "roleName": "ui.Component",
       "summary": ":ui モジュールの component package に置く、feature をまたいで使う部品",
-      "parameterNames": [
-        "previewText"
-      ],
+      "parameterNames": ["previewText"],
       "captures": [
         {
           "name": "name",
@@ -223,10 +219,7 @@
           "kind": "BooleanParameter",
           "typeName": "Boolean",
           "default": "true",
-          "acceptedValues": [
-            "true",
-            "false"
-          ],
+          "acceptedValues": ["true", "false"],
           "isRequired": false,
           "previewValue": "true",
           "previewValueSource": "Default"
@@ -237,13 +230,8 @@
           "pattern": "feature/${feature}/src/main/kotlin/com/example/sample/feature/<feature>/component/<feature>${name}.kt",
           "fileName": "<feature>${name}.kt",
           "path": null,
-          "captures": [
-            "feature",
-            "name"
-          ],
-          "parameters": [
-            "withPreview"
-          ],
+          "captures": ["feature", "name"],
+          "parameters": ["withPreview"],
           "content": "package com.example.sample.feature.${feature}.component\n\nimport androidx.compose.foundation.layout.Arrangement\nimport androidx.compose.foundation.layout.Column\nimport androidx.compose.material3.MaterialTheme\nimport androidx.compose.material3.Text\nimport androidx.compose.runtime.Composable\nimport androidx.compose.ui.Modifier\nimport androidx.compose.ui.unit.dp\nimport androidx.compose.ui.tooling.preview.Preview\nimport com.example.sample.ui.preview.PreviewRoot\n\n/** Part of the ${feature} screen that no other screen uses. */\n@Composable\ninternal fun ${feature}${name}(\n    title: String,\n    modifier: Modifier = Modifier,\n) {\n    Column(\n        modifier = modifier,\n        verticalArrangement = Arrangement.spacedBy(8.dp),\n    ) {\n        Text(text = title, style = MaterialTheme.typography.titleMedium)\n    }\n}\n\n@Preview(showBackground = true)\n@Composable\nprivate fun ${feature}${name}Preview() = PreviewRoot {\n    ${feature}${name}(title = \"${name}\")\n}"
         }
       ],
@@ -287,9 +275,7 @@
           "pattern": "feature/home/src/test/kotlin/com/example/sample/feature/home/Home${name}Test.kt",
           "fileName": "Home${name}Test.kt",
           "path": "feature/home/src/test/kotlin/com/example/sample/feature/home/Home${name}Test.kt",
-          "captures": [
-            "name"
-          ],
+          "captures": ["name"],
           "parameters": [],
           "content": "package com.example.sample.feature.home\n\nimport com.example.sample.testing.FakeUserRepository\nimport com.example.sample.ui.core.UiState\nimport org.junit.Assert.assertEquals\nimport org.junit.Test\n\nclass Home${name}Test {\n    @Test\n    fun `リポジトリから読んだ値を Content として公開する`() {\n        val viewModel = HomeViewModel(userRepository = FakeUserRepository(userName = \"katachi\"))\n\n        assertEquals(UiState.Content(HomeContent(userName = \"katachi\", visitCount = 1)), viewModel.uiState.value)\n    }\n}\n"
         }
@@ -318,9 +304,7 @@
           "pattern": "feature/settings/src/test/kotlin/com/example/sample/feature/settings/Settings${name}Test.kt",
           "fileName": "Settings${name}Test.kt",
           "path": "feature/settings/src/test/kotlin/com/example/sample/feature/settings/Settings${name}Test.kt",
-          "captures": [
-            "name"
-          ],
+          "captures": ["name"],
           "parameters": [],
           "content": "package com.example.sample.feature.settings\n\nimport com.example.sample.testing.FakeSettingsRepository\nimport com.example.sample.ui.core.UiState\nimport org.junit.Assert.assertEquals\nimport org.junit.Test\n\nclass Settings${name}Test {\n    @Test\n    fun `リポジトリから読んだ値を Content として公開する`() {\n        val viewModel = SettingsViewModel(settingsRepository = FakeSettingsRepository(darkThemeEnabled = true))\n\n        assertEquals(UiState.Content(SettingsContent(darkThemeEnabled = true)), viewModel.uiState.value)\n    }\n}\n"
         }
@@ -360,12 +344,8 @@
           "pattern": "ui/src/main/kotlin/com/example/sample/ui/component/${name}.kt",
           "fileName": "${name}.kt",
           "path": "ui/src/main/kotlin/com/example/sample/ui/component/${name}.kt",
-          "captures": [
-            "name"
-          ],
-          "parameters": [
-            "previewText"
-          ],
+          "captures": ["name"],
+          "parameters": ["previewText"],
           "content": "package com.example.sample.ui.component\n\nimport androidx.compose.material3.Text\nimport androidx.compose.runtime.Composable\nimport androidx.compose.ui.Modifier\nimport androidx.compose.ui.tooling.preview.Preview\nimport com.example.sample.ui.preview.PreviewRoot\n\n/** Shared ${name}, called by feature modules instead of Material's own. */\n@Composable\nfun ${name}(\n    text: String,\n    modifier: Modifier = Modifier,\n) {\n    Text(text = text, modifier = modifier)\n}\n\n@Preview(showBackground = true)\n@Composable\nprivate fun ${name}Preview() = PreviewRoot {\n    ${name}(text = \"${previewText}\")\n}\n"
         }
       ],
@@ -393,9 +373,7 @@
           "pattern": "data/src/main/kotlin/com/example/sample/data/user/User${name}Repository.kt",
           "fileName": "User${name}Repository.kt",
           "path": "data/src/main/kotlin/com/example/sample/data/user/User${name}Repository.kt",
-          "captures": [
-            "name"
-          ],
+          "captures": ["name"],
           "parameters": [],
           "content": "package com.example.sample.data.user\n\n/** Reads ${name} data. */\ninterface User${name}Repository {\n    // TODO: replace with what this repository actually reads and writes.\n    fun load(): String\n}\n"
         }
@@ -424,9 +402,7 @@
           "pattern": "data/src/main/kotlin/com/example/sample/data/settings/Settings${name}Repository.kt",
           "fileName": "Settings${name}Repository.kt",
           "path": "data/src/main/kotlin/com/example/sample/data/settings/Settings${name}Repository.kt",
-          "captures": [
-            "name"
-          ],
+          "captures": ["name"],
           "parameters": [],
           "content": "package com.example.sample.data.settings\n\n/** Reads ${name} data. */\ninterface Settings${name}Repository {\n    // TODO: replace with what this repository actually reads and writes.\n    fun load(): String\n}\n"
         }
@@ -455,9 +431,7 @@
           "pattern": "data/src/main/kotlin/com/example/sample/data/user/User${name}RepositoryImpl.kt",
           "fileName": "User${name}RepositoryImpl.kt",
           "path": "data/src/main/kotlin/com/example/sample/data/user/User${name}RepositoryImpl.kt",
-          "captures": [
-            "name"
-          ],
+          "captures": ["name"],
           "parameters": [],
           "content": "package com.example.sample.data.user\n\n/** Production implementation of [User${name}Repository]. */\nclass User${name}RepositoryImpl : User${name}Repository {\n    override fun load(): String = \"\"\n}\n"
         }
@@ -486,9 +460,7 @@
           "pattern": "data/src/main/kotlin/com/example/sample/data/settings/Settings${name}RepositoryImpl.kt",
           "fileName": "Settings${name}RepositoryImpl.kt",
           "path": "data/src/main/kotlin/com/example/sample/data/settings/Settings${name}RepositoryImpl.kt",
-          "captures": [
-            "name"
-          ],
+          "captures": ["name"],
           "parameters": [],
           "content": "package com.example.sample.data.settings\n\n/** Production implementation of [Settings${name}Repository]. */\nclass Settings${name}RepositoryImpl : Settings${name}Repository {\n    override fun load(): String = \"\"\n}\n"
         }
@@ -517,9 +489,7 @@
           "pattern": "testing/src/main/kotlin/com/example/sample/testing/Fake${repository}.kt",
           "fileName": "Fake${repository}.kt",
           "path": "testing/src/main/kotlin/com/example/sample/testing/Fake${repository}.kt",
-          "captures": [
-            "repository"
-          ],
+          "captures": ["repository"],
           "parameters": [],
           "content": "package com.example.sample.testing\n\nimport com.example.sample.data.user.${repository}\n\n/** In-memory [${repository}] for tests of other modules. */\nclass Fake${repository}(\n    private var value: String = \"\",\n) : ${repository} {\n    override fun load(): String = value\n}\n"
         }
@@ -548,9 +518,7 @@
           "pattern": "architecture-test/src/test/kotlin/com/example/sample/groups/${name}Group.kt",
           "fileName": "${name}Group.kt",
           "path": "architecture-test/src/test/kotlin/com/example/sample/groups/${name}Group.kt",
-          "captures": [
-            "name"
-          ],
+          "captures": ["name"],
           "parameters": [],
           "content": "package com.example.sample.groups\n\nimport me.tbsten.katachi.dsl.DeclarationContainerScope\n\n// TODO: call ${name}Group() from ProjectArchitecture.kt.\n/** TODO: say what the roles of the ${name} group have in common. */\nfun DeclarationContainerScope.${name}Group() = \"${name}\".group {\n    title = \"${name}\"\n    summary = \"TODO: この group の役割に共通すること\"\n}\n"
         }
@@ -579,9 +547,7 @@
           "pattern": "architecture-test/src/test/kotlin/com/example/sample/roles/${name}Role.kt",
           "fileName": "${name}Role.kt",
           "path": "architecture-test/src/test/kotlin/com/example/sample/roles/${name}Role.kt",
-          "captures": [
-            "name"
-          ],
+          "captures": ["name"],
           "parameters": [],
           "content": "package com.example.sample.roles\n\nimport me.tbsten.katachi.dsl.DeclarationContainerScope\n\n// TODO: call ${name}() from the group this role belongs to.\n/** TODO: say what a file of the ${name} role is. */\nfun DeclarationContainerScope.${name}() = \"${name}\" {\n    title = \"${name}\"\n    summary = \"TODO: この役割のファイルが何か\"\n    // TODO: declare where its files live.\n    layout { }\n}\n"
         }
@@ -595,6 +561,27 @@
           "pattern": "architecture-test/src/test/kotlin/com/example/sample/roles/*Role.kt",
           "position": 8,
           "segment": "${name}Role.kt"
+        }
+      ]
+    }
+  ],
+  "modulePlacements": [
+    {
+      "template": "feature.FeatureComponent",
+      "modulePattern": ":feature:*",
+      "captureNames": ["feature"],
+      "modules": [
+        {
+          "values": ["home"],
+          "modulePath": ":feature:home",
+          "directory": "feature/home",
+          "path": "feature/home/src/main/kotlin/com/example/sample/feature/home/component/Home${name}.kt"
+        },
+        {
+          "values": ["settings"],
+          "modulePath": ":feature:settings",
+          "directory": "feature/settings",
+          "path": "feature/settings/src/main/kotlin/com/example/sample/feature/settings/component/Settings${name}.kt"
         }
       ]
     }

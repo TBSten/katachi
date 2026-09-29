@@ -4,15 +4,19 @@ import kotlinx.serialization.KSerializer
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import me.tbsten.katachi.ExperimentalKatachiApi
+import me.tbsten.katachi.check.internal.moduleIndex
+import me.tbsten.katachi.dsl.files.internal.findProjectRoot
 import me.tbsten.katachi.internal.absolutePathOf
 import me.tbsten.katachi.internal.catching
 import me.tbsten.katachi.internal.fileUri
 import me.tbsten.katachi.internal.runProcessorCatching
 import me.tbsten.katachi.processor.ArchitectureProcessContext
 import me.tbsten.katachi.processor.ArchitectureProcessor
+import me.tbsten.katachi.processor.internal.fileSystem
 import me.tbsten.katachi.template.internal.DeclaredTemplate
 import me.tbsten.katachi.template.internal.declaredTemplatesOf
 import me.tbsten.katachi.template.internal.encodeTemplateDescriptionJson
+import me.tbsten.katachi.template.internal.modulePlacementsOf
 import me.tbsten.katachi.template.internal.resolveTemplate
 import me.tbsten.katachi.template.internal.templateDetailLines
 import me.tbsten.katachi.template.internal.templateDetailOf
@@ -47,7 +51,7 @@ import me.tbsten.katachi.template.internal.writeTemplateDescriptionJson
  * whose module only the modules that exist could pick, so such a file is shown without a path.
  *
  * It reads nothing but the declarations, and writes nothing unless `--arg format=json` asks it
- * to.
+ * to -- which also lists the modules, as "The JSON form" below says.
  *
  * ## The JSON form
  *
@@ -56,6 +60,10 @@ import me.tbsten.katachi.template.internal.writeTemplateDescriptionJson
  * Gradle plugin registers this processor a second time under the internal key
  * `internalTemplatesJson` with both arguments set, and that task is not meant to be run by hand.
  * A template whose preview fails is listed without a detail rather than failing the run.
+ *
+ * The JSON also says, for a template whose file sits below a module capture, where that file
+ * lands in each module that exists and that the capture can pick -- what the text form leaves
+ * open. That one part reads the project's modules, and only when such a template is declared.
  *
  * ## What it answers
  *
@@ -117,8 +125,14 @@ public object DescribeTemplates : ArchitectureProcessor<DescribeTemplates.Args, 
         templateListLines(list).forEach(context::log)
         // One template that cannot be previewed must not cost the IDE every other one. It is
         // still listed, with `conflict: true`, as the text list already shows it.
-        val details = table.mapNotNull { template -> catching { templateDetailOf(template) }.getOrNull() }
-        writeTemplateDescriptionJson(output, encodeTemplateDescriptionJson(list.templates, details))
+        val previewed = table.mapNotNull { template -> catching { template to templateDetailOf(template) }.getOrNull() }
+        val details = previewed.map { it.second }
+        // Reads the modules only when a template sits below a module capture: which modules exist
+        // is what decides where such a file lands, and the declarations alone cannot say it.
+        val placements = modulePlacementsOf(previewed.map { it.first }) {
+            moduleIndex(context.fileSystem, findProjectRoot(context.fileSystem).path, context.architecture.moduleResolver)
+        }
+        writeTemplateDescriptionJson(output, encodeTemplateDescriptionJson(list.templates, details, placements))
         context.log("Wrote ${fileUri(absolutePathOf(output))}")
         return list
     }

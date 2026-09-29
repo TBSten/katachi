@@ -377,5 +377,6 @@
       "exampleCommand": "./gradlew katachiTemplate --arg template=second.AlsoOnlyHere --arg name=Name",
       "captures": []
     }
-  ]
+  ],
+  "modulePlacements": []
 }

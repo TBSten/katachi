@@ -6,7 +6,8 @@ import me.tbsten.katachi.dsl.Architecture
 import me.tbsten.katachi.processor.internal.FakeArchitectureProcessContext
 import me.tbsten.katachi.template.DescribeTemplates
 import me.tbsten.katachi.template.DescribeTemplatesFormat
-import me.tbsten.katachi.test.dsl.files.ForbiddenFileSystem
+import me.tbsten.katachi.dsl.files.KatachiFileSystem
+import me.tbsten.katachi.test.dsl.files.fakeFileSystem
 
 private const val UPDATE_ENV: String = "KATACHI_UPDATE_IDE_PLUGIN_FIXTURES"
 
@@ -16,12 +17,26 @@ private const val FIXTURE_DIRECTORY: String = "../katachi-intellij-plugin/src/te
 private const val UPDATE_COMMAND: String =
     "$UPDATE_ENV=true ./gradlew :katachi:test --tests '*IdePluginSyntheticJsonSpec*' --rerun"
 
+/**
+ * The project the synthetic definitions are described in: its root at `/repo`, the definition
+ * module in `architecture-test/`, and the two modules `other.Wildcard`'s `":feature:*"` can pick.
+ * Only the modules are ever read from it -- the rest of the JSON comes from the declarations.
+ */
+private fun syntheticProject(): KatachiFileSystem = fakeFileSystem(workingDirectory = "/repo/architecture-test") {
+    "/repo" {
+        "gradlew"()
+        "architecture-test/build.gradle.kts"()
+        "feature/home/build.gradle.kts"()
+        "feature/settings/build.gradle.kts"()
+    }
+}
+
 private fun Architecture.templateDescriptionJson(): String = withTempProject { root ->
     val output = File(root, "templateDescription.json")
     val context = FakeArchitectureProcessContext(
         architecture = this,
         args = DescribeTemplates.Args(format = DescribeTemplatesFormat.Json, output = output.path),
-        fileSystem = ForbiddenFileSystem,
+        fileSystem = syntheticProject(),
     )
     DescribeTemplates.process(context).getOrThrow()
     output.readText()

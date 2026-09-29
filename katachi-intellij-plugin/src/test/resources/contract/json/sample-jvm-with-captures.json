@@ -31,9 +31,7 @@
       "title": "サービス",
       "roleName": "domain.Service",
       "summary": "アプリ固有の振る舞いを1つ持ち、Repository を組み合わせて実現する",
-      "parameterNames": [
-        "kdoc"
-      ],
+      "parameterNames": ["kdoc"],
       "captures": [
         {
           "name": "name",
@@ -59,10 +57,7 @@
           "pattern": "src/main/kotlin/com/example/controller/${resource}/${name}Controller.kt",
           "fileName": "${name}Controller.kt",
           "path": "src/main/kotlin/com/example/controller/${resource}/${name}Controller.kt",
-          "captures": [
-            "resource",
-            "name"
-          ],
+          "captures": ["resource", "name"],
           "parameters": [],
           "content": "package com.example.controller.${resource}\n\nimport io.ktor.server.response.respondText\nimport io.ktor.server.routing.Route\nimport io.ktor.server.routing.get\n\n/** Maps `GET /${resource}`. */\nclass ${name}Controller {\n    fun register(route: Route) {\n        route.get(\"/${resource}\") {\n            call.respondText(\"TODO: ${name}Controller\")\n        }\n    }\n}\n"
         }
@@ -109,12 +104,8 @@
           "pattern": "src/main/kotlin/com/example/service/${name}Service.kt",
           "fileName": "${name}Service.kt",
           "path": "src/main/kotlin/com/example/service/${name}Service.kt",
-          "captures": [
-            "name"
-          ],
-          "parameters": [
-            "kdoc"
-          ],
+          "captures": ["name"],
+          "parameters": ["kdoc"],
           "content": "package com.example.service\n\n/** ${kdoc} */\nclass ${name}Service {\n    fun execute(): String = TODO(\"${name}Service の実装\")\n}\n"
         }
       ],
@@ -130,5 +121,6 @@
         }
       ]
     }
-  ]
+  ],
+  "modulePlacements": []
 }

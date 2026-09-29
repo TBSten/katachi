@@ -459,5 +459,26 @@
         }
       ]
     }
+  ],
+  "modulePlacements": [
+    {
+      "template": "other.Wildcard",
+      "modulePattern": ":feature:*",
+      "captureNames": ["feature"],
+      "modules": [
+        {
+          "values": ["home"],
+          "modulePath": ":feature:home",
+          "directory": "feature/home",
+          "path": "feature/home/src/main/kotlin/${name}Screen.kt"
+        },
+        {
+          "values": ["settings"],
+          "modulePath": ":feature:settings",
+          "directory": "feature/settings",
+          "path": "feature/settings/src/main/kotlin/${name}Screen.kt"
+        }
+      ]
+    }
   ]
 }
