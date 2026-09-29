@@ -1,23 +1,24 @@
-[Ktor サンプルアプリ](../README.md) / [API](README.md)
+[Ktor sample app](../README.md) / [API](README.md)
 
-# コントローラ
+# Controller
 
-HTTP のリクエストを1つ受け取り、対応する Service を呼んで結果を返す
+Receives one HTTP request, calls the matching Service and returns the result
 
-HTTP とアプリケーションの中身との境目です。パスとメソッドの登録、リクエストからの値の
-取り出し、Service が返した値を応答にするところまでを持ちます。
+The boundary between HTTP and the inside of the application. It owns registering paths and
+methods, pulling values out of the request, and turning what a Service returned into a
+response.
 
-1ファイル1コントローラで、ファイル名は `*Controller.kt`。リソースごとに
-`controller/health/` のような package を1つ切り、その中に置きます。ファイル名がそのまま
-エンドポイントのまとまりを表すので、新しいパスを既存のファイルに足すのか新しく作るのかを
-名前だけで判断できます。なお `layout { }` が見ているのは置き場所と名前までで、
-「置いてはいけないもの」を機械的に弾いてはいません。
+One controller per file, and the file name is `*Controller.kt`. Each resource gets one
+package such as `controller/health/`, and the controller goes inside it. The file name
+directly names a group of endpoints, so the name alone tells you whether a new path
+belongs in an existing file or in a new one. Note that `layout { }` only looks at where
+files live and what they are named; it does not mechanically reject "Forbidden contents".
 
-テンプレートから生成できます。リソースの package の階層に `resource` と名前を付けてあるので、
-`--arg template=Controller --arg resource=user --arg name=User` で
-`controller/user/UserController.kt` ができます。`resource` は package にそのまま入るので、
-テンプレートは英数字だけの値しか受け付けません（`--arg resource=user-profile` のような値は
-弾きます）。
+It can be generated from a template. The package level of the resource is named
+`resource`, so `--arg template=Controller --arg resource=user --arg name=User` produces
+`controller/user/UserController.kt`. `resource` goes straight into the package, so the
+template accepts only letters and digits (a value such as `--arg resource=user-profile`
+is rejected).
 
 ## Placement
 
@@ -27,18 +28,19 @@ HTTP とアプリケーションの中身との境目です。パスとメソッ
 
 ## Examples
 
-- `HealthController` ... ヘルスチェックの受け口
+- `HealthController` ... The health check entry point
 
-## 置いてよいもの
+## Allowed contents
 
-置いてよいのは Ktor の `Route` に対する登録と、受け渡しのための変換だけです。
-`HealthController` は `register(route: Route)` の中で `route.get("/health") { ... }` を
-書き、呼び出す `HealthService` は既定値付きのコンストラクタ引数で受け取るので、
-テストから差し替えられます。
+Only registration on a Ktor `Route` and the conversion needed to hand values over may be
+placed here. `HealthController` writes `route.get("/health") { ... }` inside
+`register(route: Route)`, and the `HealthService` it calls is received as a constructor
+argument with a default value, so a test can swap it.
 
-## 置いてはいけないもの
+## Forbidden contents
 
-- 条件分岐や計算。「どちらを返すか」を決めた時点で、それはサービスの仕事です
-- `com.example.repository` の呼び出し。Controller から直接データを取りに行きません
-- `install(...)` のような Application 全体への設定と `routing { }` 自体。どの Controller を
-  routing ツリーに繋ぐかは `plugin/Routing.kt` が決めます
+- Branching or computation. The moment it decides "which one to return", it is the
+  service's job
+- Calls to `com.example.repository`. A Controller does not fetch data directly
+- Application-wide configuration such as `install(...)`, and `routing { }` itself. Which
+  Controllers are connected to the routing tree is decided by `plugin/Routing.kt`

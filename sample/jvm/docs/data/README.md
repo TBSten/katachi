@@ -1,29 +1,30 @@
-[Ktor サンプルアプリ](../README.md)
+[Ktor sample app](../README.md)
 
-# データ
+# Data
 
-値がどこから来るのかを引き受ける層
+The layer that takes responsibility for where values come from
 
-取得元との往復をここに閉じ込める層です。いまはリポジトリの役割1つだけですが、
-グループを立てているのは、キャッシュや外部 API クライアントのように「取得元が変わったら
-直す」ものが増える先を、あらかじめ決めておくためです。
+A layer that confines the round trips to a data source. It holds just one role, the
+repository, for now. The group exists to decide in advance where things that "get fixed
+when the data source changes", such as caches and external API clients, will go when they
+appear.
 
-Repository が返すのはドメインのモデルで、取得元に固有の型をこの層の外へ出しません。
-Service は `HealthRepository.load()` を呼ぶだけで、その先が DB なのか固定値なのかを
-知らずに済みます。
+A Repository returns domain models and never lets a type specific to the data source out
+of this layer. A Service only calls `HealthRepository.load()` and does not need to know
+whether what lies behind it is a DB or a fixed value.
 
 | Role | Summary |
 |---|---|
-| [リポジトリ](./Repository.md) | データの取得・保存を担い、取得元の詳細をドメインから隠す |
+| [Repository](./Repository.md) | Handles fetching and saving data, hiding data source details from the domain |
 
 ## Placement in this group
 
 ```
 :
-  src/main/kotlin/**/repository/*Repository.kt  リポジトリ
+  src/main/kotlin/**/repository/*Repository.kt  Repository
 ```
 
-## 置いてはいけないもの
+## Forbidden contents
 
-ここに置いてはいけないのは、アプリ固有の判断です。何を優先するか・どう組み合わせるかは
-ドメインの担当で、この層は言われたものを取ってくるところまでにします。
+What must not be placed here is application-specific decisions. What to prioritize and how
+to combine things belong to the domain; this layer stops at fetching what it is asked for.

@@ -11,16 +11,17 @@ import me.tbsten.katachi.dsl.DeclarationContainerScope
  */
 fun DeclarationContainerScope.toolGroup() = "tool".group {
     documented = false
-    title = "ツール設定"
-    summary = "ビルドそのものではない、プロジェクト周辺のツールの設定"
+    title = "Tool configuration"
+    summary = "Configuration of tools around the project that are not the build itself"
 
     description = """
-        リポジトリに置かれて開発を支える、ビルド以外のものです。いまは Git 設定の役割
-        （`.gitignore`）と、人が読む `README.md` の2つが入っています。
+        Things kept in the repository that support development but are not the build. For now
+        this holds two roles: the Git configuration (`.gitignore`) and the `README.md` that people
+        read.
 
-        ビルドと同じく `documented = false` で、チェックはするが生成ドキュメントには出しません。
-        エディタや CI の設定ファイルが増えたときは `.gitignore` の役割に混ぜず、このグループに
-        役割を1つ足すのが想定している育て方です。
+        Like the build, it is `documented = false`: it is checked but does not appear in the
+        generated documentation. When editor or CI configuration files appear, the intended way to
+        grow is to add one role to this group rather than mixing them into the `.gitignore` role.
     """.trimIndent()
 
     documentation()

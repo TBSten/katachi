@@ -4,22 +4,23 @@ import me.tbsten.katachi.dsl.DeclarationContainerScope
 
 /** The role of the prose that explains this sample to whoever opens it. */
 fun DeclarationContainerScope.documentation() = "Documentation" {
-    title = "ドキュメント"
-    summary = "README.md など、リポジトリを読む人に向けた説明"
+    title = "Documentation"
+    summary = "README.md and other explanations for people reading the repository"
     documented = false
     description = """
-        このサンプルを開いた人に向けた散文。いまはルートの `README.md` 1つで、
-        どういうサンプルか、読むべきファイル、どのコマンドで何が走るかが書いてある。
+        Prose for whoever opens this sample. For now it is the single root `README.md`, which says
+        what kind of sample this is, which files to read, and which command runs what.
 
-        役割の一覧やレイヤーの説明はここに書かない。それは定義そのものが持っているもので、
-        写しを置けば必ず片方が古くなる。`README.md` が引き受けるのは、定義からは出てこないこと
-        （このサンプルの狙い、どこから読むか、検査の回し方）に限る。
+        The list of roles and the description of the layers are not written here. The definition
+        itself holds them, and keeping a copy means one of the two will always go stale. What
+        `README.md` takes on is limited to what the definition cannot say: the aim of this sample,
+        where to start reading, and how to run the checks.
 
-        `documented = false`。読む人に向けた説明という役割は、このアプリが何であるかを
-        説明しないので、生成されるドキュメントには出さない。検査はするので、
-        `README.md` を消したり名前を変えたりすれば違反になる。
+        `documented = false`. A role for explanations aimed at readers does not describe what this
+        app is, so it does not appear in the generated documentation. It is still checked, so
+        deleting or renaming `README.md` is a violation.
     """.trimIndent()
-    example("README.md", "サンプルの説明")
+    example("README.md", "The description of the sample")
     layout {
         "README.md".file()
     }

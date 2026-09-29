@@ -1,16 +1,16 @@
-[Ktor サンプルアプリ](../README.md) / [API](README.md)
+[Ktor sample app](../README.md) / [API](README.md)
 
-# Ktor プラグイン設定
+# Ktor plugin configuration
 
-Ktor の Application に対する横断的な設定を1つ行う
+Applies one cross-cutting setting to the Ktor Application
 
-特定のエンドポイントではなく、Application 全体に一度だけ効く設定を置く場所です。
-1ファイルにつき `Application` の拡張関数 `configureXxx()` を1つ書き、
-エントリポイントの `Application.module()` がそれを順に呼びます。
+A place for settings that take effect once for the whole Application, not for a specific
+endpoint. Each file holds one extension function on `Application`, `configureXxx()`, and
+the entry point's `Application.module()` calls them in turn.
 
-ファイル名に接尾辞はありません。`*Controller` のような手がかりが無いので、
-「これはプラグイン設定だ」と言っているのは `plugin` パッケージそのものです。
-ファイル名は install する Ktor の機能の名前に合わせます。
+File names have no suffix. There is no cue like `*Controller`, so it is the `plugin`
+package itself that says "this is a plugin configuration". The file name matches the name
+of the Ktor feature being installed.
 
 ## Placement
 
@@ -20,18 +20,19 @@ Ktor の Application に対する横断的な設定を1つ行う
 
 ## Examples
 
-- `Routing` ... routing ツリーの配線
-- `Serialization` ... JSON の入出力設定
+- `Routing` ... Wiring of the routing tree
+- `Serialization` ... JSON input/output configuration
 
-## 置いてよいもの
+## Allowed contents
 
-置いてよいのは Ktor プラグインの `install(...)` と、その設定ブロックです。
-`Serialization.kt` は `ContentNegotiation` に JSON（`prettyPrint` と `ignoreUnknownKeys` を
-有効にしたもの）を入れ、`Routing.kt` は `routing { }` を開いて各 Controller の `register` を
-呼びます。どの Controller が繋がっているかを1ファイルで見渡せるのが狙いです。
+Only a Ktor plugin's `install(...)` and its configuration block may be placed here.
+`Serialization.kt` installs JSON (with `prettyPrint` and `ignoreUnknownKeys` enabled) into
+`ContentNegotiation`, and `Routing.kt` opens `routing { }` and calls each Controller's
+`register`. The aim is to see in one file which Controllers are connected.
 
-## 置いてはいけないもの
+## Forbidden contents
 
-- エンドポイントのハンドラ本体。`get`/`post` の中身はコントローラの役割です
-- ドメインの判断やデータ取得。Service・Repository をここから直接呼びません
-- `main()` と `Application.module()`。起動と組み立てはエントリポイントの役割です
+- The body of an endpoint handler. What goes inside `get`/`post` is the controller's role
+- Domain decisions or data fetching. Do not call a Service or Repository from here
+- `main()` and `Application.module()`. Starting and assembling belong to the entry point
+  role

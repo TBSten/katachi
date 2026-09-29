@@ -1,35 +1,36 @@
-[Ktor サンプルアプリ](../README.md)
+[Ktor sample app](../README.md)
 
-# ドメイン
+# Domain
 
-アプリ固有の振る舞いと、その対象になる値
+The application-specific behaviour, and the values it acts on
 
-このアプリが何をするのかを書く層です。HTTP のことも、値がどこに保存されているかも
-知りません。
+The layer that says what this application does. It knows nothing about HTTP, nor about
+where values are stored.
 
-サービスとモデルを一緒に置いているのは、振る舞いとその対象になる値が同じ理由で変わる
-からです。`Health` に項目が増えれば `HealthService` が返すものも変わります。逆に、
-取得元が変わってもこの層は変わらない、というのがデータ層を分けている理由です。
+Services and models sit together because the behaviour and the values it acts on change
+for the same reasons. If `Health` gains a field, what `HealthService` returns changes too.
+Conversely, this layer does not change when the data source changes, which is why the data
+layer is separate.
 
-モデルは `@Serializable` を持ち、API の応答本文としてもそのまま使われます。
-ドメインのモデルと API のペイロードを分けない、という判断を1つしている場所なので、
-ずれ始めたら API 層に DTO の役割を足す形で戻せます。
+Models carry `@Serializable` and are used as-is as the API response body. This is a place
+where one decision has been made not to separate domain models from API payloads; if the
+two start to drift apart, it can be undone by adding a DTO role to the API layer.
 
 | Role | Summary |
 |---|---|
-| [サービス](./Service.md) | アプリ固有の振る舞いを1つ持ち、Repository を組み合わせて実現する |
-| [モデル](./Model.md) | ドメインで扱う値。API の入出力としてもそのまま使う |
+| [Service](./Service.md) | Owns one application-specific behaviour, realized by combining Repositories |
+| [Model](./Model.md) | The values the domain handles, used as-is for API input and output too |
 
 ## Placement in this group
 
 ```
 :
   src/main/kotlin/**/
-    service/*Service.kt  サービス
-    model/*.kt           モデル
+    service/*Service.kt  Service
+    model/*.kt           Model
 ```
 
-## 置いてはいけないもの
+## Forbidden contents
 
-ここに置いてはいけないのは、`Route` や `call` といった Ktor の型と、
-接続先やクエリといった取得元の詳細です。
+What must not be placed here is Ktor types such as `Route` and `call`, and data source
+details such as connection targets and queries.

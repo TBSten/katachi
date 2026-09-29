@@ -23,7 +23,7 @@ import org.junit.jupiter.api.Test
 @OptIn(ExperimentalKatachiApi::class)
 class ProjectArchitectureTest {
     @Test
-    fun `プロジェクトの構成が定義どおりになっている`() {
+    fun `the project structure matches the definition`() {
         projectArchitecture.assert(FileConstraintCheck())
     }
 }

@@ -11,44 +11,47 @@ import me.tbsten.katachi.dsl.DeclarationContainerScope
  * Declaring it is what buys the pages a place in the repository, where a reader can find them.
  */
 fun DeclarationContainerScope.generatedDocumentation() = "GeneratedDocumentation" {
-    title = "生成ドキュメント"
-    summary = "この定義から書き出され、リポジトリにコミットされる Markdown"
+    title = "Generated documentation"
+    summary = "Markdown written out of this definition and committed to the repository"
     description = """
-        `./gradlew :architecture-test:katachiDocs` が、この定義そのものから
-        書き出す Markdown です。出力先は `katachi { processors { docs { outputDir } } }` で
-        `sample/jvm/docs` に向けてあります。
+        The Markdown that `./gradlew :architecture-test:katachiDocs` writes out of this very
+        definition. The output destination is pointed at `sample/jvm/docs` by
+        `katachi { processors { docs { outputDir } } }`.
 
-        これは手で書かない。`katachiDocs` が書く。ここに書き足した文章は次の生成で消えます。
-        直す場所は常に定義側で、役割や group の `title` `summary` `description` `example` が
-        そのままページになります。
+        Do not write it by hand; `katachiDocs` writes it. Any text added here is erased by the next
+        generation. The place to fix is always the definition, and a role's or group's `title`,
+        `summary`, `description` and `example` become the pages as they are.
 
-        生成物なのに `build/` の外に置いているのは、リポジトリを開いた人がそのまま読めるように
-        するためです。その代わり既定の `files = gitTracked()` の検査対象に入るので、この役割が
-        要ります。役割を消すと `[UnexpectedDirectory] docs` で `:architecture-test:test` が落ちます。
+        It is generated, yet kept outside `build/` so that anyone who opens the repository can read
+        it as is. In exchange, it falls under the default `files = gitTracked()` check, which is
+        why this role is needed. Removing the role makes `:architecture-test:test` fail with
+        `[UnexpectedDirectory] docs`.
 
-        古くなっていないかは CI が `--arg mode=check` で見ています。`mode=check` は何も書かずに
-        ディスク上の内容と突き合わせ、食い違えば例外で落ちるので、定義を変えて生成し忘れたまま
-        push するとリポジトリルートの `checkSampleJvm` が赤くなります。手元で直すには
-        `katachiDocs` をもう一度走らせるだけです（`mode` を付けなければ書き込みです）。
+        CI looks for staleness with `--arg mode=check`. `mode=check` writes nothing and compares
+        against what is on disk, failing with an exception on a mismatch, so pushing a changed
+        definition without regenerating turns `checkSampleJvm` at the repository root red. To fix
+        it locally, just run `katachiDocs` again (without `mode`, it writes).
 
-        `documented = true` にしてあります。生成物であっても一覧に出ないと、この `docs/` が
-        何なのかがどこにも書かれていないことになるからです。この役割自身のページ
-        （`docs/testing/GeneratedDocumentation.md`）も生成されます。
+        It is set to `documented = true`. Even for generated output, if it were missing from the
+        list, nothing anywhere would say what this `docs/` is. This role's own page
+        (`docs/testing/GeneratedDocumentation.md`) is generated as well.
 
-        `layout { }` の `**` は0段以上に一致するので、索引の `docs/README.md` も
-        `docs/<group>/README.md` も `docs/<group>/<役割>.md` も1行で覆えます。group を入れ子に
-        してもこの行は変わりません。索引だけワイルドカード無しで別に書いてあり、そちらは
-        `required` です。1度も生成していない状態がそこで見つかります。
+        `**` in `layout { }` matches zero or more levels, so a single line covers the index
+        `docs/README.md`, `docs/<group>/README.md` and `docs/<group>/<role>.md`. The line does not
+        change even if groups are nested. The index alone is written separately without a
+        wildcard, and that entry is `required`: a state where nothing has ever been generated is
+        found there.
     """.trimIndent()
     forbiddenContents = """
-        - 手書きのドキュメント。`docs/` 配下の `*.md` は生成のたびに作り直され、この定義が
-          作らないページは削除されます。人が書く散文は `.gitignore` と並ぶ `tool` グループの側です
-        - `.md` 以外の資源。いまの `layout { }` は `*.md` しか認めていないので、画像を足すなら
-          役割を書き換えるところから始まります
+        - Hand-written documentation. Every `*.md` under `docs/` is recreated at each generation,
+          and pages this definition does not produce are deleted. Prose written by people belongs
+          on the `tool` group side, next to `.gitignore`
+        - Resources other than `.md`. The current `layout { }` accepts only `*.md`, so adding an
+          image starts with rewriting the role
     """.trimIndent()
-    example("docs/README.md", "全ページの索引と、group ごとの一覧")
-    example("docs/api/Controller.md", "役割1つのページ")
-    example("docs/api/README.md", "group 1つのページ")
+    example("docs/README.md", "The index of all pages, and the list for each group")
+    example("docs/api/Controller.md", "The page of a single role")
+    example("docs/api/README.md", "The page of a single group")
     layout {
         "docs" {
             // The index, written on every run, so it is the one entry without a wildcard --

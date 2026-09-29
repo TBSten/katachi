@@ -20,7 +20,7 @@ import java.io.File
  * says why.
  */
 class ProjectRootSpec : FreeSpec({
-    "作業ディレクトリから親へ辿ったとき、最初に見つかる gradlew がこのサンプルのものである" {
+    "walking up from the working directory, the first gradlew found belongs to this sample" {
         val workingDirectory = File(System.getProperty("user.dir")).absoluteFile
 
         val root = generateSequence(workingDirectory) { it.parentFile }
@@ -31,7 +31,7 @@ class ProjectRootSpec : FreeSpec({
         root.parentFile.name shouldBe "sample"
     }
 
-    "テストは architecture-test モジュールのディレクトリから実行される" {
+    "the tests run from the architecture-test module directory" {
         // The path used by the source-reading test in ProjectArchitectureSpec depends on
         // this. If the working directory ever moves, that test's lookup has to move too.
         File(System.getProperty("user.dir")).absoluteFile.name shouldBe "architecture-test"

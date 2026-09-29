@@ -13,7 +13,7 @@ import io.ktor.server.testing.testApplication
  * compiles. A layout check that passes over dead code is not worth much.
  */
 class HealthRouteTest : FreeSpec({
-    "GET /health が 200 と status=UP を返す" {
+    "GET /health returns 200 and status=UP" {
         testApplication {
             // `testApplication` ignores the `modules` list in application.conf, so the
             // module has to be installed explicitly. Without this every route is 404.
@@ -27,7 +27,7 @@ class HealthRouteTest : FreeSpec({
         }
     }
 
-    "定義していないパスは 404 を返す" {
+    "an undefined path returns 404" {
         testApplication {
             application { module() }
 

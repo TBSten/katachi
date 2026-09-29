@@ -9,35 +9,38 @@ import me.tbsten.katachi.konsist.konsist
 
 /** The role of the katachi definition itself, which belongs to no layer of the application. */
 fun DeclarationContainerScope.architectureDefinition() = "ArchitectureDefinition" {
-    title = "アーキテクチャ定義"
-    summary = "katachi の DSL で書かれた役割の定義。どのレイヤーにも属さない"
+    title = "Architecture definition"
+    summary = "The role definitions written in katachi's DSL. It belongs to no layer"
     description = """
-        このプロジェクトの形を書いたコードそのものです。アプリのどのレイヤーにも属さないので、
-        `:architecture-test` という専用モジュールに置きます。アプリはルートプロジェクト（`:`）
-        なので、定義を外に出してもアプリ側の main ソースセットは1つのままです。
+        The code that describes the shape of this project. Since it belongs to no layer of the
+        application, it lives in a dedicated module, `:architecture-test`. The application is the
+        root project (`:`), so moving the definition out keeps the application's main source set
+        at one.
 
-        中身は1宣言1ファイルです。`ProjectArchitecture.kt` が入口、`groups/<Name>Group.kt` が
-        グループ、`roles/<Name>Role.kt` が役割、`processors/` がこのサンプル自身が書いた
-        プロセッサです。定義どおりかを確かめる `ProjectArchitectureTest` と、katachi 側の
-        結合テストである `*Spec` も同じモジュールにあるので、この役割が覆います。
+        It is one declaration per file. `ProjectArchitecture.kt` is the entry point,
+        `groups/<Name>Group.kt` holds a group, `roles/<Name>Role.kt` holds a role, and
+        `processors/` holds the processors this sample wrote itself. `ProjectArchitectureTest`,
+        which checks that the project matches the definition, and the `*Spec` files, which are
+        katachi's own integration tests, are in the same module, so this role covers them too.
 
-        `layout { }` は `com/example` の下を `**` でまるごと見ています。`groups/` と `roles/` に
-        分けるのは読みやすさのための約束であって、`layout { }` が強制しているわけではありません
-        （`roles/` に何も宣言しない `.kt` を置いても通ります）。
+        `layout { }` looks at everything under `com/example` with `**`. Splitting into `groups/`
+        and `roles/` is a convention for readability, not something `layout { }` enforces (a `.kt`
+        in `roles/` that declares nothing still passes).
 
-        そのかわり、逆向きの約束だけは `konsist(scope = DirectOnly)` で検査しています。
-        `com/example` の**直下**には group・役割の宣言（`DeclarationContainerScope` の拡張関数）を
-        置かず、それは `groups/` と `roles/` に書きます。`scope = DirectOnly` なので、この制約は
-        `groups/` と `roles/` の中のファイルには降りません。
+        Instead, only the reverse convention is checked, with `konsist(scope = DirectOnly)`:
+        no group or role declaration (an extension function on `DeclarationContainerScope`) is
+        placed **directly** under `com/example`; those go in `groups/` and `roles/`. Because it is
+        `scope = DirectOnly`, this constraint does not descend into the files inside `groups/` and
+        `roles/`.
     """.trimIndent()
     forbiddenContents = """
-        - アプリのコード。`:architecture-test` に `src/main/kotlin` を作ると、
-          どの役割も覆わないファイルとして落ちます
-        - どのレイヤーに属するかが決まっているもの。ここは「形」だけを書く場所です
+        - Application code. Creating `src/main/kotlin` in `:architecture-test` fails as files that
+          no role covers
+        - Anything that already has a layer it belongs to. This is a place to write only "shape"
     """.trimIndent()
-    example("ProjectArchitecture.kt", "定義の入口")
-    example("roles/ControllerRole.kt", "役割1つの宣言")
-    example("ProjectArchitectureTest.kt", "定義を assert するテスト")
+    example("ProjectArchitecture.kt", "The entry point of the definition")
+    example("roles/ControllerRole.kt", "The declaration of a single role")
+    example("ProjectArchitectureTest.kt", "The test that asserts the definition")
     layout {
         // The price of the recommended setup: `:architecture-test` checks itself, so
         // the definition has to give itself a role like everything else. The module
@@ -51,7 +54,7 @@ fun DeclarationContainerScope.architectureDefinition() = "ArchitectureDefinition
                 // The samples' one `DirectOnly` constraint (katachi's guide: "Konsist
                 // integration"). With the default scope, `Subtree`, it would also cover `groups/` and
                 // `roles/`, where every file is exactly such a declaration, and fail.
-                "直下に group・役割の宣言を置かない".konsist(scope = DirectOnly) {
+                "Must not declare groups or roles directly here".konsist(scope = DirectOnly) {
                     functions().mustNot { it.receiverType?.name == "DeclarationContainerScope" }
                 }
                 "*".ktFile()

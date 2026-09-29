@@ -9,26 +9,27 @@ import me.tbsten.katachi.dsl.kotlin.ktFile
 
 /** The role of the values the domain is about, reused as the API payloads. */
 fun DeclarationContainerScope.model() = "Model" {
-    title = "モデル"
-    summary = "ドメインで扱う値。API の入出力としてもそのまま使う"
+    title = "Model"
+    summary = "The values the domain handles, used as-is for API input and output too"
     description = """
-        アプリが扱う値そのものです。`Health` は `status` と `version` を持つ `@Serializable` な
-        data class で、Repository が作り、Service が受け渡し、Controller がそのまま
-        `GET /health` の応答本文にします。
+        The values the application handles. `Health` is a `@Serializable` data class with `status`
+        and `version`; the Repository creates it, the Service passes it along, and the Controller
+        uses it as-is as the response body of `GET /health`.
 
-        ドメインのモデルと API のペイロードを分けていないのは、このサンプルが意図して選んだ形です。
-        両者がずれ始めたら API 層に DTO の役割を新しく立てて戻せるように、いまは1つにしてあります。
+        Not separating domain models from API payloads is a form this sample chose on purpose.
+        They are one thing for now, so that if the two start to drift apart, a new DTO role can be
+        added to the API layer to split them.
 
-        名前は「何を表す値か」そのもので、接尾辞は付けません（`HealthModel` ではなく `Health`）。
-        対象は `model` パッケージ直下の `.kt` だけで、その下にディレクトリを掘っても
-        この役割には入りません。
+        The name is simply what the value represents, with no suffix (`Health`, not
+        `HealthModel`). Only `.kt` files directly in the `model` package are covered; a directory
+        dug beneath it does not fall under this role.
     """.trimIndent()
-    allowedContents = "置いてよいのは data class・enum・値オブジェクトと、その値に閉じた計算です。"
+    allowedContents = "Only data classes, enums, value objects and computations closed over those values may be placed here."
     forbiddenContents = """
-        - 取得や保存。I/O はリポジトリの役割です
-        - Ktor への依存。モデルが知ってよいのは `kotlinx.serialization` までです
+        - Fetching or saving. I/O is the repository's role
+        - Dependencies on Ktor. A model may know about `kotlinx.serialization` and no further
     """.trimIndent()
-    example("Health", "稼働状態とバージョン")
+    example("Health", "Running status and version")
     layout {
         // A model is named after the thing it models, so the package is the only
         // marker. Any `.kt` directly in it counts; a subdirectory does not.

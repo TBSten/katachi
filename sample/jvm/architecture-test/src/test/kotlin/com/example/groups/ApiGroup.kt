@@ -20,7 +20,7 @@ import me.tbsten.katachi.dsl.documentSection
  * A heading below this one would be `TestPolicy.documentSection("...")` rather than a second
  * top level section.
  */
-val TestPolicy: DocumentSection = documentSection("テスト方針")
+val TestPolicy: DocumentSection = documentSection("Test policy")
 
 /** Writes the body of [TestPolicy], on a group or on the root of the definition. */
 var DeclarationContainerScope.testPolicy: String? by TestPolicy
@@ -28,37 +28,38 @@ var DeclarationContainerScope.testPolicy: String? by TestPolicy
 /** Roles of the API layer: everything that faces HTTP. */
 fun DeclarationContainerScope.apiGroup() = "api".group {
     title = "API"
-    summary = "HTTP に面する層。リクエストを受け取り、応答を返すところまでを持つ"
+    summary = "The layer that faces HTTP. It owns everything from receiving a request to returning a response"
 
     description = """
-        外から来たリクエストが最初に当たる層です。アプリの中身が `io.ktor.server.*` を
-        知らずに済むようにするための壁でもあります。
+        The layer that an incoming request hits first. It is also a wall that keeps the rest of
+        the application from having to know about `io.ktor.server.*`.
 
-        集めているのは2つです。コントローラは1エンドポイントぶんの受け口、Ktor プラグイン設定は
-        Application 全体に一度だけ効く設定と、どの Controller を routing ツリーに繋ぐかの配線です。
-        どちらも「HTTP をどう受けるか」の話で、変えたくなる理由が同じなので同じグループに
-        しています。
+        It gathers two things. A controller is the entry point for one endpoint; the Ktor plugin
+        configuration holds the settings that apply once to the whole Application, plus the wiring
+        that decides which Controllers are connected to the routing tree. Both are about "how HTTP
+        is received" and change for the same reasons, so they share a group.
 
-        ただし katachi の `layout { }` が見ているのは置き場所とファイル名までです。
-        「Controller から Repository を直接呼ばない」といった約束は、ここに文章として
-        書いてあるだけで、機械的には弾かれません。
+        Note that katachi's `layout { }` only looks at where files live and what they are named.
+        A convention such as "a Controller does not call a Repository directly" is only written
+        here as prose; nothing rejects it mechanically.
     """.trimIndent()
 
     forbiddenContents = """
-        ここに置いてはいけないのは「何を返すか」の判断と、値がどこから来るかです。前者は
-        ドメイン、後者はデータの担当になります。実際、`io.ktor.server.*` の import が出てくるのは
-        この層とエントリポイントだけで、`service` `repository` `model` には1つもありません。
+        What must not be placed here is the decision of "what to return" and where a value comes
+        from. The former belongs to the domain, the latter to the data layer. In fact,
+        `io.ktor.server.*` is imported only in this layer and the entry point, and never in
+        `service`, `repository` or `model`.
     """.trimIndent()
 
     testPolicy = """
-        以下をテストする。
+        Test the following.
 
-        - ルーティングが登録されていること。`testApplication` を立てて実際にリクエストを投げる
-        - 応答のステータスコードと、本文の JSON に必要なキーが入っていること
-        - 登録していないパスが 404 になること
+        - That the routing is registered: start a `testApplication` and send real requests
+        - That the status code and the required keys in the JSON body are correct
+        - That a path that was not registered returns 404
 
-        Service はコンストラクタで差し替えられるようにしてあるので、分岐の網羅はドメイン側の
-        テストで行い、ここでは HTTP に出てくる形だけを見る。
+        A Service can be swapped through its constructor, so branch coverage belongs to the
+        domain tests; here we only look at the shape that comes out over HTTP.
     """.trimIndent()
 
     controller()

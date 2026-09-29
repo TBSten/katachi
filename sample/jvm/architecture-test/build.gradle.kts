@@ -34,8 +34,8 @@ tasks.test {
 
 dependencies {
     testImplementation(libs.katachi)
-    // DocumentSections.kt の allowedContents / forbiddenContents に付けた @Language("markdown") 用。
-    // 実行時には要らない注釈なので testCompileOnly。
+    // For the @Language("markdown") on allowedContents / forbiddenContents in DocumentSections.kt.
+    // The annotation is not needed at runtime, so it is testCompileOnly.
     testCompileOnly(libs.jetbrainsAnnotations)
     testImplementation(libs.katachiKonsist)
     testImplementation(libs.kotestRunnerJunit5)

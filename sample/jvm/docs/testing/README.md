@@ -1,53 +1,56 @@
-[Ktor サンプルアプリ](../README.md)
+[Ktor sample app](../README.md)
 
-# テスト
+# Testing
 
-振る舞いを確かめるテストと、この定義そのもの、そこから書き出されるドキュメントとスナップショット
+Tests that check behaviour, this definition itself, and the documentation and snapshot written out from it
 
-アプリのレイヤーではなく、プロジェクトを支えているコードを集めた場所です。
-テストコード、アーキテクチャ定義そのもの、そしてその定義から書き出される `docs/` と
-`snapshots/` が入ります。
+Not an application layer, but a place that gathers the code that supports the project:
+the test code, the architecture definition itself, and the `docs/` and `snapshots/`
+written out from that definition.
 
-テストと定義を分けているのは対象が違うからです。テストは振る舞いを確かめ、
-アーキテクチャ定義は形を記述します。定義を `Test` の中に隠すと、`:architecture-test`
-というモジュールがなぜあるのかがドキュメントから消えてしまいます。
+Tests and the definition are separate because they have different subjects. Tests check
+behaviour; the architecture definition describes shape. If the definition were hidden
+inside `Test`, the documentation would no longer explain why the `:architecture-test`
+module exists.
 
-書き出されたものも定義と分けてあります。定義は人が書くもの、`docs/` と `snapshots/` は
-機械が書くもので、手を入れてよい場所がまるで違うからです。`build/` の外に出した以上、
-生成物にも役割が要る、という例にもなっています。2つを1つにまとめていないのは、
-読み手が違うからです。`docs/` は定義を読みに来た人が開くページ、`snapshots/` は
-定義を書き換えた差分をレビューする人が見るテキストです。
+What is written out is also kept apart from the definition. The definition is written by
+people, while `docs/` and `snapshots/` are written by machines, so where a hand may touch
+them is completely different. It is also an example of the fact that, once generated files
+live outside `build/`, they need roles too. The two are not merged because their readers
+differ: `docs/` is the pages opened by someone who came to read the definition, and
+`snapshots/` is the text seen by someone reviewing the diff of a definition change.
 
-`katachi-baseline.json` も、テストが書き出すファイルとしてここに入ります。katachi を
-入れた時点ですでにあった違反の台帳で、そこに記録した違反はテストを落としません。
+`katachi-baseline.json` also belongs here, as a file the test writes out. It is the ledger
+of violations that already existed when katachi was introduced, and the violations recorded
+in it do not fail the test.
 
 | Role | Summary |
 |---|---|
-| [テストコード](./Test.md) | src/test/kotlin に置かれるテスト。本体と同じ package 構成を保つ |
-| [アーキテクチャ定義](./ArchitectureDefinition.md) | katachi の DSL で書かれた役割の定義。どのレイヤーにも属さない |
-| [生成ドキュメント](./GeneratedDocumentation.md) | この定義から書き出され、リポジトリにコミットされる Markdown |
-| [レイアウトのスナップショット](./LayoutSnapshot.md) | この定義を平坦化して全行書き出した記録。定義の変化を人が差分でレビューするためにある |
-| [baseline（棚上げした違反の台帳）](./BaselineFile.md) | katachi を入れた時点ですでにあった違反を記録し、テストを落とさずに棚上げしておく台帳 |
+| [Test code](./Test.md) | Tests placed in src/test/kotlin, keeping the same package structure as the main code |
+| [Architecture definition](./ArchitectureDefinition.md) | The role definitions written in katachi's DSL. It belongs to no layer |
+| [Generated documentation](./GeneratedDocumentation.md) | Markdown written out of this definition and committed to the repository |
+| [Layout snapshot](./LayoutSnapshot.md) | A record of every line of this definition, flattened. It exists so people can review changes to the definition as a diff |
+| [Baseline (ledger of held-back violations)](./BaselineFile.md) | A ledger that records violations already present when katachi was introduced and holds them back without failing the test |
 
 ## Placement in this group
 
 ```
 :
-  src/test/kotlin/**/*.kt  テストコード
+  src/test/kotlin/**/*.kt  Test code
 
 :architecture-test
   src/test/kotlin/com/example/
-    *.kt                   アーキテクチャ定義
-    **/*.kt                アーキテクチャ定義
+    *.kt                   Architecture definition
+    **/*.kt                Architecture definition
 
 docs/
-  README.md                生成ドキュメント
-  **/*.md                  生成ドキュメント
-snapshots/layout.txt       レイアウトのスナップショット
-katachi-baseline.json      baseline（棚上げした違反の台帳）
+  README.md                Generated documentation
+  **/*.md                  Generated documentation
+snapshots/layout.txt       Layout snapshot
+katachi-baseline.json      Baseline (ledger of held-back violations)
 ```
 
-## 置いてはいけないもの
+## Forbidden contents
 
-ここに置いてはいけないのは、アプリの本体コードです。`:architecture-test` はアプリの
-どのレイヤーにも属さないモジュールで、main ソースセットを持ちません。
+What must not be placed here is the application's own code. `:architecture-test` is a
+module that belongs to no layer of the application and has no main source set.

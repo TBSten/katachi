@@ -11,31 +11,35 @@ import me.tbsten.katachi.dsl.DeclarationContainerScope
  * check and it needs a role; without one the test fails with `[UnexpectedFile]` about it.
  */
 fun DeclarationContainerScope.baselineFile() = "BaselineFile" {
-    title = "baseline（棚上げした違反の台帳）"
-    summary = "katachi を入れた時点ですでにあった違反を記録し、テストを落とさずに棚上げしておく台帳"
+    title = "Baseline (ledger of held-back violations)"
+    summary = "A ledger that records violations already present when katachi was introduced and holds them back without failing the test"
     description = """
-        `ProjectArchitecture.kt` の `baseline()` が指すファイルです。ここに記録した
-        違反は `:architecture-test:test` を落とさず、「held back N violations」と件数だけが出ます。
-        記録に無い新しい違反は、これまでどおりテストを落とします。
+        The file that `baseline()` in `ProjectArchitecture.kt` points at. Violations recorded here
+        do not fail `:architecture-test:test`; only the count is shown, as "held back N
+        violations". A new violation that is not recorded fails the test as before.
 
-        このサンプルでは、baseline の見本として2件を意図的に残してあります。
-        `service/LegacyHealthCheck.kt`（`*Service.kt` ではないので `[UnexpectedFile]`）と、
-        `service/LegacyStatusService.kt`（`internal` なので `public であること` の制約に違反）です。
+        This sample deliberately leaves two entries in as a demo of baseline:
+        `service/LegacyHealthCheck.kt` (`[UnexpectedFile]`, since it is not `*Service.kt`) and
+        `service/LegacyStatusService.kt` (`internal`, so it violates the `Must be public`
+        constraint).
 
-        これは手で書かない。更新は次の2つで行います。
+        Do not write it by hand. It is updated in one of two ways.
 
-        - `./gradlew :architecture-test:test -Dkatachi.baseline.update=true` — 今ある違反で丸ごと作り直す
-        - `./gradlew :architecture-test:test -Dkatachi.baseline.prune=true` — 直した違反の項目だけを消す
+        - `./gradlew :architecture-test:test -Dkatachi.baseline.update=true` — rebuild it wholesale from the violations that exist now
+        - `./gradlew :architecture-test:test -Dkatachi.baseline.prune=true` — remove only the entries whose violations have been fixed
 
-        違反を直すと、その項目は「もう無い違反を棚上げしている」として `[StaleBaselineEntry]` で
-        テストを落とします。prune で項目を消すまで落ち続けるので、棚上げの件数は減る一方になります。
-        CI（環境変数 `CI=true`）では update も prune も拒否され、突き合わせだけを行います。
+        Once a violation is fixed, its entry fails the test with `[StaleBaselineEntry]`, as
+        "holding back a violation that no longer exists". It keeps failing until prune removes the
+        entry, so the number of held-back violations can only go down.
+        On CI (environment variable `CI=true`), both update and prune are refused and only the
+        comparison is made.
     """.trimIndent()
     forbiddenContents = """
-        - 恒久的に認めたいもの。それは台帳ではなく、定義の `layout { }` に役割として書きます
-        - 手で足した項目。次の update で書き戻されます
+        - Anything you want to allow permanently. That belongs not in the ledger but in the
+          definition's `layout { }`, written as a role
+        - Entries added by hand. They are overwritten by the next update
     """.trimIndent()
-    example("katachi-baseline.json", "棚上げした違反の一覧")
+    example("katachi-baseline.json", "The list of held-back violations")
     layout {
         "katachi-baseline.json".file()
     }

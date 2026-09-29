@@ -6,28 +6,28 @@ import me.tbsten.katachi.dsl.kotlin.ktFile
 
 /** The role of code that asserts behaviour, mirroring the main source set. */
 fun DeclarationContainerScope.test() = "Test" {
-    title = "テストコード"
-    summary = "src/test/kotlin に置かれるテスト。本体と同じ package 構成を保つ"
+    title = "Test code"
+    summary = "Tests placed in src/test/kotlin, keeping the same package structure as the main code"
     description = """
-        アプリケーションの振る舞いを確かめるコードです。対象と同じ package に置き、
-        `src/test/kotlin` の下が `src/main/kotlin` の鏡像になるようにします。
+        The code that checks the application's behaviour. It sits in the same package as its
+        target, so that what is under `src/test/kotlin` mirrors `src/main/kotlin`.
 
-        `HealthRouteTest` は kotest の `FreeSpec` で書かれ、Ktor の `testApplication` を立てて
-        `GET /health` に実際にリクエストを投げます。テスト名は日本語の1文で、何を確かめるのかを
-        そのまま書きます。レイアウトのチェックが通るだけで中身が死んでいる、という状態に
-        しないための押さえです。
+        `HealthRouteTest` is written with kotest's `FreeSpec`, starts Ktor's `testApplication`
+        and sends a real request to `GET /health`. A test name is a single sentence that says
+        exactly what is being checked. It is a safeguard against a state where the layout check
+        passes but the contents are dead.
 
-        ここに入らないもの:
+        What does not belong here:
 
-        - アーキテクチャ定義そのもののテスト。それらは `:architecture-test` にあり、
-          アーキテクチャ定義の役割が覆います。この役割が見ているのはルートプロジェクト（`:`）の
-          テストソースセットだけです
+        - Tests of the architecture definition itself. Those live in `:architecture-test` and are
+          covered by the architecture definition role. This role only looks at the test source
+          set of the root project (`:`)
 
-        `layout { }` はファイル名を縛っていません（`**` がパッケージの階層、その下の `*` が
-        任意の `.kt` 1ファイル）。代わりに、`.kt` を1つも持たないディレクトリがテストソースセットの
-        下に残っていれば報告されます。
+        `layout { }` does not constrain file names (`**` is the package hierarchy, and the `*`
+        below it is any one `.kt` file). Instead, a directory left under the test source set
+        without a single `.kt` is reported.
     """.trimIndent()
-    example("HealthRouteTest", "GET /health のテスト")
+    example("HealthRouteTest", "The test for GET /health")
     layout {
         // `**` stands for the package levels, which mirror the main source set and are
         // not worth writing twice — so `modulePackage` is deliberately not used here.

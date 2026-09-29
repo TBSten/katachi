@@ -20,31 +20,34 @@ import me.tbsten.katachi.dsl.DeclarationContainerScope
  * `BaselineFile` is the ledger of the violations held back, which the test writes too.
  */
 fun DeclarationContainerScope.testingGroup() = "testing".group {
-    title = "テスト"
-    summary = "振る舞いを確かめるテストと、この定義そのもの、そこから書き出されるドキュメントとスナップショット"
+    title = "Testing"
+    summary = "Tests that check behaviour, this definition itself, and the documentation and snapshot written out from it"
 
     description = """
-        アプリのレイヤーではなく、プロジェクトを支えているコードを集めた場所です。
-        テストコード、アーキテクチャ定義そのもの、そしてその定義から書き出される `docs/` と
-        `snapshots/` が入ります。
+        Not an application layer, but a place that gathers the code that supports the project:
+        the test code, the architecture definition itself, and the `docs/` and `snapshots/`
+        written out from that definition.
 
-        テストと定義を分けているのは対象が違うからです。テストは振る舞いを確かめ、
-        アーキテクチャ定義は形を記述します。定義を `Test` の中に隠すと、`:architecture-test`
-        というモジュールがなぜあるのかがドキュメントから消えてしまいます。
+        Tests and the definition are separate because they have different subjects. Tests check
+        behaviour; the architecture definition describes shape. If the definition were hidden
+        inside `Test`, the documentation would no longer explain why the `:architecture-test`
+        module exists.
 
-        書き出されたものも定義と分けてあります。定義は人が書くもの、`docs/` と `snapshots/` は
-        機械が書くもので、手を入れてよい場所がまるで違うからです。`build/` の外に出した以上、
-        生成物にも役割が要る、という例にもなっています。2つを1つにまとめていないのは、
-        読み手が違うからです。`docs/` は定義を読みに来た人が開くページ、`snapshots/` は
-        定義を書き換えた差分をレビューする人が見るテキストです。
+        What is written out is also kept apart from the definition. The definition is written by
+        people, while `docs/` and `snapshots/` are written by machines, so where a hand may touch
+        them is completely different. It is also an example of the fact that, once generated files
+        live outside `build/`, they need roles too. The two are not merged because their readers
+        differ: `docs/` is the pages opened by someone who came to read the definition, and
+        `snapshots/` is the text seen by someone reviewing the diff of a definition change.
 
-        `katachi-baseline.json` も、テストが書き出すファイルとしてここに入ります。katachi を
-        入れた時点ですでにあった違反の台帳で、そこに記録した違反はテストを落としません。
+        `katachi-baseline.json` also belongs here, as a file the test writes out. It is the ledger
+        of violations that already existed when katachi was introduced, and the violations recorded
+        in it do not fail the test.
     """.trimIndent()
 
     forbiddenContents = """
-        ここに置いてはいけないのは、アプリの本体コードです。`:architecture-test` はアプリの
-        どのレイヤーにも属さないモジュールで、main ソースセットを持ちません。
+        What must not be placed here is the application's own code. `:architecture-test` is a
+        module that belongs to no layer of the application and has no main source set.
     """.trimIndent()
 
     test()

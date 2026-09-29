@@ -6,20 +6,22 @@ import me.tbsten.katachi.dsl.DeclarationContainerScope
 
 /** Roles that assemble and configure the running process. */
 fun DeclarationContainerScope.appGroup() = "app".group {
-    title = "アプリケーション"
-    summary = "プロセスの起動と、実行時に読み込まれる設定"
+    title = "Application"
+    summary = "Starting the process, and the configuration loaded at runtime"
 
     description = """
-        「このプロセスはどう始まるのか」に答えるものを集めた層です。レイヤーというより、
-        他のどの層にも属さない起動まわりの置き場所です。
+        A layer that gathers what answers "how does this process start?". Rather than a layer, it
+        is a home for the startup code that belongs to no other layer.
 
-        入っているのはエントリポイント（`Application.kt`）とサーバ設定（`application.conf` と
-        `logback.xml`）です。この2つは対になっていて、`application.conf` の `modules` が
-        `com.example.ApplicationKt.module` を名指しし、その関数が各プラグイン設定を呼びます。
-        片方だけ直すと起動しないので、同じ場所で読めるようにしてあります。
+        It holds the entry point (`Application.kt`) and the server configuration
+        (`application.conf` and `logback.xml`). The two are a pair: `modules` in `application.conf`
+        names `com.example.ApplicationKt.module`, and that function calls each plugin
+        configuration. Fixing only one of them stops the server from starting, so they can be
+        read in the same place.
 
-        ここに置かないのは、ビルド時にしか効かない設定（Gradle スクリプトの役割）と、
-        個々の `install(...)` の中身（API 層の Ktor プラグイン設定の役割）です。
+        What is not placed here: settings that only take effect at build time (the Gradle script
+        roles) and the contents of each `install(...)` (the Ktor plugin configuration role in the
+        API layer).
     """.trimIndent()
 
     entrypoint()

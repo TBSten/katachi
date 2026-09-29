@@ -62,7 +62,7 @@ import me.tbsten.katachi.konsist.konsist
  */
 @OptIn(InternalKatachiApi::class, ExperimentalKatachiApi::class)
 class ProjectArchitectureSpec : FreeSpec({
-    "宣言した group がすべてモデルに含まれる" {
+    "every declared group is in the model" {
         projectArchitecture.allGroups.map { it.qualifiedName }.toSet() shouldBe setOf(
             "api",
             "domain",
@@ -75,7 +75,7 @@ class ProjectArchitectureSpec : FreeSpec({
         )
     }
 
-    "宣言した役割がすべて group のパス付きでモデルに含まれる" {
+    "every declared role is in the model, with its group path" {
         projectArchitecture.allRoles.map { it.qualifiedName }.toSet() shouldBe setOf(
             "api.Controller",
             "api.KtorPlugin",
@@ -102,7 +102,7 @@ class ProjectArchitectureSpec : FreeSpec({
         )
     }
 
-    "役割の宣言位置として、それを書いた拡張関数のファイルの行番号が取れる" {
+    "a role's declaration site is the line in the file of the extension function that wrote it" {
         // Guards the stack-trace based capture in a real user build: if the frame filter
         // ever starts skipping user code, this reports the test runner's file instead.
         val controller = projectArchitecture.allRoles.single { it.qualifiedName == "api.Controller" }
@@ -110,12 +110,12 @@ class ProjectArchitectureSpec : FreeSpec({
         (controller.declaredAt.lineNumber > 0) shouldBe true
     }
 
-    "group の宣言位置も、それを書いた拡張関数のファイルである" {
+    "a group's declaration site is also the file of the extension function that wrote it" {
         val api = projectArchitecture.allGroups.single { it.qualifiedName == "api" }
         api.declaredAt.fileName shouldBe "ApiGroup.kt"
     }
 
-    "宣言位置が ProjectArchitecture.kt ではなく、宣言を書いたファイルを指す" {
+    "declaration sites point at the file that wrote the declaration, not at ProjectArchitecture.kt" {
         // The point of splitting the definition: `ProjectArchitecture.kt` only calls the
         // group functions, so nothing may be attributed to it. If katachi captured the frame
         // one level out, every declaration would collapse onto this one file.
@@ -126,7 +126,7 @@ class ProjectArchitectureSpec : FreeSpec({
         files shouldNotContain "ProjectArchitecture.kt"
     }
 
-    "group ごとに、その group の名前から決まるファイルで宣言されている" {
+    "each group is declared in the file determined by its name" {
         // The naming rule is the whole convention, so it is checked rather than listed: a
         // group named `"debug-menu"` belongs in `DebugMenuGroup.kt`, using `pascalCase` -- the
         // same conversion a layout can call explicitly on a captured wildcard
@@ -140,13 +140,13 @@ class ProjectArchitectureSpec : FreeSpec({
         }
     }
 
-    "役割ごとに、その役割の名前から決まるファイルで宣言されている" {
+    "each role is declared in the file determined by its name" {
         projectArchitecture.allRoles.filterNot { it.qualifiedName.isGradleGroupSubtree() }.forEach { role ->
             role.declaredAt.fileName shouldBe "${role.name.pascalCase}Role.kt"
         }
     }
 
-    "捕捉した行番号の行に、その宣言が実際に書かれている" {
+    "the declaration is actually written on the captured line" {
         // The tests above only prove the file name and that the line is positive. This one
         // reads the source back, so a one-frame shift lands on `architecture {` or on the
         // `apiGroup()` call in ProjectArchitecture.kt and fails. It is also what catches an
@@ -163,12 +163,12 @@ class ProjectArchitectureSpec : FreeSpec({
         }
     }
 
-    "Gradle とその配下は、gradle() を呼んだ1箇所にまとめて宣言されている" {
-        // katachi はスタックトレースを自分のフレームの外まで辿って宣言位置を捕まえるので、
-        // `gradle()` の中で書かれた `"Gradle".group { }` やその中の `name { }` はそれぞれの
-        // 行ではなく、katachi の外で最初に見つかるフレーム -- `groups/GradleGroup.kt` の
-        // `gradle()` 呼び出し -- に集約される。「1宣言1ファイル」規約の例外ではなく、
-        // 宣言位置が実際に1箇所しかないことの表れ。
+    "Gradle and everything under it is declared at the single site that calls gradle()" {
+        // katachi walks the stack trace past its own frames to capture the declaration site, so
+        // the `"Gradle".group { }` written inside `gradle()` and every `name { }` inside it
+        // are attributed not to their own lines but to the first frame outside katachi -- the
+        // `gradle()` call in `groups/GradleGroup.kt`. This is not an exception to the "one
+        // declaration, one file" rule; it shows that there really is only one declaration site.
         val gradleGroup = projectArchitecture.allGroups.single { it.qualifiedName == "Gradle" }
         gradleGroup.declaredAt.fileName shouldBe "GradleGroup.kt"
 
@@ -184,14 +184,14 @@ class ProjectArchitectureSpec : FreeSpec({
         source[gradleGroup.declaredAt.lineNumber - 1] shouldContain "gradle()"
     }
 
-    "documented = false を付けた group だけが documented = false になる" {
-        // 書かなかった宣言には Documented が入らない。省略を true と読むのはここ（読む側）。
+    "only groups marked documented = false are documented = false" {
+        // A declaration that did not write it has no Documented entry. Reading an omission as true happens here (the reading side).
         projectArchitecture.allGroups
             .filterNot { it[Documented] ?: true }
             .map { it.qualifiedName } shouldBe listOf("Gradle", "Gradle.GradleWrapper", "tool")
     }
 
-    "documented = false を付けた役割だけが documented = false になる" {
+    "only roles marked documented = false are documented = false" {
         projectArchitecture.allRoles
             .filterNot { it[Documented] ?: true }
             .map { it.qualifiedName } shouldBe listOf(
@@ -207,18 +207,18 @@ class ProjectArchitectureSpec : FreeSpec({
         )
     }
 
-    "title を省略しなかった役割は指定した表示名を持つ" {
+    "a role that did not omit title has the display name it specified" {
         val model = projectArchitecture.allRoles.single { it.qualifiedName == "domain.Model" }
-        model[Title] shouldBe "モデル"
+        model[Title] shouldBe "Model"
         model[Examples].orEmpty().map { it.name } shouldBe listOf("Health")
     }
 
-    "すべての役割が layout を1つ持つ" {
+    "every role has exactly one layout" {
         projectArchitecture.allRoles.filter { it.layouts.size != 1 } shouldBe emptyList()
     }
 
-    "役割を1つ欠いた定義では、その役割が覆っていたファイルが Unexpected になる" {
-        // "assert() が通る" alone cannot tell a working check from one that walks nothing:
+    "in a definition missing one role, the files that role covered become Unexpected" {
+        // "assert() passes" alone cannot tell a working check from one that walks nothing:
         // an empty traversal passes just as happily. Dropping `app/Entrypoint` leaves
         // `Application.kt` in a directory other roles still claim, so the file itself has to
         // be reached and matched for this to fail - which is the part being proven here.
@@ -231,7 +231,7 @@ class ProjectArchitectureSpec : FreeSpec({
             )
     }
 
-    "`.module { }` と sourceSet が、手で書いたディレクトリ宣言と同じエントリに展開される" {
+    "`.module { }` and sourceSet expand to the same entries as a hand-written directory declaration" {
         // The whole claim of the sugar: it is a shorthand and not a second way of
         // saying something slightly different. Written against `:architecture-test` rather
         // than the root project so that the module directory itself is part of the answer.
@@ -264,7 +264,7 @@ class ProjectArchitectureSpec : FreeSpec({
         sugared.flattenLayout().map { shapeOf(it) } shouldBe handWritten.flattenLayout().map { shapeOf(it) }
     }
 
-    "modulePackage はモジュールごとに解決され、base package を変えると宣言先が変わる" {
+    "modulePackage is resolved per module, and changing the base package changes where it declares" {
         // Guards against the sugar going through without ever being read: if the package
         // levels came from anywhere but `modulePackage`, both of these would land on the
         // same path and the check would not be following the definition at all.
@@ -284,7 +284,7 @@ class ProjectArchitectureSpec : FreeSpec({
         pathsUnder("com.other.app") shouldContain "src/main/kotlin/com/other/app/Application.kt"
     }
 
-    "gitTracked() / wholeTree() が利用者のビルドからも書ける" {
+    "gitTracked() / wholeTree() can be written from a user's build too" {
         // They are context parameter extensions rather than `ArchitectureScope` members, and
         // this build enables no compiler flag for them: an import is the whole cost. Proving
         // it here rather than in katachi's own specs is the point, because `:katachi` compiles
@@ -293,7 +293,7 @@ class ProjectArchitectureSpec : FreeSpec({
         architecture { files = wholeTree() }.files shouldBe FileSelection.WholeTree
     }
 
-    "利用者が実装した FileSelection が、実際に走査するファイル集合を決める" {
+    "a FileSelection implemented by the user decides the set of files actually walked" {
         // `FileSelection` is an ordinary interface, so a project whose files are listed by
         // something other than git writes its own. The first assertion keeps the second from
         // passing vacuously: over the real tree an empty definition reports plenty.
@@ -304,7 +304,7 @@ class ProjectArchitectureSpec : FreeSpec({
         overNothing.validate() shouldBe emptyList()
     }
 
-    "scope = DirectOnly の konsist は groups/ と roles/ に降りず、Subtree にすると降りてそこで落ちる" {
+    "a konsist with scope = DirectOnly does not descend into groups/ and roles/, and with Subtree it descends and fails there" {
         // `roles/ArchitectureDefinitionRole.kt` passing proves nothing about `DirectOnly` on its
         // own: a constraint that covered nothing would pass too. Taking the flag away has to
         // make the same rule reach `groups/` and `roles/`, where every file declares exactly
@@ -315,7 +315,7 @@ class ProjectArchitectureSpec : FreeSpec({
                     layout {
                         ":architecture-test".module {
                             testSourceSet / kotlin / "com/example" {
-                                "直下に group・役割の宣言を置かない".konsist(scope = scope) {
+                                "Must not declare groups or roles directly here".konsist(scope = scope) {
                                     functions().mustNot { it.receiverType?.name == "DeclarationContainerScope" }
                                 }
                                 "*".ktFile()
@@ -334,7 +334,7 @@ class ProjectArchitectureSpec : FreeSpec({
             "architecture-test/src/test/kotlin/com/example/roles/ServiceRole.kt"
     }
 
-    "正しい定義では、baseline に棚上げした違反のほかは1件も出ない" {
+    "a correct definition reports nothing but the violations held back by the baseline" {
         // The same run ProjectArchitectureTest makes, read as a list rather than as a thrown
         // error, so a failure here names the violations instead of only the message.
         // `FileConstraintCheck()` matches what `ProjectArchitectureTest` itself passes: without
@@ -424,8 +424,8 @@ private fun sourceLinesOf(fileName: String): List<String> = sourceLineCache.getO
     val sourceRoot = generateSequence(workingDir) { it.parentFile }
         .map { File(it, "src/test/kotlin") }
         .firstOrNull { it.isDirectory }
-    requireNotNull(sourceRoot) { "src/test/kotlin が $workingDir とその親に見つからない" }
+    requireNotNull(sourceRoot) { "src/test/kotlin not found in $workingDir or its parents" }
 
     val source = sourceRoot.walkTopDown().firstOrNull { it.isFile && it.name == fileName }
-    requireNotNull(source) { "$fileName が $sourceRoot 以下に見つからない" }.readLines()
+    requireNotNull(source) { "$fileName not found under $sourceRoot" }.readLines()
 }

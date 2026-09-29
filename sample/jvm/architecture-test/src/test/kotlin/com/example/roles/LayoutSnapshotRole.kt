@@ -13,43 +13,44 @@ import me.tbsten.katachi.dsl.DeclarationContainerScope
  * is why each of them has a role.
  */
 fun DeclarationContainerScope.layoutSnapshot() = "LayoutSnapshot" {
-    title = "レイアウトのスナップショット"
-    summary = "この定義を平坦化して全行書き出した記録。定義の変化を人が差分でレビューするためにある"
+    title = "Layout snapshot"
+    summary = "A record of every line of this definition, flattened. It exists so people can review changes to the definition as a diff"
     description = """
-        `:architecture-test:test` が、この定義を平坦化した結果を1行1エントリで書き出したものです。
-        1行は `<役割の qualifiedName>` `<パス>` `<種別>` `<required|optional>` の4つ組で、
-        `layout { }` が最終的に何を許しているのかがそのまま並びます。
+        What `:architecture-test:test` writes out after flattening this definition, one entry per
+        line. A line is a four-tuple of `<role qualifiedName>`, `<path>`, `<kind>` and
+        `<required|optional>`, so what `layout { }` ends up allowing is laid out as is.
 
-        これは手で編集しない。`LayoutSnapshotSpec` が書きます。更新するには
-        `./gradlew :architecture-test:test -Dkatachi.snapshot.update=true` を走らせるだけです。
+        Do not edit it by hand; `LayoutSnapshotSpec` writes it. To update it, just run
+        `./gradlew :architecture-test:test -Dkatachi.snapshot.update=true`.
 
-        何のためにあるのかというと、定義の変化を人が差分でレビューするためです。役割を
-        `.module { }` や `mainSourceSet` で書き直したとき、読みやすくなっただけなのか、
-        検査する木そのものが変わってしまったのかは、定義のコードを眺めても分かりません。
-        平坦化した結果をコミット済みのテキストにしておけば、`git diff` の行数がそのまま答えに
-        なります。1行も動かなければ書き換えは等価、動いたなら何がどう変わったのかがその行に
-        出ています。
+        It exists so that people can review changes to the definition as a diff. When a role is
+        rewritten with `.module { }` or `mainSourceSet`, looking at the definition code does not
+        tell you whether it merely got easier to read or whether the tree being checked has itself
+        changed. If the flattened result is kept as committed text, the lines in `git diff` are
+        the answer. If no line moves, the rewrite is equivalent; if lines move, they show what
+        changed and how.
 
-        これは katachi 自身の検証のために置いてあるもので、katachi を導入するときに書くもの
-        ではありません。サンプルの定義に手を入れたときに意味が変わっていないことを、katachi の
-        開発側が確かめるための記録です。
+        It is here for katachi's own verification, not something you write when adopting katachi.
+        It is a record that lets katachi's developers confirm that the meaning did not change when
+        the sample's definition was touched.
 
-        生成物なのに `build/` の外に置いているのは、差分で見せるのが仕事だからです。
-        コミットされていない記録は誰のレビューにも出てきません。その代わり既定の
-        `files = gitTracked()` の検査対象に入るので、この役割が要ります。役割を消すと
-        `[UnexpectedDirectory] snapshots` で `:architecture-test:test` が落ちます。
+        It is generated, yet kept outside `build/` because its job is to be shown as a diff. A
+        record that is not committed appears in nobody's review. In exchange, it falls under the
+        default `files = gitTracked()` check, so this role is needed. Removing the role makes
+        `:architecture-test:test` fail with `[UnexpectedDirectory] snapshots`.
 
-        `documented` は書いていません（既定の `true`）。この `snapshots/` が何なのかを説明する
-        場所は他に無く、一覧から外すとリポジトリを開いた人には由来の分からない `.txt` が
-        1つ残るだけになるからです。この役割自身のページ
-        （`docs/testing/LayoutSnapshot.md`）も生成されます。
+        `documented` is not written (the default `true`). There is nowhere else that explains what
+        this `snapshots/` is, and taking it off the list would leave a `.txt` of unknown origin
+        for anyone who opens the repository. This role's own page
+        (`docs/testing/LayoutSnapshot.md`) is generated as well.
     """.trimIndent()
     forbiddenContents = """
-        - 手書きのメモ。次の `-Dkatachi.snapshot.update=true` で丸ごと上書きされます
-        - 別の種類の記録。いまの `layout { }` は `snapshots/layout.txt` の1ファイルしか
-          認めていないので、足すなら役割を書き換えるところから始まります
+        - Hand-written notes. They are overwritten wholesale by the next
+          `-Dkatachi.snapshot.update=true`
+        - Other kinds of records. The current `layout { }` accepts only the single file
+          `snapshots/layout.txt`, so adding one starts with rewriting the role
     """.trimIndent()
-    example("snapshots/layout.txt", "平坦化した layout の全行")
+    example("snapshots/layout.txt", "Every line of the flattened layout")
     layout {
         "snapshots" {
             // Written out by name rather than as `*.txt`, so the entry carries no wildcard

@@ -16,7 +16,7 @@ import org.intellij.lang.annotations.Language
  * `description`. Pulling it into its own heading keeps `description` to what the layer is and
  * why, and gives "what may be placed here" a place a reader can jump to directly.
  */
-val AllowedContents: DocumentSection = documentSection("置いてよいもの")
+val AllowedContents: DocumentSection = documentSection("Allowed contents")
 
 /** Writes the body of [AllowedContents], on a role, a group, or the root of the definition. */
 @get:Language("markdown")
@@ -31,7 +31,7 @@ var MetadataScope.allowedContents: String? by AllowedContents
  * as a bullet list inside its `description`; pulling it into its own heading keeps that list
  * findable on its own, next to what is actually allowed.
  */
-val ForbiddenContents: DocumentSection = documentSection("置いてはいけないもの")
+val ForbiddenContents: DocumentSection = documentSection("Forbidden contents")
 
 /** Writes the body of [ForbiddenContents], on a role, a group, or the root of the definition. */
 @get:Language("markdown")

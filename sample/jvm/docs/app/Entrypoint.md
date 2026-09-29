@@ -1,20 +1,20 @@
-[Ktor サンプルアプリ](../README.md) / [アプリケーション](README.md)
+[Ktor sample app](../README.md) / [Application](README.md)
 
-# エントリポイント
+# Entry point
 
-プロセスの起動と、Ktor の Application モジュールの組み立て
+Starting the process and assembling the Ktor Application module
 
-プロセスが始まる1点です。`Application.kt` に `main()` と `Application.module()` の2つだけを
-置きます。`main()` は `EngineMain.main(args)` を呼び、エンジンが
-`src/main/resources/application.conf` を読んで待ち受けを始めます。
+The single point where the process starts. `Application.kt` holds just two things:
+`main()` and `Application.module()`. `main()` calls `EngineMain.main(args)`, and the engine
+reads `src/main/resources/application.conf` and starts listening.
 
-`Application.module()` は `configureSerialization()` と `configureRouting()` を並べるだけの
-関数です。ここを読めば、このアプリにどんな横断的設定がどの順で入っているかが分かります。
-プラグイン設定を1つ足すときに触るのも、この並びの1行です。
+`Application.module()` is a function that merely lines up `configureSerialization()` and
+`configureRouting()`. Reading it tells you which cross-cutting settings this app has, and
+in what order. Adding a plugin configuration means touching one line in this list.
 
-この役割の `layout { }` にはワイルドカードが無く、`Application.kt` が1つあることを
-要求します。消せば `[MissingFile]` が出るので、起動点がどこにも無い状態で
-通り過ぎることはありません。
+This role's `layout { }` has no wildcard and requires exactly one `Application.kt`.
+Deleting it produces `[MissingFile]`, so the check cannot pass with no entry point
+anywhere.
 
 ## Placement
 
@@ -24,10 +24,12 @@
 
 ## Examples
 
-- `Application.kt` ... プロセスの起動点
+- `Application.kt` ... Where the process starts
 
-## 置いてはいけないもの
+## Forbidden contents
 
-- `install(...)` の中身。設定そのものは Ktor プラグイン設定の役割で、ここには呼び出しだけ
-- エンドポイントの登録。`routing { }` は `plugin/Routing.kt` が持ちます
-- 待ち受けポートや適用モジュールの一覧。それは `application.conf`（サーバ設定）側です
+- The contents of `install(...)`. The settings themselves belong to the Ktor plugin
+  configuration role; only the calls belong here
+- Endpoint registration. `routing { }` is held by `plugin/Routing.kt`
+- The listening port and the list of modules to apply. Those are on the
+  `application.conf` (server configuration) side

@@ -1,19 +1,21 @@
-[Ktor サンプルアプリ](../README.md) / [アプリケーション](README.md)
+[Ktor sample app](../README.md) / [Application](README.md)
 
-# サーバ設定
+# Server configuration
 
-実行時に読み込まれる設定ファイル。Kotlin ではない資源も役割を持つ
+Configuration files loaded at runtime. Resources that are not Kotlin have roles too
 
-起動したプロセスが読む設定です。`src/main/resources` に置かれ、ビルド時ではなく実行時に
-効きます。役割を持つのは Kotlin のファイルだけではない、という例でもあります。
+The configuration the started process reads. It lives in `src/main/resources` and takes
+effect at runtime, not at build time. It is also an example of the fact that not only
+Kotlin files have roles.
 
-`application.conf` は待ち受けポート（`18080`、環境変数 `PORT` で上書き）と、起動時に適用する
-モジュール `com.example.ApplicationKt.module` を書きます。エントリポイントの
-`Application.module()` と名指しで対になっていて、片方だけ直すと起動しません。
-`logback.xml` はログの出力先と書式を決めます。
+`application.conf` writes the listening port (`18080`, overridable with the environment
+variable `PORT`) and the module applied at startup, `com.example.ApplicationKt.module`. It
+is paired by name with the entry point's `Application.module()`, and fixing only one of
+them stops the server from starting. `logback.xml` decides where logs go and their format.
 
-`layout { }` はワイルドカードではなく2つのファイルを名前で並べています。実行時に効く設定が
-3つ目に増えたら、それは黙って増えてよいものではなく、気づきたいものだからです。
+`layout { }` lists the two files by name rather than with a wildcard. If a third setting
+that takes effect at runtime appears, it should not be allowed to appear silently; it is
+something we want to notice.
 
 ## Placement
 
@@ -24,11 +26,12 @@
 
 ## Examples
 
-- `application.conf` ... 待ち受けポートと適用モジュール
-- `logback.xml` ... ログの出力先と書式
+- `application.conf` ... The listening port and the applied module
+- `logback.xml` ... Where logs go and their format
 
-## 置いてはいけないもの
+## Forbidden contents
 
-- ビルドの設定。依存やプラグインは Gradle スクリプトの役割です
-- 開発者ごとに違う値や秘密情報。`local.properties` は `.gitignore` に入っていて、
-  既定の `files = gitTracked()` ではそもそも検査に渡りません
+- Build settings. Dependencies and plugins are the Gradle script roles
+- Values that differ per developer, or secrets. `local.properties` is in `.gitignore` and
+  is never handed to the check under the default `files = gitTracked()` in the first
+  place

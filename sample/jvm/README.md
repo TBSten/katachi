@@ -1,54 +1,54 @@
 # sample/jvm
 
-## どういうサンプルか
+## What this sample is
 
-Ktor で書いた**単一モジュールの小さな HTTP サーバ**を、katachi で定義したサンプルです。
+A sample that defines, with katachi, **a small single-module HTTP server** written in Ktor.
 
-API・ドメイン・データの各層に何を置くかを役割として宣言し、`assert()` でファイルの配置を検査しています。
-1つの役割には `konsist { }` で「public であること」という制約も書いてあります。
-定義自身の役割には、親ディレクトリの制約を子ディレクトリに降ろさない `konsist(scope = DirectOnly)` の例もあります。
-同じ定義から [`docs/`](docs/README.md) のドキュメントを生成し、定義を読む自作の processor も1つ置いています。
+It declares as roles what goes in each of the API, domain and data layers, and checks the placement of files with `assert()`.
+One role also has a constraint written with `konsist { }`: "Must be public".
+The role for the definition itself also has an example of `konsist(scope = DirectOnly)`, which does not push a parent directory's constraint down into child directories.
+The same definition generates the documentation in [`docs/`](docs/README.md), and there is also one custom processor that reads the definition.
 
-katachi はリポジトリのソースから `includeBuild("../..")` で取り込んでいますが、書き方は利用者と同じ
-`testImplementation(libs.katachi)` です。
+katachi is pulled in from the repository source with `includeBuild("../..")`, but it is written the same way a user would write it:
+`testImplementation(libs.katachi)`.
 
-## キーとなるファイル
+## Key files
 
-| ファイル                                                                                                 | 何が分かるか                                                                                                   |
+| File                                                                                                 | What it shows                                                                                                   |
 |----------------------------------------------------------------------------------------------------------|----------------------------------------------------------------------------------------------------------------|
-| [`ProjectArchitecture.kt`](architecture-test/src/test/kotlin/com/example/ProjectArchitecture.kt)         | `architecture { }` の本体。7 つの group を呼んでいるだけで、役割は `roles/` に1ファイル1役割で置いてある       |
-| [`roles/ServiceRole.kt`](architecture-test/src/test/kotlin/com/example/roles/ServiceRole.kt)             | `layout { }` に加えて `konsist { }` で制約を書いた役割。ファイルの宣言に付けた `.template { }` で `*Service.kt` を生成する見本も兼ねる |
-| [`roles/ControllerRole.kt`](architecture-test/src/test/kotlin/com/example/roles/ControllerRole.kt)       | `capture("resource")` でディレクトリの `*` に名前を付け、`.template { }` から `captureValue("resource")` で読み返す見本。package にそのまま使う値なので `require(...)` で弾いている |
-| [`roles/ArchitectureDefinitionRole.kt`](architecture-test/src/test/kotlin/com/example/roles/ArchitectureDefinitionRole.kt) | `konsist(scope = DirectOnly)` の例。`com/example` 直下にだけ効き、`groups/`・`roles/` には降りない制約 |
-| [`ProjectArchitectureTest.kt`](architecture-test/src/test/kotlin/com/example/ProjectArchitectureTest.kt) | 利用者が書くテストはこれ1つ。`konsist { }` も評価するために `assert(FileConstraintCheck())` を呼んでいる              |
-| [`processors/RoleNames.kt`](architecture-test/src/test/kotlin/com/example/processors/RoleNames.kt)       | `--arg` で引数を受け取る自作 processor の最小例                                                                |
-| [`katachi-baseline.json`](katachi-baseline.json) | baseline の台帳。`service/LegacyHealthCheck.kt` と `service/LegacyStatusService.kt` の2件を意図的に残して棚上げしている（[`../README.md`](../README.md#baseline)） |
+| [`ProjectArchitecture.kt`](architecture-test/src/test/kotlin/com/example/ProjectArchitecture.kt)         | The body of `architecture { }`. It only calls the 7 groups; the roles live in `roles/`, one role per file       |
+| [`roles/ServiceRole.kt`](architecture-test/src/test/kotlin/com/example/roles/ServiceRole.kt)             | A role that writes a constraint with `konsist { }` in addition to `layout { }`. It doubles as an example of generating `*Service.kt` with the `.template { }` attached to a file declaration |
+| [`roles/ControllerRole.kt`](architecture-test/src/test/kotlin/com/example/roles/ControllerRole.kt)       | An example of naming a directory's `*` with `capture("resource")` and reading it back from `.template { }` with `captureValue("resource")`. The value is used as-is in a package, so it is rejected with `require(...)` |
+| [`roles/ArchitectureDefinitionRole.kt`](architecture-test/src/test/kotlin/com/example/roles/ArchitectureDefinitionRole.kt) | An example of `konsist(scope = DirectOnly)`. A constraint that applies only directly under `com/example` and does not descend into `groups/` or `roles/` |
+| [`ProjectArchitectureTest.kt`](architecture-test/src/test/kotlin/com/example/ProjectArchitectureTest.kt) | The only test a user writes. It calls `assert(FileConstraintCheck())` so that `konsist { }` is evaluated too              |
+| [`processors/RoleNames.kt`](architecture-test/src/test/kotlin/com/example/processors/RoleNames.kt)       | A minimal example of a custom processor that receives arguments with `--arg`                                                                |
+| [`katachi-baseline.json`](katachi-baseline.json) | The baseline ledger. It deliberately leaves two entries, `service/LegacyHealthCheck.kt` and `service/LegacyStatusService.kt`, held back ([`../README.md`](../README.md#baseline)) |
 
-## 実行方法
+## How to run
 
-Android SDK は要りません。JDK 17 だけで動きます。
+No Android SDK is needed. It runs with JDK 17 alone.
 
 ```sh
 cd sample/jvm
 
-# ファイルの配置と konsist { } の制約を検査する
+# Check file placement and the konsist { } constraints
 ./gradlew :architecture-test:test
 
-# 定義からドキュメントを docs/ に生成する
+# Generate the documentation into docs/ from the definition
 ./gradlew :architecture-test:katachiDocs
 
-# 自作の processor を実行する
+# Run the custom processor
 ./gradlew :architecture-test:katachiRoleNames --arg prefix=domain
 
-# Service のテンプレートから src/main/kotlin/com/example/service/GreetingService.kt を生成する
+# Generate src/main/kotlin/com/example/service/GreetingService.kt from the Service template
 ./gradlew :architecture-test:katachiTemplate --arg template=domain.Service --arg name=Greeting
 
-# Controller のテンプレートから src/main/kotlin/com/example/controller/greeting/GreetingController.kt を生成する
-# （resource は layout で capture("resource") と名前を付けた階層。どのディレクトリに生成するかをこれで選ぶ）
+# Generate src/main/kotlin/com/example/controller/greeting/GreetingController.kt from the Controller template
+# (resource is the level named with capture("resource") in the layout; it selects which directory to generate into)
 ./gradlew :architecture-test:katachiTemplate --arg template=Controller --arg resource=greeting --arg name=Greeting
 ```
 
-リポジトリのルートからは、CI と同じ一式（テンプレートから生成 → 検査 → 生成物を削除、まで含む）を1コマンドで回せます。
+From the repository root, the same set as CI (including generating from templates, checking, and deleting the generated files) runs with one command.
 
 ```sh
 ./gradlew checkSampleJvm

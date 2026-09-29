@@ -5,23 +5,24 @@ import me.tbsten.katachi.dsl.DeclarationContainerScope
 
 /** The role of the version control configuration. */
 fun DeclarationContainerScope.git() = "Git" {
-    title = "Git 設定"
-    summary = "バージョン管理の設定ファイル"
+    title = "Git configuration"
+    summary = "Version control configuration files"
     description = """
-        Git に何を渡さないかを書くファイルです。このプロジェクトでは `.gitignore` の1つだけが
-        この役割に入ります。
+        The file that says what not to hand to Git. In this project only `.gitignore` falls under
+        this role.
 
-        単なる作業上の都合ではなく、katachi の検査範囲そのものに効きます。既定の
-        `files = gitTracked()` は git が追跡しているファイルだけを検査に渡すので、
-        `.gitignore` に書いたもの（`build/`, `.gradle/`, `.kotlin/`, `local.properties` など）は
-        どの役割にも属さないまま通り過ぎます。逆に、追跡されているのに役割が無いファイルは
-        落ちます。
+        It is not merely a working convenience; it affects the scope of katachi's check itself.
+        The default `files = gitTracked()` passes only the files git tracks to the check, so
+        anything listed in `.gitignore` (`build/`, `.gradle/`, `.kotlin/`, `local.properties` and
+        so on) goes by without belonging to any role. Conversely, a file that is tracked but has
+        no role fails.
 
-        増えたら `.gitignore` の役割に混ぜず、`tool` グループに役割を1つ足します。この役割が属する
-        `tool` グループは `documented = false` なので、生成ドキュメントには出ません。
+        When more files appear, add one role to the `tool` group rather than mixing them into this
+        one. The `tool` group this role belongs to is `documented = false`, so it does not appear
+        in the generated documentation.
     """.trimIndent()
-    forbiddenContents = "置いてはいけないのは Git 以外のツールの設定です。"
-    example(".gitignore", "管理対象から外すファイルの一覧")
+    forbiddenContents = "What must not be placed here is configuration for tools other than Git."
+    example(".gitignore", "The list of files excluded from version control")
     layout {
         ".gitignore".file()
     }
