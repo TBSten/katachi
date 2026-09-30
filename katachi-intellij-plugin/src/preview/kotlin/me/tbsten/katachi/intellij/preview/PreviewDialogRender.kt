@@ -124,6 +124,7 @@ private class SeenNode(
     val insideForm: Boolean,
     val overlay: Boolean,
     val cut: Boolean,
+    val cutDetail: String,
 ) {
     val center: Offset get() = Offset((left + right) / 2, (top + bottom) / 2)
 }
@@ -150,6 +151,10 @@ private fun nodesOf(scene: ImageComposeScene): List<SeenNode> {
             insideForm = insideForm,
             overlay = overlay,
             cut = layouts.any { it.hasVisualOverflow },
+            cutDetail = layouts.filter { it.hasVisualOverflow }.joinToString("; ") {
+                "text ${it.size.width}x${it.size.height} in box ${node.size.width}x${node.size.height}, ${it.lineCount} lines, " +
+                    "font ${it.layoutInput.style.fontFamily} ${it.layoutInput.style.fontSize}"
+            },
         )
         val form = insideForm || tag == KatachiTestTags.DIALOG_FORM
         node.children.forEach { walk(it, form, overlay) }
@@ -177,5 +182,6 @@ private fun layoutNodesOf(scene: ImageComposeScene): List<PreviewChecks.LayoutNo
             scrolled = n.insideForm,
             textCut = n.cut,
             overlay = n.overlay,
+            cutDetail = n.cutDetail,
         )
     }

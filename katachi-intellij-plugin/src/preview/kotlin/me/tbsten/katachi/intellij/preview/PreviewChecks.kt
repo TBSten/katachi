@@ -67,6 +67,8 @@ object PreviewChecks {
         val scrolled: Boolean = false,
         val textCut: Boolean = false,
         val overlay: Boolean = false,
+        /** What the cut text measured (size, lines, overflow), shown in the failure; empty when unknown. */
+        val cutDetail: String = "",
     ) {
         fun overlaps(other: LayoutNode): Boolean = left < other.right && other.left < right && top < other.bottom && other.top < bottom
 
@@ -88,7 +90,7 @@ object PreviewChecks {
             if (n.left < 0 || n.right > width) add("${n.name} sticks out of the window horizontally (${n.left}..${n.right} of $width)")
             if (n.top < 0) add("${n.name} sticks out above the window (top ${n.top})")
             if (!n.scrolled && n.bottom > height) add("${n.name} sticks out below the window (bottom ${n.bottom} of $height)")
-            if (n.textCut) add("${n.name} is cut")
+            if (n.textCut) add("${n.name} is cut" + if (n.cutDetail.isEmpty()) "" else " (${n.cutDetail})")
         }
         for (i in nodes.indices) for (j in i + 1 until nodes.size) {
             val a = nodes[i]

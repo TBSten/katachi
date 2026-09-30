@@ -207,8 +207,9 @@ jobs:
         run: ./gradlew checkIdePlugin --stacktrace
 
       # The test reports, the shrunk counterexample and its PNG of a failing property
-      # (build/uiTest-failures), and the before/after report of a failing verifyPreview
-      # (build/preview/report).
+      # (build/uiTest-failures), and every PNG verifyPreview rendered (build/preview): a failing
+      # gate (e.g. "text is cut") stops before the before/after report is written, and the PNGs
+      # this runner drew are what tells a font difference from a real overflow.
       - name: Upload reports
         if: ${{ failure() }}
         uses: actions/upload-artifact@v7
@@ -218,7 +219,7 @@ jobs:
             katachi-intellij-plugin/build/reports/
             katachi-intellij-plugin/build/test-results/
             katachi-intellij-plugin/build/uiTest-failures/
-            katachi-intellij-plugin/build/preview/report/
+            katachi-intellij-plugin/build/preview/
           retention-days: 7
           if-no-files-found: ignore
 
