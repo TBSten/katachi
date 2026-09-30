@@ -32,7 +32,7 @@ module that exists.
 ## Allowed contents
 
 - An `internal` `@Composable` that takes values and callbacks
-- The `@Preview` of that part (wrapped in `PreviewRoot { }`; see the Preview role)
+- The `@Preview` of that part (a `private` function at the end of the same file, wrapped in `PreviewRoot { }`)
 
 ## Forbidden contents
 

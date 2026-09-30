@@ -23,8 +23,11 @@ mapping like `:ui` to `com.example.sample.ui` (the other one is `:architecture-t
 
 | Role | Summary |
 |---|---|
-| [Entrypoint](./Entrypoint.md) | The types Android touches when it launches the app, kept in :app |
-| [Android resources](./AndroidResource.md) | AndroidManifest.xml, res/ and proguard-rules.pro |
+| [Activity entrypoint](./ActivityEntrypoint.md) | The single Activity Android launches, kept in :app |
+| [Application entrypoint](./ApplicationEntrypoint.md) | The single Application class Android creates at process start, kept in :app |
+| [Android manifest](./AndroidManifest.md) | AndroidManifest.xml of :app, which declares the app to Android |
+| [Proguard rules](./ProguardRules.md) | proguard-rules.pro of :app, the rules the code shrinker reads |
+| [Android resources](./AndroidResource.md) | The res/ tree of :app, whose inner structure the Android resource system decides |
 
 ## Placement in this group
 
@@ -32,10 +35,10 @@ mapping like `:ui` to `com.example.sample.ui` (the other one is `:architecture-t
 :app
   src/main/
     kotlin/com/example/sample/
-      MainActivity.kt     Entrypoint
-      MainApplication.kt  Entrypoint
-    AndroidManifest.xml   Android resources
-  proguard-rules.pro      Android resources
+      MainActivity.kt     Activity entrypoint
+      MainApplication.kt  Application entrypoint
+    AndroidManifest.xml   Android manifest
+  proguard-rules.pro      Proguard rules
 
 app/src/main/res/         Android resources
 ```

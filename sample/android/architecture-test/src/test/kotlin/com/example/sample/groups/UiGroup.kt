@@ -3,7 +3,6 @@ package com.example.sample.groups
 import com.example.sample.allowedContents
 import com.example.sample.roles.component
 import com.example.sample.roles.navigation
-import com.example.sample.roles.preview
 import com.example.sample.roles.previewRoot
 import com.example.sample.roles.theme
 import com.example.sample.roles.uiCore
@@ -49,7 +48,6 @@ fun DeclarationContainerScope.uiGroup() = "ui".group {
     component()
     theme()
     uiCore()
-    preview()
     previewRoot()
     navigation()
 }

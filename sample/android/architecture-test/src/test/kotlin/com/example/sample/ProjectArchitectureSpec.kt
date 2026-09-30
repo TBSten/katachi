@@ -60,15 +60,22 @@ class ProjectArchitectureSpec : FreeSpec({
             "ui.Component",
             "ui.Theme",
             "ui.UiCore",
-            "ui.Preview",
             "ui.PreviewRoot",
             "ui.Navigation",
-            "data.Repository",
-            "app.Entrypoint",
+            "data.RepositoryInterface",
+            "data.RepositoryImplementation",
+            "app.ActivityEntrypoint",
+            "app.ApplicationEntrypoint",
+            "app.AndroidManifest",
+            "app.ProguardRules",
             "app.AndroidResource",
             "testing.Fake",
-            "testing.Test",
-            "testing.ArchitectureDefinition",
+            "testing.ProjectArchitectureTest",
+            "testing.ProjectArchitectureSpec",
+            "testing.DefinitionEntry",
+            "testing.DefinitionSections",
+            "testing.GroupDefinition",
+            "testing.RoleDefinition",
             "testing.GeneratedDocumentation",
             "testing.LayoutSnapshot",
             "testing.BaselineFile",
@@ -190,26 +197,20 @@ class ProjectArchitectureSpec : FreeSpec({
         otherRoles.map { it[Documented] ?: true }.toSet() shouldBe setOf(true)
     }
 
-    "a role without a title has no Title, and its name is the display name" {
-        val git = projectArchitecture.allRoles.single { it.qualifiedName == "tool.Git" }
-        git[Title] shouldBe null
-        (git[Title] ?: git.name) shouldBe "Git"
-    }
-
     "a role with a title uses it as its display name" {
         val screen = projectArchitecture.allRoles.single { it.qualifiedName == "feature.Screen" }
         screen[Title] shouldBe "Screen"
     }
 
-    "one role can have several places as layouts" {
-        val repository = projectArchitecture.allRoles.single { it.qualifiedName == "data.Repository" }
-        repository.layouts.size shouldBe 2
+    "every role declares one place, so a role holds one kind of file" {
+        projectArchitecture.allRoles.filterNot { it.qualifiedName.isGradleGroupSubtree() }.forEach { role ->
+            role.layouts.size shouldBe 1
+        }
     }
 
     "examples are kept in the order they were called" {
-        val repository = projectArchitecture.allRoles.single { it.qualifiedName == "data.Repository" }
-        repository[Examples].orEmpty().map { it.name } shouldContainExactly
-            listOf("UserRepository", "UserRepositoryImpl")
+        val screen = projectArchitecture.allRoles.single { it.qualifiedName == "feature.Screen" }
+        screen[Examples].orEmpty().map { it.name } shouldContainExactly listOf("HomeScreen", "SettingsScreen")
     }
 
     "a definition missing one group's roles flags only the files that group covered" {

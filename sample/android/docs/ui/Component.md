@@ -13,6 +13,12 @@ of this role is that callers need not pick between Material3's `Button` and
 `OutlinedButton` themselves, so a part, the enum for it and its `@Preview` go in the
 same file.
 
+A `@Preview` is a `private` `@Composable` at the end of the same file as its part, with
+the body wrapped in `PreviewRoot { }` from the `preview` package of `:ui`, so the theme
+and background are decided in one place. It passes only state. This convention is not
+checked in this sample: "is private" and "is wrapped in `PreviewRoot`" cannot be
+expressed by where a file sits, and would take `konsist { }` (see sample/jvm).
+
 File names are not restricted to `*.kt`, because parts are expected to multiply.
 
 Can be generated from a template. The whole file name is `capture("name")`, so `--arg

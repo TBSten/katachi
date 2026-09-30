@@ -1,7 +1,10 @@
 package com.example.sample.groups
 
+import com.example.sample.roles.activityEntrypoint
+import com.example.sample.roles.androidManifest
 import com.example.sample.roles.androidResource
-import com.example.sample.roles.entrypoint
+import com.example.sample.roles.applicationEntrypoint
+import com.example.sample.roles.proguardRules
 import me.tbsten.katachi.dsl.DeclarationContainerScope
 
 /**
@@ -35,6 +38,9 @@ fun DeclarationContainerScope.appGroup() = "app".group {
         mapping like `:ui` to `com.example.sample.ui` (the other one is `:architecture-test`).
     """.trimIndent()
 
-    entrypoint()
+    activityEntrypoint()
+    applicationEntrypoint()
+    androidManifest()
+    proguardRules()
     androidResource()
 }

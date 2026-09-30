@@ -4,8 +4,7 @@ import me.tbsten.katachi.dsl.DeclarationContainerScope
 
 /** The role of the files git itself reads. */
 fun DeclarationContainerScope.git() = "Git" {
-    // No `title` here on purpose: an undocumented role has no display name to show,
-    // and the sample asserts that the role name is then used as-is.
+    title = "Git"
     summary = ".gitignore and the like"
     documented = false
     description = """
@@ -21,9 +20,6 @@ fun DeclarationContainerScope.git() = "Git" {
         When editing `.gitignore`, be aware that the set of checked files moves. Ignoring more
         removes files from the check, and ignoring less turns them into violations as files
         without a role.
-
-        Only this role has no `title`. This sample demonstrates katachi's behavior that a role
-        without a display name uses its role name (`Git`) as is.
     """.trimIndent()
     example(".gitignore", "The list of what git ignores")
     layout {

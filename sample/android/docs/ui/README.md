@@ -26,7 +26,6 @@ navigation dependency. Building the graph is done by `:app`.
 | [Shared component](./Component.md) | A part in the component package of the :ui module, used across features |
 | [Theme](./Theme.md) | Colors, typography and shapes, kept in the theme package of the :ui module |
 | [UI foundation](./UiCore.md) | Types that form the foundation of the UI layer, kept in the core package of the :ui module |
-| [Preview](./Preview.md) | A private @Composable annotated with @Preview. Placed in the same file as its target Composable, with the body wrapped in PreviewRoot |
 | [Preview base](./PreviewRoot.md) | The base every @Preview wraps its body in, kept in the preview package of :ui. Decides the theme and background in one place, and takes darkTheme to show light and dark |
 | [Screen navigation](./Navigation.md) | Movement between screens, kept in :navigation |
 

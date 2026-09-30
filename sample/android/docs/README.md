@@ -21,7 +21,6 @@ UI shared across features: the four packages of :ui, and :navigation
 - [Shared component](./ui/Component.md)
 - [Theme](./ui/Theme.md)
 - [UI foundation](./ui/UiCore.md)
-- [Preview](./ui/Preview.md)
 - [Preview base](./ui/PreviewRoot.md)
 - [Screen navigation](./ui/Navigation.md)
 
@@ -29,13 +28,17 @@ UI shared across features: the four packages of :ui, and :navigation
 
 What :data holds: fetching and storing data
 
-- [Repository](./data/Repository.md)
+- [Repository interface](./data/RepositoryInterface.md)
+- [Repository implementation](./data/RepositoryImplementation.md)
 
 ### [Entrypoint layer](./app/README.md)
 
 What :app holds: the launch entrypoints and the Android resources
 
-- [Entrypoint](./app/Entrypoint.md)
+- [Activity entrypoint](./app/ActivityEntrypoint.md)
+- [Application entrypoint](./app/ApplicationEntrypoint.md)
+- [Android manifest](./app/AndroidManifest.md)
+- [Proguard rules](./app/ProguardRules.md)
 - [Android resources](./app/AndroidResource.md)
 
 ### [Testing](./testing/README.md)
@@ -43,8 +46,12 @@ What :app holds: the launch entrypoints and the Android resources
 What exists to verify the app: shared fakes, tests, the architecture definition, generated docs, the layout snapshot and the baseline
 
 - [Fake](./testing/Fake.md)
-- [Test code](./testing/Test.md)
-- [Architecture definition](./testing/ArchitectureDefinition.md)
+- [Architecture test](./testing/ProjectArchitectureTest.md)
+- [Architecture spec](./testing/ProjectArchitectureSpec.md)
+- [Definition entrypoint](./testing/DefinitionEntry.md)
+- [Definition sections](./testing/DefinitionSections.md)
+- [Group definition](./testing/GroupDefinition.md)
+- [Role definition](./testing/RoleDefinition.md)
 - [Generated documentation](./testing/GeneratedDocumentation.md)
 - [Layout snapshot](./testing/LayoutSnapshot.md)
 - [baseline (ledger of held-back violations)](./testing/BaselineFile.md)
@@ -66,7 +73,6 @@ UI shared across features: the four packages of :ui, and :navigation
 - [Shared component](./ui/Component.md) ... A part in the component package of the :ui module, used across features
 - [Theme](./ui/Theme.md) ... Colors, typography and shapes, kept in the theme package of the :ui module
 - [UI foundation](./ui/UiCore.md) ... Types that form the foundation of the UI layer, kept in the core package of the :ui module
-- [Preview](./ui/Preview.md) ... A private @Composable annotated with @Preview. Placed in the same file as its target Composable, with the body wrapped in PreviewRoot
 - [Preview base](./ui/PreviewRoot.md) ... The base every @Preview wraps its body in, kept in the preview package of :ui. Decides the theme and background in one place, and takes darkTheme to show light and dark
 - [Screen navigation](./ui/Navigation.md) ... Movement between screens, kept in :navigation
 
@@ -74,22 +80,30 @@ UI shared across features: the four packages of :ui, and :navigation
 
 What :data holds: fetching and storing data
 
-- [Repository](./data/Repository.md) ... Fetching and storing data. Interfaces and implementations sit side by side in :data, in one package per subject (user / settings)
+- [Repository interface](./data/RepositoryInterface.md) ... The interface for fetching and storing data, in :data, in one package per subject (user / settings)
+- [Repository implementation](./data/RepositoryImplementation.md) ... The implementation of a repository interface, in :data, next to the interface
 
 ## Entrypoint layer
 
 What :app holds: the launch entrypoints and the Android resources
 
-- [Entrypoint](./app/Entrypoint.md) ... The types Android touches when it launches the app, kept in :app
-- [Android resources](./app/AndroidResource.md) ... AndroidManifest.xml, res/ and proguard-rules.pro
+- [Activity entrypoint](./app/ActivityEntrypoint.md) ... The single Activity Android launches, kept in :app
+- [Application entrypoint](./app/ApplicationEntrypoint.md) ... The single Application class Android creates at process start, kept in :app
+- [Android manifest](./app/AndroidManifest.md) ... AndroidManifest.xml of :app, which declares the app to Android
+- [Proguard rules](./app/ProguardRules.md) ... proguard-rules.pro of :app, the rules the code shrinker reads
+- [Android resources](./app/AndroidResource.md) ... The res/ tree of :app, whose inner structure the Android resource system decides
 
 ## Testing
 
 What exists to verify the app: shared fakes, tests, the architecture definition, generated docs, the layout snapshot and the baseline
 
 - [Fake](./testing/Fake.md) ... A stand-in implementation kept in :testing, used by the tests of other modules
-- [Test code](./testing/Test.md) ... Tests that check the definition, kept in src/test/kotlin of :architecture-test
-- [Architecture definition](./testing/ArchitectureDefinition.md) ... The role definitions written in the katachi DSL. Belongs to no layer
+- [Architecture test](./testing/ProjectArchitectureTest.md) ... The single JUnit test that runs the definition, kept in src/test/kotlin of :architecture-test
+- [Architecture spec](./testing/ProjectArchitectureSpec.md) ... Tests that verify the definition and katachi itself, kept in src/test/kotlin of :architecture-test
+- [Definition entrypoint](./testing/DefinitionEntry.md) ... ProjectArchitecture.kt, which only calls the group functions and belongs to no layer
+- [Definition sections](./testing/DefinitionSections.md) ... DocumentSections.kt, the section headings every group and role writes through
+- [Group definition](./testing/GroupDefinition.md) ... groups/<Name>Group.kt, one group of the definition, which lists its roles by calling their functions
+- [Role definition](./testing/RoleDefinition.md) ... roles/<Name>Role.kt, one role of the definition, with where its files live
 - [Generated documentation](./testing/GeneratedDocumentation.md) ... Markdown written out from this definition and committed to the repository
 - [Layout snapshot](./testing/LayoutSnapshot.md) ... A record of every line of this definition once flattened, so people can review changes to the definition as a diff
 - [baseline (ledger of held-back violations)](./testing/BaselineFile.md) ... A ledger of the violations that already existed when katachi was adopted, held back so the test does not fail

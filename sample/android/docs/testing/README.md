@@ -4,7 +4,7 @@
 
 What exists to verify the app: shared fakes, tests, the architecture definition, generated docs, the layout snapshot and the baseline
 
-Not a layer of the app, but what exists to verify it. Six things are gathered here.
+Not a layer of the app, but what exists to verify it. Six kinds of thing are gathered here.
 Fakes are the replacement implementations in `:testing`; test code is the tests
 themselves; the architecture definition is this very definition, written in katachi's
 DSL; generated documentation is the `docs/` that `katachiDocs` writes from that
@@ -26,8 +26,8 @@ tests. Shipping test code as production code is deliberate, because `src/test` i
 visible from other modules.
 
 `:architecture-test` is, like `:app`, a module whose package cannot be derived from the
-module path. Applied as is it would be `com/example/sample/architectureTest`, so both
-definition-side roles of this group write `com/example/sample` directly.
+module path. Applied as is it would be `com/example/sample/architectureTest`, so the
+definition-side and test roles of this group write `com/example/sample` directly.
 
 Generated documentation and the snapshot are not even inside a module: they come out in
 `docs/` and `snapshots/` directly under the root. They are here as an example that
@@ -44,8 +44,12 @@ sits here with the generated files.
 | Role | Summary |
 |---|---|
 | [Fake](./Fake.md) | A stand-in implementation kept in :testing, used by the tests of other modules |
-| [Test code](./Test.md) | Tests that check the definition, kept in src/test/kotlin of :architecture-test |
-| [Architecture definition](./ArchitectureDefinition.md) | The role definitions written in the katachi DSL. Belongs to no layer |
+| [Architecture test](./ProjectArchitectureTest.md) | The single JUnit test that runs the definition, kept in src/test/kotlin of :architecture-test |
+| [Architecture spec](./ProjectArchitectureSpec.md) | Tests that verify the definition and katachi itself, kept in src/test/kotlin of :architecture-test |
+| [Definition entrypoint](./DefinitionEntry.md) | ProjectArchitecture.kt, which only calls the group functions and belongs to no layer |
+| [Definition sections](./DefinitionSections.md) | DocumentSections.kt, the section headings every group and role writes through |
+| [Group definition](./GroupDefinition.md) | groups/<Name>Group.kt, one group of the definition, which lists its roles by calling their functions |
+| [Role definition](./RoleDefinition.md) | roles/<Name>Role.kt, one role of the definition, with where its files live |
 | [Generated documentation](./GeneratedDocumentation.md) | Markdown written out from this definition and committed to the repository |
 | [Layout snapshot](./LayoutSnapshot.md) | A record of every line of this definition once flattened, so people can review changes to the definition as a diff |
 | [baseline (ledger of held-back violations)](./BaselineFile.md) | A ledger of the violations that already existed when katachi was adopted, held back so the test does not fail |
@@ -58,12 +62,12 @@ sits here with the generated files.
 
 :architecture-test
   src/test/kotlin/com/example/sample/
-    *Spec.kt                   Test code
-    *Test.kt                   Test code
-    ProjectArchitecture.kt     Architecture definition
-    DocumentSections.kt        Architecture definition
-    groups/*Group.kt           Architecture definition
-    roles/*Role.kt             Architecture definition
+    *Test.kt                   Architecture test
+    *Spec.kt                   Architecture spec
+    ProjectArchitecture.kt     Definition entrypoint
+    DocumentSections.kt        Definition sections
+    groups/*Group.kt           Group definition
+    roles/*Role.kt             Role definition
 
 docs/
   README.md                    Generated documentation

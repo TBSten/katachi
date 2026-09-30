@@ -16,6 +16,13 @@ navigation takes `viewModel()` as a default argument, collects state with
 function that takes only `UiState<HomeContent>` and callbacks, and it is what `@Preview`
 touches.
 
+A `@Preview` is a `private` `@Composable` at the end of the same file, with the body
+wrapped in `PreviewRoot { }` from `:ui`. It passes only state:
+`HomeScreenContentPreview` passes `UiState.Content(...)` and `HomeScreenLoadingPreview`
+passes `UiState.Loading`, lining up different states of the same screen. The overload
+that takes `viewModel()` is not previewed. This convention is not checked in this
+sample.
+
 ## Placement
 
 | Module | Path | When to use |
@@ -31,7 +38,7 @@ touches.
 
 - The screen layout, and switching between `Loading` / `Content` / `Error` of `UiState`
 - Shared components from `:ui` (such as `AppButton`) and calls to Material3
-- The `@Preview` for this screen (see the Preview role)
+- The `@Preview` for this screen (a `private` function in this file, wrapped in `PreviewRoot { }`)
 
 ## Forbidden contents
 

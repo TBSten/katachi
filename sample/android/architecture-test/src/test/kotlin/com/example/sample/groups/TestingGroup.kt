@@ -1,11 +1,15 @@
 package com.example.sample.groups
 
-import com.example.sample.roles.architectureDefinition
 import com.example.sample.roles.baselineFile
+import com.example.sample.roles.definitionEntry
+import com.example.sample.roles.definitionSections
 import com.example.sample.roles.fake
 import com.example.sample.roles.generatedDocumentation
+import com.example.sample.roles.groupDefinition
 import com.example.sample.roles.layoutSnapshot
-import com.example.sample.roles.test
+import com.example.sample.roles.projectArchitectureSpec
+import com.example.sample.roles.projectArchitectureTest
+import com.example.sample.roles.roleDefinition
 import me.tbsten.katachi.dsl.DeclarationContainerScope
 
 /**
@@ -15,22 +19,23 @@ import me.tbsten.katachi.dsl.DeclarationContainerScope
  *
  * The definition lives in `:architecture-test`, a module that belongs to no layer of the
  * application. It is still code someone has to maintain, so it gets a role of its own
- * rather than hiding inside `Test`: `ArchitectureDefinition` describes the shape, `Test`
- * asserts behaviour. The two share one module and are told apart by where the file sits:
+ * rather than hiding inside the test roles: the definition roles (`DefinitionEntry`,
+ * `DefinitionSections`, `GroupDefinition`, `RoleDefinition`) describe the shape,
+ * `ProjectArchitectureTest` and `ProjectArchitectureSpec` assert behaviour. The two share one module and are told apart by where the file sits:
  * the definition is `ProjectArchitecture.kt` plus the `Group.kt` and `Role.kt` files of the
  * `groups` and `roles` packages, and everything `*Spec.kt` or `*Test.kt` at the top of the
  * package is a test.
  *
  * `:architecture-test` is also the second module whose package does not follow its module
- * path — it would come out as `com/example/sample/architectureTest` — so the two roles
- * write `com/example/sample` out as a key. `:testing` does follow it and uses
+ * path — it would come out as `com/example/sample/architectureTest` — so the roles
+ * of this module write `com/example/sample` out as a key. `:testing` does follow it and uses
  * `modulePackage`, which is what makes the difference visible side by side.
  */
 fun DeclarationContainerScope.testingGroup() = "testing".group {
     title = "Testing"
     summary = "What exists to verify the app: shared fakes, tests, the architecture definition, generated docs, the layout snapshot and the baseline"
     description = """
-        Not a layer of the app, but what exists to verify it. Six things are gathered here.
+        Not a layer of the app, but what exists to verify it. Six kinds of thing are gathered here.
         Fakes are the replacement implementations in `:testing`; test code is the tests
         themselves; the architecture definition is this very definition, written in katachi's
         DSL; generated documentation is the `docs/` that `katachiDocs` writes from that
@@ -52,8 +57,8 @@ fun DeclarationContainerScope.testingGroup() = "testing".group {
         visible from other modules.
 
         `:architecture-test` is, like `:app`, a module whose package cannot be derived from the
-        module path. Applied as is it would be `com/example/sample/architectureTest`, so both
-        definition-side roles of this group write `com/example/sample` directly.
+        module path. Applied as is it would be `com/example/sample/architectureTest`, so the
+        definition-side and test roles of this group write `com/example/sample` directly.
 
         Generated documentation and the snapshot are not even inside a module: they come out in
         `docs/` and `snapshots/` directly under the root. They are here as an example that
@@ -69,8 +74,12 @@ fun DeclarationContainerScope.testingGroup() = "testing".group {
     """.trimIndent()
 
     fake()
-    test()
-    architectureDefinition()
+    projectArchitectureTest()
+    projectArchitectureSpec()
+    definitionEntry()
+    definitionSections()
+    groupDefinition()
+    roleDefinition()
     generatedDocumentation()
     layoutSnapshot()
     baselineFile()
