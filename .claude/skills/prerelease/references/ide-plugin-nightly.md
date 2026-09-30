@@ -53,7 +53,37 @@ python3 .claude/skills/prerelease/scripts/run-ide-plugin-e2e.py --release-dir .l
   手で消す
 - 結果は `ide-plugin-e2e.md`、ログは `tmp/ide-plugin-e2e/`
 
+## 10-3. 配る zip（Release に添付するもの）
+
+v0.2.0 から、IDE プラグインは実験的として katachi のリリースに同梱して配る。**プラグインの版は katachi とは別**
+（ルートの `gradle/libs.versions.toml` の `katachiIntellij`。以下 `<IDE の版>`）。JetBrains Marketplace には出さず、publish.yml が
+Release の published で `buildPlugin` し、`gh release upload` で `katachi-intellij-plugin-<IDE の版>.zip` を添付する。利用者は
+Settings > Plugins > ⚙ > Install Plugin from Disk… で入れる。その zip の中身を、リリースの前に確かめる。
+
+```shell
+cd katachi-intellij-plugin
+./gradlew --no-daemon --console=plain --project-cache-dir ../.local/tmp/gradle-cache/prerelease-zip buildPlugin
+unzip -l build/distributions/katachi-intellij-plugin-<IDE の版>.zip
+unzip -p build/distributions/katachi-intellij-plugin-<IDE の版>.zip 'katachi-intellij-plugin/lib/katachi-intellij-plugin-<IDE の版>.jar' > ../.local/release-v<版>/tmp/ide-plugin.jar
+unzip -p ../.local/release-v<版>/tmp/ide-plugin.jar META-INF/plugin.xml
+```
+
+確かめること:
+
+- zip のファイル名が `katachi-intellij-plugin-<IDE の版>.zip` で、publish.yml が添付しようとする名前（`zip=` の行）と一致する。
+  リリースノートの IDE プラグインの badge も、この名前とこの版を指す
+- `plugin.xml` の `<version>` が `<IDE の版>`（`katachiIntellij`）
+- 説明文（`<description>`）の先頭が Experimental で、要る katachi の版（今回の katachi の版）と、zip で配ることが書かれている。
+  `<change-notes>` の見出しが `<IDE の版>` で、中身が今回の変更になっている。**どちらも版を直書きしているので、版を上げたときに古いまま残りやすい**
+- `katachiIntellij` を上げ忘れていないか（プラグインに変更があるのに前のリリースと同じ版なら警告）
+- `<idea-version since-build="261">` のとおりで、`until-build` が無い（上限なしは利用者の決定）
+- 手で入れて動かす確認（Install Plugin from Disk… からサンプルの写しで生成まで）は、10-2 の E2E が build のプラグインで
+  同じ画面を通すので必須にはしない。zip の作り方（publish.yml・`buildPlugin` の設定）を変えた版では、手で一度入れる
+
+食い違いは priority 8 の警告（利用者が入れたプラグインの版や説明が違う。エラーからは気づけるので 9 ではない）。
+結果は `ide-plugin-zip.md` に書く。
+
 ## 共通
 
 - 1つでも落ちたら priority 10 の警告にする（8・9-1 と同じ扱い。リリースしてはいけない状態）
-- prerelease-check-list.md には、10-1 は通った/落ちたとシード・scale を、10-2 は通った/落ちたを書く
+- prerelease-check-list.md には、10-1 は通った/落ちたとシード・scale を、10-2 は通った/落ちたを、10-3 は zip の名前と plugin.xml の版を書く

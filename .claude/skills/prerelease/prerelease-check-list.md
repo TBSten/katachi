@@ -113,6 +113,8 @@
 - [ ] 10-1 結果: {TODO file://.local/release-v0.0.0/ide-plugin-nightly.md の絶対パス}
 - [ ] 10-2 通った: {TODO}（`run-ide-plugin-e2e.py`）
 - [ ] 10-2 結果: {TODO file://.local/release-v0.0.0/ide-plugin-e2e.md の絶対パス}
+- [ ] 10-3 zip の名前と plugin.xml の版・説明文・change-notes が今回の版: {TODO}
+- [ ] 10-3 結果: {TODO file://.local/release-v0.0.0/ide-plugin-zip.md の絶対パス}
 
 <details>
     <summary>memo</summary>

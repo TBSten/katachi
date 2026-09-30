@@ -69,6 +69,7 @@ flowchart LR
 | `ci-checks.md`                   | 8        |
 | `ide-plugin-nightly.md`          | 10-1     |
 | `ide-plugin-e2e.md`              | 10-2     |
+| `ide-plugin-zip.md`              | 10-3     |
 | `install-kit.md`                 | 9-1      |
 | `install-e2e.md`                 | 9-2      |
 | `TODO.html`                      | 途中から・オーケストレータ（利用者がやること・決めることだけ） |
@@ -99,6 +100,7 @@ flowchart LR
 ## 4. リリースノート作成
 
 `release-note-material.py` で直前のタグからのコミットを材料に出し（`tmp/` へ）、利用者への影響を中心に `release-note.md` を書く。
+**英語で書き**（GitHub Releases にそのまま貼る）、タイトルの直下に版を固定した badge を並べ、新機能の詳細・移行表・Also は `<details>` に畳む。
 詳細: [references/release-note.md](references/release-note.md)
 
 ## 5. 実際の実装・挙動 と ドキュメント に不整合がないかチェック
@@ -128,6 +130,10 @@ priority 10 の警告。結果は `ci-checks.md`、ログは `tmp/ci-checks/`。
   まま忘れられがちなので、ここで必ず一度は通す。実 IDE のウィンドウを開くので、ディスプレイのあるセッションが要る。
   オーケストレータが自分で走らせてよい。落ちたら priority 10 の警告。結果は `ide-plugin-e2e.md`、ログは
   `tmp/ide-plugin-e2e/`。
+- 10-3: 配る zip を確かめる。IDE プラグインは Marketplace に出さず、Release に添付する `katachi-intellij-plugin-<IDE の版>.zip` で配る
+  （実験的。プラグインの版は katachi と別で、catalog の `katachiIntellij`）。`buildPlugin` で作った zip の `plugin.xml` の版・説明文・
+  change-notes が合っているか、publish.yml が添付する名前と合っているかを見る。説明文と change-notes の版は直書きなので、版を上げるたびに古いまま残りやすい。
+  食い違いは priority 8 の警告。結果は `ide-plugin-zip.md`。
 
 詳細: [references/ide-plugin-nightly.md](references/ide-plugin-nightly.md)
 
