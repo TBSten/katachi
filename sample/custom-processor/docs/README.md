@@ -16,7 +16,10 @@ A small app that only reads notes and lists them. What the processors read
 
 The katachi definition, the three processors of your own that read it, and the generated documentation
 
-- [Architecture definition](./testing/ArchitectureDefinition.md)
+- [Architecture entry](./testing/ArchitectureEntry.md)
+- [Group definition](./testing/GroupDefinition.md)
+- [Role definition](./testing/RoleDefinition.md)
+- [Architecture test](./testing/ArchitectureTest.md)
 - [Processor](./testing/Processor.md)
 - [Generated documentation](./testing/GeneratedDocumentation.md)
 - [Layout snapshot](./testing/LayoutSnapshot.md)
@@ -33,7 +36,10 @@ A small app that only reads notes and lists them. What the processors read
 
 The katachi definition, the three processors of your own that read it, and the generated documentation
 
-- [Architecture definition](./testing/ArchitectureDefinition.md) ... Role definitions written in the katachi DSL, and the tests that assert them
+- [Architecture entry](./testing/ArchitectureEntry.md) ... The entry point of the katachi definition, and the section definitions shared by its groups and roles
+- [Group definition](./testing/GroupDefinition.md) ... One group of the katachi definition, declared in `groups/<Name>Group.kt`
+- [Role definition](./testing/RoleDefinition.md) ... One role of the katachi definition, declared in `roles/<Name>Role.kt`
+- [Architecture test](./testing/ArchitectureTest.md) ... The tests that check the project against the definition and exercise the processors
 - [Processor](./testing/Processor.md) ... The ArchitectureProcessor implementations this project wrote itself. They read the definition and produce something
 - [Generated documentation](./testing/GeneratedDocumentation.md) ... Markdown written out of this definition and committed to the repository
 - [Layout snapshot](./testing/LayoutSnapshot.md) ... Text recording the flattened result of `layout { }`, for katachi's own self-verification

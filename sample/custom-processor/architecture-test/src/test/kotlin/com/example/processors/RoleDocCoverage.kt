@@ -8,6 +8,7 @@ import me.tbsten.katachi.dsl.Examples
 import me.tbsten.katachi.dsl.Summary
 import me.tbsten.katachi.processor.ArchitectureProcessNoArgContext
 import me.tbsten.katachi.processor.ArchitectureProcessorNoArg
+import me.tbsten.katachi.util.runCatchingScoped
 
 /**
  * A check of the definition itself: every role that reaches the generated documentation has to
@@ -15,18 +16,17 @@ import me.tbsten.katachi.processor.ArchitectureProcessorNoArg
  *
  * The third of the three shapes, and the one that is worth reading twice. It is a check, but it
  * does not answer with `List<Violation>` -- its answer is a [Report], a type of its own, because
- * what it found is two numbers and a list of reasons rather than a list of file paths.
+ * what it found is a count rather than a list of file paths.
  *
- * ## Why it throws inside `runCatching` rather than answering a [Report] that says "missing"
+ * ## Why it uses `runCatchingScoped` rather than answering a [Report] that says "missing"
  *
- * A `katachi<Key>` task never learns the shape of a result. A [Report] whose [Report.missing] is
- * not empty and one whose list is empty look the same to it, so it cannot decide on its own
- * whether a run passed. What it does read is the [Result]: `success` is `[OK]`, `failure` is
- * `[FAILED]` and a non-zero exit. So the body runs inside `runCatching`, a clean definition
- * ends it with the report, and one with gaps throws `IncompleteDocumentation(report)` there --
- * the same [Report], carried on the exception so a test can still read it. Answering `success`
- * either way would make this processor report `[OK]` and exit zero while holding the problems
- * it had just found.
+ * A `katachi<Key>` task never learns the shape of a result. What it reads is the [Result]:
+ * `success` is `[OK]`, `failure` is `[FAILED]` and a non-zero exit. So a gap has to be a
+ * `failure`, and a gap should not stop the walk at the first role that has one.
+ * `runCatchingScoped` does both: `failure(...)` records a gap and carries on, and when the block
+ * ends the run is a `failure` holding every gap as a suppressed exception of a
+ * `KatachiMultipleFailuresException`. `throw(...)` is for the other kind of problem, the one that
+ * makes the rest meaningless -- a definition with no documented role at all.
  *
  * ## Which roles it looks at
  *
@@ -36,16 +36,14 @@ import me.tbsten.katachi.processor.ArchitectureProcessorNoArg
  * is this processor's own: katachi keeps what was written, and what combining two values means
  * is a decision only the reader can make.
  *
- * ## Example 1: run it from a test and read what it found, pass or fail
+ * ## Example 1: read every gap at once, not only the first
  * ```kt
- * val result = projectArchitecture.process(RoleDocCoverage)
- * val report = result.getOrNull()
- *     ?: (result.exceptionOrNull() as? RoleDocCoverage.IncompleteDocumentation)?.report
- * report?.missing shouldBe emptyList()
+ * val failure = projectArchitecture.process(RoleDocCoverage).exceptionOrNull()
+ * failure?.suppressed?.map { it.message } shouldBe emptyList()
  * ```
  */
 object RoleDocCoverage : ArchitectureProcessorNoArg<RoleDocCoverage.Report> {
-    override fun process(context: ArchitectureProcessNoArgContext): Result<Report> = runCatching {
+    override fun process(context: ArchitectureProcessNoArgContext): Result<Report> = runCatchingScoped {
         // A group that opted out takes its roles with it, so the silent group names are
         // collected first and every prefix of a role's group path is checked against them.
         val silentGroups = context.groups
@@ -64,55 +62,28 @@ object RoleDocCoverage : ArchitectureProcessorNoArg<RoleDocCoverage.Report> {
                 "(${context.roles.size - documented.size} roles that do not reach the documentation are skipped)",
         )
 
-        val missing = documented.flatMap { role ->
-            buildList {
-                if (role[Summary].isNullOrBlank()) {
-                    add(Missing(role = role.qualifiedName, reason = "no summary"))
-                }
-                if (role[Examples].orEmpty().isEmpty()) {
-                    add(Missing(role = role.qualifiedName, reason = "no example"))
-                }
+        if (documented.isEmpty()) `throw`(IllegalStateException("no documented roles"))
+
+        for (role in documented) {
+            if (role[Summary].isNullOrBlank()) {
+                failure(IllegalStateException("${role.qualifiedName}: no summary"))
+            }
+            if (role[Examples].orEmpty().isEmpty()) {
+                failure(IllegalStateException("${role.qualifiedName}: no example"))
             }
         }
 
-        val report = Report(checked = documented.size, missing = missing)
-        if (missing.isNotEmpty()) throw IncompleteDocumentation(report)
-        report
+        Report(checked = documented.size)
     }
 
     /**
-     * The answer "not every role is documented", with the [Report] that says which.
+     * What [RoleDocCoverage] found when nothing was missing: how many roles it looked at.
      *
-     * An [AssertionError] so that `getOrThrow()` in a test reads as a failed assertion, and its
-     * message is [Report.toString] because that is what `katachiRoleDocCoverage` prints under
-     * `[FAILED]`.
+     * `toString()` is written out because `katachiRoleDocCoverage` prints it through the result on
+     * `[OK]`, and the generated `toString()` of a data class is the one line a reader least wants
+     * at the end of a run.
      */
-    class IncompleteDocumentation(val report: Report) : AssertionError(report.toString())
-
-    /**
-     * What [RoleDocCoverage] found: how many roles it looked at, and everything that was missing.
-     *
-     * `toString()` is written out because `katachiRoleDocCoverage` prints it -- through the result on
-     * `[OK]`, through [IncompleteDocumentation]'s message on `[FAILED]` -- and the generated
-     * `toString()` of a data class is the one line a reader least wants at the end of a run.
-     */
-    data class Report(
-        val checked: Int,
-        val missing: List<Missing>,
-    ) {
-        override fun toString(): String = buildString {
-            if (missing.isEmpty()) {
-                append("All $checked roles have a summary and an example")
-                return@buildString
-            }
-            append("Of $checked roles, the following are missing something")
-            missing.forEach { append("\n  - ${it.role}: ${it.reason}") }
-        }
+    data class Report(val checked: Int) {
+        override fun toString(): String = "All $checked roles have a summary and an example"
     }
-
-    /** One thing a role did not write, and which role did not write it. */
-    data class Missing(
-        val role: String,
-        val reason: String,
-    )
 }

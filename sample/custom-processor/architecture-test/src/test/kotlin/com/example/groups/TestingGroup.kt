@@ -1,7 +1,10 @@
 package com.example.groups
 
 import com.example.forbiddenContents
-import com.example.roles.architectureDefinition
+import com.example.roles.architectureEntry
+import com.example.roles.architectureTest
+import com.example.roles.groupDefinition
+import com.example.roles.roleDefinition
 import com.example.roles.generatedDocumentation
 import com.example.roles.layoutSnapshot
 import com.example.roles.processor
@@ -26,7 +29,7 @@ fun DeclarationContainerScope.testingGroup() = "testing".group {
         The roles are separate because they read in different directions. The architecture definition
         describes a shape, a processor reads that shape and produces something, and the generated
         documentation and the layout snapshot are what was written out. If `processors/` were included
-        in the definition role, what this sample wants to show would vanish from both `docs/` and the
+        in a definition role, what this sample wants to show would vanish from both `docs/` and the
         output of `RoleFileCount`.
 
         The three processors each take one shape: no arguments, typed arguments, and a check (failing
@@ -42,7 +45,10 @@ fun DeclarationContainerScope.testingGroup() = "testing".group {
         source set.
     """.trimIndent()
 
-    architectureDefinition()
+    architectureEntry()
+    groupDefinition()
+    roleDefinition()
+    architectureTest()
     processor()
     generatedDocumentation()
     layoutSnapshot()

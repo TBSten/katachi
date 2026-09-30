@@ -12,6 +12,7 @@ import me.tbsten.katachi.ExperimentalKatachiApi
 import me.tbsten.katachi.dsl.architecture
 import me.tbsten.katachi.processor.decodeFromStringMap
 import me.tbsten.katachi.processor.process
+import me.tbsten.katachi.util.KatachiMultipleFailuresException
 
 /**
  * The three processors of this sample, called the way a user calls them from a test.
@@ -79,13 +80,12 @@ class CustomProcessorSpec : FreeSpec({
     }
 
     "the checking processor finds no problem in this definition and returns success" {
-        // If getOrThrow() throws, the list of roles with gaps becomes the failure message as it is.
+        // If getOrThrow() throws, every gap is a suppressed exception of the failure.
         val report = projectArchitecture.process(RoleDocCoverage).getOrThrow()
 
         withClue(report.toString()) {
-            report.missing shouldBe emptyList()
-            // Only the 7 roles of `core` and `testing` are checked. `Gradle` and `tool` are documented = false.
-            report.checked shouldBe 7
+            // Only the 10 roles of `core` and `testing` are checked. `Gradle` and `tool` are documented = false.
+            report.checked shouldBe 10
         }
     }
 
@@ -105,20 +105,23 @@ class CustomProcessorSpec : FreeSpec({
         }
 
         // A `success` here would make the run print `[OK]` and exit zero while holding the
-        // two problems below -- a check that can never fail.
+        // two problems below -- a check that can never fail. Both are reported, not only the first.
         val failure = broken.process(RoleDocCoverage).exceptionOrNull()
-            .shouldBeInstanceOf<RoleDocCoverage.IncompleteDocumentation>()
-        val report = failure.report
+            .shouldBeInstanceOf<KatachiMultipleFailuresException>()
 
-        withClue(report.toString()) {
-            report.checked shouldBe 2
-            report.missing shouldBe listOf(
-                RoleDocCoverage.Missing(role = "core.Blank", reason = "no summary"),
-                RoleDocCoverage.Missing(role = "core.Blank", reason = "no example"),
-            )
-            // A `katachi<Key>` task prints the message under `[FAILED]`, so it is the report.
-            failure.message shouldBe report.toString()
-        }
+        failure.suppressed.map { it.message } shouldBe listOf(
+            "core.Blank: no summary",
+            "core.Blank: no example",
+        )
+    }
+
+    "a definition with no documented role stops the check at once" {
+        val empty = architecture { }
+
+        val failure = empty.process(RoleDocCoverage).exceptionOrNull()
+            .shouldBeInstanceOf<IllegalStateException>()
+
+        failure.message shouldBe "no documented roles"
     }
 
     "roles in a group with documented = false are left out of the checking processor" {
@@ -131,11 +134,10 @@ class CustomProcessorSpec : FreeSpec({
             }
         }
 
-        val report = silent.process(RoleDocCoverage).getOrThrow()
+        // Nothing is documented, so the check has nothing to read and says so.
+        val failure = silent.process(RoleDocCoverage).exceptionOrNull()
+            .shouldBeInstanceOf<IllegalStateException>()
 
-        withClue(report.toString()) {
-            report.checked shouldBe 0
-            report.missing shouldBe emptyList()
-        }
+        failure.message shouldBe "no documented roles"
     }
 })

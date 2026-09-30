@@ -10,7 +10,7 @@ rather than a layer of the application.
 The roles are separate because they read in different directions. The architecture definition
 describes a shape, a processor reads that shape and produces something, and the generated
 documentation and the layout snapshot are what was written out. If `processors/` were included
-in the definition role, what this sample wants to show would vanish from both `docs/` and the
+in a definition role, what this sample wants to show would vanish from both `docs/` and the
 output of `RoleFileCount`.
 
 The three processors each take one shape: no arguments, typed arguments, and a check (failing
@@ -22,7 +22,10 @@ in how they are updated and in who is troubled when one is deleted.
 
 | Role | Summary |
 |---|---|
-| [Architecture definition](./ArchitectureDefinition.md) | Role definitions written in the katachi DSL, and the tests that assert them |
+| [Architecture entry](./ArchitectureEntry.md) | The entry point of the katachi definition, and the section definitions shared by its groups and roles |
+| [Group definition](./GroupDefinition.md) | One group of the katachi definition, declared in `groups/<Name>Group.kt` |
+| [Role definition](./RoleDefinition.md) | One role of the katachi definition, declared in `roles/<Name>Role.kt` |
+| [Architecture test](./ArchitectureTest.md) | The tests that check the project against the definition and exercise the processors |
 | [Processor](./Processor.md) | The ArchitectureProcessor implementations this project wrote itself. They read the definition and produce something |
 | [Generated documentation](./GeneratedDocumentation.md) | Markdown written out of this definition and committed to the repository |
 | [Layout snapshot](./LayoutSnapshot.md) | Text recording the flattened result of `layout { }`, for katachi's own self-verification |
@@ -32,12 +35,12 @@ in how they are updated and in who is troubled when one is deleted.
 ```
 :architecture-test
   src/test/kotlin/com/example/
-    ProjectArchitecture.kt      Architecture definition
-    DocumentSections.kt         Architecture definition
-    ProjectArchitectureTest.kt  Architecture definition
-    *Spec.kt                    Architecture definition
-    groups/*.kt                 Architecture definition
-    roles/*.kt                  Architecture definition
+    ProjectArchitecture.kt      Architecture entry
+    DocumentSections.kt         Architecture entry
+    groups/*Group.kt            Group definition
+    roles/*Role.kt              Role definition
+    ProjectArchitectureTest.kt  Architecture test
+    *Spec.kt                    Architecture test
     processors/*.kt             Processor
 
 docs/
