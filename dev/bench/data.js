@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1790811710113,
+  "lastUpdate": 1790811711795,
   "repoUrl": "https://github.com/TBSten/katachi",
   "entries": {
     "JMH time": [
@@ -414,6 +414,56 @@ window.BENCHMARK_DATA = {
             "range": "± 163212",
             "unit": "B/op",
             "extra": "mode: ss\nforks: 5"
+          }
+        ]
+      }
+    ],
+    "Real project (nowinandroid)": [
+      {
+        "commit": {
+          "author": {
+            "email": "programmingcafeteria@gmail.com",
+            "name": "tbsten",
+            "username": "TBSten"
+          },
+          "committer": {
+            "email": "programmingcafeteria@gmail.com",
+            "name": "tbsten",
+            "username": "TBSten"
+          },
+          "distinct": true,
+          "id": "2c41ea67c4a43d81f73c5b84ffb8c76ac43c4ca1",
+          "message": "ci(ide-plugin): verifyPreview の「is cut」に寸法を添え、失敗時にプレビューの PNG を全部残す\n\nCI の macOS で初めて ide-plugin ジョブが動き、ダイアログのプレビューのゲートが「生成 is cut」で\n76 件落ちた。手元の macOS では JVM の言語を変えても通るので、runner のフォントの寸法の差と見ているが、\nCI で描かれた PNG が無く確かめられない。失敗の文言にテキストと枠の寸法・行数・フォントを出し、\n失敗時の成果物に build/preview を丸ごと入れる（ゲートで落ちると before/after の report は作られない）。\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_01V1S8xW78Ggb5XF8aU7Ynr3",
+          "timestamp": "2026-10-01T08:26:05+09:00",
+          "tree_id": "5f111c582a324c006d5b8c607dc182c41a885cab",
+          "url": "https://github.com/TBSten/katachi/commit/2c41ea67c4a43d81f73c5b84ffb8c76ac43c4ca1"
+        },
+        "date": 1790811711439,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "nowinandroid validate() cold",
+            "value": 326.791072,
+            "unit": "ms",
+            "extra": "violations: 106 (layout) / 102 (with Konsist)\nUnexpectedFile: 81, UnexpectedDirectory: 16, MissingDescription: 5, UncheckedFileConstraint: 4\nwarmups: 5, iterations: 15"
+          },
+          {
+            "name": "nowinandroid validate() warm median",
+            "value": 59.163387,
+            "unit": "ms",
+            "extra": "violations: 106 (layout) / 102 (with Konsist)\nUnexpectedFile: 81, UnexpectedDirectory: 16, MissingDescription: 5, UncheckedFileConstraint: 4\nwarmups: 5, iterations: 15"
+          },
+          {
+            "name": "nowinandroid validate(FileConstraintCheck()) cold",
+            "value": 1321.537555,
+            "unit": "ms",
+            "extra": "violations: 106 (layout) / 102 (with Konsist)\nUnexpectedFile: 81, UnexpectedDirectory: 16, MissingDescription: 5, UncheckedFileConstraint: 4\nwarmups: 5, iterations: 15"
+          },
+          {
+            "name": "nowinandroid validate(FileConstraintCheck()) warm median",
+            "value": 59.597267,
+            "unit": "ms",
+            "extra": "violations: 106 (layout) / 102 (with Konsist)\nUnexpectedFile: 81, UnexpectedDirectory: 16, MissingDescription: 5, UncheckedFileConstraint: 4\nwarmups: 5, iterations: 15"
           }
         ]
       }
