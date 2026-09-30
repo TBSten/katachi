@@ -20,6 +20,8 @@
 #        実行され、足したファイルが Unexpected として出れば OK（入力にファイルの並びが効いている）
 #   4. <release-dir>/install-kit.md に結果の表を書く。fixture は <release-dir>/tmp/install-kit/fixtures/、
 #      ログは <release-dir>/tmp/install-kit/logs/（作業場所の直下には人が読む成果物だけを置く）
+#      --lang en や --only を付けた実行は、install-kit-en.md / install-kit-only-<fixture>.md のように名前に付けて別に残す
+#      （ja で全 fixture の結果を上書きしないため）
 #
 # 終了コード: 全部 OK なら 0、1つでも NG なら 1、引数の誤りは 2。
 #
@@ -35,7 +37,7 @@ set -u
 usage() {
 	cat <<'EOF'
 使い方: sh check-install-kit.sh --release-dir .local/release-v<版> [--only <fixture>,...] [--skip-publish] [--lang <ja|en>]
-  --release-dir   作業場所（結果は <dir>/install-kit.md、fixture とログは <dir>/tmp/install-kit/）
+  --release-dir   作業場所（結果は <dir>/install-kit.md、fixture とログは <dir>/tmp/install-kit/。--lang en / --only の実行は名前に付けて別に残す）
   --only          指定した fixture だけ走らせる（カンマ区切り）
   --skip-publish  publishToMavenLocal を飛ばす（直前に publish 済みのとき）
   --lang          init に渡す言語（既定 ja）。en のときは init / scaffold の出力に日本語が残っていないかも見る
@@ -66,9 +68,16 @@ case "${RELEASE_DIR}" in
 esac
 SCRIPTS="${REPO}/.claude/skills/prerelease/scripts"
 KIT="${REPO}/docs/public/install/katachi-install.sh"
-WORK="${RELEASE_DIR}/tmp/install-kit"
+# 既定（ja で全 fixture）以外の実行は、名前に言語と --only を含める。再実行が全件の結果を上書きしないように。
+SUFFIX=""
+[ "${LANG_ARG}" = "ja" ] || SUFFIX="${SUFFIX}-${LANG_ARG}"
+if [ -n "${ONLY}" ]; then
+	ONLY_TAG=`echo "${ONLY}" | tr ',' '-'`
+	SUFFIX="${SUFFIX}-only-${ONLY_TAG}"
+fi
+WORK="${RELEASE_DIR}/tmp/install-kit${SUFFIX}"
 LOGS="${WORK}/logs"
-RESULT="${RELEASE_DIR}/install-kit.md"
+RESULT="${RELEASE_DIR}/install-kit${SUFFIX}.md"
 GRADLE_CACHE="${REPO}/.local/tmp/gradle-cache/prerelease-install"
 
 toml_value() { # $1 = キー, $2 = toml

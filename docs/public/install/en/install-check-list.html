@@ -355,7 +355,7 @@
   .progress-warn { color: var(--warn); }
 
 
-  /* 任意のステップ — 必須と同じ見た目にすると、やらなかっただけで未完了に見える */
+  /* Optional steps: styled like the required ones, they would look unfinished just for not being done */
   .step.is-optional .step-num { border-style: dashed; color: var(--text-muted); }
   .step.is-optional .step-title { color: var(--text-muted); }
   .step.is-optional::before { border-left: 2px dashed var(--border); background: none; width: 0; }
@@ -616,7 +616,7 @@
     "jvmToolchain": null,
     "git": null
   },
-  "reportHref": "./project-code-base-report.html",
+  "reportHref": "./project-code-base-report-template.html",
   "steps": [
     {
       "id": "0",
@@ -776,7 +776,7 @@
     "jvmToolchain": "17 (from ../app/build.gradle.kts)",
     "git": "yes"
   },
-  "reportHref": "./project-code-base-report.html",
+  "reportHref": "./project-code-base-report-template.html",
   "steps": [
     {
       "id": "0",
@@ -963,7 +963,7 @@
     </p>
     <div data-render="error"></div>
 
-    <a class="cross-link" id="cross-link" href="./project-code-base-report.html" hidden>
+    <a class="cross-link" id="cross-link" href="./project-code-base-report-template.html" hidden>
       <span class="cross-link-label">Codebase report</span>
       <span class="cross-link-hint">Analysis of this project</span>
     </a>
@@ -977,7 +977,7 @@
     <div class="progress-row">
       <span id="progress-text"></span>
       <span class="progress-actions">
-        <a id="report-link" href="./project-code-base-report.html">View report</a>
+        <a id="report-link" href="./project-code-base-report-template.html">View report</a>
         <button type="button" class="link-button" id="toggle-all">Expand all</button>
       </span>
     </div>
@@ -1256,7 +1256,7 @@
       var nodes = boxesIn(step);
       var done = checkedIn(nodes);
       var complete = nodes.length > 0 && done === nodes.length;
-      // 任意のステップは、手を付けていなければ畳んでおく
+      // Optional steps stay collapsed until you start them
       if (optional(step) && done === 0) { step.open = false; return; }
       step.open = !complete || warned(step);
     });

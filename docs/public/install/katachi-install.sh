@@ -61,7 +61,7 @@ KATACHI_MIN_MAJOR="0"
 KATACHI_MIN_MINOR="2"
 KATACHI_PLUGIN_ID="me.tbsten.katachi"
 
-JUNIT_VERSION="5.13.4"
+JUNIT_VERSION="5.14.4"
 
 MODULE_DIR="architecture-test"
 
@@ -140,7 +140,8 @@ katachi-install.sh — katachi のインストールのうち機械的にでき�
       最後に KEY=VALUE 形式で結果を出力する（後続のステップがこれを読む）。
 
       --workdir <path>    作業用ディレクトリを明示する（既定: 自動判定）
-      --katachi <version> katachi のバージョンを明示する（既定: 最新を取得）
+      --katachi <version> katachi のバージョンを明示する（既定: GitHub の最新リリース。やり直しでは
+                          前回の init が記録した版を使い続ける）
       --offline           ダウンロードを行わない
       --force             記入済みのチェックリスト・レポートも取り直す
       --lang <en|ja>      チェックリスト・レポート・このスクリプトの出力の言語（既定: en）。
@@ -160,7 +161,7 @@ katachi-install.sh — katachi のインストールのうち機械的にでき�
 
       --package <pkg>     アプリのパッケージ名（必須）
       --katachi <version> katachi のバージョン（既定: init が記録した版。
-                          無ければ最新を取得）
+                          無ければ GitHub の最新リリース）
       --kotlin <version>  Kotlin のバージョン（既定: プロジェクトから検出）
       --no-konsist        katachi-konsist を使わない構成で生成する
       --force             既存の architecture-test/ を上書きする
@@ -209,7 +210,7 @@ katachi-install.sh — katachi のインストールのうち機械的にでき�
 
   sh katachi-install.sh lint
       定義（architecture-test/src/test/kotlin）を読み、種類の違うファイルを1つの
-      役割に抱えていそうなものを列挙する。check 3-2 / check 3-3 でも自動で走る。
+      Role に抱えていそうなものを列挙する。check 3-2 / check 3-3 でも自動で走る。
       素朴なテキスト走査なので誤検知があり得る。失敗にはしない（常に 0 を返す）。
 
   sh katachi-install.sh compare-violations [<前のログ> <後のログ>]
@@ -260,7 +261,8 @@ Usage:
       Prints the result as KEY=VALUE lines at the end (the later steps read them).
 
       --workdir <path>    Use this working directory (default: chosen automatically)
-      --katachi <version> Use this katachi version (default: the latest release)
+      --katachi <version> Use this katachi version (default: the latest GitHub release; on a rerun,
+                          the version the previous init recorded)
       --offline           Do not download anything
       --force             Fetch the check list and the report again, even if filled in
       --lang <en|ja>      Language of the check list, the report and this script's
@@ -329,7 +331,7 @@ Usage:
       yellow and stays open even when it is done.
 
   sh katachi-install.sh lint
-      Reads the definition (architecture-test/src/test/kotlin) and lists roles that
+      Reads the definition (architecture-test/src/test/kotlin) and lists Roles that
       seem to hold files of different kinds. Also runs on check 3-2 / check 3-3.
       It is a plain text scan, so false positives are possible. Never fails (always returns 0).
 
@@ -555,7 +557,26 @@ fetch_once() {
 	fi
 	mkdir -p "${2%/*}"
 	download "$1" "$2"
+	relink_fetched_page "$2"
 	record_fetch "$1" "$2"
+}
+
+# 配信サイトの HTML は、互いを配信上のファイル名（install-check-list.html /
+# project-code-base-report-template.html）でリンクする。作業用ディレクトリでは
+# check-list.html / project-code-base-report.html という名前で置くので、置き直す。
+relink_fetched_page() {
+	case "$1" in
+	*.html) ;;
+	*) return 0 ;;
+	esac
+	_rl_tmp="$1.relink.$$"
+	if sed -e 's#"\./install-check-list\.html"#"./check-list.html"#g' \
+		-e 's#"\./project-code-base-report-template\.html"#"./project-code-base-report.html"#g' \
+		"$1" >"$_rl_tmp"; then
+		mv "$_rl_tmp" "$1"
+	else
+		rm -f "$_rl_tmp"
+	fi
 }
 
 # Gradle のルートにいることを確かめ、settings ファイル名を SETTINGS_FILE に入れる。
@@ -1856,12 +1877,18 @@ catalog_kotlin_accessors_joined() {
 #
 # 行コメントは `//` の前が `:` でないものだけ落とす。`uri("https://...")` の `//` から先を
 # 消すと閉じ括弧 `}` も消え、括弧の深さがずれて後ろの plugins { } を見落とす。
+# 文字列の中の `{` `}` も同じ理由で数えない。
 root_plugin_blocks() {
 	sed -E 's#(^|[^:])//.*#\1#' "$1" | awk '
 		!inblk && depth == 0 && /^[[:space:]]*(plugins|buildscript)[[:space:]]*\{/ { inblk = 1 }
 		{
 			line = $0
 			if (inblk) print line
+			# 括弧の数え方から、文字列・文字リテラル・1行のブロックコメントの中身は外す。
+			# `val s = "{"` のような行が plugins { } より前にあると、深さがずれて見落とす。
+			gsub(/\/\*[^*]*\*\//, "", line)
+			gsub(/"([^"\\]|\\.)*"/, "", line)
+			gsub(/'"'"'([^'"'"'\\]|\\.)'"'"'/, "", line)
 			opened = gsub(/\{/, "{", line)
 			closed = gsub(/\}/, "}", line)
 			depth += opened - closed
@@ -2501,24 +2528,24 @@ cmd_docs() {
 	printf '%s\n' "$_dest"
 }
 
-# ---------------------------------------------------------------- 役割の点検
+# ---------------------------------------------------------------- Role の点検
 
-# 定義のソースを読み、種類の違うファイルを1つの役割に抱えていそうなものを列挙する。
-# 「1 種類のファイル = 1 役割、種類の違うものを束ねるのは group」を機械的に拾える範囲で
+# 定義のソースを読み、種類の違うファイルを1つの Role に抱えていそうなものを列挙する。
+# 「1 種類のファイル = 1 Role、種類の違うものを束ねるのは group」を機械的に拾える範囲で
 # 拾うためのもの。Kotlin の構文解析はせず、素朴なテキスト走査なので誤検知があり得る。
 # だから**失敗にはせず、常に 0 を返す。** check 3-2 / 3-3 のたびに走り、lint で単独でも呼べる。
 #
 # 拾う規則（どれも実地テストの定義で取り違えを拾い、正しい定義を誤検知しないことを確かめた）:
 #   - README・LICENSE・settings.gradle(.kts)・gradlew・.gitignore のような、名前で種類が
-#     決まるファイルが、2種類以上同じ役割にある
-#   - .claude / .github / .run のようなツールごとの設定ディレクトリを、1つの役割で
+#     決まるファイルが、2種類以上同じ Role にある
+#   - .claude / .github / .run のようなツールごとの設定ディレクトリを、1つの Role で
 #     anyFile() / ignore() している
-#   - 同じ役割に本体（main）とテスト（test）の置き場所がある
-# あわせて、Gradle のファイルを手書きの役割で宣言していれば gradle() を勧める。
+#   - 同じ Role に本体（main）とテスト（test）の置き場所がある
+# あわせて、Gradle のファイルを手書きの Role で宣言していれば gradle() を勧める。
 lint_roles() {
 	command -v python3 >/dev/null 2>&1 || {
-		note "役割の点検は python3 が無いため飛ばしました。" \
-			"Skipped the role check because python3 is not available."
+		note "Role の点検は python3 が無いため飛ばしました。" \
+			"Skipped the Role check because python3 is not available."
 		return 0
 	}
 	# プロジェクトルートは init がチェックリストに記録したものを使う。
@@ -2533,7 +2560,7 @@ lint_roles() {
 		cat <<'PYROLES'
 import os, re, sys
 
-# 役割（"Name" { }）ごとに、layout { } の中で宣言しているファイルを集め、
+# Role（"Name" { }）ごとに、layout { } の中で宣言しているファイルを集め、
 # 種類の違うファイルを抱えていそうなものを列挙する。Kotlin の構文解析はしない。
 # 文字列・コメントを飛ばして括弧を数えるだけの素朴な走査なので、誤検知はあり得る。
 
@@ -2552,7 +2579,7 @@ root = os.path.join(project_root, sys.argv[2], "src", "test", "kotlin")
 
 def included_builds():
     # buildSrc と、settings で includeBuild したビルドのディレクトリ（プロジェクトルートからの相対）。
-    # これらのビルドは gradle() の対象外なので、手書きの役割で宣言していても gradle() を勧めない。
+    # これらのビルドは gradle() の対象外なので、手書きの Role で宣言していても gradle() を勧めない。
     found = {"buildSrc"}
     for name in ("settings.gradle.kts", "settings.gradle"):
         path = os.path.join(project_root, name)
@@ -2764,7 +2791,7 @@ def scan(path, roles):
 
 roles = []
 if not os.path.isdir(root):
-    print(t("役割の点検: 定義のディレクトリがありません（%s）。scaffold の後に実行してください。",
+    print(t("Role の点検: 定義のディレクトリがありません（%s）。scaffold の後に実行してください。",
             "Role check: the definition directory does not exist (%s). Run this after scaffold.") % file_uri(root))
     sys.exit(0)
 for d, _, fs in os.walk(root):
@@ -2785,7 +2812,7 @@ for r in roles:
             if gradle and not in_included_build(where):
                 gradle_hand.append((r, name))
     if len(kinds) >= 2:
-        reasons.append(t("種類の違うファイルが同居しています: ", "Files of different kinds share this role: ") + " / ".join(
+        reasons.append(t("種類の違うファイルが同居しています: ", "Files of different kinds share this Role: ") + " / ".join(
             t("%s（%s）", "%s (%s)") % (label, ", ".join(sorted(set(names)))) for label, names in kinds.items()))
     dots = sorted(set(seg for _, t, _ in r.catchall for seg in t.split("/")[-1:] if seg.startswith(".") and len(seg) > 1))
     if len(dots) >= 2:
@@ -2797,50 +2824,50 @@ for r in roles:
     has_test = any(any(TEST.match(x) for x in s_) for s_ in segs)
     has_main = any(any(MAIN.match(x) for x in s_) and not any(TEST.match(x) for x in s_) for s_ in segs)
     if has_test and has_main:
-        reasons.append(t("本体（main）とテスト（test）のファイルを同じ役割で宣言しています",
-                         "Declares main and test files in the same role"))
+        reasons.append(t("本体（main）とテスト（test）のファイルを同じ Role で宣言しています",
+                         "Declares main and test files in the same Role"))
     if reasons:
         warnings.append((r, reasons))
 
 if not warnings and not gradle_hand:
-    print(t("役割の点検: 種類の違うファイルを抱えていそうな役割は見つかりませんでした（%d 件を走査）。",
+    print(t("Role の点検: 種類の違うファイルを抱えていそうな Role は見つかりませんでした（%d 件を走査）。",
             "Role check: no role seems to hold files of different kinds (%d scanned).") % len(roles))
     sys.exit(0)
 print()
-print(t("== 役割の点検（失敗にはしません） ================================",
+print(t("== Role の点検（失敗にはしません） ================================",
         "== Role check (never fails) ======================================"))
 print(t("定義: %s", "Definition: %s") % file_uri(root))
 if warnings:
     print()
-    print(t("種類の違うファイルを1つの役割に抱えていそうなものが %d 件あります（%d 件を走査）。",
+    print(t("種類の違うファイルを1つの Role に抱えていそうなものが %d 件あります（%d 件を走査）。",
             "Roles that seem to hold files of different kinds: %d (%d scanned).") % (len(warnings), len(roles)))
     for r, reasons in warnings:
         print()
-        print(t('  %s:%d 役割 "%s"', '  %s:%d role "%s"') % (file_uri(r.path), r.line, r.name))
+        print(t('  %s:%d Role "%s"', '  %s:%d Role "%s"') % (file_uri(r.path), r.line, r.name))
         for x in reasons:
             print("    - " + x)
     print()
-    print(t("""役割（"Name" { }）は1種類のファイルを表し、種類の違うものを束ねるのは group です。
-手順書 3-2 の「1 つの役割 = 1 種類のファイル」の3つの問いで見直し、分けるべきものは
-種類ごとの役割に分けて group で束ねてください。テキストの素朴な走査なので誤検知はあり得ます。
+    print(t("""Role（"Name" { }）は1種類のファイルを表し、種類の違うものを束ねるのは group です。
+手順書 3-2 の「1 つの Role = 1 種類のファイル」の3つの問いで見直し、分けるべきものは
+種類ごとの Role に分けて group で束ねてください。テキストの素朴な走査なので誤検知はあり得ます。
 見直して1種類だと判断したものは、そのままでかまいません。""",
-            """A role ("Name" { }) stands for one kind of file; group is what bundles different kinds.
-Review them with the three questions of "one role = one kind of file" in step 3-2 of the guide,
-and split what should be split into one role per kind, bundled with group. This is a plain text
-scan, so false positives are possible. If you review a role and decide it is one kind, leave it."""))
+            """A Role ("Name" { }) stands for one kind of file; group is what bundles different kinds.
+Review them with the three questions of "one Role = one kind of file" in step 3-2 of the guide,
+and split what should be split into one Role per kind, bundled with group. This is a plain text
+scan, so false positives are possible. If you review a Role and decide it is one kind, leave it."""))
 if gradle_hand:
     names = sorted(set(r.name for r, _ in gradle_hand))
     print()
-    print(t("Gradle のファイルを手書きの役割で宣言しています（役割: %s）。",
-            "Gradle files are declared in hand-written roles (roles: %s).") % ", ".join(names))
+    print(t("Gradle のファイルを手書きの Role で宣言しています（Role: %s）。",
+            "Gradle files are declared in hand-written Roles (Roles: %s).") % ", ".join(names))
     print(t("""katachi 0.2 以降は gradle() が wrapper・settings・ビルドスクリプト・gradle.properties・
-version catalog を種類ごとの役割に分けて宣言します（import me.tbsten.katachi.dsl.gradle.*）。
-これらの役割を消して gradle() の1行に置き換えてください。buildSrc や includeBuild した
-ビルドは gradle() の対象外なので、それだけは自分の役割に残します（この点検もその下は数えません）。""",
+version catalog を種類ごとの Role に分けて宣言します（import me.tbsten.katachi.dsl.gradle.*）。
+これらの Role を消して gradle() の1行に置き換えてください。buildSrc や includeBuild した
+ビルドは gradle() の対象外なので、それだけは自分の Role に残します（この点検もその下は数えません）。""",
             """Since katachi 0.2, gradle() declares the wrapper, settings, build scripts, gradle.properties
-and the version catalog as one role per kind (import me.tbsten.katachi.dsl.gradle.*).
-Remove these roles and replace them with the single line gradle(). buildSrc and included
-builds are not covered by gradle(), so keep only those in your own roles (this check skips them too)."""))
+and the version catalog as one Role per kind (import me.tbsten.katachi.dsl.gradle.*).
+Remove these Roles and replace them with the single line gradle(). buildSrc and included
+builds are not covered by gradle(), so keep only those in your own Roles (this check skips them too)."""))
 print("==================================================================")
 PYROLES
 	} | python3 - "$_lr_json" "$MODULE_DIR" || :
@@ -2919,10 +2946,10 @@ cmd_compare_violations() {
 	rm -f "$_cv_a" "$_cv_b"
 	say ""
 	say "リファクタリングで振る舞いが変わっています。前のログを取り直すのではなく、定義のほうを直してください。
-分けた定義ファイルが [UnexpectedFile] になっているなら、architecture-test/ を受け持つ役割の layout { } が
+分けた定義ファイルが [UnexpectedFile] になっているなら、architecture-test/ を受け持つ Role の layout { } が
 <group>/<role>/<Role>.kt の深さまで受け入れていません。" \
 		"The refactoring changed the behavior. Fix the definition instead of capturing the before log again.
-If the split definition files show up as [UnexpectedFile], the layout { } of the role that owns
+If the split definition files show up as [UnexpectedFile], the layout { } of the Role that owns
 architecture-test/ does not accept files as deep as <group>/<role>/<Role>.kt."
 	exit 1
 }
@@ -3001,7 +3028,7 @@ cmd_check() {
 	[ $# -gt 0 ] || die "check: 項目 id を1つ以上指定してください（例: check 1-1 1-2）" \
 		"check: specify one or more item ids (for example: check 1-1 1-2)"
 	edit_checklist "$CHECK_PY" true "$@"
-	# 定義を書き終えた時点と整え終えた時点で、役割の取り違えを拾う。
+	# 定義を書き終えた時点と整え終えた時点で、Role の取り違えを拾う。
 	# 完了にはしたうえで警告だけ出す。
 	for _ck_id in "$@"; do
 		case $_ck_id in
@@ -3076,7 +3103,7 @@ FIELDS = {
                                   ["allowed", "forbidden", "examples"]),
     "tool":       ("tools",       ["name", "configPath", "declareInKatachi", "note"], []),
     "excluded":   ("excluded",    ["path", "reason"], []),
-    # 導入の最後に出す「次にできること」。どの役割にどんなテンプレートを当てるかは
+    # 導入の最後に出す「次にできること」。どの Role にどんなテンプレートを当てるかは
     # エージェントが判断し、ここは記録するだけ。summary とレポートが表示する。
     "template":   ("templates",   ["role", "basedOn", "reason"], ["files", "params"]),
 }
@@ -3437,7 +3464,7 @@ for i in optional_items:
     if i.get("done"):
         continue
     if i["id"] == "6-4":
-        # 当てる役割が無いと判断したなら、何も勧めない
+        # 当てる Role が無いと判断したなら、何も勧めない
         if not report_templates:
             continue
         print("    - %s" % (HINT["6-4"] % len(report_templates)))
