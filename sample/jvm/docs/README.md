@@ -29,14 +29,21 @@ The layer that takes responsibility for where values come from
 Starting the process, and the configuration loaded at runtime
 
 - [Entry point](./app/Entrypoint.md)
-- [Server configuration](./app/ServerConfig.md)
+- [Application configuration](./app/ApplicationConfig.md)
+- [Logging configuration](./app/LoggingConfig.md)
 
 ### [Testing](./testing/README.md)
 
 Tests that check behaviour, this definition itself, and the documentation and snapshot written out from it
 
 - [Test code](./testing/Test.md)
-- [Architecture definition](./testing/ArchitectureDefinition.md)
+- [Architecture definition entry](./testing/ArchitectureDefinitionEntry.md)
+- [Document section definition](./testing/DocumentSectionDefinition.md)
+- [Group definition](./testing/GroupDefinition.md)
+- [Role definition](./testing/RoleDefinition.md)
+- [Processor definition](./testing/ProcessorDefinition.md)
+- [Architecture test](./testing/ArchitectureTest.md)
+- [Integration spec](./testing/IntegrationSpec.md)
 - [Generated documentation](./testing/GeneratedDocumentation.md)
 - [Layout snapshot](./testing/LayoutSnapshot.md)
 - [Baseline (ledger of held-back violations)](./testing/BaselineFile.md)
@@ -66,14 +73,21 @@ The layer that takes responsibility for where values come from
 Starting the process, and the configuration loaded at runtime
 
 - [Entry point](./app/Entrypoint.md) ... Starting the process and assembling the Ktor Application module
-- [Server configuration](./app/ServerConfig.md) ... Configuration files loaded at runtime. Resources that are not Kotlin have roles too
+- [Application configuration](./app/ApplicationConfig.md) ... The configuration file loaded at startup: the port and the module to apply
+- [Logging configuration](./app/LoggingConfig.md) ... The Logback configuration: where logs go and their format
 
 ## Testing
 
 Tests that check behaviour, this definition itself, and the documentation and snapshot written out from it
 
 - [Test code](./testing/Test.md) ... Tests placed in src/test/kotlin, keeping the same package structure as the main code
-- [Architecture definition](./testing/ArchitectureDefinition.md) ... The role definitions written in katachi's DSL. It belongs to no layer
+- [Architecture definition entry](./testing/ArchitectureDefinitionEntry.md) ... The one file whose `architecture { }` gathers every group, so the definition can be read from here
+- [Document section definition](./testing/DocumentSectionDefinition.md) ... The headings this project declares for itself, so roles and groups can write under them
+- [Group definition](./testing/GroupDefinition.md) ... One `groups/<Name>Group.kt` per group, saying what the group is made of by calling role functions
+- [Role definition](./testing/RoleDefinition.md) ... One `roles/<Name>Role.kt` per role, holding its description, its layout and its constraints
+- [Processor definition](./testing/ProcessorDefinition.md) ... A custom processor that reads the definition, registered in `architecture-test/build.gradle.kts`
+- [Architecture test](./testing/ArchitectureTest.md) ... The one test that checks the whole project against the definition
+- [Integration spec](./testing/IntegrationSpec.md) ... katachi's own integration tests, run against this real project
 - [Generated documentation](./testing/GeneratedDocumentation.md) ... Markdown written out of this definition and committed to the repository
 - [Layout snapshot](./testing/LayoutSnapshot.md) ... A record of every line of this definition, flattened. It exists so people can review changes to the definition as a diff
 - [Baseline (ledger of held-back violations)](./testing/BaselineFile.md) ... A ledger that records violations already present when katachi was introduced and holds them back without failing the test

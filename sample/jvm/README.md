@@ -6,7 +6,7 @@ A sample that defines, with katachi, **a small single-module HTTP server** writt
 
 It declares as roles what goes in each of the API, domain and data layers, and checks the placement of files with `assert()`.
 One role also has a constraint written with `konsist { }`: "Must be public".
-The role for the definition itself also has an example of `konsist(scope = DirectOnly)`, which does not push a parent directory's constraint down into child directories.
+The entry of the definition itself also has a `konsist { }` constraint: it declares no group or role.
 The same definition generates the documentation in [`docs/`](docs/README.md), and there is also one custom processor that reads the definition.
 
 katachi is pulled in from the repository source with `includeBuild("../..")`, but it is written the same way a user would write it:
@@ -19,7 +19,7 @@ katachi is pulled in from the repository source with `includeBuild("../..")`, bu
 | [`ProjectArchitecture.kt`](architecture-test/src/test/kotlin/com/example/ProjectArchitecture.kt)         | The body of `architecture { }`. It only calls the 7 groups; the roles live in `roles/`, one role per file       |
 | [`roles/ServiceRole.kt`](architecture-test/src/test/kotlin/com/example/roles/ServiceRole.kt)             | A role that writes a constraint with `konsist { }` in addition to `layout { }`. It doubles as an example of generating `*Service.kt` with the `.template { }` attached to a file declaration |
 | [`roles/ControllerRole.kt`](architecture-test/src/test/kotlin/com/example/roles/ControllerRole.kt)       | An example of naming a directory's `*` with `capture("resource")` and reading it back from `.template { }` with `captureValue("resource")`. The value is used as-is in a package, so it is rejected with `require(...)` |
-| [`roles/ArchitectureDefinitionRole.kt`](architecture-test/src/test/kotlin/com/example/roles/ArchitectureDefinitionRole.kt) | An example of `konsist(scope = DirectOnly)`. A constraint that applies only directly under `com/example` and does not descend into `groups/` or `roles/` |
+| [`roles/ArchitectureDefinitionEntryRole.kt`](architecture-test/src/test/kotlin/com/example/roles/ArchitectureDefinitionEntryRole.kt) | The definition split into one role per kind of file: the entry, `groups/*Group.kt` ([`GroupDefinitionRole.kt`](architecture-test/src/test/kotlin/com/example/roles/GroupDefinitionRole.kt)) and `roles/*Role.kt` ([`RoleDefinitionRole.kt`](architecture-test/src/test/kotlin/com/example/roles/RoleDefinitionRole.kt)). The entry also carries a `konsist { }` constraint |
 | [`ProjectArchitectureTest.kt`](architecture-test/src/test/kotlin/com/example/ProjectArchitectureTest.kt) | The only test a user writes. It calls `assert(FileConstraintCheck())` so that `konsist { }` is evaluated too              |
 | [`processors/RoleNames.kt`](architecture-test/src/test/kotlin/com/example/processors/RoleNames.kt)       | A minimal example of a custom processor that receives arguments with `--arg`                                                                |
 | [`katachi-baseline.json`](katachi-baseline.json) | The baseline ledger. It deliberately leaves two entries, `service/LegacyHealthCheck.kt` and `service/LegacyStatusService.kt`, held back ([`../README.md`](../README.md#baseline)) |

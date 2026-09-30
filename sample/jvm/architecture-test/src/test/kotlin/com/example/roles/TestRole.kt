@@ -23,18 +23,18 @@ fun DeclarationContainerScope.test() = "Test" {
           covered by the architecture definition role. This role only looks at the test source
           set of the root project (`:`)
 
-        `layout { }` does not constrain file names (`**` is the package hierarchy, and the `*`
-        below it is any one `.kt` file). Instead, a directory left under the test source set
-        without a single `.kt` is reported.
+        The file name is `*Test.kt`, so a helper or a fixture with another name is reported
+        rather than let in silently. `**` is the package hierarchy, which mirrors the main
+        source set, and a directory left under the test source set without a single test is
+        reported.
     """.trimIndent()
     example("HealthRouteTest", "The test for GET /health")
     layout {
         // `**` stands for the package levels, which mirror the main source set and are
         // not worth writing twice — so `modulePackage` is deliberately not used here.
-        // The `*` after it is one file name, so a directory holding no `.kt` at all is
-        // still reported.
+        // `*Test` is the name of one test file, so a directory holding none is still reported.
         ":".module {
-            testSourceSet / kotlin / "**" / "*".ktFile()
+            testSourceSet / kotlin / "**" / "*Test".ktFile()
         }
     }
 }

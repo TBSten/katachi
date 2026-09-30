@@ -1,7 +1,8 @@
 package com.example.groups
 
+import com.example.roles.applicationConfig
 import com.example.roles.entrypoint
-import com.example.roles.serverConfig
+import com.example.roles.loggingConfig
 import me.tbsten.katachi.dsl.DeclarationContainerScope
 
 /** Roles that assemble and configure the running process. */
@@ -25,5 +26,6 @@ fun DeclarationContainerScope.appGroup() = "app".group {
     """.trimIndent()
 
     entrypoint()
-    serverConfig()
+    applicationConfig()
+    loggingConfig()
 }

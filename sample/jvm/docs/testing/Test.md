@@ -18,15 +18,16 @@ What does not belong here:
   covered by the architecture definition role. This role only looks at the test source
   set of the root project (`:`)
 
-`layout { }` does not constrain file names (`**` is the package hierarchy, and the `*`
-below it is any one `.kt` file). Instead, a directory left under the test source set
-without a single `.kt` is reported.
+The file name is `*Test.kt`, so a helper or a fixture with another name is reported
+rather than let in silently. `**` is the package hierarchy, which mirrors the main
+source set, and a directory left under the test source set without a single test is
+reported.
 
 ## Placement
 
 | Module | Path | When to use |
 |---|---|---|
-| `:` | `src/test/kotlin/**/*.kt` |  |
+| `:` | `src/test/kotlin/**/*Test.kt` |  |
 
 ## Examples
 

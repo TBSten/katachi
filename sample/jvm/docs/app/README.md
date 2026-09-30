@@ -20,7 +20,8 @@ API layer).
 | Role | Summary |
 |---|---|
 | [Entry point](./Entrypoint.md) | Starting the process and assembling the Ktor Application module |
-| [Server configuration](./ServerConfig.md) | Configuration files loaded at runtime. Resources that are not Kotlin have roles too |
+| [Application configuration](./ApplicationConfig.md) | The configuration file loaded at startup: the port and the module to apply |
+| [Logging configuration](./LoggingConfig.md) | The Logback configuration: where logs go and their format |
 
 ## Placement in this group
 
@@ -29,6 +30,6 @@ API layer).
   src/main/
     kotlin/**/Application.kt  Entry point
     resources/
-      application.conf        Server configuration
-      logback.xml             Server configuration
+      application.conf        Application configuration
+      logback.xml             Logging configuration
 ```

@@ -1,10 +1,16 @@
 package com.example.groups
 
 import com.example.forbiddenContents
-import com.example.roles.architectureDefinition
+import com.example.roles.architectureDefinitionEntry
+import com.example.roles.architectureTest
 import com.example.roles.baselineFile
+import com.example.roles.documentSectionDefinition
 import com.example.roles.generatedDocumentation
+import com.example.roles.groupDefinition
+import com.example.roles.integrationSpec
 import com.example.roles.layoutSnapshot
+import com.example.roles.processorDefinition
+import com.example.roles.roleDefinition
 import com.example.roles.test
 import me.tbsten.katachi.dsl.DeclarationContainerScope
 
@@ -14,7 +20,7 @@ import me.tbsten.katachi.dsl.DeclarationContainerScope
  *
  * The definition lives in `:architecture-test`, a module that belongs to no layer of the
  * application. It is still code someone has to maintain, so it gets a role of its own rather
- * than hiding inside `Test`: `ArchitectureDefinition` describes the shape and `Test` asserts
+ * than hiding inside `Test`: the architecture definition roles describe the shape and `Test` asserts
  * behaviour. `GeneratedDocumentation` and `LayoutSnapshot` are the shape written out — as
  * pages for a reader, and as one flattened line per entry for a reviewer's `git diff`.
  * `BaselineFile` is the ledger of the violations held back, which the test writes too.
@@ -51,7 +57,13 @@ fun DeclarationContainerScope.testingGroup() = "testing".group {
     """.trimIndent()
 
     test()
-    architectureDefinition()
+    architectureDefinitionEntry()
+    documentSectionDefinition()
+    groupDefinition()
+    roleDefinition()
+    processorDefinition()
+    architectureTest()
+    integrationSpec()
     generatedDocumentation()
     layoutSnapshot()
     baselineFile()

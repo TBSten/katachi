@@ -27,7 +27,13 @@ in it do not fail the test.
 | Role | Summary |
 |---|---|
 | [Test code](./Test.md) | Tests placed in src/test/kotlin, keeping the same package structure as the main code |
-| [Architecture definition](./ArchitectureDefinition.md) | The role definitions written in katachi's DSL. It belongs to no layer |
+| [Architecture definition entry](./ArchitectureDefinitionEntry.md) | The one file whose `architecture { }` gathers every group, so the definition can be read from here |
+| [Document section definition](./DocumentSectionDefinition.md) | The headings this project declares for itself, so roles and groups can write under them |
+| [Group definition](./GroupDefinition.md) | One `groups/<Name>Group.kt` per group, saying what the group is made of by calling role functions |
+| [Role definition](./RoleDefinition.md) | One `roles/<Name>Role.kt` per role, holding its description, its layout and its constraints |
+| [Processor definition](./ProcessorDefinition.md) | A custom processor that reads the definition, registered in `architecture-test/build.gradle.kts` |
+| [Architecture test](./ArchitectureTest.md) | The one test that checks the whole project against the definition |
+| [Integration spec](./IntegrationSpec.md) | katachi's own integration tests, run against this real project |
 | [Generated documentation](./GeneratedDocumentation.md) | Markdown written out of this definition and committed to the repository |
 | [Layout snapshot](./LayoutSnapshot.md) | A record of every line of this definition, flattened. It exists so people can review changes to the definition as a diff |
 | [Baseline (ledger of held-back violations)](./BaselineFile.md) | A ledger that records violations already present when katachi was introduced and holds them back without failing the test |
@@ -36,18 +42,23 @@ in it do not fail the test.
 
 ```
 :
-  src/test/kotlin/**/*.kt  Test code
+  src/test/kotlin/**/*Test.kt  Test code
 
 :architecture-test
   src/test/kotlin/com/example/
-    *.kt                   Architecture definition
-    **/*.kt                Architecture definition
+    ProjectArchitecture.kt     Architecture definition entry
+    DocumentSections.kt        Document section definition
+    groups/*Group.kt           Group definition
+    roles/*Role.kt             Role definition
+    processors/*.kt            Processor definition
+    *Test.kt                   Architecture test
+    *Spec.kt                   Integration spec
 
 docs/
-  README.md                Generated documentation
-  **/*.md                  Generated documentation
-snapshots/layout.txt       Layout snapshot
-katachi-baseline.json      Baseline (ledger of held-back violations)
+  README.md                    Generated documentation
+  **/*.md                      Generated documentation
+snapshots/layout.txt           Layout snapshot
+katachi-baseline.json          Baseline (ledger of held-back violations)
 ```
 
 ## Forbidden contents

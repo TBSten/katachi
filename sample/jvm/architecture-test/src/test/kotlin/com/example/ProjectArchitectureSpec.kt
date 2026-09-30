@@ -6,7 +6,8 @@ import com.example.groups.domainGroup
 import com.example.groups.gradleGroup
 import com.example.groups.testingGroup
 import com.example.groups.toolGroup
-import com.example.roles.serverConfig
+import com.example.roles.applicationConfig
+import com.example.roles.loggingConfig
 import io.kotest.core.spec.style.FreeSpec
 import io.kotest.matchers.collections.shouldContain
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
@@ -83,9 +84,16 @@ class ProjectArchitectureSpec : FreeSpec({
             "domain.Model",
             "data.Repository",
             "app.Entrypoint",
-            "app.ServerConfig",
+            "app.ApplicationConfig",
+            "app.LoggingConfig",
             "testing.Test",
-            "testing.ArchitectureDefinition",
+            "testing.ArchitectureDefinitionEntry",
+            "testing.DocumentSectionDefinition",
+            "testing.GroupDefinition",
+            "testing.RoleDefinition",
+            "testing.ProcessorDefinition",
+            "testing.ArchitectureTest",
+            "testing.IntegrationSpec",
             "testing.GeneratedDocumentation",
             "testing.LayoutSnapshot",
             "testing.BaselineFile",
@@ -305,17 +313,17 @@ class ProjectArchitectureSpec : FreeSpec({
     }
 
     "a konsist with scope = DirectOnly does not descend into groups/ and roles/, and with Subtree it descends and fails there" {
-        // `roles/ArchitectureDefinitionRole.kt` passing proves nothing about `DirectOnly` on its
-        // own: a constraint that covered nothing would pass too. Taking the flag away has to
-        // make the same rule reach `groups/` and `roles/`, where every file declares exactly
-        // what it forbids.
+        // A self-contained definition, not one of this sample's roles: a user's roles should not
+        // need `DirectOnly`. Passing proves nothing on its own, since a constraint that covered
+        // nothing would pass too. Taking the flag away has to make the same rule reach `groups/`
+        // and `roles/`, where every file declares exactly what it forbids.
         fun unsatisfiedPaths(scope: FileConstraintRange): List<String> = architecture {
             "testing".group {
                 "Definition" {
                     layout {
                         ":architecture-test".module {
                             testSourceSet / kotlin / "com/example" {
-                                "Must not declare groups or roles directly here".konsist(scope = scope) {
+                                "Must not declare a group or a role at the top of com.example".konsist(scope = scope) {
                                     functions().mustNot { it.receiverType?.name == "DeclarationContainerScope" }
                                 }
                                 "*".ktFile()
@@ -339,7 +347,7 @@ class ProjectArchitectureSpec : FreeSpec({
         // error, so a failure here names the violations instead of only the message.
         // `FileConstraintCheck()` matches what `ProjectArchitectureTest` itself passes: without
         // it, the `konsist { }` constraints in `roles/ServiceRole.kt` and
-        // `roles/ArchitectureDefinitionRole.kt` would come back as
+        // `roles/ArchitectureDefinitionEntryRole.kt` would come back as
         // `[UncheckedFileConstraint] reason=NotEvaluated` instead of being evaluated.
         //
         // `validate()` does not read the baseline, so what `katachi-baseline.json` holds back
@@ -391,8 +399,8 @@ private fun String.isGradleGroupSubtree(): Boolean = this == "Gradle" || startsW
  *
  * Deliberately broken, and deliberately kept out of `ProjectArchitecture.kt`: a reader
  * looking for the definition to copy should never meet it. Splitting one role per file pays
- * for itself here — the `app` group is rebuilt by calling `serverConfig()`, so the role it
- * keeps is the real one and only the omission is written out. Before the split, `appRoles()`
+ * for itself here — the `app` group is rebuilt by calling `applicationConfig()` and `loggingConfig()`, so the
+ * roles it keeps are the real ones and only the omission is written out. Before the split, `appRoles()`
  * declared both roles at once and the remaining one had to be copied by hand, where it could
  * drift away from the definition it was standing in for.
  */
@@ -400,7 +408,10 @@ private val architectureWithoutEntrypointRole: Architecture = architecture {
     apiGroup()
     domainGroup()
     dataGroup()
-    "app".group { serverConfig() }
+    "app".group {
+        applicationConfig()
+        loggingConfig()
+    }
     testingGroup()
     gradleGroup()
     toolGroup()
