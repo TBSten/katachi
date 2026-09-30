@@ -1,5 +1,6 @@
 package me.tbsten.katachi.docs
 
+import me.tbsten.katachi.ExperimentalKatachiApi
 import me.tbsten.katachi.KatachiCheckException
 import me.tbsten.katachi.internal.absolutePathOf
 import me.tbsten.katachi.internal.displayExistingPath
@@ -33,6 +34,7 @@ import me.tbsten.katachi.internal.fileUri
  *
  * @see GenerateDocumentation
  */
+@ExperimentalKatachiApi
 public class KatachiStaleDocumentationException internal constructor(
     /** The directory that was compared, exactly as `--arg outputDir=` spelled it. */
     public val outputDir: String,
@@ -89,6 +91,7 @@ public class KatachiStaleDocumentationException internal constructor(
  *
  * @see GenerateDocumentation
  */
+@ExperimentalKatachiApi
 public class KatachiDocumentIoException internal constructor(
     /** The page being written or read, relative to [outputDir]. */
     public val path: String,

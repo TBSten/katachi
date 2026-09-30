@@ -1,5 +1,6 @@
 package me.tbsten.katachi.template
 
+import me.tbsten.katachi.ExperimentalKatachiApi
 import me.tbsten.katachi.KatachiDeclarationException
 
 /**
@@ -28,6 +29,7 @@ import me.tbsten.katachi.KatachiDeclarationException
  * @see GenerateCodeFromTemplate
  * @see DescribeTemplates
  */
+@ExperimentalKatachiApi
 public class KatachiUnknownTemplateException internal constructor(
     /** The specifier `--arg template=` carried, as written. */
     public val specifier: String,
@@ -80,6 +82,7 @@ public class KatachiUnknownTemplateException internal constructor(
  * @see GenerateCodeFromTemplate
  * @see DescribeTemplates
  */
+@ExperimentalKatachiApi
 public class KatachiAmbiguousTemplateException internal constructor(
     /** The specifier `--arg template=` carried, as written. */
     public val specifier: String,
@@ -126,6 +129,7 @@ public class KatachiAmbiguousTemplateException internal constructor(
  * @see GenerateCodeFromTemplate
  * @see DescribeTemplates
  */
+@ExperimentalKatachiApi
 public class KatachiInvalidTemplateSpecifierException internal constructor(
     /** What is wrong with [specifiers]. */
     public val problem: Problem,

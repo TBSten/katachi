@@ -1,5 +1,6 @@
 package me.tbsten.katachi.template
 
+import me.tbsten.katachi.ExperimentalKatachiApi
 import me.tbsten.katachi.KatachiCheckException
 import me.tbsten.katachi.KatachiDeclarationException
 import me.tbsten.katachi.dsl.DeclarationSite
@@ -43,6 +44,7 @@ import me.tbsten.katachi.dsl.DeclarationSite
  *
  * @see GenerateCodeFromTemplate
  */
+@ExperimentalKatachiApi
 public class KatachiMissingTemplateCaptureException internal constructor(
     /** The role whose template needs the values, qualified. */
     public val role: String,
@@ -125,6 +127,7 @@ public class KatachiMissingTemplateCaptureException internal constructor(
  *
  * @see GenerateCodeFromTemplate
  */
+@ExperimentalKatachiApi
 public class KatachiInvalidTemplateCaptureValueException internal constructor(
     /** The role whose layout names the capture, qualified. */
     public val role: String,
@@ -256,6 +259,7 @@ public class KatachiInvalidTemplateCaptureValueException internal constructor(
  *
  * @see GenerateCodeFromTemplate
  */
+@ExperimentalKatachiApi
 public class KatachiTemplateModuleNotFoundException internal constructor(
     /** The role whose template produced the file, qualified. */
     public val role: String,

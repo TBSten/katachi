@@ -1,5 +1,6 @@
 package me.tbsten.katachi.dsl
 
+import me.tbsten.katachi.ExperimentalKatachiApi
 import me.tbsten.katachi.KatachiInternalException
 
 /**
@@ -65,6 +66,7 @@ public class KatachiEmptyLayoutChainException internal constructor(
  * @property path the declared path of the node this was noticed on.
  * @property role the role evaluating that node, qualified.
  */
+@ExperimentalKatachiApi
 public class KatachiMissingFirstTemplateException internal constructor(
     public val path: String,
     public val role: String,

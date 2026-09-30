@@ -1,5 +1,6 @@
 package me.tbsten.katachi.dsl
 
+import me.tbsten.katachi.ExperimentalKatachiApi
 import me.tbsten.katachi.KatachiDeclarationException
 
 /**
@@ -35,6 +36,7 @@ import me.tbsten.katachi.KatachiDeclarationException
  *
  * @see TemplateScope.captureValue
  */
+@ExperimentalKatachiApi
 public class KatachiUnknownTemplateCaptureException internal constructor(
     /** The role whose template read it, qualified. */
     public val role: String,
@@ -109,6 +111,7 @@ public class KatachiUnknownTemplateCaptureException internal constructor(
  *
  * @see TemplateScope.captureValue
  */
+@ExperimentalKatachiApi
 public class KatachiTemplateParameterConflictException internal constructor(
     /** The role whose layout and template disagree, qualified. */
     public val role: String,
@@ -187,6 +190,7 @@ public class KatachiTemplateParameterConflictException internal constructor(
  * thrown.name shouldBe "name"
  * ```
  */
+@ExperimentalKatachiApi
 public class KatachiTemplateParameterTypeConflictException internal constructor(
     /** The name both parameters answer to. */
     public val name: String,

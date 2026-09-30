@@ -1,5 +1,6 @@
 package me.tbsten.katachi.dsl
 
+import me.tbsten.katachi.ExperimentalKatachiApi
 import me.tbsten.katachi.KatachiDeclarationException
 
 /**
@@ -17,6 +18,7 @@ import me.tbsten.katachi.KatachiDeclarationException
  *
  * @see documentSection
  */
+@ExperimentalKatachiApi
 public class KatachiUnnamedDocumentSectionException internal constructor(
     /** Where `documentSection()` was called. */
     public val declaredAt: DeclarationSite,
@@ -49,6 +51,7 @@ public class KatachiUnnamedDocumentSectionException internal constructor(
  *
  * @see DocumentSection.documentSection
  */
+@ExperimentalKatachiApi
 public class KatachiDocumentSectionTooDeepException internal constructor(
     /** The heading of the section that was refused. */
     public val heading: String,

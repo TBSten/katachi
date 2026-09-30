@@ -1,5 +1,6 @@
 package me.tbsten.katachi.docs
 
+import me.tbsten.katachi.ExperimentalKatachiApi
 import me.tbsten.katachi.KatachiDeclarationException
 import me.tbsten.katachi.KatachiInternalException
 import me.tbsten.katachi.docs.internal.writtenAt
@@ -28,6 +29,7 @@ import me.tbsten.katachi.dsl.DeclarationSite
  * }
  * ```
  */
+@ExperimentalKatachiApi
 public class KatachiDocumentPathCollisionException internal constructor(
     /** The page both declarations produce, relative to the output root. */
     public val path: String,
@@ -83,6 +85,7 @@ public class KatachiDocumentPathCollisionException internal constructor(
  *
  * @see KatachiDocumentPathCollisionException
  */
+@ExperimentalKatachiApi
 public class KatachiDocumentPathCaseCollisionException internal constructor(
     /** Each set of pages that are one file, in the order the pages were generated. */
     public val collisions: List<List<String>>,
@@ -120,6 +123,7 @@ public class KatachiDocumentPathCaseCollisionException internal constructor(
  *
  * @see KatachiBrokenDocumentLinkException
  */
+@ExperimentalKatachiApi
 public class BrokenDocumentLink internal constructor(
     /** The generated page the link is written on, relative to the output root. */
     public val source: String,
@@ -157,6 +161,7 @@ public class BrokenDocumentLink internal constructor(
  *
  * @see BrokenDocumentLink
  */
+@ExperimentalKatachiApi
 public class KatachiBrokenDocumentLinkException internal constructor(
     /** Every link that pointed nowhere, in the order the pages were generated. */
     public val links: List<BrokenDocumentLink>,

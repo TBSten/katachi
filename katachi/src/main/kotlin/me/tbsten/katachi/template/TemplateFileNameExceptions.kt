@@ -1,5 +1,6 @@
 package me.tbsten.katachi.template
 
+import me.tbsten.katachi.ExperimentalKatachiApi
 import me.tbsten.katachi.KatachiDeclarationException
 import me.tbsten.katachi.KatachiInternalException
 import me.tbsten.katachi.dsl.DeclarationSite
@@ -34,6 +35,7 @@ import me.tbsten.katachi.dsl.DeclarationSite
  *
  * @see GenerateCodeFromTemplate
  */
+@ExperimentalKatachiApi
 public class KatachiTemplatePathOutsideProjectException internal constructor(
     /** The role whose layout resolved to it, qualified. */
     public val role: String,
@@ -77,6 +79,7 @@ public class KatachiTemplatePathOutsideProjectException internal constructor(
  *
  * @see GenerateCodeFromTemplate
  */
+@ExperimentalKatachiApi
 public class KatachiTemplatePathMismatchException internal constructor(
     /** The template that produced [path], its complete `--arg template=` specifier. */
     public val template: String,
@@ -118,6 +121,7 @@ public class KatachiTemplatePathMismatchException internal constructor(
  *
  * @see GenerateCodeFromTemplate
  */
+@ExperimentalKatachiApi
 public class KatachiTemplateEntryNotResolvedException internal constructor(
     /** The template being generated, its complete `--arg template=` specifier. */
     public val template: String,

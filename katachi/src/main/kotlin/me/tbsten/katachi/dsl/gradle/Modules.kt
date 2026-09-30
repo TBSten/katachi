@@ -1,5 +1,6 @@
 package me.tbsten.katachi.dsl.gradle
 
+import me.tbsten.katachi.ExperimentalKatachiApi
 import me.tbsten.katachi.KatachiDeclarationException
 import me.tbsten.katachi.dsl.DeclarationSite
 import me.tbsten.katachi.dsl.LayoutDirectoryScope
@@ -169,6 +170,7 @@ public val wildcards: List<String>
  * @throws KatachiWildcardsOutsideModuleException when called outside a `module { }` block.
  * @throws KatachiUnknownCaptureException when the module key gave no wildcard that name.
  */
+@ExperimentalKatachiApi
 context(layoutScope: LayoutScope)
 public fun wildcard(name: String): String {
     if (layoutScope.currentWildcards == null) {
@@ -203,6 +205,7 @@ public fun wildcard(name: String): String {
  * @property knownNames the names the module key did give; empty when it named nothing.
  * @property declaredAt where `wildcard(name)` was called.
  */
+@ExperimentalKatachiApi
 public class KatachiUnknownCaptureException internal constructor(
     public val name: String,
     public val modulePath: String,

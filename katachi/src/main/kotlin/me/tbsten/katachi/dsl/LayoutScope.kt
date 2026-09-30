@@ -1,5 +1,6 @@
 package me.tbsten.katachi.dsl
 
+import me.tbsten.katachi.ExperimentalKatachiApi
 import org.intellij.lang.annotations.Language
 
 /**
@@ -221,6 +222,7 @@ public sealed interface LayoutScope : FileConstraintScope {
      * @throws KatachiAdjacentCaptureException when this token ends up touching another wildcard
      *   with nothing literal between them, noticed when the layout is flattened.
      */
+    @ExperimentalKatachiApi
     public fun capture(name: String): String
 
     /**
@@ -242,6 +244,7 @@ public sealed interface LayoutScope : FileConstraintScope {
      * }
      * ```
      */
+    @ExperimentalKatachiApi
     public fun capture(name: String, block: LayoutDirectoryScope.() -> Unit): LayoutDirectory
 }
 

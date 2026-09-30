@@ -1,5 +1,6 @@
 package me.tbsten.katachi.template
 
+import me.tbsten.katachi.ExperimentalKatachiApi
 import me.tbsten.katachi.KatachiCheckException
 import me.tbsten.katachi.KatachiDeclarationException
 import me.tbsten.katachi.internal.absolutePathOf
@@ -31,6 +32,7 @@ import me.tbsten.katachi.internal.fileUri
  *
  * @see GenerateCodeFromTemplate
  */
+@ExperimentalKatachiApi
 public class KatachiDuplicateTemplateOutputException internal constructor(
     /** The path both templates resolve to, relative to the project root. */
     public val path: String,
@@ -80,6 +82,7 @@ public class KatachiDuplicateTemplateOutputException internal constructor(
  *
  * @see OnExisting
  */
+@ExperimentalKatachiApi
 public class KatachiExistingTemplateFileException internal constructor(
     /** The paths that are already taken, relative to the project root, sorted. */
     public val existing: List<String>,
@@ -129,6 +132,7 @@ public class KatachiExistingTemplateFileException internal constructor(
  *
  * @see GenerateCodeFromTemplate
  */
+@ExperimentalKatachiApi
 public class KatachiTemplateIoException internal constructor(
     /** The file being written, relative to [projectRoot]. */
     public val path: String,
@@ -176,6 +180,7 @@ public class KatachiTemplateIoException internal constructor(
  *
  * @see OnExisting
  */
+@ExperimentalKatachiApi
 public class KatachiReservedTemplatePathException internal constructor(
     /** The taken paths, relative to the project root, sorted. */
     public val reserved: List<String>,
@@ -229,6 +234,7 @@ public class KatachiReservedTemplatePathException internal constructor(
  *
  * @see GenerateCodeFromTemplate
  */
+@ExperimentalKatachiApi
 public class KatachiTemplateEscapesProjectException internal constructor(
     /** The file's path as the layout declares it, relative to the project root. */
     public val path: String,
@@ -280,6 +286,7 @@ public class KatachiTemplateEscapesProjectException internal constructor(
  *
  * @see OnExisting
  */
+@ExperimentalKatachiApi
 public class KatachiTemplateTargetNotAFileException internal constructor(
     /** The paths taken by something other than a regular file, relative to the project root. */
     public val blocked: List<String>,

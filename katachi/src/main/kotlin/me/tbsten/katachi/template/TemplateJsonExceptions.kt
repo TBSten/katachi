@@ -1,5 +1,6 @@
 package me.tbsten.katachi.template
 
+import me.tbsten.katachi.ExperimentalKatachiApi
 import me.tbsten.katachi.KatachiCheckException
 import me.tbsten.katachi.KatachiDeclarationException
 import me.tbsten.katachi.KatachiInternalException
@@ -31,6 +32,7 @@ import me.tbsten.katachi.internal.fileUri
  *
  * @see DescribeTemplates
  */
+@ExperimentalKatachiApi
 public class KatachiTemplateJsonOutputMissingException internal constructor() : KatachiDeclarationException(
     message = buildString {
         appendLine("--arg format=json was given without --arg output=.")
@@ -71,6 +73,7 @@ public class KatachiTemplateJsonOutputMissingException internal constructor() : 
  *
  * @see DescribeTemplates
  */
+@ExperimentalKatachiApi
 public class KatachiTemplateJsonWithTemplateException internal constructor(
     /** The specifier `--arg template=` carried, as written. */
     public val template: String,
@@ -111,6 +114,7 @@ public class KatachiTemplateJsonWithTemplateException internal constructor(
  *
  * @see DescribeTemplates
  */
+@ExperimentalKatachiApi
 public class KatachiMultipleTemplatesToDescribeException internal constructor(
     /** The value `--arg template=` carried, as written. */
     public val template: String,
@@ -152,6 +156,7 @@ public class KatachiMultipleTemplatesToDescribeException internal constructor(
  *
  * @see DescribeTemplates
  */
+@ExperimentalKatachiApi
 public class KatachiTemplateJsonIoException internal constructor(
     /** The file being written, exactly as `--arg output=` spelled it. */
     public val output: String,
@@ -189,6 +194,7 @@ public class KatachiTemplateJsonIoException internal constructor(
  *
  * @see DescribeTemplates
  */
+@ExperimentalKatachiApi
 public class KatachiUnsupportedTemplateJsonValueException internal constructor(
     /** What could not be written: a serial kind such as `MAP`, or a type such as `Double`. */
     public val kind: String,

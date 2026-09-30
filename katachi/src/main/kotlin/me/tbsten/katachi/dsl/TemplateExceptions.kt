@@ -1,5 +1,6 @@
 package me.tbsten.katachi.dsl
 
+import me.tbsten.katachi.ExperimentalKatachiApi
 import me.tbsten.katachi.KatachiDeclarationException
 
 /**
@@ -31,6 +32,7 @@ import me.tbsten.katachi.KatachiDeclarationException
  *
  * @see LayoutFile.template
  */
+@ExperimentalKatachiApi
 public class KatachiDuplicateTemplateException internal constructor(
     /** The role that declared both, qualified. */
     public val role: String,
@@ -84,6 +86,7 @@ public class KatachiDuplicateTemplateException internal constructor(
  *
  * @see LayoutFile.template
  */
+@ExperimentalKatachiApi
 public class KatachiDuplicateTemplateIdException internal constructor(
     /** The role both templates belong to, qualified. */
     public val role: String,
@@ -135,6 +138,7 @@ public class KatachiDuplicateTemplateIdException internal constructor(
  *
  * @see LayoutFile.template
  */
+@ExperimentalKatachiApi
 public class KatachiMissingTemplateIdException internal constructor(
     /** The role with more than one template, qualified. */
     public val role: String,
@@ -185,6 +189,7 @@ public class KatachiMissingTemplateIdException internal constructor(
  *
  * @see LayoutFile.template
  */
+@ExperimentalKatachiApi
 public class KatachiTemplateOnWildcardException internal constructor(
     /** The role whose declaration this is, qualified. */
     public val role: String,

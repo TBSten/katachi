@@ -1,5 +1,6 @@
 package me.tbsten.katachi.dsl
 
+import me.tbsten.katachi.ExperimentalKatachiApi
 import me.tbsten.katachi.KatachiDeclarationException
 
 /**
@@ -30,6 +31,7 @@ import me.tbsten.katachi.KatachiDeclarationException
  * @property firstDeclaredAt where the name was used the first time.
  * @property declaredAt where it was used again.
  */
+@ExperimentalKatachiApi
 public class KatachiDuplicateCaptureException internal constructor(
     public val name: String,
     public val role: String?,
@@ -79,6 +81,7 @@ public class KatachiDuplicateCaptureException internal constructor(
  *   touching, or the one, for a capture touching a plain `*`.
  * @property declaredAt where the segment was written.
  */
+@ExperimentalKatachiApi
 public class KatachiAdjacentCaptureException internal constructor(
     public val key: String,
     public val names: List<String>,
@@ -125,6 +128,7 @@ public class KatachiAdjacentCaptureException internal constructor(
  * @property name the capture name the stray token carried.
  * @property declaredAt where the text holding it was written.
  */
+@ExperimentalKatachiApi
 public class KatachiStrayCaptureTokenException internal constructor(
     public val where: String,
     public val name: String,

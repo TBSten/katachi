@@ -1,5 +1,6 @@
 package me.tbsten.katachi.dsl
 
+import me.tbsten.katachi.ExperimentalKatachiApi
 import me.tbsten.katachi.dsl.internal.LayoutTemplate
 import me.tbsten.katachi.dsl.internal.Template
 import me.tbsten.katachi.dsl.internal.captureDeclarationSite
@@ -52,6 +53,7 @@ import me.tbsten.katachi.dsl.internal.requireValidIdentifier
  *   unnamed `*` or `**`, noticed when the layout is flattened.
  * @featured
  */
+@ExperimentalKatachiApi
 public fun LayoutFile.template(
     id: String? = null,
     title: String? = null,

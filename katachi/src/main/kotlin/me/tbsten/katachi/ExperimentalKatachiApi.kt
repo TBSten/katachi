@@ -6,7 +6,8 @@ package me.tbsten.katachi
  * This is the opposite end of [InternalKatachiApi]. An internal API is only for katachi's own
  * other modules and says "do not touch this"; an experimental one is open to every project and
  * says "touch it, and expect to adjust when you upgrade". The processor API is marked this
- * way, and so is what a project needs to extend katachi on its own terms — its own
+ * way, and so are the template DSL (`.template { }` and `capture()`), documentation
+ * generation, and what a project needs to extend katachi on its own terms — its own
  * [me.tbsten.katachi.dsl.FileSelection], or its own `.module { }` built on
  * [me.tbsten.katachi.dsl.gradle.expandModulePath]. What a processor is handed grows with every
  * version that finds something new to hand it, so freezing that shape now would mean freezing

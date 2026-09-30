@@ -1,5 +1,6 @@
 package me.tbsten.katachi.dsl
 
+import me.tbsten.katachi.ExperimentalKatachiApi
 import me.tbsten.katachi.dsl.internal.TemplateParameterBinder
 import me.tbsten.katachi.dsl.internal.TemplateParameterType
 import kotlin.enums.EnumEntries
@@ -86,6 +87,7 @@ import kotlin.reflect.KProperty
  * @see LayoutFile.template
  * @see TemplateParameter
  */
+@ExperimentalKatachiApi
 @KatachiDsl
 public sealed interface TemplateScope {
     /**
@@ -278,6 +280,7 @@ public sealed interface TemplateScope {
  * @see TemplateScope.intParameter
  * @see TemplateScope.enumParameter
  */
+@ExperimentalKatachiApi
 public class TemplateParameter<out T> internal constructor(
     private val binder: TemplateParameterBinder,
     internal val type: TemplateParameterType<T>,

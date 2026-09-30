@@ -1,5 +1,6 @@
 package me.tbsten.katachi.dsl
 
+import me.tbsten.katachi.ExperimentalKatachiApi
 import me.tbsten.katachi.KatachiDeclarationException
 import me.tbsten.katachi.dsl.internal.InvalidArgReason
 import me.tbsten.katachi.dsl.internal.InvalidTemplateValue
@@ -35,6 +36,7 @@ import me.tbsten.katachi.dsl.internal.TemplateParameterType
  *
  * @see TemplateScope.stringParameter
  */
+@ExperimentalKatachiApi
 public class KatachiUnboundTemplateParameterException internal constructor(
     /** The role whose template declared them. */
     public val role: String,
@@ -89,6 +91,7 @@ public class KatachiUnboundTemplateParameterException internal constructor(
  *
  * @see TemplateScope.stringParameter
  */
+@ExperimentalKatachiApi
 public class KatachiDuplicateTemplateParameterException internal constructor(
     /** The role whose template declared both. */
     public val role: String,
@@ -141,6 +144,7 @@ public class KatachiDuplicateTemplateParameterException internal constructor(
  *
  * @see TemplateScope.stringParameter
  */
+@ExperimentalKatachiApi
 public class KatachiTemplateParameterReusedException internal constructor(
     /** The property name it was given first. */
     public val firstName: String,
@@ -193,6 +197,7 @@ public class KatachiTemplateParameterReusedException internal constructor(
  *
  * @see TemplateScope.stringParameter
  */
+@ExperimentalKatachiApi
 public class KatachiMissingTemplateParameterException internal constructor(
     /** The role whose template was replayed. */
     public val role: String,
@@ -266,6 +271,7 @@ public class KatachiMissingTemplateParameterException internal constructor(
  * @see TemplateScope.intParameter
  * @see TemplateScope.enumParameter
  */
+@ExperimentalKatachiApi
 public class KatachiInvalidTemplateParameterValueException internal constructor(
     /** The role whose template was replayed. */
     public val role: String,
@@ -334,6 +340,7 @@ public class KatachiInvalidTemplateParameterValueException internal constructor(
  *
  * @see TemplateScope.enumParameter
  */
+@ExperimentalKatachiApi
 public class KatachiEmptyEnumTemplateParameterException internal constructor(
     /** The role whose template declared it. */
     public val role: String,
