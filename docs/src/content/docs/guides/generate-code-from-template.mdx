@@ -165,6 +165,38 @@ The name is used when passing a value with `--arg`. Left as `*`, a template can'
 - **It can't be used on `**`.** How many levels of directory to create isn't decided
 - A name follows the same rule as a Role name (starts with a letter, followed by letters, digits, `_`, `-`)
 
+## Templates work on files other than Kotlin
+
+`.template { }` can be attached to a file declared with `.file()`, not only to `.ktFile()`. The string the block returns becomes the file's content as it is, so you can also generate a document with a fixed shape, such as Markdown.
+
+```kt {3-4} nocollapse
+"FeatureReadme" {
+    layout {
+        "docs" / capture("feature") / "README.md".file()
+            .template {
+                val feature = captureValue("feature")
+                """
+                    # $feature
+
+                    ## Responsibility
+
+                    TODO
+
+                    ## Public API
+
+                    TODO
+                """.trimIndent()
+            }
+    }
+}
+```
+
+```shell
+./gradlew katachiTemplate --arg "template=FeatureReadme" --arg "feature=home"
+```
+
+This generates `docs/home/README.md`.
+
 ## When a file already exists
 
 `--arg onExisting=` chooses what happens when a file already exists at the destination. **The default is `fail`.** When generating more than one template at once, `onExisting` applies to the whole set.

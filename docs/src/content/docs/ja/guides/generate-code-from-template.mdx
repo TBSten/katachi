@@ -165,6 +165,38 @@ layout {
 - **`**` には付けられません。** 何階層ぶんのディレクトリを作ればよいかが決まらないためです
 - 名前は Role 名と同じ規則で書きます（英字で始まり、英数字・`_`・`-` が続く）
 
+## Kotlin 以外のファイルにも付けられる
+
+`.template { }` は `.ktFile()` に限らず、`.file()` で宣言したファイルにも付けられます。ブロックが返した文字列がそのままファイルの中身になるので、Markdown のように決まった形の文書も生成できます。
+
+```kt {3-4} nocollapse
+"FeatureReadme" {
+    layout {
+        "docs" / capture("feature") / "README.md".file()
+            .template {
+                val feature = captureValue("feature")
+                """
+                    # $feature
+
+                    ## 責務
+
+                    TODO
+
+                    ## 公開する API
+
+                    TODO
+                """.trimIndent()
+            }
+    }
+}
+```
+
+```shell
+./gradlew katachiTemplate --arg "template=FeatureReadme" --arg "feature=home"
+```
+
+`docs/home/README.md` が生成されます。
+
 ## 既にファイルがあるとき
 
 生成先に既にファイルがある場合の振る舞いは `--arg onExisting=` で選べます。**デフォルトは `fail` です。** 複数のテンプレートを一度に生成するときは、`onExisting` は組全体に効きます。
