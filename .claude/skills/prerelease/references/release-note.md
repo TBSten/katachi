@@ -19,6 +19,11 @@
       リンクは英語のドキュメント（`https://tbsten.github.io/katachi/...`。`/ja/` を付けない）へ張る。
       日本語で下書きした場合は `tmp/release-note.ja.md` に置く（人が読む成果物は英語の1本だけにする）。
       手順 7 の報告のリリースノート概要は、これまでどおり日本語で書く
+    - **タイトルの直下に badge を並べる。**版はそのリリースの版で固定する（`img.shields.io/badge/...` の静的な badge。
+      `maven-central/v/...` は最新版を指すので、古いリリースのノートでも新しい版が出てしまう）。並べるもの:
+      katachi（Central の artifact の版のページへ）・Gradle プラグイン（plugin marker の版のページへ）・
+      IDE プラグイン（experimental。Release に添付する `katachi-intellij-plugin-<版>.zip` へ）・Docs・
+      動作に要る JDK / Kotlin / Gradle の下限（README の「対応」の行と同じ値）
     - **節の中身は `<details>` で畳む。**最初に見えるのは冒頭の説明と、新機能の名前を1行に並べたものだけにする。
       新機能の詳細・移行表・Also は、それぞれ `<details><summary>… (n)</summary>` に入れる。
       GitHub の Markdown が中を描画するように、`<summary>` の行の後と `</details>` の前に空行を置く
