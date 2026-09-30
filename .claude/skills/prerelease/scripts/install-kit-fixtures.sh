@@ -6,10 +6,13 @@
 #
 # 呼び出し側が決めておく変数: REPO（リポジトリの直下）、K（Kotlin の版）、AGP（AGP の版）
 #
+# fx_toolchain_<名前>（任意）は「scaffold が architecture-test/build.gradle.kts に書くべき jvmToolchain の N」。
+# none は「jvmToolchain の行を書かない」。定義した fixture だけ、生成物と突き合わせる。
+#
 # fx_anchor_<名前> は「scaffold が足した include の直前に来るべき行」（前後の空白を除いた中身）。
 # END は「include が無いので末尾に足される」。
 
-FIXTURES="agp noroot rootjvm subonly groovyinc multiinc withid buildscript catalogalias"
+FIXTURES="agp noroot rootjvm subonly groovyinc multiinc withid buildscript catalogalias jdkonly tc21"
 
 fx_wrapper() {
 	mkdir -p "$1/gradle/wrapper"
@@ -295,4 +298,58 @@ EOF
 	printf 'plugins {\n    alias(libs.plugins.jvm) apply false\n}\n' >"$d/build.gradle.kts"
 	printf 'plugins {\n    alias(libs.plugins.jvm)\n}\n' >"$d/app/build.gradle.kts"
 	printf 'package fx\nclass A\n' >"$d/app/src/main/kotlin/fx/A.kt"
+}
+
+# ---- 10, 11. JDK 21 だけの環境（toolchain の自動検出を切る。foojay も無い） -----------------------
+# 手元に JDK 17 があっても再現できるよう、gradle.properties で org.gradle.java.installations.auto-detect=false
+# にする。こうすると Gradle が知っている JDK は「Gradle を動かしている JDK」だけになり、jvmToolchain(17) は
+# "Cannot find a Java installation ... languageVersion=17" で落ちる（prerelease 9-2 の警告の再現）。
+# Gradle を動かす JDK が 21 であることが前提（tc21 の期待は 21 を書いてある）。
+fx_only_running_jdk() {
+	printf 'org.gradle.java.installations.auto-detect=false\n' >>"$1/gradle.properties"
+}
+
+fx_desc_jdkonly() { echo "JDK 21 だけ・foojay 無し・toolchain の設定無し（jvmToolchain を書かない）"; }
+fx_anchor_jdkonly() { echo 'END'; }
+fx_toolchain_jdkonly() { echo none; }
+fx_jdkonly() {
+	d="$1"
+	mkdir -p "$d/src/main/kotlin/fx"
+	printf 'rootProject.name = "fx-jdkonly"\n' >"$d/settings.gradle.kts"
+	cat >"$d/build.gradle.kts" <<EOF
+plugins {
+    kotlin("jvm") version "${K}"
+}
+repositories { mavenCentral() }
+EOF
+	printf 'package fx\nclass A\n' >"$d/src/main/kotlin/fx/A.kt"
+	fx_only_running_jdk "$d"
+}
+
+fx_desc_tc21() { echo "JDK 21 だけ・foojay 無し・ほかのモジュールに jvmToolchain(21)"; }
+fx_anchor_tc21() { echo 'include(":lib")'; }
+fx_toolchain_tc21() { echo 21; }
+fx_tc21() {
+	d="$1"
+	mkdir -p "$d/lib/src/main/kotlin/fx"
+	cat >"$d/settings.gradle.kts" <<'EOF'
+rootProject.name = "fx-tc21"
+include(":lib")
+EOF
+	cat >"$d/build.gradle.kts" <<EOF
+plugins {
+    kotlin("jvm") version "${K}" apply false
+}
+EOF
+	cat >"$d/lib/build.gradle.kts" <<'EOF'
+plugins {
+    kotlin("jvm")
+}
+repositories { mavenCentral() }
+kotlin {
+    jvmToolchain(21)
+}
+EOF
+	printf 'package fx\nclass A\n' >"$d/lib/src/main/kotlin/fx/A.kt"
+	fx_only_running_jdk "$d"
 }

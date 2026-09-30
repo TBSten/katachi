@@ -61,7 +61,6 @@ KATACHI_MIN_MAJOR="0"
 KATACHI_MIN_MINOR="2"
 KATACHI_PLUGIN_ID="me.tbsten.katachi"
 
-JVM_TOOLCHAIN="17"
 JUNIT_VERSION="5.13.4"
 
 MODULE_DIR="architecture-test"
@@ -699,6 +698,198 @@ detect_kotlin_version() {
 	printf '%s\n' "${_v:-}"
 }
 
+# ---------------------------------------------------------------- JDK / toolchain
+
+# katachi が要る JDK の最小の major。Gradle を動かす JDK も、jvmToolchain に書く N もこれ以上。
+JDK_MIN_MAJOR="17"
+
+# $1（java の実行ファイル）の major を出す。読めなければ空。"21.0.9" -> 21、"1.8.0_402" -> 8。
+java_major_of() {
+	_jm=$("$1" -version 2>&1 | sed -n 's/^.*version "\([0-9][0-9]*\)\.\{0,1\}\([0-9]*\).*".*/\1 \2/p' | head -n 1)
+	[ -n "$_jm" ] || return 0
+	_jm_a=${_jm% *}
+	_jm_b=${_jm#* }
+	if [ "$_jm_a" = "1" ] && [ -n "$_jm_b" ]; then
+		printf '%s\n' "$_jm_b"
+	else
+		printf '%s\n' "$_jm_a"
+	fi
+}
+
+# gradle.properties（プロジェクト、ホームの順）の org.gradle.java.home。あれば Gradle はそれで動く。
+gradle_properties_java_home() {
+	for _gj_f in gradle.properties "${GRADLE_USER_HOME:-$HOME/.gradle}/gradle.properties"; do
+		[ -f "$_gj_f" ] || continue
+		_gj=$(sed -n 's/^[[:space:]]*org\.gradle\.java\.home[[:space:]]*=[[:space:]]*//p' "$_gj_f" | head -n 1)
+		if [ -n "$_gj" ]; then
+			printf '%s\n' "$_gj"
+			return 0
+		fi
+	done
+	return 0
+}
+
+# Gradle を動かす JDK を調べる。結果は次の変数に入れる。
+#   GRADLE_JDK_MAJOR  major（読めなければ空）
+#   GRADLE_JDK_FROM   どこから分かったか（ja / en の順に `|` で区切る）
+# 順番は Gradle の選び方に合わせる:
+#   gradle/gradle-daemon-jvm.properties の toolchainVersion > org.gradle.java.home > JAVA_HOME > PATH の java
+detect_gradle_jdk() {
+	GRADLE_JDK_MAJOR=""
+	GRADLE_JDK_FROM=""
+	if [ -f "gradle/gradle-daemon-jvm.properties" ]; then
+		_dj=$(sed -n 's/^[[:space:]]*toolchainVersion[[:space:]]*=[[:space:]]*\([0-9][0-9]*\).*/\1/p' gradle/gradle-daemon-jvm.properties | head -n 1)
+		if [ -n "$_dj" ]; then
+			GRADLE_JDK_MAJOR="$_dj"
+			GRADLE_JDK_FROM="gradle/gradle-daemon-jvm.properties の toolchainVersion|toolchainVersion in gradle/gradle-daemon-jvm.properties"
+			return 0
+		fi
+	fi
+	_gh=$(gradle_properties_java_home)
+	if [ -n "$_gh" ] && [ -x "$_gh/bin/java" ]; then
+		GRADLE_JDK_MAJOR=$(java_major_of "$_gh/bin/java")
+		GRADLE_JDK_FROM="org.gradle.java.home（${_gh}）|org.gradle.java.home (${_gh})"
+		return 0
+	fi
+	if [ -n "${JAVA_HOME:-}" ] && [ -x "$JAVA_HOME/bin/java" ]; then
+		GRADLE_JDK_MAJOR=$(java_major_of "$JAVA_HOME/bin/java")
+		GRADLE_JDK_FROM="JAVA_HOME（${JAVA_HOME}）|JAVA_HOME (${JAVA_HOME})"
+		return 0
+	fi
+	_jp=$(command -v java 2>/dev/null || true)
+	if [ -n "$_jp" ]; then
+		GRADLE_JDK_MAJOR=$(java_major_of "$_jp")
+		GRADLE_JDK_FROM="PATH の java（${_jp}）|java on PATH (${_jp})"
+	fi
+	return 0
+}
+
+# Gradle を動かす JDK が JDK_MIN_MAJOR 以上かを確かめる。未満なら直し方つきで止まる。
+# JDK を見つけられない・版を読めないときは、Gradle 自身が知っている可能性があるので警告だけで進む。
+check_gradle_jdk() {
+	detect_gradle_jdk
+	if [ -z "$GRADLE_JDK_FROM" ]; then
+		warn "Gradle を動かす JDK を見つけられませんでした（JAVA_HOME も PATH の java もありません）。katachi は JDK ${JDK_MIN_MAJOR} 以上が要ります。" \
+			"Could not find the JDK that runs Gradle (there is no JAVA_HOME and no java on PATH). katachi needs JDK ${JDK_MIN_MAJOR} or later."
+		return 0
+	fi
+	if [ -z "$GRADLE_JDK_MAJOR" ]; then
+		warn "Gradle を動かす JDK の版を読めませんでした（$(pick "${GRADLE_JDK_FROM%%|*}" "${GRADLE_JDK_FROM#*|}")）。katachi は JDK ${JDK_MIN_MAJOR} 以上が要ります。" \
+			"Could not read the version of the JDK that runs Gradle ($(pick "${GRADLE_JDK_FROM%%|*}" "${GRADLE_JDK_FROM#*|}")). katachi needs JDK ${JDK_MIN_MAJOR} or later."
+		return 0
+	fi
+	if [ "$GRADLE_JDK_MAJOR" -lt "$JDK_MIN_MAJOR" ]; then
+		die "Gradle を動かす JDK が ${GRADLE_JDK_MAJOR} です（${GRADLE_JDK_FROM%%|*}）。katachi は JDK ${JDK_MIN_MAJOR} 以上が要ります。
+    JAVA_HOME を JDK ${JDK_MIN_MAJOR} 以上に向けるか、org.gradle.java.home（gradle.properties）で JDK ${JDK_MIN_MAJOR} 以上を
+    指定してから、もう一度実行してください。" \
+			"The JDK that runs Gradle is ${GRADLE_JDK_MAJOR} (${GRADLE_JDK_FROM#*|}). katachi needs JDK ${JDK_MIN_MAJOR} or later.
+    Point JAVA_HOME at JDK ${JDK_MIN_MAJOR} or later, or set org.gradle.java.home in gradle.properties to one,
+    then run this again."
+	fi
+	note "Gradle の JDK: ${GRADLE_JDK_MAJOR}（${GRADLE_JDK_FROM%%|*}）" \
+		"Gradle's JDK: ${GRADLE_JDK_MAJOR} (${GRADLE_JDK_FROM#*|})"
+}
+
+# gradle/libs.versions.toml の [versions] から、アクセサ $1（libs.versions.<ここ>）の値の先頭の数字を出す。
+# アクセサは - _ . を区切りとして同じ扱いにして突き合わせる。読めなければ何も出さない。
+catalog_version_number() {
+	[ -f "gradle/libs.versions.toml" ] || return 0
+	sed 's:#.*::' "gradle/libs.versions.toml" | awk -v want="$1" '
+		function norm(s) { gsub(/[-_.]/, ".", s); return s }
+		/^[[:space:]]*\[/ { section = $0; next }
+		section ~ /^[[:space:]]*\[versions\]/ && $0 ~ /=/ {
+			key = $0
+			sub(/[[:space:]]*=.*/, "", key)
+			gsub(/[[:space:]"\047]/, "", key)
+			if (norm(key) != norm(want)) next
+			val = $0
+			sub(/^[^=]*=[[:space:]]*/, "", val)
+			if (match(val, /^["\047][0-9]+/)) { print substr(val, 2, RLENGTH - 1); exit }
+		}
+	'
+}
+
+# プロジェクトの build ファイル（と buildSrc / build-logic の Kotlin）から、JDK の toolchain の設定を探し、
+# 見つけた分を「N<TAB>ファイル」で1行ずつ出す。N が決められなかった設定は「?<TAB>ファイル」。
+#   - jvmToolchain(N)（kotlin { } の中も、buildSrc・build-logic の convention plugin の中も）
+#   - JavaLanguageVersion.of(N)（java { toolchain { languageVersion = ... } }）
+#   - N の代わりに libs.versions.<別名>（.get() / .toInt() が付いていてもよい）。version catalog から読む
+# 生成する $MODULE_DIR 自身と、ビルドの出力・キャッシュは見ない。
+jvm_toolchain_candidates() {
+	find . \( -path "./$MODULE_DIR" -o -name build -o -name .gradle -o -name .git -o -name .kotlin \
+		-o -name .idea -o -name .local -o -name node_modules \) -prune -o \
+		-type f \( -name '*.gradle.kts' -o -name '*.gradle' \
+		-o \( -name '*.kt' \( -path '*/buildSrc/*' -o -path '*/build-logic/*' -o -path '*/buildLogic/*' \) \) \) \
+		-print 2>/dev/null | sort |
+		while IFS= read -r _jc_f; do
+			sed -E 's#(^|[^:])//.*#\1#' "$_jc_f" | grep -E 'jvmToolchain|JavaLanguageVersion\.of' |
+				while IFS= read -r _jc_l; do
+					_jc_n=$(printf '%s' "$_jc_l" | sed -n -E \
+						-e 's/.*jvmToolchain[[:space:]]*\([[:space:]]*"?([0-9]+)"?[[:space:]]*\).*/\1/p' \
+						-e 's/.*JavaLanguageVersion\.of\([[:space:]]*"?([0-9]+)"?[[:space:]]*\).*/\1/p' | head -n 1)
+					if [ -z "$_jc_n" ]; then
+						_jc_a=$(printf '%s' "$_jc_l" | sed -n -E 's/.*libs\.versions\.([A-Za-z0-9_]+(\.[A-Za-z0-9_]+)*).*/\1/p' |
+							head -n 1 | sed -E 's/(\.(get|toInt|toString|asProvider|orNull|getOrNull))+$//')
+						[ -n "$_jc_a" ] && _jc_n=$(catalog_version_number "$_jc_a")
+					fi
+					printf '%s\t%s\n' "${_jc_n:-?}" "${_jc_f#./}"
+				done
+		done
+}
+
+# jvmToolchain に書く N を決める。結果は次の変数に入れる。
+#   SC_TC_N     書く N（書かないなら空）
+#   SC_TC_JA    検出の結果（ja。scaffold の出力とチェックリストに残す）
+#   SC_TC_EN    同じ内容の英語
+# 決め方: 見つかった N のうち最大のものを使う。17 未満は使わない。何も無ければ書かない
+# （Gradle を動かしている JDK をそのまま使う）。
+detect_jvm_toolchain() {
+	SC_TC_N=""
+	_tc_list=$(jvm_toolchain_candidates)
+	_tc_best=""
+	_tc_best_f=""
+	_tc_old=""
+	_tc_old_en=""
+	_tc_unknown=""
+	_tc_tab=$(printf '\t')
+	_tc_nl='
+'
+	_tc_oldifs=$IFS
+	IFS=$_tc_nl
+	for _tc_row in $_tc_list; do
+		_tc_n=${_tc_row%%"$_tc_tab"*}
+		_tc_f=${_tc_row#*"$_tc_tab"}
+		case "$_tc_n" in
+		'?') _tc_unknown="${_tc_unknown:-$_tc_f}" ;;
+		*)
+			if [ "$_tc_n" -lt "$JDK_MIN_MAJOR" ]; then
+				_tc_old="${_tc_old:-${_tc_n}（${_tc_f}）}"
+				_tc_old_en="${_tc_old_en:-${_tc_n} (${_tc_f})}"
+			elif [ -z "$_tc_best" ] || [ "$_tc_n" -gt "$_tc_best" ]; then
+				_tc_best="$_tc_n"
+				_tc_best_f="$_tc_f"
+			fi
+			;;
+		esac
+	done
+	IFS=$_tc_oldifs
+
+	if [ -n "$_tc_best" ]; then
+		SC_TC_N="$_tc_best"
+		SC_TC_JA="${_tc_best}（${_tc_best_f} の設定から）"
+		SC_TC_EN="${_tc_best} (from ${_tc_best_f})"
+	elif [ -n "$_tc_old" ]; then
+		SC_TC_JA="書かない（既存の toolchain は ${_tc_old} で、katachi の要る ${JDK_MIN_MAJOR} 未満のため使わない。Gradle の JDK を使う）"
+		SC_TC_EN="not written (the existing toolchain is ${_tc_old_en}, below the ${JDK_MIN_MAJOR} katachi needs, so it is not used; Gradle's JDK is used)"
+	elif [ -n "$_tc_unknown" ]; then
+		SC_TC_JA="書かない（${_tc_unknown} に toolchain の設定はあるが、N を読み取れなかった。Gradle の JDK を使う）"
+		SC_TC_EN="not written (${_tc_unknown} sets a toolchain but N could not be read; Gradle's JDK is used)"
+	else
+		SC_TC_JA="書かない（プロジェクトに toolchain の設定が無い。Gradle の JDK を使う）"
+		SC_TC_EN="not written (the project sets no toolchain; Gradle's JDK is used)"
+	fi
+}
+
 # $1 を $2 にダウンロードする。
 download() {
 	require_commands curl
@@ -1174,6 +1365,10 @@ cmd_scaffold() {
 	require_gradle_root
 	resolve_root_build_file
 
+	# Gradle を動かす JDK が 17 以上か（未満なら直し方つきで止まる）と、jvmToolchain に書く N。
+	check_gradle_jdk
+	detect_jvm_toolchain
+
 	# 生成物のコメントとテスト名も KATACHI_LANG に従う。scaffold は作業用ディレクトリに
 	# 置かれたこのスクリプトから呼ばれるので、resolve_lang が init の記録を読んでいる。
 
@@ -1285,6 +1480,8 @@ cmd_scaffold() {
 	*) note "katachi:      ${sc_version}" ;;
 	esac
 	note "Kotlin:       ${sc_kotlin}"
+	note "JVM toolchain: ${SC_TC_JA}" \
+		"JVM toolchain: ${SC_TC_EN}"
 	note "konsist:      ${sc_konsist}"
 	note "モジュール:   $(file_uri "$MODULE_DIR")/" \
 		"Module:       $(file_uri "$MODULE_DIR")/"
@@ -1311,7 +1508,7 @@ cmd_scaffold() {
 	fi
 
 	mkdir -p "$src_dir"
-	write_module_build "$sc_version" "$sc_konsist" "$sc_context_flag" "$sc_package" "$sc_kotlin_plugin"
+	write_module_build "$sc_version" "$sc_konsist" "$sc_context_flag" "$sc_package" "$sc_kotlin_plugin" "$SC_TC_N"
 	# **--force でも定義は上書きしない。** ここには人とエージェントが書いた
 	# architecture { } が入っている。やり直しで消えると取り返しがつかない。
 	if [ -s "$src_dir/ProjectArchitecture.kt" ]; then
@@ -1402,6 +1599,7 @@ in ${sc_root_build_uri} (create plugins { } if there is none)."
 	# 空のまま残り、verify が未記入として数え続ける。実際に使った版で埋める。
 	if _sc_wd=$(resolve_workdir); then
 		update_checklist_meta "$_sc_wd/check-list.html" kotlin "$sc_kotlin"
+		update_checklist_meta "$_sc_wd/check-list.html" jvmToolchain "$(pick "$SC_TC_JA" "$SC_TC_EN")"
 	fi
 
 	say ""
@@ -1419,6 +1617,7 @@ write_module_build() {
 	_context_flag="$3"
 	_package="$4"
 	_kotlin_plugin="$5"
+	_toolchain="${6:-}"
 
 	# 生成物は利用者のリポジトリにそのまま残るので、コメントも --lang に合わせる
 	# （テスト関数名と同じ理由。write_test_kt を参照）。
@@ -1470,16 +1669,26 @@ write_module_build() {
     // redundant.'
 			;;
 		esac
-		_kotlin_block="kotlin {
-    jvmToolchain($JVM_TOOLCHAIN)
+		_tc_block=""
+		[ -n "$_toolchain" ] && _tc_block="    jvmToolchain($_toolchain)
 
-$_ctx_note
-    compilerOptions.freeCompilerArgs.add(\"-Xcontext-parameters\")
-}"
-	else
+"
 		_kotlin_block="kotlin {
-    jvmToolchain($JVM_TOOLCHAIN)
-}"
+$_tc_block$_ctx_note
+    compilerOptions.freeCompilerArgs.add(\"-Xcontext-parameters\")
+}
+
+"
+	elif [ -n "$_toolchain" ]; then
+		_kotlin_block="kotlin {
+    jvmToolchain($_toolchain)
+}
+
+"
+	else
+		# 書くものが無いので kotlin { } ごと省く。jvmToolchain を書かないと、Gradle を動かしている
+		# JDK でコンパイルされる（JDK 17 が無く toolchain の自動取得も無い環境で、解決に失敗しない）。
+		_kotlin_block=""
 	fi
 
 	if [ "$_konsist" = "yes" ]; then
@@ -1495,9 +1704,7 @@ $_plugin_note
     id("$KATACHI_PLUGIN_ID") version "$_version"
 }
 
-$_kotlin_block
-
-katachi {
+${_kotlin_block}katachi {
 $_arch_note
     architecture = "$_package.test.architecture.projectArchitecture"
 }
@@ -3295,6 +3502,8 @@ cmd_doctor() {
 	require_commands "$REQ_ALL" "$REC_ALL"
 	say "必要なコマンドはそろっています（${REQ_ALL}）。" \
 		"All required commands are available (${REQ_ALL})."
+	# java はコマンドの有無ではなく、Gradle が使う JDK の版を確かめる（JAVA_HOME だけのこともあるため REQ_* には入れない）。
+	check_gradle_jdk
 }
 
 # ---------------------------------------------------------------- entry

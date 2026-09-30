@@ -221,6 +221,18 @@ print(n)' 2>>"${LOGS}/${fx}-ja-lines.log"`
 		fi
 	fi
 
+	# fx_toolchain_<名前> を持つ fixture は、生成された build.gradle.kts の jvmToolchain が期待どおりかも見る。
+	if command -v "fx_toolchain_${fx}" >/dev/null 2>&1; then
+		want_tc=`fx_toolchain_${fx}`
+		got_tc=`sed -n 's/^[[:space:]]*jvmToolchain(\([0-9]*\)).*/\1/p' "$d/architecture-test/build.gradle.kts" | head -1`
+		[ -n "${got_tc}" ] || got_tc="none"
+		if [ "${got_tc}" != "${want_tc}" ]; then
+			SCAFFOLD="NG: jvmToolchain が ${got_tc}（期待: ${want_tc}）"
+			return
+		fi
+		NOTE="${NOTE:+${NOTE}、}jvmToolchain は ${got_tc}（期待どおり）"
+	fi
+
 	check_include "${fx}" "${settings}"
 
 	if ! grep -q "dependencyResolutionManagement" "${settings}"; then
@@ -273,7 +285,22 @@ for fx in ${FIXTURES}; do
 	TOTAL=`expr "${TOTAL}" + 1`
 	started=`date +%s`
 	echo "== ${fx} =="
+	# fx_toolchain_<名前> を持つ fixture は「JDK 21 だけ」の環境を再現する。~/.gradle/jdks に自動取得済みの JDK 17 があると
+	# auto-detect=false でも見つかってしまうので、GRADLE_USER_HOME を別に作る（wrapper と caches だけ本物へのリンク）。
+	if command -v "fx_toolchain_${fx}" >/dev/null 2>&1; then
+		ISO_HOME="${WORK}/gradle-user-home"
+		rm -rf "${ISO_HOME}"
+		mkdir -p "${ISO_HOME}"
+		REAL_GUH="${GRADLE_USER_HOME:-${HOME}/.gradle}"
+		ln -s "${REAL_GUH}/wrapper" "${ISO_HOME}/wrapper"
+		ln -s "${REAL_GUH}/caches" "${ISO_HOME}/caches"
+		export GRADLE_USER_HOME="${ISO_HOME}"
+	fi
 	run_fixture "${fx}"
+	if [ -n "${REAL_GUH:-}" ]; then
+		if [ "${REAL_GUH}" = "${HOME}/.gradle" ]; then unset GRADLE_USER_HOME; else GRADLE_USER_HOME="${REAL_GUH}"; fi
+		REAL_GUH=""
+	fi
 	elapsed=`date +%s`
 	elapsed=`expr "${elapsed}" - "${started}"`
 	all="${INIT} ${SCAFFOLD} ${INC} ${TEST} ${RERUN}"
