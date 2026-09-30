@@ -14,8 +14,9 @@ plugins {
 }
 
 group = "me.tbsten.katachi.intellij"
-// TODO: follow katachi's own version once the plugin is published.
-version = "0.1.0"
+// katachi's own version: the zip attached to each GitHub Release (publish.yml) carries the version
+// of that release. Read from the root gradle/libs.versions.toml through settings.gradle.kts.
+version = katachiLibs.versions.katachi.get()
 
 // JBR 21, which the 261 platform runs on.
 kotlin {
@@ -70,9 +71,10 @@ intellijPlatform {
     pluginConfiguration {
         ideaVersion {
             sinceBuild = "261"
-            // No upper bound: every future build is declared compatible. Safe only because the
-            // nightly workflow gates it with verifyPlugin against IDEA and Android Studio (below
-            // and ide-plugin-nightly.yml); narrow to "261.*" if that gate is ever dropped.
+            // No upper bound: every future build is declared compatible. The zip is installed from
+            // disk (no Marketplace), so the IDE never updates it and a later IDE may break it; the
+            // nightly workflow runs verifyPlugin against IDEA and Android Studio (below and
+            // ide-plugin-nightly.yml) to find that out first. Narrow to "261.*" if that gate is dropped.
             untilBuild = provider { null }
         }
     }

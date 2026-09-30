@@ -23,6 +23,12 @@ plugins {
 rootProject.name = "katachi-intellij-plugin"
 
 dependencyResolutionManagement {
+    // The root build's catalog, read only for `katachi`: the plugin is released with katachi's
+    // version (build.gradle.kts), and gradle/libs.versions.toml at the root is its single source
+    // of truth. This build's own catalog stays `libs`.
+    versionCatalogs {
+        create("katachiLibs") { from(files("../gradle/libs.versions.toml")) }
+    }
     repositories {
         mavenCentral()
         google()

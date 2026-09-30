@@ -6,8 +6,8 @@ import com.intellij.openapi.project.DumbAware
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.wm.ToolWindow
 import com.intellij.openapi.wm.ToolWindowFactory
-import me.tbsten.katachi.intellij.presentation.JapaneseKatachiStrings
 import me.tbsten.katachi.intellij.presentation.KatachiIntent
+import me.tbsten.katachi.intellij.presentation.KatachiStrings
 import me.tbsten.katachi.intellij.presentation.uiStateOf
 import me.tbsten.katachi.intellij.ui.KatachiToolWindowContent
 import org.jetbrains.jewel.bridge.addComposeTab
@@ -30,10 +30,12 @@ internal class KatachiToolWindowFactory : ToolWindowFactory, DumbAware {
 
     override fun createToolWindowContent(project: Project, toolWindow: ToolWindow) {
         val viewModel = sdkCall("create the katachi project service") { KatachiProjectService.getInstance(project).viewModel }.getOrNull() ?: return
+        // Read once: the IDE changes its language with a restart.
+        val strings = toolWindowStrings()
         sdkCall("add the Template tab") {
             toolWindow.addComposeTab(KatachiBundle.message("toolWindow.tab.template")) {
                 val state by viewModel.state.collectAsState()
-                KatachiToolWindowContent(uiStateOf(state, JapaneseKatachiStrings, Instant.now()), onIntent = viewModel::dispatch)
+                KatachiToolWindowContent(uiStateOf(state, strings, Instant.now()), onIntent = viewModel::dispatch)
             }
         }
         // TODO: ⟳ / ■ belong to the Template tab. Move them into that tab's own toolbar once a second
@@ -49,3 +51,9 @@ internal class KatachiToolWindowFactory : ToolWindowFactory, DumbAware {
         const val TOOL_WINDOW_ID: String = "katachi"
     }
 }
+
+/**
+ * The tool window's texts in the IDE's language: the language of the `KatachiBundle` file the platform
+ * resolves, so the tool window always speaks the language of the menus and notifications.
+ */
+internal fun toolWindowStrings(): KatachiStrings = KatachiStrings.of(KatachiBundle.message("toolWindow.language"))

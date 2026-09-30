@@ -9,7 +9,9 @@ import androidx.compose.ui.InternalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.renderComposeScene
 import androidx.compose.runtime.CompositionLocalProvider
+import me.tbsten.katachi.intellij.presentation.EnglishKatachiStrings
 import me.tbsten.katachi.intellij.presentation.JapaneseKatachiStrings
+import me.tbsten.katachi.intellij.presentation.KatachiStrings
 import me.tbsten.katachi.intellij.presentation.uiStateOf
 import me.tbsten.katachi.intellij.ui.KatachiToolWindowContent
 import me.tbsten.katachi.intellij.ui.LocalStaticRendering
@@ -34,7 +36,7 @@ import kotlin.system.exitProcess
 /** Every state of the screen spec (PreviewScenarios.kt), each docked narrow and wide. */
 private val scenarios: List<Scenario> = statusScenarios + listScenarios + generationScenarios + longScenario + revealScenarios
 
-/** One PNG per scenario × layout × theme. */
+/** One PNG per scenario × layout × language × theme. */
 private data class Render(val scenario: Scenario, val layout: String, val width: Int, val height: Int)
 
 private val renders: List<Render> = scenarios.flatMap { s ->
@@ -44,7 +46,16 @@ private val renders: List<Render> = scenarios.flatMap { s ->
     )
 }
 
-private val themes = listOf("light" to false, "dark" to true)
+/**
+ * The tool window's languages. The file name of Japanese has no language, as the dialog's scenarios
+ * (Japanese unless named `english-`), and English carries `-en`.
+ */
+private enum class Language(val suffix: String, val strings: KatachiStrings, val themes: List<Pair<String, Boolean>>) {
+    Japanese("", JapaneseKatachiStrings, listOf("light" to false, "dark" to true)),
+
+    // Light only: a theme changes the colors and never where the text wraps, which is what English changes.
+    English("-en", EnglishKatachiStrings, listOf("light" to false)),
+}
 
 fun main(args: Array<String>) {
     // Also passed as Gradle jvmArgs; set again so that a plain run from the IDE works too.
@@ -65,10 +76,14 @@ fun main(args: Array<String>) {
     PreviewChecks.cleanManagedOutputs(outDir)
     outDir.mkdirs()
 
-    val expected = renders.flatMap { r -> themes.map { (theme, _) -> fileNameOf(r, theme) } }.toSet() + expectedDialogFiles()
+    val expected = renders.flatMap { r ->
+        Language.entries.flatMap { language -> language.themes.map { (theme, _) -> fileNameOf(r, language, theme) } }
+    }.toSet() + expectedDialogFiles()
     for (render in renders) {
-        for ((theme, dark) in themes) {
-            renderScenario(render, dark, File(outDir, fileNameOf(render, theme)))
+        for (language in Language.entries) {
+            for ((theme, dark) in language.themes) {
+                renderScenario(render, language.strings, dark, File(outDir, fileNameOf(render, language, theme)))
+            }
         }
     }
     val dialogs = renderDialogScenarios(outDir)
@@ -113,11 +128,12 @@ fun main(args: Array<String>) {
     }
 }
 
-private fun fileNameOf(render: Render, theme: String) = "preview-${render.scenario.name}-${render.layout}-$theme.png"
+private fun fileNameOf(render: Render, language: Language, theme: String) =
+    "preview-${render.scenario.name}-${render.layout}${language.suffix}-$theme.png"
 
 /** Standalone Jewel Int UI theme + renderComposeScene -> PNG. */
-private fun renderScenario(render: Render, dark: Boolean, out: File) {
-    val ui = uiStateOf(render.scenario.state, JapaneseKatachiStrings, PREVIEW_NOW)
+private fun renderScenario(render: Render, strings: KatachiStrings, dark: Boolean, out: File) {
+    val ui = uiStateOf(render.scenario.state, strings, PREVIEW_NOW)
     val image = renderComposeScene(width = render.width, height = render.height) {
         IntUiTheme(isDark = dark) {
             CompositionLocalProvider(LocalStaticRendering provides true) {

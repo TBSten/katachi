@@ -2,12 +2,20 @@ package me.tbsten.katachi.intellij.presentation
 
 /**
  * Every text of the tool window. The mapper words the UI state through this, so the Composables
- * never build a sentence.
+ * never build a sentence. Written in code rather than in `KatachiBundle` because several texts pick
+ * their wording from their arguments; the IDE picks [EnglishKatachiStrings] or [JapaneseKatachiStrings]
+ * in the language `KatachiBundle` resolves to, and the preview renders both.
  *
- * TODO: stage 3 backs the plugin's instance with a DynamicBundle (KatachiBundle.properties) and adds
- *  the English text; until then both the plugin and the preview use [JapaneseKatachiStrings].
+ * ```kotlin
+ * val ui = uiStateOf(state, EnglishKatachiStrings, Instant.now())
+ * ```
  */
 internal interface KatachiStrings {
+    companion object {
+        /** The texts for [language], an ISO 639 code: Japanese for `ja`, English for anything else. */
+        fun of(language: String): KatachiStrings = if (language == "ja") JapaneseKatachiStrings else EnglishKatachiStrings
+    }
+
     // Status screens
     val initializing: String
     val loadingTitle: String
@@ -82,8 +90,7 @@ internal interface KatachiStrings {
 
     /**
      * The note under a capture's field: where its value goes. [markedPattern] is the pattern with
-     * the capture's `*` written `<name>`. English, for stage 3: "The directory for <name> in
-     * [markedPattern]" / "The existing module for <name> in [markedPattern]".
+     * the capture's `*` written `<name>`.
      */
     fun capturePathHint(name: String, markedPattern: String): String
     fun captureModuleHint(name: String, markedPattern: String): String

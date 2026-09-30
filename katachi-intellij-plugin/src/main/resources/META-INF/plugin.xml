@@ -2,12 +2,24 @@
     <id>me.tbsten.katachi.intellij</id>
     <name>katachi</name>
     <vendor url="https://github.com/tbsten/katachi">tbsten</vendor>
+    <!-- The version, since-build and until-build are patched in from build.gradle.kts. -->
     <description><![CDATA[
-        Generate code from the templates of your katachi architecture.
+        <p><b>Experimental.</b> An early preview released together with katachi 0.2.0: its screens and
+        behavior may change in any release. It is not on JetBrains Marketplace; it is distributed as a zip
+        attached to each <a href="https://github.com/TBSten/katachi/releases">GitHub Release</a>
+        and installed with Settings &gt; Plugins &gt; Install Plugin from Disk.</p>
+        <p>Generate code from the templates of your katachi architecture.
         Start from the katachi tool window, from New &gt; katachi in the Project tree, or from the notification
         that appears in the editor when a template fits the file you opened (it can be turned off in Settings &gt; Tools &gt; katachi).
         Pick a template, fill in its arguments and press Generate; katachi's Gradle task writes the files.
+        The screens follow the IDE's language: Japanese when the IDE is in Japanese, English otherwise.</p>
+        <p>Needs a Gradle project that applies the katachi Gradle plugin 0.2.0 or later (<code>id("me.tbsten.katachi")</code>).
+        See <a href="https://tbsten.github.io/katachi/guides/generate-code-from-template/">Generate code from template</a>.</p>
     ]]></description>
+    <change-notes><![CDATA[
+        <p>0.2.0: the first release, experimental. The katachi tool window, New &gt; katachi, and the editor
+        notification on files a template fits, in English and Japanese.</p>
+    ]]></change-notes>
 
     <depends>com.intellij.modules.platform</depends>
     <!-- Detection reads the Gradle sync data; loading and generating run Gradle through ExternalSystem. -->

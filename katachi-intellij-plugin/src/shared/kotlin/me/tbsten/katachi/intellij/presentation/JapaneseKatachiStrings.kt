@@ -1,6 +1,6 @@
 package me.tbsten.katachi.intellij.presentation
 
-/** The Japanese wording of the screen spec (`.local/design-ide-plugin`). */
+/** The Japanese wording of the screen spec (`.local/design-ide-plugin`), the source [EnglishKatachiStrings] follows. */
 internal object JapaneseKatachiStrings : KatachiStrings {
     override val initializing = "定義モジュールを探しています"
     override val loadingTitle = "テンプレートを読み込んでいます"
@@ -28,7 +28,7 @@ internal object JapaneseKatachiStrings : KatachiStrings {
         "定義モジュールに katachi の Gradle プラグインを適用してください。適用した直後なら、Gradle を同期してください。"
     override val installGuide = "導入手順を見る"
     override fun outdatedTitle(version: String?) =
-        if (version == null) "katachi を更新してください（0.3 以降）" else "katachi を更新してください（いま $version、0.3 以降が必要）"
+        if (version == null) "katachi を更新してください（0.2 以降）" else "katachi を更新してください（いま $version、0.2 以降が必要）"
 
     override val outdatedBody = "この版の katachi は、IDE 用のタスクを持っていません。"
     override val updateGuide = "更新手順を見る"

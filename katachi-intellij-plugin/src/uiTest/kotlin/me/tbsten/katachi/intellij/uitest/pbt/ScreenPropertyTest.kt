@@ -10,8 +10,9 @@ import kotlinx.coroutines.runBlocking
 import org.junit.Test
 
 /**
- * Sequences of operations on the real ViewModel, with every state they reach checked and drawn.
- * See [ScreenMachine] for how a sequence plays and [stateViolationsOf] for what must hold.
+ * Sequences of operations on the real ViewModel, with every state they reach checked and drawn, each
+ * sequence in Japanese or English ([languageArb]). See [ScreenMachine] for how a sequence plays and
+ * [stateViolationsOf] for what must hold.
  *
  * The seed is fixed so that `test` is repeatable; `-Pkatachi.pbt.seed=N` tries another and
  * `-Pkatachi.pbt.scale=N` runs N times as many sequences (the defaults keep `test` short). A failure
@@ -41,8 +42,8 @@ class ScreenPropertyTest {
     fun `どんな操作の列でも例外なく仕様の状態に留まり選択と入力を勝手に失わず各状態を2つの幅で描ける`() = runBlocking {
         val started = System.nanoTime()
         var renders = 0
-        checkAll(config(defaultIterations = 60), catalogArb(), opsArb(1..30)) { catalog, ops ->
-            ScreenMachine(catalog, render = true).use { machine ->
+        checkAll(config(defaultIterations = 60), catalogArb(), opsArb(1..30), languageArb) { catalog, ops, language ->
+            ScreenMachine(catalog, render = true, language).use { machine ->
                 machine.run(ops)
                 machine.collect()
                 renders += machine.renders
@@ -56,8 +57,8 @@ class ScreenPropertyTest {
     fun `通知からのテンプレートを見るを混ぜた操作の列でも強調は1行だけで頼んだ行が一覧に出て各状態を描ける`() = runBlocking {
         val started = System.nanoTime()
         var renders = 0
-        checkAll(config(defaultIterations = 60), catalogArb(), opsArb(1..30, stepWithRevealArb)) { catalog, ops ->
-            ScreenMachine(catalog, render = true).use { machine ->
+        checkAll(config(defaultIterations = 60), catalogArb(), opsArb(1..30, stepWithRevealArb), languageArb) { catalog, ops, language ->
+            ScreenMachine(catalog, render = true, language).use { machine ->
                 machine.run(ops)
                 machine.collect()
                 renders += machine.renders
@@ -69,8 +70,8 @@ class ScreenPropertyTest {
     @Test
     fun `描かずに長い操作の列を多く流しても仕様の状態に留まる`() = runBlocking {
         val started = System.nanoTime()
-        checkAll(config(defaultIterations = 300), catalogArb(), opsArb(1..80)) { catalog, ops ->
-            ScreenMachine(catalog, render = false).use { machine ->
+        checkAll(config(defaultIterations = 300), catalogArb(), opsArb(1..80), languageArb) { catalog, ops, language ->
+            ScreenMachine(catalog, render = false, language).use { machine ->
                 machine.run(ops)
                 machine.collect()
             }
@@ -82,8 +83,8 @@ class ScreenPropertyTest {
     fun `katachi本体が書いたJSONの上で操作しても仕様の状態に留まり各状態を描ける`() = runBlocking {
         val started = System.nanoTime()
         var renders = 0
-        checkAll(config(defaultIterations = 25), Arb.constant(syntheticCatalog), opsArb(1..30)) { catalog, ops ->
-            ScreenMachine(catalog, render = true).use { machine ->
+        checkAll(config(defaultIterations = 25), Arb.constant(syntheticCatalog), opsArb(1..30), languageArb) { catalog, ops, language ->
+            ScreenMachine(catalog, render = true, language).use { machine ->
                 machine.run(ops)
                 machine.collect()
                 renders += machine.renders
@@ -96,8 +97,8 @@ class ScreenPropertyTest {
     fun `数百件のテンプレートでも操作して描ける`() = runBlocking {
         val started = System.nanoTime()
         var renders = 0
-        checkAll(config(defaultIterations = 4), catalogArb(sizes = 150..300), opsArb(1..12)) { catalog, ops ->
-            ScreenMachine(catalog, render = true).use { machine ->
+        checkAll(config(defaultIterations = 4), catalogArb(sizes = 150..300), opsArb(1..12), languageArb) { catalog, ops, language ->
+            ScreenMachine(catalog, render = true, language).use { machine ->
                 machine.run(ops)
                 machine.collect()
                 renders += machine.renders

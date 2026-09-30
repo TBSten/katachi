@@ -10,7 +10,6 @@ import me.tbsten.katachi.intellij.model.ConflictChoice
 import me.tbsten.katachi.intellij.model.KatachiModule
 import me.tbsten.katachi.intellij.presentation.FieldId
 import me.tbsten.katachi.intellij.presentation.GenerationState
-import me.tbsten.katachi.intellij.presentation.JapaneseKatachiStrings
 import me.tbsten.katachi.intellij.presentation.KatachiIntent
 import me.tbsten.katachi.intellij.presentation.KatachiScreenState
 import me.tbsten.katachi.intellij.presentation.KatachiUiState
@@ -33,13 +32,17 @@ import java.io.File
  * sequence therefore always plays the same way, which is what lets kotest shrink it.
  *
  * After each step it checks the invariants and, when [render] is set, draws the new screen at both
- * [DockSize]s as the tool window would.
+ * [DockSize]s as the tool window would, worded in [language].
  *
  * ```kotlin
  * ScreenMachine(catalog, render = true).use { it.run(ops) }
  * ```
  */
-internal class ScreenMachine(private val catalog: Catalog, private val render: Boolean) : AutoCloseable {
+internal class ScreenMachine(
+    private val catalog: Catalog,
+    private val render: Boolean,
+    private val language: ScreenLanguage = ScreenLanguage.Japanese,
+) : AutoCloseable {
     private val dispatcher = ManualDispatcher()
     private val escaped = mutableListOf<Throwable>()
     private val scope = CoroutineScope(dispatcher + SupervisorJob() + CoroutineExceptionHandler { _, e -> escaped += e })
@@ -255,14 +258,14 @@ internal class ScreenMachine(private val catalog: Catalog, private val render: B
 
     private fun gate(): CompletableDeferred<Unit> = CompletableDeferred<Unit>().also { gates += it }
 
-    private fun ui(state: KatachiScreenState): KatachiUiState = uiStateOf(state, JapaneseKatachiStrings, ScenarioHarness.NOW)
+    private fun ui(state: KatachiScreenState): KatachiUiState = uiStateOf(state, language.strings, ScenarioHarness.NOW)
 
     private fun fail(problem: String, state: KatachiScreenState, ui: KatachiUiState?): Nothing {
         val picture = ui?.let { savePicture(it) }
         throw AssertionError(
             buildString {
                 appendLine(problem)
-                appendLine("after these steps:")
+                appendLine("in $language, after these steps:")
                 trace.forEachIndexed { index, step -> appendLine("  ${index + 1}. $step") }
                 appendLine("state: phase=${state.phase} loading=${state.loading} generation=${state.generation}")
                 appendLine("form: selected=${state.form.selected.map { it.template }} inputs=${state.form.inputs.mapKeys { it.key.template }}")

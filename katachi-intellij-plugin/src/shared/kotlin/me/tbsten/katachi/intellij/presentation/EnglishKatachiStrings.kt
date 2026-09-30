@@ -1,0 +1,143 @@
+package me.tbsten.katachi.intellij.presentation
+
+/**
+ * The English wording of the tool window, shown unless the IDE is in Japanese. It follows
+ * [JapaneseKatachiStrings] (the source) text for text, and words the texts the dialog shares with the
+ * tool window the way `KatachiBundle.properties` does.
+ */
+internal object EnglishKatachiStrings : KatachiStrings {
+    override val initializing = "Looking for the definition modules"
+    override val loadingTitle = "Loading the templates"
+    override val loadingNote = "The first time takes a few tens of seconds, as the definition is compiled."
+    override val cancel = "Cancel"
+    override val showLog = "Show Log"
+    override val reload = "Reload"
+    override val sync = "Sync"
+    override val details = "Details"
+    override fun refreshing(since: String) = "Refreshing… (last: $since)"
+    override fun minutesAgo(minutes: Long) = if (minutes == 1L) "1 minute ago" else "$minutes minutes ago"
+    override fun hoursAgo(hours: Long) = if (hours == 1L) "1 hour ago" else "$hours hours ago"
+    override fun daysAgo(days: Long) = if (days == 1L) "1 day ago" else "$days days ago"
+    override val justNow = "just now"
+
+    override val noTemplatesTitle = "No templates yet"
+    override val noTemplatesBody = "Write template { } in a role, and it is listed here."
+    override val howToWrite = "How to write one"
+    override val notGradleTitle = "Not a Gradle project"
+    override val notGradleBody = "katachi reads its templates from a Gradle definition module."
+    override val notSyncedTitle = "The Gradle project is not synced"
+    override val notSyncedBody = "The definition modules are looked for again once the sync finishes."
+    override val notInstalledTitle = "katachi is not found"
+    override val notInstalledBody =
+        "Apply the katachi Gradle plugin to the definition module. If you have just applied it, sync the Gradle project."
+    override val installGuide = "How to install"
+    override fun outdatedTitle(version: String?) =
+        if (version == null) "Update katachi (0.2 or later)" else "Update katachi (now $version, 0.2 or later is needed)"
+
+    override val outdatedBody = "This version of katachi has no task for the IDE."
+    override val updateGuide = "How to update"
+    override fun searchEmptyTitle(query: String) = "No template matches \"$query\""
+    override val clearSearch = "Clear Search"
+
+    override val loadErrorTitle = "Could not load the templates"
+    override val compileFailed = "The definition module failed to compile."
+    override val compileFailedHint = "Fix the definition, then reload."
+    override val staleSync = "The Gradle sync may be out of date."
+    override val staleSyncHint = "Sync the Gradle project, then reload."
+    override val architectureNotSet = "The definition module has no katachi { architecture = ... }."
+    override val architectureNotSetHint = "Set architecture in build.gradle.kts."
+    override val openBuildScript = "Open build.gradle.kts"
+    override val gradleFailed = "Gradle failed."
+    override val gradleFailedHint = "Details shows the last lines of the log."
+    override val jsonMissing = "The template list (JSON) was not written."
+    override val jsonMalformed = "The template list (JSON) could not be read."
+    override val jsonIncompatible = "The versions of katachi and the plugin do not go together."
+    override val jsonIncompatibleHint = "Update both katachi and the plugin to the latest version."
+    override val openJson = "Open JSON"
+    override val loadCancelled = "Loading stopped"
+    override val staleListBanner = "Could not load. Showing the previous list."
+    override val definitionChanged = "The definition changed."
+    override fun removedTemplates(names: List<String>) =
+        "${names.joinToString(", ")} ${if (names.size == 1) "is" else "are"} gone"
+
+    override val searchPlaceholder = "Search"
+    override val outsideSearch = "Outside the search, selected"
+    override fun filledCount(filled: Int, total: Int) = "$filled/$total filled"
+    override val previewFailed = "The preview failed. Show Cause under ⋯ tells why."
+    override fun unknownKinds(kinds: List<String>) =
+        "Some arguments are of a type this plugin does not know (${kinds.joinToString()})"
+
+    override val unresolvedTarget = "Some files have no target decided"
+    override val copyCommand = "Copy Command"
+    override val showCause = "Show Cause"
+    override val causeLoading = "Looking for the cause…"
+
+    override fun collapsedField(name: String, controller: String, value: String) = "$name (when $controller is ${valueLabel(value)})"
+
+    override fun valueLabel(value: String) = when (value) {
+        "true" -> "on"
+        "false" -> "off"
+        else -> value
+    }
+
+    override val chooseOne = "Choose one"
+    override val requiredError = "Enter a value"
+    override fun notAnInt(min: Int, max: Int) = "Enter an integer ($min to $max)"
+    override val notAccepted = "Choose one of the values"
+    override fun capturePathHint(name: String, markedPattern: String) = "A directory name that goes to <$name> in $markedPattern"
+    override fun captureModuleHint(name: String, markedPattern: String) = "An existing module name that goes to <$name> in module $markedPattern"
+    override fun captureModuleTarget(path: String) = "Target: $path"
+    override fun notAnExistingModule(existing: List<String>) =
+        if (existing.isEmpty()) "No existing module matches" else "Enter an existing module (${existing.joinToString(", ")})"
+    override val captureSeparatorError = "Use a single-level name (/ and \\ are not allowed)"
+    override val captureDotError = ". and .. are not allowed"
+    override val multilineOn = "Multiple Lines"
+    override val multilineOff = "Single Line"
+    override val alreadyExists = "exists"
+
+    override val nothingSelected = "Check a template"
+    override fun reasonRequired(role: String, parameter: String) = "$role: $parameter is empty"
+    override fun reasonNotAnInt(role: String, parameter: String) = "$role: enter an integer for $parameter"
+    override fun reasonNotAccepted(role: String, parameter: String) = "$role: the value of $parameter is not one of the values"
+    override fun reasonInvalidCapture(role: String, capture: String) = "$role: $capture must be a single-level directory name"
+    override fun reasonNotExistingModule(role: String, capture: String) = "$role: no module matches $capture"
+    override fun reasonUnavailable(role: String) = "$role cannot be generated"
+    override fun reasonUnresolved(role: String, fileName: String) = "$role: the target of $fileName is not decided"
+    override val reasonGenerating = "Generating"
+    override val reasonLoading = "Loading the templates"
+    override val onExisting = "Existing files"
+    override val onExistingAsk = "Ask"
+    override val onExistingSkip = "Skip"
+    override val onExistingOverwrite = "Overwrite"
+    override val overwriteWarning = "Existing files are replaced without asking"
+    override val generate = "Generate"
+
+    override fun rowWritten(count: Int) = if (count == 1) "1 file" else "$count files"
+    override fun rowRunning(taskPath: String?) = if (taskPath == null) "Running" else "Running > $taskPath"
+    override val rowWaiting = "Waiting"
+    override val rowAwaitingConflict = "Files exist · waiting for an answer"
+    override fun runningTask(taskPath: String) = "› $taskPath"
+    override val noArguments = "(no arguments)"
+    override fun generatingProgress(position: Int, total: Int) = "Generating… $position / $total"
+    override val waitingForLoad = "Waiting for loading to finish…"
+    override val waitingForConflict = "Waiting for an answer…"
+    override val fileNew = "new"
+    override val fileOverwritten = "overwritten"
+    override val fileSkipped = "skipped"
+    override val openedMarker = "← Opened"
+    override val rowSkipped = "Files exist, so nothing was written"
+    override val rowStopped = "Stopped here (files exist)"
+    override val rowInterrupted = "Interrupted (whether files were written is unknown)"
+    override val rowNotRun = "Not run"
+    override val writesUnknown = "Generated (the written files are unknown)"
+    override val outputIncomplete = "Generated (the output is incomplete)"
+    override val definitionCompileFailed = "The definition failed to compile"
+    override val generationTaskNotFound = "The task is not found. The Gradle sync may be out of date"
+    override fun resultAll(count: Int) = if (count == 1) "Generated 1 template" else "Generated $count templates"
+    override fun resultPartial(done: Int, total: Int) = "Generated $done of $total (the written files stay)"
+    override fun resultNothingWritten(total: Int) = "Generated 0 of $total (nothing was written)"
+    override fun undoHint(label: String) = "To undo: Local History \"$label\""
+    override val retryRemaining = "Retry the Rest"
+    override val continueGenerating = "Generate More"
+    override val uncheckAll = "Uncheck All"
+}

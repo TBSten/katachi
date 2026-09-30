@@ -7,7 +7,7 @@ internal sealed interface DetectionResult {
     /** Definition modules, grouped per linked root and ordered by root, then Gradle path (E-05, E-32). */
     data class Found(val modules: List<KatachiModule>, val katachiVersions: Map<ModuleId, String>) : DetectionResult
 
-    /** `katachiTemplates` exists but `katachiInternalTemplatesJson` does not: katachi before 0.3 (E-02). */
+    /** `katachiTemplates` exists but `katachiInternalTemplatesJson` does not: katachi before 0.2 (E-02). */
     data class Outdated(val katachiVersion: String?) : DetectionResult
 
     /** No module has either task (E-01). */
