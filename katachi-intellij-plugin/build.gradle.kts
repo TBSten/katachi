@@ -16,7 +16,7 @@ plugins {
 group = "me.tbsten.katachi.intellij"
 // katachi's own version: the zip attached to each GitHub Release (publish.yml) carries the version
 // of that release. Read from the root gradle/libs.versions.toml through settings.gradle.kts.
-version = katachiLibs.versions.katachi.get()
+version = katachiLibs.versions.katachiIntellij.get()
 
 // JBR 21, which the 261 platform runs on.
 kotlin {
@@ -155,7 +155,10 @@ intellijPlatformTesting.testIdeUi.register("integrationTest") {
         // Where the smoke copies the repository to open sample/jvm without touching the original.
         systemProperty("katachi.smoke.workDir", layout.buildDirectory.dir("integrationTest").get().asFile.path)
         // Starter reports through Allure, which otherwise writes allure-results/ into this directory.
-        systemProperty("allure.results.directory", layout.buildDirectory.dir("integrationTest/allure-results").get().asFile.path)
+        systemProperty(
+            "allure.results.directory",
+            layout.buildDirectory.dir("integrationTest/allure-results").get().asFile.path
+        )
     }
 }
 
@@ -183,7 +186,11 @@ dependencies {
     "uiTestImplementation"(libs.kotest.property)
     "uiTestImplementation"(libs.junit4)
     // The ViewModel logs through the platform's Logger; only that jar, not the platform with its Compose.
-    "uiTestImplementation"(files(configurations.named("intellijPlatformClasspath").map { platform -> platform.filter { it.name == "util-8.jar" } }))
+    "uiTestImplementation"(
+        files(
+            configurations.named("intellijPlatformClasspath")
+                .map { platform -> platform.filter { it.name == "util-8.jar" } })
+    )
 }
 val uiTest = tasks.register<Test>("uiTest") {
     group = "verification"
@@ -213,5 +220,13 @@ fun registerPreviewTask(name: String, mode: String, desc: String) = tasks.regist
     jvmArgs("-Djava.awt.headless=true", "-Dskiko.renderApi=SOFTWARE")
     args(mode)
 }
-registerPreviewTask("updatePreview", "update", "Render preview PNGs, write the gallery, and force-refresh the golden snapshots.")
-registerPreviewTask("verifyPreview", "verify", "Render preview PNGs and fail the build if any differs from the golden snapshots (VRT gate).")
+registerPreviewTask(
+    "updatePreview",
+    "update",
+    "Render preview PNGs, write the gallery, and force-refresh the golden snapshots."
+)
+registerPreviewTask(
+    "verifyPreview",
+    "verify",
+    "Render preview PNGs and fail the build if any differs from the golden snapshots (VRT gate)."
+)
