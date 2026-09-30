@@ -30,13 +30,46 @@ internal fun awaitEntryDialog(bridge: EditorEntryProbe, vararg lines: String) {
     }
 }
 
+/**
+ * Replaces the dialog's `name` field with [value] by keyboard only, starting from `name` or the field
+ * right after it (`body`). Compose's focus is invisible to Driver, so a probe character tells which
+ * field has it before anything is erased, and each step waits for the ViewModel to show its effect:
+ * a blind Shift+Tab then Cmd+A once put the whole value at the end of `body` instead (10-2). Only
+ * Shift+Tab carries a modifier; the field is cleared with Backspace, not the macOS-only Cmd+A.
+ */
 internal fun Driver.typeEntryCapture(value: String, bridge: EditorEntryProbe) {
-    // The caller moves focus with Tab/Shift+Tab; never click inside Compose by coordinates.
-    ui.keyboard {
-        hotKey(KeyEvent.VK_META, KeyEvent.VK_A)
-        typeText(value, delayBetweenCharsInMs = 80)
+    val name = entryField(bridge, "name")
+    val body = entryField(bridge, "body")
+    ui.keyboard { typeText(ENTRY_PROBE, delayBetweenCharsInMs = 80) }
+    val landed = awaitProbe(bridge, "name" to name, "body" to body)
+    if (landed == "body") {
+        ui.keyboard { backspace() }
+        awaitEntryDialog(bridge, "field=body=$body")
+        ui.keyboard { hotKey(KeyEvent.VK_SHIFT, KeyEvent.VK_TAB) }
+        ui.keyboard { typeText(ENTRY_PROBE, delayBetweenCharsInMs = 80) }
+        assertEquals("name", awaitProbe(bridge, "name" to name, "body" to body), "Shift+Tab from body must reach name")
     }
+    // The caret is after the probe at the end of name: erase the old value and the probe.
+    ui.keyboard { repeat(name.length + ENTRY_PROBE.length) { backspace() } }
+    awaitEntryDialog(bridge, "field=name=")
+    ui.keyboard { typeText(value, delayBetweenCharsInMs = 80) }
     awaitEntryDialog(bridge, "field=name=$value")
+}
+
+private const val ENTRY_PROBE = "Q"
+
+private fun entryField(bridge: EditorEntryProbe, name: String): String =
+    bridge.describeDialog().lines().single { it.startsWith("field=$name=") }.removePrefix("field=$name=")
+
+/** Which of [fields] (name to value before the probe) now ends with the probe; fails when none does. */
+private fun awaitProbe(bridge: EditorEntryProbe, vararg fields: Pair<String, String>): String {
+    var landed: String? = null
+    waitFor("probe typed into a text field", timeout = 30.seconds, errorMessage = { bridge.describeDialog() }) {
+        val lines = bridge.describeDialog().lines()
+        landed = fields.firstOrNull { (name, before) -> "field=$name=$before$ENTRY_PROBE" in lines }?.first
+        landed != null
+    }
+    return checkNotNull(landed)
 }
 
 /** S3's select-opened-file locator avoids assumptions about compact package nodes in Project. */
