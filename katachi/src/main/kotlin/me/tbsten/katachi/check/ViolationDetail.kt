@@ -14,6 +14,8 @@ package me.tbsten.katachi.check
  * ```kt
  * ViolationDetail("Rule", "LongMethod").toString() shouldBe "Rule: LongMethod"
  * ```
+ *
+ * @constructor Takes the label and the value, each as the report should show it.
  */
 public data class ViolationDetail(
     /**
@@ -35,5 +37,6 @@ public data class ViolationDetail(
      */
     public val value: String,
 ) {
+    /** `<label>: <value>`, the way a report prints the row. */
     override fun toString(): String = "$label: $value"
 }

@@ -9,7 +9,7 @@ import me.tbsten.katachi.dsl.KatachiDsl
  * katachi answers with.
  *
  * Everything on the left of the dot is Konsist's — `classes()`, `functions()`,
- * `declarations()`, `withNameEndingWith(...)` and the rest arrive through [KoScope] and
+ * `declarations()`, `withNameEndingWith(...)` and the rest arrive through Konsist's `KoScope` and
  * Konsist's list extensions, unchanged. What katachi replaces is the right of the dot: where
  * Konsist would end a query with its own `assertTrue`, a `konsist { }` block ends it with
  * [must], [mustNot] or [mustBeEmpty].
@@ -27,7 +27,7 @@ import me.tbsten.katachi.dsl.KatachiDsl
  * - **`KoFileDeclaration.projectPath` and `moduleName` are not usable here.** The scope is
  *   built with `scopeFromExternalDirectories`, which Konsist documents as not resolving its
  *   own project root, so both are relative to whatever root Konsist inferred rather than to
- *   the project katachi walked. Use [KoScope] queries and the paths in the report instead.
+ *   the project katachi walked. Use `KoScope` queries and the paths in the report instead.
  * - **`.kts` files are never in the scope.** Konsist 0.17.3 parses a file only when its name
  *   ends in `.kt` (`File.isKotlinFile`), so a `build.gradle.kts` or any other script inside
  *   what a constraint covers is invisible here however the layout was written. A rule about

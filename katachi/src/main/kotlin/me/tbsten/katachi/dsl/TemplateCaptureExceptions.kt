@@ -118,8 +118,9 @@ public class KatachiTemplateParameterConflictException internal constructor(
     /** The name both of them answer to. */
     public val name: String,
     /**
-     * What else answers to [name]: `stringParameter()` and its siblings, or
-     * `GenerateCodeFromTemplate.Args.template` / `GenerateCodeFromTemplate.Args.onExisting`.
+     * What else answers to [name][KatachiTemplateParameterConflictException.name]:
+     * `stringParameter()` and its siblings, or `GenerateCodeFromTemplate.Args.template` /
+     * `GenerateCodeFromTemplate.Args.onExisting`.
      */
     public val conflictsWith: String,
     /** Where a layout path naming the capture was declared. */

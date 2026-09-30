@@ -30,9 +30,10 @@ import java.util.concurrent.atomic.AtomicInteger
  * Passing it twice changes nothing — the second instance finds every constraint already
  * answered for and returns nothing, so no violation is counted twice.
  *
- * It answers through [assertNoErrors], like [LayoutCheck]: a constraint that could not be
- * evaluated is reported as an [UncheckedFileConstraint] in that answer rather than thrown, and
- * whatever else stops it is a `Result.failure` rather than a throw out of `process`.
+ * It answers through [me.tbsten.katachi.check.assertNoErrors], like [LayoutCheck]: a constraint
+ * that could not be evaluated is reported as an [UncheckedFileConstraint] in that answer rather
+ * than thrown, and whatever else stops it is a `Result.failure` rather than a throw out of
+ * `process`.
  *
  * ## Evaluating in parallel
  *
@@ -52,11 +53,12 @@ import java.util.concurrent.atomic.AtomicInteger
  * }
  * ```
  *
- * ## Example 2: read what the constraints found without failing the test
+ * ## Example 2: read which files the constraints rejected
  * ```kt
- * projectArchitecture.validate(FileConstraintCheck())
- *     .filterIsInstance<UnsatisfiedFileConstraint>()
- *     .map { it.path } shouldBe emptyList()
+ * val failure = shouldThrow<KatachiArchitectureAssertionError> {
+ *     projectArchitecture.assert(FileConstraintCheck())
+ * }
+ * failure.violations.filterIsInstance<UnsatisfiedFileConstraint>().map { it.path }
  * ```
  *
  * ## Example 3: run it from the command line
@@ -85,7 +87,9 @@ import java.util.concurrent.atomic.AtomicInteger
  *
  * @property parallelism how many constraints may be evaluated at once; `1`, the default,
  *   evaluates them one at a time on the calling thread.
- * @throws KatachiInvalidFileConstraintParallelismException when [parallelism] is less than 1.
+ * @throws KatachiInvalidFileConstraintParallelismException when
+ *   [parallelism][FileConstraintCheck.parallelism] is less than 1.
+ * @constructor Takes how many constraints may run at once, one unless given.
  */
 @ExperimentalKatachiApi
 public class FileConstraintCheck(
@@ -116,6 +120,7 @@ public class FileConstraintCheck(
             violations.assertNoErrors(walk.projectRoot)
         }
 
+    /** `FileConstraintCheck`, with `(parallelism=<n>)` when it runs more than one at once. */
     override fun toString(): String =
         if (parallelism == 1) "FileConstraintCheck" else "FileConstraintCheck(parallelism=$parallelism)"
 }

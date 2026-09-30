@@ -18,8 +18,10 @@ private const val LISTED_PATHS: Int = 3
  *
  * ## Example 1: catch a backend that answered about the wrong files
  * ```kt
- * projectArchitecture.validate(FileConstraintCheck())
- *     .filterIsInstance<UncheckedFileConstraint>()
+ * val failure = shouldThrow<KatachiArchitectureAssertionError> {
+ *     projectArchitecture.assert(FileConstraintCheck())
+ * }
+ * failure.violations.filterIsInstance<UncheckedFileConstraint>()
  *     .single().cause.shouldBeInstanceOf<KatachiFileConstraintSubjectException>()
  * ```
  *
@@ -27,7 +29,8 @@ private const val LISTED_PATHS: Int = 3
  * @property constraintName what the constraint was called, or `null`.
  * @property declaredAt where the constraint was written.
  * @property outside the paths that were answered about but never handed over.
- * @param projectRoot what the message resolves [outside] against to print `file:///...` URIs.
+ * @param projectRoot what the message resolves
+ *   [outside][KatachiFileConstraintSubjectException.outside] against to print `file:///...` URIs.
  *   `null` prints them as they are.
  */
 public class KatachiFileConstraintSubjectException internal constructor(

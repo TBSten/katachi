@@ -230,7 +230,7 @@ private class CaptureTrail(
     }
 }
 
-/** [trail] extended with what [child], the [segmentIndex]-th level of its path, names. */
+/** This trail extended with what [child], the [segmentIndex]-th level of its path, names. */
 private fun CaptureTrail.enter(child: LayoutNode, segmentIndex: Int, role: Role, path: String): CaptureTrail {
     val moduleNames = child.moduleCaptureNames?.filterNotNull()
     val pattern = child.moduleCapturePattern

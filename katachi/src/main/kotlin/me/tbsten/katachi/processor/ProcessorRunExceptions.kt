@@ -55,8 +55,8 @@ public class KatachiProcessorNotFoundException internal constructor(
 /**
  * A registered processor class could be neither read as a singleton nor constructed.
  *
- * [me.tbsten.katachi.processor.internal.instantiateProcessor] looks for a Kotlin `object`'s `INSTANCE` field first, and a no-argument
- * constructor second; this is thrown once both have failed.
+ * katachi looks for a Kotlin `object`'s `INSTANCE` field first, and a no-argument constructor
+ * second; this is thrown once both have failed.
  *
  * ## Example 1: a class with no `INSTANCE` field and no no-argument constructor
  * ```kt
@@ -128,7 +128,7 @@ public class KatachiProcessorTypeException internal constructor(
 )
 
 /**
- * The Gradle plugin's generated [me.tbsten.katachi.processor.internal.KatachiEntryPoint] could not be read.
+ * The entry point class the Gradle plugin generates could not be read.
  *
  * ## Example 1: an entry point class that was never generated
  * ```kt

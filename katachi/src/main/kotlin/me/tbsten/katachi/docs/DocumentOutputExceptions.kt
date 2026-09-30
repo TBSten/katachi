@@ -93,7 +93,10 @@ public class KatachiStaleDocumentationException internal constructor(
  */
 @ExperimentalKatachiApi
 public class KatachiDocumentIoException internal constructor(
-    /** The page being written or read, relative to [outputDir]. */
+    /**
+     * The page being written or read, relative to
+     * [outputDir][KatachiDocumentIoException.outputDir].
+     */
     public val path: String,
     /** The output directory, exactly as `--arg outputDir=` spelled it. */
     public val outputDir: String,

@@ -10,11 +10,18 @@ package me.tbsten.katachi.dsl
  * ```kt
  * DeclarationSite("ProjectArchitecture.kt", 42).toString() shouldBe "ProjectArchitecture.kt:42"
  * ```
+ *
+ * @property fileName the name of the file alone, without its directory, such as
+ *   `ProjectArchitecture.kt`.
+ * @property lineNumber the line in that file, counted from 1.
+ * @constructor Takes the file name and the line. katachi captures one by itself for every
+ *   declaration; build one by hand to compare against it in a test.
  */
 public data class DeclarationSite(
     public val fileName: String,
     public val lineNumber: Int,
 ) {
+    /** `<fileName>:<lineNumber>`, the form a report prints next to a declaration. */
     override fun toString(): String = "$fileName:$lineNumber"
 
     /**

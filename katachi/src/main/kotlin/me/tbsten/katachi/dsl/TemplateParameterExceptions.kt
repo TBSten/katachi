@@ -44,7 +44,7 @@ public class KatachiUnboundTemplateParameterException internal constructor(
     public val parameterSites: List<DeclarationSite>,
     /** The function the first unnamed one was declared with, for the fix to quote. */
     internal val declaredWith: String,
-    /** Where `template { }` was written. */
+    /** Where `.template { }` was written. */
     public val declaredAt: DeclarationSite,
 ) : KatachiDeclarationException(
     message = buildString {
@@ -203,15 +203,18 @@ public class KatachiMissingTemplateParameterException internal constructor(
     public val role: String,
     /** Every name the run was short of, sorted. */
     public val names: List<String>,
-    /** What each of [names] accepts, for the ones not declared with `stringParameter()`. */
+    /**
+     * What each of [names][KatachiMissingTemplateParameterException.names] accepts, for the ones
+     * not declared with `stringParameter()`.
+     */
     internal val accepted: Map<String, String>,
-    /** Where `template { }` was written. */
+    /** Where `.template { }` was written. */
     public val declaredAt: DeclarationSite,
     cause: Throwable?,
     /**
      * The captures the template read with `captureValue(...)` that the run gave no value either,
-     * sorted. They are not in [names]: a capture is not a parameter, and is reported on its own
-     * once every parameter has a value.
+     * sorted. They are not in [names][KatachiMissingTemplateParameterException.names]: a capture is
+     * not a parameter, and is reported on its own once every parameter has a value.
      */
     public val missingCaptures: List<String> = emptyList(),
 ) : KatachiDeclarationException(
@@ -281,7 +284,7 @@ public class KatachiInvalidTemplateParameterValueException internal constructor(
     /** Names the run was also short of, sorted. Empty when none were missing. */
     public val missing: List<String>,
     internal val missingAccepted: Map<String, String>,
-    /** Where `template { }` was written. */
+    /** Where `.template { }` was written. */
     public val declaredAt: DeclarationSite,
     cause: Throwable?,
 ) : KatachiDeclarationException(

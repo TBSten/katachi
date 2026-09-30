@@ -40,6 +40,9 @@ package me.tbsten.katachi
  *     message = "This block expects nothing, declared at $declaredAt.",
  * )
  * ```
+ *
+ * @constructor Takes the finished message and, optionally, the cause. Open to a third-party
+ *   backend's own subclass, which opts in to [ExperimentalKatachiApi].
  */
 public abstract class KatachiDeclarationException @ExperimentalKatachiApi public constructor(
     message: String,
@@ -105,6 +108,9 @@ public abstract class KatachiCheckException internal constructor(
  *     """.trimIndent(),
  * )
  * ```
+ *
+ * @constructor Takes the finished message and, optionally, the cause. Open to a third-party
+ *   backend's own subclass, which opts in to [ExperimentalKatachiApi].
  */
 public abstract class KatachiInternalException @ExperimentalKatachiApi public constructor(
     message: String,

@@ -31,7 +31,7 @@ internal val Throwable.isFatal: Boolean
  * It sits in the root package rather than next to the walk that first needed it, because the
  * same rule has to hold in more than one layer: `validate` runs each check handed to it under
  * this so that a third-party check that throws becomes one `[UncheckedCheck]` block, and
- * `evaluateTemplate` runs a user's own `template { }` block under it so that a missing
+ * `evaluateTemplate` runs a user's own `.template { }` block under it so that a missing
  * parameter is reported before whatever failed for want of it. "Here it failed, so the
  * neighbour still answers" is one rule, and one rule is one place -- which has to be a place
  * every layer may reach.

@@ -21,8 +21,8 @@ import me.tbsten.katachi.processor.internal.projectWalk
  * another run to learn the second. Turning a result into a test failure is `assert()`'s job,
  * and `assert()` is the only entry point that throws.
  *
- * "Returns" means [assertNoErrors] at the end of the body: warnings only is a
- * `success`, and anything that fails the check is a `failure` carrying a
+ * "Returns" means [me.tbsten.katachi.check.assertNoErrors] at the end of the body: warnings only
+ * is a `success`, and anything that fails the check is a `failure` carrying a
  * [KatachiArchitectureAssertionError] that holds every violation found, warnings included.
  * Whatever else goes wrong -- no project root, a mistake in the definition -- is a `failure`
  * too, and is not thrown out of `process`.
@@ -94,6 +94,8 @@ import me.tbsten.katachi.processor.internal.projectWalk
  *
  * It is not registered by default: the test already runs it through `assert()`, and a key of its
  * own is only needed to run the check alone from the command line.
+ *
+ * @constructor Takes nothing: the check has no settings.
  */
 @ExperimentalKatachiApi
 public class LayoutCheck : ArchitectureProcessorNoArg<List<Violation>> {

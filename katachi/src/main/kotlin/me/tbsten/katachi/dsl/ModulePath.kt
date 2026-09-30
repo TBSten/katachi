@@ -83,10 +83,13 @@ public class ModulePath private constructor(
      */
     public fun child(name: String): ModulePath = ModulePath(segments + name)
 
+    /** Equal when both have the same [value][ModulePath.value]. */
     override fun equals(other: Any?): Boolean = other is ModulePath && other.value == value
 
+    /** Hashes [value][ModulePath.value] alone, to agree with [equals]. */
     override fun hashCode(): Int = value.hashCode()
 
+    /** The path itself, [value][ModulePath.value], such as `:core:data`. */
     override fun toString(): String = value
 
     /**
@@ -119,8 +122,8 @@ public class ModulePath private constructor(
          * ```
          *
          * @throws KatachiGlobSyntaxException when [raw] is empty, has an empty segment
-         *   (`":core::data"`, `":core:"`), or still holds a `*` — a pattern goes through
-         *   [me.tbsten.katachi.dsl.internal.ModulePattern] instead.
+         *   (`":core::data"`, `":core:"`), or still holds a `*`: this is one module's path, not a
+         *   pattern.
          */
         public fun of(raw: String): ModulePath {
             if (raw.isEmpty()) throw KatachiGlobSyntaxException(raw, GlobProblem.EmptyModulePath)

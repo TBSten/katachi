@@ -81,11 +81,17 @@ public class KatachiTemplatePathOutsideProjectException internal constructor(
  */
 @ExperimentalKatachiApi
 public class KatachiTemplatePathMismatchException internal constructor(
-    /** The template that produced [path], its complete `--arg template=` specifier. */
+    /**
+     * The template that produced [path][KatachiTemplatePathMismatchException.path], its complete
+     * `--arg template=` specifier.
+     */
     public val template: String,
     /** The declared pattern the filled-in path was checked against. */
     public val pattern: String,
-    /** The path the run's values filled in, which [pattern] does not match. */
+    /**
+     * The path the run's values filled in, which
+     * [pattern][KatachiTemplatePathMismatchException.pattern] does not match.
+     */
     public val path: String,
 ) : KatachiInternalException(
     message = """

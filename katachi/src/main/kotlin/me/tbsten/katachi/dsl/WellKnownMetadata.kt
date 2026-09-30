@@ -5,9 +5,9 @@ import me.tbsten.katachi.ExperimentalKatachiApi
 /**
  * One concrete example of a role, as `example("GetUserUseCase", "Fetches a user")`.
  *
- * Name and description are separate arguments so that a description may contain anything,
- * `...` included. [description] is `null`, not an empty string, when it was left out --
- * generated documentation then shows the name alone.
+ * Name and description are separate arguments so that a description may contain anything, `...`
+ * included. [description][RoleExample.description] is `null`, not an empty string, when it was left
+ * out -- generated documentation then shows the name alone.
  *
  * ## Example 1: attach one concrete example to a role, with and without a description
  * ```kt
@@ -22,6 +22,10 @@ import me.tbsten.katachi.ExperimentalKatachiApi
  * arch.allRoles.single()[Examples] shouldContainExactly
  *     listOf(RoleExample("GetUserUseCase", "Fetches a user"), RoleExample("SignOutUseCase", null))
  * ```
+ *
+ * @property name the example itself, such as `GetUserUseCase`.
+ * @property description one sentence about it, or `null` when it was left out.
+ * @constructor Takes the name and, optionally, the description; `example(...)` builds one.
  */
 public data class RoleExample(
     public val name: String,

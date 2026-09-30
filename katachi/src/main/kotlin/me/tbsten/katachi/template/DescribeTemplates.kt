@@ -147,6 +147,8 @@ public object DescribeTemplates : ArchitectureProcessor<DescribeTemplates.Args, 
      * // ./gradlew katachiTemplates --arg template=data.Repository.repository
      * DescribeTemplates.Args(template = "data.Repository.repository")
      * ```
+     *
+     * @constructor Takes the template to explain, or nothing to list them all.
      */
     @Serializable
     public data class Args(

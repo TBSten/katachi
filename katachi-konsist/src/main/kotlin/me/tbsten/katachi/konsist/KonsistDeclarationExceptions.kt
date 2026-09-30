@@ -17,8 +17,10 @@ private fun namedFileConstraint(constraintName: String?, declaredAt: Declaration
  *
  * ## Example 1: catch a block that forgot to say what it wants
  * ```kt
- * projectArchitecture.validate(FileConstraintCheck())
- *     .filterIsInstance<UncheckedFileConstraint>()
+ * val failure = shouldThrow<KatachiArchitectureAssertionError> {
+ *     projectArchitecture.assert(FileConstraintCheck())
+ * }
+ * failure.violations.filterIsInstance<UncheckedFileConstraint>()
  *     .single().cause.shouldBeInstanceOf<KatachiKonsistNoExpectationException>()
  * ```
  *
@@ -83,8 +85,10 @@ public class KatachiKonsistNoExpectationException internal constructor(
  *
  * ## Example 1: catch a rule written over files Konsist cannot read
  * ```kt
- * projectArchitecture.validate(FileConstraintCheck())
- *     .filterIsInstance<UncheckedFileConstraint>()
+ * val failure = shouldThrow<KatachiArchitectureAssertionError> {
+ *     projectArchitecture.assert(FileConstraintCheck())
+ * }
+ * failure.violations.filterIsInstance<UncheckedFileConstraint>()
  *     .single().cause.shouldBeInstanceOf<KatachiKonsistNoKotlinFilesException>()
  * ```
  *
@@ -160,8 +164,10 @@ public class KatachiKonsistNoKotlinFilesException internal constructor(
  *
  * ## Example 1: catch a suppressed `assertTrue`
  * ```kt
- * projectArchitecture.validate(FileConstraintCheck())
- *     .filterIsInstance<UncheckedFileConstraint>()
+ * val failure = shouldThrow<KatachiArchitectureAssertionError> {
+ *     projectArchitecture.assert(FileConstraintCheck())
+ * }
+ * failure.violations.filterIsInstance<UncheckedFileConstraint>()
  *     .single().cause.shouldBeInstanceOf<KatachiKonsistDirectAssertionException>()
  * ```
  *
@@ -202,8 +208,10 @@ public class KatachiKonsistDirectAssertionException internal constructor(
  *
  * ## Example 1: catch a rejection katachi could not point at a file
  * ```kt
- * projectArchitecture.validate(FileConstraintCheck())
- *     .filterIsInstance<UncheckedFileConstraint>()
+ * val failure = shouldThrow<KatachiArchitectureAssertionError> {
+ *     projectArchitecture.assert(FileConstraintCheck())
+ * }
+ * failure.violations.filterIsInstance<UncheckedFileConstraint>()
  *     .single().cause.shouldBeInstanceOf<KatachiKonsistUnlocatableDeclarationException>()
  * ```
  *

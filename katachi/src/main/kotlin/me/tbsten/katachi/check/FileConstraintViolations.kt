@@ -12,14 +12,17 @@ import me.tbsten.katachi.dsl.Role
  * prints: there is no "How to fix", because what would satisfy the rule is the rule's own
  * business and inventing advice about it would be inventing a claim.
  *
- * One of these per rejected file per constraint. A constraint rejecting four classes in one
- * file produces four, each with its own [declaration] and [line]; the same declaration
- * rejected twice by one block produces one.
+ * One of these per rejected file per constraint. A constraint rejecting four classes in one file
+ * produces four, each with its own [declaration][UnsatisfiedFileConstraint.declaration] and
+ * [line][UnsatisfiedFileConstraint.line]; the same declaration rejected twice by one block produces
+ * one.
  *
  * ## Example 1: list the files a constraint rejected
  * ```kt
- * projectArchitecture.validate(FileConstraintCheck())
- *     .filterIsInstance<UnsatisfiedFileConstraint>()
+ * val failure = shouldThrow<KatachiArchitectureAssertionError> {
+ *     projectArchitecture.assert(FileConstraintCheck())
+ * }
+ * failure.violations.filterIsInstance<UnsatisfiedFileConstraint>()
  *     .map { it.path } shouldBe listOf("core/domain/useCase/Helper.kt")
  * ```
  */
@@ -43,7 +46,8 @@ public class UnsatisfiedFileConstraint internal constructor(
      */
     public val declaration: String?,
     /**
-     * Line [declaration] starts at, 1-based, or `null` when the backend could not say.
+     * Line [declaration][UnsatisfiedFileConstraint.declaration] starts at, 1-based, or `null` when
+     * the backend could not say.
      *
      * ## Example 1: jump to the rejected declaration
      * ```kt
@@ -92,6 +96,7 @@ public class UnsatisfiedFileConstraint internal constructor(
     override val kind: ViolationKind get() = ViolationKind.FileConstraint
     override val severity: Severity get() = Severity.Error
     override val label: String get() = "UnsatisfiedFileConstraint"
+    /** `[<label>] <path>`, for a log line or a test failure message. */
     override fun toString(): String = "[$label] $path"
 }
 
@@ -144,8 +149,10 @@ public enum class UncheckedFileConstraintReason {
  *
  * ## Example 1: notice that a run evaluated no constraints
  * ```kt
- * projectArchitecture.validate()
- *     .filterIsInstance<UncheckedFileConstraint>()
+ * val failure = shouldThrow<KatachiArchitectureAssertionError> {
+ *     projectArchitecture.assert()
+ * }
+ * failure.violations.filterIsInstance<UncheckedFileConstraint>()
  *     .map { it.reason } shouldBe listOf(UncheckedFileConstraintReason.NotEvaluated)
  * ```
  */
@@ -221,5 +228,6 @@ public class UncheckedFileConstraint internal constructor(
     override val kind: ViolationKind get() = ViolationKind.Failed
     override val severity: Severity get() = Severity.Error
     override val label: String get() = "UncheckedFileConstraint"
+    /** `[<label>] <path>`, for a log line or a test failure message. */
     override fun toString(): String = "[$label] $path"
 }

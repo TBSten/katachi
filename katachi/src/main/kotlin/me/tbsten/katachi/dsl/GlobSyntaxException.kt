@@ -7,8 +7,9 @@ import me.tbsten.katachi.dsl.internal.GlobProblem
 /**
  * A glob pattern katachi cannot make sense of.
  *
- * The wording is `problem`'s, and `context` adds where the pattern was written when that is
- * known. Both are internal bookkeeping; [pattern] is the part a caller can rely on.
+ * The wording is `problem`'s, and `context` adds where the pattern was written when that is known.
+ * Both are internal bookkeeping; [pattern][KatachiGlobSyntaxException.pattern] is the part a caller
+ * can rely on.
  *
  * ## Example 1: catch a broken pattern and read back what was written
  * ```kt

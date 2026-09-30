@@ -25,7 +25,6 @@ import me.tbsten.katachi.konsist.internal.KonsistFileConstraint
  * `konsist { }` there does not compile: a group holds roles, not files, so there would be no
  * set of files for the block to be about.
  *
- *
  * ## Example 1: one rule, on one module
  * ```kt
  * "UseCase" {

@@ -32,12 +32,12 @@ import me.tbsten.katachi.processor.internal.NoArgContextView
  * otherwise.
  *
  * A check that reports `Violation`s says "I found something" by ending its body with
- * `me.tbsten.katachi.check.assertNoErrors`, which throws a `KatachiArchitectureAssertionError`
- * when there is an error among them. `validate()` and `assert()` put that exception's violations
- * into their one report; any other failure is read there as "this check could not do its job",
- * and becomes one `UncheckedCheck`. On the command line both are `[FAILED]`.
+ * `me.tbsten.katachi.check.assertNoErrors`, which throws a `KatachiArchitectureAssertionError` when
+ * there is an error among them. `assert()` and `assertNoErrors()` put that exception's violations
+ * into their one report; any other failure is read there as "this check could not do its job", and
+ * becomes one `UncheckedCheck`. On the command line both are `[FAILED]`.
  *
- * The runner and `validate()` still catch a processor that throws out of `process` instead, and
+ * The runner and `assert()` still catch a processor that throws out of `process` instead, and
  * treat it as the same failure, but a processor is expected not to.
  *
  * ## Example 1: a processor with typed arguments, written as an object
@@ -173,10 +173,6 @@ public interface ArchitectureProcessor<Args, R> {
  * [ArchitectureProcessNoArgContext]: the same context, with `args` deprecated because there is
  * nothing in it to read. The `ArchitectureProcessContext<Unit>` overload that katachi calls is
  * implemented here and forwards to it.
- *
- * This replaces v0.1's `ArchitectureProcessorUnit`, which was an alias for
- * `ArchitectureProcessor<Unit>`. With two type parameters that alias could no longer say what
- * it meant, so the shape has a name instead.
  *
  * ## Example 1: a processor that exists for its effect
  * ```kt

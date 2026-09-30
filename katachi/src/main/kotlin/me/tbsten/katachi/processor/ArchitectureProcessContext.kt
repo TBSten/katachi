@@ -81,7 +81,7 @@ public interface ArchitectureProcessContext<out Args> {
      * [args] is the typed reading of these, narrowed to the fields one processor declares, and is
      * what a processor normally works with. This is the undecoded map, and it exists for the one
      * shape [args] cannot have: a vocabulary that differs per role, such as the parameters a
-     * `template { }` declares, which no fixed set of fields could name.
+     * `.template { }` declares, which no fixed set of fields could name.
      *
      * **Being able to read a name is not the same as being allowed to be passed it.** Whether a
      * `--arg` belongs to this run at all is decided once, before any processor starts; what a

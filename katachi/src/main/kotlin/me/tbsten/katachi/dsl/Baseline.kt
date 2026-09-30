@@ -51,8 +51,11 @@ public class Baseline internal constructor(
     /** Where `baseline(...)` was called; not part of what makes two baselines equal. */
     internal val declaredAt: DeclarationSite = DeclarationSite.Unknown,
 ) {
+    /** Equal when both read the same [path][Baseline.path]. */
     override fun equals(other: Any?): Boolean = other is Baseline && other.path == path
+    /** Hashes [path][Baseline.path] alone, to agree with [equals]. */
     override fun hashCode(): Int = path.hashCode()
+    /** `Baseline(<path>)`. */
     override fun toString(): String = "Baseline($path)"
 }
 

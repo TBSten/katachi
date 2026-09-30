@@ -6,8 +6,8 @@ import me.tbsten.katachi.KatachiDeclarationException
 import me.tbsten.katachi.dsl.Role
 
 /**
- * [ArchitectureProcessContext.filesOf] was handed a role that belongs to a different
- * definition.
+ * A role that belongs to a different definition was handed to
+ * [ArchitectureProcessContext.filesOf].
  *
  * A run answers for the one [me.tbsten.katachi.dsl.Architecture] it was started from, and a
  * [Role] carries no identity beyond the object itself, so a role taken from elsewhere cannot be

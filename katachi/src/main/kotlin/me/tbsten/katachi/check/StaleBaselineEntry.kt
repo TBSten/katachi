@@ -53,5 +53,6 @@ public class StaleBaselineEntry internal constructor(
     override val kind: ViolationKind get() = ViolationKind.Stale
     override val severity: Severity get() = STALE_BASELINE_ENTRY_SEVERITY
     override val label: String get() = "StaleBaselineEntry"
+    /** `[<label>] <path>`, for a log line or a test failure message. */
     override fun toString(): String = "[$label] $path"
 }

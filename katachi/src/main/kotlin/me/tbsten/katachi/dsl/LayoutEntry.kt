@@ -116,7 +116,10 @@ public class LayoutEntry internal constructor(
      * ```
      */
     public val path: String,
-    /** [path] compiled. `Glob.hasWildcard` is what made a declaration optional by itself. */
+    /**
+     * [path][LayoutEntry.path] compiled. `Glob.hasWildcard` is what made a declaration optional by
+     * itself.
+     */
     @property:InternalKatachiApi public val glob: Glob,
     /**
      * What the declaration says about this path.
@@ -226,11 +229,12 @@ public class LayoutEntry internal constructor(
      */
     internal val modulePath: String?,
     /**
-     * [path] as the declaration reads inside its module: the module's own directory taken off
-     * the front, and every level a module package produced folded into a single `**`.
+     * [path][LayoutEntry.path] as the declaration reads inside its module: the module's own
+     * directory taken off the front, and every level a module package produced folded into a single
+     * `**`.
      *
-     * Equal to [path] when [modulePath] is `null` or names the root project, neither of which
-     * has a directory of its own to take off.
+     * Equal to [path][LayoutEntry.path] when [modulePath] is `null` or names the root project,
+     * neither of which has a directory of its own to take off.
      *
      * Internal for the same reason [modulePath] is. It is derived while the tree is flattened
      * because that is the last moment the marks survive -- a flattened path is a string, and a
@@ -291,6 +295,7 @@ public class LayoutEntry internal constructor(
     @ExperimentalKatachiApi
     public operator fun <T : Any> get(key: MetadataKey<T>): T? = metadata[key]
 
+    /** The path, the kind and the role, plus `required` when it is. */
     override fun toString(): String =
         "LayoutEntry($path, $kind, ${role.qualifiedName}${if (required) ", required" else ""})"
 }

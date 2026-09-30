@@ -104,10 +104,13 @@ public class FsPath private constructor(
     public fun relativeTo(base: FsPath): String? =
         if (!startsWith(base)) null else segments.drop(base.segments.size).joinToString("/")
 
+    /** Equal when both have the same [value][FsPath.value]. */
     override fun equals(other: Any?): Boolean = other is FsPath && other.value == value
 
+    /** Hashes [value][FsPath.value] alone, to agree with [equals]. */
     override fun hashCode(): Int = value.hashCode()
 
+    /** The normalized path, [value][FsPath.value]. */
     override fun toString(): String = value
 
     /**

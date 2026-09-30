@@ -58,6 +58,8 @@ public fun interface FileConstraint {
  * ```kt
  * FileConstraintFailure("core/domain/useCase/Helper.kt", declaration = "Helper", line = 12)
  * ```
+ *
+ * @constructor Takes the rejected file, and optionally what inside it and on which line.
  */
 @ExperimentalKatachiApi
 public data class FileConstraintFailure(
@@ -228,6 +230,7 @@ public class FileConstraintSubject internal constructor(
         return jvmType.cast(existing)
     }
 
+    /** The role, the constraint (its name, or where it was declared) and the number of files. */
     override fun toString(): String =
         "FileConstraintSubject(${role.qualifiedName}, ${name ?: declaredAt}, files=${files.size})"
 }

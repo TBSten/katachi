@@ -6,9 +6,9 @@ import me.tbsten.katachi.dsl.Role
 /**
  * One problem found by a check.
  *
- * The check returns these as a list rather than throwing, so that a later version can filter
- * them (a baseline), write them out (JSON / SARIF) or count them without any of it being a
- * rewrite. `assert()` is the thin layer on top that turns a non-empty list into a failure.
+ * The check returns these as a list rather than throwing, so that they can be filtered (a baseline
+ * does), written out or counted without any of it being a rewrite. `assert()` is the thin layer on
+ * top that turns a non-empty list into a failure.
  *
  * A violation carries everything its report block needs and nothing else: the wording lives
  * in the report, not here. A violation declared outside katachi has no block of its own,
@@ -32,7 +32,10 @@ public interface Violation {
      *
      * ## Example 1: group violations for a report, one block per kind
      * ```kt
-     * projectArchitecture.validate().groupBy { it.kind }
+     * val failure = shouldThrow<KatachiArchitectureAssertionError> {
+     *     projectArchitecture.assert()
+     * }
+     * failure.violations.groupBy { it.kind }
      * ```
      */
     public val kind: ViolationKind
@@ -42,8 +45,10 @@ public interface Violation {
      *
      * ## Example 1: separate failing violations from warnings
      * ```kt
-     * val (failures, warnings) = projectArchitecture.validate()
-     *     .partition { it.severity == Severity.Error }
+     * val failure = shouldThrow<KatachiArchitectureAssertionError> {
+     *     projectArchitecture.assert()
+     * }
+     * val (failures, warnings) = failure.violations.partition { it.severity == Severity.Error }
      * ```
      */
     public val severity: Severity
@@ -55,7 +60,10 @@ public interface Violation {
      *
      * ## Example 1: list where every violation was found
      * ```kt
-     * projectArchitecture.validate().map { it.path }
+     * val failure = shouldThrow<KatachiArchitectureAssertionError> {
+     *     projectArchitecture.assert()
+     * }
+     * failure.violations.map { it.path }
      * ```
      */
     public val path: String
@@ -68,7 +76,10 @@ public interface Violation {
      *
      * ## Example 1: print each violation with its label
      * ```kt
-     * projectArchitecture.validate().forEach { println("[${it.label}] ${it.path}") }
+     * val failure = shouldThrow<KatachiArchitectureAssertionError> {
+     *     projectArchitecture.assert()
+     * }
+     * failure.violations.forEach { println("[${it.label}] ${it.path}") }
      * ```
      */
     public val label: String
@@ -101,7 +112,10 @@ public interface Violation {
  *
  * ## Example 1: read the nearby locations suggested for an unexpected file
  * ```kt
- * val unexpectedFile = projectArchitecture.validate().filterIsInstance<UnexpectedFile>().first()
+ * val failure = shouldThrow<KatachiArchitectureAssertionError> {
+ *     projectArchitecture.assert()
+ * }
+ * val unexpectedFile = failure.violations.filterIsInstance<UnexpectedFile>().first()
  * unexpectedFile.nearby.map { it.directory }
  * ```
  */
@@ -125,6 +139,7 @@ public class NearbyLocation internal constructor(
      */
     public val directory: String,
 ) {
+    /** `<role> -> <directory>`, for a log line or a test failure message. */
     override fun toString(): String = "${role.qualifiedName} -> $directory"
 }
 
@@ -133,7 +148,10 @@ public class NearbyLocation internal constructor(
  *
  * ## Example 1: list every file nothing declared
  * ```kt
- * projectArchitecture.validate().filterIsInstance<UnexpectedFile>().map { it.path }
+ * val failure = shouldThrow<KatachiArchitectureAssertionError> {
+ *     projectArchitecture.assert()
+ * }
+ * failure.violations.filterIsInstance<UnexpectedFile>().map { it.path }
  * ```
  */
 public class UnexpectedFile internal constructor(
@@ -143,7 +161,10 @@ public class UnexpectedFile internal constructor(
      *
      * ## Example 1: suggest where an unexpected file could move to
      * ```kt
-     * projectArchitecture.validate().filterIsInstance<UnexpectedFile>().first().nearby
+     * val failure = shouldThrow<KatachiArchitectureAssertionError> {
+     *     projectArchitecture.assert()
+     * }
+     * failure.violations.filterIsInstance<UnexpectedFile>().first().nearby
      * ```
      */
     public val nearby: List<NearbyLocation>,
@@ -156,6 +177,7 @@ public class UnexpectedFile internal constructor(
     override val kind: ViolationKind get() = ViolationKind.Unexpected
     override val severity: Severity get() = Severity.Error
     override val label: String get() = "UnexpectedFile"
+    /** `[<label>] <path>`, for a log line or a test failure message. */
     override fun toString(): String = "[$label] $path"
 }
 
@@ -168,7 +190,10 @@ public class UnexpectedFile internal constructor(
  *
  * ## Example 1: list every directory nothing declared
  * ```kt
- * projectArchitecture.validate().filterIsInstance<UnexpectedDirectory>().map { it.path }
+ * val failure = shouldThrow<KatachiArchitectureAssertionError> {
+ *     projectArchitecture.assert()
+ * }
+ * failure.violations.filterIsInstance<UnexpectedDirectory>().map { it.path }
  * ```
  */
 public class UnexpectedDirectory internal constructor(
@@ -177,6 +202,7 @@ public class UnexpectedDirectory internal constructor(
     override val kind: ViolationKind get() = ViolationKind.Unexpected
     override val severity: Severity get() = Severity.Error
     override val label: String get() = "UnexpectedDirectory"
+    /** `[<label>] <path>`, for a log line or a test failure message. */
     override fun toString(): String = "[$label] $path"
 }
 
@@ -188,7 +214,10 @@ public class UnexpectedDirectory internal constructor(
  *
  * ## Example 1: list every declared file with nothing at its path yet
  * ```kt
- * projectArchitecture.validate().filterIsInstance<MissingFile>().map { it.path }
+ * val failure = shouldThrow<KatachiArchitectureAssertionError> {
+ *     projectArchitecture.assert()
+ * }
+ * failure.violations.filterIsInstance<MissingFile>().map { it.path }
  * ```
  */
 public class MissingFile internal constructor(
@@ -198,7 +227,10 @@ public class MissingFile internal constructor(
      *
      * ## Example 1: read which role declared a missing file
      * ```kt
-     * projectArchitecture.validate().filterIsInstance<MissingFile>().first().role.qualifiedName
+     * val failure = shouldThrow<KatachiArchitectureAssertionError> {
+     *     projectArchitecture.assert()
+     * }
+     * failure.violations.filterIsInstance<MissingFile>().first().role.qualifiedName
      * ```
      */
     public val role: Role,
@@ -207,7 +239,10 @@ public class MissingFile internal constructor(
      *
      * ## Example 1: point back at where the missing file was declared
      * ```kt
-     * projectArchitecture.validate().filterIsInstance<MissingFile>().first().declaredAt
+     * val failure = shouldThrow<KatachiArchitectureAssertionError> {
+     *     projectArchitecture.assert()
+     * }
+     * failure.violations.filterIsInstance<MissingFile>().first().declaredAt
      * ```
      */
     public val declaredAt: DeclarationSite,
@@ -215,6 +250,7 @@ public class MissingFile internal constructor(
     override val kind: ViolationKind get() = ViolationKind.Missing
     override val severity: Severity get() = Severity.Error
     override val label: String get() = "MissingFile"
+    /** `[<label>] <path>`, for a log line or a test failure message. */
     override fun toString(): String = "[$label] $path"
 }
 
@@ -222,18 +258,24 @@ public class MissingFile internal constructor(
  * A file the check failed at, so nothing is known about it.
  *
  * The walk keeps going past one of these: the file that threw is usually unrelated to the
- * violations the reader came for, and losing the whole report over it would leave them with
- * nothing to fix. What was lost is exactly this one path, and saying so is what [cause] and
- * the count at the end of the report are for.
+ * violations the reader came for, and losing the whole report over it would leave them with nothing
+ * to fix. What was lost is exactly this one path, and saying so is what
+ * [cause][UncheckedFile.cause] and the count at the end of the report are for.
  *
  * ## Example 1: list the files a run could not look at
  * ```kt
- * projectArchitecture.validate().filterIsInstance<UncheckedFile>().map { it.path }
+ * val failure = shouldThrow<KatachiArchitectureAssertionError> {
+ *     projectArchitecture.assert()
+ * }
+ * failure.violations.filterIsInstance<UncheckedFile>().map { it.path }
  * ```
  *
  * ## Example 2: read what went wrong before reporting it as a katachi bug
  * ```kt
- * projectArchitecture.validate().filterIsInstance<UncheckedFile>().forEach {
+ * val failure = shouldThrow<KatachiArchitectureAssertionError> {
+ *     projectArchitecture.assert()
+ * }
+ * failure.violations.filterIsInstance<UncheckedFile>().forEach {
  *     println("${it.path}: ${it.cause}")
  * }
  * ```
@@ -245,8 +287,10 @@ public class UncheckedFile internal constructor(
      *
      * ## Example 1: keep only the failures that came from the file system
      * ```kt
-     * projectArchitecture.validate()
-     *     .filterIsInstance<UncheckedFile>()
+     * val failure = shouldThrow<KatachiArchitectureAssertionError> {
+     *     projectArchitecture.assert()
+     * }
+     * failure.violations.filterIsInstance<UncheckedFile>()
      *     .filter { it.cause is java.io.IOException }
      * ```
      */
@@ -255,6 +299,7 @@ public class UncheckedFile internal constructor(
     override val kind: ViolationKind get() = ViolationKind.Failed
     override val severity: Severity get() = Severity.Error
     override val label: String get() = "UncheckedFile"
+    /** `[<label>] <path>`, for a log line or a test failure message. */
     override fun toString(): String = "[$label] $path"
 }
 
@@ -268,7 +313,10 @@ public class UncheckedFile internal constructor(
  *
  * ## Example 1: tell an unreadable directory from one whose modules went unfound
  * ```kt
- * projectArchitecture.validate().filterIsInstance<UncheckedDirectory>().map { it.reason } shouldBe
+ * val failure = shouldThrow<KatachiArchitectureAssertionError> {
+ *     projectArchitecture.assert()
+ * }
+ * failure.violations.filterIsInstance<UncheckedDirectory>().map { it.reason } shouldBe
  *     listOf(UncheckedDirectoryReason.NotWalked)
  * ```
  */
@@ -278,8 +326,10 @@ public enum class UncheckedDirectoryReason {
      *
      * ## Example 1: list the directories whose contents nothing looked at
      * ```kt
-     * projectArchitecture.validate()
-     *     .filterIsInstance<UncheckedDirectory>()
+     * val failure = shouldThrow<KatachiArchitectureAssertionError> {
+     *     projectArchitecture.assert()
+     * }
+     * failure.violations.filterIsInstance<UncheckedDirectory>()
      *     .filter { it.reason == UncheckedDirectoryReason.NotWalked }
      *     .map { it.path }
      * ```
@@ -293,8 +343,10 @@ public enum class UncheckedDirectoryReason {
      *
      * ## Example 1: explain a `:feature:*` key that expanded to too few modules
      * ```kt
-     * projectArchitecture.validate()
-     *     .filterIsInstance<UncheckedDirectory>()
+     * val failure = shouldThrow<KatachiArchitectureAssertionError> {
+     *     projectArchitecture.assert()
+     * }
+     * failure.violations.filterIsInstance<UncheckedDirectory>()
      *     .filter { it.reason == UncheckedDirectoryReason.ModulesNotDiscovered }
      *     .map { it.path }
      * ```
@@ -308,16 +360,22 @@ public enum class UncheckedDirectoryReason {
  * Reported instead of everything inside it, the way [UnexpectedDirectory] is: the run never
  * got the directory's contents, so there is one path to report and it is this one. Its
  * siblings are unaffected — and which of the two readings failed, which is what decides how
- * much was lost, is [reason].
+ * much was lost, is [reason][UncheckedDirectory.reason].
  *
  * ## Example 1: list the directories a run could not look into
  * ```kt
- * projectArchitecture.validate().filterIsInstance<UncheckedDirectory>().map { it.path }
+ * val failure = shouldThrow<KatachiArchitectureAssertionError> {
+ *     projectArchitecture.assert()
+ * }
+ * failure.violations.filterIsInstance<UncheckedDirectory>().map { it.path }
  * ```
  *
  * ## Example 2: read what went wrong before reporting it as a katachi bug
  * ```kt
- * projectArchitecture.validate().filterIsInstance<UncheckedDirectory>().forEach {
+ * val failure = shouldThrow<KatachiArchitectureAssertionError> {
+ *     projectArchitecture.assert()
+ * }
+ * failure.violations.filterIsInstance<UncheckedDirectory>().forEach {
  *     println("${it.path}: ${it.cause}")
  * }
  * ```
@@ -329,7 +387,10 @@ public class UncheckedDirectory internal constructor(
      *
      * ## Example 1: branch on how much a failed directory cost
      * ```kt
-     * projectArchitecture.validate().filterIsInstance<UncheckedDirectory>().single().reason shouldBe
+     * val failure = shouldThrow<KatachiArchitectureAssertionError> {
+     *     projectArchitecture.assert()
+     * }
+     * failure.violations.filterIsInstance<UncheckedDirectory>().single().reason shouldBe
      *     UncheckedDirectoryReason.ModulesNotDiscovered
      * ```
      */
@@ -339,8 +400,10 @@ public class UncheckedDirectory internal constructor(
      *
      * ## Example 1: keep only the failures that came from the file system
      * ```kt
-     * projectArchitecture.validate()
-     *     .filterIsInstance<UncheckedDirectory>()
+     * val failure = shouldThrow<KatachiArchitectureAssertionError> {
+     *     projectArchitecture.assert()
+     * }
+     * failure.violations.filterIsInstance<UncheckedDirectory>()
      *     .filter { it.cause is java.io.IOException }
      * ```
      */
@@ -349,5 +412,6 @@ public class UncheckedDirectory internal constructor(
     override val kind: ViolationKind get() = ViolationKind.Failed
     override val severity: Severity get() = Severity.Error
     override val label: String get() = "UncheckedDirectory"
+    /** `[<label>] <path>`, for a log line or a test failure message. */
     override fun toString(): String = "[$label] $path"
 }

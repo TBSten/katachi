@@ -32,7 +32,7 @@ import me.tbsten.katachi.processor.internal.withArgs
  * answer -- the first half's when both fail, with the second's attached as a suppressed
  * exception -- and a half that throws ends the call. A failing half's list is whatever its
  * failure carries: to have two checks' violations merged into one report, pass them to
- * `validate(check, more)` or `assert(check, more)` instead.
+ * `assert(check, more)` or `assertNoErrors(check, more)` instead.
  *
  * ## Example 1: run two processors as one, on one walk
  * ```kt

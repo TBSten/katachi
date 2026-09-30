@@ -11,9 +11,8 @@ import kotlin.reflect.KProperty
  * in from, and the block's return value, which is that file's content.
  *
  * A template is attached to the file declaration itself, because that declaration already says
- * where the file lands: `layout { "useCase" / "${capture("name")}UseCase.kt".file().template { ... } }` needs no
- * `file(...)` call of its own to name the file a second time, the way the old, role-level
- * `template { }` did.
+ * where the file lands: in `"useCase" / "${capture("name")}UseCase.kt".file().template { ... }`
+ * the block returns only the content, and the path is the declaration's own.
  *
  * The block is stored, not evaluated, exactly like [RoleScope.layout] — `architecture { }` runs
  * long before anyone passes `--arg`. It is replayed once per run, with the values of that run
@@ -356,6 +355,7 @@ public class TemplateParameter<out T> internal constructor(
     // Reached only when a parameter is interpolated instead of the property it was written
     // through, which is the `val name = stringParameter()` mistake. Saying where it was declared
     // is what makes the file name that came out of it explainable.
+    /** `TemplateParameter(<name>)`, or where it was declared while it has no name yet. */
     override fun toString(): String =
         name?.let { "TemplateParameter($it)" } ?: "TemplateParameter(unbound, $declaredAt)"
 }

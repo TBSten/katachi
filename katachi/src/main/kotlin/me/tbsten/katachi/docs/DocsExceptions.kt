@@ -129,11 +129,15 @@ public class BrokenDocumentLink internal constructor(
     public val source: String,
     /** The text of the link, which is a `title` wherever katachi wrote the link itself. */
     public val text: String,
-    /** The link exactly as it was written, before it was followed from [source]. */
+    /**
+     * The link exactly as it was written, before it was followed from
+     * [source][BrokenDocumentLink.source].
+     */
     public val target: String,
     /**
-     * Where [target] lands when followed from [source], or `null` when it climbs above the
-     * output root and so lands nowhere katachi could have generated anything.
+     * Where [target][BrokenDocumentLink.target] lands when followed from
+     * [source][BrokenDocumentLink.source], or `null` when it climbs above the output root and so
+     * lands nowhere katachi could have generated anything.
      */
     public val resolved: String?,
 )

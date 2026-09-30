@@ -9,7 +9,7 @@ import me.tbsten.katachi.dsl.internal.TemplateParameterType
 import me.tbsten.katachi.dsl.internal.captureDeclarationSite
 
 /**
- * Collects one replay of a `template { }` block.
+ * Collects one replay of a `.template { }` block.
  *
  * A fresh instance per replay: the values differ from run to run, and nothing a previous run
  * bound may leak into the next one. Unlike the parameters and captures it tracks, the block's

@@ -8,12 +8,12 @@ import me.tbsten.katachi.dsl.internal.get
 /**
  * A role: what a file is for, and where it may live.
  *
- * What a role *is* — its name, where it was declared, where its files live — is here. What
- * some processor wants to say *about* it is metadata, read with [get]: [Title], [Summary],
- * [Description], [Documented] and [Examples] are the ones katachi ships, a processor adds its
- * own with [metadata], and whoever writes the definition adds a whole section of the generated
- * page with [documentSection]. Keeping them apart is what lets a new processor bring a new word
- * without this class growing a field for it.
+ * What a role *is* — its name, where it was declared, where its files live — is here. What some
+ * processor wants to say *about* it is metadata, read with [get]: [Title], [Summary],
+ * [Description], [Documented] and [Examples] are the ones katachi ships, a processor adds its own
+ * with [metadata()][me.tbsten.katachi.dsl.metadata], and whoever writes the definition adds a whole
+ * section of the generated page with [documentSection]. Keeping them apart is what lets a new
+ * processor bring a new word without this class growing a field for it.
  *
  * ## Example 1: declare a role and read it back
  * ```kt
@@ -105,7 +105,7 @@ public class Role internal constructor(
     public val declaredAt: DeclarationSite,
 ) {
     /**
-     * [groupPath] and [name] joined with `.`, e.g. `domain.UseCase`.
+     * [groupPath][Role.groupPath] and [name][Role.name] joined with `.`, e.g. `domain.UseCase`.
      *
      * ## Example 1: read the qualified name of a nested role
      * ```kt
@@ -128,8 +128,8 @@ public class Role internal constructor(
     /**
      * The value written under [key], or `null` when this role does not carry that key.
      *
-     * The declared value, as written: nothing is inherited from the groups around it. A
-     * processor that wants inheritance walks [groupPath] itself, where it can say what
+     * The declared value, as written: nothing is inherited from the groups around it. A processor
+     * that wants inheritance walks [groupPath][Role.groupPath] itself, where it can say what
      * combining two values means for its own word.
      *
      * ## Example 1: read a processor's own key off a role
@@ -172,5 +172,6 @@ public class Role internal constructor(
     @ExperimentalKatachiApi
     public operator fun get(section: DocumentSection): String? = metadata[section]
 
+    /** `Role(<qualifiedName>)`. */
     override fun toString(): String = "Role($qualifiedName)"
 }

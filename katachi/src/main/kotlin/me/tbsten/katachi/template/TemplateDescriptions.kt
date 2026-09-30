@@ -46,6 +46,7 @@ public class TemplateList internal constructor(
     /** One entry per declared template. Empty when no declaration has one. */
     public val templates: List<TemplateSummary>,
 ) : TemplateDescription {
+    /** `<n> templates`, the count alone. */
     override fun toString(): String =
         if (templates.size == 1) "1 template" else "${templates.size} templates"
 }
@@ -68,7 +69,10 @@ public class TemplateSummary internal constructor(
     public val template: String,
     /** This template's `id`, or `null` for the one template of a role that declares no other. */
     public val id: String?,
-    /** `.template { }`'s own `title`, falling back to [id], then to the role's `title`. */
+    /**
+     * `.template { }`'s own `title`, falling back to [id][TemplateSummary.id], then to the role's
+     * `title`.
+     */
     public val title: String,
     /** The role this template belongs to, qualified, `.` separated. */
     public val roleName: String,
@@ -86,6 +90,7 @@ public class TemplateSummary internal constructor(
      */
     public val conflict: Boolean,
 ) {
+    /** `TemplateSummary(<template>)`. */
     override fun toString(): String = "TemplateSummary($template)"
 }
 
@@ -124,7 +129,10 @@ public class TemplateDetail internal constructor(
     public val template: String,
     /** This template's `id`, or `null` for the one template of a role that declares no other. */
     public val id: String?,
-    /** `.template { }`'s own `title`, falling back to [id], then to the role's `title`. */
+    /**
+     * `.template { }`'s own `title`, falling back to [id][TemplateDetail.id], then to the role's
+     * `title`.
+     */
     public val title: String,
     /** The role this template belongs to, qualified, `.` separated. */
     public val roleName: String,
@@ -141,6 +149,7 @@ public class TemplateDetail internal constructor(
     /** This template's named wildcards, which a run also takes as `--arg`. See [TemplateCapturePreview]. */
     public val captures: List<TemplateCapturePreview>,
 ) : TemplateDescription {
+    /** `Template <template>: <n> parameters`. */
     override fun toString(): String = "Template $template: ${parameters.size} parameters"
 }
 
@@ -175,9 +184,10 @@ public class TemplateParameterPreview internal constructor(
     public val isRequired: Boolean,
     /** The value the preview filled in: `${name}` for a String, a real value otherwise. */
     public val previewValue: String,
-    /** Why the preview chose [previewValue]. */
+    /** Why the preview chose [previewValue][TemplateParameterPreview.previewValue]. */
     public val previewValueSource: PreviewValueSource,
 ) {
+    /** `TemplateParameterPreview(<name>: <type> = <previewValue>)`. */
     override fun toString(): String = "TemplateParameterPreview($name: $typeName = $previewValue)"
 }
 
@@ -215,8 +225,8 @@ public class TemplateCapturePreview internal constructor(
      */
     public val pattern: String,
     /**
-     * Which level of [pattern] it is, 0-based: the `/`-separated level of a file pattern, or the
-     * position among the `*`s of a module key.
+     * Which level of [pattern][TemplateCapturePreview.pattern] it is, 0-based: the `/`-separated
+     * level of a file pattern, or the position among the `*`s of a module key.
      */
     public val position: Int,
     /**
@@ -225,6 +235,7 @@ public class TemplateCapturePreview internal constructor(
      */
     public val segment: String,
 ) {
+    /** `TemplateCapturePreview(<name> at <pattern>[<position>])`. */
     override fun toString(): String = "TemplateCapturePreview($name at $pattern[$position])"
 }
 
@@ -316,13 +327,14 @@ public class TemplateFilePreview internal constructor(
      * could pick. A directory `capture("...")` names is shown as `${name}`.
      */
     public val path: String?,
-    /** This template's captures that appear on [pattern], by name. */
+    /** This template's captures that appear on [pattern][TemplateFilePreview.pattern], by name. */
     public val captures: List<String>,
     /** This template's parameters, by name. */
     public val parameters: List<String>,
     /** The contents, with the preview's values filled in. */
     public val content: String,
 ) {
+    /** `TemplateFilePreview(<path>)`, or the file name when the path is not known. */
     override fun toString(): String = "TemplateFilePreview(${path ?: fileName})"
 }
 
@@ -348,20 +360,28 @@ public class TemplateBranch internal constructor(
     /** The value it was changed to, as `--arg` spells it. */
     public val value: String,
     /**
-     * File names this template would produce with [value] and not with the preview's value. A
-     * template describes exactly one file once it renders, so this is empty unless [value] makes
-     * rendering fail where the preview's own value did not.
+     * File names this template would produce with [value][TemplateBranch.value] and not with the
+     * preview's value. A template describes exactly one file once it renders, so this is empty
+     * unless [value][TemplateBranch.value] makes rendering fail where the preview's own value did
+     * not.
      */
     public val addedFiles: List<String>,
-    /** The mirror image of [addedFiles]: file names produced with the preview's value and not with [value]. */
+    /**
+     * The mirror image of [addedFiles][TemplateBranch.addedFiles]: file names produced with the
+     * preview's value and not with [value][TemplateBranch.value].
+     */
     public val removedFiles: List<String>,
     /**
-     * Parameters declared with [value] and not with the preview's value, such as one written
-     * inside `if (withImpl) { }`, previewed the way [TemplateDetail.parameters] are.
+     * Parameters declared with [value][TemplateBranch.value] and not with the preview's value, such
+     * as one written inside `if (withImpl) { }`, previewed the way [TemplateDetail.parameters] are.
      */
     public val addedParameters: List<TemplateParameterPreview>,
-    /** Names of the parameters declared with the preview's value and not with [value]. */
+    /**
+     * Names of the parameters declared with the preview's value and not with
+     * [value][TemplateBranch.value].
+     */
     public val removedParameters: List<String>,
 ) {
+    /** `TemplateBranch(<parameterName>=<value>)`. */
     override fun toString(): String = "TemplateBranch($parameterName=$value)"
 }

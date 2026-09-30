@@ -56,11 +56,11 @@ public class KatachiUnknownTemplateException internal constructor(
 /**
  * `--arg template=` named something more than one template answers to.
  *
- * Reached two ways: a specifier that leaves its group out and its role has more than one
- * template, and a specifier read two ways at once -- `feature.Screen` as either the role `Screen`
- * of group `feature`, or the id `Screen` of a role `feature` -- see the design draft's section 3.
- * Either way, [candidates] is what to choose from: every one of them is a specifier
- * `--arg template=` accepts on its own.
+ * Reached two ways: a specifier that leaves its group out and its role has more than one template,
+ * and a specifier read two ways at once -- `feature.Screen` as either the role `Screen` of group
+ * `feature`, or the id `Screen` of a role `feature` -- see the design draft's section 3. Either
+ * way, [candidates][KatachiAmbiguousTemplateException.candidates] is what to choose from: every one
+ * of them is a specifier `--arg template=` accepts on its own.
  *
  * ## Example 1: catch a role name that no longer picks one template
  * ```kt
@@ -86,7 +86,10 @@ public class KatachiUnknownTemplateException internal constructor(
 public class KatachiAmbiguousTemplateException internal constructor(
     /** The specifier `--arg template=` carried, as written. */
     public val specifier: String,
-    /** Every template [specifier] could mean, each a complete `--arg template=` specifier, sorted. */
+    /**
+     * Every template [specifier][KatachiAmbiguousTemplateException.specifier] could mean, each a
+     * complete `--arg template=` specifier, sorted.
+     */
     public val candidates: List<String>,
 ) : KatachiDeclarationException(
     message = buildString {
@@ -131,7 +134,7 @@ public class KatachiAmbiguousTemplateException internal constructor(
  */
 @ExperimentalKatachiApi
 public class KatachiInvalidTemplateSpecifierException internal constructor(
-    /** What is wrong with [specifiers]. */
+    /** What is wrong with [specifiers][KatachiInvalidTemplateSpecifierException.specifiers]. */
     public val problem: Problem,
     /** The specifiers `--arg template=` carried, exactly as split on `,`. */
     public val specifiers: List<String>,

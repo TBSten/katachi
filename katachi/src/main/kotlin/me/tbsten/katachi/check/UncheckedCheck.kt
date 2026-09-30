@@ -10,7 +10,10 @@ import me.tbsten.katachi.check.internal.ROOT_PATH
  *
  * ## Example 1: list the checks a run could not finish
  * ```kt
- * projectArchitecture.validate(TodoCheck()).filterIsInstance<UncheckedCheck>().map { it.check }
+ * val failure = shouldThrow<KatachiArchitectureAssertionError> {
+ *     projectArchitecture.assert(TodoCheck())
+ * }
+ * failure.violations.filterIsInstance<UncheckedCheck>().map { it.check }
  * ```
  */
 public class UncheckedCheck internal constructor(
@@ -20,7 +23,10 @@ public class UncheckedCheck internal constructor(
      *
      * ## Example 1: list which checks a run could not finish
      * ```kt
-     * projectArchitecture.validate(TodoCheck()).filterIsInstance<UncheckedCheck>().map { it.check }
+     * val failure = shouldThrow<KatachiArchitectureAssertionError> {
+     *     projectArchitecture.assert(TodoCheck())
+     * }
+     * failure.violations.filterIsInstance<UncheckedCheck>().map { it.check }
      * ```
      */
     public val check: String,
@@ -29,8 +35,10 @@ public class UncheckedCheck internal constructor(
      *
      * ## Example 1: read what went wrong before reporting it as a bug
      * ```kt
-     * projectArchitecture.validate(TodoCheck())
-     *     .filterIsInstance<UncheckedCheck>()
+     * val failure = shouldThrow<KatachiArchitectureAssertionError> {
+     *     projectArchitecture.assert(TodoCheck())
+     * }
+     * failure.violations.filterIsInstance<UncheckedCheck>()
      *     .forEach { println("${it.check}: ${it.cause}") }
      * ```
      */
@@ -40,5 +48,6 @@ public class UncheckedCheck internal constructor(
     override val kind: ViolationKind get() = ViolationKind.Failed
     override val severity: Severity get() = Severity.Error
     override val label: String get() = "UncheckedCheck"
+    /** `[<label>] <path>`, for a log line or a test failure message. */
     override fun toString(): String = "[$label] $path"
 }

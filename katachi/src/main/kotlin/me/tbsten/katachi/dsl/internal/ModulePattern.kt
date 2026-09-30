@@ -154,7 +154,7 @@ internal class ModulePattern private constructor(
          *
          * `<name>` rather than `<featureName>`: what a `*` captures is the name of the module
          * at that level, and nothing here knows what kind of module that is. Deriving a better
-         * word from the pattern's literal segments is v0.3's question, not this one's.
+         * word from the pattern's literal segments is left open.
          */
         const val WILDCARD_PLACEHOLDER: String = "<name>"
 

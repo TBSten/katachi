@@ -16,8 +16,10 @@ import me.tbsten.katachi.KatachiInternalException
  *
  * ## Example 1: recognise it as a katachi bug rather than a failed rule
  * ```kt
- * projectArchitecture.validate(FileConstraintCheck())
- *     .filterIsInstance<UncheckedFileConstraint>()
+ * val failure = shouldThrow<KatachiArchitectureAssertionError> {
+ *     projectArchitecture.assert(FileConstraintCheck())
+ * }
+ * failure.violations.filterIsInstance<UncheckedFileConstraint>()
  *     .single().cause.shouldBeInstanceOf<KatachiKonsistScopeIncompleteException>()
  * ```
  *

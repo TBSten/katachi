@@ -5,7 +5,10 @@ package me.tbsten.katachi.check
  *
  * ## Example 1: keep only the violations that fail the check
  * ```kt
- * projectArchitecture.validate().filter { it.severity == Severity.Error }
+ * val failure = shouldThrow<KatachiArchitectureAssertionError> {
+ *     projectArchitecture.assert()
+ * }
+ * failure.violations.filter { it.severity == Severity.Error }
  * ```
  */
 public enum class Severity {
@@ -14,7 +17,10 @@ public enum class Severity {
      *
      * ## Example 1: count how many violations fail the check
      * ```kt
-     * projectArchitecture.validate().count { it.severity == Severity.Error }
+     * val failure = shouldThrow<KatachiArchitectureAssertionError> {
+     *     projectArchitecture.assert()
+     * }
+     * failure.violations.count { it.severity == Severity.Error }
      * ```
      */
     Error,
@@ -24,7 +30,7 @@ public enum class Severity {
      *
      * ## Example 1: check whether a violation is only informational
      * ```kt
-     * projectArchitecture.validate().first().severity == Severity.Warning
+     * projectArchitecture.assertNoErrors().first().severity == Severity.Warning
      * ```
      */
     Warning,

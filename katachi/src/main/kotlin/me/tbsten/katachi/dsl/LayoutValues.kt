@@ -48,6 +48,7 @@ public class LayoutDirectory internal constructor(
         return this
     }
 
+    /** `LayoutDirectory(<path>)`, the path as far as this declaration wrote it. */
     override fun toString(): String = "LayoutDirectory(${leaf.pathFromDeclaration()})"
 }
 
@@ -106,6 +107,7 @@ public class LayoutFile internal constructor(
         return this
     }
 
+    /** `LayoutFile(<path>)`, the path as far as this declaration wrote it. */
     override fun toString(): String = "LayoutFile(${leaf.pathFromDeclaration()})"
 }
 
@@ -182,6 +184,7 @@ public class LayoutModule internal constructor(
         return this
     }
 
+    /** `LayoutModule(<paths>)`, the paths as far as this declaration wrote them. */
     override fun toString(): String = "LayoutModule(${declared.map { it.pathFromDeclaration() }})"
 }
 
@@ -224,5 +227,6 @@ public class LayoutDeclaration internal constructor(
     /** The block itself. Evaluated by the checker, not by the DSL. */
     internal val block: LayoutScope.() -> Unit,
 ) {
+    /** `LayoutDeclaration(<declaredAt>)`. */
     override fun toString(): String = "LayoutDeclaration($declaredAt)"
 }

@@ -29,12 +29,11 @@ import me.tbsten.katachi.processor.ArchitectureProcessor
  *
  * ## Why this object is the only part that does IO
  *
- * Building the pages is [roleReferenceDocuments], a function from a context to a map of path to
- * text. Everything that can be wrong about the output -- a heading, a table, a link that
- * resolves nowhere -- is decided there and pinned by specs comparing two strings. This object
- * adds the one thing a spec cannot compare and a pure function cannot do: it puts the map on a
- * disk. Keeping the split means [DocumentationMode.Check] is not a second implementation of
- * anything, only a second ending.
+ * Building the pages is a pure function from a context to a map of path to text. Everything that
+ * can be wrong about the output -- a heading, a table, a link that resolves nowhere -- is decided
+ * there and pinned by specs comparing two strings. This object adds the one thing a spec cannot
+ * compare and a pure function cannot do: it puts the map on a disk. Keeping the split means
+ * [DocumentationMode.Check] is not a second implementation of anything, only a second ending.
  *
  * ## What it answers
  *
@@ -151,6 +150,8 @@ public object GenerateDocumentation : ArchitectureProcessor<GenerateDocumentatio
      *     }
      * }
      * ```
+     *
+     * @constructor Takes where the pages go and whether to write them or only compare.
      */
     @Serializable
     public data class Args(

@@ -62,7 +62,7 @@ public class KatachiDuplicateTemplateException internal constructor(
  * `.template(id = "...")` was given an id already used by another template of the same role.
  *
  * `--arg template=` selects by `role.id`, so two templates answering to the same id could never
- * be told apart. The same [LayoutTemplate] instance repeated by a wildcard module key's
+ * be told apart. The same `.template { }` declaration repeated by a wildcard module key's
  * expansion is not a duplicate: every module gets one template with the same id, by design.
  *
  * ## Example 1: catch two templates of one role sharing an id

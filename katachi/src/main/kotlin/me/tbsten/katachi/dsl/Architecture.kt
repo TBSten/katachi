@@ -180,6 +180,7 @@ public class Architecture internal constructor(
     @ExperimentalKatachiApi
     public operator fun get(section: DocumentSection): String? = metadata[section]
 
+    /** The top-level group names and the number of roles, not the whole definition. */
     override fun toString(): String =
         "Architecture(groups=${groups.map { it.name }}, roles=${allRoles.size})"
 }

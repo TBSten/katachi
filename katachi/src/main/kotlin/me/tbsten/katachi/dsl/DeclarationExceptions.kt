@@ -164,9 +164,9 @@ public class KatachiInvalidIdentifierException internal constructor(
  * ```
  *
  * @property kind whether the rejected declaration was a group's or a role's.
- * @property firstKind whether the declaration that took the name first was a group's or a
- *   role's. It differs from [kind] when a group and a role collided, and telling the two
- *   cases apart is what the last line of the message does.
+ * @property firstKind whether the declaration that took the name first was a group's or a role's.
+ *   It differs from [kind][KatachiDuplicateDeclarationException.kind] when a group and a role
+ *   collided, and telling the two cases apart is what the last line of the message does.
  * @property name the duplicated name.
  * @property scope where the two declarations collided, such as `the root of architecture { }`
  *   or `group "domain/user"`. It is a value the message is built from, not the message.

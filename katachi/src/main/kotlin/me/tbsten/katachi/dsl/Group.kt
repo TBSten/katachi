@@ -9,11 +9,11 @@ import me.tbsten.katachi.dsl.internal.get
  * about where the files physically live, so the roles of one group may be spread over
  * several modules. Groups can nest.
  *
- * What a group *is* — its name, its path, what it holds — is here. What some processor
- * wants to say *about* it is metadata, read with [get]: [Title], [Summary], [Description] and
- * [Documented] are the ones katachi ships for groups, a processor adds its own with [metadata],
- * and whoever writes the definition adds a whole section of the generated page with
- * [documentSection].
+ * What a group *is* — its name, its path, what it holds — is here. What some processor wants to say
+ * *about* it is metadata, read with [get]: [Title], [Summary], [Description] and [Documented] are
+ * the ones katachi ships for groups, a processor adds its own with
+ * [metadata()][me.tbsten.katachi.dsl.metadata], and whoever writes the definition adds a whole
+ * section of the generated page with [documentSection].
  *
  * ## Example 1: declare nested groups
  * ```kt
@@ -103,7 +103,7 @@ public class Group internal constructor(
     public val declaredAt: DeclarationSite,
 ) {
     /**
-     * [path] joined with `.`, e.g. `domain.model`.
+     * [path][Group.path] joined with `.`, e.g. `domain.model`.
      *
      * ## Example 1: read the qualified name of a nested group
      * ```kt
@@ -166,5 +166,6 @@ public class Group internal constructor(
     internal fun selfAndDescendants(): List<Group> =
         listOf(this) + groups.flatMap { it.selfAndDescendants() }
 
+    /** `Group(<qualifiedName>)`. */
     override fun toString(): String = "Group($qualifiedName)"
 }

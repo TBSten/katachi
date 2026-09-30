@@ -4,7 +4,7 @@ import me.tbsten.katachi.ExperimentalKatachiApi
 import me.tbsten.katachi.KatachiInternalException
 
 /**
- * A layout scope reached the Gradle vocabulary without implementing [ModuleAwareLayoutScope].
+ * A layout scope reached the Gradle vocabulary without knowing which module it is in.
  *
  * ## Example 1: report it instead of treating it as a bad definition
  * ```kt

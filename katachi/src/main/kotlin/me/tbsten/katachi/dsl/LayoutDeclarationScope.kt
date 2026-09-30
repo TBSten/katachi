@@ -13,9 +13,9 @@ import me.tbsten.katachi.dsl.internal.MetadataBuilder
  * Metadata attached this way lands on the **leaf** of whatever was declared — the file, or the
  * innermost directory of a `/` chain — and is not inherited: a value on a directory says
  * nothing about what is beneath it. It changes nothing about the flattened layout or the
- * check: [me.tbsten.katachi.dsl.internal.flattenLayout]'s path, kind, `required` and
- * `description` are the same with or without it, and a processor reads it back off
- * [LayoutEntry] with the same `[key]` syntax a role's metadata is read with.
+ * check: the flattened entry's path, kind, `required` and `description` are the same with or
+ * without it, and a processor reads it back off [LayoutEntry] with the same `[key]` syntax a
+ * role's metadata is read with.
  *
  * ## Example 1: attach metadata to a declared file and read it back off the flattened entry
  * ```kt

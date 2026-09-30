@@ -132,6 +132,7 @@ public class DocumentSection internal constructor(
     public fun documentSection(heading: String): DocumentSection =
         declareDocumentSection(heading = heading, parent = this)
 
+    /** `DocumentSection(<heading>)`. */
     override fun toString(): String = "DocumentSection($heading)"
 }
 

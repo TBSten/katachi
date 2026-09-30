@@ -9,14 +9,14 @@ import me.tbsten.katachi.dsl.internal.markSynthetic
  *
  * | role | files |
  * |---|---|
- * | `Gradle/GradleWrapper/LauncherScript` | `gradlew`, `gradlew.bat` |
- * | `Gradle/GradleWrapper/WrapperJar` | `gradle/wrapper/gradle-wrapper.jar` |
- * | `Gradle/GradleWrapper/WrapperProperties` | `gradle/wrapper/gradle-wrapper.properties` |
- * | `Gradle/SettingsScript` | `settings.gradle.kts` or `settings.gradle` |
- * | `Gradle/BuildScript` | `build.gradle.kts` or `build.gradle` of every module, the root project included |
- * | `Gradle/GradleProperties` | `gradle.properties` |
- * | `Gradle/VersionCatalog` | `*.versions.toml` directly inside `gradle` |
- * | `Gradle/DaemonJvmProperties` | `gradle/gradle-daemon-jvm.properties`, the daemon JVM toolchain of Gradle 8.8 and later |
+ * | `Gradle.GradleWrapper.LauncherScript` | `gradlew`, `gradlew.bat` |
+ * | `Gradle.GradleWrapper.WrapperJar` | `gradle/wrapper/gradle-wrapper.jar` |
+ * | `Gradle.GradleWrapper.WrapperProperties` | `gradle/wrapper/gradle-wrapper.properties` |
+ * | `Gradle.SettingsScript` | `settings.gradle.kts` or `settings.gradle` |
+ * | `Gradle.BuildScript` | `build.gradle.kts` or `build.gradle` of every module, the root project included |
+ * | `Gradle.GradleProperties` | `gradle.properties` |
+ * | `Gradle.VersionCatalog` | `*.versions.toml` directly inside `gradle` |
+ * | `Gradle.DaemonJvmProperties` | `gradle/gradle-daemon-jvm.properties`, the daemon JVM toolchain of Gradle 8.8 and later |
  *
  * Only the four wrapper files are required, because `gradle wrapper` writes them as one set
  * and a `*.jar` line in `.gitignore` silently leaving the jar out is exactly what a missing

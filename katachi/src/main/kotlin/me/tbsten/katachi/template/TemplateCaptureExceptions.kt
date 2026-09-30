@@ -53,21 +53,31 @@ public class KatachiMissingTemplateCaptureException internal constructor(
     /** The capture names without a value, in declaration order. */
     public val names: List<String>,
     /**
-     * Each layout pattern naming one of [names], with every capture of it written as `<name>` in
-     * place of its `*`, and the names of [names] it holds.
+     * Each layout pattern naming one of [names][KatachiMissingTemplateCaptureException.names], with
+     * every capture of it written as `<name>` in place of its `*`, and the names of
+     * [names][KatachiMissingTemplateCaptureException.names] it holds.
      */
     public val missing: Map<String, List<String>>,
-    /** For each of [names], where the layout declares it. */
+    /**
+     * For each of [names][KatachiMissingTemplateCaptureException.names], where the layout declares
+     * it.
+     */
     public val captureDeclaredAt: Map<String, DeclarationSite>,
     /**
-     * For each of [names], the values that pick a directory or a module that exists now, sorted.
-     * Empty when none could be listed -- the directory above the capture holds a wildcard of its
-     * own, or the project could not be read.
+     * For each of [names][KatachiMissingTemplateCaptureException.names], the values that pick a
+     * directory or a module that exists now, sorted. Empty when none could be listed -- the
+     * directory above the capture holds a wildcard of its own, or the project could not be read.
      */
     public val existingValues: Map<String, List<String>>,
-    /** How each of [names] is declared: `capture("feature")` or `":feature:${capture("feature")}".module { }`. */
+    /**
+     * How each of [names][KatachiMissingTemplateCaptureException.names] is declared:
+     * `capture("feature")` or `":feature:${capture("feature")}".module { }`.
+     */
     internal val declaredWith: Map<String, String>,
-    /** Where the `file(...)` that could not be placed, or the `template { }` that read the capture, was written. */
+    /**
+     * Where the file declaration that could not be placed, or the `.template { }` that read the
+     * capture, was written.
+     */
     public val declaredAt: DeclarationSite,
     cause: Throwable? = null,
 ) : KatachiDeclarationException(
@@ -135,12 +145,18 @@ public class KatachiInvalidTemplateCaptureValueException internal constructor(
     public val name: String,
     /** The value the run passed. */
     public val value: String,
-    /** What is wrong: with [value] itself when [segment] is `null`, with [segment] otherwise. */
+    /**
+     * What is wrong: with [value][KatachiInvalidTemplateCaptureValueException.value] itself when
+     * [segment][KatachiInvalidTemplateCaptureValueException.segment] is `null`, with
+     * [segment][KatachiInvalidTemplateCaptureValueException.segment] otherwise.
+     */
     public val problem: Problem,
     /**
-     * The whole path segment [value] landed in, with every capture of it filled in -- `"a."` for
-     * `"${capture("x")}."` given `--arg x=a`. `null` when [problem] is about [value] on its own,
-     * such as one holding a `/`, rather than about the segment it partially filled.
+     * The whole path segment [value][KatachiInvalidTemplateCaptureValueException.value] landed in,
+     * with every capture of it filled in -- `"a."` for `"${capture("x")}."` given `--arg x=a`.
+     * `null` when [problem][KatachiInvalidTemplateCaptureValueException.problem] is about
+     * [value][KatachiInvalidTemplateCaptureValueException.value] on its own, such as one holding a
+     * `/`, rather than about the segment it partially filled.
      */
     public val segment: String? = null,
     /** Where a layout path naming the capture was declared. */
@@ -271,14 +287,18 @@ public class KatachiTemplateModuleNotFoundException internal constructor(
     public val captureNames: List<String>,
     /** The key with the run's values put in, `":feature:hoem"`. */
     public val modulePath: String,
-    /** Every existing module [modulePattern] matches. */
+    /**
+     * Every existing module [modulePattern][KatachiTemplateModuleNotFoundException.modulePattern]
+     * matches.
+     */
     public val existing: List<String>,
     /**
-     * For each of [existing], in the same order, the `--arg`s that pick it:
-     * `"--arg feature=home"`, or `"--arg feature=home --arg layer=data"` for a key of two names.
+     * For each of [existing][KatachiTemplateModuleNotFoundException.existing], in the same order,
+     * the `--arg`s that pick it: `"--arg feature=home"`, or `"--arg feature=home --arg layer=data"`
+     * for a key of two names.
      */
     public val existingArgs: List<String>,
-    /** Where the `file(...)` being placed was written. */
+    /** Where the file declaration being placed was written. */
     public val declaredAt: DeclarationSite,
 ) : KatachiCheckException(
     message = buildString {

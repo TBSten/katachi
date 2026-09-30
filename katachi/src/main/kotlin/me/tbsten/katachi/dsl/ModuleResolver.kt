@@ -32,15 +32,15 @@ public class KatachiUnresolvableModulePatternException internal constructor(
  * This is the only thing that is replaceable, and it does one thing: module path in,
  * directory out. Nothing else about a module goes through here — a source set is the plain
  * directory `src/<name>`, and a package directory is derived by whatever strategy the user
- * assigned to their own `modulePackage`. Keeping those out is what lets v0.1 resolve modules
+ * assigned to their own `modulePackage`. Keeping those out is what lets katachi resolve modules
  * without reading anything from Gradle.
  *
  * The default, [Conventional], replaces `:` with `/`. That is right for every project that
  * has not customised `projectDir`, which in practice means every new project. A build that
  * has customised it replaces the resolver. A resolver replaced this way is asked about the
  * modules the layout names. It is not asked which modules exist: expanding `":feature:*"`
- * walks the tree looking for a `build.gradle.kts` or `build.gradle`, and that stays convention
- * based until a Gradle plugin can hand katachi the real list.
+ * walks the tree looking for a `build.gradle.kts` or `build.gradle`: katachi does not read the
+ * list of modules from Gradle, the Gradle plugin included.
  *
  * ## Example 1: place a module at a non-conventional directory
  * ```kt

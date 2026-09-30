@@ -7,15 +7,16 @@ import me.tbsten.katachi.ExperimentalKatachiApi
  * about it, so a report groups its blocks by this.
  *
  * The declaration order is the order the blocks appear in a report. [Failed] stays last no
- * matter what — `Scan` and `validate` sort blocks with `sortedBy { it.kind.ordinal }`, and every
+ * matter what — the check sorts blocks with `sortedBy { it.kind.ordinal }`, and every
  * existing report's ordering depends on [Failed] being the last kind — while a new entry goes in
  * wherever it actually belongs among the rest, ahead of [Failed].
  *
  * ## Example 1: count violations by kind
  * ```kt
- * ViolationKind.entries.associateWith { kind ->
- *     projectArchitecture.validate().count { it.kind == kind }
+ * val failure = shouldThrow<KatachiArchitectureAssertionError> {
+ *     projectArchitecture.assert()
  * }
+ * ViolationKind.entries.associateWith { kind -> failure.violations.count { it.kind == kind } }
  * ```
  */
 public enum class ViolationKind {
@@ -24,7 +25,10 @@ public enum class ViolationKind {
      *
      * ## Example 1: list files and directories nothing declared
      * ```kt
-     * projectArchitecture.validate().filter { it.kind == ViolationKind.Unexpected }
+     * val failure = shouldThrow<KatachiArchitectureAssertionError> {
+     *     projectArchitecture.assert()
+     * }
+     * failure.violations.filter { it.kind == ViolationKind.Unexpected }
      * ```
      */
     Unexpected,
@@ -34,7 +38,10 @@ public enum class ViolationKind {
      *
      * ## Example 1: list declarations with nothing at their path yet
      * ```kt
-     * projectArchitecture.validate().filter { it.kind == ViolationKind.Missing }
+     * val failure = shouldThrow<KatachiArchitectureAssertionError> {
+     *     projectArchitecture.assert()
+     * }
+     * failure.violations.filter { it.kind == ViolationKind.Missing }
      * ```
      */
     Missing,
@@ -45,7 +52,10 @@ public enum class ViolationKind {
      *
      * ## Example 1: list the constraints that failed
      * ```kt
-     * projectArchitecture.validate(FileConstraintCheck()).filter { it.kind == ViolationKind.FileConstraint }
+     * val failure = shouldThrow<KatachiArchitectureAssertionError> {
+     *     projectArchitecture.assert(FileConstraintCheck())
+     * }
+     * failure.violations.filter { it.kind == ViolationKind.FileConstraint }
      * ```
      */
     FileConstraint,
@@ -75,7 +85,7 @@ public enum class ViolationKind {
      *
      * ## Example 1: list what more than one declaration claims
      * ```kt
-     * projectArchitecture.validate().filter { it.kind == ViolationKind.Ambiguous }
+     * projectArchitecture.assertNoErrors().filter { it.kind == ViolationKind.Ambiguous }
      * ```
      */
     Ambiguous,
@@ -88,7 +98,7 @@ public enum class ViolationKind {
      *
      * ## Example 1: list declarations missing their explanation
      * ```kt
-     * projectArchitecture.validate().filter { it.kind == ViolationKind.Unexplained }
+     * projectArchitecture.assertNoErrors().filter { it.kind == ViolationKind.Unexplained }
      * ```
      */
     Unexplained,
@@ -103,7 +113,10 @@ public enum class ViolationKind {
      *
      * ## Example 1: tell a partial result from a complete one
      * ```kt
-     * val partial = projectArchitecture.validate().any { it.kind == ViolationKind.Failed }
+     * val failure = shouldThrow<KatachiArchitectureAssertionError> {
+     *     projectArchitecture.assert()
+     * }
+     * val partial = failure.violations.any { it.kind == ViolationKind.Failed }
      * ```
      */
     Failed,

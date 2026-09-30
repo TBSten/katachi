@@ -10,8 +10,9 @@ import me.tbsten.katachi.processor.ArchitectureProcessor
  * tree that only exists in memory. Same deferral: [fileSystem] is untouched unless the
  * processor asks for files.
  *
- * Internal, so this door is katachi's own: [KatachiFileSystem] is `@InternalKatachiApi`, so a
- * processor written outside `:katachi` tests against a real checkout instead.
+ * Internal, so this door is katachi's own. [KatachiFileSystem] itself is
+ * `@ExperimentalKatachiApi`, but no public entry runs a processor against one, so a processor
+ * written outside `:katachi` tests against a real checkout instead.
  */
 internal fun <R> Architecture.process(
     processor: ArchitectureProcessor<Unit, R>,

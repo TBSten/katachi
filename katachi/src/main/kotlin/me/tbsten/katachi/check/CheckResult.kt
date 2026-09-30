@@ -10,13 +10,13 @@ import me.tbsten.katachi.check.internal.assertNoErrors
  * of this list, warnings included. Warnings only, or nothing at all -> this list, unchanged: a
  * warning is reported, never a reason to fail.
  *
- * **This is how a check written outside katachi says "I found something".** Call it last,
- * inside the `runCatching { }` that is the body of `process`: the throw becomes the check's
- * `Result.failure`, which is what lets `validate()` and `assert()` put the violations into the
- * one report instead of calling the check broken, and what makes a `katachi<Key>` task print
- * the same report and exit non-zero. The constructor of [KatachiArchitectureAssertionError] is
- * not public, and does not need to be: this is the one way in. Any other failure is a check
- * that could not run, and becomes one [UncheckedCheck] instead.
+ * **This is how a check written outside katachi says "I found something".** Call it last, inside
+ * the `runCatching { }` that is the body of `process`: the throw becomes the check's
+ * `Result.failure`, which is what lets `assert()` and `assertNoErrors()` put the violations into
+ * the one report instead of calling the check broken, and what makes a `katachi<Key>` task print
+ * the same report and exit non-zero. The constructor of [KatachiArchitectureAssertionError] is not
+ * public, and does not need to be: this is the one way in. Any other failure is a check that could
+ * not run, and becomes one [UncheckedCheck] instead.
  *
  * ## Example 1: a check of your own that reports through the same report as the layout check
  * ```kt

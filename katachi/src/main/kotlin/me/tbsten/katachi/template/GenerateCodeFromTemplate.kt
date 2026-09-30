@@ -138,11 +138,11 @@ public object GenerateCodeFromTemplate : ArchitectureProcessor<GenerateCodeFromT
     /**
      * The parameters `--arg template=` chose, so that the run's own check knows them.
      *
-     * Exactly the names every chosen template's `template { }` declared for this run's values,
+     * Exactly the names every chosen template's `.template { }` declared for this run's values,
      * together with the names its `layout { }` gave its wildcards with `capture(...)` -- not
      * "anything", which is what would put a hole in the check this answers for. Reading nothing
-     * off disk is what keeps deciding "is this key a typo" free of a project walk: [resolveTemplate]
-     * and [templateParameterNames] both work from the declarations alone.
+     * off disk is what keeps deciding "is this key a typo" free of a project walk: choosing the
+     * template and listing its parameters both work from the declarations alone.
      *
      * When those values leave the names in doubt -- a value that decides a branch could not be
      * read, or was missing -- the run is failed here with that value's own exception, before any
@@ -234,6 +234,8 @@ public object GenerateCodeFromTemplate : ArchitectureProcessor<GenerateCodeFromT
      *     }
      * }
      * ```
+     *
+     * @constructor Takes the templates to run and, optionally, what to do about an existing file.
      */
     @Serializable
     public data class Args(

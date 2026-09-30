@@ -36,7 +36,10 @@ import me.tbsten.katachi.internal.fileUri
 public class KatachiDuplicateTemplateOutputException internal constructor(
     /** The path both templates resolve to, relative to the project root. */
     public val path: String,
-    /** The specifiers of the templates that both claim [path], sorted. */
+    /**
+     * The specifiers of the templates that both claim
+     * [path][KatachiDuplicateTemplateOutputException.path], sorted.
+     */
     public val templates: List<String>,
 ) : KatachiDeclarationException(
     message = buildString {
@@ -134,7 +137,9 @@ public class KatachiExistingTemplateFileException internal constructor(
  */
 @ExperimentalKatachiApi
 public class KatachiTemplateIoException internal constructor(
-    /** The file being written, relative to [projectRoot]. */
+    /**
+     * The file being written, relative to [projectRoot][KatachiTemplateIoException.projectRoot].
+     */
     public val path: String,
     /** The project root the path is relative to, absolute. */
     public val projectRoot: String,
@@ -213,8 +218,9 @@ public class KatachiReservedTemplatePathException internal constructor(
  * to anywhere, and following it lands a generated file in a tree the definition never described --
  * silently, since the log reports the path as declared.
  *
- * So the real location is resolved once more just before writing. The paths this names are the
- * ones the definition asked for; [resolved] is where the file system says they actually go.
+ * So the real location is resolved once more just before writing. The paths this names are the ones
+ * the definition asked for; [resolved][KatachiTemplateEscapesProjectException.resolved] is where
+ * the file system says they actually go.
  *
  * ## Example 1: refuse to follow a link out of the project
  * ```kt

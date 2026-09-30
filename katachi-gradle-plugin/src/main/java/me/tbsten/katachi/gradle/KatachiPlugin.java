@@ -23,9 +23,10 @@ import org.gradle.api.tasks.testing.Test;
  * holds no knowledge of any individual processor, and it never starts a test runner.
  *
  * <p>Every processor key gets a {@link KatachiProcessorTask} named {@code katachi} followed by
- * the key with its first letter upper-cased. {@code docs} and {@code template} are registered by
- * default, so {@code katachiDocs} and {@code katachiTemplate} are always there; a
- * {@code register("layout", ...)} adds {@code katachiLayout}. {@code katachiProcessors} runs
+ * the key with its first letter upper-cased. {@code docs}, {@code template} and {@code templates}
+ * are registered by default, so {@code katachiDocs}, {@code katachiTemplate} and
+ * {@code katachiTemplates} are always there; a {@code register("layout", ...)} adds
+ * {@code katachiLayout}. {@code katachiProcessors} runs
  * several of them in one JVM ({@link KatachiProcessorsTask}). An internal key such as
  * {@code internalTemplatesJson}, which the katachi IDE plugin runs, gets its task without a group
  * so that {@code ./gradlew tasks} does not offer it. A key whose task name is already

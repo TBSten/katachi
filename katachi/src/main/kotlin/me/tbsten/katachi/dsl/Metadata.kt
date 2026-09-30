@@ -100,6 +100,10 @@ public class MetadataKey<T : Any> internal constructor(
      */
     internal fun valueOf(stored: Any): T = type.cast(stored)
 
+    /**
+     * `MetadataKey<<type>>`. Two keys of the same type print the same, but are still different
+     * keys.
+     */
     override fun toString(): String = "MetadataKey<${type.simpleName}>"
 }
 

@@ -42,8 +42,9 @@ import me.tbsten.katachi.KatachiDeclarationException
  *
  * @property unknown the `--arg` keys that matched no processor's arguments.
  * @property known every `--arg` key the selected processors do accept.
- * @property knownDependsOnValues whether some of [known] was named by a processor for this run's
- *   values, so that other values could have made an [unknown] key known.
+ * @property knownDependsOnValues whether some of [known][KatachiUnknownProcessorArgException.known]
+ *   was named by a processor for this run's values, so that other values could have made an
+ *   [unknown][KatachiUnknownProcessorArgException.unknown] key known.
  */
 @ExperimentalKatachiApi
 public class KatachiUnknownProcessorArgException internal constructor(
@@ -128,7 +129,7 @@ public class KatachiInvalidProcessorArgException internal constructor(
  * ```
  *
  * @property serialName the serial name of the unsupported structure.
- * @property kind the [kotlinx.serialization.descriptors.SerialKind] that was refused, as text.
+ * @property kind the `SerialKind` that was refused, as text.
  */
 @ExperimentalKatachiApi
 public class KatachiUnsupportedProcessorArgException internal constructor(
@@ -150,7 +151,7 @@ public class KatachiUnsupportedProcessorArgException internal constructor(
 
 /**
  * An `argsSerializer` combined with `+` (see the `ArchitectureProcessor` combination in
- * `ProcessorComposition.kt`) was handed to a [kotlinx.serialization.encoding.Decoder] other than
+ * `ProcessorComposition.kt`) was handed to a `Decoder` other than
  * katachi's own `StringMapDecoder`.
  *
  * ## Example 1: a combined serializer only decodes from `--arg` values
