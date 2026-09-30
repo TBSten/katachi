@@ -108,7 +108,7 @@ val projectArchitecture = architecture {
 	agents: {
 		titleHtml: 'Built for AI agents.<br /><em>Good for humans too.</em>',
 		bodyHtml:
-			'エージェントに効くのは、文章ではなく落ちるテスト。<br />\n直し方まで書かれた出力は、人が読んでも分かります。',
+			'エージェントに効くのは、文章ではなく落ちるテストです。',
 	},
 
 	cta: {
