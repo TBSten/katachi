@@ -128,7 +128,13 @@ class GenerationIdeErrorsTest {
         val anchor = "import me.tbsten.katachi.dsl.kotlin.ktFile\n"
         check(anchor in source) { "$role no longer imports ktFile the way this test expects" }
         val withImport = if (TEMPLATE_IMPORT in source) source else source.replace(anchor, anchor + TEMPLATE_IMPORT)
-        role.writeText(withImport.replace(existing, replacement))
+        // `template` and `capture` are ExperimentalKatachiApi, so a role that does not opt in yet needs both lines.
+        val withOptIn = if (OPT_IN in withImport) {
+            withImport
+        } else {
+            OPT_IN + "\n\n" + withImport.replace(anchor, anchor + EXPERIMENTAL_IMPORT)
+        }
+        role.writeText(withOptIn.replace(existing, replacement))
     }
 
     /** The fields each template asks for: the Controller's package level is `capture("resource")` as well. */
@@ -139,6 +145,8 @@ class GenerationIdeErrorsTest {
 
     private companion object {
         const val TEMPLATE_IMPORT = "import me.tbsten.katachi.dsl.template\n"
+        const val OPT_IN = "@file:OptIn(ExperimentalKatachiApi::class)"
+        const val EXPERIMENTAL_IMPORT = "import me.tbsten.katachi.ExperimentalKatachiApi\n"
         const val SERVICE_TEMPLATE = "domain.Service"
         const val REPOSITORY_TEMPLATE = "data.Repository"
         const val CONTROLLER_TEMPLATE = "api.Controller"
