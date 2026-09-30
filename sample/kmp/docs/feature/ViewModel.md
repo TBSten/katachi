@@ -36,6 +36,6 @@ It only receives the Repository as an argument and never creates it. Creating it
 ## Forbidden contents
 
 - `@Composable`. Drawing is the Screen's job
-- `android.*` imports and `Context`. Push whatever needs them down to PlatformImplementation
+- `android.*` imports and `Context`. Push whatever needs them down to ExpectDeclaration and ActualImplementation
   (expect/actual) in `:data`; written here, `commonMain` would not compile
 - Dependencies on the ViewModel of another feature

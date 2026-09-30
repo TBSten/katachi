@@ -15,14 +15,16 @@ shows that both can be written.
 
 `:app:android` has one more trait. It is the only nested module path in this sample, and
 also the only module whose package does not follow the module path (`com.example.kmp.app`,
-not `com.example.kmp.app.android`). That is why Entrypoint and AndroidResource write the
+not `com.example.kmp.app.android`). That is why ActivityEntrypoint and AppRoot write the
 package out instead of using `modulePackage`. Saying "this one is different" is kinder to
 the reader than bending the rule to fit.
 
 | Role | Summary |
 |---|---|
-| [Entrypoint](./Entrypoint.md) | The starting point of the Android app: a ComponentActivity and the whole-app @Composable it calls via setContent |
-| [Android resources](./AndroidResource.md) | AndroidManifest.xml and the resource XML under res/. Only :app:android has them |
+| [Activity entrypoint](./ActivityEntrypoint.md) | The starting point of the Android app: the ComponentActivity that calls setContent, kept in :app:android |
+| [App root](./AppRoot.md) | The whole-app @Composable that MainActivity calls via setContent, kept in :app:android |
+| [Android manifest](./AndroidManifest.md) | AndroidManifest.xml of :app:android, which declares the app to Android |
+| [Android resources](./AndroidResource.md) | The resource XML under res/ of :app:android. Only :app:android has them |
 | [Xcode project](./XcodeProject.md) | Under app/ios. Outside Gradle's management and not checked |
 
 ## Placement in this group
@@ -30,11 +32,13 @@ the reader than bending the rule to fit.
 ```
 :app:android
   src/main/
-    kotlin/com/example/kmp/app/*.kt  Entrypoint
-    AndroidManifest.xml              Android resources
-    res/*/*.xml                      Android resources
+    kotlin/com/example/kmp/app/
+      MainActivity.kt    Activity entrypoint
+      AppRoot.kt         App root
+    AndroidManifest.xml  Android manifest
+    res/*/*.xml          Android resources
 
-app/ios/                             Xcode project
+app/ios/                 Xcode project
 ```
 
 ## Allowed contents

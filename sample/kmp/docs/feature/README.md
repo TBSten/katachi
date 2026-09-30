@@ -19,12 +19,15 @@ declaration covers any number of them. Adding something to `:ui` or `:navigation
 other hand, is a design decision. Merging them into one group would erase that difference
 from the generated documentation.
 
+A screen's `@Preview` functions (ScreenPreview) sit in the same module as the screen they
+draw.
+
 Only the screen parts (FeatureComponent) grow in number inside a single feature, and they
 can be generated from a template. The `*` of `:feature:*` is named `feature`, so
 `--arg feature=home` picks the module to generate into.
 
 Every role in this group is `commonMain`. There is no `androidMain` / `iosMain` around the
-screens. Platform differences stay inside PlatformImplementation of the data group.
+screens. Platform differences stay inside ExpectDeclaration and ActualImplementation of the data group.
 
 | Role | Summary |
 |---|---|
@@ -32,6 +35,7 @@ screens. Platform differences stay inside PlatformImplementation of the data gro
 | [ViewModel](./ViewModel.md) | An androidx.lifecycle.ViewModel that holds screen state. Converts values fetched from the Repository into a UiState and exposes it as a StateFlow |
 | [Route](./Route.md) | Ties a screen to a navigation Destination and also takes on creating the ViewModel |
 | [Screen component](./FeatureComponent.md) | A @Composable used by only one screen. Placed as <Name>*.kt in the component package of the commonMain of :feature:<name> |
+| [Screen preview](./ScreenPreview.md) | A private @Composable annotated with @Preview for a screen. Placed in Home*Preview.kt in the feature module that holds the screen, with the content wrapped in PreviewRoot |
 
 ## Placement in this group
 
@@ -42,6 +46,7 @@ screens. Platform differences stay inside PlatformImplementation of the data gro
     <feature>ViewModel.kt    ViewModel
     <feature>Route.kt        Route
     component/<feature>*.kt  Screen component
+    <feature>*Preview.kt     Screen preview
 ```
 
 ## Forbidden contents

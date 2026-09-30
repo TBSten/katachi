@@ -35,4 +35,4 @@ reports the overlap as `[AmbiguousLayout]`. This is a known and accepted shape.
 - Parts that take `UiState` or a ViewModel. `:ui` does not know about the feature side, so
   if this role knew screen state the dependency would flow backwards
 - Implementations for `androidMain`. If an Android-only View is needed, solve it with
-  expect/actual, like PlatformImplementation in `:data`
+  expect/actual, like ExpectDeclaration / ActualImplementation in `:data`

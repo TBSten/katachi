@@ -33,7 +33,8 @@ fun DeclarationContainerScope.test() = "Test" {
         which is outside what this sample wants to show.
     """.trimIndent()
     forbiddenContents = """
-        - The architecture definition. `:architecture-test` is the ArchitectureDefinition role
+        - The architecture definition. `:architecture-test` is described by the DefinitionEntry, GroupDefinition, RoleDefinition
+          and related roles
         - Test doubles. `Fake*` live in the commonMain of `:testing`
     """.trimIndent()
     example("SampleModulesSpec", "The unit tests of :app:android")

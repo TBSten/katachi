@@ -41,6 +41,6 @@ fun DeclarationContainerScope.xcodeProject() = "XcodeProject" {
     example("iosAppApp.swift", "The SwiftUI entry point")
     example("ContentView.swift", "The screen on the iOS side")
     layout {
-        "app/ios" { ignore() }
+        "app/ios".ignore()
     }
 }

@@ -41,7 +41,7 @@ fun DeclarationContainerScope.viewModel() = "ViewModel" {
     """.trimIndent()
     forbiddenContents = """
         - `@Composable`. Drawing is the Screen's job
-        - `android.*` imports and `Context`. Push whatever needs them down to PlatformImplementation
+        - `android.*` imports and `Context`. Push whatever needs them down to ExpectDeclaration and ActualImplementation
           (expect/actual) in `:data`; written here, `commonMain` would not compile
         - Dependencies on the ViewModel of another feature
     """.trimIndent()

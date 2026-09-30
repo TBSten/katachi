@@ -2,8 +2,10 @@ package com.example.kmp.groups
 
 import com.example.kmp.allowedContents
 import com.example.kmp.forbiddenContents
+import com.example.kmp.roles.activityEntrypoint
+import com.example.kmp.roles.androidManifest
 import com.example.kmp.roles.androidResource
-import com.example.kmp.roles.entrypoint
+import com.example.kmp.roles.appRoot
 import com.example.kmp.roles.xcodeProject
 import me.tbsten.katachi.dsl.DeclarationContainerScope
 
@@ -31,7 +33,7 @@ fun DeclarationContainerScope.appGroup() = "app".group {
 
         `:app:android` has one more trait. It is the only nested module path in this sample, and
         also the only module whose package does not follow the module path (`com.example.kmp.app`,
-        not `com.example.kmp.app.android`). That is why Entrypoint and AndroidResource write the
+        not `com.example.kmp.app.android`). That is why ActivityEntrypoint and AppRoot write the
         package out instead of using `modulePackage`. Saying "this one is different" is kinder to
         the reader than bending the rule to fit.
     """.trimIndent()
@@ -44,7 +46,9 @@ fun DeclarationContainerScope.appGroup() = "app".group {
         - Logic meant to be shared. Anything written here is invisible to iOS
     """.trimIndent()
 
-    entrypoint()
+    activityEntrypoint()
+    appRoot()
+    androidManifest()
     androidResource()
     xcodeProject()
 }

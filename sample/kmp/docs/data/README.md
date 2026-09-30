@@ -4,10 +4,10 @@
 
 The :data module. The way into data, and the parts whose implementation differs per platform
 
-One `:data` module split into packages. `user` holds the repositories and `platform` the
-expect/actual pair. Like `:ui`, it is split by package, not by module.
+One `:data` module split into packages. `user` holds the repositories (interface and
+implementation) and `platform` the expect/actual pair. Like `:ui`, it is split by package, not by module.
 
-Both roles sit in the same group because both are "a way to bring in values from outside
+All four roles sit in the same group because they are "a way to bring in values from outside
 the app". `UserRepository` is the way into data and `platformName()` the way into
 outside information about the runtime, and to the caller (the ViewModel) both look like a
 single dependency on `:data`.
@@ -19,8 +19,10 @@ instead of into a screen.
 
 | Role | Summary |
 |---|---|
-| [Repository](./Repository.md) | The :data module's user package. The way into data, placed as an interface and an implementation |
-| [Platform implementation](./PlatformImplementation.md) | The :data module's platform package. The expect declaration in commonMain and the actual implementations in androidMain / iosMain sit in the same package |
+| [Repository interface](./RepositoryInterface.md) | The :data module's user package. The interface through which the app reads data |
+| [Repository implementation](./RepositoryImplementation.md) | The :data module's user package. The implementation of a repository interface |
+| [Expect declaration](./ExpectDeclaration.md) | The :data module's platform package. The expect declaration in commonMain that the common side calls |
+| [Actual implementation](./ActualImplementation.md) | The :data module's platform package. The actual implementations in androidMain / iosMain |
 
 ## Placement in this group
 
@@ -29,11 +31,11 @@ instead of into a screen.
   src/
     commonMain/kotlin/**/
       user/
-        *Repository.kt                           Repository
-        *RepositoryImpl.kt                       Repository
-      platform/*.kt                              Platform implementation
-    androidMain/kotlin/**/platform/*.android.kt  Platform implementation
-    iosMain/kotlin/**/platform/*.ios.kt          Platform implementation
+        *Repository.kt                           Repository interface
+        *RepositoryImpl.kt                       Repository implementation
+      platform/*.kt                              Expect declaration
+    androidMain/kotlin/**/platform/*.android.kt  Actual implementation
+    iosMain/kotlin/**/platform/*.ios.kt          Actual implementation
 ```
 
 ## Forbidden contents

@@ -35,7 +35,7 @@ fun DeclarationContainerScope.screen() = "Screen" {
 
         It is `commonMain` only so that Android and iOS share the same screen code through
         Compose Multiplatform. If something needs platform-dependent behavior, push it down to
-        PlatformImplementation (expect/actual) in `:data`, not into a screen.
+        ExpectDeclaration / ActualImplementation (expect/actual) in `:data`, not into a screen.
     """.trimIndent()
     allowedContents = """
         - The `@Composable` of that screen, and a stateless `<Name>Content` that receives state as an argument

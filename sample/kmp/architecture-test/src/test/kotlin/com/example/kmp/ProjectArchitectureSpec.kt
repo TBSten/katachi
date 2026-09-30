@@ -44,18 +44,31 @@ class ProjectArchitectureSpec : FreeSpec({
                 "ui.Component",
                 "ui.Theme",
                 "ui.UiCore",
-                "ui.Preview",
+                "ui.ComponentPreview",
+                "feature.ScreenPreview",
                 "ui.PreviewRoot",
                 "ui.Navigation",
-                "data.Repository",
-                "data.PlatformImplementation",
+                "data.RepositoryInterface",
+                "data.RepositoryImplementation",
+                "data.ExpectDeclaration",
+                "data.ActualImplementation",
                 "testing.Fake",
                 "testing.Test",
-                "testing.ArchitectureDefinition",
+                "testing.DefinitionEntry",
+                "testing.DefinitionSections",
+                "testing.GroupDefinition",
+                "testing.RoleDefinition",
+                "testing.ProjectArchitectureTest",
+                "testing.ProjectArchitectureSpec",
+                "testing.CustomProcessor",
+                "testing.ProcessorMetadata",
+                "testing.ProcessorSpec",
                 "testing.GeneratedDocumentation",
                 "testing.LayoutSnapshot",
                 "testing.BaselineFile",
-                "app.Entrypoint",
+                "app.ActivityEntrypoint",
+                "app.AppRoot",
+                "app.AndroidManifest",
                 "app.AndroidResource",
                 "app.XcodeProject",
                 "Gradle.SettingsScript",
@@ -177,7 +190,7 @@ class ProjectArchitectureSpec : FreeSpec({
         // Reading an omission as true is the reader's job; the declaration only records "not written".
         projectArchitecture.allGroups.single { it.name == "ui" }[Documented] shouldBe null
         projectArchitecture.allRoles
-            .single { it.qualifiedName == "data.Repository" }[Documented] shouldBe null
+            .single { it.qualifiedName == "data.RepositoryInterface" }[Documented] shouldBe null
     }
 
     "a role or group with a title uses it as the display name" {
@@ -206,16 +219,20 @@ class ProjectArchitectureSpec : FreeSpec({
         }
     }
 
-    "Preview and PreviewRoot are separate roles" {
-        // Two roles whose names are prefixes of each other, which is exactly where a mix-up
-        // would go unnoticed. `Preview` is the `@Preview` function itself and lives beside
-        // the composable it renders; `PreviewRoot` is the single wrapper in `:ui`.
+    "the previews and PreviewRoot are separate roles" {
+        // Roles whose names share a prefix, which is exactly where a mix-up would go
+        // unnoticed. The two previews are the `@Preview` functions themselves and live beside
+        // the composable they render (a screen's in its feature module, a component's in
+        // `:ui`); `PreviewRoot` is the single wrapper in `:ui`.
         val roles = projectArchitecture.allRoles.associateBy { it.qualifiedName }
-        val preview = requireNotNull(roles["ui.Preview"]) { "ui.Preview is missing" }
+        val screenPreview = requireNotNull(roles["feature.ScreenPreview"]) { "feature.ScreenPreview is missing" }
+        val componentPreview = requireNotNull(roles["ui.ComponentPreview"]) { "ui.ComponentPreview is missing" }
         val previewRoot = requireNotNull(roles["ui.PreviewRoot"]) { "ui.PreviewRoot is missing" }
 
-        preview[Summary].orEmpty() shouldContain "Preview.kt"
-        preview[Summary].orEmpty() shouldContain "wrapped in PreviewRoot"
+        listOf(screenPreview, componentPreview).forAll { preview ->
+            preview[Summary].orEmpty() shouldContain "Preview.kt"
+            preview[Summary].orEmpty() shouldContain "wrapped in PreviewRoot"
+        }
         previewRoot[Summary].orEmpty() shouldContain "preview package"
     }
 
@@ -224,8 +241,10 @@ class ProjectArchitectureSpec : FreeSpec({
         // its package would send a reader of the generated docs to the wrong directory.
         val roles = projectArchitecture.allRoles.associateBy { it.qualifiedName }
         val packageOfRole = mapOf(
-            "data.Repository" to "user",
-            "data.PlatformImplementation" to "platform",
+            "data.RepositoryInterface" to "user",
+            "data.RepositoryImplementation" to "user",
+            "data.ExpectDeclaration" to "platform",
+            "data.ActualImplementation" to "platform",
         )
         packageOfRole.forAll { (qualifiedName, packageName) ->
             val summary = requireNotNull(roles[qualifiedName]?.get(Summary)) { "$qualifiedName has no summary" }
@@ -238,22 +257,33 @@ class ProjectArchitectureSpec : FreeSpec({
         // `settings` role here would document a package that no file lives in.
         projectArchitecture.allRoles
             .filter { it.groupPath == listOf("data") }
-            .map { it.name } shouldContainExactly listOf("Repository", "PlatformImplementation")
+            .map { it.name } shouldContainExactly
+            listOf("RepositoryInterface", "RepositoryImplementation", "ExpectDeclaration", "ActualImplementation")
         projectArchitecture.allRoles.forAll { role ->
             role[Summary].orEmpty() shouldNotContain "settings package"
         }
     }
 
     "all examples are kept in the order they were called" {
-        projectArchitecture.allRoles.single { it.qualifiedName == "data.Repository" }[Examples]
+        projectArchitecture.allRoles.single { it.qualifiedName == "data.ActualImplementation" }[Examples]
             .orEmpty().map { it.name } shouldContainExactly
-            listOf("UserRepository", "UserRepositoryImpl")
+            listOf("PlatformInfo.android.kt", "PlatformInfo.ios.kt")
+    }
+
+    "every role declares one place per kind of file" {
+        // A role holds one kind of file. The Gradle group is left out: it is declared by
+        // katachi's own `gradle()`, not by this sample.
+        projectArchitecture.allRoles
+            .filterNot { it.qualifiedName.isGradleGroupSubtree() }
+            .filter { it.layouts.size > 1 }
+            .map { it.qualifiedName } shouldBe emptyList()
     }
 
     "KMP-specific roles are declared" {
         // These three are what makes this sample different from sample/android.
         val roles = projectArchitecture.allRoles.associateBy { it.qualifiedName }
-        roles["data.PlatformImplementation"] shouldNotBe null
+        roles["data.ExpectDeclaration"] shouldNotBe null
+        roles["data.ActualImplementation"] shouldNotBe null
         roles["app.XcodeProject"] shouldNotBe null
         roles["testing.Test"]?.get(Summary)?.contains("commonTest") shouldBe true
     }
@@ -263,10 +293,10 @@ class ProjectArchitectureSpec : FreeSpec({
         // of the repository, so it needs a role too. Its sources are the definition itself,
         // and its build script falls under the module build script role.
         val roles = projectArchitecture.allRoles.associateBy { it.qualifiedName }
-        val definition = requireNotNull(roles["testing.ArchitectureDefinition"]) {
-            "testing.ArchitectureDefinition is missing"
+        val definition = requireNotNull(roles["testing.DefinitionEntry"]) {
+            "testing.DefinitionEntry is missing"
         }
-        definition[Summary].orEmpty() shouldContain ":architecture-test"
+        definition[Summary].orEmpty() shouldContain "ProjectArchitecture.kt"
         // `Gradle/BuildScript` needs no example naming it: `":**".module { }` already
         // covers every module katachi finds, `:architecture-test` included, and `gradle()`
         // sets no `example()` on the roles it declares.

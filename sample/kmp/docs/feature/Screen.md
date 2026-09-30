@@ -15,7 +15,7 @@ drawn once given a state lets both previews (ui/Preview) and tests deal with the
 
 It is `commonMain` only so that Android and iOS share the same screen code through
 Compose Multiplatform. If something needs platform-dependent behavior, push it down to
-PlatformImplementation (expect/actual) in `:data`, not into a screen.
+ExpectDeclaration / ActualImplementation (expect/actual) in `:data`, not into a screen.
 
 ## Placement
 

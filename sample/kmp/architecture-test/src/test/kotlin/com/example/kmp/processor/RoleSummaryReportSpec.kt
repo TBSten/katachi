@@ -10,14 +10,14 @@ import me.tbsten.katachi.dsl.architecture
 import me.tbsten.katachi.processor.process
 
 /**
- * [RoleSummaryReport] run twice with two different `write` lambdas: once collecting, once
- * comparing. Nothing in [RoleSummaryReport] branches on which mode is running -- the mode is
+ * [RoleSummaryReportProcessor] run twice with two different `write` lambdas: once collecting, once
+ * comparing. Nothing in [RoleSummaryReportProcessor] branches on which mode is running -- the mode is
  * entirely the lambda's business: for an `ArchitectureProcessorNoArg<Unit>`, writing and checking
  * differ only in the lambda that is injected.
  *
  * This file's own `@OptIn(ExperimentalKatachiApi::class)` is needed for calling
  * [me.tbsten.katachi.processor.process] below, which is itself `@ExperimentalKatachiApi`.
- * [RoleSummaryReport] opts in separately, because implementing
+ * [RoleSummaryReportProcessor] opts in separately, because implementing
  * [me.tbsten.katachi.processor.ArchitectureProcessorNoArg] is a second place the experimental
  * marker has to be crossed -- both files doing it independently is the point.
  */
@@ -26,7 +26,7 @@ class RoleSummaryReportSpec : FreeSpec({
     "write mode: passing a collecting lambda gathers one MD per role" {
         val written = mutableMapOf<String, String>()
 
-        twoRoleArchitecture.process(RoleSummaryReport(write = { path, content -> written[path] = content }))
+        twoRoleArchitecture.process(RoleSummaryReportProcessor(write = { path, content -> written[path] = content }))
             .getOrThrow()
 
         written shouldBe mapOf(
@@ -38,7 +38,7 @@ class RoleSummaryReportSpec : FreeSpec({
     "check mode: dropping one role lets the comparing lambda detect the vanished path (like --check)" {
         // Get what twoRoleArchitecture should have written first, using the collecting lambda.
         val expected = mutableMapOf<String, String>()
-        twoRoleArchitecture.process(RoleSummaryReport(write = { path, content -> expected[path] = content }))
+        twoRoleArchitecture.process(RoleSummaryReportProcessor(write = { path, content -> expected[path] = content }))
             .getOrThrow()
 
         // Run the same processor with the comparing lambda against the definition without Second. If an
@@ -47,7 +47,7 @@ class RoleSummaryReportSpec : FreeSpec({
         val seen = mutableSetOf<String>()
         val mismatched = mutableSetOf<String>()
         oneRoleArchitecture.process(
-            RoleSummaryReport(
+            RoleSummaryReportProcessor(
                 write = { path, content ->
                     seen += path
                     if (expected[path] != content) mismatched += path

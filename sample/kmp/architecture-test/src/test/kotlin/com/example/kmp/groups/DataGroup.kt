@@ -1,8 +1,10 @@
 package com.example.kmp.groups
 
 import com.example.kmp.forbiddenContents
-import com.example.kmp.roles.platformImplementation
-import com.example.kmp.roles.repository
+import com.example.kmp.roles.actualImplementation
+import com.example.kmp.roles.expectDeclaration
+import com.example.kmp.roles.repositoryImplementation
+import com.example.kmp.roles.repositoryInterface
 import me.tbsten.katachi.dsl.DeclarationContainerScope
 
 /**
@@ -15,10 +17,10 @@ fun DeclarationContainerScope.dataGroup() = "data".group {
     title = "Data"
     summary = "The :data module. The way into data, and the parts whose implementation differs per platform"
     description = """
-        One `:data` module split into packages. `user` holds the repositories and `platform` the
-        expect/actual pair. Like `:ui`, it is split by package, not by module.
+        One `:data` module split into packages. `user` holds the repositories (interface and
+        implementation) and `platform` the expect/actual pair. Like `:ui`, it is split by package, not by module.
 
-        Both roles sit in the same group because both are "a way to bring in values from outside
+        All four roles sit in the same group because they are "a way to bring in values from outside
         the app". `UserRepository` is the way into data and `platformName()` the way into
         outside information about the runtime, and to the caller (the ViewModel) both look like a
         single dependency on `:data`.
@@ -34,6 +36,8 @@ fun DeclarationContainerScope.dataGroup() = "data".group {
         - `@Composable`. The `:data` build script does not apply the Compose plugin
     """.trimIndent()
 
-    repository()
-    platformImplementation()
+    repositoryInterface()
+    repositoryImplementation()
+    expectDeclaration()
+    actualImplementation()
 }

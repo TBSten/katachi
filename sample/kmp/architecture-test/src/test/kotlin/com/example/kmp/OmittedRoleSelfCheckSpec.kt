@@ -87,7 +87,7 @@ private const val HELD_BACK_BY_BASELINE: String =
  * claims every `.kt` file and `Preview` claims the ones ending in `Preview.kt`, so the one file
  * matching both belongs to both roles.
  *
- * katachi reports it as a Warning, which never fails `assert()` — see `roles/PreviewRole.kt`,
+ * katachi reports it as a Warning, which never fails `assert()` — see `roles/ComponentPreviewRole.kt`,
  * where the overlap is declared on purpose. Both definitions above keep `uiGroup()`, so it is
  * in both of their results and says nothing about the group each of them dropped.
  */

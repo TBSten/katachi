@@ -4,6 +4,7 @@ import com.example.kmp.forbiddenContents
 import com.example.kmp.roles.featureComponent
 import com.example.kmp.roles.route
 import com.example.kmp.roles.screen
+import com.example.kmp.roles.screenPreview
 import com.example.kmp.roles.viewModel
 import me.tbsten.katachi.dsl.DeclarationContainerScope
 
@@ -43,12 +44,15 @@ fun DeclarationContainerScope.featureGroup() = "feature".group {
         other hand, is a design decision. Merging them into one group would erase that difference
         from the generated documentation.
 
+        A screen's `@Preview` functions (ScreenPreview) sit in the same module as the screen they
+        draw.
+
         Only the screen parts (FeatureComponent) grow in number inside a single feature, and they
         can be generated from a template. The `*` of `:feature:*` is named `feature`, so
         `--arg feature=home` picks the module to generate into.
 
         Every role in this group is `commonMain`. There is no `androidMain` / `iosMain` around the
-        screens. Platform differences stay inside PlatformImplementation of the data group.
+        screens. Platform differences stay inside ExpectDeclaration and ActualImplementation of the data group.
     """.trimIndent()
     forbiddenContents = """
         - Parts used by several screens. Those are Component in `:ui`
@@ -61,4 +65,5 @@ fun DeclarationContainerScope.featureGroup() = "feature".group {
     viewModel()
     route()
     featureComponent()
+    screenPreview()
 }

@@ -16,8 +16,8 @@ with `testImplementation(libs.katachi)`.
 | File | What it shows |
 |---|---|
 | [`ProjectArchitecture.kt`](architecture-test/src/test/kotlin/com/example/kmp/ProjectArchitecture.kt) | The body of `architecture { }`. It only calls the groups; each role is in `roles/`, one role per file |
-| [`roles/PlatformImplementationRole.kt`](architecture-test/src/test/kotlin/com/example/kmp/roles/PlatformImplementationRole.kt) | A role that declares `expect` / `actual` per source set |
-| [`roles/RepositoryRole.kt`](architecture-test/src/test/kotlin/com/example/kmp/roles/RepositoryRole.kt) | A role whose two file declarations each carry `.template(id = ...)`, so the interface and the implementation can be generated separately (or together with `--arg template=a,b`) |
+| [`roles/ExpectDeclarationRole.kt`](architecture-test/src/test/kotlin/com/example/kmp/roles/ExpectDeclarationRole.kt) / [`roles/ActualImplementationRole.kt`](architecture-test/src/test/kotlin/com/example/kmp/roles/ActualImplementationRole.kt) | The `expect` in `commonMain` and the `actual` in `androidMain` / `iosMain`, as two roles because they are two kinds of file |
+| [`roles/RepositoryInterfaceRole.kt`](architecture-test/src/test/kotlin/com/example/kmp/roles/RepositoryInterfaceRole.kt) / [`roles/RepositoryImplementationRole.kt`](architecture-test/src/test/kotlin/com/example/kmp/roles/RepositoryImplementationRole.kt) | The interface and the implementation as two roles, each with its own `.template`, so they can be generated separately (or together with `--arg template=a,b`) |
 | [`roles/FeatureComponentRole.kt`](architecture-test/src/test/kotlin/com/example/kmp/roles/FeatureComponentRole.kt) | An example of `":feature:${capture("feature")}".module { }`. The same capture decides the location with `wildcard("feature")` and the template content with `captureValue("feature")` |
 | [`ProjectArchitectureTest.kt`](architecture-test/src/test/kotlin/com/example/kmp/ProjectArchitectureTest.kt) | The only test a user writes. It just calls `projectArchitecture.assert()` |
 | [`katachi-baseline.json`](katachi-baseline.json) | The baseline ledger. It deliberately leaves one entry, `user/` in the `androidMain` of `:data`, shelved ([`../README.md`](../README.md#baseline)) |
@@ -40,9 +40,9 @@ cd sample/kmp
 # Generate the documents into docs/ from the definition
 ./gradlew :architecture-test:katachiDocs
 
-# Generate ProfileRepository.kt and ProfileRepositoryImpl.kt into the user package of :data from the Repository template
-# (give the two ids together, comma-separated; pass only data.Repository.repository for just one)
-./gradlew :architecture-test:katachiTemplate --arg template=data.Repository.repository,data.Repository.repositoryImpl --arg name=Profile
+# Generate ProfileRepository.kt and ProfileRepositoryImpl.kt into the user package of :data from the Repository templates
+# (give the two together, comma-separated; pass only data.RepositoryInterface for just one)
+./gradlew :architecture-test:katachiTemplate --arg template=data.RepositoryInterface,data.RepositoryImplementation --arg name=Profile
 
 # Generate SettingsToggleRow.kt into the component package of :feature:settings from the FeatureComponent template
 # (feature is the name given to :feature:* in the layout; it picks the module to generate into)

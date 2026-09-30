@@ -19,7 +19,7 @@ import me.tbsten.katachi.processor.ArchitectureProcessorNoArg
  * ## Example 1: write one `.md` file per role
  * ```kt
  * projectArchitecture.process(
- *     RoleSummaryReport(write = { path, content -> File(outDir, path).writeText(content) }),
+ *     RoleSummaryReportProcessor(write = { path, content -> File(outDir, path).writeText(content) }),
  * ).getOrThrow()
  * ```
  *
@@ -27,7 +27,7 @@ import me.tbsten.katachi.processor.ArchitectureProcessorNoArg
  * ```kt
  * val stale = mutableListOf<String>()
  * projectArchitecture.process(
- *     RoleSummaryReport(
+ *     RoleSummaryReportProcessor(
  *         write = { path, content -> if (File(outDir, path).readText() != content) stale += path },
  *     ),
  * ).getOrThrow()
@@ -39,7 +39,7 @@ import me.tbsten.katachi.processor.ArchitectureProcessorNoArg
 // same point through the `ArchitectureProcessorUnit` typealias, which v0.2 dropped -- two type
 // parameters left nothing for an alias named after one of them to say.
 @OptIn(ExperimentalKatachiApi::class)
-class RoleSummaryReport(
+class RoleSummaryReportProcessor(
     private val write: (path: String, content: String) -> Unit,
 ) : ArchitectureProcessorNoArg<Unit> {
     override fun process(context: ArchitectureProcessNoArgContext): Result<Unit> = runCatching {

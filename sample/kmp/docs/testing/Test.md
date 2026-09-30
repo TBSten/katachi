@@ -32,5 +32,6 @@ which is outside what this sample wants to show.
 
 ## Forbidden contents
 
-- The architecture definition. `:architecture-test` is the ArchitectureDefinition role
+- The architecture definition. `:architecture-test` is described by the DefinitionEntry, GroupDefinition, RoleDefinition
+  and related roles
 - Test doubles. `Fake*` live in the commonMain of `:testing`

@@ -31,7 +31,7 @@ fun DeclarationContainerScope.component() = "Component" {
         - Parts that take `UiState` or a ViewModel. `:ui` does not know about the feature side, so
           if this role knew screen state the dependency would flow backwards
         - Implementations for `androidMain`. If an Android-only View is needed, solve it with
-          expect/actual, like PlatformImplementation in `:data`
+          expect/actual, like ExpectDeclaration / ActualImplementation in `:data`
     """.trimIndent()
     example("PrimaryButton", "The button for the main action")
     layout {
