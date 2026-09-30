@@ -19,7 +19,7 @@ For example `UseCase`, `Repository`, `Controller`, or `ViewModel`.
 
 You define what Roles exist inside `architecture { }`.
 
-```kt {2-5}
+```kt
 architecture {
     // Define a Role called UseCase
     "UseCase" {
@@ -35,7 +35,7 @@ You write a Role's description, placement, and constraints inside that Role's bl
   - See [Layout definitions](/katachi/guides/layout/) for details.
 - `"constraint name".konsist { }` ... Defines constraints you can apply to that Role's files.
   - Constraints are defined using Konsist. See [Konsist integration](/katachi/guides/konsist-integration/) for details.
-- `template` ... Defines the template used when creating a new file for that Role.
+- `.template { }` ... Attached to a file declared in `layout { }`, it defines the template used when that file is newly created.
   - See [Generate code from a template](/katachi/guides/generate-code-from-template/) for details.
 
 ```kt
@@ -88,22 +88,6 @@ At minimum, all you need is `summary`. It becomes the one-line entry for the Rol
     example("GetUserUseCase", "Fetch the user")
     example("UpdateUserUseCase", "Update the user")
 }
-```
-
-**Writing a Role name in Japanese fails.**
-
-```kt
-"ユースケース" {
-    summary = "A single app-specific behavior that occurs on each screen"
-}
-```
-
-This throws an exception the moment the definition is evaluated — before the check even runs.
-
-```text
-Invalid role name "ユースケース" declared at ProjectArchitecture.kt:42.
-Names must match [A-Za-z][A-Za-z0-9_-]*: start with an ASCII letter, then ASCII letters, digits, '_' or '-'.
-Use `title` for a human readable display name.
 ```
 
 </details>
@@ -190,7 +174,7 @@ A constraint applies to the files that matched the Role's `layout { }`. You cann
 You can also express a prohibition with `mustNot` and `mustBeEmpty()`.
 
 ```kt
-"Repository" {
+"RepositoryInterface" {
     layout {
         "src/main/kotlin/com/example/repository" / "*Repository".ktFile()
     }
@@ -226,18 +210,16 @@ When the test calls `assert(FileConstraintCheck())`, it shows up in the same rep
   Declared at: ProjectArchitecture.kt:12
 ```
 
-`How to fix:` is not shown. Since the body of a constraint is an arbitrary Kotlin expression, **katachi has no idea what would satisfy it.** Guessing would produce a lie, so it only points to where the rule is declared.
-
 </details>
 
 
-Also, because Role names are used for things like documentation generation, they must be ASCII only (letters, digits, and a few symbols).
+Also, because Role names are used for things like documentation generation, they must be ASCII only (starting with a letter, followed by letters, digits, `_`, or `-`). Put a Japanese (or any other) display name in `title`.
 
 ## Grouping Roles
 
 You can group Roles together using `"group name".group { ... }`.
 
-```kt {2,10}
+```kt {2}
 architecture {
     "domain".group {
         "UseCase" {
@@ -268,7 +250,7 @@ With one Role per kind, the description and constraints only deal with that kind
 <CodeComparison>
     <CodeComparison.Panel label="🆖 Two kinds of file in one Role" labelVariant="danger">
 
-    ```kt {4-5,7-9} nocollapse
+    ```kt {4-5,7-8} nocollapse
     "Repository" {
         summary = "Loads and saves data"
         layout {

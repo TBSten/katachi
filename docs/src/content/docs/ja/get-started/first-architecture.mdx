@@ -11,9 +11,7 @@ tags:
 
 import { Aside, Tabs, TabItem, Steps, Badge } from '@astrojs/starlight/components';
 
-<Aside>
 katachi が必要かどうか疑問がある場合は、先に [モチベーション](/katachi/ja/get-started/motivation/) を読むことをおすすめします。
-</Aside>
 
 ## katachi をプロジェクトに導入する
 
@@ -44,12 +42,9 @@ katachi が必要かどうか疑問がある場合は、先に [モチベーシ�
     2. AI Agent がプロジェクトにセットアップした差分を **レビュー** し、必要に応じて内容を修正してください。
 
         注目すべき点:
-        - `architecture-test/src/test/kotlin/.../test/architecture/ProjectArchitecture.kt` がエントリーポイントです。
-        - AI Agent は architecture の定義を group・役割ごとのファイルに分け、`ProjectArchitecture.kt` の下のパッケージに置きます。そのファイルもレビュー対象です。
-    
-        <Aside title="チーム開発">
-          - チームで開発している場合は、チームメンバー（特にチームのリード）にも重点的にレビューしてもらいましょう。
-        </Aside>
+        - `architecture-test/src/test/kotlin/<パッケージ>/ProjectArchitecture.kt` がエントリーポイントです。
+        - AI Agent は architecture の定義を group・Role ごとのファイルに分け、`ProjectArchitecture.kt` の下のパッケージに置きます。そのファイルもレビュー対象です。
+        - チームで開発している場合は、チームメンバー（特にチームのリード）にも重点的にレビューしてもらいましょう。
 
     3. **アーキテクチャテストを実行** し、All green になることを確認してください。
 
@@ -148,10 +143,14 @@ katachi が必要かどうか疑問がある場合は、先に [モチベーシ�
 
         ```kotlin
         // 例
+        @file:OptIn(ExperimentalKatachiApi::class)
+
         package com.example
 
+        import me.tbsten.katachi.ExperimentalKatachiApi
         import me.tbsten.katachi.dsl.architecture
         import me.tbsten.katachi.dsl.gradle.gradle
+        import me.tbsten.katachi.dsl.kotlin.ktFile
 
         val projectArchitecture = architecture {
             gradle() // wrapper・settings・build スクリプトなど Gradle のファイル
@@ -159,9 +158,7 @@ katachi が必要かどうか疑問がある場合は、先に [モチベーシ�
                 "UseCase" {
                     summary = "各画面で発生するアプリ固有の1つの振る舞い"
                     layout {
-                        "domain/src/main/kotlin/usecase" {
-                            "*UseCase.kt".file()
-                        }
+                        "domain/src/main/kotlin/usecase" / "*UseCase".ktFile()
                     }
                 }
             }
@@ -171,8 +168,11 @@ katachi が必要かどうか疑問がある場合は、先に [モチベーシ�
     4. **検査する1本のテストを書く**
 
         ```kotlin title="architecture-test/src/test/kotlin/<パッケージ>/ProjectArchitectureTest.kt"
+        @file:OptIn(ExperimentalKatachiApi::class)
+
         package com.example
 
+        import me.tbsten.katachi.ExperimentalKatachiApi
         import me.tbsten.katachi.check.assert
         import org.junit.jupiter.api.Test
 
@@ -194,11 +194,11 @@ katachi が必要かどうか疑問がある場合は、先に [モチベーシ�
         ./gradlew :architecture-test:test
         ```
 
-        最初は **宣言していないファイルがすべて違反として出ます。** katachi は許可リスト方式なので、これが正常な出発点です。出てきたパスを定義に足すか、消すかを決めていってください。
+        最初は **宣言していないファイルやディレクトリが違反として出ます。** katachi は許可リスト方式なので、これが正常な出発点です。出てきたパスを定義に足すか、消すかを決めていってください。
 
         Gradle のファイル（wrapper・`settings.gradle.kts`・build スクリプト・`gradle.properties`・version catalog）は、手順3の `gradle()` の1行で宣言できます。`buildSrc` や convention plugin がある場合は [Gradle 周辺のレシピ](/katachi/ja/recipes/gradle/) を参照してください。
 
-        既存の違反が多くてすぐには片付けられない場合は、実験的な機能の baseline で今ある違反をとりあえず許容し、新しい違反だけをエラーにすることもできます。今ある違反は baseline のファイル（デフォルトは `katachi-baseline.json`）に記録します。`architecture { baseline() }` と書き、最初に `-Dkatachi.baseline.update=true` を付けて実行して baseline のファイルを作ります。許容していた違反を直したら、`-Dkatachi.baseline.prune=true` で baseline のファイルから消すまでテストは落ちます。baseline のファイル自身も `layout { }` で宣言します。詳しくは [baseline](/katachi/ja/guides/baseline/) を参照してください。
+        既存の違反が多くてすぐには片付けられない場合は、実験的な機能の baseline で今ある違反をとりあえず許容し、新しい違反だけをエラーにすることもできます。詳しくは [baseline](/katachi/ja/guides/baseline/) を参照してください。
 
     </Steps>
   </TabItem>

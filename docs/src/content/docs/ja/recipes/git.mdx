@@ -11,8 +11,11 @@ tags:
 
 import SnippetIsStartingPoint from '../../../../components/SnippetIsStartingPoint.astro';
 
-```kt collapse {6,15,23,31}
+```kt collapse {9,21,29,37}
 // ProjectArchitecture.kt
+@file:OptIn(ExperimentalKatachiApi::class)
+
+import me.tbsten.katachi.ExperimentalKatachiApi
 import me.tbsten.katachi.dsl.architecture
 
 val projectArchitecture = architecture {
@@ -22,6 +25,9 @@ val projectArchitecture = architecture {
 }
 
 // roles/Git.kt
+@file:OptIn(ExperimentalKatachiApi::class)
+
+import me.tbsten.katachi.ExperimentalKatachiApi
 import me.tbsten.katachi.dsl.DeclarationContainerScope
 
 fun DeclarationContainerScope.git() =
@@ -51,5 +57,7 @@ fun DeclarationContainerScope.git() =
         }
     }
 ```
+
+サンプルでは `.gitignore` だけを1つの Role で宣言しています（[sample/jvm の GitRole.kt](https://github.com/TBSten/katachi/blob/main/sample/jvm/architecture-test/src/test/kotlin/com/example/roles/GitRole.kt)）。
 
 <SnippetIsStartingPoint />

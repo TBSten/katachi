@@ -4,6 +4,12 @@ description: An example of declaring where detekt's configuration file and basel
 tags:
   - beginner
 ---
+
+{/*
+  Purpose of this page: show the smallest example of declaring detekt's configuration files (the YAML and the baseline) as Roles.
+  Separate from the Gradle recipe: it only covers where one kind of file, linter configuration, lives.
+*/}
+
 import SnippetIsStartingPoint from '../../../components/SnippetIsStartingPoint.astro';
 
 import { LinkCard } from '@astrojs/starlight/components';
@@ -16,10 +22,13 @@ import { LinkCard } from '@astrojs/starlight/components';
 
 detekt lets you configure rule enable/disable settings and thresholds through a YAML configuration file.
 
-You should declare the configuration file and baseline in your architecture definition so katachi knows about them.
+We recommend declaring the configuration file and the baseline in your architecture definition too, so katachi knows about them.
 
 ```kt collapse
 // ProjectArchitecture.kt
+@file:OptIn(ExperimentalKatachiApi::class)
+
+import me.tbsten.katachi.ExperimentalKatachiApi
 import me.tbsten.katachi.dsl.architecture
 
 val projectArchitecture = architecture {
@@ -29,6 +38,9 @@ val projectArchitecture = architecture {
 }
 
 // roles/Detekt.kt
+@file:OptIn(ExperimentalKatachiApi::class)
+
+import me.tbsten.katachi.ExperimentalKatachiApi
 import me.tbsten.katachi.dsl.DeclarationContainerScope
 
 private const val detektConfigDir = "config/detekt"

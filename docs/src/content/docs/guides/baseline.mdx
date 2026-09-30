@@ -9,16 +9,15 @@ tags:
   The purpose of this page: to gain a deep, comprehensive understanding of the baseline feature, which is useful when introducing katachi into an existing project.
 */}
 
-Adding katachi to an existing project means that on the first run, **every undeclared file comes out as a violation.** The basic approach is to work through the reported paths one by one — adding them to the definition, moving them, or deleting them — but when there are a lot of them, you can't clear them all right away.
+Adding katachi to an existing project means that on the first run, **undeclared files and directories come out as violations.** The basic approach is to work through the reported paths one by one — adding them to the definition, moving them, or deleting them — but when there are a lot of them, you can't clear them all right away.
 
-baseline is a feature that **temporarily suppresses existing violations, so that only new violations fail the test**.
+baseline is a feature that **temporarily suppresses existing violations, so that new violations fail the test**.
 
 ## Setting it up
 
 ### 1. Write `baseline()` in the definition
 
-```kt title="ProjectArchitecture.kt (excerpt)" {1,4}
-@OptIn(ExperimentalKatachiApi::class)
+```kt title="ProjectArchitecture.kt (excerpt)" {3}
 val projectArchitecture: Architecture = architecture {
     // ...
     baseline()
@@ -65,12 +64,6 @@ Running the architecture test with `-Dkatachi.baseline.update=true` makes all vi
 ./gradlew :architecture-test:test -Dkatachi.baseline.update=true
 ```
 
-How many were recorded is reported in the following line. This line goes to the test's standard error output, so with Gradle's default settings it doesn't show up in the console.
-
-```
-Katachi baseline file:///path/to/project/katachi-baseline.json: 2 violations recorded in 2 entries (+2, -0).
-```
-
 It's recommended to commit the created/updated file.
 
 ## After you fix a tolerated violation
@@ -87,7 +80,7 @@ prune only **reduces** the number of records. It never adds new violations to th
 
 ## Summary
 
-- baseline is a feature that records existing violations in the baseline file and temporarily suppresses them, so that only **newly added violations** fail the test.
+- baseline is a feature that records existing violations in the baseline file and temporarily suppresses them, so that only **newly added violations, and entries still in the baseline file after they were fixed,** fail the test.
 - The baseline file is created and updated by running the architecture test with `-Dkatachi.baseline.update=true`. Commit the resulting file.
 - When you fix a tolerated violation, the entries left in the baseline file fail the test as `[StaleBaselineEntry]`. `-Dkatachi.baseline.prune=true` removes the violations you have fixed.
 

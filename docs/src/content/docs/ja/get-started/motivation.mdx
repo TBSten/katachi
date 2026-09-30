@@ -12,17 +12,14 @@ tags:
 import { Aside, FileTree, LinkCard } from '@astrojs/starlight/components';
 import CodeComparison from '../../../../components/CodeComparison';
 
-<Aside title="時間がありませんか？">
-  katachi の全体像を掴むための 5分で読めるスライドもあります。
+katachi の全体像を掴むための、5分で読めるスライドもあります。
 
-  <LinkCard
-    title="5分でわかる katachi"
-    description="katachi が解く問題と、1つの定義からテストとドキュメントを出す仕組みを、スライドでざっと掴む。"
-    href="../../slides/katachi-in-5-minutes/index.html"
-    target="_blank"
-  />
-
-</Aside>
+<LinkCard
+  title="5分でわかる katachi"
+  description="katachi が解く問題と、1つの定義からテストとドキュメントを出す仕組みを、スライドでざっと掴む。"
+  href="../../slides/katachi-in-5-minutes/index.html"
+  target="_blank"
+/>
 
 ## アーキテクチャドキュメントは必ず実装と乖離する
 
@@ -201,7 +198,7 @@ katachi で定義したプロジェクト構造を SSoT にして、人間も AI
 
 <LinkCard
     title="ドキュメント生成"
-    description="architecture { } の定義から、役割ごとの Markdown を生成する方法。"
+    description="architecture { } の定義から、Role ごとの Markdown を生成する方法。"
     href="/katachi/ja/guides/document-generation/"
 />
 
@@ -331,7 +328,7 @@ val projectArchitecture = architecture {
 
 - AI を使った開発では、**プロジェクト構造のルールを AI Agent に守らせる手段** が必要です。
 - katachi はプロジェクト全体の構造を定義・テストしたり、ドキュメントを生成したりする DSL を提供します。
-- プロジェクト全体の構造は katachi、各ファイルの中身は Konsist。**役割が違うので併用します**。
+- プロジェクト全体の構造は katachi、各ファイルの中身は Konsist。**役割が違うので、併用するのがおすすめの使い方です**。
 
 ## 次のステップ
 

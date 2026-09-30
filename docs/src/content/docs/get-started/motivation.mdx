@@ -12,17 +12,14 @@ tags:
 import { Aside, FileTree, LinkCard } from '@astrojs/starlight/components';
 import CodeComparison from '../../../components/CodeComparison';
 
-<Aside title="Short on time?">
-  There's also a 5-minute slide deck that gives you the big picture of katachi.
+There's also a 5-minute slide deck that gives you the big picture of katachi.
 
-  <LinkCard
-    title="katachi in 5 Minutes"
-    description="Get a quick grasp, in slides, of the problem katachi solves and how one definition produces both tests and documentation."
-    href="../../slides/katachi-in-5-minutes/index.html"
-    target="_blank"
-  />
-
-</Aside>
+<LinkCard
+  title="katachi in 5 Minutes"
+  description="Get a quick grasp, in slides, of the problem katachi solves and how one definition produces both tests and documentation."
+  href="../../slides/katachi-in-5-minutes/index.html"
+  target="_blank"
+/>
 
 ## Architecture documentation always drifts from the implementation
 
@@ -201,7 +198,7 @@ See [Document generation](/katachi/guides/document-generation/) for the details.
 
 <LinkCard
     title="Document generation"
-    description="How to generate a Markdown page per role from the architecture { } definition."
+    description="How to generate a Markdown page per Role from the architecture { } definition."
     href="/katachi/guides/document-generation/"
 />
 
@@ -331,7 +328,7 @@ See [Konsist integration](/katachi/guides/konsist-integration/) for the details.
 
 - Developing with AI calls for **a way to make AI agents follow the rules about project structure**.
 - katachi gives you a DSL for defining and testing the structure of the whole project, and for generating documentation from it.
-- katachi for the structure of the whole project, Konsist for the contents of each file. **They do different jobs, so use both.**
+- katachi for the structure of the whole project, Konsist for the contents of each file. **They do different jobs, so using both is the recommended way.**
 
 ## Next steps
 

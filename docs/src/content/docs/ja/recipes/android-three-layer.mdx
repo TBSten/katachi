@@ -48,6 +48,9 @@ Android developers で公開されているアプリアーキテクチャガイ�
 
 ```kt
 // ProjectArchitecture.kt
+@file:OptIn(ExperimentalKatachiApi::class)
+
+import me.tbsten.katachi.ExperimentalKatachiApi
 import me.tbsten.katachi.dsl.architecture
 import me.tbsten.katachi.dsl.gradle.gradle
 
@@ -82,6 +85,9 @@ val projectArchitecture = architecture {
 const val appPackageDir = "com/example/project"
 
 // roles/UiState.kt
+@file:OptIn(ExperimentalKatachiApi::class)
+
+import me.tbsten.katachi.ExperimentalKatachiApi
 import me.tbsten.katachi.dsl.DeclarationContainerScope
 import me.tbsten.katachi.dsl.RoleScope
 import me.tbsten.katachi.dsl.gradle.kotlin
@@ -104,6 +110,9 @@ private fun RoleScope.shouldBeImmutable() =
   }
 
 // roles/ViewModel.kt
+@file:OptIn(ExperimentalKatachiApi::class)
+
+import me.tbsten.katachi.ExperimentalKatachiApi
 import me.tbsten.katachi.dsl.DeclarationContainerScope
 import me.tbsten.katachi.dsl.RoleScope
 import me.tbsten.katachi.dsl.gradle.kotlin
@@ -142,6 +151,9 @@ private fun RoleScope.shouldUiStateFlowBePublic() =
   }
 
 // roles/Screen.kt
+@file:OptIn(ExperimentalKatachiApi::class)
+
+import me.tbsten.katachi.ExperimentalKatachiApi
 import me.tbsten.katachi.dsl.DeclarationContainerScope
 import me.tbsten.katachi.dsl.RoleScope
 import me.tbsten.katachi.dsl.gradle.kotlin
@@ -169,6 +181,9 @@ private fun RoleScope.shouldContainsPublicScreenComposable() =
   }
 
 // roles/UseCase.kt
+@file:OptIn(ExperimentalKatachiApi::class)
+
+import me.tbsten.katachi.ExperimentalKatachiApi
 import me.tbsten.katachi.dsl.DeclarationContainerScope
 import me.tbsten.katachi.dsl.RoleScope
 import me.tbsten.katachi.dsl.gradle.kotlin
@@ -199,6 +214,9 @@ private fun RoleScope.shouldSingleInvokePublicMethod() =
   }
 
 // roles/DomainModel.kt
+@file:OptIn(ExperimentalKatachiApi::class)
+
+import me.tbsten.katachi.ExperimentalKatachiApi
 import me.tbsten.katachi.dsl.DeclarationContainerScope
 import me.tbsten.katachi.dsl.gradle.kotlin
 import me.tbsten.katachi.dsl.gradle.mainSourceSet
@@ -212,6 +230,9 @@ fun DeclarationContainerScope.domainModel() = "DomainModel" {
 }
 
 // roles/RepositoryInterface.kt
+@file:OptIn(ExperimentalKatachiApi::class)
+
+import me.tbsten.katachi.ExperimentalKatachiApi
 import me.tbsten.katachi.dsl.DeclarationContainerScope
 import me.tbsten.katachi.dsl.RoleScope
 import me.tbsten.katachi.dsl.gradle.kotlin
@@ -234,6 +255,9 @@ private fun RoleScope.shouldContainsRepositoryInterface() =
   }
 
 // roles/RepositoryImplementation.kt
+@file:OptIn(ExperimentalKatachiApi::class)
+
+import me.tbsten.katachi.ExperimentalKatachiApi
 import me.tbsten.katachi.dsl.DeclarationContainerScope
 import me.tbsten.katachi.dsl.RoleScope
 import me.tbsten.katachi.dsl.gradle.kotlin
@@ -256,6 +280,9 @@ private fun RoleScope.shouldContainsRepositoryImplementationClass() =
   }
 
 // roles/DataSource.kt
+@file:OptIn(ExperimentalKatachiApi::class)
+
+import me.tbsten.katachi.ExperimentalKatachiApi
 import me.tbsten.katachi.dsl.DeclarationContainerScope
 import me.tbsten.katachi.dsl.RoleScope
 import me.tbsten.katachi.dsl.gradle.kotlin
@@ -279,6 +306,8 @@ private fun RoleScope.shouldContainsDataSourceClass() =
 ```
 
 `konsist { }` を使うので、`:architecture-test` に `katachi-konsist` への依存を足し、テストでは `assert(FileConstraintCheck())` を呼んでください。`assert()` だけでは制約が評価されず、`[UncheckedFileConstraint]` で落ちます。詳しくは [Konsist との統合](/katachi/ja/guides/konsist-integration/) を参照してください。
+
+層を group に、ファイルの種類を Role に分けた実際の定義は、[sample/android の ProjectArchitecture.kt](https://github.com/TBSten/katachi/blob/main/sample/android/architecture-test/src/test/kotlin/com/example/sample/ProjectArchitecture.kt) にあります。サンプルはドメイン層を持たず、画面ごとにモジュールを分けた構成なので、このページの定義とは形が違います。
 
 <SnippetIsStartingPoint>
 たとえばプロダクトで Dagger Hilt を使っているなら、ViewModel に `@HiltViewModel` アノテーションが付いているかの検査や、Repository の実装クラスに `@Inject` コンストラクタがあるかの検査を追加するなど、さらにカスタマイズが必要になるでしょう。

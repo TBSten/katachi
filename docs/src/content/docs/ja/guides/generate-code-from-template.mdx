@@ -67,15 +67,15 @@ val modulePackage = capitalizedModuleNamePackage("com.example")
 
 ## テンプレートの指定 — `--arg template=`
 
-1つのテンプレートは `group名.役割名.id` で指定します。group が無ければ役割名から、id が省略できるのはその役割のテンプレートが1つだけのときです。
+テンプレートは、それを持つ Role の修飾名（`group名.Role名`）で指定します。複数のテンプレートを一度に生成するときは `,` で区切ります。
 
 | 書いたもの | 意味 |
 | --- | --- |
-| `Controller` | group に入っていない役割 `Controller` の、ただ1つのテンプレート |
-| `feature.Screen` | group `feature` の役割 `Screen` の、ただ1つのテンプレート |
-| `RepositoryInterface.settings` | group を省いた指定。役割名 `RepositoryInterface` がアーキテクチャ全体で1つだけなら使えます |
+| `Controller` | group に入っていない Role `Controller` のテンプレート |
+| `feature.Screen` | group `feature` の Role `Screen` のテンプレート |
+| `RepositoryInterface` | group を省いた指定。テンプレートを持つ Role の中で、Role 名 `RepositoryInterface` が1つだけなら使えます |
 
-役割名で選べるのはテンプレートが1つの役割だけです。2つ以上あれば、書ける指定を並べて失敗します。知らない指定も同様に、書ける指定の一覧を並べて失敗します。
+書いた指定に当たるテンプレートが無いときは、書ける指定の一覧を並べて失敗します。
 
 ## パラメータ
 
@@ -108,7 +108,7 @@ val modulePackage = capitalizedModuleNamePackage("com.example")
 | `val pageSize by intParameter(default = 20)` | `--arg pageSize=50` | 整数 |
 | `val visibility by enumParameter(default = Visibility.Public)` | `--arg visibility=Internal` | enum のエントリ名 |
 
-**capture とパラメータは、1回の実行で生成するテンプレート全部の中で名前ごとに1つです。** 2つのテンプレートに同じ `capture("name")` があれば、`--arg name=User` の1回で両方に効きます。パラメータの**型かデフォルト値**が食い違っていると、エラーになります。
+**capture とパラメータは、1回の実行で生成するテンプレート全部の中で名前ごとに1つです。** 2つのテンプレートに同じ `capture("name")` があれば、`--arg name=User` の1回で両方に効きます。同じ名前のパラメータを2つのテンプレートで宣言するときは、型とデフォルト値を揃えてください。
 
 ## 生成先にワイルドカードがあるときは、名前を付けて値を渡す
 
@@ -124,24 +124,23 @@ layout {
 
 名前は `--arg` で値を渡すときに使います。`*` のままだと、テンプレートは `feature/home` と `feature/settings` のどちらに作ればよいかを決められません。名前を付けておけば、`--arg feature=home` で選べます。テンプレートを持たない Role なら、`*` のままで構いません。
 
-`.template { }` はファイルの宣言そのものに付くので、生成先のパスは `layout { }` の宣言と1つに決まります。そのパスに `capture()` で名前の付いていない `*` や `**` が残っていると、値の渡しようが無いので、**`.template { }` を付けた時点でエラーになります**。
+`.template { }` はファイルの宣言そのものに付くので、生成先のパスは `layout { }` の宣言と1つに決まります。そのパスに `capture()` で名前の付いていない `*` や `**` が残っていると、値の渡しようが無いので**エラーになります**。
 
-```kt {3,5-8} nocollapse
+```kt {3,5,7-8} nocollapse
 "FeatureComponent" {
     layout {
         ":feature:${capture("feature")}".module {
             "commonMain".sourceSet / kotlin / modulePackage / "component" /
-                "${wildcard("feature").pascalCase}${capture("name")}".ktFile()
+                "${capture("name")}".ktFile()
                     .template {
                         val feature = captureValue("feature")
                         val name = captureValue("name")
-                        val component = "${feature.pascalCase}$name"
 
                         """
                             package com.example.kmp.feature.$feature.component
 
                             @Composable
-                            internal fun $component(title: String) {
+                            internal fun $name(title: String) {
                                 Text(text = title)
                             }
                         """.trimIndent()
@@ -153,17 +152,12 @@ layout {
 
 ```shell
 ./gradlew katachiTemplate \
-    --arg "template=FeatureComponent" --arg "feature=home" --arg "name=UserCard"
+    --arg "template=FeatureComponent" --arg "feature=home" --arg "name=HomeUserCard"
 ```
 
 `--arg feature=home` が `:feature:${capture("feature")}` の `*` を `home` に決めるので、`HomeUserCard.kt` は `:feature:home` の `component/` に入ります。
 
 **capture の名前は、そのまま `--arg` の引数名になります。** テンプレートの中では、同じ値を `captureValue("feature")` で読めます。
-
-### 名前の付け方の決まり
-
-- **`**` には付けられません。** 何階層ぶんのディレクトリを作ればよいかが決まらないためです
-- 名前は Role 名と同じ規則で書きます（英字で始まり、英数字・`_`・`-` が続く）
 
 ## Kotlin 以外のファイルにも付けられる
 
@@ -235,23 +229,34 @@ katachi {
 ./gradlew katachiTemplates
 
 # 1つのテンプレートの詳細
-./gradlew katachiTemplates --arg "template=data.RepositoryInterface.user"
+./gradlew katachiTemplates --arg "template=data.RepositoryInterface"
 ```
 
 詳細には、パラメータの一覧、生成先のパスとファイルの中身、`katachiTemplate` のコマンドが表示されます。
 
-```
-  [templates] Previewed with: item=${item} (placeholder)
-  [templates] File (path relative to the project root):
-  [templates]   data/src/commonMain/kotlin/com/example/kmp/data/user/${name}Repository.kt
-  [templates]     | interface ${name}Repository {
-  ...
-```
+## IDE から生成する（実験的）
+
+IntelliJ IDEA / Android Studio のプラグインを入れると、テンプレートの一覧・パラメータの入力・生成を IDE の中で済ませられます。`--arg` を組み立てる必要はありません。実験的な機能なので、画面や振る舞いは今後の版で変わることがあります。
+
+JetBrains Marketplace には公開していません。次の手順で、GitHub Releases の zip から入れます。
+
+1. [GitHub Releases](https://github.com/TBSten/katachi/releases/latest) から `katachi-intellij-plugin-<版>.zip` をダウンロードします。
+2. IDE の **Settings → Plugins** で ⚙ → **Install Plugin from Disk…** を選び、zip を展開せずに指定します。
+3. 再起動を求められたら IDE を再起動します。
+
+IntelliJ IDEA 2026.1 と Android Studio Quail（2026.1）以降で使えます。プロジェクトに katachi 0.2.0 以降の Gradle プラグインが入っていて、Gradle の同期が済んでいれば、次の3か所から生成できます。画面の言語は IDE の言語（日本語または英語）に従います。
+
+- 右端の **katachi** Tool Window
+- Project ツリーで右クリック → **New → katachi**
+- テンプレートに合うファイルを開いたときに、エディタの上に出る通知
+
+IDE は更新しても、プラグインは自動では更新されません。新しい版は Releases から入れ直します。
 
 ## まとめ
 
 - **`.template { }`** をファイルの宣言に追加すると、**`katachiTemplate` task** でそのファイルをコードとして生成できます。
 - **`katachiTemplates` task** で、テンプレートの一覧と、パラメータ・生成先のパスの詳細を確かめられます。
+- **IDE プラグイン（実験的）** を入れると、同じことを IDE の画面から行えます。
 
 ## 次のステップ
 

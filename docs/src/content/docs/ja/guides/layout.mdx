@@ -17,7 +17,7 @@ import { Aside } from "@astrojs/starlight/components";
 
 Role に対応するファイルをどこに置けるかを定義するのが `layout { }` です。
 
-```kt {3-6}
+```kt {3-5}
 architecture {
     "UseCase" {
         // UseCase は useCase/ の中の *UseCase.kt にだけ置けます
@@ -127,42 +127,30 @@ architecture {
 - `anyFile()` と `ignore()` は任意のファイルの配置を許可することができますが、これは **deny by default の逃げ道** です。注意して使ってください。
 - 生成先のワイルドカードに名前を付ける `capture()` は、テンプレートと一緒に使います（[テンプレートからコード生成](/katachi/ja/guides/generate-code-from-template/#生成先にワイルドカードがあるときは名前を付けて値を渡す)）。layout の検査だけなら `*` のままで構いません。
 
-```kt {1,6-11}
-val useCasePackage = "src/main/kotlin/com/example/useCase"  // パスは定数に切り出せる
+```kt {1,6-8,16,23}
+val appPackageDir = "src/main/kotlin/com/example"  // パスは定数に切り出せる
 
 architecture {
     "UseCase" {
         layout {
-            useCasePackage / "*UseCase".ktFile()          // "/" でつないで置き場所を宣言する
-            "src/main/kotlin/com/example" {               // ブロックで囲んでも同じ宣言になる
+            appPackageDir / "useCase" / "*UseCase".ktFile()   // "/" で繋いで置き場所を宣言する
+            appPackageDir {                                    // ブロックで囲んでも同じ宣言になる
                 "legacy" / "*UseCase".ktFile()
             }
-            "generated" { anyFile() }                     // 直下ならどんなファイルでもよい
-            "build".ignore()                              // それより下は検査しない
         }
     }
-}
-```
 
-```kt
-// パスは定数に切り出せる
-val appPackageDir = "src/main/kotlin/com/example"
-
-architecture {
-    // 文法の一覧です。実際には、種類の違うファイルは Role を分けて宣言します
-    "Example" {
+    "GeneratedFile" {
+        summary = "ツールが生成するファイル"
         layout {
-            // "/" で繋ぐ: useCase/ の直下の *UseCase.kt だけ置ける（* は任意の文字列）
-            appPackageDir / "useCase" / "*UseCase".ktFile()
+            "generated" { anyFile() }   // 直下ならどんなファイルでもよい（サブディレクトリは不可）
+        }
+    }
 
-            // ブロックで囲む: 同じディレクトリに複数のものを置く
-            appPackageDir / "docs" {
-                "*Guide".ktFile()   // Kotlin ファイル
-                "README.md".file()      // 名前の決まった、種類を問わないファイル
-            }
-
-            "generated" { anyFile() }     // 直下ならどんなファイルでもよい（サブディレクトリは不可）
-            "build".ignore()              // 以下すべて検査しない
+    "BuildOutput" {
+        summary = "ビルドの出力"
+        layout {
+            "build".ignore()            // それより下は検査しない
         }
     }
 }

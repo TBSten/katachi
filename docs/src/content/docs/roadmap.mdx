@@ -29,13 +29,13 @@ import { Steps } from '@astrojs/starlight/components';
         </tr>
         <tr>
             <td><strong>v0.2</strong></td>
-            <td>Gradle plugin + documentation generation + templates + baseline</td>
+            <td>Gradle plugin + documentation generation + templates + baseline (+ IDE plugin, experimental)</td>
             <td><code>./gradlew katachiDocs</code> produces documentation. With existing violations tolerated by a baseline, the test fails only on new violations and on entries still in the baseline file after they were fixed</td>
         </tr>
         <tr>
             <td><strong>v0.3 and beyond</strong></td>
             <td><code>declarations &#123; &#125;</code> / report output / vocabulary-size measurement</td>
-            <td>Can be adopted in an <strong>existing project</strong>. Most of the <code>konsist &#123; &#125;</code> written in v0.1 can be replaced with <code>declarations &#123; &#125;</code></td>
+            <td>Easier to adopt in an <strong>existing project</strong>. Most of the <code>konsist &#123; &#125;</code> written in v0.1 can be replaced with <code>declarations &#123; &#125;</code></td>
         </tr>
     </tbody>
 </table>
@@ -49,17 +49,17 @@ Making katachi easier to adopt in existing projects is the theme of v0.3 and bey
 | **`dependsOnlyOn`** | Writes what may be depended on as an **allow list**. A deny-list approach lets omissions slip through. Moved here from the v0.2 plan |
 | **Report output** | Outputs JSON / SARIF, surfaced as annotations on GitHub PRs |
 | **`pairedWith`** | Checks coverage, such as "every `Screen` has a corresponding `Preview`" |
-| **Vocabulary-size measurement** | Reports the number of roles and the file count per role as numbers |
+| **Vocabulary-size measurement** | Reports the number of Roles and the file count per Role as numbers |
 | **Module resolution based on Gradle's model** | Follows modules whose `projectDir` was changed, and where source sets actually are |
 
 The specification for this stage is largely undecided. Even the version numbering is grouped together as "v0.3 and beyond" for now.
 
 ### `declarations { }` — a promotion out of `konsist { }`
 
-v0.1's `konsist { }` is, frankly, **an escape hatch.** Something almost every role wants to say — like "only a `*UseCase` interface and a `Default*UseCase` class go here" — ends up being spelled out as a Konsist expression every time.
+v0.1's `konsist { }` is, frankly, **an escape hatch.** Something almost every Role wants to say — like "only a `*UseCase` interface and a `Default*UseCase` class go here" — ends up being spelled out as a Konsist expression every time.
 
 ```kt
-"only the interface and its Default implementation".konsist {
+"only the interface and its Default implementation are placed".konsist {
     files.must { file ->
         val decls = file.declarations(includeNested = false, includeLocal = false)
         decls.size == 2 &&

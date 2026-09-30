@@ -12,10 +12,13 @@ tags:
 import SnippetIsStartingPoint from '../../../components/SnippetIsStartingPoint.astro';
 
 ```kt title="ProjectArchitecture.kt"
+@file:OptIn(ExperimentalKatachiApi::class)
+
+import me.tbsten.katachi.ExperimentalKatachiApi
 import me.tbsten.katachi.dsl.architecture
 import me.tbsten.katachi.dsl.gradle.gradle
 
-val architecture = architecture {
+val projectArchitecture = architecture {
     gradle() // Declares gradle.kts, the Gradle wrapper, and the like with documented = false
 }
 ```
@@ -39,7 +42,7 @@ import me.tbsten.katachi.dsl.template
 const val buildConventionDir = "build-logic" // Use "buildSrc" instead if you use buildSrc
 const val conventionSourceDir = "$buildConventionDir/src/main/kotlin"
 
-val architecture = architecture {
+val projectArchitecture = architecture {
     gradle()
 
     "Build".group {

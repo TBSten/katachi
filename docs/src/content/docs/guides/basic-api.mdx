@@ -112,7 +112,7 @@ Declaring a Role with `"..." { }` doesn't say anything about the files that corr
 
 `layout { }` is the block that defines where the files for a Role may be placed.
 
-```kt {3-5}
+```kt {3-4}
 architecture {
   "UseCase" {
     layout {
@@ -213,7 +213,7 @@ For `"...".konsist { }`, also see the [Konsist integration guide](/katachi/guide
       }
       ```
 
-      - Meaning: the test fails if there's a violation. A single run collects every violation and puts them in one message. By default the message details up to 10 of them (change it with `assert(maxViolations = …)`); the rest are only counted
+      - Meaning: the test fails if there's a violation. A single run collects every violation and puts them in one message
     </td>
   </tr>
 

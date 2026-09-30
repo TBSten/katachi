@@ -15,10 +15,7 @@ katachi のコア API は、ディレクトリ構造やファイルの位置に�
 
 ## インストール
 
-`"...".konsist { }` はオプション機能として別モジュールに切り出してあるため、別途インストールが必要です。
-`build.gradle.kts` に以下を追加してください。
-
-Konsist との統合は別アーティファクト `me.tbsten.katachi:katachi-konsist` に公開されているため、別途依存に追加する必要があります。
+`"...".konsist { }` は別アーティファクト `me.tbsten.katachi:katachi-konsist` に入っているので、`build.gradle.kts` の依存に追加してください。
 
 ```kts title="build.gradle.kts" {2}
 dependencies {
@@ -28,8 +25,7 @@ dependencies {
 
 次に、`projectArchitecture.assert()` に `FileConstraintCheck()` を渡すと、Konsist の検証を実行できます。
 
-```kt del={4} ins={1,5}
-@OptIn(ExperimentalKatachiApi::class)
+```kt del={3} ins={4}
 @Test
 fun `アーキテクチャに沿ったファイル配置になっている`() {
   projectArchitecture.assert()
@@ -41,7 +37,7 @@ fun `アーキテクチャに沿ったファイル配置になっている`() {
 
 Role の中で、その Role のファイルにどういう宣言があるのかを定義します。
 
-```kt {7-9}
+```kt {7-8}
 architecture {
   "UseCase" {
     layout {
@@ -55,7 +51,7 @@ architecture {
 }
 ```
 
-制約の対象は、その Role の `layout { }` に当てはまったファイルです。`layout { }` の無い Role に制約を書くと、定義を評価した時点で `KatachiFileConstraintWithoutLayoutException` になります。
+制約の対象は、その Role の `layout { }` に当てはまったファイルです。`layout { }` の無い Role には制約を書けません。
 
 ## エラーの例
 
@@ -88,7 +84,7 @@ katachi が足しているのは `must` / `mustNot` / `mustBeEmpty` の3つで�
 - `layout { }` が **ファイルをどこに置いてよいか**、`konsist { }` が **ファイルの中身がどうあるべきか** を担当します。
 - `katachi-konsist` は**任意のモジュール**です。依存の追加と `assert(FileConstraintCheck())` の設定が必要です。
 - **制約名がそのまま違反レポートに出ます。** 名前は「満たすべきこと」の形で書いてください。
-- `assertTrue` 系は**コンパイルエラーになります**。その場で例外を投げてしまい、1回の実行で全違反を集める設計と噛み合わないためです。
+- Konsist の `assertTrue` 系は `konsist { }` の中では**使えません**（コンパイルエラーになります）。`must` / `mustNot` / `mustBeEmpty` で書いてください。
 
 ## 次のステップ
 

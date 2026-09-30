@@ -4,6 +4,12 @@ description: detekt の設定ファイルとベースラインの置き場所を
 tags:
   - beginner
 ---
+
+{/*
+  このページの目的: detekt の設定ファイル（YAML とベースライン）を Role として宣言する最小の例を示す。
+  Gradle 周辺のレシピとは別に、linter の設定という1種類のファイルの置き場所だけを扱う。
+*/}
+
 import SnippetIsStartingPoint from '../../../../components/SnippetIsStartingPoint.astro';
 
 import { LinkCard } from '@astrojs/starlight/components';
@@ -16,10 +22,13 @@ import { LinkCard } from '@astrojs/starlight/components';
 
 detekt では、ルールの有効・無効やしきい値を YAML の設定ファイルで設定できます。
 
-設定ファイルとベースラインは、アーキテクチャ定義に書いて katachi に伝えておくべきです。
+設定ファイルとベースラインも、アーキテクチャ定義に書いて katachi に伝えておくのがおすすめです。
 
 ```kt collapse
 // ProjectArchitecture.kt
+@file:OptIn(ExperimentalKatachiApi::class)
+
+import me.tbsten.katachi.ExperimentalKatachiApi
 import me.tbsten.katachi.dsl.architecture
 
 val projectArchitecture = architecture {
@@ -29,6 +38,9 @@ val projectArchitecture = architecture {
 }
 
 // roles/Detekt.kt
+@file:OptIn(ExperimentalKatachiApi::class)
+
+import me.tbsten.katachi.ExperimentalKatachiApi
 import me.tbsten.katachi.dsl.DeclarationContainerScope
 
 private const val detektConfigDir = "config/detekt"

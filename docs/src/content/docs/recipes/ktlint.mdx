@@ -5,14 +5,14 @@ tags:
   - beginner
 ---
 
-import SnippetIsStartingPoint from '../../../components/SnippetIsStartingPoint.astro';
-
-import { LinkCard } from '@astrojs/starlight/components';
-
 {/*
   Purpose of this page: show the smallest example of declaring ktlint's configuration files (.editorconfig and the baseline) as Roles.
   Separate from the Gradle recipe: it only covers where one kind of file, linter configuration, lives.
 */}
+
+import SnippetIsStartingPoint from '../../../components/SnippetIsStartingPoint.astro';
+
+import { LinkCard } from '@astrojs/starlight/components';
 
 <LinkCard
   title="ktlint"
@@ -22,10 +22,13 @@ import { LinkCard } from '@astrojs/starlight/components';
 
 ktlint lets you configure things like disabling lint rules through the .editorconfig file.
 
-You should declare .editorconfig and the baseline (`ktlint-baseline.xml`) in your architecture definition so katachi knows about them.
+We recommend declaring .editorconfig and the baseline (`ktlint-baseline.xml`) in your architecture definition so katachi knows about them.
 
 ```kt collapse
 // ProjectArchitecture.kt
+@file:OptIn(ExperimentalKatachiApi::class)
+
+import me.tbsten.katachi.ExperimentalKatachiApi
 import me.tbsten.katachi.dsl.architecture
 
 val projectArchitecture = architecture {
@@ -35,6 +38,9 @@ val projectArchitecture = architecture {
 }
 
 // roles/Ktlint.kt
+@file:OptIn(ExperimentalKatachiApi::class)
+
+import me.tbsten.katachi.ExperimentalKatachiApi
 import me.tbsten.katachi.dsl.DeclarationContainerScope
 
 fun DeclarationContainerScope.ktlint() =

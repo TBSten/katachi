@@ -23,8 +23,8 @@ English | [日本語](./README.ja.md) ・ [Docs](https://tbsten.github.io/katach
 From this one definition, you get the following three things.
 
 - **A test**: reports files that live somewhere the definition doesn't cover. Since only what you declare is allowed, the set of places files can end up doesn't quietly grow
-- **Documentation**: `./gradlew katachiDocs` writes out Markdown for each role
-- **Code scaffolding**: `./gradlew katachiTemplate --arg template=UseCase --arg name=GetUser` creates a file where the definition says it belongs
+- **Documentation**: `./gradlew katachiDocs` writes out Markdown for each Role
+- **Code scaffolding**: `./gradlew katachiTemplate --arg template=UseCase --arg name=GetUser` creates a file where the definition says it belongs. It can also be generated from an IntelliJ IDEA / Android Studio plugin (experimental) ([how to install](https://tbsten.github.io/katachi/guides/generate-code-from-template/))
 
 You can also write rules about a file's contents — being public, for example — with `konsist { }`. How this differs from Konsist, detekt and ArchUnit is in [Comparison with other tools](https://tbsten.github.io/katachi/get-started/comparison-with-other-tools/).
 
@@ -102,7 +102,7 @@ class ProjectArchitectureTest {
 ./gradlew :architecture-test:katachiDocs    # writes docs to architecture-test/build/katachi/docs
 ```
 
-At first, every file you haven't declared comes back as a violation. For each path that shows up, decide whether to add it to the definition or delete the file.
+At first, the files and directories you haven't declared come back as violations. For each path that shows up, decide whether to add it to the definition or delete the file. If there are too many to clear up right away, you can tolerate the existing violations for now with [baseline](https://tbsten.github.io/katachi/guides/baseline/) and fail only on new ones.
 
 The full walkthrough — importing, and handing it off to an AI agent — is in [Your first architecture definition](https://tbsten.github.io/katachi/get-started/first-architecture/).
 
@@ -120,7 +120,7 @@ The full walkthrough — importing, and handing it off to an AI agent — is in 
 
 | What you want to do | Page |
 |---|---|
-| Learn how to write roles and groups | [Basic API](https://tbsten.github.io/katachi/guides/basic-api/), [Role](https://tbsten.github.io/katachi/guides/role/) |
+| Learn how to write Roles and groups | [Basic API](https://tbsten.github.io/katachi/guides/basic-api/), [Role](https://tbsten.github.io/katachi/guides/role/) |
 | Get the details of writing layouts | [Layout](https://tbsten.github.io/katachi/guides/layout/) |
 | Check file contents too | [Konsist integration](https://tbsten.github.io/katachi/guides/konsist-integration/) |
 | Generate documentation and code | [Document generation](https://tbsten.github.io/katachi/guides/document-generation/), [Generating code from a template](https://tbsten.github.io/katachi/guides/generate-code-from-template/) |

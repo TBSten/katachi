@@ -29,13 +29,13 @@ import { Steps } from '@astrojs/starlight/components';
         </tr>
         <tr>
             <td><strong>v0.2</strong></td>
-            <td>Gradle plugin + ドキュメント生成 + テンプレート + baseline</td>
+            <td>Gradle plugin + ドキュメント生成 + テンプレート + baseline（＋ IDE プラグイン、実験的）</td>
             <td><code>./gradlew katachiDocs</code> でドキュメントが出る。既存の違反を baseline で許容した状態で、新しい違反と、直したのに baseline のファイルに残っている項目でだけテストが落ちる</td>
         </tr>
         <tr>
             <td><strong>v0.3 以降</strong></td>
             <td><code>declarations &#123; &#125;</code> / レポート出力 / 語彙数の計測</td>
-            <td><strong>既存プロジェクト</strong>に導入できる。v0.1 で書いた <code>konsist &#123; &#125;</code> の大半を <code>declarations &#123; &#125;</code> で置き換えられる</td>
+            <td><strong>既存プロジェクト</strong>に入れやすくなる。v0.1 で書いた <code>konsist &#123; &#125;</code> の大半を <code>declarations &#123; &#125;</code> で置き換えられる</td>
         </tr>
     </tbody>
 </table>
@@ -49,17 +49,17 @@ import { Steps } from '@astrojs/starlight/components';
 | **`dependsOnlyOn`** | 依存してよい先を**許可リスト**で書く。禁止リスト方式は書き漏れが素通りする。v0.2 の計画から移した |
 | **レポート出力** | JSON / SARIF で出し、GitHub の PR にアノテーションとして載せる |
 | **`pairedWith`** | 「すべての `Screen` に対応する `Preview` がある」のような網羅性を検査する |
-| **語彙数の計測** | 役割の数と、役割ごとのファイル数を数値で出す |
+| **語彙数の計測** | Role の数と、Role ごとのファイル数を数値で出す |
 | **Gradle のモデルに基づくモジュールの解決** | `projectDir` を変えたモジュールや、source set の実際の場所に追従する |
 
 この段階の仕様はまだほとんど決まっていません。バージョン番号の割り当ても「v0.3 以降」とひとまとまりです。
 
 ### `declarations { }` — `konsist { }` からの昇格
 
-v0.1 の `konsist { }` は、言ってしまえば**逃げ道**です。「`*UseCase` interface と `Default*UseCase` class だけを置く」のように、ほとんどの役割が言いたいことでも、毎回 Konsist の式で書き下すことになります。
+v0.1 の `konsist { }` は、言ってしまえば**逃げ道**です。「`*UseCase` interface と `Default*UseCase` class だけを置く」のように、ほとんどの Role が言いたいことでも、毎回 Konsist の式で書き下すことになります。
 
 ```kt
-"interface と Default 実装のみ".konsist {
+"interface と Default 実装だけを置くこと".konsist {
     files.must { file ->
         val decls = file.declarations(includeNested = false, includeLocal = false)
         decls.size == 2 &&

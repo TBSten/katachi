@@ -6,10 +6,23 @@
   --sl-content-width: 75rem;
 }
 
+/*
+ * A table wider than the text column scrolls sideways inside the column instead of pushing the
+ * page wider. macOS hides overlay scrollbars until you scroll, so a table cut at the right edge
+ * looked broken rather than scrollable: keep a thin scrollbar visible, and shade the side that
+ * has more to show (the `local` gradients cover the shade once that edge is reached).
+ */
 .sl-markdown-content table {
   display: block;
   max-width: 100%;
   overflow-x: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--sl-color-gray-4) transparent;
+  background:
+    linear-gradient(to right, var(--sl-color-bg), transparent) left center / 1.5rem 100% no-repeat local,
+    linear-gradient(to left, var(--sl-color-bg), transparent) right center / 1.5rem 100% no-repeat local,
+    radial-gradient(farthest-side at 0 50%, rgb(0 0 0 / 0.25), transparent) left center / 1rem 100% no-repeat scroll,
+    radial-gradient(farthest-side at 100% 50%, rgb(0 0 0 / 0.25), transparent) right center / 1rem 100% no-repeat scroll;
 }
 
 table .sl-badge {

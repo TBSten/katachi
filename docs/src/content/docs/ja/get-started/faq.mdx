@@ -9,7 +9,7 @@ tags:
   このページの目的: motivation を読んだユーザが、katachi の設計思想をより深く理解できるようになること。
 */}
 
-import {Aside, CardGrid, FileTree, LinkCard} from '@astrojs/starlight/components';
+import {CardGrid, FileTree, LinkCard} from '@astrojs/starlight/components';
 
 このページは **katachi がなぜこの形をしているのか** に答えます。
 導入手順や書き方は [初めてのアーキテクチャ定義](/katachi/ja/get-started/first-architecture/) を参照してください。
@@ -198,7 +198,7 @@ Katachi check failed: 3 violations (Unexpected: 2, Missing: 1)
 
 ```mermaid
 flowchart LR
-    D["architecture { }<br/>役割・配置・説明"]
+    D["architecture { }<br/>Role・配置・説明"]
     D --> T["テスト<br/>宣言どおりか検査する"]
     D --> M["ドキュメント<br/>何を置く場所か説明する"]
     D -.-> C["自作 Processor<br/>集計・抽出・別形式への出力"]

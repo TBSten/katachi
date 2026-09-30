@@ -67,15 +67,15 @@ val modulePackage = capitalizedModuleNamePackage("com.example")
 
 ## Specifying a template — `--arg template=`
 
-One template is specified as `group.role.id`. Leave off the group when there is none; `id` can be left out only when that role has just one template.
+A template is specified by the qualified name of the Role that has it (`group.Role`). To generate several templates at once, separate them with `,`.
 
 | What you write | What it means |
 | --- | --- |
-| `Controller` | The one template of role `Controller`, which is in no group |
-| `feature.Screen` | The one template of role `Screen`, in group `feature` |
-| `RepositoryInterface.settings` | A specifier with no group. Usable only when the role name `RepositoryInterface` is unique across the whole architecture |
+| `Controller` | The template of Role `Controller`, which is in no group |
+| `feature.Screen` | The template of Role `Screen`, in group `feature` |
+| `RepositoryInterface` | A specifier with no group. Usable when, among the Roles that have a template, only one is named `RepositoryInterface` |
 
-A role can be selected by name alone only when it has one template. With two or more, the run fails, listing the specifiers you could write instead. An unknown specifier fails the same way, listing the specifiers that are available.
+When no template matches what you wrote, the run fails, listing the specifiers you can write.
 
 ## Parameters
 
@@ -108,7 +108,7 @@ There are four parameter types. All of them are passed as `--arg name=value`.
 | `val pageSize by intParameter(default = 20)` | `--arg pageSize=50` | An integer |
 | `val visibility by enumParameter(default = Visibility.Public)` | `--arg visibility=Internal` | An enum entry name |
 
-**A capture and a parameter are each one, by name, across every template a single run generates.** If two templates share one `capture("name")`, one `--arg name=User` fills in both. A **type or a default** that disagrees between them is an error.
+**A capture and a parameter are each one, by name, across every template a single run generates.** If two templates share one `capture("name")`, one `--arg name=User` fills in both. When two templates declare a parameter of the same name, give it the same type and the same default.
 
 ## When the destination has a wildcard, name it and pass a value
 
@@ -124,24 +124,23 @@ layout {
 
 The name is used when passing a value with `--arg`. Left as `*`, a template can't tell whether to generate into `feature/home` or `feature/settings`. Name it, and you can choose with `--arg feature=home`. For a Role with no template, `*` on its own is fine.
 
-`.template { }` is attached to the file declaration itself, so the destination path is fixed to that one `layout { }` declaration. If a `*` or `**` with no name from `capture()` is still left in it, there is nowhere for a value to arrive, so **it fails as soon as `.template { }` is attached**.
+`.template { }` is attached to the file declaration itself, so the destination path is fixed to that one `layout { }` declaration. If a `*` or `**` with no name from `capture()` is still left in it, there is nowhere for a value to arrive, so **it is an error**.
 
-```kt {3,5-8} nocollapse
+```kt {3,5,7-8} nocollapse
 "FeatureComponent" {
     layout {
         ":feature:${capture("feature")}".module {
             "commonMain".sourceSet / kotlin / modulePackage / "component" /
-                "${wildcard("feature").pascalCase}${capture("name")}".ktFile()
+                "${capture("name")}".ktFile()
                     .template {
                         val feature = captureValue("feature")
                         val name = captureValue("name")
-                        val component = "${feature.pascalCase}$name"
 
                         """
                             package com.example.kmp.feature.$feature.component
 
                             @Composable
-                            internal fun $component(title: String) {
+                            internal fun $name(title: String) {
                                 Text(text = title)
                             }
                         """.trimIndent()
@@ -153,17 +152,12 @@ The name is used when passing a value with `--arg`. Left as `*`, a template can'
 
 ```shell
 ./gradlew katachiTemplate \
-    --arg "template=FeatureComponent" --arg "feature=home" --arg "name=UserCard"
+    --arg "template=FeatureComponent" --arg "feature=home" --arg "name=HomeUserCard"
 ```
 
 `--arg feature=home` decides the `*` of `:feature:${capture("feature")}` as `home`, so `HomeUserCard.kt` lands in `:feature:home`'s `component/`.
 
 **A capture's name becomes the `--arg` argument name, as is.** Inside the template, read the same value with `captureValue("feature")`.
-
-### Rules for naming
-
-- **It can't be used on `**`.** How many levels of directory to create isn't decided
-- A name follows the same rule as a Role name (starts with a letter, followed by letters, digits, `_`, `-`)
 
 ## Templates work on files other than Kotlin
 
@@ -235,23 +229,34 @@ The **`katachiTemplates` task** shows which templates exist, and what to pass to
 ./gradlew katachiTemplates
 
 # the detail of one template
-./gradlew katachiTemplates --arg "template=data.RepositoryInterface.user"
+./gradlew katachiTemplates --arg "template=data.RepositoryInterface"
 ```
 
 The detail shows the list of parameters, the destination path and the file's contents, and a `katachiTemplate` command.
 
-```
-  [templates] Previewed with: item=${item} (placeholder)
-  [templates] File (path relative to the project root):
-  [templates]   data/src/commonMain/kotlin/com/example/kmp/data/user/${name}Repository.kt
-  [templates]     | interface ${name}Repository {
-  ...
-```
+## Generating from the IDE (experimental)
+
+With the IntelliJ IDEA / Android Studio plugin installed, you can list templates, fill in their parameters and generate, all inside the IDE. You do not have to assemble `--arg`. It is experimental, so its screens and behavior may change in later versions.
+
+It is not published on JetBrains Marketplace. Install it from the zip on GitHub Releases:
+
+1. Download `katachi-intellij-plugin-<version>.zip` from [GitHub Releases](https://github.com/TBSten/katachi/releases/latest).
+2. In the IDE, open **Settings → Plugins**, choose ⚙ → **Install Plugin from Disk…**, and select the zip without extracting it.
+3. Restart the IDE if it asks you to.
+
+It works with IntelliJ IDEA 2026.1 and Android Studio Quail (2026.1) or later. If the project has the katachi Gradle plugin 0.2.0 or later and Gradle is synced, you can generate from three places. The screens follow the IDE's language (Japanese or English).
+
+- The **katachi** tool window on the right edge
+- Right-click in the Project tree → **New → katachi**
+- The notification that appears above the editor when you open a file that a template fits
+
+Updating the IDE does not update the plugin. Install a newer version from Releases again.
 
 ## Summary
 
 - Add **`.template { }`** to a file declaration, and the **`katachiTemplate` task** can generate that file as code.
 - The **`katachiTemplates` task** shows a list of templates, and the detail of each parameter and destination path.
+- The **IDE plugin (experimental)** does the same from the IDE screens.
 
 ## Next steps
 

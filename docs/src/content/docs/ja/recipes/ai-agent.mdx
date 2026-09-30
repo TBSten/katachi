@@ -5,16 +5,19 @@ tags:
   - intermediate
 ---
 
-import SnippetIsStartingPoint from '../../../../components/SnippetIsStartingPoint.astro';
-
 {/*
   このページの目的: Claude Code / Cursor など AI コーディングツールの設定ファイルを、ツールごとの group と Role で宣言する例を示す。
 */}
+
+import SnippetIsStartingPoint from '../../../../components/SnippetIsStartingPoint.astro';
 
 ## Claude Code
 
 ```kt collapse
 // ProjectArchitecture.kt
+@file:OptIn(ExperimentalKatachiApi::class)
+
+import me.tbsten.katachi.ExperimentalKatachiApi
 import me.tbsten.katachi.dsl.architecture
 
 val projectArchitecture = architecture {
@@ -24,6 +27,9 @@ val projectArchitecture = architecture {
 }
 
 // roles/ClaudeCode.kt
+@file:OptIn(ExperimentalKatachiApi::class)
+
+import me.tbsten.katachi.ExperimentalKatachiApi
 import me.tbsten.katachi.dsl.DeclarationContainerScope
 
 fun DeclarationContainerScope.claudeCode() =
@@ -100,6 +106,9 @@ fun DeclarationContainerScope.claudeCode() =
 
 ```kt collapse
 // ProjectArchitecture.kt
+@file:OptIn(ExperimentalKatachiApi::class)
+
+import me.tbsten.katachi.ExperimentalKatachiApi
 import me.tbsten.katachi.dsl.architecture
 
 val projectArchitecture = architecture {
@@ -109,6 +118,9 @@ val projectArchitecture = architecture {
 }
 
 // roles/Cursor.kt
+@file:OptIn(ExperimentalKatachiApi::class)
+
+import me.tbsten.katachi.ExperimentalKatachiApi
 import me.tbsten.katachi.dsl.DeclarationContainerScope
 
 fun DeclarationContainerScope.cursor() =
@@ -193,6 +205,9 @@ fun DeclarationContainerScope.cursor() =
 
 ```kt collapse
 // ProjectArchitecture.kt
+@file:OptIn(ExperimentalKatachiApi::class)
+
+import me.tbsten.katachi.ExperimentalKatachiApi
 import me.tbsten.katachi.dsl.architecture
 
 val projectArchitecture = architecture {
@@ -202,6 +217,9 @@ val projectArchitecture = architecture {
 }
 
 // roles/Windsurf.kt
+@file:OptIn(ExperimentalKatachiApi::class)
+
+import me.tbsten.katachi.ExperimentalKatachiApi
 import me.tbsten.katachi.dsl.DeclarationContainerScope
 
 fun DeclarationContainerScope.windsurf() =
@@ -278,6 +296,9 @@ fun DeclarationContainerScope.windsurf() =
 
 ```kt collapse
 // ProjectArchitecture.kt
+@file:OptIn(ExperimentalKatachiApi::class)
+
+import me.tbsten.katachi.ExperimentalKatachiApi
 import me.tbsten.katachi.dsl.architecture
 
 val projectArchitecture = architecture {
@@ -287,6 +308,9 @@ val projectArchitecture = architecture {
 }
 
 // roles/GitHubCopilot.kt
+@file:OptIn(ExperimentalKatachiApi::class)
+
+import me.tbsten.katachi.ExperimentalKatachiApi
 import me.tbsten.katachi.dsl.DeclarationContainerScope
 
 fun DeclarationContainerScope.githubCopilot() =
@@ -356,6 +380,9 @@ fun DeclarationContainerScope.githubCopilot() =
 
 ```kt collapse
 // ProjectArchitecture.kt
+@file:OptIn(ExperimentalKatachiApi::class)
+
+import me.tbsten.katachi.ExperimentalKatachiApi
 import me.tbsten.katachi.dsl.architecture
 
 val projectArchitecture = architecture {
@@ -365,6 +392,9 @@ val projectArchitecture = architecture {
 }
 
 // roles/Cline.kt
+@file:OptIn(ExperimentalKatachiApi::class)
+
+import me.tbsten.katachi.ExperimentalKatachiApi
 import me.tbsten.katachi.dsl.DeclarationContainerScope
 
 fun DeclarationContainerScope.cline() =
@@ -417,6 +447,9 @@ fun DeclarationContainerScope.cline() =
 
 ```kt collapse
 // ProjectArchitecture.kt
+@file:OptIn(ExperimentalKatachiApi::class)
+
+import me.tbsten.katachi.ExperimentalKatachiApi
 import me.tbsten.katachi.dsl.architecture
 
 val projectArchitecture = architecture {
@@ -426,6 +459,9 @@ val projectArchitecture = architecture {
 }
 
 // roles/Junie.kt
+@file:OptIn(ExperimentalKatachiApi::class)
+
+import me.tbsten.katachi.ExperimentalKatachiApi
 import me.tbsten.katachi.dsl.DeclarationContainerScope
 
 fun DeclarationContainerScope.junie() =
@@ -487,6 +523,9 @@ fun DeclarationContainerScope.junie() =
 
 ```kt collapse
 // ProjectArchitecture.kt
+@file:OptIn(ExperimentalKatachiApi::class)
+
+import me.tbsten.katachi.ExperimentalKatachiApi
 import me.tbsten.katachi.dsl.architecture
 
 val projectArchitecture = architecture {
@@ -496,6 +535,9 @@ val projectArchitecture = architecture {
 }
 
 // roles/Codex.kt
+@file:OptIn(ExperimentalKatachiApi::class)
+
+import me.tbsten.katachi.ExperimentalKatachiApi
 import me.tbsten.katachi.dsl.DeclarationContainerScope
 
 fun DeclarationContainerScope.codex() =
@@ -546,6 +588,9 @@ fun DeclarationContainerScope.codex() =
 
 ```kt collapse
 // ProjectArchitecture.kt
+@file:OptIn(ExperimentalKatachiApi::class)
+
+import me.tbsten.katachi.ExperimentalKatachiApi
 import me.tbsten.katachi.dsl.architecture
 
 val projectArchitecture = architecture {
@@ -555,6 +600,9 @@ val projectArchitecture = architecture {
 }
 
 // roles/Antigravity.kt
+@file:OptIn(ExperimentalKatachiApi::class)
+
+import me.tbsten.katachi.ExperimentalKatachiApi
 import me.tbsten.katachi.dsl.DeclarationContainerScope
 
 fun DeclarationContainerScope.antigravity() =
@@ -607,6 +655,9 @@ fun DeclarationContainerScope.antigravity() =
 
 ```kt collapse
 // ProjectArchitecture.kt
+@file:OptIn(ExperimentalKatachiApi::class)
+
+import me.tbsten.katachi.ExperimentalKatachiApi
 import me.tbsten.katachi.dsl.architecture
 
 val projectArchitecture = architecture {
@@ -616,6 +667,9 @@ val projectArchitecture = architecture {
 }
 
 // roles/Aider.kt
+@file:OptIn(ExperimentalKatachiApi::class)
+
+import me.tbsten.katachi.ExperimentalKatachiApi
 import me.tbsten.katachi.dsl.DeclarationContainerScope
 
 fun DeclarationContainerScope.aider() =

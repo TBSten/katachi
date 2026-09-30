@@ -9,18 +9,15 @@ tags:
   このページの目的: 既存プロジェクトに katachi を導入する際に役立つ Baseline 機能について深く網羅的に理解する。
 */}
 
-import { Aside } from '@astrojs/starlight/components';
+既存のプロジェクトに katachi を入れると、最初の実行で **宣言していないファイルやディレクトリが違反として出ます。** 出てきたパスを定義に足すか・移すか・消すかで片付けていくのが基本ですが、数が多いとすぐには片付けきれないでしょう。
 
-既存のプロジェクトに katachi を入れると、最初の実行で **宣言していないファイルがすべて違反として出ます。** 出てきたパスを定義に足すか・移すか・消すかで片付けていくのが基本ですが、数が多いとすぐには片付けきれないでしょう。
-
-**baseline は 既存の違反を一時的に抑制して、新しい違反だけをテストでエラーにする**機能です。
+**baseline は 既存の違反を一時的に抑制して、新しい違反をテストでエラーにする**機能です。
 
 ## 設定する
 
 ### 1. 定義に `baseline()` を書く
 
-```kt title="ProjectArchitecture.kt（抜粋）" {1,4}
-@OptIn(ExperimentalKatachiApi::class)
+```kt title="ProjectArchitecture.kt（抜粋）" {3}
 val projectArchitecture: Architecture = architecture {
     // ...
     baseline()
@@ -67,12 +64,6 @@ fun DeclarationContainerScope.baselineFile() = "BaselineFile" {
 ./gradlew :architecture-test:test -Dkatachi.baseline.update=true
 ```
 
-何件記録したかは、次の1行で報告されます。この行はテストの標準エラー出力に出るので、Gradle のデフォルトの設定ではコンソールに出ません。
-
-```
-Katachi baseline file:///path/to/project/katachi-baseline.json: 2 violations recorded in 2 entries (+2, -0).
-```
-
 作成・更新されたファイルはコミットするのが推奨です。
 
 ## 許容していた違反を直したあと
@@ -89,7 +80,7 @@ prune は、記録の件数を**減らすだけ**です。新しい違反を bas
 
 ## まとめ
 
-- baseline は、既存の違反を Baseline ファイルに記録して一時的に抑制し、**新しく増えた違反だけ**でテストを落とすための機能です。
+- baseline は、既存の違反を Baseline ファイルに記録して一時的に抑制し、**新しく増えた違反と、直したのに Baseline ファイルに残っている分でだけ**テストを落とすための機能です。
 - Baseline ファイルは `-Dkatachi.baseline.update=true` を付けてアーキテクチャテストを実行すると作成・更新されます。できたファイルはコミットしておきましょう。
 - 許容していた違反を直すと、baseline のファイルに残った分が `[StaleBaselineEntry]` でテストを落とします。`-Dkatachi.baseline.prune=true` で修正した違反を削除します。
 

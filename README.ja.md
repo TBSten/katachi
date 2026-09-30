@@ -23,8 +23,8 @@
 この定義1つから、次の3つが手に入ります。
 
 - **テスト**: 定義に無い場所のファイルを報告します。定義したものだけを許す方式なので、置き場所がいつの間にか増えません
-- **ドキュメント**: `./gradlew katachiDocs` が役割ごとの Markdown を書き出します
-- **コードの雛形**: `./gradlew katachiTemplate --arg template=UseCase --arg name=GetUser` が、定義どおりの場所にファイルを作ります
+- **ドキュメント**: `./gradlew katachiDocs` が Role ごとの Markdown を書き出します
+- **コードの雛形**: `./gradlew katachiTemplate --arg template=UseCase --arg name=GetUser` が、定義どおりの場所にファイルを作ります。IntelliJ IDEA / Android Studio のプラグイン（実験的）からも生成できます（[導入](https://tbsten.github.io/katachi/ja/guides/generate-code-from-template/)）
 
 ファイルの中身の規則（「public であること」など）も `konsist { }` で書けます。Konsist・detekt・ArchUnit との違いは [他ツールとの比較](https://tbsten.github.io/katachi/ja/get-started/comparison-with-other-tools/) にあります。
 
@@ -102,7 +102,7 @@ class ProjectArchitectureTest {
 ./gradlew :architecture-test:katachiDocs    # ドキュメントを architecture-test/build/katachi/docs に書き出す
 ```
 
-最初は、定義していないファイルがすべて違反として出ます。出てきたパスごとに、定義に足すかファイルを消すかを決めていきます。
+最初は、定義していないファイルやディレクトリが違反として出ます。出てきたパスごとに、定義に足すかファイルを消すかを決めていきます。数が多くてすぐには片付かない場合は、今ある違反を [baseline](https://tbsten.github.io/katachi/ja/guides/baseline/) でとりあえず許容し、新しい違反だけをエラーにすることもできます。
 
 手順の全体（import・AI Agent に任せる方法）は [初めてのアーキテクチャ定義](https://tbsten.github.io/katachi/ja/get-started/first-architecture/) にあります。
 
@@ -120,7 +120,7 @@ class ProjectArchitectureTest {
 
 | やりたいこと | ページ |
 |---|---|
-| 役割・group の書き方 | [基本的な API](https://tbsten.github.io/katachi/ja/guides/basic-api/)、[Role](https://tbsten.github.io/katachi/ja/guides/role/) |
+| Role・group の書き方 | [基本的な API](https://tbsten.github.io/katachi/ja/guides/basic-api/)、[Role](https://tbsten.github.io/katachi/ja/guides/role/) |
 | 置き場所の書き方 | [Layout](https://tbsten.github.io/katachi/ja/guides/layout/) |
 | ファイルの中身も検査する | [Konsist との統合](https://tbsten.github.io/katachi/ja/guides/konsist-integration/) |
 | ドキュメント・コードを生成する | [ドキュメント生成](https://tbsten.github.io/katachi/ja/guides/document-generation/)、[テンプレートからコード生成](https://tbsten.github.io/katachi/ja/guides/generate-code-from-template/) |

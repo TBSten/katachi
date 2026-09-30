@@ -9,7 +9,7 @@ tags:
   Purpose of this page: to help readers who have read the motivation page understand katachi's design philosophy more deeply.
 */}
 
-import { Aside, LinkCard, CardGrid, FileTree } from '@astrojs/starlight/components';
+import { LinkCard, CardGrid, FileTree } from '@astrojs/starlight/components';
 
 This page answers **why katachi has the shape it does**.
 For how to install it and how to write definitions, see [Your first architecture definition](/katachi/get-started/first-architecture/).
@@ -203,7 +203,7 @@ in a Role are at once the subject of the check and the body of the documentation
 
 ```mermaid
 flowchart LR
-    D["architecture { }<br/>roles, placement, descriptions"]
+    D["architecture { }<br/>Roles, placement, descriptions"]
     D --> T["Test<br/>check that it matches the declaration"]
     D --> M["Docs<br/>explain what each place is for"]
     D -.-> C["Your own Processor<br/>aggregate, extract, emit other formats"]

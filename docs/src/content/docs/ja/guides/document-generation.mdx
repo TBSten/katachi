@@ -9,7 +9,7 @@ tags:
   このページの目的: katachi のドキュメント生成機能について深く網羅的に理解してもらうこと。
 */}
 
-import { Tabs, TabItem, Aside, LinkCard, FileTree } from '@astrojs/starlight/components';
+import { Tabs, TabItem, LinkCard, FileTree } from '@astrojs/starlight/components';
 import CodeComparison from '../../../../components/CodeComparison';
 
 katachi は `architecture { }` 定義から markdown ドキュメントを生成できます。
@@ -51,10 +51,10 @@ architecture {
             example("GetItemListUseCase", "商品の一覧")
             example("SignInUseCase", "サインイン")
             layout { ":core:domain".module { mainSourceSet / kotlin / modulePackage / "useCase" / "*UseCase".ktFile() } }
-            "invoke メソッドのみを持つ".konsist { /* ... */ }
+            "invoke メソッドだけを持つこと".konsist { /* ... */ }
         }
 
-        "Repository" {
+        "RepositoryInterface" {
             title = "リポジトリ"
             summary = "データの取得と保存の境界"
             layout { ":core:domain".module { mainSourceSet / kotlin / modulePackage / "repository" / "*Repository".ktFile() } }
@@ -71,7 +71,7 @@ architecture {
           - domain/
             - README.md
             - UseCase.md
-            - Repository.md
+            - RepositoryInterface.md
         </FileTree>
     </TabItem>
 
@@ -86,14 +86,14 @@ architecture {
         アプリ固有の振る舞いと、その対象になる値
 
         - [ユースケース](./domain/UseCase.md)
-        - [リポジトリ](./domain/Repository.md)
+        - [リポジトリ](./domain/RepositoryInterface.md)
 
         ## Domain レイヤー
 
         アプリ固有の振る舞いと、その対象になる値
 
         - [ユースケース](./domain/UseCase.md) ... 各画面で発生するアプリ固有の1つの振る舞い
-        - [リポジトリ](./domain/Repository.md) ... データの取得と保存の境界
+        - [リポジトリ](./domain/RepositoryInterface.md) ... データの取得と保存の境界
         ```
     </TabItem>
     <TabItem label="domain/README.md">
@@ -107,7 +107,7 @@ architecture {
         | Role | Summary |
         |---|---|
         | [ユースケース](./UseCase.md) | 各画面で発生するアプリ固有の1つの振る舞い |
-        | [リポジトリ](./Repository.md) | データの取得と保存の境界 |
+        | [リポジトリ](./RepositoryInterface.md) | データの取得と保存の境界 |
 
         ## Placement in this group
 
@@ -135,7 +135,7 @@ architecture {
 
         ## Constraints
 
-        - invoke メソッドのみを持つ
+        - invoke メソッドだけを持つこと
 
         ## Examples
 
@@ -143,7 +143,7 @@ architecture {
         - `SignInUseCase` ... サインイン
         ```
     </TabItem>
-    <TabItem label="domain/Repository.md">
+    <TabItem label="domain/RepositoryInterface.md">
         ```md collapse
         [myapp](../README.md) / [Domain レイヤー](README.md)
 
@@ -160,11 +160,9 @@ architecture {
     </TabItem>
 </Tabs>
 
-<Aside>
-    katachi の GitHub リポジトリのサンプルでは、実際に生成したドキュメントを `sample/<name>/docs/` に置いています。具体例はこちらも参照してください。
+katachi の GitHub リポジトリのサンプルでは、実際に生成したドキュメントを `sample/<name>/docs/` に置いています。具体例はこちらも参照してください。
 
-    <LinkCard title="katachi の sample" href="https://github.com/TBSten/katachi/tree/main/sample" />
-</Aside>
+<LinkCard title="katachi の sample" href="https://github.com/TBSten/katachi/tree/main/sample" />
 
 ## 出力先ディレクトリ
 
@@ -172,7 +170,7 @@ architecture {
 
 出力先は、build.gradle.kts で `katachi.processors.docs.outputDir` を設定すると変更できます。
 
-```kt {6}
+```kts {6}
 katachi {
     architecture = "com.example.projectArchitecture"
 
@@ -222,9 +220,9 @@ group は入れ子にでき、入れ子の group はその親の group のディ
 
 | プロパティ | 生成されるドキュメントでの役割 | 使用されるページ |
 |---|---|---|
-| [`title`](/katachi/api-docs/katachi/me.tbsten.katachi.dsl/-role-scope/title.html) | 役割ページの見出し。デフォルトは役割の識別子 | `<Role名>.md`、および索引・一覧のリンク文字列 |
+| [`title`](/katachi/api-docs/katachi/me.tbsten.katachi.dsl/-role-scope/title.html) | Role のページの見出し。デフォルトは Role の識別子 | `<Role名>.md`、および索引・一覧のリンク文字列 |
 | [`summary`](/katachi/api-docs/katachi/me.tbsten.katachi.dsl/-role-scope/summary.html) | 一覧の表に入る1行 | `<Role名>.md`、親の `README.md` |
-| [`description`](/katachi/api-docs/katachi/me.tbsten.katachi.dsl/-role-scope/description.html) | 役割ページの本文。書いた Markdown が改行も含めてそのまま入ります。katachi は構造を足さないので、**中の見出しは書き手が決めます** | `<Role名>.md` |
+| [`description`](/katachi/api-docs/katachi/me.tbsten.katachi.dsl/-role-scope/description.html) | Role のページの本文。書いた Markdown が改行も含めてそのまま入ります。katachi は構造を足さないので、**中の見出しは書き手が決めます** | `<Role名>.md` |
 | [`example(name, description)`](/katachi/api-docs/katachi/me.tbsten.katachi.dsl/-role-scope/example.html) | 具体例。1つの例につき1回呼びます。**呼んだ順**に並びます | `<Role名>.md` の `## Examples` |
 | [`documented`](/katachi/api-docs/katachi/me.tbsten.katachi.dsl/-role-scope/documented.html) | `false` にするとドキュメントに出ません。出ないだけで、**assert() などの検査には引き続き参加します** | --- |
 
@@ -246,7 +244,7 @@ group は入れ子にでき、入れ子の group はその親の group のディ
                     "*UseCase".ktFile()
             }
 
-            "invoke メソッドのみを持つ".konsist { /* ... */ }
+            "invoke メソッドだけを持つこと".konsist { /* ... */ }
         }
         ```
     </CodeComparison.Panel>
@@ -268,7 +266,7 @@ group は入れ子にでき、入れ子の group はその親の group のディ
 
         ## Constraints                                        ← konsist { } の名前
 
-        - invoke メソッドのみを持つ
+        - invoke メソッドだけを持つこと
 
         ## Examples                                          ← example()
 
@@ -321,7 +319,7 @@ group に設定できるのは Role と同じ4つです。**`example()` だけ�
                 layout { "src/main/kotlin/com/example/domain/useCase" / "*UseCase".ktFile() }
             }
 
-            "Repository" {
+            "RepositoryInterface" {
                 title = "リポジトリ"
                 summary = "データの取得と保存の境界"
                 layout { "src/main/kotlin/com/example/domain/repository" / "*Repository".ktFile() }
@@ -339,12 +337,12 @@ group に設定できるのは Role と同じ4つです。**`example()` だけ�
 
         画面にも保存先にも依存しない層です。              ← description
 
-        | Role | Summary |                                 ← 配下の役割の title と summary
+        | Role | Summary |                                 ← 配下の Role の title と summary
         |---|---|
         | [ユースケース](./UseCase.md) | 各画面で発生するアプリ固有の1つの振る舞い |
-        | [リポジトリ](./Repository.md) | データの取得と保存の境界 |
+        | [リポジトリ](./RepositoryInterface.md) | データの取得と保存の境界 |
 
-        ## Placement in this group                           ← 配下の役割の layout { }
+        ## Placement in this group                           ← 配下の Role の layout { }
 
         ```
         src/main/kotlin/com/example/domain/
@@ -408,8 +406,6 @@ title などデフォルトで用意されているセクションのほかに�
 セクションは `documentSection("見出し")` で宣言し、書き込むためのプロパティを `by` で作ります。
 
 ```kt
-@file:OptIn(ExperimentalKatachiApi::class)
-
 val TestPolicy = documentSection("テスト方針")
 var MetadataScope.testPolicy by TestPolicy
 ```
@@ -424,13 +420,11 @@ var MetadataScope.testPolicy by TestPolicy
     <CodeComparison>
         <CodeComparison.Panel label="セクションの定義">
             ```kt
-            @file:OptIn(ExperimentalKatachiApi::class)
-
             val TestPolicy = documentSection("テスト方針")
             var MetadataScope.testPolicy by TestPolicy
 
             val UnitTest = TestPolicy.documentSection("ユニットテスト")
-            var RoleScope.unitTest by UnitTest
+            var MetadataScope.unitTest by UnitTest
 
             val projectArchitecture = architecture {
                 "UseCase" {
@@ -477,7 +471,7 @@ var MetadataScope.testPolicy by TestPolicy
 
 ## まとめ
 
-- ドキュメントはアーキテクチャ定義の中に title, summary, description, summary, example などのプロパティを設定することで作成することができます。
+- ドキュメントはアーキテクチャ定義の中に title, summary, description, example などのプロパティを設定することで作成することができます。
 
 ## 次のステップ
 

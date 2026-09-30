@@ -19,7 +19,7 @@ import CodeComparison from "../../../../components/CodeComparison";
 
 どんな Role があるのかは、`architecture { }` の中で定義します。
 
-```kt {2-5}
+```kt
 architecture {
     // UseCase という Role を定義する
     "UseCase" {
@@ -35,7 +35,7 @@ Role の説明・置き場所・制約は、その Role のブロックの中に
   - 詳しくは [レイアウトの定義](/katachi/ja/guides/layout/) を参照してください。
 - `"制約名".konsist { }` ... そのRoleのファイルにかけられる制限を定義します。
   - 制約は Konsist で書きます。詳しくは [Konsist との統合](/katachi/ja/guides/konsist-integration/) を参照してください。
-- `template` ... その Role のファイルを新規作成する際のテンプレートを定義します。
+- `.template { }` ... `layout { }` で宣言したファイルに付けて、そのファイルを新しく作るときのテンプレートを定義します。
   - 詳しくは [テンプレートからコード生成](/katachi/ja/guides/generate-code-from-template/) を参照してください。
 
 ```kt
@@ -88,22 +88,6 @@ architecture {
     example("GetUserUseCase", "ユーザーを取得する")
     example("UpdateUserUseCase", "ユーザーを更新する")
 }
-```
-
-**Role名に日本語を書くと失敗します。**
-
-```kt
-"ユースケース" {
-    summary = "各画面で発生するアプリ固有の1つの振る舞い"
-}
-```
-
-定義を評価した時点で例外になります。検査を実行するより前です。
-
-```text
-Invalid role name "ユースケース" declared at ProjectArchitecture.kt:42.
-Names must match [A-Za-z][A-Za-z0-9_-]*: start with an ASCII letter, then ASCII letters, digits, '_' or '-'.
-Use `title` for a human readable display name.
 ```
 
 </details>
@@ -190,7 +174,7 @@ Katachi check failed: 1 violation (Unexpected: 1)
 `mustNot` と `mustBeEmpty()` で禁止も書けます。
 
 ```kt
-"Repository" {
+"RepositoryInterface" {
     layout {
         "src/main/kotlin/com/example/repository" / "*Repository".ktFile()
     }
@@ -226,18 +210,16 @@ class GetUserUseCase(private val repository: UserRepository) {
   Declared at: ProjectArchitecture.kt:12
 ```
 
-`How to fix:` は出ません。制約の中身は任意の Kotlin 式なので、**何をすれば満たされるかを katachi は知りません。** 推測で書くと嘘になるため、規則の場所だけを示しています。
-
 </details>
 
 
-なお、Roleの名前はドキュメント生成などで使うため、ASCII（英数字と一部の記号）しか使えません。
+なお、Role の名前はドキュメント生成などで使うため、ASCII（英字で始まり、英数字・`_`・`-` が続く）しか使えません。日本語の表示名は `title` に書きます。
 
 ## Role のグループ
 
 `"グループ名".group { ... }` を使うと、Roleをグループにまとめられます。
 
-```kt {2,10}
+```kt {2}
 architecture {
     "domain".group {
         "UseCase" {
@@ -268,7 +250,7 @@ architecture {
 <CodeComparison>
     <CodeComparison.Panel label="🆖 2種類のファイルを1つの Role に" labelVariant="danger">
 
-    ```kt {4-5,7-9} nocollapse
+    ```kt {4-5,7-8} nocollapse
     "Repository" {
         summary = "データの取得と保存"
         layout {

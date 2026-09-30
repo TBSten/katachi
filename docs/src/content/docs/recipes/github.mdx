@@ -13,6 +13,9 @@ import SnippetIsStartingPoint from '../../../components/SnippetIsStartingPoint.a
 
 ```kt collapse
 // ProjectArchitecture.kt
+@file:OptIn(ExperimentalKatachiApi::class)
+
+import me.tbsten.katachi.ExperimentalKatachiApi
 import me.tbsten.katachi.dsl.architecture
 
 val projectArchitecture = architecture {
@@ -22,6 +25,9 @@ val projectArchitecture = architecture {
 }
 
 // roles/GitHub.kt
+@file:OptIn(ExperimentalKatachiApi::class)
+
+import me.tbsten.katachi.ExperimentalKatachiApi
 import me.tbsten.katachi.dsl.DeclarationContainerScope
 
 fun DeclarationContainerScope.github() =

@@ -15,10 +15,7 @@ While katachi's core API focuses on validating directory structure and file loca
 
 ## Installation
 
-`"...".konsist { }` lives in a separate, optional module, so you need to install it separately.
-Add the following to `build.gradle.kts`.
-
-The Konsist integration is published as a separate artifact, `me.tbsten.katachi:katachi-konsist`, so you need to add it to your dependencies separately.
+`"...".konsist { }` lives in a separate artifact, `me.tbsten.katachi:katachi-konsist`, so add it to the dependencies in `build.gradle.kts`.
 
 ```kts title="build.gradle.kts" {2}
 dependencies {
@@ -28,8 +25,7 @@ dependencies {
 
 Next, pass `FileConstraintCheck()` to `projectArchitecture.assert()` to run the Konsist checks.
 
-```kt del={4} ins={1,5}
-@OptIn(ExperimentalKatachiApi::class)
+```kt del={3} ins={4}
 @Test
 fun `files are placed according to the architecture`() {
   projectArchitecture.assert()
@@ -41,7 +37,7 @@ fun `files are placed according to the architecture`() {
 
 Inside a Role, you define what declarations that Role's files should have.
 
-```kt {7-9}
+```kt {7-8}
 architecture {
   "UseCase" {
     layout {
@@ -55,7 +51,7 @@ architecture {
 }
 ```
 
-A constraint applies to the files that matched the Role's `layout { }`. Writing a constraint on a Role with no `layout { }` throws `KatachiFileConstraintWithoutLayoutException` as soon as the definition is evaluated.
+A constraint applies to the files that matched the Role's `layout { }`. A Role with no `layout { }` can't have constraints.
 
 ## Example error
 
@@ -88,7 +84,7 @@ katachi adds three things — `must`, `mustNot`, and `mustBeEmpty` — and block
 - `layout { }` handles **where files may be placed**, and `konsist { }` handles **what their contents should look like**.
 - `katachi-konsist` is an **optional module**. It requires adding the dependency and setting up `assert(FileConstraintCheck())`.
 - **The constraint name appears directly in the violation report.** Write the name in the form of what must be satisfied.
-- The `assertTrue` family **causes a compile error**. It throws an exception on the spot, which doesn't fit the design that collects every violation in a single run.
+- Konsist's `assertTrue` family **can't be used** inside `konsist { }` (it causes a compile error). Write `must` / `mustNot` / `mustBeEmpty` instead.
 
 ## Next steps
 

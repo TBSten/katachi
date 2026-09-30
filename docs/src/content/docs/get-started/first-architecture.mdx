@@ -11,9 +11,7 @@ tags:
 
 import { Aside, Tabs, TabItem, Steps, Badge } from '@astrojs/starlight/components';
 
-<Aside>
 If you are not yet convinced that you need katachi, read [Motivation](/katachi/get-started/motivation/) first.
-</Aside>
 
 ## Add katachi to your project
 
@@ -44,12 +42,9 @@ If you are not yet convinced that you need katachi, read [Motivation](/katachi/g
     2. **Review** the changes the AI agent made to your project and adjust them as needed.
 
         What to look at:
-        - `architecture-test/src/test/kotlin/.../test/architecture/ProjectArchitecture.kt` is the entry point.
-        - The AI agent splits the architecture definition into one file per group and per role, and puts them in packages under `ProjectArchitecture.kt`. Review those files too.
-    
-        <Aside title="Working in a team">
-          - If you work in a team, have your teammates (especially whoever leads it) review this closely as well.
-        </Aside>
+        - `architecture-test/src/test/kotlin/<package>/ProjectArchitecture.kt` is the entry point.
+        - The AI agent splits the architecture definition into one file per group and per Role, and puts them in packages under `ProjectArchitecture.kt`. Review those files too.
+        - If you work in a team, have your teammates (especially whoever leads it) review this closely as well.
 
     3. **Run the architecture test** and confirm that it is all green.
 
@@ -148,10 +143,14 @@ If you are not yet convinced that you need katachi, read [Motivation](/katachi/g
 
         ```kotlin
         // Example
+        @file:OptIn(ExperimentalKatachiApi::class)
+
         package com.example
 
+        import me.tbsten.katachi.ExperimentalKatachiApi
         import me.tbsten.katachi.dsl.architecture
         import me.tbsten.katachi.dsl.gradle.gradle
+        import me.tbsten.katachi.dsl.kotlin.ktFile
 
         val projectArchitecture = architecture {
             gradle() // Gradle's files: the wrapper, settings, build scripts and so on
@@ -159,9 +158,7 @@ If you are not yet convinced that you need katachi, read [Motivation](/katachi/g
                 "UseCase" {
                     summary = "A single app-specific behavior that occurs on a screen"
                     layout {
-                        "domain/src/main/kotlin/usecase" {
-                            "*UseCase.kt".file()
-                        }
+                        "domain/src/main/kotlin/usecase" / "*UseCase".ktFile()
                     }
                 }
             }
@@ -171,8 +168,11 @@ If you are not yet convinced that you need katachi, read [Motivation](/katachi/g
     4. **Write the one test that checks it**
 
         ```kotlin title="architecture-test/src/test/kotlin/<package>/ProjectArchitectureTest.kt"
+        @file:OptIn(ExperimentalKatachiApi::class)
+
         package com.example
 
+        import me.tbsten.katachi.ExperimentalKatachiApi
         import me.tbsten.katachi.check.assert
         import org.junit.jupiter.api.Test
 
@@ -194,11 +194,11 @@ If you are not yet convinced that you need katachi, read [Motivation](/katachi/g
         ./gradlew :architecture-test:test
         ```
 
-        At first **every file you have not declared comes out as a violation.** katachi is an allow-list, so this is the normal starting point. Go through the reported paths and decide, one by one, whether to add them to the definition or delete them.
+        At first **the files and directories you have not declared come out as violations.** katachi is an allow-list, so this is the normal starting point. Go through the reported paths and decide, one by one, whether to add them to the definition or delete them.
 
         Gradle's files (the wrapper, `settings.gradle.kts`, build scripts, `gradle.properties` and the version catalog) are declared by the single `gradle()` line in step 3. If you have `buildSrc` or convention plugins, see the [Gradle recipe](/katachi/recipes/gradle/).
 
-        If there are too many existing violations to clear up right away, the experimental baseline feature lets you tolerate the existing violations for now and fail only on new ones. The existing violations are recorded in a baseline file (`katachi-baseline.json` by default). Write `architecture { baseline() }`, then run the test once with `-Dkatachi.baseline.update=true` to create the baseline file. Once you fix a violation that had been tolerated, the test keeps failing until you remove it from the baseline file with `-Dkatachi.baseline.prune=true`. Declare the baseline file itself in `layout { }` too. See [Baseline](/katachi/guides/baseline/) for details.
+        If there are too many existing violations to clear up right away, the experimental baseline feature lets you tolerate the existing violations for now and fail only on new ones. See [Baseline](/katachi/guides/baseline/) for details.
 
     </Steps>
   </TabItem>

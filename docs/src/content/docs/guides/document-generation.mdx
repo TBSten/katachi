@@ -5,7 +5,11 @@ tags:
   - beginner
 ---
 
-import { Tabs, TabItem, Aside, LinkCard, FileTree } from '@astrojs/starlight/components';
+{/*
+  Purpose of this page: to give a deep, thorough understanding of katachi's document generation.
+*/}
+
+import { Tabs, TabItem, LinkCard, FileTree } from '@astrojs/starlight/components';
 import CodeComparison from '../../../components/CodeComparison';
 
 katachi can generate Markdown documentation from an `architecture { }` definition.
@@ -50,7 +54,7 @@ architecture {
             "has only an invoke method".konsist { /* ... */ }
         }
 
-        "Repository" {
+        "RepositoryInterface" {
             title = "Repository"
             summary = "The boundary where data is fetched and saved"
             layout { ":core:domain".module { mainSourceSet / kotlin / modulePackage / "repository" / "*Repository".ktFile() } }
@@ -67,7 +71,7 @@ architecture {
           - domain/
             - README.md
             - UseCase.md
-            - Repository.md
+            - RepositoryInterface.md
         </FileTree>
     </TabItem>
 
@@ -82,14 +86,14 @@ architecture {
         App-specific behavior and the values it acts on
 
         - [Use case](./domain/UseCase.md)
-        - [Repository](./domain/Repository.md)
+        - [Repository](./domain/RepositoryInterface.md)
 
         ## Domain layer
 
         App-specific behavior and the values it acts on
 
         - [Use case](./domain/UseCase.md) ... A single app-specific behavior that happens on a screen
-        - [Repository](./domain/Repository.md) ... The boundary where data is fetched and saved
+        - [Repository](./domain/RepositoryInterface.md) ... The boundary where data is fetched and saved
         ```
     </TabItem>
     <TabItem label="domain/README.md">
@@ -103,7 +107,7 @@ architecture {
         | Role | Summary |
         |---|---|
         | [Use case](./UseCase.md) | A single app-specific behavior that happens on a screen |
-        | [Repository](./Repository.md) | The boundary where data is fetched and saved |
+        | [Repository](./RepositoryInterface.md) | The boundary where data is fetched and saved |
 
         ## Placement in this group
 
@@ -139,7 +143,7 @@ architecture {
         - `SignInUseCase` ... Signing in
         ```
     </TabItem>
-    <TabItem label="domain/Repository.md">
+    <TabItem label="domain/RepositoryInterface.md">
         ```md collapse
         [myapp](../README.md) / [Domain layer](README.md)
 
@@ -156,11 +160,9 @@ architecture {
     </TabItem>
 </Tabs>
 
-<Aside>
-    The samples in katachi's GitHub repository keep actually generated documentation in `sample/<name>/docs/`. See them for concrete examples as well.
+The samples in katachi's GitHub repository keep actually generated documentation in `sample/<name>/docs/`. See them for concrete examples as well.
 
-    <LinkCard title="katachi samples" href="https://github.com/TBSten/katachi/tree/main/sample" />
-</Aside>
+<LinkCard title="katachi samples" href="https://github.com/TBSten/katachi/tree/main/sample" />
 
 ## Output directory
 
@@ -168,7 +170,7 @@ By default the documentation is generated under `build/katachi/docs/`.
 
 The destination can be changed by setting `katachi.processors.docs.outputDir` in `build.gradle.kts`.
 
-```kt {5-7}
+```kts {6}
 katachi {
     architecture = "com.example.projectArchitecture"
 
@@ -179,12 +181,6 @@ katachi {
     }
 }
 ```
-
-<Aside type="caution">
-katachi manages the output directory. Any `*.md` there that the run did not generate is deleted (files other than `.md` are kept, and each deleted file is logged). If you point it at a directory holding hand-written Markdown, that Markdown is deleted. Give it a directory of its own.
-
-`outputDir` accepts a String, a Directory, or a File. A String is resolved relative to the module; a Directory or a File is used as an absolute path.
-</Aside>
 
 ## Generated files
 
@@ -218,15 +214,15 @@ File and directory names are decided by the **identifier** (`UseCase` in `"UseCa
 
 ## Properties used to generate the documentation
 
-The documentation is generated from the properties you set on roles and groups.
+The documentation is generated from the properties you set on Roles and groups.
 
 ### Role
 
 | Property | What it becomes in the generated documentation | Pages it is used on |
 |---|---|---|
-| [`title`](/katachi/api-docs/katachi/me.tbsten.katachi.dsl/-role-scope/title.html) | The heading of the role page. Defaults to the role's identifier | `<Role>.md`, and the link text in the index and listings |
+| [`title`](/katachi/api-docs/katachi/me.tbsten.katachi.dsl/-role-scope/title.html) | The heading of the Role's page. Defaults to the Role's identifier | `<Role>.md`, and the link text in the index and listings |
 | [`summary`](/katachi/api-docs/katachi/me.tbsten.katachi.dsl/-role-scope/summary.html) | The single line that goes in the listing table | `<Role>.md`, the parent's `README.md` |
-| [`description`](/katachi/api-docs/katachi/me.tbsten.katachi.dsl/-role-scope/description.html) | The body of the role page. The Markdown you write goes in as is, newlines included. katachi adds no structure of its own, so **the headings inside are yours to choose** | `<Role>.md` |
+| [`description`](/katachi/api-docs/katachi/me.tbsten.katachi.dsl/-role-scope/description.html) | The body of the Role's page. The Markdown you write goes in as is, newlines included. katachi adds no structure of its own, so **the headings inside are yours to choose** | `<Role>.md` |
 | [`example(name, description)`](/katachi/api-docs/katachi/me.tbsten.katachi.dsl/-role-scope/example.html) | A concrete example. Call it once per example; they appear **in the order you called them** | `## Examples` in `<Role>.md` |
 | [`documented`](/katachi/api-docs/katachi/me.tbsten.katachi.dsl/-role-scope/documented.html) | Set to `false` to keep it out of the documentation. It only stops being documented -- **it still takes part in `assert()` and the other checks** | --- |
 
@@ -282,7 +278,7 @@ The documentation is generated from the properties you set on roles and groups.
 
 ### group
 
-A group takes the same four properties a role does. **Only `example()` is missing.**
+A group takes the same four properties a Role does. **Only `example()` is missing.**
 
 | Property | What it becomes in the generated documentation | Pages it is used on |
 |---|---|---|
@@ -294,7 +290,7 @@ A group takes the same four properties a role does. **Only `example()` is missin
 <details>
     <summary>Careful: documented = false takes the group's contents out with it</summary>
 
-    A group with `documented = false` **takes its roles and nested groups out of the documentation along with it,** whatever those roles write for themselves.
+    A group with `documented = false` **takes its Roles and nested groups out of the documentation along with it,** whatever those Roles write for themselves.
 
     ```kt
     "build".group {
@@ -303,7 +299,7 @@ A group takes the same four properties a role does. **Only `example()` is missin
     }
     ```
 
-    The value itself is not copied onto the roles and groups inside (each keeps what it wrote). A processor of your own that reads this value should walk up `Role.groupPath` and look at the parent groups' values too.
+    The value itself is not copied onto the Roles and groups inside (each keeps what it wrote). A processor of your own that reads this value should walk up `Role.groupPath` and look at the parent groups' values too.
 
 </details>
 
@@ -323,7 +319,7 @@ A group takes the same four properties a role does. **Only `example()` is missin
                 layout { "src/main/kotlin/com/example/domain/useCase" / "*UseCase".ktFile() }
             }
 
-            "Repository" {
+            "RepositoryInterface" {
                 title = "Repository"
                 summary = "The boundary where data is fetched and saved"
                 layout { "src/main/kotlin/com/example/domain/repository" / "*Repository".ktFile() }
@@ -341,12 +337,12 @@ A group takes the same four properties a role does. **Only `example()` is missin
 
         The layer that depends on neither the screens nor the storage.  ← description
 
-        | Role | Summary |                                 ← title and summary of the roles inside
+        | Role | Summary |                                 ← title and summary of the Roles inside
         |---|---|
         | [Use case](./UseCase.md) | A single app-specific behavior that happens on a screen |
-        | [Repository](./Repository.md) | The boundary where data is fetched and saved |
+        | [Repository](./RepositoryInterface.md) | The boundary where data is fetched and saved |
 
-        ## Placement in this group                           ← layout { } of the roles inside
+        ## Placement in this group                           ← layout { } of the Roles inside
 
         ```
         src/main/kotlin/com/example/domain/
@@ -361,10 +357,10 @@ A group takes the same four properties a role does. **Only `example()` is missin
 
 The heading and description of the top page (the `README.md` right under the output directory) are set by writing `title` and `description` directly inside `architecture { }`.
 
-| Property | Role in the generated documentation | Used on |
+| Property | What it becomes in the generated documentation | Pages it is used on |
 |---|---|---|
-| [`title`](/katachi/api-docs/katachi/me.tbsten.katachi.dsl/-architecture-scope/title.html) | The top page's heading (`# <title> documentation`) and the first item of every page's breadcrumb. Defaults to `Architecture` | `README.md`, the breadcrumb of every page |
-| [`description`](/katachi/api-docs/katachi/me.tbsten.katachi.dsl/-architecture-scope/description.html) | The body right under the heading, as the Markdown you wrote. The place to say what the repository is and how to read the documentation | `README.md` |
+| [`title`](/katachi/api-docs/katachi/me.tbsten.katachi.dsl/-architecture-scope/title.html) | The heading of the top page | `README.md`, the breadcrumb of every page |
+| [`description`](/katachi/api-docs/katachi/me.tbsten.katachi.dsl/-architecture-scope/description.html) | The body right under the heading. | `README.md` |
 
 <CodeComparison>
     <CodeComparison.Panel label="architecture definition">
@@ -372,12 +368,14 @@ The heading and description of the top page (the `README.md` right under the out
         val projectArchitecture = architecture {
             title = "myapp"
             description = """
-                The file layout of myapp. There is one page per role.
+                The file layout of myapp.
+
+                myapp is designed on top of **MVVM * Clean Architecture**.
             """.trimIndent()
 
             "domain".group {
                 title = "Domain layer"
-                summary = "The app-specific behaviors and the values they work on"
+                summary = "App-specific behavior and the values it acts on"
                 "UseCase" { /* ... */ }
             }
         }
@@ -385,114 +383,97 @@ The heading and description of the top page (the `README.md` right under the out
     </CodeComparison.Panel>
     <CodeComparison.Panel label="Generated Markdown">
         ```md title="README.md"
-        # myapp documentation                          ← title
+        # myapp documentation
 
-        The file layout of myapp. There is one page per role.  ← description
+        The file layout of myapp.
+
+        myapp is designed on top of **MVVM * Clean Architecture**.
 
         ## Document map
 
         ### [Domain layer](./domain/README.md)
 
-        The app-specific behaviors and the values they work on
+        App-specific behavior and the values it acts on
         ...
         ```
     </CodeComparison.Panel>
 </CodeComparison>
 
-Without `title`, the heading is `# Architecture documentation` and the breadcrumb starts with `[Architecture]`. Without `description`, the Document map starts right under the heading.
-
-These two can only be written inside the definition. They cannot be set from build.gradle.kts or `--arg`.
-
 ### Custom sections
 
-To add your own sections to the documentation on top of the built-in ones such as the title, define a section with [`documentSection()`](/katachi/api-docs/katachi/me.tbsten.katachi.dsl/document-section.html).
+To add your own sections to the documentation on top of the ones provided by default, such as the title, define a section with [`documentSection()`](/katachi/api-docs/katachi/me.tbsten.katachi.dsl/document-section.html).
 
 Declare a section with `documentSection("heading")`, and create a property to write it through with `by`.
 
 ```kt
-@file:OptIn(ExperimentalKatachiApi::class)
-
 val TestPolicy = documentSection("Test policy")
 var MetadataScope.testPolicy by TestPolicy
 ```
 
-**The receiver type of the property decides where it can be written.**
+<details>
+    <summary>Nesting sections</summary>
 
-| Receiver type | Where it can be written |
-|---|---|
-| `MetadataScope` | Anywhere: a group, a role, or the root |
-| `DeclarationContainerScope` | Only a group or the root (not a role) |
-| `RoleScope` | Only a role |
+    Sections can be nested. Declare the child on its parent section, as in `TestPolicy.documentSection("Unit tests")`.
+    **The heading level follows from the depth.** The top level is `##`, and each level down adds one `#`.
+    Even if the parent has no body, its heading still appears when a child has one.
 
-Sections can be nested. Declare the child on its parent section, as in `TestPolicy.documentSection("Unit tests")`.
-**The heading level follows from the depth.** The top level is `##`, and each level down adds one `#`.
-Even if the parent has no body, its heading still appears when a child has one.
+    <CodeComparison>
+        <CodeComparison.Panel label="Section definition">
+            ```kt
+            val TestPolicy = documentSection("Test policy")
+            var MetadataScope.testPolicy by TestPolicy
 
-<CodeComparison>
-    <CodeComparison.Panel label="Section definition">
-        ```kt
-        @file:OptIn(ExperimentalKatachiApi::class)
+            val UnitTest = TestPolicy.documentSection("Unit tests")
+            var MetadataScope.unitTest by UnitTest
 
-        val TestPolicy = documentSection("Test policy")
-        var MetadataScope.testPolicy by TestPolicy
+            val projectArchitecture = architecture {
+                "UseCase" {
+                    title = "Use case"
+                    summary = "A single app-specific behavior that happens on a screen"
+                    example("SignInUseCase", "Signing in")
+                    layout { "src/main/kotlin/com/example/useCase" / "*UseCase".ktFile() }
 
-        val UnitTest = TestPolicy.documentSection("Unit tests")
-        var RoleScope.unitTest by UnitTest
-
-        val projectArchitecture = architecture {
-            "UseCase" {
-                title = "Use case"
-                summary = "A single app-specific behavior that happens on a screen"
-                example("SignInUseCase", "Signing in")
-                layout { "src/main/kotlin/com/example/useCase" / "*UseCase".ktFile() }
-
-                unitTest = "Replace the repository with a fake and check the return value."
+                    unitTest = "Replace the repository with a fake and check the return value."
+                }
             }
-        }
-        ```
-    </CodeComparison.Panel>
-    <CodeComparison.Panel label="Generated Markdown">
-        ```md title="UseCase.md"
-        [Architecture](README.md)
+            ```
+        </CodeComparison.Panel>
+        <CodeComparison.Panel label="Generated Markdown">
+            ```md title="UseCase.md"
+            [Architecture](README.md)
 
-        # Use case
+            # Use case
 
-        A single app-specific behavior that happens on a screen
+            A single app-specific behavior that happens on a screen
 
-        ## Placement
+            ## Placement
 
-        | Module | Path | When to use |
-        |---|---|---|
-        |  | `src/main/kotlin/com/example/useCase/*UseCase.kt` |  |
+            | Module | Path | When to use |
+            |---|---|---|
+            |  | `src/main/kotlin/com/example/useCase/*UseCase.kt` |  |
 
-        ## Examples
+            ## Examples
 
-        - `SignInUseCase` ... Signing in
+            - `SignInUseCase` ... Signing in
 
-        ## Test policy                                 ← no body, but shown because a child has one
+            ## Test policy                                 ← no body, but shown because a child has one
 
-        ### Unit tests                                 ← one level down, so ###
+            ### Unit tests                                 ← one level down, so ###
 
-        Replace the repository with a fake and check the return value.
-        ```
-    </CodeComparison.Panel>
-</CodeComparison>
+            Replace the repository with a fake and check the return value.
+            ```
+        </CodeComparison.Panel>
+    </CodeComparison>
 
-Custom sections come **after the built-in sections (`## Placement` / `## Constraints` / `## Examples`)**, in the order they are written in the definition.
+    Custom sections come **after the built-in sections (`## Placement` / `## Constraints` / `## Examples`)**, in the order they are written in the definition.
 
-The following two throw **when the section is declared**, not when the documentation is generated.
-
-- An empty heading (`documentSection("")` or whitespace only): `KatachiUnnamedDocumentSectionException`
-- Nesting deeper than `######` (the sixth level and below, counting the top level `##` as the first): `KatachiDocumentSectionTooDeepException`
+</details>
 
 ## Summary
 
-- The documentation is generated from **the same definition as the checks**. The two are not written separately, so **the documentation and the code do not drift apart**.
-- Two things are generated: **role pages** (what this role is and where it goes) and **the placement tree in the READMEs of groups and of the root** (what may be placed in this directory). The placement tree appears as `## Placement in this group` in a group's README and as `## Placement at the root` in the root README.
-- **Only named `konsist { }` blocks appear under `## Constraints`.** Writing a name is enough to get listed, which gives a natural reason to write one.
+- Documentation is created by setting properties such as title, summary, description, and example in the architecture definition.
 
 ## Next steps
 
-- [Role](/katachi/guides/role/) ... Learn how to write `title` / `summary` / `description` / `example`, the material the documentation is made from.
-- [ArchitectureProcessor and customizing it](/katachi/guides/processor/) ... Document generation is one ArchitectureProcessor too. Learn how to produce other outputs of your own.
 - [Generating code from a template](/katachi/guides/generate-code-from-template/) ... Learn how to generate code, rather than documentation, from the same definition.
+- [ArchitectureProcessor and customizing it](/katachi/guides/processor/) ... Document generation is one ArchitectureProcessor too. Learn how to produce other outputs of your own.
