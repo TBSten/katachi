@@ -1,8 +1,11 @@
+@file:OptIn(ExperimentalKatachiApi::class)
+
 package com.example.roles
 
 import com.example.allowedContents
 import com.example.forbiddenContents
 import com.example.modulePackage
+import me.tbsten.katachi.ExperimentalKatachiApi
 import me.tbsten.katachi.dsl.DeclarationContainerScope
 import me.tbsten.katachi.dsl.LayoutScope
 import me.tbsten.katachi.dsl.gradle.div

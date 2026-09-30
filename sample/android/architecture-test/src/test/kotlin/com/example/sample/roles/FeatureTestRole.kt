@@ -1,9 +1,12 @@
+@file:OptIn(ExperimentalKatachiApi::class)
+
 package com.example.sample.roles
 
 import com.example.sample.forbiddenContents
 import com.example.sample.groups.FeatureModule
 import com.example.sample.groups.eachFeatureModule
 import com.example.sample.modulePackage
+import me.tbsten.katachi.ExperimentalKatachiApi
 import me.tbsten.katachi.dsl.DeclarationContainerScope
 import me.tbsten.katachi.dsl.gradle.*
 import me.tbsten.katachi.dsl.kotlin.ktFile
