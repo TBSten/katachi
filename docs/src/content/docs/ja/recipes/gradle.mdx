@@ -27,6 +27,9 @@ val architecture = architecture {
 `gradle()` は `build-logic` などの included build と `buildSrc` を宣言しません。その中のビルドスクリプトと規約プラグインは、自分で宣言します。
 
 ```kt title="ProjectArchitecture.kt"
+@file:OptIn(ExperimentalKatachiApi::class)
+
+import me.tbsten.katachi.ExperimentalKatachiApi
 import me.tbsten.katachi.dsl.architecture
 import me.tbsten.katachi.dsl.gradle.gradle
 import me.tbsten.katachi.dsl.kotlin.ktFile

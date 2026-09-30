@@ -27,6 +27,9 @@ The samples declare it with the same single line ([GradleGroup.kt in sample/jvm]
 `gradle()` does not declare included builds such as `build-logic`, nor `buildSrc`. Declare their build scripts and convention plugins yourself.
 
 ```kt title="ProjectArchitecture.kt"
+@file:OptIn(ExperimentalKatachiApi::class)
+
+import me.tbsten.katachi.ExperimentalKatachiApi
 import me.tbsten.katachi.dsl.architecture
 import me.tbsten.katachi.dsl.gradle.gradle
 import me.tbsten.katachi.dsl.kotlin.ktFile
