@@ -320,7 +320,9 @@ sh $CLI scaffold --package com.example.app
 - settings ファイルへの `include("architecture-test")` の追加（Groovy の `settings.gradle` なら `include 'architecture-test'`。すでにあれば何もしない）
 - settings ファイルの `pluginManagement { repositories { } }` への `mavenCentral()` の追加。katachi の Gradle plugin は Maven Central にあるため（すでにあれば何もしない。`pluginManagement { }` が無ければ作る）
 
-プラグインのバージョン衝突、JUnit の engine、JVM toolchain、プロジェクトの Kotlin バージョンに応じたコンパイラオプション、Android / KMP プロジェクトでの扱いは**すべてスクリプトが決めています。** Kotlin 2.4 未満なら `-Xcontext-parameters` を書き込み（これが無いと DSL を1つも呼べません）、2.4 以降では付けません（付けると redundant の警告になるため）。Kotlin 2.2 未満ならその旨を伝えて止まります。katachi の metadata をそのコンパイラが読めないためです。 生成されたファイルを読んで直したくなっても、直さないこと。
+プラグインのバージョン衝突、JUnit の engine、JVM toolchain（下記）、プロジェクトの Kotlin バージョンに応じたコンパイラオプション、Android / KMP プロジェクトでの扱いは**すべてスクリプトが決めています。** Kotlin 2.4 未満なら `-Xcontext-parameters` を書き込み（これが無いと DSL を1つも呼べません）、2.4 以降では付けません（付けると redundant の警告になるため）。Kotlin 2.2 未満ならその旨を伝えて止まります。katachi の metadata をそのコンパイラが読めないためです。 生成されたファイルを読んで直したくなっても、直さないこと。
+
+JVM toolchain は、プロジェクトに既にある設定（ほかのモジュールの `jvmToolchain(N)`、`JavaLanguageVersion.of(N)`、buildSrc・build-logic の中の同じ書き方、version catalog から読む形）と同じ N を使います。katachi は JDK 17 以上が要るので、見つかった N が 17 未満なら使いません。設定が見つからないときは `jvmToolchain` を書かず、Gradle を動かしている JDK をそのまま使います（JDK 17 が無く toolchain の自動取得も無い環境で落ちないため）。どちらにしたかは scaffold の出力とチェックリストの「JVM toolchain」に残ります。`doctor` と `scaffold` は Gradle が使う JDK が 17 以上かも確かめ、未満なら直し方を出して止まります。
 
 例外は、生成されたファイルを変えないとビルドがそもそも動かない場合だけです。これは上のルールより優先します。ただしその場合はスクリプト側のバグなので、`add changed` に理由を書いて記録し、`questions` にも登録してください。
 
