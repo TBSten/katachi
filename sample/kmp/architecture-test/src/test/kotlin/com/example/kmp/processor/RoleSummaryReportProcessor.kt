@@ -35,9 +35,7 @@ import me.tbsten.katachi.processor.ArchitectureProcessorNoArg
  * ```
  */
 // The `@OptIn` is what a real consumer of the published artifact writes: implementing
-// `ArchitectureProcessorNoArg` outside `:katachi` does not compile without it. v0.1 made the
-// same point through the `ArchitectureProcessorUnit` typealias, which v0.2 dropped -- two type
-// parameters left nothing for an alias named after one of them to say.
+// `ArchitectureProcessorNoArg` outside `:katachi` does not compile without it.
 @OptIn(ExperimentalKatachiApi::class)
 class RoleSummaryReportProcessor(
     private val write: (path: String, content: String) -> Unit,

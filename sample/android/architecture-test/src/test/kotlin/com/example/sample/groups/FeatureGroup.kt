@@ -79,10 +79,11 @@ fun DeclarationContainerScope.featureGroup() = "feature".group {
  * package, which is the start of every path in this group.
  *
  * **This is the project's own vocabulary, written exactly the way katachi writes its own.**
- * `mainSourceSet`, `kotlin` and `modulePackage` are not members of `LayoutScope`; each is a
- * function taking the scope as a context parameter, so one more of them can be added from
- * outside katachi — from here — and reads at the call site like the ones that shipped with
- * it. `with(layoutScope)` is what hands the scope on to them.
+ * `mainSourceSet` and `kotlin` are not members of `LayoutScope`; each is a function taking
+ * the scope as a context parameter, so one more of them can be added from outside katachi —
+ * from here — and reads at the call site like the ones that shipped with it. `with(layoutScope)`
+ * is what hands the scope on to them. `modulePackage` is the opposite case: a plain `val`
+ * declared in `ProjectArchitecture.kt`, read the same way at the call site.
  *
  * Nothing here is sugar the DSL had to be taught. `featureSources() / "X".ktFile()` declares
  * the same path `mainSourceSet / kotlin / modulePackage / "X".ktFile()` did, which is why

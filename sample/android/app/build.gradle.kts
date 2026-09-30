@@ -2,7 +2,7 @@ plugins {
     // No `org.jetbrains.kotlin.android` here: AGP 9 compiles Kotlin itself. The root
     // build file explains how the compiler version is raised to katachi's.
     alias(sampleLibs.plugins.androidApplication)
-    id("org.jetbrains.kotlin.plugin.compose")
+    alias(libs.plugins.kotlinPluginCompose)
 }
 
 android {

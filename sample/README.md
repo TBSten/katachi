@@ -41,7 +41,7 @@ katachi が表現できなければならない形の中で最もよく出てく
 ## 定義のファイル分割
 
 各サンプルの `architecture { }` は1ファイルではなく、`groups/`（1ファイル1 group）と
-`roles/`（1ファイル1役割）に package を分けて書いてある。それぞれが非 inline の
+`roles/`（1ファイル1 Role）に package を分けて書いてある。それぞれが非 inline の
 `DeclarationContainerScope` 拡張関数を公開し（`architecture { }` の中でも `group { }` の中でも呼べる）、
 `ProjectArchitecture.kt` はそれを呼ぶだけ。**拡張関数に切り出しても宣言位置が呼び出し元ではなく
 定義を書いたファイルを指すこと**を、`jvm` / `android` / `kmp` の `ProjectArchitectureSpec` が

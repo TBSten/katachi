@@ -4,7 +4,7 @@ plugins {
     // Compose compiler. Applied per module rather than to every module, because only the
     // modules that actually hold `@Composable` code need it. The version comes from the
     // root build file, where it is pinned to the Kotlin version.
-    id("org.jetbrains.kotlin.plugin.compose")
+    alias(libs.plugins.kotlinPluginCompose)
 }
 
 // One module for the whole UI layer. `component` / `theme` / `core` are packages

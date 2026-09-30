@@ -48,7 +48,7 @@ cd sample/android
 ./gradlew :architecture-test:katachiTemplate --arg template=feature.FeatureComponent --arg feature=home --arg name=UserCard
 ```
 
-From the repository root, one command runs the same set as CI (including generating from templates, checking, and deleting the generated files).
+From the repository root, one command runs the same set as CI (including generating from templates, checking, and deleting the generated files, plus checking that the baseline is up to date).
 
 ```sh
 ./gradlew checkSampleAndroid

@@ -1,7 +1,7 @@
 plugins {
     // AGP 9 compiles Kotlin itself; see the root build file.
     alias(sampleLibs.plugins.androidLibrary)
-    id("org.jetbrains.kotlin.plugin.compose")
+    alias(libs.plugins.kotlinPluginCompose)
 }
 
 android {

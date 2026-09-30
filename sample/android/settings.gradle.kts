@@ -38,7 +38,7 @@ dependencyResolutionManagement {
         create("libs") {
             from(files("../../gradle/libs.versions.toml"))
         }
-        // `sampleLibs` holds what only this sample needs (AGP). It is named
+        // `sampleLibs` holds what only this sample needs (AGP, AndroidX, Compose BOM and JUnit 4). It is named
         // `sample.versions.toml` rather than `libs.versions.toml` so that Gradle does
         // not auto-create a second `libs` catalog from it and clash with the one above.
         create("sampleLibs") {
