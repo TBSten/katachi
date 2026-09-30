@@ -358,10 +358,13 @@ val sampleBuilds = listOf(
                                 "SettingsKatachiSmokeTest.kt",
                     ),
                 ),
-                // The interface and the implementation are two ids of the same role
-                // (`data.Repository.user` / `.userImpl`), generated together in one `--arg template=a,b`.
+                // The interface and the implementation are two roles (`data.RepositoryInterface.user` /
+                // `data.RepositoryImplementation.user`), generated together in one `--arg template=a,b`.
                 SampleTemplateRun(
-                    args = listOf("template=data.Repository.user,data.Repository.userImpl", "name=KatachiSmoke"),
+                    args = listOf(
+                        "template=data.RepositoryInterface.user,data.RepositoryImplementation.user",
+                        "name=KatachiSmoke",
+                    ),
                     generatedFiles = listOf(
                         "data/src/main/kotlin/com/example/sample/data/user/UserKatachiSmokeRepository.kt",
                         "data/src/main/kotlin/com/example/sample/data/user/UserKatachiSmokeRepositoryImpl.kt",
@@ -376,13 +379,13 @@ val sampleBuilds = listOf(
                     ),
                 ),
                 SampleTemplateRun(
-                    args = listOf("template=ArchitectureDefinition.role", "name=KatachiSmoke"),
+                    args = listOf("template=RoleDefinition", "name=KatachiSmoke"),
                     generatedFiles = listOf(
                         "architecture-test/src/test/kotlin/com/example/sample/roles/KatachiSmokeRole.kt",
                     ),
                 ),
                 SampleTemplateRun(
-                    args = listOf("template=ArchitectureDefinition.group", "name=KatachiSmoke"),
+                    args = listOf("template=GroupDefinition", "name=KatachiSmoke"),
                     generatedFiles = listOf(
                         "architecture-test/src/test/kotlin/com/example/sample/groups/KatachiSmokeGroup.kt",
                     ),
@@ -417,12 +420,12 @@ val sampleBuilds = listOf(
         needsAndroidSdk = true,
         template = SampleTemplate(
             runs = listOf(
-                // The interface and the implementation are two ids of the same role
-                // (`data.Repository.repository` / `.repositoryImpl`), generated in one
+                // The interface and the implementation are two roles
+                // (`data.RepositoryInterface` / `data.RepositoryImplementation`), generated in one
                 // `--arg template=a,b`.
                 SampleTemplateRun(
                     args = listOf(
-                        "template=data.Repository.repository,data.Repository.repositoryImpl",
+                        "template=data.RepositoryInterface,data.RepositoryImplementation",
                         "name=KatachiSmoke",
                     ),
                     generatedFiles = listOf(
