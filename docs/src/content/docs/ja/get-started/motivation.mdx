@@ -152,40 +152,20 @@ Gradle plugin の `katachi { architecture = "..." }` で定義の場所を指定
     ```kt title="ProjectArchitecture.kt"
     val projectArchitecture = architecture {
       "UseCase" {
-        layout {
-          "src/main/kotlin/com/example/project/useCase" /
-            "${capture("name")}UseCase".ktFile()
-                .template {
-                  val name = captureValue("name")
-                  """
-                    package com.example.project.useCase
+        title = "ユースケース"
+        summary = "各画面で発生するアプリ固有の1つの振る舞い"
 
-                    interface ${name}UseCase {
-                      suspend operator fun invoke()
-                    }
-                  """.trimIndent()
-                }
+        example("GetUserUseCase", "ユーザーを取得する")
+        example("UpdateUserUseCase", "ユーザーを更新する")
+
+        layout {
+          "src/main/kotlin/com/example/project/useCase" {
+            description = "複数の画面から使われるもの"
+            "*UseCase".ktFile()
+          }
         }
       }
 
-      "UseCaseImplementation" {
-        layout {
-          "src/main/kotlin/com/example/project/useCase" /
-            "${capture("name")}UseCaseImpl".ktFile()
-                .template {
-                  val name = captureValue("name")
-                  """
-                    package com.example.project.useCase
-
-                    class ${name}UseCaseImpl : ${name}UseCase {
-                      override suspend fun invoke() {
-                        // ここに振る舞いを書く
-                      }
-                    }
-                  """.trimIndent()
-                }
-        }
-      }
       // ...
     }
     ```
@@ -242,36 +222,39 @@ $ ./gradlew katachiTemplate --arg template=UseCase,UseCaseImplementation --arg n
     val projectArchitecture = architecture {
       "UseCase" {
         layout {
-          "src/main/kotlin/com/example/project/useCase" {
+          "src/main/kotlin/com/example/project/useCase" /
             "${capture("name")}UseCase".ktFile()
-                .template(id = "useCase") {
-              val name = captureValue("name")
-              """
-                package com.example.project.useCase
+                .template {
+                  val name = captureValue("name")
+                  """
+                    package com.example.project.useCase
 
-                interface ${name}UseCase {
-                  suspend operator fun invoke()
+                    interface ${name}UseCase {
+                      suspend operator fun invoke()
+                    }
+                  """.trimIndent()
                 }
-              """.trimIndent()
-            }
-
-            "${capture("name")}UseCaseImpl".ktFile()
-                .template(id = "useCaseImpl") {
-              val name = captureValue("name")
-              """
-                package com.example.project.useCase
-
-                class ${name}UseCaseImpl : ${name}UseCase {
-                  override suspend fun invoke() {
-                    // ここに振る舞いを書く
-                  }
-                }
-              """.trimIndent()
-            }
-          }
         }
       }
 
+      "UseCaseImplementation" {
+        layout {
+          "src/main/kotlin/com/example/project/useCase" /
+            "${capture("name")}UseCaseImpl".ktFile()
+                .template {
+                  val name = captureValue("name")
+                  """
+                    package com.example.project.useCase
+
+                    class ${name}UseCaseImpl : ${name}UseCase {
+                      override suspend fun invoke() {
+                        // ここに振る舞いを書く
+                      }
+                    }
+                  """.trimIndent()
+                }
+        }
+      }
       // ...
     }
     ```

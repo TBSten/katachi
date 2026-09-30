@@ -152,40 +152,20 @@ Once you point the Gradle plugin at the definition with `katachi { architecture 
     ```kt title="ProjectArchitecture.kt"
     val projectArchitecture = architecture {
       "UseCase" {
-        layout {
-          "src/main/kotlin/com/example/project/useCase" /
-            "${capture("name")}UseCase".ktFile()
-                .template {
-                  val name = captureValue("name")
-                  """
-                    package com.example.project.useCase
+        title = "Use case"
+        summary = "A single app-specific behavior that occurs on a screen"
 
-                    interface ${name}UseCase {
-                      suspend operator fun invoke()
-                    }
-                  """.trimIndent()
-                }
+        example("GetUserUseCase", "Gets a user")
+        example("UpdateUserUseCase", "Updates a user")
+
+        layout {
+          "src/main/kotlin/com/example/project/useCase" {
+            description = "Ones used from more than one screen"
+            "*UseCase".ktFile()
+          }
         }
       }
 
-      "UseCaseImplementation" {
-        layout {
-          "src/main/kotlin/com/example/project/useCase" /
-            "${capture("name")}UseCaseImpl".ktFile()
-                .template {
-                  val name = captureValue("name")
-                  """
-                    package com.example.project.useCase
-
-                    class ${name}UseCaseImpl : ${name}UseCase {
-                      override suspend fun invoke() {
-                        // Write the behavior here
-                      }
-                    }
-                  """.trimIndent()
-                }
-        }
-      }
       // ...
     }
     ```
@@ -242,36 +222,39 @@ $ ./gradlew katachiTemplate --arg template=UseCase,UseCaseImplementation --arg n
     val projectArchitecture = architecture {
       "UseCase" {
         layout {
-          "src/main/kotlin/com/example/project/useCase" {
+          "src/main/kotlin/com/example/project/useCase" /
             "${capture("name")}UseCase".ktFile()
-                .template(id = "useCase") {
-              val name = captureValue("name")
-              """
-                package com.example.project.useCase
+                .template {
+                  val name = captureValue("name")
+                  """
+                    package com.example.project.useCase
 
-                interface ${name}UseCase {
-                  suspend operator fun invoke()
+                    interface ${name}UseCase {
+                      suspend operator fun invoke()
+                    }
+                  """.trimIndent()
                 }
-              """.trimIndent()
-            }
-
-            "${capture("name")}UseCaseImpl".ktFile()
-                .template(id = "useCaseImpl") {
-              val name = captureValue("name")
-              """
-                package com.example.project.useCase
-
-                class ${name}UseCaseImpl : ${name}UseCase {
-                  override suspend fun invoke() {
-                    // Write the behavior here
-                  }
-                }
-              """.trimIndent()
-            }
-          }
         }
       }
 
+      "UseCaseImplementation" {
+        layout {
+          "src/main/kotlin/com/example/project/useCase" /
+            "${capture("name")}UseCaseImpl".ktFile()
+                .template {
+                  val name = captureValue("name")
+                  """
+                    package com.example.project.useCase
+
+                    class ${name}UseCaseImpl : ${name}UseCase {
+                      override suspend fun invoke() {
+                        // Write the behavior here
+                      }
+                    }
+                  """.trimIndent()
+                }
+        }
+      }
       // ...
     }
     ```
