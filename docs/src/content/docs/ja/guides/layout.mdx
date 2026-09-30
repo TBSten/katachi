@@ -50,8 +50,8 @@ layout {
 ```kt
 layout {
     "src/main/kotlin/com/example/useCase" {
-        "*UseCase".ktFile()
-        "*UseCaseImpl".ktFile()
+        "Get*UseCase".ktFile()
+        "Update*UseCase".ktFile()
     }
 }
 ```
@@ -149,15 +149,16 @@ architecture {
 val appPackageDir = "src/main/kotlin/com/example"
 
 architecture {
-    "UseCase" {
+    // 文法の一覧です。実際には、種類の違うファイルは Role を分けて宣言します
+    "Example" {
         layout {
             // "/" で繋ぐ: useCase/ の直下の *UseCase.kt だけ置ける（* は任意の文字列）
             appPackageDir / "useCase" / "*UseCase".ktFile()
 
             // ブロックで囲む: 同じディレクトリに複数のものを置く
-            appPackageDir / "useCaseImpl" {
-                "*UseCaseImpl".ktFile()   // Kotlin ファイル
-                "README.md".file()        // 名前の決まった、種類を問わないファイル
+            appPackageDir / "docs" {
+                "*Guide".ktFile()   // Kotlin ファイル
+                "README.md".file()      // 名前の決まった、種類を問わないファイル
             }
 
             "generated" { anyFile() }     // 直下ならどんなファイルでもよい（サブディレクトリは不可）

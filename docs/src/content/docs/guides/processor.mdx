@@ -30,7 +30,7 @@ public interface ArchitectureProcessor<Args, R> {
 }
 ```
 
-Wrap the body of `process` in `runCatching { }` (or the `runCatchingScoped` utility).
+Wrap the body of `process` in `runCatching { }` (or the `runCatchingScoped` utility). `runCatchingScoped` collects every problem you find with `failure(...)` and fails once at the end ([RoleDocCoverage.kt in sample/custom-processor](https://github.com/TBSten/katachi/blob/main/sample/custom-processor/architecture-test/src/test/kotlin/com/example/processors/RoleDocCoverage.kt)).
 
 | Return value | Meaning | Handling in the Gradle task |
 | --- | --- | --- |

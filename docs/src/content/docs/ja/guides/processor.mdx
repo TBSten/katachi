@@ -30,7 +30,7 @@ public interface ArchitectureProcessor<Args, R> {
 }
 ```
 
-`process` の本体は `runCatching { }` (もしくは `runCatchingScoped` ユーティリティ) で囲ってください。
+`process` の本体は `runCatching { }` (もしくは `runCatchingScoped` ユーティリティ) で囲ってください。`runCatchingScoped` は、見つかった不足を `failure(...)` で全部貯めて、最後にまとめて失敗にできます（[sample/custom-processor の RoleDocCoverage.kt](https://github.com/TBSten/katachi/blob/main/sample/custom-processor/architecture-test/src/test/kotlin/com/example/processors/RoleDocCoverage.kt)）。
 
 | 戻り値 | 意味 | Gradle タスクでの扱い |
 | --- | --- | --- |

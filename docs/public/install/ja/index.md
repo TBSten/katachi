@@ -624,13 +624,14 @@ sh $CLI summary
 | 項目 | 中身 |
 |---|---|
 | `--role` | 役割の名前（`architecture { }` に書いた名前） |
-| `--files` | 作るファイル名。**複数回渡せる。** `${name}UseCase.kt` のように、パラメータを埋め込んだ形で書く（例: interface と実装の2つ） |
+| `--files` | 作るファイル名。**複数回渡せる。** `${name}UseCase.kt` のように、パラメータを埋め込んだ形で書く（同じ種類のファイルの名前の形が複数あるときだけ。interface と実装のように種類が違うものは役割を分け、`add template` を役割ごとに1回ずつ実行する） |
 | `--params` | `stringParameter()` などの `*Parameter()` で受けるパラメータ名と、生成先のワイルドカードに付ける名前（例: `feature`）。複数回渡せる。**生成先の `*` が複数あれば（モジュールとパッケージのディレクトリなど）、その数だけ並べる** |
 | `--basedOn` | 雛形の元にする既存ファイル（`roles[].examples` の1本） |
 | `--reason` | その役割に当てる理由（件数と、形が揃っていること） |
 
 ```sh
-sh $CLI add template --role UseCase --files '${name}UseCase.kt' --files '${name}UseCaseImpl.kt' --params name --basedOn "domain/src/main/kotlin/com/example/app/domain/useCase/GetUserUseCase.kt" --reason "18 件がすべて interface と Impl の2ファイルで、形が揃っている"
+sh $CLI add template --role UseCase --files '${name}UseCase.kt' --params name --basedOn "domain/src/main/kotlin/com/example/app/domain/useCase/GetUserUseCase.kt" --reason "18 件がすべて interface で、形が揃っている"
+sh $CLI add template --role UseCaseImplementation --files '${name}UseCaseImpl.kt' --params name --basedOn "data/src/main/kotlin/com/example/app/data/useCase/GetUserUseCaseImpl.kt" --reason "18 件がすべて UseCase の実装で、形が揃っている"
 sh $CLI add template --role ViewModel --files '${name}ViewModel.kt' --params feature --params featurePackage --params name --basedOn "feature/home/src/main/kotlin/com/example/app/feature/home/HomeViewModel.kt" --reason "12 件が :feature:* の各モジュールに1本ずつあり、形が揃っている。:feature:* の * とパッケージのディレクトリの * に名前を付けて生成先を選ぶ"
 ```
 

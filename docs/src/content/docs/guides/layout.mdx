@@ -50,8 +50,8 @@ This is useful when you want to place multiple files inside a specific directory
 ```kt
 layout {
     "src/main/kotlin/com/example/useCase" {
-        "*UseCase".ktFile()
-        "*UseCaseImpl".ktFile()
+        "Get*UseCase".ktFile()
+        "Update*UseCase".ktFile()
     }
 }
 ```
@@ -148,15 +148,16 @@ architecture {
 val appPackageDir = "src/main/kotlin/com/example"
 
 architecture {
-    "UseCase" {
+    // A list of the syntax. In practice, files of different kinds are declared in separate Roles
+    "Example" {
         layout {
             // Chain with "/": only *UseCase.kt directly inside useCase/ may be placed (* matches any string)
             appPackageDir / "useCase" / "*UseCase".ktFile()
 
             // Wrap in a block: put several things in the same directory
-            appPackageDir / "useCaseImpl" {
-                "*UseCaseImpl".ktFile()   // a Kotlin file
-                "README.md".file()        // a file with a fixed name, of any kind
+            appPackageDir / "docs" {
+                "*Guide".ktFile()   // a Kotlin file
+                "README.md".file()      // a file with a fixed name, of any kind
             }
 
             "generated" { anyFile() }     // any file directly inside is fine (no subdirectories)

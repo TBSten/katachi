@@ -624,13 +624,14 @@ For each role, decide the following and record it with `add template`.
 | Field | Content |
 |---|---|
 | `--role` | The role's name (as written in `architecture { }`) |
-| `--files` | The files it creates. **Can be passed more than once.** Write them with the parameter embedded, like `${name}UseCase.kt` (for example, an interface and its implementation) |
+| `--files` | The files it creates. **Can be passed more than once.** Write them with the parameter embedded, like `${name}UseCase.kt` (only when one kind of file has several name shapes; files of different kinds, like an interface and its implementation, get separate roles and one `add template` each) |
 | `--params` | The parameter names taken with `stringParameter()` or another `*Parameter()`, plus the name given to a wildcard in the destination (for example, `feature`). Can be passed more than once. **If the destination has more than one `*` (the module and the package directory, for example), list that many** |
 | `--basedOn` | The existing file the skeleton is based on (one of `roles[].examples`) |
 | `--reason` | Why this role gets one (the count, and that the files share a shape) |
 
 ```sh
-sh $CLI add template --role UseCase --files '${name}UseCase.kt' --files '${name}UseCaseImpl.kt' --params name --basedOn "domain/src/main/kotlin/com/example/app/domain/useCase/GetUserUseCase.kt" --reason "All 18 are an interface plus an Impl, and share one shape"
+sh $CLI add template --role UseCase --files '${name}UseCase.kt' --params name --basedOn "domain/src/main/kotlin/com/example/app/domain/useCase/GetUserUseCase.kt" --reason "All 18 are interfaces and share one shape"
+sh $CLI add template --role UseCaseImplementation --files '${name}UseCaseImpl.kt' --params name --basedOn "data/src/main/kotlin/com/example/app/data/useCase/GetUserUseCaseImpl.kt" --reason "All 18 implement a UseCase and share one shape"
 sh $CLI add template --role ViewModel --files '${name}ViewModel.kt' --params feature --params featurePackage --params name --basedOn "feature/home/src/main/kotlin/com/example/app/feature/home/HomeViewModel.kt" --reason "12 are one each in every :feature:* module, and share one shape. Name the * in :feature:* and the * of the package directory to pick the destination"
 ```
 

@@ -121,18 +121,18 @@ Use `title` for a human readable display name.
 }
 ```
 
-**`layout { }` は複数書けます。** 同じRoleが複数の場所に現れてよい、という宣言です。
+**`layout { }` は複数書けます。** 同じ種類のファイルが複数の場所に現れてよい、という宣言です。種類の違うファイルは、Role を分けて宣言します。
 
 ```kt
-"Repository" {
-    // インターフェースは domain に
+"Screen" {
+    // feature-home のモジュールに
     layout {
-        "domain/src/main/kotlin/repository" / "*Repository".ktFile()
+        "feature-home/src/main/kotlin/screen" / "*Screen".ktFile()
     }
 
-    // 実装は data に
+    // feature-settings のモジュールにも
     layout {
-        "data/src/main/kotlin/repository" / "*RepositoryImpl".ktFile()
+        "feature-settings/src/main/kotlin/screen" / "*Screen".ktFile()
     }
 }
 ```

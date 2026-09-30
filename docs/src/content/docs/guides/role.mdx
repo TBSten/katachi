@@ -121,18 +121,18 @@ This is the case where a Role has just one place to live.
 }
 ```
 
-**You can write multiple `layout { }` blocks.** This declares that the same Role is allowed to appear in more than one place.
+**You can write multiple `layout { }` blocks.** This declares that the same kind of file is allowed to appear in more than one place. Files of different kinds go in separate Roles.
 
 ```kt
-"Repository" {
-    // Interfaces go in domain
+"Screen" {
+    // In the feature-home module
     layout {
-        "domain/src/main/kotlin/repository" / "*Repository".ktFile()
+        "feature-home/src/main/kotlin/screen" / "*Screen".ktFile()
     }
 
-    // Implementations go in data
+    // And in the feature-settings module
     layout {
-        "data/src/main/kotlin/repository" / "*RepositoryImpl".ktFile()
+        "feature-settings/src/main/kotlin/screen" / "*Screen".ktFile()
     }
 }
 ```

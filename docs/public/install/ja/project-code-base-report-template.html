@@ -715,10 +715,17 @@
   "templates": [
     {
       "role": "UseCase",
-      "files": ["${name}UseCase.kt", "${name}UseCaseImpl.kt"],
+      "files": ["${name}UseCase.kt"],
       "params": ["name"],
       "basedOn": "domain/src/main/kotlin/com/example/app/domain/useCase/GetUserUseCase.kt",
-      "reason": "18 件がすべて interface と Impl の2ファイルで、中身の形も揃っているため"
+      "reason": "18 件がすべて interface で、中身の形も揃っているため"
+    },
+    {
+      "role": "UseCaseImplementation",
+      "files": ["${name}UseCaseImpl.kt"],
+      "params": ["name"],
+      "basedOn": "data/src/main/kotlin/com/example/app/data/useCase/GetUserUseCaseImpl.kt",
+      "reason": "18 件がすべて UseCase の実装で、中身の形も揃っているため"
     }
   ]
 }

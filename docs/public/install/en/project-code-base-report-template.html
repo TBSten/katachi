@@ -715,10 +715,17 @@
   "templates": [
     {
       "role": "UseCase",
-      "files": ["${name}UseCase.kt", "${name}UseCaseImpl.kt"],
+      "files": ["${name}UseCase.kt"],
       "params": ["name"],
       "basedOn": "domain/src/main/kotlin/com/example/app/domain/useCase/GetUserUseCase.kt",
-      "reason": "All 18 are an interface plus an Impl, and their bodies share one shape"
+      "reason": "All 18 are interfaces, and their bodies share one shape"
+    },
+    {
+      "role": "UseCaseImplementation",
+      "files": ["${name}UseCaseImpl.kt"],
+      "params": ["name"],
+      "basedOn": "data/src/main/kotlin/com/example/app/data/useCase/GetUserUseCaseImpl.kt",
+      "reason": "All 18 implement a UseCase, and their bodies share one shape"
     }
   ]
 }
