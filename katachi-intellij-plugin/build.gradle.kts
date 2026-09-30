@@ -14,8 +14,9 @@ plugins {
 }
 
 group = "me.tbsten.katachi.intellij"
-// katachi's own version: the zip attached to each GitHub Release (publish.yml) carries the version
-// of that release. Read from the root gradle/libs.versions.toml through settings.gradle.kts.
+// The plugin's own version, apart from katachi's: `katachiIntellij` in the root
+// gradle/libs.versions.toml, read through settings.gradle.kts. The zip attached to each GitHub
+// Release (publish.yml) is named after it.
 version = katachiLibs.versions.katachiIntellij.get()
 
 // JBR 21, which the 261 platform runs on.

@@ -78,9 +78,10 @@ jobs:
   # Release instead, and users install it from disk. No `needs`: it runs, and can be re-run, apart
   # from Maven Central. macOS as ci.yml's ide-plugin job, the only place buildPlugin runs in CI; only
   # buildPlugin, as the tests ran on the pull requests.
+  # The plugin has a version of its own (`katachiIntellij` in the root catalog), apart from katachi's.
   # If it fails, attach the zip by hand:
   #   cd katachi-intellij-plugin && ./gradlew buildPlugin
-  #   gh release upload v<version> build/distributions/katachi-intellij-plugin-<version>.zip --clobber
+  #   gh release upload v<katachi version> build/distributions/katachi-intellij-plugin-<plugin version>.zip --clobber
   ide-plugin-zip:
     name: attach the IDE plugin zip
     if: ${{ github.event_name == 'release' }}
@@ -113,15 +114,17 @@ jobs:
         working-directory: katachi-intellij-plugin
         run: ./gradlew buildPlugin verifyPluginStructure --console=plain --stacktrace
 
-      # The zip is named after katachi's version in the root catalog, which the publish job checks
-      # against the tag: a missing file means the two drifted.
+      # The zip is named after the plugin's own version, `katachiIntellij` in the root catalog (not
+      # the tag, which carries katachi's version): a missing file means build.gradle.kts stopped
+      # reading it.
       - name: Attach it to the release
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          zip="katachi-intellij-plugin/build/distributions/katachi-intellij-plugin-${GITHUB_REF_NAME#v}.zip"
-          if [ ! -f "${zip}" ]; then
-            echo "::error::${zip} がありません。gradle/libs.versions.toml の katachi と tag を揃えてください。"
+          version=$(sed -n 's/^katachiIntellij = "\(.*\)"/\1/p' gradle/libs.versions.toml | head -n 1)
+          zip="katachi-intellij-plugin/build/distributions/katachi-intellij-plugin-${version}.zip"
+          if [ -z "${version}" ] || [ ! -f "${zip}" ]; then
+            echo "::error::${zip} がありません。gradle/libs.versions.toml の katachiIntellij と build.gradle.kts の version を確かめてください。"
             exit 1
           fi
           gh release upload "${GITHUB_REF_NAME}" "${zip}" --clobber

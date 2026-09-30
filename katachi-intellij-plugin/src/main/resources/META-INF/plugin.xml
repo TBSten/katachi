@@ -17,7 +17,7 @@
         See <a href="https://tbsten.github.io/katachi/guides/generate-code-from-template/">Generate code from template</a>.</p>
     ]]></description>
     <change-notes><![CDATA[
-        <p>0.2.0: the first release, experimental. The katachi tool window, New &gt; katachi, and the editor
+        <p>0.1.0 (with katachi 0.2.0): the first release, experimental. The katachi tool window, New &gt; katachi, and the editor
         notification on files a template fits, in English and Japanese.</p>
     ]]></change-notes>
 
