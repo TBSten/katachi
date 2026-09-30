@@ -20,7 +20,7 @@ python3 .claude/skills/prerelease/scripts/run-ide-plugin-nightly.py --release-di
 - シードは既定で実行時刻（nightly の既定は実行 id）。`--seed` / `--scale` で上書きできる
 - 落ちたら `ide-plugin-nightly.md` に、同じシードで再現するコマンドがそのまま書かれる。ログの末尾から shrink された
   系列とシードを拾い、原因を1〜2行で書く
-- 既定 scale 20 は Apple silicon で約18分かかる（ワークフロー自身のコメントより）
+- 既定 scale 20 は Apple silicon で約30〜35分かかる（v0.2.0 の prerelease の実測で 1965 秒）
 - 前提: 8 と同じ（IDE プラグイン用の JDK 21、macOS。`verifyPreview` 同様 Skia のレンダリングが乗るため）
 - 結果は `ide-plugin-nightly.md`、ログは `tmp/ide-plugin-nightly/`
 

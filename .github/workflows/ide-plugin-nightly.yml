@@ -39,8 +39,9 @@ jobs:
   pbt:
     name: pbt (scale ${{ inputs.scale || '20' }})
     runs-on: macos-26
-    # Scale 20 took about 18 minutes on an Apple silicon laptop (the pull request run's properties
-    # take under a minute); the limit leaves room for a slower runner and a cold SDK download.
+    # Scale 20 took about 33 minutes on an Apple silicon laptop (1965 s in the v0.2.0 prerelease;
+    # the pull request run's properties take under a minute); the limit leaves room for a slower
+    # runner and a cold SDK download.
     timeout-minutes: 90
     env:
       PBT_SEED: ${{ inputs.seed || github.run_id }}
