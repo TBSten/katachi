@@ -31,7 +31,7 @@ because the unanticipated thing is itself the violation.
 The one difference is **which way the things you failed to enumerate fall** — that is all.
 
 <details>
-<summary>Where this meets security</summary>
+<summary>The same idea appears in security</summary>
 
 Treating anything unexpected as suspicious is a habit security shares.
 
@@ -39,7 +39,7 @@ It is called **fail-safe defaults**, one of the design principles.
 
 **A scheme that enumerates prohibitions lets through
 whatever it failed to enumerate.** Just as signature-based malware protection cannot stop an
-unknown sample, **when something slips past, it falls to the "passes quietly" side.**
+unknown sample, **when something slips past, it falls to the side where it passes without anyone noticing.**
 With a scheme that enumerates permissions, whatever slips past falls to the "does not pass" side.
 It is a choice of which way you want it to fall.
 
@@ -87,7 +87,7 @@ Konsist.scopeFromProject()
     .assertTrue { /* ... */ }
 ```
 
-Written this way, **anything the net does not catch is never checked.**
+Written this way, **anything outside the narrowed range is never checked.**
 
 <FileTree>
 - src/main/kotlin/com/example/
@@ -98,7 +98,7 @@ Written this way, **anything the net does not catch is never checked.**
     - **memo.md** the whole directory is out of view to begin with
 </FileTree>
 
-katachi works the other way around. **It walks the whole project and matches it against the declaration.**
+katachi works the other way around. **It scans the whole project and matches it against the declaration.**
 
 ```mermaid
 flowchart TB

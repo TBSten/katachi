@@ -39,11 +39,11 @@ katachi に似たツールとして、Konsist や ArchUnit などがあります
 </table>
 
 Konsist は `Konsist.scopeFromProject()` で対象を絞り、絞った範囲のクラスや関数を検証します。
-**絞った網に引っかからないものは検証されません。** 名前の規則から外れたファイルも、
+**絞った範囲に入らないものは検証されません。** 名前の規則から外れたファイルも、
 誰も想定していないディレクトリも、視界に入らないままです。
 
-katachi はその逆で、プロジェクト全体を歩いて宣言と突き合わせます。
-**「配置」と「中身」で担当が分かれる**ので、片方だけでは穴が残ります。
+katachi はその逆で、プロジェクト全体を走査して宣言と突き合わせます。
+**「配置」と「中身」で担当が分かれる**ので、どちらか片方だけでは検証できない部分が残ります。
 
 katachi は `katachi-konsist` という任意モジュールでこの2つを繋ぎます。
 Role の中に `konsist { }` を書き、テストで `assert(FileConstraintCheck())` を呼ぶと、**配置の違反と中身の違反が1つのレポートにまとまります。**
@@ -66,11 +66,11 @@ Role の中に `konsist { }` を書き、テストで `assert(FileConstraintChec
 
 Role の性質をそのまま制約にできます。
 
-- **`UseCase` は `invoke` 関数を1つだけ持つ** — Role の定義そのもの
-- **`Repository` は interface として宣言される** — 実装の差し替えを前提にした層で効く
-- **Role のファイルは外から使える可視性を持つ** — `classes().must { it.hasPublicOrDefaultModifier }`
-- **`ViewModel` は Android の View 型を参照しない** — 層の漏れを中身の側から止める
-- **`data` 層のクラスは特定のアノテーションを持つ** — シリアライズ対象の取りこぼしを防ぐ
+- **`UseCase` は `invoke` 関数を1つだけ持つ。** Role の定義そのもの
+- **`Repository` は interface として宣言される。** 実装の差し替えを前提にした層で効く
+- **Role のファイルは外から使える可視性を持つ。** `classes().must { it.hasPublicOrDefaultModifier }`
+- **`ViewModel` は Android の View 型を参照しない。** 層の漏れを中身の側から止める
+- **`data` 層のクラスは特定のアノテーションを持つ。** シリアライズ対象の取りこぼしを防ぐ
 
 ## katachi と detekt
 

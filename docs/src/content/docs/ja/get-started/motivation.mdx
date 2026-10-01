@@ -57,7 +57,7 @@ Konsist は Scope と呼ばれる記法で、プロジェクト内の特定の�
 
 ## katachi の出番
 
-katachi を使うと、プロジェクト全体を俯瞰して、そこに現れて良いファイルの種類と、その置き方を宣言できます。
+katachi では、プロジェクト全体を見渡して、現れてよいファイルの種類とその置き方を宣言できます。
 
 ```kt
 val projectArchitecture = architecture {
@@ -78,9 +78,9 @@ katachi では次の2つを宣言します。
 
 <Aside title="Deny by default" type="tip">
 
-katachi が採用している Deny by default の原則により、**`projectArchitecture` に宣言されていないファイルはその存在を許されません**。
+katachi が採用している Deny by default の原則により、**`projectArchitecture` に宣言されていないファイルは存在が許されません**。
 
-AI Agent がルールに背くコードを書いたとしても、katachi はその存在を許さず、違反として報告します。
+AI Agent がルールに背くコードを書いたとしても、katachi はそのファイルを許さず、違反として報告します。
 </Aside>
 
 <details>
@@ -131,7 +131,7 @@ Katachi check failed: 1 violation (Unexpected: 1)
 
 ## katachi による自動生成
 
-katachi ではアーキテクチャ定義から様々な物を生成することができます。
+katachi は、アーキテクチャ定義からさまざまなものを生成できます。
 
 <details>
 <summary>ドキュメントを生成する</summary>
@@ -194,7 +194,7 @@ Gradle plugin の `katachi { architecture = "..." }` で定義の場所を指定
 
 katachi で定義したプロジェクト構造を SSoT にして、人間も AI Agent も読めるドキュメントを生成しましょう。
 
-詳しくは [ドキュメント生成](/katachi/ja/guides/document-generation/) のドキュメントをご覧ください。
+詳しくは [ドキュメント生成](/katachi/ja/guides/document-generation/) をご覧ください。
 
 <LinkCard
     title="ドキュメント生成"
@@ -286,7 +286,7 @@ $ ./gradlew katachiTemplate --arg template=UseCase,UseCaseImplementation --arg n
   </CodeComparison.Panel>
 </CodeComparison>
 
-詳しくは [テンプレートからコード生成](/katachi/ja/guides/generate-code-from-template/) のドキュメントをご覧ください。
+詳しくは [テンプレートからコード生成](/katachi/ja/guides/generate-code-from-template/) をご覧ください。
 
 <LinkCard
     title="テンプレートからコード生成"
@@ -298,7 +298,7 @@ $ ./gradlew katachiTemplate --arg template=UseCase,UseCaseImplementation --arg n
 
 ## katachi と Konsist
 
-katachi は Konsist と連携すると、プロジェクト全体を検証したあとで、個々のファイルを別々に検証できます。
+Konsist と連携すると、katachi でプロジェクト全体を検証したあとに、個々のファイルを別々に検証できます。
 
 ```kt
 val projectArchitecture = architecture {
@@ -322,7 +322,7 @@ val projectArchitecture = architecture {
 
 **katachi でプロジェクト全体の構造をテストし、そのあと Konsist で各ファイルの中身を検証する** という使い分けをおすすめします。
 
-詳しくは [Konsist との統合](/katachi/ja/guides/konsist-integration/) のドキュメントをご覧ください。
+詳しくは [Konsist との統合](/katachi/ja/guides/konsist-integration/) をご覧ください。
 
 ## まとめ
 

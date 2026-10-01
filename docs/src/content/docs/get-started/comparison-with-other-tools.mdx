@@ -39,11 +39,11 @@ Konsist, ArchUnit, and Konture cover similar ground, and there is little point i
 </table>
 
 Konsist narrows its target with `Konsist.scopeFromProject()` and checks the classes and functions
-inside that range. **Anything the net does not catch is never checked.** A file that strays from
+inside that range. **Anything outside the narrowed range is never checked.** A file that strays from
 the naming convention, or a directory nobody anticipated, stays out of view.
 
-katachi is the reverse: it walks the whole project and matches it against the declaration.
-**Responsibility splits between "placement" and "contents"**, so either one alone leaves a hole.
+katachi is the reverse: it scans the whole project and matches it against the declaration.
+**Responsibility splits between "placement" and "contents"**, so either one alone leaves something unchecked.
 
 katachi bridges the two through an optional module called `katachi-konsist`.
 Write `konsist { }` inside a role and call `assert(FileConstraintCheck())` in the test, and **placement violations and content violations land in a single report.**
