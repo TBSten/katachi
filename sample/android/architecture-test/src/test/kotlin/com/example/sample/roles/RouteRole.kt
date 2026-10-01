@@ -8,7 +8,6 @@ import me.tbsten.katachi.ExperimentalKatachiApi
 import me.tbsten.katachi.dsl.DeclarationContainerScope
 import me.tbsten.katachi.dsl.gradle.*
 import me.tbsten.katachi.dsl.kotlin.ktFile
-import me.tbsten.katachi.dsl.pascalCase
 
 /** The role of a feature module's only public entry: where the rest of the app navigates to. */
 fun DeclarationContainerScope.route() = "Route" {
@@ -18,7 +17,7 @@ fun DeclarationContainerScope.route() = "Route" {
         The only thing a feature module shows to the outside. An object such as `HomeRoute`
         holds the destination path as `PATH`, and an extension function such as
         `NavGraphBuilder.homeScreen(...)` registers its own screen in the graph. The file name
-        is `<Name>Route.kt`, decided by the module name.
+        is `<Name>Route.kt`, where `<Name>` is the feature's name.
 
         Only `AppNavHost` in `:app` builds the graph, and what `:app` touches is limited to what
         this role exposes, such as `HomeRoute.PATH` and `homeScreen(...)`. Neither `HomeScreen`
@@ -37,8 +36,6 @@ fun DeclarationContainerScope.route() = "Route" {
     example("HomeRoute", "The destination of the home screen")
     example("SettingsRoute", "The destination of the settings screen")
     layout {
-        ":feature:${capture("feature")}".module {
-            featureSources() / "${wildcard("feature").pascalCase}Route".ktFile()
-        }
+        featureSources() / "*Route".ktFile()
     }
 }

@@ -27,9 +27,9 @@ convention of this role, not something the layout enforces).
 
 ## Placement
 
-| Module | Path | When to use |
-|---|---|---|
-| `:ui` | `src/main/kotlin/**/component/*.kt` |  |
+| Path | When to use |
+|---|---|
+| `ui/src/main/kotlin/com/example/sample/ui/component/*.kt` |  |
 
 ## Examples
 

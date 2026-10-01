@@ -27,9 +27,9 @@ import me.tbsten.katachi.dsl.DeclarationContainerScope
  * package is a test.
  *
  * `:architecture-test` is also the second module whose package does not follow its module
- * path — it would come out as `com/example/sample/architectureTest` — so the roles
- * of this module write `com/example/sample` out as a key. `:testing` does follow it and uses
- * `modulePackage`, which is what makes the difference visible side by side.
+ * path — it would be `com/example/sample/architectureTest` — so the roles
+ * of this module write `com/example/sample` out as a key, while `:testing` writes
+ * `com/example/sample/testing`.
  */
 fun DeclarationContainerScope.testingGroup() = "testing".group {
     title = "Testing"

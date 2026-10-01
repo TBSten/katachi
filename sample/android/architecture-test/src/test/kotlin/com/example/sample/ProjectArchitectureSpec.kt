@@ -102,8 +102,8 @@ class ProjectArchitectureSpec : FreeSpec({
     "each group is declared in the file its name determines" {
         // The naming rule is the whole convention, so it is checked rather than listed: a
         // group named `"debug-menu"` belongs in `DebugMenuGroup.kt`, using `pascalCase` -- the
-        // same conversion a layout can call explicitly on a captured wildcard
-        // (`wildcard(...).pascalCase`). katachi itself never applies one on its own.
+        // same conversion a template can call explicitly on a captured value
+        // (`captureValue(...).pascalCase`). katachi itself never applies one on its own.
         //
         // `Gradle` and everything nested under it are left out: they are declared by
         // katachi's own `gradle()`, not by this convention — see the dedicated test below.

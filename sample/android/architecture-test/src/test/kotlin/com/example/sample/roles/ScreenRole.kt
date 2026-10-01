@@ -9,24 +9,23 @@ import me.tbsten.katachi.ExperimentalKatachiApi
 import me.tbsten.katachi.dsl.DeclarationContainerScope
 import me.tbsten.katachi.dsl.gradle.*
 import me.tbsten.katachi.dsl.kotlin.ktFile
-import me.tbsten.katachi.dsl.pascalCase
 
 /**
  * The role of one screen's UI: the `@Composable` its feature module is named after.
  *
- * `wildcard("feature")` is the module's own name, so a file is not merely allowed to be *a*
- * screen but has to be **that module's** screen: `:feature:home` may hold `HomeScreen.kt` and
- * nothing else called `*Screen.kt`.
+ * The layout is loosened by directory: `"feature" / "*" / … / "*Screen"`. Any feature module
+ * may hold a `<Name>Screen.kt`; the check does not tie the file name to the module name, and it
+ * does not list the feature modules one by one.
  */
 fun DeclarationContainerScope.screen() = "Screen" {
     title = "Screen"
     summary = "A @Composable that implements the UI of one screen. One <Name>Screen.kt per :feature:<name>"
     description = """
-        The `@Composable` that draws the screen itself. The correspondence is fixed:
-        `:feature:home` has exactly one `HomeScreen.kt`, and the file name is decided by the
-        module name. You cannot put a `ProfileScreen.kt` in `:feature:home`, and you cannot
-        delete `HomeScreen.kt`. When there are two screens, split them into separate feature
-        modules.
+        The `@Composable` that draws the screen itself. The convention is
+        that `:feature:home` has one `HomeScreen.kt`, named after the module. The check only
+        looks at the place and the suffix (`*Screen.kt` in any feature module), so the pairing of module
+        name and file name is kept by review. When there are two screens, split them into
+        separate feature modules.
 
         Two `HomeScreen`s sit stacked in one file, both `internal`. The one called from
         navigation takes `viewModel()` as a default argument, collects state with
@@ -56,8 +55,6 @@ fun DeclarationContainerScope.screen() = "Screen" {
     example("HomeScreen", "The home screen")
     example("SettingsScreen", "The settings screen")
     layout {
-        ":feature:${capture("feature")}".module {
-            featureSources() / "${wildcard("feature").pascalCase}Screen".ktFile()
-        }
+        featureSources() / "*Screen".ktFile()
     }
 }

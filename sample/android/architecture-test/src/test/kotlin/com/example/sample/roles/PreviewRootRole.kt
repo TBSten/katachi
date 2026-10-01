@@ -1,7 +1,6 @@
 package com.example.sample.roles
 
 import com.example.sample.forbiddenContents
-import com.example.sample.modulePackage
 import me.tbsten.katachi.dsl.DeclarationContainerScope
 import me.tbsten.katachi.dsl.gradle.*
 import me.tbsten.katachi.dsl.kotlin.ktFile
@@ -31,10 +30,10 @@ fun DeclarationContainerScope.previewRoot() = "PreviewRoot" {
     """.trimIndent()
     example("PreviewRoot", "The base shared by previews")
     layout {
-        ":ui".module {
+        "ui" {
             // Required, so deleting the file fails the check with `[MissingFile]`
             // rather than leaving every `@Preview` without a base.
-            mainSourceSet / kotlin / modulePackage / "preview" / "PreviewRoot".ktFile()
+            mainSourceSet / kotlin / "com/example/sample/ui" / "preview" / "PreviewRoot".ktFile()
         }
     }
 }

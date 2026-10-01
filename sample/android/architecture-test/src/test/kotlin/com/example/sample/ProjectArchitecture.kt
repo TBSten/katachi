@@ -9,28 +9,7 @@ import com.example.sample.groups.toolGroup
 import com.example.sample.groups.uiGroup
 import me.tbsten.katachi.ExperimentalKatachiApi
 import me.tbsten.katachi.dsl.Architecture
-import me.tbsten.katachi.dsl.gradle.ModulePackage
 import me.tbsten.katachi.dsl.architecture
-import me.tbsten.katachi.dsl.gradle.capitalizedModuleNamePackage
-
-/**
- * Where a module keeps its Kotlin sources, below its own source set.
- *
- * Declared once, here, and written as `modulePackage` inside every `module { }` block that
- * follows the convention: `:ui` means `com/example/sample/ui`, `:feature:home` means
- * `com/example/sample/feature/home`. It is a strategy rather than a string because one
- * `val` has to stand for a different directory in every module it is read in.
- *
- * Two modules of this sample do **not** follow it and write their package out as a plain
- * key instead: `:app`, whose sources sit directly in `com.example.sample` because it is the
- * application itself, and `:architecture-test`, which is not a layer of the app at all.
- * Bending the strategy into covering those two would hide, in a lambda, the very fact that
- * they are exceptions.
- *
- * Declared next to [projectArchitecture] rather than in one role file because every group
- * uses it and none of them owns it.
- */
-val modulePackage: ModulePackage = capitalizedModuleNamePackage("com.example.sample")
 
 /**
  * The architecture of this sample, written the way a user of katachi would write it.
@@ -51,13 +30,11 @@ val modulePackage: ModulePackage = capitalizedModuleNamePackage("com.example.sam
  * violation would point at a line nobody wrote. Written once here rather than repeated in
  * twenty-nine files; [ProjectArchitectureSpec] is what actually holds the line.
  *
- * Every `layout { }` is written in terms of Gradle: a place is named by the module path it
- * belongs to (`":feature:${capture("feature")}".module { }`), the source set inside it
- * (`mainSourceSet`) and [modulePackage], rather than by spelling the directories out.
- * `:feature:*` is the one to read first — it is matched against the modules that exist, and
- * what the `*` captured is read back by its name as `wildcard("feature")`, which is what ties a
- * module's name to the names of the files in it. The same name is what a template is given
- * (`--arg feature=home`) to pick the module it generates into.
+ * Every `layout { }` is written as directories, in terms of Gradle's own vocabulary: the module
+ * directory (`"ui"`, `"feature" / "*"`), the source set inside it (`mainSourceSet`) and the
+ * package written out as a string. `"feature" / "*"` is the one to read first — the `*` matches
+ * whichever feature module exists, and a template picks one by naming the directory with a
+ * capture (`--arg feature=home --arg featurePackage=home`).
  *
  * Building this value reads nothing from disk — the `layout { }` blocks are deferred until
  * a check runs — so it is safe to hold in a top level `val`.

@@ -14,16 +14,17 @@ a second feature wants to call it, move it to the component package of `:ui` and
 `App*`. Features do not depend on each other, so a part left here cannot be called from
 another feature.
 
-Can be generated from a template. The `*` of `:feature:*` is named `feature`, so `--arg
-template=feature.FeatureComponent --arg feature=home --arg name=UserCard` puts
-`HomeUserCard.kt` into `:feature:home`. `feature` accepts only the name of a feature
-module that exists.
+Can be generated from a template. The module directory is named `feature` and its
+package directory `featurePackage`, so `--arg template=feature.FeatureComponent --arg
+feature=home --arg featurePackage=home --arg name=HomeUserCard` puts
+`HomeUserCard.kt` into `:feature:home`. `name` is the whole file name, including the
+module's name; the check does not tie the two together.
 
 ## Placement
 
-| Module | Path | When to use |
-|---|---|---|
-| `:feature:<feature>` | `src/main/kotlin/**/component/<feature>*.kt` |  |
+| Path | When to use |
+|---|---|
+| `feature/*/src/main/kotlin/com/example/sample/feature/*/component/*.kt` |  |
 
 ## Examples
 

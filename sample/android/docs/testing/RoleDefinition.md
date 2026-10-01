@@ -19,9 +19,9 @@ once it says something.
 
 ## Placement
 
-| Module | Path | When to use |
-|---|---|---|
-| `:architecture-test` | `src/test/kotlin/com/example/sample/roles/*Role.kt` |  |
+| Path | When to use |
+|---|---|
+| `architecture-test/src/test/kotlin/com/example/sample/roles/*Role.kt` |  |
 
 ## Examples
 

@@ -13,9 +13,9 @@ is a violation.
 
 ## Placement
 
-| Module | Path | When to use |
-|---|---|---|
-| `:app` | `src/main/AndroidManifest.xml` |  |
+| Path | When to use |
+|---|---|
+| `app/src/main/AndroidManifest.xml` |  |
 
 ## Examples
 

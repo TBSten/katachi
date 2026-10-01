@@ -32,13 +32,12 @@ mapping like `:ui` to `com.example.sample.ui` (the other one is `:architecture-t
 ## Placement in this group
 
 ```
-:app
+app/
   src/main/
     kotlin/com/example/sample/
       MainActivity.kt     Activity entrypoint
       MainApplication.kt  Application entrypoint
     AndroidManifest.xml   Android manifest
+    res/                  Android resources
   proguard-rules.pro      Proguard rules
-
-app/src/main/res/         Android resources
 ```

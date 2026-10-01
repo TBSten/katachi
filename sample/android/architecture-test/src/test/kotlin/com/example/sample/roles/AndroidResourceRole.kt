@@ -21,7 +21,7 @@ fun DeclarationContainerScope.androidResource() = "AndroidResource" {
     """.trimIndent()
     example("res/values/strings.xml", "String resources")
     layout {
-        ":app".module {
+        "app" {
             mainSourceSet {
                 "res".ignore()
             }

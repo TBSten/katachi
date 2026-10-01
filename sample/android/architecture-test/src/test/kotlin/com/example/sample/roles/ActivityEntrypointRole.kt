@@ -19,9 +19,8 @@ fun DeclarationContainerScope.activityEntrypoint() = "ActivityEntrypoint" {
         `:feature:*` and builds the navigation graph. `:app` is the only module allowed to know
         every feature, and that knowledge stays inside this file.
 
-        This role writes its package directly as `com/example/sample` instead of using
-        `modulePackage`. `:app` is the application itself and has no mapping to the module path
-        like `:ui` to `com.example.sample.ui`.
+        This role writes the package `com/example/sample` directly. `:app` is the application
+        itself and has no mapping to the module path like `:ui` to `com.example.sample.ui`.
     """.trimIndent()
     forbiddenContents = """
         Screen contents. `:app` only connects features; the UI lives in `:ui` and `:feature:*`.
@@ -29,7 +28,7 @@ fun DeclarationContainerScope.activityEntrypoint() = "ActivityEntrypoint" {
     """.trimIndent()
     example("MainActivity", "The Activity shown at launch")
     layout {
-        ":app".module {
+        "app" {
             // Named exactly, so an app that loses its entry point fails with
             // `[MissingFile]` instead of quietly passing.
             mainSourceSet / kotlin / "com/example/sample" {

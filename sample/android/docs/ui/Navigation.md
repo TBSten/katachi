@@ -23,9 +23,9 @@ means of navigation go here, but the destination of a particular screen (such as
 
 ## Placement
 
-| Module | Path | When to use |
-|---|---|---|
-| `:navigation` | `src/main/kotlin/**/*.kt` |  |
+| Path | When to use |
+|---|---|
+| `navigation/src/main/kotlin/com/example/sample/navigation/*.kt` |  |
 
 ## Examples
 

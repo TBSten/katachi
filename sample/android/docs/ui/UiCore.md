@@ -21,9 +21,9 @@ ViewModel. Rendering-related parts go in `component`, and colors and text in `th
 
 ## Placement
 
-| Module | Path | When to use |
-|---|---|---|
-| `:ui` | `src/main/kotlin/**/core/*.kt` |  |
+| Path | When to use |
+|---|---|
+| `ui/src/main/kotlin/com/example/sample/ui/core/*.kt` |  |
 
 ## Examples
 

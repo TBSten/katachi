@@ -28,7 +28,7 @@ fun DeclarationContainerScope.projectArchitectureTest() = "ProjectArchitectureTe
     layout {
         // Only the top level of the package: `groups/` and `roles/` hold declarations,
         // never tests, which is what the definition roles say on their side.
-        ":architecture-test".module {
+        "architecture-test" {
             testSourceSet / kotlin / "com/example/sample" {
                 "*Test".ktFile()
             }

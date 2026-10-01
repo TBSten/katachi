@@ -9,17 +9,19 @@ import me.tbsten.katachi.ExperimentalKatachiApi
 import me.tbsten.katachi.dsl.DeclarationContainerScope
 import me.tbsten.katachi.dsl.gradle.*
 import me.tbsten.katachi.dsl.kotlin.ktFile
-import me.tbsten.katachi.dsl.pascalCase
 import me.tbsten.katachi.dsl.template
 
 /**
  * The role of a widget one screen uses and no other: the feature-local counterpart of Component.
  *
- * Its layout is `":feature:*"` with the wildcard named `feature`, and a file name has to start
- * with that module's name. The name is what lets the template below pick its module:
- * `--arg feature=home` binds the `*` to `:feature:home`, so katachi has one place to put the
- * file, and the template reads the same value back with `captureValue("feature")` to build the
- * package and the file name from it.
+ * Its layout is the directory `"feature" / "*"` with the module directory named `feature` and the
+ * package directory below it named `featurePackage`. The names are what let the template below
+ * pick its place: `--arg feature=home --arg featurePackage=home` binds both, so katachi has one
+ * place to put the file, and the template reads the same values back with `captureValue(...)`
+ * to build the package from them. They are two names because a capture name may be used only
+ * once in a path. The price of the loose directory is that a `feature` that is not a module is
+ * created as it is, and the file name is not tied to the module name.
+
  */
 fun DeclarationContainerScope.featureComponent() = "FeatureComponent" {
     title = "Screen part"
@@ -35,10 +37,11 @@ fun DeclarationContainerScope.featureComponent() = "FeatureComponent" {
         `App*`. Features do not depend on each other, so a part left here cannot be called from
         another feature.
 
-        Can be generated from a template. The `*` of `:feature:*` is named `feature`, so `--arg
-        template=feature.FeatureComponent --arg feature=home --arg name=UserCard` puts
-        `HomeUserCard.kt` into `:feature:home`. `feature` accepts only the name of a feature
-        module that exists.
+        Can be generated from a template. The module directory is named `feature` and its
+        package directory `featurePackage`, so `--arg template=feature.FeatureComponent --arg
+        feature=home --arg featurePackage=home --arg name=HomeUserCard` puts
+        `HomeUserCard.kt` into `:feature:home`. `name` is the whole file name, including the
+        module's name; the check does not tie the two together.
     """.trimIndent()
     allowedContents = """
         - An `internal` `@Composable` that takes values and callbacks
@@ -49,18 +52,19 @@ fun DeclarationContainerScope.featureComponent() = "FeatureComponent" {
         - Types of other features, and `public` declarations. Only the Route is visible from outside
     """.trimIndent()
     example("HomeUserCard", "A card used only by the home screen (example)")
-    // The module is chosen by `--arg feature=...`, the name the layout gave `:feature:*`.
-    // A module that does not exist is refused rather than created.
+    // The module is chosen by `--arg feature=...` and its package by `--arg featurePackage=...`,
+    // the names the layout gave the two directories. A `feature` that is not a module is not
+    // refused; the directory is created as given.
     //   ./gradlew :architecture-test:katachiTemplate \
-    //       --arg template=feature.FeatureComponent --arg feature=home --arg name=UserCard
+    //       --arg template=feature.FeatureComponent --arg feature=home --arg featurePackage=home \
+    //       --arg name=HomeUserCard
     layout {
-        ":feature:${capture("feature")}".module {
-            featureSources() / "component" / "${wildcard("feature").pascalCase}${capture("name")}".ktFile()
+        featureSources(module = capture("feature"), packageName = capture("featurePackage")) /
+            "component" / capture("name").ktFile()
                 .template {
-                    val feature = captureValue("feature")
-                    val name = captureValue("name")
+                    val featurePackage = captureValue("featurePackage")
+                    val component = captureValue("name")
                     val withPreview by booleanParameter(default = true)
-                    val component = "${feature.pascalCase}$name"
                     val previewImports = if (withPreview) {
                         """
                             import androidx.compose.ui.tooling.preview.Preview
@@ -75,7 +79,7 @@ fun DeclarationContainerScope.featureComponent() = "FeatureComponent" {
                             @Preview(showBackground = true)
                             @Composable
                             private fun ${component}Preview() = PreviewRoot {
-                                $component(title = "$name")
+                                $component(title = "$component")
                             }
                         """.trimIndent()
                     } else {
@@ -83,7 +87,7 @@ fun DeclarationContainerScope.featureComponent() = "FeatureComponent" {
                     }
 
                     """
-                        |package com.example.sample.feature.$feature.component
+                        |package com.example.sample.feature.$featurePackage.component
                         |
                         |import androidx.compose.foundation.layout.Arrangement
                         |import androidx.compose.foundation.layout.Column
@@ -93,7 +97,7 @@ fun DeclarationContainerScope.featureComponent() = "FeatureComponent" {
                         |import androidx.compose.ui.Modifier
                         |import androidx.compose.ui.unit.dp
                         |$previewImports
-                        |/** Part of the $feature screen that no other screen uses. */
+                        |/** Part of the $featurePackage screen that no other screen uses. */
                         |@Composable
                         |internal fun $component(
                         |    title: String,
@@ -108,6 +112,5 @@ fun DeclarationContainerScope.featureComponent() = "FeatureComponent" {
                         |}$preview
                     """.trimMargin()
                 }
-        }
     }
 }

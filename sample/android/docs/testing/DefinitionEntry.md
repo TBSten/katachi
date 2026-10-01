@@ -22,9 +22,9 @@ line back.
 
 ## Placement
 
-| Module | Path | When to use |
-|---|---|---|
-| `:architecture-test` | `src/test/kotlin/com/example/sample/ProjectArchitecture.kt` |  |
+| Path | When to use |
+|---|---|
+| `architecture-test/src/test/kotlin/com/example/sample/ProjectArchitecture.kt` |  |
 
 ## Examples
 

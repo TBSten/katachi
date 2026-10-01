@@ -21,7 +21,7 @@ fun DeclarationContainerScope.definitionSections() = "DefinitionSections" {
     """.trimIndent()
     example("DocumentSections.kt", "The section headings shared by every group and role")
     layout {
-        ":architecture-test".module {
+        "architecture-test" {
             testSourceSet / kotlin / "com/example/sample" {
                 "DocumentSections".ktFile()
             }

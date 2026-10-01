@@ -5,7 +5,6 @@ package com.example.sample.roles
 import com.example.sample.forbiddenContents
 import com.example.sample.groups.FeatureModule
 import com.example.sample.groups.eachFeatureModule
-import com.example.sample.modulePackage
 import me.tbsten.katachi.ExperimentalKatachiApi
 import me.tbsten.katachi.dsl.DeclarationContainerScope
 import me.tbsten.katachi.dsl.gradle.*
@@ -18,9 +17,9 @@ import me.tbsten.katachi.dsl.template
  * Named module by module through [FeatureModule], so that the template can write into one of
  * them: `HomeViewModelTest.kt` fits only `:feature:home`'s pattern.
  *
- * Not `":feature:${capture("feature")}".module { }` like FeatureComponent, because what the
- * test arranges differs per screen: the template is a `when` over [FeatureModule], which a new
- * module cannot slip past, while a captured value is only a string.
+ * Not the directory captures FeatureComponent uses, because what the test arranges differs per
+ * screen: the template is a `when` over [FeatureModule], which a new module cannot slip past,
+ * while a captured value is only a string.
  */
 fun DeclarationContainerScope.featureTest() = "FeatureTest" {
     title = "Screen test"
@@ -55,7 +54,7 @@ fun DeclarationContainerScope.featureTest() = "FeatureTest" {
     //       --arg template=feature.FeatureTest.home --arg name=ViewModel
     layout {
         eachFeatureModule { feature ->
-            testSourceSet / kotlin / modulePackage / "${feature.name}${capture("name")}Test".ktFile()
+            testSourceSet / kotlin / feature.packageDirectory / "${feature.name}${capture("name")}Test".ktFile()
                 .template(id = feature.name.lowercase()) {
                     featureTestContent(feature, captureValue("name"))
                 }

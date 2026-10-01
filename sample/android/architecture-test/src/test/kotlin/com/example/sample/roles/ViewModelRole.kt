@@ -8,7 +8,6 @@ import me.tbsten.katachi.ExperimentalKatachiApi
 import me.tbsten.katachi.dsl.DeclarationContainerScope
 import me.tbsten.katachi.dsl.gradle.*
 import me.tbsten.katachi.dsl.kotlin.ktFile
-import me.tbsten.katachi.dsl.pascalCase
 
 /** The role holding one screen's state, named after the feature module it belongs to. */
 fun DeclarationContainerScope.viewModel() = "ViewModel" {
@@ -18,7 +17,7 @@ fun DeclarationContainerScope.viewModel() = "ViewModel" {
         One `<Name>ViewModel.kt` per `:feature:<name>`. It exposes the screen state as
         `StateFlow<UiState<T>>` and emits the next state on receiving events from the screen
         (`refresh()`, `setDarkThemeEnabled(enabled)`). As with the Screen, the file name is
-        decided by the module name, so `SettingsViewModel.kt` cannot go in `:feature:home`.
+        `<Name>ViewModel.kt`, where `<Name>` is the feature's name.
 
         The state container is `UiState` from the `core` package of `:ui`, and the content its
         `Content` wraps (`HomeContent` / `SettingsContent`) is a data class in the same file as
@@ -39,8 +38,6 @@ fun DeclarationContainerScope.viewModel() = "ViewModel" {
     example("HomeViewModel", "The state of the home screen")
     example("SettingsViewModel", "The state of the settings screen")
     layout {
-        ":feature:${capture("feature")}".module {
-            featureSources() / "${wildcard("feature").pascalCase}ViewModel".ktFile()
-        }
+        featureSources() / "*ViewModel".ktFile()
     }
 }

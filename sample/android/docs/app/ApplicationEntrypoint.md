@@ -15,9 +15,9 @@ The package is written directly as `com/example/sample` for the same reason as
 
 ## Placement
 
-| Module | Path | When to use |
-|---|---|---|
-| `:app` | `src/main/kotlin/com/example/sample/MainApplication.kt` |  |
+| Path | When to use |
+|---|---|
+| `app/src/main/kotlin/com/example/sample/MainApplication.kt` |  |
 
 ## Examples
 

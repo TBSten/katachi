@@ -26,9 +26,9 @@ variable `CI=true`) both update and prune are refused and only the comparison ru
 
 ## Placement
 
-| Module | Path | When to use |
-|---|---|---|
-|  | `katachi-baseline.json` |  |
+| Path | When to use |
+|---|---|
+| `katachi-baseline.json` |  |
 
 ## Examples
 

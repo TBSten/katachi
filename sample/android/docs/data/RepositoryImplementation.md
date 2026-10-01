@@ -16,12 +16,12 @@ they are generated together
 
 ## Placement
 
-| Module | Path | When to use |
-|---|---|---|
-| `:data` | `src/main/kotlin/**/user/UserRepositoryImpl.kt` |  |
-| `:data` | `src/main/kotlin/**/user/User*RepositoryImpl.kt` |  |
-| `:data` | `src/main/kotlin/**/settings/SettingsRepositoryImpl.kt` |  |
-| `:data` | `src/main/kotlin/**/settings/Settings*RepositoryImpl.kt` |  |
+| Path | When to use |
+|---|---|
+| `data/src/main/kotlin/com/example/sample/data/user/UserRepositoryImpl.kt` |  |
+| `data/src/main/kotlin/com/example/sample/data/user/User*RepositoryImpl.kt` |  |
+| `data/src/main/kotlin/com/example/sample/data/settings/SettingsRepositoryImpl.kt` |  |
+| `data/src/main/kotlin/com/example/sample/data/settings/Settings*RepositoryImpl.kt` |  |
 
 ## Examples
 

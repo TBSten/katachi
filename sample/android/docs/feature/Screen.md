@@ -4,11 +4,11 @@
 
 A @Composable that implements the UI of one screen. One <Name>Screen.kt per :feature:<name>
 
-The `@Composable` that draws the screen itself. The correspondence is fixed:
-`:feature:home` has exactly one `HomeScreen.kt`, and the file name is decided by the
-module name. You cannot put a `ProfileScreen.kt` in `:feature:home`, and you cannot
-delete `HomeScreen.kt`. When there are two screens, split them into separate feature
-modules.
+The `@Composable` that draws the screen itself. The convention is
+that `:feature:home` has one `HomeScreen.kt`, named after the module. The check only
+looks at the place and the suffix (`*Screen.kt` in any feature module), so the pairing of module
+name and file name is kept by review. When there are two screens, split them into
+separate feature modules.
 
 Two `HomeScreen`s sit stacked in one file, both `internal`. The one called from
 navigation takes `viewModel()` as a default argument, collects state with
@@ -25,9 +25,9 @@ sample.
 
 ## Placement
 
-| Module | Path | When to use |
-|---|---|---|
-| `:feature:<feature>` | `src/main/kotlin/**/<feature>Screen.kt` |  |
+| Path | When to use |
+|---|---|
+| `feature/*/src/main/kotlin/com/example/sample/feature/*/*Screen.kt` |  |
 
 ## Examples
 

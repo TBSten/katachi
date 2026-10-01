@@ -15,9 +15,9 @@ this role. Putting one in `roles/` gives an `[UnexpectedFile]`.
 
 ## Placement
 
-| Module | Path | When to use |
-|---|---|---|
-| `:architecture-test` | `src/test/kotlin/com/example/sample/*Spec.kt` |  |
+| Path | When to use |
+|---|---|
+| `architecture-test/src/test/kotlin/com/example/sample/*Spec.kt` |  |
 
 ## Examples
 

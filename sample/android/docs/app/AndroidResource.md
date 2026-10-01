@@ -17,9 +17,9 @@ but no module other than `:app` has a `res/` in this sample, so this role looks 
 
 ## Placement
 
-| Module | Path | When to use |
-|---|---|---|
-|  | `app/src/main/res` |  |
+| Path | When to use |
+|---|---|
+| `app/src/main/res` |  |
 
 ## Examples
 

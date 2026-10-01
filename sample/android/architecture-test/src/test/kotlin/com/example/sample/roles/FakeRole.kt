@@ -4,7 +4,6 @@ package com.example.sample.roles
 
 import com.example.sample.forbiddenContents
 import com.example.sample.groups.DataDomain
-import com.example.sample.modulePackage
 import me.tbsten.katachi.ExperimentalKatachiApi
 import me.tbsten.katachi.dsl.DeclarationContainerScope
 import me.tbsten.katachi.dsl.gradle.*
@@ -14,8 +13,8 @@ import me.tbsten.katachi.dsl.template
 /**
  * The role of a stand-in implementation other modules' tests use.
  *
- * `:testing` follows the module path convention, so its package comes from `modulePackage`
- * rather than being written out the way `:architecture-test` has to write its own.
+ * `:testing`'s package is written out as a plain key, `com/example/sample/testing`, the same
+ * way every other module of this sample writes its own.
  */
 fun DeclarationContainerScope.fake() = "Fake" {
     title = "Fake"
@@ -53,8 +52,8 @@ fun DeclarationContainerScope.fake() = "Fake" {
     //   ./gradlew :architecture-test:katachiTemplate \
     //       --arg template=testing.Fake --arg repository=UserProfileRepository
     layout {
-        ":testing".module {
-            mainSourceSet / kotlin / modulePackage / "Fake${capture("repository")}".ktFile()
+        "testing" {
+            mainSourceSet / kotlin / "com/example/sample/testing" / "Fake${capture("repository")}".ktFile()
                 .template {
                     val repository = captureValue("repository")
                     // The package a repository interface lives in is not part of its own name, so it

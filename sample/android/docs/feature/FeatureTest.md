@@ -21,10 +21,10 @@ it is chosen by id rather than by passing values.
 
 ## Placement
 
-| Module | Path | When to use |
-|---|---|---|
-| `:feature:home` | `src/test/kotlin/**/Home*Test.kt` | For `:feature:home`. Start the file name with `Home` |
-| `:feature:settings` | `src/test/kotlin/**/Settings*Test.kt` | For `:feature:settings`. Start the file name with `Settings` |
+| Path | When to use |
+|---|---|
+| `feature/home/src/test/kotlin/com/example/sample/feature/home/Home*Test.kt` | For `:feature:home`. Start the file name with `Home` |
+| `feature/settings/src/test/kotlin/com/example/sample/feature/settings/Settings*Test.kt` | For `:feature:settings`. Start the file name with `Settings` |
 
 ## Examples
 

@@ -24,7 +24,7 @@ fun DeclarationContainerScope.applicationEntrypoint() = "ApplicationEntrypoint" 
     """.trimIndent()
     example("MainApplication", "The Application implementation")
     layout {
-        ":app".module {
+        "app" {
             mainSourceSet / kotlin / "com/example/sample" {
                 "MainApplication".ktFile()
             }

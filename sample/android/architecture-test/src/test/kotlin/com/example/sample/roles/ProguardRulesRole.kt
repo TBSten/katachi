@@ -14,7 +14,7 @@ fun DeclarationContainerScope.proguardRules() = "ProguardRules" {
     """.trimIndent()
     example("proguard-rules.pro", "The rules the shrinker reads")
     layout {
-        ":app".module {
+        "app" {
             "proguard-rules.pro".file()
         }
     }

@@ -12,9 +12,8 @@ import me.tbsten.katachi.dsl.DeclarationContainerScope
  * together.
  *
  * `:app` is the one module of the app whose package is not derived from its module path:
- * its sources sit directly in `com.example.sample`, so the package is written out as a key
- * instead of with `modulePackage`. Everything else about the module — where it is, that it
- * has a build script, that its `build/` is not checked — still comes from `":app".module`.
+ * its sources sit directly in `com.example.sample`, so the package is written out as
+ * `com/example/sample` rather than `com/example/sample/app`.
  */
 fun DeclarationContainerScope.appGroup() = "app".group {
     title = "Entrypoint layer"

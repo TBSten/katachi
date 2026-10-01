@@ -1,7 +1,6 @@
 package com.example.sample.roles
 
 import com.example.sample.forbiddenContents
-import com.example.sample.modulePackage
 import me.tbsten.katachi.dsl.DeclarationContainerScope
 import me.tbsten.katachi.dsl.gradle.*
 import me.tbsten.katachi.dsl.kotlin.ktFile
@@ -33,10 +32,10 @@ fun DeclarationContainerScope.theme() = "Theme" {
     """.trimIndent()
     example("AppTheme", "The app theme")
     layout {
-        ":ui".module {
+        "ui" {
             // Named exactly, not `*.kt`: there is one theme, and a second file turning up
             // here should be a violation rather than a silent second theme.
-            mainSourceSet / kotlin / modulePackage / "theme" / "AppTheme".ktFile()
+            mainSourceSet / kotlin / "com/example/sample/ui" / "theme" / "AppTheme".ktFile()
         }
     }
 }

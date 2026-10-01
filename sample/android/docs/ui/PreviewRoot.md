@@ -20,9 +20,9 @@ is made not to disappear silently.
 
 ## Placement
 
-| Module | Path | When to use |
-|---|---|---|
-| `:ui` | `src/main/kotlin/**/preview/PreviewRoot.kt` |  |
+| Path | When to use |
+|---|---|
+| `ui/src/main/kotlin/com/example/sample/ui/preview/PreviewRoot.kt` |  |
 
 ## Examples
 

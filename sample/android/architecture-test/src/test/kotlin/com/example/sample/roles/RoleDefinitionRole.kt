@@ -31,7 +31,7 @@ fun DeclarationContainerScope.roleDefinition() = "RoleDefinition" {
     //   ./gradlew :architecture-test:katachiTemplate \
     //       --arg template=testing.RoleDefinition --arg name=UseCase
     layout {
-        ":architecture-test".module {
+        "architecture-test" {
             testSourceSet / kotlin / "com/example/sample" {
                 "roles" {
                     "${capture("name")}Role".ktFile()

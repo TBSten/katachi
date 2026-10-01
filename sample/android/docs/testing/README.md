@@ -57,21 +57,17 @@ sits here with the generated files.
 ## Placement in this group
 
 ```
-:testing
-  src/main/kotlin/**/Fake*.kt  Fake
-
-:architecture-test
-  src/test/kotlin/com/example/sample/
-    *Test.kt                   Architecture test
-    *Spec.kt                   Architecture spec
-    ProjectArchitecture.kt     Definition entrypoint
-    DocumentSections.kt        Definition sections
-    groups/*Group.kt           Group definition
-    roles/*Role.kt             Role definition
-
+testing/src/main/kotlin/com/example/sample/testing/Fake*.kt  Fake
+architecture-test/src/test/kotlin/com/example/sample/
+  *Test.kt                                                   Architecture test
+  *Spec.kt                                                   Architecture spec
+  ProjectArchitecture.kt                                     Definition entrypoint
+  DocumentSections.kt                                        Definition sections
+  groups/*Group.kt                                           Group definition
+  roles/*Role.kt                                             Role definition
 docs/
-  README.md                    Generated documentation
-  **/*.md                      Generated documentation
-snapshots/layout.txt           Layout snapshot
-katachi-baseline.json          baseline (ledger of held-back violations)
+  README.md                                                  Generated documentation
+  **/*.md                                                    Generated documentation
+snapshots/layout.txt                                         Layout snapshot
+katachi-baseline.json                                        baseline (ledger of held-back violations)
 ```

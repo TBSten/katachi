@@ -16,7 +16,7 @@ katachi is pulled in from the repository source with `includeBuild("../..")`, bu
 |-----------------------------------------------------------------------------------------------------------------|-----------------------------------------------------------------------------------------------------------|
 | [`ProjectArchitecture.kt`](architecture-test/src/test/kotlin/com/example/sample/ProjectArchitecture.kt)         | The body of `architecture { }`. It only calls the groups; roles are kept one per file in `roles/` |
 | [`roles/ComponentRole.kt`](architecture-test/src/test/kotlin/com/example/sample/roles/ComponentRole.kt)         | How to write one role. A `.template { }` whose whole file name is `capture("name")`, generating a file with exactly the name passed |
-| [`roles/FeatureComponentRole.kt`](architecture-test/src/test/kotlin/com/example/sample/roles/FeatureComponentRole.kt) | An example of `":feature:${capture("feature")}".module { }`. The same capture decides the location with `wildcard("feature")` and the template content with `captureValue("feature")` |
+| [`roles/FeatureComponentRole.kt`](architecture-test/src/test/kotlin/com/example/sample/roles/FeatureComponentRole.kt) | An example of a template placed by two directory captures, `capture("feature")` and `capture("featurePackage")`. The same captures decide the location and, with `captureValue(...)`, the template content |
 | [`ProjectArchitectureTest.kt`](architecture-test/src/test/kotlin/com/example/sample/ProjectArchitectureTest.kt) | The only test a user writes. It just calls `projectArchitecture.assert()` |
 | [`docs/README.md`](docs/README.md)                                                                              | Documentation generated from the definition. Not written by hand |
 | [`katachi-baseline.json`](katachi-baseline.json) | The baseline ledger. Two violations, `HomeFormatter.kt` and `legacy/` in `:data`, are deliberately left and held back ([`../README.md`](../README.md#baseline)) |
@@ -44,8 +44,9 @@ cd sample/android
 ./gradlew :architecture-test:katachiTemplate --arg template=Component --arg name=AppLabel
 
 # Generate HomeUserCard.kt in the component package of :feature:home from the FeatureComponent template
-# (feature is the name the layout gave :feature:*. It selects which module to generate into)
-./gradlew :architecture-test:katachiTemplate --arg template=feature.FeatureComponent --arg feature=home --arg name=UserCard
+# (feature and featurePackage are the names the layout gave the two directories. They select the module and its package;
+# the whole file name is capture("name"), so pass the module's name with it)
+./gradlew :architecture-test:katachiTemplate --arg template=feature.FeatureComponent --arg feature=home --arg featurePackage=home --arg name=HomeUserCard
 ```
 
 From the repository root, one command runs the same set as CI (including generating from templates, checking, and deleting the generated files, plus checking that the baseline is up to date).

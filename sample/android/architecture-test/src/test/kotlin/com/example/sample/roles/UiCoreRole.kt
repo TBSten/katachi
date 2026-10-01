@@ -1,6 +1,5 @@
 package com.example.sample.roles
 
-import com.example.sample.modulePackage
 import me.tbsten.katachi.dsl.DeclarationContainerScope
 import me.tbsten.katachi.dsl.gradle.*
 import me.tbsten.katachi.dsl.kotlin.ktFile
@@ -27,8 +26,8 @@ fun DeclarationContainerScope.uiCore() = "UiCore" {
     """.trimIndent()
     example("UiState", "The sealed interface representing screen state")
     layout {
-        ":ui".module {
-            mainSourceSet / kotlin / modulePackage / "core" / "*".ktFile()
+        "ui" {
+            mainSourceSet / kotlin / "com/example/sample/ui" / "core" / "*".ktFile()
         }
     }
 }

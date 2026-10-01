@@ -32,15 +32,12 @@ navigation dependency. Building the graph is done by `:app`.
 ## Placement in this group
 
 ```
-:ui
-  src/main/kotlin/**/
-    component/*.kt          Shared component
-    theme/AppTheme.kt       Theme
-    core/*.kt               UI foundation
-    preview/PreviewRoot.kt  Preview base
-
-:navigation
-  src/main/kotlin/**/*.kt   Screen navigation
+ui/src/main/kotlin/com/example/sample/ui/
+  component/*.kt                                               Shared component
+  theme/AppTheme.kt                                            Theme
+  core/*.kt                                                    UI foundation
+  preview/PreviewRoot.kt                                       Preview base
+navigation/src/main/kotlin/com/example/sample/navigation/*.kt  Screen navigation
 ```
 
 ## Allowed contents

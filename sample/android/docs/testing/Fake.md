@@ -26,9 +26,9 @@ goes into is decided by which `DataDomain` the start of the name matches.
 
 ## Placement
 
-| Module | Path | When to use |
-|---|---|---|
-| `:testing` | `src/main/kotlin/**/Fake*.kt` |  |
+| Path | When to use |
+|---|---|
+| `testing/src/main/kotlin/com/example/sample/testing/Fake*.kt` |  |
 
 ## Examples
 

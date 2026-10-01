@@ -6,7 +6,7 @@ A module per screen. Each :feature:<name> holds one Screen / ViewModel / Route, 
 
 The contents of a module that holds one screen, such as `:feature:home` or
 `:feature:settings`. Every module has one `<Name>Screen.kt`, `<Name>ViewModel.kt` and
-`<Name>Route.kt`, and the file names are determined by the module name. A new screen
+`<Name>Route.kt`, named after the module. A new screen
 means a new module, so a feature never holds a second screen.
 
 It is split into three because they change for different reasons. The Screen is the
@@ -16,8 +16,8 @@ the Screen and ViewModel stay inside the module.
 
 The shared layers (`:ui` and `:navigation`) are not in this group because they grow
 differently. A feature is a place where adding is the norm, so it is written as
-`":feature:*"`: adding `include(":feature:profile")` to `settings.gradle.kts` brings it
-under the check without touching this definition. Adding to a shared layer is a design
+the directory `"feature" / "*"`: a new feature module comes under the check without touching
+this definition. Adding to a shared layer is a design
 decision every time, and that lives in the UI (shared layer) group.
 
 Features do not depend on each other. Even when navigating to another screen, the
@@ -27,10 +27,11 @@ require re-reading the others.
 
 Screen parts and tests multiply inside one feature. Both start their file names with
 the module name (`HomeUserCard.kt`, `HomeViewModelTest.kt`) and can be generated from
-templates. The `*` of `":feature:*"` is named `feature` for screen parts, and
-`--arg feature=home` picks the module to generate into, so adding a feature does not
-touch this definition. Only tests name each module one by one, because the template
-content differs per screen; when adding a feature, add one line to `FeatureModule` too.
+templates. A screen part is placed by two directory captures (`feature` for the module,
+`featurePackage` for its package), so `--arg feature=home --arg featurePackage=home`
+picks the module to generate into and adding a feature does not touch this definition.
+Only tests name each module one by one, because the template content differs per
+screen; when adding a feature, add one line to `FeatureModule` too.
 
 | Role | Summary |
 |---|---|
@@ -43,16 +44,12 @@ content differs per screen; when adding a feature, add one line to `FeatureModul
 ## Placement in this group
 
 ```
-:feature:<feature>
-  src/main/kotlin/**/
-    <feature>Screen.kt                 Screen
-    <feature>ViewModel.kt              ViewModel
-    <feature>Route.kt                  Route
-    component/<feature>*.kt            Screen part
-
-:feature:home
-  src/test/kotlin/**/Home*Test.kt      Screen test
-
-:feature:settings
-  src/test/kotlin/**/Settings*Test.kt  Screen test
+feature/
+  */src/main/kotlin/com/example/sample/feature/*/
+    *Screen.kt                                                                   Screen
+    *ViewModel.kt                                                                ViewModel
+    *Route.kt                                                                    Route
+    component/*.kt                                                               Screen part
+  home/src/test/kotlin/com/example/sample/feature/home/Home*Test.kt              Screen test
+  settings/src/test/kotlin/com/example/sample/feature/settings/Settings*Test.kt  Screen test
 ```

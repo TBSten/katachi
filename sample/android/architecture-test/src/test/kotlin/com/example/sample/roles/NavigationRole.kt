@@ -1,6 +1,5 @@
 package com.example.sample.roles
 
-import com.example.sample.modulePackage
 import me.tbsten.katachi.dsl.DeclarationContainerScope
 import me.tbsten.katachi.dsl.gradle.*
 import me.tbsten.katachi.dsl.kotlin.ktFile
@@ -29,8 +28,8 @@ fun DeclarationContainerScope.navigation() = "Navigation" {
     """.trimIndent()
     example("AppNavigator", "The entry point for screen navigation")
     layout {
-        ":navigation".module {
-            mainSourceSet / kotlin / modulePackage / "*".ktFile()
+        "navigation" {
+            mainSourceSet / kotlin / "com/example/sample/navigation" / "*".ktFile()
         }
     }
 }

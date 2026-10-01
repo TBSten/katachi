@@ -4,13 +4,11 @@ package com.example.sample.roles
 
 import com.example.sample.allowedContents
 import com.example.sample.forbiddenContents
-import com.example.sample.modulePackage
 import me.tbsten.katachi.ExperimentalKatachiApi
 import me.tbsten.katachi.dsl.DeclarationContainerScope
 import me.tbsten.katachi.dsl.gradle.div
 import me.tbsten.katachi.dsl.gradle.kotlin
 import me.tbsten.katachi.dsl.gradle.mainSourceSet
-import me.tbsten.katachi.dsl.gradle.module
 import me.tbsten.katachi.dsl.kotlin.ktFile
 import me.tbsten.katachi.dsl.template
 
@@ -57,8 +55,8 @@ fun DeclarationContainerScope.component() = "Component" {
     // preview is wrapped in `PreviewRoot { }` from the start, as this role's description asks.
     //   ./gradlew :architecture-test:katachiTemplate --arg template=Component --arg name=AppLabel
     layout {
-        ":ui".module {
-            mainSourceSet / kotlin / modulePackage / "component" / capture("name").ktFile()
+        "ui" {
+            mainSourceSet / kotlin / "com/example/sample/ui" / "component" / capture("name").ktFile()
                 .template {
                     val name = captureValue("name")
                     val previewText by stringParameter(default = name)

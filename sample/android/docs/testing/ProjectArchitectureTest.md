@@ -16,9 +16,9 @@ definition helper cannot be placed next to the test.
 
 ## Placement
 
-| Module | Path | When to use |
-|---|---|---|
-| `:architecture-test` | `src/test/kotlin/com/example/sample/*Test.kt` |  |
+| Path | When to use |
+|---|---|
+| `architecture-test/src/test/kotlin/com/example/sample/*Test.kt` |  |
 
 ## Examples
 

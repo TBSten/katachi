@@ -21,9 +21,9 @@ they are in.
 
 ## Placement
 
-| Module | Path | When to use |
-|---|---|---|
-| `:ui` | `src/main/kotlin/**/theme/AppTheme.kt` |  |
+| Path | When to use |
+|---|---|
+| `ui/src/main/kotlin/com/example/sample/ui/theme/AppTheme.kt` |  |
 
 ## Examples
 

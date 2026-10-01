@@ -7,7 +7,7 @@ The destination of a screen. The only entrance a feature exposes to the outside
 The only thing a feature module shows to the outside. An object such as `HomeRoute`
 holds the destination path as `PATH`, and an extension function such as
 `NavGraphBuilder.homeScreen(...)` registers its own screen in the graph. The file name
-is `<Name>Route.kt`, decided by the module name.
+is `<Name>Route.kt`, where `<Name>` is the feature's name.
 
 Only `AppNavHost` in `:app` builds the graph, and what `:app` touches is limited to what
 this role exposes, such as `HomeRoute.PATH` and `homeScreen(...)`. Neither `HomeScreen`
@@ -20,9 +20,9 @@ decides which screen to go to, and a feature never imports another feature's Rou
 
 ## Placement
 
-| Module | Path | When to use |
-|---|---|---|
-| `:feature:<feature>` | `src/main/kotlin/**/<feature>Route.kt` |  |
+| Path | When to use |
+|---|---|
+| `feature/*/src/main/kotlin/com/example/sample/feature/*/*Route.kt` |  |
 
 ## Examples
 

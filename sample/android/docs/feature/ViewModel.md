@@ -7,7 +7,7 @@ An androidx.lifecycle.ViewModel that exposes screen state as a StateFlow and rec
 One `<Name>ViewModel.kt` per `:feature:<name>`. It exposes the screen state as
 `StateFlow<UiState<T>>` and emits the next state on receiving events from the screen
 (`refresh()`, `setDarkThemeEnabled(enabled)`). As with the Screen, the file name is
-decided by the module name, so `SettingsViewModel.kt` cannot go in `:feature:home`.
+`<Name>ViewModel.kt`, where `<Name>` is the feature's name.
 
 The state container is `UiState` from the `core` package of `:ui`, and the content its
 `Content` wraps (`HomeContent` / `SettingsContent`) is a data class in the same file as
@@ -20,9 +20,9 @@ disappears and the shape does not change.
 
 ## Placement
 
-| Module | Path | When to use |
-|---|---|---|
-| `:feature:<feature>` | `src/main/kotlin/**/<feature>ViewModel.kt` |  |
+| Path | When to use |
+|---|---|
+| `feature/*/src/main/kotlin/com/example/sample/feature/*/*ViewModel.kt` |  |
 
 ## Examples
 

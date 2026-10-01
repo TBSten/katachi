@@ -27,16 +27,15 @@ and think later".
 ## Placement in this group
 
 ```
-:data
-  src/main/kotlin/**/
-    user/
-      UserRepository.kt           Repository interface
-      User*Repository.kt          Repository interface
-      UserRepositoryImpl.kt       Repository implementation
-      User*RepositoryImpl.kt      Repository implementation
-    settings/
-      SettingsRepository.kt       Repository interface
-      Settings*Repository.kt      Repository interface
-      SettingsRepositoryImpl.kt   Repository implementation
-      Settings*RepositoryImpl.kt  Repository implementation
+data/src/main/kotlin/com/example/sample/data/
+  user/
+    UserRepository.kt           Repository interface
+    User*Repository.kt          Repository interface
+    UserRepositoryImpl.kt       Repository implementation
+    User*RepositoryImpl.kt      Repository implementation
+  settings/
+    SettingsRepository.kt       Repository interface
+    Settings*Repository.kt      Repository interface
+    SettingsRepositoryImpl.kt   Repository implementation
+    Settings*RepositoryImpl.kt  Repository implementation
 ```

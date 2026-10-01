@@ -10,9 +10,9 @@ and a second one is a violation.
 
 ## Placement
 
-| Module | Path | When to use |
-|---|---|---|
-| `:app` | `proguard-rules.pro` |  |
+| Path | When to use |
+|---|---|
+| `app/proguard-rules.pro` |  |
 
 ## Examples
 

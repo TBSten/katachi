@@ -20,9 +20,9 @@ group says something.
 
 ## Placement
 
-| Module | Path | When to use |
-|---|---|---|
-| `:architecture-test` | `src/test/kotlin/com/example/sample/groups/*Group.kt` |  |
+| Path | When to use |
+|---|---|
+| `architecture-test/src/test/kotlin/com/example/sample/groups/*Group.kt` |  |
 
 ## Examples
 

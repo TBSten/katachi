@@ -12,7 +12,7 @@ Not edited by hand. `LayoutSnapshotSpec` writes it. To update it, just run `./gr
 :architecture-test:test -Dkatachi.snapshot.update=true`.
 
 What it is for is letting people review changes to the definition as a diff. When roles
-spread over nine modules are rewritten with `.module { }` or `modulePackage`, reading
+spread over nine modules are rewritten with shorthand such as `featureSources()`, reading
 the definition code does not tell you whether it just became easier to read or the tree
 being checked itself changed. If the flattened result is kept as committed text, the
 number of lines in `git diff` is the answer: if no line moves, the rewrite is
@@ -34,9 +34,9 @@ opposite of `Documentation` in the `tool` group being `documented = false`.
 
 ## Placement
 
-| Module | Path | When to use |
-|---|---|---|
-|  | `snapshots/layout.txt` |  |
+| Path | When to use |
+|---|---|
+| `snapshots/layout.txt` |  |
 
 ## Examples
 

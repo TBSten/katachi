@@ -4,7 +4,6 @@ package com.example.sample.roles
 
 import com.example.sample.forbiddenContents
 import com.example.sample.groups.DataDomain
-import com.example.sample.modulePackage
 import me.tbsten.katachi.ExperimentalKatachiApi
 import me.tbsten.katachi.dsl.DeclarationContainerScope
 import me.tbsten.katachi.dsl.gradle.*
@@ -34,8 +33,8 @@ fun DeclarationContainerScope.repositoryImplementation() = "RepositoryImplementa
     //   ./gradlew :architecture-test:katachiTemplate \
     //       --arg template=data.RepositoryImplementation.user --arg name=Profile
     layout {
-        ":data".module {
-            mainSourceSet / kotlin / modulePackage {
+        "data" {
+            mainSourceSet / kotlin / "com/example/sample/data" {
                 DataDomain.entries.forEach { domain ->
                     domain.packageName {
                         "${domain.name}RepositoryImpl".ktFile()

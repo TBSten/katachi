@@ -32,7 +32,7 @@ fun DeclarationContainerScope.groupDefinition() = "GroupDefinition" {
     //   ./gradlew :architecture-test:katachiTemplate \
     //       --arg template=testing.GroupDefinition --arg name=Domain
     layout {
-        ":architecture-test".module {
+        "architecture-test" {
             testSourceSet / kotlin / "com/example/sample" {
                 "groups" {
                     "${capture("name")}Group".ktFile()

@@ -22,12 +22,12 @@ generation target). The id is split per domain, and
 
 ## Placement
 
-| Module | Path | When to use |
-|---|---|---|
-| `:data` | `src/main/kotlin/**/user/UserRepository.kt` |  |
-| `:data` | `src/main/kotlin/**/user/User*Repository.kt` |  |
-| `:data` | `src/main/kotlin/**/settings/SettingsRepository.kt` |  |
-| `:data` | `src/main/kotlin/**/settings/Settings*Repository.kt` |  |
+| Path | When to use |
+|---|---|
+| `data/src/main/kotlin/com/example/sample/data/user/UserRepository.kt` |  |
+| `data/src/main/kotlin/com/example/sample/data/user/User*Repository.kt` |  |
+| `data/src/main/kotlin/com/example/sample/data/settings/SettingsRepository.kt` |  |
+| `data/src/main/kotlin/com/example/sample/data/settings/Settings*Repository.kt` |  |
 
 ## Examples
 

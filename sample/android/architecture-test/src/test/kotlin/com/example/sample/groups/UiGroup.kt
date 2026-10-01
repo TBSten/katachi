@@ -14,10 +14,9 @@ import me.tbsten.katachi.dsl.DeclarationContainerScope
  * The per-feature roles (`Screen` / `ViewModel` / `Route`) live in [featureGroup] instead.
  * See the note there for why the two are separate groups.
  *
- * `:ui` is one module split into packages, which is the shape `modulePackage` exists for:
- * `component` / `theme` / `core` / `preview` are named as what they are — one more level
- * below the module's own package — and `mainSourceSet / kotlin / modulePackage` says where
- * that package starts without any role file ever repeating `com/example/sample`.
+ * `:ui` is one module split into packages: `component` / `theme` / `core` / `preview` are
+ * named as what they are — one more level below the module's own package
+ * `com/example/sample/ui`.
  */
 fun DeclarationContainerScope.uiGroup() = "ui".group {
     title = "UI (shared layer)"
