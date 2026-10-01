@@ -35,7 +35,7 @@ katachi 自体を直す人向けの情報。使い方は [README](README.ja.md) 
 | [`sample/kmp`](sample/kmp/README.md)                           | Android + iOS の KMP プロジェクト（Compose Multiplatform の実依存あり） |
 | [`sample/custom-processor`](sample/custom-processor/README.md) | 自分で processor を書くときの見本                                       |
 
-4つとも、プラグインと `gradle()` を使い、`katachiDocs` で生成したドキュメントをコミットしている。`template { }` と baseline を使っているのは jvm / android / kmp だけ。
+4つとも、プラグインと `gradle()` を使い、`katachiDocs` で生成したドキュメントをコミットしている。`.template { }` と baseline を使っているのは jvm / android / kmp だけ。
 
 ## 検査する
 

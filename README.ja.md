@@ -77,8 +77,6 @@ katachi が検査するのはリポジトリ全体のファイルですが、Gra
 
 ```kotlin
 // architecture-test/src/test/kotlin/com/example/ProjectArchitecture.kt
-package com.example
-
 val projectArchitecture = architecture {
     gradle() // wrapper・settings・build スクリプトなど Gradle のファイル
     "domain".group {
@@ -89,8 +87,6 @@ val projectArchitecture = architecture {
 }
 
 // architecture-test/src/test/kotlin/com/example/ProjectArchitectureTest.kt
-package com.example
-
 class ProjectArchitectureTest {
     @Test
     fun `構成が定義どおりになっている`() = projectArchitecture.assert()

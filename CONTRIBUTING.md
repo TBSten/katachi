@@ -34,7 +34,7 @@ Four of them live under `sample/`. Each one's own README covers what it looks li
 | [`sample/kmp`](sample/kmp/README.md) | An Android + iOS KMP project, with real Compose Multiplatform dependencies |
 | [`sample/custom-processor`](sample/custom-processor/README.md) | A hands-on tour of writing your own processor |
 
-All four use the plugin and `gradle()`, and commit the documentation `katachiDocs` generates for them. Only jvm, android and kmp use `template { }` and baseline.
+All four use the plugin and `gradle()`, and commit the documentation `katachiDocs` generates for them. Only jvm, android and kmp use `.template { }` and baseline.
 
 ## Checking
 
