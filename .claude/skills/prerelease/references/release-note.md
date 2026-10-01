@@ -19,7 +19,9 @@
       リンクは英語のドキュメント（`https://tbsten.github.io/katachi/...`。`/ja/` を付けない）へ張る。
       日本語で下書きした場合は `tmp/release-note.ja.md` に置く（人が読む成果物は英語の1本だけにする）。
       手順 7 の報告のリリースノート概要は、これまでどおり日本語で書く
-    - **タイトルの直下に badge を並べる。**版はそのリリースの版で固定する（`img.shields.io/badge/...` の静的な badge。
+    - **`# …` の見出しを書かない。**GitHub の Release は題名（`v<版>`）を別に出すので、本文の先頭の見出しは重なる
+      （v0.2.0 で利用者が下書きから消した）。本文は badge から始める
+    - **本文の先頭に badge を並べる。**版はそのリリースの版で固定する（`img.shields.io/badge/...` の静的な badge。
       `maven-central/v/...` は最新版を指すので、古いリリースのノートでも新しい版が出てしまう）。並べるもの:
       katachi（Central の artifact の版のページへ）・Gradle プラグイン（plugin marker の版のページへ）・
       IDE プラグイン（experimental。版は catalog の `katachiIntellij` で katachi と別。Release に添付する `katachi-intellij-plugin-<その版>.zip` へ）・Docs・

@@ -100,7 +100,7 @@ flowchart LR
 ## 4. リリースノート作成
 
 `release-note-material.py` で直前のタグからのコミットを材料に出し（`tmp/` へ）、利用者への影響を中心に `release-note.md` を書く。
-**英語で書き**（GitHub Releases にそのまま貼る）、タイトルの直下に版を固定した badge を並べ、新機能の詳細・移行表・Also は `<details>` に畳む。
+**英語で書き**（GitHub Releases にそのまま貼る）、`# …` の見出しは書かずに本文の先頭に版を固定した badge を並べ、新機能の詳細・移行表・Also は `<details>` に畳む。
 詳細: [references/release-note.md](references/release-note.md)
 
 ## 5. 実際の実装・挙動 と ドキュメント に不整合がないかチェック
