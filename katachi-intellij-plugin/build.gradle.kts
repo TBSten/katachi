@@ -219,6 +219,9 @@ fun registerPreviewTask(name: String, mode: String, desc: String) = tasks.regist
     mainClass.set("me.tbsten.katachi.intellij.preview.PreviewMainKt")
     classpath = sourceSets["preview"].runtimeClasspath
     jvmArgs("-Djava.awt.headless=true", "-Dskiko.renderApi=SOFTWARE")
+    // `-Pkatachi.preview.noSystemFonts=true` switches the OS fonts off, to see that the PNGs need
+    // only the fonts bundled in src/preview/resources/fonts (PreviewFonts.kt).
+    providers.gradleProperty("katachi.preview.noSystemFonts").orNull?.let { systemProperty("katachi.preview.noSystemFonts", it) }
     args(mode)
 }
 registerPreviewTask(

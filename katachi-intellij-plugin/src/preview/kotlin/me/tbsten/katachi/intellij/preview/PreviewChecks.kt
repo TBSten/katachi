@@ -100,6 +100,30 @@ object PreviewChecks {
     }
 
     /**
+     * One text a preview drew: what it says, the font family it was laid out in, and whether that
+     * family is one the preview fills with its bundled fonts (PreviewFonts).
+     */
+    data class DrawnText(val text: String, val fontFamily: String, val bundledFamily: Boolean)
+
+    /**
+     * The font gate: the preview draws with bundled fonts only, so that a PNG does not depend on the
+     * fonts of the OS it was drawn on. Returns readable problems; empty means OK:
+     * - a text is laid out in a family the preview does not fill (Skia would draw it with the OS fonts)
+     * - a text has a character beyond ASCII that the bundled fonts lack, by [covers] (Skia would fall
+     *   back to an OS font for it)
+     */
+    fun fontProblems(texts: List<DrawnText>, covers: (codePoint: Int) -> Boolean): List<String> = buildList {
+        for (t in texts.distinct()) {
+            if (!t.bundledFamily) add("text:${t.text} is laid out in ${t.fontFamily}, which the preview does not bundle; use the theme's text style or FontFamily.Monospace")
+            val missing = t.text.codePoints().toArray().filter { it > 0x7E && !covers(it) }.distinct()
+            if (missing.isNotEmpty()) {
+                val chars = missing.joinToString { "'${String(Character.toChars(it))}' U+%04X".format(it) }
+                add("text:${t.text} has characters the bundled preview fonts lack ($chars); run scripts/preview-font/build_font.sh")
+            }
+        }
+    }
+
+    /**
      * True when something is drawn on the outermost pixel ring of [png] (it differs from the corner):
      * a part that reaches the window edge was cut there. The dialog keeps a margin all around.
      */

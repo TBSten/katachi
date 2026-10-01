@@ -1,13 +1,15 @@
-@file:OptIn(InternalComposeUiApi::class) // renderComposeScene
+@file:OptIn(InternalComposeUiApi::class, ExperimentalComposeUiApi::class) // ImageComposeScene
 
 package me.tbsten.katachi.intellij.preview
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.ui.ExperimentalComposeUiApi
+import androidx.compose.ui.ImageComposeScene
 import androidx.compose.ui.InternalComposeUiApi
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.renderComposeScene
+import androidx.compose.ui.unit.Density
 import androidx.compose.runtime.CompositionLocalProvider
 import me.tbsten.katachi.intellij.presentation.EnglishKatachiStrings
 import me.tbsten.katachi.intellij.presentation.JapaneseKatachiStrings
@@ -16,7 +18,6 @@ import me.tbsten.katachi.intellij.presentation.uiStateOf
 import me.tbsten.katachi.intellij.ui.KatachiToolWindowContent
 import me.tbsten.katachi.intellij.ui.LocalStaticRendering
 import org.jetbrains.jewel.foundation.theme.JewelTheme
-import org.jetbrains.jewel.intui.standalone.theme.IntUiTheme
 import org.jetbrains.skia.EncodedImageFormat
 import java.io.File
 import kotlin.system.exitProcess
@@ -79,10 +80,11 @@ fun main(args: Array<String>) {
     val expected = renders.flatMap { r ->
         Language.entries.flatMap { language -> language.themes.map { (theme, _) -> fileNameOf(r, language, theme) } }
     }.toSet() + expectedDialogFiles()
+    val toolWindowFailures = mutableListOf<String>()
     for (render in renders) {
         for (language in Language.entries) {
             for ((theme, dark) in language.themes) {
-                renderScenario(render, language.strings, dark, File(outDir, fileNameOf(render, language, theme)))
+                toolWindowFailures += renderScenario(render, language.strings, dark, File(outDir, fileNameOf(render, language, theme)))
             }
         }
     }
@@ -91,6 +93,7 @@ fun main(args: Array<String>) {
 
     // Mechanical gates, so that eyeballing the PNGs is not the only check.
     val gateFailures = buildList {
+        addAll(toolWindowFailures)
         addAll(dialogs.gateFailures)
         addAll(PreviewChecks.unexpectedFileSet(outDir, expected))
         addAll(
@@ -131,11 +134,14 @@ fun main(args: Array<String>) {
 private fun fileNameOf(render: Render, language: Language, theme: String) =
     "preview-${render.scenario.name}-${render.layout}${language.suffix}-$theme.png"
 
-/** Standalone Jewel Int UI theme + renderComposeScene -> PNG. */
-private fun renderScenario(render: Render, strings: KatachiStrings, dark: Boolean, out: File) {
+/**
+ * Standalone Jewel Int UI theme + one frame of an [ImageComposeScene] -> PNG (what renderComposeScene
+ * does, kept open to read the texts). Returns what the font gate says about the texts it drew.
+ */
+private fun renderScenario(render: Render, strings: KatachiStrings, dark: Boolean, out: File): List<String> {
     val ui = uiStateOf(render.scenario.state, strings, PREVIEW_NOW)
-    val image = renderComposeScene(width = render.width, height = render.height) {
-        IntUiTheme(isDark = dark) {
+    val scene = ImageComposeScene(render.width, render.height, Density(1f)) {
+        PreviewTheme(isDark = dark) {
             CompositionLocalProvider(LocalStaticRendering provides true) {
                 // Paint the whole root with the panel background; the transparent-corner gate needs it.
                 Box(Modifier.fillMaxSize().background(JewelTheme.globalColors.panelBackground)) {
@@ -144,7 +150,13 @@ private fun renderScenario(render: Render, strings: KatachiStrings, dark: Boolea
             }
         }
     }
-    out.writeBytes(image.encodeToData(EncodedImageFormat.PNG)!!.bytes)
+    try {
+        val image = scene.render()
+        out.writeBytes(image.encodeToData(EncodedImageFormat.PNG)!!.bytes)
+        return PreviewChecks.fontProblems(drawnTextsOf(scene), PreviewFonts::covers).map { "${out.name}: $it" }
+    } finally {
+        scene.close()
+    }
 }
 
 /** Writes one page showing every PNG, for agents and humans to look at. */

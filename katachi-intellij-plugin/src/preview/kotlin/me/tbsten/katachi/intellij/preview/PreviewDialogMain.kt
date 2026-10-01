@@ -28,6 +28,7 @@ internal fun renderDialogScenarios(outDir: File): DialogOutcome {
             val file = File(outDir, name).apply { writeBytes(rendered.png) }
             names += name
             PreviewChecks.layoutProblems(scenario.size.width, scenario.size.height, rendered.nodes).forEach { failures += "$name: $it" }
+            PreviewChecks.fontProblems(rendered.texts, PreviewFonts::covers).forEach { failures += "$name: $it" }
             if (PreviewChecks.edgeTouched(file)) failures += "$name: something is drawn on the window edge (cut off there)"
         }
     }

@@ -34,14 +34,13 @@ import me.tbsten.katachi.intellij.ui.dialog.GenerateDialogContent
 import me.tbsten.katachi.intellij.ui.dialog.GenerateDialogStrings
 import me.tbsten.katachi.intellij.ui.dialog.GenerateDialogUiState
 import org.jetbrains.jewel.foundation.theme.JewelTheme
-import org.jetbrains.jewel.intui.standalone.theme.IntUiTheme
 import org.jetbrains.jewel.ui.component.DefaultButton
 import org.jetbrains.jewel.ui.component.OutlinedButton
 import org.jetbrains.jewel.ui.component.Text
 import org.jetbrains.skia.EncodedImageFormat
 
-/** What one dialog scenario drew: the PNG and where every part ended up. */
-internal class DialogRender(val png: ByteArray, val nodes: List<PreviewChecks.LayoutNode>)
+/** What one dialog scenario drew: the PNG, where every part ended up, and every text with its font. */
+internal class DialogRender(val png: ByteArray, val nodes: List<PreviewChecks.LayoutNode>, val texts: List<PreviewChecks.DrawnText>)
 
 private const val FRAME_NANOS = 16_666_667L
 
@@ -64,7 +63,7 @@ private val noActions = object : GenerateDialogActions {
 internal fun renderDialog(scenario: DialogScenario, dark: Boolean): DialogRender {
     val strings = if (scenario.english) englishDialogStrings else japaneseDialogStrings
     val scene = ImageComposeScene(scenario.size.width, scenario.size.height, Density(1f)) {
-        IntUiTheme(isDark = dark) {
+        PreviewTheme(isDark = dark) {
             CompositionLocalProvider(LocalStaticRendering provides true) {
                 Box(Modifier.fillMaxSize().background(JewelTheme.globalColors.panelBackground)) {
                     DialogFrame(scenario.ui, strings, scenario.english)
@@ -87,7 +86,7 @@ internal fun renderDialog(scenario: DialogScenario, dark: Boolean): DialogRender
             repeat(3) { frame() }
         }
         val image = frame()
-        return DialogRender(image.encodeToData(EncodedImageFormat.PNG)!!.bytes, layoutNodesOf(scene))
+        return DialogRender(image.encodeToData(EncodedImageFormat.PNG)!!.bytes, layoutNodesOf(scene), drawnTextsOf(scene))
     } finally {
         scene.close()
     }
