@@ -105,7 +105,7 @@ const ja = {
 	agents: {
 		titleHtml: 'Built for AI agents.<br /><em>Good for humans too.</em>',
 		bodyHtml:
-			'エージェントに効くのは、文章ではなく落ちるテストです。',
+			'エージェントにとって有効なのは、文章ではなく落ちるテストです。',
 	},
 
 	cta: {

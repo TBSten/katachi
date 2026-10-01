@@ -112,7 +112,7 @@ public class KatachiDuplicateDeclarationException internal constructor(
 エラーメッセージの仕様は利用者向けの検査結果（`[UnexpectedFile]` など）と同じ方針に従う。
 
 - **英語**で書く。利用者が書いた識別子（役割名、制約名）が引用として混ざるのは許容する
-- **ASCII のみ。** `→` や `✗` は環境によって化ける。`->` で足りる
+- **ASCII のみ。** `→` や `✗` は環境によって文字化けする。`->` で足りる
 - ANSI エスケープを使わない
 - **宣言位置（`ファイル名:行番号`）を含める。** DSL 評価時のエラーは、どこを直せばよいかが
   行番号で分かるかどうかで直しやすさが変わる
@@ -126,7 +126,7 @@ Names must match [A-Za-z][A-Za-z0-9_-]*: start with an ASCII letter, then ASCII 
 Use `title` for a human readable display name.
 ```
 
-最後の1行が効く。**利用者がやりたかったこと（読みやすい名前を付けたい）に対して、正しい場所を示している。**
+最後の1行が役に立つ。**利用者がやりたかったこと（読みやすい名前を付けたい）に対して、正しい場所を示している。**
 
 ### 内部の想定違反
 
@@ -205,7 +205,7 @@ internal inline fun <T> catching(block: () -> T): Result<T> =
 | 投げ直す | なぜ |
 |---|---|
 | `VirtualMachineError`（`OutOfMemoryError` / `StackOverflowError`） | JVM がもう続けられない。握っても次のファイルで同じことが起きるだけで、原因だけが消える |
-| `LinkageError` | classpath が壊れている。全ファイルで失敗するので、報告が N 件の同じノイズで埋まる |
+| `LinkageError` | classpath がおかしくなっている。全ファイルで失敗するので、報告が N 件の同じノイズで埋まる |
 | `InterruptedException` | 呼び出し側がやめろと言っている。握るのは無視すること |
 | `AssertionError`（`KatachiArchitectureAssertionError` を含む） | これは**結果**であって失敗ではない |
 
@@ -247,7 +247,7 @@ public abstract class KatachiInternalException
   この2つの基底を名乗ってよい。** `katachi-konsist` の `KatachiKonsist*Exception` 5本はこの経路で
   作られている — もし `katachi` の外の第三者が同じことをしたければ、同じ2つの基底を継承すればよい
 - **どちらも `cause: Throwable?` を新たに取れる。** 既存のサブクラスは全部 `message =` を
-  名前付きで渡しているので無傷（コンストラクタのシグネチャが増えても呼び出し側は変わらない）。
+  名前付きで渡しているので影響を受けない（コンストラクタのシグネチャが増えても呼び出し側は変わらない）。
   `IllegalArgumentException(message, cause)` / `IllegalStateException(message, cause)` に
   そのまま渡す
 - **`KatachiCheckException` と `KatachiArchitectureAssertionError` は `internal constructor` のまま。**
@@ -279,7 +279,7 @@ public abstract class KatachiInternalException
 `check` / `require` / `checkNotNull` / `requireNotNull` / `error` が投げるのは
 `IllegalStateException` と `IllegalArgumentException` で、スタックトレースに katachi の名前が
 出ない。利用者は「自分のコードが悪いのか、katachi が悪いのか」を切り分けられないまま
-放り出される。専用の例外なら名前が出どころを語り、`catch` して報告できる。
+放り出される。専用の例外なら名前から出どころが分かり、`catch` して報告できる。
 
 素の `ClassCastException` も同じで、何が起きたのか読み手に伝わらない。`as` を禁じているのは
 このため。
