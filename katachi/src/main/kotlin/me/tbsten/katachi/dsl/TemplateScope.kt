@@ -209,18 +209,16 @@ public sealed interface TemplateScope {
      * string `${name}`. The value is checked as one directory level and nothing more, so a template
      * that puts it into a package or a class name tidies or refuses a `-` itself.
      *
-     * ## Example 1: build the package from the module the file is generated into
+     * ## Example 1: build the package from the directory the file is generated into
      * ```kt
      * "Screen" {
      *     layout {
-     *         ":feature:${capture("feature")}".module {
-     *             "${capture("name")}Screen.kt".file()
-     *                 .template {
-     *                     val name = captureValue("name")
-     *                     val feature = captureValue("feature") // --arg feature=home
-     *                     "package com.example.feature.$feature\n\nfun ${name}Screen() {}"
-     *                 }
-     *         }
+     *         "feature" / capture("feature") / "${capture("name")}Screen.kt".file()
+     *             .template {
+     *                 val name = captureValue("name")
+     *                 val feature = captureValue("feature") // --arg feature=home
+     *                 "package com.example.feature.$feature\n\nfun ${name}Screen() {}"
+     *             }
      *     }
      * }
      * ```

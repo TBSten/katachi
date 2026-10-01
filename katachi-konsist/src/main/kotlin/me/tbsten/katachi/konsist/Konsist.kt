@@ -29,11 +29,11 @@ import me.tbsten.katachi.konsist.internal.KonsistFileConstraint
  * ```kt
  * "UseCase" {
  *     layout {
- *         ":core:domain".module {
+ *         "core/domain" {
  *             "is usable from outside".konsist {
  *                 classes().must { it.hasPublicOrDefaultModifier }
  *             }
- *             mainSourceSet / kotlin / modulePackage / "useCase" / "*UseCase".ktFile()
+ *             mainSourceSet / kotlin / "com/example/core/domain" / "useCase" / "*UseCase".ktFile()
  *         }
  *     }
  * }
@@ -46,7 +46,7 @@ import me.tbsten.katachi.konsist.internal.KonsistFileConstraint
  *         classes().withNameEndingWith("UseCase")
  *             .must { klass -> klass.hasFunction { it.name == "invoke" } }
  *     }
- *     layout { ":core:domain".module { "useCase" / "*UseCase".ktFile() } }
+ *     layout { "core/domain" / "useCase" / "*UseCase".ktFile() }
  * }
  * ```
  *

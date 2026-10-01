@@ -28,9 +28,7 @@ import me.tbsten.katachi.dsl.LayoutScope
  * import me.tbsten.katachi.dsl.gradle.*
  * import me.tbsten.katachi.dsl.kotlin.ktFile
  *
- * ":testing".module {
- *     "commonMain".sourceSet / kotlin / modulePackage / "Fake*".ktFile()
- * }
+ * "testing" / "commonMain".sourceSet / kotlin / "com/example/testing" / "Fake*".ktFile()
  * ```
  */
 context(layoutScope: LayoutScope)
@@ -45,11 +43,9 @@ public val String.sourceSet: LayoutDirectory
  *
  * ## Example 1: Place files directly under src/main
  * ```kt
- * ":app".module {
- *     mainSourceSet {
- *         "AndroidManifest.xml".file()
- *         "res".ignore()
- *     }
+ * "app" / mainSourceSet {
+ *     "AndroidManifest.xml".file()
+ *     "res".ignore()
  * }
  * ```
  */
@@ -61,11 +57,9 @@ public val mainSourceSet: LayoutDirectory get() = "main".sourceSet
  *
  * ## Example 1: Place test code under src/test
  * ```kt
- * ":architecture-test".module {
- *     testSourceSet / kotlin / "com/example/sample" {
- *         "*Spec".ktFile()
- *         "*Test".ktFile()
- *     }
+ * "architecture-test" / testSourceSet / kotlin / "com/example/sample" {
+ *     "*Spec".ktFile()
+ *     "*Test".ktFile()
  * }
  * ```
  */
@@ -80,9 +74,7 @@ public val testSourceSet: LayoutDirectory get() = "test".sourceSet
  *
  * ## Example 1: Reach the kotlin directory below a source set
  * ```kt
- * ":core:domain".module {
- *     mainSourceSet / kotlin / "Foo".ktFile()
- * }
+ * "core/domain" / mainSourceSet / kotlin / "Foo".ktFile()
  * ```
  */
 context(layoutScope: LayoutScope)

@@ -4,6 +4,7 @@ import io.kotest.assertions.withClue
 import io.kotest.core.spec.style.FreeSpec
 import io.kotest.matchers.collections.shouldContainExactly
 import io.kotest.matchers.shouldBe
+import io.kotest.matchers.string.shouldContain
 import io.kotest.matchers.string.shouldNotContain
 import me.tbsten.katachi.dsl.Architecture
 import me.tbsten.katachi.dsl.architecture
@@ -83,7 +84,7 @@ class PlacementSpec : FreeSpec({
             )
         }
 
-        "module { } の外で書いた宣言は、モジュール列が空でフルパスになる" {
+        "module { } の外で書いた宣言は、モジュール列が無くフルパスになる" {
             val arch = architecture {
                 "tool".group {
                     "Script" {
@@ -93,7 +94,7 @@ class PlacementSpec : FreeSpec({
             }
 
             arch.placementRows("tool/Script.md") shouldContainExactly listOf(
-                "|  | `scripts/*.sh` |  |",
+                "| `scripts/*.sh` |  |",
             )
         }
 
@@ -114,8 +115,44 @@ class PlacementSpec : FreeSpec({
         }
     }
 
+    "Module 列の有無" - {
+        "どの行もモジュールを持たなければ Module 列を出さない" {
+            val arch = architecture {
+                "tool".group {
+                    "Script" {
+                        layout { "scripts" / "*.sh".file() }
+                    }
+                }
+            }
+
+            val page = arch.page("tool/Script.md")
+            page shouldContain "| Path | When to use |"
+            page shouldNotContain "Module"
+        }
+
+        "1行でもモジュールを持てば Module 列を出し、持たない行は空欄にする" {
+            val arch = architecture {
+                "tool".group {
+                    "Script" {
+                        layout {
+                            ":core".module { mainSourceSet / kotlin / "*".ktFile() }
+                            "scripts" / "*.sh".file()
+                        }
+                    }
+                }
+            }
+
+            val page = arch.page("tool/Script.md")
+            page shouldContain "| Module | Path | When to use |"
+            arch.placementRows("tool/Script.md") shouldContainExactly listOf(
+                "| `:core` | `src/main/kotlin/*.kt` |  |",
+                "|  | `scripts/*.sh` |  |",
+            )
+        }
+    }
+
     "ignore() と anyFile()" - {
-        "どちらもモジュール列を空にしてフルパスを出す" {
+        "どちらもモジュール列を持たずフルパスを出す" {
             val arch = architecture {
                 "app".group {
                     "Resource" {
@@ -132,8 +169,8 @@ class PlacementSpec : FreeSpec({
             }
 
             arch.placementRows("app/Resource.md") shouldContainExactly listOf(
-                "|  | `app/src/main/res` |  |",
-                "|  | `app/src/main/assets` |  |",
+                "| `app/src/main/res` |  |",
+                "| `app/src/main/assets` |  |",
             )
         }
     }
@@ -253,6 +290,6 @@ class PlacementSpec : FreeSpec({
 private fun Architecture.placementRows(path: String): List<String> =
     page(path)
         .lines()
-        .dropWhile { it != "|---|---|---|" }
+        .dropWhile { it != "|---|---|---|" && it != "|---|---|" }
         .drop(1)
         .takeWhile { it.startsWith("|") }

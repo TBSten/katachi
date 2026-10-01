@@ -173,7 +173,7 @@ public class KatachiFileConstraintDirectOnlyWithoutDirectoryException internal c
         )
         append(
             "Move the constraint into the directory block whose own files it is about " +
-                "(e.g. `\"util\" { ... }` or `\":core\".module { ... }`), or use the default " +
+                "(e.g. `\"util\" { ... }` or `\"core\" { ... }`), or use the default " +
                 "scope, Subtree, to cover everything below.",
         )
     },

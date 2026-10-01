@@ -68,11 +68,10 @@ public val String.nameWords: List<String>
  * "remoteAPI".pascalCase shouldBe "RemoteApi"
  * ```
  *
- * ## Example 2: build a file name from a captured module name
+ * ## Example 2: build a file name from a name
  * ```kt
- * ":feature:*".module {
- *   mainSourceSet / kotlin / modulePackage / "${wildcards[0].pascalCase}Screen".ktFile()
- * }
+ * val feature = "debug-menu"
+ * mainSourceSet / kotlin / "com/example/debug" / "${feature.pascalCase}Screen".ktFile()
  * ```
  */
 public val String.pascalCase: String

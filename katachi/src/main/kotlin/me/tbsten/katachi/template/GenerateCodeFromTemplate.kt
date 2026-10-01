@@ -96,12 +96,12 @@ import me.tbsten.katachi.template.internal.writeTemplateFiles
  *     --arg template=data.Repository.repository,data.Repository.repositoryImpl --arg name=User
  * ```
  *
- * ## Example 4: generate below a module, named with `capture()`
+ * ## Example 4: generate below a directory, named with `capture()`
  *
- * A wildcard module key names no single module, so the layout names its `*`s and the run gives
+ * A wildcard directory names no single directory, so the layout names its `*`s and the run gives
  * their values.
  * ```sh
- * # layout { ":feature:${capture("feature")}".module { "${capture("name")}Screen.kt".file().template { ... } } }
+ * # layout { "feature" / capture("feature") / "${capture("name")}Screen.kt".file().template { ... } }
  * ./gradlew :architecture-test:katachiTemplate \
  *     --arg template=feature.Screen --arg feature=home --arg name=Home
  * ```

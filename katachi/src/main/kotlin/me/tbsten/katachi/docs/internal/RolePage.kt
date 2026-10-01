@@ -33,25 +33,33 @@ internal fun rolePage(
     appendLine()
 }
 
-/** Where the role's files may live: one row per declared pattern. */
+/**
+ * Where the role's files may live: one row per declared pattern.
+ *
+ * The Module column appears only when some row has a module to show. Without one, every cell in
+ * the column would be empty, so the table drops it and starts at Path.
+ */
 private fun StringBuilder.appendPlacements(placements: List<Placement>) {
     if (placements.isEmpty()) return
+    val withModule = placements.any { it.module != null }
     append(SECTION_BREAK)
     append("## Placement")
     append(SECTION_BREAK)
-    append(tableRow(listOf("Module", "Path", "When to use")))
-    append("\n|---|---|---|")
+    if (withModule) {
+        append(tableRow(listOf("Module", "Path", "When to use")))
+        append("\n|---|---|---|")
+    } else {
+        append(tableRow(listOf("Path", "When to use")))
+        append("\n|---|---|")
+    }
     for (placement in placements) {
         append("\n")
-        append(
-            tableRow(
-                listOf(
-                    placement.module?.let { "`$it`" }.orEmpty(),
-                    "`${placement.path}`",
-                    placement.description.orEmpty(),
-                ),
-            ),
+        val cells = listOfNotNull(
+            if (withModule) placement.module?.let { "`$it`" }.orEmpty() else null,
+            "`${placement.path}`",
+            placement.description.orEmpty(),
         )
+        append(tableRow(cells))
     }
 }
 

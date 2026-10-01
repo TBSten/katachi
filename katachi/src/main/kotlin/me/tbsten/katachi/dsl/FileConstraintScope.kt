@@ -22,7 +22,7 @@ import me.tbsten.katachi.dsl.internal.captureDeclarationSite
  * "UseCase" {
  *     fileConstraint("has an invoke function") { subject -> /* every place below */ emptyList() }
  *     layout {
- *         ":core:domain".module {
+ *         "core/domain" {
  *             fileConstraint("is usable from outside") { subject -> /* core/domain only */ emptyList() }
  *             mainSourceSet / kotlin / "useCase" / "*UseCase".ktFile()
  *         }

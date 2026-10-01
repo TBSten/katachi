@@ -24,11 +24,9 @@ import me.tbsten.katachi.dsl.LayoutScope
  * import me.tbsten.katachi.dsl.gradle.*
  * import me.tbsten.katachi.dsl.kotlin.ktFile
  *
- * ":app".module {
- *     mainSourceSet / kotlin / "com/example/sample" {
- *         "MainActivity".ktFile()
- *         "MainApplication".ktFile()
- *     }
+ * "app" / mainSourceSet / kotlin / "com/example/sample" {
+ *     "MainActivity".ktFile()
+ *     "MainApplication".ktFile()
  * }
  * ```
  */
@@ -43,14 +41,12 @@ public fun String.ktFile(): LayoutFile {
  *
  * The same as `"build.gradle.kts".file()`, and produces the same declaration.
  *
- * ## Example 1: Declare a module's own build script
+ * ## Example 1: Declare a settings script
  * ```kt
  * import me.tbsten.katachi.dsl.gradle.*
  * import me.tbsten.katachi.dsl.kotlin.ktsFile
  *
- * ":".module {
- *     "settings.gradle".ktsFile()
- * }
+ * "settings.gradle".ktsFile()
  * ```
  */
 context(layoutScope: LayoutScope)

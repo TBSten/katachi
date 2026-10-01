@@ -340,9 +340,9 @@ class RolePageSpec : FreeSpec({
 
             ## Placement
 
-            | Module | Path | When to use |
-            |---|---|---|
-            |  | `useCase/*UseCase.kt` |  |
+            | Path | When to use |
+            |---|---|
+            | `useCase/*UseCase.kt` |  |
 
             ## Constraints
 
