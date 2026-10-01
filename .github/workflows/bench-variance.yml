@@ -1,0 +1,153 @@
+name: Benchmark variance
+
+# How much the real-project benchmark (ci.yml's bench-real-project) moves on GitHub's standard
+# runners when nothing changes: the same commit, measured on several runners at once and a few
+# times on each. The numbers decide bench-store's alert threshold, which compares one run with
+# the previous one only.
+#
+# Run by hand only. Nothing is stored on gh-pages and no comment is posted: the results are the
+# job summary and the `variance` artifact.
+#
+#   gh workflow run bench-variance.yml -f runners=8 -f repeats=3
+
+on:
+  workflow_dispatch:
+    inputs:
+      runners:
+        description: How many runners measure in parallel (the variance between machines)
+        default: '8'
+      repeats:
+        description: How many times each runner measures, in a fresh JVM each time (the variance on one machine)
+        default: '3'
+
+permissions:
+  contents: read
+
+jobs:
+  plan:
+    runs-on: ubuntu-latest
+    outputs:
+      runners: ${{ steps.plan.outputs.runners }}
+    steps:
+      - id: plan
+        env:
+          RUNNERS: ${{ inputs.runners }}
+        run: |
+          python3 -c "import json, os; print('runners=' + json.dumps(list(range(1, int(os.environ['RUNNERS']) + 1))))" >> "${GITHUB_OUTPUT}"
+
+  measure:
+    needs: plan
+    name: measure (runner ${{ matrix.runner }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      matrix:
+        runner: ${{ fromJSON(needs.plan.outputs.runners) }}
+    env:
+      # The same pinned commit as ci.yml's bench-real-project.
+      REAL_PROJECT_REPOSITORY: https://github.com/android/nowinandroid.git
+      REAL_PROJECT_COMMIT: a49ed253d75e61a2b6ab80a8da677b57437b08eb
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Check out nowinandroid
+        run: |
+          dir="${RUNNER_TEMP}/nowinandroid"
+          git init -q "${dir}"
+          git -C "${dir}" remote add origin "${REAL_PROJECT_REPOSITORY}"
+          git -C "${dir}" fetch -q --depth 1 origin "${REAL_PROJECT_COMMIT}"
+          git -C "${dir}" checkout -q FETCH_HEAD
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v6
+
+      # The same arguments as ci.yml, once per repeat. Each repeat is its own JavaExec, so each
+      # starts a fresh JVM: the cold numbers stay cold.
+      - name: Measure validate()
+        env:
+          REPEATS: ${{ inputs.repeats }}
+          RUNNER_INDEX: ${{ matrix.runner }}
+        run: |
+          mkdir -p variance
+          for i in $(seq 1 "${REPEATS}"); do
+            ./gradlew :benchmark:measureRealProject --rerun-tasks \
+              -PrealProject.name=nowinandroid \
+              "-PrealProject.dir=${RUNNER_TEMP}/nowinandroid" \
+              -PrealProject.warmups=5 \
+              -PrealProject.iterations=15 \
+              "-PrealProject.output=${GITHUB_WORKSPACE}/variance/runner${RUNNER_INDEX}-repeat${i}.json"
+          done
+          nproc
+          grep 'model name' /proc/cpuinfo | head -n 1
+
+      - name: Upload results
+        uses: actions/upload-artifact@v7
+        with:
+          name: variance-runner${{ matrix.runner }}
+          path: variance/
+          retention-days: 30
+
+  summary:
+    needs: measure
+    if: ${{ !cancelled() }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download results
+        uses: actions/download-artifact@v8
+        with:
+          pattern: variance-runner*
+          path: variance
+          merge-multiple: true
+
+      - name: Summarize
+        run: |
+          cat > summarize.py <<'PY'
+          import glob, json, re, statistics
+
+          runs = {}  # metric -> list of (runner, repeat, value)
+          for path in sorted(glob.glob("variance/*.json")):
+              m = re.search(r"runner(\d+)-repeat(\d+)", path)
+              for bench in json.load(open(path)):
+                  runs.setdefault(bench["name"], []).append((int(m.group(1)), int(m.group(2)), bench["value"]))
+
+          lines = [
+              "| metric | n | min | median | max | max / min | CV | worst ratio of two runs in a row | within one runner (median of max/min) |",
+              "|---|---|---|---|---|---|---|---|---|",
+          ]
+          for name, rows in sorted(runs.items()):
+              values = [v for _, _, v in rows]
+              med = statistics.median(values)
+              cv = statistics.pstdev(values) / statistics.mean(values)
+              per_runner = {}
+              for r, _, v in rows:
+                  per_runner.setdefault(r, []).append(v)
+              within = statistics.median(max(v) / min(v) for v in per_runner.values() if len(v) > 1) if any(len(v) > 1 for v in per_runner.values()) else float("nan")
+              # bench-store compares a run with the previous one: the worst such ratio among
+              # the first repeat of each runner, taken in runner order.
+              firsts = [v for r, i, v in sorted(rows) if i == 1]
+              worst = max((b / a for a, b in zip(firsts, firsts[1:])), default=float("nan"))
+              lines.append(
+                  f"| {name} | {len(values)} | {min(values):.1f} | {med:.1f} | {max(values):.1f} | "
+                  f"{max(values) / min(values):.2f} | {cv:.1%} | {worst:.2f} | {within:.2f} |"
+              )
+          text = "\n".join(lines)
+          print(text)
+          open("variance/summary.md", "w").write(text + "\n")
+          PY
+          python3 summarize.py
+          cat variance/summary.md >> "${GITHUB_STEP_SUMMARY}"
+
+      - name: Upload summary
+        uses: actions/upload-artifact@v7
+        with:
+          name: variance
+          path: variance/
+          retention-days: 30
