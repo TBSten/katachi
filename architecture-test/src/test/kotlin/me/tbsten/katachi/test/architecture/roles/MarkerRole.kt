@@ -5,7 +5,6 @@ import me.tbsten.katachi.dsl.LayoutScope
 import me.tbsten.katachi.dsl.gradle.div
 import me.tbsten.katachi.dsl.gradle.kotlin
 import me.tbsten.katachi.dsl.gradle.mainSourceSet
-import me.tbsten.katachi.dsl.gradle.module
 import me.tbsten.katachi.dsl.kotlin.ktFile
 import me.tbsten.katachi.konsist.konsist
 import me.tbsten.katachi.test.architecture.INTERNAL_PACKAGE_RULE
@@ -14,11 +13,11 @@ import me.tbsten.katachi.test.architecture.KDOC_TAG_ORDER_RULE
 import me.tbsten.katachi.test.architecture.PACKAGE_MATCHES_PATH_RULE
 import me.tbsten.katachi.test.architecture.importsLaterLayerThan
 import me.tbsten.katachi.test.architecture.laterLayersOf
-import me.tbsten.katachi.test.architecture.mainPackage
 import me.tbsten.katachi.test.architecture.misplacedDeclarationsOf
 import me.tbsten.katachi.test.architecture.publicDeclarationsOf
 import me.tbsten.katachi.test.architecture.keepsBlockTagsLast
 import me.tbsten.katachi.test.architecture.showsExample
+import me.tbsten.katachi.test.architecture.KATACHI_MAIN_PACKAGE
 
 /**
  * The role of the root package of `:katachi`.
@@ -35,7 +34,7 @@ fun DeclarationContainerScope.marker() = "Marker" {
     example("InternalKatachiApi.kt", "ライブラリの他モジュール専用の API の opt-in マーカー")
     example("Exceptions.kt", "利用者が catch する例外の基底")
     layout {
-        ":katachi".module {
+        "katachi" {
             importsOnlyEarlierLayers()
             packageMatchesPath()
             internalDeclarationsInInternalPackage()
@@ -43,8 +42,8 @@ fun DeclarationContainerScope.marker() = "Marker" {
             publicDeclarationsKeepTagsLast()
             // The root package, and only it: `*` never crosses a `/`, so the layer
             // directories one level down are untouched by this.
-            mainSourceSet / kotlin / mainPackage / "*".ktFile()
-            mainSourceSet / kotlin / mainPackage / "internal" / "*".ktFile()
+            mainSourceSet / kotlin / KATACHI_MAIN_PACKAGE / "*".ktFile()
+            mainSourceSet / kotlin / KATACHI_MAIN_PACKAGE / "internal" / "*".ktFile()
         }
     }
 }

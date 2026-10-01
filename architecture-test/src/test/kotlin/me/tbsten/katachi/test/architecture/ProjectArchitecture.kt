@@ -2,7 +2,6 @@ package me.tbsten.katachi.test.architecture
 
 import me.tbsten.katachi.dsl.Architecture
 import me.tbsten.katachi.dsl.architecture
-import me.tbsten.katachi.dsl.gradle.ModulePackage
 import me.tbsten.katachi.test.architecture.groups.backendGroup
 import me.tbsten.katachi.test.architecture.groups.docsGroup
 import me.tbsten.katachi.test.architecture.groups.gradleGroup
@@ -13,47 +12,35 @@ import me.tbsten.katachi.test.architecture.groups.sampleGroup
 import me.tbsten.katachi.test.architecture.groups.testingGroup
 import me.tbsten.katachi.test.architecture.groups.toolGroup
 
-/**
- * Where each module keeps its production sources, below its own `src/main/kotlin`.
- *
- * Not derivable from the module name: `:katachi` is the root package itself and
- * `:katachi-konsist` sits *inside* it, as `me.tbsten.katachi.konsist`, because the backend is
- * one more package of the library rather than a library of its own. So the mapping is written
- * out instead of being computed by [me.tbsten.katachi.dsl.gradle.capitalizedModuleNamePackage].
- *
- * A module this does not know answers with the empty string, which katachi turns into
- * `KatachiModulePackageException` at the line that used it — a louder failure than silently
- * deriving a plausible-looking directory that nothing lives in.
- */
-val mainPackage: ModulePackage = ModulePackage { modulePath ->
-    // The KDoc of `packageDirectoryOf` says the leading `:` may be absent, so it is never
-    // matched on.
-    when (modulePath.removePrefix(":")) {
-        "katachi" -> "me/tbsten/katachi"
-        "katachi-konsist" -> "me/tbsten/katachi/konsist"
-        "tool:dokka" -> "me/tbsten/katachi/dokka"
-        else -> ""
-    }
-}
+// Where each module keeps its production sources, below its own `src/main/kotlin`, and its test
+// sources below `src/test/kotlin`. Written out rather than derived from the module name:
+// `:katachi` is the root package itself and `:katachi-konsist` sits *inside* it, as
+// `me.tbsten.katachi.konsist`, because the backend is one more package of the library rather than
+// a library of its own.
+//
+// Test code lives one level deeper than production code, under `me.tbsten.katachi.test`, and that
+// is load bearing rather than a convention -- see [projectArchitecture] for why.
 
-/**
- * Where each module keeps its test sources, below its own `src/test/kotlin`.
- *
- * Test code lives one level deeper than production code, under `me.tbsten.katachi.test`, and
- * that is load bearing rather than a convention — see [projectArchitecture] for why.
- *
- * `:architecture-test` is in the table too, so this definition's own files are addressed the
- * same way as everything else it describes.
- */
-val testPackage: ModulePackage = ModulePackage { modulePath ->
-    when (modulePath.removePrefix(":")) {
-        "katachi" -> "me/tbsten/katachi/test"
-        "katachi-konsist" -> "me/tbsten/katachi/test/konsist"
-        "architecture-test" -> "me/tbsten/katachi/test/architecture"
-        "tool:dokka" -> "me/tbsten/katachi/test/dokka"
-        else -> ""
-    }
-}
+/** Production package directory of `:katachi`. */
+const val KATACHI_MAIN_PACKAGE: String = "me/tbsten/katachi"
+
+/** Production package directory of `:katachi-konsist`. */
+const val KONSIST_MAIN_PACKAGE: String = "me/tbsten/katachi/konsist"
+
+/** Production package directory of `:tool:dokka`. */
+const val DOKKA_MAIN_PACKAGE: String = "me/tbsten/katachi/dokka"
+
+/** Test package directory of `:katachi`. */
+const val KATACHI_TEST_PACKAGE: String = "me/tbsten/katachi/test"
+
+/** Test package directory of `:katachi-konsist`. */
+const val KONSIST_TEST_PACKAGE: String = "me/tbsten/katachi/test/konsist"
+
+/** Test package directory of `:tool:dokka`. */
+const val DOKKA_TEST_PACKAGE: String = "me/tbsten/katachi/test/dokka"
+
+/** Test package directory of `:architecture-test`, so this definition's own files are addressed the same way. */
+const val ARCHITECTURE_TEST_PACKAGE: String = "me/tbsten/katachi/test/architecture"
 
 /**
  * The architecture of katachi itself, described with katachi.

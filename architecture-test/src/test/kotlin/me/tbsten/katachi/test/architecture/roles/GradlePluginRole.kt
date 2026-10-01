@@ -2,17 +2,16 @@ package me.tbsten.katachi.test.architecture.roles
 
 import me.tbsten.katachi.dsl.DeclarationContainerScope
 import me.tbsten.katachi.dsl.gradle.mainSourceSet
-import me.tbsten.katachi.dsl.gradle.module
 import me.tbsten.katachi.dsl.gradle.testSourceSet
 
 /**
  * The role of `:katachi-gradle-plugin`, the Gradle plugin katachi publishes.
  *
- * ## Why the package paths are written out instead of going through `mainPackage`
+ * ## Why the package paths are written out instead of going through the package constants
  *
- * `mainPackage` and `testPackage` map a module path to a directory below `src/main/kotlin` and
- * `src/test/kotlin`. This module has no Kotlin in it at all — see its `build.gradle.kts` for
- * why — so neither table applies to it. One literal path per source set says it once, in the
+ * The `*_MAIN_PACKAGE` and `*_TEST_PACKAGE` constants name a directory below `src/main/kotlin`
+ * and `src/test/kotlin`. This module has no Kotlin in it at all — see its `build.gradle.kts` for
+ * why — so none of them applies to it. One literal path per source set says it once, in the
  * file it applies to.
  *
  * ## Why there is no `konsist { }` here
@@ -30,7 +29,7 @@ fun DeclarationContainerScope.gradlePlugin() = "GradlePlugin" {
     example("KatachiExtension.java", "利用者が書く katachi { } ブロック")
     example("GenerateKatachiEntryPointTask.java", "architecture の参照とレジストリだけを吐くコード生成")
     layout {
-        ":katachi-gradle-plugin".module {
+        "katachi-gradle-plugin" {
             mainSourceSet / "java" / "me/tbsten/katachi/gradle" / "*.java".file()
             testSourceSet / "java" / "me/tbsten/katachi/test/gradle" / "*.java".file()
         }

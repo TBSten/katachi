@@ -5,13 +5,12 @@ import me.tbsten.katachi.dsl.LayoutScope
 import me.tbsten.katachi.dsl.gradle.div
 import me.tbsten.katachi.dsl.gradle.kotlin
 import me.tbsten.katachi.dsl.gradle.mainSourceSet
-import me.tbsten.katachi.dsl.gradle.module
 import me.tbsten.katachi.dsl.kotlin.ktFile
 import me.tbsten.katachi.konsist.konsist
 import me.tbsten.katachi.test.architecture.KDOC_TAG_ORDER_RULE
 import me.tbsten.katachi.test.architecture.keepsBlockTagsLast
-import me.tbsten.katachi.test.architecture.mainPackage
 import me.tbsten.katachi.test.architecture.publicDeclarationsOf
+import me.tbsten.katachi.test.architecture.DOKKA_MAIN_PACKAGE
 
 /**
  * The role of `:tool:dokka`, the Dokka plugin behind this repository's own API reference.
@@ -36,22 +35,22 @@ fun DeclarationContainerScope.dokkaPlugin() = "DokkaPlugin" {
     example("ModuleFragmentStrategy.kt", "モジュールごとの run が残した断片を、束ねる run で回収する")
     example("LlmsModuleInstaller.kt", "モジュールの出力に llms.txt と llms-full.txt を足す")
     layout {
-        ":tool:dokka".module {
+        "tool/dokka" {
             publicDeclarationsKeepTagsLast()
-            mainSourceSet / kotlin / mainPackage / "*".ktFile()
-            mainSourceSet / kotlin / mainPackage / "featured" / "*".ktFile()
-            mainSourceSet / kotlin / mainPackage / "llms" / "*".ktFile()
-            mainSourceSet / kotlin / mainPackage / "navigation" / "*".ktFile()
+            mainSourceSet / kotlin / DOKKA_MAIN_PACKAGE / "*".ktFile()
+            mainSourceSet / kotlin / DOKKA_MAIN_PACKAGE / "featured" / "*".ktFile()
+            mainSourceSet / kotlin / DOKKA_MAIN_PACKAGE / "llms" / "*".ktFile()
+            mainSourceSet / kotlin / DOKKA_MAIN_PACKAGE / "navigation" / "*".ktFile()
             // Implementation parts shared across features (collected here rather than under
             // whichever feature happened to introduce them first): "internal" is this module's
             // own domain split, not katachi's `.internal`-for-internal-declarations convention
             // (see `publicDeclarationsKeepTagsLast` — that convention does not apply here).
-            mainSourceSet / kotlin / mainPackage / "internal" / "featured" / "*".ktFile()
-            mainSourceSet / kotlin / mainPackage / "internal" / "fragment" / "*".ktFile()
-            mainSourceSet / kotlin / mainPackage / "internal" / "link" / "*".ktFile()
-            mainSourceSet / kotlin / mainPackage / "internal" / "markdown" / "*".ktFile()
-            mainSourceSet / kotlin / mainPackage / "internal" / "page" / "*".ktFile()
-            mainSourceSet / kotlin / mainPackage / "internal" / "summary" / "*".ktFile()
+            mainSourceSet / kotlin / DOKKA_MAIN_PACKAGE / "internal" / "featured" / "*".ktFile()
+            mainSourceSet / kotlin / DOKKA_MAIN_PACKAGE / "internal" / "fragment" / "*".ktFile()
+            mainSourceSet / kotlin / DOKKA_MAIN_PACKAGE / "internal" / "link" / "*".ktFile()
+            mainSourceSet / kotlin / DOKKA_MAIN_PACKAGE / "internal" / "markdown" / "*".ktFile()
+            mainSourceSet / kotlin / DOKKA_MAIN_PACKAGE / "internal" / "page" / "*".ktFile()
+            mainSourceSet / kotlin / DOKKA_MAIN_PACKAGE / "internal" / "summary" / "*".ktFile()
             // How Dokka finds the plugin: `ServiceLoader` over the plugin classpath.
             mainSourceSet / "resources" / "META-INF/services" / "org.jetbrains.dokka.plugability.DokkaPlugin".file()
         }

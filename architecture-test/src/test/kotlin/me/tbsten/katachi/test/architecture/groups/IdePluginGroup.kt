@@ -15,7 +15,7 @@ import me.tbsten.katachi.test.architecture.roles.idePluginTest
  * describe itself with katachi, so nothing else would notice a stray file in it.
  *
  * It is an independent Gradle build (see `IdePluginBuild`), so none of its paths go through
- * `.module { }`: no module path of this build resolves to it. The roles are deliberately coarse —
+ * module resolution: no module path of this build resolves to it. The roles are deliberately coarse —
  * build, sources, tests, preview — until the plugin has enough code to be worth layering.
  */
 fun DeclarationContainerScope.idePluginGroup() = "ide-plugin".group {

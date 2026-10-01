@@ -27,9 +27,9 @@ import me.tbsten.katachi.processor.process
  * This replaces the third assertion of the spec that used to live at
  * `katachi/src/test/kotlin/me/tbsten/katachi/test/PackageDependencySpec.kt`, which asked that
  * no layer of `:katachi` had become empty. It is checked per declaration rather than per role,
- * for a reason worth writing down: `".module { }"` injects that module's `build.gradle.kts`
- * into every role that uses it, so "this role owns at least one file" is answered `true` by
- * the injected build script alone and would have caught nothing.
+ * for a reason worth writing down: a role that also declares a build script of its own would
+ * answer "this role owns at least one file" with `true` from that one file alone, and so would
+ * catch nothing.
  */
 @OptIn(ExperimentalKatachiApi::class, InternalKatachiApi::class)
 class RoleCoverageSpec : FreeSpec({

@@ -5,10 +5,10 @@ import me.tbsten.katachi.dsl.LayoutScope
 import me.tbsten.katachi.dsl.gradle.div
 import me.tbsten.katachi.dsl.gradle.kotlin
 import me.tbsten.katachi.dsl.gradle.mainSourceSet
-import me.tbsten.katachi.dsl.gradle.module
 import me.tbsten.katachi.dsl.kotlin.ktFile
 import me.tbsten.katachi.konsist.konsist
 import me.tbsten.katachi.test.architecture.*
+import me.tbsten.katachi.test.architecture.KATACHI_MAIN_PACKAGE
 
 /**
  * The role of the general-purpose helpers that know nothing about architecture definitions.
@@ -23,14 +23,14 @@ fun DeclarationContainerScope.util() = "Util" {
     summary = "アーキテクチャ定義を知らない、標準ライブラリだけで書かれた道具"
     example("RunCatchingScoped.kt", "失敗を記録しながら最後まで進める runCatchingScoped")
     layout {
-        ":katachi".module {
+        "katachi" {
             importsOnlyEarlierLayers()
             packageMatchesPath()
             internalDeclarationsInInternalPackage()
             publicDeclarationsShowExample()
             publicDeclarationsKeepTagsLast()
-            mainSourceSet / kotlin / mainPackage / "util" / "*".ktFile()
-            mainSourceSet / kotlin / mainPackage / "util" / "internal" / "*".ktFile()
+            mainSourceSet / kotlin / KATACHI_MAIN_PACKAGE / "util" / "*".ktFile()
+            mainSourceSet / kotlin / KATACHI_MAIN_PACKAGE / "util" / "internal" / "*".ktFile()
         }
     }
 }

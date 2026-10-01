@@ -5,7 +5,6 @@ import me.tbsten.katachi.dsl.LayoutScope
 import me.tbsten.katachi.dsl.gradle.div
 import me.tbsten.katachi.dsl.gradle.kotlin
 import me.tbsten.katachi.dsl.gradle.mainSourceSet
-import me.tbsten.katachi.dsl.gradle.module
 import me.tbsten.katachi.dsl.kotlin.ktFile
 import me.tbsten.katachi.konsist.konsist
 import me.tbsten.katachi.test.architecture.INTERNAL_PACKAGE_RULE
@@ -14,11 +13,11 @@ import me.tbsten.katachi.test.architecture.KDOC_TAG_ORDER_RULE
 import me.tbsten.katachi.test.architecture.PACKAGE_MATCHES_PATH_RULE
 import me.tbsten.katachi.test.architecture.importsLaterLayerThan
 import me.tbsten.katachi.test.architecture.laterLayersOf
-import me.tbsten.katachi.test.architecture.mainPackage
 import me.tbsten.katachi.test.architecture.misplacedDeclarationsOf
 import me.tbsten.katachi.test.architecture.publicDeclarationsOf
 import me.tbsten.katachi.test.architecture.keepsBlockTagsLast
 import me.tbsten.katachi.test.architecture.showsExample
+import me.tbsten.katachi.test.architecture.KATACHI_MAIN_PACKAGE
 
 /**
  * The role of the layer that receives a definition and holds the declared model.
@@ -35,7 +34,7 @@ fun DeclarationContainerScope.dsl() = "Dsl" {
         `dsl.gradle` と `dsl.kotlin` もこの層です。`layout { }` の上に context parameter で
         書かれた語彙で、種類としては別物ですが依存としては同じ層にいます。
         `dsl/LayoutScopeImpl.kt` が `dsl.kotlin.ktsFile` を import しているので
-        （`.module { }` が `build.gradle.kts` を注入するため）、
+        （モジュールの宣言が `build.gradle.kts` を注入するため）、
         「コアは語彙を import しない」という規則は今日の時点で落ちます。
 
         `dsl.files` もこの層です。`files = gitTracked()` が選ぶファイルシステムの拡張点
@@ -45,18 +44,18 @@ fun DeclarationContainerScope.dsl() = "Dsl" {
     """.trimIndent()
     example("LayoutScope.kt", "layout { } の受け皿。コアの語彙はこれで全部")
     example("Architecture.kt", "宣言し終わった1つの定義")
-    example("Modules.kt", "\":core:data\".module { } — dsl.gradle の語彙")
+    example("Modules.kt", "モジュールのパスをディレクトリに読み替える語彙 — dsl.gradle")
     example("FileSelection.kt", "走査するファイル集合の選び方")
     example("KatachiFileSystem.kt", "走査が触る最小のファイルシステム抽象 — dsl.files の拡張点")
     layout {
-        ":katachi".module {
+        "katachi" {
             importsOnlyEarlierLayers()
             packageMatchesPath()
             internalDeclarationsInInternalPackage()
             publicDeclarationsShowExample()
             publicDeclarationsKeepTagsLast()
-            mainSourceSet / kotlin / mainPackage / "dsl" / "*".ktFile()
-            mainSourceSet / kotlin / mainPackage / "dsl" / "**" / "*".ktFile()
+            mainSourceSet / kotlin / KATACHI_MAIN_PACKAGE / "dsl" / "*".ktFile()
+            mainSourceSet / kotlin / KATACHI_MAIN_PACKAGE / "dsl" / "**" / "*".ktFile()
         }
     }
 }

@@ -5,18 +5,17 @@ import me.tbsten.katachi.dsl.LayoutScope
 import me.tbsten.katachi.dsl.gradle.div
 import me.tbsten.katachi.dsl.gradle.kotlin
 import me.tbsten.katachi.dsl.gradle.mainSourceSet
-import me.tbsten.katachi.dsl.gradle.module
 import me.tbsten.katachi.dsl.kotlin.ktFile
 import me.tbsten.katachi.konsist.konsist
 import me.tbsten.katachi.test.architecture.INTERNAL_PACKAGE_RULE
 import me.tbsten.katachi.test.architecture.KDOC_EXAMPLE_RULE
 import me.tbsten.katachi.test.architecture.KDOC_TAG_ORDER_RULE
 import me.tbsten.katachi.test.architecture.PACKAGE_MATCHES_PATH_RULE
-import me.tbsten.katachi.test.architecture.mainPackage
 import me.tbsten.katachi.test.architecture.misplacedDeclarationsOf
 import me.tbsten.katachi.test.architecture.publicDeclarationsOf
 import me.tbsten.katachi.test.architecture.keepsBlockTagsLast
 import me.tbsten.katachi.test.architecture.showsExample
+import me.tbsten.katachi.test.architecture.KONSIST_MAIN_PACKAGE
 
 /**
  * The role of `:katachi-konsist`, today's only constraint backend.
@@ -49,13 +48,13 @@ fun DeclarationContainerScope.konsistBackend() = "KonsistBackend" {
     example("Konsist.kt", "\"...\".konsist { } の入口")
     example("KonsistScope.kt", "Konsist の問い合わせ語彙 + must / mustNot / mustBeEmpty")
     layout {
-        ":katachi-konsist".module {
+        "katachi-konsist" {
             packageMatchesPath()
             internalDeclarationsInInternalPackage()
             publicDeclarationsShowExample()
             publicDeclarationsKeepTagsLast()
-            mainSourceSet / kotlin / mainPackage / "*".ktFile()
-            mainSourceSet / kotlin / mainPackage / "internal" / "*".ktFile()
+            mainSourceSet / kotlin / KONSIST_MAIN_PACKAGE / "*".ktFile()
+            mainSourceSet / kotlin / KONSIST_MAIN_PACKAGE / "internal" / "*".ktFile()
         }
     }
 }

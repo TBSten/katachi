@@ -3,7 +3,6 @@ package me.tbsten.katachi.test.architecture.roles
 import me.tbsten.katachi.dsl.DeclarationContainerScope
 import me.tbsten.katachi.dsl.gradle.div
 import me.tbsten.katachi.dsl.gradle.kotlin
-import me.tbsten.katachi.dsl.gradle.module
 import me.tbsten.katachi.dsl.gradle.sourceSet
 import me.tbsten.katachi.dsl.kotlin.ktFile
 
@@ -19,7 +18,7 @@ fun DeclarationContainerScope.benchmark() = "Benchmark" {
     example("WalkBench.kt", "ファイル数 × ロール数 × モジュール数を振って、メモリ上の木で検査全体を測る")
     example("BenchmarkSupport.kt", "ベンチマークが共有する定義の組み立てと、測る前の確かめ")
     layout {
-        ":benchmark".module {
+        "benchmark" {
             description = "JMH のベンチマークと、実プロジェクトでの計測。どちらも check には入らない"
             "jmh".sourceSet / kotlin / "me/tbsten/katachi/benchmark" / "*Bench".ktFile()
             "jmh".sourceSet / kotlin / "me/tbsten/katachi/benchmark" / "BenchmarkSupport".ktFile()

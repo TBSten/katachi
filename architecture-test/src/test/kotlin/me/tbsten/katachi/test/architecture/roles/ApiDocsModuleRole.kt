@@ -1,7 +1,6 @@
 package me.tbsten.katachi.test.architecture.roles
 
 import me.tbsten.katachi.dsl.DeclarationContainerScope
-import me.tbsten.katachi.dsl.gradle.module
 
 /**
  * The role of `Module.md`, one per published module.
@@ -17,11 +16,11 @@ fun DeclarationContainerScope.apiDocsModule() = "ApiDocsModule" {
     summary = "Dokka の includes に渡す Module.md。モジュール自身と、公開パッケージそれぞれの概要を持つ"
     example("katachi/Module.md", "# Module katachi の段落と、公開パッケージごとの # Package 見出し")
     layout {
-        ":katachi".module {
+        "katachi" {
             description = "katachi 自身のモジュールと、その公開パッケージそれぞれの説明"
             "Module.md".file()
         }
-        ":katachi-konsist".module {
+        "katachi-konsist" {
             description = "katachi-konsist モジュールと、その公開パッケージそれぞれの説明"
             "Module.md".file()
         }

@@ -5,7 +5,6 @@ import me.tbsten.katachi.dsl.LayoutScope
 import me.tbsten.katachi.dsl.gradle.div
 import me.tbsten.katachi.dsl.gradle.kotlin
 import me.tbsten.katachi.dsl.gradle.mainSourceSet
-import me.tbsten.katachi.dsl.gradle.module
 import me.tbsten.katachi.dsl.kotlin.ktFile
 import me.tbsten.katachi.konsist.konsist
 import me.tbsten.katachi.test.architecture.INTERNAL_PACKAGE_RULE
@@ -14,11 +13,11 @@ import me.tbsten.katachi.test.architecture.KDOC_TAG_ORDER_RULE
 import me.tbsten.katachi.test.architecture.PACKAGE_MATCHES_PATH_RULE
 import me.tbsten.katachi.test.architecture.importsLaterLayerThan
 import me.tbsten.katachi.test.architecture.laterLayersOf
-import me.tbsten.katachi.test.architecture.mainPackage
 import me.tbsten.katachi.test.architecture.misplacedDeclarationsOf
 import me.tbsten.katachi.test.architecture.publicDeclarationsOf
 import me.tbsten.katachi.test.architecture.keepsBlockTagsLast
 import me.tbsten.katachi.test.architecture.showsExample
+import me.tbsten.katachi.test.architecture.KATACHI_MAIN_PACKAGE
 
 /**
  * The role of the layer that turns a role's `template { }` into files in the repository.
@@ -35,14 +34,14 @@ fun DeclarationContainerScope.template() = "Template" {
     example("TemplatePlacement.kt", "生成したファイル名を layout のパターンと突き合わせ、置き場所を1つに決める")
     example("TemplateOutput.kt", "組み立てた結果をディスクに置く唯一の場所。全部書くか1つも書かないか")
     layout {
-        ":katachi".module {
+        "katachi" {
             importsOnlyEarlierLayers()
             packageMatchesPath()
             internalDeclarationsInInternalPackage()
             publicDeclarationsShowExample()
             publicDeclarationsKeepTagsLast()
-            mainSourceSet / kotlin / mainPackage / "template" / "*".ktFile()
-            mainSourceSet / kotlin / mainPackage / "template" / "**" / "*".ktFile()
+            mainSourceSet / kotlin / KATACHI_MAIN_PACKAGE / "template" / "*".ktFile()
+            mainSourceSet / kotlin / KATACHI_MAIN_PACKAGE / "template" / "**" / "*".ktFile()
         }
     }
 }
