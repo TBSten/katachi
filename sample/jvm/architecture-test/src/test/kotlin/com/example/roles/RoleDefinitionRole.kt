@@ -23,8 +23,6 @@ fun DeclarationContainerScope.roleDefinition() = "RoleDefinition" {
     """.trimIndent()
     example("roles/ControllerRole.kt", "The declaration of a single role")
     layout {
-        ":architecture-test".module {
-            testSourceSet / kotlin / "com/example" / "roles" / "*Role".ktFile()
-        }
+        "architecture-test" / testSourceSet / kotlin / "com/example" / "roles" / "*Role".ktFile()
     }
 }

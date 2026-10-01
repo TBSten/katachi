@@ -22,9 +22,9 @@ is rejected).
 
 ## Placement
 
-| Module | Path | When to use |
-|---|---|---|
-| `:` | `src/main/kotlin/**/controller/*/*Controller.kt` |  |
+| Path | When to use |
+|---|---|
+| `src/main/kotlin/com/example/controller/*/*Controller.kt` |  |
 
 ## Examples
 

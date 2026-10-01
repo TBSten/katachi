@@ -20,8 +20,6 @@ fun DeclarationContainerScope.integrationSpec() = "IntegrationSpec" {
     """.trimIndent()
     example("ProjectArchitectureSpec.kt", "Checks the definition is modelled as written")
     layout {
-        ":architecture-test".module {
-            testSourceSet / kotlin / "com/example" / "*Spec".ktFile()
-        }
+        "architecture-test" / testSourceSet / kotlin / "com/example" / "*Spec".ktFile()
     }
 }

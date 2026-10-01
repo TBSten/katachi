@@ -4,14 +4,12 @@ package com.example.roles
 
 import com.example.allowedContents
 import com.example.forbiddenContents
-import com.example.modulePackage
 import me.tbsten.katachi.ExperimentalKatachiApi
 import me.tbsten.katachi.dsl.DeclarationContainerScope
 import me.tbsten.katachi.dsl.LayoutScope
 import me.tbsten.katachi.dsl.gradle.div
 import me.tbsten.katachi.dsl.gradle.kotlin
 import me.tbsten.katachi.dsl.gradle.mainSourceSet
-import me.tbsten.katachi.dsl.gradle.module
 import me.tbsten.katachi.dsl.kotlin.ktFile
 import me.tbsten.katachi.dsl.template
 import me.tbsten.katachi.konsist.konsist
@@ -46,23 +44,21 @@ fun DeclarationContainerScope.service() = "Service" {
     example("HealthService", "Getting the server running status")
     // ./gradlew :architecture-test:katachiTemplate --arg template=domain.Service --arg name=User
     layout {
-        ":".module {
-            mustBePublic()
-            mainSourceSet / kotlin / modulePackage / "service" /
-                "${capture("name")}Service".ktFile()
-                    .template {
-                        val name = captureValue("name")
-                        val kdoc by stringParameter(default = "Application-specific behaviour for $name.")
-                        """
-                            package com.example.service
+        mustBePublic()
+        mainSourceSet / kotlin / "com/example/service" /
+            "${capture("name")}Service".ktFile()
+                .template {
+                    val name = captureValue("name")
+                    val kdoc by stringParameter(default = "Application-specific behaviour for $name.")
+                    """
+                        package com.example.service
 
-                            /** $kdoc */
-                            class ${name}Service {
-                                fun execute(): String = TODO("Implement ${name}Service")
-                            }
-                        """.trimIndent() + "\n"
-                    }
-        }
+                        /** $kdoc */
+                        class ${name}Service {
+                            fun execute(): String = TODO("Implement ${name}Service")
+                        }
+                    """.trimIndent() + "\n"
+                }
     }
 }
 
@@ -70,10 +66,8 @@ fun DeclarationContainerScope.service() = "Service" {
 // outside katachi, so a violation keeps naming the role that owns the rule.
 //
 // The samples' one `konsist { }` constraint on application code (katachi's guide: "Konsist integration"): the one
-// line that shows a backend-written constraint next to katachi's own layout vocabulary. Also stands as the
-// regression test for `LayoutNode.synthetic` — a `":".module { }` block injects `build` and
-// `build.gradle.kts`, and this constraint would wrongly cover `build.gradle.kts` if that
-// exclusion ever broke.
+// line that shows a backend-written constraint next to katachi's own layout vocabulary. It covers only
+// the `.kt` files this role declares, never the project's `build.gradle.kts`.
 private fun LayoutScope.mustBePublic() =
     "Must be public".konsist {
         classes().must { it.hasPublicOrDefaultModifier }

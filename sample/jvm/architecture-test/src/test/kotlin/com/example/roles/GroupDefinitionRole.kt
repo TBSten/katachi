@@ -25,8 +25,6 @@ fun DeclarationContainerScope.groupDefinition() = "GroupDefinition" {
     """.trimIndent()
     example("groups/DomainGroup.kt", "A group that lists the roles of the domain layer")
     layout {
-        ":architecture-test".module {
-            testSourceSet / kotlin / "com/example" / "groups" / "*Group".ktFile()
-        }
+        "architecture-test" / testSourceSet / kotlin / "com/example" / "groups" / "*Group".ktFile()
     }
 }

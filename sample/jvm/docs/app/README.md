@@ -26,10 +26,9 @@ API layer).
 ## Placement in this group
 
 ```
-:
-  src/main/
-    kotlin/**/Application.kt  Entry point
-    resources/
-      application.conf        Application configuration
-      logback.xml             Logging configuration
+src/main/
+  kotlin/com/example/Application.kt  Entry point
+  resources/
+    application.conf                 Application configuration
+    logback.xml                      Logging configuration
 ```

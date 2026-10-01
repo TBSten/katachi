@@ -13,9 +13,9 @@ tests, which have a role of their own.
 
 ## Placement
 
-| Module | Path | When to use |
-|---|---|---|
-| `:architecture-test` | `src/test/kotlin/com/example/*Test.kt` |  |
+| Path | When to use |
+|---|---|
+| `architecture-test/src/test/kotlin/com/example/*Test.kt` |  |
 
 ## Examples
 

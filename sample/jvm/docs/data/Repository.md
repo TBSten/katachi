@@ -13,9 +13,9 @@ The file name is `*Repository.kt`, one class per file.
 
 ## Placement
 
-| Module | Path | When to use |
-|---|---|---|
-| `:` | `src/main/kotlin/**/repository/*Repository.kt` |  |
+| Path | When to use |
+|---|---|
+| `src/main/kotlin/com/example/repository/*Repository.kt` |  |
 
 ## Examples
 

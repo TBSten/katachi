@@ -31,10 +31,8 @@ fun DeclarationContainerScope.test() = "Test" {
     example("HealthRouteTest", "The test for GET /health")
     layout {
         // `**` stands for the package levels, which mirror the main source set and are
-        // not worth writing twice — so `modulePackage` is deliberately not used here.
+        // not worth writing twice.
         // `*Test` is the name of one test file, so a directory holding none is still reported.
-        ":".module {
-            testSourceSet / kotlin / "**" / "*Test".ktFile()
-        }
+        testSourceSet / kotlin / "**" / "*Test".ktFile()
     }
 }

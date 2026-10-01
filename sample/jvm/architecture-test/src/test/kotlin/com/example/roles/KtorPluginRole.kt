@@ -2,7 +2,6 @@ package com.example.roles
 
 import com.example.allowedContents
 import com.example.forbiddenContents
-import com.example.modulePackage
 import me.tbsten.katachi.dsl.DeclarationContainerScope
 import me.tbsten.katachi.dsl.gradle.*
 import me.tbsten.katachi.dsl.kotlin.ktFile
@@ -37,8 +36,6 @@ fun DeclarationContainerScope.ktorPlugin() = "KtorPlugin" {
     layout {
         // No suffix to key on: a plugin file is named after the Ktor feature it
         // installs, so the package itself is what says "this is a plugin".
-        ":".module {
-            mainSourceSet / kotlin / modulePackage / "plugin" / "*".ktFile()
-        }
+        mainSourceSet / kotlin / "com/example/plugin" / "*".ktFile()
     }
 }

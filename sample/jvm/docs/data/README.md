@@ -20,8 +20,7 @@ whether what lies behind it is a DB or a fixed value.
 ## Placement in this group
 
 ```
-:
-  src/main/kotlin/**/repository/*Repository.kt  Repository
+src/main/kotlin/com/example/repository/*Repository.kt  Repository
 ```
 
 ## Forbidden contents

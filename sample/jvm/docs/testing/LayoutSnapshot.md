@@ -12,7 +12,7 @@ Do not edit it by hand; `LayoutSnapshotSpec` writes it. To update it, just run
 `./gradlew :architecture-test:test -Dkatachi.snapshot.update=true`.
 
 It exists so that people can review changes to the definition as a diff. When a role is
-rewritten with `.module { }` or `mainSourceSet`, looking at the definition code does not
+rewritten with `mainSourceSet` or `testSourceSet`, looking at the definition code does not
 tell you whether it merely got easier to read or whether the tree being checked has itself
 changed. If the flattened result is kept as committed text, the lines in `git diff` are
 the answer. If no line moves, the rewrite is equivalent; if lines move, they show what
@@ -34,9 +34,9 @@ for anyone who opens the repository. This role's own page
 
 ## Placement
 
-| Module | Path | When to use |
-|---|---|---|
-|  | `snapshots/layout.txt` |  |
+| Path | When to use |
+|---|---|
+| `snapshots/layout.txt` |  |
 
 ## Examples
 

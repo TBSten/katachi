@@ -34,7 +34,7 @@ fun DeclarationContainerScope.architectureDefinitionEntry() = "ArchitectureDefin
         // The price of the recommended setup: `:architecture-test` checks itself, so the
         // definition has to give itself a role like everything else. The module path
         // resolves to `architecture-test/`, which is where the files actually are.
-        ":architecture-test".module {
+        "architecture-test" {
             testSourceSet / kotlin / "com/example" {
                 "Must not declare a group or a role in the entry file".konsist {
                     functions().mustNot { it.receiverType?.name == "DeclarationContainerScope" }

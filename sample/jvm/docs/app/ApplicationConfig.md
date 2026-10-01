@@ -14,9 +14,9 @@ It is also an example of the fact that not only Kotlin files have roles.
 
 ## Placement
 
-| Module | Path | When to use |
-|---|---|---|
-| `:` | `src/main/resources/application.conf` |  |
+| Path | When to use |
+|---|---|
+| `src/main/resources/application.conf` |  |
 
 ## Examples
 

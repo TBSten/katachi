@@ -11,9 +11,9 @@ owns, so it is a file of its own next to the entry.
 
 ## Placement
 
-| Module | Path | When to use |
-|---|---|---|
-| `:architecture-test` | `src/test/kotlin/com/example/DocumentSections.kt` |  |
+| Path | When to use |
+|---|---|
+| `architecture-test/src/test/kotlin/com/example/DocumentSections.kt` |  |
 
 ## Examples
 

@@ -16,9 +16,9 @@ Controller in another package.
 
 ## Placement
 
-| Module | Path | When to use |
-|---|---|---|
-| `:` | `src/main/kotlin/**/service/*Service.kt` |  |
+| Path | When to use |
+|---|---|
+| `src/main/kotlin/com/example/service/*Service.kt` |  |
 
 ## Constraints
 

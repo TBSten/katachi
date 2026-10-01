@@ -18,9 +18,9 @@ anywhere.
 
 ## Placement
 
-| Module | Path | When to use |
-|---|---|---|
-| `:` | `src/main/kotlin/**/Application.kt` |  |
+| Path | When to use |
+|---|---|
+| `src/main/kotlin/com/example/Application.kt` |  |
 
 ## Examples
 

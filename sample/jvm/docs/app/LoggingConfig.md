@@ -10,9 +10,9 @@ own configuration, so it is a role of its own next to `application.conf`.
 
 ## Placement
 
-| Module | Path | When to use |
-|---|---|---|
-| `:` | `src/main/resources/logback.xml` |  |
+| Path | When to use |
+|---|---|
+| `src/main/resources/logback.xml` |  |
 
 ## Examples
 

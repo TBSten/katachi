@@ -41,24 +41,20 @@ in it do not fail the test.
 ## Placement in this group
 
 ```
-:
-  src/test/kotlin/**/*Test.kt  Test code
-
-:architecture-test
-  src/test/kotlin/com/example/
-    ProjectArchitecture.kt     Architecture definition entry
-    DocumentSections.kt        Document section definition
-    groups/*Group.kt           Group definition
-    roles/*Role.kt             Role definition
-    processors/*.kt            Processor definition
-    *Test.kt                   Architecture test
-    *Spec.kt                   Integration spec
-
+src/test/kotlin/**/*Test.kt  Test code
+architecture-test/src/test/kotlin/com/example/
+  ProjectArchitecture.kt     Architecture definition entry
+  DocumentSections.kt        Document section definition
+  groups/*Group.kt           Group definition
+  roles/*Role.kt             Role definition
+  processors/*.kt            Processor definition
+  *Test.kt                   Architecture test
+  *Spec.kt                   Integration spec
 docs/
-  README.md                    Generated documentation
-  **/*.md                      Generated documentation
-snapshots/layout.txt           Layout snapshot
-katachi-baseline.json          Baseline (ledger of held-back violations)
+  README.md                  Generated documentation
+  **/*.md                    Generated documentation
+snapshots/layout.txt         Layout snapshot
+katachi-baseline.json        Baseline (ledger of held-back violations)
 ```
 
 ## Forbidden contents

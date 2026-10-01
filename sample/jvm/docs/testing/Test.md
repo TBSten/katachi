@@ -25,9 +25,9 @@ reported.
 
 ## Placement
 
-| Module | Path | When to use |
-|---|---|---|
-| `:` | `src/test/kotlin/**/*Test.kt` |  |
+| Path | When to use |
+|---|---|
+| `src/test/kotlin/**/*Test.kt` |  |
 
 ## Examples
 

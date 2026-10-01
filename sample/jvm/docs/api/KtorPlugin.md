@@ -14,9 +14,9 @@ of the Ktor feature being installed.
 
 ## Placement
 
-| Module | Path | When to use |
-|---|---|---|
-| `:` | `src/main/kotlin/**/plugin/*.kt` |  |
+| Path | When to use |
+|---|---|
+| `src/main/kotlin/com/example/plugin/*.kt` |  |
 
 ## Examples
 

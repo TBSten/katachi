@@ -18,11 +18,9 @@ fun DeclarationContainerScope.loggingConfig() = "LoggingConfig" {
     """.trimIndent()
     example("logback.xml", "Where logs go and their format")
     layout {
-        ":".module {
-            mainSourceSet {
-                "resources" {
-                    "logback.xml".file()
-                }
+        mainSourceSet {
+            "resources" {
+                "logback.xml".file()
             }
         }
     }

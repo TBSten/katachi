@@ -10,9 +10,9 @@ block of `architecture-test/build.gradle.kts`.
 
 ## Placement
 
-| Module | Path | When to use |
-|---|---|---|
-| `:architecture-test` | `src/test/kotlin/com/example/processors/*.kt` |  |
+| Path | When to use |
+|---|---|
+| `architecture-test/src/test/kotlin/com/example/processors/*.kt` |  |
 
 ## Examples
 

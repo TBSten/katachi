@@ -26,7 +26,6 @@ import me.tbsten.katachi.dsl.FileConstraintRange
 import me.tbsten.katachi.dsl.FileConstraintRange.DirectOnly
 import me.tbsten.katachi.dsl.FileConstraintRange.Subtree
 import me.tbsten.katachi.dsl.FileSelection
-import me.tbsten.katachi.dsl.LayoutEntry
 import me.tbsten.katachi.dsl.Title
 import me.tbsten.katachi.dsl.architecture
 import me.tbsten.katachi.dsl.files.FsPath
@@ -34,10 +33,7 @@ import me.tbsten.katachi.dsl.files.KatachiFileSystem
 import me.tbsten.katachi.dsl.files.ProjectRoot
 import me.tbsten.katachi.dsl.gitTracked
 import me.tbsten.katachi.dsl.gradle.*
-import me.tbsten.katachi.dsl.gradle.capitalizedModuleNamePackage
-import me.tbsten.katachi.dsl.internal.flattenLayout
 import me.tbsten.katachi.dsl.kotlin.ktFile
-import me.tbsten.katachi.dsl.kotlin.ktsFile
 import me.tbsten.katachi.dsl.pascalCase
 import me.tbsten.katachi.dsl.wholeTree
 import me.tbsten.katachi.konsist.konsist
@@ -137,8 +133,8 @@ class ProjectArchitectureSpec : FreeSpec({
     "each group is declared in the file determined by its name" {
         // The naming rule is the whole convention, so it is checked rather than listed: a
         // group named `"debug-menu"` belongs in `DebugMenuGroup.kt`, using `pascalCase` -- the
-        // same conversion a layout can call explicitly on a captured wildcard
-        // (`wildcard(...).pascalCase`). katachi itself never applies one on its own.
+        // same conversion a layout can call explicitly on a captured value
+        // (`capture("name").pascalCase`). katachi itself never applies one on its own.
         //
         // `Gradle` and everything nested under it are left out: they are declared by
         // katachi's own `gradle()`, not by this convention. The next test checks what they
@@ -239,59 +235,6 @@ class ProjectArchitectureSpec : FreeSpec({
             )
     }
 
-    "`.module { }` and sourceSet expand to the same entries as a hand-written directory declaration" {
-        // The whole claim of the sugar: it is a shorthand and not a second way of
-        // saying something slightly different. Written against `:architecture-test` rather
-        // than the root project so that the module directory itself is part of the answer.
-        val sugared = architecture {
-            "sugar".group {
-                "Sugared" {
-                    layout {
-                        ":architecture-test".module {
-                            mainSourceSet / kotlin / "*".ktFile()
-                        }
-                    }
-                }
-            }
-        }
-        val handWritten = architecture {
-            "sugar".group {
-                "HandWritten" {
-                    layout {
-                        "architecture-test" {
-                            "build".ignore()
-                            "build.gradle".ktsFile()
-                            "src/main" / "kotlin" / "*".ktFile()
-                        }
-                    }
-                }
-            }
-        }
-
-        // The role name is all that differs, so the entries are compared without it.
-        sugared.flattenLayout().map { shapeOf(it) } shouldBe handWritten.flattenLayout().map { shapeOf(it) }
-    }
-
-    "modulePackage is resolved per module, and changing the base package changes where it declares" {
-        // Guards against the sugar going through without ever being read: if the package
-        // levels came from anywhere but `modulePackage`, both of these would land on the
-        // same path and the check would not be following the definition at all.
-        fun pathsUnder(base: String): List<String> = architecture {
-            "sugar".group {
-                "Packaged" {
-                    layout {
-                        ":".module {
-                            mainSourceSet / kotlin / capitalizedModuleNamePackage(base) / "Application".ktFile()
-                        }
-                    }
-                }
-            }
-        }.flattenLayout().map { it.path }
-
-        pathsUnder("com.example") shouldContain "src/main/kotlin/com/example/Application.kt"
-        pathsUnder("com.other.app") shouldContain "src/main/kotlin/com/other/app/Application.kt"
-    }
-
     "gitTracked() / wholeTree() can be written from a user's build too" {
         // They are context parameter extensions rather than `ArchitectureScope` members, and
         // this build enables no compiler flag for them: an import is the whole cost. Proving
@@ -321,7 +264,7 @@ class ProjectArchitectureSpec : FreeSpec({
             "testing".group {
                 "Definition" {
                     layout {
-                        ":architecture-test".module {
+                        "architecture-test" {
                             testSourceSet / kotlin / "com/example" {
                                 "Must not declare a group or a role at the top of com.example".konsist(scope = scope) {
                                     functions().mustNot { it.receiverType?.name == "DeclarationContainerScope" }
@@ -376,11 +319,6 @@ private object SelectsNothing : FileSelection {
         override fun list(directory: FsPath): List<FsPath> = emptyList()
     }
 }
-
-/** A flattened entry without the role that declared it, for comparing two definitions. */
-@OptIn(InternalKatachiApi::class, ExperimentalKatachiApi::class)
-private fun shapeOf(entry: LayoutEntry): String =
-    "${entry.path}\t${entry.kind}\t${if (entry.required) "required" else "optional"}"
 
 /**
  * The violations left in the project on purpose, as the demo of `baseline()`, and

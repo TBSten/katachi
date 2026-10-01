@@ -1,7 +1,6 @@
 package com.example.roles
 
 import com.example.forbiddenContents
-import com.example.modulePackage
 import me.tbsten.katachi.dsl.DeclarationContainerScope
 import me.tbsten.katachi.dsl.gradle.*
 import me.tbsten.katachi.dsl.kotlin.ktFile
@@ -34,8 +33,6 @@ fun DeclarationContainerScope.entrypoint() = "Entrypoint" {
     layout {
         // No wildcard, so this one is required: delete `Application.kt` and the check
         // reports `[MissingFile]` instead of silently passing.
-        ":".module {
-            mainSourceSet / kotlin / modulePackage / "Application".ktFile()
-        }
+        mainSourceSet / kotlin / "com/example" / "Application".ktFile()
     }
 }

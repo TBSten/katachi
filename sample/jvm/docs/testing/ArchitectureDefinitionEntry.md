@@ -19,9 +19,9 @@ declared in `groups/` and `roles/`.
 
 ## Placement
 
-| Module | Path | When to use |
-|---|---|---|
-| `:architecture-test` | `src/test/kotlin/com/example/ProjectArchitecture.kt` |  |
+| Path | When to use |
+|---|---|
+| `architecture-test/src/test/kotlin/com/example/ProjectArchitecture.kt` |  |
 
 ## Constraints
 

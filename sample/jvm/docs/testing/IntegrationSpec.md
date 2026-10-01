@@ -11,9 +11,9 @@ user's build does not have. A project that merely uses katachi does not write th
 
 ## Placement
 
-| Module | Path | When to use |
-|---|---|---|
-| `:architecture-test` | `src/test/kotlin/com/example/*Spec.kt` |  |
+| Path | When to use |
+|---|---|
+| `architecture-test/src/test/kotlin/com/example/*Spec.kt` |  |
 
 ## Examples
 

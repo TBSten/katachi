@@ -7,7 +7,7 @@ import me.tbsten.katachi.dsl.gradle.gradle
  * The `"Gradle"` group katachi ships (see [gradle]): the wrapper, `settings.gradle.kts`, every
  * module's `build.gradle.kts`, the root `gradle.properties` and the version catalog.
  *
- * `gradle()` needs no module list: its build-script role expands `":**".module { }`, the same
+ * `gradle()` needs no module list: its build-script role covers the same
  * modules `settings.gradle.kts` already names. Its own `"Gradle"` group already sets
  * `documented = false` and a title, so it is called as is rather than wrapped in a group of
  * this sample's own.

@@ -19,8 +19,6 @@ fun DeclarationContainerScope.processorDefinition() = "ProcessorDefinition" {
     """.trimIndent()
     example("processors/RoleNames.kt", "A processor that lists role names by a prefix")
     layout {
-        ":architecture-test".module {
-            testSourceSet / kotlin / "com/example" / "processors" / "*".ktFile()
-        }
+        "architecture-test" / testSourceSet / kotlin / "com/example" / "processors" / "*".ktFile()
     }
 }

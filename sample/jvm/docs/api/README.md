@@ -24,10 +24,9 @@ here as prose; nothing rejects it mechanically.
 ## Placement in this group
 
 ```
-:
-  src/main/kotlin/**/
-    controller/*/*Controller.kt  Controller
-    plugin/*.kt                  Ktor plugin configuration
+src/main/kotlin/com/example/
+  controller/*/*Controller.kt  Controller
+  plugin/*.kt                  Ktor plugin configuration
 ```
 
 ## Forbidden contents

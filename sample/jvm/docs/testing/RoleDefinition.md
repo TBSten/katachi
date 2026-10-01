@@ -14,9 +14,9 @@ owns the rule.
 
 ## Placement
 
-| Module | Path | When to use |
-|---|---|---|
-| `:architecture-test` | `src/test/kotlin/com/example/roles/*Role.kt` |  |
+| Path | When to use |
+|---|---|
+| `architecture-test/src/test/kotlin/com/example/roles/*Role.kt` |  |
 
 ## Examples
 

@@ -30,11 +30,9 @@ fun DeclarationContainerScope.applicationConfig() = "ApplicationConfig" {
         //
         // `resources` is a plain directory, not a source set and not a package: a source set
         // only ever means `src/<name>`, and what sits below it is written out.
-        ":".module {
-            mainSourceSet {
-                "resources" {
-                    "application.conf".file()
-                }
+        mainSourceSet {
+            "resources" {
+                "application.conf".file()
             }
         }
     }

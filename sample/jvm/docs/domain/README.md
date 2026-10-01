@@ -24,10 +24,9 @@ two start to drift apart, it can be undone by adding a DTO role to the API layer
 ## Placement in this group
 
 ```
-:
-  src/main/kotlin/**/
-    service/*Service.kt  Service
-    model/*.kt           Model
+src/main/kotlin/com/example/
+  service/*Service.kt  Service
+  model/*.kt           Model
 ```
 
 ## Forbidden contents
