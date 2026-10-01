@@ -2,7 +2,6 @@ package com.example.kmp.roles
 
 import com.example.kmp.allowedContents
 import com.example.kmp.forbiddenContents
-import com.example.kmp.modulePackage
 import me.tbsten.katachi.dsl.DeclarationContainerScope
 import me.tbsten.katachi.dsl.gradle.*
 import me.tbsten.katachi.dsl.kotlin.ktFile
@@ -42,8 +41,8 @@ fun DeclarationContainerScope.expectDeclaration() = "ExpectDeclaration" {
     """.trimIndent()
     example("PlatformInfo.kt", "The expect declaration in commonMain")
     layout {
-        ":data".module {
-            "commonMain".sourceSet / kotlin / modulePackage / "platform" / "*".ktFile()
+        "data" {
+            "commonMain".sourceSet / kotlin / "com/example/kmp/data" / "platform" / "*".ktFile()
         }
     }
 }

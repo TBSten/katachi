@@ -18,9 +18,9 @@ an Android-only place is what makes them shareable with iOS.
 
 ## Placement
 
-| Module | Path | When to use |
-|---|---|---|
-| `:app:android` | `src/main/res/*/*.xml` |  |
+| Path | When to use |
+|---|---|
+| `app/android/src/main/res/*/*.xml` |  |
 
 ## Examples
 

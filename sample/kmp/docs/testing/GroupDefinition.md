@@ -16,9 +16,9 @@ anything.
 
 ## Placement
 
-| Module | Path | When to use |
-|---|---|---|
-| `:architecture-test` | `src/test/kotlin/com/example/kmp/groups/*Group.kt` |  |
+| Path | When to use |
+|---|---|
+| `architecture-test/src/test/kotlin/com/example/kmp/groups/*Group.kt` |  |
 
 ## Examples
 

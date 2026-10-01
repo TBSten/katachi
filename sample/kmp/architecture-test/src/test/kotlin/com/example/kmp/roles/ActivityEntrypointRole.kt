@@ -22,9 +22,10 @@ fun DeclarationContainerScope.activityEntrypoint() = "ActivityEntrypoint" {
         two are split because `AppRoot` is the part that can be shared once `app/ios` gets a
         `ComposeUIViewController`, while the Activity stays Android-specific.
 
-        The package of this module is `com.example.kmp.app`, which cannot be derived from the
-        module path `:app:android`. That is why the layout writes the package out instead of
-        using `modulePackage`. When something breaks the rule, it is more honest to say so.
+        The package of this module is `com.example.kmp.app`, which does not follow the
+        module path `:app:android`, so the layout writes the package out as `com/example/kmp/app`
+        rather than as `com/example/kmp/app/android`. When something breaks the rule, it is more
+        honest to say so.
     """.trimIndent()
     allowedContents = """
         - The platform entry point (`ComponentActivity`) and its minimal wiring
@@ -38,7 +39,7 @@ fun DeclarationContainerScope.activityEntrypoint() = "ActivityEntrypoint" {
     // `mainSourceSet`, not `"commonMain".sourceSet`: `:app:android` is the Android
     // application module, and its code lives in `src/main` like any Android module's.
     layout {
-        ":app:android".module {
+        "app/android" {
             mainSourceSet / kotlin / "com/example/kmp/app" / "MainActivity".ktFile()
         }
     }

@@ -19,9 +19,9 @@ Android build requires, such as the app name, stays in AndroidResource of `:app:
 
 ## Placement
 
-| Module | Path | When to use |
-|---|---|---|
-| `:ui` | `src/commonMain/kotlin/**/theme/*.kt` |  |
+| Path | When to use |
+|---|---|
+| `ui/src/commonMain/kotlin/com/example/kmp/ui/theme/*.kt` |  |
 
 ## Examples
 

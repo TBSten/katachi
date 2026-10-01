@@ -32,7 +32,7 @@ fun DeclarationContainerScope.appRoot() = "AppRoot" {
     """.trimIndent()
     example("AppRoot", "The Composable that assembles the whole app")
     layout {
-        ":app:android".module {
+        "app/android" {
             mainSourceSet / kotlin / "com/example/kmp/app" / "AppRoot".ktFile()
         }
     }

@@ -18,8 +18,8 @@ import me.tbsten.katachi.processor.process
  * - `LayoutEntry` and `LayoutEntryKind` have to be reachable with `@ExperimentalKatachiApi`
  *   alone. They used to be `@InternalKatachiApi`, which made `context.declaredEntries` an API
  *   member whose elements nobody outside katachi was allowed to touch.
- * - `declaredEntries` and `filesOf` answer different questions, and a wildcard module key is
- *   where that shows. This sample writes `":feature:*".module(...) { }` in five places, so it is the
+ * - `declaredEntries` and `filesOf` answer different questions, and a wildcard directory is
+ *   where that shows. This sample writes `"feature" / "*"` in five places, so it is the
  *   one that can say so against a real checkout instead of against an invented tree.
  */
 @OptIn(ExperimentalKatachiApi::class)
@@ -32,7 +32,7 @@ class DeclaredEntriesSpec : FreeSpec({
         paths shouldContain "settings.gradle.kts"
     }
 
-    "a wildcard module key appears as the pattern in declaredEntries and expanded in filesOf" {
+    "a wildcard directory appears as the pattern in declaredEntries and expanded in filesOf" {
         // Read both from a single Context. Processing separately could be read as "the answers differ
         // because there are two models", which blurs what we want to pin down (two members of the
         // same model returning different answers.)
@@ -42,9 +42,9 @@ class DeclaredEntriesSpec : FreeSpec({
             declared to walked
         }
 
-        // `:feature:*` stands for the feature modules that exist, and which modules exist is a
+        // `feature/*` stands for the feature directories that exist, and which ones exist is a
         // question only the file system can answer -- so the declared view, which reads nothing,
-        // keeps the key as the pattern it was written as instead of naming any module.
+        // keeps the key as the pattern it was written as instead of naming any directory.
         declaredFeaturePaths.shouldNotBeEmpty()
         declaredFeaturePaths.all { it.startsWith("feature/*") } shouldBe true
         // The walk does answer it, so the same model hands back the files under those modules --

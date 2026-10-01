@@ -22,9 +22,9 @@ wildcard, so if `PreviewRoot.kt` is deleted or renamed it is reported as `[Missi
 
 ## Placement
 
-| Module | Path | When to use |
-|---|---|---|
-| `:ui` | `src/commonMain/kotlin/**/preview/PreviewRoot.kt` |  |
+| Path | When to use |
+|---|---|
+| `ui/src/commonMain/kotlin/com/example/kmp/ui/preview/PreviewRoot.kt` |  |
 
 ## Examples
 

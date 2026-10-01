@@ -26,7 +26,7 @@ fun DeclarationContainerScope.projectArchitectureSpec() = "ProjectArchitectureSp
     """.trimIndent()
     example("ProjectArchitectureSpec", "A test that verifies this definition itself")
     layout {
-        ":architecture-test".module {
+        "architecture-test" {
             testSourceSet / kotlin / "com/example/kmp" / "*Spec".ktFile()
         }
     }

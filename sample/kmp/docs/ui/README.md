@@ -20,9 +20,8 @@ list of destinations and the current location; how to show them is the job of `A
 in `:app:android`. It is on the side that screens draw from, like `:ui`, so it is placed
 in this group.
 
-Every layout starts from a module path, and the package below it is derived from
-`modulePackage`. Instead of copying directory names, the policy of the whole
-sample is to write exactly what the build says.
+Every layout starts from the module's directory, then the source set, then the package.
+The policy of the whole sample is to write exactly what the build says.
 
 | Role | Summary |
 |---|---|
@@ -36,17 +35,14 @@ sample is to write exactly what the build says.
 ## Placement in this group
 
 ```
-:ui
-  src/commonMain/kotlin/**/
-    component/
-      *.kt                       Shared component
-      *Preview.kt                Component preview
-    theme/*.kt                   Theme
-    core/*.kt                    UI core
-    preview/PreviewRoot.kt       Preview root
-
-:navigation
-  src/commonMain/kotlin/**/*.kt  Navigation
+ui/src/commonMain/kotlin/com/example/kmp/ui/
+  component/
+    *.kt                                                          Shared component
+    *Preview.kt                                                   Component preview
+  theme/*.kt                                                      Theme
+  core/*.kt                                                       UI core
+  preview/PreviewRoot.kt                                          Preview root
+navigation/src/commonMain/kotlin/com/example/kmp/navigation/*.kt  Navigation
 ```
 
 ## Forbidden contents

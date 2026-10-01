@@ -2,7 +2,6 @@ package com.example.kmp.roles
 
 import com.example.kmp.allowedContents
 import com.example.kmp.forbiddenContents
-import com.example.kmp.modulePackage
 import me.tbsten.katachi.dsl.DeclarationContainerScope
 import me.tbsten.katachi.dsl.gradle.*
 import me.tbsten.katachi.dsl.kotlin.ktFile
@@ -35,8 +34,8 @@ fun DeclarationContainerScope.component() = "Component" {
     """.trimIndent()
     example("PrimaryButton", "The button for the main action")
     layout {
-        ":ui".module {
-            "commonMain".sourceSet / kotlin / modulePackage / "component" / "*".ktFile()
+        "ui" {
+            "commonMain".sourceSet / kotlin / "com/example/kmp/ui" / "component" / "*".ktFile()
         }
     }
 }

@@ -9,8 +9,8 @@ A `private @Composable` annotated with `@Preview` that draws a screen. It is wri
 holds the screen. Keeping it in the same file as the target is also possible, but this
 sample splits the files (the co-located form is in sample/android).
 
-The file name is tied to the module the same way the screen it renders is: `:feature:home`
-may hold `Home*Preview.kt` and nothing else.
+The file is written as a `*Preview.kt` glob in any feature module, and named after the
+screen it renders by convention (`HomeLoadedPreview.kt` for the home screen).
 
 This `@Preview` is the one from Compose Multiplatform's
 `org.jetbrains.compose.ui:ui-tooling-preview`. Its fully qualified annotation name is
@@ -20,9 +20,9 @@ Previews can be written in `commonMain` because the former is used.
 
 ## Placement
 
-| Module | Path | When to use |
-|---|---|---|
-| `:feature:<feature>` | `src/commonMain/kotlin/**/<feature>*Preview.kt` |  |
+| Path | When to use |
+|---|---|
+| `feature/*/src/commonMain/kotlin/com/example/kmp/feature/*/*Preview.kt` |  |
 
 ## Examples
 

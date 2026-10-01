@@ -12,9 +12,9 @@ an `[UnexpectedFile]`.
 
 ## Placement
 
-| Module | Path | When to use |
-|---|---|---|
-| `:architecture-test` | `src/test/kotlin/com/example/kmp/DocumentSections.kt` |  |
+| Path | When to use |
+|---|---|
+| `architecture-test/src/test/kotlin/com/example/kmp/DocumentSections.kt` |  |
 
 ## Examples
 

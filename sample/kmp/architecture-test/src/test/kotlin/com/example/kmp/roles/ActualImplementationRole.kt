@@ -2,7 +2,6 @@ package com.example.kmp.roles
 
 import com.example.kmp.allowedContents
 import com.example.kmp.forbiddenContents
-import com.example.kmp.modulePackage
 import me.tbsten.katachi.dsl.DeclarationContainerScope
 import me.tbsten.katachi.dsl.gradle.*
 import me.tbsten.katachi.dsl.kotlin.ktFile
@@ -43,9 +42,9 @@ fun DeclarationContainerScope.actualImplementation() = "ActualImplementation" {
     example("PlatformInfo.android.kt", "The actual for Android")
     example("PlatformInfo.ios.kt", "The actual for iOS")
     layout {
-        ":data".module {
-            "androidMain".sourceSet / kotlin / modulePackage / "platform" / "*.android".ktFile()
-            "iosMain".sourceSet / kotlin / modulePackage / "platform" / "*.ios".ktFile()
+        "data" {
+            "androidMain".sourceSet / kotlin / "com/example/kmp/data" / "platform" / "*.android".ktFile()
+            "iosMain".sourceSet / kotlin / "com/example/kmp/data" / "platform" / "*.ios".ktFile()
         }
     }
 }

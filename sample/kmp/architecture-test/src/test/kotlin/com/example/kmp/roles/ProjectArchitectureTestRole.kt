@@ -25,7 +25,7 @@ fun DeclarationContainerScope.projectArchitectureTest() = "ProjectArchitectureTe
     """.trimIndent()
     example("ProjectArchitectureTest", "The only test a user writes")
     layout {
-        ":architecture-test".module {
+        "architecture-test" {
             testSourceSet / kotlin / "com/example/kmp" / "*Test".ktFile()
         }
     }

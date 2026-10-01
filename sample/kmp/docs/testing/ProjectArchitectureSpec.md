@@ -17,9 +17,9 @@ specs of the custom processors are the ProcessorSpec role.
 
 ## Placement
 
-| Module | Path | When to use |
-|---|---|---|
-| `:architecture-test` | `src/test/kotlin/com/example/kmp/*Spec.kt` |  |
+| Path | When to use |
+|---|---|
+| `architecture-test/src/test/kotlin/com/example/kmp/*Spec.kt` |  |
 
 ## Examples
 

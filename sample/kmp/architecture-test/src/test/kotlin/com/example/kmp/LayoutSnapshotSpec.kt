@@ -15,7 +15,7 @@ import me.tbsten.katachi.dsl.internal.flattenLayout
  * katachi's own self-verification, not part of adopting katachi: a sentinel that pins down
  * which tree this sample's layout checks, so that rewriting the definition shows up as a diff.
  *
- * The definition leans on shorthand -- `.module { }`, `mainSourceSet`, `modulePackage`,
+ * The definition leans on shorthand -- `"commonMain".sourceSet`, `kotlin`,
  * `gradle()` -- and whether a rewrite still checks the same files cannot be read off the
  * source. So the flattened layout is recorded as text and compared on every run: a rewrite
  * that says the same thing in other words keeps this green, one that checks a different tree
@@ -91,7 +91,7 @@ private fun File.write(text: String) {
  * The layout as the check sees it.
  *
  * The module index is built from the real tree, exactly as a check that knows about Gradle
- * modules has to: it is what resolves keys like `":app".module { }` and `":**".module { }`
+ * modules has to: it is what resolves the module keys `gradle()` declares
  * into directories. Recording the snapshot without it would compare two different questions.
  */
 @OptIn(InternalKatachiApi::class, ExperimentalKatachiApi::class)

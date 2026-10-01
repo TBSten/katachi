@@ -13,9 +13,9 @@ the processors read is the ProcessorMetadata role, and their tests are Processor
 
 ## Placement
 
-| Module | Path | When to use |
-|---|---|---|
-| `:architecture-test` | `src/test/kotlin/com/example/kmp/processors/*Processor.kt` |  |
+| Path | When to use |
+|---|---|
+| `architecture-test/src/test/kotlin/com/example/kmp/processors/*Processor.kt` |  |
 
 ## Examples
 

@@ -15,9 +15,9 @@ reports the overlap as `[AmbiguousLayout]`. This is a known and accepted shape.
 
 ## Placement
 
-| Module | Path | When to use |
-|---|---|---|
-| `:ui` | `src/commonMain/kotlin/**/component/*.kt` |  |
+| Path | When to use |
+|---|---|
+| `ui/src/commonMain/kotlin/com/example/kmp/ui/component/*.kt` |  |
 
 ## Examples
 

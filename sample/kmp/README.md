@@ -18,7 +18,7 @@ with `testImplementation(libs.katachi)`.
 | [`ProjectArchitecture.kt`](architecture-test/src/test/kotlin/com/example/kmp/ProjectArchitecture.kt) | The body of `architecture { }`. It only calls the groups; each role is in `roles/`, one role per file |
 | [`roles/ExpectDeclarationRole.kt`](architecture-test/src/test/kotlin/com/example/kmp/roles/ExpectDeclarationRole.kt) / [`roles/ActualImplementationRole.kt`](architecture-test/src/test/kotlin/com/example/kmp/roles/ActualImplementationRole.kt) | The `expect` in `commonMain` and the `actual` in `androidMain` / `iosMain`, as two roles because they are two kinds of file |
 | [`roles/RepositoryInterfaceRole.kt`](architecture-test/src/test/kotlin/com/example/kmp/roles/RepositoryInterfaceRole.kt) / [`roles/RepositoryImplementationRole.kt`](architecture-test/src/test/kotlin/com/example/kmp/roles/RepositoryImplementationRole.kt) | The interface and the implementation as two roles, each with its own `.template`, so they can be generated separately (or together with `--arg template=a,b`) |
-| [`roles/FeatureComponentRole.kt`](architecture-test/src/test/kotlin/com/example/kmp/roles/FeatureComponentRole.kt) | An example of `":feature:${capture("feature")}".module { }`. The same capture decides the location with `wildcard("feature")` and the template content with `captureValue("feature")` |
+| [`roles/FeatureComponentRole.kt`](architecture-test/src/test/kotlin/com/example/kmp/roles/FeatureComponentRole.kt) | An example of a template placed by two directory captures, `capture("feature")` and `capture("featurePackage")`. The same captures decide the location and, with `captureValue(...)`, the template content |
 | [`ProjectArchitectureTest.kt`](architecture-test/src/test/kotlin/com/example/kmp/ProjectArchitectureTest.kt) | The only test a user writes. It just calls `projectArchitecture.assert()` |
 | [`katachi-baseline.json`](katachi-baseline.json) | The baseline ledger. It deliberately leaves one entry, `user/` in the `androidMain` of `:data`, shelved ([`../README.md`](../README.md#baseline)) |
 
@@ -45,8 +45,9 @@ cd sample/kmp
 ./gradlew :architecture-test:katachiTemplate --arg template=data.RepositoryInterface,data.RepositoryImplementation --arg name=Profile
 
 # Generate SettingsToggleRow.kt into the component package of :feature:settings from the FeatureComponent template
-# (feature is the name given to :feature:* in the layout; it picks the module to generate into)
-./gradlew :architecture-test:katachiTemplate --arg template=feature.FeatureComponent --arg feature=settings --arg name=ToggleRow
+# (feature and featurePackage are the names the layout gave the two directories; they pick the module and its package.
+# The whole file name is capture("name"), so pass the module's name with it)
+./gradlew :architecture-test:katachiTemplate --arg template=feature.FeatureComponent --arg feature=settings --arg featurePackage=settings --arg name=SettingsToggleRow
 ```
 
 **Write the task with the module path**, as in `:architecture-test:test`. Writing just `test`

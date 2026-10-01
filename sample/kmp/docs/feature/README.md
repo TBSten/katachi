@@ -8,14 +8,13 @@ A layer of modules that grows by one per screen. There are `:feature:home` and
 `:feature:settings`; adding a screen means adding a module.
 
 Screen / ViewModel / Route are collected here because each of them exists for a single
-screen. All three read back the module name that `wildcard("feature")` (that is, `:feature:*`)
-matched and use it to decide the file name, so `:feature:home` needs `HomeScreen.kt` /
-`HomeViewModel.kt` / `HomeRoute.kt`. The shape of this group can say not just "there
-should be a screen" but "a screen with that name is required".
+screen. All three are written as globs under the directory `feature/*`, and by convention the
+file is named after the module: `:feature:home` has `HomeScreen.kt` / `HomeViewModel.kt` /
+`HomeRoute.kt`. The check looks at the place and the suffix, not at the pairing.
 
 It is separate from the ui group because the two grow differently. A feature is a place
-where modules are expected to multiply, and one `":feature:${capture("feature")}".module { }`
-declaration covers any number of them. Adding something to `:ui` or `:navigation`, on the
+where modules are expected to multiply, and one declaration of the directory `feature/*`
+covers any number of them. Adding something to `:ui` or `:navigation`, on the
 other hand, is a design decision. Merging them into one group would erase that difference
 from the generated documentation.
 
@@ -23,8 +22,9 @@ A screen's `@Preview` functions (ScreenPreview) sit in the same module as the sc
 draw.
 
 Only the screen parts (FeatureComponent) grow in number inside a single feature, and they
-can be generated from a template. The `*` of `:feature:*` is named `feature`, so
-`--arg feature=home` picks the module to generate into.
+can be generated from a template. The module directory is named `feature` and its
+package directory `featurePackage`, so `--arg feature=home --arg featurePackage=home`
+picks the module to generate into.
 
 Every role in this group is `commonMain`. There is no `androidMain` / `iosMain` around the
 screens. Platform differences stay inside ExpectDeclaration and ActualImplementation of the data group.
@@ -40,13 +40,12 @@ screens. Platform differences stay inside ExpectDeclaration and ActualImplementa
 ## Placement in this group
 
 ```
-:feature:<feature>
-  src/commonMain/kotlin/**/
-    <feature>Screen.kt       Screen
-    <feature>ViewModel.kt    ViewModel
-    <feature>Route.kt        Route
-    component/<feature>*.kt  Screen component
-    <feature>*Preview.kt     Screen preview
+feature/*/src/commonMain/kotlin/com/example/kmp/feature/*/
+  *Screen.kt      Screen
+  *ViewModel.kt   ViewModel
+  *Route.kt       Route
+  component/*.kt  Screen component
+  *Preview.kt     Screen preview
 ```
 
 ## Forbidden contents

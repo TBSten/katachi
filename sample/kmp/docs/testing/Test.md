@@ -22,9 +22,9 @@ which is outside what this sample wants to show.
 
 ## Placement
 
-| Module | Path | When to use |
-|---|---|---|
-| `:app:android` | `src/test/kotlin/com/example/kmp/app/*Spec.kt` |  |
+| Path | When to use |
+|---|---|
+| `app/android/src/test/kotlin/com/example/kmp/app/*Spec.kt` |  |
 
 ## Examples
 

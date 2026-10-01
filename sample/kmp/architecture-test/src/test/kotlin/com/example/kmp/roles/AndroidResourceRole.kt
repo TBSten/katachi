@@ -34,7 +34,7 @@ fun DeclarationContainerScope.androidResource() = "AndroidResource" {
     // `mipmap-hdpi`, ...). Android decides those names, so the layout names the
     // level rather than each directory.
     layout {
-        ":app:android".module {
+        "app/android" {
             mainSourceSet / "res" / "*" / "*.xml".file()
         }
     }

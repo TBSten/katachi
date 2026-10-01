@@ -4,18 +4,16 @@ package com.example.kmp.roles
 
 import com.example.kmp.allowedContents
 import com.example.kmp.forbiddenContents
-import com.example.kmp.modulePackage
 import me.tbsten.katachi.ExperimentalKatachiApi
 import me.tbsten.katachi.dsl.DeclarationContainerScope
 import me.tbsten.katachi.dsl.gradle.*
 import me.tbsten.katachi.dsl.kotlin.ktFile
-import me.tbsten.katachi.dsl.pascalCase
 
 /**
  * The state holder of one screen, named after the feature module it sits in.
  *
- * Tied to `wildcard("feature")` the same way [screen] is: `:feature:home` may hold `HomeViewModel.kt`
- * and nothing else called `*ViewModel.kt`.
+ * Written the same loose way as [screen]: a `*ViewModel.kt` glob under the directory
+ * `"feature" / "*"`, with the file name named after the module by convention.
  */
 fun DeclarationContainerScope.viewModel() = "ViewModel" {
     title = "ViewModel"
@@ -48,9 +46,7 @@ fun DeclarationContainerScope.viewModel() = "ViewModel" {
     example("HomeViewModel", "The state of the home screen")
     example("SettingsViewModel", "The state of the settings screen")
     layout {
-        ":feature:${capture("feature")}".module {
-            "commonMain".sourceSet / kotlin / modulePackage /
-                "${wildcard("feature").pascalCase}ViewModel".ktFile()
-        }
+        "feature" / "*" / "commonMain".sourceSet / kotlin / "com/example/kmp/feature" / "*" /
+            "*ViewModel".ktFile()
     }
 }

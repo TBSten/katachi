@@ -20,9 +20,9 @@ anyway. Create one in Xcode if you want to run it.
 
 ## Placement
 
-| Module | Path | When to use |
-|---|---|---|
-|  | `app/ios` |  |
+| Path | When to use |
+|---|---|
+| `app/ios` |  |
 
 ## Examples
 

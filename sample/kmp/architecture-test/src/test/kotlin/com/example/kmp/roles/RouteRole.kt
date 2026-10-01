@@ -3,18 +3,16 @@
 package com.example.kmp.roles
 
 import com.example.kmp.forbiddenContents
-import com.example.kmp.modulePackage
 import me.tbsten.katachi.ExperimentalKatachiApi
 import me.tbsten.katachi.dsl.DeclarationContainerScope
 import me.tbsten.katachi.dsl.gradle.*
 import me.tbsten.katachi.dsl.kotlin.ktFile
-import me.tbsten.katachi.dsl.pascalCase
 
 /**
  * What binds a screen to a navigation destination, named after its feature module.
  *
- * The third of the three files a feature module is required to hold, and the third place
- * `wildcard("feature")` ties a file name to the module it sits in.
+ * The third of the three files a feature module holds, written like [screen] and [viewModel]:
+ * a `*Route.kt` glob under the directory `"feature" / "*"`.
  */
 fun DeclarationContainerScope.route() = "Route" {
     title = "Route"
@@ -41,9 +39,7 @@ fun DeclarationContainerScope.route() = "Route" {
     example("HomeRoute", "The destination of the home screen")
     example("SettingsRoute", "The destination of the settings screen")
     layout {
-        ":feature:${capture("feature")}".module {
-            "commonMain".sourceSet / kotlin / modulePackage /
-                "${wildcard("feature").pascalCase}Route".ktFile()
-        }
+        "feature" / "*" / "commonMain".sourceSet / kotlin / "com/example/kmp/feature" / "*" /
+            "*Route".ktFile()
     }
 }

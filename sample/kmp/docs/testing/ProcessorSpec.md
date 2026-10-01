@@ -11,9 +11,9 @@ together: someone copying a processor into their own project takes the spec with
 
 ## Placement
 
-| Module | Path | When to use |
-|---|---|---|
-| `:architecture-test` | `src/test/kotlin/com/example/kmp/processors/*Spec.kt` |  |
+| Path | When to use |
+|---|---|
+| `architecture-test/src/test/kotlin/com/example/kmp/processors/*Spec.kt` |  |
 
 ## Examples
 

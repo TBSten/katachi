@@ -1,6 +1,5 @@
 package com.example.kmp.roles
 
-import com.example.kmp.modulePackage
 import me.tbsten.katachi.dsl.DeclarationContainerScope
 import me.tbsten.katachi.dsl.gradle.*
 import me.tbsten.katachi.dsl.kotlin.ktFile
@@ -37,8 +36,8 @@ fun DeclarationContainerScope.previewRoot() = "PreviewRoot" {
     // One of the file names in this sample written without a wildcard, so it is also
     // one of the declarations that is reported as `[MissingFile]` when it disappears.
     layout {
-        ":ui".module {
-            "commonMain".sourceSet / kotlin / modulePackage / "preview" / "PreviewRoot".ktFile()
+        "ui" {
+            "commonMain".sourceSet / kotlin / "com/example/kmp/ui" / "preview" / "PreviewRoot".ktFile()
         }
     }
 }

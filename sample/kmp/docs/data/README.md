@@ -27,15 +27,14 @@ instead of into a screen.
 ## Placement in this group
 
 ```
-:data
-  src/
-    commonMain/kotlin/**/
-      user/
-        *Repository.kt                           Repository interface
-        *RepositoryImpl.kt                       Repository implementation
-      platform/*.kt                              Expect declaration
-    androidMain/kotlin/**/platform/*.android.kt  Actual implementation
-    iosMain/kotlin/**/platform/*.ios.kt          Actual implementation
+data/src/
+  commonMain/kotlin/com/example/kmp/data/
+    user/
+      *Repository.kt                                             Repository interface
+      *RepositoryImpl.kt                                         Repository implementation
+    platform/*.kt                                                Expect declaration
+  androidMain/kotlin/com/example/kmp/data/platform/*.android.kt  Actual implementation
+  iosMain/kotlin/com/example/kmp/data/platform/*.ios.kt          Actual implementation
 ```
 
 ## Forbidden contents

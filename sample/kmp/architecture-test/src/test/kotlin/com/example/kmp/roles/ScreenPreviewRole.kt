@@ -4,12 +4,10 @@ package com.example.kmp.roles
 
 import com.example.kmp.allowedContents
 import com.example.kmp.forbiddenContents
-import com.example.kmp.modulePackage
 import me.tbsten.katachi.ExperimentalKatachiApi
 import me.tbsten.katachi.dsl.DeclarationContainerScope
 import me.tbsten.katachi.dsl.gradle.*
 import me.tbsten.katachi.dsl.kotlin.ktFile
-import me.tbsten.katachi.dsl.pascalCase
 
 /**
  * The `@Preview` functions of a screen.
@@ -29,8 +27,8 @@ fun DeclarationContainerScope.screenPreview() = "ScreenPreview" {
         holds the screen. Keeping it in the same file as the target is also possible, but this
         sample splits the files (the co-located form is in sample/android).
 
-        The file name is tied to the module the same way the screen it renders is: `:feature:home`
-        may hold `Home*Preview.kt` and nothing else.
+        The file is written as a `*Preview.kt` glob in any feature module, and named after the
+        screen it renders by convention (`HomeLoadedPreview.kt` for the home screen).
 
         This `@Preview` is the one from Compose Multiplatform's
         `org.jetbrains.compose.ui:ui-tooling-preview`. Its fully qualified annotation name is
@@ -51,9 +49,7 @@ fun DeclarationContainerScope.screenPreview() = "ScreenPreview" {
     """.trimIndent()
     example("HomeLoadedPreview", "The home screen, loaded")
     layout {
-        ":feature:${capture("feature")}".module {
-            "commonMain".sourceSet / kotlin / modulePackage /
-                "${wildcard("feature").pascalCase}*Preview".ktFile()
-        }
+        "feature" / "*" / "commonMain".sourceSet / kotlin / "com/example/kmp/feature" / "*" /
+            "*Preview".ktFile()
     }
 }

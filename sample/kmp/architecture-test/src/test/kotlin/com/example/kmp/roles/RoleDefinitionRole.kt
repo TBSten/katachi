@@ -19,7 +19,7 @@ fun DeclarationContainerScope.roleDefinition() = "RoleDefinition" {
     """.trimIndent()
     example("roles/ScreenRole.kt", "The declaration of the Screen role")
     layout {
-        ":architecture-test".module {
+        "architecture-test" {
             testSourceSet / kotlin / "com/example/kmp" / "roles" / "*Role".ktFile()
         }
     }

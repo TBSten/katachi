@@ -25,10 +25,10 @@ actual match, and that compiler does not run on CI; that is the hole here.
 
 ## Placement
 
-| Module | Path | When to use |
-|---|---|---|
-| `:data` | `src/androidMain/kotlin/**/platform/*.android.kt` |  |
-| `:data` | `src/iosMain/kotlin/**/platform/*.ios.kt` |  |
+| Path | When to use |
+|---|---|
+| `data/src/androidMain/kotlin/com/example/kmp/data/platform/*.android.kt` |  |
+| `data/src/iosMain/kotlin/com/example/kmp/data/platform/*.ios.kt` |  |
 
 ## Examples
 

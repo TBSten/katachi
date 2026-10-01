@@ -18,7 +18,7 @@ fun DeclarationContainerScope.processorMetadata() = "ProcessorMetadata" {
     """.trimIndent()
     example("Owner.kt", "The metadata key `owner` and the property that writes it")
     layout {
-        ":architecture-test".module {
+        "architecture-test" {
             testSourceSet / kotlin / "com/example/kmp" / "processors" / "Owner".ktFile()
         }
     }

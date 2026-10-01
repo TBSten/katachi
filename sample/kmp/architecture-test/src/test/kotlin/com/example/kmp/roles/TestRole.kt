@@ -44,7 +44,7 @@ fun DeclarationContainerScope.test() = "Test" {
     // declared for a directory that does not exist would claim a shape the sample
     // does not have.
     layout {
-        ":app:android".module {
+        "app/android" {
             testSourceSet / kotlin / "com/example/kmp/app" / "*Spec".ktFile()
         }
     }

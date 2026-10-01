@@ -19,9 +19,9 @@ It is fixed to `commonMain` so that the same Route can be called from the Androi
 
 ## Placement
 
-| Module | Path | When to use |
-|---|---|---|
-| `:feature:<feature>` | `src/commonMain/kotlin/**/<feature>Route.kt` |  |
+| Path | When to use |
+|---|---|
+| `feature/*/src/commonMain/kotlin/com/example/kmp/feature/*/*Route.kt` |  |
 
 ## Examples
 

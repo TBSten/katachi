@@ -3,12 +3,10 @@
 package com.example.kmp.roles
 
 import com.example.kmp.forbiddenContents
-import com.example.kmp.modulePackage
 import me.tbsten.katachi.ExperimentalKatachiApi
 import me.tbsten.katachi.dsl.DeclarationContainerScope
 import me.tbsten.katachi.dsl.gradle.div
 import me.tbsten.katachi.dsl.gradle.kotlin
-import me.tbsten.katachi.dsl.gradle.module
 import me.tbsten.katachi.dsl.gradle.sourceSet
 import me.tbsten.katachi.dsl.kotlin.ktFile
 import me.tbsten.katachi.dsl.template
@@ -55,8 +53,8 @@ fun DeclarationContainerScope.repositoryInterface() = "RepositoryInterface" {
     //   ./gradlew :architecture-test:katachiTemplate --arg template=data.RepositoryInterface \
     //       --arg name=Cache
     layout {
-        ":data".module {
-            "commonMain".sourceSet / kotlin / modulePackage / "user" {
+        "data" {
+            "commonMain".sourceSet / kotlin / "com/example/kmp/data" / "user" {
                 "${capture("name")}Repository".ktFile()
                     .template {
                         val name = captureValue("name")

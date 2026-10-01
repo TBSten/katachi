@@ -15,15 +15,16 @@ navigation bar and the Route for the current destination is the AppRoot role's j
 two are split because `AppRoot` is the part that can be shared once `app/ios` gets a
 `ComposeUIViewController`, while the Activity stays Android-specific.
 
-The package of this module is `com.example.kmp.app`, which cannot be derived from the
-module path `:app:android`. That is why the layout writes the package out instead of
-using `modulePackage`. When something breaks the rule, it is more honest to say so.
+The package of this module is `com.example.kmp.app`, which does not follow the
+module path `:app:android`, so the layout writes the package out as `com/example/kmp/app`
+rather than as `com/example/kmp/app/android`. When something breaks the rule, it is more
+honest to say so.
 
 ## Placement
 
-| Module | Path | When to use |
-|---|---|---|
-| `:app:android` | `src/main/kotlin/com/example/kmp/app/MainActivity.kt` |  |
+| Path | When to use |
+|---|---|
+| `app/android/src/main/kotlin/com/example/kmp/app/MainActivity.kt` |  |
 
 ## Examples
 

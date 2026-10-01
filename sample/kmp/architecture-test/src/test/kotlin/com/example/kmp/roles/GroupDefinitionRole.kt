@@ -21,7 +21,7 @@ fun DeclarationContainerScope.groupDefinition() = "GroupDefinition" {
     """.trimIndent()
     example("groups/UiGroup.kt", "The declaration of the ui group")
     layout {
-        ":architecture-test".module {
+        "architecture-test" {
             testSourceSet / kotlin / "com/example/kmp" / "groups" / "*Group".ktFile()
         }
     }

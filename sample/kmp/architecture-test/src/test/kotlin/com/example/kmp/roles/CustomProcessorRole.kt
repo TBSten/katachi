@@ -19,7 +19,7 @@ fun DeclarationContainerScope.customProcessor() = "CustomProcessor" {
     example("PlatformOwnedFilesProcessor.kt", "Lists the files of roles tagged with an owner")
     example("RoleSummaryReportProcessor.kt", "Writes one short page per role")
     layout {
-        ":architecture-test".module {
+        "architecture-test" {
             testSourceSet / kotlin / "com/example/kmp" / "processors" / "*Processor".ktFile()
         }
     }

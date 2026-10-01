@@ -17,9 +17,9 @@ It only receives the Repository as an argument and never creates it. Creating it
 
 ## Placement
 
-| Module | Path | When to use |
-|---|---|---|
-| `:feature:<feature>` | `src/commonMain/kotlin/**/<feature>ViewModel.kt` |  |
+| Path | When to use |
+|---|---|
+| `feature/*/src/commonMain/kotlin/com/example/kmp/feature/*/*ViewModel.kt` |  |
 
 ## Examples
 

@@ -4,9 +4,10 @@
 
 The @Composable of one screen. Subscribes to the ViewModel's StateFlow and draws by combining Components
 
-The look of one whole screen. Put exactly one file, `<Name>Screen.kt`, in the
-`commonMain` of `:feature:<name>`. The file name is decided by the module name, so
-`ProfileScreen.kt` cannot be added to `:feature:home`. To add a screen, add a module.
+The look of one whole screen. Put one file, `<Name>Screen.kt`, in the
+`commonMain` of `:feature:<name>`, named after the module (`HomeScreen.kt` in
+`:feature:home`). The check looks at the place and the suffix only. To add a screen,
+add a module.
 
 The file is built in two levels. `HomeScreen` receives the ViewModel and subscribes with
 `collectAsState()`, and `internal fun HomeContent` receives a `UiState` as an argument and
@@ -19,9 +20,9 @@ ExpectDeclaration / ActualImplementation (expect/actual) in `:data`, not into a 
 
 ## Placement
 
-| Module | Path | When to use |
-|---|---|---|
-| `:feature:<feature>` | `src/commonMain/kotlin/**/<feature>Screen.kt` |  |
+| Path | When to use |
+|---|---|
+| `feature/*/src/commonMain/kotlin/com/example/kmp/feature/*/*Screen.kt` |  |
 
 ## Examples
 

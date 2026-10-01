@@ -18,9 +18,9 @@ anything goes. Judge by whether it satisfies both "knows no screen" and "knows n
 
 ## Placement
 
-| Module | Path | When to use |
-|---|---|---|
-| `:ui` | `src/commonMain/kotlin/**/core/*.kt` |  |
+| Path | When to use |
+|---|---|
+| `ui/src/commonMain/kotlin/com/example/kmp/ui/core/*.kt` |  |
 
 ## Examples
 

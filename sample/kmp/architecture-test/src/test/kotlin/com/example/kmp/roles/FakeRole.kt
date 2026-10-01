@@ -2,7 +2,6 @@ package com.example.kmp.roles
 
 import com.example.kmp.allowedContents
 import com.example.kmp.forbiddenContents
-import com.example.kmp.modulePackage
 import me.tbsten.katachi.dsl.DeclarationContainerScope
 import me.tbsten.katachi.dsl.gradle.*
 import me.tbsten.katachi.dsl.kotlin.ktFile
@@ -35,8 +34,8 @@ fun DeclarationContainerScope.fake() = "Fake" {
     """.trimIndent()
     example("FakeUserRepository", "A fake implementation of UserRepository")
     layout {
-        ":testing".module {
-            "commonMain".sourceSet / kotlin / modulePackage / "Fake*".ktFile()
+        "testing" {
+            "commonMain".sourceSet / kotlin / "com/example/kmp/testing" / "Fake*".ktFile()
         }
     }
 }

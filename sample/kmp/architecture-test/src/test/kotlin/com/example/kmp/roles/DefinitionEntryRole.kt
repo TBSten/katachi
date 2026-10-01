@@ -28,7 +28,7 @@ fun DeclarationContainerScope.definitionEntry() = "DefinitionEntry" {
     """.trimIndent()
     example("ProjectArchitecture.kt", "The entry point of the definition")
     layout {
-        ":architecture-test".module {
+        "architecture-test" {
             testSourceSet / kotlin / "com/example/kmp" / "ProjectArchitecture".ktFile()
         }
     }

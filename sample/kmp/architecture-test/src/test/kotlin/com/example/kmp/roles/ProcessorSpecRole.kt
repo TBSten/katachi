@@ -16,7 +16,7 @@ fun DeclarationContainerScope.processorSpec() = "ProcessorSpec" {
     """.trimIndent()
     example("PlatformOwnedFilesSpec", "The spec of PlatformOwnedFilesProcessor")
     layout {
-        ":architecture-test".module {
+        "architecture-test" {
             testSourceSet / kotlin / "com/example/kmp" / "processors" / "*Spec".ktFile()
         }
     }

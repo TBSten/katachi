@@ -20,9 +20,9 @@ ActualImplementation role is a wildcard. That is the hole here.
 
 ## Placement
 
-| Module | Path | When to use |
-|---|---|---|
-| `:data` | `src/commonMain/kotlin/**/platform/*.kt` |  |
+| Path | When to use |
+|---|---|
+| `data/src/commonMain/kotlin/com/example/kmp/data/platform/*.kt` |  |
 
 ## Examples
 

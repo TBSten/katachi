@@ -52,30 +52,24 @@ is the text seen by whoever reviews the diff of a changed definition.
 ## Placement in this group
 
 ```
-:testing
-  src/commonMain/kotlin/**/Fake*.kt             Fake
-
-:app:android
-  src/test/kotlin/com/example/kmp/app/*Spec.kt  Test code
-
-:architecture-test
-  src/test/kotlin/com/example/kmp/
-    ProjectArchitecture.kt                      Definition entrypoint
-    DocumentSections.kt                         Definition sections
-    groups/*Group.kt                            Group definition
-    roles/*Role.kt                              Role definition
-    *Test.kt                                    Architecture test
-    *Spec.kt                                    Architecture spec
-    processors/
-      *Processor.kt                             Custom processor
-      Owner.kt                                  Processor metadata
-      *Spec.kt                                  Processor spec
-
+testing/src/commonMain/kotlin/com/example/kmp/testing/Fake*.kt  Fake
+app/android/src/test/kotlin/com/example/kmp/app/*Spec.kt        Test code
+architecture-test/src/test/kotlin/com/example/kmp/
+  ProjectArchitecture.kt                                        Definition entrypoint
+  DocumentSections.kt                                           Definition sections
+  groups/*Group.kt                                              Group definition
+  roles/*Role.kt                                                Role definition
+  *Test.kt                                                      Architecture test
+  *Spec.kt                                                      Architecture spec
+  processors/
+    *Processor.kt                                               Custom processor
+    Owner.kt                                                    Processor metadata
+    *Spec.kt                                                    Processor spec
 docs/
-  README.md                                     Generated documentation
-  **/*.md                                       Generated documentation
-snapshots/layout.txt                            Layout snapshot
-katachi-baseline.json                           Baseline (ledger of held-back violations)
+  README.md                                                     Generated documentation
+  **/*.md                                                       Generated documentation
+snapshots/layout.txt                                            Layout snapshot
+katachi-baseline.json                                           Baseline (ledger of held-back violations)
 ```
 
 ## Forbidden contents

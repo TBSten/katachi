@@ -14,9 +14,8 @@ import me.tbsten.katachi.dsl.DeclarationContainerScope
  *
  * `:app:android` is the one nested module path of this sample, and it is also the one module
  * whose package does not follow it: the sources sit in `com.example.kmp.app`, not in
- * `com.example.kmp.app.android`. So the package is written out in the roles below instead of
- * coming from `modulePackage` — a module that does not follow the rule should say so rather
- * than bend it.
+ * `com.example.kmp.app.android`. So the roles below write the package out as `com/example/kmp/app` —
+ * a module that does not follow the rule should say so rather than bend it.
  */
 fun DeclarationContainerScope.appGroup() = "app".group {
     title = "App"
@@ -34,7 +33,7 @@ fun DeclarationContainerScope.appGroup() = "app".group {
         `:app:android` has one more trait. It is the only nested module path in this sample, and
         also the only module whose package does not follow the module path (`com.example.kmp.app`,
         not `com.example.kmp.app.android`). That is why ActivityEntrypoint and AppRoot write the
-        package out instead of using `modulePackage`. Saying "this one is different" is kinder to
+        package out as `com/example/kmp/app`. Saying "this one is different" is kinder to
         the reader than bending the rule to fit.
     """.trimIndent()
     allowedContents = """

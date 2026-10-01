@@ -12,18 +12,18 @@ import me.tbsten.katachi.dsl.DeclarationContainerScope
  * Roles of one feature: what every `:feature:<name>` module holds.
  *
  * Kept apart from [uiGroup] because the two differ in how they grow. A feature module is a
- * place where things are *expected* to multiply — `":feature:${capture("feature")}".module { }`
- * stands for however many there are and reads the matched name back as `wildcard("feature")` —
- * while `:ui` and
+ * place where things are *expected* to multiply — the directory `"feature" / "*"`
+ * stands for however many there are — while `:ui` and
  * `:navigation` are shared modules where adding something is a design decision. Folding both
  * into one group would hide that difference in the generated documentation, and would mix two
  * shapes of `layout` inside a single group.
  *
- * Screen, ViewModel and Route are where this sample ties a file name to the module it sits in:
- * each one reads `wildcard("feature")` back, so `:feature:home` is required to hold
- * `HomeScreen.kt`, `HomeViewModel.kt` and `HomeRoute.kt` — not merely *a* screen, a view model
- * and a route. FeatureComponent reads the same name, and its template is given it
- * (`--arg feature=home`) to pick the module it generates into.
+ * Screen, ViewModel and Route are written loosely, as `*Screen.kt` / `*ViewModel.kt` /
+ * `*Route.kt` globs under that directory, so the check does not tie a file name to the module
+ * it sits in; that pairing is kept by convention and review. FeatureComponent names the
+ * module directory (`feature`) and its package directory (`featurePackage`) with captures, and
+ * its template is given both (`--arg feature=home --arg featurePackage=home`) to pick the
+ * module it generates into.
  */
 fun DeclarationContainerScope.featureGroup() = "feature".group {
     title = "Feature"
@@ -33,14 +33,13 @@ fun DeclarationContainerScope.featureGroup() = "feature".group {
         `:feature:settings`; adding a screen means adding a module.
 
         Screen / ViewModel / Route are collected here because each of them exists for a single
-        screen. All three read back the module name that `wildcard("feature")` (that is, `:feature:*`)
-        matched and use it to decide the file name, so `:feature:home` needs `HomeScreen.kt` /
-        `HomeViewModel.kt` / `HomeRoute.kt`. The shape of this group can say not just "there
-        should be a screen" but "a screen with that name is required".
+        screen. All three are written as globs under the directory `feature/*`, and by convention the
+        file is named after the module: `:feature:home` has `HomeScreen.kt` / `HomeViewModel.kt` /
+        `HomeRoute.kt`. The check looks at the place and the suffix, not at the pairing.
 
         It is separate from the ui group because the two grow differently. A feature is a place
-        where modules are expected to multiply, and one `":feature:${'$'}{capture("feature")}".module { }`
-        declaration covers any number of them. Adding something to `:ui` or `:navigation`, on the
+        where modules are expected to multiply, and one declaration of the directory `feature/*`
+        covers any number of them. Adding something to `:ui` or `:navigation`, on the
         other hand, is a design decision. Merging them into one group would erase that difference
         from the generated documentation.
 
@@ -48,8 +47,9 @@ fun DeclarationContainerScope.featureGroup() = "feature".group {
         draw.
 
         Only the screen parts (FeatureComponent) grow in number inside a single feature, and they
-        can be generated from a template. The `*` of `:feature:*` is named `feature`, so
-        `--arg feature=home` picks the module to generate into.
+        can be generated from a template. The module directory is named `feature` and its
+        package directory `featurePackage`, so `--arg feature=home --arg featurePackage=home`
+        picks the module to generate into.
 
         Every role in this group is `commonMain`. There is no `androidMain` / `iosMain` around the
         screens. Platform differences stay inside ExpectDeclaration and ActualImplementation of the data group.

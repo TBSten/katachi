@@ -17,7 +17,7 @@ fun DeclarationContainerScope.androidManifest() = "AndroidManifest" {
     """.trimIndent()
     example("AndroidManifest.xml", "The app manifest")
     layout {
-        ":app:android".module {
+        "app/android" {
             mainSourceSet / "AndroidManifest.xml".file()
         }
     }

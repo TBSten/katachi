@@ -29,9 +29,9 @@ package in the definition would make the documentation point at a directory that
 
 ## Placement
 
-| Module | Path | When to use |
-|---|---|---|
-| `:data` | `src/commonMain/kotlin/**/user/*Repository.kt` |  |
+| Path | When to use |
+|---|---|
+| `data/src/commonMain/kotlin/com/example/kmp/data/user/*Repository.kt` |  |
 
 ## Examples
 

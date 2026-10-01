@@ -1,7 +1,6 @@
 package com.example.kmp.roles
 
 import com.example.kmp.forbiddenContents
-import com.example.kmp.modulePackage
 import me.tbsten.katachi.dsl.DeclarationContainerScope
 import me.tbsten.katachi.dsl.gradle.*
 import me.tbsten.katachi.dsl.kotlin.ktFile
@@ -31,8 +30,8 @@ fun DeclarationContainerScope.theme() = "Theme" {
     example("AppTheme", "The theme of the whole app")
     example("AppSpacing", "The spacing tokens")
     layout {
-        ":ui".module {
-            "commonMain".sourceSet / kotlin / modulePackage / "theme" / "*".ktFile()
+        "ui" {
+            "commonMain".sourceSet / kotlin / "com/example/kmp/ui" / "theme" / "*".ktFile()
         }
     }
 }

@@ -25,9 +25,9 @@ comparison is made.
 
 ## Placement
 
-| Module | Path | When to use |
-|---|---|---|
-|  | `katachi-baseline.json` |  |
+| Path | When to use |
+|---|---|
+| `katachi-baseline.json` |  |
 
 ## Examples
 

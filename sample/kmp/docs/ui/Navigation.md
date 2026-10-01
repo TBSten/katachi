@@ -19,9 +19,9 @@ that this sample wants to show.
 
 ## Placement
 
-| Module | Path | When to use |
-|---|---|---|
-| `:navigation` | `src/commonMain/kotlin/**/*.kt` |  |
+| Path | When to use |
+|---|---|
+| `navigation/src/commonMain/kotlin/com/example/kmp/navigation/*.kt` |  |
 
 ## Examples
 

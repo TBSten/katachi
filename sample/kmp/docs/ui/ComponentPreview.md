@@ -17,9 +17,9 @@ it renders, and the report saying so out loud is what this sample wants to show 
 
 ## Placement
 
-| Module | Path | When to use |
-|---|---|---|
-| `:ui` | `src/commonMain/kotlin/**/component/*Preview.kt` |  |
+| Path | When to use |
+|---|---|
+| `ui/src/commonMain/kotlin/com/example/kmp/ui/component/*Preview.kt` |  |
 
 ## Examples
 

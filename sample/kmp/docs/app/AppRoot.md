@@ -18,9 +18,9 @@ ActivityEntrypoint: it does not follow the module path `:app:android`.
 
 ## Placement
 
-| Module | Path | When to use |
-|---|---|---|
-| `:app:android` | `src/main/kotlin/com/example/kmp/app/AppRoot.kt` |  |
+| Path | When to use |
+|---|---|
+| `app/android/src/main/kotlin/com/example/kmp/app/AppRoot.kt` |  |
 
 ## Examples
 

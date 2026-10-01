@@ -20,9 +20,9 @@ creates both at once, and the `item` parameter binds both when given once.
 
 ## Placement
 
-| Module | Path | When to use |
-|---|---|---|
-| `:data` | `src/commonMain/kotlin/**/user/*RepositoryImpl.kt` |  |
+| Path | When to use |
+|---|---|
+| `data/src/commonMain/kotlin/com/example/kmp/data/user/*RepositoryImpl.kt` |  |
 
 ## Examples
 

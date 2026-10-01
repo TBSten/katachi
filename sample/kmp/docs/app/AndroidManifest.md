@@ -13,9 +13,9 @@ only at it. If another module needs one, widen the role then.
 
 ## Placement
 
-| Module | Path | When to use |
-|---|---|---|
-| `:app:android` | `src/main/AndroidManifest.xml` |  |
+| Path | When to use |
+|---|---|
+| `app/android/src/main/AndroidManifest.xml` |  |
 
 ## Examples
 

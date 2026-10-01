@@ -4,21 +4,21 @@ package com.example.kmp.roles
 
 import com.example.kmp.allowedContents
 import com.example.kmp.forbiddenContents
-import com.example.kmp.modulePackage
 import me.tbsten.katachi.ExperimentalKatachiApi
 import me.tbsten.katachi.dsl.DeclarationContainerScope
 import me.tbsten.katachi.dsl.gradle.*
 import me.tbsten.katachi.dsl.kotlin.ktFile
-import me.tbsten.katachi.dsl.pascalCase
 import me.tbsten.katachi.dsl.template
 
 /**
  * The role of a part one screen draws and no other: the feature-local counterpart of Component.
  *
- * This sample's example of generating into a wildcard module. `:feature:*` is named `feature`,
- * so `--arg feature=home` picks `:feature:home` as the one place the template writes to, and
- * the template reads the same value back with `captureValue("feature")` for the package and the
- * head of the file name. `:feature:home` holds one of them, `HomeUserCard.kt`, which the home
+ * This sample's example of generating into one of several modules. The module directory is
+ * named `feature` and its package directory `featurePackage` (a capture name may be used only
+ * once in a path, so the two need two names), so `--arg feature=home --arg featurePackage=home`
+ * picks `:feature:home` as the one place the template writes to, and the template reads the
+ * package back with `captureValue("featurePackage")`. A `feature` that is not a module is not
+ * refused. `:feature:home` holds one of them, `HomeUserCard.kt`, which the home
  * screen draws; `checkSampleKmp` generates another and checks it before deleting it again.
  */
 fun DeclarationContainerScope.featureComponent() = "FeatureComponent" {
@@ -33,9 +33,10 @@ fun DeclarationContainerScope.featureComponent() = "FeatureComponent" {
         use it. When a second screen wants it, move it to the component package of `:ui`.
         Features do not depend on each other, so left here it cannot be called from other screens.
 
-        It can be generated from a template. The `*` of `:feature:*` is named `feature`, so
-        `--arg feature=home --arg name=UserCard` puts `HomeUserCard.kt` into `:feature:home`.
-        Only the name of an existing feature module can be passed as `feature`.
+        It can be generated from a template. The module directory is named `feature` and its package
+        directory `featurePackage`, so `--arg feature=home --arg featurePackage=home --arg
+        name=HomeUserCard` puts `HomeUserCard.kt` into `:feature:home`. `name` is the whole file
+        name, including the module's name; the check does not tie the two together.
     """.trimIndent()
     allowedContents = """
         - An `internal` `@Composable` that receives values and callbacks
@@ -46,25 +47,27 @@ fun DeclarationContainerScope.featureComponent() = "FeatureComponent" {
         - `public` declarations. Only the Route is visible from outside the feature
     """.trimIndent()
     example("HomeUserCard", "Shows one user, used only on the home screen")
-    // The module is chosen by `--arg feature=...`, the name the layout gave `:feature:*`.
-    // A module that does not exist is refused rather than created.
+    // The module is chosen by `--arg feature=...` and its package by `--arg featurePackage=...`,
+    // the names the layout gave the two directories. A `feature` that is not a module is not
+    // refused; the directory is created as given.
     //   ./gradlew :architecture-test:katachiTemplate \
-    //       --arg template=feature.FeatureComponent --arg feature=home --arg name=UserCard
+    //       --arg template=feature.FeatureComponent --arg feature=home --arg featurePackage=home \
+    //       --arg name=HomeUserCard
     layout {
-        ":feature:${capture("feature")}".module {
-            "commonMain".sourceSet / kotlin / modulePackage / "component" /
-                "${wildcard("feature").pascalCase}${capture("name")}".ktFile()
+        "feature" / capture("feature") / "commonMain".sourceSet / kotlin / "com/example/kmp/feature" /
+            capture("featurePackage") / "component" /
+            capture("name").ktFile()
                     .template {
-                        val feature = captureValue("feature")
-                        val component = "${feature.pascalCase}${captureValue("name")}"
+                        val featurePackage = captureValue("featurePackage")
+                        val component = captureValue("name")
                         """
-                            package com.example.kmp.feature.$feature.component
+                            package com.example.kmp.feature.$featurePackage.component
 
                             import androidx.compose.material3.Text
                             import androidx.compose.runtime.Composable
                             import androidx.compose.ui.Modifier
 
-                            /** Part of the $feature screen that no other screen uses. */
+                            /** Part of the $featurePackage screen that no other screen uses. */
                             @Composable
                             internal fun $component(
                                 name: String,
@@ -74,6 +77,5 @@ fun DeclarationContainerScope.featureComponent() = "FeatureComponent" {
                             }
                         """.trimIndent() + "\n"
                     }
-        }
     }
 }

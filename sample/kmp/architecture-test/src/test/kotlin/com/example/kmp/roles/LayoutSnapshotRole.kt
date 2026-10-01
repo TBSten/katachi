@@ -24,7 +24,7 @@ fun DeclarationContainerScope.layoutSnapshot() = "LayoutSnapshot" {
         `./gradlew :architecture-test:test -Dkatachi.snapshot.update=true`.
 
         It exists so a person can review changes to the definition as a diff. This sample uses
-        wildcard module keys such as `":feature:*".module { }` and sourceSet sugar more than
+        wildcard directories such as `"feature" / "*"` and sourceSet sugar more than
         anything, and looking at the definition code alone does not tell you whether a rewrite
         only made it easier to read or changed the checked tree itself. If the flattened result is
         committed as text, the number of lines in `git diff` is the answer: if no line moves, the

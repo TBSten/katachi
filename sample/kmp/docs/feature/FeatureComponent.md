@@ -12,15 +12,16 @@ The difference from the shared component (ui/Component) is the number of screens
 use it. When a second screen wants it, move it to the component package of `:ui`.
 Features do not depend on each other, so left here it cannot be called from other screens.
 
-It can be generated from a template. The `*` of `:feature:*` is named `feature`, so
-`--arg feature=home --arg name=UserCard` puts `HomeUserCard.kt` into `:feature:home`.
-Only the name of an existing feature module can be passed as `feature`.
+It can be generated from a template. The module directory is named `feature` and its package
+directory `featurePackage`, so `--arg feature=home --arg featurePackage=home --arg
+name=HomeUserCard` puts `HomeUserCard.kt` into `:feature:home`. `name` is the whole file
+name, including the module's name; the check does not tie the two together.
 
 ## Placement
 
-| Module | Path | When to use |
-|---|---|---|
-| `:feature:<feature>` | `src/commonMain/kotlin/**/component/<feature>*.kt` |  |
+| Path | When to use |
+|---|---|
+| `feature/*/src/commonMain/kotlin/com/example/kmp/feature/*/component/*.kt` |  |
 
 ## Examples
 

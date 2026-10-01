@@ -59,7 +59,7 @@ class OmittedRoleSelfCheckSpec : FreeSpec({
         // the one directory that has to be explained is, and the walk stops there.
         //
         // `data` itself stays known, because `Gradle/BuildScript` claims
-        // `data/build.gradle.kts` through its `":**".module { }`.
+        // `data/build.gradle.kts` through the module key it declares.
         val withoutData = architecture {
             featureGroup()
             uiGroup()

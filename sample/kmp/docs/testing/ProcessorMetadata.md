@@ -13,9 +13,9 @@ here once there is a second one to justify a pattern.
 
 ## Placement
 
-| Module | Path | When to use |
-|---|---|---|
-| `:architecture-test` | `src/test/kotlin/com/example/kmp/processors/Owner.kt` |  |
+| Path | When to use |
+|---|---|
+| `architecture-test/src/test/kotlin/com/example/kmp/processors/Owner.kt` |  |
 
 ## Examples
 

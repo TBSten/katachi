@@ -15,10 +15,9 @@ import me.tbsten.katachi.dsl.DeclarationContainerScope
  * The per-feature roles (`Screen` / `ViewModel` / `Route`) live in [featureGroup] instead. See
  * the note there for why the two are separate groups.
  *
- * Every layout here starts at a module path rather than at a directory name. `":ui".module { }`
- * is the directory the build puts `:ui` in, plus the two lines every Gradle module has
- * (`build/` is not checked, `build.gradle.kts` has to be there), and the package below it
- * comes from `modulePackage` instead of being spelled out per role.
+ * Every layout here starts at the directory the build puts the module in (`"ui"`), then the
+ * source set (`"commonMain".sourceSet`), then the package, written out as
+ * `com/example/kmp/ui`.
  *
  * Component / Theme / UiCore all live in the one `:ui` module. They used to be
  * `:ui:component` / `:ui:theme` / `:ui:core`; now they are packages of `:ui`, which is the
@@ -44,9 +43,8 @@ fun DeclarationContainerScope.uiGroup() = "ui".group {
         in `:app:android`. It is on the side that screens draw from, like `:ui`, so it is placed
         in this group.
 
-        Every layout starts from a module path, and the package below it is derived from
-        `modulePackage`. Instead of copying directory names, the policy of the whole
-        sample is to write exactly what the build says.
+        Every layout starts from the module's directory, then the source set, then the package.
+        The policy of the whole sample is to write exactly what the build says.
     """.trimIndent()
     forbiddenContents = """
         - Per-screen Screen / ViewModel / Route. Those belong to the feature group

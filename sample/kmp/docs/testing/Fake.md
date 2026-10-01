@@ -17,9 +17,9 @@ itself depends on.
 
 ## Placement
 
-| Module | Path | When to use |
-|---|---|---|
-| `:testing` | `src/commonMain/kotlin/**/Fake*.kt` |  |
+| Path | When to use |
+|---|---|
+| `testing/src/commonMain/kotlin/com/example/kmp/testing/Fake*.kt` |  |
 
 ## Examples
 

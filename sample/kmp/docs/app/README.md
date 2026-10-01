@@ -16,7 +16,7 @@ shows that both can be written.
 `:app:android` has one more trait. It is the only nested module path in this sample, and
 also the only module whose package does not follow the module path (`com.example.kmp.app`,
 not `com.example.kmp.app.android`). That is why ActivityEntrypoint and AppRoot write the
-package out instead of using `modulePackage`. Saying "this one is different" is kinder to
+package out as `com/example/kmp/app`. Saying "this one is different" is kinder to
 the reader than bending the rule to fit.
 
 | Role | Summary |
@@ -30,15 +30,14 @@ the reader than bending the rule to fit.
 ## Placement in this group
 
 ```
-:app:android
-  src/main/
+app/
+  android/src/main/
     kotlin/com/example/kmp/app/
       MainActivity.kt    Activity entrypoint
       AppRoot.kt         App root
     AndroidManifest.xml  Android manifest
     res/*/*.xml          Android resources
-
-app/ios/                 Xcode project
+  ios/                   Xcode project
 ```
 
 ## Allowed contents

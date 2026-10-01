@@ -114,8 +114,8 @@ class ProjectArchitectureSpec : FreeSpec({
         //
         // The naming rule is checked rather than listed, so adding a role does not mean
         // editing a table here: a group named `"debug-menu"` belongs in `DebugMenuGroup.kt`,
-        // using `pascalCase` -- the same conversion a layout can call explicitly on a captured
-        // wildcard (`wildcard(...).pascalCase`). katachi itself never applies one on its own.
+        // using `pascalCase` -- the same conversion a template can call explicitly on a captured
+        // value (`captureValue(...).pascalCase`). katachi itself never applies one on its own.
         //
         // `Gradle` and everything nested under it are left out: they are declared by
         // katachi's own `gradle()`, not by this convention -- see the dedicated test below.
@@ -297,8 +297,8 @@ class ProjectArchitectureSpec : FreeSpec({
             "testing.DefinitionEntry is missing"
         }
         definition[Summary].orEmpty() shouldContain "ProjectArchitecture.kt"
-        // `Gradle/BuildScript` needs no example naming it: `":**".module { }` already
-        // covers every module katachi finds, `:architecture-test` included, and `gradle()`
+        // `Gradle/BuildScript` needs no example naming it: the module key it
+        // declares already covers every module katachi finds, `:architecture-test` included, and `gradle()`
         // sets no `example()` on the roles it declares.
         requireNotNull(roles["Gradle.BuildScript"]) { "Gradle.BuildScript is missing" }
     }
