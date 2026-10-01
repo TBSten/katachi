@@ -30,7 +30,7 @@ architecture {
 
 Role の説明・置き場所・制約は、その Role のブロックの中に書きます。
 
-- `title`, `summary`, `description`, etc. ... そのRoleの説明です。ドキュメント生成に使われます。
+- `title`・`summary`・`description` など ... そのRoleの説明です。ドキュメント生成に使われます。
 - `layout { }` ... そのRoleのファイルをどこに置けるかを定義します。
   - 詳しくは [レイアウトの定義](/katachi/ja/guides/layout/) を参照してください。
 - `"制約名".konsist { }` ... そのRoleのファイルにかけられる制限を定義します。
@@ -127,7 +127,7 @@ architecture {
 src/main/kotlin/com/example/GetUserUseCase.kt   ← useCase/ の外に置いてしまった
 ```
 
-テストを実行すると、近い置き場所と直し方まで1つのブロックで報告されます。
+テストを実行すると、katachi が近い置き場所と直し方まで1つのブロックで報告します。
 
 ```text
 Katachi check failed: 1 violation (Unexpected: 1)
@@ -245,7 +245,7 @@ architecture {
 
 **1つの Role は、1種類のファイルだけを表すようにしてください。**
 たとえば Repository の interface と実装は、名前は似ていても別の種類のファイルです。1つの Role にまとめると、説明・制約・テンプレートが「どちらのファイルの話か」で分かれてしまい、`konsist { }` の制約にも「interface なら…、実装なら…」という条件分岐が入ります。
-種類ごとに Role を分ければ、説明も制約もその種類のファイルだけを相手にでき、生成されるドキュメントも種類ごとのページになります。
+種類ごとに Role を分ければ、説明も制約もその種類のファイルだけを対象にでき、生成されるドキュメントも種類ごとのページになります。
 
 <CodeComparison>
     <CodeComparison.Panel label="🆖 2種類のファイルを1つの Role に" labelVariant="danger">

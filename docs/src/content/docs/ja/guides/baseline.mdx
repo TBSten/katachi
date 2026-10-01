@@ -11,7 +11,7 @@ tags:
 
 既存のプロジェクトに katachi を入れると、最初の実行で **宣言していないファイルやディレクトリが違反として出ます。** 出てきたパスを定義に足すか・移すか・消すかで片付けていくのが基本ですが、数が多いとすぐには片付けきれないでしょう。
 
-**baseline は 既存の違反を一時的に抑制して、新しい違反をテストでエラーにする**機能です。
+**baseline は既存の違反を一時的に抑制して、新しい違反をテストでエラーにする**機能です。
 
 ## 設定する
 
@@ -30,7 +30,7 @@ baseline を設定すると、デフォルトではプロジェクトルート�
 
 ### 2. Baseline ファイル自身を `layout { }` で宣言する
 
-Baseline ファイルもプロジェクトのファイルの1つなので Role として宣言しないと `projectArchitecture.assert()` でエラーになってしまいます。
+Baseline ファイルもプロジェクトのファイルの1つなので、Role として宣言しないと `projectArchitecture.assert()` でエラーになってしまいます。
 
 慣例に従って "BaselineFile" という名前の Role を用意して architecture 定義内に追加してください。
 
@@ -58,19 +58,19 @@ fun DeclarationContainerScope.baselineFile() = "BaselineFile" {
 
 ### 3. Baseline ファイルを作成する
 
-`-Dkatachi.baseline.update=true` を付けてアーキテクチャテストを実行すると、全ての違反がエラーになる代わりに許容され Baseline ファイルに書き込まれます。
+`-Dkatachi.baseline.update=true` を付けてアーキテクチャテストを実行すると、全ての違反はエラーにならず、許容されて Baseline ファイルに書き込まれます。
 
 ```shell
 ./gradlew :architecture-test:test -Dkatachi.baseline.update=true
 ```
 
-作成・更新されたファイルはコミットするのが推奨です。
+作成・更新されたファイルは、コミットすることをおすすめします。
 
 ## 許容していた違反を直したあと
 
-許容されていた違反を直すと、Baseline ファイルにはもう存在しない違反の記録が残ります。放っておくと、あとで同じパスに置かれた別のファイルが黙って通ってしまうので、katachi はこの残りを `[StaleBaselineEntry]` として報告し、**テストを落とします。**
+許容されていた違反を直すと、Baseline ファイルにはもう存在しない違反の記録が残ります。放っておくと、あとで同じパスに置かれた別のファイルが気づかないうちに通ってしまうので、katachi はこの残りを `[StaleBaselineEntry]` として報告し、**テストを落とします。**
 
-baseline のファイルを縮めるには、`-Dkatachi.baseline.prune=true` を付けて、もう一度アーキテクチャテストを実行します。
+baseline のファイルから修正した違反を削除するには、`-Dkatachi.baseline.prune=true` を付けて、もう一度アーキテクチャテストを実行します。
 
 ```shell
 ./gradlew :architecture-test:test -Dkatachi.baseline.prune=true

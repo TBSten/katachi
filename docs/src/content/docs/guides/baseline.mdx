@@ -70,7 +70,7 @@ It's recommended to commit the created/updated file.
 
 When you fix a violation that had been tolerated, the baseline file is left with a record of a violation that no longer exists. If left alone, a different file placed at the same path later would pass silently, so katachi reports these leftovers as `[StaleBaselineEntry]` and **fails the test.**
 
-To shrink the baseline file, run the architecture test again with `-Dkatachi.baseline.prune=true`.
+To remove fixed violations from the baseline file, run the architecture test again with `-Dkatachi.baseline.prune=true`.
 
 ```shell
 ./gradlew :architecture-test:test -Dkatachi.baseline.prune=true

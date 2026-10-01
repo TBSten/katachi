@@ -11,7 +11,7 @@ tags:
 
 import { LinkCard } from '@astrojs/starlight/components';
 
-katachi のコア API は、ディレクトリ構造やファイルの位置に着目して検証します。`"...".konsist { }` を使うと、Konsist の API で **ファイル内の宣言を検証** できます。
+katachi のコア API で検証できるのは、ディレクトリ構造やファイルの位置です。`"...".konsist { }` を使うと、Konsist の API で **ファイル内の宣言を検証** できます。
 
 ## インストール
 
@@ -35,7 +35,7 @@ fun `アーキテクチャに沿ったファイル配置になっている`() {
 
 ## 基本的な使い方
 
-Role の中で、その Role のファイルにどういう宣言があるのかを定義します。
+Role の中で、その Role のファイルにどんな宣言があるべきかを定義します。
 
 ```kt {7-8}
 architecture {
@@ -77,7 +77,7 @@ Katachi check failed: 1 violation (FileConstraint: 1)
   href="https://docs.konsist.lemonappdev.com/"
 />
 
-katachi が足しているのは `must` / `mustNot` / `mustBeEmpty` の3つで、Konsist の `assertTrue` などのアサーションはコンパイルエラーで塞いでいます。対象を絞るまでの書き方は Konsist のものがそのまま使えます。
+katachi が足しているのは `must` / `mustNot` / `mustBeEmpty` の3つで、Konsist の `assertTrue` などのアサーションは、コンパイルエラーにして使えないようにしています。対象を絞るまでの書き方は Konsist のものがそのまま使えます。
 
 ## まとめ
 
