@@ -3,6 +3,8 @@ package me.tbsten.katachi.test.architecture.groups
 import me.tbsten.katachi.dsl.DeclarationContainerScope
 import me.tbsten.katachi.test.architecture.roles.idePluginBuild
 import me.tbsten.katachi.test.architecture.roles.idePluginPreview
+import me.tbsten.katachi.test.architecture.roles.idePluginPreviewFont
+import me.tbsten.katachi.test.architecture.roles.idePluginPreviewFontTool
 import me.tbsten.katachi.test.architecture.roles.idePluginSource
 import me.tbsten.katachi.test.architecture.roles.idePluginTest
 
@@ -23,4 +25,6 @@ fun DeclarationContainerScope.idePluginGroup() = "ide-plugin".group {
     idePluginSource()
     idePluginTest()
     idePluginPreview()
+    idePluginPreviewFont()
+    idePluginPreviewFontTool()
 }
