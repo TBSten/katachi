@@ -11,7 +11,7 @@ tags:
 
 import { Tabs, TabItem, LinkCard } from "@astrojs/starlight/components"
 
-このページでは、katachi の重要な構成要素の 1 つである ArchitectureProcessor を解説し、katachi への理解を一層深めることを目指します。
+このページでは、katachi の重要な構成要素の 1 つである ArchitectureProcessor を解説し、katachi の理解を深めます。
 
 後半では、独自の ArchitectureProcessor を書いて実行する方法を解説します。
 
@@ -100,7 +100,7 @@ katachi は 5 つの ArchitectureProcessor を提供しています。
     </tbody>
 </table>
 
-いずれもプロジェクトのアーキテクチャ定義を受け取り、それを検証や生成のために使用しています。
+いずれもプロジェクトのアーキテクチャ定義を受け取り、検証や生成に使っています。
 
 ## ArchitectureProcessor の実行
 
@@ -216,7 +216,7 @@ process メソッドに渡される `context` には、アーキテクチャ定�
     
     </TabItem>
     <TabItem label="引数あり">
-        katachi は引数のパースに [kotlinx.serialization](https://github.com/kotlin/kotlinx.serialization) を利用するため プロジェクトに kotlinx.serialization の依存を追加してください。
+        katachi は引数のパースに [kotlinx.serialization](https://github.com/kotlin/kotlinx.serialization) を使うため、プロジェクトに kotlinx.serialization の依存を追加してください。
 
         ```kts {3} title="architecture-test/build.gradle.kts" 
         plugins {
@@ -262,7 +262,7 @@ process メソッドに渡される `context` には、アーキテクチャ定�
     場合によっては、ArchitectureProcessor の側で、アーキテクチャ定義に独自のプロパティを指定してほしくなるかもしれません。
     その場合は **Role の metadata** を使えます。
 
-    例えば、すでに非推奨なのに過去の遺産として残ってしまっている Role を Obsolete としてマークしたいなら、以下のように Obsolete という metadata を定義して設定できます。
+    例えば、すでに非推奨なのにそのまま残っている Role を Obsolete としてマークしたいなら、以下のように Obsolete という metadata を定義して設定できます。
 
     ```kt nocollapse
     // metadata のキー
@@ -304,7 +304,7 @@ process メソッドに渡される `context` には、アーキテクチャ定�
 
         引数なしの定義の場合は、`process(CountFilesPerRole)` と書きます。
 
-        利用者は processor の存在を知らず用意された API を呼び出すことができます。
+        利用者は processor を知らなくても、用意された API を呼び出せます。
 
         ```kt
         val counts = projectArchitecture.countFilesPerRole()
@@ -337,12 +337,12 @@ process メソッドに渡される `context` には、アーキテクチャ定�
 
 ---
 
-用意した実行方法は **processor の KDoc に書くなど ドキュメンテーションとして用意して利用者に実行方法まで含めて伝えるようにしてください**。
+用意した実行方法は **processor の KDoc などにドキュメントとして書き、実行方法まで利用者に伝えてください**。
 
 ## まとめ
 
 - **`assert()` もドキュメント・テンプレート生成も ArchitectureProcessor** です。
-- 標準の ArchitectureProcessor が使う仕組みと同じ仕組みに則って、カスタムの ArchitectureProcessor を作ることができます。
+- 標準の ArchitectureProcessor が使う仕組みと同じ仕組みで、カスタムの ArchitectureProcessor を作れます。
 
 ## 次のステップ
 

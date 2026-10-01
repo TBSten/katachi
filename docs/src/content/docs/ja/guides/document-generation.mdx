@@ -281,7 +281,7 @@ group に設定できるのは Role と同じ4つです。**`example()` だけ�
 |---|---|---|
 | [`title`](/katachi/api-docs/katachi/me.tbsten.katachi.dsl/-group-scope/title.html) | group の README の見出し。デフォルトは group の識別子 | `README.md`, `<グループ名>/README.md` |
 | [`summary`](/katachi/api-docs/katachi/me.tbsten.katachi.dsl/-group-scope/summary.html) | 親の Document map と group の節に出る1行 | `README.md`, `<グループ名>/README.md` |
-| [`description`](/katachi/api-docs/katachi/me.tbsten.katachi.dsl/-group-scope/description.html) | group の README の本文。 | `<グループ名>/README.md` |
+| [`description`](/katachi/api-docs/katachi/me.tbsten.katachi.dsl/-group-scope/description.html) | group の README の本文 | `<グループ名>/README.md` |
 | [`documented`](/katachi/api-docs/katachi/me.tbsten.katachi.dsl/-group-scope/documented.html) | `false` にすると group ごとドキュメントに出ません。検査には参加します | --- |
 
 <details>
@@ -357,7 +357,7 @@ group に設定できるのは Role と同じ4つです。**`example()` だけ�
 | プロパティ | 生成されるドキュメントでの役割 | 使用されるページ |
 |---|---|---|
 | [`title`](/katachi/api-docs/katachi/me.tbsten.katachi.dsl/-architecture-scope/title.html) | トップページの見出し | `README.md`、すべてのページのパンくず |
-| [`description`](/katachi/api-docs/katachi/me.tbsten.katachi.dsl/-architecture-scope/description.html) | 見出しの直下の本文。 | `README.md` |
+| [`description`](/katachi/api-docs/katachi/me.tbsten.katachi.dsl/-architecture-scope/description.html) | 見出しの直下の本文 | `README.md` |
 
 <CodeComparison>
     <CodeComparison.Panel label="architecture 定義">
@@ -398,7 +398,7 @@ group に設定できるのは Role と同じ4つです。**`example()` だけ�
 
 ### 独自のセクション
 
-title などデフォルトで用意されているセクションのほかに独自のセクションをドキュメントへ足したいときは、[`documentSection()`](/katachi/api-docs/katachi/me.tbsten.katachi.dsl/document-section.html) でセクションを定義します。
+title などデフォルトで用意されているセクションのほかに、独自のセクションをドキュメントへ足したいときは、[`documentSection()`](/katachi/api-docs/katachi/me.tbsten.katachi.dsl/document-section.html) でセクションを定義します。
 
 セクションは `documentSection("見出し")` で宣言し、書き込むためのプロパティを `by` で作ります。
 
@@ -468,7 +468,7 @@ var MetadataScope.testPolicy by TestPolicy
 
 ## まとめ
 
-- ドキュメントはアーキテクチャ定義の中に title, summary, description, example などのプロパティを設定することで作成することができます。
+- アーキテクチャ定義に title, summary, description, example などのプロパティを設定すると、ドキュメントを作成できます。
 
 ## 次のステップ
 
