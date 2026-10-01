@@ -44,9 +44,7 @@ class SampleAndroidEntryTest {
         }
         val repository = Files.createTempDirectory(workDir, "repository-")
         val source = Path.of(System.getProperty("katachi.smoke.sampleProject")).resolve("../..").normalize()
-        run(workDir, "rsync", "-a", "--exclude", "build/", "--exclude", ".gradle/", "--exclude", ".kotlin/",
-            "--exclude", ".idea/", "--exclude", ".git", "--exclude", ".intellijPlatform/",
-            "--exclude", "/.local/", "--exclude", "/katachi-intellij-plugin/", "$source/", "$repository/")
+        run(workDir, "rsync", "-a", *REPOSITORY_COPY_EXCLUDES, "$source/", "$repository/")
         val project = repository.resolve("sample/android")
         val relative = "feature/home/src/main/kotlin/com/example/sample/feature/home/component/HomeUserCard.kt"
         val placeholder = "  \npackage com.example.sample.feature.home.component\n\n// Placeholder\n/* Generate here. */\n  "

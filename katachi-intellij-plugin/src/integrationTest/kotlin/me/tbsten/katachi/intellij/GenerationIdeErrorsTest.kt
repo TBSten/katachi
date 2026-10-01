@@ -206,13 +206,7 @@ private fun copyOfRepository(sample: Path, destination: Path): Path {
     val repository = sample.resolve("../..").normalize()
     runCommand(destination.parent, "rm", "-rf", destination.toString())
     Files.createDirectories(destination)
-    runCommand(
-        destination.parent, "rsync", "-a",
-        "--exclude", "build/", "--exclude", ".gradle/", "--exclude", ".kotlin/", "--exclude", ".idea/",
-        "--exclude", ".git", "--exclude", ".intellijPlatform/", "--exclude", "/katachi-intellij-plugin/",
-        "--exclude", "/.local/",
-        "$repository/", "$destination/",
-    )
+    runCommand(destination.parent, "rsync", "-a", *REPOSITORY_COPY_EXCLUDES, "$repository/", "$destination/")
     runCommand(destination, "git", "init", "-q")
     return destination
 }

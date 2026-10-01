@@ -144,12 +144,7 @@ class ToolWindowSmokeTest {
         val destination = workDir.resolve("repository")
         run(workDir, "rm", "-rf", destination.toString())
         Files.createDirectories(destination)
-        run(
-            workDir, "rsync", "-a",
-            "--exclude", "build/", "--exclude", ".gradle/", "--exclude", ".kotlin/", "--exclude", ".idea/",
-            "--exclude", ".git", "--exclude", ".intellijPlatform/", "--exclude", "/katachi-intellij-plugin/",
-            "$repository/", "$destination/",
-        )
+        run(workDir, "rsync", "-a", *REPOSITORY_COPY_EXCLUDES, "$repository/", "$destination/")
         run(destination, "git", "init", "-q")
         return destination
     }

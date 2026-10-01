@@ -28,10 +28,7 @@ internal class EditorEntryFixture(private val sample: Path, val workDir: Path) {
         }
         // A new directory prevents stale IDE workspace state (especially an already open tool window).
         val repository = Files.createTempDirectory(workDir, "repository-")
-        run("rsync", "-a", "--exclude", "build/", "--exclude", ".gradle/", "--exclude", ".kotlin/",
-            "--exclude", ".idea/", "--exclude", ".git", "--exclude", ".intellijPlatform/",
-            "--exclude", "/.local/", "--exclude", "/katachi-intellij-plugin/",
-            "${sample.resolve("../..").normalize()}/", "$repository/")
+        run("rsync", "-a", *REPOSITORY_COPY_EXCLUDES, "${sample.resolve("../..").normalize()}/", "$repository/")
         project = repository.resolve("sample/jvm")
         // Two templates exercise the group → role → template hierarchy. The required body
         // parameter cannot be reverse-captured and receives the dialog's initial keyboard focus.
