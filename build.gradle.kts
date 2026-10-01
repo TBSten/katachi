@@ -325,9 +325,15 @@ val sampleBuilds = listOf(
                     args = listOf("template=Component", "name=AppKatachiSmoke"),
                     generatedFiles = listOf("ui/src/main/kotlin/com/example/sample/ui/component/AppKatachiSmoke.kt"),
                 ),
-                // `feature` is the name the layout gave `:feature:*`: it picks the module.
+                // `feature` and `featurePackage` are the names the layout gave the two directories:
+                // they pick the module and its package. `name` is the whole file name.
                 SampleTemplateRun(
-                    args = listOf("template=feature.FeatureComponent", "feature=home", "name=KatachiSmoke"),
+                    args = listOf(
+                        "template=feature.FeatureComponent",
+                        "feature=home",
+                        "featurePackage=home",
+                        "name=HomeKatachiSmoke",
+                    ),
                     generatedFiles = listOf(
                         "feature/home/src/main/kotlin/com/example/sample/feature/home/component/HomeKatachiSmoke.kt",
                     ),
@@ -336,7 +342,8 @@ val sampleBuilds = listOf(
                     args = listOf(
                         "template=feature.FeatureComponent",
                         "feature=settings",
-                        "name=KatachiSmoke",
+                        "featurePackage=settings",
+                        "name=SettingsKatachiSmoke",
                         "withPreview=false",
                     ),
                     generatedFiles = listOf(
@@ -433,9 +440,15 @@ val sampleBuilds = listOf(
                         "data/src/commonMain/kotlin/com/example/kmp/data/user/KatachiSmokeRepositoryImpl.kt",
                     ),
                 ),
-                // `feature` is the name the layout gave `:feature:*`: it picks the module.
+                // `feature` and `featurePackage` are the names the layout gave the two directories:
+                // they pick the module and its package. `name` is the whole file name.
                 SampleTemplateRun(
-                    args = listOf("template=feature.FeatureComponent", "feature=home", "name=KatachiSmoke"),
+                    args = listOf(
+                        "template=feature.FeatureComponent",
+                        "feature=home",
+                        "featurePackage=home",
+                        "name=HomeKatachiSmoke",
+                    ),
                     generatedFiles = listOf(
                         "feature/home/src/commonMain/kotlin/com/example/kmp/feature/home/component/HomeKatachiSmoke.kt",
                     ),
@@ -857,3 +870,44 @@ tasks.register<Exec>("checkIdePlugin") {
     workingDir = layout.projectDirectory.dir("katachi-intellij-plugin").asFile
     commandLine(gradlewCommand + listOf("buildPlugin", "test", "verifyPreview", "--console=plain"))
 }
+
+/**
+ * Fails when a sample, a document or the repository's own definition writes `.module { }`.
+ *
+ * The sugar stays in the API for now, but it is on its way out, so nothing a reader copies from
+ * here may use it: write the directory path (`"core/domain" / mainSourceSet / ...`) instead.
+ * katachi's own sources, tests and benchmarks are not watched; they exercise the API itself.
+ */
+val checkNoModuleSugar = tasks.register("checkNoModuleSugar") {
+    group = LifecycleBasePlugin.VERIFICATION_GROUP
+    description = "Fails when `.module { }` appears in the samples, the repository's own " +
+            "architecture-test, the docs or the install kit."
+    val root = layout.projectDirectory.asFile
+    val watched = listOf(
+        "sample/jvm/architecture-test/src",
+        "sample/android/architecture-test/src",
+        "sample/kmp/architecture-test/src",
+        "sample/custom-processor/architecture-test/src",
+        "architecture-test/src",
+        "docs/src/content/docs",
+        "docs/public/install",
+        "docs/src/components/home/strings.ts",
+    )
+    val sugar = Regex("""\.module *\{""")
+    doLast {
+        val hits = watched.flatMap { path ->
+            root.resolve(path).walkTopDown().filter { it.isFile }.flatMap { file ->
+                file.readLines().withIndex()
+                    .filter { (_, line) -> sugar.containsMatchIn(line) }
+                    .map { (index, line) -> "${file.relativeTo(root)}:${index + 1}: ${line.trim()}" }
+            }.toList()
+        }
+        check(hits.isEmpty()) {
+            "`.module { }` is not written in samples or docs (the API is kept, but is being retired). " +
+                "Write the directory path instead, e.g. \"core/domain\" / mainSourceSet / ...\n" +
+                hits.joinToString("\n")
+        }
+    }
+}
+
+tasks.named("check") { dependsOn(checkNoModuleSugar) }

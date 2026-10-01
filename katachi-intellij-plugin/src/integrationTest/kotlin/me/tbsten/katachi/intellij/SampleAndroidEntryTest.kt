@@ -26,11 +26,11 @@ import kotlin.time.Duration.Companion.seconds
 
 /**
  * V1: G2 scenario 1 (notification -> dialog -> generation) on a copy of sample/android, whose
- * templates have a module capture (`:feature:${capture("feature")}`). Explicitly invoked only.
+ * templates capture the module directory and the package directory (`feature` / `featurePackage`). Explicitly invoked only.
  */
 class SampleAndroidEntryTest {
     @Test
-    fun `sample android のモジュール capture が逆引きされ本物の katachiTemplate が仮のファイルを上書きする`() {
+    fun `sample android のディレクトリ capture が逆引きされ本物の katachiTemplate が仮のファイルを上書きする`() {
         val workDir = Path.of(System.getProperty("katachi.smoke.workDir")).resolve("sample-android")
         Files.createDirectories(workDir)
         Files.newDirectoryStream(workDir).use { dirs ->
@@ -73,9 +73,10 @@ class SampleAndroidEntryTest {
             openFile(relative, waitForCodeAnalysis = false)
             awaitEntryNotification("Create")
             entryNotification().x { byVisibleText("Create") }.click()
-            waitFor("dialog with both captures reverse-captured", timeout = 2.minutes, errorMessage = { bridge.describeDialog() }) {
+            waitFor("dialog with all captures reverse-captured", timeout = 2.minutes, errorMessage = { bridge.describeDialog() }) {
                 val lines = bridge.describeDialog().lines()
-                "dialog=open" in lines && "field=feature=home" in lines && "field=name=UserCard" in lines &&
+                "dialog=open" in lines && "field=feature=home" in lines && "field=featurePackage=home" in lines &&
+                    "field=name=HomeUserCard" in lines &&
                     lines.any { it.startsWith("target=") && it.endsWith(relative) }
             }
             println("SAMPLE-DIALOG:\n" + bridge.describeDialog())

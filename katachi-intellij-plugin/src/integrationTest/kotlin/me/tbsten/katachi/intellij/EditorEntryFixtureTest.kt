@@ -80,31 +80,27 @@ internal class EditorEntryFixture(private val sample: Path, val workDir: Path) {
 
             package com.example.roles
 
-            import com.example.modulePackage
             import me.tbsten.katachi.ExperimentalKatachiApi
             import me.tbsten.katachi.dsl.DeclarationContainerScope
             import me.tbsten.katachi.dsl.gradle.div
             import me.tbsten.katachi.dsl.gradle.kotlin
             import me.tbsten.katachi.dsl.gradle.mainSourceSet
-            import me.tbsten.katachi.dsl.gradle.module
             import me.tbsten.katachi.dsl.kotlin.ktFile
             import me.tbsten.katachi.dsl.template
 
             fun DeclarationContainerScope.service() = "Service" {
                 layout {
-                    ":".module {
-                        mainSourceSet / kotlin / modulePackage / "service" /
-                            "${'$'}{capture("name")}Service".ktFile().template(id = "main", title = "Service source") {
-                                val name = captureValue("name")
-                                val body by stringParameter()
-                                "package com.example.service\n\n// ${'$'}{body}\nclass ${'$'}{name}Service\n"
-                            }
-                        mainSourceSet / kotlin / modulePackage / "service" /
-                            "${'$'}{capture("name")}Helper".ktFile().template(id = "helper", title = "Helper source") {
-                                val name = captureValue("name")
-                                "package com.example.service\n\nclass ${'$'}{name}Helper\n"
-                            }
-                    }
+                    mainSourceSet / kotlin / "com/example" / "service" /
+                        "${'$'}{capture("name")}Service".ktFile().template(id = "main", title = "Service source") {
+                            val name = captureValue("name")
+                            val body by stringParameter()
+                            "package com.example.service\n\n// ${'$'}{body}\nclass ${'$'}{name}Service\n"
+                        }
+                    mainSourceSet / kotlin / "com/example" / "service" /
+                        "${'$'}{capture("name")}Helper".ktFile().template(id = "helper", title = "Helper source") {
+                            val name = captureValue("name")
+                            "package com.example.service\n\nclass ${'$'}{name}Helper\n"
+                        }
                 }
             }
         """.trimIndent()

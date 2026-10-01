@@ -42,6 +42,8 @@ import java.nio.file.Paths
  * `output/real-jvm-*.log` are unedited outputs of the samples (only the project root is replaced by
  * `file:///__ROOT__`), so a change of shape on katachi's side makes this test fail once the
  * fixtures are refreshed from the samples.
+ *
+ * `json/sample-android-with-captures.json` and `json/sample-kmp-with-captures.json` are the outputs from before `.module { }` was removed from the samples; they are kept so that `modulePlacements` stays covered.
  */
 class RealKatachiContractTest {
     private val root: Path = Paths.get("/work/sample jvm")
