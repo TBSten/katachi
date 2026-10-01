@@ -8,11 +8,11 @@
 
 あなたが判断するのは次だけです。
 
-- ステップ 1 — コードベースの解析
-- ステップ 3 — `architecture { }` 定義の作成とリファクタリング
-- ステップ 4 — 残ったアーキテクチャ違反を直すか残すかの判断
-- ステップ 6 — どの Role にテンプレートを当てるかの提案
-- ステップ 6-A / 6-B / 6-C / 6-D — 題材タスクの立案、CI の配線、ドキュメント生成とテンプレートのセットアップ
+- ステップ 1: コードベースの解析
+- ステップ 3: `architecture { }` 定義の作成とリファクタリング
+- ステップ 4: 残ったアーキテクチャ違反を直すか残すかの判断
+- ステップ 6: どの Role にテンプレートを当てるかの提案
+- ステップ 6-A / 6-B / 6-C / 6-D: 題材タスクの立案、CI の配線、ドキュメント生成とテンプレートのセットアップ
 
 **`scaffold` が生成した `build.gradle.kts` と、追記された `settings` / ルートの build ファイルは書き換えないこと。** `ProjectArchitecture.kt` はステップ 3 で埋める対象なので、これは別です。`build.gradle.kts` の `katachi { }` に `processors { }` を足すのは、6-C / 6-D でユーザが同意したときだけです。
 
@@ -150,7 +150,7 @@ sh $CLI data set report new.json
 
 `report` と `check-list` は作業用ディレクトリのファイルを指す短縮名です。
 
-**`data merge` は配列を丸ごと置き換えます。追記ではありません。** 2件目を merge した瞬間に1件目が消えます。配列に足すときは `add` を使ってください。
+**`data merge` は配列を丸ごと置き換えます。追記ではありません。** 2件目を merge すると、1件目が消えます。配列に足すときは `add` を使ってください。
 
 ```sh
 sh $CLI add violation --violation "..." --location "..." --whyNotFixed "..." --suggestion "..."
@@ -210,7 +210,7 @@ sh $CLI warn 4 "アーキテクチャ違反を 2 件残しました"   # その�
 sh $CLI warn 4 --clear         # 警告を消す
 ```
 
-`check` は**知らない id を渡すと止まります**。打ち間違いが黙って無視されることはありません。
+`check` は**知らない id を渡すと止まります**。打ち間違いに気づけないまま進むことはありません。
 
 `warn` のステップ id は **0〜6** です（チェックリストのステップはそこまで）。付けたステップは黄色になり、完了していても開いたまま表示されます。
 
@@ -226,7 +226,7 @@ sh $CLI warn 4 --clear         # 警告を消す
 
 **コードより先に読んでください。** コードは「いまこうなっている」を示し、ドキュメントは「こうあるべき」を示します。`architecture { }` に書くのは後者です。コードだけを見て書くと、**現状をそのまま追認した定義**になり、既存の逸脱を「正しいもの」として固定してしまいます。
 
-見る場所（あるものだけでよい）:
+見る場所は次のとおりです（あるものだけでよい）。
 
 - `README` / `CONTRIBUTING` / `ARCHITECTURE.md`
 - `docs/` `doc/` `documentation/` とドキュメントサイト（`docs-site/` など）
@@ -234,7 +234,7 @@ sh $CLI warn 4 --clear         # 警告を消す
 - `CLAUDE.md` / `AGENTS.md` / `.cursor/rules` など、AI エージェント向けの規約
 - 各モジュール直下の `README`
 
-取り出すもの:
+取り出すものは次のとおりです。
 
 | 取り出すもの | 行き先 |
 |---|---|
@@ -284,7 +284,7 @@ sh $CLI data merge report <KATACHI_WORKDIR>/tmp/roles.json
 
 `importance` / `name` / `layout` / `naming` は**必須**です。埋めないと `verify` が通りません。
 
-利用できる場合は適宜 subagent を起動するなど コンテキストを多く消費しうるタスクであることを認識する。
+このタスクはコンテキストを多く消費しうるので、利用できる場合は適宜 subagent を起動するなどしてください。
 
 すべての記載が完了し次第 `sh $CLI check 1-1 1-2`。
 
@@ -318,7 +318,7 @@ sh $CLI scaffold --package com.example.app
 - settings ファイルへの `include("architecture-test")` の追加（Groovy の `settings.gradle` なら `include 'architecture-test'`。すでにあれば何もしない）
 - settings ファイルの `pluginManagement { repositories { } }` への `mavenCentral()` の追加。katachi の Gradle plugin は Maven Central にあるため（すでにあれば何もしない。`pluginManagement { }` が無ければ作る）
 
-プラグインのバージョン衝突、JUnit の engine、JVM toolchain（下記）、プロジェクトの Kotlin バージョンに応じたコンパイラオプション、Android / KMP プロジェクトでの扱いは**すべてスクリプトが決めています。** Kotlin 2.4 未満なら `-Xcontext-parameters` を書き込み（これが無いと DSL を1つも呼べません）、2.4 以降では付けません（付けると redundant の警告になるため）。Kotlin 2.2 未満ならその旨を伝えて止まります。katachi の metadata をそのコンパイラが読めないためです。 生成されたファイルを読んで直したくなっても、直さないこと。
+プラグインのバージョン衝突、JUnit の engine、JVM toolchain（下記）、プロジェクトの Kotlin バージョンに応じたコンパイラオプション、Android / KMP プロジェクトでの扱いは**すべてスクリプトが決めています。** Kotlin 2.4 未満なら `-Xcontext-parameters` を書き込み（これが無いと DSL を1つも呼べません）、2.4 以降では付けません（付けると redundant の警告になるため）。Kotlin 2.2 未満ならその旨を伝えて止まります。katachi の metadata をそのコンパイラが読めないためです。生成されたファイルを読んで直したくなっても、直さないこと。
 
 JVM toolchain は、プロジェクトに既にある設定（ほかのモジュールの `jvmToolchain(N)`、`JavaLanguageVersion.of(N)`、buildSrc・build-logic の中の同じ書き方、version catalog から読む形）と同じ N を使います。katachi は JDK 17 以上が要るので、見つかった N が 17 未満なら使いません。設定が見つからないときは `jvmToolchain` を書かず、Gradle を動かしている JDK をそのまま使います（JDK 17 が無く toolchain の自動取得も無い環境で落ちないため）。どちらにしたかは scaffold の出力とチェックリストの「JVM toolchain」に残ります。`doctor` と `scaffold` は Gradle が使う JDK が 17 以上かも確かめ、未満なら直し方を出して止まります。
 
@@ -381,7 +381,7 @@ sh $CLI docs --api
 
 1本目はガイド全体が1つのテキストにまとまったものを、2本目は API リファレンス（Dokka）のルート索引を取得する。**ページを1つずつ開かないこと。** どちらもすでに取得済みなら取り直さない。ガイドの分量が問題になる場合は `--small` を付ける。
 
-**取得されるのは英語版です。** ドキュメントサイトのデフォルトロケールが英語で、この形式はデフォルトロケールのぶんしか生成されないため。DSL の API 名は言語に依らないので、定義を書くうえでは差し支えない。
+**取得されるのは英語版です。** ドキュメントサイトのデフォルトロケールが英語で、この形式はデフォルトロケールのぶんしか生成されないためです。DSL の API 名は言語に依らないので、定義を書くうえでは差し支えない。
 
 読み終えたら `sh $CLI check 3-1`。
 
@@ -490,7 +490,7 @@ import me.tbsten.katachi.konsist.konsist                 // konsist { } を書�
 
 #### 既存の静的解析との分担
 
-プロジェクトに detekt・Android Lint・ktlint・独自の compiler plugin があっても、**重複を理由に制約を省かないでください。** 導入後の検証で、エージェントが重複を避けることを優先しすぎて制約を入れなさすぎ、**実際の規約違反を捕まえたのは既存の checker だけだった**という例があります。
+プロジェクトに detekt・Android Lint・ktlint・独自の compiler plugin があっても、**重複を理由に制約を省かないでください。** 導入後の検証で、エージェントが重複を避けることを優先しすぎて制約が足りなくなり、**実際の規約違反を捕まえたのは既存の checker だけだった**という例があります。
 
 判断はこうします。
 
@@ -516,7 +516,7 @@ import me.tbsten.katachi.konsist.konsist                 // konsist { } を書�
 
 3-2 の定義を、**検査結果を変えずに**整えます。API に迷ったら 3-1 の「API に迷ったら」の llms.txt を読んでください。
 
-**リファクタリングのチェックリスト** — 上から順に見て、当てはまらないものは飛ばしてかまいません。
+**リファクタリングのチェックリスト** 上から順に見て、当てはまらないものは飛ばしてかまいません。
 
 - [ ] **ファイル・パッケージを分けた。** 1 Role 1 ファイル（`<group>/<role>/<Role>.kt`）、1 group 1 ファイル（`<group>/<Group>.kt`）、`ProjectArchitecture.kt` は group を呼ぶだけ。命名規則は下の「定義のファイルの置き方」
 - [ ] **group 名・ディレクトリ名が `.gitignore` に当たっていない。** group 名に `build` / `out` など `.gitignore` に当たる名前を使わない（例: `buildLogic`）。分けたあと `git ls-files --others --ignored --exclude-standard architecture-test/src` を実行し、何も出力されないこと（定義のファイルが無視されていないこと）を確かめる。無視されたファイルは `gitTracked()` に載らず、定義の抜けに気づけない
@@ -679,7 +679,7 @@ sh $CLI add template --role ViewModel --files '${name}ViewModel.kt' --params fea
 
 ### 実行と確認
 
-着手する前に、**そのタスクで増えるファイルがどの Role に当たるかを予想して書き留めておく。**タスク実行後、`./gradlew :architecture-test:test` を実行し、予想と検査結果を比べて `architecture { }` の修正が必要かを判断する。予想どおりに受け入れられた、予想外に `Unexpected` になった、受け皿の Role が黙って受け入れた、のどれかが分かります。
+着手する前に、**そのタスクで増えるファイルがどの Role に当たるかを予想して書き留めておく。**タスク実行後、`./gradlew :architecture-test:test` を実行し、予想と検査結果を比べて `architecture { }` の修正が必要かを判断する。予想どおりに受け入れられた、予想外に `Unexpected` になった、受け皿の Role が何も指摘せずに受け入れた、のどれかが分かります。
 
 終わったら `sh $CLI check 6-1`。
 
@@ -730,7 +730,7 @@ jobs:
 
 ### GitHub Actions 以外を使っている場合
 
-Pull request 作成時・Merge request 作成時・pre-push hook など ストレスにならない適切なタイミングで `./gradlew :architecture-test:test` が実行・レポートされるようにワークフローを修正する。
+Pull request 作成時・Merge request 作成時・pre-push hook など、ストレスにならない適切なタイミングで `./gradlew :architecture-test:test` が実行・レポートされるようにワークフローを修正する。
 
 終わったら `sh $CLI check 6-2`。
 
@@ -742,7 +742,7 @@ Pull request 作成時・Merge request 作成時・pre-push hook など スト�
 
 1. `architecture { }` の先頭に `title = "..."` と `description = "..."` を書く（3-2 で書いていれば飛ばす）。ルートページの見出しと本文になる。
 2. `./gradlew :architecture-test:katachiDocs` で生成し、`architecture-test/build/katachi/docs/` を確かめる。
-3. **生成物をコミットするかをユーザに提案する。** デフォルトの出力先は `build/` の下なのでコミットされない。コミットするなら次の3つを揃える。1つでも欠けると、テストか CI が落ちるか、ドキュメントが黙って古くなる。
+3. **生成物をコミットするかをユーザに提案する。** デフォルトの出力先は `build/` の下なのでコミットされない。コミットするなら次の3つを揃える。1つでも欠けると、テストか CI が落ちるか、ドキュメントが気づかないうちに古くなる。
    - `architecture-test/build.gradle.kts` の `katachi { }` に出力先を書く（`architecture = ...` の行はそのまま）
 
      ```kts
