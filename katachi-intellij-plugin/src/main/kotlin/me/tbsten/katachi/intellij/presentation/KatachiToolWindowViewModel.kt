@@ -27,6 +27,7 @@ import me.tbsten.katachi.intellij.data.gradle.SerialGradleTaskRunner
 import me.tbsten.katachi.intellij.data.load.LoadResult
 import me.tbsten.katachi.intellij.data.load.TemplateDescriptionLoader
 import me.tbsten.katachi.intellij.model.ConflictQuestion
+import me.tbsten.katachi.intellij.model.DescriptionSnapshot
 import me.tbsten.katachi.intellij.model.DetectionResult
 import me.tbsten.katachi.intellij.model.GenerationFailure
 import me.tbsten.katachi.intellij.model.GenerationItemResult
@@ -277,7 +278,8 @@ internal class KatachiToolWindowViewModel(
         // The list on screen is newer than the cache when the modules did not change.
         if (!unchanged) {
             mutableState.update { state ->
-                if (cached.isEmpty()) state.copy(modules = modules) else applyLoaded(state.copy(modules = modules), cached)
+                val snapshots = provisionalSnapshotsOf(modules, state.snapshots, cached)
+                if (snapshots.isEmpty()) state.copy(modules = modules) else applyLoaded(state.copy(modules = modules), snapshots)
             }
         }
         return true
@@ -448,6 +450,20 @@ internal class KatachiToolWindowViewModel(
     private companion object {
         val LOG = logger<KatachiToolWindowViewModel>()
     }
+}
+
+/**
+ * What a detection shows of [modules] until the load that follows it answers: a module already on
+ * screen keeps the list on screen, and only a module not shown yet takes its [cached] JSON (E-43).
+ * The cache may hold the answer of a load that was stopped, which the screen never took; showing it
+ * for a module on screen would drop checks (E-45) that the load then brings back unchecked.
+ */
+private fun provisionalSnapshotsOf(
+    modules: List<KatachiModule>,
+    shown: List<DescriptionSnapshot>,
+    cached: List<DescriptionSnapshot>,
+): List<DescriptionSnapshot> = modules.mapNotNull { module ->
+    shown.firstOrNull { it.module.id == module.id }?.copy(module = module) ?: cached.firstOrNull { it.module.id == module.id }
 }
 
 /** An unexpected exception as one line for the error details. */

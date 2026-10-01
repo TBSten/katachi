@@ -103,6 +103,35 @@ class ReloadChangesScenarioTest {
     }
 
     @Test
+    fun `止めた再読み込みが書いたJSONから消えたテンプレートでも同期完了の読み込みで戻るならチェックは残る`() = manual { dispatcher, s ->
+        s.dispatch(KatachiIntent.Opened)
+        dispatcher.runAll()
+        s.check(s.noArgs)
+
+        // Gradle wrote a definition without NoArgs before ⟳ was stopped: the list on screen stays.
+        s.loadJson = withoutNoArgs
+        s.loadGate = CompletableDeferred()
+        s.dispatch(KatachiIntent.Reload)
+        dispatcher.runAll()
+        s.dispatch(KatachiIntent.CancelLoad)
+        dispatcher.runAll()
+        assertNull(s.state.loading)
+        assertTrue(s.state.form.isSelected(s.noArgs))
+
+        // NoArgs is back in the definition. A sync that adds a module reads the cached JSON
+        // (without NoArgs) before it loads: the check must not go with that cache.
+        s.loadGate = null
+        s.loadJson = base
+        s.addModule(archB, ContractFixtures.json("arch-b"))
+        s.dispatch(KatachiIntent.SyncCompleted)
+        dispatcher.runAll()
+        assertEquals(3, s.loads)
+        assertNull(s.state.loading)
+        assertTrue(s.state.form.isSelected(s.noArgs))
+        assertTrue(s.state.removedTemplates.isEmpty())
+    }
+
+    @Test
     fun `読み込みを待つ生成の間にその読み込みでチェックした行が消えると進み具合の分母からも外れ残りの行だけ生成する`() = manual { dispatcher, s ->
         s.dispatch(KatachiIntent.Opened)
         dispatcher.runAll()
