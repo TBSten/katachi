@@ -2,6 +2,7 @@ package me.tbsten.katachi.intellij.preview
 
 import java.io.File
 import javax.imageio.ImageIO
+import kotlin.math.abs
 
 /**
  * The mechanical gates on the preview output.
@@ -156,13 +157,38 @@ object PreviewChecks {
         val changed = expected.filter { name ->
             val golden = File(goldenDir, name)
             val actual = File(outDir, name)
-            golden.isFile && actual.isFile && !golden.readBytes().contentEquals(actual.readBytes())
+            golden.isFile && actual.isFile && !samePicture(golden, actual)
         }.sorted()
         return GoldenDiff(
             changed = changed,
             new = (expected - goldenNames).sorted(),
             missing = (goldenNames - expected).sorted(),
         )
+    }
+
+    /**
+     * The most one colour channel of a pixel may differ from the golden and still count as the same
+     * picture. Text drawn on another macOS (GitHub's runner against a laptop) differs only in the
+     * shades of the glyphs' edges: up to 9 of 255 on 47 pixels across all 306 PNGs. A real change
+     * (text that moved or changed, a box that grew) differs by far more than this.
+     */
+    const val CHANNEL_TOLERANCE: Int = 16
+
+    /** Byte-identical, or the same size with every channel of every pixel within [CHANNEL_TOLERANCE]. */
+    fun samePicture(golden: File, actual: File): Boolean {
+        if (golden.readBytes().contentEquals(actual.readBytes())) return true
+        val a = ImageIO.read(golden) ?: return false
+        val b = ImageIO.read(actual) ?: return false
+        if (a.width != b.width || a.height != b.height) return false
+        for (y in 0 until a.height) for (x in 0 until a.width) {
+            val p = a.getRGB(x, y)
+            val q = b.getRGB(x, y)
+            if (p == q) continue
+            for (shift in intArrayOf(24, 16, 8, 0)) {
+                if (abs(((p ushr shift) and 0xFF) - ((q ushr shift) and 0xFF)) > CHANNEL_TOLERANCE) return false
+            }
+        }
+        return true
     }
 
     /** update: force-syncs the golden, deleting stale PNGs. Files it does not own (.gitkeep) stay. */

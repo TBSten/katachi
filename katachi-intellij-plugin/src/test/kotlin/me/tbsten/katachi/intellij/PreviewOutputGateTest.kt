@@ -82,4 +82,33 @@ class PreviewOutputGateTest {
         assertEquals(listOf("preview-missing-light.png"), diff.missing)
         assertTrue(!diff.isEmpty())
     }
+
+    private fun writeShaded(dir: File, name: String, shift: Int): File {
+        val img = BufferedImage(8, 8, BufferedImage.TYPE_INT_ARGB)
+        val g = img.createGraphics()
+        g.color = Color(0x2B, 0x2D, 0x30)
+        g.fillRect(0, 0, 8, 8)
+        g.dispose()
+        // One pixel of a glyph's edge, drawn a little lighter or darker.
+        img.setRGB(3, 3, Color(0x80 + shift, 0x80 + shift, 0x80 + shift).rgb)
+        return File(dir, name).also { ImageIO.write(img, "png", it) }
+    }
+
+    @Test
+    fun `文字の縁の階調ほどの差は golden と同じとみなし、それより大きい差は changed にする`() {
+        val outDir = tmp.newFolder("out")
+        val goldenDir = tmp.newFolder("golden")
+        writeShaded(goldenDir, "preview-shade-light.png", shift = 0)
+        writeShaded(outDir, "preview-shade-light.png", shift = PreviewChecks.CHANNEL_TOLERANCE)
+        writeShaded(goldenDir, "preview-moved-light.png", shift = 0)
+        writeShaded(outDir, "preview-moved-light.png", shift = PreviewChecks.CHANNEL_TOLERANCE + 1)
+
+        val diff = PreviewChecks.diffAgainstGolden(
+            outDir,
+            goldenDir,
+            expected = setOf("preview-shade-light.png", "preview-moved-light.png"),
+        )
+
+        assertEquals(listOf("preview-moved-light.png"), diff.changed)
+    }
 }
