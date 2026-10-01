@@ -1678,13 +1678,13 @@ write_module_build() {
 		case "$KATACHI_LANG" in
 		ja)
 			_ctx_note='    // Kotlin 2.4 未満では、context parameters を呼ぶ側にこのオプションが要る。
-    // katachi の DSL（module / mainSourceSet / ktFile など）はすべて context parameters
+    // katachi の DSL（mainSourceSet / ktFile など）はすべて context parameters
     // なので、無いと1つも書けない。Kotlin を 2.4 以降に上げたらこの2行は消すこと
     // （2.4 以降で付けたままだと redundant の警告が出る）。'
 			;;
 		*)
 			_ctx_note='    // Kotlin before 2.4 needs this on the calling side to use context parameters.
-    // Every katachi DSL entry point (module / mainSourceSet / ktFile ...) is a contextual
+    // Every katachi DSL entry point (mainSourceSet / ktFile ...) is a contextual
     // declaration, so without it you cannot write a single one. Drop these two lines once
     // the project moves to Kotlin 2.4 or later - from 2.4 on the flag warns that it is
     // redundant.'

@@ -25,15 +25,12 @@ const ja = {
 		getStarted: '導入する →',
 		github: 'GitHub ↗',
 		codeTitle: 'ProjectArchitecture.kt',
-		code: `val modulePackage = capitalizedModuleNamePackage("com.example")
-
-val projectArchitecture = architecture {
+		code: `val projectArchitecture = architecture {
   "domain".group {
     "UseCase" {
       layout {
-        ":core:domain".module {
-          mainSourceSet / kotlin / modulePackage / "useCase" / "*UseCase".ktFile()
-        }
+        "core/domain" / mainSourceSet / kotlin /
+          "com/example/core/domain/useCase" / "*UseCase".ktFile()
       }
     }
   }

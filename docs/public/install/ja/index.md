@@ -430,7 +430,7 @@ import me.tbsten.katachi.konsist.konsist                 // konsist { } を書�
 
 逆に **1ファイル1 Role でもありません。** `*UseCase.kt` が 18 本あれば、Role は `UseCase` の1つです。違反の `How to fix:` が出す雛形は Role 名がファイル名（`"GetUserUseCase"` など）なので、そのまま貼らず種類の名前に直してください。
 
-ルート直下のファイルは `layout { }` の直下にそのまま書けます（`"README.md".file()`）。`":".module { }` の中に1つの Role でまとめて書く必要はありません。
+ルート直下のファイルは `layout { }` の直下にそのまま書けます（`"README.md".file()`）。1つの Role にまとめて書く必要はありません。
 
 **Gradle のファイル（wrapper・settings・各モジュールのビルドスクリプト・`gradle.properties`・version catalog）は、Role を自分で書かずに `gradle()` を1行書いてください。** 種類ごとの Role に分けた `Gradle` group を katachi が宣言します（katachi 0.2 以降。`me.tbsten.katachi.dsl.gradle.*` のスター import に入っています）。対象外の `buildSrc` と、`includeBuild` したビルドだけは自分で Role を書きます。
 
@@ -632,7 +632,7 @@ sh $CLI summary
 
 材料はステップ 1 のレポートの `roles` です（`sh $CLI data get report`）。**向いているのは、同じ形のファイルが何本もある Role**です（UseCase、ViewModel、Screen、Repository など）。`count` が小さい Role や、1本ごとに形が違う Role には提案しないこと。
 
-**`:feature:*` のように、生成先のディレクトリやモジュールがワイルドカードの Role も対象です**（ViewModel、Screen はたいていこの形です）。その `*` に `capture("feature")` で名前を付ければ（モジュールキーならキーの中に埋め込む）、`--arg feature=home` で生成先を選べます（6-D の手順 2）。**生成先に残る `*` は、モジュールのものもパッケージのディレクトリのものもすべて名前が要ります。**名前を付けられないのは `**` だけで（部分一致は `capture()` で名前を付けられます）、生成先が `**` しか無い Role には提案しないこと。
+**`feature/*/...` のように、生成先のディレクトリがワイルドカードの Role も対象です**（ViewModel、Screen はたいていこの形です）。その `*` に `capture("feature")` で名前を付ければ、`--arg feature=home` で生成先を選べます（6-D の手順 2）。**生成先に残る `*` は、モジュールのディレクトリのものもパッケージのディレクトリのものもすべて名前が要ります。**名前を付けられないのは `**` だけで（部分一致は `capture()` で名前を付けられます）、生成先が `**` しか無い Role には提案しないこと。
 
 Role ごとに次を決め、`add template` で記録します。
 
@@ -640,14 +640,14 @@ Role ごとに次を決め、`add template` で記録します。
 |---|---|
 | `--role` | Role の名前（`architecture { }` に書いた名前） |
 | `--files` | 作るファイル名。**複数回渡せる。** `${name}UseCase.kt` のように、パラメータを埋め込んだ形で書く（同じ種類のファイルの名前の形が複数あるときだけ。interface と実装のように種類が違うものは Role を分け、`add template` を Role ごとに1回ずつ実行する） |
-| `--params` | `stringParameter()` などの `*Parameter()` で受けるパラメータ名と、生成先のワイルドカードに付ける名前（例: `feature`）。複数回渡せる。**生成先の `*` が複数あれば（モジュールとパッケージのディレクトリなど）、その数だけ並べる** |
+| `--params` | `stringParameter()` などの `*Parameter()` で受けるパラメータ名と、生成先のワイルドカードに付ける名前（例: `feature`）。複数回渡せる。**生成先の `*` が複数あれば（モジュールのディレクトリとパッケージのディレクトリなど）、その数だけ並べる** |
 | `--basedOn` | 雛形の元にする既存ファイル（`roles[].examples` の1本） |
 | `--reason` | その Role に当てる理由（件数と、形が揃っていること） |
 
 ```sh
 sh $CLI add template --role UseCase --files '${name}UseCase.kt' --params name --basedOn "domain/src/main/kotlin/com/example/app/domain/useCase/GetUserUseCase.kt" --reason "18 件がすべて interface で、形が揃っている"
 sh $CLI add template --role UseCaseImplementation --files '${name}UseCaseImpl.kt' --params name --basedOn "data/src/main/kotlin/com/example/app/data/useCase/GetUserUseCaseImpl.kt" --reason "18 件がすべて UseCase の実装で、形が揃っている"
-sh $CLI add template --role ViewModel --files '${name}ViewModel.kt' --params feature --params featurePackage --params name --basedOn "feature/home/src/main/kotlin/com/example/app/feature/home/HomeViewModel.kt" --reason "12 件が :feature:* の各モジュールに1本ずつあり、形が揃っている。:feature:* の * とパッケージのディレクトリの * に名前を付けて生成先を選ぶ"
+sh $CLI add template --role ViewModel --files '${name}ViewModel.kt' --params feature --params featurePackage --params name --basedOn "feature/home/src/main/kotlin/com/example/app/feature/home/HomeViewModel.kt" --reason "12 件が feature/* の各モジュールに1本ずつあり、形が揃っている。feature/* の * とパッケージのディレクトリの * に名前を付けて生成先を選ぶ"
 ```
 
 当てられる Role が無いと判断したら、何も記録しなくて構いません。記録したものは `summary` の「Next action」とレポートの「テンプレートの提案」に出ます。**`.template { }` をここで書かないこと。** 書くのはユーザが同意した後の 6-D です。
@@ -814,7 +814,7 @@ Pull request 作成時・Merge request 作成時・pre-push hook など スト�
    }
    ```
 
-   **生成先のディレクトリやモジュールにワイルドカード（`*`）がある Role は、その `*` に `capture()` で名前を付ける。** 検査の結果は変わらない。名前の無い `*` や `**` が残ったまま `.template { }` を付けると、layout を展開する時点（`./gradlew :architecture-test:test` の `assert()`）でエラーになる。値はテンプレートの中で `captureValue("名前")` で読む（`stringParameter()` で宣言し直さないこと。名前がぶつかって落ちる）
+   **生成先のディレクトリにワイルドカード（`*`）がある Role は、その `*` に `capture()` で名前を付ける。** 検査の結果は変わらない。名前の無い `*` や `**` が残ったまま `.template { }` を付けると、layout を展開する時点（`./gradlew :architecture-test:test` の `assert()`）でエラーになる。値はテンプレートの中で `captureValue("名前")` で読む（`stringParameter()` で宣言し直さないこと。名前がぶつかって落ちる）
 
    ```kt
    @file:OptIn(ExperimentalKatachiApi::class)
@@ -824,32 +824,31 @@ Pull request 作成時・Merge request 作成時・pre-push hook など スト�
 
    "ViewModel" {
        layout {
-           ":feature:${capture("feature")}".module {   // 元は ":feature:*".module {
-               // 元は ... / "feature" / "*" / "*ViewModel".ktFile()
-               mainSourceSet / kotlin / "com/example/app/feature" / capture("featurePackage") /
-                   "${capture("name")}ViewModel".ktFile()
-                       .template {
-                           val featurePackage = captureValue("featurePackage")   // --arg featurePackage=home なら "home"
-                           val name = captureValue("name")                       // --arg name=Home なら "Home"
+           // 元は "feature" / "*" / mainSourceSet / kotlin / "com/example/app/feature" / "*" / "*ViewModel".ktFile()
+           "feature" / capture("feature") / mainSourceSet / kotlin /
+               "com/example/app/feature" / capture("featurePackage") /
+               "${capture("name")}ViewModel".ktFile()
+                   .template {
+                       val featurePackage = captureValue("featurePackage")   // --arg featurePackage=home なら "home"
+                       val name = captureValue("name")                       // --arg name=Home なら "Home"
 
-                           """
-                               package com.example.app.feature.$featurePackage
+                       """
+                           package com.example.app.feature.$featurePackage
 
-                               class ${name}ViewModel
-                           """.trimIndent()
-                       }
-           }
+                           class ${name}ViewModel
+                       """.trimIndent()
+                   }
        }
    }
    ```
 
-   ディレクトリの `*` なら、`"feature" / "*" / ...` の `"*"` を `capture("feature")` に書き換える。モジュールキーの `*` が複数あれば、`":feature:${capture("feature")}:${capture("layer")}".module { }` のようにそれぞれに `capture()` を埋め込む。
+   ディレクトリの `*` は、`"feature" / "*" / ...` の `"*"` を `capture("feature")` に書き換える。`*` が複数あれば、`"feature" / capture("feature") / capture("layer") / ...` のようにそれぞれに別の名前の `capture()` を書く。**同じ名前の capture は1本のパスで2回使えない**（`KatachiDuplicateCaptureException` になる）。
 
-   **生成先のディレクトリ部分に残る `*` は、モジュールのものもディレクトリのものもすべて名前を付ける。** 上の例のようにモジュールの `*` とパッケージのディレクトリの `*` の両方があるなら、モジュールキーの中の `capture(...)` とディレクトリの `capture(...)` の両方が要る。1つでも名前の無い `*` が残ると、`.template { }` を付けたファイルの layout を展開する時点でエラーになる（`assert()` で分かり、`katachiTemplate` の実行を待たない）。
+   **生成先のディレクトリ部分に残る `*` は、すべて名前を付ける。** 上の例のようにモジュールのディレクトリの `*` とパッケージのディレクトリの `*` の両方があるなら、それぞれに別の名前の `capture(...)` が要る。1つでも名前の無い `*` が残ると、`.template { }` を付けたファイルの layout を展開する時点でエラーになる（`assert()` で分かり、`katachiTemplate` の実行を待たない）。
 
-   **パッケージのディレクトリ名がモジュール名と違う（モジュール `appConfig` とディレクトリ `appconfig` など）なら、そのディレクトリの `*` にもモジュールとは別の名前を付け、その `captureValue()` を package に使う。** モジュールの名前（`captureValue("feature")`）を package に入れると、ディレクトリと食い違う package が書かれ、検査もコンパイルも通るので気づけない。
+   **パッケージのディレクトリ名がモジュールのディレクトリ名と違う（モジュール `appConfig` とディレクトリ `appconfig` など）なら、そのディレクトリの `*` にもモジュールとは別の名前を付け、その `captureValue()` を package に使う。** モジュールの名前（`captureValue("feature")`）を package に入れると、ディレクトリと食い違う package が書かれ、検査もコンパイルも通るので気づけない。
 
-   使えるのは `stringParameter()` / `booleanParameter()` / `intParameter()`（`default = ...` も可）、`enumParameter()`（`entries` かデフォルト値を渡す）、それに生成先のワイルドカードに名前を付ける `capture("名前")`（layout のディレクトリ・ファイル名・モジュールキーのどこにでも埋め込める）と、その値を読む `captureValue("名前")`（template の中）だけです。これ以外の語を推測で足さないこと。
+   使えるのは `stringParameter()` / `booleanParameter()` / `intParameter()`（`default = ...` も可）、`enumParameter()`（`entries` かデフォルト値を渡す）、それに生成先のワイルドカードに名前を付ける `capture("名前")`（layout のディレクトリ・ファイル名のどこにでも埋め込める）と、その値を読む `captureValue("名前")`（template の中）だけです。これ以外の語を推測で足さないこと。
 3. テンプレート独自のパラメータ（`--arg name=...`）は、モジュール側の設定なしにそのまま渡せる。受け付けるのは、名指しした Role の `.template { }` が宣言した名前と、`layout { }` のワイルドカードに付けた名前だけで、打ち間違いはこれまでどおり `Unknown processor argument(s): ...` で落ちる。
 4. 1本生成し、**直後に検査が通ること**を確かめる。`--arg template=` には、group があれば `group名.Role 名`、無ければ Role 名を書く。
 
@@ -858,7 +857,7 @@ Pull request 作成時・Merge request 作成時・pre-push hook など スト�
    ./gradlew :architecture-test:test
    ```
 
-   ワイルドカードに名前を付けた Role は、その値も渡す。**モジュールの値は実在するモジュールだけ**（無いモジュールを渡すと、今あるモジュールを並べて失敗する）。
+   ワイルドカードに名前を付けた Role は、その値も渡す。**ディレクトリの値は、存在しない名前を渡してもそのまま生成先のパスになる**（打ち間違えると、無いディレクトリにファイルを作る）。実在するディレクトリ名を渡すこと。
 
    ```sh
    ./gradlew :architecture-test:katachiTemplate --arg template=ViewModel --arg feature=home --arg featurePackage=home --arg name=Sample

@@ -12,47 +12,41 @@ tags:
 
 Add `.template { }` to a layout declaration and that file can be generated as code.
 
-```kt {7-8,26-27} nocollapse
-val modulePackage = capitalizedModuleNamePackage("com.example")
-
+```kt {4-5,21-22} nocollapse
 "UseCase" {
     layout {
-        ":core:domain".module {
-            mainSourceSet / kotlin / modulePackage / "useCase" /
-                "${capture("name")}UseCase".ktFile()
-                    .template {
-                        val name = captureValue("name")
-                        """
-                            package com.example.core.domain.useCase
+        "core/domain" / mainSourceSet / kotlin / "com/example/core/domain/useCase" /
+            "${capture("name")}UseCase".ktFile()
+                .template {
+                    val name = captureValue("name")
+                    """
+                        package com.example.core.domain.useCase
 
-                            interface ${name}UseCase {
-                                suspend operator fun invoke()
-                            }
-                        """.trimIndent()
-                    }
-        }
+                        interface ${name}UseCase {
+                            suspend operator fun invoke()
+                        }
+                    """.trimIndent()
+                }
     }
 }
 
 "UseCaseImplementation" {
     layout {
-        ":core:domain".module {
-            mainSourceSet / kotlin / modulePackage / "useCase" /
-                "${capture("name")}UseCaseImpl".ktFile()
-                    .template {
-                        val name = captureValue("name")
-                        val implBody by stringParameter(default = """TODO("Implement ${name}UseCase")""")
-                        """
-                            package com.example.core.domain.useCase
+        "core/domain" / mainSourceSet / kotlin / "com/example/core/domain/useCase" /
+            "${capture("name")}UseCaseImpl".ktFile()
+                .template {
+                    val name = captureValue("name")
+                    val implBody by stringParameter(default = """TODO("Implement ${name}UseCase")""")
+                    """
+                        package com.example.core.domain.useCase
 
-                            class ${name}UseCaseImpl : ${name}UseCase {
-                                override suspend fun invoke() {
-                                    $implBody
-                                }
+                        class ${name}UseCaseImpl : ${name}UseCase {
+                            override suspend fun invoke() {
+                                $implBody
                             }
-                        """.trimIndent()
-                    }
-        }
+                        }
+                    """.trimIndent()
+                }
     }
 }
 ```
@@ -126,38 +120,37 @@ The name is used when passing a value with `--arg`. Left as `*`, a template can'
 
 `.template { }` is attached to the file declaration itself, so the destination path is fixed to that one `layout { }` declaration. If a `*` or `**` with no name from `capture()` is still left in it, there is nowhere for a value to arrive, so **it is an error**.
 
-```kt {3,5,7-8} nocollapse
+```kt {3-5,7-8} nocollapse
 "FeatureComponent" {
     layout {
-        ":feature:${capture("feature")}".module {
-            "commonMain".sourceSet / kotlin / modulePackage / "component" /
-                "${capture("name")}".ktFile()
-                    .template {
-                        val feature = captureValue("feature")
-                        val name = captureValue("name")
+        "feature" / capture("feature") / "commonMain".sourceSet / kotlin /
+            "com/example/kmp/feature" / capture("featurePackage") / "component" /
+            "${capture("name")}".ktFile()
+                .template {
+                    val featurePackage = captureValue("featurePackage")
+                    val name = captureValue("name")
 
-                        """
-                            package com.example.kmp.feature.$feature.component
+                    """
+                        package com.example.kmp.feature.$featurePackage.component
 
-                            @Composable
-                            internal fun $name(title: String) {
-                                Text(text = title)
-                            }
-                        """.trimIndent()
-                    }
-        }
+                        @Composable
+                        internal fun $name(title: String) {
+                            Text(text = title)
+                        }
+                    """.trimIndent()
+                }
     }
 }
 ```
 
 ```shell
 ./gradlew katachiTemplate \
-    --arg "template=FeatureComponent" --arg "feature=home" --arg "name=HomeUserCard"
+    --arg "template=FeatureComponent" --arg "feature=home" --arg "featurePackage=home" --arg "name=HomeUserCard"
 ```
 
-`--arg feature=home` decides the `*` of `:feature:${capture("feature")}` as `home`, so `HomeUserCard.kt` lands in `:feature:home`'s `component/`.
+`--arg feature=home` decides the `*` of the module's directory and `--arg featurePackage=home` decides the `*` of the package's directory, both as `home`, so `HomeUserCard.kt` lands in `component/` under `feature/home/`. The same capture name can't be used twice in one path, so give the module's directory and the package's directory different names.
 
-**A capture's name becomes the `--arg` argument name, as is.** Inside the template, read the same value with `captureValue("feature")`.
+**A capture's name becomes the `--arg` argument name, as is.** Inside the template, read the same value with `captureValue("featurePackage")`, for example.
 
 ## Templates work on files other than Kotlin
 

@@ -36,8 +36,6 @@ Once that is set, running the `katachiDocs` Gradle task generates the documentat
 Take the following definition as an example.
 
 ```kt
-val modulePackage = capitalizedModuleNamePackage("com.example")
-
 architecture {
     title = "myapp"
 
@@ -50,14 +48,14 @@ architecture {
             summary = "A single app-specific behavior that happens on a screen"
             example("GetItemListUseCase", "The list of items")
             example("SignInUseCase", "Signing in")
-            layout { ":core:domain".module { mainSourceSet / kotlin / modulePackage / "useCase" / "*UseCase".ktFile() } }
+            layout { "core/domain" / mainSourceSet / kotlin / "com/example/core/domain/useCase" / "*UseCase".ktFile() }
             "has only an invoke method".konsist { /* ... */ }
         }
 
         "RepositoryInterface" {
             title = "Repository"
             summary = "The boundary where data is fetched and saved"
-            layout { ":core:domain".module { mainSourceSet / kotlin / modulePackage / "repository" / "*Repository".ktFile() } }
+            layout { "core/domain" / mainSourceSet / kotlin / "com/example/core/domain/repository" / "*Repository".ktFile() }
         }
     }
 }
@@ -112,10 +110,9 @@ architecture {
         ## Placement in this group
 
         ```
-        :core:domain
-          src/main/kotlin/**/
-            useCase/*UseCase.kt        Use case
-            repository/*Repository.kt  Repository
+        core/domain/src/main/kotlin/com/example/core/domain/
+          useCase/*UseCase.kt        Use case
+          repository/*Repository.kt  Repository
         ```
         ````
     </TabItem>
@@ -129,9 +126,9 @@ architecture {
 
         ## Placement
 
-        | Module | Path | When to use |
-        |---|---|---|
-        | `:core:domain` | `src/main/kotlin/**/useCase/*UseCase.kt` |  |
+        | Path | When to use |
+        |---|---|
+        | `core/domain/src/main/kotlin/com/example/core/domain/useCase/*UseCase.kt` |  |
 
         ## Constraints
 
@@ -153,9 +150,9 @@ architecture {
 
         ## Placement
 
-        | Module | Path | When to use |
-        |---|---|---|
-        | `:core:domain` | `src/main/kotlin/**/repository/*Repository.kt` |  |
+        | Path | When to use |
+        |---|---|
+        | `core/domain/src/main/kotlin/com/example/core/domain/repository/*Repository.kt` |  |
         ```
     </TabItem>
 </Tabs>
@@ -260,9 +257,9 @@ The documentation is generated from the properties you set on Roles and groups.
 
         ## Placement                                    ← layout { }
 
-        | Module | Path | When to use |
-        |---|---|---|
-        |  | `src/main/kotlin/com/example/useCase/*UseCase.kt` |  |
+        | Path | When to use |
+        |---|---|
+        | `src/main/kotlin/com/example/useCase/*UseCase.kt` |  |
 
         ## Constraints                                        ← the name of konsist { }
 
@@ -448,9 +445,9 @@ var MetadataScope.testPolicy by TestPolicy
 
             ## Placement
 
-            | Module | Path | When to use |
-            |---|---|---|
-            |  | `src/main/kotlin/com/example/useCase/*UseCase.kt` |  |
+            | Path | When to use |
+            |---|---|
+            | `src/main/kotlin/com/example/useCase/*UseCase.kt` |  |
 
             ## Examples
 

@@ -12,47 +12,41 @@ tags:
 
 layout の宣言に `.template { }` を追加すると、そのファイルをコードとして生成できます。
 
-```kt {7-8,26-27} nocollapse
-val modulePackage = capitalizedModuleNamePackage("com.example")
-
+```kt {4-5,21-22} nocollapse
 "UseCase" {
     layout {
-        ":core:domain".module {
-            mainSourceSet / kotlin / modulePackage / "useCase" /
-                "${capture("name")}UseCase".ktFile()
-                    .template {
-                        val name = captureValue("name")
-                        """
-                            package com.example.core.domain.useCase
+        "core/domain" / mainSourceSet / kotlin / "com/example/core/domain/useCase" /
+            "${capture("name")}UseCase".ktFile()
+                .template {
+                    val name = captureValue("name")
+                    """
+                        package com.example.core.domain.useCase
 
-                            interface ${name}UseCase {
-                                suspend operator fun invoke()
-                            }
-                        """.trimIndent()
-                    }
-        }
+                        interface ${name}UseCase {
+                            suspend operator fun invoke()
+                        }
+                    """.trimIndent()
+                }
     }
 }
 
 "UseCaseImplementation" {
     layout {
-        ":core:domain".module {
-            mainSourceSet / kotlin / modulePackage / "useCase" /
-                "${capture("name")}UseCaseImpl".ktFile()
-                    .template {
-                        val name = captureValue("name")
-                        val implBody by stringParameter(default = """TODO("${name}UseCase の実装")""")
-                        """
-                            package com.example.core.domain.useCase
+        "core/domain" / mainSourceSet / kotlin / "com/example/core/domain/useCase" /
+            "${capture("name")}UseCaseImpl".ktFile()
+                .template {
+                    val name = captureValue("name")
+                    val implBody by stringParameter(default = """TODO("${name}UseCase の実装")""")
+                    """
+                        package com.example.core.domain.useCase
 
-                            class ${name}UseCaseImpl : ${name}UseCase {
-                                override suspend fun invoke() {
-                                    $implBody
-                                }
+                        class ${name}UseCaseImpl : ${name}UseCase {
+                            override suspend fun invoke() {
+                                $implBody
                             }
-                        """.trimIndent()
-                    }
-        }
+                        }
+                    """.trimIndent()
+                }
     }
 }
 ```
@@ -126,38 +120,37 @@ layout {
 
 `.template { }` はファイルの宣言そのものに付くので、生成先のパスは `layout { }` の宣言と1つに決まります。そのパスに `capture()` で名前の付いていない `*` や `**` が残っていると、値の渡しようが無いので**エラーになります**。
 
-```kt {3,5,7-8} nocollapse
+```kt {3-5,7-8} nocollapse
 "FeatureComponent" {
     layout {
-        ":feature:${capture("feature")}".module {
-            "commonMain".sourceSet / kotlin / modulePackage / "component" /
-                "${capture("name")}".ktFile()
-                    .template {
-                        val feature = captureValue("feature")
-                        val name = captureValue("name")
+        "feature" / capture("feature") / "commonMain".sourceSet / kotlin /
+            "com/example/kmp/feature" / capture("featurePackage") / "component" /
+            "${capture("name")}".ktFile()
+                .template {
+                    val featurePackage = captureValue("featurePackage")
+                    val name = captureValue("name")
 
-                        """
-                            package com.example.kmp.feature.$feature.component
+                    """
+                        package com.example.kmp.feature.$featurePackage.component
 
-                            @Composable
-                            internal fun $name(title: String) {
-                                Text(text = title)
-                            }
-                        """.trimIndent()
-                    }
-        }
+                        @Composable
+                        internal fun $name(title: String) {
+                            Text(text = title)
+                        }
+                    """.trimIndent()
+                }
     }
 }
 ```
 
 ```shell
 ./gradlew katachiTemplate \
-    --arg "template=FeatureComponent" --arg "feature=home" --arg "name=HomeUserCard"
+    --arg "template=FeatureComponent" --arg "feature=home" --arg "featurePackage=home" --arg "name=HomeUserCard"
 ```
 
-`--arg feature=home` が `:feature:${capture("feature")}` の `*` を `home` に決めるので、`HomeUserCard.kt` は `:feature:home` の `component/` に入ります。
+`--arg feature=home` がモジュールのディレクトリの `*` を、`--arg featurePackage=home` がパッケージのディレクトリの `*` を、それぞれ `home` に決めるので、`HomeUserCard.kt` は `feature/home/` の `component/` に入ります。同じ名前の capture は1本のパスで2回使えないので、モジュールのディレクトリとパッケージのディレクトリには別の名前を付けます。
 
-**capture の名前は、そのまま `--arg` の引数名になります。** テンプレートの中では、同じ値を `captureValue("feature")` で読めます。
+**capture の名前は、そのまま `--arg` の引数名になります。** テンプレートの中では、同じ値を `captureValue("featurePackage")` のように読めます。
 
 ## Kotlin 以外のファイルにも付けられる
 

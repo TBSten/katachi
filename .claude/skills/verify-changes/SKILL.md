@@ -97,7 +97,7 @@ Kotlin/Native も要らないのはこの空っぽさのおかげなので、ル
 `:architecture-test:test` が `[MissingFile]` で落ちる。
 
 **何が壊れたときに落ちるか**: 「書き換えたが意味は変えていないはず」が実は変わっていたとき。
-糖衣構文（`.module { }`、`mainSourceSet`、`modulePackage`）が素のディレクトリ宣言と同じものを
+糖衣構文（`mainSourceSet`、`testSourceSet`、`kotlin`、`sourceSet`）が素のディレクトリ宣言と同じものを
 言っているかは、これでしか押さえられない。
 
 判断のしかた:

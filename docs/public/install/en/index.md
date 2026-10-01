@@ -430,7 +430,7 @@ Decide whether files belong in the same Role with these three questions. If any 
 
 The other way round, **it is not one Role per file either.** Eighteen `*UseCase.kt` files are one Role, `UseCase`. The snippet a violation's `How to fix:` offers names the Role after the file (`"GetUserUseCase"` and so on), so do not paste it as is — rename it to the kind.
 
-Files directly under the root can be written directly under `layout { }` (`"README.md".file()`). You do not need to gather them in one Role inside `":".module { }`.
+Files directly under the root can be written directly under `layout { }` (`"README.md".file()`). You do not need to gather them in one Role.
 
 **For the Gradle files (the wrapper, settings, each module's build script, `gradle.properties`, the version catalog), do not write Roles yourself: write the one line `gradle()`.** katachi declares a `Gradle` group split into one Role per kind of file (katachi 0.2 and later; it comes with the star import of `me.tbsten.katachi.dsl.gradle.*`). Only `buildSrc` and builds added with `includeBuild`, which it does not cover, need Roles of your own.
 
@@ -632,7 +632,7 @@ sh $CLI summary
 
 Work from `roles` in the step 1 report (`sh $CLI data get report`). **The good candidates are Roles with many files of the same shape** (UseCase, ViewModel, Screen, Repository, and so on). Do not propose one for a Role with a small `count`, or one whose files each take a different shape.
 
-**Roles whose destination directory or module is a wildcard, like `:feature:*`, are candidates too** (ViewModel and Screen are usually shaped this way). Name that `*` with `capture("feature")` (embedded in the module key itself, for a module wildcard) and you can pick the destination with `--arg feature=home` (step 2 of 6-D). **Every `*` left in the destination needs a name, both the module's and the package directory's.** The only thing that can't be named is `**` (a partial match can be named with `capture()`); don't propose one for a Role whose destination is only that.
+**Roles whose destination directory is a wildcard, like `feature/*/...`, are candidates too** (ViewModel and Screen are usually shaped this way). Name that `*` with `capture("feature")` and you can pick the destination with `--arg feature=home` (step 2 of 6-D). **Every `*` left in the destination needs a name, both the module directory's and the package directory's.** The only thing that can't be named is `**` (a partial match can be named with `capture()`); don't propose one for a Role whose destination is only that.
 
 For each Role, decide the following and record it with `add template`.
 
@@ -640,14 +640,14 @@ For each Role, decide the following and record it with `add template`.
 |---|---|
 | `--role` | The Role's name (as written in `architecture { }`) |
 | `--files` | The files it creates. **Can be passed more than once.** Write them with the parameter embedded, like `${name}UseCase.kt` (only when one kind of file has several name shapes; files of different kinds, like an interface and its implementation, get separate Roles and one `add template` each) |
-| `--params` | The parameter names taken with `stringParameter()` or another `*Parameter()`, plus the name given to a wildcard in the destination (for example, `feature`). Can be passed more than once. **If the destination has more than one `*` (the module and the package directory, for example), list that many** |
+| `--params` | The parameter names taken with `stringParameter()` or another `*Parameter()`, plus the name given to a wildcard in the destination (for example, `feature`). Can be passed more than once. **If the destination has more than one `*` (the module directory and the package directory, for example), list that many** |
 | `--basedOn` | The existing file the skeleton is based on (one of `roles[].examples`) |
 | `--reason` | Why this Role gets one (the count, and that the files share a shape) |
 
 ```sh
 sh $CLI add template --role UseCase --files '${name}UseCase.kt' --params name --basedOn "domain/src/main/kotlin/com/example/app/domain/useCase/GetUserUseCase.kt" --reason "All 18 are interfaces and share one shape"
 sh $CLI add template --role UseCaseImplementation --files '${name}UseCaseImpl.kt' --params name --basedOn "data/src/main/kotlin/com/example/app/data/useCase/GetUserUseCaseImpl.kt" --reason "All 18 implement a UseCase and share one shape"
-sh $CLI add template --role ViewModel --files '${name}ViewModel.kt' --params feature --params featurePackage --params name --basedOn "feature/home/src/main/kotlin/com/example/app/feature/home/HomeViewModel.kt" --reason "12 are one each in every :feature:* module, and share one shape. Name the * in :feature:* and the * of the package directory to pick the destination"
+sh $CLI add template --role ViewModel --files '${name}ViewModel.kt' --params feature --params featurePackage --params name --basedOn "feature/home/src/main/kotlin/com/example/app/feature/home/HomeViewModel.kt" --reason "12 are one each in every feature/* module, and share one shape. Name the * in feature/* and the * of the package directory to pick the destination"
 ```
 
 If you judge that no Role suits a template, record nothing. What you record shows up in the "Next action" of `summary` and in the report's "Template proposals". **Do not write `.template { }` here.** That happens in 6-D, after the user agrees.
@@ -814,7 +814,7 @@ Do this only for the Roles, among those proposed in step 6, that the user agreed
    }
    ```
 
-   **For a Role whose destination directory or module has a wildcard (`*`), name that `*` with `capture()`.** The check's result doesn't change. Attaching `.template { }` to a path that still has an unnamed `*` or `**` fails when layout is expanded (`assert()` in `./gradlew :architecture-test:test`). Read the value inside the template with `captureValue("name")` (don't redeclare it with `stringParameter()` — the names collide and it fails).
+   **For a Role whose destination directory has a wildcard (`*`), name that `*` with `capture()`.** The check's result doesn't change. Attaching `.template { }` to a path that still has an unnamed `*` or `**` fails when layout is expanded (`assert()` in `./gradlew :architecture-test:test`). Read the value inside the template with `captureValue("name")` (don't redeclare it with `stringParameter()` — the names collide and it fails).
 
    ```kt
    @file:OptIn(ExperimentalKatachiApi::class)
@@ -824,32 +824,31 @@ Do this only for the Roles, among those proposed in step 6, that the user agreed
 
    "ViewModel" {
        layout {
-           ":feature:${capture("feature")}".module {   // was ":feature:*".module {
-               // was ... / "feature" / "*" / "*ViewModel".ktFile()
-               mainSourceSet / kotlin / "com/example/app/feature" / capture("featurePackage") /
-                   "${capture("name")}ViewModel".ktFile()
-                       .template {
-                           val featurePackage = captureValue("featurePackage")   // "home" for --arg featurePackage=home
-                           val name = captureValue("name")                       // "Home" for --arg name=Home
+           // was "feature" / "*" / mainSourceSet / kotlin / "com/example/app/feature" / "*" / "*ViewModel".ktFile()
+           "feature" / capture("feature") / mainSourceSet / kotlin /
+               "com/example/app/feature" / capture("featurePackage") /
+               "${capture("name")}ViewModel".ktFile()
+                   .template {
+                       val featurePackage = captureValue("featurePackage")   // "home" for --arg featurePackage=home
+                       val name = captureValue("name")                       // "Home" for --arg name=Home
 
-                           """
-                               package com.example.app.feature.$featurePackage
+                       """
+                           package com.example.app.feature.$featurePackage
 
-                               class ${name}ViewModel
-                           """.trimIndent()
-                       }
-           }
+                           class ${name}ViewModel
+                       """.trimIndent()
+                   }
        }
    }
    ```
 
-   For a directory's `*`, rewrite the `"*"` in `"feature" / "*" / ...` as `capture("feature")`. For a module key with more than one `*`, embed a `capture()` for each one, as in `":feature:${capture("feature")}:${capture("layer")}".module { }`.
+   For a directory's `*`, rewrite the `"*"` in `"feature" / "*" / ...` as `capture("feature")`. With more than one `*`, write a `capture()` with a different name for each, as in `"feature" / capture("feature") / capture("layer") / ...`. **The same capture name can't be used twice in one path** (it raises `KatachiDuplicateCaptureException`).
 
-   **Name every `*` left in the directory part of the destination, the module's and the directories' alike.** If there is both a module `*` and a package directory `*`, as in the example above, you need both a `capture(...)` embedded in the module key and one in the directory. If even one unnamed `*` is left, an error occurs when layout is expanded for the file with `.template { }` attached (`assert()` catches it; it doesn't wait for `katachiTemplate` to run).
+   **Name every `*` left in the directory part of the destination.** If there is both a module directory `*` and a package directory `*`, as in the example above, each needs a `capture(...)` with a different name. If even one unnamed `*` is left, an error occurs when layout is expanded for the file with `.template { }` attached (`assert()` catches it; it doesn't wait for `katachiTemplate` to run).
 
-   **If the package directory's name differs from the module's name (module `appConfig` and directory `appconfig`, for example), give that directory's `*` its own name, separate from the module's, and use its `captureValue()` in the package.** If you put the module's name (`captureValue("feature")`) in the package, you write a package that disagrees with its directory, and since both the check and the compiler pass, you won't notice.
+   **If the package directory's name differs from the module directory's name (module `appConfig` and directory `appconfig`, for example), give that directory's `*` its own name, separate from the module's, and use its `captureValue()` in the package.** If you put the module's name (`captureValue("feature")`) in the package, you write a package that disagrees with its directory, and since both the check and the compiler pass, you won't notice.
 
-   All there is to use is `stringParameter()` / `booleanParameter()` / `intParameter()` (optionally with `default = ...`), `enumParameter()` (given `entries` or a default value), plus `capture("name")` — embeddable anywhere in a layout's directory, file name, or module key — to name a wildcard in the destination, and, to read its value, `captureValue("name")` (inside the template). Do not add other words by guessing.
+   All there is to use is `stringParameter()` / `booleanParameter()` / `intParameter()` (optionally with `default = ...`), `enumParameter()` (given `entries` or a default value), plus `capture("name")` — embeddable anywhere in a layout's directory or file name — to name a wildcard in the destination, and, to read its value, `captureValue("name")` (inside the template). Do not add other words by guessing.
 3. A template's own parameters (`--arg name=...`) can be passed as-is, with no setting needed on the module side. What is accepted is exactly the set of names the named Role's `.template { }` declares, plus the names given to wildcards in its `layout { }`; a typo still fails, as before, with `Unknown processor argument(s): ...`
 4. Generate one file, and confirm **the check passes right after**. `--arg template=` takes `group.Role` (or just the Role name with no group);
 
@@ -858,7 +857,7 @@ Do this only for the Roles, among those proposed in step 6, that the user agreed
    ./gradlew :architecture-test:test
    ```
 
-   For a Role whose wildcard was named, pass that value too. **A module's value must be one that already exists** (passing one that doesn't fails, listing the modules that do).
+   For a Role whose wildcard was named, pass that value too. **A directory's value becomes the destination path as it is, even if no such directory exists** (a typo creates the file in a directory that isn't there). Pass the name of a directory that exists.
 
    ```sh
    ./gradlew :architecture-test:katachiTemplate --arg template=ViewModel --arg feature=home --arg featurePackage=home --arg name=Sample

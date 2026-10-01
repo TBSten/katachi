@@ -36,8 +36,6 @@ katachi {
 次の定義を例にします。
 
 ```kt
-val modulePackage = capitalizedModuleNamePackage("com.example")
-
 architecture {
     title = "myapp"
 
@@ -50,14 +48,14 @@ architecture {
             summary = "各画面で発生するアプリ固有の1つの振る舞い"
             example("GetItemListUseCase", "商品の一覧")
             example("SignInUseCase", "サインイン")
-            layout { ":core:domain".module { mainSourceSet / kotlin / modulePackage / "useCase" / "*UseCase".ktFile() } }
+            layout { "core/domain" / mainSourceSet / kotlin / "com/example/core/domain/useCase" / "*UseCase".ktFile() }
             "invoke メソッドだけを持つこと".konsist { /* ... */ }
         }
 
         "RepositoryInterface" {
             title = "リポジトリ"
             summary = "データの取得と保存の境界"
-            layout { ":core:domain".module { mainSourceSet / kotlin / modulePackage / "repository" / "*Repository".ktFile() } }
+            layout { "core/domain" / mainSourceSet / kotlin / "com/example/core/domain/repository" / "*Repository".ktFile() }
         }
     }
 }
@@ -112,10 +110,9 @@ architecture {
         ## Placement in this group
 
         ```
-        :core:domain
-          src/main/kotlin/**/
-            useCase/*UseCase.kt        ユースケース
-            repository/*Repository.kt  リポジトリ
+        core/domain/src/main/kotlin/com/example/core/domain/
+          useCase/*UseCase.kt        ユースケース
+          repository/*Repository.kt  リポジトリ
         ```
         ````
     </TabItem>
@@ -129,9 +126,9 @@ architecture {
 
         ## Placement
 
-        | Module | Path | When to use |
-        |---|---|---|
-        | `:core:domain` | `src/main/kotlin/**/useCase/*UseCase.kt` |  |
+        | Path | When to use |
+        |---|---|
+        | `core/domain/src/main/kotlin/com/example/core/domain/useCase/*UseCase.kt` |  |
 
         ## Constraints
 
@@ -153,9 +150,9 @@ architecture {
 
         ## Placement
 
-        | Module | Path | When to use |
-        |---|---|---|
-        | `:core:domain` | `src/main/kotlin/**/repository/*Repository.kt` |  |
+        | Path | When to use |
+        |---|---|
+        | `core/domain/src/main/kotlin/com/example/core/domain/repository/*Repository.kt` |  |
         ```
     </TabItem>
 </Tabs>
@@ -260,9 +257,9 @@ group は入れ子にでき、入れ子の group はその親の group のディ
 
         ## Placement                                    ← layout { }
 
-        | Module | Path | When to use |
-        |---|---|---|
-        |  | `src/main/kotlin/com/example/useCase/*UseCase.kt` |  |
+        | Path | When to use |
+        |---|---|
+        | `src/main/kotlin/com/example/useCase/*UseCase.kt` |  |
 
         ## Constraints                                        ← konsist { } の名前
 
@@ -448,9 +445,9 @@ var MetadataScope.testPolicy by TestPolicy
 
             ## Placement
 
-            | Module | Path | When to use |
-            |---|---|---|
-            |  | `src/main/kotlin/com/example/useCase/*UseCase.kt` |  |
+            | Path | When to use |
+            |---|---|
+            | `src/main/kotlin/com/example/useCase/*UseCase.kt` |  |
 
             ## Examples
 

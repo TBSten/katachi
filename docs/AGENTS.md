@@ -229,6 +229,9 @@ prerelease の手順 11（ドキュメントがガイドのルールに沿って
 - **ガイドのルールを守った見本だけを書く。** コード例は利用者がそのまま写す。ルールに反する例は、悪い形を広める。
   - 🆖 1つの Role に interface と実装を入れた例（`"Repository" { layout { "*Repository".ktFile(); "*RepositoryImpl".ktFile() } }`）
   - 🆗 `"RepositoryInterface"` と `"RepositoryImplementation"` に分けた例（Role のガイドの「1つの Role には1種類のファイルだけを入れる」）
+- **廃止予定の書き方は例に使わない。** `.module { }` は廃止する予定で、API は残っているが、例に使うと利用者がその形を写して、あとで書き直すことになる。ドキュメント・サンプル・リポジトリ自身の定義のどこにも書かない。
+  - 🆖 `":core:domain".module { mainSourceSet / kotlin / modulePackage / "useCase" / "*UseCase".ktFile() }`
+  - 🆗 `"core/domain" / mainSourceSet / kotlin / "com/example/core/domain/useCase" / "*UseCase".ktFile()`（`modulePackage` や `wildcard()` も `.module { }` の中でしか使えないので書かない。モジュールごとに名前を変えたいときは、ディレクトリの `*` に `capture()` で名前を付ける）
 - **katachi の概念は用語で書く。** 読み手がガイドの説明と結びつけられるように。
   - 🆖 「役割はたとえば次のようになるでしょう」 → 🆗 「Role はたとえば次のようになるでしょう」
   - 一般語の「役割」（「固有の役割を持つファイル」）はそのままでよい。初めて出すところは「役割（Role）」と添えてもよい
