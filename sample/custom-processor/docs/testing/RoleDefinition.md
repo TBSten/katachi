@@ -9,9 +9,9 @@ summary, description and examples, and the `layout { }` that says which files be
 
 ## Placement
 
-| Module | Path | When to use |
-|---|---|---|
-| `:architecture-test` | `src/test/kotlin/com/example/roles/*Role.kt` |  |
+| Path | When to use |
+|---|---|
+| `architecture-test/src/test/kotlin/com/example/roles/*Role.kt` |  |
 
 ## Examples
 

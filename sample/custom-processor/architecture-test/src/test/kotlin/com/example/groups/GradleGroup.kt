@@ -11,7 +11,7 @@ import me.tbsten.katachi.dsl.gradle.gradle
  * reaches the generated documentation, and `RoleDocCoverage` -- which walks up each role's
  * group path looking for that flag -- does not count them among the roles it checks.
  *
- * `gradle()` needs no module list: its build-script role expands `":**".module { }`, the same
+ * `gradle()` needs no module list: its build-script role covers the same
  * modules `settings.gradle.kts` already names, `:architecture-test` included.
  */
 fun DeclarationContainerScope.gradleGroup() = gradle()

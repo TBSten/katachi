@@ -9,7 +9,7 @@ whether it is required" one entry per line. `LayoutSnapshotSpec` rebuilds it eac
 compares it against the recorded content.
 
 It exists to show that what is checked has not changed when the way a role is written changes.
-As long as this diff stays empty, rewriting to sugar (`":".module { }` or `mainSourceSet`) is
+As long as this diff stays empty, rewriting to sugar (`mainSourceSet`, `testSourceSet`) is
 safe.
 
 Never write this by hand; `LayoutSnapshotSpec` writes it. To update it after an intended
@@ -21,9 +21,9 @@ has not broken the sample, and its purpose differs from that of `ProjectArchitec
 
 ## Placement
 
-| Module | Path | When to use |
-|---|---|---|
-|  | `snapshots/layout.txt` |  |
+| Path | When to use |
+|---|---|
+| `snapshots/layout.txt` |  |
 
 ## Examples
 

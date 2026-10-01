@@ -12,9 +12,9 @@ The file name is `*Test.kt`. The `*Spec` files next to it have a role of their o
 
 ## Placement
 
-| Module | Path | When to use |
-|---|---|---|
-| `:architecture-test` | `src/test/kotlin/com/example/*Test.kt` |  |
+| Path | When to use |
+|---|---|
+| `architecture-test/src/test/kotlin/com/example/*Test.kt` |  |
 
 ## Examples
 

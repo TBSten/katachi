@@ -2,7 +2,6 @@ package com.example.roles
 
 import com.example.allowedContents
 import com.example.forbiddenContents
-import com.example.modulePackage
 import me.tbsten.katachi.dsl.DeclarationContainerScope
 import me.tbsten.katachi.dsl.gradle.*
 import me.tbsten.katachi.dsl.kotlin.ktFile
@@ -30,8 +29,6 @@ fun DeclarationContainerScope.model() = "Model" {
     layout {
         // A model is named after the thing it models, so the package is the only marker.
         // Any `.kt` directly in it counts; a subdirectory does not.
-        ":".module {
-            mainSourceSet / kotlin / modulePackage / "model" / "*".ktFile()
-        }
+        mainSourceSet / kotlin / "com/example/model" / "*".ktFile()
     }
 }

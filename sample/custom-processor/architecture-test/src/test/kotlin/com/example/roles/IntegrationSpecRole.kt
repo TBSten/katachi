@@ -24,8 +24,6 @@ fun DeclarationContainerScope.integrationSpec() = "IntegrationSpec" {
     """.trimIndent()
     example("CustomProcessorSpec.kt", "The processors called the way a user calls them")
     layout {
-        ":architecture-test".module {
-            testSourceSet / kotlin / "com/example" / "*Spec".ktFile()
-        }
+        "architecture-test" / testSourceSet / kotlin / "com/example" / "*Spec".ktFile()
     }
 }

@@ -17,9 +17,9 @@ it raises `[MissingFile]`.
 
 ## Placement
 
-| Module | Path | When to use |
-|---|---|---|
-| `:` | `src/main/kotlin/**/Main.kt` |  |
+| Path | When to use |
+|---|---|
+| `src/main/kotlin/com/example/Main.kt` |  |
 
 ## Examples
 

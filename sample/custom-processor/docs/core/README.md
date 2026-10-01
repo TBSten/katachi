@@ -24,11 +24,10 @@ processor did.
 ## Placement in this group
 
 ```
-:
-  src/main/kotlin/**/
-    Main.kt     Entrypoint
-    model/*.kt  Model
-    store/*.kt  Store
+src/main/kotlin/com/example/
+  Main.kt     Entrypoint
+  model/*.kt  Model
+  store/*.kt  Store
 ```
 
 ## Forbidden contents

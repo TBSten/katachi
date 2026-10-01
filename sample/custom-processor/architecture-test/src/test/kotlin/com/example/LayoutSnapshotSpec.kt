@@ -80,8 +80,8 @@ private fun File.write(text: String) {
 /**
  * The layout as the check sees it.
  *
- * The module index is built from the real tree, because this definition names modules with
- * `":".module { }` and `":architecture-test".module { }` and those keys are what it resolves.
+ * The module index is built from the real tree, because `gradle()` names every module's
+ * build script with a `":**"` key and that key is what it resolves.
  * Recording the snapshot without it would compare two different questions.
  */
 @OptIn(InternalKatachiApi::class, ExperimentalKatachiApi::class)

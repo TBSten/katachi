@@ -22,8 +22,6 @@ fun DeclarationContainerScope.architectureTest() = "ArchitectureTest" {
     """.trimIndent()
     example("ProjectArchitectureTest.kt", "The test that asserts the definition")
     layout {
-        ":architecture-test".module {
-            testSourceSet / kotlin / "com/example" / "*Test".ktFile()
-        }
+        "architecture-test" / testSourceSet / kotlin / "com/example" / "*Test".ktFile()
     }
 }

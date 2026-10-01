@@ -20,8 +20,6 @@ fun DeclarationContainerScope.documentSectionDefinition() = "DocumentSectionDefi
     """.trimIndent()
     example("DocumentSections.kt", "The two headings and their properties")
     layout {
-        ":architecture-test".module {
-            testSourceSet / kotlin / "com/example" / "DocumentSections".ktFile()
-        }
+        "architecture-test" / testSourceSet / kotlin / "com/example" / "DocumentSections".ktFile()
     }
 }

@@ -6,22 +6,6 @@ import com.example.groups.testingGroup
 import com.example.groups.toolGroup
 import me.tbsten.katachi.dsl.Architecture
 import me.tbsten.katachi.dsl.architecture
-import me.tbsten.katachi.dsl.gradle.ModulePackage
-import me.tbsten.katachi.dsl.gradle.capitalizedModuleNamePackage
-
-/**
- * Where a module keeps its sources, below its own source set.
- *
- * `modulePackage` is not a katachi symbol: it is a `val` the project declares once and writes
- * into every `layout { }`, and it stands for a different directory in each module it is read
- * in. Here the application is the root project, so `":"` alone derives nothing and the base
- * package is the whole answer — `com/example`.
- *
- * `:architecture-test` deliberately does not use it. Its sources are in `com.example` as well,
- * while this strategy would derive `com/example/architectureTest` from the module name, so the
- * roles covering that module write their package out instead.
- */
-val modulePackage: ModulePackage = capitalizedModuleNamePackage("com.example")
 
 /**
  * The architecture of this sample, described with katachi.

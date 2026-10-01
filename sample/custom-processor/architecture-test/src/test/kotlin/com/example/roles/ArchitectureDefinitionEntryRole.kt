@@ -15,9 +15,9 @@ fun DeclarationContainerScope.architectureDefinitionEntry() = "ArchitectureDefin
         the section definitions are other kinds of file with their own roles, so this role is the one
         file and nothing else.
 
-        `layout { }` writes the package as `"com/example"` directly. It does not use `modulePackage`,
-        because this module's sources are in `com/example`, not in `com/example/architectureTest`, which
-        is what would be derived from the module name.
+        `layout { }` writes the package as `"com/example"` directly, because this module's sources
+        are in `com/example`, not in `com/example/architectureTest`, which is what the module name
+        would suggest.
     """.trimIndent()
     forbiddenContents = """
         - A group or a role. Those belong to the group definition and role definition roles, one
@@ -26,8 +26,6 @@ fun DeclarationContainerScope.architectureDefinitionEntry() = "ArchitectureDefin
     """.trimIndent()
     example("ProjectArchitecture.kt", "The entry point of the definition")
     layout {
-        ":architecture-test".module {
-            testSourceSet / kotlin / "com/example" / "ProjectArchitecture".ktFile()
-        }
+        "architecture-test" / testSourceSet / kotlin / "com/example" / "ProjectArchitecture".ktFile()
     }
 }

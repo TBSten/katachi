@@ -13,9 +13,9 @@ role.
 
 ## Placement
 
-| Module | Path | When to use |
-|---|---|---|
-| `:` | `src/main/kotlin/**/model/*.kt` |  |
+| Path | When to use |
+|---|---|
+| `src/main/kotlin/com/example/model/*.kt` |  |
 
 ## Examples
 

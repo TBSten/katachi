@@ -2,7 +2,6 @@ package com.example.roles
 
 import com.example.allowedContents
 import com.example.forbiddenContents
-import com.example.modulePackage
 import me.tbsten.katachi.dsl.DeclarationContainerScope
 import me.tbsten.katachi.dsl.gradle.*
 import me.tbsten.katachi.dsl.kotlin.ktFile
@@ -32,11 +31,8 @@ fun DeclarationContainerScope.entrypoint() = "Entrypoint" {
     """.trimIndent()
     example("Main.kt", "Where the process starts")
     layout {
-        // The application is the root project, so `":"` resolves to the repository root and
-        // `modulePackage` derives `com/example` from the base package alone. No wildcard, so
-        // this one is required.
-        ":".module {
-            mainSourceSet / kotlin / modulePackage / "Main".ktFile()
-        }
+        // The application is the root project, so the path starts at the repository root and the
+        // package is written out as `com/example`. No wildcard, so this one is required.
+        mainSourceSet / kotlin / "com/example" / "Main".ktFile()
     }
 }

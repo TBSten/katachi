@@ -45,8 +45,6 @@ fun DeclarationContainerScope.processor() = "Processor" {
     example("RoleTable", "A form that takes typed arguments")
     example("RoleDocCoverage", "A check that fails the run with Result.failure")
     layout {
-        ":architecture-test".module {
-            testSourceSet / kotlin / "com/example" / "processors" / "*".ktFile()
-        }
+        "architecture-test" / testSourceSet / kotlin / "com/example" / "processors" / "*".ktFile()
     }
 }

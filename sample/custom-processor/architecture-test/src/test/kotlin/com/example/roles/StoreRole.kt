@@ -2,7 +2,6 @@ package com.example.roles
 
 import com.example.allowedContents
 import com.example.forbiddenContents
-import com.example.modulePackage
 import me.tbsten.katachi.dsl.DeclarationContainerScope
 import me.tbsten.katachi.dsl.gradle.*
 import me.tbsten.katachi.dsl.kotlin.ktFile
@@ -31,8 +30,6 @@ fun DeclarationContainerScope.store() = "Store" {
     """.trimIndent()
     example("NoteStore", "The list of notes in memory")
     layout {
-        ":".module {
-            mainSourceSet / kotlin / modulePackage / "store" / "*".ktFile()
-        }
+        mainSourceSet / kotlin / "com/example/store" / "*".ktFile()
     }
 }

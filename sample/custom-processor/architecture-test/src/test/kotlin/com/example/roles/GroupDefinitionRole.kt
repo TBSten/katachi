@@ -19,8 +19,6 @@ fun DeclarationContainerScope.groupDefinition() = "GroupDefinition" {
     forbiddenContents = "Role declarations. A role belongs to the role definition role, in `roles/`."
     example("groups/CoreGroup.kt", "A group made of three roles")
     layout {
-        ":architecture-test".module {
-            testSourceSet / kotlin / "com/example" / "groups" / "*Group".ktFile()
-        }
+        "architecture-test" / testSourceSet / kotlin / "com/example" / "groups" / "*Group".ktFile()
     }
 }

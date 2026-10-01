@@ -33,9 +33,8 @@ class CustomProcessorSpec : FreeSpec({
         withClue(lines.joinToString("\n")) {
             lines.map { it.substringBefore(":") } shouldBe
                 projectArchitecture.allRoles.map { it.qualifiedName }
-            // `tool/Documentation` covers `README.md` and nothing else -- no `.module { }`,
-            // so no `build.gradle.kts` is counted with it and the number does not move when
-            // a source file is added elsewhere.
+            // `tool/Documentation` covers `README.md` and nothing else, so the number does
+            // not move when a source file is added elsewhere.
             lines shouldContain "tool.Documentation: 1 file(s)"
         }
     }

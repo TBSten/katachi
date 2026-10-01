@@ -14,9 +14,9 @@ this sample a reader copies when testing a processor of their own.
 
 ## Placement
 
-| Module | Path | When to use |
-|---|---|---|
-| `:architecture-test` | `src/test/kotlin/com/example/*Spec.kt` |  |
+| Path | When to use |
+|---|---|
+| `architecture-test/src/test/kotlin/com/example/*Spec.kt` |  |
 
 ## Examples
 

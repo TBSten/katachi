@@ -34,10 +34,10 @@ ever been generated is found there.
 
 ## Placement
 
-| Module | Path | When to use |
-|---|---|---|
-|  | `docs/README.md` |  |
-|  | `docs/**/*.md` |  |
+| Path | When to use |
+|---|---|
+| `docs/README.md` |  |
+| `docs/**/*.md` |  |
 
 ## Examples
 

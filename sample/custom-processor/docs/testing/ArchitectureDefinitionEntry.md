@@ -9,15 +9,15 @@ project reads, and it only calls the group functions. The groups, the roles, the
 the section definitions are other kinds of file with their own roles, so this role is the one
 file and nothing else.
 
-`layout { }` writes the package as `"com/example"` directly. It does not use `modulePackage`,
-because this module's sources are in `com/example`, not in `com/example/architectureTest`, which
-is what would be derived from the module name.
+`layout { }` writes the package as `"com/example"` directly, because this module's sources
+are in `com/example`, not in `com/example/architectureTest`, which is what the module name
+would suggest.
 
 ## Placement
 
-| Module | Path | When to use |
-|---|---|---|
-| `:architecture-test` | `src/test/kotlin/com/example/ProjectArchitecture.kt` |  |
+| Path | When to use |
+|---|---|
+| `architecture-test/src/test/kotlin/com/example/ProjectArchitecture.kt` |  |
 
 ## Examples
 

@@ -35,20 +35,18 @@ in how they are updated and in who is troubled when one is deleted.
 ## Placement in this group
 
 ```
-:architecture-test
-  src/test/kotlin/com/example/
-    ProjectArchitecture.kt  Architecture definition entry
-    DocumentSections.kt     Document section definition
-    groups/*Group.kt        Group definition
-    roles/*Role.kt          Role definition
-    *Test.kt                Architecture test
-    *Spec.kt                Integration spec
-    processors/*.kt         Processor
-
+architecture-test/src/test/kotlin/com/example/
+  ProjectArchitecture.kt  Architecture definition entry
+  DocumentSections.kt     Document section definition
+  groups/*Group.kt        Group definition
+  roles/*Role.kt          Role definition
+  *Test.kt                Architecture test
+  *Spec.kt                Integration spec
+  processors/*.kt         Processor
 docs/
-  README.md                 Generated documentation
-  **/*.md                   Generated documentation
-snapshots/layout.txt        Layout snapshot
+  README.md               Generated documentation
+  **/*.md                 Generated documentation
+snapshots/layout.txt      Layout snapshot
 ```
 
 ## Forbidden contents

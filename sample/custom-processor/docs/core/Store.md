@@ -14,9 +14,9 @@ mechanically.
 
 ## Placement
 
-| Module | Path | When to use |
-|---|---|---|
-| `:` | `src/main/kotlin/**/store/*.kt` |  |
+| Path | When to use |
+|---|---|
+| `src/main/kotlin/com/example/store/*.kt` |  |
 
 ## Examples
 
