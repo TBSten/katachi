@@ -80,9 +80,9 @@ val projectArchitecture = architecture {
 // domain/useCase/Helper.kt → [UnexpectedFile]`,
 		},
 		role: {
-			titleHtml: '役割駆動による<br />アーキテクチャ定義',
+			titleHtml: 'Role 駆動による<br />アーキテクチャ定義',
 			bodyHtml:
-				'1つの役割が2つのモジュールに住んでいても、説明は1箇所のまま。置き場所は <code dir="auto">layout { }</code> を並べて宣言します。',
+				'1つの Role が2つのモジュールに住んでいても、説明は1箇所のまま。置き場所は <code dir="auto">layout { }</code> を並べて宣言します。',
 			code: `"UseCase" {
   summary = "各画面で発生するアプリ固有の1つの振る舞い"
   layout { "core/domain/useCase" / "*UseCase".ktFile() }
@@ -93,7 +93,7 @@ val projectArchitecture = architecture {
 			titleHtml: '検査した定義が、<br />そのままドキュメントへ',
 			// リンクの前後で分ける。リンク先は `link`（locale なし）。
 			bodyBeforeLinkHtml:
-				'<code dir="auto">title</code> / <code dir="auto">summary</code> / <code dir="auto">example</code> を役割の中に書きます。v0.2 からは <code dir="auto">./gradlew katachiDocs</code> で、同じ定義から',
+				'<code dir="auto">title</code> / <code dir="auto">summary</code> / <code dir="auto">example</code> を Role の中に書きます。v0.2 からは <code dir="auto">./gradlew katachiDocs</code> で、同じ定義から',
 			linkText: 'ドキュメントを生成',
 			link: 'guides/document-generation/',
 			bodyAfterLinkHtml: 'できます。',

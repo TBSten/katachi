@@ -109,7 +109,8 @@ title: ...
 - **ページタイトルとサイドバーのラベルは分けられる**（Starlight の `sidebar.label`）
 - **存在しないページにリンクするとビルドが落ちる。** 書けるページから順に出す
 - **`@ExperimentalKatachiApi` が要る API を使う箇所に「`@OptIn(ExperimentalKatachiApi::class)` が必要です」と書かない。**
-  opt-in が無ければコンパイラがそう言うので、エラーメッセージから直せる。本文とコード例が注記で重くなるだけ
+  opt-in が無ければコンパイラがそう言い、`@RequiresOptIn` の message にも注釈名（`ExperimentalKatachiApi`）が入っているので、
+  Gradle でも CLI でも、エラーメッセージから直せる。本文とコード例が注記で重くなるだけ
 - **ファイル全体を見せる例（`package` や `import` から書く例）には `@file:OptIn(ExperimentalKatachiApi::class)` を書く。断片の例には書かない。**
   ファイル全体の例は利用者がそのまま写してコンパイルするので、opt-in まで揃っている必要がある。
   断片の例は写した先のファイルに opt-in があるかどうかが分からず、書くと本文が注記で重くなるだけ（上の「OptIn が必要です」と書かないのと同じ理由）。

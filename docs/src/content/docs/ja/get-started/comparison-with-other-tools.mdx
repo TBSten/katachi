@@ -46,7 +46,7 @@ katachi はその逆で、プロジェクト全体を歩いて宣言と突き合
 **「配置」と「中身」で担当が分かれる**ので、片方だけでは穴が残ります。
 
 katachi は `katachi-konsist` という任意モジュールでこの2つを繋ぎます。
-役割の中に `konsist { }` を書き、テストで `assert(FileConstraintCheck())` を呼ぶと、**配置の違反と中身の違反が1つのレポートにまとまります。**
+Role の中に `konsist { }` を書き、テストで `assert(FileConstraintCheck())` を呼ぶと、**配置の違反と中身の違反が1つのレポートにまとまります。**
 
 ```kt title="ProjectArchitecture.kt"
 "UseCase" {
@@ -64,11 +64,11 @@ katachi は `katachi-konsist` という任意モジュールでこの2つを繋�
 
 ### アイデア
 
-役割の性質をそのまま制約にできます。
+Role の性質をそのまま制約にできます。
 
-- **`UseCase` は `invoke` 関数を1つだけ持つ** — 役割の定義そのもの
+- **`UseCase` は `invoke` 関数を1つだけ持つ** — Role の定義そのもの
 - **`Repository` は interface として宣言される** — 実装の差し替えを前提にした層で効く
-- **役割のファイルは外から使える可視性を持つ** — `classes().must { it.hasPublicOrDefaultModifier }`
+- **Role のファイルは外から使える可視性を持つ** — `classes().must { it.hasPublicOrDefaultModifier }`
 - **`ViewModel` は Android の View 型を参照しない** — 層の漏れを中身の側から止める
 - **`data` 層のクラスは特定のアノテーションを持つ** — シリアライズ対象の取りこぼしを防ぐ
 
@@ -95,7 +95,7 @@ detekt と `konsist { }` のどちらに書くか迷う場面があります。�
 - **レポートを1つにまとめたいなら `konsist { }`。**
   `assert(FileConstraintCheck())` で検査すれば配置の違反と並んで出るので、直す材料が1回のテスト実行で揃います
 - **プロジェクト全体に一律で効かせたいなら detekt。**
-  役割に紐づかない約束（関数の長さ、複雑度、命名の一般則）は、役割の中に書いても
+  Role に紐づかない約束（関数の長さ、複雑度、命名の一般則）は、Role の中に書いても
   意味が薄くなります
 
 detekt が向いているもの:
