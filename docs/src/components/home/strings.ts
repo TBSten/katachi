@@ -204,7 +204,7 @@ const en: HomeStrings = {
 	agents: {
 		titleHtml: ja.agents.titleHtml,
 		bodyHtml:
-			'What gets through to an agent is a failing test, not prose.<br />\nAnd output that spells out how to fix it reads just as well to a human.',
+			'What gets through to an agent is a failing test, not prose.',
 	},
 
 	cta: {
