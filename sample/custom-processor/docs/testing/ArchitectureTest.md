@@ -2,24 +2,25 @@
 
 # Architecture test
 
-The tests that check the project against the definition and exercise the processors
+The one test that checks the whole project against the definition
 
-`ProjectArchitectureTest` checks the project against the definition. `CustomProcessorSpec`
-calls the three processors through the API, and `LayoutSnapshotSpec`, katachi's own sentinel,
-lives in the same module. The last two are matched by the `*Spec` name.
+`ProjectArchitectureTest` calls `assert()` on the definition. Every violation of the
+repository arrives in a single failure message, so there is nothing to gain from splitting
+it up. It is the only test a project adopting katachi writes.
+
+The file name is `*Test.kt`. The `*Spec` files next to it have a role of their own.
 
 ## Placement
 
 | Module | Path | When to use |
 |---|---|---|
-| `:architecture-test` | `src/test/kotlin/com/example/ProjectArchitectureTest.kt` |  |
-| `:architecture-test` | `src/test/kotlin/com/example/*Spec.kt` |  |
+| `:architecture-test` | `src/test/kotlin/com/example/*Test.kt` |  |
 
 ## Examples
 
 - `ProjectArchitectureTest.kt` ... The test that asserts the definition
-- `CustomProcessorSpec.kt` ... The processors called the way a user calls them
 
 ## Forbidden contents
 
-Processors. `processors/` belongs to the "Processor" role.
+- Tests of the application. Those go in the root project's test source set
+- The processors' tests. Those are `*Spec` files, which belong to the integration spec role

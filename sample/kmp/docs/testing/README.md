@@ -7,7 +7,7 @@ Test doubles, the test code itself, the katachi architecture definition, the doc
 The roles around testing: Fake (commonMain of `:testing`), Test (the tests of each
 module), the roles of `:architecture-test` (DefinitionEntry, DefinitionSections,
 GroupDefinition, RoleDefinition, ProjectArchitectureTest, ProjectArchitectureSpec, and the
-processor package's CustomProcessor, ProcessorMetadata and ProcessorSpec),
+processors package's CustomProcessor, ProcessorMetadata and ProcessorSpec),
 GeneratedDocumentation (`docs/` at the root), LayoutSnapshot (`snapshots/` at the root)
 and BaselineFile (`katachi-baseline.json` at the root, the ledger of shelved violations).
 
@@ -42,12 +42,12 @@ is the text seen by whoever reviews the diff of a changed definition.
 | [Role definition](./RoleDefinition.md) | roles/<Name>Role.kt, one role of the definition, with where its files live |
 | [Architecture test](./ProjectArchitectureTest.md) | The single JUnit test that runs the definition, kept in src/test/kotlin of :architecture-test |
 | [Architecture spec](./ProjectArchitectureSpec.md) | Tests that verify the definition and katachi itself, kept in src/test/kotlin of :architecture-test |
-| [Custom processor](./CustomProcessor.md) | Processors a user adds beside the check katachi ships, kept in the processor package of :architecture-test |
-| [Processor metadata](./ProcessorMetadata.md) | Owner.kt, the metadata key and property a custom processor reads, kept in the processor package |
-| [Processor spec](./ProcessorSpec.md) | Tests of the custom processors, kept in the processor package of :architecture-test |
+| [Custom processor](./CustomProcessor.md) | Processors a user adds beside the check katachi ships, kept in the processors package of :architecture-test |
+| [Processor metadata](./ProcessorMetadata.md) | Owner.kt, the metadata key and property a custom processor reads, kept in the processors package |
+| [Processor spec](./ProcessorSpec.md) | Tests of the custom processors, kept in the processors package of :architecture-test |
 | [Generated documentation](./GeneratedDocumentation.md) | Markdown written from this definition and committed to the repository |
 | [Layout snapshot](./LayoutSnapshot.md) | A record of this definition, flattened and written out in full. It exists so a person can review changes to the definition as a diff |
-| [Baseline (ledger of shelved violations)](./BaselineFile.md) | A ledger that records violations already present when katachi was introduced, shelving them without failing the tests |
+| [Baseline (ledger of held-back violations)](./BaselineFile.md) | A ledger that records violations already present when katachi was introduced and holds them back without failing the test |
 
 ## Placement in this group
 
@@ -66,7 +66,7 @@ is the text seen by whoever reviews the diff of a changed definition.
     roles/*Role.kt                              Role definition
     *Test.kt                                    Architecture test
     *Spec.kt                                    Architecture spec
-    processor/
+    processors/
       *Processor.kt                             Custom processor
       Owner.kt                                  Processor metadata
       *Spec.kt                                  Processor spec
@@ -75,7 +75,7 @@ docs/
   README.md                                     Generated documentation
   **/*.md                                       Generated documentation
 snapshots/layout.txt                            Layout snapshot
-katachi-baseline.json                           Baseline (ledger of shelved violations)
+katachi-baseline.json                           Baseline (ledger of held-back violations)
 ```
 
 ## Forbidden contents

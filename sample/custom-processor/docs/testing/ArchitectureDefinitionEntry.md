@@ -1,13 +1,13 @@
 [Custom processor sample](../README.md) / [Definition and processors](README.md)
 
-# Architecture entry
+# Architecture definition entry
 
-The entry point of the katachi definition, and the section definitions shared by its groups and roles
+The one file whose `architecture { }` gathers every group, so the definition can be read from here
 
 `ProjectArchitecture.kt` holds `projectArchitecture`, the value every test and processor of this
-project reads, and `DocumentSections.kt` holds the section definitions that every group and role
-uses through `by`. Both are allowed by name, so adding a third file here is a decision, not an
-accident.
+project reads, and it only calls the group functions. The groups, the roles, the processors and
+the section definitions are other kinds of file with their own roles, so this role is the one
+file and nothing else.
 
 `layout { }` writes the package as `"com/example"` directly. It does not use `modulePackage`,
 because this module's sources are in `com/example`, not in `com/example/architectureTest`, which
@@ -18,12 +18,10 @@ is what would be derived from the module name.
 | Module | Path | When to use |
 |---|---|---|
 | `:architecture-test` | `src/test/kotlin/com/example/ProjectArchitecture.kt` |  |
-| `:architecture-test` | `src/test/kotlin/com/example/DocumentSections.kt` |  |
 
 ## Examples
 
 - `ProjectArchitecture.kt` ... The entry point of the definition
-- `DocumentSections.kt` ... The sections every group and role shares
 
 ## Forbidden contents
 

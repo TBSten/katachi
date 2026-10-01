@@ -34,7 +34,7 @@ fun DeclarationContainerScope.testingGroup() = "testing".group {
         The roles around testing: Fake (commonMain of `:testing`), Test (the tests of each
         module), the roles of `:architecture-test` (DefinitionEntry, DefinitionSections,
         GroupDefinition, RoleDefinition, ProjectArchitectureTest, ProjectArchitectureSpec, and the
-        processor package's CustomProcessor, ProcessorMetadata and ProcessorSpec),
+        processors package's CustomProcessor, ProcessorMetadata and ProcessorSpec),
         GeneratedDocumentation (`docs/` at the root), LayoutSnapshot (`snapshots/` at the root)
         and BaselineFile (`katachi-baseline.json` at the root, the ledger of shelved violations).
 

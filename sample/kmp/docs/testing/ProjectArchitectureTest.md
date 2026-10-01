@@ -11,7 +11,7 @@ RoleDefinition roles, and kept apart from this file because the definition's job
 describe the project.
 
 Files named `*Test.kt` directly under the package (outside `groups/`, `roles/` and
-`processor/`) are this role. That tells them apart from the roles of the definition in
+`processors/`) are this role. That tells them apart from the roles of the definition in
 the same module.
 
 ## Placement

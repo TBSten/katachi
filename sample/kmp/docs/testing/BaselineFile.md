@@ -1,26 +1,27 @@
 [katachi-sample-kmp](../README.md) / [Testing support](README.md)
 
-# Baseline (ledger of shelved violations)
+# Baseline (ledger of held-back violations)
 
-A ledger that records violations already present when katachi was introduced, shelving them without failing the tests
+A ledger that records violations already present when katachi was introduced and holds them back without failing the test
 
-The file that `baseline()` in `ProjectArchitecture.kt` points to. Violations recorded here
-do not fail `:architecture-test:test`; only a count such as "held back N violations" is
-printed. A new violation that is not in the record fails the test as before.
+The file that `baseline()` in `ProjectArchitecture.kt` points at. Violations recorded here
+do not fail `:architecture-test:test`; only the count is shown, as "held back N
+violations". A new violation that is not recorded fails the test as before.
 
-As a baseline example, this sample deliberately leaves one entry: `user/UserAgent.android.kt`
-in the `androidMain` of `:data`. Only the `platform` package may sit in `androidMain`, so
-the whole `user` directory becomes an `[UnexpectedDirectory]`.
+This sample deliberately leaves one entry in as a demo of baseline:
+`user/UserAgent.android.kt` in the `androidMain` of `:data`. Only the `platform` package
+may sit in `androidMain`, so the whole `user` directory becomes an `[UnexpectedDirectory]`.
 
-Do not write it by hand. Update it in one of two ways.
+Do not write it by hand. It is updated in one of two ways.
 
-- `./gradlew :architecture-test:test -Dkatachi.baseline.update=true` -- rebuild it from scratch with the current violations
-- `./gradlew :architecture-test:test -Dkatachi.baseline.prune=true` -- remove only the entries for violations that were fixed
+- `./gradlew :architecture-test:test -Dkatachi.baseline.update=true` — rebuild it wholesale from the violations that exist now
+- `./gradlew :architecture-test:test -Dkatachi.baseline.prune=true` — remove only the entries whose violations have been fixed
 
-Once a violation is fixed, its entry fails the test as `[StaleBaselineEntry]`
-("shelving a violation that no longer exists"). It keeps failing until prune removes the
-entry, so the number of shelved violations only goes down. On CI (`CI=true`) both update
-and prune are refused and only the comparison runs.
+Once a violation is fixed, its entry fails the test with `[StaleBaselineEntry]`, as
+"holding back a violation that no longer exists". It keeps failing until prune removes the
+entry, so the number of held-back violations can only go down.
+On CI (environment variable `CI=true`), both update and prune are refused and only the
+comparison is made.
 
 ## Placement
 
@@ -30,9 +31,10 @@ and prune are refused and only the comparison runs.
 
 ## Examples
 
-- `katachi-baseline.json` ... The list of shelved violations
+- `katachi-baseline.json` ... The list of held-back violations
 
 ## Forbidden contents
 
-- Things you want to allow permanently. Those are written as roles in the definition's `layout { }`, not in the ledger
-- Entries added by hand. The next update overwrites them
+- Anything you want to allow permanently. That belongs not in the ledger but in the
+  definition's `layout { }`, written as a role
+- Entries added by hand. They are overwritten by the next update

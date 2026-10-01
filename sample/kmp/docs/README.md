@@ -51,7 +51,7 @@ Test doubles, the test code itself, the katachi architecture definition, the doc
 - [Processor spec](./testing/ProcessorSpec.md)
 - [Generated documentation](./testing/GeneratedDocumentation.md)
 - [Layout snapshot](./testing/LayoutSnapshot.md)
-- [Baseline (ledger of shelved violations)](./testing/BaselineFile.md)
+- [Baseline (ledger of held-back violations)](./testing/BaselineFile.md)
 
 ### [App](./app/README.md)
 
@@ -105,12 +105,12 @@ Test doubles, the test code itself, the katachi architecture definition, the doc
 - [Role definition](./testing/RoleDefinition.md) ... roles/<Name>Role.kt, one role of the definition, with where its files live
 - [Architecture test](./testing/ProjectArchitectureTest.md) ... The single JUnit test that runs the definition, kept in src/test/kotlin of :architecture-test
 - [Architecture spec](./testing/ProjectArchitectureSpec.md) ... Tests that verify the definition and katachi itself, kept in src/test/kotlin of :architecture-test
-- [Custom processor](./testing/CustomProcessor.md) ... Processors a user adds beside the check katachi ships, kept in the processor package of :architecture-test
-- [Processor metadata](./testing/ProcessorMetadata.md) ... Owner.kt, the metadata key and property a custom processor reads, kept in the processor package
-- [Processor spec](./testing/ProcessorSpec.md) ... Tests of the custom processors, kept in the processor package of :architecture-test
+- [Custom processor](./testing/CustomProcessor.md) ... Processors a user adds beside the check katachi ships, kept in the processors package of :architecture-test
+- [Processor metadata](./testing/ProcessorMetadata.md) ... Owner.kt, the metadata key and property a custom processor reads, kept in the processors package
+- [Processor spec](./testing/ProcessorSpec.md) ... Tests of the custom processors, kept in the processors package of :architecture-test
 - [Generated documentation](./testing/GeneratedDocumentation.md) ... Markdown written from this definition and committed to the repository
 - [Layout snapshot](./testing/LayoutSnapshot.md) ... A record of this definition, flattened and written out in full. It exists so a person can review changes to the definition as a diff
-- [Baseline (ledger of shelved violations)](./testing/BaselineFile.md) ... A ledger that records violations already present when katachi was introduced, shelving them without failing the tests
+- [Baseline (ledger of held-back violations)](./testing/BaselineFile.md) ... A ledger that records violations already present when katachi was introduced and holds them back without failing the test
 
 ## App
 

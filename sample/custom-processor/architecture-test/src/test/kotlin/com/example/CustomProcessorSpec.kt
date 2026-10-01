@@ -84,8 +84,8 @@ class CustomProcessorSpec : FreeSpec({
         val report = projectArchitecture.process(RoleDocCoverage).getOrThrow()
 
         withClue(report.toString()) {
-            // Only the 10 roles of `core` and `testing` are checked. `Gradle` and `tool` are documented = false.
-            report.checked shouldBe 10
+            // Only the 12 roles of `core` and `testing` are checked. `Gradle` and `tool` are documented = false.
+            report.checked shouldBe 12
         }
     }
 

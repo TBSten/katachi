@@ -289,8 +289,8 @@ testing.CustomProcessor	architecture-test/src/test/kotlin	Directory	optional
 testing.CustomProcessor	architecture-test/src/test/kotlin/com	Directory	optional
 testing.CustomProcessor	architecture-test/src/test/kotlin/com/example	Directory	optional
 testing.CustomProcessor	architecture-test/src/test/kotlin/com/example/kmp	Directory	optional
-testing.CustomProcessor	architecture-test/src/test/kotlin/com/example/kmp/processor	Directory	optional
-testing.CustomProcessor	architecture-test/src/test/kotlin/com/example/kmp/processor/*Processor.kt	File	optional
+testing.CustomProcessor	architecture-test/src/test/kotlin/com/example/kmp/processors	Directory	optional
+testing.CustomProcessor	architecture-test/src/test/kotlin/com/example/kmp/processors/*Processor.kt	File	optional
 testing.DefinitionEntry	architecture-test	Directory	optional
 testing.DefinitionEntry	architecture-test/build	Ignore	optional
 testing.DefinitionEntry	architecture-test/build.gradle.kts	File	required
@@ -348,8 +348,8 @@ testing.ProcessorMetadata	architecture-test/src/test/kotlin	Directory	optional
 testing.ProcessorMetadata	architecture-test/src/test/kotlin/com	Directory	optional
 testing.ProcessorMetadata	architecture-test/src/test/kotlin/com/example	Directory	optional
 testing.ProcessorMetadata	architecture-test/src/test/kotlin/com/example/kmp	Directory	optional
-testing.ProcessorMetadata	architecture-test/src/test/kotlin/com/example/kmp/processor	Directory	optional
-testing.ProcessorMetadata	architecture-test/src/test/kotlin/com/example/kmp/processor/Owner.kt	File	required
+testing.ProcessorMetadata	architecture-test/src/test/kotlin/com/example/kmp/processors	Directory	optional
+testing.ProcessorMetadata	architecture-test/src/test/kotlin/com/example/kmp/processors/Owner.kt	File	required
 testing.ProcessorSpec	architecture-test	Directory	optional
 testing.ProcessorSpec	architecture-test/build	Ignore	optional
 testing.ProcessorSpec	architecture-test/build.gradle.kts	File	required
@@ -359,8 +359,8 @@ testing.ProcessorSpec	architecture-test/src/test/kotlin	Directory	optional
 testing.ProcessorSpec	architecture-test/src/test/kotlin/com	Directory	optional
 testing.ProcessorSpec	architecture-test/src/test/kotlin/com/example	Directory	optional
 testing.ProcessorSpec	architecture-test/src/test/kotlin/com/example/kmp	Directory	optional
-testing.ProcessorSpec	architecture-test/src/test/kotlin/com/example/kmp/processor	Directory	optional
-testing.ProcessorSpec	architecture-test/src/test/kotlin/com/example/kmp/processor/*Spec.kt	File	optional
+testing.ProcessorSpec	architecture-test/src/test/kotlin/com/example/kmp/processors	Directory	optional
+testing.ProcessorSpec	architecture-test/src/test/kotlin/com/example/kmp/processors/*Spec.kt	File	optional
 testing.ProjectArchitectureSpec	architecture-test	Directory	optional
 testing.ProjectArchitectureSpec	architecture-test/build	Ignore	optional
 testing.ProjectArchitectureSpec	architecture-test/build.gradle.kts	File	required

@@ -17,7 +17,7 @@ fun DeclarationContainerScope.projectArchitectureTest() = "ProjectArchitectureTe
         describe the project.
 
         Files named `*Test.kt` directly under the package (outside `groups/`, `roles/` and
-        `processor/`) are this role. That tells them apart from the roles of the definition in
+        `processors/`) are this role. That tells them apart from the roles of the definition in
         the same module.
     """.trimIndent()
     forbiddenContents = """

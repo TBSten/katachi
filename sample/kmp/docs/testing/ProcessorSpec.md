@@ -2,10 +2,10 @@
 
 # Processor spec
 
-Tests of the custom processors, kept in the processor package of :architecture-test
+Tests of the custom processors, kept in the processors package of :architecture-test
 
 The tests that run a custom processor against a small architecture and pin what it
-returns, in `processor/*Spec.kt` beside the processor they test. They are a role of
+returns, in `processors/*Spec.kt` beside the processor they test. They are a role of
 their own, not part of ProjectArchitectureSpec, because a processor and its spec travel
 together: someone copying a processor into their own project takes the spec with it.
 
@@ -13,7 +13,7 @@ together: someone copying a processor into their own project takes the spec with
 
 | Module | Path | When to use |
 |---|---|---|
-| `:architecture-test` | `src/test/kotlin/com/example/kmp/processor/*Spec.kt` |  |
+| `:architecture-test` | `src/test/kotlin/com/example/kmp/processors/*Spec.kt` |  |
 
 ## Examples
 

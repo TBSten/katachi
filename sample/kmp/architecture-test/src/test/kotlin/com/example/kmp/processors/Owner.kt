@@ -1,4 +1,4 @@
-package com.example.kmp.processor
+package com.example.kmp.processors
 
 import me.tbsten.katachi.ExperimentalKatachiApi
 import me.tbsten.katachi.dsl.MetadataKey

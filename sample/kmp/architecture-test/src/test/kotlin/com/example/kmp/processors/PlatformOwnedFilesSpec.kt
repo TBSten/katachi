@@ -1,4 +1,4 @@
-package com.example.kmp.processor
+package com.example.kmp.processors
 
 import com.example.kmp.groups.appGroup
 import com.example.kmp.groups.dataGroup

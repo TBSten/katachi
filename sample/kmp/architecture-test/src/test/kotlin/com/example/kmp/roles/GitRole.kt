@@ -1,7 +1,7 @@
 package com.example.kmp.roles
 
 import com.example.kmp.forbiddenContents
-import com.example.kmp.processor.owner
+import com.example.kmp.processors.owner
 import me.tbsten.katachi.dsl.DeclarationContainerScope
 
 /**
@@ -14,7 +14,7 @@ import me.tbsten.katachi.dsl.DeclarationContainerScope
 fun DeclarationContainerScope.git() = "Git" {
     summary = ".gitignore. Keeps build outputs and Xcode working files out of Git"
     documented = false
-    // Also `owner = "platform"` (see com.example.kmp.processor.Owner), this sample's own
+    // Also `owner = "platform"` (see com.example.kmp.processors.Owner), this sample's own
     // metadata key -- not katachi's. `PlatformOwnedFilesSpec` builds a variant of
     // this exact role with the tag left out to prove its processor really reads it.
     owner = "platform"

@@ -22,10 +22,12 @@ in how they are updated and in who is troubled when one is deleted.
 
 | Role | Summary |
 |---|---|
-| [Architecture entry](./ArchitectureEntry.md) | The entry point of the katachi definition, and the section definitions shared by its groups and roles |
+| [Architecture definition entry](./ArchitectureDefinitionEntry.md) | The one file whose `architecture { }` gathers every group, so the definition can be read from here |
+| [Document section definition](./DocumentSectionDefinition.md) | The headings this project declares for itself, so roles and groups can write under them |
 | [Group definition](./GroupDefinition.md) | One group of the katachi definition, declared in `groups/<Name>Group.kt` |
 | [Role definition](./RoleDefinition.md) | One role of the katachi definition, declared in `roles/<Name>Role.kt` |
-| [Architecture test](./ArchitectureTest.md) | The tests that check the project against the definition and exercise the processors |
+| [Architecture test](./ArchitectureTest.md) | The one test that checks the whole project against the definition |
+| [Integration spec](./IntegrationSpec.md) | The tests that call the processors through the API, and katachi's own sentinel run against this real project |
 | [Processor](./Processor.md) | The ArchitectureProcessor implementations this project wrote itself. They read the definition and produce something |
 | [Generated documentation](./GeneratedDocumentation.md) | Markdown written out of this definition and committed to the repository |
 | [Layout snapshot](./LayoutSnapshot.md) | Text recording the flattened result of `layout { }`, for katachi's own self-verification |
@@ -35,18 +37,18 @@ in how they are updated and in who is troubled when one is deleted.
 ```
 :architecture-test
   src/test/kotlin/com/example/
-    ProjectArchitecture.kt      Architecture entry
-    DocumentSections.kt         Architecture entry
-    groups/*Group.kt            Group definition
-    roles/*Role.kt              Role definition
-    ProjectArchitectureTest.kt  Architecture test
-    *Spec.kt                    Architecture test
-    processors/*.kt             Processor
+    ProjectArchitecture.kt  Architecture definition entry
+    DocumentSections.kt     Document section definition
+    groups/*Group.kt        Group definition
+    roles/*Role.kt          Role definition
+    *Test.kt                Architecture test
+    *Spec.kt                Integration spec
+    processors/*.kt         Processor
 
 docs/
-  README.md                     Generated documentation
-  **/*.md                       Generated documentation
-snapshots/layout.txt            Layout snapshot
+  README.md                 Generated documentation
+  **/*.md                   Generated documentation
+snapshots/layout.txt        Layout snapshot
 ```
 
 ## Forbidden contents

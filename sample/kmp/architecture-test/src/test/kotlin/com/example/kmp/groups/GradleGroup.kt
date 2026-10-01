@@ -1,6 +1,6 @@
 package com.example.kmp.groups
 
-import com.example.kmp.processor.owner
+import com.example.kmp.processors.owner
 import me.tbsten.katachi.dsl.DeclarationContainerScope
 import me.tbsten.katachi.dsl.gradle.gradle
 
@@ -14,11 +14,11 @@ import me.tbsten.katachi.dsl.gradle.gradle
  * this sample's own.
  *
  * `owner = "platform"` is set here, on the group rather than on a role -- `owner` reads
- * [com.example.kmp.processor.Owner] through [me.tbsten.katachi.dsl.MetadataScope], which a
+ * [com.example.kmp.processors.Owner] through [me.tbsten.katachi.dsl.MetadataScope], which a
  * group is one of. The roles `gradle()` declares (`Gradle/BuildScript`,
  * `Gradle/SettingsScript`, ...) are katachi's own and cannot be reopened from this block to tag
  * each one by hand.
- * Tagging the group once and asking [com.example.kmp.processor.PlatformOwnedFilesProcessor] to
+ * Tagging the group once and asking [com.example.kmp.processors.PlatformOwnedFilesProcessor] to
  * also walk a tagged group's roles reaches the same files, and is the shape
  * [me.tbsten.katachi.dsl.MetadataScope]'s own KDoc shows first: `owner` written on a group,
  * `arch.groups.single()[Owner]` read back.

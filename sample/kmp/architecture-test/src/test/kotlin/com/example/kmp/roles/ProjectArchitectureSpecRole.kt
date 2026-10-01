@@ -18,7 +18,7 @@ fun DeclarationContainerScope.projectArchitectureSpec() = "ProjectArchitectureSp
         out, and `ProjectRootSpec` watches the result of the project root lookup.
 
         Files named `*Spec.kt` directly under the package (outside `groups/`, `roles/` and
-        `processor/`) are this role. Putting one in `roles/` gives an `[UnexpectedFile]`. The
+        `processors/`) are this role. Putting one in `roles/` gives an `[UnexpectedFile]`. The
         specs of the custom processors are the ProcessorSpec role.
     """.trimIndent()
     forbiddenContents = """

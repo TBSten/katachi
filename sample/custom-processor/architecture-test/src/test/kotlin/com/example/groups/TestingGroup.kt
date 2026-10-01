@@ -1,13 +1,15 @@
 package com.example.groups
 
 import com.example.forbiddenContents
-import com.example.roles.architectureEntry
+import com.example.roles.architectureDefinitionEntry
 import com.example.roles.architectureTest
-import com.example.roles.groupDefinition
-import com.example.roles.roleDefinition
+import com.example.roles.documentSectionDefinition
 import com.example.roles.generatedDocumentation
+import com.example.roles.groupDefinition
+import com.example.roles.integrationSpec
 import com.example.roles.layoutSnapshot
 import com.example.roles.processor
+import com.example.roles.roleDefinition
 import me.tbsten.katachi.dsl.DeclarationContainerScope
 
 /**
@@ -45,10 +47,12 @@ fun DeclarationContainerScope.testingGroup() = "testing".group {
         source set.
     """.trimIndent()
 
-    architectureEntry()
+    architectureDefinitionEntry()
+    documentSectionDefinition()
     groupDefinition()
     roleDefinition()
     architectureTest()
+    integrationSpec()
     processor()
     generatedDocumentation()
     layoutSnapshot()

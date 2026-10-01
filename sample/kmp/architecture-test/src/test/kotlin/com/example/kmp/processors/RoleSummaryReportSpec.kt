@@ -1,4 +1,4 @@
-package com.example.kmp.processor
+package com.example.kmp.processors
 
 import io.kotest.core.spec.style.FreeSpec
 import io.kotest.matchers.collections.shouldBeEmpty

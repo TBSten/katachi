@@ -5,24 +5,25 @@ import me.tbsten.katachi.dsl.DeclarationContainerScope
 import me.tbsten.katachi.dsl.gradle.*
 import me.tbsten.katachi.dsl.kotlin.ktFile
 
-/** The role of the tests that assert the katachi definition. */
+/** The role of the one test a project adopting katachi writes. */
 fun DeclarationContainerScope.architectureTest() = "ArchitectureTest" {
     title = "Architecture test"
-    summary = "The tests that check the project against the definition and exercise the processors"
+    summary = "The one test that checks the whole project against the definition"
     description = """
-        `ProjectArchitectureTest` checks the project against the definition. `CustomProcessorSpec`
-        calls the three processors through the API, and `LayoutSnapshotSpec`, katachi's own sentinel,
-        lives in the same module. The last two are matched by the `*Spec` name.
+        `ProjectArchitectureTest` calls `assert()` on the definition. Every violation of the
+        repository arrives in a single failure message, so there is nothing to gain from splitting
+        it up. It is the only test a project adopting katachi writes.
+
+        The file name is `*Test.kt`. The `*Spec` files next to it have a role of their own.
     """.trimIndent()
-    forbiddenContents = "Processors. `processors/` belongs to the \"Processor\" role."
+    forbiddenContents = """
+        - Tests of the application. Those go in the root project's test source set
+        - The processors' tests. Those are `*Spec` files, which belong to the integration spec role
+    """.trimIndent()
     example("ProjectArchitectureTest.kt", "The test that asserts the definition")
-    example("CustomProcessorSpec.kt", "The processors called the way a user calls them")
     layout {
         ":architecture-test".module {
-            testSourceSet / kotlin / "com/example" {
-                "ProjectArchitectureTest".ktFile()
-                "*Spec".ktFile()
-            }
+            testSourceSet / kotlin / "com/example" / "*Test".ktFile()
         }
     }
 }
