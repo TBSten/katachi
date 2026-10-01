@@ -57,7 +57,7 @@ import java.io.File
 
 /** Verification renders (PNG, looked at by eye) of the dialog and the tool window over sample/android's real 11 templates. */
 class MultiTemplateRenderTest {
-    private val out = File(System.getProperty("katachi.verify.out", "/Users/tbsten/dev/katachi/.local/tmp/verify-multi-template"))
+    private val out = File(System.getProperty("katachi.verify.out", "build/verify-multi-template"))
     private val dispatcher = ManualDispatcher()
     private val scope = CoroutineScope(dispatcher + SupervisorJob())
     private val harness = ScenarioHarness(scope, ioDispatcher = dispatcher)

@@ -30,8 +30,9 @@ fun DeclarationContainerScope.idePluginTest() = "IdePluginTest" {
             "resources" / "contract" / "output" / "*.log".file()
             "resources" / "contract" / "output" / "*.exit".file()
         }
-        // The Driver smoke: a real IDE started by Starter (JUnit 5), run on demand by `integrationTest`.
-        "katachi-intellij-plugin" / "src" / "integrationTest" / "kotlin" / "me/tbsten/katachi/intellij" / "**" / "*Test".ktFile()
+        // The Driver smoke: a real IDE started by Starter (JUnit 5), run on demand by `integrationTest`,
+        // with what the tests share (how the repository is copied for the IDE to open, ...).
+        "katachi-intellij-plugin" / "src" / "integrationTest" / "kotlin" / "me/tbsten/katachi/intellij" / "**" / "*".ktFile()
         // The property-based tests and the UI tests on standalone Compose, run by `uiTest` (which
         // `test` runs too), with what they build on: generators, operations, invariants, the renderer.
         "katachi-intellij-plugin" / "src" / "uiTest" / "kotlin" / "me/tbsten/katachi/intellij/uitest" / "**" / "*".ktFile()

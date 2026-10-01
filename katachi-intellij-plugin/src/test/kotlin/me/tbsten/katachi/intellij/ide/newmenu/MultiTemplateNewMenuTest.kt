@@ -15,7 +15,7 @@ import java.io.File
  */
 internal class MultiTemplateNewMenuTest : NewMenuTestBase() {
     private val android = ContractFixtures.templates("sample-android-with-captures")
-    private val dump = File(System.getProperty("katachi.verify.dump", "/Users/tbsten/dev/katachi/.local/tmp/verify-multi-template/newmenu-android.txt"))
+    private val dump = File(System.getProperty("katachi.verify.dump", "build/verify-multi-template/newmenu-android.txt"))
 
     private fun problemsOf(actions: Array<AnAction>, path: String): List<String> {
         val problems = mutableListOf<String>()
@@ -55,6 +55,7 @@ internal class MultiTemplateNewMenuTest : NewMenuTestBase() {
             outline(children).forEach { out.appendLine(it) }
             problems += problemsOf(children, relative)
         }
+        dump.parentFile?.mkdirs()
         dump.writeText(out.toString())
         assertTrue(problems.joinToString("\n"), problems.isEmpty())
     }
@@ -81,6 +82,7 @@ internal class MultiTemplateNewMenuTest : NewMenuTestBase() {
         loadAndSettle()
         val lines = menuOn(directory("data/src/main/kotlin/com/example/sample/data/user"))
         val problems = problemsOf(eventOn(directory("data/src/main/kotlin/com/example/sample/data/user")).let { e -> group.update(e); group.getChildren(e) }, "user")
+        dump.parentFile?.mkdirs()
         File(dump.path + ".defs").writeText(lines.joinToString("\n"))
         assertEquals(problems.joinToString("\n"), emptyList<String>(), problems)
         assertEquals(1, lines.count { it == ":arch-a" })

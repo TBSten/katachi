@@ -119,7 +119,8 @@ internal class MultiTemplateInjectionTest : AnalysisTestBase() {
     }
 
     fun `test 実際の sample の定義ファイルで注入される文字列と template の数`() {
-        val repoRoot = File(System.getProperty("katachi.verify.repo", "/Users/tbsten/dev/katachi/.local/worktrees/verify-multi-template"))
+        // The repository this build sits in (the test runs in katachi-intellij-plugin/), unless pointed elsewhere.
+        val repoRoot = File(System.getProperty("katachi.verify.repo", "..")).canonicalFile
         val report = StringBuilder()
         for (sample in listOf("jvm", "kmp", "android")) {
             val dir = File(repoRoot, "sample/$sample/architecture-test/src/test/kotlin")
@@ -137,6 +138,8 @@ internal class MultiTemplateInjectionTest : AnalysisTestBase() {
                 assertEquals("$sample/${file.name}: a fragment is shared by two strings", fragments.size, fragments.distinct().size)
             }
         }
-        File(System.getProperty("katachi.verify.dump", "/Users/tbsten/dev/katachi/.local/tmp/verify-multi-template/dump") + ".injection.txt").writeText(report.toString())
+        File(System.getProperty("katachi.verify.dump", "build/verify-multi-template/dump") + ".injection.txt")
+            .apply { parentFile?.mkdirs() }
+            .writeText(report.toString())
     }
 }
