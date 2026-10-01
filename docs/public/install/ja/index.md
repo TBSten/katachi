@@ -519,14 +519,14 @@ import me.tbsten.katachi.konsist.konsist                 // konsist { } を書�
 **リファクタリングのチェックリスト** — 上から順に見て、当てはまらないものは飛ばしてかまいません。
 
 - [ ] **ファイル・パッケージを分けた。** 1 Role 1 ファイル（`<group>/<role>/<Role>.kt`）、1 group 1 ファイル（`<group>/<Group>.kt`）、`ProjectArchitecture.kt` は group を呼ぶだけ。命名規則は下の「定義のファイルの置き方」
-- [ ] **group 名・ディレクトリ名が `.gitignore` に当たっていない。** group 名に `build` / `out` など `.gitignore` に当たる名前を使わない（例: `buildLogic`）。分けたあと `git check-ignore -r architecture-test/src` を実行し、何も出力されないこと（定義のファイルが無視されていないこと）を確かめる。無視されたファイルは `gitTracked()` に載らず、定義の抜けに気づけない
+- [ ] **group 名・ディレクトリ名が `.gitignore` に当たっていない。** group 名に `build` / `out` など `.gitignore` に当たる名前を使わない（例: `buildLogic`）。分けたあと `git ls-files --others --ignored --exclude-standard architecture-test/src` を実行し、何も出力されないこと（定義のファイルが無視されていないこと）を確かめる。無視されたファイルは `gitTracked()` に載らず、定義の抜けに気づけない
 - [ ] **分割に使う関数を `inline` にしていない。** katachi は違反の宣言位置をスタックトレースから読むので、`inline` にすると行番号がずれる
 - [ ] **分けた定義ファイルが検査に通る。** 定義ファイル自身も検査の対象です。`architecture-test/` を受け持つ Role の `layout { }` が `<group>/<role>/<Role>.kt` の深さまで受け入れること
 - [ ] **1 つの Role = 1 種類のファイル。** すべての Role を 3-2 の「1 つの Role = 1 種類のファイル」の3つの問いで見直した。`lint` の警告が 0 件か、残すものは理由を `sh $CLI warn 3 "..."` に書いた
 - [ ] **Gradle まわりは `gradle()` の1行。** Gradle のファイルを手書きの Role で宣言していない（`buildSrc` と `includeBuild` したビルドは除く）
 - [ ] **受け皿の Role が残っていない。** `anyFile()` / `ignore()` の寄せ集めや、「その場所なら何でもよい」`layout` の Role に、ファイル名のパターンか `konsist { }` の制約が付いている（3-2 の「配置だけで終わらせない」）
 - [ ] **説明がそろっている。** Role と group に `title` / `summary` / `description`、Role に `example()`（実例のファイル名）。中身はステップ 1 のレポートの `roles` から取る
-- [ ] **重複を共通化した。** 同じ `layout` を複数の Role に書き写していない（関数に切り出す）。`modulePackage` のような何度も出る値を `val` に切り出した
+- [ ] **重複を共通化した。** 同じ `layout` を複数の Role に書き写していない（関数に切り出す）。パッケージのディレクトリのような何度も出る値を `val` に切り出した
 - [ ] **検査結果が前後で変わらない。** 下の「前後で比べる」が「変わっていません」で終わる
 
 <details>
@@ -789,7 +789,7 @@ Pull request 作成時・Merge request 作成時・pre-push hook など スト�
 **始める前に、テンプレートからコード生成のページを読む。**3-1 で取得した全文のうち `Generating code from a template` の節です（日本語版は https://tbsten.github.io/katachi/ja/guides/generate-code-from-template/ ）。`.template { }` で書ける語（`stringParameter()` などの `*Parameter()`）、生成先のパスを書かない理由、既存ファイルがあるときの扱いはここに書いてあります。シグネチャに迷ったら、推測で書かずに 3-1 の「API に迷ったら」の llms.txt を読んでください（`.template { }` の入口は https://tbsten.github.io/katachi/api-docs/katachi/me.tbsten.katachi.dsl/template.html.md ）。
 
 1. 提案を確かめる（`sh $CLI data get report` の `templates`）。
-2. その Role の `layout { }` の、ファイルの宣言に `.template { }` を付ける。**`.template` は拡張関数なので、書くファイルに `import me.tbsten.katachi.dsl.template` を足す**（`captureValue()` などはブロックの中で使えるので import は要らない）。**`.template { }`・`capture()`・`captureValue()` は実験的な API なので、そのファイルに `@file:OptIn(ExperimentalKatachiApi::class)` と `import me.tbsten.katachi.ExperimentalKatachiApi` も足す。** 足さないと `This katachi API is experimental. It is safe to use, but its shape will still change.` でコンパイルが落ち、メッセージに足すべき注釈の名前は出ない。**中身は `basedOn` のファイルを元にする。** 生成先のパスは `layout { }` の宣言そのものが決めるので、テンプレート側には書かない
+2. その Role の `layout { }` の、ファイルの宣言に `.template { }` を付ける。**`.template` は拡張関数なので、書くファイルに `import me.tbsten.katachi.dsl.template` を足す**（`captureValue()` などはブロックの中で使えるので import は要らない）。**`.template { }`・`capture()`・`captureValue()` は実験的な API なので、そのファイルに `@file:OptIn(ExperimentalKatachiApi::class)` と `import me.tbsten.katachi.ExperimentalKatachiApi` も足す。** 足さないと `This katachi API is experimental. …` でコンパイルが落ちる（メッセージに付け方が出る）。**中身は `basedOn` のファイルを元にする。** 生成先のパスは `layout { }` の宣言そのものが決めるので、テンプレート側には書かない
 
    ```kt
    @file:OptIn(ExperimentalKatachiApi::class)
