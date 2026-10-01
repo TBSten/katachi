@@ -494,7 +494,7 @@ import me.tbsten.katachi.konsist.konsist                 // konsist { } を書�
 
 判断はこうします。
 
-- **Role に結びつく規約は katachi に書く。** 「ViewModel は Repository を直接呼ばない」は ViewModel という Role の定義そのものです。他のツールが似た検査をしていても、katachi 側にあることで「この role とは何か」が1箇所に揃います
+- **Role に結びつく規約は katachi に書く。** 「ViewModel は Repository を直接呼ばない」は ViewModel という Role の定義そのものです。他のツールが似た検査をしていても、katachi 側にあることで「この Role とは何か」が1箇所に揃います
 - **省いてよいのは、既存のツールがコンパイルエラーとして落としていて、かつファイル単位で抑制できないものだけです。** 抑制できるなら katachi 側にも書く価値があります
 - 迷ったら書く。制約は後から消せます
 
@@ -519,6 +519,7 @@ import me.tbsten.katachi.konsist.konsist                 // konsist { } を書�
 **リファクタリングのチェックリスト** — 上から順に見て、当てはまらないものは飛ばしてかまいません。
 
 - [ ] **ファイル・パッケージを分けた。** 1 Role 1 ファイル（`<group>/<role>/<Role>.kt`）、1 group 1 ファイル（`<group>/<Group>.kt`）、`ProjectArchitecture.kt` は group を呼ぶだけ。命名規則は下の「定義のファイルの置き方」
+- [ ] **group 名・ディレクトリ名が `.gitignore` に当たっていない。** group 名に `build` / `out` など `.gitignore` に当たる名前を使わない（例: `buildLogic`）。分けたあと `git check-ignore -r architecture-test/src` を実行し、何も出力されないこと（定義のファイルが無視されていないこと）を確かめる。無視されたファイルは `gitTracked()` に載らず、定義の抜けに気づけない
 - [ ] **分割に使う関数を `inline` にしていない。** katachi は違反の宣言位置をスタックトレースから読むので、`inline` にすると行番号がずれる
 - [ ] **分けた定義ファイルが検査に通る。** 定義ファイル自身も検査の対象です。`architecture-test/` を受け持つ Role の `layout { }` が `<group>/<role>/<Role>.kt` の深さまで受け入れること
 - [ ] **1 つの Role = 1 種類のファイル。** すべての Role を 3-2 の「1 つの Role = 1 種類のファイル」の3つの問いで見直した。`lint` の警告が 0 件か、残すものは理由を `sh $CLI warn 3 "..."` に書いた
@@ -710,12 +711,14 @@ jobs:
       - uses: actions/setup-java@v6
         with:
           distribution: temurin
-          java-version: '17'
+          java-version: '17' # 手順 2 で決まった JVM toolchain の N に合わせる（17 以上）
 
       - uses: gradle/actions/setup-gradle@v6
 
       - run: ./gradlew :architecture-test:test
 ```
+
+新しく作ったワークフローのファイル（`.github/workflows/*.yml`）が `architecture { }` の定義に無ければ Role を足し（例: `".github/workflows" / "*.yml".file()`）、`./gradlew :architecture-test:test` を回して通ることを確かめる。
 
 既存の CI が emulator や複数の OS を回す matrix のジョブ 1 本だけのときは、その各要素で毎回 `:architecture-test:test` が走らないように、**matrix の外に別のジョブとして足します。** 新しい yaml ファイルは作らず、同じ workflow ファイルの `jobs:` に上の `architecture` ジョブを足してください。
 
@@ -772,6 +775,8 @@ Pull request 作成時・Merge request 作成時・pre-push hook など スト�
 
    - CI で `--arg mode=check` を回す（6-B の末尾）
 
+   **出力先のディレクトリ名に `build` / `out` など `.gitignore` に当たる名前を使わない**（3-3 と同じ。コミットしたつもりのページが無視される）。
+
    **出力先は katachi のものになります。** そこにある、今回の生成で作られなかった `*.md` は消されます。手書きの Markdown があるディレクトリを指さないこと。
 4. 生成し直し、`./gradlew :architecture-test:test` が通ることを確かめる。
 
@@ -781,12 +786,17 @@ Pull request 作成時・Merge request 作成時・pre-push hook など スト�
 
 ステップ 6 で記録した提案に、ユーザが同意した Role だけ行う。
 
-**始める前に、テンプレートからのコード生成のページを読む。**3-1 で取得した全文のうち `Generating code from a template` の節です（日本語版は https://tbsten.github.io/katachi/ja/guides/generate-code-from-template/ ）。`.template { }` で書ける語（`stringParameter()` などの `*Parameter()`）、生成先のパスを書かない理由、既存ファイルがあるときの扱いはここに書いてあります。シグネチャに迷ったら、推測で書かずに 3-1 の「API に迷ったら」の llms.txt を読んでください（`.template { }` の入口は https://tbsten.github.io/katachi/api-docs/katachi/me.tbsten.katachi.dsl/template.html.md ）。
+**始める前に、テンプレートからコード生成のページを読む。**3-1 で取得した全文のうち `Generating code from a template` の節です（日本語版は https://tbsten.github.io/katachi/ja/guides/generate-code-from-template/ ）。`.template { }` で書ける語（`stringParameter()` などの `*Parameter()`）、生成先のパスを書かない理由、既存ファイルがあるときの扱いはここに書いてあります。シグネチャに迷ったら、推測で書かずに 3-1 の「API に迷ったら」の llms.txt を読んでください（`.template { }` の入口は https://tbsten.github.io/katachi/api-docs/katachi/me.tbsten.katachi.dsl/template.html.md ）。
 
 1. 提案を確かめる（`sh $CLI data get report` の `templates`）。
-2. その Role の `layout { }` の、ファイルの宣言に `.template { }` を付ける。**`.template` は拡張関数なので、書くファイルに `import me.tbsten.katachi.dsl.template` を足す**（`captureValue()` などはブロックの中で使えるので import は要らない）。**中身は `basedOn` のファイルを元にする。** 生成先のパスは `layout { }` の宣言そのものが決めるので、テンプレート側には書かない
+2. その Role の `layout { }` の、ファイルの宣言に `.template { }` を付ける。**`.template` は拡張関数なので、書くファイルに `import me.tbsten.katachi.dsl.template` を足す**（`captureValue()` などはブロックの中で使えるので import は要らない）。**`.template { }`・`capture()`・`captureValue()` は実験的な API なので、そのファイルに `@file:OptIn(ExperimentalKatachiApi::class)` と `import me.tbsten.katachi.ExperimentalKatachiApi` も足す。** 足さないと `This katachi API is experimental. It is safe to use, but its shape will still change.` でコンパイルが落ち、メッセージに足すべき注釈の名前は出ない。**中身は `basedOn` のファイルを元にする。** 生成先のパスは `layout { }` の宣言そのものが決めるので、テンプレート側には書かない
 
    ```kt
+   @file:OptIn(ExperimentalKatachiApi::class)
+
+   import me.tbsten.katachi.ExperimentalKatachiApi
+   import me.tbsten.katachi.dsl.template
+
    "UseCase" {
        layout {
            "useCase" / "${capture("name")}UseCase".ktFile()
@@ -807,6 +817,11 @@ Pull request 作成時・Merge request 作成時・pre-push hook など スト�
    **生成先のディレクトリやモジュールにワイルドカード（`*`）がある Role は、その `*` に `capture()` で名前を付ける。** 検査の結果は変わらない。名前の無い `*` や `**` が残ったまま `.template { }` を付けると、layout を展開する時点（`./gradlew :architecture-test:test` の `assert()`）でエラーになる。値はテンプレートの中で `captureValue("名前")` で読む（`stringParameter()` で宣言し直さないこと。名前がぶつかって落ちる）
 
    ```kt
+   @file:OptIn(ExperimentalKatachiApi::class)
+
+   import me.tbsten.katachi.ExperimentalKatachiApi
+   import me.tbsten.katachi.dsl.template
+
    "ViewModel" {
        layout {
            ":feature:${capture("feature")}".module {   // 元は ":feature:*".module {
@@ -834,11 +849,9 @@ Pull request 作成時・Merge request 作成時・pre-push hook など スト�
 
    **パッケージのディレクトリ名がモジュール名と違う（モジュール `appConfig` とディレクトリ `appconfig` など）なら、そのディレクトリの `*` にもモジュールとは別の名前を付け、その `captureValue()` を package に使う。** モジュールの名前（`captureValue("feature")`）を package に入れると、ディレクトリと食い違う package が書かれ、検査もコンパイルも通るので気づけない。
 
-   **1つの Role に2つ以上の `.template { }` があるときは、`.template(id = "名前")` で見分ける。** Role のテンプレートが1つだけなら `id` は省略できる。
-
-   使えるのは `stringParameter()` / `booleanParameter()` / `intParameter()`（`default = ...` も可）、`enumParameter()`（`entries` かデフォルト値を渡す）、それに生成先のワイルドカードに名前を付ける `capture("名前")`（layout のディレクトリ・ファイル名・モジュールキーのどこにでも埋め込める）と、その値を読む `captureValue("名前")`（template の中）/ `wildcard("名前")`（layout のモジュールブロックの中）だけです。これ以外の語を推測で足さないこと。
+   使えるのは `stringParameter()` / `booleanParameter()` / `intParameter()`（`default = ...` も可）、`enumParameter()`（`entries` かデフォルト値を渡す）、それに生成先のワイルドカードに名前を付ける `capture("名前")`（layout のディレクトリ・ファイル名・モジュールキーのどこにでも埋め込める）と、その値を読む `captureValue("名前")`（template の中）だけです。これ以外の語を推測で足さないこと。
 3. テンプレート独自のパラメータ（`--arg name=...`）は、モジュール側の設定なしにそのまま渡せる。受け付けるのは、名指しした Role の `.template { }` が宣言した名前と、`layout { }` のワイルドカードに付けた名前だけで、打ち間違いはこれまでどおり `Unknown processor argument(s): ...` で落ちる。
-4. 1本生成し、**直後に検査が通ること**を確かめる。`--arg template=` には、group があれば `group名.Role 名`、無ければ Role 名を書く。テンプレートが2つ以上ある Role は `.id` を続ける（`domain.UseCase.useCase` のように）。
+4. 1本生成し、**直後に検査が通ること**を確かめる。`--arg template=` には、group があれば `group名.Role 名`、無ければ Role 名を書く。
 
    ```sh
    ./gradlew :architecture-test:katachiTemplate --arg template=UseCase --arg name=Sample

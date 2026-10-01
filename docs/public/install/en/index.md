@@ -395,7 +395,7 @@ Once you've finished reading, run `sh $CLI check 3-1`.
 | `:katachi` list / full text (signatures and KDoc) | https://tbsten.github.io/katachi/api-docs/katachi/llms.txt / https://tbsten.github.io/katachi/api-docs/katachi/llms-full.txt | `sh $CLI docs --api katachi` (full text) |
 | `:katachi-konsist` list / full text | https://tbsten.github.io/katachi/api-docs/katachi-konsist/llms.txt / https://tbsten.github.io/katachi/api-docs/katachi-konsist/llms-full.txt | `sh $CLI docs --api katachi-konsist` (full text) |
 
-To look at just one API, open the Markdown version of its page, linked from the index or the list. It is the HTML URL with `.md` appended (e.g. `RoleScope.layout` is https://tbsten.github.io/katachi/api-docs/katachi/me.tbsten.katachi.dsl/-Role-scope/layout.html.md ). What the commands fetch stays in the working directory's `cache/`, so you don't need to re-read the whole index every time.
+To look at just one API, open the Markdown version of its page, linked from the index or the list. It is the HTML URL with `.md` appended (e.g. `RoleScope.layout` is https://tbsten.github.io/katachi/api-docs/katachi/me.tbsten.katachi.dsl/-role-scope/layout.html.md ). What the commands fetch stays in the working directory's `cache/`, so you don't need to re-read the whole index every time.
 
 ### 3-2. Write the definition
 
@@ -519,6 +519,7 @@ Tidy up the 3-2 definition **without changing the check result.** When unsure ab
 **Refactoring checklist** — go from the top; skip anything that does not apply.
 
 - [ ] **Files and packages are split.** One Role per file (`<group>/<role>/<Role>.kt`), one group per file (`<group>/<Group>.kt`), and `ProjectArchitecture.kt` only calls the groups. The naming is in "Where the definition files go" below
+- [ ] **No group or directory name matches `.gitignore`.** Do not use a name such as `build` or `out` for a group (use e.g. `buildLogic`). After splitting, run `git check-ignore -r architecture-test/src` and confirm it prints nothing (no definition file is ignored). An ignored file never shows up in `gitTracked()`, so a gap in the definition goes unnoticed
 - [ ] **The functions used for splitting are not `inline`.** katachi reads a violation's declaration site off the stack trace, and `inline` shifts the line numbers
 - [ ] **The split definition files pass the check.** The definition files are checked too. The `layout { }` of the Role that covers `architecture-test/` accepts files as deep as `<group>/<role>/<Role>.kt`
 - [ ] **One Role = one kind of file.** Every Role has been gone over with the three questions of "One Role = one kind of file" in 3-2. `lint` reports 0 warnings, or the reason for each one kept is written with `sh $CLI warn 3 "..."`
@@ -710,12 +711,14 @@ jobs:
       - uses: actions/setup-java@v6
         with:
           distribution: temurin
-          java-version: '17'
+          java-version: '17' # match the JVM toolchain N decided in step 2 (17 or later)
 
       - uses: gradle/actions/setup-gradle@v6
 
       - run: ./gradlew :architecture-test:test
 ```
+
+If the workflow file you just created (`.github/workflows/*.yml`) is not in the `architecture { }` definition, add a Role for it (for example `".github/workflows" / "*.yml".file()`) and run `./gradlew :architecture-test:test` to confirm it passes.
 
 If the existing CI is a single matrix job that runs emulators or several OSes, **add the job separately, outside the matrix**, so `:architecture-test:test` does not run for every matrix entry. Do not create a new yaml file; add the `architecture` job above to `jobs:` in the same workflow file.
 
@@ -772,6 +775,8 @@ Do this only if the user wants it.
 
    - Run `--arg mode=check` in CI (the end of 6-B)
 
+   **Do not use a name that matches `.gitignore`, such as `build` or `out`, for the output directory** (same as 3-3; pages you thought you committed would be ignored).
+
    **The output directory becomes katachi's.** Any `*.md` in it that this run did not generate is deleted. Do not point it at a directory holding handwritten Markdown.
 4. Generate again, and confirm `./gradlew :architecture-test:test` passes.
 
@@ -784,9 +789,14 @@ Do this only for the Roles, among those proposed in step 6, that the user agreed
 **Before you start, read the page on generating code from a template.** It is the `Generating code from a template` section of the full text you fetched in 3-1 (also at https://tbsten.github.io/katachi/guides/generate-code-from-template/ ). The words `.template { }` offers (the `*Parameter()` functions such as `stringParameter()`), why you don't write the destination path, and what happens when a file already exists are all there. When unsure about a signature, read the llms.txt in "When unsure about an API" in 3-1 instead of guessing (the entry point for `.template { }` is https://tbsten.github.io/katachi/api-docs/katachi/me.tbsten.katachi.dsl/template.html.md ).
 
 1. Check the proposals (`templates` in `sh $CLI data get report`).
-2. Attach `.template { }` to a file declaration in that Role's `layout { }`. **`.template` is an extension function, so add `import me.tbsten.katachi.dsl.template` to the file you write it in** (`captureValue()` and the like can be used inside the block, so they need no import). **Base its content on the `basedOn` file.** The destination path comes from the `layout { }` declaration itself, so don't write it on the template's side
+2. Attach `.template { }` to a file declaration in that Role's `layout { }`. **`.template` is an extension function, so add `import me.tbsten.katachi.dsl.template` to the file you write it in** (`captureValue()` and the like can be used inside the block, so they need no import). **`.template { }`, `capture()` and `captureValue()` are experimental APIs, so also add `@file:OptIn(ExperimentalKatachiApi::class)` and `import me.tbsten.katachi.ExperimentalKatachiApi` to that file.** Without them compilation fails with `This katachi API is experimental. It is safe to use, but its shape will still change.`, and the message does not name the annotation you need. **Base its content on the `basedOn` file.** The destination path comes from the `layout { }` declaration itself, so don't write it on the template's side
 
    ```kt
+   @file:OptIn(ExperimentalKatachiApi::class)
+
+   import me.tbsten.katachi.ExperimentalKatachiApi
+   import me.tbsten.katachi.dsl.template
+
    "UseCase" {
        layout {
            "useCase" / "${capture("name")}UseCase".ktFile()
@@ -807,6 +817,11 @@ Do this only for the Roles, among those proposed in step 6, that the user agreed
    **For a Role whose destination directory or module has a wildcard (`*`), name that `*` with `capture()`.** The check's result doesn't change. Attaching `.template { }` to a path that still has an unnamed `*` or `**` fails when layout is expanded (`assert()` in `./gradlew :architecture-test:test`). Read the value inside the template with `captureValue("name")` (don't redeclare it with `stringParameter()` — the names collide and it fails).
 
    ```kt
+   @file:OptIn(ExperimentalKatachiApi::class)
+
+   import me.tbsten.katachi.ExperimentalKatachiApi
+   import me.tbsten.katachi.dsl.template
+
    "ViewModel" {
        layout {
            ":feature:${capture("feature")}".module {   // was ":feature:*".module {
@@ -834,11 +849,9 @@ Do this only for the Roles, among those proposed in step 6, that the user agreed
 
    **If the package directory's name differs from the module's name (module `appConfig` and directory `appconfig`, for example), give that directory's `*` its own name, separate from the module's, and use its `captureValue()` in the package.** If you put the module's name (`captureValue("feature")`) in the package, you write a package that disagrees with its directory, and since both the check and the compiler pass, you won't notice.
 
-   **When a Role has two or more `.template { }`, tell them apart with `.template(id = "name")`.** `id` can be left out while the Role has only one.
-
-   All there is to use is `stringParameter()` / `booleanParameter()` / `intParameter()` (optionally with `default = ...`), `enumParameter()` (given `entries` or a default value), plus `capture("name")` — embeddable anywhere in a layout's directory, file name, or module key — to name a wildcard in the destination, and, to read its value, `captureValue("name")` (inside the template) / `wildcard("name")` (inside a module block in layout). Do not add other words by guessing.
+   All there is to use is `stringParameter()` / `booleanParameter()` / `intParameter()` (optionally with `default = ...`), `enumParameter()` (given `entries` or a default value), plus `capture("name")` — embeddable anywhere in a layout's directory, file name, or module key — to name a wildcard in the destination, and, to read its value, `captureValue("name")` (inside the template). Do not add other words by guessing.
 3. A template's own parameters (`--arg name=...`) can be passed as-is, with no setting needed on the module side. What is accepted is exactly the set of names the named Role's `.template { }` declares, plus the names given to wildcards in its `layout { }`; a typo still fails, as before, with `Unknown processor argument(s): ...`
-4. Generate one file, and confirm **the check passes right after**. `--arg template=` takes `group.Role` (or just the Role name with no group); a Role with two or more templates needs `.id` appended, as in `domain.UseCase.useCase`.
+4. Generate one file, and confirm **the check passes right after**. `--arg template=` takes `group.Role` (or just the Role name with no group);
 
    ```sh
    ./gradlew :architecture-test:katachiTemplate --arg template=UseCase --arg name=Sample
