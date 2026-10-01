@@ -41,7 +41,10 @@ package me.tbsten.katachi
  */
 @RequiresOptIn(
     level = RequiresOptIn.Level.ERROR,
-    message = "This katachi API is experimental. It is safe to use, but its shape will still change.",
+    message = "This katachi API is experimental. It is safe to use, but its shape will still change. " +
+        "To use it anyway, opt in with @OptIn(ExperimentalKatachiApi::class) on the caller, " +
+        "@file:OptIn(ExperimentalKatachiApi::class) at the top of the file, " +
+        "or the compiler option -opt-in=me.tbsten.katachi.ExperimentalKatachiApi.",
 )
 @Retention(AnnotationRetention.BINARY)
 @Target(

@@ -38,7 +38,10 @@ package me.tbsten.katachi
  */
 @RequiresOptIn(
     level = RequiresOptIn.Level.ERROR,
-    message = "This is an internal katachi API. It may change or be removed without notice.",
+    message = "This is an internal katachi API. It may change or be removed without notice. " +
+        "Prefer the public API; if you must use it, opt in with @OptIn(InternalKatachiApi::class) on the caller, " +
+        "@file:OptIn(InternalKatachiApi::class) at the top of the file, " +
+        "or the compiler option -opt-in=me.tbsten.katachi.InternalKatachiApi.",
 )
 @Retention(AnnotationRetention.BINARY)
 @Target(
