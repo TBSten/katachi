@@ -46,7 +46,7 @@ Making katachi easier to adopt in existing projects is the theme of v0.3 and bey
 
 | Feature | What it enables |
 |---|---|
-| **`dependsOnlyOn`** | Writes what may be depended on as an **allow list**. A deny-list approach lets omissions slip through. Moved here from the v0.2 plan |
+| **`dependsOnlyOn`** | Writes what may be depended on as an **allow list**. A deny-list approach passes omissions without complaint. Moved here from the v0.2 plan |
 | **Report output** | Outputs JSON / SARIF, surfaced as annotations on GitHub PRs |
 | **`pairedWith`** | Checks coverage, such as "every `Screen` has a corresponding `Preview`" |
 | **Vocabulary-size measurement** | Reports the number of Roles and the file count per Role as numbers |
@@ -69,7 +69,7 @@ v0.1's `konsist { }` is, frankly, **an escape hatch.** Something almost every Ro
 }
 ```
 
-The same rule should read like this. The plan is to make that happen in v0.3 and beyond.
+The same rule should be writable in a form like the one below. The plan is to realize that in v0.3 and beyond.
 
 ```kt
 "UseCase" {
