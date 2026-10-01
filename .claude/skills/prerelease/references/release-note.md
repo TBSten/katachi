@@ -25,8 +25,10 @@
       IDE プラグイン（experimental。版は catalog の `katachiIntellij` で katachi と別。Release に添付する `katachi-intellij-plugin-<その版>.zip` へ）・Docs・
       動作に要る JDK / Kotlin / Gradle の下限（README の「対応」の行と同じ値）。
       「利用できるもの」（katachi・Gradle プラグイン・IDE プラグイン・Docs）と「利用できる環境」（JDK・Kotlin・Gradle）の
-      2段に分け、間に空行を1つ置く（空行が無いと1行に続けて並ぶ）
-    - **節の中身は `<details>` で畳む。**最初に見えるのは冒頭の説明と、新機能の名前を1行に並べたものだけにする。
+      2段に分け、間に空行を1つ置く（空行が無いと1行に続けて並ぶ）。段の中の badge は、空白で区切って1行に並べる
+    - **冒頭の説明の段落（コミット数・「0.x なので破壊的変更を含む」など）は置かない。**badge のすぐ下を `## New features` にする
+      （v0.2.0 で利用者が下書きから消した）
+    - **節の中身は `<details>` で畳む。**最初に見えるのは badge と、新機能の名前を1行に並べたものだけにする。
       新機能の詳細・移行表・Also は、それぞれ `<details><summary>… (n)</summary>` に入れる。
       GitHub の Markdown が中を描画するように、`<summary>` の行の後と `</details>` の前に空行を置く
     - ユーザ影響を中心に作成する。
