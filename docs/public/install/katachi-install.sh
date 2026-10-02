@@ -30,19 +30,19 @@
 #     ./gradlew publishToMavenLocal -Pkatachi.skipSigning
 #     # 試すプロジェクトで。scaffold は init の --katachi を引き継ぐ
 #     KATACHI_MAVEN_LOCAL=1 sh katachi-install.sh init --katachi 0.2.0
-#     sh <作業用ディレクトリ>/katachi-install.sh scaffold --package com.example.app
+#     sh <作業用ディレクトリ>/tmp/katachi-install.sh scaffold --package com.example.app
 
 set -eu
 
 # 配信元。ローカルで試すときだけ環境変数で差し替える。
-# init に渡した値は作業用ディレクトリ（cache/docs）に記録され、以降のコマンドは環境変数が
+# init に渡した値は作業用ディレクトリ（tmp/cache/docs）に記録され、以降のコマンドは環境変数が
 # 無ければそれを使う（resolve_docs）。init にだけ渡して docs が黙って本番を取る、を防ぐため。
 KATACHI_DOCS_DEFAULT="https://tbsten.github.io/katachi"
 KATACHI_DOCS_ENV="${KATACHI_DOCS:-}"
 KATACHI_DOCS="${KATACHI_DOCS:-$KATACHI_DOCS_DEFAULT}"
 
 # 言語。チェックリストとレポート、scaffold の生成物のコメント、**このスクリプトの出力**が従う。
-# `init --lang` で決まり、作業用ディレクトリ（cache/lang）に記録される。以降のコマンドは
+# `init --lang` で決まり、作業用ディレクトリ（tmp/cache/lang）に記録される。以降のコマンドは
 # そこから読むので、毎回指定しなくてよい。決め方は resolve_lang を参照。
 KATACHI_LANG="${KATACHI_LANG:-}"
 KATACHI_RELEASES_API="https://api.github.com/repos/TBSten/katachi/releases/latest"
@@ -149,7 +149,7 @@ katachi-install.sh — katachi のインストールのうち機械的にでき�
 
       2回目以降の実行では、記入済みのファイルは上書きしません。
       また自分自身を作業用ディレクトリにコピーするので、以降は
-      <作業用ディレクトリ>/katachi-install.sh を使ってください。
+      <作業用ディレクトリ>/tmp/katachi-install.sh を使ってください。
 
   sh katachi-install.sh doctor [--lang <en|ja>]
       このスクリプトが使うコマンド（curl・python3・git など）がそろっているかを確かめる。
@@ -187,7 +187,7 @@ katachi-install.sh — katachi のインストールのうち機械的にでき�
       report:     module / role / tool / excluded / codebase-question / template
 
   sh katachi-install.sh docs [--small] [--refresh]
-      ガイド全文（llms-full.txt）を作業用ディレクトリの cache/ に取得し、
+      ガイド全文（llms-full.txt）を作業用ディレクトリの tmp/cache/ に取得し、
       そのパスを出力する。すでにあれば取りに行かない。
 
   sh katachi-install.sh docs --api [--refresh]
@@ -271,7 +271,7 @@ Usage:
 
       On later runs, files that are already filled in are not overwritten.
       The script also copies itself into the working directory, so from then on
-      use <working directory>/katachi-install.sh.
+      use <working directory>/tmp/katachi-install.sh.
 
   sh katachi-install.sh doctor [--lang <en|ja>]
       Checks that the commands this script uses (curl, python3, git, ...) are available.
@@ -309,7 +309,7 @@ Usage:
       report:     module / role / tool / excluded / codebase-question / template
 
   sh katachi-install.sh docs [--small] [--refresh]
-      Fetches the full guide (llms-full.txt) into cache/ in the working directory
+      Fetches the full guide (llms-full.txt) into tmp/cache/ in the working directory
       and prints its path. Does not fetch again if it is already there.
 
   sh katachi-install.sh docs --api [--refresh]
@@ -474,21 +474,75 @@ script_dir() {
 	esac
 }
 
+# 作業用ディレクトリの配置:
+#   <作業用ディレクトリ>/check-list.html, project-code-base-report.html   人が開くもの
+#   <作業用ディレクトリ>/tmp/katachi-install.sh                           init が写した自分
+#   <作業用ディレクトリ>/tmp/cache/                                       lang・docs・MANIFEST・取得物
+# 直下を人が開く2つの HTML と tmp/ だけにするため、スクリプトと cache/ は tmp/ の下に置く。
+#
 # 作業用ディレクトリ。init が自分をそこへコピーするので、2回目以降は
 # 「自分の隣」が作業用ディレクトリになる。引数は要らない。
+# 旧配置（直下に katachi-install.sh と cache/ がある）で呼ばれたら、見つけたうえで新配置へ移す。
 resolve_workdir() {
 	_sd=$(script_dir)
-	if [ -f "$_sd/check-list.html" ] || [ -d "$_sd/cache" ]; then
+	if [ "${_sd##*/}" = "tmp" ] && [ -d "$_sd/cache" ] \
+		&& { [ -s "$_sd/cache/lang" ] || [ -f "$_sd/../check-list.html" ]; }; then
+		(cd "$_sd/.." && pwd)
+		return 0
+	fi
+	if is_legacy_workdir "$_sd"; then
+		migrate_layout "$_sd"
 		printf '%s\n' "$_sd"
 		return 0
 	fi
 	return 1
 }
 
+# 旧配置（直下に cache/ がある）の作業用ディレクトリか。
+is_legacy_workdir() {
+	[ -f "$1/check-list.html" ] || [ -s "$1/cache/lang" ] || [ -f "$1/cache/MANIFEST" ]
+}
+
+# 旧配置を新配置へ移す。何度呼んでもよい（移すものが無ければ何もしない）。
+#   cache/ → tmp/cache/（MANIFEST の置き場所の列も書き換える）、katachi-install.sh → tmp/katachi-install.sh
+# 実行中のスクリプト自身が旧位置にいるときは、tmp/ へ写してから旧位置のものを消す
+# （実行中のファイルを消しても、このプロセスは読み続けられる）。
+migrate_layout() {
+	_mg_d="$1"
+	[ -d "$_mg_d/cache" ] || [ -f "$_mg_d/katachi-install.sh" ] || return 0
+	mkdir -p "$_mg_d/tmp/cache"
+	if [ -d "$_mg_d/cache" ]; then
+		for _mg_f in "$_mg_d"/cache/* "$_mg_d"/cache/.[!.]*; do
+			[ -e "$_mg_f" ] || continue
+			[ -e "$_mg_d/tmp/cache/${_mg_f##*/}" ] || mv "$_mg_f" "$_mg_d/tmp/cache/"
+		done
+		rmdir "$_mg_d/cache" 2>/dev/null || :
+	fi
+	if [ -s "$_mg_d/tmp/cache/MANIFEST" ]; then
+		_mg_tmp="$_mg_d/tmp/cache/.MANIFEST.$$"
+		awk -F'\t' -v OFS='\t' '{
+			if ($4 != "" && index($4, "/tmp/cache/") == 0) {
+				_i = 0; _s = $4
+				while ((_p = index(substr(_s, _i + 1), "/cache/")) > 0) _i += _p
+				if (_i > 0) $4 = substr($4, 1, _i - 1) "/tmp/cache/" substr($4, _i + 7)
+			}
+			print
+		}' "$_mg_d/tmp/cache/MANIFEST" >"$_mg_tmp" && mv "$_mg_tmp" "$_mg_d/tmp/cache/MANIFEST"
+	fi
+	if [ -f "$_mg_d/katachi-install.sh" ]; then
+		if [ "$(script_dir)" = "$(cd "$_mg_d" && pwd)" ] && [ "${0##*/}" = "katachi-install.sh" ]; then
+			cp "$0" "$_mg_d/tmp/katachi-install.sh" && chmod +x "$_mg_d/tmp/katachi-install.sh"
+		fi
+		rm -f "$_mg_d/katachi-install.sh"
+	fi
+	printf '   %s\n' "$(pick "作業用ディレクトリの配置を新しくしました: katachi-install.sh と cache/ を tmp/ の下へ移しました（以降は ${_mg_d}/tmp/katachi-install.sh を使ってください）。" \
+		"Updated the working directory layout: moved katachi-install.sh and cache/ under tmp/ (from now on use ${_mg_d}/tmp/katachi-install.sh).")" >&2
+}
+
 require_workdir() {
-	WORKDIR=$(resolve_workdir) || die "作業用ディレクトリが分かりません。先に 'sh katachi-install.sh init' を実行し、以降は <作業用ディレクトリ>/katachi-install.sh を使ってください。" \
-		"Cannot find the working directory. Run 'sh katachi-install.sh init' first, and from then on use <working directory>/katachi-install.sh."
-	MANIFEST="$WORKDIR/cache/MANIFEST"
+	WORKDIR=$(resolve_workdir) || die "作業用ディレクトリが分かりません。先に 'sh katachi-install.sh init' を実行し、以降は <作業用ディレクトリ>/tmp/katachi-install.sh を使ってください。" \
+		"Cannot find the working directory. Run 'sh katachi-install.sh init' first, and from then on use <working directory>/tmp/katachi-install.sh."
+	MANIFEST="$WORKDIR/tmp/cache/MANIFEST"
 }
 
 # 言語を決める。スクリプトの出力もこれに従うので、サブコマンドを振り分ける前に1回だけ呼ぶ。
@@ -503,8 +557,8 @@ resolve_lang() {
 		KATACHI_LANG="${KATACHI_LANG:-en}"
 	else
 		_rl_wd=$(resolve_workdir) || _rl_wd=""
-		if [ -n "$_rl_wd" ] && [ -s "$_rl_wd/cache/lang" ]; then
-			KATACHI_LANG=$(cat "$_rl_wd/cache/lang")
+		if [ -n "$_rl_wd" ] && [ -s "$_rl_wd/tmp/cache/lang" ]; then
+			KATACHI_LANG=$(cat "$_rl_wd/tmp/cache/lang")
 		fi
 		KATACHI_LANG="${KATACHI_LANG:-ja}"
 	fi
@@ -524,8 +578,8 @@ resolve_docs() {
 	[ -n "$KATACHI_DOCS_ENV" ] && return 0
 	[ "${1:-}" = "init" ] && return 0
 	_rd_wd=$(resolve_workdir) || _rd_wd=""
-	if [ -n "$_rd_wd" ] && [ -s "$_rd_wd/cache/docs" ]; then
-		KATACHI_DOCS=$(cat "$_rd_wd/cache/docs")
+	if [ -n "$_rd_wd" ] && [ -s "$_rd_wd/tmp/cache/docs" ]; then
+		KATACHI_DOCS=$(cat "$_rd_wd/tmp/cache/docs")
 	fi
 }
 
@@ -642,7 +696,7 @@ maven_local_enabled() {
 	1 | yes | true) return 0 ;;
 	esac
 	_ml_wd=$(resolve_workdir) || return 1
-	[ -f "$_ml_wd/cache/maven-local" ]
+	[ -f "$_ml_wd/tmp/cache/maven-local" ]
 }
 
 # $1 の katachi に Gradle plugin があるかを確かめ、無ければ止まる。
@@ -1027,7 +1081,9 @@ cmd_init() {
 		done
 	fi
 
-	mkdir -p "$init_workdir/tmp" "$init_workdir/cache"
+	mkdir -p "$init_workdir/tmp/cache"
+	# 旧配置（直下に cache/ と katachi-install.sh）の作業用ディレクトリは、新配置へ移す。
+	migrate_layout "$init_workdir"
 	# KEY=VALUE の結果には素の絶対パスを出す（後続のステップは相対パスだと
 	# 呼び出す場所に縛られる）。判定には指定どおりの init_workdir を使い続ける。
 	init_workdir_abs=$(CDPATH='' cd -- "$init_workdir" && pwd)
@@ -1090,23 +1146,23 @@ cmd_init() {
 
 	# 以降このスクリプトは作業用ディレクトリから使う。ここに自分を置いておけば、
 	# セッションが切れても同じものを使い続けられる。
-	MANIFEST="$init_workdir/cache/MANIFEST"
-	mkdir -p "$init_workdir/cache"
+	MANIFEST="$init_workdir/tmp/cache/MANIFEST"
+	mkdir -p "$init_workdir/tmp/cache"
 	install_self "$init_workdir"
 	# 以降のコマンドが同じ言語を使えるように記録する（出力の言語もこれに従う）。
-	printf '%s' "$KATACHI_LANG" >"$init_workdir/cache/lang"
+	printf '%s' "$KATACHI_LANG" >"$init_workdir/tmp/cache/lang"
 	# 配信元も記録し、以降のコマンド（docs など）が環境変数なしでも同じ配信元を使うようにする。
 	# 本番（既定）なら記録を消す。前回ローカルに向けた記録が残ると、黙ってそちらを取り続ける。
 	if [ "$KATACHI_DOCS" = "$KATACHI_DOCS_DEFAULT" ]; then
-		rm -f "$init_workdir/cache/docs"
+		rm -f "$init_workdir/tmp/cache/docs"
 	else
-		printf '%s' "$KATACHI_DOCS" >"$init_workdir/cache/docs"
+		printf '%s' "$KATACHI_DOCS" >"$init_workdir/tmp/cache/docs"
 		note "配信元:             ${KATACHI_DOCS}（KATACHI_DOCS。以降のコマンドもこれを使う）" \
 			"Docs source:        ${KATACHI_DOCS} (KATACHI_DOCS; later commands use it too)"
 	fi
 	# KATACHI_MAVEN_LOCAL も同じく記録し、scaffold で付け忘れても効くようにする。
 	case "${KATACHI_MAVEN_LOCAL:-}" in
-	1 | yes | true) printf 'yes' >"$init_workdir/cache/maven-local" ;;
+	1 | yes | true) printf 'yes' >"$init_workdir/tmp/cache/maven-local" ;;
 	esac
 	# katachi の版も記録し、scaffold が --katachi なしでも同じ版を使うようにする。
 	# 記録しないと scaffold が GitHub の最新を取り直し、init --katachi で固定した版と
@@ -1115,7 +1171,7 @@ cmd_init() {
 	# --katachi なしのやり直しでは、前回の記録を残す。最新で上書きすると、前回
 	# --katachi で固定した版が黙って変わり、残したチェックリストの meta.version とも食い違う。
 	_iv_recorded=""
-	[ -s "$init_workdir/cache/version" ] && _iv_recorded=$(cat "$init_workdir/cache/version")
+	[ -s "$init_workdir/tmp/cache/version" ] && _iv_recorded=$(cat "$init_workdir/tmp/cache/version")
 	if [ "$init_version_source" = "latest" ] && [ -n "$_iv_recorded" ] && [ "$init_force" = "no" ]; then
 		if [ "$_iv_recorded" != "$init_version" ]; then
 			note "                    → 前回の init が記録した ${_iv_recorded} を使い続けます（最新は ${init_version}。変えるなら --katachi を付けて実行し直す）" \
@@ -1123,9 +1179,9 @@ cmd_init() {
 		fi
 		init_version="$_iv_recorded"
 	elif [ "$init_version" = "UNKNOWN" ]; then
-		rm -f "$init_workdir/cache/version"
+		rm -f "$init_workdir/tmp/cache/version"
 	else
-		printf '%s' "$init_version" >"$init_workdir/cache/version"
+		printf '%s' "$init_version" >"$init_workdir/tmp/cache/version"
 	fi
 
 	# チェックリストとレポート。**すでにあるものは上書きしない。**
@@ -1168,12 +1224,12 @@ cmd_init() {
 	say "KATACHI_KOTLIN=${kotlin_version:-}"
 	say "KATACHI_GIT=$git_state"
 	say "KATACHI_SETTINGS=$project_root/$SETTINGS_FILE"
-	say "KATACHI_CLI=$init_workdir_abs/katachi-install.sh"
+	say "KATACHI_CLI=$init_workdir_abs/tmp/katachi-install.sh"
 	say "KATACHI_LANG=$KATACHI_LANG"
 	say "========================================================"
 	say ""
-	say "以降は ${init_workdir_uri}/katachi-install.sh を使ってください（再ダウンロードは不要です）。" \
-		"From now on, use ${init_workdir_uri}/katachi-install.sh (no need to download it again)."
+	say "以降は ${init_workdir_uri}/tmp/katachi-install.sh を使ってください（再ダウンロードは不要です）。" \
+		"From now on, use ${init_workdir_uri}/tmp/katachi-install.sh (no need to download it again)."
 	say ""
 	say "次: プロジェクトを解析して ${init_workdir_uri}/project-code-base-report.html を埋めてください。" \
 		"Next: analyze the project and fill in ${init_workdir_uri}/project-code-base-report.html."
@@ -1184,9 +1240,9 @@ install_self() {
 	_wd="$1"
 	[ -f "$0" ] || return 0
 	_here=$(script_dir)
-	_there=$(cd "$_wd" && pwd)
+	_there=$(cd "$_wd/tmp" && pwd)
 	[ "$_here" = "$_there" ] && return 0
-	cp "$0" "$_wd/katachi-install.sh" && chmod +x "$_wd/katachi-install.sh"
+	cp "$0" "$_wd/tmp/katachi-install.sh" && chmod +x "$_wd/tmp/katachi-install.sh"
 }
 
 # cmd_data を、スクリプトごと終わらせずに呼ぶ。成功なら 0。
@@ -1395,8 +1451,8 @@ cmd_scaffold() {
 
 	# katachi の版は --katachi > init が記録した版 > GitHub の最新 の順に決める。
 	sc_version_source="explicit"
-	if [ -z "$sc_version" ] && _sc_wd=$(resolve_workdir) && [ -s "$_sc_wd/cache/version" ]; then
-		sc_version=$(cat "$_sc_wd/cache/version")
+	if [ -z "$sc_version" ] && _sc_wd=$(resolve_workdir) && [ -s "$_sc_wd/tmp/cache/version" ]; then
+		sc_version=$(cat "$_sc_wd/tmp/cache/version")
 		sc_version_source="init"
 	fi
 	if [ -z "$sc_version" ]; then
@@ -2510,7 +2566,7 @@ cmd_docs() {
 		_name="llms-full.txt"
 		_url="$KATACHI_DOCS/$_name"
 	fi
-	_dest="$WORKDIR/cache/$_name"
+	_dest="$WORKDIR/tmp/cache/$_name"
 
 	if [ -s "$_dest" ] && [ "$_refresh" = "no" ]; then
 		_cached="yes"
@@ -2552,7 +2608,7 @@ lint_roles() {
 	_lr_json=""
 	_lr_wd=$(resolve_workdir) || _lr_wd=""
 	if [ -n "$_lr_wd" ] && [ -f "$_lr_wd/check-list.html" ]; then
-		_lr_json="$_lr_wd/cache/.lint-cl.$$"
+		_lr_json="$_lr_wd/tmp/cache/.lint-cl.$$"
 		extract_json "$_lr_wd/check-list.html" checklist >"$_lr_json" 2>/dev/null || :
 	fi
 	{
@@ -2917,9 +2973,9 @@ cmd_compare_violations() {
 				"$(file_uri "$_cv_f") has no check result. The build did not get as far as the check (a compile error, for example). Fix it and capture the log again."
 	done
 
-	mkdir -p "$WORKDIR/cache"
-	_cv_a="$WORKDIR/cache/.cv-before.$$"
-	_cv_b="$WORKDIR/cache/.cv-after.$$"
+	mkdir -p "$WORKDIR/tmp/cache"
+	_cv_a="$WORKDIR/tmp/cache/.cv-before.$$"
+	_cv_b="$WORKDIR/tmp/cache/.cv-after.$$"
 	extract_check_result "$_cv_before" "$_cv_a"
 	extract_check_result "$_cv_after" "$_cv_b"
 	_cv_md_a=$(count_missing_description "$_cv_before")
@@ -3338,14 +3394,14 @@ cmd_verify() {
 	[ -f "$_cl" ] || die "$(file_uri "$_cl") がありません。先に init を実行してください。" \
 		"$(file_uri "$_cl") not found. Run init first."
 
-	_a="$WORKDIR/cache/.verify-cl.$$"
-	_out="$WORKDIR/cache/.verify-out.$$"
+	_a="$WORKDIR/tmp/cache/.verify-cl.$$"
+	_out="$WORKDIR/tmp/cache/.verify-out.$$"
 	extract_json "$_cl" checklist >"$_a" || die "チェックリストの JSON を読めません。" \
 		"Cannot read the JSON of the check list."
 
 	_b=""
 	if [ -f "$_rp" ]; then
-		_b="$WORKDIR/cache/.verify-rp.$$"
+		_b="$WORKDIR/tmp/cache/.verify-rp.$$"
 		if ! extract_json "$_rp" report >"$_b"; then
 			rm -f "$_a" "$_b"
 			die "レポートの JSON を読めません。開始タグと閉じタグは、それぞれ行頭に単独で置かれている必要があります。" \
@@ -3483,13 +3539,13 @@ cmd_summary() {
 	_cl="$WORKDIR/check-list.html"
 	[ -f "$_cl" ] || die "$(file_uri "$_cl") がありません。先に init を実行してください。" \
 		"$(file_uri "$_cl") not found. Run init first."
-	_a="$WORKDIR/cache/.summary.$$"
+	_a="$WORKDIR/tmp/cache/.summary.$$"
 	extract_json "$_cl" checklist >"$_a" || die "チェックリストの JSON を読めません。" \
 		"Cannot read the JSON of the check list."
 
 	# レポート側の questions も出す。ステップ1で書いたものがユーザに一度も
 	# 届かないまま終わる事故があったため（手順書ではステップ3の前に提示させている）。
-	_b="$WORKDIR/cache/.summary-report.$$"
+	_b="$WORKDIR/tmp/cache/.summary-report.$$"
 	_rp="$WORKDIR/project-code-base-report.html"
 	if [ -f "$_rp" ]; then
 		extract_json "$_rp" report >"$_b" 2>/dev/null || printf '{}\n' >"$_b"

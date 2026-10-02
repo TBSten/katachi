@@ -14,7 +14,7 @@
   サンドボックスを外して実行してよい（このホストに対してだけ）。
 - **配信元はビルド済みのサイトに限る**（6-1 で配信している URL か、`file://<repo>/docs/dist`）。
   `docs/public` は使わない。`llms-full.txt` などはビルドで作られるので、`docs/public` を指すと `docs` が取れない。
-- `KATACHI_DOCS` は **init に渡す。** init が作業用ディレクトリ（`cache/docs`）に記録し、以降のコマンド（`docs` など）は
+- `KATACHI_DOCS` は **init に渡す。** init が作業用ディレクトリ（`tmp/cache/docs`）に記録し、以降のコマンド（`docs` など）は
   環境変数が無くてもそれを使う（init が `配信元: ...` の行を出す）。`docs` は取得元の URL を標準エラーに
   `取得元: ...` と出すので、**本番（`https://tbsten.github.io/katachi`）になっていないことを毎回確かめる。**
   本番になっていたら、それは所見（priority 6 以上）として書く。

@@ -99,7 +99,7 @@ This command does all of the following. **Do not redo any of this by hand.**
 - Detecting the Kotlin version the project uses
 - Placing `check-list.html` and `project-code-base-report.html`
 - Initializing the checklist's JSON (working directory / version / project root / date-time / Kotlin / Git)
-- Placing itself at `<KATACHI_WORKDIR>/katachi-install.sh`
+- Placing itself at `<KATACHI_WORKDIR>/tmp/katachi-install.sh`
 
 At the end, the result is printed in the following format (a few lines of guidance follow after it). The steps from here on use these values.
 
@@ -110,7 +110,7 @@ KATACHI_PROJECT_ROOT=/path/to/project
 KATACHI_KOTLIN=2.4.10
 KATACHI_GIT=yes
 KATACHI_SETTINGS=/path/to/project/settings.gradle.kts
-KATACHI_CLI=/path/to/project/tmp/install-katachi/katachi-install.sh
+KATACHI_CLI=/path/to/project/tmp/install-katachi/tmp/katachi-install.sh
 KATACHI_LANG=en
 ```
 
@@ -126,7 +126,7 @@ Once this is done, run `sh $CLI check 0-1 0-2`.
 
 **If it lists things that are "untracked and not ignored", the reason is the same.** Ask the user whether to declare each of them in the definition or add it to `.gitignore`.
 
-Whenever you need temporary storage from here on, save it inside `<KATACHI_WORKDIR>/tmp/`, and do not clutter the top level of the working directory.
+The top level of the working directory holds only `check-list.html` and `project-code-base-report.html`, which people open, plus `tmp/`. The copy of the script, the fetched files (`tmp/cache/`), and any notes or logs all go inside `<KATACHI_WORKDIR>/tmp/`. Do not add anything to the top level.
 
 ### 0-3. Reading and writing the checklist and report
 

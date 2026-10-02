@@ -145,7 +145,7 @@ Astro は `public/` を加工せずそのままコピーするので、`<base-ur
 | ファイル | 役割 |
 |---|---|
 | `index.md` | インストール手順そのもの。エージェントはこれを読んで動く |
-| `katachi-install.sh` | 機械的にできる工程の**唯一の実装**。`init`・`doctor`・`scaffold` のほか、チェックリストとレポートを読み書きする `data`・`check`・`add`・`verify`・`summary` など（一覧は `--help`）。出力の言語は `init --lang` に従う |
+| `katachi-install.sh` | 機械的にできる工程の**唯一の実装**。`init` が作業用ディレクトリの `tmp/` に自分を写し、`tmp/cache/` に記録と取得物を置く（直下は人が開く2つの HTML と `tmp/` だけ）。`init`・`doctor`・`scaffold` のほか、チェックリストとレポートを読み書きする `data`・`check`・`add`・`verify`・`summary` など（一覧は `--help`）。出力の言語は `init --lang` に従う |
 | `install-check-list.html` | 進捗と結果のチェックリスト。`init` が配置し、中の `<script type="application/json" id="checklist">` をスクリプトの `data` 系のサブコマンドが書き換える |
 | `project-code-base-report-template.html` | コードベース解析レポートのテンプレート。`init` が配置する |
 
@@ -161,7 +161,7 @@ Astro は `public/` を加工せずそのままコピーするので、`<base-ur
   最低限「AGP + version catalog」「ルート build ファイル無し」「Kotlin JVM が既にルートに居る」の3つ
   - これらを含む 11 種の形は `.claude/skills/prerelease/scripts/check-install-kit.sh` でまとめて回せる。
     リリース前には prerelease の手順 9 が、これに加えて手順書どおりに実在のプロジェクトへ導入する統合テストも回す
-- 配信元は `KATACHI_DOCS` 環境変数で差し替えられる。dev server に向けて試せる。init に渡すと作業用ディレクトリに記録され、
+- 配信元は `KATACHI_DOCS` 環境変数で差し替えられる。dev server に向けて試せる。init に渡すと作業用ディレクトリの `tmp/cache/docs` に記録され、
   以降のコマンドもそこから取る。`docs` サブコマンドが取る `llms-full.txt` はビルドで作られるので、`docs/public` ではなく
   ビルド済みのサイト（`docs/dist` か配信 URL）を指す
 

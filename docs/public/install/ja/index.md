@@ -99,7 +99,7 @@ sh /tmp/katachi-install.sh init --lang ja
 - プロジェクトが使っている Kotlin バージョンの検出
 - `check-list.html` と `project-code-base-report.html` の配置
 - チェックリストの JSON の初期化（作業用ディレクトリ / バージョン / プロジェクトルート / 日時 / Kotlin / Git）
-- 自分自身を `<KATACHI_WORKDIR>/katachi-install.sh` に設置
+- 自分自身を `<KATACHI_WORKDIR>/tmp/katachi-install.sh` に設置
 
 最後に次の形式で結果が出る（この後に案内が数行続く）。以降のステップはこの値を使う。
 
@@ -110,7 +110,7 @@ KATACHI_PROJECT_ROOT=/path/to/project
 KATACHI_KOTLIN=2.4.10
 KATACHI_GIT=yes
 KATACHI_SETTINGS=/path/to/project/settings.gradle.kts
-KATACHI_CLI=/path/to/project/tmp/install-katachi/katachi-install.sh
+KATACHI_CLI=/path/to/project/tmp/install-katachi/tmp/katachi-install.sh
 KATACHI_LANG=ja
 ```
 
@@ -126,7 +126,7 @@ KATACHI_LANG=ja
 
 **「未追跡で ignore もされていないものがあります」と一覧が出た場合も、理由は同じです。** 一覧のものを定義で宣言するか `.gitignore` に足すかを、ユーザに確認してください。
 
-以降で一時的な保存領域が必要な場合は `<KATACHI_WORKDIR>/tmp/` 内に保存し、作業用ディレクトリ直下を汚さないこと。
+作業用ディレクトリの直下に置くのは、人が開く `check-list.html` と `project-code-base-report.html`、それに `tmp/` だけです。スクリプトの写し、取得したファイルの置き場（`tmp/cache/`）、メモやログなどの一時ファイルは、すべて `<KATACHI_WORKDIR>/tmp/` の中に置いてください。直下には何も足さないこと。
 
 ### 0-3. チェックリストとレポートの読み書き
 
