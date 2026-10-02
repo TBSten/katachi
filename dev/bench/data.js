@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1790948100225,
+  "lastUpdate": 1790948102510,
   "repoUrl": "https://github.com/TBSten/katachi",
   "entries": {
     "JMH time": [
@@ -4094,6 +4094,54 @@ window.BENCHMARK_DATA = {
           {
             "name": "nowinandroid validate(FileConstraintCheck()) warm median",
             "value": 77.839973,
+            "unit": "ms",
+            "extra": "violations: 106 (layout) / 102 (with Konsist)\nUnexpectedFile: 81, UnexpectedDirectory: 16, MissingDescription: 5, UncheckedFileConstraint: 4\nwarmups: 5, iterations: 15"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "programmingcafeteria@gmail.com",
+            "name": "tbsten",
+            "username": "TBSten"
+          },
+          "committer": {
+            "email": "programmingcafeteria@gmail.com",
+            "name": "tbsten",
+            "username": "TBSten"
+          },
+          "distinct": true,
+          "id": "20828c85a900679ee16803317244f663450619f8",
+          "message": "feat(install): 作業用ディレクトリの直下を HTML 2つと tmp/ だけにし、スクリプトの写しと cache/ を tmp/ の下へ移す\n\n直下には人が開く check-list.html と project-code-base-report.html、エージェントの作業場所の\ntmp/ だけを置く。katachi-install.sh の写しと cache/（lang・version・docs・maven-local・MANIFEST・\n取得したガイド）は tmp/ の下に置く。前の配置（直下に cache/ か katachi-install.sh がある）は、\ninit やサブコマンドを打ったときに tmp/ の下へ移し、MANIFEST の置き場所の列も書き換える。\n手順書（ja / en）、docs/AGENTS.md の表、prerelease の統合テストの手引きも合わせる。\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_01V1S8xW78Ggb5XF8aU7Ynr3",
+          "timestamp": "2026-10-02T09:09:11+09:00",
+          "tree_id": "53cc872e29006badbada1659ab9139308a31e75c",
+          "url": "https://github.com/TBSten/katachi/commit/20828c85a900679ee16803317244f663450619f8"
+        },
+        "date": 1790948101863,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "nowinandroid validate() cold",
+            "value": 468.106275,
+            "unit": "ms",
+            "extra": "violations: 106 (layout) / 102 (with Konsist)\nUnexpectedFile: 81, UnexpectedDirectory: 16, MissingDescription: 5, UncheckedFileConstraint: 4\nwarmups: 5, iterations: 15"
+          },
+          {
+            "name": "nowinandroid validate() warm median",
+            "value": 64.492319,
+            "unit": "ms",
+            "extra": "violations: 106 (layout) / 102 (with Konsist)\nUnexpectedFile: 81, UnexpectedDirectory: 16, MissingDescription: 5, UncheckedFileConstraint: 4\nwarmups: 5, iterations: 15"
+          },
+          {
+            "name": "nowinandroid validate(FileConstraintCheck()) cold",
+            "value": 1531.177133,
+            "unit": "ms",
+            "extra": "violations: 106 (layout) / 102 (with Konsist)\nUnexpectedFile: 81, UnexpectedDirectory: 16, MissingDescription: 5, UncheckedFileConstraint: 4\nwarmups: 5, iterations: 15"
+          },
+          {
+            "name": "nowinandroid validate(FileConstraintCheck()) warm median",
+            "value": 79.669758,
             "unit": "ms",
             "extra": "violations: 106 (layout) / 102 (with Konsist)\nUnexpectedFile: 81, UnexpectedDirectory: 16, MissingDescription: 5, UncheckedFileConstraint: 4\nwarmups: 5, iterations: 15"
           }
