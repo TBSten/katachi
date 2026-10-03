@@ -49,6 +49,11 @@ dependencies {
 }
 
 katachi {
+    // Writes the violations as SARIF 2.1.0 to build/reports/katachi/katachi.sarif (this module's
+    // Test task is `test`). The root build's checkSample*Build checks the file after the run.
+    report {
+        sarif = true
+    }
     architecture = "com.example.kmp.projectArchitecture"
     processors {
         register("layout", "me.tbsten.katachi.check.LayoutCheck")

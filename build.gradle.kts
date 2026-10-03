@@ -318,8 +318,8 @@ val sampleBuilds = listOf(
             ),
         ),
         baseline = SampleBaseline(":architecture-test:test", "com.example.ProjectArchitectureTest", heldBack = 2),
-        // The one sample with `report { sarif = true }`: its `check` writes the file through the
-        // Gradle plugin, the path a user takes.
+        // `report { sarif = true }`: its `check` writes the file through the Gradle plugin, the
+        // path a user takes. Its Test task is `test`, so the file sits directly under katachi/.
         sarifReport = "architecture-test/build/reports/katachi/katachi.sarif",
     ),
     SampleBuild(
@@ -423,6 +423,7 @@ val sampleBuilds = listOf(
             ),
         ),
         baseline = SampleBaseline(":architecture-test:test", "com.example.sample.ProjectArchitectureTest", heldBack = 2),
+        sarifReport = "architecture-test/build/reports/katachi/katachi.sarif",
     ),
     SampleBuild(
         "kmp",
@@ -473,6 +474,7 @@ val sampleBuilds = listOf(
             ),
         ),
         baseline = SampleBaseline(":architecture-test:test", "com.example.kmp.ProjectArchitectureTest", heldBack = 1),
+        sarifReport = "architecture-test/build/reports/katachi/katachi.sarif",
     ),
     SampleBuild(
         "custom-processor",
