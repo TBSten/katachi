@@ -7,7 +7,7 @@ import me.tbsten.katachi.dsl.gradle.*
 import me.tbsten.katachi.dsl.kotlin.ktFile
 
 /** The role of the values the domain is about, reused as the API payloads. */
-fun DeclarationContainerScope.model() = "Model" {
+fun DeclarationContainerScope.model() = "Model".role {
     title = "Model"
     summary = "The values the domain handles, used as-is for API input and output too"
     description = """

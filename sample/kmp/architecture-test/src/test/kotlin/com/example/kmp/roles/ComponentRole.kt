@@ -7,7 +7,7 @@ import me.tbsten.katachi.dsl.gradle.*
 import me.tbsten.katachi.dsl.kotlin.ktFile
 
 /** The shared `@Composable` parts several screens draw with: the `component` package of `:ui`. */
-fun DeclarationContainerScope.component() = "Component" {
+fun DeclarationContainerScope.component() = "Component".role {
     title = "Shared component"
     summary = "The component package of the :ui module. @Composable parts used by several screens"
     description = """

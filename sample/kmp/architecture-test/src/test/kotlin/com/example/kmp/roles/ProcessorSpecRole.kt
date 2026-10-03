@@ -5,7 +5,7 @@ import me.tbsten.katachi.dsl.gradle.*
 import me.tbsten.katachi.dsl.kotlin.ktFile
 
 /** The role of the tests of this sample's own custom processors. */
-fun DeclarationContainerScope.processorSpec() = "ProcessorSpec" {
+fun DeclarationContainerScope.processorSpec() = "ProcessorSpec".role {
     title = "Processor spec"
     summary = "Tests of the custom processors, kept in the processors package of :architecture-test"
     description = """

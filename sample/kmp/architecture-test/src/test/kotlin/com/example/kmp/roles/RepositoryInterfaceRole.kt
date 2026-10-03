@@ -18,7 +18,7 @@ import me.tbsten.katachi.dsl.template
  * SettingsRepository, and the settings screen reads `:data` through UserRepository and
  * `platformName()`.
  */
-fun DeclarationContainerScope.repositoryInterface() = "RepositoryInterface" {
+fun DeclarationContainerScope.repositoryInterface() = "RepositoryInterface".role {
     title = "Repository interface"
     summary = "The :data module's user package. The interface through which the app reads data"
     description = """

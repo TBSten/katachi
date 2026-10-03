@@ -6,7 +6,7 @@ import me.tbsten.katachi.dsl.gradle.*
 import me.tbsten.katachi.dsl.kotlin.ktFile
 
 /** The role of the headings this definition adds to the generated documentation. */
-fun DeclarationContainerScope.documentSectionDefinition() = "DocumentSectionDefinition" {
+fun DeclarationContainerScope.documentSectionDefinition() = "DocumentSectionDefinition".role {
     title = "Document section definition"
     summary = "The headings this project declares for itself, so roles and groups can write under them"
     description = """

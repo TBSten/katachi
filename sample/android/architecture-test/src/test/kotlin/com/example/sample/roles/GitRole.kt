@@ -3,7 +3,7 @@ package com.example.sample.roles
 import me.tbsten.katachi.dsl.DeclarationContainerScope
 
 /** The role of the files git itself reads. */
-fun DeclarationContainerScope.git() = "Git" {
+fun DeclarationContainerScope.git() = "Git".role {
     title = "Git"
     summary = ".gitignore and the like"
     documented = false

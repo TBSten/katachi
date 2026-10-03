@@ -11,7 +11,7 @@ import me.tbsten.katachi.dsl.DeclarationContainerScope
  * directory no role claims is a violation. Declaring the role is what buys them a place in the
  * repository, where a reader finds them without running anything.
  */
-fun DeclarationContainerScope.generatedDocumentation() = "GeneratedDocumentation" {
+fun DeclarationContainerScope.generatedDocumentation() = "GeneratedDocumentation".role {
     title = "Generated documentation"
     summary = "Markdown written from this definition and committed to the repository"
     description = """

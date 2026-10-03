@@ -16,7 +16,7 @@ import me.tbsten.katachi.dsl.template
  * `:testing`'s package is written out as a plain key, `com/example/sample/testing`, the same
  * way every other module of this sample writes its own.
  */
-fun DeclarationContainerScope.fake() = "Fake" {
+fun DeclarationContainerScope.fake() = "Fake".role {
     title = "Fake"
     summary = "A stand-in implementation kept in :testing, used by the tests of other modules"
     description = """

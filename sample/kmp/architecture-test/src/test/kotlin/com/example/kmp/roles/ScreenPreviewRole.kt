@@ -17,7 +17,7 @@ import me.tbsten.katachi.dsl.kotlin.ktFile
  * Both shapes are common; having one sample of each is the point. A component's previews are
  * the neighboring [componentPreview] role.
  */
-fun DeclarationContainerScope.screenPreview() = "ScreenPreview" {
+fun DeclarationContainerScope.screenPreview() = "ScreenPreview".role {
     title = "Screen preview"
     summary = "A private @Composable annotated with @Preview for a screen. Placed in Home*Preview.kt in the feature " +
         "module that holds the screen, with the content wrapped in PreviewRoot"

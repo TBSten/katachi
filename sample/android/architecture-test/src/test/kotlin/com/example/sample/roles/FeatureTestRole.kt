@@ -21,7 +21,7 @@ import me.tbsten.katachi.dsl.template
  * screen: the template is a `when` over [FeatureModule], which a new module cannot slip past,
  * while a captured value is only a string.
  */
-fun DeclarationContainerScope.featureTest() = "FeatureTest" {
+fun DeclarationContainerScope.featureTest() = "FeatureTest".role {
     title = "Screen test"
     summary = "A test in src/test of :feature:<name> that runs the ViewModel with fakes from :testing"
     description = """

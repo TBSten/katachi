@@ -78,7 +78,7 @@ internal class MultiTemplateInjectionTest : AnalysisTestBase() {
         configure(
             """
             fun define() {
-                "Repository" {
+                "Repository".role {
                     layout {
                         "*Repository".ktFile().template(id = "user") { "class UserRepo {}" }
                         "*Repository".ktFile().template(id = "settings") { "class SettingsRepo {}" }

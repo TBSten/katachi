@@ -95,11 +95,11 @@ class CustomProcessorSpec : FreeSpec({
             "core".group {
                 title = "Application"
                 summary = "A broken definition"
-                "Written" {
+                "Written".role {
                     summary = "A role with both a summary and an example"
                     example("Note", "A note with a title and a body")
                 }
-                "Blank" { }
+                "Blank".role { }
             }
         }
 
@@ -129,7 +129,7 @@ class CustomProcessorSpec : FreeSpec({
         val silent = architecture {
             "hidden".group {
                 documented = false
-                "Silent" { }
+                "Silent".role { }
             }
         }
 

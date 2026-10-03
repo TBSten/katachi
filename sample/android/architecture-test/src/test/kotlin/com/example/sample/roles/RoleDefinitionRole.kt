@@ -9,7 +9,7 @@ import me.tbsten.katachi.dsl.kotlin.ktFile
 import me.tbsten.katachi.dsl.template
 
 /** The role of a file that declares one role of the definition. */
-fun DeclarationContainerScope.roleDefinition() = "RoleDefinition" {
+fun DeclarationContainerScope.roleDefinition() = "RoleDefinition".role {
     title = "Role definition"
     summary = "roles/<Name>Role.kt, one role of the definition, with where its files live"
     description = """
@@ -45,7 +45,7 @@ fun DeclarationContainerScope.roleDefinition() = "RoleDefinition" {
 
                                 // TODO: call $function() from the group this role belongs to.
                                 /** TODO: say what a file of the $name role is. */
-                                fun DeclarationContainerScope.$function() = "$name" {
+                                fun DeclarationContainerScope.$function() = "$name".role {
                                     title = "$name"
                                     summary = "TODO: what a file of this role is"
                                     // TODO: declare where its files live.

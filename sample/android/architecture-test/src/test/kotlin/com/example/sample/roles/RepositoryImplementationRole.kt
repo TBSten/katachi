@@ -11,7 +11,7 @@ import me.tbsten.katachi.dsl.kotlin.ktFile
 import me.tbsten.katachi.dsl.template
 
 /** The role of the production implementation of a repository interface. */
-fun DeclarationContainerScope.repositoryImplementation() = "RepositoryImplementation" {
+fun DeclarationContainerScope.repositoryImplementation() = "RepositoryImplementation".role {
     title = "Repository implementation"
     summary = "The implementation of a repository interface, in :data, next to the interface"
     description = """

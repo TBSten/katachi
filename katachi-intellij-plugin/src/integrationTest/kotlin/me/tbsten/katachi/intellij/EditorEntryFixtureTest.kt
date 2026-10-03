@@ -88,7 +88,7 @@ internal class EditorEntryFixture(private val sample: Path, val workDir: Path) {
             import me.tbsten.katachi.dsl.kotlin.ktFile
             import me.tbsten.katachi.dsl.template
 
-            fun DeclarationContainerScope.service() = "Service" {
+            fun DeclarationContainerScope.service() = "Service".role {
                 layout {
                     mainSourceSet / kotlin / "com/example" / "service" /
                         "${'$'}{capture("name")}Service".ktFile().template(id = "main", title = "Service source") {

@@ -3,7 +3,7 @@ package com.example.sample.roles
 import me.tbsten.katachi.dsl.DeclarationContainerScope
 
 /** The role of the prose that explains the repository to whoever opens it. */
-fun DeclarationContainerScope.documentation() = "Documentation" {
+fun DeclarationContainerScope.documentation() = "Documentation".role {
     title = "Documentation"
     summary = "Explanations for people reading the repository, such as README.md"
     documented = false

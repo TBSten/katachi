@@ -21,7 +21,7 @@ import me.tbsten.katachi.dsl.template
  * `--arg resource=user --arg name=User` writes `controller/user/UserController.kt`, and a
  * resource that has no package yet gets a new one.
  */
-fun DeclarationContainerScope.controller() = "Controller" {
+fun DeclarationContainerScope.controller() = "Controller".role {
     title = "Controller"
     summary = "Receives one HTTP request, calls the matching Service and returns the result"
     description = """

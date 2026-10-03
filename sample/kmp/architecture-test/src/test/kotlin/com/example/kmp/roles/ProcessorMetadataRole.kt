@@ -5,7 +5,7 @@ import me.tbsten.katachi.dsl.gradle.*
 import me.tbsten.katachi.dsl.kotlin.ktFile
 
 /** The role of the file that brings the sample's own `owner` metadata into the DSL. */
-fun DeclarationContainerScope.processorMetadata() = "ProcessorMetadata" {
+fun DeclarationContainerScope.processorMetadata() = "ProcessorMetadata".role {
     title = "Processor metadata"
     summary = "Owner.kt, the metadata key and property a custom processor reads, kept in the processors package"
     description = """

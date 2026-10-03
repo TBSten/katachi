@@ -262,7 +262,7 @@ class ProjectArchitectureSpec : FreeSpec({
         // and `roles/`, where every file declares exactly what it forbids.
         fun unsatisfiedPaths(scope: FileConstraintRange): List<String> = architecture {
             "testing".group {
-                "Definition" {
+                "Definition".role {
                     layout {
                         "architecture-test" {
                             testSourceSet / kotlin / "com/example" {

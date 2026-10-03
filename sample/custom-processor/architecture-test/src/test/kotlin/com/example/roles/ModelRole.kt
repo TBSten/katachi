@@ -7,7 +7,7 @@ import me.tbsten.katachi.dsl.gradle.*
 import me.tbsten.katachi.dsl.kotlin.ktFile
 
 /** The role of the values the application is about. */
-fun DeclarationContainerScope.model() = "Model" {
+fun DeclarationContainerScope.model() = "Model".role {
     title = "Model"
     summary = "The values the application handles. Holds data classes, enums and value objects"
     description = """

@@ -5,7 +5,7 @@ import me.tbsten.katachi.dsl.DeclarationContainerScope
 import me.tbsten.katachi.dsl.gradle.*
 
 /** The role of the file that decides where logs go and in what format. */
-fun DeclarationContainerScope.loggingConfig() = "LoggingConfig" {
+fun DeclarationContainerScope.loggingConfig() = "LoggingConfig".role {
     title = "Logging configuration"
     summary = "The Logback configuration: where logs go and their format"
     description = """

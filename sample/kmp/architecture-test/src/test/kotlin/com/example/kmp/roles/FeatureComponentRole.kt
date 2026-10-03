@@ -21,7 +21,7 @@ import me.tbsten.katachi.dsl.template
  * refused. `:feature:home` holds one of them, `HomeUserCard.kt`, which the home
  * screen draws; `checkSampleKmp` generates another and checks it before deleting it again.
  */
-fun DeclarationContainerScope.featureComponent() = "FeatureComponent" {
+fun DeclarationContainerScope.featureComponent() = "FeatureComponent".role {
     title = "Screen component"
     summary = "A @Composable used by only one screen. Placed as <Name>*.kt in the component package of the commonMain of :feature:<name>"
     description = """

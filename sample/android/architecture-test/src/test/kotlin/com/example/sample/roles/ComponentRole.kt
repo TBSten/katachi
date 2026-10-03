@@ -13,7 +13,7 @@ import me.tbsten.katachi.dsl.kotlin.ktFile
 import me.tbsten.katachi.dsl.template
 
 /** The role of a widget shared across features, rather than owned by one of them. */
-fun DeclarationContainerScope.component() = "Component" {
+fun DeclarationContainerScope.component() = "Component".role {
     title = "Shared component"
     summary = "A part in the component package of the :ui module, used across features"
     description = """

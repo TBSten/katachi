@@ -9,7 +9,7 @@ import me.tbsten.katachi.dsl.kotlin.ktFile
 import me.tbsten.katachi.dsl.template
 
 /** The role of a file that declares one group of the definition. */
-fun DeclarationContainerScope.groupDefinition() = "GroupDefinition" {
+fun DeclarationContainerScope.groupDefinition() = "GroupDefinition".role {
     title = "Group definition"
     summary = "groups/<Name>Group.kt, one group of the definition, which lists its roles by calling their functions"
     description = """

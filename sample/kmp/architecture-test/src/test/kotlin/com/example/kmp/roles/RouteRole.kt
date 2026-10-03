@@ -14,7 +14,7 @@ import me.tbsten.katachi.dsl.kotlin.ktFile
  * The third of the three files a feature module holds, written like [screen] and [viewModel]:
  * a `*Route.kt` glob under the directory `"feature" / "*"`.
  */
-fun DeclarationContainerScope.route() = "Route" {
+fun DeclarationContainerScope.route() = "Route".role {
     title = "Route"
     summary = "Ties a screen to a navigation Destination and also takes on creating the ViewModel"
     description = """

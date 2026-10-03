@@ -12,7 +12,7 @@ import me.tbsten.katachi.dsl.kotlin.ktFile
 import me.tbsten.katachi.dsl.template
 
 /** The implementations of the interfaces in [repositoryInterface], beside them in the `user` package. */
-fun DeclarationContainerScope.repositoryImplementation() = "RepositoryImplementation" {
+fun DeclarationContainerScope.repositoryImplementation() = "RepositoryImplementation".role {
     title = "Repository implementation"
     summary = "The :data module's user package. The implementation of a repository interface"
     description = """

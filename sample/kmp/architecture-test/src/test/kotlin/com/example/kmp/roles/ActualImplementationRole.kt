@@ -9,7 +9,7 @@ import me.tbsten.katachi.dsl.kotlin.ktFile
 /**
  * The `actual` half of [expectDeclaration]: one file per platform, in the same package.
  */
-fun DeclarationContainerScope.actualImplementation() = "ActualImplementation" {
+fun DeclarationContainerScope.actualImplementation() = "ActualImplementation".role {
     title = "Actual implementation"
     summary = "The :data module's platform package. The actual implementations in androidMain / iosMain"
     description = """

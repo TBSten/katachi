@@ -62,12 +62,12 @@ class RoleSummaryReportSpec : FreeSpec({
 
 /** Two roles at the root, standing in for a report generated before a role was removed. */
 private val twoRoleArchitecture: Architecture = architecture {
-    "First" { }
-    "Second" { }
+    "First".role { }
+    "Second".role { }
 }
 
 /** [twoRoleArchitecture] with `Second` removed, standing in for the definition after it moved
  * on without regenerating the report. */
 private val oneRoleArchitecture: Architecture = architecture {
-    "First" { }
+    "First".role { }
 }

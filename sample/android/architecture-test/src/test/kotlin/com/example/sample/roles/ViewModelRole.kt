@@ -10,7 +10,7 @@ import me.tbsten.katachi.dsl.gradle.*
 import me.tbsten.katachi.dsl.kotlin.ktFile
 
 /** The role holding one screen's state, named after the feature module it belongs to. */
-fun DeclarationContainerScope.viewModel() = "ViewModel" {
+fun DeclarationContainerScope.viewModel() = "ViewModel".role {
     title = "ViewModel"
     summary = "An androidx.lifecycle.ViewModel that exposes screen state as a StateFlow and receives events"
     description = """

@@ -7,7 +7,7 @@ import me.tbsten.katachi.dsl.gradle.*
 import me.tbsten.katachi.dsl.kotlin.ktFile
 
 /** The role of one cross-cutting setting installed into the Ktor `Application`. */
-fun DeclarationContainerScope.ktorPlugin() = "KtorPlugin" {
+fun DeclarationContainerScope.ktorPlugin() = "KtorPlugin".role {
     title = "Ktor plugin configuration"
     summary = "Applies one cross-cutting setting to the Ktor Application"
     description = """
