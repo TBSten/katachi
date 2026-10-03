@@ -265,12 +265,19 @@ data class SampleBaseline(
     val ledger: String = "katachi-baseline.json",
 )
 
+/**
+ * A sample, and what is checked about it. [sarifReport], when given, is the path inside the
+ * sample of the SARIF file its `katachi { report { sarif = true } }` writes; checkSample<Name>Build
+ * deletes it before the run and requires it afterwards to be a SARIF 2.1.0 document with no
+ * `error` in it (the run passed, and what the baseline held back must not be in the file either).
+ */
 data class SampleBuild(
     val name: String,
     val defaultTasks: List<String>,
     val needsAndroidSdk: Boolean,
     val template: SampleTemplate? = null,
     val baseline: SampleBaseline? = null,
+    val sarifReport: String? = null,
 )
 
 val sampleBuilds = listOf(
@@ -311,6 +318,9 @@ val sampleBuilds = listOf(
             ),
         ),
         baseline = SampleBaseline(":architecture-test:test", "com.example.ProjectArchitectureTest", heldBack = 2),
+        // The one sample with `report { sarif = true }`: its `check` writes the file through the
+        // Gradle plugin, the path a user takes.
+        sarifReport = "architecture-test/build/reports/katachi/katachi.sarif",
     ),
     SampleBuild(
         "android",
@@ -746,12 +756,46 @@ sampleBuilds.forEach { sample ->
     // A sample without a template keeps checkSample<Name> as the one Exec it always was.
     // With one, that name becomes the lifecycle task over the build and the template run.
     val buildTaskName = if (template == null) "checkSample$suffix" else "checkSample${suffix}Build"
+    // Only a File and Strings are captured below: the configuration cache cannot store `sample`
+    // or the script itself, which a call to a top-level function from doLast would drag in.
+    val sarifReport = sample.sarifReport?.let { File(sampleDir, it) }
     val buildTask = tasks.register<Exec>(buildTaskName) {
         group = LifecycleBasePlugin.VERIFICATION_GROUP
         description = "Runs `${sampleTasks.joinToString(" ")}` in the standalone sample build " +
-                "sample/${sample.name}.$sdkNote"
+                "sample/${sample.name}." +
+                (if (sarifReport == null) "" else " Requires it to leave a SARIF 2.1.0 report at ${sample.sarifReport}.") +
+                sdkNote
         runSampleWrapper(sample, sampleDir, sampleTasks)
         mustRunAfter(predecessors)
+        if (sarifReport != null) {
+            // Deleted first, so a file an earlier run left behind cannot pass for this one.
+            doFirst { sarifReport.delete() }
+            doLast {
+                val text = sarifReport.takeIf { it.isFile }?.readText()
+                    ?: throw GradleException(
+                        "sample/$sampleName passed, but left no SARIF report at ${sarifReport.path}. " +
+                                "Either `report { sarif = true }` is gone from its architecture-test/build.gradle.kts, " +
+                                "or the Gradle plugin no longer hands -Dkatachi.report.sarif to the test JVM.",
+                    )
+                // What every document katachi writes has, in the exact shape it writes it (two-space
+                // indentation, one key per line): the version, the results array, and the base the
+                // uris are relative to. `"level": "error"` must be absent: the run passed, so every
+                // error-severity violation was held back by the baseline, and a held-back violation
+                // is left out of the file.
+                val missing = listOf("\"version\": \"2.1.0\"", "\"results\": [", "\"%SRCROOT%\"").filterNot { it in text }
+                val errors = text.lines().count { it.trim() == "\"level\": \"error\"," || it.trim() == "\"level\": \"error\"" }
+                if (missing.isNotEmpty() || errors > 0) {
+                    throw GradleException(
+                        "sample/$sampleName passed and wrote ${sarifReport.path}, but the file is not the SARIF " +
+                                "katachi is expected to write:" +
+                                missing.joinToString("") { "\n  missing $it" } +
+                                (if (errors == 0) "" else "\n  $errors result(s) at level \"error\" in a run that passed " +
+                                        "(a violation the baseline held back must not be written)") +
+                                "\nRead the file, and fix katachi's SARIF output or this check.",
+                    )
+                }
+            }
+        }
     }
     registeredSamples += buildTask
 
