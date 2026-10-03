@@ -1,0 +1,257 @@
+---
+title: テンプレートからコード生成
+description: layout の宣言に .template { } を追加して、コードを生成する方法を説明します。
+tags:
+  - beginner
+slug: ja/0.2/guides/generate-code-from-template
+---
+
+{/*
+  このページの目的: katachi のテンプレート生成機能について深く網羅的に理解してもらうこと。
+  */}
+
+layout の宣言に `.template { }` を追加すると、そのファイルをコードとして生成できます。
+
+```kt {4-5,21-22} nocollapse
+"UseCase" {
+    layout {
+        "core/domain" / mainSourceSet / kotlin / "com/example/core/domain/useCase" /
+            "${capture("name")}UseCase".ktFile()
+                .template {
+                    val name = captureValue("name")
+                    """
+                        package com.example.core.domain.useCase
+
+                        interface ${name}UseCase {
+                            suspend operator fun invoke()
+                        }
+                    """.trimIndent()
+                }
+    }
+}
+
+"UseCaseImplementation" {
+    layout {
+        "core/domain" / mainSourceSet / kotlin / "com/example/core/domain/useCase" /
+            "${capture("name")}UseCaseImpl".ktFile()
+                .template {
+                    val name = captureValue("name")
+                    val implBody by stringParameter(default = """TODO("${name}UseCase の実装")""")
+                    """
+                        package com.example.core.domain.useCase
+
+                        class ${name}UseCaseImpl : ${name}UseCase {
+                            override suspend fun invoke() {
+                                $implBody
+                            }
+                        }
+                    """.trimIndent()
+                }
+    }
+}
+```
+
+```shell
+# UseCase と UseCaseImplementation の両方を一度に生成する
+./gradlew katachiTemplate \
+    --arg "template=UseCase,UseCaseImplementation" --arg "name=GetItemList"
+```
+
+`--arg template=<指定>` に、どのテンプレートを生成するかを書きます。
+
+## テンプレートの指定 — `--arg template=`
+
+テンプレートは、それを持つ Role の修飾名（`group名.Role名`）で指定します。複数のテンプレートを一度に生成するときは `,` で区切ります。
+
+| 書いたもの | 意味 |
+| --- | --- |
+| `Controller` | group に入っていない Role `Controller` のテンプレート |
+| `feature.Screen` | group `feature` の Role `Screen` のテンプレート |
+| `RepositoryInterface` | group を省いた指定。テンプレートを持つ Role の中で、Role 名 `RepositoryInterface` が1つだけなら使えます |
+
+書いた指定に当たるテンプレートが無いときは、書ける指定の一覧を並べて失敗します。
+
+## パラメータ
+
+コード生成時に `--arg` で渡せるパラメータを、テンプレートのブロックの中で宣言します。
+
+```kt {4}
+"${capture("name")}UseCaseImpl".ktFile()
+    .template {
+        val name = captureValue("name")
+        val implBody by stringParameter(default = """TODO("${name}UseCase の実装")""")
+
+        // ...
+    }
+```
+
+**プロパティの名前がそのままパラメータの名前になります。** `val implBody by stringParameter(default = ...)` は `--arg implBody=...` で渡すパラメータを宣言します。
+
+```shell
+./gradlew katachiTemplate \
+    --arg "template=UseCaseImplementation" \
+    --arg "name=GetItemList" --arg 'implBody=println("Hello World")'
+```
+
+パラメータの型は4つです。どれも `--arg 名前=値` で渡します。
+
+| 書き方 | 渡し方 | 受け付ける値 |
+| --- | --- | --- |
+| `val name by stringParameter()` | `--arg name=User` | 何でも |
+| `val withImpl by booleanParameter(default = true)` | `--arg withImpl=false` | `true` / `false`（小文字のみ） |
+| `val pageSize by intParameter(default = 20)` | `--arg pageSize=50` | 整数 |
+| `val visibility by enumParameter(default = Visibility.Public)` | `--arg visibility=Internal` | enum のエントリ名 |
+
+**capture とパラメータは、1回の実行で生成するテンプレート全部の中で名前ごとに1つです。** 2つのテンプレートに同じ `capture("name")` があれば、`--arg name=User` の1回で両方に効きます。同じ名前のパラメータを2つのテンプレートで宣言するときは、型とデフォルト値を揃えてください。
+
+## 生成先にワイルドカードがあるときは、名前を付けて値を渡す
+
+`*` に名前を付けるのが `capture()` です。`capture()` は宣言を作らず、名前を埋め込んだ文字列を返すだけなので、Kotlin の文字列テンプレートの中にそのまま書けます。
+
+```kt {2}
+layout {
+    "feature" / capture("feature") / "src" / "main" / "kotlin" / "*ViewModel".ktFile()
+}
+```
+
+**検査の上では `*` とまったく同じです。** `capture("feature")` を `"*"` に書き換えても、許されるファイルは1つも変わりません。
+
+名前は `--arg` で値を渡すときに使います。`*` のままだと、テンプレートは `feature/home` と `feature/settings` のどちらに作ればよいかを決められません。名前を付けておけば、`--arg feature=home` で選べます。テンプレートを持たない Role なら、`*` のままで構いません。
+
+`.template { }` はファイルの宣言そのものに付くので、生成先のパスは `layout { }` の宣言と1つに決まります。そのパスに `capture()` で名前の付いていない `*` や `**` が残っていると、値を渡せないので**エラーになります**。
+
+```kt {3-5,7-8} nocollapse
+"FeatureComponent" {
+    layout {
+        "feature" / capture("feature") / "commonMain".sourceSet / kotlin /
+            "com/example/kmp/feature" / capture("featurePackage") / "component" /
+            "${capture("name")}".ktFile()
+                .template {
+                    val featurePackage = captureValue("featurePackage")
+                    val name = captureValue("name")
+
+                    """
+                        package com.example.kmp.feature.$featurePackage.component
+
+                        @Composable
+                        internal fun $name(title: String) {
+                            Text(text = title)
+                        }
+                    """.trimIndent()
+                }
+    }
+}
+```
+
+```shell
+./gradlew katachiTemplate \
+    --arg "template=FeatureComponent" --arg "feature=home" --arg "featurePackage=home" --arg "name=HomeUserCard"
+```
+
+`--arg feature=home` がモジュールのディレクトリの `*` を、`--arg featurePackage=home` がパッケージのディレクトリの `*` を、それぞれ `home` に決めるので、`HomeUserCard.kt` は `feature/home/` の `component/` に入ります。同じ名前の capture は1本のパスで2回使えないので、モジュールのディレクトリとパッケージのディレクトリには別の名前を付けます。
+
+**capture の名前は、そのまま `--arg` の引数名になります。** テンプレートの中では、同じ値を `captureValue("featurePackage")` のように読めます。
+
+## Kotlin 以外のファイルにも付けられる
+
+`.template { }` は `.ktFile()` に限らず、`.file()` で宣言したファイルにも付けられます。ブロックが返した文字列がそのままファイルの中身になるので、Markdown のように決まった形の文書も生成できます。
+
+```kt {3-4} nocollapse
+"FeatureReadme" {
+    layout {
+        "docs" / capture("feature") / "README.md".file()
+            .template {
+                val feature = captureValue("feature")
+                """
+                    # $feature
+
+                    ## 責務
+
+                    TODO
+
+                    ## 公開する API
+
+                    TODO
+                """.trimIndent()
+            }
+    }
+}
+```
+
+```shell
+./gradlew katachiTemplate --arg "template=FeatureReadme" --arg "feature=home"
+```
+
+`docs/home/README.md` が生成されます。
+
+## 既にファイルがあるとき
+
+生成先に既にファイルがある場合の振る舞いは `--arg onExisting=` で選べます。**デフォルトは `fail` です。** 複数のテンプレートを一度に生成するときは、`onExisting` は組全体に効きます。
+
+| 値 | 振る舞い |
+| --- | --- |
+| `fail` (デフォルト) | 1つでも既にあれば**1つも書かずに**失敗します |
+| `skip` | 1つでも既にあれば**1つも書かず**、失敗もしません |
+| `overwrite` | 既存を置き換えます |
+
+```shell
+./gradlew katachiTemplate \
+    --arg "template=UseCase" --arg "name=GetItemList" --arg "onExisting=overwrite"
+```
+
+デフォルト値は build.gradle.kts で設定することもできます。
+
+```kts {6} title="architecture-test/build.gradle.kts"
+import me.tbsten.katachi.gradle.KatachiOnExisting
+
+katachi {
+    processors {
+        template {
+            onExisting = KatachiOnExisting.SKIP
+        }
+    }
+}
+```
+
+## テンプレートの一覧と詳細を見る
+
+どのテンプレートがあり、何を渡せば何が生成されるかは **`katachiTemplates` task** で確認できます。
+
+```shell
+# テンプレートの一覧（title / summary、パラメータ名、`--arg template=` に書ける指定）
+./gradlew katachiTemplates
+
+# 1つのテンプレートの詳細
+./gradlew katachiTemplates --arg "template=data.RepositoryInterface"
+```
+
+詳細には、パラメータの一覧、生成先のパスとファイルの中身、`katachiTemplate` のコマンドが表示されます。
+
+## IDE から生成する（実験的）
+
+IntelliJ IDEA / Android Studio のプラグインを入れると、テンプレートの一覧・パラメータの入力・生成を IDE の中で済ませられます。`--arg` を組み立てる必要はありません。実験的な機能なので、画面や振る舞いは今後の版で変わることがあります。
+
+JetBrains Marketplace には公開していません。次の手順で、GitHub Releases の zip から入れます。
+
+1. [GitHub Releases](https://github.com/TBSten/katachi/releases/latest) から `katachi-intellij-plugin-<版>.zip` をダウンロードします。
+2. IDE の **Settings → Plugins** で ⚙ → **Install Plugin from Disk…** を選び、zip を展開せずに指定します。
+3. 再起動を求められたら IDE を再起動します。
+
+IntelliJ IDEA 2026.1 と Android Studio Quail（2026.1）以降で使えます。プロジェクトに katachi 0.2.0 以降の Gradle プラグインが入っていて、Gradle の同期が済んでいれば、次の3か所から生成できます。画面の言語は IDE の言語（日本語または英語）に従います。
+
+* 右端の **katachi** Tool Window
+* Project ツリーで右クリック → **New → katachi**
+* テンプレートに合うファイルを開いたときに、エディタの上に出る通知
+
+IDE を更新しても、プラグインは自動では更新されません。新しい版は Releases から入れ直します。
+
+## まとめ
+
+* **`.template { }`** をファイルの宣言に追加すると、**`katachiTemplate` task** でそのファイルをコードとして生成できます。
+* **`katachiTemplates` task** で、テンプレートの一覧と、パラメータ・生成先のパスの詳細を確かめられます。
+* **IDE プラグイン（実験的）** を入れると、同じことを IDE の画面から行えます。
+
+## 次のステップ
+
+* [ドキュメント生成](/katachi/ja/0.2/guides/document-generation/) ... 同じ定義から、コードではなくドキュメントを生成する方法を学びましょう。
+* [ArchitectureProcessor とそのカスタマイズ](/katachi/ja/0.2/guides/processor/) ... テンプレート生成も ArchitectureProcessor の1つです。

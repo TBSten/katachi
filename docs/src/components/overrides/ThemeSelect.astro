@@ -1,0 +1,20 @@
+---
+/**
+ * ヘッダ右端（狭い画面ではメニューの下端）の、版の切り替えとテーマの切り替え。
+ *
+ * starlight-versions は ThemeSelect を差し替えて版の切り替えを出すが、ThemeSelect は
+ * starlight-theme-nova が既に差し替えているため、プラグインは手を引く。ここで両方を並べる。
+ *
+ * トップページ（src/pages/ の .astro）と 404 には版の切り替えを出さない。トップページは
+ * content collection に無いので版の写しが無く、`/katachi/0.2/` に飛ぶと 404 になる。
+ */
+import VersionSelect from 'starlight-versions/components/VersionSelect.astro';
+import NovaThemeSelect from 'starlight-theme-nova/components/ThemeSelect.astro';
+
+const { entry, locale } = Astro.locals.starlightRoute;
+const id = locale && entry.id.startsWith(`${locale}`) ? entry.id.slice(locale.length).replace(/^\//, '') : entry.id;
+const showVersionSelect = id !== '' && id !== '404';
+---
+
+{showVersionSelect && <VersionSelect />}
+<NovaThemeSelect />

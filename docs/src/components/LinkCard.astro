@@ -7,10 +7,14 @@
  * 画像が出るのは外部リンク（http(s)）で og:image が取れたときだけ。取れなければ
  * Starlight 本来の見た目のまま。詳しくは src/lib/link-og-image.ts。
  * 見た目の骨格は Starlight 0.42 の LinkCard.astro と同じ。更新で差が出たらそちらに合わせる。
+ *
+ * 古い版のページ（/katachi/0.2/...）では、最新版のページへの href を同じ版のページへ向け直す。
+ * starlight-versions は版の写しを作るとき LinkCard の href を書き換えないため（src/lib/version-links.ts）。
  */
 import type { HTMLAttributes } from 'astro/types';
 import { Icon as StarlightIcon } from '@astrojs/starlight/components';
 import { getLinkOgImage } from '../lib/link-og-image';
+import { versionDocsHref } from '../lib/version-links';
 
 interface Props extends Omit<HTMLAttributes<'a'>, 'title'> {
 	title: string;
@@ -18,6 +22,7 @@ interface Props extends Omit<HTMLAttributes<'a'>, 'title'> {
 }
 
 const { title, description, ...attributes } = Astro.props;
+attributes.href = versionDocsHref(attributes.href as string | undefined, Astro.url);
 const image = await getLinkOgImage(attributes.href as string | undefined);
 ---
 

@@ -1,0 +1,91 @@
+---
+title: Roadmap
+description: katachi's plans by version — from the v0.1 DSL and checks, through
+  the v0.2 Gradle plugin, documentation generation, templates and baseline, to
+  declarations and adoption in existing projects in v0.3 and beyond.
+tags:
+  - advanced
+slug: 0.2/roadmap
+---
+
+{/*
+  The purpose of this page: to show katachi's plans by version, and what is in now versus what has been put off. How to use each feature is left to the individual guides.
+  */}
+
+import { Steps } from '@astrojs/starlight/components';
+
+## Overview
+
+<table>
+  <thead>
+    <tr>
+      <th style="min-width: 6rem;">Version</th>
+      <th style="min-width: 12rem;">Theme</th>
+      <th style="min-width: 36rem;">Definition of done</th>
+    </tr>
+  </thead>
+
+  <tbody>
+    <tr>
+      <td><strong>v0.1</strong></td>
+      <td>DSL + checks + <code>konsist \{ }</code></td>
+      <td>Can express a large project, and checks pass</td>
+    </tr>
+
+    <tr>
+      <td><strong>v0.2</strong></td>
+      <td>Gradle plugin + documentation generation + templates + baseline (+ IDE plugin, experimental)</td>
+      <td><code>./gradlew katachiDocs</code> produces documentation. With existing violations tolerated by a baseline, the test fails only on new violations and on entries still in the baseline file after they were fixed</td>
+    </tr>
+
+    <tr>
+      <td><strong>v0.3 and beyond</strong></td>
+      <td><code>declarations \{ }</code> / report output / vocabulary-size measurement</td>
+      <td>Easier to adopt in an <strong>existing project</strong>. Most of the <code>konsist \{ }</code> written in v0.1 can be replaced with <code>declarations \{ }</code></td>
+    </tr>
+  </tbody>
+</table>
+
+## v0.3 and beyond — Adoption in existing projects and `declarations { }`
+
+Making katachi easier to adopt in existing projects is the theme of v0.3 and beyond. Only baseline, which tolerates the existing violations for now and fails only on new ones, has already landed in v0.2 as an experimental feature.
+
+| Feature | What it enables |
+|---|---|
+| **`dependsOnlyOn`** | Writes what may be depended on as an **allow list**. A deny-list approach passes omissions without complaint. Moved here from the v0.2 plan |
+| **Report output** | Outputs JSON / SARIF, surfaced as annotations on GitHub PRs |
+| **`pairedWith`** | Checks coverage, such as "every `Screen` has a corresponding `Preview`" |
+| **Vocabulary-size measurement** | Reports the number of Roles and the file count per Role as numbers |
+| **Module resolution based on Gradle's model** | Follows modules whose `projectDir` was changed, and where source sets actually are |
+
+The specification for this stage is largely undecided. Even the version numbering is grouped together as "v0.3 and beyond" for now.
+
+### `declarations { }` — a promotion out of `konsist { }`
+
+v0.1's `konsist { }` is, frankly, **an escape hatch.** Something almost every Role wants to say — like "only a `*UseCase` interface and a `Default*UseCase` class go here" — ends up being spelled out as a Konsist expression every time.
+
+```kt
+"only the interface and its Default implementation are placed".konsist {
+    files.must { file ->
+        val decls = file.declarations(includeNested = false, includeLocal = false)
+        decls.size == 2 &&
+            decls.any { it is KoInterfaceDeclaration && it.name.endsWith("UseCase") } &&
+            decls.any { it is KoClassDeclaration && it.name.startsWith("Default") }
+    }
+}
+```
+
+The same rule should be writable in a form like the one below. The plan is to realize that in v0.3 and beyond.
+
+```kt
+"UseCase" {
+    declarations {
+        `interface`("*UseCase")
+        `class`("Default*UseCase")
+    }
+}
+```
+
+Top-level declarations that aren't enumerated may not appear. The block is the allow list for contents, in the same way `layout { }` is the allow list for placement.
+
+The API is still at the design stage, but it will very likely be implemented in v0.3 and beyond.

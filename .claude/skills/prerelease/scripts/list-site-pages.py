@@ -2,7 +2,8 @@
 """ビルド済みのドキュメントサイト（docs/dist）から、巡回するページの URL を列挙する。
 
 サイトは base が /katachi なので、`pnpm --dir docs preview` で配信したときの URL を出す。
-3つに分けて出す: 英語のページ / 日本語のページ / API リファレンス（api-docs）。
+4つに分けて出す: 英語のページ / 日本語のページ / API リファレンス（api-docs）/ 凍結した版のページ（archived）。
+凍結した版（/katachi/0.2/...・/katachi/ja/0.2/...）は公開済みの版の写しで直さないので、en / ja には入れない。
 API リファレンスは数百ページあるので、既定では各モジュールのトップと、パッケージの
 トップ（index.html）だけを出す（--all で全部）。
 
@@ -12,18 +13,23 @@ API リファレンスは数百ページあるので、既定では各モジュ�
   python3 .claude/skills/prerelease/scripts/list-site-pages.py --group api-docs --all
   python3 .claude/skills/prerelease/scripts/list-site-pages.py --origin http://localhost:4321
 """
-import argparse, sys
+import argparse, re, sys
 from pathlib import Path
 
 sys.dont_write_bytecode = True
 
 DIST = Path("docs/dist")
 BASE = "/katachi"
-GROUPS = ("en", "ja", "api-docs")
+GROUPS = ("en", "ja", "api-docs", "archived")
+# 版の slug は数字で始まる（docs/src/lib/versions.mjs）
+VERSION_SEGMENT = re.compile(r"^[0-9]")
 
 
 def group_of(rel: Path) -> str:
     first = rel.parts[0] if rel.parts else ""
+    version = rel.parts[1] if first == "ja" and len(rel.parts) > 1 else first
+    if VERSION_SEGMENT.match(version):
+        return "archived"
     if first == "api-docs":
         return "api-docs"
     if first == "ja":

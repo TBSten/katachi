@@ -1,0 +1,320 @@
+---
+title: 基本的な API
+description: 覚えるのは6つだけ。architecture / group / Role / layout / konsist / assert。
+tags:
+  - beginner
+slug: ja/0.2/guides/basic-api
+---
+
+{/*
+  このページの目的: ユーザが katachi の基本的な API を理解して自身のプロジェクトのアーキテクチャを定義できるようになること。katachi が用意する API の全体像を掴めるようにすること。
+  */}
+
+import { FileTree } from '@astrojs/starlight/components';
+
+katachi の主要な API を紹介します。
+ここに挙げる API を覚えれば、katachi の基本的な使い方を理解できるはずです。
+
+## 1. `architecture { }`
+
+`architecture { }` はプロジェクト全体のアーキテクチャを定義するエントリーポイントです。
+このブロックの中に、プロジェクトにあるファイルの Role を書きます。
+
+```kt
+architecture {
+  "UseCase" { /* ... */ }
+  "RepositoryInterface" { /* ... */ }
+}
+// このプロジェクトには `UseCase` と `RepositoryInterface` という2つの Role がある
+```
+
+アーキテクチャを構成する要素 (Role) は、後のセクションで詳しく説明します。
+
+## 2. アーキテクチャをテストする `assert()`
+
+`architecture { }` で定義したアーキテクチャをテストする関数が `assert()` です。
+
+```kt {8}
+val projectArchitecture = architecture {
+  "UseCase" { /* ... */ }
+  "RepositoryInterface" { /* ... */ }
+}
+
+@Test
+fun `アーキテクチャに沿ったファイル配置になっている`() {
+  projectArchitecture.assert()
+}
+```
+
+## 3. Role を定義する `"名前" { }`
+
+`"名前" { }` はプロジェクトの中に登場するファイルの役割 (Role) を定義します。
+
+```kt {2,4}
+architecture {
+  "UseCase" { /* ... */ }
+
+  "RepositoryInterface" { /* ... */ }
+}
+```
+
+`architecture { }` ブロックの中に `"名前" { }` を書くと、プロジェクトに登場するファイルの Role を定義できます。
+
+### Role の例
+
+よく知られたアーキテクチャを採用しているなら、Role はたとえば次のようになるでしょう。
+
+| アーキテクチャ | Role |
+|---|---|
+| MVC | `Controller` |
+| | `View` |
+| | `Model` |
+| MVVM | `View` |
+| | `ViewModel` |
+| Clean architecture | `Service` |
+| | `UseCase` |
+| | `Entity` |
+| | `RepositoryInterface`, `RepositoryImplementation` |
+
+### Deny by default
+
+katachi では、**宣言した Role のファイルしかプロジェクトに存在を許されません**。
+
+つまり katachi を導入するときは、プロジェクトの規約に合った Role を列挙する必要があります。
+
+### 関連ドキュメント
+
+Role については [Role 定義の詳細](/katachi/ja/0.2/guides/role/) も参照してください。
+
+## 4. Role をグルーピングする `"...".group { }`
+
+`"名前".group { }` は Role をまとめるためのブロックです。
+
+例えば Clean architecture では、`UseCase` と `RepositoryInterface` は **同じドメインレイヤーの Role** です。
+
+```kt {2}
+architecture {
+  "domain".group {
+    "UseCase" { /* ... */ }
+    "RepositoryInterface" { /* ... */ }
+  }
+}
+```
+
+Role のグループをドメインレイヤーとして DSL で表すと、Role 同士の関係や階層構造が明確になります。分かりやすいアーキテクチャ定義を作るには、分かりやすい粒度で Role をグループ化することが大切です。
+
+### 関連ドキュメント
+
+Role のグループについては [Role 定義の詳細](/katachi/ja/0.2/guides/role/) も参照してください。
+
+## 5. ファイルが存在して良い位置を定義する `layout { }`
+
+`"..." { }` で Role を定義しただけでは、その Role のファイルをどこに置いてよいかは決まりません。
+
+`layout { }` は Role に対応するファイルをどこに置けるかを定義するためのブロックです。
+
+```kt {3-4}
+architecture {
+  "UseCase" {
+    layout {
+      "src/main/kotlin/com/example/useCase" / "*UseCase".ktFile()
+    }
+  }
+}
+
+// UseCase は `src/main/kotlin/com/example/useCase/*UseCase.kt` に置くことができる
+```
+
+### どのように機能するか
+
+Deny by default の原則により、`layout { }` で宣言していない場所にはファイルを置けません。
+
+たとえば AI Agent が、新しい UseCase ファイルを `src/main/kotlin/com/example/GetItemUseCase.kt` に置こうとしたとします (本来は useCase パッケージの中に置くべきです)。
+`assert()` が呼び出された時点で、katachi はこのパスに一致する Role が無いことを検知し、テストが失敗します。
+
+<FileTree>
+  * src/main/kotlin/com/example/
+    * **GetItemUseCase.kt** ❌ `layout { }` で宣言していない場所
+    * useCase/
+      * GetUserUseCase.kt ⭐️ 宣言どおりの場所
+</FileTree>
+
+### 関連ドキュメント
+
+`layout { }` については [Layout 定義の詳細](/katachi/ja/0.2/guides/layout/) も参照してください。
+
+## 6. ファイル内の制約を定義する `"...".konsist { }`
+
+Role を定義したファイルには、[Konsist](https://docs.konsist.lemonappdev.com/) で制約をかけられます。
+
+```kt {7}
+architecture {
+  "UseCase" {
+    layout {
+      "src/main/kotlin/com/example/useCase" / "*UseCase".ktFile()
+    }
+
+    "invoke 関数を1つだけ持つこと".konsist {
+      classes().must { it.functions().map { f -> f.name } == listOf("invoke") }
+    }
+  }
+}
+```
+
+制約の対象は `layout { }` で指定したファイルで、制約そのものは Konsist の API で書きます。
+
+制約を検査するには、テストで `assert()` の代わりに `assert(FileConstraintCheck())` を呼びます。`assert()` だけでは制約が評価されず、`[UncheckedFileConstraint]` としてテストが落ちます。
+
+### 関連ドキュメント
+
+`"...".konsist { }` については [Konsist 連携ガイド](/katachi/ja/0.2/guides/konsist-integration/) も参照してください。
+
+## まとめ
+
+<table>
+  <tr>
+    <th>API</th>
+    <th style="min-width: 12rem">何をするか</th>
+    <th>例</th>
+  </tr>
+
+  <tr>
+    <td>
+      ```kt
+      architecture { }
+      ```
+    </td>
+
+    <td>
+      プロジェクト全体のアーキテクチャを定義する、エントリーポイントの関数です。
+    </td>
+
+    <td>
+      ```kt nocollapse
+      architecture {
+        "UseCase" { /* ... */ }
+      }
+      ```
+
+      * 意味: このプロジェクトには `UseCase` という Role がある
+    </td>
+  </tr>
+
+  <tr>
+    <td>
+      ```kt
+      assert()
+      ```
+    </td>
+
+    <td>
+      定義どおりにファイルが置かれているかを検査します。テストから呼ぶ1行で、これが無いと何も起きません。
+    </td>
+
+    <td>
+      ```kt nocollapse
+      @Test
+      fun `配置が定義どおり`() {
+        projectArchitecture.assert()
+      }
+      ```
+
+      * 意味: 違反があればテストが落ちる。1回の実行で全部の違反を集め、1つのメッセージにまとめる
+    </td>
+  </tr>
+
+  <tr>
+    <td>
+      ```kt
+      "名前" { }
+      ```
+    </td>
+
+    <td>
+      プロジェクトの中に登場するファイルの役割 (Role) を定義します。
+    </td>
+
+    <td>
+      ```kt nocollapse
+      "UseCase" {
+        layout { /* ... */ }
+      }
+      ```
+
+      * 意味: `UseCase` という Role がある。宣言していない Role のファイルは置けない
+    </td>
+  </tr>
+
+  <tr>
+    <td>
+      ```kt
+      "名前".group { }
+      ```
+    </td>
+
+    <td>
+      Role をまとめて階層を作ります。使うかどうかは任意で、使わなくても Role は書けます。
+    </td>
+
+    <td>
+      ```kt nocollapse
+      "domain".group {
+        "UseCase" { /* ... */ }
+      }
+      ```
+
+      * 意味: `UseCase` は domain レイヤーの Role。修飾名は `domain.UseCase` になる
+    </td>
+  </tr>
+
+  <tr>
+    <td>
+      ```kt
+      layout { }
+      ```
+    </td>
+
+    <td>
+      その Role のファイルをどこに置いてよいかを定義します。
+    </td>
+
+    <td>
+      ```kt nocollapse
+      layout {
+        "domain/useCase" /
+          "*UseCase".ktFile()
+      }
+      ```
+
+      * 意味: `domain/useCase/*UseCase.kt` にだけ置ける。それ以外の場所に置くと違反になる
+    </td>
+  </tr>
+
+  <tr>
+    <td>
+      ```kt
+      "名前".konsist { }
+      ```
+    </td>
+
+    <td>
+      その Role のファイルの中身に制約をかけます。別モジュール `katachi-konsist` と、テストでの `assert(FileConstraintCheck())` が必要です。
+    </td>
+
+    <td>
+      ```kt nocollapse
+      "invoke を1つだけ持つこと".konsist {
+        classes().must { /* 条件 */ }
+      }
+      ```
+
+      * 意味: 満たさないファイルがあると違反になる。**制約名がそのまま違反レポートに出る**
+    </td>
+  </tr>
+</table>
+
+## 次のステップ
+
+* [初めてのアーキテクチャ定義](/katachi/ja/0.2/get-started/first-architecture/) ... あなたのプロジェクトに katachi を導入して、この6つを実際に書いてみましょう。
+* [Role](/katachi/ja/0.2/guides/role/) ... Role に説明を書く方法と、定義がディレクトリ構造のコピーにならないようにする考え方を学びましょう。
+* [Layout](/katachi/ja/0.2/guides/layout/) ... 置き場所の書き分けと、`anyFile()` / `ignore()` という deny by default の逃げ道の使いどころを学びましょう。

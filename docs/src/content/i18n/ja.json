@@ -1,0 +1,9 @@
+{
+	"starlightVersions.link.latest": "最新の内容は<a href={{link}}>最新版</a>を見てください。",
+	"starlightVersions.outdated.label": "このページは {{label}} の内容です。",
+	"starlightVersions.outdated.slug": "このページは {{slug}} 版の内容です。",
+	"starlightVersions.search.link.latest": "最新の結果は<a href={{link}}>最新版</a>で検索してください。",
+	"starlightVersions.search.outdated.label": "{{label}} の中だけを検索しています。",
+	"starlightVersions.search.outdated.slug": "{{slug}} 版の中だけを検索しています。",
+	"starlightVersions.select.accessibleLabel": "版を選ぶ"
+}

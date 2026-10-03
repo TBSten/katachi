@@ -1,0 +1,92 @@
+---
+title: Konsist との統合
+description: konsist { } で Konsist の API を使い、ファイルの配置ではなく中の宣言に制約をかける方法。must /
+  mustNot / mustBeEmpty の使い分け。
+tags:
+  - intermediate
+slug: ja/0.2/guides/konsist-integration
+---
+
+{/*
+  このページの目的: katachi のなかで konsist を活用する方法を紹介する。
+  */}
+
+import { LinkCard } from '@astrojs/starlight/components';
+
+katachi のコア API で検証できるのは、ディレクトリ構造やファイルの位置です。`"...".konsist { }` を使うと、Konsist の API で **ファイル内の宣言を検証** できます。
+
+## インストール
+
+`"...".konsist { }` は別アーティファクト `me.tbsten.katachi:katachi-konsist` に入っているので、`build.gradle.kts` の依存に追加してください。
+
+```kts title="build.gradle.kts" {2}
+dependencies {
+    testImplementation("me.tbsten.katachi:katachi-konsist:<version>")
+}
+```
+
+次に、`projectArchitecture.assert()` に `FileConstraintCheck()` を渡すと、Konsist の検証を実行できます。
+
+```kt del={3} ins={4}
+@Test
+fun `アーキテクチャに沿ったファイル配置になっている`() {
+  projectArchitecture.assert()
+  projectArchitecture.assert(FileConstraintCheck())
+}
+```
+
+## 基本的な使い方
+
+Role の中で、その Role のファイルにどんな宣言があるべきかを定義します。
+
+```kt {7-8}
+architecture {
+  "UseCase" {
+    layout {
+      "src/main/kotlin/com/example/useCase" / "*UseCase".ktFile()
+    }
+
+    "invoke 関数を1つだけ持つこと".konsist {
+        classes().must { it.functions().map { f -> f.name } == listOf("invoke") }
+    }
+  }
+}
+```
+
+制約の対象は、その Role の `layout { }` に当てはまったファイルです。`layout { }` の無い Role には制約を書けません。
+
+## エラーの例
+
+制約の違反を検知すると、次のようなエラーメッセージが表示されます。
+
+```text
+Katachi check failed: 1 violation (FileConstraint: 1)
+
+[UnsatisfiedFileConstraint] file:///path/to/project/src/main/kotlin/com/example/useCase/GetUserUseCase.kt
+  Role: UseCase / FileConstraint: "invoke 関数を1つだけ持つこと"
+  Declaration: GetUserUseCase (line 3)
+  Declared at: ProjectArchitecture.kt:12
+```
+
+**制約に付けた名前がそのまま出ます。** 制約が複数あるとき、どれが落ちたのかはこの1行で分かるので、名前は「満たすべきこと」の形で書いてください。
+
+## Konsist API
+
+`"...".konsist { }` ブロック内では通常の Konsist API が使えます。
+
+<LinkCard title="Konsist のドキュメント" href="https://docs.konsist.lemonappdev.com/" />
+
+katachi が足しているのは `must` / `mustNot` / `mustBeEmpty` の3つで、Konsist の `assertTrue` などのアサーションは、コンパイルエラーにして使えないようにしています。対象を絞るまでの書き方は Konsist のものがそのまま使えます。
+
+## まとめ
+
+* `layout { }` が **ファイルをどこに置いてよいか**、`konsist { }` が **ファイルの中身がどうあるべきか** を担当します。
+* `katachi-konsist` は**任意のモジュール**です。依存の追加と `assert(FileConstraintCheck())` の設定が必要です。
+* **制約名がそのまま違反レポートに出ます。** 名前は「満たすべきこと」の形で書いてください。
+* Konsist の `assertTrue` 系は `konsist { }` の中では**使えません**（コンパイルエラーになります）。`must` / `mustNot` / `mustBeEmpty` で書いてください。
+
+## 次のステップ
+
+* Konsist API を実際に使う例は、各種レシピを参照してください。
+* [Role](/katachi/ja/0.2/guides/role/) ... 制約を書く先である Role の説明・置き場所・グループの書き方を学びましょう。
+* [ArchitectureProcessor とそのカスタマイズ](/katachi/ja/0.2/guides/processor/) ... `FileConstraintCheck` と同じ interface で、定義から自分で何かを取り出す方法を学びましょう。

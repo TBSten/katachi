@@ -49,7 +49,7 @@ def area_of(path, own_module):
         return "test"
     if path.startswith("sample/"):
         return "sample"
-    if path.startswith("docs/src/content/docs/ja/") or path == "README.ja.md":
+    if (path.startswith("docs/src/content/docs/ja/") and not api.is_frozen_doc(path)) or path == "README.ja.md":
         return "docs"
     return None
 

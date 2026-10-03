@@ -1,6 +1,7 @@
 ---
 import { getCollection } from 'astro:content';
 import { CardGrid, LinkCard } from '@astrojs/starlight/components';
+import { archivedVersionSlugs } from '../lib/versions.mjs';
 
 /**
  * その節に属するページをカードで並べる。`recipes/index.mdx` のような索引ページ用。
@@ -44,7 +45,18 @@ const localeOf = (pathname: string) => {
 	return first === 'ja' ? 'ja' : undefined;
 };
 const pageLocale = locale ?? localeOf(Astro.url.pathname);
-const prefix = (pageLocale ? pageLocale + '/' : '') + Astro.props.dir + '/';
+// 古い版の写し（`0.2/recipes/index.mdx` など）では、同じ版のページだけを並べる。
+// id は `0.2/recipes/...`（英語）・`ja/0.2/recipes/...`（日本語）と、locale の後ろに版が入る。
+const versionOf = (pathname: string) => {
+	const segments = (pathname.startsWith(base) ? pathname.slice(base.length) : pathname)
+		.replace(/^\//, '')
+		.split('/');
+	const candidate = segments[0] === 'ja' ? segments[1] : segments[0];
+	return candidate && archivedVersionSlugs.includes(candidate) ? candidate : undefined;
+};
+const pageVersion = versionOf(Astro.url.pathname);
+const prefix =
+	(pageLocale ? pageLocale + '/' : '') + (pageVersion ? pageVersion + '/' : '') + Astro.props.dir + '/';
 const slugOf = (href: string) =>
 	(href.startsWith(base) ? href.slice(base.length) : href).replace(/^\/|\/$/g, '');
 

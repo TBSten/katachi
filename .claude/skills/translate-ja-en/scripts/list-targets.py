@@ -18,7 +18,7 @@ stale のものには、訳を最後に変えたコミット（base）を出す�
   python3 .claude/skills/translate-ja-en/scripts/list-targets.py          # 要るものだけ
   python3 .claude/skills/translate-ja-en/scripts/list-targets.py --all    # ok も含めて全部
 """
-import csv, os, subprocess, sys
+import csv, fnmatch, os, subprocess, sys
 from pathlib import Path
 
 PATTERN_FILE = Path(__file__).resolve().parent.parent / "target-file-pattern.csv"
@@ -26,13 +26,14 @@ SRC_COLUMN, DST_COLUMN = "対象ファイル", "翻訳先ファイル"
 
 
 def load_patterns():
-    """target-file-pattern.csv を読み、(ディレクトリの組, ファイルの組) を返す。
+    """target-file-pattern.csv を読み、(ディレクトリの組, ファイルの組, 除外) を返す。
 
     1行が1組。列は「対象ファイル」「翻訳先ファイル」（「備考」は読むだけで使わない）。
     ディレクトリの組: (原本のディレクトリ, 訳のディレクトリ, 拡張子の集合)
     ファイルの組:     (原本, 訳)
+    除外:             `!` で始まる行。両方の列の glob（fnmatch。`*` は `/` もまたぐ）に当たるファイルを組にしない
     """
-    dir_pairs, file_pairs = [], []
+    dir_pairs, file_pairs, excludes = [], [], []
     with PATTERN_FILE.open(encoding="utf-8", newline="") as f:
         reader = csv.DictReader(f)
         missing = {SRC_COLUMN, DST_COLUMN} - set(reader.fieldnames or [])
@@ -44,6 +45,11 @@ def load_patterns():
                 continue
             if not src or not dst:
                 sys.exit(f"{PATTERN_FILE.name}:{n}: 対象ファイルと翻訳先ファイルの両方が要ります")
+            if src.startswith("!") or dst.startswith("!"):
+                if not (src.startswith("!") and dst.startswith("!")):
+                    sys.exit(f"{PATTERN_FILE.name}:{n}: 除外の行は両方の列を `!` で始めます")
+                excludes += [src[1:], dst[1:]]
+                continue
             if ("*" in src) != ("*" in dst):
                 sys.exit(f"{PATTERN_FILE.name}:{n}: 片方だけがワイルドカードです")
             if "*" not in src:
@@ -57,7 +63,11 @@ def load_patterns():
             if exts != extensions(dst_leaf):
                 sys.exit(f"{PATTERN_FILE.name}:{n}: 対象と翻訳先で拡張子が違います")
             dir_pairs.append((src_root, dst_root, exts))
-    return dir_pairs, file_pairs
+    return dir_pairs, file_pairs, excludes
+
+
+def excluded(path, excludes):
+    return any(fnmatch.fnmatchcase(str(path), pattern) for pattern in excludes)
 
 
 def extensions(leaf):
@@ -114,11 +124,11 @@ def judge(src, dst, s, d):
 
 def main():
     show_all = "--all" in sys.argv
-    PAIRS, FILE_PAIRS = load_patterns()
+    PAIRS, FILE_PAIRS, EXCLUDES = load_patterns()
     rows = []
     for src_root, dst_root, exts in PAIRS:
         for src in sorted(Path(src_root).rglob("*")):
-            if not src.is_file() or src.suffix not in exts:
+            if not src.is_file() or src.suffix not in exts or excluded(src, EXCLUDES):
                 continue
             dst = Path(dst_root) / src.relative_to(src_root)
             s, d = last_change(str(src)), last_change(str(dst))
@@ -136,7 +146,7 @@ def main():
     # 訳の側にしか無いファイル（原本が消えた・原本が無いまま英語で書かれた）
     for src_root, dst_root, exts in PAIRS:
         for dst in sorted(Path(dst_root).rglob("*")):
-            if not dst.is_file() or dst.suffix not in exts:
+            if not dst.is_file() or dst.suffix not in exts or excluded(dst, EXCLUDES):
                 continue
             if Path(src_root) in dst.parents or dst.parent == Path(src_root):
                 continue

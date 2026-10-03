@@ -1,0 +1,93 @@
+---
+title: Gradle
+description: ビルドスクリプト・wrapper・version catalog を architecture { }
+  で宣言する例と、composite build / buildSrc を使っている場合の宣言の例。
+tags:
+  - intermediate
+slug: ja/0.2/recipes/gradle
+---
+
+{/*
+  このページの目的: Gradle のファイル（wrapper・build スクリプト・version catalog）を `gradle()` で1行宣言する方法と、composite build / buildSrc を使うときに自分で宣言する範囲を、コピーして使える例で示すこと。
+  */}
+
+import SnippetIsStartingPoint from '../../../../../components/SnippetIsStartingPoint.astro';
+
+```kt title="ProjectArchitecture.kt"
+@file:OptIn(ExperimentalKatachiApi::class)
+
+import me.tbsten.katachi.ExperimentalKatachiApi
+import me.tbsten.katachi.dsl.architecture
+import me.tbsten.katachi.dsl.gradle.gradle
+
+val projectArchitecture = architecture {
+    gradle() // gradle.kts, gradle wrapper などが documented = false で宣言されます
+}
+```
+
+サンプルでも同じ1行で宣言しています（[sample/jvm の GradleGroup.kt](https://github.com/TBSten/katachi/blob/main/sample/jvm/architecture-test/src/test/kotlin/com/example/groups/GradleGroup.kt)）。
+
+## composite build / buildSrc を利用している場合
+
+`gradle()` は `build-logic` などの included build と `buildSrc` を宣言しません。その中のビルドスクリプトと規約プラグインは、自分で宣言します。
+
+```kt title="ProjectArchitecture.kt"
+@file:OptIn(ExperimentalKatachiApi::class)
+
+import me.tbsten.katachi.ExperimentalKatachiApi
+import me.tbsten.katachi.dsl.architecture
+import me.tbsten.katachi.dsl.gradle.gradle
+import me.tbsten.katachi.dsl.kotlin.ktFile
+import me.tbsten.katachi.dsl.kotlin.ktsFile
+import me.tbsten.katachi.dsl.template
+
+const val buildConventionDir = "build-logic" // buildSrc を利用する場合は代わりに "buildSrc"
+const val conventionSourceDir = "$buildConventionDir/src/main/kotlin"
+
+val projectArchitecture = architecture {
+    gradle()
+
+    "Build".group {
+        documented = false
+
+        "BuildScript" {
+            summary = "included build / buildSrc 自身のビルドスクリプト"
+            layout {
+                buildConventionDir {
+                    "build.gradle".ktsFile()
+                    "settings.gradle".ktsFile().optional() // buildSrc では無くてもよい
+                }
+            }
+        }
+
+        "ConventionPluginScript" {
+            summary = "各モジュールが plugins { id(\"...\") } で適用する、規約プラグインのスクリプト"
+            layout {
+                conventionSourceDir {
+                    "${capture("name")}.gradle".ktsFile()
+                        .template {
+                            """
+                                plugins {
+                                    kotlin("jvm")
+                                }
+                            """.trimIndent()
+                        }
+                }
+            }
+
+            // ./gradlew katachiTemplate --arg template=Build.ConventionPluginScript --arg name=kotlin-library
+        }
+
+        "ConventionPluginSource" {
+            summary = "規約プラグインのスクリプトから使う、ヘルパーの Kotlin クラス"
+            layout {
+                conventionSourceDir {
+                    "**" / "*".ktFile() // パッケージを切ったクラスも許す
+                }
+            }
+        }
+    }
+}
+```
+
+<SnippetIsStartingPoint />

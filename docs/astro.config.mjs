@@ -6,6 +6,9 @@ import mermaid from 'astro-mermaid';
 import starlightLlmsTxt from 'starlight-llms-txt';
 // 内部リンクの切れをビルドで落とす。腐ったリンクを公開しないための歯止め。
 import starlightLinksValidator from 'starlight-links-validator';
+// ドキュメントの版。版の一覧は src/lib/versions.mjs にある（版を足すときに直すのはそこだけ）。
+import starlightVersions from 'starlight-versions';
+import { archivedVersions, archivedVersionSlugs, currentVersion, publicSections } from './src/lib/versions.mjs';
 import { existsSync, readFileSync, statSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 
@@ -78,23 +81,55 @@ export default defineConfig({
 			// リンクにはしない自前描画（DifficultyTag.astro）。starlight-tags は使っていない
 			// — v2.0.0 は /tags/ 系のページを常に生成し、日本語側でそのリンクが
 			// `/katachi/ja/ja/...` と locale が二重になって 404 になる不具合があったため。
+			//
+			// starlight-versions は PageTitle・ThemeSelect・Search・Banner を差し替えて版の表示を足すが、
+			// PageTitle（ここ）と ThemeSelect・Search（starlight-theme-nova）は既に差し替え済みなので、
+			// プラグインは「上書き済み」の警告を出して手を引く。代わりに次のようにしている。
+			// - PageTitle: 自前の PageTitle.astro が「古い版です」の注意（VersionNotice）を出す。
+			// - ThemeSelect: 自前の ThemeSelect.astro が版の切り替え（VersionSelect）と nova のテーマ切り替えを並べる。
+			// - Search: nova のまま。古い版のページは検索の索引に入れない（src/lib/route-data.ts）。
 			components: {
 				PageTitle: './src/components/overrides/PageTitle.astro',
+				ThemeSelect: './src/components/overrides/ThemeSelect.astro',
 			},
+			// 古い版のページを検索の索引から外し、サイドバーの public/ 行きのリンクを直す。
+			routeMiddleware: './src/lib/route-data.ts',
 			// `locales` のキーで指す。ja は root なので 'root'。
 			defaultLocale: 'root',
 			// デザインシステムは starlight-theme-nova に任せる。
 			plugins: [
 				starlightThemeNova(),
 				// /llms.txt・/llms-full.txt・/llms-small.txt を生成する。
-				starlightLlmsTxt(),
+				// 古い版の写しは llms-small.txt から外し、llms-full.txt では末尾へ回す
+				// （llms-full.txt には除外の設定が無い）。
+				starlightLlmsTxt({
+					exclude: archivedVersionSlugs.map((slug) => `${slug}/**`),
+					demote: archivedVersionSlugs.map((slug) => `${slug}/**`),
+				}),
 				// 内部リンクが切れていたらビルドを落とす。腐ったリンクを公開しないための歯止め。
 				// 相対リンクも許す（public/ のスライドへは ../../slides/... で張っている）。
 				// トップページは content collection ではなく src/pages/ の .astro なので、validator は
 				// 存在を知らず「custom page への不正なリンク」として落とす。そこだけ検査から外す。
 				starlightLinksValidator({
 					errorOnRelativeLinks: false,
-					exclude: ['/katachi/', '/katachi/ja/'],
+					//
+					// 古い版の写しの中の public/ 行きのリンク（`/katachi/0.2/api-docs/...`）も外す。starlight-versions が
+					// 版の区切りを足してしまったもので、表示の手前で src/middleware.ts が `/katachi/api-docs/...` に戻す。
+					exclude: [
+						'/katachi/',
+						'/katachi/ja/',
+						...archivedVersionSlugs.flatMap((slug) =>
+							['', 'ja/'].map((locale) => `/katachi/${locale}${slug}/{${publicSections.join(',')}}/**`),
+						),
+					],
+				}),
+				// ドキュメントの版。src/content/docs/ 直下がいま書いている版（URL は今までどおり）、
+				// 凍結した版は src/content/docs/<slug>/ と src/content/docs/ja/<slug>/ の写し。
+				// `versions` に無い版の写しが無ければ、dev / build の開始時に今の docs から写しを作る。
+				// starlight-theme-nova より後ろに置くこと（nova の差し替えを見て警告を出すため。上の components を参照）。
+				starlightVersions({
+					versions: archivedVersions,
+					current: currentVersion,
 				}),
 			],
 			// Expressive Code の設定（長いコードブロックを畳むプラグイン）は ec.config.mjs にある。

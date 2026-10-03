@@ -1,0 +1,65 @@
+---
+title: Git
+description: .gitignore, .gitattributes, and other Git-related files, declared
+  in architecture { }.
+tags:
+  - beginner
+slug: 0.2/recipes/git
+---
+
+{/*
+  The purpose of this page: to show, in a copy-and-paste form, how to declare .gitignore / .gitkeep / .gitattributes as one Role per kind of file.
+  */}
+
+import SnippetIsStartingPoint from '../../../../components/SnippetIsStartingPoint.astro';
+
+```kt collapse {9,21,29,37}
+// ProjectArchitecture.kt
+@file:OptIn(ExperimentalKatachiApi::class)
+
+import me.tbsten.katachi.ExperimentalKatachiApi
+import me.tbsten.katachi.dsl.architecture
+
+val projectArchitecture = architecture {
+    "Tools".group {
+        git()
+    }
+}
+
+// roles/Git.kt
+@file:OptIn(ExperimentalKatachiApi::class)
+
+import me.tbsten.katachi.ExperimentalKatachiApi
+import me.tbsten.katachi.dsl.DeclarationContainerScope
+
+fun DeclarationContainerScope.git() =
+    "Git".group {
+        "GitIgnore" {
+            title = "Git ignore"
+            summary = "The list of files kept out of Git (.gitignore)"
+            layout {
+                "**/.gitignore".file()
+            }
+        }
+
+        "GitKeep" {
+            title = "Git keep"
+            summary = "Empty placeholder files that keep a directory in Git (.gitkeep)"
+            layout {
+                "**/.gitkeep".file()
+            }
+        }
+
+        "GitAttributes" {
+            title = "Git attributes"
+            summary = "Per-path attributes such as line endings and diff handling (.gitattributes)"
+            layout {
+                "**/.gitattributes".file()
+            }
+        }
+    }
+```
+
+The samples declare only `.gitignore`, with one Role ([GitRole.kt in sample/jvm](https://github.com/TBSten/katachi/blob/main/sample/jvm/architecture-test/src/test/kotlin/com/example/roles/GitRole.kt)).
+
+<SnippetIsStartingPoint />

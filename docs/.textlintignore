@@ -1,0 +1,3 @@
+# 凍結した版の写し（starlight-versions が作る src/content/docs/ja/<版>/）は直さないので、検査しない。
+# 版の slug は数字で始まる（0.2 など）。版の一覧は src/lib/versions.mjs。
+src/content/docs/ja/[0-9]*/**

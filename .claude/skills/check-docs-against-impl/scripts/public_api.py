@@ -384,6 +384,14 @@ DOC_GLOBS = (
     "docs/public/install/ja/index.md",
 )
 _SKIP_DIRS = {"build", "node_modules", ".gradle", ".kotlin", ".idea"}
+# 凍結したドキュメントの版の写し（starlight-versions が作る docs/src/content/docs/ja/0.2/ など）。
+# 公開済みの版のまま直さないので、今の実装とは照合しない。版の slug は数字で始まる
+_FROZEN_DOCS = re.compile(r"^docs/src/content/docs/(?:ja/)?[0-9][^/]*/")
+
+
+def is_frozen_doc(path):
+    """凍結した版の写しなら True（path はリポジトリの直下からの相対パス）。"""
+    return bool(_FROZEN_DOCS.match(path))
 
 
 def doc_files(root):
@@ -391,7 +399,7 @@ def doc_files(root):
     for pattern in DOC_GLOBS:
         for f in root.glob(pattern):
             rel = f.relative_to(root)
-            if f.is_file() and not (_SKIP_DIRS & set(rel.parts)):
+            if f.is_file() and not (_SKIP_DIRS & set(rel.parts)) and not is_frozen_doc(rel.as_posix()):
                 found.add(rel.as_posix())
     return sorted(found)
 

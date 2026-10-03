@@ -1,0 +1,163 @@
+---
+title: Layout システムでディレクトリ構成を厳守させる
+sidebar:
+  label: Layout
+description: layout { } でディレクトリ構成とファイル名を宣言し、宣言していない場所にファイルが増えたら落とす方法。
+tags:
+  - intermediate
+slug: ja/0.2/guides/layout
+---
+
+{/*
+  このページの目的: katachi のアーキテクチャ定義における重要な要素である Role の layout 周辺の使い方を深く網羅的に理解すること。
+  */}
+
+import { Aside } from "@astrojs/starlight/components";
+
+## ファイルをどこに置けるかを定義する
+
+Role に対応するファイルをどこに置けるかを定義するのが `layout { }` です。
+
+```kt {3-5}
+architecture {
+    "UseCase" {
+        // UseCase は useCase/ の中の *UseCase.kt にだけ置けます
+        layout {
+            "src/main/kotlin/com/example/useCase" / "*UseCase".ktFile()
+        }
+    }
+}
+```
+
+## ディレクトリ宣言の書き方のスタイル
+
+ディレクトリ宣言にはいくつか書き方があり、好みのスタイルで書けます。
+
+### スラッシュで繋ぐ
+
+各階層に置くものが1つだけのときは、`/` で繋いで1行で書けます。
+
+```kt
+layout {
+    "src/main/kotlin/com/example/useCase" / "*UseCase".ktFile()
+}
+```
+
+### ブロックで囲む
+
+同じディレクトリに複数のものを置くときは、ブロックで囲みます。
+
+```kt
+layout {
+    "src/main/kotlin/com/example/useCase" {
+        "Get*UseCase".ktFile()
+        "Update*UseCase".ktFile()
+    }
+}
+```
+
+ブロックの中では `description` を書けます。生成ドキュメントで「この置き場所は何か」の説明になります。
+
+```kt
+layout {
+    "src/main/kotlin/com/example/useCase" {
+        description = "複数の画面から使われるもの"
+        "*UseCase".ktFile()
+    }
+}
+```
+
+## 任意のファイルの配置を許す
+
+### `anyFile()` — 直下のファイルだけ許す
+
+そのディレクトリの**直下に限って**、どんなファイルでも置けるようにします。
+
+```kt
+layout {
+    "generated" { anyFile() }
+}
+```
+
+**この例ではサブディレクトリは許されません。** 1階層下にファイルがあれば、それは違反のまま報告されます。
+
+### `ignore()` — 以下すべての検査をやめる
+
+そのディレクトリより下を、**どの深さでも**検査しなくなります。
+
+```kt
+layout {
+    "build".ignore()
+}
+```
+
+`"build" { ignore() }` とブロックの中に書くこともできます。
+
+<Aside type="caution">
+  `anyFile()` と `ignore()` は任意のファイルの配置を許可しますが、これは **deny by default の逃げ道** です。注意して使ってください。
+
+  「宣言するのが面倒だから」で ignore, anyFile を乱用すると katachi を入れた意味が薄れます。
+  **機械的に生成されるもの** や、 **別のツールが構成を決めているもの** に限って使ってください。
+</Aside>
+
+## ワイルドカードに名前を付ける
+
+生成先のワイルドカードに名前を付ける `capture()` は、テンプレートと一緒に使います。layout の検査だけなら `capture()` は要らず、`*` のままで構いません。書き方は [テンプレートからコード生成](/katachi/ja/0.2/guides/generate-code-from-template/#生成先にワイルドカードがあるときは名前を付けて値を渡す) を参照してください。
+
+## ベストプラクティス
+
+すべての Role にディレクトリのパスを丸ごと書くのは非効率です。
+意味のある単位でパスを定数にしましょう。
+
+```kt {1,6}
+val appPackageDir = "src/main/kotlin/com/example"
+
+architecture {
+    "UseCase" {
+        layout {
+            appPackageDir / "useCase" / "*UseCase".ktFile()
+        }
+    }
+}
+```
+
+## まとめ
+
+* `layout { }` は **Role のファイルが現れてよい場所** を宣言します。宣言していない場所のファイルは違反になります。
+* `anyFile()` と `ignore()` は任意のファイルの配置を許可しますが、これは **deny by default の逃げ道** です。注意して使ってください。
+* 生成先のワイルドカードに名前を付ける `capture()` は、テンプレートと一緒に使います（[テンプレートからコード生成](/katachi/ja/0.2/guides/generate-code-from-template/#生成先にワイルドカードがあるときは名前を付けて値を渡す)）。layout の検査だけなら `*` のままで構いません。
+
+```kt {1,6-8,16,23}
+val appPackageDir = "src/main/kotlin/com/example"  // パスは定数に切り出せる
+
+architecture {
+    "UseCase" {
+        layout {
+            appPackageDir / "useCase" / "*UseCase".ktFile()   // "/" で繋いで置き場所を宣言する
+            appPackageDir {                                    // ブロックで囲んでも同じ宣言になる
+                "legacy" / "*UseCase".ktFile()
+            }
+        }
+    }
+
+    "GeneratedFile" {
+        summary = "ツールが生成するファイル"
+        layout {
+            "generated" { anyFile() }   // 直下ならどんなファイルでもよい（サブディレクトリは不可）
+        }
+    }
+
+    "BuildOutput" {
+        summary = "ビルドの出力"
+        layout {
+            "build".ignore()            // それより下は検査しない
+        }
+    }
+}
+```
+
+## 次のステップ
+
+* [Role](/katachi/ja/0.2/guides/role/) ... 定義が大きくなってきたときに、ファイルと関数へ切り分ける方法を学びましょう。
+* [Konsist との統合](/katachi/ja/0.2/guides/konsist-integration/) ... 置き場所だけでなく、ファイルの中身にも制約をかける方法を学びましょう。
+* [初めてのアーキテクチャ定義](/katachi/ja/0.2/get-started/first-architecture/) ... あなたのプロジェクトに katachi を導入して、実際に宣言を書いてみましょう。

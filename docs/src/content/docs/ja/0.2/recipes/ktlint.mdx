@@ -1,0 +1,63 @@
+---
+title: ktlint
+description: ktlint の .editorconfig とベースラインの置き場所を architecture { } で宣言する例。
+tags:
+  - beginner
+slug: ja/0.2/recipes/ktlint
+---
+
+{/*
+  このページの目的: ktlint の設定ファイル（.editorconfig とベースライン）を Role として宣言する最小の例を示す。
+  Gradle 周辺のレシピとは別に、linter の設定という1種類のファイルの置き場所だけを扱う。
+  */}
+
+import SnippetIsStartingPoint from '../../../../../components/SnippetIsStartingPoint.astro';
+
+import { LinkCard } from '@astrojs/starlight/components';
+
+<LinkCard title="ktlint" description="Kotlin の linter / formatter。設定は .editorconfig に書く。" href="https://ktlint.github.io/ktlint/latest/" />
+
+ktlint では、lint rule の無効化などを .editorconfig ファイルで設定できます。
+
+.editorconfig とベースライン（`ktlint-baseline.xml`）は、アーキテクチャ定義に書いて katachi に伝えておくのがおすすめです。
+
+```kt collapse
+// ProjectArchitecture.kt
+@file:OptIn(ExperimentalKatachiApi::class)
+
+import me.tbsten.katachi.ExperimentalKatachiApi
+import me.tbsten.katachi.dsl.architecture
+
+val projectArchitecture = architecture {
+    "Tools".group {
+        ktlint()
+    }
+}
+
+// roles/Ktlint.kt
+@file:OptIn(ExperimentalKatachiApi::class)
+
+import me.tbsten.katachi.ExperimentalKatachiApi
+import me.tbsten.katachi.dsl.DeclarationContainerScope
+
+fun DeclarationContainerScope.ktlint() =
+    "Ktlint".group {
+        "EditorConfig" {
+            title = "EditorConfig"
+            summary = "ktlint のルールを設定するファイル"
+            layout {
+                "**/.editorconfig".file()
+            }
+        }
+
+        "Baseline" {
+            title = "ktlint ベースライン"
+            summary = "既存の違反を許容するために ktlint が書き出すファイル"
+            layout {
+                "**/ktlint-baseline.xml".file()
+            }
+        }
+    }
+```
+
+<SnippetIsStartingPoint />

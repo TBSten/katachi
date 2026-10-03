@@ -137,6 +137,24 @@ title: ...
   プロジェクトルートに `.git` が無くてもよい）
 - Gradle のルートがリポジトリのルートと違う場合（モノレポ、サブモジュール）
 
+## ドキュメントの版
+
+版の切り替えは starlight-versions で出している。版の一覧は `src/lib/versions.mjs` の1か所にある。
+
+- `src/content/docs/` の直下（`0.2/` などの版のディレクトリを除く）が、いま書いている版。URL は `/katachi/guides/...` のままで、ページを直すのはここだけ
+- `src/content/docs/0.2/` と `src/content/docs/ja/0.2/`、`src/content/versions/0.2.json` は、v0.2 公開時点の写し（URL は `/katachi/0.2/...` と `/katachi/ja/0.2/...`）。**写しは凍結していて直さない。**
+  直すのは、ビルドが落ちる・リンクが切れるといった明らかな壊れだけ。文章の方針や言い換えの辞書が変わっても、写しは合わせない
+- 写しは textlint（`.textlintignore`）、translate-ja-en の訳の同期、check-docs-against-impl と prerelease の照合から外してある
+- public/ の下（API リファレンス・インストールキット・スライド）は版を持たない。古い版のページからのリンクは、`src/middleware.ts` が最新のものへ向け直す
+
+新しい版を切る手順（v0.3 を公開するときの例）:
+
+1. `src/lib/versions.mjs` の `archivedVersions` の先頭に `{ slug: '0.3', label: 'v0.3' }` を足し、`currentVersion` のラベルを `v0.4` にする
+2. `pnpm run build` を1回回す。ビルドの開始時に、その時点の `src/content/docs/` から `src/content/docs/0.3/`・`src/content/docs/ja/0.3/`・`src/content/versions/0.3.json` ができる。一度に切れる版は1つだけ
+3. ビルド（リンク検査を含む）と `pnpm run lint:text` が通るのを確かめ、写しを生成したままコミットする
+
+版を切るのは、その版の内容を書き終えてから、次の版の変更を入れる前にする。写しはビルドした時点の docs をそのまま写すので、次の版の変更が混ざると戻せない。
+
 ## `public/install/` — AI エージェント向けの配布物
 
 ドキュメントサイトのページではなく、**AI エージェントが `curl` で取りに来る素材**を置く場所。

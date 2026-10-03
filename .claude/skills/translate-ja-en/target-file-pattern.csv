@@ -6,3 +6,4 @@ docs/public/install/ja/**/*.md,docs/public/install/en/**/*.md,
 docs/public/install/ja/**/*.html,docs/public/install/en/**/*.html,
 CONTRIBUTING.ja.md,CONTRIBUTING.md,
 katachi-intellij-plugin/src/main/resources/messages/KatachiBundle_ja.properties,katachi-intellij-plugin/src/main/resources/messages/KatachiBundle.properties,IDE プラグインの文言。ロケール無しの既定ファイルが英語の訳。キーは変えず値だけ訳す
+!docs/src/content/docs/ja/[0-9]*/**,!docs/src/content/docs/[0-9]*/**,凍結したドキュメントの版の写し（starlight-versions が作る）。直さないので訳も同期しない

@@ -3,10 +3,15 @@
  * Starlight's page title, with the page's difficulty tag (frontmatter `tags`, defined in
  * tags.yml) shown as a plain, non-link label above it. The label text comes from tags.yml per
  * locale, so the Japanese pages read 初心者向け and the English ones Beginner.
+ *
+ * Below the title, pages of an archived documentation version (src/content/docs/0.2/ etc.)
+ * get starlight-versions' "this content is for v0.2" notice. The plugin would add it by
+ * overriding PageTitle itself, but it backs off because this override exists.
  */
 import Default from '@astrojs/starlight/components/PageTitle.astro';
 import DifficultyTag from './DifficultyTag.astro';
 import AskAboutPage from './AskAboutPage.astro';
+import VersionNotice from 'starlight-versions/components/VersionNotice.astro';
 const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 const path = Astro.url.pathname.replace(/\/$/, '');
 const isDocsPage = path !== base && path !== `${base}/ja` && !!Astro.locals.starlightRoute?.entry?.id;
@@ -19,6 +24,7 @@ const isDocsPage = path !== base && path !== `${base}/ja` && !!Astro.locals.star
 	</div>
 ) : <DifficultyTag />}
 <Default><slot /></Default>
+<VersionNotice />
 
 <style>
 	.page-title-meta {
