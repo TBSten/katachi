@@ -354,10 +354,7 @@ private fun declaredFileConstraintsOf(
     }
 }
 
-private fun coverageOf(covered: List<LayoutEntry>): FileConstraintCoverage = FileConstraintCoverage(
-    fileGlobs = covered.filter { it.kind == LayoutEntryKind.File }.map { it.glob },
-    anyFileGlobs = covered.filter { it.kind == LayoutEntryKind.AnyFile }.map { it.glob },
-)
+private fun coverageOf(covered: List<LayoutEntry>): FileConstraintCoverage = FileConstraintCoverage(covered)
 
 /**
  * The entries a [FileConstraintRange.DirectOnly] constraint covers: [owned] themselves, whose `anyFile()` opens

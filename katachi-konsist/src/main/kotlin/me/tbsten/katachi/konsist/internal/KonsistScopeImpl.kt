@@ -7,15 +7,20 @@ import com.lemonappdev.konsist.api.provider.KoNameProvider
 import com.lemonappdev.konsist.api.provider.KoPathProvider
 import java.io.File
 import me.tbsten.katachi.dsl.FileConstraintFailure
+import me.tbsten.katachi.dsl.FileConstraintFix
+import me.tbsten.katachi.dsl.FileConstraintReason
 import me.tbsten.katachi.konsist.KatachiKonsistUnlocatableDeclarationException
 import me.tbsten.katachi.konsist.KonsistScope
 
 /**
- * One element a block rejected: enough to open a report block on, and nothing more.
+ * One element a block rejected: enough to open a report block on, and what the rule that
+ * rejected it said about itself.
  *
  * A `data class` so that the same declaration rejected twice — by two `must` calls in one
  * block, or by a query that lists it twice — collapses to one entry in the set that holds
- * these. Two different declarations of one file stay two.
+ * these, as long as both said the same (or nothing). Two different declarations of one file
+ * stay two, and so does one declaration rejected by two rules giving different reasons: each
+ * reason is something the reader has to fix.
  */
 internal data class RejectedElement(
     /** Absolute, `/` separated, as Konsist reported it. Made project relative on the way out. */
@@ -24,6 +29,10 @@ internal data class RejectedElement(
     val name: String?,
     /** 1-based, or `null` when Konsist could not place it — a whole file, for instance. */
     val line: Int?,
+    /** Why the rule exists, as `must(reason) { }` gave it, or `null` for a rule that gave none. */
+    val reason: String? = null,
+    /** The fixes `must(reason, howToFix) { }` offered. */
+    val howToFix: List<String> = emptyList(),
 )
 
 /**
@@ -64,6 +73,33 @@ internal class KonsistScopeImpl(scope: KoScope) : KonsistScope, KoScope by scope
         asked++
         for (element in this) collected += rejectedElementOf(element)
     }
+
+    override fun <T : KoBaseProvider> List<T>.must(
+        reason: String,
+        howToFix: List<String>,
+        predicate: (T) -> Boolean,
+    ) {
+        asked++
+        for (element in this) {
+            if (!predicate(element)) collected += rejectedElementOf(element).copy(reason = reason, howToFix = howToFix)
+        }
+    }
+
+    override fun <T : KoBaseProvider> List<T>.mustNot(
+        reason: String,
+        howToFix: List<String>,
+        predicate: (T) -> Boolean,
+    ) {
+        asked++
+        for (element in this) {
+            if (predicate(element)) collected += rejectedElementOf(element).copy(reason = reason, howToFix = howToFix)
+        }
+    }
+
+    override fun <T : KoBaseProvider> List<T>.mustBeEmpty(reason: String, howToFix: List<String>) {
+        asked++
+        for (element in this) collected += rejectedElementOf(element).copy(reason = reason, howToFix = howToFix)
+    }
 }
 
 /**
@@ -96,7 +132,7 @@ private fun rejectedElementOf(element: KoBaseProvider): RejectedElement {
  * failed to read is a report that says a little less; a run that died reading one would be a
  * report that says nothing at all.
  */
-private fun lineOf(element: KoBaseProvider, path: String): Int? {
+internal fun lineOf(element: KoBaseProvider, path: String): Int? {
     val location = (element as? KoLocationProvider)
         ?.let { runCatching { it.location }.getOrNull() }
         ?: return null
@@ -107,10 +143,19 @@ private fun lineOf(element: KoBaseProvider, path: String): Int? {
     return rest.substringBefore(':').toIntOrNull()
 }
 
-/** One rejection, with its path written the way every other path in a report is written. */
+/**
+ * One rejection, with its path written the way every other path in a report is written, and the
+ * rule's reason and fixes as the report's `Reason:` line and `How to fix:` list.
+ */
 internal fun RejectedElement.toFileConstraintFailure(projectRoot: String): FileConstraintFailure =
     FileConstraintFailure(
         file = absolutePath.removePrefix("$projectRoot/"),
         declaration = name,
         line = line,
+        reasons = reason?.let { listOf(FileConstraintReason(REASON_LABEL, it)) }.orEmpty(),
+        howToFix = howToFix.map { FileConstraintFix(it) },
     )
+
+/** The label `must(reason) { }`'s reason is printed under: `Reason: <reason>`. */
+private const val REASON_LABEL: String = "Reason"
+

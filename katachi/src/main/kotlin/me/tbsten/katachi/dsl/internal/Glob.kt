@@ -71,6 +71,14 @@ public class Glob private constructor(
      */
     internal val groupKinds: List<GlobGroupKind>,
     /**
+     * For each entry of [groupKinds], the segment it sits in: 0-based, counted after a leading
+     * separator, so `":feature:*:**"` reads `[1, 2]`.
+     *
+     * What lets a caller tell which level a wildcard captured, for a name given to that level
+     * (see `LayoutEntry.captureValuesOf`) rather than to the n-th wildcard of the whole path.
+     */
+    internal val groupSegments: List<Int>,
+    /**
      * The segments before the first one holding a wildcard, with their escapes undone: what
      * any path this pattern matches has to start with, level for level.
      *
@@ -124,6 +132,27 @@ public class Glob private constructor(
             }
         }
         return GlobMatch(wildcards)
+    }
+
+    /**
+     * The raw text each wildcard matched, one entry per [groupKinds] entry and in the same order,
+     * or `null` when [path] does not match.
+     *
+     * Unlike [match], a `**` is not split into levels and is kept even when it matched nothing
+     * (as `""`), so that the n-th entry always belongs to the n-th wildcard -- the shape
+     * [groupSegments] is indexed by.
+     *
+     * ## Example 1: read what each wildcard of a module path matched
+     * ```kt
+     * Glob.compile(":feature:*:**", Glob.MODULE_SEPARATOR).matchGroups(":feature:home:ui:list") shouldBe
+     *     listOf("home", "ui:list")
+     * Glob.compile(":feature:*:**", Glob.MODULE_SEPARATOR).matchGroups(":feature:home") shouldBe
+     *     listOf("home", "")
+     * ```
+     */
+    internal fun matchGroups(path: String): List<String>? {
+        val result = regex.matchEntire(path) ?: return null
+        return groupKinds.indices.map { index -> result.groupValues.getOrElse(index + 1) { "" } }
     }
 
     /**
@@ -220,10 +249,12 @@ public class Glob private constructor(
             val oneLevel = "[^$escapedSeparator]+"
             val manyLevels = "($oneLevel(?:$escapedSeparator$oneLevel)*)"
             val kinds = mutableListOf<GlobGroupKind>()
+            val groupSegments = mutableListOf<Int>()
             val expression = StringBuilder()
             if (leadingSeparator) expression.append(escapedSeparator)
 
             segments.forEachIndexed { index, segment ->
+                val groupsBefore = kinds.size
                 // A preceding `**` has already emitted the separator that follows it, inside
                 // its own optional group, so that `a/**/b` still matches `a/b`.
                 val needsSeparator = index > 0 && segments[index - 1] != DOUBLE_STAR
@@ -241,6 +272,7 @@ public class Glob private constructor(
                     if (needsSeparator) expression.append(escapedSeparator)
                     expression.append(segmentExpression(pattern, segment, escapedSeparator, kinds))
                 }
+                repeat(kinds.size - groupsBefore) { groupSegments += index }
             }
 
             return Glob(
@@ -249,6 +281,7 @@ public class Glob private constructor(
                 segments = segments,
                 regex = Regex(expression.toString()),
                 groupKinds = kinds.toList(),
+                groupSegments = groupSegments.toList(),
                 literalPrefix = if (leadingSeparator) emptyList() else literalPrefixOf(segments),
             )
         }

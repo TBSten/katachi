@@ -12,7 +12,8 @@ import me.tbsten.katachi.dsl.KatachiDsl
  * `declarations()`, `withNameEndingWith(...)` and the rest arrive through Konsist's `KoScope` and
  * Konsist's list extensions, unchanged. What katachi replaces is the right of the dot: where
  * Konsist would end a query with its own `assertTrue`, a `konsist { }` block ends it with
- * [must], [mustNot] or [mustBeEmpty].
+ * [must], [mustNot] or [mustBeEmpty] — each also taking a reason and how to fix a rejection,
+ * which the report then prints under it.
  *
  * The reason is the report, not taste. `assertTrue` throws on the first rejection and says
  * so in prose; katachi needs the rejected declarations themselves, because the first line of
@@ -114,6 +115,80 @@ public interface KonsistScope : KoScope {
      * ```
      */
     public fun <T : KoBaseProvider> List<T>.mustBeEmpty()
+
+    /**
+     * [must], with the reason the rule exists and how to fix a rejection, printed in the report
+     * under each element it rejects.
+     *
+     * ```text
+     *   Declaration: GetUserUseCaseImpl (line 9)
+     *   Reason: a use case is an interface; its implementation lives in :core:data
+     *   Declared at: UseCaseRole.kt:16
+     *
+     *   How to fix:
+     *     - Move the class to :core:data
+     * ```
+     *
+     * ## Example 1: say why the rule exists and how to satisfy it
+     * ```kt
+     * "use cases are interfaces".konsist {
+     *     classes().must(
+     *         reason = "a use case is an interface; its implementation lives in :core:data",
+     *         howToFix = listOf("Move the class to :core:data"),
+     *     ) { false }
+     * }
+     * ```
+     *
+     * @param reason why the rule exists, printed as `Reason: <reason>` on one line.
+     * @param howToFix the fixes to offer, one `How to fix:` item each, or empty for none.
+     * @param predicate what has to hold. `true` keeps the element, `false` rejects it.
+     */
+    public fun <T : KoBaseProvider> List<T>.must(
+        reason: String,
+        howToFix: List<String> = emptyList(),
+        predicate: (T) -> Boolean,
+    )
+
+    /**
+     * [mustNot], with the reason and how to fix a rejection. See the `must(reason)` overload.
+     *
+     * ## Example 1: forbid the Android framework, and say what to do instead
+     * ```kt
+     * konsist {
+     *     files.mustNot("the domain layer runs on the JVM alone", listOf("Receive the value from the caller")) { file ->
+     *         file.imports.any { it.name.startsWith("android.") }
+     *     }
+     * }
+     * ```
+     *
+     * @param reason why the rule exists, printed as `Reason: <reason>` on one line.
+     * @param howToFix the fixes to offer, one `How to fix:` item each, or empty for none.
+     * @param predicate what must not hold. `true` rejects the element, `false` keeps it.
+     */
+    public fun <T : KoBaseProvider> List<T>.mustNot(
+        reason: String,
+        howToFix: List<String> = emptyList(),
+        predicate: (T) -> Boolean,
+    )
+
+    /**
+     * [mustBeEmpty], with the reason and how to fix a rejection. See the `must(reason)` overload.
+     *
+     * ## Example 1: no public class in an internal layer, with the fix
+     * ```kt
+     * konsist {
+     *     classes().filter { it.hasPublicOrDefaultModifier }
+     *         .mustBeEmpty("this layer is internal", listOf("Make the class internal"))
+     * }
+     * ```
+     *
+     * @param reason why the rule exists, printed as `Reason: <reason>` on one line.
+     * @param howToFix the fixes to offer, one `How to fix:` item each, or empty for none.
+     */
+    public fun <T : KoBaseProvider> List<T>.mustBeEmpty(
+        reason: String,
+        howToFix: List<String> = emptyList(),
+    )
 
     // ---------------------------------------------------------------------------------------
     // Konsist's own twelve assertions, shadowed.
