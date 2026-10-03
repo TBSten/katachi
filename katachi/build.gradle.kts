@@ -34,6 +34,20 @@ dependencies {
 
     testImplementation(libs.kotestRunnerJunit5)
     testImplementation(libs.kotestAssertionsCore)
+    // SARIF 2.1.0 の JSON Schema で `toSarif` の出力を検証するためだけ。test 専用で、利用者の
+    // classpath には出ない。
+    testImplementation(libs.jsonSchemaValidator)
+}
+
+// `tool.driver.semanticVersion` のために、実行中の katachi が自分の版を読めるようにする。
+// MANIFEST の Implementation-Version は jar から読んだときしか入らず、`:katachi:test` や
+// composite build のクラスディレクトリでは null になるので、resources に埋める。
+tasks.processResources {
+    val katachiVersion = version.toString()
+    inputs.property("katachiVersion", katachiVersion)
+    filesMatching("META-INF/katachi/version.properties") {
+        expand("katachiVersion" to katachiVersion)
+    }
 }
 
 // kotest はタグの指定をテスト JVM のシステムプロパティで読む。`./gradlew :katachi:test -Dkotest.tags.exclude=Perf`
@@ -42,6 +56,9 @@ tasks.test {
     listOf("kotest.tags", "kotest.tags.include", "kotest.tags.exclude").forEach { key ->
         providers.systemProperty(key).orNull?.let { systemProperty(key, it) }
     }
+    // SARIF の golden（src/test/resources/sarif/golden/）を今の出力で書き直す:
+    // `./gradlew :katachi:test -Dkatachi.golden.update=true`
+    providers.systemProperty("katachi.golden.update").orNull?.let { systemProperty("katachi.golden.update", it) }
 }
 
 // java-test-fixtures は既定で `java` component に testFixtures の variant を足し、Maven Central に

@@ -126,9 +126,6 @@ internal interface OutsideProjectDirectories {
     fun holdsNothingOfTheProject(directory: FsPath): Boolean
 }
 
-/** How long to wait for `git ls-files` before giving up. */
-private const val GIT_TIMEOUT_SECONDS: Long = 60L
-
 private val GIT_LS_FILES: List<String> = listOf(
     "git",
     "ls-files",
@@ -137,8 +134,6 @@ private val GIT_LS_FILES: List<String> = listOf(
     "--exclude-standard",
     "-z",
 )
-
-private val GIT_INSIDE_WORK_TREE: List<String> = listOf("git", "rev-parse", "--is-inside-work-tree")
 
 /**
  * Asks git whether [root] is inside a work tree.
@@ -153,22 +148,8 @@ private val GIT_INSIDE_WORK_TREE: List<String> = listOf("git", "rev-parse", "--i
  * walking the whole tree. A failure *after* git has claimed the root is a different matter
  * and is reported: see [gitLsFiles].
  */
-internal fun isInsideGitWorkTree(root: FsPath): Boolean {
-    val process = try {
-        ProcessBuilder(GIT_INSIDE_WORK_TREE)
-            .directory(File(root.value))
-            .redirectErrorStream(true)
-            .start()
-    } catch (_: IOException) {
-        return false
-    }
-    val output = process.inputStream.use { it.readBytes() }.toString(Charsets.UTF_8)
-    if (!process.waitFor(GIT_TIMEOUT_SECONDS, TimeUnit.SECONDS)) {
-        process.destroyForcibly()
-        return false
-    }
-    return process.exitValue() == 0 && output.trim() == "true"
-}
+internal fun isInsideGitWorkTree(root: FsPath): Boolean =
+    runGit(root, "rev-parse", "--is-inside-work-tree")?.trim() == "true"
 
 /**
  * Wraps [delegate] so that only the files git reports for [root] are visible.

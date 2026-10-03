@@ -2,6 +2,7 @@ package me.tbsten.katachi.dsl
 
 import me.tbsten.katachi.ExperimentalKatachiApi
 import me.tbsten.katachi.dsl.internal.MetadataValues
+import me.tbsten.katachi.dsl.internal.captureDeclarationSite
 import me.tbsten.katachi.dsl.internal.get
 
 /**
@@ -92,6 +93,21 @@ public class Architecture internal constructor(
      */
     @ExperimentalKatachiApi
     public val baseline: Baseline? = null,
+    /**
+     * Where `architecture { }` itself was called, as `FileName.kt:42`.
+     *
+     * The last place a report can point at when a violation has no file of its own -- a
+     * directory nobody declared, a check that threw -- and no declaration site either.
+     * [DeclarationSite.Unknown] when the call could not be found on the stack.
+     *
+     * ## Example 1: read where the definition was written
+     * ```kt
+     * val arch = architecture { "domain".group { "UseCase" { } } }
+     * arch.declaredAt.fileName shouldBe "ProjectArchitecture.kt"
+     * ```
+     */
+    @ExperimentalKatachiApi
+    public val declaredAt: DeclarationSite = DeclarationSite.Unknown,
 ) {
     /**
      * Every group, parents before their children, in declaration order.
@@ -226,7 +242,8 @@ public class Architecture internal constructor(
  * @featured
  */
 public fun architecture(block: ArchitectureScope.() -> Unit): Architecture {
+    val declaredAt = captureDeclarationSite()
     val scope = ArchitectureScopeImpl()
     scope.block()
-    return scope.build()
+    return scope.build(declaredAt)
 }

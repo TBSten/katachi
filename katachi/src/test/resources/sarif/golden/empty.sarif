@@ -1,0 +1,27 @@
+{
+  "$schema": "https://json.schemastore.org/sarif-2.1.0.json",
+  "version": "2.1.0",
+  "runs": [
+    {
+      "tool": {
+        "driver": {
+          "name": "katachi",
+          "semanticVersion": "0.0.0-test",
+          "informationUri": "https://tbsten.github.io/katachi/",
+          "rules": []
+        }
+      },
+      "originalUriBaseIds": {
+        "%SRCROOT%": {
+          "uri": "file:///w/repo/android/"
+        }
+      },
+      "invocations": [
+        {
+          "executionSuccessful": true
+        }
+      ],
+      "results": []
+    }
+  ]
+}

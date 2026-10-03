@@ -29,6 +29,12 @@ fun DeclarationContainerScope.specSupport() = "SpecSupport" {
             // their own (`java-test-fixtures`) so that a module other than `:katachi` can use them.
             "testFixtures".sourceSet / kotlin / KATACHI_TEST_PACKAGE / "synthetic" / "Synthetic*".ktFile()
             "testFixtures".sourceSet / kotlin / KATACHI_TEST_PACKAGE / "synthetic" / "*FileSystem".ktFile()
+            // What the SARIF specs read: the SARIF 2.1.0 JSON Schema the output is validated
+            // against, the goldens `toSarif` is compared with, and the note saying where the
+            // schema came from.
+            testSourceSet / "resources" / "sarif" / "sarif-schema-2.1.0.json".file()
+            testSourceSet / "resources" / "sarif" / "README.md".file()
+            testSourceSet / "resources" / "sarif" / "golden" / "*.sarif".file()
         }
         "katachi-konsist" {
             description = "スペックが使う道具のうち、Konsist に読ませる実ファイルを一時ディレクトリに用意するもの"

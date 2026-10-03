@@ -39,6 +39,13 @@ internal fun renderBaseline(ledger: BaselineLedger): String = buildString {
     append("}\n")
 }
 
+/**
+ * One entry exactly as [renderBaseline] writes it on its line, without the indent and the comma.
+ * The SARIF report searches the baseline file for this text to point at the entry's line.
+ */
+internal fun baselineEntryLine(key: BaselineKey, count: Int): String =
+    StringBuilder().appendEntry(key, count).toString()
+
 private fun StringBuilder.appendEntry(key: BaselineKey, count: Int): StringBuilder {
     val fields = buildList {
         add("rule" to key.rule)

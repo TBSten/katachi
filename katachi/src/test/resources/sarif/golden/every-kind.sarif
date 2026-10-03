@@ -1,0 +1,574 @@
+{
+  "$schema": "https://json.schemastore.org/sarif-2.1.0.json",
+  "version": "2.1.0",
+  "runs": [
+    {
+      "tool": {
+        "driver": {
+          "name": "katachi",
+          "semanticVersion": "0.0.0-test",
+          "informationUri": "https://tbsten.github.io/katachi/",
+          "rules": [
+            {
+              "id": "BareRule",
+              "name": "BareRule",
+              "shortDescription": {
+                "text": "Reported by a check outside katachi."
+              },
+              "defaultConfiguration": {
+                "level": "warning"
+              }
+            },
+            {
+              "id": "TodoRule",
+              "name": "TodoRule",
+              "shortDescription": {
+                "text": "Reported by a check outside katachi."
+              },
+              "defaultConfiguration": {
+                "level": "error"
+              }
+            },
+            {
+              "id": "katachi.AmbiguousLayout",
+              "name": "AmbiguousLayout",
+              "shortDescription": {
+                "text": "Two or more roles claim the same path."
+              },
+              "defaultConfiguration": {
+                "level": "warning"
+              }
+            },
+            {
+              "id": "katachi.MissingDescription",
+              "name": "MissingDescription",
+              "shortDescription": {
+                "text": "A role that may live in more than one place has a place without a description."
+              },
+              "defaultConfiguration": {
+                "level": "warning"
+              }
+            },
+            {
+              "id": "katachi.MissingFile",
+              "name": "MissingFile",
+              "shortDescription": {
+                "text": "A file a role declared without a wildcard does not exist."
+              },
+              "defaultConfiguration": {
+                "level": "error"
+              }
+            },
+            {
+              "id": "katachi.StaleBaselineEntry",
+              "name": "StaleBaselineEntry",
+              "shortDescription": {
+                "text": "A baseline entry holds back more violations than the project still has."
+              },
+              "defaultConfiguration": {
+                "level": "error"
+              }
+            },
+            {
+              "id": "katachi.UncheckedCheck",
+              "name": "UncheckedCheck",
+              "shortDescription": {
+                "text": "A check handed to assert(...) threw, so nothing it would have reported is known."
+              },
+              "defaultConfiguration": {
+                "level": "error"
+              }
+            },
+            {
+              "id": "katachi.UncheckedDirectory",
+              "name": "UncheckedDirectory",
+              "shortDescription": {
+                "text": "The check failed at this directory, so part of what it would have said is unknown."
+              },
+              "defaultConfiguration": {
+                "level": "error"
+              }
+            },
+            {
+              "id": "katachi.UncheckedFile",
+              "name": "UncheckedFile",
+              "shortDescription": {
+                "text": "The check failed at this file, so nothing is known about it."
+              },
+              "defaultConfiguration": {
+                "level": "error"
+              }
+            },
+            {
+              "id": "katachi.UncheckedFileConstraint",
+              "name": "UncheckedFileConstraint",
+              "shortDescription": {
+                "text": "A file constraint was not evaluated or failed, so the run is a partial result."
+              },
+              "defaultConfiguration": {
+                "level": "error"
+              }
+            },
+            {
+              "id": "katachi.UnexpectedDirectory",
+              "name": "UnexpectedDirectory",
+              "shortDescription": {
+                "text": "A directory exists that no role's layout mentions. Nothing below it was checked."
+              },
+              "defaultConfiguration": {
+                "level": "error"
+              }
+            },
+            {
+              "id": "katachi.UnexpectedFile",
+              "name": "UnexpectedFile",
+              "shortDescription": {
+                "text": "A file exists that no role's layout allows."
+              },
+              "defaultConfiguration": {
+                "level": "error"
+              }
+            },
+            {
+              "id": "katachi.UnsatisfiedFileConstraint",
+              "name": "UnsatisfiedFileConstraint",
+              "shortDescription": {
+                "text": "A file constraint (fileConstraint { } or konsist { }) rejected a file."
+              },
+              "defaultConfiguration": {
+                "level": "error"
+              }
+            }
+          ]
+        }
+      },
+      "originalUriBaseIds": {
+        "%SRCROOT%": {
+          "uri": "file:///w/repo/"
+        }
+      },
+      "invocations": [
+        {
+          "executionSuccessful": true
+        }
+      ],
+      "results": [
+        {
+          "ruleId": "katachi.UnexpectedFile",
+          "ruleIndex": 11,
+          "level": "error",
+          "message": {
+            "text": "No role is defined for this file.\n\nNearby locations:\n  domain.UseCase core/domain/src/main/kotlin/com/example/domain/\n\nHow to fix:\n  - Move it to one of the locations above\n  - Delete it if it is not needed\n  - Add a new role for it:\n      \"Helper\" {\n        summary = \"TODO\"\n        layout {\n          \"app/src/main/kotlin/com/example\" / \"Helper\".ktFile()\n        }\n      }"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "android/app/src/main/kotlin/com/example/Helper.kt",
+                  "uriBaseId": "%SRCROOT%"
+                }
+              }
+            }
+          ],
+          "properties": {
+            "kind": "Unexpected",
+            "severity": "Error",
+            "path": "app/src/main/kotlin/com/example/Helper.kt"
+          }
+        },
+        {
+          "ruleId": "katachi.UnexpectedDirectory",
+          "ruleIndex": 10,
+          "level": "error",
+          "message": {
+            "text": "No role is defined for this directory. Nothing below it was checked.\n\nHow to fix:\n  - Delete it if it is not needed\n  - Declare what belongs in it in the layout of an existing role\n  - Add a new role for it:\n      \"Legacy\" {\n        summary = \"TODO\"\n        layout {\n          \"legacy\" { ignore() }\n        }\n      }"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "android/architecture-test/src/test/kotlin/com/example/ProjectArchitecture.kt",
+                  "uriBaseId": "%SRCROOT%"
+                },
+                "region": {
+                  "startLine": 12
+                }
+              }
+            }
+          ],
+          "relatedLocations": [
+            {
+              "id": 1,
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "android/legacy",
+                  "uriBaseId": "%SRCROOT%"
+                }
+              },
+              "message": {
+                "text": "The directory nothing declared"
+              }
+            }
+          ],
+          "properties": {
+            "kind": "Unexpected",
+            "severity": "Error",
+            "path": "legacy"
+          }
+        },
+        {
+          "ruleId": "katachi.MissingFile",
+          "ruleIndex": 4,
+          "level": "error",
+          "message": {
+            "text": "No file has been created yet for role domain.UseCase.\nDeclared at: UseCaseRole.kt:16\n\nHow to fix:\n  - If it is not implemented yet, this error is expected\n  - If it is no longer needed, remove the declaration at UseCaseRole.kt:16"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "android/architecture-test/src/test/kotlin/com/example/roles/UseCaseRole.kt",
+                  "uriBaseId": "%SRCROOT%"
+                },
+                "region": {
+                  "startLine": 16
+                }
+              }
+            }
+          ],
+          "relatedLocations": [
+            {
+              "id": 1,
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "android/core/domain/src/main/kotlin/com/example/domain/GetOrderUseCase.kt",
+                  "uriBaseId": "%SRCROOT%"
+                }
+              },
+              "message": {
+                "text": "The declared file, which does not exist"
+              }
+            }
+          ],
+          "properties": {
+            "kind": "Missing",
+            "severity": "Error",
+            "path": "core/domain/src/main/kotlin/com/example/domain/GetOrderUseCase.kt",
+            "role": "domain.UseCase",
+            "declaredAt": "UseCaseRole.kt:16"
+          }
+        },
+        {
+          "ruleId": "katachi.UnsatisfiedFileConstraint",
+          "ruleIndex": 12,
+          "level": "error",
+          "message": {
+            "text": "Role: domain.UseCase / FileConstraint: \"外から使えること\"\nDeclaration: GetUserUseCase (line 7)\nDeclared at: UseCaseRole.kt:16 (layout of core/domain)"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "android/core/domain/src/main/kotlin/com/example/domain/GetUserUseCase.kt",
+                  "uriBaseId": "%SRCROOT%"
+                },
+                "region": {
+                  "startLine": 7
+                }
+              }
+            }
+          ],
+          "relatedLocations": [
+            {
+              "id": 1,
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "android/architecture-test/src/test/kotlin/com/example/roles/UseCaseRole.kt",
+                  "uriBaseId": "%SRCROOT%"
+                },
+                "region": {
+                  "startLine": 16
+                }
+              },
+              "message": {
+                "text": "Declared here"
+              }
+            }
+          ],
+          "properties": {
+            "kind": "FileConstraint",
+            "severity": "Error",
+            "path": "core/domain/src/main/kotlin/com/example/domain/GetUserUseCase.kt",
+            "role": "domain.UseCase",
+            "constraint": "外から使えること",
+            "declaration": "GetUserUseCase",
+            "layoutPath": "core/domain",
+            "declaredAt": "UseCaseRole.kt:16"
+          }
+        },
+        {
+          "ruleId": "TodoRule",
+          "ruleIndex": 1,
+          "level": "error",
+          "message": {
+            "text": "Rule: TODO\nLine: 12"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "android/app/src/main/kotlin/com/example/Broken.kt",
+                  "uriBaseId": "%SRCROOT%"
+                }
+              }
+            }
+          ],
+          "properties": {
+            "kind": "FileConstraint",
+            "severity": "Error",
+            "path": "app/src/main/kotlin/com/example/Broken.kt"
+          }
+        },
+        {
+          "ruleId": "BareRule",
+          "ruleIndex": 0,
+          "level": "warning",
+          "message": {
+            "text": "[BareRule] app/src/main/kotlin/com/example/Broken.kt"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "android/app/src/main/kotlin/com/example/Broken.kt",
+                  "uriBaseId": "%SRCROOT%"
+                }
+              }
+            }
+          ],
+          "properties": {
+            "kind": "FileConstraint",
+            "severity": "Warning",
+            "path": "app/src/main/kotlin/com/example/Broken.kt"
+          }
+        },
+        {
+          "ruleId": "katachi.StaleBaselineEntry",
+          "ruleIndex": 5,
+          "level": "error",
+          "message": {
+            "text": "Baseline: katachi-baseline.json (me.tbsten.katachi.check.LayoutCheck)\nRule: UnexpectedFile, allowed 2, found 0\n\nHow to fix:\n  - Every violation this entry held back is gone. Remove the entry by re-running the architecture test with\n      -Dkatachi.baseline.prune=true"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "android/katachi-baseline.json",
+                  "uriBaseId": "%SRCROOT%"
+                },
+                "region": {
+                  "startLine": 5
+                }
+              }
+            }
+          ],
+          "properties": {
+            "kind": "Stale",
+            "severity": "Error",
+            "path": "legacy/Old.kt",
+            "check": "me.tbsten.katachi.check.LayoutCheck",
+            "baseline": "katachi-baseline.json"
+          }
+        },
+        {
+          "ruleId": "katachi.AmbiguousLayout",
+          "ruleIndex": 2,
+          "level": "warning",
+          "message": {
+            "text": "2 roles claim this file, so it belongs to all of them.\nEvery constraint those roles declare is checked against it.\n\nDeclared by:\n  domain.UseCase    UseCaseRole.kt:16\n  domain.Repository RepositoryRole.kt:9\n\nHow to fix:\n  - Narrow one of the two declarations so that each of these files is claimed by one role\n  - Or keep the overlap, and make every constraint of both roles hold for these files"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "android/core/domain/src/main/kotlin/com/example/domain/Shared.kt",
+                  "uriBaseId": "%SRCROOT%"
+                }
+              }
+            }
+          ],
+          "relatedLocations": [
+            {
+              "id": 1,
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "android/architecture-test/src/test/kotlin/com/example/roles/RepositoryRole.kt",
+                  "uriBaseId": "%SRCROOT%"
+                },
+                "region": {
+                  "startLine": 9
+                }
+              },
+              "message": {
+                "text": "Also claimed by domain.Repository"
+              }
+            }
+          ],
+          "properties": {
+            "kind": "Ambiguous",
+            "severity": "Warning",
+            "path": "core/domain/src/main/kotlin/com/example/domain/Shared.kt",
+            "role": "domain.UseCase,domain.Repository",
+            "declaredAt": "UseCaseRole.kt:16"
+          }
+        },
+        {
+          "ruleId": "katachi.MissingDescription",
+          "ruleIndex": 3,
+          "level": "warning",
+          "message": {
+            "text": "Role domain.Repository may live in 2 places, and this one does not say when to use it.\nOther place: feature/cart/data\nDeclared at: RepositoryRole.kt:9\n\nHow to fix:\n  - Write `description = \"...\"` in this block, saying which files belong here rather than in the others\n  - Or merge this place into another if the two are really the same place"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "android/architecture-test/src/test/kotlin/com/example/roles/RepositoryRole.kt",
+                  "uriBaseId": "%SRCROOT%"
+                },
+                "region": {
+                  "startLine": 9
+                }
+              }
+            }
+          ],
+          "properties": {
+            "kind": "Unexplained",
+            "severity": "Warning",
+            "path": "core/data",
+            "role": "domain.Repository",
+            "declaredAt": "RepositoryRole.kt:9"
+          }
+        },
+        {
+          "ruleId": "katachi.UncheckedFile",
+          "ruleIndex": 8,
+          "level": "error",
+          "message": {
+            "text": "Katachi failed while checking this file, so nothing is known about it.\nCause: java.lang.IllegalStateException: unreadable\n\nHow to fix:\n  - Check that the file is readable, then run the check again\n  - If it is, report this at https://github.com/TBSten/katachi/issues with the cause above"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "android/app/src/main/kotlin/com/example/Broken.kt",
+                  "uriBaseId": "%SRCROOT%"
+                }
+              }
+            }
+          ],
+          "properties": {
+            "kind": "Failed",
+            "severity": "Error",
+            "path": "app/src/main/kotlin/com/example/Broken.kt"
+          }
+        },
+        {
+          "ruleId": "katachi.UncheckedDirectory",
+          "ruleIndex": 7,
+          "level": "error",
+          "message": {
+            "text": "Katachi failed while checking this directory. Nothing below it was checked.\nCause: java.io.IOException: Permission denied\n\nHow to fix:\n  - Check that the directory is readable, then run the check again\n  - If it is, report this at https://github.com/TBSten/katachi/issues with the cause above"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "android/architecture-test/src/test/kotlin/com/example/ProjectArchitecture.kt",
+                  "uriBaseId": "%SRCROOT%"
+                },
+                "region": {
+                  "startLine": 12
+                }
+              }
+            }
+          ],
+          "relatedLocations": [
+            {
+              "id": 1,
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "android/build",
+                  "uriBaseId": "%SRCROOT%"
+                }
+              },
+              "message": {
+                "text": "The directory the check failed at"
+              }
+            }
+          ],
+          "properties": {
+            "kind": "Failed",
+            "severity": "Error",
+            "path": "build"
+          }
+        },
+        {
+          "ruleId": "katachi.UncheckedCheck",
+          "ruleIndex": 6,
+          "level": "error",
+          "message": {
+            "text": "Katachi failed while running com.example.TodoCheck, so nothing it would have reported is known.\nCause: java.lang.IllegalStateException: broken check\n\nHow to fix:\n  - Read the cause above and fix the check, or stop passing it to assert()\n  - Report it at https://github.com/TBSten/katachi/issues if the check is one of katachi's"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "android/architecture-test/src/test/kotlin/com/example/ProjectArchitecture.kt",
+                  "uriBaseId": "%SRCROOT%"
+                },
+                "region": {
+                  "startLine": 12
+                }
+              }
+            }
+          ],
+          "properties": {
+            "kind": "Failed",
+            "severity": "Error",
+            "path": ".",
+            "check": "com.example.TodoCheck"
+          }
+        },
+        {
+          "ruleId": "katachi.UncheckedFileConstraint",
+          "ruleIndex": 9,
+          "level": "error",
+          "message": {
+            "text": "Nothing evaluated this constraint, so nothing is known about it.\nRole: domain.Repository\nDeclared at: RepositoryRole.kt:9\n\nHow to fix:\n  - Pass FileConstraintCheck() to assert(): projectArchitecture.assert(FileConstraintCheck())\n  - Remove the constraint at RepositoryRole.kt:9 if it is no longer wanted"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "android/architecture-test/src/test/kotlin/com/example/roles/RepositoryRole.kt",
+                  "uriBaseId": "%SRCROOT%"
+                },
+                "region": {
+                  "startLine": 9
+                }
+              }
+            }
+          ],
+          "properties": {
+            "kind": "Failed",
+            "severity": "Error",
+            "path": "core/data",
+            "role": "domain.Repository",
+            "declaredAt": "RepositoryRole.kt:9"
+          }
+        }
+      ]
+    }
+  ]
+}
