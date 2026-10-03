@@ -55,6 +55,10 @@ fun DeclarationContainerScope.konsistBackend() = "KonsistBackend" {
             publicDeclarationsKeepTagsLast()
             mainSourceSet / kotlin / KONSIST_MAIN_PACKAGE / "*".ktFile()
             mainSourceSet / kotlin / KONSIST_MAIN_PACKAGE / "internal" / "*".ktFile()
+            // `ktFileContent { }`: the same kind of file, Kotlin sources of this backend, so the same
+            // four rules hold for them rather than a role of their own.
+            mainSourceSet / kotlin / KONSIST_MAIN_PACKAGE / "declarations" / "*".ktFile()
+            mainSourceSet / kotlin / KONSIST_MAIN_PACKAGE / "declarations" / "internal" / "*".ktFile()
         }
     }
 }
