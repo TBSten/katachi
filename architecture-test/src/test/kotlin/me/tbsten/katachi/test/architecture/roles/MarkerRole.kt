@@ -27,7 +27,7 @@ import me.tbsten.katachi.test.architecture.KATACHI_MAIN_PACKAGE
  * own, which is why the layer they are checked as is the empty one that everything may depend
  * on.
  */
-fun DeclarationContainerScope.marker() = "Marker" {
+fun DeclarationContainerScope.marker() = "Marker".role {
     title = "マーカーと例外基底"
     summary = "どの層にも属さず、すべての層が依存してよいもの"
     example("ExperimentalKatachiApi.kt", "利用者に開いているが、まだ形が動く API の opt-in マーカー")

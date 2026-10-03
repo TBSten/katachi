@@ -40,7 +40,7 @@ class GenerateDocumentationSpec : FreeSpec({
             val arch = architecture {
                 "domain".group {
                     title = "ドメイン"
-                    "UseCase" { title = "ユースケース" }
+                    "UseCase".role { title = "ユースケース" }
                 }
             }
 
@@ -59,7 +59,7 @@ class GenerateDocumentationSpec : FreeSpec({
         }
 
         "出力先のディレクトリがまだ無ければ作られる" {
-            val arch = architecture { "domain".group { "UseCase" { } } }
+            val arch = architecture { "domain".group { "UseCase".role { } } }
 
             withTempDirectory { output ->
                 val nested = File(output, "build/katachi/docs")
@@ -80,7 +80,7 @@ class GenerateDocumentationSpec : FreeSpec({
         }
 
         "宣言から消えた役割のページは削除される" {
-            val arch = architecture { "domain".group { "UseCase" { } } }
+            val arch = architecture { "domain".group { "UseCase".role { } } }
 
             withTempDirectory { output ->
                 File(output, "domain").mkdirs()
@@ -99,7 +99,7 @@ class GenerateDocumentationSpec : FreeSpec({
         }
 
         "katachi が書かない拡張子のファイルは消さない" {
-            val arch = architecture { "domain".group { "UseCase" { } } }
+            val arch = architecture { "domain".group { "UseCase".role { } } }
 
             withTempDirectory { output ->
                 File(output, "diagram.png").writeText("not a page")
@@ -120,7 +120,7 @@ class GenerateDocumentationSpec : FreeSpec({
         }
 
         "削除で空になったディレクトリも残さない" {
-            val arch = architecture { "domain".group { "UseCase" { } } }
+            val arch = architecture { "domain".group { "UseCase".role { } } }
 
             withTempDirectory { output ->
                 File(output, "legacy/deep").mkdirs()
@@ -143,7 +143,7 @@ class GenerateDocumentationSpec : FreeSpec({
         }
 
         "書いたページも消したページも context.log に出る" {
-            val arch = architecture { "domain".group { "UseCase" { } } }
+            val arch = architecture { "domain".group { "UseCase".role { } } }
 
             withTempDirectory { output ->
                 File(output, "Stale.md").writeText("# 古いページ\n")
@@ -167,10 +167,10 @@ class GenerateDocumentationSpec : FreeSpec({
         "ネストした group は段が深くなり、同じディレクトリ名は1度しか出ない" {
             val arch = architecture {
                 "ui".group {
-                    "Screen" { }
-                    "parts".group { "Button" { }; "Icon" { } }
+                    "Screen".role { }
+                    "parts".group { "Button".role { }; "Icon".role { } }
                 }
-                "data".group { "Repository" { } }
+                "data".group { "Repository".role { } }
             }
 
             withTempDirectory { output ->
@@ -211,7 +211,7 @@ class GenerateDocumentationSpec : FreeSpec({
         "制約は1つも評価されない" {
             val arch = architecture {
                 "domain".group {
-                    "UseCase" {
+                    "UseCase".role {
                         fileConstraint("走らせてはいけない制約") { error("この制約は評価されたら失敗する") }
                         layout { "domain" { "*UseCase.kt".file() } }
                     }
@@ -228,7 +228,7 @@ class GenerateDocumentationSpec : FreeSpec({
         }
 
         "プロジェクトのファイルを1つも読まない" {
-            val arch = architecture { "domain".group { "UseCase" { layout { "domain" { "*.kt".file() } } } } }
+            val arch = architecture { "domain".group { "UseCase".role { layout { "domain" { "*.kt".file() } } } } }
 
             withTempDirectory { output ->
                 withClue("読んだら ForbiddenFileSystem が投げる。違反があっても生成が通るのはこれが理由") {
@@ -240,7 +240,7 @@ class GenerateDocumentationSpec : FreeSpec({
 
     "process は投げずに答える" - {
         "書き込めない出力先は failure として返す" {
-            val arch = architecture { "domain".group { "UseCase" { } } }
+            val arch = architecture { "domain".group { "UseCase".role { } } }
 
             withTempDirectory { directory ->
                 // A regular file where the output directory should be: nothing can be written below it.
@@ -257,7 +257,7 @@ class GenerateDocumentationSpec : FreeSpec({
 
     "mode=check" - {
         "生成物が最新なら何も起きない" {
-            val arch = architecture { "domain".group { "UseCase" { } } }
+            val arch = architecture { "domain".group { "UseCase".role { } } }
 
             withTempDirectory { output ->
                 arch.generateDocumentation(output)
@@ -270,7 +270,7 @@ class GenerateDocumentationSpec : FreeSpec({
         }
 
         "食い違いは投げずに failure で返す" {
-            val arch = architecture { "domain".group { "UseCase" { } } }
+            val arch = architecture { "domain".group { "UseCase".role { } } }
 
             withTempDirectory { output ->
                 arch.generateDocumentation(output)
@@ -285,7 +285,7 @@ class GenerateDocumentationSpec : FreeSpec({
         }
 
         "欠けているページが報告される" {
-            val arch = architecture { "domain".group { "UseCase" { } } }
+            val arch = architecture { "domain".group { "UseCase".role { } } }
 
             withTempDirectory { output ->
                 arch.generateDocumentation(output)
@@ -299,7 +299,7 @@ class GenerateDocumentationSpec : FreeSpec({
         }
 
         "中身が違うページが報告される" {
-            val arch = architecture { "domain".group { "UseCase" { } } }
+            val arch = architecture { "domain".group { "UseCase".role { } } }
 
             withTempDirectory { output ->
                 arch.generateDocumentation(output)
@@ -313,7 +313,7 @@ class GenerateDocumentationSpec : FreeSpec({
         }
 
         "もう生成しないページが余分として報告される" {
-            val arch = architecture { "domain".group { "UseCase" { } } }
+            val arch = architecture { "domain".group { "UseCase".role { } } }
 
             withTempDirectory { output ->
                 arch.generateDocumentation(output)
@@ -327,7 +327,7 @@ class GenerateDocumentationSpec : FreeSpec({
         }
 
         "3種類は1つの例外にまとめて載る" {
-            val arch = architecture { "domain".group { "UseCase" { } } }
+            val arch = architecture { "domain".group { "UseCase".role { } } }
 
             withTempDirectory { output ->
                 arch.generateDocumentation(output)
@@ -347,7 +347,7 @@ class GenerateDocumentationSpec : FreeSpec({
         }
 
         "出力先がまだ無ければ、全ページが欠けていると報告される" {
-            val arch = architecture { "domain".group { "UseCase" { } } }
+            val arch = architecture { "domain".group { "UseCase".role { } } }
 
             withTempDirectory { output ->
                 val absent = File(output, "never-generated")
@@ -363,7 +363,7 @@ class GenerateDocumentationSpec : FreeSpec({
         }
 
         "1文字も書かない" {
-            val arch = architecture { "domain".group { "UseCase" { } } }
+            val arch = architecture { "domain".group { "UseCase".role { } } }
 
             withTempDirectory { output ->
                 arch.generateDocumentation(output)

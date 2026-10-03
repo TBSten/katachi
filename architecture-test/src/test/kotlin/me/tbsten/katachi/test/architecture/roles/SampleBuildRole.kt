@@ -26,7 +26,7 @@ import me.tbsten.katachi.dsl.DeclarationContainerScope
  * `[UnexpectedDirectory]` until this role says otherwise — which is also when someone
  * notices it needs a `checkSample<Name>` task of its own.
  */
-fun DeclarationContainerScope.sampleBuild() = "SampleBuild" {
+fun DeclarationContainerScope.sampleBuild() = "SampleBuild".role {
     title = "サンプルビルド"
     summary = "独立した Gradle ビルド4本。それぞれが自分の構成を katachi で宣言して assert している"
     example("sample/jvm", "Ktor のサーバサイド JVM プロジェクト")

@@ -12,7 +12,7 @@ class DocumentedSpec : FreeSpec({
     }
 
     "documented を省略した役割には Documented が入らない" {
-        val arch = architecture { "domain".group { "UseCase" { } } }
+        val arch = architecture { "domain".group { "UseCase".role { } } }
         arch.allRoles.single()[Documented] shouldBe null
     }
 
@@ -20,7 +20,7 @@ class DocumentedSpec : FreeSpec({
         val arch = architecture {
             "Gradle".group {
                 documented = false
-                "VersionCatalog" { }
+                "VersionCatalog".role { }
             }
         }
         arch.groups.single()[Documented] shouldBe false
@@ -29,8 +29,8 @@ class DocumentedSpec : FreeSpec({
     "役割にはブロック内プロパティで documented = false を指定できる" {
         val arch = architecture {
             "domain".group {
-                "UseCase" { documented = false }
-                "Repository" { }
+                "UseCase".role { documented = false }
+                "Repository".role { }
             }
         }
 
@@ -43,8 +43,8 @@ class DocumentedSpec : FreeSpec({
         val arch = architecture {
             "Gradle".group {
                 documented = false
-                "VersionCatalog" { }
-                "BuildScript" { documented = false }
+                "VersionCatalog".role { }
+                "BuildScript".role { documented = false }
             }
         }
 
@@ -70,7 +70,7 @@ class DocumentedSpec : FreeSpec({
         val arch = architecture {
             "domain".group {
                 documented = true
-                "UseCase" { documented = true }
+                "UseCase".role { documented = true }
             }
         }
 

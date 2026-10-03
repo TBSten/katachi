@@ -19,7 +19,7 @@ import me.tbsten.katachi.dsl.internal.TemplateParameterType
  * ```kt
  * val arch = architecture {
  *     "domain".group {
- *         "UseCase" {
+ *         "UseCase".role {
  *             layout {
  *                 "useCase" / "UseCase.kt".file()
  *                     .template {
@@ -73,7 +73,7 @@ public class KatachiUnboundTemplateParameterException internal constructor(
  * ```kt
  * val arch = architecture {
  *     "domain".group {
- *         "UseCase" {
+ *         "UseCase".role {
  *             layout {
  *                 "useCase" / "UseCase.kt".file()
  *                     .template {
@@ -125,7 +125,7 @@ public class KatachiDuplicateTemplateParameterException internal constructor(
  * ```kt
  * val arch = architecture {
  *     "domain".group {
- *         "UseCase" {
+ *         "UseCase".role {
  *             layout {
  *                 "useCase" / "UseCase.kt".file()
  *                     .template {
@@ -178,7 +178,7 @@ public class KatachiTemplateParameterReusedException internal constructor(
  * ```kt
  * val arch = architecture {
  *     "domain".group {
- *         "UseCase" {
+ *         "UseCase".role {
  *             layout {
  *                 "useCase" / "UseCase.kt".file()
  *                     .template {
@@ -252,7 +252,7 @@ public class KatachiMissingTemplateParameterException internal constructor(
  * ```kt
  * val arch = architecture {
  *     "data".group {
- *         "Repository" {
+ *         "Repository".role {
  *             layout {
  *                 "repository" / "Repository.kt".file()
  *                     .template {
@@ -327,7 +327,7 @@ public class KatachiInvalidTemplateParameterValueException internal constructor(
  *
  * val arch = architecture {
  *     "domain".group {
- *         "UseCase" {
+ *         "UseCase".role {
  *             layout {
  *                 "useCase" / "GetUserUseCase.kt".file()
  *                     .template {

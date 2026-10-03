@@ -223,7 +223,7 @@ internal sealed interface GlobProblem {
      * ```kt
      * val arch = architecture {
      *     "group".group {
-     *         "Role" { layout { "app//ios" { } } }
+     *         "Role".role { layout { "app//ios" { } } }
      *     }
      * }
      * shouldThrow<KatachiGlobSyntaxException> { arch.flattenLayout() }
@@ -251,7 +251,7 @@ internal sealed interface GlobProblem {
  * ```kt
  * val arch = architecture {
  *     "group".group {
- *         "Role" { layout { "{a,b}".file() } }
+ *         "Role".role { layout { "{a,b}".file() } }
  *     }
  * }
  * shouldThrow<KatachiGlobSyntaxException> { arch.flattenLayout() }
@@ -266,7 +266,7 @@ internal sealed interface GlobContext {
      * ```kt
      * val arch = architecture {
      *     "group".group {
-     *         "Role" { layout { "{a,b}".file() } }
+     *         "Role".role { layout { "{a,b}".file() } }
      *     }
      * }
      * val context = shouldThrow<KatachiGlobSyntaxException> { arch.flattenLayout() }
@@ -283,7 +283,7 @@ internal sealed interface GlobContext {
      * ```kt
      * val arch = architecture {
      *     "group".group {
-     *         "Role" { layout { "{a,b}".file() } }
+     *         "Role".role { layout { "{a,b}".file() } }
      *     }
      * }
      * val context = shouldThrow<KatachiGlobSyntaxException> { arch.flattenLayout() }
@@ -308,7 +308,7 @@ internal sealed interface GlobContext {
      * ```kt
      * val arch = architecture {
      *     "group".group {
-     *         "Role" { layout { ":core::data".module { } } }
+     *         "Role".role { layout { ":core::data".module { } } }
      *     }
      * }
      * val context = shouldThrow<KatachiGlobSyntaxException> { arch.flattenLayout() }

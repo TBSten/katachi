@@ -17,8 +17,8 @@ import me.tbsten.katachi.dsl.Role
  *
  * ## Example 1: catch a role read off the wrong definition
  * ```kt
- * val one = architecture { "domain".group { "UseCase" { } } }
- * val other = architecture { "domain".group { "UseCase" { } } }
+ * val one = architecture { "domain".group { "UseCase".role { } } }
+ * val other = architecture { "domain".group { "UseCase".role { } } }
  *
  * shouldThrow<KatachiUnknownRoleException> {
  *     one.process { context -> context.filesOf(other.allRoles.single()) }

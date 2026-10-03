@@ -27,7 +27,7 @@ import me.tbsten.katachi.konsist.internal.KonsistFileConstraint
  *
  * ## Example 1: one rule, on one module
  * ```kt
- * "UseCase" {
+ * "UseCase".role {
  *     layout {
  *         "core/domain" {
  *             "is usable from outside".konsist {
@@ -41,7 +41,7 @@ import me.tbsten.katachi.konsist.internal.KonsistFileConstraint
  *
  * ## Example 2: one rule over everywhere the role lives
  * ```kt
- * "UseCase" {
+ * "UseCase".role {
  *     "has an invoke function".konsist {
  *         classes().withNameEndingWith("UseCase")
  *             .must { klass -> klass.hasFunction { it.name == "invoke" } }
@@ -52,7 +52,7 @@ import me.tbsten.katachi.konsist.internal.KonsistFileConstraint
  *
  * ## Example 3: a rule for one directory that its subdirectories do not inherit
  * ```kt
- * "Util" {
+ * "Util".role {
  *     layout {
  *         "util" {
  *             "does not use the KSP API".konsist(scope = FileConstraintRange.DirectOnly) {
@@ -98,7 +98,7 @@ public fun String.konsist(
  *
  * ## Example 1: the only rule of one directory
  * ```kt
- * "UseCase" {
+ * "UseCase".role {
  *     layout {
  *         "core/domain/useCase" {
  *             konsist { classes().must { it.hasInternalModifier } }

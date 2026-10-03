@@ -40,7 +40,7 @@ class DocumentSectionSpec : FreeSpec({
         "役割に書いた節" {
             val arch = architecture {
                 "api".group {
-                    "Controller" { unitTest = "リクエストの変換だけを見る。" }
+                    "Controller".role { unitTest = "リクエストの変換だけを見る。" }
                 }
             }
 
@@ -56,7 +56,7 @@ class DocumentSectionSpec : FreeSpec({
         }
 
         "書いていない節は null になる" {
-            val arch = architecture { "api".group { "Controller" { } } }
+            val arch = architecture { "api".group { "Controller".role { } } }
 
             arch.groups.single()[TestPolicy] shouldBe null
             arch.allRoles.single()[UnitTest] shouldBe null
@@ -90,7 +90,7 @@ class DocumentSectionSpec : FreeSpec({
             val arch = architecture {
                 "api".group {
                     testPolicy = "グループの方針。"
-                    "Controller" { }
+                    "Controller".role { }
                 }
             }
 

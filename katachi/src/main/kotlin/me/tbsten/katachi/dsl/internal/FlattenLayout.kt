@@ -40,7 +40,7 @@ import me.tbsten.katachi.dsl.Role
  *
  * val projectArchitecture = architecture {
  *     "domain".group {
- *         "UseCase" { layout { "useCase" / "*UseCase".ktFile() } }
+ *         "UseCase".role { layout { "useCase" / "*UseCase".ktFile() } }
  *     }
  * }
  *
@@ -71,7 +71,7 @@ public fun Architecture.flattenLayout(
  *
  * val projectArchitecture = architecture {
  *     "domain".group {
- *         "UseCase" { layout { "useCase" / "*UseCase".ktFile() } }
+ *         "UseCase".role { layout { "useCase" / "*UseCase".ktFile() } }
  *     }
  * }
  *

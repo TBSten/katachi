@@ -47,7 +47,7 @@ private fun runOver(
     val projectArchitecture = architecture {
         files = wholeTree()
         "domain".group {
-            "UseCase" {
+            "UseCase".role {
                 layout {
                     "gradlew".file()
                     "src" {

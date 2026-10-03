@@ -27,7 +27,7 @@ import me.tbsten.katachi.test.architecture.DOKKA_MAIN_PACKAGE
  * Each subpackage is listed rather than matched with `**`, so a new one has to be declared here
  * on purpose.
  */
-fun DeclarationContainerScope.dokkaPlugin() = "DokkaPlugin" {
+fun DeclarationContainerScope.dokkaPlugin() = "DokkaPlugin".role {
     title = "Dokka プラグイン"
     summary = "API リファレンスに Featured（ページの節とサイドバー）・サイドバーの package の階層表示と、AI エージェント向けの llms.txt・ページごとの Markdown を足す、このリポジトリ専用の Dokka プラグイン"
     example("KatachiDokkaPlugin.kt", "拡張の登録だけを持つプラグイン本体")

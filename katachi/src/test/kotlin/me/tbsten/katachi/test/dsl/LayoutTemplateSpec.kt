@@ -219,7 +219,7 @@ class LayoutTemplateSpec : FreeSpec({
             shouldThrow<KatachiTemplateOnWildcardException> {
                 architecture {
                     "group".group {
-                        "Role" { layout { "*Repository".ktFile().template { "" } } }
+                        "Role".role { layout { "*Repository".ktFile().template { "" } } }
                     }
                 }.flattenLayout()
             }

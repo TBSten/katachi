@@ -13,7 +13,7 @@ import me.tbsten.katachi.dsl.GroupScope
 fun ArchitectureScope.domainRoles() {
     "domain".group {
         title = "ドメイン"
-        "UseCase" {
+        "UseCase".role {
             title = "ユースケース"
             summary = "各画面で発生するアプリ固有の1つの振る舞い"
             example("GetUserUseCase", "ユーザーを取得する")
@@ -26,13 +26,13 @@ fun ArchitectureScope.domainRoles() {
 /** Nested split: a [GroupScope] extension called from inside another group's block. */
 fun GroupScope.modelGroup() {
     "model".group {
-        "Entity" { }
+        "Entity".role { }
     }
 }
 
 /** Declared but deliberately never called by some specs, to show the silent-drop case. */
 fun ArchitectureScope.dataRoles() {
     "data".group {
-        "Repository" { }
+        "Repository".role { }
     }
 }

@@ -27,7 +27,7 @@ import kotlin.reflect.KProperty
  * ```kt
  * val arch = architecture {
  *     "domain".group {
- *         "UseCase" {
+ *         "UseCase".role {
  *             layout {
  *                 "useCase" / "${capture("name")}UseCase.kt".file()
  *                     .template {
@@ -58,7 +58,7 @@ import kotlin.reflect.KProperty
  *
  * val arch = architecture {
  *     "data".group {
- *         "Repository" {
+ *         "Repository".role {
  *             layout {
  *                 // ./gradlew :architecture-test:katachiTemplate \
  *                 //   --arg template=data.Repository.repository,data.Repository.repositoryImpl \
@@ -211,7 +211,7 @@ public sealed interface TemplateScope {
      *
      * ## Example 1: build the package from the directory the file is generated into
      * ```kt
-     * "Screen" {
+     * "Screen".role {
      *     layout {
      *         "feature" / capture("feature") / "${capture("name")}Screen.kt".file()
      *             .template {

@@ -100,7 +100,7 @@ class LayoutModulePackageSpec : FreeSpec({
 
             val declared = architecture {
                 "group".group {
-                    "Role" { layout { ":core:data".module { counting / "*".ktFile() } } }
+                    "Role".role { layout { ":core:data".module { counting / "*".ktFile() } } }
                 }
             }
 

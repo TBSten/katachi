@@ -26,7 +26,7 @@ import me.tbsten.katachi.dsl.internal.metadataBuilder
  *
  * val arch = architecture {
  *     "domain".group {
- *         "UseCase" { owner = "platform" }
+ *         "UseCase".role { owner = "platform" }
  *     }
  * }
  * arch.allRoles.single()[Owner] shouldBe "platform"
@@ -72,7 +72,7 @@ public class MetadataKey<T : Any> internal constructor(
      * var RoleScope.owner: String? by Owner
      *
      * val arch = architecture {
-     *     "domain".group { "UseCase" { owner = "platform" } }
+     *     "domain".group { "UseCase".role { owner = "platform" } }
      * }
      * arch.allRoles.single()[Owner] shouldBe "platform"
      * ```

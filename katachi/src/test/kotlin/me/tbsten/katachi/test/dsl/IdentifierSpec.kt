@@ -43,14 +43,14 @@ class IdentifierSpec : FreeSpec({
         invalidNames.forEach { (name, reason) ->
             "$reason の役割名 \"$name\" は DSL 評価時に失敗する" {
                 shouldThrow<KatachiInvalidIdentifierException> {
-                    architecture { "domain".group { name { } } }
+                    architecture { "domain".group { name.role { } } }
                 }.name shouldBe name
             }
         }
 
         validNames.forEach { name ->
             "\"$name\" は役割名として受け付けられる" {
-                architecture { "domain".group { name { } } }
+                architecture { "domain".group { name.role { } } }
                     .allRoles.single().name shouldBe name
             }
         }

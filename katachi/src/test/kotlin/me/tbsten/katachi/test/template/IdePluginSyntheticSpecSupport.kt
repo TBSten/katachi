@@ -51,7 +51,7 @@ internal enum class SyntheticStyle { Plain, Fancy, Minimal }
  *   previews as `0`.
  */
 internal fun syntheticStructureArchitecture(): Architecture = architecture {
-    "AllTypes" {
+    "AllTypes".role {
         title = "全部の型"
         summary = "string / boolean / int / enum を既定値ありなしで1つずつ持つ"
         layout {
@@ -69,7 +69,7 @@ internal fun syntheticStructureArchitecture(): Architecture = architecture {
         }
     }
     "a".group {
-        "Shallow" {
+        "Shallow".role {
             title = "浅い"
             summary = "Boolean と enum の分岐で引数が増減する"
             layout {
@@ -97,7 +97,7 @@ internal fun syntheticStructureArchitecture(): Architecture = architecture {
         }
         "b".group {
             "c".group {
-                "Deep" {
+                "Deep".role {
                     layout {
                         "src/main/kotlin/a/b/c" / "Deep.kt".file().template {
                             val name by stringParameter()
@@ -107,7 +107,7 @@ internal fun syntheticStructureArchitecture(): Architecture = architecture {
                     }
                 }
             }
-            "Middle" {
+            "Middle".role {
                 title = "Middle"
                 layout {
                     "src/main/kotlin/a/b" / capture("name").file().template {
@@ -121,7 +121,7 @@ internal fun syntheticStructureArchitecture(): Architecture = architecture {
         }
     }
     "other".group {
-        "Broken" {
+        "Broken".role {
             title = "壊れたテンプレート"
             layout {
                 "src/main/kotlin/other" / "Broken.kt".file().template {
@@ -132,7 +132,7 @@ internal fun syntheticStructureArchitecture(): Architecture = architecture {
                 }
             }
         }
-        "Wildcard" {
+        "Wildcard".role {
             summary = "生成先のモジュールが決まらない"
             layout {
                 ":feature:${capture("feature")}".module {
@@ -143,7 +143,7 @@ internal fun syntheticStructureArchitecture(): Architecture = architecture {
             }
         }
     }
-    "Counter" {
+    "Counter".role {
         title = "カウンター"
         layout {
             "src/main/kotlin/counter" / "Counter.kt".file().template {
@@ -185,7 +185,7 @@ internal fun syntheticManyArchitecture(): Architecture = architecture {
 private fun DeclarationContainerScope.manyRoles(indices: List<Int>) {
     for (index in indices) {
         val id = index.toString().padStart(3, '0')
-        "T$id" {
+        "T$id".role {
             if (index % 2 == 0) title = "テンプレート $id"
             if (index % 5 == 0) summary = "$id 番目の合成テンプレート"
             layout {
@@ -220,7 +220,7 @@ private fun DeclarationContainerScope.manyRoles(indices: List<Int>) {
  * `second.AlsoOnlyHere`.
  */
 internal fun syntheticSecondArchitecture(): Architecture = architecture {
-    "AllTypes" {
+    "AllTypes".role {
         title = "全部の型（2つ目）"
         layout {
             "src/main/kotlin/allTypes" / "AllTypesSecond.kt".file().template {
@@ -237,7 +237,7 @@ internal fun syntheticSecondArchitecture(): Architecture = architecture {
         }
     }
     "a".group {
-        "Shallow" {
+        "Shallow".role {
             title = "浅い（2つ目）"
             layout {
                 "src/main/kotlin/a" / "Shallow.kt".file().template {
@@ -249,7 +249,7 @@ internal fun syntheticSecondArchitecture(): Architecture = architecture {
         }
     }
     "second".group {
-        "OnlyHere" {
+        "OnlyHere".role {
             title = "2つ目だけ"
             layout {
                 "src/main/kotlin/second" / "OnlyHere.kt".file().template {
@@ -258,7 +258,7 @@ internal fun syntheticSecondArchitecture(): Architecture = architecture {
                 }
             }
         }
-        "AlsoOnlyHere" {
+        "AlsoOnlyHere".role {
             layout {
                 "src/main/kotlin/second" / "AlsoOnlyHere.kt".file().template {
                     val name by stringParameter()
@@ -268,7 +268,7 @@ internal fun syntheticSecondArchitecture(): Architecture = architecture {
             }
         }
     }
-    "SecondRoot" {
+    "SecondRoot".role {
         summary = "2つ目のルート直下"
         layout {
             "src/main/kotlin/secondRoot" / "SecondRoot.kt".file().template {
@@ -277,7 +277,7 @@ internal fun syntheticSecondArchitecture(): Architecture = architecture {
             }
         }
     }
-    "Counter" {
+    "Counter".role {
         title = "カウンター"
         layout {
             "src/main/kotlin/counter" / "Counter.kt".file().template {

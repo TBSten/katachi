@@ -19,7 +19,7 @@ class ArchitectureFilesSpec : FreeSpec({
     "files = wholeTree() を書けば WholeTree になる" {
         val arch = architecture {
             files = wholeTree()
-            "domain".group { "UseCase" { } }
+            "domain".group { "UseCase".role { } }
         }
 
         arch.files shouldBe FileSelection.WholeTree
@@ -33,7 +33,7 @@ class ArchitectureFilesSpec : FreeSpec({
     "利用者が実装した FileSelection を files に渡すと、その集合が検査される" {
         val arch = architecture {
             files = HidesGeneratedFiles
-            "app".group { "Root" { layout { "gradlew".file() } } }
+            "app".group { "Root".role { layout { "gradlew".file() } } }
         }
 
         arch.files shouldBe HidesGeneratedFiles
@@ -42,7 +42,7 @@ class ArchitectureFilesSpec : FreeSpec({
     }
 
     "同じツリーでも wholeTree() なら隠していたファイルが Unexpected になる" {
-        architectureOf { "app".group { "Root" { layout { "gradlew".file() } } } }
+        architectureOf { "app".group { "Root".role { layout { "gradlew".file() } } } }
             .validate(repositoryOf { "gradlew"(); "generated.txt"() })
             .labels() shouldBe listOf("[UnexpectedFile] generated.txt")
     }

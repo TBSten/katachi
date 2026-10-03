@@ -21,8 +21,8 @@ class ArchitectureSpec : FreeSpec({
     "ルートブロック内で宣言した group と役割が、追加の登録操作なしでモデルに含まれる" {
         val arch = architecture {
             "domain".group {
-                "UseCase" { }
-                "Repository" { }
+                "UseCase".role { }
+                "Repository".role { }
             }
         }
 
@@ -58,10 +58,10 @@ class ArchitectureSpec : FreeSpec({
             "domain".group {
                 "model".group {
                     "value".group {
-                        "ValueObject" { }
+                        "ValueObject".role { }
                     }
                 }
-                "UseCase" { }
+                "UseCase".role { }
             }
         }
 
@@ -81,8 +81,8 @@ class ArchitectureSpec : FreeSpec({
 
     "同じ役割名でも group が違えば両方がモデルに残る" {
         val arch = architecture {
-            "domain".group { "Repository" { } }
-            "data".group { "Repository" { } }
+            "domain".group { "Repository".role { } }
+            "data".group { "Repository".role { } }
         }
 
         arch.allRoles.map { it.qualifiedName } shouldContainExactly

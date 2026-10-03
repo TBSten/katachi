@@ -116,7 +116,7 @@ class ModuleScanSpec : FreeSpec({
                 moduleResolver = ModuleResolver { module ->
                     module.segments.joinToString("/") { if (it == "feature") "features" else it }
                 }
-                "app".group { "Screen" { layout { ":feature:home".module { "Home".ktFile() } } } }
+                "app".group { "Screen".role { layout { ":feature:home".module { "Home".ktFile() } } } }
             }
 
             architecture

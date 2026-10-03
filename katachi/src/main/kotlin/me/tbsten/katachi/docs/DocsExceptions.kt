@@ -24,7 +24,7 @@ import me.tbsten.katachi.dsl.DeclarationSite
  * // `domain/README.md` is the group's own page, and the role would be written to the same path.
  * val projectArchitecture = architecture {
  *     "domain".group {
- *         "README" { }
+ *         "README".role { }
  *     }
  * }
  * ```
@@ -79,7 +79,7 @@ public class KatachiDocumentPathCollisionException internal constructor(
  *
  * // `Readme.md` and the root's own `README.md` are one file on a case insensitive filesystem.
  * val projectArchitecture = architecture {
- *     "Readme" { }
+ *     "Readme".role { }
  * }
  * ```
  *

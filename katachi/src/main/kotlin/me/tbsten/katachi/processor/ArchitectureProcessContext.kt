@@ -112,7 +112,7 @@ public interface ArchitectureProcessContext<out Args> {
      * ## Example 1: list every group, nested ones included
      * ```kt
      * val arch = architecture {
-     *     "domain".group { "model".group { "Entity" { } } }
+     *     "domain".group { "model".group { "Entity".role { } } }
      * }
      * arch.process { context -> context.groups.map { it.qualifiedName } } shouldContainExactly
      *     listOf("domain", "domain.model")
@@ -133,8 +133,8 @@ public interface ArchitectureProcessContext<out Args> {
      * ## Example 1: pick the roles a processor cares about
      * ```kt
      * val arch = architecture {
-     *     "domain".group { "UseCase" { } }
-     *     "data".group { "Repository" { } }
+     *     "domain".group { "UseCase".role { } }
+     *     "data".group { "Repository".role { } }
      * }
      * arch.process { context -> context.roles.map { it.qualifiedName } } shouldContainExactly
      *     listOf("domain.UseCase", "data.Repository")
@@ -143,8 +143,8 @@ public interface ArchitectureProcessContext<out Args> {
      * ## Example 2: a role declared at the root is one of them
      * ```kt
      * val arch = architecture {
-     *     "Readme" { }
-     *     "domain".group { "UseCase" { } }
+     *     "Readme".role { }
+     *     "domain".group { "UseCase".role { } }
      * }
      * arch.process { context -> context.roles.map { it.qualifiedName } } shouldContainExactly
      *     listOf("Readme", "domain.UseCase")
@@ -170,7 +170,7 @@ public interface ArchitectureProcessContext<out Args> {
      * ## Example 1: read the declared paths
      * ```kt
      * val arch = architecture {
-     *     "domain".group { "UseCase" { layout { "useCase" / "GetUserUseCase".ktFile() } } }
+     *     "domain".group { "UseCase".role { layout { "useCase" / "GetUserUseCase".ktFile() } } }
      * }
      * arch.process { context -> context.declaredEntries.map { it.path } } shouldContainExactly
      *     listOf("useCase", "useCase/GetUserUseCase.kt")
@@ -179,7 +179,7 @@ public interface ArchitectureProcessContext<out Args> {
      * ## Example 2: a wildcard module key is declared here as one pattern
      * ```kt
      * val arch = architecture {
-     *     "feature".group { "Module" { layout { ":feature:*".module { } } } }
+     *     "feature".group { "Module".role { layout { ":feature:*".module { } } } }
      * }
      * // Four entries however many feature modules the project holds, with the wildcard still
      * // standing where a module name would be. Split into levels only so that this example

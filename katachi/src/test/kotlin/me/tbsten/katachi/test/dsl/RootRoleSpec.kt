@@ -22,7 +22,7 @@ class RootRoleSpec : FreeSpec({
     "宣言" - {
         "architecture { } の直下に役割を宣言でき、allRoles に入る" {
             val arch = architecture {
-                "UseCase" { }
+                "UseCase".role { }
             }
 
             arch.allRoles.map { it.name } shouldContainExactly listOf("UseCase")
@@ -30,7 +30,7 @@ class RootRoleSpec : FreeSpec({
 
         "ルート直下の役割の qualifiedName は役割名そのもので、groupPath は空になる" {
             val arch = architecture {
-                "UseCase" { }
+                "UseCase".role { }
             }
 
             val role = arch.allRoles.single()
@@ -40,12 +40,12 @@ class RootRoleSpec : FreeSpec({
 
         "ルート直下の役割と group 直下の役割を混ぜて宣言できる" {
             val arch = architecture {
-                "Readme" { }
+                "Readme".role { }
                 "domain".group {
-                    "UseCase" { }
-                    "model".group { "Entity" { } }
+                    "UseCase".role { }
+                    "model".group { "Entity".role { } }
                 }
-                "Gitignore" { }
+                "Gitignore".role { }
             }
 
             arch.roles.map { it.name } shouldContainExactly listOf("Readme", "Gitignore")
@@ -56,7 +56,7 @@ class RootRoleSpec : FreeSpec({
 
         "group を1つも持たない定義でも役割を宣言できる" {
             val arch = architecture {
-                "Readme" { }
+                "Readme".role { }
             }
 
             arch.groups.shouldBeEmpty()
@@ -65,7 +65,7 @@ class RootRoleSpec : FreeSpec({
 
         "ルート直下の役割も group 内と同じプロパティを書ける" {
             val arch = architecture {
-                "Readme" { title = "README" }
+                "Readme".role { title = "README" }
             }
 
             arch.allRoles.single()[Title] shouldBe "README"
@@ -73,7 +73,7 @@ class RootRoleSpec : FreeSpec({
 
         "ルート直下の役割の宣言位置はそれを書いた行を指す" {
             val arch = architecture {
-                "Readme" { }
+                "Readme".role { }
             }
 
             // この行番号はファイル内の位置に依存する。上のブロックを動かしたら直すこと。
@@ -85,7 +85,7 @@ class RootRoleSpec : FreeSpec({
     "layout" - {
         "ルート直下の役割の layout { } が平坦化される" {
             val arch = architecture {
-                "Gitignore" { layout { ".gitignore".file() } }
+                "Gitignore".role { layout { ".gitignore".file() } }
             }
 
             arch.flattenLayout().map { it.path } shouldContainExactly listOf(".gitignore")
@@ -93,9 +93,9 @@ class RootRoleSpec : FreeSpec({
 
         "ルート直下の役割の layout は group 内の役割の layout と並んで平坦化される" {
             val arch = architecture {
-                "Gitignore" { layout { ".gitignore".file() } }
+                "Gitignore".role { layout { ".gitignore".file() } }
                 "domain".group {
-                    "UseCase" { layout { "useCase" { } } }
+                    "UseCase".role { layout { "useCase" { } } }
                 }
             }
 
@@ -105,7 +105,7 @@ class RootRoleSpec : FreeSpec({
 
         "processor のモデルからもルート直下の役割とそのエントリが見える" {
             val arch = architecture {
-                "Gitignore" { layout { ".gitignore".file() } }
+                "Gitignore".role { layout { ".gitignore".file() } }
             }
 
             // 宣言しか読まないので、ファイルシステムに触ったら落ちるものを渡してよい。
@@ -119,8 +119,8 @@ class RootRoleSpec : FreeSpec({
         "ルート直下で同名の役割を2回宣言するとエラーになる" {
             val thrown = shouldThrow<KatachiDuplicateDeclarationException> {
                 architecture {
-                    "Readme" { }
-                    "Readme" { }
+                    "Readme".role { }
+                    "Readme".role { }
                 }
             }
 
@@ -134,7 +134,7 @@ class RootRoleSpec : FreeSpec({
             val thrown = shouldThrow<KatachiDuplicateDeclarationException> {
                 architecture {
                     "domain".group { }
-                    "domain" { }
+                    "domain".role { }
                 }
             }
 
@@ -146,7 +146,7 @@ class RootRoleSpec : FreeSpec({
         "ルート直下で役割と同名の group を宣言してもエラーになる" {
             val thrown = shouldThrow<KatachiDuplicateDeclarationException> {
                 architecture {
-                    "domain" { }
+                    "domain".role { }
                     "domain".group { }
                 }
             }
@@ -160,7 +160,7 @@ class RootRoleSpec : FreeSpec({
             val thrown = shouldThrow<KatachiDuplicateDeclarationException> {
                 architecture {
                     "domain".group { }
-                    "domain" { }
+                    "domain".role { }
                 }
             }
 
@@ -177,7 +177,7 @@ class RootRoleSpec : FreeSpec({
             val thrown = shouldThrow<KatachiDuplicateDeclarationException> {
                 architecture {
                     val root = this
-                    "domain" {
+                    "domain".role {
                         with(root) { "domain".group { } }
                     }
                 }
@@ -193,7 +193,7 @@ class RootRoleSpec : FreeSpec({
                 architecture {
                     "x".group {
                         "domain".group { }
-                        "domain" { }
+                        "domain".role { }
                     }
                 }
             }
@@ -206,8 +206,8 @@ class RootRoleSpec : FreeSpec({
 
         "ルート直下の役割と、group の中の同名の役割は衝突しない" {
             val arch = architecture {
-                "UseCase" { }
-                "domain".group { "UseCase" { } }
+                "UseCase".role { }
+                "domain".group { "UseCase".role { } }
             }
 
             arch.allRoles.map { it.qualifiedName } shouldContainExactly

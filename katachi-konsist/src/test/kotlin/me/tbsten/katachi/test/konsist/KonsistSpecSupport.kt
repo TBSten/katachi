@@ -33,7 +33,7 @@ internal fun konsistRun(
     val projectArchitecture = architecture {
         files = wholeTree()
         "domain".group {
-            "UseCase" {
+            "UseCase".role {
                 layout {
                     // The fixture's own project root marker: a real file in a tree the check
                     // walks whole, so the layout has to account for it.
@@ -62,7 +62,7 @@ internal fun konsistRunWithoutFileConstraintCheck(
     val projectArchitecture = architecture {
         files = wholeTree()
         "domain".group {
-            "UseCase" {
+            "UseCase".role {
                 layout {
                     "gradlew".file()
                     "src" {

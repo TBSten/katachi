@@ -18,7 +18,7 @@ import me.tbsten.katachi.test.dsl.files.FakeFileSystem
 
 private fun definition(): Architecture = architectureOf {
     baseline()
-    "Readme" { layout { "README.md".file() } }
+    "Readme".role { layout { "README.md".file() } }
 }
 
 private fun treeWith(vararg extra: String): FakeFileSystem = repositoryOf {
@@ -91,7 +91,7 @@ class BaselineCheckConflictSpec : FreeSpec({
         val run = TestRun()
         val other = architectureOf {
             baseline()
-            "Notes" { layout { "notes.md".file() } }
+            "Notes".role { layout { "notes.md".file() } }
         }
         run.assert(definition(), treeWith("notes.md"), update = true)
 
@@ -138,7 +138,7 @@ class BaselineCheckConflictSpec : FreeSpec({
             val run = TestRun()
             val elsewhere = architectureOf {
                 baseline("config/katachi-baseline.json")
-                "Readme" { layout { "README.md".file() } }
+                "Readme".role { layout { "README.md".file() } }
             }
             run.assert(definition(), treeWith(), ScriptedCheck(listOf(ForeignViolation("a.kt"))), update = true)
 

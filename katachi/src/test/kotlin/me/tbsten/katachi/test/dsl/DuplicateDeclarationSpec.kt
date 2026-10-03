@@ -31,8 +31,8 @@ class DuplicateDeclarationSpec : FreeSpec({
             architecture {
                 "domain".group {
                     val group = this
-                    "UseCase" {
-                        with(group) { "UseCase" { } }
+                    "UseCase".role {
+                        with(group) { "UseCase".role { } }
                     }
                 }
             }
@@ -76,8 +76,8 @@ class DuplicateDeclarationSpec : FreeSpec({
         val thrown = shouldThrow<KatachiDuplicateDeclarationException> {
             architecture {
                 "domain".group {
-                    "UseCase" { }
-                    "UseCase" { }
+                    "UseCase".role { }
+                    "UseCase".role { }
                 }
             }
         }
@@ -86,8 +86,8 @@ class DuplicateDeclarationSpec : FreeSpec({
 
     "group が違えば同名の役割を宣言できる" {
         val arch = architecture {
-            "domain".group { "Repository" { } }
-            "data".group { "Repository" { } }
+            "domain".group { "Repository".role { } }
+            "data".group { "Repository".role { } }
         }
 
         arch.allRoles.map { it.qualifiedName } shouldContainExactly
@@ -102,7 +102,7 @@ class DuplicateDeclarationSpec : FreeSpec({
                 "x".group {
                     "y".group {
                         "domain".group { }
-                        "domain" { }
+                        "domain".role { }
                     }
                 }
             }
@@ -119,7 +119,7 @@ class DuplicateDeclarationSpec : FreeSpec({
             architecture {
                 "x".group {
                     "domain".group { }
-                    "domain" { }
+                    "domain".role { }
                 }
             }
         }
@@ -136,7 +136,7 @@ class DuplicateDeclarationSpec : FreeSpec({
         val thrown = shouldThrow<KatachiDuplicateDeclarationException> {
             architecture {
                 "x".group {
-                    "domain" { }
+                    "domain".role { }
                     "domain".group { }
                 }
             }
@@ -150,7 +150,7 @@ class DuplicateDeclarationSpec : FreeSpec({
     "別々の group でなら、group 名と役割名に同じ名前を使える" {
         val arch = architecture {
             "a".group { "domain".group { } }
-            "b".group { "domain" { } }
+            "b".group { "domain".role { } }
         }
 
         arch.allGroups.map { it.qualifiedName } shouldContainExactly listOf("a", "a.domain", "b")
@@ -178,8 +178,8 @@ class DuplicateDeclarationSpec : FreeSpec({
         val thrown = shouldThrow<KatachiDuplicateDeclarationException> {
             architecture {
                 "domain".group {
-                    "UseCase" { }
-                    "UseCase" { }
+                    "UseCase".role { }
+                    "UseCase".role { }
                 }
             }
         }
@@ -214,8 +214,8 @@ class DuplicateDeclarationSpec : FreeSpec({
         val thrown = shouldThrow<KatachiDuplicateDeclarationException> {
             architecture {
                 "domain".group {
-                    "UseCase" { }
-                    "UseCase" { }
+                    "UseCase".role { }
+                    "UseCase".role { }
                 }
             }
         }

@@ -14,7 +14,7 @@ import me.tbsten.katachi.konsist.konsist
  * bundled Jewel) and into the headless preview (against standalone Jewel), so that the preview
  * renders the code that ships.
  */
-fun DeclarationContainerScope.idePluginSource() = "IdePluginSource" {
+fun DeclarationContainerScope.idePluginSource() = "IdePluginSource".role {
     title = "IDE プラグインの実装"
     summary = "Tool Window の登録と、plugin 本体と preview の両方でコンパイルする Compose (Jewel) の画面"
     example("KatachiToolWindowFactory.kt", "Tool Window に Compose の画面を載せる")

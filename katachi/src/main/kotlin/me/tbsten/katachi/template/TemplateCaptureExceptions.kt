@@ -28,7 +28,7 @@ import me.tbsten.katachi.dsl.DeclarationSite
  *
  * val arch = architecture {
  *     "feature".group {
- *         "ViewModel" {
+ *         "ViewModel".role {
  *             layout {
  *                 "feature" / capture("feature") / "ViewModel.kt".file()
  *                     .template { "class ViewModel" }

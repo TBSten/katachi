@@ -26,7 +26,7 @@ import me.tbsten.katachi.test.architecture.roles.buildLogic
  * not here, `Group.declaredAt` / `Role.declaredAt` for all of them resolve to the line below --
  * katachi walks the stack past its own frames to the first one outside itself, which is this
  * call. `BuildLogic` is different: `buildLogic()` is called from here, but the role itself is
- * still written as `"BuildLogic" { }` inside `roles/BuildLogicRole.kt`, so its own declaration
+ * still written as `"BuildLogic".role { }` inside `roles/BuildLogicRole.kt`, so its own declaration
  * site is that file, same as every other role in this project. `DeclarationSiteSpec` checks
  * both halves of that split.
  */

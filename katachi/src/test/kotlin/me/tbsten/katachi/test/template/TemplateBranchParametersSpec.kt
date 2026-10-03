@@ -24,7 +24,7 @@ class TemplateBranchParametersSpec : FreeSpec({
     "if (withImpl) の中のパラメータは、withImpl=true の分岐で addedParameters に出る" {
         val arch = architectureOf {
             "domain".group {
-                "UseCase" {
+                "UseCase".role {
                     layout {
                         "useCase" / "UseCase.kt".file().template {
                             val withImpl by booleanParameter(default = false)
@@ -52,7 +52,7 @@ class TemplateBranchParametersSpec : FreeSpec({
     "分岐しないパラメータは branches に出ない" {
         val arch = architectureOf {
             "domain".group {
-                "UseCase" {
+                "UseCase".role {
                     layout { "useCase" / "UseCase.kt".file().template { val name by stringParameter(); "class $name" } }
                 }
             }
@@ -63,7 +63,7 @@ class TemplateBranchParametersSpec : FreeSpec({
     "enum の他の値でも中身が変わればブランチに出る" {
         val arch = architectureOf {
             "domain".group {
-                "UseCase" {
+                "UseCase".role {
                     layout {
                         "useCase" / "UseCase.kt".file().template {
                             val visibility by enumParameter(BranchVisibility.Public)

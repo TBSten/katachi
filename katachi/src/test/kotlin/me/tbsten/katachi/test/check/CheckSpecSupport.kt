@@ -48,7 +48,7 @@ internal fun layoutArchitecture(
     role: String = "Role",
     block: LayoutScope.() -> Unit,
 ): Architecture = architectureOf {
-    group.group { role { layout(block) } }
+    group.group { role.role { layout(block) } }
 }
 
 /** Violations as their report's first lines, which is what a spec about the traversal means. */

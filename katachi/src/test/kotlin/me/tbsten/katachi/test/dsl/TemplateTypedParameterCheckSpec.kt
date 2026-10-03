@@ -204,7 +204,7 @@ class TemplateTypedParameterCheckSpec : FreeSpec({
         "TemplateScope の KDoc の Example 2 がそのとおりに動く（id で選んだ側だけを評価する）" {
             val arch = architecture {
                 "data".group {
-                    "Repository" {
+                    "Repository".role {
                         layout {
                             "repository" / "${capture("name")}Repository.kt".file().template(id = "repository") {
                                 val name = captureValue("name")

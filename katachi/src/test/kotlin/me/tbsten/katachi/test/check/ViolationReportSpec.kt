@@ -14,8 +14,8 @@ class ViolationReportSpec : FreeSpec({
     "Unexpected なファイル" - {
         val definition = architectureOf {
             "domain".group {
-                "UseCase" { layout { "core/domain/useCase" / "*UseCase".ktFile() } }
-                "Repository" { layout { "core/domain/repository" / "*Repository".ktFile() } }
+                "UseCase".role { layout { "core/domain/useCase" / "*UseCase".ktFile() } }
+                "Repository".role { layout { "core/domain/repository" / "*Repository".ktFile() } }
             }
         }
         val tree = repositoryOf {
@@ -42,7 +42,7 @@ class ViolationReportSpec : FreeSpec({
                     - Move it to one of the locations above
                     - Delete it if it is not needed
                     - Add a new role for it:
-                        "TokenRefresher" {
+                        "TokenRefresher".role {
                           summary = "TODO"
                           layout {
                             "core/domain" / "TokenRefresher".ktFile()
@@ -67,7 +67,7 @@ class ViolationReportSpec : FreeSpec({
                     - Move it to one of the locations above
                     - Delete it if it is not needed
                     - Add a new role for it:
-                        "TokenRefresher" {
+                        "TokenRefresher".role {
                           summary = "TODO"
                           layout {
                             "core/domain" / "TokenRefresher".ktFile()
@@ -111,7 +111,7 @@ class ViolationReportSpec : FreeSpec({
                     - Delete it if it is not needed
                     - Declare what belongs in it in the layout of an existing role
                     - Add a new role for it:
-                        "TmpExperiment" {
+                        "TmpExperiment".role {
                           summary = "TODO"
                           layout {
                             "tmp-experiment" { ignore() }
@@ -135,7 +135,7 @@ class ViolationReportSpec : FreeSpec({
                   How to fix:
                     - Delete it if it is not needed
                     - Add a new role for it:
-                        "BuildGradle" {
+                        "BuildGradle".role {
                           summary = "TODO"
                           layout {
                             "build.gradle".ktsFile()
@@ -148,7 +148,7 @@ class ViolationReportSpec : FreeSpec({
                   How to fix:
                     - Delete it if it is not needed
                     - Add a new role for it:
-                        "LibsVersionsToml" {
+                        "LibsVersionsToml".role {
                           summary = "TODO"
                           layout {
                             "libs.versions.toml".file()

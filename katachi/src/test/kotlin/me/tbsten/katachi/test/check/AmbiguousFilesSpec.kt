@@ -35,8 +35,8 @@ class AmbiguousFilesSpec : FreeSpec({
         "違う pattern が同じファイルに当たると1グループになる" {
             val overlaps = overlapsOf("home/HomeScreen.kt", "home/HomeViewModel.kt") {
                 "ui".group {
-                    "Component" { layout { "home" { "*".ktFile() } } }
-                    "ViewModel" { layout { "home" { "*ViewModel".ktFile() } } }
+                    "Component".role { layout { "home" { "*".ktFile() } } }
+                    "ViewModel".role { layout { "home" { "*ViewModel".ktFile() } } }
                 }
             }
 
@@ -50,8 +50,8 @@ class AmbiguousFilesSpec : FreeSpec({
                 "topic/TopicViewModel.kt",
             ) {
                 "ui".group {
-                    "Component" { layout { "*" { "*".ktFile() } } }
-                    "ViewModel" { layout { "*" { "*ViewModel".ktFile() } } }
+                    "Component".role { layout { "*" { "*".ktFile() } } }
+                    "ViewModel".role { layout { "*" { "*ViewModel".ktFile() } } }
                 }
             }
 
@@ -65,9 +65,9 @@ class AmbiguousFilesSpec : FreeSpec({
         "役割の組が違えばグループも分かれる" {
             val overlaps = overlapsOf("home/HomeViewModel.kt", "home/HomeState.kt") {
                 "ui".group {
-                    "Component" { layout { "home" { "*".ktFile() } } }
-                    "ViewModel" { layout { "home" { "*ViewModel".ktFile() } } }
-                    "State" { layout { "home" { "*State".ktFile() } } }
+                    "Component".role { layout { "home" { "*".ktFile() } } }
+                    "ViewModel".role { layout { "home" { "*ViewModel".ktFile() } } }
+                    "State".role { layout { "home" { "*State".ktFile() } } }
                 }
             }
 
@@ -78,8 +78,8 @@ class AmbiguousFilesSpec : FreeSpec({
         "1つの役割しか掴んでいないファイルはグループを作らない" {
             val overlaps = overlapsOf("home/HomeScreen.kt") {
                 "ui".group {
-                    "Component" { layout { "home" { "*".ktFile() } } }
-                    "ViewModel" { layout { "home" { "*ViewModel".ktFile() } } }
+                    "Component".role { layout { "home" { "*".ktFile() } } }
+                    "ViewModel".role { layout { "home" { "*ViewModel".ktFile() } } }
                 }
             }
 
@@ -91,8 +91,8 @@ class AmbiguousFilesSpec : FreeSpec({
         "module { } が注入する build.gradle.kts は重なり扱いにならない" {
             val overlaps = overlapsOf("app/build.gradle.kts") {
                 "app".group {
-                    "Foo" { layout { ":app".module { "Foo".ktFile() } } }
-                    "Bar" { layout { ":app".module { "Bar".ktFile() } } }
+                    "Foo".role { layout { ":app".module { "Foo".ktFile() } } }
+                    "Bar".role { layout { ":app".module { "Bar".ktFile() } } }
                 }
             }
 
@@ -102,8 +102,8 @@ class AmbiguousFilesSpec : FreeSpec({
         "両方の役割が build.gradle.kts を自分で書いたときは重なりになる" {
             val overlaps = overlapsOf("app/build.gradle.kts") {
                 "app".group {
-                    "Foo" { layout { ":app".module { "build.gradle.kts".file() } } }
-                    "Bar" { layout { ":app".module { "build.gradle.kts".file() } } }
+                    "Foo".role { layout { ":app".module { "build.gradle.kts".file() } } }
+                    "Bar".role { layout { ":app".module { "build.gradle.kts".file() } } }
                 }
             }
 
@@ -113,8 +113,8 @@ class AmbiguousFilesSpec : FreeSpec({
         "anyFile() は claim なので file() と重なる" {
             val overlaps = overlapsOf("generated/Api.kt") {
                 "build".group {
-                    "Open" { layout { "generated" { anyFile() } } }
-                    "Kotlin" { layout { "generated" { "*".ktFile() } } }
+                    "Open".role { layout { "generated" { anyFile() } } }
+                    "Kotlin".role { layout { "generated" { "*".ktFile() } } }
                 }
             }
 
@@ -128,8 +128,8 @@ class AmbiguousFilesSpec : FreeSpec({
         "path のテキストが一致して既に報告済みの役割の組は落とされる" {
             val definition = architecture {
                 "ui".group {
-                    "Component" { layout { "home" { "*".ktFile() } } }
-                    "ViewModel" { layout { "home" { "*".ktFile() } } }
+                    "Component".role { layout { "home" { "*".ktFile() } } }
+                    "ViewModel".role { layout { "home" { "*".ktFile() } } }
                 }
             }
             val entries = definition.flattenLayout()
@@ -144,8 +144,8 @@ class AmbiguousFilesSpec : FreeSpec({
         "報告済みの組が1つも無ければ、そのまま AmbiguousLayout になる" {
             val overlaps = overlapsOf("home/HomeViewModel.kt", "home/OtherViewModel.kt") {
                 "ui".group {
-                    "Component" { layout { "home" { "*".ktFile() } } }
-                    "ViewModel" { layout { "home" { "*ViewModel".ktFile() } } }
+                    "Component".role { layout { "home" { "*".ktFile() } } }
+                    "ViewModel".role { layout { "home" { "*ViewModel".ktFile() } } }
                 }
             }
 

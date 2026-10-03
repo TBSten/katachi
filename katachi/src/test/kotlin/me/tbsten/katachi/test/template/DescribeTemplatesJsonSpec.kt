@@ -17,7 +17,7 @@ import me.tbsten.katachi.test.check.architectureOf
 class DescribeTemplatesJsonSpec : FreeSpec({
     val arch = architectureOf {
         "domain".group {
-            "UseCase" {
+            "UseCase".role {
                 layout {
                     "useCase" / "${capture("name")}UseCase.kt".file().template {
                         "class ${captureValue("name")}UseCase"

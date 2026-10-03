@@ -20,7 +20,7 @@ import me.tbsten.katachi.test.architecture.showsExample
 import me.tbsten.katachi.test.architecture.KATACHI_MAIN_PACKAGE
 
 /** The role of the entry point a user implements to turn one walk into whatever they need. */
-fun DeclarationContainerScope.processor() = "Processor" {
+fun DeclarationContainerScope.processor() = "Processor".role {
     title = "プロセッサ"
     summary = "1度の走査の結果を受け取って、好きな形に変換する入口"
     example("ArchitectureProcessContext.kt", "走査を高々1度に抑えたうえで、宣言と実体の両方を processor に見せる入口")

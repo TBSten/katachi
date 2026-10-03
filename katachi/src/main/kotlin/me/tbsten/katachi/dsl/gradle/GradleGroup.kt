@@ -43,7 +43,7 @@ import me.tbsten.katachi.dsl.internal.markSynthetic
  *
  * val arch = architecture {
  *     gradle {
- *         "DependencyVerification" {
+ *         "DependencyVerification".role {
  *             documented = false
  *             layout { "gradle/verification-metadata.xml".file() }
  *         }
@@ -104,7 +104,7 @@ public fun DeclarationContainerScope.gradle(
 
 /** One role of [gradle]: out of the documentation, and with nothing but a layout. */
 private fun GroupScope.gradleRole(name: String, summary: String, layout: LayoutScope.() -> Unit) {
-    name {
+    name.role {
         this.summary = summary
         documented = false
         layout(layout)

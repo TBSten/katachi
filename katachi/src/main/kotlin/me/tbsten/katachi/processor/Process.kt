@@ -49,8 +49,8 @@ public fun <R> Architecture.process(processor: ArchitectureProcessor<Unit, R>): 
  * }
  *
  * val arch = architecture {
- *     "domain".group { "GetUserUseCase" { }; "GetOrderUseCase" { } }
- *     "data".group { "GetUserRepository" { } }
+ *     "domain".group { "GetUserUseCase".role { }; "GetOrderUseCase".role { } }
+ *     "data".group { "GetUserRepository".role { } }
  * }
  * val count = arch.process(CountRoles, CountRoles.Args(prefix = "Get"))
  * count.getOrThrow() shouldBe 3

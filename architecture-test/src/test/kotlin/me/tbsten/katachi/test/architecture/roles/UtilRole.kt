@@ -18,7 +18,7 @@ import me.tbsten.katachi.test.architecture.KATACHI_MAIN_PACKAGE
  * helper that needs a role, a layout or a file system is not general-purpose, and belongs to the
  * layer whose words it speaks.
  */
-fun DeclarationContainerScope.util() = "Util" {
+fun DeclarationContainerScope.util() = "Util".role {
     title = "汎用の道具"
     summary = "アーキテクチャ定義を知らない、標準ライブラリだけで書かれた道具"
     example("RunCatchingScoped.kt", "失敗を記録しながら最後まで進める runCatchingScoped")

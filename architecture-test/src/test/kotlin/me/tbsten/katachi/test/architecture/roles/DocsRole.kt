@@ -26,7 +26,7 @@ import me.tbsten.katachi.test.architecture.KATACHI_MAIN_PACKAGE
  * something from them, and neither is more privileged than the other. It sits after `Check` in
  * the layer table only because nothing imports it yet, which makes it the cheapest place to put.
  */
-fun DeclarationContainerScope.docs() = "Docs" {
+fun DeclarationContainerScope.docs() = "Docs".role {
     title = "ドキュメント生成"
     summary = "宣言から役割リファレンスの Markdown を組み立て、書き出す層"
     example("GenerateDocumentation.kt", "katachiDocs の入口。組み立てた結果をディスクに置く唯一の場所")

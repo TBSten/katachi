@@ -26,7 +26,7 @@ import me.tbsten.katachi.test.architecture.KATACHI_MAIN_PACKAGE
  * the same split — a pure function builds a map of path to contents, and one thin shell puts it on
  * a disk. It sits after `Docs` in the layer table only because nothing imports it.
  */
-fun DeclarationContainerScope.template() = "Template" {
+fun DeclarationContainerScope.template() = "Template".role {
     title = "テンプレート生成"
     summary = "役割の template { } を replay して、layout が示す場所へファイルを書き出す層"
     example("GenerateCodeFromTemplate.kt", "katachiTemplate の入口。--arg を受け取り、書き出しを起動する")

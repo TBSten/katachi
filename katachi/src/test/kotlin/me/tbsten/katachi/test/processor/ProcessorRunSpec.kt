@@ -34,7 +34,7 @@ import me.tbsten.katachi.test.check.architectureOf
 
 class ProcessorRunSpec : FreeSpec({
     val definition = architectureOf {
-        "domain".group { "UseCase" { layout { "useCase" / "*UseCase".ktFile() } } }
+        "domain".group { "UseCase".role { layout { "useCase" / "*UseCase".ktFile() } } }
     }
 
     "instantiateProcessor" - {
@@ -396,7 +396,7 @@ class ProcessorRunSpec : FreeSpec({
             // both would read --arg name=..., which is exactly what KatachiTemplateParameterConflictException refuses.
             val withConflict = architectureOf {
                 "domain".group {
-                    "UseCase" {
+                    "UseCase".role {
                         layout {
                             "useCase" / "${capture("name")}UseCase.kt".file().template {
                                 val name by stringParameter()
@@ -427,7 +427,7 @@ class ProcessorRunSpec : FreeSpec({
         "テンプレートの中で投げた例外も [FAILED] template で出す" {
             val withThrowingTemplate = architectureOf {
                 "domain".group {
-                    "UseCase" {
+                    "UseCase".role {
                         layout {
                             "useCase" / "GetUserUseCase.kt".file().template {
                                 error("boom")

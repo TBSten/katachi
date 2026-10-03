@@ -21,7 +21,7 @@ import me.tbsten.katachi.check.internal.missingDescriptionsOf
  * `assert()` and the wording of its report block.
  */
 private fun oneRole(block: LayoutScope.() -> Unit): List<LayoutEntry> = architecture {
-    "group".group { "Role" { layout(block) } }
+    "group".group { "Role".role { layout(block) } }
 }.flattenLayout()
 
 private fun warningsOf(entries: List<LayoutEntry>): List<MissingDescription> =
@@ -82,8 +82,8 @@ class MissingDescriptionSpec : FreeSpec({
         "役割が違えば place は合算されない" {
             val entries = architecture {
                 "group".group {
-                    "RoleA" { layout { ":core:domain".module { "*UseCase".ktFile() } } }
-                    "RoleB" { layout { ":feature:home".module { "*UseCase".ktFile() } } }
+                    "RoleA".role { layout { ":core:domain".module { "*UseCase".ktFile() } } }
+                    "RoleB".role { layout { ":feature:home".module { "*UseCase".ktFile() } } }
                 }
             }.flattenLayout()
 

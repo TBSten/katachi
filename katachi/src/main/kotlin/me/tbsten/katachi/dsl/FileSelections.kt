@@ -23,7 +23,7 @@ package me.tbsten.katachi.dsl
  *
  * val projectArchitecture = architecture {
  *     files = gitTracked()
- *     "domain".group { "UseCase" { } }
+ *     "domain".group { "UseCase".role { } }
  * }
  * ```
  */
@@ -40,7 +40,7 @@ public fun gitTracked(): FileSelection = FileSelection.GitTracked
  *
  * val projectArchitecture = architecture {
  *     files = wholeTree()
- *     "domain".group { "UseCase" { } }
+ *     "domain".group { "UseCase".role { } }
  * }
  * ```
  */

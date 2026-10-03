@@ -30,7 +30,7 @@ class DirectoryTreeSpec : FreeSpec({
         "ネストしたディレクトリが木になり、役割一覧表とグループ一覧の間に入る" {
             val arch = architecture {
                 "domain".group {
-                    "UseCase" {
+                    "UseCase".role {
                         title = "ユースケース"
                         layout {
                             ":core:domain".module {
@@ -38,7 +38,7 @@ class DirectoryTreeSpec : FreeSpec({
                             }
                         }
                     }
-                    "Repository" {
+                    "Repository".role {
                         title = "リポジトリ"
                         layout {
                             ":core:domain".module {
@@ -79,7 +79,7 @@ class DirectoryTreeSpec : FreeSpec({
         "役割名はリンクにしない" {
             val arch = architecture {
                 "domain".group {
-                    "UseCase" {
+                    "UseCase".role {
                         title = "ユースケース"
                         layout { ":core:domain".module { mainSourceSet / kotlin / "*UseCase".ktFile() } }
                     }
@@ -97,7 +97,7 @@ class DirectoryTreeSpec : FreeSpec({
         "複数のモジュールがそれぞれの見出しの下に並ぶ" {
             val arch = architecture {
                 "domain".group {
-                    "UseCase" {
+                    "UseCase".role {
                         title = "ユースケース"
                         layout {
                             ":core:domain".module { mainSourceSet / kotlin / "useCase" / "*UseCase".ktFile() }
@@ -122,7 +122,7 @@ class DirectoryTreeSpec : FreeSpec({
         "ワイルドカードのモジュールキーは展開されずパターンのまま出る" {
             val arch = architecture {
                 "feature".group {
-                    "Screen" {
+                    "Screen".role {
                         title = "画面"
                         layout { ":feature:*".module { mainSourceSet / kotlin / "*Screen".ktFile() } }
                     }
@@ -139,7 +139,7 @@ class DirectoryTreeSpec : FreeSpec({
         "modulePackage は展開せず ** のまま出る" {
             val arch = architecture {
                 "domain".group {
-                    "UseCase" {
+                    "UseCase".role {
                         title = "ユースケース"
                         layout {
                             ":core:domain".module {
@@ -158,7 +158,7 @@ class DirectoryTreeSpec : FreeSpec({
         "ルートプロジェクトの module { } は : の見出しで出る" {
             val arch = architecture {
                 "build".group {
-                    "GradleRoot" {
+                    "GradleRoot".role {
                         title = "ルートの Gradle ファイル"
                         layout { ":".module { "settings.gradle".ktsFile() } }
                     }
@@ -175,7 +175,7 @@ class DirectoryTreeSpec : FreeSpec({
         "module { } の外で書いた宣言は、モジュールの見出しを持たずルートからのパスで出る" {
             val arch = architecture {
                 "tool".group {
-                    "Script" {
+                    "Script".role {
                         title = "スクリプト"
                         layout { "scripts" / "*.sh".file() }
                     }
@@ -191,7 +191,7 @@ class DirectoryTreeSpec : FreeSpec({
         "ignore() と anyFile() も、役割ページの表と同じくフルパスで出る" {
             val arch = architecture {
                 "app".group {
-                    "Resource" {
+                    "Resource".role {
                         title = "リソース"
                         layout {
                             ":app".module {
@@ -218,11 +218,11 @@ class DirectoryTreeSpec : FreeSpec({
         "同じパスに複数の役割がマッチすれば、どちらも同じ行に並ぶ" {
             val arch = architecture {
                 "domain".group {
-                    "UseCase" {
+                    "UseCase".role {
                         title = "ユースケース"
                         layout { ":core:domain".module { mainSourceSet / kotlin / "*.kt".file() } }
                     }
-                    "Repository" {
+                    "Repository".role {
                         title = "リポジトリ"
                         layout { ":core:domain".module { mainSourceSet / kotlin / "*.kt".file() } }
                     }
@@ -241,7 +241,7 @@ class DirectoryTreeSpec : FreeSpec({
         "同じディレクトリに複数のパターンを書いても、役割名は行ごとに1つ" {
             val arch = architecture {
                 "domain".group {
-                    "UseCase" {
+                    "UseCase".role {
                         title = "ユースケース"
                         layout {
                             ":core:domain".module {
@@ -267,7 +267,7 @@ class DirectoryTreeSpec : FreeSpec({
         "optional() の宣言も他と同じように出る" {
             val arch = architecture {
                 "build".group {
-                    "VersionCatalog" {
+                    "VersionCatalog".role {
                         title = "バージョンカタログ"
                         layout { "gradle" / "libs.versions.toml".file().optional() }
                     }
@@ -285,11 +285,11 @@ class DirectoryTreeSpec : FreeSpec({
         "documented = false の役割はツリーからも消える" {
             val arch = architecture {
                 "domain".group {
-                    "UseCase" {
+                    "UseCase".role {
                         title = "ユースケース"
                         layout { ":core:domain".module { mainSourceSet / kotlin / "useCase" / "*UseCase".ktFile() } }
                     }
-                    "Internal" {
+                    "Internal".role {
                         documented = false
                         layout { ":core:domain".module { mainSourceSet / kotlin / "internal" / "*.kt".file() } }
                     }
@@ -304,12 +304,12 @@ class DirectoryTreeSpec : FreeSpec({
         "ネストした group の役割は、親のツリーではなく自分のツリーに出る" {
             val arch = architecture {
                 "domain".group {
-                    "UseCase" {
+                    "UseCase".role {
                         title = "ユースケース"
                         layout { ":core:domain".module { mainSourceSet / kotlin / "*UseCase".ktFile() } }
                     }
                     "model".group {
-                        "Entity" {
+                        "Entity".role {
                             title = "エンティティ"
                             layout { ":core:model".module { mainSourceSet / kotlin / "*Entity".ktFile() } }
                         }
@@ -326,7 +326,7 @@ class DirectoryTreeSpec : FreeSpec({
         "module { } が注入する build/ と build.gradle.kts は出ない" {
             val arch = architecture {
                 "domain".group {
-                    "UseCase" {
+                    "UseCase".role {
                         title = "ユースケース"
                         layout { ":core:domain".module { mainSourceSet / kotlin / "*UseCase".ktFile() } }
                     }
@@ -339,14 +339,14 @@ class DirectoryTreeSpec : FreeSpec({
         }
 
         "layout { } が空なら節ごと出ない" {
-            val arch = architecture { "domain".group { "UseCase" { } } }
+            val arch = architecture { "domain".group { "UseCase".role { } } }
 
             arch.page("domain/README.md") shouldNotContain TREE_HEADING
         }
 
         "ルートの README には architecture { } 直下の役割の配置が出る" {
             val arch = architecture {
-                "Changelog" {
+                "Changelog".role {
                     title = "変更履歴"
                     layout { "CHANGELOG.md".file() }
                 }
@@ -381,9 +381,9 @@ class DirectoryTreeSpec : FreeSpec({
 
         "ルートのツリーには group の中の役割の配置が出ない" {
             val arch = architecture {
-                "Changelog" { layout { "CHANGELOG.md".file() } }
+                "Changelog".role { layout { "CHANGELOG.md".file() } }
                 "domain".group {
-                    "UseCase" {
+                    "UseCase".role {
                         layout { ":core:domain".module { mainSourceSet / kotlin / "*UseCase".ktFile() } }
                     }
                 }
@@ -397,7 +397,7 @@ class DirectoryTreeSpec : FreeSpec({
         "ルート直下に役割が無ければ節ごと出ない" {
             val arch = architecture {
                 "domain".group {
-                    "UseCase" {
+                    "UseCase".role {
                         layout { ":core:domain".module { mainSourceSet / kotlin / "*UseCase".ktFile() } }
                     }
                 }
@@ -410,7 +410,7 @@ class DirectoryTreeSpec : FreeSpec({
     "ツリーの組み立てはファイルシステムを1度も読まない" {
         val arch = architecture {
             "feature".group {
-                "Screen" {
+                "Screen".role {
                     title = "画面"
                     layout { ":feature:*".module { mainSourceSet / kotlin / "*Screen".ktFile() } }
                 }

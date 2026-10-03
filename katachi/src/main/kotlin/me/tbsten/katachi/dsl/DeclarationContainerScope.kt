@@ -15,9 +15,9 @@ package me.tbsten.katachi.dsl
  * ## Example 1: declare a role and a group side by side
  * ```kt
  * val arch = architecture {
- *     "Readme" { layout { "README.md".file() } }
+ *     "Readme".role { layout { "README.md".file() } }
  *     "domain".group {
- *         "UseCase" { }
+ *         "UseCase".role { }
  *     }
  * }
  * arch.allRoles.map { it.qualifiedName } shouldContainExactly listOf("Readme", "domain.UseCase")
@@ -26,7 +26,7 @@ package me.tbsten.katachi.dsl
  * ## Example 2: collect declarations in an ArchitectureScope extension function
  * ```kt
  * fun ArchitectureScope.domainRoles() {
- *   "domain".group { "UseCase" { } }
+ *   "domain".group { "UseCase".role { } }
  * }
  * ```
  */
@@ -43,7 +43,7 @@ public sealed interface DeclarationContainerScope : MetadataScope {
      * ```kt
      * val arch = architecture {
      *     "domain".group {
-     *         "UseCase" { }
+     *         "UseCase".role { }
      *     }
      * }
      * ```
@@ -53,7 +53,7 @@ public sealed interface DeclarationContainerScope : MetadataScope {
      * val arch = architecture {
      *     "build".group {
      *         documented = false
-     *         "VersionCatalog" { documented = false }
+     *         "VersionCatalog".role { documented = false }
      *     }
      * }
      * ```
@@ -63,10 +63,11 @@ public sealed interface DeclarationContainerScope : MetadataScope {
     public fun String.group(block: GroupScope.() -> Unit)
 
     /**
-     * Declares a role: `"UseCase" { title = "Use case" }`.
+     * Declares a role: `"UseCase".role { title = "Use case" }`.
      *
-     * This is `String.invoke`, so the role name is written as a plain string literal
-     * followed by its block.
+     * The role name is written as a plain string literal, then `.role` and its block. The
+     * shape matches `.group { }` next to it, and it tells a role apart from a directory
+     * declaration inside `layout { }`, where `"src" { }` is a directory and not a role.
      *
      * A role declared directly in `architecture { }` carries an empty
      * [group path][Role.groupPath], so its [qualified name][Role.qualifiedName] is the role
@@ -78,7 +79,7 @@ public sealed interface DeclarationContainerScope : MetadataScope {
      * ```kt
      * val arch = architecture {
      *     "domain".group {
-     *         "UseCase" {
+     *         "UseCase".role {
      *             title = "Use case"
      *             summary = "A single app-specific behavior that happens on a screen"
      *         }
@@ -89,7 +90,7 @@ public sealed interface DeclarationContainerScope : MetadataScope {
      * ## Example 2: declare a role at the root, with no group around it
      * ```kt
      * val arch = architecture {
-     *     "Readme" {
+     *     "Readme".role {
      *         title = "README"
      *         layout { "README.md".file() }
      *     }
@@ -99,5 +100,30 @@ public sealed interface DeclarationContainerScope : MetadataScope {
      *
      * @featured
      */
-    public operator fun String.invoke(block: RoleScope.() -> Unit)
+    public fun String.role(block: RoleScope.() -> Unit)
+
+    /**
+     * The former spelling of a role declaration, `"UseCase" { }`. Write `"UseCase".role { }`.
+     *
+     * Only the role declaration changed: a directory inside `layout { }` is still written
+     * `"src" { }`.
+     *
+     * ## Example 1: rewrite the old spelling
+     * ```kt
+     * // Before (v0.2): "UseCase" { title = "Use case" }
+     * val arch = architecture {
+     *     "UseCase".role { title = "Use case" }
+     * }
+     * ```
+     */
+    @Deprecated(
+        message = "\"UseCase\" { } is no longer a role declaration. " +
+            "Write \"UseCase\".role { } instead. " +
+            "A directory inside layout { } is still written \"src\" { }.",
+        replaceWith = ReplaceWith("role(block)"),
+        level = DeprecationLevel.ERROR,
+    )
+    public operator fun String.invoke(block: RoleScope.() -> Unit) {
+        role(block)
+    }
 }

@@ -28,7 +28,7 @@ class ContainerBodySpec : FreeSpec({
                         ### 置かないもの
                         - ドメインの判断
                     """.trimIndent()
-                    "Controller" { }
+                    "Controller".role { }
                 }
             }
 

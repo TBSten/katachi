@@ -189,7 +189,7 @@ private fun keptLine(after: BaselineLedger, ran: List<CheckedViolations>): Strin
 private fun undeclaredWarning(uri: String, path: String): String =
     "Warning: no role's layout { } allows the baseline file $uri, so every run from the next one " +
         "fails with [UnexpectedFile] about it. Declare it in a role, e.g. " +
-        "\"$BASELINE_ROLE_NAME\" { layout { ${layoutLineFor(path, isDirectory = false)} } }."
+        "\"$BASELINE_ROLE_NAME\".role { layout { ${layoutLineFor(path, isDirectory = false)} } }."
 
 private fun emptyNotice(uri: String): String =
     "Baseline $uri holds back nothing any more: `baseline(...)` can be removed from the definition, " +

@@ -72,7 +72,7 @@ public fun interface ModuleResolver {
      * ```kt
      * val projectArchitecture = architecture {
      *     moduleResolver = ModuleResolver.Conventional
-     *     "domain".group { "UseCase" { } }
+     *     "domain".group { "UseCase".role { } }
      * }
      * ```
      */

@@ -55,7 +55,7 @@ class FileConstraintParallelSpec : FreeSpec({
             }
             val arch = architectureOf {
                 "domain".group {
-                    "UseCase" {
+                    "UseCase".role {
                         layout {
                             "alpha" {
                                 fileConstraint("first", check = observing())
@@ -122,7 +122,7 @@ class FileConstraintParallelSpec : FreeSpec({
             }
             val arch = architectureOf {
                 "domain".group {
-                    "UseCase" {
+                    "UseCase".role {
                         layout {
                             "alpha" {
                                 fileConstraint("first", check = first)
@@ -142,7 +142,7 @@ class FileConstraintParallelSpec : FreeSpec({
         "投げた制約だけが Unchecked(Failed) になり、ほかは答える" {
             val arch = architectureOf {
                 "domain".group {
-                    "UseCase" {
+                    "UseCase".role {
                         layout {
                             "alpha" {
                                 fileConstraint("broken", check = throwing { IllegalStateException("boom") })
@@ -200,7 +200,7 @@ class FileConstraintParallelSpec : FreeSpec({
             }
             val arch = architectureOf {
                 "domain".group {
-                    "UseCase" {
+                    "UseCase".role {
                         layout {
                             "alpha" {
                                 fileConstraint("one", check = meeting())
@@ -259,7 +259,7 @@ class FileConstraintParallelSpec : FreeSpec({
             }
             val arch = architectureOf {
                 "domain".group {
-                    "UseCase" {
+                    "UseCase".role {
                         layout {
                             "alpha" {
                                 fileConstraint("a", check = memoizing())
@@ -328,7 +328,7 @@ private fun List<Violation>.described(): List<String> = map { violation ->
 /** Two constraints, named `first` and `second`, over the files under `alpha`. */
 private fun twoConstraints(first: FileConstraint, second: FileConstraint): Architecture = architectureOf {
     "domain".group {
-        "UseCase" {
+        "UseCase".role {
             layout {
                 "alpha" {
                     fileConstraint("first", check = first)
@@ -346,7 +346,7 @@ private fun twoConstraints(first: FileConstraint, second: FileConstraint): Archi
  */
 private fun manyConstraints(): Architecture = architectureOf {
     "domain".group {
-        "UseCase" {
+        "UseCase".role {
             fileConstraint("role wide", check = rejectsEverything())
             layout {
                 "alpha" {
@@ -357,7 +357,7 @@ private fun manyConstraints(): Architecture = architectureOf {
                 }
             }
         }
-        "Repository" {
+        "Repository".role {
             layout {
                 "beta" {
                     fileConstraint("beta E", check = rejecting("beta/E.kt"))
@@ -368,7 +368,7 @@ private fun manyConstraints(): Architecture = architectureOf {
         }
     }
     "data".group {
-        "Source" {
+        "Source".role {
             layout {
                 fileConstraint("gamma all", check = rejectsEverything())
                 "gamma" {

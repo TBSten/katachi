@@ -20,7 +20,7 @@ class ContainerPageSpec : FreeSpec({
             val arch = architecture {
                 "domain".group {
                     title = "ドメイン"
-                    "UseCase" {
+                    "UseCase".role {
                         title = "ユースケース"
                         summary = "各画面で発生するアプリ固有の1つの振る舞い"
                     }
@@ -40,13 +40,13 @@ class ContainerPageSpec : FreeSpec({
         }
 
         "title が無ければ識別子がそのまま見出しになる" {
-            val arch = architecture { "domain".group { "UseCase" { } } }
+            val arch = architecture { "domain".group { "UseCase".role { } } }
 
             arch.page("domain/README.md") shouldContain "# domain"
         }
 
         "summary が無い役割の概要欄は空になる" {
-            val arch = architecture { "domain".group { "UseCase" { } } }
+            val arch = architecture { "domain".group { "UseCase".role { } } }
 
             arch.page("domain/README.md") shouldContain "| [UseCase](./UseCase.md) |  |"
         }
@@ -54,7 +54,7 @@ class ContainerPageSpec : FreeSpec({
         "ネストした group は自分の README へのリンクとして並ぶ" {
             val arch = architecture {
                 "domain".group {
-                    "UseCase" { }
+                    "UseCase".role { }
                     "model".group { title = "モデル" }
                 }
             }
@@ -78,7 +78,7 @@ class ContainerPageSpec : FreeSpec({
         "表を壊す文字は書いたとおりに出さず、エスケープして出す" {
             val arch = architecture {
                 "domain".group {
-                    "UseCase" {
+                    "UseCase".role {
                         title = "a | b"
                         summary = "1行目\n2行目"
                     }
@@ -91,8 +91,8 @@ class ContainerPageSpec : FreeSpec({
         "documented = false の役割は一覧からも消える" {
             val arch = architecture {
                 "domain".group {
-                    "UseCase" { }
-                    "Internal" { documented = false }
+                    "UseCase".role { }
+                    "Internal".role { documented = false }
                 }
             }
 
@@ -190,7 +190,7 @@ class ContainerPageSpec : FreeSpec({
         "パンくずもリンク切れ検査に掛かる" {
             val arch = architecture {
                 "ui".group {
-                    "screen".group { "Screen" { } }
+                    "screen".group { "Screen".role { } }
                 }
             }
 

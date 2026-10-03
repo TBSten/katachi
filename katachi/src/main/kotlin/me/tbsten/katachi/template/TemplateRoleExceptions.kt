@@ -19,7 +19,7 @@ import me.tbsten.katachi.KatachiDeclarationException
  * import me.tbsten.katachi.template.GenerateCodeFromTemplate
  * import me.tbsten.katachi.template.KatachiUnknownTemplateException
  *
- * val arch = architecture { "domain".group { "UseCase" { } } }
+ * val arch = architecture { "domain".group { "UseCase".role { } } }
  * val thrown = shouldThrow<KatachiUnknownTemplateException> {
  *     arch.process(GenerateCodeFromTemplate, GenerateCodeFromTemplate.Args(template = listOf("UseCse"))).getOrThrow()
  * }

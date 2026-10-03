@@ -15,7 +15,7 @@ class TemplateCaptureConflictSpec : FreeSpec({
     "capture と同名のパラメータは KatachiTemplateParameterConflictException" {
         val arch = architectureOf {
             "feature".group {
-                "ViewModel" {
+                "ViewModel".role {
                     layout {
                         "feature" / "${capture("feature")}ViewModel.kt".file().template {
                             val feature by stringParameter()
@@ -38,7 +38,7 @@ class TemplateCaptureConflictSpec : FreeSpec({
         // （parameterOriginsOnEveryBranch）。
         val arch = architectureOf {
             "feature".group {
-                "ViewModel" {
+                "ViewModel".role {
                     layout {
                         "feature" / "${capture("feature")}ViewModel.kt".file().template {
                             val withPreview by booleanParameter(default = false)
@@ -64,7 +64,7 @@ class TemplateCaptureConflictSpec : FreeSpec({
     "capture が template（GenerateCodeFromTemplate.Args の予約名）と同じなら、処理系の引数として名指しされる" {
         val arch = architectureOf {
             "domain".group {
-                "UseCase" {
+                "UseCase".role {
                     layout { "useCase" / "${capture("template")}UseCase.kt".file().template { "" } }
                 }
             }

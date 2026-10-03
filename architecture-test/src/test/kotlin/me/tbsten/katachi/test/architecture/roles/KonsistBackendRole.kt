@@ -42,7 +42,7 @@ import me.tbsten.katachi.test.architecture.KONSIST_MAIN_PACKAGE
  * `konsist` at all: the entry only means something while the files under
  * `me/tbsten/katachi/konsist/` are the ones declaring `package me.tbsten.katachi.konsist`.
  */
-fun DeclarationContainerScope.konsistBackend() = "KonsistBackend" {
+fun DeclarationContainerScope.konsistBackend() = "KonsistBackend".role {
     title = "Konsist バックエンド"
     summary = "konsist { } を layout { } の中に書けるようにする。katachi の public な面だけに乗る"
     example("Konsist.kt", "\"...\".konsist { } の入口")
