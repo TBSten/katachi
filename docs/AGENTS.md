@@ -34,6 +34,10 @@ Manage the background server with `astro dev stop`, `astro dev status`, and `ast
 本文の先頭（「このページの目的」のコメントと import の直後）に
 `<Aside type="note" title="AI が書いた下書き">` を置き、AI エージェントが書いた下書きで人の見直しが
 済んでいないことを明記する（英語版も同じ Aside を訳して付ける）。Aside を外すのは見直した人。
+新しく足したページなら、サイドバーの表示名（`astro.config.mjs` の `label` と `translations.ja`）と
+frontmatter の `title`（ページの見出しになる）の先頭にも `[AI生成]` を付ける（英語は `[AI-generated]`）。
+`title` は先頭が `[` なので、YAML の配列と読まれないよう `title: "[AI生成] …"` と引用符で囲む。
+既存のページを AI が書き直しただけなら、印は Aside だけにする。印を外すのも見直した人。
 
 **日本語が原本、英語は翻訳。** `src/content/docs/ja/` を人が書き、`src/content/docs/` は
 **そこから機械的に訳すだけ**にする。英語側だけで文章を足したり、英語側で先に書いたりしない。
