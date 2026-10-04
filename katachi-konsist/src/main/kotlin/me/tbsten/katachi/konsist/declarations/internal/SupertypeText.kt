@@ -15,10 +15,14 @@ package me.tbsten.katachi.konsist.declarations.internal
 /**
  * The supertypes [header] lists, where [header] is the declaration's text with its KDoc and
  * annotations taken off, and [name] its name (`Companion` for an unnamed companion object).
+ *
+ * The header is read with its comments and the insides of its string literals blanked out
+ * (`codeOnly`), so that `Base(), // the base` and `Exception(":)")` read as the code they are.
  */
 internal fun supertypesOf(header: String, name: String): List<SupertypeFact> {
-    val found = headerRegexOf(name).find(header) ?: return emptyList()
-    val list = supertypeListOf(header.substring(found.range.last + 1)) ?: return emptyList()
+    val code = codeOnly(header)
+    val found = headerRegexOf(name).find(code) ?: return emptyList()
+    val list = supertypeListOf(code.substring(found.range.last + 1)) ?: return emptyList()
     return splitAtTopLevelCommas(list)
         .map { entry -> withoutConstructorCall(withoutDelegation(entry.trim())) }
         .filter { it.isNotEmpty() }
@@ -70,17 +74,16 @@ private const val UNNAMED_COMPANION: String = "Companion"
 
 /**
  * What follows the header's `:` in [rest], the text after a declaration's name, or `null` when it
- * lists no supertype. Brackets are skipped so a constructor parameter's `:` is never taken.
+ * lists no supertype. Brackets are skipped so a constructor parameter's `:` is never taken; the
+ * list ends at the body or at a `where` clause.
  */
 private fun supertypeListOf(rest: String): String? {
-    var depth = 0
+    val topLevel = topLevelOf(rest)
     var start = -1
     for ((index, char) in rest.withIndex()) {
         when {
-            char == '(' || char == '<' -> depth++
-            char == ')' || isClosingAngle(rest, index) -> depth--
-            depth > 0 -> Unit
-            char == '{' || rest.startsWith(" where ", index) -> return if (start < 0) null else rest.substring(start, index)
+            !topLevel[index] -> Unit
+            char == '{' || spacedKeywordAt(rest, index, "where") -> return if (start < 0) null else rest.substring(start, index)
             char == ':' && start < 0 -> start = index + 1
         }
     }
@@ -93,18 +96,13 @@ private fun isClosingAngle(text: String, index: Int): Boolean =
 
 /** [list] split at the commas that are not inside `<...>` or `(...)`. */
 private fun splitAtTopLevelCommas(list: String): List<String> {
+    val topLevel = topLevelOf(list)
     val entries = mutableListOf<String>()
-    var depth = 0
     var from = 0
     for ((index, char) in list.withIndex()) {
-        when (char) {
-            '(', '<' -> depth++
-            ')' -> depth--
-            '>' -> if (isClosingAngle(list, index)) depth--
-            ',' -> if (depth == 0) {
-                entries += list.substring(from, index)
-                from = index + 1
-            }
+        if (char == ',' && topLevel[index]) {
+            entries += list.substring(from, index)
+            from = index + 1
         }
     }
     entries += list.substring(from)
@@ -113,19 +111,18 @@ private fun splitAtTopLevelCommas(list: String): List<String> {
 
 /** `Handler by Noop` is `Handler`: the delegate is not part of the type. */
 private fun withoutDelegation(entry: String): String {
-    var depth = 0
-    for ((index, char) in entry.withIndex()) {
-        when {
-            char == '(' || char == '<' -> depth++
-            char == ')' || isClosingAngle(entry, index) -> depth--
-            depth == 0 && DELEGATION.matchesAt(entry, index) -> return entry.substring(0, index).trim()
-        }
+    val topLevel = topLevelOf(entry)
+    for (index in entry.indices) {
+        if (topLevel[index] && spacedKeywordAt(entry, index, "by")) return entry.substring(0, index).trim()
     }
     return entry
 }
 
-/** The ` by ` that starts a delegate. */
-private val DELEGATION: Regex = Regex("""\sby\s""")
+/** Whether [word] starts at [index] of [code] with white space (a line break too) on both sides. */
+private fun spacedKeywordAt(code: String, index: Int, word: String): Boolean =
+    code.startsWith(word, index) &&
+        code.getOrNull(index - 1)?.isWhitespace() == true &&
+        code.getOrNull(index + word.length)?.isWhitespace() == true
 
 /** `ViewModel()` and `Base(id)` are `ViewModel` and `Base`: the constructor call is not part of the type. */
 private fun withoutConstructorCall(entry: String): String {

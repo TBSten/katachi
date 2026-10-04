@@ -49,7 +49,7 @@ internal class EvaluationSession(val input: EvaluationInput) {
         current = null
     }
 
-    override fun toString(): String = "EvaluationSession(${input.fileName}, open=$isOpen)"
+    override fun toString(): String = "EvaluationSession($input, open=$isOpen)"
 }
 
 /** Something a declaration list holds: a declaration line still being written, or a finished `anythingElse()`. */

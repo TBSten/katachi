@@ -84,11 +84,12 @@ private fun packageTable(rules: List<PackageRule>): String = table(listOf("Packa
             PackageTarget.MatchingDirectory -> THE_FILES_DIRECTORY
         }
         listOf(if (rule.prohibited) "$target (not allowed)" else target)
-    }
+    } + listOfNotNull(listOf("$ANYTHING_ELSE (not allowed)").takeIf { rules.all { it.prohibited } })
 }
 
 private fun importTable(rules: List<ImportRule>): String = table(listOf("Import", "")) {
-    rules.map { rule -> listOf(code(rule.path.written) + exceptCells(rule.except), statusOf(rule.prohibited, rule.required)) }
+    rules.map { rule -> listOf(code(rule.path.written) + exceptCells(rule.except), statusOf(rule.prohibited, rule.required)) } +
+        listOfNotNull(listOf(ANYTHING_ELSE, NOT_ALLOWED).takeIf { rules.all { it.prohibited } })
 }
 
 private fun declarationTable(heading: String, list: DeclarationListRules): String = table(listOf(heading, "")) {
@@ -103,8 +104,14 @@ private fun declarationTable(heading: String, list: DeclarationListRules): Strin
                 listOf(if (modifiers.isEmpty()) ANYTHING else "${code(modifiers)} $ANYTHING", OPTIONAL)
             }
         }
-    }
+    } + listOfNotNull(listOf(ANYTHING_ELSE, NOT_ALLOWED).takeIf { list.allowsOnlyByNot() })
 }
+
+/**
+ * The last row of a table whose lines are all `not.` lines: they still make an allow list, so
+ * what they do not prohibit is not allowed either.
+ */
+private const val ANYTHING_ELSE: String = "(anything else)"
 
 /** A `### Members of ...` section for every line with a `{ }`, outer classes before their nested ones. */
 private fun memberSections(list: DeclarationListRules, outer: List<String>): List<String> = list.lines.flatMap { rule ->
@@ -129,8 +136,10 @@ private fun lineWithoutNotAndExcept(rule: DeclarationRule): String = renderDecla
 
 private const val OPTIONAL: String = "optional"
 
+private const val NOT_ALLOWED: String = "not allowed"
+
 private fun statusOf(prohibited: Boolean, required: Boolean): String = when {
-    prohibited -> "not allowed"
+    prohibited -> NOT_ALLOWED
     required -> "required"
     else -> OPTIONAL
 }

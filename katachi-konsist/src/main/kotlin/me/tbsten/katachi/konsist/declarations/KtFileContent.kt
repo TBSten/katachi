@@ -45,6 +45,8 @@ private const val KT_FILE_CONTENT_NAME: String = "ktFileContent"
  *         `import`("kotlinx.coroutines.**")
  *         `import`("androidx.**")
  *         `import`("com.example.domain.**")
+ *         `import`("dagger.hilt.**")
+ *         `import`("javax.inject.**")
  *
  *         annotated("HiltViewModel")
  *             .public.`class`(fileName).superclass("ViewModel") {

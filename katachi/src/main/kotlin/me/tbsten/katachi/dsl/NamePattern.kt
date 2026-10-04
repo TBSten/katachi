@@ -90,6 +90,7 @@ public class NamePattern private constructor(
     /** Equal when the pattern and the separator are. */
     override fun equals(other: Any?): Boolean = other is NamePattern && other.glob == glob
 
+    /** Consistent with [equals]: the hash of the pattern and the separator. */
     override fun hashCode(): Int = glob.hashCode()
 
     /** `NamePattern(<pattern>)`. */

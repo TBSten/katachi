@@ -50,6 +50,11 @@ internal class DeclarationFact(
     val kind: DeclarationKindName,
     /** Without backticks; without the receiver of an extension. */
     val name: String,
+    /**
+     * The receiver of an extension function or property as written (`String`, `List<T>`), or
+     * `null`. Shown in a report only: a line's name is matched without it.
+     */
+    val receiver: String? = null,
     /** The modifiers written on it, and no others: no implicit `public`. */
     val modifiers: Set<ModifierName>,
     val annotations: List<AnnotationFact>,

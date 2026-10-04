@@ -110,4 +110,28 @@ class KtFileContentKonsistAssumptionsSpec : FreeSpec({
             annotations.map { it.text } shouldBe listOf("@androidx.compose.runtime.Composable", "@get:JvmName(\"x\")")
         }
     }
+
+    "拡張プロパティの type は、書いた型ではなく受け手を返す（そのため型はテキストから読む）" {
+        parsed("package com.example\n\nval Int.dp: Float get() = 1f\n") { file ->
+            val property = file.properties(includeNested = false).single()
+            property.isExtension shouldBe true
+            property.type?.text shouldBe "Int"
+        }
+    }
+
+    "context(...) の前のアノテーションは annotations に出ず、text は context の後ろから始まる（そのためテキストから読む）" {
+        parsed("package com.example\n\n@Keep\ncontext(logger: Logger)\nfun f() {}\n") { file ->
+            val function = file.functions(includeNested = false, includeLocal = false).single()
+            function.annotations shouldBe emptyList()
+            function.text shouldBe "fun f() {}"
+            lineOf(function, function.path) shouldBe 5
+        }
+    }
+
+    "BOM で始まるファイルの packagee は null、imports は空（そのため BOM を外して読み直す）" {
+        parsed("\uFEFFpackage com.example\n\nimport a.B\n\nclass A\n") { file ->
+            file.packagee.shouldBeNull()
+            file.imports shouldBe emptyList()
+        }
+    }
 })

@@ -229,7 +229,8 @@ class KtFileContentReportSpec : FreeSpec({
               Declared at: $uiState
 
               How to fix:
-                - Declare it in class HomeViewModel
+                - Change the declaration at line 4 to: public val uiState: StateFlow<*>
+                - Or change the line at $uiState if the declaration is right
                 - If some files do not need it, make it optional at $uiState
         """.trimIndent()
     }

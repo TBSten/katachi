@@ -4,7 +4,9 @@ package me.tbsten.katachi.konsist.declarations.internal
  * Which full names an annotation written in a file may stand for, so that
  * `annotated("androidx.compose.runtime.Composable")` matches `@Composable` as well as
  * `@androidx.compose.runtime.Composable`. Read off the file's own imports and package: nothing is
- * resolved, so every name the annotation could be is a candidate.
+ * resolved, so every name the annotation could be is a candidate -- except that, as in Kotlin, a
+ * name an explicit import (or its alias) gives is that name only, hiding the same name in the
+ * file's package, in a star import and in the default imports.
  */
 
 /**
@@ -37,15 +39,13 @@ internal fun annotationFactOf(annotationText: String, packageName: String?, impo
     val written = writtenAnnotationName(annotationText)
     val simpleName = written.substringAfterLast('.')
     if ('.' in written) return AnnotationFact(simpleName, setOf(written))
+    val explicit = imports.filter { import ->
+        !import.isWildcard && (import.alias ?: import.path.substringAfterLast('.')) == written
+    }
+    if (explicit.isNotEmpty()) return AnnotationFact(simpleName, explicit.mapTo(LinkedHashSet()) { it.path })
     val candidates = buildSet {
-        for (import in imports) {
-            when {
-                import.isWildcard -> add("${import.path}.$written")
-                import.alias == written -> add(import.path)
-                import.alias == null && import.path.substringAfterLast('.') == written -> add(import.path)
-            }
-        }
         add(if (packageName.isNullOrEmpty()) written else "$packageName.$written")
+        for (import in imports) if (import.isWildcard) add("${import.path}.$written")
         for (defaultPackage in DEFAULT_IMPORTS) add("$defaultPackage.$written")
     }
     return AnnotationFact(simpleName, candidates)

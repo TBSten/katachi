@@ -61,8 +61,8 @@ class KtFileContentDesignExamplesSpec : FreeSpec({
                 `import`("kotlinx.coroutines.**")
                 `import`("androidx.**")
                 `import`("com.example.domain.**")
-                // Not in design.md's example, which would reject the import @HiltViewModel needs.
                 `import`("dagger.hilt.**")
+                `import`("javax.inject.**")
 
                 annotated("HiltViewModel")
                     .public.`class`(fileName).superclass("ViewModel") {
@@ -75,7 +75,7 @@ class KtFileContentDesignExamplesSpec : FreeSpec({
 
         violations.unsatisfiedLines() shouldBe listOf(
             "feature/settings/SettingsViewModel.kt: import android.content.Context (line 3) | " +
-                "Not allowed: not in the allowed imports (kotlin.**, kotlinx.coroutines.**, androidx.**, com.example.domain.**, dagger.hilt.**)",
+                "Not allowed: not in the allowed imports (kotlin.**, kotlinx.coroutines.**, androidx.**, com.example.domain.**, dagger.hilt.**, javax.inject.**)",
             "feature/settings/SettingsViewModel.kt: SettingsViewModel.isLoading (line 11) | " +
                 "Not allowed: var isLoading in class SettingsViewModel",
             "feature/settings/SettingsViewModel.kt: SettingsViewModel.onSave (line 12) | " +

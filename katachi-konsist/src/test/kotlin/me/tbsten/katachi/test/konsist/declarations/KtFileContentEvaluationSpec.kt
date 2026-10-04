@@ -2,6 +2,7 @@
 
 package me.tbsten.katachi.test.konsist.declarations
 
+import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.FreeSpec
 import io.kotest.matchers.collections.shouldBeEmpty
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
@@ -28,6 +29,7 @@ import me.tbsten.katachi.konsist.declarations.KatachiKtFileContentCaptureUnavail
 import me.tbsten.katachi.konsist.declarations.KatachiKtFileContentDuplicateException
 import me.tbsten.katachi.konsist.declarations.KatachiKtFileContentModifierException
 import me.tbsten.katachi.konsist.declarations.KatachiKtFileContentNothingWrittenException
+import me.tbsten.katachi.konsist.declarations.KatachiKtFileContentPatternException
 import me.tbsten.katachi.konsist.declarations.KatachiKtFileContentUnknownCaptureException
 import me.tbsten.katachi.konsist.declarations.internal.fileNameOf
 import me.tbsten.katachi.konsist.declarations.ktFileContent
@@ -242,6 +244,34 @@ class KtFileContentEvaluationSpec : FreeSpec({
             val violations = ktFileContentRun(paths = { "src" { "*".ktFile(); ktFileContent { } } }) { }
 
             violations.filterIsInstance<UncheckedFileConstraint>().shouldBeEmpty()
+        }
+    }
+
+    "代わりの値でだけ読めないパターン" - {
+        "代わりの値を読んだブロックのパターンの誤りは、定義を読んだ時点では落とさず、本当の値で評価する" {
+            val violations = ktFileContentRun(
+                "src/HomeViewModel.kt" to "package com.example\n\nclass HomeViewModel\nclass Home\n",
+                paths = { "src" / "*ViewModel".ktFile() },
+            ) {
+                ktFileContent {
+                    `class`(fileName)
+                    // Empty for the stand-in Sample only: "Home" for the real file.
+                    `class`(fileName.dropLast("ViewModel".length))
+                }
+            }
+
+            violations.shouldBeEmpty()
+        }
+
+        "値を読まないブロックのパターンの誤りは、定義を読んだ時点で落とす" {
+            shouldThrow<KatachiKtFileContentPatternException> {
+                architecture {
+                    "Screen" {
+                        layout { "src" / "*".ktFile() }
+                        ktFileContent { `import`("a..b") }
+                    }
+                }
+            }
         }
     }
 })

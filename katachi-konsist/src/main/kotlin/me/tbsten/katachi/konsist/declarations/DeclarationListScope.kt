@@ -103,6 +103,8 @@ public sealed interface DeclarationListScope : DeclarationVocabulary {
  *
  *     `import`("kotlin.**")
  *     `import`("androidx.**")
+ *     `import`("dagger.hilt.**")
+ *     `import`("javax.inject.**")
  *     not.`import`("android.**")
  *
  *     annotated("HiltViewModel")

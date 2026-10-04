@@ -108,7 +108,7 @@ class KonsistFactsSpec : FreeSpec({
             "  fun d()",
             "  fun e()",
             "  abstract fun f()",
-            "  fun g(): Int",
+            "  fun String.g(): Int",
         )
     }
 
@@ -168,7 +168,7 @@ class KonsistFactsSpec : FreeSpec({
     }
 
     "アノテーションの完全修飾名の候補" - {
-        "単純名は import・alias・star import・同じ package・既定の package から" {
+        "単純名は、明示の import か alias があればそれだけ、無ければ star import・同じ package・既定の package から" {
             val annotation = factsOf(
                 """
                 package com.example
@@ -177,15 +177,25 @@ class KonsistFactsSpec : FreeSpec({
                 import other.Real as Preview
                 import lib.*
 
-                @Composable @Preview @JvmInline
+                @Composable @Preview @JvmInline @Marker
                 class X
                 """.trimIndent(),
             ).declarations.single().annotations
 
-            annotation.map { it.simpleName } shouldBe listOf("Composable", "Preview", "JvmInline")
-            annotation[0].qualifiedCandidates shouldContainAll setOf("androidx.compose.runtime.Composable", "lib.Composable", "com.example.Composable")
-            annotation[1].qualifiedCandidates shouldContainAll setOf("other.Real")
-            annotation[2].qualifiedCandidates shouldContainAll setOf("kotlin.jvm.JvmInline")
+            annotation.map { it.simpleName } shouldBe listOf("Composable", "Preview", "JvmInline", "Marker")
+            annotation[0].qualifiedCandidates shouldBe setOf("androidx.compose.runtime.Composable")
+            annotation[1].qualifiedCandidates shouldBe setOf("other.Real")
+            annotation[2].qualifiedCandidates shouldContainAll setOf("kotlin.jvm.JvmInline", "lib.JvmInline", "com.example.JvmInline")
+            annotation[3].qualifiedCandidates shouldContainAll setOf("com.example.Marker", "lib.Marker")
+        }
+
+        "明示の import が同じ package の名前を隠す" {
+            judged("package com.example\n\nimport other.Marker\n\n@Marker\nclass Sample\n") {
+                annotated("com.example.Marker").`class`(fileName)
+            }.size shouldBe 1
+            judged("package com.example\n\nimport other.Marker\n\n@Marker\nclass Sample\n") {
+                annotated("other.Marker").`class`(fileName)
+            } shouldBe emptyList()
         }
 
         "完全修飾名で書いたものは、その名前だけ。use-site target は外す" {

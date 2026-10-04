@@ -5,6 +5,7 @@ import me.tbsten.katachi.KatachiDeclarationException
 import me.tbsten.katachi.dsl.DeclarationSite
 import me.tbsten.katachi.dsl.KatachiGlobSyntaxException
 import me.tbsten.katachi.konsist.declarations.internal.DeclarationKindName
+import me.tbsten.katachi.konsist.declarations.internal.KtFileContentPatternRefusal
 import me.tbsten.katachi.konsist.declarations.internal.ModifierName
 import me.tbsten.katachi.konsist.declarations.internal.applicableKinds
 
@@ -131,8 +132,10 @@ public class KatachiKtFileContentPatternException internal constructor(
      * ```
      */
     public val declaredAt: DeclarationSite,
-    cause: KatachiGlobSyntaxException,
-) : KatachiDeclarationException(message = patternMessage(pattern, what, declaredAt, cause), cause = cause)
+    cause: KatachiGlobSyntaxException?,
+    /** Why the pattern is refused when the glob reads it but katachi would read it wrongly. */
+    problem: KtFileContentPatternRefusal? = null,
+) : KatachiDeclarationException(message = patternMessage(pattern, what, declaredAt, cause, problem), cause = cause)
 
 /**
  * A line of `ktFileContent { }` written in a way that cannot mean anything, raised while the
@@ -229,11 +232,12 @@ private fun patternMessage(
     pattern: String,
     what: KtFileContentPatternKind,
     declaredAt: DeclarationSite,
-    cause: KatachiGlobSyntaxException,
+    cause: KatachiGlobSyntaxException?,
+    problem: KtFileContentPatternRefusal?,
 ): String = listOfNotNull(
     "The ${what.label} pattern \"$pattern\" in ktFileContent { } at $declaredAt cannot be read.",
-    cause.message?.lineSequence()?.firstOrNull()?.takeIf { it.isNotBlank() },
-    "Write the pattern with * and ** only; escape a literal character with \\.",
+    problem?.why ?: cause?.message?.lineSequence()?.firstOrNull()?.takeIf { it.isNotBlank() },
+    problem?.how ?: "Write the pattern with * and ** only; escape a literal character with \\.",
 ).joinToString("\n")
 
 private fun lineMessage(problem: KtFileContentLineProblem, line: String, at: DeclarationSite): String {

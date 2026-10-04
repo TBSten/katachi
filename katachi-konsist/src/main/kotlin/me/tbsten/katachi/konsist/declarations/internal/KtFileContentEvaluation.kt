@@ -4,6 +4,7 @@ import me.tbsten.katachi.KatachiDeclarationException
 import me.tbsten.katachi.dsl.DeclarationSite
 import me.tbsten.katachi.dsl.FileConstraintSubject
 import me.tbsten.katachi.konsist.declarations.KatachiKtFileContentCaptureUnavailableException
+import me.tbsten.katachi.konsist.declarations.KatachiKtFileContentPatternException
 import me.tbsten.katachi.konsist.declarations.KatachiKtFileContentUnknownCaptureException
 import me.tbsten.katachi.konsist.declarations.KtFileContentScope
 import me.tbsten.katachi.konsist.declarations.KtFileContentScopeImpl
@@ -22,13 +23,32 @@ internal fun placeholderCaptureValue(name: String): String = "<$name>"
 
 /** What one run of the block is told. */
 internal class EvaluationInput(
-    /** The file's name before its first `.`: `Platform.android.kt` is `Platform`. */
-    val fileName: String,
-    /** The value of `captureValue(name)`, or the exception that says why there is none. */
-    val captureValue: (String) -> String,
+    fileName: String,
+    captureValue: (String) -> String,
     val patterns: PatternCache,
 ) {
-    override fun toString(): String = "EvaluationInput($fileName)"
+    private val name = fileName
+    private val capture = captureValue
+
+    /** Whether the block read [fileName] or [captureValue] during the run. */
+    @Volatile
+    var readValues: Boolean = false
+        private set
+
+    /** The file's name before its first `.`: `Platform.android.kt` is `Platform`. */
+    val fileName: String
+        get() {
+            readValues = true
+            return name
+        }
+
+    /** The value of `captureValue(name)`, or the exception that says why there is none. */
+    val captureValue: (String) -> String = { captured ->
+        readValues = true
+        capture(captured)
+    }
+
+    override fun toString(): String = "EvaluationInput($name)"
 }
 
 /**
@@ -68,11 +88,14 @@ internal fun validateAtDeclaration(block: KtFileContentScope.() -> Unit, declare
  * Only katachi's own definition errors are let through. Anything else the block throws -- most
  * likely because a stand-in is not a value it expected, such as `fileName.substring(10)` on
  * `Sample` -- is dropped: the run with each file's real values happens anyway, and
- * reports it there.
+ * reports it there. So is a pattern that cannot be read once the block has read a stand-in:
+ * `fileName.dropLast(9)` is empty for `Sample` only.
  */
 internal fun evaluateWithStandIns(block: KtFileContentScope.() -> Unit, input: EvaluationInput, declaredAt: DeclarationSite) {
     try {
         evaluateRules(block, input, declaredAt)
+    } catch (cause: KatachiKtFileContentPatternException) {
+        if (!input.readValues) throw cause
     } catch (cause: KatachiDeclarationException) {
         throw cause
     } catch (cause: InterruptedException) {

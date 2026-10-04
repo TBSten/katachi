@@ -211,4 +211,35 @@ class KtFileContentDocsSpec : FreeSpec({
 
         page shouldContain "| `` val `a\\|b` `` | required |"
     }
+
+    "not. の行しか無い種類の表には、残りが許されないことを最後の行に出す" {
+        val page = rolePageOf {
+            "Screen" {
+                example("HomeScreen")
+                layout { "src" / "*Screen".ktFile() }
+                ktFileContent {
+                    not.`package`("com.example.legacy.**")
+                    not.`import`("android.**")
+                    not.`class`("*Impl")
+                }
+            }
+        }.getValue("Screen.md")
+
+        page shouldContain """
+            | Package |
+            |---|
+            | `com.example.legacy.**` (not allowed) |
+            | (anything else) (not allowed) |
+
+            | Import | |
+            |---|---|
+            | `android.**` | not allowed |
+            | (anything else) | not allowed |
+
+            | Declaration | |
+            |---|---|
+            | `class *Impl` | not allowed |
+            | (anything else) | not allowed |
+        """.trimIndent()
+    }
 })

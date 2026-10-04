@@ -40,7 +40,7 @@ internal class KtFileContentScopeImpl(
 
     override fun `import`(pattern: String): ImportLine = ImportLine(file.declareImport(pattern, prohibited = false))
 
-    override fun toString(): String = "KtFileContentScope(${file.session.input.fileName})"
+    override fun toString(): String = "KtFileContentScope(${file.session.input})"
 }
 
 /** The receiver of the `{ }` of one class line. */

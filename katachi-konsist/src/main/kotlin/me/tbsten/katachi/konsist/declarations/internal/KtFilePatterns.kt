@@ -38,11 +38,14 @@ internal fun PatternCache.pathRule(written: String, what: KtFileContentPatternKi
     NameRule(written, compileOrThrow(written, written, PATH_SEPARATOR, what))
 
 /** A property type, a parameter type or a return type, matched against the canonical form of what is written. */
-internal fun PatternCache.typeRule(written: String): TypeRule =
-    TypeRule(written, compileOrThrow(written, typePatternOf(written), separator = null, KtFileContentPatternKind.Type))
+internal fun PatternCache.typeRule(written: String): TypeRule {
+    refusePackageWildcard(written, KtFileContentPatternKind.Type)
+    return TypeRule(written, compileOrThrow(written, typePatternOf(written), separator = null, KtFileContentPatternKind.Type))
+}
 
 /** One `.superclass("...")`: by name when no type argument is written, type arguments and all otherwise. */
 internal fun PatternCache.superclassRule(written: String): SuperclassRule {
+    refusePackageWildcard(written, KtFileContentPatternKind.Superclass)
     val pattern = typePatternOf(written)
     return SuperclassRule(
         written = written,
@@ -59,15 +62,37 @@ internal fun PatternCache.annotationRule(written: String): AnnotationRule {
 }
 
 /**
- * [text] with every space removed and the package part of each name taken off:
- * `kotlinx.coroutines.flow.StateFlow<com.example.HomeUiState>` is `StateFlow<HomeUiState>`, while an
- * outer class (`Map.Entry`) stays, being capitalised.
+ * [text] with every space removed, the package part of each name taken off and a trailing comma
+ * dropped: `kotlinx.coroutines.flow.StateFlow<com.example.HomeUiState>` is `StateFlow<HomeUiState>`,
+ * while an outer class (`Map.Entry`) stays, being capitalised. `Map<String, Int,>` is
+ * `Map<String,Int>`, the same type written another way.
  */
 internal fun canonicalType(text: String): String =
-    PACKAGE_QUALIFIER.replace(text.filterNot { it.isWhitespace() }, "")
+    PACKAGE_QUALIFIER.replace(text.filterNot { it.isWhitespace() }, "").replace(TRAILING_COMMA, "")
+
+/** A comma right before the `>` of type arguments or the `)` of a function type's parameters. */
+private val TRAILING_COMMA = Regex(""",(?=[>)])""")
 
 /** A run of lowercase-initial names, each followed by `.`, that a name follows: the package of a type. */
 private val PACKAGE_QUALIFIER = Regex("""(?<![A-Za-z0-9_`.])(?:[a-z_][A-Za-z0-9_]*\.)+(?=[A-Za-z_`*])""")
+
+/**
+ * Refuses a type pattern that names a package and then a wildcard (`com.example.*`): types are
+ * compared without their package, so it would be `*`, which matches every type.
+ */
+private fun refusePackageWildcard(written: String, what: KtFileContentPatternKind) {
+    if (!PACKAGE_WILDCARD.containsMatchIn(written.filterNot { it.isWhitespace() })) return
+    throw KatachiKtFileContentPatternException(
+        pattern = written,
+        what = what,
+        declaredAt = DeclarationSite.capture(),
+        cause = null,
+        problem = KtFileContentPatternRefusal.PackageOfType,
+    )
+}
+
+/** A package written in a type pattern, a wildcard right after it. */
+private val PACKAGE_WILDCARD = Regex("""(?<![A-Za-z0-9_`.])(?:[a-z_][A-Za-z0-9_]*\.)+\*""")
 
 /**
  * The pattern a type is matched with: its canonical form, with `?` made literal. In a type `?`
@@ -96,3 +121,12 @@ private fun PatternCache.compileOrThrow(
             cause = cause,
         )
     }
+
+/** A pattern the glob reads, refused because it would not mean what it says. */
+internal enum class KtFileContentPatternRefusal(val why: String, val how: String) {
+    /** `com.example.*` as a type: types are compared without their package, so it is `*`. */
+    PackageOfType(
+        why = "Types are compared without their package, so this pattern would match every type.",
+        how = "Write the type by its name without the package, such as \"*UiState\".",
+    ),
+}
