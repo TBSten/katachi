@@ -9,7 +9,7 @@ tags:
   Purpose of this page: to give a deep, thorough understanding of katachi's document generation.
 */}
 
-import { Tabs, TabItem, LinkCard, FileTree } from '@astrojs/starlight/components';
+import { Aside, Tabs, TabItem, LinkCard, FileTree } from '@astrojs/starlight/components';
 import CodeComparison from '../../../components/CodeComparison';
 
 katachi can generate Markdown documentation from an `architecture { }` definition.
@@ -272,6 +272,77 @@ The documentation is generated from the properties you set on Roles and groups.
         ```
     </CodeComparison.Panel>
 </CodeComparison>
+
+#### The `ktFileContent { }` section
+
+<Aside type="caution" title="Draft written by AI">
+This section is a draft written by AI. `ktFileContent { }` is an experimental feature planned for v0.3.
+</Aside>
+
+A constraint can add a section of its own to a Role's page. The page of a Role that has [`ktFileContent { }`](/katachi/guides/kt-file-content/) gets a `## Kotlin file content` section between `## Constraints` and `## Examples`.
+It is a table made by applying the lines you wrote in `ktFileContent { }` to an example file.
+
+<CodeComparison>
+    <CodeComparison.Panel label="Role definition">
+        ```kt
+        "ViewModel" {
+            summary = "Exposes the screen's state as a StateFlow and receives events from the screen"
+            example("HomeViewModel", "The home screen's state")
+
+            layout {
+                "feature" / capture("feature") / mainSourceSet / kotlin / "**" / "*ViewModel".ktFile()
+            }
+
+            ktFileContent {
+                `package`("com.example.feature.${captureValue("feature")}")
+
+                `import`("androidx.lifecycle.**")
+                `import`("kotlinx.coroutines.**")
+
+                `class`(fileName).superclass("ViewModel") {
+                    public.`val`("uiState", "StateFlow<${fileName.replace("ViewModel", "UiState")}>")
+                    private.anythingElse()
+                }
+            }
+        }
+        ```
+    </CodeComparison.Panel>
+    <CodeComparison.Panel label="Generated Markdown">
+        ```md title="ViewModel.md (excerpt)"
+        ## Kotlin file content
+
+        Example: `HomeViewModel.kt`
+
+        | Package |
+        |---|
+        | `com.example.feature.<feature>` |
+
+        | Import | |
+        |---|---|
+        | `androidx.lifecycle.**` | optional |
+        | `kotlinx.coroutines.**` | optional |
+
+        | Declaration | |
+        |---|---|
+        | `class HomeViewModel : ViewModel` | required |
+
+        ### Members of `class HomeViewModel`
+
+        | Member | |
+        |---|---|
+        | `public val uiState: StateFlow<HomeUiState>` | required |
+        | `private` (anything) | optional |
+        ```
+    </CodeComparison.Panel>
+</CodeComparison>
+
+The example file is decided in the following order.
+
+1. The first name in the Role's `example(…)` (for `example("HomeViewModel")`, `HomeViewModel.kt`)
+2. If there is no `example(…)`, the first of the project's files that matched that Role
+3. If neither exists, `Sample.kt`
+
+A capture value that can't be worked out from the example file's name appears as the capture's name, like `<feature>` in `com.example.feature.<feature>`.
 
 ### group
 

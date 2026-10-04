@@ -1,21 +1,27 @@
 package me.tbsten.katachi.check
 
+import me.tbsten.katachi.ExperimentalKatachiApi
 import me.tbsten.katachi.dsl.DeclarationSite
+import me.tbsten.katachi.dsl.FileConstraintAllowedList
+import me.tbsten.katachi.dsl.FileConstraintFix
+import me.tbsten.katachi.dsl.FileConstraintReason
 import me.tbsten.katachi.dsl.Role
 
 /**
  * A constraint said no about a file that exists.
  *
  * The block a `fileConstraint { }` — or a backend's `konsist { }` — holds is an arbitrary Kotlin
- * expression, so katachi knows only two things about a rejection: which file it was about, and
- * optionally which declaration inside it. That is deliberately all a block of this kind
- * prints: there is no "How to fix", because what would satisfy the rule is the rule's own
- * business and inventing advice about it would be inventing a claim.
+ * expression, so katachi itself knows only which file a rejection was about, and optionally which
+ * declaration inside it. Anything more comes from the constraint: the reasons, what it would have
+ * allowed, and how to fix it are printed only when the constraint said them
+ * ([me.tbsten.katachi.dsl.FileConstraintFailure]). katachi never adds a "How to fix" of its own,
+ * because what would satisfy the rule is the rule's own business and inventing advice about it
+ * would be inventing a claim.
  *
  * One of these per rejected file per constraint. A constraint rejecting four classes in one file
  * produces four, each with its own [declaration][UnsatisfiedFileConstraint.declaration] and
- * [line][UnsatisfiedFileConstraint.line]; the same declaration rejected twice by one block produces
- * one.
+ * [line][UnsatisfiedFileConstraint.line]; the same declaration rejected twice by one block, for
+ * the same reasons, produces one.
  *
  * ## Example 1: list the files a constraint rejected
  * ```kt
@@ -92,6 +98,52 @@ public class UnsatisfiedFileConstraint internal constructor(
      * ```
      */
     public val declaredAt: DeclarationSite,
+    /**
+     * Why the constraint said no, one `<label>: <text>` line each, or empty when it did not say.
+     *
+     * ## Example 1: read what a rule found
+     * ```kt
+     * violations.filterIsInstance<UnsatisfiedFileConstraint>().single().reasons shouldBe
+     *     listOf(FileConstraintReason("Not allowed", "class GetUserUseCaseImpl"))
+     * ```
+     */
+    @property:ExperimentalKatachiApi
+    public val reasons: List<FileConstraintReason> = emptyList(),
+    /**
+     * What the constraint would have accepted instead, or `null` when it did not say.
+     *
+     * ## Example 1: read what the file may hold
+     * ```kt
+     * violations.filterIsInstance<UnsatisfiedFileConstraint>().single().allowed?.entries shouldBe
+     *     listOf("interface GetUserUseCase")
+     * ```
+     */
+    @property:ExperimentalKatachiApi
+    public val allowed: FileConstraintAllowedList? = null,
+    /**
+     * How to fix it, as the constraint put it. Empty when it did not say, and then the report has
+     * no `How to fix:`.
+     *
+     * ## Example 1: read the first suggested fix
+     * ```kt
+     * violations.filterIsInstance<UnsatisfiedFileConstraint>().single().howToFix.first().text shouldBe
+     *     "Rename it to DefaultGetUserUseCase"
+     * ```
+     */
+    @property:ExperimentalKatachiApi
+    public val howToFix: List<FileConstraintFix> = emptyList(),
+    /**
+     * The line of the rule that said no, when the constraint named one; the report prints it as
+     * `Declared at:` instead of [declaredAt][UnsatisfiedFileConstraint.declaredAt].
+     *
+     * ## Example 1: jump to the line of the rule rather than to the whole constraint
+     * ```kt
+     * val violation = violations.filterIsInstance<UnsatisfiedFileConstraint>().single()
+     * val site = violation.ruleDeclaredAt ?: violation.declaredAt
+     * ```
+     */
+    @property:ExperimentalKatachiApi
+    public val ruleDeclaredAt: DeclarationSite? = null,
 ) : Violation {
     override val kind: ViolationKind get() = ViolationKind.FileConstraint
     override val severity: Severity get() = Severity.Error

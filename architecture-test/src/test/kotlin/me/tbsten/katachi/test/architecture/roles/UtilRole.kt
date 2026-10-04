@@ -1,11 +1,13 @@
 package me.tbsten.katachi.test.architecture.roles
 
+import me.tbsten.katachi.ExperimentalKatachiApi
 import me.tbsten.katachi.dsl.DeclarationContainerScope
 import me.tbsten.katachi.dsl.LayoutScope
 import me.tbsten.katachi.dsl.gradle.div
 import me.tbsten.katachi.dsl.gradle.kotlin
 import me.tbsten.katachi.dsl.gradle.mainSourceSet
 import me.tbsten.katachi.dsl.kotlin.ktFile
+import me.tbsten.katachi.konsist.declarations.ktFileContent
 import me.tbsten.katachi.konsist.konsist
 import me.tbsten.katachi.test.architecture.*
 import me.tbsten.katachi.test.architecture.KATACHI_MAIN_PACKAGE
@@ -24,8 +26,7 @@ fun DeclarationContainerScope.util() = "Util" {
     example("RunCatchingScoped.kt", "失敗を記録しながら最後まで進める runCatchingScoped")
     layout {
         "katachi" {
-            importsOnlyEarlierLayers()
-            packageMatchesPath()
+            packageAndLayerImports()
             internalDeclarationsInInternalPackage()
             publicDeclarationsShowExample()
             publicDeclarationsKeepTagsLast()
@@ -35,20 +36,18 @@ fun DeclarationContainerScope.util() = "Util" {
     }
 }
 
-/** The layer this role is, named once so the rule and its wording cannot drift apart. */
+/** The layer this role is: the entry of the layer table its import lines are built from. */
 private const val LAYER: String = "util"
 
-// Written here rather than in a shared file: `konsist { }` captures the first frame outside
-// katachi as its declaration site, so a shared wrapper would make every layer role report the
-// same line.
-private fun LayoutScope.importsOnlyEarlierLayers() =
-    "${laterLayersOf(LAYER)} を import しないこと".konsist {
-        files.mustNot(importsLaterLayerThan(LAYER))
-    }
-
-private fun LayoutScope.packageMatchesPath() =
-    PACKAGE_MATCHES_PATH_RULE.konsist {
-        packages.must { it.hasMatchingPath }
+// Written here rather than in a shared file: katachi captures the first frame outside itself as
+// the declaration site of a `konsist { }`, of a `ktFileContent { }` and of each line in it, so a
+// shared wrapper would make every layer role report the same line.
+@OptIn(ExperimentalKatachiApi::class)
+private fun LayoutScope.packageAndLayerImports() =
+    ktFileContent {
+        `package`(matchingDirectory)
+        `import`("**")
+        laterLayerImportsOf(LAYER).forEach { not.`import`(it) }
     }
 
 private fun LayoutScope.publicDeclarationsShowExample() =

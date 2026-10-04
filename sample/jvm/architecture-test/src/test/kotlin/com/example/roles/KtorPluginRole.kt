@@ -1,10 +1,14 @@
+@file:OptIn(ExperimentalKatachiApi::class)
+
 package com.example.roles
 
 import com.example.allowedContents
 import com.example.forbiddenContents
+import me.tbsten.katachi.ExperimentalKatachiApi
 import me.tbsten.katachi.dsl.DeclarationContainerScope
 import me.tbsten.katachi.dsl.gradle.*
 import me.tbsten.katachi.dsl.kotlin.ktFile
+import me.tbsten.katachi.konsist.declarations.ktFileContent
 
 /** The role of one cross-cutting setting installed into the Ktor `Application`. */
 fun DeclarationContainerScope.ktorPlugin() = "KtorPlugin" {
@@ -37,5 +41,15 @@ fun DeclarationContainerScope.ktorPlugin() = "KtorPlugin" {
         // No suffix to key on: a plugin file is named after the Ktor feature it
         // installs, so the package itself is what says "this is a plugin".
         mainSourceSet / kotlin / "com/example/plugin" / "*".ktFile()
+    }
+    // `fileName` is a plain String, so the one function a file holds is named from it:
+    // Routing.kt holds `Application.configureRouting()` and nothing else. The imports leave out
+    // the Services and Repositories, which a plugin configuration never calls.
+    ktFileContent {
+        `import`("io.ktor.**")
+        `import`("kotlinx.serialization.**")
+        `import`("com.example.controller.**")
+
+        `fun`("configure$fileName")()
     }
 }

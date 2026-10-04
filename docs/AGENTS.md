@@ -69,10 +69,11 @@ title: ...
     - FAQ                              （思想・考え方の FAQ。ハウツーは書かない）
     - 他ツールとの比較                  （Konsist / detekt / ArchUnit などとの守備範囲）
 - ガイド                                （もとはコンセプトとガイドの2節。1つにまとめた）
-    - 基本的な API                      （覚える6つ。この節の入口）
+    - 基本的な API                      （覚える7つ。この節の入口）
     - Role                             （group と「Role 定義を分割する」を含む）
     - Layout                           ［ページタイトルは「Layout システムでディレクトリ構成を厳守させる」］
-    - Konsist との統合
+    - ファイルの中で定義できる宣言の許可リストを定義する   （`ktFileContent { }`。katachi-konsist のインストールの節もここに置く）
+    - カスタムルールを Konsist で定義する                  （`konsist { }`。`ktFileContent { }` で書けない規則。インストールは上のページを指す）
     - ドキュメント生成
     - テンプレートからコード生成
     - Baseline                         （実験的な機能。processor の手前に置く）
@@ -196,7 +197,7 @@ CI で毎回回っている。解説 + サンプルの該当箇所へのリン�
 
 | レシピ | 教える語彙 | 現物 |
 |---|---|---|
-| Android の3層アーキテクチャ | 層による分割、`konsist { }` での命名と中身の規約 | `sample/android`（モジュールを分けた構成なので、レシピそのものではない） |
+| Android の3層アーキテクチャ | 層による分割、`ktFileContent { }` と `konsist { }` での命名と中身の規約 | `sample/android`（モジュールを分けた構成なので、レシピそのものではない） |
 | **Gradle** | `gradle()` の1行、`documented = false`、composite build / buildSrc を自分で宣言する範囲 | 3サンプルの `GradleGroup.kt`（`gradle()` の1行） |
 | AI Agent | ツールごとの group と、設定ファイルの種類ごとの Role | 無い |
 | ktlint | linter の設定ファイルとベースラインの Role | 無い |

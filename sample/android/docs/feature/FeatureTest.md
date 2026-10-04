@@ -26,6 +26,34 @@ it is chosen by id rather than by passing values.
 | `feature/home/src/test/kotlin/com/example/sample/feature/home/Home*Test.kt` | For `:feature:home`. Start the file name with `Home` |
 | `feature/settings/src/test/kotlin/com/example/sample/feature/settings/Settings*Test.kt` | For `:feature:settings`. Start the file name with `Settings` |
 
+## Constraints
+
+- ktFileContent
+
+## Kotlin file content
+
+Example: `HomeViewModelTest.kt`
+
+| Package |
+|---|
+| (the file's directory) |
+
+| Import | |
+|---|---|
+| `org.junit.**` | optional |
+| `com.example.sample.**` | optional |
+| `com.example.sample.data.**.*RepositoryImpl` | not allowed |
+
+| Declaration | |
+|---|---|
+| `class HomeViewModelTest` | required |
+
+### Members of `class HomeViewModelTest`
+
+| Member | |
+|---|---|
+| `@Test fun *(...)` | optional |
+
 ## Examples
 
 - `HomeViewModelTest` ... A test that runs HomeViewModel with fakes

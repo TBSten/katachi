@@ -36,6 +36,9 @@ dependencies {
     // For the @Language("markdown") on allowedContents / forbiddenContents in DocumentSections.kt.
     // The annotation is not needed at runtime, so testCompileOnly.
     testCompileOnly(libs.jetbrainsAnnotations)
+    // `ktFileContent { }` in the roles: what a Kotlin file of the role may hold. It is checked by
+    // `FileConstraintCheck()`, which `ProjectArchitectureTest` passes.
+    testImplementation(libs.katachiKonsist)
     testImplementation(libs.kotestRunnerJunit5)
     testImplementation(libs.kotestAssertionsCore)
 

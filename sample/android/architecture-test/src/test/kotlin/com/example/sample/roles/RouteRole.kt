@@ -8,6 +8,7 @@ import me.tbsten.katachi.ExperimentalKatachiApi
 import me.tbsten.katachi.dsl.DeclarationContainerScope
 import me.tbsten.katachi.dsl.gradle.*
 import me.tbsten.katachi.dsl.kotlin.ktFile
+import me.tbsten.katachi.konsist.declarations.ktFileContent
 
 /** The role of a feature module's only public entry: where the rest of the app navigates to. */
 fun DeclarationContainerScope.route() = "Route" {
@@ -37,5 +38,16 @@ fun DeclarationContainerScope.route() = "Route" {
     example("SettingsRoute", "The destination of the settings screen")
     layout {
         featureSources() / "*Route".ktFile()
+    }
+    // `fileName` is a plain String: HomeRoute.kt holds `object HomeRoute` and `homeScreen(...)`.
+    // Navigation is the only import, so another feature's Route cannot be reached from here.
+    ktFileContent {
+        `import`("androidx.navigation.**")
+
+        val feature = fileName.removeSuffix("Route").replaceFirstChar { it.lowercaseChar() }
+        `object`(fileName) {
+            const.`val`("PATH", "String")
+        }
+        `fun`("${feature}Screen")                                   // NavGraphBuilder.homeScreen(...)
     }
 }

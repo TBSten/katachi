@@ -9,6 +9,7 @@ import me.tbsten.katachi.dsl.DeclarationContainerScope
 import me.tbsten.katachi.dsl.gradle.*
 import me.tbsten.katachi.dsl.kotlin.ktFile
 import me.tbsten.katachi.dsl.template
+import me.tbsten.katachi.konsist.declarations.ktFileContent
 
 /**
  * The role of a part one screen draws and no other: the feature-local counterpart of Component.
@@ -77,5 +78,15 @@ fun DeclarationContainerScope.featureComponent() = "FeatureComponent" {
                             }
                         """.trimIndent() + "\n"
                     }
+    }
+    // The package is the captured `featurePackage` of the file being checked, and the part is
+    // `internal`: only the Route is visible from outside a feature.
+    ktFileContent {
+        `package`("com.example.kmp.feature.${captureValue("featurePackage")}.component")
+
+        `import`("androidx.compose.**")
+        `import`("com.example.kmp.ui.**")
+
+        annotated("Composable").internal.`fun`(fileName)
     }
 }

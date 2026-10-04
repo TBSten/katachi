@@ -9,7 +9,7 @@ tags:
   The purpose of this page: to gain a deep, comprehensive understanding of how to use Role, an important element of katachi's architecture definitions.
 */}
 
-import { FileTree } from "@astrojs/starlight/components";
+import { Aside, FileTree } from "@astrojs/starlight/components";
 import CodeComparison from "../../../components/CodeComparison";
 
 ## Declaring a Role
@@ -33,10 +33,16 @@ You write a Role's description, placement, and constraints inside that Role's bl
 - `title`, `summary`, `description`, etc. ... The description of the Role. Used when generating documentation.
 - `layout { }` ... Defines where the files for that Role may be placed.
   - See [Layout definitions](/katachi/guides/layout/) for details.
-- `"constraint name".konsist { }` ... Defines constraints you can apply to that Role's files.
-  - Constraints are defined using Konsist. See [Konsist integration](/katachi/guides/konsist-integration/) for details.
+- `ktFileContent { }` ... Defines the package, imports, and declarations that may be placed in that Role's files.
+  - See [Define an allow list of the declarations a file may contain](/katachi/guides/kt-file-content/) for details.
+- `"constraint name".konsist { }` ... Defines, using Konsist, the constraints that `ktFileContent { }` cannot express.
+  - See [Define custom rules with Konsist](/katachi/guides/konsist-integration/) for details.
 - `.template { }` ... Attached to a file declared in `layout { }`, it defines the template used when that file is newly created.
   - See [Generate code from a template](/katachi/guides/generate-code-from-template/) for details.
+
+<Aside type="caution" title="Draft written by AI">
+The `ktFileContent { }` item in this list and the examples on this page that use `ktFileContent { }` are a draft written by AI. `ktFileContent { }` is an experimental feature planned for v0.3.
+</Aside>
 
 ```kt
 architecture {
@@ -155,6 +161,8 @@ Katachi check failed: 1 violation (Unexpected: 1)
 <details>
 <summary>Constraining the contents</summary>
 
+The declarations a file may contain can be defined with `ktFileContent { }`. Here, we explain the constraints you write with `konsist { }`.
+
 You give each constraint a name. **That name appears directly in the violation report.**
 
 ```kt
@@ -244,7 +252,7 @@ Make good use of wildcards like `*` and `**` so that `architecture { }` doesn't 
 ### Put only one kind of file in a Role
 
 **Make each Role stand for exactly one kind of file.**
-For example, a Repository interface and its implementation have similar names but are different kinds of file. If you put both in one Role, its description, constraints, and templates split by "which of the two files this is about", and your `konsist { }` constraints end up with branches like "if it is the interface…, if it is the implementation…".
+For example, a Repository interface and its implementation have similar names but are different kinds of file. If you put both in one Role, its description, constraints, and templates split by "which of the two files this is about", and your `ktFileContent { }` ends up with branches like "if it is the interface…, if it is the implementation…".
 With one Role per kind, the description and constraints only deal with that kind of file, and the generated documentation gets one page per kind.
 
 <CodeComparison>
@@ -257,8 +265,8 @@ With one Role per kind, the description and constraints only deal with that kind
             "repository" / "*Repository".ktFile()      // interface
             "repository" / "*RepositoryImpl".ktFile()  // implementation
         }
-        "Declarations only for the interface, and for the implementation…".konsist {
-            // the constraint has to branch on which file it is
+        ktFileContent {
+            // the lines to write have to differ between the interface file and the implementation file
         }
     }
     ```
@@ -271,8 +279,8 @@ With one Role per kind, the description and constraints only deal with that kind
     "RepositoryInterface" {
         summary = "The entry point for loading and saving data"
         layout { "repository" / "*Repository".ktFile() }
-        "Put only interfaces here".konsist {
-            classes().mustBeEmpty()
+        ktFileContent {
+            `interface`(fileName)
         }
     }
 
@@ -317,8 +325,8 @@ Factor each Role out into its own extension function.
             layout { 
                 "src/main/kotlin/com/example/project/repository" / "*Repository".ktFile()
             }
-            "must not hold a class".konsist {
-                classes().mustBeEmpty()
+            ktFileContent {
+                `interface`(fileName)
             }
             // ...
         }
@@ -365,8 +373,8 @@ Factor each Role out into its own extension function.
         layout {
             "src/main/kotlin/com/example/project/repository" / "*Repository".ktFile()
         }
-        "must not hold a class".konsist {
-            classes().mustBeEmpty()
+        ktFileContent {
+            `interface`(fileName)
         }
         // ...
     }
@@ -419,7 +427,7 @@ Don't hesitate to factor `"...".konsist { }` out into private extension function
 ## Summary
 
 - A Role is **a kind of file that's allowed to appear in the project**. It's independent of packages and modules.
-- A single Role **brings together** its description (`title` / `summary`), placement (`layout { }`), and constraints (`konsist { }`).
+- A single Role **brings together** its description (`title` / `summary`), placement (`layout { }`), and constraints (`ktFileContent { }` and `konsist { }`).
 - **Role definitions bloat easily.** To keep `architecture { }` and Role definitions from bloating, make good use of extension functions to split them appropriately.
 
 ```kt
@@ -444,5 +452,6 @@ architecture {
 ## Next steps
 
 - [Layout](/katachi/guides/layout/) ... Learn how to declare where a Role's files may be placed.
-- [Konsist integration](/katachi/guides/konsist-integration/) ... Learn how to constrain the contents of a Role's files.
+- [Define an allow list of the declarations a file may contain](/katachi/guides/kt-file-content/) ... Learn how to define the declarations that may be placed in a Role's files.
+- [Define custom rules with Konsist](/katachi/guides/konsist-integration/) ... Learn how to use Konsist to apply the constraints that `ktFileContent { }` cannot express.
 - [Your first architecture definition](/katachi/get-started/first-architecture/) ... Introduce katachi into your project and actually write a Role.

@@ -195,6 +195,8 @@ private fun violationsOf(
         projectRoot = walk.projectRootPath,
         files = files,
         shared = walk.scratch(),
+        captureNames = declared.coverage.captureNames,
+        captureValues = declared.coverage::captureValuesOf,
     )
     val failures = catching {
         val answered = declared.check.evaluate(subject)
@@ -230,6 +232,10 @@ private fun violationsOf(
                 constraintName = declared.name,
                 layoutPath = declared.layoutPath,
                 declaredAt = declared.declaredAt,
+                reasons = failure.reasons,
+                allowed = failure.allowed,
+                howToFix = failure.howToFix,
+                ruleDeclaredAt = failure.ruleDeclaredAt,
             )
         }
 }

@@ -1,7 +1,5 @@
 package me.tbsten.katachi.test.architecture
 
-import com.lemonappdev.konsist.api.declaration.KoFileDeclaration
-
 /**
  * The layers of the library, bottom first.
  *
@@ -53,56 +51,51 @@ private fun layersAfter(layer: String): List<String> {
 private const val ROOT_PACKAGE: String = "me.tbsten.katachi"
 
 /**
- * The name every role declares the place-matches-package rule under.
+ * The imports a file of [layer] may not have, one `ktFileContent { }` import pattern per layer
+ * after it: `me.tbsten.katachi.docs.**`, `me.tbsten.katachi.template.**`, … in table order.
  *
- * ## Why this rule is part of the layer table and not a tidiness rule
+ * Each library role writes them as prohibited lines under `` `import`("**") ``, next to
+ * `` `package`(matchingDirectory) ``:
+ *
+ * ```kt
+ * ktFileContent {
+ *     `package`(matchingDirectory)
+ *     `import`("**")
+ *     laterLayerImportsOf(LAYER).forEach { not.`import`(it) }
+ * }
+ * ```
+ *
+ * ## Why the package line sits in the same block
  *
  * The two halves of a role disagree about what they read. A `layout { }` pins a file by the
- * **directory** it sits in; [importsLaterLayerThan] decides what that file may import by the
- * **package** its importers name. Nothing so far says the two agree, and where they do not the
+ * **directory** it sits in; the prohibited lines decide what that file may import by the
+ * **package** its importers name. Nothing else says the two agree, and where they do not the
  * table stops meaning anything: a file written into `dsl/` under `package me.tbsten.katachi.util`
  * is checked as `dsl` and imported as `util`, so `util` would gain everything `dsl` can reach
- * without a single rule going red.
+ * without a single rule going red. `` `package`(matchingDirectory) `` closes that, and it has to
+ * live in the same block because a role holds one `ktFileContent { }`. It asks for the directory
+ * below `src/main/kotlin/` exactly; the Konsist `hasMatchingPath` it replaced only asked that the
+ * path end with the package, so `package katachi.dsl`, `package sl` and a file with no package
+ * line at all passed in `dsl/`.
  *
- * One line per role closes it, and one line is all it takes because Konsist already asks the
- * question — `hasMatchingPath` compares a package declaration against its own file's path, so
- * unlike [laterLayersOf] this rule needs nothing said about *which* layer the role is. That is
- * also why the rule is a bare constant rather than a function: there is no per-role wording for
- * a helper to build, and `konsist { }` still has to be written in the role's own file so that a
- * report points there rather than here.
+ * ## Why a list of patterns and not a helper that writes the block
+ *
+ * katachi records the first stack frame outside itself as the place of the block and of each of
+ * its lines, so a helper declared *here* would make every layer role's report point at this file.
+ * Returning only the patterns keeps the lines in the role's own file; the `forEach` there is
+ * where a report says the prohibited line was written. The same holds for the `konsist { }`
+ * rules the roles share through `InternalPackages.kt` and `KdocExamples.kt`: their names and
+ * predicates are shared, the calls are not.
+ *
+ * ## What a pattern matches
+ *
+ * `**` crosses the dots, so `me.tbsten.katachi.dsl.**` matches `me.tbsten.katachi.dsl.gradle.div`
+ * as well as a star import, which `ktFileContent { }` reads as the path `me.tbsten.katachi.dsl.*`.
+ * The `konsist { }` rule it replaced compared Konsist's import name, which leaves the `.*` off,
+ * so `import me.tbsten.katachi.docs.*` slipped past it.
+ * It never matches a hypothetical `me.tbsten.katachi.dslfoo`: the pattern is matched level by
+ * level. A `**` may match no level at all, so the pattern would also match a declaration named
+ * `dsl` in the root package itself — there is none.
  */
-const val PACKAGE_MATCHES_PATH_RULE: String = "package 宣言がファイルの置き場所と一致すること"
-
-/**
- * The layers after [layer], worded to fit on the one line a constraint name gets.
- *
- * The hand-written spec this replaced opened its failure with the whole table, so that a
- * reader saw the rule and not only the breach. An `[UnsatisfiedFileConstraint]` block has no room
- * for a table, so the rule is folded into the constraint's name instead: the report line reads
- * `docs / template / konsist を import しないこと`.
- */
-fun laterLayersOf(layer: String): String =
-    layersAfter(layer).joinToString(" / ")
-
-/**
- * A predicate selecting files that import a layer after [layer].
- *
- * Deliberately **not** a function that wraps `konsist { }`. `FileConstraintScope.fileConstraint`
- * captures the first stack frame outside katachi as the declaration site, so a helper declared
- * *here* would make every layer role's report point at this file — and `konsist { }` has no
- * parameter for passing a site through. Returning only the predicate keeps the declaration in
- * the role's own file.
- *
- * Wrapping `konsist { }` inside that file is fine, and is what each role does: a `private fun
- * LayoutScope.importsOnlyEarlierLayers()` sits next to the role it serves, so the captured
- * frame is still `roles/<Name>Role.kt`. What may not be shared is the `konsist { }` call, not
- * the idea of a helper.
- *
- * The trailing dot on each forbidden prefix matters: `me.tbsten.katachi.dsl` alone would also
- * match a hypothetical `me.tbsten.katachi.dslfoo`. A wildcard import lands here as
- * `me.tbsten.katachi.dsl.*`, which the prefix catches unchanged.
- */
-fun importsLaterLayerThan(layer: String): (KoFileDeclaration) -> Boolean {
-    val forbidden = layersAfter(layer).map { "$ROOT_PACKAGE.$it." }
-    return { file -> file.imports.any { import -> forbidden.any { import.name.startsWith(it) } } }
-}
+fun laterLayerImportsOf(layer: String): List<String> =
+    layersAfter(layer).map { "$ROOT_PACKAGE.$it.**" }

@@ -9,6 +9,7 @@ import me.tbsten.katachi.dsl.DeclarationContainerScope
 import me.tbsten.katachi.dsl.gradle.*
 import me.tbsten.katachi.dsl.kotlin.ktFile
 import me.tbsten.katachi.dsl.template
+import me.tbsten.katachi.konsist.declarations.ktFileContent
 
 /** The role of the interface callers depend on to fetch and store data. */
 fun DeclarationContainerScope.repositoryInterface() = "RepositoryInterface" {
@@ -61,6 +62,17 @@ fun DeclarationContainerScope.repositoryInterface() = "RepositoryInterface" {
                     }
                 }
             }
+        }
+    }
+    // A plain Kotlin interface named after the file, of functions only. :data knows neither
+    // Android, Compose nor :ui, so importing any of them fails.
+    ktFileContent {
+        `import`("kotlin.**")
+        `import`("kotlinx.**")
+        `import`("com.example.sample.data.**")
+
+        `interface`(fileName) {
+            `fun`("*")
         }
     }
 }

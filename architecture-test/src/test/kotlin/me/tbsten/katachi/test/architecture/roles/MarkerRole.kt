@@ -1,18 +1,18 @@
 package me.tbsten.katachi.test.architecture.roles
 
+import me.tbsten.katachi.ExperimentalKatachiApi
 import me.tbsten.katachi.dsl.DeclarationContainerScope
 import me.tbsten.katachi.dsl.LayoutScope
 import me.tbsten.katachi.dsl.gradle.div
 import me.tbsten.katachi.dsl.gradle.kotlin
 import me.tbsten.katachi.dsl.gradle.mainSourceSet
 import me.tbsten.katachi.dsl.kotlin.ktFile
+import me.tbsten.katachi.konsist.declarations.ktFileContent
 import me.tbsten.katachi.konsist.konsist
 import me.tbsten.katachi.test.architecture.INTERNAL_PACKAGE_RULE
 import me.tbsten.katachi.test.architecture.KDOC_EXAMPLE_RULE
 import me.tbsten.katachi.test.architecture.KDOC_TAG_ORDER_RULE
-import me.tbsten.katachi.test.architecture.PACKAGE_MATCHES_PATH_RULE
-import me.tbsten.katachi.test.architecture.importsLaterLayerThan
-import me.tbsten.katachi.test.architecture.laterLayersOf
+import me.tbsten.katachi.test.architecture.laterLayerImportsOf
 import me.tbsten.katachi.test.architecture.misplacedDeclarationsOf
 import me.tbsten.katachi.test.architecture.publicDeclarationsOf
 import me.tbsten.katachi.test.architecture.keepsBlockTagsLast
@@ -35,8 +35,7 @@ fun DeclarationContainerScope.marker() = "Marker" {
     example("Exceptions.kt", "利用者が catch する例外の基底")
     layout {
         "katachi" {
-            importsOnlyEarlierLayers()
-            packageMatchesPath()
+            packageAndLayerImports()
             internalDeclarationsInInternalPackage()
             publicDeclarationsShowExample()
             publicDeclarationsKeepTagsLast()
@@ -51,18 +50,16 @@ fun DeclarationContainerScope.marker() = "Marker" {
 /** The empty name is the root package itself, the first entry of the layer table. */
 private const val LAYER: String = ""
 
-// The five rules are written here, in the role's own file, rather than in a shared one:
-// `konsist { }` captures the first frame outside katachi as its declaration site, so a shared
-// wrapper would make every layer role report this same line. Private per file, the report keeps
-// naming the role that owns the rule.
-private fun LayoutScope.importsOnlyEarlierLayers() =
-    "${laterLayersOf(LAYER)} を import しないこと".konsist {
-        files.mustNot(importsLaterLayerThan(LAYER))
-    }
-
-private fun LayoutScope.packageMatchesPath() =
-    PACKAGE_MATCHES_PATH_RULE.konsist {
-        packages.must { it.hasMatchingPath }
+// The rules are written here, in the role's own file, rather than in a shared one: katachi
+// captures the first frame outside itself as the declaration site of a `konsist { }`, of a
+// `ktFileContent { }` and of each line in it, so a shared wrapper would make every layer role
+// report this same line. Private per file, the report keeps naming the role that owns the rule.
+@OptIn(ExperimentalKatachiApi::class)
+private fun LayoutScope.packageAndLayerImports() =
+    ktFileContent {
+        `package`(matchingDirectory)
+        `import`("**")
+        laterLayerImportsOf(LAYER).forEach { not.`import`(it) }
     }
 
 private fun LayoutScope.publicDeclarationsShowExample() =

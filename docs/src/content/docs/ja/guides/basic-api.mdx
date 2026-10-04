@@ -1,6 +1,6 @@
 ---
 title: 基本的な API
-description: 覚えるのは6つだけ。architecture / group / Role / layout / konsist / assert。
+description: 覚えるのは7つだけ。architecture / group / Role / layout / ktFileContent / konsist / assert。
 tags:
   - beginner
 ---
@@ -9,7 +9,7 @@ tags:
   このページの目的: ユーザが katachi の基本的な API を理解して自身のプロジェクトのアーキテクチャを定義できるようになること。katachi が用意する API の全体像を掴めるようにすること。
 */}
 
-import { FileTree } from '@astrojs/starlight/components';
+import { Aside, FileTree } from '@astrojs/starlight/components';
 
 katachi の主要な API を紹介します。
 ここに挙げる API を覚えれば、katachi の基本的な使い方を理解できるはずです。
@@ -142,9 +142,41 @@ Deny by default の原則により、`layout { }` で宣言していない場所
 
 `layout { }` については [Layout 定義の詳細](/katachi/ja/guides/layout/) も参照してください。
 
-## 6. ファイル内の制約を定義する `"...".konsist { }`
+## 6. ファイルに置ける宣言を定義する `ktFileContent { }`
 
-Role を定義したファイルには、[Konsist](https://docs.konsist.lemonappdev.com/) で制約をかけられます。
+<Aside type="caution" title="AI が書いた下書き">
+この節と、まとめの表の `ktFileContent { }` の行は、AI が書いた下書きです。`ktFileContent { }` は v0.3 で入る予定の実験的な機能です。
+</Aside>
+
+`ktFileContent { }` は、Role のファイルに置いてよい package・import・宣言を、許可リストで定義するブロックです。
+
+```kt {7-8}
+architecture {
+  "UseCase" {
+    layout {
+      "src/main/kotlin/com/example/useCase" / "*UseCase".ktFile()
+    }
+
+    ktFileContent {
+      `class`(fileName)
+    }
+  }
+}
+
+// GetUserUseCase.kt には、class GetUserUseCase だけを置ける
+```
+
+書いた種類（package・import・宣言）だけが許可リストになり、書いた行に当たらないものは違反になります。`fileName` には、検査しているファイルの名前が入ります（`GetUserUseCase.kt` なら `GetUserUseCase`）。
+
+`ktFileContent { }` は別モジュール `katachi-konsist` に入っています。検査するには、テストで `assert()` の代わりに `assert(FileConstraintCheck())` を呼びます。`assert()` だけでは検査されず、`[UncheckedFileConstraint]` としてテストが落ちます。
+
+### 関連ドキュメント
+
+`ktFileContent { }` については [ファイルの中で定義できる宣言の許可リストを定義する](/katachi/ja/guides/kt-file-content/) も参照してください。
+
+## 7. ファイル内の制約を定義する `"...".konsist { }`
+
+Role を定義したファイルには、[Konsist](https://docs.konsist.lemonappdev.com/) で制約をかけられます。`ktFileContent { }` で書けない制約は、こちらで書きます。
 
 ```kt {7}
 architecture {
@@ -166,7 +198,7 @@ architecture {
 
 ### 関連ドキュメント
 
-`"...".konsist { }` については [Konsist 連携ガイド](/katachi/ja/guides/konsist-integration/) も参照してください。
+`"...".konsist { }` については [カスタムルールを Konsist で定義する](/katachi/ja/guides/konsist-integration/) も参照してください。
 
 ## まとめ
 
@@ -282,6 +314,26 @@ architecture {
   <tr>
     <td>
       ```kt
+      ktFileContent { }
+      ```
+    </td>
+    <td>
+      その Role のファイルに置いてよい package・import・宣言を、許可リストで定義します。別モジュール `katachi-konsist` と、テストでの `assert(FileConstraintCheck())` が必要です。
+    </td>
+    <td>
+      ```kt nocollapse
+      ktFileContent {
+        `class`(fileName)
+      }
+      ```
+
+      - 意味: ファイル名と同じ名前の class だけを置ける。ほかの宣言を置くと違反になる
+    </td>
+  </tr>
+
+  <tr>
+    <td>
+      ```kt
       "名前".konsist { }
       ```
     </td>
@@ -302,6 +354,6 @@ architecture {
 
 ## 次のステップ
 
-- [初めてのアーキテクチャ定義](/katachi/ja/get-started/first-architecture/) ... あなたのプロジェクトに katachi を導入して、この6つを実際に書いてみましょう。
+- [初めてのアーキテクチャ定義](/katachi/ja/get-started/first-architecture/) ... あなたのプロジェクトに katachi を導入して、この7つを実際に書いてみましょう。
 - [Role](/katachi/ja/guides/role/) ... Role に説明を書く方法と、定義がディレクトリ構造のコピーにならないようにする考え方を学びましょう。
 - [Layout](/katachi/ja/guides/layout/) ... 置き場所の書き分けと、`anyFile()` / `ignore()` という deny by default の逃げ道の使いどころを学びましょう。

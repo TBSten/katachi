@@ -8,6 +8,7 @@ import me.tbsten.katachi.ExperimentalKatachiApi
 import me.tbsten.katachi.dsl.DeclarationContainerScope
 import me.tbsten.katachi.dsl.gradle.*
 import me.tbsten.katachi.dsl.kotlin.ktFile
+import me.tbsten.katachi.konsist.declarations.ktFileContent
 
 /**
  * The state holder of one screen, named after the feature module it sits in.
@@ -48,5 +49,21 @@ fun DeclarationContainerScope.viewModel() = "ViewModel" {
     layout {
         "feature" / "*" / "commonMain".sourceSet / kotlin / "com/example/kmp/feature" / "*" /
             "*ViewModel".ktFile()
+    }
+    // The state holder named after the file, exposing `state` and taking events, and a display
+    // type such as SettingsUi beside it. androidx.compose and android are not among the imports,
+    // so a view model that reaches for either fails.
+    ktFileContent {
+        `import`("androidx.lifecycle.**")
+        `import`("kotlinx.coroutines.**")
+        `import`("com.example.kmp.data.**")
+        `import`("com.example.kmp.ui.core.**")
+
+        internal.data.`class`("*Ui")
+        internal.`class`(fileName).superclass("ViewModel") {
+            public.`val`("state", "StateFlow<UiState<*>>")
+            public.`fun`("*")                                       // the events: reload()
+            private.anythingElse()                                  // the repository and the mutable state
+        }
     }
 }

@@ -11,7 +11,11 @@ tags:
 
 import SnippetIsStartingPoint from '../../../components/SnippetIsStartingPoint.astro';
 
-import { FileTree, LinkCard } from '@astrojs/starlight/components';
+import { Aside, FileTree, LinkCard } from '@astrojs/starlight/components';
+
+<Aside type="caution" title="Draft written by AI">
+The definitions on this page are a draft that AI rewrote to match the addition of `ktFileContent { }`, and their contents have not been reviewed yet. `ktFileContent { }` is an experimental feature planned for v0.3.
+</Aside>
 
 <LinkCard
   title="App Architecture Guide"
@@ -114,11 +118,10 @@ private fun RoleScope.shouldBeImmutable() =
 
 import me.tbsten.katachi.ExperimentalKatachiApi
 import me.tbsten.katachi.dsl.DeclarationContainerScope
-import me.tbsten.katachi.dsl.RoleScope
 import me.tbsten.katachi.dsl.gradle.kotlin
 import me.tbsten.katachi.dsl.gradle.mainSourceSet
 import me.tbsten.katachi.dsl.kotlin.ktFile
-import me.tbsten.katachi.konsist.konsist
+import me.tbsten.katachi.konsist.declarations.ktFileContent
 
 fun DeclarationContainerScope.viewModel() = "ViewModel" {
   summary = "Exposes a screen's state as a StateFlow and receives events from the screen"
@@ -126,40 +129,25 @@ fun DeclarationContainerScope.viewModel() = "ViewModel" {
     "app" / mainSourceSet / kotlin / appPackageDir / "ui/*" / "*ViewModel".ktFile()
   }
 
-  shouldContainsViewModelClass()
-  shouldExtendsViewModel()
-  shouldUiStateFlowBePublic()
-}
-
-private fun RoleScope.shouldContainsViewModelClass() =
-  "Declares exactly one class named after the file".konsist {
-    files.must { file -> file.classes().map { it.name } == listOf(file.name) }
-  }
-
-private fun RoleScope.shouldExtendsViewModel() =
-  "Extends ViewModel".konsist {
-    classes().must { klass -> klass.parents().any { it.name == "ViewModel" } }
-  }
-
-private fun RoleScope.shouldUiStateFlowBePublic() =
-  "Exposes the UiState Flow as public".konsist {
-    classes().must { klass ->
-      klass.properties().any {
-        it.hasPublicOrDefaultModifier && it.type?.name?.startsWith("StateFlow") == true
-      }
+  // HomeViewModel.kt contains only class HomeViewModel, which extends ViewModel
+  ktFileContent {
+    `class`(fileName).superclass("ViewModel") {
+      public.`val`("uiState", "StateFlow<${fileName.replace("ViewModel", "UiState")}>")
+      public.`fun`("*")          // events from the screen
+      private.anythingElse()     // UseCases, and the writable side of the state
     }
   }
+}
 
 // roles/Screen.kt
 @file:OptIn(ExperimentalKatachiApi::class)
 
 import me.tbsten.katachi.ExperimentalKatachiApi
 import me.tbsten.katachi.dsl.DeclarationContainerScope
-import me.tbsten.katachi.dsl.RoleScope
 import me.tbsten.katachi.dsl.gradle.kotlin
 import me.tbsten.katachi.dsl.gradle.mainSourceSet
 import me.tbsten.katachi.dsl.kotlin.ktFile
-import me.tbsten.katachi.konsist.konsist
+import me.tbsten.katachi.konsist.declarations.ktFileContent
 
 fun DeclarationContainerScope.screen() = "Screen" {
   summary = "The public Composable that draws a screen"
@@ -167,29 +155,22 @@ fun DeclarationContainerScope.screen() = "Screen" {
     "app" / mainSourceSet / kotlin / appPackageDir / "ui/*" / "*Screen".ktFile()
   }
 
-  shouldContainsPublicScreenComposable()
-}
-
-private fun RoleScope.shouldContainsPublicScreenComposable() =
-  "Declares a public Composable named after the file".konsist {
-    files.must { file ->
-      file.functions().any {
-        it.name == file.name && it.hasPublicOrDefaultModifier &&
-          it.hasAnnotationWithName("Composable")
-      }
-    }
+  // The only public declaration in HomeScreen.kt is @Composable fun HomeScreen
+  ktFileContent {
+    annotated("Composable").public.`fun`(fileName)
+    private.anythingElse()      // anything private is fine, such as parts of the screen and Previews
   }
+}
 
 // roles/UseCase.kt
 @file:OptIn(ExperimentalKatachiApi::class)
 
 import me.tbsten.katachi.ExperimentalKatachiApi
 import me.tbsten.katachi.dsl.DeclarationContainerScope
-import me.tbsten.katachi.dsl.RoleScope
 import me.tbsten.katachi.dsl.gradle.kotlin
 import me.tbsten.katachi.dsl.gradle.mainSourceSet
 import me.tbsten.katachi.dsl.kotlin.ktFile
-import me.tbsten.katachi.konsist.konsist
+import me.tbsten.katachi.konsist.declarations.ktFileContent
 
 fun DeclarationContainerScope.useCase() = "UseCase" {
   summary = "Runs one app-specific behavior through invoke"
@@ -197,21 +178,14 @@ fun DeclarationContainerScope.useCase() = "UseCase" {
     "app" / mainSourceSet / kotlin / appPackageDir / "domain/*" / "*UseCase".ktFile()
   }
 
-  shouldContainsUseCaseClass()
-  shouldSingleInvokePublicMethod()
-}
-
-private fun RoleScope.shouldContainsUseCaseClass() =
-  "Declares exactly one class named after the file".konsist {
-    files.must { file -> file.classes().map { it.name } == listOf(file.name) }
-  }
-
-private fun RoleScope.shouldSingleInvokePublicMethod() =
-  "Has exactly one public invoke method".konsist {
-    classes().must { klass ->
-      klass.functions().filter { it.hasPublicOrDefaultModifier }.map { it.name } == listOf("invoke")
+  // GetUserUseCase.kt contains only class GetUserUseCase, and its only public function is invoke
+  ktFileContent {
+    `class`(fileName) {
+      public.`fun`("invoke")
+      private.anythingElse()      // such as the Repository received in the constructor
     }
   }
+}
 
 // roles/DomainModel.kt
 @file:OptIn(ExperimentalKatachiApi::class)
@@ -234,11 +208,10 @@ fun DeclarationContainerScope.domainModel() = "DomainModel" {
 
 import me.tbsten.katachi.ExperimentalKatachiApi
 import me.tbsten.katachi.dsl.DeclarationContainerScope
-import me.tbsten.katachi.dsl.RoleScope
 import me.tbsten.katachi.dsl.gradle.kotlin
 import me.tbsten.katachi.dsl.gradle.mainSourceSet
 import me.tbsten.katachi.dsl.kotlin.ktFile
-import me.tbsten.katachi.konsist.konsist
+import me.tbsten.katachi.konsist.declarations.ktFileContent
 
 fun DeclarationContainerScope.repositoryInterface() = "RepositoryInterface" {
   summary = "The interface that serves as the entry point for reading and storing data"
@@ -246,24 +219,21 @@ fun DeclarationContainerScope.repositoryInterface() = "RepositoryInterface" {
     "app" / mainSourceSet / kotlin / appPackageDir / "data/*" / "*Repository".ktFile()
   }
 
-  shouldContainsRepositoryInterface()
-}
-
-private fun RoleScope.shouldContainsRepositoryInterface() =
-  "Declares exactly one interface named after the file".konsist {
-    files.must { file -> file.interfaces().map { it.name } == listOf(file.name) }
+  // UserRepository.kt contains only interface UserRepository
+  ktFileContent {
+    `interface`(fileName)
   }
+}
 
 // roles/RepositoryImplementation.kt
 @file:OptIn(ExperimentalKatachiApi::class)
 
 import me.tbsten.katachi.ExperimentalKatachiApi
 import me.tbsten.katachi.dsl.DeclarationContainerScope
-import me.tbsten.katachi.dsl.RoleScope
 import me.tbsten.katachi.dsl.gradle.kotlin
 import me.tbsten.katachi.dsl.gradle.mainSourceSet
 import me.tbsten.katachi.dsl.kotlin.ktFile
-import me.tbsten.katachi.konsist.konsist
+import me.tbsten.katachi.konsist.declarations.ktFileContent
 
 fun DeclarationContainerScope.repositoryImplementation() = "RepositoryImplementation" {
   summary = "The implementation of RepositoryInterface"
@@ -271,24 +241,21 @@ fun DeclarationContainerScope.repositoryImplementation() = "RepositoryImplementa
     "app" / mainSourceSet / kotlin / appPackageDir / "data/*" / "*RepositoryImpl".ktFile()
   }
 
-  shouldContainsRepositoryImplementationClass()
-}
-
-private fun RoleScope.shouldContainsRepositoryImplementationClass() =
-  "Declares exactly one class named after the file".konsist {
-    files.must { file -> file.classes().map { it.name } == listOf(file.name) }
+  // UserRepositoryImpl.kt contains only class UserRepositoryImpl, which implements UserRepository
+  ktFileContent {
+    `class`(fileName).superclass(fileName.removeSuffix("Impl"))
   }
+}
 
 // roles/DataSource.kt
 @file:OptIn(ExperimentalKatachiApi::class)
 
 import me.tbsten.katachi.ExperimentalKatachiApi
 import me.tbsten.katachi.dsl.DeclarationContainerScope
-import me.tbsten.katachi.dsl.RoleScope
 import me.tbsten.katachi.dsl.gradle.kotlin
 import me.tbsten.katachi.dsl.gradle.mainSourceSet
 import me.tbsten.katachi.dsl.kotlin.ktFile
-import me.tbsten.katachi.konsist.konsist
+import me.tbsten.katachi.konsist.declarations.ktFileContent
 
 fun DeclarationContainerScope.dataSource() = "DataSource" {
   summary = "Access to the sources and stores of data that a Repository uses"
@@ -296,16 +263,14 @@ fun DeclarationContainerScope.dataSource() = "DataSource" {
     "app" / mainSourceSet / kotlin / appPackageDir / "data/*" / "*DataSource".ktFile()
   }
 
-  shouldContainsDataSourceClass()
-}
-
-private fun RoleScope.shouldContainsDataSourceClass() =
-  "Declares exactly one class named after the file".konsist {
-    files.must { file -> file.classes().map { it.name } == listOf(file.name) }
+  // UserRemoteDataSource.kt contains only class UserRemoteDataSource
+  ktFileContent {
+    `class`(fileName)
   }
+}
 ```
 
-Because this uses `konsist { }`, add a dependency on `katachi-konsist` to `:architecture-test` and call `assert(FileConstraintCheck())` in the test. With `assert()` alone the constraints are not evaluated and the test fails with `[UncheckedFileConstraint]`. See [Konsist integration](/katachi/guides/konsist-integration/) for details.
+The declarations a file may contain are written with `ktFileContent { }`, and the rule that every property of a UiState is a `val` is written with `konsist { }`. Both are included in `katachi-konsist`, so add a dependency on `katachi-konsist` to `:architecture-test` and call `assert(FileConstraintCheck())` in the test. With `assert()` alone the constraints are not evaluated and the test fails with `[UncheckedFileConstraint]`. See [Define an allow list of the declarations a file may contain](/katachi/guides/kt-file-content/#installation) for details.
 
 A real definition that splits the layers into groups and the kinds of files into Roles is in [ProjectArchitecture.kt in sample/android](https://github.com/TBSten/katachi/blob/main/sample/android/architecture-test/src/test/kotlin/com/example/sample/ProjectArchitecture.kt). The sample has no domain layer and splits its modules by screen, so its definition is shaped differently from the one on this page.
 

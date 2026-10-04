@@ -10,6 +10,7 @@ import me.tbsten.katachi.dsl.gradle.kotlin
 import me.tbsten.katachi.dsl.gradle.sourceSet
 import me.tbsten.katachi.dsl.kotlin.ktFile
 import me.tbsten.katachi.dsl.template
+import me.tbsten.katachi.konsist.declarations.ktFileContent
 
 /**
  * The interface through which the app touches data: the `user` package of `:data`.
@@ -69,6 +70,12 @@ fun DeclarationContainerScope.repositoryInterface() = "RepositoryInterface" {
                         """.trimIndent() + "\n"
                     }
             }
+        }
+    }
+    // The interface named after the file, of functions only.
+    ktFileContent {
+        `interface`(fileName) {
+            `fun`("*")
         }
     }
 }

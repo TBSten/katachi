@@ -20,14 +20,34 @@ A `@Preview` is a `private` `@Composable` at the end of the same file, with the 
 wrapped in `PreviewRoot { }` from `:ui`. It passes only state:
 `HomeScreenContentPreview` passes `UiState.Content(...)` and `HomeScreenLoadingPreview`
 passes `UiState.Loading`, lining up different states of the same screen. The overload
-that takes `viewModel()` is not previewed. This convention is not checked in this
-sample.
+that takes `viewModel()` is not previewed. `ktFileContent { }` checks the shape of the
+file (`internal` screens named after it, `private` previews, and what it imports); what
+a preview passes and wraps its body in is not checked.
 
 ## Placement
 
 | Path | When to use |
 |---|---|
 | `feature/*/src/main/kotlin/com/example/sample/feature/*/*Screen.kt` |  |
+
+## Constraints
+
+- ktFileContent
+
+## Kotlin file content
+
+Example: `HomeScreen.kt`
+
+| Import | |
+|---|---|
+| `androidx.compose.**` | optional |
+| `androidx.lifecycle.**` | optional |
+| `com.example.sample.ui.**` | optional |
+
+| Declaration | |
+|---|---|
+| `@Composable internal fun HomeScreen(...)` | required |
+| `@Preview private fun *Preview(...)` | optional |
 
 ## Examples
 

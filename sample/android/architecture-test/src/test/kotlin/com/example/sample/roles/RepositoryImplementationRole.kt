@@ -9,6 +9,7 @@ import me.tbsten.katachi.dsl.DeclarationContainerScope
 import me.tbsten.katachi.dsl.gradle.*
 import me.tbsten.katachi.dsl.kotlin.ktFile
 import me.tbsten.katachi.dsl.template
+import me.tbsten.katachi.konsist.declarations.ktFileContent
 
 /** The role of the production implementation of a repository interface. */
 fun DeclarationContainerScope.repositoryImplementation() = "RepositoryImplementation" {
@@ -45,6 +46,18 @@ fun DeclarationContainerScope.repositoryImplementation() = "RepositoryImplementa
                     }
                 }
             }
+        }
+    }
+    // The class named after the file implements the interface of the same name without `Impl`,
+    // and holds overrides and private state only.
+    ktFileContent {
+        `import`("kotlin.**")
+        `import`("kotlinx.**")
+        `import`("com.example.sample.data.**")
+
+        `class`(fileName).superclass(fileName.removeSuffix("Impl")) {   // UserRepositoryImpl : UserRepository
+            override.`fun`("*")
+            private.anythingElse()
         }
     }
 }

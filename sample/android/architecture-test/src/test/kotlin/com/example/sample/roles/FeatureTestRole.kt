@@ -10,6 +10,7 @@ import me.tbsten.katachi.dsl.DeclarationContainerScope
 import me.tbsten.katachi.dsl.gradle.*
 import me.tbsten.katachi.dsl.kotlin.ktFile
 import me.tbsten.katachi.dsl.template
+import me.tbsten.katachi.konsist.declarations.ktFileContent
 
 /**
  * The role of a feature module's own unit tests, which stand the ViewModel on `:testing`'s fakes.
@@ -58,6 +59,19 @@ fun DeclarationContainerScope.featureTest() = "FeatureTest" {
                 .template(id = feature.name.lowercase()) {
                     featureTestContent(feature, captureValue("name"))
                 }
+        }
+    }
+    // A test class named after the file, in the package of the code it tests, holding @Test
+    // functions only. A real repository implementation is not imported: the fakes of :testing are.
+    ktFileContent {
+        `package`(matchingDirectory)
+
+        `import`("org.junit.**")
+        `import`("com.example.sample.**")
+        not.`import`("com.example.sample.data.**.*RepositoryImpl")
+
+        `class`(fileName) {
+            annotated("Test").`fun`("*")
         }
     }
 }

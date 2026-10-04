@@ -11,6 +11,7 @@ import me.tbsten.katachi.dsl.gradle.kotlin
 import me.tbsten.katachi.dsl.gradle.mainSourceSet
 import me.tbsten.katachi.dsl.kotlin.ktFile
 import me.tbsten.katachi.dsl.template
+import me.tbsten.katachi.konsist.declarations.ktFileContent
 
 /**
  * The role that faces HTTP: one request in, one service call, one response out.
@@ -32,8 +33,10 @@ fun DeclarationContainerScope.controller() = "Controller" {
         One controller per file, and the file name is `*Controller.kt`. Each resource gets one
         package such as `controller/health/`, and the controller goes inside it. The file name
         directly names a group of endpoints, so the name alone tells you whether a new path
-        belongs in an existing file or in a new one. Note that `layout { }` only looks at where
-        files live and what they are named; it does not mechanically reject "Forbidden contents".
+        belongs in an existing file or in a new one. `layout { }` only looks at where files live
+        and what they are named; `ktFileContent { }` adds what a file holds: the package of its
+        resource, a class with `register(route: Route)`, and imports that leave out
+        `com.example.repository`. The rest of "Forbidden contents" is not rejected mechanically.
 
         It can be generated from a template. The package level of the resource is named
         `resource`, so `--arg template=Controller --arg resource=user --arg name=User` produces
@@ -93,5 +96,20 @@ fun DeclarationContainerScope.controller() = "Controller" {
                             }
                         """.trimIndent() + "\n"
                     }
+    }
+    // The block runs once per file, so `captureValue("resource")` is that file's own directory
+    // (`health` for `controller/health/HealthController.kt`) and the package follows it.
+    ktFileContent {
+        `package`("com.example.controller.${captureValue("resource")}")
+
+        // HTTP and the domain. No com.example.repository: a Controller does not fetch data itself.
+        `import`("io.ktor.server.**")
+        `import`("com.example.service.**")
+        `import`("com.example.model.**")
+
+        `class`(fileName) {
+            private.`val`("*", "*Service")          // the Services it calls, swappable from a test
+            `fun`("register")("Route")              // the one function plugin/Routing.kt calls
+        }
     }
 }

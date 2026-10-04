@@ -18,6 +18,24 @@ of the Ktor feature being installed.
 |---|---|
 | `src/main/kotlin/com/example/plugin/*.kt` |  |
 
+## Constraints
+
+- ktFileContent
+
+## Kotlin file content
+
+Example: `Routing.kt`
+
+| Import | |
+|---|---|
+| `io.ktor.**` | optional |
+| `kotlinx.serialization.**` | optional |
+| `com.example.controller.**` | optional |
+
+| Declaration | |
+|---|---|
+| `fun configureRouting()` | required |
+
 ## Examples
 
 - `Routing` ... Wiring of the routing tree

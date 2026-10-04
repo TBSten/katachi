@@ -30,6 +30,22 @@ actual match, and that compiler does not run on CI; that is the hole here.
 | `data/src/androidMain/kotlin/com/example/kmp/data/platform/*.android.kt` |  |
 | `data/src/iosMain/kotlin/com/example/kmp/data/platform/*.ios.kt` |  |
 
+## Constraints
+
+- ktFileContent
+
+## Kotlin file content
+
+Example: `PlatformInfo.android.kt`
+
+| Package |
+|---|
+| `com.example.kmp.data.platform` |
+
+| Declaration | |
+|---|---|
+| `actual` (anything) | optional |
+
 ## Examples
 
 - `PlatformInfo.android.kt` ... The actual for Android

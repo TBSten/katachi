@@ -23,3 +23,15 @@ dependencies {
     testImplementation(libs.kotestRunnerJunit5)
     testImplementation(libs.kotestAssertionsCore)
 }
+
+// The property-based specs of ktFileContent { } run few trials by default, as the IDE plugin's do.
+// `-Pkatachi.pbt.scale=20` runs 20 times as many and `-Pkatachi.pbt.seed=N` tries another seed; both
+// reach the test JVM as system properties (KtFileContentPbtSpecSupport.kt reads them).
+tasks.test {
+    listOf("katachi.pbt.seed", "katachi.pbt.scale").forEach { key ->
+        providers.gradleProperty(key).orNull?.let { systemProperty(key, it) }
+    }
+    // Konsist keeps every file it has parsed in caches of its own for the life of the JVM, and a scaled
+    // run parses tens of thousands of fixtures: more than a test worker's default heap holds.
+    if ((providers.gradleProperty("katachi.pbt.scale").orNull?.toDoubleOrNull() ?: 1.0) > 1.0) maxHeapSize = "4g"
+}

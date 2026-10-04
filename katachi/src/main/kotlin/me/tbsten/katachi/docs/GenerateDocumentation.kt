@@ -27,6 +27,11 @@ import me.tbsten.katachi.processor.ArchitectureProcessor
  * what the rules *are*, and whether the repository keeps them is the check's answer, not this
  * one's.
  *
+ * The one exception is a constraint that describes itself on its role's page
+ * (`FileConstraint.documentSection`) with an example file, for a role that names no
+ * `example(...)`: finding that file lists the project's files once. A project that cannot be
+ * listed gives a stand-in example instead of a failure.
+ *
  * ## Why this object is the only part that does IO
  *
  * Building the pages is a pure function from a context to a map of path to text. Everything that

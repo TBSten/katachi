@@ -133,6 +133,27 @@ internal sealed interface GlobProblem {
     }
 
     /**
+     * A separator that is itself one of the glob's own characters, which the pattern could then
+     * neither split on nor escape reliably.
+     *
+     * Only `NamePattern.compile` lets a caller pick the separator; the layout DSL always uses
+     * `/` or `:`.
+     *
+     * ## Example 1: a name pattern split on `*`
+     * ```kt
+     * val problem = shouldThrow<KatachiGlobSyntaxException> { NamePattern.compile("a*b", separator = '*') }.problem
+     * problem.shouldBeInstanceOf<GlobProblem.UnusableSeparator>().separator shouldBe '*'
+     * ```
+     */
+    class UnusableSeparator(
+        val separator: Char,
+    ) : GlobProblem {
+        override fun explain(pattern: String): String =
+            "`$pattern` is to be split on `$separator`, but katachi's glob already gives " +
+                "`$separator` a meaning. Use a separator other than `$GLOB_ESCAPABLE`, or none."
+    }
+
+    /**
      * A module path pattern uses `**` more than once.
      *
      * ## Example 1: a module pattern with `**` twice

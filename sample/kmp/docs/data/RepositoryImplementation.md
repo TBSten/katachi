@@ -24,6 +24,24 @@ creates both at once, and the `item` parameter binds both when given once.
 |---|---|
 | `data/src/commonMain/kotlin/com/example/kmp/data/user/*RepositoryImpl.kt` |  |
 
+## Constraints
+
+- ktFileContent
+
+## Kotlin file content
+
+Example: `UserRepositoryImpl.kt`
+
+| Declaration | |
+|---|---|
+| `class UserRepositoryImpl : UserRepository` | required |
+
+### Members of `class UserRepositoryImpl`
+
+| Member | |
+|---|---|
+| `override fun *(...)` | optional |
+
 ## Examples
 
 - `UserRepositoryImpl` ... The implementation of UserRepository

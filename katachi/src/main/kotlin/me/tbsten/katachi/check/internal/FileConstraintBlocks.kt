@@ -18,9 +18,15 @@ import me.tbsten.katachi.internal.displayPath
 /**
  * A constraint that said no.
  *
- * There is no `How to fix:`. The block a constraint holds is an arbitrary Kotlin expression,
- * so katachi does not know what would satisfy it, and a report that guessed would be inventing
- * a claim. The context lines say enough to find the rule and read it.
+ * Everything after the context lines is the constraint's own: its reasons, what it would have
+ * allowed, and its `How to fix:`. katachi adds none of them. The block a constraint holds is an
+ * arbitrary Kotlin expression, so katachi does not know what would satisfy it, and a report that
+ * guessed would be inventing a claim -- a constraint that says nothing gets the four context
+ * lines and no more.
+ *
+ * Every line a constraint wrote is folded onto one line with [oneLine], like a constraint's
+ * name, except the code under a fix: that is meant for pasting, so its own indentation is kept
+ * and a line break in it starts another line.
  */
 internal fun unsatisfiedFileConstraintBlock(violation: UnsatisfiedFileConstraint, root: String?): List<String> = buildList {
     add("[${violation.label}] ${constraintPath(root, violation.path, violation.declaredAt)}")
@@ -28,8 +34,33 @@ internal fun unsatisfiedFileConstraintBlock(violation: UnsatisfiedFileConstraint
         "$STEP${constraintLine(violation.role.qualifiedName, violation.constraintName)}",
     )
     declarationLine(violation.declaration, violation.line)?.let { add("$STEP$it") }
-    add("${STEP}Declared at: ${violation.declaredAt}${inLayout(root, violation.layoutPath)}")
+    for (reason in violation.reasons) add("$STEP${oneLine(reason.label)}: ${oneLine(reason.text)}")
+    violation.allowed?.let { allowed ->
+        add("$STEP${oneLine(allowed.heading)}:")
+        if (allowed.entries.isEmpty()) add("$STEP$STEP(nothing)")
+        for (entry in allowed.entries) add("$STEP$STEP${oneLine(entry)}")
+    }
+    val declaredAt = violation.ruleDeclaredAt ?: violation.declaredAt
+    add("${STEP}Declared at: $declaredAt${inLayout(root, violation.layoutPath)}")
+    if (violation.howToFix.isNotEmpty()) {
+        add("")
+        add("${STEP}How to fix:")
+        for (fix in violation.howToFix) {
+            add("$STEP$STEP- ${oneLine(fix.text)}")
+            addAll(codeLines(fix.code))
+        }
+    }
 }
+
+/**
+ * The code under one fix, indented two steps past its `- `: as written, but with each element's
+ * line breaks starting lines of their own, and trailing spaces dropped so that a blank line of
+ * the fragment stays blank.
+ */
+private fun codeLines(code: List<String>): List<String> =
+    code.flatMap { it.lines() }
+        .map { it.trimEnd() }
+        .map { if (it.isEmpty()) it else "$STEP$STEP$STEP$STEP$it" }
 
 /**
  * A constraint nothing could answer for.

@@ -24,6 +24,29 @@ decides which screen to go to, and a feature never imports another feature's Rou
 |---|---|
 | `feature/*/src/main/kotlin/com/example/sample/feature/*/*Route.kt` |  |
 
+## Constraints
+
+- ktFileContent
+
+## Kotlin file content
+
+Example: `HomeRoute.kt`
+
+| Import | |
+|---|---|
+| `androidx.navigation.**` | optional |
+
+| Declaration | |
+|---|---|
+| `object HomeRoute` | required |
+| `fun homeScreen(...)` | required |
+
+### Members of `object HomeRoute`
+
+| Member | |
+|---|---|
+| `const val PATH: String` | required |
+
 ## Examples
 
 - `HomeRoute` ... The destination of the home screen

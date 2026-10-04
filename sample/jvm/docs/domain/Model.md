@@ -22,6 +22,19 @@ dug beneath it does not fall under this role.
 |---|---|
 | `src/main/kotlin/com/example/model/*.kt` |  |
 
+## Constraints
+
+- ktFileContent
+
+## Kotlin file content
+
+Example: `Health.kt`
+
+| Import | |
+|---|---|
+| `kotlin.**` | optional |
+| `kotlinx.serialization.**` | optional |
+
 ## Examples
 
 - `Health` ... Running status and version

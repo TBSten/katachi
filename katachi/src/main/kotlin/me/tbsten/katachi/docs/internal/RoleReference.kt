@@ -73,6 +73,13 @@ internal fun roleReferenceDocuments(
     val constraintNames = evaluation.fileConstraints
         .mapNotNull { constraint -> constraint.name?.let { constraint.role to it } }
         .groupBy({ it.first }, { it.second })
+    // Asked per page rather than up front: a constraint's section is only worked out for a role
+    // that gets a page, and working it out may list the project's files (see
+    // `constraintSectionsOf`).
+    val constraintsByRole = evaluation.fileConstraints.groupBy { it.role }
+    val constraintSections: (Role) -> List<String> = { role ->
+        constraintSectionsOf(context, role, constraintsByRole[role].orEmpty())
+    }
 
     // Decided once and handed to both the page and every breadcrumb that points back at it. A
     // reader who saw `# myapp documentation` and then `[Architecture](../README.md)` two clicks
@@ -95,10 +102,17 @@ internal fun roleReferenceDocuments(
     for (role in architecture.roles.filter { it.isDocumented }) {
         // A role written at the root sits beside the root `README.md`, so its one step back is
         // `README.md` with no `../` in front of it. `breadcrumbOf` counts that from a depth of 0.
-        documents.putRole(role, directory = "", placements, constraintNames, breadcrumbOf(rootName, emptyList(), depth = 0))
+        documents.putRole(
+            role,
+            directory = "",
+            placements,
+            constraintNames,
+            constraintSections,
+            breadcrumbOf(rootName, emptyList(), depth = 0),
+        )
     }
     for (group in architecture.groups) {
-        documents.putGroup(group, rootName, ancestors = emptyList(), placements, constraintNames)
+        documents.putGroup(group, rootName, ancestors = emptyList(), placements, constraintNames, constraintSections)
     }
     return documents.pages().also(::checkDocumentLinks)
 }
@@ -119,6 +133,7 @@ private fun Documents.putGroup(
     ancestors: List<Group>,
     placements: Map<Role, List<Placement>>,
     constraintNames: Map<Role, List<String>>,
+    constraintSections: (Role) -> List<String>,
 ) {
     // A group that opted out takes its subtree with it. Its directory is never created, so a page
     // written inside it would sit somewhere nothing links to.
@@ -144,11 +159,12 @@ private fun Documents.putGroup(
             directory,
             placements,
             constraintNames,
+            constraintSections,
             breadcrumbOf(rootName, ancestors + group, depth = group.path.size),
         )
     }
     for (child in group.groups) {
-        putGroup(child, rootName, ancestors + group, placements, constraintNames)
+        putGroup(child, rootName, ancestors + group, placements, constraintNames, constraintSections)
     }
 }
 
@@ -175,6 +191,7 @@ private fun Documents.putRole(
     directory: String,
     placements: Map<Role, List<Placement>>,
     constraintNames: Map<Role, List<String>>,
+    constraintSections: (Role) -> List<String>,
     ancestors: List<Crumb>,
 ) = put(
     path = "$directory${role.name}$PAGE_EXTENSION",
@@ -183,6 +200,7 @@ private fun Documents.putRole(
         role = role,
         placements = placements[role].orEmpty(),
         constraintNames = constraintNames[role].orEmpty(),
+        constraintSections = constraintSections(role),
         ancestors = ancestors,
     ),
 )

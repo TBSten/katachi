@@ -1,10 +1,14 @@
+@file:OptIn(ExperimentalKatachiApi::class)
+
 package com.example.roles
 
 import com.example.allowedContents
 import com.example.forbiddenContents
+import me.tbsten.katachi.ExperimentalKatachiApi
 import me.tbsten.katachi.dsl.DeclarationContainerScope
 import me.tbsten.katachi.dsl.gradle.*
 import me.tbsten.katachi.dsl.kotlin.ktFile
+import me.tbsten.katachi.konsist.declarations.ktFileContent
 
 /** The role of the values the domain is about, reused as the API payloads. */
 fun DeclarationContainerScope.model() = "Model" {
@@ -33,5 +37,11 @@ fun DeclarationContainerScope.model() = "Model" {
         // A model is named after the thing it models, so the package is the only
         // marker. Any `.kt` directly in it counts; a subdirectory does not.
         mainSourceSet / kotlin / "com/example/model" / "*".ktFile()
+    }
+    // Imports only: a model may know about kotlinx.serialization and no further. No other kind
+    // of line is written, so the declarations themselves are not looked at.
+    ktFileContent {
+        `import`("kotlin.**")
+        `import`("kotlinx.serialization.**")
     }
 }

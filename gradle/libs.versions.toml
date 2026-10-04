@@ -44,7 +44,7 @@ jetbrainsAnnotations = "26.0.2"
 # `includeBuild("../..")` in their settings substitutes this module with the local build.
 katachi = { module = "me.tbsten.katachi:katachi", version.ref = "katachi" }
 # The konsist backend, substituted the same way `katachi` is. A sample only needs it when its
-# definition writes `konsist { }`.
+# definition writes `konsist { }` or `ktFileContent { }`.
 katachiKonsist = { module = "me.tbsten.katachi:katachi-konsist", version.ref = "katachi" }
 konsist = { module = "com.lemonappdev:konsist", version.ref = "konsist" }
 # `KSerializer` / `AbstractDecoder` / `buildClassSerialDescriptor` だけを使う。json は要らない。

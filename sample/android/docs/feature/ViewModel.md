@@ -24,6 +24,34 @@ disappears and the shape does not change.
 |---|---|
 | `feature/*/src/main/kotlin/com/example/sample/feature/*/*ViewModel.kt` |  |
 
+## Constraints
+
+- ktFileContent
+
+## Kotlin file content
+
+Example: `HomeViewModel.kt`
+
+| Import | |
+|---|---|
+| `androidx.lifecycle.**` | optional |
+| `kotlinx.coroutines.**` | optional |
+| `com.example.sample.data.**` | optional |
+| `com.example.sample.ui.core.**` | optional |
+
+| Declaration | |
+|---|---|
+| `internal data class HomeContent` | required |
+| `internal class HomeViewModel : ViewModel` | required |
+
+### Members of `class HomeViewModel`
+
+| Member | |
+|---|---|
+| `public val uiState: StateFlow<UiState<HomeContent>>` | required |
+| `public fun *(...)` | optional |
+| `private` (anything) | optional |
+
 ## Examples
 
 - `HomeViewModel` ... The state of the home screen

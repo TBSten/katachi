@@ -21,6 +21,34 @@ It only receives the Repository as an argument and never creates it. Creating it
 |---|---|
 | `feature/*/src/commonMain/kotlin/com/example/kmp/feature/*/*ViewModel.kt` |  |
 
+## Constraints
+
+- ktFileContent
+
+## Kotlin file content
+
+Example: `HomeViewModel.kt`
+
+| Import | |
+|---|---|
+| `androidx.lifecycle.**` | optional |
+| `kotlinx.coroutines.**` | optional |
+| `com.example.kmp.data.**` | optional |
+| `com.example.kmp.ui.core.**` | optional |
+
+| Declaration | |
+|---|---|
+| `internal data class *Ui` | optional |
+| `internal class HomeViewModel : ViewModel` | required |
+
+### Members of `class HomeViewModel`
+
+| Member | |
+|---|---|
+| `public val state: StateFlow<UiState<*>>` | required |
+| `public fun *(...)` | optional |
+| `private` (anything) | optional |
+
 ## Examples
 
 - `HomeViewModel` ... The state of the home screen

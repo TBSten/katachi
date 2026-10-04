@@ -33,6 +33,24 @@ package in the definition would make the documentation point at a directory that
 |---|---|
 | `data/src/commonMain/kotlin/com/example/kmp/data/user/*Repository.kt` |  |
 
+## Constraints
+
+- ktFileContent
+
+## Kotlin file content
+
+Example: `UserRepository.kt`
+
+| Declaration | |
+|---|---|
+| `interface UserRepository` | required |
+
+### Members of `interface UserRepository`
+
+| Member | |
+|---|---|
+| `fun *(...)` | optional |
+
 ## Examples
 
 - `UserRepository` ... The interface that fetches users

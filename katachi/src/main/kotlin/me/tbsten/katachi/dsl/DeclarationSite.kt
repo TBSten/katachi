@@ -1,5 +1,8 @@
 package me.tbsten.katachi.dsl
 
+import me.tbsten.katachi.ExperimentalKatachiApi
+import me.tbsten.katachi.dsl.internal.captureDeclarationSite
+
 /**
  * Where a declaration was written, as `FileName.kt:42`.
  *
@@ -25,8 +28,8 @@ public data class DeclarationSite(
     override fun toString(): String = "$fileName:$lineNumber"
 
     /**
-     * Where a stand-in [DeclarationSite] comes from when the real one could not be captured:
-     * [Unknown].
+     * Where a [DeclarationSite] comes from: [capture] for the line that called into the DSL, and
+     * [Unknown] as the stand-in when the real one could not be captured.
      *
      * ## Example 1: fall back when there is no real site
      * ```kt
@@ -43,5 +46,28 @@ public data class DeclarationSite(
          * ```
          */
         public val Unknown: DeclarationSite = DeclarationSite("<unknown>", -1)
+
+        /**
+         * The line that called into katachi: the first stack frame outside `me.tbsten.katachi.`.
+         *
+         * katachi's own artifacts -- `katachi-konsist` included -- are inside, so a DSL function
+         * one of them adds can call this from inside itself and get the line its user wrote, which
+         * is what a report should point back at. Everything else is outside: katachi's own specs
+         * (`me.tbsten.katachi.test.`), and code in any other package, so a wrapper of your own gets
+         * its own line from this -- take the site from your caller instead, as
+         * `fileConstraint(declaredAt = ...)` does. [Unknown] when no frame is outside.
+         *
+         * Not `inline`, and it must not be reached through an `inline` function either: a frame
+         * inlined into its caller carries a line number remapped past the end of the file.
+         *
+         * ## Example 1: remember the line that declared a rule
+         * ```kt
+         * // ProjectArchitecture.kt
+         * val declaredAt = DeclarationSite.capture()
+         * declaredAt.fileName shouldBe "ProjectArchitecture.kt"
+         * ```
+         */
+        @ExperimentalKatachiApi
+        public fun capture(): DeclarationSite = captureDeclarationSite()
     }
 }

@@ -9,7 +9,7 @@ tags:
   このページの目的: katachi のアーキテクチャ定義における重要な要素である Role 周辺の使い方を深く網羅的に理解すること。
 */}
 
-import { FileTree } from "@astrojs/starlight/components";
+import { Aside, FileTree } from "@astrojs/starlight/components";
 import CodeComparison from "../../../../components/CodeComparison";
 
 ## Role を定義する
@@ -33,10 +33,16 @@ Role の説明・置き場所・制約は、その Role のブロックの中に
 - `title`・`summary`・`description` など ... そのRoleの説明です。ドキュメント生成に使われます。
 - `layout { }` ... そのRoleのファイルをどこに置けるかを定義します。
   - 詳しくは [レイアウトの定義](/katachi/ja/guides/layout/) を参照してください。
-- `"制約名".konsist { }` ... そのRoleのファイルにかけられる制限を定義します。
-  - 制約は Konsist で書きます。詳しくは [Konsist との統合](/katachi/ja/guides/konsist-integration/) を参照してください。
+- `ktFileContent { }` ... そのRoleのファイルに置いてよい package・import・宣言を定義します。
+  - 詳しくは [ファイルの中で定義できる宣言の許可リストを定義する](/katachi/ja/guides/kt-file-content/) を参照してください。
+- `"制約名".konsist { }` ... `ktFileContent { }` で書けない制限を、Konsist で定義します。
+  - 詳しくは [カスタムルールを Konsist で定義する](/katachi/ja/guides/konsist-integration/) を参照してください。
 - `.template { }` ... `layout { }` で宣言したファイルに付けて、そのファイルを新しく作るときのテンプレートを定義します。
   - 詳しくは [テンプレートからコード生成](/katachi/ja/guides/generate-code-from-template/) を参照してください。
+
+<Aside type="caution" title="AI が書いた下書き">
+この一覧の `ktFileContent { }` の項目と、このページで `ktFileContent { }` を使う例は、AI が書いた下書きです。`ktFileContent { }` は v0.3 で入る予定の実験的な機能です。
+</Aside>
 
 ```kt
 architecture {
@@ -155,6 +161,8 @@ Katachi check failed: 1 violation (Unexpected: 1)
 <details>
 <summary>中身に制約をかける</summary>
 
+ファイルに置いてよい宣言は `ktFileContent { }` で定義できます。ここでは、`konsist { }` で書く制約を説明します。
+
 制約には名前を付けます。**この名前がそのまま違反レポートに出ます。**
 
 ```kt
@@ -244,7 +252,7 @@ architecture {
 ### 1つの Role には1種類のファイルだけを入れる
 
 **1つの Role は、1種類のファイルだけを表すようにしてください。**
-たとえば Repository の interface と実装は、名前は似ていても別の種類のファイルです。1つの Role にまとめると、説明・制約・テンプレートが「どちらのファイルの話か」で分かれてしまい、`konsist { }` の制約にも「interface なら…、実装なら…」という条件分岐が入ります。
+たとえば Repository の interface と実装は、名前は似ていても別の種類のファイルです。1つの Role にまとめると、説明・制約・テンプレートが「どちらのファイルの話か」で分かれてしまい、`ktFileContent { }` にも「interface なら…、実装なら…」という条件分岐が入ります。
 種類ごとに Role を分ければ、説明も制約もその種類のファイルだけを対象にでき、生成されるドキュメントも種類ごとのページになります。
 
 <CodeComparison>
@@ -257,8 +265,8 @@ architecture {
             "repository" / "*Repository".ktFile()      // interface
             "repository" / "*RepositoryImpl".ktFile()  // 実装
         }
-        "interface なら宣言だけ、実装なら…".konsist {
-            // どちらのファイルかで制約を分ける必要がある
+        ktFileContent {
+            // interface のファイルか実装のファイルかで、書く行を分ける必要がある
         }
     }
     ```
@@ -271,8 +279,8 @@ architecture {
     "RepositoryInterface" {
         summary = "データの取得と保存の窓口"
         layout { "repository" / "*Repository".ktFile() }
-        "interface だけを置くこと".konsist {
-            classes().mustBeEmpty()
+        ktFileContent {
+            `interface`(fileName)
         }
     }
 
@@ -317,8 +325,8 @@ Role ごとに拡張関数に切り出しましょう。
             layout { 
                 "src/main/kotlin/com/example/project/repository" / "*Repository".ktFile()
             }
-            "class を置かないこと".konsist {
-                classes().mustBeEmpty()
+            ktFileContent {
+                `interface`(fileName)
             }
             // ...
         }
@@ -365,8 +373,8 @@ Role ごとに拡張関数に切り出しましょう。
         layout {
             "src/main/kotlin/com/example/project/repository" / "*Repository".ktFile()
         }
-        "class を置かないこと".konsist {
-            classes().mustBeEmpty()
+        ktFileContent {
+            `interface`(fileName)
         }
         // ...
     }
@@ -419,7 +427,7 @@ Role 定義の中でも、特に `"...".konsist { }` は、制約が多かった
 ## まとめ
 
 - Role は **プロジェクトの中に現れてよいファイルの種類** です。パッケージやモジュールとは独立しています。
-- 1つのRoleに、説明（`title` / `summary`）・置き場所（`layout { }`）・制約（`konsist { }`）が **まとまります**。
+- 1つのRoleに、説明（`title` / `summary`）・置き場所（`layout { }`）・制約（`ktFileContent { }`・`konsist { }`）が **まとまります**。
 - **Role 定義はすぐに肥大化します。** `architecture { }` や Role 定義が膨らまないよう、拡張関数を使って適切に分割しましょう。
 
 ```kt
@@ -444,5 +452,6 @@ architecture {
 ## 次のステップ
 
 - [Layout](/katachi/ja/guides/layout/) ... Roleのファイルをどこに置けるか宣言する方法を学びましょう。
-- [Konsist との統合](/katachi/ja/guides/konsist-integration/) ... Roleのファイルの中身に制約をかける方法を学びましょう。
+- [ファイルの中で定義できる宣言の許可リストを定義する](/katachi/ja/guides/kt-file-content/) ... Roleのファイルに置いてよい宣言を定義する方法を学びましょう。
+- [カスタムルールを Konsist で定義する](/katachi/ja/guides/konsist-integration/) ... `ktFileContent { }` で書けない制約を、Konsist でかける方法を学びましょう。
 - [初めてのアーキテクチャ定義](/katachi/ja/get-started/first-architecture/) ... あなたのプロジェクトに katachi を導入して、実際に Role を書いてみましょう。

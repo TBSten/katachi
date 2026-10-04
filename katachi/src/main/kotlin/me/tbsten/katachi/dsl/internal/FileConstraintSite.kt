@@ -4,6 +4,9 @@ import me.tbsten.katachi.dsl.DeclarationSite
 import me.tbsten.katachi.dsl.FileConstraint
 import me.tbsten.katachi.dsl.FileConstraintRange
 import me.tbsten.katachi.dsl.KatachiFileConstraintNameException
+import me.tbsten.katachi.dsl.LayoutEntry
+import me.tbsten.katachi.dsl.LayoutEntryKind
+import java.util.Collections
 
 /**
  * One `fileConstraint { }` call, kept as written.
@@ -65,7 +68,8 @@ internal class FileConstraintSite(
 )
 
 /**
- * Which files one constraint covers, as the patterns its own entries declared.
+ * Which files one constraint covers, as the patterns its own entries declared, and what the
+ * `capture("...")` names of those entries take from each file.
  *
  * The rule is [me.tbsten.katachi.check.internal.LayoutIndex.rolesOf]'s, narrowed to one constraint's
  * entries: a file is covered when a file declaration matches it, or when its directory was
@@ -73,13 +77,47 @@ internal class FileConstraintSite(
  * covering a file the role does not own, or missing one it does.
  */
 internal class FileConstraintCoverage(
-    private val fileGlobs: List<Glob>,
-    private val anyFileGlobs: List<Glob>,
+    /** The entries the block owns. Only the files and the `anyFile()` directories cover anything. */
+    covered: List<LayoutEntry>,
 ) {
+    private val entries: List<LayoutEntry> =
+        covered.filter { it.kind == LayoutEntryKind.File || it.kind == LayoutEntryKind.AnyFile }
+    private val fileGlobs: List<Glob> = entries.filter { it.kind == LayoutEntryKind.File }.map { it.glob }
+    private val anyFileGlobs: List<Glob> = entries.filter { it.kind == LayoutEntryKind.AnyFile }.map { it.glob }
+
+    /**
+     * See [me.tbsten.katachi.dsl.FileConstraintSubject.captureNames]. Read-only, because every
+     * constraint of the block is handed this same set.
+     */
+    val captureNames: Set<String> = Collections.unmodifiableSet(
+        entries.flatMapTo(LinkedHashSet()) { entry -> entry.captureVariants.flatMap { it.names } },
+    )
+
     fun covers(file: String): Boolean {
         if (fileGlobs.any { it.matches(file) }) return true
         val parent = file.substringBeforeLast('/', missingDelimiterValue = "")
         return parent.isNotEmpty() && anyFileGlobs.any { it.matches(parent) }
+    }
+
+    /**
+     * See [me.tbsten.katachi.dsl.FileConstraintSubject.captureValuesOf]. Every entry matching
+     * [file] has its say, the first to name a value keeping it.
+     */
+    fun captureValuesOf(file: String): Map<String, String> = merged { it.captureValuesOf(file) }
+
+    /**
+     * What [fileName] alone gives the names on the file name level of each file entry, for an
+     * example that is only a name.
+     */
+    fun captureValuesOfFileName(fileName: String): Map<String, String> =
+        merged { it.captureValuesOfFileName(fileName) }
+
+    private inline fun merged(valuesOf: (LayoutEntry) -> Map<String, String>): Map<String, String> {
+        val values = LinkedHashMap<String, String>()
+        for (entry in entries) {
+            for ((name, value) in valuesOf(entry)) values.putIfAbsent(name, value)
+        }
+        return values
     }
 
     override fun toString(): String =
