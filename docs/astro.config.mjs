@@ -219,7 +219,7 @@ export default defineConfig({
 						{ label: 'Role', translations: { ja: 'Role' }, slug: 'guides/role' },
 						{ label: 'Layout', translations: { ja: 'Layout' }, slug: 'guides/layout' },
 						// ktFileContent { }。katachi-konsist のインストールの節もここが持ち、Konsist のページはここを指す。
-						{ label: 'File content allow list', translations: { ja: 'ファイルの中で定義できる宣言の許可リストを定義する' }, slug: 'guides/kt-file-content' },
+						{ label: '[AI-generated] File content allow list', translations: { ja: '[AI生成] ファイルの中で定義できる宣言の許可リストを定義する' }, slug: 'guides/kt-file-content' },
 						{ label: 'Custom rules with Konsist', translations: { ja: 'カスタムルールを Konsist で定義する' }, slug: 'guides/konsist-integration' },
 						{ label: 'Document generation', translations: { ja: 'ドキュメント生成' }, slug: 'guides/document-generation' },
 						{ label: 'Generate code from template', translations: { ja: 'テンプレートからコード生成' }, slug: 'guides/generate-code-from-template' },
