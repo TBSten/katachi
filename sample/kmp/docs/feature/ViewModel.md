@@ -15,11 +15,19 @@ is an easy place to trip in KMP.
 
 It only receives the Repository as an argument and never creates it. Creating it is the Route's job.
 
+Among the application's roles, only this one writes a constraint with `konture { }`,
+"Does not depend on Compose": a ViewModel that imports anything under `androidx.compose`
+fails the test, before drawing code can settle in the place that holds state.
+
 ## Placement
 
 | Path | When to use |
 |---|---|
 | `feature/*/src/commonMain/kotlin/com/example/kmp/feature/*/*ViewModel.kt` |  |
+
+## Constraints
+
+- Does not depend on Compose
 
 ## Examples
 

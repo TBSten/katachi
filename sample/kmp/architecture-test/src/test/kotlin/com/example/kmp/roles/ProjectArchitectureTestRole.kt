@@ -11,8 +11,10 @@ fun DeclarationContainerScope.projectArchitectureTest() = "ProjectArchitectureTe
     summary = "The single JUnit test that runs the definition, kept in src/test/kotlin of :architecture-test"
     description = """
         The test that checks the whole project through the definition: a single JUnit test that
-        calls `projectArchitecture.assert()`. This is the only test a project adopting katachi
-        writes. The definition it runs is described by the DefinitionEntry, GroupDefinition and
+        calls `projectArchitecture.assert(FileConstraintCheck())`. This is the only test a project
+        adopting katachi writes. `FileConstraintCheck()` is what makes the ViewModel role's
+        `konture { }` constraint run; without it the constraint is reported as not evaluated.
+        The definition it runs is described by the DefinitionEntry, GroupDefinition and
         RoleDefinition roles, and kept apart from this file because the definition's job is to
         describe the project.
 

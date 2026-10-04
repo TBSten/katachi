@@ -8,12 +8,18 @@ import me.tbsten.katachi.ExperimentalKatachiApi
 import me.tbsten.katachi.dsl.DeclarationContainerScope
 import me.tbsten.katachi.dsl.gradle.*
 import me.tbsten.katachi.dsl.kotlin.ktFile
+import me.tbsten.katachi.konture.konture
 
 /**
  * The state holder of one screen, named after the feature module it sits in.
  *
  * Written the same loose way as [screen]: a `*ViewModel.kt` glob under the directory
  * `"feature" / "*"`, with the file name named after the module by convention.
+ *
+ * This is also the one role of the sample with a constraint on the file's contents, written
+ * with `konture { }` (katachi's guide: "Konture integration"). It sits directly on the role, so
+ * it covers every file the `layout { }` below matches, and is evaluated only when the test
+ * passes `FileConstraintCheck()` to `assert()`.
  */
 fun DeclarationContainerScope.viewModel() = "ViewModel".role {
     title = "ViewModel"
@@ -30,6 +36,10 @@ fun DeclarationContainerScope.viewModel() = "ViewModel".role {
         is an easy place to trip in KMP.
 
         It only receives the Repository as an argument and never creates it. Creating it is the Route's job.
+
+        Among the application's roles, only this one writes a constraint with `konture { }`,
+        "Does not depend on Compose": a ViewModel that imports anything under `androidx.compose`
+        fails the test, before drawing code can settle in the place that holds state.
     """.trimIndent()
     allowedContents = """
         - `private val mutableState = MutableStateFlow(...)` and a `val state: StateFlow<UiState<...>>`
@@ -45,6 +55,13 @@ fun DeclarationContainerScope.viewModel() = "ViewModel".role {
     """.trimIndent()
     example("HomeViewModel", "The state of the home screen")
     example("SettingsViewModel", "The state of the settings screen")
+    // The samples' one `konture { }` constraint on application code: the Konture rule
+    // `classes { should() notDependOnPackages "..." }` next to katachi's own layout vocabulary.
+    // Written on the role rather than inside `layout { }`, it covers every `*ViewModel.kt` the
+    // layout matches, and nothing else -- never the `@Composable` screens beside them.
+    "Does not depend on Compose".konture {
+        classes { should() notDependOnPackages "androidx.compose.." }
+    }
     layout {
         "feature" / "*" / "commonMain".sourceSet / kotlin / "com/example/kmp/feature" / "*" /
             "*ViewModel".ktFile()

@@ -6,7 +6,9 @@ A sample that defines a **Kotlin Multiplatform app** (Android and iOS) with kata
 
 It declares as roles what goes into each of the `:feature:*`, `:ui`, `:data`, `:navigation`, `:testing` and `:app:android` modules,
 and checks the file layout with `assert()`. The highlight is how to write **things whose location differs per source set**,
-such as `expect` in `commonMain` and `actual` in `androidMain` / `iosMain`. The same definition also generates the documents in [`docs/`](docs/README.md).
+such as `expect` in `commonMain` and `actual` in `androidMain` / `iosMain`.
+One role also has a constraint written with `konture { }`: "Does not depend on Compose" on the ViewModel.
+The same definition also generates the documents in [`docs/`](docs/README.md).
 
 katachi is pulled in from the repository source with `includeBuild("../..")`, but it is written the same way a user would,
 with `testImplementation(libs.katachi)`.
@@ -18,8 +20,9 @@ with `testImplementation(libs.katachi)`.
 | [`ProjectArchitecture.kt`](architecture-test/src/test/kotlin/com/example/kmp/ProjectArchitecture.kt) | The body of `architecture { }`. It only calls the groups; each role is in `roles/`, one role per file |
 | [`roles/ExpectDeclarationRole.kt`](architecture-test/src/test/kotlin/com/example/kmp/roles/ExpectDeclarationRole.kt) / [`roles/ActualImplementationRole.kt`](architecture-test/src/test/kotlin/com/example/kmp/roles/ActualImplementationRole.kt) | The `expect` in `commonMain` and the `actual` in `androidMain` / `iosMain`, as two roles because they are two kinds of file |
 | [`roles/RepositoryInterfaceRole.kt`](architecture-test/src/test/kotlin/com/example/kmp/roles/RepositoryInterfaceRole.kt) / [`roles/RepositoryImplementationRole.kt`](architecture-test/src/test/kotlin/com/example/kmp/roles/RepositoryImplementationRole.kt) | The interface and the implementation as two roles, each with its own `.template`, so they can be generated separately (or together with `--arg template=a,b`) |
+| [`roles/ViewModelRole.kt`](architecture-test/src/test/kotlin/com/example/kmp/roles/ViewModelRole.kt) | A role that writes a constraint with `konture { }` in addition to `layout { }`: a Konture `classes { should() notDependOnPackages "androidx.compose.." }` rule over the files the layout matches. This sample uses `konture { }` where sample/jvm uses `konsist { }`; the two backends cannot share one test module |
 | [`roles/FeatureComponentRole.kt`](architecture-test/src/test/kotlin/com/example/kmp/roles/FeatureComponentRole.kt) | An example of a template placed by two directory captures, `capture("feature")` and `capture("featurePackage")`. The same captures decide the location and, with `captureValue(...)`, the template content |
-| [`ProjectArchitectureTest.kt`](architecture-test/src/test/kotlin/com/example/kmp/ProjectArchitectureTest.kt) | The only test a user writes. It just calls `projectArchitecture.assert()` |
+| [`ProjectArchitectureTest.kt`](architecture-test/src/test/kotlin/com/example/kmp/ProjectArchitectureTest.kt) | The only test a user writes. It calls `assert(FileConstraintCheck())` so that `konture { }` is evaluated too |
 | [`katachi-baseline.json`](katachi-baseline.json) | The baseline ledger. It deliberately leaves one entry, `user/` in the `androidMain` of `:data`, shelved ([`../README.md`](../README.md#baseline)) |
 
 ## How to run
@@ -34,7 +37,7 @@ echo "sdk.dir=$HOME/Library/Android/sdk" > sample/kmp/local.properties
 ```sh
 cd sample/kmp
 
-# Check the file layout
+# Check the file layout and the konture { } constraint
 ./gradlew :architecture-test:test
 
 # Generate the documents into docs/ from the definition

@@ -36,6 +36,12 @@ dependencies {
     // For the @Language("markdown") on allowedContents / forbiddenContents in DocumentSections.kt.
     // The annotation is not needed at runtime, so testCompileOnly.
     testCompileOnly(libs.jetbrainsAnnotations)
+    // The konture backend behind the one `konture { }` constraint (`roles/ViewModelRole.kt`).
+    // Substituted with `:katachi-konture` of the included build, like `libs.katachi`. This is
+    // the sample that shows `konture { }` rather than `konsist { }`: the two cannot share a
+    // test classpath (Konsist 0.17.3 and Konture 1.0.1 need different kotlin-compiler-embeddable
+    // versions), so sample/jvm keeps `konsist { }` and this one takes `konture { }`.
+    testImplementation(libs.katachiKonture)
     testImplementation(libs.kotestRunnerJunit5)
     testImplementation(libs.kotestAssertionsCore)
 
@@ -52,6 +58,9 @@ katachi {
     architecture = "com.example.kmp.projectArchitecture"
     processors {
         register("layout", "me.tbsten.katachi.check.LayoutCheck")
+        // Evaluates the `konture { }` constraint from the command line (`katachiFileConstraint`),
+        // the way `ProjectArchitectureTest` does with `assert(FileConstraintCheck())`.
+        register("fileConstraint", "me.tbsten.katachi.check.FileConstraintCheck")
 
         docs {
             outputDir = rootProject.layout.projectDirectory.dir("docs")
