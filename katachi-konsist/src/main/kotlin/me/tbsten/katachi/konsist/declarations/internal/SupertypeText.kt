@@ -9,20 +9,20 @@ package me.tbsten.katachi.konsist.declarations.internal
  * header is short and regular enough to read directly: skip to the declaration's own name, step
  * over its type parameters and primary constructor, and take what the `:` lists up to the body or
  * a `where` clause. The same reading as `architecture-test`'s `directSupertypeNamesOf`, which
- * lives in another module and so cannot be shared.
+ * lives in another module and so cannot be shared. A body can be long and every nested class reads
+ * its own header, so the body is left alone wherever the first `{` shows where the header ends.
  */
 
 /**
- * The supertypes [header] lists, where [header] is the declaration's text with its KDoc and
+ * The supertypes the declaration [text] lists, where [text] is its text with its KDoc and
  * annotations taken off, and [name] its name (`Companion` for an unnamed companion object).
  *
  * The header is read with its comments and the insides of its string literals blanked out
  * (`codeOnly`), so that `Base(), // the base` and `Exception(":)")` read as the code they are.
  */
-internal fun supertypesOf(header: String, name: String): List<SupertypeFact> {
-    val code = codeOnly(header)
-    val found = headerRegexOf(name).find(code) ?: return emptyList()
-    val list = supertypeListOf(code.substring(found.range.last + 1)) ?: return emptyList()
+internal fun supertypesOf(text: String, name: String): List<SupertypeFact> {
+    val afterName = codeAfterNameOf(text, name) ?: return emptyList()
+    val list = supertypeListOf(afterName) ?: return emptyList()
     return splitAtTopLevelCommas(list)
         .map { entry -> withoutConstructorCall(withoutDelegation(entry.trim())) }
         .filter { it.isNotEmpty() }
@@ -73,21 +73,53 @@ private fun headerRegexOf(name: String): Regex =
 private const val UNNAMED_COMPANION: String = "Companion"
 
 /**
+ * The code (`codeOnly`) after the name of the declaration [text], or `null` when the name is not
+ * found. A body can be long, so [text] is blanked only as far as the header when that is easy to tell.
+ *
+ * In most classes the first `{` opens the body. It does when the code up to it holds the end of the
+ * header, and then only that part is blanked: exactly as it is within the whole text, because
+ * blanking goes from the start and what follows a `{` changes nothing at or before it. When it does
+ * not (the `{` is in a default value or in an argument of a supertype, as in `FreeSpec({ ... })`, or
+ * there is no body), all of [text] is blanked.
+ */
+private fun codeAfterNameOf(text: String, name: String): String? {
+    val regex = headerRegexOf(name)
+    val brace = text.indexOf('{')
+    if (brace >= 0) {
+        val afterName = afterNameIn(codeOnly(text.substring(0, brace + 1)), regex)
+        if (afterName != null && headerEndIn(afterName, topLevelOf(afterName)) != null) return afterName
+    }
+    return afterNameIn(codeOnly(text), regex)
+}
+
+/** What follows the first match of [regex] in [code], or `null` when there is none. */
+private fun afterNameIn(code: String, regex: Regex): String? =
+    regex.find(code)?.let { found -> code.substring(found.range.last + 1) }
+
+/**
  * What follows the header's `:` in [rest], the text after a declaration's name, or `null` when it
  * lists no supertype. Brackets are skipped so a constructor parameter's `:` is never taken; the
- * list ends at the body or at a `where` clause.
+ * list ends where the header does.
  */
 private fun supertypeListOf(rest: String): String? {
     val topLevel = topLevelOf(rest)
-    var start = -1
-    for ((index, char) in rest.withIndex()) {
-        when {
-            !topLevel[index] -> Unit
-            char == '{' || spacedKeywordAt(rest, index, "where") -> return if (start < 0) null else rest.substring(start, index)
-            char == ':' && start < 0 -> start = index + 1
-        }
+    val end = headerEndIn(rest, topLevel) ?: rest.length
+    for (index in 0 until end) {
+        if (topLevel[index] && rest[index] == ':') return rest.substring(index + 1, end)
     }
-    return if (start < 0) null else rest.substring(start)
+    return null
+}
+
+/**
+ * The index in [rest], the text after a declaration's name, where its header ends: the `{` of the
+ * body or the `where` clause, whichever comes first outside every bracket. `null` when neither is
+ * there. [topLevel] is `topLevelOf(rest)`.
+ */
+private fun headerEndIn(rest: String, topLevel: BooleanArray): Int? {
+    for (index in rest.indices) {
+        if (topLevel[index] && (rest[index] == '{' || spacedKeywordAt(rest, index, "where"))) return index
+    }
+    return null
 }
 
 /** Whether the `>` at [index] closes a `<`, rather than ending the arrow of a function type. */

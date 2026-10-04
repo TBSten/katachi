@@ -66,8 +66,11 @@ private class FactReader(
     private val imports: List<ImportedName>,
     private val fileText: String,
 ) {
-    /** The file blanked as `codeOnly` does, read only for a file that writes `context`. */
-    private val fileCode: String by lazy { codeOnly(fileText) }
+    /**
+     * The file blanked as `codeOnly` does, or `null` for a file that never writes `context`, where
+     * no `context(...)` can come before a declaration. Asked once per file, not once per declaration.
+     */
+    private val fileCode: String? by lazy { if (CONTEXT_KEYWORD in fileText) codeOnly(fileText) else null }
 
     /** What [container] declares directly, in the order written. */
     fun declarationsOf(container: KoDeclarationProvider): List<DeclarationFact> =
@@ -165,10 +168,10 @@ private class FactReader(
      * which Konsist places on [line], or `null` when there is no `context(...)` there.
      */
     private fun writtenBeforeContextOf(declaration: KoBaseDeclaration, line: Int): WrittenBeforeContext? {
-        if (CONTEXT_KEYWORD !in fileText) return null
+        val code = fileCode ?: return null
         val text = (declaration as? KoTextProvider)?.text ?: return null
         val start = fileText.indexOf(text, startOfLine(fileText, line)).takeIf { it >= 0 } ?: return null
-        return writtenBeforeContext(fileText, fileCode, start)
+        return writtenBeforeContext(fileText, code, start)
     }
 }
 

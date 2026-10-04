@@ -1,13 +1,15 @@
 package me.tbsten.katachi.test.konsist.declarations
 
+import io.kotest.assertions.withClue
 import io.kotest.core.spec.style.FreeSpec
 import io.kotest.matchers.shouldBe
+import me.tbsten.katachi.konsist.declarations.internal.supertypesOf
 
 /**
  * What the matching reads off the text where Konsist's parse is not enough (`KotlinCodeText.kt`,
  * `SupertypeText.kt`, `DeclarationText.kt`): the supertypes around comments, string literals and
- * comparisons, the type of an extension property, the annotations before a `context(...)`, and a
- * file that starts with a byte order mark.
+ * comparisons and whatever the body holds, the type of an extension property, the annotations before
+ * a `context(...)`, and a file that starts with a byte order mark.
  */
 class KonsistFactsTextSpec : FreeSpec({
     "親の型の一覧の中のコメントは、親の型に入らない" {
@@ -60,6 +62,46 @@ class KonsistFactsTextSpec : FreeSpec({
         renderedFactsOf("package com.example\n\nclass A<T> : Bar\nwhere T : Any\nclass B<T> : Bar\twhere T : Any\n") shouldBe listOf(
             "class A : Bar",
             "class B : Bar",
+        )
+    }
+
+    "親の型は、ヘッダに書いたものだけで、本体に何が書いてあっても変わらない" {
+        for ((header, supertypes) in HEADERS) {
+            withClue(header) { supertypesOf(header, "A").map { it.written } shouldBe supertypes }
+            for (body in BODIES) {
+                val text = "$header\n$body"
+                withClue(text) { supertypesOf(text, "A").map { it.written } shouldBe supertypes }
+            }
+        }
+    }
+
+    "本体の中のクラスは、外側の文字列や { を気にせず、自分のヘッダから親の型を読む" {
+        renderedFactsOf(
+            """
+            package com.example
+
+            class Outer(val label: String = "{") : Base() {
+                val text = "class Outer : Wrong {"
+                // class Inner : Wrong {
+                class Inner(val f: () -> Unit = { }) : Other() {
+                    val s = "}"
+                }
+                object Single : Marker
+            }
+
+            class Last : FreeSpec({
+                "a" { }
+            })
+            """.trimIndent(),
+        ) shouldBe listOf(
+            "class Outer : Base",
+            "  val label: String",
+            "  val text",
+            "  class Inner : Other",
+            "    val f: () -> Unit",
+            "    val s",
+            "  object Single : Marker",
+            "class Last : FreeSpec",
         )
     }
 
@@ -131,6 +173,16 @@ class KonsistFactsTextSpec : FreeSpec({
             factsOf("package com.example\n\nfun a() = run(1)\ncontext(logger: Logger)\nfun f() {}\n").declarations.map { it.line } shouldBe
                 listOf(3, 4)
         }
+
+        "context と書いてあるだけで context(...) の無いファイルは、行もアノテーションも書いたまま" {
+            val facts = factsOf(
+                "package com.example\n\nval note = \"context\"\n@Keep\nval x = listOf(1)\nfun f() {}\n",
+            )
+            facts.declarations.map { it.line } shouldBe listOf(3, 4, 6)
+            renderedFactsOf(
+                "package com.example\n\nval note = \"context\"\n@Keep\nval x = listOf(1)\nfun f() {}\n",
+            ) shouldBe listOf("val note", "@Keep val x", "fun f()")
+        }
     }
 
     "BOM で始まるファイルの package と import を読む" {
@@ -141,3 +193,38 @@ class KonsistFactsTextSpec : FreeSpec({
         facts.declarations.single().line shouldBe 5
     }
 })
+
+/** A class header written many ways, each with the supertypes it lists. */
+private val HEADERS: List<Pair<String, List<String>>> = listOf(
+    "class A : Base(), Other" to listOf("Base", "Other"),
+    "class A<T : Comparable<T>>(val value: T) : Base<T>(), Other<T>" to listOf("Base<T>", "Other<T>"),
+    "interface A : Base<String>, Other" to listOf("Base<String>", "Other"),
+    "class A<T> : Base<T>()\n    where T : Any" to listOf("Base<T>"),
+    "class A(val x: Int = 1)" to emptyList(),
+    "class A(b: Base) : Base by b" to listOf("Base"),
+    "class A :\n    Base(), // the base\n    Other" to listOf("Base", "Other"),
+    // A `{` that is not the body's: in a string, a character, a comment, a default value or an argument.
+    "class A(val s: String = \"{\") : Base()" to listOf("Base"),
+    "class A(val c: Char = '{') : Base()" to listOf("Base"),
+    "class A(val f: () -> Unit = { println(\"}\") }) : Base(), Other" to listOf("Base", "Other"),
+    "class A : Base({ 1 }), Other" to listOf("Base", "Other"),
+    "class A /* { */ : Base() // {" to listOf("Base"),
+)
+
+/** Bodies that hold what looks like a header, a `:` or a brace in every way a body can. */
+private val BODIES: List<String> = listOf(
+    "{}",
+    "{ val s = \"}\" }",
+    "{ val s = \"{{\" }",
+    "{ // class A : Wrong {\n}",
+    "{ /* class A : Wrong { */ }",
+    "{ val c = '{' }",
+    "{ val raw = \"\"\" class A : Wrong { \"\"\" }",
+    "{ val t = \"\${\"{\"}\" }",
+    "{ class A : Wrong() { class A : Deeper } }",
+    "{ companion object : Wrong { } }",
+    "{ val x: Wrong = 1 }",
+    "{ fun <T> f(x: T): Map<String, () -> Unit> = TODO() }",
+    "{ val f = { x: Int -> if (x < 3) { 1 } else { 2 } } }",
+    "{ // it's a comment\n }",
+)
