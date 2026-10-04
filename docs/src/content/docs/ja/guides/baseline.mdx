@@ -66,6 +66,8 @@ fun DeclarationContainerScope.baselineFile() = "BaselineFile" {
 
 作成・更新されたファイルは、コミットすることをおすすめします。
 
+baseline で許容した違反は、テストを落とさないだけでなく、[PR に注釈を出す](/katachi/ja/recipes/github/#pr-に注釈を出す)ときの SARIF のファイルにも書かれません。
+
 ## 許容していた違反を直したあと
 
 許容されていた違反を直すと、Baseline ファイルにはもう存在しない違反の記録が残ります。放っておくと、あとで同じパスに置かれた別のファイルが気づかないうちに通ってしまうので、katachi はこの残りを `[StaleBaselineEntry]` として報告し、**テストを落とします。**
