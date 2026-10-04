@@ -14,8 +14,8 @@ import me.tbsten.katachi.test.architecture.groups.toolGroup
 
 // Where each module keeps its production sources, below its own `src/main/kotlin`, and its test
 // sources below `src/test/kotlin`. Written out rather than derived from the module name:
-// `:katachi` is the root package itself and `:katachi-konsist` sits *inside* it, as
-// `me.tbsten.katachi.konsist`, because the backend is one more package of the library rather than
+// `:katachi` is the root package itself and `:katachi-konsist` and `:katachi-konture` sit *inside* it, as
+// `me.tbsten.katachi.konsist` and `me.tbsten.katachi.konture`, because the backend is one more package of the library rather than
 // a library of its own.
 //
 // Test code lives one level deeper than production code, under `me.tbsten.katachi.test`, and that
@@ -27,6 +27,9 @@ const val KATACHI_MAIN_PACKAGE: String = "me/tbsten/katachi"
 /** Production package directory of `:katachi-konsist`. */
 const val KONSIST_MAIN_PACKAGE: String = "me/tbsten/katachi/konsist"
 
+/** Production package directory of `:katachi-konture`. */
+const val KONTURE_MAIN_PACKAGE: String = "me/tbsten/katachi/konture"
+
 /** Production package directory of `:tool:dokka`. */
 const val DOKKA_MAIN_PACKAGE: String = "me/tbsten/katachi/dokka"
 
@@ -35,6 +38,9 @@ const val KATACHI_TEST_PACKAGE: String = "me/tbsten/katachi/test"
 
 /** Test package directory of `:katachi-konsist`. */
 const val KONSIST_TEST_PACKAGE: String = "me/tbsten/katachi/test/konsist"
+
+/** Test package directory of `:katachi-konture`. */
+const val KONTURE_TEST_PACKAGE: String = "me/tbsten/katachi/test/konture"
 
 /** Test package directory of `:tool:dokka`. */
 const val DOKKA_TEST_PACKAGE: String = "me/tbsten/katachi/test/dokka"
@@ -84,17 +90,18 @@ const val ARCHITECTURE_TEST_PACKAGE: String = "me/tbsten/katachi/test/architectu
  * `ktFileContent { }` that forbids imports of the layers after it and pins its package to its
  * directory so that the first means something. That half used to be a hand-written spec
  * reading the sources as text; it is a rule about what a Kotlin file holds, which is what
- * `ktFileContent { }` writes. See `LayerImports.kt`. `backend/KonsistBackend` carries the
- * package line alone.
+ * `ktFileContent { }` writes. See `LayerImports.kt`. `backend/KonsistBackend` and
+ * `backend/KontureBackend` carry the package line alone.
  *
- * Two `konsist { }` on each of those roles — the same two on `backend/KonsistBackend`, and one
- * alone on `tool/DokkaPlugin` — ask the repository's KDoc convention of every public
- * declaration: that it shows a `## Example` (`KDOC_EXAMPLE_RULE`), and that nothing sits after
- * its block tags, where Dokka would stop rendering it (`KDOC_TAG_ORDER_RULE`) — see
- * `KdocExamples.kt`. It is deliberately not asked of `sample/`, of this definition, or of test
- * code. A third, `INTERNAL_PACKAGE_RULE`, keeps internal code in `.internal` packages — see
- * `InternalPackages.kt`. These three stay `konsist { }`: `ktFileContent { }` reads no KDoc, and
- * cannot tell an `.internal` file from its neighbour or know which sealed types other files declare.
+ * Two `konsist { }` on each of those roles — the same two on `backend/KonsistBackend` and
+ * `backend/KontureBackend`, and one alone on `tool/DokkaPlugin` — ask the repository's KDoc
+ * convention of every public declaration: that it shows a `## Example` (`KDOC_EXAMPLE_RULE`),
+ * and that nothing sits after its block tags, where Dokka would stop rendering it
+ * (`KDOC_TAG_ORDER_RULE`) — see `KdocExamples.kt`. It is deliberately not asked of `sample/`, of
+ * this definition, or of test code. A third, `INTERNAL_PACKAGE_RULE`, keeps internal code in
+ * `.internal` packages — see `InternalPackages.kt`. These three stay `konsist { }`:
+ * `ktFileContent { }` reads no KDoc, and cannot tell an `.internal` file from its neighbour or
+ * know which sealed types other files declare.
  */
 val projectArchitecture: Architecture = architecture {
     libraryGroup()

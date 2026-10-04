@@ -19,7 +19,8 @@ import me.tbsten.katachi.test.architecture.showsExample
 import me.tbsten.katachi.test.architecture.KONSIST_MAIN_PACKAGE
 
 /**
- * The role of `:katachi-konsist`, today's only constraint backend.
+ * The role of `:katachi-konsist`, one of the two constraint backends (the other is
+ * `:katachi-konture`).
  *
  * ## Why no layer rule here
  *

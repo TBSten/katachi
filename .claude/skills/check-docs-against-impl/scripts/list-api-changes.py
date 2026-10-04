@@ -26,7 +26,13 @@ sys.dont_write_bytecode = True
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import public_api as api  # noqa: E402
 
-IMPL_DIRS = ("katachi/src/main", "katachi-konsist/src/main", "katachi-gradle-plugin/src/main", "tool/dokka/src/main")
+IMPL_DIRS = (
+    "katachi/src/main",
+    "katachi-konsist/src/main",
+    "katachi-konture/src/main",
+    "katachi-gradle-plugin/src/main",
+    "tool/dokka/src/main",
+)
 
 
 class DocIndex:

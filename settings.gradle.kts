@@ -24,7 +24,12 @@ include(":katachi")
 // `:katachi` has no runtime dependencies and this one has Konsist as an `api` dependency.
 include(":katachi-konsist")
 
-// The Gradle plugin, the third published artifact. A module of its own rather than a source
+// The Konture backend, the Konsist backend's sibling. A module of its own rather than a part of
+// `:katachi-konsist`, because the two parsers cannot share a classpath: Konsist 0.17.3 and
+// Konture 1.0.1 need different kotlin-compiler-embeddable versions.
+include(":katachi-konture")
+
+// The Gradle plugin, the fourth published artifact. A module of its own rather than a source
 // set of `:katachi`, and written in Java rather than Kotlin, because it is loaded by the
 // user's Gradle daemon and therefore has an entirely different compatibility target
 // (Gradle 8.0 / Java 8) from the library (Kotlin 2.2 / JVM 17). See its build.gradle.kts.

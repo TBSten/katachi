@@ -11,11 +11,19 @@ A name says what the value is, with no suffix (`Note`, not `NoteModel`). Only th
 directly in the `model` package are covered; a directory dug below it does not belong to this
 role.
 
+Among the application's roles, only this one writes a constraint with `konture { }`,
+"Does not depend on the store": a model that refers to anything in the `store` package
+fails the test, before a value starts to know where it is kept.
+
 ## Placement
 
 | Path | When to use |
 |---|---|
 | `src/main/kotlin/com/example/model/*.kt` |  |
+
+## Constraints
+
+- Does not depend on the store
 
 ## Examples
 

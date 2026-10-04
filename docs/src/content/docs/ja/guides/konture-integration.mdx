@@ -1,0 +1,137 @@
+---
+title: Konture との統合
+description: konture { } で Konture の files / classes / functions / properties の規則を、ファイルの中の宣言にかける方法。konsist { } との使い分けと、同じテストモジュールに置けない理由。
+tags:
+  - intermediate
+---
+
+{/*
+  このページの目的: katachi のなかで Konture を活用する方法を紹介する。
+  「Konsist との統合」と同じ構成で、違いは Konture の that() / should() の流儀で書くことと、konsist { } と同居できないこと。
+*/}
+
+import { Aside, LinkCard } from '@astrojs/starlight/components';
+
+<Aside type="note" title="AI が書いた下書き">
+このページは AI エージェントが書いた下書きです。実装と照合してありますが、人の見直しはまだ済んでいません。
+</Aside>
+
+katachi のコア API で検証できるのは、ディレクトリ構造やファイルの位置です。`"...".konture { }` を使うと、[Konture](https://baole.github.io/konture/) の規則で **ファイル内の宣言を検証** できます。
+
+[`konsist { }`](/katachi/ja/guides/konsist-integration/) と同じ位置に、同じ形で書きます。違いは、中身を Konture の `that()` / `should()` の流儀で書くことです。
+
+## インストール
+
+`"...".konture { }` は別アーティファクト `me.tbsten.katachi:katachi-konture` に入っているので、`build.gradle.kts` の依存に追加してください。Konture の Gradle plugin は要りません。
+
+```kts title="build.gradle.kts" {2}
+dependencies {
+    testImplementation("me.tbsten.katachi:katachi-konture:<version>")
+}
+```
+
+**`katachi-konsist` と同じテストモジュールには入れないでください。** 2つを同じ test classpath に置くと、どちらかの検証が必ず落ちます。理由は下の「できないこと」に書きました。
+
+`katachi-konture` を使うモジュールの Kotlin は 2.3 以上が必要です。
+
+次に、`projectArchitecture.assert()` に `FileConstraintCheck()` を渡すと、Konture の検証を実行できます。
+
+```kt del={3} ins={4}
+@Test
+fun `アーキテクチャに沿ったファイル配置になっている`() {
+  projectArchitecture.assert()
+  projectArchitecture.assert(FileConstraintCheck())
+}
+```
+
+## 基本的な使い方
+
+Role の中で、その Role のファイルにどんな宣言があるべきかを定義します。
+
+```kt {3-5}
+architecture {
+  "ViewModel".role {
+    "Compose に依存しないこと".konture {
+      classes { should() notDependOnPackages "androidx.compose.." }
+    }
+
+    layout {
+      "feature" / "*" / "commonMain".sourceSet / kotlin / "com/example/kmp/feature" / "*" /
+        "*ViewModel".ktFile()
+    }
+  }
+}
+```
+
+制約の対象は、その Role の `layout { }` に当てはまったファイルです。`layout { }` の無い Role には制約を書けません。
+
+`konture { }` の中に書けるのは `files { }` / `classes { }` / `functions { }` / `properties { }` の4つで、それぞれの中は Konture の規則そのままです。対象を絞るときは `that()` を先に書きます。
+
+```kt {3-4}
+"Compose に依存しないこと".konture {
+  classes {
+    that() nameEndsWith "ViewModel"
+    should() notDependOnPackages "androidx.compose.."
+  }
+}
+```
+
+`that()` で絞った結果が0件でも、違反にはなりません。「あるべきファイルが無い」は `layout { }` が検出します。1つの `konture { }` に `classes { }` などを1つも書かない、または規則を `should()` で終えないと、テストは失敗します。
+
+## エラーの例
+
+制約の違反を検知すると、次のようなエラーメッセージが表示されます。
+
+```text
+Katachi check failed: 1 violation (FileConstraint: 1)
+
+[UnsatisfiedFileConstraint] file:///path/to/project/feature/home/src/commonMain/kotlin/com/example/kmp/feature/home/HomeViewModel.kt
+  Role: ViewModel / FileConstraint: "Compose に依存しないこと"
+  Declaration: HomeViewModel (line 12)
+  Declared at: ProjectArchitecture.kt:12
+```
+
+**制約に付けた名前がそのまま出ます。** 制約が複数あるとき、どれが落ちたのかはこの1行で分かるので、名前は「満たすべきこと」の形で書いてください。
+
+Konture 自身のメッセージ（英文）は出ません。違反の場所は `Declaration` と行番号で示します。
+
+## できないこと
+
+katachi が担当するのはファイルの配置、Konture が担当するのはその中身です。Konture には、そのほかにモジュールグラフの検証もありますが、`konture { }` では使えません。
+
+- **モジュールグラフの規則（`modules { }` / `slices { }` / `layeredArchitecture` / `assertNoCycles`）は書けません。** `konture { }` が見るのは `layout { }` が当てたファイルだけで、Gradle のモジュール同士の依存は katachi の範囲外です。モジュールグラフを検証したいときは、Konture を Gradle plugin ごと別のテストモジュールに入れて、直接使ってください。
+- **モジュールを指定する絞り込みと規則（`inModule` / `notInModule` / `resideInModule` など）は使えません。** `konture { }` が組むモジュールは `:` の1つだけなので、`that()` に書くと対象が0件になって違反が出ず、`should()` に書くと全部が違反になります。置き場所は `layout { }` で、パッケージは `inPackage` で指定してください。
+- **`konsist { }` と同じテストモジュールには置けません。** Konsist と Konture はそれぞれ違う版の Kotlin コンパイラ（`kotlin-compiler-embeddable`）を使っていて、同じ test classpath に両方を置くと片方が動きません。`ktFileContent { }` も Konsist の上で動くので、`konture { }` と同じテストモジュールには置けません。別のテストモジュールに分ければ、両方を使えます。
+- **Konture 自身の入口（`architecture { }` / `Konture.files()` / `rule { }` / `architectureRules { }` など）は、`konture { }` の中ではコンパイルエラーになります。** 規則は `files { }` / `classes { }` などの中に書いてください。
+- **`Konture.reset()` や `Konture.failOnSeverity` のような Konture 本体の設定は、`konture { }` の中に書けても評価には効きません。** たとえば `Konture.failOnSeverity = ERROR` と書いても、違反が例外に変わることはありません。
+- **`satisfy { }` の中では assert せず、`true` / `false` を返してください。** assert が失敗すると、最初に満たさない宣言で評価が中断され、その制約は評価できなかったものとして報告されます。
+- **Konture の baseline・HTML / JSON レポート・`severity` は使いません。** 違反はすべて katachi の報告に載り、既存の違反を許容するのも [katachi の baseline](/katachi/ja/guides/baseline/) の仕事です。ただし JVM に `-Dkonture.baseline.generate=true` のような `konture.*` の system property が付いていると、Konture 自身が baseline やレポートを書き出すことがあります。katachi の報告は変わりません。
+- **継承の連鎖と型の解決は、制約が覆うファイルの中だけです。** 覆っていないクラスを経由する `areAssignableTo` / `beAssignableTo` は継承を辿れないので、Konture を直接使うときより判定できる範囲が狭くなります。ワイルドカード import が2つ以上あるファイルでは、覆っていないクラスの短い名前も解決できません。継承の階層をまとめて覆うか、型を完全限定名で書いてください。
+- **外から参照される側の規則（`onlyBeAccessedByAnyPackage` など）は、制約が覆うファイルの中しか見ません。** 覆っていないファイルからの参照は数えられません。依存する側の規則（`notDependOnPackages` など）は、覆っていないパッケージへの依存も見えます。
+- **`.kts` は対象になりません。** 覆ったファイルが全部 `.kts` なら、テストは失敗します。
+
+ソースに書いた `@Suppress("konture:classes.rule")` や Konture の `suppress { }` は、`konture { }` の中でも効きます。
+
+## Konture API
+
+`"...".konture { }` ブロックの `files { }` などの中では、通常の Konture API が使えます。
+
+<LinkCard
+  title="Konture のドキュメント"
+  href="https://baole.github.io/konture/"
+/>
+
+katachi が足しているのは `files { }` / `classes { }` / `functions { }` / `properties { }` の4つの入口だけで、絞り方と規則は Konture のものがそのまま使えます。使えない入口と効かない設定は、「できないこと」の節に書きました。
+
+## まとめ
+
+- `layout { }` が **ファイルをどこに置いてよいか**、`konture { }` が **ファイルの中身がどうあるべきか** を担当します。
+- `katachi-konture` は**任意のモジュール**です。依存の追加と `assert(FileConstraintCheck())` の設定が必要です。Konture の Gradle plugin は要りません。
+- **制約名がそのまま違反レポートに出ます。** 名前は「満たすべきこと」の形で書いてください。
+- `konsist { }` と `konture { }` は **同じテストモジュールに置けません**。どちらかを選ぶか、テストモジュールを分けてください。
+
+## 次のステップ
+
+- [Konsist との統合](/katachi/ja/guides/konsist-integration/) ... 同じ位置に書けるもう1つの中身の制約です。Konsist の API に慣れているなら、こちらを選びましょう。
+- [Role](/katachi/ja/guides/role/) ... 制約を書く先である Role の説明・置き場所・グループの書き方を学びましょう。
+- [ArchitectureProcessor とそのカスタマイズ](/katachi/ja/guides/processor/) ... `FileConstraintCheck` と同じ interface で、定義から自分で何かを取り出す方法を学びましょう。

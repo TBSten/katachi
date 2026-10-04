@@ -134,6 +134,7 @@ calling `assert(FileConstraintCheck())` in the test puts **placement violations 
 
 And Konsist is not the only tool that occupies the "check the contents of a file" position.
 If you use custom [detekt](https://detekt.dev/) rules or [Konture](https://github.com/baole/konture), those may serve as a substitute for Konsist, depending on the rule you want to check.
+Konture can be written inside a katachi definition as `konture { }`, which has the same shape as `konsist { }`, through `katachi-konture` ([Konture integration](/katachi/guides/konture-integration/)).
 
 
 <CardGrid>

@@ -24,10 +24,12 @@ package me.tbsten.katachi.test.architecture
  * built on `processor`. Each imports the other, so neither may come before the other: they may
  * import each other freely, and both may import nothing after them.
  *
- * `konsist` is `:katachi-konsist`'s layer. Nothing in `:katachi` can import it — the Gradle
- * dependency runs the other way — so its entry is not a rule that might break but a copy of
- * one that cannot. It is listed so that the layer rules in `roles/` name a complete set of
- * forbidden targets rather than falling silent at the end of the table.
+ * `konsist` and `konture` are the layers of `:katachi-konsist` and `:katachi-konture`, listed
+ * together because the two backends are siblings and neither is "after" the other. Nothing in
+ * `:katachi` can import either — the Gradle dependency runs the other way — so their entry is
+ * not a rule that might break but a copy of one that cannot. It is listed so that the layer
+ * rules in `roles/` name a complete set of forbidden targets rather than falling silent at the
+ * end of the table.
  */
 private val LAYERS: List<List<String>> =
     listOf(
@@ -37,7 +39,7 @@ private val LAYERS: List<List<String>> =
         listOf("processor", "check"),
         listOf("docs"),
         listOf("template"),
-        listOf("konsist"),
+        listOf("konsist", "konture"),
     )
 
 /** The layers after the one [layer] belongs to, flattened in table order. */

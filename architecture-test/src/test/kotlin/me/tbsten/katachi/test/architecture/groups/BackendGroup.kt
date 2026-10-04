@@ -2,9 +2,10 @@ package me.tbsten.katachi.test.architecture.groups
 
 import me.tbsten.katachi.dsl.DeclarationContainerScope
 import me.tbsten.katachi.test.architecture.roles.konsistBackend
+import me.tbsten.katachi.test.architecture.roles.kontureBackend
 
 /**
- * The roles of the constraint backends — today there is one, `:katachi-konsist`.
+ * The roles of the constraint backends — `:katachi-konsist` and `:katachi-konture`.
  *
  * A sibling module rather than a source set of `:katachi`, because `:katachi` has no runtime
  * dependencies at all and this one has Konsist as an `api` dependency. That is also why it is
@@ -15,4 +16,5 @@ fun DeclarationContainerScope.backendGroup() = "backend".group {
     title = "バックエンド"
 
     konsistBackend()
+    kontureBackend()
 }

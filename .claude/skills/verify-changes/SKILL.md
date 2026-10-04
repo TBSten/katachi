@@ -50,11 +50,14 @@ Kotlin/Native も要らないのはこの空っぽさのおかげなので、ル
 `check` にぶら下がっているのは **compile と test だけ**。ktlint はいまも入っていない。
 フォーマット違反は誰も検出しないので、自分で揃える。
 
-**`./gradlew check` は `:katachi-konsist:test` も拾う。** ルートプロジェクトが
-`:katachi` に加えて `:katachi-konsist`（Konsist バックエンド。v0.1 ステップ4 で追加）も
-含んでいるため。`:katachi-konsist` のテストは実ファイルシステムを使う fixture 方式で、
-一時ディレクトリは `.local/tmp/katachi-konsist-fixtures/<連番>/` に書き出して `finally` で消す
-（Konsist は実ファイルのパスを要求するので、偽のファイルシステムでは動かない）。
+**`./gradlew check` は `:katachi-konsist:test` と `:katachi-konture:test` も拾う。** ルートプロジェクトが
+`:katachi` に加えて `:katachi-konsist`（Konsist バックエンド。v0.1 ステップ4 で追加）と
+`:katachi-konture`（Konture バックエンド。v0.3 で追加）も含んでいるため。どちらのテストも
+実ファイルシステムを使う fixture 方式で、一時ディレクトリは `.local/tmp/katachi-konsist-fixtures/<連番>/`・
+`.local/tmp/katachi-konture-fixtures/<連番>/` に書き出して `finally` で消す
+（Konsist も Konture も実ファイルのパスを要求するので、偽のファイルシステムでは動かない）。
+2 つのバックエンドは kotlin-compiler-embeddable の版が違うので同じ test classpath に乗れないが、
+別モジュールなのでリポジトリのビルドでは問題にならない。
 
 ### 2. サンプル 3 本の結合テスト — `./gradlew checkSamples`
 
@@ -143,7 +146,7 @@ cd sample/jvm && ./gradlew :architecture-test:test -Dkatachi.snapshot.update=tru
 内部実装の **置き場所**は機械的に見ている。トップレベルの `internal` / `@InternalKatachiApi` は
 `.internal` パッケージ（`me.tbsten.katachi.check.internal` など）に置く決まりで
 （`docs/internal/kotlin/kotlin.md`）、リポジトリ直下の `./gradlew :architecture-test:test` が
-`INTERNAL_PACKAGE_RULE` として library の各役割と `:katachi-konsist` で検査する。内部実装を
+`INTERNAL_PACKAGE_RULE` として library の各役割と `:katachi-konsist`・`:katachi-konture` で検査する。内部実装を
 足した・移したときはこれも回す。`.internal` パッケージは Dokka の API リファレンスにも出ない。
 
 ## 何はテストしなくて良いか
@@ -191,11 +194,11 @@ mkdir -p .local/tmp/gradle-cache
 
 キャッシュディレクトリを分けても解決しない。 **3 つのサンプルはどれも
 `includeBuild("../..")` で同じ `katachi/build/` に書き込む**ので、同時に走らせると壊れる。
-`includeBuild("../..")` は `:katachi-konsist` も含んでいるので、 **`katachi-konsist/build/` も
-同じ取り合いに加わる**（konsist { } を使わないサンプルでも、composite build 自体が
-`:katachi-konsist` を configure するため対象になる）。ルートの `build.gradle.kts` がタスク間に
+`includeBuild("../..")` は `:katachi-konsist` と `:katachi-konture` も含んでいるので、 **`katachi-konsist/build/` と
+`katachi-konture/build/` も同じ取り合いに加わる**（konsist { } / konture { } を使わないサンプルでも、composite build 自体が
+両モジュールを configure するため対象になる）。ルートの `build.gradle.kts` がタスク間に
 `mustRunAfter` を張っているのはこのため（`./gradlew check checkSamples` の同時実行も含めて
-順序を保証している。`:katachi:*` 4 タスクと `:katachi-konsist:*` 4 タスクの両方に張ってある）。
+順序を保証している。`:katachi:*`・`:katachi-konsist:*`・`:katachi-konture:*` の各 4 タスクに張ってある）。
 
 subagent に分担させるときも、 **サンプルを触るものは 1 体だけ**にする。
 

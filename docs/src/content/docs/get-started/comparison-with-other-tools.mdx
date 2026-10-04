@@ -22,13 +22,14 @@ They are **not necessarily exclusive with katachi**.
 | [detekt](https://detekt.dev/) | Static analysis of the source. Code smells and your own rules | Gradle task / CLI | 🆗 Works |
 | [ArchUnit](https://www.archunit.org/) | Dependencies between classes and layers. JVM class information | Unit test | 🆗 Works |
 | [ProjectGuard](https://github.com/rubensousa/ProjectGuard) | Dependency declarations between modules. The build graph | Gradle plugin | 🆗 Works |
-| [Konture](https://github.com/baole/konture) | Module dependencies, package encapsulation, class characteristics | Unit test | 🆗 Works |
+| [Konture](https://github.com/baole/konture) | Module dependencies, package encapsulation, class characteristics | Unit test | ⭐️ Integrated (`katachi-konture`) |
 
 **katachi is the only one that asks whether a file may exist.**
 The other five all check the contents of, or the relationships between, **things that already exist**.
 
 That is why they do not overlap. What does overlap is **the other tools with each other**:
 Konsist, ArchUnit, and Konture cover similar ground, and there is little point in adopting all three.
+You can use Konture alongside katachi as `konture { }`, which has the same shape as `konsist { }`, through `katachi-konture`. However, it cannot be placed in the same test module as `konsist { }`. If you split them into separate test modules, you can use both.
 
 ## katachi and Konsist
 
@@ -114,5 +115,6 @@ What detekt is good at:
 ## Next steps
 
 - [Konsist integration](/katachi/guides/konsist-integration/) ... Learn how to write `konsist { }` and how placement violations and content violations end up in one report.
+- [Konture integration](/katachi/guides/konture-integration/) ... Learn how to write `konture { }` and how to choose between it and `konsist { }`.
 - [FAQ](/katachi/get-started/faq/) ... Understand the design thinking behind why a tool that checks every file in the project against the declaration is needed.
 - [Your first architecture definition](/katachi/get-started/first-architecture/) ... Add katachi to your project and try the split in practice.
