@@ -11,7 +11,7 @@
 ## できること
 
 ```kotlin
-"UseCase" {
+"UseCase".role {
     summary = "各画面で発生するアプリ固有の1つの振る舞い"
     layout {
         "domain/src/main/kotlin/com/example/useCase" / "${capture("name")}UseCase".ktFile()
@@ -80,7 +80,7 @@ katachi が検査するのはリポジトリ全体のファイルですが、Gra
 val projectArchitecture = architecture {
     gradle() // wrapper・settings・build スクリプトなど Gradle のファイル
     "domain".group {
-        "UseCase" {
+        "UseCase".role {
             layout { "domain/src/main/kotlin/com/example/useCase" / "*UseCase".ktFile() }
         }
     }

@@ -13,7 +13,7 @@ tags:
 layout の宣言に `.template { }` を追加すると、そのファイルをコードとして生成できます。
 
 ```kt {4-5,21-22} nocollapse
-"UseCase" {
+"UseCase".role {
     layout {
         "core/domain" / mainSourceSet / kotlin / "com/example/core/domain/useCase" /
             "${capture("name")}UseCase".ktFile()
@@ -30,7 +30,7 @@ layout の宣言に `.template { }` を追加すると、そのファイルを�
     }
 }
 
-"UseCaseImplementation" {
+"UseCaseImplementation".role {
     layout {
         "core/domain" / mainSourceSet / kotlin / "com/example/core/domain/useCase" /
             "${capture("name")}UseCaseImpl".ktFile()
@@ -121,7 +121,7 @@ layout {
 `.template { }` はファイルの宣言そのものに付くので、生成先のパスは `layout { }` の宣言と1つに決まります。そのパスに `capture()` で名前の付いていない `*` や `**` が残っていると、値を渡せないので**エラーになります**。
 
 ```kt {3-5,7-8} nocollapse
-"FeatureComponent" {
+"FeatureComponent".role {
     layout {
         "feature" / capture("feature") / "commonMain".sourceSet / kotlin /
             "com/example/kmp/feature" / capture("featurePackage") / "component" /
@@ -157,7 +157,7 @@ layout {
 `.template { }` は `.ktFile()` に限らず、`.file()` で宣言したファイルにも付けられます。ブロックが返した文字列がそのままファイルの中身になるので、Markdown のように決まった形の文書も生成できます。
 
 ```kt {3-4} nocollapse
-"FeatureReadme" {
+"FeatureReadme".role {
     layout {
         "docs" / capture("feature") / "README.md".file()
             .template {

@@ -49,7 +49,7 @@ katachi は `katachi-konsist` という任意モジュールでこの2つを繋�
 Role の中に `konsist { }` を書き、テストで `assert(FileConstraintCheck())` を呼ぶと、**配置の違反と中身の違反が1つのレポートにまとまります。**
 
 ```kt title="ProjectArchitecture.kt"
-"UseCase" {
+"UseCase".role {
     // どこに置いてよいか — katachi の担当
     layout {
         "src/main/kotlin/com/example/useCase" / "*UseCase".ktFile()

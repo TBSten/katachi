@@ -57,7 +57,7 @@
  *     
  * ```kt
  * architecture {
- *   "..." {
+ *   "...".role {
  *     // Role 内
  *     mainSourceSet / kotlin / modulePackage / "useCase" / "*UseCase".ktFile()
  * 

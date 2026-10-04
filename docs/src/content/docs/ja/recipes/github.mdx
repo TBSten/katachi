@@ -33,7 +33,7 @@ import me.tbsten.katachi.dsl.DeclarationContainerScope
 fun DeclarationContainerScope.github() =
     "GitHub".group {
         "Actions".group {
-            "Workflow" {
+            "Workflow".role {
                 summary = "GitHub Actions のワークフロー"
                 layout {
                     ".github/workflows/*.yml".file()
@@ -41,7 +41,7 @@ fun DeclarationContainerScope.github() =
                 }
             }
 
-            "CompositeAction" {
+            "CompositeAction".role {
                 summary = "リポジトリ内で定義する composite action"
                 layout {
                     ".github/actions/*/action.yml".file()
@@ -50,7 +50,7 @@ fun DeclarationContainerScope.github() =
         }
 
         "Templates".group {
-            "Issue" {
+            "Issue".role {
                 summary = "Issue を立てるときのテンプレート"
                 layout {
                     ".github/ISSUE_TEMPLATE/*.yml".file()
@@ -58,7 +58,7 @@ fun DeclarationContainerScope.github() =
                 }
             }
 
-            "PullRequest" {
+            "PullRequest".role {
                 summary = "Pull Request の説明のテンプレート"
                 layout {
                     ".github/PULL_REQUEST_TEMPLATE.md".file().optional()
@@ -66,14 +66,14 @@ fun DeclarationContainerScope.github() =
             }
         }
 
-        "CodeOwners" {
+        "CodeOwners".role {
             summary = "パスごとのレビュー担当者の宣言"
             layout {
                 ".github/CODEOWNERS".file().optional()
             }
         }
 
-        "Dependabot" {
+        "Dependabot".role {
             summary = "Dependabot の更新設定"
             layout {
                 ".github/dependabot.yml".file().optional()
@@ -81,35 +81,35 @@ fun DeclarationContainerScope.github() =
         }
 
         "CommunityHealth".group {
-            "Contributing" {
+            "Contributing".role {
                 summary = "コントリビュートの手順"
                 layout {
                     ".github/CONTRIBUTING.md".file().optional()
                 }
             }
 
-            "CodeOfConduct" {
+            "CodeOfConduct".role {
                 summary = "行動規範"
                 layout {
                     ".github/CODE_OF_CONDUCT.md".file().optional()
                 }
             }
 
-            "Security" {
+            "Security".role {
                 summary = "脆弱性の報告方法"
                 layout {
                     ".github/SECURITY.md".file().optional()
                 }
             }
 
-            "Support" {
+            "Support".role {
                 summary = "質問や助けを求める先"
                 layout {
                     ".github/SUPPORT.md".file().optional()
                 }
             }
 
-            "Funding" {
+            "Funding".role {
                 summary = "スポンサーシップの案内"
                 layout {
                     ".github/FUNDING.yml".file().optional()

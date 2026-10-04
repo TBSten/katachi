@@ -155,7 +155,7 @@ katachi が必要かどうか迷う場合は、先に [モチベーション](/k
         val projectArchitecture = architecture {
             gradle() // wrapper・settings・build スクリプトなど Gradle のファイル
             "domain".group {
-                "UseCase" {
+                "UseCase".role {
                     summary = "各画面で発生するアプリ固有の1つの振る舞い"
                     layout {
                         "domain/src/main/kotlin/usecase" / "*UseCase".ktFile()

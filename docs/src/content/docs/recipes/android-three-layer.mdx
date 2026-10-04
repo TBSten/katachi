@@ -95,7 +95,7 @@ import me.tbsten.katachi.dsl.gradle.mainSourceSet
 import me.tbsten.katachi.dsl.kotlin.ktFile
 import me.tbsten.katachi.konsist.konsist
 
-fun DeclarationContainerScope.uiState() = "UiState" {
+fun DeclarationContainerScope.uiState() = "UiState".role {
   summary = "Holds the state a screen renders, as an immutable value"
   layout {
     "app" / mainSourceSet / kotlin / appPackageDir / "ui/*" / "*UiState".ktFile()
@@ -120,7 +120,7 @@ import me.tbsten.katachi.dsl.gradle.mainSourceSet
 import me.tbsten.katachi.dsl.kotlin.ktFile
 import me.tbsten.katachi.konsist.konsist
 
-fun DeclarationContainerScope.viewModel() = "ViewModel" {
+fun DeclarationContainerScope.viewModel() = "ViewModel".role {
   summary = "Exposes a screen's state as a StateFlow and receives events from the screen"
   layout {
     "app" / mainSourceSet / kotlin / appPackageDir / "ui/*" / "*ViewModel".ktFile()
@@ -161,7 +161,7 @@ import me.tbsten.katachi.dsl.gradle.mainSourceSet
 import me.tbsten.katachi.dsl.kotlin.ktFile
 import me.tbsten.katachi.konsist.konsist
 
-fun DeclarationContainerScope.screen() = "Screen" {
+fun DeclarationContainerScope.screen() = "Screen".role {
   summary = "The public Composable that draws a screen"
   layout {
     "app" / mainSourceSet / kotlin / appPackageDir / "ui/*" / "*Screen".ktFile()
@@ -191,7 +191,7 @@ import me.tbsten.katachi.dsl.gradle.mainSourceSet
 import me.tbsten.katachi.dsl.kotlin.ktFile
 import me.tbsten.katachi.konsist.konsist
 
-fun DeclarationContainerScope.useCase() = "UseCase" {
+fun DeclarationContainerScope.useCase() = "UseCase".role {
   summary = "Runs one app-specific behavior through invoke"
   layout {
     "app" / mainSourceSet / kotlin / appPackageDir / "domain/*" / "*UseCase".ktFile()
@@ -222,7 +222,7 @@ import me.tbsten.katachi.dsl.gradle.kotlin
 import me.tbsten.katachi.dsl.gradle.mainSourceSet
 import me.tbsten.katachi.dsl.kotlin.ktFile
 
-fun DeclarationContainerScope.domainModel() = "DomainModel" {
+fun DeclarationContainerScope.domainModel() = "DomainModel".role {
   summary = "Models that represent the app's concepts in the domain layer"
   layout {
     "app" / mainSourceSet / kotlin / appPackageDir / "domain/model" / "*".ktFile()
@@ -240,7 +240,7 @@ import me.tbsten.katachi.dsl.gradle.mainSourceSet
 import me.tbsten.katachi.dsl.kotlin.ktFile
 import me.tbsten.katachi.konsist.konsist
 
-fun DeclarationContainerScope.repositoryInterface() = "RepositoryInterface" {
+fun DeclarationContainerScope.repositoryInterface() = "RepositoryInterface".role {
   summary = "The interface that serves as the entry point for reading and storing data"
   layout {
     "app" / mainSourceSet / kotlin / appPackageDir / "data/*" / "*Repository".ktFile()
@@ -265,7 +265,7 @@ import me.tbsten.katachi.dsl.gradle.mainSourceSet
 import me.tbsten.katachi.dsl.kotlin.ktFile
 import me.tbsten.katachi.konsist.konsist
 
-fun DeclarationContainerScope.repositoryImplementation() = "RepositoryImplementation" {
+fun DeclarationContainerScope.repositoryImplementation() = "RepositoryImplementation".role {
   summary = "The implementation of RepositoryInterface"
   layout {
     "app" / mainSourceSet / kotlin / appPackageDir / "data/*" / "*RepositoryImpl".ktFile()
@@ -290,7 +290,7 @@ import me.tbsten.katachi.dsl.gradle.mainSourceSet
 import me.tbsten.katachi.dsl.kotlin.ktFile
 import me.tbsten.katachi.konsist.konsist
 
-fun DeclarationContainerScope.dataSource() = "DataSource" {
+fun DeclarationContainerScope.dataSource() = "DataSource".role {
   summary = "Access to the sources and stores of data that a Repository uses"
   layout {
     "app" / mainSourceSet / kotlin / appPackageDir / "data/*" / "*DataSource".ktFile()

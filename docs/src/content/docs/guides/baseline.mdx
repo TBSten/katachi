@@ -46,7 +46,7 @@ val projectArchitecture = architecture {
     // ...
 }
 
-fun DeclarationContainerScope.baselineFile() = "BaselineFile" {
+fun DeclarationContainerScope.baselineFile() = "BaselineFile".role {
     title = "katachi Baseline file"
     summary = "A file for temporarily suppressing existing violations"
     description = "See: https://tbsten.github.io/katachi/guides/baseline/"

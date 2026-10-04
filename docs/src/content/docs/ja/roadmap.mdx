@@ -54,6 +54,12 @@ import { Steps } from '@astrojs/starlight/components';
 
 この段階の仕様はまだほとんど決まっていません。バージョン番号の割り当ても「v0.3 以降」とひとまとまりです。
 
+### Role の宣言は `"名前".role { }` に
+
+v0.2 まで `"UseCase" { }` と書いていた Role の宣言は、v0.3 から `"UseCase".role { }` と書きます。`"domain".group { }` と形がそろい、`layout { }` の中に書くディレクトリの宣言 `"src" { }` と見分けられるようにするためです。
+
+v0.2 の `"UseCase" { }` は v0.3 ではコンパイルエラーになり、エラーメッセージに書き換え先の `"UseCase".role { }` が出ます。IDE の検索と置換で `.role` を足せば直せます。`layout { }` の中のディレクトリの宣言（`"src" { }`）は変わらないので、置き換えないでください。
+
 ### `declarations { }` — `konsist { }` からの昇格
 
 v0.1 の `konsist { }` は、言ってしまえば**逃げ道**です。「`*UseCase` interface と `Default*UseCase` class だけを置く」のように、ほとんどの Role が言いたいことでも、毎回 Konsist の式で書き下すことになります。
@@ -72,7 +78,7 @@ v0.1 の `konsist { }` は、言ってしまえば**逃げ道**です。「`*Use
 同じ規則を、次のように読める形で書けるようにすべきでしょう。v0.3 以降で実現する予定です。
 
 ```kt
-"UseCase" {
+"UseCase".role {
     declarations {
         `interface`("*UseCase")
         `class`("Default*UseCase")

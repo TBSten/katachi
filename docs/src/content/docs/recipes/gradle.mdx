@@ -48,7 +48,7 @@ val projectArchitecture = architecture {
     "Build".group {
         documented = false
 
-        "BuildScript" {
+        "BuildScript".role {
             summary = "The build scripts of the included build / buildSrc itself"
             layout {
                 buildConventionDir {
@@ -58,7 +58,7 @@ val projectArchitecture = architecture {
             }
         }
 
-        "ConventionPluginScript" {
+        "ConventionPluginScript".role {
             summary = "Convention plugin scripts that each module applies with plugins { id(\"...\") }"
             layout {
                 conventionSourceDir {
@@ -76,7 +76,7 @@ val projectArchitecture = architecture {
             // ./gradlew katachiTemplate --arg template=Build.ConventionPluginScript --arg name=kotlin-library
         }
 
-        "ConventionPluginSource" {
+        "ConventionPluginSource".role {
             summary = "Helper Kotlin classes used by the convention plugin scripts"
             layout {
                 conventionSourceDir {

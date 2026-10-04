@@ -54,6 +54,12 @@ Making katachi easier to adopt in existing projects is the theme of v0.3 and bey
 
 The specification for this stage is largely undecided. Even the version numbering is grouped together as "v0.3 and beyond" for now.
 
+### Declaring a Role with `"Name".role { }`
+
+Up to v0.2, a Role was declared as `"UseCase" { }`. From v0.3, you write `"UseCase".role { }`. This matches the shape of `"domain".group { }` and sets a Role declaration apart from a directory declaration such as `"src" { }`, which you write inside `layout { }`.
+
+In v0.3, the v0.2 form `"UseCase" { }` is a compile error, and the error message shows the `"UseCase".role { }` to rewrite it to. A search and replace in your IDE that adds `.role` fixes it. Directory declarations inside `layout { }` (`"src" { }`) do not change, so do not replace them.
+
 ### `declarations { }` — a promotion out of `konsist { }`
 
 v0.1's `konsist { }` is, frankly, **an escape hatch.** Something almost every Role wants to say — like "only a `*UseCase` interface and a `Default*UseCase` class go here" — ends up being spelled out as a Konsist expression every time.
@@ -72,7 +78,7 @@ v0.1's `konsist { }` is, frankly, **an escape hatch.** Something almost every Ro
 The same rule should be writable in a form like the one below. The plan is to realize that in v0.3 and beyond.
 
 ```kt
-"UseCase" {
+"UseCase".role {
     declarations {
         `interface`("*UseCase")
         `class`("Default*UseCase")

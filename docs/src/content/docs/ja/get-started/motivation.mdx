@@ -61,7 +61,7 @@ katachi では、プロジェクト全体を見渡して、現れてよいファ
 
 ```kt
 val projectArchitecture = architecture {
-  "UseCase" {
+  "UseCase".role {
     layout {
       "src/main/kotlin/com/example/project/useCase" / "*UseCase".ktFile()
     }
@@ -119,7 +119,7 @@ Katachi check failed: 1 violation (Unexpected: 1)
     - Move it to one of the locations above
     - Delete it if it is not needed
     - Add a new role for it:
-        "GetUserUseCase" {
+        "GetUserUseCase".role {
           summary = "TODO"
           layout {
             "src/main/kotlin/com/example/project" / "GetUserUseCase".ktFile()
@@ -148,7 +148,7 @@ Gradle plugin の `katachi { architecture = "..." }` で定義の場所を指定
   <CodeComparison.Panel label="アーキテクチャ定義" labelVariant="note">
     ```kt title="ProjectArchitecture.kt"
     val projectArchitecture = architecture {
-      "UseCase" {
+      "UseCase".role {
         title = "ユースケース"
         summary = "各画面で発生するアプリ固有の1つの振る舞い"
 
@@ -217,7 +217,7 @@ $ ./gradlew katachiTemplate --arg template=UseCase,UseCaseImplementation --arg n
   <CodeComparison.Panel label="アーキテクチャ定義" labelVariant="note">
     ```kt title="ProjectArchitecture.kt"
     val projectArchitecture = architecture {
-      "UseCase" {
+      "UseCase".role {
         layout {
           "src/main/kotlin/com/example/project/useCase" /
             "${capture("name")}UseCase".ktFile()
@@ -234,7 +234,7 @@ $ ./gradlew katachiTemplate --arg template=UseCase,UseCaseImplementation --arg n
         }
       }
 
-      "UseCaseImplementation" {
+      "UseCaseImplementation".role {
         layout {
           "src/main/kotlin/com/example/project/useCase" /
             "${capture("name")}UseCaseImpl".ktFile()
@@ -302,7 +302,7 @@ Konsist と連携すると、katachi でプロジェクト全体を検証した�
 
 ```kt
 val projectArchitecture = architecture {
-  "UseCase" {
+  "UseCase".role {
     // どこに置いてよいか
     layout {
       "src/main/kotlin/com/example/project/useCase" / "*UseCase".ktFile()

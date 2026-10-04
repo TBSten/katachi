@@ -2616,7 +2616,7 @@ lint_roles() {
 		cat <<'PYROLES'
 import os, re, sys
 
-# Role（"Name" { }）ごとに、layout { } の中で宣言しているファイルを集め、
+# Role（"Name".role { }）ごとに、layout { } の中で宣言しているファイルを集め、
 # 種類の違うファイルを抱えていそうなものを列挙する。Kotlin の構文解析はしない。
 # 文字列・コメントを飛ばして括弧を数えるだけの素朴な走査なので、誤検知はあり得る。
 
@@ -2793,15 +2793,18 @@ def scan(path, roles):
         kinds = [s[0] for s in stack]
         in_layout = "layout" in kinds
         if t == "op" and v == "{":
-            if prev[0] == "str" and prev[1] is not None:
+            # Role の宣言は "Name".role { }。"Name" { } は v0.2 までの書き方で、layout { } の外にあれば Role として読む
+            role_call = prev == ("id", "role", prev[2]) and prev2[1] == "." and prev3[0] == "str" and prev3[1] is not None
+            if role_call or (prev[0] == "str" and prev[1] is not None):
+                name_tok = prev3 if role_call else prev
                 if in_layout:
-                    stack.append(("dir", prev[1]))
-                elif "role" in kinds or "other" in kinds or re.search(r"\s", prev[1]):
+                    stack.append(("dir", name_tok[1]))
+                elif "role" in kinds or "other" in kinds or re.search(r"\s", name_tok[1]):
                     stack.append(("other", None))
                 else:
-                    role = Role(prev[1], path, prev[2])
+                    role = Role(name_tok[1], path, name_tok[2])
                     roles.append(role)
-                    stack.append(("role", prev[1]))
+                    stack.append(("role", name_tok[1]))
             elif prev == ("id", "group", prev[2]) and prev2[1] == ".":
                 stack.append(("group", None))
             elif prev[0] == "id" and prev[1] == "module" and prev2[1] == "." and in_layout:
@@ -2903,11 +2906,11 @@ if warnings:
         for x in reasons:
             print("    - " + x)
     print()
-    print(t("""Role（"Name" { }）は1種類のファイルを表し、種類の違うものを束ねるのは group です。
+    print(t("""Role（"Name".role { }）は1種類のファイルを表し、種類の違うものを束ねるのは group です。
 手順書 3-2 の「1 つの Role = 1 種類のファイル」の3つの問いで見直し、分けるべきものは
 種類ごとの Role に分けて group で束ねてください。テキストの素朴な走査なので誤検知はあり得ます。
 見直して1種類だと判断したものは、そのままでかまいません。""",
-            """A Role ("Name" { }) stands for one kind of file; group is what bundles different kinds.
+            """A Role ("Name".role { }) stands for one kind of file; group is what bundles different kinds.
 Review them with the three questions of "one Role = one kind of file" in step 3-2 of the guide,
 and split what should be split into one Role per kind, bundled with group. This is a plain text
 scan, so false positives are possible. If you review a Role and decide it is one kind, leave it."""))

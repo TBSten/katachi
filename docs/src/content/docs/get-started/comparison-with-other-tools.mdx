@@ -49,7 +49,7 @@ katachi bridges the two through an optional module called `katachi-konsist`.
 Write `konsist { }` inside a role and call `assert(FileConstraintCheck())` in the test, and **placement violations and content violations land in a single report.**
 
 ```kt title="ProjectArchitecture.kt"
-"UseCase" {
+"UseCase".role {
     // where it may be placed — katachi's job
     layout {
         "src/main/kotlin/com/example/useCase" / "*UseCase".ktFile()

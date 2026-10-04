@@ -60,6 +60,13 @@ rules:
       - from: Repository-implementation
         to: RepositoryImplementation
 
+  # Role の宣言は `"名前".role { }`。v0.2 までの `"名前" { }` は v0.3 からコンパイルエラーなので、例に書かない。
+  # 検出だけ（Role 名は英大文字で始まる決まりなので、`"大文字始まり" {` を見る。`layout { }` の中のディレクトリ `"src" { }` は小文字始まりが普通で、当たらない）。
+  # expected は案の1つ（自動修正はしない。ディレクトリの宣言に当たったら、そのまま残す）。
+  - expected: '"UseCase".role {'
+    pattern: /"([A-Z][A-Za-z0-9_-]*)" \{/
+    prh: 'Role の宣言は `"名前".role { }` で書く。`"名前" { }` はコンパイルエラーになる形なので例に書かない'
+
   # IDE のエディタに出る通知のこと。「帯」では何のことか伝わらない。
   - expected: エディタの通知
     pattern: 帯

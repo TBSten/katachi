@@ -32,7 +32,7 @@ import me.tbsten.katachi.dsl.DeclarationContainerScope
 
 fun DeclarationContainerScope.git() =
     "Git".group {
-        "GitIgnore" {
+        "GitIgnore".role {
             title = "Git ignore"
             summary = "The list of files kept out of Git (.gitignore)"
             layout {
@@ -40,7 +40,7 @@ fun DeclarationContainerScope.git() =
             }
         }
 
-        "GitKeep" {
+        "GitKeep".role {
             title = "Git keep"
             summary = "Empty placeholder files that keep a directory in Git (.gitkeep)"
             layout {
@@ -48,7 +48,7 @@ fun DeclarationContainerScope.git() =
             }
         }
 
-        "GitAttributes" {
+        "GitAttributes".role {
             title = "Git attributes"
             summary = "Per-path attributes such as line endings and diff handling (.gitattributes)"
             layout {
