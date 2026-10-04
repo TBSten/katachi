@@ -30,7 +30,10 @@ Manage the background server with `astro dev stop`, `astro dev status`, and `ast
 ## サイドバーの構成
 
 **ドキュメントの本文は人が書く。** エージェントが用意してよいのは、サイドバーの配線と
-空ページ（frontmatter だけ）まで。
+空ページ（frontmatter だけ）まで。例外は、人が「下書きを書いて」と頼んだページ。そのときは
+本文の先頭（「このページの目的」のコメントと import の直後）に
+`<Aside type="note" title="AI が書いた下書き">` を置き、AI エージェントが書いた下書きで人の見直しが
+済んでいないことを明記する（英語版も同じ Aside を訳して付ける）。Aside を外すのは見直した人。
 
 **日本語が原本、英語は翻訳。** `src/content/docs/ja/` を人が書き、`src/content/docs/` は
 **そこから機械的に訳すだけ**にする。英語側だけで文章を足したり、英語側で先に書いたりしない。
@@ -73,6 +76,7 @@ title: ...
     - Role                             （group と「Role 定義を分割する」を含む）
     - Layout                           ［ページタイトルは「Layout システムでディレクトリ構成を厳守させる」］
     - Konsist との統合
+    - Konture との統合                  （konsist { } と同じ位置に書く Konture の規則。同じテストモジュールに両方は置けない）
     - ドキュメント生成
     - テンプレートからコード生成
     - Baseline                         （実験的な機能。processor の手前に置く）
