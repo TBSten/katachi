@@ -24,6 +24,32 @@ tasks.test {
     // them wrong puts the silent pass straight back.
     outputs.upToDateWhen { false }
     outputs.cacheIf { false }
+
+    // The violations as SARIF 2.1.0, next to the JUnit report: ci.yml hands this file to
+    // GitHub's code scanning (`upload-sarif`), which annotates a pull request with them.
+    //
+    // This module does not apply the katachi Gradle plugin, so what `katachi { report { sarif
+    // = true } }` would wire is written here by hand: the two system properties katachi's
+    // `assert()` reads. The second one is where it looks up the files that declared the
+    // architecture (the file name is all a declaration site remembers); without it the test
+    // JVM looks under src/*/kotlin of its working directory, which here is this module too,
+    // so it is given for the same reason the plugin gives it -- the same input either way.
+    val sarifFile = layout.buildDirectory.file("reports/katachi/katachi.sarif")
+    systemProperty("katachi.report.sarif", sarifFile.get().asFile.absolutePath)
+    systemProperty(
+        "katachi.report.sourceRoots",
+        kotlin.sourceSets["test"].kotlin.srcDirs.joinToString(File.pathSeparator) { it.absolutePath },
+    )
+    outputs.file(sarifFile)
+    // What the plugin's DeleteStaleSarifReports does: the file is written only when assert()
+    // runs, so a run that never reaches it (`--tests` on another spec, a failure before it)
+    // must not leave the previous run's report for ci.yml's upload-sarif to pick up as this
+    // run's. The numbered siblings a second assert() in one JVM writes go with it.
+    doFirst {
+        val report = sarifFile.get().asFile
+        report.delete()
+        report.parentFile?.listFiles { _, name -> Regex("katachi-\\d+\\.sarif").matches(name) }?.forEach { it.delete() }
+    }
 }
 
 // Neither `group` nor `version` is set: this module is never published.

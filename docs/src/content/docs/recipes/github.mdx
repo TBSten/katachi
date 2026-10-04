@@ -1,14 +1,17 @@
 ---
 title: GitHub
-description: An example of declaring GitHub Actions workflows, CODEOWNERS, and community health files in architecture { }.
+description: An example of declaring GitHub Actions workflows, CODEOWNERS, and community health files in architecture { }, plus how to write architecture test violations to SARIF and show them as annotations on GitHub PRs.
 tags:
   - intermediate
 ---
 
 {/*
   Purpose of this page: to show, as one copyable group, how to declare the files under `.github/` such as GitHub Actions, CODEOWNERS and community health files.
+  It also shows how to write architecture test violations to a SARIF file and surface them as annotations on a PR through GitHub code scanning or reviewdog.
+  The steps for running the architecture test in CI themselves belong to "Your first architecture".
 */}
 
+import { Aside } from '@astrojs/starlight/components';
 import SnippetIsStartingPoint from '../../../components/SnippetIsStartingPoint.astro';
 
 ```kt collapse
@@ -120,3 +123,122 @@ fun DeclarationContainerScope.github() =
 ```
 
 <SnippetIsStartingPoint />
+
+## Annotate the PR
+
+Violations found by the architecture test can also be written to a [SARIF](https://sarifweb.azurewebsites.net/) file (a standard format for the results of static analysis tools). Hand that file to GitHub code scanning and the violations are attached as annotations to the matching files and lines of the PR.
+
+### 1. Produce the SARIF file
+
+In `build.gradle.kts` of `:architecture-test`, add `report { sarif = true }` to `katachi { }`.
+
+```kts title="architecture-test/build.gradle.kts" {3-5}
+katachi {
+    architecture = "com.example.projectArchitecture"
+    report {
+        sarif = true
+    }
+}
+```
+
+Run `./gradlew :architecture-test:test` and `architecture-test/build/reports/katachi/katachi.sarif` is created, whether the tests pass or fail. Even with 0 violations, a file with empty results is created.
+
+<details>
+<summary>Produce it in a module that does not use the Gradle plugin</summary>
+
+Pass the output path to the test JVM through the system property `katachi.report.sarif` and the same file is created.
+
+```kts title="architecture-test/build.gradle.kts"
+tasks.test {
+    systemProperty(
+        "katachi.report.sarif",
+        layout.buildDirectory.file("reports/katachi/katachi.sarif").get().asFile.absolutePath,
+    )
+}
+```
+
+</details>
+
+### 2. Upload to code scanning
+
+To the workflow in "Wire it into CI" of [Your first architecture](/katachi/get-started/first-architecture/), add one line to `permissions` and one `upload-sarif` step.
+
+```yaml title=".github/workflows/architecture.yml" {10, 23-27}
+name: Architecture
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+  security-events: write
+
+jobs:
+  architecture:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: gradle/actions/setup-gradle@v6
+      - run: ./gradlew :architecture-test:test
+      - uses: github/codeql-action/upload-sarif@v4
+        if: ${{ always() && hashFiles('architecture-test/build/reports/katachi/katachi.sarif') != '' && (github.event_name != 'pull_request' || !github.event.pull_request.head.repo.fork) }}
+        with:
+          sarif_file: architecture-test/build/reports/katachi/katachi.sarif
+          category: katachi
+```
+
+- **`security-events: write`**: The permission `upload-sarif` needs to write results to code scanning.
+- **`if: always() && hashFiles(...) != ''`**: The test fails when there are violations, so upload even when it fails. Skip it when the file itself was not created, for example because of a compile error.
+- **`!github.event.pull_request.head.repo.fork`**: In PRs from forks, `GITHUB_TOKEN` has no write permission and the upload would fail, so exclude them.
+- **`on.push.branches: [main]`**: The annotations shown on a PR are the violations that increased compared with the results on main. Without uploading on main too, there is nothing to compare against. The Code scanning list in the Security tab is also built from the results on main.
+- **`category`**: When there are several architecture test modules, give each module a different value, such as `katachi/<module>`. Results with the same `category` are replaced by the next upload.
+
+<Aside type="note" title="Annotations appear only inside the PR's diff">
+The annotations in a PR's Files changed show only violations in files the PR changed. Violations in files outside the diff (such as a `MissingFile` for something declared but not yet present) do not appear on the PR, so read them in the test output or in Code scanning in the repository's Security tab.
+</Aside>
+
+Once you fix all the violations, a SARIF file with empty results is uploaded and the open alerts are closed.
+
+### Use reviewdog in private repositories
+
+GitHub code scanning is available in public repositories without any additional agreement. Private repositories need a GitHub Code Security (formerly GitHub Advanced Security) license. Without a license, you can pass the same SARIF file to [reviewdog](https://github.com/reviewdog/reviewdog) and show the results as annotations in the PR's Checks.
+
+```yaml title=".github/workflows/architecture.yml" {10-11, 23-28}
+name: Architecture
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+  checks: write
+  pull-requests: write
+
+jobs:
+  architecture:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: gradle/actions/setup-gradle@v6
+      - run: ./gradlew :architecture-test:test
+      - uses: reviewdog/action-setup@v1
+        if: ${{ always() }}
+      - if: ${{ always() && hashFiles('architecture-test/build/reports/katachi/katachi.sarif') != '' }}
+        env:
+          REVIEWDOG_GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: reviewdog -f=sarif -name=katachi -reporter=github-pr-check -filter-mode=nofilter < architecture-test/build/reports/katachi/katachi.sarif
+```
+
+By default (`-filter-mode=added`), reviewdog shows only results on lines added in the PR. Many katachi violations attach to whether a file exists or where it is placed, and do not overlap with added lines, so we recommend showing everything with `-filter-mode=nofilter`. Violations outside the diff do not appear in Files changed; they appear in the list on the Checks tab.

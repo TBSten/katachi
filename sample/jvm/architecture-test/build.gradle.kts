@@ -52,6 +52,13 @@ dependencies {
 
 katachi {
     architecture = "com.example.projectArchitecture"
+    // Every Test task of this module also writes the violations as SARIF 2.1.0 to
+    // build/reports/katachi/katachi.sarif (an empty `results` when there are none), the file
+    // GitHub's code scanning (`upload-sarif`) or reviewdog turns into PR annotations. The root
+    // build's checkSampleJvmBuild checks that the file is there after `check`.
+    report {
+        sarif = true
+    }
     processors {
         register("layout", "me.tbsten.katachi.check.LayoutCheck")
         register("fileConstraint", "me.tbsten.katachi.check.FileConstraintCheck")

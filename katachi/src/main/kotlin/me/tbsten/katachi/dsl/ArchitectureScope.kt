@@ -182,12 +182,13 @@ internal class ArchitectureScopeImpl : ArchitectureScope {
         )
     }
 
-    fun build(): Architecture = Architecture(
+    fun build(declaredAt: DeclarationSite = DeclarationSite.Unknown): Architecture = Architecture(
         groups = groups.toList(),
         roles = roles.toList(),
         files = files,
         moduleResolver = moduleResolver,
         metadata = metadata.build(),
         baseline = baseline,
+        declaredAt = declaredAt,
     )
 }

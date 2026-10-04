@@ -69,17 +69,27 @@ private val definition: Architecture = architecture {
 
 /**
  * `assert(FileConstraintCheck())` against [root], applying the definition's baseline: `:katachi`'s
- * internal `assertWith`, with the default environment (read the ledger from disk, update nothing).
+ * internal `assertWith`, with every environment it takes at its default (read the ledger from
+ * disk, update nothing, and write no SARIF report unless `-Dkatachi.report.sarif` asks for one).
  */
 private fun assertWithBaseline(root: File): List<Violation> {
     val assertWith = Class.forName("me.tbsten.katachi.check.internal.AssertWithKt").methods.single { method ->
-        method.name == "assertWith" && method.parameterCount == 5
+        method.name == "assertWith"
     }
-    val environment = Class.forName("me.tbsten.katachi.check.internal.BaselineEnvironment").getConstructor().newInstance()
+    // What follows the four arguments below is one environment per concern (the baseline's, the
+    // SARIF report's), each built from its own defaults, so a new one does not break this spec.
+    val environments = assertWith.parameterTypes.drop(4).map { it.getConstructor().newInstance() }
     val fileSystem: KatachiFileSystem = RealFileSystem(root)
     try {
         @Suppress("UNCHECKED_CAST")
-        return assertWith.invoke(null, definition, fileSystem, listOf(FileConstraintCheck()), 10, environment) as List<Violation>
+        return assertWith.invoke(
+            null,
+            definition,
+            fileSystem,
+            listOf(FileConstraintCheck()),
+            10,
+            *environments.toTypedArray(),
+        ) as List<Violation>
     } catch (wrapped: InvocationTargetException) {
         throw wrapped.targetException
     }

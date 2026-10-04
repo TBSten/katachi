@@ -18,11 +18,13 @@ package me.tbsten.katachi.test.architecture
  * implementations throw the exceptions declared next to `FileSelection`, so the two import
  * each other; being one layer, they may.
  *
- * `processor` and `check` share one layer. The walk and its results (`Violation` and the rest)
- * live in `check`, next to the `assert()` and the checks that produce them, and
+ * `processor`, `check` and `report` share one layer. The walk and its results (`Violation` and
+ * the rest) live in `check`, next to the `assert()` and the checks that produce them, and
  * `processor.internal.ProjectWalk` hands that same walk to every processor; `check` in turn is
- * built on `processor`. Each imports the other, so neither may come before the other: they may
- * import each other freely, and both may import nothing after them.
+ * built on `processor`. `report` turns the violations of a run into a SARIF file: `check`'s
+ * `assertWith` writes it, and it reads `check`'s violations and report blocks. Each imports
+ * another, so none may come before the others: they may import each other freely, and all
+ * three may import nothing after them.
  *
  * `konsist` and `konture` are the layers of `:katachi-konsist` and `:katachi-konture`, listed
  * together because the two backends are siblings and neither is "after" the other. Nothing in
@@ -36,7 +38,7 @@ private val LAYERS: List<List<String>> =
         listOf(""),
         listOf("util"),
         listOf("dsl"),
-        listOf("processor", "check"),
+        listOf("processor", "check", "report"),
         listOf("docs"),
         listOf("template"),
         listOf("konsist", "konture"),

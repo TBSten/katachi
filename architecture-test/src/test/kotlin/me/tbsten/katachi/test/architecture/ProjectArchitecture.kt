@@ -86,7 +86,7 @@ const val ARCHITECTURE_TEST_PACKAGE: String = "me/tbsten/katachi/test/architectu
  *
  * ## What the layer roles enforce that a layout cannot
  *
- * The seven roles of the `library` group are the package layers of `:katachi`, each carrying a
+ * The eight roles of the `library` group are the package layers of `:katachi`, each carrying a
  * `ktFileContent { }` that forbids imports of the layers after it and pins its package to its
  * directory so that the first means something. That half used to be a hand-written spec
  * reading the sources as text; it is a rule about what a Kotlin file holds, which is what

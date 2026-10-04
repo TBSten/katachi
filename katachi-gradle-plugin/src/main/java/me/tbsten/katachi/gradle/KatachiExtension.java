@@ -61,6 +61,7 @@ public class KatachiExtension {
 
     private String architecture;
     private final KatachiProcessors processors = new KatachiProcessors();
+    private final KatachiReportOptions report = new KatachiReportOptions();
 
     /**
      * The fully qualified name of the top level {@code val} the generated entry point imports as
@@ -120,4 +121,17 @@ public class KatachiExtension {
         action.execute(processors);
     }
 
+    /** The reports the architecture test writes. See {@link #report(Action)}. */
+    public KatachiReportOptions getReport() {
+        return report;
+    }
+
+    /**
+     * Configures what the architecture test reports besides failing.
+     *
+     * @param action a block that sets {@link KatachiReportOptions#setSarif}.
+     */
+    public void report(Action<? super KatachiReportOptions> action) {
+        action.execute(report);
+    }
 }

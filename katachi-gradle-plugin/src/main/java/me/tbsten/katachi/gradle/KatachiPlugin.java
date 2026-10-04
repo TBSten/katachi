@@ -5,11 +5,15 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.Callable;
 
 import org.gradle.api.InvalidUserDataException;
 import org.gradle.api.Plugin;
 import org.gradle.api.Project;
+import org.gradle.api.file.ConfigurableFileCollection;
+import org.gradle.api.file.SourceDirectorySet;
 import org.gradle.api.plugins.JavaPluginExtension;
+import org.gradle.api.provider.Provider;
 import org.gradle.api.tasks.SourceSet;
 import org.gradle.api.tasks.TaskProvider;
 import org.gradle.api.tasks.testing.Test;
@@ -36,6 +40,10 @@ import org.gradle.api.tasks.testing.Test;
  * <p>It also hands {@code -Dkatachi.baseline.update} and {@code -Dkatachi.baseline.prune} on to
  * every {@code Test} task of the module ({@link KatachiBaselineArguments}), so that the
  * architecture test can update its baseline.
+ *
+ * <p>With {@code katachi { report { sarif = true } }} every {@code Test} task also gets
+ * {@code -Dkatachi.report.sarif} and {@code -Dkatachi.report.sourceRoots}
+ * ({@link KatachiReportArguments}), and declares the SARIF file as an output.
  *
  * <p>Applying this plugin to a module without the {@code java} plugin registers the tasks but
  * leaves their classpath empty, so a run fails at startup rather than at configuration time.
@@ -87,6 +95,9 @@ public class KatachiPlugin implements Plugin<Project> {
         final File projectDirectory = project.getLayout().getProjectDirectory().getAsFile();
 
         final KatachiExtension extension = project.getExtensions().create("katachi", KatachiExtension.class);
+
+        // Filled in once the java plugin is there; empty before that and without it.
+        final ConfigurableFileCollection testSourceRoots = project.files();
 
         // Wrapped in `project.provider { ... }` because `katachi { }` is evaluated after this
         // `apply(Project)` returns: reading `extension.getArchitecture()` right here would
@@ -189,6 +200,18 @@ public class KatachiPlugin implements Plugin<Project> {
             final JavaPluginExtension java = project.getExtensions().getByType(JavaPluginExtension.class);
             final SourceSet testSourceSet = java.getSourceSets().getByName(SourceSet.TEST_SOURCE_SET_NAME);
 
+            // The Java directories, and the Kotlin ones when the Kotlin Gradle plugin registered
+            // its `kotlin` extension on the source set -- found by name, because this module
+            // never touches a Kotlin Gradle plugin type. Resolved lazily: the extension may be
+            // added after this callback ran.
+            testSourceRoots.from(testSourceSet.getJava().getSourceDirectories());
+            testSourceRoots.from((Callable<Object>) () -> {
+                Object kotlin = testSourceSet.getExtensions().findByName("kotlin");
+                return kotlin instanceof SourceDirectorySet
+                        ? ((SourceDirectorySet) kotlin).getSourceDirectories()
+                        : Collections.emptyList();
+            });
+
             // The generated file is Kotlin, added to the *Java* source directory set of the
             // `test` source set. That is not a mistake: the Kotlin Gradle plugin (confirmed in
             // 2.4.10's `KotlinJvmCompilationWireJavaSourcesSideEffect`, registered for every
@@ -227,6 +250,24 @@ public class KatachiPlugin implements Plugin<Project> {
             test.getOutputs().upToDateWhen(baselineArguments.notRequested());
             test.getOutputs().doNotCacheIf(
                     "-Dkatachi.baseline.update or -Dkatachi.baseline.prune was given", baselineArguments.requested());
+
+            // `katachi { report { sarif = true } }`. `test` writes build/reports/katachi/
+            // katachi.sarif; any other Test task writes under its own name, so two tasks of a
+            // module never declare the same output.
+            final String reportPath = "reports/katachi/"
+                    + (SourceSet.TEST_SOURCE_SET_NAME.equals(test.getName()) ? "" : test.getName() + "/")
+                    + "katachi.sarif";
+            final Provider<File> sarifFile = project.getLayout().getBuildDirectory()
+                    .file(reportPath).map(regularFile -> regularFile.getAsFile());
+            final Provider<Boolean> sarif = project.provider(() -> extension.getReport().getSarif());
+            test.getJvmArgumentProviders().add(new KatachiReportArguments(sarif, sarifFile, testSourceRoots));
+            // Declared only while the report is on, so a build without it has the outputs it had.
+            test.getOutputs().files((Callable<Object>) () ->
+                    sarif.get() ? Collections.singletonList(sarifFile.get()) : Collections.emptyList());
+            // The test JVM writes the file only when assert() runs; a run that skips it (a
+            // --tests filter, a failure before it) must not leave the previous run's report
+            // for upload-sarif to pick up as this run's.
+            test.doFirst(new DeleteStaleSarifReports(sarif, sarifFile));
         });
 
         // A safety net alongside the `srcDir(...)` above. Whether `SourceDirectorySet`'s

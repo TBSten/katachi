@@ -259,7 +259,13 @@ private fun uncheckedLines(violations: List<Violation>): List<String> = buildLis
     if (checks > 0) add("$checks ${if (checks == 1) "check" else "checks"} could not be run.")
 }
 
-private fun blockOf(violation: Violation, root: String?): List<String> = when (violation) {
+/**
+ * The report block of one violation: its `[label] path` line first, then what the kind has to say.
+ *
+ * `internal` rather than private so that the SARIF report (`report.internal`) can build its
+ * `message.text` from the same lines, and the two can never word one violation differently.
+ */
+internal fun blockOf(violation: Violation, root: String?): List<String> = when (violation) {
     is UnexpectedFile -> unexpectedFileBlock(violation, root)
     is UnexpectedDirectory -> unexpectedDirectoryBlock(violation, root)
     is MissingFile -> missingFileBlock(violation, root)

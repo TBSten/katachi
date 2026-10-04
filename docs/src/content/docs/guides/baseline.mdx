@@ -68,6 +68,8 @@ It's recommended to commit the created/updated file.
 
 Violations of [`ktFileContent { }`](/katachi/guides/kt-file-content/) are recorded per declaration, such as `GetUserUseCaseImpl`, `HomeViewModel.isLoading`, `import android.content.Context`, or `package com.example.home`. Line numbers are not recorded, so even if you add lines to the same file and the violating line shifts, the violations you tolerated stay tolerated. (AI draft)
 
+Violations tolerated by the baseline not only do not fail the test; they are also not written to the SARIF file used when you [annotate the PR](/katachi/recipes/github/#annotate-the-pr).
+
 ## After you fix a tolerated violation
 
 When you fix a violation that had been tolerated, the baseline file is left with a record of a violation that no longer exists. If left alone, a different file placed at the same path later would pass silently, so katachi reports these leftovers as `[StaleBaselineEntry]` and **fails the test.**

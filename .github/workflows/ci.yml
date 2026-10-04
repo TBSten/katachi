@@ -20,6 +20,12 @@ jobs:
     name: check
     runs-on: ubuntu-latest
     timeout-minutes: 45
+    # `security-events: write` is what upload-sarif below needs to hand katachi's own SARIF to
+    # code scanning. Only this job gets it; the workflow-level `contents: read` is repeated
+    # here because a job-level block replaces the workflow's, it does not add to it.
+    permissions:
+      contents: read
+      security-events: write
     steps:
       - name: Checkout
         uses: actions/checkout@v7
@@ -72,6 +78,23 @@ jobs:
 
       - name: Check katachi
         run: ./gradlew check --stacktrace
+
+      # Dogfooding of `report { sarif = true }`: the SARIF that :architecture-test:test wrote (its
+      # build.gradle.kts passes the properties by hand, this repository does not apply its own
+      # Gradle plugin) goes to code scanning, which annotates a pull request with the violations
+      # and lists them under Security > Code scanning. The same step is what
+      # docs/.../recipes/github.mdx tells a user to add.
+      #
+      #   always()            a violation fails `check`, and that is exactly when the file matters
+      #   hashFiles(...)      skipped when the test never ran (a compile error before it)
+      #   !...head.repo.fork  a fork's GITHUB_TOKEN cannot write security events; the upload
+      #                       would fail the job for a reason the contributor cannot fix
+      - name: Upload katachi SARIF to code scanning
+        if: ${{ always() && hashFiles('architecture-test/build/reports/katachi/katachi.sarif') != '' && (github.event_name != 'pull_request' || !github.event.pull_request.head.repo.fork) }}
+        uses: github/codeql-action/upload-sarif@v4
+        with:
+          sarif_file: architecture-test/build/reports/katachi/katachi.sarif
+          category: katachi
 
       # sample/* are standalone Gradle builds; each checkSample* task shells out
       # to that sample's own wrapper (see the root build.gradle.kts for why).
