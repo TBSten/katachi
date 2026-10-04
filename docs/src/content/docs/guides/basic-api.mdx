@@ -21,8 +21,8 @@ Inside it, you write the roles of the files that exist in your project.
 
 ```kt
 architecture {
-  "UseCase" { /* ... */ }
-  "RepositoryInterface" { /* ... */ }
+  "UseCase".role { /* ... */ }
+  "RepositoryInterface".role { /* ... */ }
 }
 // This project has two roles: `UseCase` and `RepositoryInterface`
 ```
@@ -35,8 +35,8 @@ The elements inside an architecture (Role) are covered in more depth in a later 
 
 ```kt {8}
 val projectArchitecture = architecture {
-  "UseCase" { /* ... */ }
-  "RepositoryInterface" { /* ... */ }
+  "UseCase".role { /* ... */ }
+  "RepositoryInterface".role { /* ... */ }
 }
 
 @Test
@@ -45,19 +45,19 @@ fun `files are placed according to the architecture`() {
 }
 ```
 
-## 3. Declaring a Role with `"Name" { }`
+## 3. Declaring a Role with `"Name".role { }`
 
-`"Name" { }` declares the role that a file appearing in the project plays.
+`"Name".role { }` declares the role that a file appearing in the project plays.
 
 ```kt {2,4}
 architecture {
-  "UseCase" { /* ... */ }
+  "UseCase".role { /* ... */ }
 
-  "RepositoryInterface" { /* ... */ }
+  "RepositoryInterface".role { /* ... */ }
 }
 ```
 
-Writing `"Name" { }` inside an `architecture { }` block lets you declare the roles of files that appear in the project.
+Writing `"Name".role { }` inside an `architecture { }` block lets you declare the roles of files that appear in the project.
 
 ### Example roles
 
@@ -94,8 +94,8 @@ For example, in Clean architecture, `UseCase` and `RepositoryInterface` are both
 ```kt {2}
 architecture {
   "domain".group {
-    "UseCase" { /* ... */ }
-    "RepositoryInterface" { /* ... */ }
+    "UseCase".role { /* ... */ }
+    "RepositoryInterface".role { /* ... */ }
   }
 }
 ```
@@ -108,13 +108,13 @@ For grouping Roles, also see [Role definitions in depth](/katachi/guides/role/).
 
 ## 5. Defining where files may exist with `layout { }`
 
-Declaring a Role with `"..." { }` alone doesn't decide where that Role's files may be placed.
+Declaring a Role with `"...".role { }` alone doesn't decide where that Role's files may be placed.
 
 `layout { }` is the block that defines where the files for a Role may be placed.
 
 ```kt {3-4}
 architecture {
-  "UseCase" {
+  "UseCase".role {
     layout {
       "src/main/kotlin/com/example/useCase" / "*UseCase".ktFile()
     }
@@ -151,7 +151,7 @@ This section and the `ktFileContent { }` row in the summary table are a draft wr
 
 ```kt {7-8}
 architecture {
-  "UseCase" {
+  "UseCase".role {
     layout {
       "src/main/kotlin/com/example/useCase" / "*UseCase".ktFile()
     }
@@ -179,7 +179,7 @@ You can set constraints on the files of a declared Role using [Konsist](https://
 
 ```kt {7}
 architecture {
-  "UseCase" {
+  "UseCase".role {
     layout {
       "src/main/kotlin/com/example/useCase" / "*UseCase".ktFile()
     }
@@ -220,7 +220,7 @@ For `"...".konsist { }`, also see [Define custom rules with Konsist](/katachi/gu
     <td>
       ```kt nocollapse
       architecture {
-        "UseCase" { /* ... */ }
+        "UseCase".role { /* ... */ }
       }
       ```
 
@@ -252,7 +252,7 @@ For `"...".konsist { }`, also see [Define custom rules with Konsist](/katachi/gu
   <tr>
     <td>
       ```kt
-      "Name" { }
+      "Name".role { }
       ```
     </td>
     <td>
@@ -260,7 +260,7 @@ For `"...".konsist { }`, also see [Define custom rules with Konsist](/katachi/gu
     </td>
     <td>
       ```kt nocollapse
-      "UseCase" {
+      "UseCase".role {
         layout { /* ... */ }
       }
       ```
@@ -281,7 +281,7 @@ For `"...".konsist { }`, also see [Define custom rules with Konsist](/katachi/gu
     <td>
       ```kt nocollapse
       "domain".group {
-        "UseCase" { /* ... */ }
+        "UseCase".role { /* ... */ }
       }
       ```
 

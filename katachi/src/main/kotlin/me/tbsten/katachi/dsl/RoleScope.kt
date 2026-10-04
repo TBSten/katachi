@@ -7,7 +7,7 @@ import me.tbsten.katachi.dsl.internal.fileConstraintDeclarationOf
 import org.intellij.lang.annotations.Language
 
 /**
- * Receiver of `"RoleName" { }`.
+ * Receiver of `"RoleName".role { }`.
  *
  * The five properties below are metadata under the hood — sugar over [Title], [Summary],
  * [Description], [Documented] and [Examples] — and a processor adds its own words the same
@@ -19,7 +19,7 @@ import org.intellij.lang.annotations.Language
  * ```kt
  * val arch = architecture {
  *     "domain".group {
- *         "UseCase" {
+ *         "UseCase".role {
  *             title = "Use case"
  *             summary = "A single app-specific behavior that happens on a screen"
  *             example("GetUserUseCase", "Fetches a user")
@@ -38,7 +38,7 @@ public sealed interface RoleScope : MetadataScope, FileConstraintScope {
      * ```kt
      * val arch = architecture {
      *     "domain".group {
-     *         "UseCase" { title = "Use case" }
+     *         "UseCase".role { title = "Use case" }
      *     }
      * }
      * arch.allRoles.single()[Title] shouldBe "Use case"
@@ -55,7 +55,7 @@ public sealed interface RoleScope : MetadataScope, FileConstraintScope {
      * ```kt
      * val arch = architecture {
      *     "domain".group {
-     *         "UseCase" { summary = "A single app-specific behavior that happens on a screen" }
+     *         "UseCase".role { summary = "A single app-specific behavior that happens on a screen" }
      *     }
      * }
      * arch.allRoles.single()[Summary] shouldBe "A single app-specific behavior that happens on a screen"
@@ -76,7 +76,7 @@ public sealed interface RoleScope : MetadataScope, FileConstraintScope {
      * ```kt
      * val arch = architecture {
      *     "domain".group {
-     *         "UseCase" {
+     *         "UseCase".role {
      *             summary = "A single app-specific behavior that happens on a screen"
      *             description = """
      *                 The UI calls use cases only; it never touches a repository directly.
@@ -102,7 +102,7 @@ public sealed interface RoleScope : MetadataScope, FileConstraintScope {
      * ```kt
      * val arch = architecture {
      *     "domain".group {
-     *         "UseCase" { documented = false }
+     *         "UseCase".role { documented = false }
      *     }
      * }
      * arch.allRoles.single()[Documented] shouldBe false
@@ -118,7 +118,7 @@ public sealed interface RoleScope : MetadataScope, FileConstraintScope {
      * ```kt
      * val arch = architecture {
      *     "domain".group {
-     *         "UseCase" {
+     *         "UseCase".role {
      *             example("GetUserUseCase", "Fetches a user")
      *             example("SignOutUseCase")
      *         }
@@ -137,7 +137,7 @@ public sealed interface RoleScope : MetadataScope, FileConstraintScope {
      * ```kt
      * val arch = architecture {
      *     "domain".group {
-     *         "UseCase" {
+     *         "UseCase".role {
      *             layout { }
      *         }
      *     }

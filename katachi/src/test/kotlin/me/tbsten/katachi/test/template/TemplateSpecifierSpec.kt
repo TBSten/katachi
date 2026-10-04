@@ -19,7 +19,7 @@ class TemplateSpecifierSpec : FreeSpec({
     "役割名（テンプレートが1つ）で選べる" {
         val arch = architectureOf {
             "domain".group {
-                "UseCase" {
+                "UseCase".role {
                     layout { "useCase" / "UseCase.kt".file().template { "// use case" } }
                 }
             }
@@ -30,7 +30,7 @@ class TemplateSpecifierSpec : FreeSpec({
     "役割名.id でも選べる（1つでも）" {
         val arch = architectureOf {
             "domain".group {
-                "UseCase" {
+                "UseCase".role {
                     layout { "useCase" / "UseCase.kt".file().template(id = "useCase") { "// use case" } }
                 }
             }
@@ -41,7 +41,7 @@ class TemplateSpecifierSpec : FreeSpec({
     "group 付きで選べる" {
         val arch = architectureOf {
             "data".group {
-                "Repository" {
+                "Repository".role {
                     layout { "repository" / "Repository.kt".file().template { "// repo" } }
                 }
             }
@@ -53,7 +53,7 @@ class TemplateSpecifierSpec : FreeSpec({
         val arch = architectureOf {
             "a".group {
                 "b".group {
-                    "Role" {
+                    "Role".role {
                         layout { "role" / "Role.kt".file().template { "// role" } }
                     }
                 }
@@ -65,7 +65,7 @@ class TemplateSpecifierSpec : FreeSpec({
     "group を省いても、役割名が全体で1つなら通る" {
         val arch = architectureOf {
             "data".group {
-                "Repository" {
+                "Repository".role {
                     layout { "repository" / "Repository.kt".file().template { "// repo" } }
                 }
             }
@@ -79,12 +79,12 @@ class TemplateSpecifierSpec : FreeSpec({
         // は正しく、群と役割の同名禁止にも触れない（親が違う）ので、この曖昧さは宣言時には見つからない。
         val arch = architectureOf {
             "Repository".group {
-                "repositoryImpl" {
+                "repositoryImpl".role {
                     layout { "repositoryImpl" / "Content.kt".file().template { "// A" } }
                 }
             }
             "data".group {
-                "Repository" {
+                "Repository".role {
                     layout { "repository" / "Repository.kt".file().template(id = "repositoryImpl") { "// B" } }
                 }
             }
@@ -99,10 +99,10 @@ class TemplateSpecifierSpec : FreeSpec({
         // なっていた（候補が実在するのに）。
         val arch = architectureOf {
             "a".group {
-                "Repository" { layout { "a" / "Repository.kt".file().template { "// a" } } }
+                "Repository".role { layout { "a" / "Repository.kt".file().template { "// a" } } }
             }
             "b".group {
-                "Repository" { layout { "b" / "Repository.kt".file().template { "// b" } } }
+                "Repository".role { layout { "b" / "Repository.kt".file().template { "// b" } } }
             }
         }
 
@@ -113,7 +113,7 @@ class TemplateSpecifierSpec : FreeSpec({
     "2つ以上の役割を役割名だけで書いたら、role.id を並べて Ambiguous になる" {
         val arch = architectureOf {
             "data".group {
-                "Repository" {
+                "Repository".role {
                     layout {
                         "repository" / "Repository.kt".file().template(id = "repository") { "" }
                         "repository" / "RepositoryImpl.kt".file().template(id = "repositoryImpl") { "" }
@@ -128,7 +128,7 @@ class TemplateSpecifierSpec : FreeSpec({
     "知らない指定は Unknown になり、書ける指定を並べる" {
         val arch = architectureOf {
             "domain".group {
-                "UseCase" {
+                "UseCase".role {
                     layout { "useCase" / "UseCase.kt".file().template { "// use case" } }
                 }
             }
@@ -140,7 +140,7 @@ class TemplateSpecifierSpec : FreeSpec({
     "テンプレートの無い役割を指定すると Unknown になる（テンプレートの一覧に無い）" {
         val arch = architectureOf {
             "domain".group {
-                "UseCase" { layout { "useCase" / "*UseCase.kt".file() } }
+                "UseCase".role { layout { "useCase" / "*UseCase.kt".file() } }
             }
         }
         val thrown = shouldThrow<KatachiUnknownTemplateException> { arch.generated("UseCase") }
@@ -150,7 +150,7 @@ class TemplateSpecifierSpec : FreeSpec({
     "完全な指定（group.role.id）は2通りに当たらない" {
         val arch = architectureOf {
             "data".group {
-                "Repository" {
+                "Repository".role {
                     layout {
                         "repository" / "Repository.kt".file().template(id = "repository") { "" }
                         "repository" / "RepositoryImpl.kt".file().template(id = "repositoryImpl") { "" }
@@ -167,7 +167,7 @@ class TemplateSpecifierSpec : FreeSpec({
         // 2つ目（settings）が一覧からも生成からも消えていた。
         val arch = architectureOf {
             "data".group {
-                "Repository" {
+                "Repository".role {
                     layout {
                         listOf("user", "settings").forEach { id ->
                             "$id" / "Repository.kt".file().template(id = id) { "// $id" }
@@ -185,7 +185,7 @@ class TemplateSpecifierSpec : FreeSpec({
     "モジュールのワイルドカードの展開は、id が同じなら引き続き1つのテンプレートにまとまる" {
         val arch = architectureOf {
             "feature".group {
-                "Screen" {
+                "Screen".role {
                     layout {
                         ":feature:${capture("feature")}".module { "Screen.kt".file().template { "// screen" } }
                     }

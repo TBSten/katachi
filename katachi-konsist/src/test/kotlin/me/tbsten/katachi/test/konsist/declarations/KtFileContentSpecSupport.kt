@@ -147,7 +147,7 @@ internal fun ktFileContentRun(
 ): List<Violation> = fixtureProject(*sources) { root ->
     val projectArchitecture = architecture {
         files = wholeTree()
-        "Screen" {
+        "Screen".role {
             layout {
                 "gradlew".file()
                 paths()

@@ -22,8 +22,8 @@ class AmbiguousLayoutCheckSpec : FreeSpec({
     "同じ glob を2つの役割が書くと Warning が1件になり assert() は落ちない" {
         val definition = architectureOf {
             "group".group {
-                "RoleA" { layout { ".gitignore".file() } }
-                "RoleB" { layout { ".gitignore".file() } }
+                "RoleA".role { layout { ".gitignore".file() } }
+                "RoleB".role { layout { ".gitignore".file() } }
             }
         }
         val tree = repositoryOf { ".gitignore"() }
@@ -43,8 +43,8 @@ class AmbiguousLayoutCheckSpec : FreeSpec({
     "\":feature:*\".module { } を2役割が書くと、実在するモジュール数によらず警告は1件" {
         val definition = architectureOf {
             "group".group {
-                "RoleA" { layout { ":feature:*".module { "Screen".ktFile() } } }
-                "RoleB" { layout { ":feature:*".module { "Screen".ktFile() } } }
+                "RoleA".role { layout { ":feature:*".module { "Screen".ktFile() } } }
+                "RoleB".role { layout { ":feature:*".module { "Screen".ktFile() } } }
             }
         }
         val tree = repositoryOf {
@@ -64,8 +64,8 @@ class AmbiguousLayoutCheckSpec : FreeSpec({
     "2つの役割が同じモジュールを .module { } で書いても警告は出ない" {
         val definition = architectureOf {
             "group".group {
-                "RoleA" { layout { ":app".module { "Foo".ktFile() } } }
-                "RoleB" { layout { ":app".module { "Bar".ktFile() } } }
+                "RoleA".role { layout { ":app".module { "Foo".ktFile() } } }
+                "RoleB".role { layout { ":app".module { "Bar".ktFile() } } }
             }
         }
         val tree = repositoryOf {
@@ -82,8 +82,8 @@ class AmbiguousLayoutCheckSpec : FreeSpec({
         "違う pattern が同じ実ファイルを掴むと警告が出る" {
             val definition = architectureOf {
                 "ui".group {
-                    "Component" { layout { "home" { "*".ktFile() } } }
-                    "ViewModel" { layout { "home" { "*ViewModel".ktFile() } } }
+                    "Component".role { layout { "home" { "*".ktFile() } } }
+                    "ViewModel".role { layout { "home" { "*ViewModel".ktFile() } } }
                 }
             }
             val tree = repositoryOf { "home" { "HomeScreen.kt"(); "HomeViewModel.kt"() } }
@@ -98,8 +98,8 @@ class AmbiguousLayoutCheckSpec : FreeSpec({
         "重なったファイルが何件あっても警告は1件で、overlappingFiles が全部を持つ" {
             val definition = architectureOf {
                 "ui".group {
-                    "Component" { layout { "*" { "*".ktFile() } } }
-                    "ViewModel" { layout { "*" { "*ViewModel".ktFile() } } }
+                    "Component".role { layout { "*" { "*".ktFile() } } }
+                    "ViewModel".role { layout { "*" { "*ViewModel".ktFile() } } }
                 }
             }
             val tree = repositoryOf {
@@ -121,8 +121,8 @@ class AmbiguousLayoutCheckSpec : FreeSpec({
         "文字列一致で既に報告された役割の組は、別のファイルで重なっても2件目にならない" {
             val definition = architectureOf {
                 "group".group {
-                    "RoleA" { layout { "docs" / "README.md".file(); "src" { "*".ktFile() } } }
-                    "RoleB" { layout { "docs" / "README.md".file(); "src" { "*Spec".ktFile() } } }
+                    "RoleA".role { layout { "docs" / "README.md".file(); "src" { "*".ktFile() } } }
+                    "RoleB".role { layout { "docs" / "README.md".file(); "src" { "*Spec".ktFile() } } }
                 }
             }
             val tree = repositoryOf {
@@ -138,8 +138,8 @@ class AmbiguousLayoutCheckSpec : FreeSpec({
         "ignore() したディレクトリは歩かれないので、ファイル単位の重なりも出ない" {
             val definition = architectureOf {
                 "group".group {
-                    "RoleA" { layout { "secrets".ignore() } }
-                    "RoleB" { layout { "secrets" { "*.txt".file() } } }
+                    "RoleA".role { layout { "secrets".ignore() } }
+                    "RoleB".role { layout { "secrets" { "*.txt".file() } } }
                 }
             }
             val tree = repositoryOf { "secrets" { "token.txt"() } }
@@ -150,8 +150,8 @@ class AmbiguousLayoutCheckSpec : FreeSpec({
         "anyFile() も claim なので file() と重なる" {
             val definition = architectureOf {
                 "build".group {
-                    "Open" { layout { "generated" { anyFile() } } }
-                    "Kotlin" { layout { "generated" { "*".ktFile() } } }
+                    "Open".role { layout { "generated" { anyFile() } } }
+                    "Kotlin".role { layout { "generated" { "*".ktFile() } } }
                 }
             }
             val tree = repositoryOf { "generated" { "Api.kt"() } }
@@ -165,8 +165,8 @@ class AmbiguousLayoutCheckSpec : FreeSpec({
         "2つの役割 — Declared by の各行と How to fix の単数形" {
             val definition = architectureOf {
                 "group".group {
-                    "RoleA" { layout { "gradle" / "libs.versions.toml".file() } }
-                    "RoleB" { layout { "gradle" / "libs.versions.toml".file() } }
+                    "RoleA".role { layout { "gradle" / "libs.versions.toml".file() } }
+                    "RoleB".role { layout { "gradle" / "libs.versions.toml".file() } }
                 }
             }
             val violations = definition.validate(repositoryOf { "gradle" { "libs.versions.toml"() } })
@@ -193,9 +193,9 @@ class AmbiguousLayoutCheckSpec : FreeSpec({
         "3つ以上の役割 — 件数と How to fix が複数形になる" {
             val definition = architectureOf {
                 "group".group {
-                    "RoleA" { layout { "docs" / "README.md".file() } }
-                    "RoleB" { layout { "docs" / "README.md".file() } }
-                    "RoleC" { layout { "docs" / "README.md".file() } }
+                    "RoleA".role { layout { "docs" / "README.md".file() } }
+                    "RoleB".role { layout { "docs" / "README.md".file() } }
+                    "RoleC".role { layout { "docs" / "README.md".file() } }
                 }
             }
 
@@ -211,8 +211,8 @@ class AmbiguousLayoutCheckSpec : FreeSpec({
                 // Two role names of the same length, so the `Declared by:` column needs no
                 // padding and this spec can pin the block as one string.
                 "ui".group {
-                    "Component" { layout { "home" { "*".ktFile() } } }
-                    "ViewModel" { layout { "home" { "*ViewModel".ktFile() } } }
+                    "Component".role { layout { "home" { "*".ktFile() } } }
+                    "ViewModel".role { layout { "home" { "*ViewModel".ktFile() } } }
                 }
             }
             val violations = definition.validate(
@@ -242,8 +242,8 @@ class AmbiguousLayoutCheckSpec : FreeSpec({
         "実ファイル単位 — 残りのファイルは3件まで並べて、あとは数える" {
             val definition = architectureOf {
                 "ui".group {
-                    "Component" { layout { "*" { "*".ktFile() } } }
-                    "ViewModel" { layout { "*" { "*ViewModel".ktFile() } } }
+                    "Component".role { layout { "*" { "*".ktFile() } } }
+                    "ViewModel".role { layout { "*" { "*ViewModel".ktFile() } } }
                 }
             }
             val tree = repositoryOf {
@@ -268,9 +268,9 @@ class AmbiguousLayoutCheckSpec : FreeSpec({
         "実ファイル単位 — 3つ以上の役割で件数と How to fix が複数形になる" {
             val definition = architectureOf {
                 "ui".group {
-                    "Component" { layout { "home" { "*".ktFile() } } }
-                    "ViewModel" { layout { "home" { "*ViewModel".ktFile() } } }
-                    "Home" { layout { "home" { "Home*".ktFile() } } }
+                    "Component".role { layout { "home" { "*".ktFile() } } }
+                    "ViewModel".role { layout { "home" { "*ViewModel".ktFile() } } }
+                    "Home".role { layout { "home" { "Home*".ktFile() } } }
                 }
             }
 

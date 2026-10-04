@@ -10,7 +10,7 @@ import me.tbsten.katachi.dsl.DeclarationContainerScope
  * `files = gitTracked()` offers it to the check, and a directory no role claims is a violation.
  * Declaring it is what buys the pages a place in the repository, where a reader can find them.
  */
-fun DeclarationContainerScope.generatedDocumentation() = "GeneratedDocumentation" {
+fun DeclarationContainerScope.generatedDocumentation() = "GeneratedDocumentation".role {
     title = "Generated documentation"
     summary = "Markdown written out of this definition and committed to the repository"
     description = """

@@ -31,8 +31,8 @@ import me.tbsten.katachi.test.check.repositoryOf
 class ProcessorCompositionSpec : FreeSpec({
     val definition = architectureOf {
         "domain".group {
-            "UseCase" { layout { "useCase" / "*UseCase".ktFile() } }
-            "Repository" { layout { "repository" / "*Repository".ktFile() } }
+            "UseCase".role { layout { "useCase" / "*UseCase".ktFile() } }
+            "Repository".role { layout { "repository" / "*Repository".ktFile() } }
         }
     }
 

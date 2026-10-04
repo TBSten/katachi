@@ -12,7 +12,7 @@ import me.tbsten.katachi.dsl.architecture
 
 class RoleSpec : FreeSpec({
     "title を省略した役割には Title が入らず、読む側が役割名にフォールバックする" {
-        val role = architecture { "domain".group { "UseCase" { } } }.allRoles.single()
+        val role = architecture { "domain".group { "UseCase".role { } } }.allRoles.single()
         role[Title] shouldBe null
         (role[Title] ?: role.name) shouldBe "UseCase"
     }
@@ -27,7 +27,7 @@ class RoleSpec : FreeSpec({
         val arch = architecture {
             "domain".group {
                 title = "ドメイン"
-                "UseCase" { title = "ユースケース" }
+                "UseCase".role { title = "ユースケース" }
             }
         }
 
@@ -41,28 +41,28 @@ class RoleSpec : FreeSpec({
     }
 
     "summary を省略した役割の Summary は null になる" {
-        val arch = architecture { "domain".group { "UseCase" { } } }
+        val arch = architecture { "domain".group { "UseCase".role { } } }
         arch.allRoles.single()[Summary] shouldBe null
     }
 
     "summary を指定すると保持される" {
         val arch = architecture {
             "domain".group {
-                "UseCase" { summary = "各画面で発生するアプリ固有の1つの振る舞い" }
+                "UseCase".role { summary = "各画面で発生するアプリ固有の1つの振る舞い" }
             }
         }
         arch.allRoles.single()[Summary] shouldBe "各画面で発生するアプリ固有の1つの振る舞い"
     }
 
     "description を省略した役割の Description は null になる" {
-        val arch = architecture { "domain".group { "UseCase" { } } }
+        val arch = architecture { "domain".group { "UseCase".role { } } }
         arch.allRoles.single()[Description] shouldBe null
     }
 
     "description を指定すると Description から読める" {
         val arch = architecture {
             "domain".group {
-                "UseCase" { description = "UI からは UseCase だけを呼ぶ。" }
+                "UseCase".role { description = "UI からは UseCase だけを呼ぶ。" }
             }
         }
         arch.allRoles.single()[Description] shouldBe "UI からは UseCase だけを呼ぶ。"
@@ -73,7 +73,7 @@ class RoleSpec : FreeSpec({
     "description の複数行が改行ごとそのまま保たれる" {
         val arch = architecture {
             "domain".group {
-                "UseCase" {
+                "UseCase".role {
                     description = """
                         UI からは UseCase だけを呼び、Repository を直接触らない。
 
@@ -101,9 +101,9 @@ class RoleSpec : FreeSpec({
     "summary と description は互いに独立している" {
         val arch = architecture {
             "domain".group {
-                "OnlySummary" { summary = "1行の概要" }
-                "OnlyDescription" { description = "本文だけ" }
-                "Both" {
+                "OnlySummary".role { summary = "1行の概要" }
+                "OnlyDescription".role { description = "本文だけ" }
+                "Both".role {
                     summary = "1行の概要"
                     description = "本文"
                 }
@@ -120,7 +120,7 @@ class RoleSpec : FreeSpec({
     "example を複数回呼ぶと、呼んだ順にすべて保持される" {
         val arch = architecture {
             "domain".group {
-                "UseCase" {
+                "UseCase".role {
                     example("GetRecommendedProductListUseCase", "おすすめの商品リストを取得する")
                     example("ToggleProductFavorite", "商品のいいね状態を切り替える")
                     example("SignOutUseCase", "サインアウトする")
@@ -138,7 +138,7 @@ class RoleSpec : FreeSpec({
     "example の説明文に ... を含めても名前と説明が正しく分かれる" {
         val arch = architecture {
             "domain".group {
-                "UseCase" {
+                "UseCase".role {
                     example("ToggleProductFavorite", "商品のいいね状態 ... を切り替える")
                 }
             }
@@ -152,7 +152,7 @@ class RoleSpec : FreeSpec({
     "example は description を省略して宣言でき、description は null になる" {
         val arch = architecture {
             "domain".group {
-                "UseCase" {
+                "UseCase".role {
                     example("SignOutUseCase")
                 }
             }
@@ -164,14 +164,14 @@ class RoleSpec : FreeSpec({
     }
 
     "example を1つも呼ばなければ Examples は書き込まれない" {
-        val arch = architecture { "domain".group { "UseCase" { } } }
+        val arch = architecture { "domain".group { "UseCase".role { } } }
         arch.allRoles.single()[Examples] shouldBe null
     }
 
     "役割は自分が属する group のパスを保持する" {
         val arch = architecture {
             "domain".group {
-                "model".group { "Entity" { } }
+                "model".group { "Entity".role { } }
             }
         }
 

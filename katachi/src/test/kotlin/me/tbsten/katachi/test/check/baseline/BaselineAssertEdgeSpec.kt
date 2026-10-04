@@ -24,7 +24,7 @@ import me.tbsten.katachi.test.dsl.files.FakeFileSystem
 /** A definition that allows `README.md` and nothing else. The baseline file is not declared. */
 private fun definition(path: String = "katachi-baseline.json"): Architecture = architectureOf {
     baseline(path)
-    "Readme" { layout { "README.md".file() } }
+    "Readme".role { layout { "README.md".file() } }
 }
 
 private fun treeWith(vararg extra: String): FakeFileSystem = repositoryOf {
@@ -121,16 +121,16 @@ class BaselineAssertEdgeSpec : FreeSpec({
 
             val message = definition().failure(treeWith("katachi-baseline.json"), environmentOf(store)).message!!
 
-            message shouldContain "\"BaselineFile\" {"
+            message shouldContain "\"BaselineFile\".role {"
             message shouldContain "\"katachi-baseline.json\".file()"
-            err.joinToString("\n") shouldContain "\"BaselineFile\" { layout { \"katachi-baseline.json\".file() } }"
+            err.joinToString("\n") shouldContain "\"BaselineFile\".role { layout { \"katachi-baseline.json\".file() } }"
         }
 
         "台帳ファイルを先に宣言してから初回の update をしても、まだ無い台帳ファイルの [MissingFile] を記録せず、次の実行は緑" {
             val declared = architectureOf {
                 baseline()
-                "Readme" { layout { "README.md".file() } }
-                "BaselineFile" { layout { "katachi-baseline.json".file() } }
+                "Readme".role { layout { "README.md".file() } }
+                "BaselineFile".role { layout { "katachi-baseline.json".file() } }
             }
             val store = MemoryBaselineStore()
 
@@ -220,7 +220,7 @@ class BaselineAssertEdgeSpec : FreeSpec({
     "台帳を持たない定義" - {
         "baseline が無ければ台帳を読まない" {
             val store = MemoryBaselineStore()
-            architectureOf { "Readme" { layout { "README.md".file() } } }
+            architectureOf { "Readme".role { layout { "README.md".file() } } }
                 .failure(treeWith("notes.md"), environmentOf(store, update = true))
             store.files[BASELINE_FILE].shouldBeNull()
             store.writes shouldBe 0

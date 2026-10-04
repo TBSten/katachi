@@ -25,7 +25,7 @@ package me.tbsten.katachi.dsl
  * val arch = architecture {
  *     "domain".group {
  *         owner = "platform"
- *         "UseCase" { owner = "product" }
+ *         "UseCase".role { owner = "product" }
  *     }
  * }
  * arch.groups.single()[Owner] shouldBe "platform"

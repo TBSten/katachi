@@ -5,7 +5,7 @@ import com.example.forbiddenContents
 import me.tbsten.katachi.dsl.DeclarationContainerScope
 
 /** The role of the prose a human writes for whoever opens this sample. */
-fun DeclarationContainerScope.documentation() = "Documentation" {
+fun DeclarationContainerScope.documentation() = "Documentation".role {
     title = "Handwritten documentation"
     summary = "README.md and similar: explanations for whoever opens this sample"
     description = """

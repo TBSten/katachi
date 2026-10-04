@@ -20,7 +20,7 @@ This page is a draft written by AI, and its contents have not been reviewed yet.
 It covers four kinds: the package, imports, top-level declarations, and class members. You write them in the same order as in Kotlin source.
 
 ```kt {6,8-13,15-19}
-"ViewModel" {
+"ViewModel".role {
     layout {
         "feature" / capture("feature") / mainSourceSet / kotlin / "**" / "*ViewModel".ktFile()
     }
@@ -326,7 +326,7 @@ When you want to prohibit only some things, also write a line that allows the re
 If you attach `{ }` to a class, interface, or object line, its members also become an allow list. What you write inside the `{ }` is the same as at the top level of a file.
 
 ```kt {5,8-9}
-"UseCase" {
+"UseCase".role {
     layout { "core/domain" / mainSourceSet / kotlin / "com/example/domain" / "*UseCase".ktFile() }
     ktFileContent {
         `interface`(fileName) {                                    // for GetUserUseCase.kt, interface GetUserUseCase
@@ -373,7 +373,7 @@ Violations of `ktFileContent { }` are reported as `[UnsatisfiedFileConstraint]`,
 In this example, with the following Role, `GetUserUseCaseImpl` is placed in `GetUserUseCase.kt`.
 
 ```kt title="UseCaseRole.kt"
-fun DeclarationContainerScope.useCase() = "UseCase" {
+fun DeclarationContainerScope.useCase() = "UseCase".role {
     layout { "core/domain" / mainSourceSet / kotlin / "com/example/domain" / "*UseCase".ktFile() }
     ktFileContent {
         `interface`(fileName)
@@ -425,7 +425,7 @@ Katachi check failed: 2 violations (FileConstraint: 2)
 In this example, with the following Role, `HomeViewModel.kt` imports `android.content.Context`, which isn't allowed, and `SettingsRepository` from another feature.
 
 ```kt title="ViewModelRole.kt"
-fun DeclarationContainerScope.viewModel() = "ViewModel" {
+fun DeclarationContainerScope.viewModel() = "ViewModel".role {
     layout { "feature" / capture("feature") / mainSourceSet / kotlin / "**" / "*ViewModel".ktFile() }
     ktFileContent {
         `import`("kotlin.**")

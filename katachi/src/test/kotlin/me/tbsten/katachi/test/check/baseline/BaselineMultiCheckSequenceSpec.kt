@@ -36,7 +36,7 @@ private enum class SeenKind { Todo, Unsatisfied, Warning }
 /** A violation "the project" has, reported by check [check] (0 or 1). */
 private data class Seen(val check: Int, val kind: SeenKind, val path: String, val name: String, val line: Int)
 
-private val constraintRole: Role = architectureOf { "domain".group { "UseCase" { } } }.allRoles.single()
+private val constraintRole: Role = architectureOf { "domain".group { "UseCase".role { } } }.allRoles.single()
 private val checkNames = listOf(SCRIPTED, OTHER_SCRIPTED)
 private val sourcePaths = listOf("a.kt", "b.kt", "c/d.kt")
 private val layoutFiles = listOf("x.md", "y.md", "z.md")
@@ -158,8 +158,8 @@ private fun describe(violations: List<Violation>): List<String> = violations
 
 private val definition: Architecture = architectureOf {
     baseline()
-    "Readme" { layout { "README.md".file() } }
-    "BaselineFile" { layout { "katachi-baseline.json".file() } }
+    "Readme".role { layout { "README.md".file() } }
+    "BaselineFile".role { layout { "katachi-baseline.json".file() } }
 }
 
 class BaselineMultiCheckSequenceSpec : FreeSpec({

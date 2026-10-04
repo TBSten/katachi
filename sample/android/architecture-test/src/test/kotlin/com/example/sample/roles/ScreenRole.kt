@@ -18,7 +18,7 @@ import me.tbsten.katachi.konsist.declarations.ktFileContent
  * may hold a `<Name>Screen.kt`; the check does not tie the file name to the module name, and it
  * does not list the feature modules one by one.
  */
-fun DeclarationContainerScope.screen() = "Screen" {
+fun DeclarationContainerScope.screen() = "Screen".role {
     title = "Screen"
     summary = "A @Composable that implements the UI of one screen. One <Name>Screen.kt per :feature:<name>"
     description = """

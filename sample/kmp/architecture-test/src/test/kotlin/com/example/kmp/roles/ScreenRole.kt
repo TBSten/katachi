@@ -17,7 +17,7 @@ import me.tbsten.katachi.dsl.kotlin.ktFile
  * (a `ProfileScreen.kt` under `:feature:home` is accepted, and so is a module without a
  * screen), so that pairing is kept by review.
  */
-fun DeclarationContainerScope.screen() = "Screen" {
+fun DeclarationContainerScope.screen() = "Screen".role {
     title = "Screen"
     summary = "The @Composable of one screen. Subscribes to the ViewModel's StateFlow and draws by combining Components"
     description = """

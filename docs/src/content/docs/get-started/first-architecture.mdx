@@ -155,7 +155,7 @@ If you are not yet convinced that you need katachi, read [Motivation](/katachi/g
         val projectArchitecture = architecture {
             gradle() // Gradle's files: the wrapper, settings, build scripts and so on
             "domain".group {
-                "UseCase" {
+                "UseCase".role {
                     summary = "A single app-specific behavior that occurs on a screen"
                     layout {
                         "domain/src/main/kotlin/usecase" / "*UseCase".ktFile()

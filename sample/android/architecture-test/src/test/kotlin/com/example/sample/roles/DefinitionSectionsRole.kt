@@ -9,7 +9,7 @@ import me.tbsten.katachi.dsl.kotlin.ktFile
 import me.tbsten.katachi.dsl.template
 
 /** The role of the one shared helper the definition allows. */
-fun DeclarationContainerScope.definitionSections() = "DefinitionSections" {
+fun DeclarationContainerScope.definitionSections() = "DefinitionSections".role {
     title = "Definition sections"
     summary = "DocumentSections.kt, the section headings every group and role writes through"
     description = """

@@ -181,7 +181,7 @@ class LayoutCaptureSpec : FreeSpec({
         "別の layout ブロックで同じ名前を使うのは通る" {
             val entries = architecture {
                 "group".group {
-                    "Role" {
+                    "Role".role {
                         layout { "feature" / capture("feature") / "a.kt".file() }
                         layout { "test" / capture("feature") / "b.kt".file() }
                     }
@@ -264,7 +264,7 @@ class LayoutCaptureSpec : FreeSpec({
             // layout のキーには戻らないので同じ例外になる。
             val arch = architectureOf {
                 "domain".group {
-                    "UseCase" {
+                    "UseCase".role {
                         layout { "UseCase.kt".file().template { captureToken("leak") } }
                     }
                 }

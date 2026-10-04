@@ -16,7 +16,7 @@ class ArchitectureModuleResolverSpec : FreeSpec({
             moduleResolver = ModuleResolver { module ->
                 if (module.value == ":app") "apps/android" else module.segments.joinToString("/")
             }
-            "domain".group { "UseCase" { } }
+            "domain".group { "UseCase".role { } }
         }
 
         architecture.moduleResolver.directoryOf(ModulePath.of(":app")) shouldBe "apps/android"

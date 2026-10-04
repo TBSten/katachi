@@ -142,7 +142,7 @@ private fun gitReporting(reported: List<String>, block: LayoutScope.() -> Unit):
         override fun fileSystemFor(delegate: KatachiFileSystem, projectRoot: ProjectRoot): KatachiFileSystem =
             GitTrackedFileSystem(delegate, projectRoot.path, reported)
     }
-    "app".group { "Role" { layout(block) } }
+    "app".group { "Role".role { layout(block) } }
 }
 
 /** [delegate], remembering every directory it was asked to list. */

@@ -9,7 +9,7 @@ import me.tbsten.katachi.dsl.DeclarationContainerScope
  * A generated artifact that lives outside `build/` needs a role like anything else: the default
  * `files = gitTracked()` offers it to the check, and a directory no role claims is a violation.
  */
-fun DeclarationContainerScope.generatedDocumentation() = "GeneratedDocumentation" {
+fun DeclarationContainerScope.generatedDocumentation() = "GeneratedDocumentation".role {
     title = "Generated documentation"
     summary = "Markdown written out of this definition and committed to the repository"
     description = """

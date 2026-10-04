@@ -53,7 +53,7 @@ import me.tbsten.katachi.dsl.internal.metadataBuilder
  *
  * val arch = architecture {
  *     "api".group {
- *         "Controller" { unitTest = "リクエストの変換だけを見る。" }
+ *         "Controller".role { unitTest = "リクエストの変換だけを見る。" }
  *     }
  * }
  * arch.allRoles.single()[UnitTest] shouldBe "リクエストの変換だけを見る。"

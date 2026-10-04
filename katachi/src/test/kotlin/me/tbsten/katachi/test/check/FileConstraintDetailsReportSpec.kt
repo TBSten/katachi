@@ -37,7 +37,7 @@ private val RULE_SITE: DeclarationSite = DeclarationSite("UseCaseRole.kt", 16)
  */
 private fun useCaseArchitecture(check: FileConstraint): Architecture = architectureOf {
     "domain".group {
-        "UseCase" {
+        "UseCase".role {
             fileConstraint(name = "ktFileContent", declaredAt = CONSTRAINT_SITE, check = check)
             layout { "core/domain" { "*.kt".file() } }
         }
@@ -228,7 +228,7 @@ class FileConstraintDetailsReportSpec : FreeSpec({
     "layout の中の制約は、規則の行の後ろに layout を添える" {
         val arch = architectureOf {
             "domain".group {
-                "UseCase" {
+                "UseCase".role {
                     layout {
                         "core/domain" {
                             fileConstraint(

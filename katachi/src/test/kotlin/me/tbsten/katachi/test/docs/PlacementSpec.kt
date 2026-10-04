@@ -31,7 +31,7 @@ class PlacementSpec : FreeSpec({
         "module { } の中の宣言は、モジュール名とモジュール内の相対パスに分かれる" {
             val arch = architecture {
                 "domain".group {
-                    "UseCase" {
+                    "UseCase".role {
                         layout {
                             ":core:domain".module {
                                 mainSourceSet / kotlin / "useCase" / "*UseCase".ktFile()
@@ -49,7 +49,7 @@ class PlacementSpec : FreeSpec({
         "modulePackage は展開せず ** のまま出る" {
             val arch = architecture {
                 "domain".group {
-                    "UseCase" {
+                    "UseCase".role {
                         layout {
                             ":core:domain".module {
                                 mainSourceSet / kotlin / modulePackage / "useCase" / "*UseCase".ktFile()
@@ -69,7 +69,7 @@ class PlacementSpec : FreeSpec({
         "ワイルドカードのモジュールキーは書かれたまま出る" {
             val arch = architecture {
                 "feature".group {
-                    "Screen" {
+                    "Screen".role {
                         layout {
                             ":feature:*".module {
                                 mainSourceSet / kotlin / "*Screen".ktFile()
@@ -87,7 +87,7 @@ class PlacementSpec : FreeSpec({
         "module { } の外で書いた宣言は、モジュール列が無くフルパスになる" {
             val arch = architecture {
                 "tool".group {
-                    "Script" {
+                    "Script".role {
                         layout { "scripts" / "*.sh".file() }
                     }
                 }
@@ -101,7 +101,7 @@ class PlacementSpec : FreeSpec({
         "ルートプロジェクトの module { } はモジュール列に : が出る" {
             val arch = architecture {
                 "build".group {
-                    "GradleRoot" {
+                    "GradleRoot".role {
                         layout {
                             ":".module { "settings.gradle".ktsFile() }
                         }
@@ -119,7 +119,7 @@ class PlacementSpec : FreeSpec({
         "どの行もモジュールを持たなければ Module 列を出さない" {
             val arch = architecture {
                 "tool".group {
-                    "Script" {
+                    "Script".role {
                         layout { "scripts" / "*.sh".file() }
                     }
                 }
@@ -133,7 +133,7 @@ class PlacementSpec : FreeSpec({
         "1行でもモジュールを持てば Module 列を出し、持たない行は空欄にする" {
             val arch = architecture {
                 "tool".group {
-                    "Script" {
+                    "Script".role {
                         layout {
                             ":core".module { mainSourceSet / kotlin / "*".ktFile() }
                             "scripts" / "*.sh".file()
@@ -155,7 +155,7 @@ class PlacementSpec : FreeSpec({
         "どちらもモジュール列を持たずフルパスを出す" {
             val arch = architecture {
                 "app".group {
-                    "Resource" {
+                    "Resource".role {
                         layout {
                             ":app".module {
                                 mainSourceSet {
@@ -179,7 +179,7 @@ class PlacementSpec : FreeSpec({
         "module { } に書いた description が、その下の宣言の行に出る" {
             val arch = architecture {
                 "domain".group {
-                    "UseCase" {
+                    "UseCase".role {
                         layout {
                             ":core:domain".module {
                                 description = "複数 feature から使われるもの"
@@ -205,7 +205,7 @@ class PlacementSpec : FreeSpec({
         "表を壊す文字はエスケープして出す" {
             val arch = architecture {
                 "domain".group {
-                    "UseCase" {
+                    "UseCase".role {
                         layout {
                             ":core:domain".module {
                                 description = "a | b"
@@ -224,7 +224,7 @@ class PlacementSpec : FreeSpec({
         "近いところに書いた description が勝つ" {
             val arch = architecture {
                 "domain".group {
-                    "UseCase" {
+                    "UseCase".role {
                         layout {
                             ":core:domain".module {
                                 description = "モジュールの説明"
@@ -248,7 +248,7 @@ class PlacementSpec : FreeSpec({
         "module { } が注入する build/ と build.gradle.kts は出ない" {
             val arch = architecture {
                 "domain".group {
-                    "UseCase" {
+                    "UseCase".role {
                         layout {
                             ":core:domain".module { mainSourceSet / kotlin / "*UseCase".ktFile() }
                         }
@@ -267,7 +267,7 @@ class PlacementSpec : FreeSpec({
         "宣言の途中にあるだけのディレクトリは行にならない" {
             val arch = architecture {
                 "domain".group {
-                    "UseCase" {
+                    "UseCase".role {
                         layout {
                             ":core:domain".module { mainSourceSet / kotlin / "useCase" / "*UseCase".ktFile() }
                         }
@@ -279,7 +279,7 @@ class PlacementSpec : FreeSpec({
         }
 
         "layout { } が空なら## Placement の節ごと出ない" {
-            val arch = architecture { "domain".group { "UseCase" { } } }
+            val arch = architecture { "domain".group { "UseCase".role { } } }
 
             arch.page("domain/UseCase.md") shouldNotContain "## Placement"
         }

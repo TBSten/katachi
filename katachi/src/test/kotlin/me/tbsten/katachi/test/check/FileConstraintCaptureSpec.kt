@@ -35,7 +35,7 @@ private fun subjectsOf(tree: FakeFileSystem, layouts: List<LayoutScope.() -> Uni
     val recording = RecordingFileConstraint()
     val arch = architectureOf {
         "app".group {
-            "Role" {
+            "Role".role {
                 fileConstraint(check = recording)
                 layouts.forEach { layout(it) }
             }

@@ -92,7 +92,7 @@ class GradleGroupSpec : FreeSpec({
             }
             architectureOf {
                 gradle()
-                "App" { layout { ":app".module { mainSourceSet / kotlin / "Main".ktFile() } } }
+                "App".role { layout { ":app".module { mainSourceSet / kotlin / "Main".ktFile() } } }
             }.validate(build).labels().shouldBeEmpty()
         }
     }
@@ -120,7 +120,7 @@ class GradleGroupSpec : FreeSpec({
             val build = kotlinDslBuild { "gradle" { "verification-metadata.xml"() } }
             architectureOf {
                 gradle {
-                    "DependencyVerification" {
+                    "DependencyVerification".role {
                         documented = false
                         layout { "gradle/verification-metadata.xml".file() }
                     }
@@ -205,7 +205,7 @@ class GradleGroupSpec : FreeSpec({
         "生成されるドキュメントに Gradle のページが出ない" {
             val documents = architecture {
                 gradle()
-                "UseCase" { layout { "src" / "*UseCase.kt".file() } }
+                "UseCase".role { layout { "src" / "*UseCase.kt".file() } }
             }.documents()
             documents shouldContainKey "README.md"
             documents.keys.filter { it.startsWith("Gradle") }.shouldBeEmpty()

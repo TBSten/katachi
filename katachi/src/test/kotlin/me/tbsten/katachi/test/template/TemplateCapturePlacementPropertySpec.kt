@@ -30,7 +30,7 @@ class TemplateCapturePlacementPropertySpec : FreeSpec({
 
             val arch = architectureOf {
                 "domain".group {
-                    "Trial" {
+                    "Trial".role {
                         layout {
                             // A single key may hold several `/`-levels at once (`chainUnder`
                             // splits it), so the whole chain -- captures included -- is built as

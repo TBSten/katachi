@@ -58,7 +58,7 @@ public class KatachiMetadataWithoutEntryException internal constructor(
  * shouldThrow<KatachiConflictingLayoutMetadataException> {
  *     architecture {
  *         "legacy".group {
- *             "Dao" {
+ *             "Dao".role {
  *                 layout {
  *                     "legacy" / "*Dao".ktFile().metadata { owner = "team-a" }
  *                     "legacy" / "*Dao".ktFile().metadata { owner = "team-b" }

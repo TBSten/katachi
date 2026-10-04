@@ -25,7 +25,7 @@ import me.tbsten.katachi.dsl.internal.requireValidIdentifier
  * ```kt
  * val arch = architecture {
  *     "domain".group {
- *         "UseCase" {
+ *         "UseCase".role {
  *             layout {
  *                 "useCase" / "${capture("name")}UseCase.kt".file()
  *                     .template {

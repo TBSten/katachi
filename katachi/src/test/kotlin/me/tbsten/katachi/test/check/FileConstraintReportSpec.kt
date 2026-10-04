@@ -42,7 +42,7 @@ class FileConstraintReportSpec : FreeSpec({
         "名前・宣言・行・layout をすべて持つブロック" {
             val arch = architectureOf {
                 "domain".group {
-                    "UseCase" {
+                    "UseCase".role {
                         layout {
                             "alpha" {
                                 fileConstraint(
@@ -72,7 +72,7 @@ class FileConstraintReportSpec : FreeSpec({
         "名前も宣言も layout も無いブロックは2行に縮む" {
             val arch = architectureOf {
                 "domain".group {
-                    "UseCase" {
+                    "UseCase".role {
                         fileConstraint(
                             declaredAt = DECLARED_AT,
                             check = rejectingDeclaration("alpha/Helper.kt", null, null),
@@ -96,7 +96,7 @@ class FileConstraintReportSpec : FreeSpec({
         "行が分からないときは宣言名だけを出す" {
             val arch = architectureOf {
                 "domain".group {
-                    "UseCase" {
+                    "UseCase".role {
                         layout {
                             "alpha" {
                                 fileConstraint(
@@ -120,7 +120,7 @@ class FileConstraintReportSpec : FreeSpec({
             // 推測を書いた瞬間、それは katachi が作った嘘になる。
             val arch = architectureOf {
                 "domain".group {
-                    "UseCase" {
+                    "UseCase".role {
                         layout {
                             "alpha" {
                                 fileConstraint(
@@ -144,7 +144,7 @@ class FileConstraintReportSpec : FreeSpec({
         "NotEvaluated のブロックと末尾の件数行" {
             val arch = architectureOf {
                 "domain".group {
-                    "UseCase" {
+                    "UseCase".role {
                         layout {
                             "alpha" {
                                 fileConstraint(
@@ -179,7 +179,7 @@ class FileConstraintReportSpec : FreeSpec({
         "Failed のブロックは Cause を持ち、How to fix が3行になる" {
             val arch = architectureOf {
                 "domain".group {
-                    "UseCase" {
+                    "UseCase".role {
                         layout {
                             "alpha" {
                                 fileConstraint(
@@ -218,7 +218,7 @@ class FileConstraintReportSpec : FreeSpec({
         "FileConstraint のブロックが1件は残り、打ち切り行が出る" {
             val arch = architectureOf {
                 "domain".group {
-                    "UseCase" {
+                    "UseCase".role {
                         layout {
                             "alpha" {
                                 fileConstraint(
@@ -251,7 +251,7 @@ class FileConstraintReportSpec : FreeSpec({
         "開きのパスと layout は file URI になり、宣言位置はそのまま" {
             val arch = architectureOf {
                 "domain".group {
-                    "UseCase" {
+                    "UseCase".role {
                         layout {
                             "alpha" {
                                 fileConstraint(
@@ -283,7 +283,7 @@ class FileConstraintReportSpec : FreeSpec({
             // layout, so the violation is built from one it does produce.
             val declared = architectureOf {
                 "domain".group {
-                    "UseCase" {
+                    "UseCase".role {
                         layout {
                             "alpha" {
                                 fileConstraint(name = "invoke", declaredAt = DECLARED_AT, check = silentCheck())
@@ -312,7 +312,7 @@ class FileConstraintReportSpec : FreeSpec({
         "katachi が書く文面に非 ASCII が混ざらない" {
             val arch = architectureOf {
                 "domain".group {
-                    "UseCase" {
+                    "UseCase".role {
                         fileConstraint(
                             name = "role wide",
                             declaredAt = DECLARED_AT,

@@ -24,7 +24,7 @@ import me.tbsten.katachi.test.dsl.files.fakeFileSystem
 internal fun layoutOf(block: LayoutScope.() -> Unit): List<LayoutEntry> =
     architecture {
         "group".group {
-            "Role" { layout(block) }
+            "Role".role { layout(block) }
         }
     }.flattenLayout()
 
@@ -32,7 +32,7 @@ internal fun layoutOf(block: LayoutScope.() -> Unit): List<LayoutEntry> =
 internal fun layoutOf(moduleIndex: ModuleIndex, block: LayoutScope.() -> Unit): List<LayoutEntry> =
     architecture {
         "group".group {
-            "Role" { layout(block) }
+            "Role".role { layout(block) }
         }
     }.flattenLayout(moduleIndex)
 

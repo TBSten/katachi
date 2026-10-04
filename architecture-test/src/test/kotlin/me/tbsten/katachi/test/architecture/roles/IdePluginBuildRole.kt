@@ -10,7 +10,7 @@ import me.tbsten.katachi.dsl.kotlin.ktsFile
  * the plugin has to be compiled with a Kotlin no newer than the one bundled in its target IDE.
  * So it is written as a plain directory, the same way `BuildLogic` writes `buildSrc`.
  */
-fun DeclarationContainerScope.idePluginBuild() = "IdePluginBuild" {
+fun DeclarationContainerScope.idePluginBuild() = "IdePluginBuild".role {
     title = "IDE プラグインのビルド"
     summary = "IDE プラグインの独立した Gradle ビルド。対象の IDE に同梱された Kotlin・Jewel に版を揃える"
     example("katachi-intellij-plugin/build.gradle.kts", "IntelliJ Platform Gradle Plugin の配線と、preview のタスク")

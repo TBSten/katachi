@@ -14,7 +14,7 @@ class DeclarationSiteSpec : FreeSpec({
     "group・役割・layout それぞれの宣言位置として、ファイル名と行番号が取れる" {
         val arch = architecture {
             "domain".group {
-                "UseCase" {
+                "UseCase".role {
                     layout { }
                 }
             }

@@ -4,7 +4,7 @@ import me.tbsten.katachi.dsl.DeclarationContainerScope
 import me.tbsten.katachi.dsl.gradle.*
 
 /** The role of the resource tree Android's build system owns. */
-fun DeclarationContainerScope.androidResource() = "AndroidResource" {
+fun DeclarationContainerScope.androidResource() = "AndroidResource".role {
     title = "Android resources"
     summary = "The res/ tree of :app, whose inner structure the Android resource system decides"
     description = """

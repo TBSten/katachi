@@ -22,11 +22,13 @@ You define what Roles exist inside `architecture { }`.
 ```kt
 architecture {
     // Define a Role called UseCase
-    "UseCase" {
+    "UseCase".role {
         // Write the description, placement, and constraints inside here
     }
 }
 ```
+
+A Role is declared with `"Name".role { }`. This matches the shape of `"name".group { }` and sets it apart from a directory declaration such as `"src" { }`, which you write inside `layout { }`.
 
 You write a Role's description, placement, and constraints inside that Role's block.
 
@@ -46,7 +48,7 @@ The `ktFileContent { }` item in this list and the examples on this page that use
 
 ```kt
 architecture {
-    "UseCase" {
+    "UseCase".role {
         title = "Use case"
         summary = "A single app-specific behavior that occurs on each screen"
 
@@ -73,7 +75,7 @@ Let's look at each of these in a bit more detail.
 At minimum, all you need is `summary`. It becomes the one-line entry for the Role in the generated documentation's list table.
 
 ```kt
-"UseCase" {
+"UseCase".role {
     summary = "A single app-specific behavior that occurs on each screen"
 }
 ```
@@ -81,7 +83,7 @@ At minimum, all you need is `summary`. It becomes the one-line entry for the Rol
 `description` can hold a longer explanation, and `example()` a representative example. Calls to `example()` are kept in the order you call them.
 
 ```kt
-"UseCase" {
+"UseCase".role {
     title = "Use case"
     summary = "A single app-specific behavior that occurs on each screen"
     description = """
@@ -104,7 +106,7 @@ At minimum, all you need is `summary`. It becomes the one-line entry for the Rol
 This is the case where a Role has just one place to live.
 
 ```kt
-"UseCase" {
+"UseCase".role {
     layout {
         "src/main/kotlin/com/example/useCase" / "*UseCase".ktFile()
     }
@@ -114,7 +116,7 @@ This is the case where a Role has just one place to live.
 **You can write multiple `layout { }` blocks.** This declares that the same kind of file is allowed to appear in more than one place. Files of different kinds go in separate Roles.
 
 ```kt
-"Screen" {
+"Screen".role {
     // In the feature-home module
     layout {
         "feature-home/src/main/kotlin/screen" / "*Screen".ktFile()
@@ -148,7 +150,7 @@ Katachi check failed: 1 violation (Unexpected: 1)
     - Move it to one of the locations above
     - Delete it if it is not needed
     - Add a new role for it:
-        "GetUserUseCase" {
+        "GetUserUseCase".role {
           summary = "TODO"
           layout {
             "src/main/kotlin/com/example" / "GetUserUseCase".ktFile()
@@ -166,7 +168,7 @@ The declarations a file may contain can be defined with `ktFileContent { }`. Her
 You give each constraint a name. **That name appears directly in the violation report.**
 
 ```kt
-"UseCase" {
+"UseCase".role {
     layout {
         "src/main/kotlin/com/example/useCase" / "*UseCase".ktFile()
     }
@@ -182,7 +184,7 @@ A constraint applies to the files that matched the Role's `layout { }`. You cann
 You can also express a prohibition with `mustNot` and `mustBeEmpty()`.
 
 ```kt
-"RepositoryInterface" {
+"RepositoryInterface".role {
     layout {
         "src/main/kotlin/com/example/repository" / "*Repository".ktFile()
     }
@@ -230,11 +232,11 @@ You can group Roles together using `"group name".group { ... }`.
 ```kt {2}
 architecture {
     "domain".group {
-        "UseCase" {
+        "UseCase".role {
             // ...
         }
 
-        "RepositoryInterface" {
+        "RepositoryInterface".role {
             // ...
         }
     }
@@ -259,7 +261,7 @@ With one Role per kind, the description and constraints only deal with that kind
     <CodeComparison.Panel label="🆖 Two kinds of file in one Role" labelVariant="danger">
 
     ```kt {4-5,7-8} nocollapse
-    "Repository" {
+    "Repository".role {
         summary = "Loads and saves data"
         layout {
             "repository" / "*Repository".ktFile()      // interface
@@ -276,7 +278,7 @@ With one Role per kind, the description and constraints only deal with that kind
     <CodeComparison.Panel label="🆗 One Role per kind" labelVariant="success">
 
     ```kt {1,3,9,11} nocollapse
-    "RepositoryInterface" {
+    "RepositoryInterface".role {
         summary = "The entry point for loading and saving data"
         layout { "repository" / "*Repository".ktFile() }
         ktFileContent {
@@ -284,7 +286,7 @@ With one Role per kind, the description and constraints only deal with that kind
         }
     }
 
-    "RepositoryImplementation" {
+    "RepositoryImplementation".role {
         summary = "The implementation of RepositoryInterface"
         layout { "repository" / "*RepositoryImpl".ktFile() }
     }
@@ -311,7 +313,7 @@ Factor each Role out into its own extension function.
 
     ```kt title=ProjectArchitecture.kt nocollapse
     architecture {
-        "UseCase" {
+        "UseCase".role {
             layout { 
                 "src/main/kotlin/com/example/project/useCase" / "*UseCase".ktFile()
             }
@@ -321,7 +323,7 @@ Factor each Role out into its own extension function.
             // ...
         }
 
-        "RepositoryInterface" {
+        "RepositoryInterface".role {
             layout { 
                 "src/main/kotlin/com/example/project/repository" / "*Repository".ktFile()
             }
@@ -357,7 +359,7 @@ Factor each Role out into its own extension function.
 
     ```kt title=domain/UseCaseRole.kt
     // hint: DeclarationContainerScope is the receiver of architecture { } and "...".group { }.
-    fun DeclarationContainerScope.useCase() = "UseCase" {
+    fun DeclarationContainerScope.useCase() = "UseCase".role {
         layout {
             "src/main/kotlin/com/example/project/useCase" / "*UseCase".ktFile()
         }
@@ -369,7 +371,7 @@ Factor each Role out into its own extension function.
     ```
 
     ```kt title=domain/RepositoryInterfaceRole.kt
-    fun DeclarationContainerScope.repositoryInterface() = "RepositoryInterface" {
+    fun DeclarationContainerScope.repositoryInterface() = "RepositoryInterface".role {
         layout {
             "src/main/kotlin/com/example/project/repository" / "*Repository".ktFile()
         }
@@ -393,7 +395,7 @@ Don't hesitate to factor `"...".konsist { }` out into private extension function
 <CodeComparison>
     <CodeComparison.Panel label="Before">
       ```kt
-        fun DeclarationContainerScope.useCase() = "UseCase" {
+        fun DeclarationContainerScope.useCase() = "UseCase".role {
             layout {
                 "src/main/kotlin/com/example/project/useCase" / "*UseCase".ktFile()
             }
@@ -407,7 +409,7 @@ Don't hesitate to factor `"...".konsist { }` out into private extension function
 
     <CodeComparison.Panel label="After" labelVariant="success">
       ```kt
-        fun DeclarationContainerScope.useCase() = "UseCase" {
+        fun DeclarationContainerScope.useCase() = "UseCase".role {
             layout {
                 "src/main/kotlin/com/example/project/useCase" / "*UseCase".ktFile()
             }
@@ -433,7 +435,7 @@ Don't hesitate to factor `"...".konsist { }` out into private extension function
 ```kt
 architecture {
     "domain".group {
-        "UseCase" {
+        "UseCase".role {
             summary = "A single app-specific behavior that occurs on each screen"
 
             // However many places it is put in, the description stays in this one place

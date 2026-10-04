@@ -12,7 +12,7 @@ import me.tbsten.katachi.dsl.kotlin.ktFile
  * prefix of, because the two are different things: one is the wrapper, the other is what the
  * wrapper is used by.
  */
-fun DeclarationContainerScope.previewRoot() = "PreviewRoot" {
+fun DeclarationContainerScope.previewRoot() = "PreviewRoot".role {
     title = "Preview root"
     summary = "The preview package of the :ui module. Wraps the content of a @Preview in AppTheme and Surface"
     description = """

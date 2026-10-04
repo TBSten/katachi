@@ -18,7 +18,7 @@ import me.tbsten.katachi.konsist.declarations.ktFileContent
 class KtFileContentDocsSpec : FreeSpec({
     "要点の ViewModel を、役割の例のファイルで表にする" {
         val page = rolePageOf {
-            "ViewModel" {
+            "ViewModel".role {
                 example("HomeViewModel")
                 layout { "feature" / capture("feature") / "*ViewModel".ktFile() }
                 ktFileContent {
@@ -67,7 +67,7 @@ class KtFileContentDocsSpec : FreeSpec({
 
     "入れ子のクラス・空の { }・禁止の行・anythingElse・matchingDirectory" {
         val page = rolePageOf {
-            "UseCase" {
+            "UseCase".role {
                 example("GetUserUseCase")
                 layout { "domain" / "*UseCase".ktFile() }
                 ktFileContent {
@@ -112,7 +112,7 @@ class KtFileContentDocsSpec : FreeSpec({
 
     "書いていない種類の表は出ない" {
         val page = rolePageOf {
-            "Repository" {
+            "Repository".role {
                 example("UserRepository")
                 layout { "data" / "*Repository".ktFile() }
                 ktFileContent { `import`("kotlinx.**") }
@@ -126,7 +126,7 @@ class KtFileContentDocsSpec : FreeSpec({
 
     "例のファイルで何も書かなければ節を出さない" {
         val page = rolePageOf {
-            "Repository" {
+            "Repository".role {
                 example("UserRepository")
                 layout { "data" / "*Repository".ktFile() }
                 ktFileContent { if (fileName != "UserRepository") `class`(fileName) }
@@ -138,7 +138,7 @@ class KtFileContentDocsSpec : FreeSpec({
 
     "例が無く、プロジェクトに当たるファイルも無ければ Sample.kt で表にし、そう書く" {
         val page = rolePageOf {
-            "Repository" {
+            "Repository".role {
                 layout { "data" / "*Repository".ktFile() }
                 ktFileContent { `interface`(fileName) }
             }
@@ -152,7 +152,7 @@ class KtFileContentDocsSpec : FreeSpec({
         val page = rolePageOf(
             "feature/settings/SettingsViewModel.kt" to "package x\n\nclass SettingsViewModel\n",
         ) {
-            "ViewModel" {
+            "ViewModel".role {
                 layout { "feature" / capture("feature") / "*ViewModel".ktFile() }
                 ktFileContent { `package`("com.example.${captureValue("feature")}") }
             }
@@ -164,7 +164,7 @@ class KtFileContentDocsSpec : FreeSpec({
 
     "例の値で利用者のブロックが落ちたら、表の代わりにそう書いて生成は続ける" {
         val page = rolePageOf {
-            "Screen" {
+            "Screen".role {
                 example("Home")
                 layout { "ui" / "*".ktFile() }
                 ktFileContent { `class`(fileName.substring(10)) }
@@ -185,7 +185,7 @@ class KtFileContentDocsSpec : FreeSpec({
             "feature/home/build.gradle.kts" to "",
             "feature/settings/build.gradle.kts" to "",
         ) {
-            "Screen" {
+            "Screen".role {
                 example("HomeScreen")
                 layout {
                     ":feature:*".module {
@@ -202,7 +202,7 @@ class KtFileContentDocsSpec : FreeSpec({
 
     "セルの | はエスケープし、バッククオートを含むコードは 2 つで囲む" {
         val page = rolePageOf {
-            "Screen" {
+            "Screen".role {
                 example("Home")
                 layout { "ui" / "*".ktFile() }
                 ktFileContent { `val`("`a|b`") }
@@ -214,7 +214,7 @@ class KtFileContentDocsSpec : FreeSpec({
 
     "not. の行しか無い種類の表には、残りが許されないことを最後の行に出す" {
         val page = rolePageOf {
-            "Screen" {
+            "Screen".role {
                 example("HomeScreen")
                 layout { "src" / "*Screen".ktFile() }
                 ktFileContent {

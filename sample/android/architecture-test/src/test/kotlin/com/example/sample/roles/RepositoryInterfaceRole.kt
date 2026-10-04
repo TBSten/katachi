@@ -12,7 +12,7 @@ import me.tbsten.katachi.dsl.template
 import me.tbsten.katachi.konsist.declarations.ktFileContent
 
 /** The role of the interface callers depend on to fetch and store data. */
-fun DeclarationContainerScope.repositoryInterface() = "RepositoryInterface" {
+fun DeclarationContainerScope.repositoryInterface() = "RepositoryInterface".role {
     title = "Repository interface"
     summary = "The interface for fetching and storing data, in :data, in one package per subject (user / settings)"
     description = """

@@ -29,11 +29,11 @@ import me.tbsten.katachi.test.dsl.files.FakeFileSystem
 /** A definition that allows `README.md` and nothing else, with or without a baseline. */
 private fun definition(withBaseline: Boolean = true): Architecture = architectureOf {
     if (withBaseline) baseline()
-    "Readme" { layout { "README.md".file() } }
+    "Readme".role { layout { "README.md".file() } }
 }
 
 /** The role function the baseline guide has users write, named like the old `baselineFile()`. */
-private fun DeclarationContainerScope.baselineFile() = "BaselineFile" {
+private fun DeclarationContainerScope.baselineFile() = "BaselineFile".role {
     layout { "katachi-baseline.json".file() }
 }
 
@@ -334,8 +334,8 @@ class BaselineAssertSpec : FreeSpec({
             val err = mutableListOf<String>()
             val declared = architectureOf {
                 baseline()
-                "Readme" { layout { "README.md".file() } }
-                "BaselineFile" { layout { "katachi-baseline.json".file() } }
+                "Readme".role { layout { "README.md".file() } }
+                "BaselineFile".role { layout { "katachi-baseline.json".file() } }
             }
             declared.run(treeWith("notes.md"), environmentOf(MemoryBaselineStore(), update = true, standardError = err))
 

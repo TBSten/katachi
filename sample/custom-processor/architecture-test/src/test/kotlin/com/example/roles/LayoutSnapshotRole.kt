@@ -10,7 +10,7 @@ import me.tbsten.katachi.dsl.DeclarationContainerScope
  * that is generated and not under `build/`. This is the same arrangement `GeneratedDocumentation`
  * has, which is why the two sit next to each other.
  */
-fun DeclarationContainerScope.layoutSnapshot() = "LayoutSnapshot" {
+fun DeclarationContainerScope.layoutSnapshot() = "LayoutSnapshot".role {
     title = "Layout snapshot"
     summary = "Text recording the flattened result of `layout { }`, for katachi's own self-verification"
     description = """

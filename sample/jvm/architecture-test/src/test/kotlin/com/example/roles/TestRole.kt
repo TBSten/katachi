@@ -5,7 +5,7 @@ import me.tbsten.katachi.dsl.gradle.*
 import me.tbsten.katachi.dsl.kotlin.ktFile
 
 /** The role of code that asserts behaviour, mirroring the main source set. */
-fun DeclarationContainerScope.test() = "Test" {
+fun DeclarationContainerScope.test() = "Test".role {
     title = "Test code"
     summary = "Tests placed in src/test/kotlin, keeping the same package structure as the main code"
     description = """

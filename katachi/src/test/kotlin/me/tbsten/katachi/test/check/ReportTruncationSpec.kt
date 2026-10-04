@@ -11,7 +11,7 @@ import me.tbsten.katachi.dsl.DeclarationSite
 import me.tbsten.katachi.dsl.Role
 
 /** A [Role] good enough to hang a [MissingFile] off of; nothing here reads its layout. */
-private val role: Role = architectureOf { "app".group { "Role" {} } }.allRoles.single()
+private val role: Role = architectureOf { "app".group { "Role".role {} } }.allRoles.single()
 
 private fun unexpectedFile(path: String): UnexpectedFile = UnexpectedFile(path, nearby = emptyList())
 

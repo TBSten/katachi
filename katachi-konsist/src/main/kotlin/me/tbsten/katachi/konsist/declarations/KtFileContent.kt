@@ -34,7 +34,7 @@ private const val KT_FILE_CONTENT_NAME: String = "ktFileContent"
  *
  * ## Example 1: the shape of a view model file
  * ```kt
- * "ViewModel" {
+ * "ViewModel".role {
  *     layout {
  *         "feature" / capture("feature") / mainSourceSet / kotlin / "**" / "*ViewModel".ktFile()
  *     }
@@ -60,7 +60,7 @@ private const val KT_FILE_CONTENT_NAME: String = "ktFileContent"
  *
  * ## Example 2: a use case interface and its default implementation
  * ```kt
- * "UseCase" {
+ * "UseCase".role {
  *     layout { "core/domain" / mainSourceSet / kotlin / "com/example/domain" / "*UseCase".ktFile() }
  *     ktFileContent {
  *         `interface`(fileName) {

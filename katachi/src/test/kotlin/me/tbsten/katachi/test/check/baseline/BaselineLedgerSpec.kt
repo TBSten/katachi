@@ -27,7 +27,7 @@ import me.tbsten.katachi.dsl.DeclarationSite
 import me.tbsten.katachi.dsl.Role
 import me.tbsten.katachi.test.check.architectureOf
 
-private val role: Role = architectureOf { "domain".group { "UseCase" { } } }.allRoles.single()
+private val role: Role = architectureOf { "domain".group { "UseCase".role { } } }.allRoles.single()
 
 private fun unsatisfied(
     path: String = "core/Helper.kt",

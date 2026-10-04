@@ -218,16 +218,16 @@ class LinkCheckSpec : FreeSpec({
     "生成したドキュメント" - {
         "ネストした group を含む定義でも1件も検出されない" {
             val arch = architecture {
-                "Changelog" { title = "変更履歴" }
+                "Changelog".role { title = "変更履歴" }
                 "domain".group {
                     title = "ドメイン"
-                    "UseCase" { title = "ユースケース" }
+                    "UseCase".role { title = "ユースケース" }
                     "model".group {
                         title = "モデル"
-                        "Entity" { title = "エンティティ" }
+                        "Entity".role { title = "エンティティ" }
                     }
                 }
-                "data".group { "Repository" { } }
+                "data".group { "Repository".role { } }
             }
 
             withClue("正常な定義で1件でも出るなら、それは検査のほうが間違っている") {
@@ -239,7 +239,7 @@ class LinkCheckSpec : FreeSpec({
             val arch = architecture {
                 "build".group {
                     documented = false
-                    "Convention" { }
+                    "Convention".role { }
                 }
                 "domain".group { }
             }
@@ -252,7 +252,7 @@ class LinkCheckSpec : FreeSpec({
         "description に書いた相対リンクもリンク切れとして報告される" {
             val arch = architecture {
                 "domain".group {
-                    "UseCase" { description = "詳しくは [規約](../CONTRIBUTING.md) を読む。" }
+                    "UseCase".role { description = "詳しくは [規約](../CONTRIBUTING.md) を読む。" }
                 }
             }
 
@@ -265,11 +265,11 @@ class LinkCheckSpec : FreeSpec({
         "ツリーに出る役割は、すぐ上の表にもリンクとして出る" {
             val arch = architecture {
                 "domain".group {
-                    "UseCase" {
+                    "UseCase".role {
                         title = "ユースケース"
                         layout { ":core:domain".module { mainSourceSet / kotlin / "*UseCase".ktFile() } }
                     }
-                    "Repository" {
+                    "Repository".role {
                         title = "リポジトリ"
                         layout { ":core:domain".module { mainSourceSet / kotlin / "*Repository".ktFile() } }
                     }
@@ -292,7 +292,7 @@ class LinkCheckSpec : FreeSpec({
         "検査はファイルシステムを1度も読まない" {
             val arch = architecture {
                 "domain".group {
-                    "UseCase" {
+                    "UseCase".role {
                         layout { ":core:domain".module { mainSourceSet / kotlin / "*UseCase".ktFile() } }
                     }
                 }
@@ -308,8 +308,8 @@ class LinkCheckSpec : FreeSpec({
         "識別子の大文字小文字だけが違う役割が検出される" {
             val arch = architecture {
                 "domain".group {
-                    "UseCase" { }
-                    "usecase" { }
+                    "UseCase".role { }
+                    "usecase".role { }
                 }
             }
 
@@ -320,7 +320,7 @@ class LinkCheckSpec : FreeSpec({
         }
 
         "ルート直下の Readme はルートの README.md と衝突する" {
-            val arch = architecture { "Readme" { } }
+            val arch = architecture { "Readme".role { } }
 
             val exception = shouldThrow<KatachiDocumentPathCaseCollisionException> { arch.documents() }
 
@@ -328,7 +328,7 @@ class LinkCheckSpec : FreeSpec({
         }
 
         "例外は両方のページと、それを出した宣言を名指しする" {
-            val arch = architecture { "Readme" { } }
+            val arch = architecture { "Readme".role { } }
 
             val exception = shouldThrow<KatachiDocumentPathCaseCollisionException> { arch.documents() }
 
@@ -338,10 +338,10 @@ class LinkCheckSpec : FreeSpec({
 
         "複数の衝突が1つの例外にまとまる" {
             val arch = architecture {
-                "Readme" { }
+                "Readme".role { }
                 "domain".group {
-                    "UseCase" { }
-                    "usecase" { }
+                    "UseCase".role { }
+                    "usecase".role { }
                 }
             }
 

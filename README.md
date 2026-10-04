@@ -11,7 +11,7 @@ English | [日本語](./README.ja.md) ・ [Docs](https://tbsten.github.io/katach
 ## What katachi does
 
 ```kotlin
-"UseCase" {
+"UseCase".role {
     summary = "A single app-specific behavior that happens on a screen"
     layout {
         "domain/src/main/kotlin/com/example/useCase" / "${capture("name")}UseCase".ktFile()
@@ -80,7 +80,7 @@ Write the definition and a test.
 val projectArchitecture = architecture {
     gradle() // Gradle files: wrapper, settings, build scripts, etc.
     "domain".group {
-        "UseCase" {
+        "UseCase".role {
             layout { "domain/src/main/kotlin/com/example/useCase" / "*UseCase".ktFile() }
         }
     }

@@ -7,7 +7,7 @@ import me.tbsten.katachi.dsl.gradle.*
 import me.tbsten.katachi.dsl.kotlin.ktFile
 
 /** The whole of the `:navigation` module: where a screen can be reached from, and from where. */
-fun DeclarationContainerScope.navigation() = "Navigation" {
+fun DeclarationContainerScope.navigation() = "Navigation".role {
     title = "Navigation"
     summary = "The definition of destinations, and the Navigator that holds the current location"
     description = """

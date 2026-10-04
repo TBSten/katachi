@@ -15,7 +15,7 @@ import me.tbsten.katachi.dsl.DeclarationContainerScope
  * What stays tight is the set of top-level directories. A new one appearing under `docs/` is
  * reported, which is exactly the change worth hearing about — a new tool's config file is not.
  */
-fun DeclarationContainerScope.docsSite() = "DocsSite" {
+fun DeclarationContainerScope.docsSite() = "DocsSite".role {
     title = "ドキュメントサイト"
     summary = "Astro (Starlight) のサイト。中の構成は Astro の規約が決めるので katachi は言わない"
     example("astro.config.mjs", "Starlight とテーマの配線")

@@ -10,7 +10,7 @@ import me.tbsten.katachi.dsl.DeclarationContainerScope
  * The file is a file of the project like any other, so `files = gitTracked()` hands it to the
  * check and it needs a role; without one the test fails with `[UnexpectedFile]` about it.
  */
-fun DeclarationContainerScope.baselineFile() = "BaselineFile" {
+fun DeclarationContainerScope.baselineFile() = "BaselineFile".role {
     title = "baseline (ledger of held-back violations)"
     summary = "A ledger of the violations that already existed when katachi was adopted, held back so the test does not fail"
     description = """

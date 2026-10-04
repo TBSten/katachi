@@ -22,7 +22,7 @@ class GenerateCodeFromTemplateSpec : FreeSpec({
         withTempProject { projectDir ->
             val arch = architectureOf {
                 "domain".group {
-                    "UseCase" {
+                    "UseCase".role {
                         layout { "useCase" / "GetUserUseCase.kt".file().template { "class GetUserUseCase" } }
                     }
                 }
@@ -47,7 +47,7 @@ class GenerateCodeFromTemplateSpec : FreeSpec({
         withTempProject { projectDir ->
             val arch = architectureOf {
                 "domain".group {
-                    "UseCase" {
+                    "UseCase".role {
                         layout { "useCase" / "GetUserUseCase.kt".file().template { "class GetUserUseCase" } }
                     }
                 }

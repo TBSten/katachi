@@ -13,7 +13,7 @@ import me.tbsten.katachi.dsl.DeclarationContainerScope
  * declares the directory and stops the check there. It is still a declared directory with a
  * role and a summary around it, which is the only way katachi lets anything go unchecked.
  */
-fun DeclarationContainerScope.xcodeProject() = "XcodeProject" {
+fun DeclarationContainerScope.xcodeProject() = "XcodeProject".role {
     title = "Xcode project"
     summary = "Under app/ios. Outside Gradle's management and not checked"
     description = """

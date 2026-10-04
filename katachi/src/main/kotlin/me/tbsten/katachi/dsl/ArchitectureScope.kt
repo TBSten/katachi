@@ -19,9 +19,9 @@ import org.intellij.lang.annotations.Language
  * ## Example 1: declare groups and roles inside architecture { }
  * ```kt
  * val arch = architecture {
- *     "Readme" { layout { "README.md".file() } }
+ *     "Readme".role { layout { "README.md".file() } }
  *     "domain".group {
- *         "UseCase" { }
+ *         "UseCase".role { }
  *     }
  * }
  * ```
@@ -39,7 +39,7 @@ public sealed interface ArchitectureScope : DeclarationContainerScope {
      * ```kt
      * val arch = architecture {
      *     title = "myapp"
-     *     "domain".group { "UseCase" { } }
+     *     "domain".group { "UseCase".role { } }
      * }
      * arch[Title] shouldBe "myapp"
      * ```
@@ -59,7 +59,7 @@ public sealed interface ArchitectureScope : DeclarationContainerScope {
      * val arch = architecture {
      *     title = "myapp"
      *     description = "このリポジトリの構成。役割ごとに1ページある。"
-     *     "domain".group { "UseCase" { } }
+     *     "domain".group { "UseCase".role { } }
      * }
      * arch[Description] shouldBe "このリポジトリの構成。役割ごとに1ページある。"
      * ```
@@ -75,7 +75,7 @@ public sealed interface ArchitectureScope : DeclarationContainerScope {
      * ```kt
      * val arch = architecture {
      *   files = wholeTree()
-     *   "domain".group { "UseCase" { } }
+     *   "domain".group { "UseCase".role { } }
      * }
      * arch.files shouldBe FileSelection.WholeTree
      * ```
@@ -109,7 +109,7 @@ public sealed interface ArchitectureScope : DeclarationContainerScope {
      * ```kt
      * val arch = architecture {
      *     baseline()
-     *     "BaselineFile" { layout { "katachi-baseline.json".file() } }
+     *     "BaselineFile".role { layout { "katachi-baseline.json".file() } }
      * }
      * arch.baseline?.path shouldBe "katachi-baseline.json"
      * ```
@@ -133,7 +133,7 @@ internal class ArchitectureScopeImpl : ArchitectureScope {
      * One namespace for groups and roles alike, exactly as a group block keeps one.
      *
      * A top level group's `qualifiedName` is its bare name, and so is a root role's, so
-     * `"domain".group { }` and `"domain" { }` would both answer to `"domain"` and nothing
+     * `"domain".group { }` and `"domain".role { }` would both answer to `"domain"` and nothing
      * could say which one a reference means. Sharing the reservations is how that is said.
      */
     private val declaredNames = DeclaredNames()
@@ -172,7 +172,7 @@ internal class ArchitectureScopeImpl : ArchitectureScope {
         )
     }
 
-    override operator fun String.invoke(block: RoleScope.() -> Unit) {
+    override fun String.role(block: RoleScope.() -> Unit) {
         roles += declareRole(
             name = this,
             groupPath = emptyList(),

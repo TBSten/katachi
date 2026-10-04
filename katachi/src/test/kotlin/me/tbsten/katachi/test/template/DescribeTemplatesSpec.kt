@@ -18,8 +18,8 @@ class DescribeTemplatesSpec : FreeSpec({
     "一覧" - {
         "宣言順にテンプレートを並べる" {
             val arch = architectureOf {
-                "a".group { "A" { layout { "a" / "A.kt".file().template { "" } } } }
-                "b".group { "B" { layout { "b" / "B.kt".file().template { "" } } } }
+                "a".group { "A".role { layout { "a" / "A.kt".file().template { "" } } } }
+                "b".group { "B".role { layout { "b" / "B.kt".file().template { "" } } } }
             }
             val list = arch.process(DescribeTemplates, DescribeTemplates.Args()).getOrThrow() as TemplateList
             list.templates.map { it.template } shouldContainExactly listOf("a.A", "b.B")
@@ -28,7 +28,7 @@ class DescribeTemplatesSpec : FreeSpec({
         "title は .template(title=) → id → 役割の title の順" {
             val arch = architectureOf {
                 "domain".group {
-                    "UseCase" {
+                    "UseCase".role {
                         title = "Use case"
                         layout {
                             "a" / "A.kt".file().template(id = "withTitle", title = "With title") { "" }
@@ -44,7 +44,7 @@ class DescribeTemplatesSpec : FreeSpec({
 
         "id が無く役割にも title が無ければ、役割の qualifiedName にまで落ちる" {
             val arch = architectureOf {
-                "domain".group { "UseCase" { layout { "a" / "A.kt".file().template { "" } } } }
+                "domain".group { "UseCase".role { layout { "a" / "A.kt".file().template { "" } } } }
             }
             val list = arch.process(DescribeTemplates, DescribeTemplates.Args()).getOrThrow() as TemplateList
             list.templates.single().title shouldBe "domain.UseCase"
@@ -53,7 +53,7 @@ class DescribeTemplatesSpec : FreeSpec({
         "role の summary をそのまま運ぶ" {
             val arch = architectureOf {
                 "domain".group {
-                    "UseCase" {
+                    "UseCase".role {
                         summary = "A single app-specific behavior"
                         layout { "a" / "A.kt".file().template { "" } }
                     }
@@ -66,7 +66,7 @@ class DescribeTemplatesSpec : FreeSpec({
         "capture と parameter が衝突するテンプレートは conflict=true で残り、一覧全体は失敗しない" {
             val arch = architectureOf {
                 "a".group {
-                    "A" {
+                    "A".role {
                         layout {
                             "a" / "${capture("name")}A.kt".file().template {
                                 val name by stringParameter()
@@ -75,7 +75,7 @@ class DescribeTemplatesSpec : FreeSpec({
                         }
                     }
                 }
-                "b".group { "B" { layout { "b" / "B.kt".file().template { "// ok" } } } }
+                "b".group { "B".role { layout { "b" / "B.kt".file().template { "// ok" } } } }
             }
             val list = arch.process(DescribeTemplates, DescribeTemplates.Args()).getOrThrow() as TemplateList
             list.templates.single { it.template == "a.A" }.conflict shouldBe true
@@ -86,7 +86,7 @@ class DescribeTemplatesSpec : FreeSpec({
     "詳細" - {
         "--arg template= で1つのテンプレートを選べる" {
             val arch = architectureOf {
-                "domain".group { "UseCase" { layout { "a" / "A.kt".file().template { "class A" } } } }
+                "domain".group { "UseCase".role { layout { "a" / "A.kt".file().template { "class A" } } } }
             }
             val detail = arch.process(DescribeTemplates, DescribeTemplates.Args(template = "domain.UseCase"))
                 .getOrThrow() as TemplateDetail
@@ -96,7 +96,7 @@ class DescribeTemplatesSpec : FreeSpec({
 
         "知らない指定は KatachiUnknownTemplateException" {
             val arch = architectureOf {
-                "domain".group { "UseCase" { layout { "a" / "A.kt".file().template { "" } } } }
+                "domain".group { "UseCase".role { layout { "a" / "A.kt".file().template { "" } } } }
             }
             shouldThrow<KatachiUnknownTemplateException> {
                 arch.process(DescribeTemplates, DescribeTemplates.Args(template = "Nope")).getOrThrow()
@@ -106,7 +106,7 @@ class DescribeTemplatesSpec : FreeSpec({
         "曖昧な指定は KatachiAmbiguousTemplateException" {
             val arch = architectureOf {
                 "data".group {
-                    "Repository" {
+                    "Repository".role {
                         layout {
                             "repository" / "Repository.kt".file().template(id = "repository") { "" }
                             "repository" / "RepositoryImpl.kt".file().template(id = "repositoryImpl") { "" }
@@ -121,8 +121,8 @@ class DescribeTemplatesSpec : FreeSpec({
 
         ", を含む指定は KatachiMultipleTemplatesToDescribeException" {
             val arch = architectureOf {
-                "a".group { "A" { layout { "a" / "A.kt".file().template { "" } } } }
-                "b".group { "B" { layout { "b" / "B.kt".file().template { "" } } } }
+                "a".group { "A".role { layout { "a" / "A.kt".file().template { "" } } } }
+                "b".group { "B".role { layout { "b" / "B.kt".file().template { "" } } } }
             }
             val thrown = shouldThrow<KatachiMultipleTemplatesToDescribeException> {
                 arch.process(DescribeTemplates, DescribeTemplates.Args(template = "a.A,b.B")).getOrThrow()

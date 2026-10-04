@@ -27,25 +27,25 @@ internal fun nowInAndroidArchitecture(): Architecture = architecture {
     gradle(requireWrapper = false)
 
     "nowinandroid".group {
-        "FeatureApi" {
+        "FeatureApi".role {
             kotlinConstraint()
             layout {
                 ":feature:*:api".module { "src" / "*" / "kotlin" / "**" / "*".ktFile() }
             }
         }
-        "FeatureImpl" {
+        "FeatureImpl".role {
             kotlinConstraint()
             layout {
                 ":feature:*:impl".module { "src" / "*" / "kotlin" / "**" / "*".ktFile() }
             }
         }
-        "Core" {
+        "Core".role {
             kotlinConstraint()
             layout {
                 ":core:*".module { "src" / "*" / "kotlin" / "**" / "*".ktFile() }
             }
         }
-        "App" {
+        "App".role {
             kotlinConstraint()
             layout {
                 ":app".module { "src" / "*" / "kotlin" / "**" / "*".ktFile() }
@@ -55,7 +55,7 @@ internal fun nowInAndroidArchitecture(): Architecture = architecture {
                 ":lint".module { "src" / "*" / "kotlin" / "**" / "*".ktFile() }
             }
         }
-        "AndroidResource" {
+        "AndroidResource".role {
             layout {
                 ":**".module {
                     "src" / "*" / "res" / "**" / "*".file()
@@ -63,17 +63,17 @@ internal fun nowInAndroidArchitecture(): Architecture = architecture {
                 }
             }
         }
-        "Screenshot" {
+        "Screenshot".role {
             layout {
                 ":**".module { "src" / "*" / "screenshots" / "**" / "*.png".file() }
             }
         }
-        "BuildLogic" {
+        "BuildLogic".role {
             layout {
                 "build-logic" / "**" / "*".file()
             }
         }
-        "Document" {
+        "Document".role {
             layout {
                 "*.md".file()
                 "docs" / "**" / "*".file()

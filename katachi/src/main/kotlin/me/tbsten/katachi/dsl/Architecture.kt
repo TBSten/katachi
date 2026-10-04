@@ -16,7 +16,7 @@ import me.tbsten.katachi.dsl.internal.get
  * ```kt
  * val projectArchitecture: Architecture = architecture {
  *     "domain".group {
- *         "UseCase" { }
+ *         "UseCase".role { }
  *     }
  * }
  * ```
@@ -29,8 +29,8 @@ public class Architecture internal constructor(
      * ```kt
      * val arch = architecture {
      *     "domain".group {
-     *         "UseCase" { }
-     *         "Repository" { }
+     *         "UseCase".role { }
+     *         "Repository".role { }
      *     }
      * }
      * arch.groups.map { it.name } shouldContainExactly listOf("domain")
@@ -47,8 +47,8 @@ public class Architecture internal constructor(
      * ## Example 1: read the roles declared at the root
      * ```kt
      * val arch = architecture {
-     *     "Readme" { }
-     *     "domain".group { "UseCase" { } }
+     *     "Readme".role { }
+     *     "domain".group { "UseCase".role { } }
      * }
      * arch.roles.map { it.qualifiedName } shouldContainExactly listOf("Readme")
      * ```
@@ -61,7 +61,7 @@ public class Architecture internal constructor(
      * ```kt
      * val arch = architecture {
      *     files = wholeTree()
-     *     "domain".group { "UseCase" { } }
+     *     "domain".group { "UseCase".role { } }
      * }
      * arch.files shouldBe FileSelection.WholeTree
      * ```
@@ -76,7 +76,7 @@ public class Architecture internal constructor(
      *     moduleResolver = ModuleResolver { module ->
      *         if (module.value == ":app") "apps/android" else module.segments.joinToString("/")
      *     }
-     *     "domain".group { "UseCase" { } }
+     *     "domain".group { "UseCase".role { } }
      * }
      * architecture.moduleResolver.directoryOf(ModulePath.of(":app")) shouldBe "apps/android"
      * ```
@@ -102,7 +102,7 @@ public class Architecture internal constructor(
      *     "domain".group {
      *         "model".group {
      *             "value".group {
-     *                 "ValueObject" { }
+     *                 "ValueObject".role { }
      *             }
      *         }
      *     }
@@ -122,8 +122,8 @@ public class Architecture internal constructor(
      * ## Example 1: read every role across every group
      * ```kt
      * val arch = architecture {
-     *     "domain".group { "Repository" { } }
-     *     "data".group { "Repository" { } }
+     *     "domain".group { "Repository".role { } }
+     *     "data".group { "Repository".role { } }
      * }
      * arch.allRoles.map { it.qualifiedName } shouldContainExactly
      *     listOf("domain.Repository", "data.Repository")
@@ -132,8 +132,8 @@ public class Architecture internal constructor(
      * ## Example 2: a role declared at the root is one of them
      * ```kt
      * val arch = architecture {
-     *     "Readme" { }
-     *     "domain".group { "UseCase" { } }
+     *     "Readme".role { }
+     *     "domain".group { "UseCase".role { } }
      * }
      * arch.allRoles.map { it.qualifiedName } shouldContainExactly
      *     listOf("Readme", "domain.UseCase")
@@ -154,7 +154,7 @@ public class Architecture internal constructor(
      *
      * val arch = architecture {
      *     owner = "platform"
-     *     "domain".group { "UseCase" { } }
+     *     "domain".group { "UseCase".role { } }
      * }
      * arch[Owner] shouldBe "platform"
      * ```
@@ -210,7 +210,7 @@ public class Architecture internal constructor(
  * fun ArchitectureScope.domainRoles() {
  *     "domain".group {
  *         title = "Domain"
- *         "UseCase" {
+ *         "UseCase".role {
  *             title = "Use case"
  *             summary = "A single app-specific behavior that happens on a screen"
  *         }

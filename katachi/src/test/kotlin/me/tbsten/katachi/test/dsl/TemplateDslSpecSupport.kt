@@ -17,7 +17,7 @@ internal const val TEMPLATE_ROLE: String = "UseCase"
 
 internal fun architectureWithTemplate(block: TemplateScope.() -> String): Architecture =
     architecture {
-        "domain".group { TEMPLATE_ROLE { layout { "Generated".ktFile().template(block = block) } } }
+        "domain".group { TEMPLATE_ROLE.role { layout { "Generated".ktFile().template(block = block) } } }
     }
 
 /** The one `.template { }` this file's `architectureWithTemplate` declared. */

@@ -6,7 +6,7 @@ import me.tbsten.katachi.dsl.gradle.*
 import me.tbsten.katachi.dsl.kotlin.ktFile
 
 /** The role of a group declared in the katachi DSL. */
-fun DeclarationContainerScope.groupDefinition() = "GroupDefinition" {
+fun DeclarationContainerScope.groupDefinition() = "GroupDefinition".role {
     title = "Group definition"
     summary = "One group of the katachi definition, declared in `groups/<Name>Group.kt`"
     description = """

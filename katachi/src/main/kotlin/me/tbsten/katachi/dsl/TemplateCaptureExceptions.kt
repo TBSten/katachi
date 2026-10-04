@@ -20,7 +20,7 @@ import me.tbsten.katachi.KatachiDeclarationException
  *
  * val arch = architecture {
  *     "feature".group {
- *         "ViewModel" {
+ *         "ViewModel".role {
  *             layout {
  *                 "feature" / capture("feature") / "ViewModel.kt".file()
  *                     .template { captureValue("featur") }
@@ -92,7 +92,7 @@ public class KatachiUnknownTemplateCaptureException internal constructor(
  *
  * val arch = architecture {
  *     "feature".group {
- *         "ViewModel" {
+ *         "ViewModel".role {
  *             layout {
  *                 "feature" / capture("feature") / "ViewModel.kt".file()
  *                     .template {
@@ -177,11 +177,11 @@ public class KatachiTemplateParameterConflictException internal constructor(
  *
  * val arch = architecture {
  *     "a".group {
- *         "A" { layout { "a" / "A.kt".file()
+ *         "A".role { layout { "a" / "A.kt".file()
  *             .template { val name by stringParameter(); "// $name" } } }
  *     }
  *     "b".group {
- *         "B" { layout { "b" / "B.kt".file()
+ *         "B".role { layout { "b" / "B.kt".file()
  *             .template { val name by intParameter(); "// $name" } } }
  *     }
  * }

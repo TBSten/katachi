@@ -20,9 +20,9 @@ import me.tbsten.katachi.dsl.internal.get
  * val arch = architecture {
  *     "domain".group {
  *         "model".group {
- *             "ValueObject" { }
+ *             "ValueObject".role { }
  *         }
- *         "UseCase" { }
+ *         "UseCase".role { }
  *     }
  * }
  * ```
@@ -63,7 +63,7 @@ public class Group internal constructor(
      * val arch = architecture {
      *     "domain".group {
      *         "model".group { }
-     *         "UseCase" { }
+     *         "UseCase".role { }
      *     }
      * }
      * arch.groups.single().groups.map { it.name } shouldContainExactly listOf("model")
@@ -77,8 +77,8 @@ public class Group internal constructor(
      * ```kt
      * val arch = architecture {
      *     "domain".group {
-     *         "model".group { "ValueObject" { } }
-     *         "UseCase" { }
+     *         "model".group { "ValueObject".role { } }
+     *         "UseCase".role { }
      *     }
      * }
      * arch.groups.single().roles.map { it.name } shouldContainExactly listOf("UseCase")
@@ -92,7 +92,7 @@ public class Group internal constructor(
      * ```kt
      * val arch = architecture {
      *     "domain".group {
-     *         "UseCase" {
+     *         "UseCase".role {
      *             layout { }
      *         }
      *     }

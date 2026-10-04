@@ -42,7 +42,7 @@ class FileConstraintCheckSpec : FreeSpec({
         "役割直下の制約が全 layout の和集合を覆う" {
             val arch = architectureOf {
                 "domain".group {
-                    "UseCase" {
+                    "UseCase".role {
                         fileConstraint("role wide", check = rejectsEverything())
                         layout { "alpha" / "*.kt".file() }
                         layout { "beta" / "*.kt".file() }
@@ -65,7 +65,7 @@ class FileConstraintCheckSpec : FreeSpec({
         "layout の中に書いた制約はその場所のファイルだけを覆う" {
             val arch = architectureOf {
                 "domain".group {
-                    "UseCase" {
+                    "UseCase".role {
                         layout {
                             "alpha" {
                                 fileConstraint("alpha only", check = rejectsEverything())
@@ -89,7 +89,7 @@ class FileConstraintCheckSpec : FreeSpec({
         "同じファイルを役割直下と layout 内の制約が両方拒んだら2ブロック出る" {
             val arch = architectureOf {
                 "domain".group {
-                    "UseCase" {
+                    "UseCase".role {
                         fileConstraint("role wide", check = rejectsEverything())
                         layout {
                             "alpha" {
@@ -115,7 +115,7 @@ class FileConstraintCheckSpec : FreeSpec({
         "制約をブロックの前に書いても後ろに書いても覆う範囲は変わらない" {
             val before = architectureOf {
                 "domain".group {
-                    "UseCase" {
+                    "UseCase".role {
                         layout {
                             "alpha" {
                                 fileConstraint("x", check = rejectsEverything())
@@ -127,7 +127,7 @@ class FileConstraintCheckSpec : FreeSpec({
             }
             val after = architectureOf {
                 "domain".group {
-                    "UseCase" {
+                    "UseCase".role {
                         layout {
                             "alpha" {
                                 "*.kt".file()
@@ -151,7 +151,7 @@ class FileConstraintCheckSpec : FreeSpec({
             val recording = RecordingFileConstraint()
             val arch = architectureOf {
                 "domain".group {
-                    "UseCase" {
+                    "UseCase".role {
                         layout {
                             "alpha" {
                                 fileConstraint("alpha only", check = recording)
@@ -193,7 +193,7 @@ class FileConstraintCheckSpec : FreeSpec({
             }
             val arch = architectureOf {
                 "domain".group {
-                    "UseCase" {
+                    "UseCase".role {
                         layout { "alpha" { fileConstraint("dup", check = twice); "*.kt".file() } }
                     }
                 }
@@ -210,7 +210,7 @@ class FileConstraintCheckSpec : FreeSpec({
             }
             val arch = architectureOf {
                 "domain".group {
-                    "UseCase" {
+                    "UseCase".role {
                         layout { "alpha" { fileConstraint("rev", check = reversed); "*.kt".file() } }
                     }
                 }
@@ -226,7 +226,7 @@ class FileConstraintCheckSpec : FreeSpec({
         "配置違反と制約違反が1回の validate の1レポートに種別順で並ぶ" {
             val arch = architectureOf {
                 "domain".group {
-                    "UseCase" {
+                    "UseCase".role {
                         layout {
                             "alpha" {
                                 fileConstraint("no helper", check = rejecting("alpha/Helper.kt"))
@@ -259,7 +259,7 @@ class FileConstraintCheckSpec : FreeSpec({
             }
             val arch = architectureOf {
                 "domain".group {
-                    "UseCase" {
+                    "UseCase".role {
                         layout { "alpha" { fileConstraint("once", check = recording); "*.kt".file() } }
                     }
                 }
@@ -279,7 +279,7 @@ class FileConstraintCheckSpec : FreeSpec({
             val recording = RecordingFileConstraint()
             val arch = architectureOf {
                 "domain".group {
-                    "UseCase" {
+                    "UseCase".role {
                         layout { "alpha" { fileConstraint("invoke", check = recording); "*.kt".file() } }
                     }
                 }
@@ -298,7 +298,7 @@ class FileConstraintCheckSpec : FreeSpec({
         "FileConstraintCheck を渡せば出ない" {
             val arch = architectureOf {
                 "domain".group {
-                    "UseCase" {
+                    "UseCase".role {
                         layout { "alpha" { fileConstraint("invoke", check = silentCheck()); "*.kt".file() } }
                     }
                 }
@@ -326,7 +326,7 @@ class FileConstraintCheckSpec : FreeSpec({
             // 「自分が評価しなかった制約」が混ざったら、返り値の意味が変わってしまう。
             val arch = architectureOf {
                 "domain".group {
-                    "UseCase" {
+                    "UseCase".role {
                         fileConstraint("role wide", check = silentCheck())
                         layout {
                             "alpha" { fileConstraint("alpha only", check = silentCheck()); "*.kt".file() }
@@ -341,7 +341,7 @@ class FileConstraintCheckSpec : FreeSpec({
         "ディレクトリしか宣言していない役割でも1行目がドットにならない" {
             val arch = architectureOf {
                 "build".group {
-                    "Generated" {
+                    "Generated".role {
                         fileConstraint("role wide", check = silentCheck())
                         layout { "generated" { } }
                     }
@@ -358,7 +358,7 @@ class FileConstraintCheckSpec : FreeSpec({
             val recording = RecordingFileConstraint()
             val arch = architectureOf {
                 "domain".group {
-                    "UseCase" {
+                    "UseCase".role {
                         layout {
                             "alpha" { fileConstraint("nothing yet", check = recording); "*.kt".file() }
                         }
@@ -386,7 +386,7 @@ class FileConstraintCheckSpec : FreeSpec({
             }
             val arch = architectureOf {
                 "domain".group {
-                    "UseCase" {
+                    "UseCase".role {
                         fileConstraint("first", check = memoizing)
                         layout { "alpha" { fileConstraint("second", check = memoizing); "*.kt".file() } }
                     }
@@ -411,7 +411,7 @@ class FileConstraintCheckSpec : FreeSpec({
             }
             val arch = architectureOf {
                 "domain".group {
-                    "UseCase" {
+                    "UseCase".role {
                         fileConstraint("value", check = asValue)
                         layout { "alpha" { fileConstraint("text", check = asText); "*.kt".file() } }
                     }
@@ -436,7 +436,7 @@ class FileConstraintCheckSpec : FreeSpec({
         val withFileConstraint = { check: FileConstraint ->
             architectureOf {
                 "domain".group {
-                    "UseCase" { layout { "alpha" { fileConstraint("rule", check = check); "*.kt".file() } } }
+                    "UseCase".role { layout { "alpha" { fileConstraint("rule", check = check); "*.kt".file() } } }
                 }
             }
         }

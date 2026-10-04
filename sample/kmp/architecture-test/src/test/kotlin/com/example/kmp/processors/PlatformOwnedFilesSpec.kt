@@ -52,7 +52,7 @@ class PlatformOwnedFilesSpec : FreeSpec({
                 documented = false
                 title = "Tool"
 
-                "Git" {
+                "Git".role {
                     summary = ".gitignore and the like"
                     documented = false
                     example(".gitignore", "Keeps generated files out of Git")

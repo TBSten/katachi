@@ -17,7 +17,7 @@ private fun nameOf(type: KClass<*>): String = type.qualifiedName ?: type.java.na
  * ```kt
  * shouldThrow<KatachiFileConstraintNameException> {
  *     architecture {
- *         "UseCase" {
+ *         "UseCase".role {
  *             fileConstraint("has an invoke\nfunction") { emptyList() }
  *             layout { "useCase" { } }
  *         }
@@ -35,7 +35,7 @@ public class KatachiFileConstraintNameException internal constructor(
      * ## Example 1: read back the name that was rejected
      * ```kt
      * shouldThrow<KatachiFileConstraintNameException> {
-     *     architecture { "UseCase" { fileConstraint("   ") { emptyList() }; layout { } } }
+     *     architecture { "UseCase".role { fileConstraint("   ") { emptyList() }; layout { } } }
      * }.name shouldBe "   "
      * ```
      */
@@ -46,7 +46,7 @@ public class KatachiFileConstraintNameException internal constructor(
      * ## Example 1: jump to the line that declared the rejected constraint
      * ```kt
      * shouldThrow<KatachiFileConstraintNameException> {
-     *     architecture { "UseCase" { fileConstraint("   ") { emptyList() }; layout { } } }
+     *     architecture { "UseCase".role { fileConstraint("   ") { emptyList() }; layout { } } }
      * }.declaredAt.lineNumber shouldBeGreaterThan 0
      * ```
      */
@@ -80,7 +80,7 @@ public class KatachiFileConstraintNameException internal constructor(
  * shouldThrow<KatachiFileConstraintWithoutLayoutException> {
  *     architecture {
  *         "domain".group {
- *             "UseCase" { fileConstraint("has an invoke function") { emptyList() } }
+ *             "UseCase".role { fileConstraint("has an invoke function") { emptyList() } }
  *         }
  *     }
  * }.role shouldBe "UseCase"
@@ -96,7 +96,7 @@ public class KatachiFileConstraintWithoutLayoutException internal constructor(
      * ## Example 1: read back which role could not hold a constraint
      * ```kt
      * shouldThrow<KatachiFileConstraintWithoutLayoutException> {
-     *     architecture { "UseCase" { fileConstraint { emptyList() } } }
+     *     architecture { "UseCase".role { fileConstraint { emptyList() } } }
      * }.role shouldBe "UseCase"
      * ```
      */
@@ -107,7 +107,7 @@ public class KatachiFileConstraintWithoutLayoutException internal constructor(
      * ## Example 1: jump to the constraint that has nothing to be about
      * ```kt
      * shouldThrow<KatachiFileConstraintWithoutLayoutException> {
-     *     architecture { "UseCase" { fileConstraint { emptyList() } } }
+     *     architecture { "UseCase".role { fileConstraint { emptyList() } } }
      * }.declaredAt.fileName shouldBe "ProjectArchitecture.kt"
      * ```
      */
@@ -143,7 +143,7 @@ public class KatachiFileConstraintWithoutLayoutException internal constructor(
  * shouldThrow<KatachiFileConstraintDirectOnlyWithoutDirectoryException> {
  *     architecture {
  *         "util".group {
- *             "Util" {
+ *             "Util".role {
  *                 fileConstraint("uses the stdlib only", scope = FileConstraintRange.DirectOnly) { emptyList() }
  *                 layout { "util" { "*.kt".file() } }
  *             }
@@ -194,7 +194,7 @@ public class KatachiFileConstraintDirectOnlyWithoutDirectoryException internal c
  * ```kt
  * val arch = architecture {
  *     "util".group {
- *         "Util" {
+ *         "Util".role {
  *             layout {
  *                 "util" {
  *                     fileConstraint("uses the stdlib only", scope = FileConstraintRange.DirectOnly) { emptyList() }

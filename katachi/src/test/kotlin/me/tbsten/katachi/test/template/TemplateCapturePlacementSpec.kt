@@ -15,7 +15,7 @@ class TemplateCapturePlacementSpec : FreeSpec({
     "値が無い capture は KatachiMissingTemplateCaptureException" {
         val arch = architectureOf {
             "feature".group {
-                "ViewModel" {
+                "ViewModel".role {
                     layout {
                         "feature" / capture("feature") / "ViewModel.kt".file().template {
                             "class ${captureValue("feature")}ViewModel"
@@ -33,7 +33,7 @@ class TemplateCapturePlacementSpec : FreeSpec({
     "複数の capture のうち一部だけ渡すと、残りだけが名指しされる" {
         val arch = architectureOf {
             "feature".group {
-                "Screen" {
+                "Screen".role {
                     layout {
                         "feature" / capture("feature") / "component" /
                             "${capture("fileName")}Screen.kt".file().template { "// screen" }
@@ -51,7 +51,7 @@ class TemplateCapturePlacementSpec : FreeSpec({
     "captureValue で読むだけの capture も、無ければ落ちる" {
         val arch = architectureOf {
             "feature".group {
-                "ViewModel" {
+                "ViewModel".role {
                     layout {
                         "feature" / capture("feature") / "ViewModel.kt".file().template {
                             val label = captureValue("feature")

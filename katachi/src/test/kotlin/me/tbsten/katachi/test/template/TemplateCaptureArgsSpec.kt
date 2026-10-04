@@ -13,7 +13,7 @@ class TemplateCaptureArgsSpec : FreeSpec({
     "stringParameter は --arg の値をそのまま読む" {
         val arch = architectureOf {
             "domain".group {
-                "UseCase" {
+                "UseCase".role {
                     layout {
                         "useCase" / "GetUserUseCase.kt".file().template {
                             val body by stringParameter()
@@ -30,7 +30,7 @@ class TemplateCaptureArgsSpec : FreeSpec({
     "既定値は --arg を渡さなければ使われる" {
         val arch = architectureOf {
             "domain".group {
-                "UseCase" {
+                "UseCase".role {
                     layout {
                         "useCase" / "GetUserUseCase.kt".file().template {
                             val body by stringParameter(default = "TODO()")
@@ -46,7 +46,7 @@ class TemplateCaptureArgsSpec : FreeSpec({
     "intParameter / booleanParameter / enumParameter を1つのテンプレートで使える" {
         val arch = architectureOf {
             "data".group {
-                "Repository" {
+                "Repository".role {
                     layout {
                         "repository" / "Repository.kt".file().template {
                             val pageSize by intParameter(default = 20)
@@ -67,7 +67,7 @@ class TemplateCaptureArgsSpec : FreeSpec({
     "capture とパラメータは名前空間が別（同じ文字列でも読み口が違う）" {
         val arch = architectureOf {
             "feature".group {
-                "ViewModel" {
+                "ViewModel".role {
                     layout {
                         "feature" / capture("feature") / "ViewModel.kt".file().template {
                             val label by stringParameter()

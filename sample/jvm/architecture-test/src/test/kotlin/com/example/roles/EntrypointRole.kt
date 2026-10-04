@@ -6,7 +6,7 @@ import me.tbsten.katachi.dsl.gradle.*
 import me.tbsten.katachi.dsl.kotlin.ktFile
 
 /** The role of starting the process and assembling the Ktor `Application` module. */
-fun DeclarationContainerScope.entrypoint() = "Entrypoint" {
+fun DeclarationContainerScope.entrypoint() = "Entrypoint".role {
     title = "Entry point"
     summary = "Starting the process and assembling the Ktor Application module"
     description = """

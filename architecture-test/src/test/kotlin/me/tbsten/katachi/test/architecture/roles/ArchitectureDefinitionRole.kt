@@ -8,7 +8,7 @@ import me.tbsten.katachi.dsl.kotlin.ktFile
 import me.tbsten.katachi.test.architecture.ARCHITECTURE_TEST_PACKAGE
 
 /** The role of this definition itself, which belongs to no layer of the library. */
-fun DeclarationContainerScope.architectureDefinition() = "ArchitectureDefinition" {
+fun DeclarationContainerScope.architectureDefinition() = "ArchitectureDefinition".role {
     title = "アーキテクチャ定義"
     summary = "katachi の DSL で書かれた役割の定義。どのレイヤーにも属さない"
     example("ProjectArchitecture.kt", "定義の入口。group ごとの拡張関数を呼ぶ")

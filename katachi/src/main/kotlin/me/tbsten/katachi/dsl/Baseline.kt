@@ -30,7 +30,7 @@ import me.tbsten.katachi.KatachiDeclarationException
  * ```kt
  * val projectArchitecture = architecture {
  *     baseline()                                // or baseline("config/katachi-baseline.json")
- *     "BaselineFile" {
+ *     "BaselineFile".role {
  *         summary = "Violations the project had when katachi was adopted"
  *         layout { "katachi-baseline.json".file() }
  *     }

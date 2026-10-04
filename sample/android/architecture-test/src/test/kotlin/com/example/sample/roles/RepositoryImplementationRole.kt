@@ -12,7 +12,7 @@ import me.tbsten.katachi.dsl.template
 import me.tbsten.katachi.konsist.declarations.ktFileContent
 
 /** The role of the production implementation of a repository interface. */
-fun DeclarationContainerScope.repositoryImplementation() = "RepositoryImplementation" {
+fun DeclarationContainerScope.repositoryImplementation() = "RepositoryImplementation".role {
     title = "Repository implementation"
     summary = "The implementation of a repository interface, in :data, next to the interface"
     description = """

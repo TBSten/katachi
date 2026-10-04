@@ -33,7 +33,7 @@ import me.tbsten.katachi.dsl.pascalCase
  *
  * `Gradle.BuildLogic` is declared inside the same `gradle { }` block but is not one of
  * those: `buildLogic()` is a plain call to a function written in `roles/BuildLogicRole.kt`, and
- * the role itself -- `"BuildLogic" { }` -- is literally written there, so its own frame is
+ * the role itself -- `"BuildLogic".role { }` -- is literally written there, so its own frame is
  * outside katachi already and the walk never reaches `groups/GradleGroup.kt` at all. It is
  * checked by the ordinary per-file rule below, same as any other role.
  */
@@ -102,7 +102,7 @@ class DeclarationSiteSpec : FreeSpec({
 
     "Gradle.BuildLogic は gradle() の内側から buildLogic() で足されるが、宣言位置は自分のファイル" {
         // block() に渡した buildLogic() 自体はこの project の groups/GradleGroup.kt から
-        // 呼ばれるが、"BuildLogic" { } という呼び出しそのものは roles/BuildLogicRole.kt に
+        // 呼ばれるが、"BuildLogic".role { } という呼び出しそのものは roles/BuildLogicRole.kt に
         // 書かれているので、宣言位置はそちらに残る。gradle() が内部で持つ役割と違って、
         // katachi のフレームを一切経由しない。
         val buildLogic = projectArchitecture.allRoles.single { it.qualifiedName == "Gradle.BuildLogic" }

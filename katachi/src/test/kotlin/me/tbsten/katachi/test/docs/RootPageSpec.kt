@@ -26,15 +26,15 @@ class RootPageSpec : FreeSpec({
             val arch = architecture {
                 title = "myapp"
                 description = "このリポジトリの構成。"
-                "Changelog" { }
+                "Changelog".role { }
                 "api".group {
                     title = "API"
-                    "Controller" { summary = "HTTP のリクエストを1つ受け取る" }
-                    "KtorPlugin" { summary = "Ktor の Application への横断的な設定" }
+                    "Controller".role { summary = "HTTP のリクエストを1つ受け取る" }
+                    "KtorPlugin".role { summary = "Ktor の Application への横断的な設定" }
                 }
                 "domain".group {
                     title = "ドメイン"
-                    "Service" { summary = "アプリ固有の振る舞い" }
+                    "Service".role { summary = "アプリ固有の振る舞い" }
                 }
             }
 
@@ -81,7 +81,7 @@ class RootPageSpec : FreeSpec({
 
     "Document map" - {
         "group に属さない役割が無ければ、冒頭の箇条書きごと出ない" {
-            val arch = architecture { "api".group { "Controller" { } } }
+            val arch = architecture { "api".group { "Controller".role { } } }
 
             arch.rootReadme() shouldBe
                 """
@@ -100,7 +100,7 @@ class RootPageSpec : FreeSpec({
         }
 
         "group が1つも無ければ見出しも group の節も出ない" {
-            val arch = architecture { "Changelog" { summary = "リリースごとの変更点" } }
+            val arch = architecture { "Changelog".role { summary = "リリースごとの変更点" } }
 
             withClue("索引なので summary は書かない。名前だけを追えることのほうが役に立つ") {
                 arch.rootReadme() shouldBe
@@ -120,8 +120,8 @@ class RootPageSpec : FreeSpec({
 
         "documented = false の役割も group も載らない" {
             val arch = architecture {
-                "Changelog" { }
-                "Scratch" { documented = false }
+                "Changelog".role { }
+                "Scratch".role { documented = false }
                 "build".group { documented = false }
             }
 
@@ -134,10 +134,10 @@ class RootPageSpec : FreeSpec({
             val arch = architecture {
                 "domain".group {
                     title = "ドメイン"
-                    "UseCase" { summary = "1つの振る舞い" }
+                    "UseCase".role { summary = "1つの振る舞い" }
                     "model".group {
                         title = "モデル"
-                        "Entity" { }
+                        "Entity".role { }
                     }
                 }
             }
@@ -168,7 +168,7 @@ class RootPageSpec : FreeSpec({
 
         "###### を超える深さは見出しを増やさず、箇条書きの入れ子になる" {
             val arch = architecture {
-                "a".group { "b".group { "c".group { "d".group { "e".group { "Deep" { } } } } } }
+                "a".group { "b".group { "c".group { "d".group { "e".group { "Deep".role { } } } } } }
             }
 
             withClue("####### は見出しではなく、ただのハッシュ7個として出てしまう") {
@@ -212,7 +212,7 @@ class RootPageSpec : FreeSpec({
                     title = "API"
                     summary = "HTTP に面するものを集めた層"
                     description = "これは group 自身の README にだけ出る。"
-                    "Controller" { summary = "HTTP のリクエストを1つ受け取る" }
+                    "Controller".role { summary = "HTTP のリクエストを1つ受け取る" }
                 }
             }
 
@@ -239,8 +239,8 @@ class RootPageSpec : FreeSpec({
         "summary の無い役割には区切りごと付かない" {
             val arch = architecture {
                 "api".group {
-                    "Controller" { }
-                    "KtorPlugin" { summary = "横断的な設定" }
+                    "Controller".role { }
+                    "KtorPlugin".role { summary = "横断的な設定" }
                 }
             }
 
@@ -249,7 +249,7 @@ class RootPageSpec : FreeSpec({
 
         "summary が複数行でも箇条書きは1行のまま" {
             val arch = architecture {
-                "api".group { "Controller" { summary = "1行目\n2行目" } }
+                "api".group { "Controller".role { summary = "1行目\n2行目" } }
             }
 
             withClue("改行がそのまま出ると、そこで箇条書きが終わってしまう") {
@@ -261,13 +261,13 @@ class RootPageSpec : FreeSpec({
     "ルート直下の配置" - {
         "Document map の後ろ、group の節の前に出る" {
             val arch = architecture {
-                "Changelog" {
+                "Changelog".role {
                     title = "変更履歴"
                     layout { "CHANGELOG.md".file() }
                 }
                 "domain".group {
                     title = "ドメイン"
-                    "UseCase" { }
+                    "UseCase".role { }
                 }
             }
 
@@ -358,12 +358,12 @@ class RootPageSpec : FreeSpec({
 
     "リンク切れ検査を1件も鳴らさない" {
         val arch = architecture {
-            "Changelog" { }
-            "a".group { "b".group { "c".group { "d".group { "e".group { "Deep" { } } } } } }
+            "Changelog".role { }
+            "a".group { "b".group { "c".group { "d".group { "e".group { "Deep".role { } } } } } }
             "domain".group {
                 title = "ドメイン"
-                "UseCase" { }
-                "model".group { "Entity" { } }
+                "UseCase".role { }
+                "model".group { "Entity".role { } }
             }
         }
 

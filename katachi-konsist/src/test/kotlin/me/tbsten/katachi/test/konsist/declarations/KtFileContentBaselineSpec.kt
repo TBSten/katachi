@@ -53,7 +53,7 @@ private const val VIOLATING_SOURCE: String =
 private val definition: Architecture = architecture {
     files = wholeTree()
     baseline(BASELINE)
-    "Screen" {
+    "Screen".role {
         layout {
             "gradlew".file()
             BASELINE.file()

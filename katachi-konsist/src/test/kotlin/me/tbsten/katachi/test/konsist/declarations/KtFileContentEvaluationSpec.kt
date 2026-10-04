@@ -203,7 +203,7 @@ class KtFileContentEvaluationSpec : FreeSpec({
             ) { root ->
                 architecture {
                     files = wholeTree()
-                    "Screen" {
+                    "Screen".role {
                         layout {
                             "gradlew".file()
                             ":feature:*".module {
@@ -266,7 +266,7 @@ class KtFileContentEvaluationSpec : FreeSpec({
         "値を読まないブロックのパターンの誤りは、定義を読んだ時点で落とす" {
             shouldThrow<KatachiKtFileContentPatternException> {
                 architecture {
-                    "Screen" {
+                    "Screen".role {
                         layout { "src" / "*".ktFile() }
                         ktFileContent { `import`("a..b") }
                     }

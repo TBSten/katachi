@@ -181,8 +181,8 @@ class LayoutFlatteningSpec : FreeSpec({
         "別々の役割が同じパスを主張すると役割ごとに1件ずつ出る" {
             val entries = architecture {
                 "domain".group {
-                    "UseCase" { layout { "core/domain" { "*UseCase".ktFile() } } }
-                    "Repository" { layout { "core/domain" { "*Repository".ktFile() } } }
+                    "UseCase".role { layout { "core/domain" { "*UseCase".ktFile() } } }
+                    "Repository".role { layout { "core/domain" { "*Repository".ktFile() } } }
                 }
             }.flattenLayout()
 
@@ -193,7 +193,7 @@ class LayoutFlatteningSpec : FreeSpec({
         "1つの役割が複数の layout ブロックを持てる" {
             val entries = architecture {
                 "domain".group {
-                    "UseCase" {
+                    "UseCase".role {
                         layout { "core/domain" { "*UseCase".ktFile() } }
                         layout { "feature/*" { "*UseCase".ktFile() } }
                     }
@@ -212,8 +212,8 @@ class LayoutFlatteningSpec : FreeSpec({
 
         "役割の展開結果は役割の宣言順に並ぶ" {
             val entries = architecture {
-                "a".group { "First" { layout { "one.txt".file() } } }
-                "b".group { "Second" { layout { "two.txt".file() } } }
+                "a".group { "First".role { layout { "one.txt".file() } } }
+                "b".group { "Second".role { layout { "two.txt".file() } } }
             }.flattenLayout()
 
             entries.map { it.role.qualifiedName } shouldBe listOf("a.First", "b.Second")

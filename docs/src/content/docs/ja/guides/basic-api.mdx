@@ -21,8 +21,8 @@ katachi の主要な API を紹介します。
 
 ```kt
 architecture {
-  "UseCase" { /* ... */ }
-  "RepositoryInterface" { /* ... */ }
+  "UseCase".role { /* ... */ }
+  "RepositoryInterface".role { /* ... */ }
 }
 // このプロジェクトには `UseCase` と `RepositoryInterface` という2つの Role がある
 ```
@@ -35,8 +35,8 @@ architecture {
 
 ```kt {8}
 val projectArchitecture = architecture {
-  "UseCase" { /* ... */ }
-  "RepositoryInterface" { /* ... */ }
+  "UseCase".role { /* ... */ }
+  "RepositoryInterface".role { /* ... */ }
 }
 
 @Test
@@ -45,19 +45,19 @@ fun `アーキテクチャに沿ったファイル配置になっている`() {
 }
 ```
 
-## 3. Role を定義する `"名前" { }`
+## 3. Role を定義する `"名前".role { }`
 
-`"名前" { }` はプロジェクトの中に登場するファイルの役割 (Role) を定義します。
+`"名前".role { }` はプロジェクトの中に登場するファイルの役割 (Role) を定義します。
 
 ```kt {2,4}
 architecture {
-  "UseCase" { /* ... */ }
+  "UseCase".role { /* ... */ }
 
-  "RepositoryInterface" { /* ... */ }
+  "RepositoryInterface".role { /* ... */ }
 }
 ```
 
-`architecture { }` ブロックの中に `"名前" { }` を書くと、プロジェクトに登場するファイルの Role を定義できます。
+`architecture { }` ブロックの中に `"名前".role { }` を書くと、プロジェクトに登場するファイルの Role を定義できます。
 
 ### Role の例
 
@@ -94,8 +94,8 @@ Role については [Role 定義の詳細](/katachi/ja/guides/role/) も参照�
 ```kt {2}
 architecture {
   "domain".group {
-    "UseCase" { /* ... */ }
-    "RepositoryInterface" { /* ... */ }
+    "UseCase".role { /* ... */ }
+    "RepositoryInterface".role { /* ... */ }
   }
 }
 ```
@@ -108,13 +108,13 @@ Role のグループについては [Role 定義の詳細](/katachi/ja/guides/ro
 
 ## 5. ファイルが存在して良い位置を定義する `layout { }`
 
-`"..." { }` で Role を定義しただけでは、その Role のファイルをどこに置いてよいかは決まりません。
+`"...".role { }` で Role を定義しただけでは、その Role のファイルをどこに置いてよいかは決まりません。
 
 `layout { }` は Role に対応するファイルをどこに置けるかを定義するためのブロックです。
 
 ```kt {3-4}
 architecture {
-  "UseCase" {
+  "UseCase".role {
     layout {
       "src/main/kotlin/com/example/useCase" / "*UseCase".ktFile()
     }
@@ -152,7 +152,7 @@ Deny by default の原則により、`layout { }` で宣言していない場所
 
 ```kt {7-8}
 architecture {
-  "UseCase" {
+  "UseCase".role {
     layout {
       "src/main/kotlin/com/example/useCase" / "*UseCase".ktFile()
     }
@@ -180,7 +180,7 @@ Role を定義したファイルには、[Konsist](https://docs.konsist.lemonapp
 
 ```kt {7}
 architecture {
-  "UseCase" {
+  "UseCase".role {
     layout {
       "src/main/kotlin/com/example/useCase" / "*UseCase".ktFile()
     }
@@ -221,7 +221,7 @@ architecture {
     <td>
       ```kt nocollapse
       architecture {
-        "UseCase" { /* ... */ }
+        "UseCase".role { /* ... */ }
       }
       ```
 
@@ -253,7 +253,7 @@ architecture {
   <tr>
     <td>
       ```kt
-      "名前" { }
+      "名前".role { }
       ```
     </td>
     <td>
@@ -261,7 +261,7 @@ architecture {
     </td>
     <td>
       ```kt nocollapse
-      "UseCase" {
+      "UseCase".role {
         layout { /* ... */ }
       }
       ```
@@ -282,7 +282,7 @@ architecture {
     <td>
       ```kt nocollapse
       "domain".group {
-        "UseCase" { /* ... */ }
+        "UseCase".role { /* ... */ }
       }
       ```
 

@@ -31,7 +31,7 @@ import me.tbsten.katachi.dsl.files.internal.isInsideGitWorkTree
  * ```kt
  * val projectArchitecture = architecture {
  *     files = wholeTree()
- *     "domain".group { "UseCase" { } }
+ *     "domain".group { "UseCase".role { } }
  * }
  * ```
  *
@@ -55,7 +55,7 @@ import me.tbsten.katachi.dsl.files.internal.isInsideGitWorkTree
  *
  * val projectArchitecture = architecture {
  *     files = BazelSources
- *     "domain".group { "UseCase" { } }
+ *     "domain".group { "UseCase".role { } }
  * }
  * ```
  */
@@ -139,7 +139,7 @@ public interface FileSelection {
      * ```kt
      * val projectArchitecture = architecture {
      *     files = wholeTree()
-     *     "domain".group { "UseCase" { } }
+     *     "domain".group { "UseCase".role { } }
      * }
      * ```
      */

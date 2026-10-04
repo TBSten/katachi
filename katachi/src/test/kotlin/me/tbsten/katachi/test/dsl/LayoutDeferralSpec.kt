@@ -12,10 +12,10 @@ class LayoutDeferralSpec : FreeSpec({
 
         val arch = architecture {
             "domain".group {
-                "UseCase" {
+                "UseCase".role {
                     layout { invocations++ }
                 }
-                "Repository" {
+                "Repository".role {
                     layout { invocations++ }
                 }
             }
@@ -30,7 +30,7 @@ class LayoutDeferralSpec : FreeSpec({
 
         val arch = architecture {
             "domain".group {
-                "UseCase" { layout(declared) }
+                "UseCase".role { layout(declared) }
             }
         }
 
@@ -40,7 +40,7 @@ class LayoutDeferralSpec : FreeSpec({
     "同じ group の役割が複数の layout を持てる" {
         val arch = architecture {
             "domain".group {
-                "UseCase" {
+                "UseCase".role {
                     layout { }
                     layout { }
                 }
@@ -52,7 +52,7 @@ class LayoutDeferralSpec : FreeSpec({
 
     "layout を1つも書かない役割も宣言できる" {
         val arch = architecture {
-            "domain".group { "UseCase" { } }
+            "domain".group { "UseCase".role { } }
         }
 
         arch.allRoles.single().layouts shouldBe emptyList()

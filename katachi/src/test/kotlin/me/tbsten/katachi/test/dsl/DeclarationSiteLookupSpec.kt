@@ -87,7 +87,7 @@ class DeclarationSiteLookupSpec : FreeSpec({
         var entryLine = -1
         val arch = architecture {
             "g".group {
-                "Role" {
+                "Role".role {
                     roleLine = callerLine() - 1
                     layout { }; layoutLine = callerLine()
                 }

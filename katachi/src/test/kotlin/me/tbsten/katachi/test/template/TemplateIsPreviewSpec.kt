@@ -19,7 +19,7 @@ class TemplateIsPreviewSpec : FreeSpec({
         val seen = mutableListOf<Boolean>()
         val arch = architectureOf {
             "domain".group {
-                "UseCase" {
+                "UseCase".role {
                     layout {
                         "useCase" / "GetUserUseCase.kt".file().template {
                             seen += isPreview
@@ -42,7 +42,7 @@ class TemplateIsPreviewSpec : FreeSpec({
         var real: String? = null
         val arch = architectureOf {
             "feature".group {
-                "ViewModel" {
+                "ViewModel".role {
                     layout {
                         "feature" / capture("feature") / "ViewModel.kt".file().template {
                             val value = captureValue("feature")
@@ -64,7 +64,7 @@ class TemplateIsPreviewSpec : FreeSpec({
     "isPreview を使うと、プレースホルダ値に対する自前の検査をプレビュー時だけ黙らせられる" {
         val arch = architectureOf {
             "feature".group {
-                "ViewModel" {
+                "ViewModel".role {
                     layout {
                         "feature" / capture("resource") / "ViewModel.kt".file().template {
                             val resource = captureValue("resource")

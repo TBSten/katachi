@@ -342,7 +342,7 @@ Katachi check failed: 4 violations (Unexpected: 4)
 
   How to fix:
     - Add a new role for it:
-        "BuildGradle" { ... }
+        "BuildGradle".role { ... }
 ```
 
 違反の表示件数はデフォルトでは 10 件ですが、**`scaffold` が生成するテストは `maxViolations = 200` にしてあります**（導入中は数十〜百件出るため）。`TODO` コメントが付いているので、ステップ 4 で外します。
@@ -420,7 +420,7 @@ import me.tbsten.katachi.konsist.konsist                 // konsist { } を書�
 
 #### 1 つの Role = 1 種類のファイル
 
-**Role（`"Name" { }`）は1種類のファイルを表します。種類の違うファイルを束ねるのは group（`"name".group { }`）です。** 1つの Role に種類の違うファイルを詰めると、その Role の `summary` も `konsist { }` も全部のファイルには当てはまらなくなり、生成ドキュメントにも「何でも入る箱」が載ります。
+**Role（`"Name".role { }`）は1種類のファイルを表します。種類の違うファイルを束ねるのは group（`"name".group { }`）です。** 1つの Role に種類の違うファイルを詰めると、その Role の `summary` も `konsist { }` も全部のファイルには当てはまらなくなり、生成ドキュメントにも「何でも入る箱」が載ります。
 
 同じ Role に入れてよいかは、次の3つで判定します。1つでも答えが「いいえ」のファイルがあれば、Role を分けてください。
 
@@ -449,7 +449,7 @@ import me.tbsten.katachi.konsist.konsist                 // konsist { } を書�
 
 ```kt
 // ✗ 種類の違うファイルを1つの Role に詰めている
-"ProjectMeta" {
+"ProjectMeta".role {
     layout {
         "README.md".file()
         "LICENSE".file()
@@ -459,9 +459,9 @@ import me.tbsten.katachi.konsist.konsist                 // konsist { } を書�
 
 // ○ 種類ごとに Role を分け、group で束ねる
 "meta".group {
-    "ProjectReadme" { layout { "README.md".file() } }
-    "License" { layout { "LICENSE".file() } }
-    "GitIgnore" { layout { ".gitignore".file() } }
+    "ProjectReadme".role { layout { "README.md".file() } }
+    "License".role { layout { "LICENSE".file() } }
+    "GitIgnore".role { layout { ".gitignore".file() } }
 }
 ```
 
@@ -479,7 +479,7 @@ import me.tbsten.katachi.konsist.konsist                 // konsist { } を書�
 ファイルの import を見る制約は、`classes()` ではなく `files` に書きます。ドキュメントの規約の多くは「これを import しない」の形です。
 
 ```kt
-"ViewModel" {
+"ViewModel".role {
     layout { /* ... */ }
 
     "android パッケージを import しないこと".konsist {
@@ -587,7 +587,7 @@ sh $CLI compare-violations
 **残す違反が多く、ユーザが「今ある違反は許容して、新しい違反だけで落としたい」と望む場合は、baseline を提案できます。** 実験的な機能（`@ExperimentalKatachiApi`）なので、使うかどうかは `questions` でユーザに確認してから入れてください。使う場合の手順は次のとおりです。
 
 - `ProjectArchitecture.kt` の `architecture { }` に `baseline()` を書き、`val projectArchitecture` に `@OptIn(ExperimentalKatachiApi::class)` を付ける。baseline のファイルはデフォルトで `katachi-baseline.json`（プロジェクトルート）
-- baseline のファイルも検査の対象なので、Role を1つ足して `layout { }` で宣言する（例: `"BaselineFile" { layout { "katachi-baseline.json".file() } }`）。宣言しないと baseline のファイル自身が `[UnexpectedFile]` になり、これは baseline に入れられない
+- baseline のファイルも検査の対象なので、Role を1つ足して `layout { }` で宣言する（例: `"BaselineFile".role { layout { "katachi-baseline.json".file() } }`）。宣言しないと baseline のファイル自身が `[UnexpectedFile]` になり、これは baseline に入れられない
 - `./gradlew :architecture-test:test -Dkatachi.baseline.update=true` で、今ある違反を baseline のファイルに書き出す。以降は baseline のファイルに無い違反だけでテストが落ちる。違反を直すと、その項目が `[StaleBaselineEntry]` で落ちるので、`-Dkatachi.baseline.prune=true` で消す（CI（`CI=true`）では update も prune も拒否される）
 
 許容した違反も `violations` に書いてください。baseline のファイルに入れても、違反が消えたわけではありません。
@@ -759,7 +759,7 @@ Pull request 作成時・Merge request 作成時・pre-push hook など、スト
    - その場所を Role として `layout { }` に宣言する。宣言しないと生成したページが `gitTracked()` に拾われ、`:architecture-test:test` が `[UnexpectedFile]` / `[UnexpectedDirectory]` で落ちる。索引の `README.md` と、Role ・group ごとの `*.md` の両方を覆う
 
      ```kt
-     "ArchitectureDocs" {
+     "ArchitectureDocs".role {
          summary = "katachiDocs が生成するページ"
          description = "katachiDocs が生成するページ。手で書かない"
          layout {
@@ -797,7 +797,7 @@ Pull request 作成時・Merge request 作成時・pre-push hook など、スト
    import me.tbsten.katachi.ExperimentalKatachiApi
    import me.tbsten.katachi.dsl.template
 
-   "UseCase" {
+   "UseCase".role {
        layout {
            "useCase" / "${capture("name")}UseCase".ktFile()
                .template {
@@ -822,7 +822,7 @@ Pull request 作成時・Merge request 作成時・pre-push hook など、スト
    import me.tbsten.katachi.ExperimentalKatachiApi
    import me.tbsten.katachi.dsl.template
 
-   "ViewModel" {
+   "ViewModel".role {
        layout {
            // 元は "feature" / "*" / mainSourceSet / kotlin / "com/example/app/feature" / "*" / "*ViewModel".ktFile()
            "feature" / capture("feature") / mainSourceSet / kotlin /

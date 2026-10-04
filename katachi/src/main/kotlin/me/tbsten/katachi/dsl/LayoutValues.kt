@@ -199,7 +199,7 @@ public class LayoutModule internal constructor(
  * ```kt
  * val arch = architecture {
  *   "domain".group {
- *     "UseCase" {
+ *     "UseCase".role {
  *       layout { }
  *     }
  *   }
@@ -216,7 +216,7 @@ public class LayoutDeclaration internal constructor(
      * ```kt
      * val arch = architecture {
      *   "domain".group {
-     *     "UseCase" { layout { } }
+     *     "UseCase".role { layout { } }
      *   }
      * }
      *

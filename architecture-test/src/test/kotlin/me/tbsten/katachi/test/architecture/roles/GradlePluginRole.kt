@@ -21,7 +21,7 @@ import me.tbsten.katachi.dsl.gradle.testSourceSet
  * which katachi reports as `KatachiKonsistNoKotlinFilesException` rather than passing quietly.
  * The same reason keeps `konsist { }` out of the whole `Gradle` group.
  */
-fun DeclarationContainerScope.gradlePlugin() = "GradlePlugin" {
+fun DeclarationContainerScope.gradlePlugin() = "GradlePlugin".role {
     title = "プラグイン本体"
     summary = "processor ごとのタスク（katachiDocs など）を登録する plugin。利用者の Gradle デーモンに読まれるので Java で書く"
     example("KatachiPlugin.java", "plugin 本体。登録キーごとに katachi<Key> タスクを登録する")

@@ -11,7 +11,7 @@ import me.tbsten.katachi.dsl.DeclarationContainerScope
  * one place in this sample that exercises the default — the role name itself.
  * `ProjectArchitectureSpec` asserts it.
  */
-fun DeclarationContainerScope.git() = "Git" {
+fun DeclarationContainerScope.git() = "Git".role {
     summary = ".gitignore. Keeps build outputs and Xcode working files out of Git"
     documented = false
     // Also `owner = "platform"` (see com.example.kmp.processors.Owner), this sample's own

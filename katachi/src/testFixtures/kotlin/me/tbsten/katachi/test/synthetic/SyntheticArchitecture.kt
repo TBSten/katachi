@@ -28,7 +28,7 @@ fun SyntheticProject.architecture(files: FileSelection = FileSelection.WholeTree
         this.files = files
         "synthetic".group {
             for ((index, role) in roles.withIndex()) {
-                role.name {
+                role.name.role {
                     layout {
                         if (index == 0) {
                             ":".module {

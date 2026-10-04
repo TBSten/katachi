@@ -19,7 +19,7 @@ import me.tbsten.katachi.dsl.internal.captureDeclarationSite
  *
  * ## Example 1: constrain one directory, and the whole role
  * ```kt
- * "UseCase" {
+ * "UseCase".role {
  *     fileConstraint("has an invoke function") { subject -> /* every place below */ emptyList() }
  *     layout {
  *         "core/domain" {
@@ -32,7 +32,7 @@ import me.tbsten.katachi.dsl.internal.captureDeclarationSite
  *
  * ## Example 2: a parent directory whose rule does not reach its children
  * ```kt
- * "Util" {
+ * "Util".role {
  *     layout {
  *         "util" {
  *             fileConstraint("uses the stdlib only", scope = FileConstraintRange.DirectOnly) { subject -> /* util/ only */ emptyList() }
@@ -54,7 +54,7 @@ public sealed interface FileConstraintScope {
      *
      * ## Example 1: a constraint written by hand, without any backend
      * ```kt
-     * "UseCase" {
+     * "UseCase".role {
      *     fileConstraint("leaves no TODO") { subject ->
      *         subject.files.filter { it.endsWith(".kt") }.map { FileConstraintFailure(it) }
      *     }
@@ -64,7 +64,7 @@ public sealed interface FileConstraintScope {
      *
      * ## Example 2: point the report somewhere other than the calling line
      * ```kt
-     * "UseCase" {
+     * "UseCase".role {
      *     fileConstraint("has an invoke function", DeclarationSite("DomainRules.kt", 12)) { subject ->
      *         emptyList()
      *     }

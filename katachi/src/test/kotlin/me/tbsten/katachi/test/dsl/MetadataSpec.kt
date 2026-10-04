@@ -34,7 +34,7 @@ class MetadataSpec : FreeSpec({
     "役割に付けた metadata を processor が添字で読める" {
         val arch = architecture {
             "domain".group {
-                "UseCase" { owner = "platform" }
+                "UseCase".role { owner = "platform" }
             }
         }
 
@@ -50,7 +50,7 @@ class MetadataSpec : FreeSpec({
     }
 
     "何も書かなかった宣言では、そのキーは null になる" {
-        val arch = architecture { "domain".group { "UseCase" { } } }
+        val arch = architecture { "domain".group { "UseCase".role { } } }
 
         arch.groups.single()[Owner] shouldBe null
         arch.allRoles.single()[Owner] shouldBe null
@@ -61,7 +61,7 @@ class MetadataSpec : FreeSpec({
         val arch = architecture {
             "domain".group {
                 owner = "platform"
-                "UseCase" { }
+                "UseCase".role { }
             }
         }
 
@@ -85,7 +85,7 @@ class MetadataSpec : FreeSpec({
         // キーを識別するのはインスタンスであって型でも名前でもない、という一点。
         val arch = architecture {
             "domain".group {
-                "UseCase" {
+                "UseCase".role {
                     owner = "platform"
                     reviewer = "design"
                 }
@@ -101,7 +101,7 @@ class MetadataSpec : FreeSpec({
         val arch = architecture {
             "domain".group {
                 since = 2
-                "UseCase" { tags = listOf("core", "public") }
+                "UseCase".role { tags = listOf("core", "public") }
             }
         }
 
@@ -114,7 +114,7 @@ class MetadataSpec : FreeSpec({
     "同じキーに2回書くと、最後に書いた値が残る" {
         val arch = architecture {
             "domain".group {
-                "UseCase" {
+                "UseCase".role {
                     owner = "platform"
                     owner = "product"
                 }
@@ -127,7 +127,7 @@ class MetadataSpec : FreeSpec({
     "null を書くとそのキーは書かなかったのと同じ状態に戻る" {
         val arch = architecture {
             "domain".group {
-                "UseCase" {
+                "UseCase".role {
                     owner = "platform"
                     owner = null
                 }
@@ -142,7 +142,7 @@ class MetadataSpec : FreeSpec({
         var readBack: String? = "not read"
         architecture {
             "domain".group {
-                "UseCase" {
+                "UseCase".role {
                     owner = "platform"
                     readBack = owner
                 }
@@ -156,7 +156,7 @@ class MetadataSpec : FreeSpec({
         val arch = architecture {
             "domain".group {
                 owner = "platform"
-                "UseCase" { owner = "product" }
+                "UseCase".role { owner = "product" }
             }
         }
 
@@ -167,7 +167,7 @@ class MetadataSpec : FreeSpec({
     "katachi が用意するキーと利用者のキーは同じ器に同居する" {
         val arch = architecture {
             "domain".group {
-                "UseCase" {
+                "UseCase".role {
                     title = "ユースケース"
                     owner = "platform"
                 }

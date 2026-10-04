@@ -25,7 +25,7 @@ class KtFileContentDeclarationTimeSpec : FreeSpec({
             var site: DeclarationSite? = null
             val error = shouldThrow<KatachiKtFileContentModifierException> {
                 architecture {
-                    "UiState" {
+                    "UiState".role {
                         layout { "*UiState".ktFile() }
                         ktFileContent {
                             site = DeclarationSite.capture(); data.`interface`(fileName)
@@ -42,7 +42,7 @@ class KtFileContentDeclarationTimeSpec : FreeSpec({
             var site: DeclarationSite? = null
             val error = shouldThrow<KatachiKtFileContentPatternException> {
                 architecture {
-                    "Screen" {
+                    "Screen".role {
                         layout { "*Screen".ktFile() }
                         ktFileContent {
                             `import`("kotlin.**")
@@ -59,7 +59,7 @@ class KtFileContentDeclarationTimeSpec : FreeSpec({
             var site: DeclarationSite? = null
             val error = shouldThrow<KatachiKtFileContentLineException> {
                 architecture {
-                    "Screen" {
+                    "Screen".role {
                         layout { "*Screen".ktFile() }
                         ktFileContent {
                             site = DeclarationSite.capture(); `import`("kotlin.**").except("kotlin.io.**")
@@ -75,7 +75,7 @@ class KtFileContentDeclarationTimeSpec : FreeSpec({
             var site: DeclarationSite? = null
             val error = shouldThrow<KatachiKtFileContentModifierException> {
                 architecture {
-                    "Screen" {
+                    "Screen".role {
                         layout { "*Screen".ktFile() }
                         ktFileContent {
                             `class`(fileName) {
@@ -93,7 +93,7 @@ class KtFileContentDeclarationTimeSpec : FreeSpec({
         "代わりの値でしか通らない分岐の誤りも、その時点で出る" {
             shouldThrow<KatachiKtFileContentModifierException> {
                 architecture {
-                    "Screen" {
+                    "Screen".role {
                         layout { "*Screen".ktFile() }
                         ktFileContent {
                             if (fileName == "Sample") data.`interface`(fileName) else `class`(fileName)
@@ -108,7 +108,7 @@ class KtFileContentDeclarationTimeSpec : FreeSpec({
         "fileName は Sample、captureValue(x) は <x> で 1 回だけ評価する" {
             val seen = mutableListOf<String>()
             architecture {
-                "Screen" {
+                "Screen".role {
                     layout { "*Screen".ktFile() }
                     ktFileContent {
                         seen += "$fileName ${captureValue("feature")} ${captureValue("anything")}"
@@ -123,7 +123,7 @@ class KtFileContentDeclarationTimeSpec : FreeSpec({
         "代わりの値で利用者のブロックが katachi のものでない例外を投げても architecture { } は通る" {
             shouldNotThrowAny {
                 architecture {
-                    "Screen" {
+                    "Screen".role {
                         layout { "*Screen".ktFile() }
                         ktFileContent {
                             `class`(captureValue("feature").substring(20))
