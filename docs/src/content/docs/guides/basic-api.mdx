@@ -1,6 +1,6 @@
 ---
 title: Basic API
-description: Just six things to remember. architecture / group / Role / layout / konsist / assert.
+description: Just seven things to remember. architecture / group / Role / layout / ktFileContent / konsist / assert.
 tags:
   - beginner
 ---
@@ -9,7 +9,7 @@ tags:
   Purpose of this page: to help users understand katachi's basic API well enough to define their own project's architecture. To give them the big picture of the API katachi provides.
 */}
 
-import { FileTree } from '@astrojs/starlight/components';
+import { Aside, FileTree } from '@astrojs/starlight/components';
 
 This page introduces katachi's core API.
 Once you know these, you should understand the basics of using katachi.
@@ -141,9 +141,41 @@ Say an AI Agent tries to place a new UseCase file at `src/main/kotlin/com/exampl
 
 For `layout { }`, also see [Layout definitions in depth](/katachi/guides/layout/).
 
-## 6. Constraining a file's contents with `"...".konsist { }`
+## 6. Defining the declarations a file may contain with `ktFileContent { }`
 
-You can set constraints on the files of a declared Role using [Konsist](https://docs.konsist.lemonappdev.com/).
+<Aside type="caution" title="Draft written by AI">
+This section and the `ktFileContent { }` row in the summary table are a draft written by AI. `ktFileContent { }` is an experimental feature planned for v0.3.
+</Aside>
+
+`ktFileContent { }` is the block that defines, as an allow list, the package, imports, and declarations that may be placed in a Role's files.
+
+```kt {7-8}
+architecture {
+  "UseCase" {
+    layout {
+      "src/main/kotlin/com/example/useCase" / "*UseCase".ktFile()
+    }
+
+    ktFileContent {
+      `class`(fileName)
+    }
+  }
+}
+
+// GetUserUseCase.kt may contain only class GetUserUseCase
+```
+
+Only the kinds you write (package, import, declaration) become allow lists, and anything that doesn't match a line you wrote is a violation. `fileName` holds the name of the file being checked (`GetUserUseCase` for `GetUserUseCase.kt`).
+
+`ktFileContent { }` lives in the separate `katachi-konsist` module. To check it, call `assert(FileConstraintCheck())` instead of `assert()` in the test. With `assert()` alone it is not checked, and the test fails with `[UncheckedFileConstraint]`.
+
+### Related documentation
+
+For `ktFileContent { }`, also see [Define an allow list of the declarations a file may contain](/katachi/guides/kt-file-content/).
+
+## 7. Constraining a file's contents with `"...".konsist { }`
+
+You can set constraints on the files of a declared Role using [Konsist](https://docs.konsist.lemonappdev.com/). Write the constraints that `ktFileContent { }` can't express here.
 
 ```kt {7}
 architecture {
@@ -165,7 +197,7 @@ To check the constraints, call `assert(FileConstraintCheck())` instead of `asser
 
 ### Related documentation
 
-For `"...".konsist { }`, also see the [Konsist integration guide](/katachi/guides/konsist-integration/).
+For `"...".konsist { }`, also see [Define custom rules with Konsist](/katachi/guides/konsist-integration/).
 
 ## Summary
 
@@ -281,6 +313,26 @@ For `"...".konsist { }`, also see the [Konsist integration guide](/katachi/guide
   <tr>
     <td>
       ```kt
+      ktFileContent { }
+      ```
+    </td>
+    <td>
+      Defines, as an allow list, the package, imports, and declarations that may be placed in that Role's files. Requires the separate `katachi-konsist` module and `assert(FileConstraintCheck())` in the test.
+    </td>
+    <td>
+      ```kt nocollapse
+      ktFileContent {
+        `class`(fileName)
+      }
+      ```
+
+      - Meaning: only a class named the same as the file can be placed. Placing any other declaration is a violation
+    </td>
+  </tr>
+
+  <tr>
+    <td>
+      ```kt
       "Name".konsist { }
       ```
     </td>
@@ -301,6 +353,6 @@ For `"...".konsist { }`, also see the [Konsist integration guide](/katachi/guide
 
 ## Next steps
 
-- [Your first architecture definition](/katachi/get-started/first-architecture/) ... Introduce katachi into your project and actually write these six things.
+- [Your first architecture definition](/katachi/get-started/first-architecture/) ... Introduce katachi into your project and actually write these seven things.
 - [Role](/katachi/guides/role/) ... Learn how to write descriptions for roles, and how to keep the definition from becoming a copy of your directory structure.
 - [Layout](/katachi/guides/layout/) ... Learn how to write out placements, and when to reach for the deny-by-default escape hatches `anyFile()` / `ignore()`.

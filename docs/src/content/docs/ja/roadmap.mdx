@@ -1,6 +1,6 @@
 ---
 title: ロードマップ
-description: katachi のバージョンごとの計画。v0.1 の DSL と検査、v0.2 の Gradle plugin・ドキュメント生成・テンプレート・baseline から、v0.3 以降の declarations と既存プロジェクトへの導入まで。
+description: katachi のバージョンごとの計画。v0.1 の DSL と検査、v0.2 の Gradle plugin・ドキュメント生成・テンプレート・baseline から、v0.3 以降の ktFileContent と既存プロジェクトへの導入まで。
 tags:
   - advanced
 ---
@@ -9,7 +9,7 @@ tags:
   このページの目的: katachi のバージョンごとの計画と、いま何が入っていて何が先送りかを示すこと。機能の使い方は各ガイドに任せる。
 */}
 
-import { Steps } from '@astrojs/starlight/components';
+import { Aside, Steps } from '@astrojs/starlight/components';
 
 ## 全体像
 
@@ -34,19 +34,23 @@ import { Steps } from '@astrojs/starlight/components';
         </tr>
         <tr>
             <td><strong>v0.3 以降</strong></td>
-            <td><code>declarations &#123; &#125;</code> / レポート出力 / 語彙数の計測</td>
-            <td><strong>既存プロジェクト</strong>に入れやすくなる。v0.1 で書いた <code>konsist &#123; &#125;</code> の大半を <code>declarations &#123; &#125;</code> で置き換えられる</td>
+            <td><code>ktFileContent &#123; &#125;</code> / レポート出力 / 語彙数の計測</td>
+            <td><strong>既存プロジェクト</strong>に入れやすくなる。v0.1 で書いた <code>konsist &#123; &#125;</code> の大半を <code>ktFileContent &#123; &#125;</code> で置き換えられる</td>
         </tr>
     </tbody>
 </table>
 
-## v0.3 以降 — 既存プロジェクトへの導入と `declarations { }`
+## v0.3 以降 — 既存プロジェクトへの導入と `ktFileContent { }`
+
+<Aside type="caution" title="AI が書いた下書き">
+この節と、全体像の表の v0.3 以降の行は、`ktFileContent { }` の実装にあわせて AI が書き直した下書きです。内容はまだ確認が済んでいません。
+</Aside>
 
 既存プロジェクトに入れやすくするのが v0.3 以降の主題です。今ある違反をとりあえず許容し、新しい違反だけをエラーにする baseline だけは、実験的な機能として v0.2 に先に入りました。
 
 | 機能 | 何ができるか |
 |---|---|
-| **`dependsOnlyOn`** | 依存してよい先を**許可リスト**で書く。禁止リスト方式は、書き漏れがあっても検査を通ってしまう。v0.2 の計画から移した |
+| **Role で import を指す書き方**（将来） | import を、パスのパターンではなく Role で指す（「domain の Role のファイルだけを import してよい」）。v0.2 の計画にあった `dependsOnlyOn` は作らず、import の許可リストは `ktFileContent { }` に入れた |
 | **レポート出力** | JSON / SARIF で出し、GitHub の PR にアノテーションとして載せる |
 | **`pairedWith`** | 「すべての `Screen` に対応する `Preview` がある」のような網羅性を検査する |
 | **語彙数の計測** | Role の数と、Role ごとのファイル数を数値で出す |
@@ -54,7 +58,7 @@ import { Steps } from '@astrojs/starlight/components';
 
 この段階の仕様はまだほとんど決まっていません。バージョン番号の割り当ても「v0.3 以降」とひとまとまりです。
 
-### `declarations { }` — `konsist { }` からの昇格
+### `ktFileContent { }` — `konsist { }` からの昇格
 
 v0.1 の `konsist { }` は、言ってしまえば**逃げ道**です。「`*UseCase` interface と `Default*UseCase` class だけを置く」のように、ほとんどの Role が言いたいことでも、毎回 Konsist の式で書き下すことになります。
 
@@ -69,17 +73,20 @@ v0.1 の `konsist { }` は、言ってしまえば**逃げ道**です。「`*Use
 }
 ```
 
-同じ規則を、次のように読める形で書けるようにすべきでしょう。v0.3 以降で実現する予定です。
+「interface と Default 実装だけを置く」規則は、v0.3 では `ktFileContent { }` で次のように書けます。v0.3 の間は実験的な機能です。
 
 ```kt
 "UseCase" {
-    declarations {
-        `interface`("*UseCase")
-        `class`("Default*UseCase")
+    layout {
+        "src/main/kotlin/com/example/useCase" / "*UseCase".ktFile()
+    }
+    ktFileContent {
+        `interface`(fileName)
+        `class`("Default$fileName").superclass(fileName)
     }
 }
 ```
 
-列挙していない top-level 宣言は書けません。`layout { }` が配置の allow list であるのと同じ意味で、このブロックが中身の allow list になります。
+書いた種類（package・import・宣言・メンバ）は、列挙したもの以外を置けません。`layout { }` が配置の allow list であるのと同じ意味で、このブロックが中身の allow list になります。
 
-まだ API の設計段階ですが、v0.3 以降で高い確率で実装されるでしょう。
+詳しくは [ファイルの中で定義できる宣言の許可リストを定義する](/katachi/ja/guides/kt-file-content/) を参照してください。

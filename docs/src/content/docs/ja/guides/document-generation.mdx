@@ -9,7 +9,7 @@ tags:
   このページの目的: katachi のドキュメント生成機能について深く網羅的に理解してもらうこと。
 */}
 
-import { Tabs, TabItem, LinkCard, FileTree } from '@astrojs/starlight/components';
+import { Aside, Tabs, TabItem, LinkCard, FileTree } from '@astrojs/starlight/components';
 import CodeComparison from '../../../../components/CodeComparison';
 
 katachi は `architecture { }` 定義から markdown ドキュメントを生成できます。
@@ -272,6 +272,77 @@ group は入れ子にでき、入れ子の group はその親の group のディ
         ```
     </CodeComparison.Panel>
 </CodeComparison>
+
+#### `ktFileContent { }` の節
+
+<Aside type="caution" title="AI が書いた下書き">
+この節は AI が書いた下書きです。`ktFileContent { }` は v0.3 で入る予定の実験的な機能です。
+</Aside>
+
+制約は、Role のページに自分の節を出せます。[`ktFileContent { }`](/katachi/ja/guides/kt-file-content/) を書いた Role のページには、`## Constraints` と `## Examples` のあいだに `## Kotlin file content` の節が出ます。
+`ktFileContent { }` に書いた行を、例のファイルに当てはめて表にしたものです。
+
+<CodeComparison>
+    <CodeComparison.Panel label="Role 定義">
+        ```kt
+        "ViewModel" {
+            summary = "画面の状態を StateFlow で公開し、画面からのイベントを受け取る"
+            example("HomeViewModel", "ホーム画面の状態")
+
+            layout {
+                "feature" / capture("feature") / mainSourceSet / kotlin / "**" / "*ViewModel".ktFile()
+            }
+
+            ktFileContent {
+                `package`("com.example.feature.${captureValue("feature")}")
+
+                `import`("androidx.lifecycle.**")
+                `import`("kotlinx.coroutines.**")
+
+                `class`(fileName).superclass("ViewModel") {
+                    public.`val`("uiState", "StateFlow<${fileName.replace("ViewModel", "UiState")}>")
+                    private.anythingElse()
+                }
+            }
+        }
+        ```
+    </CodeComparison.Panel>
+    <CodeComparison.Panel label="生成されるマークダウン">
+        ```md title="ViewModel.md（抜粋）"
+        ## Kotlin file content
+
+        Example: `HomeViewModel.kt`
+
+        | Package |
+        |---|
+        | `com.example.feature.<feature>` |
+
+        | Import | |
+        |---|---|
+        | `androidx.lifecycle.**` | optional |
+        | `kotlinx.coroutines.**` | optional |
+
+        | Declaration | |
+        |---|---|
+        | `class HomeViewModel : ViewModel` | required |
+
+        ### Members of `class HomeViewModel`
+
+        | Member | |
+        |---|---|
+        | `public val uiState: StateFlow<HomeUiState>` | required |
+        | `private` (anything) | optional |
+        ```
+    </CodeComparison.Panel>
+</CodeComparison>
+
+例のファイルは、次の順に決まります。
+
+1. Role の `example(…)` の最初の名前（`example("HomeViewModel")` なら `HomeViewModel.kt`）
+2. `example(…)` が無ければ、その Role に当たったプロジェクトのファイルのうち最初のもの
+3. どちらも無ければ `Sample.kt`
+
+例のファイルの名前から分からない capture の値は、`com.example.feature.<feature>` の `<feature>` のように、capture の名前で出ます。
 
 ### group
 
