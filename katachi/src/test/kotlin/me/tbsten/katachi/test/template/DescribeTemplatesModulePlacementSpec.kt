@@ -46,7 +46,7 @@ private fun projectWith(vararg features: String): KatachiFileSystem =
 private fun featureComponent(resolver: ModuleResolver = ModuleResolver.Conventional): Architecture = architectureOf {
     moduleResolver = resolver
     "feature".group {
-        "Component" {
+        "Component".role {
             layout {
                 ":feature:${capture("feature")}".module {
                     "src/main/kotlin/feature" / wildcard("feature") /
@@ -153,7 +153,7 @@ class DescribeTemplatesModulePlacementSpec : FreeSpec({
     "モジュールの capture の無い定義はモジュールを探さない（modulePlacements は空）" {
         val arch = architectureOf {
             "domain".group {
-                "UseCase" {
+                "UseCase".role {
                     layout {
                         "useCase" / "${capture("name")}UseCase.kt".file().template { "class ${captureValue("name")}UseCase" }
                     }

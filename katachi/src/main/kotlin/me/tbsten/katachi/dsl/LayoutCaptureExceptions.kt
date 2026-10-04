@@ -17,7 +17,7 @@ import me.tbsten.katachi.KatachiDeclarationException
  * shouldThrow<KatachiDuplicateCaptureException> {
  *     architecture {
  *         "ui".group {
- *             "Screen" { layout { capture("x") / capture("x") / "*Screen".ktFile() } }
+ *             "Screen".role { layout { capture("x") / capture("x") / "*Screen".ktFile() } }
  *         }
  *     }.flattenLayout()
  * }.name shouldBe "x"
@@ -68,7 +68,7 @@ public class KatachiDuplicateCaptureException internal constructor(
  * shouldThrow<KatachiAdjacentCaptureException> {
  *     architecture {
  *         "ui".group {
- *             "Screen" {
+ *             "Screen".role {
  *                 layout { "${capture("a")}${capture("b")}Screen".ktFile() }
  *             }
  *         }
@@ -112,7 +112,7 @@ public class KatachiAdjacentCaptureException internal constructor(
  * shouldThrow<KatachiStrayCaptureTokenException> {
  *     architecture {
  *         "ui".group {
- *             "Screen" {
+ *             "Screen".role {
  *                 layout {
  *                     "feature" / capture("feature") / "*Screen".ktFile()
  *                     description = "for ${capture("feature")}"

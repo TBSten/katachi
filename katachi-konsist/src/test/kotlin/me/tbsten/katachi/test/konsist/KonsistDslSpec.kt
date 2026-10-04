@@ -37,7 +37,7 @@ class KonsistDslSpec : FreeSpec({
             val projectArchitecture = architecture {
                 files = wholeTree()
                 "domain".group {
-                    "UseCase" {
+                    "UseCase".role {
                         "名前".konsist { classes().must { it.hasInternalModifier } }
                         layout {
                             // The fixture's project root marker. It is a real file in a tree the
@@ -67,7 +67,7 @@ class KonsistDslSpec : FreeSpec({
             val projectArchitecture = architecture {
                 files = wholeTree()
                 "domain".group {
-                    "UseCase" {
+                    "UseCase".role {
                         "名前".konsist { invocations++ }
                         layout {
                             "gradlew".file()
@@ -101,7 +101,7 @@ class KonsistDslSpec : FreeSpec({
             shouldThrow<KatachiFileConstraintWithoutLayoutException> {
                 architecture {
                     "domain".group {
-                        "UseCase" { "名前".konsist { } }
+                        "UseCase".role { "名前".konsist { } }
                     }
                 }
             }
@@ -111,7 +111,7 @@ class KonsistDslSpec : FreeSpec({
             shouldThrow<KatachiFileConstraintNameException> {
                 architecture {
                     "domain".group {
-                        "UseCase" {
+                        "UseCase".role {
                             "   ".konsist { }
                             layout { "core/domain" { "*.kt".file() } }
                         }
@@ -129,7 +129,7 @@ class KonsistDslSpec : FreeSpec({
             val projectArchitecture = architecture {
                 files = wholeTree()
                 "domain".group {
-                    "UseCase" {
+                    "UseCase".role {
                         layout {
                             "gradlew".file()
                             "core/domain" {
@@ -162,7 +162,7 @@ class KonsistDslSpec : FreeSpec({
                 val projectArchitecture = architecture {
                     files = wholeTree()
                     "util".group {
-                        "Util" {
+                        "Util".role {
                             layout {
                                 "gradlew".file()
                                 "util" {
@@ -186,7 +186,7 @@ class KonsistDslSpec : FreeSpec({
                 val projectArchitecture = architecture {
                     files = wholeTree()
                     "util".group {
-                        "Util" {
+                        "Util".role {
                             layout {
                                 "gradlew".file()
                                 "util" {
@@ -208,7 +208,7 @@ class KonsistDslSpec : FreeSpec({
                 val projectArchitecture = architecture {
                     files = wholeTree()
                     "util".group {
-                        "Util" {
+                        "Util".role {
                             layout {
                                 "gradlew".file()
                                 "util" {
@@ -230,7 +230,7 @@ class KonsistDslSpec : FreeSpec({
             shouldThrow<KatachiFileConstraintDirectOnlyWithoutDirectoryException> {
                 architecture {
                     "util".group {
-                        "Util" {
+                        "Util".role {
                             konsist(scope = FileConstraintRange.DirectOnly) { }
                             layout { "util" { "*.kt".file() } }
                         }
@@ -272,7 +272,7 @@ class KonsistDslSpec : FreeSpec({
         }
 
         "konsist { } の中に konsist { } は書けない" {
-            // "UseCase" {
+            // "UseCase".role {
             //     "外側".konsist {
             //         "内側".konsist { }
             //     }

@@ -5,7 +5,7 @@ import me.tbsten.katachi.dsl.gradle.*
 import me.tbsten.katachi.dsl.kotlin.ktFile
 
 /** The role of moving between screens, which belongs to no single feature. */
-fun DeclarationContainerScope.navigation() = "Navigation" {
+fun DeclarationContainerScope.navigation() = "Navigation".role {
     title = "Screen navigation"
     summary = "Movement between screens, kept in :navigation"
     description = """

@@ -7,7 +7,7 @@ import me.tbsten.katachi.dsl.gradle.*
 import me.tbsten.katachi.dsl.kotlin.ktFile
 
 /** The role of where the values come from. */
-fun DeclarationContainerScope.store() = "Store" {
+fun DeclarationContainerScope.store() = "Store".role {
     title = "Store"
     summary = "Takes responsibility for where values come from. For now, fixed values in memory"
     description = """

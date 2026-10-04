@@ -194,7 +194,7 @@ public fun wildcard(name: String): String {
  * shouldThrow<KatachiUnknownCaptureException> {
  *     architecture {
  *         "ui".group {
- *             "Screen" { layout { ":feature:*".module { wildcard("feature") } } }
+ *             "Screen".role { layout { ":feature:*".module { wildcard("feature") } } }
  *         }
  *     }.flattenLayout()
  * }.knownNames shouldBe emptyList()

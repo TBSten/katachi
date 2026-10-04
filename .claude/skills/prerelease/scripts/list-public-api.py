@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""リリース前チェックの 3（可視性）の材料: `:katachi` と `:katachi-konsist` の公開宣言を、3つの区分に分けて全部並べる。
+"""リリース前チェックの 3（可視性）の材料: `:katachi`・`:katachi-konsist`・`:katachi-konture` の公開宣言を、3つの区分に分けて全部並べる。
 
 区分:
   public        注釈なし
@@ -10,7 +10,7 @@
   - 基準（直前のタグ）からの印: [追加] / [変更] / [移動] / [区分変更]（同じなら無印）
   - 宣言の種類と名前、`file://` の絶対パス:行、`.internal` パッケージかどうか
   - 名前が出てくる回数（単語として。宣言そのものの1回は引く）。場所ごとに
-      自 = 同じモジュールの main（KDoc の例を含む） / 他 = もう片方のライブラリ・Gradle プラグイン（Java の文字列を含む）・tool/
+      自 = 同じモジュールの main（KDoc の例を含む） / 他 = ほかのライブラリ・Gradle プラグイン（Java の文字列を含む）・tool/
       test = 各モジュールのテストと architecture-test / sample = sample/ / docs = 日本語のドキュメントと README.ja.md
   - シグネチャ
 

@@ -40,7 +40,7 @@ class AssertSpec : FreeSpec({
         // the tree that comes back has to be this repository's own.
         val repository = architecture {
             // No `files` here: the point is that the default reaches the real tree.
-            "app".group { "Role" { layout { "settings.gradle.kts".file() } } }
+            "app".group { "Role".role { layout { "settings.gradle.kts".file() } } }
         }
         val failure = shouldThrow<KatachiArchitectureAssertionError> { repository.assert() }
         val paths = failure.violations.map { it.path }

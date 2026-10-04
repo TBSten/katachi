@@ -12,12 +12,12 @@ import me.tbsten.katachi.check.assertNoErrors
  * The whole of adopting katachi: one call, and the report it throws names every file nobody
  * declared, every declared file that is missing, and every constraint that was not satisfied.
  *
- * `FileConstraintCheck()` is not optional here. The roles of the `library` group and
- * `KonsistBackend` declare a `ktFileContent { }` and three `konsist { }` each, `DokkaPlugin` and
- * `IdePluginSource` one `konsist { }`, and a bare `assert()` evaluates no constraints at all — it
- * would report every one of them as an `[UncheckedFileConstraint] reason=NotEvaluated` block
- * instead of checking the import directions. A project that declares no constraint can leave it
- * out; this one cannot.
+ * `FileConstraintCheck()` is not optional here. The roles of the `library` group,
+ * `KonsistBackend` and `KontureBackend` declare a `ktFileContent { }` and three `konsist { }`
+ * each, `DokkaPlugin` and `IdePluginSource` one `konsist { }`, and a bare `assert()` evaluates no
+ * constraints at all — it would report every one of them as an
+ * `[UncheckedFileConstraint] reason=NotEvaluated` block instead of checking the import
+ * directions. A project that declares no constraint can leave it out; this one cannot.
  */
 @OptIn(ExperimentalKatachiApi::class)
 class ProjectArchitectureSpec : FreeSpec({

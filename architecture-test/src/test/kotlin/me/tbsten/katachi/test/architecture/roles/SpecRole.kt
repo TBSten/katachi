@@ -12,7 +12,7 @@ import me.tbsten.katachi.dsl.kotlin.ktFile
  * It reaches across every module that has tests, `:architecture-test` included. That module checks itself
  * like everything else — the price of the recommended setup, and the point of it.
  */
-fun DeclarationContainerScope.spec() = "Spec" {
+fun DeclarationContainerScope.spec() = "Spec".role {
     title = "スペック"
     summary = "kotest の FreeSpec。振る舞いを1つ確かめる"
     example("ScanSpec.kt", "走査そのものを確かめる")
@@ -28,6 +28,10 @@ fun DeclarationContainerScope.spec() = "Spec" {
         }
         "katachi-konsist" {
             description = "Konsist 連携の振る舞い。実ファイルを書き出して Konsist に読ませる必要があるもの"
+            testSourceSet / kotlin / "**" / "*Spec".ktFile()
+        }
+        "katachi-konture" {
+            description = "Konture 連携の振る舞い。実ファイルを書き出して Konture に読ませる必要があるもの"
             testSourceSet / kotlin / "**" / "*Spec".ktFile()
         }
         "architecture-test" {

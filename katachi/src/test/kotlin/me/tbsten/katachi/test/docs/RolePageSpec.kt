@@ -23,7 +23,7 @@ class RolePageSpec : FreeSpec({
         "見出しは title、その下に summary が1行で出る" {
             val arch = architecture {
                 "domain".group {
-                    "UseCase" {
+                    "UseCase".role {
                         title = "ユースケース"
                         summary = "各画面で発生するアプリ固有の1つの振る舞いを表す。"
                     }
@@ -41,7 +41,7 @@ class RolePageSpec : FreeSpec({
         }
 
         "title が無ければ識別子が見出しになる" {
-            val arch = architecture { "domain".group { "UseCase" { } } }
+            val arch = architecture { "domain".group { "UseCase".role { } } }
 
             arch.page("domain/UseCase.md") shouldBe "[Architecture](../README.md) / [domain](README.md)\n\n# UseCase\n"
         }
@@ -51,7 +51,7 @@ class RolePageSpec : FreeSpec({
         "見出しと summary の直後に、改行ごとそのまま出る" {
             val arch = architecture {
                 "domain".group {
-                    "UseCase" {
+                    "UseCase".role {
                         title = "ユースケース"
                         summary = "1つの振る舞い"
                         description = """
@@ -84,7 +84,7 @@ class RolePageSpec : FreeSpec({
         "前後の空行は落として差し込む" {
             val arch = architecture {
                 "domain".group {
-                    "UseCase" { description = "\n\n本文。\n\n" }
+                    "UseCase".role { description = "\n\n本文。\n\n" }
                 }
             }
 
@@ -101,7 +101,7 @@ class RolePageSpec : FreeSpec({
         "summary が無くても見出しの直後に出る" {
             val arch = architecture {
                 "domain".group {
-                    "UseCase" { description = "本文だけを書いた役割。" }
+                    "UseCase".role { description = "本文だけを書いた役割。" }
                 }
             }
 
@@ -120,7 +120,7 @@ class RolePageSpec : FreeSpec({
         "名前を付けた制約だけが並ぶ" {
             val arch = architecture {
                 "domain".group {
-                    "UseCase" {
+                    "UseCase".role {
                         fileConstraint("invoke を持つこと") { emptyList() }
                         fileConstraint { emptyList() }
                         layout { "useCase" / "*UseCase".ktFile() }
@@ -141,7 +141,7 @@ class RolePageSpec : FreeSpec({
         "layout の中で名前を付けた制約も出る" {
             val arch = architecture {
                 "domain".group {
-                    "UseCase" {
+                    "UseCase".role {
                         layout {
                             "useCase" {
                                 fileConstraint("public であること") { emptyList() }
@@ -158,7 +158,7 @@ class RolePageSpec : FreeSpec({
         "役割の制約が先、layout の中の制約が後に並ぶ" {
             val arch = architecture {
                 "domain".group {
-                    "UseCase" {
+                    "UseCase".role {
                         fileConstraint("役割ぜんたいの制約") { emptyList() }
                         layout {
                             "useCase" {
@@ -180,7 +180,7 @@ class RolePageSpec : FreeSpec({
         "名前付きの制約が1つも無ければ節ごと出ない" {
             val arch = architecture {
                 "domain".group {
-                    "UseCase" {
+                    "UseCase".role {
                         fileConstraint { emptyList() }
                         layout { "useCase" / "*UseCase".ktFile() }
                     }
@@ -193,11 +193,11 @@ class RolePageSpec : FreeSpec({
         "他の役割の制約は混ざらない" {
             val arch = architecture {
                 "domain".group {
-                    "UseCase" {
+                    "UseCase".role {
                         fileConstraint("ユースケースの制約") { emptyList() }
                         layout { "useCase" / "*UseCase".ktFile() }
                     }
-                    "Repository" {
+                    "Repository".role {
                         fileConstraint("リポジトリの制約") { emptyList() }
                         layout { "repository" / "*Repository".ktFile() }
                     }
@@ -212,7 +212,7 @@ class RolePageSpec : FreeSpec({
         "example が 名前 ... 説明 の形で並ぶ" {
             val arch = architecture {
                 "domain".group {
-                    "UseCase" {
+                    "UseCase".role {
                         example("GetRecommendedProductListUseCase", "おすすめの商品リストを取得する")
                         example("ToggleProductFavorite", "商品のいいね状態を切り替える")
                     }
@@ -229,7 +229,7 @@ class RolePageSpec : FreeSpec({
         }
 
         "example が1つも無ければ節ごと出ない" {
-            val arch = architecture { "domain".group { "UseCase" { } } }
+            val arch = architecture { "domain".group { "UseCase".role { } } }
 
             arch.page("domain/UseCase.md") shouldNotContain "## Examples"
         }
@@ -237,7 +237,7 @@ class RolePageSpec : FreeSpec({
         "description の無い example は名前だけが出て、... と説明は付かない" {
             val arch = architecture {
                 "domain".group {
-                    "UseCase" {
+                    "UseCase".role {
                         example("SignOutUseCase")
                     }
                 }
@@ -254,7 +254,7 @@ class RolePageSpec : FreeSpec({
         "description のある example と無い example が混ざると、無いものだけ名前だけになる" {
             val arch = architecture {
                 "domain".group {
-                    "UseCase" {
+                    "UseCase".role {
                         example("GetRecommendedProductListUseCase", "おすすめの商品リストを取得する")
                         example("SignOutUseCase")
                     }
@@ -279,7 +279,7 @@ class RolePageSpec : FreeSpec({
             val arch = architecture {
                 "domain".group {
                     title = "ドメイン"
-                    "UseCase" { }
+                    "UseCase".role { }
                 }
             }
 
@@ -295,7 +295,7 @@ class RolePageSpec : FreeSpec({
             val arch = architecture {
                 "ui".group {
                     "screen".group {
-                        "Screen" { }
+                        "Screen".role { }
                     }
                 }
             }
@@ -309,7 +309,7 @@ class RolePageSpec : FreeSpec({
         }
 
         "group に属さない役割はルートの README だけを指す" {
-            val arch = architecture { "Changelog" { } }
+            val arch = architecture { "Changelog".role { } }
 
             arch.page("Changelog.md") shouldBe "[Architecture](README.md)\n\n# Changelog\n"
         }
@@ -318,7 +318,7 @@ class RolePageSpec : FreeSpec({
     "節の並び" {
         val arch = architecture {
             "domain".group {
-                "UseCase" {
+                "UseCase".role {
                     summary = "1つの振る舞い"
                     description = "本文。"
                     example("GetUserUseCase", "ユーザーを取得する")

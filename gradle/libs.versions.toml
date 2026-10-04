@@ -15,13 +15,17 @@ kotest = "6.2.5"
 # see this; `:katachi` itself depends only on kotlinx.serialization (below), for decoding
 # processor arguments.
 konsist = "0.17.3"
+# The Kotlin parser and rule vocabulary behind `konture { }`. Only `:katachi-konture` and the
+# samples that use it see this. It cannot share a test classpath with Konsist (different
+# kotlin-compiler-embeddable), so a module uses one backend or the other.
+konture = "1.0.1"
 # processor の引数デコード。`:katachi` の唯一の実行時依存。**1.9.0 から上げない。**
 # 1.9.0 は kotlin-stdlib 2.2.0 に依存する最後の系列で、1.10.0 は 2.3.0、1.11.0 は 2.3.20 を
 # 引き連れる（Maven Central の POM で確認）。katachi は Kotlin 2.2 の利用者が読める metadata で
 # 出すために languageVersion / apiVersion / coreLibrariesVersion を 2.2 に固定しているので、
 # 2.3 系の stdlib を推移的に持ち込むとその固定が意味を失う。
 kotlinxSerialization = "1.9.0"
-# 公開まわり。`:katachi` / `:katachi-konsist` / `:katachi-gradle-plugin` の3つだけを Maven Central に出す。
+# 公開まわり。`:katachi` / `:katachi-konsist` / `:katachi-konture` / `:katachi-gradle-plugin` の4つだけを Maven Central に出す。
 vanniktechPublish = "0.37.0"
 # javadoc jar を作るのに要る。Central は sources と javadoc の両方を必須にしている。
 dokka = "2.2.0"
@@ -38,6 +42,9 @@ jmhPlugin = "0.7.3"
 # `@Language("markdown")` だけを使う。IDE 補完・シンタックスハイライト用の注釈で実行時には
 # 要らないため、使う側は compileOnly で引く。
 jetbrainsAnnotations = "26.0.2"
+# `:katachi` のテストだけが使う。`toSarif` の出力を SARIF 2.1.0 の JSON Schema（draft-07）で
+# 検証する。test 専用の依存で、公開物には載らない。
+jsonSchemaValidator = "1.5.6"
 
 [libraries]
 # katachi itself. Samples depend on it as `testImplementation(libs.katachi)`; the
@@ -47,6 +54,10 @@ katachi = { module = "me.tbsten.katachi:katachi", version.ref = "katachi" }
 # definition writes `konsist { }` or `ktFileContent { }`.
 katachiKonsist = { module = "me.tbsten.katachi:katachi-konsist", version.ref = "katachi" }
 konsist = { module = "com.lemonappdev:konsist", version.ref = "konsist" }
+# The konture backend, substituted the same way `katachi` is. A sample only needs it when its
+# definition writes `konture { }`.
+katachiKonture = { module = "me.tbsten.katachi:katachi-konture", version.ref = "katachi" }
+konture = { module = "io.github.baole:konture", version.ref = "konture" }
 # `KSerializer` / `AbstractDecoder` / `buildClassSerialDescriptor` だけを使う。json は要らない。
 kotlinxSerializationCore = { module = "org.jetbrains.kotlinx:kotlinx-serialization-core", version.ref = "kotlinxSerialization" }
 kotlinGradlePlugin = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
@@ -78,6 +89,7 @@ kotestAssertionsCore = { module = "io.kotest:kotest-assertions-core", version.re
 # targets, where the engine has to be declared explicitly.
 kotestFrameworkEngine = { module = "io.kotest:kotest-framework-engine", version.ref = "kotest" }
 jetbrainsAnnotations = { module = "org.jetbrains:annotations", version.ref = "jetbrainsAnnotations" }
+jsonSchemaValidator = { module = "com.networknt:json-schema-validator", version.ref = "jsonSchemaValidator" }
 
 [plugins]
 kotlinJvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }

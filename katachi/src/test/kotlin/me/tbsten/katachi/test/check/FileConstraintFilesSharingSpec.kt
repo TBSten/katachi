@@ -30,7 +30,7 @@ class FileConstraintFilesSharingSpec : FreeSpec({
             val third = RecordingFileConstraint()
             val arch = architectureOf {
                 "domain".group {
-                    "UseCase" {
+                    "UseCase".role {
                         layout {
                             "alpha" {
                                 fileConstraint("first", check = first)
@@ -62,7 +62,7 @@ class FileConstraintFilesSharingSpec : FreeSpec({
             val after = RecordingFileConstraint()
             val arch = architectureOf {
                 "domain".group {
-                    "UseCase" {
+                    "UseCase".role {
                         layout {
                             "alpha" {
                                 fileConstraint("vandal", check = vandal)
@@ -88,7 +88,7 @@ class FileConstraintFilesSharingSpec : FreeSpec({
             val betaOnly = RecordingFileConstraint()
             val arch = architectureOf {
                 "domain".group {
-                    "UseCase" {
+                    "UseCase".role {
                         fileConstraint("role wide", check = roleWide)
                         layout {
                             fileConstraint("layout wide", check = layoutWide)
@@ -126,7 +126,7 @@ class FileConstraintFilesSharingSpec : FreeSpec({
             val repositories = RecordingFileConstraint()
             val arch = architectureOf {
                 "domain".group {
-                    "UseCase" {
+                    "UseCase".role {
                         layout {
                             "shared" {
                                 fileConstraint("use cases", check = useCases)
@@ -134,7 +134,7 @@ class FileConstraintFilesSharingSpec : FreeSpec({
                             }
                         }
                     }
-                    "Repository" {
+                    "Repository".role {
                         layout {
                             "shared" {
                                 fileConstraint("repositories", check = repositories)
@@ -158,7 +158,7 @@ class FileConstraintFilesSharingSpec : FreeSpec({
             val recording = RecordingFileConstraint()
             val arch = architectureOf {
                 "feature".group {
-                    "Screen" {
+                    "Screen".role {
                         layout {
                             ":".module { "settings.gradle".ktsFile() }
                             ":feature:*".module {
@@ -194,7 +194,7 @@ class FileConstraintFilesSharingSpec : FreeSpec({
             val recording = RecordingFileConstraint()
             val arch = architectureOf {
                 "domain".group {
-                    "UseCase" {
+                    "UseCase".role {
                         layout {
                             "alpha" {
                                 fileConstraint("alpha only", check = recording)

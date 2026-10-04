@@ -34,7 +34,7 @@ import me.tbsten.katachi.dsl.DeclarationContainerScope
 
 fun DeclarationContainerScope.claudeCode() =
     "ClaudeCode".group {
-        "Rules" {
+        "Rules".role {
             summary = "Instruction files that Claude Code reads"
 
             layout {
@@ -44,7 +44,7 @@ fun DeclarationContainerScope.claudeCode() =
             }
         }
 
-        "Skills" {
+        "Skills".role {
             summary = "Claude Code skills"
 
             layout {
@@ -52,7 +52,7 @@ fun DeclarationContainerScope.claudeCode() =
             }
         }
 
-        "Agents" {
+        "Agents".role {
             summary = "Claude Code subagent definitions"
 
             layout {
@@ -60,7 +60,7 @@ fun DeclarationContainerScope.claudeCode() =
             }
         }
 
-        "Commands" {
+        "Commands".role {
             summary = "Claude Code slash commands"
 
             layout {
@@ -68,7 +68,7 @@ fun DeclarationContainerScope.claudeCode() =
             }
         }
 
-        "OutputStyles" {
+        "OutputStyles".role {
             summary = "Claude Code output styles"
 
             layout {
@@ -76,7 +76,7 @@ fun DeclarationContainerScope.claudeCode() =
             }
         }
 
-        "Hooks" {
+        "Hooks".role {
             summary = "Claude Code hook scripts"
 
             layout {
@@ -84,7 +84,7 @@ fun DeclarationContainerScope.claudeCode() =
             }
         }
 
-        "Settings" {
+        "Settings".role {
             summary = "Claude Code settings file"
 
             layout {
@@ -92,7 +92,7 @@ fun DeclarationContainerScope.claudeCode() =
             }
         }
 
-        "Mcp" {
+        "Mcp".role {
             summary = "Claude Code MCP server configuration"
 
             layout {
@@ -125,7 +125,7 @@ import me.tbsten.katachi.dsl.DeclarationContainerScope
 
 fun DeclarationContainerScope.cursor() =
     "Cursor".group {
-        "Rules" {
+        "Rules".role {
             summary = "Instruction files that Cursor reads"
 
             layout {
@@ -134,7 +134,7 @@ fun DeclarationContainerScope.cursor() =
             }
         }
 
-        "Skills" {
+        "Skills".role {
             summary = "Cursor skills"
 
             layout {
@@ -142,7 +142,7 @@ fun DeclarationContainerScope.cursor() =
             }
         }
 
-        "Agents" {
+        "Agents".role {
             summary = "Cursor subagent definitions"
 
             layout {
@@ -150,7 +150,7 @@ fun DeclarationContainerScope.cursor() =
             }
         }
 
-        "Commands" {
+        "Commands".role {
             summary = "Cursor commands"
 
             layout {
@@ -158,7 +158,7 @@ fun DeclarationContainerScope.cursor() =
             }
         }
 
-        "HookConfig" {
+        "HookConfig".role {
             summary = "Cursor hook configuration file"
 
             layout {
@@ -166,7 +166,7 @@ fun DeclarationContainerScope.cursor() =
             }
         }
 
-        "HookScripts" {
+        "HookScripts".role {
             summary = "Cursor hook scripts"
 
             layout {
@@ -174,7 +174,7 @@ fun DeclarationContainerScope.cursor() =
             }
         }
 
-        "Mcp" {
+        "Mcp".role {
             summary = "Cursor MCP server configuration"
 
             layout {
@@ -182,7 +182,7 @@ fun DeclarationContainerScope.cursor() =
             }
         }
 
-        "Environment" {
+        "Environment".role {
             summary = "Cursor environment configuration"
 
             layout {
@@ -190,7 +190,7 @@ fun DeclarationContainerScope.cursor() =
             }
         }
 
-        "Ignore" {
+        "Ignore".role {
             summary = "Files that Cursor should ignore"
 
             layout {
@@ -224,7 +224,7 @@ import me.tbsten.katachi.dsl.DeclarationContainerScope
 
 fun DeclarationContainerScope.windsurf() =
     "Windsurf".group {
-        "Rules" {
+        "Rules".role {
             summary = "Instruction files that Windsurf reads"
 
             layout {
@@ -233,7 +233,7 @@ fun DeclarationContainerScope.windsurf() =
             }
         }
 
-        "Skills" {
+        "Skills".role {
             summary = "Windsurf skills"
 
             layout {
@@ -241,7 +241,7 @@ fun DeclarationContainerScope.windsurf() =
             }
         }
 
-        "Workflows" {
+        "Workflows".role {
             summary = "Windsurf workflows"
 
             layout {
@@ -249,7 +249,7 @@ fun DeclarationContainerScope.windsurf() =
             }
         }
 
-        "Hooks" {
+        "Hooks".role {
             summary = "Windsurf hook configuration file"
 
             layout {
@@ -257,7 +257,7 @@ fun DeclarationContainerScope.windsurf() =
             }
         }
 
-        "Ignore" {
+        "Ignore".role {
             summary = "Files that Windsurf should ignore"
 
             layout {
@@ -265,7 +265,7 @@ fun DeclarationContainerScope.windsurf() =
             }
         }
 
-        "LegacyRules" {
+        "LegacyRules".role {
             summary = "Legacy Windsurf instruction files"
 
             layout {
@@ -274,7 +274,7 @@ fun DeclarationContainerScope.windsurf() =
             }
         }
 
-        "LegacySkills" {
+        "LegacySkills".role {
             summary = "Legacy Windsurf skills"
 
             layout {
@@ -282,7 +282,7 @@ fun DeclarationContainerScope.windsurf() =
             }
         }
 
-        "LegacyWorkflows" {
+        "LegacyWorkflows".role {
             summary = "Legacy Windsurf workflows"
 
             layout {
@@ -315,7 +315,7 @@ import me.tbsten.katachi.dsl.DeclarationContainerScope
 
 fun DeclarationContainerScope.githubCopilot() =
     "GitHubCopilot".group {
-        "Instructions" {
+        "Instructions".role {
             summary = "Instruction files that GitHub Copilot reads"
 
             layout {
@@ -325,7 +325,7 @@ fun DeclarationContainerScope.githubCopilot() =
             }
         }
 
-        "Skills" {
+        "Skills".role {
             summary = "GitHub Copilot skills"
 
             layout {
@@ -333,7 +333,7 @@ fun DeclarationContainerScope.githubCopilot() =
             }
         }
 
-        "Agents" {
+        "Agents".role {
             summary = "GitHub Copilot custom agent definitions"
 
             layout {
@@ -341,7 +341,7 @@ fun DeclarationContainerScope.githubCopilot() =
             }
         }
 
-        "Prompts" {
+        "Prompts".role {
             summary = "GitHub Copilot prompt files"
 
             layout {
@@ -349,7 +349,7 @@ fun DeclarationContainerScope.githubCopilot() =
             }
         }
 
-        "Hooks" {
+        "Hooks".role {
             summary = "GitHub Copilot hook configuration files"
 
             layout {
@@ -357,7 +357,7 @@ fun DeclarationContainerScope.githubCopilot() =
             }
         }
 
-        "Mcp" {
+        "Mcp".role {
             summary = "GitHub Copilot MCP server configuration"
 
             layout {
@@ -365,7 +365,7 @@ fun DeclarationContainerScope.githubCopilot() =
             }
         }
 
-        "SetupSteps" {
+        "SetupSteps".role {
             summary = "Workflow that prepares the GitHub Copilot environment"
 
             layout {
@@ -399,7 +399,7 @@ import me.tbsten.katachi.dsl.DeclarationContainerScope
 
 fun DeclarationContainerScope.cline() =
     "Cline".group {
-        "Rules" {
+        "Rules".role {
             summary = "Instruction files that Cline reads"
 
             layout {
@@ -409,7 +409,7 @@ fun DeclarationContainerScope.cline() =
             }
         }
 
-        "Skills" {
+        "Skills".role {
             summary = "Cline skills"
 
             layout {
@@ -417,7 +417,7 @@ fun DeclarationContainerScope.cline() =
             }
         }
 
-        "Agents" {
+        "Agents".role {
             summary = "Cline agent definitions"
 
             layout {
@@ -425,7 +425,7 @@ fun DeclarationContainerScope.cline() =
             }
         }
 
-        "Hooks" {
+        "Hooks".role {
             summary = "Cline hook scripts"
 
             layout {
@@ -433,7 +433,7 @@ fun DeclarationContainerScope.cline() =
             }
         }
 
-        "Ignore" {
+        "Ignore".role {
             summary = "Files that Cline should ignore"
 
             layout {
@@ -466,7 +466,7 @@ import me.tbsten.katachi.dsl.DeclarationContainerScope
 
 fun DeclarationContainerScope.junie() =
     "Junie".group {
-        "Rules" {
+        "Rules".role {
             summary = "Instruction files that Junie reads"
 
             layout {
@@ -477,7 +477,7 @@ fun DeclarationContainerScope.junie() =
             }
         }
 
-        "Skills" {
+        "Skills".role {
             summary = "Junie skills"
 
             layout {
@@ -485,7 +485,7 @@ fun DeclarationContainerScope.junie() =
             }
         }
 
-        "Commands" {
+        "Commands".role {
             summary = "Junie commands"
 
             layout {
@@ -493,7 +493,7 @@ fun DeclarationContainerScope.junie() =
             }
         }
 
-        "Mcp" {
+        "Mcp".role {
             summary = "Junie MCP server configuration"
 
             layout {
@@ -501,7 +501,7 @@ fun DeclarationContainerScope.junie() =
             }
         }
 
-        "Config" {
+        "Config".role {
             summary = "Junie configuration file"
 
             layout {
@@ -509,7 +509,7 @@ fun DeclarationContainerScope.junie() =
             }
         }
 
-        "Ignore" {
+        "Ignore".role {
             summary = "Files that Junie should ignore"
 
             layout {
@@ -542,7 +542,7 @@ import me.tbsten.katachi.dsl.DeclarationContainerScope
 
 fun DeclarationContainerScope.codex() =
     "Codex".group {
-        "Rules" {
+        "Rules".role {
             summary = "Instruction files that Codex reads"
 
             layout {
@@ -550,7 +550,7 @@ fun DeclarationContainerScope.codex() =
             }
         }
 
-        "Skills" {
+        "Skills".role {
             summary = "Codex skills"
 
             layout {
@@ -558,7 +558,7 @@ fun DeclarationContainerScope.codex() =
             }
         }
 
-        "Config" {
+        "Config".role {
             summary = "Codex configuration file"
 
             layout {
@@ -566,7 +566,7 @@ fun DeclarationContainerScope.codex() =
             }
         }
 
-        "Hooks" {
+        "Hooks".role {
             summary = "Codex hook configuration file"
 
             layout {
@@ -574,7 +574,7 @@ fun DeclarationContainerScope.codex() =
             }
         }
 
-        "SandboxRules" {
+        "SandboxRules".role {
             summary = "Rules that decide which commands Codex may run"
 
             layout {
@@ -607,7 +607,7 @@ import me.tbsten.katachi.dsl.DeclarationContainerScope
 
 fun DeclarationContainerScope.antigravity() =
     "Antigravity".group {
-        "Rules" {
+        "Rules".role {
             summary = "Instruction files that Antigravity reads"
 
             layout {
@@ -617,7 +617,7 @@ fun DeclarationContainerScope.antigravity() =
             }
         }
 
-        "Skills" {
+        "Skills".role {
             summary = "Antigravity skills"
 
             layout {
@@ -625,7 +625,7 @@ fun DeclarationContainerScope.antigravity() =
             }
         }
 
-        "Agents" {
+        "Agents".role {
             summary = "Antigravity agent definitions"
 
             layout {
@@ -633,7 +633,7 @@ fun DeclarationContainerScope.antigravity() =
             }
         }
 
-        "Mcp" {
+        "Mcp".role {
             summary = "Antigravity MCP server configuration"
 
             layout {
@@ -641,7 +641,7 @@ fun DeclarationContainerScope.antigravity() =
             }
         }
 
-        "Hooks" {
+        "Hooks".role {
             summary = "Antigravity hook configuration file"
 
             layout {
@@ -674,7 +674,7 @@ import me.tbsten.katachi.dsl.DeclarationContainerScope
 
 fun DeclarationContainerScope.aider() =
     "Aider".group {
-        "Conventions" {
+        "Conventions".role {
             summary = "Convention file that Aider reads"
 
             layout {
@@ -682,7 +682,7 @@ fun DeclarationContainerScope.aider() =
             }
         }
 
-        "Settings" {
+        "Settings".role {
             summary = "Aider configuration files"
 
             layout {
@@ -691,7 +691,7 @@ fun DeclarationContainerScope.aider() =
             }
         }
 
-        "Ignore" {
+        "Ignore".role {
             summary = "Files that Aider should ignore"
 
             layout {

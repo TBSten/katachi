@@ -45,7 +45,7 @@ import me.tbsten.katachi.dsl.DeclarationContainerScope
 
 fun DeclarationContainerScope.ktlint() =
     "Ktlint".group {
-        "EditorConfig" {
+        "EditorConfig".role {
             title = "EditorConfig"
             summary = "The file that configures ktlint's rules"
             layout {
@@ -53,7 +53,7 @@ fun DeclarationContainerScope.ktlint() =
             }
         }
 
-        "Baseline" {
+        "Baseline".role {
             title = "ktlint baseline"
             summary = "The file ktlint writes out to tolerate existing violations"
             layout {

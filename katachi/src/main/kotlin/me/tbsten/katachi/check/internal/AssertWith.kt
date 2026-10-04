@@ -7,6 +7,8 @@ import me.tbsten.katachi.check.Violation
 import me.tbsten.katachi.dsl.Architecture
 import me.tbsten.katachi.dsl.files.KatachiFileSystem
 import me.tbsten.katachi.processor.ArchitectureProcessor
+import me.tbsten.katachi.report.internal.SarifEnvironment
+import me.tbsten.katachi.report.internal.writeSarifIfRequested
 
 /**
  * `assert()` against [fileSystem]. See `validate(fileSystem)`.
@@ -85,12 +87,17 @@ internal fun Architecture.assertNoErrors(
  *
  * Returns every violation of the run the baseline did not hold back when it does not throw,
  * which is what `assertNoErrors()` hands back and `assert()` drops.
+ *
+ * Between the baseline and the throw, the same violations are written out as a SARIF file when
+ * `-Dkatachi.report.sarif=<path>` asks for one -- see [writeSarifIfRequested]. Nothing about
+ * the throw or the output changes when it is not asked for, or when the write fails.
  */
 internal fun Architecture.assertWith(
     fileSystem: KatachiFileSystem,
     checks: List<ArchitectureProcessor<Unit, List<Violation>>>,
     maxViolations: Int,
     environment: BaselineEnvironment = BaselineEnvironment(),
+    sarif: SarifEnvironment = SarifEnvironment(),
 ): List<Violation> {
     val baseline = baseline
     // Read before the walk: a refused update on CI should not cost a whole run first.
@@ -103,6 +110,9 @@ internal fun Architecture.assertWith(
     outcome?.notices?.forEach(environment.standardError)
     val violations = outcome?.violations ?: result.violations
     val trailer = outcome?.trailer.orEmpty()
+    // Before the throw, so that a failing check still leaves a file for the CI to upload. Every
+    // violation the baseline let through, warnings included, and never cut to `maxViolations`.
+    writeSarifIfRequested(violations, projectRoot, this, fileSystem.workingDirectory, sarif)
     if (violations.none { it.severity == Severity.Error }) {
         val warnings = violations.report(maxViolations, projectRoot)
         if (warnings.isNotEmpty()) environment.standardError(warnings)

@@ -44,7 +44,7 @@ internal class MetadataValues(
 }
 
 /**
- * Collects metadata while a `"Role" { }` or `"group".group { }` block runs.
+ * Collects metadata while a `"Role".role { }` or `"group".group { }` block runs.
  *
  * Writing `null` removes the key instead of storing it, which is what keeps "absent" the one
  * way of saying "not written": `summary = null` after a `summary = "..."` leaves the role

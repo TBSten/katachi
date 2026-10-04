@@ -12,7 +12,7 @@ import me.tbsten.katachi.dsl.DeclarationContainerScope
  * generated artifact nobody can open is worth nothing. Outside `build/` means inside
  * `files = gitTracked()`, which is why each of them needs a role of its own.
  */
-fun DeclarationContainerScope.layoutSnapshot() = "LayoutSnapshot" {
+fun DeclarationContainerScope.layoutSnapshot() = "LayoutSnapshot".role {
     title = "Layout snapshot"
     summary = "A record of every line of this definition once flattened, so people can review changes to the definition as a diff"
     description = """

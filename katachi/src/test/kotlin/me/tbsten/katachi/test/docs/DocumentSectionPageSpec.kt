@@ -33,7 +33,7 @@ class DocumentSectionPageSpec : FreeSpec({
         "組み込みの節を全部出したあと、書いた順に並ぶ" {
             val arch = architecture {
                 "domain".group {
-                    "UseCase" {
+                    "UseCase".role {
                         summary = "1つの振る舞い"
                         description = "本文。"
                         example("GetUserUseCase", "ユーザーを取得する")
@@ -82,7 +82,7 @@ class DocumentSectionPageSpec : FreeSpec({
         "書く順を入れ替えると、出る順も入れ替わる" {
             val arch = architecture {
                 "domain".group {
-                    "UseCase" {
+                    "UseCase".role {
                         ownership = "platform"
                         testPolicy = "- 戻り値"
                     }
@@ -108,7 +108,7 @@ class DocumentSectionPageSpec : FreeSpec({
         "設定していない節は出ない" {
             val arch = architecture {
                 "domain".group {
-                    "UseCase" { ownership = "platform" }
+                    "UseCase".role { ownership = "platform" }
                 }
             }
 
@@ -118,7 +118,7 @@ class DocumentSectionPageSpec : FreeSpec({
         "本文はそのまま差し込まれ、前後の空行だけ落ちる" {
             val arch = architecture {
                 "domain".group {
-                    "UseCase" { testPolicy = "\n\n以下をテストする。\n\n- ステータスコード\n\n" }
+                    "UseCase".role { testPolicy = "\n\n以下をテストする。\n\n- ステータスコード\n\n" }
                 }
             }
 
@@ -141,7 +141,7 @@ class DocumentSectionPageSpec : FreeSpec({
         "本文が空でも、書いた以上は見出しが出る" {
             val arch = architecture {
                 "domain".group {
-                    "UseCase" { testPolicy = "" }
+                    "UseCase".role { testPolicy = "" }
                 }
             }
 
@@ -160,7 +160,7 @@ class DocumentSectionPageSpec : FreeSpec({
         "同じ節に2回書くと、最後の本文が最初に書いた位置に出る" {
             val arch = architecture {
                 "domain".group {
-                    "UseCase" {
+                    "UseCase".role {
                         testPolicy = "はじめに書いた本文。"
                         ownership = "platform"
                         testPolicy = "あとから書いた本文。"
@@ -189,7 +189,7 @@ class DocumentSectionPageSpec : FreeSpec({
         val arch = architecture {
             "api".group {
                 testPolicy = "グループ全体の方針。"
-                "Controller" { testPolicy = "この役割だけの方針。" }
+                "Controller".role { testPolicy = "この役割だけの方針。" }
             }
         }
 
@@ -227,7 +227,7 @@ class DocumentSectionPageSpec : FreeSpec({
             val arch = architecture {
                 "api".group {
                     testPolicy = "[存在しないページ](./Nope.md) を見ること。"
-                    "Controller" { }
+                    "Controller".role { }
                 }
             }
 
@@ -240,7 +240,7 @@ class DocumentSectionPageSpec : FreeSpec({
             val arch = architecture {
                 "api".group {
                     testPolicy = "[Controller](./Controller.md) を見ること。"
-                    "Controller" { }
+                    "Controller".role { }
                 }
             }
 

@@ -7,7 +7,7 @@ import me.tbsten.katachi.dsl.kotlin.ktFile
 import me.tbsten.katachi.konsist.konsist
 
 /** The role of the entry point of the katachi definition, which belongs to no layer of the application. */
-fun DeclarationContainerScope.architectureDefinitionEntry() = "ArchitectureDefinitionEntry" {
+fun DeclarationContainerScope.architectureDefinitionEntry() = "ArchitectureDefinitionEntry".role {
     title = "Architecture definition entry"
     summary = "The one file whose `architecture { }` gathers every group, so the definition can be read from here"
     description = """

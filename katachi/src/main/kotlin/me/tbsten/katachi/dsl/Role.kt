@@ -19,7 +19,7 @@ import me.tbsten.katachi.dsl.internal.get
  * ```kt
  * val arch = architecture {
  *     "domain".group {
- *         "UseCase" {
+ *         "UseCase".role {
  *             title = "Use case"
  *             summary = "A single app-specific behavior that happens on a screen"
  *         }
@@ -35,7 +35,7 @@ public class Role internal constructor(
      *
      * ## Example 1: read the declared role name
      * ```kt
-     * val arch = architecture { "domain".group { "UseCase" { } } }
+     * val arch = architecture { "domain".group { "UseCase".role { } } }
      * arch.allRoles.single().name shouldBe "UseCase"
      * ```
      */
@@ -50,7 +50,7 @@ public class Role internal constructor(
      * ```kt
      * val arch = architecture {
      *     "domain".group {
-     *         "UseCase" {
+     *         "UseCase".role {
      *             layout { }
      *         }
      *     }
@@ -74,7 +74,7 @@ public class Role internal constructor(
      * ```kt
      * val arch = architecture {
      *     "domain".group {
-     *         "model".group { "Entity" { } }
+     *         "model".group { "Entity".role { } }
      *     }
      * }
      * arch.allRoles.single().groupPath shouldContainExactly listOf("domain", "model")
@@ -82,19 +82,19 @@ public class Role internal constructor(
      *
      * ## Example 2: a role declared at the root of architecture { } is in no group
      * ```kt
-     * val arch = architecture { "Readme" { } }
+     * val arch = architecture { "Readme".role { } }
      * arch.allRoles.single().groupPath shouldBe emptyList()
      * ```
      */
     public val groupPath: List<String>,
     /**
-     * Where `"Name" { }` was written.
+     * Where `"Name".role { }` was written.
      *
      * ## Example 1: read where a role was declared
      * ```kt
      * val arch = architecture {
      *     "domain".group {
-     *         "UseCase" {
+     *         "UseCase".role {
      *             layout { }
      *         }
      *     }
@@ -111,7 +111,7 @@ public class Role internal constructor(
      * ```kt
      * val arch = architecture {
      *     "domain".group {
-     *         "model".group { "Entity" { } }
+     *         "model".group { "Entity".role { } }
      *     }
      * }
      * arch.allRoles.single().qualifiedName shouldBe "domain.model.Entity"
@@ -119,7 +119,7 @@ public class Role internal constructor(
      *
      * ## Example 2: a role declared at the root is qualified by its name alone
      * ```kt
-     * val arch = architecture { "Readme" { } }
+     * val arch = architecture { "Readme".role { } }
      * arch.allRoles.single().qualifiedName shouldBe "Readme"
      * ```
      */
@@ -138,7 +138,7 @@ public class Role internal constructor(
      * var RoleScope.owner: String? by Owner
      *
      * val arch = architecture {
-     *     "domain".group { "UseCase" { owner = "platform" } }
+     *     "domain".group { "UseCase".role { owner = "platform" } }
      * }
      * arch.allRoles.single()[Owner] shouldBe "platform"
      * ```
@@ -146,7 +146,7 @@ public class Role internal constructor(
      * ## Example 2: read one of the keys katachi ships
      * ```kt
      * val arch = architecture {
-     *     "domain".group { "UseCase" { title = "Use case" } }
+     *     "domain".group { "UseCase".role { title = "Use case" } }
      * }
      * arch.allRoles.single()[Title] shouldBe "Use case"
      * ```
@@ -164,7 +164,7 @@ public class Role internal constructor(
      * var MetadataScope.testPolicy by TestPolicy
      *
      * val arch = architecture {
-     *     "api".group { "Controller" { testPolicy = "- The status code" } }
+     *     "api".group { "Controller".role { testPolicy = "- The status code" } }
      * }
      * arch.allRoles.single()[TestPolicy] shouldBe "- The status code"
      * ```

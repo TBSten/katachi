@@ -75,7 +75,7 @@ class BaselineFileStoreSpec : FreeSpec({
         }
         val definition = architectureOf {
             baseline()
-            "Readme" { layout { "README.md".file() } }
+            "Readme".role { layout { "README.md".file() } }
         }
 
         val failure = shouldThrow<KatachiBaselineWriteException> {

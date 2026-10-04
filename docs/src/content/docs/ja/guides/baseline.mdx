@@ -46,7 +46,7 @@ val projectArchitecture = architecture {
     // ...
 }
 
-fun DeclarationContainerScope.baselineFile() = "BaselineFile" {
+fun DeclarationContainerScope.baselineFile() = "BaselineFile".role {
     title = "katachi Baseline ファイル"
     summary = "既存の違反を一時的に抑制するためのファイル"
     description = "参照: https://tbsten.github.io/katachi/ja/guides/baseline/"
@@ -67,6 +67,8 @@ fun DeclarationContainerScope.baselineFile() = "BaselineFile" {
 作成・更新されたファイルは、コミットすることをおすすめします。
 
 [`ktFileContent { }`](/katachi/ja/guides/kt-file-content/) の違反は、`GetUserUseCaseImpl`・`HomeViewModel.isLoading`・`import android.content.Context`・`package com.example.home` のように、宣言ごとに記録されます。行番号は記録しないので、同じファイルに行を足して違反の行がずれても、許容した違反は許容されたままです。（AI の下書き）
+
+baseline で許容した違反は、テストを落とさないだけでなく、[PR に注釈を出す](/katachi/ja/recipes/github/#pr-に注釈を出す)ときの SARIF のファイルにも書かれません。
 
 ## 許容していた違反を直したあと
 

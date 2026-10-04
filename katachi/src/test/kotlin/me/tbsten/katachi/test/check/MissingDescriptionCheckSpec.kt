@@ -27,7 +27,7 @@ import me.tbsten.katachi.dsl.kotlin.ktFile
 /** A role living in [modules], each holding one wildcard file and no `description`. */
 private fun roleAcross(vararg modules: String) = architecture {
     "group".group {
-        "Role" {
+        "Role".role {
             layout {
                 for (modulePath in modules) modulePath.module { "*UseCase".ktFile() }
             }
@@ -43,7 +43,7 @@ class MissingDescriptionCheckSpec : FreeSpec({
     "配置場所が2つあって description が無いと、警告は出るが assert() は落ちない" {
         val definition = architectureOf {
             "group".group {
-                "Role" {
+                "Role".role {
                     layout {
                         ":core:domain".module { "*UseCase".ktFile() }
                         ":feature:home".module { "*UseCase".ktFile() }
@@ -69,7 +69,7 @@ class MissingDescriptionCheckSpec : FreeSpec({
     "description を書けば警告が消える" {
         val definition = architectureOf {
             "group".group {
-                "Role" {
+                "Role".role {
                     layout {
                         ":core:domain".module {
                             description = "複数 feature から使われるもの"
@@ -94,7 +94,7 @@ class MissingDescriptionCheckSpec : FreeSpec({
     "\":feature:*\".module { } は、実在するモジュール数によらず1つの place として数えられる" {
         val definition = architectureOf {
             "group".group {
-                "Role" {
+                "Role".role {
                     layout {
                         ":core:ui".module { "*Screen".ktFile() }
                         ":feature:*".module { "*Screen".ktFile() }
@@ -127,7 +127,7 @@ class MissingDescriptionCheckSpec : FreeSpec({
     "Error と Warning が両方あると、失敗メッセージの末尾に Warning セクションが来る" {
         val definition = architectureOf {
             "group".group {
-                "Role" {
+                "Role".role {
                     layout {
                         ":core:domain".module { "GetUser".ktFile() }
                         ":feature:home".module { "*UseCase".ktFile() }

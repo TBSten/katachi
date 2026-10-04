@@ -24,7 +24,7 @@ class ArchitectureProcessContextSpec : FreeSpec({
         "宣言しか見ない processor はファイルシステムに触らない" {
             val definition = architectureOf {
                 "domain".group {
-                    "UseCase" { layout { "useCase" / "*UseCase".ktFile() } }
+                    "UseCase".role { layout { "useCase" / "*UseCase".ktFile() } }
                 }
             }
 
@@ -66,8 +66,8 @@ class ArchitectureProcessContextSpec : FreeSpec({
         "glob が重なるファイルは一致した役割すべてで返る" {
             val definition = architectureOf {
                 "domain".group {
-                    "UseCase" { layout { "core" / "*.kt".file() } }
-                    "Api" { layout { "core" / "*Api.kt".file() } }
+                    "UseCase".role { layout { "core" / "*.kt".file() } }
+                    "Api".role { layout { "core" / "*Api.kt".file() } }
                 }
             }
 
@@ -175,7 +175,7 @@ class ArchitectureProcessContextSpec : FreeSpec({
         // 歩くので展開後が見える。この食い違いは仕様であって、KDoc の1段落だけに
         // 任せておくと次の誰かが黙って壊す。
         val definition = architectureOf {
-            "feature".group { "Module" { layout { ":feature:*".module { } } } }
+            "feature".group { "Module".role { layout { ":feature:*".module { } } } }
         }
         val patternEntries = listOf(
             "feature",
@@ -228,7 +228,7 @@ class ArchitectureProcessContextSpec : FreeSpec({
             // パターンのまま残るのはワイルドカードのときだけ、という線引きの固定。
             // モジュールを名指しするキーは、どこに置かれるかを resolver だけで答えられる。
             val literal = architectureOf {
-                "feature".group { "Module" { layout { ":feature:home".module { } } } }
+                "feature".group { "Module".role { layout { ":feature:home".module { } } } }
             }
 
             literal.process(tree) { context -> context.declaredEntries.map { it.path } } shouldBe

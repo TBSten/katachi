@@ -35,7 +35,7 @@ class TemplateKdocExamplesSpec : FreeSpec({
         "Example 1 は名前付き capture で宣言でき、既定値つきの引数を書く" {
             val arch = architecture {
                 "domain".group {
-                    "UseCase" {
+                    "UseCase".role {
                         layout {
                             "useCase" / "${capture("name")}UseCase.kt".file()
                                 .template {
@@ -65,7 +65,7 @@ class TemplateKdocExamplesSpec : FreeSpec({
 
         "stringParameter の例" {
             val arch = architecture {
-                "UseCase" {
+                "UseCase".role {
                     layout {
                         "useCase" / "${capture("name")}UseCase.kt".file()
                             .template {
@@ -82,7 +82,7 @@ class TemplateKdocExamplesSpec : FreeSpec({
 
         "booleanParameter・intParameter・enumParameter の例" {
             val bool = architecture {
-                "Repository" {
+                "Repository".role {
                     layout {
                         "repository" / "${capture("name")}Repository.kt".file()
                             .template {
@@ -98,7 +98,7 @@ class TemplateKdocExamplesSpec : FreeSpec({
                 "interface UserRepository { fun all(): List<User> }"
 
             val int = architecture {
-                "Pager" {
+                "Pager".role {
                     layout {
                         "pager" / "${capture("name")}Pager.kt".file()
                             .template {
@@ -113,7 +113,7 @@ class TemplateKdocExamplesSpec : FreeSpec({
                 "const val User_PAGE_SIZE: Int = 50"
 
             val entries = architecture {
-                "Any" {
+                "Any".role {
                     layout {
                         "any" / "${capture("name")}.kt".file()
                             .template {
@@ -128,7 +128,7 @@ class TemplateKdocExamplesSpec : FreeSpec({
                 "internal class User"
 
             val default = architecture {
-                "Any" {
+                "Any".role {
                     layout {
                         "any" / "${capture("name")}.kt".file()
                             .template {
@@ -144,7 +144,7 @@ class TemplateKdocExamplesSpec : FreeSpec({
 
         "captureValue の例（module の capture と file の capture）" {
             val arch = architecture {
-                "Screen" {
+                "Screen".role {
                     layout {
                         "feature" / capture("feature") / "${capture("name")}Screen.kt".file()
                             .template {
@@ -161,7 +161,7 @@ class TemplateKdocExamplesSpec : FreeSpec({
 
         "isPreview の例" {
             val arch = architecture {
-                "Any" {
+                "Any".role {
                     layout {
                         "any" / "${capture("resource")}.kt".file()
                             .template {
@@ -186,7 +186,7 @@ class TemplateKdocExamplesSpec : FreeSpec({
     "LayoutFile.template の例" {
         val arch = architecture {
             "domain".group {
-                "UseCase" {
+                "UseCase".role {
                     layout {
                         "useCase" / "${capture("name")}UseCase.kt".file()
                             .template {
@@ -203,7 +203,7 @@ class TemplateKdocExamplesSpec : FreeSpec({
     "TemplateParameter の例" - {
         "宣言に使う引数だけを持つ template が動く" {
             val arch = architecture {
-                "UseCase" {
+                "UseCase".role {
                     layout {
                         "useCase" / "${capture("name")}UseCase.kt".file()
                             .template {
@@ -219,7 +219,7 @@ class TemplateKdocExamplesSpec : FreeSpec({
 
         "provideDelegate の例: 読まない引数も受け付ける名前になる" {
             val arch = architecture {
-                "UseCase" {
+                "UseCase".role {
                     layout {
                         "useCase" / "${capture("name")}UseCase.kt".file()
                             .template {
@@ -240,7 +240,7 @@ class TemplateKdocExamplesSpec : FreeSpec({
         "KatachiUnboundTemplateParameterException" {
             val arch = architecture {
                 "domain".group {
-                    "UseCase" {
+                    "UseCase".role {
                         layout {
                             "useCase" / "UseCase.kt".file()
                                 .template {
@@ -258,7 +258,7 @@ class TemplateKdocExamplesSpec : FreeSpec({
         "KatachiDuplicateTemplateParameterException" {
             val arch = architecture {
                 "domain".group {
-                    "UseCase" {
+                    "UseCase".role {
                         layout {
                             "useCase" / "UseCase.kt".file()
                                 .template {
@@ -276,7 +276,7 @@ class TemplateKdocExamplesSpec : FreeSpec({
         "KatachiTemplateParameterReusedException" {
             val arch = architecture {
                 "domain".group {
-                    "UseCase" {
+                    "UseCase".role {
                         layout {
                             "useCase" / "UseCase.kt".file()
                                 .template {
@@ -295,7 +295,7 @@ class TemplateKdocExamplesSpec : FreeSpec({
         "KatachiMissingTemplateParameterException" {
             val arch = architecture {
                 "domain".group {
-                    "UseCase" {
+                    "UseCase".role {
                         layout {
                             "useCase" / "UseCase.kt".file()
                                 .template {
@@ -313,7 +313,7 @@ class TemplateKdocExamplesSpec : FreeSpec({
         "KatachiInvalidTemplateParameterValueException" {
             val arch = architecture {
                 "data".group {
-                    "Repository" {
+                    "Repository".role {
                         layout {
                             "repository" / "Repository.kt".file()
                                 .template {
@@ -333,7 +333,7 @@ class TemplateKdocExamplesSpec : FreeSpec({
         "KatachiEmptyEnumTemplateParameterException の例は空でない enum なので投げない" {
             val arch = architecture {
                 "domain".group {
-                    "UseCase" {
+                    "UseCase".role {
                         layout {
                             "useCase" / "GetUserUseCase.kt".file()
                                 .template {
@@ -354,7 +354,7 @@ class TemplateKdocExamplesSpec : FreeSpec({
             val thrown = shouldThrow<KatachiDuplicateTemplateException> {
                 architecture {
                     "domain".group {
-                        "UseCase" {
+                        "UseCase".role {
                             layout {
                                 "useCase" / "${capture("name")}UseCase.kt".file()
                                     .template { "a" }
@@ -371,7 +371,7 @@ class TemplateKdocExamplesSpec : FreeSpec({
             val thrown = shouldThrow<KatachiDuplicateTemplateIdException> {
                 architecture {
                     "data".group {
-                        "Repository" {
+                        "Repository".role {
                             layout {
                                 "repository" / "${capture("name")}Repository.kt".file()
                                     .template(id = "repository") { "" }
@@ -389,7 +389,7 @@ class TemplateKdocExamplesSpec : FreeSpec({
             val thrown = shouldThrow<KatachiMissingTemplateIdException> {
                 architecture {
                     "data".group {
-                        "Repository" {
+                        "Repository".role {
                             layout {
                                 "repository" / "${capture("name")}Repository.kt".file()
                                     .template { "" }
@@ -407,7 +407,7 @@ class TemplateKdocExamplesSpec : FreeSpec({
             val thrown = shouldThrow<KatachiTemplateOnWildcardException> {
                 architecture {
                     "data".group {
-                        "Repository" {
+                        "Repository".role {
                             layout {
                                 "repository" / "*Repository.kt".file()
                                     .template { "" }

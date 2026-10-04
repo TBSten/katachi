@@ -27,7 +27,7 @@ import me.tbsten.katachi.test.architecture.KATACHI_MAIN_PACKAGE
  * the file system the walk reads; they are still this layer because that is where they sit in
  * the dependency table. See the `description`.
  */
-fun DeclarationContainerScope.dsl() = "Dsl" {
+fun DeclarationContainerScope.dsl() = "Dsl".role {
     title = "DSL"
     summary = "architecture { } / group { } / role { } / layout { } の受け皿と、宣言されたモデル。走査するファイル集合の選択と、その下のファイルシステム"
     description = """

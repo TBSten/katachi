@@ -27,7 +27,7 @@ const ja = {
 		codeTitle: 'ProjectArchitecture.kt',
 		code: `val projectArchitecture = architecture {
   "domain".group {
-    "UseCase" {
+    "UseCase".role {
       layout {
         "core/domain" / mainSourceSet / kotlin /
           "com/example/core/domain/useCase" / "*UseCase".ktFile()
@@ -73,14 +73,14 @@ const ja = {
 			titleHtml: '宣言にないファイルは<br />アーキテクチャ違反',
 			bodyHtml:
 				'禁止を数え上げる運用から、存在してよいものを宣言する運用へ。「いつの間にか増えた置き場所」が起きません。',
-			code: `"UseCase" { layout { "domain/useCase" / "*UseCase".ktFile() } }
+			code: `"UseCase".role { layout { "domain/useCase" / "*UseCase".ktFile() } }
 // domain/useCase/Helper.kt → [UnexpectedFile]`,
 		},
 		role: {
 			titleHtml: 'Role 駆動による<br />アーキテクチャ定義',
 			bodyHtml:
 				'1つの Role が2つのモジュールに住んでいても、説明は1箇所のまま。置き場所は <code dir="auto">layout { }</code> を並べて宣言します。',
-			code: `"UseCase" {
+			code: `"UseCase".role {
   summary = "各画面で発生するアプリ固有の1つの振る舞い"
   layout { "core/domain/useCase" / "*UseCase".ktFile() }
   layout { "feature/home/useCase" / "*UseCase".ktFile() }
@@ -94,7 +94,7 @@ const ja = {
 			linkText: 'ドキュメントを生成',
 			link: 'guides/document-generation/',
 			bodyAfterLinkHtml: 'できます。',
-			code: `"UseCase" {
+			code: `"UseCase".role {
   title = "ユースケース"
   summary = "各画面で発生するアプリ固有の1つの振る舞い"
   example("GetUserUseCase", "ユーザーを取得する")
@@ -177,7 +177,7 @@ const en: HomeStrings = {
 			titleHtml: 'Architecture definitions<br />driven by roles',
 			bodyHtml:
 				'Even when one role lives in two modules, the explanation stays in one place. Declare its placements by listing <code dir="auto">layout { }</code> blocks.',
-			code: `"UseCase" {
+			code: `"UseCase".role {
   summary = "A single app-specific behavior that occurs on a screen"
   layout { "core/domain/useCase" / "*UseCase".ktFile() }
   layout { "feature/home/useCase" / "*UseCase".ktFile() }
@@ -190,7 +190,7 @@ const en: HomeStrings = {
 			linkText: 'generates documentation',
 			link: 'guides/document-generation/',
 			bodyAfterLinkHtml: ' from that same definition.',
-			code: `"UseCase" {
+			code: `"UseCase".role {
   title = "Use case"
   summary = "A single app-specific behavior that occurs on a screen"
   example("GetUserUseCase", "Gets a user")

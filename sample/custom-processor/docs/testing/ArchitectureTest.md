@@ -4,9 +4,11 @@
 
 The one test that checks the whole project against the definition
 
-`ProjectArchitectureTest` calls `assert()` on the definition. Every violation of the
-repository arrives in a single failure message, so there is nothing to gain from splitting
-it up. It is the only test a project adopting katachi writes.
+`ProjectArchitectureTest` calls `assert(FileConstraintCheck())` on the definition. Every
+violation of the repository arrives in a single failure message, so there is nothing to
+gain from splitting it up. It is the only test a project adopting katachi writes.
+`FileConstraintCheck()` is what makes the Model role's `konture { }` constraint run;
+without it the constraint is reported as not evaluated.
 
 The file name is `*Test.kt`. The `*Spec` files next to it have a role of their own.
 

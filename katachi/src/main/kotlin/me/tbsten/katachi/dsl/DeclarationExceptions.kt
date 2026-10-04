@@ -49,7 +49,7 @@ public enum class DeclarationKind(
      * ## Example 1: match on a rejected role declaration
      * ```kt
      * val thrown = shouldThrow<KatachiInvalidIdentifierException> {
-     *     architecture { "domain".group { "use case" { } } }
+     *     architecture { "domain".group { "use case".role { } } }
      * }
      * thrown.kind shouldBe DeclarationKind.Role
      * ```
@@ -68,7 +68,7 @@ public enum class DeclarationKind(
      * val thrown = shouldThrow<KatachiInvalidIdentifierException> {
      *     architecture {
      *         "ui".group {
-     *             "Screen" { layout { "feature" / capture("1feature") / "*Screen".ktFile() } }
+     *             "Screen".role { layout { "feature" / capture("1feature") / "*Screen".ktFile() } }
      *         }
      *     }.flattenLayout()
      * }
@@ -91,7 +91,7 @@ public enum class DeclarationKind(
      * val thrown = shouldThrow<KatachiInvalidIdentifierException> {
      *     architecture {
      *         "domain".group {
-     *             "UseCase" { layout { "*UseCase.kt".file()
+     *             "UseCase".role { layout { "*UseCase.kt".file()
      *                 .template(id = "not valid") { "" } } }
      *         }
      *     }
@@ -156,7 +156,7 @@ public class KatachiInvalidIdentifierException internal constructor(
  * val thrown = shouldThrow<KatachiDuplicateDeclarationException> {
  *     architecture {
  *         "domain".group { }
- *         "domain" { }
+ *         "domain".role { }
  *     }
  * }
  * thrown.kind shouldBe DeclarationKind.Role

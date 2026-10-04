@@ -14,7 +14,7 @@ import me.tbsten.katachi.test.check.repositoryOf
 
 private val definition: Architecture = architectureOf {
     baseline()
-    "Readme" { layout { "README.md".file() } }
+    "Readme".role { layout { "README.md".file() } }
 }
 
 private fun ledgerHolding(vararg paths: String): MemoryBaselineStore = MemoryBaselineStore(

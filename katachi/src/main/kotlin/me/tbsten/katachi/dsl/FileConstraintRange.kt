@@ -12,7 +12,7 @@ package me.tbsten.katachi.dsl
  *
  * ## Example 1: a parent directory whose rule does not reach its children
  * ```kt
- * "Util" {
+ * "Util".role {
  *     layout {
  *         "util" {
  *             "does not use the KSP API".konsist(scope = FileConstraintRange.DirectOnly) {

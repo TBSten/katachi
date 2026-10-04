@@ -23,8 +23,8 @@ class RoleReferenceSpec : FreeSpec({
         "group がディレクトリ、役割が識別子のファイルになる" {
             val arch = architecture {
                 "domain".group {
-                    "UseCase" { }
-                    "Repository" { }
+                    "UseCase".role { }
+                    "Repository".role { }
                 }
             }
 
@@ -40,7 +40,7 @@ class RoleReferenceSpec : FreeSpec({
             val arch = architecture {
                 "domain".group {
                     "model".group {
-                        "Entity" { }
+                        "Entity".role { }
                     }
                 }
             }
@@ -55,8 +55,8 @@ class RoleReferenceSpec : FreeSpec({
 
         "group に属さない役割は出力ルートの直下に出る" {
             val arch = architecture {
-                "Changelog" { }
-                "domain".group { "UseCase" { } }
+                "Changelog".role { }
+                "domain".group { "UseCase".role { } }
             }
 
             arch.documents().keys.toList() shouldContainExactly listOf(
@@ -71,7 +71,7 @@ class RoleReferenceSpec : FreeSpec({
             val arch = architecture {
                 "domain".group {
                     title = "ドメイン"
-                    "UseCase" { title = "ユースケース" }
+                    "UseCase".role { title = "ユースケース" }
                 }
             }
 
@@ -87,8 +87,8 @@ class RoleReferenceSpec : FreeSpec({
         "指定した役割のページが生成されない" {
             val arch = architecture {
                 "domain".group {
-                    "UseCase" { }
-                    "Internal" { documented = false }
+                    "UseCase".role { }
+                    "Internal".role { documented = false }
                 }
             }
 
@@ -103,9 +103,9 @@ class RoleReferenceSpec : FreeSpec({
             val arch = architecture {
                 "build".group {
                     documented = false
-                    "GradleModule" { }
+                    "GradleModule".role { }
                 }
-                "domain".group { "UseCase" { } }
+                "domain".group { "UseCase".role { } }
             }
 
             arch.documents().keys.toList() shouldContainExactly listOf(
@@ -119,7 +119,7 @@ class RoleReferenceSpec : FreeSpec({
             val arch = architecture {
                 "build".group {
                     documented = false
-                    "logic".group { "Convention" { } }
+                    "logic".group { "Convention".role { } }
                 }
             }
 
@@ -151,7 +151,7 @@ class RoleReferenceSpec : FreeSpec({
         "group の README と同じ名前の役割は例外になる" {
             val arch = architecture {
                 "domain".group {
-                    "README" { }
+                    "README".role { }
                 }
             }
 
@@ -162,7 +162,7 @@ class RoleReferenceSpec : FreeSpec({
         }
 
         "ルート README と同じ名前の役割も例外になる" {
-            val arch = architecture { "README" { } }
+            val arch = architecture { "README".role { } }
 
             val exception = shouldThrow<KatachiDocumentPathCollisionException> { arch.documents() }
 
@@ -175,7 +175,7 @@ class RoleReferenceSpec : FreeSpec({
         "衝突の例外は宣言位置を両方とも名指しする" {
             val arch = architecture {
                 "domain".group {
-                    "README" { }
+                    "README".role { }
                 }
             }
 
@@ -189,7 +189,7 @@ class RoleReferenceSpec : FreeSpec({
     "ページの組み立てはファイルシステムを1度も読まない" {
         val arch = architecture {
             "domain".group {
-                "UseCase" { layout { "useCase" { "*UseCase.kt".file() } } }
+                "UseCase".role { layout { "useCase" { "*UseCase.kt".file() } } }
             }
         }
 
@@ -201,7 +201,7 @@ class RoleReferenceSpec : FreeSpec({
     "ファイル構成の節は declarations { } がまだ無いので出ない" {
         val arch = architecture {
             "domain".group {
-                "UseCase" { layout { "useCase" { "*UseCase.kt".file() } } }
+                "UseCase".role { layout { "useCase" { "*UseCase.kt".file() } } }
             }
         }
 

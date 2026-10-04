@@ -32,7 +32,7 @@ import me.tbsten.katachi.dsl.Architecture
  * @OptIn(InternalKatachiApi::class)
  * object MyEntryPoint : KatachiEntryPoint {
  *     override val architecture: Architecture = architecture {
- *         "domain".group { "UseCase" { layout { "domain" / "*UseCase.kt".file() } } }
+ *         "domain".group { "UseCase".role { layout { "domain" / "*UseCase.kt".file() } } }
  *     }
  *     override val processors: Map<String, Class<*>> = mapOf(
  *         "layout" to LayoutCheck::class.java,
@@ -53,7 +53,7 @@ public interface KatachiEntryPoint {
      * @OptIn(InternalKatachiApi::class)
      * object MyEntryPoint : KatachiEntryPoint {
      *     override val architecture: Architecture = architecture {
-     *         "domain".group { "UseCase" { layout { "domain" / "*UseCase.kt".file() } } }
+     *         "domain".group { "UseCase".role { layout { "domain" / "*UseCase.kt".file() } } }
      *     }
      *     override val processors: Map<String, Class<*>> = mapOf(
      *         "layout" to LayoutCheck::class.java,
@@ -80,7 +80,7 @@ public interface KatachiEntryPoint {
      * @OptIn(InternalKatachiApi::class)
      * object MyEntryPoint : KatachiEntryPoint {
      *     override val architecture: Architecture = architecture {
-     *         "domain".group { "UseCase" { layout { "domain" / "*UseCase.kt".file() } } }
+     *         "domain".group { "UseCase".role { layout { "domain" / "*UseCase.kt".file() } } }
      *     }
      *     override val processors: Map<String, Class<*>> = mapOf(
      *         "layout" to LayoutCheck::class.java,

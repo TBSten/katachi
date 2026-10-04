@@ -1,14 +1,17 @@
 ---
 title: GitHub
-description: GitHub Actions のワークフローや CODEOWNERS、Community Health ファイルを architecture { } で宣言する例。
+description: GitHub Actions のワークフローや CODEOWNERS、Community Health ファイルを architecture { } で宣言する例と、アーキテクチャテストの違反を SARIF で書き出して GitHub の PR に注釈として出す手順。
 tags:
   - intermediate
 ---
 
 {/*
   このページの目的: GitHub Actions・CODEOWNERS・Community Health ファイルなど `.github/` 配下のファイルを、コピーして使える1つの group で宣言する例を示すこと。
+  あわせて、アーキテクチャテストの違反を SARIF のファイルに書き、GitHub の code scanning か reviewdog で PR に注釈として出す手順を示すこと。
+  アーキテクチャテストを CI で回す手順そのものは「初めてのアーキテクチャ定義」が持つ。
 */}
 
+import { Aside } from '@astrojs/starlight/components';
 import SnippetIsStartingPoint from '../../../../components/SnippetIsStartingPoint.astro';
 
 ```kt collapse
@@ -33,7 +36,7 @@ import me.tbsten.katachi.dsl.DeclarationContainerScope
 fun DeclarationContainerScope.github() =
     "GitHub".group {
         "Actions".group {
-            "Workflow" {
+            "Workflow".role {
                 summary = "GitHub Actions のワークフロー"
                 layout {
                     ".github/workflows/*.yml".file()
@@ -41,7 +44,7 @@ fun DeclarationContainerScope.github() =
                 }
             }
 
-            "CompositeAction" {
+            "CompositeAction".role {
                 summary = "リポジトリ内で定義する composite action"
                 layout {
                     ".github/actions/*/action.yml".file()
@@ -50,7 +53,7 @@ fun DeclarationContainerScope.github() =
         }
 
         "Templates".group {
-            "Issue" {
+            "Issue".role {
                 summary = "Issue を立てるときのテンプレート"
                 layout {
                     ".github/ISSUE_TEMPLATE/*.yml".file()
@@ -58,7 +61,7 @@ fun DeclarationContainerScope.github() =
                 }
             }
 
-            "PullRequest" {
+            "PullRequest".role {
                 summary = "Pull Request の説明のテンプレート"
                 layout {
                     ".github/PULL_REQUEST_TEMPLATE.md".file().optional()
@@ -66,14 +69,14 @@ fun DeclarationContainerScope.github() =
             }
         }
 
-        "CodeOwners" {
+        "CodeOwners".role {
             summary = "パスごとのレビュー担当者の宣言"
             layout {
                 ".github/CODEOWNERS".file().optional()
             }
         }
 
-        "Dependabot" {
+        "Dependabot".role {
             summary = "Dependabot の更新設定"
             layout {
                 ".github/dependabot.yml".file().optional()
@@ -81,35 +84,35 @@ fun DeclarationContainerScope.github() =
         }
 
         "CommunityHealth".group {
-            "Contributing" {
+            "Contributing".role {
                 summary = "コントリビュートの手順"
                 layout {
                     ".github/CONTRIBUTING.md".file().optional()
                 }
             }
 
-            "CodeOfConduct" {
+            "CodeOfConduct".role {
                 summary = "行動規範"
                 layout {
                     ".github/CODE_OF_CONDUCT.md".file().optional()
                 }
             }
 
-            "Security" {
+            "Security".role {
                 summary = "脆弱性の報告方法"
                 layout {
                     ".github/SECURITY.md".file().optional()
                 }
             }
 
-            "Support" {
+            "Support".role {
                 summary = "質問や助けを求める先"
                 layout {
                     ".github/SUPPORT.md".file().optional()
                 }
             }
 
-            "Funding" {
+            "Funding".role {
                 summary = "スポンサーシップの案内"
                 layout {
                     ".github/FUNDING.yml".file().optional()
@@ -120,3 +123,122 @@ fun DeclarationContainerScope.github() =
 ```
 
 <SnippetIsStartingPoint />
+
+## PR に注釈を出す
+
+アーキテクチャテストが見つけた違反は、[SARIF](https://sarifweb.azurewebsites.net/)（静的解析ツールの結果の標準の形式）のファイルにも書き出せます。そのファイルを GitHub の code scanning に渡すと、PR の該当するファイルと行に違反が注釈として付きます。
+
+### 1. SARIF のファイルを出す
+
+`:architecture-test` の `build.gradle.kts` の `katachi { }` に `report { sarif = true }` を足します。
+
+```kts title="architecture-test/build.gradle.kts" {3-5}
+katachi {
+    architecture = "com.example.projectArchitecture"
+    report {
+        sarif = true
+    }
+}
+```
+
+`./gradlew :architecture-test:test` を実行すると、テストが通っても落ちても `architecture-test/build/reports/katachi/katachi.sarif` ができます。違反が 0 件のときも、結果が空のファイルができます。
+
+<details>
+<summary>Gradle plugin を使っていないモジュールで出す</summary>
+
+テストの JVM に system property `katachi.report.sarif` で出力先を渡すと、同じファイルができます。
+
+```kts title="architecture-test/build.gradle.kts"
+tasks.test {
+    systemProperty(
+        "katachi.report.sarif",
+        layout.buildDirectory.file("reports/katachi/katachi.sarif").get().asFile.absolutePath,
+    )
+}
+```
+
+</details>
+
+### 2. code scanning に上げる
+
+[初めてのアーキテクチャ定義](/katachi/ja/get-started/first-architecture/)の「CI に組み込む」のワークフローに、`permissions` の 1 行と `upload-sarif` の 1 ステップを足します。
+
+```yaml title=".github/workflows/architecture.yml" {10, 23-27}
+name: Architecture
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+  security-events: write
+
+jobs:
+  architecture:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: gradle/actions/setup-gradle@v6
+      - run: ./gradlew :architecture-test:test
+      - uses: github/codeql-action/upload-sarif@v4
+        if: ${{ always() && hashFiles('architecture-test/build/reports/katachi/katachi.sarif') != '' && (github.event_name != 'pull_request' || !github.event.pull_request.head.repo.fork) }}
+        with:
+          sarif_file: architecture-test/build/reports/katachi/katachi.sarif
+          category: katachi
+```
+
+- **`security-events: write`**: `upload-sarif` が code scanning に結果を書き込むための権限です。
+- **`if: always() && hashFiles(...) != ''`**: 違反があるとテストは落ちるので、落ちたときも上げます。コンパイルエラーなどでファイル自体ができなかったときは飛ばします。
+- **`!github.event.pull_request.head.repo.fork`**: フォークからの PR では `GITHUB_TOKEN` に書き込みの権限が無く、上げると失敗するので外します。
+- **`on.push.branches: [main]`**: PR に出る注釈は、main の結果と比べて増えた違反です。main でも上げないと、比べる元がありません。Security タブの Code scanning の一覧も、main の結果から作られます。
+- **`category`**: アーキテクチャテストのモジュールが複数あるときは、`katachi/<module>` のようにモジュールごとに別の値にします。同じ `category` の結果は、次に上げたもので置き換わります。
+
+<Aside type="note" title="注釈が付くのは PR の差分の中だけ">
+PR の Files changed に注釈として出るのは、その PR で変更したファイルにある違反だけです。差分の外のファイルにある違反（宣言したのにまだ無い `MissingFile` など）は PR には出ないので、テストの出力か、リポジトリの Security タブの Code scanning で読んでください。
+</Aside>
+
+違反をすべて直すと、結果が空の SARIF のファイルが上がり、開いていた alert は閉じます。
+
+### プライベートリポジトリでは reviewdog で出す
+
+GitHub の code scanning は、公開リポジトリでは追加の契約なしに使えます。プライベートリポジトリでは GitHub Code Security（旧 GitHub Advanced Security）のライセンスが要ります。ライセンスが無いときは、同じ SARIF のファイルを [reviewdog](https://github.com/reviewdog/reviewdog) に渡すと、PR の Checks に注釈として出せます。
+
+```yaml title=".github/workflows/architecture.yml" {10-11, 23-28}
+name: Architecture
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+  checks: write
+  pull-requests: write
+
+jobs:
+  architecture:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: gradle/actions/setup-gradle@v6
+      - run: ./gradlew :architecture-test:test
+      - uses: reviewdog/action-setup@v1
+        if: ${{ always() }}
+      - if: ${{ always() && hashFiles('architecture-test/build/reports/katachi/katachi.sarif') != '' }}
+        env:
+          REVIEWDOG_GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: reviewdog -f=sarif -name=katachi -reporter=github-pr-check -filter-mode=nofilter < architecture-test/build/reports/katachi/katachi.sarif
+```
+
+reviewdog はデフォルト（`-filter-mode=added`）では、PR で追加した行にある結果だけを出します。katachi の違反はファイルの有無や置き場所に付くものが多く、追加した行とは重ならないので、`-filter-mode=nofilter` で全件を出すのがおすすめです。差分の外の違反は Files changed には出ず、Checks タブの一覧に出ます。

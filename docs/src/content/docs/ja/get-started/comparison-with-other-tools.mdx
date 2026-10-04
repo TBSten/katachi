@@ -22,13 +22,14 @@ katachi に似たツールとして、Konsist や ArchUnit などがあります
 | [detekt](https://detekt.dev/) | ソースの静的解析。コードスメルと自作ルール | Gradle タスク / CLI | 🆗 可能 |
 | [ArchUnit](https://www.archunit.org/) | クラス間の依存と層。JVM のクラス情報 | ユニットテスト | 🆗 可能 |
 | [ProjectGuard](https://github.com/rubensousa/ProjectGuard) | モジュール同士の依存宣言。ビルドグラフ | Gradle プラグイン | 🆗 可能 |
-| [Konture](https://github.com/baole/konture) | モジュール依存・パッケージの閉じ方・クラスの性質 | ユニットテスト | 🆗 可能 |
+| [Konture](https://github.com/baole/konture) | モジュール依存・パッケージの閉じ方・クラスの性質 | ユニットテスト | ⭐️ 統合あり（`katachi-konture`） |
 
 **katachi だけが「そのファイルは存在してよいか」を問います。**
 ほかの5つはすべて、**すでに存在しているもの**について、中身や関係を検証します。
 
 だから重なりません。むしろ重なるのは**他ツール同士**で、Konsist・ArchUnit・Konture は
 互いに守備範囲が近く、3つ全部を入れる意味は薄いはずです。
+Konture は `katachi-konture` で `konsist { }` と同じ形の `konture { }` として併用できます。ただし `konsist { }` と同じテストモジュールには置けません。別のテストモジュールに分ければ、両方を使えます。
 
 ## katachi と Konsist
 
@@ -49,7 +50,7 @@ katachi は `katachi-konsist` という任意モジュールでこの2つを繋�
 Role の中に `konsist { }` を書き、テストで `assert(FileConstraintCheck())` を呼ぶと、**配置の違反と中身の違反が1つのレポートにまとまります。**
 
 ```kt title="ProjectArchitecture.kt"
-"UseCase" {
+"UseCase".role {
     // どこに置いてよいか — katachi の担当
     layout {
         "src/main/kotlin/com/example/useCase" / "*UseCase".ktFile()
@@ -114,5 +115,6 @@ detekt が向いているもの:
 ## 次のステップ
 
 - [Konsist との統合](/katachi/ja/guides/konsist-integration/) ... `konsist { }` の書き方と、配置の違反と中身の違反が1つのレポートにまとまる仕組みを学びましょう。
+- [Konture との統合](/katachi/ja/guides/konture-integration/) ... `konture { }` の書き方と、`konsist { }` との使い分けを学びましょう。
 - [FAQ](/katachi/ja/get-started/faq/) ... なぜプロジェクトのファイルを全部見て宣言と照らし合わせる道具が必要なのか、設計の考え方を理解しましょう。
 - [初めてのアーキテクチャ定義](/katachi/ja/get-started/first-architecture/) ... あなたのプロジェクトに katachi を導入して、実際の使い分けを試してみましょう。

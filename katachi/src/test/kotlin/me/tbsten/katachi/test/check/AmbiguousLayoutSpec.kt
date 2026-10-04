@@ -24,8 +24,8 @@ private fun twoRoles(
     roleB: LayoutScope.() -> Unit,
 ): List<LayoutEntry> = architecture {
     "group".group {
-        "RoleA" { layout(roleA) }
-        "RoleB" { layout(roleB) }
+        "RoleA".role { layout(roleA) }
+        "RoleB".role { layout(roleB) }
     }
 }.flattenLayout()
 
@@ -35,9 +35,9 @@ private fun threeRoles(
     roleC: LayoutScope.() -> Unit,
 ): List<LayoutEntry> = architecture {
     "group".group {
-        "RoleA" { layout(roleA) }
-        "RoleB" { layout(roleB) }
-        "RoleC" { layout(roleC) }
+        "RoleA".role { layout(roleA) }
+        "RoleB".role { layout(roleB) }
+        "RoleC".role { layout(roleC) }
     }
 }.flattenLayout()
 

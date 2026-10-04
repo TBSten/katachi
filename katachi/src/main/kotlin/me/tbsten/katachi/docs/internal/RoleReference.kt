@@ -36,7 +36,7 @@ import me.tbsten.katachi.processor.ArchitectureProcessContext
  * val arch = architecture {
  *     "domain".group {
  *         title = "ドメイン"
- *         "UseCase" { title = "ユースケース" }
+ *         "UseCase".role { title = "ユースケース" }
  *     }
  * }
  *

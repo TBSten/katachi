@@ -22,7 +22,7 @@ import me.tbsten.katachi.konsist.declarations.internal.applicableKinds
  * ```kt
  * val error = shouldThrow<KatachiKtFileContentModifierException> {
  *     architecture {
- *         "UiState" {
+ *         "UiState".role {
  *             layout { "*UiState".ktFile() }
  *             ktFileContent { data.`interface`(fileName) }
  *         }
@@ -94,7 +94,7 @@ public class KatachiKtFileContentModifierException internal constructor(
  * ```kt
  * val error = shouldThrow<KatachiKtFileContentPatternException> {
  *     architecture {
- *         "Screen" {
+ *         "Screen".role {
  *             layout { "*Screen".ktFile() }
  *             ktFileContent { `import`("androidx..compose") }
  *         }
@@ -146,7 +146,7 @@ public class KatachiKtFileContentPatternException internal constructor(
  * ```kt
  * val error = shouldThrow<KatachiKtFileContentLineException> {
  *     architecture {
- *         "Screen" {
+ *         "Screen".role {
  *             layout { "*Screen".ktFile() }
  *             ktFileContent { `import`("kotlin.**").except("kotlin.io.**") }
  *         }

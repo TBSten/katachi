@@ -23,7 +23,7 @@ class TemplateModuleCapturePlacementSpec : FreeSpec({
     "実在するモジュールの capture を値で選べる" {
         val arch = architectureOf {
             "feature".group {
-                "Screen" {
+                "Screen".role {
                     layout {
                         ":feature:${capture("feature")}".module {
                             "Screen.kt".file().template {
@@ -42,7 +42,7 @@ class TemplateModuleCapturePlacementSpec : FreeSpec({
     "実在しないモジュールを選ぶと KatachiTemplateModuleNotFoundException になり、実在する値を並べる" {
         val arch = architectureOf {
             "feature".group {
-                "Screen" {
+                "Screen".role {
                     layout {
                         ":feature:${capture("feature")}".module {
                             "Screen.kt".file().template { "// screen" }
@@ -62,7 +62,7 @@ class TemplateModuleCapturePlacementSpec : FreeSpec({
     "モジュール capture の値が無ければ KatachiMissingTemplateCaptureException（プロジェクトは読まない）" {
         val arch = architectureOf {
             "feature".group {
-                "Screen" {
+                "Screen".role {
                     layout {
                         ":feature:${capture("feature")}".module {
                             "Screen.kt".file().template { "// screen" }
@@ -81,7 +81,7 @@ class TemplateModuleCapturePlacementSpec : FreeSpec({
     "同じ役割が複数モジュールに展開されても、値で1つに絞られる" {
         val arch = architectureOf {
             "feature".group {
-                "BuildFile" {
+                "BuildFile".role {
                     layout {
                         ":feature:${capture("feature")}".module {
                             "module.txt".file().template(id = "module") {
@@ -104,7 +104,7 @@ class TemplateModuleCapturePlacementSpec : FreeSpec({
         // 未解決の entry に戻り、wildcard("feature") のプレースホルダ '<feature>' がパスに残っていた。
         val arch = architectureOf {
             "feature".group {
-                "Component" {
+                "Component".role {
                     layout {
                         ":feature:${capture("feature")}".module {
                             "component" / "${wildcard("feature")}${capture("name")}.kt".file().template {
@@ -125,7 +125,7 @@ class TemplateModuleCapturePlacementSpec : FreeSpec({
         // どちらを指すかが決まらない。id まで見て、指定した方のファイル名で書かれることを確かめる。
         val arch = architectureOf {
             "feature".group {
-                "Part" {
+                "Part".role {
                     layout {
                         ":feature:${capture("feature")}".module {
                             listOf("Screen", "Route").forEach { kind ->

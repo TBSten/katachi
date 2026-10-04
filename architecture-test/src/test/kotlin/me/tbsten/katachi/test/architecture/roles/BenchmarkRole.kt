@@ -12,7 +12,7 @@ import me.tbsten.katachi.dsl.kotlin.ktFile
  * Never published and not part of `check`: it is run on demand or by a scheduled job, so it
  * carries none of the library's layer rules and sits in the undocumented `tool` group.
  */
-fun DeclarationContainerScope.benchmark() = "Benchmark" {
+fun DeclarationContainerScope.benchmark() = "Benchmark".role {
     title = "性能ベンチマーク"
     summary = "JMH で walk・ロール照合・layout 評価・Konsist 解析・初回の assert() を測る、公開しないモジュール。実プロジェクトでの計測と gradle-profiler のシナリオも置く"
     example("WalkBench.kt", "ファイル数 × ロール数 × モジュール数を振って、メモリ上の木で検査全体を測る")

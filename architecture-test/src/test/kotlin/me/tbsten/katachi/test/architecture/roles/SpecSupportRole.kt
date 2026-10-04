@@ -8,9 +8,10 @@ import me.tbsten.katachi.dsl.gradle.testSourceSet
 import me.tbsten.katachi.dsl.kotlin.ktFile
 import me.tbsten.katachi.test.architecture.KATACHI_TEST_PACKAGE
 import me.tbsten.katachi.test.architecture.KONSIST_TEST_PACKAGE
+import me.tbsten.katachi.test.architecture.KONTURE_TEST_PACKAGE
 
 /** The role of test code that is not itself a test: fixtures, fakes, shared assembly. */
-fun DeclarationContainerScope.specSupport() = "SpecSupport" {
+fun DeclarationContainerScope.specSupport() = "SpecSupport".role {
     title = "テストの道具"
     summary = "スペックではないテストコード。フィクスチャ、偽物のファイルシステム、共通の組み立て"
     example("FakeFileSystem.kt", "ディスクを触らずに走査を動かすための木")
@@ -29,11 +30,22 @@ fun DeclarationContainerScope.specSupport() = "SpecSupport" {
             // their own (`java-test-fixtures`) so that a module other than `:katachi` can use them.
             "testFixtures".sourceSet / kotlin / KATACHI_TEST_PACKAGE / "synthetic" / "Synthetic*".ktFile()
             "testFixtures".sourceSet / kotlin / KATACHI_TEST_PACKAGE / "synthetic" / "*FileSystem".ktFile()
+            // What the SARIF specs read: the SARIF 2.1.0 JSON Schema the output is validated
+            // against, the goldens `toSarif` is compared with, and the note saying where the
+            // schema came from.
+            testSourceSet / "resources" / "sarif" / "sarif-schema-2.1.0.json".file()
+            testSourceSet / "resources" / "sarif" / "README.md".file()
+            testSourceSet / "resources" / "sarif" / "golden" / "*.sarif".file()
         }
         "katachi-konsist" {
             description = "スペックが使う道具のうち、Konsist に読ませる実ファイルを一時ディレクトリに用意するもの"
             testSourceSet / kotlin / "**" / "*SpecSupport".ktFile()
             testSourceSet / kotlin / KONSIST_TEST_PACKAGE / "FixtureProject".ktFile()
+        }
+        "katachi-konture" {
+            description = "スペックが使う道具のうち、Konture に読ませる実ファイルを一時ディレクトリに用意するもの"
+            testSourceSet / kotlin / "**" / "*SpecSupport".ktFile()
+            testSourceSet / kotlin / KONTURE_TEST_PACKAGE / "FixtureProject".ktFile()
         }
         "tool/dokka" {
             description = "Dokka プラグインのスペックが使う道具。Dokka の実行の組み立てと、@featured を付けたインラインのソース"

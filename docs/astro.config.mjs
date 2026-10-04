@@ -221,6 +221,7 @@ export default defineConfig({
 						// ktFileContent { }。katachi-konsist のインストールの節もここが持ち、Konsist のページはここを指す。
 						{ label: '[AI-generated] File content allow list', translations: { ja: '[AI生成] ファイルの中で定義できる宣言の許可リストを定義する' }, slug: 'guides/kt-file-content' },
 						{ label: 'Custom rules with Konsist', translations: { ja: 'カスタムルールを Konsist で定義する' }, slug: 'guides/konsist-integration' },
+						{ label: 'Konture integration', translations: { ja: 'Konture との統合' }, slug: 'guides/konture-integration' },
 						{ label: 'Document generation', translations: { ja: 'ドキュメント生成' }, slug: 'guides/document-generation' },
 						{ label: 'Generate code from template', translations: { ja: 'テンプレートからコード生成' }, slug: 'guides/generate-code-from-template' },
 						// 既存のプロジェクトに入れるときの棚上げ。実験的な機能なので、processor の手前（ガイドの後ろ寄り）に置く。

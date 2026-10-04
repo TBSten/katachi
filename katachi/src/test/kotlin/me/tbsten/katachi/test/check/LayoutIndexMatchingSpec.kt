@@ -60,19 +60,19 @@ private class LinearReference(private val entries: List<LayoutEntry>) {
 /** A definition mixing literal paths, `*`, `**`, escapes, module keys and overlaps. */
 private val mixedDefinition: ArchitectureScope.() -> Unit = {
     "ui".group {
-        "Screen" {
+        "Screen".role {
             layout {
                 "home" { "*Screen".ktFile(); "HomeScreen".ktFile() }
                 "feature" / "*" / "ui" / "*".ktFile()
             }
         }
-        "ViewModel" {
+        "ViewModel".role {
             layout {
                 "home" { "*ViewModel".ktFile(); "*".ktFile() }
                 "feature" / "**" / "*ViewModel".ktFile()
             }
         }
-        "Open" {
+        "Open".role {
             layout {
                 "home" { anyFile() }
                 "generated" / "**" { anyFile() }
@@ -81,7 +81,7 @@ private val mixedDefinition: ArchitectureScope.() -> Unit = {
         }
     }
     "build".group {
-        "Gradle" {
+        "Gradle".role {
             layout {
                 "build.gradle.kts".file()
                 "settings.gradle.kts".file()
@@ -92,7 +92,7 @@ private val mixedDefinition: ArchitectureScope.() -> Unit = {
                 "tmp" / "*".ignore()
             }
         }
-        "Literal" {
+        "Literal".role {
             layout {
                 "weird" / "a\\*b.kt".file()
                 "weird" / "x\\*y" { "*.kt".file() }
@@ -101,8 +101,8 @@ private val mixedDefinition: ArchitectureScope.() -> Unit = {
         }
     }
     "modules".group {
-        "Feature" { layout { ":feature:*".module { "src" / "main" / "kotlin" / "**" / "*.kt".file() } } }
-        "App" { layout { ":app".module { "src" { anyFile() } } } }
+        "Feature".role { layout { ":feature:*".module { "src" / "main" / "kotlin" / "**" / "*.kt".file() } } }
+        "App".role { layout { ":app".module { "src" { anyFile() } } } }
     }
 }
 
@@ -218,7 +218,7 @@ class LayoutIndexMatchingSpec : FreeSpec({
         val index = LayoutIndex(
             entriesOf {
                 "modules".group {
-                    "Feature" { layout { ":feature:*".module { "src" / "main" / "*.kt".file() } } }
+                    "Feature".role { layout { ":feature:*".module { "src" / "main" / "*.kt".file() } } }
                 }
             },
         )

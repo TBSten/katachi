@@ -9,7 +9,7 @@ import me.tbsten.katachi.ExperimentalKatachiApi
  * ## Example 1: tell which modifier mistake a definition made
  * ```kt
  * val error = shouldThrow<KatachiKtFileContentModifierException> {
- *     architecture { "UiState" { layout { "*".ktFile() }; ktFileContent { data.`interface`(fileName) } } }
+ *     architecture { "UiState".role { layout { "*".ktFile() }; ktFileContent { data.`interface`(fileName) } } }
  * }
  * error.problem shouldBe KtFileContentModifierProblem.NotApplicable
  * ```
@@ -33,7 +33,7 @@ public enum class KtFileContentModifierProblem {
  * ## Example 1: tell which pattern of a definition could not be read
  * ```kt
  * val error = shouldThrow<KatachiKtFileContentPatternException> {
- *     architecture { "Screen" { layout { "*".ktFile() }; ktFileContent { `import`("a..b") } } }
+ *     architecture { "Screen".role { layout { "*".ktFile() }; ktFileContent { `import`("a..b") } } }
  * }
  * error.what shouldBe KtFileContentPatternKind.Import
  * ```
@@ -69,7 +69,7 @@ public enum class KtFileContentPatternKind(internal val label: String) {
  * ## Example 1: tell which mistake a line made
  * ```kt
  * val error = shouldThrow<KatachiKtFileContentLineException> {
- *     architecture { "Screen" { layout { "*".ktFile() }; ktFileContent { `import`("kotlin.**").except("kotlin.io.**") } } }
+ *     architecture { "Screen".role { layout { "*".ktFile() }; ktFileContent { `import`("kotlin.**").except("kotlin.io.**") } } }
  * }
  * error.problem shouldBe KtFileContentLineProblem.ExceptWithoutNot
  * ```

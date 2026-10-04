@@ -30,7 +30,7 @@ Role の中で、その Role のファイルにどんな宣言があるべきか
 
 ```kt {7-8}
 architecture {
-  "UseCase" {
+  "UseCase".role {
     layout {
       "src/main/kotlin/com/example/useCase" / "*UseCase".ktFile()
     }
@@ -65,7 +65,7 @@ Katachi check failed: 1 violation (FileConstraint: 1)
 
 ```kt {9-10}
 architecture {
-  "UseCase" {
+  "UseCase".role {
     layout {
       "src/main/kotlin/com/example/useCase" / "*UseCase".ktFile()
     }

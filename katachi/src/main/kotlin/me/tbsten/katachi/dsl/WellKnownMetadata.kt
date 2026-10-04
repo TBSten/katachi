@@ -13,7 +13,7 @@ import me.tbsten.katachi.ExperimentalKatachiApi
  * ```kt
  * val arch = architecture {
  *     "domain".group {
- *         "UseCase" {
+ *         "UseCase".role {
  *             example("GetUserUseCase", "Fetches a user")
  *             example("SignOutUseCase")
  *         }
@@ -43,8 +43,8 @@ public data class RoleExample(
  * ```kt
  * val arch = architecture {
  *     "domain".group {
- *         "UseCase" { title = "Use case" }
- *         "Repository" { }
+ *         "UseCase".role { title = "Use case" }
+ *         "Repository".role { }
  *     }
  * }
  * arch.allRoles.map { it[Title] ?: it.name } shouldContainExactly
@@ -61,7 +61,7 @@ public val Title: MetadataKey<String> = metadata()
  * ```kt
  * val arch = architecture {
  *     "domain".group {
- *         "UseCase" { summary = "A single app-specific behavior that happens on a screen" }
+ *         "UseCase".role { summary = "A single app-specific behavior that happens on a screen" }
  *     }
  * }
  * arch.allRoles.single()[Summary] shouldBe "A single app-specific behavior that happens on a screen"
@@ -86,7 +86,7 @@ public val Summary: MetadataKey<String> = metadata()
  * ```kt
  * val arch = architecture {
  *     "domain".group {
- *         "UseCase" {
+ *         "UseCase".role {
  *             summary = "A single app-specific behavior that happens on a screen"
  *             description = """
  *                 The UI calls use cases only; it never touches a repository directly.
@@ -116,9 +116,9 @@ public val Description: MetadataKey<String> = metadata()
  * val arch = architecture {
  *     "build".group {
  *         documented = false
- *         "GradleModule" { documented = false }
+ *         "GradleModule".role { documented = false }
  *     }
- *     "domain".group { "UseCase" { } }
+ *     "domain".group { "UseCase".role { } }
  * }
  * arch.allGroups.filterNot { it[Documented] ?: true }.map { it.name } shouldContainExactly
  *     listOf("build")
@@ -137,7 +137,7 @@ public val Documented: MetadataKey<Boolean> = metadata()
  * ```kt
  * val arch = architecture {
  *     "domain".group {
- *         "UseCase" {
+ *         "UseCase".role {
  *             example("GetUserUseCase", "Fetches a user")
  *             example("SignOutUseCase", "Signs the user out")
  *         }

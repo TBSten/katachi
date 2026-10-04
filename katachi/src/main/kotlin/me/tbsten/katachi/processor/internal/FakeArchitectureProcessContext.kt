@@ -21,7 +21,7 @@ import me.tbsten.katachi.processor.ArchitectureProcessContext
  * class GenerateDocumentationSpec : FreeSpec({
  *     "walks the roles and says so" {
  *         val context = FakeArchitectureProcessContext(
- *             architecture = architecture { "domain".group { "UseCase" { } } },
+ *             architecture = architecture { "domain".group { "UseCase".role { } } },
  *             args = GenerateDocumentation.Args(outputDir = "build/katachi/docs"),
  *             fileSystem = RealFileSystem(),
  *         )
@@ -58,7 +58,7 @@ internal class FakeArchitectureProcessContext<Args>(
      * class GenerateDocumentationSpec : FreeSpec({
      *     "walks the roles and says so" {
      *         val context = FakeArchitectureProcessContext(
-     *             architecture = architecture { "domain".group { "UseCase" { } } },
+     *             architecture = architecture { "domain".group { "UseCase".role { } } },
      *             args = GenerateDocumentation.Args(outputDir = "build/katachi/docs"),
      *             fileSystem = RealFileSystem(),
      *         )

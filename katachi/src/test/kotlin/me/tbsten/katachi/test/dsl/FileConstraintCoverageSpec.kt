@@ -28,7 +28,7 @@ class FileConstraintCoverageSpec : FreeSpec({
         "役割直下の制約が全 layout の和集合を覆う" {
             val arch = architecture {
                 "domain".group {
-                    "UseCase" {
+                    "UseCase".role {
                         fileConstraint("role wide", check = silent())
                         layout { "alpha" / "*.kt".file() }
                         layout { "beta" / "*.kt".file() }
@@ -45,7 +45,7 @@ class FileConstraintCoverageSpec : FreeSpec({
         "layout { } 直下の制約はそのブロックのエントリだけを覆う" {
             val arch = architecture {
                 "domain".group {
-                    "UseCase" {
+                    "UseCase".role {
                         layout {
                             fileConstraint("alpha only", check = silent())
                             "alpha" / "*.kt".file()
@@ -63,7 +63,7 @@ class FileConstraintCoverageSpec : FreeSpec({
         "ディレクトリブロックの制約はその部分木だけを覆う" {
             val arch = architecture {
                 "domain".group {
-                    "UseCase" {
+                    "UseCase".role {
                         layout {
                             "alpha" {
                                 fileConstraint("alpha only", check = silent())
@@ -83,7 +83,7 @@ class FileConstraintCoverageSpec : FreeSpec({
         "anyFile() を書いたディレクトリの直下のファイルも覆う" {
             val arch = architecture {
                 "build".group {
-                    "Generated" {
+                    "Generated".role {
                         layout {
                             "generated" {
                                 fileConstraint("anything here", check = silent())
@@ -102,7 +102,7 @@ class FileConstraintCoverageSpec : FreeSpec({
         "module の制約が build.gradle.kts を覆わない" {
             val arch = architecture {
                 "domain".group {
-                    "UseCase" {
+                    "UseCase".role {
                         layout {
                             ":core:domain".module {
                                 fileConstraint("in core/domain", check = silent())
@@ -121,7 +121,7 @@ class FileConstraintCoverageSpec : FreeSpec({
         "ルートプロジェクトの module の制約が build.gradle.kts を覆わない" {
             val arch = architecture {
                 "build".group {
-                    "Settings" {
+                    "Settings".role {
                         layout {
                             ":".module {
                                 fileConstraint("root project", check = silent())
@@ -140,7 +140,7 @@ class FileConstraintCoverageSpec : FreeSpec({
         "ルートプロジェクトの module の制約は layout 全体ではなくそのブロックのエントリだけを覆う" {
             val arch = architecture {
                 "build".group {
-                    "Settings" {
+                    "Settings".role {
                         layout {
                             "docs" / "*.md".file()
                             ":".module {
@@ -160,7 +160,7 @@ class FileConstraintCoverageSpec : FreeSpec({
         "自分で書いた build.gradle.kts は覆う" {
             val arch = architecture {
                 "build".group {
-                    "Scripts" {
+                    "Scripts".role {
                         layout {
                             ":core:domain".module {
                                 fileConstraint("build script too", check = silent())
@@ -180,7 +180,7 @@ class FileConstraintCoverageSpec : FreeSpec({
         "展開されたモジュールごとに1つずつ、解決済みの実パス付きで宣言される" {
             val arch = architecture {
                 "feature".group {
-                    "Screen" {
+                    "Screen".role {
                         layout {
                             ":feature:*".module {
                                 fileConstraint("internal であること", check = silent())
@@ -201,7 +201,7 @@ class FileConstraintCoverageSpec : FreeSpec({
         "1つもマッチしない役割では制約が1つも宣言されず、例外にもならない" {
             val arch = architecture {
                 "feature".group {
-                    "Screen" {
+                    "Screen".role {
                         layout {
                             ":feature:*".module {
                                 fileConstraint("internal であること", check = silent())
@@ -220,7 +220,7 @@ class FileConstraintCoverageSpec : FreeSpec({
         "役割直下と layout { } 直下では null になる" {
             val arch = architecture {
                 "domain".group {
-                    "UseCase" {
+                    "UseCase".role {
                         fileConstraint("role wide", check = silent())
                         layout {
                             fileConstraint("layout wide", check = silent())
@@ -238,7 +238,7 @@ class FileConstraintCoverageSpec : FreeSpec({
         "ワイルドカードを含まないパスを優先する" {
             val arch = architecture {
                 "domain".group {
-                    "UseCase" {
+                    "UseCase".role {
                         fileConstraint("role wide", check = silent())
                         layout { "feature" / "*" / "useCase" / "*.kt".file() }
                         layout { "core/domain/useCase" / "*.kt".file() }
@@ -254,7 +254,7 @@ class FileConstraintCoverageSpec : FreeSpec({
         "候補が1つも無いときは定義ファイル名になり、ドットにならない" {
             val arch = architecture {
                 "domain".group {
-                    "UseCase" {
+                    "UseCase".role {
                         fileConstraint("role wide", check = silent())
                         layout { }
                     }
@@ -270,7 +270,7 @@ class FileConstraintCoverageSpec : FreeSpec({
         "ディレクトリしか宣言していない layout でもドットにならない" {
             val arch = architecture {
                 "build".group {
-                    "Generated" {
+                    "Generated".role {
                         fileConstraint("role wide", check = silent())
                         layout { "generated" { } }
                     }

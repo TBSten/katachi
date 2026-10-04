@@ -29,7 +29,7 @@ class FileConstraintDirectOnlySpec : FreeSpec({
         "ネストしたディレクトリブロックのファイルは覆わない" {
             val arch = architecture {
                 "util".group {
-                    "Util" {
+                    "Util".role {
                         layout {
                             "util" {
                                 fileConstraint("stdlib only", scope = FileConstraintRange.DirectOnly, check = silent())
@@ -49,7 +49,7 @@ class FileConstraintDirectOnlySpec : FreeSpec({
         "/ で1段下に宣言したファイルもネストしたブロックと同じく覆わない" {
             val arch = architecture {
                 "util".group {
-                    "Util" {
+                    "Util".role {
                         layout {
                             "util" {
                                 fileConstraint("stdlib only", scope = FileConstraintRange.DirectOnly, check = silent())
@@ -69,7 +69,7 @@ class FileConstraintDirectOnlySpec : FreeSpec({
         "scope を書かないか Subtree なら従来どおり部分木全体を覆う" {
             val arch = architecture {
                 "util".group {
-                    "Util" {
+                    "Util".role {
                         layout {
                             "util" {
                                 fileConstraint("subtree", check = silent())
@@ -94,7 +94,7 @@ class FileConstraintDirectOnlySpec : FreeSpec({
         "ブロック自身の anyFile() は覆い、子ディレクトリの anyFile() は覆わない" {
             val arch = architecture {
                 "build".group {
-                    "Generated" {
+                    "Generated".role {
                         layout {
                             "generated" {
                                 fileConstraint("top level only", scope = FileConstraintRange.DirectOnly, check = silent())
@@ -114,7 +114,7 @@ class FileConstraintDirectOnlySpec : FreeSpec({
         "** を含む宣言は直下のファイル宣言として数えない" {
             val arch = architecture {
                 "doc".group {
-                    "Doc" {
+                    "Doc".role {
                         layout {
                             "doc" {
                                 fileConstraint("index only", scope = FileConstraintRange.DirectOnly, check = silent())
@@ -134,7 +134,7 @@ class FileConstraintDirectOnlySpec : FreeSpec({
         "module ブロックでは直下のファイル宣言だけを覆い、build.gradle.kts は覆わない" {
             val arch = architecture {
                 "domain".group {
-                    "UseCase" {
+                    "UseCase".role {
                         layout {
                             ":core:domain".module {
                                 fileConstraint("module root", scope = FileConstraintRange.DirectOnly, check = silent())
@@ -155,7 +155,7 @@ class FileConstraintDirectOnlySpec : FreeSpec({
         "自分で書いた build.gradle.kts は module ブロックの直下として覆う" {
             val arch = architecture {
                 "build".group {
-                    "Scripts" {
+                    "Scripts".role {
                         layout {
                             ":core:domain".module {
                                 fileConstraint("build script", scope = FileConstraintRange.DirectOnly, check = silent())
@@ -173,7 +173,7 @@ class FileConstraintDirectOnlySpec : FreeSpec({
         "layoutPath と paths は DirectOnly でも変わらない" {
             val arch = architecture {
                 "util".group {
-                    "Util" {
+                    "Util".role {
                         layout {
                             "util" {
                                 fileConstraint("stdlib only", scope = FileConstraintRange.DirectOnly, check = silent())
@@ -195,7 +195,7 @@ class FileConstraintDirectOnlySpec : FreeSpec({
             val thrown = shouldThrow<KatachiFileConstraintDirectOnlyWithoutDirectoryException> {
                 architecture {
                     "util".group {
-                        "Util" {
+                        "Util".role {
                             fileConstraint("stdlib only", scope = FileConstraintRange.DirectOnly, check = silent())
                             layout { "util" { "*.kt".file() } }
                         }
@@ -211,7 +211,7 @@ class FileConstraintDirectOnlySpec : FreeSpec({
         "layout { } 直下に書くと layout の評価時に落ちる" {
             val arch = architecture {
                 "util".group {
-                    "Util" {
+                    "Util".role {
                         layout {
                             fileConstraint(scope = FileConstraintRange.DirectOnly, check = silent())
                             "*.kt".file()
@@ -229,7 +229,7 @@ class FileConstraintDirectOnlySpec : FreeSpec({
         "\":\".module { } の中に書くと layout の評価時に落ちる" {
             val arch = architecture {
                 "build".group {
-                    "Settings" {
+                    "Settings".role {
                         layout {
                             ":".module {
                                 fileConstraint("root project", scope = FileConstraintRange.DirectOnly, check = silent())
@@ -250,7 +250,7 @@ class FileConstraintDirectOnlySpec : FreeSpec({
         "直下にファイル宣言が無いと layout の評価時に落ちる" {
             val arch = architecture {
                 "util".group {
-                    "Util" {
+                    "Util".role {
                         layout {
                             "util" {
                                 fileConstraint("stdlib only", scope = FileConstraintRange.DirectOnly, check = silent())
@@ -272,7 +272,7 @@ class FileConstraintDirectOnlySpec : FreeSpec({
         "module が足す build.gradle.kts だけでは覆うものがあることにならない" {
             val arch = architecture {
                 "domain".group {
-                    "UseCase" {
+                    "UseCase".role {
                         layout {
                             ":core:domain".module {
                                 fileConstraint("module root", scope = FileConstraintRange.DirectOnly, check = silent())
@@ -291,7 +291,7 @@ class FileConstraintDirectOnlySpec : FreeSpec({
         "DirectOnly でない制約は覆うものが無くても従来どおり落ちない" {
             val arch = architecture {
                 "build".group {
-                    "Generated" {
+                    "Generated".role {
                         layout {
                             "generated" {
                                 fileConstraint("nothing declared", check = silent())

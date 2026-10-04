@@ -22,7 +22,7 @@ import org.intellij.lang.annotations.Language
  *     "domain".group {
  *         title = "Domain"
  *         summary = "The rules of the product, with nothing about how they are delivered"
- *         "UseCase" { }
+ *         "UseCase".role { }
  *         "model".group { }
  *     }
  * }
@@ -101,7 +101,7 @@ public sealed interface GroupScope : DeclarationContainerScope {
      * val arch = architecture {
      *     "build".group {
      *         documented = false
-     *         "VersionCatalog" { }
+     *         "VersionCatalog".role { }
      *     }
      * }
      * arch.groups.single()[Documented] shouldBe false
@@ -117,7 +117,7 @@ internal class GroupScopeImpl(private val path: List<String>) : GroupScope {
     val roles = mutableListOf<Role>()
 
     // One namespace for groups and roles alike, the same as the root of `architecture { }`.
-    // `"x".group { "domain".group { }; "domain" { } }` gives both the qualified name
+    // `"x".group { "domain".group { }; "domain".role { } }` gives both the qualified name
     // "x/domain", so a reference to it could not say which one it means.
     private val declaredNames = DeclaredNames()
 
@@ -155,7 +155,7 @@ internal class GroupScopeImpl(private val path: List<String>) : GroupScope {
         )
     }
 
-    override operator fun String.invoke(block: RoleScope.() -> Unit) {
+    override fun String.role(block: RoleScope.() -> Unit) {
         roles += declareRole(
             name = this,
             groupPath = path,

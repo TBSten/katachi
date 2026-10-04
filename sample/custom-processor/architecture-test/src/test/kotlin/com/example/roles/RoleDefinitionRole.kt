@@ -6,7 +6,7 @@ import me.tbsten.katachi.dsl.gradle.*
 import me.tbsten.katachi.dsl.kotlin.ktFile
 
 /** The role of a role declared in the katachi DSL. */
-fun DeclarationContainerScope.roleDefinition() = "RoleDefinition" {
+fun DeclarationContainerScope.roleDefinition() = "RoleDefinition".role {
     title = "Role definition"
     summary = "One role of the katachi definition, declared in `roles/<Name>Role.kt`"
     description = """

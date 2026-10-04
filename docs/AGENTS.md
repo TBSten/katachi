@@ -30,7 +30,10 @@ Manage the background server with `astro dev stop`, `astro dev status`, and `ast
 ## サイドバーの構成
 
 **ドキュメントの本文は人が書く。** エージェントが用意してよいのは、サイドバーの配線と
-空ページ（frontmatter だけ）まで。
+空ページ（frontmatter だけ）まで。例外は、人が「下書きを書いて」と頼んだページ。そのときは
+本文の先頭（「このページの目的」のコメントと import の直後）に
+`<Aside type="note" title="AI が書いた下書き">` を置き、AI エージェントが書いた下書きで人の見直しが
+済んでいないことを明記する（英語版も同じ Aside を訳して付ける）。Aside を外すのは見直した人。
 
 **日本語が原本、英語は翻訳。** `src/content/docs/ja/` を人が書き、`src/content/docs/` は
 **そこから機械的に訳すだけ**にする。英語側だけで文章を足したり、英語側で先に書いたりしない。
@@ -74,6 +77,7 @@ title: ...
     - Layout                           ［ページタイトルは「Layout システムでディレクトリ構成を厳守させる」］
     - ファイルの中で定義できる宣言の許可リストを定義する   （`ktFileContent { }`。katachi-konsist のインストールの節もここに置く）
     - カスタムルールを Konsist で定義する                  （`konsist { }`。`ktFileContent { }` で書けない規則。インストールは上のページを指す）
+    - Konture との統合                                     （`konture { }`。`konsist { }` と同じ位置に書く Konture の規則。katachi-konsist（`ktFileContent { }` / `konsist { }`）と同じテストモジュールには置けない）
     - ドキュメント生成
     - テンプレートからコード生成
     - Baseline                         （実験的な機能。processor の手前に置く）
@@ -250,11 +254,14 @@ nova ではどれも起きない（本文は 792px、splash も素直に出る�
 prerelease の手順 11（ドキュメントがガイドのルールに沿っているか）は、この節も照合の対象にする。
 
 - **ガイドのルールを守った見本だけを書く。** コード例は利用者がそのまま写す。ルールに反する例は、悪い形を広める。
-  - 🆖 1つの Role に interface と実装を入れた例（`"Repository" { layout { "*Repository".ktFile(); "*RepositoryImpl".ktFile() } }`）
+  - 🆖 1つの Role に interface と実装を入れた例（`"Repository".role { layout { "*Repository".ktFile(); "*RepositoryImpl".ktFile() } }`）
   - 🆗 `"RepositoryInterface"` と `"RepositoryImplementation"` に分けた例（Role のガイドの「1つの Role には1種類のファイルだけを入れる」）
 - **廃止予定の書き方は例に使わない。** `.module { }` は廃止する予定で、API は残っているが、例に使うと利用者がその形を写して、あとで書き直すことになる。ドキュメント・サンプル・リポジトリ自身の定義のどこにも書かない。
   - 🆖 `":core:domain".module { mainSourceSet / kotlin / modulePackage / "useCase" / "*UseCase".ktFile() }`
   - 🆗 `"core/domain" / mainSourceSet / kotlin / "com/example/core/domain/useCase" / "*UseCase".ktFile()`（`modulePackage` や `wildcard()` も `.module { }` の中でしか使えないので書かない。モジュールごとに名前を変えたいときは、ディレクトリの `*` に `capture()` で名前を付ける）
+- **Role の宣言は `"名前".role { }` で書く。** v0.2 までの `"名前" { }` は v0.3 からコンパイルエラーになるので、例に書かない。`.role` を付けるのは Role の宣言だけで、`layout { }` の中のディレクトリの宣言 `"src" { }` はそのまま。
+  - 🆖 `"UseCase" { layout { "useCase" / "*UseCase".ktFile() } }`
+  - 🆗 `"UseCase".role { layout { "useCase" / "*UseCase".ktFile() } }`（`layout { }` の中で `"useCase" { "*UseCase".ktFile() }` と書くのはディレクトリの宣言なので、`.role` を付けない）
 - **katachi の概念は用語で書く。** 読み手がガイドの説明と結びつけられるように。
   - 🆖 「役割はたとえば次のようになるでしょう」 → 🆗 「Role はたとえば次のようになるでしょう」
   - 一般語の「役割」（「固有の役割を持つファイル」）はそのままでよい。初めて出すところは「役割（Role）」と添えてもよい

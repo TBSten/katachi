@@ -24,7 +24,7 @@ import me.tbsten.katachi.dsl.Role
  * ```kt
  * val arch = architecture {
  *     "domain".group {
- *         "UseCase" {
+ *         "UseCase".role {
  *             layout {
  *                 "useCase" {
  *                     fileConstraint("leaves no TODO") { subject ->

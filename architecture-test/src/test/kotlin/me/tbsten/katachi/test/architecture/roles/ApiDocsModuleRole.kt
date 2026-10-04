@@ -11,7 +11,7 @@ import me.tbsten.katachi.dsl.DeclarationContainerScope
  * package's own KDoc. Neither file holds a wildcard, so a module published without one is
  * reported rather than quietly generating a reference with empty package summaries.
  */
-fun DeclarationContainerScope.apiDocsModule() = "ApiDocsModule" {
+fun DeclarationContainerScope.apiDocsModule() = "ApiDocsModule".role {
     title = "API リファレンスのモジュール説明"
     summary = "Dokka の includes に渡す Module.md。モジュール自身と、公開パッケージそれぞれの概要を持つ"
     example("katachi/Module.md", "# Module katachi の段落と、公開パッケージごとの # Package 見出し")
@@ -22,6 +22,10 @@ fun DeclarationContainerScope.apiDocsModule() = "ApiDocsModule" {
         }
         "katachi-konsist" {
             description = "katachi-konsist モジュールと、その公開パッケージそれぞれの説明"
+            "Module.md".file()
+        }
+        "katachi-konture" {
+            description = "katachi-konture モジュールと、その公開パッケージそれぞれの説明"
             "Module.md".file()
         }
     }

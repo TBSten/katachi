@@ -27,7 +27,7 @@ import me.tbsten.katachi.test.architecture.KATACHI_MAIN_PACKAGE
  * zero-argument call in `groups/LibraryGroup.kt` can only resolve to this extension. The naming
  * rule is followed rather than bent, because `DeclarationSiteSpec` checks it mechanically.
  */
-fun DeclarationContainerScope.check() = "Check" {
+fun DeclarationContainerScope.check() = "Check".role {
     title = "検査"
     summary = "利用者が呼ぶ assert() と、宣言に導かれた1度だけの走査、その結果と報告の組み立て"
     example("Assert.kt", "利用者がテストに書く1行")

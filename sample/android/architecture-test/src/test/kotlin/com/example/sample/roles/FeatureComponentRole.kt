@@ -24,7 +24,7 @@ import me.tbsten.katachi.konsist.declarations.ktFileContent
  * created as it is, and the file name is not tied to the module name.
 
  */
-fun DeclarationContainerScope.featureComponent() = "FeatureComponent" {
+fun DeclarationContainerScope.featureComponent() = "FeatureComponent".role {
     title = "Screen part"
     summary = "A @Composable used by only one screen. Placed as <Name>*.kt in the component package of :feature:<name>"
     description = """

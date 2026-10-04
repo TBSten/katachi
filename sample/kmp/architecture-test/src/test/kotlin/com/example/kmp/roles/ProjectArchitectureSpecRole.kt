@@ -6,7 +6,7 @@ import me.tbsten.katachi.dsl.gradle.*
 import me.tbsten.katachi.dsl.kotlin.ktFile
 
 /** The role of the tests that verify katachi itself, which a user does not write. */
-fun DeclarationContainerScope.projectArchitectureSpec() = "ProjectArchitectureSpec" {
+fun DeclarationContainerScope.projectArchitectureSpec() = "ProjectArchitectureSpec".role {
     title = "Architecture spec"
     summary = "Tests that verify the definition and katachi itself, kept in src/test/kotlin of :architecture-test"
     description = """

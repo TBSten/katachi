@@ -11,7 +11,7 @@ import me.tbsten.katachi.dsl.DeclarationContainerScope
  * group is machine-facing (`.github`, `.claude`, `.gitignore`) and is kept out of the
  * generated documentation, which is the wrong place for the page everyone reads first.
  */
-fun DeclarationContainerScope.projectDocument() = "ProjectDocument" {
+fun DeclarationContainerScope.projectDocument() = "ProjectDocument".role {
     title = "プロジェクト文書"
     summary = "リポジトリを開いた人が最初に読むもの"
     example("README.md", "katachi が何で、どう入れるか")

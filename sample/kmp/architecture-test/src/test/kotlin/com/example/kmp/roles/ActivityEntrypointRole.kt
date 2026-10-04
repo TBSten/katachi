@@ -7,7 +7,7 @@ import me.tbsten.katachi.dsl.gradle.*
 import me.tbsten.katachi.dsl.kotlin.ktFile
 
 /** Where the Android application starts: the one Activity it launches. */
-fun DeclarationContainerScope.activityEntrypoint() = "ActivityEntrypoint" {
+fun DeclarationContainerScope.activityEntrypoint() = "ActivityEntrypoint".role {
     title = "Activity entrypoint"
     summary = "The starting point of the Android app: the ComponentActivity that calls setContent, kept in :app:android"
     description = """

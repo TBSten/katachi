@@ -59,7 +59,7 @@ class RolePageConstraintSectionSpec : FreeSpec({
         "節は ## Constraints の後、## Examples の前に出る" {
             val arch = architecture {
                 "domain".group {
-                    "UseCase" {
+                    "UseCase".role {
                         example("GetUserUseCase")
                         fileConstraint("has a section", check = DescribedConstraint { "## Custom\n\nBody." })
                         layout { "useCase" / "*UseCase".ktFile() }
@@ -86,7 +86,7 @@ class RolePageConstraintSectionSpec : FreeSpec({
         "複数の制約の節は書いた順に並ぶ" {
             val arch = architecture {
                 "domain".group {
-                    "UseCase" {
+                    "UseCase".role {
                         fileConstraint(check = DescribedConstraint { "## First" })
                         layout {
                             "useCase" {
@@ -104,7 +104,7 @@ class RolePageConstraintSectionSpec : FreeSpec({
         "前後の空行は落とし、空の節は出さない" {
             val arch = architecture {
                 "domain".group {
-                    "UseCase" {
+                    "UseCase".role {
                         fileConstraint(check = DescribedConstraint { "\n\n## Trimmed\n\nBody.\n\n\n" })
                         fileConstraint(check = DescribedConstraint { "  \n  " })
                         layout { "useCase" / "*UseCase".ktFile() }
@@ -119,7 +119,7 @@ class RolePageConstraintSectionSpec : FreeSpec({
         "節を書かない制約しかない役割のページは今と同じ" {
             val withoutSection = architecture {
                 "domain".group {
-                    "UseCase" {
+                    "UseCase".role {
                         fileConstraint("has a name") { emptyList() }
                         fileConstraint(check = DescribedConstraint { null })
                         layout { "useCase" / "*UseCase".ktFile() }
@@ -128,7 +128,7 @@ class RolePageConstraintSectionSpec : FreeSpec({
             }
             val plain = architecture {
                 "domain".group {
-                    "UseCase" {
+                    "UseCase".role {
                         fileConstraint("has a name") { emptyList() }
                         layout { "useCase" / "*UseCase".ktFile() }
                     }
@@ -142,7 +142,7 @@ class RolePageConstraintSectionSpec : FreeSpec({
             val shared = DescribedConstraint { "## Shared" }
             val arch = architecture {
                 "domain".group {
-                    "UseCase" {
+                    "UseCase".role {
                         layout {
                             "alpha" {
                                 fileConstraint(check = shared)
@@ -166,7 +166,7 @@ class RolePageConstraintSectionSpec : FreeSpec({
             val site = DeclarationSite("UseCaseRole.kt", 12)
             val arch = architecture {
                 "domain".group {
-                    "UseCase" {
+                    "UseCase".role {
                         layout {
                             for (directory in listOf("alpha", "beta")) {
                                 directory {
@@ -186,7 +186,7 @@ class RolePageConstraintSectionSpec : FreeSpec({
             val site = DeclarationSite("UseCaseRole.kt", 12)
             val arch = architecture {
                 "domain".group {
-                    "UseCase" {
+                    "UseCase".role {
                         fileConstraint("first", site, check = DescribedConstraint { "## First" })
                         fileConstraint("second", site, check = DescribedConstraint { "## Second" })
                         layout { "useCase" / "*UseCase".ktFile() }
@@ -202,7 +202,7 @@ class RolePageConstraintSectionSpec : FreeSpec({
         "節を書くときに投げた例外は、そのまま生成を止める" {
             val arch = architecture {
                 "domain".group {
-                    "UseCase" {
+                    "UseCase".role {
                         fileConstraint(check = DescribedConstraint { throw IllegalStateException("cannot describe") })
                         layout { "useCase" / "*UseCase".ktFile() }
                     }
@@ -215,7 +215,7 @@ class RolePageConstraintSectionSpec : FreeSpec({
         "ドキュメントを出さない役割の制約には節を聞かない" {
             val arch = architecture {
                 "domain".group {
-                    "UseCase" {
+                    "UseCase".role {
                         documented = false
                         fileConstraint(check = DescribedConstraint { throw IllegalStateException("asked") })
                         layout { "useCase" / "*UseCase".ktFile() }
@@ -232,7 +232,7 @@ class RolePageConstraintSectionSpec : FreeSpec({
             val recording = ExampleRecordingConstraint()
             val arch = architecture {
                 "feature".group {
-                    "ViewModel" {
+                    "ViewModel".role {
                         example("HomeViewModel", "the home screen")
                         fileConstraint(check = recording)
                         layout { "feature" / capture("feature") / "${capture("name")}ViewModel".ktFile() }
@@ -252,7 +252,7 @@ class RolePageConstraintSectionSpec : FreeSpec({
             val recording = ExampleRecordingConstraint()
             val arch = architecture {
                 "domain".group {
-                    "Platform" {
+                    "Platform".role {
                         example("Platform.android.kt")
                         fileConstraint(check = recording)
                         layout { "platform" / "*.kt".file() }
@@ -269,7 +269,7 @@ class RolePageConstraintSectionSpec : FreeSpec({
             val arch = architecture {
                 files = wholeTree()
                 "feature".group {
-                    "ViewModel" {
+                    "ViewModel".role {
                         fileConstraint(check = recording)
                         layout { "feature" / capture("feature") / "${capture("name")}ViewModel".ktFile() }
                     }
@@ -295,7 +295,7 @@ class RolePageConstraintSectionSpec : FreeSpec({
             val recording = ExampleRecordingConstraint()
             val arch = architecture {
                 "domain".group {
-                    "UseCase" {
+                    "UseCase".role {
                         fileConstraint(check = recording)
                         layout { "useCase" / "*UseCase".ktFile() }
                     }
@@ -315,7 +315,7 @@ class RolePageConstraintSectionSpec : FreeSpec({
         "節を書くときに例のファイルを読まなければ、プロジェクトは読まない" {
             val arch = architecture {
                 "domain".group {
-                    "UseCase" {
+                    "UseCase".role {
                         fileConstraint(check = DescribedConstraint { context -> "## Names\n\n${context.captureNames}" })
                         layout { "useCase" / capture("name") / "*UseCase".ktFile() }
                     }

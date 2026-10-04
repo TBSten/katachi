@@ -20,7 +20,7 @@ class TemplateCaptureValuePropertySpec : FreeSpec({
     "値そのものの検査（capture が1セグメント丸ごとのとき）" - {
         val arch = architectureOf {
             "feature".group {
-                "ViewModel" {
+                "ViewModel".role {
                     layout {
                         "feature" / capture("feature") / "ViewModel.kt".file().template {
                             captureValue("feature")
@@ -64,7 +64,7 @@ class TemplateCaptureValuePropertySpec : FreeSpec({
         "値そのものは問題無くても、埋めた結果が . で終わると TrailingDot（segment 付き）" {
             val arch = architectureOf {
                 "domain".group {
-                    "UseCase" {
+                    "UseCase".role {
                         layout {
                             "useCase" / "${capture("name")}.".file().template { "" }
                         }
@@ -83,7 +83,7 @@ class TemplateCaptureValuePropertySpec : FreeSpec({
         "値そのものは予約デバイス名でなくても、埋めた結果がそうなれば検査される（拡張子付き）" {
             val arch = architectureOf {
                 "domain".group {
-                    "UseCase" {
+                    "UseCase".role {
                         layout {
                             // 値 "CO" 自体は予約名ではないが、リテラルの "N.txt" と組み合わさると
                             // "CON.txt" になる。
@@ -103,7 +103,7 @@ class TemplateCaptureValuePropertySpec : FreeSpec({
         "埋めた結果が問題無ければ通る" {
             val arch = architectureOf {
                 "domain".group {
-                    "UseCase" {
+                    "UseCase".role {
                         layout {
                             "useCase" / "${capture("name")}UseCase.kt".file().template { "" }
                         }

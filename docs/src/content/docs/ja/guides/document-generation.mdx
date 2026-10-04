@@ -43,7 +43,7 @@ architecture {
         title = "Domain レイヤー"
         summary = "アプリ固有の振る舞いと、その対象になる値"
 
-        "UseCase" {
+        "UseCase".role {
             title = "ユースケース"
             summary = "各画面で発生するアプリ固有の1つの振る舞い"
             example("GetItemListUseCase", "商品の一覧")
@@ -52,7 +52,7 @@ architecture {
             "invoke メソッドだけを持つこと".konsist { /* ... */ }
         }
 
-        "RepositoryInterface" {
+        "RepositoryInterface".role {
             title = "リポジトリ"
             summary = "データの取得と保存の境界"
             layout { "core/domain" / mainSourceSet / kotlin / "com/example/core/domain/repository" / "*Repository".ktFile() }
@@ -207,7 +207,7 @@ katachi {
 
 group は入れ子にでき、入れ子の group はその親の group のディレクトリの下に出ます。
 
-ファイル名とディレクトリ名は、`title` ではなく**識別子**（`"UseCase" { }` の `UseCase`、`"domain".group { }` の `domain`）で決まります。`title` を変えても、ファイル名は変わりません。
+ファイル名とディレクトリ名は、`title` ではなく**識別子**（`"UseCase".role { }` の `UseCase`、`"domain".group { }` の `domain`）で決まります。`title` を変えても、ファイル名は変わりません。
 
 ## ドキュメント生成に利用されるプロパティ
 
@@ -226,7 +226,7 @@ group は入れ子にでき、入れ子の group はその親の group のディ
 <CodeComparison>
     <CodeComparison.Panel label="Role 定義">
         ```kt
-        "UseCase" {
+        "UseCase".role {
             title = "UseCase"
             summary = "各画面で発生するアプリ固有の1つの振る舞い"
             description = """
@@ -285,7 +285,7 @@ group は入れ子にでき、入れ子の group はその親の group のディ
 <CodeComparison>
     <CodeComparison.Panel label="Role 定義">
         ```kt
-        "ViewModel" {
+        "ViewModel".role {
             summary = "画面の状態を StateFlow で公開し、画面からのイベントを受け取る"
             example("HomeViewModel", "ホーム画面の状態")
 
@@ -363,7 +363,7 @@ group に設定できるのは Role と同じ4つです。**`example()` だけ�
     ```kt
     "build".group {
         documented = false
-        "VersionCatalog" { }   // group と一緒にドキュメントから外れる
+        "VersionCatalog".role { }   // group と一緒にドキュメントから外れる
     }
     ```
 
@@ -381,13 +381,13 @@ group に設定できるのは Role と同じ4つです。**`example()` だけ�
                 画面にも保存先にも依存しない層です。
             """.trimIndent()
 
-            "UseCase" {
+            "UseCase".role {
                 title = "ユースケース"
                 summary = "各画面で発生するアプリ固有の1つの振る舞い"
                 layout { "src/main/kotlin/com/example/domain/useCase" / "*UseCase".ktFile() }
             }
 
-            "RepositoryInterface" {
+            "RepositoryInterface".role {
                 title = "リポジトリ"
                 summary = "データの取得と保存の境界"
                 layout { "src/main/kotlin/com/example/domain/repository" / "*Repository".ktFile() }
@@ -444,7 +444,7 @@ group に設定できるのは Role と同じ4つです。**`example()` だけ�
             "domain".group {
                 title = "Domain レイヤー"
                 summary = "アプリ固有の振る舞いと、その対象になる値"
-                "UseCase" { /* ... */ }
+                "UseCase".role { /* ... */ }
             }
         }
         ```
@@ -495,7 +495,7 @@ var MetadataScope.testPolicy by TestPolicy
             var MetadataScope.unitTest by UnitTest
 
             val projectArchitecture = architecture {
-                "UseCase" {
+                "UseCase".role {
                     title = "ユースケース"
                     summary = "各画面で発生するアプリ固有の1つの振る舞い"
                     example("SignInUseCase", "サインイン")

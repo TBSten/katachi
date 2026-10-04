@@ -13,7 +13,7 @@ tags:
 Add `.template { }` to a layout declaration and that file can be generated as code.
 
 ```kt {4-5,21-22} nocollapse
-"UseCase" {
+"UseCase".role {
     layout {
         "core/domain" / mainSourceSet / kotlin / "com/example/core/domain/useCase" /
             "${capture("name")}UseCase".ktFile()
@@ -30,7 +30,7 @@ Add `.template { }` to a layout declaration and that file can be generated as co
     }
 }
 
-"UseCaseImplementation" {
+"UseCaseImplementation".role {
     layout {
         "core/domain" / mainSourceSet / kotlin / "com/example/core/domain/useCase" /
             "${capture("name")}UseCaseImpl".ktFile()
@@ -121,7 +121,7 @@ The name is used when passing a value with `--arg`. Left as `*`, a template can'
 `.template { }` is attached to the file declaration itself, so the destination path is fixed to that one `layout { }` declaration. If a `*` or `**` with no name from `capture()` is still left in it, there is nowhere for a value to arrive, so **it is an error**.
 
 ```kt {3-5,7-8} nocollapse
-"FeatureComponent" {
+"FeatureComponent".role {
     layout {
         "feature" / capture("feature") / "commonMain".sourceSet / kotlin /
             "com/example/kmp/feature" / capture("featurePackage") / "component" /
@@ -157,7 +157,7 @@ The name is used when passing a value with `--arg`. Left as `*`, a template can'
 `.template { }` can be attached to a file declared with `.file()`, not only to `.ktFile()`. The string the block returns becomes the file's content as it is, so you can also generate a document with a fixed shape, such as Markdown.
 
 ```kt {3-4} nocollapse
-"FeatureReadme" {
+"FeatureReadme".role {
     layout {
         "docs" / capture("feature") / "README.md".file()
             .template {

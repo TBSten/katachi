@@ -45,7 +45,7 @@ private fun answering(vararg failures: (String) -> FileConstraintFailure): FileC
 
 /** A context for asking a constraint for its section directly, outside of page generation. */
 private fun documentContextForTest(): FileConstraintDocumentContext = FileConstraintDocumentContext(
-    role = architectureOf { "domain".group { "UseCase" { } } }.allRoles.single(),
+    role = architectureOf { "domain".group { "UseCase".role { } } }.allRoles.single(),
     name = null,
     declaredAt = CONSTRAINT_SITE,
     captureNames = emptySet(),
@@ -83,7 +83,7 @@ class FileConstraintFailureDetailsSpec : FreeSpec({
         "理由・許可の一覧・直し方・規則の行がそのまま渡る" {
             val arch = architectureOf {
                 "domain".group {
-                    "UseCase" {
+                    "UseCase".role {
                         fileConstraint(declaredAt = CONSTRAINT_SITE, check = answering(::detailedFailure))
                         layout { "alpha" / "*.kt".file() }
                     }
@@ -102,7 +102,7 @@ class FileConstraintFailureDetailsSpec : FreeSpec({
         "新しい欄を使わない失敗では、どれも空のまま" {
             val arch = architectureOf {
                 "domain".group {
-                    "UseCase" {
+                    "UseCase".role {
                         fileConstraint(declaredAt = CONSTRAINT_SITE, check = rejectsEverything())
                         layout { "alpha" / "*.kt".file() }
                     }
@@ -120,7 +120,7 @@ class FileConstraintFailureDetailsSpec : FreeSpec({
         "同じ失敗を2回返したら1件" {
             val arch = architectureOf {
                 "domain".group {
-                    "UseCase" {
+                    "UseCase".role {
                         fileConstraint(check = answering(::detailedFailure, ::detailedFailure))
                         layout { "alpha" / "*.kt".file() }
                     }
@@ -133,7 +133,7 @@ class FileConstraintFailureDetailsSpec : FreeSpec({
         "同じ宣言でも理由が違えば2件" {
             val arch = architectureOf {
                 "domain".group {
-                    "UseCase" {
+                    "UseCase".role {
                         fileConstraint(
                             check = answering(
                                 ::detailedFailure,

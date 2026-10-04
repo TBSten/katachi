@@ -1,6 +1,6 @@
 // Maven Central へ出す **Kotlin の** ライブラリに共通する設定。
 //
-// 適用するのは `:katachi` と `:katachi-konsist` の2つ。3つ目の公開モジュール
+// 適用するのは `:katachi` / `:katachi-konsist` / `:katachi-konture` の3つ。4つ目の公開モジュール
 // `:katachi-gradle-plugin` は Java だけで書かれていて、Kotlin の互換設定も Dokka も要らない
 // （理由は katachi-gradle-plugin/build.gradle.kts の冒頭）。だからここは
 // `katachi-publish` から切り出してある。
@@ -25,7 +25,7 @@ plugins {
 
 dokka {
     // モジュール表示名。デフォルトは project.name と同じだが、明示しておく
-    // （:katachi -> "katachi", :katachi-konsist -> "katachi-konsist"）。
+    // （:katachi -> "katachi", :katachi-konsist -> "katachi-konsist", :katachi-konture -> "katachi-konture"）。
     moduleName.set(project.name)
 
     dokkaSourceSets.configureEach {
@@ -39,7 +39,7 @@ dokka {
         // 見出し）。tool/dokka の Summaries は「パッケージの概要は includes の最初の段落から取る」実装
         // なので、ここに書かないとパッケージの行の概要は常に空になる。ファイルが無いモジュールに
         // `includes.from` を渡すと Dokka が失敗するので、存在するときだけ足す
-        // （このコンベンションを適用するのは :katachi と :katachi-konsist の2つで、どちらも持つ）。
+        // （このコンベンションを適用するのは :katachi / :katachi-konsist / :katachi-konture の3つで、どれも持つ）。
         val moduleDoc = layout.projectDirectory.file("Module.md")
         if (moduleDoc.asFile.exists()) {
             includes.from(moduleDoc)

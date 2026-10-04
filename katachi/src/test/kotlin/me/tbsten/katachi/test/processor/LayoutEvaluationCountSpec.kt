@@ -30,7 +30,7 @@ class LayoutEvaluationCountSpec : FreeSpec({
             var evaluations = 0
             val definition = architectureOf {
                 "domain".group {
-                    "UseCase" {
+                    "UseCase".role {
                         layout {
                             evaluations++
                             "useCase" / "*UseCase".ktFile()
@@ -49,7 +49,7 @@ class LayoutEvaluationCountSpec : FreeSpec({
             var evaluations = 0
             val definition = architectureOf {
                 "domain".group {
-                    "UseCase" {
+                    "UseCase".role {
                         layout {
                             evaluations++
                             "useCase" / "*UseCase".ktFile()
@@ -67,7 +67,7 @@ class LayoutEvaluationCountSpec : FreeSpec({
             var evaluations = 0
             val definition = architectureOf {
                 "domain".group {
-                    "UseCase" {
+                    "UseCase".role {
                         layout {
                             evaluations++
                             "useCase" / "*UseCase".ktFile()
@@ -92,7 +92,7 @@ class LayoutEvaluationCountSpec : FreeSpec({
             var plainEvaluations = 0
             val definition = architectureOf {
                 "feature".group {
-                    "Module" {
+                    "Module".role {
                         layout {
                             wildcardEvaluations++
                             ":feature:*".module { }
@@ -100,7 +100,7 @@ class LayoutEvaluationCountSpec : FreeSpec({
                     }
                 }
                 "core".group {
-                    "Data" {
+                    "Data".role {
                         layout {
                             plainEvaluations++
                             ":core:data".module { }
@@ -123,14 +123,14 @@ class LayoutEvaluationCountSpec : FreeSpec({
     "評価を分け合っても答えは変わらない" - {
         val definition = architectureOf {
             "feature".group {
-                "Module" {
+                "Module".role {
                     layout {
                         ":feature:*".module { "src" / "*.kt".file() }
                     }
                 }
             }
             "core".group {
-                "Data" {
+                "Data".role {
                     layout {
                         ":core:data".module { "src" / "Repository.kt".file() }
                         "docs" / "README.md".file()

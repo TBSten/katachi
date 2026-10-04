@@ -34,7 +34,7 @@ internal fun SyntheticProject.konsistArchitecture(): Architecture {
         files = FileSelection.WholeTree
         "synthetic".group {
             for ((index, role) in roles.withIndex()) {
-                role.name {
+                role.name.role {
                     "classes are public".konsist {
                         classes().must { it.hasPublicOrDefaultModifier }
                     }

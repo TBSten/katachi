@@ -24,7 +24,7 @@ import me.tbsten.katachi.test.dsl.files.ForbiddenFileSystem
 class TemplateMultipleSpec : FreeSpec({
     val repositoryPair = architectureOf {
         "data".group {
-            "Repository" {
+            "Repository".role {
                 layout {
                     "repository" / "${capture("name")}Repository.kt".file().template(id = "repository") {
                         "interface ${captureValue("name")}Repository"
@@ -50,12 +50,12 @@ class TemplateMultipleSpec : FreeSpec({
     "役割をまたいでよい" {
         val arch = architectureOf {
             "data".group {
-                "Repository" {
+                "Repository".role {
                     layout { "repository" / "${capture("name")}Repository.kt".file().template { "interface ${captureValue("name")}Repository" } }
                 }
             }
             "testing".group {
-                "Fake" {
+                "Fake".role {
                     layout { "testing" / "Fake${capture("name")}.kt".file().template { "class Fake${captureValue("name")}" } }
                 }
             }
@@ -70,10 +70,10 @@ class TemplateMultipleSpec : FreeSpec({
     "型が食い違う同名パラメータは入口で KatachiTemplateParameterTypeConflictException" {
         val arch = architectureOf {
             "a".group {
-                "A" { layout { "a" / "A.kt".file().template { val name by stringParameter(); "// $name" } } }
+                "A".role { layout { "a" / "A.kt".file().template { val name by stringParameter(); "// $name" } } }
             }
             "b".group {
-                "B" { layout { "b" / "B.kt".file().template { val name by intParameter(); "// $name" } } }
+                "B".role { layout { "b" / "B.kt".file().template { val name by intParameter(); "// $name" } } }
             }
         }
 
@@ -91,10 +91,10 @@ class TemplateMultipleSpec : FreeSpec({
         // 仕様の節2は「型か既定値が食い違ったら落とす」で、名前ごとに1つの値という前提と矛盾する。
         val arch = architectureOf {
             "a".group {
-                "A" { layout { "a" / "A.kt".file().template { val name by stringParameter(default = "x"); "// $name" } } }
+                "A".role { layout { "a" / "A.kt".file().template { val name by stringParameter(default = "x"); "// $name" } } }
             }
             "b".group {
-                "B" { layout { "b" / "B.kt".file().template { val name by stringParameter(default = "y"); "// $name" } } }
+                "B".role { layout { "b" / "B.kt".file().template { val name by stringParameter(default = "y"); "// $name" } } }
             }
         }
 
@@ -109,10 +109,10 @@ class TemplateMultipleSpec : FreeSpec({
     "既定値も型も同じ同名パラメータは1つの値として通る" {
         val arch = architectureOf {
             "a".group {
-                "A" { layout { "a" / "A.kt".file().template { val name by stringParameter(default = "x"); "// $name" } } }
+                "A".role { layout { "a" / "A.kt".file().template { val name by stringParameter(default = "x"); "// $name" } } }
             }
             "b".group {
-                "B" { layout { "b" / "B.kt".file().template { val name by stringParameter(default = "x"); "// $name" } } }
+                "B".role { layout { "b" / "B.kt".file().template { val name by stringParameter(default = "x"); "// $name" } } }
             }
         }
 
@@ -125,10 +125,10 @@ class TemplateMultipleSpec : FreeSpec({
     "異なる enum 型どうしは declaredWith（enumParameter()）が同じでも型の食い違いとして落ちる" {
         val arch = architectureOf {
             "a".group {
-                "A" { layout { "a" / "A.kt".file().template { val color by enumParameter(Color.entries); "// $color" } } }
+                "A".role { layout { "a" / "A.kt".file().template { val color by enumParameter(Color.entries); "// $color" } } }
             }
             "b".group {
-                "B" { layout { "b" / "B.kt".file().template { val color by enumParameter(Size.entries); "// $color" } } }
+                "B".role { layout { "b" / "B.kt".file().template { val color by enumParameter(Size.entries); "// $color" } } }
             }
         }
 
@@ -143,7 +143,7 @@ class TemplateMultipleSpec : FreeSpec({
     "途中で値が足りずに失敗したら、何も書かない" {
         val arch = architectureOf {
             "data".group {
-                "Repository" {
+                "Repository".role {
                     layout {
                         "repository" / "${capture("name")}Repository.kt".file().template(id = "repository") { captureValue("name") }
                         "repository" / "${capture("other")}RepositoryImpl.kt".file().template(id = "repositoryImpl") { captureValue("other") }
@@ -169,10 +169,10 @@ class TemplateMultipleSpec : FreeSpec({
     "同じパスに2つのテンプレートが書こうとすると KatachiDuplicateTemplateOutputException" {
         val arch = architectureOf {
             "a".group {
-                "A" { layout { "shared" / "File.kt".file().template(id = "a") { "// a" } } }
+                "A".role { layout { "shared" / "File.kt".file().template(id = "a") { "// a" } } }
             }
             "b".group {
-                "B" { layout { "shared" / "File.kt".file().template(id = "b") { "// b" } } }
+                "B".role { layout { "shared" / "File.kt".file().template(id = "b") { "// b" } } }
             }
         }
 

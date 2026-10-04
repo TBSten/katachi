@@ -14,7 +14,7 @@ import me.tbsten.katachi.check.internal.validate
 class RootRoleScanSpec : FreeSpec({
     "ルート直下の役割だけが覆うファイルは Unexpected にならない" {
         architectureOf {
-            "Gitignore" { layout { ".gitignore".file() } }
+            "Gitignore".role { layout { ".gitignore".file() } }
         }
             .validate(repositoryOf { ".gitignore"() })
             .labels() shouldBe emptyList()
@@ -28,7 +28,7 @@ class RootRoleScanSpec : FreeSpec({
 
     "ルート直下の役割が覆うディレクトリの中まで検査される" {
         architectureOf {
-            "Documentation" { layout { "docs" / "README.md".file() } }
+            "Documentation".role { layout { "docs" / "README.md".file() } }
         }
             .validate(
                 repositoryOf {
@@ -43,9 +43,9 @@ class RootRoleScanSpec : FreeSpec({
 
     "ルート直下の役割と group 内の役割は同時に効く" {
         architectureOf {
-            "Gitignore" { layout { ".gitignore".file() } }
+            "Gitignore".role { layout { ".gitignore".file() } }
             "domain".group {
-                "UseCase" { layout { "useCase" / "GetUserUseCase.kt".file() } }
+                "UseCase".role { layout { "useCase" / "GetUserUseCase.kt".file() } }
             }
         }
             .validate(
@@ -59,7 +59,7 @@ class RootRoleScanSpec : FreeSpec({
 
     "ルート直下の役割が宣言した必須ファイルが無ければ Missing になる" {
         architectureOf {
-            "Gitignore" { layout { ".gitignore".file() } }
+            "Gitignore".role { layout { ".gitignore".file() } }
         }
             .validate(repositoryOf { })
             .labels() shouldBe listOf("[MissingFile] .gitignore")

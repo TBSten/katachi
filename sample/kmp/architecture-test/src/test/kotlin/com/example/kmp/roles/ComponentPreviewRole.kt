@@ -11,7 +11,7 @@ import me.tbsten.katachi.dsl.kotlin.ktFile
  *
  * A screen's previews are the neighboring [screenPreview] role.
  */
-fun DeclarationContainerScope.componentPreview() = "ComponentPreview" {
+fun DeclarationContainerScope.componentPreview() = "ComponentPreview".role {
     title = "Component preview"
     summary = "A private @Composable annotated with @Preview for a component. Placed in <Target>Preview.kt in the " +
         "component package of :ui, with the content wrapped in PreviewRoot"

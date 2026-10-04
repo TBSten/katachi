@@ -7,7 +7,7 @@ import me.tbsten.katachi.dsl.gradle.*
 import me.tbsten.katachi.dsl.kotlin.ktFile
 
 /** The role that owns where a value comes from, so the domain does not have to know. */
-fun DeclarationContainerScope.repository() = "Repository" {
+fun DeclarationContainerScope.repository() = "Repository".role {
     title = "Repository"
     summary = "Handles fetching and saving data, hiding data source details from the domain"
     description = """

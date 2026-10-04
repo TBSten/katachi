@@ -16,7 +16,7 @@ import me.tbsten.katachi.konsist.declarations.ktFileContent
  * Written the same loose way as [screen]: a `*ViewModel.kt` glob under the directory
  * `"feature" / "*"`, with the file name named after the module by convention.
  */
-fun DeclarationContainerScope.viewModel() = "ViewModel" {
+fun DeclarationContainerScope.viewModel() = "ViewModel".role {
     title = "ViewModel"
     summary = "An androidx.lifecycle.ViewModel that holds screen state. " +
         "Converts values fetched from the Repository into a UiState and exposes it as a StateFlow"

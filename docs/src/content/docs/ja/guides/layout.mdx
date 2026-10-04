@@ -19,7 +19,7 @@ Role に対応するファイルをどこに置けるかを定義するのが `l
 
 ```kt {3-5}
 architecture {
-    "UseCase" {
+    "UseCase".role {
         // UseCase は useCase/ の中の *UseCase.kt にだけ置けます
         layout {
             "src/main/kotlin/com/example/useCase" / "*UseCase".ktFile()
@@ -112,7 +112,7 @@ layout {
 val appPackageDir = "src/main/kotlin/com/example"
 
 architecture {
-    "UseCase" {
+    "UseCase".role {
         layout {
             appPackageDir / "useCase" / "*UseCase".ktFile()
         }
@@ -130,7 +130,7 @@ architecture {
 val appPackageDir = "src/main/kotlin/com/example"  // パスは定数に切り出せる
 
 architecture {
-    "UseCase" {
+    "UseCase".role {
         layout {
             appPackageDir / "useCase" / "*UseCase".ktFile()   // "/" で繋いで置き場所を宣言する
             appPackageDir {                                    // ブロックで囲んでも同じ宣言になる
@@ -139,14 +139,14 @@ architecture {
         }
     }
 
-    "GeneratedFile" {
+    "GeneratedFile".role {
         summary = "ツールが生成するファイル"
         layout {
             "generated" { anyFile() }   // 直下ならどんなファイルでもよい（サブディレクトリは不可）
         }
     }
 
-    "BuildOutput" {
+    "BuildOutput".role {
         summary = "ビルドの出力"
         layout {
             "build".ignore()            // それより下は検査しない

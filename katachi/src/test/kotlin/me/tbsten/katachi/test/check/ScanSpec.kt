@@ -148,8 +148,8 @@ class ScanSpec : FreeSpec({
             // `AmbiguousLayout` warning no comparison of the pattern text could have found.
             val violations = architectureOf {
                 "domain".group {
-                    "UseCase" { layout { "core" / "*.kt".file() } }
-                    "Api" { layout { "core" / "GetUser.kt".file() } }
+                    "UseCase".role { layout { "core" / "*.kt".file() } }
+                    "Api".role { layout { "core" / "GetUser.kt".file() } }
                 }
             }.validate(repositoryOf { "core" { "GetUser.kt"() } })
 
@@ -160,8 +160,8 @@ class ScanSpec : FreeSpec({
         "役割ごとの宣言は合わせて1つの allow list になる" {
             architectureOf {
                 "domain".group {
-                    "UseCase" { layout { "core" / "*UseCase".ktFile() } }
-                    "Repository" { layout { "core" / "*Repository".ktFile() } }
+                    "UseCase".role { layout { "core" / "*UseCase".ktFile() } }
+                    "Repository".role { layout { "core" / "*Repository".ktFile() } }
                 }
             }
                 .validate(

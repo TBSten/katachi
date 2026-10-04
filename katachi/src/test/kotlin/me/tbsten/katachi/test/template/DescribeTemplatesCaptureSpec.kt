@@ -15,7 +15,7 @@ class DescribeTemplatesCaptureSpec : FreeSpec({
     "ディレクトリの capture（丸ごと1セグメント）" {
         val arch = architectureOf {
             "feature".group {
-                "ViewModel" {
+                "ViewModel".role {
                     layout { "feature" / capture("feature") / "ViewModel.kt".file().template { "" } }
                 }
             }
@@ -33,7 +33,7 @@ class DescribeTemplatesCaptureSpec : FreeSpec({
     "ファイル名の部分一致の capture は segment にリテラルも残す" {
         val arch = architectureOf {
             "feature".group {
-                "Screen" {
+                "Screen".role {
                     layout { "feature" / "${capture("fileName")}Screen.kt".file().template { "" } }
                 }
             }
@@ -46,7 +46,7 @@ class DescribeTemplatesCaptureSpec : FreeSpec({
     "モジュールの capture は module key 全体を segment に持つ" {
         val arch = architectureOf {
             "feature".group {
-                "BuildFile" {
+                "BuildFile".role {
                     layout { ":feature:${capture("feature")}".module { "module.txt".file().template { "" } } }
                 }
             }

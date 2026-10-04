@@ -17,7 +17,7 @@ import me.tbsten.katachi.KatachiDeclarationException
  * val thrown = shouldThrow<KatachiDuplicateTemplateException> {
  *     architecture {
  *         "domain".group {
- *             "UseCase" {
+ *             "UseCase".role {
  *                 layout {
  *                     "useCase" / "${capture("name")}UseCase.kt".file()
  *                         .template { "a" }
@@ -70,7 +70,7 @@ public class KatachiDuplicateTemplateException internal constructor(
  * val thrown = shouldThrow<KatachiDuplicateTemplateIdException> {
  *     architecture {
  *         "data".group {
- *             "Repository" {
+ *             "Repository".role {
  *                 layout {
  *                     "repository" / "${capture("name")}Repository.kt".file()
  *                         .template(id = "repository") { "" }
@@ -122,7 +122,7 @@ public class KatachiDuplicateTemplateIdException internal constructor(
  * val thrown = shouldThrow<KatachiMissingTemplateIdException> {
  *     architecture {
  *         "data".group {
- *             "Repository" {
+ *             "Repository".role {
  *                 layout {
  *                     "repository" / "${capture("name")}Repository.kt".file()
  *                         .template { "" }
@@ -175,7 +175,7 @@ public class KatachiMissingTemplateIdException internal constructor(
  * val thrown = shouldThrow<KatachiTemplateOnWildcardException> {
  *     architecture {
  *         "data".group {
- *             "Repository" {
+ *             "Repository".role {
  *                 layout {
  *                     "repository" / "*Repository.kt".file()
  *                         .template { "" }

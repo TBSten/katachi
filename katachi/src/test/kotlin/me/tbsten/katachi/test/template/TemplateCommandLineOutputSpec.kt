@@ -20,7 +20,7 @@ import me.tbsten.katachi.test.check.architectureOf
 class TemplateCommandLineOutputSpec : FreeSpec({
     val arch = architectureOf {
         "domain".group {
-            "UseCase" {
+            "UseCase".role {
                 summary = "A single app-specific behavior"
                 layout {
                     "useCase" / "${capture("name")}UseCase.kt".file().template(id = "useCase", title = "Use case") {
@@ -33,7 +33,7 @@ class TemplateCommandLineOutputSpec : FreeSpec({
     }
 
     "一覧: テンプレートが無ければそう言う" {
-        val empty = architectureOf { "domain".group { "UseCase" { layout { "useCase" / "UseCase.kt".file() } } } }
+        val empty = architectureOf { "domain".group { "UseCase".role { layout { "useCase" / "UseCase.kt".file() } } } }
         val list = empty.process(DescribeTemplates, DescribeTemplates.Args()).getOrThrow() as TemplateList
         templateListLines(list) shouldBe listOf("No declaration attaches a template { }.")
     }

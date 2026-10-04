@@ -15,7 +15,7 @@ class TemplatePlacementSpec : FreeSpec({
     "宣言どおりのパスに、値なしでも書ける（capture が無い）" {
         val arch = architectureOf {
             "domain".group {
-                "UseCase" {
+                "UseCase".role {
                     layout { "useCase" / "GetUserUseCase.kt".file().template { "class GetUserUseCase" } }
                 }
             }
@@ -26,7 +26,7 @@ class TemplatePlacementSpec : FreeSpec({
     "ディレクトリの capture を値で埋める" {
         val arch = architectureOf {
             "feature".group {
-                "ViewModel" {
+                "ViewModel".role {
                     layout {
                         "feature" / capture("feature") / "ViewModel.kt".file().template {
                             "class ${captureValue("feature")}ViewModel"
@@ -42,7 +42,7 @@ class TemplatePlacementSpec : FreeSpec({
     "ファイル名の部分一致で capture を埋める" {
         val arch = architectureOf {
             "domain".group {
-                "UseCase" {
+                "UseCase".role {
                     layout {
                         "useCase" / "${capture("name")}UseCase.kt".file().template {
                             "class ${captureValue("name")}UseCase"
@@ -58,7 +58,7 @@ class TemplatePlacementSpec : FreeSpec({
     "ディレクトリとファイル名、両方に capture があっても埋まる" {
         val arch = architectureOf {
             "feature".group {
-                "Screen" {
+                "Screen".role {
                     layout {
                         "feature" / capture("feature") / "component" /
                             "${capture("fileName")}Screen.kt".file().template {
@@ -78,7 +78,7 @@ class TemplatePlacementSpec : FreeSpec({
         // 拾って生成先のパスに * が残ったまま書かれていた（LayoutEntry.templateCaptures 追加前）。
         val unnamedFirst = architectureOf {
             "domain".group {
-                "UseCase" {
+                "UseCase".role {
                     layout {
                         "dir" / "*.kt".file()
                         "dir" / "${capture("name")}.kt".file().template { "// ${captureValue("name")}" }
@@ -91,7 +91,7 @@ class TemplatePlacementSpec : FreeSpec({
 
         val namedFirst = architectureOf {
             "domain".group {
-                "UseCase" {
+                "UseCase".role {
                     layout {
                         "dir" / "${capture("name")}.kt".file().template { "// ${captureValue("name")}" }
                         "dir" / "*.kt".file()
@@ -106,7 +106,7 @@ class TemplatePlacementSpec : FreeSpec({
     "戻り値には末尾の改行を足さない" {
         val arch = architectureOf {
             "domain".group {
-                "UseCase" {
+                "UseCase".role {
                     layout { "useCase" / "GetUserUseCase.kt".file().template { "class GetUserUseCase" } }
                 }
             }

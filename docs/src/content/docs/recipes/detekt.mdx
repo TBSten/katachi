@@ -47,7 +47,7 @@ private const val detektConfigDir = "config/detekt"
 
 fun DeclarationContainerScope.detekt() =
     "Detekt".group {
-        "Config" {
+        "Config".role {
             title = "detekt config file"
             summary = "YAML that enables or disables detekt rules and sets thresholds"
             layout {
@@ -55,7 +55,7 @@ fun DeclarationContainerScope.detekt() =
             }
         }
 
-        "Baseline" {
+        "Baseline".role {
             title = "detekt baseline"
             summary = "baseline.xml that tolerates existing findings (may be absent)"
             layout {

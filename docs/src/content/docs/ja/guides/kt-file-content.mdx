@@ -20,7 +20,7 @@ import { Aside } from '@astrojs/starlight/components';
 対象は package・import・ファイル直下の宣言・クラスのメンバの4種類で、書き方は Kotlin のソースと同じ並びです。
 
 ```kt {6,8-13,15-19}
-"ViewModel" {
+"ViewModel".role {
     layout {
         "feature" / capture("feature") / mainSourceSet / kotlin / "**" / "*ViewModel".ktFile()
     }
@@ -326,7 +326,7 @@ ktFileContent {
 class・interface・object の行に `{ }` を付けると、そのメンバも許可リストになります。`{ }` の中の書き方は、ファイル直下と同じです。
 
 ```kt {5,8-9}
-"UseCase" {
+"UseCase".role {
     layout { "core/domain" / mainSourceSet / kotlin / "com/example/domain" / "*UseCase".ktFile() }
     ktFileContent {
         `interface`(fileName) {                                    // GetUserUseCase.kt なら interface GetUserUseCase
@@ -373,7 +373,7 @@ ktFileContent {
 次の Role で、`GetUserUseCase.kt` に `GetUserUseCaseImpl` を置いた例です。
 
 ```kt title="UseCaseRole.kt"
-fun DeclarationContainerScope.useCase() = "UseCase" {
+fun DeclarationContainerScope.useCase() = "UseCase".role {
     layout { "core/domain" / mainSourceSet / kotlin / "com/example/domain" / "*UseCase".ktFile() }
     ktFileContent {
         `interface`(fileName)
@@ -425,7 +425,7 @@ Katachi check failed: 2 violations (FileConstraint: 2)
 次の Role で、`HomeViewModel.kt` が許していない `android.content.Context` と、ほかの feature の `SettingsRepository` を import した例です。
 
 ```kt title="ViewModelRole.kt"
-fun DeclarationContainerScope.viewModel() = "ViewModel" {
+fun DeclarationContainerScope.viewModel() = "ViewModel".role {
     layout { "feature" / capture("feature") / mainSourceSet / kotlin / "**" / "*ViewModel".ktFile() }
     ktFileContent {
         `import`("kotlin.**")

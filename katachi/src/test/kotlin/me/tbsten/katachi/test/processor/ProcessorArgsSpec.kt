@@ -303,5 +303,5 @@ private object AnnotateRoles : ArchitectureProcessorNoArg<Unit> {
 
 /** One role in one group, so `qualifiedName` is a two-part name rather than a bare one. */
 private fun oneRoleArchitecture(): Architecture = architecture {
-    "domain".group { "UseCase" { } }
+    "domain".group { "UseCase".role { } }
 }

@@ -61,7 +61,7 @@ private fun moduleKonsistRun(vararg sources: Pair<String, String>): List<Violati
         val projectArchitecture = architecture {
             files = wholeTree()
             "domain".group {
-                "UseCase" {
+                "UseCase".role {
                     layout {
                         "gradlew".file()
                         ":".module {

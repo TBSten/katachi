@@ -24,7 +24,7 @@ import me.tbsten.katachi.dsl.internal.MetadataBuilder
  *
  * val arch = architecture {
  *     "legacy".group {
- *         "Dao" {
+ *         "Dao".role {
  *             layout { "legacy" / "*Dao".ktFile().metadata { obsolete = true } }
  *         }
  *     }

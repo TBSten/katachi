@@ -17,7 +17,7 @@ import me.tbsten.katachi.test.dsl.files.ForbiddenFileSystem
 class FakeArchitectureProcessContextSpec : FreeSpec({
     val definition = architectureOf {
         "domain".group {
-            "UseCase" { layout { "useCase" / "*UseCase".ktFile() } }
+            "UseCase".role { layout { "useCase" / "*UseCase".ktFile() } }
         }
     }
 

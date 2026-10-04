@@ -54,7 +54,7 @@ class FileConstraintFailureSpec : FreeSpec({
         "reason=Failed になり、原因がそのまま乗る" {
             val arch = architectureOf {
                 "domain".group {
-                    "UseCase" {
+                    "UseCase".role {
                         layout {
                             "alpha" {
                                 fileConstraint("invoke", check = throwing { IllegalStateException("boom") })
@@ -79,7 +79,7 @@ class FileConstraintFailureSpec : FreeSpec({
         "1つ目が落ちても残りの制約は評価される" {
             val arch = architectureOf {
                 "domain".group {
-                    "UseCase" {
+                    "UseCase".role {
                         layout {
                             "alpha" {
                                 fileConstraint("first", check = throwing { IllegalStateException("boom") })
@@ -104,7 +104,7 @@ class FileConstraintFailureSpec : FreeSpec({
         "役割直下の制約が落ちても1行目がドットにならない" {
             val arch = architectureOf {
                 "domain".group {
-                    "UseCase" {
+                    "UseCase".role {
                         fileConstraint("role wide", check = throwing { IllegalStateException("boom") })
                         layout { "alpha" / "*.kt".file() }
                     }
@@ -126,7 +126,7 @@ class FileConstraintFailureSpec : FreeSpec({
             for (fatal in fatals) {
                 val arch = architectureOf {
                     "domain".group {
-                        "UseCase" {
+                        "UseCase".role {
                             layout { "alpha" { fileConstraint("fatal", check = throwing(fatal)); "*.kt".file() } }
                         }
                     }
@@ -147,7 +147,7 @@ class FileConstraintFailureSpec : FreeSpec({
             }
             val arch = architectureOf {
                 "domain".group {
-                    "UseCase" {
+                    "UseCase".role {
                         layout { "alpha" { fileConstraint("no outsiders", check = outsider); "*.kt".file() } }
                     }
                 }
@@ -178,7 +178,7 @@ class FileConstraintFailureSpec : FreeSpec({
             }
             val arch = architectureOf {
                 "domain".group {
-                    "UseCase" {
+                    "UseCase".role {
                         layout { "alpha" { fileConstraint("no outsiders", check = outsider); "*.kt".file() } }
                     }
                 }
@@ -201,7 +201,7 @@ class FileConstraintFailureSpec : FreeSpec({
         "末尾の3文が並び、ファイルも検査も制約もそれぞれ数えられる" {
             val arch = architectureOf {
                 "domain".group {
-                    "UseCase" {
+                    "UseCase".role {
                         layout {
                             // `src` はモジュール探索が降りていかないディレクトリ。降りる場所で
                             // `isDirectory` を落とすと、走査より前のモジュール探索が素通しで
@@ -238,7 +238,7 @@ class FileConstraintFailureSpec : FreeSpec({
         "打ち切っても末尾の件数行は消えない" {
             val arch = architectureOf {
                 "domain".group {
-                    "UseCase" {
+                    "UseCase".role {
                         layout {
                             "alpha" {
                                 fileConstraint("invoke", check = throwing { IllegalStateException("boom") })
@@ -257,7 +257,7 @@ class FileConstraintFailureSpec : FreeSpec({
         "複数落ちれば複数形になる" {
             val arch = architectureOf {
                 "domain".group {
-                    "UseCase" {
+                    "UseCase".role {
                         layout {
                             "alpha" {
                                 fileConstraint("first", check = throwing { IllegalStateException("boom") })
