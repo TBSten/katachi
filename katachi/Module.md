@@ -49,6 +49,12 @@ The extension point a definition is read through: something that takes an
 [me.tbsten.katachi.processor.ArchitectureProcessContext] and answers with a `Result`, the way
 both the check and documentation generation do.
 
+# Package me.tbsten.katachi.report
+
+Writes the violations of a check as a SARIF 2.1.0 file, so that GitHub code scanning or reviewdog
+can show them on a pull request. `assert()` writes one by itself when `-Dkatachi.report.sarif` is
+given.
+
 # Package me.tbsten.katachi.template
 
 Writes the files a role's `template { }` produces into the project.

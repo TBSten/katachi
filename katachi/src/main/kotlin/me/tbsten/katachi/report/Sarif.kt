@@ -35,6 +35,9 @@ import me.tbsten.katachi.report.internal.writeSarifText
  * violations.writeSarif(FsPath.of("/w/repo/android/build/reports/katachi/katachi.sarif"), context)
  * ```
  *
+ * @constructor Takes the project root, and optionally where to look for the files that declared
+ *   things, the repository prefix, where the architecture was declared, the version to report,
+ *   and how to reach the disk.
  * @see toSarif
  * @see writeSarif
  */
