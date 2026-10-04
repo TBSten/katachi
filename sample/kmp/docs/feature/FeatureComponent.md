@@ -23,6 +23,27 @@ name, including the module's name; the check does not tie the two together.
 |---|---|
 | `feature/*/src/commonMain/kotlin/com/example/kmp/feature/*/component/*.kt` |  |
 
+## Constraints
+
+- ktFileContent
+
+## Kotlin file content
+
+Example: `HomeUserCard.kt`
+
+| Package |
+|---|
+| `com.example.kmp.feature.<featurePackage>.component` |
+
+| Import | |
+|---|---|
+| `androidx.compose.**` | optional |
+| `com.example.kmp.ui.**` | optional |
+
+| Declaration | |
+|---|---|
+| `@Composable internal fun HomeUserCard(...)` | required |
+
 ## Examples
 
 - `HomeUserCard` ... Shows one user, used only on the home screen

@@ -15,9 +15,10 @@ same file.
 
 A `@Preview` is a `private` `@Composable` at the end of the same file as its part, with
 the body wrapped in `PreviewRoot { }` from the `preview` package of `:ui`, so the theme
-and background are decided in one place. It passes only state. This convention is not
-checked in this sample: "is private" and "is wrapped in `PreviewRoot`" cannot be
-expressed by where a file sits, and would take `konsist { }` (see sample/jvm).
+and background are decided in one place. It passes only state. `ktFileContent { }`
+checks the declarations of the file: the part named after it, its `private` previews and
+the type it picks its look with. "Is wrapped in `PreviewRoot`" is in a function's body,
+which `ktFileContent { }` does not read; it would take `konsist { }` (see sample/jvm).
 
 File names are not restricted to `*.kt`, because parts are expected to multiply.
 
@@ -30,6 +31,29 @@ convention of this role, not something the layout enforces).
 | Path | When to use |
 |---|---|
 | `ui/src/main/kotlin/com/example/sample/ui/component/*.kt` |  |
+
+## Constraints
+
+- ktFileContent
+
+## Kotlin file content
+
+Example: `AppButton.kt`
+
+| Package |
+|---|
+| `com.example.sample.ui.component` |
+
+| Import | |
+|---|---|
+| `androidx.compose.**` | optional |
+| `com.example.sample.ui.**` | optional |
+
+| Declaration | |
+|---|---|
+| `@Composable public fun AppButton(...)` | required |
+| `@Preview private fun *Preview(...)` | optional |
+| `public enum class AppButton*` | optional |
 
 ## Examples
 

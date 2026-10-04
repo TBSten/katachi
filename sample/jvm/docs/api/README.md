@@ -13,7 +13,9 @@ that decides which Controllers are connected to the routing tree. Both are about
 is received" and change for the same reasons, so they share a group.
 
 Note that katachi's `layout { }` only looks at where files live and what they are named.
-A convention such as "a Controller does not call a Repository directly" is only written
+What a file of this layer may import and declare is written in each role's
+`ktFileContent { }`, so "a Controller does not call a Repository directly" fails the test
+as soon as a Controller imports one. What a function does in its body is only written
 here as prose; nothing rejects it mechanically.
 
 | Role | Summary |

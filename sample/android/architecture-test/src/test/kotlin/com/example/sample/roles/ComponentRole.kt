@@ -11,6 +11,7 @@ import me.tbsten.katachi.dsl.gradle.kotlin
 import me.tbsten.katachi.dsl.gradle.mainSourceSet
 import me.tbsten.katachi.dsl.kotlin.ktFile
 import me.tbsten.katachi.dsl.template
+import me.tbsten.katachi.konsist.declarations.ktFileContent
 
 /** The role of a widget shared across features, rather than owned by one of them. */
 fun DeclarationContainerScope.component() = "Component" {
@@ -28,9 +29,10 @@ fun DeclarationContainerScope.component() = "Component" {
 
         A `@Preview` is a `private` `@Composable` at the end of the same file as its part, with
         the body wrapped in `PreviewRoot { }` from the `preview` package of `:ui`, so the theme
-        and background are decided in one place. It passes only state. This convention is not
-        checked in this sample: "is private" and "is wrapped in `PreviewRoot`" cannot be
-        expressed by where a file sits, and would take `konsist { }` (see sample/jvm).
+        and background are decided in one place. It passes only state. `ktFileContent { }`
+        checks the declarations of the file: the part named after it, its `private` previews and
+        the type it picks its look with. "Is wrapped in `PreviewRoot`" is in a function's body,
+        which `ktFileContent { }` does not read; it would take `konsist { }` (see sample/jvm).
 
         File names are not restricted to `*.kt`, because parts are expected to multiply.
 
@@ -87,5 +89,18 @@ fun DeclarationContainerScope.component() = "Component" {
                     """.trimIndent() + "\n"
                 }
         }
+    }
+    // The part named after the file, its previews (private: nothing else calls them) and the type
+    // it picks its look with (AppButton.kt -> AppButtonEmphasis). :ui imports neither :data nor
+    // :feature:*, so those imports fail.
+    ktFileContent {
+        `package`("com.example.sample.ui.component")
+
+        `import`("androidx.compose.**")
+        `import`("com.example.sample.ui.**")
+
+        annotated("Composable").public.`fun`(fileName)
+        annotated("Preview").private.`fun`("*Preview")
+        public.enum.`class`("$fileName*")
     }
 }

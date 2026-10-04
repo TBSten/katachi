@@ -8,6 +8,7 @@ import me.tbsten.katachi.ExperimentalKatachiApi
 import me.tbsten.katachi.dsl.DeclarationContainerScope
 import me.tbsten.katachi.dsl.gradle.*
 import me.tbsten.katachi.dsl.kotlin.ktFile
+import me.tbsten.katachi.konsist.declarations.ktFileContent
 
 /**
  * The `@Preview` functions of a screen.
@@ -51,5 +52,9 @@ fun DeclarationContainerScope.screenPreview() = "ScreenPreview" {
     layout {
         "feature" / "*" / "commonMain".sourceSet / kotlin / "com/example/kmp/feature" / "*" /
             "*Preview".ktFile()
+    }
+    // Previews only, and private: nothing else calls them.
+    ktFileContent {
+        annotated("Preview").private.`fun`("*Preview")
     }
 }

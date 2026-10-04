@@ -24,6 +24,18 @@ Previews can be written in `commonMain` because the former is used.
 |---|---|
 | `feature/*/src/commonMain/kotlin/com/example/kmp/feature/*/*Preview.kt` |  |
 
+## Constraints
+
+- ktFileContent
+
+## Kotlin file content
+
+Example: `HomeLoadedPreview.kt`
+
+| Declaration | |
+|---|---|
+| `@Preview private fun *Preview(...)` | optional |
+
 ## Examples
 
 - `HomeLoadedPreview` ... The home screen, loaded

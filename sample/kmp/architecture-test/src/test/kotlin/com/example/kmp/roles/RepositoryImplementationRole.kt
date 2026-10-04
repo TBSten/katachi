@@ -10,6 +10,7 @@ import me.tbsten.katachi.dsl.gradle.kotlin
 import me.tbsten.katachi.dsl.gradle.sourceSet
 import me.tbsten.katachi.dsl.kotlin.ktFile
 import me.tbsten.katachi.dsl.template
+import me.tbsten.katachi.konsist.declarations.ktFileContent
 
 /** The implementations of the interfaces in [repositoryInterface], beside them in the `user` package. */
 fun DeclarationContainerScope.repositoryImplementation() = "RepositoryImplementation" {
@@ -54,6 +55,14 @@ fun DeclarationContainerScope.repositoryImplementation() = "RepositoryImplementa
                         """.trimIndent() + "\n"
                     }
             }
+        }
+    }
+    // The same `name` capture as the template: `UserRepositoryImpl.kt` holds
+    // `class UserRepositoryImpl : UserRepository`, and that class only overrides. The skeleton is
+    // written twice, here and in the template, and a drift between them fails the next check.
+    ktFileContent {
+        `class`(fileName).superclass("${captureValue("name")}Repository") {
+            override.`fun`("*")
         }
     }
 }

@@ -1,10 +1,14 @@
+@file:OptIn(ExperimentalKatachiApi::class)
+
 package com.example.kmp.roles
 
 import com.example.kmp.allowedContents
 import com.example.kmp.forbiddenContents
+import me.tbsten.katachi.ExperimentalKatachiApi
 import me.tbsten.katachi.dsl.DeclarationContainerScope
 import me.tbsten.katachi.dsl.gradle.*
 import me.tbsten.katachi.dsl.kotlin.ktFile
+import me.tbsten.katachi.konsist.declarations.ktFileContent
 
 /**
  * The role that only exists because this is a KMP project: the `expect` half.
@@ -44,5 +48,11 @@ fun DeclarationContainerScope.expectDeclaration() = "ExpectDeclaration" {
         "data" {
             "commonMain".sourceSet / kotlin / "com/example/kmp/data" / "platform" / "*".ktFile()
         }
+    }
+    // Nothing but `expect` declarations, whatever their kind, in the package the `actual` files
+    // share. A declaration written once for every platform belongs to another role.
+    ktFileContent {
+        `package`("com.example.kmp.data.platform")
+        expect.anythingElse()
     }
 }

@@ -10,6 +10,7 @@ import me.tbsten.katachi.dsl.DeclarationContainerScope
 import me.tbsten.katachi.dsl.gradle.*
 import me.tbsten.katachi.dsl.kotlin.ktFile
 import me.tbsten.katachi.dsl.template
+import me.tbsten.katachi.konsist.declarations.ktFileContent
 
 /**
  * The role of a widget one screen uses and no other: the feature-local counterpart of Component.
@@ -112,5 +113,20 @@ fun DeclarationContainerScope.featureComponent() = "FeatureComponent" {
                         |}$preview
                     """.trimMargin()
                 }
+    }
+    // The package is the captured `featurePackage` of the file being checked. A part may import
+    // its own feature, but not its ViewModel (state comes from the Screen as values) and no other
+    // feature.
+    ktFileContent {
+        val feature = "com.example.sample.feature.${captureValue("featurePackage")}"
+        `package`("$feature.component")
+
+        `import`("androidx.compose.**")
+        `import`("com.example.sample.ui.**")
+        `import`("$feature.**")
+        not.`import`("$feature.*ViewModel")
+
+        annotated("Composable").internal.`fun`(fileName)
+        annotated("Preview").private.`fun`("*Preview")
     }
 }

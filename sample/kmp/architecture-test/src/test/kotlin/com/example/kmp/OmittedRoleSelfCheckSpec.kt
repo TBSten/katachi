@@ -9,7 +9,9 @@ import com.example.kmp.groups.toolGroup
 import com.example.kmp.groups.uiGroup
 import io.kotest.core.spec.style.FreeSpec
 import io.kotest.matchers.collections.shouldContainExactly
+import me.tbsten.katachi.ExperimentalKatachiApi
 import me.tbsten.katachi.InternalKatachiApi
+import me.tbsten.katachi.check.FileConstraintCheck
 import me.tbsten.katachi.check.Violation
 import me.tbsten.katachi.check.internal.validate
 import me.tbsten.katachi.dsl.architecture
@@ -27,8 +29,12 @@ import me.tbsten.katachi.dsl.architecture
  *
  * `validate()` answers with the warnings too, so [PREVIEW_OVERLAP] is in every expectation
  * below. It is not a failure and not a side effect of dropping a group — see its own comment.
+ *
+ * `FileConstraintCheck()` is passed as [ProjectArchitectureTest] passes it, so the
+ * `ktFileContent { }` of the roles kept in each definition are checked rather than reported as
+ * `[UncheckedFileConstraint]`. The files still match them, so they add nothing to the expectations.
  */
-@OptIn(InternalKatachiApi::class)
+@OptIn(InternalKatachiApi::class, ExperimentalKatachiApi::class)
 class OmittedRoleSelfCheckSpec : FreeSpec({
     "dropping a role makes the files only that role covered Unexpected" {
         // `tool` owns exactly two files, both at the root -- `.gitignore` and `README.md` --
@@ -44,7 +50,7 @@ class OmittedRoleSelfCheckSpec : FreeSpec({
         }
 
         // `validate()` does not read the baseline, so what it holds back is here too.
-        withoutTool.validate().labels() shouldContainExactly
+        withoutTool.validate(FileConstraintCheck()).labels() shouldContainExactly
             listOf(
                 "[UnexpectedFile] .gitignore",
                 "[UnexpectedFile] README.md",
@@ -69,7 +75,7 @@ class OmittedRoleSelfCheckSpec : FreeSpec({
             toolGroup()
         }
 
-        withoutData.validate().labels() shouldContainExactly
+        withoutData.validate(FileConstraintCheck()).labels() shouldContainExactly
             listOf("[UnexpectedDirectory] data/src", PREVIEW_OVERLAP)
     }
 })

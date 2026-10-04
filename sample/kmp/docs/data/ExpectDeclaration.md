@@ -24,6 +24,22 @@ ActualImplementation role is a wildcard. That is the hole here.
 |---|---|
 | `data/src/commonMain/kotlin/com/example/kmp/data/platform/*.kt` |  |
 
+## Constraints
+
+- ktFileContent
+
+## Kotlin file content
+
+Example: `PlatformInfo.kt`
+
+| Package |
+|---|
+| `com.example.kmp.data.platform` |
+
+| Declaration | |
+|---|---|
+| `expect` (anything) | optional |
+
 ## Examples
 
 - `PlatformInfo.kt` ... The expect declaration in commonMain

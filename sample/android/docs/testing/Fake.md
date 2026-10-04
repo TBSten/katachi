@@ -30,6 +30,29 @@ goes into is decided by which `DataDomain` the start of the name matches.
 |---|---|
 | `testing/src/main/kotlin/com/example/sample/testing/Fake*.kt` |  |
 
+## Constraints
+
+- ktFileContent
+
+## Kotlin file content
+
+Example: `FakeUserRepository.kt`
+
+| Import | |
+|---|---|
+| `com.example.sample.data.**` | optional |
+
+| Declaration | |
+|---|---|
+| `class FakeUserRepository : UserRepository` | required |
+
+### Members of `class FakeUserRepository`
+
+| Member | |
+|---|---|
+| `override fun *(...)` | optional |
+| `private` (anything) | optional |
+
 ## Examples
 
 - `FakeUserRepository` ... The in-memory implementation of UserRepository

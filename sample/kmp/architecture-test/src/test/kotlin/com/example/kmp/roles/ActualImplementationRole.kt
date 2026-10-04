@@ -1,10 +1,14 @@
+@file:OptIn(ExperimentalKatachiApi::class)
+
 package com.example.kmp.roles
 
 import com.example.kmp.allowedContents
 import com.example.kmp.forbiddenContents
+import me.tbsten.katachi.ExperimentalKatachiApi
 import me.tbsten.katachi.dsl.DeclarationContainerScope
 import me.tbsten.katachi.dsl.gradle.*
 import me.tbsten.katachi.dsl.kotlin.ktFile
+import me.tbsten.katachi.konsist.declarations.ktFileContent
 
 /**
  * The `actual` half of [expectDeclaration]: one file per platform, in the same package.
@@ -46,5 +50,11 @@ fun DeclarationContainerScope.actualImplementation() = "ActualImplementation" {
             "androidMain".sourceSet / kotlin / "com/example/kmp/data" / "platform" / "*.android".ktFile()
             "iosMain".sourceSet / kotlin / "com/example/kmp/data" / "platform" / "*.ios".ktFile()
         }
+    }
+    // Nothing but `actual` declarations, in the same package as the `expect`: the two do not
+    // pair up otherwise. Whether every `expect` has its `actual` is still the compiler's to say.
+    ktFileContent {
+        `package`("com.example.kmp.data.platform")
+        actual.anythingElse()
     }
 }

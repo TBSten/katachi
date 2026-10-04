@@ -29,6 +29,30 @@ generation target). The id is split per domain, and
 | `data/src/main/kotlin/com/example/sample/data/settings/SettingsRepository.kt` |  |
 | `data/src/main/kotlin/com/example/sample/data/settings/Settings*Repository.kt` |  |
 
+## Constraints
+
+- ktFileContent
+
+## Kotlin file content
+
+Example: `UserRepository.kt`
+
+| Import | |
+|---|---|
+| `kotlin.**` | optional |
+| `kotlinx.**` | optional |
+| `com.example.sample.data.**` | optional |
+
+| Declaration | |
+|---|---|
+| `interface UserRepository` | required |
+
+### Members of `interface UserRepository`
+
+| Member | |
+|---|---|
+| `fun *(...)` | optional |
+
 ## Examples
 
 - `UserRepository` ... The interface for fetching and storing the user

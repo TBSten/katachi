@@ -9,6 +9,7 @@ import me.tbsten.katachi.dsl.DeclarationContainerScope
 import me.tbsten.katachi.dsl.gradle.*
 import me.tbsten.katachi.dsl.kotlin.ktFile
 import me.tbsten.katachi.dsl.template
+import me.tbsten.katachi.konsist.declarations.ktFileContent
 
 /**
  * The role of a stand-in implementation other modules' tests use.
@@ -79,6 +80,16 @@ fun DeclarationContainerScope.fake() = "Fake" {
                         }
                     """.trimIndent() + "\n"
                 }
+        }
+    }
+    // The captured part of the file name is the interface the fake stands in for:
+    // FakeUserRepository.kt holds `class FakeUserRepository : UserRepository`.
+    ktFileContent {
+        `import`("com.example.sample.data.**")
+
+        `class`(fileName).superclass(captureValue("repository")) {
+            override.`fun`("*")
+            private.anythingElse()
         }
     }
 }

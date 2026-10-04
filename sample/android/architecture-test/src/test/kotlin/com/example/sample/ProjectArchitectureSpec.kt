@@ -15,6 +15,7 @@ import io.kotest.matchers.string.shouldContain
 import java.io.File
 import me.tbsten.katachi.ExperimentalKatachiApi
 import me.tbsten.katachi.InternalKatachiApi
+import me.tbsten.katachi.check.FileConstraintCheck
 import me.tbsten.katachi.check.internal.validate
 import me.tbsten.katachi.dsl.Architecture
 import me.tbsten.katachi.dsl.Documented
@@ -220,7 +221,9 @@ class ProjectArchitectureSpec : FreeSpec({
         //
         // `tool` is the group to drop because it owns exactly two files, both at the root,
         // so the expectation can be written out in full rather than as a count.
-        val violations = architectureWithoutToolRoles.validate()
+        // `FileConstraintCheck()` is what `ProjectArchitectureTest` passes too: without it, every
+        // `ktFileContent { }` of the roles would come back as `[UncheckedFileConstraint]`.
+        val violations = architectureWithoutToolRoles.validate(FileConstraintCheck())
 
         // `validate()` does not read the baseline, so the violations it holds back are here too.
         violations.map { "[${it.label}] ${it.path}" } shouldContainExactlyInAnyOrder listOf(

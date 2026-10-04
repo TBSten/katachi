@@ -226,8 +226,8 @@ class ProjectArchitectureSpec : FreeSpec({
         // an empty traversal passes just as happily. Dropping `app/Entrypoint` leaves
         // `Application.kt` in a directory other roles still claim, so the file itself has to
         // be reached and matched for this to fail - which is the part being proven here.
-        // `FileConstraintCheck()` is passed so the `konsist { }` constraints are evaluated
-        // rather than reported as `[UncheckedFileConstraint]` alongside it.
+        // `FileConstraintCheck()` is passed so the `konsist { }` and `ktFileContent { }`
+        // constraints are evaluated rather than reported as `[UncheckedFileConstraint]` alongside it.
         // `validate()` does not read the baseline, so the two violations it holds back are here too.
         architectureWithoutEntrypointRole.validate(FileConstraintCheck()).map { "[${it.label}] ${it.path}" }
             .shouldContainExactlyInAnyOrder(
@@ -290,8 +290,9 @@ class ProjectArchitectureSpec : FreeSpec({
         // error, so a failure here names the violations instead of only the message.
         // `FileConstraintCheck()` matches what `ProjectArchitectureTest` itself passes: without
         // it, the `konsist { }` constraints in `roles/ServiceRole.kt` and
-        // `roles/ArchitectureDefinitionEntryRole.kt` would come back as
-        // `[UncheckedFileConstraint] reason=NotEvaluated` instead of being evaluated.
+        // `roles/ArchitectureDefinitionEntryRole.kt`, and the `ktFileContent { }` of the
+        // application's roles, would come back as `[UncheckedFileConstraint] reason=NotEvaluated`
+        // instead of being evaluated.
         //
         // `validate()` does not read the baseline, so what `katachi-baseline.json` holds back
         // is all that may come back: the two violations left in on purpose, and nothing else.

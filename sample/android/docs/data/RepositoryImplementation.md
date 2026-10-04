@@ -23,6 +23,31 @@ they are generated together
 | `data/src/main/kotlin/com/example/sample/data/settings/SettingsRepositoryImpl.kt` |  |
 | `data/src/main/kotlin/com/example/sample/data/settings/Settings*RepositoryImpl.kt` |  |
 
+## Constraints
+
+- ktFileContent
+
+## Kotlin file content
+
+Example: `UserRepositoryImpl.kt`
+
+| Import | |
+|---|---|
+| `kotlin.**` | optional |
+| `kotlinx.**` | optional |
+| `com.example.sample.data.**` | optional |
+
+| Declaration | |
+|---|---|
+| `class UserRepositoryImpl : UserRepository` | required |
+
+### Members of `class UserRepositoryImpl`
+
+| Member | |
+|---|---|
+| `override fun *(...)` | optional |
+| `private` (anything) | optional |
+
 ## Examples
 
 - `UserRepositoryImpl` ... The implementation of UserRepository

@@ -9,6 +9,7 @@ import me.tbsten.katachi.ExperimentalKatachiApi
 import me.tbsten.katachi.dsl.DeclarationContainerScope
 import me.tbsten.katachi.dsl.gradle.*
 import me.tbsten.katachi.dsl.kotlin.ktFile
+import me.tbsten.katachi.konsist.declarations.ktFileContent
 
 /**
  * The role of one screen's UI: the `@Composable` its feature module is named after.
@@ -37,8 +38,9 @@ fun DeclarationContainerScope.screen() = "Screen" {
         wrapped in `PreviewRoot { }` from `:ui`. It passes only state:
         `HomeScreenContentPreview` passes `UiState.Content(...)` and `HomeScreenLoadingPreview`
         passes `UiState.Loading`, lining up different states of the same screen. The overload
-        that takes `viewModel()` is not previewed. This convention is not checked in this
-        sample.
+        that takes `viewModel()` is not previewed. `ktFileContent { }` checks the shape of the
+        file (`internal` screens named after it, `private` previews, and what it imports); what
+        a preview passes and wraps its body in is not checked.
     """.trimIndent()
     allowedContents = """
         - The screen layout, and switching between `Loading` / `Content` / `Error` of `UiState`
@@ -56,5 +58,15 @@ fun DeclarationContainerScope.screen() = "Screen" {
     example("SettingsScreen", "The settings screen")
     layout {
         featureSources() / "*Screen".ktFile()
+    }
+    // The two overloads named after the file, both internal, and the previews, all private.
+    // Navigation and other features are not among the imports: leaving a screen is a callback.
+    ktFileContent {
+        `import`("androidx.compose.**")
+        `import`("androidx.lifecycle.**")
+        `import`("com.example.sample.ui.**")
+
+        annotated("Composable").internal.`fun`(fileName)
+        annotated("Preview").private.`fun`("*Preview")
     }
 }

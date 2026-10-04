@@ -12,6 +12,7 @@ import me.tbsten.katachi.dsl.gradle.kotlin
 import me.tbsten.katachi.dsl.gradle.mainSourceSet
 import me.tbsten.katachi.dsl.kotlin.ktFile
 import me.tbsten.katachi.dsl.template
+import me.tbsten.katachi.konsist.declarations.ktFileContent
 import me.tbsten.katachi.konsist.konsist
 
 /** The role holding one application-specific behaviour, built out of repositories. */
@@ -28,6 +29,12 @@ fun DeclarationContainerScope.service() = "Service" {
         this one writes a constraint with `konsist { }`, "Must be public", so accidentally adding
         `internal` fails the test. You notice before it can no longer be referenced from a
         Controller in another package.
+
+        The rest of the shape is written with `ktFileContent { }`, the way the file itself is
+        written: the one class is named after the file, it holds nothing but the Repositories it
+        receives and its functions, and the file imports models and Repositories only. An
+        `io.ktor` import fails the test, which is how "knowledge of HTTP stops at the API layer"
+        is held.
     """.trimIndent()
     allowedContents = """
         Only application-specific procedures, decisions and assembly may be placed here.
@@ -59,6 +66,21 @@ fun DeclarationContainerScope.service() = "Service" {
                         }
                     """.trimIndent() + "\n"
                 }
+    }
+    // What a Service file may hold, in the order the file lists it. Only the kinds a line is
+    // written for are checked, each as an allow list: the package, the imports, the one class
+    // and that class's members. The template above writes a file that passes it.
+    ktFileContent {
+        `package`("com.example.service")
+
+        // The domain knows the models and the Repositories, and nothing of HTTP.
+        `import`("com.example.model.**")
+        `import`("com.example.repository.**")
+
+        `class`(fileName) {                         // HealthService.kt -> class HealthService
+            private.`val`("*", "*Repository")       // the Repositories it is built from
+            `fun`("*")                              // the behaviour a Controller calls
+        }
     }
 }
 
