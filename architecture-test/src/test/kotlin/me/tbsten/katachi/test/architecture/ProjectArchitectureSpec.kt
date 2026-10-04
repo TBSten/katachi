@@ -13,7 +13,7 @@ import me.tbsten.katachi.check.assertNoErrors
  * declared, every declared file that is missing, and every constraint that was not satisfied.
  *
  * `FileConstraintCheck()` is not optional here. The roles of the `library` group declare five
- * `konsist { }` each, `KonsistBackend` declares four and `DokkaPlugin` declares one, and a bare
+ * `konsist { }` each, `KonsistBackend` and `KontureBackend` declare four each and `DokkaPlugin` declares one, and a bare
  * `assert()` evaluates no constraints at all — it would report every one of them as an
  * `[UncheckedFileConstraint] reason=NotEvaluated` block instead of checking the import directions. A
  * project that declares no constraint can leave it out; this one cannot.

@@ -8,6 +8,7 @@ import me.tbsten.katachi.dsl.gradle.testSourceSet
 import me.tbsten.katachi.dsl.kotlin.ktFile
 import me.tbsten.katachi.test.architecture.KATACHI_TEST_PACKAGE
 import me.tbsten.katachi.test.architecture.KONSIST_TEST_PACKAGE
+import me.tbsten.katachi.test.architecture.KONTURE_TEST_PACKAGE
 
 /** The role of test code that is not itself a test: fixtures, fakes, shared assembly. */
 fun DeclarationContainerScope.specSupport() = "SpecSupport".role {
@@ -34,6 +35,11 @@ fun DeclarationContainerScope.specSupport() = "SpecSupport".role {
             description = "スペックが使う道具のうち、Konsist に読ませる実ファイルを一時ディレクトリに用意するもの"
             testSourceSet / kotlin / "**" / "*SpecSupport".ktFile()
             testSourceSet / kotlin / KONSIST_TEST_PACKAGE / "FixtureProject".ktFile()
+        }
+        "katachi-konture" {
+            description = "スペックが使う道具のうち、Konture に読ませる実ファイルを一時ディレクトリに用意するもの"
+            testSourceSet / kotlin / "**" / "*SpecSupport".ktFile()
+            testSourceSet / kotlin / KONTURE_TEST_PACKAGE / "FixtureProject".ktFile()
         }
         "tool/dokka" {
             description = "Dokka プラグインのスペックが使う道具。Dokka の実行の組み立てと、@featured を付けたインラインのソース"

@@ -16,10 +16,10 @@ description: >-
 | ドキュメントサイト   | `docs/src/content/docs/ja/**/*.mdx`                                      | **日本語が原本なので、日本語だけを確かめる。**英語は translate-ja-en で追随させる |
 | README               | `README.ja.md`、`sample/**/README.md`                                    | 同上。`README.md` は訳                                                            |
 | インストールキット   | `docs/public/install/ja/index.md`、`katachi-install.sh` が出すメッセージ | 手順書どおりにスクリプトが動くか                                                  |
-| API リファレンスの元 | `katachi/src/main`・`katachi-konsist/src/main` の公開 API の KDoc        | KDoc の例は自己検査でコンパイルされるので、確かめるのは文章の主張だけ             |
+| API リファレンスの元 | `katachi/src/main`・`katachi-konsist/src/main`・`katachi-konture/src/main` の公開 API の KDoc | KDoc の例は自己検査でコンパイルされるので、確かめるのは文章の主張だけ |
 | サンプル             | `sample/**` の定義・ビルド設定・コメント                                 | 利用者が写す見本。CI で緑でも、古い書き方や嘘のコメントは残る                     |
 
-実装の側の根拠は、`katachi/`、`katachi-konsist/`、`katachi-gradle-plugin/`、`tool/dokka/` のソースと、`sample/` の実際の挙動。
+実装の側の根拠は、`katachi/`、`katachi-konsist/`、`katachi-konture/`、`katachi-gradle-plugin/`、`tool/dokka/` のソースと、`sample/` の実際の挙動。
 
 **サンプルは根拠であると同時に、確かめる対象でもある。** CI が保証するのは「今の定義で緑になる」ことだけで、
 「今の katachi で推奨される書き方になっている」「コメントが本当のことを言っている」ことは保証しない。
@@ -46,7 +46,7 @@ python3 ${S}/list-state-claims.py           # 「まだ」「予定」「〜だ�
 
 | 節                    | 中身                                                                                      | 読み方                                                                                           |
 |-----------------------|-------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------|
-| 1. 実装のソースの変更 | `git diff --stat <基準>`（katachi / katachi-konsist / Gradle プラグイン / tool/dokka）    | 振る舞いの変更はここから拾う。API の差分に出ない変更（メッセージ・既定値・出力の形）は差分を読む |
+| 1. 実装のソースの変更 | `git diff --stat <基準>`（katachi / katachi-konsist / katachi-konture / Gradle プラグイン / tool/dokka） | 振る舞いの変更はここから拾う。API の差分に出ない変更（メッセージ・既定値・出力の形）は差分を読む |
 | 2. 削除・改名の候補   | 基準にあって今は無い公開宣言と、それが出てくるドキュメントの行                            | **ドキュメントに残っていれば、ほぼ確実に古い**。「同名が今もある」ものは別物のことがある         |
 | 3. 変更               | シグネチャ・opt-in の区分・パッケージが変わった宣言（`[変更]` / `[区分変更]` / `[移動]`） | コード例の引数・import がずれていないか                                                          |
 | 4. 追加               | 今だけにある宣言。「ドキュメントに出てこない」印つき                                      | 書くべきかは判断。書かなくてよいものも多い                                                       |

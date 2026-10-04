@@ -14,8 +14,8 @@ import me.tbsten.katachi.test.architecture.groups.toolGroup
 
 // Where each module keeps its production sources, below its own `src/main/kotlin`, and its test
 // sources below `src/test/kotlin`. Written out rather than derived from the module name:
-// `:katachi` is the root package itself and `:katachi-konsist` sits *inside* it, as
-// `me.tbsten.katachi.konsist`, because the backend is one more package of the library rather than
+// `:katachi` is the root package itself and `:katachi-konsist` and `:katachi-konture` sit *inside* it, as
+// `me.tbsten.katachi.konsist` and `me.tbsten.katachi.konture`, because the backend is one more package of the library rather than
 // a library of its own.
 //
 // Test code lives one level deeper than production code, under `me.tbsten.katachi.test`, and that
@@ -27,6 +27,9 @@ const val KATACHI_MAIN_PACKAGE: String = "me/tbsten/katachi"
 /** Production package directory of `:katachi-konsist`. */
 const val KONSIST_MAIN_PACKAGE: String = "me/tbsten/katachi/konsist"
 
+/** Production package directory of `:katachi-konture`. */
+const val KONTURE_MAIN_PACKAGE: String = "me/tbsten/katachi/konture"
+
 /** Production package directory of `:tool:dokka`. */
 const val DOKKA_MAIN_PACKAGE: String = "me/tbsten/katachi/dokka"
 
@@ -35,6 +38,9 @@ const val KATACHI_TEST_PACKAGE: String = "me/tbsten/katachi/test"
 
 /** Test package directory of `:katachi-konsist`. */
 const val KONSIST_TEST_PACKAGE: String = "me/tbsten/katachi/test/konsist"
+
+/** Test package directory of `:katachi-konture`. */
+const val KONTURE_TEST_PACKAGE: String = "me/tbsten/katachi/test/konture"
 
 /** Test package directory of `:tool:dokka`. */
 const val DOKKA_TEST_PACKAGE: String = "me/tbsten/katachi/test/dokka"
@@ -86,7 +92,7 @@ const val ARCHITECTURE_TEST_PACKAGE: String = "me/tbsten/katachi/test/architectu
  * reading the sources as text; it is a rule about imports, which is Konsist's job.
  * See `LayerImports.kt`.
  *
- * A third and a fourth `konsist { }` on each of those roles — two on `backend/KonsistBackend`,
+ * A third and a fourth `konsist { }` on each of those roles — two on each of `backend/KonsistBackend` and `backend/KontureBackend`,
  * and one alone on `tool/DokkaPlugin` — ask the repository's KDoc convention of every public
  * declaration: that it shows a `## Example` (`KDOC_EXAMPLE_RULE`), and that nothing sits after
  * its block tags, where Dokka would stop rendering it (`KDOC_TAG_ORDER_RULE`) — see

@@ -30,6 +30,10 @@ fun DeclarationContainerScope.spec() = "Spec".role {
             description = "Konsist 連携の振る舞い。実ファイルを書き出して Konsist に読ませる必要があるもの"
             testSourceSet / kotlin / "**" / "*Spec".ktFile()
         }
+        "katachi-konture" {
+            description = "Konture 連携の振る舞い。実ファイルを書き出して Konture に読ませる必要があるもの"
+            testSourceSet / kotlin / "**" / "*Spec".ktFile()
+        }
         "architecture-test" {
             description = "katachi を利用者として使う側。このリポジトリ自身の定義について確かめるもの"
             testSourceSet / kotlin / "**" / "*Spec".ktFile()

@@ -42,6 +42,9 @@ dependencies {
     // `architecture`, `assert` and `FileConstraintCheck` directly.
     testImplementation(project(":katachi"))
     testImplementation(project(":katachi-konsist"))
+    // No `:katachi-konture` here, deliberately. This module's rules are Konsist's, and Konsist
+    // 0.17.3 cannot share a classpath with Konture 1.0.1 (different kotlin-compiler-embeddable);
+    // the `KontureBackend` role only describes the files of `:katachi-konture`.
     testImplementation(libs.kotestRunnerJunit5)
     testImplementation(libs.kotestAssertionsCore)
 

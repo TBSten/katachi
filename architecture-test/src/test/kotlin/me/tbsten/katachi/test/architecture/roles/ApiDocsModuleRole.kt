@@ -24,5 +24,9 @@ fun DeclarationContainerScope.apiDocsModule() = "ApiDocsModule".role {
             description = "katachi-konsist モジュールと、その公開パッケージそれぞれの説明"
             "Module.md".file()
         }
+        "katachi-konture" {
+            description = "katachi-konture モジュールと、その公開パッケージそれぞれの説明"
+            "Module.md".file()
+        }
     }
 }

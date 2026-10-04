@@ -1,11 +1,11 @@
-"""katachi のライブラリ（`:katachi` と `:katachi-konsist`）の公開宣言を、ソースの素朴な字句走査で拾う。
+"""katachi のライブラリ（`:katachi`、`:katachi-konsist`、`:katachi-konture`）の公開宣言を、ソースの素朴な字句走査で拾う。
 
 スクリプトではなく、ほかのスクリプトが読み込む部品。check-docs-against-impl の list-api-changes.py と、
 prerelease の list-public-api.py が使う。
 
 **目安であって、構文解析ではない。**拾い方:
 
-- 両モジュールは explicitApi() なので、公開する宣言には必ず `public` が書いてある。`public` の付いた宣言のうち、
+- どのモジュールも explicitApi() なので、公開する宣言には必ず `public` が書いてある。`public` の付いた宣言のうち、
   囲む型もすべて `public` のものを公開宣言とする。`override` は新しい API ではないので数えない
 - コメントと文字列は先に消してから数える（KDoc のコード例の `public` を拾わないため）
 - 注釈は、宣言の直前の行（と同じ行の前）にある `@Foo` を拾う。型に付いた `@InternalKatachiApi` /
@@ -21,6 +21,7 @@ from pathlib import Path
 MODULES = {
     ":katachi": "katachi/src/main",
     ":katachi-konsist": "katachi-konsist/src/main",
+    ":katachi-konture": "katachi-konture/src/main",
 }
 INTERNAL_ANNOTATION = "InternalKatachiApi"
 EXPERIMENTAL_ANNOTATION = "ExperimentalKatachiApi"

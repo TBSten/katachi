@@ -1,6 +1,6 @@
 // Maven Central へ出すモジュールの共通設定。
 //
-// 適用するのは `:katachi` / `:katachi-konsist` / `:katachi-gradle-plugin` の3つ。
+// 適用するのは `:katachi` / `:katachi-konsist` / `:katachi-konture` / `:katachi-gradle-plugin` の4つ。
 // `:architecture-test` は katachi 自身の検査用で、公開しない
 // （この plugin を適用しなければ publish タスクも生えない）。
 //
@@ -70,7 +70,7 @@ mavenPublishing {
 
     pom {
         // artifactId はモジュール名がそのまま入る
-        // （katachi / katachi-konsist / katachi-gradle-plugin）。
+        // （katachi / katachi-konsist / katachi-konture / katachi-gradle-plugin）。
         // plugin marker だけは me.tbsten.katachi:me.tbsten.katachi.gradle.plugin という
         // 別座標になるが、name / description / licenses / developers / scm はこの pom { } が
         // 全 publication に配るので marker にも入る。
@@ -80,6 +80,10 @@ mavenPublishing {
                 "katachi-konsist" ->
                     "Konsist backend for katachi. Adds `konsist { }` so an architecture " +
                         "definition can constrain what a file declares, not just where it lives."
+
+                "katachi-konture" ->
+                    "Konture backend for katachi. Adds `konture { }` so an architecture " +
+                        "definition can apply Konture's rules to the files a role covers."
 
                 "katachi-gradle-plugin" ->
                     "Gradle plugin for katachi. Registers one task per katachi processor " +
