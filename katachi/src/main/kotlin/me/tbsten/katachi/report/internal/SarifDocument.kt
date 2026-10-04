@@ -11,6 +11,7 @@ import me.tbsten.katachi.check.UnsatisfiedFileConstraint
 import me.tbsten.katachi.check.Violation
 import me.tbsten.katachi.check.internal.STEP
 import me.tbsten.katachi.check.internal.blockOf
+import me.tbsten.katachi.check.internal.reportedDeclaredAt
 import me.tbsten.katachi.report.SarifContext
 
 private const val SARIF_SCHEMA: String = "https://json.schemastore.org/sarif-2.1.0.json"
@@ -170,7 +171,7 @@ private fun propertiesOf(violation: Violation): SarifJson = sarifObject {
             put("constraint", violation.constraintName)
             put("declaration", violation.declaration)
             put("layoutPath", violation.layoutPath)
-            put("declaredAt", violation.declaredAt.toString())
+            put("declaredAt", violation.reportedDeclaredAt.toString())
         }
 
         is UncheckedFileConstraint -> {

@@ -65,6 +65,24 @@ class SarifLocationsSpec : FreeSpec({
             relatedLocationsOf(sarif) shouldContain "\"text\": \"Declared here\""
         }
 
+        "規則の行（ruleDeclaredAt）があれば、relatedLocations と properties の宣言元はテキストの報告と同じその行" {
+            val violation = UnsatisfiedFileConstraint(
+                path = "core/domain/src/main/kotlin/com/example/domain/GetUserUseCase.kt",
+                declaration = "GetUserUseCaseImpl",
+                line = 9,
+                role = roles.useCase,
+                constraintName = "ktFileContent",
+                layoutPath = null,
+                declaredAt = useCaseSite,
+                ruleDeclaredAt = DeclarationSite("UseCaseRole.kt", 18),
+            )
+            val sarif = violation.sarifWith(tree.context())
+            relatedLocationsOf(sarif) shouldContain "\"startLine\": 18"
+            relatedLocationsOf(sarif) shouldNotContain "\"startLine\": 16"
+            sarif shouldContain "\"declaredAt\": \"UseCaseRole.kt:18\""
+            sarif shouldContain "Declared at: UseCaseRole.kt:18"
+        }
+
         "空白と # と ? と % を含むパスは percent-encoding され、非 ASCII はそのまま" {
             val odd = FakeSarifTree((SARIF_PROJECT_ROOT / "My App/src/main/kotlin/com/example/Foo#1 100%.kt").value to "")
             val sarif = UnexpectedFile("My App/src/main/kotlin/com/example/Foo#1 100%.kt", emptyList()).sarifWith(odd.context())

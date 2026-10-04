@@ -40,8 +40,7 @@ internal fun unsatisfiedFileConstraintBlock(violation: UnsatisfiedFileConstraint
         if (allowed.entries.isEmpty()) add("$STEP$STEP(nothing)")
         for (entry in allowed.entries) add("$STEP$STEP${oneLine(entry)}")
     }
-    val declaredAt = violation.ruleDeclaredAt ?: violation.declaredAt
-    add("${STEP}Declared at: $declaredAt${inLayout(root, violation.layoutPath)}")
+    add("${STEP}Declared at: ${violation.reportedDeclaredAt}${inLayout(root, violation.layoutPath)}")
     if (violation.howToFix.isNotEmpty()) {
         add("")
         add("${STEP}How to fix:")
@@ -51,6 +50,14 @@ internal fun unsatisfiedFileConstraintBlock(violation: UnsatisfiedFileConstraint
         }
     }
 }
+
+/**
+ * Where a report says [this] was declared: the line of the rule that said no when the constraint
+ * named one, the constraint's own site otherwise. The text block's `Declared at:` and the SARIF
+ * report both read it, so the two never point at different lines.
+ */
+internal val UnsatisfiedFileConstraint.reportedDeclaredAt: DeclarationSite
+    get() = ruleDeclaredAt ?: declaredAt
 
 /**
  * The code under one fix, indented two steps past its `- `: as written, but with each element's

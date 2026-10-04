@@ -11,6 +11,7 @@ import me.tbsten.katachi.check.UnsatisfiedFileConstraint
 import me.tbsten.katachi.check.Violation
 import me.tbsten.katachi.check.internal.BaselineKey
 import me.tbsten.katachi.check.internal.baselineEntryLine
+import me.tbsten.katachi.check.internal.reportedDeclaredAt
 import me.tbsten.katachi.dsl.DeclarationSite
 import me.tbsten.katachi.dsl.files.FsPath
 import me.tbsten.katachi.internal.fileUri
@@ -135,7 +136,7 @@ internal class SarifLocationResolver(
         )
 
         is UnsatisfiedFileConstraint -> listOfNotNull(
-            resolvedLocationOf(violation.declaredAt)?.let { SarifRelatedLocation(it, "Declared here") },
+            resolvedLocationOf(violation.reportedDeclaredAt)?.let { SarifRelatedLocation(it, "Declared here") },
         )
 
         is AmbiguousLayout -> violation.claims.drop(1).mapNotNull { claim ->
@@ -154,7 +155,7 @@ internal class SarifLocationResolver(
     /** The declaration site a violation of this type carries, or `null` when it has none. */
     private fun declaredSiteOf(violation: Violation): DeclarationSite? = when (violation) {
         is MissingFile -> violation.declaredAt
-        is UnsatisfiedFileConstraint -> violation.declaredAt
+        is UnsatisfiedFileConstraint -> violation.reportedDeclaredAt
         is UncheckedFileConstraint -> violation.declaredAt
         is MissingDescription -> violation.declaredAt
         is AmbiguousLayout -> violation.claims.firstOrNull()?.declaredAt
