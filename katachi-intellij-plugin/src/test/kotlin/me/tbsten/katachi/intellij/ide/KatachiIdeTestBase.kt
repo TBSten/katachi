@@ -21,6 +21,7 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import me.tbsten.katachi.intellij.AnalysisTestBase
 import me.tbsten.katachi.intellij.data.NioProjectFileSystem
+import me.tbsten.katachi.intellij.data.gradle.GradleActivity
 import me.tbsten.katachi.intellij.data.detect.SyncedModule
 import me.tbsten.katachi.intellij.data.detect.SyncedProject
 import me.tbsten.katachi.intellij.data.detect.SyncedRoot
@@ -68,11 +69,29 @@ internal abstract class KatachiIdeTestBase : AnalysisTestBase() {
     }
 
     /** Installs a new [KatachiProjectService] over the fakes and returns its ViewModel. */
-    internal fun installService(): KatachiToolWindowViewModel {
-        val ports = KatachiPorts({ synced }, gradle, NioProjectFileSystem, IdeEffectsImpl(project))
+    internal fun installService(): KatachiToolWindowViewModel = installProjectService().viewModel
+
+    /**
+     * Installs a new [KatachiProjectService] over the fakes. [gradleActivity] stands in for the IDE's Gradle
+     * (`null`: the real one, fed by ExternalSystem), [autoReloadDelayMillis] for the two seconds after a save.
+     */
+    internal fun installProjectService(
+        gradleActivity: GradleActivity? = null,
+        autoReloadDelayMillis: Long = AutoReload.AUTO_RELOAD_DELAY_MILLIS,
+    ): KatachiProjectService {
+        val ownSave = OwnSaveMark()
+        val ports = KatachiPorts(
+            { synced },
+            gradle,
+            NioProjectFileSystem,
+            IdeEffectsImpl(project, ownSave),
+            gradleActivity = gradleActivity,
+            autoReloadDelayMillis = autoReloadDelayMillis,
+            ownSave = ownSave,
+        )
         val service = KatachiProjectService(project, scope, ports)
         project.replaceService(KatachiProjectService::class.java, service, testRootDisposable)
-        return service.viewModel
+        return service
     }
 
     /** Synced data where [gradlePaths] have `katachiInternalTemplatesJson`, under [root]. */
@@ -82,6 +101,19 @@ internal abstract class KatachiIdeTestBase : AnalysisTestBase() {
                 root,
                 "project",
                 gradlePaths.map { SyncedModule(it, moduleDirOf(it), setOf(KatachiModule.TEMPLATES_JSON_TASK), "0.3.0") },
+            ),
+        ),
+    )
+
+    /** Synced data where [gradlePaths] have both internal tasks (katachi 0.3 and later), under [root]. */
+    internal fun syncedWithDefinition(vararg gradlePaths: String): SyncedProject = SyncedProject.Synced(
+        listOf(
+            SyncedRoot(
+                root,
+                "project",
+                gradlePaths.map {
+                    SyncedModule(it, moduleDirOf(it), setOf(KatachiModule.TEMPLATES_JSON_TASK, KatachiModule.DEFINITION_JSON_TASK), "0.3.0")
+                },
             ),
         ),
     )

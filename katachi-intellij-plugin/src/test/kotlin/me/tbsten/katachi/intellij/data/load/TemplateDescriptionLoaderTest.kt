@@ -30,7 +30,7 @@ class TemplateDescriptionLoaderTest {
     @Test
     fun `複数モジュールのタスクを1回のGradle実行に並べて各JSONを読む`() = runBlocking {
         val runner = FakeGradleTaskRunner(fs) { _, _ -> FakeRun(writes = writesBoth()) }
-        val result = TemplateDescriptionLoader(runner, fs).load(listOf(archA, archB), emptyMap(), noListener)
+        val result = DefinitionLoader(runner, fs).load(listOf(archA, archB), emptyMap(), noListener)
 
         assertEquals(1, runner.requests.size)
         assertEquals(listOf(":arch-a:katachiInternalTemplatesJson", ":arch-b:katachiInternalTemplatesJson"), runner.requests.single().taskNames)
@@ -44,7 +44,7 @@ class TemplateDescriptionLoaderTest {
         val other = module(":arch", root = Paths.get("/work/other"), rootName = "other")
         fs.write(other.templateDescriptionJson, ContractFixtures.json("arch-b"))
         val runner = FakeGradleTaskRunner(fs) { _, _ -> FakeRun(writes = writesBoth()) }
-        val result = TemplateDescriptionLoader(runner, fs).load(listOf(archA, other), emptyMap(), noListener)
+        val result = DefinitionLoader(runner, fs).load(listOf(archA, other), emptyMap(), noListener)
 
         assertEquals(listOf(archA.linkedRootPath, other.linkedRootPath), runner.requests.map { it.linkedRootPath })
         assertTrue(result is LoadResult.Loaded)
@@ -55,7 +55,7 @@ class TemplateDescriptionLoaderTest {
         val at = Instant.parse("2026-09-27T01:02:03Z")
         val runner = FakeGradleTaskRunner(fs) { _, _ -> FakeRun() }
         fs.write(archA.templateDescriptionJson, ContractFixtures.json("arch-a"), at)
-        val result = TemplateDescriptionLoader(runner, fs).load(listOf(archA), mapOf(archA.id to "0.3.0"), noListener)
+        val result = DefinitionLoader(runner, fs).load(listOf(archA), mapOf(archA.id to "0.3.0"), noListener)
         val snapshot = (result as? LoadResult.Loaded)?.snapshots?.single() ?: throw AssertionError()
         assertEquals(at, snapshot.loadedAt)
         assertEquals("0.3.0", snapshot.katachiVersion)
@@ -65,7 +65,7 @@ class TemplateDescriptionLoaderTest {
     fun `Gradleが失敗したら出力から原因を分類する`() = runBlocking {
         val lines = ContractFixtures.outputLines("task-not-found", Paths.get("/p"))
         val runner = FakeGradleTaskRunner(fs) { _, _ -> FakeRun(lines, GradleRunOutcome.Failed) }
-        val result = TemplateDescriptionLoader(runner, fs).load(listOf(archA), emptyMap(), noListener) as? LoadResult.Failed
+        val result = DefinitionLoader(runner, fs).load(listOf(archA), emptyMap(), noListener) as? LoadResult.Failed
         val failure = (result?.failure as? LoadFailure.Gradle)?.failure
         assertTrue("$failure", failure is GradleFailure.TaskNotFound)
         assertEquals(lines, result?.output)
@@ -74,14 +74,14 @@ class TemplateDescriptionLoaderTest {
     @Test
     fun `成功したのにJSONが無ければその場所を名指しする`() = runBlocking {
         val runner = FakeGradleTaskRunner(fs) { _, _ -> FakeRun() }
-        val result = TemplateDescriptionLoader(runner, fs).load(listOf(archA), emptyMap(), noListener) as? LoadResult.Failed
+        val result = DefinitionLoader(runner, fs).load(listOf(archA), emptyMap(), noListener) as? LoadResult.Failed
         assertEquals(LoadFailure.JsonMissing(archA.templateDescriptionJson), result?.failure)
     }
 
     @Test
     fun `壊れたJSONと版の合わないJSONを別の失敗にする`() = runBlocking {
         val runner = FakeGradleTaskRunner(fs) { _, _ -> FakeRun() }
-        val loader = TemplateDescriptionLoader(runner, fs)
+        val loader = DefinitionLoader(runner, fs)
 
         fs.write(archA.templateDescriptionJson, """{"templates": [""")
         assertTrue((loader.load(listOf(archA), emptyMap(), noListener) as? LoadResult.Failed)?.failure is LoadFailure.MalformedJson)
@@ -96,7 +96,7 @@ class TemplateDescriptionLoaderTest {
         val runner = FakeGradleTaskRunner(fs) { _, _ -> FakeRun(lines = listOf("a", "b"), tasks = listOf(":arch-a:compileTestKotlin"), writes = writesBoth()) }
         val tasks = mutableListOf<String>()
         val lines = mutableListOf<String>()
-        TemplateDescriptionLoader(runner, fs).load(
+        DefinitionLoader(runner, fs).load(
             listOf(archA),
             emptyMap(),
             object : GradleRunListener {
@@ -118,14 +118,14 @@ class TemplateDescriptionLoaderTest {
         val runner = FakeGradleTaskRunner(fs) { _, _ -> throw AssertionError("must not run Gradle") }
         fs.write(archA.templateDescriptionJson, ContractFixtures.json("arch-a"))
         fs.write(archB.templateDescriptionJson, "{")
-        val cached = TemplateDescriptionLoader(runner, fs).readCached(listOf(archA, archB, module(":arch-c")), emptyMap())
+        val cached = DefinitionLoader(runner, fs).readCached(listOf(archA, archB, module(":arch-c")), emptyMap())
         assertEquals(listOf(":arch-a"), cached.map { it.module.gradlePath })
     }
 
     @Test
     fun `cleanでJSONが消えていればキャッシュは空で初回扱いになる`() {
         val runner = FakeGradleTaskRunner(fs) { _, _ -> throw AssertionError("must not run Gradle") }
-        assertEquals(emptyList<Any>(), TemplateDescriptionLoader(runner, fs).readCached(listOf(archA), emptyMap()))
+        assertEquals(emptyList<Any>(), DefinitionLoader(runner, fs).readCached(listOf(archA), emptyMap()))
     }
 
     @Test
@@ -134,7 +134,7 @@ class TemplateDescriptionLoaderTest {
         val runner = FakeGradleTaskRunner(fs) { request, _ ->
             if (request.taskNames.single().startsWith(":arch-a")) FakeRun(writes = writesBoth()) else FakeRun(lines, GradleRunOutcome.Failed)
         }
-        val result = TemplateDescriptionLoader(runner, fs).loadCandidates(listOf(archA, module(":app")), emptyMap(), noListener)
+        val result = DefinitionLoader(runner, fs).loadCandidates(listOf(archA, module(":app")), emptyMap(), noListener)
         assertEquals(2, runner.requests.size)
         assertEquals(listOf(":arch-a"), (result as? LoadResult.Loaded)?.snapshots?.map { it.module.gradlePath })
     }
@@ -143,7 +143,7 @@ class TemplateDescriptionLoaderTest {
     fun `候補の実行がタスク無し以外で失敗したらそこで失敗にする`() = runBlocking {
         val lines = ContractFixtures.outputLines("compile-failure", Paths.get("/p"))
         val runner = FakeGradleTaskRunner(fs) { _, _ -> FakeRun(lines, GradleRunOutcome.Failed) }
-        val result = TemplateDescriptionLoader(runner, fs).loadCandidates(listOf(archA), emptyMap(), noListener)
+        val result = DefinitionLoader(runner, fs).loadCandidates(listOf(archA), emptyMap(), noListener)
         assertTrue(((result as? LoadResult.Failed)?.failure as? LoadFailure.Gradle)?.failure is GradleFailure.CompilationFailed)
     }
 }

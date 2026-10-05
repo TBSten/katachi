@@ -9,7 +9,20 @@ import java.time.Instant
  */
 internal data class ModuleId(val linkedRootPath: Path, val gradlePath: String)
 
-/** A definition module: a Gradle module that has the `katachiInternalTemplatesJson` task. */
+/** Which of katachi's internal tasks a definition module has (design 4.1). */
+internal enum class KatachiCapability {
+    /** `katachiInternalDefinitionJson` (katachi 0.3 and later): the definition model and the templates in one JSON. */
+    Definition,
+
+    /** `katachiInternalTemplatesJson` (katachi 0.2 and later): the templates only. */
+    Templates,
+}
+
+/**
+ * A definition module: a Gradle module that has `katachiInternalDefinitionJson` or
+ * `katachiInternalTemplatesJson`. [capabilities] says which; a module found without a task list
+ * (Android Studio's sync setting, E-30) has none, and loading tries the definition task first.
+ */
 internal data class KatachiModule(
     /** The Gradle path, `:` for the root project. */
     val gradlePath: String,
@@ -18,11 +31,18 @@ internal data class KatachiModule(
     val linkedRootPath: Path,
     /** The linked root's name, shown as `rootName › :path` when several roots are linked. */
     val rootName: String,
+    val capabilities: Set<KatachiCapability> = setOf(KatachiCapability.Templates),
 ) {
     val id: ModuleId get() = ModuleId(linkedRootPath, gradlePath)
 
     /** Where `katachiInternalTemplatesJson` writes, by the contract. */
     val templateDescriptionJson: Path get() = directory.resolve(TEMPLATE_DESCRIPTION_JSON)
+
+    /** Where `katachiInternalDefinitionJson` writes, by the contract (design 1.1). */
+    val definitionJson: Path get() = directory.resolve(DEFINITION_JSON)
+
+    /** Whether loading reads the definition JSON: the module has the definition task, or nobody knows yet. */
+    val readsDefinition: Boolean get() = KatachiCapability.Definition in capabilities || capabilities.isEmpty()
 
     /** `:<path>:<taskName>`, or `:<taskName>` for the root project. */
     fun taskPath(taskName: String): String = if (gradlePath == ":") ":$taskName" else "$gradlePath:$taskName"
@@ -30,6 +50,8 @@ internal data class KatachiModule(
     companion object {
         const val TEMPLATE_DESCRIPTION_JSON: String = "build/katachi/internalTemplatesJson/templateDescription.json"
         const val TEMPLATES_JSON_TASK: String = "katachiInternalTemplatesJson"
+        const val DEFINITION_JSON: String = "build/katachi/internalDefinitionJson/definition.json"
+        const val DEFINITION_JSON_TASK: String = "katachiInternalDefinitionJson"
         const val TEMPLATE_TASK: String = "katachiTemplate"
         const val DESCRIBE_TEMPLATES_TASK: String = "katachiTemplates"
     }
@@ -51,6 +73,11 @@ internal data class DescriptionSnapshot(
     val templates: List<TemplateModel>,
     /** The JSON file's modification time: the "last loaded" of the screen (E-43). */
     val loadedAt: Instant,
+    /**
+     * The definition model, when the module was read through `katachiInternalDefinitionJson` (katachi 0.3 and later);
+     * `null` for a templates-only module. `KatachiProjectService.definitions` is derived from it.
+     */
+    val definition: DefinitionModel? = null,
 )
 
 /**

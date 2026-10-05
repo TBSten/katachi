@@ -48,6 +48,8 @@ import java.nio.file.Path
  */
 internal class IdeEffectsImpl(
     private val project: Project,
+    /** Marks the save of `saveAllDocuments` as the plugin's own for the file watcher (design 4.8). */
+    private val ownSave: OwnSaveMark = OwnSaveMark(),
     /**
      * Runs first inside the SDK calls of the generation from an entry, with [EntrySdkCall] naming which;
      * a test throws from it to play the IDE failing there. Does nothing in the IDE.
@@ -55,7 +57,9 @@ internal class IdeEffectsImpl(
     private val entrySdkProbe: (EntrySdkCall) -> Unit = {},
 ) : IdeEffects {
     override suspend fun saveAllDocuments() {
-        onEdt { sdkCall("save all documents") { writeIntentReadAction { FileDocumentManager.getInstance().saveAllDocuments() } } }
+        onEdt {
+            ownSave.around { sdkCall("save all documents") { writeIntentReadAction { FileDocumentManager.getInstance().saveAllDocuments() } } }
+        }
     }
 
     override suspend fun putLocalHistoryLabel(titles: List<String>): String? {

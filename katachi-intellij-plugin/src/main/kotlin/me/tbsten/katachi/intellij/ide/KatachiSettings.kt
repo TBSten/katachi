@@ -15,8 +15,12 @@ import java.nio.file.Path
 
 /** What [KatachiSettings] writes to the workspace file. */
 internal class KatachiSettingsState : BaseState() {
-    /** "Reload when a definition is saved" (E-44). Off by default: a definition does not compile while being edited. */
-    var autoReloadOnSave by property(false)
+    /**
+     * "Reload when a definition is saved" (E-44). On by default (ide-definition-model decision U-1): only a save of the
+     * definition module's test sources reloads, after two seconds and once Gradle is idle, and a reload that fails
+     * keeps the previous answer.
+     */
+    var autoReloadOnSave by property(true)
     var openAfterGeneration by enum(OpenAfterGeneration.First)
 
     /** The "existing files" combo, remembered per project (spec 04 "入力値の保存"); never "overwrite". */

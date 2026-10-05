@@ -52,7 +52,7 @@
         <projectConfigurable parentId="tools" id="me.tbsten.katachi.intellij.settings" instance="me.tbsten.katachi.intellij.ide.KatachiConfigurable"
                              bundle="messages.KatachiBundle" key="settings.displayName" nonDefaultProject="true"/>
         <!-- The "definition changed" banner (E-44). -->
-        <vfs.asyncListener implementation="me.tbsten.katachi.intellij.ide.DefinitionChangeWatcher"/>
+        <vfs.asyncListener implementation="me.tbsten.katachi.intellij.ide.KatachiFileWatcher"/>
         <!-- The editor notification on files a template fits (design section 1). -->
         <editorNotificationProvider implementation="me.tbsten.katachi.intellij.ide.notification.KatachiEditorNotificationProvider"/>
         <!-- The content of .ktFile().template { } / .ktsFile().template { } highlighted as Kotlin / Kotlin script. -->
@@ -69,5 +69,9 @@
         <group id="katachi.NewGroup" class="me.tbsten.katachi.intellij.ide.newmenu.KatachiNewGroup" popup="true" icon="/icons/katachi.svg">
             <add-to-group group-id="NewGroup" anchor="after" relative-to-action="NewDir"/>
         </group>
+        <!-- Read the definition again through Gradle (design 4.8); the gutter and the notification call it. -->
+        <action id="katachi.RefreshDefinition" class="me.tbsten.katachi.intellij.ide.RefreshDefinitionAction" icon="/icons/katachi.svg"/>
+        <!-- Run the check (:<module>:test) that writes katachi.sarif (design 4.7); the gutter and the notification call it. -->
+        <action id="katachi.RunCheck" class="me.tbsten.katachi.intellij.ide.sarif.RunCheckAction" icon="/icons/katachi.svg"/>
     </actions>
 </idea-plugin>
