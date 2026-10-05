@@ -12,42 +12,63 @@ docs/AGENTS.md の「`public/install/`」の節が「スクリプトを直した
 これまでに不具合が出た形を足して、毎回まとめて動かす。
 
 ```shell
+sh .claude/skills/prerelease/scripts/check-install-kit-smoke.sh                                     # 先に Gradle 無しのスモーク（3〜5 分）
 pgrep -fl GradleWrapperMain                                                                          # ほかの Gradle が走っていないこと
-sh .claude/skills/prerelease/scripts/check-install-kit.sh --release-dir .local/release-v<版>        # 走らせる（15〜20 分）
+sh .claude/skills/prerelease/scripts/check-install-kit.sh --release-dir .local/release-v<版>        # 走らせる（16 種 × 1.5〜2 分 = 25〜35 分）
 sh .claude/skills/prerelease/scripts/check-install-kit.sh --release-dir .local/release-v<版> --only agp,rootjvm   # 一部だけ
 sh .claude/skills/prerelease/scripts/check-install-kit.sh --release-dir .local/release-v<版> --lang en --only agp,groovyinc   # 英語の出力（日本語が残れば NG）
 ```
 
+- スモーク（`check-install-kit-smoke.sh`。Gradle を起動しない）: 合成のプロジェクトにサブコマンドを当て、終了コードと出力の
+  grep で確かめる。guide の目次とフェンス、docs --topic、preferences、answers、summary の再開欄、add の 8 並列と件数検査、
+  ロックの待ちと残骸、init の既存ファイルと --module-dir、lint の exit 1 と制約 Role の緩和、add role / excluded の拒否、
+  scaffold --deps の衝突、test の exit 2 と要約、data get のキー、の 24 ケース（69 判定）。`docs --topic` は
+  `docs/dist/llms-full.txt` を読む（無ければ `--llms-full <path>` か、docs の build）。`KSH=dash` で kit を別のシェルで動かせる。
+  fixture の本番の前に回し、全部緑にしてから Gradle を使う方へ進む
 - やること（スクリプトの冒頭のコメントに詳細）:
     1. `sh -n` と `/bin/bash -n`（macOS の bash 3.2）で `katachi-install.sh` の構文を確かめる
     2. リポジトリの katachi を mavenLocal に publish する（`publishToMavenLocal -Pkatachi.skipSigning`）
     3. 合成の Gradle プロジェクト（fixture。定義は `scripts/install-kit-fixtures.sh`）ごとに、順番に
-       `KATACHI_DOCS=file://<repo>/docs/public`・`KATACHI_MAVEN_LOCAL=1` で `init --lang ja --katachi <今回の版>` →
-       `scaffold` → `./gradlew :architecture-test:test`。そのあとルートにファイルを1つ足して、`--rerun` なしでもう一度 test
+       `KATACHI_DOCS=file://<repo>/docs/public`・`KATACHI_MAVEN_LOCAL=1` で `init --lang ja --katachi <今回の版>`
+       （`fx_module_dir_<名前>` がある fixture は `--module-dir` も）→ `scaffold`（`fx_scaffold_args_<名前>` があればその引数も）→
+       `./gradlew <KATACHI_MODULE_PATH>:test`。そのあとルートにファイルを1つ足して、`--rerun` なしでもう一度 test
 - 判定（fixture ごと。1つでも NG の欄があれば NG）:
-    - init・scaffold: 終了コードが 0。init が Kotlin の版を検出できなかったときだけ、手順書どおり `--kotlin` を渡す
-    - settings の include: `architecture-test` の include が1回だけ、最後の include 文の直後（include が無ければ末尾）に入った
+    - init・scaffold: 終了コードが 0。init が Kotlin の版を検出できなかったときだけ、手順書どおり `--kotlin` を渡す。
+      `fx_expect_<名前>` がある fixture は生成物の grep 検査（toml の別名、`alias(libs.plugins.katachi)`、`FunSpec` など）も scaffold の欄
+    - settings の include: 検査用モジュール（init が出す `KATACHI_MODULE_PATH`。既定 `:architecture-test`）の include が1回だけ、
+      最後の include 文の直後（include が無ければ末尾）に入った
     - test（配線）: **「定義していないファイルが Unexpected として出て落ちる」なら OK**（`architecture { }` が空なので、
       これが正常）。構文エラー・プラグインの衝突・解決できない・Unexpected 以外の違反で落ちたら NG。通ってしまっても NG
     - 2回目が走ったか: test タスクが UP-TO-DATE にならずに実行され、足したファイルが Unexpected として出た
     - settings に `dependencyResolutionManagement` が無い fixture は、scaffold の警告どおり mavenLocal() と mavenCentral() を
       足してから test を走らせる（表の「形」の欄に注記が出る）
-- fixture（足すときは `install-kit-fixtures.sh` の `FIXTURES` と3つの関数を揃える）:
+    - `fx_toolchain_<名前>` がある fixture は、生成された build.gradle.kts の `jvmToolchain(N)` が期待どおりかも見る（JDK 21 だけの
+      環境を GRADLE_USER_HOME の分離で再現する）
+- fixture（足すときは `install-kit-fixtures.sh` の `FIXTURES` と3つの関数 `fx_<名前>` / `fx_desc_<名前>` / `fx_anchor_<名前>` を揃える。
+  任意で `fx_module_dir_` / `fx_scaffold_args_` / `fx_expect_` / `fx_toolchain_`）:
 
-  | fixture      | 形                                                                                     |
-  |--------------|----------------------------------------------------------------------------------------|
-  | agp          | AGP + version catalog                                                                  |
-  | noroot       | ルートの build ファイル無し（Kotlin は gradle.properties の版だけ）                    |
-  | rootjvm      | Kotlin JVM が既にルートに居る（include 無し）                                          |
-  | subonly      | サブプロジェクトだけが版付きで Kotlin を宣言（kdoctor の形）                           |
-  | groovyinc    | Groovy DSL の複数行 include                                                            |
-  | multiinc     | Kotlin DSL の複数行 `include(`（後ろにブロック）                                       |
-  | withid       | ルートに `plugins.withId("org.jetbrains.kotlin.jvm")` の文字列だけ                     |
-  | buildscript  | buildscript の classpath に kotlin-gradle-plugin                                       |
-  | catalogalias | catalog の別名の Kotlin（`jvm = { id = "org.jetbrains.kotlin.jvm" }`）                 |
+  | fixture      | 形                                                                                                   |
+  |--------------|------------------------------------------------------------------------------------------------------|
+  | agp          | AGP + version catalog                                                                                |
+  | noroot       | ルートの build ファイル無し（Kotlin は gradle.properties の版だけ）                                  |
+  | rootjvm      | Kotlin JVM が既にルートに居る（include 無し）                                                        |
+  | subonly      | サブプロジェクトだけが版付きで Kotlin を宣言（kdoctor の形）                                         |
+  | groovyinc    | Groovy DSL の複数行 include                                                                          |
+  | multiinc     | Kotlin DSL の複数行 `include(`（後ろにブロック）                                                     |
+  | withid       | ルートに `plugins.withId("org.jetbrains.kotlin.jvm")` の文字列だけ                                   |
+  | buildscript  | buildscript の classpath に kotlin-gradle-plugin                                                     |
+  | catalogalias | catalog の別名の Kotlin（`jvm = { id = "org.jetbrains.kotlin.jvm" }`）                               |
+  | jdkonly      | JDK 21 だけ・foojay 無し・toolchain の設定無し（`jvmToolchain` を書かない）                          |
+  | tc21         | JDK 21 だけ・foojay 無し・ほかのモジュールに `jvmToolchain(21)`（21 を写す）                         |
+  | nestedmod    | `init --module-dir static-analysis/katachi`（include とタスクのパスが入れ子）                        |
+  | catalogwrite | catalog に `katachi` / `katachiKonsist` / `junit-*` を追記、`libs.katachi` で参照、`--force` の 2 回目で重複しない |
+  | kotestdetect | catalog に `kotest-runner-junit5`（検出して `FunSpec` の雛形、依存は kotest）                        |
+  | tcval        | build-logic の convention plugin に `private val jvmTarget = 21` + `jvmToolchain(jvmTarget)`（21 を読む） |
+  | buildlogic   | includeBuild の build-logic に kotlin-gradle-plugin（ルートは convention を apply false。placement root） |
 
 - 出力: `.local/release-v<版>/install-kit.md` に結果の表（fixture / 形 / init / scaffold / settings の include /
-  test（配線）/ 2回目が走ったか / 結果 / ログ）。fixture とログは `.local/release-v<版>/tmp/install-kit/`。
+  test（配線）/ 2回目が走ったか / 結果 / ログ）。形の欄の（）に検査用モジュールの置き場所とテストのフレームワークが出る。
+  fixture とログは `.local/release-v<版>/tmp/install-kit/`。
   1つでも NG なら終了コード 1
 - **オーケストレータが自分で走らせてよい**（判断の要らない作業。background で起動し、終わったら結果の表だけ読む）
 - Gradle を使う。8・6-1・5 のサンプルを動かす作業とは重ねない。fixture の project cache は
