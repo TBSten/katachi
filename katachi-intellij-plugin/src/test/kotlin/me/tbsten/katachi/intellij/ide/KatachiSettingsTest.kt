@@ -9,9 +9,9 @@ import java.nio.file.Path
 
 internal class KatachiSettingsTest : AnalysisTestBase() {
 
-    fun `test 既定は自動で再読み込みせず、生成後は最初の1ファイルを開き、既存ファイルは確認する`() {
+    fun `test 既定は保存で自動で再読み込みし、生成後は最初の1ファイルを開き、既存ファイルは確認する`() {
         val settings = KatachiSettings()
-        assertFalse(settings.autoReloadOnSave)
+        assertTrue(settings.autoReloadOnSave)
         assertEquals(OpenAfterGeneration.First, settings.openAfterGeneration)
         assertEquals(OnExistingChoice.Fail, settings.onExisting)
         assertEmpty(settings.collapsedModules)
@@ -20,7 +20,7 @@ internal class KatachiSettingsTest : AnalysisTestBase() {
     fun `test 保存した値を読み戻せる`() {
         val collapsed = setOf(ModuleId(Path.of("/work/project"), ":arch-a"), ModuleId(Path.of("/work/other"), ":"))
         val written = KatachiSettings().apply {
-            autoReloadOnSave = true
+            autoReloadOnSave = false
             openAfterGeneration = OpenAfterGeneration.All
             onExisting = OnExistingChoice.Skip
             collapsedModules = collapsed
@@ -29,7 +29,7 @@ internal class KatachiSettingsTest : AnalysisTestBase() {
         val read = KatachiSettings()
         read.loadState(XmlSerializer.deserialize(XmlSerializer.serialize(written.state), KatachiSettingsState::class.java))
 
-        assertTrue(read.autoReloadOnSave)
+        assertFalse(read.autoReloadOnSave)
         assertEquals(OpenAfterGeneration.All, read.openAfterGeneration)
         assertEquals(OnExistingChoice.Skip, read.onExisting)
         assertEquals(collapsed, read.collapsedModules)
@@ -80,7 +80,7 @@ internal class KatachiSettingsTest : AnalysisTestBase() {
             notifyOnFileWithContent = false
             notifyOnContentOnce = false
             autoLoadTemplates = false
-            autoReloadOnSave = true
+            autoReloadOnSave = false
         }
 
         val element = XmlSerializer.serialize(written.state)

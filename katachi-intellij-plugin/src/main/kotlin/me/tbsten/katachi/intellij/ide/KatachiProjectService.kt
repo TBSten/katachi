@@ -13,9 +13,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.async
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -29,20 +27,30 @@ import kotlinx.coroutines.withContext
 import me.tbsten.katachi.intellij.data.NioProjectFileSystem
 import me.tbsten.katachi.intellij.data.ProjectFileSystem
 import me.tbsten.katachi.intellij.data.detect.SyncedProjectSource
+import me.tbsten.katachi.intellij.data.detect.detectDefinitionModules
 import me.tbsten.katachi.intellij.data.generate.GenerationCatalogPort
 import me.tbsten.katachi.intellij.data.generate.GenerationCatalogReload
 import me.tbsten.katachi.intellij.data.generate.SingleFileGeneration
 import me.tbsten.katachi.intellij.data.generate.SingleFileGenerationRequest
 import me.tbsten.katachi.intellij.data.generate.SingleFileGenerationResult
+import me.tbsten.katachi.intellij.data.gradle.GradleActivity
 import me.tbsten.katachi.intellij.data.gradle.GradleTaskRunner
 import me.tbsten.katachi.intellij.data.gradle.SerialGradleTaskRunner
 import me.tbsten.katachi.intellij.data.load.LoadResult
 import me.tbsten.katachi.intellij.data.placement.PlacementIndexState
 import me.tbsten.katachi.intellij.data.placement.TemplatePlacementIndex
 import me.tbsten.katachi.intellij.data.placement.placementRootOf
+import me.tbsten.katachi.intellij.data.watch.FileChanges
+import me.tbsten.katachi.intellij.data.watch.WatchedModule
+import me.tbsten.katachi.intellij.ide.definition.DeclarationSiteResolver
+import me.tbsten.katachi.intellij.ide.definition.DefinitionStatePublisher
+import me.tbsten.katachi.intellij.ide.definition.RefreshReason
 import me.tbsten.katachi.intellij.ide.entry.EntryEffectsImpl
+import me.tbsten.katachi.intellij.model.DefinitionState
+import me.tbsten.katachi.intellij.model.DetectionResult
 import me.tbsten.katachi.intellij.model.DescriptionSnapshot
 import me.tbsten.katachi.intellij.model.KatachiModule
+import me.tbsten.katachi.intellij.model.answer
 import me.tbsten.katachi.intellij.presentation.FormState
 import me.tbsten.katachi.intellij.presentation.IdeEffects
 import me.tbsten.katachi.intellij.presentation.KatachiIntent
@@ -71,14 +79,24 @@ internal data class KatachiPorts(
     val refreshNotifications: (() -> Unit)? = null,
     /** `null`: [TemplatePlacementIndex.build] over [placementRootOf]. Tests wrap it to see where it runs. */
     val buildIndex: ((List<DescriptionSnapshot>) -> TemplatePlacementIndex)? = null,
+    /** `null`: a new one fed by the IDE's ExternalSystem tasks. Tests play a Gradle build with it. */
+    val gradleActivity: GradleActivity? = null,
+    /** How long the automatic reload waits after the last save of a test source (design 4.8). Tests shorten it. */
+    val autoReloadDelayMillis: Long = AutoReload.AUTO_RELOAD_DELAY_MILLIS,
+    /** Set while [effects] saves the editors for a load: the file watcher's events of that save are not changes of the user. */
+    val ownSave: OwnSaveMark = OwnSaveMark(),
 ) {
     companion object {
-        fun of(project: Project): KatachiPorts = KatachiPorts(
-            syncedProject = ProjectDataModuleSource(project),
-            runner = ExternalSystemGradleTaskRunner(project),
-            fileSystem = NioProjectFileSystem,
-            effects = IdeEffectsImpl(project),
-        )
+        fun of(project: Project): KatachiPorts {
+            val ownSave = OwnSaveMark()
+            return KatachiPorts(
+                syncedProject = ProjectDataModuleSource(project),
+                runner = ExternalSystemGradleTaskRunner(project),
+                fileSystem = NioProjectFileSystem,
+                effects = IdeEffectsImpl(project, ownSave),
+                ownSave = ownSave,
+            )
+        }
     }
 }
 
@@ -104,13 +122,18 @@ internal class KatachiProjectService(
 
     private val settings: KatachiSettings? = sdkCall("read the katachi settings") { KatachiSettings.getInstance(project) }.getOrNull()
 
+    /** Whether Gradle runs in the IDE for this project: this plugin's builds and the IDE's (design U-12). */
+    val gradleActivity: GradleActivity = ports.gradleActivity ?: GradleActivity()
+
     /**
-     * The project's one Gradle runner: the tool window, the entries and the generation from an entry
-     * all run through it, one build at a time, so they never fight over the same `build/`.
+     * The project's one Gradle runner: the tool window, the entries, the generation from an entry and the
+     * check (`katachi.RunCheck`) all run through it, one build at a time, so they never fight over the same `build/`.
      */
-    val gradleRunner: GradleTaskRunner = SerialGradleTaskRunner(ports.runner)
+    val gradleRunner: GradleTaskRunner = SerialGradleTaskRunner(ports.runner, gradleActivity)
 
     private val fileSystem: ProjectFileSystem = ports.fileSystem
+    private val syncedProject: SyncedProjectSource = ports.syncedProject
+    private val ownSave: OwnSaveMark = ports.ownSave
     private val effects: IdeEffects = ports.effects
     private val importInProgress: () -> Boolean = ports.importInProgress ?: ::platformImportInProgress
     private val refreshNotifications: () -> Unit = ports.refreshNotifications ?: ::updateAllNotifications
@@ -139,13 +162,31 @@ internal class KatachiProjectService(
         syncedProject = ports.syncedProject,
         runner = gradleRunner,
         fileSystem = ports.fileSystem,
-        effects = ports.effects,
+        effects = effects,
         initial = KatachiScreenState(
             form = settings?.let { FormState(onExisting = it.onExisting) } ?: FormState(),
             view = settings?.let { ViewState(collapsedModules = it.collapsedModules) } ?: ViewState(),
         ),
-        loadsWithoutUser = { settings?.let { sdkCall("read the auto-load setting") { it.autoLoadTemplates }.getOrNull() } ?: true },
+        loadsWithoutUser = ::loadsWithoutUser,
     )
+
+    private val definitionPublisher = DefinitionStatePublisher(scope, viewModel, loadsWithoutUser = ::loadsWithoutUser)
+
+    /**
+     * The definition model (design 4.3), derived from [viewModel]'s state as [placementIndex] is: one load
+     * path. `KatachiDefinitionService` publishes it to the two features.
+     */
+    val definitions: StateFlow<DefinitionState> = definitionPublisher.state
+
+    /** Where the definition's `FileName.kt:NN` are, among the definition modules' test sources (design 4.6). */
+    val siteResolver: DeclarationSiteResolver = DeclarationSiteResolver(project, scope)
+
+    private val autoReload = AutoReload(scope, viewModel.state, gradleActivity, ports.autoReloadDelayMillis) {
+        withContext(Dispatchers.EDT) { viewModel.reloadIfIdle() }
+    }
+
+    /** Whether an automatic reload waits for its delay or for Gradle. */
+    val isAutoReloadPending: Boolean get() = autoReload.isPending
 
     /**
      * The generation from the editor notification and the New menu (E3) over this project's one runner,
@@ -166,6 +207,8 @@ internal class KatachiProjectService(
         }
 
     init {
+        // Without it the automatic reload waits only for this plugin's own builds (design U-12).
+        if (ports.gradleActivity == null) watchIdeGradle(project, gradleActivity, this)
         // Without it the list does not follow a Gradle sync; ⟳ still reloads it.
         sdkCall("listen to Gradle syncs") {
             project.messageBus.connect(this).subscribe(
@@ -177,6 +220,7 @@ internal class KatachiProjectService(
 
                     override fun onImportFinished(projectPath: String?) {
                         importEnded()
+                        siteResolver.invalidateRoots()
                         dispatchOnEdt(KatachiIntent.SyncCompleted)
                         if (ensureAfterImport) ensureLoaded()
                     }
@@ -210,22 +254,62 @@ internal class KatachiProjectService(
         }
     }
 
-    private var autoReload: Job? = null
+    /**
+     * Files changed (the file watcher, design 4.8): a change of a definition module's sources or build script
+     * shows the "definition changed" banner and marks the definition stale, and drops the walk of its test
+     * sources. A change of its test sources with "reload when saved" on reloads once the user stops saving
+     * and Gradle is idle. Saves this plugin makes before a load or a generation are its own (`OwnSaveMark`):
+     * the load reads what they wrote, so they neither mark the definition stale nor schedule a reload. Nothing
+     * loaded in this session (loading without the user turned off): a change does not start one.
+     */
+    fun onFilesChanged(changes: FileChanges) {
+        if (changes.definitionChanged.isEmpty() || ownSave.isSaving || viewModel.definitionModules.isEmpty()) return
+        dispatchOnEdt(KatachiIntent.DefinitionChanged)
+        definitionPublisher.markStale()
+        siteResolver.invalidate(changes.definitionChanged)
+        if (changes.testSourcesChanged.isEmpty() || !autoReloadsOnSave() || !viewModel.loadStarted.value) return
+        autoReload.schedule()
+    }
+
+    /** An explicit update of the definition (design 4.5 `refresh`): a sync re-detects, the rest reload through Gradle. */
+    fun refreshDefinition(reason: RefreshReason) {
+        dispatchOnEdt(if (reason == RefreshReason.SyncCompleted) KatachiIntent.SyncCompleted else KatachiIntent.Reload)
+    }
 
     /**
-     * A definition file changed (E-44): the banner, and with "reload when saved" a reload two seconds
-     * after the last change. Saves made by a running load are its own and schedule nothing.
+     * The definition modules as the file watcher sees them, with their test source roots: the ones in the synced
+     * data too before anything was detected, so that the SARIF of a project nobody loaded is followed.
      */
-    fun onDefinitionChanged() {
-        dispatchOnEdt(KatachiIntent.DefinitionChanged)
-        // Nothing loaded in this session (loading without the user turned off): a change does not start one.
-        if (settings?.autoReloadOnSave != true || viewModel.state.value.loading != null || !viewModel.loadStarted.value) return
-        autoReload?.cancel()
-        autoReload = scope.launch {
-            delay(AUTO_RELOAD_DELAY_MILLIS)
-            withContext(Dispatchers.EDT) { viewModel.dispatch(KatachiIntent.Reload) }
+    fun watchedModules(): List<WatchedModule> = definitionModules().map { WatchedModule(it, siteResolver.testRootsOf(it)) }
+
+    /**
+     * The definition modules for the check and the SARIF reading: the ones the tool window's detection found, else
+     * the ones in the synced data (no Gradle), so that they are known before anything was loaded (the check
+     * from Find Action, the SARIF already on disk). Reads the synced data at most once between two syncs: call it off the EDT.
+     */
+    fun definitionModules(): List<KatachiModule> =
+        viewModel.definitionModules.ifEmpty { modulesInSyncedData ?: readModulesInSyncedData().also { modulesInSyncedData = it } }
+
+    @Volatile private var modulesInSyncedData: List<KatachiModule>? = null
+
+    private fun readModulesInSyncedData(): List<KatachiModule> =
+        when (val result = sdkCall("detect the katachi definition modules") { detectDefinitionModules(syncedProject.read()) }.getOrNull()) {
+            is DetectionResult.Found -> result.modules
+            is DetectionResult.TaskListMissing -> result.candidates
+            else -> emptyList()
         }
+
+    /** The project roots under which a change makes the check's results stale: each definition's, else its Gradle root. */
+    fun projectRoots(): List<Path> {
+        val answered = definitions.value.answer?.definitions.orEmpty().mapNotNull { it.definition?.projectRoot }
+        return answered.ifEmpty { definitionModules().map { it.linkedRootPath }.distinct() }
     }
+
+    private fun autoReloadsOnSave(): Boolean =
+        settings?.let { sdkCall("read the reload-when-saved setting") { it.autoReloadOnSave }.getOrNull() } == true
+
+    private fun loadsWithoutUser(): Boolean =
+        settings?.let { sdkCall("read the auto-load setting") { it.autoLoadTemplates }.getOrNull() } ?: true
 
     private val ensureScheduled = AtomicBoolean(false)
 
@@ -294,6 +378,7 @@ internal class KatachiProjectService(
 
     private fun importEnded() {
         importsRunning.updateAndGet { (it - 1).coerceAtLeast(0) }
+        modulesInSyncedData = null
     }
 
     private fun platformImportInProgress(): Boolean = sdkCall("ask whether Gradle is importing") {
@@ -312,8 +397,6 @@ internal class KatachiProjectService(
     override fun dispose() = Unit
 
     companion object {
-        private const val AUTO_RELOAD_DELAY_MILLIS = 2_000L
-
         /** Call inside [sdkCall]. */
         fun getInstance(project: Project): KatachiProjectService = project.service()
     }

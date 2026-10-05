@@ -11,7 +11,7 @@ import me.tbsten.katachi.intellij.data.generate.templateArgsOf
 import me.tbsten.katachi.intellij.data.gradle.GradleRunListener
 import me.tbsten.katachi.intellij.data.gradle.GradleRunOutcome
 import me.tbsten.katachi.intellij.data.load.LoadResult
-import me.tbsten.katachi.intellij.data.load.TemplateDescriptionLoader
+import me.tbsten.katachi.intellij.data.load.DefinitionLoader
 import me.tbsten.katachi.intellij.model.ConflictChoice
 import me.tbsten.katachi.intellij.model.ConflictQuestion
 import me.tbsten.katachi.intellij.model.GeneratedFile
@@ -157,7 +157,7 @@ class RealKatachiContractTest {
         val runner = FakeGradleTaskRunner(fs) { _, _ ->
             FakeRun(lines, writes = mapOf(definition.templateDescriptionJson to ContractFixtures.json("sample-jvm")))
         }
-        val result = TemplateDescriptionLoader(runner, fs).load(listOf(definition), emptyMap(), object : GradleRunListener {})
+        val result = DefinitionLoader(runner, fs).load(listOf(definition), emptyMap(), object : GradleRunListener {})
 
         val loaded = result as? LoadResult.Loaded ?: throw AssertionError("$result")
         assertEquals(listOf("domain.Service"), loaded.snapshots.single().templates.map { it.template })

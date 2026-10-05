@@ -25,7 +25,7 @@ import me.tbsten.katachi.intellij.data.gradle.GradleRunListener
 import me.tbsten.katachi.intellij.data.gradle.GradleTaskRunner
 import me.tbsten.katachi.intellij.data.gradle.SerialGradleTaskRunner
 import me.tbsten.katachi.intellij.data.load.LoadResult
-import me.tbsten.katachi.intellij.data.load.TemplateDescriptionLoader
+import me.tbsten.katachi.intellij.data.load.DefinitionLoader
 import me.tbsten.katachi.intellij.model.ConflictQuestion
 import me.tbsten.katachi.intellij.model.DescriptionSnapshot
 import me.tbsten.katachi.intellij.model.DetectionResult
@@ -74,7 +74,7 @@ internal class KatachiToolWindowViewModel(
     val state: StateFlow<KatachiScreenState> = mutableState.asStateFlow()
 
     private val runner: GradleTaskRunner = runner as? SerialGradleTaskRunner ?: SerialGradleTaskRunner(runner)
-    private val loader = TemplateDescriptionLoader(this.runner, fileSystem)
+    private val loader = DefinitionLoader(this.runner, fileSystem)
 
     // Written on the EDT or in the background, read on the other.
     @Volatile private var detection: DetectionResult? = null
@@ -157,10 +157,18 @@ internal class KatachiToolWindowViewModel(
 
     /** ⟳ reads the synced data again first (no Gradle), so a module added since shows too. */
     private fun reload() {
-        val current = mutableState.value
-        if (current.generation is GenerationState.Running || loadJob?.isActive == true) return
+        reloadIfIdle()
+    }
+
+    /**
+     * [KatachiIntent.Reload], reporting whether it started: `false` when a detection, a load or a generation is
+     * still going, whose end the caller (the automatic reload) waits for and then asks again. On the EDT.
+     */
+    fun reloadIfIdle(): Boolean {
+        if (mutableState.value.generation is GenerationState.Running || loadJob?.isActive == true) return false
         mutableLoadStarted.value = true
         launchLoad(detect = true)
+        return true
     }
 
     /** The first load of the session; after a detection of [detectOnly] that may still run. */
@@ -256,10 +264,11 @@ internal class KatachiToolWindowViewModel(
     private suspend fun detect(onlyWhenModulesChanged: Boolean = false): Boolean {
         mutableState.update { it.copy(phase = if (it.snapshots.isEmpty()) ScreenPhase.Initializing else it.phase) }
         // Walking the synced data and parsing the cached JSON are too slow for the EDT (a large Android build).
-        val (result, cached) = withContext(ioDispatcher) {
+        val (detected, cached) = withContext(ioDispatcher) {
             val found = detectDefinitionModules(syncedProject.read())
             found to if (found is DetectionResult.Found) loader.readCached(found.modules, found.katachiVersions) else emptyList()
         }
+        val result = withKnownCapabilities(detected, mutableState.value.modules)
         val modules = when (result) {
             is DetectionResult.Found -> result.modules
             is DetectionResult.TaskListMissing -> result.candidates
@@ -294,13 +303,19 @@ internal class KatachiToolWindowViewModel(
         }
         effects.saveAllDocuments()
         val modules = mutableState.value.modules
-        val result = when (val found = detection) {
+        val found = detection
+        val result = when (found) {
             is DetectionResult.TaskListMissing -> loader.loadCandidates(found.candidates, versions(), listener)
             else -> loader.load(modules, versions(), listener)
         }
+        // A candidate that answered a task has it: the next load runs that task only, and 0.2.x is told from 0.3.
+        val answered = if (found is DetectionResult.TaskListMissing && result is LoadResult.Loaded) result.snapshots.associate { it.module.id to it.module } else emptyMap()
+        if (found is DetectionResult.TaskListMissing && answered.isNotEmpty()) {
+            detection = DetectionResult.TaskListMissing(found.candidates.map { answered[it.id] ?: it })
+        }
         mutableState.update { state ->
             when (result) {
-                is LoadResult.Loaded -> applyLoaded(state, result.snapshots)
+                is LoadResult.Loaded -> applyLoaded(state.copy(modules = state.modules.map { answered[it.id] ?: it }), result.snapshots)
                 is LoadResult.Failed -> applyLoadFailed(state, result.failure, result.output)
             }
         }
@@ -464,6 +479,20 @@ private fun provisionalSnapshotsOf(
     cached: List<DescriptionSnapshot>,
 ): List<DescriptionSnapshot> = modules.mapNotNull { module ->
     shown.firstOrNull { it.module.id == module.id }?.copy(module = module) ?: cached.firstOrNull { it.module.id == module.id }
+}
+
+/**
+ * [detected] with the capabilities [known] modules already answered with: a sync without a task list names the
+ * candidates but not their tasks (design 4.1), and what a load found out must not be forgotten by the next detection.
+ */
+private fun withKnownCapabilities(detected: DetectionResult, known: List<KatachiModule>): DetectionResult {
+    if (detected !is DetectionResult.TaskListMissing) return detected
+    return DetectionResult.TaskListMissing(
+        detected.candidates.map { candidate ->
+            val capabilities = known.firstOrNull { it.id == candidate.id }?.capabilities.orEmpty()
+            if (capabilities.isEmpty()) candidate else candidate.copy(capabilities = capabilities)
+        },
+    )
 }
 
 /** An unexpected exception as one line for the error details. */
