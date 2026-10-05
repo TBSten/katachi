@@ -6,6 +6,7 @@ import me.tbsten.katachi.dsl.LayoutEntry
 import me.tbsten.katachi.dsl.Role
 import me.tbsten.katachi.dsl.files.internal.findProjectRoot
 import me.tbsten.katachi.dsl.internal.LayoutCaptures
+import me.tbsten.katachi.dsl.internal.fillCapturedPath
 import me.tbsten.katachi.dsl.internal.ModuleIndex
 import me.tbsten.katachi.dsl.internal.ModuleMiss
 import me.tbsten.katachi.dsl.internal.Template
@@ -104,7 +105,7 @@ private fun templateFileFor(
     // path may have folded into one entry, and only `templateCaptures` is guaranteed to be the
     // one `.template { }` was actually attached to -- see `LayoutEntry.templateCaptures`.
     val variant = entry.templateCaptures ?: entry.captureVariants.firstOrNull() ?: LayoutCaptures.NONE
-    val missingPathCaptures = variant.pathCaptures.map { it.name }.filterNot { it in values }
+    val missingPathCaptures = variant.pathCaptures.map { it.name }.distinct().filterNot { it in values }
     if (missingPathCaptures.isNotEmpty()) {
         throw missingCaptureException(role, entries, missingPathCaptures, template.declaredAt, fileName = null, existingValues)
     }
@@ -112,7 +113,9 @@ private fun templateFileFor(
     // Step 5: check the values, both on their own and once filled into the whole segment.
     requireValidFilledSegments(role, entry, variant, values)
 
-    val path = fillCapturedPath(entry.path, variant, values)
+    // A derived occurrence reads the converted value of its plain capture; the same name on two
+    // levels reads the one value twice.
+    val path = fillCapturedPath(entry.path, variant, values) { filledValueOf(it, values) }
 
     // Step 6: the filled path has to match the very pattern it was filled from -- structurally
     // certain once every capture has a valid value, so a mismatch here is katachi's own bug.

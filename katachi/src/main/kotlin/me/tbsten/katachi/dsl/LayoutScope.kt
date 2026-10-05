@@ -194,31 +194,37 @@ public sealed interface LayoutScope : FileConstraintScope {
      * Names a wildcard: a marker `capture("feature")` embeds in a layout key, read back out
      * wherever the key is used and replaced with a plain `*` before the check ever sees it.
      *
-     * Substituting `"*"` for every `capture(...)` in a definition changes nothing about what is
-     * checked or about the flattened layout -- the name is only what a template fills in,
-     * generating a file for the role from the level's value at `--arg feature=...`. Because it
-     * is an ordinary `String`, it can name a whole level (`capture("feature")`) or part of one:
-     * `"${capture("fileName")}Screen".ktFile()` and `"feature-${capture("x")}"` both work, with
-     * no overload of their own.
+     * As long as a name is written once along a path, substituting `"*"` for the `capture(...)`
+     * changes nothing about what is checked or about the flattened layout -- the name is only
+     * what a template fills in, generating a file for the role from the level's value at
+     * `--arg feature=...`. Because it is an ordinary `String`, it can name a whole level
+     * (`capture("feature")`) or part of one: `"${capture("fileName")}Screen".ktFile()` and
+     * `"feature-${capture("x")}"` both work, with no overload of their own.
      *
-     * The same name may appear once along one path; a different path of the same role may reuse
-     * it, and then the two share the one parameter. Two captures may not sit directly next to
-     * each other with nothing between them -- see [KatachiAdjacentCaptureException] -- and a
-     * name written where no layout key ever reads it is refused too, see
-     * [KatachiStrayCaptureTokenException].
+     * The same name written twice along one path is the declaration that the two levels read the
+     * same value: the check then allows only a file whose levels agree, and reports the others as
+     * `[CaptureMismatch]`; a template fills both from the one `--arg`. A naming conversion on the
+     * token -- `"${capture("feature").pascalCase}Screen"` -- derives that level from the plain
+     * `capture("feature")` of the same path in the same way (see [nameWords]). A different path of
+     * the same role may reuse a name freely, and then the two paths only share the one parameter.
+     * Two captures may not sit directly next to each other with nothing between them -- see
+     * [KatachiAdjacentCaptureException] -- and a name written where no layout key ever reads it
+     * is refused too, see [KatachiStrayCaptureTokenException].
      *
-     * ## Example 1: Naming a whole level, and part of one
+     * ## Example 1: Naming a whole level, part of one, and tying two levels together
      * ```kt
      * layout {
      *   "feature" / capture("feature") / "src" / "main" / "kotlin" / "${capture("fileName")}ViewModel.kt".file()
+     *   // feature/home/.../home/HomeScreen.kt is allowed; feature/home/.../settings/HomeScreen.kt is not
+     *   "feature" / capture("feature") / "src" / "main" / "kotlin" / capture("feature") / "${capture("feature").pascalCase}Screen.kt".file()
      * }
      * ```
      *
      * @param name the parameter name, following the same rule as a role name
      *   (`[A-Za-z][A-Za-z0-9_-]*`).
      * @throws KatachiInvalidIdentifierException when [name] is not an identifier.
-     * @throws KatachiDuplicateCaptureException when [name] is already used along the same path,
-     *   noticed when the layout is flattened.
+     * @throws KatachiDerivedCaptureWithoutSourceException when a conversion is applied to a name
+     *   that is not also written plain on the same path, noticed when the layout is flattened.
      * @throws KatachiAdjacentCaptureException when this token ends up touching another wildcard
      *   with nothing literal between them, noticed when the layout is flattened.
      */

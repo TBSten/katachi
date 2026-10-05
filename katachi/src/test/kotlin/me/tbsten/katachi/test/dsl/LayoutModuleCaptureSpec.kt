@@ -7,7 +7,6 @@ import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
 import io.kotest.matchers.string.shouldNotContain
 import me.tbsten.katachi.dsl.DeclarationKind
-import me.tbsten.katachi.dsl.KatachiDuplicateCaptureException
 import me.tbsten.katachi.dsl.KatachiInvalidIdentifierException
 import me.tbsten.katachi.dsl.gradle.*
 import me.tbsten.katachi.dsl.internal.LayoutCaptures
@@ -63,7 +62,7 @@ class LayoutModuleCaptureSpec : FreeSpec({
 
             entries.single { it.path == "feature/*/*/*Screen.kt" }.captureVariants shouldBe listOf(
                 LayoutCaptures(
-                    pathCaptures = listOf(PathCapture(2, "pkg")),
+                    pathCaptures = listOf(PathCapture(2, 0, "pkg", null)),
                     moduleCapture = ModuleCapture(":feature:*", listOf("feature")),
                 ),
             )
@@ -73,15 +72,11 @@ class LayoutModuleCaptureSpec : FreeSpec({
     }
 
     "宣言時の検査" - {
-        "1つの module key で同じ名前を2回使うと KatachiDuplicateCaptureException" {
-            val failure = shouldThrow<KatachiDuplicateCaptureException> {
-                layoutOf { ":core:${capture("x")}:${capture("x")}".module { } }
-            }
+        "1つの module key で同じ名前を2回使うと、その名前は同じ値の宣言になる（束縛は LayoutCaptureSpec）" {
+            val entries = layoutOf { ":core:${capture("x")}:${capture("x")}".module { "a.kt".file() } }
 
-            failure.name shouldBe "x"
-            failure.path shouldBe ":core:*:*"
-            failure.role shouldBe null
-            withClue("同じ位置を2回言わない") { failure.message!! shouldNotContain "(first at" }
+            entries.single { it.path == "core/*/*/a.kt" }.captureVariants.single().moduleCapture shouldBe
+                ModuleCapture(":core:*:*", listOf("x", "x"))
         }
 
         "名前が識別子でないと KatachiInvalidIdentifierException" {

@@ -171,7 +171,14 @@ private fun layoutEntryJsonOf(index: Int, entry: LayoutEntry, files: List<String
         declaredAt = siteOf(entry.declaredAt),
         modulePath = entry.modulePath,
         pathInModule = entry.pathInModule,
-        captures = captures?.pathCaptures.orEmpty().map { PathCaptureJson(name = it.name, segmentIndex = it.segmentIndex) },
+        captures = captures?.pathCaptures.orEmpty().map {
+            PathCaptureJson(
+                name = it.name,
+                segmentIndex = it.segmentIndex,
+                wildcardIndex = it.wildcardIndex,
+                transform = it.transform?.spelling,
+            )
+        },
         moduleCapture = captures?.moduleCapture?.let { ModuleCaptureJson(pattern = it.modulePattern, names = it.names) },
         template = template?.let {
             TemplateRefJson(

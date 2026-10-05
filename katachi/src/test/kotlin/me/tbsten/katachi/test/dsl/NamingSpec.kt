@@ -4,6 +4,8 @@ import io.kotest.core.spec.style.FreeSpec
 import io.kotest.matchers.collections.shouldContainExactly
 import io.kotest.matchers.shouldBe
 import me.tbsten.katachi.dsl.camelCase
+import me.tbsten.katachi.dsl.internal.CaptureTransform
+import me.tbsten.katachi.dsl.internal.captureToken
 import me.tbsten.katachi.dsl.flatCase
 import me.tbsten.katachi.dsl.kebabCase
 import me.tbsten.katachi.dsl.nameWords
@@ -106,6 +108,34 @@ class NamingSpec : FreeSpec({
         "捕捉したモジュール名からファイル名を組み立てられる" {
             val featureName = "debug-menu"
             "${featureName.pascalCase}Screen.kt" shouldBe "DebugMenuScreen.kt"
+        }
+    }
+
+    "capture のトークン" - {
+        "capture のトークンに camelCase を掛けると文字は変形せず変換付きのトークンになる" {
+            captureToken("my-page").camelCase shouldBe captureToken("my-page", CaptureTransform.CamelCase)
+        }
+
+        "6 つの変換がそれぞれ自分の名前の付いたトークンになる" {
+            val token = captureToken("x")
+            token.camelCase shouldBe captureToken("x", CaptureTransform.CamelCase)
+            token.pascalCase shouldBe captureToken("x", CaptureTransform.PascalCase)
+            token.kebabCase shouldBe captureToken("x", CaptureTransform.KebabCase)
+            token.snakeCase shouldBe captureToken("x", CaptureTransform.SnakeCase)
+            token.screamingSnakeCase shouldBe captureToken("x", CaptureTransform.ScreamingSnakeCase)
+            token.flatCase shouldBe captureToken("x", CaptureTransform.FlatCase)
+        }
+
+        "トークンを含まない文字列は今までどおり変換される" {
+            "my-page".camelCase shouldBe "myPage"
+            "my-page".pascalCase shouldBe "MyPage"
+        }
+
+        "変換の apply は検査と生成で同じ規則を使う" {
+            CaptureTransform.CamelCase.apply("my-page") shouldBe "my-page".camelCase
+            CaptureTransform.FlatCase.apply("my-page") shouldBe "mypage"
+            CaptureTransform.fromSpelling("pascalCase") shouldBe CaptureTransform.PascalCase
+            CaptureTransform.fromSpelling("lowercase") shouldBe null
         }
     }
 })

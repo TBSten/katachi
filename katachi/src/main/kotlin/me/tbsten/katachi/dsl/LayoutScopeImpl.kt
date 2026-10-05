@@ -6,6 +6,7 @@ import me.tbsten.katachi.dsl.internal.GlobContext
 import me.tbsten.katachi.dsl.internal.LayoutNode
 import me.tbsten.katachi.dsl.internal.ModuleContext
 import me.tbsten.katachi.dsl.internal.ModuleIndex
+import me.tbsten.katachi.dsl.internal.ModuleTarget
 import me.tbsten.katachi.dsl.internal.ModulePattern
 import me.tbsten.katachi.dsl.internal.captureDeclarationSite
 import me.tbsten.katachi.dsl.internal.captureToken
@@ -182,7 +183,7 @@ internal class LayoutScopeImpl(
         // Not `expand`: a wildcard key against an index that has not listed the project stands
         // for itself rather than for nothing. See `ModuleIndex.targetsOf`.
         val moduleDirectories = mutableListOf<LayoutNode>()
-        val declared = moduleIndex.targetsOf(pattern).flatMap { target ->
+        val declared = moduleIndex.targetsOf(pattern).filter { it.readsOneValuePerName() }.flatMap { target ->
             // The root project resolves to the project root itself, which is this scope's
             // own container: an empty directory name would otherwise become an empty level.
             val directory = target.directory
@@ -284,14 +285,13 @@ internal class LayoutScopeImpl(
 }
 
 /**
- * Adds where the module path was written to whatever the pattern compiler complained about,
- * and checks that no name its `capture("...")` tokens gave two of its `*`s is used twice.
+ * Adds where the module path was written to whatever the pattern compiler complained about.
  *
  * The layout blocks are deferred, so this is the first moment a bad key can be noticed at
  * all, and by then the stack no longer points anywhere useful.
  */
-private fun compileModulePath(key: String, declaredAt: DeclarationSite): ModulePattern {
-    val pattern = try {
+private fun compileModulePath(key: String, declaredAt: DeclarationSite): ModulePattern =
+    try {
         ModulePattern.compile(key, declaredAt)
     } catch (cause: KatachiGlobSyntaxException) {
         throw KatachiGlobSyntaxException(
@@ -300,16 +300,15 @@ private fun compileModulePath(key: String, declaredAt: DeclarationSite): ModuleP
             context = GlobContext.LayoutModulePath(key = key, declaredAt = declaredAt),
         )
     }
-    val names = pattern.wildcardNames.filterNotNull()
-    val duplicate = names.groupingBy { it }.eachCount().entries.firstOrNull { it.value > 1 }
-    if (duplicate != null) {
-        throw KatachiDuplicateCaptureException(
-            name = duplicate.key,
-            role = null,
-            path = pattern.pattern,
-            firstDeclaredAt = declaredAt,
-            declaredAt = declaredAt,
-        )
-    }
-    return pattern
+
+/**
+ * Whether every name the key gave twice -- `":${capture("a")}:${capture("a")}"` -- reads one
+ * value in this module: the same name is a claim that the levels hold the same value, so a module
+ * where they differ is not one the key names. A key kept as a pattern reads the same placeholder
+ * for both and passes, as does a key naming nothing twice.
+ */
+private fun ModuleTarget.readsOneValuePerName(): Boolean {
+    val names = captureNames ?: return true
+    val byName = names.withIndex().filter { it.value != null }.groupBy({ it.value }, { it.index })
+    return byName.values.all { indices -> indices.map { wildcards.getOrNull(it) }.distinct().size == 1 }
 }

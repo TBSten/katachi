@@ -90,9 +90,11 @@ internal class LayoutNode(
 
     /**
      * The `capture("...")` token(s) this segment embedded, or `null` when it holds none. The
-     * node's own [segment] already has every token replaced by a plain `*` -- this is only
-     * template generation's way back to which `*` a `--arg` value fills in, and under what name;
-     * the check reads [segment] exactly as it would read the same text without any captures.
+     * node's own [segment] already has every token replaced by a plain `*` -- this is template
+     * generation's way back to which `*` a `--arg` value fills in, and under what name, and what
+     * the check reads the level's value by when the name is bound to another level of the path
+     * (see [LayoutCaptures.isBound]); otherwise the check reads [segment] exactly as it would read
+     * the same text without any captures.
      */
     var captureSegment: CaptureSegment? = null
 

@@ -10,6 +10,7 @@ import me.tbsten.katachi.dsl.internal.Glob
 import me.tbsten.katachi.dsl.internal.LayoutCaptures
 import me.tbsten.katachi.dsl.internal.ModuleIndex
 import me.tbsten.katachi.dsl.internal.ModulePattern
+import me.tbsten.katachi.dsl.internal.fillCapturedPath
 import me.tbsten.katachi.internal.catching
 import me.tbsten.katachi.template.KatachiMissingTemplateCaptureException
 
@@ -26,13 +27,16 @@ private fun declarationOf(entries: List<LayoutEntry>, name: String): CaptureDecl
     return null
 }
 
-/** [declaration]'s path with every capture of it written as `<name>`: `feature/<feature>/src/...`. */
+/**
+ * [declaration]'s path with every capture of it written as `<name>` -- `feature/<feature>/src/...`
+ * -- and a derived one as `<name.transform>`.
+ */
 private fun displayPatternOf(declaration: CaptureDeclaration): String =
     fillCapturedPath(
         declaration.entry.path,
         declaration.variant,
         declaration.variant.names.associateWith { "<$it>" },
-    )
+    ) { capture -> "<${capture.name}${capture.transform?.let { ".${it.spelling}" }.orEmpty()}>" }
 
 /** How [name] is written in the layout: `capture("feature")`, or the module key that names it. */
 private fun declaredWithOf(declaration: CaptureDeclaration?, name: String): String {
@@ -120,7 +124,9 @@ private fun existingDirectoriesAt(
     fileSystem: KatachiFileSystem,
     projectRoot: () -> FsPath,
 ): List<String> {
-    val capture = declaration.variant.pathCaptures.firstOrNull { it.name == name } ?: return emptyList()
+    // The plain occurrence: a derived level is not a directory a value is read from.
+    val capture = declaration.variant.pathCaptures.firstOrNull { it.name == name && it.transform == null }
+        ?: return emptyList()
     val parent = declaration.entry.path.split('/').take(capture.segmentIndex)
     if (parent.isNotEmpty() && Glob.compile(parent.joinToString("/"), Glob.PATH_SEPARATOR).hasWildcard) {
         return emptyList()

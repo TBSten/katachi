@@ -2,22 +2,33 @@ package me.tbsten.katachi.test.dsl
 
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.FreeSpec
+import io.kotest.matchers.collections.shouldContain
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
+import io.kotest.matchers.collections.shouldNotContain
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
 import me.tbsten.katachi.dsl.DeclarationKind
 import me.tbsten.katachi.dsl.KatachiAdjacentCaptureException
-import me.tbsten.katachi.dsl.KatachiDuplicateCaptureException
+import me.tbsten.katachi.dsl.KatachiCaptureTransformInModuleKeyException
+import me.tbsten.katachi.dsl.KatachiCaptureTransformOnMixedTextException
+import me.tbsten.katachi.dsl.KatachiChainedCaptureTransformException
+import me.tbsten.katachi.dsl.KatachiDerivedCaptureWithoutSourceException
 import me.tbsten.katachi.dsl.KatachiInvalidIdentifierException
 import me.tbsten.katachi.dsl.KatachiStrayCaptureTokenException
 import me.tbsten.katachi.dsl.LayoutEntry
 import me.tbsten.katachi.dsl.architecture
 import me.tbsten.katachi.dsl.gradle.*
+import me.tbsten.katachi.dsl.internal.CaptureTransform
 import me.tbsten.katachi.dsl.internal.LayoutCaptures
+import me.tbsten.katachi.dsl.internal.ModuleCapture
 import me.tbsten.katachi.dsl.internal.PathCapture
 import me.tbsten.katachi.dsl.internal.captureToken
 import me.tbsten.katachi.dsl.internal.flattenLayout
+import me.tbsten.katachi.dsl.camelCase
+import me.tbsten.katachi.dsl.kebabCase
 import me.tbsten.katachi.dsl.kotlin.ktFile
+import me.tbsten.katachi.dsl.pascalCase
+import me.tbsten.katachi.dsl.snakeCase
 import me.tbsten.katachi.dsl.template
 import me.tbsten.katachi.test.check.architectureOf
 import me.tbsten.katachi.test.template.generated
@@ -129,56 +140,72 @@ class LayoutCaptureSpec : FreeSpec({
 
         "ハイフンとアンダースコアを含む名前は通る" {
             layoutOf { capture("feature-name_2") / "a.kt".file() }.at("*").captureVariants shouldBe
-                listOf(LayoutCaptures(listOf(PathCapture(0, "feature-name_2")), null))
+                listOf(LayoutCaptures(listOf(PathCapture(0, 0, "feature-name_2", null)), null))
         }
     }
 
-    "同じパスで同じ名前" - {
-        "1つのパスで同じ名前を2回使うと KatachiDuplicateCaptureException" {
-            val failure = shouldThrow<KatachiDuplicateCaptureException> {
-                layoutOf { capture("x") / "a" / capture("x") / "a.kt".file() }
-            }
+    "同じパスで同じ名前は同じ値" - {
+        "1つのパスで同じ名前を2回使うと束縛になり、出現が2つ運ばれる" {
+            val variant = layoutOf { capture("x") / "a" / capture("x") / "a.kt".file() }
+                .at("*/a/*/a.kt").captureVariants.single()
 
-            failure.name shouldBe "x"
-            failure.role shouldBe "group.Role"
-            failure.path shouldBe "*/a/*"
-            failure.message!! shouldContain "--arg x="
+            variant.pathCaptures shouldBe listOf(PathCapture(0, 0, "x", null), PathCapture(2, 0, "x", null))
+            variant.names shouldBe listOf("x")
+            variant.isBound shouldBe true
         }
 
-        "同じセグメントの中で同じ名前を2回使っても KatachiDuplicateCaptureException" {
-            // レビューで見つかったバグの再現: CaptureTrail.enter は上の階層から集めた declaredAt
-            // としか照らしていなかったので、newNames 自身の中の重複（同じセグメントの部分一致）は
-            // 素通りしていた。
-            val failure = shouldThrow<KatachiDuplicateCaptureException> {
-                layoutOf { "${capture("a")}-${capture("a")}.kt".file() }
-            }
+        "同じ区切りの中の同名も束縛になる" {
+            val variant = layoutOf { "${capture("a")}-${capture("a")}.kt".file() }.at("*-*.kt").captureVariants.single()
 
-            failure.name shouldBe "a"
+            variant.pathCaptures shouldBe listOf(PathCapture(0, 0, "a", null), PathCapture(0, 1, "a", null))
+            variant.isBound shouldBe true
         }
 
-        "ブロックをまたいだ入れ子でも同じパスなら KatachiDuplicateCaptureException" {
-            shouldThrow<KatachiDuplicateCaptureException> {
-                layoutOf { capture("x") { capture("x") / "a.kt".file() } }
-            }.name shouldBe "x"
+        "ブロックをまたいだ入れ子でも同じパスなら束縛になる" {
+            layoutOf { capture("x") { capture("x") / "a.kt".file() } }.at("*/*/a.kt").captureVariants.single()
+                .isBound shouldBe true
         }
 
-        "モジュールの capture とパスの capture が同名でも KatachiDuplicateCaptureException" {
-            shouldThrow<KatachiDuplicateCaptureException> {
-                layoutOf { ":feature:${capture("feature")}".module { capture("feature") / "a.kt".file() } }
-            }.name shouldBe "feature"
+        "モジュールキーの名前とパスの同名は束縛になる" {
+            val variant = layoutOf { ":feature:${capture("feature")}".module { capture("feature") / "a.kt".file() } }
+                .at("feature/*/*/a.kt").captureVariants.single()
+
+            variant.moduleCapture shouldBe ModuleCapture(":feature:*", listOf("feature"))
+            variant.pathCaptures shouldBe listOf(PathCapture(2, 0, "feature", null))
+            variant.names shouldBe listOf("feature")
+            variant.isBound shouldBe true
         }
 
-        "同じ役割の別パスで同じ名前を使うのは通る" {
+        "1つのモジュールキーの中の同名は値が等しいモジュールだけに展開される" {
+            val index = moduleIndexOf("home/home", "home/settings", "settings/settings")
+
+            val paths = layoutOf(index) { ":${capture("a")}:${capture("a")}".module { "a.kt".file() } }.map { it.path }
+
+            paths shouldContain "home/home/a.kt"
+            paths shouldContain "settings/settings/a.kt"
+            paths shouldNotContain "home/settings/a.kt"
+        }
+
+        "名前の無い1つの * は値を比べずに今までどおり展開される" {
+            val index = moduleIndexOf("home/home", "home/settings")
+
+            val paths = layoutOf(index) { ":${capture("a")}:*".module { "a.kt".file() } }.map { it.path }
+
+            paths shouldContain "home/settings/a.kt"
+        }
+
+        "同じ役割の別パスで同じ名前を使うのは束縛にならない" {
             val entries = layoutOf {
                 "feature" / capture("feature") / "a.kt".file()
                 "test" / capture("feature") / "b.kt".file()
             }
 
             entries.at("feature/*/a.kt").captureVariants.single().names shouldBe listOf("feature")
-            entries.at("test/*/b.kt").captureVariants.single().names shouldBe listOf("feature")
+            entries.at("feature/*/a.kt").captureVariants.single().isBound shouldBe false
+            entries.at("test/*/b.kt").captureVariants.single().isBound shouldBe false
         }
 
-        "別の layout ブロックで同じ名前を使うのは通る" {
+        "別の layout ブロックで同じ名前を使うのは束縛にならない" {
             val entries = architecture {
                 "group".group {
                     "Role".role {
@@ -196,16 +223,116 @@ class LayoutCaptureSpec : FreeSpec({
                 "test/*",
                 "test/*/b.kt",
             )
+            entries.flatMap { it.captureVariants }.none { it.isBound } shouldBe true
         }
 
-        "同じ名前の兄弟ディレクトリは別パスなので通る" {
+        "同じ名前の兄弟ディレクトリは別パスなので束縛にならない" {
             val entries = layoutOf {
                 capture("x") / "a.kt".file()
                 capture("x") / "b.kt".file()
             }
 
-            entries.at("*/a.kt").captureVariants.single().names shouldBe listOf("x")
-            entries.at("*/b.kt").captureVariants.single().names shouldBe listOf("x")
+            entries.at("*/a.kt").captureVariants.single().isBound shouldBe false
+            entries.at("*/b.kt").captureVariants.single().isBound shouldBe false
+        }
+
+        "名前の無い * と同じ区切りの capture は何番目の * かを運ぶ" {
+            layoutOf { "*-${capture("source")}.kt".file() }.at("*-*.kt").captureVariants.single()
+                .pathCaptures shouldBe listOf(PathCapture(0, 1, "source", null))
+        }
+    }
+
+    "派生" - {
+        "派生は元の名前と変換を運び、平坦化の shape は * と同じ" {
+            val named = layoutOf { "feature" / capture("f") / "${capture("f").pascalCase}Screen".ktFile() }
+            val plain = layoutOf { "feature" / "*" / "*Screen".ktFile() }
+
+            named.shape() shouldBe plain.shape()
+            val variant = named.at("feature/*/*Screen.kt").captureVariants.single()
+            variant.pathCaptures shouldBe listOf(
+                PathCapture(1, 0, "f", null),
+                PathCapture(2, 0, "f", CaptureTransform.PascalCase),
+            )
+            variant.names shouldBe listOf("f")
+            variant.isBound shouldBe true
+        }
+
+        "派生が元より上の階層にあっても通る" {
+            val variant = layoutOf { capture("m").kebabCase / capture("m") / "a.kt".file() }
+                .at("*/*/a.kt").captureVariants.single()
+
+            variant.pathCaptures shouldBe listOf(
+                PathCapture(0, 0, "m", CaptureTransform.KebabCase),
+                PathCapture(1, 0, "m", null),
+            )
+        }
+
+        "モジュールキーの名前を派生の元にできる" {
+            val variant = layoutOf { ":feature:${capture("f")}".module { "${capture("f").pascalCase}Screen".ktFile() } }
+                .at("feature/*/*Screen.kt").captureVariants.single()
+
+            variant.pathCaptures shouldBe listOf(PathCapture(2, 0, "f", CaptureTransform.PascalCase))
+            variant.isBound shouldBe true
+        }
+
+        "元の capture が同じパスに無い派生は KatachiDerivedCaptureWithoutSourceException" {
+            val failure = shouldThrow<KatachiDerivedCaptureWithoutSourceException> {
+                layoutOf { "feature" / "${capture("m").camelCase}Screen".ktFile() }
+            }
+
+            failure.name shouldBe "m"
+            failure.transform shouldBe "camelCase"
+            failure.role shouldBe "group.Role"
+            failure.path shouldBe "feature/*Screen.kt"
+            failure.message!! shouldContain "capture(\"m\").camelCase"
+            failure.message!! shouldContain "drop .camelCase"
+        }
+
+        "元が別パスにあっても KatachiDerivedCaptureWithoutSourceException" {
+            shouldThrow<KatachiDerivedCaptureWithoutSourceException> {
+                layoutOf {
+                    "feature" / capture("m") / "a.kt".file()
+                    "docs" / "${capture("m").camelCase}.md".file()
+                }
+            }.name shouldBe "m"
+        }
+
+        "変換を2回重ねると KatachiChainedCaptureTransformException" {
+            val failure = shouldThrow<KatachiChainedCaptureTransformException> {
+                layoutOf { capture("m") / "${capture("m").kebabCase.pascalCase}.kt".file() }
+            }
+
+            failure.name shouldBe "m"
+            failure.first shouldBe "kebabCase"
+            failure.second shouldBe "pascalCase"
+            failure.message!! shouldContain "Keep one of .kebabCase and .pascalCase"
+        }
+
+        "トークンと文字が混ざった String に変換を掛けると KatachiCaptureTransformOnMixedTextException" {
+            val failure = shouldThrow<KatachiCaptureTransformOnMixedTextException> {
+                layoutOf { capture("x") / "${capture("x")}Screen".pascalCase.ktFile() }
+            }
+
+            failure.names shouldBe listOf("x")
+            failure.transform shouldBe "pascalCase"
+            failure.text shouldBe "\${capture(\"x\")}Screen"
+            failure.message!! shouldContain "\"\${capture(\"x\").pascalCase}Screen\""
+        }
+
+        "トークンが2つある String に変換を掛けても KatachiCaptureTransformOnMixedTextException" {
+            shouldThrow<KatachiCaptureTransformOnMixedTextException> {
+                layoutOf { "${capture("a")}-${capture("b")}".snakeCase / "a.kt".file() }
+            }.names shouldBe listOf("a", "b")
+        }
+
+        "モジュールキーの中の派生は KatachiCaptureTransformInModuleKeyException" {
+            val failure = shouldThrow<KatachiCaptureTransformInModuleKeyException> {
+                layoutOf { ":feature:${capture("f").camelCase}".module { "a.kt".file() } }
+            }
+
+            failure.name shouldBe "f"
+            failure.transform shouldBe "camelCase"
+            failure.moduleKey shouldBe ":feature:\${capture(\"f\").camelCase}"
         }
     }
 
@@ -282,10 +409,10 @@ class LayoutCaptureSpec : FreeSpec({
             }
 
             entries.at("feature/*/src/*/*ViewModel.kt").captureVariants shouldBe listOf(
-                LayoutCaptures(listOf(PathCapture(1, "feature"), PathCapture(3, "layer")), null),
+                LayoutCaptures(listOf(PathCapture(1, 0, "feature", null), PathCapture(3, 0, "layer", null)), null),
             )
             entries.at("feature/*").captureVariants shouldBe listOf(
-                LayoutCaptures(listOf(PathCapture(1, "feature")), null),
+                LayoutCaptures(listOf(PathCapture(1, 0, "feature", null)), null),
             )
             entries.at("feature").captureVariants shouldBe emptyList()
         }
@@ -303,7 +430,7 @@ class LayoutCaptureSpec : FreeSpec({
 
             entries.count { it.path == "feature/*/a.kt" } shouldBe 1
             entries.at("feature/*/a.kt").captureVariants shouldBe listOf(
-                LayoutCaptures(listOf(PathCapture(1, "feature")), null),
+                LayoutCaptures(listOf(PathCapture(1, 0, "feature", null)), null),
                 LayoutCaptures.NONE,
             )
         }

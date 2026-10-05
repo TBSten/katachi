@@ -5,7 +5,7 @@ import me.tbsten.katachi.dsl.Architecture
 import me.tbsten.katachi.dsl.DeclarationSite
 import me.tbsten.katachi.dsl.FileConstraintRange
 import me.tbsten.katachi.dsl.KatachiConflictingLayoutMetadataException
-import me.tbsten.katachi.dsl.KatachiDuplicateCaptureException
+import me.tbsten.katachi.dsl.KatachiDerivedCaptureWithoutSourceException
 import me.tbsten.katachi.dsl.KatachiDuplicateTemplateException
 import me.tbsten.katachi.dsl.KatachiDuplicateTemplateIdException
 import me.tbsten.katachi.dsl.KatachiFileConstraintDirectOnlyCoversNothingException
@@ -214,51 +214,54 @@ private data class EntryKey(val path: String, val kind: LayoutEntryKind)
 private const val MODULE_PACKAGE_PLACEHOLDER: String = "**"
 
 /**
- * The capture names seen from the root down to the node being flattened, and where each was
- * written, so that one name used twice along a path is caught where the second one appears.
+ * The capture occurrences seen from the root down to the node being flattened, with where each
+ * was written. A name written twice along the way is not refused: it is the declaration that
+ * the two levels read the same value (see [LayoutCaptures.isBound]).
  */
 private class CaptureTrail(
     val pathCaptures: List<PathCapture>,
+    /** Where each of [pathCaptures] was written, by index. */
+    val declaredAt: List<DeclarationSite>,
     val moduleCapture: ModuleCapture?,
-    val declaredAt: Map<String, DeclarationSite>,
 ) {
     fun toCaptures(): LayoutCaptures? =
         LayoutCaptures(pathCaptures, moduleCapture).takeUnless { it.isEmpty }
 
+    /**
+     * Refuses a derived occurrence no plain occurrence of its name sits on this path, the module
+     * key's names counted. Asked only for a declaration the check matches files by, so a plain
+     * capture below the derived one has been seen by then.
+     */
+    fun requireDerivedHaveSources(role: Role, path: String) {
+        val plain = moduleCapture?.names.orEmpty() + pathCaptures.filter { it.transform == null }.map { it.name }
+        pathCaptures.forEachIndexed { index, capture ->
+            val transform = capture.transform ?: return@forEachIndexed
+            if (capture.name in plain) return@forEachIndexed
+            throw KatachiDerivedCaptureWithoutSourceException(
+                name = capture.name,
+                transform = transform.spelling,
+                role = role.qualifiedName,
+                path = path,
+                declaredAt = declaredAt[index],
+            )
+        }
+    }
+
     companion object {
-        val EMPTY: CaptureTrail = CaptureTrail(emptyList(), null, emptyMap())
+        val EMPTY: CaptureTrail = CaptureTrail(emptyList(), emptyList(), null)
     }
 }
 
 /** This trail extended with what [child], the [segmentIndex]-th level of its path, names. */
-private fun CaptureTrail.enter(child: LayoutNode, segmentIndex: Int, role: Role, path: String): CaptureTrail {
+private fun CaptureTrail.enter(child: LayoutNode, segmentIndex: Int): CaptureTrail {
     val moduleNames = child.moduleCaptureNames?.filterNotNull()
     val pattern = child.moduleCapturePattern
-    val pathNames = child.captureSegment?.names.orEmpty()
-    if (moduleNames == null && pathNames.isEmpty()) return this
-    val newNames = moduleNames.orEmpty() + pathNames
-    // Checked against the trail from above *and* against names this same call already added --
-    // `newNames` alone can repeat one name, e.g. two capture("a") tokens in one segment
-    // (`"${capture("a")}-${capture("a")}.kt"`), which the trail (still the parent's) would not
-    // catch on its own.
-    val seenHere = mutableSetOf<String>()
-    for (name in newNames) {
-        val first = declaredAt[name] ?: if (name in seenHere) child.declaredAt else null
-        if (first != null) {
-            throw KatachiDuplicateCaptureException(
-                name = name,
-                role = role.qualifiedName,
-                path = path,
-                firstDeclaredAt = first,
-                declaredAt = child.declaredAt,
-            )
-        }
-        seenHere += name
-    }
+    val captures = child.captureSegment?.captures.orEmpty()
+    if (moduleNames == null && captures.isEmpty()) return this
     return CaptureTrail(
-        pathCaptures = pathCaptures + pathNames.map { PathCapture(segmentIndex, it) },
+        pathCaptures = pathCaptures + captures.map { PathCapture(segmentIndex, it.wildcardIndex, it.name, it.transform) },
+        declaredAt = declaredAt + captures.map { child.declaredAt },
         moduleCapture = if (moduleNames != null && pattern != null) ModuleCapture(pattern, moduleNames) else moduleCapture,
-        declaredAt = declaredAt + newNames.associateWith { child.declaredAt },
     )
 }
 
@@ -274,7 +277,7 @@ private fun collectInto(
 ) {
     for (child in node.children) {
         val segments = prefix + child.segment
-        val childCaptures = captures.enter(child, prefix.size, role, segments.joinToString("/"))
+        val childCaptures = captures.enter(child, prefix.size)
         val childModulePath = child.modulePath ?: modulePath
         val childInModule = when {
             // The directory a module key opened is the module itself, so the path inside it
@@ -291,8 +294,14 @@ private fun collectInto(
 
             else -> inModule + child.segment
         }
+        val path = segments.joinToString("/")
+        // Only where the check matches files: a derived capture on a directory on the way down
+        // may find its plain capture further below.
+        if (child.entryKind() == LayoutEntryKind.File || child.entryKind() == LayoutEntryKind.AnyFile) {
+            childCaptures.requireDerivedHaveSources(role, path)
+        }
         val entry = child.toEntry(
-            path = segments.joinToString("/"),
+            path = path,
             role = role,
             modulePath = childModulePath,
             pathInModule = childInModule.joinToString("/"),
@@ -438,14 +447,7 @@ private fun LayoutNode.toEntry(
     pathInModule: String,
     captures: LayoutCaptures?,
 ): LayoutEntry {
-    val kind = when {
-        isFile -> LayoutEntryKind.File
-        // `ignore()` subsumes `anyFile()`: nothing below is checked, the files directly
-        // inside included.
-        ignored -> LayoutEntryKind.Ignore
-        anyFile -> LayoutEntryKind.AnyFile
-        else -> LayoutEntryKind.Directory
-    }
+    val kind = entryKind()
     val glob = compilePath(path, role, declaredAt)
     duplicateTemplateAttempt?.let { second ->
         val first = metadata[Template]
@@ -473,6 +475,15 @@ private fun LayoutNode.toEntry(
         templateCaptures = captures.takeIf { metadata[Template] != null },
         metadata = metadata.build(),
     )
+}
+
+private fun LayoutNode.entryKind(): LayoutEntryKind = when {
+    isFile -> LayoutEntryKind.File
+    // `ignore()` subsumes `anyFile()`: nothing below is checked, the files directly
+    // inside included.
+    ignored -> LayoutEntryKind.Ignore
+    anyFile -> LayoutEntryKind.AnyFile
+    else -> LayoutEntryKind.Directory
 }
 
 /**
@@ -640,7 +651,9 @@ private fun LayoutNode.hasUnnamedWildcardInChain(): Boolean {
 
 /**
  * Whether this one node's own [LayoutNode.segment] holds a `*` [LayoutNode.captureSegment] does
- * not account for: a plain `**` (never nameable), or more `*` characters than there are names.
+ * not account for: a plain `**` (never nameable), or more `*` characters than there are
+ * captures. A derived capture counts as named: a template fills it from its plain capture's
+ * value, so nothing is left for a run to guess.
  *
  * The count, not an exact character-by-character match, is what keeps this simple for the common
  * case -- a whole node either has one `*` (named or not) or is built entirely from tokens -- while
@@ -650,30 +663,8 @@ private fun LayoutNode.hasUnnamedWildcardInChain(): Boolean {
 private fun LayoutNode.hasOwnUnnamedWildcard(): Boolean {
     if (segment == "**") return true
     val starCount = segment.countUnescapedWildcards()
-    val namedCount = captureSegment?.names?.size ?: 0
+    val namedCount = captureSegment?.captures?.size ?: 0
     return starCount > namedCount
-}
-
-/**
- * The `*`s of [this] that [Glob] would read as a wildcard -- every `*` except one written
- * `\*`, which [Glob]'s own escaping (`GLOB_ESCAPABLE`) reads as the literal character instead.
- * A plain `segment.count { it == '*' }` would count that one too and report an unnamed wildcard
- * that is not there.
- */
-private fun String.countUnescapedWildcards(): Int {
-    var count = 0
-    var index = 0
-    while (index < length) {
-        when (this[index]) {
-            '\\' -> index += 2
-            '*' -> {
-                count++
-                index++
-            }
-            else -> index++
-        }
-    }
-    return count
 }
 
 /** [LayoutNode.pathFromDeclaration], with every capture shown as `${capture("name")}` instead of `*`. */

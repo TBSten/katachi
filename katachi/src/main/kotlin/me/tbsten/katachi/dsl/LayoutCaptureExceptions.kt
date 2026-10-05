@@ -4,53 +4,180 @@ import me.tbsten.katachi.ExperimentalKatachiApi
 import me.tbsten.katachi.KatachiDeclarationException
 
 /**
- * The same capture name was used twice along one path of a `layout { }`: two `capture("x")`
- * levels, a `capture("x")` below a module key that named a wildcard `x` too, or one
- * `":...:${capture("x")}".module { }` key giving the same name twice.
+ * A derived capture -- `capture("m").camelCase` -- sits on a path that holds no plain
+ * `capture("m")` for it to be derived from: neither on a level of the path nor among the names
+ * of the module key above it.
  *
- * A template takes the value of a name from one `--arg`, so two levels sharing a name could never
- * hold two different directories. The same name on two *different* paths of a role is fine:
- * those paths share the one parameter.
+ * The check compares a derived level with the conversion of its plain capture's value, so
+ * without a plain capture there would be nothing to compare it with and the derivation would be
+ * written but never checked. Noticed when the layout is flattened, for every file declaration
+ * (`"...".file()` / `anyFile()`) the derived capture sits above; the plain capture may be above
+ * or below it on that path.
  *
- * ## Example 1: catch a path that names two levels alike
+ * ## Example 1: catch a derived capture whose plain capture is on another path
  * ```kt
- * shouldThrow<KatachiDuplicateCaptureException> {
+ * shouldThrow<KatachiDerivedCaptureWithoutSourceException> {
  *     architecture {
  *         "ui".group {
- *             "Screen".role { layout { capture("x") / capture("x") / "*Screen".ktFile() } }
+ *             "Screen".role {
+ *                 layout {
+ *                     "feature" / capture("m") / "a.kt".file()
+ *                     "docs" / "${capture("m").camelCase}.md".file()
+ *                 }
+ *             }
  *         }
  *     }.flattenLayout()
- * }.name shouldBe "x"
+ * }.name shouldBe "m"
  * ```
  *
- * @property name the name used twice.
- * @property role the role's qualified name, or `null` when the duplicate was within the names of
- *   one module key, which is noticed before the role's entries exist.
- * @property path the path the two uses meet on, with the named levels written as `*`, or the
- *   module key for a duplicate within one module key's names.
- * @property firstDeclaredAt where the name was used the first time.
- * @property declaredAt where it was used again.
+ * @property name the plain capture's name the derived one asks for.
+ * @property transform the conversion that was written, such as `"camelCase"`.
+ * @property role the role's qualified name.
+ * @property path the path the derived capture sits on, with every capture written as `*`.
+ * @property declaredAt where the derived capture was written.
  */
 @ExperimentalKatachiApi
-public class KatachiDuplicateCaptureException internal constructor(
+public class KatachiDerivedCaptureWithoutSourceException internal constructor(
     public val name: String,
-    public val role: String?,
+    public val transform: String,
+    public val role: String,
     public val path: String,
-    public val firstDeclaredAt: DeclarationSite,
     public val declaredAt: DeclarationSite,
 ) : KatachiDeclarationException(
     message = buildString {
-        val where = if (role == null) "`$path`" else "`$path` of role \"$role\""
-        val at = if (firstDeclaredAt == declaredAt) "at $declaredAt" else "at $declaredAt (first at $firstDeclaredAt)"
-        appendLine("Capture \"$name\" is used twice on $where, $at.")
         appendLine(
-            "A template takes one value for it from `--arg $name=...`, so the two levels could " +
-                "never hold different directories.",
+            "capture(\"$name\").$transform at $declaredAt has no plain capture(\"$name\") on `$path` of role \"$role\".",
         )
-        append(
-            "Give one of them another name. Using the same name on a different path of the same " +
-                "role is fine: those paths share the one parameter.",
+        appendLine(
+            "A derived capture is checked against the value of its plain capture, so without one nothing " +
+                "would be checked.",
         )
+        append("Write capture(\"$name\") on a level of the same path, or drop .$transform.")
+    },
+)
+
+/**
+ * Two naming conversions were applied to one capture token: `capture("m").kebabCase.pascalCase`.
+ *
+ * Every conversion reads the same words out of a value, so one of them already says everything
+ * the two would; and `flatCase` runs the words together, after which a second conversion has no
+ * word boundaries left to read, so a chain has no one defined meaning.
+ *
+ * ## Example 1: catch a chained conversion
+ * ```kt
+ * shouldThrow<KatachiChainedCaptureTransformException> {
+ *     architecture {
+ *         "ui".group {
+ *             "Screen".role {
+ *                 layout { capture("m") / "${capture("m").kebabCase.pascalCase}.kt".file() }
+ *             }
+ *         }
+ *     }.flattenLayout()
+ * }.second shouldBe "pascalCase"
+ * ```
+ *
+ * @property name the capture's name.
+ * @property first the conversion the token already carried, such as `"kebabCase"`.
+ * @property second the conversion applied on top of it.
+ * @property declaredAt where the second conversion was written.
+ */
+@ExperimentalKatachiApi
+public class KatachiChainedCaptureTransformException internal constructor(
+    public val name: String,
+    public val first: String,
+    public val second: String,
+    public val declaredAt: DeclarationSite,
+) : KatachiDeclarationException(
+    message = buildString {
+        appendLine("capture(\"$name\").$first.$second at $declaredAt applies two conversions.")
+        appendLine(
+            "Each conversion reads the same words, so one of them is enough; flatCase loses the word " +
+                "boundaries, so a second conversion after it has no defined meaning.",
+        )
+        append("Keep one of .$first and .$second.")
+    },
+)
+
+/**
+ * A naming conversion was applied to a `String` that holds a capture token beside other text,
+ * or more than one token: `"${capture("x")}Screen".pascalCase`.
+ *
+ * A conversion on a token makes a derived capture of that one token's value. On a string with
+ * text around it, whether the literal text is meant to change as well is a guess katachi does
+ * not make; the conversion goes on the capture alone, and the text stays as written.
+ *
+ * ## Example 1: catch a conversion applied around a capture
+ * ```kt
+ * shouldThrow<KatachiCaptureTransformOnMixedTextException> {
+ *     architecture {
+ *         "ui".group {
+ *             "Screen".role {
+ *                 layout { capture("x") / "${capture("x")}Screen".pascalCase.ktFile() }
+ *             }
+ *         }
+ *     }.flattenLayout()
+ * }.names shouldBe listOf("x")
+ * ```
+ *
+ * @property text the string the conversion was applied to, each token shown as `${capture("name")}`.
+ * @property names the names of the tokens in [text], in order.
+ * @property transform the conversion that was applied, such as `"pascalCase"`.
+ * @property declaredAt where the conversion was written.
+ */
+@ExperimentalKatachiApi
+public class KatachiCaptureTransformOnMixedTextException internal constructor(
+    public val text: String,
+    public val names: List<String>,
+    public val transform: String,
+    public val declaredAt: DeclarationSite,
+) : KatachiDeclarationException(
+    message = buildString {
+        appendLine(".$transform at $declaredAt was applied to \"$text\", which holds text beside the capture.")
+        appendLine(
+            "A conversion applies to one capture's value; whether the literal text should change too " +
+                "is not something katachi guesses.",
+        )
+        val fixed = names.fold(text) { acc, name -> acc.replace("\${capture(\"$name\")}", "\${capture(\"$name\").$transform}") }
+        append("Apply it to the capture alone: \"$fixed\".")
+    },
+)
+
+/**
+ * A derived capture was written inside a module key: `":feature:${capture("f").camelCase}".module { }`.
+ *
+ * A module key names modules that exist, and a module's name is read from the project rather
+ * than derived from another value. The key's `*` may still be named -- `capture("f")` -- and a
+ * level of the path below it may then be derived from that name.
+ *
+ * ## Example 1: catch a conversion inside a module key
+ * ```kt
+ * shouldThrow<KatachiCaptureTransformInModuleKeyException> {
+ *     architecture {
+ *         "ui".group {
+ *             "Screen".role {
+ *                 layout { ":feature:${capture("f").camelCase}".module { "a.kt".file() } }
+ *             }
+ *         }
+ *     }.flattenLayout()
+ * }.name shouldBe "f"
+ * ```
+ *
+ * @property name the capture's name.
+ * @property transform the conversion that was written, such as `"camelCase"`.
+ * @property moduleKey the key as it was written, each token shown as `${capture("name")}`.
+ * @property declaredAt where the key was written.
+ */
+@ExperimentalKatachiApi
+public class KatachiCaptureTransformInModuleKeyException internal constructor(
+    public val name: String,
+    public val transform: String,
+    public val moduleKey: String,
+    public val declaredAt: DeclarationSite,
+) : KatachiDeclarationException(
+    message = buildString {
+        appendLine("\"$moduleKey\" at $declaredAt converts a module wildcard.")
+        appendLine("A module key names an existing module, and a module's name is not derived from another value.")
+        append("Write capture(\"$name\") in the key, and put .$transform on a level of the path below it.")
     },
 )
 

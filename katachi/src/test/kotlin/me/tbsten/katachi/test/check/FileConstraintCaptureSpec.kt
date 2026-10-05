@@ -91,14 +91,14 @@ class FileConstraintCaptureSpec : FreeSpec({
             subject.captureValuesOf("docs/home/notes.md") shouldBe mapOf("feature" to "home")
         }
 
-        "名前の無い * と capture が同じ区切りにあると、その区切りの値は取らない" {
-            // Which `*` of `*-*.kt` the name belongs to is not kept, so no value is guessed.
+        "名前の無い * と同じ区切りの capture の値も取れる" {
+            // Which `*` of `*-*.kt` the name belongs to is kept as its wildcard index.
             val subject = subjectsOf(repositoryOf { "data" { "user-remote.kt"() } }) {
                 "data" / "*-${capture("source")}.kt".file()
             }.single()
 
             subject.captureNames.toList() shouldBe listOf("source")
-            subject.captureValuesOf("data/user-remote.kt").shouldBeEmpty()
+            subject.captureValuesOf("data/user-remote.kt") shouldBe mapOf("source" to "remote")
         }
     }
 

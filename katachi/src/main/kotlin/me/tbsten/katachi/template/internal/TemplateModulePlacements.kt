@@ -4,6 +4,7 @@ import kotlinx.serialization.Serializable
 import me.tbsten.katachi.dsl.DeclarationSite
 import me.tbsten.katachi.dsl.LayoutEntry
 import me.tbsten.katachi.dsl.internal.LayoutCaptures
+import me.tbsten.katachi.dsl.internal.fillCapturedPath
 import me.tbsten.katachi.dsl.internal.ModuleCapture
 import me.tbsten.katachi.dsl.internal.ModuleIndex
 import me.tbsten.katachi.dsl.internal.ModuleMiss
@@ -119,6 +120,6 @@ private fun choiceOf(
         values = values,
         modulePath = module.path.value,
         directory = module.directory,
-        path = fillCapturedPath(entry.path, variant, variant.names.associateWith(::placeholderOf)),
+        path = fillCapturedPath(entry.path, variant, variant.names.associateWith(::placeholderOf), ::placeholderOf),
     )
 }
