@@ -18,6 +18,7 @@ import java.io.File
 import me.tbsten.katachi.ExperimentalKatachiApi
 import me.tbsten.katachi.InternalKatachiApi
 import me.tbsten.katachi.check.FileConstraintCheck
+import me.tbsten.katachi.check.UnexpectedFile
 import me.tbsten.katachi.check.internal.validate
 import me.tbsten.katachi.dsl.Architecture
 import me.tbsten.katachi.dsl.Documented
@@ -233,6 +234,25 @@ class ProjectArchitectureSpec : FreeSpec({
             .shouldContainExactlyInAnyOrder(
                 listOf("[UnexpectedFile] src/main/kotlin/com/example/Application.kt") + violationsHeldBackByBaseline,
             )
+    }
+
+    "the nearby locations of a file that lost its role are the roles one level away, never Gradle.BuildScript" {
+        // The feedback this pins: a `build.gradle.kts` sits next to `Application.kt`, but
+        // `gradle()` wrote that line rather than this definition, and it takes another
+        // extension, so it is never offered. What is offered is computed from the real
+        // declarations: no role declares a file directly in `src/main/kotlin/com/example`, so
+        // the roles one directory below come first, the `*.kt` ones ahead of the suffixed
+        // ones because `Application.kt` fits their pattern, and `testing.Test` -- one level
+        // away through `test` against `main` -- closes the list.
+        val unexpected = architectureWithoutEntrypointRole.validate(FileConstraintCheck())
+            .filterIsInstance<UnexpectedFile>()
+            .single { it.path == "src/main/kotlin/com/example/Application.kt" }
+
+        unexpected.nearby.map { Triple(it.role.qualifiedName, it.directory, it.filePattern) } shouldBe listOf(
+            Triple("domain.Model", "src/main/kotlin/com/example/model", "*.kt"),
+            Triple("api.KtorPlugin", "src/main/kotlin/com/example/plugin", "*.kt"),
+            Triple("testing.Test", "src/test/kotlin/com/example", "*Test.kt"),
+        )
     }
 
     "gitTracked() / wholeTree() can be written from a user's build too" {

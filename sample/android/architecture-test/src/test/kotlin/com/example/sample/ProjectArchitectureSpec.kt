@@ -5,7 +5,12 @@ import com.example.sample.groups.dataGroup
 import com.example.sample.groups.featureGroup
 import com.example.sample.groups.gradleGroup
 import com.example.sample.groups.testingGroup
+import com.example.sample.groups.toolGroup
 import com.example.sample.groups.uiGroup
+import com.example.sample.roles.featureComponent
+import com.example.sample.roles.featureTest
+import com.example.sample.roles.route
+import com.example.sample.roles.viewModel
 import io.kotest.core.spec.style.FreeSpec
 import io.kotest.matchers.collections.shouldContainExactly
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
@@ -16,6 +21,7 @@ import java.io.File
 import me.tbsten.katachi.ExperimentalKatachiApi
 import me.tbsten.katachi.InternalKatachiApi
 import me.tbsten.katachi.check.FileConstraintCheck
+import me.tbsten.katachi.check.UnexpectedFile
 import me.tbsten.katachi.check.internal.validate
 import me.tbsten.katachi.dsl.Architecture
 import me.tbsten.katachi.dsl.Documented
@@ -231,7 +237,49 @@ class ProjectArchitectureSpec : FreeSpec({
             "[UnexpectedFile] README.md",
         ) + violationsHeldBackByBaseline
     }
+
+    "the nearby locations of a file that lost its role are the roles of its own directory, never Gradle.BuildScript" {
+        // The feedback this pins: with every feature role written as `"feature" / "*"`, the
+        // places offered used to be only the `build.gradle.kts` of each module, because a
+        // place holding a wildcard was never a candidate. Now the wildcards are filled in
+        // from the file's own path, so `HomeScreen.kt` is offered the roles declared in the
+        // very directory it sits in, in declaration order, then the one a level below.
+        val unexpected = architectureWithoutScreenRole.validate(FileConstraintCheck())
+            .filterIsInstance<UnexpectedFile>()
+            .single { it.path == "$HOME_SOURCES/HomeScreen.kt" }
+
+        unexpected.nearby.map { Triple(it.role.qualifiedName, it.directory, it.filePattern) } shouldBe listOf(
+            Triple("feature.ViewModel", HOME_SOURCES, "*ViewModel.kt"),
+            Triple("feature.Route", HOME_SOURCES, "*Route.kt"),
+            Triple("feature.FeatureComponent", "$HOME_SOURCES/component", "*.kt"),
+        )
+    }
 })
+
+/** The directory of `:feature:home`'s sources, where `HomeScreen.kt` lives. */
+private const val HOME_SOURCES = "feature/home/src/main/kotlin/com/example/sample/feature/home"
+
+/**
+ * [projectArchitecture] with `feature.Screen` removed, and nothing else changed: the feature
+ * group is rebuilt from the same role functions, so the roles it keeps are the real ones and
+ * only the omission is written out. Deliberately broken, and kept out of
+ * `ProjectArchitecture.kt` for the same reason [architectureWithoutToolRoles] is.
+ */
+private val architectureWithoutScreenRole: Architecture = architecture {
+    "feature".group {
+        // screen() — omitted on purpose. `HomeScreen.kt` and `SettingsScreen.kt` lose their role.
+        viewModel()
+        route()
+        featureComponent()
+        featureTest()
+    }
+    uiGroup()
+    dataGroup()
+    appGroup()
+    testingGroup()
+    gradleGroup()
+    toolGroup()
+}
 
 /**
  * [projectArchitecture] with `toolGroup()` left out, used by the last test above.
