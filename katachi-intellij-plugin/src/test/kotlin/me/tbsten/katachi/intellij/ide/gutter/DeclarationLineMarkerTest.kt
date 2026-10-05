@@ -246,7 +246,8 @@ internal class DeclarationLineMarkerTest : GutterTestBase() {
             } else {
                 val stale = answer.freshness is Freshness.Stale || state is DefinitionState.Unavailable
                 assertEquals("$state", 1, marks.size)
-                assertEquals("$state", stale, marks.single().tooltip!!.endsWith("(stale)"))
+                // A failed reload adds a line saying why under the first, which is the one that carries the mark.
+                assertEquals("$state", stale, marks.single().tooltip!!.substringBefore("<br>").endsWith("(stale)"))
             }
         }
     }

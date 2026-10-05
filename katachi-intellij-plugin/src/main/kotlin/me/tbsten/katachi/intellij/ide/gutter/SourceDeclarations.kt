@@ -66,14 +66,17 @@ internal object SourceDeclarations {
     }
 
     /** Where the declaration starts as katachi counts lines: its first annotation or modifier, after its KDoc. */
-    private fun startOffsetOf(declaration: KtDeclaration): Int =
+    fun startOffsetOf(declaration: KtDeclaration): Int =
         generateSequence(declaration.firstChild) { it.nextSibling }
             .firstOrNull { it !is PsiComment && it !is PsiWhiteSpace }
             ?.textRange?.startOffset
             ?: declaration.textRange.startOffset
 
-    /** The first leaf of [element] (or after it) that is not white space: where a ◆ for the whole file goes. */
+    /**
+     * The first leaf of [element] (or after it) that is not white space: where a ◆ for the whole file goes. A plain text file is
+     * one leaf, so one that holds only white space is not a leaf to put it on.
+     */
     fun firstLeafOf(element: PsiElement): PsiElement? =
         generateSequence(PsiTreeUtil.firstChild(element)) { PsiTreeUtil.nextLeaf(it) }
-            .firstOrNull { it !is PsiWhiteSpace && it.textLength > 0 }
+            .firstOrNull { it !is PsiWhiteSpace && it.textLength > 0 && it.text.isNotBlank() }
 }

@@ -92,6 +92,26 @@ internal class KatachiDebugBridge(private val project: Project) {
         return true
     }
 
+    /**
+     * The katachi ◆ of [path], a file open in the editor, as the daemon drew them: `gutter`, `open`, `marks` and one
+     * `mark=<line>|menu|<leaf>|<tooltip>` each (see [GutterDebugReader.describeGutter]).
+     */
+    fun describeGutter(path: String): String = gutterReader().describeGutter(path)
+
+    /** The katachi annotations of [path] as the daemon holds them: severity, range, description and fixes (see [GutterDebugReader.describeHighlights]). */
+    fun describeHighlights(path: String): String = gutterReader().describeHighlights(path)
+
+    /** Opens the menu of the ◆ on [line] of [path], returns its rows and closes it (see [GutterDebugReader.clickGutter]). */
+    fun clickGutter(path: String, line: Int): String = gutterReader().clickGutter(path, line)
+
+    /** Chooses the row starting with [row] in the menu of the ◆ on [line] of [path]: `chosen=<row>` or `chosen=none`. */
+    fun chooseFromGutter(path: String, line: Int, row: String): String = gutterReader().chooseFromGutter(path, line, row)
+
+    private fun gutterReader(): GutterDebugReader {
+        check(System.getProperty(ENABLED_PROPERTY) == "true") { "The katachi debug bridge is off; start the IDE with -D$ENABLED_PROPERTY=true." }
+        return GutterDebugReader(project)
+    }
+
     /** Presses Generate. */
     fun generate() = onEdt { viewModel.dispatch(KatachiIntent.Generate) }
 

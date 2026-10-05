@@ -18,6 +18,15 @@ internal class DefinitionModuleCacheTest : AnalysisTestBase() {
         cache.invalidate()
     }
 
+    // The light project is shared: an answer kept here (these tests read `true`) would make every later test's real ports find a definition module.
+    override fun tearDown() {
+        try {
+            cache.invalidate()
+        } finally {
+            super.tearDown()
+        }
+    }
+
     private fun syncFinishes() = project.messageBus.syncPublisher(ProjectDataImportListener.TOPIC).onImportFinished("/w/repo")
 
     private fun syncFails() = project.messageBus.syncPublisher(ProjectDataImportListener.TOPIC).onImportFailed("/w/repo", IllegalStateException("boom"))

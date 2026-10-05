@@ -2,6 +2,7 @@ package me.tbsten.katachi.intellij.ide.definition
 
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.module.ModuleManager
+import com.intellij.openapi.progress.ProgressManager
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.roots.ModuleRootManager
 import com.intellij.openapi.util.Computable
@@ -117,6 +118,8 @@ internal class DeclarationSiteResolver(
                 Runnable {
                     for (root in roots) {
                         VfsUtilCore.iterateChildrenRecursively(root, null) { file ->
+                            // The daemon asks from inside its own read action: a write that waits (typing) cancels it here, and no half walk is kept.
+                            ProgressManager.checkCanceled()
                             if (!file.isDirectory) byName.getOrPut(file.name) { mutableListOf() } += file
                             true
                         }

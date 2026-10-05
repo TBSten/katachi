@@ -59,6 +59,10 @@
         <multiHostInjector implementation="me.tbsten.katachi.intellij.ide.injection.KatachiTemplateInjector"/>
         <!-- The ◆ of the source files a role holds (ide-gutter design 2.1), listed in Settings | Editor | General | Gutter Icons. -->
         <codeInsight.lineMarkerProvider language="kotlin" implementationClass="me.tbsten.katachi.intellij.ide.gutter.KatachiDeclarationLineMarkerProvider"/>
+        <!-- Every other language (.md, .xml, .toml, plain text): one ◆ at the top of the file. Kotlin is left to the provider above. Both share one switch there. -->
+        <codeInsight.lineMarkerProvider language="" implementationClass="me.tbsten.katachi.intellij.ide.gutter.KatachiFileLineMarkerProvider"/>
+        <!-- The violations of the last check, under the declaration they reject (ide-gutter design 2.5); Problems lists them too. -->
+        <externalAnnotator language="kotlin" implementationClass="me.tbsten.katachi.intellij.ide.gutter.annotator.KatachiViolationAnnotator"/>
     </extensions>
 
     <actions>

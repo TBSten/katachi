@@ -41,6 +41,9 @@ internal class KatachiSettingsState : BaseState() {
     /** Load the templates without a user action, which runs Gradle. */
     var autoLoadTemplates by property(true)
 
+    /** Underline the violations of the last check in the source files, and put the ones without a line in a banner (ide-gutter design 2.5). */
+    var showViolationsInEditor by property(true)
+
     /** Folded module header bands, as `<linked root>|<Gradle path>`. */
     var collapsedModules by stringSet()
 }
@@ -92,6 +95,12 @@ internal class KatachiSettings : SimplePersistentStateComponent<KatachiSettingsS
         get() = state.autoLoadTemplates
         set(value) {
             state.autoLoadTemplates = value
+        }
+
+    var showViolationsInEditor: Boolean
+        get() = state.showViolationsInEditor
+        set(value) {
+            state.showViolationsInEditor = value
         }
 
     var openAfterGeneration: OpenAfterGeneration

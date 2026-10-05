@@ -3,6 +3,8 @@ package me.tbsten.katachi.intellij.ide
 import com.intellij.ui.components.JBCheckBox
 import com.intellij.util.ui.UIUtil
 import me.tbsten.katachi.intellij.AnalysisTestBase
+import me.tbsten.katachi.intellij.ide.gutter.HighlightingRefresher
+import java.nio.file.Path
 import javax.swing.JComponent
 
 internal class KatachiConfigurableTest : AnalysisTestBase() {
@@ -115,6 +117,36 @@ internal class KatachiConfigurableTest : AnalysisTestBase() {
             assertFalse(enabledBox.isSelected)
         } finally {
             settings.editorNotificationEnabled = true
+            settings.autoLoadTemplates = true
+        }
+    }
+
+    fun `test 違反を表示するチェックボックスが 1 つ見え 既定で選ばれている`() {
+        val box = box("settings.showViolations")
+        assertTrue(box.isSelected)
+        assertTrue(box.isEnabled)
+    }
+
+    fun `test 違反の表示を替えて適用すると 開いているファイルの描き直しを頼み 関係ない設定だけなら頼まない`() {
+        val settings = KatachiSettings.getInstance(project)
+        val refresher = HighlightingRefresher.getInstance(project)
+        val before = refresher.restarter
+        val redraws = mutableListOf<Pair<String, List<Path>>>()
+        refresher.restarter = { reason, roots -> redraws += reason to roots }
+        try {
+            autoLoadBox.doClick()
+            configurable.apply()
+            assertEquals("a setting the annotations do not read draws nothing", emptyList<Pair<String, List<Path>>>(), redraws)
+
+            box("settings.showViolations").doClick()
+            configurable.apply()
+
+            assertFalse(settings.showViolationsInEditor)
+            assertEquals("every open file is drawn again", 1, redraws.size)
+            assertEquals("no root: any open file may hold an annotation", emptyList<Path>(), redraws.single().second)
+        } finally {
+            refresher.restarter = before
+            settings.showViolationsInEditor = true
             settings.autoLoadTemplates = true
         }
     }

@@ -2,19 +2,14 @@ package me.tbsten.katachi.intellij.ide.gutter
 
 import com.intellij.codeInsight.daemon.GutterIconNavigationHandler
 import com.intellij.ide.DataManager
-import com.intellij.openapi.actionSystem.ActionPlaces
-import com.intellij.openapi.actionSystem.ActionUiKind
 import com.intellij.openapi.actionSystem.ActionUpdateThread
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
-import com.intellij.openapi.actionSystem.CommonDataKeys
 import com.intellij.openapi.actionSystem.DataContext
 import com.intellij.openapi.actionSystem.DefaultActionGroup
 import com.intellij.openapi.actionSystem.Separator
 import com.intellij.openapi.actionSystem.ex.ActionUtil
-import com.intellij.openapi.actionSystem.impl.SimpleDataContext
 import com.intellij.openapi.project.DumbAware
-import com.intellij.openapi.project.DumbService
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.popup.JBPopupFactory
 import com.intellij.openapi.ui.popup.ListPopup
@@ -66,6 +61,9 @@ internal class GutterMenu(
     /** The menu's current rows as an action group: what the popup shows, and what a test chooses from. */
     fun actionGroup(parent: DataContext): DefaultActionGroup = contextOf(parent).let { groupOf(captured.model(availability()), it) }
 
+    /** The heading of the menu as it is now. */
+    fun title(): String = captured.model(availability()).title
+
     private fun availability() = MenuAvailability(
         runCheck = ports.action(RUN_CHECK) != null,
         refresh = ports.action(REFRESH) != null,
@@ -73,11 +71,7 @@ internal class GutterMenu(
     )
 
     /** The popup's data context with this file and project in it: `katachi.RunCheck` finds its module from the file. */
-    private fun contextOf(parent: DataContext): DataContext = SimpleDataContext.builder()
-        .add(CommonDataKeys.VIRTUAL_FILE, captured.file)
-        .add(CommonDataKeys.PROJECT, project)
-        .setParent(parent)
-        .build()
+    private fun contextOf(parent: DataContext): DataContext = GutterActions.contextOf(project, captured.file, parent)
 
     private fun groupOf(model: MenuModel, context: DataContext): DefaultActionGroup {
         val group = DefaultActionGroup()
@@ -117,15 +111,7 @@ internal class GutterMenu(
         effects.openGenerateDialog(GenerateDialogRequest(origin, target.template, ports.seeds().seedsFor(origin, target.template)))
     }
 
-    private fun performAction(id: String, context: DataContext) {
-        val action = ports.action(id) ?: return
-        val event = AnActionEvent.createEvent(action, context, null, ActionPlaces.POPUP, ActionUiKind.POPUP, null)
-        val result = ActionUtil.performAction(action, event)
-        // The platform says why itself while indexing; otherwise a disabled action would do nothing and say nothing.
-        if (result.isIgnored && !DumbService.isDumb(project)) {
-            ports.notify(KatachiBundle.message("gutter.actionIgnored", action.templatePresentation.text.orEmpty()))
-        }
-    }
+    private fun performAction(id: String, context: DataContext) = GutterActions.perform(project, ports, id, context)
 
     /** A row that opens more rows. Dumb aware, or the popup would leave it out while indexing, with the rows in it. */
     class SubMenu(text: String, rows: List<AnAction>) : DefaultActionGroup(text, rows), DumbAware {
@@ -150,7 +136,10 @@ internal class GutterMenu(
             event.presentation.putClientProperty(ActionUtil.SECONDARY_TEXT, row.trailing)
         }
 
-        override fun actionPerformed(event: AnActionEvent) {
+        override fun actionPerformed(event: AnActionEvent) = choose()
+
+        /** What choosing the row does: nothing for a row that cannot be chosen. */
+        fun choose() {
             row.target?.takeIf { row.enabled }?.let(run)
         }
     }

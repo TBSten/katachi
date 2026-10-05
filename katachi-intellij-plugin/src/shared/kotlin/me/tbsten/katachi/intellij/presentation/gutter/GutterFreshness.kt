@@ -1,6 +1,7 @@
 package me.tbsten.katachi.intellij.presentation.gutter
 
 import me.tbsten.katachi.intellij.model.DefinitionState
+import me.tbsten.katachi.intellij.model.DefinitionUnavailableReason
 import me.tbsten.katachi.intellij.model.Freshness
 import java.time.Instant
 
@@ -32,4 +33,22 @@ internal object GutterFreshness {
      */
     fun shouldRedraw(before: DefinitionState?, after: DefinitionState): Boolean =
         after !is DefinitionState.Loading && before != after
+
+    /**
+     * Whether a ◆ that sees [state] asks the service to read the definition (design 2.6, `NotLoaded`): nothing was asked yet
+     * and the user lets katachi load by itself ([autoLoad], `autoLoadTemplates`), or it was off when the service looked and is
+     * on again. The same rule as the editor notification's.
+     */
+    fun shouldEnsureLoaded(state: DefinitionState, autoLoad: Boolean): Boolean =
+        autoLoad && (
+            state == DefinitionState.NotLoaded ||
+                (state is DefinitionState.Unavailable && state.reason == DefinitionUnavailableReason.LoadingWithoutUserDisabled)
+            )
+
+    /**
+     * Whether the definition was written by a katachi older than the IDE reads (design 2.6, `KatachiTooOld`): the gutter and the
+     * annotations draw nothing, though the state may still carry an earlier answer.
+     */
+    fun isTooOld(state: DefinitionState): Boolean =
+        state is DefinitionState.Unavailable && state.reason == DefinitionUnavailableReason.KatachiTooOld
 }

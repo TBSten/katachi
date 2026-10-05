@@ -5,7 +5,6 @@ import com.intellij.psi.PsiFile
 import me.tbsten.katachi.intellij.ide.definition.DefinitionModelService
 import me.tbsten.katachi.intellij.ide.sdkCall
 import me.tbsten.katachi.intellij.model.DefinitionState
-import me.tbsten.katachi.intellij.model.DefinitionUnavailableReason
 import me.tbsten.katachi.intellij.model.FileRoles
 import me.tbsten.katachi.intellij.presentation.gutter.GutterFreshness
 import me.tbsten.katachi.intellij.presentation.gutter.GutterInput
@@ -40,9 +39,13 @@ internal object GutterPlacement {
         val service = ports.definitions() ?: return null
         HighlightingRefresher.getInstance(file.project).follow(service, ports.violations())
         val virtualFile = file.viewProvider.virtualFile
-        // The definition was written by a katachi older than the IDE reads (design 2.6): nothing it kept is shown, though `previous` still holds an answer.
         val state = service.state.value
-        if (state is DefinitionState.Unavailable && state.reason == DefinitionUnavailableReason.KatachiTooOld) return null
+        // Nothing was read yet: ask the service to (it does not wait and loads once however often it is asked). The state change draws the ◆ then.
+        if (GutterFreshness.shouldEnsureLoaded(state, ports.settings().autoLoadTemplates)) {
+            sdkCall("ask the definition to load for the gutter") { service.ensureLoaded() }
+        }
+        // The definition was written by a katachi older than the IDE reads (design 2.6): nothing it kept is shown, though `previous` still holds an answer.
+        if (GutterFreshness.isTooOld(state)) return null
         val roles = service.forFile(virtualFile) ?: return null
         val kind = kindOf(file)
         val sources = if (kind == SourceFileKind.Kotlin && file is KtFile) SourceDeclarations.of(file) else emptyList()

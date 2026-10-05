@@ -75,6 +75,11 @@ internal class HighlightingRefresher(private val project: Project, private val s
         if (followed.compareAndSet(current, Followed(definitions, violations, job))) current?.job?.cancel() else job.cancel()
     }
 
+    /** Draws every open file again now, for a change that is not a state of the two services (a setting). */
+    fun redrawNow(reason: String) {
+        restarter(reason, emptyList())
+    }
+
     private fun rootsOf(definitions: DefinitionModelService): List<Path> =
         definitions.definitions.map { it.definition?.projectRoot ?: it.module.linkedRootPath }.distinct()
 

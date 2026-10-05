@@ -116,6 +116,48 @@ internal class DefinitionServiceTest : DefinitionServiceTestBase() {
         )
     }
 
+    // The line marker and the annotator ask from inside the daemon's read action: a walk that cannot be cancelled would make a key stroke wait for all of it.
+    // (The VFS iteration checks too, so this pins the behaviour, not the resolver's own check.)
+    fun `test 宣言元の探索は ファイルごとに取り消しを確かめ 取り消されたら止まって 半端な答えを残さない`() {
+        install()
+        loaded()
+        val arch = definition.definitions.single().module
+        addTestSourceRoot(root.resolve("arch/src/jvmTest/kotlin"))
+        repeat(FILES) { writeFile("arch/src/jvmTest/kotlin/roles/Role$it.kt", "// role\n") }
+        val site = DeclarationSiteRef("Role0.kt", 1)
+        val progress = com.intellij.openapi.progress.ProgressManager.getInstance() as com.intellij.openapi.progress.impl.ProgressManagerImpl
+
+        // Every check of the walk is seen by a hook: one for each file at least.
+        projectService.siteResolver.invalidateRoots()
+        var checks = 0
+        val counting = com.intellij.openapi.progress.impl.CoreProgressManager.CheckCanceledHook {
+            checks++
+            false
+        }
+        progress.addCheckCanceledHook(counting)
+        try {
+            assertTrue(definition.resolve(arch.id, site) is ResolvedSite.Found)
+        } finally {
+            progress.removeCheckCanceledHook(counting)
+        }
+        assertTrue("one check for each of the $FILES files: $checks", checks >= FILES)
+
+        // A cancel in the middle of the walk (a write is waiting): the walk stops, and the next ask walks again and answers.
+        projectService.siteResolver.invalidateRoots()
+        var seen = 0
+        val cancelling = com.intellij.openapi.progress.impl.CoreProgressManager.CheckCanceledHook {
+            if (++seen == FILES / 2) throw com.intellij.openapi.progress.ProcessCanceledException()
+            false
+        }
+        progress.addCheckCanceledHook(cancelling)
+        try {
+            assertThrows(com.intellij.openapi.progress.ProcessCanceledException::class.java) { definition.resolve(arch.id, site) }
+        } finally {
+            progress.removeCheckCanceledHook(cancelling)
+        }
+        assertTrue("the next ask walks again and answers", definition.resolve(arch.id, site) is ResolvedSite.Found)
+    }
+
     fun `test 定義の test ソースセット以外のルートは宣言元の候補にも自動再読み込みの契機にも入れない`() {
         KatachiSettings.getInstance(project).autoReloadOnSave = true
         install(autoReloadDelayMillis = 200)
@@ -218,5 +260,9 @@ internal class DefinitionServiceTest : DefinitionServiceTestBase() {
 
         waitState("loaded") { it is DefinitionState.Ready && !projectService.viewModel.isLoadRunning }
         assertEquals(1, gradle.loadRequests.size)
+    }
+
+    private companion object {
+        const val FILES = 12
     }
 }

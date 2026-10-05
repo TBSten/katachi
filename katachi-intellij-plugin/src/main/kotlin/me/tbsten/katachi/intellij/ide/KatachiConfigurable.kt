@@ -12,6 +12,7 @@ import com.intellij.ui.dsl.builder.panel
 import com.intellij.ui.dsl.builder.selected
 import com.intellij.ui.layout.and
 import me.tbsten.katachi.intellij.data.generate.OpenAfterGeneration
+import me.tbsten.katachi.intellij.ide.gutter.HighlightingRefresher
 
 /**
  * Settings | Tools | katachi: the choices [KatachiSettings] offers. The three detail notification
@@ -57,6 +58,9 @@ internal class KatachiConfigurable(private val project: Project) : BoundConfigur
                         .bindSelected(settings::autoLoadTemplates)
                 }
             }
+            row {
+                checkBox(KatachiBundle.message("settings.showViolations")).bindSelected(settings::showViolationsInEditor)
+            }
             buttonsGroup(KatachiBundle.message("settings.openAfter")) {
                 row { radioButton(KatachiBundle.message("settings.open.first"), OpenAfterGeneration.First) }
                 row { radioButton(KatachiBundle.message("settings.open.all"), OpenAfterGeneration.All) }
@@ -65,10 +69,15 @@ internal class KatachiConfigurable(private val project: Project) : BoundConfigur
         }
     }.getOrElse { DialogPanel() }
 
-    /** Applies the page, then asks the open editors to redraw their notifications for the new choices. */
+    /** Applies the page, then asks the open editors to redraw their notifications and annotations for the new choices. */
     override fun apply() {
+        val showViolations = KatachiSettings.getInstance(project).showViolationsInEditor
         super.apply()
         sdkCall("update the editor notifications") { EditorNotifications.getInstance(project).updateAllNotifications() }
+        // The annotator is asked only when the daemon runs again: an unchanged file would keep (or lack) the underlines.
+        if (showViolations != KatachiSettings.getInstance(project).showViolationsInEditor) {
+            HighlightingRefresher.getInstance(project).redrawNow("the setting of the violation annotations changed")
+        }
     }
 
     companion object {

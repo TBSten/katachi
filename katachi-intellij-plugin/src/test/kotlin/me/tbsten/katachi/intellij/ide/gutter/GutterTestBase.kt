@@ -2,6 +2,7 @@ package me.tbsten.katachi.intellij.ide.gutter
 
 import com.intellij.codeInsight.daemon.DaemonCodeAnalyzer
 import com.intellij.codeInsight.daemon.LineMarkerInfo
+import com.intellij.codeInsight.daemon.LineMarkerProvider
 import com.intellij.codeInsight.daemon.LineMarkerProviders
 import com.intellij.codeInsight.daemon.impl.DaemonCodeAnalyzerImpl
 import com.intellij.openapi.actionSystem.AnAction
@@ -59,6 +60,12 @@ internal abstract class GutterTestBase : AnalysisTestBase() {
     lateinit var violations: FakeViolationsService
     lateinit var provider: KatachiDeclarationLineMarkerProvider
 
+    /** `Show katachi violations in the editor`. */
+    @Volatile var showViolations: Boolean = true
+
+    /** `Settings | Tools | katachi`: the gutter may ask the definition to load itself. */
+    @Volatile var autoLoadTemplates: Boolean = true
+
     /** Whether the synced data has a definition module. */
     @Volatile var hasDefinitionModule: Boolean = true
 
@@ -109,6 +116,7 @@ internal abstract class GutterTestBase : AnalysisTestBase() {
         seeds = { seedPort },
         action = { id -> actions[id] },
         notify = { balloons += it },
+        settings = { GutterPorts.GutterSettings(showViolationsInEditor = showViolations, autoLoadTemplates = autoLoadTemplates) },
     )
 
     /** A ready definition whose answer for the light file [fileName] is [roles] and [explanations]. */
@@ -220,13 +228,14 @@ internal abstract class GutterTestBase : AnalysisTestBase() {
         .mapNotNull { it.navigationHandler as? GutterMenu }
 
     /** What the provider gives for every element of [file] at once, as the daemon would ask it; works in dumb mode and for `.kts`. */
-    fun collectedDirectly(file: PsiFile): List<DrawnMark> = collectedInfos(file).map(::drawnOf).sortedBy { it.line }
+    fun collectedDirectly(file: PsiFile, using: LineMarkerProvider = provider): List<DrawnMark> =
+        collectedInfos(file, using).map(::drawnOf).sortedBy { it.line }
 
     /** [collectedDirectly] before it is read as [DrawnMark]. */
-    fun collectedInfos(file: PsiFile): List<LineMarkerInfo<*>> {
+    fun collectedInfos(file: PsiFile, using: LineMarkerProvider = provider): List<LineMarkerInfo<*>> {
         val elements = SyntaxTraverser.psiTraverser(file).toList()
         val result = mutableListOf<LineMarkerInfo<*>>()
-        runReadActionBlocking { provider.collectSlowLineMarkers(elements.toMutableList(), result) }
+        runReadActionBlocking { using.collectSlowLineMarkers(elements.toMutableList(), result) }
         return result.sortedBy { it.startOffset }
     }
 

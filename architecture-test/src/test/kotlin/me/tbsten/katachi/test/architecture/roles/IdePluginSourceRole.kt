@@ -67,6 +67,11 @@ private val FILES_WITHOUT_SDK_CALLS: Map<String, String> = mapOf(
     "DefinitionModelService" to "an interface: types and signatures, no SDK call; the implementation wraps its calls in sdkCall",
     "ResolvedSite" to "a result type that holds a VirtualFile; no SDK call; the implementation that finds it wraps its calls in sdkCall",
     "ViolationsService" to "an interface: types and signatures, no SDK call; the implementation wraps its calls in sdkCall",
+    "GutterActions" to "runs the foundation's actions; its callers (the gutter menu's row, the quick fix) call it inside sdkCall",
+    "AnnotationRanges" to "reads the PSI's declarations and the Document; its only caller (the violation annotator's doAnnotate) wraps the call in sdkCall",
+    "ViolationAnnotation" to "types that hold a PsiFile, a VirtualFile and a TextRange; no SDK call",
+    "KatachiDeclarationLineMarkerProvider" to "hands the daemon's elements to GutterMarkerDrawing, which wraps every SDK call in sdkCall",
+    "KatachiFileLineMarkerProvider" to "hands the daemon's elements to GutterMarkerDrawing, which wraps every SDK call in sdkCall",
 )
 
 /** Whether [file] imports `com.intellij.` and never says `sdkCall`, without a reason in [FILES_WITHOUT_SDK_CALLS]. */

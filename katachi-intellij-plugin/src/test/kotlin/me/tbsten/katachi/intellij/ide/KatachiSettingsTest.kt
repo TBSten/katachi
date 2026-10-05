@@ -100,4 +100,14 @@ internal class KatachiSettingsTest : AnalysisTestBase() {
         val declared = KatachiSettingsState::class.java.declaredFields.map { it.name }
         assertFalse(declared.any { it.contains("dismiss", ignoreCase = true) || it.contains("seen", ignoreCase = true) || it.contains("closed", ignoreCase = true) })
     }
+
+    fun `test 違反の注釈は既定で表示し 保存して読み戻せる`() {
+        assertTrue(KatachiSettings().showViolationsInEditor)
+
+        val written = KatachiSettings().apply { showViolationsInEditor = false }
+        val read = KatachiSettings()
+        read.loadState(XmlSerializer.deserialize(XmlSerializer.serialize(written.state), KatachiSettingsState::class.java))
+
+        assertFalse(read.showViolationsInEditor)
+    }
 }
