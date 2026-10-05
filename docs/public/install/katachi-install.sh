@@ -202,6 +202,34 @@ katachi-install.sh — katachi のインストールのうち機械的にでき�
       配列に1件追記する。merge と違い、既存の要素を消さない。
       check-list: violation / question / changed
       report:     module / role / tool / excluded / codebase-question / template
+      question / codebase-question は id（q1, q2, ...）を自動で採番する。
+      追記の前後で件数を確かめ、合わなければ止まる（並行して書き込んだときの検知）。
+
+      add role --group <group> [--constraint-only --note <理由>]
+          --group は定義での束ね先（入れ子は . 区切り: feature.ui）。Gradle のビルドファイルは
+          gradle() が受け持つので --layout に書けない（buildSrc / includeBuild したビルドは除く）。
+          制約を付けるための Role だけ --constraint-only --note <理由> で記録する。
+      add module --deviation <文>
+          同じ kind の他のモジュールと構成が違う点（無ければ省略）。
+      add excluded は .gitignore で除外済みのパスを拒む（katachi はもともと見ない）。
+
+  sh katachi-install.sh preferences [show]
+  sh katachi-install.sh preferences set <key>=<value> ...
+      書き方の方針を表示 / 記録する（手順書 1-3）。show は 1 行 1 キーで、値と
+      「推奨 / 記録済み / 検出: <根拠>」を出す。知らないキー・値は止まる。
+      key: nestedGroups (yes/no) / moduleDir (パス) / testFramework (junit5/kotest) /
+           dependencyStyle (catalog/literal) / constraintNames (plain/numbered) /
+           oneRolePerFile (yes/no)
+      moduleDir はチェックリストの meta.moduleDir に、ほかは preferences に記録される。
+      lint が nestedGroups / oneRolePerFile を、scaffold が testFramework / dependencyStyle を読む。
+
+  sh katachi-install.sh answers [show] [--target report|check-list]
+  sh katachi-install.sh answers import <json> [--target report|check-list]
+  sh katachi-install.sh answers set <id> <回答> [--note <文>] [--target report|check-list]
+      確認事項（questions）への回答を表示 / 取り込む。import はブラウザで書き出した JSON
+      （{"target": "report", "answers": {"q1": {"answer": "...", "note": null}}}）を読み、
+      知らない id は飛ばして件数を出す。--target の既定は JSON の target、無ければ report。
+      回答は answers（id ごと）に残り、summary が回答済みの件数と未回答だけを出す。
 
   sh katachi-install.sh docs [--small] [--refresh]
       ガイド全文（llms-full.txt）を作業用ディレクトリの tmp/cache/ に取得し、
@@ -233,7 +261,9 @@ katachi-install.sh — katachi のインストールのうち機械的にでき�
 
   sh katachi-install.sh lint
       定義（検査用モジュールの src/test/kotlin）を読み、種類の違うファイルを1つの
-      Role に抱えていそうなものを列挙する。check 3-2 / check 3-3 でも自動で走る。
+      Role に抱えていそうなもの、Gradle のファイルを手書きで宣言した Role（制約を持つものは
+      katachi 0.3 以降なら hook への移し方を出し、0.3 より前なら指摘しない）、平たい group、
+      分けていないファイル、documented = false の候補を列挙する。check 3-2 / check 3-3 でも自動で走る。
       素朴なテキスト走査なので誤検知があり得る。点検の結果では失敗にしない（0 を返す）。
       定義のディレクトリが無ければ（scaffold 前、置き場所の食い違い）1 を返す。
 
@@ -356,6 +386,38 @@ Usage:
       Appends one entry to an array. Unlike merge, existing entries are kept.
       check-list: violation / question / changed
       report:     module / role / tool / excluded / codebase-question / template
+      question / codebase-question get an id (q1, q2, ...) automatically.
+      The count is checked before and after appending; a mismatch stops the command
+      (detects concurrent writes).
+
+      add role --group <group> [--constraint-only --note <reason>]
+          --group is where the Role goes in the definition (nested with dots: feature.ui).
+          Gradle build files cannot be a --layout since gradle() takes care of them
+          (except buildSrc and included builds). Only a Role that exists to attach a
+          constraint is recorded, with --constraint-only --note <reason>.
+      add module --deviation <text>
+          How this module differs from the other modules of the same kind (omit if none).
+      add excluded rejects a path already excluded by .gitignore (katachi never looks at it).
+
+  sh katachi-install.sh preferences [show]
+  sh katachi-install.sh preferences set <key>=<value> ...
+      Shows / records how the definition should be written (step 1-3 of the guide). show prints
+      one key per line with the value and "recommended / recorded / detected: <evidence>".
+      An unknown key or value stops the command.
+      key: nestedGroups (yes/no) / moduleDir (path) / testFramework (junit5/kotest) /
+           dependencyStyle (catalog/literal) / constraintNames (plain/numbered) /
+           oneRolePerFile (yes/no)
+      moduleDir is recorded as meta.moduleDir of the check list, the others under preferences.
+      lint reads nestedGroups / oneRolePerFile; scaffold reads testFramework / dependencyStyle.
+
+  sh katachi-install.sh answers [show] [--target report|check-list]
+  sh katachi-install.sh answers import <json> [--target report|check-list]
+  sh katachi-install.sh answers set <id> <answer> [--note <text>] [--target report|check-list]
+      Shows / imports the answers to the questions. import reads the JSON exported from the
+      browser ({"target": "report", "answers": {"q1": {"answer": "...", "note": null}}}),
+      skips unknown ids and prints the counts. --target defaults to the target in the JSON,
+      otherwise report. Answers are kept under answers (per id); summary prints the number
+      answered and lists only the unanswered ones.
 
   sh katachi-install.sh docs [--small] [--refresh]
       Fetches the full guide (llms-full.txt) into tmp/cache/ in the working directory
@@ -387,7 +449,10 @@ Usage:
 
   sh katachi-install.sh lint
       Reads the definition (src/test/kotlin of the test module) and lists Roles that
-      seem to hold files of different kinds. Also runs on check 3-2 / check 3-3.
+      seem to hold files of different kinds, hand-written Roles for Gradle files (ones with
+      constraints get the way to move them into a hook on katachi 0.3 or later, and are not
+      reported before 0.3), flat groups, files not split, and candidates for documented = false.
+      Also runs on check 3-2 / check 3-3.
       It is a plain text scan, so false positives are possible. Findings never fail it (returns 0).
       Returns 1 if the definition directory does not exist (before scaffold, or a different location).
 
@@ -3218,14 +3283,57 @@ import os, re, sys
 # 定義のディレクトリ。チェックリストに init が記録したプロジェクトルートから決める。
 # 読めなければカレントディレクトリ（init / scaffold と同じく Gradle のルートで呼ばれる前提）。
 project_root = os.getcwd()
+# 書き方の方針（preferences。design 4）。nestedGroups / oneRolePerFile が no なら、その点検はしない。
+prefs = {}
 try:
     import json
-    meta = json.load(open(sys.argv[1], encoding="utf-8")).get("meta") or {}
+    checklist = json.load(open(sys.argv[1], encoding="utf-8"))
+    meta = checklist.get("meta") or {}
     if meta.get("projectRoot"):
         project_root = meta["projectRoot"]
+    prefs = checklist.get("preferences") or {}
 except Exception:
     pass
-root = os.path.join(project_root, sys.argv[2], "src", "test", "kotlin")
+module_dir = sys.argv[2]
+plugin_id = sys.argv[3] if len(sys.argv) > 3 else "me.tbsten.katachi"
+root = os.path.join(project_root, module_dir, "src", "test", "kotlin")
+
+
+def katachi_version():
+    # プロジェクトの katachi の版。(a) 検査用モジュールの build.gradle(.kts) の plugin の座標
+    # → (b) version catalog の katachi の版 → (c) 無ければ None（0.3 以降として扱う）。
+    for name in ("build.gradle.kts", "build.gradle"):
+        path = os.path.join(project_root, module_dir, name)
+        if not os.path.isfile(path):
+            continue
+        src = open(path, encoding="utf-8", errors="replace").read()
+        m = re.search(r"""id\s*\(?\s*["']""" + re.escape(plugin_id) + r"""["']\s*\)?\s+version\s+["']([0-9][^"']*)["']""", src)
+        if m:
+            return m.group(1)
+    toml = os.path.join(project_root, "gradle", "libs.versions.toml")
+    if os.path.isfile(toml):
+        src = open(toml, encoding="utf-8", errors="replace").read()
+        m = re.search(r"""(?m)^\s*katachi\s*=\s*["']([0-9][^"']*)["']""", src)
+        if m:
+            return m.group(1)
+        m = re.search(r"""me\.tbsten\.katachi:katachi[^\n]*version\s*=\s*["']([0-9][^"']*)["']""", src)
+        if m:
+            return m.group(1)
+    return None
+
+
+def version_before(version, major, minor):
+    # version が major.minor より前なら True。読めなければ False（新しい方の扱い）。
+    m = re.match(r"^(\d+)\.(\d+)", version or "")
+    if not m:
+        return False
+    return (int(m.group(1)), int(m.group(2))) < (major, minor)
+
+
+KATACHI_VERSION = katachi_version()
+# 0.3 より前の katachi では gradle { buildScript { } } が無いので、制約を持つ手書きの Gradle Role は
+# 黙って通す（design 18）。0.3 以降（版が読めないときも）は hook への移し方を出す。
+HOOKS_AVAILABLE = not version_before(KATACHI_VERSION, 0, 3)
 
 
 def included_builds():
@@ -3369,24 +3477,51 @@ def tokenize(src):
 
 
 class Role:
-    def __init__(self, name, path, line):
+    def __init__(self, name, path, line, group):
         self.name, self.path, self.line = name, path, line
-        self.files = []      # (名前, 行, 宣言の場所)
-        self.catchall = []   # (anyFile / ignore, 対象, 行)
-        self.places = []     # 宣言の場所（本体とテストの同居を見る）
+        self.group = group          # 直近の group（無ければ None）
+        self.files = []             # (名前, 行, 宣言の場所)
+        self.catchall = []          # (anyFile / ignore, 対象, 行)
+        self.places = []            # 宣言の場所（本体とテストの同居を見る）
+        self.has_constraint = False # 本体（layout の外）に fileConstraint / konsist / ktFileContent / konture がある
+        self.documented = False     # documented = ... を自分で書いている
+
+    def documented_somewhere(self):
+        # 自分か、外側の group のどれかが documented を書いていれば True（group の false は中の Role にも効く）
+        g = self.group
+        while g is not None:
+            if g.documented:
+                return True
+            g = g.parent
+        return self.documented
 
 
-def scan(path, roles):
+class Group:
+    def __init__(self, name, path, line, parent):
+        self.name, self.path, self.line, self.parent = name, path, line, parent
+        self.direct_roles = 0       # 直下の Role の数
+        self.has_group = False      # 直下に group がある
+        self.documented = False
+
+
+# hook（gradle { buildScript { } } など）は `識別子 {` なので block 扱いになり、Role にならない。
+# この性質を壊さないこと（gradle-role-constraints の設計 5 の条件 1）。
+CONSTRAINT_CALLS = ("fileConstraint", "konsist", "ktFileContent", "konture")
+
+
+def scan(path, roles, groups, decls):
     src = open(path, encoding="utf-8", errors="replace").read()
     toks = tokenize(src)
-    stack = []  # (種類, 名前)
+    stack = []  # (種類, 名前 / Group)
     role = None
     for k, (t, v, line) in enumerate(toks):
         prev = toks[k - 1] if k > 0 else (None, None, 0)
         prev2 = toks[k - 2] if k > 1 else (None, None, 0)
         prev3 = toks[k - 3] if k > 2 else (None, None, 0)
+        nxt = toks[k + 1] if k + 1 < len(toks) else (None, None, 0)
         kinds = [s[0] for s in stack]
         in_layout = "layout" in kinds
+        group = next((s[1] for s in reversed(stack) if s[0] == "group"), None)
         if t == "op" and v == "{":
             # Role の宣言は "Name".role { }。"Name" { } は v0.2 までの書き方で、layout { } の外にあれば Role として読む
             role_call = prev == ("id", "role", prev[2]) and prev2[1] == "." and prev3[0] == "str" and prev3[1] is not None
@@ -3397,11 +3532,19 @@ def scan(path, roles):
                 elif "role" in kinds or "other" in kinds or re.search(r"\s", name_tok[1]):
                     stack.append(("other", None))
                 else:
-                    role = Role(name_tok[1], path, name_tok[2])
+                    role = Role(name_tok[1], path, name_tok[2], group)
                     roles.append(role)
+                    decls.setdefault(path, []).append(("Role", role.name, role.line))
+                    if group is not None:
+                        group.direct_roles += 1
                     stack.append(("role", name_tok[1]))
             elif prev == ("id", "group", prev[2]) and prev2[1] == ".":
-                stack.append(("group", None))
+                g = Group(prev3[1] if prev3[0] == "str" else "?", path, prev3[2], group)
+                groups.append(g)
+                decls.setdefault(path, []).append(("group", g.name, g.line))
+                if group is not None:
+                    group.has_group = True
+                stack.append(("group", g))
             elif prev[0] == "id" and prev[1] == "module" and prev2[1] == "." and in_layout:
                 stack.append(("dir", prev3[1] or "?"))
             elif prev[0] == "id" and prev[1] == "layout" and "role" in kinds:
@@ -3417,6 +3560,16 @@ def scan(path, roles):
                 if popped[0] == "role":
                     role = None
             continue
+        if not in_layout and t == "id":
+            # layout の外: 制約の呼び出しと documented = ... を Role / group に記録する
+            if role is not None and v in CONSTRAINT_CALLS and nxt[1] in ("(", "{"):
+                role.has_constraint = True
+            elif v == "documented" and nxt[1] == "=":
+                if role is not None:
+                    role.documented = True
+                elif group is not None:
+                    group.documented = True
+            continue
         if not (in_layout and role is not None):
             continue
         dirs = "/".join(s[1] for s in stack if s[0] == "dir" and s[1])
@@ -3429,7 +3582,6 @@ def scan(path, roles):
                 break
             b -= 1
         where = dirs + "/" + "/".join(reversed(chain))
-        nxt = toks[k + 1] if k + 1 < len(toks) else (None, None, 0)
         if t == "id" and v in ("file", "ktFile", "ktsFile") and prev[1] == "." and nxt[1] == "(":
             if prev2[0] == "str" and prev2[1] is not None:
                 name = prev2[1] + {"file": "", "ktFile": ".kt", "ktsFile": ".kts"}[v]
@@ -3444,14 +3596,17 @@ def scan(path, roles):
 
 
 roles = []
+groups = []
+decls = {}  # ファイル → [(Role / group, 名前, 行)]
 # 定義のディレクトリの有無は sh 側（require_definition_dir）が先に確かめて、無ければ止めている。
 for d, _, fs in os.walk(root):
     for f in sorted(fs):
         if f.endswith(".kt"):
-            scan(os.path.join(d, f), roles)
+            scan(os.path.join(d, f), roles, groups, decls)
 
 warnings = []
 gradle_hand = []
+gradle_constrained = []
 for r in roles:
     reasons = []
     kinds = {}
@@ -3461,7 +3616,11 @@ for r in roles:
             kinds.setdefault(label, []).append(name.rsplit("/", 1)[-1])
             # buildSrc と includeBuild したビルドの下は gradle() の対象外なので勧めない
             if gradle and not in_included_build(where):
-                gradle_hand.append((r, name))
+                if not r.has_constraint:
+                    gradle_hand.append((r, name))
+                elif HOOKS_AVAILABLE:
+                    # 制約の行き先（hook）まで言う。0.3 より前では黙って通す（design 18）
+                    gradle_constrained.append((r, name, label))
     if len(kinds) >= 2:
         reasons.append(t("種類の違うファイルが同居しています: ", "Files of different kinds share this Role: ") + " / ".join(
             t("%s（%s）", "%s (%s)") % (label, ", ".join(sorted(set(names)))) for label, names in kinds.items()))
@@ -3480,7 +3639,36 @@ for r in roles:
     if reasons:
         warnings.append((r, reasons))
 
-if not warnings and not gradle_hand:
+# 3 つの点検（design 7）。どれも失敗にはしない。
+nested_groups = prefs.get("nestedGroups") != "no"
+one_role_per_file = prefs.get("oneRolePerFile") != "no"
+# 平たい group: 直下に Role が 8 個以上あり、group を含まない
+flat_groups = [g for g in groups if g.direct_roles >= 8 and not g.has_group] if nested_groups else []
+# 分けていないファイル: 1 ファイルに Role か group が 2 つ以上
+unsplit_files = [(p, ds) for p, ds in sorted(decls.items()) if len(ds) >= 2] if one_role_per_file else []
+# documented = false の候補: documented が無く、layout のファイルが全部 KINDS の非 Gradle の種類か、ignore() だけ
+documented_candidates = []
+for r in roles:
+    if r.documented_somewhere():
+        continue
+    if r.files:
+        labels = [kind_of(name) for name, _, _ in r.files]
+        if all(label and not gradle for label, gradle in labels):
+            documented_candidates.append((r, ", ".join(sorted(set(label for label, _ in labels)))))
+    elif r.catchall and all(v == "ignore" for v, _, _ in r.catchall):
+        documented_candidates.append((r, "ignore()"))
+
+HOOK_OF = {
+    "settings.gradle(.kts)": "settingsScript { }",
+    "build.gradle(.kts)": "buildScript { }",
+    "gradle.properties": "gradleProperties { }",
+    "gradlew": "launcherScript { }",
+    "gradle-wrapper.jar": "wrapperJar { }",
+    "gradle-wrapper.properties": "wrapperProperties { }",
+    "version catalog": "versionCatalog { }",
+}
+
+if not warnings and not gradle_hand and not gradle_constrained and not flat_groups and not unsplit_files and not documented_candidates:
     print(t("Role の点検: 種類の違うファイルを抱えていそうな Role は見つかりませんでした（%d 件を走査）。",
             "Role check: no role seems to hold files of different kinds (%d scanned).") % len(roles))
     sys.exit(0)
@@ -3519,9 +3707,49 @@ version catalog を種類ごとの Role に分けて宣言します（import me.
 and the version catalog as one Role per kind (import me.tbsten.katachi.dsl.gradle.*).
 Remove these Roles and replace them with the single line gradle(). buildSrc and included
 builds are not covered by gradle(), so keep only those in your own Roles (this check skips them too)."""))
+if gradle_constrained:
+    print()
+    print(t("Gradle のファイルを手書きの Role で宣言し、その Role に制約を付けています:",
+            "Gradle files are declared in hand-written Roles that also carry constraints:"))
+    for r, name, label in sorted(set(gradle_constrained), key=lambda x: (x[0].path, x[0].line)):
+        print(t('  %s:%d Role "%s"（%s → gradle { %s }）', '  %s:%d Role "%s" (%s -> gradle { %s })')
+              % (file_uri(r.path), r.line, r.name, name.rsplit("/", 1)[-1], HOOK_OF.get(label, "buildScript { }")))
+    print(t("""配置は gradle() の 1 行に置き換え、制約は gradle { buildScript { } }（settings なら settingsScript { }、
+catalog なら versionCatalog { }）に移してください（katachi 0.3 以降）。katachi の Role（BuildScript など）と
+同名の "X".role { } は重複の例外になります。制約は hook に書いてください。""",
+            """Replace the placement with the single line gradle() and move the constraints into
+gradle { buildScript { } } (settingsScript { } for settings, versionCatalog { } for the catalog)
+(katachi 0.3 or later). A "X".role { } with the same name as one of the Roles katachi declares
+(BuildScript and so on) is a duplicate declaration error; write the constraints in the hook."""))
+if flat_groups:
+    print()
+    print(t("平たい group（直下に Role が 8 個以上あり、group を含まない）が %d 件あります（preferences.nestedGroups = yes）。",
+            "Flat groups (8 or more Roles directly inside, no nested group): %d (preferences.nestedGroups = yes).") % len(flat_groups))
+    for g in flat_groups:
+        print(t('  %s:%d group "%s"（Role %d 個）', '  %s:%d group "%s" (%d Roles)') % (file_uri(g.path), g.line, g.name, g.direct_roles))
+    print(t("group は「モジュール → 層 → 種類」の順で入れ子にし、1 つの group に Role を 8 個以上並べないでください（並ぶなら group を切る）。",
+            "Nest groups in the order module -> layer -> kind, and do not put 8 or more Roles in one group (split it when they pile up)."))
+if unsplit_files:
+    print()
+    print(t("分けていないファイル（1 ファイルに Role か group が 2 つ以上）が %d 件あります（preferences.oneRolePerFile = yes）。",
+            "Files not split (2 or more Roles or groups in one file): %d (preferences.oneRolePerFile = yes).") % len(unsplit_files))
+    for p, ds in unsplit_files:
+        print("  %s: %s" % (file_uri(p), ", ".join('%s "%s"' % (k, n) for k, n, _ in ds)))
+    print(t("1 Role 1 ファイルで書き、group はディレクトリで表してください（手順書 3-3）。",
+            "Write one Role per file and express groups as directories (step 3-3 of the guide)."))
+if documented_candidates:
+    print()
+    print(t("documented = false の候補が %d 件あります（生成ドキュメントに載せる価値があるかを見直してください）。",
+            "Candidates for documented = false: %d (review whether they belong in the generated docs).") % len(documented_candidates))
+    for r, what in documented_candidates:
+        print(t('  %s:%d Role "%s"（%s）', '  %s:%d Role "%s" (%s)') % (file_uri(r.path), r.line, r.name, what))
+    print(t("""documented = false にするもの: (1) 生成物、(2) ビルド・ツールの設定（.editorconfig、CI の yaml、lint の設定）、
+(3) 1 ファイルしかない補助（README、LICENSE、.gitignore）。利用者が読んで役に立つ Role だけを生成ドキュメントに載せます。""",
+            """Set documented = false on: (1) generated output, (2) build and tool configuration (.editorconfig, CI yaml,
+lint config), (3) single-file helpers (README, LICENSE, .gitignore). Only Roles a reader benefits from belong in the generated docs."""))
 print("==================================================================")
 PYROLES
-	} | python3 - "$_lr_json" "$MODULE_DIR" || :
+	} | python3 - "$_lr_json" "$MODULE_DIR" "$KATACHI_PLUGIN_ID" || :
 	[ -n "$_lr_json" ] && rm -f "$_lr_json"
 	return 0
 }
@@ -3922,11 +4150,16 @@ cmd_warn() {
 
 # 配列への追記。`data merge` は配列を丸ごと置き換えるので、2件目を足すと
 # 1件目が黙って消える。追記はこちらを使う。
+# argv: 1 = 読む JSON, 2 = 書く JSON, 3 = 対象（check-list / report）, 4 = 種類,
+#       5 = buildSrc と includeBuild したビルドのディレクトリ（改行区切り。role の Gradle ファイルの判定に使う）,
+#       6.. = --<項目> <値> ...
+# 追記前の件数を標準エラーに before=N で出す（sh 側が追記後に N+1 を確かめる。design 10）。
 ADD_PY='
-import json, sys
+import json, re, sys
 
 src, dest, target, kind = sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4]
-args = sys.argv[5:]
+included_builds = [d for d in (sys.argv[5] if len(sys.argv) > 5 else "").split("\n") if d]
+args = sys.argv[6:]
 
 FIELDS = {
     "violation":  ("violations",  ["violation", "location", "whyNotFixed", "suggestion"], []),
@@ -3938,8 +4171,10 @@ FIELDS = {
     "changed":    ("changedFiles",["path", "change", "summary"], []),
     # モジュールが何を受け持つか。katachi の Role（1種類のファイル）と紛れないよう
     # role とは呼ばない。モジュールは種類の違うファイルのまとまりで、定義では group になる。
-    "module":     ("modules",     ["path", "kind", "responsibility", "buildFile"], []),
-    "role":       ("roles",       ["importance", "name", "layout", "naming", "count", "note"],
+    # deviation は同じ kind の他のモジュールと構成が違う点（無ければ null）。
+    "module":     ("modules",     ["path", "kind", "responsibility", "buildFile", "deviation"], []),
+    # group は定義での束ね先（入れ子は . 区切り: feature.ui）。verify が必須に数える。
+    "role":       ("roles",       ["importance", "name", "layout", "naming", "count", "note", "group"],
                                   ["allowed", "forbidden", "examples"]),
     "tool":       ("tools",       ["name", "configPath", "declareInKatachi", "note"], []),
     "excluded":   ("excluded",    ["path", "reason"], []),
@@ -3947,6 +4182,24 @@ FIELDS = {
     # エージェントが判断し、ここは記録するだけ。summary とレポートが表示する。
     "template":   ("templates",   ["role", "basedOn", "reason"], ["files", "params"]),
 }
+
+# 値を取らない印。role の --constraint-only は「Gradle のビルドファイルに制約を付けるためだけの
+# Role」で、Gradle ファイルの拒否を通す代わりに --note（何を検査するか）が要る（design 7）。
+FLAGS = {
+    "role": {"constraint-only": "constraintOnly"},
+}
+
+# question / codebase-question は id を q<n> で採番する（ブラウザの一括回答が id で答えを返す）。
+NUMBERED = ("question", "codebase-question")
+
+# gradle() が受け持つファイル（lint の KINDS の Gradle 行と同じ）。add role の --layout の末尾がこれなら、
+# buildSrc / includeBuild したビルドの下でない限り拒む。
+GRADLE_FILE = re.compile(r"(^|/)(settings\.gradle(\.kts)?|build\.gradle(\.kts)?|gradle\.properties|[^/]*\.versions\.toml|gradlew(\.bat)?|gradle-wrapper\.[A-Za-z0-9]+)$")
+
+
+def in_included_build(path):
+    p = path.replace("\\", "/").replace(":", "/").lstrip("./")
+    return any(p == d or p.startswith(d + "/") for d in included_builds)
 
 # 二重登録を弾くためのキー。violation と question は同じ内容を2回書く理由が
 # あり得るので入れない。
@@ -3965,6 +4218,7 @@ if kind not in FIELDS:
     sys.exit(1)
 
 key, scalars, lists = FIELDS[kind]
+flags = FLAGS.get(kind, {})
 
 # --help: 使える項目を並べて終わる。ファイルには触らない（init 前でも答えられるように）
 if any(a in ("-h", "--help") for a in args):
@@ -3972,6 +4226,17 @@ if any(a in ("-h", "--help") for a in args):
     print(t("使える項目: %s", "Valid fields: %s") % ", ".join("--" + f for f in scalars + lists))
     if lists:
         print(t("複数回渡せる項目: %s", "Fields you can pass more than once: %s") % ", ".join("--" + f for f in lists))
+    if flags:
+        print(t("値を取らない印: %s", "Flags (no value): %s") % ", ".join("--" + f for f in flags))
+    if kind == "role":
+        print(t("--group は定義での束ね先（入れ子は . 区切り: feature.ui）。Gradle のビルドファイルは gradle() が受け持つので --layout に書けません（buildSrc / includeBuild したビルドは除く）。制約を付けるための Role なら --constraint-only --note <理由> で記録します。",
+                "--group is where the Role goes in the definition (nested with dots: feature.ui). Gradle build files cannot be a --layout since gradle() takes care of them (except buildSrc and included builds). A Role that exists only to attach a constraint is recorded with --constraint-only --note <reason>."))
+    if kind == "module":
+        print(t("--deviation は同じ kind の他のモジュールと構成が違う点（無ければ省略）。",
+                "--deviation is how this module differs from the other modules of the same kind (omit if none)."))
+    if kind in NUMBERED:
+        print(t("id は q1, q2, ... と自動で採番されます（ブラウザの一括回答と answers がこの id で答えを結びつけます）。",
+                "The id is numbered automatically as q1, q2, ... (the answers in the browser and answers use it)."))
     sys.exit(0)
 
 if not args:
@@ -3985,10 +4250,16 @@ for f in scalars:
     entry[f] = None
 for f in lists:
     entry[f] = []
+for f in flags.values():
+    entry[f] = False
 
 i = 0
 while i < len(args):
     name = args[i].lstrip("-")
+    if name in flags:
+        entry[flags[name]] = True
+        i += 1
+        continue
     if i + 1 >= len(args):
         sys.stderr.write(t("--%s に値がありません\n", "--%s needs a value\n") % name)
         sys.exit(1)
@@ -4012,6 +4283,19 @@ while i < len(args):
         sys.stderr.write(t("使えるもの: %s\n", "Valid fields: %s\n") % ", ".join(scalars + lists))
         sys.exit(1)
 
+# Gradle のビルドファイルは gradle() が受け持つ。Role 候補には書かない（design 7）。
+# 例外は、制約を付けるためだけの Role（--constraint-only。--note で何を検査するかを書く）。
+if kind == "role":
+    layout = entry.get("layout") or ""
+    if entry["constraintOnly"] and not entry.get("note"):
+        sys.stderr.write(t("--constraint-only には --note で理由（何を検査するか）を書いてください\n",
+                           "--constraint-only needs --note with the reason (what the constraint checks)\n"))
+        sys.exit(1)
+    if GRADLE_FILE.search(layout) and not in_included_build(layout) and not entry["constraintOnly"]:
+        sys.stderr.write(t("Gradle のビルドファイルは gradle() が受け持ちます。Role 候補には書きません: %s（buildSrc / includeBuild したビルドは除く。制約を付けるための Role なら --constraint-only --note <理由>）\n",
+                           "gradle() takes care of Gradle build files. They are not Role candidates: %s (except buildSrc and included builds; for a Role that exists only to attach a constraint, use --constraint-only --note <reason>)\n") % layout)
+        sys.exit(1)
+
 data = json.load(open(src, encoding="utf-8"))
 rows = data.setdefault(key, [])
 
@@ -4025,10 +4309,44 @@ if idf is not None and entry.get(idf) is not None:
                                "To change it, take it out with data get, edit it, and write it back with data set.\n"))
             sys.exit(1)
 
+# id の採番（design 5）: q<n>、n は既存の q<n> の最大 + 1。id の無い既存要素があれば先に位置順で、
+# 使われていない最小の番号から埋める（ブラウザの一括回答が id で答えを返すので、全部に要る）。
+if kind in NUMBERED:
+    used = set()
+    for row in rows:
+        m = re.match(r"^q([0-9]+)$", str(row.get("id") or ""))
+        if m:
+            used.add(int(m.group(1)))
+    n = 1
+    for row in rows:
+        if not row.get("id"):
+            while n in used:
+                n += 1
+            row["id"] = "q%d" % n
+            used.add(n)
+    entry = dict([("id", "q%d" % ((max(used) if used else 0) + 1))] + list(entry.items()))
+
+# 追記前の件数。sh 側が追記後に N+1 になったことを確かめる（並行書き込みの検知）。
+sys.stderr.write("before=%d\n" % len(rows))
+sys.stderr.write("array=%s\n" % key)
+
 rows.append(entry)
 json.dump(data, open(dest, "w", encoding="utf-8"), ensure_ascii=False, indent=2)
 print(t("%s に1件追記しました（計 %d 件）", "Appended 1 entry to %s (%d in total)") % (key, len(data[key])))
+if kind in NUMBERED:
+    print("id=%s" % entry["id"])
 '
+
+# buildSrc と、settings で includeBuild したビルドのディレクトリ（$1 = プロジェクトルート）を 1 行ずつ出す。
+# lint（PYROLES の included_builds）と同じ抽出。add role が Gradle ファイルの拒否から外すのに使う。
+included_build_dirs() {
+	printf 'buildSrc\n'
+	for _ib_f in "$1/settings.gradle.kts" "$1/settings.gradle"; do
+		[ -f "$_ib_f" ] || continue
+		sed -n 's/.*includeBuild[[:space:]]*(\{0,1\}[[:space:]]*["'"'"']\([^"'"'"']*\)["'"'"'].*/\1/p' "$_ib_f" |
+			sed -e 's|\\|/|g' -e 's|^\./||' -e 's|/$||' | grep -v '^\.\.' | grep -v '^$' || :
+	done
+}
 
 # どの種類がどちらのファイルに属するか。
 add_target_of() {
@@ -4060,16 +4378,36 @@ cmd_add() {
 
 	# --help なら使える項目を並べて終わる。チェックリストやレポートには触らない。
 	if wants_help "$@"; then
-		printf '%s\n%s' "$PY_LANG" "$ADD_PY" | python3 - "" "" "$_target" "$_kind" --help
+		printf '%s\n%s' "$PY_LANG" "$ADD_PY" | python3 - "" "" "$_target" "$_kind" "" --help
 		return $?
 	fi
 
+	require_workdir
 	_html=$(resolve_data_target "$_target")
 	[ -f "$_html" ] || die "ファイルがありません: $(file_uri "$_html")" "File not found: $(file_uri "$_html")"
 	_id=$(guess_block_id "$_html")
+	_root=$(read_checklist_meta "$WORKDIR/check-list.html" projectRoot)
+	[ -n "$_root" ] || _root="$PWD"
+
+	# excluded: .gitignore で除外されたパスは katachi がもともと見ないので、対象外には書かない（design 6）。
+	# cwd に関わらずプロジェクトルートで判定する（git が無ければ検査しない）。
+	if [ "$_kind" = "excluded" ]; then
+		_ex_path=""
+		_ex_prev=""
+		for _ex_a in "$@"; do
+			[ "$_ex_prev" = "--path" ] && _ex_path="$_ex_a"
+			_ex_prev="$_ex_a"
+		done
+		if [ -n "$_ex_path" ] && [ -d "$_root" ] && (cd "$_root" && path_is_ignored "$_ex_path"); then
+			die "そのパスは .gitignore で除外されています。katachi はもともと見ないので、対象外には書きません: ${_ex_path}" \
+				"That path is excluded by .gitignore. katachi never looks at it, so it is not recorded as excluded: ${_ex_path}"
+		fi
+	fi
+
+	_included=""
+	[ "$_kind" = "role" ] && _included=$(included_build_dirs "$_root")
 
 	# 読む前にロックを取る（並べて add しても 1 件ずつ追記される）。cmd_data は保持中なら取らない。
-	# 件数の検査（追記前 N 件 → 追記後 N+1 件。ロックが効いていることの確かめ）はこの後ろに足す。
 	lock_acquire "$_html"
 	_cur="$_html.cur.$$"
 	extract_json "$_html" "$_id" >"$_cur" || {
@@ -4078,13 +4416,363 @@ cmd_add() {
 			"Could not extract the JSON from $(file_uri "$_html")."
 	}
 
+	# ADD_PY の標準エラーは一度ファイルに受ける。before=N（追記前の件数）と array=<配列名> を
+	# 抜き取り、残りをそのまま標準エラーに流す。
 	_new="$_html.new.$$"
-	if printf '%s\n%s' "$PY_LANG" "$ADD_PY" | python3 - "$_cur" "$_new" "$_target" "$_kind" "$@"; then
-		rm -f "$_cur"
-		cmd_data set "$_html" "$_new" --id "$_id" >/dev/null &&
+	_err="$_html.err.$$"
+	if printf '%s\n%s' "$PY_LANG" "$ADD_PY" | python3 - "$_cur" "$_new" "$_target" "$_kind" "$_included" "$@" 2>"$_err"; then
+		grep -v '^before=\|^array=' "$_err" >&2 || :
+		_before=$(sed -n 's/^before=//p' "$_err" | head -n 1)
+		_array=$(sed -n 's/^array=//p' "$_err" | head -n 1)
+		rm -f "$_cur" "$_err"
+		# 件数の検査（design 10）: 追記前 N 件 → 追記後 N+1 件。KATACHI_ADD_EXPECT は検査そのものを
+		# 確かめるためのテスト用（usage には書かない）。
+		[ -n "${KATACHI_ADD_EXPECT:-}" ] && _before="$KATACHI_ADD_EXPECT"
+		if cmd_data set "$_html" "$_new" --id "$_id" >/dev/null; then
 			rm -f "$_new" "$_html.bak"
+		else
+			rm -f "$_new"
+			exit 1
+		fi
+		_after=$(extract_json "$_html" "$_id" 2>/dev/null | python3 -c '
+import json, sys
+print(len(json.load(sys.stdin).get(sys.argv[1]) or []))
+' "$_array" 2>/dev/null || printf '?')
+		case "${_before:-x}${_after:-x}" in
+		*[!0-9]*) ;;
+		*)
+			[ "$_after" -eq "$((_before + 1))" ] ||
+				die "件数が合いません: ${_array} は書き込み前 ${_before} 件、追記後 ${_after} 件（期待 $((_before + 1))）。ほかのプロセスが同時に書いていませんか" \
+					"The count does not add up: ${_array} had ${_before} entries before, ${_after} after appending (expected $((_before + 1))). Is another process writing at the same time?"
+			;;
+		esac
 	else
-		rm -f "$_cur" "$_new"
+		grep -v '^before=\|^array=' "$_err" >&2 || :
+		rm -f "$_cur" "$_new" "$_err"
+		exit 1
+	fi
+	lock_release
+}
+
+# ---------------------------------------------------------------- preferences
+
+# 書き方の方針（design 4）。キーはチェックリスト JSON の preferences、moduleDir だけは meta.moduleDir。
+# $1 = キー。使える値を空白区切りで出す（moduleDir は path）。知らないキーなら空。
+preference_values_of() {
+	case "$1" in
+	nestedGroups | oneRolePerFile) printf 'yes no\n' ;;
+	moduleDir) printf 'path\n' ;;
+	testFramework) printf 'junit5 kotest\n' ;;
+	dependencyStyle) printf 'catalog literal\n' ;;
+	constraintNames) printf 'plain numbered\n' ;;
+	*) printf '\n' ;;
+	esac
+}
+PREFERENCE_KEYS="nestedGroups moduleDir testFramework dependencyStyle constraintNames oneRolePerFile"
+
+# $1 = キー。問いを出す（show の行の末尾に添える）。
+preference_question_of() {
+	case "$1" in
+	nestedGroups) pick "group を入れ子にするか" "Nest groups?" ;;
+	moduleDir) pick "検査用モジュールの置き場所" "Where the test module goes" ;;
+	testFramework) pick "テストのフレームワーク" "Test framework" ;;
+	dependencyStyle) pick "依存の書き方" "How dependencies are written" ;;
+	constraintNames) pick "制約名に確認事項の番号を入れるか" "Put the question number in constraint names?" ;;
+	oneRolePerFile) pick "1 Role 1 ファイルで書くか" "One Role per file?" ;;
+	esac
+}
+
+cmd_preferences() {
+	_pf_action="${1:-show}"
+	case "$_pf_action" in
+	-h | --help)
+		usage
+		return 0
+		;;
+	show | set) [ $# -gt 0 ] && shift ;;
+	*=*) _pf_action="set" ;;
+	*) die "preferences のサブコマンドは show / set です（指定されたのは '${_pf_action}'）" \
+		"The preferences subcommands are show / set (got '${_pf_action}')" ;;
+	esac
+	need_python
+	require_workdir
+	resolve_module_dir
+	_pf_cl="$WORKDIR/check-list.html"
+	[ -f "$_pf_cl" ] || die "$(file_uri "$_pf_cl") がありません。先に init を実行してください。" \
+		"$(file_uri "$_pf_cl") not found. Run init first."
+
+	if [ "$_pf_action" = "set" ]; then
+		[ $# -gt 0 ] || die "preferences set: key=value を 1 つ以上指定してください（例: preferences set nestedGroups=no）" \
+			"preferences set: give one or more key=value (for example: preferences set nestedGroups=no)"
+		# 全部を先に検査してから書く（途中で止まって半分だけ記録しない）。
+		_pf_patch=""
+		_pf_module_dir=""
+		for _pf_kv in "$@"; do
+			case "$_pf_kv" in
+			*=*) ;;
+			*) die "preferences set は key=value の形です: ${_pf_kv}" "preferences set takes key=value: ${_pf_kv}" ;;
+			esac
+			_pf_k="${_pf_kv%%=*}"
+			_pf_v="${_pf_kv#*=}"
+			_pf_vals=$(preference_values_of "$_pf_k")
+			[ -n "$_pf_vals" ] || die "知らないキーです: ${_pf_k}（使えるキー: ${PREFERENCE_KEYS}）" \
+				"Unknown key: ${_pf_k} (valid keys: ${PREFERENCE_KEYS})"
+			if [ "$_pf_vals" = "path" ]; then
+				validate_module_dir "$_pf_v"
+				_pf_module_dir="$_pf_v"
+				continue
+			fi
+			_pf_ok="no"
+			for _pf_c in $_pf_vals; do
+				[ "$_pf_c" = "$_pf_v" ] && _pf_ok="yes"
+			done
+			[ "$_pf_ok" = "yes" ] || die "${_pf_k} の値が違います: ${_pf_v}（使える値: $(printf '%s' "$_pf_vals" | tr ' ' '/')）" \
+				"Invalid value for ${_pf_k}: ${_pf_v} (valid values: $(printf '%s' "$_pf_vals" | tr ' ' '/'))"
+			_pf_patch="${_pf_patch}${_pf_patch:+,}\"${_pf_k}\": \"${_pf_v}\""
+		done
+		# 書き込みはロック付きの data merge（dict なので追記になる）。moduleDir は meta に書く。
+		lock_acquire "$_pf_cl"
+		if [ -n "$_pf_patch" ]; then
+			_pf_file="$WORKDIR/tmp/cache/.preferences.$$"
+			printf '{"preferences": {%s}}\n' "$_pf_patch" >"$_pf_file"
+			if cmd_data merge "$_pf_cl" "$_pf_file" --id checklist >/dev/null; then
+				rm -f "$_pf_file" "$_pf_cl.bak"
+			else
+				rm -f "$_pf_file"
+				exit 1
+			fi
+		fi
+		if [ -n "$_pf_module_dir" ]; then
+			update_checklist_meta "$_pf_cl" moduleDir "$_pf_module_dir"
+			MODULE_DIR="$_pf_module_dir"
+			MODULE_DIR_SOURCE="checklist"
+		fi
+		lock_release
+		say "記録しました: $*" "Recorded: $*"
+		return 0
+	fi
+
+	# show: 1 行 1 キー `key = 値（推奨 / 記録済み / 検出: <根拠>）`。検出はプロジェクトルートで行う
+	# （testFramework は S2 の detect_test_framework、dependencyStyle は gradle/libs.versions.toml の有無）。
+	_pf_root=$(read_checklist_meta "$_pf_cl" projectRoot)
+	[ -n "$_pf_root" ] && [ -d "$_pf_root" ] && cd "$_pf_root"
+	say "書き方の方針（推奨から変えたいものだけ 'preferences set key=value' で記録してください）:" \
+		"Preferences (record only what you want to change from the recommendation with 'preferences set key=value'):"
+	for _pf_k in $PREFERENCE_KEYS; do
+		_pf_state=""
+		if [ "$_pf_k" = "moduleDir" ]; then
+			_pf_v="$MODULE_DIR"
+			[ "$MODULE_DIR_SOURCE" = "checklist" ] && _pf_state=$(pick "記録済み" "recorded") || _pf_state=$(pick "推奨" "recommended")
+		else
+			_pf_v=$(read_preference "$_pf_k")
+			if [ -n "$_pf_v" ]; then
+				_pf_state=$(pick "記録済み" "recorded")
+			else
+				_pf_state=$(pick "推奨" "recommended")
+				case "$_pf_k" in
+				nestedGroups | oneRolePerFile) _pf_v="yes" ;;
+				constraintNames) _pf_v="plain" ;;
+				testFramework)
+					SC_TF=""
+					SC_TF_FROM=""
+					detect_test_framework
+					_pf_v="${SC_TF:-junit5}"
+					[ -n "$SC_TF_FROM" ] && _pf_state=$(pick "検出: ${SC_TF_FROM}" "detected: ${SC_TF_FROM}")
+					;;
+				dependencyStyle)
+					if [ -f gradle/libs.versions.toml ]; then
+						_pf_v="catalog"
+						_pf_state=$(pick "検出: gradle/libs.versions.toml" "detected: gradle/libs.versions.toml")
+					else
+						_pf_v="literal"
+					fi
+					;;
+				esac
+			fi
+		fi
+		printf '%s = %s%s%s%s   # %s (%s)\n' "$_pf_k" "$_pf_v" "$(pick "（" " (")" "$_pf_state" "$(pick "）" ")")" \
+			"$(preference_question_of "$_pf_k")" "$(preference_values_of "$_pf_k" | tr ' ' '/')"
+	done
+}
+
+# ---------------------------------------------------------------- answers
+
+# 確認事項への回答（design 5）。answers は dict: { "<id>": { "answer", "note", "answeredAt" } }。
+# argv: 1 = 動作（show / import / set）, 2 = 対象の JSON, 3 = 書き出すパッチ（show は空）,
+#       import: 4 = 取り込む JSON / set: 4 = id, 5 = 回答, 6 = note（空なら null）
+# import / set はパッチ（answers だけ）を 3 に書く。sh が data merge で深くマージする。
+ANSWERS_PY='
+import datetime, json, re, sys
+
+action, src, patch = sys.argv[1], sys.argv[2], sys.argv[3]
+data = json.load(open(src, encoding="utf-8"))
+questions = data.get("questions") or []
+answers = data.get("answers") or {}
+if not isinstance(answers, dict):
+    answers = {}
+
+
+def qid(q, pos):
+    # id が無い古い要素は位置から補う（HTML と summary も同じ規則）
+    return q.get("id") or "q%d" % (pos + 1)
+
+
+ids = [qid(q, n) for n, q in enumerate(questions)]
+now = datetime.datetime.now().astimezone().replace(microsecond=0).isoformat()
+
+if action == "show":
+    answered = [i for i in ids if answers.get(i)]
+    print(t("回答済み %d 件 / 未回答 %d 件", "Answered %d / unanswered %d") % (len(answered), len(ids) - len(answered)))
+    for n, q in enumerate(questions):
+        i = qid(q, n)
+        if answers.get(i):
+            continue
+        rec = q.get("recommendation")
+        line = "- %s %s" % (i, q.get("question") or t("(未記入)", "(blank)"))
+        if rec:
+            line += t(" → 推奨: %s", " → recommended: %s") % rec
+        print(line)
+    sys.exit(0)
+
+incoming = {}
+if action == "import":
+    try:
+        doc = json.load(open(sys.argv[4], encoding="utf-8"))
+    except Exception as e:
+        sys.stderr.write(t("JSON として読めません: %s（%s）\n", "Not valid JSON: %s (%s)\n") % (sys.argv[4], e))
+        sys.exit(1)
+    raw = doc.get("answers") if isinstance(doc, dict) else None
+    if not isinstance(raw, dict):
+        sys.stderr.write(t("answers が dict ではありません（ブラウザで書き出した JSON をそのまま渡してください）\n",
+                           "answers is not a dict (pass the JSON exported from the browser as is)\n"))
+        sys.exit(1)
+    for i, a in raw.items():
+        if i not in ids:
+            sys.stderr.write(t("[!] 知らない id を飛ばしました: %s\n", "[!] Skipped an unknown id: %s\n") % i)
+            continue
+        if isinstance(a, dict):
+            ans = a.get("answer")
+            note = a.get("note")
+        else:
+            ans, note = a, None
+        if ans is None or str(ans).strip() == "":
+            continue
+        incoming[i] = {"answer": str(ans), "note": (str(note) if note not in (None, "") else None),
+                       "answeredAt": a.get("answeredAt") if isinstance(a, dict) and a.get("answeredAt") else now}
+else:
+    i, ans, note = sys.argv[4], sys.argv[5], sys.argv[6] if len(sys.argv) > 6 else ""
+    if i not in ids:
+        sys.stderr.write(t("知らない id です: %s（使える id: %s）\n", "Unknown id: %s (valid ids: %s)\n") % (i, ", ".join(ids) or "-"))
+        sys.exit(1)
+    incoming[i] = {"answer": ans, "note": note or None, "answeredAt": now}
+
+merged = dict(answers)
+merged.update(incoming)
+json.dump({"answers": incoming}, open(patch, "w", encoding="utf-8"), ensure_ascii=False, indent=2)
+unanswered = [i for i in ids if not merged.get(i)]
+print(t("取り込みました: 回答 %d 件（未回答 %d 件）", "Imported: %d answers (%d unanswered)") % (len(incoming), len(unanswered)))
+'
+
+cmd_answers() {
+	_an_action="${1:-show}"
+	case "$_an_action" in
+	-h | --help)
+		usage
+		return 0
+		;;
+	show | import | set) [ $# -gt 0 ] && shift ;;
+	*) die "answers のサブコマンドは show / import / set です（指定されたのは '${_an_action}'）" \
+		"The answers subcommands are show / import / set (got '${_an_action}')" ;;
+	esac
+	need_python
+	_an_target=""
+	_an_note=""
+	_an_1=""
+	_an_2=""
+	_an_n=0
+	while [ $# -gt 0 ]; do
+		case "$1" in
+		--target)
+			need_value "$1" "${2:-}"
+			_an_target="$2"
+			shift 2
+			;;
+		--note)
+			need_value "$1" "${2:-}"
+			_an_note="$2"
+			shift 2
+			;;
+		-*) die "answers: 知らないオプションです: ${1}" "answers: unknown option: ${1}" ;;
+		*)
+			_an_n=$((_an_n + 1))
+			case "$_an_n" in
+			1) _an_1="$1" ;;
+			2) _an_2="$1" ;;
+			*) die "answers: 引数が多すぎます: ${1}（回答に空白があれば引用符で囲んでください）" \
+				"answers: too many arguments: ${1} (quote the answer if it contains spaces)" ;;
+			esac
+			shift
+			;;
+		esac
+	done
+
+	if [ "$_an_action" = "import" ]; then
+		[ -n "$_an_1" ] || die "answers import: ブラウザで書き出した JSON のパスを指定してください。" \
+			"answers import: give the path of the JSON exported from the browser."
+		[ -f "$_an_1" ] || die "ファイルがありません: $(file_uri "$_an_1")" "File not found: $(file_uri "$_an_1")"
+		# 対象は JSON の target（report / check-list）> --target > report
+		if [ -z "$_an_target" ]; then
+			_an_target=$(python3 -c '
+import json, sys
+try:
+    v = json.load(open(sys.argv[1], encoding="utf-8")).get("target")
+except Exception:
+    v = None
+print(v if isinstance(v, str) else "")
+' "$_an_1" 2>/dev/null || :)
+		fi
+	elif [ "$_an_action" = "set" ]; then
+		[ -n "$_an_1" ] && [ -n "$_an_2" ] || die "answers set: <id> <回答> を指定してください（例: answers set q1 \"はい\" --note \"理由\"）" \
+			"answers set: give <id> <answer> (for example: answers set q1 \"yes\" --note \"reason\")"
+	fi
+	[ -n "$_an_target" ] || _an_target="report"
+	case "$_an_target" in
+	report | check-list | checklist) ;;
+	*) die "answers: 対象は report か check-list です: ${_an_target}" "answers: the target is report or check-list: ${_an_target}" ;;
+	esac
+	_an_html=$(resolve_data_target "$_an_target")
+	[ -f "$_an_html" ] || die "ファイルがありません: $(file_uri "$_an_html")" "File not found: $(file_uri "$_an_html")"
+	_an_id=$(guess_block_id "$_an_html")
+
+	# import / set は読む前にロックを取る（cmd_data は保持中なら取らない）。show は読むだけ。
+	[ "$_an_action" = "show" ] || lock_acquire "$_an_html"
+	_an_cur="$_an_html.cur.$$"
+	extract_json "$_an_html" "$_an_id" >"$_an_cur" || {
+		rm -f "$_an_cur"
+		die "$(file_uri "$_an_html") から JSON を取り出せません。" \
+			"Could not extract the JSON from $(file_uri "$_an_html")."
+	}
+	if [ "$_an_action" = "show" ]; then
+		say "$(pick "対象" "Target"): ${_an_target}"
+		if printf '%s\n%s' "$PY_LANG" "$ANSWERS_PY" | python3 - show "$_an_cur" ""; then
+			rm -f "$_an_cur"
+		else
+			rm -f "$_an_cur"
+			exit 1
+		fi
+		return 0
+	fi
+	_an_patch="$_an_html.answers.$$"
+	if printf '%s\n%s' "$PY_LANG" "$ANSWERS_PY" | python3 - "$_an_action" "$_an_cur" "$_an_patch" "$_an_1" "$_an_2" "$_an_note"; then
+		rm -f "$_an_cur"
+		if cmd_data merge "$_an_html" "$_an_patch" --id "$_an_id" >/dev/null; then
+			rm -f "$_an_patch" "$_an_html.bak"
+		else
+			rm -f "$_an_patch"
+			exit 1
+		fi
+	else
+		rm -f "$_an_cur" "$_an_patch"
 		exit 1
 	fi
 	lock_release
@@ -4144,8 +4832,9 @@ if rp is not None:
     for key in ("modules", "directoryTree", "roles"):
         if blank(rp.get(key)):
             missing.append("report: %s" % key)
+    # group は定義での束ね先（design 6）。preferences / answers は未記入に数えない。
     for n, r in enumerate(rp.get("roles") or []):
-        for k in ("importance", "name", "layout", "naming"):
+        for k in ("importance", "name", "layout", "naming", "group"):
             if blank(r.get(k)):
                 missing.append("report: roles[%d].%s" % (n, k))
 
@@ -4216,18 +4905,22 @@ cmd_verify() {
 	return $_rc
 }
 
-# argv: 1 = チェックリストの JSON, 2 = レポートの JSON, 3 = MODULE_DIR（相対パス）, 4 = MODULE_GRADLE_PATH（:a:b）
+# argv: 1 = チェックリストの JSON, 2 = レポートの JSON, 3 = MODULE_DIR（相対パス）, 4 = MODULE_GRADLE_PATH（:a:b）,
+#       5 = このスクリプトのパス（再開欄の `sh <CLI> guide <節>`）, 6 = 定義のディレクトリ, 7 = その有無（yes / no）
+# 先頭に PY_LANG と SECTION_OF_PY（section_of）を流し込む。
 SUMMARY_PY='
 import json, os, sys
 
 cl = json.load(open(sys.argv[1], encoding="utf-8"))
 module_dir = sys.argv[3] if len(sys.argv) > 3 and sys.argv[3] else "architecture-test"
 module_path = sys.argv[4] if len(sys.argv) > 4 and sys.argv[4] else ":" + module_dir.replace("/", ":")
+cli = sys.argv[5] if len(sys.argv) > 5 and sys.argv[5] else "katachi-install.sh"
+def_dir = sys.argv[6] if len(sys.argv) > 6 else ""
+def_exists = len(sys.argv) > 7 and sys.argv[7] == "yes"
 try:
     report = json.load(open(sys.argv[2], encoding="utf-8"))
 except Exception:
     report = {}
-report_questions = report.get("questions") or []
 report_templates = report.get("templates") or []
 meta = cl.get("meta") or {}
 workdir = meta.get("workdir")
@@ -4247,12 +4940,27 @@ def in_workdir(name):
     return file_uri(os.path.join(workdir, name))
 
 violations = cl.get("violations") or []
-questions = cl.get("questions") or []
 changed = cl.get("changedFiles") or []
 steps = cl.get("steps", [])
 items = [i for s in steps if s.get("optional") is not True for i in s.get("items", [])]
 done = [i for i in items if i.get("done")]
 optional_items = [i for s in steps if s.get("optional") is True for i in s.get("items", [])]
+
+
+def answer_counts(doc):
+    # 確認事項（questions）と回答（answers: { "<id>": {...} }）。id の無い古い要素は位置から q<n> を補う。
+    qs = doc.get("questions") or []
+    ans = doc.get("answers") or {}
+    if not isinstance(ans, dict):
+        ans = {}
+    ids = [q.get("id") or "q%d" % (n + 1) for n, q in enumerate(qs)]
+    answered = [i for i in ids if ans.get(i)]
+    unanswered = [(i, q) for i, q in zip(ids, qs) if not ans.get(i)]
+    return len(answered), unanswered
+
+
+report_answered, report_unanswered = answer_counts(report)
+cl_answered, cl_unanswered = answer_counts(cl)
 
 if len(done) < len(items):
     print(t("❌ katachi のセットアップができませんでした", "❌ Could not set up katachi"))
@@ -4261,10 +4969,43 @@ if len(done) < len(items):
     for i in items:
         if not i.get("done"):
             print("- %s %s" % (i["id"], i.get("label", "")))
+    # 再開の欄（design 3）: 次のセッションが会話の記憶に頼らずに続けられるように。
+    print()
+    print(t("再開:", "Resume:"))
+    print(t("  作業用ディレクトリ: %s", "  Working directory: %s")
+          % (file_uri(workdir) if workdir else t("<作業用ディレクトリ>", "<working directory>")))
+    print(t("  終わった項目: %s", "  Done: %s") % (" ".join(i["id"] for i in done) or "-"))
+    first = next((i for i in items if not i.get("done")), None)
+    section = section_of(first["id"]) if first else None
+    if section:
+        print(t("  次の節: sh %s guide %s", "  Next section: sh %s guide %s") % (cli, section))
+    if def_exists:
+        print(t("  定義: %s", "  Definition: %s") % file_uri(def_dir))
+    else:
+        print(t("  定義: まだ無い（scaffold 未実行。meta.moduleDir = %s）",
+                "  Definition: not yet (scaffold has not run; meta.moduleDir = %s)") % module_dir)
+    print(t("  確認事項: レポート 回答済み %d / 未回答 %d、チェックリスト 回答済み %d / 未回答 %d",
+            "  Questions: report answered %d / unanswered %d, check list answered %d / unanswered %d")
+          % (report_answered, len(report_unanswered), cl_answered, len(cl_unanswered)))
     print()
     print(t("チェックリスト:", "Check list:"))
     print(in_workdir("check-list.html"))
     sys.exit(0)
+
+
+def print_questions(label, where, answered, unanswered):
+    # 回答済みは件数だけ、未回答だけ id / 問い / 推奨 で列挙する（design 5）。
+    if not answered and not unanswered:
+        return
+    print(t("- %s: 回答済み %d 件 / 未回答 %d 件（%s）", "- %s: answered %d / unanswered %d (%s)")
+          % (label, answered, len(unanswered), where))
+    for i, q in unanswered:
+        text = q.get("question") or t("(未記入)", "(blank)")
+        rec = q.get("recommendation")
+        line = "    - %s %s" % (i, text)
+        if rec:
+            line += t(" → 推奨: %s", " → recommended: %s") % rec
+        print(line)
 
 if violations:
     print(t("⚠️ katachi のセットアップを行いました", "⚠️ Set up katachi"))
@@ -4281,19 +5022,12 @@ if violations:
             "- `%s:test` result: ⚠️ architecture violations left: %d") % (module_path, len(violations)))
 else:
     print(t("- `%s:test` の実行結果: ✅ All green", "- `%s:test` result: ✅ All green") % module_path)
-if questions:
-    print(t("- 確認したいことが %d 件あります（チェックリストの「ユーザに確認したいこと」）",
-            "- Questions for you: %d (\"Questions for the user\" in the check list)") % len(questions))
-if report_questions:
-    print(t("- コードベースの揺れが %d 件あります（レポートの questions）",
-            "- Inconsistencies in the codebase: %d (questions in the report)") % len(report_questions))
-    for q in report_questions:
-        text = q.get("question") or t("(未記入)", "(blank)")
-        rec = q.get("recommendation")
-        if rec:
-            print(t("    - %s → 推奨: %s", "    - %s → recommended: %s") % (text, rec))
-        else:
-            print("    - %s" % text)
+print_questions(t("確認したいこと（チェックリスト）", "Questions for you (check list)"),
+                t("チェックリストの「ユーザに確認したいこと」", "\"Questions for the user\" in the check list"),
+                cl_answered, cl_unanswered)
+print_questions(t("コードベースの揺れ（レポート）", "Inconsistencies in the codebase (report)"),
+                t("レポートの questions", "questions in the report"),
+                report_answered, report_unanswered)
 print(t("- 変更したファイル: %d 件", "- Changed files: %d") % len(changed))
 print("- Next action:")
 print(t("    - %s/ 以下の ProjectArchitecture.kt を**レビュー**してください",
@@ -4349,8 +5083,14 @@ cmd_summary() {
 		printf '{}\n' >"$_b"
 	fi
 
+	# 再開の欄に出す、このスクリプトのパスと定義のディレクトリの有無。
+	_cli="$(script_dir)/${0##*/}"
+	_def=$(definition_dir)
+	_def_exists="no"
+	[ -d "$_def" ] && _def_exists="yes"
+
 	# `set -e` の下では、条件に置かないと python の失敗で後始末に届かない。
-	if printf '%s\n%s\n%s' "$PY_LANG" "$SECTION_OF_PY" "$SUMMARY_PY" | python3 - "$_a" "$_b" "$MODULE_DIR" "$MODULE_GRADLE_PATH"; then
+	if printf '%s\n%s\n%s' "$PY_LANG" "$SECTION_OF_PY" "$SUMMARY_PY" | python3 - "$_a" "$_b" "$MODULE_DIR" "$MODULE_GRADLE_PATH" "$_cli" "$_def" "$_def_exists"; then
 		rm -f "$_a" "$_b"
 	else
 		rm -f "$_a" "$_b"
@@ -4407,7 +5147,7 @@ trap 'lock_release; exit 130' INT TERM
 # 自前で --help を読まないサブコマンドは、ここで使い方を出す。値として --help を
 # 読んで「値がありません」と落ちたり、作業用ディレクトリが無いと言って止まったりしないように。
 case "${1:-}" in
-data | check | uncheck | warn | lint | compare-violations | verify | summary | guide | test)
+data | check | uncheck | warn | lint | compare-violations | verify | summary | guide | test | preferences | answers)
 	if wants_help "$@"; then
 		usage
 		exit 0
@@ -4461,6 +5201,14 @@ warn)
 add)
 	shift
 	cmd_add "$@"
+	;;
+preferences)
+	shift
+	cmd_preferences "$@"
+	;;
+answers)
+	shift
+	cmd_answers "$@"
 	;;
 lint)
 	shift
