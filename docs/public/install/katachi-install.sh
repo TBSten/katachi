@@ -2981,14 +2981,23 @@ kotlin_plugin_declared_in() {
 }
 
 # settings で includeBuild したビルドのディレクトリ（build-logic など）を 1 行ずつ出す。
-# 相対パスのまま。`..` で始まるもの（リポジトリの外）と `.` は出さない。
+# 相対パスのまま。`..` で始まるもの（リポジトリの外）と `.` は出さない。buildSrc は出さない
+# （要るところで足す）。$1 にプロジェクトルートを渡すとそこの settings を読み、無ければ
+# require_gradle_root が入れた SETTINGS_FILE（cwd）を読む。
 # lint の PYROLES にも同じ抽出（included_builds）がある。変えるときは揃えること。
 included_build_dirs() {
-	[ -f "${SETTINGS_FILE:-}" ] || return 0
-	sed 's://.*::' "$SETTINGS_FILE" |
+	_ib_f="${SETTINGS_FILE:-}"
+	if [ -n "${1:-}" ]; then
+		_ib_f=""
+		for _ib_c in "$1/settings.gradle.kts" "$1/settings.gradle"; do
+			[ -f "$_ib_c" ] && _ib_f="$_ib_c" && break
+		done
+	fi
+	[ -n "$_ib_f" ] && [ -f "$_ib_f" ] || return 0
+	sed 's://.*::' "$_ib_f" |
 		grep -oE "includeBuild[[:space:]]*\(?[[:space:]]*[\"'][^\"']+[\"']" |
 		sed -E "s/^includeBuild[[:space:]]*\(?[[:space:]]*[\"']//; s/[\"']$//" |
-		sed -e 's#^\./##' -e 's#/$##' |
+		sed -e 's#\\#/#g' -e 's#^\./##' -e 's#/$##' |
 		grep -vE '^(\.|\.\..*)?$' || :
 }
 
@@ -5010,17 +5019,6 @@ if kind in NUMBERED:
     print("id=%s" % entry["id"])
 '
 
-# buildSrc と、settings で includeBuild したビルドのディレクトリ（$1 = プロジェクトルート）を 1 行ずつ出す。
-# lint（PYROLES の included_builds）と同じ抽出。add role が Gradle ファイルの拒否から外すのに使う。
-included_build_dirs() {
-	printf 'buildSrc\n'
-	for _ib_f in "$1/settings.gradle.kts" "$1/settings.gradle"; do
-		[ -f "$_ib_f" ] || continue
-		sed -n 's/.*includeBuild[[:space:]]*(\{0,1\}[[:space:]]*["'"'"']\([^"'"'"']*\)["'"'"'].*/\1/p' "$_ib_f" |
-			sed -e 's|\\|/|g' -e 's|^\./||' -e 's|/$||' | grep -v '^\.\.' | grep -v '^$' || :
-	done
-}
-
 # どの種類がどちらのファイルに属するか。
 add_target_of() {
 	case "$1" in
@@ -5077,8 +5075,9 @@ cmd_add() {
 		fi
 	fi
 
+	# buildSrc と includeBuild したビルド（scaffold 側の included_build_dirs と同じ抽出。ADD_PY の argv[5]）。
 	_included=""
-	[ "$_kind" = "role" ] && _included=$(included_build_dirs "$_root")
+	[ "$_kind" = "role" ] && _included=$(printf 'buildSrc\n' && included_build_dirs "$_root")
 
 	# 読む前にロックを取る（並べて add しても 1 件ずつ追記される）。cmd_data は保持中なら取らない。
 	lock_acquire "$_html"
@@ -5246,10 +5245,10 @@ cmd_preferences() {
 				nestedGroups | oneRolePerFile) _pf_v="yes" ;;
 				constraintNames) _pf_v="plain" ;;
 				testFramework)
-					SC_TF=""
+					SC_TF_DETECTED=""
 					SC_TF_FROM=""
 					detect_test_framework
-					_pf_v="${SC_TF:-junit5}"
+					_pf_v="${SC_TF_DETECTED:-junit5}"
 					[ -n "$SC_TF_FROM" ] && _pf_state=$(pick "検出: ${SC_TF_FROM}" "detected: ${SC_TF_FROM}")
 					;;
 				dependencyStyle)
