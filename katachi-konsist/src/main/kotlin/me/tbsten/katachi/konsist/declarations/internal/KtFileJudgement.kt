@@ -31,7 +31,42 @@ internal fun judgeKtFiles(
     subject: FileConstraintSubject,
     declaredAt: DeclarationSite,
     rulesOf: (file: String) -> FileRules,
-): List<FileConstraintFailure> {
+): List<FileConstraintFailure> =
+    readKtFiles(subject, declaredAt) { file -> Result.success(rulesOf(file)) }.flatMap { input ->
+        val rules = input.rules.getOrThrow()
+        val facts = input.facts
+        if (rules.isEmpty || facts == null) return@flatMap emptyList()
+        judgeKtFile(facts, rules).map { failureOf(it, input.file, rules) }
+    }
+
+/** One `.kt` file of a subject: the rules the block wrote for it, and its facts when Konsist read it. */
+internal class KtFileInput(
+    /** Project relative. */
+    val file: String,
+    /** The rules of this file, or what the block threw while writing them. */
+    val rules: Result<FileRules>,
+    factsOf: () -> KtFileFacts?,
+) {
+    /** What Konsist read off the file, written down on first use; `null` when Konsist did not read it. */
+    val facts: KtFileFacts? by lazy(LazyThreadSafetyMode.NONE, factsOf)
+}
+
+/**
+ * The `.kt` files of [subject], each with its rules and its facts: what [judgeKtFiles] judges, and
+ * what the IDE's explanation decides the same way. Empty when [subject] covers nothing.
+ *
+ * Every file's rules are worked out before the first file is judged, and [rulesOf] decides whether
+ * a block that throws ends the whole run (the check) or only that file's answer (the explanation).
+ *
+ * @throws KatachiKonsistNoKotlinFilesException when the covered files hold no `.kt` file.
+ * @throws KatachiKtFileContentNothingWrittenException when the block writes no line for any file
+ *   and threw for none.
+ */
+internal fun readKtFiles(
+    subject: FileConstraintSubject,
+    declaredAt: DeclarationSite,
+    rulesOf: (file: String) -> Result<FileRules>,
+): List<KtFileInput> {
     val kotlinFiles = subject.files.filter { it.endsWith(KOTLIN_EXTENSION) }
     // Covered files and none Konsist reads: said out loud by konsistScopeOf, as for konsist { }.
     // Nothing covered at all is a place that has not filled up yet, and says nothing.
@@ -39,15 +74,16 @@ internal fun judgeKtFiles(
     val parsed = konsistScopeOf(subject).files.associateBy { File(it.path).invariantSeparatorsPath }
 
     val rulesByFile = kotlinFiles.map { it to rulesOf(it) }
-    if (rulesByFile.all { (_, rules) -> rules.isEmpty }) {
+    if (rulesByFile.all { (_, rules) -> rules.getOrNull()?.isEmpty == true }) {
         throw KatachiKtFileContentNothingWrittenException(role = subject.role.qualifiedName, declaredAt = declaredAt)
     }
-    return rulesByFile.flatMap { (file, rules) ->
-        if (rules.isEmpty) return@flatMap emptyList()
+    return rulesByFile.map { (file, rules) ->
         val absolute = "${subject.projectRoot}/$file"
-        val koFile = parsed[absolute] ?: return@flatMap emptyList()
-        val facts = subject.memo(KtFileFactsKey(absolute), KtFileFacts::class) { ktFileFactsOf(koFile, file) }
-        judgeKtFile(facts, rules).map { failureOf(it, file, rules) }
+        KtFileInput(file = file, rules = rules) {
+            parsed[absolute]?.let { koFile ->
+                subject.memo(KtFileFactsKey(absolute), KtFileFacts::class) { ktFileFactsOf(koFile, file) }
+            }
+        }
     }
 }
 

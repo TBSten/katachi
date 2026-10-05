@@ -4,6 +4,7 @@ import me.tbsten.katachi.dsl.DeclarationContainerScope
 import me.tbsten.katachi.test.architecture.roles.check
 import me.tbsten.katachi.test.architecture.roles.docs
 import me.tbsten.katachi.test.architecture.roles.dsl
+import me.tbsten.katachi.test.architecture.roles.ide
 import me.tbsten.katachi.test.architecture.roles.marker
 import me.tbsten.katachi.test.architecture.roles.processor
 import me.tbsten.katachi.test.architecture.roles.report
@@ -16,7 +17,7 @@ import me.tbsten.katachi.test.architecture.roles.util
  * Here a role is a layer, and that is an observation rather than a shortcut: in this
  * repository the kinds of file and the package layers happen to coincide. A file in
  * `processor/` is a piece of the processor machinery and cannot be anything else; the same
- * holds for `check/`, for `report/` and for `template/`. Where the two came apart, the role follows the kind and not
+ * holds for `check/`, for `report/`, for `template/` and for `ide/`. Where the two came apart, the role follows the kind and not
  * the package — see `roles/MarkerRole.kt` and `roles/DslRole.kt`.
  *
  * Each role carries the same five rules, in the same order: the first two are the lines of one
@@ -59,4 +60,5 @@ fun DeclarationContainerScope.libraryGroup() = "library".group {
     report()
     docs()
     template()
+    ide()
 }

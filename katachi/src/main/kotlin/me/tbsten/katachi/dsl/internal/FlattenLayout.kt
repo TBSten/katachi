@@ -349,6 +349,7 @@ private fun declaredFileConstraintsOf(
             } else {
                 coverage
             },
+            range = declaration.scope,
             check = declaration.check,
         )
     }

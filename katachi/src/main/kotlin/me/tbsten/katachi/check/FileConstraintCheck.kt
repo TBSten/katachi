@@ -2,6 +2,7 @@ package me.tbsten.katachi.check
 
 import me.tbsten.katachi.ExperimentalKatachiApi
 import me.tbsten.katachi.check.internal.assertNoErrors
+import me.tbsten.katachi.check.internal.fileConstraintSubjectOf
 import me.tbsten.katachi.check.internal.uncheckedFileConstraintOf
 import me.tbsten.katachi.dsl.FileConstraintFailure
 import me.tbsten.katachi.dsl.FileConstraintSubject
@@ -187,17 +188,7 @@ private fun violationsOf(
     if (files.isEmpty()) return emptyList()
 
     val order = files.withIndex().associate { (index, file) -> file to index }
-    val subject = FileConstraintSubject(
-        role = declared.role,
-        name = declared.name,
-        declaredAt = declared.declaredAt,
-        paths = declared.paths,
-        projectRoot = walk.projectRootPath,
-        files = files,
-        shared = walk.scratch(),
-        captureNames = declared.coverage.captureNames,
-        captureValues = declared.coverage::captureValuesOf,
-    )
+    val subject = fileConstraintSubjectOf(walk, declared, files)
     val failures = catching {
         val answered = declared.check.evaluate(subject)
         // A backend answering about files it was never handed has no way of noticing that on

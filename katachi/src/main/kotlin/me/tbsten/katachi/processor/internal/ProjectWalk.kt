@@ -79,6 +79,12 @@ internal class ProjectWalk(
 
     val declaredFileConstraints: List<DeclaredFileConstraint> get() = scan.fileConstraints
 
+    /**
+     * The entries the walk evaluated: [declaredEntries] with each wildcard module key expanded to
+     * the modules that exist. Reading it walks the project, as [filesOf] does.
+     */
+    val resolvedEntries: List<LayoutEntry> get() = scan.layout.entries
+
     /** Where the walk started -- what a report resolves each relative path against. */
     val projectRoot: FsPath get() = scan.projectRoot
 

@@ -36,6 +36,8 @@ fun DeclarationContainerScope.specSupport() = "SpecSupport".role {
             testSourceSet / "resources" / "sarif" / "sarif-schema-2.1.0.json".file()
             testSourceSet / "resources" / "sarif" / "README.md".file()
             testSourceSet / "resources" / "sarif" / "golden" / "*.sarif".file()
+            // The goldens `DescribeDefinition`'s JSON is compared with.
+            testSourceSet / "resources" / "definition" / "golden" / "*.json".file()
         }
         "katachi-konsist" {
             description = "スペックが使う道具のうち、Konsist に読ませる実ファイルを一時ディレクトリに用意するもの"

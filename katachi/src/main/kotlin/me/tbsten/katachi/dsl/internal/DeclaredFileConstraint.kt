@@ -2,6 +2,7 @@ package me.tbsten.katachi.dsl.internal
 
 import me.tbsten.katachi.dsl.DeclarationSite
 import me.tbsten.katachi.dsl.FileConstraint
+import me.tbsten.katachi.dsl.FileConstraintRange
 import me.tbsten.katachi.dsl.Role
 
 /**
@@ -97,6 +98,8 @@ internal class DeclaredFileConstraint(
     val declaredAt: DeclarationSite,
     /** Which files this constraint covers. See [FileConstraintCoverage]. */
     val coverage: FileConstraintCoverage,
+    /** How far below its block it reaches, as `fileConstraint(..., range = ...)` said. */
+    val range: FileConstraintRange,
     /** The block itself. Evaluated by a check, not by the DSL. */
     val check: FileConstraint,
 ) {

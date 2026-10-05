@@ -1,0 +1,1906 @@
+[
+  {
+    "pattern": "build.gradle.kts",
+    "path": "build.gradle.kts",
+    "matches": true,
+    "error": false,
+    "literalPrefix": ["build.gradle.kts"],
+    "hasWildcard": false
+  },
+  {
+    "pattern": "build.gradle.kts",
+    "path": "build_gradle_kts",
+    "matches": false,
+    "error": false,
+    "literalPrefix": ["build.gradle.kts"],
+    "hasWildcard": false
+  },
+  {
+    "pattern": "build.gradle.kts",
+    "path": "app/build.gradle.kts",
+    "matches": false,
+    "error": false,
+    "literalPrefix": ["build.gradle.kts"],
+    "hasWildcard": false
+  },
+  {
+    "pattern": "build.gradle.kts",
+    "path": "build.gradle.kt",
+    "matches": false,
+    "error": false,
+    "literalPrefix": ["build.gradle.kts"],
+    "hasWildcard": false
+  },
+  {
+    "pattern": "*.kt",
+    "path": "Foo.kt",
+    "matches": true,
+    "error": false,
+    "literalPrefix": [],
+    "hasWildcard": true
+  },
+  {
+    "pattern": "*.kt",
+    "path": "a/Foo.kt",
+    "matches": false,
+    "error": false,
+    "literalPrefix": [],
+    "hasWildcard": true
+  },
+  {
+    "pattern": "*.kt",
+    "path": ".kt",
+    "matches": false,
+    "error": false,
+    "literalPrefix": [],
+    "hasWildcard": true
+  },
+  {
+    "pattern": "*.kt",
+    "path": "Foo.kts",
+    "matches": false,
+    "error": false,
+    "literalPrefix": [],
+    "hasWildcard": true
+  },
+  {
+    "pattern": "*.kt",
+    "path": "x.kt",
+    "matches": true,
+    "error": false,
+    "literalPrefix": [],
+    "hasWildcard": true
+  },
+  {
+    "pattern": "*UseCase.kt",
+    "path": "GetUserUseCase.kt",
+    "matches": true,
+    "error": false,
+    "literalPrefix": [],
+    "hasWildcard": true
+  },
+  {
+    "pattern": "*UseCase.kt",
+    "path": "UseCase.kt",
+    "matches": false,
+    "error": false,
+    "literalPrefix": [],
+    "hasWildcard": true
+  },
+  {
+    "pattern": "*UseCase.kt",
+    "path": "useCase/GetUserUseCase.kt",
+    "matches": false,
+    "error": false,
+    "literalPrefix": [],
+    "hasWildcard": true
+  },
+  {
+    "pattern": "*UseCase.kt",
+    "path": "GetUserUseCase.kts",
+    "matches": false,
+    "error": false,
+    "literalPrefix": [],
+    "hasWildcard": true
+  },
+  {
+    "pattern": "Pre*Post",
+    "path": "PreXPost",
+    "matches": true,
+    "error": false,
+    "literalPrefix": [],
+    "hasWildcard": true
+  },
+  {
+    "pattern": "Pre*Post",
+    "path": "PrePost",
+    "matches": false,
+    "error": false,
+    "literalPrefix": [],
+    "hasWildcard": true
+  },
+  {
+    "pattern": "Pre*Post",
+    "path": "PreX/Post",
+    "matches": false,
+    "error": false,
+    "literalPrefix": [],
+    "hasWildcard": true
+  },
+  {
+    "pattern": "Pre*Post",
+    "path": "PreXYZPost",
+    "matches": true,
+    "error": false,
+    "literalPrefix": [],
+    "hasWildcard": true
+  },
+  {
+    "pattern": "*.*",
+    "path": "a.b",
+    "matches": true,
+    "error": false,
+    "literalPrefix": [],
+    "hasWildcard": true
+  },
+  {
+    "pattern": "*.*",
+    "path": "ab",
+    "matches": false,
+    "error": false,
+    "literalPrefix": [],
+    "hasWildcard": true
+  },
+  {
+    "pattern": "*.*",
+    "path": ".b",
+    "matches": false,
+    "error": false,
+    "literalPrefix": [],
+    "hasWildcard": true
+  },
+  {
+    "pattern": "*.*",
+    "path": "a.",
+    "matches": false,
+    "error": false,
+    "literalPrefix": [],
+    "hasWildcard": true
+  },
+  {
+    "pattern": "*.*",
+    "path": "a.b.c",
+    "matches": true,
+    "error": false,
+    "literalPrefix": [],
+    "hasWildcard": true
+  },
+  {
+    "pattern": "src/*/Foo.kt",
+    "path": "src/main/Foo.kt",
+    "matches": true,
+    "error": false,
+    "literalPrefix": ["src"],
+    "hasWildcard": true
+  },
+  {
+    "pattern": "src/*/Foo.kt",
+    "path": "src/Foo.kt",
+    "matches": false,
+    "error": false,
+    "literalPrefix": ["src"],
+    "hasWildcard": true
+  },
+  {
+    "pattern": "src/*/Foo.kt",
+    "path": "src/a/b/Foo.kt",
+    "matches": false,
+    "error": false,
+    "literalPrefix": ["src"],
+    "hasWildcard": true
+  },
+  {
+    "pattern": "src/*/Foo.kt",
+    "path": "src/main/Foo.kts",
+    "matches": false,
+    "error": false,
+    "literalPrefix": ["src"],
+    "hasWildcard": true
+  },
+  {
+    "pattern": "src/*/*",
+    "path": "src/a/b",
+    "matches": true,
+    "error": false,
+    "literalPrefix": ["src"],
+    "hasWildcard": true
+  },
+  {
+    "pattern": "src/*/*",
+    "path": "src/a",
+    "matches": false,
+    "error": false,
+    "literalPrefix": ["src"],
+    "hasWildcard": true
+  },
+  {
+    "pattern": "src/*/*",
+    "path": "src/a/b/c",
+    "matches": false,
+    "error": false,
+    "literalPrefix": ["src"],
+    "hasWildcard": true
+  },
+  {
+    "pattern": "**",
+    "path": "a",
+    "matches": true,
+    "error": false,
+    "literalPrefix": [],
+    "hasWildcard": true
+  },
+  {
+    "pattern": "**",
+    "path": "a/b/c.kt",
+    "matches": true,
+    "error": false,
+    "literalPrefix": [],
+    "hasWildcard": true
+  },
+  {
+    "pattern": "**",
+    "path": "build.gradle.kts",
+    "matches": true,
+    "error": false,
+    "literalPrefix": [],
+    "hasWildcard": true
+  },
+  {
+    "pattern": "src/**",
+    "path": "src",
+    "matches": true,
+    "error": false,
+    "literalPrefix": ["src"],
+    "hasWildcard": true
+  },
+  {
+    "pattern": "src/**",
+    "path": "src/a",
+    "matches": true,
+    "error": false,
+    "literalPrefix": ["src"],
+    "hasWildcard": true
+  },
+  {
+    "pattern": "src/**",
+    "path": "src/a/b/c",
+    "matches": true,
+    "error": false,
+    "literalPrefix": ["src"],
+    "hasWildcard": true
+  },
+  {
+    "pattern": "src/**",
+    "path": "srcx",
+    "matches": false,
+    "error": false,
+    "literalPrefix": ["src"],
+    "hasWildcard": true
+  },
+  {
+    "pattern": "src/**",
+    "path": "other/a",
+    "matches": false,
+    "error": false,
+    "literalPrefix": ["src"],
+    "hasWildcard": true
+  },
+  {
+    "pattern": "src/**/Foo.kt",
+    "path": "src/Foo.kt",
+    "matches": true,
+    "error": false,
+    "literalPrefix": ["src"],
+    "hasWildcard": true
+  },
+  {
+    "pattern": "src/**/Foo.kt",
+    "path": "src/a/Foo.kt",
+    "matches": true,
+    "error": false,
+    "literalPrefix": ["src"],
+    "hasWildcard": true
+  },
+  {
+    "pattern": "src/**/Foo.kt",
+    "path": "src/a/b/c/Foo.kt",
+    "matches": true,
+    "error": false,
+    "literalPrefix": ["src"],
+    "hasWildcard": true
+  },
+  {
+    "pattern": "src/**/Foo.kt",
+    "path": "Foo.kt",
+    "matches": false,
+    "error": false,
+    "literalPrefix": ["src"],
+    "hasWildcard": true
+  },
+  {
+    "pattern": "src/**/Foo.kt",
+    "path": "src/a/Bar.kt",
+    "matches": false,
+    "error": false,
+    "literalPrefix": ["src"],
+    "hasWildcard": true
+  },
+  {
+    "pattern": "**/build.gradle.kts",
+    "path": "build.gradle.kts",
+    "matches": true,
+    "error": false,
+    "literalPrefix": [],
+    "hasWildcard": true
+  },
+  {
+    "pattern": "**/build.gradle.kts",
+    "path": "core/data/build.gradle.kts",
+    "matches": true,
+    "error": false,
+    "literalPrefix": [],
+    "hasWildcard": true
+  },
+  {
+    "pattern": "**/build.gradle.kts",
+    "path": "core/data/build.gradle.kt",
+    "matches": false,
+    "error": false,
+    "literalPrefix": [],
+    "hasWildcard": true
+  },
+  {
+    "pattern": "**/useCase/*UseCase.kt",
+    "path": "useCase/GetUseCase.kt",
+    "matches": true,
+    "error": false,
+    "literalPrefix": [],
+    "hasWildcard": true
+  },
+  {
+    "pattern": "**/useCase/*UseCase.kt",
+    "path": "a/b/useCase/GetUseCase.kt",
+    "matches": true,
+    "error": false,
+    "literalPrefix": [],
+    "hasWildcard": true
+  },
+  {
+    "pattern": "**/useCase/*UseCase.kt",
+    "path": "a/useCase/x/GetUseCase.kt",
+    "matches": false,
+    "error": false,
+    "literalPrefix": [],
+    "hasWildcard": true
+  },
+  {
+    "pattern": "a/**/b/**/c",
+    "path": "a/b/c",
+    "matches": true,
+    "error": false,
+    "literalPrefix": ["a"],
+    "hasWildcard": true
+  },
+  {
+    "pattern": "a/**/b/**/c",
+    "path": "a/x/b/y/c",
+    "matches": true,
+    "error": false,
+    "literalPrefix": ["a"],
+    "hasWildcard": true
+  },
+  {
+    "pattern": "a/**/b/**/c",
+    "path": "a/b/x/y/c",
+    "matches": true,
+    "error": false,
+    "literalPrefix": ["a"],
+    "hasWildcard": true
+  },
+  {
+    "pattern": "a/**/b/**/c",
+    "path": "a/c",
+    "matches": false,
+    "error": false,
+    "literalPrefix": ["a"],
+    "hasWildcard": true
+  },
+  {
+    "pattern": "a/**/b/**/c",
+    "path": "a/x/y/c",
+    "matches": false,
+    "error": false,
+    "literalPrefix": ["a"],
+    "hasWildcard": true
+  },
+  {
+    "pattern": "core/*/src/main/kotlin/**/useCase",
+    "path": "core/domain/src/main/kotlin/useCase",
+    "matches": true,
+    "error": false,
+    "literalPrefix": ["core"],
+    "hasWildcard": true
+  },
+  {
+    "pattern": "core/*/src/main/kotlin/**/useCase",
+    "path": "core/domain/src/main/kotlin/com/example/useCase",
+    "matches": true,
+    "error": false,
+    "literalPrefix": ["core"],
+    "hasWildcard": true
+  },
+  {
+    "pattern": "core/*/src/main/kotlin/**/useCase",
+    "path": "core/src/main/kotlin/useCase",
+    "matches": false,
+    "error": false,
+    "literalPrefix": ["core"],
+    "hasWildcard": true
+  },
+  {
+    "pattern": "\\*.kt",
+    "path": "*.kt",
+    "matches": true,
+    "error": false,
+    "literalPrefix": ["*.kt"],
+    "hasWildcard": false
+  },
+  {
+    "pattern": "\\*.kt",
+    "path": "Foo.kt",
+    "matches": false,
+    "error": false,
+    "literalPrefix": ["*.kt"],
+    "hasWildcard": false
+  },
+  {
+    "pattern": "a\\,b.kt",
+    "path": "a,b.kt",
+    "matches": true,
+    "error": false,
+    "literalPrefix": ["a,b.kt"],
+    "hasWildcard": false
+  },
+  {
+    "pattern": "a\\,b.kt",
+    "path": "ab.kt",
+    "matches": false,
+    "error": false,
+    "literalPrefix": ["a,b.kt"],
+    "hasWildcard": false
+  },
+  {
+    "pattern": "a,b.kt",
+    "path": "a,b.kt",
+    "matches": true,
+    "error": false,
+    "literalPrefix": ["a,b.kt"],
+    "hasWildcard": false
+  },
+  {
+    "pattern": "a,b.kt",
+    "path": "a.kt",
+    "matches": false,
+    "error": false,
+    "literalPrefix": ["a,b.kt"],
+    "hasWildcard": false
+  },
+  {
+    "pattern": "\\{x\\}",
+    "path": "{x}",
+    "matches": true,
+    "error": false,
+    "literalPrefix": ["{x}"],
+    "hasWildcard": false
+  },
+  {
+    "pattern": "\\{x\\}",
+    "path": "x",
+    "matches": false,
+    "error": false,
+    "literalPrefix": ["{x}"],
+    "hasWildcard": false
+  },
+  {
+    "pattern": "\\[x\\]",
+    "path": "[x]",
+    "matches": true,
+    "error": false,
+    "literalPrefix": ["[x]"],
+    "hasWildcard": false
+  },
+  {
+    "pattern": "\\[x\\]",
+    "path": "x",
+    "matches": false,
+    "error": false,
+    "literalPrefix": ["[x]"],
+    "hasWildcard": false
+  },
+  {
+    "pattern": "\\?",
+    "path": "?",
+    "matches": true,
+    "error": false,
+    "literalPrefix": ["?"],
+    "hasWildcard": false
+  },
+  {
+    "pattern": "\\?",
+    "path": "a",
+    "matches": false,
+    "error": false,
+    "literalPrefix": ["?"],
+    "hasWildcard": false
+  },
+  {
+    "pattern": "a\\\\b",
+    "path": "a\\b",
+    "matches": true,
+    "error": false,
+    "literalPrefix": ["a\\b"],
+    "hasWildcard": false
+  },
+  {
+    "pattern": "a\\\\b",
+    "path": "ab",
+    "matches": false,
+    "error": false,
+    "literalPrefix": ["a\\b"],
+    "hasWildcard": false
+  },
+  {
+    "pattern": "a.b",
+    "path": "a.b",
+    "matches": true,
+    "error": false,
+    "literalPrefix": ["a.b"],
+    "hasWildcard": false
+  },
+  {
+    "pattern": "a.b",
+    "path": "axb",
+    "matches": false,
+    "error": false,
+    "literalPrefix": ["a.b"],
+    "hasWildcard": false
+  },
+  {
+    "pattern": "a+b(c)",
+    "path": "a+b(c)",
+    "matches": true,
+    "error": false,
+    "literalPrefix": ["a+b(c)"],
+    "hasWildcard": false
+  },
+  {
+    "pattern": "a+b(c)",
+    "path": "aab(c)",
+    "matches": false,
+    "error": false,
+    "literalPrefix": ["a+b(c)"],
+    "hasWildcard": false
+  },
+  {
+    "pattern": "$x^",
+    "path": "$x^",
+    "matches": true,
+    "error": false,
+    "literalPrefix": ["$x^"],
+    "hasWildcard": false
+  },
+  {
+    "pattern": "$x^",
+    "path": "x",
+    "matches": false,
+    "error": false,
+    "literalPrefix": ["$x^"],
+    "hasWildcard": false
+  },
+  {
+    "pattern": "ドメイン/*.kt",
+    "path": "ドメイン/ユースケース.kt",
+    "matches": true,
+    "error": false,
+    "literalPrefix": ["ドメイン"],
+    "hasWildcard": true
+  },
+  {
+    "pattern": "ドメイン/*.kt",
+    "path": "domain/ユースケース.kt",
+    "matches": false,
+    "error": false,
+    "literalPrefix": ["ドメイン"],
+    "hasWildcard": true
+  },
+  {
+    "pattern": ":feature:*",
+    "path": ":feature:home",
+    "matches": true,
+    "error": false,
+    "literalPrefix": [],
+    "hasWildcard": true
+  },
+  {
+    "pattern": ":feature:*",
+    "path": ":feature",
+    "matches": false,
+    "error": false,
+    "literalPrefix": [],
+    "hasWildcard": true
+  },
+  {
+    "pattern": "/src/*",
+    "path": "/src/a",
+    "matches": true,
+    "error": false,
+    "literalPrefix": [],
+    "hasWildcard": true
+  },
+  {
+    "pattern": "/src/*",
+    "path": "src/a",
+    "matches": false,
+    "error": false,
+    "literalPrefix": [],
+    "hasWildcard": true
+  },
+  {
+    "pattern": "Src/*.kt",
+    "path": "src/A.kt",
+    "matches": false,
+    "error": false,
+    "literalPrefix": ["Src"],
+    "hasWildcard": true
+  },
+  {
+    "pattern": "Src/*.kt",
+    "path": "Src/A.kt",
+    "matches": true,
+    "error": false,
+    "literalPrefix": ["Src"],
+    "hasWildcard": true
+  },
+  {
+    "pattern": "src/**/Foo.kt",
+    "path": "src/a/b/Foo.kt",
+    "matches": true,
+    "error": false,
+    "literalPrefix": ["src"],
+    "hasWildcard": true
+  },
+  {
+    "pattern": "**/Foo.kt",
+    "path": "Foo.kt",
+    "matches": true,
+    "error": false,
+    "literalPrefix": [],
+    "hasWildcard": true
+  },
+  {
+    "pattern": "**/Foo.kt",
+    "path": "a/b/Foo.kt",
+    "matches": true,
+    "error": false,
+    "literalPrefix": [],
+    "hasWildcard": true
+  },
+  {
+    "pattern": "**/Foo.kt",
+    "path": "a/b/Bar.kt",
+    "matches": false,
+    "error": false,
+    "literalPrefix": [],
+    "hasWildcard": true
+  },
+  {
+    "pattern": "a/**/b/**/c",
+    "path": "a/x/b/y/z/c",
+    "matches": true,
+    "error": false,
+    "literalPrefix": ["a"],
+    "hasWildcard": true
+  },
+  {
+    "pattern": "a/**/b/**/c",
+    "path": "a/x/c",
+    "matches": false,
+    "error": false,
+    "literalPrefix": ["a"],
+    "hasWildcard": true
+  },
+  {
+    "pattern": "**/assets",
+    "path": "a/b/assets",
+    "matches": true,
+    "error": false,
+    "literalPrefix": [],
+    "hasWildcard": true
+  },
+  {
+    "pattern": "**/assets",
+    "path": "assets",
+    "matches": true,
+    "error": false,
+    "literalPrefix": [],
+    "hasWildcard": true
+  },
+  {
+    "pattern": "a\\*b.kt",
+    "path": "a*b.kt",
+    "matches": true,
+    "error": false,
+    "literalPrefix": ["a*b.kt"],
+    "hasWildcard": false
+  },
+  {
+    "pattern": "a\\*b.kt",
+    "path": "aXb.kt",
+    "matches": false,
+    "error": false,
+    "literalPrefix": ["a*b.kt"],
+    "hasWildcard": false
+  },
+  {
+    "pattern": "x\\\\y",
+    "path": "x\\y",
+    "matches": true,
+    "error": false,
+    "literalPrefix": ["x\\y"],
+    "hasWildcard": false
+  },
+  {
+    "pattern": "a\\,b",
+    "path": "a,b",
+    "matches": true,
+    "error": false,
+    "literalPrefix": ["a,b"],
+    "hasWildcard": false
+  },
+  {
+    "pattern": "a\\{b\\}",
+    "path": "a{b}",
+    "matches": true,
+    "error": false,
+    "literalPrefix": ["a{b}"],
+    "hasWildcard": false
+  },
+  {
+    "pattern": "a\\?b",
+    "path": "a?b",
+    "matches": true,
+    "error": false,
+    "literalPrefix": ["a?b"],
+    "hasWildcard": false
+  },
+  {
+    "pattern": "a\\[b\\]",
+    "path": "a[b]",
+    "matches": true,
+    "error": false,
+    "literalPrefix": ["a[b]"],
+    "hasWildcard": false
+  },
+  {
+    "pattern": "a.b+c(d)^$|e",
+    "path": "a.b+c(d)^$|e",
+    "matches": true,
+    "error": false,
+    "literalPrefix": ["a.b+c(d)^$|e"],
+    "hasWildcard": false
+  },
+  {
+    "pattern": "a.b",
+    "path": "aXb",
+    "matches": false,
+    "error": false,
+    "literalPrefix": ["a.b"],
+    "hasWildcard": false
+  },
+  {
+    "pattern": "日本語/*.kt",
+    "path": "日本語/あ.kt",
+    "matches": true,
+    "error": false,
+    "literalPrefix": ["日本語"],
+    "hasWildcard": true
+  },
+  {
+    "pattern": "Foo*Bar*.kt",
+    "path": "FooXBarY.kt",
+    "matches": true,
+    "error": false,
+    "literalPrefix": [],
+    "hasWildcard": true
+  },
+  {
+    "pattern": "Foo*Bar*.kt",
+    "path": "FooBar.kt",
+    "matches": false,
+    "error": false,
+    "literalPrefix": [],
+    "hasWildcard": true
+  },
+  {
+    "pattern": "core/*/src/**/useCase/*UseCase.kt",
+    "path": "core/domain/src/main/kotlin/com/example/useCase/GetUserUseCase.kt",
+    "matches": true,
+    "error": false,
+    "literalPrefix": ["core"],
+    "hasWildcard": true
+  },
+  {
+    "pattern": "core/*/src/**/useCase/*UseCase.kt",
+    "path": "core/domain/src/useCase/GetUserUseCase.kt",
+    "matches": true,
+    "error": false,
+    "literalPrefix": ["core"],
+    "hasWildcard": true
+  },
+  {
+    "pattern": "core/*/src/**/useCase/*UseCase.kt",
+    "path": "core/src/useCase/GetUserUseCase.kt",
+    "matches": false,
+    "error": false,
+    "literalPrefix": ["core"],
+    "hasWildcard": true
+  },
+  {
+    "pattern": "a/**/**",
+    "path": "a",
+    "matches": false,
+    "error": false,
+    "literalPrefix": ["a"],
+    "hasWildcard": true
+  },
+  {
+    "pattern": "a/**/**",
+    "path": "a/b",
+    "matches": true,
+    "error": false,
+    "literalPrefix": ["a"],
+    "hasWildcard": true
+  },
+  {
+    "pattern": "a/**/**",
+    "path": "a/b/c",
+    "matches": true,
+    "error": false,
+    "literalPrefix": ["a"],
+    "hasWildcard": true
+  },
+  {
+    "pattern": "**/**",
+    "path": "a",
+    "matches": true,
+    "error": false,
+    "literalPrefix": [],
+    "hasWildcard": true
+  },
+  {
+    "pattern": "",
+    "path": null,
+    "matches": null,
+    "error": true,
+    "literalPrefix": null,
+    "hasWildcard": null
+  },
+  {
+    "pattern": "a//b",
+    "path": null,
+    "matches": null,
+    "error": true,
+    "literalPrefix": null,
+    "hasWildcard": null
+  },
+  {
+    "pattern": "/",
+    "path": null,
+    "matches": null,
+    "error": true,
+    "literalPrefix": null,
+    "hasWildcard": null
+  },
+  {
+    "pattern": "a/",
+    "path": null,
+    "matches": null,
+    "error": true,
+    "literalPrefix": null,
+    "hasWildcard": null
+  },
+  {
+    "pattern": "//",
+    "path": null,
+    "matches": null,
+    "error": true,
+    "literalPrefix": null,
+    "hasWildcard": null
+  },
+  {
+    "pattern": "*/",
+    "path": null,
+    "matches": null,
+    "error": true,
+    "literalPrefix": null,
+    "hasWildcard": null
+  },
+  {
+    "pattern": "{a,b}.kt",
+    "path": null,
+    "matches": null,
+    "error": true,
+    "literalPrefix": null,
+    "hasWildcard": null
+  },
+  {
+    "pattern": "Foo?.kt",
+    "path": null,
+    "matches": null,
+    "error": true,
+    "literalPrefix": null,
+    "hasWildcard": null
+  },
+  {
+    "pattern": "[abc].kt",
+    "path": null,
+    "matches": null,
+    "error": true,
+    "literalPrefix": null,
+    "hasWildcard": null
+  },
+  {
+    "pattern": "a/{x}/b",
+    "path": null,
+    "matches": null,
+    "error": true,
+    "literalPrefix": null,
+    "hasWildcard": null
+  },
+  {
+    "pattern": "a]",
+    "path": null,
+    "matches": null,
+    "error": true,
+    "literalPrefix": null,
+    "hasWildcard": null
+  },
+  {
+    "pattern": "a}",
+    "path": null,
+    "matches": null,
+    "error": true,
+    "literalPrefix": null,
+    "hasWildcard": null
+  },
+  {
+    "pattern": "a**b",
+    "path": null,
+    "matches": null,
+    "error": true,
+    "literalPrefix": null,
+    "hasWildcard": null
+  },
+  {
+    "pattern": "**a",
+    "path": null,
+    "matches": null,
+    "error": true,
+    "literalPrefix": null,
+    "hasWildcard": null
+  },
+  {
+    "pattern": "a**",
+    "path": null,
+    "matches": null,
+    "error": true,
+    "literalPrefix": null,
+    "hasWildcard": null
+  },
+  {
+    "pattern": "src/***",
+    "path": null,
+    "matches": null,
+    "error": true,
+    "literalPrefix": null,
+    "hasWildcard": null
+  },
+  {
+    "pattern": "a\\",
+    "path": null,
+    "matches": null,
+    "error": true,
+    "literalPrefix": null,
+    "hasWildcard": null
+  },
+  {
+    "pattern": "\\a.kt",
+    "path": null,
+    "matches": null,
+    "error": true,
+    "literalPrefix": null,
+    "hasWildcard": null
+  },
+  {
+    "pattern": "a\\-b",
+    "path": null,
+    "matches": null,
+    "error": true,
+    "literalPrefix": null,
+    "hasWildcard": null
+  },
+  {
+    "pattern": "a\\/b",
+    "path": null,
+    "matches": null,
+    "error": true,
+    "literalPrefix": null,
+    "hasWildcard": null
+  },
+  {
+    "pattern": "*a/*.kt",
+    "path": "Homea/X.kt",
+    "matches": true,
+    "error": false,
+    "literalPrefix": [],
+    "hasWildcard": true
+  },
+  {
+    "pattern": "*a/*.kt",
+    "path": "Homea/data",
+    "matches": false,
+    "error": false,
+    "literalPrefix": [],
+    "hasWildcard": true
+  },
+  {
+    "pattern": "*a/*.kt",
+    "path": "Homea/main/X.kt",
+    "matches": false,
+    "error": false,
+    "literalPrefix": [],
+    "hasWildcard": true
+  },
+  {
+    "pattern": "*a/*.kt",
+    "path": "a.ba/.kt",
+    "matches": false,
+    "error": false,
+    "literalPrefix": [],
+    "hasWildcard": true
+  },
+  {
+    "pattern": "**/x\\,y/sr*",
+    "path": "kotlin/src/x,y/srX",
+    "matches": true,
+    "error": false,
+    "literalPrefix": [],
+    "hasWildcard": true
+  },
+  {
+    "pattern": "**/x\\,y/sr*",
+    "path": "a/kotlin/src/x,y/srX",
+    "matches": true,
+    "error": false,
+    "literalPrefix": [],
+    "hasWildcard": true
+  },
+  {
+    "pattern": "**/x\\,y/sr*",
+    "path": "kotlin/src/x,y",
+    "matches": false,
+    "error": false,
+    "literalPrefix": [],
+    "hasWildcard": true
+  },
+  {
+    "pattern": "**/x\\,y/sr*",
+    "path": "kotlin/kotlin/x,y/sr",
+    "matches": false,
+    "error": false,
+    "literalPrefix": [],
+    "hasWildcard": true
+  },
+  {
+    "pattern": "kotlin/useCase/x\\,y/ドメイン",
+    "path": "kotlin/useCase/x,y/ドメイン",
+    "matches": true,
+    "error": false,
+    "literalPrefix": ["kotlin", "useCase", "x,y", "ドメイン"],
+    "hasWildcard": false
+  },
+  {
+    "pattern": "kotlin/useCase/x\\,y/ドメイン",
+    "path": "data/useCase/x,y/ドメイン",
+    "matches": false,
+    "error": false,
+    "literalPrefix": ["kotlin", "useCase", "x,y", "ドメイン"],
+    "hasWildcard": false
+  },
+  {
+    "pattern": "kotlin/useCase/x\\,y/ドメイン",
+    "path": "kotlin/useCase/b/x,y/ドメイン",
+    "matches": false,
+    "error": false,
+    "literalPrefix": ["kotlin", "useCase", "x,y", "ドメイン"],
+    "hasWildcard": false
+  },
+  {
+    "pattern": "a/main",
+    "path": "a/main",
+    "matches": true,
+    "error": false,
+    "literalPrefix": ["a", "main"],
+    "hasWildcard": false
+  },
+  {
+    "pattern": "a/main",
+    "path": "a/main/src",
+    "matches": false,
+    "error": false,
+    "literalPrefix": ["a", "main"],
+    "hasWildcard": false
+  },
+  {
+    "pattern": "a/main",
+    "path": "a/main/data",
+    "matches": false,
+    "error": false,
+    "literalPrefix": ["a", "main"],
+    "hasWildcard": false
+  },
+  {
+    "pattern": "*.kt",
+    "path": "a.b.kt",
+    "matches": true,
+    "error": false,
+    "literalPrefix": [],
+    "hasWildcard": true
+  },
+  {
+    "pattern": "*.kt",
+    "path": "main/a.b.kt",
+    "matches": false,
+    "error": false,
+    "literalPrefix": [],
+    "hasWildcard": true
+  },
+  {
+    "pattern": "*.kt",
+    "path": "useCase/a.b.kt",
+    "matches": false,
+    "error": false,
+    "literalPrefix": [],
+    "hasWildcard": true
+  },
+  {
+    "pattern": "x\\,y/b/x\\,y/*ore",
+    "path": "x,y/b/x,y/ore",
+    "matches": false,
+    "error": false,
+    "literalPrefix": ["x,y", "b", "x,y"],
+    "hasWildcard": true
+  },
+  {
+    "pattern": "x\\,y/b/x\\,y/*ore",
+    "path": "x,y/a/b/x,y/ore",
+    "matches": false,
+    "error": false,
+    "literalPrefix": ["x,y", "b", "x,y"],
+    "hasWildcard": true
+  },
+  {
+    "pattern": "x\\,y/b/x\\,y/*ore",
+    "path": "x,y/x.kt/x,y/ore",
+    "matches": false,
+    "error": false,
+    "literalPrefix": ["x,y", "b", "x,y"],
+    "hasWildcard": true
+  },
+  {
+    "pattern": "**",
+    "path": "a",
+    "matches": true,
+    "error": false,
+    "literalPrefix": [],
+    "hasWildcard": true
+  },
+  {
+    "pattern": "**",
+    "path": "a/extra",
+    "matches": true,
+    "error": false,
+    "literalPrefix": [],
+    "hasWildcard": true
+  },
+  {
+    "pattern": "**",
+    "path": "kotlin",
+    "matches": true,
+    "error": false,
+    "literalPrefix": [],
+    "hasWildcard": true
+  },
+  {
+    "pattern": "*/a\\*b",
+    "path": "a.b/a*b",
+    "matches": true,
+    "error": false,
+    "literalPrefix": [],
+    "hasWildcard": true
+  },
+  {
+    "pattern": "*/a\\*b",
+    "path": "a.b/useCase",
+    "matches": false,
+    "error": false,
+    "literalPrefix": [],
+    "hasWildcard": true
+  },
+  {
+    "pattern": "*/a\\*b",
+    "path": "a.b/a*b/x.kt",
+    "matches": false,
+    "error": false,
+    "literalPrefix": [],
+    "hasWildcard": true
+  },
+  {
+    "pattern": "*/a\\*b",
+    "path": "X/a*b",
+    "matches": true,
+    "error": false,
+    "literalPrefix": [],
+    "hasWildcard": true
+  },
+  {
+    "pattern": "a*/core/da*",
+    "path": "a/core/daa.b",
+    "matches": false,
+    "error": false,
+    "literalPrefix": [],
+    "hasWildcard": true
+  },
+  {
+    "pattern": "a*/core/da*",
+    "path": "a/core",
+    "matches": false,
+    "error": false,
+    "literalPrefix": [],
+    "hasWildcard": true
+  },
+  {
+    "pattern": "a*/core/da*",
+    "path": "a/src/daa.b",
+    "matches": false,
+    "error": false,
+    "literalPrefix": [],
+    "hasWildcard": true
+  },
+  {
+    "pattern": "a*/core/da*",
+    "path": "a/core/da",
+    "matches": false,
+    "error": false,
+    "literalPrefix": [],
+    "hasWildcard": true
+  },
+  {
+    "pattern": "**/*/**",
+    "path": "a/a.b/Foo.kt/kotlin",
+    "matches": true,
+    "error": false,
+    "literalPrefix": [],
+    "hasWildcard": true
+  },
+  {
+    "pattern": "**/*/**",
+    "path": "a/useCase/a.b/Foo.kt/kotlin",
+    "matches": true,
+    "error": false,
+    "literalPrefix": [],
+    "hasWildcard": true
+  },
+  {
+    "pattern": "**/*/**",
+    "path": "a.b/Foo.kt/kotlin",
+    "matches": true,
+    "error": false,
+    "literalPrefix": [],
+    "hasWildcard": true
+  },
+  {
+    "pattern": "**/*/**",
+    "path": "b/X/x.kt",
+    "matches": true,
+    "error": false,
+    "literalPrefix": [],
+    "hasWildcard": true
+  },
+  {
+    "pattern": "a/data",
+    "path": "a/data",
+    "matches": true,
+    "error": false,
+    "literalPrefix": ["a", "data"],
+    "hasWildcard": false
+  },
+  {
+    "pattern": "a/data",
+    "path": "useCase/data",
+    "matches": false,
+    "error": false,
+    "literalPrefix": ["a", "data"],
+    "hasWildcard": false
+  },
+  {
+    "pattern": "a/data",
+    "path": "a/Foo.kt/data",
+    "matches": false,
+    "error": false,
+    "literalPrefix": ["a", "data"],
+    "hasWildcard": false
+  },
+  {
+    "pattern": "ドメイン/b/ドメイン/core",
+    "path": "ドメイン/b/ドメイン/core",
+    "matches": true,
+    "error": false,
+    "literalPrefix": ["ドメイン", "b", "ドメイン", "core"],
+    "hasWildcard": false
+  },
+  {
+    "pattern": "ドメイン/b/ドメイン/core",
+    "path": "ドメイン/core/ドメイン/core",
+    "matches": false,
+    "error": false,
+    "literalPrefix": ["ドメイン", "b", "ドメイン", "core"],
+    "hasWildcard": false
+  },
+  {
+    "pattern": "ドメイン/b/ドメイン/core",
+    "path": "ドメイン/b/core",
+    "matches": false,
+    "error": false,
+    "literalPrefix": ["ドメイン", "b", "ドメイン", "core"],
+    "hasWildcard": false
+  },
+  {
+    "pattern": "kotlin/*ata/**/useCase",
+    "path": "kotlin/ata/b/useCase",
+    "matches": false,
+    "error": false,
+    "literalPrefix": ["kotlin"],
+    "hasWildcard": true
+  },
+  {
+    "pattern": "kotlin/*ata/**/useCase",
+    "path": "kotlin/main/b/useCase",
+    "matches": false,
+    "error": false,
+    "literalPrefix": ["kotlin"],
+    "hasWildcard": true
+  },
+  {
+    "pattern": "kotlin/*ata/**/useCase",
+    "path": "kotlin/ata/b/kotlin/useCase",
+    "matches": false,
+    "error": false,
+    "literalPrefix": ["kotlin"],
+    "hasWildcard": true
+  },
+  {
+    "pattern": "kotlin/*ata/**/useCase",
+    "path": "kotlin/a.bata/main/useCase",
+    "matches": true,
+    "error": false,
+    "literalPrefix": ["kotlin"],
+    "hasWildcard": true
+  },
+  {
+    "pattern": "kotlin/*/*/ma*",
+    "path": "kotlin/a.b/Home/maa.b",
+    "matches": true,
+    "error": false,
+    "literalPrefix": ["kotlin"],
+    "hasWildcard": true
+  },
+  {
+    "pattern": "kotlin/*/*/ma*",
+    "path": "kotlin/b/a.b/Home/maa.b",
+    "matches": false,
+    "error": false,
+    "literalPrefix": ["kotlin"],
+    "hasWildcard": true
+  },
+  {
+    "pattern": "kotlin/*/*/ma*",
+    "path": "kotlin/a.b/Home/data",
+    "matches": false,
+    "error": false,
+    "literalPrefix": ["kotlin"],
+    "hasWildcard": true
+  },
+  {
+    "pattern": "kotlin/*/*/ma*",
+    "path": "kotlin/a.b/X/ma",
+    "matches": false,
+    "error": false,
+    "literalPrefix": ["kotlin"],
+    "hasWildcard": true
+  },
+  {
+    "pattern": "*/*/ma*",
+    "path": "a.b/a.b/maHome",
+    "matches": true,
+    "error": false,
+    "literalPrefix": [],
+    "hasWildcard": true
+  },
+  {
+    "pattern": "*/*/ma*",
+    "path": "a.b/a.b/kotlin/maHome",
+    "matches": false,
+    "error": false,
+    "literalPrefix": [],
+    "hasWildcard": true
+  },
+  {
+    "pattern": "*/*/ma*",
+    "path": "a.b/maHome",
+    "matches": false,
+    "error": false,
+    "literalPrefix": [],
+    "hasWildcard": true
+  },
+  {
+    "pattern": "*/*/ma*",
+    "path": "X/Home/ma",
+    "matches": false,
+    "error": false,
+    "literalPrefix": [],
+    "hasWildcard": true
+  },
+  {
+    "pattern": "b/a\\*b/us*",
+    "path": "b/a*b/usX",
+    "matches": true,
+    "error": false,
+    "literalPrefix": ["b", "a*b"],
+    "hasWildcard": true
+  },
+  {
+    "pattern": "b/a\\*b/us*",
+    "path": "b/a*b/usX/useCase",
+    "matches": false,
+    "error": false,
+    "literalPrefix": ["b", "a*b"],
+    "hasWildcard": true
+  },
+  {
+    "pattern": "b/a\\*b/us*",
+    "path": "b/a*b/usX/core",
+    "matches": false,
+    "error": false,
+    "literalPrefix": ["b", "a*b"],
+    "hasWildcard": true
+  },
+  {
+    "pattern": "b/a\\*b/us*",
+    "path": "b/a*b/usHome",
+    "matches": true,
+    "error": false,
+    "literalPrefix": ["b", "a*b"],
+    "hasWildcard": true
+  },
+  {
+    "pattern": "*/b*",
+    "path": "a.b/bHome",
+    "matches": true,
+    "error": false,
+    "literalPrefix": [],
+    "hasWildcard": true
+  },
+  {
+    "pattern": "*/b*",
+    "path": "a.b",
+    "matches": false,
+    "error": false,
+    "literalPrefix": [],
+    "hasWildcard": true
+  },
+  {
+    "pattern": "*/b*",
+    "path": "a.b/useCase",
+    "matches": false,
+    "error": false,
+    "literalPrefix": [],
+    "hasWildcard": true
+  },
+  {
+    "pattern": "*/b*",
+    "path": "Home/ba.b",
+    "matches": true,
+    "error": false,
+    "literalPrefix": [],
+    "hasWildcard": true
+  },
+  {
+    "pattern": "main/x\\,y/a\\*b",
+    "path": "main/x,y/a*b",
+    "matches": true,
+    "error": false,
+    "literalPrefix": ["main", "x,y", "a*b"],
+    "hasWildcard": false
+  },
+  {
+    "pattern": "main/x\\,y/a\\*b",
+    "path": "main/x,y/b/a*b",
+    "matches": false,
+    "error": false,
+    "literalPrefix": ["main", "x,y", "a*b"],
+    "hasWildcard": false
+  },
+  {
+    "pattern": "main/x\\,y/a\\*b",
+    "path": "main/core/a*b",
+    "matches": false,
+    "error": false,
+    "literalPrefix": ["main", "x,y", "a*b"],
+    "hasWildcard": false
+  },
+  {
+    "pattern": "ドメイン",
+    "path": "ドメイン",
+    "matches": true,
+    "error": false,
+    "literalPrefix": ["ドメイン"],
+    "hasWildcard": false
+  },
+  {
+    "pattern": "ドメイン",
+    "path": "data",
+    "matches": false,
+    "error": false,
+    "literalPrefix": ["ドメイン"],
+    "hasWildcard": false
+  },
+  {
+    "pattern": "ドメイン",
+    "path": "ドメイン/extra",
+    "matches": false,
+    "error": false,
+    "literalPrefix": ["ドメイン"],
+    "hasWildcard": false
+  },
+  {
+    "pattern": "src/kotlin/a*",
+    "path": "src/kotlin/aa.b",
+    "matches": true,
+    "error": false,
+    "literalPrefix": ["src", "kotlin"],
+    "hasWildcard": true
+  },
+  {
+    "pattern": "src/kotlin/a*",
+    "path": "kotlin/aa.b",
+    "matches": false,
+    "error": false,
+    "literalPrefix": ["src", "kotlin"],
+    "hasWildcard": true
+  },
+  {
+    "pattern": "src/kotlin/a*",
+    "path": "src/kotlin/a/aa.b",
+    "matches": false,
+    "error": false,
+    "literalPrefix": ["src", "kotlin"],
+    "hasWildcard": true
+  },
+  {
+    "pattern": "src/**/ko*",
+    "path": "src/data/main/ko",
+    "matches": false,
+    "error": false,
+    "literalPrefix": ["src"],
+    "hasWildcard": true
+  },
+  {
+    "pattern": "src/**/ko*",
+    "path": "src/main/ko",
+    "matches": false,
+    "error": false,
+    "literalPrefix": ["src"],
+    "hasWildcard": true
+  },
+  {
+    "pattern": "src/**/ko*",
+    "path": "src/data/main",
+    "matches": false,
+    "error": false,
+    "literalPrefix": ["src"],
+    "hasWildcard": true
+  },
+  {
+    "pattern": "src/**/ko*",
+    "path": "src/x.kt/koX",
+    "matches": true,
+    "error": false,
+    "literalPrefix": ["src"],
+    "hasWildcard": true
+  },
+  {
+    "pattern": "**/*ore",
+    "path": "core/b/ore",
+    "matches": false,
+    "error": false,
+    "literalPrefix": [],
+    "hasWildcard": true
+  },
+  {
+    "pattern": "**/*ore",
+    "path": "core/b/data/ore",
+    "matches": false,
+    "error": false,
+    "literalPrefix": [],
+    "hasWildcard": true
+  },
+  {
+    "pattern": "**/*ore",
+    "path": "main/core/b/ore",
+    "matches": false,
+    "error": false,
+    "literalPrefix": [],
+    "hasWildcard": true
+  },
+  {
+    "pattern": "**/*ore",
+    "path": "a.bore",
+    "matches": true,
+    "error": false,
+    "literalPrefix": [],
+    "hasWildcard": true
+  },
+  {
+    "pattern": "a\\*b/*",
+    "path": "a*b/a.b",
+    "matches": true,
+    "error": false,
+    "literalPrefix": ["a*b"],
+    "hasWildcard": true
+  },
+  {
+    "pattern": "a\\*b/*",
+    "path": "a*b",
+    "matches": false,
+    "error": false,
+    "literalPrefix": ["a*b"],
+    "hasWildcard": true
+  },
+  {
+    "pattern": "a\\*b/*",
+    "path": "a*b/a.b/core",
+    "matches": false,
+    "error": false,
+    "literalPrefix": ["a*b"],
+    "hasWildcard": true
+  },
+  {
+    "pattern": "a\\*b/*",
+    "path": "a*b/X",
+    "matches": true,
+    "error": false,
+    "literalPrefix": ["a*b"],
+    "hasWildcard": true
+  },
+  {
+    "pattern": "a\\*b/x.kt",
+    "path": "a*b/x.kt",
+    "matches": true,
+    "error": false,
+    "literalPrefix": ["a*b", "x.kt"],
+    "hasWildcard": false
+  },
+  {
+    "pattern": "a\\*b/x.kt",
+    "path": "a*b/x.kt/b",
+    "matches": false,
+    "error": false,
+    "literalPrefix": ["a*b", "x.kt"],
+    "hasWildcard": false
+  },
+  {
+    "pattern": "a\\*b/x.kt",
+    "path": "a*b",
+    "matches": false,
+    "error": false,
+    "literalPrefix": ["a*b", "x.kt"],
+    "hasWildcard": false
+  },
+  {
+    "pattern": "a/b*/sr*",
+    "path": "a/bHome/srX",
+    "matches": true,
+    "error": false,
+    "literalPrefix": ["a"],
+    "hasWildcard": true
+  },
+  {
+    "pattern": "a/b*/sr*",
+    "path": "bHome/srX",
+    "matches": false,
+    "error": false,
+    "literalPrefix": ["a"],
+    "hasWildcard": true
+  },
+  {
+    "pattern": "a/b*/sr*",
+    "path": "a/bHome",
+    "matches": false,
+    "error": false,
+    "literalPrefix": ["a"],
+    "hasWildcard": true
+  },
+  {
+    "pattern": "a/b*/sr*",
+    "path": "a/bX/srX",
+    "matches": true,
+    "error": false,
+    "literalPrefix": ["a"],
+    "hasWildcard": true
+  },
+  {
+    "pattern": "x\\,y/**",
+    "path": "x,y/useCase/data",
+    "matches": true,
+    "error": false,
+    "literalPrefix": ["x,y"],
+    "hasWildcard": true
+  },
+  {
+    "pattern": "x\\,y/**",
+    "path": "x,y/useCase/data/data",
+    "matches": true,
+    "error": false,
+    "literalPrefix": ["x,y"],
+    "hasWildcard": true
+  },
+  {
+    "pattern": "x\\,y/**",
+    "path": "x,y/useCase/data/core",
+    "matches": true,
+    "error": false,
+    "literalPrefix": ["x,y"],
+    "hasWildcard": true
+  },
+  {
+    "pattern": "x\\,y/**",
+    "path": "x,y/kotlin",
+    "matches": true,
+    "error": false,
+    "literalPrefix": ["x,y"],
+    "hasWildcard": true
+  },
+  {
+    "pattern": "**/sr*/a\\*b",
+    "path": "sr/a*b",
+    "matches": false,
+    "error": false,
+    "literalPrefix": [],
+    "hasWildcard": true
+  },
+  {
+    "pattern": "**/sr*/a\\*b",
+    "path": "a*b",
+    "matches": false,
+    "error": false,
+    "literalPrefix": [],
+    "hasWildcard": true
+  },
+  {
+    "pattern": "**/sr*/a\\*b",
+    "path": "srX/a*b",
+    "matches": true,
+    "error": false,
+    "literalPrefix": [],
+    "hasWildcard": true
+  },
+  {
+    "pattern": "**/b",
+    "path": "a/a/b",
+    "matches": true,
+    "error": false,
+    "literalPrefix": [],
+    "hasWildcard": true
+  },
+  {
+    "pattern": "**/b",
+    "path": "a/b",
+    "matches": true,
+    "error": false,
+    "literalPrefix": [],
+    "hasWildcard": true
+  },
+  {
+    "pattern": "**/b",
+    "path": "src/a/b",
+    "matches": true,
+    "error": false,
+    "literalPrefix": [],
+    "hasWildcard": true
+  },
+  {
+    "pattern": "**/b",
+    "path": "kotlin/b",
+    "matches": true,
+    "error": false,
+    "literalPrefix": [],
+    "hasWildcard": true
+  },
+  {
+    "pattern": "*/*",
+    "path": "a.b/X",
+    "matches": true,
+    "error": false,
+    "literalPrefix": [],
+    "hasWildcard": true
+  },
+  {
+    "pattern": "*/*",
+    "path": "a.b/X/b",
+    "matches": false,
+    "error": false,
+    "literalPrefix": [],
+    "hasWildcard": true
+  },
+  {
+    "pattern": "*/*",
+    "path": "kotlin/X",
+    "matches": true,
+    "error": false,
+    "literalPrefix": [],
+    "hasWildcard": true
+  },
+  {
+    "pattern": "*/*",
+    "path": "Home/Home",
+    "matches": true,
+    "error": false,
+    "literalPrefix": [],
+    "hasWildcard": true
+  },
+  {
+    "pattern": "kotlin",
+    "path": "kotlin",
+    "matches": true,
+    "error": false,
+    "literalPrefix": ["kotlin"],
+    "hasWildcard": false
+  },
+  {
+    "pattern": "kotlin",
+    "path": "kotlin/extra",
+    "matches": false,
+    "error": false,
+    "literalPrefix": ["kotlin"],
+    "hasWildcard": false
+  },
+  {
+    "pattern": "kotlin",
+    "path": "useCase/kotlin",
+    "matches": false,
+    "error": false,
+    "literalPrefix": ["kotlin"],
+    "hasWildcard": false
+  }
+]
