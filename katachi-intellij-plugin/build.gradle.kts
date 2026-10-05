@@ -72,14 +72,11 @@ intellijPlatform {
     pluginConfiguration {
         ideaVersion {
             sinceBuild = "261"
-            // Up to 2026.2 (262). 2026.3 (263) moved ChangeListManager / ProjectLevelVcsManager into the "Version
-            // Control" plugin, and verifyPlugin reports them unresolved there (also with the intellij.platform.vcs
-            // module declared in plugin.xml); a missing class is a LinkageError, which sdkCall rethrows, so the IDE
-            // would show errors. The zip is installed from disk (no Marketplace), so the IDE never updates it and
-            // a later IDE may break it: declare only the builds verifyPlugin passes on.
-            // TODO(263): lift this when the VCS classes resolve in 263 (verifyPlugin green on IU-263), and then
-            //  go back to no upper bound with the nightly gate (ide-plugin-nightly.yml) watching newer builds.
-            untilBuild = "262.*"
+            // No upper bound: the nightly gate (ide-plugin-nightly.yml) runs verifyPlugin on the newest builds, recommended()
+            // included. 2026.3 (263) moved the VCS API (ChangeListManager, ProjectLevelVcsManager) into the bundled "Version
+            // Control" plugin; <depends>com.intellij.modules.vcs</depends> in plugin.xml reaches it there (integrationTest263
+            // passes on a real 263), while verifyPlugin reports it unresolved: see verifyPlugin-ignored-problems.txt.
+            untilBuild = provider { null }
         }
     }
     // `./gradlew verifyPlugin` checks binary compatibility against the IDEs configured here. It
@@ -96,6 +93,8 @@ intellijPlatform {
     // rather than renaming the ID, which is unrelated to and out of scope for this task.
     pluginVerification {
         freeArgs = listOf("-mute", "TemplateWordInPluginId")
+        // Known false reports of the verifier, each line with its reason (today: the VCS API on 263, which a real 263 loads).
+        ignoredProblemsFile = layout.projectDirectory.file("verifyPlugin-ignored-problems.txt")
         // Besides what breaks users (binary incompatibility, misused API), the verifier's warnings
         // fail too, as a compiler warning does: deprecated, removal-scheduled or internal API, and
         // the structure and dependency warnings. Two levels stay allowed. EXPERIMENTAL_API_USAGES:
@@ -163,6 +162,30 @@ intellijPlatformTesting.testIdeUi.register("integrationTest") {
             "allure.results.directory",
             layout.buildDirectory.dir("integrationTest/allure-results").get().asFile.path
         )
+    }
+}
+
+// The same smokes against IDEA 2026.3 (263), where the VCS API (ChangeListManager, ProjectLevelVcsManager) moved from the
+// platform into the bundled "Version Control" plugin: verifyPlugin reports it unresolved there, and only a real 263 shows
+// whether the plugin's classloader sees it. On demand, like integrationTest:
+// `./gradlew integrationTest263 --tests '*NoRoleSmokeTest*'` (it opens IDE windows).
+intellijPlatformTesting.testIdeUi.register("integrationTest263") {
+    type = IntelliJPlatformType.IntellijIdea
+    version = "263.6259.32"
+    task {
+        val integrationTestSourceSet = sourceSets.getByName("integrationTest")
+        testClassesDirs = integrationTestSourceSet.output.classesDirs
+        classpath = integrationTestSourceSet.runtimeClasspath
+        useJUnitPlatform()
+        systemProperty("katachi.smoke.sampleProject", rootDir.resolve("../sample/jvm").canonicalPath)
+        systemProperty("katachi.smoke.workDir", layout.buildDirectory.dir("integrationTest263").get().asFile.path)
+        systemProperty(
+            "allure.results.directory",
+            layout.buildDirectory.dir("integrationTest263/allure-results").get().asFile.path
+        )
+        // The 263 distribution this task resolved, not the build SDK's.
+        val ideHome = this
+        doFirst { systemProperty("katachi.smoke.ideHome", ideHome.platformPath.toString()) }
     }
 }
 

@@ -1,0 +1,12 @@
+// Problems verifyPlugin reports that are not real, read by pluginVerification.ignoredProblemsFile in build.gradle.kts.
+// Each line: <plugin id>:<plugin version, empty for all>:<regexp the problem's short description must match whole>. No ':' in the regexp.
+//
+// IntelliJ Plugin Verifier 1.410 (the latest on 2026-10-06) does not find these VCS classes on IDEA 2026.3 (263), where they moved
+// from the platform into the bundled "Version Control" plugin (com.intellij.platform.vcs, content module intellij.platform.vcs).
+// The verifier's own dependency tree resolves <depends>com.intellij.modules.vcs</depends> to that module, yet it reports the classes
+// unresolved, also with <module name="intellij.platform.vcs"/> declared. A real 263 loads them: integrationTest263 (NoRoleSmokeTest)
+// passes there, and the 2026.3 API changes page says the alias dependency is sufficient. Only these classes, which the plugin calls
+// today, are listed: a new VCS class the plugin starts to use is reported again and has to be checked on 263 the same way.
+// TODO(263): remove these lines when a verifier release resolves them (verifyPlugin green on IU-263 without this file).
+me.tbsten.katachi.intellij::Access to unresolved class com\.intellij\.openapi\.vcs\.(ProjectLevelVcsManager(\.Companion)?|changes\.ChangeListManager|changes\.VcsDirtyScopeManager)
+me.tbsten.katachi.intellij::Access to unresolved class com\.intellij\.vcsUtil\.VcsUtil

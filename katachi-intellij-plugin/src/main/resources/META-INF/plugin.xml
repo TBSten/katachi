@@ -24,10 +24,10 @@
     <depends>com.intellij.modules.platform</depends>
     <!-- Detection reads the Gradle sync data; loading and generating run Gradle through ExternalSystem. -->
     <depends>com.intellij.gradle</depends>
-    <!-- ChangeListManager / ProjectLevelVcsManager (VCS-ignored and untracked files). Up to 2026.2 (262) these classes are in the platform
-         and this line only says a VCS exists. 2026.3 (263) moved them to the "Version Control" plugin, and the plugin verifier reports them
-         unresolved there even with <module name="intellij.platform.vcs"/> in <dependencies> (tried, see background.md); a missing class
-         is a LinkageError, which sdkCall rethrows, so 263 gets IDE errors. That is why until-build is 262.* (build.gradle.kts). -->
+    <!-- ChangeListManager / ProjectLevelVcsManager (VCS-ignored and untracked files). Up to 2026.2 (262) these classes are in the platform;
+         2026.3 (263) moved them to the bundled "Version Control" plugin, whose content module intellij.platform.vcs.impl declares this alias,
+         and the 2026.3 API changes say the alias is sufficient. A real 263 loads them with this line alone (integrationTest263); verifyPlugin
+         reports them unresolved there all the same, so verifyPlugin-ignored-problems.txt holds those reports back. -->
     <depends>com.intellij.modules.vcs</depends>
     <!-- The Analysis API. TODO: make it optional (config-file) if nothing ends up needing it. -->
     <depends>org.jetbrains.kotlin</depends>
