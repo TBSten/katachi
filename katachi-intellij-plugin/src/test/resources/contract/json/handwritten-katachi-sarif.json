@@ -1,0 +1,55 @@
+{
+  "$schema": "https://json.schemastore.org/sarif-2.1.0.json",
+  "version": "2.1.0",
+  "runs": [
+    {
+      "tool": {
+        "driver": {
+          "name": "katachi",
+          "semanticVersion": "0.3.0",
+          "informationUri": "https://tbsten.github.io/katachi/",
+          "rules": [
+            { "id": "katachi.MissingFile", "name": "MissingFile", "shortDescription": { "text": "A file a role declared does not exist." }, "defaultConfiguration": { "level": "error" } },
+            { "id": "katachi.UnexpectedFile", "name": "UnexpectedFile", "shortDescription": { "text": "A file exists that no role allows." }, "defaultConfiguration": { "level": "error" } },
+            { "id": "katachi.MissingDescription", "name": "MissingDescription", "shortDescription": { "text": "A role has no description." }, "defaultConfiguration": { "level": "warning" } }
+          ]
+        }
+      },
+      "originalUriBaseIds": { "%SRCROOT%": { "uri": "file:///w/my%20repo/" } },
+      "invocations": [ { "executionSuccessful": true } ],
+      "results": [
+        {
+          "ruleId": "katachi.UnexpectedFile",
+          "ruleIndex": 1,
+          "level": "error",
+          "message": { "text": "No role is defined for this file." },
+          "locations": [ { "physicalLocation": { "artifactLocation": { "uri": "src/main/kotlin/com/example/Stray%20File%23.kt", "uriBaseId": "%SRCROOT%" } } } ],
+          "properties": { "kind": "Unexpected", "severity": "Error", "path": "src/main/kotlin/com/example/Stray File#.kt" }
+        },
+        {
+          "ruleId": "katachi.MissingFile",
+          "ruleIndex": 0,
+          "level": "error",
+          "message": { "text": "No file has been created yet for role app.ApplicationConfig." },
+          "locations": [ { "physicalLocation": { "artifactLocation": { "uri": "architecture-test/src/test/kotlin/roles/ApplicationConfigRole.kt", "uriBaseId": "%SRCROOT%" }, "region": { "startLine": 35 } } } ],
+          "relatedLocations": [
+            { "id": 1, "physicalLocation": { "artifactLocation": { "uri": "src/main/resources/application.conf", "uriBaseId": "%SRCROOT%" } }, "message": { "text": "Expected here" } },
+            { "id": 2, "physicalLocation": { "artifactLocation": { "uri": "file:///elsewhere/%E3%81%82.kt" }, "region": { "startLine": 3 } }, "message": { "text": "Absolute" } }
+          ],
+          "properties": { "kind": "Missing", "severity": "Error", "path": "src/main/resources/application.conf", "role": "app.ApplicationConfig", "declaredAt": "ApplicationConfigRole.kt:35", "count": 2, "flag": true, "nested": { "x": 1 }, "gone": null }
+        },
+        {
+          "ruleId": "katachi.MissingDescription",
+          "message": { "text": "Role has no description." },
+          "locations": [ { "physicalLocation": { "artifactLocation": { "uri": "relative-without-base.kt" } } } ]
+        }
+      ]
+    },
+    {
+      "tool": { "driver": { "name": "katachi", "rules": [] } },
+      "results": [
+        { "ruleId": "katachi.Custom", "level": "note", "message": { "text": "second run" } }
+      ]
+    }
+  ]
+}

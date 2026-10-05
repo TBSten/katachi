@@ -62,6 +62,9 @@ private val FILES_WITHOUT_SDK_CALLS: Map<String, String> = mapOf(
     "EntryGenerationSupport" to "packageOfDirectory is called only inside sdkCall { readAction { } } (IdeEffectsImpl); the rest is text",
     "KatachiNotificationPanel" to "builds Swing components; its only caller wraps the build in sdkCall (KatachiEditorNotificationProvider)",
     "KatachiToolWindowViewModel" to "calls nothing of the SDK but its Logger",
+    "DefinitionModelService" to "an interface: types and signatures, no SDK call; the implementation wraps its calls in sdkCall",
+    "ResolvedSite" to "a result type that holds a VirtualFile; no SDK call; the implementation that finds it wraps its calls in sdkCall",
+    "ViolationsService" to "an interface: types and signatures, no SDK call; the implementation wraps its calls in sdkCall",
 )
 
 /** Whether [file] imports `com.intellij.` and never says `sdkCall`, without a reason in [FILES_WITHOUT_SDK_CALLS]. */

@@ -1,0 +1,519 @@
+{
+  "schemaVersion": 1,
+  "katachiVersion": "0.3.0",
+  "generatedAt": "2026-10-04T00:30:12Z",
+  "projectRoot": "/w/repo",
+  "architecture": {
+    "declaredAt": {
+      "fileName": "ProjectArchitecture.kt",
+      "line": 12
+    },
+    "files": "gitTracked",
+    "baseline": null
+  },
+  "groups": [
+    {
+      "qualifiedName": "domain",
+      "name": "domain",
+      "path": [
+        "domain"
+      ],
+      "title": "Domain",
+      "summary": null,
+      "documented": null,
+      "declaredAt": {
+        "fileName": "DomainGroup.kt",
+        "line": 8
+      }
+    },
+    {
+      "qualifiedName": "ui",
+      "name": "ui",
+      "path": [
+        "ui"
+      ],
+      "title": null,
+      "summary": null,
+      "documented": true,
+      "declaredAt": {
+        "fileName": "UiGroup.kt",
+        "line": 5
+      }
+    },
+    {
+      "qualifiedName": "gradle",
+      "name": "gradle",
+      "path": [
+        "gradle"
+      ],
+      "title": null,
+      "summary": null,
+      "documented": false,
+      "declaredAt": {
+        "fileName": "GradleGroup.kt",
+        "line": 6
+      }
+    }
+  ],
+  "roles": [
+    {
+      "qualifiedName": "domain.UseCase",
+      "name": "UseCase",
+      "groupPath": [
+        "domain"
+      ],
+      "title": "Use case",
+      "summary": "A single app-specific behavior",
+      "documented": null,
+      "declaredAt": {
+        "fileName": "UseCaseRole.kt",
+        "line": 10
+      },
+      "layout": [
+        {
+          "index": 0,
+          "path": "core/domain/src/main/kotlin/com/example/domain/useCase",
+          "kind": "Directory",
+          "required": false,
+          "description": "Behavior for each screen",
+          "declaredAt": {
+            "fileName": "UseCaseRole.kt",
+            "line": 13
+          },
+          "modulePath": ":core:domain",
+          "pathInModule": "src/main/kotlin/**/useCase",
+          "captures": [],
+          "moduleCapture": null,
+          "template": null,
+          "matchedFiles": [],
+          "matchedCount": null,
+          "matchedFilesTruncated": false,
+          "synthetic": false,
+          "place": false
+        },
+        {
+          "index": 1,
+          "path": "core/domain/src/main/kotlin/com/example/domain/useCase/*UseCase.kt",
+          "kind": "File",
+          "required": false,
+          "description": null,
+          "declaredAt": {
+            "fileName": "UseCaseRole.kt",
+            "line": 14
+          },
+          "modulePath": ":core:domain",
+          "pathInModule": "src/main/kotlin/**/useCase/*UseCase.kt",
+          "captures": [
+            {
+              "name": "name",
+              "segmentIndex": 7
+            }
+          ],
+          "moduleCapture": null,
+          "template": {
+            "specifier": "domain.UseCase",
+            "id": null,
+            "title": null,
+            "declaredAt": {
+              "fileName": "UseCaseRole.kt",
+              "line": 14
+            }
+          },
+          "matchedFiles": [
+            "core/domain/src/main/kotlin/com/example/domain/useCase/GetUserUseCase.kt"
+          ],
+          "matchedCount": 1,
+          "matchedFilesTruncated": false,
+          "synthetic": false,
+          "place": false
+        },
+        {
+          "index": 2,
+          "path": "core/domain/src/main/kotlin/com/example/domain/useCase/*.kt",
+          "kind": "File",
+          "required": false,
+          "description": null,
+          "declaredAt": {
+            "fileName": "UseCaseRole.kt",
+            "line": 15
+          },
+          "modulePath": ":core:domain",
+          "pathInModule": "core/domain/src/main/kotlin/com/example/domain/useCase/*.kt",
+          "captures": [],
+          "moduleCapture": null,
+          "template": null,
+          "matchedFiles": [
+            "core/domain/src/main/kotlin/com/example/domain/useCase/GetUserUseCase.kt",
+            "core/domain/src/main/kotlin/com/example/domain/useCase/Broken.kt"
+          ],
+          "matchedCount": 2,
+          "matchedFilesTruncated": false,
+          "synthetic": false,
+          "place": false
+        }
+      ],
+      "constraints": [
+        {
+          "name": "has an invoke function",
+          "backend": "konsist",
+          "checkClass": "me.tbsten.katachi.konsist.internal.KonsistFileConstraint",
+          "range": "Subtree",
+          "declaredAt": {
+            "fileName": "UseCaseRole.kt",
+            "line": 11
+          },
+          "layoutPath": null,
+          "anchors": [
+            "core/domain/src/main/kotlin/com/example/domain/useCase"
+          ],
+          "entries": [
+            1
+          ],
+          "coverage": {
+            "files": [
+              "core/domain/src/main/kotlin/com/example/domain/useCase/*UseCase.kt"
+            ],
+            "anyFileDirectories": []
+          }
+        },
+        {
+          "name": null,
+          "backend": "ktFileContent",
+          "checkClass": "me.tbsten.katachi.konsist.declarations.internal.KtFileContentConstraint",
+          "range": "Subtree",
+          "declaredAt": {
+            "fileName": "UseCaseRole.kt",
+            "line": 20
+          },
+          "layoutPath": null,
+          "anchors": [
+            "core/domain/src/main/kotlin/com/example/domain/useCase"
+          ],
+          "entries": [
+            1,
+            2
+          ],
+          "coverage": {
+            "files": [
+              "core/domain/src/main/kotlin/com/example/domain/useCase/*.kt"
+            ],
+            "anyFileDirectories": []
+          },
+          "fileDeclarations": [
+            {
+              "file": "core/domain/src/main/kotlin/com/example/domain/useCase/GetUserUseCase.kt",
+              "declarationsChecked": true,
+              "declarations": [
+                {
+                  "kind": "class",
+                  "name": "GetUserUseCase",
+                  "line": 7,
+                  "verdict": "Allowed",
+                  "rules": [
+                    {
+                      "text": "class GetUserUseCase",
+                      "declaredAt": {
+                        "fileName": "UseCaseRole.kt",
+                        "line": 21
+                      }
+                    }
+                  ],
+                  "difference": null
+                },
+                {
+                  "kind": "fun",
+                  "name": "helper",
+                  "line": 19,
+                  "verdict": "Unexpected",
+                  "rules": [],
+                  "difference": null
+                },
+                {
+                  "kind": "val",
+                  "name": "limit",
+                  "line": 23,
+                  "verdict": "Mismatched",
+                  "rules": [
+                    {
+                      "text": "private (anything)",
+                      "declaredAt": {
+                        "fileName": "UseCaseRole.kt",
+                        "line": 22
+                      }
+                    }
+                  ],
+                  "difference": "modifiers: expected private"
+                }
+              ],
+              "missing": [
+                {
+                  "text": "object Companion",
+                  "declaredAt": null
+                }
+              ],
+              "unexplainedReason": null
+            },
+            {
+              "file": "core/domain/src/main/kotlin/com/example/domain/useCase/Broken.kt",
+              "declarationsChecked": false,
+              "declarations": [],
+              "missing": [],
+              "unexplainedReason": "IllegalStateException: boom"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "qualifiedName": "ui.Screen",
+      "name": "Screen",
+      "groupPath": [
+        "ui"
+      ],
+      "title": null,
+      "summary": null,
+      "documented": null,
+      "declaredAt": {
+        "fileName": "UiGroup.kt",
+        "line": 9
+      },
+      "layout": [
+        {
+          "index": 0,
+          "path": "feature",
+          "kind": "Directory",
+          "required": false,
+          "description": null,
+          "declaredAt": null,
+          "modulePath": null,
+          "pathInModule": "feature",
+          "captures": [],
+          "moduleCapture": null,
+          "template": null,
+          "matchedFiles": [],
+          "matchedCount": null,
+          "matchedFilesTruncated": false,
+          "synthetic": false,
+          "place": false
+        },
+        {
+          "index": 1,
+          "path": "feature/*",
+          "kind": "Directory",
+          "required": false,
+          "description": null,
+          "declaredAt": null,
+          "modulePath": null,
+          "pathInModule": "feature/*",
+          "captures": [],
+          "moduleCapture": null,
+          "template": null,
+          "matchedFiles": [],
+          "matchedCount": null,
+          "matchedFilesTruncated": false,
+          "synthetic": false,
+          "place": false
+        },
+        {
+          "index": 2,
+          "path": "feature/*/ui",
+          "kind": "AnyFile",
+          "required": false,
+          "description": null,
+          "declaredAt": {
+            "fileName": "UiGroup.kt",
+            "line": 12
+          },
+          "modulePath": ":feature:*",
+          "pathInModule": "feature/*/ui",
+          "captures": [],
+          "moduleCapture": {
+            "pattern": ":feature:*",
+            "names": [
+              "feature"
+            ]
+          },
+          "template": null,
+          "matchedFiles": [
+            "feature/home/ui/HomeScreen.kt",
+            "feature/home/ui/Theme.kt"
+          ],
+          "matchedCount": 2,
+          "matchedFilesTruncated": false,
+          "synthetic": false,
+          "place": false
+        }
+      ],
+      "constraints": [
+        {
+          "name": "direct only",
+          "backend": "custom",
+          "checkClass": "com.example.MyCheck$1",
+          "range": "DirectOnly",
+          "declaredAt": {
+            "fileName": "UiGroup.kt",
+            "line": 13
+          },
+          "layoutPath": null,
+          "anchors": [
+            "feature/*/ui"
+          ],
+          "entries": [
+            2
+          ],
+          "coverage": {
+            "files": [],
+            "anyFileDirectories": [
+              "feature/*/ui"
+            ]
+          }
+        },
+        {
+          "name": "future backend",
+          "backend": "hologram",
+          "checkClass": "com.example.hologram.Check",
+          "range": "Teleport",
+          "declaredAt": null,
+          "layoutPath": null,
+          "anchors": [],
+          "entries": [],
+          "coverage": {
+            "files": [
+              "feature/*/ui/*.kt"
+            ],
+            "anyFileDirectories": []
+          }
+        }
+      ]
+    },
+    {
+      "qualifiedName": "ui.Docs",
+      "name": "Docs",
+      "groupPath": [
+        "ui"
+      ],
+      "title": null,
+      "summary": null,
+      "documented": null,
+      "declaredAt": {
+        "fileName": "UiGroup.kt",
+        "line": 20
+      },
+      "layout": [
+        {
+          "index": 0,
+          "path": "feature",
+          "kind": "Directory",
+          "required": false,
+          "description": null,
+          "declaredAt": null,
+          "modulePath": null,
+          "pathInModule": "feature",
+          "captures": [],
+          "moduleCapture": null,
+          "template": null,
+          "matchedFiles": [],
+          "matchedCount": null,
+          "matchedFilesTruncated": false,
+          "synthetic": false,
+          "place": false
+        },
+        {
+          "index": 1,
+          "path": "feature/*/ui/README.md",
+          "kind": "File",
+          "required": false,
+          "description": null,
+          "declaredAt": null,
+          "modulePath": null,
+          "pathInModule": "feature/*/ui/README.md",
+          "captures": [],
+          "moduleCapture": null,
+          "template": null,
+          "matchedFiles": [
+            "feature/home/ui/README.md"
+          ],
+          "matchedCount": 1,
+          "matchedFilesTruncated": false,
+          "synthetic": false,
+          "place": false
+        },
+        {
+          "index": 2,
+          "path": "feature/*/docs",
+          "kind": "AnyFile",
+          "required": false,
+          "description": null,
+          "declaredAt": null,
+          "modulePath": null,
+          "pathInModule": "feature/*/docs",
+          "captures": [],
+          "moduleCapture": null,
+          "template": null,
+          "matchedFiles": [
+            "feature/home/docs/index.md"
+          ],
+          "matchedCount": 1,
+          "matchedFilesTruncated": false,
+          "synthetic": false,
+          "place": false
+        },
+        {
+          "index": 3,
+          "path": "feature/*/mystery",
+          "kind": "Hologram",
+          "required": false,
+          "description": null,
+          "declaredAt": null,
+          "modulePath": null,
+          "pathInModule": "feature/*/mystery",
+          "captures": [],
+          "moduleCapture": null,
+          "template": null,
+          "matchedFiles": [],
+          "matchedCount": null,
+          "matchedFilesTruncated": false,
+          "synthetic": false,
+          "place": false
+        }
+      ],
+      "constraints": []
+    }
+  ],
+  "templates": {
+    "templates": [
+      {
+        "template": "domain.UseCase",
+        "id": null,
+        "title": "Use case",
+        "roleName": "domain.UseCase",
+        "summary": null,
+        "parameterNames": [],
+        "captures": [
+          {
+            "name": "name",
+            "kind": "PathCapture",
+            "pattern": "core/domain/src/main/kotlin/com/example/domain/useCase/*UseCase.kt",
+            "position": 7,
+            "segment": "${name}UseCase.kt"
+          }
+        ],
+        "conflict": false
+      }
+    ],
+    "details": [],
+    "modulePlacements": []
+  },
+  "problems": [
+    {
+      "kind": "ExplanationTruncated",
+      "message": "Explained 2000 of 2100 files.",
+      "detail": null
+    },
+    {
+      "kind": "FutureKind",
+      "message": "Something new.",
+      "detail": "x"
+    }
+  ]
+}

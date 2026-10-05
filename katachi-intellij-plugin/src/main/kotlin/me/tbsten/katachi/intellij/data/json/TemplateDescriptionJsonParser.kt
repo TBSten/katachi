@@ -29,8 +29,16 @@ import java.nio.file.Path
  * @throws KatachiMalformedTemplateJsonException when [text] is not JSON (E-37).
  * @throws KatachiIncompatibleTemplateJsonException when a required key is missing or mistyped (E-35).
  */
-internal fun parseTemplateDescriptionJson(text: String, file: Path): List<TemplateModel> {
-    val root = JsonReader(parseJsonText(text, file), "$", file)
+internal fun parseTemplateDescriptionJson(text: String, file: Path): List<TemplateModel> =
+    parseTemplateDescriptionJson(parseJsonText(text, file), file)
+
+/**
+ * [parseTemplateDescriptionJson] over a document that is already parsed: `definition.json` carries
+ * the same object under its `templates` key, and reads it through here. [file] is for error messages;
+ * a location in them starts at the given [document] (`$`).
+ */
+internal fun parseTemplateDescriptionJson(document: JsonValue, file: Path): List<TemplateModel> {
+    val root = JsonReader(document, "$", file)
     val summaries = root.array("templates").map { it.summary() }.distinctBy { it.template }
     val placements = root.optionalArray("modulePlacements").map { it.modulePlacement() }.distinctBy { it.first }.toMap()
     val details = root.array("details").map { it.detail() }.distinctBy { it.template }
