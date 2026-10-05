@@ -26,7 +26,7 @@ class ViolationReportSpec : FreeSpec({
             }
         }
 
-        "移動先の候補と貼り付けられる DSL 断片が出る" {
+        "移動先の候補にファイル名のパターンが添えられ貼り付けられる DSL 断片が出る" {
             definition.validate(tree).report() shouldBe
                 """
                 Katachi check failed: 1 violation (Unexpected: 1)
@@ -35,11 +35,11 @@ class ViolationReportSpec : FreeSpec({
                   No role is defined for this file.
 
                   Nearby locations:
-                    domain.UseCase    core/domain/useCase/
-                    domain.Repository core/domain/repository/
+                    domain.UseCase    core/domain/useCase/ (*UseCase.kt)
+                    domain.Repository core/domain/repository/ (*Repository.kt)
 
                   How to fix:
-                    - Move it to one of the locations above
+                    - Move it to one of the locations above, with a name matching the pattern in parentheses
                     - Delete it if it is not needed
                     - Add a new role for it:
                         "TokenRefresher".role {
@@ -60,11 +60,11 @@ class ViolationReportSpec : FreeSpec({
                   No role is defined for this file.
 
                   Nearby locations:
-                    domain.UseCase    file:///repo/core/domain/useCase/
-                    domain.Repository file:///repo/core/domain/repository/
+                    domain.UseCase    file:///repo/core/domain/useCase/ (*UseCase.kt)
+                    domain.Repository file:///repo/core/domain/repository/ (*Repository.kt)
 
                   How to fix:
-                    - Move it to one of the locations above
+                    - Move it to one of the locations above, with a name matching the pattern in parentheses
                     - Delete it if it is not needed
                     - Add a new role for it:
                         "TokenRefresher".role {
@@ -93,6 +93,20 @@ class ViolationReportSpec : FreeSpec({
             definition.validate(tree).report().all { it.code in 0x20..0x7E || it == '\n' } shouldBe true
             definition.validate(tree).report(projectRoot = FsPath.of("/repo/日本 語"))
                 .all { it.code in 0x20..0x7E || it == '\n' } shouldBe true
+        }
+
+        "anyFile の置き場所にはパターンが添えられず Move の行は今までの文のまま" {
+            val open = architectureOf {
+                "domain".group {
+                    "UseCase".role { layout { "core/domain/useCase" { anyFile() } } }
+                }
+            }
+            val report = open.validate(repositoryOf { "core/domain" { "TokenRefresher.kt"(); "useCase" { "A.kt"() } } }).report()
+
+            report.lines().filter { it.contains("domain.UseCase") || it.startsWith("    - Move") } shouldBe listOf(
+                "    domain.UseCase core/domain/useCase/",
+                "    - Move it to one of the locations above",
+            )
         }
     }
 

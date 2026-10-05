@@ -110,13 +110,17 @@ public interface Violation {
 /**
  * A place a role declared, offered as somewhere an unexpected file could move to.
  *
+ * A declared place may hold wildcards (`feature` / `*` / `src/main/kotlin`); what is offered here is
+ * that place with the unexpected file's own path filled into them, so the directory is one
+ * the file could actually be moved to.
+ *
  * ## Example 1: read the nearby locations suggested for an unexpected file
  * ```kt
  * val failure = shouldThrow<KatachiArchitectureAssertionError> {
  *     projectArchitecture.assert()
  * }
  * val unexpectedFile = failure.violations.filterIsInstance<UnexpectedFile>().first()
- * unexpectedFile.nearby.map { it.directory }
+ * unexpectedFile.nearby.map { "${it.directory} ${it.filePattern ?: "(any name)"}" }
  * ```
  */
 public class NearbyLocation internal constructor(
@@ -130,7 +134,8 @@ public class NearbyLocation internal constructor(
      */
     public val role: Role,
     /**
-     * The directory, relative to the project root. Never empty, never holds a wildcard.
+     * The directory, relative to the project root, with the file's own path filled into every
+     * wildcard. Never empty, never holds a wildcard.
      *
      * ## Example 1: read the directory a nearby role's files may live in
      * ```kt
@@ -138,9 +143,20 @@ public class NearbyLocation internal constructor(
      * ```
      */
     public val directory: String,
+    /**
+     * The file name pattern the role declared there (`*Screen.kt`), or `null` when the role
+     * wrote `anyFile()`.
+     *
+     * ## Example 1: read the name a file has to have at a nearby location
+     * ```kt
+     * unexpectedFile.nearby.first().filePattern
+     * ```
+     */
+    public val filePattern: String?,
 ) {
-    /** `<role> -> <directory>`, for a log line or a test failure message. */
-    override fun toString(): String = "${role.qualifiedName} -> $directory"
+    /** `<role> -> <directory>/<filePattern>`, for a log line or a test failure message. */
+    override fun toString(): String =
+        "${role.qualifiedName} -> $directory" + (filePattern?.let { "/$it" } ?: "")
 }
 
 /**

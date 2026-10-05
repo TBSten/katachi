@@ -158,7 +158,7 @@
           "ruleIndex": 11,
           "level": "error",
           "message": {
-            "text": "No role is defined for this file.\n\nNearby locations:\n  domain.UseCase core/domain/src/main/kotlin/com/example/domain/\n\nHow to fix:\n  - Move it to one of the locations above\n  - Delete it if it is not needed\n  - Add a new role for it:\n      \"Helper\".role {\n        summary = \"TODO\"\n        layout {\n          \"app/src/main/kotlin/com/example\" / \"Helper\".ktFile()\n        }\n      }"
+            "text": "No role is defined for this file.\n\nNearby locations:\n  domain.UseCase core/domain/src/main/kotlin/com/example/domain/ (*UseCase.kt)\n\nHow to fix:\n  - Move it to one of the locations above, with a name matching the pattern in parentheses\n  - Delete it if it is not needed\n  - Add a new role for it:\n      \"Helper\".role {\n        summary = \"TODO\"\n        layout {\n          \"app/src/main/kotlin/com/example\" / \"Helper\".ktFile()\n        }\n      }"
           },
           "locations": [
             {

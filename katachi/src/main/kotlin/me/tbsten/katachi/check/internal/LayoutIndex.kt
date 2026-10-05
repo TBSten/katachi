@@ -6,9 +6,6 @@ import me.tbsten.katachi.dsl.LayoutEntryKind
 import me.tbsten.katachi.dsl.Role
 import me.tbsten.katachi.dsl.internal.Glob
 
-/** How many locations an `[UnexpectedFile]` block offers. */
-private const val NEARBY_LIMIT: Int = 3
-
 /**
  * The flattened layout of every role, turned into the four questions the traversal asks.
  *
@@ -58,7 +55,7 @@ internal class LayoutIndex(entries: List<LayoutEntry>) {
     /** Declarations that have to be matched by a real file, in declaration order. */
     val requiredFiles: List<LayoutEntry> = entries.filter { it.required }
 
-    private val locations: List<NearbyLocation> = entries.nearbyLocations()
+    private val nearby: NearbyCandidates = NearbyCandidates(entries)
 
     /** Whether the check stops at [directory] because a role said to. */
     fun isIgnored(directory: String): Boolean = ignoredDirectories.anyMatches(directory)
@@ -115,22 +112,11 @@ internal class LayoutIndex(entries: List<LayoutEntry>) {
     }
 
     /**
-     * Places [file] could be moved to, the ones sharing the most leading path with it first.
-     *
-     * A location sharing nothing with the file is left out rather than padding the list: a
-     * suggestion that far away is noise, and the block still ends with a role to paste.
-     * Locations that tie keep declaration order, so the roles line up in the report the same
-     * way they do in the definition.
+     * Places [file] could be moved to, nearest first, three at most. The rule is
+     * [NearbyCandidates]'s; a location sharing nothing with the file is left out rather than
+     * padding the list, because a suggestion that far away is noise.
      */
-    fun nearbyOf(file: String): List<NearbyLocation> {
-        val directory = file.parentPath()
-        return locations
-            .map { it to sharedLeadingSegments(directory, it.directory) }
-            .filter { (_, shared) -> shared > 0 }
-            .sortedByDescending { (_, shared) -> shared }
-            .take(NEARBY_LIMIT)
-            .map { (location, _) -> location }
-    }
+    fun nearbyOf(file: String): List<NearbyLocation> = nearby.nearbyOf(file)
 }
 
 private fun List<LayoutEntry>.indexedByGlob(): PrefixGlobIndex<LayoutEntry> = PrefixGlobIndex(this) { it.glob }
@@ -144,44 +130,4 @@ private fun LayoutEntry.directoryPatterns(): List<String> {
     // is one only when the entry is not a file.
     val levels = if (kind == LayoutEntryKind.File) segments.size - 1 else segments.size
     return (1..levels).map { segments.take(it).joinToString("/") }
-}
-
-/**
- * The directories a role actually accepts a file into: where it declared one, and where it
- * wrote `anyFile()`.
- *
- * A directory that only exists to hold another directory is not one of them. `core/domain`,
- * passed through on the way to the `useCase` directory below it, accepts nothing itself, so
- * offering it as somewhere to move a file to would be wrong as well as unhelpful. A
- * directory the role stopped checking in is left out for the same reason: moving a file
- * there hides it instead of giving it a role.
- */
-private fun List<LayoutEntry>.nearbyLocations(): List<NearbyLocation> {
-    val seen = LinkedHashMap<Pair<String, String>, NearbyLocation>()
-    for (entry in this) {
-        val directory = when (entry.kind) {
-            LayoutEntryKind.File -> entry.path.parentPath()
-            LayoutEntryKind.AnyFile -> entry.path
-            LayoutEntryKind.Directory, LayoutEntryKind.Ignore -> continue
-        }
-        // A pattern is not somewhere a file can be moved to, and the project root is not a
-        // suggestion worth printing.
-        if (directory.isEmpty() || '*' in directory) continue
-        seen.getOrPut(entry.role.qualifiedName to directory) {
-            NearbyLocation(role = entry.role, directory = directory)
-        }
-    }
-    return seen.values.toList()
-}
-
-private fun sharedLeadingSegments(left: String, right: String): Int {
-    if (left.isEmpty() || right.isEmpty()) return 0
-    val leftSegments = left.split('/')
-    val rightSegments = right.split('/')
-    var shared = 0
-    while (shared < leftSegments.size && shared < rightSegments.size) {
-        if (leftSegments[shared] != rightSegments[shared]) break
-        shared++
-    }
-    return shared
 }
