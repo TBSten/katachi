@@ -18,6 +18,15 @@ private fun unexpectedFile(path: String): UnexpectedFile = UnexpectedFile(path, 
 private fun missingFile(path: String): MissingFile =
     MissingFile(path, role = role, declaredAt = DeclarationSite("ReportTruncationSpec.kt", 0))
 
+/** The line right after the truncation line: how to see every block. */
+private const val HINT = "  To show every block, run with -Dkatachi.maxViolations=all, or set maxViolations in assert()."
+
+/** The truncation line: the one before the hint, which is the report's last line. */
+private fun List<String>.truncationLine(): String {
+    last() shouldBe HINT
+    return this[size - 2]
+}
+
 /**
  * `report()`'s truncation: the budget is split fairly across the kinds that showed up, not
  * spent on the first kind in the list, and the trailing "could not be ..." sentences never
@@ -33,7 +42,14 @@ class ReportTruncationSpec : FreeSpec({
         }
 
         "打ち切り行は隠れた種別が1つなので内訳なしの Showing first 2 (11 more)" {
-            violations.report(maxViolations = 2).lines().last() shouldBe "Showing first 2 (11 more)"
+            violations.report(maxViolations = 2).lines().truncationLine() shouldBe "Showing first 2 (11 more)"
+        }
+
+        "打ち切り行の直後に全件を出す方法の行が出る" {
+            val lines = violations.report(maxViolations = 2).lines()
+
+            lines.last() shouldBe HINT
+            lines[lines.size - 2] shouldBe "Showing first 2 (11 more)"
         }
     }
 
@@ -42,7 +58,7 @@ class ReportTruncationSpec : FreeSpec({
             (1..3).map { missingFile("missing-$it.txt") }
 
         "打ち切り行は隠れた種別が2つなので内訳つきの Showing first 2 (13 more: Unexpected 11, Missing 2)" {
-            violations.report(maxViolations = 2).lines().last() shouldBe
+            violations.report(maxViolations = 2).lines().truncationLine() shouldBe
                 "Showing first 2 (13 more: Unexpected 11, Missing 2)"
         }
     }
@@ -69,7 +85,7 @@ class ReportTruncationSpec : FreeSpec({
         val report = violations.report(maxViolations = 0)
 
         report.lines().count { it.startsWith("[") } shouldBe 0
-        report.lines().last() shouldBe "Showing first 0 (5 more: Unexpected 3, Missing 2)"
+        report.lines().truncationLine() shouldBe "Showing first 0 (5 more: Unexpected 3, Missing 2)"
     }
 
     "打ち切られて隠れた種別でも末尾の件数行は消えない" - {

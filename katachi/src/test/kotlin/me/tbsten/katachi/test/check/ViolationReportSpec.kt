@@ -193,7 +193,7 @@ class ViolationReportSpec : FreeSpec({
             val report = definition.validate(tree).report()
 
             report shouldStartWith "Katachi check failed: 12 violations (Unexpected: 12)\n"
-            report.lines().last() shouldBe "Showing first 10 (2 more)"
+            report.lines().dropLast(1).last() shouldBe "Showing first 10 (2 more)"
             report.lines().count { it.startsWith("[") } shouldBe 10
         }
 
@@ -201,7 +201,7 @@ class ViolationReportSpec : FreeSpec({
             val report = definition.validate(tree).report(maxViolations = 3)
 
             report shouldStartWith "Katachi check failed: 12 violations (Unexpected: 12)\n"
-            report.lines().last() shouldBe "Showing first 3 (9 more)"
+            report.lines().dropLast(1).last() shouldBe "Showing first 3 (9 more)"
             report.lines().count { it.startsWith("[") } shouldBe 3
         }
 

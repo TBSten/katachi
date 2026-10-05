@@ -243,7 +243,7 @@ class FileConstraintReportSpec : FreeSpec({
                 "[UnexpectedFile] note-0.md",
                 "[UnsatisfiedFileConstraint] alpha/Helper.kt",
             )
-            lines.last() shouldBe "Showing first 2 (11 more)"
+            lines.dropLast(1).last() shouldBe "Showing first 2 (11 more)"
         }
     }
 

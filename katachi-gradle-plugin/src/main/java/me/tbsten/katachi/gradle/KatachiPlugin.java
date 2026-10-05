@@ -228,8 +228,15 @@ public class KatachiPlugin implements Plugin<Project> {
             // after this point still gets its classpath. `runtimeClasspath` carries the tasks
             // that produce it, and JavaExec declares `classpath` as @Classpath, so compiling the
             // tests is ordered before a run without a `dependsOn` of its own.
-            project.getTasks().withType(KatachiProcessorTask.class).configureEach(task ->
-                    task.setClasspath(testSourceSet.getRuntimeClasspath()));
+            project.getTasks().withType(KatachiProcessorTask.class).configureEach(task -> {
+                task.setClasspath(testSourceSet.getRuntimeClasspath());
+                // A `katachi<Key>` task prints the same report `assert()` prints, so the same
+                // `-Dkatachi.maxViolations` reaches its JVM. No `upToDateWhen`: the value only
+                // changes what the report looks like, and as an @Input it reruns the task when
+                // it changes, which is all that is needed.
+                task.getJvmArgumentProviders().add(new KatachiMaxViolationsArguments(
+                        project.getProviders().systemProperty(KatachiMaxViolationsArguments.MAX_VIOLATIONS_PROPERTY)));
+            });
             project.getTasks().withType(KatachiProcessorsTask.class).configureEach(task ->
                     task.setClasspath(testSourceSet.getRuntimeClasspath()));
         });
@@ -250,6 +257,10 @@ public class KatachiPlugin implements Plugin<Project> {
             test.getOutputs().upToDateWhen(baselineArguments.notRequested());
             test.getOutputs().doNotCacheIf(
                     "-Dkatachi.baseline.update or -Dkatachi.baseline.prune was given", baselineArguments.requested());
+            // `-Dkatachi.maxViolations` the same way, minus the `upToDateWhen`: it changes what
+            // the report looks like, not what is written, so being an @Input is enough.
+            test.getJvmArgumentProviders().add(new KatachiMaxViolationsArguments(
+                    project.getProviders().systemProperty(KatachiMaxViolationsArguments.MAX_VIOLATIONS_PROPERTY)));
 
             // `katachi { report { sarif = true } }`. `test` writes build/reports/katachi/
             // katachi.sarif; any other Test task writes under its own name, so two tasks of a

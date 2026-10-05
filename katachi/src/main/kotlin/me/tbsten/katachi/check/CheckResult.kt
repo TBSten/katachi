@@ -45,6 +45,9 @@ import me.tbsten.katachi.check.internal.assertNoErrors
  * }
  * ```
  *
+ * The message is cut to `-Dkatachi.maxViolations` blocks when that is given, else to
+ * [DEFAULT_MAX_VIOLATIONS], exactly as `assert()` cuts its own.
+ *
  * @throws KatachiArchitectureAssertionError when any violation of this list is a
  *   [Severity.Error].
  */
@@ -53,4 +56,4 @@ public fun List<Violation>.assertNoErrors(): List<Violation> =
     // TODO: a third-party check has no project root to hand over here, so its message keeps the
     //  paths relative. An overload taking the `ArchitectureProcessContext` could resolve them.
     //  `validate()` / `assert()` rebuild the message with the root either way.
-    assertNoErrors(projectRoot = null)
+    assertNoErrors(systemProperty = System::getProperty, standardError = System.err::println)

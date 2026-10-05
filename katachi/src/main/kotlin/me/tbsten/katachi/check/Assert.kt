@@ -9,7 +9,8 @@ import me.tbsten.katachi.dsl.files.internal.RealFileSystem
 import me.tbsten.katachi.processor.ArchitectureProcessor
 
 /**
- * How many blocks `assert()` prints before it stops and counts the rest.
+ * How many blocks `assert()` prints when neither the test nor `-Dkatachi.maxViolations` says
+ * otherwise.
  *
  * ## Example 1: show twice as many blocks as `assert()` shows by default
  * ```kt
@@ -74,13 +75,36 @@ public class KatachiArchitectureAssertionError internal constructor(
  * The overload taking checks runs those on the same walk as well; this one runs [LayoutCheck]
  * alone.
  *
+ * ## Example 2: show every violation without touching the test
+ *
+ * The message is cut to [DEFAULT_MAX_VIOLATIONS] blocks unless the test says otherwise, and the
+ * test does not have to: with katachi's Gradle plugin applied, a `-D` on the Gradle command
+ * line reaches the test JVM. `all` shows every block; a whole number shows that many.
+ *
+ * ```sh
+ * ./gradlew test -Dkatachi.maxViolations=all
+ * ```
+ *
+ * ## Example 3: the same without the Gradle plugin
+ *
+ * A test JVM does not see the `-D` of the Gradle command line by itself, so hand it on.
+ *
+ * ```kt
+ * tasks.test {
+ *     providers.systemProperty("katachi.maxViolations").orNull?.let { systemProperty("katachi.maxViolations", it) }
+ * }
+ * ```
+ *
  * @param maxViolations the combined budget the message's error blocks and warning blocks
- *   share. The rest are counted on their section's own last line. This is about the message
- *   only — the check always looks at everything.
+ *   share. `null` (the default) takes it from `-Dkatachi.maxViolations` -- `all`, or a whole
+ *   number of 0 or more -- and from [DEFAULT_MAX_VIOLATIONS] when that is not given either. A
+ *   value written here wins over the `-D`, which is then noted on standard error. The rest are
+ *   counted on their section's own last line, and this is about the message only — the check
+ *   always looks at everything.
  * @throws KatachiArchitectureAssertionError when the check found anything that fails it.
  * @featured
  */
-public fun Architecture.assert(maxViolations: Int = DEFAULT_MAX_VIOLATIONS): Unit {
+public fun Architecture.assert(maxViolations: Int? = null): Unit {
     assertWith(RealFileSystem(), emptyList(), maxViolations)
 }
 
@@ -115,8 +139,11 @@ public fun Architecture.assert(maxViolations: Int = DEFAULT_MAX_VIOLATIONS): Uni
  * ```
  *
  * @param maxViolations the combined budget the message's error blocks and warning blocks
- *   share. The rest are counted on their section's own last line. This is about the message
- *   only — the check always looks at everything.
+ *   share. `null` (the default) takes it from `-Dkatachi.maxViolations` -- `all`, or a whole
+ *   number of 0 or more -- and from [DEFAULT_MAX_VIOLATIONS] when that is not given either. A
+ *   value written here wins over the `-D`, which is then noted on standard error. The rest are
+ *   counted on their section's own last line, and this is about the message only — the check
+ *   always looks at everything.
  * @throws KatachiArchitectureAssertionError when anything that ran found something that fails
  *   it, a check that threw included.
  */
@@ -124,7 +151,7 @@ public fun Architecture.assert(maxViolations: Int = DEFAULT_MAX_VIOLATIONS): Uni
 public fun Architecture.assert(
     check: ArchitectureProcessor<Unit, List<Violation>>,
     vararg more: ArchitectureProcessor<Unit, List<Violation>>,
-    maxViolations: Int = DEFAULT_MAX_VIOLATIONS,
+    maxViolations: Int? = null,
 ): Unit {
     assertWith(RealFileSystem(), listOf(check) + more, maxViolations)
 }
@@ -157,7 +184,8 @@ public fun Architecture.assert(
  * ```
  *
  * @param maxViolations the combined budget the message's error blocks and warning blocks
- *   share, as for [assert].
+ *   share, as for [assert]: written here, else `-Dkatachi.maxViolations`, else
+ *   [DEFAULT_MAX_VIOLATIONS].
  * @throws KatachiArchitectureAssertionError when the check found anything that fails it.
  * @return every violation of the run, sorted as the report sorts them: only warnings, or
  *   nothing, since any error throws instead.
@@ -165,7 +193,7 @@ public fun Architecture.assert(
  * @see List.assertNoErrors
  */
 @ExperimentalKatachiApi
-public fun Architecture.assertNoErrors(maxViolations: Int = DEFAULT_MAX_VIOLATIONS): List<Violation> =
+public fun Architecture.assertNoErrors(maxViolations: Int? = null): List<Violation> =
     assertWith(RealFileSystem(), emptyList(), maxViolations)
 
 /**
@@ -181,7 +209,8 @@ public fun Architecture.assertNoErrors(maxViolations: Int = DEFAULT_MAX_VIOLATIO
  * ```
  *
  * @param maxViolations the combined budget the message's error blocks and warning blocks
- *   share, as for [assert].
+ *   share, as for [assert]: written here, else `-Dkatachi.maxViolations`, else
+ *   [DEFAULT_MAX_VIOLATIONS].
  * @throws KatachiArchitectureAssertionError when anything that ran found something that fails
  *   it, a check that threw included.
  * @return every violation of the run: only warnings, or nothing, since any error throws instead.
@@ -190,5 +219,5 @@ public fun Architecture.assertNoErrors(maxViolations: Int = DEFAULT_MAX_VIOLATIO
 public fun Architecture.assertNoErrors(
     check: ArchitectureProcessor<Unit, List<Violation>>,
     vararg more: ArchitectureProcessor<Unit, List<Violation>>,
-    maxViolations: Int = DEFAULT_MAX_VIOLATIONS,
+    maxViolations: Int? = null,
 ): List<Violation> = assertWith(RealFileSystem(), listOf(check) + more, maxViolations)

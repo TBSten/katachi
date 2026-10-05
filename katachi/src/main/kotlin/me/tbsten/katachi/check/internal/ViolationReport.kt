@@ -80,7 +80,9 @@ public fun List<Violation>.report(
                 append("\n\n")
                 append(blockOf(violation, projectRoot?.value).joinToString("\n"))
             }
-            truncationLine(errors, shownErrors, noun = "", withBreakdown = true)?.let { append("\n\n$it") }
+            truncationLine(errors, shownErrors, noun = "", withBreakdown = true)?.let {
+                append("\n\n$it\n$STEP$TRUNCATION_HINT")
+            }
             // After the truncation line, and outside it: these are the only sentences saying
             // the result is partial, and a reader who does not see them is entitled to believe
             // every path, constraint and check was looked at. Cutting them away with the
@@ -95,7 +97,7 @@ public fun List<Violation>.report(
                 append(blockOf(violation, projectRoot?.value).joinToString("\n"))
             }
             truncationLine(warnings, shownWarnings, noun = " warnings", withBreakdown = false)
-                ?.let { append("\n\n$it") }
+                ?.let { append("\n\n$it\n$STEP$TRUNCATION_HINT") }
         }
     }
 }
@@ -199,7 +201,8 @@ private fun warningHeading(count: Int): String {
 
 /**
  * The "Showing first N (M more)" line for one severity's own slice of the budget — `null` when
- * nothing of that severity was left out.
+ * nothing of that severity was left out. The caller hangs [TRUNCATION_HINT] under it, indented
+ * one [STEP], so the line that says blocks were cut is also the line that says how to see them.
  *
  * @param noun appended right after the shown count: `""` for the error section, so it reads
  *   `Showing first 10 (4 more: ...)` exactly as it always has, and `" warnings"` for the Warning

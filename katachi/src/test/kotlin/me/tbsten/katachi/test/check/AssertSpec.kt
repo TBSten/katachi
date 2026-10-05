@@ -68,6 +68,8 @@ class AssertSpec : FreeSpec({
 
         failure.violations.size shouldBe 12
         failure.message!!.lines().count { it.startsWith("[") } shouldBe 2
-        failure.message!!.lines().last() shouldBe "Showing first 2 (10 more)"
+        failure.message!!.lines().last() shouldBe
+            "  To show every block, run with -Dkatachi.maxViolations=all, or set maxViolations in assert()."
+        failure.message!!.lines().dropLast(1).last() shouldBe "Showing first 2 (10 more)"
     }
 })
