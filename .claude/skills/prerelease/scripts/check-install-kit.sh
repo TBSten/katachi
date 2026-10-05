@@ -320,7 +320,11 @@ EOF
 		TEST="飛ばした（JDK 21 が無い。この fixture は Gradle を JDK 21 で動かす前提）"
 		return
 	fi
-	[ -n "${JAVA_HOME:-}" ] && NOTE="${NOTE:+${NOTE}、}JAVA_HOME `basename "${JAVA_HOME}"`"
+	# JAVA_HOME の名前（.../temurin-21/Contents/Home なら temurin-21）を形の欄に残す。
+	if [ -n "${JAVA_HOME:-}" ]; then
+		jh_name=`echo "${JAVA_HOME}" | sed 's#/Contents/Home$##; s#/libexec/openjdk.jdk$##; s#.*/##'`
+		NOTE="${NOTE:+${NOTE}、}JAVA_HOME ${jh_name}"
+	fi
 	(cd "$d" && ./gradlew "${MODULE_PATH}:test" --no-daemon --console=plain \
 		--project-cache-dir "${GRADLE_CACHE}/${fx}") >"${t1_log}" 2>&1
 	if grep -q "> Task ${MODULE_PATH}:test FAILED" "${t1_log}" &&

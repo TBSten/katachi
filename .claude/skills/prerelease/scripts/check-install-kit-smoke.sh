@@ -639,6 +639,19 @@ case_test() {
 	out=$(${KSH} "${c}" test 2>&1)
 	st=$?
 	[ "${st}" -eq 0 ] && printf '%s\n' "${out}" | grep -q '^結果: 検査は通りました（違反 0 件）' && ok "test は違反 0 件で exit 0" || ng "test は違反 0 件で exit 0" "st=${st} ${out}"
+	# Gradle のテスト出力の形（例外のクラス名が前に付き、件数が単数）でも検査が落ちたと判定する
+	printf 'ProjectArchitectureTest > the project layout matches the definition() FAILED\n    me.tbsten.katachi.check.KatachiArchitectureAssertionError: Katachi check failed: 1 violation (Unexpected: 1)\n\n    [UnexpectedFile] file:///x/settings.gradle.kts.bak\n      No role is defined for this file.\n\n1 tests completed, 1 failed\n> Task :architecture-test:test FAILED\nBUILD FAILED in 19s\n' >"${d}/fake-out.txt"
+	printf '1\n' >"${d}/fake-exit"
+	out=$(${KSH} "${c}" test 2>&1)
+	st=$?
+	[ "${st}" -eq 1 ] && printf '%s\n' "${out}" | grep -q '^結果: Katachi check failed: 1 violation (Unexpected: 1)' && printf '%s\n' "${out}" | grep -q '^  + \[UnexpectedFile\] file:///x/settings.gradle.kts.bak' &&
+		ok "test は例外のクラス名つきの単数の結果行でも検査が落ちたと判定する" || ng "test は例外のクラス名つきの単数の結果行でも検査が落ちたと判定する" "st=${st} ${out}"
+	# 検査の違反は無いが、検査用モジュールのほかのテストが落ちた（コンパイルエラーとは別の文面で exit 1）
+	printf 'ProjectRootSpec > walking up from the working directory FAILED\n    org.opentest4j.AssertionFailedError: expected:<sample> but was:<copy>\n\nProjectArchitectureTest > the project layout matches the definition() PASSED\n\n2 tests completed, 1 failed\n> Task :architecture-test:test FAILED\nFAILURE: Build failed with an exception.\n> There were failing tests. See the report at: file:///x/index.html\nBUILD FAILED in 19s\n' >"${d}/fake-out.txt"
+	out=$(${KSH} "${c}" test 2>&1)
+	st=$?
+	[ "${st}" -eq 1 ] && printf '%s\n' "${out}" | grep -q '^結果: 検査の違反は出ていませんが、検査用モジュールのほかのテストが落ちています' && printf '%s\n' "${out}" | grep -q '^ProjectRootSpec > walking up from the working directory FAILED' &&
+		ok "test はほかのテストが落ちたときは検査まで届いていないと言わずに exit 1" || ng "test はほかのテストが落ちたときは検査まで届いていないと言わずに exit 1" "st=${st} ${out}"
 }
 
 # data get のキー指定は部分だけ出す
