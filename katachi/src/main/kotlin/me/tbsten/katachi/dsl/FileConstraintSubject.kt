@@ -106,7 +106,8 @@ public class FileConstraintSubject internal constructor(
      *
      * A name here is one [captureValuesOf] can answer for -- for a file whose own layout
      * declaration names it. A role whose places are declared by more than one path may name
-     * something on one path only.
+     * something on one path only. A derived capture (`capture("x").pascalCase`) has no name of
+     * its own and is not listed.
      *
      * ## Example 1: refuse a rule that asks for a name the layout does not capture
      * ```kt
@@ -168,7 +169,9 @@ public class FileConstraintSubject internal constructor(
      * gives `feature`, `"${capture("name")}Repository".ktFile()` gives `name`, and a module key
      * `":feature:${capture("feature")}"` gives the module's own name. A name whose declaration
      * does not match [file] is left out, so the map can be smaller than [captureNames] -- and
-     * empty for a file no declaration names anything on.
+     * empty for a file no declaration names anything on. A name written on two levels of one
+     * path gives one value: the check has already held the levels of every file in [files] to
+     * the same value, and a file where they differ is not in [files] at all.
      *
      * Meant for one of [files]. Asked about another path, it still answers with whatever the
      * layout's declarations say about that path rather than refusing.

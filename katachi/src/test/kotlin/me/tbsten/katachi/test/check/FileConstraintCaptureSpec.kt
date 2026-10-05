@@ -12,6 +12,7 @@ import me.tbsten.katachi.dsl.gradle.kotlin
 import me.tbsten.katachi.dsl.gradle.mainSourceSet
 import me.tbsten.katachi.dsl.gradle.module
 import me.tbsten.katachi.dsl.kotlin.ktFile
+import me.tbsten.katachi.dsl.pascalCase
 import me.tbsten.katachi.test.dsl.files.FakeFileSystem
 
 /**
@@ -183,6 +184,38 @@ class FileConstraintCaptureSpec : FreeSpec({
             }.single()
 
             subject.captureValuesOf("feature/cart/CartScreen.kt") shouldBe mapOf("feature" to "cart")
+        }
+    }
+
+    "束縛と派生" - {
+        val tree = repositoryOf {
+            "feature/home" { "home" { "HomeScreen.kt"() }; "settings" { "HomeScreen.kt"() } }
+        }
+
+        "束縛のある名前の captureValuesOf は1つの値を返す" {
+            val subject = subjectsOf(tree) {
+                "feature" / capture("feature") / capture("feature") / "*Screen".ktFile()
+            }.single()
+
+            subject.captureNames.toList() shouldBe listOf("feature")
+            subject.captureValuesOf("feature/home/home/HomeScreen.kt") shouldBe mapOf("feature" to "home")
+        }
+
+        "一致しないファイルは subject.files に入らない" {
+            val subject = subjectsOf(tree) {
+                "feature" / capture("feature") / capture("feature") / "*Screen".ktFile()
+            }.single()
+
+            subject.files shouldBe listOf("feature/home/home/HomeScreen.kt")
+        }
+
+        "派生は captureNames にも captureValuesOf にも出ない" {
+            val subject = subjectsOf(tree) {
+                "feature" / capture("feature") / "*" / "${capture("feature").pascalCase}Screen".ktFile()
+            }.single()
+
+            subject.captureNames.toList() shouldBe listOf("feature")
+            subject.captureValuesOf("feature/home/home/HomeScreen.kt") shouldBe mapOf("feature" to "home")
         }
     }
 })

@@ -11,6 +11,7 @@ import me.tbsten.katachi.dsl.internal.ModulePattern
 import me.tbsten.katachi.dsl.internal.PathCapture
 import me.tbsten.katachi.dsl.internal.TemplateParameterOrigin
 import me.tbsten.katachi.dsl.internal.fillCapturedSegments
+import me.tbsten.katachi.dsl.internal.placeholder
 import me.tbsten.katachi.template.KatachiInvalidTemplateCaptureValueException
 import me.tbsten.katachi.template.TemplateCaptureKind
 import me.tbsten.katachi.template.TemplateCapturePreview
@@ -234,13 +235,8 @@ internal fun isUncreatableInName(character: Char): Boolean =
 internal fun filledValueOf(capture: PathCapture, values: Map<String, String>): String? =
     values[capture.name]?.let { value -> capture.transform?.apply?.invoke(value) ?: value }
 
-/**
- * What [capture] reads as in a preview or a message: `${name}` for a plain occurrence, which a
- * `--arg` fills, and `<name.transform>` for a derived one, which katachi fills from that value.
- * The two spellings are what `katachiTemplates`, the template JSON and the IDE plugin share.
- */
-internal fun placeholderOf(capture: PathCapture): String =
-    capture.transform?.let { "<${capture.name}.${it.spelling}>" } ?: placeholderOf(capture.name)
+/** [PathCapture.placeholder], as a function reference for the fill calls here. */
+internal fun placeholderOf(capture: PathCapture): String = capture.placeholder()
 
 /**
  * The captures of one template as `DescribeTemplates` lists them: one per module wildcard and one

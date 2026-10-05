@@ -1,6 +1,7 @@
 package me.tbsten.katachi.check.internal
 
 import me.tbsten.katachi.check.AmbiguousLayout
+import me.tbsten.katachi.check.CaptureMismatch
 import me.tbsten.katachi.check.MissingDescription
 import me.tbsten.katachi.check.MissingFile
 import me.tbsten.katachi.check.Severity
@@ -62,6 +63,7 @@ internal enum class BaselineRule {
 internal fun baselineRuleOf(violation: Violation): BaselineRule = when (violation) {
     is UnexpectedFile -> BaselineRule.ByPath
     is UnexpectedDirectory -> BaselineRule.ByPath
+    is CaptureMismatch -> BaselineRule.ByPath
     is MissingFile -> BaselineRule.ByPath
     is UnsatisfiedFileConstraint -> BaselineRule.ByDeclaration
     // What the run could not look at is a hole, not a violation. Holding it back would make the

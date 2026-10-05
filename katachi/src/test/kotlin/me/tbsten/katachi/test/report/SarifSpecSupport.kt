@@ -2,6 +2,8 @@ package me.tbsten.katachi.test.report
 
 import java.io.File
 import me.tbsten.katachi.check.AmbiguousLayout
+import me.tbsten.katachi.check.CaptureMismatch
+import me.tbsten.katachi.check.CaptureOccurrence
 import me.tbsten.katachi.check.LayoutClaim
 import me.tbsten.katachi.check.MissingDescription
 import me.tbsten.katachi.check.MissingFile
@@ -135,6 +137,7 @@ internal val SARIF_REPOSITORY_FILES: List<String> = listOf(
     "app/src/main/kotlin/com/example/Broken.kt",
     "core/domain/src/main/kotlin/com/example/domain/GetUserUseCase.kt",
     "core/domain/src/main/kotlin/com/example/domain/Shared.kt",
+    "feature/home/src/main/kotlin/com/example/feature/settings/HomeScreen.kt",
     "architecture-test/src/test/kotlin/com/example/roles/UseCaseRole.kt",
     "architecture-test/src/test/kotlin/com/example/roles/RepositoryRole.kt",
     "architecture-test/src/test/kotlin/com/example/ProjectArchitecture.kt",
@@ -192,6 +195,18 @@ internal fun everyKindOfViolation(roles: SarifRoles = SarifRoles()): List<Violat
             nearby = listOf(NearbyLocation(roles.useCase, "core/domain/src/main/kotlin/com/example/domain")),
         ),
         UnexpectedDirectory(path = "legacy"),
+        CaptureMismatch(
+            path = "feature/home/src/main/kotlin/com/example/feature/settings/HomeScreen.kt",
+            role = roles.useCase,
+            declaredAt = useCaseSite,
+            pattern = "feature/\${feature}/src/main/kotlin/com/example/feature/\${feature}/<feature.pascalCase>Screen.kt",
+            occurrences = listOf(
+                CaptureOccurrence(name = "feature", transform = null, level = 1, value = "home", expected = null),
+                CaptureOccurrence(name = "feature", transform = null, level = 7, value = "settings", expected = "home"),
+                CaptureOccurrence(name = "feature", transform = "pascalCase", level = 8, value = "Home", expected = "Home"),
+            ),
+            expectedPath = "feature/home/src/main/kotlin/com/example/feature/home/HomeScreen.kt",
+        ),
         MissingFile(
             path = "core/domain/src/main/kotlin/com/example/domain/GetOrderUseCase.kt",
             role = roles.useCase,

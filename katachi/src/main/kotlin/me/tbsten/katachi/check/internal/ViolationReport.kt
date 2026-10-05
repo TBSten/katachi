@@ -268,6 +268,7 @@ private fun uncheckedLines(violations: List<Violation>): List<String> = buildLis
 internal fun blockOf(violation: Violation, root: String?): List<String> = when (violation) {
     is UnexpectedFile -> unexpectedFileBlock(violation, root)
     is UnexpectedDirectory -> unexpectedDirectoryBlock(violation, root)
+    is CaptureMismatch -> captureMismatchBlock(violation, root)
     is MissingFile -> missingFileBlock(violation, root)
     is UncheckedFile -> uncheckedFileBlock(violation, root)
     is UncheckedDirectory -> uncheckedDirectoryBlock(violation, root)
@@ -318,6 +319,64 @@ private fun unexpectedDirectoryBlock(violation: UnexpectedDirectory, root: Strin
     add("$STEP$STEP- Declare what belongs in it in the layout of an existing role")
     add("$STEP$STEP- Add a new role for it:")
     addAll(fragment(roleSuggestionFor(violation.path, isDirectory = true)))
+}
+
+/**
+ * A file a pattern matched, held back because the levels one capture name ties together read
+ * different values.
+ *
+ * The lines after the first say, per name, what every level read and what it was held to, and
+ * the How to fix names the one place the file would be allowed -- `expectedPath` resolved like
+ * `MissingFile`'s first line, a URI for a file that does not exist yet -- before the usual
+ * "delete it". The last items depend on what failed: two plain levels can be given different
+ * names; a derived level can drop its conversion.
+ */
+private fun captureMismatchBlock(violation: CaptureMismatch, root: String?): List<String> = buildList {
+    val failed = violation.occurrences.filter { it.expected != null && it.expected != it.value }
+    val failedNames = failed.map { it.name }.distinct()
+    add("[${violation.label}] ${displayExistingPath(root, violation.path)}")
+    add(
+        "${STEP}The file matches a pattern of role ${violation.role.qualifiedName}, but the levels named by " +
+            "${failedNames.joinToString(", ") { "capture(\"$it\")" }} do not agree.",
+    )
+    add("${STEP}Pattern: ${violation.pattern}")
+    for ((name, plain) in violation.occurrences.filter { it.transform == null }.groupBy { it.name }) {
+        add("$STEP$name: ${plain.joinToString(", ") { occurrenceText(it) }}")
+    }
+    for (derived in violation.occurrences.filter { it.transform != null }) {
+        val source = violation.occurrences.firstOrNull { it.name == derived.name && it.transform == null && it.expected == null }
+        val from = source?.let { ", from ${it.name} = \"${it.value}\"" }.orEmpty()
+        add("$STEP${derived.name}.${derived.transform}: ${occurrenceText(derived, from)}")
+    }
+    add("${STEP}Declared at: ${violation.declaredAt}")
+    add("")
+    add("${STEP}How to fix:")
+    val expectedPath = violation.expectedPath
+    val held = failedNames.singleOrNull()?.let { name ->
+        violation.occurrences.firstOrNull { it.name == name && it.transform == null && it.expected == null }?.value
+    }
+    val reads = if (held != null) "every level named ${failedNames.single()} reads \"$held\"" else "the levels named ${failedNames.joinToString(", ")} agree"
+    if (expectedPath != null) {
+        add("$STEP$STEP- Move it so that $reads:")
+        add("$STEP$STEP$STEP$STEP${displayPath(root, expectedPath)}")
+    } else {
+        add("$STEP$STEP- Move it so that ${if (held != null) reads else "every level named ${failedNames.joinToString(", ")} reads the same value"}")
+    }
+    add("$STEP$STEP- Delete it if it is not needed")
+    if (failed.any { it.transform == null }) {
+        add("$STEP$STEP- If the two levels may differ, give them different names in the layout at ${violation.declaredAt}")
+    }
+    for (transform in failed.mapNotNull { it.transform }.distinct()) {
+        add("$STEP$STEP- If the file name need not follow the directory, drop .$transform at ${violation.declaredAt}")
+    }
+}
+
+/** `"home" at level 2`, plus ` (expected "settings"<from>)` when the level was held to something else. */
+private fun occurrenceText(occurrence: CaptureOccurrence, from: String = ""): String {
+    val expected = occurrence.expected
+    val held = if (expected != null && expected != occurrence.value) " (expected \"$expected\"$from)" else ""
+    // 1-based, as `katachiTemplates` counts levels.
+    return "\"${occurrence.value}\" at level ${occurrence.level + 1}$held"
 }
 
 private fun missingFileBlock(violation: MissingFile, root: String?): List<String> = listOf(

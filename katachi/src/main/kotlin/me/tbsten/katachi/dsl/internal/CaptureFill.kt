@@ -96,3 +96,12 @@ private inline fun fillSegment(segment: String, valueOf: (wildcardIndex: Int) ->
         }
     }
 }
+
+/**
+ * What [this] reads as in a preview, a message or a report's Pattern line: `${name}` for a plain
+ * occurrence, which a `--arg` fills, and `<name.transform>` for a derived one, which katachi
+ * fills from that value. The two spellings are what `katachiTemplates`, the template JSON, a
+ * `[CaptureMismatch]` block and the IDE plugin share.
+ */
+internal fun PathCapture.placeholder(): String =
+    transform?.let { "<$name.${it.spelling}>" } ?: ("\$" + "{" + name + "}")
