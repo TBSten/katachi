@@ -14,9 +14,9 @@ import com.intellij.ui.layout.and
 import me.tbsten.katachi.intellij.data.generate.OpenAfterGeneration
 
 /**
- * Settings | Tools | katachi: the choices [KatachiSettings] offers. The three detail notification
- * rows are disabled while the master switch is off, and "only the first time" while the
- * "files with content" row is off.
+ * Settings | Tools | katachi: the choices [KatachiSettings] offers. The four detail notification
+ * rows (the three about templates and "files no role allows") are disabled while the master switch
+ * is off, and "only the first time" while the "files with content" row is off.
  */
 internal class KatachiConfigurable(private val project: Project) : BoundConfigurable(KatachiBundle.message("settings.displayName")) {
     /** An empty page when the IDE fails to build it, rather than an error over the Settings dialog. */
@@ -50,6 +50,11 @@ internal class KatachiConfigurable(private val project: Project) : BoundConfigur
                                 .bindSelected(settings::notifyOnContentOnce)
                                 .enabledIf(enabled.selected and withContent.selected)
                         }
+                    }
+                    row {
+                        checkBox(KatachiBundle.message("settings.rules.noRole"))
+                            .bindSelected(settings::notifyOnNoRole)
+                            .enabledIf(enabled.selected)
                     }
                 }
                 row {

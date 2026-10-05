@@ -28,6 +28,11 @@ import me.tbsten.katachi.intellij.ide.KatachiPorts
 import me.tbsten.katachi.intellij.ide.KatachiProjectService
 import me.tbsten.katachi.intellij.ide.KatachiSettings
 import me.tbsten.katachi.intellij.ide.LoadAnswer
+import me.tbsten.katachi.intellij.ide.definition.DefinitionModelService
+import me.tbsten.katachi.intellij.ide.definition.FakeDefinitionModelService
+import me.tbsten.katachi.intellij.ide.rules.RulesPorts
+import me.tbsten.katachi.intellij.ide.rules.ruleSettingsOf
+import me.tbsten.katachi.intellij.presentation.rules.VcsTracking
 import me.tbsten.katachi.intellij.model.DetectionResult
 import me.tbsten.katachi.intellij.presentation.entry.EntryEffects
 import me.tbsten.katachi.intellij.presentation.entry.GenerateDialogRequest
@@ -35,6 +40,7 @@ import me.tbsten.katachi.intellij.presentation.entry.PlacementMatch
 import me.tbsten.katachi.intellij.testing.FakeEntryEffects
 import java.nio.file.Files
 import java.nio.file.Path
+import java.util.concurrent.CopyOnWriteArrayList
 import java.util.concurrent.atomic.AtomicInteger
 
 /**
@@ -59,21 +65,41 @@ internal abstract class EditorNotificationTestBase : EntryServiceTestBase() {
     /** The runner the next created service loads through. */
     var serviceRunner: GradleTaskRunner? = null
 
+    /** What the no-role notification asks the definition: a fake by default, a test may put the real service here. */
+    @Volatile var definitions: DefinitionModelService? = FakeDefinitionModelService()
+
+    /** What the VCS says of each file; a test changes it and fires a status change. */
+    @Volatile var vcsOf: (VirtualFile) -> VcsTracking = { VcsTracking.Tracked }
+
+    /** What the VCS says once it has settled, `null` before it has; `null` here means the same as [vcsOf] (a VCS that is always settled). */
+    @Volatile var vcsSettledOf: ((VirtualFile) -> VcsTracking?)? = null
+
+    val ruleEffects = FakeRuleEffects()
+
+    /** The popups the no-role notification was asked to open, in order. */
+    val popups = CopyOnWriteArrayList<ShownPopup>()
+
     lateinit var provider: KatachiEditorNotificationProvider
+    lateinit var noRoleProvider: NoRoleNotificationProvider
     lateinit var memoryService: EditorNotificationMemoryService
 
     @Volatile private var created: KatachiProjectService? = null
     private val settings get() = KatachiSettings.getInstance(project)
     private val notifications get() = EditorNotifications.getInstance(project) as EditorNotificationsImpl
     private var saved = listOf<Boolean>()
+    private var savedNoRole = true
 
     override fun setUp() {
         super.setUp()
         saved = listOf(settings.editorNotificationEnabled, settings.notifyOnEmptyFile, settings.notifyOnFileWithContent, settings.notifyOnContentOnce)
+        savedNoRole = settings.notifyOnNoRole
         memoryService = newMemoryService()
-        provider = KatachiEditorNotificationProvider { ports() }
+        provider = KatachiEditorNotificationProvider({ ports() }, { rulesPorts() })
+        noRoleProvider = NoRoleNotificationProvider({ rulesPorts() }, { project, file, path -> provider.templateDecisionOf(project, file, path) }) { under, group ->
+            popups += ShownPopup(under, group)
+        }
         @Suppress("UNCHECKED_CAST")
-        (EditorNotificationProvider.EP_NAME.getPoint(project) as ExtensionPointImpl<EditorNotificationProvider>).maskAll(listOf(provider), testRootDisposable, true)
+        (EditorNotificationProvider.EP_NAME.getPoint(project) as ExtensionPointImpl<EditorNotificationProvider>).maskAll(listOf(provider, noRoleProvider), testRootDisposable, true)
     }
 
     override fun tearDown() {
@@ -82,6 +108,7 @@ internal abstract class EditorNotificationTestBase : EntryServiceTestBase() {
             settings.notifyOnEmptyFile = saved[1]
             settings.notifyOnFileWithContent = saved[2]
             settings.notifyOnContentOnce = saved[3]
+            settings.notifyOnNoRole = savedNoRole
         } finally {
             super.tearDown()
         }
@@ -101,6 +128,15 @@ internal abstract class EditorNotificationTestBase : EntryServiceTestBase() {
             entrySettingsOf(settings)
         },
         memory = { memoryService },
+    )
+
+    fun rulesPorts(): RulesPorts = RulesPorts(
+        definitions = { definitions },
+        settings = { ruleSettingsOf(settings) },
+        memory = { memoryService },
+        vcs = { vcsOf(it) },
+        vcsIfSettled = { file -> vcsSettledOf.let { settled -> if (settled == null) vcsOf(file) else settled(file) } },
+        effects = { ruleEffects },
     )
 
     @Synchronized
@@ -182,6 +218,20 @@ internal abstract class EditorNotificationTestBase : EntryServiceTestBase() {
         settleNotifications()
         return notifications.getNotificationPanels(editor).entries.firstOrNull { it.key == KatachiEditorNotificationProvider::class.java }?.value as EditorNotificationPanel?
     }
+
+    /** The panel of the no-role notification on [editor] once the pending updates are done; `null` when there is none. */
+    fun noRolePanelOf(editor: FileEditor): EditorNotificationPanel? {
+        settleNotifications()
+        return notifications.getNotificationPanels(editor).entries.firstOrNull { it.key == NoRoleNotificationProvider::class.java }?.value as EditorNotificationPanel?
+    }
+
+    /**
+     * The no-role panel on [editor] as it is now, without waiting for the platform's pending work: the platform's wait
+     * (`completeAsyncTasks`) fails when an update starts while it waits, as the delayed redraws after a definition change do.
+     * Poll this under `waitWithEventsDispatching`; ask [noRolePanelOf] only when nothing is on its way.
+     */
+    fun peekNoRolePanel(editor: FileEditor): EditorNotificationPanel? =
+        notifications.getNotificationPanels(editor).entries.firstOrNull { it.key == NoRoleNotificationProvider::class.java }?.value as EditorNotificationPanel?
 
     fun updateAll() {
         notifications.updateAllNotifications()

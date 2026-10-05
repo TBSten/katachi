@@ -11,6 +11,8 @@ import me.tbsten.katachi.intellij.data.placement.CommentSyntax
 import me.tbsten.katachi.intellij.data.placement.EmptyFileRule
 import me.tbsten.katachi.intellij.data.placement.PlacementIndexState
 import me.tbsten.katachi.intellij.ide.KatachiProjectService
+import me.tbsten.katachi.intellij.ide.rules.RulesPorts
+import me.tbsten.katachi.intellij.ide.rules.decideNoRole
 import me.tbsten.katachi.intellij.ide.sdkCall
 import me.tbsten.katachi.intellij.presentation.entry.EntryOrigin
 import me.tbsten.katachi.intellij.presentation.entry.FileContentState
@@ -19,6 +21,9 @@ import me.tbsten.katachi.intellij.presentation.entry.NotificationDecision
 import me.tbsten.katachi.intellij.presentation.entry.NotificationInput
 import me.tbsten.katachi.intellij.presentation.entry.PlacementMatch
 import me.tbsten.katachi.intellij.presentation.entry.decideNotification
+import me.tbsten.katachi.intellij.presentation.rules.NoRoleDecision
+import me.tbsten.katachi.intellij.presentation.rules.NotificationWinner
+import me.tbsten.katachi.intellij.presentation.rules.arbitrateNotifications
 import java.nio.file.Path
 import java.util.function.Function
 import javax.swing.JComponent
@@ -32,6 +37,9 @@ import javax.swing.JComponent
  * the cached Document or the disk, the memory and the ledger, then `decideNotification`. It returns
  * `null` for no notification. The returned function only builds the panel on the EDT. Without an index it calls `KatachiProjectService.ensureLoaded()` and shows nothing.
  *
+ * A file that no role holds shows the no-role notification (`NoRoleNotificationProvider`) instead of these two links:
+ * after deciding, a convenience asks `arbitrateNotifications` and gives way. A generation under way or failed does not.
+ *
  * A project whose synced data has no katachi definition module gets no project service at all
  * (decision 17). Whatever an SDK call throws on the way means no notification, never an IDE error;
  * control flow (`ProcessCanceledException` when the read action restarts) is thrown again.
@@ -42,19 +50,41 @@ import javax.swing.JComponent
  */
 internal class KatachiEditorNotificationProvider(
     private val portsOf: (Project) -> NotificationPorts,
+    private val rulesPortsOf: (Project) -> RulesPorts,
 ) : EditorNotificationProvider, DumbAware {
     @Suppress("unused") // Called by the platform.
-    constructor() : this(NotificationPorts::of)
+    constructor() : this(NotificationPorts::of, RulesPorts::of)
+
+    /** With the real definition service on the no-role side. */
+    constructor(portsOf: (Project) -> NotificationPorts) : this(portsOf, RulesPorts::of)
 
     override fun collectNotificationData(project: Project, file: VirtualFile): Function<in FileEditor, out JComponent?>? {
         val path = sdkCall("find the path of ${file.name}") { file.fileSystem.getNioPath(file) }.getOrNull()
             ?: return null
         val decided = sdkCall("decide the katachi notification of $path") { decide(project, file, path) }.getOrNull()
             ?: return null
+        // A file with no role holds shows that notification instead of a convenience (design 2.4).
+        if (!wins(project, file, path, decided.decision)) return null
         // A panel the IDE fails to build is no panel, not an IDE error.
         return Function { editor ->
             sdkCall("build the katachi notification of $path") { katachiNotificationPanel(editor, decided.decision, decided.actionsFor(project, file, path)) }.getOrNull()
         }
+    }
+
+    /** What this notification decides for [file]; the no-role notification arbitrates with it. Runs in the background under the read lock. */
+    fun templateDecisionOf(project: Project, file: VirtualFile, path: Path): NotificationDecision =
+        decide(project, file, path)?.decision ?: NotificationDecision.Hidden
+
+    /**
+     * Whether [decision] is the notification this file shows. Only a convenience ([NotificationDecision.CreateFromTemplate],
+     * [NotificationDecision.ViewTemplate]) can lose, and only to a file no role holds, so the other side is asked
+     * just then.
+     */
+    private fun wins(project: Project, file: VirtualFile, path: Path, decision: NotificationDecision): Boolean {
+        if (decision !is NotificationDecision.CreateFromTemplate && decision !is NotificationDecision.ViewTemplate) return true
+        val rule = sdkCall("decide the no-role notification of $path") { decideNoRole(rulesPortsOf(project), file, path) }.getOrNull()?.decision
+            ?: NoRoleDecision.Hidden
+        return arbitrateNotifications(decision, rule) == NotificationWinner.Template
     }
 
     /** `null`: no notification. Runs in the background under the read lock. */

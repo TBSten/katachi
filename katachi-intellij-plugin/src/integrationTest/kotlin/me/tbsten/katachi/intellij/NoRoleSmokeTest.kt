@@ -1,0 +1,100 @@
+package me.tbsten.katachi.intellij
+
+import com.intellij.driver.client.Driver
+import com.intellij.driver.sdk.*
+import com.intellij.driver.sdk.ui.ui
+import com.intellij.ide.starter.driver.engine.runIdeWithDriver
+import com.intellij.ide.starter.ide.IdeProductProvider
+import com.intellij.ide.starter.ide.installer.ExistingIdeInstaller
+import com.intellij.ide.starter.models.TestCase
+import com.intellij.ide.starter.project.LocalProjectInfo
+import com.intellij.ide.starter.runner.Starter
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertTrue
+import org.junit.jupiter.api.Test
+import java.nio.file.Path
+import kotlin.time.Duration.Companion.minutes
+import kotlin.time.Duration.Companion.seconds
+
+/**
+ * V3 of the no-role notification (ide-display-rules-for-file plan): a real IDE opens a git copy of sample/jvm, opens a file
+ * no role holds, and the notification must appear with its nearest role, open the popup under its link, change its
+ * wording when the file is `git add`ed, and go away when closed. Written but not run by the build: explicitly invoked,
+ * `./gradlew -p katachi-intellij-plugin integrationTest --tests '*NoRoleSmokeTest*'` (it opens IDE windows).
+ *
+ * What it can not see: where the popup opens relative to the link (design V4, by eye) and the colour of the warning.
+ */
+class NoRoleSmokeTest {
+    @Test
+    fun `新しく作った当たらないファイルを開くと通知が出て近い Role の popup が開き git に追加すると文言が変わり閉じると消える`() {
+        val fixture = NoRoleFixture(
+            Path.of(System.getProperty("katachi.smoke.sampleProject")),
+            Path.of(System.getProperty("katachi.smoke.workDir")).resolve("no-role"),
+        )
+        val project = fixture.prepare()
+        val ideHome = Path.of(System.getProperty("katachi.smoke.ideHome"))
+        val ide = IdeProductProvider.IU.copy(getInstaller = { ExistingIdeInstaller(fixture.appBundle(ideHome)) })
+        val context = Starter.newContext("katachiNoRole", TestCase(ide, LocalProjectInfo(project)), false)
+            .apply { pluginConfigurator.installPluginFromPath(Path.of(System.getProperty("path.to.build.plugin"))) }
+            .applyVMOptionsPatch {
+                addSystemProperty("katachi.debugBridge", true)
+                addSystemProperty("user.language", "en")
+                addSystemProperty("user.country", "US")
+            }
+        context.runIdeWithDriver(runTimeout = 40.minutes).useDriverAndCloseIde {
+            waitForProjectOpen(5.minutes)
+            waitForIndicators(singleProject(), 15.minutes)
+            val probe = NoRoleProbe(this, singleProject())
+            showsForUntrackedFile(probe)
+            popupOpensUnderTheLink(probe)
+            wordingChangesAfterGitAdd(fixture, probe)
+            closeHidesIt(probe)
+        }
+    }
+
+    private fun Driver.showsForUntrackedFile(probe: NoRoleProbe) {
+        openFile(NoRoleFixture.STRAY, waitForCodeAnalysis = false)
+        // The definition is read through Gradle on the first look: minutes, not seconds.
+        waitFor("the no-role notification", timeout = 10.minutes, interval = 2.seconds, errorMessage = { probe.describe() }) {
+            probe.value("noRole") == "shown"
+        }
+        assertEquals("file=NoRoleProbe.kt", probe.lines().first())
+        assertEquals(UNTRACKED_TEXT, probe.value("text"))
+        assertTrue(probe.value("nearby").orEmpty().startsWith("Nearest role: "), probe.describe())
+        assertTrue("Nearby roles…" in probe.links(), probe.describe())
+    }
+
+    private fun Driver.popupOpensUnderTheLink(probe: NoRoleProbe) {
+        // The notification can be rebuilt between press and release (see EditorEntrySmokeTest), so click until the popup is up.
+        var opened = false
+        repeat(6) {
+            if (opened) return@repeat
+            runCatching { noRoleLink("Nearby roles…").click() }
+            opened = runCatching { waitFor("the nearby roles popup", timeout = 8.seconds) { ui.x { byVisibleText(POPUP_TITLE) }.present() } }.isSuccess
+        }
+        assertTrue(opened, "[Nearby roles...] never opened its popup; " + probe.describe())
+        assertTrue(ui.x { byVisibleText("Refresh definition") }.present())
+        ui.keyboard { escape() }
+        waitFor("the popup closed", timeout = 10.seconds) { !ui.x { byVisibleText(POPUP_TITLE) }.present() }
+        assertEquals("closing the popup must not close the notification", "shown", probe.value("noRole"))
+    }
+
+    private fun Driver.wordingChangesAfterGitAdd(fixture: NoRoleFixture, probe: NoRoleProbe) {
+        fixture.addToGit()
+        // The IDE learns of an outside `git add` from the change of .git/index, a few seconds later.
+        waitFor("the wording after git add", timeout = 2.minutes, interval = 2.seconds, errorMessage = { probe.describe() }) {
+            probe.value("text") == TRACKED_TEXT
+        }
+    }
+
+    private fun Driver.closeHidesIt(probe: NoRoleProbe) {
+        noRolePanel().x { byTooltip("Dismiss the notification for this file") }.click()
+        waitFor("the notification closed", timeout = 30.seconds, errorMessage = { probe.describe() }) { probe.value("noRole") == "none" }
+    }
+
+    private companion object {
+        const val UNTRACKED_TEXT = "No role allows this file. Once you add it to git, the test will report it as UnexpectedFile."
+        const val TRACKED_TEXT = "No role allows this file. The test will report it as UnexpectedFile."
+        const val POPUP_TITLE = "Nearby roles (where this file could go)"
+    }
+}

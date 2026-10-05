@@ -72,6 +72,20 @@ internal class KatachiSettingsTest : AnalysisTestBase() {
         assertFalse(read.autoLoadTemplates)
     }
 
+    fun `test 当たる Role が無いファイルの通知は既定で有効で切った値を保存して読み戻せ他の項目と独立している`() {
+        assertTrue(KatachiSettings().notifyOnNoRole)
+        val written = KatachiSettings().apply { notifyOnNoRole = false }
+
+        val element = XmlSerializer.serialize(written.state)
+        val read = KatachiSettings()
+        read.loadState(XmlSerializer.deserialize(element, KatachiSettingsState::class.java))
+
+        assertEquals(setOf("notifyOnNoRole"), element.children.mapNotNull { it.getAttributeValue("name") }.toSet())
+        assertFalse(read.notifyOnNoRole)
+        assertTrue(read.editorNotificationEnabled)
+        assertTrue(read.notifyOnEmptyFile)
+    }
+
     // covers: 論点15
     fun `test 閉じた記憶と最初の1回の記憶は状態に含まれず保存されない`() {
         val written = KatachiSettings().apply {

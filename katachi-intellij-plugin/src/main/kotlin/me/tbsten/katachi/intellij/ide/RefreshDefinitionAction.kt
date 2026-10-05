@@ -4,6 +4,7 @@ import com.intellij.openapi.actionSystem.ActionUpdateThread
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.project.DumbAwareAction
+import com.intellij.openapi.project.Project
 import me.tbsten.katachi.intellij.ide.definition.DefinitionPorts
 import me.tbsten.katachi.intellij.ide.definition.RefreshReason
 
@@ -25,14 +26,18 @@ internal class RefreshDefinitionAction : DumbAwareAction() {
     }
 
     override fun actionPerformed(e: AnActionEvent) {
-        val project = e.project ?: return
-        // Finding the service may read the synced data, which a large Android build makes too slow for the EDT.
-        ApplicationManager.getApplication().executeOnPooledThread {
-            sdkCall("reload the definition") { DefinitionPorts.of(project).service()?.refresh(RefreshReason.UserAction) }
-        }
+        refresh(e.project ?: return)
     }
 
     companion object {
+        /** What the action does, for the popups that offer it as a row of their own. */
+        fun refresh(project: Project) {
+            // Finding the service may read the synced data, which a large Android build makes too slow for the EDT.
+            ApplicationManager.getApplication().executeOnPooledThread {
+                sdkCall("reload the definition") { DefinitionPorts.of(project).service()?.refresh(RefreshReason.UserAction) }
+            }
+        }
+
         /** The `id` of the action in plugin.xml. */
         const val ID: String = "katachi.RefreshDefinition"
     }

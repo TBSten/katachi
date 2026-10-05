@@ -4,8 +4,10 @@ import com.intellij.icons.AllIcons
 import com.intellij.openapi.fileEditor.FileEditor
 import com.intellij.ui.EditorNotificationPanel
 import com.intellij.ui.InplaceButton
+import com.intellij.util.ui.UIUtil
 import me.tbsten.katachi.intellij.ide.KatachiBundle
 import me.tbsten.katachi.intellij.presentation.entry.NotificationDecision
+import javax.swing.JLabel
 
 /** What the panel's links and buttons do. Each is called on the EDT when clicked. */
 internal class NotificationPanelActions(
@@ -51,8 +53,14 @@ internal fun katachiNotificationPanel(editor: FileEditor, decision: Notification
     return panel
 }
 
-/** An [EditorNotificationPanel] with ⚙ after the links, where the platform's own links go. */
-private class KatachiNotificationPanel(editor: FileEditor, status: Status) : EditorNotificationPanel(editor, status) {
+/** An [EditorNotificationPanel] with ⚙ after the links, where the platform's own links go. Also the base of the no-role notification's panel. */
+internal open class KatachiNotificationPanel(editor: FileEditor, status: Status) : EditorNotificationPanel(editor, status) {
+    /** The tooltip of the text; the label reads it as HTML, so the caller escapes. */
+    fun setTextTooltip(html: String) {
+        // The platform's text label (`myLabel`) is deprecated for removal; the links are HyperlinkLabels, not JLabels.
+        UIUtil.findComponentsOfType(this, JLabel::class.java).forEach { it.toolTipText = html }
+    }
+
     fun addSettingsButton(open: () -> Unit) {
         val tooltip = KatachiBundle.message("notification.editor.settings.tooltip")
         myLinksPanel.add(InplaceButton(tooltip, AllIcons.General.GearPlain) { open() })

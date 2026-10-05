@@ -1,10 +1,15 @@
 package me.tbsten.katachi.intellij.ide.debug
 
 import com.intellij.openapi.application.ApplicationManager
+import com.intellij.openapi.application.ModalityState
+import com.intellij.openapi.fileEditor.FileEditorManager
+import com.intellij.ui.HyperlinkLabel
+import com.intellij.util.ui.UIUtil
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.project.Project
 import me.tbsten.katachi.intellij.ide.KatachiProjectService
 import me.tbsten.katachi.intellij.ide.dialog.GenerateDialogs
+import me.tbsten.katachi.intellij.ide.notification.NoRolePanels
 import me.tbsten.katachi.intellij.presentation.FieldId
 import me.tbsten.katachi.intellij.presentation.GenerationState
 import me.tbsten.katachi.intellij.presentation.KatachiIntent
@@ -75,6 +80,34 @@ internal class KatachiDebugBridge(private val project: Project) {
             add("canGenerate=${state.canGenerate}")
             add("okEnabled=${dialog.isOKActionEnabled}")
             dialog.refusal?.let { add("refusal=$it") }
+        }.joinToString("\n")
+    }
+
+    /**
+     * The "no role holds this file" notification on the selected editor as `key=value` lines: `file`, then `noRole=none`,
+     * or `noRole=shown`, `text` (the first line), `nearby` (the second, when there is one), `tooltip` (when there is one)
+     * and one `link` per link in the order on screen. Reads what is on screen and nothing else, so it works while a popup
+     * is open.
+     */
+    fun describeNoRole(): String {
+        check(System.getProperty(ENABLED_PROPERTY) == "true") { "The katachi debug bridge is off; start the IDE with -D$ENABLED_PROPERTY=true." }
+        var description = "noRole=none"
+        // Any modality: a modal dialog (Settings) must not hide what is on screen.
+        ApplicationManager.getApplication().invokeAndWait({ description = describeNoRoleOnEdt() }, ModalityState.any())
+        return description
+    }
+
+    private fun describeNoRoleOnEdt(): String {
+        val editor = FileEditorManager.getInstance(project).selectedEditors.firstOrNull() ?: return "file=none\nnoRole=none"
+        val file = editor.file?.name.orEmpty()
+        val panel = NoRolePanels.of(editor) ?: return "file=$file\nnoRole=none"
+        return buildList {
+            add("file=$file")
+            add("noRole=shown")
+            add("text=${panel.lines.first}")
+            panel.lines.second?.let { add("nearby=$it") }
+            panel.lines.tooltip?.let { add("tooltip=$it") }
+            UIUtil.findComponentsOfType(panel, HyperlinkLabel::class.java).forEach { add("link=${it.text}") }
         }.joinToString("\n")
     }
 
