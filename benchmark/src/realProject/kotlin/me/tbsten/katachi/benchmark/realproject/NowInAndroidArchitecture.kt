@@ -79,6 +79,13 @@ internal fun nowInAndroidArchitecture(): Architecture = architecture {
                 "docs" / "**" / "*".file()
             }
         }
+        // nowinandroid tracks part of `.idea/` (`.idea/*` with `!/.idea/codeStyles/...`), so
+        // without this the count would move by one. Ignored, not declared: coarse is the point.
+        "IdeSettings".role {
+            layout {
+                ".idea".ignore()
+            }
+        }
     }
 }
 

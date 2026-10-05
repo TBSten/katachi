@@ -9,3 +9,5 @@ local.properties
 app/ios/**/xcuserdata/
 app/ios/**/DerivedData/
 .DS_Store
+# IDE project files; katachi would otherwise report .idea as a directory without a role.
+.idea/
