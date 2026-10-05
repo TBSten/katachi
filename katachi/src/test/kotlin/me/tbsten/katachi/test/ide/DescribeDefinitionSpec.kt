@@ -9,11 +9,16 @@ import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
 import io.kotest.matchers.string.shouldStartWith
 import java.io.File
+import me.tbsten.katachi.dsl.architecture
+import me.tbsten.katachi.dsl.gradle.gradle
+import me.tbsten.katachi.dsl.wholeTree
 import me.tbsten.katachi.ide.DescribeDefinition
 import me.tbsten.katachi.ide.KatachiDefinitionJsonIoException
 import me.tbsten.katachi.ide.internal.DefinitionProblemKind
 import me.tbsten.katachi.ide.internal.backendOf
 import me.tbsten.katachi.processor.internal.FakeArchitectureProcessContext
+import me.tbsten.katachi.test.dsl.files.fakeFileSystem
+import me.tbsten.katachi.test.dsl.silent
 import me.tbsten.katachi.test.template.withTempProject
 
 /**
@@ -54,6 +59,32 @@ class DescribeDefinitionSpec : FreeSpec({
                 (failure is KatachiDefinitionJsonIoException) shouldBe true
                 failure?.message.orEmpty() shouldContain "Cannot write the definition JSON"
             }
+        }
+    }
+
+    "gradle()" - {
+        "gradle() の BuildScript の build.gradle.kts は synthetic ではなく、hook の制約が constraints に出る" {
+            val project = fakeFileSystem(workingDirectory = "/repo") {
+                "/repo" {
+                    "gradlew"()
+                    "settings.gradle.kts"()
+                    "build.gradle.kts"()
+                    "app" { "build.gradle.kts"() }
+                }
+            }
+            val definition = architecture {
+                files = wholeTree()
+                gradle(requireWrapper = false) {
+                    buildScript { fileConstraint("build scripts", check = silent()) }
+                }
+            }.definitionOf(project)
+
+            val buildScript = definition.roles.single { it.qualifiedName == "Gradle.BuildScript" }
+            val scripts = buildScript.layout.filter { it.path.endsWith("build.gradle.kts") || it.path.endsWith("build.gradle") }
+            scripts.map { it.path }.sorted() shouldBe listOf("app/build.gradle", "app/build.gradle.kts", "build.gradle", "build.gradle.kts")
+            scripts.map { it.synthetic }.distinct() shouldBe listOf(false)
+            buildScript.layout.filter { it.path == "build" || it.path.endsWith("/build") }.map { it.synthetic }.distinct() shouldBe listOf(true)
+            buildScript.constraints.map { it.name } shouldBe listOf("build scripts")
         }
     }
 

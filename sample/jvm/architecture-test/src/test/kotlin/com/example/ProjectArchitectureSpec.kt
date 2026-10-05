@@ -187,7 +187,7 @@ class ProjectArchitectureSpec : FreeSpec({
         sites shouldBe listOf(gradleGroup.declaredAt)
 
         val source = sourceLinesOf(gradleGroup.declaredAt.fileName)
-        source[gradleGroup.declaredAt.lineNumber - 1] shouldContain "gradle()"
+        source[gradleGroup.declaredAt.lineNumber - 1] shouldContain "gradle {"
     }
 
     "only groups marked documented = false are documented = false" {

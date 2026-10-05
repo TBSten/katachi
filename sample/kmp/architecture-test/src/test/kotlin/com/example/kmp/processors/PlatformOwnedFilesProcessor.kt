@@ -15,11 +15,13 @@ import me.tbsten.katachi.processor.ArchitectureProcessorNoArg
  * ([me.tbsten.katachi.check.LayoutCheck]), without touching katachi itself.
  *
  * Looks at [ArchitectureProcessContext.groups] as well as [ArchitectureProcessContext.roles]:
- * `tool/Git` still tags itself directly, the way every role in this sample used to, but the
- * roles `me.tbsten.katachi.dsl.gradle.gradle` declares under `"Gradle"` are katachi's own and
- * cannot be reopened one by one, so `groups/GradleGroup.kt` tags the whole group instead. A
- * role counts as platform-owned when it carries the tag itself, or when its
- * [me.tbsten.katachi.dsl.Role.groupPath] sits inside a group that does.
+ * `tool/Git` tags itself directly, the way every role in this sample used to, while
+ * `groups/GradleGroup.kt` tags the whole `"Gradle"` group, which reaches every role
+ * `me.tbsten.katachi.dsl.gradle.gradle` declares under it in one line. A role counts as
+ * platform-owned when it carries the tag itself, or when its
+ * [me.tbsten.katachi.dsl.Role.groupPath] sits inside a group that does -- and a role that has
+ * it both ways, as `Gradle/BuildScript` does through `buildScript { owner = ... }`, is still one
+ * role, so its files are listed once.
  *
  * [owner] is a constructor parameter rather than a hardcoded `"platform"` so the same class can
  * answer "which files does platform own" for any owner, [PlatformOwnedFilesSpec]'s anti-vacuous

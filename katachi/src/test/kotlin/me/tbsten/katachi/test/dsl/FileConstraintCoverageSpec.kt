@@ -5,6 +5,7 @@ import io.kotest.matchers.collections.shouldBeEmpty
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 import me.tbsten.katachi.dsl.architecture
+import me.tbsten.katachi.dsl.gradle.gradle
 import me.tbsten.katachi.dsl.gradle.mainSourceSet
 import me.tbsten.katachi.dsl.gradle.module
 import me.tbsten.katachi.dsl.kotlin.ktFile
@@ -116,6 +117,19 @@ class FileConstraintCoverageSpec : FreeSpec({
             val coverage = arch.declaredFileConstraints().single().coverage
             coverage.covers("core/domain/src/main/kotlin/GetUserUseCase.kt") shouldBe true
             coverage.covers("core/domain/build.gradle.kts") shouldBe false
+        }
+
+        "gradle() の BuildScript の制約は build.gradle.kts と build.gradle を覆い、build は覆わない" {
+            val arch = architecture {
+                gradle {
+                    buildScript { fileConstraint("build scripts", check = silent()) }
+                }
+            }
+
+            val coverage = arch.declaredFileConstraints(moduleIndexOf("app")).single().coverage
+            coverage.covers("app/build.gradle.kts") shouldBe true
+            coverage.covers("app/build.gradle") shouldBe true
+            coverage.covers("app/build/x") shouldBe false
         }
 
         "ルートプロジェクトの module の制約が build.gradle.kts を覆わない" {

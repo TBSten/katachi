@@ -146,20 +146,30 @@ internal class GroupScopeImpl(private val path: List<String>) : GroupScope {
         }
 
     override fun String.group(block: GroupScope.() -> Unit) {
+        declareGroupAt(name = this, declaredAt = captureDeclarationSite(), block = block)
+    }
+
+    override fun String.role(block: RoleScope.() -> Unit) {
+        declareRoleAt(name = this, declaredAt = captureDeclarationSite(), block = block)
+    }
+
+    /** Declares a group with a site taken earlier, for a block that defers its declarations. */
+    fun declareGroupAt(name: String, declaredAt: DeclarationSite, block: GroupScope.() -> Unit) {
         groups += declareGroup(
-            name = this,
+            name = name,
             parentPath = path,
-            declaredAt = captureDeclarationSite(),
+            declaredAt = declaredAt,
             declaredNames = declaredNames,
             block = block,
         )
     }
 
-    override fun String.role(block: RoleScope.() -> Unit) {
+    /** Declares a role with a site taken earlier, for a block that defers its declarations. */
+    fun declareRoleAt(name: String, declaredAt: DeclarationSite, block: RoleScope.() -> Unit) {
         roles += declareRole(
-            name = this,
+            name = name,
             groupPath = path,
-            declaredAt = captureDeclarationSite(),
+            declaredAt = declaredAt,
             declaredNames = declaredNames,
             block = block,
         )

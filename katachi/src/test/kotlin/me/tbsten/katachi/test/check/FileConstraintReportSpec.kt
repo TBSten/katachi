@@ -12,6 +12,7 @@ import me.tbsten.katachi.dsl.FileConstraintFailure
 import me.tbsten.katachi.dsl.DeclarationSite
 import me.tbsten.katachi.dsl.FileConstraint
 import me.tbsten.katachi.dsl.files.FsPath
+import me.tbsten.katachi.dsl.gradle.gradle
 
 /**
  * What the two constraint blocks actually print.
@@ -90,6 +91,29 @@ class FileConstraintReportSpec : FreeSpec({
                 [UnsatisfiedFileConstraint] alpha/Helper.kt
                   Role: domain.UseCase
                   Declared at: ProjectArchitecture.kt:61
+                """.trimIndent()
+        }
+
+        "hook の制約の違反は Role に Gradle.BuildScript、Declared at に hook の中の行を持つ" {
+            // The one block here whose site is captured rather than passed: what it pins is that
+            // the site is the user's line inside the hook, not katachi's `gradle()` or the call to it.
+            val line = Throwable().stackTrace.first().lineNumber + 4
+            val arch = architectureOf {
+                gradle(requireWrapper = false) {
+                    buildScript {
+                        fileConstraint("no app script", check = rejectingDeclaration("app/build.gradle.kts", null, null))
+                    }
+                }
+            }
+
+            arch.validate(repositoryOf { "build.gradle.kts"(); "app" { "build.gradle.kts"() } }, FileConstraintCheck())
+                .report() shouldBe
+                """
+                Katachi check failed: 1 violation (FileConstraint: 1)
+
+                [UnsatisfiedFileConstraint] app/build.gradle.kts
+                  Role: Gradle.BuildScript / FileConstraint: "no app script"
+                  Declared at: FileConstraintReportSpec.kt:$line
                 """.trimIndent()
         }
 

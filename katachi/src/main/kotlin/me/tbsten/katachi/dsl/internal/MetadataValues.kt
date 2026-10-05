@@ -2,6 +2,8 @@ package me.tbsten.katachi.dsl.internal
 
 import me.tbsten.katachi.dsl.ArchitectureScopeImpl
 import me.tbsten.katachi.dsl.DocumentSection
+import me.tbsten.katachi.dsl.GradleRoleScopeImpl
+import me.tbsten.katachi.dsl.GradleScopeImpl
 import me.tbsten.katachi.dsl.GroupScopeImpl
 import me.tbsten.katachi.dsl.LayoutDeclarationScope
 import me.tbsten.katachi.dsl.LayoutDeclarationScopeImpl
@@ -72,6 +74,8 @@ internal fun MetadataScope.metadataBuilder(): MetadataBuilder = when (this) {
     is GroupScopeImpl -> metadata
     is ArchitectureScopeImpl -> metadata
     is LayoutDeclarationScopeImpl -> metadata
+    is GradleScopeImpl -> group.metadataBuilder()
+    is GradleRoleScopeImpl -> role.metadataBuilder()
 }
 
 /**

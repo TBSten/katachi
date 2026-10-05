@@ -7,6 +7,7 @@ import io.kotest.matchers.maps.shouldContainKey
 import io.kotest.matchers.maps.shouldNotContainKey
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldNotContain
+import me.tbsten.katachi.check.AmbiguousLayout
 import me.tbsten.katachi.check.MissingFile
 import me.tbsten.katachi.check.internal.validate
 import me.tbsten.katachi.dsl.DeclarationSite
@@ -94,6 +95,18 @@ class GradleGroupSpec : FreeSpec({
                 gradle()
                 "App".role { layout { ":app".module { mainSourceSet / kotlin / "Main".ktFile() } } }
             }.validate(build).labels().shouldBeEmpty()
+        }
+
+        "手書きの Role が build.gradle.kts を宣言すると BuildScript との AmbiguousLayout になる" {
+            // The build script is BuildScript's own declaration, not a line the module sugar left
+            // behind, so a second role claiming it is the same ambiguity any two roles sharing a path are.
+            val ambiguous = architectureOf {
+                gradle()
+                "Hand".role { layout { "app/build.gradle.kts".file() } }
+            }.validate(kotlinDslBuild()).filterIsInstance<AmbiguousLayout>()
+
+            ambiguous.map { it.path } shouldBe listOf("app/build.gradle.kts")
+            ambiguous.single().claims.map { it.role.qualifiedName }.sorted() shouldBe listOf("Gradle.BuildScript", "Hand")
         }
     }
 
