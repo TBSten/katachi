@@ -39,6 +39,10 @@ interface GutterBridgeRef {
     fun clickGutter(path: String, line: Int): String
 
     fun chooseFromGutter(path: String, line: Int, row: String): String
+
+    fun screenshotFrame(out: String): String
+
+    fun screenshotGutterMenu(path: String, line: Int, out: String): String
 }
 
 /**
@@ -83,6 +87,7 @@ class GutterSmokeTest {
             val ideProject = singleProject()
             waitForIndicators(ideProject, 15.minutes)
             val bridge = service(GutterBridgeRef::class, ideProject)
+            val shots = workDir.resolve("screenshots")
             val service = project.resolve("$SERVICE_DIR/HealthService.kt").toString()
             val probePath = probe.toString()
 
@@ -96,6 +101,11 @@ class GutterSmokeTest {
             assertEquals(1, gutter.count { it.startsWith("mark=") }, gutter.toString())
 
             // 2. The menu: the other files of the role, the template for the next file, and the way to the rule.
+            // What the user sees, painted by the IDE itself (Starter's desktop screenshot is the wallpaper without screen-recording permission).
+            println("screenshot " + bridge.screenshotFrame(shots.resolve("1-service-gutter.png").toString()))
+            println("screenshot " + bridge.screenshotGutterMenu(service, 7, shots.resolve("2-service-gutter-menu.png").toString()))
+            Thread.sleep(10_000)
+            println("screenshot " + bridge.screenshotFrame(shots.resolve("1b-service-gutter-10s-later.png").toString()))
             val menu = bridge.clickGutter(service, 7).lines()
             assertEquals("menu=HealthService — domain.Service", menu.first())
             assertTrue("item=◆ Allowed by class HealthService|ServiceRole.kt:80|enabled" in menu, menu.toString())
@@ -114,13 +124,20 @@ class GutterSmokeTest {
             waitFor("the ◆ on ProbeService", timeout = 2.minutes, interval = 2.seconds, errorMessage = { bridge.describeGutter(probePath) }) {
                 "katachi: domain.Service" in bridge.describeGutter(probePath)
             }
-            val chosen = bridge.chooseFromGutter(service, 7, "▶ Run the check")
+            // Run from the ◆ of the file on screen: the platform ignores an action whose editor is not showing (HealthService.kt's tab is behind).
+            val chosen = bridge.chooseFromGutter(probePath, 3, "▶ Run the check")
             assertTrue(chosen.startsWith("chosen=▶ Run the check (:") && chosen.endsWith(":test)"), chosen)
             waitFor("the underline under ProbeService", timeout = 20.minutes, interval = 5.seconds, errorMessage = { bridge.describeHighlights(probePath) }) {
                 bridge.describeHighlights(probePath).lines().any { "rejected ProbeService" in it }
             }
             val highlights = bridge.describeHighlights(probePath).lines().filter { it.startsWith("highlight=") }
             assertTrue(highlights.any { it.startsWith("highlight=ERROR|3:16-3:28|katachi: \"Must be public\"") && it.endsWith("Run the check again") }, highlights.toString())
+            println("screenshot " + bridge.screenshotFrame(shots.resolve("3-probe-underline.png").toString()))
+            println("screenshot " + bridge.screenshotGutterMenu(probePath, 3, shots.resolve("4-probe-gutter-menu.png").toString()))
+            // Back to the first file: the ◆ drawn earlier is still on screen.
+            openFile("$SERVICE_DIR/HealthService.kt", waitForCodeAnalysis = false)
+            Thread.sleep(5_000)
+            println("screenshot " + bridge.screenshotFrame(shots.resolve("5-service-again.png").toString()))
             takeScreenshot("katachiGutter")
         }
     }

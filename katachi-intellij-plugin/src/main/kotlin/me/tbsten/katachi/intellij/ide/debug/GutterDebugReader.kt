@@ -1,8 +1,7 @@
 package me.tbsten.katachi.intellij.ide.debug
 
-import com.intellij.codeInsight.daemon.DaemonCodeAnalyzer
 import com.intellij.codeInsight.daemon.LineMarkerInfo
-import com.intellij.codeInsight.daemon.impl.DaemonCodeAnalyzerImpl
+import com.intellij.codeInsight.daemon.impl.DaemonCodeAnalyzerEx
 import com.intellij.codeInsight.daemon.impl.HighlightInfo
 import com.intellij.ide.DataManager
 import com.intellij.openapi.actionSystem.AnAction
@@ -12,6 +11,7 @@ import com.intellij.openapi.actionSystem.Separator
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.editor.Document
 import com.intellij.openapi.editor.Editor
+import com.intellij.openapi.editor.impl.DocumentMarkupModel
 import com.intellij.openapi.fileEditor.FileDocumentManager
 import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.fileEditor.TextEditor
@@ -19,8 +19,6 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.TextRange
 import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.openapi.vfs.VirtualFile
-import com.intellij.psi.PsiFile
-import com.intellij.psi.PsiManager
 import me.tbsten.katachi.intellij.ide.gutter.GutterMenu
 import me.tbsten.katachi.intellij.ide.sdkCall
 import java.nio.file.Paths
@@ -54,7 +52,7 @@ internal class GutterDebugReader(private val project: Project) {
     /**
      * The katachi annotations of [path] (a description with `katachi: `): `highlights`, `count`, then one
      * `highlight=<severity>|<range>|<description>|<fixes>` each. The range is `line:col-line:col` (1-based, end exclusive) or
-     * `file` for the banner over the file; fixes are `;` separated.
+     * `file` for a banner over the file (see [highlightsOf]); fixes are `;` separated.
      */
     fun describeHighlights(path: String): String {
         val opened = openFile(path) ?: return "highlights=$path\nopen=false"
@@ -64,7 +62,7 @@ internal class GutterDebugReader(private val project: Project) {
                 highlightsOf(opened).filter { it.description?.contains("katachi: ") == true }
                     .sortedWith(compareBy({ it.startOffset }, { it.description }))
                     .map { info ->
-                        val range = if (info.isFileLevelAnnotation) "file" else rangeOf(opened.document, TextRange(info.startOffset, info.endOffset))
+                        val range = if (isBanner(info)) "file" else rangeOf(opened.document, TextRange(info.startOffset, info.endOffset))
                         "highlight=${info.severity.name}|$range|${info.description.orEmpty().oneLine()}|${fixesOf(info).joinToString(";") { it.oneLine() }}"
                     }
             }
@@ -89,6 +87,19 @@ internal class GutterDebugReader(private val project: Project) {
             popup.cancel()
         }
         return lines.joinToString("\n")
+    }
+
+    /** Opens the menu of the ◆ on [line], writes the popup as a PNG to [out], and closes it (see [DebugScreenshots.ofPopup]); `saved=none` when no ◆ is there. */
+    fun screenshotGutterMenu(path: String, line: Int, out: String): String {
+        val menu = menuAt(path, line) ?: return "saved=none"
+        var result = "saved=none"
+        onEdt {
+            val popup = menu.createPopup(contextOf(path))
+            editorOf(path)?.let { sdkCall("show the katachi gutter menu") { popup.showInBestPositionFor(it) } }
+            result = DebugScreenshots(project).ofPopup(popup, out)
+            popup.cancel()
+        }
+        return result
     }
 
     /** Chooses the row of the ◆ menu on [line] whose text starts with [row], as a click on it would. `chosen=<text>` or `chosen=none`. */
@@ -121,8 +132,15 @@ internal class GutterDebugReader(private val project: Project) {
     private fun contextOf(path: String): DataContext =
         editorOf(path)?.let { DataManager.getInstance().getDataContext(it.contentComponent) } ?: DataContext.EMPTY_CONTEXT
 
+    /**
+     * The ◆ the daemon drew: the line markers behind the gutter icons of the document's markup model. Not
+     * `DaemonCodeAnalyzerImpl.getLineMarkers`, which is `@ApiStatus.Internal` (verifyPlugin fails on it).
+     */
     private fun markersOf(document: Document): List<LineMarkerInfo<*>> =
-        sdkCall("read the line markers") { DaemonCodeAnalyzerImpl.getLineMarkers(document, project) }.getOrDefault(emptyList())
+        sdkCall("read the line markers") {
+            DocumentMarkupModel.forDocument(document, project, false)?.allHighlighters.orEmpty()
+                .mapNotNull { (it.gutterIconRenderer as? LineMarkerInfo.LineMarkerGutterIconRenderer<*>)?.lineMarkerInfo }
+        }.getOrDefault(emptyList())
             .filter { it.lineMarkerTooltip?.startsWith("katachi:") == true }
             .sortedBy { it.startOffset }
 
@@ -136,18 +154,21 @@ internal class GutterDebugReader(private val project: Project) {
         }
     }
 
-    private fun highlightsOf(opened: Opened): List<HighlightInfo> {
-        val daemon = DaemonCodeAnalyzer.getInstance(project) as? DaemonCodeAnalyzerImpl
-        val psi: PsiFile? = sdkCall("find the PSI of ${opened.file.path}") { PsiManager.getInstance(project).findFile(opened.file) }.getOrNull()
-        val ranged = sdkCall("read the highlights") { DaemonCodeAnalyzerImpl.getHighlights(opened.document, null, project) }.getOrDefault(emptyList())
-        val banners = if (daemon != null && psi != null) {
-            sdkCall("read the file-level highlights") { daemon.getFileLevelHighlights(project, psi) }.getOrDefault(emptyList())
-        } else {
-            emptyList()
-        }
-        // A banner is the file-level list's alone: the ranged list is the markup model's, where a banner never sits.
-        return ranged.filterNot { it.isFileLevelAnnotation } + banners
-    }
+    /**
+     * The ranged highlights of the document: public API, and the very list the editor draws the underlines from. A banner
+     * over the whole file (`fileLevel()`) is in it in unit tests only: `DaemonCodeAnalyzerImpl.getFileLevelHighlights`, the
+     * platform's own list of them, asserts unit-test mode, so a real IDE lists no banner and the real-IDE smoke cannot see one.
+     * TODO(banner): read the banners from a public API once the platform has one.
+     */
+    private fun highlightsOf(opened: Opened): List<HighlightInfo> = sdkCall("read the highlights") {
+        val found = mutableListOf<HighlightInfo>()
+        DaemonCodeAnalyzerEx.processHighlights(opened.document, project, null, 0, opened.document.textLength) { found += it; true }
+        found
+    }.getOrDefault(emptyList())
+
+    /** Whether [info] is a banner. `HighlightInfo.isFileLevelAnnotation` is `@ApiStatus.Internal` (verifyPlugin fails on it), so it is called by name. */
+    private fun isBanner(info: HighlightInfo): Boolean =
+        sdkCall("ask whether a highlight is a banner") { HighlightInfo::class.java.getMethod("isFileLevelAnnotation").invoke(info) as Boolean }.getOrDefault(false)
 
     private fun fixesOf(info: HighlightInfo): List<String> {
         val found = mutableListOf<String>()
@@ -163,7 +184,7 @@ internal class GutterDebugReader(private val project: Project) {
         return "${at(range.startOffset)}-${at(range.endOffset)}"
     }
 
-    private fun rowsOf(group: DefaultActionGroup, nested: Boolean): List<String> = group.getChildren(null).flatMap { child ->
+    private fun rowsOf(group: DefaultActionGroup, nested: Boolean): List<String> = group.getChildActionsOrStubs().flatMap { child ->
         val key = if (nested) "subitem" else "item"
         when {
             child is GutterMenu.RowAction -> listOf("$key=${child.row.text.oneLine()}|${child.row.trailing.orEmpty().oneLine()}|${if (child.row.enabled) "enabled" else "disabled"}")
@@ -174,7 +195,7 @@ internal class GutterDebugReader(private val project: Project) {
         }
     }
 
-    private fun allRows(group: DefaultActionGroup): List<GutterMenu.RowAction> = group.getChildren(null).flatMap { child: AnAction ->
+    private fun allRows(group: DefaultActionGroup): List<GutterMenu.RowAction> = group.getChildActionsOrStubs().flatMap { child: AnAction ->
         when (child) {
             is GutterMenu.RowAction -> listOf(child)
             is DefaultActionGroup -> allRows(child)

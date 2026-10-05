@@ -1,0 +1,73 @@
+pluginManagement {
+    // `plugins { id("me.tbsten.katachi") }` is resolved here and nowhere else. The
+    // `includeBuild("../..")` further down substitutes *library* coordinates only --
+    // plugin resolution never looks at it -- so the same build is included a second time,
+    // in this block. Gradle treats the two as one included build; its own integration
+    // tests cover a build included both as a plugin build and as a regular one.
+    //
+    // A real user writes neither line. They keep the repositories below and write
+    // `id("me.tbsten.katachi") version "<version>"`. The sample stands in for that with a
+    // composite build, so that it always exercises the plugin in this working tree rather
+    // than the last one published.
+    includeBuild("../..")
+
+    repositories {
+        google()
+        mavenCentral()
+        gradlePluginPortal()
+    }
+}
+
+plugins {
+    // Resolves the JDK 17 toolchain the modules ask for, so the sample builds on a machine
+    // that only has some other JDK installed.
+    id("org.gradle.toolchains.foojay-resolver-convention") version "1.0.0"
+}
+
+dependencyResolutionManagement {
+    repositories {
+        // google() first: AGP and the Android artifacts only live there.
+        google()
+        mavenCentral()
+    }
+    versionCatalogs {
+        // Two catalogs on purpose.
+        // `libs` is the repository root catalog: the single source of truth for the Kotlin,
+        // katachi, kotest and JUnit versions shared by katachi itself and every sample. The
+        // Compose compiler plugin is versioned with Kotlin, so it is declared in that file
+        // too and read here as `libs.plugins.kotlinPluginCompose` — nothing is added on top.
+        create("libs") {
+            from(files("../../gradle/libs.versions.toml"))
+        }
+        // `sampleLibs` holds what only this sample needs (AGP). It is deliberately NOT
+        // named `gradle/libs.versions.toml`, because Gradle would then auto-create a `libs`
+        // accessor from it and collide with the root catalog above.
+        create("sampleLibs") {
+            from(files("gradle/sample.versions.toml"))
+        }
+    }
+}
+
+rootProject.name = "katachi-sample-kmp"
+
+// Build katachi from source instead of resolving it from a repository. Every
+// `me.tbsten.katachi:katachi` dependency is substituted with the `:katachi` project of the
+// included build, so this sample always tests the working tree.
+includeBuild("../..")
+
+include(":app:android")
+// The recommended home for katachi: one plain JVM module holding the architecture
+// definition and the test that asserts it. It matters most in a build like this one, whose
+// modules are all Kotlin Multiplatform without a JVM target -- katachi is a JVM library, so
+// there is no `commonTest` it could live in.
+include(":architecture-test")
+include(":data")
+include(":feature:home")
+include(":feature:settings")
+include(":ui")
+include(":navigation")
+include(":testing")
+
+// NOTE: `app/ios` is intentionally not included. It is a plain directory holding the Xcode
+// project, and one of the things this sample exists to exercise is a directory that Gradle
+// knows nothing about.

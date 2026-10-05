@@ -11,6 +11,20 @@ private const val NO_ROLE_PLUGIN = "me.tbsten.katachi.intellij"
 @Remote("me.tbsten.katachi.intellij.ide.debug.KatachiDebugBridge", plugin = NO_ROLE_PLUGIN)
 interface NoRoleBridgeRef {
     fun describeNoRole(): String
+
+    fun screenshotFrame(out: String): String
+
+    fun screenshotPopup(out: String): String
+
+    fun pressNoRoleLink(text: String): String
+
+    fun dismissNoRole(): String
+
+    fun closePopups(): String
+
+    fun describePopup(): String
+
+    fun refreshFromDisk(): String
 }
 
 /** `describeNoRole()` of the running IDE, parsed into the lines the smoke compares. */
@@ -18,6 +32,23 @@ internal class NoRoleProbe(driver: Driver, project: Project) {
     private val bridge by lazy { driver.service(NoRoleBridgeRef::class, project) }
 
     fun describe(): String = bridge.describeNoRole()
+
+    /** The IDE window painted by the IDE itself into [out] (Starter's desktop screenshot is the wallpaper without screen-recording permission). */
+    fun screenshot(out: java.nio.file.Path) = println("screenshot " + bridge.screenshotFrame(out.toString()))
+
+    fun screenshotPopup(out: java.nio.file.Path) = println("screenshot " + bridge.screenshotPopup(out.toString()))
+
+    /** What a click on the link calls, done in the IDE: Driver's click moves the real mouse, which lands in the window in front, not necessarily the IDE under test. */
+    fun press(link: String): String = bridge.pressNoRoleLink(link)
+
+    fun dismiss(): String = bridge.dismissNoRole()
+
+    fun closePopups(): String = bridge.closePopups()
+
+    /** What focusing the IDE does after an outside `git add`; the IDE under test is not in front on a machine in use. */
+    fun refreshFromDisk(): String = bridge.refreshFromDisk()
+
+    fun popup(): List<String> = bridge.describePopup().lines()
 
     fun lines(): List<String> = describe().lines()
 

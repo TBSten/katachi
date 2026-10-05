@@ -45,9 +45,12 @@ class NoRoleSmokeTest {
             waitForProjectOpen(5.minutes)
             waitForIndicators(singleProject(), 15.minutes)
             val probe = NoRoleProbe(this, singleProject())
+            val shots = Path.of(System.getProperty("katachi.smoke.workDir")).resolve("no-role/screenshots")
             showsForUntrackedFile(probe)
-            popupOpensUnderTheLink(probe)
+            probe.screenshot(shots.resolve("1-untracked.png"))
+            popupOpensUnderTheLink(probe, shots)
             wordingChangesAfterGitAdd(fixture, probe)
+            probe.screenshot(shots.resolve("3-tracked.png"))
             closeHidesIt(probe)
         }
     }
@@ -64,37 +67,40 @@ class NoRoleSmokeTest {
         assertTrue("Nearby roles…" in probe.links(), probe.describe())
     }
 
-    private fun Driver.popupOpensUnderTheLink(probe: NoRoleProbe) {
-        // The notification can be rebuilt between press and release (see EditorEntrySmokeTest), so click until the popup is up.
-        var opened = false
-        repeat(6) {
-            if (opened) return@repeat
-            runCatching { noRoleLink("Nearby roles…").click() }
-            opened = runCatching { waitFor("the nearby roles popup", timeout = 8.seconds) { ui.x { byVisibleText(POPUP_TITLE) }.present() } }.isSuccess
-        }
-        assertTrue(opened, "[Nearby roles...] never opened its popup; " + probe.describe())
-        assertTrue(ui.x { byVisibleText("Refresh definition") }.present())
-        ui.keyboard { escape() }
+    private fun Driver.popupOpensUnderTheLink(probe: NoRoleProbe, shots: Path) {
+        // Pressed in the IDE (see NoRoleProbe.press): the notification can be rebuilt between a real press and release, and the real mouse is not ours.
+        assertEquals("pressed=Nearby roles…", probe.press("Nearby roles…"))
+        waitFor("the nearby roles popup", timeout = 15.seconds, interval = 1.seconds, errorMessage = { probe.describe() }) { ui.x { byVisibleText(POPUP_TITLE) }.present() }
+        val rows = probe.popup()
+        assertEquals("popup=open", rows.first(), rows.toString())
+        assertTrue(rows.any { "domain.Service" in it && it.endsWith("|enabled") }, "a nearby role row; $rows")
+        assertTrue(rows.any { it.startsWith("row=Refresh definition") }, "the refresh row; $rows")
+        assertTrue(rows.any { it.startsWith("row=Copy a role declaration draft") }, "the draft row; $rows")
+        probe.screenshot(shots.resolve("2-popup-frame.png"))
+        probe.screenshotPopup(shots.resolve("2-popup.png"))
+        assertEquals("closed=1", probe.closePopups())
         waitFor("the popup closed", timeout = 10.seconds) { !ui.x { byVisibleText(POPUP_TITLE) }.present() }
-        assertEquals("closing the popup must not close the notification", "shown", probe.value("noRole"))
+        assertEquals("shown", probe.value("noRole"), "closing the popup must not close the notification")
     }
 
     private fun Driver.wordingChangesAfterGitAdd(fixture: NoRoleFixture, probe: NoRoleProbe) {
         fixture.addToGit()
-        // The IDE learns of an outside `git add` from the change of .git/index, a few seconds later.
-        waitFor("the wording after git add", timeout = 2.minutes, interval = 2.seconds, errorMessage = { probe.describe() }) {
+        // A user coming back from the terminal focuses the IDE, which looks at the disk again; this IDE is not in front, so it is asked to.
+        // Asked again on every poll: one refresh right after `git add` can run before git's own scan has seen the new index.
+        waitFor("the wording after git add", timeout = 2.minutes, interval = 3.seconds, errorMessage = { probe.describe() }) {
+            probe.refreshFromDisk()
             probe.value("text") == TRACKED_TEXT
         }
     }
 
     private fun Driver.closeHidesIt(probe: NoRoleProbe) {
-        noRolePanel().x { byTooltip("Dismiss the notification for this file") }.click()
+        assertEquals("dismissed=true", probe.dismiss())
         waitFor("the notification closed", timeout = 30.seconds, errorMessage = { probe.describe() }) { probe.value("noRole") == "none" }
     }
 
     private companion object {
-        const val UNTRACKED_TEXT = "No role allows this file. Once you add it to git, the test will report it as UnexpectedFile."
-        const val TRACKED_TEXT = "No role allows this file. The test will report it as UnexpectedFile."
+        const val UNTRACKED_TEXT = "No role allows this file. Once you add it to git, the test reports it as UnexpectedFile unless the baseline holds it back."
+        const val TRACKED_TEXT = "No role allows this file. The test reports it as UnexpectedFile unless the baseline holds it back."
         const val POPUP_TITLE = "Nearby roles (where this file could go)"
     }
 }

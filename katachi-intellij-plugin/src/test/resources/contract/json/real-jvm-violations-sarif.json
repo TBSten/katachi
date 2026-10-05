@@ -1,0 +1,119 @@
+{
+  "$schema": "https://json.schemastore.org/sarif-2.1.0.json",
+  "version": "2.1.0",
+  "runs": [
+    {
+      "tool": {
+        "driver": {
+          "name": "katachi",
+          "semanticVersion": "0.2.0",
+          "informationUri": "https://tbsten.github.io/katachi/",
+          "rules": [
+            {
+              "id": "katachi.UnexpectedFile",
+              "name": "UnexpectedFile",
+              "shortDescription": {
+                "text": "A file exists that no role's layout allows."
+              },
+              "defaultConfiguration": {
+                "level": "error"
+              }
+            },
+            {
+              "id": "katachi.UnsatisfiedFileConstraint",
+              "name": "UnsatisfiedFileConstraint",
+              "shortDescription": {
+                "text": "A file constraint (fileConstraint { } or konsist { }) rejected a file."
+              },
+              "defaultConfiguration": {
+                "level": "error"
+              }
+            }
+          ]
+        }
+      },
+      "originalUriBaseIds": {
+        "%SRCROOT%": {
+          "uri": "file:///__ROOT__/"
+        }
+      },
+      "invocations": [
+        {
+          "executionSuccessful": true
+        }
+      ],
+      "results": [
+        {
+          "ruleId": "katachi.UnexpectedFile",
+          "ruleIndex": 0,
+          "level": "error",
+          "message": {
+            "text": "No role is defined for this file.\n\nNearby locations:\n  domain.Service src/main/kotlin/com/example/service/\n  api.KtorPlugin src/main/kotlin/com/example/plugin/\n  domain.Model   src/main/kotlin/com/example/model/\n\nHow to fix:\n  - Move it to one of the locations above\n  - Delete it if it is not needed\n  - Add a new role for it:\n      \"LegacyHealthCheck\".role {\n        summary = \"TODO\"\n        layout {\n          \"src/main/kotlin/com/example/service\" / \"LegacyHealthCheck\".ktFile()\n        }\n      }"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/main/kotlin/com/example/service/LegacyHealthCheck.kt",
+                  "uriBaseId": "%SRCROOT%"
+                }
+              }
+            }
+          ],
+          "properties": {
+            "kind": "Unexpected",
+            "severity": "Error",
+            "path": "src/main/kotlin/com/example/service/LegacyHealthCheck.kt"
+          }
+        },
+        {
+          "ruleId": "katachi.UnsatisfiedFileConstraint",
+          "ruleIndex": 1,
+          "level": "error",
+          "message": {
+            "text": "Role: domain.Service / FileConstraint: \"Must be public\"\nDeclaration: LegacyStatusService (line 3)\nDeclared at: ServiceRole.kt:94"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/main/kotlin/com/example/service/LegacyStatusService.kt",
+                  "uriBaseId": "%SRCROOT%"
+                },
+                "region": {
+                  "startLine": 3
+                }
+              }
+            }
+          ],
+          "relatedLocations": [
+            {
+              "id": 1,
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "architecture-test/src/test/kotlin/com/example/roles/ServiceRole.kt",
+                  "uriBaseId": "%SRCROOT%"
+                },
+                "region": {
+                  "startLine": 94
+                }
+              },
+              "message": {
+                "text": "Declared here"
+              }
+            }
+          ],
+          "properties": {
+            "kind": "FileConstraint",
+            "severity": "Error",
+            "path": "src/main/kotlin/com/example/service/LegacyStatusService.kt",
+            "role": "domain.Service",
+            "constraint": "Must be public",
+            "declaration": "LegacyStatusService",
+            "declaredAt": "ServiceRole.kt:94"
+          }
+        }
+      ]
+    }
+  ]
+}

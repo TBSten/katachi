@@ -140,6 +140,35 @@ internal class KatachiDebugBridge(private val project: Project) {
     /** Chooses the row starting with [row] in the menu of the ◆ on [line] of [path]: `chosen=<row>` or `chosen=none`. */
     fun chooseFromGutter(path: String, line: Int, row: String): String = gutterReader().chooseFromGutter(path, line, row)
 
+    /** Writes the IDE window as a PNG to [out]: `saved=<out>|<w>x<h>` (see [DebugScreenshots.ofFrame]). */
+    fun screenshotFrame(out: String): String = DebugScreenshots(project).ofFrame(checked(out))
+
+    /** Writes the menu of the ◆ on [line] of [path] as a PNG to [out] (see [GutterDebugReader.screenshotGutterMenu]). */
+    fun screenshotGutterMenu(path: String, line: Int, out: String): String = gutterReader().screenshotGutterMenu(path, line, out)
+
+    /** Presses the link [text] of the no-role notification: `pressed=<text>` or `pressed=none` (see [DebugPanels.pressNoRoleLink]). */
+    fun pressNoRoleLink(text: String): String = DebugPanels(project).pressNoRoleLink(checked(text))
+
+    /** Presses × of the no-role notification (see [DebugPanels.dismissNoRole]). */
+    fun dismissNoRole(): String = checked(DebugPanels(project)).dismissNoRole()
+
+    /** Writes the popup on screen as a PNG to [out] (see [DebugPanels.screenshotPopup]). */
+    fun screenshotPopup(out: String): String = DebugPanels(project).screenshotPopup(checked(out))
+
+    /** The rows of the popup on screen (see [DebugPanels.describePopup]). */
+    fun describePopup(): String = checked(DebugPanels(project)).describePopup()
+
+    /** Looks at the disk again, as coming back to the IDE does (see [DebugPanels.refreshFromDisk]). */
+    fun refreshFromDisk(): String = checked(DebugPanels(project)).refreshFromDisk()
+
+    /** Closes the popups on screen (see [DebugPanels.closePopups]). */
+    fun closePopups(): String = checked(DebugPanels(project)).closePopups()
+
+    private fun <T> checked(value: T): T {
+        check(System.getProperty(ENABLED_PROPERTY) == "true") { "The katachi debug bridge is off; start the IDE with -D$ENABLED_PROPERTY=true." }
+        return value
+    }
+
     private fun gutterReader(): GutterDebugReader {
         check(System.getProperty(ENABLED_PROPERTY) == "true") { "The katachi debug bridge is off; start the IDE with -D$ENABLED_PROPERTY=true." }
         return GutterDebugReader(project)

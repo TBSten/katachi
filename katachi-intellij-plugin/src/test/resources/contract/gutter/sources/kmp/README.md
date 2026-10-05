@@ -1,0 +1,74 @@
+# sample/kmp
+
+## What this sample is
+
+A sample that defines a **Kotlin Multiplatform app** (Android and iOS) with katachi.
+
+It declares as roles what goes into each of the `:feature:*`, `:ui`, `:data`, `:navigation`, `:testing` and `:app:android` modules,
+and checks the file layout with `assert()`. The highlight is how to write **things whose location differs per source set**,
+such as `expect` in `commonMain` and `actual` in `androidMain` / `iosMain`. The same definition also generates the documents in [`docs/`](docs/README.md).
+
+katachi is pulled in from the repository source with `includeBuild("../..")`, but it is written the same way a user would,
+with `testImplementation(libs.katachi)`.
+
+## Key files
+
+| File | What it shows |
+|---|---|
+| [`ProjectArchitecture.kt`](architecture-test/src/test/kotlin/com/example/kmp/ProjectArchitecture.kt) | The body of `architecture { }`. It only calls the groups; each role is in `roles/`, one role per file |
+| [`roles/ExpectDeclarationRole.kt`](architecture-test/src/test/kotlin/com/example/kmp/roles/ExpectDeclarationRole.kt) / [`roles/ActualImplementationRole.kt`](architecture-test/src/test/kotlin/com/example/kmp/roles/ActualImplementationRole.kt) | The `expect` in `commonMain` and the `actual` in `androidMain` / `iosMain`, as two roles because they are two kinds of file |
+| [`roles/RepositoryInterfaceRole.kt`](architecture-test/src/test/kotlin/com/example/kmp/roles/RepositoryInterfaceRole.kt) / [`roles/RepositoryImplementationRole.kt`](architecture-test/src/test/kotlin/com/example/kmp/roles/RepositoryImplementationRole.kt) | The interface and the implementation as two roles, each with its own `.template`, so they can be generated separately (or together with `--arg template=a,b`) |
+| [`roles/FeatureComponentRole.kt`](architecture-test/src/test/kotlin/com/example/kmp/roles/FeatureComponentRole.kt) | An example of a template placed by two directory captures, `capture("feature")` and `capture("featurePackage")`. The same captures decide the location and, with `captureValue(...)`, the template content |
+| [`ProjectArchitectureTest.kt`](architecture-test/src/test/kotlin/com/example/kmp/ProjectArchitectureTest.kt) | The only test a user writes. It just calls `projectArchitecture.assert()` |
+| [`katachi-baseline.json`](katachi-baseline.json) | The baseline ledger. It deliberately leaves one entry, `user/` in the `androidMain` of `:data`, shelved ([`../README.md`](../README.md#baseline)) |
+
+## How to run
+
+**The Android SDK is required.** Set `ANDROID_HOME`, or write `sdk.dir` in `local.properties`.
+
+```sh
+# at the repository root
+echo "sdk.dir=$HOME/Library/Android/sdk" > sample/kmp/local.properties
+```
+
+```sh
+cd sample/kmp
+
+# Check the file layout
+./gradlew :architecture-test:test
+
+# Generate the documents into docs/ from the definition
+./gradlew :architecture-test:katachiDocs
+
+# Generate ProfileRepository.kt and ProfileRepositoryImpl.kt into the user package of :data from the Repository templates
+# (give the two together, comma-separated; pass only data.RepositoryInterface for just one)
+./gradlew :architecture-test:katachiTemplate --arg template=data.RepositoryInterface,data.RepositoryImplementation --arg name=Profile
+
+# Generate SettingsToggleRow.kt into the component package of :feature:settings from the FeatureComponent template
+# (feature and featurePackage are the names the layout gave the two directories; they pick the module and its package.
+# The whole file name is capture("name"), so pass the module's name with it)
+./gradlew :architecture-test:katachiTemplate --arg template=feature.FeatureComponent --arg feature=settings --arg featurePackage=settings --arg name=SettingsToggleRow
+```
+
+**Write the task with the module path**, as in `:architecture-test:test`. Writing just `test`
+also targets the tasks of the iOS modules, which needs macOS and Xcode.
+
+From the repository root, one command runs the same set as CI (including generating from templates, checking, and deleting the generated files, plus checking that the baseline is up to date).
+
+```sh
+./gradlew checkSampleKmp
+```
+
+## The default tasks of `checkSampleKmp`
+
+Unlike the other samples, the default task of `checkSampleKmp` is not `check`. `check` is not used because
+the KMP modules declare iOS targets, and `check` would pull `compileKotlinIosArm64` and the download of
+the Kotlin/Native toolchain into the task graph.
+
+Instead it runs both `:architecture-test:test` (verifying katachi) and `:app:android:testDebugUnitTest` (verifying
+that the sample compiles as a KMP project). `:architecture-test` is a plain JVM module that references
+none of `:ui` / `:data` / `:feature:*`, so one of the two alone is not enough. These are followed by
+`:architecture-test:katachiLayout` (the layout check via the processor) and
+`:architecture-test:katachiDocs --arg mode=check` (whether the generated documents are up to date). The layout
+snapshot (`snapshots/layout.txt`) is checked by `LayoutSnapshotSpec` inside `:architecture-test:test`. For the exact default values, see `sampleBuilds` in the root
+`build.gradle.kts`.

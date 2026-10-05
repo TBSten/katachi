@@ -55,12 +55,27 @@ class DeclarationBindingPropertyTest {
 
     // covers: オーバーロード, 行のずれ
     @Test
-    fun `オーバーロードの数が変わったら 行の最も近い説明に結ばれ 同じ差なら前の行`() {
+    fun `オーバーロードを消したら 残った宣言は行の最も近い説明に結ばれ 同じ差なら前の行`() {
         val explanations = BindingFile(listOf(fn(3), fn(9))).explanations()
-        val bound = DeclarationBinding.bind(listOf(fn(5), fn(6), fn(12)), explanations)
-        assertEquals(listOf(explanations[0], explanations[0], explanations[1]), bound.map { it.explanation.model })
+        val bound = DeclarationBinding.bind(listOf(fn(5)), explanations)
+        assertEquals(listOf(explanations[0]), bound.map { it.explanation.model })
         val tie = DeclarationBinding.bind(listOf(fn(6)), explanations)
         assertSame(explanations[0], tie.single().explanation.model)
+    }
+
+    // covers: オーバーロード, 行のずれ
+    @Test
+    fun `オーバーロードを足したら 説明は行の最も近い宣言に1つずつ結ばれ 足した宣言はまだ計算していない`() {
+        val explanations = BindingFile(listOf(fn(3), fn(9))).explanations()
+        val (first, second) = explanations.map(BoundExplanation::Explained)
+        val middle = DeclarationBinding.bind(listOf(fn(3), fn(5), fn(9)), explanations)
+        assertEquals(listOf(first, BoundExplanation.NotComputed, second), middle.map { it.explanation })
+        val last = DeclarationBinding.bind(listOf(fn(3), fn(9), fn(12)), explanations)
+        assertEquals(listOf(first, second, BoundExplanation.NotComputed), last.map { it.explanation })
+        // One explanation, the name overloaded afterwards: only the nearest declaration borrows it.
+        val single = BindingFile(listOf(fn(10))).explanations()
+        val added = DeclarationBinding.bind(listOf(fn(4), fn(11)), single)
+        assertEquals(listOf(BoundExplanation.NotComputed, BoundExplanation.Explained(single[0])), added.map { it.explanation })
     }
 
     // covers: 行のずれ
@@ -144,7 +159,12 @@ internal object BindingInvariants {
                 is BoundExplanation.Explained -> {
                     assertEquals("${where()}: #$index binds its own kind and name", source.kind to source.name, explanation.declaration.kind to explanation.declaration.name)
                 }
-                BoundExplanation.NotComputed -> assertTrue("${where()}: #$index $source was explained", (source.kind to source.name) !in originalKeys)
+                // Not computed: a name nobody explained, or one more declaration of that name than katachi saw.
+                BoundExplanation.NotComputed -> assertTrue(
+                    "${where()}: #$index $source was explained",
+                    (source.kind to source.name) !in originalKeys ||
+                        sources.count { it.kind == source.kind && it.name == source.name } > explanations.count { it.kind == source.kind && it.name == source.name },
+                )
             }
         }
         // A kind and name whose declarations are all the original ones, as many as katachi saw: each keeps its own explanation.

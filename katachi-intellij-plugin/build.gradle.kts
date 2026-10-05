@@ -214,6 +214,9 @@ tasks.test { dependsOn(uiTest) }
 // No useJUnitPlatform(): BasePlatformTestCase is JUnit 4 based.
 tasks.test { systemProperty("idea.kotlin.plugin.use.k2", "true") }
 
+// `./gradlew test -Dkatachi.gutter.golden.update=true` writes the gutter's text goldens (contract/gutter/*.txt) instead of comparing.
+tasks.test { providers.systemProperty("katachi.gutter.golden.update").orNull?.let { systemProperty("katachi.gutter.golden.update", it) } }
+
 // updatePreview / verifyPreview: run the preview main() on the standalone classpath.
 // The first argument picks the mode; the working directory is this project directory.
 fun registerPreviewTask(name: String, mode: String, desc: String) = tasks.register<JavaExec>(name) {

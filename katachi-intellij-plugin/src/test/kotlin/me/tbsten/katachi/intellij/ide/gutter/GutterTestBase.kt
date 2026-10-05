@@ -104,7 +104,7 @@ internal abstract class GutterTestBase : AnalysisTestBase() {
     /** The platform actions the menu finds by id (`katachi.RunCheck`, `katachi.RefreshDefinition`); none until a test adds one. */
     val actions: MutableMap<String, AnAction> = mutableMapOf()
 
-    fun ports(): GutterPorts = GutterPorts(
+    open fun ports(): GutterPorts = GutterPorts(
         hasDefinitionModule = { hasDefinitionModule },
         definitions = { definitions },
         violations = { violations },
