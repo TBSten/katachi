@@ -36,6 +36,7 @@ internal class KatachiConfigurableTest : AnalysisTestBase() {
     private val contentBox get() = box("settings.editorNotification.content")
     private val onceBox get() = box("settings.editorNotification.contentOnce")
     private val autoLoadBox get() = box("settings.editorNotification.autoLoad")
+    private val noRoleBox get() = box("settings.rules.noRole")
 
     // covers: 論点14
     fun `test 新しい5項目の文言のチェックボックスがそれぞれ1つ見える`() {
@@ -52,9 +53,18 @@ internal class KatachiConfigurableTest : AnalysisTestBase() {
         }
     }
 
+    fun `test 当たる Role が無いファイルの通知のチェックボックスが1つ見え通知の項目の中に並ぶ`() {
+        val boxes = UIUtil.findComponentsOfType(panel, JBCheckBox::class.java)
+        val text = KatachiBundle.message("settings.rules.noRole")
+        assertEquals(1, boxes.count { it.text == text })
+        // Under the notification switches, before "load the templates": it is one of them.
+        val order = boxes.map { it.text }
+        assertTrue(order.toString(), order.indexOf(text) in order.indexOf(onceBox.text) + 1 until order.indexOf(autoLoadBox.text))
+    }
+
     // covers: 論点14
     fun `test 既定ではすべてのチェックボックスが選ばれて有効`() {
-        listOf(enabledBox, emptyBox, contentBox, onceBox, autoLoadBox).forEach {
+        listOf(enabledBox, emptyBox, contentBox, onceBox, autoLoadBox, noRoleBox).forEach {
             assertTrue("${it.text} selected", it.isSelected)
             assertTrue("${it.text} enabled", it.isEnabled)
         }
@@ -67,6 +77,7 @@ internal class KatachiConfigurableTest : AnalysisTestBase() {
         assertFalse(emptyBox.isEnabled)
         assertFalse(contentBox.isEnabled)
         assertFalse(onceBox.isEnabled)
+        assertFalse(noRoleBox.isEnabled)
         assertTrue("auto load does not depend on the master switch", autoLoadBox.isEnabled)
 
         enabledBox.doClick()
@@ -74,6 +85,33 @@ internal class KatachiConfigurableTest : AnalysisTestBase() {
         assertTrue(emptyBox.isEnabled)
         assertTrue(contentBox.isEnabled)
         assertTrue(onceBox.isEnabled)
+        assertTrue(noRoleBox.isEnabled)
+    }
+
+    fun `test 当たる Role が無いファイルの通知は中身のあるファイルの通知の入り切りに左右されない`() {
+        contentBox.doClick()
+        emptyBox.doClick()
+
+        assertTrue(noRoleBox.isEnabled)
+        assertTrue(noRoleBox.isSelected)
+    }
+
+    fun `test 当たる Role が無いファイルの通知を切って適用すると設定に書かれ他の項目は変わらない`() {
+        val settings = KatachiSettings.getInstance(project)
+        try {
+            noRoleBox.doClick()
+            assertTrue(configurable.isModified)
+
+            configurable.apply()
+
+            assertFalse(settings.notifyOnNoRole)
+            assertTrue(settings.editorNotificationEnabled)
+            assertTrue(settings.notifyOnEmptyFile)
+            configurable.reset()
+            assertFalse(noRoleBox.isSelected)
+        } finally {
+            settings.notifyOnNoRole = true
+        }
     }
 
     // covers: 論点14

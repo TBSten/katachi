@@ -38,6 +38,9 @@ internal class KatachiSettingsState : BaseState() {
     /** Notify on a file with content only the first time it is opened (the memory of that is not persisted). */
     var notifyOnContentOnce by property(true)
 
+    /** Notify on a file no role holds (the test would report it as UnexpectedFile). Off with [editorNotificationEnabled] too. */
+    var notifyOnNoRole by property(true)
+
     /** Load the templates without a user action, which runs Gradle. */
     var autoLoadTemplates by property(true)
 
@@ -89,6 +92,12 @@ internal class KatachiSettings : SimplePersistentStateComponent<KatachiSettingsS
         get() = state.notifyOnContentOnce
         set(value) {
             state.notifyOnContentOnce = value
+        }
+
+    var notifyOnNoRole: Boolean
+        get() = state.notifyOnNoRole
+        set(value) {
+            state.notifyOnNoRole = value
         }
 
     var autoLoadTemplates: Boolean
