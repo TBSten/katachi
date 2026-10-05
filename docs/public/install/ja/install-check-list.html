@@ -591,6 +591,99 @@
 
   .qa-pick .qa-head { color: var(--accent); }
   .qa-pick p:last-child { margin: 0; }
+
+  .lede { color: var(--text-muted); font-size: 14px; margin: 6px 0 0; }
+
+  /* 書き方の方針（推奨と違う行） */
+  tr.pref-differs td { background: var(--warn-soft); }
+  .pref-mark { color: var(--warn); font-size: 12px; white-space: nowrap; }
+
+  /* 回答欄 */
+  .qa-answer { margin-top: 14px; padding-top: 12px; border-top: 1px dashed var(--border); }
+  .qa-answer .qa-head { display: flex; align-items: baseline; gap: 8px; }
+  .qa-answer-list { margin: 0; padding: 0; list-style: none; }
+  .qa-answer-list li { margin: 2px 0; }
+
+  .qa-answer-list label {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    padding: 4px 6px;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+
+  .qa-answer-list label:hover { background: var(--surface-2); }
+  .qa-answer-list input[type="radio"] { flex: none; margin: 0.35em 0 0; accent-color: var(--accent); }
+  .qa-answer-list .option-letter { flex: none; font-family: var(--font-mono); font-size: 12px; color: var(--text-muted); margin-top: 3px; }
+
+  .qa-answer textarea {
+    display: block;
+    width: 100%;
+    min-height: 3.5em;
+    margin: 8px 0 0;
+    padding: 8px 10px;
+    border: 1px solid var(--border-strong);
+    border-radius: 6px;
+    background: var(--surface);
+    color: var(--text);
+    font-family: inherit;
+    font-size: 14px;
+    line-height: 1.6;
+    resize: vertical;
+  }
+
+  .qa-answer textarea:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+
+  .answered-badge:empty { display: none; }
+  .answered-badge { border-color: var(--ok); color: var(--ok); }
+  .qa.is-answered > summary .qa-num { background: var(--ok); color: var(--bg); }
+  .qa-imported { color: var(--ok); font-size: 12px; font-family: var(--font-mono); }
+
+  .action-button {
+    padding: 4px 12px;
+    border: 1px solid var(--border-strong);
+    border-radius: 6px;
+    background: var(--surface);
+    color: var(--text);
+    font-family: inherit;
+    font-size: 13px;
+    line-height: 1.6;
+    cursor: pointer;
+  }
+
+  .action-button:hover { background: var(--surface-2); border-color: var(--accent); }
+  .action-button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .action-button.is-primary { background: var(--accent); border-color: var(--accent); color: var(--bg); }
+  .qa-answer .action-button { margin-top: 8px; }
+
+  .answer-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 12px 0 0; }
+  .answer-actions:empty { display: none; }
+  .answer-status { flex-basis: 100%; margin: 0; font-size: 13px; color: var(--text-muted); }
+  .answer-status.is-error { color: var(--warn); }
+  .answer-status:empty { display: none; }
+
+  .answer-manual {
+    display: block;
+    width: 100%;
+    min-height: 6em;
+    margin: 8px 0 0;
+    padding: 8px 10px;
+    border: 1px solid var(--border-strong);
+    border-radius: 6px;
+    background: var(--surface-2);
+    color: var(--text);
+    font-family: var(--font-mono);
+    font-size: 12px;
+  }
+
+  /* display: block が UA の [hidden] { display: none } に勝ってしまうので上書きする */
+  .answer-manual[hidden] { display: none; }
+
+  @media print {
+    .answer-actions, .qa-answer .action-button { display: none; }
+    .qa-answer textarea { border: 1px solid #000; }
+  }
 </style>
 </head>
 <body>
@@ -609,6 +702,7 @@
 {
   "meta": {
     "workdir": null,
+    "moduleDir": null,
     "version": null,
     "projectRoot": null,
     "ranAt": null,
@@ -649,12 +743,17 @@
           "id": "1-2",
           "label": "project-code-base-report.html の JSON を埋めた",
           "done": false
+        },
+        {
+          "id": "1-3",
+          "label": "sh katachi-install.sh preferences で書き方の方針を聞いて記録した",
+          "done": false
         }
       ]
     },
     {
       "id": "2",
-      "title": ":architecture-test モジュールを作成し 標準的な katachi のテスト用モジュールとして設定",
+      "title": "検査用モジュール（既定 architecture-test/）を作成し 標準的な katachi のテスト用モジュールとして設定",
       "warning": null,
       "items": [
         {
@@ -664,7 +763,7 @@
         },
         {
           "id": "2-2",
-          "label": "定義が空の状態で ./gradlew :architecture-test:test が Unexpected だけで落ちることを確認した",
+          "label": "定義が空の状態で 検査用モジュールの test が Unexpected だけで落ちることを確認した",
           "done": false
         }
       ]
@@ -681,7 +780,7 @@
         },
         {
           "id": "3-2",
-          "label": "architecture { } 定義を書き、./gradlew :architecture-test:test の出力をリファクタリング前の基準として保存した",
+          "label": "architecture { } 定義を書き、検査用モジュールの test の出力をリファクタリング前の基準として保存した",
           "done": false
         },
         {
@@ -698,7 +797,7 @@
       "items": [
         {
           "id": "4-1",
-          "label": "./gradlew :architecture-test:test を実行した",
+          "label": "検査用モジュールの test を実行した",
           "done": false
         },
         {
@@ -708,7 +807,7 @@
         },
         {
           "id": "4-3",
-          "label": ":architecture-test:katachiDocs で docs を生成し、出力を確かめた",
+          "label": "検査用モジュールの katachiDocs で docs を生成し、出力を確かめた",
           "done": false
         }
       ]
@@ -743,7 +842,7 @@
         },
         {
           "id": "6-2",
-          "label": "CI に :architecture-test:test を組み込んだ",
+          "label": "CI に検査用モジュールの test を組み込んだ",
           "done": false
         },
         {
@@ -753,14 +852,16 @@
         },
         {
           "id": "6-4",
-          "label": "テンプレートを書き、1本生成した直後に :architecture-test:test が通ることを確かめた",
+          "label": "テンプレートを書き、1本生成した直後に検査用モジュールの test が通ることを確かめた",
           "done": false
         }
       ]
     }
   ],
+  "preferences": {},
   "violations": [],
   "questions": [],
+  "answers": {},
   "changedFiles": []
 }
 </script>
@@ -769,6 +870,7 @@
 {
   "meta": {
     "workdir": ".local/install-katachi",
+    "moduleDir": "architecture-test",
     "version": "0.5.0",
     "projectRoot": "/Users/me/dev/example-app",
     "ranAt": "2026-09-24 10:00 JST",
@@ -809,12 +911,17 @@
           "id": "1-2",
           "label": "project-code-base-report.html の JSON を埋めた",
           "done": true
+        },
+        {
+          "id": "1-3",
+          "label": "sh katachi-install.sh preferences で書き方の方針を聞いて記録した",
+          "done": true
         }
       ]
     },
     {
       "id": "2",
-      "title": ":architecture-test モジュールを作成し 標準的な katachi のテスト用モジュールとして設定",
+      "title": "検査用モジュール（既定 architecture-test/）を作成し 標準的な katachi のテスト用モジュールとして設定",
       "warning": null,
       "items": [
         {
@@ -824,7 +931,7 @@
         },
         {
           "id": "2-2",
-          "label": "定義が空の状態で ./gradlew :architecture-test:test が Unexpected だけで落ちることを確認した",
+          "label": "定義が空の状態で 検査用モジュールの test が Unexpected だけで落ちることを確認した",
           "done": true
         }
       ]
@@ -841,7 +948,7 @@
         },
         {
           "id": "3-2",
-          "label": "architecture { } 定義を書き、./gradlew :architecture-test:test の出力をリファクタリング前の基準として保存した",
+          "label": "architecture { } 定義を書き、検査用モジュールの test の出力をリファクタリング前の基準として保存した",
           "done": true
         },
         {
@@ -858,7 +965,7 @@
       "items": [
         {
           "id": "4-1",
-          "label": "./gradlew :architecture-test:test を実行した",
+          "label": "検査用モジュールの test を実行した",
           "done": true
         },
         {
@@ -868,7 +975,7 @@
         },
         {
           "id": "4-3",
-          "label": ":architecture-test:katachiDocs で docs を生成し、出力を確かめた",
+          "label": "検査用モジュールの katachiDocs で docs を生成し、出力を確かめた",
           "done": true
         }
       ]
@@ -903,7 +1010,7 @@
         },
         {
           "id": "6-2",
-          "label": "CI に :architecture-test:test を組み込んだ",
+          "label": "CI に検査用モジュールの test を組み込んだ",
           "done": false
         },
         {
@@ -913,12 +1020,19 @@
         },
         {
           "id": "6-4",
-          "label": "テンプレートを書き、1本生成した直後に :architecture-test:test が通ることを確かめた",
+          "label": "テンプレートを書き、1本生成した直後に検査用モジュールの test が通ることを確かめた",
           "done": false
         }
       ]
     }
   ],
+  "preferences": {
+    "nestedGroups": "yes",
+    "testFramework": "kotest",
+    "dependencyStyle": "catalog",
+    "constraintNames": "numbered",
+    "oneRolePerFile": "yes"
+  },
   "violations": [
     {
       "violation": "ui 層から data 層の DataSource を直接参照している",
@@ -929,6 +1043,7 @@
   ],
   "questions": [
     {
+      "id": "q1",
       "question": "legacy パッケージは katachi の対象に含めますか？",
       "observed": "app/src/main/kotlin/com/example/app/ui/legacy/ の配下だけ Fragment + Presenter のまま残っている",
       "options": [
@@ -938,6 +1053,7 @@
       "recommendation": "B。対象が1画面だけで、移行の予定が決まっていないため"
     }
   ],
+  "answers": {},
   "changedFiles": [
     {
       "path": "architecture-test/build.gradle.kts",
@@ -991,13 +1107,21 @@
 
   <div class="steps" data-render="steps"></div>
 
+  <section class="block" id="preferences">
+    <h2>書き方の方針</h2>
+    <p class="lede">ステップ 1-3 で聞いた、定義の書き方の方針です。推奨と違うものは強調しています。検査用モジュールの置き場所はメタ情報にあります。</p>
+    <div data-render="preferences"></div>
+  </section>
+
   <section class="block" id="violations">
     <h2>残しているアーキテクチャ違反<span class="count-badge" data-render="violationCount"></span></h2>
     <div data-render="violations"></div>
   </section>
 
   <section class="block" id="questions">
-    <h2>ユーザに確認したいこと<span class="count-badge" data-render="questionCount"></span></h2>
+    <h2>ユーザに確認したいこと<span class="count-badge" data-render="questionCount"></span><span class="count-badge answered-badge" data-render="answeredCount"></span></h2>
+    <p class="lede">各項目で選択肢を選ぶか、自由に書いてください。両方あれば自由記入は補足になります。書き終えたら「回答を書き出す」で JSON を保存し、AI エージェントに渡してください（<code>sh katachi-install.sh answers import &lt;json&gt;</code>）。</p>
+    <div class="answer-actions" data-render="answerActions"></div>
     <div data-render="questions"></div>
   </section>
 
@@ -1063,16 +1187,6 @@
     var p = el('p', 'empty');
     p.textContent = dataOk ? (label || 'なし') : '不明';
     return p;
-  }
-  function numbered(values, key) {
-    if (blank(values)) return paragraph(unfilled(key));
-    var ol = el('ol');
-    values.forEach(function (item) {
-      var li = el('li');
-      li.textContent = String(item);
-      ol.appendChild(li);
-    });
-    return ol;
   }
   function defs(cls, pairs) {
     var dl = el('dl', cls);
@@ -1267,6 +1381,7 @@
   function renderMeta(meta) {
     mount('meta', [defs('kv', [
       ['作業用ディレクトリ', value(meta.workdir, 'meta.workdir')],
+      ['検査用モジュールの置き場所', value(meta.moduleDir, 'meta.moduleDir')],
       ['katachi のバージョン', value(meta.version, 'meta.version')],
       ['Kotlin', value(meta.kotlin, 'meta.kotlin')],
       ['JVM toolchain', value(meta.jvmToolchain, 'meta.jvmToolchain')],
@@ -1274,6 +1389,46 @@
       ['対象プロジェクトのルート', value(meta.projectRoot, 'meta.projectRoot')],
       ['実行日時', value(meta.ranAt, 'meta.ranAt')]
     ])]);
+  }
+
+  // 書き方の方針。key / 問い / 推奨（null は「検出」で、推奨との比較をしない）
+  var PREFERENCE_KEYS = [
+    ['nestedGroups', 'group を入れ子にするか', 'yes'],
+    ['testFramework', 'テストのフレームワーク', null],
+    ['dependencyStyle', '依存の書き方', null],
+    ['constraintNames', '制約名に確認事項の番号を入れるか', 'plain'],
+    ['oneRolePerFile', '1 Role 1 ファイルで書くか', 'yes']
+  ];
+  function renderPreferences(preferences) {
+    var known = PREFERENCE_KEYS.map(function (spec) { return spec[0]; });
+    var extra = Object.keys(preferences).filter(function (key) { return known.indexOf(key) < 0; });
+    var specs = PREFERENCE_KEYS.concat(extra.map(function (key) { return [key, '', null]; }));
+    var differs = [];
+    var rows = specs.map(function (spec, index) {
+      var key = spec[0];
+      var raw = preferences[key];
+      var recorded = !blank(raw);
+      var valueCell = el('span');
+      if (recorded) {
+        valueCell.textContent = String(raw);
+      } else {
+        var muted = el('span', 'empty');
+        muted.textContent = spec[2] === null ? '未記録（検出した値を使う）' : '未記録（推奨のまま）';
+        valueCell.appendChild(muted);
+      }
+      var recommended = document.createTextNode(spec[2] === null ? '検出' : spec[2]);
+      if (recorded && spec[2] !== null && String(raw) !== spec[2]) {
+        differs.push(index);
+        var mark = el('span', 'pref-mark');
+        mark.textContent = ' 推奨と違う';
+        valueCell.appendChild(mark);
+      }
+      return [document.createTextNode(key), document.createTextNode(spec[1]), valueCell, recommended];
+    });
+    var table = tableOf(['key', '問い', '値', '推奨'], rows);
+    var trs = table.querySelectorAll('tbody tr');
+    differs.forEach(function (index) { trs[index].classList.add('pref-differs'); });
+    mount('preferences', [table]);
   }
 
   function renderViolations(violations) {
@@ -1303,11 +1458,184 @@
     mount('changedFiles', [tableOf(['パス', '新規 / 変更', '内容'], rows)]);
   }
 
-  function questionCard(item, index) {
+  // ---- 確認事項の回答欄（レポートにも同じ関数がある。JS は共有できない） ----
+  var ANSWER_TARGET = 'check-list';
+  var ANSWER_FILE = 'katachi-answers-check-list.json';
+  // { id, recommendation, radios, free, card }
+  var answerCards = [];
+
+  function questionId(item, index) {
+    return blank(item.id) ? 'q' + (index + 1) : String(item.id);
+  }
+  // 入力途中の下書き。localStorage が使えなくても描画は壊さない
+  function draftKey(id) { return location.href.split('#')[0] + '#answer:' + id; }
+  function readDraft(id) {
+    try {
+      var raw = localStorage.getItem(draftKey(id));
+      return raw ? record(JSON.parse(raw)) : null;
+    } catch (error) {
+      return null;
+    }
+  }
+  function writeDraft(id, draft) {
+    try {
+      if (draft) localStorage.setItem(draftKey(id), JSON.stringify(draft));
+      else localStorage.removeItem(draftKey(id));
+    } catch (error) { /* 保存できなくても続ける */ }
+  }
+  // 回答欄の状態。選択肢を選んでいれば自由記入は note、選んでいなければ自由記入が answer
+  function readCard(entry) {
+    var picked = entry.radios.filter(function (radio) { return radio.checked; })[0];
+    var free = entry.free.value.replace(/^\s+|\s+$/g, '');
+    if (picked) return { answer: picked.value, note: free || null };
+    if (free) return { answer: free, note: null };
+    return null;
+  }
+  function fillCard(entry, answer) {
+    var found = false;
+    entry.radios.forEach(function (radio) {
+      radio.checked = !found && radio.value === answer.answer;
+      if (radio.checked) found = true;
+    });
+    var note = blank(answer.note) ? '' : String(answer.note);
+    entry.free.value = found ? note : [answer.answer || '', note].filter(Boolean).join('\n');
+  }
+  function paintAnswers() {
+    var answered = 0;
+    answerCards.forEach(function (entry) {
+      var current = readCard(entry);
+      entry.card.classList.toggle('is-answered', current !== null);
+      if (current) answered += 1;
+    });
+    mount('answeredCount', [document.createTextNode(answered ? '回答済み ' + answered + ' 件' : '')]);
+  }
+  function onCardInput(entry) {
+    writeDraft(entry.id, readCard(entry));
+    paintAnswers();
+  }
+  // 推奨の先頭の文字（"B。..."）が選択肢の記号なら、その選択肢を選ぶ。そうでなければ文を自由記入に入れる
+  function adoptRecommendation(entry) {
+    var text = blank(entry.recommendation) ? '' : String(entry.recommendation).replace(/^\s+/, '');
+    var match = /^([A-Z])(?![A-Za-z])/.exec(text);
+    var index = match ? match[1].charCodeAt(0) - 65 : -1;
+    if (index >= 0 && index < entry.radios.length) {
+      entry.radios[index].checked = true;
+    } else if (text) {
+      entry.radios.forEach(function (radio) { radio.checked = false; });
+      entry.free.value = text;
+    }
+    onCardInput(entry);
+  }
+  function collectAnswers() {
+    var out = {};
+    var now = new Date().toISOString();
+    answerCards.forEach(function (entry) {
+      var current = readCard(entry);
+      if (!current) return;
+      out[entry.id] = { answer: current.answer, note: current.note, answeredAt: now };
+    });
+    return out;
+  }
+  function answersJson() {
+    return JSON.stringify({ target: ANSWER_TARGET, answers: collectAnswers() }, null, 2) + '\n';
+  }
+  function setAnswerStatus(text, isError) {
+    var status = document.getElementById('answer-status');
+    var manual = document.getElementById('answer-manual');
+    if (!status || !manual) return;
+    status.textContent = text;
+    status.classList.toggle('is-error', isError === true);
+    manual.hidden = true;
+  }
+  // 自動で渡せなかったときは JSON をそのまま出して、手で選んでもらう
+  function showManualAnswers(text, message) {
+    setAnswerStatus(message, true);
+    var manual = document.getElementById('answer-manual');
+    if (!manual) return;
+    manual.value = text;
+    manual.hidden = false;
+    manual.focus();
+    manual.select();
+  }
+  function downloadAnswers() {
+    var text = answersJson();
+    try {
+      var url = URL.createObjectURL(new Blob([text], { type: 'application/json' }));
+      var a = el('a');
+      a.setAttribute('href', url);
+      a.setAttribute('download', ANSWER_FILE);
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
+      setAnswerStatus(ANSWER_FILE + ' を保存しました。sh katachi-install.sh answers import <保存したファイル> で取り込めます。');
+    } catch (error) {
+      showManualAnswers(text, 'ダウンロードできませんでした。下の JSON を手で選んでコピーし、AI エージェントに渡してください。');
+    }
+  }
+  function copyAnswers() {
+    var text = answersJson();
+    function done() { setAnswerStatus('回答の JSON をコピーしました。AI エージェントに貼り付けて渡してください。'); }
+    function fallback() {
+      var box = el('textarea');
+      box.value = text;
+      box.setAttribute('readonly', '');
+      box.style.position = 'fixed';
+      box.style.left = '-9999px';
+      document.body.appendChild(box);
+      box.select();
+      var ok = false;
+      try { ok = document.execCommand('copy'); } catch (error) { ok = false; }
+      document.body.removeChild(box);
+      if (ok) done();
+      else showManualAnswers(text, 'コピーできませんでした。下の JSON を手で選んでコピーしてください。');
+    }
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(done, fallback);
+    } else {
+      fallback();
+    }
+  }
+  function clearAnswers() {
+    answerCards.forEach(function (entry) {
+      entry.radios.forEach(function (radio) { radio.checked = false; });
+      entry.free.value = '';
+      writeDraft(entry.id, null);
+    });
+    paintAnswers();
+    setAnswerStatus('回答を消しました（この JSON に取り込み済みの回答は、再読み込みで戻ります）。');
+  }
+  function actionButton(label, handler, primary) {
+    var button = el('button', primary ? 'action-button is-primary' : 'action-button');
+    button.type = 'button';
+    button.textContent = label;
+    button.addEventListener('click', handler);
+    return button;
+  }
+  function renderAnswerActions() {
+    var status = el('p', 'answer-status');
+    status.id = 'answer-status';
+    var manual = el('textarea', 'answer-manual');
+    manual.id = 'answer-manual';
+    manual.setAttribute('readonly', '');
+    manual.setAttribute('aria-label', '回答の JSON');
+    manual.hidden = true;
+    mount('answerActions', [
+      actionButton('すべて推奨を採用', function () { answerCards.forEach(adoptRecommendation); }),
+      actionButton('回答を書き出す（ダウンロード）', downloadAnswers, true),
+      actionButton('回答をコピー', copyAnswers),
+      actionButton('回答を消す', clearAnswers),
+      status,
+      manual
+    ]);
+  }
+
+  function questionCard(item, index, answers) {
+    var id = questionId(item, index);
     var card = el('details', 'qa');
     var summary = el('summary');
     var badge = el('span', 'qa-num');
-    badge.textContent = 'Q' + (index + 1);
+    badge.textContent = id;
     var title = el('span', 'qa-title');
     title.appendChild(value(item.question, 'questions[].question'));
     summary.appendChild(badge);
@@ -1316,22 +1644,76 @@
     var body = el('div', 'qa-body');
     body.appendChild(subHeading('観測したこと'));
     body.appendChild(paragraph(richText(item.observed, 'questions[].observed')));
-    body.appendChild(subHeading('選択肢'));
-    body.appendChild(numbered(item.options, 'questions[].options'));
     var pick = el('div', 'qa-pick');
     pick.appendChild(subHeading('推奨'));
     pick.appendChild(paragraph(value(item.recommendation, 'questions[].recommendation')));
     body.appendChild(pick);
+
+    // 回答欄
+    var imported = answers[id] ? record(answers[id]) : null;
+    var answer = el('div', 'qa-answer');
+    var head = subHeading('回答');
+    if (imported) {
+      var mark = el('span', 'qa-imported');
+      mark.textContent = '取り込み済み';
+      head.appendChild(mark);
+    }
+    answer.appendChild(head);
+    var entry = { id: id, recommendation: item.recommendation, radios: [], free: null, card: card };
+    if (blank(item.options)) {
+      answer.appendChild(paragraph(unfilled('questions[].options')));
+    } else {
+      var ul = el('ul', 'qa-answer-list');
+      item.options.forEach(function (option, i) {
+        var li = el('li');
+        var label = el('label');
+        var radio = el('input');
+        radio.type = 'radio';
+        radio.name = 'answer-' + id;
+        radio.value = String(option);
+        radio.addEventListener('change', function () { onCardInput(entry); });
+        var letter = el('span', 'option-letter');
+        letter.textContent = String.fromCharCode(65 + i);
+        var text = el('span');
+        text.textContent = String(option);
+        label.appendChild(radio);
+        label.appendChild(letter);
+        label.appendChild(text);
+        li.appendChild(label);
+        ul.appendChild(li);
+        entry.radios.push(radio);
+      });
+      answer.appendChild(ul);
+    }
+    var free = el('textarea');
+    free.setAttribute('aria-label', id + ' の自由記入');
+    free.setAttribute('placeholder', '自由記入（選択肢を選んだときは補足になります）');
+    free.addEventListener('input', function () { onCardInput(entry); });
+    entry.free = free;
+    answer.appendChild(free);
+    answer.appendChild(actionButton('推奨を採用', function () { adoptRecommendation(entry); }));
+    body.appendChild(answer);
+
+    // JSON に取り込み済みの回答があればそれを、無ければ下書きを出す。未回答のカードは開いておく
+    var initial = imported || readDraft(id);
+    if (initial) fillCard(entry, initial);
+    card.open = !initial;
+    answerCards.push(entry);
 
     card.appendChild(summary);
     card.appendChild(body);
     return card;
   }
 
-  function renderQuestions(questions) {
+  function renderQuestions(questions, answers) {
+    answerCards = [];
     mount('questionCount', [document.createTextNode(countLabel(questions))]);
     if (!countOf(questions)) { mount('questions', [none()]); return; }
-    mount('questions', entries(questions).map(questionCard));
+    mount('questions', entries(questions).map(function (item, index) {
+      return questionCard(item, index, answers);
+    }));
+    renderAnswerActions();
+    paintAnswers();
   }
 
   function renderError(message) {
@@ -1369,6 +1751,7 @@
     }
     renderMeta(record(data.meta));
     renderSteps(data.steps);
+    renderPreferences(record(data.preferences));
     if (!blank(data.reportHref)) {
       var href = String(data.reportHref);
       document.getElementById('report-link').setAttribute('href', href);
@@ -1377,7 +1760,7 @@
       card.hidden = false;
     }
     renderViolations(data.violations);
-    renderQuestions(data.questions);
+    renderQuestions(data.questions, record(data.answers));
     renderChangedFiles(data.changedFiles);
     foldFinishedSteps();
     paint();
