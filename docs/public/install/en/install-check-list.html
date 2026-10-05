@@ -591,6 +591,99 @@
 
   .qa-pick .qa-head { color: var(--accent); }
   .qa-pick p:last-child { margin: 0; }
+
+  .lede { color: var(--text-muted); font-size: 14px; margin: 6px 0 0; }
+
+  /* Writing preferences (rows that differ from the recommendation) */
+  tr.pref-differs td { background: var(--warn-soft); }
+  .pref-mark { color: var(--warn); font-size: 12px; white-space: nowrap; }
+
+  /* Answer fields */
+  .qa-answer { margin-top: 14px; padding-top: 12px; border-top: 1px dashed var(--border); }
+  .qa-answer .qa-head { display: flex; align-items: baseline; gap: 8px; }
+  .qa-answer-list { margin: 0; padding: 0; list-style: none; }
+  .qa-answer-list li { margin: 2px 0; }
+
+  .qa-answer-list label {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    padding: 4px 6px;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+
+  .qa-answer-list label:hover { background: var(--surface-2); }
+  .qa-answer-list input[type="radio"] { flex: none; margin: 0.35em 0 0; accent-color: var(--accent); }
+  .qa-answer-list .option-letter { flex: none; font-family: var(--font-mono); font-size: 12px; color: var(--text-muted); margin-top: 3px; }
+
+  .qa-answer textarea {
+    display: block;
+    width: 100%;
+    min-height: 3.5em;
+    margin: 8px 0 0;
+    padding: 8px 10px;
+    border: 1px solid var(--border-strong);
+    border-radius: 6px;
+    background: var(--surface);
+    color: var(--text);
+    font-family: inherit;
+    font-size: 14px;
+    line-height: 1.6;
+    resize: vertical;
+  }
+
+  .qa-answer textarea:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+
+  .answered-badge:empty { display: none; }
+  .answered-badge { border-color: var(--ok); color: var(--ok); }
+  .qa.is-answered > summary .qa-num { background: var(--ok); color: var(--bg); }
+  .qa-imported { color: var(--ok); font-size: 12px; font-family: var(--font-mono); }
+
+  .action-button {
+    padding: 4px 12px;
+    border: 1px solid var(--border-strong);
+    border-radius: 6px;
+    background: var(--surface);
+    color: var(--text);
+    font-family: inherit;
+    font-size: 13px;
+    line-height: 1.6;
+    cursor: pointer;
+  }
+
+  .action-button:hover { background: var(--surface-2); border-color: var(--accent); }
+  .action-button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .action-button.is-primary { background: var(--accent); border-color: var(--accent); color: var(--bg); }
+  .qa-answer .action-button { margin-top: 8px; }
+
+  .answer-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 12px 0 0; }
+  .answer-actions:empty { display: none; }
+  .answer-status { flex-basis: 100%; margin: 0; font-size: 13px; color: var(--text-muted); }
+  .answer-status.is-error { color: var(--warn); }
+  .answer-status:empty { display: none; }
+
+  .answer-manual {
+    display: block;
+    width: 100%;
+    min-height: 6em;
+    margin: 8px 0 0;
+    padding: 8px 10px;
+    border: 1px solid var(--border-strong);
+    border-radius: 6px;
+    background: var(--surface-2);
+    color: var(--text);
+    font-family: var(--font-mono);
+    font-size: 12px;
+  }
+
+  /* display: block beats the UA's [hidden] { display: none }, so override it */
+  .answer-manual[hidden] { display: none; }
+
+  @media print {
+    .answer-actions, .qa-answer .action-button { display: none; }
+    .qa-answer textarea { border: 1px solid #000; }
+  }
 </style>
 </head>
 <body>
@@ -609,6 +702,7 @@
 {
   "meta": {
     "workdir": null,
+    "moduleDir": null,
     "version": null,
     "projectRoot": null,
     "ranAt": null,
@@ -650,12 +744,17 @@
           "id": "1-2",
           "label": "Filled in the JSON in `project-code-base-report.html`",
           "done": false
+        },
+        {
+          "id": "1-3",
+          "label": "Asked about writing preferences with sh katachi-install.sh preferences and recorded them",
+          "done": false
         }
       ]
     },
     {
       "id": "2",
-      "title": "Create the `:architecture-test` module and set it up as katachi's standard test module",
+      "title": "Create the test module (default architecture-test/) and set it up as the standard katachi test module",
       "warning": null,
       "items": [
         {
@@ -665,7 +764,7 @@
         },
         {
           "id": "2-2",
-          "label": "Confirmed `./gradlew :architecture-test:test` fails with Unexpected only, on an empty definition",
+          "label": "Confirmed that with an empty definition, the test module's test fails only with Unexpected",
           "done": false
         }
       ]
@@ -682,7 +781,7 @@
         },
         {
           "id": "3-2",
-          "label": "Wrote the `architecture { }` definition and saved the output of `./gradlew :architecture-test:test` as the baseline before refactoring",
+          "label": "Wrote the architecture { } definition and saved the test module's test output as the pre-refactoring baseline",
           "done": false
         },
         {
@@ -699,7 +798,7 @@
       "items": [
         {
           "id": "4-1",
-          "label": "Ran `./gradlew :architecture-test:test`",
+          "label": "Ran the test module's test",
           "done": false
         },
         {
@@ -709,7 +808,7 @@
         },
         {
           "id": "4-3",
-          "label": "Generated the docs with :architecture-test:katachiDocs and checked the output",
+          "label": "Generated docs with the test module's katachiDocs and checked the output",
           "done": false
         }
       ]
@@ -744,7 +843,7 @@
         },
         {
           "id": "6-2",
-          "label": "Wired :architecture-test:test into CI",
+          "label": "Added the test module's test to CI",
           "done": false
         },
         {
@@ -754,14 +853,16 @@
         },
         {
           "id": "6-4",
-          "label": "Wrote a template, generated one file, and confirmed :architecture-test:test passes right after",
+          "label": "Wrote a template and confirmed the test module's test passes right after generating one file",
           "done": false
         }
       ]
     }
   ],
+  "preferences": {},
   "violations": [],
   "questions": [],
+  "answers": {},
   "changedFiles": []
 }
 </script>
@@ -770,6 +871,7 @@
 {
   "meta": {
     "workdir": ".local/install-katachi",
+    "moduleDir": "architecture-test",
     "version": "0.5.0",
     "projectRoot": "/Users/me/dev/example-app",
     "ranAt": "2026-09-24 10:00 JST",
@@ -810,12 +912,17 @@
           "id": "1-2",
           "label": "Filled in the JSON in `project-code-base-report.html`",
           "done": true
+        },
+        {
+          "id": "1-3",
+          "label": "Asked about writing preferences with sh katachi-install.sh preferences and recorded them",
+          "done": true
         }
       ]
     },
     {
       "id": "2",
-      "title": "Create the `:architecture-test` module and set it up as katachi's standard test module",
+      "title": "Create the test module (default architecture-test/) and set it up as the standard katachi test module",
       "warning": null,
       "items": [
         {
@@ -825,7 +932,7 @@
         },
         {
           "id": "2-2",
-          "label": "Confirmed `./gradlew :architecture-test:test` fails with Unexpected only, on an empty definition",
+          "label": "Confirmed that with an empty definition, the test module's test fails only with Unexpected",
           "done": true
         }
       ]
@@ -842,7 +949,7 @@
         },
         {
           "id": "3-2",
-          "label": "Wrote the `architecture { }` definition and saved the output of `./gradlew :architecture-test:test` as the baseline before refactoring",
+          "label": "Wrote the architecture { } definition and saved the test module's test output as the pre-refactoring baseline",
           "done": true
         },
         {
@@ -859,7 +966,7 @@
       "items": [
         {
           "id": "4-1",
-          "label": "Ran `./gradlew :architecture-test:test`",
+          "label": "Ran the test module's test",
           "done": true
         },
         {
@@ -869,7 +976,7 @@
         },
         {
           "id": "4-3",
-          "label": "Generated the docs with :architecture-test:katachiDocs and checked the output",
+          "label": "Generated docs with the test module's katachiDocs and checked the output",
           "done": true
         }
       ]
@@ -904,7 +1011,7 @@
         },
         {
           "id": "6-2",
-          "label": "Wired :architecture-test:test into CI",
+          "label": "Added the test module's test to CI",
           "done": false
         },
         {
@@ -914,12 +1021,19 @@
         },
         {
           "id": "6-4",
-          "label": "Wrote a template, generated one file, and confirmed :architecture-test:test passes right after",
+          "label": "Wrote a template and confirmed the test module's test passes right after generating one file",
           "done": false
         }
       ]
     }
   ],
+  "preferences": {
+    "nestedGroups": "yes",
+    "testFramework": "kotest",
+    "dependencyStyle": "catalog",
+    "constraintNames": "numbered",
+    "oneRolePerFile": "yes"
+  },
   "violations": [
     {
       "violation": "The ui layer references the data layer's DataSource directly",
@@ -930,6 +1044,7 @@
   ],
   "questions": [
     {
+      "id": "q1",
       "question": "Should the legacy package be included in katachi's scope?",
       "observed": "Only the files under app/src/main/kotlin/com/example/app/ui/legacy/ still use the old Fragment + Presenter pattern",
       "options": [
@@ -939,6 +1054,7 @@
       "recommendation": "B. Only one screen is affected, and there's no migration plan decided yet"
     }
   ],
+  "answers": {},
   "changedFiles": [
     {
       "path": "architecture-test/build.gradle.kts",
@@ -992,13 +1108,21 @@
 
   <div class="steps" data-render="steps"></div>
 
+  <section class="block" id="preferences">
+    <h2>Writing preferences</h2>
+    <p class="lede">How the definition is written, as asked in step 1-3. Values that differ from the recommendation are highlighted. The test module location is in the meta information.</p>
+    <div data-render="preferences"></div>
+  </section>
+
   <section class="block" id="violations">
     <h2>Architecture violations left unfixed<span class="count-badge" data-render="violationCount"></span></h2>
     <div data-render="violations"></div>
   </section>
 
   <section class="block" id="questions">
-    <h2>Questions for you<span class="count-badge" data-render="questionCount"></span></h2>
+    <h2>Questions for you<span class="count-badge" data-render="questionCount"></span><span class="count-badge answered-badge" data-render="answeredCount"></span></h2>
+    <p class="lede">For each question, pick an option or write freely. If you do both, the free text becomes a note. When done, save the JSON with "Export answers" and hand it to the AI agent (<code>sh katachi-install.sh answers import &lt;json&gt;</code>).</p>
+    <div class="answer-actions" data-render="answerActions"></div>
     <div data-render="questions"></div>
   </section>
 
@@ -1013,7 +1137,8 @@
   <p><a href="https://tbsten.github.io/katachi/">katachi documentation</a></p>
   <p>
     This checklist follows katachi's install instructions at
-    <a href="https://tbsten.github.io/katachi/install/en/index.md">https://tbsten.github.io/katachi/install/en/index.md</a>.
+    <a href="https://tbsten.github.io/katachi/install/en/index.md">https://tbsten.github.io/katachi/install/en/index.md</a>
+    and mirrors its steps.
   </p>
 </footer>
 
@@ -1063,16 +1188,6 @@
     var p = el('p', 'empty');
     p.textContent = dataOk ? (label || 'None') : 'Unknown';
     return p;
-  }
-  function numbered(values, key) {
-    if (blank(values)) return paragraph(unfilled(key));
-    var ol = el('ol');
-    values.forEach(function (item) {
-      var li = el('li');
-      li.textContent = String(item);
-      ol.appendChild(li);
-    });
-    return ol;
   }
   function defs(cls, pairs) {
     var dl = el('dl', cls);
@@ -1267,6 +1382,7 @@
   function renderMeta(meta) {
     mount('meta', [defs('kv', [
       ['Working directory', value(meta.workdir, 'meta.workdir')],
+      ['Test module location', value(meta.moduleDir, 'meta.moduleDir')],
       ['katachi version', value(meta.version, 'meta.version')],
       ['Kotlin', value(meta.kotlin, 'meta.kotlin')],
       ['JVM toolchain', value(meta.jvmToolchain, 'meta.jvmToolchain')],
@@ -1274,6 +1390,46 @@
       ['Target project root', value(meta.projectRoot, 'meta.projectRoot')],
       ['Ran at', value(meta.ranAt, 'meta.ranAt')]
     ])]);
+  }
+
+  // Writing preferences: key / question / recommendation (null means "detected", so no comparison)
+  var PREFERENCE_KEYS = [
+    ['nestedGroups', 'Nest groups?', 'yes'],
+    ['testFramework', 'Test framework', null],
+    ['dependencyStyle', 'How dependencies are written', null],
+    ['constraintNames', 'Put question numbers in constraint names?', 'plain'],
+    ['oneRolePerFile', 'One Role per file?', 'yes']
+  ];
+  function renderPreferences(preferences) {
+    var known = PREFERENCE_KEYS.map(function (spec) { return spec[0]; });
+    var extra = Object.keys(preferences).filter(function (key) { return known.indexOf(key) < 0; });
+    var specs = PREFERENCE_KEYS.concat(extra.map(function (key) { return [key, '', null]; }));
+    var differs = [];
+    var rows = specs.map(function (spec, index) {
+      var key = spec[0];
+      var raw = preferences[key];
+      var recorded = !blank(raw);
+      var valueCell = el('span');
+      if (recorded) {
+        valueCell.textContent = String(raw);
+      } else {
+        var muted = el('span', 'empty');
+        muted.textContent = spec[2] === null ? 'Not recorded (detected value is used)' : 'Not recorded (recommendation is used)';
+        valueCell.appendChild(muted);
+      }
+      var recommended = document.createTextNode(spec[2] === null ? 'detected' : spec[2]);
+      if (recorded && spec[2] !== null && String(raw) !== spec[2]) {
+        differs.push(index);
+        var mark = el('span', 'pref-mark');
+        mark.textContent = ' differs from the recommendation';
+        valueCell.appendChild(mark);
+      }
+      return [document.createTextNode(key), document.createTextNode(spec[1]), valueCell, recommended];
+    });
+    var table = tableOf(['key', 'Question', 'Value', 'Recommended'], rows);
+    var trs = table.querySelectorAll('tbody tr');
+    differs.forEach(function (index) { trs[index].classList.add('pref-differs'); });
+    mount('preferences', [table]);
   }
 
   function renderViolations(violations) {
@@ -1303,11 +1459,184 @@
     mount('changedFiles', [tableOf(['Path', 'Added / Changed', 'Summary'], rows)]);
   }
 
-  function questionCard(item, index) {
+  // ---- Answer fields (the report has the same functions; JS cannot be shared) ----
+  var ANSWER_TARGET = 'check-list';
+  var ANSWER_FILE = 'katachi-answers-check-list.json';
+  // { id, recommendation, radios, free, card }
+  var answerCards = [];
+
+  function questionId(item, index) {
+    return blank(item.id) ? 'q' + (index + 1) : String(item.id);
+  }
+  // Drafts while typing. Rendering must not break when localStorage is unavailable
+  function draftKey(id) { return location.href.split('#')[0] + '#answer:' + id; }
+  function readDraft(id) {
+    try {
+      var raw = localStorage.getItem(draftKey(id));
+      return raw ? record(JSON.parse(raw)) : null;
+    } catch (error) {
+      return null;
+    }
+  }
+  function writeDraft(id, draft) {
+    try {
+      if (draft) localStorage.setItem(draftKey(id), JSON.stringify(draft));
+      else localStorage.removeItem(draftKey(id));
+    } catch (error) { /* keep going even if it cannot be saved */ }
+  }
+  // State of the answer fields. With an option picked the free text is the note; otherwise it is the answer
+  function readCard(entry) {
+    var picked = entry.radios.filter(function (radio) { return radio.checked; })[0];
+    var free = entry.free.value.replace(/^\s+|\s+$/g, '');
+    if (picked) return { answer: picked.value, note: free || null };
+    if (free) return { answer: free, note: null };
+    return null;
+  }
+  function fillCard(entry, answer) {
+    var found = false;
+    entry.radios.forEach(function (radio) {
+      radio.checked = !found && radio.value === answer.answer;
+      if (radio.checked) found = true;
+    });
+    var note = blank(answer.note) ? '' : String(answer.note);
+    entry.free.value = found ? note : [answer.answer || '', note].filter(Boolean).join('\n');
+  }
+  function paintAnswers() {
+    var answered = 0;
+    answerCards.forEach(function (entry) {
+      var current = readCard(entry);
+      entry.card.classList.toggle('is-answered', current !== null);
+      if (current) answered += 1;
+    });
+    mount('answeredCount', [document.createTextNode(answered ? answered + ' answered' : '')]);
+  }
+  function onCardInput(entry) {
+    writeDraft(entry.id, readCard(entry));
+    paintAnswers();
+  }
+  // If the recommendation starts with an option letter ("B. ..."), pick that option; otherwise put the text in the free field
+  function adoptRecommendation(entry) {
+    var text = blank(entry.recommendation) ? '' : String(entry.recommendation).replace(/^\s+/, '');
+    var match = /^([A-Z])(?![A-Za-z])/.exec(text);
+    var index = match ? match[1].charCodeAt(0) - 65 : -1;
+    if (index >= 0 && index < entry.radios.length) {
+      entry.radios[index].checked = true;
+    } else if (text) {
+      entry.radios.forEach(function (radio) { radio.checked = false; });
+      entry.free.value = text;
+    }
+    onCardInput(entry);
+  }
+  function collectAnswers() {
+    var out = {};
+    var now = new Date().toISOString();
+    answerCards.forEach(function (entry) {
+      var current = readCard(entry);
+      if (!current) return;
+      out[entry.id] = { answer: current.answer, note: current.note, answeredAt: now };
+    });
+    return out;
+  }
+  function answersJson() {
+    return JSON.stringify({ target: ANSWER_TARGET, answers: collectAnswers() }, null, 2) + '\n';
+  }
+  function setAnswerStatus(text, isError) {
+    var status = document.getElementById('answer-status');
+    var manual = document.getElementById('answer-manual');
+    if (!status || !manual) return;
+    status.textContent = text;
+    status.classList.toggle('is-error', isError === true);
+    manual.hidden = true;
+  }
+  // When it cannot be handed over automatically, show the JSON as is to be selected by hand
+  function showManualAnswers(text, message) {
+    setAnswerStatus(message, true);
+    var manual = document.getElementById('answer-manual');
+    if (!manual) return;
+    manual.value = text;
+    manual.hidden = false;
+    manual.focus();
+    manual.select();
+  }
+  function downloadAnswers() {
+    var text = answersJson();
+    try {
+      var url = URL.createObjectURL(new Blob([text], { type: 'application/json' }));
+      var a = el('a');
+      a.setAttribute('href', url);
+      a.setAttribute('download', ANSWER_FILE);
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
+      setAnswerStatus('Saved ' + ANSWER_FILE + '. Import it with sh katachi-install.sh answers import <saved file>.');
+    } catch (error) {
+      showManualAnswers(text, 'Could not download. Select and copy the JSON below by hand and hand it to the AI agent.');
+    }
+  }
+  function copyAnswers() {
+    var text = answersJson();
+    function done() { setAnswerStatus('Copied the answers JSON. Paste it to the AI agent.'); }
+    function fallback() {
+      var box = el('textarea');
+      box.value = text;
+      box.setAttribute('readonly', '');
+      box.style.position = 'fixed';
+      box.style.left = '-9999px';
+      document.body.appendChild(box);
+      box.select();
+      var ok = false;
+      try { ok = document.execCommand('copy'); } catch (error) { ok = false; }
+      document.body.removeChild(box);
+      if (ok) done();
+      else showManualAnswers(text, 'Could not copy. Select and copy the JSON below by hand.');
+    }
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(done, fallback);
+    } else {
+      fallback();
+    }
+  }
+  function clearAnswers() {
+    answerCards.forEach(function (entry) {
+      entry.radios.forEach(function (radio) { radio.checked = false; });
+      entry.free.value = '';
+      writeDraft(entry.id, null);
+    });
+    paintAnswers();
+    setAnswerStatus('Cleared the answers (answers already imported into this JSON come back on reload).');
+  }
+  function actionButton(label, handler, primary) {
+    var button = el('button', primary ? 'action-button is-primary' : 'action-button');
+    button.type = 'button';
+    button.textContent = label;
+    button.addEventListener('click', handler);
+    return button;
+  }
+  function renderAnswerActions() {
+    var status = el('p', 'answer-status');
+    status.id = 'answer-status';
+    var manual = el('textarea', 'answer-manual');
+    manual.id = 'answer-manual';
+    manual.setAttribute('readonly', '');
+    manual.setAttribute('aria-label', 'Answers JSON');
+    manual.hidden = true;
+    mount('answerActions', [
+      actionButton('Adopt all recommendations', function () { answerCards.forEach(adoptRecommendation); }),
+      actionButton('Export answers (download)', downloadAnswers, true),
+      actionButton('Copy answers', copyAnswers),
+      actionButton('Clear answers', clearAnswers),
+      status,
+      manual
+    ]);
+  }
+
+  function questionCard(item, index, answers) {
+    var id = questionId(item, index);
     var card = el('details', 'qa');
     var summary = el('summary');
     var badge = el('span', 'qa-num');
-    badge.textContent = 'Q' + (index + 1);
+    badge.textContent = id;
     var title = el('span', 'qa-title');
     title.appendChild(value(item.question, 'questions[].question'));
     summary.appendChild(badge);
@@ -1316,22 +1645,76 @@
     var body = el('div', 'qa-body');
     body.appendChild(subHeading('What was observed'));
     body.appendChild(paragraph(richText(item.observed, 'questions[].observed')));
-    body.appendChild(subHeading('Options'));
-    body.appendChild(numbered(item.options, 'questions[].options'));
     var pick = el('div', 'qa-pick');
     pick.appendChild(subHeading('Recommendation'));
     pick.appendChild(paragraph(value(item.recommendation, 'questions[].recommendation')));
     body.appendChild(pick);
+
+    // Answer fields
+    var imported = answers[id] ? record(answers[id]) : null;
+    var answer = el('div', 'qa-answer');
+    var head = subHeading('Answer');
+    if (imported) {
+      var mark = el('span', 'qa-imported');
+      mark.textContent = 'imported';
+      head.appendChild(mark);
+    }
+    answer.appendChild(head);
+    var entry = { id: id, recommendation: item.recommendation, radios: [], free: null, card: card };
+    if (blank(item.options)) {
+      answer.appendChild(paragraph(unfilled('questions[].options')));
+    } else {
+      var ul = el('ul', 'qa-answer-list');
+      item.options.forEach(function (option, i) {
+        var li = el('li');
+        var label = el('label');
+        var radio = el('input');
+        radio.type = 'radio';
+        radio.name = 'answer-' + id;
+        radio.value = String(option);
+        radio.addEventListener('change', function () { onCardInput(entry); });
+        var letter = el('span', 'option-letter');
+        letter.textContent = String.fromCharCode(65 + i);
+        var text = el('span');
+        text.textContent = String(option);
+        label.appendChild(radio);
+        label.appendChild(letter);
+        label.appendChild(text);
+        li.appendChild(label);
+        ul.appendChild(li);
+        entry.radios.push(radio);
+      });
+      answer.appendChild(ul);
+    }
+    var free = el('textarea');
+    free.setAttribute('aria-label', 'Free text for ' + id);
+    free.setAttribute('placeholder', 'Free text (becomes a note when an option is picked)');
+    free.addEventListener('input', function () { onCardInput(entry); });
+    entry.free = free;
+    answer.appendChild(free);
+    answer.appendChild(actionButton('Adopt recommendation', function () { adoptRecommendation(entry); }));
+    body.appendChild(answer);
+
+    // Show the answer imported into the JSON if any, otherwise the draft. Unanswered cards stay open
+    var initial = imported || readDraft(id);
+    if (initial) fillCard(entry, initial);
+    card.open = !initial;
+    answerCards.push(entry);
 
     card.appendChild(summary);
     card.appendChild(body);
     return card;
   }
 
-  function renderQuestions(questions) {
+  function renderQuestions(questions, answers) {
+    answerCards = [];
     mount('questionCount', [document.createTextNode(countLabel(questions))]);
     if (!countOf(questions)) { mount('questions', [none()]); return; }
-    mount('questions', entries(questions).map(questionCard));
+    mount('questions', entries(questions).map(function (item, index) {
+      return questionCard(item, index, answers);
+    }));
+    renderAnswerActions();
+    paintAnswers();
   }
 
   function renderError(message) {
@@ -1369,6 +1752,7 @@
     }
     renderMeta(record(data.meta));
     renderSteps(data.steps);
+    renderPreferences(record(data.preferences));
     if (!blank(data.reportHref)) {
       var href = String(data.reportHref);
       document.getElementById('report-link').setAttribute('href', href);
@@ -1377,7 +1761,7 @@
       card.hidden = false;
     }
     renderViolations(data.violations);
-    renderQuestions(data.questions);
+    renderQuestions(data.questions, record(data.answers));
     renderChangedFiles(data.changedFiles);
     foldFinishedSteps();
     paint();
