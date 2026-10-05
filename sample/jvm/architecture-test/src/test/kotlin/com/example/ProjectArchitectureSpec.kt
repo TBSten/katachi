@@ -103,6 +103,7 @@ class ProjectArchitectureSpec : FreeSpec({
             "Gradle.DaemonJvmProperties",
             "tool.Documentation",
             "tool.Git",
+            "tool.IdeCodeStyle",
         )
     }
 
