@@ -94,14 +94,19 @@ internal fun roleModel(
     constraints = constraints,
 )
 
-internal fun definitionModel(vararg roles: RoleModel, files: String = ArchitectureModel.FILES_GIT_TRACKED): DefinitionModel = DefinitionModel(
-    projectRoot = DEFINITION_ROOT,
+internal fun definitionModel(
+    vararg roles: RoleModel,
+    files: String = ArchitectureModel.FILES_GIT_TRACKED,
+    projectRoot: Path = DEFINITION_ROOT,
+    generatedAt: Instant = DEFINITION_INSTANT,
+): DefinitionModel = DefinitionModel(
+    projectRoot = projectRoot,
     architecture = ArchitectureModel(declaredAt = null, files = files, baseline = null),
     groups = emptyList(),
     roles = roles.toList(),
     problems = emptyList(),
     katachiVersion = "0.3.0",
-    generatedAt = DEFINITION_INSTANT,
+    generatedAt = generatedAt,
 )
 
 internal fun definitionSnapshot(

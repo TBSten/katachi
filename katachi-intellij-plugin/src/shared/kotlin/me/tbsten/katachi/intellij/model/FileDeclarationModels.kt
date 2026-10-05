@@ -71,7 +71,9 @@ internal sealed interface DeclarationVerdict : JsonNamed {
     val isAllowed: Boolean get() = this == Allowed || this == AllowedByAnythingElse
 
     companion object {
-        val known: List<DeclarationVerdict> = listOf(Allowed, AllowedByAnythingElse, Prohibited, Mismatched, Unexpected)
+        // Lazy: isAllowed is a default method, so touching Allowed first initializes this interface (and an eager list
+        // here) while Allowed is still being created, and the list would hold null.
+        val known: List<DeclarationVerdict> by lazy { listOf(Allowed, AllowedByAnythingElse, Prohibited, Mismatched, Unexpected) }
         fun of(name: String): DeclarationVerdict = known.firstOrNull { it.jsonName == name } ?: Unknown(name)
     }
 }

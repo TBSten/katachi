@@ -57,6 +57,8 @@
         <editorNotificationProvider implementation="me.tbsten.katachi.intellij.ide.notification.KatachiEditorNotificationProvider"/>
         <!-- The content of .ktFile().template { } / .ktsFile().template { } highlighted as Kotlin / Kotlin script. -->
         <multiHostInjector implementation="me.tbsten.katachi.intellij.ide.injection.KatachiTemplateInjector"/>
+        <!-- The ◆ of the source files a role holds (ide-gutter design 2.1), listed in Settings | Editor | General | Gutter Icons. -->
+        <codeInsight.lineMarkerProvider language="kotlin" implementationClass="me.tbsten.katachi.intellij.ide.gutter.KatachiDeclarationLineMarkerProvider"/>
     </extensions>
 
     <actions>

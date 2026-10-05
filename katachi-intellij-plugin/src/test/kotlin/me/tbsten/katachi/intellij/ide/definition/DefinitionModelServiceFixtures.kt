@@ -67,6 +67,11 @@ internal class FakeDefinitionModelService(initial: DefinitionState = DefinitionS
     /** The paths [forFile] / [forPath] / [fileDeclarationsOf] were asked about, in order. */
     val asked: List<String> get() = mutableAsked.toList()
 
+    private val mutableResolved = CopyOnWriteArrayList<DeclarationSiteRef>()
+
+    /** The sites [resolve] was asked about, in order. */
+    val resolved: List<DeclarationSiteRef> get() = mutableResolved.toList()
+
     // --- the state ---
 
     /** Sets the state. Setting the state it is already in changes nothing (and is not in [history]), as a `StateFlow` would. */
@@ -143,8 +148,10 @@ internal class FakeDefinitionModelService(initial: DefinitionState = DefinitionS
 
     override val definitions: List<DefinitionSnapshot> get() = state.value.answer?.definitions.orEmpty()
 
-    override fun resolve(module: ModuleId, site: DeclarationSiteRef): ResolvedSite =
-        sites[site] ?: ResolvedSite.Unresolved("not scripted in the fake: $site")
+    override fun resolve(module: ModuleId, site: DeclarationSiteRef): ResolvedSite {
+        mutableResolved += site
+        return sites[site] ?: ResolvedSite.Unresolved("not scripted in the fake: $site")
+    }
 
     override fun fileDeclarationsOf(file: VirtualFile): List<RoleFileDeclarations> {
         mutableAsked += file.path

@@ -29,6 +29,8 @@ fun DeclarationContainerScope.idePluginSource() = "IdePluginSource".role {
             "main" / "resources" / "META-INF" / "pluginIcon.svg".file()
             "main" / "resources" / "META-INF" / "pluginIcon_dark.svg".file()
             "main" / "resources" / "icons" / "*.svg".file()
+            // The 12×12 icons of the source files' gutter (ide-gutter), apart from the tool window's 13×13 ones.
+            "main" / "resources" / "icons" / "gutter" / "*.svg".file()
             "main" / "resources" / "messages" / "KatachiBundle.properties".file()
             "main" / "resources" / "messages" / "KatachiBundle_*.properties".file()
             "shared" / "kotlin" / "me/tbsten/katachi/intellij" / "**" / "*".ktFile()

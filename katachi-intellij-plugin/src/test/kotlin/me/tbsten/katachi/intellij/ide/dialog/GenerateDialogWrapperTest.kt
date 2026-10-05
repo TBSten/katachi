@@ -6,6 +6,7 @@ import me.tbsten.katachi.intellij.AnalysisTestBase
 import me.tbsten.katachi.intellij.data.generate.TargetState
 import me.tbsten.katachi.intellij.ide.KatachiBundle
 import me.tbsten.katachi.intellij.presentation.dialog.GenerateDialogIntent
+import me.tbsten.katachi.intellij.presentation.entry.EntryOrigin
 import me.tbsten.katachi.intellij.testing.underRoot
 
 /**
@@ -136,6 +137,27 @@ internal class GenerateDialogWrapperTest : AnalysisTestBase() {
             assertNull(dialog.result)
             assertFalse(dialog.isDisposed)
             assertFalse("not closed with OK", dialog.exitCode == DialogWrapper.OK_EXIT_CODE)
+        }
+    }
+
+    // covers: 論点0
+    fun `test 同じ Role のファイルから開いたときは 名前を空にして feature だけ引き継ぎ 入力すると同じ階層に生成する`() {
+        val sibling = DialogWorld(origin = EntryOrigin.SiblingOf(underRoot("feature/home/ui/HomeScreen.kt")), seeds = mapOf("feature" to "home"))
+        val dialog = sibling.dialog(project)
+        try {
+            val fields = dialog.viewModel.state.value.fields
+            assertEquals(mapOf("feature" to "home"), fields.filter { it.seeded }.associate { it.name to it.value })
+            assertTrue("the name is empty", fields.first { it.name == "name" }.value.isNullOrEmpty())
+            assertFalse("the name is still open", dialog.isOKActionEnabled)
+
+            dialog.type("name", "Profile")
+            dialog.type("title", "Profile")
+            dialog.pressGenerate()
+
+            assertEquals(underRoot("feature/home/ui/ProfileScreen.kt"), dialog.result?.target)
+            assertEquals(EntryOrigin.SiblingOf(underRoot("feature/home/ui/HomeScreen.kt")), dialog.result?.origin)
+        } finally {
+            Disposer.dispose(dialog.disposable)
         }
     }
 }
