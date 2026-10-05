@@ -1,5 +1,8 @@
 package me.tbsten.katachi.dsl
 
+import me.tbsten.katachi.dsl.internal.CaptureTransform
+import me.tbsten.katachi.dsl.internal.asTransformedCaptureToken
+
 /**
  * The words [this] name is made of, lower case and in order.
  *
@@ -15,6 +18,12 @@ package me.tbsten.katachi.dsl
  *
  * A digit is not a boundary because a module called `2fa` is one word, not a number followed
  * by a name, and splitting it would turn `2fa` into `2Fa`.
+ *
+ * Applied to a `capture("x")` of a `layout { }` -- `"${capture("x").pascalCase}Screen".ktFile()` --
+ * each conversion below makes a *derived* capture instead of converting characters: the check
+ * then holds that level to the conversion of what `x` reads elsewhere on the same path, and a
+ * template fills it from the one `--arg x=` value. Only these six do that; a `String` function
+ * from the standard library such as `lowercase()` rewrites the token itself and names nothing.
  *
  * ## Example 1: split a name into words
  * ```kt
@@ -75,7 +84,7 @@ public val String.nameWords: List<String>
  * ```
  */
 public val String.pascalCase: String
-    get() = nameWords.joinToString("") { it.capitalized() }
+    get() = asTransformedCaptureToken(CaptureTransform.PascalCase) ?: nameWords.joinToString("") { it.capitalized() }
 
 /**
  * `debug-menu` as `debugMenu`. The same words as [pascalCase], with the first one left alone.
@@ -87,7 +96,8 @@ public val String.pascalCase: String
  * ```
  */
 public val String.camelCase: String
-    get() = nameWords.mapIndexed { index, word -> if (index == 0) word else word.capitalized() }.joinToString("")
+    get() = asTransformedCaptureToken(CaptureTransform.CamelCase)
+        ?: nameWords.mapIndexed { index, word -> if (index == 0) word else word.capitalized() }.joinToString("")
 
 /**
  * `debugMenu` as `debug-menu`.
@@ -98,7 +108,7 @@ public val String.camelCase: String
  * ```
  */
 public val String.kebabCase: String
-    get() = nameWords.joinToString("-")
+    get() = asTransformedCaptureToken(CaptureTransform.KebabCase) ?: nameWords.joinToString("-")
 
 /**
  * `debugMenu` as `debug_menu`.
@@ -109,7 +119,7 @@ public val String.kebabCase: String
  * ```
  */
 public val String.snakeCase: String
-    get() = nameWords.joinToString("_")
+    get() = asTransformedCaptureToken(CaptureTransform.SnakeCase) ?: nameWords.joinToString("_")
 
 /**
  * `debugMenu` as `DEBUG_MENU`.
@@ -120,7 +130,7 @@ public val String.snakeCase: String
  * ```
  */
 public val String.screamingSnakeCase: String
-    get() = nameWords.joinToString("_") { it.uppercase() }
+    get() = asTransformedCaptureToken(CaptureTransform.ScreamingSnakeCase) ?: nameWords.joinToString("_") { it.uppercase() }
 
 /**
  * `debug-menu` as `debugmenu` — the words run together with nothing between them.
@@ -134,6 +144,6 @@ public val String.screamingSnakeCase: String
  * ```
  */
 public val String.flatCase: String
-    get() = nameWords.joinToString("")
+    get() = asTransformedCaptureToken(CaptureTransform.FlatCase) ?: nameWords.joinToString("")
 
 private fun String.capitalized(): String = replaceFirstChar { it.uppercaseChar() }

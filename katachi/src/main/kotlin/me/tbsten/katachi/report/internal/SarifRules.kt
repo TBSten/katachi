@@ -1,6 +1,7 @@
 package me.tbsten.katachi.report.internal
 
 import me.tbsten.katachi.check.AmbiguousLayout
+import me.tbsten.katachi.check.CaptureMismatch
 import me.tbsten.katachi.check.MissingDescription
 import me.tbsten.katachi.check.MissingFile
 import me.tbsten.katachi.check.Severity
@@ -29,13 +30,14 @@ internal fun sarifLevelOf(severity: Severity): String = when (severity) {
 }
 
 /**
- * Whether katachi itself wrote [violation]'s type -- the eleven that have a block of their own
+ * Whether katachi itself wrote [violation]'s type -- the twelve that have a block of their own
  * in `ViolationReport.kt`. Anything else came from a check outside katachi, and its rule keeps
  * the label the check gave it.
  */
 internal fun isKatachiViolation(violation: Violation): Boolean = when (violation) {
     is UnexpectedFile,
     is UnexpectedDirectory,
+    is CaptureMismatch,
     is MissingFile,
     is UncheckedFile,
     is UncheckedDirectory,
@@ -58,6 +60,7 @@ internal fun sarifRuleIdOf(violation: Violation): String =
 private val KATACHI_RULE_DESCRIPTIONS: Map<String, String> = mapOf(
     "UnexpectedFile" to "A file exists that no role's layout allows.",
     "UnexpectedDirectory" to "A directory exists that no role's layout mentions. Nothing below it was checked.",
+    "CaptureMismatch" to "A file matches a layout pattern, but the levels one capture names do not hold the same value.",
     "MissingFile" to "A file a role declared without a wildcard does not exist.",
     "UnsatisfiedFileConstraint" to "A file constraint (fileConstraint { } or konsist { }) rejected a file.",
     "UncheckedFileConstraint" to "A file constraint was not evaluated or failed, so the run is a partial result.",

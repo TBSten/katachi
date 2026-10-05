@@ -43,7 +43,9 @@
           "kind": "PathCapture",
           "pattern": "src/main/kotlin/a/b/*",
           "position": 5,
-          "segment": "${name}"
+          "segment": "${name}",
+          "wildcardIndex": 0,
+          "transform": null
         }
       ],
       "conflict": true
@@ -81,14 +83,18 @@
           "kind": "ModuleCapture",
           "pattern": ":feature:*",
           "position": 0,
-          "segment": ":feature:${feature}"
+          "segment": ":feature:${feature}",
+          "wildcardIndex": 0,
+          "transform": null
         },
         {
           "name": "name",
           "kind": "PathCapture",
           "pattern": "feature/*/src/main/kotlin/*Screen.kt",
           "position": 5,
-          "segment": "${name}Screen.kt"
+          "segment": "${name}Screen.kt",
+          "wildcardIndex": 0,
+          "transform": null
         }
       ],
       "conflict": false
@@ -448,14 +454,18 @@
           "kind": "ModuleCapture",
           "pattern": ":feature:*",
           "position": 0,
-          "segment": ":feature:${feature}"
+          "segment": ":feature:${feature}",
+          "wildcardIndex": 0,
+          "transform": null
         },
         {
           "name": "name",
           "kind": "PathCapture",
           "pattern": "feature/*/src/main/kotlin/*Screen.kt",
           "position": 5,
-          "segment": "${name}Screen.kt"
+          "segment": "${name}Screen.kt",
+          "wildcardIndex": 0,
+          "transform": null
         }
       ]
     }

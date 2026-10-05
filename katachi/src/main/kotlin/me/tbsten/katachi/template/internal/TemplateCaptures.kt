@@ -10,6 +10,8 @@ import me.tbsten.katachi.dsl.internal.LayoutCaptures
 import me.tbsten.katachi.dsl.internal.ModulePattern
 import me.tbsten.katachi.dsl.internal.PathCapture
 import me.tbsten.katachi.dsl.internal.TemplateParameterOrigin
+import me.tbsten.katachi.dsl.internal.fillCapturedSegments
+import me.tbsten.katachi.dsl.internal.placeholder
 import me.tbsten.katachi.template.KatachiInvalidTemplateCaptureValueException
 import me.tbsten.katachi.template.TemplateCaptureKind
 import me.tbsten.katachi.template.TemplateCapturePreview
@@ -140,8 +142,23 @@ internal fun requireValidFilledSegments(
     values: Map<String, String>,
 ) {
     if (variant.pathCaptures.isEmpty()) return
-    val segments = fillCapturedSegments(entry.path, variant.pathCaptures, values)
     val sites = captureSitesOf(listOf(entry))
+    // A derived occurrence's value is the conversion, which was never checked on its own: `--`
+    // converts to nothing at all under flatCase, and a `.kt` segment would then pass below.
+    for (capture in variant.pathCaptures) {
+        if (capture.transform == null) continue
+        val converted = filledValueOf(capture, values) ?: continue
+        val problem = captureValueProblemOf(converted) ?: continue
+        throw KatachiInvalidTemplateCaptureValueException(
+            role = role.qualifiedName,
+            name = capture.name,
+            value = converted,
+            problem = problem,
+            captureDeclaredAt = sites.getValue(capture.name),
+            isModuleCapture = false,
+        )
+    }
+    val segments = fillCapturedSegments(entry.path, variant.pathCaptures) { filledValueOf(it, values) }
     for ((segmentIndex, captures) in variant.pathCaptures.groupBy { it.segmentIndex }) {
         val segment = segments.getOrNull(segmentIndex) ?: continue
         val problem = filledSegmentProblemOf(segment) ?: continue
@@ -149,7 +166,7 @@ internal fun requireValidFilledSegments(
         throw KatachiInvalidTemplateCaptureValueException(
             role = role.qualifiedName,
             name = capture.name,
-            value = values.getValue(capture.name),
+            value = filledValueOf(capture, values) ?: values.getValue(capture.name),
             problem = problem,
             segment = segment,
             captureDeclaredAt = sites.getValue(capture.name),
@@ -227,57 +244,14 @@ internal fun isUncreatableInName(character: Char): Boolean =
         }
 
 /**
- * [path] with each of [captures] replaced by its value in [values]; the caller made sure every
- * value is there. One whole segment is one capture's value when it is the only one on that level
- * ([LayoutEntry.path] already reads `*` there); more than one capture on the same level (a
- * partial match, `*Screen.kt`, or two on one level, `*-*`) fills its `*`s left to right instead --
- * safe because [KatachiInvalidTemplateCaptureValueException.Problem.UncreatableCharacter] already
- * refuses a value holding `*`, so a value can never be mistaken for the pattern's own wildcard.
+ * What [capture] reads as in a generated path, out of a run's [values]: the value of its name,
+ * converted for a derived occurrence. `null` when the run gave the name no value.
  */
-internal fun fillCapturedSegments(path: String, captures: List<PathCapture>, values: Map<String, String>): List<String> {
-    if (captures.isEmpty()) return path.split('/')
-    val segments = path.split('/').toMutableList()
-    for ((segmentIndex, onSegment) in captures.groupBy { it.segmentIndex }) {
-        if (segmentIndex !in segments.indices) continue
-        var text = segments[segmentIndex]
-        for (capture in onSegment) {
-            val value = values[capture.name] ?: continue
-            text = text.replaceFirst("*", value)
-        }
-        segments[segmentIndex] = text
-    }
-    return segments
-}
+internal fun filledValueOf(capture: PathCapture, values: Map<String, String>): String? =
+    values[capture.name]?.let { value -> capture.transform?.apply?.invoke(value) ?: value }
 
-/** [fillCapturedSegments] joined back into a path. */
-internal fun fillCaptures(path: String, captures: List<PathCapture>, values: Map<String, String>): String =
-    fillCapturedSegments(path, captures, values).joinToString("/")
-
-/**
- * [path] with every capture of [variant] that [values] gives a value filled in: its
- * `capture("...")` levels, and the module key's `*`s when [path] still starts with the key itself.
- *
- * The second only happens to an entry flattened without the modules -- the declarations alone, as
- * a preview or a message reads them. There the key is kept as its conventional directory -- a
- * `feature` directory with a `*` level below it, for `":feature:*"` -- and filling it in the same
- * way gives the directory the value would pick. An entry flattened against a module the values
- * picked already starts with that module's directory and is left as it is.
- */
-internal fun fillCapturedPath(path: String, variant: LayoutCaptures, values: Map<String, String>): String {
-    val filled = fillCaptures(path, variant.pathCaptures, values)
-    val module = variant.moduleCapture ?: return filled
-    val moduleValues = module.names.map { values[it] ?: return filled }
-    val prefix = conventionalDirectoryOf(module.modulePattern)
-    if (filled != prefix && !filled.startsWith("$prefix/")) return filled
-    // Re-compiling an already-substituted pattern (`*`, not a capture token): nothing here can
-    // raise KatachiAdjacentCaptureException, so which declaration site is blamed does not matter.
-    val pattern = ModulePattern.compile(module.modulePattern, DeclarationSite.Unknown)
-    return conventionalDirectoryOf(pattern.filledIn(moduleValues)) + filled.removePrefix(prefix)
-}
-
-/** [modulePattern] as [ModulePattern.conventionalDirectory] spells it, without compiling it again. */
-private fun conventionalDirectoryOf(modulePattern: String): String =
-    modulePattern.removePrefix(":").replace(':', '/')
+/** [PathCapture.placeholder], as a function reference for the fill calls here. */
+internal fun placeholderOf(capture: PathCapture): String = capture.placeholder()
 
 /**
  * The captures of one template as `DescribeTemplates` lists them: one per module wildcard and one
@@ -286,9 +260,10 @@ private fun conventionalDirectoryOf(modulePattern: String): String =
  */
 internal fun capturePreviewsOf(entries: List<LayoutEntry>): List<TemplateCapturePreview> {
     // Keyed by what a preview says rather than by the preview: the public class declares no `equals`.
-    val previews = LinkedHashMap<List<Any>, TemplateCapturePreview>()
+    val previews = LinkedHashMap<List<Any?>, TemplateCapturePreview>()
     fun add(preview: TemplateCapturePreview) {
-        previews.putIfAbsent(listOf(preview.name, preview.kind, preview.pattern, preview.position), preview)
+        val key = listOf(preview.name, preview.kind, preview.pattern, preview.position, preview.wildcardIndex, preview.transform)
+        previews.putIfAbsent(key, preview)
     }
     for (entry in entries) {
         if (entry.kind != LayoutEntryKind.File || entry.synthetic) continue
@@ -308,6 +283,8 @@ internal fun capturePreviewsOf(entries: List<LayoutEntry>): List<TemplateCapture
                         pattern = entry.path,
                         position = capture.segmentIndex,
                         segment = segmentPatternOf(entry, variant, capture.segmentIndex),
+                        wildcardIndex = capture.wildcardIndex,
+                        transform = capture.transform?.spelling,
                     ),
                 )
             }
@@ -317,14 +294,13 @@ internal fun capturePreviewsOf(entries: List<LayoutEntry>): List<TemplateCapture
 }
 
 /**
- * The pattern of one segment of [entry]'s path, capture(s) shown as `${name}`: `${fileName}Screen.kt`
- * for the file-name level of a partial match, or a whole `${name}` for a level one capture fills
- * entirely.
+ * The pattern of one segment of [entry]'s path, every capture shown as its placeholder:
+ * `${fileName}Screen.kt` for the file-name level of a partial match, a whole `${name}` for a
+ * level one capture fills entirely, `<feature.pascalCase>Screen.kt` for a derived one.
  */
 private fun segmentPatternOf(entry: LayoutEntry, variant: LayoutCaptures, segmentIndex: Int): String {
     val onSegment = variant.pathCaptures.filter { it.segmentIndex == segmentIndex }
-    val placeholders = onSegment.associate { it.name to placeholderOf(it.name) }
-    return fillCapturedSegments(entry.path, onSegment, placeholders).getOrNull(segmentIndex)
+    return fillCapturedSegments(entry.path, onSegment) { placeholderOf(it) }.getOrNull(segmentIndex)
         ?: entry.path.split('/').getOrNull(segmentIndex).orEmpty()
 }
 

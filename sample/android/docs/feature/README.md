@@ -27,11 +27,12 @@ require re-reading the others.
 
 Screen parts and tests multiply inside one feature. Both start their file names with
 the module name (`HomeUserCard.kt`, `HomeViewModelTest.kt`) and can be generated from
-templates. A screen part is placed by two directory captures (`feature` for the module,
-`featurePackage` for its package), so `--arg feature=home --arg featurePackage=home`
-picks the module to generate into and adding a feature does not touch this definition.
-Only tests name each module one by one, because the template content differs per
-screen; when adding a feature, add one line to `FeatureModule` too.
+templates. A screen part is placed by one directory capture, `feature`, written on both
+the module directory and its package directory, so `--arg feature=home` picks the module
+to generate into, the check holds the two directories to the same name, and adding a
+feature does not touch this definition. Only tests name each module one by one, because
+the template content differs per screen; when adding a feature, add one line to
+`FeatureModule` too.
 
 | Role | Summary |
 |---|---|

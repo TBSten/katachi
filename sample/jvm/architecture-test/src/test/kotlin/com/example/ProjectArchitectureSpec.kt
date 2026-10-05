@@ -135,8 +135,9 @@ class ProjectArchitectureSpec : FreeSpec({
     "each group is declared in the file determined by its name" {
         // The naming rule is the whole convention, so it is checked rather than listed: a
         // group named `"debug-menu"` belongs in `DebugMenuGroup.kt`, using `pascalCase` -- the
-        // same conversion a layout can call explicitly on a captured value
-        // (`capture("name").pascalCase`). katachi itself never applies one on its own.
+        // same conversion a layout writes as a derived capture
+        // (`capture("resource").pascalCase`, see ControllerRole). katachi itself never applies
+        // one on its own.
         //
         // `Gradle` and everything nested under it are left out: they are declared by
         // katachi's own `gradle()`, not by this convention. The next test checks what they
@@ -316,7 +317,7 @@ class ProjectArchitectureSpec : FreeSpec({
         // instead of being evaluated.
         //
         // `validate()` does not read the baseline, so what `katachi-baseline.json` holds back
-        // is all that may come back: the two violations left in on purpose, and nothing else.
+        // is all that may come back: the three violations left in on purpose, and nothing else.
         projectArchitecture.validate(FileConstraintCheck()).map { "[${it.label}] ${it.path}" }
             .shouldContainExactlyInAnyOrder(violationsHeldBackByBaseline)
     }
@@ -347,6 +348,7 @@ private object SelectsNothing : FileSelection {
  * recorded in `katachi-baseline.json`. `validate()` reports them; `assert()` holds them back.
  */
 private val violationsHeldBackByBaseline: List<String> = listOf(
+    "[CaptureMismatch] src/main/kotlin/com/example/controller/health/LegacyStatusController.kt",
     "[UnexpectedFile] src/main/kotlin/com/example/service/LegacyHealthCheck.kt",
     "[UnsatisfiedFileConstraint] src/main/kotlin/com/example/service/LegacyStatusService.kt",
 )

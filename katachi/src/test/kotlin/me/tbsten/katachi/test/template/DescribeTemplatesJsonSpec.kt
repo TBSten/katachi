@@ -5,6 +5,7 @@ import io.kotest.core.spec.style.FreeSpec
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
 import io.kotest.matchers.string.shouldNotContain
+import me.tbsten.katachi.dsl.pascalCase
 import me.tbsten.katachi.dsl.template
 import me.tbsten.katachi.processor.process
 import me.tbsten.katachi.template.DescribeTemplates
@@ -72,6 +73,31 @@ class DescribeTemplatesJsonSpec : FreeSpec({
             json shouldContain "\"segment\":"
             json shouldNotContain "fileCount"
             json shouldNotContain "unresolvedPatterns"
+        }
+    }
+
+    "JSON の captures に wildcardIndex と transform が出る" {
+        val derived = architectureOf {
+            "feature".group {
+                "Screen".role {
+                    layout {
+                        "feature" / capture("feature") / "${capture("feature").pascalCase}Screen.kt".file().template { "" }
+                    }
+                }
+            }
+        }
+        withTempProject { projectDir ->
+            val output = projectDir.resolve("templateDescription.json")
+            derived.process(
+                DescribeTemplates,
+                DescribeTemplates.Args(format = DescribeTemplatesFormat.Json, output = output.path),
+            ).getOrThrow()
+
+            val json = output.readText()
+            json shouldContain "\"wildcardIndex\": 0"
+            json shouldContain "\"transform\": \"pascalCase\""
+            json shouldContain "\"transform\": null"
+            json shouldContain "\"pattern\": \"feature/\${feature}/<feature.pascalCase>Screen.kt\""
         }
     }
 })

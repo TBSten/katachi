@@ -1,5 +1,7 @@
 package me.tbsten.katachi.check.internal
 
+import me.tbsten.katachi.check.CaptureMismatch
+import me.tbsten.katachi.check.CaptureOccurrence
 import me.tbsten.katachi.check.MissingFile
 import me.tbsten.katachi.check.UncheckedDirectory
 import me.tbsten.katachi.check.UncheckedDirectoryReason
@@ -17,6 +19,8 @@ import me.tbsten.katachi.dsl.files.internal.findProjectRoot
 import me.tbsten.katachi.dsl.internal.DeclaredFileConstraint
 import me.tbsten.katachi.dsl.internal.LayoutEvaluation
 import me.tbsten.katachi.dsl.internal.evaluateLayout
+import me.tbsten.katachi.dsl.internal.fillCaptures
+import me.tbsten.katachi.dsl.internal.placeholder
 import me.tbsten.katachi.internal.catching
 
 /**
@@ -284,6 +288,22 @@ private class Scan(
         // pays for one comparison instead of a second pass over every declaration.
         if (roles.size > 1) fileOverlaps.record(path, layout.claimsOn(path))
         if (roles.isNotEmpty()) return
-        violations += UnexpectedFile(path = path, nearby = layout.nearbyOf(path))
+        // A pattern did match, and only a bound capture held the file back: that is a more
+        // useful thing to say than "no role", and it names where the file should be.
+        val (entry, mismatch) = layout.captureMismatchesOn(path).firstOrNull() ?: run {
+            violations += UnexpectedFile(path = path, nearby = layout.nearbyOf(path))
+            return
+        }
+        violations += CaptureMismatch(
+            path = path,
+            role = entry.role,
+            declaredAt = entry.declaredAt,
+            pattern = fillCaptures(entry.path, mismatch.variant.pathCaptures) { it.placeholder() },
+            occurrences = mismatch.occurrences.map {
+                CaptureOccurrence(name = it.name, transform = it.transform?.spelling, level = it.level, value = it.value, expected = it.expected)
+            },
+            expectedPath = mismatch.expectedPath,
+        )
     }
 }
+

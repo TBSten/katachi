@@ -5,6 +5,7 @@
       {"rule": "UnsatisfiedFileConstraint", "path": "src/main/kotlin/com/example/service/LegacyStatusService.kt", "role": "domain.Service", "constraint": "Must be public", "declaration": "LegacyStatusService"}
     ],
     "me.tbsten.katachi.check.LayoutCheck": [
+      {"rule": "CaptureMismatch", "path": "src/main/kotlin/com/example/controller/health/LegacyStatusController.kt"},
       {"rule": "UnexpectedFile", "path": "src/main/kotlin/com/example/service/LegacyHealthCheck.kt"}
     ]
   }

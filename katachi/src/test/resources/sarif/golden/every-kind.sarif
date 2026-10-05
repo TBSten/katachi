@@ -40,6 +40,16 @@
               }
             },
             {
+              "id": "katachi.CaptureMismatch",
+              "name": "CaptureMismatch",
+              "shortDescription": {
+                "text": "A file matches a layout pattern, but the levels one capture names do not hold the same value."
+              },
+              "defaultConfiguration": {
+                "level": "error"
+              }
+            },
+            {
               "id": "katachi.MissingDescription",
               "name": "MissingDescription",
               "shortDescription": {
@@ -155,7 +165,7 @@
       "results": [
         {
           "ruleId": "katachi.UnexpectedFile",
-          "ruleIndex": 11,
+          "ruleIndex": 12,
           "level": "error",
           "message": {
             "text": "No role is defined for this file.\n\nNearby locations:\n  domain.UseCase core/domain/src/main/kotlin/com/example/domain/ (*UseCase.kt)\n\nHow to fix:\n  - Move it to one of the locations above, with a name matching the pattern in parentheses\n  - Delete it if it is not needed\n  - Add a new role for it:\n      \"Helper\".role {\n        summary = \"TODO\"\n        layout {\n          \"app/src/main/kotlin/com/example\" / \"Helper\".ktFile()\n        }\n      }"
@@ -178,7 +188,7 @@
         },
         {
           "ruleId": "katachi.UnexpectedDirectory",
-          "ruleIndex": 10,
+          "ruleIndex": 11,
           "level": "error",
           "message": {
             "text": "No role is defined for this directory. Nothing below it was checked.\n\nHow to fix:\n  - Delete it if it is not needed\n  - Declare what belongs in it in the layout of an existing role\n  - Add a new role for it:\n      \"Legacy\".role {\n        summary = \"TODO\"\n        layout {\n          \"legacy\" { ignore() }\n        }\n      }"
@@ -217,8 +227,48 @@
           }
         },
         {
+          "ruleId": "katachi.CaptureMismatch",
+          "ruleIndex": 3,
+          "level": "error",
+          "message": {
+            "text": "The file matches a pattern of role domain.UseCase, but the levels named by capture(\"feature\") do not agree.\nPattern: feature/${feature}/src/main/kotlin/com/example/feature/${feature}/<feature.pascalCase>Screen.kt\nfeature: \"home\" at level 2, \"settings\" at level 8 (expected \"home\")\nfeature.pascalCase: \"Home\" at level 9\nDeclared at: UseCaseRole.kt:16\n\nHow to fix:\n  - Move it so that every level named feature reads \"home\":\n      feature/home/src/main/kotlin/com/example/feature/home/HomeScreen.kt\n  - Delete it if it is not needed\n  - If the two levels may differ, give them different names in the layout at UseCaseRole.kt:16"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "android/feature/home/src/main/kotlin/com/example/feature/settings/HomeScreen.kt",
+                  "uriBaseId": "%SRCROOT%"
+                }
+              }
+            }
+          ],
+          "relatedLocations": [
+            {
+              "id": 1,
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "android/architecture-test/src/test/kotlin/com/example/roles/UseCaseRole.kt",
+                  "uriBaseId": "%SRCROOT%"
+                },
+                "region": {
+                  "startLine": 16
+                }
+              },
+              "message": {
+                "text": "Declared here"
+              }
+            }
+          ],
+          "properties": {
+            "kind": "Unexpected",
+            "severity": "Error",
+            "path": "feature/home/src/main/kotlin/com/example/feature/settings/HomeScreen.kt"
+          }
+        },
+        {
           "ruleId": "katachi.MissingFile",
-          "ruleIndex": 4,
+          "ruleIndex": 5,
           "level": "error",
           "message": {
             "text": "No file has been created yet for role domain.UseCase.\nDeclared at: UseCaseRole.kt:16\n\nHow to fix:\n  - If it is not implemented yet, this error is expected\n  - If it is no longer needed, remove the declaration at UseCaseRole.kt:16"
@@ -260,7 +310,7 @@
         },
         {
           "ruleId": "katachi.UnsatisfiedFileConstraint",
-          "ruleIndex": 12,
+          "ruleIndex": 13,
           "level": "error",
           "message": {
             "text": "Role: domain.UseCase / FileConstraint: \"外から使えること\"\nDeclaration: GetUserUseCase (line 7)\nDeclared at: UseCaseRole.kt:16 (layout of core/domain)"
@@ -354,7 +404,7 @@
         },
         {
           "ruleId": "katachi.StaleBaselineEntry",
-          "ruleIndex": 5,
+          "ruleIndex": 6,
           "level": "error",
           "message": {
             "text": "Baseline: katachi-baseline.json (me.tbsten.katachi.check.LayoutCheck)\nRule: UnexpectedFile, allowed 2, found 0\n\nHow to fix:\n  - Every violation this entry held back is gone. Remove the entry by re-running the architecture test with\n      -Dkatachi.baseline.prune=true"
@@ -424,7 +474,7 @@
         },
         {
           "ruleId": "katachi.MissingDescription",
-          "ruleIndex": 3,
+          "ruleIndex": 4,
           "level": "warning",
           "message": {
             "text": "Role domain.Repository may live in 2 places, and this one does not say when to use it.\nOther place: feature/cart/data\nDeclared at: RepositoryRole.kt:9\n\nHow to fix:\n  - Write `description = \"...\"` in this block, saying which files belong here rather than in the others\n  - Or merge this place into another if the two are really the same place"
@@ -452,7 +502,7 @@
         },
         {
           "ruleId": "katachi.UncheckedFile",
-          "ruleIndex": 8,
+          "ruleIndex": 9,
           "level": "error",
           "message": {
             "text": "Katachi failed while checking this file, so nothing is known about it.\nCause: java.lang.IllegalStateException: unreadable\n\nHow to fix:\n  - Check that the file is readable, then run the check again\n  - If it is, report this at https://github.com/TBSten/katachi/issues with the cause above"
@@ -475,7 +525,7 @@
         },
         {
           "ruleId": "katachi.UncheckedDirectory",
-          "ruleIndex": 7,
+          "ruleIndex": 8,
           "level": "error",
           "message": {
             "text": "Katachi failed while checking this directory. Nothing below it was checked.\nCause: java.io.IOException: Permission denied\n\nHow to fix:\n  - Check that the directory is readable, then run the check again\n  - If it is, report this at https://github.com/TBSten/katachi/issues with the cause above"
@@ -515,7 +565,7 @@
         },
         {
           "ruleId": "katachi.UncheckedCheck",
-          "ruleIndex": 6,
+          "ruleIndex": 7,
           "level": "error",
           "message": {
             "text": "Katachi failed while running com.example.TodoCheck, so nothing it would have reported is known.\nCause: java.lang.IllegalStateException: broken check\n\nHow to fix:\n  - Read the cause above and fix the check, or stop passing it to assert()\n  - Report it at https://github.com/TBSten/katachi/issues if the check is one of katachi's"
@@ -542,7 +592,7 @@
         },
         {
           "ruleId": "katachi.UncheckedFileConstraint",
-          "ruleIndex": 9,
+          "ruleIndex": 10,
           "level": "error",
           "message": {
             "text": "Nothing evaluated this constraint, so nothing is known about it.\nRole: domain.Repository\nDeclared at: RepositoryRole.kt:9\n\nHow to fix:\n  - Pass FileConstraintCheck() to assert(): projectArchitecture.assert(FileConstraintCheck())\n  - Remove the constraint at RepositoryRole.kt:9 if it is no longer wanted"

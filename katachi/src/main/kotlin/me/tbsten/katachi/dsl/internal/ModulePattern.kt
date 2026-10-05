@@ -1,6 +1,7 @@
 package me.tbsten.katachi.dsl.internal
 
 import me.tbsten.katachi.dsl.DeclarationSite
+import me.tbsten.katachi.dsl.KatachiCaptureTransformInModuleKeyException
 import me.tbsten.katachi.dsl.KatachiGlobSyntaxException
 import me.tbsten.katachi.dsl.ModulePath
 import me.tbsten.katachi.dsl.ModuleResolver
@@ -166,6 +167,8 @@ internal class ModulePattern private constructor(
          *   or when it uses `**` anywhere but as its last segment, or more than once.
          * @throws me.tbsten.katachi.dsl.KatachiAdjacentCaptureException when a token in [raw]
          *   touches another wildcard with no literal between them.
+         * @throws KatachiCaptureTransformInModuleKeyException when a token in [raw] carries a
+         *   naming conversion: a module's name is read from the project, never derived.
          */
         fun compile(raw: String, declaredAt: DeclarationSite): ModulePattern {
             if (raw.isEmpty()) throw KatachiGlobSyntaxException(raw, GlobProblem.EmptyModulePath)
@@ -182,6 +185,14 @@ internal class ModulePattern private constructor(
                     val captureSegment = parseCaptureSegment(segment, declaredAt)
                     when {
                         captureSegment != null -> {
+                            captureSegment.captures.firstOrNull { it.transform != null }?.let { derived ->
+                                throw KatachiCaptureTransformInModuleKeyException(
+                                    name = derived.name,
+                                    transform = derived.transform?.spelling ?: "",
+                                    moduleKey = displayCaptureTokens(raw),
+                                    declaredAt = declaredAt,
+                                )
+                            }
                             names += captureSegment.names
                             captureSegment.globSegment
                         }

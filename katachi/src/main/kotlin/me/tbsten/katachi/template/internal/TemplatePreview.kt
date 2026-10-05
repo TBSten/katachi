@@ -4,6 +4,7 @@ import me.tbsten.katachi.dsl.Summary
 import me.tbsten.katachi.dsl.Title
 import me.tbsten.katachi.dsl.internal.DeclaredTemplateParameter
 import me.tbsten.katachi.dsl.internal.LayoutCaptures
+import me.tbsten.katachi.dsl.internal.fillCapturedPath
 import me.tbsten.katachi.dsl.internal.LayoutTemplate
 import me.tbsten.katachi.dsl.internal.TemplateParameterOrigin
 import me.tbsten.katachi.dsl.internal.TemplateParameterType
@@ -209,7 +210,8 @@ private fun kindOf(type: TemplateParameterType<*>): TemplateParameterKind = when
  * in, and its [content].
  *
  * A capture reads as `${name}` in the path exactly as it does in the content -- there is no real
- * value to fill a preview's path with, only the same placeholder a String parameter gets. A
+ * value to fill a preview's path with, only the same placeholder a String parameter gets -- and a
+ * derived occurrence as `<name.transform>`, the value katachi derives from that one. A
  * module capture is the one exception: which module it would pick is a question only the modules
  * that exist could answer, so [TemplateFilePreview.path] is `null` whenever one is present, as
  * [TemplateFilePreview.pattern] (the declared shape, captures included) still is not.
@@ -220,8 +222,7 @@ private fun filePreviewOf(template: DeclaredTemplate, preview: PreviewValues, co
     // `.captureVariants.firstOrNull()`, is what is guaranteed to be this template's own variant
     // when this path folded two declarations into one entry.
     val variant = entry.templateCaptures ?: entry.captureVariants.firstOrNull() ?: LayoutCaptures.NONE
-    val placeholders = variant.names.associateWith(::placeholderOf)
-    val pattern = fillCapturedPath(entry.path, variant, placeholders)
+    val pattern = fillCapturedPath(entry.path, variant, variant.names.associateWith(::placeholderOf), ::placeholderOf)
     val path = if (variant.moduleCapture != null) null else pattern
     return TemplateFilePreview(
         pattern = pattern,

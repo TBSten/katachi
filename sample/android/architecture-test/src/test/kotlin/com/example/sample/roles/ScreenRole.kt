@@ -9,24 +9,26 @@ import me.tbsten.katachi.ExperimentalKatachiApi
 import me.tbsten.katachi.dsl.DeclarationContainerScope
 import me.tbsten.katachi.dsl.gradle.*
 import me.tbsten.katachi.dsl.kotlin.ktFile
+import me.tbsten.katachi.dsl.pascalCase
 import me.tbsten.katachi.konsist.declarations.ktFileContent
 
 /**
  * The role of one screen's UI: the `@Composable` its feature module is named after.
  *
- * The layout is loosened by directory: `"feature" / "*" / … / "*Screen"`. Any feature module
- * may hold a `<Name>Screen.kt`; the check does not tie the file name to the module name, and it
- * does not list the feature modules one by one.
+ * The layout names the module directory and the package directory alike, `capture("feature")`,
+ * and derives the file name from it: `${capture("feature").pascalCase}Screen`. So `:feature:home`
+ * may hold `HomeScreen.kt` and nothing else named `*Screen.kt`, without the feature modules
+ * being listed one by one.
  */
 fun DeclarationContainerScope.screen() = "Screen".role {
     title = "Screen"
     summary = "A @Composable that implements the UI of one screen. One <Name>Screen.kt per :feature:<name>"
     description = """
         The `@Composable` that draws the screen itself. The convention is
-        that `:feature:home` has one `HomeScreen.kt`, named after the module. The check only
-        looks at the place and the suffix (`*Screen.kt` in any feature module), so the pairing of module
-        name and file name is kept by review. When there are two screens, split them into
-        separate feature modules.
+        that `:feature:home` has one `HomeScreen.kt`, named after the module, and the check
+        holds the file to it: the module directory, the package directory and the file name all
+        read the same feature name. When there are two screens, split them into separate
+        feature modules.
 
         Two `HomeScreen`s sit stacked in one file, both `internal`. The one called from
         navigation takes `viewModel()` as a default argument, collects state with
@@ -57,7 +59,9 @@ fun DeclarationContainerScope.screen() = "Screen".role {
     example("HomeScreen", "The home screen")
     example("SettingsScreen", "The settings screen")
     layout {
-        featureSources() / "*Screen".ktFile()
+        // `feature` is the module directory and the package directory alike, and the file name
+        // follows it: feature/home/.../home/HomeScreen.kt, and nothing else named *Screen.kt there.
+        featureSources(capture("feature")) / "${capture("feature").pascalCase}Screen".ktFile()
     }
     // The two overloads named after the file, both internal, and the previews, all private.
     // Navigation and other features are not among the imports: leaving a screen is a callback.

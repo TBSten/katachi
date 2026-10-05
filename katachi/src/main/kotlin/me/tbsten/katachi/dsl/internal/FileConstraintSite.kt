@@ -73,8 +73,9 @@ internal class FileConstraintSite(
  *
  * The rule is [me.tbsten.katachi.check.internal.LayoutIndex.rolesOf]'s, narrowed to one constraint's
  * entries: a file is covered when a file declaration matches it, or when its directory was
- * left open with `anyFile()`. Keeping the two rules in step is what stops a constraint from
- * covering a file the role does not own, or missing one it does.
+ * left open with `anyFile()` -- and, either way, when no bound capture of that declaration
+ * holds it back. Keeping the two rules in step is what stops a constraint from covering a file
+ * the role does not own, or missing one it does.
  */
 internal class FileConstraintCoverage(
     /** The entries the block owns. Only the files and the `anyFile()` directories cover anything. */
@@ -96,11 +97,8 @@ internal class FileConstraintCoverage(
         entries.flatMapTo(LinkedHashSet()) { entry -> entry.captureVariants.flatMap { it.names } },
     )
 
-    fun covers(file: String): Boolean {
-        if (fileGlobs.any { it.matches(file) }) return true
-        val parent = file.substringBeforeLast('/', missingDelimiterValue = "")
-        return parent.isNotEmpty() && anyFileGlobs.any { it.matches(parent) }
-    }
+    /** Whether one of the entries allows [file], bound captures included: see [LayoutEntry.allows]. */
+    fun covers(file: String): Boolean = entries.any { it.allows(file) }
 
     /**
      * See [me.tbsten.katachi.dsl.FileConstraintSubject.captureValuesOf]. Every entry matching

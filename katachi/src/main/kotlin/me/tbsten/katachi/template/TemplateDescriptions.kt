@@ -231,9 +231,20 @@ public class TemplateCapturePreview internal constructor(
     public val position: Int,
     /**
      * The pattern of the one segment this capture sits in, `${fileName}Screen.kt` for a partial
-     * match -- `${name}` in place of every capture that segment holds, itself included.
+     * match -- `${name}` in place of every plain capture that segment holds and `<name.transform>`
+     * in place of every derived one, itself included.
      */
     public val segment: String,
+    /**
+     * Which `*` of its level this occurrence is, 0-based over every unescaped `*` of the level,
+     * for a [TemplateCaptureKind.PathCapture]; `0` for a module capture.
+     */
+    public val wildcardIndex: Int = 0,
+    /**
+     * The naming conversion of a derived occurrence (`"pascalCase"`), which a run does not take a
+     * `--arg` for but derives from the plain capture of the same [name]; `null` for a plain one.
+     */
+    public val transform: String? = null,
 ) {
     /** `TemplateCapturePreview(<name> at <pattern>[<position>])`. */
     override fun toString(): String = "TemplateCapturePreview($name at $pattern[$position])"

@@ -236,7 +236,9 @@
           "captures": [
             {
               "name": "name",
-              "segmentIndex": 6
+              "segmentIndex": 6,
+              "wildcardIndex": 0,
+              "transform": null
             }
           ],
           "moduleCapture": null,
@@ -534,7 +536,9 @@
             "kind": "PathCapture",
             "pattern": "core/domain/src/main/kotlin/useCase/*UseCase.kt",
             "position": 6,
-            "segment": "${name}UseCase.kt"
+            "segment": "${name}UseCase.kt",
+            "wildcardIndex": 0,
+            "transform": null
           }
         ],
         "conflict": false
@@ -566,7 +570,9 @@
             "kind": "PathCapture",
             "pattern": "core/domain/src/main/kotlin/useCase/*UseCase.kt",
             "position": 6,
-            "segment": "${name}UseCase.kt"
+            "segment": "${name}UseCase.kt",
+            "wildcardIndex": 0,
+            "transform": null
           }
         ]
       }

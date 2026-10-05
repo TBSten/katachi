@@ -43,6 +43,21 @@ class FileConstraintCoverageSpec : FreeSpec({
             coverage.covers("gamma/GetUserUseCase.kt") shouldBe false
         }
 
+        "束縛の無い同名のパスは * と同じに覆い、束縛で落ちるファイルは覆わない" {
+            val arch = architecture {
+                "domain".group {
+                    "Screen".role {
+                        fileConstraint("bound", check = silent())
+                        layout { "feature" / capture("f") / capture("f") / "*.kt".file() }
+                    }
+                }
+            }
+
+            val coverage = arch.declaredFileConstraints().single().coverage
+            coverage.covers("feature/home/home/A.kt") shouldBe true
+            coverage.covers("feature/home/settings/A.kt") shouldBe false
+        }
+
         "layout { } 直下の制約はそのブロックのエントリだけを覆う" {
             val arch = architecture {
                 "domain".group {

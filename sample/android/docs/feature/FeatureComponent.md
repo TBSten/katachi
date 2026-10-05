@@ -14,11 +14,11 @@ a second feature wants to call it, move it to the component package of `:ui` and
 `App*`. Features do not depend on each other, so a part left here cannot be called from
 another feature.
 
-Can be generated from a template. The module directory is named `feature` and its
-package directory `featurePackage`, so `--arg template=feature.FeatureComponent --arg
-feature=home --arg featurePackage=home --arg name=HomeUserCard` puts
-`HomeUserCard.kt` into `:feature:home`. `name` is the whole file name, including the
-module's name; the check does not tie the two together.
+Can be generated from a template. The module directory and its package directory are
+both named `feature`, so `--arg template=feature.FeatureComponent --arg feature=home
+--arg name=HomeUserCard` puts `HomeUserCard.kt` into `:feature:home`, and the check
+holds the two directories to the same name. `name` is the whole file name, including
+the module's name; the check does not tie the file name to the module.
 
 ## Placement
 
@@ -36,14 +36,14 @@ Example: `HomeUserCard.kt`
 
 | Package |
 |---|
-| `com.example.sample.feature.<featurePackage>.component` |
+| `com.example.sample.feature.<feature>.component` |
 
 | Import | |
 |---|---|
 | `androidx.compose.**` | optional |
 | `com.example.sample.ui.**` | optional |
-| `com.example.sample.feature.<featurePackage>.**` | optional |
-| `com.example.sample.feature.<featurePackage>.*ViewModel` | not allowed |
+| `com.example.sample.feature.<feature>.**` | optional |
+| `com.example.sample.feature.<feature>.*ViewModel` | not allowed |
 
 | Declaration | |
 |---|---|

@@ -4,7 +4,10 @@ import me.tbsten.katachi.check.NearbyLocation
 import me.tbsten.katachi.dsl.LayoutEntry
 import me.tbsten.katachi.dsl.LayoutEntryKind
 import me.tbsten.katachi.dsl.Role
+import me.tbsten.katachi.dsl.internal.CaptureMismatchDetail
 import me.tbsten.katachi.dsl.internal.Glob
+import me.tbsten.katachi.dsl.internal.captureMismatchOf
+import java.util.IdentityHashMap
 
 /**
  * The flattened layout of every role, turned into the four questions the traversal asks.
@@ -90,7 +93,35 @@ internal class LayoutIndex(entries: List<LayoutEntry>) {
     fun claimsOn(file: String): List<LayoutEntry> =
         matchesOn(file, claimedFiles, claimedOpenDirectories).values.toList()
 
-    /** One entry per role out of [fileEntries] and [openEntries], first match winning. */
+    /**
+     * The entries whose pattern matches [file] but whose bound captures hold it back, with why,
+     * in declaration order -- what a file [rolesOf] answers nobody for is reported by, when
+     * there is one. See [me.tbsten.katachi.dsl.internal.captureMismatchOf].
+     */
+    fun captureMismatchesOn(file: String): List<Pair<LayoutEntry, CaptureMismatchDetail>> {
+        val mismatches = mutableListOf<Pair<LayoutEntry, CaptureMismatchDetail>>()
+        for (entry in allowedFiles.matching(file)) {
+            entry.captureMismatchOf(file)?.let { mismatches += entry to it }
+        }
+        val directory = file.parentPath()
+        if (directory.isNotEmpty()) {
+            for (entry in openDirectories.matching(directory)) {
+                entry.captureMismatchOf(file)?.let { mismatches += entry to it }
+            }
+        }
+        // The two lists are each in declaration order; interleaving them back is what gives the
+        // report the first declared one.
+        return mismatches.sortedBy { (entry, _) -> declarationOrder.getValue(entry) }
+    }
+
+    /** Where each entry was declared, by identity: `LayoutEntry` declares no `equals`. */
+    private val declarationOrder: Map<LayoutEntry, Int> =
+        IdentityHashMap<LayoutEntry, Int>().also { order -> entries.forEachIndexed { index, entry -> order[entry] = index } }
+
+    /**
+     * One entry per role out of [fileEntries] and [openEntries], first match winning. An entry
+     * whose pattern matches but whose bound captures hold the file back does not count.
+     */
     private fun matchesOn(
         file: String,
         fileEntries: PrefixGlobIndex<LayoutEntry>,
@@ -98,14 +129,14 @@ internal class LayoutIndex(entries: List<LayoutEntry>) {
     ): Map<Role, LayoutEntry> {
         val matched = LinkedHashMap<Role, LayoutEntry>()
         for (entry in fileEntries.matching(file)) {
-            matched.putIfAbsent(entry.role, entry)
+            if (entry.captureMismatchOf(file) == null) matched.putIfAbsent(entry.role, entry)
         }
         val directory = file.parentPath()
         // `anyFile()` covers the files directly inside a directory and nothing deeper, and
         // the root itself is not a directory any role can declare.
         if (directory.isNotEmpty()) {
             for (entry in openEntries.matching(directory)) {
-                matched.putIfAbsent(entry.role, entry)
+                if (entry.captureMismatchOf(file) == null) matched.putIfAbsent(entry.role, entry)
             }
         }
         return matched

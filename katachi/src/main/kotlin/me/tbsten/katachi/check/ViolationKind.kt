@@ -21,7 +21,8 @@ import me.tbsten.katachi.ExperimentalKatachiApi
  */
 public enum class ViolationKind {
     /**
-     * Something exists that no role allows. Delete it, move it, or declare it.
+     * Something exists that no role allows -- a file or directory nothing declared, or a file
+     * whose bound captures disagree ([CaptureMismatch]). Delete it, move it, or declare it.
      *
      * ## Example 1: list files and directories nothing declared
      * ```kt

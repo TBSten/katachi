@@ -95,8 +95,19 @@ internal class LayoutEntryJson(
     val place: Boolean,
 )
 
+/**
+ * One `capture("...")` occurrence of an entry's path. [wildcardIndex] is which `*` of that level it
+ * is (0-based, every unescaped `*` counted); [transform] is the naming conversion of a derived
+ * occurrence (`"pascalCase"`), `null` for a plain one. A name on two occurrences, or a non-null
+ * [transform], means the check holds the levels to one value -- see `LayoutCaptures.isBound`.
+ */
 @Serializable
-internal class PathCaptureJson(val name: String, val segmentIndex: Int)
+internal class PathCaptureJson(
+    val name: String,
+    val segmentIndex: Int,
+    val wildcardIndex: Int,
+    val transform: String?,
+)
 
 @Serializable
 internal class ModuleCaptureJson(val pattern: String, val names: List<String>)

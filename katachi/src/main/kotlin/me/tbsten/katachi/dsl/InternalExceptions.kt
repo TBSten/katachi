@@ -78,3 +78,35 @@ public class KatachiMissingFirstTemplateException internal constructor(
         Please report it at https://github.com/TBSten/katachi/issues.
     """.trimIndent(),
 )
+
+/**
+ * A capture token named a conversion `Naming.kt` does not have.
+ *
+ * Only the six naming conversions make a derived capture token, and each writes its own
+ * spelling into it, so a layout cannot reach this: it would mean the token was built by hand
+ * or the conversions and the parser have drifted apart.
+ *
+ * ## Example 1: report it rather than work around it
+ * ```kt
+ * try {
+ *     projectArchitecture.assert()
+ * } catch (cause: KatachiUnknownCaptureTransformException) {
+ *     println("katachi bug, conversion was `${cause.spelling}`. Please report it.")
+ * }
+ * ```
+ *
+ * @property name the capture's name.
+ * @property spelling the conversion the token named.
+ */
+@ExperimentalKatachiApi
+public class KatachiUnknownCaptureTransformException internal constructor(
+    public val name: String,
+    public val spelling: String,
+) : KatachiInternalException(
+    message = """
+        capture("$name") carries a conversion ".$spelling" that katachi has no naming conversion for.
+        Only katachi's own conversions (camelCase, pascalCase, kebabCase, snakeCase, screamingSnakeCase,
+        flatCase) write a conversion into a capture token, so a layout cannot cause this.
+        Please report it at https://github.com/TBSten/katachi/issues.
+    """.trimIndent(),
+)
