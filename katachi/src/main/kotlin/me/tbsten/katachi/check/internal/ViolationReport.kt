@@ -298,12 +298,21 @@ private fun unexpectedFileBlock(violation: UnexpectedFile, root: String?): List<
         add("${STEP}Nearby locations:")
         val width = violation.nearby.maxOf { it.role.qualifiedName.length }
         for (location in violation.nearby) {
-            add("$STEP$STEP${location.role.qualifiedName.padEnd(width)} ${displayPath(root, location.directory)}/")
+            val pattern = location.filePattern?.let { " ($it)" }.orEmpty()
+            add("$STEP$STEP${location.role.qualifiedName.padEnd(width)} ${displayPath(root, location.directory)}/$pattern")
         }
     }
     add("")
     add("${STEP}How to fix:")
-    if (violation.nearby.isNotEmpty()) add("$STEP$STEP- Move it to one of the locations above")
+    if (violation.nearby.isNotEmpty()) {
+        // The parentheses are only mentioned when a line has them: every location of an
+        // `anyFile()` role takes any name, and there is nothing to match then.
+        val named = violation.nearby.any { it.filePattern != null }
+        add(
+            "$STEP$STEP- Move it to one of the locations above" +
+                if (named) ", with a name matching the pattern in parentheses" else "",
+        )
+    }
     add("$STEP$STEP- Delete it if it is not needed")
     add("$STEP$STEP- Add a new role for it:")
     val suggestion = violation.suggestedRole

@@ -189,7 +189,7 @@ internal fun everyKindOfViolation(roles: SarifRoles = SarifRoles()): List<Violat
     return listOf(
         UnexpectedFile(
             path = "app/src/main/kotlin/com/example/Helper.kt",
-            nearby = listOf(NearbyLocation(roles.useCase, "core/domain/src/main/kotlin/com/example/domain")),
+            nearby = listOf(NearbyLocation(roles.useCase, "core/domain/src/main/kotlin/com/example/domain", "*UseCase.kt")),
         ),
         UnexpectedDirectory(path = "legacy"),
         MissingFile(
