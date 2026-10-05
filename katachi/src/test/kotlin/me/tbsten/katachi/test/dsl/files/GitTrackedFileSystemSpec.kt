@@ -152,6 +152,14 @@ class GitTrackedFileSystemSpec : FreeSpec({
             fileSystem.exists(root / ".local") shouldBe false
         }
 
+        "ignore 対象の中で追跡しているファイルは見える" {
+            // This repository's `.gitignore` says `.idea/*` and then takes `dictionaries/project.xml`
+            // back. `--cached` reports it, so the filter shows it — and nothing else below `.idea`.
+            val fileSystem = gitTrackedFileSystem(delegate, root)
+            fileSystem.exists(root / ".idea/dictionaries/project.xml") shouldBe true
+            fileSystem.list(root / ".idea").map { it.name } shouldContainExactly listOf("dictionaries")
+        }
+
         "フィルタなしなら同じツリーに無視されるものが見える" {
             // `.git` であって `.local` ではない。`.local/` は .gitignore 済みで**コミットされない**
             // ので、clone したてのチェックアウトや新しい worktree には存在しない。実際にここは

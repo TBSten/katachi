@@ -20,15 +20,10 @@ import me.tbsten.katachi.dsl.internal.evaluateLayout
 import me.tbsten.katachi.internal.catching
 
 /**
- * Directories that are not this project's files at all, whatever `files` says.
- *
- * The list stops here. `.kotlin/`, `local.properties`, `.DS_Store` and `build/` are **not**
- * on it: what a machine leaves lying around never converges into a list, which is exactly
- * the job the default `files = gitTracked()` hands to git. Under that default this set is
- * already redundant; it earns its place under `wholeTree()`, and when a project root was
- * found without git being there to answer.
+ * The repository itself (a file in a worktree or a submodule), the only name the walk skips at
+ * any depth whatever `files` says. Module discovery ([scanModules]) has its own skip list.
  */
-private val FOREIGN_DIRECTORY_NAMES: Set<String> = setOf(".git", ".gradle", ".idea")
+private const val GIT_DIRECTORY_NAME: String = ".git"
 
 /**
  * What the project root is called when it is the project root itself that could not be read.
@@ -243,6 +238,8 @@ private class Scan(
      * what a failure here actually costs is this one path.
      */
     private fun visitChild(child: FsPath, path: String) {
+        // Before asking whether it is a directory: in a worktree or a submodule `.git` is a file.
+        if (child.name == GIT_DIRECTORY_NAME) return
         val isDirectory = catching { fileSystem.isDirectory(child) }.getOrElse { cause ->
             // Which of the two it is is exactly what could not be answered, and
             // [UncheckedFile] is the smaller claim: an [UncheckedDirectory] block tells the
@@ -267,7 +264,6 @@ private class Scan(
     }
 
     private fun visitDirectory(directory: FsPath, path: String) {
-        if (directory.name in FOREIGN_DIRECTORY_NAMES) return
         if (layout.isIgnored(path)) return
         if (!layout.isKnown(path)) {
             violations += UnexpectedDirectory(path)

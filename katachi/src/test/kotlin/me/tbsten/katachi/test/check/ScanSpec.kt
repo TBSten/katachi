@@ -7,6 +7,7 @@ import me.tbsten.katachi.check.internal.validate
 import me.tbsten.katachi.dsl.files.FsPath
 import me.tbsten.katachi.dsl.files.internal.GitTrackedFileSystem
 import me.tbsten.katachi.dsl.kotlin.ktFile
+import me.tbsten.katachi.processor.internal.process
 import me.tbsten.katachi.test.dsl.files.fakeFileSystem
 
 class ScanSpec : FreeSpec({
@@ -188,8 +189,41 @@ class ScanSpec : FreeSpec({
         }
     }
 
-    "このプロジェクトのものではないディレクトリ" - {
-        "git と Gradle と IDE のディレクトリはどの階層にあっても違反にならない" {
+    "git のディレクトリ" - {
+        ".git はどの階層にあっても files の指定によらず違反にならない" {
+            // `repositoryOf` already puts `.git/HEAD` at the root; a nested one stands for a
+            // submodule checked out as a directory.
+            layoutArchitecture {
+                ".gitignore".file()
+                "module" { }
+            }
+                .validate(
+                    repositoryOf {
+                        ".gitignore"()
+                        "module" { ".git" { "HEAD"() } }
+                    },
+                )
+                .labels() shouldBe emptyList()
+        }
+
+        "worktree やサブモジュールの .git ファイルも違反にならない" {
+            // In a worktree and in a submodule `.git` is a file that points at the real
+            // repository. `gradlew` is the root marker here, so the walk reaches the file.
+            val tree = fakeFileSystem(workingDirectory = "/repo") {
+                "/repo" {
+                    ".git"()
+                    "gradlew"()
+                    "module" { ".git"() }
+                }
+            }
+
+            layoutArchitecture {
+                "gradlew".file()
+                "module" { }
+            }.validate(tree).labels() shouldBe emptyList()
+        }
+
+        ".gradle と .idea は宣言が無ければほかのディレクトリと同じく Unexpected になる" {
             layoutArchitecture {
                 ".gitignore".file()
                 "module" { }
@@ -202,7 +236,34 @@ class ScanSpec : FreeSpec({
                         "module" { ".gradle" { "cache.bin"() } }
                     },
                 )
+                .labels() shouldBe listOf(
+                    "[UnexpectedDirectory] .gradle",
+                    "[UnexpectedDirectory] .idea",
+                    "[UnexpectedDirectory] module/.gradle",
+                )
+        }
+
+        ".idea を ignore すれば中は見ない" {
+            layoutArchitecture {
+                ".gitignore".file()
+                ".idea".ignore()
+            }
+                .validate(
+                    repositoryOf {
+                        ".gitignore"()
+                        ".idea" { "workspace.xml"(); "codeStyles" { "Project.xml"() } }
+                    },
+                )
                 .labels() shouldBe emptyList()
+        }
+
+        ".idea の中に宣言したファイルは役割に入る" {
+            val definition = layoutArchitecture { ".idea" / "codeStyles" / "Project.xml".file() }
+            val tree = repositoryOf { ".idea" { "codeStyles" { "Project.xml"() } } }
+
+            definition.validate(tree).labels() shouldBe emptyList()
+            definition.process(tree) { context -> context.filesOf(context.roles.single()) } shouldBe
+                listOf(".idea/codeStyles/Project.xml")
         }
 
         "gradle wrapper は役割を書かない限り Unexpected になる" {
@@ -240,6 +301,76 @@ class ScanSpec : FreeSpec({
                 "[UnexpectedDirectory] build",
                 "[UnexpectedFile] local.properties",
             )
+        }
+
+        "ignore 対象の中で追跡しているファイル" - {
+            // `.idea/*` with `!.idea/codeStyles/`: git reports the tracked `Project.xml` and
+            // nothing else below `.idea`, while `workspace.xml` sits on disk next to it.
+            val ideTree = fakeFileSystem(workingDirectory = "/repo") {
+                "/repo" {
+                    "gradlew"()
+                    ".gradle" { "cache.bin"() }
+                    ".idea" {
+                        "workspace.xml"()
+                        "codeStyles" { "Project.xml"() }
+                    }
+                }
+            }
+            val tracked = GitTrackedFileSystem(
+                ideTree,
+                FsPath.of("/repo"),
+                listOf("gradlew", ".idea/codeStyles/Project.xml"),
+            )
+
+            "宣言どおりに見える" {
+                val declared = layoutArchitecture {
+                    "gradlew".file()
+                    ".idea" / "codeStyles" / "Project.xml".file()
+                }
+
+                declared.validate(tracked).labels() shouldBe emptyList()
+                declared.process(tracked) { context -> context.filesOf(context.roles.single()) } shouldBe
+                    listOf(".idea/codeStyles/Project.xml", "gradlew")
+            }
+
+            "ワイルドカードで宣言しても追跡しているファイルだけが役割に入る" {
+                // A wildcard never becomes a required file, so `labels()` alone would stay
+                // empty even if the walk skipped `.idea` altogether. The files the role
+                // holds are what proves the walk went in.
+                val declared = layoutArchitecture {
+                    "gradlew".file()
+                    ".idea" / "codeStyles" / "*.xml".file()
+                }
+
+                declared.validate(tracked).labels() shouldBe emptyList()
+                declared.process(tracked) { context -> context.filesOf(context.roles.single()) } shouldBe
+                    listOf(".idea/codeStyles/Project.xml", "gradlew")
+            }
+
+            "宣言が無ければ .idea が Unexpected になる" {
+                layoutArchitecture { "gradlew".file() }
+                    .validate(tracked)
+                    .labels() shouldBe listOf("[UnexpectedDirectory] .idea")
+            }
+
+            "追跡していないファイルは宣言があっても Missing になる" {
+                layoutArchitecture {
+                    "gradlew".file()
+                    ".idea" / "codeStyles" / "Project.xml".file()
+                    ".idea" / "workspace.xml".file()
+                }
+                    .validate(tracked)
+                    .labels() shouldBe listOf("[MissingFile] .idea/workspace.xml")
+            }
+
+            "git が何も報告しない .gradle は宣言が無くても見えない" {
+                layoutArchitecture {
+                    "gradlew".file()
+                    ".idea" / "codeStyles" / "Project.xml".file()
+                }
+                    .validate(tracked)
+                    .labels() shouldBe emptyList()
+            }
         }
     }
 

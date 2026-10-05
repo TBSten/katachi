@@ -102,6 +102,12 @@ public interface FileSelection {
      * A file git does not manage cannot be given a role. `.DS_Store` turns up in every
      * directory, `local.properties` is per machine, `build/` is generated output.
      *
+     * A file tracked below an ignored directory — `.idea` ignored with `!.idea/codeStyles/`
+     * taken back, or one added with `git add -f` — is reported by `--cached` and checked like
+     * any other. A file
+     * that is *not* tracked below an ignored directory is not reported even when a `!` pattern
+     * names it; that is git's rule, and katachi does not add to it.
+     *
      * Whether git applies is decided by asking git, not by looking for a `.git` next to the
      * project root. A Gradle project often sits below the repository root — a sample inside
      * the library's own repository, a build in a monorepo, a submodule — and there
@@ -135,10 +141,14 @@ public interface FileSelection {
     /**
      * Every file in the tree below the project root, whatever git thinks of it.
      *
+     * `build/`, `.gradle/` and `.idea/` are directories like any other here: declare them or
+     * `ignore()` them. Only `.git` is never walked.
+     *
      * ## Example 1: ignore git and walk the whole tree
      * ```kt
      * val projectArchitecture = architecture {
      *     files = wholeTree()
+     *     "BuildOutput".role { layout { "build".ignore(); ".gradle".ignore() } }
      *     "domain".group { "UseCase".role { } }
      * }
      * ```

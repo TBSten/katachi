@@ -16,8 +16,8 @@ import me.tbsten.katachi.test.dsl.files.fakeFileSystem
 /**
  * A tree with a project root marker the check never runs into.
  *
- * `.git/` is one of the directories katachi knows is not the project's own, so the marker
- * that makes `/repo` the root cannot itself turn up as a violation. Pair it with
+ * `.git/` is the one name the walk never enters, so the marker that makes `/repo` the root
+ * cannot itself turn up as a violation. Pair it with
  * [architectureOf], which selects `wholeTree()`: a spec about the traversal has no business
  * starting a `git` process, and the git filter is covered by its own spec.
  */

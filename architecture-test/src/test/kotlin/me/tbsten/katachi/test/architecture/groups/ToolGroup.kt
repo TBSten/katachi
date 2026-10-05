@@ -6,6 +6,7 @@ import me.tbsten.katachi.test.architecture.roles.benchmark
 import me.tbsten.katachi.test.architecture.roles.ci
 import me.tbsten.katachi.test.architecture.roles.dokkaPlugin
 import me.tbsten.katachi.test.architecture.roles.git
+import me.tbsten.katachi.test.architecture.roles.ideDictionary
 import me.tbsten.katachi.test.architecture.roles.ideRunConfiguration
 
 /**
@@ -16,18 +17,6 @@ import me.tbsten.katachi.test.architecture.roles.ideRunConfiguration
  * `:tool:dokka` belongs here too: a Dokka plugin used only by this repository's own API
  * reference, never published and never depended on by the library. So does `:benchmark`, the
  * JMH benchmarks, for the same reason.
- *
- * ## `.idea/` deliberately has no role
- *
- * `.idea/dictionaries/project.xml` is tracked by git, so `files = gitTracked()` offers it —
- * and yet declaring it would *create* a violation rather than remove one. `Scan.visitDirectory`
- * tests `FOREIGN_DIRECTORY_NAMES` (`.git`, `.gradle`, `.idea`) before it consults the layout
- * at all and returns, so the walk never reaches anything below `.idea/`. A declared file the
- * walk never visits is reported as `[MissingFile]`.
- *
- * Not declaring it is therefore the right answer here, and the gap is katachi's, not this
- * definition's: a project with tracked `.idea/` files has no way to declare them today.
- * Filed as a TODO against katachi rather than papered over.
  */
 fun DeclarationContainerScope.toolGroup() = "tool".group {
     documented = false
@@ -37,6 +26,7 @@ fun DeclarationContainerScope.toolGroup() = "tool".group {
     agentRule()
     git()
     ideRunConfiguration()
+    ideDictionary()
     dokkaPlugin()
     benchmark()
 }
