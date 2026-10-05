@@ -1,6 +1,5 @@
 package me.tbsten.katachi.check.internal
 
-import me.tbsten.katachi.check.DEFAULT_MAX_VIOLATIONS
 import me.tbsten.katachi.check.KatachiArchitectureAssertionError
 import me.tbsten.katachi.check.Severity
 import me.tbsten.katachi.check.Violation
@@ -25,7 +24,7 @@ import me.tbsten.katachi.report.internal.writeSarifIfRequested
  */
 internal fun Architecture.assert(
     fileSystem: KatachiFileSystem,
-    maxViolations: Int = DEFAULT_MAX_VIOLATIONS,
+    maxViolations: Int? = null,
 ): Unit {
     assertWith(fileSystem, emptyList(), maxViolations)
 }
@@ -52,7 +51,7 @@ internal fun Architecture.assert(
     fileSystem: KatachiFileSystem,
     check: ArchitectureProcessor<Unit, List<Violation>>,
     vararg more: ArchitectureProcessor<Unit, List<Violation>>,
-    maxViolations: Int = DEFAULT_MAX_VIOLATIONS,
+    maxViolations: Int? = null,
 ): Unit {
     assertWith(fileSystem, listOf(check) + more, maxViolations)
 }
@@ -63,7 +62,7 @@ internal fun Architecture.assert(
  */
 internal fun Architecture.assertNoErrors(
     fileSystem: KatachiFileSystem,
-    maxViolations: Int = DEFAULT_MAX_VIOLATIONS,
+    maxViolations: Int? = null,
 ): List<Violation> = assertWith(fileSystem, emptyList(), maxViolations)
 
 /** `assertNoErrors(check, vararg more)` against [fileSystem]. */
@@ -71,7 +70,7 @@ internal fun Architecture.assertNoErrors(
     fileSystem: KatachiFileSystem,
     check: ArchitectureProcessor<Unit, List<Violation>>,
     vararg more: ArchitectureProcessor<Unit, List<Violation>>,
-    maxViolations: Int = DEFAULT_MAX_VIOLATIONS,
+    maxViolations: Int? = null,
 ): List<Violation> = assertWith(fileSystem, listOf(check) + more, maxViolations)
 
 /**
@@ -91,14 +90,20 @@ internal fun Architecture.assertNoErrors(
  * Between the baseline and the throw, the same violations are written out as a SARIF file when
  * `-Dkatachi.report.sarif=<path>` asks for one -- see [writeSarifIfRequested]. Nothing about
  * the throw or the output changes when it is not asked for, or when the write fails.
+ *
+ * [maxViolations] is what the test wrote, `null` when it wrote nothing; the budget the message
+ * is cut to comes out of [resolveMaxViolations], which also reads `-Dkatachi.maxViolations`.
  */
 internal fun Architecture.assertWith(
     fileSystem: KatachiFileSystem,
     checks: List<ArchitectureProcessor<Unit, List<Violation>>>,
-    maxViolations: Int,
+    maxViolations: Int?,
     environment: BaselineEnvironment = BaselineEnvironment(),
     sarif: SarifEnvironment = SarifEnvironment(),
 ): List<Violation> {
+    // Resolved here and nowhere deeper: this is the one place whose message reaches the user,
+    // so the property is read, and any warning about it printed, once per `assert()`.
+    val budget = resolveMaxViolations(maxViolations, environment.systemProperty, environment.standardError)
     val baseline = baseline
     // Read before the walk: a refused update on CI should not cost a whole run first.
     val mode = if (baseline == null) BaselineMode.Check else environment.mode()
@@ -114,10 +119,10 @@ internal fun Architecture.assertWith(
     // violation the baseline let through, warnings included, and never cut to `maxViolations`.
     writeSarifIfRequested(violations, projectRoot, this, fileSystem.workingDirectory, sarif)
     if (violations.none { it.severity == Severity.Error }) {
-        val warnings = violations.report(maxViolations, projectRoot)
+        val warnings = violations.report(budget, projectRoot)
         if (warnings.isNotEmpty()) environment.standardError(warnings)
         trailer.forEach(environment.standardError)
         return violations
     }
-    throw KatachiArchitectureAssertionError(violations, maxViolations, projectRoot, trailer)
+    throw KatachiArchitectureAssertionError(violations, budget, projectRoot, trailer)
 }

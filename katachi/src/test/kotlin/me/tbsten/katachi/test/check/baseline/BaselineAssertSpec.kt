@@ -382,6 +382,7 @@ class BaselineAssertSpec : FreeSpec({
             message.endsWith(
                 """
                 Showing first 3 (2 more: Unexpected 1, FileConstraint 1)
+                  To show every block, run with -Dkatachi.maxViolations=all, or set maxViolations in assert().
 
                 Baseline file:///repo/katachi-baseline.json held back 1 violation.
                 2 violations reported in full because their baseline entries allow fewer.

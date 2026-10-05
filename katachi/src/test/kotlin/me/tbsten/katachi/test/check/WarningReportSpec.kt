@@ -122,13 +122,25 @@ class WarningReportSpec : FreeSpec({
             lines shouldContain "Showing first 2 warnings (1 more)"
         }
 
+        "Error と Warning の両方が打ち切られたときヒント行は 2 回出る" {
+            val violations = (1..12).map { TestError(path = "e$it") } +
+                (1..3).map { TestWarning(path = "w$it") }
+
+            val lines = violations.report(maxViolations = 10).lines()
+
+            val hint = "  To show every block, run with -Dkatachi.maxViolations=all, or set maxViolations in assert()."
+            lines.count { it == hint } shouldBe 2
+            lines[lines.indexOf("Showing first 8 (4 more)") + 1] shouldBe hint
+            lines[lines.indexOf("Showing first 2 warnings (1 more)") + 1] shouldBe hint
+        }
+
         "Warning だけのときはその severity が予算を丸ごと使う" {
             val violations = (1..12).map { TestWarning(path = "w$it") }
 
             val report = violations.report(maxViolations = 10)
 
             report.lines().count { it.startsWith("[TestWarning]") } shouldBe 10
-            report.lines().last() shouldBe "Showing first 10 warnings (2 more)"
+            report.lines().dropLast(1).last() shouldBe "Showing first 10 warnings (2 more)"
         }
 
         "maxViolations = 0 だと Warning も1ブロックも出ない" {

@@ -1,6 +1,5 @@
 package me.tbsten.katachi.processor.internal
 
-import me.tbsten.katachi.check.DEFAULT_MAX_VIOLATIONS
 import me.tbsten.katachi.check.KatachiArchitectureAssertionError
 import me.tbsten.katachi.check.Severity
 import me.tbsten.katachi.check.Violation
@@ -9,6 +8,7 @@ import me.tbsten.katachi.check.internal.BaselineMode
 import me.tbsten.katachi.check.internal.CheckedViolations
 import me.tbsten.katachi.check.internal.applyBaseline
 import me.tbsten.katachi.check.internal.checkNameOf
+import me.tbsten.katachi.check.internal.resolveMaxViolations
 import me.tbsten.katachi.dsl.Architecture
 import me.tbsten.katachi.dsl.files.KatachiFileSystem
 import me.tbsten.katachi.dsl.files.internal.RealFileSystem
@@ -229,7 +229,11 @@ private fun Result<Any?>.againstBaseline(
             environment = environment,
         )
         if (outcome.violations.any { it.severity == Severity.Error }) {
-            throw KatachiArchitectureAssertionError(outcome.violations, DEFAULT_MAX_VIOLATIONS, walk.projectRoot, outcome.trailer)
+            // What a `katachi<Key>` task prints is what the user reads, so the budget is resolved
+            // here the way `assert()` resolves it: the Gradle plugin hands `-Dkatachi.maxViolations`
+            // on to this JVM too.
+            val budget = resolveMaxViolations(explicit = null, environment.systemProperty, environment.standardError)
+            throw KatachiArchitectureAssertionError(outcome.violations, budget, walk.projectRoot, outcome.trailer)
         }
         HeldBack(outcome.violations, outcome.trailer)
     }
