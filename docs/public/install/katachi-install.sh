@@ -62,6 +62,8 @@ KATACHI_MIN_MINOR="2"
 KATACHI_PLUGIN_ID="me.tbsten.katachi"
 
 JUNIT_VERSION="5.14.4"
+# --test-framework kotest で、プロジェクトの catalog に io.kotest の版が無いときに書く版。
+KOTEST_VERSION="6.2.5"
 
 # 検査用モジュールの置き場所（Gradle ルートからの相対パス）の既定。実際の値は
 # resolve_module_dir が MODULE_DIR（相対パス）と MODULE_GRADLE_PATH（:a:b の形）に入れる。
@@ -173,6 +175,15 @@ katachi-install.sh — katachi のインストールのうち機械的にでき�
       --no-konsist        katachi-konsist を使わない構成で生成する
       --module-dir <path> 検査用モジュールの置き場所（既定: init が記録した meta.moduleDir。
                           無ければ architecture-test）。指定すると meta.moduleDir を書き換える
+      --test-framework <junit5|kotest>
+                          テストの雛形と依存（既定: preferences.testFramework。無ければ
+                          kotest の依存がプロジェクトにあれば kotest、なければ junit5）
+      --deps <catalog|literal>
+                          依存の書き方（既定: preferences.dependencyStyle。無ければ
+                          gradle/libs.versions.toml があれば catalog）。catalog は toml に
+                          無い項目だけを足し、build.gradle.kts は libs.katachi のように参照する。
+                          別名が別の用途で使われていると、明示したときは止まり、
+                          既定のときは literal に落とす
       --force             既存の検査用モジュールを上書きする
       --dry-run           何も書かずに、何をするかだけ出力する
 
@@ -302,6 +313,16 @@ Usage:
       --no-konsist        Generate a setup that does not use katachi-konsist
       --module-dir <path> Where the test module goes (default: meta.moduleDir recorded by init,
                           otherwise architecture-test). When given, meta.moduleDir is updated
+      --test-framework <junit5|kotest>
+                          Test template and dependencies (default: preferences.testFramework;
+                          otherwise kotest when the project depends on kotest, else junit5)
+      --deps <catalog|literal>
+                          How dependencies are written (default: preferences.dependencyStyle;
+                          otherwise catalog when gradle/libs.versions.toml exists). catalog adds
+                          only the missing entries to the toml, and build.gradle.kts refers to
+                          them as libs.katachi and so on. When an alias is already used for
+                          something else, an explicit --deps catalog stops; the default falls
+                          back to literal
       --force             Overwrite an existing test module
       --dry-run           Write nothing; only print what would be done
 
@@ -595,6 +616,24 @@ except Exception:
     v = None
 print(v if isinstance(v, str) else "")
 ' "$2" 2>/dev/null || :
+}
+
+# チェックリストの preferences.<$1>（書き方の方針。preferences set が記録する）を標準出力に出す。
+# 文字列でなければ空。作業用ディレクトリが無い・python3 が無い・JSON が読めないときも空（止まらない）。
+# scaffold（testFramework / dependencyStyle の既定）と preferences show が呼ぶ。
+read_preference() {
+	_rp_wd="${WORKDIR:-}"
+	[ -n "$_rp_wd" ] || _rp_wd=$(resolve_workdir 2>/dev/null) || _rp_wd=""
+	[ -n "$_rp_wd" ] && [ -f "$_rp_wd/check-list.html" ] || return 0
+	command -v python3 >/dev/null 2>&1 || return 0
+	extract_json "$_rp_wd/check-list.html" checklist 2>/dev/null | python3 -c '
+import json, sys
+try:
+    v = (json.load(sys.stdin).get("preferences") or {}).get(sys.argv[1])
+except Exception:
+    v = None
+print(v if isinstance(v, str) else "")
+' "$1" 2>/dev/null || :
 }
 
 # 検査用モジュールの置き場所を決めて、次の変数に入れる。
@@ -1075,6 +1114,7 @@ catalog_version_number() {
 #   - jvmToolchain(N)（kotlin { } の中も、buildSrc・build-logic の convention plugin の中も）
 #   - JavaLanguageVersion.of(N)（java { toolchain { languageVersion = ... } }）
 #   - N の代わりに libs.versions.<別名>（.get() / .toInt() が付いていてもよい）。version catalog から読む
+#   - N の代わりに識別子（jvmToolchain(jvmTarget)）。同じファイルの `(const )?val jvmTarget(: Int)? = N` から読む
 # 生成する $MODULE_DIR 自身と、ビルドの出力・キャッシュは見ない。
 jvm_toolchain_candidates() {
 	find . \( -path "./$MODULE_DIR" -o -name build -o -name .gradle -o -name .git -o -name .kotlin \
@@ -1092,6 +1132,16 @@ jvm_toolchain_candidates() {
 						_jc_a=$(printf '%s' "$_jc_l" | sed -n -E 's/.*libs\.versions\.([A-Za-z0-9_]+(\.[A-Za-z0-9_]+)*).*/\1/p' |
 							head -n 1 | sed -E 's/(\.(get|toInt|toString|asProvider|orNull|getOrNull))+$//')
 						[ -n "$_jc_a" ] && _jc_n=$(catalog_version_number "$_jc_a")
+					fi
+					if [ -z "$_jc_n" ]; then
+						# jvmToolchain(jvmTarget) のように識別子で書かれている: 同じファイルの
+						# `(const )?val <識別子>(: Int)? = N` を探す（build-logic の convention plugin に多い）。
+						_jc_id=$(printf '%s' "$_jc_l" | sed -n -E \
+							-e 's/.*jvmToolchain[[:space:]]*\([[:space:]]*([A-Za-z_][A-Za-z0-9_]*)[[:space:]]*\).*/\1/p' \
+							-e 's/.*JavaLanguageVersion\.of\([[:space:]]*([A-Za-z_][A-Za-z0-9_]*)[[:space:]]*\).*/\1/p' | head -n 1)
+						[ -n "$_jc_id" ] && _jc_n=$(sed -E 's#(^|[^:])//.*#\1#' "$_jc_f" |
+							sed -n -E "s/.*(const[[:space:]]+)?val[[:space:]]+${_jc_id}([[:space:]]*:[[:space:]]*Int)?[[:space:]]*=[[:space:]]*\"?([0-9]+)\"?.*/\3/p" |
+							head -n 1)
 					fi
 					printf '%s\t%s\n' "${_jc_n:-?}" "${_jc_f#./}"
 				done
@@ -1620,6 +1670,9 @@ cmd_scaffold() {
 	sc_force="no"
 	sc_dry="no"
 	sc_module_dir=""
+	sc_tf=""
+	sc_deps=""
+	SC_DEPS_EXPLICIT="no"
 
 	while [ $# -gt 0 ]; do
 		case "$1" in
@@ -1631,6 +1684,23 @@ cmd_scaffold() {
 		--module-dir)
 			need_value "$1" "${2:-}"
 			sc_module_dir="$2"
+			shift 2
+			;;
+		--test-framework)
+			need_value "$1" "${2:-}"
+			case "$2" in
+			junit5 | kotest) sc_tf="$2" ;;
+			*) die "--test-framework は junit5 か kotest です: ${2}" "--test-framework must be junit5 or kotest: ${2}" ;;
+			esac
+			shift 2
+			;;
+		--deps)
+			need_value "$1" "${2:-}"
+			case "$2" in
+			catalog | literal) sc_deps="$2" ;;
+			*) die "--deps は catalog か literal です: ${2}" "--deps must be catalog or literal: ${2}" ;;
+			esac
+			SC_DEPS_EXPLICIT="yes"
 			shift 2
 			;;
 		--katachi)
@@ -1770,6 +1840,91 @@ cmd_scaffold() {
 		sc_kotlin_plugin="kotlin(\"jvm\")"
 	fi
 
+	# テストのフレームワーク: --test-framework > preferences.testFramework > 検出（kotest の依存があるか）> junit5。
+	detect_test_framework
+	sc_tf_from=""
+	if [ -n "$sc_tf" ]; then
+		sc_tf_from="--test-framework|--test-framework"
+	else
+		sc_tf=$(read_preference testFramework)
+		case "$sc_tf" in
+		junit5 | kotest) sc_tf_from="preferences.testFramework|preferences.testFramework" ;;
+		"") sc_tf="" ;;
+		*)
+			warn "preferences.testFramework の値を知りません（${sc_tf}。junit5 か kotest）。検出した値を使います。" \
+				"Unknown value in preferences.testFramework (${sc_tf}; expected junit5 or kotest). Using the detected value instead."
+			sc_tf=""
+			;;
+		esac
+		if [ -z "$sc_tf" ]; then
+			sc_tf="$SC_TF_DETECTED"
+			if [ -n "$SC_TF_FROM" ]; then
+				sc_tf_from="検出: ${SC_TF_FROM}|detected from ${SC_TF_FROM}"
+			else
+				sc_tf_from="既定。kotest の依存が見つからない|the default; no kotest dependency found"
+			fi
+		fi
+	fi
+
+	# 依存の書き方: --deps > preferences.dependencyStyle > gradle/libs.versions.toml があれば catalog > literal。
+	# catalog に決めても、書けない事情（別名の衝突、settings で別のファイルを libs にしている）があれば
+	# literal に落とす。--deps catalog を明示したときだけ、衝突は止まる（黙って literal にしない）。
+	sc_deps_from=""
+	if [ -n "$sc_deps" ]; then
+		sc_deps_from="--deps|--deps"
+	else
+		sc_deps=$(read_preference dependencyStyle)
+		case "$sc_deps" in
+		catalog | literal) sc_deps_from="preferences.dependencyStyle|preferences.dependencyStyle" ;;
+		"") sc_deps="" ;;
+		*)
+			warn "preferences.dependencyStyle の値を知りません（${sc_deps}。catalog か literal）。検出した値を使います。" \
+				"Unknown value in preferences.dependencyStyle (${sc_deps}; expected catalog or literal). Using the detected value instead."
+			sc_deps=""
+			;;
+		esac
+		if [ -z "$sc_deps" ]; then
+			if [ -f "$CATALOG_FILE" ]; then
+				sc_deps="catalog"
+				sc_deps_from="検出: ${CATALOG_FILE}|detected: ${CATALOG_FILE}"
+			else
+				sc_deps="literal"
+				sc_deps_from="${CATALOG_FILE} が無い|no ${CATALOG_FILE}"
+			fi
+		fi
+	fi
+	sc_deps_note=""
+	if [ "$sc_deps" = "catalog" ]; then
+		if [ ! -f "$CATALOG_FILE" ]; then
+			sc_deps_note="${CATALOG_FILE} が無い|no ${CATALOG_FILE}"
+		elif catalog_is_remapped; then
+			sc_deps_note="$(file_uri "$SETTINGS_FILE") の versionCatalogs { } が ${CATALOG_FILE} 以外を使っている|versionCatalogs { } in $(file_uri "$SETTINGS_FILE") uses something other than ${CATALOG_FILE}"
+		else
+			plan_catalog_entries "$sc_version" "$sc_konsist" "$sc_tf"
+			sc_deps_note="$SC_CAT_FALLBACK"
+		fi
+		if [ -n "$sc_deps_note" ]; then
+			if [ "$SC_DEPS_EXPLICIT" = "yes" ]; then
+				die "${sc_deps_note%%|*}。--deps literal にするか、カタログの別名を直してください。" \
+					"${sc_deps_note#*|}. Use --deps literal, or fix the alias in the catalog."
+			fi
+			sc_deps="literal"
+			sc_deps_from="${sc_deps_from%%|*}。catalog には書かない|${sc_deps_from#*|}; not written to the catalog"
+		fi
+	fi
+	# placement が module（サブプロジェクトだけが版付き）で catalog に Kotlin JVM の別名があれば、
+	# 版を直書きせずその別名で apply する（同じ版でも id が違えば落ちるので、別名から取る）。
+	sc_kotlin_plugin_from=""
+	if [ "$sc_deps" = "catalog" ] && [ "$kotlin_placement" = "module" ]; then
+		_sc_kalias=$(catalog_alias_for plugins "org.jetbrains.kotlin.jvm")
+		if [ -n "$_sc_kalias" ]; then
+			sc_kotlin_plugin="alias($(catalog_accessor_of_alias plugins "$_sc_kalias"))"
+			sc_kotlin_plugin_from="catalog"
+		fi
+	fi
+	sc_kotest_version=""
+	[ "$sc_tf" = "kotest" ] && sc_kotest_version=$(kotest_version_literal)
+
 	# include 済みの判定。include は Gradle パスの形（":static-analysis:katachi"）で書くが、
 	# 1 階層のときは "architecture-test" と ":architecture-test" の両方に当てる。
 	# 正規表現では . が任意の 1 文字なので、置き場所の . は \. にしてから当てる。
@@ -1804,6 +1959,22 @@ cmd_scaffold() {
 	note "JVM toolchain: ${SC_TC_JA}" \
 		"JVM toolchain: ${SC_TC_EN}"
 	note "konsist:      ${sc_konsist}"
+	note "テスト:       ${sc_tf}（${sc_tf_from%%|*}）" \
+		"Test framework: ${sc_tf} (${sc_tf_from#*|})"
+	if [ "$sc_deps" = "catalog" ]; then
+		note "依存:         catalog（${sc_deps_from%%|*}。$(file_uri "$CATALOG_FILE") に追記）" \
+			"Dependencies: catalog (${sc_deps_from#*|}; appended to $(file_uri "$CATALOG_FILE"))"
+		if [ -n "$SC_CATALOG_ADDED" ]; then
+			catalog_additions | sed 's/^/                /'
+		else
+			note "              追記なし（必要な項目はすべてある）" \
+				"              nothing to append (every entry is already there)"
+		fi
+	else
+		note "依存:         literal（${sc_deps_from%%|*}）" \
+			"Dependencies: literal (${sc_deps_from#*|})"
+		[ -n "$sc_deps_note" ] && note "              ${sc_deps_note%%|*}" "              ${sc_deps_note#*|}"
+	fi
 	case "$MODULE_DIR_SOURCE" in
 	arg) note "モジュール:   $(file_uri "$MODULE_DIR")/（${MODULE_GRADLE_PATH}。--module-dir）" \
 		"Module:       $(file_uri "$MODULE_DIR")/ (${MODULE_GRADLE_PATH}; from --module-dir)" ;;
@@ -1817,9 +1988,9 @@ cmd_scaffold() {
 	note "ルートに追加: ${root_needs_plugin} ($(file_uri "$ROOT_BUILD_FILE"))" \
 		"Add to root:  ${root_needs_plugin} ($(file_uri "$ROOT_BUILD_FILE"))"
 	[ "$kotlin_placement" = "module" ] &&
-		note "              サブプロジェクトが Kotlin プラグインを版付きで宣言しているため、ルートには足さず ${MODULE_GRADLE_PATH} に版を書きます
+		note "              サブプロジェクトが Kotlin プラグインを版付きで宣言しているため、ルートには足さず ${MODULE_GRADLE_PATH} に版を書きます（${sc_kotlin_plugin}）
               Gradle が「The Kotlin Gradle plugin was loaded multiple times ...」と警告しますが、この構成では想定どおりです" \
-			"              A subproject declares the Kotlin plugin with a version, so it is not added to the root; the version goes into ${MODULE_GRADLE_PATH}
+			"              A subproject declares the Kotlin plugin with a version, so it is not added to the root; the version goes into ${MODULE_GRADLE_PATH} (${sc_kotlin_plugin})
               Gradle warns \"The Kotlin Gradle plugin was loaded multiple times ...\"; that is expected with this setup"
 	note "include 追加: ${settings_needs_include} ($(file_uri "$SETTINGS_FILE"))" \
 		"Add include:  ${settings_needs_include} ($(file_uri "$SETTINGS_FILE"))"
@@ -1835,7 +2006,9 @@ cmd_scaffold() {
 	fi
 
 	mkdir -p "$src_dir"
-	write_module_build "$sc_version" "$sc_konsist" "$sc_context_flag" "$sc_package" "$sc_kotlin_plugin" "$SC_TC_N"
+	# catalog を先に書く。build.gradle.kts が参照するアクセサは、ここで足した項目から作られる。
+	[ "$sc_deps" = "catalog" ] && write_catalog_entries
+	write_module_build "$sc_version" "$sc_konsist" "$sc_context_flag" "$sc_package" "$sc_kotlin_plugin" "$SC_TC_N" "$sc_deps" "$sc_tf" "$sc_kotest_version"
 	# **--force でも定義は上書きしない。** ここには人とエージェントが書いた
 	# architecture { } が入っている。やり直しで消えると取り返しがつかない。
 	if [ -s "$src_dir/ProjectArchitecture.kt" ]; then
@@ -1844,7 +2017,7 @@ cmd_scaffold() {
 	else
 		write_architecture_kt "$sc_package" "$src_dir"
 	fi
-	write_test_kt "$sc_package" "$src_dir" "$sc_konsist"
+	write_test_kt "$sc_package" "$src_dir" "$sc_konsist" "$sc_tf"
 
 	ROOT_PLUGIN_MANUAL=""
 	SETTINGS_MANUAL=""
@@ -1863,6 +2036,16 @@ cmd_scaffold() {
 	say "$(file_uri "$MODULE_DIR/build.gradle.kts")"
 	say "$(file_uri "$src_dir/ProjectArchitecture.kt")"
 	say "$(file_uri "$src_dir/ProjectArchitectureTest.kt")"
+	if [ "$sc_deps" = "catalog" ]; then
+		if [ -n "$SC_CATALOG_ADDED" ]; then
+			say "$(file_uri "$CATALOG_FILE") （次の項目を追記）" \
+				"$(file_uri "$CATALOG_FILE") (appended the following)"
+			catalog_additions | sed 's/^/    /'
+		else
+			say "$(file_uri "$CATALOG_FILE") （追記なし。必要な項目はすべてあった）" \
+				"$(file_uri "$CATALOG_FILE") (nothing appended; every entry was already there)"
+		fi
+	fi
 	[ "$root_needs_plugin" = "yes" ] && say "${sc_root_build_uri} （Kotlin JVM プラグインを apply false で追加）" \
 		"${sc_root_build_uri} (added the Kotlin JVM plugin with apply false)"
 	[ "$settings_needs_include" = "yes" ] && [ -z "$SETTINGS_INCLUDE_MANUAL" ] &&
@@ -1940,6 +2123,12 @@ in ${sc_root_build_uri} (create plugins { } if there is none)."
     fails. That is expected. Only errors other than Unexpected are a problem."
 }
 
+# $MODULE_DIR/build.gradle.kts を書く。
+#   $1 katachi の版   $2 konsist（yes/no）   $3 -Xcontext-parameters が要るか（yes/no）
+#   $4 パッケージ     $5 Kotlin plugin の行   $6 jvmToolchain に書く N（空なら書かない）
+#   $7 依存の書き方（catalog/literal）  $8 テストのフレームワーク（junit5/kotest）
+#   $9 literal で書く Kotest の版（kotest のときだけ）
+# catalog のときのアクセサは plan_catalog_entries が SC_ACC_* に入れている。
 write_module_build() {
 	_version="$1"
 	_konsist="$2"
@@ -1947,6 +2136,9 @@ write_module_build() {
 	_package="$4"
 	_kotlin_plugin="$5"
 	_toolchain="${6:-}"
+	_deps="${7:-literal}"
+	_tf="${8:-junit5}"
+	_kotest_version="${9:-$KOTEST_VERSION}"
 
 	# 生成物は利用者のリポジトリにそのまま残るので、コメントも --lang に合わせる
 	# （テスト関数名と同じ理由。write_test_kt を参照）。
@@ -2020,17 +2212,54 @@ $_tc_block$_ctx_note
 		_kotlin_block=""
 	fi
 
-	if [ "$_konsist" = "yes" ]; then
-		_konsist_line="    testImplementation(\"me.tbsten.katachi:katachi-konsist:$_version\")"
+	# 依存と plugin の行。catalog ならアクセサ（plan_catalog_entries の SC_ACC_*）、literal なら座標を直書き。
+	# JUnit 5 は jupiter + launcher、Kotest は runner + launcher（jupiter は書かない）。bom はどちらも。
+	if [ "$_deps" = "catalog" ]; then
+		_plugin_line="    alias(${SC_ACC_PLUGIN})"
+		_katachi_line="    testImplementation(${SC_ACC_KATACHI})"
+		_konsist_line="    testImplementation(${SC_ACC_KONSIST})"
+		_bom_line="    testImplementation(platform(${SC_ACC_JUNIT_BOM}))"
+		_engine_line="    testImplementation(${SC_ACC_JUNIT_JUPITER})"
+		[ "$_tf" = "kotest" ] && _engine_line="    testImplementation(${SC_ACC_KOTEST})"
+		_launcher_line="    testRuntimeOnly(${SC_ACC_JUNIT_LAUNCHER})"
 	else
-		_konsist_line=""
+		_plugin_line="    id(\"$KATACHI_PLUGIN_ID\") version \"$_version\""
+		_katachi_line="    testImplementation(\"me.tbsten.katachi:katachi:$_version\")"
+		_konsist_line="    testImplementation(\"me.tbsten.katachi:katachi-konsist:$_version\")"
+		_bom_line="    testImplementation(platform(\"org.junit:junit-bom:$JUNIT_VERSION\"))"
+		_engine_line="    testImplementation(\"org.junit.jupiter:junit-jupiter\")"
+		[ "$_tf" = "kotest" ] && _engine_line="    testImplementation(\"io.kotest:kotest-runner-junit5:$_kotest_version\")"
+		_launcher_line="    testRuntimeOnly(\"org.junit.platform:junit-platform-launcher\")"
+	fi
+	[ "$_konsist" = "yes" ] || _konsist_line=""
+
+	# Kotlin plugin の行は catalog でも版なしの kotlin("jvm") のまま（placement が module のときは
+	# 版付きか catalog の別名）。catalog に寄せたくなった人が alias(libs.plugins.kotlin.jvm) に
+	# 書き換えて落ちないように、理由と書き方をコメントで残す。
+	_kotlin_plugin_note=""
+	if [ "$_deps" = "catalog" ] && [ "$_kotlin_plugin" = 'kotlin("jvm")' ]; then
+		case "$KATACHI_LANG" in
+		ja)
+			_kotlin_plugin_note='    // alias(libs.plugins.kotlin.jvm) と書かない。build-logic（includeBuild）経由で Kotlin plugin が
+    // classpath にあると "already on the classpath with an unknown version" で落ちる。版なしの
+    // kotlin("jvm") か、カタログに寄せるなら id(libs.plugins.kotlin.jvm.get().pluginId) を使う。
+'
+			;;
+		*)
+			_kotlin_plugin_note='    // Do not write alias(libs.plugins.kotlin.jvm). When the Kotlin plugin is already on the
+    // classpath through build-logic (includeBuild), that fails with "already on the classpath
+    // with an unknown version". Use the version-less kotlin("jvm"), or
+    // id(libs.plugins.kotlin.jvm.get().pluginId) if you want it to come from the catalog.
+'
+			;;
+		esac
 	fi
 
 	cat >"$MODULE_DIR/build.gradle.kts" <<EOF
 plugins {
-    $_kotlin_plugin
+${_kotlin_plugin_note}    $_kotlin_plugin
 $_plugin_note
-    id("$KATACHI_PLUGIN_ID") version "$_version"
+$_plugin_line
 }
 
 ${_kotlin_block}katachi {
@@ -2054,11 +2283,11 @@ $_std_note
 }
 
 dependencies {
-    testImplementation("me.tbsten.katachi:katachi:$_version")
+$_katachi_line
 $_konsist_line
-    testImplementation(platform("org.junit:junit-bom:$JUNIT_VERSION"))
-    testImplementation("org.junit.jupiter:junit-jupiter")
-    testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+$_bom_line
+$_engine_line
+$_launcher_line
 }
 EOF
 	# repositories は宣言しない。Android のように FAIL_ON_PROJECT_REPOS が
@@ -2079,27 +2308,63 @@ val projectArchitecture = architecture {
 EOF
 }
 
+# ProjectArchitectureTest.kt を書く。$1 パッケージ、$2 置き場所、$3 konsist（yes/no）、$4 junit5 / kotest。
+# 違反の件数の上限（maxViolations）は書かない。導入中に全件を見たいときは、テストを書き換えずに
+# -Dkatachi.maxViolations=all で出せる（katachi の Gradle plugin が test の JVM に渡す）。
 write_test_kt() {
 	_package="$1"
 	_dir="$2"
 	_konsist="$3"
+	_tf="${4:-junit5}"
 
 	# テスト名は利用者のリポジトリにそのまま残るので、--lang に合わせる。
 	# 英語で進めている利用者に日本語の識別子を置いていかないため。
 	case "$KATACHI_LANG" in
-	ja)
-		_test_name="プロジェクトの構成が定義どおりになっている"
-		# 導入中は違反が数十〜百件出る。既定の 10 件で打ち切られると全体が見えず、
-		# 定義を書き進められない。書き終えたら外す前提の一時設定なので TODO を付ける。
-		_max_note='        // TODO: 導入が落ち着いたら maxViolations を外す（既定は 10 件）。'
-		;;
-	*)
-		_test_name="the project matches its declaration"
-		_max_note='        // TODO: drop maxViolations once the definition has settled (the default is 10).'
-		;;
+	ja) _test_name="プロジェクトの構成が定義どおりになっている" ;;
+	*) _test_name="the project matches its declaration" ;;
 	esac
 
+	# konsist あり: FileConstraintCheck() を渡す（渡さないと konsist { } などの制約が評価されない）。
+	# FileConstraintCheck は実験的 API なので opt-in が要る。
 	if [ "$_konsist" = "yes" ]; then
+		_assert_line="        projectArchitecture.assert(FileConstraintCheck())"
+	else
+		_assert_line="        projectArchitecture.assert()"
+	fi
+
+	if [ "$_tf" = "kotest" ]; then
+		if [ "$_konsist" = "yes" ]; then
+			cat >"$_dir/ProjectArchitectureTest.kt" <<EOF
+@file:OptIn(ExperimentalKatachiApi::class)
+
+package $_package.test.architecture
+
+import io.kotest.core.spec.style.FunSpec
+import me.tbsten.katachi.ExperimentalKatachiApi
+import me.tbsten.katachi.check.FileConstraintCheck
+import me.tbsten.katachi.check.assert
+
+class ProjectArchitectureTest : FunSpec({
+    test("$_test_name") {
+$_assert_line
+    }
+})
+EOF
+		else
+			cat >"$_dir/ProjectArchitectureTest.kt" <<EOF
+package $_package.test.architecture
+
+import io.kotest.core.spec.style.FunSpec
+import me.tbsten.katachi.check.assert
+
+class ProjectArchitectureTest : FunSpec({
+    test("$_test_name") {
+$_assert_line
+    }
+})
+EOF
+		fi
+	elif [ "$_konsist" = "yes" ]; then
 		cat >"$_dir/ProjectArchitectureTest.kt" <<EOF
 package $_package.test.architecture
 
@@ -2112,8 +2377,7 @@ class ProjectArchitectureTest {
     @OptIn(ExperimentalKatachiApi::class)
     @Test
     fun \`$_test_name\`() {
-$_max_note
-        projectArchitecture.assert(FileConstraintCheck(), maxViolations = 200)
+$_assert_line
     }
 }
 EOF
@@ -2127,8 +2391,7 @@ import org.junit.jupiter.api.Test
 class ProjectArchitectureTest {
     @Test
     fun \`$_test_name\`() {
-$_max_note
-        projectArchitecture.assert(maxViolations = 200)
+$_assert_line
     }
 }
 EOF
@@ -2178,6 +2441,380 @@ catalog_kotlin_accessors_joined() {
 	done | tr '\n' '|' | sed 's/|$//'
 }
 
+# ---------------------------------------------------------------- version catalog への追記
+#
+# scaffold --deps catalog は gradle/libs.versions.toml に katachi / JUnit / Kotest の項目を足し、
+# build.gradle.kts からは alias(libs.plugins.katachi) / libs.katachi のようにアクセサで参照する。
+# ここにあるのはその読み取り（別名を中身で引く、アクセサを作る、衝突を見る）と書き込み。
+# 対象は gradle/libs.versions.toml だけ。読むのは 1 行で閉じた項目だけ（複数行の { } は見ない）。
+
+CATALOG_FILE="gradle/libs.versions.toml"
+
+# [$1] の項目を「別名<TAB>中身<TAB>version.ref」で 1 行ずつ出す（version.ref は無ければ空）。
+# 中身は libraries なら group:name、plugins なら id、versions なら値。コメントと空の項目は飛ばす。
+catalog_entries() {
+	[ -f "$CATALOG_FILE" ] || return 0
+	sed 's:#.*::' "$CATALOG_FILE" | awk -v want="$1" '
+		function unq(s) { gsub(/^[[:space:]"\047]+|[[:space:]"\047]+$/, "", s); return s }
+		function field(s, name,   re, m) {
+			re = "(^|[{,[:space:]])" name "[[:space:]]*=[[:space:]]*[\"\047][^\"\047]*[\"\047]"
+			if (!match(s, re)) return ""
+			m = substr(s, RSTART, RLENGTH)
+			sub(/^[^=]*=[[:space:]]*/, "", m)
+			return unq(m)
+		}
+		/^[[:space:]]*\[/ { section = $0; gsub(/[][[:space:]]/, "", section); next }
+		section != want || $0 !~ /=/ { next }
+		{
+			key = $0
+			sub(/[[:space:]]*=.*/, "", key)
+			gsub(/[[:space:]"\047]/, "", key)
+			val = $0
+			sub(/^[^=]*=[[:space:]]*/, "", val)
+			content = ""
+			ref = ""
+			if (val ~ /^["\047]/) {
+				v = unq(val)
+				if (want == "versions") content = v
+				else {
+					n = split(v, parts, ":")
+					content = (want == "libraries" && n >= 2) ? parts[1] ":" parts[2] : parts[1]
+				}
+			} else if (want == "libraries") {
+				content = field(val, "module")
+				if (content == "") {
+					g = field(val, "group")
+					nm = field(val, "name")
+					if (g != "" && nm != "") content = g ":" nm
+				}
+				ref = field(val, "version.ref")
+			} else if (want == "plugins") {
+				content = field(val, "id")
+				ref = field(val, "version.ref")
+			}
+			if (key != "" && content != "") print key "\t" content "\t" ref
+		}
+	'
+}
+
+# 別名を Gradle のアクセサの区切りに揃える（- _ . を . に。camelCase はそのまま）。
+catalog_norm_alias() {
+	printf '%s\n' "$1" | tr '_-' '..'
+}
+
+# [$1] で中身が $2 の項目の別名を出す（無ければ空）。同じものを指す項目が既にあれば、
+# 名前が違っても（katachi_konsist でも katachiKonsist でも）それを使うため。
+catalog_alias_for() {
+	catalog_entries "$1" | awk -F'\t' -v c="$2" '$2 == c { print $1; exit }'
+}
+
+# [$1] で中身が $2 の項目の version.ref を出す（無ければ空）。
+catalog_version_ref_for() {
+	catalog_entries "$1" | awk -F'\t' -v c="$2" '$2 == c { print $3; exit }'
+}
+
+# [libraries] で group が $1（io.kotest など）の項目のうち、最初の version.ref を出す（無ければ空）。
+catalog_version_ref_for_group() {
+	catalog_entries libraries | awk -F'\t' -v g="$1:" 'index($2, g) == 1 && $3 != "" { print $3; exit }'
+}
+
+# [$1] で別名 $2（区切りの違いは同一視）の中身を出す（無ければ空）。
+catalog_alias_content() {
+	catalog_entries "$1" | awk -F'\t' -v a="$(catalog_norm_alias "$2")" '
+		function norm(s) { gsub(/[-_]/, ".", s); return s }
+		norm($1) == a { print $2; exit }
+	'
+}
+
+# [$1] で別名 $2（区切りの違いは同一視）の、ファイルに書かれているとおりの別名を出す（無ければ空）。
+catalog_alias_key() {
+	catalog_entries "$1" | awk -F'\t' -v a="$(catalog_norm_alias "$2")" '
+		function norm(s) { gsub(/[-_]/, ".", s); return s }
+		norm($1) == a { print $1; exit }
+	'
+}
+
+# [$1] に別名 $2 が**別の中身**で使われていれば 0（衝突）。無い・同じ中身なら 1。
+catalog_alias_conflict() {
+	_cac=$(catalog_alias_content "$1" "$2")
+	[ -n "$_cac" ] && [ "$_cac" != "$3" ]
+}
+
+# [$1] の既存の別名が $2 の接頭辞（- _ . 区切りの先頭部分）になっていれば 0。
+# junit があるところに junit-bom を足すと、libs.junit が group になって既存の参照が壊れるので、
+# その別名は使わず camelCase（junitBom）に逃がす。
+catalog_alias_has_prefix_in() {
+	catalog_entries "$1" | awk -F'\t' -v a="$(catalog_norm_alias "$2")" '
+		function norm(s) { gsub(/[-_]/, ".", s); return s }
+		{ k = norm($1); if (k != a && index(a, k ".") == 1) { found = 1; exit } }
+		END { exit found ? 0 : 1 }
+	'
+}
+
+# - _ . 区切りの別名を camelCase にする（junit-bom → junitBom。区切りが無ければそのまま）。
+catalog_alias_camel() {
+	printf '%s\n' "$1" | awk '{
+		n = split($0, p, /[-_.]/)
+		out = p[1]
+		for (i = 2; i <= n; i++) out = out toupper(substr(p[i], 1, 1)) substr(p[i], 2)
+		print out
+	}'
+}
+
+# [$1] の別名 $2 を Kotlin DSL のアクセサにして出す（libs.junit.bom / libs.plugins.katachi）。
+# 同じ節に $2 を接頭辞とする別名（katachi に対する katachi-konsist）があれば、Gradle は
+# libs.katachi を group にするので、.asProvider() を付けた形で出す。
+catalog_accessor_of_alias() {
+	_coa=$(catalog_norm_alias "$2")
+	_coa_prefix="libs."
+	[ "$1" = "plugins" ] && _coa_prefix="libs.plugins."
+	if catalog_entries "$1" | awk -F'\t' -v a="$_coa" '
+		function norm(s) { gsub(/[-_]/, ".", s); return s }
+		{ k = norm($1); if (k != a && index(k, a ".") == 1) { found = 1; exit } }
+		END { exit found ? 0 : 1 }
+	'; then
+		printf '%s%s.asProvider()\n' "$_coa_prefix" "$_coa"
+	else
+		printf '%s%s\n' "$_coa_prefix" "$_coa"
+	fi
+}
+
+# settings の versionCatalogs { } が、既定の gradle/libs.versions.toml 以外を libs にしているか。
+# そのときは toml に足しても libs から見えないので、scaffold は literal に落とす。
+catalog_is_remapped() {
+	[ -f "${SETTINGS_FILE:-}" ] || return 1
+	_cir=$(sed 's://.*::' "$SETTINGS_FILE")
+	printf '%s' "$_cir" | grep -q 'versionCatalogs[[:space:]]*{' || return 1
+	printf '%s' "$_cir" | grep -qE "[\"'](\./)?gradle/libs\.versions\.toml[\"']" && return 1
+	return 0
+}
+
+# scaffold が catalog に足す項目を決める。結果は次の変数に入れる。
+#   SC_CAT_<節>      追記する行（改行区切り。無ければ空）。節は VERSIONS / LIBRARIES / PLUGINS
+#   SC_CATALOG_ADDED 追記する行が 1 つでもあれば yes（一覧は catalog_additions が出す）
+#   SC_CAT_FALLBACK  catalog に書けない理由（ja|en）。空なら書ける
+#   SC_ACC_*         build.gradle.kts に書くアクセサ（PLUGIN / KATACHI / KONSIST / JUNIT_BOM /
+#                    JUNIT_JUPITER / JUNIT_LAUNCHER / KOTEST）
+# 引数: $1 = katachi の版, $2 = konsist（yes/no）, $3 = テストのフレームワーク（junit5/kotest）
+#
+# 決め方（項目ごと）: 同じ中身の項目があればその別名を使う → 同じ別名が別の中身なら衝突
+# （SC_CAT_FALLBACK）→ 既存の別名の接頭辞になるなら camelCase に逃がす → 足す。
+# 版は、同じ中身の既存の項目に version.ref があればそれを使い、無ければ [versions] に足す。
+plan_catalog_entries() {
+	_pc_version="$1"
+	_pc_konsist="$2"
+	_pc_tf="$3"
+	SC_CAT_VERSIONS=""
+	SC_CAT_LIBRARIES=""
+	SC_CAT_PLUGINS=""
+	SC_CATALOG_ADDED=""
+	SC_CAT_FALLBACK=""
+	SC_ACC_PLUGIN=""
+	SC_ACC_KATACHI=""
+	SC_ACC_KONSIST=""
+	SC_ACC_JUNIT_BOM=""
+	SC_ACC_JUNIT_JUPITER=""
+	SC_ACC_JUNIT_LAUNCHER=""
+	SC_ACC_KOTEST=""
+
+	# katachi の version.ref: 既存の katachi の項目（me.tbsten.katachi の library か plugin）が持っていればそれ。
+	_pc_ref=$(catalog_version_ref_for_group me.tbsten.katachi)
+	[ -n "$_pc_ref" ] || _pc_ref=$(catalog_version_ref_for plugins "$KATACHI_PLUGIN_ID")
+	if [ -z "$_pc_ref" ]; then
+		plan_catalog_version katachi "$_pc_version" || return 0
+		_pc_ref="$PC_REF"
+	fi
+	plan_catalog_item plugins katachi "$KATACHI_PLUGIN_ID" "id = \"${KATACHI_PLUGIN_ID}\", version.ref = \"${_pc_ref}\"" || return 0
+	SC_ACC_PLUGIN="$PC_ACCESSOR"
+	plan_catalog_item libraries katachi "me.tbsten.katachi:katachi" "module = \"me.tbsten.katachi:katachi\", version.ref = \"${_pc_ref}\"" || return 0
+	SC_ACC_KATACHI="$PC_ACCESSOR"
+	if [ "$_pc_konsist" = "yes" ]; then
+		plan_catalog_item libraries katachiKonsist "me.tbsten.katachi:katachi-konsist" "module = \"me.tbsten.katachi:katachi-konsist\", version.ref = \"${_pc_ref}\"" || return 0
+		SC_ACC_KONSIST="$PC_ACCESSOR"
+	fi
+
+	# JUnit: bom と launcher は常に。jupiter は JUnit 5 のときだけ。版は bom（か jupiter）の version.ref。
+	_pc_jref=$(catalog_version_ref_for libraries "org.junit:junit-bom")
+	[ -n "$_pc_jref" ] || _pc_jref=$(catalog_version_ref_for libraries "org.junit.jupiter:junit-jupiter")
+	if [ -z "$_pc_jref" ]; then
+		plan_catalog_version junit "$JUNIT_VERSION" || return 0
+		_pc_jref="$PC_REF"
+	fi
+	plan_catalog_item libraries junit-bom "org.junit:junit-bom" "module = \"org.junit:junit-bom\", version.ref = \"${_pc_jref}\"" || return 0
+	SC_ACC_JUNIT_BOM="$PC_ACCESSOR"
+	if [ "$_pc_tf" = "junit5" ]; then
+		plan_catalog_item libraries junit-jupiter "org.junit.jupiter:junit-jupiter" "module = \"org.junit.jupiter:junit-jupiter\"" || return 0
+		SC_ACC_JUNIT_JUPITER="$PC_ACCESSOR"
+	fi
+	plan_catalog_item libraries junit-platform-launcher "org.junit.platform:junit-platform-launcher" "module = \"org.junit.platform:junit-platform-launcher\"" || return 0
+	SC_ACC_JUNIT_LAUNCHER="$PC_ACCESSOR"
+
+	if [ "$_pc_tf" = "kotest" ]; then
+		_pc_kref=$(catalog_version_ref_for_group io.kotest)
+		if [ -z "$_pc_kref" ]; then
+			plan_catalog_version kotest "$KOTEST_VERSION" || return 0
+			_pc_kref="$PC_REF"
+		fi
+		plan_catalog_item libraries kotest-runner-junit5 "io.kotest:kotest-runner-junit5" "module = \"io.kotest:kotest-runner-junit5\", version.ref = \"${_pc_kref}\"" || return 0
+		SC_ACC_KOTEST="$PC_ACCESSOR"
+	fi
+}
+
+# [versions] に別名 $1 = "$2" を用意し、使う別名（version.ref に書く名前）を PC_REF に入れる。
+# 同じ別名が同じ値なら既存のものを使う（値だけが同じ別の別名 — kotlin = "2.3.0" など — は使わない。
+# version.ref で結ぶと、その別名の更新に katachi の版が引きずられる）。別の値なら衝突として
+# SC_CAT_FALLBACK を入れて 1 を返す。$( ) の中で呼ばないこと（SC_CAT_* が失われる）。
+plan_catalog_version() {
+	PC_REF=""
+	_pv_have=$(catalog_alias_content versions "$1")
+	if [ -n "$_pv_have" ]; then
+		if [ "$_pv_have" = "$2" ]; then
+			PC_REF=$(catalog_alias_key versions "$1")
+			return 0
+		fi
+		SC_CAT_FALLBACK="別名 ${1} が別の用途で使われています（[versions] ${1} = \"${_pv_have}\"）|alias ${1} is used for something else ([versions] ${1} = \"${_pv_have}\")"
+		return 1
+	fi
+	SC_CAT_VERSIONS="${SC_CAT_VERSIONS}${SC_CAT_VERSIONS:+
+}${1} = \"${2}\""
+	SC_CATALOG_ADDED="yes"
+	PC_REF="$1"
+}
+
+# [$1] に別名 $2（中身 $3、本文 $4）を用意し、アクセサを PC_ACCESSOR に入れる。
+# 衝突なら SC_CAT_FALLBACK を入れて 1 を返す。
+plan_catalog_item() {
+	_pi_section="$1"
+	_pi_alias="$2"
+	_pi_content="$3"
+	_pi_body="$4"
+	_pi_have=$(catalog_alias_for "$_pi_section" "$_pi_content")
+	if [ -n "$_pi_have" ]; then
+		PC_ACCESSOR=$(catalog_accessor_of_alias "$_pi_section" "$_pi_have")
+		return 0
+	fi
+	if catalog_alias_conflict "$_pi_section" "$_pi_alias" "$_pi_content"; then
+		_pi_other=$(catalog_alias_content "$_pi_section" "$_pi_alias")
+		SC_CAT_FALLBACK="別名 ${_pi_alias} が別の用途で使われています（[${_pi_section}] ${_pi_alias} → ${_pi_other}）|alias ${_pi_alias} is used for something else ([${_pi_section}] ${_pi_alias} → ${_pi_other})"
+		return 1
+	fi
+	if catalog_alias_has_prefix_in "$_pi_section" "$_pi_alias"; then
+		_pi_camel=$(catalog_alias_camel "$_pi_alias")
+		if [ "$_pi_camel" != "$_pi_alias" ]; then
+			if catalog_alias_conflict "$_pi_section" "$_pi_camel" "$_pi_content"; then
+				_pi_other=$(catalog_alias_content "$_pi_section" "$_pi_camel")
+				SC_CAT_FALLBACK="別名 ${_pi_camel} が別の用途で使われています（[${_pi_section}] ${_pi_camel} → ${_pi_other}）|alias ${_pi_camel} is used for something else ([${_pi_section}] ${_pi_camel} → ${_pi_other})"
+				return 1
+			fi
+			_pi_alias="$_pi_camel"
+		fi
+	fi
+	_pi_line="${_pi_alias} = { ${_pi_body} }"
+	case "$_pi_section" in
+	libraries) SC_CAT_LIBRARIES="${SC_CAT_LIBRARIES}${SC_CAT_LIBRARIES:+
+}${_pi_line}" ;;
+	plugins) SC_CAT_PLUGINS="${SC_CAT_PLUGINS}${SC_CAT_PLUGINS:+
+}${_pi_line}" ;;
+	esac
+	SC_CATALOG_ADDED="yes"
+	# 足す前なので、接頭辞の判定は追記後の形で行う（この別名の下に既存の別名があれば asProvider）。
+	PC_ACCESSOR=$(catalog_accessor_of_alias "$_pi_section" "$_pi_alias")
+}
+
+# plan_catalog_entries が足すと決めた行を「[節] 行」の形で、節の順（versions / libraries / plugins）に出す。
+# 「作成する内容」と「作成しました」が使う。
+catalog_additions() {
+	[ -z "$SC_CAT_VERSIONS" ] || printf '%s\n' "$SC_CAT_VERSIONS" | sed 's/^/[versions] /'
+	[ -z "$SC_CAT_LIBRARIES" ] || printf '%s\n' "$SC_CAT_LIBRARIES" | sed 's/^/[libraries] /'
+	[ -z "$SC_CAT_PLUGINS" ] || printf '%s\n' "$SC_CAT_PLUGINS" | sed 's/^/[plugins] /'
+}
+
+# plan_catalog_entries の結果（SC_CAT_*）を gradle/libs.versions.toml に書く。
+# 追記は節の末尾（次の [ の直前。末尾の空行より前）。節が無ければファイルの末尾に作る。
+# .bak に退避 → awk → mv。失敗したら戻して止まる。足すものが無ければ何もしない。
+write_catalog_entries() {
+	[ -n "${SC_CAT_VERSIONS}${SC_CAT_LIBRARIES}${SC_CAT_PLUGINS}" ] || return 0
+	cp "$CATALOG_FILE" "$CATALOG_FILE.bak"
+	_wc_tmp="$CATALOG_FILE.tmp.$$"
+	# 追記する行は改行を含むので -v ではなく環境変数で渡す（macOS の awk は -v の値に改行を入れられない）。
+	if KATACHI_ADD_VERSIONS="$SC_CAT_VERSIONS" KATACHI_ADD_LIBRARIES="$SC_CAT_LIBRARIES" KATACHI_ADD_PLUGINS="$SC_CAT_PLUGINS" awk '
+		function pending(name) {
+			if (name == "versions") return ENVIRON["KATACHI_ADD_VERSIONS"]
+			if (name == "libraries") return ENVIRON["KATACHI_ADD_LIBRARIES"]
+			if (name == "plugins") return ENVIRON["KATACHI_ADD_PLUGINS"]
+			return ""
+		}
+		function flush_section() {
+			if (section != "" && pending(section) != "" && !done[section]) { print pending(section); done[section] = 1 }
+			# 節の末尾の空行は、追記した行の後ろに戻す
+			printf "%s", blanks
+			blanks = ""
+		}
+		/^[[:space:]]*\[/ {
+			flush_section()
+			section = $0
+			gsub(/[][[:space:]]/, "", section)
+			print
+			next
+		}
+		/^[[:space:]]*$/ { blanks = blanks $0 "\n"; next }
+		{ printf "%s", blanks; blanks = ""; print }
+		END {
+			flush_section()
+			n = split("versions libraries plugins", order, " ")
+			for (i = 1; i <= n; i++) {
+				name = order[i]
+				if (pending(name) != "" && !done[name]) { print ""; print "[" name "]"; print pending(name); done[name] = 1 }
+			}
+		}
+	' "$CATALOG_FILE" >"$_wc_tmp"; then
+		mv "$_wc_tmp" "$CATALOG_FILE"
+		rm -f "$CATALOG_FILE.bak"
+		return 0
+	fi
+	rm -f "$_wc_tmp"
+	mv "$CATALOG_FILE.bak" "$CATALOG_FILE"
+	die "$(file_uri "$CATALOG_FILE") の書き換えに失敗しました。元に戻しました。" \
+		"Failed to edit $(file_uri "$CATALOG_FILE"). It was restored."
+}
+
+# テストのフレームワークを検出する。結果は次の変数に入れる。
+#   SC_TF_DETECTED  junit5 / kotest
+#   SC_TF_FROM      kotest と判断した根拠のファイル（junit5 のときは空）
+# catalog の [libraries] に io.kotest: があるか、ルート以外の build.gradle(.kts) に io.kotest が
+# あれば kotest。どちらも無ければ junit5。preferences show も同じものを出す。
+detect_test_framework() {
+	SC_TF_DETECTED="junit5"
+	SC_TF_FROM=""
+	if catalog_entries libraries | awk -F'\t' 'index($2, "io.kotest:") == 1 { found = 1; exit } END { exit found ? 0 : 1 }'; then
+		SC_TF_DETECTED="kotest"
+		SC_TF_FROM="$CATALOG_FILE"
+		return 0
+	fi
+	_dtf=$(find . -maxdepth 6 \
+		\( -name build -o -name node_modules -o -name '.?*' -o -path "./${MODULE_DIR:-$MODULE_DIR_DEFAULT}" \) -prune -o \
+		\( -name 'build.gradle.kts' -o -name 'build.gradle' \) -print 2>/dev/null | sort |
+		while IFS= read -r _dtf_f; do
+			[ "${_dtf_f%/*}" = "." ] && continue
+			if sed 's://.*::' "$_dtf_f" | grep -q 'io\.kotest'; then
+				printf '%s\n' "${_dtf_f#./}"
+				break
+			fi
+		done | head -n 1)
+	if [ -n "$_dtf" ]; then
+		SC_TF_DETECTED="kotest"
+		SC_TF_FROM="$_dtf"
+	fi
+}
+
+# literal で書く Kotest の版。catalog の io.kotest の version.ref が指す値があればそれ、無ければ KOTEST_VERSION。
+kotest_version_literal() {
+	_kvl_ref=$(catalog_version_ref_for_group io.kotest)
+	_kvl=""
+	[ -n "$_kvl_ref" ] && _kvl=$(catalog_entries versions | awk -F'\t' -v a="$_kvl_ref" '$1 == a { print $2; exit }')
+	printf '%s\n' "${_kvl:-$KOTEST_VERSION}"
+}
+
 # $1 のトップレベルの plugins { } と buildscript { } の中身だけを出す（行コメントは落とす）。
 # 宣言がクラスパスに効くのはこの2か所だけ。subprojects { } の中の
 # plugins.withId("org.jetbrains.kotlin.jvm") / pluginManager.withPlugin(...) /
@@ -2219,18 +2856,53 @@ kotlin_plugin_declared_in() {
 	root_plugin_blocks "$1" | grep -qE "$_kd_pat"
 }
 
-# buildSrc が Kotlin Gradle plugin を依存に持っているか。buildSrc の実行時クラスパスは
-# すべての build スクリプトの親になるので、持っていればルートに足さなくても載っている
-# （kilua）。buildSrc 自身の plugins { kotlin("jvm") } は buildSrc のコンパイル用で、
-# プロジェクトのクラスパスには載らないので数えない。compileOnly も同じ理由で数えない。
+# settings で includeBuild したビルドのディレクトリ（build-logic など）を 1 行ずつ出す。
+# 相対パスのまま。`..` で始まるもの（リポジトリの外）と `.` は出さない。
+# lint の PYROLES にも同じ抽出（included_builds）がある。変えるときは揃えること。
+included_build_dirs() {
+	[ -f "${SETTINGS_FILE:-}" ] || return 0
+	sed 's://.*::' "$SETTINGS_FILE" |
+		grep -oE "includeBuild[[:space:]]*\(?[[:space:]]*[\"'][^\"']+[\"']" |
+		sed -E "s/^includeBuild[[:space:]]*\(?[[:space:]]*[\"']//; s/[\"']$//" |
+		sed -e 's#^\./##' -e 's#/$##' |
+		grep -vE '^(\.|\.\..*)?$' || :
+}
+
+# ルートの build ファイルが、版なしの id("...") でプラグインを apply しているか（apply false も含む）。
+# 版なしの id は buildSrc か includeBuild のビルドから来る convention plugin の印。
+# 核のプラグイン（base / java-library のように . を含まない id）と Kotlin / Android の id は数えない
+# （Kotlin の id は kotlin_plugin_declared_in が見る）。
+root_applies_convention_plugin() {
+	[ -f "${1:-}" ] || return 1
+	root_plugin_blocks "$1" | grep -E "id[[:space:](]+[\"'][^\"']*\.[^\"']*[\"']" |
+		grep -vE 'version[[:space:]]+' |
+		grep -qvE "[\"'](org\.jetbrains\.kotlin|com\.android)\."
+}
+
+# buildSrc か includeBuild したビルド（build-logic など）が Kotlin Gradle plugin を依存に持っているか。
+# buildSrc の実行時クラスパスはすべての build スクリプトの親になるので、持っていればルートに
+# 足さなくても載っている（kilua）。buildSrc 自身の plugins { kotlin("jvm") } は buildSrc の
+# コンパイル用で、プロジェクトのクラスパスには載らないので数えない。compileOnly も同じ理由で数えない。
+#
+# includeBuild のビルドは buildSrc と違い、ルートがそこの plugin を apply して初めてクラスパスに
+# 載る。build-logic に依存があってもルートが何も apply していなければ、版なしの kotlin("jvm") は
+# plugin not found で落ちるので、root_applies_convention_plugin も見る。
 kotlin_plugin_in_buildsrc() {
+	_kb_pat="kotlin-gradle-plugin|kotlin\\(\"gradle-plugin\""
+	_kb_accs=$(catalog_kotlin_accessors_joined libraries)
+	[ -n "$_kb_accs" ] && _kb_pat="${_kb_pat}|${_kb_accs}"
 	for _kb_f in buildSrc/build.gradle.kts buildSrc/build.gradle; do
 		[ -f "$_kb_f" ] || continue
-		_kb_pat="kotlin-gradle-plugin|kotlin\\(\"gradle-plugin\""
-		_kb_accs=$(catalog_kotlin_accessors_joined libraries)
-		[ -n "$_kb_accs" ] && _kb_pat="${_kb_pat}|${_kb_accs}"
 		sed 's://.*::' "$_kb_f" | grep -E '(implementation|api|runtimeOnly)[[:space:](]' |
 			grep -qE "$_kb_pat" && return 0
+	done
+	root_applies_convention_plugin "${ROOT_BUILD_FILE:-}" || return 1
+	for _kb_d in $(included_build_dirs); do
+		for _kb_f in "$_kb_d/build.gradle.kts" "$_kb_d/build.gradle"; do
+			[ -f "$_kb_f" ] || continue
+			sed 's://.*::' "$_kb_f" | grep -E '(implementation|api|runtimeOnly)[[:space:](]' |
+				grep -qE "$_kb_pat" && return 0
+		done
 	done
 	return 1
 }
@@ -2240,7 +2912,8 @@ kotlin_plugin_in_buildsrc() {
 # このときルートに版付きで足すと、そのプロジェクト側の要求が "already on the classpath
 # with an unknown version" で落ちる（kdoctor）。同じ版でも、id が違えば落ちる。
 #
-# 別の settings を持つディレクトリ（includeBuild される build-logic など）は別のビルドなので見ない。
+# 別の settings を持つディレクトリ（includeBuild される build-logic など）は別のビルドなので
+# ここでは見ない（そこに Kotlin Gradle plugin の依存があるかは kotlin_plugin_in_buildsrc が見る）。
 kotlin_plugin_requested_by_subprojects() {
 	_ks_pat="kotlin\\(\"(${KOTLIN_KGP_IDS})\"\\)[[:space:]]+version|id[[:space:](]+[\"']org\\.jetbrains\\.kotlin\\.(${KOTLIN_KGP_IDS})[\"']\\)?[[:space:]]+version"
 	_ks_accs=$(catalog_kotlin_accessors_joined plugins)
