@@ -140,6 +140,23 @@ fi
 
 # ---- 3. fixture ごと -----------------------------------------------------------------------
 
+# JDK 21 の置き場所を出す（fx_toolchain_<名前> を持つ fixture は「Gradle を JDK 21 で動かす」前提。JAVA_HOME が 17 を
+# 指す環境でも回せるように、見つけたものを JAVA_HOME に入れる）。見つからなければ 1。
+find_jdk21() {
+	for _c in "${JAVA_HOME:-}" "`/usr/libexec/java_home -v 21 2>/dev/null`" \
+		/opt/homebrew/opt/openjdk@21/libexec/openjdk.jdk/Contents/Home /opt/homebrew/opt/openjdk@21 \
+		"${HOME}"/.gradle/jdks/*21*/Contents/Home "${HOME}"/.gradle/jdks/*21* \
+		"${HOME}"/Library/Java/JavaVirtualMachines/*21*/Contents/Home /Library/Java/JavaVirtualMachines/*21*/Contents/Home; do
+		[ -n "${_c}" ] && [ -x "${_c}/bin/java" ] || continue
+		_v=`"${_c}/bin/java" -version 2>&1 | head -1 | sed -n 's/.*version "\([0-9]*\).*/\1/p'`
+		if [ "${_v}" = "21" ]; then
+			echo "${_c}"
+			return 0
+		fi
+	done
+	return 1
+}
+
 # Gradle のログから、落ちた理由の1行を拾う。
 failure_reason() {
 	_fr=`grep -E "already on the classpath|already requested|Could not resolve|Cannot resolve|Plugin \[id|Unresolved reference|Expecting|Unexpected tokens|Script compilation error|Katachi check failed" "$1" | head -1`
@@ -299,6 +316,11 @@ EOF
 		NOTE="${NOTE:+${NOTE}、}dependencyResolutionManagement を足した"
 	fi
 
+	if [ -n "${JDK21_MISSING:-}" ] && [ "${want_tc:-none}" != "none" ]; then
+		TEST="飛ばした（JDK 21 が無い。この fixture は Gradle を JDK 21 で動かす前提）"
+		return
+	fi
+	[ -n "${JAVA_HOME:-}" ] && NOTE="${NOTE:+${NOTE}、}JAVA_HOME `basename "${JAVA_HOME}"`"
 	(cd "$d" && ./gradlew "${MODULE_PATH}:test" --no-daemon --console=plain \
 		--project-cache-dir "${GRADLE_CACHE}/${fx}") >"${t1_log}" 2>&1
 	if grep -q "> Task ${MODULE_PATH}:test FAILED" "${t1_log}" &&
@@ -337,6 +359,9 @@ for fx in ${FIXTURES}; do
 	echo "== ${fx} =="
 	# fx_toolchain_<名前> を持つ fixture は「JDK 21 だけ」の環境を再現する。~/.gradle/jdks に自動取得済みの JDK 17 があると
 	# auto-detect=false でも見つかってしまうので、GRADLE_USER_HOME を別に作る（wrapper と caches だけ本物へのリンク）。
+	# あわせて Gradle を JDK 21 で動かす（JAVA_HOME が別の版を指していても）。JDK 21 が無ければ、期待が none 以外の fixture は
+	# test を飛ばす（NG ではなく「飛ばした」。fixture の前提が満たせないだけで、kit の不具合ではない）。
+	JDK21_MISSING=""
 	if command -v "fx_toolchain_${fx}" >/dev/null 2>&1; then
 		ISO_HOME="${WORK}/gradle-user-home"
 		rm -rf "${ISO_HOME}"
@@ -345,17 +370,26 @@ for fx in ${FIXTURES}; do
 		ln -s "${REAL_GUH}/wrapper" "${ISO_HOME}/wrapper"
 		ln -s "${REAL_GUH}/caches" "${ISO_HOME}/caches"
 		export GRADLE_USER_HOME="${ISO_HOME}"
+		REAL_JAVA_HOME="${JAVA_HOME:-}"
+		if jdk21=`find_jdk21`; then
+			export JAVA_HOME="${jdk21}"
+		else
+			JDK21_MISSING="yes"
+		fi
 	fi
 	run_fixture "${fx}"
 	if [ -n "${REAL_GUH:-}" ]; then
 		if [ "${REAL_GUH}" = "${HOME}/.gradle" ]; then unset GRADLE_USER_HOME; else GRADLE_USER_HOME="${REAL_GUH}"; fi
 		REAL_GUH=""
+		if [ -n "${REAL_JAVA_HOME:-}" ]; then JAVA_HOME="${REAL_JAVA_HOME}"; else unset JAVA_HOME; fi
+		REAL_JAVA_HOME=""
 	fi
 	elapsed=`date +%s`
 	elapsed=`expr "${elapsed}" - "${started}"`
 	all="${INIT} ${SCAFFOLD} ${INC} ${TEST} ${RERUN}"
 	case "${all}" in
 	*NG*) VERDICT="**NG**"; NG=1 ;;
+	*飛ばした*) VERDICT="飛ばした" ;;
 	*) VERDICT="OK"; OK_COUNT=`expr "${OK_COUNT}" + 1` ;;
 	esac
 	echo "   init=${INIT} scaffold=${SCAFFOLD} include=${INC} test=${TEST} rerun=${RERUN} -> ${VERDICT}（${elapsed}s）"

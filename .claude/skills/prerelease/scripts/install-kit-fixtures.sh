@@ -434,12 +434,16 @@ fx_expect_catalogwrite() {
 	grep -q 'me.tbsten.katachi:' "${_b}" && echo "build.gradle.kts に座標の直書きが残っている"
 	# 2 回目の --force で重複しない
 	(cd "$1" && sh "$2" scaffold --package com.example.fx --force) >"$1/scaffold-force.log" 2>&1 || echo "scaffold --force の 2 回目が失敗（$1/scaffold-force.log）"
-	_n=`grep -c '^katachi = ' "${_t}"`
-	[ "${_n}" = "2" ] || echo "--force の 2 回目で toml の katachi = が ${_n} 件（期待 2: versions と libraries）"
+	_n=`grep -c '^katachi = "' "${_t}"`
+	[ "${_n}" = "1" ] || echo "--force の 2 回目で toml の versions の katachi が ${_n} 件（期待 1）"
+	_n=`grep -c '^katachi = { module' "${_t}"`
+	[ "${_n}" = "1" ] || echo "--force の 2 回目で toml の libraries の katachi が ${_n} 件（期待 1）"
 	_n=`grep -c '^katachiKonsist = ' "${_t}"`
 	[ "${_n}" = "1" ] || echo "--force の 2 回目で toml の katachiKonsist が ${_n} 件（期待 1）"
 	_n=`grep -c '^katachi = { id' "${_t}"`
 	[ "${_n}" = "1" ] || echo "--force の 2 回目で toml の plugins の katachi が ${_n} 件（期待 1）"
+	_n=`grep -c '^junit-bom = ' "${_t}"`
+	[ "${_n}" = "1" ] || echo "--force の 2 回目で toml の junit-bom が ${_n} 件（期待 1）"
 	return 0
 }
 
