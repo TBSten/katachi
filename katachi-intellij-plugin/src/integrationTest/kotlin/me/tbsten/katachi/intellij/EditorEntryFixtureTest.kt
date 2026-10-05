@@ -46,6 +46,9 @@ internal class EditorEntryFixture(private val sample: Path, val workDir: Path) {
         val bundle = Files.createTempDirectory(workDir, "ide-").resolve("IntelliJ IDEA.app")
         Files.createDirectories(bundle)
         run("ditto", contents.toString(), bundle.resolve("Contents").toString())
+        // The Gradle plugin adds this marker to the IDE it extracts, which breaks the bundle's code seal ("file added"). macOS
+        // then kills the JBR of 2026.3 (263) inside the bundle with SIGKILL (exit 137) before the IDE starts; 261 tolerated it.
+        Files.deleteIfExists(bundle.resolve("Contents/Resources/.toolbox-ignore"))
         return bundle
     }
 
