@@ -303,11 +303,12 @@ val sampleBuilds = listOf(
                     args = listOf("template=domain.Service", "name=KatachiSmoke"),
                     generatedFiles = listOf("src/main/kotlin/com/example/service/KatachiSmokeService.kt"),
                 ),
-                // `resource` is the layout's `capture("resource")`: it picks the directory.
+                // `resource` is the layout's `capture("resource")`: it picks the directory, and the
+                // file name is derived from it (`${capture("resource").pascalCase}Controller`).
                 SampleTemplateRun(
-                    args = listOf("template=Controller", "resource=health", "name=KatachiSmoke"),
+                    args = listOf("template=Controller", "resource=smoke"),
                     generatedFiles = listOf(
-                        "src/main/kotlin/com/example/controller/health/KatachiSmokeController.kt",
+                        "src/main/kotlin/com/example/controller/smoke/SmokeController.kt",
                     ),
                 ),
             ),
@@ -318,7 +319,7 @@ val sampleBuilds = listOf(
                 ":compileKotlin",
             ),
         ),
-        baseline = SampleBaseline(":architecture-test:test", "com.example.ProjectArchitectureTest", heldBack = 2),
+        baseline = SampleBaseline(":architecture-test:test", "com.example.ProjectArchitectureTest", heldBack = 3),
         // `report { sarif = true }`: its `check` writes the file through the Gradle plugin, the
         // path a user takes. Its Test task is `test`, so the file sits directly under katachi/.
         sarifReport = "architecture-test/build/reports/katachi/katachi.sarif",
@@ -336,13 +337,12 @@ val sampleBuilds = listOf(
                     args = listOf("template=Component", "name=AppKatachiSmoke"),
                     generatedFiles = listOf("ui/src/main/kotlin/com/example/sample/ui/component/AppKatachiSmoke.kt"),
                 ),
-                // `feature` and `featurePackage` are the names the layout gave the two directories:
-                // they pick the module and its package. `name` is the whole file name.
+                // `feature` is the name the layout gave both the module directory and its package
+                // directory: one value picks the module and its package. `name` is the whole file name.
                 SampleTemplateRun(
                     args = listOf(
                         "template=feature.FeatureComponent",
                         "feature=home",
-                        "featurePackage=home",
                         "name=HomeKatachiSmoke",
                     ),
                     generatedFiles = listOf(
@@ -353,7 +353,6 @@ val sampleBuilds = listOf(
                     args = listOf(
                         "template=feature.FeatureComponent",
                         "feature=settings",
-                        "featurePackage=settings",
                         "name=SettingsKatachiSmoke",
                         "withPreview=false",
                     ),
@@ -452,13 +451,12 @@ val sampleBuilds = listOf(
                         "data/src/commonMain/kotlin/com/example/kmp/data/user/KatachiSmokeRepositoryImpl.kt",
                     ),
                 ),
-                // `feature` and `featurePackage` are the names the layout gave the two directories:
-                // they pick the module and its package. `name` is the whole file name.
+                // `feature` is the name the layout gave both the module directory and its package
+                // directory: one value picks the module and its package. `name` is the whole file name.
                 SampleTemplateRun(
                     args = listOf(
                         "template=feature.FeatureComponent",
                         "feature=home",
-                        "featurePackage=home",
                         "name=HomeKatachiSmoke",
                     ),
                     generatedFiles = listOf(
