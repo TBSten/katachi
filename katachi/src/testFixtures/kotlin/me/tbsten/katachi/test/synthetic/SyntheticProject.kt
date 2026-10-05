@@ -31,13 +31,20 @@ class SyntheticProject internal constructor(
     val unknownDirectories: List<String>,
     /** Files below a module's `build/`, which `.module { }` ignores. */
     val ignoredFiles: List<String>,
+    /**
+     * Files directly inside a module's `src/main/kotlin`: a directory every module role
+     * passes through, where no role declares a file. The walk reports each one as an
+     * `UnexpectedFile`, with the nearby locations computed over every module's role directories.
+     */
+    val unexpectedFiles: List<String> = emptyList(),
 ) {
     /**
      * What `validate()` answers for [architecture], as `[label] path`, sorted: one
-     * `UnexpectedDirectory` per [unknownDirectories], and nothing else.
+     * `UnexpectedDirectory` per [unknownDirectories], one `UnexpectedFile` per
+     * [unexpectedFiles], and nothing else.
      */
     val expectedViolationLabels: List<String> =
-        unknownDirectories.map { "[UnexpectedDirectory] $it" }.sorted()
+        (unknownDirectories.map { "[UnexpectedDirectory] $it" } + unexpectedFiles.map { "[UnexpectedFile] $it" }).sorted()
 
     override fun toString(): String =
         "SyntheticProject(files=${files.size}, roles=${roles.size}, modules=${modules.size})"
@@ -78,6 +85,8 @@ enum class SyntheticPlacement {
  * - [unknownDirectoryRatio] of the files go into directories no role declares, four to a
  *   directory, half of them at the project root and half inside a module.
  * - [ignoredFileRatio] of the files go below a module's `build/`.
+ * - [unexpectedFiles] of the files go directly inside a module's `src/main/kotlin`, a
+ *   directory the module roles pass through without declaring a file in.
  * - The fixed part — `settings.gradle.kts`, the root `build.gradle.kts` and one
  *   `build.gradle.kts` per module — counts towards [files] too.
  *
@@ -91,26 +100,31 @@ fun generateProject(
     seed: Long = 0L,
     unknownDirectoryRatio: Double = 0.02,
     ignoredFileRatio: Double = 0.05,
+    unexpectedFiles: Int = 0,
     root: String = "/repo",
 ): SyntheticProject {
     require(roles >= 1) { "roles must be at least 1, was $roles" }
     require(modules >= 1) { "modules must be at least 1, was $modules" }
     require(unknownDirectoryRatio in 0.0..1.0) { "unknownDirectoryRatio must be in 0..1, was $unknownDirectoryRatio" }
     require(ignoredFileRatio in 0.0..1.0) { "ignoredFileRatio must be in 0..1, was $ignoredFileRatio" }
+    require(unexpectedFiles >= 0) { "unexpectedFiles must be 0 or more, was $unexpectedFiles" }
     val random = Random(seed)
     val moduleNames = List(modules) { "m$it" }
     val skeleton = listOf("build.gradle.kts", "settings.gradle.kts") +
         moduleNames.map { "modules/$it/build.gradle.kts" }
     val ignoredCount = (files * ignoredFileRatio).roundToInt()
     val unknownCount = (files * unknownDirectoryRatio).roundToInt()
-    val roleFileCount = files - skeleton.size - ignoredCount - unknownCount
+    val roleFileCount = files - skeleton.size - ignoredCount - unknownCount - unexpectedFiles
     require(roleFileCount >= 0) {
         "files=$files cannot hold the ${skeleton.size} build files of $modules modules " +
-            "plus $ignoredCount ignored and $unknownCount unknown files"
+            "plus $ignoredCount ignored, $unknownCount unknown and $unexpectedFiles unexpected files"
     }
 
     val ignored = List(ignoredCount) { index ->
         "modules/${moduleNames[random.nextInt(modules)]}/build/tmp/Generated$index.class"
+    }
+    val unexpected = List(unexpectedFiles) { index ->
+        "modules/${moduleNames[random.nextInt(modules)]}/src/main/kotlin/Unexpected$index.kt"
     }
     val unknownDirectories = List((unknownCount + FILES_PER_UNKNOWN_DIRECTORY - 1) / FILES_PER_UNKNOWN_DIRECTORY) { index ->
         if (random.nextBoolean()) "stray$index" else "modules/${moduleNames[random.nextInt(modules)]}/stray$index"
@@ -141,11 +155,12 @@ fun generateProject(
 
     return SyntheticProject(
         root = FsPath.of(root),
-        files = (skeleton + ignored + unknown + roleFiles.flatten()).sorted(),
+        files = (skeleton + ignored + unknown + unexpected + roleFiles.flatten()).sorted(),
         roles = syntheticRoles,
         modules = moduleNames.map { ":modules:$it" },
         unknownDirectories = unknownDirectories.distinct().sorted(),
         ignoredFiles = ignored.sorted(),
+        unexpectedFiles = unexpected.sorted(),
     )
 }
 

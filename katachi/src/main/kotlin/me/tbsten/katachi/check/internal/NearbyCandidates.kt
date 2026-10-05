@@ -45,7 +45,9 @@ internal class NearbyCandidates(entries: List<LayoutEntry>) {
             val third = best.getOrNull(NEARBY_LIMIT - 1)
             if (third != null && abs(filled.size - levels.size) > third.segments) continue
             val ranked = Ranked(candidate, filled, levels, name)
-            val same = best.indexOfFirst { it.candidate.role === candidate.role && it.directory == filled }
+            val same = best.indexOfFirst {
+                it.candidate.role.qualifiedName == candidate.role.qualifiedName && it.directory == filled
+            }
             if (same >= 0) {
                 // One line per role and directory: a role that declared `X.kt` and `*.kt`
                 // in the same directory is offered once, with whichever came out nearer.

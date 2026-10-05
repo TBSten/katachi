@@ -21,13 +21,11 @@ private const val DOUBLE_STAR = "**"
 
 internal fun nearbySegmentsOf(directoryPattern: String): List<NearbySegment> =
     directoryPattern.split('/').map { segment ->
-        when {
-            segment == DOUBLE_STAR -> NearbySegment.DoubleStar
-            // The whole pattern compiled already, so a level of it compiles too; what is
-            // asked here is only whether the level holds a wildcard once escapes are read.
-            Glob.compile(segment).hasWildcard -> NearbySegment.Wildcard(segment, Glob.compile(segment))
-            else -> NearbySegment.Literal(unescaped(segment))
-        }
+        if (segment == DOUBLE_STAR) return@map NearbySegment.DoubleStar
+        // The whole pattern compiled already, so a level of it compiles too; what is asked
+        // here is only whether the level holds a wildcard once escapes are read.
+        val glob = Glob.compile(segment)
+        if (glob.hasWildcard) NearbySegment.Wildcard(segment, glob) else NearbySegment.Literal(unescaped(segment))
     }
 
 /**

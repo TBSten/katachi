@@ -8,7 +8,9 @@ import io.kotest.matchers.ints.shouldBeGreaterThan
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 import io.kotest.matchers.string.shouldContain
+import io.kotest.matchers.string.shouldStartWith
 import java.nio.file.Files
+import me.tbsten.katachi.check.UnexpectedFile
 import me.tbsten.katachi.check.Violation
 import me.tbsten.katachi.check.internal.validate
 
@@ -94,6 +96,28 @@ class SyntheticProjectSpec : FreeSpec({
 
             project.expectedViolationLabels.size shouldBeGreaterThan 0
             labels.sorted() shouldBe project.expectedViolationLabels
+        }
+
+        "既知のディレクトリに置いた未宣言のファイルがそれぞれ 1 件の UnexpectedFile になる" {
+            val project = generateProject(
+                files = 1_000,
+                roles = 5,
+                modules = 10,
+                unknownDirectoryRatio = 0.0,
+                ignoredFileRatio = 0.0,
+                unexpectedFiles = 20,
+            )
+
+            val violations = project.architecture().validate(project.inMemoryFileSystem())
+
+            project.unexpectedFiles shouldHaveSize 20
+            violations.labels().sorted() shouldBe project.unexpectedFiles.map { "[UnexpectedFile] $it" }
+            // Every module role passes through the file's directory, so the nearest places
+            // are that module's own role directories, three of them and no more.
+            violations.filterIsInstance<UnexpectedFile>().forEach { violation ->
+                violation.nearby shouldHaveSize 3
+                violation.nearby.forEach { it.directory shouldStartWith violation.path.substringBeforeLast('/') }
+            }
         }
 
         "10k ファイル × ロール 20 × モジュール 100 でも想定どおり" {
