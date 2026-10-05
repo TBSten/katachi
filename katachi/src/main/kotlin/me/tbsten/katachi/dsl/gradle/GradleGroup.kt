@@ -1,22 +1,23 @@
 package me.tbsten.katachi.dsl.gradle
 
 import me.tbsten.katachi.dsl.*
+import me.tbsten.katachi.dsl.internal.GradleRoleKind
 import me.tbsten.katachi.dsl.internal.markSynthetic
 
 /**
  * Declares the files every Gradle build has, as a `"Gradle"` group with one role per kind of
  * file, kept out of the generated documentation.
  *
- * | role | files |
- * |---|---|
- * | `Gradle.GradleWrapper.LauncherScript` | `gradlew`, `gradlew.bat` |
- * | `Gradle.GradleWrapper.WrapperJar` | `gradle/wrapper/gradle-wrapper.jar` |
- * | `Gradle.GradleWrapper.WrapperProperties` | `gradle/wrapper/gradle-wrapper.properties` |
- * | `Gradle.SettingsScript` | `settings.gradle.kts` or `settings.gradle` |
- * | `Gradle.BuildScript` | `build.gradle.kts` or `build.gradle` of every module, the root project included |
- * | `Gradle.GradleProperties` | `gradle.properties` |
- * | `Gradle.VersionCatalog` | `*.versions.toml` directly inside `gradle` |
- * | `Gradle.DaemonJvmProperties` | `gradle/gradle-daemon-jvm.properties`, the daemon JVM toolchain of Gradle 8.8 and later |
+ * | role | hook in [block] | files |
+ * |---|---|---|
+ * | `Gradle.GradleWrapper.LauncherScript` | `launcherScript { }` | `gradlew`, `gradlew.bat` |
+ * | `Gradle.GradleWrapper.WrapperJar` | `wrapperJar { }` | `gradle/wrapper/gradle-wrapper.jar` |
+ * | `Gradle.GradleWrapper.WrapperProperties` | `wrapperProperties { }` | `gradle/wrapper/gradle-wrapper.properties` |
+ * | `Gradle.SettingsScript` | `settingsScript { }` | `settings.gradle.kts` or `settings.gradle` |
+ * | `Gradle.BuildScript` | `buildScript { }` | `build.gradle.kts` or `build.gradle` of every module, the root project included |
+ * | `Gradle.GradleProperties` | `gradleProperties { }` | `gradle.properties` |
+ * | `Gradle.VersionCatalog` | `versionCatalog { }` | `*.versions.toml` directly inside `gradle` |
+ * | `Gradle.DaemonJvmProperties` | `daemonJvmProperties { }` | `gradle/gradle-daemon-jvm.properties`, the daemon JVM toolchain of Gradle 8.8 and later |
  *
  * Only the four wrapper files are required, because `gradle wrapper` writes them as one set
  * and a `*.jar` line in `.gitignore` silently leaving the jar out is exactly what a missing
@@ -28,6 +29,12 @@ import me.tbsten.katachi.dsl.internal.markSynthetic
  * Build scripts are declared for the modules katachi finds, the same modules a `":**"` module
  * key expands to, so the list of modules is never written twice. What else lives inside a
  * module is left to the project's own roles.
+ *
+ * A hook of [GradleScope] opens one of these roles for a constraint or a metadata value of the
+ * project's own — `buildScript { fileConstraint("...") { subject -> ... } }` — without taking
+ * over where its files live. A `"BuildScript".role { }` written in [block] instead is a
+ * duplicate of katachi's role and is refused with [KatachiDuplicateDeclarationException];
+ * the constraint belongs in the hook.
  *
  * Every group and role here sets `documented = false` for itself. The generated
  * documentation already drops a whole group that opted out, but the metadata is not
@@ -51,63 +58,102 @@ import me.tbsten.katachi.dsl.internal.markSynthetic
  * }
  * ```
  *
+ * ## Example 2: Constrain the build scripts katachi declares
+ * ```kt
+ * import me.tbsten.katachi.dsl.FileConstraintFailure
+ * import me.tbsten.katachi.dsl.architecture
+ * import me.tbsten.katachi.dsl.gradle.gradle
+ *
+ * val arch = architecture {
+ *     gradle {
+ *         buildScript {
+ *             fileConstraint("fails the build on every compiler warning") { subject ->
+ *                 subject.files
+ *                     .filterNot { "allWarningsAsErrors" in java.io.File(subject.projectRoot, it).readText() }
+ *                     .map { FileConstraintFailure(it) }
+ *             }
+ *         }
+ *     }
+ * }
+ * ```
+ *
  * @param requireWrapper whether a missing wrapper file is reported. `false` still allows the
  *   wrapper files; it only stops asking for them.
- * @param block evaluated inside the `"Gradle"` group, after katachi's own roles, to add roles
- *   of the project's own or to change the group's `title` and `summary`.
+ * @param block evaluated inside the `"Gradle"` group, before katachi's own roles are declared.
+ *   A hook (`buildScript { }` and the others of [GradleScope]) only records its block, which is
+ *   applied while katachi declares the role it names; `title` / `summary` / `owner = ...` are
+ *   written to the group at once; a `"X".role { }` or `"X".group { }` takes its declaration
+ *   site at once and is declared after katachi's eight roles, in the order written. So the
+ *   roles of the project's own come after katachi's, and a role named like one of katachi's
+ *   (`"BuildScript".role { }`) is the duplicate, not katachi's — write its constraint in the
+ *   matching hook instead.
+ * @see me.tbsten.katachi.dsl.GradleScope
  * @see me.tbsten.katachi.dsl.gradle.module
  */
 public fun DeclarationContainerScope.gradle(
     requireWrapper: Boolean = true,
-    block: GroupScope.() -> Unit = {},
+    block: GradleScope.() -> Unit = {},
 ): Unit = "Gradle".group {
     title = "Gradle"
     summary = "The files that make this project a Gradle build"
     documented = false
+
+    val scope = GradleScopeImpl(this)
+    scope.block()
 
     "GradleWrapper".group {
         title = "Gradle wrapper"
         summary = "What runs the build with the Gradle version the project pins"
         documented = false
 
-        gradleRole("LauncherScript", "The scripts that start the wrapper, for Unix and Windows") {
+        gradleRole(GradleRoleKind.LauncherScript, "The scripts that start the wrapper, for Unix and Windows", scope) {
             "gradlew".file().optionalUnless(requireWrapper)
             "gradlew.bat".file().optionalUnless(requireWrapper)
         }
-        gradleRole("WrapperJar", "The wrapper itself, which downloads and runs Gradle") {
+        gradleRole(GradleRoleKind.WrapperJar, "The wrapper itself, which downloads and runs Gradle", scope) {
             "gradle/wrapper/gradle-wrapper.jar".file().optionalUnless(requireWrapper)
         }
-        gradleRole("WrapperProperties", "Which Gradle distribution the wrapper runs") {
+        gradleRole(GradleRoleKind.WrapperProperties, "Which Gradle distribution the wrapper runs", scope) {
             "gradle/wrapper/gradle-wrapper.properties".file().optionalUnless(requireWrapper)
         }
     }
 
-    gradleRole("SettingsScript", "Which modules make up the build") {
+    gradleRole(GradleRoleKind.SettingsScript, "Which modules make up the build", scope) {
         "settings.gradle.kts".file().optional()
         "settings.gradle".file().optional()
     }
-    gradleRole("BuildScript", "How one module is built, one per module") {
+    gradleRole(GradleRoleKind.BuildScript, "How one module is built, one per module", scope) {
         ":**".module { "build.gradle".file().markSynthetic() }.optional()
     }
-    gradleRole("GradleProperties", "Properties of the build and of the Gradle daemon") {
+    gradleRole(GradleRoleKind.GradleProperties, "Properties of the build and of the Gradle daemon", scope) {
         "gradle.properties".file().optional()
     }
-    gradleRole("VersionCatalog", "The versions of the build's dependencies and plugins") {
+    gradleRole(GradleRoleKind.VersionCatalog, "The versions of the build's dependencies and plugins", scope) {
         "gradle" / "*.versions.toml".file().optional()
     }
-    gradleRole("DaemonJvmProperties", "Which JVM the Gradle daemon runs on (Gradle 8.8 and later)") {
+    gradleRole(GradleRoleKind.DaemonJvmProperties, "Which JVM the Gradle daemon runs on (Gradle 8.8 and later)", scope) {
         "gradle/gradle-daemon-jvm.properties".file().optional()
     }
 
-    block()
+    scope.declareDeferred()
 }
 
-/** One role of [gradle]: out of the documentation, and with nothing but a layout. */
-private fun GroupScope.gradleRole(name: String, summary: String, layout: LayoutScope.() -> Unit) {
-    name.role {
+/**
+ * One role of [gradle]: out of the documentation, with the layout katachi decides, and with
+ * whatever the matching hook of [scope] wrote on top.
+ */
+private fun GroupScope.gradleRole(
+    kind: GradleRoleKind,
+    summary: String,
+    scope: GradleScopeImpl,
+    layout: LayoutScope.() -> Unit,
+) {
+    kind.roleName.role {
         this.summary = summary
         documented = false
         layout(layout)
+        val roleScope = GradleRoleScopeImpl(this)
+        for (hook in scope.hooksOf(kind)) roleScope.hook()
     }
 }
 
