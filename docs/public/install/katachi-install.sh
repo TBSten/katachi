@@ -63,7 +63,10 @@ KATACHI_PLUGIN_ID="me.tbsten.katachi"
 
 JUNIT_VERSION="5.14.4"
 
-MODULE_DIR="architecture-test"
+# 検査用モジュールの置き場所（Gradle ルートからの相対パス）の既定。実際の値は
+# resolve_module_dir が MODULE_DIR（相対パス）と MODULE_GRADLE_PATH（:a:b の形）に入れる。
+# どちらも resolve_module_dir を呼ぶまでは未定義（set -u で落ちる。呼び忘れに気づくため）。
+MODULE_DIR_DEFAULT="architecture-test"
 
 # ---------------------------------------------------------------- 出力
 
@@ -146,6 +149,9 @@ katachi-install.sh — katachi のインストールのうち機械的にでき�
       --force             記入済みのチェックリスト・レポートも取り直す
       --lang <en|ja>      チェックリスト・レポート・このスクリプトの出力の言語（既定: en）。
                           作業用ディレクトリに記録され、以降のコマンドが従う
+      --module-dir <path> 検査用モジュールの置き場所。Gradle ルートからの相対パス
+                          （既定: architecture-test。例: static-analysis/katachi）。
+                          チェックリストの meta.moduleDir に記録され、scaffold 以降が従う
 
       2回目以降の実行では、記入済みのファイルは上書きしません。
       また自分自身を作業用ディレクトリにコピーするので、以降は
@@ -157,14 +163,17 @@ katachi-install.sh — katachi のインストールのうち機械的にでき�
       init もはじめに同じ確認をする。
 
   sh katachi-install.sh scaffold --package <com.example.app> [オプション]
-      :architecture-test モジュールを作成し、ビルドに組み込む。
+      検査用モジュール（既定 architecture-test/。--module-dir で変える）を作成し、
+      ビルドに組み込む。
 
       --package <pkg>     アプリのパッケージ名（必須）
       --katachi <version> katachi のバージョン（既定: init が記録した版。
                           無ければ GitHub の最新リリース）
       --kotlin <version>  Kotlin のバージョン（既定: プロジェクトから検出）
       --no-konsist        katachi-konsist を使わない構成で生成する
-      --force             既存の architecture-test/ を上書きする
+      --module-dir <path> 検査用モジュールの置き場所（既定: init が記録した meta.moduleDir。
+                          無ければ architecture-test）。指定すると meta.moduleDir を書き換える
+      --force             既存の検査用モジュールを上書きする
       --dry-run           何も書かずに、何をするかだけ出力する
 
   sh katachi-install.sh data get <対象> [--id <id>]
@@ -209,12 +218,13 @@ katachi-install.sh — katachi のインストールのうち機械的にでき�
       完了していても閉じずに表示される。
 
   sh katachi-install.sh lint
-      定義（architecture-test/src/test/kotlin）を読み、種類の違うファイルを1つの
+      定義（検査用モジュールの src/test/kotlin）を読み、種類の違うファイルを1つの
       Role に抱えていそうなものを列挙する。check 3-2 / check 3-3 でも自動で走る。
-      素朴なテキスト走査なので誤検知があり得る。失敗にはしない（常に 0 を返す）。
+      素朴なテキスト走査なので誤検知があり得る。点検の結果では失敗にしない（0 を返す）。
+      定義のディレクトリが無ければ（scaffold 前、置き場所の食い違い）1 を返す。
 
   sh katachi-install.sh compare-violations [<前のログ> <後のログ>]
-      ./gradlew :architecture-test:test の出力を2つ比べ、検査結果（違反の件数と中身）が
+      ./gradlew <module>:test の出力を2つ比べ、検査結果（違反の件数と中身）が
       変わっていないかを確かめる。定義のリファクタリング（手順書 3-3）の前後に使う。
       既定は <作業用ディレクトリ>/tmp/test-before-refactor.log と test-after-refactor.log。
       [MissingDescription] の警告は、説明を書き足せば減るのが正しいので件数だけ出す。
@@ -268,6 +278,9 @@ Usage:
       --lang <en|ja>      Language of the check list, the report and this script's
                           output (default: en). Recorded in the working directory;
                           later commands follow it
+      --module-dir <path> Where the test module goes, relative to the Gradle root
+                          (default: architecture-test; for example static-analysis/katachi).
+                          Recorded as meta.moduleDir in the check list; scaffold and later follow it
 
       On later runs, files that are already filled in are not overwritten.
       The script also copies itself into the working directory, so from then on
@@ -279,14 +292,17 @@ Usage:
       init runs the same check first.
 
   sh katachi-install.sh scaffold --package <com.example.app> [options]
-      Creates the :architecture-test module and wires it into the build.
+      Creates the test module (default architecture-test/; change it with --module-dir)
+      and wires it into the build.
 
       --package <pkg>     The app's package name (required)
       --katachi <version> katachi version (default: the one init recorded,
                           otherwise the latest release)
       --kotlin <version>  Kotlin version (default: detected from the project)
       --no-konsist        Generate a setup that does not use katachi-konsist
-      --force             Overwrite an existing architecture-test/
+      --module-dir <path> Where the test module goes (default: meta.moduleDir recorded by init,
+                          otherwise architecture-test). When given, meta.moduleDir is updated
+      --force             Overwrite an existing test module
       --dry-run           Write nothing; only print what would be done
 
   sh katachi-install.sh data get <target> [--id <id>]
@@ -331,12 +347,13 @@ Usage:
       yellow and stays open even when it is done.
 
   sh katachi-install.sh lint
-      Reads the definition (architecture-test/src/test/kotlin) and lists Roles that
+      Reads the definition (src/test/kotlin of the test module) and lists Roles that
       seem to hold files of different kinds. Also runs on check 3-2 / check 3-3.
-      It is a plain text scan, so false positives are possible. Never fails (always returns 0).
+      It is a plain text scan, so false positives are possible. Findings never fail it (returns 0).
+      Returns 1 if the definition directory does not exist (before scaffold, or a different location).
 
   sh katachi-install.sh compare-violations [<log before> <log after>]
-      Compares two outputs of ./gradlew :architecture-test:test and checks that the
+      Compares two outputs of ./gradlew <module>:test and checks that the
       check result (the number and content of violations) has not changed. Use it
       before and after refactoring the definition (step 3-3 of the guide).
       Defaults: <working directory>/tmp/test-before-refactor.log and test-after-refactor.log.
@@ -383,13 +400,17 @@ USAGE
 # python3 は JSON の検査・マージ・加工に使う。以前は jq でも代われたが、check / add /
 # verify / summary が python3 を必須にしていたため、jq だけの環境では導入を最後まで
 # 進められなかった。分岐を減らすため python3 に一本化した。
-REQ_BASE="awk sed grep tr cut head tail wc date cp mv rm mkdir cat sort find chmod"
+#
+# sleep と rmdir は書き込みのロック（lock_acquire / lock_release）が使う。
+# scaffold / compare-violations は resolve_module_dir がチェックリストの meta.moduleDir を
+# python3 で読むので python3 が要る。
+REQ_BASE="awk sed grep tr cut head tail wc date cp mv rm mkdir cat sort find chmod sleep rmdir"
 REQ_INIT="${REQ_BASE} curl python3"
 REQ_INIT_OFFLINE="${REQ_BASE} python3"
-REQ_SCAFFOLD="${REQ_BASE}"
+REQ_SCAFFOLD="${REQ_BASE} python3"
 REQ_JSON="${REQ_BASE} python3"
 REQ_DOCS="${REQ_BASE} curl"
-REQ_COMPARE="${REQ_BASE} cmp diff"
+REQ_COMPARE="${REQ_BASE} cmp diff python3"
 REQ_ALL="${REQ_BASE} cmp diff curl python3"
 # 無くても進めるが、あれば使うもの。無ければ警告だけ出す。
 REC_ALL="git"
@@ -543,6 +564,171 @@ require_workdir() {
 	WORKDIR=$(resolve_workdir) || die "作業用ディレクトリが分かりません。先に 'sh katachi-install.sh init' を実行し、以降は <作業用ディレクトリ>/tmp/katachi-install.sh を使ってください。" \
 		"Cannot find the working directory. Run 'sh katachi-install.sh init' first, and from then on use <working directory>/tmp/katachi-install.sh."
 	MANIFEST="$WORKDIR/tmp/cache/MANIFEST"
+}
+
+# ---------------------------------------------------------------- 検査用モジュールの置き場所
+
+# --module-dir の値（Gradle ルートからの相対パス）として使えるかを確かめ、だめなら止まる。
+# 先頭の / や ./、.. の段、末尾の /、空は受け付けない。
+# init / scaffold の --module-dir と、preferences set moduleDir が同じ検査を通す。
+validate_module_dir() {
+	printf '%s' "${1:-}" | grep -qE '^[A-Za-z0-9_][A-Za-z0-9_.-]*(/[A-Za-z0-9_][A-Za-z0-9_.-]*)*$' ||
+		die "--module-dir は Gradle ルートからの相対パスです（例: static-analysis/katachi）: ${1:-}" \
+			"--module-dir must be a path relative to the Gradle root (for example static-analysis/katachi): ${1:-}"
+}
+
+# 相対パスを Gradle のプロジェクトパス（:a:b）にして出す。
+module_gradle_path_of() {
+	printf ':%s\n' "$(printf '%s' "$1" | tr '/' ':')"
+}
+
+# チェックリストの meta.<$2> を標準出力に出す（文字列でなければ空）。$1 = check-list.html。
+# python3 が無い・ファイルが無い・JSON が読めないときも空（止まらない）。
+read_checklist_meta() {
+	[ -f "${1:-}" ] || return 0
+	command -v python3 >/dev/null 2>&1 || return 0
+	extract_json "$1" checklist 2>/dev/null | python3 -c '
+import json, sys
+try:
+    v = (json.load(sys.stdin).get("meta") or {}).get(sys.argv[1])
+except Exception:
+    v = None
+print(v if isinstance(v, str) else "")
+' "$2" 2>/dev/null || :
+}
+
+# 検査用モジュールの置き場所を決めて、次の変数に入れる。
+#   MODULE_DIR          Gradle ルートからの相対パス（architecture-test、static-analysis/katachi）
+#   MODULE_GRADLE_PATH  Gradle のプロジェクトパス（:architecture-test、:static-analysis:katachi）
+#   MODULE_DIR_SOURCE   どこから決めたか（arg / checklist / default）
+#   MODULE_DIR_RECORDED チェックリストの meta.moduleDir（無ければ空。scaffold が食い違いを知らせるのに使う）
+# 優先順: $1（引数）> チェックリストの meta.moduleDir > 既定。
+# scaffold / lint / compare-violations / summary / test / preferences の先頭で、require_workdir の
+# 直後に呼ぶ（作業用ディレクトリが無い scaffold は引数か既定で決まる）。init は呼ばず、
+# 引数か既定を自分で入れる。
+resolve_module_dir() {
+	_rm_wd="${WORKDIR:-}"
+	[ -n "$_rm_wd" ] || _rm_wd=$(resolve_workdir 2>/dev/null) || _rm_wd=""
+	MODULE_DIR_RECORDED=""
+	[ -n "$_rm_wd" ] && MODULE_DIR_RECORDED=$(read_checklist_meta "$_rm_wd/check-list.html" moduleDir)
+	if [ -n "${1:-}" ]; then
+		MODULE_DIR="$1"
+		MODULE_DIR_SOURCE="arg"
+	elif [ -n "$MODULE_DIR_RECORDED" ]; then
+		MODULE_DIR="$MODULE_DIR_RECORDED"
+		MODULE_DIR_SOURCE="checklist"
+	else
+		MODULE_DIR="$MODULE_DIR_DEFAULT"
+		MODULE_DIR_SOURCE="default"
+	fi
+	validate_module_dir "$MODULE_DIR"
+	MODULE_GRADLE_PATH=$(module_gradle_path_of "$MODULE_DIR")
+}
+
+# 定義のディレクトリ（<プロジェクトルート>/<MODULE_DIR>/src/test/kotlin）を標準出力に出す。
+# プロジェクトルートは init がチェックリストに記録したもの、無ければカレントディレクトリ。
+# resolve_module_dir のあとで呼ぶ。
+definition_dir() {
+	_dd_wd="${WORKDIR:-}"
+	[ -n "$_dd_wd" ] || _dd_wd=$(resolve_workdir 2>/dev/null) || _dd_wd=""
+	_dd_root=""
+	[ -n "$_dd_wd" ] && _dd_root=$(read_checklist_meta "$_dd_wd/check-list.html" projectRoot)
+	[ -n "$_dd_root" ] || _dd_root="$PWD"
+	printf '%s/%s/src/test/kotlin\n' "$_dd_root" "$MODULE_DIR"
+}
+
+# 定義のディレクトリが無ければ止まる（lint / compare-violations）。test は同じ文面を warn にする。
+# summary は呼ばない（scaffold 前に区切ったセッションの再開で使うため）。
+require_definition_dir() {
+	_rd_dir=$(definition_dir)
+	[ -d "$_rd_dir" ] && return 0
+	die "定義のディレクトリがありません: $(file_uri "$_rd_dir") 。scaffold をまだ実行していないか、置き場所が違います（記録: meta.moduleDir = ${MODULE_DIR}。変えるなら 'preferences set moduleDir=<path>' か 'scaffold --module-dir <path>'）" \
+		"The definition directory does not exist: $(file_uri "$_rd_dir") . Either scaffold has not run yet, or the location differs (recorded: meta.moduleDir = ${MODULE_DIR}; change it with 'preferences set moduleDir=<path>' or 'scaffold --module-dir <path>')"
+}
+
+# ---------------------------------------------------------------- 書き込みのロック
+
+# チェックリストとレポートへの書き込み（data set / merge、add、check、warn、verify ...）を
+# 1 プロセスずつにする。subagent が並べて add すると、読んで→書くの間に別のプロセスが
+# 書いたぶんが消える（8 件中 1 件しか残らなかった）。
+#
+# 置き場: 対象が作業用ディレクトリの中なら <作業用ディレクトリ>/tmp/cache/.lock（1 つで両方の
+# HTML を守る）、外のファイル（data set <任意のパス>）なら <対象>.lock。
+# 取り方: mkdir（原子的）。取れたら pid.tmp に自分の pid を書き、mv で pid にする（読む側が
+# 空の pid を見ない）。取れなければ 1 秒ごとに再試行し、KATACHI_LOCK_WAIT 秒（既定 30）で止まる。
+# 残骸: pid があって kill -0 が失敗する → 残骸。pid が無く mtime が 60 秒以上前 → 残骸
+# （mkdir と pid の書き込みの間でクラッシュしたもの）。pid が無く 60 秒未満 → 書き込み中とみなして待つ。
+# 再入: 取った lock のパスを KATACHI_LOCK_HELD に持つ。外側（cmd_add など）が取っていれば
+# cmd_data は取らない。放すのはトップレベルの trap（EXIT / INT / TERM）と、各コマンドの終わり。
+# data_quietly のサブシェルは、親が保持中でなければ自分で取って、抜けるときに自分で放す。
+# KATACHI_LOCK_WAIT はテストで短くするための環境変数。usage には書かない。
+lock_path_for() {
+	_lp_t=$1
+	case $_lp_t in (/*) ;; (*) _lp_t="${PWD}/${_lp_t#./}" ;; esac
+	_lp_d=${_lp_t%/*}
+	[ -d "$_lp_d" ] && _lp_d=$(CDPATH='' cd -- "$_lp_d" && pwd)
+	_lp_wd="${WORKDIR:-}"
+	[ -n "$_lp_wd" ] || _lp_wd=$(resolve_workdir 2>/dev/null) || _lp_wd=""
+	if [ -n "$_lp_wd" ]; then
+		case "$_lp_d/" in
+		("$_lp_wd"/*)
+			printf '%s\n' "$_lp_wd/tmp/cache/.lock"
+			return 0
+			;;
+		esac
+	fi
+	printf '%s\n' "$_lp_t.lock"
+}
+
+# $1 の lock が残骸なら 0。
+lock_is_stale() {
+	_ls_pid=""
+	[ -f "$1/pid" ] && _ls_pid=$(cat "$1/pid" 2>/dev/null)
+	case "$_ls_pid" in
+	('' | *[!0-9]*)
+		# stat は GNU / BSD で引数が違うので、find の -mmin で「60 秒以上前」を見る。
+		[ -n "$(find "$1" -maxdepth 0 -mmin +1 2>/dev/null)" ]
+		;;
+	(*) ! kill -0 "$_ls_pid" 2>/dev/null ;;
+	esac
+}
+
+# $1 = 書き込む対象のファイル。保持中なら何もしない。
+lock_acquire() {
+	[ -z "${KATACHI_LOCK_HELD:-}" ] || return 0
+	_la_lock=$(lock_path_for "$1")
+	_la_wait="${KATACHI_LOCK_WAIT:-30}"
+	_la_n=0
+	mkdir -p "${_la_lock%/*}"
+	while :; do
+		if mkdir "$_la_lock" 2>/dev/null; then
+			printf '%s' "$$" >"$_la_lock/pid.tmp" && mv "$_la_lock/pid.tmp" "$_la_lock/pid"
+			KATACHI_LOCK_HELD="$_la_lock"
+			return 0
+		fi
+		if lock_is_stale "$_la_lock"; then
+			lock_remove "$_la_lock"
+			continue
+		fi
+		[ "$_la_n" -lt "$_la_wait" ] ||
+			die "作業用ディレクトリのロックを ${_la_wait} 秒待ちましたが取れませんでした: ${_la_lock} 。ほかの katachi-install.sh が書き込み中か、残骸です。残骸なら rm -r で消してやり直してください" \
+				"Waited ${_la_wait} seconds for the lock but could not get it: ${_la_lock} . Another katachi-install.sh is writing, or this is left over. If it is left over, remove it with rm -r and try again"
+		sleep 1
+		_la_n=$((_la_n + 1))
+	done
+}
+
+# lock のディレクトリを消す（pid を消してから rmdir。別のプロセスが先に消していても失敗にしない）。
+lock_remove() {
+	rm -f "$1/pid" "$1/pid.tmp" 2>/dev/null || :
+	rmdir "$1" 2>/dev/null || :
+}
+
+# 持っている lock を放す。持っていなければ何もしない。
+lock_release() {
+	[ -n "${KATACHI_LOCK_HELD:-}" ] || return 0
+	lock_remove "$KATACHI_LOCK_HELD"
+	KATACHI_LOCK_HELD=""
 }
 
 # 言語を決める。スクリプトの出力もこれに従うので、サブコマンドを振り分ける前に1回だけ呼ぶ。
@@ -988,12 +1174,19 @@ cmd_init() {
 	init_version_source="explicit"
 	init_offline="no"
 	init_force="no"
+	init_module_dir=""
 
 	while [ $# -gt 0 ]; do
 		case "$1" in
 		--workdir)
 			need_value "$1" "${2:-}"
 			init_workdir="$2"
+			shift 2
+			;;
+		--module-dir)
+			need_value "$1" "${2:-}"
+			validate_module_dir "$2"
+			init_module_dir="$2"
 			shift 2
 			;;
 		--katachi)
@@ -1090,6 +1283,29 @@ cmd_init() {
 	init_workdir_uri=$(file_uri "$init_workdir_abs")
 	note "作業用ディレクトリ:  ${init_workdir_uri}" \
 		"Working directory:  ${init_workdir_uri}"
+	# --workdir で既存のディレクトリを指されたとき、katachi が作るもの以外があれば知らせる。
+	# 消しも上書きもしない（利用者のファイルかもしれない）。
+	_init_existing=$(find "$init_workdir" -mindepth 1 -maxdepth 1 \
+		! -name check-list.html ! -name project-code-base-report.html ! -name '*.bak' ! -name tmp 2>/dev/null | wc -l | tr -d ' ')
+	if [ "${_init_existing:-0}" -gt 0 ]; then
+		note "既存のファイルがあります（${_init_existing} 件）。上書きはしません。" \
+			"There are existing files (${_init_existing}). They are not overwritten."
+	fi
+
+	# 検査用モジュールの置き場所。--module-dir > 残したチェックリストの meta.moduleDir > 既定。
+	# やり直し（引数なし）で既定に戻すと、scaffold --module-dir で記録した値が黙って変わる。
+	_init_recorded_module_dir=$(read_checklist_meta "$init_workdir/check-list.html" moduleDir)
+	if [ -n "$init_module_dir" ]; then
+		MODULE_DIR="$init_module_dir"
+	elif [ -n "$_init_recorded_module_dir" ] && [ "$init_force" = "no" ]; then
+		MODULE_DIR="$_init_recorded_module_dir"
+		validate_module_dir "$MODULE_DIR"
+	else
+		MODULE_DIR="$MODULE_DIR_DEFAULT"
+	fi
+	MODULE_GRADLE_PATH=$(module_gradle_path_of "$MODULE_DIR")
+	note "検査用モジュール:    ${MODULE_DIR}/（Gradle のパス ${MODULE_GRADLE_PATH}）" \
+		"Test module:        ${MODULE_DIR}/ (Gradle path ${MODULE_GRADLE_PATH})"
 
 	# katachi は「未追跡だが ignore もされていない」ファイルも検査する
 	# （git ls-files --others --exclude-standard 相当）。作業用ディレクトリが
@@ -1193,13 +1409,14 @@ cmd_init() {
 		if [ -s "$_cl" ] && [ "$init_force" = "no" ]; then
 			note "すでにあるので残しました: $(file_uri "$_cl")" \
 				"Kept (already there): $(file_uri "$_cl")"
-			# 版だけは今回の値にそろえる（--katachi で変えた場合）。記入済みの欄は触らない。
+			# 版と置き場所だけは今回の値にそろえる（--katachi / --module-dir で変えた場合）。記入済みの欄は触らない。
 			[ "$init_version" = "UNKNOWN" ] || update_checklist_meta "$_cl" version "$init_version"
+			[ "$MODULE_DIR" = "$_init_recorded_module_dir" ] || update_checklist_meta "$_cl" moduleDir "$MODULE_DIR"
 		else
 			fetch_once "$KATACHI_DOCS/install/$KATACHI_LANG/install-check-list.html" "$_cl" yes
 			write_checklist_data "$_cl" \
 				"$init_workdir" "$init_version" "$project_root" \
-				"${kotlin_version:-}" "$git_state"
+				"${kotlin_version:-}" "$git_state" "$MODULE_DIR"
 			note "配置しました:        $(file_uri "$_cl")" \
 				"Placed:             $(file_uri "$_cl")"
 		fi
@@ -1226,6 +1443,8 @@ cmd_init() {
 	say "KATACHI_SETTINGS=$project_root/$SETTINGS_FILE"
 	say "KATACHI_CLI=$init_workdir_abs/tmp/katachi-install.sh"
 	say "KATACHI_LANG=$KATACHI_LANG"
+	say "KATACHI_MODULE_DIR=$MODULE_DIR"
+	say "KATACHI_MODULE_PATH=$MODULE_GRADLE_PATH"
 	say "========================================================"
 	say ""
 	say "以降は ${init_workdir_uri}/tmp/katachi-install.sh を使ってください（再ダウンロードは不要です）。" \
@@ -1253,7 +1472,12 @@ install_self() {
 # サブシェルで呼び、失敗の理由（stderr）は DATA_ERR に改行つきで入れて警告に添える。
 data_quietly() {
 	DATA_ERR=""
-	if _dq_err=$( (cmd_data "$@" >/dev/null) 2>&1); then
+	# サブシェルには親の trap が引き継がれないので、親がロックを保持していなければ、
+	# このサブシェルの中で取ったロックをサブシェルの終わりに自分で放す（die で抜けても残さない）。
+	if _dq_err=$( (
+		[ -n "${KATACHI_LOCK_HELD:-}" ] || trap lock_release EXIT
+		cmd_data "$@" >/dev/null
+	) 2>&1); then
 		return 0
 	fi
 	[ -n "$_dq_err" ] && DATA_ERR="
@@ -1294,6 +1518,7 @@ write_checklist_data() {
 	_root="$4"
 	_kotlin="$5"
 	_git="$6"
+	_module_dir="${7:-}"
 	_now=$(date '+%Y-%m-%d %H:%M %Z')
 
 	[ -f "$_file" ] || return 0
@@ -1307,7 +1532,8 @@ write_checklist_data() {
 		printf '    "projectRoot": %s,\n' "$(json_value "$_root")"
 		printf '    "ranAt": %s,\n' "$(json_value "$_now")"
 		printf '    "kotlin": %s,\n' "$(json_value "$_kotlin")"
-		printf '    "git": %s\n' "$(json_value "$_git")"
+		printf '    "git": %s,\n' "$(json_value "$_git")"
+		printf '    "moduleDir": %s\n' "$(json_value "$_module_dir")"
 		printf '  }\n'
 		printf '}\n'
 	} >"$_data"
@@ -1393,12 +1619,18 @@ cmd_scaffold() {
 	sc_konsist="yes"
 	sc_force="no"
 	sc_dry="no"
+	sc_module_dir=""
 
 	while [ $# -gt 0 ]; do
 		case "$1" in
 		--package)
 			need_value "$1" "${2:-}"
 			sc_package="$2"
+			shift 2
+			;;
+		--module-dir)
+			need_value "$1" "${2:-}"
+			sc_module_dir="$2"
 			shift 2
 			;;
 		--katachi)
@@ -1441,6 +1673,14 @@ cmd_scaffold() {
 
 	require_gradle_root
 	resolve_root_build_file
+
+	# 検査用モジュールの置き場所。--module-dir > init が記録した meta.moduleDir > 既定。
+	# 引数で変えたときは、記録との食い違いを知らせたうえで、書き込み後に記録を書き換える。
+	resolve_module_dir "$sc_module_dir"
+	if [ "$MODULE_DIR_SOURCE" = "arg" ] && [ -n "$MODULE_DIR_RECORDED" ] && [ "$MODULE_DIR_RECORDED" != "$MODULE_DIR" ]; then
+		note "--module-dir ${MODULE_DIR} は init の記録（meta.moduleDir = ${MODULE_DIR_RECORDED}）と違います。記録を ${MODULE_DIR} に書き換えます。" \
+			"--module-dir ${MODULE_DIR} differs from what init recorded (meta.moduleDir = ${MODULE_DIR_RECORDED}). The record is updated to ${MODULE_DIR}."
+	fi
 
 	# Gradle を動かす JDK が 17 以上か（未満なら直し方つきで止まる）と、jvmToolchain に書く N。
 	check_gradle_jdk
@@ -1530,8 +1770,12 @@ cmd_scaffold() {
 		sc_kotlin_plugin="kotlin(\"jvm\")"
 	fi
 
+	# include 済みの判定。include は Gradle パスの形（":static-analysis:katachi"）で書くが、
+	# 1 階層のときは "architecture-test" と ":architecture-test" の両方に当てる。
+	# 正規表現では . が任意の 1 文字なので、置き場所の . は \. にしてから当てる。
+	_sc_inc_pat=$(printf '%s' "$MODULE_GRADLE_PATH" | sed -e 's/^://' -e 's/\./\\./g')
 	if sed 's://.*::' "$SETTINGS_FILE" 2>/dev/null |
-		grep -qE "^[[:space:]]*include[[:space:](]+[^)]*[\"']:?$MODULE_DIR[\"']"; then
+		grep -qE "^[[:space:]]*include[[:space:](]+[^)]*[\"']:?${_sc_inc_pat}[\"']"; then
 		settings_needs_include="no"
 	else
 		settings_needs_include="yes"
@@ -1560,16 +1804,22 @@ cmd_scaffold() {
 	note "JVM toolchain: ${SC_TC_JA}" \
 		"JVM toolchain: ${SC_TC_EN}"
 	note "konsist:      ${sc_konsist}"
-	note "モジュール:   $(file_uri "$MODULE_DIR")/" \
-		"Module:       $(file_uri "$MODULE_DIR")/"
+	case "$MODULE_DIR_SOURCE" in
+	arg) note "モジュール:   $(file_uri "$MODULE_DIR")/（${MODULE_GRADLE_PATH}。--module-dir）" \
+		"Module:       $(file_uri "$MODULE_DIR")/ (${MODULE_GRADLE_PATH}; from --module-dir)" ;;
+	checklist) note "モジュール:   $(file_uri "$MODULE_DIR")/（${MODULE_GRADLE_PATH}。init が記録した meta.moduleDir）" \
+		"Module:       $(file_uri "$MODULE_DIR")/ (${MODULE_GRADLE_PATH}; meta.moduleDir recorded by init)" ;;
+	*) note "モジュール:   $(file_uri "$MODULE_DIR")/（${MODULE_GRADLE_PATH}。既定）" \
+		"Module:       $(file_uri "$MODULE_DIR")/ (${MODULE_GRADLE_PATH}; the default)" ;;
+	esac
 	note "ソース:       $(file_uri "$src_dir")/" \
 		"Sources:      $(file_uri "$src_dir")/"
 	note "ルートに追加: ${root_needs_plugin} ($(file_uri "$ROOT_BUILD_FILE"))" \
 		"Add to root:  ${root_needs_plugin} ($(file_uri "$ROOT_BUILD_FILE"))"
 	[ "$kotlin_placement" = "module" ] &&
-		note "              サブプロジェクトが Kotlin プラグインを版付きで宣言しているため、ルートには足さず :${MODULE_DIR} に版を書きます
+		note "              サブプロジェクトが Kotlin プラグインを版付きで宣言しているため、ルートには足さず ${MODULE_GRADLE_PATH} に版を書きます
               Gradle が「The Kotlin Gradle plugin was loaded multiple times ...」と警告しますが、この構成では想定どおりです" \
-			"              A subproject declares the Kotlin plugin with a version, so it is not added to the root; the version goes into :${MODULE_DIR}
+			"              A subproject declares the Kotlin plugin with a version, so it is not added to the root; the version goes into ${MODULE_GRADLE_PATH}
               Gradle warns \"The Kotlin Gradle plugin was loaded multiple times ...\"; that is expected with this setup"
 	note "include 追加: ${settings_needs_include} ($(file_uri "$SETTINGS_FILE"))" \
 		"Add include:  ${settings_needs_include} ($(file_uri "$SETTINGS_FILE"))"
@@ -1625,8 +1875,8 @@ cmd_scaffold() {
 		say "${sc_settings_uri} （dependencyResolutionManagement の repositories に mavenLocal() を追加。開発者向け）" \
 			"${sc_settings_uri} (added mavenLocal() to the repositories of dependencyResolutionManagement; for developers)"
 	say "========================================================"
-	sc_fails_until="足すまで ./gradlew :${MODULE_DIR}:test は失敗します。"
-	sc_fails_until_en="./gradlew :${MODULE_DIR}:test fails until you add it."
+	sc_fails_until="足すまで ./gradlew ${MODULE_GRADLE_PATH}:test は失敗します。"
+	sc_fails_until_en="./gradlew ${MODULE_GRADLE_PATH}:test fails until you add it."
 	if [ -n "$SETTINGS_MANUAL" ]; then
 		warn "${sc_settings_uri} の pluginManagement { } の形を読み取れなかったため、自動で書き換えませんでした。" \
 			"Could not read the shape of pluginManagement { } in ${sc_settings_uri}, so it was not edited automatically."
@@ -1655,8 +1905,8 @@ cmd_scaffold() {
 	if [ "$DEPENDENCY_MAVEN_LOCAL" = "manual" ]; then
 		warn "${sc_settings_uri} に dependencyResolutionManagement { repositories { } } が無いため、依存の解決先に mavenLocal() を足せませんでした（開発者向けの KATACHI_MAVEN_LOCAL）。" \
 			"${sc_settings_uri} has no dependencyResolutionManagement { repositories { } }, so mavenLocal() could not be added to where dependencies are resolved (KATACHI_MAVEN_LOCAL, for developers)."
-		say "  :${MODULE_DIR} が依存を解決している repositories { } に mavenLocal() を手で足してください。" \
-			"  Add mavenLocal() by hand to the repositories { } that :${MODULE_DIR} resolves its dependencies from."
+		say "  ${MODULE_GRADLE_PATH} が依存を解決している repositories { } に mavenLocal() を手で足してください。" \
+			"  Add mavenLocal() by hand to the repositories { } that ${MODULE_GRADLE_PATH} resolves its dependencies from."
 	fi
 	if [ -n "${ROOT_PLUGIN_MANUAL:-}" ]; then
 		warn "${sc_root_build_uri} は buildscript { } を持つため、自動で書き換えませんでした。" \
@@ -1674,16 +1924,18 @@ in ${sc_root_build_uri} (create plugins { } if there is none)."
 
 	# init が Kotlin を検出できず --kotlin で受け取った場合、チェックリストの meta.kotlin が
 	# 空のまま残り、verify が未記入として数え続ける。実際に使った版で埋める。
+	# 置き場所も記録する（--module-dir で変えたとき、以降の lint / summary / test が従う）。
 	if _sc_wd=$(resolve_workdir); then
 		update_checklist_meta "$_sc_wd/check-list.html" kotlin "$sc_kotlin"
 		update_checklist_meta "$_sc_wd/check-list.html" jvmToolchain "$(pick "$SC_TC_JA" "$SC_TC_EN")"
+		[ "$MODULE_DIR" = "$MODULE_DIR_RECORDED" ] || update_checklist_meta "$_sc_wd/check-list.html" moduleDir "$MODULE_DIR"
 	fi
 
 	say ""
-	say "次: ./gradlew :${MODULE_DIR}:test
+	say "次: ./gradlew ${MODULE_GRADLE_PATH}:test
     architecture { } が空なので、すべてのファイルが Unexpected として報告されて
     落ちるのが正常です。Unexpected 以外のエラーが出た場合だけが問題です。" \
-		"Next: ./gradlew :${MODULE_DIR}:test
+		"Next: ./gradlew ${MODULE_GRADLE_PATH}:test
     architecture { } is empty, so every file is reported as Unexpected and the test
     fails. That is expected. Only errors other than Unexpected are a problem."
 }
@@ -1995,7 +2247,7 @@ kotlin_plugin_requested_by_subprojects() {
 	[ -n "$_ks_accs" ] && _ks_pat="${_ks_pat}|alias\\((${_ks_accs})"
 	# '.?*' は隠しディレクトリ。'.*' だと起点の . 自体に当たって何も見なくなる。
 	find . -maxdepth 6 \
-		\( -name build -o -name node_modules -o -name buildSrc -o -name '.?*' -o -name "$MODULE_DIR" \) -prune -o \
+		\( -name build -o -name node_modules -o -name buildSrc -o -name '.?*' -o -path "./$MODULE_DIR" \) -prune -o \
 		\( -name 'build.gradle.kts' -o -name 'build.gradle' \) -print 2>/dev/null |
 		while IFS= read -r _ks_f; do
 			_ks_d=${_ks_f%/*}
@@ -2114,10 +2366,12 @@ EOF
 }
 
 add_settings_include() {
+	# 常に Gradle パスの形（":static-analysis:katachi"。1 階層でも ":architecture-test"）。
+	# 親ディレクトリに build ファイルが無くても Gradle が中間プロジェクトを作るので、親には何も書かない。
 	if [ "$SETTINGS_DSL" = "groovy" ]; then
-		_inc_line="include '$MODULE_DIR'"
+		_inc_line="include '$MODULE_GRADLE_PATH'"
 	else
-		_inc_line="include(\"$MODULE_DIR\")"
+		_inc_line="include(\"$MODULE_GRADLE_PATH\")"
 	fi
 
 	# 既存の include の並びの直後に入れる。素朴に末尾へ足すと
@@ -2476,6 +2730,15 @@ cmd_data() {
 	_safe="$_json.safe.$$"
 	sed 's|</script|<\\/script|g' "$_json" >"$_safe"
 
+	# 書く前にロックを取る。外側（cmd_add / edit_checklist / cmd_verify）が読む前に取っていれば
+	# そのまま（lock_acquire は保持中なら何もしない）。自分で取ったときだけ最後に放す。
+	# 失敗（die）で抜けるときはトップレベルか data_quietly のサブシェルの trap が放す。
+	_dl_mine="no"
+	if [ -z "${KATACHI_LOCK_HELD:-}" ]; then
+		lock_acquire "$_html"
+		_dl_mine="yes"
+	fi
+
 	cp "$_html" "$_html.bak"
 	_tmp="$_html.tmp.$$"
 	if awk -v open_tag="<script type=\"application/json\" id=\"$_id\">" -v src="$_safe" '
@@ -2502,6 +2765,7 @@ cmd_data() {
 	_check="$_html.check.$$"
 	if extract_json "$_html" "$_id" >"$_check" 2>/dev/null && validate_json "$_check"; then
 		rm -f "$_check" ${_merged:+"$_merged"}
+		[ "$_dl_mine" = "yes" ] && lock_release
 		say "${_html_uri} の id=\"${_id}\" を更新しました（元は ${_html_uri}.bak）。" \
 			"Updated id=\"${_id}\" in ${_html_uri} (the original is ${_html_uri}.bak)."
 	else
@@ -2604,6 +2868,10 @@ lint_roles() {
 			"Skipped the Role check because python3 is not available."
 		return 0
 	}
+	# 定義のディレクトリが無ければ止まる（scaffold 前、--module-dir の食い違い）。点検の結果では
+	# 失敗にしないが、読む場所が無いのは別（黙って 0 を返すと「問題なし」と取り違える）。
+	resolve_module_dir
+	require_definition_dir
 	# プロジェクトルートは init がチェックリストに記録したものを使う。
 	_lr_json=""
 	_lr_wd=$(resolve_workdir) || _lr_wd=""
@@ -2849,10 +3117,7 @@ def scan(path, roles):
 
 
 roles = []
-if not os.path.isdir(root):
-    print(t("Role の点検: 定義のディレクトリがありません（%s）。scaffold の後に実行してください。",
-            "Role check: the definition directory does not exist (%s). Run this after scaffold.") % file_uri(root))
-    sys.exit(0)
+# 定義のディレクトリの有無は sh 側（require_definition_dir）が先に確かめて、無ければ止めている。
 for d, _, fs in os.walk(root):
     for f in sorted(fs):
         if f.endswith(".kt"):
@@ -2966,11 +3231,13 @@ count_missing_description() {
 cmd_compare_violations() {
 	require_commands "$REQ_COMPARE"
 	require_workdir
+	resolve_module_dir
+	require_definition_dir
 	_cv_before="${1:-${WORKDIR}/tmp/test-before-refactor.log}"
 	_cv_after="${2:-${WORKDIR}/tmp/test-after-refactor.log}"
 	for _cv_f in "$_cv_before" "$_cv_after"; do
-		[ -f "$_cv_f" ] || die "$(file_uri "$_cv_f") がありません。./gradlew :architecture-test:test の出力をこのパスに保存してください（手順書 3-2 / 3-3）。" \
-			"$(file_uri "$_cv_f") not found. Save the output of ./gradlew :architecture-test:test to this path (steps 3-2 / 3-3 of the guide)."
+		[ -f "$_cv_f" ] || die "$(file_uri "$_cv_f") がありません。./gradlew ${MODULE_GRADLE_PATH}:test の出力をこのパスに保存してください（手順書 3-2 / 3-3）。" \
+			"$(file_uri "$_cv_f") not found. Save the output of ./gradlew ${MODULE_GRADLE_PATH}:test to this path (steps 3-2 / 3-3 of the guide)."
 		has_check_result "$_cv_f" ||
 			die "$(file_uri "$_cv_f") に検査の結果がありません。コンパイルエラーなどで検査まで届いていません。直してから取り直してください。" \
 				"$(file_uri "$_cv_f") has no check result. The build did not get as far as the check (a compile error, for example). Fix it and capture the log again."
@@ -3005,11 +3272,11 @@ cmd_compare_violations() {
 	rm -f "$_cv_a" "$_cv_b"
 	say ""
 	say "リファクタリングで振る舞いが変わっています。前のログを取り直すのではなく、定義のほうを直してください。
-分けた定義ファイルが [UnexpectedFile] になっているなら、architecture-test/ を受け持つ Role の layout { } が
+分けた定義ファイルが [UnexpectedFile] になっているなら、${MODULE_DIR}/ を受け持つ Role の layout { } が
 <group>/<role>/<Role>.kt の深さまで受け入れていません。" \
 		"The refactoring changed the behavior. Fix the definition instead of capturing the before log again.
 If the split definition files show up as [UnexpectedFile], the layout { } of the Role that owns
-architecture-test/ does not accept files as deep as <group>/<role>/<Role>.kt."
+${MODULE_DIR}/ does not accept files as deep as <group>/<role>/<Role>.kt."
 	exit 1
 }
 
@@ -3030,6 +3297,9 @@ edit_checklist() {
 
 	_script="$1"
 	shift
+	# 読んで→書くの間に別のプロセスが書くと、そのぶんが消える。読む前にロックを取る
+	# （cmd_data は保持中なら取らない）。失敗して exit するときはトップレベルの trap が放す。
+	lock_acquire "$_cl"
 	_cur="$_cl.cur.$$"
 	extract_json "$_cl" checklist >"$_cur" ||
 		die "$(file_uri "$_cl") から JSON を取り出せませんでした。" \
@@ -3048,6 +3318,7 @@ edit_checklist() {
 		rm -f "$_cur" "$_out"
 		exit 1
 	fi
+	lock_release
 }
 
 # 埋め込みの python すべての先頭に付ける。出力の言語を sh 側（resolve_lang）と揃える。
@@ -3061,6 +3332,20 @@ EN = os.environ.get("KATACHI_LANG") == "en"
 
 def t(ja, en):
     return en if EN else ja
+'
+
+# チェックリストの項目 ID → 手順書の節 ID（guide <節 ID>）。check の「次」（CHECK_PY）と
+# summary の「再開」（SUMMARY_PY）が同じ対応表を使うために、PY_LANG と同じ流儀で両方の先頭に流し込む。
+#   0-1 .. 4-3 はそのまま / 5-1, 5-2 は 5（5 章は小見出しに番号が無い）/ 6-1 .. 6-4 は None
+#   （6-A〜6-D は「次」の計算に入れない。summary の完了形が Next action で示す）
+SECTION_OF_PY='
+
+def section_of(item_id):
+    if item_id in ("5-1", "5-2"):
+        return "5"
+    if item_id.startswith("6-"):
+        return None
+    return item_id
 '
 
 CHECK_PY='
@@ -3287,6 +3572,9 @@ cmd_add() {
 	[ -f "$_html" ] || die "ファイルがありません: $(file_uri "$_html")" "File not found: $(file_uri "$_html")"
 	_id=$(guess_block_id "$_html")
 
+	# 読む前にロックを取る（並べて add しても 1 件ずつ追記される）。cmd_data は保持中なら取らない。
+	# 件数の検査（追記前 N 件 → 追記後 N+1 件。ロックが効いていることの確かめ）はこの後ろに足す。
+	lock_acquire "$_html"
 	_cur="$_html.cur.$$"
 	extract_json "$_html" "$_id" >"$_cur" || {
 		rm -f "$_cur"
@@ -3303,6 +3591,7 @@ cmd_add() {
 		rm -f "$_cur" "$_new"
 		exit 1
 	fi
+	lock_release
 }
 
 # ---------------------------------------------------------------- verify / summary
@@ -3399,6 +3688,8 @@ cmd_verify() {
 
 	_a="$WORKDIR/tmp/cache/.verify-cl.$$"
 	_out="$WORKDIR/tmp/cache/.verify-out.$$"
+	# 通ったときに最後のステップを完了にして書き戻すので、読む前にロックを取る。
+	lock_acquire "$_cl"
 	extract_json "$_cl" checklist >"$_a" || die "チェックリストの JSON を読めません。" \
 		"Cannot read the JSON of the check list."
 
@@ -3425,13 +3716,17 @@ cmd_verify() {
 	fi
 
 	rm -f "$_a" "$_out" ${_b:+"$_b"}
+	lock_release
 	return $_rc
 }
 
+# argv: 1 = チェックリストの JSON, 2 = レポートの JSON, 3 = MODULE_DIR（相対パス）, 4 = MODULE_GRADLE_PATH（:a:b）
 SUMMARY_PY='
 import json, os, sys
 
 cl = json.load(open(sys.argv[1], encoding="utf-8"))
+module_dir = sys.argv[3] if len(sys.argv) > 3 and sys.argv[3] else "architecture-test"
+module_path = sys.argv[4] if len(sys.argv) > 4 and sys.argv[4] else ":" + module_dir.replace("/", ":")
 try:
     report = json.load(open(sys.argv[2], encoding="utf-8"))
 except Exception:
@@ -3486,10 +3781,10 @@ print()
 print(t("- チェックリスト: %s", "- Check list: %s") % in_workdir("check-list.html"))
 print(t("- コードベース レポート: %s", "- Codebase report: %s") % in_workdir("project-code-base-report.html"))
 if violations:
-    print(t("- `:architecture-test:test` の実行結果: ⚠️ %d 件のアーキテクチャ違反を残しています",
-            "- `:architecture-test:test` result: ⚠️ architecture violations left: %d") % len(violations))
+    print(t("- `%s:test` の実行結果: ⚠️ %d 件のアーキテクチャ違反を残しています",
+            "- `%s:test` result: ⚠️ architecture violations left: %d") % (module_path, len(violations)))
 else:
-    print(t("- `:architecture-test:test` の実行結果: ✅ All green", "- `:architecture-test:test` result: ✅ All green"))
+    print(t("- `%s:test` の実行結果: ✅ All green", "- `%s:test` result: ✅ All green") % module_path)
 if questions:
     print(t("- 確認したいことが %d 件あります（チェックリストの「ユーザに確認したいこと」）",
             "- Questions for you: %d (\"Questions for the user\" in the check list)") % len(questions))
@@ -3506,16 +3801,16 @@ if report_questions:
 print(t("- 変更したファイル: %d 件", "- Changed files: %d") % len(changed))
 print("- Next action:")
 print(t("    - %s/ 以下の ProjectArchitecture.kt を**レビュー**してください",
-        "    - **Review** ProjectArchitecture.kt under %s/") % file_uri("architecture-test"))
+        "    - **Review** ProjectArchitecture.kt under %s/") % file_uri(module_dir))
 # 任意のステップで未実施のものを、これからやることとして出す。
 # label は「〜した」の完了形なので、そのまま出すと嘘になる。
 HINT = {
     "6-1": t("実際の実装タスクを1つ回して、定義が機能することを確かめてください",
              "Run one real implementation task and confirm that the definition works"),
-    "6-2": t("CI に `:architecture-test:test` を組み込んでください",
-             "Add `:architecture-test:test` to CI"),
-    "6-3": t("ドキュメント生成をセットアップできます（`architecture { title / description }` を書き、`./gradlew :architecture-test:katachiDocs` で生成。生成物をコミットするかを決めてください）",
-             "You can set up documentation generation (write `architecture { title / description }` and generate with `./gradlew :architecture-test:katachiDocs`; decide whether to commit the output)"),
+    "6-2": t("CI に `%s:test` を組み込んでください",
+             "Add `%s:test` to CI") % module_path,
+    "6-3": t("ドキュメント生成をセットアップできます（`architecture { title / description }` を書き、`./gradlew %s:katachiDocs` で生成。生成物をコミットするかを決めてください）",
+             "You can set up documentation generation (write `architecture { title / description }` and generate with `./gradlew %s:katachiDocs`; decide whether to commit the output)") % module_path,
     "6-4": t("テンプレートからのコード生成をセットアップできます。提案は次の %d 件です（レポートの「テンプレートの提案」）",
              "You can set up code generation from templates. Suggestions: %d (\"Template suggestions\" in the report)"),
 }
@@ -3539,6 +3834,8 @@ for i in optional_items:
 cmd_summary() {
 	need_python
 	require_workdir
+	# 置き場所は読むだけ。定義のディレクトリが無くても止めない（scaffold 前に区切ったセッションの再開で使う）。
+	resolve_module_dir
 	_cl="$WORKDIR/check-list.html"
 	[ -f "$_cl" ] || die "$(file_uri "$_cl") がありません。先に init を実行してください。" \
 		"$(file_uri "$_cl") not found. Run init first."
@@ -3557,7 +3854,7 @@ cmd_summary() {
 	fi
 
 	# `set -e` の下では、条件に置かないと python の失敗で後始末に届かない。
-	if printf '%s\n%s' "$PY_LANG" "$SUMMARY_PY" | python3 - "$_a" "$_b"; then
+	if printf '%s\n%s\n%s' "$PY_LANG" "$SECTION_OF_PY" "$SUMMARY_PY" | python3 - "$_a" "$_b" "$MODULE_DIR" "$MODULE_GRADLE_PATH"; then
 		rm -f "$_a" "$_b"
 	else
 		rm -f "$_a" "$_b"
@@ -3605,6 +3902,11 @@ wants_help() {
 }
 
 resolve_lang "${1:-}"
+
+# 書き込みのロックは、どのコマンドがどこで止まっても放す。trap はここで 1 回だけ張る
+# （関数の中では張らない。張り直すと先の trap が消える）。INT / TERM では放してから終わる。
+trap lock_release EXIT
+trap 'lock_release; exit 130' INT TERM
 
 # 自前で --help を読まないサブコマンドは、ここで使い方を出す。値として --help を
 # 読んで「値がありません」と落ちたり、作業用ディレクトリが無いと言って止まったりしないように。
