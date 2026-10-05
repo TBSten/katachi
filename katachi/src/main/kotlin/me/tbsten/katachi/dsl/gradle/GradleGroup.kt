@@ -1,7 +1,9 @@
 package me.tbsten.katachi.dsl.gradle
 
 import me.tbsten.katachi.dsl.*
+import me.tbsten.katachi.dsl.internal.DeclaredByGradle
 import me.tbsten.katachi.dsl.internal.GradleRoleKind
+import me.tbsten.katachi.dsl.internal.metadataBuilder
 import me.tbsten.katachi.dsl.kotlin.ktsFile
 
 /**
@@ -157,6 +159,8 @@ private fun GroupScope.gradleRole(
     kind.roleName.role {
         this.summary = summary
         documented = false
+        // Before the hook: a reader can tell katachi's Gradle roles apart whatever the hook wrote.
+        metadataBuilder()[DeclaredByGradle] = true
         layout(layout)
         val roleScope = GradleRoleScopeImpl(this)
         for (hook in scope.hooksOf(kind)) roleScope.hook()

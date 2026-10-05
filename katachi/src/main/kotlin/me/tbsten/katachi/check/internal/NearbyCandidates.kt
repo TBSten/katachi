@@ -5,6 +5,7 @@ import me.tbsten.katachi.check.NearbyLocation
 import me.tbsten.katachi.dsl.LayoutEntry
 import me.tbsten.katachi.dsl.LayoutEntryKind
 import me.tbsten.katachi.dsl.Role
+import me.tbsten.katachi.dsl.internal.DeclaredByGradle
 import me.tbsten.katachi.dsl.internal.Glob
 
 /** How many locations an `[UnexpectedFile]` block offers. */
@@ -18,7 +19,10 @@ private const val NEARBY_LIMIT: Int = 3
  * not one of them: `core/domain`, passed through on the way to the `useCase` directory below
  * it, accepts nothing itself. A directory the role stopped checking in is left out for the
  * same reason: moving a file there hides it instead of giving it a role. What a
- * `module { }` key or `gradle()` injected is left out too, because nobody wrote that line.
+ * `module { }` key injected and what `gradle()` declared are left out too, because nobody
+ * wrote "put a file here" on that line -- the build script `gradle()` declares in every
+ * module is not synthetic (a `buildScript { }` constraint covers it), so its role is told
+ * apart by [DeclaredByGradle] rather than by the entry.
  *
  * For one file, every place is filled in with the file's own path ([instantiate]), and the
  * ones that could hold a file of its name are ordered by how far its directory is from
@@ -94,7 +98,7 @@ private val RANKING: Comparator<Ranked> =
 private fun List<LayoutEntry>.candidates(): List<NearbyCandidate> {
     val seen = LinkedHashMap<Triple<String, String, String?>, NearbyCandidate>()
     for (entry in this) {
-        if (entry.synthetic) continue
+        if (entry.synthetic || entry.role[DeclaredByGradle] == true) continue
         val directory: String
         val filePattern: String?
         when (entry.kind) {
