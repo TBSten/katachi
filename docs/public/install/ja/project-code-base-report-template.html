@@ -604,6 +604,191 @@
 
   .qa-pick .qa-head { color: var(--accent); }
   .qa-pick p:last-child { margin: 0; }
+
+  /* モジュールのツリー（<details> の入れ子） */
+  .module-tree { margin: 8px 0 0; }
+  .module-tree .module-tree { margin: 6px 0 0 20px; border-left: 1px solid var(--border); padding-left: 12px; }
+
+  .module-tree > summary {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 8px;
+    padding: 6px 8px;
+    border-radius: 4px;
+    list-style: none;
+    cursor: pointer;
+  }
+
+  .module-tree > summary::-webkit-details-marker { display: none; }
+  .module-tree > summary:hover { background: var(--surface-2); }
+  .module-tree > summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+  .module-tree > summary::before {
+    content: "\25B8";
+    flex: none;
+    color: var(--text-muted);
+    font-size: 12px;
+  }
+
+  .module-tree[open] > summary::before { content: "\25BE"; }
+  .module-tree.is-leaf > summary::before { content: "\2022"; }
+  .module-tree > summary > code { font-size: 13px; }
+  .module-body { padding: 2px 0 6px 28px; }
+  .module-body dl.fields { margin: 4px 0 0; }
+
+  .kind-badge {
+    padding: 0 8px;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    background: var(--surface-2);
+    color: var(--text-muted);
+    font-family: var(--font-mono);
+    font-size: 12px;
+    white-space: nowrap;
+  }
+
+  /* 同じ kind の他のモジュールと構成が違う点 */
+  .deviation { color: var(--warn); font-size: 13px; }
+  .deviation::before { content: "\2691\00a0"; }
+
+  /* Role 候補の group（<details> の入れ子） */
+  .role-group {
+    margin: 12px 0 0;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+  }
+
+  .role-group .role-group { margin: 12px 0 0; }
+
+  .role-group > summary {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    padding: 10px 14px;
+    list-style: none;
+    cursor: pointer;
+  }
+
+  .role-group > summary::-webkit-details-marker { display: none; }
+  .role-group > summary:hover { background: var(--surface-2); }
+  .role-group > summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .role-group[open] > summary { border-bottom: 1px solid var(--border); }
+
+  .role-group > summary::after {
+    content: "\25B8";
+    flex: none;
+    margin-left: auto;
+    color: var(--text-muted);
+    font-size: 12px;
+  }
+
+  .role-group[open] > summary::after { content: "\25BE"; }
+  .role-group > summary > code { font-size: 14px; font-weight: 700; }
+  .role-group > summary .count-badge { margin-left: 0; }
+  .role-group-body { padding: 0 14px 14px; }
+  .role-group-body > .role-grid { margin-top: 0; padding-top: 14px; }
+
+  /* 制約のための Role */
+  .role-card.constraint-only { border-left-color: var(--border-strong); }
+
+  .constraint-only-tag {
+    display: inline-block;
+    margin: 8px 0 0;
+    padding: 2px 8px;
+    border: 1px dashed var(--border-strong);
+    border-radius: 4px;
+    color: var(--text-muted);
+    font-size: 12px;
+  }
+
+  /* 回答欄 */
+  .qa-answer { margin-top: 14px; padding-top: 12px; border-top: 1px dashed var(--border); }
+  .qa-answer .qa-head { display: flex; align-items: baseline; gap: 8px; }
+  .qa-answer-list { margin: 0; padding: 0; list-style: none; }
+  .qa-answer-list li { margin: 2px 0; }
+
+  .qa-answer-list label {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    padding: 4px 6px;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+
+  .qa-answer-list label:hover { background: var(--surface-2); }
+  .qa-answer-list input[type="radio"] { flex: none; margin: 0.35em 0 0; accent-color: var(--accent); }
+  .qa-answer-list .option-letter { flex: none; font-family: var(--font-mono); font-size: 12px; color: var(--text-muted); margin-top: 3px; }
+
+  .qa-answer textarea {
+    display: block;
+    width: 100%;
+    min-height: 3.5em;
+    margin: 8px 0 0;
+    padding: 8px 10px;
+    border: 1px solid var(--border-strong);
+    border-radius: 6px;
+    background: var(--surface);
+    color: var(--text);
+    font-family: inherit;
+    font-size: 14px;
+    line-height: 1.6;
+    resize: vertical;
+  }
+
+  .qa-answer textarea:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+
+  .answered-badge:empty { display: none; }
+  .answered-badge { border-color: var(--ok); color: var(--ok); }
+  .qa.is-answered > summary .qa-num { background: var(--ok); color: var(--bg); }
+  .qa-imported { color: var(--ok); font-size: 12px; font-family: var(--font-mono); }
+
+  .action-button {
+    padding: 4px 12px;
+    border: 1px solid var(--border-strong);
+    border-radius: 6px;
+    background: var(--surface);
+    color: var(--text);
+    font-family: inherit;
+    font-size: 13px;
+    line-height: 1.6;
+    cursor: pointer;
+  }
+
+  .action-button:hover { background: var(--surface-2); border-color: var(--accent); }
+  .action-button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .action-button.is-primary { background: var(--accent); border-color: var(--accent); color: var(--bg); }
+  .qa-answer .action-button { margin-top: 8px; }
+
+  .answer-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 12px 0 0; }
+  .answer-actions:empty { display: none; }
+  .answer-status { flex-basis: 100%; margin: 0; font-size: 13px; color: var(--text-muted); }
+  .answer-status.is-error { color: var(--warn); }
+  .answer-status:empty { display: none; }
+
+  .answer-manual {
+    display: block;
+    width: 100%;
+    min-height: 6em;
+    margin: 8px 0 0;
+    padding: 8px 10px;
+    border: 1px solid var(--border-strong);
+    border-radius: 6px;
+    background: var(--surface-2);
+    color: var(--text);
+    font-family: var(--font-mono);
+    font-size: 12px;
+  }
+
+  /* display: block が UA の [hidden] { display: none } に勝ってしまうので上書きする */
+  .answer-manual[hidden] { display: none; }
+
+  @media print {
+    .answer-actions, .qa-answer .action-button { display: none; }
+    .qa-answer textarea { border: 1px solid #000; }
+  }
 </style>
 </head>
 <body>
@@ -644,6 +829,7 @@
   "tools": [],
   "excluded": [],
   "questions": [],
+  "answers": {},
   "templates": []
 }
 </script>
@@ -672,14 +858,17 @@
     "characteristics": ["一部の画面だけ MVI を試験導入している"]
   },
   "modules": [
-    { "path": "app", "kind": "app", "responsibility": "UI 層（Activity / Compose / ViewModel）", "buildFile": "app/build.gradle.kts" },
-    { "path": "domain", "kind": "library", "responsibility": "ドメインロジック", "buildFile": "domain/build.gradle.kts" }
+    { "path": "app", "kind": "app", "responsibility": "UI 層（Activity / Compose / ViewModel）", "buildFile": "app/build.gradle.kts", "deviation": null },
+    { "path": "core/domain", "kind": "library", "responsibility": "ドメインロジック", "buildFile": "core/domain/build.gradle.kts", "deviation": null },
+    { "path": "core/data", "kind": "library", "responsibility": "Repository の実装と DataSource", "buildFile": "core/data/build.gradle.kts", "deviation": "他の library と違い Android ライブラリ（com.android.library）になっている" }
   ],
   "directoryTree": "app/\n  build.gradle.kts\n  src/main/kotlin/com/example/app/\n    MainActivity.kt\n    ui/\n      home/\n        HomeScreen.kt\n        HomeViewModel.kt\n",
   "roles": [
     {
       "importance": 5,
       "name": "ViewModel",
+      "group": "app.ui",
+      "constraintOnly": false,
       "layout": "app/src/main/kotlin/<package>/ui/*/*ViewModel.kt",
       "naming": "サフィックス ViewModel。ファイル名と同名のクラスを1つだけ持つ。",
       "allowed": ["UI State の保持と更新", "UseCase の呼び出し", "viewModelScope の管理"],
@@ -690,6 +879,19 @@
       ],
       "count": 18,
       "note": "一部の画面では rememberSaveable による State ホルダーと役割が重複している。"
+    },
+    {
+      "importance": 2,
+      "name": "AppBuildFile",
+      "group": "app",
+      "constraintOnly": true,
+      "layout": "app/build.gradle.kts",
+      "naming": "固定名",
+      "allowed": [],
+      "forbidden": [],
+      "examples": ["app/build.gradle.kts"],
+      "count": 1,
+      "note": "namespace とアプリのパッケージ名が一致することを検査するためだけの Role"
     }
   ],
   "tools": [
@@ -706,12 +908,23 @@
   ],
   "questions": [
     {
+      "id": "q1",
       "question": "UseCase と Repository の間に Interactor 層を挟む方針は今後も続けますか？",
       "observed": "domain/src/main/kotlin/com/example/app/domain/interactor/ 配下の *Interactor.kt は3件だけで、残る15件の UseCase は Repository を直接呼んでいる",
       "options": ["Interactor 層を全体に広げる", "Interactor を廃して UseCase に寄せる", "現状のまま両方を許す"],
       "recommendation": "B。Interactor が3件に留まっており、UseCase 側へ寄せるほうが規約を1つにできるため"
+    },
+    {
+      "id": "q2",
+      "question": "legacy パッケージは katachi の対象に含めますか？",
+      "observed": "app/src/main/kotlin/com/example/app/ui/legacy/ の配下だけ Fragment + Presenter のまま残っている",
+      "options": ["対象に含めて直す", "当面 ignore する"],
+      "recommendation": "B。対象が1画面だけで、移行の予定が決まっていないため"
     }
   ],
+  "answers": {
+    "q1": { "answer": "Interactor を廃して UseCase に寄せる", "note": "次の四半期で移行する", "answeredAt": "2026-09-24T11:00:00+09:00" }
+  },
   "templates": [
     {
       "role": "UseCase",
@@ -806,11 +1019,14 @@
 
     <section id="ignore">
       <h2>6. katachi の対象外にするもの</h2>
+      <p class="lede">katachi は <code>.gitignore</code> で除外されたファイルを見ません。ここに並ぶのは、git が追跡している（または未追跡で ignore されていない）のに検査から外すものです。</p>
       <div data-render="excluded"></div>
     </section>
 
     <section id="questions">
-      <h2>7. ユーザに確認したいこと<span class="count-badge" data-render="questionCount"></span></h2>
+      <h2>7. ユーザに確認したいこと<span class="count-badge" data-render="questionCount"></span><span class="count-badge answered-badge" data-render="answeredCount"></span></h2>
+      <p class="lede">各項目で選択肢を選ぶか、自由に書いてください。両方あれば自由記入は補足になります。書き終えたら「回答を書き出す」で JSON を保存し、AI エージェントに渡してください（<code>sh katachi-install.sh answers import &lt;json&gt;</code>）。</p>
+      <div class="answer-actions" data-render="answerActions"></div>
       <div data-render="questions"></div>
     </section>
     <section id="templates">
@@ -895,16 +1111,6 @@
     });
     return ul;
   }
-  function numbered(values, key) {
-    if (blank(values)) return paragraph(unfilled(key));
-    var ol = el('ol');
-    values.forEach(function (item) {
-      var li = el('li');
-      li.textContent = String(item);
-      ol.appendChild(li);
-    });
-    return ol;
-  }
   function defs(cls, pairs) {
     var dl = el('dl', cls);
     pairs.forEach(function (pair) {
@@ -970,10 +1176,34 @@
     return p;
   }
   function record(raw) { return raw && typeof raw === 'object' ? raw : {}; }
+  function list(raw) { return Array.isArray(raw) ? raw.map(record) : []; }
   // 配列が空なら「未記入の1件」を出すために、空オブジェクトを1つ返す
   function entries(raw) {
-    var items = Array.isArray(raw) ? raw : [];
-    return items.length ? items.map(record) : [{}];
+    var items = list(raw);
+    return items.length ? items : [{}];
+  }
+  // sh の file_uri と同じ規則（% → %25、空白 → %20、# → %23、? → %3F だけ）
+  function fileUri(root, rel) {
+    var path = String(root).replace(/\/+$/, '') + '/' + String(rel).replace(/^\.?\//, '');
+    return 'file://' + path.replace(/%/g, '%25').replace(/ /g, '%20').replace(/#/g, '%23').replace(/\?/g, '%3F');
+  }
+  // 実例ファイルの一覧。meta.gradleRoot があれば file:// のリンクにする
+  function fileLinks(paths, root) {
+    if (blank(paths)) return none();
+    var ul = el('ul');
+    paths.forEach(function (item) {
+      var li = el('li');
+      if (blank(root)) {
+        li.textContent = String(item);
+      } else {
+        var a = el('a');
+        a.setAttribute('href', fileUri(root, item));
+        a.textContent = String(item);
+        li.appendChild(a);
+      }
+      ul.appendChild(li);
+    });
+    return ul;
   }
   function countOf(raw) { return Array.isArray(raw) ? raw.length : 0; }
   function countLabel(raw) { return dataOk ? countOf(raw) + ' 件' : '不明'; }
@@ -1014,15 +1244,64 @@
     ]);
   }
 
-  function renderModules(data) {
-    var rows = entries(data.modules).map(function (module) {
-      return [
-        value(module.path, 'modules[].path'),
-        value(module.kind, 'modules[].kind'),
-        value(module.responsibility, 'modules[].responsibility'),
-        value(module.buildFile, 'modules[].buildFile')
-      ];
+  // modules[].path を "/" で割って木にする。親は持たず、パスから導く
+  function buildModuleTree(modules) {
+    var root = { name: '', module: null, children: [], order: [] };
+    list(modules).forEach(function (module) {
+      var segments = blank(module.path) ? ['?'] : String(module.path).split('/').filter(Boolean);
+      var node = root;
+      segments.forEach(function (segment) {
+        var next = node.order.filter(function (child) { return child.name === segment; })[0];
+        if (!next) {
+          next = { name: segment, module: null, children: [], order: [] };
+          node.order.push(next);
+        }
+        node = next;
+      });
+      // 同じ path が 2 回あれば後勝ち。記入漏れの path は "?" にまとめる
+      node.module = module;
     });
+    return root.order;
+  }
+  function hasDeviation(node) {
+    if (node.module && !blank(node.module.deviation)) return true;
+    return node.order.some(hasDeviation);
+  }
+  function moduleNode(node, depth) {
+    var box = el('details', 'module-tree');
+    var summary = el('summary');
+    var name = el('code');
+    name.textContent = node.name;
+    summary.appendChild(name);
+    var module = node.module;
+    if (module) {
+      var kind = el('span', 'kind-badge');
+      kind.appendChild(value(module.kind, 'modules[].kind'));
+      summary.appendChild(kind);
+      if (!blank(module.deviation)) {
+        var flag = el('span', 'deviation');
+        flag.textContent = String(module.deviation);
+        summary.appendChild(flag);
+      }
+    }
+    box.appendChild(summary);
+
+    var body = el('div', 'module-body');
+    if (module) {
+      body.appendChild(defs('fields', [
+        ['責務', value(module.responsibility, 'modules[].responsibility')],
+        ['ビルドファイル', value(module.buildFile, 'modules[].buildFile')]
+      ]));
+    }
+    node.order.forEach(function (child) { body.appendChild(moduleNode(child, depth + 1)); });
+    box.appendChild(body);
+    if (!node.order.length) box.classList.add('is-leaf');
+    // 最初は 2 階層まで開く。deviation を含む枝は深さに関わらず開く
+    box.open = depth < 2 || hasDeviation(node);
+    return box;
+  }
+  function renderModules(data) {
+    var tree = buildModuleTree(data.modules);
     var pre = el('pre');
     var code = el('code');
     if (blank(data.directoryTree)) {
@@ -1031,12 +1310,18 @@
       code.textContent = String(data.directoryTree);
     }
     pre.appendChild(code);
-    mount('modules', [
-      heading('モジュール一覧'),
-      tableOf(['モジュール', '種別', '責務', 'ビルドファイル'], rows),
-      heading('ディレクトリ構造'),
-      pre
-    ]);
+    var nodes = [heading('モジュール一覧')];
+    if (!tree.length) {
+      nodes.push(paragraph(unfilled('modules')));
+    } else {
+      var lede = el('p', 'lede');
+      lede.textContent = '⚑ は、同じ種別の他のモジュールと構成が違う点です。';
+      nodes.push(lede);
+      tree.forEach(function (node) { nodes.push(moduleNode(node, 0)); });
+    }
+    nodes.push(heading('ディレクトリ構造'));
+    nodes.push(folded(document.createTextNode('ディレクトリ構造を見る'), pre));
+    mount('modules', nodes);
   }
 
   // importance は 1〜5 の整数。それ以外は 0 として最後にまとめる
@@ -1057,8 +1342,9 @@
     return box;
   }
 
-  function roleCard(role) {
+  function roleCard(role, root) {
     var card = el('div', blank(role.name) ? 'role-card card-empty' : 'role-card');
+    if (role.constraintOnly === true) card.classList.add('constraint-only');
     var header = el('div', 'role-head');
     var title = el('h3');
     title.appendChild(value(role.name, 'roles[].name'));
@@ -1066,6 +1352,11 @@
     var level = rankOf(role);
     header.appendChild(level ? rankDots(level) : unfilled('roles[].importance'));
     card.appendChild(header);
+    if (role.constraintOnly === true) {
+      var tag = el('span', 'constraint-only-tag');
+      tag.textContent = '制約のための Role（gradle() のファイルに検査を足す。ドキュメントには載せない）';
+      card.appendChild(tag);
+    }
     card.appendChild(defs('fields', [
       ['配置パターン', value(role.layout, 'roles[].layout')],
       ['命名規約', value(role.naming, 'roles[].naming')]
@@ -1085,19 +1376,82 @@
     card.appendChild(rules);
 
     card.appendChild(defs('fields', [
-      ['実例ファイル', bulletsOrNone(role.examples)],
+      ['実例ファイル', fileLinks(role.examples, root)],
       ['件数', value(role.count, 'roles[].count')],
       ['備考', blank(role.note) ? null : document.createTextNode(String(role.note))]
     ]));
     return card;
   }
 
-  function renderRoles(roles) {
+  // group を "." で割って木にする。group 未記入の Role は "" の束に入れる
+  function buildGroupTree(roles) {
+    var root = { name: '', roles: [], order: [] };
+    roles.forEach(function (role) {
+      var segments = blank(role.group) ? [] : String(role.group).split('.').filter(Boolean);
+      var node = root;
+      segments.forEach(function (segment) {
+        var next = node.order.filter(function (child) { return child.name === segment; })[0];
+        if (!next) {
+          next = { name: segment, roles: [], order: [] };
+          node.order.push(next);
+        }
+        node = next;
+      });
+      node.roles.push(role);
+    });
+    return root;
+  }
+  function countRoles(node) {
+    return node.roles.length + node.order.reduce(function (sum, child) { return sum + countRoles(child); }, 0);
+  }
+  function roleGrid(roles, root) {
     // 重要度の降順。同じ重要度は JSON に書かれた順のまま（sort は安定）
-    var sorted = entries(roles).sort(function (a, b) { return rankOf(b) - rankOf(a); });
+    var sorted = roles.slice().sort(function (a, b) { return rankOf(b) - rankOf(a); });
     var grid = el('div', 'role-grid');
-    sorted.map(roleCard).forEach(function (card) { grid.appendChild(card); });
-    mount('roles', [grid]);
+    sorted.forEach(function (role) { grid.appendChild(roleCard(role, root)); });
+    return grid;
+  }
+  function groupNode(node, path, root) {
+    var box = el('details', 'role-group');
+    var summary = el('summary');
+    var name = el('code');
+    // 入れ子の group は末尾の名前だけを出し、フルパスは title に持つ
+    name.textContent = node.name;
+    name.setAttribute('title', path);
+    summary.appendChild(name);
+    var badge = el('span', 'count-badge');
+    badge.textContent = countRoles(node) + ' 件';
+    summary.appendChild(badge);
+    box.appendChild(summary);
+    var body = el('div', 'role-group-body');
+    if (node.roles.length) body.appendChild(roleGrid(node.roles, root));
+    node.order.forEach(function (child) {
+      body.appendChild(groupNode(child, path + '.' + child.name, root));
+    });
+    box.appendChild(body);
+    return box;
+  }
+  function renderRoles(roles, meta) {
+    var root = blank(meta.gradleRoot) ? null : String(meta.gradleRoot);
+    var tree = buildGroupTree(entries(roles));
+    var nodes = [];
+    tree.order.forEach(function (child) { nodes.push(groupNode(child, child.name, root)); });
+    if (tree.roles.length) {
+      // group 未記入の Role。verify が未記入に数える
+      var box = el('details', 'role-group');
+      box.open = true;
+      var summary = el('summary');
+      summary.appendChild(unfilled('roles[].group'));
+      var badge = el('span', 'count-badge');
+      badge.textContent = tree.roles.length + ' 件';
+      summary.appendChild(badge);
+      box.appendChild(summary);
+      var body = el('div', 'role-group-body');
+      body.appendChild(roleGrid(tree.roles, root));
+      box.appendChild(body);
+      nodes.push(box);
+    }
+    mount('roles', nodes);
   }
 
   function renderTools(tools) {
@@ -1138,11 +1492,184 @@
     mount('templates', [tableOf(['Role', '作るファイル', 'パラメータ', '元にした実例', '理由'], rows)]);
   }
 
-  function questionCard(item, index) {
+  // ---- 確認事項の回答欄（チェックリストにも同じ関数がある。JS は共有できない） ----
+  var ANSWER_TARGET = 'report';
+  var ANSWER_FILE = 'katachi-answers-report.json';
+  // { id, recommendation, radios, free, card }
+  var answerCards = [];
+
+  function questionId(item, index) {
+    return blank(item.id) ? 'q' + (index + 1) : String(item.id);
+  }
+  // 入力途中の下書き。localStorage が使えなくても描画は壊さない
+  function draftKey(id) { return location.href.split('#')[0] + '#answer:' + id; }
+  function readDraft(id) {
+    try {
+      var raw = localStorage.getItem(draftKey(id));
+      return raw ? record(JSON.parse(raw)) : null;
+    } catch (error) {
+      return null;
+    }
+  }
+  function writeDraft(id, draft) {
+    try {
+      if (draft) localStorage.setItem(draftKey(id), JSON.stringify(draft));
+      else localStorage.removeItem(draftKey(id));
+    } catch (error) { /* 保存できなくても続ける */ }
+  }
+  // 回答欄の状態。選択肢を選んでいれば自由記入は note、選んでいなければ自由記入が answer
+  function readCard(entry) {
+    var picked = entry.radios.filter(function (radio) { return radio.checked; })[0];
+    var free = entry.free.value.replace(/^\s+|\s+$/g, '');
+    if (picked) return { answer: picked.value, note: free || null };
+    if (free) return { answer: free, note: null };
+    return null;
+  }
+  function fillCard(entry, answer) {
+    var found = false;
+    entry.radios.forEach(function (radio) {
+      radio.checked = !found && radio.value === answer.answer;
+      if (radio.checked) found = true;
+    });
+    var note = blank(answer.note) ? '' : String(answer.note);
+    entry.free.value = found ? note : [answer.answer || '', note].filter(Boolean).join('\n');
+  }
+  function paintAnswers() {
+    var answered = 0;
+    answerCards.forEach(function (entry) {
+      var current = readCard(entry);
+      entry.card.classList.toggle('is-answered', current !== null);
+      if (current) answered += 1;
+    });
+    mount('answeredCount', [document.createTextNode(answered ? '回答済み ' + answered + ' 件' : '')]);
+  }
+  function onCardInput(entry) {
+    writeDraft(entry.id, readCard(entry));
+    paintAnswers();
+  }
+  // 推奨の先頭の文字（"B。..."）が選択肢の記号なら、その選択肢を選ぶ。そうでなければ文を自由記入に入れる
+  function adoptRecommendation(entry) {
+    var text = blank(entry.recommendation) ? '' : String(entry.recommendation).replace(/^\s+/, '');
+    var match = /^([A-Z])(?![A-Za-z])/.exec(text);
+    var index = match ? match[1].charCodeAt(0) - 65 : -1;
+    if (index >= 0 && index < entry.radios.length) {
+      entry.radios[index].checked = true;
+    } else if (text) {
+      entry.radios.forEach(function (radio) { radio.checked = false; });
+      entry.free.value = text;
+    }
+    onCardInput(entry);
+  }
+  function collectAnswers() {
+    var out = {};
+    var now = new Date().toISOString();
+    answerCards.forEach(function (entry) {
+      var current = readCard(entry);
+      if (!current) return;
+      out[entry.id] = { answer: current.answer, note: current.note, answeredAt: now };
+    });
+    return out;
+  }
+  function answersJson() {
+    return JSON.stringify({ target: ANSWER_TARGET, answers: collectAnswers() }, null, 2) + '\n';
+  }
+  function setAnswerStatus(text, isError) {
+    var status = document.getElementById('answer-status');
+    var manual = document.getElementById('answer-manual');
+    if (!status || !manual) return;
+    status.textContent = text;
+    status.classList.toggle('is-error', isError === true);
+    manual.hidden = true;
+  }
+  // 自動で渡せなかったときは JSON をそのまま出して、手で選んでもらう
+  function showManualAnswers(text, message) {
+    setAnswerStatus(message, true);
+    var manual = document.getElementById('answer-manual');
+    if (!manual) return;
+    manual.value = text;
+    manual.hidden = false;
+    manual.focus();
+    manual.select();
+  }
+  function downloadAnswers() {
+    var text = answersJson();
+    try {
+      var url = URL.createObjectURL(new Blob([text], { type: 'application/json' }));
+      var a = el('a');
+      a.setAttribute('href', url);
+      a.setAttribute('download', ANSWER_FILE);
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
+      setAnswerStatus(ANSWER_FILE + ' を保存しました。sh katachi-install.sh answers import <保存したファイル> で取り込めます。');
+    } catch (error) {
+      showManualAnswers(text, 'ダウンロードできませんでした。下の JSON を手で選んでコピーし、AI エージェントに渡してください。');
+    }
+  }
+  function copyAnswers() {
+    var text = answersJson();
+    function done() { setAnswerStatus('回答の JSON をコピーしました。AI エージェントに貼り付けて渡してください。'); }
+    function fallback() {
+      var box = el('textarea');
+      box.value = text;
+      box.setAttribute('readonly', '');
+      box.style.position = 'fixed';
+      box.style.left = '-9999px';
+      document.body.appendChild(box);
+      box.select();
+      var ok = false;
+      try { ok = document.execCommand('copy'); } catch (error) { ok = false; }
+      document.body.removeChild(box);
+      if (ok) done();
+      else showManualAnswers(text, 'コピーできませんでした。下の JSON を手で選んでコピーしてください。');
+    }
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(done, fallback);
+    } else {
+      fallback();
+    }
+  }
+  function clearAnswers() {
+    answerCards.forEach(function (entry) {
+      entry.radios.forEach(function (radio) { radio.checked = false; });
+      entry.free.value = '';
+      writeDraft(entry.id, null);
+    });
+    paintAnswers();
+    setAnswerStatus('回答を消しました（この JSON に取り込み済みの回答は、再読み込みで戻ります）。');
+  }
+  function actionButton(label, handler, primary) {
+    var button = el('button', primary ? 'action-button is-primary' : 'action-button');
+    button.type = 'button';
+    button.textContent = label;
+    button.addEventListener('click', handler);
+    return button;
+  }
+  function renderAnswerActions() {
+    var status = el('p', 'answer-status');
+    status.id = 'answer-status';
+    var manual = el('textarea', 'answer-manual');
+    manual.id = 'answer-manual';
+    manual.setAttribute('readonly', '');
+    manual.setAttribute('aria-label', '回答の JSON');
+    manual.hidden = true;
+    mount('answerActions', [
+      actionButton('すべて推奨を採用', function () { answerCards.forEach(adoptRecommendation); }),
+      actionButton('回答を書き出す（ダウンロード）', downloadAnswers, true),
+      actionButton('回答をコピー', copyAnswers),
+      actionButton('回答を消す', clearAnswers),
+      status,
+      manual
+    ]);
+  }
+
+  function questionCard(item, index, answers) {
+    var id = questionId(item, index);
     var card = el('details', 'qa');
     var summary = el('summary');
     var badge = el('span', 'qa-num');
-    badge.textContent = 'Q' + (index + 1);
+    badge.textContent = id;
     var title = el('span', 'qa-title');
     title.appendChild(value(item.question, 'questions[].question'));
     summary.appendChild(badge);
@@ -1151,22 +1678,76 @@
     var body = el('div', 'qa-body');
     body.appendChild(subHeading('観測したこと'));
     body.appendChild(paragraph(richText(item.observed, 'questions[].observed')));
-    body.appendChild(subHeading('選択肢'));
-    body.appendChild(numbered(item.options, 'questions[].options'));
     var pick = el('div', 'qa-pick');
     pick.appendChild(subHeading('推奨'));
     pick.appendChild(paragraph(value(item.recommendation, 'questions[].recommendation')));
     body.appendChild(pick);
+
+    // 回答欄
+    var imported = answers[id] ? record(answers[id]) : null;
+    var answer = el('div', 'qa-answer');
+    var head = subHeading('回答');
+    if (imported) {
+      var mark = el('span', 'qa-imported');
+      mark.textContent = '取り込み済み';
+      head.appendChild(mark);
+    }
+    answer.appendChild(head);
+    var entry = { id: id, recommendation: item.recommendation, radios: [], free: null, card: card };
+    if (blank(item.options)) {
+      answer.appendChild(paragraph(unfilled('questions[].options')));
+    } else {
+      var ul = el('ul', 'qa-answer-list');
+      item.options.forEach(function (option, i) {
+        var li = el('li');
+        var label = el('label');
+        var radio = el('input');
+        radio.type = 'radio';
+        radio.name = 'answer-' + id;
+        radio.value = String(option);
+        radio.addEventListener('change', function () { onCardInput(entry); });
+        var letter = el('span', 'option-letter');
+        letter.textContent = String.fromCharCode(65 + i);
+        var text = el('span');
+        text.textContent = String(option);
+        label.appendChild(radio);
+        label.appendChild(letter);
+        label.appendChild(text);
+        li.appendChild(label);
+        ul.appendChild(li);
+        entry.radios.push(radio);
+      });
+      answer.appendChild(ul);
+    }
+    var free = el('textarea');
+    free.setAttribute('aria-label', id + ' の自由記入');
+    free.setAttribute('placeholder', '自由記入（選択肢を選んだときは補足になります）');
+    free.addEventListener('input', function () { onCardInput(entry); });
+    entry.free = free;
+    answer.appendChild(free);
+    answer.appendChild(actionButton('推奨を採用', function () { adoptRecommendation(entry); }));
+    body.appendChild(answer);
+
+    // JSON に取り込み済みの回答があればそれを、無ければ下書きを出す。未回答のカードは開いておく
+    var initial = imported || readDraft(id);
+    if (initial) fillCard(entry, initial);
+    card.open = !initial;
+    answerCards.push(entry);
 
     card.appendChild(summary);
     card.appendChild(body);
     return card;
   }
 
-  function renderQuestions(questions) {
+  function renderQuestions(questions, answers) {
+    answerCards = [];
     mount('questionCount', [document.createTextNode(countLabel(questions))]);
     if (!countOf(questions)) { mount('questions', [none()]); return; }
-    mount('questions', entries(questions).map(questionCard));
+    mount('questions', entries(questions).map(function (item, index) {
+      return questionCard(item, index, answers);
+    }));
+    renderAnswerActions();
+    paintAnswers();
   }
 
   function renderError(message) {
@@ -1248,10 +1829,10 @@
     renderOverview(record(data.overview));
     renderArchitecture(record(data.architecture));
     renderModules(data);
-    renderRoles(data.roles);
+    renderRoles(data.roles, record(data.meta));
     renderTools(data.tools);
     renderExcluded(data.excluded);
-    renderQuestions(data.questions);
+    renderQuestions(data.questions, record(data.answers));
     renderTemplates(data.templates);
     highlightToc();
     openWhilePrinting();
