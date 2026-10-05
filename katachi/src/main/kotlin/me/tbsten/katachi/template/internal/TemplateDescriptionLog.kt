@@ -56,7 +56,12 @@ internal fun templateDetailLines(detail: TemplateDetail): List<String> = buildLi
     if (detail.captures.isNotEmpty()) {
         add("")
         add("Captures (--arg values that choose the directory):")
-        detail.captures.forEach { add("  ${captureLine(it)}") }
+        val seen = mutableSetOf<String>()
+        for (capture in detail.captures) {
+            // The first plain occurrence of a name takes the `--arg`; every later one reads it.
+            val repeated = capture.transform == null && !seen.add(capture.name)
+            add("  ${captureLine(capture, repeated)}")
+        }
     }
 
     add("")
@@ -101,11 +106,25 @@ private fun parameterLine(parameter: TemplateParameterPreview): String = buildSt
     }
 }
 
-/** A path capture as `feature: level 2 of <file pattern>`, a module capture as `feature: wildcard 1 of module :feature:*, ...`. */
-private fun captureLine(capture: TemplateCapturePreview): String = when (capture.kind) {
-    TemplateCaptureKind.PathCapture -> "${capture.name}: level ${capture.position + 1} of ${capture.pattern}"
+/**
+ * A path capture as `feature: level 2 of <file pattern>`, a module capture as
+ * `feature: wildcard 1 of module :feature:*, ...`. A name's second occurrence adds
+ * `(the same value)`, and a derived one reads `feature.pascalCase: level 9 of ..., derived from feature`.
+ */
+private fun captureLine(capture: TemplateCapturePreview, repeated: Boolean): String = when (capture.kind) {
+    TemplateCaptureKind.PathCapture -> {
+        val transform = capture.transform
+        if (transform != null) {
+            "${capture.name}.$transform: level ${capture.position + 1} of ${capture.pattern}, " +
+                "derived from ${capture.name} (no --arg of its own)"
+        } else {
+            "${capture.name}: level ${capture.position + 1} of ${capture.pattern}" +
+                (if (repeated) " (the same value)" else "")
+        }
+    }
     TemplateCaptureKind.ModuleCapture ->
-        "${capture.name}: wildcard ${capture.position + 1} of module ${capture.pattern}, an existing module"
+        "${capture.name}: wildcard ${capture.position + 1} of module ${capture.pattern}, an existing module" +
+            (if (repeated) " (the same value)" else "")
 }
 
 /** `name=${name} (placeholder), withImpl=true (default)`. */

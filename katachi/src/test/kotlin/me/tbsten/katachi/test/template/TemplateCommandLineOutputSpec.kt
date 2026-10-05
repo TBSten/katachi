@@ -4,6 +4,7 @@ import io.kotest.core.spec.style.FreeSpec
 import io.kotest.matchers.collections.shouldContain
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
+import me.tbsten.katachi.dsl.pascalCase
 import me.tbsten.katachi.dsl.template
 import me.tbsten.katachi.processor.process
 import me.tbsten.katachi.template.DescribeTemplates
@@ -58,5 +59,25 @@ class TemplateCommandLineOutputSpec : FreeSpec({
         lines.last() shouldBe "  ${detail.exampleCommand}"
         detail.exampleCommand shouldContain "--arg template=domain.UseCase.useCase"
         detail.exampleCommand shouldContain "--arg name=<name>"
+    }
+
+    "詳細の Captures に the same value と derived from の行が出る" {
+        val bound = architectureOf {
+            "feature".group {
+                "Screen".role {
+                    layout {
+                        "feature" / capture("feature") / "src" / capture("feature") /
+                            "${capture("feature").pascalCase}Screen.kt".file().template { "" }
+                    }
+                }
+            }
+        }
+        val detail = bound.process(DescribeTemplates, DescribeTemplates.Args(template = "feature.Screen"))
+            .getOrThrow() as TemplateDetail
+
+        val lines = templateDetailLines(detail)
+        lines shouldContain "  feature: level 2 of feature/*/src/*/*Screen.kt"
+        lines shouldContain "  feature: level 4 of feature/*/src/*/*Screen.kt (the same value)"
+        lines shouldContain "  feature.pascalCase: level 5 of feature/*/src/*/*Screen.kt, derived from feature (no --arg of its own)"
     }
 })

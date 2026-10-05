@@ -142,8 +142,23 @@ internal fun requireValidFilledSegments(
     values: Map<String, String>,
 ) {
     if (variant.pathCaptures.isEmpty()) return
-    val segments = fillCapturedSegments(entry.path, variant.pathCaptures) { filledValueOf(it, values) }
     val sites = captureSitesOf(listOf(entry))
+    // A derived occurrence's value is the conversion, which was never checked on its own: `--`
+    // converts to nothing at all under flatCase, and a `.kt` segment would then pass below.
+    for (capture in variant.pathCaptures) {
+        if (capture.transform == null) continue
+        val converted = filledValueOf(capture, values) ?: continue
+        val problem = captureValueProblemOf(converted) ?: continue
+        throw KatachiInvalidTemplateCaptureValueException(
+            role = role.qualifiedName,
+            name = capture.name,
+            value = converted,
+            problem = problem,
+            captureDeclaredAt = sites.getValue(capture.name),
+            isModuleCapture = false,
+        )
+    }
+    val segments = fillCapturedSegments(entry.path, variant.pathCaptures) { filledValueOf(it, values) }
     for ((segmentIndex, captures) in variant.pathCaptures.groupBy { it.segmentIndex }) {
         val segment = segments.getOrNull(segmentIndex) ?: continue
         val problem = filledSegmentProblemOf(segment) ?: continue
