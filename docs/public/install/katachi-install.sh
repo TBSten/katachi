@@ -176,9 +176,17 @@ katachi-install.sh — katachi のインストールのうち機械的にでき�
       --force             既存の検査用モジュールを上書きする
       --dry-run           何も書かずに、何をするかだけ出力する
 
-  sh katachi-install.sh data get <対象> [--id <id>]
+  sh katachi-install.sh guide [<節 ID>] [--refresh]
+      手順書（index.md）を節ごとに出す。引数なしは目次（<ID>、見出し、行数をタブ区切りで 1 行ずつ）。
+      <節 ID> は見出しの番号（0-1、3-2、5、6-A など。6-1〜6-4 は 6-A〜6-D に読み替える）。
+      章（1 など）に番号つきの節があれば、前書きと「含む節:」だけを出す。
+      各節の最後に次の節のコマンドを付ける。手順書は init が取る。--refresh で取り直す。
+
+  sh katachi-install.sh data get <対象> [<キー>] [--id <id>]
       埋め込まれた JSON を標準出力に出す。HTML 本体は読まなくてよい。
       <対象> は check-list / report / ファイルパスのどれか。
+      <キー> はドット区切り（meta.moduleDir、questions）。その部分だけを出し、
+      無ければ 1 を返す。文字列はそのまま、ほかは JSON で出す。
 
   sh katachi-install.sh data set <対象> <json> [--id <id>]
       埋め込まれた JSON を <json> で丸ごと差し替える。
@@ -198,6 +206,12 @@ katachi-install.sh — katachi のインストールのうち機械的にでき�
   sh katachi-install.sh docs [--small] [--refresh]
       ガイド全文（llms-full.txt）を作業用ディレクトリの tmp/cache/ に取得し、
       そのパスを出力する。すでにあれば取りに行かない。
+
+  sh katachi-install.sh docs --topic <名前> [--refresh]
+  sh katachi-install.sh docs --topics
+      ガイドを話題（ページ）ごとに切り出して tmp/cache/topics/<名前>.md に置き、
+      そのパスを出力する（layout / role / basic-api / konsist など。--topics で一覧）。
+      全文を読まずに済ませるためのもの。古い版の写しは含めない。
 
   sh katachi-install.sh docs --api [--refresh]
       API リファレンス（Dokka）のルート索引（api-docs/llms.txt）を取得する。
@@ -229,6 +243,16 @@ katachi-install.sh — katachi のインストールのうち機械的にでき�
       既定は <作業用ディレクトリ>/tmp/test-before-refactor.log と test-after-refactor.log。
       [MissingDescription] の警告は、説明を書き足せば減るのが正しいので件数だけ出す。
       変わっていなければ 0、変わっていれば差分を出して 1 を返す。
+
+  sh katachi-install.sh test [--save <名前>] [-- <gradle の引数>...]
+      検査用モジュールのテスト（./gradlew <module>:test）を実行し、要約だけを出す。
+      ログの全文は <作業用ディレクトリ>/tmp/test/<UTC 時刻>.log（latest.log にも写し、
+      前の latest.log は previous.log に回す）。--save <名前> で tmp/test-<名前>.log にも写す
+      （手順書 3-2 は before-refactor、3-3 は after-refactor。compare-violations の既定と同じ）。
+      -- より後ろは ./gradlew にそのまま渡す（-Dkatachi.maxViolations=all など）。
+      要約: JDK、ログのパス、結果の行、[MissingDescription] の件数、前回（previous.log）との差分。
+      0 = 通った、1 = 検査が落ちた、2 = 検査まで届かない（コンパイルエラー、gradlew 無し、定義ディレクトリ無し）。
+      このスクリプトが Gradle を起動するのはこのコマンドだけ。
 
   sh katachi-install.sh verify
       未記入のフィールドと未完了の項目を列挙する。何も残っていなければ
@@ -305,9 +329,18 @@ Usage:
       --force             Overwrite an existing test module
       --dry-run           Write nothing; only print what would be done
 
-  sh katachi-install.sh data get <target> [--id <id>]
+  sh katachi-install.sh guide [<section id>] [--refresh]
+      Prints the guide (index.md) one section at a time. Without an argument, prints the table of
+      contents (one line per section: <id>, heading, number of lines, tab-separated).
+      <section id> is the number in the heading (0-1, 3-2, 5, 6-A, ...; 6-1 to 6-4 are read as 6-A to 6-D).
+      For a chapter with numbered sections (such as 1), prints only its preamble and "Sections:".
+      Each section ends with the command for the next one. init fetches the guide; --refresh fetches it again.
+
+  sh katachi-install.sh data get <target> [<key>] [--id <id>]
       Prints the embedded JSON. You do not need to read the HTML itself.
       <target> is check-list, report, or a file path.
+      <key> is dot-separated (meta.moduleDir, questions). Prints only that part, and
+      returns 1 if it does not exist. A string is printed as is; anything else as JSON.
 
   sh katachi-install.sh data set <target> <json> [--id <id>]
       Replaces the embedded JSON with <json> as a whole.
@@ -327,6 +360,12 @@ Usage:
   sh katachi-install.sh docs [--small] [--refresh]
       Fetches the full guide (llms-full.txt) into tmp/cache/ in the working directory
       and prints its path. Does not fetch again if it is already there.
+
+  sh katachi-install.sh docs --topic <name> [--refresh]
+  sh katachi-install.sh docs --topics
+      Cuts one topic (page) out of the guide into tmp/cache/topics/<name>.md and prints
+      its path (layout / role / basic-api / konsist and so on; --topics lists them).
+      Saves reading the full text. Copies of older versions are left out.
 
   sh katachi-install.sh docs --api [--refresh]
       Fetches the root index of the API reference (Dokka), api-docs/llms.txt.
@@ -360,6 +399,17 @@ Usage:
       [MissingDescription] warnings should go down as descriptions are added, so only
       their counts are shown.
       Returns 0 if nothing changed; otherwise prints the difference and returns 1.
+
+  sh katachi-install.sh test [--save <name>] [-- <gradle arguments>...]
+      Runs the test module's tests (./gradlew <module>:test) and prints only a summary.
+      The full log goes to <working directory>/tmp/test/<UTC time>.log (also copied to latest.log;
+      the previous latest.log becomes previous.log). --save <name> also copies it to tmp/test-<name>.log
+      (before-refactor in step 3-2, after-refactor in step 3-3; the defaults of compare-violations).
+      Everything after -- is passed to ./gradlew as is (such as -Dkatachi.maxViolations=all).
+      Summary: the JDK, the log path, the result line, the number of [MissingDescription], and the
+      difference from the previous run (previous.log).
+      0 = passed, 1 = the check failed, 2 = the check was not reached (compile error, no gradlew,
+      no definition directory). This is the only command of this script that starts Gradle.
 
   sh katachi-install.sh verify
       Lists blank fields and unfinished items. If nothing is left, marks the last
@@ -402,15 +452,18 @@ USAGE
 # 進められなかった。分岐を減らすため python3 に一本化した。
 #
 # sleep と rmdir は書き込みのロック（lock_acquire / lock_release）が使う。
-# scaffold / compare-violations は resolve_module_dir がチェックリストの meta.moduleDir を
-# python3 で読むので python3 が要る。
+# scaffold / compare-violations / test は resolve_module_dir がチェックリストの meta.moduleDir を
+# python3 で読むので python3 が要る。guide は手順書の切り出しを awk でするので python3 は要らず、
+# curl は --refresh（と init が取り損ねたとき）だけが使う。
 REQ_BASE="awk sed grep tr cut head tail wc date cp mv rm mkdir cat sort find chmod sleep rmdir"
 REQ_INIT="${REQ_BASE} curl python3"
 REQ_INIT_OFFLINE="${REQ_BASE} python3"
 REQ_SCAFFOLD="${REQ_BASE} python3"
 REQ_JSON="${REQ_BASE} python3"
 REQ_DOCS="${REQ_BASE} curl"
+REQ_GUIDE="${REQ_BASE} curl"
 REQ_COMPARE="${REQ_BASE} cmp diff python3"
+REQ_TEST="${REQ_BASE} cmp diff python3"
 REQ_ALL="${REQ_BASE} cmp diff curl python3"
 # 無くても進めるが、あれば使うもの。無ければ警告だけ出す。
 REC_ALL="git"
@@ -1430,6 +1483,12 @@ cmd_init() {
 			note "配置しました:        $(file_uri "$_rp")" \
 				"Placed:             $(file_uri "$_rp")"
 		fi
+
+		# 手順書も取っておく。以降は guide <節 ID> が節ごとに出す（全文を一度に読ませないため）。
+		# 言語を変えて init し直したときに前の言語のものが残らないよう、毎回取り直す。
+		fetch_once "$KATACHI_DOCS/install/$KATACHI_LANG/index.md" "$init_workdir/tmp/cache/index.md" yes
+		note "手順書:             $(file_uri "$init_workdir/tmp/cache/index.md") （sh <CLI> guide で目次）" \
+			"Guide:              $(file_uri "$init_workdir/tmp/cache/index.md") (sh <CLI> guide for the table of contents)"
 	fi
 
 	say ""
@@ -2657,6 +2716,27 @@ with open(sys.argv[3], "w", encoding="utf-8") as out:
 PYMERGE
 }
 
+# data get <対象> <キー>。$1 = JSON のファイル, $2 = ドット区切りのキー。
+# 文字列はそのまま（引用符なし）、ほかは JSON で出す。無いキー（途中で辞書でなくなるのも含む）は 1。
+# 配列の添字（questions.0）も辿れる。
+DATA_GET_PY='
+import json, sys
+src, key = sys.argv[1], sys.argv[2]
+node = json.load(open(src, encoding="utf-8"))
+for part in key.split("."):
+    if isinstance(node, dict) and part in node:
+        node = node[part]
+    elif isinstance(node, list) and part.isdigit() and int(part) < len(node):
+        node = node[int(part)]
+    else:
+        sys.stderr.write(t("キーがありません: %s\n", "No such key: %s\n") % key)
+        sys.exit(1)
+if isinstance(node, str):
+    print(node)
+else:
+    print(json.dumps(node, ensure_ascii=False, indent=2))
+'
+
 cmd_data() {
 	_action="${1:-}"
 	shift 2>/dev/null || true
@@ -2684,6 +2764,7 @@ cmd_data() {
 	fi
 
 	_id=""
+	_key=""
 	while [ $# -gt 0 ]; do
 		case "$1" in
 		--id)
@@ -2691,7 +2772,14 @@ cmd_data() {
 			_id="$2"
 			shift 2
 			;;
-		*) die "data: 知らないオプションです: ${1}" "data: unknown option: ${1}" ;;
+		-*) die "data: 知らないオプションです: ${1}" "data: unknown option: ${1}" ;;
+		*)
+			# get の 2 つめの位置引数はキー（ドット区切り）。set / merge には位置引数は無い。
+			[ "$_action" = "get" ] && [ -z "$_key" ] ||
+				die "data ${_action}: 余分な引数です: ${1}" "data ${_action}: unexpected argument: ${1}"
+			_key="$1"
+			shift
+			;;
 		esac
 	done
 	[ -n "$_id" ] || _id=$(guess_block_id "$_html")
@@ -2699,8 +2787,23 @@ cmd_data() {
 	_no_block_en="No JSON block with id=\"${_id}\" in ${_html_uri}."
 
 	if [ "$_action" = "get" ]; then
-		extract_json "$_html" "$_id" || die "$_no_block" "$_no_block_en"
-		return 0
+		if [ -z "$_key" ]; then
+			extract_json "$_html" "$_id" || die "$_no_block" "$_no_block_en"
+			return 0
+		fi
+		require_commands "$REQ_JSON"
+		_dg="$_html.get.$$"
+		extract_json "$_html" "$_id" >"$_dg" || {
+			rm -f "$_dg"
+			die "$_no_block" "$_no_block_en"
+		}
+		# キーで辿る。無ければ 1（止まるが die の形ではない。呼ぶ側が「無い」を分岐に使えるように）。
+		if printf '%s\n%s' "$PY_LANG" "$DATA_GET_PY" | python3 - "$_dg" "$_key"; then
+			rm -f "$_dg"
+			return 0
+		fi
+		rm -f "$_dg"
+		return 1
 	fi
 
 	validate_json "$_json" ||
@@ -2778,16 +2881,86 @@ cmd_data() {
 
 # ---------------------------------------------------------------- docs
 
+# docs --topic の名前。llms-full.txt のページ見出し（`# ...`）に対応する。並びはガイドのサイドバーの順。
+# 名前はドキュメントの URL の末尾（guides/layout → layout）に合わせる。手順書の 3-1 / 6-C / 6-D が
+# layout / role / basic-api / konsist / document-generation / template を指す。
+DOCS_TOPICS="motivation first-architecture faq comparison basic-api role layout kt-file-content konsist konture document-generation template baseline processor recipes android-three-layer gradle ai-agent ktlint detekt git github roadmap"
+
+# $1（topic）に対応するページ見出しの文言を出す。知らない名前なら何も出さず 1 を返す。
+# llms-full.txt の見出しは `# <文言>` か、AI が書いた下書きの印つきの `# [AI-generated] <文言>`。
+# 見出しの文言を変えたらここも直す（docs --topic <名前> が「見出しが無い」で止まるので気づける）。
+docs_topic_title() {
+	case "$1" in
+	motivation) printf '%s\n' "Motivation and where katachi fits" ;;
+	first-architecture) printf '%s\n' "Your first architecture definition" ;;
+	faq) printf '%s\n' "FAQ" ;;
+	comparison) printf '%s\n' "Comparison with other tools" ;;
+	basic-api) printf '%s\n' "Basic API" ;;
+	role) printf '%s\n' "Role" ;;
+	layout) printf '%s\n' "Enforce directory structure with the Layout system" ;;
+	kt-file-content) printf '%s\n' "Define an allow list of the declarations a file may contain" ;;
+	konsist) printf '%s\n' "Define custom rules with Konsist" ;;
+	konture) printf '%s\n' "Konture integration" ;;
+	document-generation) printf '%s\n' "Document generation" ;;
+	template) printf '%s\n' "Generating code from a template" ;;
+	baseline) printf '%s\n' "Temporarily disable existing violations with baseline" ;;
+	processor) printf '%s\n' "ArchitectureProcessor and customizing it" ;;
+	recipes) printf '%s\n' "Recipes" ;;
+	android-three-layer) printf '%s\n' "Three-layer architecture following the Android architecture guide" ;;
+	gradle) printf '%s\n' "Gradle" ;;
+	ai-agent) printf '%s\n' "AI Agent" ;;
+	ktlint) printf '%s\n' "ktlint" ;;
+	detekt) printf '%s\n' "detekt" ;;
+	git) printf '%s\n' "Git" ;;
+	github) printf '%s\n' "GitHub" ;;
+	roadmap) printf '%s\n' "Roadmap" ;;
+	*) return 1 ;;
+	esac
+}
+
+# docs --topics の一覧（<名前>\t<見出し>）。
+print_docs_topics() {
+	for _pt in $DOCS_TOPICS; do
+		printf '%s\t%s\n' "$_pt" "$(docs_topic_title "$_pt")"
+	done
+}
+
+# llms-full.txt（$1）から見出し $2 のページを切り出して $3 に書く。行数を標準出力に出す。
+# 見出しは行頭の `# ` で、コードフェンス（行頭の ```）の内側は数えない。最初に見つけた見出しから、
+# 次のページ見出しの直前まで。llms-full.txt には古い版の写し（/0.2/ 以下）が後ろに続き同じ見出しが
+# もう一度出るので、次の見出しで止めれば写しは入らない。見つからなければ 0 を出す。
+extract_docs_topic() {
+	awk -v title="$2" -v dest="$3" '
+		/^```/ { fence = !fence }
+		!fence && /^# / {
+			if (inside) exit
+			if ($0 == "# " title || $0 == "# [AI-generated] " title) inside = 1
+		}
+		inside { print >dest; n++ }
+		END { print n + 0 }
+	' "$1"
+}
+
 cmd_docs() {
 	_small="no"
 	_refresh="no"
 	_api="no"
 	_api_module=""
+	_topic=""
 	while [ $# -gt 0 ]; do
 		case "$1" in
 		--small)
 			_small="yes"
 			shift
+			;;
+		--topics)
+			print_docs_topics
+			return 0
+			;;
+		--topic)
+			need_value "$1" "${2:-}"
+			_topic="$2"
+			shift 2
 			;;
 		--api)
 			_api="yes"
@@ -2814,6 +2987,31 @@ cmd_docs() {
 
 	require_commands "$REQ_DOCS"
 	require_workdir
+
+	if [ -n "$_topic" ]; then
+		_topic_title=$(docs_topic_title "$_topic") ||
+			die "docs --topic: 知らない名前です: ${_topic} 。使える名前:
+$(print_docs_topics)" \
+				"docs --topic: unknown topic: ${_topic} . Available topics:
+$(print_docs_topics)"
+		_name="llms-full.txt"
+		_url="$KATACHI_DOCS/$_name"
+		_dest="$WORKDIR/tmp/cache/$_name"
+		fetch_once "$_url" "$_dest" "$_refresh"
+		_topic_dest="$WORKDIR/tmp/cache/topics/$_topic.md"
+		mkdir -p "${_topic_dest%/*}"
+		_topic_lines=$(extract_docs_topic "$_dest" "$_topic_title" "$_topic_dest")
+		if [ "${_topic_lines:-0}" -eq 0 ]; then
+			rm -f "$_topic_dest"
+			die "$(file_uri "$_dest") に見出し「${_topic_title}」がありません。ガイドの見出しが変わったか、取得物が古いかです（--refresh で取り直す）。" \
+				"No heading \"${_topic_title}\" in $(file_uri "$_dest") . The guide's heading may have changed, or the copy is old (add --refresh)."
+		fi
+		# 行数と見出しは標準エラーに出す。標準出力はパスだけ（機械が読む）。
+		printf '%s\n' "$(pick "${_topic_lines} 行（llms-full.txt の「${_topic_title}」）" \
+			"${_topic_lines} lines (\"${_topic_title}\" in llms-full.txt)")" >&2
+		printf '%s\n' "$_topic_dest"
+		return 0
+	fi
 
 	if [ "$_api" = "yes" ]; then
 		if [ -n "$_api_module" ]; then
@@ -2846,6 +3044,135 @@ cmd_docs() {
 		printf '%s\n' "$(pick "取得元: ${_url}" "Source: ${_url}")" >&2
 	fi
 	printf '%s\n' "$_dest"
+}
+
+# ---------------------------------------------------------------- guide（手順書を節ごとに）
+
+# 手順書（index.md）を節に切る awk。python は使わない（guide は python3 を要らないままにする）。
+#   -v mode=toc           目次。1 行 = <ID>\t<見出し>\t<行数>
+#   -v mode=body -v want=<ID>   その節の本文。見つからなければ exit 1
+#   -v mode=next -v want=<ID>   目次の順で次の ID（最後なら何も出さない）
+# 節になる見出しは `## N.`、`## 6-A.`〜`## 6-D.`、`### N-M.` だけ。番号の無い見出し（`### 始める前に`、
+# `#### ...`）は節にならず、直前の番号つき節に含まれる。コードフェンス（行頭の ```）の内側は見出しに数えない。
+# 章（H2）に番号つきの節（H3）があるときは、章の本文は前書き（最初の H3 の直前まで）＋「含む節:」の 1 行。
+# この変数の中に \' を書かないこと（sh の単引用符）。
+GUIDE_AWK='
+/^```/ { fence = !fence }
+{ L[NR] = $0 }
+!fence && (/^## [0-9]+\. / || /^## 6-[A-D]\. / || /^### [0-9]+-[0-9]+\. /) {
+	n++
+	split($0, a, " ")
+	id[n] = a[2]
+	sub(/\.$/, "", id[n])
+	lvl[n] = ($0 ~ /^### /) ? 3 : 2
+	start[n] = NR
+	t = $0
+	sub(/^#+ [^ ]+ /, "", t)
+	title[n] = t
+}
+END {
+	for (i = 1; i <= n; i++) {
+		# 本文の終わり: H3 は次の番号つき見出しの直前、H2 は次の H2 の直前。ただし H2 の直後に H3 が
+		# 続く（子の節がある）なら前書きだけ（最初の H3 の直前まで）にして、含む節を並べる。
+		e = NR
+		kids[i] = ""
+		if (i < n) {
+			if (lvl[i] == 3 || lvl[i + 1] == 3) e = start[i + 1] - 1
+			if (lvl[i] == 2 && lvl[i + 1] == 3) {
+				for (j = i + 1; j <= n && lvl[j] == 3; j++) kids[i] = kids[i] (kids[i] == "" ? "" : ", ") id[j]
+			}
+			if (lvl[i] == 2 && lvl[i + 1] == 2) e = start[i + 1] - 1
+		}
+		while (e > start[i] && L[e] ~ /^[[:space:]]*$/) e--
+		stop[i] = e
+	}
+	if (mode == "toc") {
+		for (i = 1; i <= n; i++) printf "%s\t%s\t%d\n", id[i], title[i], stop[i] - start[i] + 1
+		exit 0
+	}
+	for (i = 1; i <= n; i++) if (id[i] == want) break
+	if (i > n) exit 1
+	if (mode == "next") {
+		if (i < n) print id[i + 1]
+		exit 0
+	}
+	for (k = start[i]; k <= stop[i]; k++) print L[k]
+	if (kids[i] != "") {
+		print ""
+		print inc ": " kids[i]
+	}
+}
+'
+
+# チェックリストの 6-1〜6-4 を手順書の 6-A〜6-D に読み替える。
+guide_section_id() {
+	case "$1" in
+	6-1) printf '6-A\n' ;;
+	6-2) printf '6-B\n' ;;
+	6-3) printf '6-C\n' ;;
+	6-4) printf '6-D\n' ;;
+	*) printf '%s\n' "$1" ;;
+	esac
+}
+
+# 目次を出す（末尾に 6-A〜6-D の読み替えの 1 行）。$1 = index.md
+print_guide_toc() {
+	awk -v mode=toc "$GUIDE_AWK" "$1"
+	say "6-A〜6-D はチェックリストでは 6-1〜6-4（guide 6-1 でも取り出せる）" \
+		"6-A to 6-D are 6-1 to 6-4 in the check list (guide 6-1 works too)"
+}
+
+cmd_guide() {
+	_gd_id=""
+	_gd_refresh="no"
+	while [ $# -gt 0 ]; do
+		case "$1" in
+		--refresh)
+			_gd_refresh="yes"
+			shift
+			;;
+		-h | --help)
+			usage
+			return 0
+			;;
+		-*) die "guide: 知らないオプションです: ${1}" "guide: unknown option: ${1}" ;;
+		*)
+			[ -z "$_gd_id" ] || die "guide: 節 ID は 1 つだけです（${_gd_id} と ${1}）" \
+				"guide: give only one section id (${_gd_id} and ${1})"
+			_gd_id="$1"
+			shift
+			;;
+		esac
+	done
+
+	require_workdir
+	_gd_cli="$WORKDIR/tmp/katachi-install.sh"
+	_gd_file="$WORKDIR/tmp/cache/index.md"
+	if [ "$_gd_refresh" = "yes" ]; then
+		require_commands "$REQ_GUIDE"
+		fetch_once "$KATACHI_DOCS/install/$KATACHI_LANG/index.md" "$_gd_file" yes
+	else
+		require_commands "$REQ_BASE"
+	fi
+	[ -s "$_gd_file" ] || die "手順書が取得されていません。'sh ${_gd_cli} guide --refresh' で取得してください。" \
+		"The guide has not been fetched. Run 'sh ${_gd_cli} guide --refresh'."
+
+	if [ -z "$_gd_id" ]; then
+		print_guide_toc "$_gd_file"
+		return 0
+	fi
+	_gd_id=$(guide_section_id "$_gd_id")
+	if ! awk -v mode=body -v want="$_gd_id" -v inc="$(pick "含む節" "Sections")" "$GUIDE_AWK" "$_gd_file"; then
+		warn "知らない節 ID です: ${_gd_id} 。使える ID は目次のとおりです。" \
+			"Unknown section id: ${_gd_id} . The ids you can use are in the table of contents."
+		print_guide_toc "$_gd_file"
+		exit 1
+	fi
+	_gd_next=$(awk -v mode=next -v want="$_gd_id" "$GUIDE_AWK" "$_gd_file")
+	if [ -n "$_gd_next" ]; then
+		say ""
+		say "次: sh ${_gd_cli} guide ${_gd_next}" "Next: sh ${_gd_cli} guide ${_gd_next}"
+	fi
 }
 
 # ---------------------------------------------------------------- Role の点検
@@ -3228,6 +3555,29 @@ count_missing_description() {
 	grep -c -E '^[[:space:]]*\[MissingDescription\] ' "$1" || :
 }
 
+# extract_check_result で揃えた 2 つ（$1 = 前, $2 = 後）の差分を出す。compare-violations と test が共有する。
+#   増えた N 件 / 減った M 件
+#     + <後だけにある行>
+#     - <前だけにある行>
+# 行は PRINT_CHECK_DIFF_MAX 件まで。超えたら「ほか N 件（ログを見る）」。同じなら何も出さず 0、違えば 1。
+PRINT_CHECK_DIFF_MAX=50
+print_check_diff() {
+	cmp -s "$1" "$2" && return 0
+	_pd="$1.diff.$$"
+	diff "$1" "$2" | sed -n -e 's/^> /  + /p' -e 's/^< /  - /p' >"$_pd" || :
+	_pd_add=$(grep -c '^  + ' "$_pd" || :)
+	_pd_del=$(grep -c '^  - ' "$_pd" || :)
+	_pd_n=$((_pd_add + _pd_del))
+	say "増えた ${_pd_add} 件 / 減った ${_pd_del} 件" "Added ${_pd_add} / removed ${_pd_del}"
+	head -n "$PRINT_CHECK_DIFF_MAX" "$_pd"
+	if [ "$_pd_n" -gt "$PRINT_CHECK_DIFF_MAX" ]; then
+		say "  ほか $((_pd_n - PRINT_CHECK_DIFF_MAX)) 件（ログを見る）" \
+			"  and $((_pd_n - PRINT_CHECK_DIFF_MAX)) more (see the log)"
+	fi
+	rm -f "$_pd"
+	return 1
+}
+
 cmd_compare_violations() {
 	require_commands "$REQ_COMPARE"
 	require_workdir
@@ -3268,7 +3618,7 @@ cmd_compare_violations() {
 	say ""
 	say "検査結果が変わっています（- が前だけ、+ が後だけにある行）。" \
 		"The check result has changed (- lines only in before, + lines only in after)."
-	diff "$_cv_a" "$_cv_b" | sed -n -e 's/^< /  - /p' -e 's/^> /  + /p' || :
+	print_check_diff "$_cv_a" "$_cv_b" || :
 	rm -f "$_cv_a" "$_cv_b"
 	say ""
 	say "リファクタリングで振る舞いが変わっています。前のログを取り直すのではなく、定義のほうを直してください。
@@ -3278,6 +3628,140 @@ cmd_compare_violations() {
 If the split definition files show up as [UnexpectedFile], the layout { } of the Role that owns
 ${MODULE_DIR}/ does not accept files as deep as <group>/<role>/<Role>.kt."
 	exit 1
+}
+
+# ---------------------------------------------------------------- test（検査用モジュールのテスト）
+
+# 検査用モジュールのテストを走らせ、ログは全文を残し、標準出力には要約だけを出す。
+# エージェントがログを grep して回らないようにするためのもの。Gradle を起動するのはこのコマンドだけ。
+#   0 = 通った / 1 = 検査が落ちた / 2 = 検査まで届かない（gradlew 無し、projectRoot 無し、定義ディレクトリ無し、
+#   コンパイルエラーなど）。2 の理由は warn で出し、die は使わない（終了コードを 2 に揃えるため）。
+# 環境変数（JAVA_HOME を含む）はそのまま継ぐ。どの JDK で動くかは detect_gradle_jdk の結果を先頭に出す。
+cmd_test() {
+	_ts_save=""
+	while [ $# -gt 0 ]; do
+		case "$1" in
+		--save)
+			need_value "$1" "${2:-}"
+			_ts_save="$2"
+			shift 2
+			;;
+		--)
+			shift
+			break
+			;;
+		-h | --help)
+			usage
+			return 0
+			;;
+		*) die "test: 知らないオプションです: ${1}（Gradle に渡す引数は -- の後ろに）" \
+			"test: unknown option: ${1} (put arguments for Gradle after --)" ;;
+		esac
+	done
+
+	require_commands "$REQ_TEST"
+	require_workdir
+	resolve_module_dir
+	_ts_root=$(read_checklist_meta "$WORKDIR/check-list.html" projectRoot)
+	if [ -z "$_ts_root" ] || [ ! -d "$_ts_root" ]; then
+		warn "プロジェクトルートが分かりません（チェックリストの meta.projectRoot: '${_ts_root}'）。init をやり直してください。" \
+			"Cannot find the project root (meta.projectRoot in the check list: '${_ts_root}'). Run init again."
+		return 2
+	fi
+	if [ ! -f "$_ts_root/gradlew" ]; then
+		warn "gradlew がありません: $(file_uri "$_ts_root/gradlew") 。Gradle wrapper の無いプロジェクトでは、./gradlew ${MODULE_GRADLE_PATH}:test を自分で実行してログを tmp/test-<名前>.log に保存してください。" \
+			"gradlew not found: $(file_uri "$_ts_root/gradlew") . Without the Gradle wrapper, run ./gradlew ${MODULE_GRADLE_PATH}:test yourself and save the log as tmp/test-<name>.log."
+		return 2
+	fi
+	_ts_def=$(definition_dir)
+	if [ ! -d "$_ts_def" ]; then
+		warn "定義のディレクトリがありません: $(file_uri "$_ts_def") 。scaffold をまだ実行していないか、置き場所が違います（記録: meta.moduleDir = ${MODULE_DIR}。変えるなら 'preferences set moduleDir=<path>' か 'scaffold --module-dir <path>'）" \
+			"The definition directory does not exist: $(file_uri "$_ts_def") . Either scaffold has not run yet, or the location differs (recorded: meta.moduleDir = ${MODULE_DIR}; change it with 'preferences set moduleDir=<path>' or 'scaffold --module-dir <path>')"
+		return 2
+	fi
+
+	_ts_dir="$WORKDIR/tmp/test"
+	mkdir -p "$_ts_dir"
+	_ts_stamp=$(date -u '+%Y-%m-%dT%H-%M-%SZ')
+	_ts_log="$_ts_dir/$_ts_stamp.log"
+	# 同じ秒に 2 回走ったら上書きしない。
+	[ -e "$_ts_log" ] && _ts_log="$_ts_dir/$_ts_stamp.$$.log"
+	# 前回のログを回す（latest → previous）。差分は previous と今回を比べる。
+	[ -f "$_ts_dir/latest.log" ] && mv "$_ts_dir/latest.log" "$_ts_dir/previous.log"
+
+	# JDK は Gradle のルートで調べる（gradle/gradle-daemon-jvm.properties と gradle.properties を見るため）。
+	cd "$_ts_root"
+	detect_gradle_jdk
+	if [ -n "$GRADLE_JDK_MAJOR" ]; then
+		say "JDK: ${GRADLE_JDK_MAJOR}（${GRADLE_JDK_FROM%%|*}）" "JDK: ${GRADLE_JDK_MAJOR} (${GRADLE_JDK_FROM#*|})"
+	elif [ -n "$GRADLE_JDK_FROM" ]; then
+		say "JDK: 不明（${GRADLE_JDK_FROM%%|*}。版を読めませんでした）" "JDK: unknown (${GRADLE_JDK_FROM#*|}; could not read the version)"
+	else
+		say "JDK: 不明（JAVA_HOME も PATH の java もありません。Gradle 自身の設定に任せます）" \
+			"JDK: unknown (no JAVA_HOME and no java on PATH; leaving it to Gradle)"
+	fi
+	say "ログ: $(file_uri "$_ts_log")" "Log: $(file_uri "$_ts_log")"
+
+	_ts_status=0
+	if [ -x "./gradlew" ]; then
+		./gradlew "${MODULE_GRADLE_PATH}:test" --console=plain "$@" >"$_ts_log" 2>&1 || _ts_status=$?
+	else
+		sh ./gradlew "${MODULE_GRADLE_PATH}:test" --console=plain "$@" >"$_ts_log" 2>&1 || _ts_status=$?
+	fi
+	cp "$_ts_log" "$_ts_dir/latest.log"
+	if [ -n "$_ts_save" ]; then
+		cp "$_ts_log" "$WORKDIR/tmp/test-$_ts_save.log"
+		say "写し: $(file_uri "$WORKDIR/tmp/test-$_ts_save.log")" "Copy: $(file_uri "$WORKDIR/tmp/test-$_ts_save.log")"
+	fi
+
+	# 検査まで届いていなければ、要約のしようがない。ログの末尾だけ見せて 2 で返す。
+	if ! has_check_result "$_ts_log"; then
+		say "結果: 検査まで届いていません（コンパイルエラーなど。Gradle の終了コード ${_ts_status}）。ログの末尾:" \
+			"Result: the check was not reached (a compile error, for example; Gradle exit code ${_ts_status}). Tail of the log:"
+		tail -n 30 "$_ts_log"
+		return 2
+	fi
+
+	_ts_result=$(grep -E '^[[:space:]]*Katachi check failed:' "$_ts_log" | sed -e 's/^[[:space:]]*//' | head -n 1)
+	if [ -n "$_ts_result" ]; then
+		say "結果: ${_ts_result}" "Result: ${_ts_result}"
+		_ts_rc=1
+	else
+		say "結果: 検査は通りました（違反 0 件）" "Result: the check passed (0 violations)"
+		_ts_rc=0
+	fi
+	_ts_md=$(count_missing_description "$_ts_log")
+	if [ "${_ts_md:-0}" -gt 0 ]; then
+		say "[MissingDescription]: ${_ts_md} 件（説明を書けば減る）" "[MissingDescription]: ${_ts_md} (goes down as descriptions are written)"
+	fi
+
+	# 前回（previous.log）との差分。前回が無い・検査まで届いていなければ出さない。
+	if [ -f "$_ts_dir/previous.log" ] && has_check_result "$_ts_dir/previous.log"; then
+		_ts_a="$_ts_dir/.prev.$$"
+		_ts_b="$_ts_dir/.cur.$$"
+		# 件数は違反の見出し（[種類] ...）だけで数える。「Katachi check failed: N violations」の行は
+		# 件数が変われば必ず変わるので、差分に混ぜると 1 件ぶん水増しになる（compare-violations では比べる）。
+		extract_check_result "$_ts_dir/previous.log" "$_ts_a.all"
+		extract_check_result "$_ts_log" "$_ts_b.all"
+		grep '^\[' "$_ts_a.all" >"$_ts_a" || :
+		grep '^\[' "$_ts_b.all" >"$_ts_b" || :
+		rm -f "$_ts_a.all" "$_ts_b.all"
+		if cmp -s "$_ts_a" "$_ts_b"; then
+			say "前回との差分（previous.log 比）: 無し" "Difference from the previous run (vs previous.log): none"
+		else
+			printf '%s' "$(pick "前回との差分（previous.log 比）: " "Difference from the previous run (vs previous.log): ")"
+			print_check_diff "$_ts_a" "$_ts_b" || :
+		fi
+		rm -f "$_ts_a" "$_ts_b"
+	fi
+
+	# 打ち切りの行（katachi が先頭 N 件だけ出したとき）。全件の出し方を添える。
+	_ts_omit=$(grep -E '^[[:space:]]*Showing first ' "$_ts_log" | sed -e 's/^[[:space:]]*//' | head -n 1)
+	if [ -n "$_ts_omit" ]; then
+		say "省略: ${_ts_omit}。全件は -- -Dkatachi.maxViolations=all（katachi 0.3 以降）" \
+			"Omitted: ${_ts_omit}. For everything, pass -- -Dkatachi.maxViolations=all (katachi 0.3 or later)"
+	fi
+	return "$_ts_rc"
 }
 
 # ---------------------------------------------------------------- 進捗と点検
@@ -3364,6 +3848,13 @@ for i in ids:
 json.dump(data, open(dest, "w", encoding="utf-8"), ensure_ascii=False, indent=2)
 if done:
     print(t("完了にしました: %s", "Marked as done: %s") % ", ".join(ids))
+    # 次に読む節。done でない最初の項目（チェックリストの順 = 手順書の目次の順）を section_of で
+    # 節 ID にする。None（6-x）か未完了が無ければ出さない。CLI のパスは sh 側が環境変数で渡す。
+    cli = os.environ.get("KATACHI_CHECK_CLI")
+    pending = [i for i in known if not known[i].get("done")]
+    section = section_of(pending[0]) if pending else None
+    if cli and section:
+        print(t("次: sh %s guide %s", "Next: sh %s guide %s") % (cli, section))
 else:
     print(t("未完了に戻しました: %s", "Marked as not done: %s") % ", ".join(ids))
 '
@@ -3371,7 +3862,12 @@ else:
 cmd_check() {
 	[ $# -gt 0 ] || die "check: 項目 id を1つ以上指定してください（例: check 1-1 1-2）" \
 		"check: specify one or more item ids (for example: check 1-1 1-2)"
-	edit_checklist "$CHECK_PY" true "$@"
+	require_workdir
+	# 完了後の「次: sh <CLI> guide <節 ID>」を CHECK_PY が組み立てるために、CLI のパスを渡す。
+	KATACHI_CHECK_CLI="$WORKDIR/tmp/katachi-install.sh"
+	export KATACHI_CHECK_CLI
+	edit_checklist "$SECTION_OF_PY
+$CHECK_PY" true "$@"
 	# 定義を書き終えた時点と整え終えた時点で、Role の取り違えを拾う。
 	# 完了にはしたうえで警告だけ出す。
 	for _ck_id in "$@"; do
@@ -3911,7 +4407,7 @@ trap 'lock_release; exit 130' INT TERM
 # 自前で --help を読まないサブコマンドは、ここで使い方を出す。値として --help を
 # 読んで「値がありません」と落ちたり、作業用ディレクトリが無いと言って止まったりしないように。
 case "${1:-}" in
-data | check | uncheck | warn | lint | compare-violations | verify | summary)
+data | check | uncheck | warn | lint | compare-violations | verify | summary | guide | test)
 	if wants_help "$@"; then
 		usage
 		exit 0
@@ -3940,6 +4436,15 @@ data)
 docs)
 	shift
 	cmd_docs "$@"
+	;;
+guide)
+	shift
+	cmd_guide "$@"
+	;;
+test)
+	shift
+	# 2 = 検査まで届かない、1 = 検査が落ちた。return の値をそのまま終了コードにする。
+	cmd_test "$@" || exit $?
 	;;
 check)
 	shift
