@@ -604,6 +604,191 @@
 
   .qa-pick .qa-head { color: var(--accent); }
   .qa-pick p:last-child { margin: 0; }
+
+  /* Module tree (nested <details>) */
+  .module-tree { margin: 8px 0 0; }
+  .module-tree .module-tree { margin: 6px 0 0 20px; border-left: 1px solid var(--border); padding-left: 12px; }
+
+  .module-tree > summary {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 8px;
+    padding: 6px 8px;
+    border-radius: 4px;
+    list-style: none;
+    cursor: pointer;
+  }
+
+  .module-tree > summary::-webkit-details-marker { display: none; }
+  .module-tree > summary:hover { background: var(--surface-2); }
+  .module-tree > summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+  .module-tree > summary::before {
+    content: "\25B8";
+    flex: none;
+    color: var(--text-muted);
+    font-size: 12px;
+  }
+
+  .module-tree[open] > summary::before { content: "\25BE"; }
+  .module-tree.is-leaf > summary::before { content: "\2022"; }
+  .module-tree > summary > code { font-size: 13px; }
+  .module-body { padding: 2px 0 6px 28px; }
+  .module-body dl.fields { margin: 4px 0 0; }
+
+  .kind-badge {
+    padding: 0 8px;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    background: var(--surface-2);
+    color: var(--text-muted);
+    font-family: var(--font-mono);
+    font-size: 12px;
+    white-space: nowrap;
+  }
+
+  /* How this module differs from other modules of the same kind */
+  .deviation { color: var(--warn); font-size: 13px; }
+  .deviation::before { content: "\2691\00a0"; }
+
+  /* Role candidate groups (nested <details>) */
+  .role-group {
+    margin: 12px 0 0;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+  }
+
+  .role-group .role-group { margin: 12px 0 0; }
+
+  .role-group > summary {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    padding: 10px 14px;
+    list-style: none;
+    cursor: pointer;
+  }
+
+  .role-group > summary::-webkit-details-marker { display: none; }
+  .role-group > summary:hover { background: var(--surface-2); }
+  .role-group > summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .role-group[open] > summary { border-bottom: 1px solid var(--border); }
+
+  .role-group > summary::after {
+    content: "\25B8";
+    flex: none;
+    margin-left: auto;
+    color: var(--text-muted);
+    font-size: 12px;
+  }
+
+  .role-group[open] > summary::after { content: "\25BE"; }
+  .role-group > summary > code { font-size: 14px; font-weight: 700; }
+  .role-group > summary .count-badge { margin-left: 0; }
+  .role-group-body { padding: 0 14px 14px; }
+  .role-group-body > .role-grid { margin-top: 0; padding-top: 14px; }
+
+  /* Constraint-only Role */
+  .role-card.constraint-only { border-left-color: var(--border-strong); }
+
+  .constraint-only-tag {
+    display: inline-block;
+    margin: 8px 0 0;
+    padding: 2px 8px;
+    border: 1px dashed var(--border-strong);
+    border-radius: 4px;
+    color: var(--text-muted);
+    font-size: 12px;
+  }
+
+  /* Answer fields */
+  .qa-answer { margin-top: 14px; padding-top: 12px; border-top: 1px dashed var(--border); }
+  .qa-answer .qa-head { display: flex; align-items: baseline; gap: 8px; }
+  .qa-answer-list { margin: 0; padding: 0; list-style: none; }
+  .qa-answer-list li { margin: 2px 0; }
+
+  .qa-answer-list label {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    padding: 4px 6px;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+
+  .qa-answer-list label:hover { background: var(--surface-2); }
+  .qa-answer-list input[type="radio"] { flex: none; margin: 0.35em 0 0; accent-color: var(--accent); }
+  .qa-answer-list .option-letter { flex: none; font-family: var(--font-mono); font-size: 12px; color: var(--text-muted); margin-top: 3px; }
+
+  .qa-answer textarea {
+    display: block;
+    width: 100%;
+    min-height: 3.5em;
+    margin: 8px 0 0;
+    padding: 8px 10px;
+    border: 1px solid var(--border-strong);
+    border-radius: 6px;
+    background: var(--surface);
+    color: var(--text);
+    font-family: inherit;
+    font-size: 14px;
+    line-height: 1.6;
+    resize: vertical;
+  }
+
+  .qa-answer textarea:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+
+  .answered-badge:empty { display: none; }
+  .answered-badge { border-color: var(--ok); color: var(--ok); }
+  .qa.is-answered > summary .qa-num { background: var(--ok); color: var(--bg); }
+  .qa-imported { color: var(--ok); font-size: 12px; font-family: var(--font-mono); }
+
+  .action-button {
+    padding: 4px 12px;
+    border: 1px solid var(--border-strong);
+    border-radius: 6px;
+    background: var(--surface);
+    color: var(--text);
+    font-family: inherit;
+    font-size: 13px;
+    line-height: 1.6;
+    cursor: pointer;
+  }
+
+  .action-button:hover { background: var(--surface-2); border-color: var(--accent); }
+  .action-button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .action-button.is-primary { background: var(--accent); border-color: var(--accent); color: var(--bg); }
+  .qa-answer .action-button { margin-top: 8px; }
+
+  .answer-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 12px 0 0; }
+  .answer-actions:empty { display: none; }
+  .answer-status { flex-basis: 100%; margin: 0; font-size: 13px; color: var(--text-muted); }
+  .answer-status.is-error { color: var(--warn); }
+  .answer-status:empty { display: none; }
+
+  .answer-manual {
+    display: block;
+    width: 100%;
+    min-height: 6em;
+    margin: 8px 0 0;
+    padding: 8px 10px;
+    border: 1px solid var(--border-strong);
+    border-radius: 6px;
+    background: var(--surface-2);
+    color: var(--text);
+    font-family: var(--font-mono);
+    font-size: 12px;
+  }
+
+  /* display: block beats the UA's [hidden] { display: none }, so override it */
+  .answer-manual[hidden] { display: none; }
+
+  @media print {
+    .answer-actions, .qa-answer .action-button { display: none; }
+    .qa-answer textarea { border: 1px solid #000; }
+  }
 </style>
 </head>
 <body>
@@ -644,6 +829,7 @@
   "tools": [],
   "excluded": [],
   "questions": [],
+  "answers": {},
   "templates": []
 }
 </script>
@@ -672,14 +858,17 @@
     "characteristics": ["A few screens are trialing MVI"]
   },
   "modules": [
-    { "path": "app", "kind": "app", "responsibility": "UI layer (Activity / Compose / ViewModel)", "buildFile": "app/build.gradle.kts" },
-    { "path": "domain", "kind": "library", "responsibility": "Domain logic", "buildFile": "domain/build.gradle.kts" }
+    { "path": "app", "kind": "app", "responsibility": "UI layer (Activity / Compose / ViewModel)", "buildFile": "app/build.gradle.kts", "deviation": null },
+    { "path": "core/domain", "kind": "library", "responsibility": "Domain logic", "buildFile": "core/domain/build.gradle.kts", "deviation": null },
+    { "path": "core/data", "kind": "library", "responsibility": "Repository implementations and DataSources", "buildFile": "core/data/build.gradle.kts", "deviation": "Unlike the other libraries, this is an Android library (com.android.library)" }
   ],
   "directoryTree": "app/\n  build.gradle.kts\n  src/main/kotlin/com/example/app/\n    MainActivity.kt\n    ui/\n      home/\n        HomeScreen.kt\n        HomeViewModel.kt\n",
   "roles": [
     {
       "importance": 5,
       "name": "ViewModel",
+      "group": "app.ui",
+      "constraintOnly": false,
       "layout": "app/src/main/kotlin/<package>/ui/*/*ViewModel.kt",
       "naming": "Suffix ViewModel. Exactly one class per file, matching the file name.",
       "allowed": ["Holding and updating UI state", "Calling UseCases", "Managing viewModelScope"],
@@ -690,6 +879,19 @@
       ],
       "count": 18,
       "note": "On some screens this overlaps with a rememberSaveable-based state holder."
+    },
+    {
+      "importance": 2,
+      "name": "AppBuildFile",
+      "group": "app",
+      "constraintOnly": true,
+      "layout": "app/build.gradle.kts",
+      "naming": "Fixed name",
+      "allowed": [],
+      "forbidden": [],
+      "examples": ["app/build.gradle.kts"],
+      "count": 1,
+      "note": "A Role that exists only to check that the namespace matches the app package name"
     }
   ],
   "tools": [
@@ -706,12 +908,23 @@
   ],
   "questions": [
     {
+      "id": "q1",
       "question": "Will you keep the policy of inserting an Interactor layer between UseCase and Repository?",
       "observed": "Only 3 *Interactor.kt files exist under domain/src/main/kotlin/com/example/app/domain/interactor/; the remaining 15 UseCases call the Repository directly",
       "options": ["Extend the Interactor layer to everything", "Drop Interactor and consolidate into UseCase", "Keep the current state and allow both"],
       "recommendation": "B. Only 3 Interactors exist, and consolidating into UseCase keeps the convention singular"
+    },
+    {
+      "id": "q2",
+      "question": "Should the legacy package be included in katachi's scope?",
+      "observed": "Only the files under app/src/main/kotlin/com/example/app/ui/legacy/ still use the old Fragment + Presenter pattern",
+      "options": ["Include it and fix it", "Ignore it for now"],
+      "recommendation": "B. Only one screen is affected, and there's no migration plan decided yet"
     }
   ],
+  "answers": {
+    "q1": { "answer": "Drop Interactor and consolidate into UseCase", "note": "Migrate next quarter", "answeredAt": "2026-09-24T11:00:00+09:00" }
+  },
   "templates": [
     {
       "role": "UseCase",
@@ -806,11 +1019,14 @@
 
     <section id="ignore">
       <h2>6. Excluded from katachi</h2>
+      <p class="lede">katachi never looks at files excluded by <code>.gitignore</code>. What is listed here is tracked by git (or untracked but not ignored) and still left out of the checks.</p>
       <div data-render="excluded"></div>
     </section>
 
     <section id="questions">
-      <h2>7. Questions for you<span class="count-badge" data-render="questionCount"></span></h2>
+      <h2>7. Questions for you<span class="count-badge" data-render="questionCount"></span><span class="count-badge answered-badge" data-render="answeredCount"></span></h2>
+      <p class="lede">For each question, pick an option or write freely. If you do both, the free text becomes a note. When done, save the JSON with "Export answers" and hand it to the AI agent (<code>sh katachi-install.sh answers import &lt;json&gt;</code>).</p>
+      <div class="answer-actions" data-render="answerActions"></div>
       <div data-render="questions"></div>
     </section>
     <section id="templates">
@@ -895,16 +1111,6 @@
     });
     return ul;
   }
-  function numbered(values, key) {
-    if (blank(values)) return paragraph(unfilled(key));
-    var ol = el('ol');
-    values.forEach(function (item) {
-      var li = el('li');
-      li.textContent = String(item);
-      ol.appendChild(li);
-    });
-    return ol;
-  }
   function defs(cls, pairs) {
     var dl = el('dl', cls);
     pairs.forEach(function (pair) {
@@ -970,10 +1176,34 @@
     return p;
   }
   function record(raw) { return raw && typeof raw === 'object' ? raw : {}; }
+  function list(raw) { return Array.isArray(raw) ? raw.map(record) : []; }
   // If the array is empty, return one empty object so a single "Unfilled" entry is shown
   function entries(raw) {
-    var items = Array.isArray(raw) ? raw : [];
-    return items.length ? items.map(record) : [{}];
+    var items = list(raw);
+    return items.length ? items : [{}];
+  }
+  // Same rule as file_uri in the sh script (only % → %25, space → %20, # → %23, ? → %3F)
+  function fileUri(root, rel) {
+    var path = String(root).replace(/\/+$/, '') + '/' + String(rel).replace(/^\.?\//, '');
+    return 'file://' + path.replace(/%/g, '%25').replace(/ /g, '%20').replace(/#/g, '%23').replace(/\?/g, '%3F');
+  }
+  // List of example files. Linked as file:// when meta.gradleRoot is set
+  function fileLinks(paths, root) {
+    if (blank(paths)) return none();
+    var ul = el('ul');
+    paths.forEach(function (item) {
+      var li = el('li');
+      if (blank(root)) {
+        li.textContent = String(item);
+      } else {
+        var a = el('a');
+        a.setAttribute('href', fileUri(root, item));
+        a.textContent = String(item);
+        li.appendChild(a);
+      }
+      ul.appendChild(li);
+    });
+    return ul;
   }
   function countOf(raw) { return Array.isArray(raw) ? raw.length : 0; }
   function countLabel(raw) { var n = countOf(raw); return dataOk ? n + (n === 1 ? ' item' : ' items') : 'Unknown'; }
@@ -1014,15 +1244,64 @@
     ]);
   }
 
-  function renderModules(data) {
-    var rows = entries(data.modules).map(function (module) {
-      return [
-        value(module.path, 'modules[].path'),
-        value(module.kind, 'modules[].kind'),
-        value(module.responsibility, 'modules[].responsibility'),
-        value(module.buildFile, 'modules[].buildFile')
-      ];
+  // Split modules[].path on "/" to build a tree. No parent field; derived from the path
+  function buildModuleTree(modules) {
+    var root = { name: '', module: null, children: [], order: [] };
+    list(modules).forEach(function (module) {
+      var segments = blank(module.path) ? ['?'] : String(module.path).split('/').filter(Boolean);
+      var node = root;
+      segments.forEach(function (segment) {
+        var next = node.order.filter(function (child) { return child.name === segment; })[0];
+        if (!next) {
+          next = { name: segment, module: null, children: [], order: [] };
+          node.order.push(next);
+        }
+        node = next;
+      });
+      // If the same path appears twice the later wins. Missing paths are grouped under "?"
+      node.module = module;
     });
+    return root.order;
+  }
+  function hasDeviation(node) {
+    if (node.module && !blank(node.module.deviation)) return true;
+    return node.order.some(hasDeviation);
+  }
+  function moduleNode(node, depth) {
+    var box = el('details', 'module-tree');
+    var summary = el('summary');
+    var name = el('code');
+    name.textContent = node.name;
+    summary.appendChild(name);
+    var module = node.module;
+    if (module) {
+      var kind = el('span', 'kind-badge');
+      kind.appendChild(value(module.kind, 'modules[].kind'));
+      summary.appendChild(kind);
+      if (!blank(module.deviation)) {
+        var flag = el('span', 'deviation');
+        flag.textContent = String(module.deviation);
+        summary.appendChild(flag);
+      }
+    }
+    box.appendChild(summary);
+
+    var body = el('div', 'module-body');
+    if (module) {
+      body.appendChild(defs('fields', [
+        ['Responsibility', value(module.responsibility, 'modules[].responsibility')],
+        ['Build file', value(module.buildFile, 'modules[].buildFile')]
+      ]));
+    }
+    node.order.forEach(function (child) { body.appendChild(moduleNode(child, depth + 1)); });
+    box.appendChild(body);
+    if (!node.order.length) box.classList.add('is-leaf');
+    // Open the first 2 levels. Branches with a deviation are open regardless of depth
+    box.open = depth < 2 || hasDeviation(node);
+    return box;
+  }
+  function renderModules(data) {
+    var tree = buildModuleTree(data.modules);
     var pre = el('pre');
     var code = el('code');
     if (blank(data.directoryTree)) {
@@ -1031,12 +1310,18 @@
       code.textContent = String(data.directoryTree);
     }
     pre.appendChild(code);
-    mount('modules', [
-      heading('Module list'),
-      tableOf(['Module', 'Kind', 'Responsibility', 'Build file'], rows),
-      heading('Directory structure'),
-      pre
-    ]);
+    var nodes = [heading('Modules')];
+    if (!tree.length) {
+      nodes.push(paragraph(unfilled('modules')));
+    } else {
+      var lede = el('p', 'lede');
+      lede.textContent = '⚑ marks how a module differs from other modules of the same kind.';
+      nodes.push(lede);
+      tree.forEach(function (node) { nodes.push(moduleNode(node, 0)); });
+    }
+    nodes.push(heading('Directory structure'));
+    nodes.push(folded(document.createTextNode('Show the directory structure'), pre));
+    mount('modules', nodes);
   }
 
   // importance is an integer from 1 to 5. Anything else is treated as 0 and grouped at the end
@@ -1057,8 +1342,9 @@
     return box;
   }
 
-  function roleCard(role) {
+  function roleCard(role, root) {
     var card = el('div', blank(role.name) ? 'role-card card-empty' : 'role-card');
+    if (role.constraintOnly === true) card.classList.add('constraint-only');
     var header = el('div', 'role-head');
     var title = el('h3');
     title.appendChild(value(role.name, 'roles[].name'));
@@ -1066,6 +1352,11 @@
     var level = rankOf(role);
     header.appendChild(level ? rankDots(level) : unfilled('roles[].importance'));
     card.appendChild(header);
+    if (role.constraintOnly === true) {
+      var tag = el('span', 'constraint-only-tag');
+      tag.textContent = 'Constraint-only Role (adds checks to files owned by gradle(); not shown in docs)';
+      card.appendChild(tag);
+    }
     card.appendChild(defs('fields', [
       ['Layout pattern', value(role.layout, 'roles[].layout')],
       ['Naming convention', value(role.naming, 'roles[].naming')]
@@ -1085,19 +1376,82 @@
     card.appendChild(rules);
 
     card.appendChild(defs('fields', [
-      ['Example files', bulletsOrNone(role.examples)],
+      ['Example files', fileLinks(role.examples, root)],
       ['Count', value(role.count, 'roles[].count')],
       ['Note', blank(role.note) ? null : document.createTextNode(String(role.note))]
     ]));
     return card;
   }
 
-  function renderRoles(roles) {
+  // Split group on "." to build a tree. Roles without a group go into the "" bucket
+  function buildGroupTree(roles) {
+    var root = { name: '', roles: [], order: [] };
+    roles.forEach(function (role) {
+      var segments = blank(role.group) ? [] : String(role.group).split('.').filter(Boolean);
+      var node = root;
+      segments.forEach(function (segment) {
+        var next = node.order.filter(function (child) { return child.name === segment; })[0];
+        if (!next) {
+          next = { name: segment, roles: [], order: [] };
+          node.order.push(next);
+        }
+        node = next;
+      });
+      node.roles.push(role);
+    });
+    return root;
+  }
+  function countRoles(node) {
+    return node.roles.length + node.order.reduce(function (sum, child) { return sum + countRoles(child); }, 0);
+  }
+  function roleGrid(roles, root) {
     // Descending by importance. Items with equal importance keep their JSON order (sort is stable)
-    var sorted = entries(roles).sort(function (a, b) { return rankOf(b) - rankOf(a); });
+    var sorted = roles.slice().sort(function (a, b) { return rankOf(b) - rankOf(a); });
     var grid = el('div', 'role-grid');
-    sorted.map(roleCard).forEach(function (card) { grid.appendChild(card); });
-    mount('roles', [grid]);
+    sorted.forEach(function (role) { grid.appendChild(roleCard(role, root)); });
+    return grid;
+  }
+  function groupNode(node, path, root) {
+    var box = el('details', 'role-group');
+    var summary = el('summary');
+    var name = el('code');
+    // Nested groups show only the last segment; the full path goes in title
+    name.textContent = node.name;
+    name.setAttribute('title', path);
+    summary.appendChild(name);
+    var badge = el('span', 'count-badge');
+    badge.textContent = countRoles(node) + (countRoles(node) === 1 ? ' role' : ' roles');
+    summary.appendChild(badge);
+    box.appendChild(summary);
+    var body = el('div', 'role-group-body');
+    if (node.roles.length) body.appendChild(roleGrid(node.roles, root));
+    node.order.forEach(function (child) {
+      body.appendChild(groupNode(child, path + '.' + child.name, root));
+    });
+    box.appendChild(body);
+    return box;
+  }
+  function renderRoles(roles, meta) {
+    var root = blank(meta.gradleRoot) ? null : String(meta.gradleRoot);
+    var tree = buildGroupTree(entries(roles));
+    var nodes = [];
+    tree.order.forEach(function (child) { nodes.push(groupNode(child, child.name, root)); });
+    if (tree.roles.length) {
+      // Roles without a group. verify counts these as unfilled
+      var box = el('details', 'role-group');
+      box.open = true;
+      var summary = el('summary');
+      summary.appendChild(unfilled('roles[].group'));
+      var badge = el('span', 'count-badge');
+      badge.textContent = tree.roles.length + (tree.roles.length === 1 ? ' role' : ' roles');
+      summary.appendChild(badge);
+      box.appendChild(summary);
+      var body = el('div', 'role-group-body');
+      body.appendChild(roleGrid(tree.roles, root));
+      box.appendChild(body);
+      nodes.push(box);
+    }
+    mount('roles', nodes);
   }
 
   function renderTools(tools) {
@@ -1138,11 +1492,184 @@
     mount('templates', [tableOf(['Role', 'Files it creates', 'Parameters', 'Based on', 'Why'], rows)]);
   }
 
-  function questionCard(item, index) {
+  // ---- Answer fields (the checklist has the same functions; JS cannot be shared) ----
+  var ANSWER_TARGET = 'report';
+  var ANSWER_FILE = 'katachi-answers-report.json';
+  // { id, recommendation, radios, free, card }
+  var answerCards = [];
+
+  function questionId(item, index) {
+    return blank(item.id) ? 'q' + (index + 1) : String(item.id);
+  }
+  // Drafts while typing. Rendering must not break when localStorage is unavailable
+  function draftKey(id) { return location.href.split('#')[0] + '#answer:' + id; }
+  function readDraft(id) {
+    try {
+      var raw = localStorage.getItem(draftKey(id));
+      return raw ? record(JSON.parse(raw)) : null;
+    } catch (error) {
+      return null;
+    }
+  }
+  function writeDraft(id, draft) {
+    try {
+      if (draft) localStorage.setItem(draftKey(id), JSON.stringify(draft));
+      else localStorage.removeItem(draftKey(id));
+    } catch (error) { /* keep going even if it cannot be saved */ }
+  }
+  // State of the answer fields. With an option picked the free text is the note; otherwise it is the answer
+  function readCard(entry) {
+    var picked = entry.radios.filter(function (radio) { return radio.checked; })[0];
+    var free = entry.free.value.replace(/^\s+|\s+$/g, '');
+    if (picked) return { answer: picked.value, note: free || null };
+    if (free) return { answer: free, note: null };
+    return null;
+  }
+  function fillCard(entry, answer) {
+    var found = false;
+    entry.radios.forEach(function (radio) {
+      radio.checked = !found && radio.value === answer.answer;
+      if (radio.checked) found = true;
+    });
+    var note = blank(answer.note) ? '' : String(answer.note);
+    entry.free.value = found ? note : [answer.answer || '', note].filter(Boolean).join('\n');
+  }
+  function paintAnswers() {
+    var answered = 0;
+    answerCards.forEach(function (entry) {
+      var current = readCard(entry);
+      entry.card.classList.toggle('is-answered', current !== null);
+      if (current) answered += 1;
+    });
+    mount('answeredCount', [document.createTextNode(answered ? answered + ' answered' : '')]);
+  }
+  function onCardInput(entry) {
+    writeDraft(entry.id, readCard(entry));
+    paintAnswers();
+  }
+  // If the recommendation starts with an option letter ("B. ..."), pick that option; otherwise put the text in the free field
+  function adoptRecommendation(entry) {
+    var text = blank(entry.recommendation) ? '' : String(entry.recommendation).replace(/^\s+/, '');
+    var match = /^([A-Z])(?![A-Za-z])/.exec(text);
+    var index = match ? match[1].charCodeAt(0) - 65 : -1;
+    if (index >= 0 && index < entry.radios.length) {
+      entry.radios[index].checked = true;
+    } else if (text) {
+      entry.radios.forEach(function (radio) { radio.checked = false; });
+      entry.free.value = text;
+    }
+    onCardInput(entry);
+  }
+  function collectAnswers() {
+    var out = {};
+    var now = new Date().toISOString();
+    answerCards.forEach(function (entry) {
+      var current = readCard(entry);
+      if (!current) return;
+      out[entry.id] = { answer: current.answer, note: current.note, answeredAt: now };
+    });
+    return out;
+  }
+  function answersJson() {
+    return JSON.stringify({ target: ANSWER_TARGET, answers: collectAnswers() }, null, 2) + '\n';
+  }
+  function setAnswerStatus(text, isError) {
+    var status = document.getElementById('answer-status');
+    var manual = document.getElementById('answer-manual');
+    if (!status || !manual) return;
+    status.textContent = text;
+    status.classList.toggle('is-error', isError === true);
+    manual.hidden = true;
+  }
+  // When it cannot be handed over automatically, show the JSON as is to be selected by hand
+  function showManualAnswers(text, message) {
+    setAnswerStatus(message, true);
+    var manual = document.getElementById('answer-manual');
+    if (!manual) return;
+    manual.value = text;
+    manual.hidden = false;
+    manual.focus();
+    manual.select();
+  }
+  function downloadAnswers() {
+    var text = answersJson();
+    try {
+      var url = URL.createObjectURL(new Blob([text], { type: 'application/json' }));
+      var a = el('a');
+      a.setAttribute('href', url);
+      a.setAttribute('download', ANSWER_FILE);
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
+      setAnswerStatus('Saved ' + ANSWER_FILE + '. Import it with sh katachi-install.sh answers import <saved file>.');
+    } catch (error) {
+      showManualAnswers(text, 'Could not download. Select and copy the JSON below by hand and hand it to the AI agent.');
+    }
+  }
+  function copyAnswers() {
+    var text = answersJson();
+    function done() { setAnswerStatus('Copied the answers JSON. Paste it to the AI agent.'); }
+    function fallback() {
+      var box = el('textarea');
+      box.value = text;
+      box.setAttribute('readonly', '');
+      box.style.position = 'fixed';
+      box.style.left = '-9999px';
+      document.body.appendChild(box);
+      box.select();
+      var ok = false;
+      try { ok = document.execCommand('copy'); } catch (error) { ok = false; }
+      document.body.removeChild(box);
+      if (ok) done();
+      else showManualAnswers(text, 'Could not copy. Select and copy the JSON below by hand.');
+    }
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(done, fallback);
+    } else {
+      fallback();
+    }
+  }
+  function clearAnswers() {
+    answerCards.forEach(function (entry) {
+      entry.radios.forEach(function (radio) { radio.checked = false; });
+      entry.free.value = '';
+      writeDraft(entry.id, null);
+    });
+    paintAnswers();
+    setAnswerStatus('Cleared the answers (answers already imported into this JSON come back on reload).');
+  }
+  function actionButton(label, handler, primary) {
+    var button = el('button', primary ? 'action-button is-primary' : 'action-button');
+    button.type = 'button';
+    button.textContent = label;
+    button.addEventListener('click', handler);
+    return button;
+  }
+  function renderAnswerActions() {
+    var status = el('p', 'answer-status');
+    status.id = 'answer-status';
+    var manual = el('textarea', 'answer-manual');
+    manual.id = 'answer-manual';
+    manual.setAttribute('readonly', '');
+    manual.setAttribute('aria-label', 'Answers JSON');
+    manual.hidden = true;
+    mount('answerActions', [
+      actionButton('Adopt all recommendations', function () { answerCards.forEach(adoptRecommendation); }),
+      actionButton('Export answers (download)', downloadAnswers, true),
+      actionButton('Copy answers', copyAnswers),
+      actionButton('Clear answers', clearAnswers),
+      status,
+      manual
+    ]);
+  }
+
+  function questionCard(item, index, answers) {
+    var id = questionId(item, index);
     var card = el('details', 'qa');
     var summary = el('summary');
     var badge = el('span', 'qa-num');
-    badge.textContent = 'Q' + (index + 1);
+    badge.textContent = id;
     var title = el('span', 'qa-title');
     title.appendChild(value(item.question, 'questions[].question'));
     summary.appendChild(badge);
@@ -1151,22 +1678,76 @@
     var body = el('div', 'qa-body');
     body.appendChild(subHeading('What was observed'));
     body.appendChild(paragraph(richText(item.observed, 'questions[].observed')));
-    body.appendChild(subHeading('Options'));
-    body.appendChild(numbered(item.options, 'questions[].options'));
     var pick = el('div', 'qa-pick');
     pick.appendChild(subHeading('Recommendation'));
     pick.appendChild(paragraph(value(item.recommendation, 'questions[].recommendation')));
     body.appendChild(pick);
+
+    // Answer fields
+    var imported = answers[id] ? record(answers[id]) : null;
+    var answer = el('div', 'qa-answer');
+    var head = subHeading('Answer');
+    if (imported) {
+      var mark = el('span', 'qa-imported');
+      mark.textContent = 'imported';
+      head.appendChild(mark);
+    }
+    answer.appendChild(head);
+    var entry = { id: id, recommendation: item.recommendation, radios: [], free: null, card: card };
+    if (blank(item.options)) {
+      answer.appendChild(paragraph(unfilled('questions[].options')));
+    } else {
+      var ul = el('ul', 'qa-answer-list');
+      item.options.forEach(function (option, i) {
+        var li = el('li');
+        var label = el('label');
+        var radio = el('input');
+        radio.type = 'radio';
+        radio.name = 'answer-' + id;
+        radio.value = String(option);
+        radio.addEventListener('change', function () { onCardInput(entry); });
+        var letter = el('span', 'option-letter');
+        letter.textContent = String.fromCharCode(65 + i);
+        var text = el('span');
+        text.textContent = String(option);
+        label.appendChild(radio);
+        label.appendChild(letter);
+        label.appendChild(text);
+        li.appendChild(label);
+        ul.appendChild(li);
+        entry.radios.push(radio);
+      });
+      answer.appendChild(ul);
+    }
+    var free = el('textarea');
+    free.setAttribute('aria-label', 'Free text for ' + id);
+    free.setAttribute('placeholder', 'Free text (becomes a note when an option is picked)');
+    free.addEventListener('input', function () { onCardInput(entry); });
+    entry.free = free;
+    answer.appendChild(free);
+    answer.appendChild(actionButton('Adopt recommendation', function () { adoptRecommendation(entry); }));
+    body.appendChild(answer);
+
+    // Show the answer imported into the JSON if any, otherwise the draft. Unanswered cards stay open
+    var initial = imported || readDraft(id);
+    if (initial) fillCard(entry, initial);
+    card.open = !initial;
+    answerCards.push(entry);
 
     card.appendChild(summary);
     card.appendChild(body);
     return card;
   }
 
-  function renderQuestions(questions) {
+  function renderQuestions(questions, answers) {
+    answerCards = [];
     mount('questionCount', [document.createTextNode(countLabel(questions))]);
     if (!countOf(questions)) { mount('questions', [none()]); return; }
-    mount('questions', entries(questions).map(questionCard));
+    mount('questions', entries(questions).map(function (item, index) {
+      return questionCard(item, index, answers);
+    }));
+    renderAnswerActions();
+    paintAnswers();
   }
 
   function renderError(message) {
@@ -1248,10 +1829,10 @@
     renderOverview(record(data.overview));
     renderArchitecture(record(data.architecture));
     renderModules(data);
-    renderRoles(data.roles);
+    renderRoles(data.roles, record(data.meta));
     renderTools(data.tools);
     renderExcluded(data.excluded);
-    renderQuestions(data.questions);
+    renderQuestions(data.questions, record(data.answers));
     renderTemplates(data.templates);
     highlightToc();
     openWhilePrinting();
