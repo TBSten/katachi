@@ -9,9 +9,16 @@ import io.kotest.matchers.maps.shouldNotContainKey
 import io.kotest.matchers.nulls.shouldBeNull
 import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
+import io.kotest.matchers.string.shouldContain
 import io.kotest.matchers.string.shouldNotContain
+import me.tbsten.katachi.check.FileConstraintCheck
+import me.tbsten.katachi.check.UncheckedFileConstraint
+import me.tbsten.katachi.check.UncheckedFileConstraintReason
+import me.tbsten.katachi.check.internal.report
+import me.tbsten.katachi.check.internal.validate
 import me.tbsten.katachi.dsl.DeclarationKind
 import me.tbsten.katachi.dsl.DeclarationSite
+import me.tbsten.katachi.dsl.FileConstraintFailure
 import me.tbsten.katachi.dsl.FileConstraintRange
 import me.tbsten.katachi.dsl.KatachiDuplicateDeclarationException
 import me.tbsten.katachi.dsl.KatachiFileConstraintDirectOnlyWithoutDirectoryException
@@ -20,7 +27,11 @@ import me.tbsten.katachi.dsl.MetadataScope
 import me.tbsten.katachi.dsl.architecture
 import me.tbsten.katachi.dsl.gradle.gradle
 import me.tbsten.katachi.dsl.metadata
+import me.tbsten.katachi.test.check.architectureOf
+import me.tbsten.katachi.test.check.labels
+import me.tbsten.katachi.test.check.repositoryOf
 import me.tbsten.katachi.test.docs.documents
+import me.tbsten.katachi.test.dsl.files.FakeFileSystemScope
 
 /** A word of this spec's own, the way a processor brings one in: written through [owner]. */
 private val Owner: MetadataKey<String> = metadata()
@@ -35,6 +46,106 @@ private var MetadataScope.owner: String? by Owner
  * captureDeclarationSite() がライブラリ自身のフレームとして読み飛ばしてしまう。
  */
 class GradleRoleConstraintSpec : FreeSpec({
+    /** A Kotlin DSL build with two modules below the root project, the same tree `GradleGroupSpec` uses. */
+    fun kotlinDslBuild(block: FakeFileSystemScope.() -> Unit = {}) = repositoryOf {
+        "settings.gradle.kts"()
+        "build.gradle.kts"()
+        "gradle.properties"()
+        "gradlew"()
+        "gradlew.bat"()
+        "gradle" {
+            "libs.versions.toml"()
+            "wrapper" {
+                "gradle-wrapper.jar"()
+                "gradle-wrapper.properties"()
+            }
+        }
+        "app" { "build.gradle.kts"() }
+        "core" { "data" { "build.gradle.kts"() } }
+        block()
+    }
+
+    "制約が受け取るファイル" - {
+        "buildScript { } の制約は全モジュールの build.gradle.kts を subject.files に受け取る" {
+            val received = mutableListOf<String>()
+            val arch = architectureOf {
+                gradle {
+                    buildScript {
+                        fileConstraint("records") { subject ->
+                            received += subject.files
+                            emptyList()
+                        }
+                    }
+                }
+            }
+
+            arch.validate(kotlinDslBuild(), FileConstraintCheck()).labels().shouldBeEmpty()
+            received.sorted() shouldContainExactly listOf(
+                "app/build.gradle.kts",
+                "build.gradle.kts",
+                "core/data/build.gradle.kts",
+            )
+        }
+
+        "buildScript { } の制約は Groovy の build.gradle も受け取る" {
+            val groovyBuild = repositoryOf {
+                "settings.gradle"()
+                "build.gradle"()
+                "gradlew"()
+                "gradlew.bat"()
+                "gradle" {
+                    "wrapper" {
+                        "gradle-wrapper.jar"()
+                        "gradle-wrapper.properties"()
+                    }
+                }
+                "app" { "build.gradle"() }
+            }
+            val received = mutableListOf<String>()
+            val arch = architectureOf {
+                gradle {
+                    buildScript {
+                        fileConstraint("records") { subject ->
+                            received += subject.files
+                            emptyList()
+                        }
+                    }
+                }
+            }
+
+            arch.validate(groovyBuild, FileConstraintCheck()).labels().shouldBeEmpty()
+            received.sorted() shouldContainExactly listOf("app/build.gradle", "build.gradle")
+        }
+
+        "buildScript { } の制約が返した失敗は Gradle.BuildScript の UnsatisfiedFileConstraint になる" {
+            val arch = architectureOf {
+                gradle {
+                    buildScript {
+                        fileConstraint("no app script") { subject ->
+                            subject.files.filter { it == "app/build.gradle.kts" }.map { FileConstraintFailure(it) }
+                        }
+                    }
+                }
+            }
+
+            val violations = arch.validate(kotlinDslBuild(), FileConstraintCheck())
+            violations.labels() shouldContainExactly listOf("[UnsatisfiedFileConstraint] app/build.gradle.kts")
+            violations.report() shouldContain "Role: Gradle.BuildScript / FileConstraint: \"no app script\""
+        }
+
+        "FileConstraintCheck を渡さないと hook の制約は NotEvaluated として報告される" {
+            val arch = architectureOf {
+                gradle {
+                    buildScript { fileConstraint("never run", check = silent()) }
+                }
+            }
+
+            val unchecked = arch.validate(kotlinDslBuild()).filterIsInstance<UncheckedFileConstraint>()
+            unchecked.map { it.role.qualifiedName to it.constraintName } shouldBe listOf("Gradle.BuildScript" to "never run")
+            unchecked.single().reason shouldBe UncheckedFileConstraintReason.NotEvaluated
+        }
+    }
+
     "hook と Role の対応" - {
         "8 つの hook はそれぞれ対応する Role に制約を付ける" {
             val arch = architecture {

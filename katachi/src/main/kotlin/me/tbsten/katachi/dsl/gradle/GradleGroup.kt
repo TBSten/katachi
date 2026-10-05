@@ -2,7 +2,7 @@ package me.tbsten.katachi.dsl.gradle
 
 import me.tbsten.katachi.dsl.*
 import me.tbsten.katachi.dsl.internal.GradleRoleKind
-import me.tbsten.katachi.dsl.internal.markSynthetic
+import me.tbsten.katachi.dsl.kotlin.ktsFile
 
 /**
  * Declares the files every Gradle build has, as a `"Gradle"` group with one role per kind of
@@ -123,7 +123,13 @@ public fun DeclarationContainerScope.gradle(
         "settings.gradle".file().optional()
     }
     gradleRole(GradleRoleKind.BuildScript, "How one module is built, one per module", scope) {
-        ":**".module { "build.gradle".file().markSynthetic() }.optional()
+        ":**".module {
+            // Declared by this role on its own account rather than left to the module sugar:
+            // the sugar's line is synthetic, which keeps it out of what a constraint covers
+            // and out of the ambiguity check, and a build script is exactly what this role is about.
+            "build.gradle".ktsFile()
+            "build.gradle".file()
+        }.optional()
     }
     gradleRole(GradleRoleKind.GradleProperties, "Properties of the build and of the Gradle daemon", scope) {
         "gradle.properties".file().optional()
