@@ -21,6 +21,10 @@ import org.junit.jupiter.api.Test
  * `FileConstraintCheck()` is passed because katachi never runs a constraint nobody asked for:
  * `assert()` alone would report every `ktFileContent { }` of the roles as
  * `[UncheckedFileConstraint] reason=NotEvaluated` instead of checking the files against it.
+ *
+ * When there are more violations than the report shows, run
+ * `./gradlew :architecture-test:test -Dkatachi.maxViolations=all`: katachi's Gradle plugin
+ * hands the property on to the test JVM, so nothing here has to change.
  */
 @OptIn(ExperimentalKatachiApi::class)
 class ProjectArchitectureTest {

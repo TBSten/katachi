@@ -19,6 +19,10 @@ import org.junit.jupiter.api.Test
  *
  * Everything else in this module - the `*Spec` files - is katachi's own integration test
  * and has no place in a project that merely uses katachi.
+ *
+ * When there are more violations than the report shows, run
+ * `./gradlew :architecture-test:test -Dkatachi.maxViolations=all`: katachi's Gradle plugin
+ * hands the property on to the test JVM, so nothing here has to change.
  */
 @OptIn(ExperimentalKatachiApi::class)
 class ProjectArchitectureTest {
