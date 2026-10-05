@@ -36,11 +36,16 @@ fun DeclarationContainerScope.specSupport() = "SpecSupport".role {
             testSourceSet / "resources" / "sarif" / "sarif-schema-2.1.0.json".file()
             testSourceSet / "resources" / "sarif" / "README.md".file()
             testSourceSet / "resources" / "sarif" / "golden" / "*.sarif".file()
+            // The goldens `DescribeDefinition`'s JSON is compared with.
+            testSourceSet / "resources" / "definition" / "golden" / "*.json".file()
         }
         "katachi-konsist" {
             description = "スペックが使う道具のうち、Konsist に読ませる実ファイルを一時ディレクトリに用意するもの"
             testSourceSet / kotlin / "**" / "*SpecSupport".ktFile()
             testSourceSet / kotlin / KONSIST_TEST_PACKAGE / "FixtureProject".ktFile()
+            // The SARIF a failing `ktFileContent { }` writes, as `KtFileContentSarifSpec` compares it. The IDE plugin keeps a
+            // copy as its contract (`katachi-intellij-plugin/src/test/resources/contract/json/`): its annotations are read against it.
+            testSourceSet / "resources" / "sarif" / "*.sarif".file()
         }
         "katachi-konture" {
             description = "スペックが使う道具のうち、Konture に読ませる実ファイルを一時ディレクトリに用意するもの"

@@ -1,0 +1,2500 @@
+# gutter golden: sample/android
+# definition: contract/definition/real-android-definition.json, sources: contract/gutter/sources/android/ (copies of the sample's files)
+# update: ./gradlew -p katachi-intellij-plugin test --tests '*RealDefinitionGutterTest*' -Dkatachi.gutter.golden.update=true
+# files: 114, with a ◆: 114, ◆: 127
+
+== README.md
+roles: tool.Documentation
+    tool.Documentation declared at DocumentationRole.kt:6 | fun DeclarationContainerScope.documentation() = "Documentation".role {
+1 | ◆ | katachi: tool.Documentation
+    menu | ◇ Role tool.Documentation — Documentation | DocumentationRole.kt:6
+    menu | == Other files of tool.Documentation
+    menu | (disabled) — No other file yet
+    menu | -----
+    menu | ▶ Run the check (:architecture-test:test)
+    menu | ⟳ Refresh the definition
+
+== app/build.gradle.kts
+roles: Gradle.BuildScript
+    Gradle.BuildScript declared at GradleGroup.kt:22 | fun DeclarationContainerScope.gradleGroup() = gradle()
+1 | ◆ | katachi: Gradle.BuildScript
+    menu | ◇ Role Gradle.BuildScript — How one module is built, one per module | GradleGroup.kt:22
+    menu | == Other files of Gradle.BuildScript (8)
+    menu | build.gradle.kts | .
+    menu | build.gradle.kts | architecture-test
+    menu | build.gradle.kts | data
+    menu | build.gradle.kts | feature/home
+    menu | build.gradle.kts | feature/settings
+    menu | build.gradle.kts | navigation
+    menu | build.gradle.kts | testing
+    menu | build.gradle.kts | ui
+    menu | -----
+    menu | ▶ Run the check (:architecture-test:test)
+    menu | ⟳ Refresh the definition
+
+== app/proguard-rules.pro
+roles: app.ProguardRules
+    app.ProguardRules declared at ProguardRulesRole.kt:7 | fun DeclarationContainerScope.proguardRules() = "ProguardRules".role {
+1 | ◆ | katachi: app.ProguardRules
+    menu | ◇ Role app.ProguardRules — Proguard rules | ProguardRulesRole.kt:7
+    menu | == Other files of app.ProguardRules
+    menu | (disabled) — No other file yet
+    menu | -----
+    menu | ▶ Run the check (:architecture-test:test)
+    menu | ⟳ Refresh the definition
+
+== app/src/main/AndroidManifest.xml
+roles: app.AndroidManifest
+    app.AndroidManifest declared at AndroidManifestRole.kt:7 | fun DeclarationContainerScope.androidManifest() = "AndroidManifest".role {
+1 | ◆ | katachi: app.AndroidManifest
+    menu | ◇ Role app.AndroidManifest — Android manifest | AndroidManifestRole.kt:7
+    menu | == Other files of app.AndroidManifest
+    menu | (disabled) — No other file yet
+    menu | -----
+    menu | ▶ Run the check (:architecture-test:test)
+    menu | ⟳ Refresh the definition
+
+== app/src/main/kotlin/com/example/sample/MainActivity.kt
+roles: app.ActivityEntrypoint
+    app.ActivityEntrypoint declared at ActivityEntrypointRole.kt:9 | fun DeclarationContainerScope.activityEntrypoint() = "ActivityEntrypoint".role {
+17 | ◆ | katachi: app.ActivityEntrypoint
+    menu | ◇ Role app.ActivityEntrypoint — Activity entrypoint | ActivityEntrypointRole.kt:9
+    menu | == Other files of app.ActivityEntrypoint
+    menu | (disabled) — No other file yet
+    menu | -----
+    menu | ▶ Run the check (:architecture-test:test)
+    menu | ⟳ Refresh the definition
+
+== app/src/main/kotlin/com/example/sample/MainApplication.kt
+roles: app.ApplicationEntrypoint
+    app.ApplicationEntrypoint declared at ApplicationEntrypointRole.kt:9 | fun DeclarationContainerScope.applicationEntrypoint() = "ApplicationEntrypoint".role {
+6 | ◆ | katachi: app.ApplicationEntrypoint
+    menu | ◇ Role app.ApplicationEntrypoint — Application entrypoint | ApplicationEntrypointRole.kt:9
+    menu | == Other files of app.ApplicationEntrypoint
+    menu | (disabled) — No other file yet
+    menu | -----
+    menu | ▶ Run the check (:architecture-test:test)
+    menu | ⟳ Refresh the definition
+
+== architecture-test/build.gradle.kts
+roles: Gradle.BuildScript
+    Gradle.BuildScript declared at GradleGroup.kt:22 | fun DeclarationContainerScope.gradleGroup() = gradle()
+1 | ◆ | katachi: Gradle.BuildScript
+    menu | ◇ Role Gradle.BuildScript — How one module is built, one per module | GradleGroup.kt:22
+    menu | == Other files of Gradle.BuildScript (8)
+    menu | build.gradle.kts | .
+    menu | build.gradle.kts | app
+    menu | build.gradle.kts | data
+    menu | build.gradle.kts | feature/home
+    menu | build.gradle.kts | feature/settings
+    menu | build.gradle.kts | navigation
+    menu | build.gradle.kts | testing
+    menu | build.gradle.kts | ui
+    menu | -----
+    menu | ▶ Run the check (:architecture-test:test)
+    menu | ⟳ Refresh the definition
+
+== architecture-test/src/test/kotlin/com/example/sample/DocumentSections.kt
+roles: testing.DefinitionSections
+    testing.DefinitionSections declared at DefinitionSectionsRole.kt:12 | fun DeclarationContainerScope.definitionSections() = "DefinitionSections".role {
+11 | ◆ | katachi: testing.DefinitionSections
+    menu | ◇ Role testing.DefinitionSections — Definition sections | DefinitionSectionsRole.kt:12
+    menu | == Other files of testing.DefinitionSections
+    menu | (disabled) — No other file yet
+    menu | -----
+    menu | ▶ Run the check (:architecture-test:test)
+    menu | ⟳ Refresh the definition
+
+== architecture-test/src/test/kotlin/com/example/sample/LayoutSnapshotSpec.kt
+roles: testing.ProjectArchitectureSpec
+    testing.ProjectArchitectureSpec declared at ProjectArchitectureSpecRole.kt:9 | fun DeclarationContainerScope.projectArchitectureSpec() = "ProjectArchitectureSpec".role {
+29 | ◆ | katachi: testing.ProjectArchitectureSpec
+    menu | ◇ Role testing.ProjectArchitectureSpec — Architecture spec | ProjectArchitectureSpecRole.kt:9
+    menu | == Other files of testing.ProjectArchitectureSpec (2)
+    menu | ProjectArchitectureSpec.kt | architecture-test/…/com/example/sample
+    menu | ProjectRootSpec.kt | architecture-test/…/com/example/sample
+    menu | -----
+    menu | ▶ Run the check (:architecture-test:test)
+    menu | ⟳ Refresh the definition
+
+== architecture-test/src/test/kotlin/com/example/sample/ProjectArchitecture.kt
+roles: testing.DefinitionEntry
+    testing.DefinitionEntry declared at DefinitionEntryRole.kt:12 | fun DeclarationContainerScope.definitionEntry() = "DefinitionEntry".role {
+52 | ◆ | katachi: testing.DefinitionEntry
+    menu | ◇ Role testing.DefinitionEntry — Definition entrypoint | DefinitionEntryRole.kt:12
+    menu | == Other files of testing.DefinitionEntry
+    menu | (disabled) — No other file yet
+    menu | -----
+    menu | ▶ Run the check (:architecture-test:test)
+    menu | ⟳ Refresh the definition
+
+== architecture-test/src/test/kotlin/com/example/sample/ProjectArchitectureSpec.kt
+roles: testing.ProjectArchitectureSpec
+    testing.ProjectArchitectureSpec declared at ProjectArchitectureSpecRole.kt:9 | fun DeclarationContainerScope.projectArchitectureSpec() = "ProjectArchitectureSpec".role {
+48 | ◆ | katachi: testing.ProjectArchitectureSpec
+    menu | ◇ Role testing.ProjectArchitectureSpec — Architecture spec | ProjectArchitectureSpecRole.kt:9
+    menu | == Other files of testing.ProjectArchitectureSpec (2)
+    menu | LayoutSnapshotSpec.kt | architecture-test/…/com/example/sample
+    menu | ProjectRootSpec.kt | architecture-test/…/com/example/sample
+    menu | -----
+    menu | ▶ Run the check (:architecture-test:test)
+    menu | ⟳ Refresh the definition
+
+== architecture-test/src/test/kotlin/com/example/sample/ProjectArchitectureTest.kt
+roles: testing.ProjectArchitectureTest
+    testing.ProjectArchitectureTest declared at ProjectArchitectureTestRole.kt:9 | fun DeclarationContainerScope.projectArchitectureTest() = "ProjectArchitectureTest".role {
+21 | ◆ | katachi: testing.ProjectArchitectureTest
+    menu | ◇ Role testing.ProjectArchitectureTest — Architecture test | ProjectArchitectureTestRole.kt:9
+    menu | == Other files of testing.ProjectArchitectureTest
+    menu | (disabled) — No other file yet
+    menu | -----
+    menu | ▶ Run the check (:architecture-test:test)
+    menu | ⟳ Refresh the definition
+
+== architecture-test/src/test/kotlin/com/example/sample/ProjectRootSpec.kt
+roles: testing.ProjectArchitectureSpec
+    testing.ProjectArchitectureSpec declared at ProjectArchitectureSpecRole.kt:9 | fun DeclarationContainerScope.projectArchitectureSpec() = "ProjectArchitectureSpec".role {
+19 | ◆ | katachi: testing.ProjectArchitectureSpec
+    menu | ◇ Role testing.ProjectArchitectureSpec — Architecture spec | ProjectArchitectureSpecRole.kt:9
+    menu | == Other files of testing.ProjectArchitectureSpec (2)
+    menu | LayoutSnapshotSpec.kt | architecture-test/…/com/example/sample
+    menu | ProjectArchitectureSpec.kt | architecture-test/…/com/example/sample
+    menu | -----
+    menu | ▶ Run the check (:architecture-test:test)
+    menu | ⟳ Refresh the definition
+
+== architecture-test/src/test/kotlin/com/example/sample/groups/AppGroup.kt
+roles: testing.GroupDefinition
+    testing.GroupDefinition declared at GroupDefinitionRole.kt:12 | fun DeclarationContainerScope.groupDefinition() = "GroupDefinition".role {
+18 | ◆ | katachi: testing.GroupDefinition
+    menu | ◇ Role testing.GroupDefinition — Group definition | GroupDefinitionRole.kt:12
+    menu | == Other files of testing.GroupDefinition (6)
+    menu | DataGroup.kt | architecture-test/…/sample/groups
+    menu | FeatureGroup.kt | architecture-test/…/sample/groups
+    menu | GradleGroup.kt | architecture-test/…/sample/groups
+    menu | TestingGroup.kt | architecture-test/…/sample/groups
+    menu | ToolGroup.kt | architecture-test/…/sample/groups
+    menu | UiGroup.kt | architecture-test/…/sample/groups
+    menu | -----
+    menu | + New testing.GroupDefinition from template…
+    menu | ▶ Run the check (:architecture-test:test)
+    menu | ⟳ Refresh the definition
+
+== architecture-test/src/test/kotlin/com/example/sample/groups/DataGroup.kt
+roles: testing.GroupDefinition
+    testing.GroupDefinition declared at GroupDefinitionRole.kt:12 | fun DeclarationContainerScope.groupDefinition() = "GroupDefinition".role {
+8 | ◆ | katachi: testing.GroupDefinition
+    menu | ◇ Role testing.GroupDefinition — Group definition | GroupDefinitionRole.kt:12
+    menu | == Other files of testing.GroupDefinition (6)
+    menu | AppGroup.kt | architecture-test/…/sample/groups
+    menu | FeatureGroup.kt | architecture-test/…/sample/groups
+    menu | GradleGroup.kt | architecture-test/…/sample/groups
+    menu | TestingGroup.kt | architecture-test/…/sample/groups
+    menu | ToolGroup.kt | architecture-test/…/sample/groups
+    menu | UiGroup.kt | architecture-test/…/sample/groups
+    menu | -----
+    menu | + New testing.GroupDefinition from template…
+    menu | ▶ Run the check (:architecture-test:test)
+    menu | ⟳ Refresh the definition
+
+== architecture-test/src/test/kotlin/com/example/sample/groups/FeatureGroup.kt
+roles: testing.GroupDefinition
+    testing.GroupDefinition declared at GroupDefinitionRole.kt:12 | fun DeclarationContainerScope.groupDefinition() = "GroupDefinition".role {
+34 | ◆ | katachi: testing.GroupDefinition
+    menu | ◇ Role testing.GroupDefinition — Group definition | GroupDefinitionRole.kt:12
+    menu | == Other files of testing.GroupDefinition (6)
+    menu | AppGroup.kt | architecture-test/…/sample/groups
+    menu | DataGroup.kt | architecture-test/…/sample/groups
+    menu | GradleGroup.kt | architecture-test/…/sample/groups
+    menu | TestingGroup.kt | architecture-test/…/sample/groups
+    menu | ToolGroup.kt | architecture-test/…/sample/groups
+    menu | UiGroup.kt | architecture-test/…/sample/groups
+    menu | -----
+    menu | + New testing.GroupDefinition from template…
+    menu | ▶ Run the check (:architecture-test:test)
+    menu | ⟳ Refresh the definition
+
+== architecture-test/src/test/kotlin/com/example/sample/groups/GradleGroup.kt
+roles: testing.GroupDefinition
+    testing.GroupDefinition declared at GroupDefinitionRole.kt:12 | fun DeclarationContainerScope.groupDefinition() = "GroupDefinition".role {
+22 | ◆ | katachi: testing.GroupDefinition
+    menu | ◇ Role testing.GroupDefinition — Group definition | GroupDefinitionRole.kt:12
+    menu | == Other files of testing.GroupDefinition (6)
+    menu | AppGroup.kt | architecture-test/…/sample/groups
+    menu | DataGroup.kt | architecture-test/…/sample/groups
+    menu | FeatureGroup.kt | architecture-test/…/sample/groups
+    menu | TestingGroup.kt | architecture-test/…/sample/groups
+    menu | ToolGroup.kt | architecture-test/…/sample/groups
+    menu | UiGroup.kt | architecture-test/…/sample/groups
+    menu | -----
+    menu | + New testing.GroupDefinition from template…
+    menu | ▶ Run the check (:architecture-test:test)
+    menu | ⟳ Refresh the definition
+
+== architecture-test/src/test/kotlin/com/example/sample/groups/TestingGroup.kt
+roles: testing.GroupDefinition
+    testing.GroupDefinition declared at GroupDefinitionRole.kt:12 | fun DeclarationContainerScope.groupDefinition() = "GroupDefinition".role {
+34 | ◆ | katachi: testing.GroupDefinition
+    menu | ◇ Role testing.GroupDefinition — Group definition | GroupDefinitionRole.kt:12
+    menu | == Other files of testing.GroupDefinition (6)
+    menu | AppGroup.kt | architecture-test/…/sample/groups
+    menu | DataGroup.kt | architecture-test/…/sample/groups
+    menu | FeatureGroup.kt | architecture-test/…/sample/groups
+    menu | GradleGroup.kt | architecture-test/…/sample/groups
+    menu | ToolGroup.kt | architecture-test/…/sample/groups
+    menu | UiGroup.kt | architecture-test/…/sample/groups
+    menu | -----
+    menu | + New testing.GroupDefinition from template…
+    menu | ▶ Run the check (:architecture-test:test)
+    menu | ⟳ Refresh the definition
+
+== architecture-test/src/test/kotlin/com/example/sample/groups/ToolGroup.kt
+roles: testing.GroupDefinition
+    testing.GroupDefinition declared at GroupDefinitionRole.kt:12 | fun DeclarationContainerScope.groupDefinition() = "GroupDefinition".role {
+20 | ◆ | katachi: testing.GroupDefinition
+    menu | ◇ Role testing.GroupDefinition — Group definition | GroupDefinitionRole.kt:12
+    menu | == Other files of testing.GroupDefinition (6)
+    menu | AppGroup.kt | architecture-test/…/sample/groups
+    menu | DataGroup.kt | architecture-test/…/sample/groups
+    menu | FeatureGroup.kt | architecture-test/…/sample/groups
+    menu | GradleGroup.kt | architecture-test/…/sample/groups
+    menu | TestingGroup.kt | architecture-test/…/sample/groups
+    menu | UiGroup.kt | architecture-test/…/sample/groups
+    menu | -----
+    menu | + New testing.GroupDefinition from template…
+    menu | ▶ Run the check (:architecture-test:test)
+    menu | ⟳ Refresh the definition
+
+== architecture-test/src/test/kotlin/com/example/sample/groups/UiGroup.kt
+roles: testing.GroupDefinition
+    testing.GroupDefinition declared at GroupDefinitionRole.kt:12 | fun DeclarationContainerScope.groupDefinition() = "GroupDefinition".role {
+21 | ◆ | katachi: testing.GroupDefinition
+    menu | ◇ Role testing.GroupDefinition — Group definition | GroupDefinitionRole.kt:12
+    menu | == Other files of testing.GroupDefinition (6)
+    menu | AppGroup.kt | architecture-test/…/sample/groups
+    menu | DataGroup.kt | architecture-test/…/sample/groups
+    menu | FeatureGroup.kt | architecture-test/…/sample/groups
+    menu | GradleGroup.kt | architecture-test/…/sample/groups
+    menu | TestingGroup.kt | architecture-test/…/sample/groups
+    menu | ToolGroup.kt | architecture-test/…/sample/groups
+    menu | -----
+    menu | + New testing.GroupDefinition from template…
+    menu | ▶ Run the check (:architecture-test:test)
+    menu | ⟳ Refresh the definition
+
+== architecture-test/src/test/kotlin/com/example/sample/roles/ActivityEntrypointRole.kt
+roles: testing.RoleDefinition
+    testing.RoleDefinition declared at RoleDefinitionRole.kt:12 | fun DeclarationContainerScope.roleDefinition() = "RoleDefinition".role {
+9 | ◆ | katachi: testing.RoleDefinition
+    menu | ◇ Role testing.RoleDefinition — Role definition | RoleDefinitionRole.kt:12
+    menu | == Other files of testing.RoleDefinition (28)
+    menu | AndroidManifestRole.kt | architecture-test/…/example/sample/roles
+    menu | AndroidResourceRole.kt | architecture-test/…/example/sample/roles
+    menu | ApplicationEntrypointRole.kt | architecture-test/…/example/sample/roles
+    menu | BaselineFileRole.kt | architecture-test/…/example/sample/roles
+    menu | ComponentRole.kt | architecture-test/…/example/sample/roles
+    menu | DefinitionEntryRole.kt | architecture-test/…/example/sample/roles
+    menu | DefinitionSectionsRole.kt | architecture-test/…/example/sample/roles
+    menu | DocumentationRole.kt | architecture-test/…/example/sample/roles
+    menu | FakeRole.kt | architecture-test/…/example/sample/roles
+    menu | FeatureComponentRole.kt | architecture-test/…/example/sample/roles
+    menu | FeatureTestRole.kt | architecture-test/…/example/sample/roles
+    menu | GeneratedDocumentationRole.kt | architecture-test/…/example/sample/roles
+    menu | GitRole.kt | architecture-test/…/example/sample/roles
+    menu | GroupDefinitionRole.kt | architecture-test/…/example/sample/roles
+    menu | LayoutSnapshotRole.kt | architecture-test/…/example/sample/roles
+    menu | (disabled) … and 13 more
+    menu | -----
+    menu | + New testing.RoleDefinition from template…
+    menu | ▶ Run the check (:architecture-test:test)
+    menu | ⟳ Refresh the definition
+
+== architecture-test/src/test/kotlin/com/example/sample/roles/AndroidManifestRole.kt
+roles: testing.RoleDefinition
+    testing.RoleDefinition declared at RoleDefinitionRole.kt:12 | fun DeclarationContainerScope.roleDefinition() = "RoleDefinition".role {
+7 | ◆ | katachi: testing.RoleDefinition
+    menu | ◇ Role testing.RoleDefinition — Role definition | RoleDefinitionRole.kt:12
+    menu | == Other files of testing.RoleDefinition (28)
+    menu | ActivityEntrypointRole.kt | architecture-test/…/example/sample/roles
+    menu | AndroidResourceRole.kt | architecture-test/…/example/sample/roles
+    menu | ApplicationEntrypointRole.kt | architecture-test/…/example/sample/roles
+    menu | BaselineFileRole.kt | architecture-test/…/example/sample/roles
+    menu | ComponentRole.kt | architecture-test/…/example/sample/roles
+    menu | DefinitionEntryRole.kt | architecture-test/…/example/sample/roles
+    menu | DefinitionSectionsRole.kt | architecture-test/…/example/sample/roles
+    menu | DocumentationRole.kt | architecture-test/…/example/sample/roles
+    menu | FakeRole.kt | architecture-test/…/example/sample/roles
+    menu | FeatureComponentRole.kt | architecture-test/…/example/sample/roles
+    menu | FeatureTestRole.kt | architecture-test/…/example/sample/roles
+    menu | GeneratedDocumentationRole.kt | architecture-test/…/example/sample/roles
+    menu | GitRole.kt | architecture-test/…/example/sample/roles
+    menu | GroupDefinitionRole.kt | architecture-test/…/example/sample/roles
+    menu | LayoutSnapshotRole.kt | architecture-test/…/example/sample/roles
+    menu | (disabled) … and 13 more
+    menu | -----
+    menu | + New testing.RoleDefinition from template…
+    menu | ▶ Run the check (:architecture-test:test)
+    menu | ⟳ Refresh the definition
+
+== architecture-test/src/test/kotlin/com/example/sample/roles/AndroidResourceRole.kt
+roles: testing.RoleDefinition
+    testing.RoleDefinition declared at RoleDefinitionRole.kt:12 | fun DeclarationContainerScope.roleDefinition() = "RoleDefinition".role {
+7 | ◆ | katachi: testing.RoleDefinition
+    menu | ◇ Role testing.RoleDefinition — Role definition | RoleDefinitionRole.kt:12
+    menu | == Other files of testing.RoleDefinition (28)
+    menu | ActivityEntrypointRole.kt | architecture-test/…/example/sample/roles
+    menu | AndroidManifestRole.kt | architecture-test/…/example/sample/roles
+    menu | ApplicationEntrypointRole.kt | architecture-test/…/example/sample/roles
+    menu | BaselineFileRole.kt | architecture-test/…/example/sample/roles
+    menu | ComponentRole.kt | architecture-test/…/example/sample/roles
+    menu | DefinitionEntryRole.kt | architecture-test/…/example/sample/roles
+    menu | DefinitionSectionsRole.kt | architecture-test/…/example/sample/roles
+    menu | DocumentationRole.kt | architecture-test/…/example/sample/roles
+    menu | FakeRole.kt | architecture-test/…/example/sample/roles
+    menu | FeatureComponentRole.kt | architecture-test/…/example/sample/roles
+    menu | FeatureTestRole.kt | architecture-test/…/example/sample/roles
+    menu | GeneratedDocumentationRole.kt | architecture-test/…/example/sample/roles
+    menu | GitRole.kt | architecture-test/…/example/sample/roles
+    menu | GroupDefinitionRole.kt | architecture-test/…/example/sample/roles
+    menu | LayoutSnapshotRole.kt | architecture-test/…/example/sample/roles
+    menu | (disabled) … and 13 more
+    menu | -----
+    menu | + New testing.RoleDefinition from template…
+    menu | ▶ Run the check (:architecture-test:test)
+    menu | ⟳ Refresh the definition
+
+== architecture-test/src/test/kotlin/com/example/sample/roles/ApplicationEntrypointRole.kt
+roles: testing.RoleDefinition
+    testing.RoleDefinition declared at RoleDefinitionRole.kt:12 | fun DeclarationContainerScope.roleDefinition() = "RoleDefinition".role {
+9 | ◆ | katachi: testing.RoleDefinition
+    menu | ◇ Role testing.RoleDefinition — Role definition | RoleDefinitionRole.kt:12
+    menu | == Other files of testing.RoleDefinition (28)
+    menu | ActivityEntrypointRole.kt | architecture-test/…/example/sample/roles
+    menu | AndroidManifestRole.kt | architecture-test/…/example/sample/roles
+    menu | AndroidResourceRole.kt | architecture-test/…/example/sample/roles
+    menu | BaselineFileRole.kt | architecture-test/…/example/sample/roles
+    menu | ComponentRole.kt | architecture-test/…/example/sample/roles
+    menu | DefinitionEntryRole.kt | architecture-test/…/example/sample/roles
+    menu | DefinitionSectionsRole.kt | architecture-test/…/example/sample/roles
+    menu | DocumentationRole.kt | architecture-test/…/example/sample/roles
+    menu | FakeRole.kt | architecture-test/…/example/sample/roles
+    menu | FeatureComponentRole.kt | architecture-test/…/example/sample/roles
+    menu | FeatureTestRole.kt | architecture-test/…/example/sample/roles
+    menu | GeneratedDocumentationRole.kt | architecture-test/…/example/sample/roles
+    menu | GitRole.kt | architecture-test/…/example/sample/roles
+    menu | GroupDefinitionRole.kt | architecture-test/…/example/sample/roles
+    menu | LayoutSnapshotRole.kt | architecture-test/…/example/sample/roles
+    menu | (disabled) … and 13 more
+    menu | -----
+    menu | + New testing.RoleDefinition from template…
+    menu | ▶ Run the check (:architecture-test:test)
+    menu | ⟳ Refresh the definition
+
+== architecture-test/src/test/kotlin/com/example/sample/roles/BaselineFileRole.kt
+roles: testing.RoleDefinition
+    testing.RoleDefinition declared at RoleDefinitionRole.kt:12 | fun DeclarationContainerScope.roleDefinition() = "RoleDefinition".role {
+13 | ◆ | katachi: testing.RoleDefinition
+    menu | ◇ Role testing.RoleDefinition — Role definition | RoleDefinitionRole.kt:12
+    menu | == Other files of testing.RoleDefinition (28)
+    menu | ActivityEntrypointRole.kt | architecture-test/…/example/sample/roles
+    menu | AndroidManifestRole.kt | architecture-test/…/example/sample/roles
+    menu | AndroidResourceRole.kt | architecture-test/…/example/sample/roles
+    menu | ApplicationEntrypointRole.kt | architecture-test/…/example/sample/roles
+    menu | ComponentRole.kt | architecture-test/…/example/sample/roles
+    menu | DefinitionEntryRole.kt | architecture-test/…/example/sample/roles
+    menu | DefinitionSectionsRole.kt | architecture-test/…/example/sample/roles
+    menu | DocumentationRole.kt | architecture-test/…/example/sample/roles
+    menu | FakeRole.kt | architecture-test/…/example/sample/roles
+    menu | FeatureComponentRole.kt | architecture-test/…/example/sample/roles
+    menu | FeatureTestRole.kt | architecture-test/…/example/sample/roles
+    menu | GeneratedDocumentationRole.kt | architecture-test/…/example/sample/roles
+    menu | GitRole.kt | architecture-test/…/example/sample/roles
+    menu | GroupDefinitionRole.kt | architecture-test/…/example/sample/roles
+    menu | LayoutSnapshotRole.kt | architecture-test/…/example/sample/roles
+    menu | (disabled) … and 13 more
+    menu | -----
+    menu | + New testing.RoleDefinition from template…
+    menu | ▶ Run the check (:architecture-test:test)
+    menu | ⟳ Refresh the definition
+
+== architecture-test/src/test/kotlin/com/example/sample/roles/ComponentRole.kt
+roles: testing.RoleDefinition
+    testing.RoleDefinition declared at RoleDefinitionRole.kt:12 | fun DeclarationContainerScope.roleDefinition() = "RoleDefinition".role {
+17 | ◆ | katachi: testing.RoleDefinition
+    menu | ◇ Role testing.RoleDefinition — Role definition | RoleDefinitionRole.kt:12
+    menu | == Other files of testing.RoleDefinition (28)
+    menu | ActivityEntrypointRole.kt | architecture-test/…/example/sample/roles
+    menu | AndroidManifestRole.kt | architecture-test/…/example/sample/roles
+    menu | AndroidResourceRole.kt | architecture-test/…/example/sample/roles
+    menu | ApplicationEntrypointRole.kt | architecture-test/…/example/sample/roles
+    menu | BaselineFileRole.kt | architecture-test/…/example/sample/roles
+    menu | DefinitionEntryRole.kt | architecture-test/…/example/sample/roles
+    menu | DefinitionSectionsRole.kt | architecture-test/…/example/sample/roles
+    menu | DocumentationRole.kt | architecture-test/…/example/sample/roles
+    menu | FakeRole.kt | architecture-test/…/example/sample/roles
+    menu | FeatureComponentRole.kt | architecture-test/…/example/sample/roles
+    menu | FeatureTestRole.kt | architecture-test/…/example/sample/roles
+    menu | GeneratedDocumentationRole.kt | architecture-test/…/example/sample/roles
+    menu | GitRole.kt | architecture-test/…/example/sample/roles
+    menu | GroupDefinitionRole.kt | architecture-test/…/example/sample/roles
+    menu | LayoutSnapshotRole.kt | architecture-test/…/example/sample/roles
+    menu | (disabled) … and 13 more
+    menu | -----
+    menu | + New testing.RoleDefinition from template…
+    menu | ▶ Run the check (:architecture-test:test)
+    menu | ⟳ Refresh the definition
+
+== architecture-test/src/test/kotlin/com/example/sample/roles/DefinitionEntryRole.kt
+roles: testing.RoleDefinition
+    testing.RoleDefinition declared at RoleDefinitionRole.kt:12 | fun DeclarationContainerScope.roleDefinition() = "RoleDefinition".role {
+12 | ◆ | katachi: testing.RoleDefinition
+    menu | ◇ Role testing.RoleDefinition — Role definition | RoleDefinitionRole.kt:12
+    menu | == Other files of testing.RoleDefinition (28)
+    menu | ActivityEntrypointRole.kt | architecture-test/…/example/sample/roles
+    menu | AndroidManifestRole.kt | architecture-test/…/example/sample/roles
+    menu | AndroidResourceRole.kt | architecture-test/…/example/sample/roles
+    menu | ApplicationEntrypointRole.kt | architecture-test/…/example/sample/roles
+    menu | BaselineFileRole.kt | architecture-test/…/example/sample/roles
+    menu | ComponentRole.kt | architecture-test/…/example/sample/roles
+    menu | DefinitionSectionsRole.kt | architecture-test/…/example/sample/roles
+    menu | DocumentationRole.kt | architecture-test/…/example/sample/roles
+    menu | FakeRole.kt | architecture-test/…/example/sample/roles
+    menu | FeatureComponentRole.kt | architecture-test/…/example/sample/roles
+    menu | FeatureTestRole.kt | architecture-test/…/example/sample/roles
+    menu | GeneratedDocumentationRole.kt | architecture-test/…/example/sample/roles
+    menu | GitRole.kt | architecture-test/…/example/sample/roles
+    menu | GroupDefinitionRole.kt | architecture-test/…/example/sample/roles
+    menu | LayoutSnapshotRole.kt | architecture-test/…/example/sample/roles
+    menu | (disabled) … and 13 more
+    menu | -----
+    menu | + New testing.RoleDefinition from template…
+    menu | ▶ Run the check (:architecture-test:test)
+    menu | ⟳ Refresh the definition
+
+== architecture-test/src/test/kotlin/com/example/sample/roles/DefinitionSectionsRole.kt
+roles: testing.RoleDefinition
+    testing.RoleDefinition declared at RoleDefinitionRole.kt:12 | fun DeclarationContainerScope.roleDefinition() = "RoleDefinition".role {
+12 | ◆ | katachi: testing.RoleDefinition
+    menu | ◇ Role testing.RoleDefinition — Role definition | RoleDefinitionRole.kt:12
+    menu | == Other files of testing.RoleDefinition (28)
+    menu | ActivityEntrypointRole.kt | architecture-test/…/example/sample/roles
+    menu | AndroidManifestRole.kt | architecture-test/…/example/sample/roles
+    menu | AndroidResourceRole.kt | architecture-test/…/example/sample/roles
+    menu | ApplicationEntrypointRole.kt | architecture-test/…/example/sample/roles
+    menu | BaselineFileRole.kt | architecture-test/…/example/sample/roles
+    menu | ComponentRole.kt | architecture-test/…/example/sample/roles
+    menu | DefinitionEntryRole.kt | architecture-test/…/example/sample/roles
+    menu | DocumentationRole.kt | architecture-test/…/example/sample/roles
+    menu | FakeRole.kt | architecture-test/…/example/sample/roles
+    menu | FeatureComponentRole.kt | architecture-test/…/example/sample/roles
+    menu | FeatureTestRole.kt | architecture-test/…/example/sample/roles
+    menu | GeneratedDocumentationRole.kt | architecture-test/…/example/sample/roles
+    menu | GitRole.kt | architecture-test/…/example/sample/roles
+    menu | GroupDefinitionRole.kt | architecture-test/…/example/sample/roles
+    menu | LayoutSnapshotRole.kt | architecture-test/…/example/sample/roles
+    menu | (disabled) … and 13 more
+    menu | -----
+    menu | + New testing.RoleDefinition from template…
+    menu | ▶ Run the check (:architecture-test:test)
+    menu | ⟳ Refresh the definition
+
+== architecture-test/src/test/kotlin/com/example/sample/roles/DocumentationRole.kt
+roles: testing.RoleDefinition
+    testing.RoleDefinition declared at RoleDefinitionRole.kt:12 | fun DeclarationContainerScope.roleDefinition() = "RoleDefinition".role {
+6 | ◆ | katachi: testing.RoleDefinition
+    menu | ◇ Role testing.RoleDefinition — Role definition | RoleDefinitionRole.kt:12
+    menu | == Other files of testing.RoleDefinition (28)
+    menu | ActivityEntrypointRole.kt | architecture-test/…/example/sample/roles
+    menu | AndroidManifestRole.kt | architecture-test/…/example/sample/roles
+    menu | AndroidResourceRole.kt | architecture-test/…/example/sample/roles
+    menu | ApplicationEntrypointRole.kt | architecture-test/…/example/sample/roles
+    menu | BaselineFileRole.kt | architecture-test/…/example/sample/roles
+    menu | ComponentRole.kt | architecture-test/…/example/sample/roles
+    menu | DefinitionEntryRole.kt | architecture-test/…/example/sample/roles
+    menu | DefinitionSectionsRole.kt | architecture-test/…/example/sample/roles
+    menu | FakeRole.kt | architecture-test/…/example/sample/roles
+    menu | FeatureComponentRole.kt | architecture-test/…/example/sample/roles
+    menu | FeatureTestRole.kt | architecture-test/…/example/sample/roles
+    menu | GeneratedDocumentationRole.kt | architecture-test/…/example/sample/roles
+    menu | GitRole.kt | architecture-test/…/example/sample/roles
+    menu | GroupDefinitionRole.kt | architecture-test/…/example/sample/roles
+    menu | LayoutSnapshotRole.kt | architecture-test/…/example/sample/roles
+    menu | (disabled) … and 13 more
+    menu | -----
+    menu | + New testing.RoleDefinition from template…
+    menu | ▶ Run the check (:architecture-test:test)
+    menu | ⟳ Refresh the definition
+
+== architecture-test/src/test/kotlin/com/example/sample/roles/FakeRole.kt
+roles: testing.RoleDefinition
+    testing.RoleDefinition declared at RoleDefinitionRole.kt:12 | fun DeclarationContainerScope.roleDefinition() = "RoleDefinition".role {
+20 | ◆ | katachi: testing.RoleDefinition
+    menu | ◇ Role testing.RoleDefinition — Role definition | RoleDefinitionRole.kt:12
+    menu | == Other files of testing.RoleDefinition (28)
+    menu | ActivityEntrypointRole.kt | architecture-test/…/example/sample/roles
+    menu | AndroidManifestRole.kt | architecture-test/…/example/sample/roles
+    menu | AndroidResourceRole.kt | architecture-test/…/example/sample/roles
+    menu | ApplicationEntrypointRole.kt | architecture-test/…/example/sample/roles
+    menu | BaselineFileRole.kt | architecture-test/…/example/sample/roles
+    menu | ComponentRole.kt | architecture-test/…/example/sample/roles
+    menu | DefinitionEntryRole.kt | architecture-test/…/example/sample/roles
+    menu | DefinitionSectionsRole.kt | architecture-test/…/example/sample/roles
+    menu | DocumentationRole.kt | architecture-test/…/example/sample/roles
+    menu | FeatureComponentRole.kt | architecture-test/…/example/sample/roles
+    menu | FeatureTestRole.kt | architecture-test/…/example/sample/roles
+    menu | GeneratedDocumentationRole.kt | architecture-test/…/example/sample/roles
+    menu | GitRole.kt | architecture-test/…/example/sample/roles
+    menu | GroupDefinitionRole.kt | architecture-test/…/example/sample/roles
+    menu | LayoutSnapshotRole.kt | architecture-test/…/example/sample/roles
+    menu | (disabled) … and 13 more
+    menu | -----
+    menu | + New testing.RoleDefinition from template…
+    menu | ▶ Run the check (:architecture-test:test)
+    menu | ⟳ Refresh the definition
+
+== architecture-test/src/test/kotlin/com/example/sample/roles/FeatureComponentRole.kt
+roles: testing.RoleDefinition
+    testing.RoleDefinition declared at RoleDefinitionRole.kt:12 | fun DeclarationContainerScope.roleDefinition() = "RoleDefinition".role {
+27 | ◆ | katachi: testing.RoleDefinition
+    menu | ◇ Role testing.RoleDefinition — Role definition | RoleDefinitionRole.kt:12
+    menu | == Other files of testing.RoleDefinition (28)
+    menu | ActivityEntrypointRole.kt | architecture-test/…/example/sample/roles
+    menu | AndroidManifestRole.kt | architecture-test/…/example/sample/roles
+    menu | AndroidResourceRole.kt | architecture-test/…/example/sample/roles
+    menu | ApplicationEntrypointRole.kt | architecture-test/…/example/sample/roles
+    menu | BaselineFileRole.kt | architecture-test/…/example/sample/roles
+    menu | ComponentRole.kt | architecture-test/…/example/sample/roles
+    menu | DefinitionEntryRole.kt | architecture-test/…/example/sample/roles
+    menu | DefinitionSectionsRole.kt | architecture-test/…/example/sample/roles
+    menu | DocumentationRole.kt | architecture-test/…/example/sample/roles
+    menu | FakeRole.kt | architecture-test/…/example/sample/roles
+    menu | FeatureTestRole.kt | architecture-test/…/example/sample/roles
+    menu | GeneratedDocumentationRole.kt | architecture-test/…/example/sample/roles
+    menu | GitRole.kt | architecture-test/…/example/sample/roles
+    menu | GroupDefinitionRole.kt | architecture-test/…/example/sample/roles
+    menu | LayoutSnapshotRole.kt | architecture-test/…/example/sample/roles
+    menu | (disabled) … and 13 more
+    menu | -----
+    menu | + New testing.RoleDefinition from template…
+    menu | ▶ Run the check (:architecture-test:test)
+    menu | ⟳ Refresh the definition
+
+== architecture-test/src/test/kotlin/com/example/sample/roles/FeatureTestRole.kt
+roles: testing.RoleDefinition
+    testing.RoleDefinition declared at RoleDefinitionRole.kt:12 | fun DeclarationContainerScope.roleDefinition() = "RoleDefinition".role {
+25 | ◆ | katachi: testing.RoleDefinition
+    menu | ◇ Role testing.RoleDefinition — Role definition | RoleDefinitionRole.kt:12
+    menu | == Other files of testing.RoleDefinition (28)
+    menu | ActivityEntrypointRole.kt | architecture-test/…/example/sample/roles
+    menu | AndroidManifestRole.kt | architecture-test/…/example/sample/roles
+    menu | AndroidResourceRole.kt | architecture-test/…/example/sample/roles
+    menu | ApplicationEntrypointRole.kt | architecture-test/…/example/sample/roles
+    menu | BaselineFileRole.kt | architecture-test/…/example/sample/roles
+    menu | ComponentRole.kt | architecture-test/…/example/sample/roles
+    menu | DefinitionEntryRole.kt | architecture-test/…/example/sample/roles
+    menu | DefinitionSectionsRole.kt | architecture-test/…/example/sample/roles
+    menu | DocumentationRole.kt | architecture-test/…/example/sample/roles
+    menu | FakeRole.kt | architecture-test/…/example/sample/roles
+    menu | FeatureComponentRole.kt | architecture-test/…/example/sample/roles
+    menu | GeneratedDocumentationRole.kt | architecture-test/…/example/sample/roles
+    menu | GitRole.kt | architecture-test/…/example/sample/roles
+    menu | GroupDefinitionRole.kt | architecture-test/…/example/sample/roles
+    menu | LayoutSnapshotRole.kt | architecture-test/…/example/sample/roles
+    menu | (disabled) … and 13 more
+    menu | -----
+    menu | + New testing.RoleDefinition from template…
+    menu | ▶ Run the check (:architecture-test:test)
+    menu | ⟳ Refresh the definition
+
+== architecture-test/src/test/kotlin/com/example/sample/roles/GeneratedDocumentationRole.kt
+roles: testing.RoleDefinition
+    testing.RoleDefinition declared at RoleDefinitionRole.kt:12 | fun DeclarationContainerScope.roleDefinition() = "RoleDefinition".role {
+13 | ◆ | katachi: testing.RoleDefinition
+    menu | ◇ Role testing.RoleDefinition — Role definition | RoleDefinitionRole.kt:12
+    menu | == Other files of testing.RoleDefinition (28)
+    menu | ActivityEntrypointRole.kt | architecture-test/…/example/sample/roles
+    menu | AndroidManifestRole.kt | architecture-test/…/example/sample/roles
+    menu | AndroidResourceRole.kt | architecture-test/…/example/sample/roles
+    menu | ApplicationEntrypointRole.kt | architecture-test/…/example/sample/roles
+    menu | BaselineFileRole.kt | architecture-test/…/example/sample/roles
+    menu | ComponentRole.kt | architecture-test/…/example/sample/roles
+    menu | DefinitionEntryRole.kt | architecture-test/…/example/sample/roles
+    menu | DefinitionSectionsRole.kt | architecture-test/…/example/sample/roles
+    menu | DocumentationRole.kt | architecture-test/…/example/sample/roles
+    menu | FakeRole.kt | architecture-test/…/example/sample/roles
+    menu | FeatureComponentRole.kt | architecture-test/…/example/sample/roles
+    menu | FeatureTestRole.kt | architecture-test/…/example/sample/roles
+    menu | GitRole.kt | architecture-test/…/example/sample/roles
+    menu | GroupDefinitionRole.kt | architecture-test/…/example/sample/roles
+    menu | LayoutSnapshotRole.kt | architecture-test/…/example/sample/roles
+    menu | (disabled) … and 13 more
+    menu | -----
+    menu | + New testing.RoleDefinition from template…
+    menu | ▶ Run the check (:architecture-test:test)
+    menu | ⟳ Refresh the definition
+
+== architecture-test/src/test/kotlin/com/example/sample/roles/GitRole.kt
+roles: testing.RoleDefinition
+    testing.RoleDefinition declared at RoleDefinitionRole.kt:12 | fun DeclarationContainerScope.roleDefinition() = "RoleDefinition".role {
+6 | ◆ | katachi: testing.RoleDefinition
+    menu | ◇ Role testing.RoleDefinition — Role definition | RoleDefinitionRole.kt:12
+    menu | == Other files of testing.RoleDefinition (28)
+    menu | ActivityEntrypointRole.kt | architecture-test/…/example/sample/roles
+    menu | AndroidManifestRole.kt | architecture-test/…/example/sample/roles
+    menu | AndroidResourceRole.kt | architecture-test/…/example/sample/roles
+    menu | ApplicationEntrypointRole.kt | architecture-test/…/example/sample/roles
+    menu | BaselineFileRole.kt | architecture-test/…/example/sample/roles
+    menu | ComponentRole.kt | architecture-test/…/example/sample/roles
+    menu | DefinitionEntryRole.kt | architecture-test/…/example/sample/roles
+    menu | DefinitionSectionsRole.kt | architecture-test/…/example/sample/roles
+    menu | DocumentationRole.kt | architecture-test/…/example/sample/roles
+    menu | FakeRole.kt | architecture-test/…/example/sample/roles
+    menu | FeatureComponentRole.kt | architecture-test/…/example/sample/roles
+    menu | FeatureTestRole.kt | architecture-test/…/example/sample/roles
+    menu | GeneratedDocumentationRole.kt | architecture-test/…/example/sample/roles
+    menu | GroupDefinitionRole.kt | architecture-test/…/example/sample/roles
+    menu | LayoutSnapshotRole.kt | architecture-test/…/example/sample/roles
+    menu | (disabled) … and 13 more
+    menu | -----
+    menu | + New testing.RoleDefinition from template…
+    menu | ▶ Run the check (:architecture-test:test)
+    menu | ⟳ Refresh the definition
+
+== architecture-test/src/test/kotlin/com/example/sample/roles/GroupDefinitionRole.kt
+roles: testing.RoleDefinition
+    testing.RoleDefinition declared at RoleDefinitionRole.kt:12 | fun DeclarationContainerScope.roleDefinition() = "RoleDefinition".role {
+12 | ◆ | katachi: testing.RoleDefinition
+    menu | ◇ Role testing.RoleDefinition — Role definition | RoleDefinitionRole.kt:12
+    menu | == Other files of testing.RoleDefinition (28)
+    menu | ActivityEntrypointRole.kt | architecture-test/…/example/sample/roles
+    menu | AndroidManifestRole.kt | architecture-test/…/example/sample/roles
+    menu | AndroidResourceRole.kt | architecture-test/…/example/sample/roles
+    menu | ApplicationEntrypointRole.kt | architecture-test/…/example/sample/roles
+    menu | BaselineFileRole.kt | architecture-test/…/example/sample/roles
+    menu | ComponentRole.kt | architecture-test/…/example/sample/roles
+    menu | DefinitionEntryRole.kt | architecture-test/…/example/sample/roles
+    menu | DefinitionSectionsRole.kt | architecture-test/…/example/sample/roles
+    menu | DocumentationRole.kt | architecture-test/…/example/sample/roles
+    menu | FakeRole.kt | architecture-test/…/example/sample/roles
+    menu | FeatureComponentRole.kt | architecture-test/…/example/sample/roles
+    menu | FeatureTestRole.kt | architecture-test/…/example/sample/roles
+    menu | GeneratedDocumentationRole.kt | architecture-test/…/example/sample/roles
+    menu | GitRole.kt | architecture-test/…/example/sample/roles
+    menu | LayoutSnapshotRole.kt | architecture-test/…/example/sample/roles
+    menu | (disabled) … and 13 more
+    menu | -----
+    menu | + New testing.RoleDefinition from template…
+    menu | ▶ Run the check (:architecture-test:test)
+    menu | ⟳ Refresh the definition
+
+== architecture-test/src/test/kotlin/com/example/sample/roles/LayoutSnapshotRole.kt
+roles: testing.RoleDefinition
+    testing.RoleDefinition declared at RoleDefinitionRole.kt:12 | fun DeclarationContainerScope.roleDefinition() = "RoleDefinition".role {
+15 | ◆ | katachi: testing.RoleDefinition
+    menu | ◇ Role testing.RoleDefinition — Role definition | RoleDefinitionRole.kt:12
+    menu | == Other files of testing.RoleDefinition (28)
+    menu | ActivityEntrypointRole.kt | architecture-test/…/example/sample/roles
+    menu | AndroidManifestRole.kt | architecture-test/…/example/sample/roles
+    menu | AndroidResourceRole.kt | architecture-test/…/example/sample/roles
+    menu | ApplicationEntrypointRole.kt | architecture-test/…/example/sample/roles
+    menu | BaselineFileRole.kt | architecture-test/…/example/sample/roles
+    menu | ComponentRole.kt | architecture-test/…/example/sample/roles
+    menu | DefinitionEntryRole.kt | architecture-test/…/example/sample/roles
+    menu | DefinitionSectionsRole.kt | architecture-test/…/example/sample/roles
+    menu | DocumentationRole.kt | architecture-test/…/example/sample/roles
+    menu | FakeRole.kt | architecture-test/…/example/sample/roles
+    menu | FeatureComponentRole.kt | architecture-test/…/example/sample/roles
+    menu | FeatureTestRole.kt | architecture-test/…/example/sample/roles
+    menu | GeneratedDocumentationRole.kt | architecture-test/…/example/sample/roles
+    menu | GitRole.kt | architecture-test/…/example/sample/roles
+    menu | GroupDefinitionRole.kt | architecture-test/…/example/sample/roles
+    menu | (disabled) … and 13 more
+    menu | -----
+    menu | + New testing.RoleDefinition from template…
+    menu | ▶ Run the check (:architecture-test:test)
+    menu | ⟳ Refresh the definition
+
+== architecture-test/src/test/kotlin/com/example/sample/roles/NavigationRole.kt
+roles: testing.RoleDefinition
+    testing.RoleDefinition declared at RoleDefinitionRole.kt:12 | fun DeclarationContainerScope.roleDefinition() = "RoleDefinition".role {
+8 | ◆ | katachi: testing.RoleDefinition
+    menu | ◇ Role testing.RoleDefinition — Role definition | RoleDefinitionRole.kt:12
+    menu | == Other files of testing.RoleDefinition (28)
+    menu | ActivityEntrypointRole.kt | architecture-test/…/example/sample/roles
+    menu | AndroidManifestRole.kt | architecture-test/…/example/sample/roles
+    menu | AndroidResourceRole.kt | architecture-test/…/example/sample/roles
+    menu | ApplicationEntrypointRole.kt | architecture-test/…/example/sample/roles
+    menu | BaselineFileRole.kt | architecture-test/…/example/sample/roles
+    menu | ComponentRole.kt | architecture-test/…/example/sample/roles
+    menu | DefinitionEntryRole.kt | architecture-test/…/example/sample/roles
+    menu | DefinitionSectionsRole.kt | architecture-test/…/example/sample/roles
+    menu | DocumentationRole.kt | architecture-test/…/example/sample/roles
+    menu | FakeRole.kt | architecture-test/…/example/sample/roles
+    menu | FeatureComponentRole.kt | architecture-test/…/example/sample/roles
+    menu | FeatureTestRole.kt | architecture-test/…/example/sample/roles
+    menu | GeneratedDocumentationRole.kt | architecture-test/…/example/sample/roles
+    menu | GitRole.kt | architecture-test/…/example/sample/roles
+    menu | GroupDefinitionRole.kt | architecture-test/…/example/sample/roles
+    menu | (disabled) … and 13 more
+    menu | -----
+    menu | + New testing.RoleDefinition from template…
+    menu | ▶ Run the check (:architecture-test:test)
+    menu | ⟳ Refresh the definition
+
+== architecture-test/src/test/kotlin/com/example/sample/roles/PreviewRootRole.kt
+roles: testing.RoleDefinition
+    testing.RoleDefinition declared at RoleDefinitionRole.kt:12 | fun DeclarationContainerScope.roleDefinition() = "RoleDefinition".role {
+9 | ◆ | katachi: testing.RoleDefinition
+    menu | ◇ Role testing.RoleDefinition — Role definition | RoleDefinitionRole.kt:12
+    menu | == Other files of testing.RoleDefinition (28)
+    menu | ActivityEntrypointRole.kt | architecture-test/…/example/sample/roles
+    menu | AndroidManifestRole.kt | architecture-test/…/example/sample/roles
+    menu | AndroidResourceRole.kt | architecture-test/…/example/sample/roles
+    menu | ApplicationEntrypointRole.kt | architecture-test/…/example/sample/roles
+    menu | BaselineFileRole.kt | architecture-test/…/example/sample/roles
+    menu | ComponentRole.kt | architecture-test/…/example/sample/roles
+    menu | DefinitionEntryRole.kt | architecture-test/…/example/sample/roles
+    menu | DefinitionSectionsRole.kt | architecture-test/…/example/sample/roles
+    menu | DocumentationRole.kt | architecture-test/…/example/sample/roles
+    menu | FakeRole.kt | architecture-test/…/example/sample/roles
+    menu | FeatureComponentRole.kt | architecture-test/…/example/sample/roles
+    menu | FeatureTestRole.kt | architecture-test/…/example/sample/roles
+    menu | GeneratedDocumentationRole.kt | architecture-test/…/example/sample/roles
+    menu | GitRole.kt | architecture-test/…/example/sample/roles
+    menu | GroupDefinitionRole.kt | architecture-test/…/example/sample/roles
+    menu | (disabled) … and 13 more
+    menu | -----
+    menu | + New testing.RoleDefinition from template…
+    menu | ▶ Run the check (:architecture-test:test)
+    menu | ⟳ Refresh the definition
+
+== architecture-test/src/test/kotlin/com/example/sample/roles/ProguardRulesRole.kt
+roles: testing.RoleDefinition
+    testing.RoleDefinition declared at RoleDefinitionRole.kt:12 | fun DeclarationContainerScope.roleDefinition() = "RoleDefinition".role {
+7 | ◆ | katachi: testing.RoleDefinition
+    menu | ◇ Role testing.RoleDefinition — Role definition | RoleDefinitionRole.kt:12
+    menu | == Other files of testing.RoleDefinition (28)
+    menu | ActivityEntrypointRole.kt | architecture-test/…/example/sample/roles
+    menu | AndroidManifestRole.kt | architecture-test/…/example/sample/roles
+    menu | AndroidResourceRole.kt | architecture-test/…/example/sample/roles
+    menu | ApplicationEntrypointRole.kt | architecture-test/…/example/sample/roles
+    menu | BaselineFileRole.kt | architecture-test/…/example/sample/roles
+    menu | ComponentRole.kt | architecture-test/…/example/sample/roles
+    menu | DefinitionEntryRole.kt | architecture-test/…/example/sample/roles
+    menu | DefinitionSectionsRole.kt | architecture-test/…/example/sample/roles
+    menu | DocumentationRole.kt | architecture-test/…/example/sample/roles
+    menu | FakeRole.kt | architecture-test/…/example/sample/roles
+    menu | FeatureComponentRole.kt | architecture-test/…/example/sample/roles
+    menu | FeatureTestRole.kt | architecture-test/…/example/sample/roles
+    menu | GeneratedDocumentationRole.kt | architecture-test/…/example/sample/roles
+    menu | GitRole.kt | architecture-test/…/example/sample/roles
+    menu | GroupDefinitionRole.kt | architecture-test/…/example/sample/roles
+    menu | (disabled) … and 13 more
+    menu | -----
+    menu | + New testing.RoleDefinition from template…
+    menu | ▶ Run the check (:architecture-test:test)
+    menu | ⟳ Refresh the definition
+
+== architecture-test/src/test/kotlin/com/example/sample/roles/ProjectArchitectureSpecRole.kt
+roles: testing.RoleDefinition
+    testing.RoleDefinition declared at RoleDefinitionRole.kt:12 | fun DeclarationContainerScope.roleDefinition() = "RoleDefinition".role {
+9 | ◆ | katachi: testing.RoleDefinition
+    menu | ◇ Role testing.RoleDefinition — Role definition | RoleDefinitionRole.kt:12
+    menu | == Other files of testing.RoleDefinition (28)
+    menu | ActivityEntrypointRole.kt | architecture-test/…/example/sample/roles
+    menu | AndroidManifestRole.kt | architecture-test/…/example/sample/roles
+    menu | AndroidResourceRole.kt | architecture-test/…/example/sample/roles
+    menu | ApplicationEntrypointRole.kt | architecture-test/…/example/sample/roles
+    menu | BaselineFileRole.kt | architecture-test/…/example/sample/roles
+    menu | ComponentRole.kt | architecture-test/…/example/sample/roles
+    menu | DefinitionEntryRole.kt | architecture-test/…/example/sample/roles
+    menu | DefinitionSectionsRole.kt | architecture-test/…/example/sample/roles
+    menu | DocumentationRole.kt | architecture-test/…/example/sample/roles
+    menu | FakeRole.kt | architecture-test/…/example/sample/roles
+    menu | FeatureComponentRole.kt | architecture-test/…/example/sample/roles
+    menu | FeatureTestRole.kt | architecture-test/…/example/sample/roles
+    menu | GeneratedDocumentationRole.kt | architecture-test/…/example/sample/roles
+    menu | GitRole.kt | architecture-test/…/example/sample/roles
+    menu | GroupDefinitionRole.kt | architecture-test/…/example/sample/roles
+    menu | (disabled) … and 13 more
+    menu | -----
+    menu | + New testing.RoleDefinition from template…
+    menu | ▶ Run the check (:architecture-test:test)
+    menu | ⟳ Refresh the definition
+
+== architecture-test/src/test/kotlin/com/example/sample/roles/ProjectArchitectureTestRole.kt
+roles: testing.RoleDefinition
+    testing.RoleDefinition declared at RoleDefinitionRole.kt:12 | fun DeclarationContainerScope.roleDefinition() = "RoleDefinition".role {
+9 | ◆ | katachi: testing.RoleDefinition
+    menu | ◇ Role testing.RoleDefinition — Role definition | RoleDefinitionRole.kt:12
+    menu | == Other files of testing.RoleDefinition (28)
+    menu | ActivityEntrypointRole.kt | architecture-test/…/example/sample/roles
+    menu | AndroidManifestRole.kt | architecture-test/…/example/sample/roles
+    menu | AndroidResourceRole.kt | architecture-test/…/example/sample/roles
+    menu | ApplicationEntrypointRole.kt | architecture-test/…/example/sample/roles
+    menu | BaselineFileRole.kt | architecture-test/…/example/sample/roles
+    menu | ComponentRole.kt | architecture-test/…/example/sample/roles
+    menu | DefinitionEntryRole.kt | architecture-test/…/example/sample/roles
+    menu | DefinitionSectionsRole.kt | architecture-test/…/example/sample/roles
+    menu | DocumentationRole.kt | architecture-test/…/example/sample/roles
+    menu | FakeRole.kt | architecture-test/…/example/sample/roles
+    menu | FeatureComponentRole.kt | architecture-test/…/example/sample/roles
+    menu | FeatureTestRole.kt | architecture-test/…/example/sample/roles
+    menu | GeneratedDocumentationRole.kt | architecture-test/…/example/sample/roles
+    menu | GitRole.kt | architecture-test/…/example/sample/roles
+    menu | GroupDefinitionRole.kt | architecture-test/…/example/sample/roles
+    menu | (disabled) … and 13 more
+    menu | -----
+    menu | + New testing.RoleDefinition from template…
+    menu | ▶ Run the check (:architecture-test:test)
+    menu | ⟳ Refresh the definition
+
+== architecture-test/src/test/kotlin/com/example/sample/roles/RepositoryImplementationRole.kt
+roles: testing.RoleDefinition
+    testing.RoleDefinition declared at RoleDefinitionRole.kt:12 | fun DeclarationContainerScope.roleDefinition() = "RoleDefinition".role {
+15 | ◆ | katachi: testing.RoleDefinition
+    menu | ◇ Role testing.RoleDefinition — Role definition | RoleDefinitionRole.kt:12
+    menu | == Other files of testing.RoleDefinition (28)
+    menu | ActivityEntrypointRole.kt | architecture-test/…/example/sample/roles
+    menu | AndroidManifestRole.kt | architecture-test/…/example/sample/roles
+    menu | AndroidResourceRole.kt | architecture-test/…/example/sample/roles
+    menu | ApplicationEntrypointRole.kt | architecture-test/…/example/sample/roles
+    menu | BaselineFileRole.kt | architecture-test/…/example/sample/roles
+    menu | ComponentRole.kt | architecture-test/…/example/sample/roles
+    menu | DefinitionEntryRole.kt | architecture-test/…/example/sample/roles
+    menu | DefinitionSectionsRole.kt | architecture-test/…/example/sample/roles
+    menu | DocumentationRole.kt | architecture-test/…/example/sample/roles
+    menu | FakeRole.kt | architecture-test/…/example/sample/roles
+    menu | FeatureComponentRole.kt | architecture-test/…/example/sample/roles
+    menu | FeatureTestRole.kt | architecture-test/…/example/sample/roles
+    menu | GeneratedDocumentationRole.kt | architecture-test/…/example/sample/roles
+    menu | GitRole.kt | architecture-test/…/example/sample/roles
+    menu | GroupDefinitionRole.kt | architecture-test/…/example/sample/roles
+    menu | (disabled) … and 13 more
+    menu | -----
+    menu | + New testing.RoleDefinition from template…
+    menu | ▶ Run the check (:architecture-test:test)
+    menu | ⟳ Refresh the definition
+
+== architecture-test/src/test/kotlin/com/example/sample/roles/RepositoryInterfaceRole.kt
+roles: testing.RoleDefinition
+    testing.RoleDefinition declared at RoleDefinitionRole.kt:12 | fun DeclarationContainerScope.roleDefinition() = "RoleDefinition".role {
+15 | ◆ | katachi: testing.RoleDefinition
+    menu | ◇ Role testing.RoleDefinition — Role definition | RoleDefinitionRole.kt:12
+    menu | == Other files of testing.RoleDefinition (28)
+    menu | ActivityEntrypointRole.kt | architecture-test/…/example/sample/roles
+    menu | AndroidManifestRole.kt | architecture-test/…/example/sample/roles
+    menu | AndroidResourceRole.kt | architecture-test/…/example/sample/roles
+    menu | ApplicationEntrypointRole.kt | architecture-test/…/example/sample/roles
+    menu | BaselineFileRole.kt | architecture-test/…/example/sample/roles
+    menu | ComponentRole.kt | architecture-test/…/example/sample/roles
+    menu | DefinitionEntryRole.kt | architecture-test/…/example/sample/roles
+    menu | DefinitionSectionsRole.kt | architecture-test/…/example/sample/roles
+    menu | DocumentationRole.kt | architecture-test/…/example/sample/roles
+    menu | FakeRole.kt | architecture-test/…/example/sample/roles
+    menu | FeatureComponentRole.kt | architecture-test/…/example/sample/roles
+    menu | FeatureTestRole.kt | architecture-test/…/example/sample/roles
+    menu | GeneratedDocumentationRole.kt | architecture-test/…/example/sample/roles
+    menu | GitRole.kt | architecture-test/…/example/sample/roles
+    menu | GroupDefinitionRole.kt | architecture-test/…/example/sample/roles
+    menu | (disabled) … and 13 more
+    menu | -----
+    menu | + New testing.RoleDefinition from template…
+    menu | ▶ Run the check (:architecture-test:test)
+    menu | ⟳ Refresh the definition
+
+== architecture-test/src/test/kotlin/com/example/sample/roles/RoleDefinitionRole.kt
+roles: testing.RoleDefinition
+    testing.RoleDefinition declared at RoleDefinitionRole.kt:12 | fun DeclarationContainerScope.roleDefinition() = "RoleDefinition".role {
+12 | ◆ | katachi: testing.RoleDefinition
+    menu | ◇ Role testing.RoleDefinition — Role definition | RoleDefinitionRole.kt:12
+    menu | == Other files of testing.RoleDefinition (28)
+    menu | ActivityEntrypointRole.kt | architecture-test/…/example/sample/roles
+    menu | AndroidManifestRole.kt | architecture-test/…/example/sample/roles
+    menu | AndroidResourceRole.kt | architecture-test/…/example/sample/roles
+    menu | ApplicationEntrypointRole.kt | architecture-test/…/example/sample/roles
+    menu | BaselineFileRole.kt | architecture-test/…/example/sample/roles
+    menu | ComponentRole.kt | architecture-test/…/example/sample/roles
+    menu | DefinitionEntryRole.kt | architecture-test/…/example/sample/roles
+    menu | DefinitionSectionsRole.kt | architecture-test/…/example/sample/roles
+    menu | DocumentationRole.kt | architecture-test/…/example/sample/roles
+    menu | FakeRole.kt | architecture-test/…/example/sample/roles
+    menu | FeatureComponentRole.kt | architecture-test/…/example/sample/roles
+    menu | FeatureTestRole.kt | architecture-test/…/example/sample/roles
+    menu | GeneratedDocumentationRole.kt | architecture-test/…/example/sample/roles
+    menu | GitRole.kt | architecture-test/…/example/sample/roles
+    menu | GroupDefinitionRole.kt | architecture-test/…/example/sample/roles
+    menu | (disabled) … and 13 more
+    menu | -----
+    menu | + New testing.RoleDefinition from template…
+    menu | ▶ Run the check (:architecture-test:test)
+    menu | ⟳ Refresh the definition
+
+== architecture-test/src/test/kotlin/com/example/sample/roles/RouteRole.kt
+roles: testing.RoleDefinition
+    testing.RoleDefinition declared at RoleDefinitionRole.kt:12 | fun DeclarationContainerScope.roleDefinition() = "RoleDefinition".role {
+14 | ◆ | katachi: testing.RoleDefinition
+    menu | ◇ Role testing.RoleDefinition — Role definition | RoleDefinitionRole.kt:12
+    menu | == Other files of testing.RoleDefinition (28)
+    menu | ActivityEntrypointRole.kt | architecture-test/…/example/sample/roles
+    menu | AndroidManifestRole.kt | architecture-test/…/example/sample/roles
+    menu | AndroidResourceRole.kt | architecture-test/…/example/sample/roles
+    menu | ApplicationEntrypointRole.kt | architecture-test/…/example/sample/roles
+    menu | BaselineFileRole.kt | architecture-test/…/example/sample/roles
+    menu | ComponentRole.kt | architecture-test/…/example/sample/roles
+    menu | DefinitionEntryRole.kt | architecture-test/…/example/sample/roles
+    menu | DefinitionSectionsRole.kt | architecture-test/…/example/sample/roles
+    menu | DocumentationRole.kt | architecture-test/…/example/sample/roles
+    menu | FakeRole.kt | architecture-test/…/example/sample/roles
+    menu | FeatureComponentRole.kt | architecture-test/…/example/sample/roles
+    menu | FeatureTestRole.kt | architecture-test/…/example/sample/roles
+    menu | GeneratedDocumentationRole.kt | architecture-test/…/example/sample/roles
+    menu | GitRole.kt | architecture-test/…/example/sample/roles
+    menu | GroupDefinitionRole.kt | architecture-test/…/example/sample/roles
+    menu | (disabled) … and 13 more
+    menu | -----
+    menu | + New testing.RoleDefinition from template…
+    menu | ▶ Run the check (:architecture-test:test)
+    menu | ⟳ Refresh the definition
+
+== architecture-test/src/test/kotlin/com/example/sample/roles/ScreenRole.kt
+roles: testing.RoleDefinition
+    testing.RoleDefinition declared at RoleDefinitionRole.kt:12 | fun DeclarationContainerScope.roleDefinition() = "RoleDefinition".role {
+21 | ◆ | katachi: testing.RoleDefinition
+    menu | ◇ Role testing.RoleDefinition — Role definition | RoleDefinitionRole.kt:12
+    menu | == Other files of testing.RoleDefinition (28)
+    menu | ActivityEntrypointRole.kt | architecture-test/…/example/sample/roles
+    menu | AndroidManifestRole.kt | architecture-test/…/example/sample/roles
+    menu | AndroidResourceRole.kt | architecture-test/…/example/sample/roles
+    menu | ApplicationEntrypointRole.kt | architecture-test/…/example/sample/roles
+    menu | BaselineFileRole.kt | architecture-test/…/example/sample/roles
+    menu | ComponentRole.kt | architecture-test/…/example/sample/roles
+    menu | DefinitionEntryRole.kt | architecture-test/…/example/sample/roles
+    menu | DefinitionSectionsRole.kt | architecture-test/…/example/sample/roles
+    menu | DocumentationRole.kt | architecture-test/…/example/sample/roles
+    menu | FakeRole.kt | architecture-test/…/example/sample/roles
+    menu | FeatureComponentRole.kt | architecture-test/…/example/sample/roles
+    menu | FeatureTestRole.kt | architecture-test/…/example/sample/roles
+    menu | GeneratedDocumentationRole.kt | architecture-test/…/example/sample/roles
+    menu | GitRole.kt | architecture-test/…/example/sample/roles
+    menu | GroupDefinitionRole.kt | architecture-test/…/example/sample/roles
+    menu | (disabled) … and 13 more
+    menu | -----
+    menu | + New testing.RoleDefinition from template…
+    menu | ▶ Run the check (:architecture-test:test)
+    menu | ⟳ Refresh the definition
+
+== architecture-test/src/test/kotlin/com/example/sample/roles/ThemeRole.kt
+roles: testing.RoleDefinition
+    testing.RoleDefinition declared at RoleDefinitionRole.kt:12 | fun DeclarationContainerScope.roleDefinition() = "RoleDefinition".role {
+9 | ◆ | katachi: testing.RoleDefinition
+    menu | ◇ Role testing.RoleDefinition — Role definition | RoleDefinitionRole.kt:12
+    menu | == Other files of testing.RoleDefinition (28)
+    menu | ActivityEntrypointRole.kt | architecture-test/…/example/sample/roles
+    menu | AndroidManifestRole.kt | architecture-test/…/example/sample/roles
+    menu | AndroidResourceRole.kt | architecture-test/…/example/sample/roles
+    menu | ApplicationEntrypointRole.kt | architecture-test/…/example/sample/roles
+    menu | BaselineFileRole.kt | architecture-test/…/example/sample/roles
+    menu | ComponentRole.kt | architecture-test/…/example/sample/roles
+    menu | DefinitionEntryRole.kt | architecture-test/…/example/sample/roles
+    menu | DefinitionSectionsRole.kt | architecture-test/…/example/sample/roles
+    menu | DocumentationRole.kt | architecture-test/…/example/sample/roles
+    menu | FakeRole.kt | architecture-test/…/example/sample/roles
+    menu | FeatureComponentRole.kt | architecture-test/…/example/sample/roles
+    menu | FeatureTestRole.kt | architecture-test/…/example/sample/roles
+    menu | GeneratedDocumentationRole.kt | architecture-test/…/example/sample/roles
+    menu | GitRole.kt | architecture-test/…/example/sample/roles
+    menu | GroupDefinitionRole.kt | architecture-test/…/example/sample/roles
+    menu | (disabled) … and 13 more
+    menu | -----
+    menu | + New testing.RoleDefinition from template…
+    menu | ▶ Run the check (:architecture-test:test)
+    menu | ⟳ Refresh the definition
+
+== architecture-test/src/test/kotlin/com/example/sample/roles/UiCoreRole.kt
+roles: testing.RoleDefinition
+    testing.RoleDefinition declared at RoleDefinitionRole.kt:12 | fun DeclarationContainerScope.roleDefinition() = "RoleDefinition".role {
+8 | ◆ | katachi: testing.RoleDefinition
+    menu | ◇ Role testing.RoleDefinition — Role definition | RoleDefinitionRole.kt:12
+    menu | == Other files of testing.RoleDefinition (28)
+    menu | ActivityEntrypointRole.kt | architecture-test/…/example/sample/roles
+    menu | AndroidManifestRole.kt | architecture-test/…/example/sample/roles
+    menu | AndroidResourceRole.kt | architecture-test/…/example/sample/roles
+    menu | ApplicationEntrypointRole.kt | architecture-test/…/example/sample/roles
+    menu | BaselineFileRole.kt | architecture-test/…/example/sample/roles
+    menu | ComponentRole.kt | architecture-test/…/example/sample/roles
+    menu | DefinitionEntryRole.kt | architecture-test/…/example/sample/roles
+    menu | DefinitionSectionsRole.kt | architecture-test/…/example/sample/roles
+    menu | DocumentationRole.kt | architecture-test/…/example/sample/roles
+    menu | FakeRole.kt | architecture-test/…/example/sample/roles
+    menu | FeatureComponentRole.kt | architecture-test/…/example/sample/roles
+    menu | FeatureTestRole.kt | architecture-test/…/example/sample/roles
+    menu | GeneratedDocumentationRole.kt | architecture-test/…/example/sample/roles
+    menu | GitRole.kt | architecture-test/…/example/sample/roles
+    menu | GroupDefinitionRole.kt | architecture-test/…/example/sample/roles
+    menu | (disabled) … and 13 more
+    menu | -----
+    menu | + New testing.RoleDefinition from template…
+    menu | ▶ Run the check (:architecture-test:test)
+    menu | ⟳ Refresh the definition
+
+== architecture-test/src/test/kotlin/com/example/sample/roles/ViewModelRole.kt
+roles: testing.RoleDefinition
+    testing.RoleDefinition declared at RoleDefinitionRole.kt:12 | fun DeclarationContainerScope.roleDefinition() = "RoleDefinition".role {
+14 | ◆ | katachi: testing.RoleDefinition
+    menu | ◇ Role testing.RoleDefinition — Role definition | RoleDefinitionRole.kt:12
+    menu | == Other files of testing.RoleDefinition (28)
+    menu | ActivityEntrypointRole.kt | architecture-test/…/example/sample/roles
+    menu | AndroidManifestRole.kt | architecture-test/…/example/sample/roles
+    menu | AndroidResourceRole.kt | architecture-test/…/example/sample/roles
+    menu | ApplicationEntrypointRole.kt | architecture-test/…/example/sample/roles
+    menu | BaselineFileRole.kt | architecture-test/…/example/sample/roles
+    menu | ComponentRole.kt | architecture-test/…/example/sample/roles
+    menu | DefinitionEntryRole.kt | architecture-test/…/example/sample/roles
+    menu | DefinitionSectionsRole.kt | architecture-test/…/example/sample/roles
+    menu | DocumentationRole.kt | architecture-test/…/example/sample/roles
+    menu | FakeRole.kt | architecture-test/…/example/sample/roles
+    menu | FeatureComponentRole.kt | architecture-test/…/example/sample/roles
+    menu | FeatureTestRole.kt | architecture-test/…/example/sample/roles
+    menu | GeneratedDocumentationRole.kt | architecture-test/…/example/sample/roles
+    menu | GitRole.kt | architecture-test/…/example/sample/roles
+    menu | GroupDefinitionRole.kt | architecture-test/…/example/sample/roles
+    menu | (disabled) … and 13 more
+    menu | -----
+    menu | + New testing.RoleDefinition from template…
+    menu | ▶ Run the check (:architecture-test:test)
+    menu | ⟳ Refresh the definition
+
+== build.gradle.kts
+roles: Gradle.BuildScript
+    Gradle.BuildScript declared at GradleGroup.kt:22 | fun DeclarationContainerScope.gradleGroup() = gradle()
+1 | ◆ | katachi: Gradle.BuildScript
+    menu | ◇ Role Gradle.BuildScript — How one module is built, one per module | GradleGroup.kt:22
+    menu | == Other files of Gradle.BuildScript (8)
+    menu | build.gradle.kts | app
+    menu | build.gradle.kts | architecture-test
+    menu | build.gradle.kts | data
+    menu | build.gradle.kts | feature/home
+    menu | build.gradle.kts | feature/settings
+    menu | build.gradle.kts | navigation
+    menu | build.gradle.kts | testing
+    menu | build.gradle.kts | ui
+    menu | -----
+    menu | ▶ Run the check (:architecture-test:test)
+    menu | ⟳ Refresh the definition
+
+== data/build.gradle.kts
+roles: Gradle.BuildScript
+    Gradle.BuildScript declared at GradleGroup.kt:22 | fun DeclarationContainerScope.gradleGroup() = gradle()
+1 | ◆ | katachi: Gradle.BuildScript
+    menu | ◇ Role Gradle.BuildScript — How one module is built, one per module | GradleGroup.kt:22
+    menu | == Other files of Gradle.BuildScript (8)
+    menu | build.gradle.kts | .
+    menu | build.gradle.kts | app
+    menu | build.gradle.kts | architecture-test
+    menu | build.gradle.kts | feature/home
+    menu | build.gradle.kts | feature/settings
+    menu | build.gradle.kts | navigation
+    menu | build.gradle.kts | testing
+    menu | build.gradle.kts | ui
+    menu | -----
+    menu | ▶ Run the check (:architecture-test:test)
+    menu | ⟳ Refresh the definition
+
+== data/src/main/kotlin/com/example/sample/data/settings/SettingsRepository.kt
+roles: data.RepositoryInterface
+    data.RepositoryInterface declared at RepositoryInterfaceRole.kt:15 | fun DeclarationContainerScope.repositoryInterface() = "RepositoryInterface".role {
+4 | ◆ | katachi: data.RepositoryInterface — allowed by interface SettingsRepository (RepositoryInterfaceRole.kt:74)
+    allowed at RepositoryInterfaceRole.kt:74 | `interface`(fileName) {
+    menu | ◆ Allowed by interface SettingsRepository | RepositoryInterfaceRole.kt:74
+    menu | ◇ Role data.RepositoryInterface — Repository interface | RepositoryInterfaceRole.kt:15
+    menu | == Other files of data.RepositoryInterface (1)
+    menu | UserRepository.kt | data/…/com/example/sample/data/user
+    menu | -----
+    menu | + New data.RepositoryInterface from template… >
+    menu |   data.RepositoryInterface.user
+    menu |   data.RepositoryInterface.settings
+    menu | ▶ Run the check (:architecture-test:test)
+    menu | ⟳ Refresh the definition
+
+== data/src/main/kotlin/com/example/sample/data/settings/SettingsRepositoryImpl.kt
+roles: data.RepositoryImplementation
+    data.RepositoryImplementation declared at RepositoryImplementationRole.kt:15 | fun DeclarationContainerScope.repositoryImplementation() = "RepositoryImplementation".role {
+8 | ◆ | katachi: data.RepositoryImplementation — allowed by class SettingsRepositoryImpl : SettingsRepository (RepositoryImplementationRole.kt:58)
+    allowed at RepositoryImplementationRole.kt:58 | `class`(fileName).superclass(fileName.removeSuffix("Impl")) {   // UserRepositoryImpl : UserRepository
+    menu | ◆ Allowed by class SettingsRepositoryImpl : SettingsRepository | RepositoryImplementationRole.kt:58
+    menu | ◇ Role data.RepositoryImplementation — Repository implementation | RepositoryImplementationRole.kt:15
+    menu | == Other files of data.RepositoryImplementation (1)
+    menu | UserRepositoryImpl.kt | data/…/com/example/sample/data/user
+    menu | -----
+    menu | + New data.RepositoryImplementation from template… >
+    menu |   data.RepositoryImplementation.user
+    menu |   data.RepositoryImplementation.settings
+    menu | ▶ Run the check (:architecture-test:test)
+    menu | ⟳ Refresh the definition
+
+== data/src/main/kotlin/com/example/sample/data/user/UserRepository.kt
+roles: data.RepositoryInterface
+    data.RepositoryInterface declared at RepositoryInterfaceRole.kt:15 | fun DeclarationContainerScope.repositoryInterface() = "RepositoryInterface".role {
+4 | ◆ | katachi: data.RepositoryInterface — allowed by interface UserRepository (RepositoryInterfaceRole.kt:74)
+    allowed at RepositoryInterfaceRole.kt:74 | `interface`(fileName) {
+    menu | ◆ Allowed by interface UserRepository | RepositoryInterfaceRole.kt:74
+    menu | ◇ Role data.RepositoryInterface — Repository interface | RepositoryInterfaceRole.kt:15
+    menu | == Other files of data.RepositoryInterface (1)
+    menu | SettingsRepository.kt | data/…/com/example/sample/data/settings
+    menu | -----
+    menu | + New data.RepositoryInterface from template… >
+    menu |   data.RepositoryInterface.user
+    menu |   data.RepositoryInterface.settings
+    menu | ▶ Run the check (:architecture-test:test)
+    menu | ⟳ Refresh the definition
+
+== data/src/main/kotlin/com/example/sample/data/user/UserRepositoryImpl.kt
+roles: data.RepositoryImplementation
+    data.RepositoryImplementation declared at RepositoryImplementationRole.kt:15 | fun DeclarationContainerScope.repositoryImplementation() = "RepositoryImplementation".role {
+9 | ◆ | katachi: data.RepositoryImplementation — allowed by class UserRepositoryImpl : UserRepository (RepositoryImplementationRole.kt:58)
+    allowed at RepositoryImplementationRole.kt:58 | `class`(fileName).superclass(fileName.removeSuffix("Impl")) {   // UserRepositoryImpl : UserRepository
+    menu | ◆ Allowed by class UserRepositoryImpl : UserRepository | RepositoryImplementationRole.kt:58
+    menu | ◇ Role data.RepositoryImplementation — Repository implementation | RepositoryImplementationRole.kt:15
+    menu | == Other files of data.RepositoryImplementation (1)
+    menu | SettingsRepositoryImpl.kt | data/…/com/example/sample/data/settings
+    menu | -----
+    menu | + New data.RepositoryImplementation from template… >
+    menu |   data.RepositoryImplementation.user
+    menu |   data.RepositoryImplementation.settings
+    menu | ▶ Run the check (:architecture-test:test)
+    menu | ⟳ Refresh the definition
+
+== docs/README.md
+roles: testing.GeneratedDocumentation
+    testing.GeneratedDocumentation declared at GeneratedDocumentationRole.kt:13 | fun DeclarationContainerScope.generatedDocumentation() = "GeneratedDocumentation".role {
+1 | ◆ | katachi: testing.GeneratedDocumentation
+    menu | ◇ Role testing.GeneratedDocumentation — Generated documentation | GeneratedDocumentationRole.kt:13
+    menu | == Other files of testing.GeneratedDocumentation (32)
+    menu | ActivityEntrypoint.md | docs/app
+    menu | AndroidManifest.md | docs/app
+    menu | AndroidResource.md | docs/app
+    menu | ApplicationEntrypoint.md | docs/app
+    menu | ProguardRules.md | docs/app
+    menu | README.md | docs/app
+    menu | README.md | docs/data
+    menu | RepositoryImplementation.md | docs/data
+    menu | RepositoryInterface.md | docs/data
+    menu | FeatureComponent.md | docs/feature
+    menu | FeatureTest.md | docs/feature
+    menu | README.md | docs/feature
+    menu | Route.md | docs/feature
+    menu | Screen.md | docs/feature
+    menu | ViewModel.md | docs/feature
+    menu | (disabled) … and 17 more
+    menu | -----
+    menu | ▶ Run the check (:architecture-test:test)
+    menu | ⟳ Refresh the definition
+
+== docs/app/ActivityEntrypoint.md
+roles: testing.GeneratedDocumentation
+    testing.GeneratedDocumentation declared at GeneratedDocumentationRole.kt:13 | fun DeclarationContainerScope.generatedDocumentation() = "GeneratedDocumentation".role {
+1 | ◆ | katachi: testing.GeneratedDocumentation
+    menu | ◇ Role testing.GeneratedDocumentation — Generated documentation | GeneratedDocumentationRole.kt:13
+    menu | == Other files of testing.GeneratedDocumentation (32)
+    menu | AndroidManifest.md | docs/app
+    menu | AndroidResource.md | docs/app
+    menu | ApplicationEntrypoint.md | docs/app
+    menu | ProguardRules.md | docs/app
+    menu | README.md | docs/app
+    menu | README.md | docs
+    menu | README.md | docs/data
+    menu | RepositoryImplementation.md | docs/data
+    menu | RepositoryInterface.md | docs/data
+    menu | FeatureComponent.md | docs/feature
+    menu | FeatureTest.md | docs/feature
+    menu | README.md | docs/feature
+    menu | Route.md | docs/feature
+    menu | Screen.md | docs/feature
+    menu | ViewModel.md | docs/feature
+    menu | (disabled) … and 17 more
+    menu | -----
+    menu | ▶ Run the check (:architecture-test:test)
+    menu | ⟳ Refresh the definition
+
+== docs/app/AndroidManifest.md
+roles: testing.GeneratedDocumentation
+    testing.GeneratedDocumentation declared at GeneratedDocumentationRole.kt:13 | fun DeclarationContainerScope.generatedDocumentation() = "GeneratedDocumentation".role {
+1 | ◆ | katachi: testing.GeneratedDocumentation
+    menu | ◇ Role testing.GeneratedDocumentation — Generated documentation | GeneratedDocumentationRole.kt:13
+    menu | == Other files of testing.GeneratedDocumentation (32)
+    menu | ActivityEntrypoint.md | docs/app
+    menu | AndroidResource.md | docs/app
+    menu | ApplicationEntrypoint.md | docs/app
+    menu | ProguardRules.md | docs/app
+    menu | README.md | docs/app
+    menu | README.md | docs
+    menu | README.md | docs/data
+    menu | RepositoryImplementation.md | docs/data
+    menu | RepositoryInterface.md | docs/data
+    menu | FeatureComponent.md | docs/feature
+    menu | FeatureTest.md | docs/feature
+    menu | README.md | docs/feature
+    menu | Route.md | docs/feature
+    menu | Screen.md | docs/feature
+    menu | ViewModel.md | docs/feature
+    menu | (disabled) … and 17 more
+    menu | -----
+    menu | ▶ Run the check (:architecture-test:test)
+    menu | ⟳ Refresh the definition
+
+== docs/app/AndroidResource.md
+roles: testing.GeneratedDocumentation
+    testing.GeneratedDocumentation declared at GeneratedDocumentationRole.kt:13 | fun DeclarationContainerScope.generatedDocumentation() = "GeneratedDocumentation".role {
+1 | ◆ | katachi: testing.GeneratedDocumentation
+    menu | ◇ Role testing.GeneratedDocumentation — Generated documentation | GeneratedDocumentationRole.kt:13
+    menu | == Other files of testing.GeneratedDocumentation (32)
+    menu | ActivityEntrypoint.md | docs/app
+    menu | AndroidManifest.md | docs/app
+    menu | ApplicationEntrypoint.md | docs/app
+    menu | ProguardRules.md | docs/app
+    menu | README.md | docs/app
+    menu | README.md | docs
+    menu | README.md | docs/data
+    menu | RepositoryImplementation.md | docs/data
+    menu | RepositoryInterface.md | docs/data
+    menu | FeatureComponent.md | docs/feature
+    menu | FeatureTest.md | docs/feature
+    menu | README.md | docs/feature
+    menu | Route.md | docs/feature
+    menu | Screen.md | docs/feature
+    menu | ViewModel.md | docs/feature
+    menu | (disabled) … and 17 more
+    menu | -----
+    menu | ▶ Run the check (:architecture-test:test)
+    menu | ⟳ Refresh the definition
+
+== docs/app/ApplicationEntrypoint.md
+roles: testing.GeneratedDocumentation
+    testing.GeneratedDocumentation declared at GeneratedDocumentationRole.kt:13 | fun DeclarationContainerScope.generatedDocumentation() = "GeneratedDocumentation".role {
+1 | ◆ | katachi: testing.GeneratedDocumentation
+    menu | ◇ Role testing.GeneratedDocumentation — Generated documentation | GeneratedDocumentationRole.kt:13
+    menu | == Other files of testing.GeneratedDocumentation (32)
+    menu | ActivityEntrypoint.md | docs/app
+    menu | AndroidManifest.md | docs/app
+    menu | AndroidResource.md | docs/app
+    menu | ProguardRules.md | docs/app
+    menu | README.md | docs/app
+    menu | README.md | docs
+    menu | README.md | docs/data
+    menu | RepositoryImplementation.md | docs/data
+    menu | RepositoryInterface.md | docs/data
+    menu | FeatureComponent.md | docs/feature
+    menu | FeatureTest.md | docs/feature
+    menu | README.md | docs/feature
+    menu | Route.md | docs/feature
+    menu | Screen.md | docs/feature
+    menu | ViewModel.md | docs/feature
+    menu | (disabled) … and 17 more
+    menu | -----
+    menu | ▶ Run the check (:architecture-test:test)
+    menu | ⟳ Refresh the definition
+
+== docs/app/ProguardRules.md
+roles: testing.GeneratedDocumentation
+    testing.GeneratedDocumentation declared at GeneratedDocumentationRole.kt:13 | fun DeclarationContainerScope.generatedDocumentation() = "GeneratedDocumentation".role {
+1 | ◆ | katachi: testing.GeneratedDocumentation
+    menu | ◇ Role testing.GeneratedDocumentation — Generated documentation | GeneratedDocumentationRole.kt:13
+    menu | == Other files of testing.GeneratedDocumentation (32)
+    menu | ActivityEntrypoint.md | docs/app
+    menu | AndroidManifest.md | docs/app
+    menu | AndroidResource.md | docs/app
+    menu | ApplicationEntrypoint.md | docs/app
+    menu | README.md | docs/app
+    menu | README.md | docs
+    menu | README.md | docs/data
+    menu | RepositoryImplementation.md | docs/data
+    menu | RepositoryInterface.md | docs/data
+    menu | FeatureComponent.md | docs/feature
+    menu | FeatureTest.md | docs/feature
+    menu | README.md | docs/feature
+    menu | Route.md | docs/feature
+    menu | Screen.md | docs/feature
+    menu | ViewModel.md | docs/feature
+    menu | (disabled) … and 17 more
+    menu | -----
+    menu | ▶ Run the check (:architecture-test:test)
+    menu | ⟳ Refresh the definition
+
+== docs/app/README.md
+roles: testing.GeneratedDocumentation
+    testing.GeneratedDocumentation declared at GeneratedDocumentationRole.kt:13 | fun DeclarationContainerScope.generatedDocumentation() = "GeneratedDocumentation".role {
+1 | ◆ | katachi: testing.GeneratedDocumentation
+    menu | ◇ Role testing.GeneratedDocumentation — Generated documentation | GeneratedDocumentationRole.kt:13
+    menu | == Other files of testing.GeneratedDocumentation (32)
+    menu | ActivityEntrypoint.md | docs/app
+    menu | AndroidManifest.md | docs/app
+    menu | AndroidResource.md | docs/app
+    menu | ApplicationEntrypoint.md | docs/app
+    menu | ProguardRules.md | docs/app
+    menu | README.md | docs
+    menu | README.md | docs/data
+    menu | RepositoryImplementation.md | docs/data
+    menu | RepositoryInterface.md | docs/data
+    menu | FeatureComponent.md | docs/feature
+    menu | FeatureTest.md | docs/feature
+    menu | README.md | docs/feature
+    menu | Route.md | docs/feature
+    menu | Screen.md | docs/feature
+    menu | ViewModel.md | docs/feature
+    menu | (disabled) … and 17 more
+    menu | -----
+    menu | ▶ Run the check (:architecture-test:test)
+    menu | ⟳ Refresh the definition
+
+== docs/data/README.md
+roles: testing.GeneratedDocumentation
+    testing.GeneratedDocumentation declared at GeneratedDocumentationRole.kt:13 | fun DeclarationContainerScope.generatedDocumentation() = "GeneratedDocumentation".role {
+1 | ◆ | katachi: testing.GeneratedDocumentation
+    menu | ◇ Role testing.GeneratedDocumentation — Generated documentation | GeneratedDocumentationRole.kt:13
+    menu | == Other files of testing.GeneratedDocumentation (32)
+    menu | RepositoryImplementation.md | docs/data
+    menu | RepositoryInterface.md | docs/data
+    menu | README.md | docs
+    menu | ActivityEntrypoint.md | docs/app
+    menu | AndroidManifest.md | docs/app
+    menu | AndroidResource.md | docs/app
+    menu | ApplicationEntrypoint.md | docs/app
+    menu | ProguardRules.md | docs/app
+    menu | README.md | docs/app
+    menu | FeatureComponent.md | docs/feature
+    menu | FeatureTest.md | docs/feature
+    menu | README.md | docs/feature
+    menu | Route.md | docs/feature
+    menu | Screen.md | docs/feature
+    menu | ViewModel.md | docs/feature
+    menu | (disabled) … and 17 more
+    menu | -----
+    menu | ▶ Run the check (:architecture-test:test)
+    menu | ⟳ Refresh the definition
+
+== docs/data/RepositoryImplementation.md
+roles: testing.GeneratedDocumentation
+    testing.GeneratedDocumentation declared at GeneratedDocumentationRole.kt:13 | fun DeclarationContainerScope.generatedDocumentation() = "GeneratedDocumentation".role {
+1 | ◆ | katachi: testing.GeneratedDocumentation
+    menu | ◇ Role testing.GeneratedDocumentation — Generated documentation | GeneratedDocumentationRole.kt:13
+    menu | == Other files of testing.GeneratedDocumentation (32)
+    menu | README.md | docs/data
+    menu | RepositoryInterface.md | docs/data
+    menu | README.md | docs
+    menu | ActivityEntrypoint.md | docs/app
+    menu | AndroidManifest.md | docs/app
+    menu | AndroidResource.md | docs/app
+    menu | ApplicationEntrypoint.md | docs/app
+    menu | ProguardRules.md | docs/app
+    menu | README.md | docs/app
+    menu | FeatureComponent.md | docs/feature
+    menu | FeatureTest.md | docs/feature
+    menu | README.md | docs/feature
+    menu | Route.md | docs/feature
+    menu | Screen.md | docs/feature
+    menu | ViewModel.md | docs/feature
+    menu | (disabled) … and 17 more
+    menu | -----
+    menu | ▶ Run the check (:architecture-test:test)
+    menu | ⟳ Refresh the definition
+
+== docs/data/RepositoryInterface.md
+roles: testing.GeneratedDocumentation
+    testing.GeneratedDocumentation declared at GeneratedDocumentationRole.kt:13 | fun DeclarationContainerScope.generatedDocumentation() = "GeneratedDocumentation".role {
+1 | ◆ | katachi: testing.GeneratedDocumentation
+    menu | ◇ Role testing.GeneratedDocumentation — Generated documentation | GeneratedDocumentationRole.kt:13
+    menu | == Other files of testing.GeneratedDocumentation (32)
+    menu | README.md | docs/data
+    menu | RepositoryImplementation.md | docs/data
+    menu | README.md | docs
+    menu | ActivityEntrypoint.md | docs/app
+    menu | AndroidManifest.md | docs/app
+    menu | AndroidResource.md | docs/app
+    menu | ApplicationEntrypoint.md | docs/app
+    menu | ProguardRules.md | docs/app
+    menu | README.md | docs/app
+    menu | FeatureComponent.md | docs/feature
+    menu | FeatureTest.md | docs/feature
+    menu | README.md | docs/feature
+    menu | Route.md | docs/feature
+    menu | Screen.md | docs/feature
+    menu | ViewModel.md | docs/feature
+    menu | (disabled) … and 17 more
+    menu | -----
+    menu | ▶ Run the check (:architecture-test:test)
+    menu | ⟳ Refresh the definition
+
+== docs/feature/FeatureComponent.md
+roles: testing.GeneratedDocumentation
+    testing.GeneratedDocumentation declared at GeneratedDocumentationRole.kt:13 | fun DeclarationContainerScope.generatedDocumentation() = "GeneratedDocumentation".role {
+1 | ◆ | katachi: testing.GeneratedDocumentation
+    menu | ◇ Role testing.GeneratedDocumentation — Generated documentation | GeneratedDocumentationRole.kt:13
+    menu | == Other files of testing.GeneratedDocumentation (32)
+    menu | FeatureTest.md | docs/feature
+    menu | README.md | docs/feature
+    menu | Route.md | docs/feature
+    menu | Screen.md | docs/feature
+    menu | ViewModel.md | docs/feature
+    menu | README.md | docs
+    menu | ActivityEntrypoint.md | docs/app
+    menu | AndroidManifest.md | docs/app
+    menu | AndroidResource.md | docs/app
+    menu | ApplicationEntrypoint.md | docs/app
+    menu | ProguardRules.md | docs/app
+    menu | README.md | docs/app
+    menu | README.md | docs/data
+    menu | RepositoryImplementation.md | docs/data
+    menu | RepositoryInterface.md | docs/data
+    menu | (disabled) … and 17 more
+    menu | -----
+    menu | ▶ Run the check (:architecture-test:test)
+    menu | ⟳ Refresh the definition
+
+== docs/feature/FeatureTest.md
+roles: testing.GeneratedDocumentation
+    testing.GeneratedDocumentation declared at GeneratedDocumentationRole.kt:13 | fun DeclarationContainerScope.generatedDocumentation() = "GeneratedDocumentation".role {
+1 | ◆ | katachi: testing.GeneratedDocumentation
+    menu | ◇ Role testing.GeneratedDocumentation — Generated documentation | GeneratedDocumentationRole.kt:13
+    menu | == Other files of testing.GeneratedDocumentation (32)
+    menu | FeatureComponent.md | docs/feature
+    menu | README.md | docs/feature
+    menu | Route.md | docs/feature
+    menu | Screen.md | docs/feature
+    menu | ViewModel.md | docs/feature
+    menu | README.md | docs
+    menu | ActivityEntrypoint.md | docs/app
+    menu | AndroidManifest.md | docs/app
+    menu | AndroidResource.md | docs/app
+    menu | ApplicationEntrypoint.md | docs/app
+    menu | ProguardRules.md | docs/app
+    menu | README.md | docs/app
+    menu | README.md | docs/data
+    menu | RepositoryImplementation.md | docs/data
+    menu | RepositoryInterface.md | docs/data
+    menu | (disabled) … and 17 more
+    menu | -----
+    menu | ▶ Run the check (:architecture-test:test)
+    menu | ⟳ Refresh the definition
+
+== docs/feature/README.md
+roles: testing.GeneratedDocumentation
+    testing.GeneratedDocumentation declared at GeneratedDocumentationRole.kt:13 | fun DeclarationContainerScope.generatedDocumentation() = "GeneratedDocumentation".role {
+1 | ◆ | katachi: testing.GeneratedDocumentation
+    menu | ◇ Role testing.GeneratedDocumentation — Generated documentation | GeneratedDocumentationRole.kt:13
+    menu | == Other files of testing.GeneratedDocumentation (32)
+    menu | FeatureComponent.md | docs/feature
+    menu | FeatureTest.md | docs/feature
+    menu | Route.md | docs/feature
+    menu | Screen.md | docs/feature
+    menu | ViewModel.md | docs/feature
+    menu | README.md | docs
+    menu | ActivityEntrypoint.md | docs/app
+    menu | AndroidManifest.md | docs/app
+    menu | AndroidResource.md | docs/app
+    menu | ApplicationEntrypoint.md | docs/app
+    menu | ProguardRules.md | docs/app
+    menu | README.md | docs/app
+    menu | README.md | docs/data
+    menu | RepositoryImplementation.md | docs/data
+    menu | RepositoryInterface.md | docs/data
+    menu | (disabled) … and 17 more
+    menu | -----
+    menu | ▶ Run the check (:architecture-test:test)
+    menu | ⟳ Refresh the definition
+
+== docs/feature/Route.md
+roles: testing.GeneratedDocumentation
+    testing.GeneratedDocumentation declared at GeneratedDocumentationRole.kt:13 | fun DeclarationContainerScope.generatedDocumentation() = "GeneratedDocumentation".role {
+1 | ◆ | katachi: testing.GeneratedDocumentation
+    menu | ◇ Role testing.GeneratedDocumentation — Generated documentation | GeneratedDocumentationRole.kt:13
+    menu | == Other files of testing.GeneratedDocumentation (32)
+    menu | FeatureComponent.md | docs/feature
+    menu | FeatureTest.md | docs/feature
+    menu | README.md | docs/feature
+    menu | Screen.md | docs/feature
+    menu | ViewModel.md | docs/feature
+    menu | README.md | docs
+    menu | ActivityEntrypoint.md | docs/app
+    menu | AndroidManifest.md | docs/app
+    menu | AndroidResource.md | docs/app
+    menu | ApplicationEntrypoint.md | docs/app
+    menu | ProguardRules.md | docs/app
+    menu | README.md | docs/app
+    menu | README.md | docs/data
+    menu | RepositoryImplementation.md | docs/data
+    menu | RepositoryInterface.md | docs/data
+    menu | (disabled) … and 17 more
+    menu | -----
+    menu | ▶ Run the check (:architecture-test:test)
+    menu | ⟳ Refresh the definition
+
+== docs/feature/Screen.md
+roles: testing.GeneratedDocumentation
+    testing.GeneratedDocumentation declared at GeneratedDocumentationRole.kt:13 | fun DeclarationContainerScope.generatedDocumentation() = "GeneratedDocumentation".role {
+1 | ◆ | katachi: testing.GeneratedDocumentation
+    menu | ◇ Role testing.GeneratedDocumentation — Generated documentation | GeneratedDocumentationRole.kt:13
+    menu | == Other files of testing.GeneratedDocumentation (32)
+    menu | FeatureComponent.md | docs/feature
+    menu | FeatureTest.md | docs/feature
+    menu | README.md | docs/feature
+    menu | Route.md | docs/feature
+    menu | ViewModel.md | docs/feature
+    menu | README.md | docs
+    menu | ActivityEntrypoint.md | docs/app
+    menu | AndroidManifest.md | docs/app
+    menu | AndroidResource.md | docs/app
+    menu | ApplicationEntrypoint.md | docs/app
+    menu | ProguardRules.md | docs/app
+    menu | README.md | docs/app
+    menu | README.md | docs/data
+    menu | RepositoryImplementation.md | docs/data
+    menu | RepositoryInterface.md | docs/data
+    menu | (disabled) … and 17 more
+    menu | -----
+    menu | ▶ Run the check (:architecture-test:test)
+    menu | ⟳ Refresh the definition
+
+== docs/feature/ViewModel.md
+roles: testing.GeneratedDocumentation
+    testing.GeneratedDocumentation declared at GeneratedDocumentationRole.kt:13 | fun DeclarationContainerScope.generatedDocumentation() = "GeneratedDocumentation".role {
+1 | ◆ | katachi: testing.GeneratedDocumentation
+    menu | ◇ Role testing.GeneratedDocumentation — Generated documentation | GeneratedDocumentationRole.kt:13
+    menu | == Other files of testing.GeneratedDocumentation (32)
+    menu | FeatureComponent.md | docs/feature
+    menu | FeatureTest.md | docs/feature
+    menu | README.md | docs/feature
+    menu | Route.md | docs/feature
+    menu | Screen.md | docs/feature
+    menu | README.md | docs
+    menu | ActivityEntrypoint.md | docs/app
+    menu | AndroidManifest.md | docs/app
+    menu | AndroidResource.md | docs/app
+    menu | ApplicationEntrypoint.md | docs/app
+    menu | ProguardRules.md | docs/app
+    menu | README.md | docs/app
+    menu | README.md | docs/data
+    menu | RepositoryImplementation.md | docs/data
+    menu | RepositoryInterface.md | docs/data
+    menu | (disabled) … and 17 more
+    menu | -----
+    menu | ▶ Run the check (:architecture-test:test)
+    menu | ⟳ Refresh the definition
+
+== docs/testing/BaselineFile.md
+roles: testing.GeneratedDocumentation
+    testing.GeneratedDocumentation declared at GeneratedDocumentationRole.kt:13 | fun DeclarationContainerScope.generatedDocumentation() = "GeneratedDocumentation".role {
+1 | ◆ | katachi: testing.GeneratedDocumentation
+    menu | ◇ Role testing.GeneratedDocumentation — Generated documentation | GeneratedDocumentationRole.kt:13
+    menu | == Other files of testing.GeneratedDocumentation (32)
+    menu | DefinitionEntry.md | docs/testing
+    menu | DefinitionSections.md | docs/testing
+    menu | Fake.md | docs/testing
+    menu | GeneratedDocumentation.md | docs/testing
+    menu | GroupDefinition.md | docs/testing
+    menu | LayoutSnapshot.md | docs/testing
+    menu | ProjectArchitectureSpec.md | docs/testing
+    menu | ProjectArchitectureTest.md | docs/testing
+    menu | README.md | docs/testing
+    menu | RoleDefinition.md | docs/testing
+    menu | README.md | docs
+    menu | ActivityEntrypoint.md | docs/app
+    menu | AndroidManifest.md | docs/app
+    menu | AndroidResource.md | docs/app
+    menu | ApplicationEntrypoint.md | docs/app
+    menu | (disabled) … and 17 more
+    menu | -----
+    menu | ▶ Run the check (:architecture-test:test)
+    menu | ⟳ Refresh the definition
+
+== docs/testing/DefinitionEntry.md
+roles: testing.GeneratedDocumentation
+    testing.GeneratedDocumentation declared at GeneratedDocumentationRole.kt:13 | fun DeclarationContainerScope.generatedDocumentation() = "GeneratedDocumentation".role {
+1 | ◆ | katachi: testing.GeneratedDocumentation
+    menu | ◇ Role testing.GeneratedDocumentation — Generated documentation | GeneratedDocumentationRole.kt:13
+    menu | == Other files of testing.GeneratedDocumentation (32)
+    menu | BaselineFile.md | docs/testing
+    menu | DefinitionSections.md | docs/testing
+    menu | Fake.md | docs/testing
+    menu | GeneratedDocumentation.md | docs/testing
+    menu | GroupDefinition.md | docs/testing
+    menu | LayoutSnapshot.md | docs/testing
+    menu | ProjectArchitectureSpec.md | docs/testing
+    menu | ProjectArchitectureTest.md | docs/testing
+    menu | README.md | docs/testing
+    menu | RoleDefinition.md | docs/testing
+    menu | README.md | docs
+    menu | ActivityEntrypoint.md | docs/app
+    menu | AndroidManifest.md | docs/app
+    menu | AndroidResource.md | docs/app
+    menu | ApplicationEntrypoint.md | docs/app
+    menu | (disabled) … and 17 more
+    menu | -----
+    menu | ▶ Run the check (:architecture-test:test)
+    menu | ⟳ Refresh the definition
+
+== docs/testing/DefinitionSections.md
+roles: testing.GeneratedDocumentation
+    testing.GeneratedDocumentation declared at GeneratedDocumentationRole.kt:13 | fun DeclarationContainerScope.generatedDocumentation() = "GeneratedDocumentation".role {
+1 | ◆ | katachi: testing.GeneratedDocumentation
+    menu | ◇ Role testing.GeneratedDocumentation — Generated documentation | GeneratedDocumentationRole.kt:13
+    menu | == Other files of testing.GeneratedDocumentation (32)
+    menu | BaselineFile.md | docs/testing
+    menu | DefinitionEntry.md | docs/testing
+    menu | Fake.md | docs/testing
+    menu | GeneratedDocumentation.md | docs/testing
+    menu | GroupDefinition.md | docs/testing
+    menu | LayoutSnapshot.md | docs/testing
+    menu | ProjectArchitectureSpec.md | docs/testing
+    menu | ProjectArchitectureTest.md | docs/testing
+    menu | README.md | docs/testing
+    menu | RoleDefinition.md | docs/testing
+    menu | README.md | docs
+    menu | ActivityEntrypoint.md | docs/app
+    menu | AndroidManifest.md | docs/app
+    menu | AndroidResource.md | docs/app
+    menu | ApplicationEntrypoint.md | docs/app
+    menu | (disabled) … and 17 more
+    menu | -----
+    menu | ▶ Run the check (:architecture-test:test)
+    menu | ⟳ Refresh the definition
+
+== docs/testing/Fake.md
+roles: testing.GeneratedDocumentation
+    testing.GeneratedDocumentation declared at GeneratedDocumentationRole.kt:13 | fun DeclarationContainerScope.generatedDocumentation() = "GeneratedDocumentation".role {
+1 | ◆ | katachi: testing.GeneratedDocumentation
+    menu | ◇ Role testing.GeneratedDocumentation — Generated documentation | GeneratedDocumentationRole.kt:13
+    menu | == Other files of testing.GeneratedDocumentation (32)
+    menu | BaselineFile.md | docs/testing
+    menu | DefinitionEntry.md | docs/testing
+    menu | DefinitionSections.md | docs/testing
+    menu | GeneratedDocumentation.md | docs/testing
+    menu | GroupDefinition.md | docs/testing
+    menu | LayoutSnapshot.md | docs/testing
+    menu | ProjectArchitectureSpec.md | docs/testing
+    menu | ProjectArchitectureTest.md | docs/testing
+    menu | README.md | docs/testing
+    menu | RoleDefinition.md | docs/testing
+    menu | README.md | docs
+    menu | ActivityEntrypoint.md | docs/app
+    menu | AndroidManifest.md | docs/app
+    menu | AndroidResource.md | docs/app
+    menu | ApplicationEntrypoint.md | docs/app
+    menu | (disabled) … and 17 more
+    menu | -----
+    menu | ▶ Run the check (:architecture-test:test)
+    menu | ⟳ Refresh the definition
+
+== docs/testing/GeneratedDocumentation.md
+roles: testing.GeneratedDocumentation
+    testing.GeneratedDocumentation declared at GeneratedDocumentationRole.kt:13 | fun DeclarationContainerScope.generatedDocumentation() = "GeneratedDocumentation".role {
+1 | ◆ | katachi: testing.GeneratedDocumentation
+    menu | ◇ Role testing.GeneratedDocumentation — Generated documentation | GeneratedDocumentationRole.kt:13
+    menu | == Other files of testing.GeneratedDocumentation (32)
+    menu | BaselineFile.md | docs/testing
+    menu | DefinitionEntry.md | docs/testing
+    menu | DefinitionSections.md | docs/testing
+    menu | Fake.md | docs/testing
+    menu | GroupDefinition.md | docs/testing
+    menu | LayoutSnapshot.md | docs/testing
+    menu | ProjectArchitectureSpec.md | docs/testing
+    menu | ProjectArchitectureTest.md | docs/testing
+    menu | README.md | docs/testing
+    menu | RoleDefinition.md | docs/testing
+    menu | README.md | docs
+    menu | ActivityEntrypoint.md | docs/app
+    menu | AndroidManifest.md | docs/app
+    menu | AndroidResource.md | docs/app
+    menu | ApplicationEntrypoint.md | docs/app
+    menu | (disabled) … and 17 more
+    menu | -----
+    menu | ▶ Run the check (:architecture-test:test)
+    menu | ⟳ Refresh the definition
+
+== docs/testing/GroupDefinition.md
+roles: testing.GeneratedDocumentation
+    testing.GeneratedDocumentation declared at GeneratedDocumentationRole.kt:13 | fun DeclarationContainerScope.generatedDocumentation() = "GeneratedDocumentation".role {
+1 | ◆ | katachi: testing.GeneratedDocumentation
+    menu | ◇ Role testing.GeneratedDocumentation — Generated documentation | GeneratedDocumentationRole.kt:13
+    menu | == Other files of testing.GeneratedDocumentation (32)
+    menu | BaselineFile.md | docs/testing
+    menu | DefinitionEntry.md | docs/testing
+    menu | DefinitionSections.md | docs/testing
+    menu | Fake.md | docs/testing
+    menu | GeneratedDocumentation.md | docs/testing
+    menu | LayoutSnapshot.md | docs/testing
+    menu | ProjectArchitectureSpec.md | docs/testing
+    menu | ProjectArchitectureTest.md | docs/testing
+    menu | README.md | docs/testing
+    menu | RoleDefinition.md | docs/testing
+    menu | README.md | docs
+    menu | ActivityEntrypoint.md | docs/app
+    menu | AndroidManifest.md | docs/app
+    menu | AndroidResource.md | docs/app
+    menu | ApplicationEntrypoint.md | docs/app
+    menu | (disabled) … and 17 more
+    menu | -----
+    menu | ▶ Run the check (:architecture-test:test)
+    menu | ⟳ Refresh the definition
+
+== docs/testing/LayoutSnapshot.md
+roles: testing.GeneratedDocumentation
+    testing.GeneratedDocumentation declared at GeneratedDocumentationRole.kt:13 | fun DeclarationContainerScope.generatedDocumentation() = "GeneratedDocumentation".role {
+1 | ◆ | katachi: testing.GeneratedDocumentation
+    menu | ◇ Role testing.GeneratedDocumentation — Generated documentation | GeneratedDocumentationRole.kt:13
+    menu | == Other files of testing.GeneratedDocumentation (32)
+    menu | BaselineFile.md | docs/testing
+    menu | DefinitionEntry.md | docs/testing
+    menu | DefinitionSections.md | docs/testing
+    menu | Fake.md | docs/testing
+    menu | GeneratedDocumentation.md | docs/testing
+    menu | GroupDefinition.md | docs/testing
+    menu | ProjectArchitectureSpec.md | docs/testing
+    menu | ProjectArchitectureTest.md | docs/testing
+    menu | README.md | docs/testing
+    menu | RoleDefinition.md | docs/testing
+    menu | README.md | docs
+    menu | ActivityEntrypoint.md | docs/app
+    menu | AndroidManifest.md | docs/app
+    menu | AndroidResource.md | docs/app
+    menu | ApplicationEntrypoint.md | docs/app
+    menu | (disabled) … and 17 more
+    menu | -----
+    menu | ▶ Run the check (:architecture-test:test)
+    menu | ⟳ Refresh the definition
+
+== docs/testing/ProjectArchitectureSpec.md
+roles: testing.GeneratedDocumentation
+    testing.GeneratedDocumentation declared at GeneratedDocumentationRole.kt:13 | fun DeclarationContainerScope.generatedDocumentation() = "GeneratedDocumentation".role {
+1 | ◆ | katachi: testing.GeneratedDocumentation
+    menu | ◇ Role testing.GeneratedDocumentation — Generated documentation | GeneratedDocumentationRole.kt:13
+    menu | == Other files of testing.GeneratedDocumentation (32)
+    menu | BaselineFile.md | docs/testing
+    menu | DefinitionEntry.md | docs/testing
+    menu | DefinitionSections.md | docs/testing
+    menu | Fake.md | docs/testing
+    menu | GeneratedDocumentation.md | docs/testing
+    menu | GroupDefinition.md | docs/testing
+    menu | LayoutSnapshot.md | docs/testing
+    menu | ProjectArchitectureTest.md | docs/testing
+    menu | README.md | docs/testing
+    menu | RoleDefinition.md | docs/testing
+    menu | README.md | docs
+    menu | ActivityEntrypoint.md | docs/app
+    menu | AndroidManifest.md | docs/app
+    menu | AndroidResource.md | docs/app
+    menu | ApplicationEntrypoint.md | docs/app
+    menu | (disabled) … and 17 more
+    menu | -----
+    menu | ▶ Run the check (:architecture-test:test)
+    menu | ⟳ Refresh the definition
+
+== docs/testing/ProjectArchitectureTest.md
+roles: testing.GeneratedDocumentation
+    testing.GeneratedDocumentation declared at GeneratedDocumentationRole.kt:13 | fun DeclarationContainerScope.generatedDocumentation() = "GeneratedDocumentation".role {
+1 | ◆ | katachi: testing.GeneratedDocumentation
+    menu | ◇ Role testing.GeneratedDocumentation — Generated documentation | GeneratedDocumentationRole.kt:13
+    menu | == Other files of testing.GeneratedDocumentation (32)
+    menu | BaselineFile.md | docs/testing
+    menu | DefinitionEntry.md | docs/testing
+    menu | DefinitionSections.md | docs/testing
+    menu | Fake.md | docs/testing
+    menu | GeneratedDocumentation.md | docs/testing
+    menu | GroupDefinition.md | docs/testing
+    menu | LayoutSnapshot.md | docs/testing
+    menu | ProjectArchitectureSpec.md | docs/testing
+    menu | README.md | docs/testing
+    menu | RoleDefinition.md | docs/testing
+    menu | README.md | docs
+    menu | ActivityEntrypoint.md | docs/app
+    menu | AndroidManifest.md | docs/app
+    menu | AndroidResource.md | docs/app
+    menu | ApplicationEntrypoint.md | docs/app
+    menu | (disabled) … and 17 more
+    menu | -----
+    menu | ▶ Run the check (:architecture-test:test)
+    menu | ⟳ Refresh the definition
+
+== docs/testing/README.md
+roles: testing.GeneratedDocumentation
+    testing.GeneratedDocumentation declared at GeneratedDocumentationRole.kt:13 | fun DeclarationContainerScope.generatedDocumentation() = "GeneratedDocumentation".role {
+1 | ◆ | katachi: testing.GeneratedDocumentation
+    menu | ◇ Role testing.GeneratedDocumentation — Generated documentation | GeneratedDocumentationRole.kt:13
+    menu | == Other files of testing.GeneratedDocumentation (32)
+    menu | BaselineFile.md | docs/testing
+    menu | DefinitionEntry.md | docs/testing
+    menu | DefinitionSections.md | docs/testing
+    menu | Fake.md | docs/testing
+    menu | GeneratedDocumentation.md | docs/testing
+    menu | GroupDefinition.md | docs/testing
+    menu | LayoutSnapshot.md | docs/testing
+    menu | ProjectArchitectureSpec.md | docs/testing
+    menu | ProjectArchitectureTest.md | docs/testing
+    menu | RoleDefinition.md | docs/testing
+    menu | README.md | docs
+    menu | ActivityEntrypoint.md | docs/app
+    menu | AndroidManifest.md | docs/app
+    menu | AndroidResource.md | docs/app
+    menu | ApplicationEntrypoint.md | docs/app
+    menu | (disabled) … and 17 more
+    menu | -----
+    menu | ▶ Run the check (:architecture-test:test)
+    menu | ⟳ Refresh the definition
+
+== docs/testing/RoleDefinition.md
+roles: testing.GeneratedDocumentation
+    testing.GeneratedDocumentation declared at GeneratedDocumentationRole.kt:13 | fun DeclarationContainerScope.generatedDocumentation() = "GeneratedDocumentation".role {
+1 | ◆ | katachi: testing.GeneratedDocumentation
+    menu | ◇ Role testing.GeneratedDocumentation — Generated documentation | GeneratedDocumentationRole.kt:13
+    menu | == Other files of testing.GeneratedDocumentation (32)
+    menu | BaselineFile.md | docs/testing
+    menu | DefinitionEntry.md | docs/testing
+    menu | DefinitionSections.md | docs/testing
+    menu | Fake.md | docs/testing
+    menu | GeneratedDocumentation.md | docs/testing
+    menu | GroupDefinition.md | docs/testing
+    menu | LayoutSnapshot.md | docs/testing
+    menu | ProjectArchitectureSpec.md | docs/testing
+    menu | ProjectArchitectureTest.md | docs/testing
+    menu | README.md | docs/testing
+    menu | README.md | docs
+    menu | ActivityEntrypoint.md | docs/app
+    menu | AndroidManifest.md | docs/app
+    menu | AndroidResource.md | docs/app
+    menu | ApplicationEntrypoint.md | docs/app
+    menu | (disabled) … and 17 more
+    menu | -----
+    menu | ▶ Run the check (:architecture-test:test)
+    menu | ⟳ Refresh the definition
+
+== docs/ui/Component.md
+roles: testing.GeneratedDocumentation
+    testing.GeneratedDocumentation declared at GeneratedDocumentationRole.kt:13 | fun DeclarationContainerScope.generatedDocumentation() = "GeneratedDocumentation".role {
+1 | ◆ | katachi: testing.GeneratedDocumentation
+    menu | ◇ Role testing.GeneratedDocumentation — Generated documentation | GeneratedDocumentationRole.kt:13
+    menu | == Other files of testing.GeneratedDocumentation (32)
+    menu | Navigation.md | docs/ui
+    menu | PreviewRoot.md | docs/ui
+    menu | README.md | docs/ui
+    menu | Theme.md | docs/ui
+    menu | UiCore.md | docs/ui
+    menu | README.md | docs
+    menu | ActivityEntrypoint.md | docs/app
+    menu | AndroidManifest.md | docs/app
+    menu | AndroidResource.md | docs/app
+    menu | ApplicationEntrypoint.md | docs/app
+    menu | ProguardRules.md | docs/app
+    menu | README.md | docs/app
+    menu | README.md | docs/data
+    menu | RepositoryImplementation.md | docs/data
+    menu | RepositoryInterface.md | docs/data
+    menu | (disabled) … and 17 more
+    menu | -----
+    menu | ▶ Run the check (:architecture-test:test)
+    menu | ⟳ Refresh the definition
+
+== docs/ui/Navigation.md
+roles: testing.GeneratedDocumentation
+    testing.GeneratedDocumentation declared at GeneratedDocumentationRole.kt:13 | fun DeclarationContainerScope.generatedDocumentation() = "GeneratedDocumentation".role {
+1 | ◆ | katachi: testing.GeneratedDocumentation
+    menu | ◇ Role testing.GeneratedDocumentation — Generated documentation | GeneratedDocumentationRole.kt:13
+    menu | == Other files of testing.GeneratedDocumentation (32)
+    menu | Component.md | docs/ui
+    menu | PreviewRoot.md | docs/ui
+    menu | README.md | docs/ui
+    menu | Theme.md | docs/ui
+    menu | UiCore.md | docs/ui
+    menu | README.md | docs
+    menu | ActivityEntrypoint.md | docs/app
+    menu | AndroidManifest.md | docs/app
+    menu | AndroidResource.md | docs/app
+    menu | ApplicationEntrypoint.md | docs/app
+    menu | ProguardRules.md | docs/app
+    menu | README.md | docs/app
+    menu | README.md | docs/data
+    menu | RepositoryImplementation.md | docs/data
+    menu | RepositoryInterface.md | docs/data
+    menu | (disabled) … and 17 more
+    menu | -----
+    menu | ▶ Run the check (:architecture-test:test)
+    menu | ⟳ Refresh the definition
+
+== docs/ui/PreviewRoot.md
+roles: testing.GeneratedDocumentation
+    testing.GeneratedDocumentation declared at GeneratedDocumentationRole.kt:13 | fun DeclarationContainerScope.generatedDocumentation() = "GeneratedDocumentation".role {
+1 | ◆ | katachi: testing.GeneratedDocumentation
+    menu | ◇ Role testing.GeneratedDocumentation — Generated documentation | GeneratedDocumentationRole.kt:13
+    menu | == Other files of testing.GeneratedDocumentation (32)
+    menu | Component.md | docs/ui
+    menu | Navigation.md | docs/ui
+    menu | README.md | docs/ui
+    menu | Theme.md | docs/ui
+    menu | UiCore.md | docs/ui
+    menu | README.md | docs
+    menu | ActivityEntrypoint.md | docs/app
+    menu | AndroidManifest.md | docs/app
+    menu | AndroidResource.md | docs/app
+    menu | ApplicationEntrypoint.md | docs/app
+    menu | ProguardRules.md | docs/app
+    menu | README.md | docs/app
+    menu | README.md | docs/data
+    menu | RepositoryImplementation.md | docs/data
+    menu | RepositoryInterface.md | docs/data
+    menu | (disabled) … and 17 more
+    menu | -----
+    menu | ▶ Run the check (:architecture-test:test)
+    menu | ⟳ Refresh the definition
+
+== docs/ui/README.md
+roles: testing.GeneratedDocumentation
+    testing.GeneratedDocumentation declared at GeneratedDocumentationRole.kt:13 | fun DeclarationContainerScope.generatedDocumentation() = "GeneratedDocumentation".role {
+1 | ◆ | katachi: testing.GeneratedDocumentation
+    menu | ◇ Role testing.GeneratedDocumentation — Generated documentation | GeneratedDocumentationRole.kt:13
+    menu | == Other files of testing.GeneratedDocumentation (32)
+    menu | Component.md | docs/ui
+    menu | Navigation.md | docs/ui
+    menu | PreviewRoot.md | docs/ui
+    menu | Theme.md | docs/ui
+    menu | UiCore.md | docs/ui
+    menu | README.md | docs
+    menu | ActivityEntrypoint.md | docs/app
+    menu | AndroidManifest.md | docs/app
+    menu | AndroidResource.md | docs/app
+    menu | ApplicationEntrypoint.md | docs/app
+    menu | ProguardRules.md | docs/app
+    menu | README.md | docs/app
+    menu | README.md | docs/data
+    menu | RepositoryImplementation.md | docs/data
+    menu | RepositoryInterface.md | docs/data
+    menu | (disabled) … and 17 more
+    menu | -----
+    menu | ▶ Run the check (:architecture-test:test)
+    menu | ⟳ Refresh the definition
+
+== docs/ui/Theme.md
+roles: testing.GeneratedDocumentation
+    testing.GeneratedDocumentation declared at GeneratedDocumentationRole.kt:13 | fun DeclarationContainerScope.generatedDocumentation() = "GeneratedDocumentation".role {
+1 | ◆ | katachi: testing.GeneratedDocumentation
+    menu | ◇ Role testing.GeneratedDocumentation — Generated documentation | GeneratedDocumentationRole.kt:13
+    menu | == Other files of testing.GeneratedDocumentation (32)
+    menu | Component.md | docs/ui
+    menu | Navigation.md | docs/ui
+    menu | PreviewRoot.md | docs/ui
+    menu | README.md | docs/ui
+    menu | UiCore.md | docs/ui
+    menu | README.md | docs
+    menu | ActivityEntrypoint.md | docs/app
+    menu | AndroidManifest.md | docs/app
+    menu | AndroidResource.md | docs/app
+    menu | ApplicationEntrypoint.md | docs/app
+    menu | ProguardRules.md | docs/app
+    menu | README.md | docs/app
+    menu | README.md | docs/data
+    menu | RepositoryImplementation.md | docs/data
+    menu | RepositoryInterface.md | docs/data
+    menu | (disabled) … and 17 more
+    menu | -----
+    menu | ▶ Run the check (:architecture-test:test)
+    menu | ⟳ Refresh the definition
+
+== docs/ui/UiCore.md
+roles: testing.GeneratedDocumentation
+    testing.GeneratedDocumentation declared at GeneratedDocumentationRole.kt:13 | fun DeclarationContainerScope.generatedDocumentation() = "GeneratedDocumentation".role {
+1 | ◆ | katachi: testing.GeneratedDocumentation
+    menu | ◇ Role testing.GeneratedDocumentation — Generated documentation | GeneratedDocumentationRole.kt:13
+    menu | == Other files of testing.GeneratedDocumentation (32)
+    menu | Component.md | docs/ui
+    menu | Navigation.md | docs/ui
+    menu | PreviewRoot.md | docs/ui
+    menu | README.md | docs/ui
+    menu | Theme.md | docs/ui
+    menu | README.md | docs
+    menu | ActivityEntrypoint.md | docs/app
+    menu | AndroidManifest.md | docs/app
+    menu | AndroidResource.md | docs/app
+    menu | ApplicationEntrypoint.md | docs/app
+    menu | ProguardRules.md | docs/app
+    menu | README.md | docs/app
+    menu | README.md | docs/data
+    menu | RepositoryImplementation.md | docs/data
+    menu | RepositoryInterface.md | docs/data
+    menu | (disabled) … and 17 more
+    menu | -----
+    menu | ▶ Run the check (:architecture-test:test)
+    menu | ⟳ Refresh the definition
+
+== feature/home/build.gradle.kts
+roles: Gradle.BuildScript
+    Gradle.BuildScript declared at GradleGroup.kt:22 | fun DeclarationContainerScope.gradleGroup() = gradle()
+1 | ◆ | katachi: Gradle.BuildScript
+    menu | ◇ Role Gradle.BuildScript — How one module is built, one per module | GradleGroup.kt:22
+    menu | == Other files of Gradle.BuildScript (8)
+    menu | build.gradle.kts | .
+    menu | build.gradle.kts | app
+    menu | build.gradle.kts | architecture-test
+    menu | build.gradle.kts | data
+    menu | build.gradle.kts | feature/settings
+    menu | build.gradle.kts | navigation
+    menu | build.gradle.kts | testing
+    menu | build.gradle.kts | ui
+    menu | -----
+    menu | ▶ Run the check (:architecture-test:test)
+    menu | ⟳ Refresh the definition
+
+== feature/home/src/main/kotlin/com/example/sample/feature/home/HomeRoute.kt
+roles: feature.Route
+    feature.Route declared at RouteRole.kt:14 | fun DeclarationContainerScope.route() = "Route".role {
+12 | ◆ | katachi: feature.Route — allowed by object HomeRoute (RouteRole.kt:48)
+    allowed at RouteRole.kt:48 | `object`(fileName) {
+    menu | ◆ Allowed by object HomeRoute | RouteRole.kt:48
+    menu | ◇ Role feature.Route — Route | RouteRole.kt:14
+    menu | == Other files of feature.Route (1)
+    menu | SettingsRoute.kt | feature/…/sample/feature/settings
+    menu | -----
+    menu | ▶ Run the check (:architecture-test:test)
+    menu | ⟳ Refresh the definition
+17 | ◆ | katachi: feature.Route — allowed by fun homeScreen(...) (RouteRole.kt:51)
+    allowed at RouteRole.kt:51 | `fun`("${feature}Screen")                                   // NavGraphBuilder.homeScreen(...)
+    menu | ◆ Allowed by fun homeScreen(...) | RouteRole.kt:51
+    menu | ◇ Role feature.Route — Route | RouteRole.kt:14
+    menu | == Other files of feature.Route (1)
+    menu | SettingsRoute.kt | feature/…/sample/feature/settings
+    menu | -----
+    menu | ▶ Run the check (:architecture-test:test)
+    menu | ⟳ Refresh the definition
+
+== feature/home/src/main/kotlin/com/example/sample/feature/home/HomeScreen.kt
+roles: feature.Screen
+    feature.Screen declared at ScreenRole.kt:21 | fun DeclarationContainerScope.screen() = "Screen".role {
+30 | ◆ | katachi: feature.Screen — allowed by @Composable internal fun HomeScreen(...) (ScreenRole.kt:69)
+    allowed at ScreenRole.kt:69 | annotated("Composable").internal.`fun`(fileName)
+    menu | ◆ Allowed by @Composable internal fun HomeScreen(...) | ScreenRole.kt:69
+    menu | ◇ Role feature.Screen — Screen | ScreenRole.kt:21
+    menu | == Other files of feature.Screen (1)
+    menu | SettingsScreen.kt | feature/…/sample/feature/settings
+    menu | -----
+    menu | ▶ Run the check (:architecture-test:test)
+    menu | ⟳ Refresh the definition
+46 | ◆ | katachi: feature.Screen — allowed by @Composable internal fun HomeScreen(...) (ScreenRole.kt:69)
+    allowed at ScreenRole.kt:69 | annotated("Composable").internal.`fun`(fileName)
+    menu | ◆ Allowed by @Composable internal fun HomeScreen(...) | ScreenRole.kt:69
+    menu | ◇ Role feature.Screen — Screen | ScreenRole.kt:21
+    menu | == Other files of feature.Screen (1)
+    menu | SettingsScreen.kt | feature/…/sample/feature/settings
+    menu | -----
+    menu | ▶ Run the check (:architecture-test:test)
+    menu | ⟳ Refresh the definition
+91 | ◆ | katachi: feature.Screen — allowed by @Preview private fun *Preview(...) (ScreenRole.kt:70)
+    allowed at ScreenRole.kt:70 | annotated("Preview").private.`fun`("*Preview")
+    menu | ◆ Allowed by @Preview private fun *Preview(...) | ScreenRole.kt:70
+    menu | ◇ Role feature.Screen — Screen | ScreenRole.kt:21
+    menu | == Other files of feature.Screen (1)
+    menu | SettingsScreen.kt | feature/…/sample/feature/settings
+    menu | -----
+    menu | ▶ Run the check (:architecture-test:test)
+    menu | ⟳ Refresh the definition
+103 | ◆ | katachi: feature.Screen — allowed by @Preview private fun *Preview(...) (ScreenRole.kt:70)
+    allowed at ScreenRole.kt:70 | annotated("Preview").private.`fun`("*Preview")
+    menu | ◆ Allowed by @Preview private fun *Preview(...) | ScreenRole.kt:70
+    menu | ◇ Role feature.Screen — Screen | ScreenRole.kt:21
+    menu | == Other files of feature.Screen (1)
+    menu | SettingsScreen.kt | feature/…/sample/feature/settings
+    menu | -----
+    menu | ▶ Run the check (:architecture-test:test)
+    menu | ⟳ Refresh the definition
+
+== feature/home/src/main/kotlin/com/example/sample/feature/home/HomeViewModel.kt
+roles: feature.ViewModel
+    feature.ViewModel declared at ViewModelRole.kt:14 | fun DeclarationContainerScope.viewModel() = "ViewModel".role {
+12 | ◆ | katachi: feature.ViewModel — allowed by internal data class HomeContent (ViewModelRole.kt:53)
+    allowed at ViewModelRole.kt:53 | internal.data.`class`(content)
+    menu | ◆ Allowed by internal data class HomeContent | ViewModelRole.kt:53
+    menu | ◇ Role feature.ViewModel — ViewModel | ViewModelRole.kt:14
+    menu | == Other files of feature.ViewModel (1)
+    menu | SettingsViewModel.kt | feature/…/sample/feature/settings
+    menu | -----
+    menu | ▶ Run the check (:architecture-test:test)
+    menu | ⟳ Refresh the definition
+23 | ◆ | katachi: feature.ViewModel — allowed by internal class HomeViewModel : ViewModel (ViewModelRole.kt:54)
+    allowed at ViewModelRole.kt:54 | internal.`class`(fileName).superclass("ViewModel") {
+    menu | ◆ Allowed by internal class HomeViewModel : ViewModel | ViewModelRole.kt:54
+    menu | ◇ Role feature.ViewModel — ViewModel | ViewModelRole.kt:14
+    menu | == Other files of feature.ViewModel (1)
+    menu | SettingsViewModel.kt | feature/…/sample/feature/settings
+    menu | -----
+    menu | ▶ Run the check (:architecture-test:test)
+    menu | ⟳ Refresh the definition
+
+== feature/home/src/test/kotlin/com/example/sample/feature/home/HomeViewModelTest.kt
+roles: feature.FeatureTest
+    feature.FeatureTest declared at FeatureTestRole.kt:25 | fun DeclarationContainerScope.featureTest() = "FeatureTest".role {
+8 | ◆ | katachi: feature.FeatureTest — allowed by class HomeViewModelTest (FeatureTestRole.kt:73)
+    allowed at FeatureTestRole.kt:73 | `class`(fileName) {
+    menu | ◆ Allowed by class HomeViewModelTest | FeatureTestRole.kt:73
+    menu | ◇ Role feature.FeatureTest — Screen test | FeatureTestRole.kt:25
+    menu | == Other files of feature.FeatureTest (1)
+    menu | SettingsViewModelTest.kt | feature/…/sample/feature/settings
+    menu | -----
+    menu | + New feature.FeatureTest from template… >
+    menu |   feature.FeatureTest.home
+    menu |   feature.FeatureTest.settings
+    menu | ▶ Run the check (:architecture-test:test)
+    menu | ⟳ Refresh the definition
+
+== feature/settings/build.gradle.kts
+roles: Gradle.BuildScript
+    Gradle.BuildScript declared at GradleGroup.kt:22 | fun DeclarationContainerScope.gradleGroup() = gradle()
+1 | ◆ | katachi: Gradle.BuildScript
+    menu | ◇ Role Gradle.BuildScript — How one module is built, one per module | GradleGroup.kt:22
+    menu | == Other files of Gradle.BuildScript (8)
+    menu | build.gradle.kts | .
+    menu | build.gradle.kts | app
+    menu | build.gradle.kts | architecture-test
+    menu | build.gradle.kts | data
+    menu | build.gradle.kts | feature/home
+    menu | build.gradle.kts | navigation
+    menu | build.gradle.kts | testing
+    menu | build.gradle.kts | ui
+    menu | -----
+    menu | ▶ Run the check (:architecture-test:test)
+    menu | ⟳ Refresh the definition
+
+== feature/settings/src/main/kotlin/com/example/sample/feature/settings/SettingsRoute.kt
+roles: feature.Route
+    feature.Route declared at RouteRole.kt:14 | fun DeclarationContainerScope.route() = "Route".role {
+12 | ◆ | katachi: feature.Route — allowed by object SettingsRoute (RouteRole.kt:48)
+    allowed at RouteRole.kt:48 | `object`(fileName) {
+    menu | ◆ Allowed by object SettingsRoute | RouteRole.kt:48
+    menu | ◇ Role feature.Route — Route | RouteRole.kt:14
+    menu | == Other files of feature.Route (1)
+    menu | HomeRoute.kt | feature/…/example/sample/feature/home
+    menu | -----
+    menu | ▶ Run the check (:architecture-test:test)
+    menu | ⟳ Refresh the definition
+17 | ◆ | katachi: feature.Route — allowed by fun settingsScreen(...) (RouteRole.kt:51)
+    allowed at RouteRole.kt:51 | `fun`("${feature}Screen")                                   // NavGraphBuilder.homeScreen(...)
+    menu | ◆ Allowed by fun settingsScreen(...) | RouteRole.kt:51
+    menu | ◇ Role feature.Route — Route | RouteRole.kt:14
+    menu | == Other files of feature.Route (1)
+    menu | HomeRoute.kt | feature/…/example/sample/feature/home
+    menu | -----
+    menu | ▶ Run the check (:architecture-test:test)
+    menu | ⟳ Refresh the definition
+
+== feature/settings/src/main/kotlin/com/example/sample/feature/settings/SettingsScreen.kt
+roles: feature.Screen
+    feature.Screen declared at ScreenRole.kt:21 | fun DeclarationContainerScope.screen() = "Screen".role {
+28 | ◆ | katachi: feature.Screen — allowed by @Composable internal fun SettingsScreen(...) (ScreenRole.kt:69)
+    allowed at ScreenRole.kt:69 | annotated("Composable").internal.`fun`(fileName)
+    menu | ◆ Allowed by @Composable internal fun SettingsScreen(...) | ScreenRole.kt:69
+    menu | ◇ Role feature.Screen — Screen | ScreenRole.kt:21
+    menu | == Other files of feature.Screen (1)
+    menu | HomeScreen.kt | feature/…/example/sample/feature/home
+    menu | -----
+    menu | ▶ Run the check (:architecture-test:test)
+    menu | ⟳ Refresh the definition
+44 | ◆ | katachi: feature.Screen — allowed by @Composable internal fun SettingsScreen(...) (ScreenRole.kt:69)
+    allowed at ScreenRole.kt:69 | annotated("Composable").internal.`fun`(fileName)
+    menu | ◆ Allowed by @Composable internal fun SettingsScreen(...) | ScreenRole.kt:69
+    menu | ◇ Role feature.Screen — Screen | ScreenRole.kt:21
+    menu | == Other files of feature.Screen (1)
+    menu | HomeScreen.kt | feature/…/example/sample/feature/home
+    menu | -----
+    menu | ▶ Run the check (:architecture-test:test)
+    menu | ⟳ Refresh the definition
+88 | ◆ | katachi: feature.Screen — allowed by @Preview private fun *Preview(...) (ScreenRole.kt:70)
+    allowed at ScreenRole.kt:70 | annotated("Preview").private.`fun`("*Preview")
+    menu | ◆ Allowed by @Preview private fun *Preview(...) | ScreenRole.kt:70
+    menu | ◇ Role feature.Screen — Screen | ScreenRole.kt:21
+    menu | == Other files of feature.Screen (1)
+    menu | HomeScreen.kt | feature/…/example/sample/feature/home
+    menu | -----
+    menu | ▶ Run the check (:architecture-test:test)
+    menu | ⟳ Refresh the definition
+
+== feature/settings/src/main/kotlin/com/example/sample/feature/settings/SettingsViewModel.kt
+roles: feature.ViewModel
+    feature.ViewModel declared at ViewModelRole.kt:14 | fun DeclarationContainerScope.viewModel() = "ViewModel".role {
+12 | ◆ | katachi: feature.ViewModel — allowed by internal data class SettingsContent (ViewModelRole.kt:53)
+    allowed at ViewModelRole.kt:53 | internal.data.`class`(content)
+    menu | ◆ Allowed by internal data class SettingsContent | ViewModelRole.kt:53
+    menu | ◇ Role feature.ViewModel — ViewModel | ViewModelRole.kt:14
+    menu | == Other files of feature.ViewModel (1)
+    menu | HomeViewModel.kt | feature/…/example/sample/feature/home
+    menu | -----
+    menu | ▶ Run the check (:architecture-test:test)
+    menu | ⟳ Refresh the definition
+17 | ◆ | katachi: feature.ViewModel — allowed by internal class SettingsViewModel : ViewModel (ViewModelRole.kt:54)
+    allowed at ViewModelRole.kt:54 | internal.`class`(fileName).superclass("ViewModel") {
+    menu | ◆ Allowed by internal class SettingsViewModel : ViewModel | ViewModelRole.kt:54
+    menu | ◇ Role feature.ViewModel — ViewModel | ViewModelRole.kt:14
+    menu | == Other files of feature.ViewModel (1)
+    menu | HomeViewModel.kt | feature/…/example/sample/feature/home
+    menu | -----
+    menu | ▶ Run the check (:architecture-test:test)
+    menu | ⟳ Refresh the definition
+
+== feature/settings/src/test/kotlin/com/example/sample/feature/settings/SettingsViewModelTest.kt
+roles: feature.FeatureTest
+    feature.FeatureTest declared at FeatureTestRole.kt:25 | fun DeclarationContainerScope.featureTest() = "FeatureTest".role {
+8 | ◆ | katachi: feature.FeatureTest — allowed by class SettingsViewModelTest (FeatureTestRole.kt:73)
+    allowed at FeatureTestRole.kt:73 | `class`(fileName) {
+    menu | ◆ Allowed by class SettingsViewModelTest | FeatureTestRole.kt:73
+    menu | ◇ Role feature.FeatureTest — Screen test | FeatureTestRole.kt:25
+    menu | == Other files of feature.FeatureTest (1)
+    menu | HomeViewModelTest.kt | feature/…/example/sample/feature/home
+    menu | -----
+    menu | + New feature.FeatureTest from template… >
+    menu |   feature.FeatureTest.home
+    menu |   feature.FeatureTest.settings
+    menu | ▶ Run the check (:architecture-test:test)
+    menu | ⟳ Refresh the definition
+
+== gradle.properties
+roles: Gradle.GradleProperties
+    Gradle.GradleProperties declared at GradleGroup.kt:22 | fun DeclarationContainerScope.gradleGroup() = gradle()
+1 | ◆ | katachi: Gradle.GradleProperties
+    menu | ◇ Role Gradle.GradleProperties — Properties of the build and of the Gradle daemon | GradleGroup.kt:22
+    menu | == Other files of Gradle.GradleProperties
+    menu | (disabled) — No other file yet
+    menu | -----
+    menu | ▶ Run the check (:architecture-test:test)
+    menu | ⟳ Refresh the definition
+
+== gradle/sample.versions.toml
+roles: Gradle.VersionCatalog
+    Gradle.VersionCatalog declared at GradleGroup.kt:22 | fun DeclarationContainerScope.gradleGroup() = gradle()
+1 | ◆ | katachi: Gradle.VersionCatalog
+    menu | ◇ Role Gradle.VersionCatalog — The versions of the build's dependencies and plugins | GradleGroup.kt:22
+    menu | == Other files of Gradle.VersionCatalog
+    menu | (disabled) — No other file yet
+    menu | -----
+    menu | ▶ Run the check (:architecture-test:test)
+    menu | ⟳ Refresh the definition
+
+== gradle/wrapper/gradle-wrapper.properties
+roles: Gradle.GradleWrapper.WrapperProperties
+    Gradle.GradleWrapper.WrapperProperties declared at GradleGroup.kt:22 | fun DeclarationContainerScope.gradleGroup() = gradle()
+1 | ◆ | katachi: Gradle.GradleWrapper.WrapperProperties
+    menu | ◇ Role Gradle.GradleWrapper.WrapperProperties — Which Gradle distribution the wrapper runs | GradleGroup.kt:22
+    menu | == Other files of Gradle.GradleWrapper.WrapperProperties
+    menu | (disabled) — No other file yet
+    menu | -----
+    menu | ▶ Run the check (:architecture-test:test)
+    menu | ⟳ Refresh the definition
+
+== katachi-baseline.json
+roles: testing.BaselineFile
+    testing.BaselineFile declared at BaselineFileRole.kt:13 | fun DeclarationContainerScope.baselineFile() = "BaselineFile".role {
+1 | ◆ | katachi: testing.BaselineFile
+    menu | ◇ Role testing.BaselineFile — baseline (ledger of held-back violations) | BaselineFileRole.kt:13
+    menu | == Other files of testing.BaselineFile
+    menu | (disabled) — No other file yet
+    menu | -----
+    menu | ▶ Run the check (:architecture-test:test)
+    menu | ⟳ Refresh the definition
+
+== navigation/build.gradle.kts
+roles: Gradle.BuildScript
+    Gradle.BuildScript declared at GradleGroup.kt:22 | fun DeclarationContainerScope.gradleGroup() = gradle()
+1 | ◆ | katachi: Gradle.BuildScript
+    menu | ◇ Role Gradle.BuildScript — How one module is built, one per module | GradleGroup.kt:22
+    menu | == Other files of Gradle.BuildScript (8)
+    menu | build.gradle.kts | .
+    menu | build.gradle.kts | app
+    menu | build.gradle.kts | architecture-test
+    menu | build.gradle.kts | data
+    menu | build.gradle.kts | feature/home
+    menu | build.gradle.kts | feature/settings
+    menu | build.gradle.kts | testing
+    menu | build.gradle.kts | ui
+    menu | -----
+    menu | ▶ Run the check (:architecture-test:test)
+    menu | ⟳ Refresh the definition
+
+== navigation/src/main/kotlin/com/example/sample/navigation/AppNavigator.kt
+roles: ui.Navigation
+    ui.Navigation declared at NavigationRole.kt:8 | fun DeclarationContainerScope.navigation() = "Navigation".role {
+14 | ◆ | katachi: ui.Navigation
+    menu | ◇ Role ui.Navigation — Screen navigation | NavigationRole.kt:8
+    menu | == Other files of ui.Navigation
+    menu | (disabled) — No other file yet
+    menu | -----
+    menu | ▶ Run the check (:architecture-test:test)
+    menu | ⟳ Refresh the definition
+
+== settings.gradle.kts
+roles: Gradle.SettingsScript
+    Gradle.SettingsScript declared at GradleGroup.kt:22 | fun DeclarationContainerScope.gradleGroup() = gradle()
+1 | ◆ | katachi: Gradle.SettingsScript
+    menu | ◇ Role Gradle.SettingsScript — Which modules make up the build | GradleGroup.kt:22
+    menu | == Other files of Gradle.SettingsScript
+    menu | (disabled) — No other file yet
+    menu | -----
+    menu | ▶ Run the check (:architecture-test:test)
+    menu | ⟳ Refresh the definition
+
+== snapshots/layout.txt
+roles: testing.LayoutSnapshot
+    testing.LayoutSnapshot declared at LayoutSnapshotRole.kt:15 | fun DeclarationContainerScope.layoutSnapshot() = "LayoutSnapshot".role {
+1 | ◆ | katachi: testing.LayoutSnapshot
+    menu | ◇ Role testing.LayoutSnapshot — Layout snapshot | LayoutSnapshotRole.kt:15
+    menu | == Other files of testing.LayoutSnapshot
+    menu | (disabled) — No other file yet
+    menu | -----
+    menu | ▶ Run the check (:architecture-test:test)
+    menu | ⟳ Refresh the definition
+
+== testing/build.gradle.kts
+roles: Gradle.BuildScript
+    Gradle.BuildScript declared at GradleGroup.kt:22 | fun DeclarationContainerScope.gradleGroup() = gradle()
+1 | ◆ | katachi: Gradle.BuildScript
+    menu | ◇ Role Gradle.BuildScript — How one module is built, one per module | GradleGroup.kt:22
+    menu | == Other files of Gradle.BuildScript (8)
+    menu | build.gradle.kts | .
+    menu | build.gradle.kts | app
+    menu | build.gradle.kts | architecture-test
+    menu | build.gradle.kts | data
+    menu | build.gradle.kts | feature/home
+    menu | build.gradle.kts | feature/settings
+    menu | build.gradle.kts | navigation
+    menu | build.gradle.kts | ui
+    menu | -----
+    menu | ▶ Run the check (:architecture-test:test)
+    menu | ⟳ Refresh the definition
+
+== testing/src/main/kotlin/com/example/sample/testing/FakeSettingsRepository.kt
+roles: testing.Fake
+    testing.Fake declared at FakeRole.kt:20 | fun DeclarationContainerScope.fake() = "Fake".role {
+6 | ◆ | katachi: testing.Fake — allowed by class FakeSettingsRepository : SettingsRepository (FakeRole.kt:90)
+    allowed at FakeRole.kt:90 | `class`(fileName).superclass(captureValue("repository")) {
+    menu | ◆ Allowed by class FakeSettingsRepository : SettingsRepository | FakeRole.kt:90
+    menu | ◇ Role testing.Fake — Fake | FakeRole.kt:20
+    menu | == Other files of testing.Fake (1)
+    menu | FakeUserRepository.kt | testing/…/com/example/sample/testing
+    menu | -----
+    menu | + New testing.Fake from template…
+    menu | ▶ Run the check (:architecture-test:test)
+    menu | ⟳ Refresh the definition
+
+== testing/src/main/kotlin/com/example/sample/testing/FakeUserRepository.kt
+roles: testing.Fake
+    testing.Fake declared at FakeRole.kt:20 | fun DeclarationContainerScope.fake() = "Fake".role {
+6 | ◆ | katachi: testing.Fake — allowed by class FakeUserRepository : UserRepository (FakeRole.kt:90)
+    allowed at FakeRole.kt:90 | `class`(fileName).superclass(captureValue("repository")) {
+    menu | ◆ Allowed by class FakeUserRepository : UserRepository | FakeRole.kt:90
+    menu | ◇ Role testing.Fake — Fake | FakeRole.kt:20
+    menu | == Other files of testing.Fake (1)
+    menu | FakeSettingsRepository.kt | testing/…/com/example/sample/testing
+    menu | -----
+    menu | + New testing.Fake from template…
+    menu | ▶ Run the check (:architecture-test:test)
+    menu | ⟳ Refresh the definition
+
+== ui/build.gradle.kts
+roles: Gradle.BuildScript
+    Gradle.BuildScript declared at GradleGroup.kt:22 | fun DeclarationContainerScope.gradleGroup() = gradle()
+1 | ◆ | katachi: Gradle.BuildScript
+    menu | ◇ Role Gradle.BuildScript — How one module is built, one per module | GradleGroup.kt:22
+    menu | == Other files of Gradle.BuildScript (8)
+    menu | build.gradle.kts | .
+    menu | build.gradle.kts | app
+    menu | build.gradle.kts | architecture-test
+    menu | build.gradle.kts | data
+    menu | build.gradle.kts | feature/home
+    menu | build.gradle.kts | feature/settings
+    menu | build.gradle.kts | navigation
+    menu | build.gradle.kts | testing
+    menu | -----
+    menu | ▶ Run the check (:architecture-test:test)
+    menu | ⟳ Refresh the definition
+
+== ui/src/main/kotlin/com/example/sample/ui/component/AppButton.kt
+roles: ui.Component
+    ui.Component declared at ComponentRole.kt:17 | fun DeclarationContainerScope.component() = "Component".role {
+18 | ◆ | katachi: ui.Component — allowed by @Composable public fun AppButton(...) (ComponentRole.kt:102)
+    allowed at ComponentRole.kt:102 | annotated("Composable").public.`fun`(fileName)
+    menu | ◆ Allowed by @Composable public fun AppButton(...) | ComponentRole.kt:102
+    menu | ◇ Role ui.Component — Shared component | ComponentRole.kt:17
+    menu | == Other files of ui.Component
+    menu | (disabled) — No other file yet
+    menu | -----
+    menu | + New ui.Component from template…
+    menu | ▶ Run the check (:architecture-test:test)
+    menu | ⟳ Refresh the definition
+37 | ◆ | katachi: ui.Component — allowed by public enum class AppButton* (ComponentRole.kt:104)
+    allowed at ComponentRole.kt:104 | public.enum.`class`("$fileName*")
+    menu | ◆ Allowed by public enum class AppButton* | ComponentRole.kt:104
+    menu | ◇ Role ui.Component — Shared component | ComponentRole.kt:17
+    menu | == Other files of ui.Component
+    menu | (disabled) — No other file yet
+    menu | -----
+    menu | + New ui.Component from template…
+    menu | ▶ Run the check (:architecture-test:test)
+    menu | ⟳ Refresh the definition
+47 | ◆ | katachi: ui.Component — allowed by @Preview private fun *Preview(...) (ComponentRole.kt:103)
+    allowed at ComponentRole.kt:103 | annotated("Preview").private.`fun`("*Preview")
+    menu | ◆ Allowed by @Preview private fun *Preview(...) | ComponentRole.kt:103
+    menu | ◇ Role ui.Component — Shared component | ComponentRole.kt:17
+    menu | == Other files of ui.Component
+    menu | (disabled) — No other file yet
+    menu | -----
+    menu | + New ui.Component from template…
+    menu | ▶ Run the check (:architecture-test:test)
+    menu | ⟳ Refresh the definition
+55 | ◆ | katachi: ui.Component — allowed by @Preview private fun *Preview(...) (ComponentRole.kt:103)
+    allowed at ComponentRole.kt:103 | annotated("Preview").private.`fun`("*Preview")
+    menu | ◆ Allowed by @Preview private fun *Preview(...) | ComponentRole.kt:103
+    menu | ◇ Role ui.Component — Shared component | ComponentRole.kt:17
+    menu | == Other files of ui.Component
+    menu | (disabled) — No other file yet
+    menu | -----
+    menu | + New ui.Component from template…
+    menu | ▶ Run the check (:architecture-test:test)
+    menu | ⟳ Refresh the definition
+65 | ◆ | katachi: ui.Component — allowed by @Preview private fun *Preview(...) (ComponentRole.kt:103)
+    allowed at ComponentRole.kt:103 | annotated("Preview").private.`fun`("*Preview")
+    menu | ◆ Allowed by @Preview private fun *Preview(...) | ComponentRole.kt:103
+    menu | ◇ Role ui.Component — Shared component | ComponentRole.kt:17
+    menu | == Other files of ui.Component
+    menu | (disabled) — No other file yet
+    menu | -----
+    menu | + New ui.Component from template…
+    menu | ▶ Run the check (:architecture-test:test)
+    menu | ⟳ Refresh the definition
+
+== ui/src/main/kotlin/com/example/sample/ui/core/UiState.kt
+roles: ui.UiCore
+    ui.UiCore declared at UiCoreRole.kt:8 | fun DeclarationContainerScope.uiCore() = "UiCore".role {
+11 | ◆ | katachi: ui.UiCore
+    menu | ◇ Role ui.UiCore — UI foundation | UiCoreRole.kt:8
+    menu | == Other files of ui.UiCore
+    menu | (disabled) — No other file yet
+    menu | -----
+    menu | ▶ Run the check (:architecture-test:test)
+    menu | ⟳ Refresh the definition
+
+== ui/src/main/kotlin/com/example/sample/ui/preview/PreviewRoot.kt
+roles: ui.PreviewRoot
+    ui.PreviewRoot declared at PreviewRootRole.kt:9 | fun DeclarationContainerScope.previewRoot() = "PreviewRoot".role {
+20 | ◆ | katachi: ui.PreviewRoot
+    menu | ◇ Role ui.PreviewRoot — Preview base | PreviewRootRole.kt:9
+    menu | == Other files of ui.PreviewRoot
+    menu | (disabled) — No other file yet
+    menu | -----
+    menu | ▶ Run the check (:architecture-test:test)
+    menu | ⟳ Refresh the definition
+
+== ui/src/main/kotlin/com/example/sample/ui/theme/AppTheme.kt
+roles: ui.Theme
+    ui.Theme declared at ThemeRole.kt:9 | fun DeclarationContainerScope.theme() = "Theme".role {
+9 | ◆ | katachi: ui.Theme
+    menu | ◇ Role ui.Theme — Theme | ThemeRole.kt:9
+    menu | == Other files of ui.Theme
+    menu | (disabled) — No other file yet
+    menu | -----
+    menu | ▶ Run the check (:architecture-test:test)
+    menu | ⟳ Refresh the definition
+
+## annotations
+(no SARIF of a real run was taken for sample/android: only sample/jvm's)

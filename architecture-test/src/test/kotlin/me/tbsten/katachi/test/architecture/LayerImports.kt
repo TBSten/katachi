@@ -26,6 +26,10 @@ package me.tbsten.katachi.test.architecture
  * another, so none may come before the others: they may import each other freely, and all
  * three may import nothing after them.
  *
+ * `ide` writes the whole definition as JSON for the katachi IDE plugin. It comes after `template`
+ * because that JSON carries the templates' own JSON, built by `template.internal`, next to what
+ * `processor` and `check` know of the walk; nothing in `:katachi` imports it.
+ *
  * `konsist` and `konture` are the layers of `:katachi-konsist` and `:katachi-konture`, listed
  * together because the two backends are siblings and neither is "after" the other. Nothing in
  * `:katachi` can import either — the Gradle dependency runs the other way — so their entry is
@@ -41,6 +45,7 @@ private val LAYERS: List<List<String>> =
         listOf("processor", "check", "report"),
         listOf("docs"),
         listOf("template"),
+        listOf("ide"),
         listOf("konsist", "konture"),
     )
 

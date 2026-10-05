@@ -1,0 +1,207 @@
+{
+  "$schema": "https://json.schemastore.org/sarif-2.1.0.json",
+  "version": "2.1.0",
+  "runs": [
+    {
+      "tool": {
+        "driver": {
+          "name": "katachi",
+          "semanticVersion": "0.0.0-test",
+          "informationUri": "https://tbsten.github.io/katachi/",
+          "rules": [
+            {
+              "id": "katachi.UnsatisfiedFileConstraint",
+              "name": "UnsatisfiedFileConstraint",
+              "shortDescription": {
+                "text": "A file constraint (fileConstraint { } or konsist { }) rejected a file."
+              },
+              "defaultConfiguration": {
+                "level": "error"
+              }
+            }
+          ]
+        }
+      },
+      "originalUriBaseIds": {
+        "%SRCROOT%": {
+          "uri": "file:///w/repo/"
+        }
+      },
+      "invocations": [
+        {
+          "executionSuccessful": true
+        }
+      ],
+      "results": [
+        {
+          "ruleId": "katachi.UnsatisfiedFileConstraint",
+          "ruleIndex": 0,
+          "level": "error",
+          "message": {
+            "text": "Role: Screen / FileConstraint: \"ktFileContent\"\nDeclaration: GetUserUseCaseImpl (line 5)\nNot allowed: class GetUserUseCaseImpl : GetUserUseCase\nAllowed here:\n  interface GetUserUseCase\n  class DefaultGetUserUseCase : GetUserUseCase  (missing)\nDeclared at: KtFileContentSarifSpec.kt:36\n\nHow to fix:\n  - Rename it to DefaultGetUserUseCase\n  - Move it to a file of another role\n  - Allow it in ktFileContent { } at KtFileContentSarifSpec.kt:36:\n      `class`(\"GetUserUseCaseImpl\").optional()"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "android/core/domain/GetUserUseCase.kt",
+                  "uriBaseId": "%SRCROOT%"
+                },
+                "region": {
+                  "startLine": 5
+                }
+              }
+            }
+          ],
+          "properties": {
+            "kind": "FileConstraint",
+            "severity": "Error",
+            "path": "core/domain/GetUserUseCase.kt",
+            "role": "Screen",
+            "constraint": "ktFileContent",
+            "declaration": "GetUserUseCaseImpl",
+            "declaredAt": "KtFileContentSarifSpec.kt:36"
+          }
+        },
+        {
+          "ruleId": "katachi.UnsatisfiedFileConstraint",
+          "ruleIndex": 0,
+          "level": "error",
+          "message": {
+            "text": "Role: Screen / FileConstraint: \"ktFileContent\"\nDeclaration: DefaultGetUserUseCase\nMissing: class DefaultGetUserUseCase : GetUserUseCase\nDeclared at: KtFileContentSarifSpec.kt:38\n\nHow to fix:\n  - Declare it in this file\n  - If some files do not need it, make it optional at KtFileContentSarifSpec.kt:38"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "android/core/domain/GetUserUseCase.kt",
+                  "uriBaseId": "%SRCROOT%"
+                }
+              }
+            }
+          ],
+          "properties": {
+            "kind": "FileConstraint",
+            "severity": "Error",
+            "path": "core/domain/GetUserUseCase.kt",
+            "role": "Screen",
+            "constraint": "ktFileContent",
+            "declaration": "DefaultGetUserUseCase",
+            "declaredAt": "KtFileContentSarifSpec.kt:38"
+          }
+        },
+        {
+          "ruleId": "katachi.UnsatisfiedFileConstraint",
+          "ruleIndex": 0,
+          "level": "error",
+          "message": {
+            "text": "Role: Screen / FileConstraint: \"ktFileContent\"\nDeclaration: HomeViewModel (line 3)\nNot allowed: class HomeViewModel\nExpected: interface HomeViewModel\nDiffers in: kind (is class, expected interface)\nDeclared at: KtFileContentSarifSpec.kt:37\n\nHow to fix:\n  - Change the declaration to: interface HomeViewModel\n  - Or change the line at KtFileContentSarifSpec.kt:37 if the declaration is right"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "android/core/domain/HomeViewModel.kt",
+                  "uriBaseId": "%SRCROOT%"
+                },
+                "region": {
+                  "startLine": 3
+                }
+              }
+            }
+          ],
+          "properties": {
+            "kind": "FileConstraint",
+            "severity": "Error",
+            "path": "core/domain/HomeViewModel.kt",
+            "role": "Screen",
+            "constraint": "ktFileContent",
+            "declaration": "HomeViewModel",
+            "declaredAt": "KtFileContentSarifSpec.kt:37"
+          }
+        },
+        {
+          "ruleId": "katachi.UnsatisfiedFileConstraint",
+          "ruleIndex": 0,
+          "level": "error",
+          "message": {
+            "text": "Role: Screen / FileConstraint: \"ktFileContent\"\nDeclaration: DefaultHomeViewModel\nMissing: class DefaultHomeViewModel : HomeViewModel\nDeclared at: KtFileContentSarifSpec.kt:38\n\nHow to fix:\n  - Declare it in this file\n  - If some files do not need it, make it optional at KtFileContentSarifSpec.kt:38"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "android/core/domain/HomeViewModel.kt",
+                  "uriBaseId": "%SRCROOT%"
+                }
+              }
+            }
+          ],
+          "properties": {
+            "kind": "FileConstraint",
+            "severity": "Error",
+            "path": "core/domain/HomeViewModel.kt",
+            "role": "Screen",
+            "constraint": "ktFileContent",
+            "declaration": "DefaultHomeViewModel",
+            "declaredAt": "KtFileContentSarifSpec.kt:38"
+          }
+        },
+        {
+          "ruleId": "katachi.UnsatisfiedFileConstraint",
+          "ruleIndex": 0,
+          "level": "error",
+          "message": {
+            "text": "Role: Screen / FileConstraint: \"ktFileContent\"\nDeclaration: import com.example.App\nMissing: import com.example.App\nDeclared at: KtFileContentSarifSpec.kt:47\n\nHow to fix:\n  - Add the import\n  - If some files do not need it, make it optional at KtFileContentSarifSpec.kt:47"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "android/core/ui/CounterViewModel.kt",
+                  "uriBaseId": "%SRCROOT%"
+                }
+              }
+            }
+          ],
+          "properties": {
+            "kind": "FileConstraint",
+            "severity": "Error",
+            "path": "core/ui/CounterViewModel.kt",
+            "role": "Screen",
+            "constraint": "ktFileContent",
+            "declaration": "import com.example.App",
+            "declaredAt": "KtFileContentSarifSpec.kt:47"
+          }
+        },
+        {
+          "ruleId": "katachi.UnsatisfiedFileConstraint",
+          "ruleIndex": 0,
+          "level": "error",
+          "message": {
+            "text": "Role: Screen / FileConstraint: \"ktFileContent\"\nDeclaration: CounterViewModel.count\nMissing: public val count: Int in class CounterViewModel\nFound: private val count (line 4)\nDeclared at: KtFileContentSarifSpec.kt:49\n\nHow to fix:\n  - Change the declaration at line 4 to: public val count: Int\n  - Or change the line at KtFileContentSarifSpec.kt:49 if the declaration is right\n  - If some files do not need it, make it optional at KtFileContentSarifSpec.kt:49"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "android/core/ui/CounterViewModel.kt",
+                  "uriBaseId": "%SRCROOT%"
+                }
+              }
+            }
+          ],
+          "properties": {
+            "kind": "FileConstraint",
+            "severity": "Error",
+            "path": "core/ui/CounterViewModel.kt",
+            "role": "Screen",
+            "constraint": "ktFileContent",
+            "declaration": "CounterViewModel.count",
+            "declaredAt": "KtFileContentSarifSpec.kt:49"
+          }
+        }
+      ]
+    }
+  ]
+}

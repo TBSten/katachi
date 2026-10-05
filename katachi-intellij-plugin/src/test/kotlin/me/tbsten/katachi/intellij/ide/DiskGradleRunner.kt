@@ -1,7 +1,9 @@
 package me.tbsten.katachi.intellij.ide
 
 import kotlinx.coroutines.CancellationException
+import com.intellij.openapi.util.io.NioFiles
 import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.delay
 import me.tbsten.katachi.intellij.data.gradle.GradleRunListener
 import me.tbsten.katachi.intellij.data.gradle.GradleRunOutcome
 import me.tbsten.katachi.intellij.data.gradle.GradleRunRequest
@@ -14,12 +16,36 @@ import java.nio.file.Path
 import java.util.Collections
 
 /**
- * What one load of the definitions (`katachiInternalTemplatesJson`) answers with, in the order of the loads.
+ * What one load of the definitions (`katachiInternalTemplatesJson` / `katachiInternalDefinitionJson`) answers
+ * with, in the order of the loads.
  *
- * [json] is written into every module of the request; `null` takes the module's fixture (see
- * [DiskGradleRunner.fixtureOf]). [fails] makes the build fail without writing anything.
+ * [json] is written into every module of the request that runs the templates task, [definitionJson] into
+ * every module that runs the definition task; `null` takes the module's fixture (see
+ * [DiskGradleRunner.fixtureOf] / [DiskGradleRunner.definitionOf]). [fails] makes the build fail without writing anything.
+ * A [gate] holds the build after it started until the test completes it.
  */
-internal data class LoadAnswer(val json: String? = null, val fails: Boolean = false)
+internal data class LoadAnswer(
+    val json: String? = null,
+    val fails: Boolean = false,
+    val definitionJson: String? = null,
+    val gate: CompletableDeferred<Unit>? = null,
+)
+
+/**
+ * One check (`:<module>:test`) of the fake Gradle. As katachi's test task does, it first deletes the module's
+ * last reports, then writes [sarif] (none: `report { sarif = true }` is missing) as `build/reports/katachi/katachi.sarif`.
+ * With [partialFirst] it writes that cut-off text first and the whole one [partialMillis] later, as a write the
+ * IDE reads in the middle of. A [gate] holds the build after the deletion. [fails]: the tests failed (the SARIF is still written).
+ */
+internal class PlannedCheck(
+    val sarif: String?,
+    val fails: Boolean = false,
+    val partialFirst: String? = null,
+    val partialMillis: Long = 400,
+    val gate: CompletableDeferred<Unit>? = null,
+) {
+    val reachedGate: CompletableDeferred<Unit> = CompletableDeferred()
+}
 
 /** The `katachiTemplate` invocation a [PlannedGeneration] answers: which module, and the `--arg`s it was given. */
 internal data class GenerationCall(val module: String, val moduleDir: Path, val root: Path, val args: List<Pair<String, String>>) {
@@ -66,11 +92,23 @@ internal class DiskGradleRunner(private val root: Path) : GradleTaskRunner {
     /** The generations answered before [generations], in order. */
     val plans: MutableList<PlannedGeneration> = Collections.synchronizedList(mutableListOf())
 
+    /** What each check (`:<module>:test`) does, in order; once empty, a check writes nothing and succeeds. */
+    val checks: MutableList<PlannedCheck> = Collections.synchronizedList(mutableListOf())
+
+    /** The `definition.json` a module answers the definition task with, by the module's directory name. */
+    val definitionOf: MutableMap<String, String> = Collections.synchronizedMap(mutableMapOf())
+
     /**
      * The contract JSON (`json/<name>.json`) a module answers a load with, by the module's directory
      * name (`arch-a` for `:arch-a`); the module's own name when absent.
      */
     val fixtureOf: MutableMap<String, String> = Collections.synchronizedMap(mutableMapOf())
+
+    /**
+     * The directory names of the modules katachi 0.2.x installed: they have no `katachiInternalDefinitionJson`, so
+     * that task fails the way Gradle fails an unknown one ("Task '...' not found in project ':arch'").
+     */
+    val withoutDefinitionTask: MutableSet<String> = Collections.synchronizedSet(mutableSetOf())
 
     /**
      * The directory the contract output's `file:///__ROOT__` stands for: [root] unless a test's
@@ -88,31 +126,72 @@ internal class DiskGradleRunner(private val root: Path) : GradleTaskRunner {
         private set
 
     /** The requests that ran a generation (`katachiTemplate`). */
-    val generationRequests: List<GradleRunRequest> get() = synchronized(requests) { requests.filterNot(::isLoad) }
+    val generationRequests: List<GradleRunRequest> get() = synchronized(requests) { requests.filterNot { isLoad(it) || isCheck(it) } }
+
+    /** The requests that ran a check (`:<module>:test`). */
+    val checkRequests: List<GradleRunRequest> get() = synchronized(requests) { requests.filter(::isCheck) }
 
     /** The requests that ran a load of the definitions. */
     val loadRequests: List<GradleRunRequest> get() = synchronized(requests) { requests.filter(::isLoad) }
 
     override suspend fun run(request: GradleRunRequest, listener: GradleRunListener): GradleRunOutcome {
         requests += request
-        return if (isLoad(request)) load(request, listener) else generate(request, listener)
+        return when {
+            isLoad(request) -> load(request, listener)
+            isCheck(request) -> check(request, listener)
+            else -> generate(request, listener)
+        }
     }
 
-    private fun isLoad(request: GradleRunRequest): Boolean = request.tasks.first().taskPath.endsWith(":${KatachiModule.TEMPLATES_JSON_TASK}")
+    private fun isLoad(request: GradleRunRequest): Boolean = request.tasks.first().taskPath.let {
+        it.endsWith(":${KatachiModule.TEMPLATES_JSON_TASK}") || it.endsWith(":${KatachiModule.DEFINITION_JSON_TASK}")
+    }
 
-    private fun load(request: GradleRunRequest, listener: GradleRunListener): GradleRunOutcome {
+    private fun isCheck(request: GradleRunRequest): Boolean = request.tasks.first().taskPath.endsWith(":test")
+
+    private suspend fun load(request: GradleRunRequest, listener: GradleRunListener): GradleRunOutcome {
+        val first = request.tasks.first()
+        if (first.taskPath.endsWith(":${KatachiModule.DEFINITION_JSON_TASK}") && moduleOf(first) in withoutDefinitionTask) {
+            listener.onLine("> Configure project :")
+            listener.onLine("FAILURE: Build failed with an exception.")
+            listener.onLine("* What went wrong:")
+            listener.onLine("Task '${KatachiModule.DEFINITION_JSON_TASK}' not found in project ':${moduleOf(first)}'.")
+            return GradleRunOutcome.Failed
+        }
         val answer = synchronized(loads) { if (loads.isEmpty()) LoadAnswer() else loads.removeAt(0) }
+        answer.gate?.let { awaitCancellable(it) }
         if (answer.fails) {
             failureLines(request.tasks.first().taskPath).forEach(listener::onLine)
             return GradleRunOutcome.Failed
         }
         for (invocation in request.tasks) {
             val module = moduleOf(invocation)
-            val json = root.resolve(module).resolve(KatachiModule.TEMPLATE_DESCRIPTION_JSON)
-            Files.createDirectories(json.parent)
-            Files.writeString(json, answer.json ?: ContractFixtures.json(fixtureOf[module] ?: module))
+            if (invocation.taskPath.endsWith(":${KatachiModule.DEFINITION_JSON_TASK}")) {
+                val text = answer.definitionJson ?: definitionOf[module] ?: throw AssertionError("no definition.json for $module")
+                write(root.resolve(module).resolve(KatachiModule.DEFINITION_JSON), text)
+            } else {
+                write(root.resolve(module).resolve(KatachiModule.TEMPLATE_DESCRIPTION_JSON), answer.json ?: ContractFixtures.json(fixtureOf[module] ?: module))
+            }
         }
         return GradleRunOutcome.Succeeded
+    }
+
+    private suspend fun check(request: GradleRunRequest, listener: GradleRunListener): GradleRunOutcome {
+        val plan = synchronized(checks) { if (checks.isEmpty()) PlannedCheck(sarif = null) else checks.removeAt(0) }
+        val reports = root.resolve(moduleOf(request.tasks.first())).resolve("build/reports/katachi")
+        if (Files.exists(reports)) NioFiles.deleteRecursively(reports)
+        listener.onLine("> Task ${request.tasks.first().taskPath}")
+        plan.gate?.let { gate ->
+            plan.reachedGate.complete(Unit)
+            awaitCancellable(gate)
+        }
+        val sarif = reports.resolve("katachi.sarif")
+        plan.partialFirst?.let { partial ->
+            write(sarif, partial)
+            delay(plan.partialMillis)
+        }
+        plan.sarif?.let { write(sarif, it) }
+        return if (plan.fails) GradleRunOutcome.Failed else GradleRunOutcome.Succeeded
     }
 
     private suspend fun generate(request: GradleRunRequest, listener: GradleRunListener): GradleRunOutcome {

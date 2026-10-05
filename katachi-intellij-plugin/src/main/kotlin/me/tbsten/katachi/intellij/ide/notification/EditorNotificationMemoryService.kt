@@ -8,9 +8,12 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 import kotlinx.coroutines.CoroutineScope
 import me.tbsten.katachi.intellij.ide.KatachiProjectService
+import me.tbsten.katachi.intellij.ide.definition.DefinitionModelService
 import me.tbsten.katachi.intellij.ide.sdkCall
+import me.tbsten.katachi.intellij.model.DefinitionState
 import me.tbsten.katachi.intellij.presentation.entry.EditorNotificationMemory
 import me.tbsten.katachi.intellij.presentation.entry.NotificationDecision
+import me.tbsten.katachi.intellij.presentation.rules.VcsTracking
 import java.nio.file.Path
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.atomic.AtomicReference
@@ -51,6 +54,7 @@ internal class EditorNotificationMemoryService(
                     override fun fileClosed(source: FileEditorManager, file: VirtualFile) {
                         // Still open in another window or split: not closed yet.
                         if (sdkCall("ask whether ${file.path} is still open") { source.isFileOpen(file) }.getOrNull() == true) return
+                        refresher.unfollowVcs(file)
                         sdkCall("find the path of ${file.name}") { file.fileSystem.getNioPath(file) }.getOrNull()?.let(::fileClosed)
                     }
                 },
@@ -66,6 +70,11 @@ internal class EditorNotificationMemoryService(
         memory.updateAndGet { it.dismiss(file) }
     }
 
+    /** × on the "no role holds this file" notification of [file]. */
+    fun dismissNoRole(file: Path) {
+        memory.updateAndGet { it.dismissNoRole(file) }
+    }
+
     /** What the notification decided for [file] last, so that closing it knows whether it was shown. */
     fun recordDecision(file: Path, decision: NotificationDecision) {
         if (decision is NotificationDecision.ViewTemplate) showingContentNotice.add(file) else showingContentNotice.remove(file)
@@ -78,6 +87,14 @@ internal class EditorNotificationMemoryService(
 
     /** Recomputes the notification of [file] (a path with a match) a moment after its Document changes (S2 (c)). */
     fun followEdits(file: Path) = refresher.followEdits(file)
+
+    /** Recomputes all notifications when [service]'s state changes (a definition reached `Ready`, went stale, failed). */
+    fun followDefinitions(service: DefinitionModelService, observed: DefinitionState) = refresher.followDefinitions(service, observed)
+
+    /** [file] shows "no role holds this file" drawn for [seen]: recompute it when [now] answers something else after a status change. */
+    fun followVcs(file: VirtualFile, seen: VcsTracking, now: () -> VcsTracking?) = refresher.followVcs(file, seen, now)
+
+    fun unfollowVcs(file: VirtualFile) = refresher.unfollowVcs(file)
 
     /** Recomputes the notifications of the files [service]'s generations touch; once per service. */
     fun followGenerations(service: KatachiProjectService) = refresher.followGenerations(service)

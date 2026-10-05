@@ -82,8 +82,11 @@ internal class FileConstraintCoverage(
 ) {
     private val entries: List<LayoutEntry> =
         covered.filter { it.kind == LayoutEntryKind.File || it.kind == LayoutEntryKind.AnyFile }
-    private val fileGlobs: List<Glob> = entries.filter { it.kind == LayoutEntryKind.File }.map { it.glob }
-    private val anyFileGlobs: List<Glob> = entries.filter { it.kind == LayoutEntryKind.AnyFile }.map { it.glob }
+    /** The patterns of the file entries: a file one of them matches is covered. */
+    val fileGlobs: List<Glob> = entries.filter { it.kind == LayoutEntryKind.File }.map { it.glob }
+
+    /** The patterns of the `anyFile()` directories: a file directly inside one of them is covered. */
+    val anyFileGlobs: List<Glob> = entries.filter { it.kind == LayoutEntryKind.AnyFile }.map { it.glob }
 
     /**
      * See [me.tbsten.katachi.dsl.FileConstraintSubject.captureNames]. Read-only, because every

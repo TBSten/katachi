@@ -16,6 +16,12 @@ internal sealed interface EntryOrigin {
      * template fits (decision 23).
      */
     data class NewMenuDirectory(override val path: Path) : EntryOrigin
+
+    /**
+     * A file of the same role, the one whose gutter menu asked for the next file (design 2.3, U-9). The captures it
+     * decides are the ones above its name: the feature and the directories carry over, the name stays open.
+     */
+    data class SiblingOf(override val path: Path) : EntryOrigin
 }
 
 /** What the generate dialog opens with. The dialog lists every template (issue 0), [initialTemplate] selected. */

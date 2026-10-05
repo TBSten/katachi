@@ -15,8 +15,12 @@ import java.nio.file.Path
 
 /** What [KatachiSettings] writes to the workspace file. */
 internal class KatachiSettingsState : BaseState() {
-    /** "Reload when a definition is saved" (E-44). Off by default: a definition does not compile while being edited. */
-    var autoReloadOnSave by property(false)
+    /**
+     * "Reload when a definition is saved" (E-44). On by default (ide-definition-model decision U-1): only a save of the
+     * definition module's test sources reloads, after two seconds and once Gradle is idle, and a reload that fails
+     * keeps the previous answer.
+     */
+    var autoReloadOnSave by property(true)
     var openAfterGeneration by enum(OpenAfterGeneration.First)
 
     /** The "existing files" combo, remembered per project (spec 04 "入力値の保存"); never "overwrite". */
@@ -34,8 +38,14 @@ internal class KatachiSettingsState : BaseState() {
     /** Notify on a file with content only the first time it is opened (the memory of that is not persisted). */
     var notifyOnContentOnce by property(true)
 
+    /** Notify on a file no role holds (the test would report it as UnexpectedFile). Off with [editorNotificationEnabled] too. */
+    var notifyOnNoRole by property(true)
+
     /** Load the templates without a user action, which runs Gradle. */
     var autoLoadTemplates by property(true)
+
+    /** Underline the violations of the last check in the source files, and put the ones without a line in a banner (ide-gutter design 2.5). */
+    var showViolationsInEditor by property(true)
 
     /** Folded module header bands, as `<linked root>|<Gradle path>`. */
     var collapsedModules by stringSet()
@@ -84,10 +94,22 @@ internal class KatachiSettings : SimplePersistentStateComponent<KatachiSettingsS
             state.notifyOnContentOnce = value
         }
 
+    var notifyOnNoRole: Boolean
+        get() = state.notifyOnNoRole
+        set(value) {
+            state.notifyOnNoRole = value
+        }
+
     var autoLoadTemplates: Boolean
         get() = state.autoLoadTemplates
         set(value) {
             state.autoLoadTemplates = value
+        }
+
+    var showViolationsInEditor: Boolean
+        get() = state.showViolationsInEditor
+        set(value) {
+            state.showViolationsInEditor = value
         }
 
     var openAfterGeneration: OpenAfterGeneration

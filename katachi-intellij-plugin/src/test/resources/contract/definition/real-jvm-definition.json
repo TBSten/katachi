@@ -1,0 +1,3853 @@
+{
+  "schemaVersion": 1,
+  "katachiVersion": "0.2.0",
+  "generatedAt": "2026-10-05T05:55:36Z",
+  "projectRoot": "/__ROOT__",
+  "architecture": {
+    "declaredAt": {
+      "fileName": "ProjectArchitecture.kt",
+      "line": 43
+    },
+    "files": "gitTracked",
+    "baseline": "katachi-baseline.json"
+  },
+  "groups": [
+    {
+      "qualifiedName": "api",
+      "name": "api",
+      "path": ["api"],
+      "title": "API",
+      "summary": "The layer that faces HTTP. It owns everything from receiving a request to returning a response",
+      "documented": null,
+      "declaredAt": {
+        "fileName": "ApiGroup.kt",
+        "line": 29
+      }
+    },
+    {
+      "qualifiedName": "domain",
+      "name": "domain",
+      "path": ["domain"],
+      "title": "Domain",
+      "summary": "The application-specific behaviour, and the values it acts on",
+      "documented": null,
+      "declaredAt": {
+        "fileName": "DomainGroup.kt",
+        "line": 9
+      }
+    },
+    {
+      "qualifiedName": "data",
+      "name": "data",
+      "path": ["data"],
+      "title": "Data",
+      "summary": "The layer that takes responsibility for where values come from",
+      "documented": null,
+      "declaredAt": {
+        "fileName": "DataGroup.kt",
+        "line": 8
+      }
+    },
+    {
+      "qualifiedName": "app",
+      "name": "app",
+      "path": ["app"],
+      "title": "Application",
+      "summary": "Starting the process, and the configuration loaded at runtime",
+      "documented": null,
+      "declaredAt": {
+        "fileName": "AppGroup.kt",
+        "line": 9
+      }
+    },
+    {
+      "qualifiedName": "testing",
+      "name": "testing",
+      "path": ["testing"],
+      "title": "Testing",
+      "summary": "Tests that check behaviour, this definition itself, and the documentation and snapshot written out from it",
+      "documented": null,
+      "declaredAt": {
+        "fileName": "TestingGroup.kt",
+        "line": 28
+      }
+    },
+    {
+      "qualifiedName": "Gradle",
+      "name": "Gradle",
+      "path": ["Gradle"],
+      "title": "Gradle",
+      "summary": "The files that make this project a Gradle build",
+      "documented": false,
+      "declaredAt": {
+        "fileName": "GradleGroup.kt",
+        "line": 22
+      }
+    },
+    {
+      "qualifiedName": "Gradle.GradleWrapper",
+      "name": "GradleWrapper",
+      "path": ["Gradle", "GradleWrapper"],
+      "title": "Gradle wrapper",
+      "summary": "What runs the build with the Gradle version the project pins",
+      "documented": false,
+      "declaredAt": {
+        "fileName": "GradleGroup.kt",
+        "line": 22
+      }
+    },
+    {
+      "qualifiedName": "tool",
+      "name": "tool",
+      "path": ["tool"],
+      "title": "Tool configuration",
+      "summary": "Configuration of tools around the project that are not the build itself",
+      "documented": false,
+      "declaredAt": {
+        "fileName": "ToolGroup.kt",
+        "line": 12
+      }
+    }
+  ],
+  "roles": [
+    {
+      "qualifiedName": "api.Controller",
+      "name": "Controller",
+      "groupPath": ["api"],
+      "title": "Controller",
+      "summary": "Receives one HTTP request, calls the matching Service and returns the result",
+      "documented": null,
+      "declaredAt": {
+        "fileName": "ControllerRole.kt",
+        "line": 25
+      },
+      "layout": [
+        {
+          "index": 0,
+          "path": "src",
+          "kind": "Directory",
+          "required": false,
+          "description": null,
+          "declaredAt": {
+            "fileName": "ControllerRole.kt",
+            "line": 69
+          },
+          "modulePath": null,
+          "pathInModule": "src",
+          "captures": [],
+          "moduleCapture": null,
+          "template": null,
+          "matchedFiles": [],
+          "matchedCount": null,
+          "matchedFilesTruncated": false,
+          "synthetic": false,
+          "place": false
+        },
+        {
+          "index": 1,
+          "path": "src/main",
+          "kind": "Directory",
+          "required": false,
+          "description": null,
+          "declaredAt": {
+            "fileName": "ControllerRole.kt",
+            "line": 69
+          },
+          "modulePath": null,
+          "pathInModule": "src/main",
+          "captures": [],
+          "moduleCapture": null,
+          "template": null,
+          "matchedFiles": [],
+          "matchedCount": null,
+          "matchedFilesTruncated": false,
+          "synthetic": false,
+          "place": false
+        },
+        {
+          "index": 2,
+          "path": "src/main/kotlin",
+          "kind": "Directory",
+          "required": false,
+          "description": null,
+          "declaredAt": {
+            "fileName": "ControllerRole.kt",
+            "line": 69
+          },
+          "modulePath": null,
+          "pathInModule": "src/main/kotlin",
+          "captures": [],
+          "moduleCapture": null,
+          "template": null,
+          "matchedFiles": [],
+          "matchedCount": null,
+          "matchedFilesTruncated": false,
+          "synthetic": false,
+          "place": false
+        },
+        {
+          "index": 3,
+          "path": "src/main/kotlin/com",
+          "kind": "Directory",
+          "required": false,
+          "description": null,
+          "declaredAt": {
+            "fileName": "ControllerRole.kt",
+            "line": 69
+          },
+          "modulePath": null,
+          "pathInModule": "src/main/kotlin/com",
+          "captures": [],
+          "moduleCapture": null,
+          "template": null,
+          "matchedFiles": [],
+          "matchedCount": null,
+          "matchedFilesTruncated": false,
+          "synthetic": false,
+          "place": false
+        },
+        {
+          "index": 4,
+          "path": "src/main/kotlin/com/example",
+          "kind": "Directory",
+          "required": false,
+          "description": null,
+          "declaredAt": {
+            "fileName": "ControllerRole.kt",
+            "line": 69
+          },
+          "modulePath": null,
+          "pathInModule": "src/main/kotlin/com/example",
+          "captures": [],
+          "moduleCapture": null,
+          "template": null,
+          "matchedFiles": [],
+          "matchedCount": null,
+          "matchedFilesTruncated": false,
+          "synthetic": false,
+          "place": false
+        },
+        {
+          "index": 5,
+          "path": "src/main/kotlin/com/example/controller",
+          "kind": "Directory",
+          "required": false,
+          "description": null,
+          "declaredAt": {
+            "fileName": "ControllerRole.kt",
+            "line": 69
+          },
+          "modulePath": null,
+          "pathInModule": "src/main/kotlin/com/example/controller",
+          "captures": [],
+          "moduleCapture": null,
+          "template": null,
+          "matchedFiles": [],
+          "matchedCount": null,
+          "matchedFilesTruncated": false,
+          "synthetic": false,
+          "place": false
+        },
+        {
+          "index": 6,
+          "path": "src/main/kotlin/com/example/controller/*",
+          "kind": "Directory",
+          "required": false,
+          "description": null,
+          "declaredAt": {
+            "fileName": "ControllerRole.kt",
+            "line": 69
+          },
+          "modulePath": null,
+          "pathInModule": "src/main/kotlin/com/example/controller/*",
+          "captures": [
+            {
+              "name": "resource",
+              "segmentIndex": 6
+            }
+          ],
+          "moduleCapture": null,
+          "template": null,
+          "matchedFiles": [],
+          "matchedCount": null,
+          "matchedFilesTruncated": false,
+          "synthetic": false,
+          "place": false
+        },
+        {
+          "index": 7,
+          "path": "src/main/kotlin/com/example/controller/*/*Controller.kt",
+          "kind": "File",
+          "required": false,
+          "description": null,
+          "declaredAt": {
+            "fileName": "ControllerRole.kt",
+            "line": 70
+          },
+          "modulePath": null,
+          "pathInModule": "src/main/kotlin/com/example/controller/*/*Controller.kt",
+          "captures": [
+            {
+              "name": "resource",
+              "segmentIndex": 6
+            },
+            {
+              "name": "name",
+              "segmentIndex": 7
+            }
+          ],
+          "moduleCapture": null,
+          "template": {
+            "specifier": "api.Controller",
+            "id": null,
+            "title": null,
+            "declaredAt": {
+              "fileName": "ControllerRole.kt",
+              "line": 71
+            }
+          },
+          "matchedFiles": ["src/main/kotlin/com/example/controller/health/HealthController.kt"],
+          "matchedCount": 1,
+          "matchedFilesTruncated": false,
+          "synthetic": false,
+          "place": false
+        }
+      ],
+      "constraints": [
+        {
+          "name": "ktFileContent",
+          "backend": "ktFileContent",
+          "checkClass": "me.tbsten.katachi.konsist.declarations.internal.KtFileContentConstraint",
+          "range": "Subtree",
+          "declaredAt": {
+            "fileName": "ControllerRole.kt",
+            "line": 102
+          },
+          "layoutPath": null,
+          "anchors": ["src/main/kotlin/com/example/controller/*"],
+          "entries": [7],
+          "coverage": {
+            "files": ["src/main/kotlin/com/example/controller/*/*Controller.kt"],
+            "anyFileDirectories": []
+          },
+          "fileDeclarations": [
+            {
+              "file": "src/main/kotlin/com/example/controller/health/HealthController.kt",
+              "declarationsChecked": true,
+              "declarations": [
+                {
+                  "kind": "class",
+                  "name": "HealthController",
+                  "line": 9,
+                  "verdict": "Allowed",
+                  "rules": [
+                    {
+                      "text": "class HealthController",
+                      "declaredAt": {
+                        "fileName": "ControllerRole.kt",
+                        "line": 110
+                      }
+                    }
+                  ],
+                  "difference": null
+                }
+              ],
+              "missing": [],
+              "unexplainedReason": null
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "qualifiedName": "api.KtorPlugin",
+      "name": "KtorPlugin",
+      "groupPath": ["api"],
+      "title": "Ktor plugin configuration",
+      "summary": "Applies one cross-cutting setting to the Ktor Application",
+      "documented": null,
+      "declaredAt": {
+        "fileName": "KtorPluginRole.kt",
+        "line": 14
+      },
+      "layout": [
+        {
+          "index": 0,
+          "path": "src",
+          "kind": "Directory",
+          "required": false,
+          "description": null,
+          "declaredAt": {
+            "fileName": "KtorPluginRole.kt",
+            "line": 43
+          },
+          "modulePath": null,
+          "pathInModule": "src",
+          "captures": [],
+          "moduleCapture": null,
+          "template": null,
+          "matchedFiles": [],
+          "matchedCount": null,
+          "matchedFilesTruncated": false,
+          "synthetic": false,
+          "place": false
+        },
+        {
+          "index": 1,
+          "path": "src/main",
+          "kind": "Directory",
+          "required": false,
+          "description": null,
+          "declaredAt": {
+            "fileName": "KtorPluginRole.kt",
+            "line": 43
+          },
+          "modulePath": null,
+          "pathInModule": "src/main",
+          "captures": [],
+          "moduleCapture": null,
+          "template": null,
+          "matchedFiles": [],
+          "matchedCount": null,
+          "matchedFilesTruncated": false,
+          "synthetic": false,
+          "place": false
+        },
+        {
+          "index": 2,
+          "path": "src/main/kotlin",
+          "kind": "Directory",
+          "required": false,
+          "description": null,
+          "declaredAt": {
+            "fileName": "KtorPluginRole.kt",
+            "line": 43
+          },
+          "modulePath": null,
+          "pathInModule": "src/main/kotlin",
+          "captures": [],
+          "moduleCapture": null,
+          "template": null,
+          "matchedFiles": [],
+          "matchedCount": null,
+          "matchedFilesTruncated": false,
+          "synthetic": false,
+          "place": false
+        },
+        {
+          "index": 3,
+          "path": "src/main/kotlin/com",
+          "kind": "Directory",
+          "required": false,
+          "description": null,
+          "declaredAt": {
+            "fileName": "KtorPluginRole.kt",
+            "line": 43
+          },
+          "modulePath": null,
+          "pathInModule": "src/main/kotlin/com",
+          "captures": [],
+          "moduleCapture": null,
+          "template": null,
+          "matchedFiles": [],
+          "matchedCount": null,
+          "matchedFilesTruncated": false,
+          "synthetic": false,
+          "place": false
+        },
+        {
+          "index": 4,
+          "path": "src/main/kotlin/com/example",
+          "kind": "Directory",
+          "required": false,
+          "description": null,
+          "declaredAt": {
+            "fileName": "KtorPluginRole.kt",
+            "line": 43
+          },
+          "modulePath": null,
+          "pathInModule": "src/main/kotlin/com/example",
+          "captures": [],
+          "moduleCapture": null,
+          "template": null,
+          "matchedFiles": [],
+          "matchedCount": null,
+          "matchedFilesTruncated": false,
+          "synthetic": false,
+          "place": false
+        },
+        {
+          "index": 5,
+          "path": "src/main/kotlin/com/example/plugin",
+          "kind": "Directory",
+          "required": false,
+          "description": null,
+          "declaredAt": {
+            "fileName": "KtorPluginRole.kt",
+            "line": 43
+          },
+          "modulePath": null,
+          "pathInModule": "src/main/kotlin/com/example/plugin",
+          "captures": [],
+          "moduleCapture": null,
+          "template": null,
+          "matchedFiles": [],
+          "matchedCount": null,
+          "matchedFilesTruncated": false,
+          "synthetic": false,
+          "place": false
+        },
+        {
+          "index": 6,
+          "path": "src/main/kotlin/com/example/plugin/*.kt",
+          "kind": "File",
+          "required": false,
+          "description": null,
+          "declaredAt": {
+            "fileName": "KtorPluginRole.kt",
+            "line": 43
+          },
+          "modulePath": null,
+          "pathInModule": "src/main/kotlin/com/example/plugin/*.kt",
+          "captures": [],
+          "moduleCapture": null,
+          "template": null,
+          "matchedFiles": ["src/main/kotlin/com/example/plugin/Routing.kt", "src/main/kotlin/com/example/plugin/Serialization.kt"],
+          "matchedCount": 2,
+          "matchedFilesTruncated": false,
+          "synthetic": false,
+          "place": false
+        }
+      ],
+      "constraints": [
+        {
+          "name": "ktFileContent",
+          "backend": "ktFileContent",
+          "checkClass": "me.tbsten.katachi.konsist.declarations.internal.KtFileContentConstraint",
+          "range": "Subtree",
+          "declaredAt": {
+            "fileName": "KtorPluginRole.kt",
+            "line": 48
+          },
+          "layoutPath": null,
+          "anchors": ["src/main/kotlin/com/example/plugin"],
+          "entries": [6],
+          "coverage": {
+            "files": ["src/main/kotlin/com/example/plugin/*.kt"],
+            "anyFileDirectories": []
+          },
+          "fileDeclarations": [
+            {
+              "file": "src/main/kotlin/com/example/plugin/Routing.kt",
+              "declarationsChecked": true,
+              "declarations": [
+                {
+                  "kind": "fun",
+                  "name": "configureRouting",
+                  "line": 8,
+                  "verdict": "Allowed",
+                  "rules": [
+                    {
+                      "text": "fun configureRouting()",
+                      "declaredAt": {
+                        "fileName": "KtorPluginRole.kt",
+                        "line": 53
+                      }
+                    }
+                  ],
+                  "difference": null
+                }
+              ],
+              "missing": [],
+              "unexplainedReason": null
+            },
+            {
+              "file": "src/main/kotlin/com/example/plugin/Serialization.kt",
+              "declarationsChecked": true,
+              "declarations": [
+                {
+                  "kind": "fun",
+                  "name": "configureSerialization",
+                  "line": 10,
+                  "verdict": "Allowed",
+                  "rules": [
+                    {
+                      "text": "fun configureSerialization()",
+                      "declaredAt": {
+                        "fileName": "KtorPluginRole.kt",
+                        "line": 53
+                      }
+                    }
+                  ],
+                  "difference": null
+                }
+              ],
+              "missing": [],
+              "unexplainedReason": null
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "qualifiedName": "domain.Service",
+      "name": "Service",
+      "groupPath": ["domain"],
+      "title": "Service",
+      "summary": "Owns one application-specific behaviour, realized by combining Repositories",
+      "documented": null,
+      "declaredAt": {
+        "fileName": "ServiceRole.kt",
+        "line": 19
+      },
+      "layout": [
+        {
+          "index": 0,
+          "path": "src",
+          "kind": "Directory",
+          "required": false,
+          "description": null,
+          "declaredAt": {
+            "fileName": "ServiceRole.kt",
+            "line": 55
+          },
+          "modulePath": null,
+          "pathInModule": "src",
+          "captures": [],
+          "moduleCapture": null,
+          "template": null,
+          "matchedFiles": [],
+          "matchedCount": null,
+          "matchedFilesTruncated": false,
+          "synthetic": false,
+          "place": false
+        },
+        {
+          "index": 1,
+          "path": "src/main",
+          "kind": "Directory",
+          "required": false,
+          "description": null,
+          "declaredAt": {
+            "fileName": "ServiceRole.kt",
+            "line": 55
+          },
+          "modulePath": null,
+          "pathInModule": "src/main",
+          "captures": [],
+          "moduleCapture": null,
+          "template": null,
+          "matchedFiles": [],
+          "matchedCount": null,
+          "matchedFilesTruncated": false,
+          "synthetic": false,
+          "place": false
+        },
+        {
+          "index": 2,
+          "path": "src/main/kotlin",
+          "kind": "Directory",
+          "required": false,
+          "description": null,
+          "declaredAt": {
+            "fileName": "ServiceRole.kt",
+            "line": 55
+          },
+          "modulePath": null,
+          "pathInModule": "src/main/kotlin",
+          "captures": [],
+          "moduleCapture": null,
+          "template": null,
+          "matchedFiles": [],
+          "matchedCount": null,
+          "matchedFilesTruncated": false,
+          "synthetic": false,
+          "place": false
+        },
+        {
+          "index": 3,
+          "path": "src/main/kotlin/com",
+          "kind": "Directory",
+          "required": false,
+          "description": null,
+          "declaredAt": {
+            "fileName": "ServiceRole.kt",
+            "line": 55
+          },
+          "modulePath": null,
+          "pathInModule": "src/main/kotlin/com",
+          "captures": [],
+          "moduleCapture": null,
+          "template": null,
+          "matchedFiles": [],
+          "matchedCount": null,
+          "matchedFilesTruncated": false,
+          "synthetic": false,
+          "place": false
+        },
+        {
+          "index": 4,
+          "path": "src/main/kotlin/com/example",
+          "kind": "Directory",
+          "required": false,
+          "description": null,
+          "declaredAt": {
+            "fileName": "ServiceRole.kt",
+            "line": 55
+          },
+          "modulePath": null,
+          "pathInModule": "src/main/kotlin/com/example",
+          "captures": [],
+          "moduleCapture": null,
+          "template": null,
+          "matchedFiles": [],
+          "matchedCount": null,
+          "matchedFilesTruncated": false,
+          "synthetic": false,
+          "place": false
+        },
+        {
+          "index": 5,
+          "path": "src/main/kotlin/com/example/service",
+          "kind": "Directory",
+          "required": false,
+          "description": null,
+          "declaredAt": {
+            "fileName": "ServiceRole.kt",
+            "line": 55
+          },
+          "modulePath": null,
+          "pathInModule": "src/main/kotlin/com/example/service",
+          "captures": [],
+          "moduleCapture": null,
+          "template": null,
+          "matchedFiles": [],
+          "matchedCount": null,
+          "matchedFilesTruncated": false,
+          "synthetic": false,
+          "place": false
+        },
+        {
+          "index": 6,
+          "path": "src/main/kotlin/com/example/service/*Service.kt",
+          "kind": "File",
+          "required": false,
+          "description": null,
+          "declaredAt": {
+            "fileName": "ServiceRole.kt",
+            "line": 56
+          },
+          "modulePath": null,
+          "pathInModule": "src/main/kotlin/com/example/service/*Service.kt",
+          "captures": [
+            {
+              "name": "name",
+              "segmentIndex": 6
+            }
+          ],
+          "moduleCapture": null,
+          "template": {
+            "specifier": "domain.Service",
+            "id": null,
+            "title": null,
+            "declaredAt": {
+              "fileName": "ServiceRole.kt",
+              "line": 57
+            }
+          },
+          "matchedFiles": ["src/main/kotlin/com/example/service/HealthService.kt", "src/main/kotlin/com/example/service/LegacyStatusService.kt"],
+          "matchedCount": 2,
+          "matchedFilesTruncated": false,
+          "synthetic": false,
+          "place": false
+        }
+      ],
+      "constraints": [
+        {
+          "name": "ktFileContent",
+          "backend": "ktFileContent",
+          "checkClass": "me.tbsten.katachi.konsist.declarations.internal.KtFileContentConstraint",
+          "range": "Subtree",
+          "declaredAt": {
+            "fileName": "ServiceRole.kt",
+            "line": 73
+          },
+          "layoutPath": null,
+          "anchors": ["src/main/kotlin/com/example/service"],
+          "entries": [6],
+          "coverage": {
+            "files": ["src/main/kotlin/com/example/service/*Service.kt"],
+            "anyFileDirectories": []
+          },
+          "fileDeclarations": [
+            {
+              "file": "src/main/kotlin/com/example/service/HealthService.kt",
+              "declarationsChecked": true,
+              "declarations": [
+                {
+                  "kind": "class",
+                  "name": "HealthService",
+                  "line": 7,
+                  "verdict": "Allowed",
+                  "rules": [
+                    {
+                      "text": "class HealthService",
+                      "declaredAt": {
+                        "fileName": "ServiceRole.kt",
+                        "line": 80
+                      }
+                    }
+                  ],
+                  "difference": null
+                }
+              ],
+              "missing": [],
+              "unexplainedReason": null
+            },
+            {
+              "file": "src/main/kotlin/com/example/service/LegacyStatusService.kt",
+              "declarationsChecked": true,
+              "declarations": [
+                {
+                  "kind": "class",
+                  "name": "LegacyStatusService",
+                  "line": 11,
+                  "verdict": "Allowed",
+                  "rules": [
+                    {
+                      "text": "class LegacyStatusService",
+                      "declaredAt": {
+                        "fileName": "ServiceRole.kt",
+                        "line": 80
+                      }
+                    }
+                  ],
+                  "difference": null
+                }
+              ],
+              "missing": [],
+              "unexplainedReason": null
+            }
+          ]
+        },
+        {
+          "name": "Must be public",
+          "backend": "konsist",
+          "checkClass": "me.tbsten.katachi.konsist.internal.KonsistFileConstraint",
+          "range": "Subtree",
+          "declaredAt": {
+            "fileName": "ServiceRole.kt",
+            "line": 94
+          },
+          "layoutPath": null,
+          "anchors": ["src/main/kotlin/com/example/service"],
+          "entries": [6],
+          "coverage": {
+            "files": ["src/main/kotlin/com/example/service/*Service.kt"],
+            "anyFileDirectories": []
+          },
+          "fileDeclarations": null
+        }
+      ]
+    },
+    {
+      "qualifiedName": "domain.Model",
+      "name": "Model",
+      "groupPath": ["domain"],
+      "title": "Model",
+      "summary": "The values the domain handles, used as-is for API input and output too",
+      "documented": null,
+      "declaredAt": {
+        "fileName": "ModelRole.kt",
+        "line": 14
+      },
+      "layout": [
+        {
+          "index": 0,
+          "path": "src",
+          "kind": "Directory",
+          "required": false,
+          "description": null,
+          "declaredAt": {
+            "fileName": "ModelRole.kt",
+            "line": 39
+          },
+          "modulePath": null,
+          "pathInModule": "src",
+          "captures": [],
+          "moduleCapture": null,
+          "template": null,
+          "matchedFiles": [],
+          "matchedCount": null,
+          "matchedFilesTruncated": false,
+          "synthetic": false,
+          "place": false
+        },
+        {
+          "index": 1,
+          "path": "src/main",
+          "kind": "Directory",
+          "required": false,
+          "description": null,
+          "declaredAt": {
+            "fileName": "ModelRole.kt",
+            "line": 39
+          },
+          "modulePath": null,
+          "pathInModule": "src/main",
+          "captures": [],
+          "moduleCapture": null,
+          "template": null,
+          "matchedFiles": [],
+          "matchedCount": null,
+          "matchedFilesTruncated": false,
+          "synthetic": false,
+          "place": false
+        },
+        {
+          "index": 2,
+          "path": "src/main/kotlin",
+          "kind": "Directory",
+          "required": false,
+          "description": null,
+          "declaredAt": {
+            "fileName": "ModelRole.kt",
+            "line": 39
+          },
+          "modulePath": null,
+          "pathInModule": "src/main/kotlin",
+          "captures": [],
+          "moduleCapture": null,
+          "template": null,
+          "matchedFiles": [],
+          "matchedCount": null,
+          "matchedFilesTruncated": false,
+          "synthetic": false,
+          "place": false
+        },
+        {
+          "index": 3,
+          "path": "src/main/kotlin/com",
+          "kind": "Directory",
+          "required": false,
+          "description": null,
+          "declaredAt": {
+            "fileName": "ModelRole.kt",
+            "line": 39
+          },
+          "modulePath": null,
+          "pathInModule": "src/main/kotlin/com",
+          "captures": [],
+          "moduleCapture": null,
+          "template": null,
+          "matchedFiles": [],
+          "matchedCount": null,
+          "matchedFilesTruncated": false,
+          "synthetic": false,
+          "place": false
+        },
+        {
+          "index": 4,
+          "path": "src/main/kotlin/com/example",
+          "kind": "Directory",
+          "required": false,
+          "description": null,
+          "declaredAt": {
+            "fileName": "ModelRole.kt",
+            "line": 39
+          },
+          "modulePath": null,
+          "pathInModule": "src/main/kotlin/com/example",
+          "captures": [],
+          "moduleCapture": null,
+          "template": null,
+          "matchedFiles": [],
+          "matchedCount": null,
+          "matchedFilesTruncated": false,
+          "synthetic": false,
+          "place": false
+        },
+        {
+          "index": 5,
+          "path": "src/main/kotlin/com/example/model",
+          "kind": "Directory",
+          "required": false,
+          "description": null,
+          "declaredAt": {
+            "fileName": "ModelRole.kt",
+            "line": 39
+          },
+          "modulePath": null,
+          "pathInModule": "src/main/kotlin/com/example/model",
+          "captures": [],
+          "moduleCapture": null,
+          "template": null,
+          "matchedFiles": [],
+          "matchedCount": null,
+          "matchedFilesTruncated": false,
+          "synthetic": false,
+          "place": false
+        },
+        {
+          "index": 6,
+          "path": "src/main/kotlin/com/example/model/*.kt",
+          "kind": "File",
+          "required": false,
+          "description": null,
+          "declaredAt": {
+            "fileName": "ModelRole.kt",
+            "line": 39
+          },
+          "modulePath": null,
+          "pathInModule": "src/main/kotlin/com/example/model/*.kt",
+          "captures": [],
+          "moduleCapture": null,
+          "template": null,
+          "matchedFiles": ["src/main/kotlin/com/example/model/Health.kt"],
+          "matchedCount": 1,
+          "matchedFilesTruncated": false,
+          "synthetic": false,
+          "place": false
+        }
+      ],
+      "constraints": [
+        {
+          "name": "ktFileContent",
+          "backend": "ktFileContent",
+          "checkClass": "me.tbsten.katachi.konsist.declarations.internal.KtFileContentConstraint",
+          "range": "Subtree",
+          "declaredAt": {
+            "fileName": "ModelRole.kt",
+            "line": 43
+          },
+          "layoutPath": null,
+          "anchors": ["src/main/kotlin/com/example/model"],
+          "entries": [6],
+          "coverage": {
+            "files": ["src/main/kotlin/com/example/model/*.kt"],
+            "anyFileDirectories": []
+          },
+          "fileDeclarations": [
+            {
+              "file": "src/main/kotlin/com/example/model/Health.kt",
+              "declarationsChecked": false,
+              "declarations": [],
+              "missing": [],
+              "unexplainedReason": null
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "qualifiedName": "data.Repository",
+      "name": "Repository",
+      "groupPath": ["data"],
+      "title": "Repository",
+      "summary": "Handles fetching and saving data, hiding data source details from the domain",
+      "documented": null,
+      "declaredAt": {
+        "fileName": "RepositoryRole.kt",
+        "line": 10
+      },
+      "layout": [
+        {
+          "index": 0,
+          "path": "src",
+          "kind": "Directory",
+          "required": false,
+          "description": null,
+          "declaredAt": {
+            "fileName": "RepositoryRole.kt",
+            "line": 36
+          },
+          "modulePath": null,
+          "pathInModule": "src",
+          "captures": [],
+          "moduleCapture": null,
+          "template": null,
+          "matchedFiles": [],
+          "matchedCount": null,
+          "matchedFilesTruncated": false,
+          "synthetic": false,
+          "place": false
+        },
+        {
+          "index": 1,
+          "path": "src/main",
+          "kind": "Directory",
+          "required": false,
+          "description": null,
+          "declaredAt": {
+            "fileName": "RepositoryRole.kt",
+            "line": 36
+          },
+          "modulePath": null,
+          "pathInModule": "src/main",
+          "captures": [],
+          "moduleCapture": null,
+          "template": null,
+          "matchedFiles": [],
+          "matchedCount": null,
+          "matchedFilesTruncated": false,
+          "synthetic": false,
+          "place": false
+        },
+        {
+          "index": 2,
+          "path": "src/main/kotlin",
+          "kind": "Directory",
+          "required": false,
+          "description": null,
+          "declaredAt": {
+            "fileName": "RepositoryRole.kt",
+            "line": 36
+          },
+          "modulePath": null,
+          "pathInModule": "src/main/kotlin",
+          "captures": [],
+          "moduleCapture": null,
+          "template": null,
+          "matchedFiles": [],
+          "matchedCount": null,
+          "matchedFilesTruncated": false,
+          "synthetic": false,
+          "place": false
+        },
+        {
+          "index": 3,
+          "path": "src/main/kotlin/com",
+          "kind": "Directory",
+          "required": false,
+          "description": null,
+          "declaredAt": {
+            "fileName": "RepositoryRole.kt",
+            "line": 36
+          },
+          "modulePath": null,
+          "pathInModule": "src/main/kotlin/com",
+          "captures": [],
+          "moduleCapture": null,
+          "template": null,
+          "matchedFiles": [],
+          "matchedCount": null,
+          "matchedFilesTruncated": false,
+          "synthetic": false,
+          "place": false
+        },
+        {
+          "index": 4,
+          "path": "src/main/kotlin/com/example",
+          "kind": "Directory",
+          "required": false,
+          "description": null,
+          "declaredAt": {
+            "fileName": "RepositoryRole.kt",
+            "line": 36
+          },
+          "modulePath": null,
+          "pathInModule": "src/main/kotlin/com/example",
+          "captures": [],
+          "moduleCapture": null,
+          "template": null,
+          "matchedFiles": [],
+          "matchedCount": null,
+          "matchedFilesTruncated": false,
+          "synthetic": false,
+          "place": false
+        },
+        {
+          "index": 5,
+          "path": "src/main/kotlin/com/example/repository",
+          "kind": "Directory",
+          "required": false,
+          "description": null,
+          "declaredAt": {
+            "fileName": "RepositoryRole.kt",
+            "line": 36
+          },
+          "modulePath": null,
+          "pathInModule": "src/main/kotlin/com/example/repository",
+          "captures": [],
+          "moduleCapture": null,
+          "template": null,
+          "matchedFiles": [],
+          "matchedCount": null,
+          "matchedFilesTruncated": false,
+          "synthetic": false,
+          "place": false
+        },
+        {
+          "index": 6,
+          "path": "src/main/kotlin/com/example/repository/*Repository.kt",
+          "kind": "File",
+          "required": false,
+          "description": null,
+          "declaredAt": {
+            "fileName": "RepositoryRole.kt",
+            "line": 36
+          },
+          "modulePath": null,
+          "pathInModule": "src/main/kotlin/com/example/repository/*Repository.kt",
+          "captures": [],
+          "moduleCapture": null,
+          "template": null,
+          "matchedFiles": ["src/main/kotlin/com/example/repository/HealthRepository.kt"],
+          "matchedCount": 1,
+          "matchedFilesTruncated": false,
+          "synthetic": false,
+          "place": false
+        }
+      ],
+      "constraints": []
+    },
+    {
+      "qualifiedName": "app.Entrypoint",
+      "name": "Entrypoint",
+      "groupPath": ["app"],
+      "title": "Entry point",
+      "summary": "Starting the process and assembling the Ktor Application module",
+      "documented": null,
+      "declaredAt": {
+        "fileName": "EntrypointRole.kt",
+        "line": 9
+      },
+      "layout": [
+        {
+          "index": 0,
+          "path": "src",
+          "kind": "Directory",
+          "required": false,
+          "description": null,
+          "declaredAt": {
+            "fileName": "EntrypointRole.kt",
+            "line": 36
+          },
+          "modulePath": null,
+          "pathInModule": "src",
+          "captures": [],
+          "moduleCapture": null,
+          "template": null,
+          "matchedFiles": [],
+          "matchedCount": null,
+          "matchedFilesTruncated": false,
+          "synthetic": false,
+          "place": false
+        },
+        {
+          "index": 1,
+          "path": "src/main",
+          "kind": "Directory",
+          "required": false,
+          "description": null,
+          "declaredAt": {
+            "fileName": "EntrypointRole.kt",
+            "line": 36
+          },
+          "modulePath": null,
+          "pathInModule": "src/main",
+          "captures": [],
+          "moduleCapture": null,
+          "template": null,
+          "matchedFiles": [],
+          "matchedCount": null,
+          "matchedFilesTruncated": false,
+          "synthetic": false,
+          "place": false
+        },
+        {
+          "index": 2,
+          "path": "src/main/kotlin",
+          "kind": "Directory",
+          "required": false,
+          "description": null,
+          "declaredAt": {
+            "fileName": "EntrypointRole.kt",
+            "line": 36
+          },
+          "modulePath": null,
+          "pathInModule": "src/main/kotlin",
+          "captures": [],
+          "moduleCapture": null,
+          "template": null,
+          "matchedFiles": [],
+          "matchedCount": null,
+          "matchedFilesTruncated": false,
+          "synthetic": false,
+          "place": false
+        },
+        {
+          "index": 3,
+          "path": "src/main/kotlin/com",
+          "kind": "Directory",
+          "required": false,
+          "description": null,
+          "declaredAt": {
+            "fileName": "EntrypointRole.kt",
+            "line": 36
+          },
+          "modulePath": null,
+          "pathInModule": "src/main/kotlin/com",
+          "captures": [],
+          "moduleCapture": null,
+          "template": null,
+          "matchedFiles": [],
+          "matchedCount": null,
+          "matchedFilesTruncated": false,
+          "synthetic": false,
+          "place": false
+        },
+        {
+          "index": 4,
+          "path": "src/main/kotlin/com/example",
+          "kind": "Directory",
+          "required": false,
+          "description": null,
+          "declaredAt": {
+            "fileName": "EntrypointRole.kt",
+            "line": 36
+          },
+          "modulePath": null,
+          "pathInModule": "src/main/kotlin/com/example",
+          "captures": [],
+          "moduleCapture": null,
+          "template": null,
+          "matchedFiles": [],
+          "matchedCount": null,
+          "matchedFilesTruncated": false,
+          "synthetic": false,
+          "place": false
+        },
+        {
+          "index": 5,
+          "path": "src/main/kotlin/com/example/Application.kt",
+          "kind": "File",
+          "required": true,
+          "description": null,
+          "declaredAt": {
+            "fileName": "EntrypointRole.kt",
+            "line": 36
+          },
+          "modulePath": null,
+          "pathInModule": "src/main/kotlin/com/example/Application.kt",
+          "captures": [],
+          "moduleCapture": null,
+          "template": null,
+          "matchedFiles": ["src/main/kotlin/com/example/Application.kt"],
+          "matchedCount": 1,
+          "matchedFilesTruncated": false,
+          "synthetic": false,
+          "place": false
+        }
+      ],
+      "constraints": []
+    },
+    {
+      "qualifiedName": "app.ApplicationConfig",
+      "name": "ApplicationConfig",
+      "groupPath": ["app"],
+      "title": "Application configuration",
+      "summary": "The configuration file loaded at startup: the port and the module to apply",
+      "documented": null,
+      "declaredAt": {
+        "fileName": "ApplicationConfigRole.kt",
+        "line": 8
+      },
+      "layout": [
+        {
+          "index": 0,
+          "path": "src",
+          "kind": "Directory",
+          "required": false,
+          "description": null,
+          "declaredAt": {
+            "fileName": "ApplicationConfigRole.kt",
+            "line": 33
+          },
+          "modulePath": null,
+          "pathInModule": "src",
+          "captures": [],
+          "moduleCapture": null,
+          "template": null,
+          "matchedFiles": [],
+          "matchedCount": null,
+          "matchedFilesTruncated": false,
+          "synthetic": false,
+          "place": false
+        },
+        {
+          "index": 1,
+          "path": "src/main",
+          "kind": "Directory",
+          "required": false,
+          "description": null,
+          "declaredAt": {
+            "fileName": "ApplicationConfigRole.kt",
+            "line": 33
+          },
+          "modulePath": null,
+          "pathInModule": "src/main",
+          "captures": [],
+          "moduleCapture": null,
+          "template": null,
+          "matchedFiles": [],
+          "matchedCount": null,
+          "matchedFilesTruncated": false,
+          "synthetic": false,
+          "place": false
+        },
+        {
+          "index": 2,
+          "path": "src/main/resources",
+          "kind": "Directory",
+          "required": false,
+          "description": null,
+          "declaredAt": {
+            "fileName": "ApplicationConfigRole.kt",
+            "line": 34
+          },
+          "modulePath": null,
+          "pathInModule": "src/main/resources",
+          "captures": [],
+          "moduleCapture": null,
+          "template": null,
+          "matchedFiles": [],
+          "matchedCount": null,
+          "matchedFilesTruncated": false,
+          "synthetic": false,
+          "place": false
+        },
+        {
+          "index": 3,
+          "path": "src/main/resources/application.conf",
+          "kind": "File",
+          "required": true,
+          "description": null,
+          "declaredAt": {
+            "fileName": "ApplicationConfigRole.kt",
+            "line": 35
+          },
+          "modulePath": null,
+          "pathInModule": "src/main/resources/application.conf",
+          "captures": [],
+          "moduleCapture": null,
+          "template": null,
+          "matchedFiles": ["src/main/resources/application.conf"],
+          "matchedCount": 1,
+          "matchedFilesTruncated": false,
+          "synthetic": false,
+          "place": false
+        }
+      ],
+      "constraints": []
+    },
+    {
+      "qualifiedName": "app.LoggingConfig",
+      "name": "LoggingConfig",
+      "groupPath": ["app"],
+      "title": "Logging configuration",
+      "summary": "The Logback configuration: where logs go and their format",
+      "documented": null,
+      "declaredAt": {
+        "fileName": "LoggingConfigRole.kt",
+        "line": 8
+      },
+      "layout": [
+        {
+          "index": 0,
+          "path": "src",
+          "kind": "Directory",
+          "required": false,
+          "description": null,
+          "declaredAt": {
+            "fileName": "LoggingConfigRole.kt",
+            "line": 21
+          },
+          "modulePath": null,
+          "pathInModule": "src",
+          "captures": [],
+          "moduleCapture": null,
+          "template": null,
+          "matchedFiles": [],
+          "matchedCount": null,
+          "matchedFilesTruncated": false,
+          "synthetic": false,
+          "place": false
+        },
+        {
+          "index": 1,
+          "path": "src/main",
+          "kind": "Directory",
+          "required": false,
+          "description": null,
+          "declaredAt": {
+            "fileName": "LoggingConfigRole.kt",
+            "line": 21
+          },
+          "modulePath": null,
+          "pathInModule": "src/main",
+          "captures": [],
+          "moduleCapture": null,
+          "template": null,
+          "matchedFiles": [],
+          "matchedCount": null,
+          "matchedFilesTruncated": false,
+          "synthetic": false,
+          "place": false
+        },
+        {
+          "index": 2,
+          "path": "src/main/resources",
+          "kind": "Directory",
+          "required": false,
+          "description": null,
+          "declaredAt": {
+            "fileName": "LoggingConfigRole.kt",
+            "line": 22
+          },
+          "modulePath": null,
+          "pathInModule": "src/main/resources",
+          "captures": [],
+          "moduleCapture": null,
+          "template": null,
+          "matchedFiles": [],
+          "matchedCount": null,
+          "matchedFilesTruncated": false,
+          "synthetic": false,
+          "place": false
+        },
+        {
+          "index": 3,
+          "path": "src/main/resources/logback.xml",
+          "kind": "File",
+          "required": true,
+          "description": null,
+          "declaredAt": {
+            "fileName": "LoggingConfigRole.kt",
+            "line": 23
+          },
+          "modulePath": null,
+          "pathInModule": "src/main/resources/logback.xml",
+          "captures": [],
+          "moduleCapture": null,
+          "template": null,
+          "matchedFiles": ["src/main/resources/logback.xml"],
+          "matchedCount": 1,
+          "matchedFilesTruncated": false,
+          "synthetic": false,
+          "place": false
+        }
+      ],
+      "constraints": []
+    },
+    {
+      "qualifiedName": "testing.Test",
+      "name": "Test",
+      "groupPath": ["testing"],
+      "title": "Test code",
+      "summary": "Tests placed in src/test/kotlin, keeping the same package structure as the main code",
+      "documented": null,
+      "declaredAt": {
+        "fileName": "TestRole.kt",
+        "line": 8
+      },
+      "layout": [
+        {
+          "index": 0,
+          "path": "src",
+          "kind": "Directory",
+          "required": false,
+          "description": null,
+          "declaredAt": {
+            "fileName": "TestRole.kt",
+            "line": 36
+          },
+          "modulePath": null,
+          "pathInModule": "src",
+          "captures": [],
+          "moduleCapture": null,
+          "template": null,
+          "matchedFiles": [],
+          "matchedCount": null,
+          "matchedFilesTruncated": false,
+          "synthetic": false,
+          "place": false
+        },
+        {
+          "index": 1,
+          "path": "src/test",
+          "kind": "Directory",
+          "required": false,
+          "description": null,
+          "declaredAt": {
+            "fileName": "TestRole.kt",
+            "line": 36
+          },
+          "modulePath": null,
+          "pathInModule": "src/test",
+          "captures": [],
+          "moduleCapture": null,
+          "template": null,
+          "matchedFiles": [],
+          "matchedCount": null,
+          "matchedFilesTruncated": false,
+          "synthetic": false,
+          "place": false
+        },
+        {
+          "index": 2,
+          "path": "src/test/kotlin",
+          "kind": "Directory",
+          "required": false,
+          "description": null,
+          "declaredAt": {
+            "fileName": "TestRole.kt",
+            "line": 36
+          },
+          "modulePath": null,
+          "pathInModule": "src/test/kotlin",
+          "captures": [],
+          "moduleCapture": null,
+          "template": null,
+          "matchedFiles": [],
+          "matchedCount": null,
+          "matchedFilesTruncated": false,
+          "synthetic": false,
+          "place": false
+        },
+        {
+          "index": 3,
+          "path": "src/test/kotlin/**",
+          "kind": "Directory",
+          "required": false,
+          "description": null,
+          "declaredAt": {
+            "fileName": "TestRole.kt",
+            "line": 36
+          },
+          "modulePath": null,
+          "pathInModule": "src/test/kotlin/**",
+          "captures": [],
+          "moduleCapture": null,
+          "template": null,
+          "matchedFiles": [],
+          "matchedCount": null,
+          "matchedFilesTruncated": false,
+          "synthetic": false,
+          "place": false
+        },
+        {
+          "index": 4,
+          "path": "src/test/kotlin/**/*Test.kt",
+          "kind": "File",
+          "required": false,
+          "description": null,
+          "declaredAt": {
+            "fileName": "TestRole.kt",
+            "line": 36
+          },
+          "modulePath": null,
+          "pathInModule": "src/test/kotlin/**/*Test.kt",
+          "captures": [],
+          "moduleCapture": null,
+          "template": null,
+          "matchedFiles": ["src/test/kotlin/com/example/HealthRouteTest.kt"],
+          "matchedCount": 1,
+          "matchedFilesTruncated": false,
+          "synthetic": false,
+          "place": false
+        }
+      ],
+      "constraints": []
+    },
+    {
+      "qualifiedName": "testing.ArchitectureDefinitionEntry",
+      "name": "ArchitectureDefinitionEntry",
+      "groupPath": ["testing"],
+      "title": "Architecture definition entry",
+      "summary": "The one file whose `architecture { }` gathers every group, so the definition can be read from here",
+      "documented": null,
+      "declaredAt": {
+        "fileName": "ArchitectureDefinitionEntryRole.kt",
+        "line": 10
+      },
+      "layout": [
+        {
+          "index": 0,
+          "path": "architecture-test",
+          "kind": "Directory",
+          "required": false,
+          "description": null,
+          "declaredAt": {
+            "fileName": "ArchitectureDefinitionEntryRole.kt",
+            "line": 37
+          },
+          "modulePath": null,
+          "pathInModule": "architecture-test",
+          "captures": [],
+          "moduleCapture": null,
+          "template": null,
+          "matchedFiles": [],
+          "matchedCount": null,
+          "matchedFilesTruncated": false,
+          "synthetic": false,
+          "place": false
+        },
+        {
+          "index": 1,
+          "path": "architecture-test/src",
+          "kind": "Directory",
+          "required": false,
+          "description": null,
+          "declaredAt": {
+            "fileName": "ArchitectureDefinitionEntryRole.kt",
+            "line": 38
+          },
+          "modulePath": null,
+          "pathInModule": "architecture-test/src",
+          "captures": [],
+          "moduleCapture": null,
+          "template": null,
+          "matchedFiles": [],
+          "matchedCount": null,
+          "matchedFilesTruncated": false,
+          "synthetic": false,
+          "place": false
+        },
+        {
+          "index": 2,
+          "path": "architecture-test/src/test",
+          "kind": "Directory",
+          "required": false,
+          "description": null,
+          "declaredAt": {
+            "fileName": "ArchitectureDefinitionEntryRole.kt",
+            "line": 38
+          },
+          "modulePath": null,
+          "pathInModule": "architecture-test/src/test",
+          "captures": [],
+          "moduleCapture": null,
+          "template": null,
+          "matchedFiles": [],
+          "matchedCount": null,
+          "matchedFilesTruncated": false,
+          "synthetic": false,
+          "place": false
+        },
+        {
+          "index": 3,
+          "path": "architecture-test/src/test/kotlin",
+          "kind": "Directory",
+          "required": false,
+          "description": null,
+          "declaredAt": {
+            "fileName": "ArchitectureDefinitionEntryRole.kt",
+            "line": 38
+          },
+          "modulePath": null,
+          "pathInModule": "architecture-test/src/test/kotlin",
+          "captures": [],
+          "moduleCapture": null,
+          "template": null,
+          "matchedFiles": [],
+          "matchedCount": null,
+          "matchedFilesTruncated": false,
+          "synthetic": false,
+          "place": false
+        },
+        {
+          "index": 4,
+          "path": "architecture-test/src/test/kotlin/com",
+          "kind": "Directory",
+          "required": false,
+          "description": null,
+          "declaredAt": {
+            "fileName": "ArchitectureDefinitionEntryRole.kt",
+            "line": 38
+          },
+          "modulePath": null,
+          "pathInModule": "architecture-test/src/test/kotlin/com",
+          "captures": [],
+          "moduleCapture": null,
+          "template": null,
+          "matchedFiles": [],
+          "matchedCount": null,
+          "matchedFilesTruncated": false,
+          "synthetic": false,
+          "place": false
+        },
+        {
+          "index": 5,
+          "path": "architecture-test/src/test/kotlin/com/example",
+          "kind": "Directory",
+          "required": false,
+          "description": null,
+          "declaredAt": {
+            "fileName": "ArchitectureDefinitionEntryRole.kt",
+            "line": 38
+          },
+          "modulePath": null,
+          "pathInModule": "architecture-test/src/test/kotlin/com/example",
+          "captures": [],
+          "moduleCapture": null,
+          "template": null,
+          "matchedFiles": [],
+          "matchedCount": null,
+          "matchedFilesTruncated": false,
+          "synthetic": false,
+          "place": false
+        },
+        {
+          "index": 6,
+          "path": "architecture-test/src/test/kotlin/com/example/ProjectArchitecture.kt",
+          "kind": "File",
+          "required": true,
+          "description": null,
+          "declaredAt": {
+            "fileName": "ArchitectureDefinitionEntryRole.kt",
+            "line": 42
+          },
+          "modulePath": null,
+          "pathInModule": "architecture-test/src/test/kotlin/com/example/ProjectArchitecture.kt",
+          "captures": [],
+          "moduleCapture": null,
+          "template": null,
+          "matchedFiles": ["architecture-test/src/test/kotlin/com/example/ProjectArchitecture.kt"],
+          "matchedCount": 1,
+          "matchedFilesTruncated": false,
+          "synthetic": false,
+          "place": false
+        }
+      ],
+      "constraints": [
+        {
+          "name": "Must not declare a group or a role in the entry file",
+          "backend": "konsist",
+          "checkClass": "me.tbsten.katachi.konsist.internal.KonsistFileConstraint",
+          "range": "Subtree",
+          "declaredAt": {
+            "fileName": "ArchitectureDefinitionEntryRole.kt",
+            "line": 39
+          },
+          "layoutPath": "architecture-test/src/test/kotlin/com/example",
+          "anchors": ["architecture-test/src/test/kotlin/com/example"],
+          "entries": [6],
+          "coverage": {
+            "files": ["architecture-test/src/test/kotlin/com/example/ProjectArchitecture.kt"],
+            "anyFileDirectories": []
+          },
+          "fileDeclarations": null
+        }
+      ]
+    },
+    {
+      "qualifiedName": "testing.DocumentSectionDefinition",
+      "name": "DocumentSectionDefinition",
+      "groupPath": ["testing"],
+      "title": "Document section definition",
+      "summary": "The headings this project declares for itself, so roles and groups can write under them",
+      "documented": null,
+      "declaredAt": {
+        "fileName": "DocumentSectionDefinitionRole.kt",
+        "line": 9
+      },
+      "layout": [
+        {
+          "index": 0,
+          "path": "architecture-test",
+          "kind": "Directory",
+          "required": false,
+          "description": null,
+          "declaredAt": {
+            "fileName": "DocumentSectionDefinitionRole.kt",
+            "line": 23
+          },
+          "modulePath": null,
+          "pathInModule": "architecture-test",
+          "captures": [],
+          "moduleCapture": null,
+          "template": null,
+          "matchedFiles": [],
+          "matchedCount": null,
+          "matchedFilesTruncated": false,
+          "synthetic": false,
+          "place": false
+        },
+        {
+          "index": 1,
+          "path": "architecture-test/src",
+          "kind": "Directory",
+          "required": false,
+          "description": null,
+          "declaredAt": {
+            "fileName": "DocumentSectionDefinitionRole.kt",
+            "line": 23
+          },
+          "modulePath": null,
+          "pathInModule": "architecture-test/src",
+          "captures": [],
+          "moduleCapture": null,
+          "template": null,
+          "matchedFiles": [],
+          "matchedCount": null,
+          "matchedFilesTruncated": false,
+          "synthetic": false,
+          "place": false
+        },
+        {
+          "index": 2,
+          "path": "architecture-test/src/test",
+          "kind": "Directory",
+          "required": false,
+          "description": null,
+          "declaredAt": {
+            "fileName": "DocumentSectionDefinitionRole.kt",
+            "line": 23
+          },
+          "modulePath": null,
+          "pathInModule": "architecture-test/src/test",
+          "captures": [],
+          "moduleCapture": null,
+          "template": null,
+          "matchedFiles": [],
+          "matchedCount": null,
+          "matchedFilesTruncated": false,
+          "synthetic": false,
+          "place": false
+        },
+        {
+          "index": 3,
+          "path": "architecture-test/src/test/kotlin",
+          "kind": "Directory",
+          "required": false,
+          "description": null,
+          "declaredAt": {
+            "fileName": "DocumentSectionDefinitionRole.kt",
+            "line": 23
+          },
+          "modulePath": null,
+          "pathInModule": "architecture-test/src/test/kotlin",
+          "captures": [],
+          "moduleCapture": null,
+          "template": null,
+          "matchedFiles": [],
+          "matchedCount": null,
+          "matchedFilesTruncated": false,
+          "synthetic": false,
+          "place": false
+        },
+        {
+          "index": 4,
+          "path": "architecture-test/src/test/kotlin/com",
+          "kind": "Directory",
+          "required": false,
+          "description": null,
+          "declaredAt": {
+            "fileName": "DocumentSectionDefinitionRole.kt",
+            "line": 23
+          },
+          "modulePath": null,
+          "pathInModule": "architecture-test/src/test/kotlin/com",
+          "captures": [],
+          "moduleCapture": null,
+          "template": null,
+          "matchedFiles": [],
+          "matchedCount": null,
+          "matchedFilesTruncated": false,
+          "synthetic": false,
+          "place": false
+        },
+        {
+          "index": 5,
+          "path": "architecture-test/src/test/kotlin/com/example",
+          "kind": "Directory",
+          "required": false,
+          "description": null,
+          "declaredAt": {
+            "fileName": "DocumentSectionDefinitionRole.kt",
+            "line": 23
+          },
+          "modulePath": null,
+          "pathInModule": "architecture-test/src/test/kotlin/com/example",
+          "captures": [],
+          "moduleCapture": null,
+          "template": null,
+          "matchedFiles": [],
+          "matchedCount": null,
+          "matchedFilesTruncated": false,
+          "synthetic": false,
+          "place": false
+        },
+        {
+          "index": 6,
+          "path": "architecture-test/src/test/kotlin/com/example/DocumentSections.kt",
+          "kind": "File",
+          "required": true,
+          "description": null,
+          "declaredAt": {
+            "fileName": "DocumentSectionDefinitionRole.kt",
+            "line": 23
+          },
+          "modulePath": null,
+          "pathInModule": "architecture-test/src/test/kotlin/com/example/DocumentSections.kt",
+          "captures": [],
+          "moduleCapture": null,
+          "template": null,
+          "matchedFiles": ["architecture-test/src/test/kotlin/com/example/DocumentSections.kt"],
+          "matchedCount": 1,
+          "matchedFilesTruncated": false,
+          "synthetic": false,
+          "place": false
+        }
+      ],
+      "constraints": []
+    },
+    {
+      "qualifiedName": "testing.GroupDefinition",
+      "name": "GroupDefinition",
+      "groupPath": ["testing"],
+      "title": "Group definition",
+      "summary": "One `groups/<Name>Group.kt` per group, saying what the group is made of by calling role functions",
+      "documented": null,
+      "declaredAt": {
+        "fileName": "GroupDefinitionRole.kt",
+        "line": 9
+      },
+      "layout": [
+        {
+          "index": 0,
+          "path": "architecture-test",
+          "kind": "Directory",
+          "required": false,
+          "description": null,
+          "declaredAt": {
+            "fileName": "GroupDefinitionRole.kt",
+            "line": 28
+          },
+          "modulePath": null,
+          "pathInModule": "architecture-test",
+          "captures": [],
+          "moduleCapture": null,
+          "template": null,
+          "matchedFiles": [],
+          "matchedCount": null,
+          "matchedFilesTruncated": false,
+          "synthetic": false,
+          "place": false
+        },
+        {
+          "index": 1,
+          "path": "architecture-test/src",
+          "kind": "Directory",
+          "required": false,
+          "description": null,
+          "declaredAt": {
+            "fileName": "GroupDefinitionRole.kt",
+            "line": 28
+          },
+          "modulePath": null,
+          "pathInModule": "architecture-test/src",
+          "captures": [],
+          "moduleCapture": null,
+          "template": null,
+          "matchedFiles": [],
+          "matchedCount": null,
+          "matchedFilesTruncated": false,
+          "synthetic": false,
+          "place": false
+        },
+        {
+          "index": 2,
+          "path": "architecture-test/src/test",
+          "kind": "Directory",
+          "required": false,
+          "description": null,
+          "declaredAt": {
+            "fileName": "GroupDefinitionRole.kt",
+            "line": 28
+          },
+          "modulePath": null,
+          "pathInModule": "architecture-test/src/test",
+          "captures": [],
+          "moduleCapture": null,
+          "template": null,
+          "matchedFiles": [],
+          "matchedCount": null,
+          "matchedFilesTruncated": false,
+          "synthetic": false,
+          "place": false
+        },
+        {
+          "index": 3,
+          "path": "architecture-test/src/test/kotlin",
+          "kind": "Directory",
+          "required": false,
+          "description": null,
+          "declaredAt": {
+            "fileName": "GroupDefinitionRole.kt",
+            "line": 28
+          },
+          "modulePath": null,
+          "pathInModule": "architecture-test/src/test/kotlin",
+          "captures": [],
+          "moduleCapture": null,
+          "template": null,
+          "matchedFiles": [],
+          "matchedCount": null,
+          "matchedFilesTruncated": false,
+          "synthetic": false,
+          "place": false
+        },
+        {
+          "index": 4,
+          "path": "architecture-test/src/test/kotlin/com",
+          "kind": "Directory",
+          "required": false,
+          "description": null,
+          "declaredAt": {
+            "fileName": "GroupDefinitionRole.kt",
+            "line": 28
+          },
+          "modulePath": null,
+          "pathInModule": "architecture-test/src/test/kotlin/com",
+          "captures": [],
+          "moduleCapture": null,
+          "template": null,
+          "matchedFiles": [],
+          "matchedCount": null,
+          "matchedFilesTruncated": false,
+          "synthetic": false,
+          "place": false
+        },
+        {
+          "index": 5,
+          "path": "architecture-test/src/test/kotlin/com/example",
+          "kind": "Directory",
+          "required": false,
+          "description": null,
+          "declaredAt": {
+            "fileName": "GroupDefinitionRole.kt",
+            "line": 28
+          },
+          "modulePath": null,
+          "pathInModule": "architecture-test/src/test/kotlin/com/example",
+          "captures": [],
+          "moduleCapture": null,
+          "template": null,
+          "matchedFiles": [],
+          "matchedCount": null,
+          "matchedFilesTruncated": false,
+          "synthetic": false,
+          "place": false
+        },
+        {
+          "index": 6,
+          "path": "architecture-test/src/test/kotlin/com/example/groups",
+          "kind": "Directory",
+          "required": false,
+          "description": null,
+          "declaredAt": {
+            "fileName": "GroupDefinitionRole.kt",
+            "line": 28
+          },
+          "modulePath": null,
+          "pathInModule": "architecture-test/src/test/kotlin/com/example/groups",
+          "captures": [],
+          "moduleCapture": null,
+          "template": null,
+          "matchedFiles": [],
+          "matchedCount": null,
+          "matchedFilesTruncated": false,
+          "synthetic": false,
+          "place": false
+        },
+        {
+          "index": 7,
+          "path": "architecture-test/src/test/kotlin/com/example/groups/*Group.kt",
+          "kind": "File",
+          "required": false,
+          "description": null,
+          "declaredAt": {
+            "fileName": "GroupDefinitionRole.kt",
+            "line": 28
+          },
+          "modulePath": null,
+          "pathInModule": "architecture-test/src/test/kotlin/com/example/groups/*Group.kt",
+          "captures": [],
+          "moduleCapture": null,
+          "template": null,
+          "matchedFiles": ["architecture-test/src/test/kotlin/com/example/groups/ApiGroup.kt", "architecture-test/src/test/kotlin/com/example/groups/AppGroup.kt", "architecture-test/src/test/kotlin/com/example/groups/DataGroup.kt", "architecture-test/src/test/kotlin/com/example/groups/DomainGroup.kt", "architecture-test/src/test/kotlin/com/example/groups/GradleGroup.kt", "architecture-test/src/test/kotlin/com/example/groups/TestingGroup.kt", "architecture-test/src/test/kotlin/com/example/groups/ToolGroup.kt"],
+          "matchedCount": 7,
+          "matchedFilesTruncated": false,
+          "synthetic": false,
+          "place": false
+        }
+      ],
+      "constraints": []
+    },
+    {
+      "qualifiedName": "testing.RoleDefinition",
+      "name": "RoleDefinition",
+      "groupPath": ["testing"],
+      "title": "Role definition",
+      "summary": "One `roles/<Name>Role.kt` per role, holding its description, its layout and its constraints",
+      "documented": null,
+      "declaredAt": {
+        "fileName": "RoleDefinitionRole.kt",
+        "line": 9
+      },
+      "layout": [
+        {
+          "index": 0,
+          "path": "architecture-test",
+          "kind": "Directory",
+          "required": false,
+          "description": null,
+          "declaredAt": {
+            "fileName": "RoleDefinitionRole.kt",
+            "line": 26
+          },
+          "modulePath": null,
+          "pathInModule": "architecture-test",
+          "captures": [],
+          "moduleCapture": null,
+          "template": null,
+          "matchedFiles": [],
+          "matchedCount": null,
+          "matchedFilesTruncated": false,
+          "synthetic": false,
+          "place": false
+        },
+        {
+          "index": 1,
+          "path": "architecture-test/src",
+          "kind": "Directory",
+          "required": false,
+          "description": null,
+          "declaredAt": {
+            "fileName": "RoleDefinitionRole.kt",
+            "line": 26
+          },
+          "modulePath": null,
+          "pathInModule": "architecture-test/src",
+          "captures": [],
+          "moduleCapture": null,
+          "template": null,
+          "matchedFiles": [],
+          "matchedCount": null,
+          "matchedFilesTruncated": false,
+          "synthetic": false,
+          "place": false
+        },
+        {
+          "index": 2,
+          "path": "architecture-test/src/test",
+          "kind": "Directory",
+          "required": false,
+          "description": null,
+          "declaredAt": {
+            "fileName": "RoleDefinitionRole.kt",
+            "line": 26
+          },
+          "modulePath": null,
+          "pathInModule": "architecture-test/src/test",
+          "captures": [],
+          "moduleCapture": null,
+          "template": null,
+          "matchedFiles": [],
+          "matchedCount": null,
+          "matchedFilesTruncated": false,
+          "synthetic": false,
+          "place": false
+        },
+        {
+          "index": 3,
+          "path": "architecture-test/src/test/kotlin",
+          "kind": "Directory",
+          "required": false,
+          "description": null,
+          "declaredAt": {
+            "fileName": "RoleDefinitionRole.kt",
+            "line": 26
+          },
+          "modulePath": null,
+          "pathInModule": "architecture-test/src/test/kotlin",
+          "captures": [],
+          "moduleCapture": null,
+          "template": null,
+          "matchedFiles": [],
+          "matchedCount": null,
+          "matchedFilesTruncated": false,
+          "synthetic": false,
+          "place": false
+        },
+        {
+          "index": 4,
+          "path": "architecture-test/src/test/kotlin/com",
+          "kind": "Directory",
+          "required": false,
+          "description": null,
+          "declaredAt": {
+            "fileName": "RoleDefinitionRole.kt",
+            "line": 26
+          },
+          "modulePath": null,
+          "pathInModule": "architecture-test/src/test/kotlin/com",
+          "captures": [],
+          "moduleCapture": null,
+          "template": null,
+          "matchedFiles": [],
+          "matchedCount": null,
+          "matchedFilesTruncated": false,
+          "synthetic": false,
+          "place": false
+        },
+        {
+          "index": 5,
+          "path": "architecture-test/src/test/kotlin/com/example",
+          "kind": "Directory",
+          "required": false,
+          "description": null,
+          "declaredAt": {
+            "fileName": "RoleDefinitionRole.kt",
+            "line": 26
+          },
+          "modulePath": null,
+          "pathInModule": "architecture-test/src/test/kotlin/com/example",
+          "captures": [],
+          "moduleCapture": null,
+          "template": null,
+          "matchedFiles": [],
+          "matchedCount": null,
+          "matchedFilesTruncated": false,
+          "synthetic": false,
+          "place": false
+        },
+        {
+          "index": 6,
+          "path": "architecture-test/src/test/kotlin/com/example/roles",
+          "kind": "Directory",
+          "required": false,
+          "description": null,
+          "declaredAt": {
+            "fileName": "RoleDefinitionRole.kt",
+            "line": 26
+          },
+          "modulePath": null,
+          "pathInModule": "architecture-test/src/test/kotlin/com/example/roles",
+          "captures": [],
+          "moduleCapture": null,
+          "template": null,
+          "matchedFiles": [],
+          "matchedCount": null,
+          "matchedFilesTruncated": false,
+          "synthetic": false,
+          "place": false
+        },
+        {
+          "index": 7,
+          "path": "architecture-test/src/test/kotlin/com/example/roles/*Role.kt",
+          "kind": "File",
+          "required": false,
+          "description": null,
+          "declaredAt": {
+            "fileName": "RoleDefinitionRole.kt",
+            "line": 26
+          },
+          "modulePath": null,
+          "pathInModule": "architecture-test/src/test/kotlin/com/example/roles/*Role.kt",
+          "captures": [],
+          "moduleCapture": null,
+          "template": null,
+          "matchedFiles": ["architecture-test/src/test/kotlin/com/example/roles/ApplicationConfigRole.kt", "architecture-test/src/test/kotlin/com/example/roles/ArchitectureDefinitionEntryRole.kt", "architecture-test/src/test/kotlin/com/example/roles/ArchitectureTestRole.kt", "architecture-test/src/test/kotlin/com/example/roles/BaselineFileRole.kt", "architecture-test/src/test/kotlin/com/example/roles/ControllerRole.kt", "architecture-test/src/test/kotlin/com/example/roles/DocumentSectionDefinitionRole.kt", "architecture-test/src/test/kotlin/com/example/roles/DocumentationRole.kt", "architecture-test/src/test/kotlin/com/example/roles/EntrypointRole.kt", "architecture-test/src/test/kotlin/com/example/roles/GeneratedDocumentationRole.kt", "architecture-test/src/test/kotlin/com/example/roles/GitRole.kt", "architecture-test/src/test/kotlin/com/example/roles/GroupDefinitionRole.kt", "architecture-test/src/test/kotlin/com/example/roles/IntegrationSpecRole.kt", "architecture-test/src/test/kotlin/com/example/roles/KtorPluginRole.kt", "architecture-test/src/test/kotlin/com/example/roles/LayoutSnapshotRole.kt", "architecture-test/src/test/kotlin/com/example/roles/LoggingConfigRole.kt", "architecture-test/src/test/kotlin/com/example/roles/ModelRole.kt", "architecture-test/src/test/kotlin/com/example/roles/ProcessorDefinitionRole.kt", "architecture-test/src/test/kotlin/com/example/roles/RepositoryRole.kt", "architecture-test/src/test/kotlin/com/example/roles/RoleDefinitionRole.kt", "architecture-test/src/test/kotlin/com/example/roles/ServiceRole.kt", "architecture-test/src/test/kotlin/com/example/roles/TestRole.kt"],
+          "matchedCount": 21,
+          "matchedFilesTruncated": false,
+          "synthetic": false,
+          "place": false
+        }
+      ],
+      "constraints": []
+    },
+    {
+      "qualifiedName": "testing.ProcessorDefinition",
+      "name": "ProcessorDefinition",
+      "groupPath": ["testing"],
+      "title": "Processor definition",
+      "summary": "A custom processor that reads the definition, registered in `architecture-test/build.gradle.kts`",
+      "documented": null,
+      "declaredAt": {
+        "fileName": "ProcessorDefinitionRole.kt",
+        "line": 9
+      },
+      "layout": [
+        {
+          "index": 0,
+          "path": "architecture-test",
+          "kind": "Directory",
+          "required": false,
+          "description": null,
+          "declaredAt": {
+            "fileName": "ProcessorDefinitionRole.kt",
+            "line": 22
+          },
+          "modulePath": null,
+          "pathInModule": "architecture-test",
+          "captures": [],
+          "moduleCapture": null,
+          "template": null,
+          "matchedFiles": [],
+          "matchedCount": null,
+          "matchedFilesTruncated": false,
+          "synthetic": false,
+          "place": false
+        },
+        {
+          "index": 1,
+          "path": "architecture-test/src",
+          "kind": "Directory",
+          "required": false,
+          "description": null,
+          "declaredAt": {
+            "fileName": "ProcessorDefinitionRole.kt",
+            "line": 22
+          },
+          "modulePath": null,
+          "pathInModule": "architecture-test/src",
+          "captures": [],
+          "moduleCapture": null,
+          "template": null,
+          "matchedFiles": [],
+          "matchedCount": null,
+          "matchedFilesTruncated": false,
+          "synthetic": false,
+          "place": false
+        },
+        {
+          "index": 2,
+          "path": "architecture-test/src/test",
+          "kind": "Directory",
+          "required": false,
+          "description": null,
+          "declaredAt": {
+            "fileName": "ProcessorDefinitionRole.kt",
+            "line": 22
+          },
+          "modulePath": null,
+          "pathInModule": "architecture-test/src/test",
+          "captures": [],
+          "moduleCapture": null,
+          "template": null,
+          "matchedFiles": [],
+          "matchedCount": null,
+          "matchedFilesTruncated": false,
+          "synthetic": false,
+          "place": false
+        },
+        {
+          "index": 3,
+          "path": "architecture-test/src/test/kotlin",
+          "kind": "Directory",
+          "required": false,
+          "description": null,
+          "declaredAt": {
+            "fileName": "ProcessorDefinitionRole.kt",
+            "line": 22
+          },
+          "modulePath": null,
+          "pathInModule": "architecture-test/src/test/kotlin",
+          "captures": [],
+          "moduleCapture": null,
+          "template": null,
+          "matchedFiles": [],
+          "matchedCount": null,
+          "matchedFilesTruncated": false,
+          "synthetic": false,
+          "place": false
+        },
+        {
+          "index": 4,
+          "path": "architecture-test/src/test/kotlin/com",
+          "kind": "Directory",
+          "required": false,
+          "description": null,
+          "declaredAt": {
+            "fileName": "ProcessorDefinitionRole.kt",
+            "line": 22
+          },
+          "modulePath": null,
+          "pathInModule": "architecture-test/src/test/kotlin/com",
+          "captures": [],
+          "moduleCapture": null,
+          "template": null,
+          "matchedFiles": [],
+          "matchedCount": null,
+          "matchedFilesTruncated": false,
+          "synthetic": false,
+          "place": false
+        },
+        {
+          "index": 5,
+          "path": "architecture-test/src/test/kotlin/com/example",
+          "kind": "Directory",
+          "required": false,
+          "description": null,
+          "declaredAt": {
+            "fileName": "ProcessorDefinitionRole.kt",
+            "line": 22
+          },
+          "modulePath": null,
+          "pathInModule": "architecture-test/src/test/kotlin/com/example",
+          "captures": [],
+          "moduleCapture": null,
+          "template": null,
+          "matchedFiles": [],
+          "matchedCount": null,
+          "matchedFilesTruncated": false,
+          "synthetic": false,
+          "place": false
+        },
+        {
+          "index": 6,
+          "path": "architecture-test/src/test/kotlin/com/example/processors",
+          "kind": "Directory",
+          "required": false,
+          "description": null,
+          "declaredAt": {
+            "fileName": "ProcessorDefinitionRole.kt",
+            "line": 22
+          },
+          "modulePath": null,
+          "pathInModule": "architecture-test/src/test/kotlin/com/example/processors",
+          "captures": [],
+          "moduleCapture": null,
+          "template": null,
+          "matchedFiles": [],
+          "matchedCount": null,
+          "matchedFilesTruncated": false,
+          "synthetic": false,
+          "place": false
+        },
+        {
+          "index": 7,
+          "path": "architecture-test/src/test/kotlin/com/example/processors/*.kt",
+          "kind": "File",
+          "required": false,
+          "description": null,
+          "declaredAt": {
+            "fileName": "ProcessorDefinitionRole.kt",
+            "line": 22
+          },
+          "modulePath": null,
+          "pathInModule": "architecture-test/src/test/kotlin/com/example/processors/*.kt",
+          "captures": [],
+          "moduleCapture": null,
+          "template": null,
+          "matchedFiles": ["architecture-test/src/test/kotlin/com/example/processors/RoleNames.kt"],
+          "matchedCount": 1,
+          "matchedFilesTruncated": false,
+          "synthetic": false,
+          "place": false
+        }
+      ],
+      "constraints": []
+    },
+    {
+      "qualifiedName": "testing.ArchitectureTest",
+      "name": "ArchitectureTest",
+      "groupPath": ["testing"],
+      "title": "Architecture test",
+      "summary": "The one test that checks the whole project against the definition",
+      "documented": null,
+      "declaredAt": {
+        "fileName": "ArchitectureTestRole.kt",
+        "line": 9
+      },
+      "layout": [
+        {
+          "index": 0,
+          "path": "architecture-test",
+          "kind": "Directory",
+          "required": false,
+          "description": null,
+          "declaredAt": {
+            "fileName": "ArchitectureTestRole.kt",
+            "line": 25
+          },
+          "modulePath": null,
+          "pathInModule": "architecture-test",
+          "captures": [],
+          "moduleCapture": null,
+          "template": null,
+          "matchedFiles": [],
+          "matchedCount": null,
+          "matchedFilesTruncated": false,
+          "synthetic": false,
+          "place": false
+        },
+        {
+          "index": 1,
+          "path": "architecture-test/src",
+          "kind": "Directory",
+          "required": false,
+          "description": null,
+          "declaredAt": {
+            "fileName": "ArchitectureTestRole.kt",
+            "line": 25
+          },
+          "modulePath": null,
+          "pathInModule": "architecture-test/src",
+          "captures": [],
+          "moduleCapture": null,
+          "template": null,
+          "matchedFiles": [],
+          "matchedCount": null,
+          "matchedFilesTruncated": false,
+          "synthetic": false,
+          "place": false
+        },
+        {
+          "index": 2,
+          "path": "architecture-test/src/test",
+          "kind": "Directory",
+          "required": false,
+          "description": null,
+          "declaredAt": {
+            "fileName": "ArchitectureTestRole.kt",
+            "line": 25
+          },
+          "modulePath": null,
+          "pathInModule": "architecture-test/src/test",
+          "captures": [],
+          "moduleCapture": null,
+          "template": null,
+          "matchedFiles": [],
+          "matchedCount": null,
+          "matchedFilesTruncated": false,
+          "synthetic": false,
+          "place": false
+        },
+        {
+          "index": 3,
+          "path": "architecture-test/src/test/kotlin",
+          "kind": "Directory",
+          "required": false,
+          "description": null,
+          "declaredAt": {
+            "fileName": "ArchitectureTestRole.kt",
+            "line": 25
+          },
+          "modulePath": null,
+          "pathInModule": "architecture-test/src/test/kotlin",
+          "captures": [],
+          "moduleCapture": null,
+          "template": null,
+          "matchedFiles": [],
+          "matchedCount": null,
+          "matchedFilesTruncated": false,
+          "synthetic": false,
+          "place": false
+        },
+        {
+          "index": 4,
+          "path": "architecture-test/src/test/kotlin/com",
+          "kind": "Directory",
+          "required": false,
+          "description": null,
+          "declaredAt": {
+            "fileName": "ArchitectureTestRole.kt",
+            "line": 25
+          },
+          "modulePath": null,
+          "pathInModule": "architecture-test/src/test/kotlin/com",
+          "captures": [],
+          "moduleCapture": null,
+          "template": null,
+          "matchedFiles": [],
+          "matchedCount": null,
+          "matchedFilesTruncated": false,
+          "synthetic": false,
+          "place": false
+        },
+        {
+          "index": 5,
+          "path": "architecture-test/src/test/kotlin/com/example",
+          "kind": "Directory",
+          "required": false,
+          "description": null,
+          "declaredAt": {
+            "fileName": "ArchitectureTestRole.kt",
+            "line": 25
+          },
+          "modulePath": null,
+          "pathInModule": "architecture-test/src/test/kotlin/com/example",
+          "captures": [],
+          "moduleCapture": null,
+          "template": null,
+          "matchedFiles": [],
+          "matchedCount": null,
+          "matchedFilesTruncated": false,
+          "synthetic": false,
+          "place": false
+        },
+        {
+          "index": 6,
+          "path": "architecture-test/src/test/kotlin/com/example/*Test.kt",
+          "kind": "File",
+          "required": false,
+          "description": null,
+          "declaredAt": {
+            "fileName": "ArchitectureTestRole.kt",
+            "line": 25
+          },
+          "modulePath": null,
+          "pathInModule": "architecture-test/src/test/kotlin/com/example/*Test.kt",
+          "captures": [],
+          "moduleCapture": null,
+          "template": null,
+          "matchedFiles": ["architecture-test/src/test/kotlin/com/example/ProjectArchitectureTest.kt"],
+          "matchedCount": 1,
+          "matchedFilesTruncated": false,
+          "synthetic": false,
+          "place": false
+        }
+      ],
+      "constraints": []
+    },
+    {
+      "qualifiedName": "testing.IntegrationSpec",
+      "name": "IntegrationSpec",
+      "groupPath": ["testing"],
+      "title": "Integration spec",
+      "summary": "katachi's own integration tests, run against this real project",
+      "documented": null,
+      "declaredAt": {
+        "fileName": "IntegrationSpecRole.kt",
+        "line": 9
+      },
+      "layout": [
+        {
+          "index": 0,
+          "path": "architecture-test",
+          "kind": "Directory",
+          "required": false,
+          "description": null,
+          "declaredAt": {
+            "fileName": "IntegrationSpecRole.kt",
+            "line": 23
+          },
+          "modulePath": null,
+          "pathInModule": "architecture-test",
+          "captures": [],
+          "moduleCapture": null,
+          "template": null,
+          "matchedFiles": [],
+          "matchedCount": null,
+          "matchedFilesTruncated": false,
+          "synthetic": false,
+          "place": false
+        },
+        {
+          "index": 1,
+          "path": "architecture-test/src",
+          "kind": "Directory",
+          "required": false,
+          "description": null,
+          "declaredAt": {
+            "fileName": "IntegrationSpecRole.kt",
+            "line": 23
+          },
+          "modulePath": null,
+          "pathInModule": "architecture-test/src",
+          "captures": [],
+          "moduleCapture": null,
+          "template": null,
+          "matchedFiles": [],
+          "matchedCount": null,
+          "matchedFilesTruncated": false,
+          "synthetic": false,
+          "place": false
+        },
+        {
+          "index": 2,
+          "path": "architecture-test/src/test",
+          "kind": "Directory",
+          "required": false,
+          "description": null,
+          "declaredAt": {
+            "fileName": "IntegrationSpecRole.kt",
+            "line": 23
+          },
+          "modulePath": null,
+          "pathInModule": "architecture-test/src/test",
+          "captures": [],
+          "moduleCapture": null,
+          "template": null,
+          "matchedFiles": [],
+          "matchedCount": null,
+          "matchedFilesTruncated": false,
+          "synthetic": false,
+          "place": false
+        },
+        {
+          "index": 3,
+          "path": "architecture-test/src/test/kotlin",
+          "kind": "Directory",
+          "required": false,
+          "description": null,
+          "declaredAt": {
+            "fileName": "IntegrationSpecRole.kt",
+            "line": 23
+          },
+          "modulePath": null,
+          "pathInModule": "architecture-test/src/test/kotlin",
+          "captures": [],
+          "moduleCapture": null,
+          "template": null,
+          "matchedFiles": [],
+          "matchedCount": null,
+          "matchedFilesTruncated": false,
+          "synthetic": false,
+          "place": false
+        },
+        {
+          "index": 4,
+          "path": "architecture-test/src/test/kotlin/com",
+          "kind": "Directory",
+          "required": false,
+          "description": null,
+          "declaredAt": {
+            "fileName": "IntegrationSpecRole.kt",
+            "line": 23
+          },
+          "modulePath": null,
+          "pathInModule": "architecture-test/src/test/kotlin/com",
+          "captures": [],
+          "moduleCapture": null,
+          "template": null,
+          "matchedFiles": [],
+          "matchedCount": null,
+          "matchedFilesTruncated": false,
+          "synthetic": false,
+          "place": false
+        },
+        {
+          "index": 5,
+          "path": "architecture-test/src/test/kotlin/com/example",
+          "kind": "Directory",
+          "required": false,
+          "description": null,
+          "declaredAt": {
+            "fileName": "IntegrationSpecRole.kt",
+            "line": 23
+          },
+          "modulePath": null,
+          "pathInModule": "architecture-test/src/test/kotlin/com/example",
+          "captures": [],
+          "moduleCapture": null,
+          "template": null,
+          "matchedFiles": [],
+          "matchedCount": null,
+          "matchedFilesTruncated": false,
+          "synthetic": false,
+          "place": false
+        },
+        {
+          "index": 6,
+          "path": "architecture-test/src/test/kotlin/com/example/*Spec.kt",
+          "kind": "File",
+          "required": false,
+          "description": null,
+          "declaredAt": {
+            "fileName": "IntegrationSpecRole.kt",
+            "line": 23
+          },
+          "modulePath": null,
+          "pathInModule": "architecture-test/src/test/kotlin/com/example/*Spec.kt",
+          "captures": [],
+          "moduleCapture": null,
+          "template": null,
+          "matchedFiles": ["architecture-test/src/test/kotlin/com/example/LayoutSnapshotSpec.kt", "architecture-test/src/test/kotlin/com/example/ProjectArchitectureSpec.kt", "architecture-test/src/test/kotlin/com/example/ProjectRootSpec.kt"],
+          "matchedCount": 3,
+          "matchedFilesTruncated": false,
+          "synthetic": false,
+          "place": false
+        }
+      ],
+      "constraints": []
+    },
+    {
+      "qualifiedName": "testing.GeneratedDocumentation",
+      "name": "GeneratedDocumentation",
+      "groupPath": ["testing"],
+      "title": "Generated documentation",
+      "summary": "Markdown written out of this definition and committed to the repository",
+      "documented": null,
+      "declaredAt": {
+        "fileName": "GeneratedDocumentationRole.kt",
+        "line": 13
+      },
+      "layout": [
+        {
+          "index": 0,
+          "path": "docs",
+          "kind": "Directory",
+          "required": false,
+          "description": null,
+          "declaredAt": {
+            "fileName": "GeneratedDocumentationRole.kt",
+            "line": 56
+          },
+          "modulePath": null,
+          "pathInModule": "docs",
+          "captures": [],
+          "moduleCapture": null,
+          "template": null,
+          "matchedFiles": [],
+          "matchedCount": null,
+          "matchedFilesTruncated": false,
+          "synthetic": false,
+          "place": false
+        },
+        {
+          "index": 1,
+          "path": "docs/README.md",
+          "kind": "File",
+          "required": true,
+          "description": null,
+          "declaredAt": {
+            "fileName": "GeneratedDocumentationRole.kt",
+            "line": 60
+          },
+          "modulePath": null,
+          "pathInModule": "docs/README.md",
+          "captures": [],
+          "moduleCapture": null,
+          "template": null,
+          "matchedFiles": ["docs/README.md"],
+          "matchedCount": 1,
+          "matchedFilesTruncated": false,
+          "synthetic": false,
+          "place": false
+        },
+        {
+          "index": 2,
+          "path": "docs/**",
+          "kind": "Directory",
+          "required": false,
+          "description": null,
+          "declaredAt": {
+            "fileName": "GeneratedDocumentationRole.kt",
+            "line": 64
+          },
+          "modulePath": null,
+          "pathInModule": "docs/**",
+          "captures": [],
+          "moduleCapture": null,
+          "template": null,
+          "matchedFiles": [],
+          "matchedCount": null,
+          "matchedFilesTruncated": false,
+          "synthetic": false,
+          "place": false
+        },
+        {
+          "index": 3,
+          "path": "docs/**/*.md",
+          "kind": "File",
+          "required": false,
+          "description": null,
+          "declaredAt": {
+            "fileName": "GeneratedDocumentationRole.kt",
+            "line": 64
+          },
+          "modulePath": null,
+          "pathInModule": "docs/**/*.md",
+          "captures": [],
+          "moduleCapture": null,
+          "template": null,
+          "matchedFiles": ["docs/README.md", "docs/api/Controller.md", "docs/api/KtorPlugin.md", "docs/api/README.md", "docs/app/ApplicationConfig.md", "docs/app/Entrypoint.md", "docs/app/LoggingConfig.md", "docs/app/README.md", "docs/data/README.md", "docs/data/Repository.md", "docs/domain/Model.md", "docs/domain/README.md", "docs/domain/Service.md", "docs/testing/ArchitectureDefinitionEntry.md", "docs/testing/ArchitectureTest.md", "docs/testing/BaselineFile.md", "docs/testing/DocumentSectionDefinition.md", "docs/testing/GeneratedDocumentation.md", "docs/testing/GroupDefinition.md", "docs/testing/IntegrationSpec.md", "docs/testing/LayoutSnapshot.md", "docs/testing/ProcessorDefinition.md", "docs/testing/README.md", "docs/testing/RoleDefinition.md", "docs/testing/Test.md"],
+          "matchedCount": 25,
+          "matchedFilesTruncated": false,
+          "synthetic": false,
+          "place": false
+        }
+      ],
+      "constraints": []
+    },
+    {
+      "qualifiedName": "testing.LayoutSnapshot",
+      "name": "LayoutSnapshot",
+      "groupPath": ["testing"],
+      "title": "Layout snapshot",
+      "summary": "A record of every line of this definition, flattened. It exists so people can review changes to the definition as a diff",
+      "documented": null,
+      "declaredAt": {
+        "fileName": "LayoutSnapshotRole.kt",
+        "line": 15
+      },
+      "layout": [
+        {
+          "index": 0,
+          "path": "snapshots",
+          "kind": "Directory",
+          "required": false,
+          "description": null,
+          "declaredAt": {
+            "fileName": "LayoutSnapshotRole.kt",
+            "line": 55
+          },
+          "modulePath": null,
+          "pathInModule": "snapshots",
+          "captures": [],
+          "moduleCapture": null,
+          "template": null,
+          "matchedFiles": [],
+          "matchedCount": null,
+          "matchedFilesTruncated": false,
+          "synthetic": false,
+          "place": false
+        },
+        {
+          "index": 1,
+          "path": "snapshots/layout.txt",
+          "kind": "File",
+          "required": true,
+          "description": null,
+          "declaredAt": {
+            "fileName": "LayoutSnapshotRole.kt",
+            "line": 59
+          },
+          "modulePath": null,
+          "pathInModule": "snapshots/layout.txt",
+          "captures": [],
+          "moduleCapture": null,
+          "template": null,
+          "matchedFiles": ["snapshots/layout.txt"],
+          "matchedCount": 1,
+          "matchedFilesTruncated": false,
+          "synthetic": false,
+          "place": false
+        }
+      ],
+      "constraints": []
+    },
+    {
+      "qualifiedName": "testing.BaselineFile",
+      "name": "BaselineFile",
+      "groupPath": ["testing"],
+      "title": "Baseline (ledger of held-back violations)",
+      "summary": "A ledger that records violations already present when katachi was introduced and holds them back without failing the test",
+      "documented": null,
+      "declaredAt": {
+        "fileName": "BaselineFileRole.kt",
+        "line": 13
+      },
+      "layout": [
+        {
+          "index": 0,
+          "path": "katachi-baseline.json",
+          "kind": "File",
+          "required": true,
+          "description": null,
+          "declaredAt": {
+            "fileName": "BaselineFileRole.kt",
+            "line": 44
+          },
+          "modulePath": null,
+          "pathInModule": "katachi-baseline.json",
+          "captures": [],
+          "moduleCapture": null,
+          "template": null,
+          "matchedFiles": ["katachi-baseline.json"],
+          "matchedCount": 1,
+          "matchedFilesTruncated": false,
+          "synthetic": false,
+          "place": false
+        }
+      ],
+      "constraints": []
+    },
+    {
+      "qualifiedName": "Gradle.SettingsScript",
+      "name": "SettingsScript",
+      "groupPath": ["Gradle"],
+      "title": null,
+      "summary": "Which modules make up the build",
+      "documented": false,
+      "declaredAt": {
+        "fileName": "GradleGroup.kt",
+        "line": 22
+      },
+      "layout": [
+        {
+          "index": 0,
+          "path": "settings.gradle.kts",
+          "kind": "File",
+          "required": false,
+          "description": null,
+          "declaredAt": {
+            "fileName": "GradleGroup.kt",
+            "line": 22
+          },
+          "modulePath": null,
+          "pathInModule": "settings.gradle.kts",
+          "captures": [],
+          "moduleCapture": null,
+          "template": null,
+          "matchedFiles": ["settings.gradle.kts"],
+          "matchedCount": 1,
+          "matchedFilesTruncated": false,
+          "synthetic": false,
+          "place": false
+        },
+        {
+          "index": 1,
+          "path": "settings.gradle",
+          "kind": "File",
+          "required": false,
+          "description": null,
+          "declaredAt": {
+            "fileName": "GradleGroup.kt",
+            "line": 22
+          },
+          "modulePath": null,
+          "pathInModule": "settings.gradle",
+          "captures": [],
+          "moduleCapture": null,
+          "template": null,
+          "matchedFiles": [],
+          "matchedCount": 0,
+          "matchedFilesTruncated": false,
+          "synthetic": false,
+          "place": false
+        }
+      ],
+      "constraints": []
+    },
+    {
+      "qualifiedName": "Gradle.BuildScript",
+      "name": "BuildScript",
+      "groupPath": ["Gradle"],
+      "title": null,
+      "summary": "How one module is built, one per module",
+      "documented": false,
+      "declaredAt": {
+        "fileName": "GradleGroup.kt",
+        "line": 22
+      },
+      "layout": [
+        {
+          "index": 0,
+          "path": "build",
+          "kind": "Ignore",
+          "required": false,
+          "description": null,
+          "declaredAt": {
+            "fileName": "GradleGroup.kt",
+            "line": 22
+          },
+          "modulePath": ":",
+          "pathInModule": "build",
+          "captures": [],
+          "moduleCapture": null,
+          "template": null,
+          "matchedFiles": [],
+          "matchedCount": null,
+          "matchedFilesTruncated": false,
+          "synthetic": true,
+          "place": false
+        },
+        {
+          "index": 1,
+          "path": "build.gradle.kts",
+          "kind": "File",
+          "required": false,
+          "description": null,
+          "declaredAt": {
+            "fileName": "GradleGroup.kt",
+            "line": 22
+          },
+          "modulePath": ":",
+          "pathInModule": "build.gradle.kts",
+          "captures": [],
+          "moduleCapture": null,
+          "template": null,
+          "matchedFiles": ["build.gradle.kts"],
+          "matchedCount": 1,
+          "matchedFilesTruncated": false,
+          "synthetic": true,
+          "place": false
+        },
+        {
+          "index": 2,
+          "path": "build.gradle",
+          "kind": "File",
+          "required": false,
+          "description": null,
+          "declaredAt": {
+            "fileName": "GradleGroup.kt",
+            "line": 22
+          },
+          "modulePath": ":",
+          "pathInModule": "build.gradle",
+          "captures": [],
+          "moduleCapture": null,
+          "template": null,
+          "matchedFiles": [],
+          "matchedCount": 0,
+          "matchedFilesTruncated": false,
+          "synthetic": true,
+          "place": false
+        },
+        {
+          "index": 3,
+          "path": "architecture-test",
+          "kind": "Directory",
+          "required": false,
+          "description": null,
+          "declaredAt": {
+            "fileName": "GradleGroup.kt",
+            "line": 22
+          },
+          "modulePath": ":architecture-test",
+          "pathInModule": "",
+          "captures": [],
+          "moduleCapture": null,
+          "template": null,
+          "matchedFiles": [],
+          "matchedCount": null,
+          "matchedFilesTruncated": false,
+          "synthetic": false,
+          "place": true
+        },
+        {
+          "index": 4,
+          "path": "architecture-test/build",
+          "kind": "Ignore",
+          "required": false,
+          "description": null,
+          "declaredAt": {
+            "fileName": "GradleGroup.kt",
+            "line": 22
+          },
+          "modulePath": ":architecture-test",
+          "pathInModule": "build",
+          "captures": [],
+          "moduleCapture": null,
+          "template": null,
+          "matchedFiles": [],
+          "matchedCount": null,
+          "matchedFilesTruncated": false,
+          "synthetic": true,
+          "place": false
+        },
+        {
+          "index": 5,
+          "path": "architecture-test/build.gradle.kts",
+          "kind": "File",
+          "required": false,
+          "description": null,
+          "declaredAt": {
+            "fileName": "GradleGroup.kt",
+            "line": 22
+          },
+          "modulePath": ":architecture-test",
+          "pathInModule": "build.gradle.kts",
+          "captures": [],
+          "moduleCapture": null,
+          "template": null,
+          "matchedFiles": ["architecture-test/build.gradle.kts"],
+          "matchedCount": 1,
+          "matchedFilesTruncated": false,
+          "synthetic": true,
+          "place": false
+        },
+        {
+          "index": 6,
+          "path": "architecture-test/build.gradle",
+          "kind": "File",
+          "required": false,
+          "description": null,
+          "declaredAt": {
+            "fileName": "GradleGroup.kt",
+            "line": 22
+          },
+          "modulePath": ":architecture-test",
+          "pathInModule": "build.gradle",
+          "captures": [],
+          "moduleCapture": null,
+          "template": null,
+          "matchedFiles": [],
+          "matchedCount": 0,
+          "matchedFilesTruncated": false,
+          "synthetic": true,
+          "place": false
+        }
+      ],
+      "constraints": []
+    },
+    {
+      "qualifiedName": "Gradle.GradleProperties",
+      "name": "GradleProperties",
+      "groupPath": ["Gradle"],
+      "title": null,
+      "summary": "Properties of the build and of the Gradle daemon",
+      "documented": false,
+      "declaredAt": {
+        "fileName": "GradleGroup.kt",
+        "line": 22
+      },
+      "layout": [
+        {
+          "index": 0,
+          "path": "gradle.properties",
+          "kind": "File",
+          "required": false,
+          "description": null,
+          "declaredAt": {
+            "fileName": "GradleGroup.kt",
+            "line": 22
+          },
+          "modulePath": null,
+          "pathInModule": "gradle.properties",
+          "captures": [],
+          "moduleCapture": null,
+          "template": null,
+          "matchedFiles": ["gradle.properties"],
+          "matchedCount": 1,
+          "matchedFilesTruncated": false,
+          "synthetic": false,
+          "place": false
+        }
+      ],
+      "constraints": []
+    },
+    {
+      "qualifiedName": "Gradle.VersionCatalog",
+      "name": "VersionCatalog",
+      "groupPath": ["Gradle"],
+      "title": null,
+      "summary": "The versions of the build's dependencies and plugins",
+      "documented": false,
+      "declaredAt": {
+        "fileName": "GradleGroup.kt",
+        "line": 22
+      },
+      "layout": [
+        {
+          "index": 0,
+          "path": "gradle",
+          "kind": "Directory",
+          "required": false,
+          "description": null,
+          "declaredAt": {
+            "fileName": "GradleGroup.kt",
+            "line": 22
+          },
+          "modulePath": null,
+          "pathInModule": "gradle",
+          "captures": [],
+          "moduleCapture": null,
+          "template": null,
+          "matchedFiles": [],
+          "matchedCount": null,
+          "matchedFilesTruncated": false,
+          "synthetic": false,
+          "place": false
+        },
+        {
+          "index": 1,
+          "path": "gradle/*.versions.toml",
+          "kind": "File",
+          "required": false,
+          "description": null,
+          "declaredAt": {
+            "fileName": "GradleGroup.kt",
+            "line": 22
+          },
+          "modulePath": null,
+          "pathInModule": "gradle/*.versions.toml",
+          "captures": [],
+          "moduleCapture": null,
+          "template": null,
+          "matchedFiles": ["gradle/sample.versions.toml"],
+          "matchedCount": 1,
+          "matchedFilesTruncated": false,
+          "synthetic": false,
+          "place": false
+        }
+      ],
+      "constraints": []
+    },
+    {
+      "qualifiedName": "Gradle.DaemonJvmProperties",
+      "name": "DaemonJvmProperties",
+      "groupPath": ["Gradle"],
+      "title": null,
+      "summary": "Which JVM the Gradle daemon runs on (Gradle 8.8 and later)",
+      "documented": false,
+      "declaredAt": {
+        "fileName": "GradleGroup.kt",
+        "line": 22
+      },
+      "layout": [
+        {
+          "index": 0,
+          "path": "gradle",
+          "kind": "Directory",
+          "required": false,
+          "description": null,
+          "declaredAt": {
+            "fileName": "GradleGroup.kt",
+            "line": 22
+          },
+          "modulePath": null,
+          "pathInModule": "gradle",
+          "captures": [],
+          "moduleCapture": null,
+          "template": null,
+          "matchedFiles": [],
+          "matchedCount": null,
+          "matchedFilesTruncated": false,
+          "synthetic": false,
+          "place": false
+        },
+        {
+          "index": 1,
+          "path": "gradle/gradle-daemon-jvm.properties",
+          "kind": "File",
+          "required": false,
+          "description": null,
+          "declaredAt": {
+            "fileName": "GradleGroup.kt",
+            "line": 22
+          },
+          "modulePath": null,
+          "pathInModule": "gradle/gradle-daemon-jvm.properties",
+          "captures": [],
+          "moduleCapture": null,
+          "template": null,
+          "matchedFiles": [],
+          "matchedCount": 0,
+          "matchedFilesTruncated": false,
+          "synthetic": false,
+          "place": false
+        }
+      ],
+      "constraints": []
+    },
+    {
+      "qualifiedName": "Gradle.GradleWrapper.LauncherScript",
+      "name": "LauncherScript",
+      "groupPath": ["Gradle", "GradleWrapper"],
+      "title": null,
+      "summary": "The scripts that start the wrapper, for Unix and Windows",
+      "documented": false,
+      "declaredAt": {
+        "fileName": "GradleGroup.kt",
+        "line": 22
+      },
+      "layout": [
+        {
+          "index": 0,
+          "path": "gradlew",
+          "kind": "File",
+          "required": true,
+          "description": null,
+          "declaredAt": {
+            "fileName": "GradleGroup.kt",
+            "line": 22
+          },
+          "modulePath": null,
+          "pathInModule": "gradlew",
+          "captures": [],
+          "moduleCapture": null,
+          "template": null,
+          "matchedFiles": ["gradlew"],
+          "matchedCount": 1,
+          "matchedFilesTruncated": false,
+          "synthetic": false,
+          "place": false
+        },
+        {
+          "index": 1,
+          "path": "gradlew.bat",
+          "kind": "File",
+          "required": true,
+          "description": null,
+          "declaredAt": {
+            "fileName": "GradleGroup.kt",
+            "line": 22
+          },
+          "modulePath": null,
+          "pathInModule": "gradlew.bat",
+          "captures": [],
+          "moduleCapture": null,
+          "template": null,
+          "matchedFiles": ["gradlew.bat"],
+          "matchedCount": 1,
+          "matchedFilesTruncated": false,
+          "synthetic": false,
+          "place": false
+        }
+      ],
+      "constraints": []
+    },
+    {
+      "qualifiedName": "Gradle.GradleWrapper.WrapperJar",
+      "name": "WrapperJar",
+      "groupPath": ["Gradle", "GradleWrapper"],
+      "title": null,
+      "summary": "The wrapper itself, which downloads and runs Gradle",
+      "documented": false,
+      "declaredAt": {
+        "fileName": "GradleGroup.kt",
+        "line": 22
+      },
+      "layout": [
+        {
+          "index": 0,
+          "path": "gradle",
+          "kind": "Directory",
+          "required": false,
+          "description": null,
+          "declaredAt": {
+            "fileName": "GradleGroup.kt",
+            "line": 22
+          },
+          "modulePath": null,
+          "pathInModule": "gradle",
+          "captures": [],
+          "moduleCapture": null,
+          "template": null,
+          "matchedFiles": [],
+          "matchedCount": null,
+          "matchedFilesTruncated": false,
+          "synthetic": false,
+          "place": false
+        },
+        {
+          "index": 1,
+          "path": "gradle/wrapper",
+          "kind": "Directory",
+          "required": false,
+          "description": null,
+          "declaredAt": {
+            "fileName": "GradleGroup.kt",
+            "line": 22
+          },
+          "modulePath": null,
+          "pathInModule": "gradle/wrapper",
+          "captures": [],
+          "moduleCapture": null,
+          "template": null,
+          "matchedFiles": [],
+          "matchedCount": null,
+          "matchedFilesTruncated": false,
+          "synthetic": false,
+          "place": false
+        },
+        {
+          "index": 2,
+          "path": "gradle/wrapper/gradle-wrapper.jar",
+          "kind": "File",
+          "required": true,
+          "description": null,
+          "declaredAt": {
+            "fileName": "GradleGroup.kt",
+            "line": 22
+          },
+          "modulePath": null,
+          "pathInModule": "gradle/wrapper/gradle-wrapper.jar",
+          "captures": [],
+          "moduleCapture": null,
+          "template": null,
+          "matchedFiles": ["gradle/wrapper/gradle-wrapper.jar"],
+          "matchedCount": 1,
+          "matchedFilesTruncated": false,
+          "synthetic": false,
+          "place": false
+        }
+      ],
+      "constraints": []
+    },
+    {
+      "qualifiedName": "Gradle.GradleWrapper.WrapperProperties",
+      "name": "WrapperProperties",
+      "groupPath": ["Gradle", "GradleWrapper"],
+      "title": null,
+      "summary": "Which Gradle distribution the wrapper runs",
+      "documented": false,
+      "declaredAt": {
+        "fileName": "GradleGroup.kt",
+        "line": 22
+      },
+      "layout": [
+        {
+          "index": 0,
+          "path": "gradle",
+          "kind": "Directory",
+          "required": false,
+          "description": null,
+          "declaredAt": {
+            "fileName": "GradleGroup.kt",
+            "line": 22
+          },
+          "modulePath": null,
+          "pathInModule": "gradle",
+          "captures": [],
+          "moduleCapture": null,
+          "template": null,
+          "matchedFiles": [],
+          "matchedCount": null,
+          "matchedFilesTruncated": false,
+          "synthetic": false,
+          "place": false
+        },
+        {
+          "index": 1,
+          "path": "gradle/wrapper",
+          "kind": "Directory",
+          "required": false,
+          "description": null,
+          "declaredAt": {
+            "fileName": "GradleGroup.kt",
+            "line": 22
+          },
+          "modulePath": null,
+          "pathInModule": "gradle/wrapper",
+          "captures": [],
+          "moduleCapture": null,
+          "template": null,
+          "matchedFiles": [],
+          "matchedCount": null,
+          "matchedFilesTruncated": false,
+          "synthetic": false,
+          "place": false
+        },
+        {
+          "index": 2,
+          "path": "gradle/wrapper/gradle-wrapper.properties",
+          "kind": "File",
+          "required": true,
+          "description": null,
+          "declaredAt": {
+            "fileName": "GradleGroup.kt",
+            "line": 22
+          },
+          "modulePath": null,
+          "pathInModule": "gradle/wrapper/gradle-wrapper.properties",
+          "captures": [],
+          "moduleCapture": null,
+          "template": null,
+          "matchedFiles": ["gradle/wrapper/gradle-wrapper.properties"],
+          "matchedCount": 1,
+          "matchedFilesTruncated": false,
+          "synthetic": false,
+          "place": false
+        }
+      ],
+      "constraints": []
+    },
+    {
+      "qualifiedName": "tool.Documentation",
+      "name": "Documentation",
+      "groupPath": ["tool"],
+      "title": "Documentation",
+      "summary": "README.md and other explanations for people reading the repository",
+      "documented": false,
+      "declaredAt": {
+        "fileName": "DocumentationRole.kt",
+        "line": 6
+      },
+      "layout": [
+        {
+          "index": 0,
+          "path": "README.md",
+          "kind": "File",
+          "required": true,
+          "description": null,
+          "declaredAt": {
+            "fileName": "DocumentationRole.kt",
+            "line": 25
+          },
+          "modulePath": null,
+          "pathInModule": "README.md",
+          "captures": [],
+          "moduleCapture": null,
+          "template": null,
+          "matchedFiles": ["README.md"],
+          "matchedCount": 1,
+          "matchedFilesTruncated": false,
+          "synthetic": false,
+          "place": false
+        }
+      ],
+      "constraints": []
+    },
+    {
+      "qualifiedName": "tool.Git",
+      "name": "Git",
+      "groupPath": ["tool"],
+      "title": "Git configuration",
+      "summary": "Version control configuration files",
+      "documented": null,
+      "declaredAt": {
+        "fileName": "GitRole.kt",
+        "line": 7
+      },
+      "layout": [
+        {
+          "index": 0,
+          "path": ".gitignore",
+          "kind": "File",
+          "required": true,
+          "description": null,
+          "declaredAt": {
+            "fileName": "GitRole.kt",
+            "line": 27
+          },
+          "modulePath": null,
+          "pathInModule": ".gitignore",
+          "captures": [],
+          "moduleCapture": null,
+          "template": null,
+          "matchedFiles": [".gitignore"],
+          "matchedCount": 1,
+          "matchedFilesTruncated": false,
+          "synthetic": false,
+          "place": false
+        }
+      ],
+      "constraints": []
+    }
+  ],
+  "templates": {
+    "templates": [
+      {
+        "template": "api.Controller",
+        "id": null,
+        "title": "Controller",
+        "roleName": "api.Controller",
+        "summary": "Receives one HTTP request, calls the matching Service and returns the result",
+        "parameterNames": [],
+        "captures": [
+          {
+            "name": "resource",
+            "kind": "PathCapture",
+            "pattern": "src/main/kotlin/com/example/controller/*/*Controller.kt",
+            "position": 6,
+            "segment": "${resource}"
+          },
+          {
+            "name": "name",
+            "kind": "PathCapture",
+            "pattern": "src/main/kotlin/com/example/controller/*/*Controller.kt",
+            "position": 7,
+            "segment": "${name}Controller.kt"
+          }
+        ],
+        "conflict": false
+      },
+      {
+        "template": "domain.Service",
+        "id": null,
+        "title": "Service",
+        "roleName": "domain.Service",
+        "summary": "Owns one application-specific behaviour, realized by combining Repositories",
+        "parameterNames": ["kdoc"],
+        "captures": [
+          {
+            "name": "name",
+            "kind": "PathCapture",
+            "pattern": "src/main/kotlin/com/example/service/*Service.kt",
+            "position": 6,
+            "segment": "${name}Service.kt"
+          }
+        ],
+        "conflict": false
+      }
+    ],
+    "details": [
+      {
+        "template": "api.Controller",
+        "id": null,
+        "title": "Controller",
+        "roleName": "api.Controller",
+        "summary": "Receives one HTTP request, calls the matching Service and returns the result",
+        "parameters": [],
+        "files": [
+          {
+            "pattern": "src/main/kotlin/com/example/controller/${resource}/${name}Controller.kt",
+            "fileName": "${name}Controller.kt",
+            "path": "src/main/kotlin/com/example/controller/${resource}/${name}Controller.kt",
+            "captures": ["resource", "name"],
+            "parameters": [],
+            "content": "package com.example.controller.${resource}\n\nimport io.ktor.server.response.respondText\nimport io.ktor.server.routing.Route\nimport io.ktor.server.routing.get\n\n/** Maps `GET /${resource}`. */\nclass ${name}Controller {\n    fun register(route: Route) {\n        route.get(\"/${resource}\") {\n            call.respondText(\"TODO: ${name}Controller\")\n        }\n    }\n}\n"
+          }
+        ],
+        "branches": [],
+        "exampleCommand": "./gradlew katachiTemplate --arg template=api.Controller --arg resource=<resource> --arg name=<name>",
+        "captures": [
+          {
+            "name": "resource",
+            "kind": "PathCapture",
+            "pattern": "src/main/kotlin/com/example/controller/*/*Controller.kt",
+            "position": 6,
+            "segment": "${resource}"
+          },
+          {
+            "name": "name",
+            "kind": "PathCapture",
+            "pattern": "src/main/kotlin/com/example/controller/*/*Controller.kt",
+            "position": 7,
+            "segment": "${name}Controller.kt"
+          }
+        ]
+      },
+      {
+        "template": "domain.Service",
+        "id": null,
+        "title": "Service",
+        "roleName": "domain.Service",
+        "summary": "Owns one application-specific behaviour, realized by combining Repositories",
+        "parameters": [
+          {
+            "name": "kdoc",
+            "kind": "StringParameter",
+            "typeName": "String",
+            "default": "Application-specific behaviour for ${name}.",
+            "acceptedValues": [],
+            "isRequired": false,
+            "previewValue": "${kdoc}",
+            "previewValueSource": "Placeholder"
+          }
+        ],
+        "files": [
+          {
+            "pattern": "src/main/kotlin/com/example/service/${name}Service.kt",
+            "fileName": "${name}Service.kt",
+            "path": "src/main/kotlin/com/example/service/${name}Service.kt",
+            "captures": ["name"],
+            "parameters": ["kdoc"],
+            "content": "package com.example.service\n\n/** ${kdoc} */\nclass ${name}Service {\n    fun execute(): String = TODO(\"Implement ${name}Service\")\n}\n"
+          }
+        ],
+        "branches": [],
+        "exampleCommand": "./gradlew katachiTemplate --arg template=domain.Service --arg name=<name>",
+        "captures": [
+          {
+            "name": "name",
+            "kind": "PathCapture",
+            "pattern": "src/main/kotlin/com/example/service/*Service.kt",
+            "position": 6,
+            "segment": "${name}Service.kt"
+          }
+        ]
+      }
+    ],
+    "modulePlacements": []
+  },
+  "problems": []
+}

@@ -1,0 +1,318 @@
+{
+  "schemaVersion": 1,
+  "katachiVersion": "0.3.0",
+  "generatedAt": "2026-10-04T00:30:12Z",
+  "projectRoot": "/repo",
+  "architecture": {
+    "declaredAt": {
+      "fileName": "DescribeDefinitionSpecSupport.kt",
+      "line": 179
+    },
+    "files": "wholeTree",
+    "baseline": null
+  },
+  "groups": [],
+  "roles": [
+    {
+      "qualifiedName": "Service",
+      "name": "Service",
+      "groupPath": [],
+      "title": null,
+      "summary": null,
+      "documented": null,
+      "declaredAt": {
+        "fileName": "DescribeDefinitionSpecSupport.kt",
+        "line": 181
+      },
+      "layout": [
+        {
+          "index": 0,
+          "path": "src",
+          "kind": "Directory",
+          "required": false,
+          "description": null,
+          "declaredAt": {
+            "fileName": "DescribeDefinitionSpecSupport.kt",
+            "line": 183
+          },
+          "modulePath": null,
+          "pathInModule": "src",
+          "captures": [],
+          "moduleCapture": null,
+          "template": null,
+          "matchedFiles": [],
+          "matchedCount": null,
+          "matchedFilesTruncated": false,
+          "synthetic": false,
+          "place": false
+        },
+        {
+          "index": 1,
+          "path": "src/service",
+          "kind": "Directory",
+          "required": false,
+          "description": null,
+          "declaredAt": {
+            "fileName": "DescribeDefinitionSpecSupport.kt",
+            "line": 183
+          },
+          "modulePath": null,
+          "pathInModule": "src/service",
+          "captures": [],
+          "moduleCapture": null,
+          "template": null,
+          "matchedFiles": [],
+          "matchedCount": null,
+          "matchedFilesTruncated": false,
+          "synthetic": false,
+          "place": false
+        },
+        {
+          "index": 2,
+          "path": "src/service/*.kt",
+          "kind": "File",
+          "required": false,
+          "description": null,
+          "declaredAt": {
+            "fileName": "DescribeDefinitionSpecSupport.kt",
+            "line": 184
+          },
+          "modulePath": null,
+          "pathInModule": "src/service/*.kt",
+          "captures": [],
+          "moduleCapture": null,
+          "template": null,
+          "matchedFiles": ["src/service/Broken.kt", "src/service/HealthService.kt", "src/service/UserServiceBad.kt"],
+          "matchedCount": 3,
+          "matchedFilesTruncated": false,
+          "synthetic": false,
+          "place": false
+        },
+        {
+          "index": 3,
+          "path": "src/service/*.md",
+          "kind": "File",
+          "required": false,
+          "description": null,
+          "declaredAt": {
+            "fileName": "DescribeDefinitionSpecSupport.kt",
+            "line": 185
+          },
+          "modulePath": null,
+          "pathInModule": "src/service/*.md",
+          "captures": [],
+          "moduleCapture": null,
+          "template": null,
+          "matchedFiles": ["src/service/README.md"],
+          "matchedCount": 1,
+          "matchedFilesTruncated": false,
+          "synthetic": false,
+          "place": false
+        }
+      ],
+      "constraints": [
+        {
+          "name": "explains itself",
+          "backend": "custom",
+          "checkClass": "me.tbsten.katachi.test.ide.ExplainByFileName",
+          "range": "Subtree",
+          "declaredAt": {
+            "fileName": "DescribeDefinitionSpecSupport.kt",
+            "line": 186
+          },
+          "layoutPath": "src/service",
+          "anchors": ["src/service"],
+          "entries": [2, 3],
+          "coverage": {
+            "files": ["src/service/*.kt", "src/service/*.md"],
+            "anyFileDirectories": []
+          },
+          "fileDeclarations": [
+            {
+              "file": "src/service/Broken.kt",
+              "declarationsChecked": false,
+              "declarations": [],
+              "missing": [],
+              "unexplainedReason": "IllegalStateException: no rules for Broken"
+            },
+            {
+              "file": "src/service/HealthService.kt",
+              "declarationsChecked": true,
+              "declarations": [
+                {
+                  "kind": "class",
+                  "name": "HealthService",
+                  "line": 3,
+                  "verdict": "Allowed",
+                  "rules": [
+                    {
+                      "text": "class HealthService",
+                      "declaredAt": {
+                        "fileName": "ExplainingRole.kt",
+                        "line": 21
+                      }
+                    }
+                  ],
+                  "difference": null
+                }
+              ],
+              "missing": [],
+              "unexplainedReason": null
+            },
+            {
+              "file": "src/service/UserServiceBad.kt",
+              "declarationsChecked": true,
+              "declarations": [
+                {
+                  "kind": "fun",
+                  "name": "UserServiceBad",
+                  "line": 3,
+                  "verdict": "Unexpected",
+                  "rules": [],
+                  "difference": null
+                }
+              ],
+              "missing": [
+                {
+                  "text": "class UserService",
+                  "declaredAt": {
+                    "fileName": "ExplainingRole.kt",
+                    "line": 21
+                  }
+                }
+              ],
+              "unexplainedReason": null
+            }
+          ]
+        },
+        {
+          "name": "does not",
+          "backend": "custom",
+          "checkClass": "me.tbsten.katachi.test.ide.AcceptEverything",
+          "range": "Subtree",
+          "declaredAt": {
+            "fileName": "DescribeDefinitionSpecSupport.kt",
+            "line": 187
+          },
+          "layoutPath": "src/service",
+          "anchors": ["src/service"],
+          "entries": [2, 3],
+          "coverage": {
+            "files": ["src/service/*.kt", "src/service/*.md"],
+            "anyFileDirectories": []
+          },
+          "fileDeclarations": null
+        }
+      ]
+    },
+    {
+      "qualifiedName": "Thrower",
+      "name": "Thrower",
+      "groupPath": [],
+      "title": null,
+      "summary": null,
+      "documented": null,
+      "declaredAt": {
+        "fileName": "DescribeDefinitionSpecSupport.kt",
+        "line": 191
+      },
+      "layout": [
+        {
+          "index": 0,
+          "path": "src",
+          "kind": "Directory",
+          "required": false,
+          "description": null,
+          "declaredAt": {
+            "fileName": "DescribeDefinitionSpecSupport.kt",
+            "line": 193
+          },
+          "modulePath": null,
+          "pathInModule": "src",
+          "captures": [],
+          "moduleCapture": null,
+          "template": null,
+          "matchedFiles": [],
+          "matchedCount": null,
+          "matchedFilesTruncated": false,
+          "synthetic": false,
+          "place": false
+        },
+        {
+          "index": 1,
+          "path": "src/thrower",
+          "kind": "Directory",
+          "required": false,
+          "description": null,
+          "declaredAt": {
+            "fileName": "DescribeDefinitionSpecSupport.kt",
+            "line": 193
+          },
+          "modulePath": null,
+          "pathInModule": "src/thrower",
+          "captures": [],
+          "moduleCapture": null,
+          "template": null,
+          "matchedFiles": [],
+          "matchedCount": null,
+          "matchedFilesTruncated": false,
+          "synthetic": false,
+          "place": false
+        },
+        {
+          "index": 2,
+          "path": "src/thrower/*.kt",
+          "kind": "File",
+          "required": false,
+          "description": null,
+          "declaredAt": {
+            "fileName": "DescribeDefinitionSpecSupport.kt",
+            "line": 193
+          },
+          "modulePath": null,
+          "pathInModule": "src/thrower/*.kt",
+          "captures": [],
+          "moduleCapture": null,
+          "template": null,
+          "matchedFiles": ["src/thrower/Thrower.kt"],
+          "matchedCount": 1,
+          "matchedFilesTruncated": false,
+          "synthetic": false,
+          "place": false
+        }
+      ],
+      "constraints": [
+        {
+          "name": "throws",
+          "backend": "custom",
+          "checkClass": "me.tbsten.katachi.test.ide.ExplainingThrows",
+          "range": "Subtree",
+          "declaredAt": {
+            "fileName": "DescribeDefinitionSpecSupport.kt",
+            "line": 195
+          },
+          "layoutPath": null,
+          "anchors": ["src/thrower"],
+          "entries": [2],
+          "coverage": {
+            "files": ["src/thrower/*.kt"],
+            "anyFileDirectories": []
+          },
+          "fileDeclarations": null
+        }
+      ]
+    }
+  ],
+  "templates": {
+    "templates": [],
+    "details": [],
+    "modulePlacements": []
+  },
+  "problems": [
+    {
+      "kind": "ExplanationFailed",
+      "message": "The constraint declared at DescribeDefinitionSpecSupport.kt:195 could not explain its declarations: IllegalStateException: cannot explain Thrower",
+      "detail": "Thrower"
+    }
+  ]
+}

@@ -1,12 +1,17 @@
+@file:OptIn(InternalKatachiApi::class)
+
 package me.tbsten.katachi.konsist.declarations.internal
 
 import java.util.concurrent.atomic.AtomicReference
+import me.tbsten.katachi.InternalKatachiApi
 import me.tbsten.katachi.dsl.DeclarationSite
 import me.tbsten.katachi.dsl.FileConstraint
 import me.tbsten.katachi.dsl.FileConstraintDocumentContext
 import me.tbsten.katachi.dsl.FileConstraintFailure
 import me.tbsten.katachi.dsl.FileConstraintSubject
 import me.tbsten.katachi.dsl.Role
+import me.tbsten.katachi.dsl.internal.DeclarationExplaining
+import me.tbsten.katachi.dsl.internal.FileDeclarationsExplanation
 import me.tbsten.katachi.konsist.declarations.KatachiKtFileContentDuplicateException
 import me.tbsten.katachi.konsist.declarations.KtFileContentScope
 
@@ -17,12 +22,15 @@ import me.tbsten.katachi.konsist.declarations.KtFileContentScope
  * Before any file is read, a run starts by refusing a second `ktFileContent { }` of the same role,
  * then runs the block once with stand-ins to refuse a `captureValue` name the layout does not
  * capture. Only then is each file's own run made and judged.
+ *
+ * It also explains itself to the IDE plugin ([DeclarationExplaining]): the same steps, keeping how
+ * each top-level declaration was decided instead of what was wrong.
  */
 internal class KtFileContentConstraint(
     private val block: KtFileContentScope.() -> Unit,
     /** Where `ktFileContent { }` was called. */
     val declaredAt: DeclarationSite,
-) : FileConstraint {
+) : FileConstraint, DeclarationExplaining {
     private val patterns = PatternCache()
 
     /** Runs the block once with stand-in values while the definition is read. See [validateAtDeclaration]. */
@@ -36,6 +44,18 @@ internal class KtFileContentConstraint(
         // capture is refused here, before any file is read.
         evaluateWithStandIns(block, placeholderInput(subject, declaredAt, patterns), declaredAt)
         return judgeKtFiles(subject, declaredAt) { file ->
+            evaluateRules(block, inputFor(subject, file, declaredAt, patterns), declaredAt)
+        }
+    }
+
+    /**
+     * Each covered `.kt` file's top-level declarations, decided as [evaluate] decides them: the
+     * same claim on the role, the same stand-in run, and per file the same rules and judging.
+     */
+    override fun explainDeclarations(subject: FileConstraintSubject): List<FileDeclarationsExplanation> {
+        registerOnce(subject)
+        evaluateWithStandIns(block, placeholderInput(subject, declaredAt, patterns), declaredAt)
+        return explainKtFiles(subject, declaredAt) { file ->
             evaluateRules(block, inputFor(subject, file, declaredAt, patterns), declaredAt)
         }
     }

@@ -32,8 +32,9 @@ import org.gradle.api.InvalidUserDataException;
  * <p>{@code docs}, {@code template} and {@code templates} are registered for every module this
  * plugin is applied to, so {@code katachiDocs}, {@code katachiTemplate} and
  * {@code katachiTemplates} work with an empty {@code katachi { } } block. So is
- * {@code internalTemplatesJson}, which the katachi IDE plugin runs to read the templates as JSON;
- * its task has no group, since it is not meant to be run by hand. They are the only ones: the
+ * {@code internalTemplatesJson} and {@code internalDefinitionJson}, which the katachi IDE plugin
+ * runs to read the templates and the whole definition as JSON; their tasks have no group, since
+ * they are not meant to be run by hand. They are the only ones: the
  * checks ({@code LayoutCheck}, {@code FileConstraintCheck}) are not registered by default,
  * although {@code :katachi} carries them too. A check already runs where a build expects it to,
  * in the {@code test} task through {@code assert()}; a default {@code katachiLayout} would be a
@@ -90,6 +91,7 @@ public class KatachiProcessors {
         defaults.put("template", "me.tbsten.katachi.template.GenerateCodeFromTemplate");
         defaults.put("templates", "me.tbsten.katachi.template.DescribeTemplates");
         defaults.put(INTERNAL_TEMPLATES_JSON_KEY, "me.tbsten.katachi.template.DescribeTemplates");
+        defaults.put(INTERNAL_DEFINITION_JSON_KEY, "me.tbsten.katachi.ide.DescribeDefinition");
         return defaults;
     }
 
@@ -98,6 +100,15 @@ public class KatachiProcessors {
 
     /** Where {@code katachiInternalTemplatesJson} writes, relative to the module directory. */
     static final String INTERNAL_TEMPLATES_JSON_DIR = "build/katachi/internalTemplatesJson";
+
+    /**
+     * The key the katachi IDE plugin runs, as {@code katachiInternalDefinitionJson}, to read the
+     * whole definition: roles, layout, constraints, the files each entry matched, and the templates.
+     */
+    static final String INTERNAL_DEFINITION_JSON_KEY = "internalDefinitionJson";
+
+    /** Where {@code katachiInternalDefinitionJson} writes, relative to the module directory. */
+    static final String INTERNAL_DEFINITION_JSON_DIR = "build/katachi/internalDefinitionJson";
 
     /**
      * The arguments a default registration runs with, by key, while it still points at katachi's
@@ -113,8 +124,11 @@ public class KatachiProcessors {
         Map<String, String> templatesJson = new LinkedHashMap<>();
         templatesJson.put("format", "json");
         templatesJson.put("output", INTERNAL_TEMPLATES_JSON_DIR + "/templateDescription.json");
+        Map<String, String> definitionJson = new LinkedHashMap<>();
+        definitionJson.put("output", INTERNAL_DEFINITION_JSON_DIR + "/definition.json");
         Map<String, Map<String, String>> defaults = new LinkedHashMap<>();
         defaults.put(INTERNAL_TEMPLATES_JSON_KEY, Collections.unmodifiableMap(templatesJson));
+        defaults.put(INTERNAL_DEFINITION_JSON_KEY, Collections.unmodifiableMap(definitionJson));
         return Collections.unmodifiableMap(defaults);
     }
 
@@ -131,6 +145,12 @@ public class KatachiProcessors {
                 INTERNAL_TEMPLATES_JSON_KEY,
                 "Internal: writes the template list as JSON for the katachi IDE plugin. "
                         + "Not meant to be run by hand.");
+        // No outputs are declared for it in resolvedOutputs: it walks the project, so it has to
+        // run every time, and an output declared on a task that never is up to date says nothing.
+        descriptions.put(
+                INTERNAL_DEFINITION_JSON_KEY,
+                "Internal: writes the architecture definition (roles, layout, constraints, templates, "
+                        + "matched files) as JSON for the katachi IDE plugin. Not meant to be run by hand.");
         return Collections.unmodifiableMap(descriptions);
     }
 

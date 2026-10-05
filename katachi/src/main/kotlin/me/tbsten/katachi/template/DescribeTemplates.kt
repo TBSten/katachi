@@ -4,20 +4,16 @@ import kotlinx.serialization.KSerializer
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import me.tbsten.katachi.ExperimentalKatachiApi
-import me.tbsten.katachi.check.internal.moduleIndex
-import me.tbsten.katachi.dsl.files.internal.findProjectRoot
 import me.tbsten.katachi.internal.absolutePathOf
-import me.tbsten.katachi.internal.catching
 import me.tbsten.katachi.internal.fileUri
 import me.tbsten.katachi.internal.runProcessorCatching
 import me.tbsten.katachi.processor.ArchitectureProcessContext
 import me.tbsten.katachi.processor.ArchitectureProcessor
-import me.tbsten.katachi.processor.internal.fileSystem
 import me.tbsten.katachi.template.internal.DeclaredTemplate
 import me.tbsten.katachi.template.internal.declaredTemplatesOf
 import me.tbsten.katachi.template.internal.encodeTemplateDescriptionJson
-import me.tbsten.katachi.template.internal.modulePlacementsOf
 import me.tbsten.katachi.template.internal.resolveTemplate
+import me.tbsten.katachi.template.internal.templateDescriptionJsonOf
 import me.tbsten.katachi.template.internal.templateDetailLines
 import me.tbsten.katachi.template.internal.templateDetailOf
 import me.tbsten.katachi.template.internal.templateListLines
@@ -123,16 +119,7 @@ public object DescribeTemplates : ArchitectureProcessor<DescribeTemplates.Args, 
         val table: List<DeclaredTemplate> = declaredTemplatesOf(context.declaredEntries)
         val list = TemplateList(templates = table.map(::templateSummaryOf))
         templateListLines(list).forEach(context::log)
-        // One template that cannot be previewed must not cost the IDE every other one. It is
-        // still listed, with `conflict: true`, as the text list already shows it.
-        val previewed = table.mapNotNull { template -> catching { template to templateDetailOf(template) }.getOrNull() }
-        val details = previewed.map { it.second }
-        // Reads the modules only when a template sits below a module capture: which modules exist
-        // is what decides where such a file lands, and the declarations alone cannot say it.
-        val placements = modulePlacementsOf(previewed.map { it.first }) {
-            moduleIndex(context.fileSystem, findProjectRoot(context.fileSystem).path, context.architecture.moduleResolver)
-        }
-        writeTemplateDescriptionJson(output, encodeTemplateDescriptionJson(list.templates, details, placements))
+        writeTemplateDescriptionJson(output, encodeTemplateDescriptionJson(templateDescriptionJsonOf(context, table)))
         context.log("Wrote ${fileUri(absolutePathOf(output))}")
         return list
     }

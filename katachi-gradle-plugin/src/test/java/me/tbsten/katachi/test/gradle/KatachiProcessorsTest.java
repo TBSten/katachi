@@ -37,6 +37,9 @@ class KatachiProcessorsTest {
     /** Where the default template describer lives, as the generated source has to spell it. */
     private static final String DESCRIBE_TEMPLATES = "me.tbsten.katachi.template.DescribeTemplates";
 
+    /** Where the default definition describer lives, as the generated source has to spell it. */
+    private static final String DESCRIBE_DEFINITION = "me.tbsten.katachi.ide.DescribeDefinition";
+
     @Test
     @DisplayName("何も register しなくても docs が引ける")
     void docsIsRegisteredByDefault() {
@@ -81,6 +84,24 @@ class KatachiProcessorsTest {
     }
 
     @Test
+    @DisplayName("何も register しなくても internalDefinitionJson が DescribeDefinition で引ける")
+    void internalDefinitionJsonIsRegisteredByDefault() {
+        Map<String, String> registrations = registrations(new KatachiProcessors());
+
+        assertEquals(DESCRIBE_DEFINITION, registrations.get("internalDefinitionJson"));
+    }
+
+    @Test
+    @DisplayName("internalDefinitionJson には既定で output だけが渡る")
+    void internalDefinitionJsonHasDefaultArgs() {
+        Map<String, String> args = configuredArgs(new KatachiProcessors()).get("internalDefinitionJson");
+
+        Map<String, String> expected = new HashMap<>();
+        expected.put("output", "build/katachi/internalDefinitionJson/definition.json");
+        assertEquals(expected, args);
+    }
+
+    @Test
     @DisplayName("args(\"internalTemplatesJson\") { } は既定の引数に名前ごとに重なり、利用者が勝つ")
     void userArgsWinOverTheDefaultArgsByName() {
         KatachiProcessors processors = new KatachiProcessors();
@@ -104,7 +125,7 @@ class KatachiProcessorsTest {
     }
 
     @Test
-    @DisplayName("既定で登録されるのは docs と template と templates と internalTemplatesJson だけ -- layout も konsist も入らない")
+    @DisplayName("既定で登録されるのは docs と template と templates と internalTemplatesJson と internalDefinitionJson だけ -- layout も konsist も入らない")
     void docsAndTemplateAreTheOnlyDefaults() {
         Map<String, String> registrations = registrations(new KatachiProcessors());
 
@@ -116,6 +137,7 @@ class KatachiProcessorsTest {
         expected.put("template", GENERATE_CODE_FROM_TEMPLATE);
         expected.put("templates", DESCRIBE_TEMPLATES);
         expected.put("internalTemplatesJson", DESCRIBE_TEMPLATES);
+        expected.put("internalDefinitionJson", DESCRIBE_DEFINITION);
         assertEquals(
                 expected,
                 registrations,
@@ -140,8 +162,8 @@ class KatachiProcessorsTest {
         // without giving it a second name.
         processors.register("docs", "com.example.processors.OurOwnDocs");
 
-        // Still the four defaults, with `docs` now pointing at the user's own class.
-        assertEquals(4, registrations(processors).size());
+        // Still the five defaults, with `docs` now pointing at the user's own class.
+        assertEquals(5, registrations(processors).size());
     }
 
     @Test

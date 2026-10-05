@@ -7,6 +7,11 @@ import java.nio.file.FileSystemException
 import java.nio.file.Files
 import java.nio.file.StandardCopyOption
 import kotlinx.serialization.Serializable
+import me.tbsten.katachi.check.internal.moduleIndex
+import me.tbsten.katachi.dsl.files.internal.findProjectRoot
+import me.tbsten.katachi.internal.catching
+import me.tbsten.katachi.processor.ArchitectureProcessContext
+import me.tbsten.katachi.processor.internal.fileSystem
 import me.tbsten.katachi.template.KatachiTemplateJsonIoException
 import me.tbsten.katachi.template.TemplateDetail
 import me.tbsten.katachi.template.TemplateSummary
@@ -38,6 +43,40 @@ internal fun encodeTemplateDescriptionJson(
     TemplateDescriptionJson(templates, details, modulePlacements),
 )
 
+/** [json] as the text of `templateDescription.json`. */
+internal fun encodeTemplateDescriptionJson(json: TemplateDescriptionJson): String =
+    encodeToJson(TemplateDescriptionJson.serializer(), json)
+
+/**
+ * Every template of [table], listed, explained and placed: what `templateDescription.json` holds,
+ * and what the definition JSON carries under its `templates` key.
+ *
+ * One template that cannot be previewed must not cost the IDE every other one. It is still
+ * listed, with `conflict: true`, as the text list already shows it. The modules are read only when
+ * a template sits below a module capture: which modules exist is what decides where such a file
+ * lands, and the declarations alone cannot say it. Without [withPlacements] they are not read, and
+ * `modulePlacements` is empty.
+ */
+internal fun templateDescriptionJsonOf(
+    context: ArchitectureProcessContext<*>,
+    table: List<DeclaredTemplate> = declaredTemplatesOf(context.declaredEntries),
+    withPlacements: Boolean = true,
+): TemplateDescriptionJson {
+    val previewed = table.mapNotNull { template -> catching { template to templateDetailOf(template) }.getOrNull() }
+    val placements = if (!withPlacements) {
+        emptyList()
+    } else {
+        modulePlacementsOf(previewed.map { it.first }) {
+            moduleIndex(context.fileSystem, findProjectRoot(context.fileSystem).path, context.architecture.moduleResolver)
+        }
+    }
+    return TemplateDescriptionJson(
+        templates = table.map(::templateSummaryOf),
+        details = previewed.map { it.second },
+        modulePlacements = placements,
+    )
+}
+
 /** The suffix the JSON wears while it is written but not yet in place. */
 private const val STAGING_SUFFIX: String = ".katachi-new"
 
@@ -50,13 +89,25 @@ private const val STAGING_SUFFIX: String = ".katachi-new"
  * @param output the path as `--arg output=` spelt it, relative to the working directory or absolute.
  */
 internal fun writeTemplateDescriptionJson(output: String, json: String) {
+    writeFileAtomically(output, json) { failure -> KatachiTemplateJsonIoException(output = output, cause = failure) }
+}
+
+/**
+ * Writes [text] to [output] the way [writeTemplateDescriptionJson] does -- next to it first, then
+ * moved over it in one call -- and throws what [failureOf] makes of a refusal, the half-written
+ * staging file removed. Shared with the definition JSON (`DescribeDefinition`), which the IDE
+ * plugin reads while Gradle writes it in the same way.
+ *
+ * @param output the path as `--arg output=` spelt it, relative to the working directory or absolute.
+ */
+internal fun writeFileAtomically(output: String, text: String, failureOf: (Exception) -> Exception) {
     val target = File(output).absoluteFile
     val staging = File(target.path + STAGING_SUFFIX)
     try {
         // An empty directory would otherwise be replaced by the move without a word.
         if (target.isDirectory) throw FileSystemException(target.path, null, "is a directory")
         target.parentFile?.let { Files.createDirectories(it.toPath()) }
-        staging.writeText(json, Charsets.UTF_8)
+        staging.writeText(text, Charsets.UTF_8)
         try {
             Files.move(
                 staging.toPath(),
@@ -69,15 +120,11 @@ internal fun writeTemplateDescriptionJson(output: String, json: String) {
             Files.move(staging.toPath(), target.toPath(), StandardCopyOption.REPLACE_EXISTING)
         }
     } catch (failure: IOException) {
-        throw jsonIoFailure(staging, output, failure)
+        runCatching { staging.delete() }
+        throw failureOf(failure)
     } catch (failure: SecurityException) {
         // A security manager refusing the write, as TemplateOutput and DocumentFiles also report it.
-        throw jsonIoFailure(staging, output, failure)
+        runCatching { staging.delete() }
+        throw failureOf(failure)
     }
-}
-
-/** Removes the half-written [staging] file and names [output] in the exception. */
-private fun jsonIoFailure(staging: File, output: String, failure: Exception): KatachiTemplateJsonIoException {
-    runCatching { staging.delete() }
-    return KatachiTemplateJsonIoException(output = output, cause = failure)
 }

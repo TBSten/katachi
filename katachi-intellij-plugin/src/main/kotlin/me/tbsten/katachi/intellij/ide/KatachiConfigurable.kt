@@ -12,11 +12,12 @@ import com.intellij.ui.dsl.builder.panel
 import com.intellij.ui.dsl.builder.selected
 import com.intellij.ui.layout.and
 import me.tbsten.katachi.intellij.data.generate.OpenAfterGeneration
+import me.tbsten.katachi.intellij.ide.gutter.HighlightingRefresher
 
 /**
- * Settings | Tools | katachi: the choices [KatachiSettings] offers. The three detail notification
- * rows are disabled while the master switch is off, and "only the first time" while the
- * "files with content" row is off.
+ * Settings | Tools | katachi: the choices [KatachiSettings] offers. The four detail notification
+ * rows (the three about templates and "files no role allows") are disabled while the master switch
+ * is off, and "only the first time" while the "files with content" row is off.
  */
 internal class KatachiConfigurable(private val project: Project) : BoundConfigurable(KatachiBundle.message("settings.displayName")) {
     /** An empty page when the IDE fails to build it, rather than an error over the Settings dialog. */
@@ -51,11 +52,19 @@ internal class KatachiConfigurable(private val project: Project) : BoundConfigur
                                 .enabledIf(enabled.selected and withContent.selected)
                         }
                     }
+                    row {
+                        checkBox(KatachiBundle.message("settings.rules.noRole"))
+                            .bindSelected(settings::notifyOnNoRole)
+                            .enabledIf(enabled.selected)
+                    }
                 }
                 row {
                     checkBox(KatachiBundle.message("settings.editorNotification.autoLoad"))
                         .bindSelected(settings::autoLoadTemplates)
                 }
+            }
+            row {
+                checkBox(KatachiBundle.message("settings.showViolations")).bindSelected(settings::showViolationsInEditor)
             }
             buttonsGroup(KatachiBundle.message("settings.openAfter")) {
                 row { radioButton(KatachiBundle.message("settings.open.first"), OpenAfterGeneration.First) }
@@ -65,10 +74,15 @@ internal class KatachiConfigurable(private val project: Project) : BoundConfigur
         }
     }.getOrElse { DialogPanel() }
 
-    /** Applies the page, then asks the open editors to redraw their notifications for the new choices. */
+    /** Applies the page, then asks the open editors to redraw their notifications and annotations for the new choices. */
     override fun apply() {
+        val showViolations = KatachiSettings.getInstance(project).showViolationsInEditor
         super.apply()
         sdkCall("update the editor notifications") { EditorNotifications.getInstance(project).updateAllNotifications() }
+        // The annotator is asked only when the daemon runs again: an unchanged file would keep (or lack) the underlines.
+        if (showViolations != KatachiSettings.getInstance(project).showViolationsInEditor) {
+            HighlightingRefresher.getInstance(project).redrawNow("the setting of the violation annotations changed")
+        }
     }
 
     companion object {

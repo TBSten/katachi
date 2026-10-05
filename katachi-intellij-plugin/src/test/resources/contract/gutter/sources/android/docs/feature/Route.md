@@ -1,0 +1,59 @@
+[katachi-sample-android](../README.md) / [Structure of each screen](README.md)
+
+# Route
+
+The destination of a screen. The only entrance a feature exposes to the outside
+
+The only thing a feature module shows to the outside. An object such as `HomeRoute`
+holds the destination path as `PATH`, and an extension function such as
+`NavGraphBuilder.homeScreen(...)` registers its own screen in the graph. The file name
+is `<Name>Route.kt`, where `<Name>` is the feature's name.
+
+Only `AppNavHost` in `:app` builds the graph, and what `:app` touches is limited to what
+this role exposes, such as `HomeRoute.PATH` and `homeScreen(...)`. Neither `HomeScreen`
+nor `HomeViewModel` is called from `:app`. Even as features grow, one line is added to
+`:app`.
+
+Navigation out of a screen is written by passing the callbacks received as arguments of
+this extension function (`onNavigateToSettings` / `onNavigateUp`) to the Screen. `:app`
+decides which screen to go to, and a feature never imports another feature's Route.
+
+## Placement
+
+| Path | When to use |
+|---|---|
+| `feature/*/src/main/kotlin/com/example/sample/feature/*/*Route.kt` |  |
+
+## Constraints
+
+- ktFileContent
+
+## Kotlin file content
+
+Example: `HomeRoute.kt`
+
+| Import | |
+|---|---|
+| `androidx.navigation.**` | optional |
+
+| Declaration | |
+|---|---|
+| `object HomeRoute` | required |
+| `fun homeScreen(...)` | required |
+
+### Members of `object HomeRoute`
+
+| Member | |
+|---|---|
+| `const val PATH: String` | required |
+
+## Examples
+
+- `HomeRoute` ... The destination of the home screen
+- `SettingsRoute` ... The destination of the settings screen
+
+## Forbidden contents
+
+- UI. Drawing as a `@Composable` is the Screen's job; here is only the registration with `composable(...)`
+- References to another feature's Route
+- Logic beyond assembling arguments. Navigation decisions belong to the caller

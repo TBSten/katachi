@@ -1,10 +1,15 @@
 package me.tbsten.katachi.intellij.ide.debug
 
 import com.intellij.openapi.application.ApplicationManager
+import com.intellij.openapi.application.ModalityState
+import com.intellij.openapi.fileEditor.FileEditorManager
+import com.intellij.ui.HyperlinkLabel
+import com.intellij.util.ui.UIUtil
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.project.Project
 import me.tbsten.katachi.intellij.ide.KatachiProjectService
 import me.tbsten.katachi.intellij.ide.dialog.GenerateDialogs
+import me.tbsten.katachi.intellij.ide.notification.NoRolePanels
 import me.tbsten.katachi.intellij.presentation.FieldId
 import me.tbsten.katachi.intellij.presentation.GenerationState
 import me.tbsten.katachi.intellij.presentation.KatachiIntent
@@ -79,6 +84,34 @@ internal class KatachiDebugBridge(private val project: Project) {
     }
 
     /**
+     * The "no role holds this file" notification on the selected editor as `key=value` lines: `file`, then `noRole=none`,
+     * or `noRole=shown`, `text` (the first line), `nearby` (the second, when there is one), `tooltip` (when there is one)
+     * and one `link` per link in the order on screen. Reads what is on screen and nothing else, so it works while a popup
+     * is open.
+     */
+    fun describeNoRole(): String {
+        check(System.getProperty(ENABLED_PROPERTY) == "true") { "The katachi debug bridge is off; start the IDE with -D$ENABLED_PROPERTY=true." }
+        var description = "noRole=none"
+        // Any modality: a modal dialog (Settings) must not hide what is on screen.
+        ApplicationManager.getApplication().invokeAndWait({ description = describeNoRoleOnEdt() }, ModalityState.any())
+        return description
+    }
+
+    private fun describeNoRoleOnEdt(): String {
+        val editor = FileEditorManager.getInstance(project).selectedEditors.firstOrNull() ?: return "file=none\nnoRole=none"
+        val file = editor.file?.name.orEmpty()
+        val panel = NoRolePanels.of(editor) ?: return "file=$file\nnoRole=none"
+        return buildList {
+            add("file=$file")
+            add("noRole=shown")
+            add("text=${panel.lines.first}")
+            panel.lines.second?.let { add("nearby=$it") }
+            panel.lines.tooltip?.let { add("tooltip=$it") }
+            UIUtil.findComponentsOfType(panel, HyperlinkLabel::class.java).forEach { add("link=${it.text}") }
+        }.joinToString("\n")
+    }
+
+    /**
      * Checks the first row whose complete specifier is [template] and types [args] into its
      * fields, one `name=value` per line. `false` when no row has that specifier.
      */
@@ -90,6 +123,55 @@ internal class KatachiDebugBridge(private val project: Project) {
             inputs.forEach { (name, value) -> viewModel.dispatch(KatachiIntent.Input(FieldId(row.id, name), value)) }
         }
         return true
+    }
+
+    /**
+     * The katachi ◆ of [path], a file open in the editor, as the daemon drew them: `gutter`, `open`, `marks` and one
+     * `mark=<line>|menu|<leaf>|<tooltip>` each (see [GutterDebugReader.describeGutter]).
+     */
+    fun describeGutter(path: String): String = gutterReader().describeGutter(path)
+
+    /** The katachi annotations of [path] as the daemon holds them: severity, range, description and fixes (see [GutterDebugReader.describeHighlights]). */
+    fun describeHighlights(path: String): String = gutterReader().describeHighlights(path)
+
+    /** Opens the menu of the ◆ on [line] of [path], returns its rows and closes it (see [GutterDebugReader.clickGutter]). */
+    fun clickGutter(path: String, line: Int): String = gutterReader().clickGutter(path, line)
+
+    /** Chooses the row starting with [row] in the menu of the ◆ on [line] of [path]: `chosen=<row>` or `chosen=none`. */
+    fun chooseFromGutter(path: String, line: Int, row: String): String = gutterReader().chooseFromGutter(path, line, row)
+
+    /** Writes the IDE window as a PNG to [out]: `saved=<out>|<w>x<h>` (see [DebugScreenshots.ofFrame]). */
+    fun screenshotFrame(out: String): String = DebugScreenshots(project).ofFrame(checked(out))
+
+    /** Writes the menu of the ◆ on [line] of [path] as a PNG to [out] (see [GutterDebugReader.screenshotGutterMenu]). */
+    fun screenshotGutterMenu(path: String, line: Int, out: String): String = gutterReader().screenshotGutterMenu(path, line, out)
+
+    /** Presses the link [text] of the no-role notification: `pressed=<text>` or `pressed=none` (see [DebugPanels.pressNoRoleLink]). */
+    fun pressNoRoleLink(text: String): String = DebugPanels(project).pressNoRoleLink(checked(text))
+
+    /** Presses × of the no-role notification (see [DebugPanels.dismissNoRole]). */
+    fun dismissNoRole(): String = checked(DebugPanels(project)).dismissNoRole()
+
+    /** Writes the popup on screen as a PNG to [out] (see [DebugPanels.screenshotPopup]). */
+    fun screenshotPopup(out: String): String = DebugPanels(project).screenshotPopup(checked(out))
+
+    /** The rows of the popup on screen (see [DebugPanels.describePopup]). */
+    fun describePopup(): String = checked(DebugPanels(project)).describePopup()
+
+    /** Looks at the disk again, as coming back to the IDE does (see [DebugPanels.refreshFromDisk]). */
+    fun refreshFromDisk(): String = checked(DebugPanels(project)).refreshFromDisk()
+
+    /** Closes the popups on screen (see [DebugPanels.closePopups]). */
+    fun closePopups(): String = checked(DebugPanels(project)).closePopups()
+
+    private fun <T> checked(value: T): T {
+        check(System.getProperty(ENABLED_PROPERTY) == "true") { "The katachi debug bridge is off; start the IDE with -D$ENABLED_PROPERTY=true." }
+        return value
+    }
+
+    private fun gutterReader(): GutterDebugReader {
+        check(System.getProperty(ENABLED_PROPERTY) == "true") { "The katachi debug bridge is off; start the IDE with -D$ENABLED_PROPERTY=true." }
+        return GutterDebugReader(project)
     }
 
     /** Presses Generate. */

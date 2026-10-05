@@ -72,11 +72,14 @@ intellijPlatform {
     pluginConfiguration {
         ideaVersion {
             sinceBuild = "261"
-            // No upper bound: every future build is declared compatible. The zip is installed from
-            // disk (no Marketplace), so the IDE never updates it and a later IDE may break it; the
-            // nightly workflow runs verifyPlugin against IDEA and Android Studio (below and
-            // ide-plugin-nightly.yml) to find that out first. Narrow to "261.*" if that gate is dropped.
-            untilBuild = provider { null }
+            // Up to 2026.2 (262). 2026.3 (263) moved ChangeListManager / ProjectLevelVcsManager into the "Version
+            // Control" plugin, and verifyPlugin reports them unresolved there (also with the intellij.platform.vcs
+            // module declared in plugin.xml); a missing class is a LinkageError, which sdkCall rethrows, so the IDE
+            // would show errors. The zip is installed from disk (no Marketplace), so the IDE never updates it and
+            // a later IDE may break it: declare only the builds verifyPlugin passes on.
+            // TODO(263): lift this when the VCS classes resolve in 263 (verifyPlugin green on IU-263), and then
+            //  go back to no upper bound with the nightly gate (ide-plugin-nightly.yml) watching newer builds.
+            untilBuild = "262.*"
         }
     }
     // `./gradlew verifyPlugin` checks binary compatibility against the IDEs configured here. It
@@ -210,6 +213,9 @@ tasks.test { dependsOn(uiTest) }
 // K2 for the Analysis API in tests, paired with <supportsKotlinPluginMode supportsK2="true"/>.
 // No useJUnitPlatform(): BasePlatformTestCase is JUnit 4 based.
 tasks.test { systemProperty("idea.kotlin.plugin.use.k2", "true") }
+
+// `./gradlew test -Dkatachi.gutter.golden.update=true` writes the gutter's text goldens (contract/gutter/*.txt) instead of comparing.
+tasks.test { providers.systemProperty("katachi.gutter.golden.update").orNull?.let { systemProperty("katachi.gutter.golden.update", it) } }
 
 // updatePreview / verifyPreview: run the preview main() on the standalone classpath.
 // The first argument picks the mode; the working directory is this project directory.

@@ -47,10 +47,20 @@ internal class TemplatePlacementIndex private constructor(
 
     /** The templates [file] (absolute) is the target of. */
     fun matchesForFile(file: Path): List<PlacementMatch> = entries.mapNotNull { entry ->
-        val relative = relativeSegments(entry.root, file) ?: return@mapNotNull null
-        val choices = entry.choices ?: return@mapNotNull entry.pattern?.matchFile(relative)?.let { entry.toMatch(it) }
+        val hit = entry.fileHit(file) ?: return@mapNotNull null
+        entry.toMatch(hit.match, hit.moduleValues)
+    }
+
+    /** How [Entry] matches [file] (absolute): the match, the module capture values of the module it is in, and the pattern that matched. */
+    private class FileHit(val match: SegmentMatch, val moduleValues: Map<String, String>, val pattern: PathPattern)
+
+    private fun Entry.fileHit(file: Path): FileHit? {
+        val relative = relativeSegments(root, file) ?: return null
+        val choices = this.choices ?: return pattern?.let { p -> p.matchFile(relative)?.let { FileHit(it, emptyMap(), p) } }
         // Only a file in a module that exists, at the place katachi writes it.
-        choices.firstNotNullOfOrNull { choice -> choice.pattern.matchFile(relative)?.let { entry.toMatch(it, choice.values) } }
+        return choices.firstNotNullOfOrNull { choice ->
+            choice.pattern.matchFile(relative)?.let { FileHit(it, choice.values, choice.pattern) }
+        }
     }
 
     /** The templates that can create a file under [directory] (absolute), with the remaining path. */
@@ -76,8 +86,23 @@ internal class TemplatePlacementIndex private constructor(
         val matches = when (origin) {
             is EntryOrigin.EditorFile -> matchesForFile(origin.path)
             is EntryOrigin.NewMenuDirectory -> matchesForDirectory(origin.path)
+            is EntryOrigin.SiblingOf -> return siblingSeeds(origin.path, template)
         }
         return matches.firstOrNull { it.id == template }?.decided.orEmpty()
+    }
+
+    /**
+     * [template]'s captures a sibling file at [file] decides, without the ones that name the file: those in the pattern's
+     * last segment and in no segment above it (`${name}` of `${name}Screen.kt`). A capture the last segment shares with a
+     * directory above (`feature`) is the sibling's, and carries over.
+     */
+    private fun siblingSeeds(file: Path, template: TemplateId): Map<String, String> {
+        val hit = entries.firstOrNull { it.template.id == template }?.fileHit(file) ?: return emptyMap()
+        val segments = hit.pattern.segments
+        fun captures(segment: PatternSegment) = segment.parts.filterIsInstance<PatternPart.Capture>().map { it.name }
+        val above = segments.dropLast(1).flatMap(::captures).toSet()
+        val naming = captures(segments.last()).filter { it !in above }.toSet()
+        return (hit.moduleValues + hit.match.decided).filterKeys { it !in naming }
     }
 
     private fun Entry.toMatch(match: SegmentMatch, moduleValues: Map<String, String> = emptyMap()): PlacementMatch = PlacementMatch(

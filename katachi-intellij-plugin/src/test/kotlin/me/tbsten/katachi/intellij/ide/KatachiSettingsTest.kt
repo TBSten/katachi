@@ -9,9 +9,9 @@ import java.nio.file.Path
 
 internal class KatachiSettingsTest : AnalysisTestBase() {
 
-    fun `test 既定は自動で再読み込みせず、生成後は最初の1ファイルを開き、既存ファイルは確認する`() {
+    fun `test 既定は保存で自動で再読み込みし、生成後は最初の1ファイルを開き、既存ファイルは確認する`() {
         val settings = KatachiSettings()
-        assertFalse(settings.autoReloadOnSave)
+        assertTrue(settings.autoReloadOnSave)
         assertEquals(OpenAfterGeneration.First, settings.openAfterGeneration)
         assertEquals(OnExistingChoice.Fail, settings.onExisting)
         assertEmpty(settings.collapsedModules)
@@ -20,7 +20,7 @@ internal class KatachiSettingsTest : AnalysisTestBase() {
     fun `test 保存した値を読み戻せる`() {
         val collapsed = setOf(ModuleId(Path.of("/work/project"), ":arch-a"), ModuleId(Path.of("/work/other"), ":"))
         val written = KatachiSettings().apply {
-            autoReloadOnSave = true
+            autoReloadOnSave = false
             openAfterGeneration = OpenAfterGeneration.All
             onExisting = OnExistingChoice.Skip
             collapsedModules = collapsed
@@ -29,7 +29,7 @@ internal class KatachiSettingsTest : AnalysisTestBase() {
         val read = KatachiSettings()
         read.loadState(XmlSerializer.deserialize(XmlSerializer.serialize(written.state), KatachiSettingsState::class.java))
 
-        assertTrue(read.autoReloadOnSave)
+        assertFalse(read.autoReloadOnSave)
         assertEquals(OpenAfterGeneration.All, read.openAfterGeneration)
         assertEquals(OnExistingChoice.Skip, read.onExisting)
         assertEquals(collapsed, read.collapsedModules)
@@ -72,6 +72,20 @@ internal class KatachiSettingsTest : AnalysisTestBase() {
         assertFalse(read.autoLoadTemplates)
     }
 
+    fun `test 当たる Role が無いファイルの通知は既定で有効で切った値を保存して読み戻せ他の項目と独立している`() {
+        assertTrue(KatachiSettings().notifyOnNoRole)
+        val written = KatachiSettings().apply { notifyOnNoRole = false }
+
+        val element = XmlSerializer.serialize(written.state)
+        val read = KatachiSettings()
+        read.loadState(XmlSerializer.deserialize(element, KatachiSettingsState::class.java))
+
+        assertEquals(setOf("notifyOnNoRole"), element.children.mapNotNull { it.getAttributeValue("name") }.toSet())
+        assertFalse(read.notifyOnNoRole)
+        assertTrue(read.editorNotificationEnabled)
+        assertTrue(read.notifyOnEmptyFile)
+    }
+
     // covers: 論点15
     fun `test 閉じた記憶と最初の1回の記憶は状態に含まれず保存されない`() {
         val written = KatachiSettings().apply {
@@ -80,7 +94,7 @@ internal class KatachiSettingsTest : AnalysisTestBase() {
             notifyOnFileWithContent = false
             notifyOnContentOnce = false
             autoLoadTemplates = false
-            autoReloadOnSave = true
+            autoReloadOnSave = false
         }
 
         val element = XmlSerializer.serialize(written.state)
@@ -99,5 +113,15 @@ internal class KatachiSettingsTest : AnalysisTestBase() {
         )
         val declared = KatachiSettingsState::class.java.declaredFields.map { it.name }
         assertFalse(declared.any { it.contains("dismiss", ignoreCase = true) || it.contains("seen", ignoreCase = true) || it.contains("closed", ignoreCase = true) })
+    }
+
+    fun `test 違反の注釈は既定で表示し 保存して読み戻せる`() {
+        assertTrue(KatachiSettings().showViolationsInEditor)
+
+        val written = KatachiSettings().apply { showViolationsInEditor = false }
+        val read = KatachiSettings()
+        read.loadState(XmlSerializer.deserialize(XmlSerializer.serialize(written.state), KatachiSettingsState::class.java))
+
+        assertFalse(read.showViolationsInEditor)
     }
 }

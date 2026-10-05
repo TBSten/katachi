@@ -1,0 +1,1796 @@
+{
+  "schemaVersion": 1,
+  "katachiVersion": "0.3.0",
+  "generatedAt": "2026-10-04T00:30:12Z",
+  "projectRoot": "/repo",
+  "architecture": {
+    "declaredAt": {
+      "fileName": "IdePluginSyntheticSpecSupport.kt",
+      "line": 53
+    },
+    "files": "gitTracked",
+    "baseline": null
+  },
+  "groups": [
+    {
+      "qualifiedName": "a",
+      "name": "a",
+      "path": ["a"],
+      "title": null,
+      "summary": null,
+      "documented": null,
+      "declaredAt": {
+        "fileName": "IdePluginSyntheticSpecSupport.kt",
+        "line": 71
+      }
+    },
+    {
+      "qualifiedName": "a.b",
+      "name": "b",
+      "path": ["a", "b"],
+      "title": null,
+      "summary": null,
+      "documented": null,
+      "declaredAt": {
+        "fileName": "IdePluginSyntheticSpecSupport.kt",
+        "line": 98
+      }
+    },
+    {
+      "qualifiedName": "a.b.c",
+      "name": "c",
+      "path": ["a", "b", "c"],
+      "title": null,
+      "summary": null,
+      "documented": null,
+      "declaredAt": {
+        "fileName": "IdePluginSyntheticSpecSupport.kt",
+        "line": 99
+      }
+    },
+    {
+      "qualifiedName": "other",
+      "name": "other",
+      "path": ["other"],
+      "title": null,
+      "summary": null,
+      "documented": null,
+      "declaredAt": {
+        "fileName": "IdePluginSyntheticSpecSupport.kt",
+        "line": 123
+      }
+    }
+  ],
+  "roles": [
+    {
+      "qualifiedName": "AllTypes",
+      "name": "AllTypes",
+      "groupPath": [],
+      "title": "全部の型",
+      "summary": "string / boolean / int / enum を既定値ありなしで1つずつ持つ",
+      "documented": null,
+      "declaredAt": {
+        "fileName": "IdePluginSyntheticSpecSupport.kt",
+        "line": 54
+      },
+      "layout": [
+        {
+          "index": 0,
+          "path": "src",
+          "kind": "Directory",
+          "required": false,
+          "description": null,
+          "declaredAt": {
+            "fileName": "IdePluginSyntheticSpecSupport.kt",
+            "line": 58
+          },
+          "modulePath": null,
+          "pathInModule": "src",
+          "captures": [],
+          "moduleCapture": null,
+          "template": null,
+          "matchedFiles": [],
+          "matchedCount": null,
+          "matchedFilesTruncated": false,
+          "synthetic": false,
+          "place": false
+        },
+        {
+          "index": 1,
+          "path": "src/main",
+          "kind": "Directory",
+          "required": false,
+          "description": null,
+          "declaredAt": {
+            "fileName": "IdePluginSyntheticSpecSupport.kt",
+            "line": 58
+          },
+          "modulePath": null,
+          "pathInModule": "src/main",
+          "captures": [],
+          "moduleCapture": null,
+          "template": null,
+          "matchedFiles": [],
+          "matchedCount": null,
+          "matchedFilesTruncated": false,
+          "synthetic": false,
+          "place": false
+        },
+        {
+          "index": 2,
+          "path": "src/main/kotlin",
+          "kind": "Directory",
+          "required": false,
+          "description": null,
+          "declaredAt": {
+            "fileName": "IdePluginSyntheticSpecSupport.kt",
+            "line": 58
+          },
+          "modulePath": null,
+          "pathInModule": "src/main/kotlin",
+          "captures": [],
+          "moduleCapture": null,
+          "template": null,
+          "matchedFiles": [],
+          "matchedCount": null,
+          "matchedFilesTruncated": false,
+          "synthetic": false,
+          "place": false
+        },
+        {
+          "index": 3,
+          "path": "src/main/kotlin/allTypes",
+          "kind": "Directory",
+          "required": false,
+          "description": null,
+          "declaredAt": {
+            "fileName": "IdePluginSyntheticSpecSupport.kt",
+            "line": 58
+          },
+          "modulePath": null,
+          "pathInModule": "src/main/kotlin/allTypes",
+          "captures": [],
+          "moduleCapture": null,
+          "template": null,
+          "matchedFiles": [],
+          "matchedCount": null,
+          "matchedFilesTruncated": false,
+          "synthetic": false,
+          "place": false
+        },
+        {
+          "index": 4,
+          "path": "src/main/kotlin/allTypes/AllTypes.kt",
+          "kind": "File",
+          "required": true,
+          "description": null,
+          "declaredAt": {
+            "fileName": "IdePluginSyntheticSpecSupport.kt",
+            "line": 58
+          },
+          "modulePath": null,
+          "pathInModule": "src/main/kotlin/allTypes/AllTypes.kt",
+          "captures": [],
+          "moduleCapture": null,
+          "template": {
+            "specifier": "AllTypes",
+            "id": null,
+            "title": null,
+            "declaredAt": {
+              "fileName": "IdePluginSyntheticSpecSupport.kt",
+              "line": 58
+            }
+          },
+          "matchedFiles": ["src/main/kotlin/allTypes/AllTypes.kt"],
+          "matchedCount": 1,
+          "matchedFilesTruncated": false,
+          "synthetic": false,
+          "place": false
+        }
+      ],
+      "constraints": []
+    },
+    {
+      "qualifiedName": "Counter",
+      "name": "Counter",
+      "groupPath": [],
+      "title": "カウンター",
+      "summary": null,
+      "documented": null,
+      "declaredAt": {
+        "fileName": "IdePluginSyntheticSpecSupport.kt",
+        "line": 146
+      },
+      "layout": [
+        {
+          "index": 0,
+          "path": "src",
+          "kind": "Directory",
+          "required": false,
+          "description": null,
+          "declaredAt": {
+            "fileName": "IdePluginSyntheticSpecSupport.kt",
+            "line": 149
+          },
+          "modulePath": null,
+          "pathInModule": "src",
+          "captures": [],
+          "moduleCapture": null,
+          "template": null,
+          "matchedFiles": [],
+          "matchedCount": null,
+          "matchedFilesTruncated": false,
+          "synthetic": false,
+          "place": false
+        },
+        {
+          "index": 1,
+          "path": "src/main",
+          "kind": "Directory",
+          "required": false,
+          "description": null,
+          "declaredAt": {
+            "fileName": "IdePluginSyntheticSpecSupport.kt",
+            "line": 149
+          },
+          "modulePath": null,
+          "pathInModule": "src/main",
+          "captures": [],
+          "moduleCapture": null,
+          "template": null,
+          "matchedFiles": [],
+          "matchedCount": null,
+          "matchedFilesTruncated": false,
+          "synthetic": false,
+          "place": false
+        },
+        {
+          "index": 2,
+          "path": "src/main/kotlin",
+          "kind": "Directory",
+          "required": false,
+          "description": null,
+          "declaredAt": {
+            "fileName": "IdePluginSyntheticSpecSupport.kt",
+            "line": 149
+          },
+          "modulePath": null,
+          "pathInModule": "src/main/kotlin",
+          "captures": [],
+          "moduleCapture": null,
+          "template": null,
+          "matchedFiles": [],
+          "matchedCount": null,
+          "matchedFilesTruncated": false,
+          "synthetic": false,
+          "place": false
+        },
+        {
+          "index": 3,
+          "path": "src/main/kotlin/counter",
+          "kind": "Directory",
+          "required": false,
+          "description": null,
+          "declaredAt": {
+            "fileName": "IdePluginSyntheticSpecSupport.kt",
+            "line": 149
+          },
+          "modulePath": null,
+          "pathInModule": "src/main/kotlin/counter",
+          "captures": [],
+          "moduleCapture": null,
+          "template": null,
+          "matchedFiles": [],
+          "matchedCount": null,
+          "matchedFilesTruncated": false,
+          "synthetic": false,
+          "place": false
+        },
+        {
+          "index": 4,
+          "path": "src/main/kotlin/counter/Counter.kt",
+          "kind": "File",
+          "required": true,
+          "description": null,
+          "declaredAt": {
+            "fileName": "IdePluginSyntheticSpecSupport.kt",
+            "line": 149
+          },
+          "modulePath": null,
+          "pathInModule": "src/main/kotlin/counter/Counter.kt",
+          "captures": [],
+          "moduleCapture": null,
+          "template": {
+            "specifier": "Counter",
+            "id": null,
+            "title": null,
+            "declaredAt": {
+              "fileName": "IdePluginSyntheticSpecSupport.kt",
+              "line": 149
+            }
+          },
+          "matchedFiles": ["src/main/kotlin/counter/Counter.kt"],
+          "matchedCount": 1,
+          "matchedFilesTruncated": false,
+          "synthetic": false,
+          "place": false
+        }
+      ],
+      "constraints": []
+    },
+    {
+      "qualifiedName": "a.Shallow",
+      "name": "Shallow",
+      "groupPath": ["a"],
+      "title": "浅い",
+      "summary": "Boolean と enum の分岐で引数が増減する",
+      "documented": null,
+      "declaredAt": {
+        "fileName": "IdePluginSyntheticSpecSupport.kt",
+        "line": 72
+      },
+      "layout": [
+        {
+          "index": 0,
+          "path": "src",
+          "kind": "Directory",
+          "required": false,
+          "description": null,
+          "declaredAt": {
+            "fileName": "IdePluginSyntheticSpecSupport.kt",
+            "line": 76
+          },
+          "modulePath": null,
+          "pathInModule": "src",
+          "captures": [],
+          "moduleCapture": null,
+          "template": null,
+          "matchedFiles": [],
+          "matchedCount": null,
+          "matchedFilesTruncated": false,
+          "synthetic": false,
+          "place": false
+        },
+        {
+          "index": 1,
+          "path": "src/main",
+          "kind": "Directory",
+          "required": false,
+          "description": null,
+          "declaredAt": {
+            "fileName": "IdePluginSyntheticSpecSupport.kt",
+            "line": 76
+          },
+          "modulePath": null,
+          "pathInModule": "src/main",
+          "captures": [],
+          "moduleCapture": null,
+          "template": null,
+          "matchedFiles": [],
+          "matchedCount": null,
+          "matchedFilesTruncated": false,
+          "synthetic": false,
+          "place": false
+        },
+        {
+          "index": 2,
+          "path": "src/main/kotlin",
+          "kind": "Directory",
+          "required": false,
+          "description": null,
+          "declaredAt": {
+            "fileName": "IdePluginSyntheticSpecSupport.kt",
+            "line": 76
+          },
+          "modulePath": null,
+          "pathInModule": "src/main/kotlin",
+          "captures": [],
+          "moduleCapture": null,
+          "template": null,
+          "matchedFiles": [],
+          "matchedCount": null,
+          "matchedFilesTruncated": false,
+          "synthetic": false,
+          "place": false
+        },
+        {
+          "index": 3,
+          "path": "src/main/kotlin/a",
+          "kind": "Directory",
+          "required": false,
+          "description": null,
+          "declaredAt": {
+            "fileName": "IdePluginSyntheticSpecSupport.kt",
+            "line": 76
+          },
+          "modulePath": null,
+          "pathInModule": "src/main/kotlin/a",
+          "captures": [],
+          "moduleCapture": null,
+          "template": null,
+          "matchedFiles": [],
+          "matchedCount": null,
+          "matchedFilesTruncated": false,
+          "synthetic": false,
+          "place": false
+        },
+        {
+          "index": 4,
+          "path": "src/main/kotlin/a/Shallow.kt",
+          "kind": "File",
+          "required": true,
+          "description": null,
+          "declaredAt": {
+            "fileName": "IdePluginSyntheticSpecSupport.kt",
+            "line": 76
+          },
+          "modulePath": null,
+          "pathInModule": "src/main/kotlin/a/Shallow.kt",
+          "captures": [],
+          "moduleCapture": null,
+          "template": {
+            "specifier": "a.Shallow",
+            "id": null,
+            "title": null,
+            "declaredAt": {
+              "fileName": "IdePluginSyntheticSpecSupport.kt",
+              "line": 76
+            }
+          },
+          "matchedFiles": ["src/main/kotlin/a/Shallow.kt"],
+          "matchedCount": 1,
+          "matchedFilesTruncated": false,
+          "synthetic": false,
+          "place": false
+        }
+      ],
+      "constraints": []
+    },
+    {
+      "qualifiedName": "a.b.Middle",
+      "name": "Middle",
+      "groupPath": ["a", "b"],
+      "title": "Middle",
+      "summary": null,
+      "documented": null,
+      "declaredAt": {
+        "fileName": "IdePluginSyntheticSpecSupport.kt",
+        "line": 110
+      },
+      "layout": [
+        {
+          "index": 0,
+          "path": "src",
+          "kind": "Directory",
+          "required": false,
+          "description": null,
+          "declaredAt": {
+            "fileName": "IdePluginSyntheticSpecSupport.kt",
+            "line": 113
+          },
+          "modulePath": null,
+          "pathInModule": "src",
+          "captures": [],
+          "moduleCapture": null,
+          "template": null,
+          "matchedFiles": [],
+          "matchedCount": null,
+          "matchedFilesTruncated": false,
+          "synthetic": false,
+          "place": false
+        },
+        {
+          "index": 1,
+          "path": "src/main",
+          "kind": "Directory",
+          "required": false,
+          "description": null,
+          "declaredAt": {
+            "fileName": "IdePluginSyntheticSpecSupport.kt",
+            "line": 113
+          },
+          "modulePath": null,
+          "pathInModule": "src/main",
+          "captures": [],
+          "moduleCapture": null,
+          "template": null,
+          "matchedFiles": [],
+          "matchedCount": null,
+          "matchedFilesTruncated": false,
+          "synthetic": false,
+          "place": false
+        },
+        {
+          "index": 2,
+          "path": "src/main/kotlin",
+          "kind": "Directory",
+          "required": false,
+          "description": null,
+          "declaredAt": {
+            "fileName": "IdePluginSyntheticSpecSupport.kt",
+            "line": 113
+          },
+          "modulePath": null,
+          "pathInModule": "src/main/kotlin",
+          "captures": [],
+          "moduleCapture": null,
+          "template": null,
+          "matchedFiles": [],
+          "matchedCount": null,
+          "matchedFilesTruncated": false,
+          "synthetic": false,
+          "place": false
+        },
+        {
+          "index": 3,
+          "path": "src/main/kotlin/a",
+          "kind": "Directory",
+          "required": false,
+          "description": null,
+          "declaredAt": {
+            "fileName": "IdePluginSyntheticSpecSupport.kt",
+            "line": 113
+          },
+          "modulePath": null,
+          "pathInModule": "src/main/kotlin/a",
+          "captures": [],
+          "moduleCapture": null,
+          "template": null,
+          "matchedFiles": [],
+          "matchedCount": null,
+          "matchedFilesTruncated": false,
+          "synthetic": false,
+          "place": false
+        },
+        {
+          "index": 4,
+          "path": "src/main/kotlin/a/b",
+          "kind": "Directory",
+          "required": false,
+          "description": null,
+          "declaredAt": {
+            "fileName": "IdePluginSyntheticSpecSupport.kt",
+            "line": 113
+          },
+          "modulePath": null,
+          "pathInModule": "src/main/kotlin/a/b",
+          "captures": [],
+          "moduleCapture": null,
+          "template": null,
+          "matchedFiles": [],
+          "matchedCount": null,
+          "matchedFilesTruncated": false,
+          "synthetic": false,
+          "place": false
+        },
+        {
+          "index": 5,
+          "path": "src/main/kotlin/a/b/*",
+          "kind": "File",
+          "required": false,
+          "description": null,
+          "declaredAt": {
+            "fileName": "IdePluginSyntheticSpecSupport.kt",
+            "line": 113
+          },
+          "modulePath": null,
+          "pathInModule": "src/main/kotlin/a/b/*",
+          "captures": [
+            {
+              "name": "name",
+              "segmentIndex": 5
+            }
+          ],
+          "moduleCapture": null,
+          "template": {
+            "specifier": "a.b.Middle",
+            "id": null,
+            "title": null,
+            "declaredAt": {
+              "fileName": "IdePluginSyntheticSpecSupport.kt",
+              "line": 113
+            }
+          },
+          "matchedFiles": ["src/main/kotlin/a/b/Middle.kt"],
+          "matchedCount": 1,
+          "matchedFilesTruncated": false,
+          "synthetic": false,
+          "place": false
+        }
+      ],
+      "constraints": []
+    },
+    {
+      "qualifiedName": "a.b.c.Deep",
+      "name": "Deep",
+      "groupPath": ["a", "b", "c"],
+      "title": null,
+      "summary": null,
+      "documented": null,
+      "declaredAt": {
+        "fileName": "IdePluginSyntheticSpecSupport.kt",
+        "line": 100
+      },
+      "layout": [
+        {
+          "index": 0,
+          "path": "src",
+          "kind": "Directory",
+          "required": false,
+          "description": null,
+          "declaredAt": {
+            "fileName": "IdePluginSyntheticSpecSupport.kt",
+            "line": 102
+          },
+          "modulePath": null,
+          "pathInModule": "src",
+          "captures": [],
+          "moduleCapture": null,
+          "template": null,
+          "matchedFiles": [],
+          "matchedCount": null,
+          "matchedFilesTruncated": false,
+          "synthetic": false,
+          "place": false
+        },
+        {
+          "index": 1,
+          "path": "src/main",
+          "kind": "Directory",
+          "required": false,
+          "description": null,
+          "declaredAt": {
+            "fileName": "IdePluginSyntheticSpecSupport.kt",
+            "line": 102
+          },
+          "modulePath": null,
+          "pathInModule": "src/main",
+          "captures": [],
+          "moduleCapture": null,
+          "template": null,
+          "matchedFiles": [],
+          "matchedCount": null,
+          "matchedFilesTruncated": false,
+          "synthetic": false,
+          "place": false
+        },
+        {
+          "index": 2,
+          "path": "src/main/kotlin",
+          "kind": "Directory",
+          "required": false,
+          "description": null,
+          "declaredAt": {
+            "fileName": "IdePluginSyntheticSpecSupport.kt",
+            "line": 102
+          },
+          "modulePath": null,
+          "pathInModule": "src/main/kotlin",
+          "captures": [],
+          "moduleCapture": null,
+          "template": null,
+          "matchedFiles": [],
+          "matchedCount": null,
+          "matchedFilesTruncated": false,
+          "synthetic": false,
+          "place": false
+        },
+        {
+          "index": 3,
+          "path": "src/main/kotlin/a",
+          "kind": "Directory",
+          "required": false,
+          "description": null,
+          "declaredAt": {
+            "fileName": "IdePluginSyntheticSpecSupport.kt",
+            "line": 102
+          },
+          "modulePath": null,
+          "pathInModule": "src/main/kotlin/a",
+          "captures": [],
+          "moduleCapture": null,
+          "template": null,
+          "matchedFiles": [],
+          "matchedCount": null,
+          "matchedFilesTruncated": false,
+          "synthetic": false,
+          "place": false
+        },
+        {
+          "index": 4,
+          "path": "src/main/kotlin/a/b",
+          "kind": "Directory",
+          "required": false,
+          "description": null,
+          "declaredAt": {
+            "fileName": "IdePluginSyntheticSpecSupport.kt",
+            "line": 102
+          },
+          "modulePath": null,
+          "pathInModule": "src/main/kotlin/a/b",
+          "captures": [],
+          "moduleCapture": null,
+          "template": null,
+          "matchedFiles": [],
+          "matchedCount": null,
+          "matchedFilesTruncated": false,
+          "synthetic": false,
+          "place": false
+        },
+        {
+          "index": 5,
+          "path": "src/main/kotlin/a/b/c",
+          "kind": "Directory",
+          "required": false,
+          "description": null,
+          "declaredAt": {
+            "fileName": "IdePluginSyntheticSpecSupport.kt",
+            "line": 102
+          },
+          "modulePath": null,
+          "pathInModule": "src/main/kotlin/a/b/c",
+          "captures": [],
+          "moduleCapture": null,
+          "template": null,
+          "matchedFiles": [],
+          "matchedCount": null,
+          "matchedFilesTruncated": false,
+          "synthetic": false,
+          "place": false
+        },
+        {
+          "index": 6,
+          "path": "src/main/kotlin/a/b/c/Deep.kt",
+          "kind": "File",
+          "required": true,
+          "description": null,
+          "declaredAt": {
+            "fileName": "IdePluginSyntheticSpecSupport.kt",
+            "line": 102
+          },
+          "modulePath": null,
+          "pathInModule": "src/main/kotlin/a/b/c/Deep.kt",
+          "captures": [],
+          "moduleCapture": null,
+          "template": {
+            "specifier": "a.b.c.Deep",
+            "id": null,
+            "title": null,
+            "declaredAt": {
+              "fileName": "IdePluginSyntheticSpecSupport.kt",
+              "line": 102
+            }
+          },
+          "matchedFiles": [],
+          "matchedCount": 0,
+          "matchedFilesTruncated": false,
+          "synthetic": false,
+          "place": false
+        }
+      ],
+      "constraints": []
+    },
+    {
+      "qualifiedName": "other.Broken",
+      "name": "Broken",
+      "groupPath": ["other"],
+      "title": "壊れたテンプレート",
+      "summary": null,
+      "documented": null,
+      "declaredAt": {
+        "fileName": "IdePluginSyntheticSpecSupport.kt",
+        "line": 124
+      },
+      "layout": [
+        {
+          "index": 0,
+          "path": "src",
+          "kind": "Directory",
+          "required": false,
+          "description": null,
+          "declaredAt": {
+            "fileName": "IdePluginSyntheticSpecSupport.kt",
+            "line": 127
+          },
+          "modulePath": null,
+          "pathInModule": "src",
+          "captures": [],
+          "moduleCapture": null,
+          "template": null,
+          "matchedFiles": [],
+          "matchedCount": null,
+          "matchedFilesTruncated": false,
+          "synthetic": false,
+          "place": false
+        },
+        {
+          "index": 1,
+          "path": "src/main",
+          "kind": "Directory",
+          "required": false,
+          "description": null,
+          "declaredAt": {
+            "fileName": "IdePluginSyntheticSpecSupport.kt",
+            "line": 127
+          },
+          "modulePath": null,
+          "pathInModule": "src/main",
+          "captures": [],
+          "moduleCapture": null,
+          "template": null,
+          "matchedFiles": [],
+          "matchedCount": null,
+          "matchedFilesTruncated": false,
+          "synthetic": false,
+          "place": false
+        },
+        {
+          "index": 2,
+          "path": "src/main/kotlin",
+          "kind": "Directory",
+          "required": false,
+          "description": null,
+          "declaredAt": {
+            "fileName": "IdePluginSyntheticSpecSupport.kt",
+            "line": 127
+          },
+          "modulePath": null,
+          "pathInModule": "src/main/kotlin",
+          "captures": [],
+          "moduleCapture": null,
+          "template": null,
+          "matchedFiles": [],
+          "matchedCount": null,
+          "matchedFilesTruncated": false,
+          "synthetic": false,
+          "place": false
+        },
+        {
+          "index": 3,
+          "path": "src/main/kotlin/other",
+          "kind": "Directory",
+          "required": false,
+          "description": null,
+          "declaredAt": {
+            "fileName": "IdePluginSyntheticSpecSupport.kt",
+            "line": 127
+          },
+          "modulePath": null,
+          "pathInModule": "src/main/kotlin/other",
+          "captures": [],
+          "moduleCapture": null,
+          "template": null,
+          "matchedFiles": [],
+          "matchedCount": null,
+          "matchedFilesTruncated": false,
+          "synthetic": false,
+          "place": false
+        },
+        {
+          "index": 4,
+          "path": "src/main/kotlin/other/Broken.kt",
+          "kind": "File",
+          "required": true,
+          "description": null,
+          "declaredAt": {
+            "fileName": "IdePluginSyntheticSpecSupport.kt",
+            "line": 127
+          },
+          "modulePath": null,
+          "pathInModule": "src/main/kotlin/other/Broken.kt",
+          "captures": [],
+          "moduleCapture": null,
+          "template": {
+            "specifier": "other.Broken",
+            "id": null,
+            "title": null,
+            "declaredAt": {
+              "fileName": "IdePluginSyntheticSpecSupport.kt",
+              "line": 127
+            }
+          },
+          "matchedFiles": [],
+          "matchedCount": 0,
+          "matchedFilesTruncated": false,
+          "synthetic": false,
+          "place": false
+        }
+      ],
+      "constraints": []
+    },
+    {
+      "qualifiedName": "other.Wildcard",
+      "name": "Wildcard",
+      "groupPath": ["other"],
+      "title": null,
+      "summary": "生成先のモジュールが決まらない",
+      "documented": null,
+      "declaredAt": {
+        "fileName": "IdePluginSyntheticSpecSupport.kt",
+        "line": 135
+      },
+      "layout": [
+        {
+          "index": 0,
+          "path": "feature",
+          "kind": "Directory",
+          "required": false,
+          "description": null,
+          "declaredAt": {
+            "fileName": "IdePluginSyntheticSpecSupport.kt",
+            "line": 138
+          },
+          "modulePath": null,
+          "pathInModule": "feature",
+          "captures": [],
+          "moduleCapture": null,
+          "template": null,
+          "matchedFiles": [],
+          "matchedCount": null,
+          "matchedFilesTruncated": false,
+          "synthetic": false,
+          "place": false
+        },
+        {
+          "index": 1,
+          "path": "feature/home",
+          "kind": "Directory",
+          "required": false,
+          "description": null,
+          "declaredAt": {
+            "fileName": "IdePluginSyntheticSpecSupport.kt",
+            "line": 138
+          },
+          "modulePath": ":feature:home",
+          "pathInModule": "",
+          "captures": [],
+          "moduleCapture": {
+            "pattern": ":feature:*",
+            "names": ["feature"]
+          },
+          "template": null,
+          "matchedFiles": [],
+          "matchedCount": null,
+          "matchedFilesTruncated": false,
+          "synthetic": false,
+          "place": true
+        },
+        {
+          "index": 2,
+          "path": "feature/home/build",
+          "kind": "Ignore",
+          "required": false,
+          "description": null,
+          "declaredAt": {
+            "fileName": "IdePluginSyntheticSpecSupport.kt",
+            "line": 138
+          },
+          "modulePath": ":feature:home",
+          "pathInModule": "build",
+          "captures": [],
+          "moduleCapture": {
+            "pattern": ":feature:*",
+            "names": ["feature"]
+          },
+          "template": null,
+          "matchedFiles": [],
+          "matchedCount": null,
+          "matchedFilesTruncated": false,
+          "synthetic": true,
+          "place": false
+        },
+        {
+          "index": 3,
+          "path": "feature/home/build.gradle.kts",
+          "kind": "File",
+          "required": true,
+          "description": null,
+          "declaredAt": {
+            "fileName": "IdePluginSyntheticSpecSupport.kt",
+            "line": 138
+          },
+          "modulePath": ":feature:home",
+          "pathInModule": "build.gradle.kts",
+          "captures": [],
+          "moduleCapture": {
+            "pattern": ":feature:*",
+            "names": ["feature"]
+          },
+          "template": null,
+          "matchedFiles": ["feature/home/build.gradle.kts"],
+          "matchedCount": 1,
+          "matchedFilesTruncated": false,
+          "synthetic": true,
+          "place": false
+        },
+        {
+          "index": 4,
+          "path": "feature/home/src",
+          "kind": "Directory",
+          "required": false,
+          "description": null,
+          "declaredAt": {
+            "fileName": "IdePluginSyntheticSpecSupport.kt",
+            "line": 139
+          },
+          "modulePath": ":feature:home",
+          "pathInModule": "src",
+          "captures": [],
+          "moduleCapture": {
+            "pattern": ":feature:*",
+            "names": ["feature"]
+          },
+          "template": null,
+          "matchedFiles": [],
+          "matchedCount": null,
+          "matchedFilesTruncated": false,
+          "synthetic": false,
+          "place": false
+        },
+        {
+          "index": 5,
+          "path": "feature/home/src/main",
+          "kind": "Directory",
+          "required": false,
+          "description": null,
+          "declaredAt": {
+            "fileName": "IdePluginSyntheticSpecSupport.kt",
+            "line": 139
+          },
+          "modulePath": ":feature:home",
+          "pathInModule": "src/main",
+          "captures": [],
+          "moduleCapture": {
+            "pattern": ":feature:*",
+            "names": ["feature"]
+          },
+          "template": null,
+          "matchedFiles": [],
+          "matchedCount": null,
+          "matchedFilesTruncated": false,
+          "synthetic": false,
+          "place": false
+        },
+        {
+          "index": 6,
+          "path": "feature/home/src/main/kotlin",
+          "kind": "Directory",
+          "required": false,
+          "description": null,
+          "declaredAt": {
+            "fileName": "IdePluginSyntheticSpecSupport.kt",
+            "line": 139
+          },
+          "modulePath": ":feature:home",
+          "pathInModule": "src/main/kotlin",
+          "captures": [],
+          "moduleCapture": {
+            "pattern": ":feature:*",
+            "names": ["feature"]
+          },
+          "template": null,
+          "matchedFiles": [],
+          "matchedCount": null,
+          "matchedFilesTruncated": false,
+          "synthetic": false,
+          "place": false
+        },
+        {
+          "index": 7,
+          "path": "feature/home/src/main/kotlin/*Screen.kt",
+          "kind": "File",
+          "required": false,
+          "description": null,
+          "declaredAt": {
+            "fileName": "IdePluginSyntheticSpecSupport.kt",
+            "line": 139
+          },
+          "modulePath": ":feature:home",
+          "pathInModule": "src/main/kotlin/*Screen.kt",
+          "captures": [
+            {
+              "name": "name",
+              "segmentIndex": 5
+            }
+          ],
+          "moduleCapture": {
+            "pattern": ":feature:*",
+            "names": ["feature"]
+          },
+          "template": {
+            "specifier": "other.Wildcard",
+            "id": null,
+            "title": null,
+            "declaredAt": {
+              "fileName": "IdePluginSyntheticSpecSupport.kt",
+              "line": 139
+            }
+          },
+          "matchedFiles": ["feature/home/src/main/kotlin/HomeScreen.kt"],
+          "matchedCount": 1,
+          "matchedFilesTruncated": false,
+          "synthetic": false,
+          "place": false
+        },
+        {
+          "index": 8,
+          "path": "feature/settings",
+          "kind": "Directory",
+          "required": false,
+          "description": null,
+          "declaredAt": {
+            "fileName": "IdePluginSyntheticSpecSupport.kt",
+            "line": 138
+          },
+          "modulePath": ":feature:settings",
+          "pathInModule": "",
+          "captures": [],
+          "moduleCapture": {
+            "pattern": ":feature:*",
+            "names": ["feature"]
+          },
+          "template": null,
+          "matchedFiles": [],
+          "matchedCount": null,
+          "matchedFilesTruncated": false,
+          "synthetic": false,
+          "place": true
+        },
+        {
+          "index": 9,
+          "path": "feature/settings/build",
+          "kind": "Ignore",
+          "required": false,
+          "description": null,
+          "declaredAt": {
+            "fileName": "IdePluginSyntheticSpecSupport.kt",
+            "line": 138
+          },
+          "modulePath": ":feature:settings",
+          "pathInModule": "build",
+          "captures": [],
+          "moduleCapture": {
+            "pattern": ":feature:*",
+            "names": ["feature"]
+          },
+          "template": null,
+          "matchedFiles": [],
+          "matchedCount": null,
+          "matchedFilesTruncated": false,
+          "synthetic": true,
+          "place": false
+        },
+        {
+          "index": 10,
+          "path": "feature/settings/build.gradle.kts",
+          "kind": "File",
+          "required": true,
+          "description": null,
+          "declaredAt": {
+            "fileName": "IdePluginSyntheticSpecSupport.kt",
+            "line": 138
+          },
+          "modulePath": ":feature:settings",
+          "pathInModule": "build.gradle.kts",
+          "captures": [],
+          "moduleCapture": {
+            "pattern": ":feature:*",
+            "names": ["feature"]
+          },
+          "template": null,
+          "matchedFiles": ["feature/settings/build.gradle.kts"],
+          "matchedCount": 1,
+          "matchedFilesTruncated": false,
+          "synthetic": true,
+          "place": false
+        },
+        {
+          "index": 11,
+          "path": "feature/settings/src",
+          "kind": "Directory",
+          "required": false,
+          "description": null,
+          "declaredAt": {
+            "fileName": "IdePluginSyntheticSpecSupport.kt",
+            "line": 139
+          },
+          "modulePath": ":feature:settings",
+          "pathInModule": "src",
+          "captures": [],
+          "moduleCapture": {
+            "pattern": ":feature:*",
+            "names": ["feature"]
+          },
+          "template": null,
+          "matchedFiles": [],
+          "matchedCount": null,
+          "matchedFilesTruncated": false,
+          "synthetic": false,
+          "place": false
+        },
+        {
+          "index": 12,
+          "path": "feature/settings/src/main",
+          "kind": "Directory",
+          "required": false,
+          "description": null,
+          "declaredAt": {
+            "fileName": "IdePluginSyntheticSpecSupport.kt",
+            "line": 139
+          },
+          "modulePath": ":feature:settings",
+          "pathInModule": "src/main",
+          "captures": [],
+          "moduleCapture": {
+            "pattern": ":feature:*",
+            "names": ["feature"]
+          },
+          "template": null,
+          "matchedFiles": [],
+          "matchedCount": null,
+          "matchedFilesTruncated": false,
+          "synthetic": false,
+          "place": false
+        },
+        {
+          "index": 13,
+          "path": "feature/settings/src/main/kotlin",
+          "kind": "Directory",
+          "required": false,
+          "description": null,
+          "declaredAt": {
+            "fileName": "IdePluginSyntheticSpecSupport.kt",
+            "line": 139
+          },
+          "modulePath": ":feature:settings",
+          "pathInModule": "src/main/kotlin",
+          "captures": [],
+          "moduleCapture": {
+            "pattern": ":feature:*",
+            "names": ["feature"]
+          },
+          "template": null,
+          "matchedFiles": [],
+          "matchedCount": null,
+          "matchedFilesTruncated": false,
+          "synthetic": false,
+          "place": false
+        },
+        {
+          "index": 14,
+          "path": "feature/settings/src/main/kotlin/*Screen.kt",
+          "kind": "File",
+          "required": false,
+          "description": null,
+          "declaredAt": {
+            "fileName": "IdePluginSyntheticSpecSupport.kt",
+            "line": 139
+          },
+          "modulePath": ":feature:settings",
+          "pathInModule": "src/main/kotlin/*Screen.kt",
+          "captures": [
+            {
+              "name": "name",
+              "segmentIndex": 5
+            }
+          ],
+          "moduleCapture": {
+            "pattern": ":feature:*",
+            "names": ["feature"]
+          },
+          "template": {
+            "specifier": "other.Wildcard",
+            "id": null,
+            "title": null,
+            "declaredAt": {
+              "fileName": "IdePluginSyntheticSpecSupport.kt",
+              "line": 139
+            }
+          },
+          "matchedFiles": [],
+          "matchedCount": 0,
+          "matchedFilesTruncated": false,
+          "synthetic": false,
+          "place": false
+        }
+      ],
+      "constraints": []
+    }
+  ],
+  "templates": {
+    "templates": [
+      {
+        "template": "AllTypes",
+        "id": null,
+        "title": "全部の型",
+        "roleName": "AllTypes",
+        "summary": "string / boolean / int / enum を既定値ありなしで1つずつ持つ",
+        "parameterNames": ["name", "label", "enabled", "verbose", "count", "pageSize", "mode", "fallbackMode"],
+        "captures": [],
+        "conflict": false
+      },
+      {
+        "template": "Counter",
+        "id": null,
+        "title": "カウンター",
+        "roleName": "Counter",
+        "summary": null,
+        "parameterNames": ["name"],
+        "captures": [],
+        "conflict": false
+      },
+      {
+        "template": "a.Shallow",
+        "id": null,
+        "title": "浅い",
+        "roleName": "a.Shallow",
+        "summary": "Boolean と enum の分岐で引数が増減する",
+        "parameterNames": ["name", "withImpl", "withTest", "style", "implSuffix"],
+        "captures": [],
+        "conflict": false
+      },
+      {
+        "template": "a.b.Middle",
+        "id": null,
+        "title": "Middle",
+        "roleName": "a.b.Middle",
+        "summary": null,
+        "parameterNames": ["name"],
+        "captures": [
+          {
+            "name": "name",
+            "kind": "PathCapture",
+            "pattern": "src/main/kotlin/a/b/*",
+            "position": 5,
+            "segment": "${name}"
+          }
+        ],
+        "conflict": true
+      },
+      {
+        "template": "a.b.c.Deep",
+        "id": null,
+        "title": "a.b.c.Deep",
+        "roleName": "a.b.c.Deep",
+        "summary": null,
+        "parameterNames": ["name", "itemName"],
+        "captures": [],
+        "conflict": false
+      },
+      {
+        "template": "other.Broken",
+        "id": null,
+        "title": "壊れたテンプレート",
+        "roleName": "other.Broken",
+        "summary": null,
+        "parameterNames": ["name"],
+        "captures": [],
+        "conflict": true
+      },
+      {
+        "template": "other.Wildcard",
+        "id": null,
+        "title": "other.Wildcard",
+        "roleName": "other.Wildcard",
+        "summary": "生成先のモジュールが決まらない",
+        "parameterNames": [],
+        "captures": [
+          {
+            "name": "feature",
+            "kind": "ModuleCapture",
+            "pattern": ":feature:*",
+            "position": 0,
+            "segment": ":feature:${feature}"
+          },
+          {
+            "name": "name",
+            "kind": "PathCapture",
+            "pattern": "feature/*/src/main/kotlin/*Screen.kt",
+            "position": 5,
+            "segment": "${name}Screen.kt"
+          }
+        ],
+        "conflict": false
+      }
+    ],
+    "details": [
+      {
+        "template": "AllTypes",
+        "id": null,
+        "title": "全部の型",
+        "roleName": "AllTypes",
+        "summary": "string / boolean / int / enum を既定値ありなしで1つずつ持つ",
+        "parameters": [
+          {
+            "name": "name",
+            "kind": "StringParameter",
+            "typeName": "String",
+            "default": null,
+            "acceptedValues": [],
+            "isRequired": true,
+            "previewValue": "${name}",
+            "previewValueSource": "Placeholder"
+          },
+          {
+            "name": "label",
+            "kind": "StringParameter",
+            "typeName": "String",
+            "default": "ラベル",
+            "acceptedValues": [],
+            "isRequired": false,
+            "previewValue": "${label}",
+            "previewValueSource": "Placeholder"
+          },
+          {
+            "name": "enabled",
+            "kind": "BooleanParameter",
+            "typeName": "Boolean",
+            "default": null,
+            "acceptedValues": ["true", "false"],
+            "isRequired": true,
+            "previewValue": "true",
+            "previewValueSource": "StandIn"
+          },
+          {
+            "name": "verbose",
+            "kind": "BooleanParameter",
+            "typeName": "Boolean",
+            "default": "false",
+            "acceptedValues": ["true", "false"],
+            "isRequired": false,
+            "previewValue": "false",
+            "previewValueSource": "Default"
+          },
+          {
+            "name": "count",
+            "kind": "IntParameter",
+            "typeName": "Int",
+            "default": null,
+            "acceptedValues": [],
+            "isRequired": true,
+            "previewValue": "0",
+            "previewValueSource": "StandIn"
+          },
+          {
+            "name": "pageSize",
+            "kind": "IntParameter",
+            "typeName": "Int",
+            "default": "20",
+            "acceptedValues": [],
+            "isRequired": false,
+            "previewValue": "20",
+            "previewValueSource": "Default"
+          },
+          {
+            "name": "mode",
+            "kind": "EnumParameter",
+            "typeName": "SyntheticMode",
+            "default": null,
+            "acceptedValues": ["Compact", "Expanded"],
+            "isRequired": true,
+            "previewValue": "Compact",
+            "previewValueSource": "StandIn"
+          },
+          {
+            "name": "fallbackMode",
+            "kind": "EnumParameter",
+            "typeName": "SyntheticMode",
+            "default": "Compact",
+            "acceptedValues": ["Compact", "Expanded"],
+            "isRequired": false,
+            "previewValue": "Compact",
+            "previewValueSource": "Default"
+          }
+        ],
+        "files": [
+          {
+            "pattern": "src/main/kotlin/allTypes/AllTypes.kt",
+            "fileName": "AllTypes.kt",
+            "path": "src/main/kotlin/allTypes/AllTypes.kt",
+            "captures": [],
+            "parameters": ["name", "label", "enabled", "verbose", "count", "pageSize", "mode", "fallbackMode"],
+            "content": "// ${label} true false 0 20 Compact Compact\nclass ${name}\n"
+          }
+        ],
+        "branches": [
+          {
+            "parameterName": "enabled",
+            "value": "false",
+            "addedFiles": [],
+            "removedFiles": [],
+            "addedParameters": [],
+            "removedParameters": []
+          },
+          {
+            "parameterName": "verbose",
+            "value": "true",
+            "addedFiles": [],
+            "removedFiles": [],
+            "addedParameters": [],
+            "removedParameters": []
+          },
+          {
+            "parameterName": "mode",
+            "value": "Expanded",
+            "addedFiles": [],
+            "removedFiles": [],
+            "addedParameters": [],
+            "removedParameters": []
+          },
+          {
+            "parameterName": "fallbackMode",
+            "value": "Expanded",
+            "addedFiles": [],
+            "removedFiles": [],
+            "addedParameters": [],
+            "removedParameters": []
+          }
+        ],
+        "exampleCommand": "./gradlew katachiTemplate --arg template=AllTypes --arg name=Name --arg enabled=true --arg count=0 --arg mode=Compact",
+        "captures": []
+      },
+      {
+        "template": "Counter",
+        "id": null,
+        "title": "カウンター",
+        "roleName": "Counter",
+        "summary": null,
+        "parameters": [
+          {
+            "name": "name",
+            "kind": "IntParameter",
+            "typeName": "Int",
+            "default": null,
+            "acceptedValues": [],
+            "isRequired": true,
+            "previewValue": "0",
+            "previewValueSource": "StandIn"
+          }
+        ],
+        "files": [
+          {
+            "pattern": "src/main/kotlin/counter/Counter.kt",
+            "fileName": "Counter.kt",
+            "path": "src/main/kotlin/counter/Counter.kt",
+            "captures": [],
+            "parameters": ["name"],
+            "content": "const val COUNTER: Int = 0\n"
+          }
+        ],
+        "branches": [],
+        "exampleCommand": "./gradlew katachiTemplate --arg template=Counter --arg name=0",
+        "captures": []
+      },
+      {
+        "template": "a.Shallow",
+        "id": null,
+        "title": "浅い",
+        "roleName": "a.Shallow",
+        "summary": "Boolean と enum の分岐で引数が増減する",
+        "parameters": [
+          {
+            "name": "name",
+            "kind": "StringParameter",
+            "typeName": "String",
+            "default": null,
+            "acceptedValues": [],
+            "isRequired": true,
+            "previewValue": "${name}",
+            "previewValueSource": "Placeholder"
+          },
+          {
+            "name": "withImpl",
+            "kind": "BooleanParameter",
+            "typeName": "Boolean",
+            "default": "true",
+            "acceptedValues": ["true", "false"],
+            "isRequired": false,
+            "previewValue": "true",
+            "previewValueSource": "Default"
+          },
+          {
+            "name": "withTest",
+            "kind": "BooleanParameter",
+            "typeName": "Boolean",
+            "default": "false",
+            "acceptedValues": ["true", "false"],
+            "isRequired": false,
+            "previewValue": "false",
+            "previewValueSource": "Default"
+          },
+          {
+            "name": "style",
+            "kind": "EnumParameter",
+            "typeName": "SyntheticStyle",
+            "default": "Plain",
+            "acceptedValues": ["Plain", "Fancy", "Minimal"],
+            "isRequired": false,
+            "previewValue": "Plain",
+            "previewValueSource": "Default"
+          },
+          {
+            "name": "implSuffix",
+            "kind": "StringParameter",
+            "typeName": "String",
+            "default": "Impl",
+            "acceptedValues": [],
+            "isRequired": false,
+            "previewValue": "${implSuffix}",
+            "previewValueSource": "Placeholder"
+          }
+        ],
+        "files": [
+          {
+            "pattern": "src/main/kotlin/a/Shallow.kt",
+            "fileName": "Shallow.kt",
+            "path": "src/main/kotlin/a/Shallow.kt",
+            "captures": [],
+            "parameters": ["name", "withImpl", "withTest", "style", "implSuffix"],
+            "content": "interface ${name}\nclass ${name}${implSuffix} : ${name}\n"
+          }
+        ],
+        "branches": [
+          {
+            "parameterName": "withImpl",
+            "value": "false",
+            "addedFiles": [],
+            "removedFiles": [],
+            "addedParameters": [],
+            "removedParameters": ["implSuffix"]
+          },
+          {
+            "parameterName": "withTest",
+            "value": "true",
+            "addedFiles": [],
+            "removedFiles": [],
+            "addedParameters": [
+              {
+                "name": "testName",
+                "kind": "StringParameter",
+                "typeName": "String",
+                "default": "${name}Test",
+                "acceptedValues": [],
+                "isRequired": false,
+                "previewValue": "${testName}",
+                "previewValueSource": "Placeholder"
+              }
+            ],
+            "removedParameters": []
+          },
+          {
+            "parameterName": "style",
+            "value": "Fancy",
+            "addedFiles": [],
+            "removedFiles": [],
+            "addedParameters": [
+              {
+                "name": "decoration",
+                "kind": "StringParameter",
+                "typeName": "String",
+                "default": "*",
+                "acceptedValues": [],
+                "isRequired": false,
+                "previewValue": "${decoration}",
+                "previewValueSource": "Placeholder"
+              }
+            ],
+            "removedParameters": []
+          }
+        ],
+        "exampleCommand": "./gradlew katachiTemplate --arg template=a.Shallow --arg name=Name",
+        "captures": []
+      },
+      {
+        "template": "a.b.c.Deep",
+        "id": null,
+        "title": "a.b.c.Deep",
+        "roleName": "a.b.c.Deep",
+        "summary": null,
+        "parameters": [
+          {
+            "name": "name",
+            "kind": "StringParameter",
+            "typeName": "String",
+            "default": null,
+            "acceptedValues": [],
+            "isRequired": true,
+            "previewValue": "${name}",
+            "previewValueSource": "Placeholder"
+          },
+          {
+            "name": "itemName",
+            "kind": "StringParameter",
+            "typeName": "String",
+            "default": "${name}Item",
+            "acceptedValues": [],
+            "isRequired": false,
+            "previewValue": "${itemName}",
+            "previewValueSource": "Placeholder"
+          }
+        ],
+        "files": [
+          {
+            "pattern": "src/main/kotlin/a/b/c/Deep.kt",
+            "fileName": "Deep.kt",
+            "path": "src/main/kotlin/a/b/c/Deep.kt",
+            "captures": [],
+            "parameters": ["name", "itemName"],
+            "content": "class ${name}\nclass ${itemName}\n"
+          }
+        ],
+        "branches": [],
+        "exampleCommand": "./gradlew katachiTemplate --arg template=a.b.c.Deep --arg name=Name",
+        "captures": []
+      },
+      {
+        "template": "other.Wildcard",
+        "id": null,
+        "title": "other.Wildcard",
+        "roleName": "other.Wildcard",
+        "summary": "生成先のモジュールが決まらない",
+        "parameters": [],
+        "files": [
+          {
+            "pattern": "feature/${feature}/src/main/kotlin/${name}Screen.kt",
+            "fileName": "${name}Screen.kt",
+            "path": null,
+            "captures": ["feature", "name"],
+            "parameters": [],
+            "content": "fun ${name}Screen() {}\n"
+          }
+        ],
+        "branches": [],
+        "exampleCommand": "./gradlew katachiTemplate --arg template=other.Wildcard --arg feature=<feature> --arg name=<name>",
+        "captures": [
+          {
+            "name": "feature",
+            "kind": "ModuleCapture",
+            "pattern": ":feature:*",
+            "position": 0,
+            "segment": ":feature:${feature}"
+          },
+          {
+            "name": "name",
+            "kind": "PathCapture",
+            "pattern": "feature/*/src/main/kotlin/*Screen.kt",
+            "position": 5,
+            "segment": "${name}Screen.kt"
+          }
+        ]
+      }
+    ],
+    "modulePlacements": [
+      {
+        "template": "other.Wildcard",
+        "modulePattern": ":feature:*",
+        "captureNames": ["feature"],
+        "modules": [
+          {
+            "values": ["home"],
+            "modulePath": ":feature:home",
+            "directory": "feature/home",
+            "path": "feature/home/src/main/kotlin/${name}Screen.kt"
+          },
+          {
+            "values": ["settings"],
+            "modulePath": ":feature:settings",
+            "directory": "feature/settings",
+            "path": "feature/settings/src/main/kotlin/${name}Screen.kt"
+          }
+        ]
+      }
+    ]
+  },
+  "problems": [
+    {
+      "kind": "TemplatePreviewFailed",
+      "message": "The template could not be previewed, so it has no detail; katachiTemplates --arg template= says why.",
+      "detail": "a.b.Middle"
+    },
+    {
+      "kind": "TemplatePreviewFailed",
+      "message": "The template could not be previewed, so it has no detail; katachiTemplates --arg template= says why.",
+      "detail": "other.Broken"
+    }
+  ]
+}
