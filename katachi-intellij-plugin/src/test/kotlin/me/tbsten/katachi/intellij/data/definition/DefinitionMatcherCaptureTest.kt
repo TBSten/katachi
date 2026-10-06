@@ -96,6 +96,14 @@ class DefinitionMatcherCaptureTest {
     }
 
     @Test
+    fun `期待するパスはクエスチョンと選択肢と名前の無いアスタリスクをファイルの文字のまま残す`() {
+        val role = roleModel("x.Mixed", layoutEntry("*/{a,b}/*-*?.kt", captures = listOf(CaptureRef("f", 0, 0), CaptureRef("f", 2, 1))))
+        val subject = DefinitionMatcher(definitionModel(role))
+        val mismatch = subject.matchFile("x/b/zz-y1.kt")
+        assertEquals("x/b/zz-x1.kt", (mismatch.outcome as MatchOutcome.CaptureMismatch).expectedPath)
+    }
+
+    @Test
     fun `名前の無いアスタリスクと同じ区切りの capture は wildcardIndex で値を読み 二重アスタリスクは移す先に残る`() {
         val role = roleModel("x.Pair", layoutEntry("src/*/**/*-*.kt", captures = listOf(CaptureRef("source", 1, 0), CaptureRef("source", 3, 1))))
         val subject = DefinitionMatcher(definitionModel(role))

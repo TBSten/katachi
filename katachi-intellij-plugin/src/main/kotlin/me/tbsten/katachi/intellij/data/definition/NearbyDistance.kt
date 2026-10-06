@@ -8,7 +8,7 @@ internal sealed interface NearbySegment {
     /** A level with no wildcard, with its escapes undone. */
     class Literal(val text: String) : NearbySegment
 
-    /** A level holding one `*` or more: the whole level, or part of it (`ui-*`). */
+    /** A level holding a `*`, `?` or `[...]`: the whole level, or part of it (`ui-*`). A `{...}` is written out before this. */
     class Wildcard(val text: String, val glob: KatachiGlob) : NearbySegment
 
     /** A `**` level, standing for zero levels or more. */
@@ -23,14 +23,15 @@ internal fun nearbySegmentsOf(directoryPattern: String): List<NearbySegment> =
         if (segment == DOUBLE_STAR) return@map NearbySegment.DoubleStar
         // The whole pattern compiled already, so a level of it compiles too.
         val glob = KatachiGlob.compile(segment)
-        if (glob.hasWildcard) NearbySegment.Wildcard(segment, glob) else NearbySegment.Literal(unescaped(segment))
+        if (glob.hasWildcard) NearbySegment.Wildcard(segment, glob) else NearbySegment.Literal(KatachiGlobLexer.unescapeLiteral(segment))
     }
 
 /**
  * [pattern] with [directory] filled into its wildcards, or `null` when the directory is too shallow to fill one.
  *
- * A `*` level takes the level of [directory] at the same position: as it is when it matches, and with every `*`
- * replaced by it when it does not (`ui-*` against `home` reads `ui-home`). A `**` takes as many levels as are left
+ * A wildcard level takes the level of [directory] at the same position: as it is when it matches, and with every `*`
+ * replaced by it when it does not (`ui-*` against `home` reads `ui-home`); one holding a `?` or `[...]` that does not
+ * match cannot be filled, and the place is dropped. A `**` takes as many levels as are left
  * over once the levels after it are lined up with the end of [directory].
  */
 internal fun instantiate(pattern: List<NearbySegment>, directory: List<String>): List<String>? {
@@ -45,7 +46,8 @@ internal fun instantiate(pattern: List<NearbySegment>, directory: List<String>):
 
             is NearbySegment.Wildcard -> {
                 val level = directory.getOrNull(next) ?: return null
-                filled += if (segment.glob.matches(level)) level else segment.filledWith(level)
+                // A `?` or `[...]` that does not hold the file's own level has no level to be filled with.
+                filled += (if (segment.glob.matches(level)) level else segment.filledWith(level)) ?: return null
                 next++
             }
 
@@ -63,16 +65,29 @@ internal fun instantiate(pattern: List<NearbySegment>, directory: List<String>):
 }
 
 /**
- * Whether a file named [fileName] could be declared by [filePattern], read from the pattern's extension alone: a pattern
- * ending in a literal extension takes that extension only, a pattern with no `.` and no `*` takes a name without an
- * extension only, and anything with a `*` in or after its extension takes every name. `null` (`anyFile()`) takes every name.
+ * Whether a file named [fileName] could be declared by [filePattern], read from the pattern's extension alone. Each way
+ * `{a,b}` can be written out is read on its own, and one accepting the name is enough. What follows the last `.` outside
+ * `{...}` and `[...]` is the extension pattern: a wildcard one is matched against the name's extension as a glob, a
+ * literal one is compared as text. A pattern with no such `.` takes every name when it holds a wildcard, and a name
+ * without an extension only when it does not. `null` (`anyFile()`) takes every name.
  */
 internal fun acceptsExtension(filePattern: String?, fileName: String): Boolean {
     if (filePattern == null) return true
     val extension = fileName.substringAfterLast('.', missingDelimiterValue = "")
-    if ('.' !in filePattern) return '*' in filePattern || extension.isEmpty()
-    val patternExtension = filePattern.substringAfterLast('.')
-    return '*' in patternExtension || patternExtension == extension
+    // Too many ways to write it out to tell apart: leave the decision to the name check.
+    val patterns = KatachiGlobLexer.expandBraces(filePattern) ?: return true
+    return patterns.any { acceptsExtensionOf(it, extension) }
+}
+
+private fun acceptsExtensionOf(pattern: String, extension: String): Boolean {
+    val dot = KatachiGlobLexer.scanLeniently(pattern).lastOrNull { it is KatachiGlobToken.Literal && it.character == '.' }?.start
+        ?: return KatachiGlobLexer.hasGlobWildcard(pattern) || extension.isEmpty()
+    val patternExtension = pattern.substring(dot + 1)
+    return if (KatachiGlobLexer.hasGlobWildcard(patternExtension)) {
+        KatachiGlob.compile(patternExtension).matches(extension)
+    } else {
+        KatachiGlobLexer.unescapeLiteral(patternExtension) == extension
+    }
 }
 
 /** The edit distance between two lists of levels: one per level inserted, deleted or replaced. */
@@ -150,41 +165,8 @@ internal fun levenshtein(left: String, right: String): Int {
     return previous[right.length]
 }
 
-/** [NearbySegment.Wildcard.text] with every unescaped `*` replaced by [level], and escapes undone. */
-private fun NearbySegment.Wildcard.filledWith(level: String): String = buildString {
-    var index = 0
-    while (index < text.length) {
-        val character = text[index]
-        when {
-            character == '\\' && index + 1 < text.length -> {
-                append(text[index + 1])
-                index += 2
-            }
-
-            character == '*' -> {
-                append(level)
-                index++
-            }
-
-            else -> {
-                append(character)
-                index++
-            }
-        }
-    }
-}
-
-/** [segment] with its escapes undone. */
-internal fun unescaped(segment: String): String = buildString {
-    var index = 0
-    while (index < segment.length) {
-        val character = segment[index]
-        if (character == '\\' && index + 1 < segment.length) {
-            append(segment[index + 1])
-            index += 2
-        } else {
-            append(character)
-            index++
-        }
-    }
+/** [NearbySegment.Wildcard.text] with every capturing `*` replaced by [level] and escapes undone, or `null` when it holds a `?` or `[...]`. */
+private fun NearbySegment.Wildcard.filledWith(level: String): String? {
+    if (KatachiGlobLexer.hasNonCapturingWildcard(text)) return null
+    return KatachiGlobLexer.unescapeLiteral(KatachiGlobLexer.replaceCapturingStars(text) { level })
 }

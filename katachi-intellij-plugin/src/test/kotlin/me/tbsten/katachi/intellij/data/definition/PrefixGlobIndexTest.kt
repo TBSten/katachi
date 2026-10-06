@@ -18,6 +18,9 @@ class PrefixGlobIndexTest {
         "core/*/src/**/Foo.kt",
         "feature/*/ui",
         ":feature:*",
+        "src/{main,test}/kotlin/*.kt",
+        "mod?/*.kt",
+        "lib[0-9]/*.kt",
     )
     private val index = PrefixGlobIndex(patterns) { KatachiGlob.compile(it, if (it.startsWith(":")) ':' else '/') }
 
@@ -26,7 +29,7 @@ class PrefixGlobIndexTest {
 
     @Test
     fun `どの階層のバケツにあるパターンも拾い宣言順に返す`() {
-        for (path in listOf("core/domain/GetUserUseCase.kt", "core/x/src/a/Foo.kt", "README.md", "a/b/README.md", "build.gradle.kts", "settings.gradle.kts", "a*b/c.kt", "feature/home/ui", "core")) {
+        for (path in listOf("core/domain/GetUserUseCase.kt", "core/x/src/a/Foo.kt", "README.md", "a/b/README.md", "build.gradle.kts", "settings.gradle.kts", "a*b/c.kt", "feature/home/ui", "core", "src/test/kotlin/A.kt", "src/main/kotlin/A.kt", "src/debug/kotlin/A.kt", "mod1/A.kt", "lib7/A.kt", "libx/A.kt")) {
             assertEquals(path, scan(path), index.matching(path))
         }
     }

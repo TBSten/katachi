@@ -100,19 +100,19 @@ class DefinitionMatcherTest {
 
     @Test
     fun `覆う glob が壊れた制約は外して残りの答えは出す`() {
-        val broken = roleModel("x.Broken", layoutEntry("x/*.kt"), constraints = listOf(constraintModel("bad", files = listOf("x/Foo?.kt")), constraintModel("good", files = listOf("x/*.kt"))))
+        val broken = roleModel("x.Broken", layoutEntry("x/*.kt"), constraints = listOf(constraintModel("bad", files = listOf("x/Foo[.kt")), constraintModel("good", files = listOf("x/*.kt"))))
         val subject = DefinitionMatcher(definitionModel(broken))
         assertEquals(listOf("good"), subject.matchFile("x/A.kt").constraints.map { it.constraint.name })
-        assertEquals(listOf("x/Foo?.kt"), subject.skippedGlobs.map { it.pattern })
+        assertEquals(listOf("x/Foo[.kt"), subject.skippedGlobs.map { it.pattern })
     }
 
     @Test
     fun `entry の glob が壊れていればその entry は照合から外れ記録される`() {
-        val broken = roleModel("x.Broken", layoutEntry("x/{a,b}.kt"), layoutEntry("y/*.kt"))
+        val broken = roleModel("x.Broken", layoutEntry("x/{a.kt"), layoutEntry("y/*.kt"))
         val subject = DefinitionMatcher(definitionModel(broken))
         assertEquals(listOf("x.Broken" to 1), subject.roles("y/A.kt"))
         assertEquals(emptyList<Any>(), subject.matchFile("x/a.kt").matches)
-        assertEquals(listOf("x/{a,b}.kt"), subject.skippedGlobs.map { it.pattern })
+        assertEquals(listOf("x/{a.kt"), subject.skippedGlobs.map { it.pattern })
     }
 
     @Test

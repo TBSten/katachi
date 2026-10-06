@@ -111,9 +111,13 @@ private fun List<Pair<RoleModel, LayoutEntryModel>>.candidates(): List<Candidate
             LayoutEntryKind.Directory, LayoutEntryKind.Ignore, is LayoutEntryKind.Unknown -> continue
         }
         if (directory.isEmpty()) continue
-        val segments = nearbySegmentsOf(directory)
-        if (segments.count { it == NearbySegment.DoubleStar } > 1) continue
-        seen.getOrPut(Triple(role.qualifiedName, directory, filePattern)) { Candidate(role, entry, segments, filePattern, order = seen.size) }
+        // Each way a `{a,b}` can be written out is a place of its own; a declaration with too many offers none.
+        val directories = KatachiGlobLexer.expandBraces(directory) ?: continue
+        for (written in directories) {
+            val segments = nearbySegmentsOf(written)
+            if (segments.count { it == NearbySegment.DoubleStar } > 1) continue
+            seen.getOrPut(Triple(role.qualifiedName, written, filePattern)) { Candidate(role, entry, segments, filePattern, order = seen.size) }
+        }
     }
     return seen.values.toList()
 }

@@ -9,7 +9,7 @@ internal const val GLOB_ESCAPABLE: String = "*\\{}?[],"
  * test pins them together). The matcher drops the entry and keeps going.
  *
  * ```kotlin
- * val failure = runCatching { KatachiGlob.compile("Foo?.kt") }.exceptionOrNull() as? KatachiGlobSyntaxException
+ * val failure = runCatching { KatachiGlob.compile("Foo[.kt") }.exceptionOrNull() as? KatachiGlobSyntaxException
  * ```
  */
 internal class KatachiGlobSyntaxException(
@@ -50,9 +50,60 @@ internal sealed interface KatachiGlobProblem {
             "`$pattern` uses `**` as part of the segment `$segment`. `**` only makes sense as a whole segment."
     }
 
-    /** A metacharacter of another tool's glob (`{ } ? [ ]`), refused rather than read as a literal. */
-    data class RejectedMetacharacter(val character: Char) : KatachiGlobProblem {
+    data class UnclosedBracket(val segment: String) : KatachiGlobProblem {
         override fun explain(pattern: String): String =
-            "`$pattern` uses `$character`. katachi's glob has only `*` and `**`; write `\\$character` for a literal `$character`."
+            "`$pattern` opens `[` in `$segment` and never closes it. `[...]` matches one character and needs its `]`; " +
+                "close it, or write `\\[` for a literal `[`."
+    }
+
+    data class UnclosedBrace(val segment: String) : KatachiGlobProblem {
+        override fun explain(pattern: String): String =
+            "`$pattern` opens `{` in `$segment` and never closes it. `{a,b}` needs its `}`; " +
+                "close it, or write `\\{` for a literal `{`."
+    }
+
+    data class UnmatchedClosing(val character: Char) : KatachiGlobProblem {
+        override fun explain(pattern: String): String =
+            "`$pattern` has a `$character` that closes nothing. Write `\\$character` for a literal `$character`."
+    }
+
+    data object EmptyCharacterClass : KatachiGlobProblem {
+        override fun explain(pattern: String): String =
+            "`$pattern` has a `[...]` with no character in it, which can match nothing. " +
+                "List at least one character, or write `\\[\\]` for the literal text."
+    }
+
+    data class ReversedRange(val from: Char, val to: Char) : KatachiGlobProblem {
+        override fun explain(pattern: String): String =
+            "`$pattern` has the range `$from-$to`, whose first character comes after its last. Write it as `$to-$from`."
+    }
+
+    data class SeparatorInBrackets(val separator: Char) : KatachiGlobProblem {
+        override fun explain(pattern: String): String =
+            "`$pattern` puts `$separator` inside `[...]`. `[...]` matches one character inside a single level and " +
+                "never the separator; write the levels apart instead."
+    }
+
+    data object EmptyBraces : KatachiGlobProblem {
+        override fun explain(pattern: String): String =
+            "`$pattern` has `{}`, which lists no alternative. Write at least one, such as `{a,b}`, " +
+                "or `{,b}` for \"nothing or b\"."
+    }
+
+    data object NestedBraces : KatachiGlobProblem {
+        override fun explain(pattern: String): String =
+            "`$pattern` opens `{` inside another `{...}`. Alternatives do not nest; write them out in one list, " +
+                "such as `{a,b,c}`."
+    }
+
+    data object DoubleStarInBraces : KatachiGlobProblem {
+        override fun explain(pattern: String): String =
+            "`$pattern` uses `**` inside `{...}`. An alternative stays within one level; write `**` as a level of its own."
+    }
+
+    data class SeparatorInBraces(val separator: Char) : KatachiGlobProblem {
+        override fun explain(pattern: String): String =
+            "`$pattern` puts `$separator` inside `{...}`. An alternative stays within one level; " +
+                "write one layout key per alternative instead."
     }
 }

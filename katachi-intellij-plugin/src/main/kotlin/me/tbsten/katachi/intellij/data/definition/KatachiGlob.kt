@@ -7,12 +7,15 @@ package me.tbsten.katachi.intellij.data.definition
  *
  * | syntax | meaning |
  * |---|---|
- * | `*`  | exactly one level, one character or more. Never crosses the separator |
- * | `**` | zero levels or more. Only valid as a whole segment |
+ * | `*`  | zero characters or more inside one level. Never crosses the separator; captured |
+ * | `**` | zero levels or more. Only valid as a whole segment; captured, one entry per level |
+ * | `?`  | one character other than the separator |
+ * | `[abc]` `[a-z]` `[!abc]` `[^abc]` | one character of the list or range, or not of it |
+ * | `{a,b}` | one of the alternatives. A `*` inside is not captured |
  *
- * Nothing else is a metacharacter: `{a,b}`, `?` and `[abc]` are rejected, and `\` escapes any of
- * `* \ { } ? [ ] ,`. Matching is case sensitive. Ported: `matches`, `literalPrefix`, `hasWildcard` and
- * `matchGroups` (what each wildcard took, which the bound captures of a layout entry are compared by).
+ * `\` escapes any of `* \ { } ? [ ] ,`. Matching is case sensitive. Ported: `matches`, `literalPrefix`, `hasWildcard`,
+ * `matchGroups` (what each wildcard took, which the bound captures of a layout entry are compared by) and
+ * `matchRanges` (where each took it).
  *
  * ```kotlin
  * val glob = KatachiGlob.compile("core/domain/Get*UseCase.kt")
@@ -38,10 +41,9 @@ internal class KatachiGlob private constructor(
      * this pattern matches has to start with, level for level. Empty for a rooted pattern.
      */
     val literalPrefix: List<String>,
+    /** Whether the pattern contains an unescaped `*`, `**`, `?`, `[` or `{`. */
+    val hasWildcard: Boolean,
 ) {
-    /** Whether the pattern contains a `*` or a `**`. */
-    val hasWildcard: Boolean get() = groupKinds.isNotEmpty()
-
     /** How many `*` (not `**`) the pattern holds. */
     val singleWildcardCount: Int get() = groupKinds.count { it == GlobGroupKind.Single }
 
@@ -56,6 +58,16 @@ internal class KatachiGlob private constructor(
         val result = regex.matchEntire(path) ?: return null
         return groupKinds.indices.map { index -> result.groupValues.getOrElse(index + 1) { "" } }
     }
+
+    /** Where each capturing wildcard matched in [path], as [groupKinds] lists them (`null` for a `**` that took no level), or `null` when [path] does not match. */
+    fun matchRanges(path: String): List<IntRange?>? {
+        val result = regex.matchEntire(path) ?: return null
+        return groupKinds.indices.map { index -> result.groups[index + 1]?.range }
+    }
+
+    /** The index into [groupKinds] of the [wildcardIndex]-th `*` of level [segmentIndex], or `null` when it has fewer. */
+    fun singleGroupIndex(segmentIndex: Int, wildcardIndex: Int): Int? =
+        groupKinds.indices.filter { groupKinds[it] == GlobGroupKind.Single && groupSegments[it] == segmentIndex }.getOrNull(wildcardIndex)
 
     /** The value the [wildcardIndex]-th `*` of level [segmentIndex] took, out of [groups] from [matchGroups]; `null` when there is no such `*`. */
     fun singleGroupValue(groups: List<String>, segmentIndex: Int, wildcardIndex: Int): String? {
@@ -74,24 +86,21 @@ internal class KatachiGlob private constructor(
         const val PATH_SEPARATOR: Char = '/'
         const val MODULE_SEPARATOR: Char = ':'
 
-        private const val DOUBLE_STAR: String = "**"
-        private const val REJECTED: String = "{}?[]"
-        private const val REGEX_METACHARACTERS: String = "\\.[]{}()*+-?^$|&/<>"
-
         /**
          * Translates [pattern] into a regular expression.
          *
          * @throws KatachiGlobSyntaxException when the pattern is empty, has an empty segment, uses
-         *   `**` inside a larger segment, or uses a metacharacter katachi does not have.
+         *   `**` inside a larger segment, or has a `[...]` or `{...}` that cannot be read.
          */
         fun compile(pattern: String, separator: Char = PATH_SEPARATOR): KatachiGlob {
             if (pattern.isEmpty()) throw KatachiGlobSyntaxException(pattern, KatachiGlobProblem.EmptyPattern)
 
-            // A leading separator is the pattern being rooted (`:feature:*`), not an empty first segment.
-            val leadingSeparator = pattern[0] == separator
-            val body = if (leadingSeparator) pattern.substring(1) else pattern
-            val segments = body.split(separator)
-            if (segments.any { it.isEmpty() }) {
+            val tokens = KatachiGlobLexer.scan(pattern, separator)
+            // A leading separator is the pattern being rooted (`:feature:*`), not an empty
+            // first segment.
+            val leadingSeparator = tokens.first() is KatachiGlobToken.Separator
+            val segmentTokens = splitIntoSegments(if (leadingSeparator) tokens.drop(1) else tokens)
+            if (segmentTokens.any { it.isEmpty() }) {
                 throw KatachiGlobSyntaxException(pattern, KatachiGlobProblem.EmptySegment(separator))
             }
 
@@ -103,14 +112,14 @@ internal class KatachiGlob private constructor(
             val expression = StringBuilder()
             if (leadingSeparator) expression.append(escapedSeparator)
 
-            segments.forEachIndexed { index, segment ->
+            segmentTokens.forEachIndexed { index, level ->
                 val groupsBefore = kinds.size
-                // A preceding `**` has already emitted the separator that follows it, inside its own
-                // optional group, so that `a/**/b` still matches `a/b`.
-                val needsSeparator = index > 0 && segments[index - 1] != DOUBLE_STAR
-                if (segment == DOUBLE_STAR) {
+                // A preceding `**` has already emitted the separator that follows it, inside
+                // its own optional group, so that `a/**/b` still matches `a/b`.
+                val needsSeparator = index > 0 && segmentTokens[index - 1].singleOrNull() !is KatachiGlobToken.DoubleStar
+                if (level.singleOrNull() is KatachiGlobToken.DoubleStar) {
                     kinds += GlobGroupKind.Recursive
-                    if (index == segments.lastIndex) {
+                    if (index == segmentTokens.lastIndex) {
                         expression.append(
                             if (needsSeparator) "(?:$escapedSeparator$manyLevels)?" else "$manyLevels?",
                         )
@@ -120,7 +129,7 @@ internal class KatachiGlob private constructor(
                     }
                 } else {
                     if (needsSeparator) expression.append(escapedSeparator)
-                    expression.append(segmentExpression(pattern, segment, escapedSeparator, kinds))
+                    expression.append(tokensExpression(level, escapedSeparator, kinds))
                 }
                 repeat(kinds.size - groupsBefore) { groupSegments += index }
             }
@@ -131,87 +140,88 @@ internal class KatachiGlob private constructor(
                 regex = Regex(expression.toString()),
                 groupKinds = kinds.toList(),
                 groupSegments = groupSegments.toList(),
-                literalPrefix = if (leadingSeparator) emptyList() else literalPrefixOf(segments),
+                literalPrefix = if (leadingSeparator) emptyList() else literalPrefixOf(segmentTokens),
+                hasWildcard = tokens.any { it !is KatachiGlobToken.Literal && it !is KatachiGlobToken.Separator },
             )
         }
 
-        private fun literalPrefixOf(segments: List<String>): List<String> {
-            val prefix = mutableListOf<String>()
-            for (segment in segments) {
-                prefix += literalOrNull(segment) ?: break
-            }
-            return prefix
-        }
-
-        /** [segment] with its escapes undone, or `null` when it holds a wildcard. */
-        private fun literalOrNull(segment: String): String? {
-            val literal = StringBuilder()
-            var index = 0
-            while (index < segment.length) {
-                val character = segment[index]
-                when (character) {
-                    // `compile` has already rejected a trailing or unknown escape.
-                    '\\' -> {
-                        literal.append(segment[index + 1])
-                        index += 2
-                    }
-
-                    '*' -> return null
-                    else -> {
-                        literal.append(character)
-                        index++
-                    }
+        private fun splitIntoSegments(tokens: List<KatachiGlobToken>): List<List<KatachiGlobToken>> {
+            val segments = mutableListOf<List<KatachiGlobToken>>()
+            var current = mutableListOf<KatachiGlobToken>()
+            for (token in tokens) {
+                if (token is KatachiGlobToken.Separator) {
+                    segments += current
+                    current = mutableListOf()
+                } else {
+                    current += token
                 }
             }
-            return literal.toString()
+            segments += current
+            return segments
+        }
+
+        private const val REGEX_METACHARACTERS: String = "\\.[]{}()*+-?^$|&/<>"
+
+        /** The segments before the first one holding a wildcard, with their escapes undone. */
+        private fun literalPrefixOf(segments: List<List<KatachiGlobToken>>): List<String> {
+            val prefix = mutableListOf<String>()
+            for (segment in segments) {
+                if (!segment.all { it is KatachiGlobToken.Literal }) break
+                prefix += segment.joinToString("") { (it as KatachiGlobToken.Literal).character.toString() }
+            }
+            return prefix
         }
 
         private fun escapeForRegex(character: Char): String =
             if (character in REGEX_METACHARACTERS) "\\$character" else character.toString()
 
-        private fun segmentExpression(
-            pattern: String,
-            segment: String,
+        /**
+         * The regular expression of one segment. [kinds] gets one entry per capturing `*`, so
+         * that the n-th group of the whole expression is the n-th entry.
+         */
+        private fun tokensExpression(
+            tokens: List<KatachiGlobToken>,
             escapedSeparator: String,
             kinds: MutableList<GlobGroupKind>,
         ): String {
             val expression = StringBuilder()
-            var index = 0
-            while (index < segment.length) {
-                val character = segment[index]
-                when {
-                    character == '\\' -> {
-                        val escaped = segment.getOrNull(index + 1)
-                            ?: throw KatachiGlobSyntaxException(pattern, KatachiGlobProblem.TrailingBackslash)
-                        if (escaped !in GLOB_ESCAPABLE) {
-                            throw KatachiGlobSyntaxException(pattern, KatachiGlobProblem.UnescapableCharacter(escaped))
-                        }
-                        expression.append(escapeForRegex(escaped))
-                        index += 2
-                    }
-
-                    character == '*' -> {
-                        if (segment.getOrNull(index + 1) == '*') {
-                            throw KatachiGlobSyntaxException(pattern, KatachiGlobProblem.DoubleStarInsideSegment(segment))
-                        }
-                        // One or more characters, never crossing a separator.
-                        expression.append("([^$escapedSeparator]+)")
+            for (token in tokens) {
+                when (token) {
+                    is KatachiGlobToken.Literal -> expression.append(escapeForRegex(token.character))
+                    is KatachiGlobToken.Star -> if (token.capturing) {
+                        // Zero characters or more, never crossing a separator.
+                        expression.append("([^$escapedSeparator]*)")
                         kinds += GlobGroupKind.Single
-                        index++
+                    } else {
+                        expression.append("[^$escapedSeparator]*")
                     }
-
-                    character in REJECTED -> throw KatachiGlobSyntaxException(
-                        pattern,
-                        KatachiGlobProblem.RejectedMetacharacter(character),
+                    is KatachiGlobToken.Question -> expression.append("[^$escapedSeparator]")
+                    is KatachiGlobToken.CharClass -> expression.append(classExpression(token, escapedSeparator))
+                    is KatachiGlobToken.Alternation -> expression.append(
+                        token.alternatives.joinToString("|", prefix = "(?:", postfix = ")") {
+                            tokensExpression(it, escapedSeparator, kinds)
+                        },
                     )
-
-                    else -> {
-                        expression.append(escapeForRegex(character))
-                        index++
-                    }
+                    // The scanner keeps these out of a segment's tokens (and a `**` is handled by the caller).
+                    is KatachiGlobToken.DoubleStar, is KatachiGlobToken.Separator -> Unit
                 }
             }
             return expression.toString()
+        }
+
+        private fun classExpression(token: KatachiGlobToken.CharClass, escapedSeparator: String): String {
+            val members = token.members.joinToString("") { member ->
+                when (member) {
+                    is KatachiGlobClassMember.Single -> escapeForRegex(member.character)
+                    is KatachiGlobClassMember.Range -> "${escapeForRegex(member.from)}-${escapeForRegex(member.to)}"
+                }
+            }
+            return when {
+                token.negated -> "[^$members$escapedSeparator]"
+                // A range can run across the separator's code point, which must still not match.
+                token.members.any { it is KatachiGlobClassMember.Range } -> "[$members&&[^$escapedSeparator]]"
+                else -> "[$members]"
+            }
         }
     }
 }

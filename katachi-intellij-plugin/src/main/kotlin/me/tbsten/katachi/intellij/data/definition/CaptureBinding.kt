@@ -72,17 +72,21 @@ internal fun captureMismatchOf(entry: LayoutEntryModel, glob: KatachiGlob, path:
     }
     if (!mismatched) return null
 
-    val expectedPath = if (expectedUnknown) null else expectedPathOf(entry, glob, path, groups, expectedOf)
+    val expectedPath = if (expectedUnknown) null else expectedPathOf(entry, glob, path, expectedOf)
     return CaptureMismatchDetail(details, expectedPath)
 }
 
 /** One occurrence with its value, before the expected value is known. [capture] is `null` for a module key's. */
 private class BoundOccurrence(val name: String, val transform: String?, val level: Int, val value: String, val capture: CaptureRef?)
 
-/** [path] itself for a file entry, its directory for an `anyFile()` entry, `null` for a kind that names no file. */
+/**
+ * [path] itself for a file entry, its directory for an `anyFile()` entry, `null` for a kind that names no file, or for a
+ * file at the root under an `anyFile()` entry (the root is no directory a role can claim, and an empty one would be
+ * matched by a `*`, which no real level is).
+ */
 private fun matchTargetOf(entry: LayoutEntryModel, path: String): String? = when (entry.kind) {
     LayoutEntryKind.File -> path
-    LayoutEntryKind.AnyFile -> path.parentPath()
+    LayoutEntryKind.AnyFile -> path.parentPath().takeIf { '/' in path }
     else -> null
 }
 
@@ -115,47 +119,17 @@ private fun moduleDirectoryLevel(entry: LayoutEntryModel): Int {
 }
 
 /**
- * [path] with every level a bound occurrence sits on filled with its expected value, every other `*` and every `**`
- * kept as the file has it, and escapes undone. Built from the entry's pattern, the one source that says which `*` each
- * occurrence is; an `anyFile()` entry keeps the file's own name below.
+ * [path] with the part each bound occurrence matched replaced by its expected value, and every other character -- unnamed
+ * `*` and `**`, `?`, `[...]`, `{...}`, escapes -- kept as the file has it. The parts are found by where
+ * [KatachiGlob.matchRanges] says each wildcard matched. An `anyFile()` entry keeps the file's own name below.
  */
-private fun expectedPathOf(entry: LayoutEntryModel, glob: KatachiGlob, path: String, groups: List<String>, expectedOf: Map<CaptureRef, String>): String {
-    val segments = entry.pattern.split('/')
-    var group = 0
-    val filled = ArrayList<String>(segments.size)
-    for ((segmentIndex, segment) in segments.withIndex()) {
-        if (segment == "**") {
-            val taken = groups.getOrElse(group++) { "" }
-            if (taken.isNotEmpty()) filled += taken
-            continue
-        }
-        var wildcardIndex = 0
-        filled += buildString {
-            var index = 0
-            while (index < segment.length) {
-                val character = segment[index]
-                when {
-                    character == '\\' && index + 1 < segment.length -> {
-                        append(segment[index + 1])
-                        index += 2
-                    }
-
-                    character == '*' -> {
-                        val capture = entry.captures.firstOrNull { it.segmentIndex == segmentIndex && it.wildcardIndex == wildcardIndex }
-                        append(capture?.let { expectedOf[it] } ?: groups.getOrElse(group) { "" })
-                        group++
-                        wildcardIndex++
-                        index++
-                    }
-
-                    else -> {
-                        append(character)
-                        index++
-                    }
-                }
-            }
-        }
+private fun expectedPathOf(entry: LayoutEntryModel, glob: KatachiGlob, path: String, expectedOf: Map<CaptureRef, String>): String {
+    val target = matchTargetOf(entry, path) ?: return path
+    val ranges = glob.matchRanges(target) ?: return path
+    val replacements = entry.captures.mapNotNull { capture ->
+        val expected = expectedOf[capture] ?: return@mapNotNull null
+        glob.singleGroupIndex(capture.segmentIndex, capture.wildcardIndex)?.let { ranges.getOrNull(it) }?.let { it to expected }
     }
-    val expected = filled.joinToString("/")
+    val expected = replacements.sortedByDescending { it.first.first }.fold(target) { text, (range, value) -> text.replaceRange(range, value) }
     return if (entry.kind == LayoutEntryKind.AnyFile) "$expected/${path.substringAfterLast('/')}" else expected
 }

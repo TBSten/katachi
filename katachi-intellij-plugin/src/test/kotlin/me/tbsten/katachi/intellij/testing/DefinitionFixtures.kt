@@ -18,6 +18,8 @@ internal data class GlobCase(
     /** The pattern's literal leading levels, when the file records them (the generated one does). */
     val literalPrefix: List<String>? = null,
     val hasWildcard: Boolean? = null,
+    /** What each capturing wildcard took (`matchGroups`), when the pattern matches the path. */
+    val groups: List<String>? = null,
 )
 
 /**
@@ -68,6 +70,8 @@ internal object DefinitionFixtures {
                 literalPrefix = (members["literalPrefix"] as? JsonValue.JsonArray)?.elements
                     ?.map { (it as? JsonValue.JsonString)?.value ?: throw IllegalArgumentException("not a string: $it") },
                 hasWildcard = (members["hasWildcard"] as? JsonValue.JsonBoolean)?.value,
+                groups = (members["groups"] as? JsonValue.JsonArray)?.elements
+                    ?.map { (it as? JsonValue.JsonString)?.value ?: throw IllegalArgumentException("not a string: $it") },
             )
         }
     }

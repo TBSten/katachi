@@ -65,7 +65,7 @@ class GlobPropertyTest {
     // covers: 文法エラー
     @Test
     fun `記号が混ざったでたらめな文字列も例外は KatachiGlobSyntaxException だけ`() = runBlocking<Unit> {
-        val alphabet = "ab*/\\{}?[],.:"
+        val alphabet = "ab*/\\{}?[],.:!^-"
         checkAll(config, Arb.list(Arb.element(alphabet.toList()), 0..8)) { chars ->
             val pattern = chars.joinToString("")
             try {

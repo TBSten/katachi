@@ -126,6 +126,37 @@ class DefinitionMatcherNearbyTest {
     }
 
     @Test
+    fun `nearby は選択肢の段を選択肢ごとの候補に展開する`() {
+        val source = roleModel("app.Source", layoutEntry("src/{main,test}/kotlin/*.kt"))
+        assertEquals(
+            listOf(Triple("app.Source", "src/main/kotlin", "*.kt"), Triple("app.Source", "src/test/kotlin", "*.kt")),
+            nearbyWithPattern(source, file = "src/x/kotlin/A.kt"),
+        )
+    }
+
+    @Test
+    fun `nearby は当たらないクエスチョンや文字クラスの段を含む置き場所を候補にしない`() {
+        val first = roleModel("app.First", layoutEntry("src/mod?/*.kt"))
+        val second = roleModel("app.Second", layoutEntry("src/lib/*.kt"))
+        assertEquals(listOf("app.Second" to "src/lib"), nearby(first, second, file = "src/xyz/A.kt"))
+        assertEquals("app.First" to "src/mod1", nearby(first, second, file = "src/mod1/A.kt").first())
+    }
+
+    @Test
+    fun `nearby は拡張子のパターンを glob として読む`() {
+        val kts = roleModel("app.Kts", layoutEntry("src/lib/*.{kt,kts}"))
+        val java = roleModel("app.Java", layoutEntry("src/other/*.java"))
+        assertEquals(listOf("app.Kts"), nearby(kts, java, file = "src/x/A.kt").map { it.first })
+        assertEquals(listOf("app.Kts"), nearby(kts, java, file = "src/x/A.kts").map { it.first })
+        assertEquals(listOf("app.Java"), nearby(kts, java, file = "src/x/A.java").map { it.first })
+        val kQuestion = roleModel("app.K", layoutEntry("src/lib/*.k?"))
+        assertEquals(listOf("app.K"), nearby(kQuestion, java, file = "src/x/A.kt").map { it.first })
+        assertEquals(listOf("app.Java"), nearby(kQuestion, java, file = "src/x/A.java").map { it.first })
+        val upper = roleModel("app.Upper", layoutEntry("src/lib/[A-Z]*"))
+        assertEquals(listOf("app.Upper"), nearby(upper, java, file = "src/x/A.md").map { it.first })
+    }
+
+    @Test
     fun `nearby は同点なら宣言順で3件までで 先頭の階層を共有しない場所は出さない`() {
         val r1 = roleModel("r.One", layoutEntry("a/b/c/Foo.kt"))
         val r2 = roleModel("r.Two", layoutEntry("a/b/Foo.kt"))
