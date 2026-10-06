@@ -4448,9 +4448,13 @@ cmd_lint() {
 # [MissingDescription] は説明を書き足せば減るのが正しいので、比べる対象から外して別に数える。
 # 要約の行の「, N warnings」も同じ理由で落とす。
 # $1 = ログ, $2 = 出力先
+# 「Katachi check failed:」の行は、Gradle のテスト出力では例外のクラス名が前に付く
+# （`    me.tbsten.katachi.check.KatachiArchitectureAssertionError: Katachi check failed: ...`）。
+# その接頭辞は付いていても付いていなくても同じ行として扱う。
+CHECK_FAILED_LINE='^[[:space:]]*([A-Za-z0-9_.$]*(Error|Exception): )?Katachi check failed:'
 extract_check_result() {
-	grep -E '^[[:space:]]*(Katachi check failed:|\[[A-Z][A-Za-z]*\] )' "$1" |
-		sed -e 's/^[[:space:]]*//' -e 's/, [0-9][0-9]* warnings*$//' |
+	grep -E "${CHECK_FAILED_LINE}|^[[:space:]]*\[[A-Z][A-Za-z]*\] " "$1" |
+		sed -E -e 's/^[[:space:]]*([A-Za-z0-9_.$]*(Error|Exception): )?//' -e 's/, [0-9][0-9]* warnings*$//' |
 		grep -v '^\[MissingDescription\] ' |
 		sort >"$2" || :
 }
@@ -4626,13 +4630,21 @@ cmd_test() {
 
 	# 検査まで届いていなければ、要約のしようがない。ログの末尾だけ見せて 2 で返す。
 	if ! has_check_result "$_ts_log"; then
+		# 検査の違反は出ていないが、検査用モジュールのほかのテスト（利用者が足した spec など）が落ちた。
+		# コンパイルエラーと取り違えないよう、別の文面で 1（検査用モジュールの test が落ちた）を返す。
+		if grep -q 'There were failing tests' "$_ts_log"; then
+			say "結果: 検査の違反は出ていませんが、検査用モジュールのほかのテストが落ちています（Gradle の終了コード ${_ts_status}）。ログの FAILED の行:" \
+				"Result: no violations, but other tests in the verification module failed (Gradle exit code ${_ts_status}). FAILED lines in the log:"
+			grep -E 'FAILED$' "$_ts_log" | head -n 30
+			return 1
+		fi
 		say "結果: 検査まで届いていません（コンパイルエラーなど。Gradle の終了コード ${_ts_status}）。ログの末尾:" \
 			"Result: the check was not reached (a compile error, for example; Gradle exit code ${_ts_status}). Tail of the log:"
 		tail -n 30 "$_ts_log"
 		return 2
 	fi
 
-	_ts_result=$(grep -E '^[[:space:]]*Katachi check failed:' "$_ts_log" | sed -e 's/^[[:space:]]*//' | head -n 1)
+	_ts_result=$(grep -E "${CHECK_FAILED_LINE}" "$_ts_log" | sed -E 's/^[[:space:]]*([A-Za-z0-9_.$]*(Error|Exception): )?//' | head -n 1)
 	if [ -n "$_ts_result" ]; then
 		say "結果: ${_ts_result}" "Result: ${_ts_result}"
 		_ts_rc=1

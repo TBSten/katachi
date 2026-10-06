@@ -10,10 +10,13 @@
 #      - KATACHI_DOCS=file://<repo>/docs/public で init --lang <ja|en> --katachi <今回の版> → scaffold
 #        （--lang は既定 ja。en を渡すと、出力に日本語が残っていないかも確かめる）
 #        （手順書どおり、init が Kotlin の版を検出できなかったときだけ scaffold に --kotlin を渡す）
-#      - settings に architecture-test の include が1回だけ、正しい位置（最後の include 文の直後）に入ったか
+#        （fx_module_dir_<名前> がある fixture は init --module-dir <path>。init が出す KATACHI_MODULE_DIR /
+#          KATACHI_MODULE_PATH を以降の include の確かめ・test のタスク名・toolchain の突き合わせに使う）
+#        （fx_scaffold_args_<名前> があれば scaffold にその引数を足す。fx_expect_<名前> があれば生成物を grep で検査する）
+#      - settings に検査用モジュールの include が1回だけ、正しい位置（最後の include 文の直後）に入ったか
 #      - settings に dependencyResolutionManagement が無ければ、scaffold の警告どおり mavenLocal() と
 #        mavenCentral() を足す（fixture に repositories が無いと依存を解決できないため）
-#      - ./gradlew :architecture-test:test が「Unexpected だけで落ちる」なら配線は OK
+#      - ./gradlew <KATACHI_MODULE_PATH>:test が「Unexpected だけで落ちる」なら配線は OK
 #        （architecture { } が空なので、定義していないファイルが Unexpected になって落ちるのが正常）。
 #        構文エラー・プラグインの衝突・解決できない・Unexpected 以外の違反で落ちたら NG。通ってしまっても NG
 #      - ルートにファイルを1つ足し、--rerun なしでもう一度 test を走らせる。test タスクが UP-TO-DATE にならずに
@@ -85,9 +88,10 @@ toml_value() { # $1 = キー, $2 = toml
 }
 VERSION=`toml_value katachi "${REPO}/gradle/libs.versions.toml"`
 K=`toml_value kotlin "${REPO}/gradle/libs.versions.toml"`
+KOTEST=`toml_value kotest "${REPO}/gradle/libs.versions.toml"`
 AGP=`toml_value agp "${REPO}/sample/android/gradle/sample.versions.toml"`
-[ -n "${VERSION}" ] && [ -n "${K}" ] && [ -n "${AGP}" ] || {
-	echo "版を読めませんでした（katachi=${VERSION} kotlin=${K} agp=${AGP}）" >&2
+[ -n "${VERSION}" ] && [ -n "${K}" ] && [ -n "${KOTEST}" ] && [ -n "${AGP}" ] || {
+	echo "版を読めませんでした（katachi=${VERSION} kotlin=${K} kotest=${KOTEST} agp=${AGP}）" >&2
 	exit 2
 }
 
@@ -136,6 +140,23 @@ fi
 
 # ---- 3. fixture ごと -----------------------------------------------------------------------
 
+# JDK 21 の置き場所を出す（fx_toolchain_<名前> を持つ fixture は「Gradle を JDK 21 で動かす」前提。JAVA_HOME が 17 を
+# 指す環境でも回せるように、見つけたものを JAVA_HOME に入れる）。見つからなければ 1。
+find_jdk21() {
+	for _c in "${JAVA_HOME:-}" "`/usr/libexec/java_home -v 21 2>/dev/null`" \
+		/opt/homebrew/opt/openjdk@21/libexec/openjdk.jdk/Contents/Home /opt/homebrew/opt/openjdk@21 \
+		"${HOME}"/.gradle/jdks/*21*/Contents/Home "${HOME}"/.gradle/jdks/*21* \
+		"${HOME}"/Library/Java/JavaVirtualMachines/*21*/Contents/Home /Library/Java/JavaVirtualMachines/*21*/Contents/Home; do
+		[ -n "${_c}" ] && [ -x "${_c}/bin/java" ] || continue
+		_v=`"${_c}/bin/java" -version 2>&1 | head -1 | sed -n 's/.*version "\([0-9]*\).*/\1/p'`
+		if [ "${_v}" = "21" ]; then
+			echo "${_c}"
+			return 0
+		fi
+	done
+	return 1
+}
+
 # Gradle のログから、落ちた理由の1行を拾う。
 failure_reason() {
 	_fr=`grep -E "already on the classpath|already requested|Could not resolve|Cannot resolve|Plugin \[id|Unresolved reference|Expecting|Unexpected tokens|Script compilation error|Katachi check failed" "$1" | head -1`
@@ -148,14 +169,18 @@ failure_reason() {
 }
 
 # include の確かめ。結果を INC に入れる（OK / NG: 理由）。
+# include の行は Gradle パスの形（include(":static-analysis:katachi") / include ':architecture-test'）。
+# 1 階層では `architecture-test` と `:architecture-test` の両方を数える（コロン無しの既存 include も include 済み扱い）。
 check_include() { # $1 = fixture, $2 = settings のパス
-	_n=`grep -c "architecture-test" "$2"`
-	_inc=`grep -cE "^[[:space:]]*include[[:space:](].*architecture-test" "$2"`
+	_mp=`echo "${MODULE_PATH}" | sed 's/^://'`
+	_pat="[\"']:?${_mp}[\"']"
+	_n=`grep -cE "${_pat}" "$2"`
+	_inc=`grep -cE "^[[:space:]]*include[[:space:](].*${_pat}" "$2"`
 	if [ "${_n}" != "1" ] || [ "${_inc}" != "1" ]; then
-		INC="NG: architecture-test が ${_n} 回（include の行は ${_inc} 回）"
+		INC="NG: ${MODULE_PATH} が ${_n} 回（include の行は ${_inc} 回）"
 		return
 	fi
-	_at=`grep -n "architecture-test" "$2" | cut -d: -f1`
+	_at=`grep -nE "${_pat}" "$2" | cut -d: -f1`
 	_want=`fx_anchor_$1`
 	if [ "${_want}" = "END" ]; then
 		_last=`awk 'NF { n = NR } END { print n }' "$2"`
@@ -177,6 +202,7 @@ run_fixture() { # $1 = fixture
 	t1_log="${LOGS}/${fx}-test1.log"
 	t2_log="${LOGS}/${fx}-test2.log"
 	INIT="-"; SCAFFOLD="-"; INC="-"; TEST="-"; RERUN="-"; NOTE=""
+	MODULE_DIR="architecture-test"; MODULE_PATH=":architecture-test"
 
 	mkdir -p "$d"
 	fx_wrapper "$d"
@@ -185,11 +211,17 @@ run_fixture() { # $1 = fixture
 	settings="$d/settings.gradle.kts"
 	[ -f "${settings}" ] || settings="$d/settings.gradle"
 
+	# fx_module_dir_<名前> を持つ fixture は、検査用モジュールの置き場所を init --module-dir で渡す。
+	module_dir_arg=""
+	if command -v "fx_module_dir_${fx}" >/dev/null 2>&1; then
+		module_dir_arg="--module-dir `fx_module_dir_${fx}`"
+	fi
+
 	export KATACHI_DOCS="file://${REPO}/docs/public"
 	export KATACHI_MAVEN_LOCAL=1
 	{
-		echo "### init --lang ${LANG_ARG} --katachi ${VERSION}"
-		(cd "$d" && sh "${KIT}" init --lang "${LANG_ARG}" --katachi "${VERSION}")
+		echo "### init --lang ${LANG_ARG} --katachi ${VERSION} ${module_dir_arg}"
+		(cd "$d" && sh "${KIT}" init --lang "${LANG_ARG}" --katachi "${VERSION}" ${module_dir_arg})
 		echo "init exit=$?"
 	} >"${setup_log}" 2>&1
 	cli=`sed -n 's/^KATACHI_CLI=//p' "${setup_log}" | tail -1`
@@ -199,21 +231,47 @@ run_fixture() { # $1 = fixture
 		INIT="NG"
 		return
 	fi
+	# init が出す KEY=VALUE から、検査用モジュールの置き場所と Gradle パスを読む（以降の確かめは全部これを使う）。
+	MODULE_DIR=`sed -n 's/^KATACHI_MODULE_DIR=//p' "${setup_log}" | tail -1`
+	MODULE_PATH=`sed -n 's/^KATACHI_MODULE_PATH=//p' "${setup_log}" | tail -1`
+	if [ -z "${MODULE_DIR}" ] || [ -z "${MODULE_PATH}" ]; then
+		INIT="NG: init の出力に KATACHI_MODULE_DIR / KATACHI_MODULE_PATH が無い"
+		return
+	fi
+	NOTE="module dir ${MODULE_DIR}"
 
 	# 手順書どおり、init が Kotlin の版を検出できなかったときだけ --kotlin を渡す。
 	kotlin_arg=""
 	if grep -q "^KATACHI_KOTLIN=$" "${setup_log}"; then
 		kotlin_arg="--kotlin ${K}"
-		NOTE="init が Kotlin を検出できず、--kotlin を渡した"
+		NOTE="${NOTE}、init が Kotlin を検出できず --kotlin を渡した"
+	fi
+	# fx_scaffold_args_<名前> を持つ fixture は、scaffold にその引数（--test-framework kotest など）を足す。
+	scaffold_args=""
+	if command -v "fx_scaffold_args_${fx}" >/dev/null 2>&1; then
+		scaffold_args=`fx_scaffold_args_${fx}`
 	fi
 	{
-		echo "### scaffold --package com.example.fx ${kotlin_arg}"
-		(cd "$d" && sh "${cli}" scaffold --package com.example.fx ${kotlin_arg})
+		echo "### scaffold --package com.example.fx ${kotlin_arg} ${scaffold_args}"
+		(cd "$d" && sh "${cli}" scaffold --package com.example.fx ${kotlin_arg} ${scaffold_args})
 		echo "scaffold exit=$?"
-		echo "### git diff（settings / ルートの build ファイル）"
-		(cd "$d" && git diff -- settings.gradle.kts settings.gradle build.gradle.kts build.gradle && git status --short)
+		echo "### git diff（settings / ルートの build ファイル / version catalog）"
+		(cd "$d" && git diff -- settings.gradle.kts settings.gradle build.gradle.kts build.gradle gradle/libs.versions.toml && git status --short)
 	} >>"${setup_log}" 2>&1
 	if grep -q "^scaffold exit=0" "${setup_log}"; then SCAFFOLD="OK"; else SCAFFOLD="NG"; return; fi
+	# scaffold が出す「テスト: junit5（検出: ...）」/「Test framework: kotest (...)」を NOTE に写す。
+	tf=`sed -En 's/^.*(テスト:|Test framework:)[[:space:]]*([a-z0-9]*).*/\2/p' "${setup_log}" | head -1`
+	[ -n "${tf}" ] && NOTE="${NOTE}、テスト ${tf}"
+
+	# fx_expect_<名前> を持つ fixture は、生成物の grep 検査をする（NG の理由を 1 行ずつ標準出力に出す。空なら OK）。
+	if command -v "fx_expect_${fx}" >/dev/null 2>&1; then
+		expect_ng=`"fx_expect_${fx}" "$d" "${cli}" 2>>"${setup_log}" | tr '\n' '/' | sed 's/\/$//'`
+		if [ -n "${expect_ng}" ]; then
+			SCAFFOLD="NG: ${expect_ng}"
+			return
+		fi
+		NOTE="${NOTE}、生成物の検査 OK"
+	fi
 
 	# en のときは、init / scaffold の出力（### の見出しと git diff より前の行）に日本語が残っていないか。
 	# 見るのはひらがな・カタカナ・漢字・全角の記号。fixture のパスには日本語が無い前提。
@@ -233,7 +291,7 @@ print(n)' 2>>"${LOGS}/${fx}-ja-lines.log"`
 	# fx_toolchain_<名前> を持つ fixture は、生成された build.gradle.kts の jvmToolchain が期待どおりかも見る。
 	if command -v "fx_toolchain_${fx}" >/dev/null 2>&1; then
 		want_tc=`fx_toolchain_${fx}`
-		got_tc=`sed -n 's/^[[:space:]]*jvmToolchain(\([0-9]*\)).*/\1/p' "$d/architecture-test/build.gradle.kts" | head -1`
+		got_tc=`sed -n 's/^[[:space:]]*jvmToolchain(\([0-9]*\)).*/\1/p' "$d/${MODULE_DIR}/build.gradle.kts" | head -1`
 		[ -n "${got_tc}" ] || got_tc="none"
 		if [ "${got_tc}" != "${want_tc}" ]; then
 			SCAFFOLD="NG: jvmToolchain が ${got_tc}（期待: ${want_tc}）"
@@ -258,9 +316,18 @@ EOF
 		NOTE="${NOTE:+${NOTE}、}dependencyResolutionManagement を足した"
 	fi
 
-	(cd "$d" && ./gradlew :architecture-test:test --no-daemon --console=plain \
+	if [ -n "${JDK21_MISSING:-}" ] && [ "${want_tc:-none}" != "none" ]; then
+		TEST="飛ばした（JDK 21 が無い。この fixture は Gradle を JDK 21 で動かす前提）"
+		return
+	fi
+	# JAVA_HOME の名前（.../temurin-21/Contents/Home なら temurin-21）を形の欄に残す。
+	if [ -n "${JAVA_HOME:-}" ]; then
+		jh_name=`echo "${JAVA_HOME}" | sed 's#/Contents/Home$##; s#/libexec/openjdk.jdk$##; s#.*/##'`
+		NOTE="${NOTE:+${NOTE}、}JAVA_HOME ${jh_name}"
+	fi
+	(cd "$d" && ./gradlew "${MODULE_PATH}:test" --no-daemon --console=plain \
 		--project-cache-dir "${GRADLE_CACHE}/${fx}") >"${t1_log}" 2>&1
-	if grep -q "> Task :architecture-test:test FAILED" "${t1_log}" &&
+	if grep -q "> Task ${MODULE_PATH}:test FAILED" "${t1_log}" &&
 		grep -qE "Katachi check failed: [0-9]+ violations? \(Unexpected: [0-9]+\)" "${t1_log}"; then
 		TEST="OK（Unexpected だけで落ちた）"
 	elif grep -q "BUILD SUCCESSFUL" "${t1_log}"; then
@@ -273,9 +340,9 @@ EOF
 	fi
 
 	: >"$d/katachi-rerun-probe.txt"
-	(cd "$d" && ./gradlew :architecture-test:test --no-daemon --console=plain \
+	(cd "$d" && ./gradlew "${MODULE_PATH}:test" --no-daemon --console=plain \
 		--project-cache-dir "${GRADLE_CACHE}/${fx}") >"${t2_log}" 2>&1
-	task_line=`grep -E "^> Task :architecture-test:test( |$)" "${t2_log}" | tail -1`
+	task_line=`grep -E "^> Task ${MODULE_PATH}:test( |$)" "${t2_log}" | tail -1`
 	case "${task_line}" in
 	*UP-TO-DATE* | *FROM-CACHE* | *SKIPPED* | "")
 		RERUN="NG: 実行されなかった（${task_line:-test タスクの行が無い}）"
@@ -296,6 +363,9 @@ for fx in ${FIXTURES}; do
 	echo "== ${fx} =="
 	# fx_toolchain_<名前> を持つ fixture は「JDK 21 だけ」の環境を再現する。~/.gradle/jdks に自動取得済みの JDK 17 があると
 	# auto-detect=false でも見つかってしまうので、GRADLE_USER_HOME を別に作る（wrapper と caches だけ本物へのリンク）。
+	# あわせて Gradle を JDK 21 で動かす（JAVA_HOME が別の版を指していても）。JDK 21 が無ければ、期待が none 以外の fixture は
+	# test を飛ばす（NG ではなく「飛ばした」。fixture の前提が満たせないだけで、kit の不具合ではない）。
+	JDK21_MISSING=""
 	if command -v "fx_toolchain_${fx}" >/dev/null 2>&1; then
 		ISO_HOME="${WORK}/gradle-user-home"
 		rm -rf "${ISO_HOME}"
@@ -304,17 +374,26 @@ for fx in ${FIXTURES}; do
 		ln -s "${REAL_GUH}/wrapper" "${ISO_HOME}/wrapper"
 		ln -s "${REAL_GUH}/caches" "${ISO_HOME}/caches"
 		export GRADLE_USER_HOME="${ISO_HOME}"
+		REAL_JAVA_HOME="${JAVA_HOME:-}"
+		if jdk21=`find_jdk21`; then
+			export JAVA_HOME="${jdk21}"
+		else
+			JDK21_MISSING="yes"
+		fi
 	fi
 	run_fixture "${fx}"
 	if [ -n "${REAL_GUH:-}" ]; then
 		if [ "${REAL_GUH}" = "${HOME}/.gradle" ]; then unset GRADLE_USER_HOME; else GRADLE_USER_HOME="${REAL_GUH}"; fi
 		REAL_GUH=""
+		if [ -n "${REAL_JAVA_HOME:-}" ]; then JAVA_HOME="${REAL_JAVA_HOME}"; else unset JAVA_HOME; fi
+		REAL_JAVA_HOME=""
 	fi
 	elapsed=`date +%s`
 	elapsed=`expr "${elapsed}" - "${started}"`
 	all="${INIT} ${SCAFFOLD} ${INC} ${TEST} ${RERUN}"
 	case "${all}" in
 	*NG*) VERDICT="**NG**"; NG=1 ;;
+	*飛ばした*) VERDICT="飛ばした" ;;
 	*) VERDICT="OK"; OK_COUNT=`expr "${OK_COUNT}" + 1` ;;
 	esac
 	echo "   init=${INIT} scaffold=${SCAFFOLD} include=${INC} test=${TEST} rerun=${RERUN} -> ${VERDICT}（${elapsed}s）"
@@ -339,7 +418,8 @@ done
 	echo "- スクリプト: \`.claude/skills/prerelease/scripts/check-install-kit.sh\`（fixture の定義は \`install-kit-fixtures.sh\`）"
 	echo
 	echo "test（配線）は「定義していないファイルが Unexpected として出て落ちる」なら OK。2回目は、ルートにファイルを1つ足して"
-	echo "\`--rerun\` なしで走らせ、test タスクが実行されて足したファイルが出れば OK。"
+	echo "\`--rerun\` なしで走らせ、test タスクが実行されて足したファイルが出れば OK。形の欄の（）に検査用モジュールの置き場所と"
+	echo "テストのフレームワーク（scaffold の出力）を写している。"
 	echo
 	echo "| fixture | 形 | init | scaffold | settings の include | test（配線） | 2回目が走ったか | 結果 | ログ |"
 	echo "|---|---|---|---|---|---|---|---|---|"

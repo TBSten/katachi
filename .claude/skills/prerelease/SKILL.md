@@ -139,8 +139,9 @@ priority 10 の警告。結果は `ci-checks.md`、ログは `tmp/ci-checks/`。
 
 ## 9. インストールキットのチェック
 
-- 9-1: `check-install-kit.sh` で `docs/public/install/katachi-install.sh` を合成の Gradle プロジェクト（fixture）で動かし、
-  init → scaffold → `:architecture-test:test` が「Unexpected だけで落ちる」（配線は正しい）かを確かめる。
+- 9-1: 先に `check-install-kit-smoke.sh`（Gradle 無し。3〜5 分）でサブコマンドの振る舞いを確かめ、次に `check-install-kit.sh` で
+  `docs/public/install/katachi-install.sh` を合成の Gradle プロジェクト（fixture。16 種）で動かし、
+  init → scaffold → `:<検査用モジュール>:test` が「Unexpected だけで落ちる」（配線は正しい）かを確かめる。
   オーケストレータが自分で走らせてよい。1つでも NG なら priority 10 の警告。結果は `install-kit.md`、fixture とログは `tmp/install-kit/`。
 - 9-2: 統合テスト。subagent（opus）が AI エージェントとして手順書（ja / en）どおりに実在のプロジェクトの写しへ最後まで導入し、
   もう1体が手順書・スクリプト・チェックリストの食い違いを読んで確かめる。**手順書が適切か**を見る。結果は `install-e2e.md`。
