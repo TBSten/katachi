@@ -7,6 +7,7 @@ import me.tbsten.katachi.dsl.LayoutEntryKind
 import me.tbsten.katachi.dsl.Role
 import me.tbsten.katachi.dsl.internal.DeclaredByGradle
 import me.tbsten.katachi.dsl.internal.Glob
+import me.tbsten.katachi.dsl.internal.GlobLexer
 
 /** How many locations an `[UnexpectedFile]` block offers. */
 private const val NEARBY_LIMIT: Int = 3
@@ -115,11 +116,16 @@ private fun List<LayoutEntry>.candidates(): List<NearbyCandidate> {
             LayoutEntryKind.Directory, LayoutEntryKind.Ignore -> continue
         }
         if (directory.isEmpty()) continue
-        val segments = nearbySegmentsOf(directory)
-        // Two `**` in one pattern have no single way of being filled in from one path.
-        if (segments.count { it == NearbySegment.DoubleStar } > 1) continue
-        seen.getOrPut(Triple(entry.role.qualifiedName, directory, filePattern)) {
-            NearbyCandidate(entry.role, segments, filePattern, order = seen.size)
+        // Each way a `{a,b}` can be written out is a place of its own, in declaration order.
+        // A declaration with too many has no useful single answer, so it offers none.
+        val directories = GlobLexer.expandBraces(directory) ?: continue
+        for (written in directories) {
+            val segments = nearbySegmentsOf(written)
+            // Two `**` in one pattern have no single way of being filled in from one path.
+            if (segments.count { it == NearbySegment.DoubleStar } > 1) continue
+            seen.getOrPut(Triple(entry.role.qualifiedName, written, filePattern)) {
+                NearbyCandidate(entry.role, segments, filePattern, order = seen.size)
+            }
         }
     }
     return seen.values.toList()

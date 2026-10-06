@@ -226,6 +226,47 @@ public class KatachiAdjacentCaptureException internal constructor(
 )
 
 /**
+ * A `capture(...)` token sits inside `{...}` or `[...]` of a layout key.
+ *
+ * A wildcard in there only takes part in matching and is never handed back as a value, so a name
+ * given to it could never be read.
+ *
+ * ## Example 1: catch a capture written inside braces
+ * ```kt
+ * shouldThrow<KatachiCaptureInsideBracketsException> {
+ *     architecture {
+ *         "ui".group {
+ *             "Screen".role {
+ *                 layout { "{${capture("name")},Home}Screen".ktFile() }
+ *             }
+ *         }
+ *     }.flattenLayout()
+ * }.opening shouldBe '{'
+ * ```
+ *
+ * @property key the segment the token was found in, with each token shown as `${capture("name")}`.
+ * @property name the capture that sits inside the brackets.
+ * @property opening `{` or `[`, whichever the capture sits in.
+ * @property declaredAt where the segment was written.
+ */
+@ExperimentalKatachiApi
+public class KatachiCaptureInsideBracketsException internal constructor(
+    public val key: String,
+    public val name: String,
+    public val opening: Char,
+    public val declaredAt: DeclarationSite,
+) : KatachiDeclarationException(
+    message = buildString {
+        appendLine("The capture \"$name\" in the layout key `$key` at $declaredAt sits inside `$opening...`.")
+        appendLine(
+            "A wildcard inside {...} or [...] only takes part in matching and is never read back, " +
+                "so the capture would never get a value.",
+        )
+        append("Move the capture out, such as \"\${capture(\"name\")}{Screen,Route}\".")
+    },
+)
+
+/**
  * A `capture(...)` token was found somewhere other than a layout key: in a `description`, a
  * `fileConstraint` name, or the string a `.template { }` block returned.
  *

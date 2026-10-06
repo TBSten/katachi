@@ -165,7 +165,7 @@ public class KatachiMissingTemplateIdException internal constructor(
 
 /**
  * `.template { }` was attached to a declaration whose path still holds a `*` or a `**` that no
- * `capture("...")` names.
+ * `capture("...")` names, or any `?`, `[...]` or `{...}`, which cannot be named at all.
  *
  * Generating a file needs a value for every level its path leaves open, and an unnamed wildcard
  * has nowhere for that value to come from: no `--arg` name reaches it.
@@ -205,12 +205,12 @@ public class KatachiTemplateOnWildcardException internal constructor(
         )
         appendLine(
             "Generating a file needs a value for every level the path leaves open, and an " +
-                "unnamed * or ** has no --arg name for that value to arrive as.",
+                "unnamed * or **, or a ?, [...] or {...}, has no --arg name for that value to arrive as.",
         )
         append(
-            "Name every remaining wildcard with capture(\"...\"), such as " +
-                "\"\${capture(\"name\")}Repository.kt\".file(), or drop the ones that stay a `*` " +
-                "into a level of their own so the file this template describes has a single path.",
+            "Name every remaining * with capture(\"...\"), such as " +
+                "\"\${capture(\"name\")}Repository.kt\".file(), and write ?, [...] and {...} out as " +
+                "the name the file will have.",
         )
     },
 )

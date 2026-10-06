@@ -107,6 +107,21 @@ class TemplateCapturePlacementSpec : FreeSpec({
             mapOf("feature/my-page/MyPageScreen.kt" to "// my-page")
     }
 
+    "文字と混ざった capture でも --arg の空は今のまま拒む" {
+        val arch = architectureOf {
+            "feature".group {
+                "Screen".role {
+                    layout { "feature" / "${capture("name")}Screen.kt".file().template { "" } }
+                }
+            }
+        }
+
+        val thrown = shouldThrow<KatachiInvalidTemplateCaptureValueException> {
+            arch.generated("feature.Screen", mapOf("name" to ""))
+        }
+        thrown.problem shouldBe KatachiInvalidTemplateCaptureValueException.Problem.Empty
+    }
+
     "派生は --arg を取らないので、元の名前だけが足りないと言われる" {
         val arch = architectureOf {
             "feature".group {

@@ -116,4 +116,4 @@ internal class DeclaredFileConstraint(
  * every project and says nothing about where to look.
  */
 internal val DeclaredFileConstraint.reportPath: String
-    get() = paths.firstOrNull { '*' !in it } ?: paths.firstOrNull() ?: declaredAt.fileName
+    get() = paths.firstOrNull { !GlobLexer.hasGlobWildcard(it) } ?: paths.firstOrNull() ?: declaredAt.fileName

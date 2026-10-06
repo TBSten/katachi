@@ -29,12 +29,12 @@ internal class ModulePattern private constructor(
      */
     val wildcardNames: List<String?> = emptyList(),
 ) {
-    /** Whether the pattern holds a `*` or a `**`, which is what makes a declaration optional. */
+    /** Whether the pattern holds a `*`, `**`, `?`, `[...]` or `{...}`, which is what makes a declaration optional. */
     val hasWildcard: Boolean get() = glob?.hasWildcard == true
 
     /** The single module named, when there is no wildcard to expand. */
     val literalPath: ModulePath?
-        get() = if (hasWildcard) null else ModulePath.of(unescape(pattern))
+        get() = if (hasWildcard) null else ModulePath.of(GlobLexer.unescapeLiteral(pattern))
 
     /**
      * One [WILDCARD_PLACEHOLDER] per wildcard, in pattern order, so `":feature:*"` reads as
@@ -88,29 +88,18 @@ internal class ModulePattern private constructor(
 
     /**
      * The pattern with its `*`s replaced by [values], in order: `":feature:*"` with `home` reads
-     * `":feature:home"`. A `**`, an escaped `\*` and a `*` left without a value stay as written.
+     * `":feature:home"`. A `**`, an escaped `\*`, a `*` inside `{...}` or `[...]` and a `*` left without a value stay as written.
      * For a message, which names the module a template run asked for.
      */
-    fun filledIn(values: List<String>): String = buildString {
+    fun filledIn(values: List<String>): String {
         var next = 0
-        var index = 0
-        while (index < pattern.length) {
-            val character = pattern[index]
-            when {
-                character == '\\' && index + 1 < pattern.length -> {
-                    append(character).append(pattern[index + 1])
-                    index += 2
-                    continue
-                }
-                character == '*' && pattern.getOrNull(index + 1) == '*' -> {
-                    append("**")
-                    index += 2
-                    continue
-                }
-                character == '*' && next < values.size -> append(values[next++])
-                else -> append(character)
+        return pattern.split(Glob.MODULE_SEPARATOR).joinToString(Glob.MODULE_SEPARATOR.toString()) { segment ->
+            // A `**` is a whole level of its own and is never given a value.
+            if (segment == RECURSIVE_WILDCARD) {
+                segment
+            } else {
+                GlobLexer.replaceCapturingStars(segment) { values.getOrNull(next++) }
             }
-            index++
         }
     }
 
@@ -197,6 +186,8 @@ internal class ModulePattern private constructor(
                             captureSegment.globSegment
                         }
 
+                        // TODO: a `*` mixed with other characters (`feature-*`) is not counted in `names`, so it
+                        //  is never matched to a `capture(...)` index; independent of the glob syntax.
                         segment == SINGLE_WILDCARD -> {
                             names += null
                             segment
@@ -214,23 +205,5 @@ internal class ModulePattern private constructor(
 
         private const val SINGLE_WILDCARD: String = "*"
         private const val RECURSIVE_WILDCARD: String = "**"
-
-        /** Drops the backslashes the glob compiler would have read as escapes. */
-        private fun unescape(pattern: String): String {
-            if ('\\' !in pattern) return pattern
-            val result = StringBuilder(pattern.length)
-            var index = 0
-            while (index < pattern.length) {
-                val character = pattern[index]
-                if (character == '\\' && index + 1 < pattern.length) {
-                    result.append(pattern[index + 1])
-                    index += 2
-                } else {
-                    result.append(character)
-                    index++
-                }
-            }
-            return result.toString()
-        }
     }
 }

@@ -5,7 +5,8 @@
     "matches": true,
     "error": false,
     "literalPrefix": ["build.gradle.kts"],
-    "hasWildcard": false
+    "hasWildcard": false,
+    "groups": []
   },
   {
     "pattern": "build.gradle.kts",
@@ -13,7 +14,8 @@
     "matches": false,
     "error": false,
     "literalPrefix": ["build.gradle.kts"],
-    "hasWildcard": false
+    "hasWildcard": false,
+    "groups": null
   },
   {
     "pattern": "build.gradle.kts",
@@ -21,7 +23,8 @@
     "matches": false,
     "error": false,
     "literalPrefix": ["build.gradle.kts"],
-    "hasWildcard": false
+    "hasWildcard": false,
+    "groups": null
   },
   {
     "pattern": "build.gradle.kts",
@@ -29,7 +32,8 @@
     "matches": false,
     "error": false,
     "literalPrefix": ["build.gradle.kts"],
-    "hasWildcard": false
+    "hasWildcard": false,
+    "groups": null
   },
   {
     "pattern": "*.kt",
@@ -37,7 +41,8 @@
     "matches": true,
     "error": false,
     "literalPrefix": [],
-    "hasWildcard": true
+    "hasWildcard": true,
+    "groups": ["Foo"]
   },
   {
     "pattern": "*.kt",
@@ -45,15 +50,17 @@
     "matches": false,
     "error": false,
     "literalPrefix": [],
-    "hasWildcard": true
+    "hasWildcard": true,
+    "groups": null
   },
   {
     "pattern": "*.kt",
     "path": ".kt",
-    "matches": false,
+    "matches": true,
     "error": false,
     "literalPrefix": [],
-    "hasWildcard": true
+    "hasWildcard": true,
+    "groups": [""]
   },
   {
     "pattern": "*.kt",
@@ -61,7 +68,8 @@
     "matches": false,
     "error": false,
     "literalPrefix": [],
-    "hasWildcard": true
+    "hasWildcard": true,
+    "groups": null
   },
   {
     "pattern": "*.kt",
@@ -69,7 +77,8 @@
     "matches": true,
     "error": false,
     "literalPrefix": [],
-    "hasWildcard": true
+    "hasWildcard": true,
+    "groups": ["x"]
   },
   {
     "pattern": "*UseCase.kt",
@@ -77,15 +86,17 @@
     "matches": true,
     "error": false,
     "literalPrefix": [],
-    "hasWildcard": true
+    "hasWildcard": true,
+    "groups": ["GetUser"]
   },
   {
     "pattern": "*UseCase.kt",
     "path": "UseCase.kt",
-    "matches": false,
+    "matches": true,
     "error": false,
     "literalPrefix": [],
-    "hasWildcard": true
+    "hasWildcard": true,
+    "groups": [""]
   },
   {
     "pattern": "*UseCase.kt",
@@ -93,7 +104,8 @@
     "matches": false,
     "error": false,
     "literalPrefix": [],
-    "hasWildcard": true
+    "hasWildcard": true,
+    "groups": null
   },
   {
     "pattern": "*UseCase.kt",
@@ -101,7 +113,8 @@
     "matches": false,
     "error": false,
     "literalPrefix": [],
-    "hasWildcard": true
+    "hasWildcard": true,
+    "groups": null
   },
   {
     "pattern": "Pre*Post",
@@ -109,15 +122,17 @@
     "matches": true,
     "error": false,
     "literalPrefix": [],
-    "hasWildcard": true
+    "hasWildcard": true,
+    "groups": ["X"]
   },
   {
     "pattern": "Pre*Post",
     "path": "PrePost",
-    "matches": false,
+    "matches": true,
     "error": false,
     "literalPrefix": [],
-    "hasWildcard": true
+    "hasWildcard": true,
+    "groups": [""]
   },
   {
     "pattern": "Pre*Post",
@@ -125,7 +140,8 @@
     "matches": false,
     "error": false,
     "literalPrefix": [],
-    "hasWildcard": true
+    "hasWildcard": true,
+    "groups": null
   },
   {
     "pattern": "Pre*Post",
@@ -133,7 +149,8 @@
     "matches": true,
     "error": false,
     "literalPrefix": [],
-    "hasWildcard": true
+    "hasWildcard": true,
+    "groups": ["XYZ"]
   },
   {
     "pattern": "*.*",
@@ -141,7 +158,8 @@
     "matches": true,
     "error": false,
     "literalPrefix": [],
-    "hasWildcard": true
+    "hasWildcard": true,
+    "groups": ["a", "b"]
   },
   {
     "pattern": "*.*",
@@ -149,23 +167,26 @@
     "matches": false,
     "error": false,
     "literalPrefix": [],
-    "hasWildcard": true
+    "hasWildcard": true,
+    "groups": null
   },
   {
     "pattern": "*.*",
     "path": ".b",
-    "matches": false,
+    "matches": true,
     "error": false,
     "literalPrefix": [],
-    "hasWildcard": true
+    "hasWildcard": true,
+    "groups": ["", "b"]
   },
   {
     "pattern": "*.*",
     "path": "a.",
-    "matches": false,
+    "matches": true,
     "error": false,
     "literalPrefix": [],
-    "hasWildcard": true
+    "hasWildcard": true,
+    "groups": ["a", ""]
   },
   {
     "pattern": "*.*",
@@ -173,7 +194,8 @@
     "matches": true,
     "error": false,
     "literalPrefix": [],
-    "hasWildcard": true
+    "hasWildcard": true,
+    "groups": ["a.b", "c"]
   },
   {
     "pattern": "src/*/Foo.kt",
@@ -181,7 +203,8 @@
     "matches": true,
     "error": false,
     "literalPrefix": ["src"],
-    "hasWildcard": true
+    "hasWildcard": true,
+    "groups": ["main"]
   },
   {
     "pattern": "src/*/Foo.kt",
@@ -189,7 +212,8 @@
     "matches": false,
     "error": false,
     "literalPrefix": ["src"],
-    "hasWildcard": true
+    "hasWildcard": true,
+    "groups": null
   },
   {
     "pattern": "src/*/Foo.kt",
@@ -197,7 +221,8 @@
     "matches": false,
     "error": false,
     "literalPrefix": ["src"],
-    "hasWildcard": true
+    "hasWildcard": true,
+    "groups": null
   },
   {
     "pattern": "src/*/Foo.kt",
@@ -205,7 +230,8 @@
     "matches": false,
     "error": false,
     "literalPrefix": ["src"],
-    "hasWildcard": true
+    "hasWildcard": true,
+    "groups": null
   },
   {
     "pattern": "src/*/*",
@@ -213,7 +239,8 @@
     "matches": true,
     "error": false,
     "literalPrefix": ["src"],
-    "hasWildcard": true
+    "hasWildcard": true,
+    "groups": ["a", "b"]
   },
   {
     "pattern": "src/*/*",
@@ -221,7 +248,8 @@
     "matches": false,
     "error": false,
     "literalPrefix": ["src"],
-    "hasWildcard": true
+    "hasWildcard": true,
+    "groups": null
   },
   {
     "pattern": "src/*/*",
@@ -229,7 +257,8 @@
     "matches": false,
     "error": false,
     "literalPrefix": ["src"],
-    "hasWildcard": true
+    "hasWildcard": true,
+    "groups": null
   },
   {
     "pattern": "**",
@@ -237,7 +266,8 @@
     "matches": true,
     "error": false,
     "literalPrefix": [],
-    "hasWildcard": true
+    "hasWildcard": true,
+    "groups": ["a"]
   },
   {
     "pattern": "**",
@@ -245,7 +275,8 @@
     "matches": true,
     "error": false,
     "literalPrefix": [],
-    "hasWildcard": true
+    "hasWildcard": true,
+    "groups": ["a/b/c.kt"]
   },
   {
     "pattern": "**",
@@ -253,7 +284,8 @@
     "matches": true,
     "error": false,
     "literalPrefix": [],
-    "hasWildcard": true
+    "hasWildcard": true,
+    "groups": ["build.gradle.kts"]
   },
   {
     "pattern": "src/**",
@@ -261,7 +293,8 @@
     "matches": true,
     "error": false,
     "literalPrefix": ["src"],
-    "hasWildcard": true
+    "hasWildcard": true,
+    "groups": [""]
   },
   {
     "pattern": "src/**",
@@ -269,7 +302,8 @@
     "matches": true,
     "error": false,
     "literalPrefix": ["src"],
-    "hasWildcard": true
+    "hasWildcard": true,
+    "groups": ["a"]
   },
   {
     "pattern": "src/**",
@@ -277,7 +311,8 @@
     "matches": true,
     "error": false,
     "literalPrefix": ["src"],
-    "hasWildcard": true
+    "hasWildcard": true,
+    "groups": ["a/b/c"]
   },
   {
     "pattern": "src/**",
@@ -285,7 +320,8 @@
     "matches": false,
     "error": false,
     "literalPrefix": ["src"],
-    "hasWildcard": true
+    "hasWildcard": true,
+    "groups": null
   },
   {
     "pattern": "src/**",
@@ -293,7 +329,8 @@
     "matches": false,
     "error": false,
     "literalPrefix": ["src"],
-    "hasWildcard": true
+    "hasWildcard": true,
+    "groups": null
   },
   {
     "pattern": "src/**/Foo.kt",
@@ -301,7 +338,8 @@
     "matches": true,
     "error": false,
     "literalPrefix": ["src"],
-    "hasWildcard": true
+    "hasWildcard": true,
+    "groups": [""]
   },
   {
     "pattern": "src/**/Foo.kt",
@@ -309,7 +347,8 @@
     "matches": true,
     "error": false,
     "literalPrefix": ["src"],
-    "hasWildcard": true
+    "hasWildcard": true,
+    "groups": ["a"]
   },
   {
     "pattern": "src/**/Foo.kt",
@@ -317,7 +356,8 @@
     "matches": true,
     "error": false,
     "literalPrefix": ["src"],
-    "hasWildcard": true
+    "hasWildcard": true,
+    "groups": ["a/b/c"]
   },
   {
     "pattern": "src/**/Foo.kt",
@@ -325,7 +365,8 @@
     "matches": false,
     "error": false,
     "literalPrefix": ["src"],
-    "hasWildcard": true
+    "hasWildcard": true,
+    "groups": null
   },
   {
     "pattern": "src/**/Foo.kt",
@@ -333,7 +374,8 @@
     "matches": false,
     "error": false,
     "literalPrefix": ["src"],
-    "hasWildcard": true
+    "hasWildcard": true,
+    "groups": null
   },
   {
     "pattern": "**/build.gradle.kts",
@@ -341,7 +383,8 @@
     "matches": true,
     "error": false,
     "literalPrefix": [],
-    "hasWildcard": true
+    "hasWildcard": true,
+    "groups": [""]
   },
   {
     "pattern": "**/build.gradle.kts",
@@ -349,7 +392,8 @@
     "matches": true,
     "error": false,
     "literalPrefix": [],
-    "hasWildcard": true
+    "hasWildcard": true,
+    "groups": ["core/data"]
   },
   {
     "pattern": "**/build.gradle.kts",
@@ -357,7 +401,8 @@
     "matches": false,
     "error": false,
     "literalPrefix": [],
-    "hasWildcard": true
+    "hasWildcard": true,
+    "groups": null
   },
   {
     "pattern": "**/useCase/*UseCase.kt",
@@ -365,7 +410,8 @@
     "matches": true,
     "error": false,
     "literalPrefix": [],
-    "hasWildcard": true
+    "hasWildcard": true,
+    "groups": ["", "Get"]
   },
   {
     "pattern": "**/useCase/*UseCase.kt",
@@ -373,7 +419,8 @@
     "matches": true,
     "error": false,
     "literalPrefix": [],
-    "hasWildcard": true
+    "hasWildcard": true,
+    "groups": ["a/b", "Get"]
   },
   {
     "pattern": "**/useCase/*UseCase.kt",
@@ -381,7 +428,8 @@
     "matches": false,
     "error": false,
     "literalPrefix": [],
-    "hasWildcard": true
+    "hasWildcard": true,
+    "groups": null
   },
   {
     "pattern": "a/**/b/**/c",
@@ -389,7 +437,8 @@
     "matches": true,
     "error": false,
     "literalPrefix": ["a"],
-    "hasWildcard": true
+    "hasWildcard": true,
+    "groups": ["", ""]
   },
   {
     "pattern": "a/**/b/**/c",
@@ -397,7 +446,8 @@
     "matches": true,
     "error": false,
     "literalPrefix": ["a"],
-    "hasWildcard": true
+    "hasWildcard": true,
+    "groups": ["x", "y"]
   },
   {
     "pattern": "a/**/b/**/c",
@@ -405,7 +455,8 @@
     "matches": true,
     "error": false,
     "literalPrefix": ["a"],
-    "hasWildcard": true
+    "hasWildcard": true,
+    "groups": ["", "x/y"]
   },
   {
     "pattern": "a/**/b/**/c",
@@ -413,7 +464,8 @@
     "matches": false,
     "error": false,
     "literalPrefix": ["a"],
-    "hasWildcard": true
+    "hasWildcard": true,
+    "groups": null
   },
   {
     "pattern": "a/**/b/**/c",
@@ -421,7 +473,8 @@
     "matches": false,
     "error": false,
     "literalPrefix": ["a"],
-    "hasWildcard": true
+    "hasWildcard": true,
+    "groups": null
   },
   {
     "pattern": "core/*/src/main/kotlin/**/useCase",
@@ -429,7 +482,8 @@
     "matches": true,
     "error": false,
     "literalPrefix": ["core"],
-    "hasWildcard": true
+    "hasWildcard": true,
+    "groups": ["domain", ""]
   },
   {
     "pattern": "core/*/src/main/kotlin/**/useCase",
@@ -437,7 +491,8 @@
     "matches": true,
     "error": false,
     "literalPrefix": ["core"],
-    "hasWildcard": true
+    "hasWildcard": true,
+    "groups": ["domain", "com/example"]
   },
   {
     "pattern": "core/*/src/main/kotlin/**/useCase",
@@ -445,7 +500,8 @@
     "matches": false,
     "error": false,
     "literalPrefix": ["core"],
-    "hasWildcard": true
+    "hasWildcard": true,
+    "groups": null
   },
   {
     "pattern": "\\*.kt",
@@ -453,7 +509,8 @@
     "matches": true,
     "error": false,
     "literalPrefix": ["*.kt"],
-    "hasWildcard": false
+    "hasWildcard": false,
+    "groups": []
   },
   {
     "pattern": "\\*.kt",
@@ -461,7 +518,8 @@
     "matches": false,
     "error": false,
     "literalPrefix": ["*.kt"],
-    "hasWildcard": false
+    "hasWildcard": false,
+    "groups": null
   },
   {
     "pattern": "a\\,b.kt",
@@ -469,7 +527,8 @@
     "matches": true,
     "error": false,
     "literalPrefix": ["a,b.kt"],
-    "hasWildcard": false
+    "hasWildcard": false,
+    "groups": []
   },
   {
     "pattern": "a\\,b.kt",
@@ -477,7 +536,8 @@
     "matches": false,
     "error": false,
     "literalPrefix": ["a,b.kt"],
-    "hasWildcard": false
+    "hasWildcard": false,
+    "groups": null
   },
   {
     "pattern": "a,b.kt",
@@ -485,7 +545,8 @@
     "matches": true,
     "error": false,
     "literalPrefix": ["a,b.kt"],
-    "hasWildcard": false
+    "hasWildcard": false,
+    "groups": []
   },
   {
     "pattern": "a,b.kt",
@@ -493,7 +554,8 @@
     "matches": false,
     "error": false,
     "literalPrefix": ["a,b.kt"],
-    "hasWildcard": false
+    "hasWildcard": false,
+    "groups": null
   },
   {
     "pattern": "\\{x\\}",
@@ -501,7 +563,8 @@
     "matches": true,
     "error": false,
     "literalPrefix": ["{x}"],
-    "hasWildcard": false
+    "hasWildcard": false,
+    "groups": []
   },
   {
     "pattern": "\\{x\\}",
@@ -509,7 +572,8 @@
     "matches": false,
     "error": false,
     "literalPrefix": ["{x}"],
-    "hasWildcard": false
+    "hasWildcard": false,
+    "groups": null
   },
   {
     "pattern": "\\[x\\]",
@@ -517,7 +581,8 @@
     "matches": true,
     "error": false,
     "literalPrefix": ["[x]"],
-    "hasWildcard": false
+    "hasWildcard": false,
+    "groups": []
   },
   {
     "pattern": "\\[x\\]",
@@ -525,7 +590,8 @@
     "matches": false,
     "error": false,
     "literalPrefix": ["[x]"],
-    "hasWildcard": false
+    "hasWildcard": false,
+    "groups": null
   },
   {
     "pattern": "\\?",
@@ -533,7 +599,8 @@
     "matches": true,
     "error": false,
     "literalPrefix": ["?"],
-    "hasWildcard": false
+    "hasWildcard": false,
+    "groups": []
   },
   {
     "pattern": "\\?",
@@ -541,7 +608,8 @@
     "matches": false,
     "error": false,
     "literalPrefix": ["?"],
-    "hasWildcard": false
+    "hasWildcard": false,
+    "groups": null
   },
   {
     "pattern": "a\\\\b",
@@ -549,7 +617,8 @@
     "matches": true,
     "error": false,
     "literalPrefix": ["a\\b"],
-    "hasWildcard": false
+    "hasWildcard": false,
+    "groups": []
   },
   {
     "pattern": "a\\\\b",
@@ -557,7 +626,8 @@
     "matches": false,
     "error": false,
     "literalPrefix": ["a\\b"],
-    "hasWildcard": false
+    "hasWildcard": false,
+    "groups": null
   },
   {
     "pattern": "a.b",
@@ -565,7 +635,8 @@
     "matches": true,
     "error": false,
     "literalPrefix": ["a.b"],
-    "hasWildcard": false
+    "hasWildcard": false,
+    "groups": []
   },
   {
     "pattern": "a.b",
@@ -573,7 +644,8 @@
     "matches": false,
     "error": false,
     "literalPrefix": ["a.b"],
-    "hasWildcard": false
+    "hasWildcard": false,
+    "groups": null
   },
   {
     "pattern": "a+b(c)",
@@ -581,7 +653,8 @@
     "matches": true,
     "error": false,
     "literalPrefix": ["a+b(c)"],
-    "hasWildcard": false
+    "hasWildcard": false,
+    "groups": []
   },
   {
     "pattern": "a+b(c)",
@@ -589,7 +662,8 @@
     "matches": false,
     "error": false,
     "literalPrefix": ["a+b(c)"],
-    "hasWildcard": false
+    "hasWildcard": false,
+    "groups": null
   },
   {
     "pattern": "$x^",
@@ -597,7 +671,8 @@
     "matches": true,
     "error": false,
     "literalPrefix": ["$x^"],
-    "hasWildcard": false
+    "hasWildcard": false,
+    "groups": []
   },
   {
     "pattern": "$x^",
@@ -605,7 +680,8 @@
     "matches": false,
     "error": false,
     "literalPrefix": ["$x^"],
-    "hasWildcard": false
+    "hasWildcard": false,
+    "groups": null
   },
   {
     "pattern": "ドメイン/*.kt",
@@ -613,7 +689,8 @@
     "matches": true,
     "error": false,
     "literalPrefix": ["ドメイン"],
-    "hasWildcard": true
+    "hasWildcard": true,
+    "groups": ["ユースケース"]
   },
   {
     "pattern": "ドメイン/*.kt",
@@ -621,7 +698,8 @@
     "matches": false,
     "error": false,
     "literalPrefix": ["ドメイン"],
-    "hasWildcard": true
+    "hasWildcard": true,
+    "groups": null
   },
   {
     "pattern": ":feature:*",
@@ -629,7 +707,8 @@
     "matches": true,
     "error": false,
     "literalPrefix": [],
-    "hasWildcard": true
+    "hasWildcard": true,
+    "groups": ["home"]
   },
   {
     "pattern": ":feature:*",
@@ -637,7 +716,8 @@
     "matches": false,
     "error": false,
     "literalPrefix": [],
-    "hasWildcard": true
+    "hasWildcard": true,
+    "groups": null
   },
   {
     "pattern": "/src/*",
@@ -645,7 +725,8 @@
     "matches": true,
     "error": false,
     "literalPrefix": [],
-    "hasWildcard": true
+    "hasWildcard": true,
+    "groups": ["a"]
   },
   {
     "pattern": "/src/*",
@@ -653,7 +734,8 @@
     "matches": false,
     "error": false,
     "literalPrefix": [],
-    "hasWildcard": true
+    "hasWildcard": true,
+    "groups": null
   },
   {
     "pattern": "Src/*.kt",
@@ -661,7 +743,8 @@
     "matches": false,
     "error": false,
     "literalPrefix": ["Src"],
-    "hasWildcard": true
+    "hasWildcard": true,
+    "groups": null
   },
   {
     "pattern": "Src/*.kt",
@@ -669,7 +752,8 @@
     "matches": true,
     "error": false,
     "literalPrefix": ["Src"],
-    "hasWildcard": true
+    "hasWildcard": true,
+    "groups": ["A"]
   },
   {
     "pattern": "src/**/Foo.kt",
@@ -677,7 +761,8 @@
     "matches": true,
     "error": false,
     "literalPrefix": ["src"],
-    "hasWildcard": true
+    "hasWildcard": true,
+    "groups": ["a/b"]
   },
   {
     "pattern": "**/Foo.kt",
@@ -685,7 +770,8 @@
     "matches": true,
     "error": false,
     "literalPrefix": [],
-    "hasWildcard": true
+    "hasWildcard": true,
+    "groups": [""]
   },
   {
     "pattern": "**/Foo.kt",
@@ -693,7 +779,8 @@
     "matches": true,
     "error": false,
     "literalPrefix": [],
-    "hasWildcard": true
+    "hasWildcard": true,
+    "groups": ["a/b"]
   },
   {
     "pattern": "**/Foo.kt",
@@ -701,7 +788,8 @@
     "matches": false,
     "error": false,
     "literalPrefix": [],
-    "hasWildcard": true
+    "hasWildcard": true,
+    "groups": null
   },
   {
     "pattern": "a/**/b/**/c",
@@ -709,7 +797,8 @@
     "matches": true,
     "error": false,
     "literalPrefix": ["a"],
-    "hasWildcard": true
+    "hasWildcard": true,
+    "groups": ["x", "y/z"]
   },
   {
     "pattern": "a/**/b/**/c",
@@ -717,7 +806,8 @@
     "matches": false,
     "error": false,
     "literalPrefix": ["a"],
-    "hasWildcard": true
+    "hasWildcard": true,
+    "groups": null
   },
   {
     "pattern": "**/assets",
@@ -725,7 +815,8 @@
     "matches": true,
     "error": false,
     "literalPrefix": [],
-    "hasWildcard": true
+    "hasWildcard": true,
+    "groups": ["a/b"]
   },
   {
     "pattern": "**/assets",
@@ -733,7 +824,8 @@
     "matches": true,
     "error": false,
     "literalPrefix": [],
-    "hasWildcard": true
+    "hasWildcard": true,
+    "groups": [""]
   },
   {
     "pattern": "a\\*b.kt",
@@ -741,7 +833,8 @@
     "matches": true,
     "error": false,
     "literalPrefix": ["a*b.kt"],
-    "hasWildcard": false
+    "hasWildcard": false,
+    "groups": []
   },
   {
     "pattern": "a\\*b.kt",
@@ -749,7 +842,8 @@
     "matches": false,
     "error": false,
     "literalPrefix": ["a*b.kt"],
-    "hasWildcard": false
+    "hasWildcard": false,
+    "groups": null
   },
   {
     "pattern": "x\\\\y",
@@ -757,7 +851,8 @@
     "matches": true,
     "error": false,
     "literalPrefix": ["x\\y"],
-    "hasWildcard": false
+    "hasWildcard": false,
+    "groups": []
   },
   {
     "pattern": "a\\,b",
@@ -765,7 +860,8 @@
     "matches": true,
     "error": false,
     "literalPrefix": ["a,b"],
-    "hasWildcard": false
+    "hasWildcard": false,
+    "groups": []
   },
   {
     "pattern": "a\\{b\\}",
@@ -773,7 +869,8 @@
     "matches": true,
     "error": false,
     "literalPrefix": ["a{b}"],
-    "hasWildcard": false
+    "hasWildcard": false,
+    "groups": []
   },
   {
     "pattern": "a\\?b",
@@ -781,7 +878,8 @@
     "matches": true,
     "error": false,
     "literalPrefix": ["a?b"],
-    "hasWildcard": false
+    "hasWildcard": false,
+    "groups": []
   },
   {
     "pattern": "a\\[b\\]",
@@ -789,7 +887,8 @@
     "matches": true,
     "error": false,
     "literalPrefix": ["a[b]"],
-    "hasWildcard": false
+    "hasWildcard": false,
+    "groups": []
   },
   {
     "pattern": "a.b+c(d)^$|e",
@@ -797,7 +896,8 @@
     "matches": true,
     "error": false,
     "literalPrefix": ["a.b+c(d)^$|e"],
-    "hasWildcard": false
+    "hasWildcard": false,
+    "groups": []
   },
   {
     "pattern": "a.b",
@@ -805,7 +905,8 @@
     "matches": false,
     "error": false,
     "literalPrefix": ["a.b"],
-    "hasWildcard": false
+    "hasWildcard": false,
+    "groups": null
   },
   {
     "pattern": "日本語/*.kt",
@@ -813,7 +914,8 @@
     "matches": true,
     "error": false,
     "literalPrefix": ["日本語"],
-    "hasWildcard": true
+    "hasWildcard": true,
+    "groups": ["あ"]
   },
   {
     "pattern": "Foo*Bar*.kt",
@@ -821,15 +923,17 @@
     "matches": true,
     "error": false,
     "literalPrefix": [],
-    "hasWildcard": true
+    "hasWildcard": true,
+    "groups": ["X", "Y"]
   },
   {
     "pattern": "Foo*Bar*.kt",
     "path": "FooBar.kt",
-    "matches": false,
+    "matches": true,
     "error": false,
     "literalPrefix": [],
-    "hasWildcard": true
+    "hasWildcard": true,
+    "groups": ["", ""]
   },
   {
     "pattern": "core/*/src/**/useCase/*UseCase.kt",
@@ -837,7 +941,8 @@
     "matches": true,
     "error": false,
     "literalPrefix": ["core"],
-    "hasWildcard": true
+    "hasWildcard": true,
+    "groups": ["domain", "main/kotlin/com/example", "GetUser"]
   },
   {
     "pattern": "core/*/src/**/useCase/*UseCase.kt",
@@ -845,7 +950,8 @@
     "matches": true,
     "error": false,
     "literalPrefix": ["core"],
-    "hasWildcard": true
+    "hasWildcard": true,
+    "groups": ["domain", "", "GetUser"]
   },
   {
     "pattern": "core/*/src/**/useCase/*UseCase.kt",
@@ -853,7 +959,8 @@
     "matches": false,
     "error": false,
     "literalPrefix": ["core"],
-    "hasWildcard": true
+    "hasWildcard": true,
+    "groups": null
   },
   {
     "pattern": "a/**/**",
@@ -861,7 +968,8 @@
     "matches": false,
     "error": false,
     "literalPrefix": ["a"],
-    "hasWildcard": true
+    "hasWildcard": true,
+    "groups": null
   },
   {
     "pattern": "a/**/**",
@@ -869,7 +977,8 @@
     "matches": true,
     "error": false,
     "literalPrefix": ["a"],
-    "hasWildcard": true
+    "hasWildcard": true,
+    "groups": ["", "b"]
   },
   {
     "pattern": "a/**/**",
@@ -877,7 +986,8 @@
     "matches": true,
     "error": false,
     "literalPrefix": ["a"],
-    "hasWildcard": true
+    "hasWildcard": true,
+    "groups": ["b", "c"]
   },
   {
     "pattern": "**/**",
@@ -885,7 +995,620 @@
     "matches": true,
     "error": false,
     "literalPrefix": [],
-    "hasWildcard": true
+    "hasWildcard": true,
+    "groups": ["", "a"]
+  },
+  {
+    "pattern": "app_icon*.xml",
+    "path": "app_icon.xml",
+    "matches": true,
+    "error": false,
+    "literalPrefix": [],
+    "hasWildcard": true,
+    "groups": [""]
+  },
+  {
+    "pattern": "app_icon*.xml",
+    "path": "app_icon_dark.xml",
+    "matches": true,
+    "error": false,
+    "literalPrefix": [],
+    "hasWildcard": true,
+    "groups": ["_dark"]
+  },
+  {
+    "pattern": "app_icon*.xml",
+    "path": "app_icon/x.xml",
+    "matches": false,
+    "error": false,
+    "literalPrefix": [],
+    "hasWildcard": true,
+    "groups": null
+  },
+  {
+    "pattern": "app_icon*.xml",
+    "path": "app_ico.xml",
+    "matches": false,
+    "error": false,
+    "literalPrefix": [],
+    "hasWildcard": true,
+    "groups": null
+  },
+  {
+    "pattern": "DropShadow*",
+    "path": "DropShadow",
+    "matches": true,
+    "error": false,
+    "literalPrefix": [],
+    "hasWildcard": true,
+    "groups": [""]
+  },
+  {
+    "pattern": "DropShadow*",
+    "path": "DropShadow.kt",
+    "matches": true,
+    "error": false,
+    "literalPrefix": [],
+    "hasWildcard": true,
+    "groups": [".kt"]
+  },
+  {
+    "pattern": "DropShadow*",
+    "path": "dropShadow",
+    "matches": false,
+    "error": false,
+    "literalPrefix": [],
+    "hasWildcard": true,
+    "groups": null
+  },
+  {
+    "pattern": "feature/*",
+    "path": "feature/home",
+    "matches": true,
+    "error": false,
+    "literalPrefix": ["feature"],
+    "hasWildcard": true,
+    "groups": ["home"]
+  },
+  {
+    "pattern": "feature/*",
+    "path": "feature",
+    "matches": false,
+    "error": false,
+    "literalPrefix": ["feature"],
+    "hasWildcard": true,
+    "groups": null
+  },
+  {
+    "pattern": "feature/*",
+    "path": "feature/home/impl",
+    "matches": false,
+    "error": false,
+    "literalPrefix": ["feature"],
+    "hasWildcard": true,
+    "groups": null
+  },
+  {
+    "pattern": "Foo?.kt",
+    "path": "FooA.kt",
+    "matches": true,
+    "error": false,
+    "literalPrefix": [],
+    "hasWildcard": true,
+    "groups": []
+  },
+  {
+    "pattern": "Foo?.kt",
+    "path": "Foo.kt",
+    "matches": false,
+    "error": false,
+    "literalPrefix": [],
+    "hasWildcard": true,
+    "groups": null
+  },
+  {
+    "pattern": "Foo?.kt",
+    "path": "FooAB.kt",
+    "matches": false,
+    "error": false,
+    "literalPrefix": [],
+    "hasWildcard": true,
+    "groups": null
+  },
+  {
+    "pattern": "Foo?.kt",
+    "path": "Foo/.kt",
+    "matches": false,
+    "error": false,
+    "literalPrefix": [],
+    "hasWildcard": true,
+    "groups": null
+  },
+  {
+    "pattern": "*?.kt",
+    "path": "AB.kt",
+    "matches": true,
+    "error": false,
+    "literalPrefix": [],
+    "hasWildcard": true,
+    "groups": ["A"]
+  },
+  {
+    "pattern": "*?.kt",
+    "path": "A.kt",
+    "matches": true,
+    "error": false,
+    "literalPrefix": [],
+    "hasWildcard": true,
+    "groups": [""]
+  },
+  {
+    "pattern": "*?.kt",
+    "path": ".kt",
+    "matches": false,
+    "error": false,
+    "literalPrefix": [],
+    "hasWildcard": true,
+    "groups": null
+  },
+  {
+    "pattern": "[abc].kt",
+    "path": "a.kt",
+    "matches": true,
+    "error": false,
+    "literalPrefix": [],
+    "hasWildcard": true,
+    "groups": []
+  },
+  {
+    "pattern": "[abc].kt",
+    "path": "d.kt",
+    "matches": false,
+    "error": false,
+    "literalPrefix": [],
+    "hasWildcard": true,
+    "groups": null
+  },
+  {
+    "pattern": "[abc].kt",
+    "path": "ab.kt",
+    "matches": false,
+    "error": false,
+    "literalPrefix": [],
+    "hasWildcard": true,
+    "groups": null
+  },
+  {
+    "pattern": "[a-c]x",
+    "path": "bx",
+    "matches": true,
+    "error": false,
+    "literalPrefix": [],
+    "hasWildcard": true,
+    "groups": []
+  },
+  {
+    "pattern": "[a-c]x",
+    "path": "dx",
+    "matches": false,
+    "error": false,
+    "literalPrefix": [],
+    "hasWildcard": true,
+    "groups": null
+  },
+  {
+    "pattern": "[a-c]x",
+    "path": "Bx",
+    "matches": false,
+    "error": false,
+    "literalPrefix": [],
+    "hasWildcard": true,
+    "groups": null
+  },
+  {
+    "pattern": "[!a]x",
+    "path": "bx",
+    "matches": true,
+    "error": false,
+    "literalPrefix": [],
+    "hasWildcard": true,
+    "groups": []
+  },
+  {
+    "pattern": "[!a]x",
+    "path": "ax",
+    "matches": false,
+    "error": false,
+    "literalPrefix": [],
+    "hasWildcard": true,
+    "groups": null
+  },
+  {
+    "pattern": "[!a]x",
+    "path": "/x",
+    "matches": false,
+    "error": false,
+    "literalPrefix": [],
+    "hasWildcard": true,
+    "groups": null
+  },
+  {
+    "pattern": "[^a]x",
+    "path": "bx",
+    "matches": true,
+    "error": false,
+    "literalPrefix": [],
+    "hasWildcard": true,
+    "groups": []
+  },
+  {
+    "pattern": "[^a]x",
+    "path": "ax",
+    "matches": false,
+    "error": false,
+    "literalPrefix": [],
+    "hasWildcard": true,
+    "groups": null
+  },
+  {
+    "pattern": "a[!x]b",
+    "path": "a/b",
+    "matches": false,
+    "error": false,
+    "literalPrefix": [],
+    "hasWildcard": true,
+    "groups": null
+  },
+  {
+    "pattern": "a[!x]b",
+    "path": "aYb",
+    "matches": true,
+    "error": false,
+    "literalPrefix": [],
+    "hasWildcard": true,
+    "groups": []
+  },
+  {
+    "pattern": "[-a].kt",
+    "path": "-.kt",
+    "matches": true,
+    "error": false,
+    "literalPrefix": [],
+    "hasWildcard": true,
+    "groups": []
+  },
+  {
+    "pattern": "[-a].kt",
+    "path": "a.kt",
+    "matches": true,
+    "error": false,
+    "literalPrefix": [],
+    "hasWildcard": true,
+    "groups": []
+  },
+  {
+    "pattern": "[-a].kt",
+    "path": "b.kt",
+    "matches": false,
+    "error": false,
+    "literalPrefix": [],
+    "hasWildcard": true,
+    "groups": null
+  },
+  {
+    "pattern": "[a-].kt",
+    "path": "-.kt",
+    "matches": true,
+    "error": false,
+    "literalPrefix": [],
+    "hasWildcard": true,
+    "groups": []
+  },
+  {
+    "pattern": "[a-].kt",
+    "path": "a.kt",
+    "matches": true,
+    "error": false,
+    "literalPrefix": [],
+    "hasWildcard": true,
+    "groups": []
+  },
+  {
+    "pattern": "[a-].kt",
+    "path": "b.kt",
+    "matches": false,
+    "error": false,
+    "literalPrefix": [],
+    "hasWildcard": true,
+    "groups": null
+  },
+  {
+    "pattern": "[*?{].kt",
+    "path": "*.kt",
+    "matches": true,
+    "error": false,
+    "literalPrefix": [],
+    "hasWildcard": true,
+    "groups": []
+  },
+  {
+    "pattern": "[*?{].kt",
+    "path": "?.kt",
+    "matches": true,
+    "error": false,
+    "literalPrefix": [],
+    "hasWildcard": true,
+    "groups": []
+  },
+  {
+    "pattern": "[*?{].kt",
+    "path": "{.kt",
+    "matches": true,
+    "error": false,
+    "literalPrefix": [],
+    "hasWildcard": true,
+    "groups": []
+  },
+  {
+    "pattern": "[*?{].kt",
+    "path": "a.kt",
+    "matches": false,
+    "error": false,
+    "literalPrefix": [],
+    "hasWildcard": true,
+    "groups": null
+  },
+  {
+    "pattern": "[\\]a].kt",
+    "path": "].kt",
+    "matches": true,
+    "error": false,
+    "literalPrefix": [],
+    "hasWildcard": true,
+    "groups": []
+  },
+  {
+    "pattern": "[\\]a].kt",
+    "path": "a.kt",
+    "matches": true,
+    "error": false,
+    "literalPrefix": [],
+    "hasWildcard": true,
+    "groups": []
+  },
+  {
+    "pattern": "[a!^]x",
+    "path": "!x",
+    "matches": true,
+    "error": false,
+    "literalPrefix": [],
+    "hasWildcard": true,
+    "groups": []
+  },
+  {
+    "pattern": "[a!^]x",
+    "path": "^x",
+    "matches": true,
+    "error": false,
+    "literalPrefix": [],
+    "hasWildcard": true,
+    "groups": []
+  },
+  {
+    "pattern": "[a!^]x",
+    "path": "bx",
+    "matches": false,
+    "error": false,
+    "literalPrefix": [],
+    "hasWildcard": true,
+    "groups": null
+  },
+  {
+    "pattern": "*.{kt,kts}",
+    "path": "Foo.kt",
+    "matches": true,
+    "error": false,
+    "literalPrefix": [],
+    "hasWildcard": true,
+    "groups": ["Foo"]
+  },
+  {
+    "pattern": "*.{kt,kts}",
+    "path": "build.kts",
+    "matches": true,
+    "error": false,
+    "literalPrefix": [],
+    "hasWildcard": true,
+    "groups": ["build"]
+  },
+  {
+    "pattern": "*.{kt,kts}",
+    "path": "Foo.java",
+    "matches": false,
+    "error": false,
+    "literalPrefix": [],
+    "hasWildcard": true,
+    "groups": null
+  },
+  {
+    "pattern": "*.{kt,kts}",
+    "path": "Foo.kt/x",
+    "matches": false,
+    "error": false,
+    "literalPrefix": [],
+    "hasWildcard": true,
+    "groups": null
+  },
+  {
+    "pattern": "build.gradle{,.kts}",
+    "path": "build.gradle",
+    "matches": true,
+    "error": false,
+    "literalPrefix": [],
+    "hasWildcard": true,
+    "groups": []
+  },
+  {
+    "pattern": "build.gradle{,.kts}",
+    "path": "build.gradle.kts",
+    "matches": true,
+    "error": false,
+    "literalPrefix": [],
+    "hasWildcard": true,
+    "groups": []
+  },
+  {
+    "pattern": "build.gradle{,.kts}",
+    "path": "build.gradle.x",
+    "matches": false,
+    "error": false,
+    "literalPrefix": [],
+    "hasWildcard": true,
+    "groups": null
+  },
+  {
+    "pattern": "*{Screen,*Route}",
+    "path": "HomeScreen",
+    "matches": true,
+    "error": false,
+    "literalPrefix": [],
+    "hasWildcard": true,
+    "groups": ["Home"]
+  },
+  {
+    "pattern": "*{Screen,*Route}",
+    "path": "HomeFooRoute",
+    "matches": true,
+    "error": false,
+    "literalPrefix": [],
+    "hasWildcard": true,
+    "groups": ["HomeFoo"]
+  },
+  {
+    "pattern": "*{Screen,*Route}",
+    "path": "Home",
+    "matches": false,
+    "error": false,
+    "literalPrefix": [],
+    "hasWildcard": true,
+    "groups": null
+  },
+  {
+    "pattern": "{a?,[xy]z}.kt",
+    "path": "ab.kt",
+    "matches": true,
+    "error": false,
+    "literalPrefix": [],
+    "hasWildcard": true,
+    "groups": []
+  },
+  {
+    "pattern": "{a?,[xy]z}.kt",
+    "path": "xz.kt",
+    "matches": true,
+    "error": false,
+    "literalPrefix": [],
+    "hasWildcard": true,
+    "groups": []
+  },
+  {
+    "pattern": "{a?,[xy]z}.kt",
+    "path": "az.kt",
+    "matches": true,
+    "error": false,
+    "literalPrefix": [],
+    "hasWildcard": true,
+    "groups": []
+  },
+  {
+    "pattern": "{a?,[xy]z}.kt",
+    "path": "bz.kt",
+    "matches": false,
+    "error": false,
+    "literalPrefix": [],
+    "hasWildcard": true,
+    "groups": null
+  },
+  {
+    "pattern": "src/{main,test}/kotlin/*.kt",
+    "path": "src/main/kotlin/A.kt",
+    "matches": true,
+    "error": false,
+    "literalPrefix": ["src"],
+    "hasWildcard": true,
+    "groups": ["A"]
+  },
+  {
+    "pattern": "src/{main,test}/kotlin/*.kt",
+    "path": "src/test/kotlin/A.kt",
+    "matches": true,
+    "error": false,
+    "literalPrefix": ["src"],
+    "hasWildcard": true,
+    "groups": ["A"]
+  },
+  {
+    "pattern": "src/{main,test}/kotlin/*.kt",
+    "path": "src/debug/kotlin/A.kt",
+    "matches": false,
+    "error": false,
+    "literalPrefix": ["src"],
+    "hasWildcard": true,
+    "groups": null
+  },
+  {
+    "pattern": "{*}.kt",
+    "path": "a.kt",
+    "matches": true,
+    "error": false,
+    "literalPrefix": [],
+    "hasWildcard": true,
+    "groups": []
+  },
+  {
+    "pattern": "{*}.kt",
+    "path": "a/b.kt",
+    "matches": false,
+    "error": false,
+    "literalPrefix": [],
+    "hasWildcard": true,
+    "groups": null
+  },
+  {
+    "pattern": ":feature:{home,settings}",
+    "path": ":feature:home",
+    "matches": true,
+    "error": false,
+    "literalPrefix": [],
+    "hasWildcard": true,
+    "groups": []
+  },
+  {
+    "pattern": ":feature:{home,settings}",
+    "path": ":feature:other",
+    "matches": false,
+    "error": false,
+    "literalPrefix": [],
+    "hasWildcard": true,
+    "groups": null
+  },
+  {
+    "pattern": ":core:[a-d]*",
+    "path": ":core:data",
+    "matches": true,
+    "error": false,
+    "literalPrefix": [],
+    "hasWildcard": true,
+    "groups": ["ata"]
+  },
+  {
+    "pattern": ":core:[a-d]*",
+    "path": ":core:ui",
+    "matches": false,
+    "error": false,
+    "literalPrefix": [],
+    "hasWildcard": true,
+    "groups": null
   },
   {
     "pattern": "",
@@ -893,7 +1616,8 @@
     "matches": null,
     "error": true,
     "literalPrefix": null,
-    "hasWildcard": null
+    "hasWildcard": null,
+    "groups": null
   },
   {
     "pattern": "a//b",
@@ -901,7 +1625,8 @@
     "matches": null,
     "error": true,
     "literalPrefix": null,
-    "hasWildcard": null
+    "hasWildcard": null,
+    "groups": null
   },
   {
     "pattern": "/",
@@ -909,7 +1634,8 @@
     "matches": null,
     "error": true,
     "literalPrefix": null,
-    "hasWildcard": null
+    "hasWildcard": null,
+    "groups": null
   },
   {
     "pattern": "a/",
@@ -917,7 +1643,8 @@
     "matches": null,
     "error": true,
     "literalPrefix": null,
-    "hasWildcard": null
+    "hasWildcard": null,
+    "groups": null
   },
   {
     "pattern": "//",
@@ -925,7 +1652,8 @@
     "matches": null,
     "error": true,
     "literalPrefix": null,
-    "hasWildcard": null
+    "hasWildcard": null,
+    "groups": null
   },
   {
     "pattern": "*/",
@@ -933,39 +1661,8 @@
     "matches": null,
     "error": true,
     "literalPrefix": null,
-    "hasWildcard": null
-  },
-  {
-    "pattern": "{a,b}.kt",
-    "path": null,
-    "matches": null,
-    "error": true,
-    "literalPrefix": null,
-    "hasWildcard": null
-  },
-  {
-    "pattern": "Foo?.kt",
-    "path": null,
-    "matches": null,
-    "error": true,
-    "literalPrefix": null,
-    "hasWildcard": null
-  },
-  {
-    "pattern": "[abc].kt",
-    "path": null,
-    "matches": null,
-    "error": true,
-    "literalPrefix": null,
-    "hasWildcard": null
-  },
-  {
-    "pattern": "a/{x}/b",
-    "path": null,
-    "matches": null,
-    "error": true,
-    "literalPrefix": null,
-    "hasWildcard": null
+    "hasWildcard": null,
+    "groups": null
   },
   {
     "pattern": "a]",
@@ -973,7 +1670,8 @@
     "matches": null,
     "error": true,
     "literalPrefix": null,
-    "hasWildcard": null
+    "hasWildcard": null,
+    "groups": null
   },
   {
     "pattern": "a}",
@@ -981,7 +1679,8 @@
     "matches": null,
     "error": true,
     "literalPrefix": null,
-    "hasWildcard": null
+    "hasWildcard": null,
+    "groups": null
   },
   {
     "pattern": "a**b",
@@ -989,7 +1688,8 @@
     "matches": null,
     "error": true,
     "literalPrefix": null,
-    "hasWildcard": null
+    "hasWildcard": null,
+    "groups": null
   },
   {
     "pattern": "**a",
@@ -997,7 +1697,8 @@
     "matches": null,
     "error": true,
     "literalPrefix": null,
-    "hasWildcard": null
+    "hasWildcard": null,
+    "groups": null
   },
   {
     "pattern": "a**",
@@ -1005,7 +1706,8 @@
     "matches": null,
     "error": true,
     "literalPrefix": null,
-    "hasWildcard": null
+    "hasWildcard": null,
+    "groups": null
   },
   {
     "pattern": "src/***",
@@ -1013,7 +1715,8 @@
     "matches": null,
     "error": true,
     "literalPrefix": null,
-    "hasWildcard": null
+    "hasWildcard": null,
+    "groups": null
   },
   {
     "pattern": "a\\",
@@ -1021,7 +1724,8 @@
     "matches": null,
     "error": true,
     "literalPrefix": null,
-    "hasWildcard": null
+    "hasWildcard": null,
+    "groups": null
   },
   {
     "pattern": "\\a.kt",
@@ -1029,7 +1733,8 @@
     "matches": null,
     "error": true,
     "literalPrefix": null,
-    "hasWildcard": null
+    "hasWildcard": null,
+    "groups": null
   },
   {
     "pattern": "a\\-b",
@@ -1037,7 +1742,8 @@
     "matches": null,
     "error": true,
     "literalPrefix": null,
-    "hasWildcard": null
+    "hasWildcard": null,
+    "groups": null
   },
   {
     "pattern": "a\\/b",
@@ -1045,7 +1751,161 @@
     "matches": null,
     "error": true,
     "literalPrefix": null,
-    "hasWildcard": null
+    "hasWildcard": null,
+    "groups": null
+  },
+  {
+    "pattern": "a[bc",
+    "path": null,
+    "matches": null,
+    "error": true,
+    "literalPrefix": null,
+    "hasWildcard": null,
+    "groups": null
+  },
+  {
+    "pattern": "a{b,c",
+    "path": null,
+    "matches": null,
+    "error": true,
+    "literalPrefix": null,
+    "hasWildcard": null,
+    "groups": null
+  },
+  {
+    "pattern": "a[",
+    "path": null,
+    "matches": null,
+    "error": true,
+    "literalPrefix": null,
+    "hasWildcard": null,
+    "groups": null
+  },
+  {
+    "pattern": "a{",
+    "path": null,
+    "matches": null,
+    "error": true,
+    "literalPrefix": null,
+    "hasWildcard": null,
+    "groups": null
+  },
+  {
+    "pattern": "[]",
+    "path": null,
+    "matches": null,
+    "error": true,
+    "literalPrefix": null,
+    "hasWildcard": null,
+    "groups": null
+  },
+  {
+    "pattern": "[!]",
+    "path": null,
+    "matches": null,
+    "error": true,
+    "literalPrefix": null,
+    "hasWildcard": null,
+    "groups": null
+  },
+  {
+    "pattern": "[^]",
+    "path": null,
+    "matches": null,
+    "error": true,
+    "literalPrefix": null,
+    "hasWildcard": null,
+    "groups": null
+  },
+  {
+    "pattern": "[z-a]",
+    "path": null,
+    "matches": null,
+    "error": true,
+    "literalPrefix": null,
+    "hasWildcard": null,
+    "groups": null
+  },
+  {
+    "pattern": "[a/b]",
+    "path": null,
+    "matches": null,
+    "error": true,
+    "literalPrefix": null,
+    "hasWildcard": null,
+    "groups": null
+  },
+  {
+    "pattern": "{}",
+    "path": null,
+    "matches": null,
+    "error": true,
+    "literalPrefix": null,
+    "hasWildcard": null,
+    "groups": null
+  },
+  {
+    "pattern": "{a,{b}}",
+    "path": null,
+    "matches": null,
+    "error": true,
+    "literalPrefix": null,
+    "hasWildcard": null,
+    "groups": null
+  },
+  {
+    "pattern": "{**}",
+    "path": null,
+    "matches": null,
+    "error": true,
+    "literalPrefix": null,
+    "hasWildcard": null,
+    "groups": null
+  },
+  {
+    "pattern": "{a/b,c}",
+    "path": null,
+    "matches": null,
+    "error": true,
+    "literalPrefix": null,
+    "hasWildcard": null,
+    "groups": null
+  },
+  {
+    "pattern": "{a,b",
+    "path": null,
+    "matches": null,
+    "error": true,
+    "literalPrefix": null,
+    "hasWildcard": null,
+    "groups": null
+  },
+  {
+    "pattern": "a/{x",
+    "path": null,
+    "matches": null,
+    "error": true,
+    "literalPrefix": null,
+    "hasWildcard": null,
+    "groups": null
+  },
+  {
+    "pattern": "{a[b}",
+    "path": null,
+    "matches": null,
+    "error": true,
+    "literalPrefix": null,
+    "hasWildcard": null,
+    "groups": null
+  },
+  {
+    "pattern": "[a{]b}",
+    "path": null,
+    "matches": null,
+    "error": true,
+    "literalPrefix": null,
+    "hasWildcard": null,
+    "groups": null
   },
   {
     "pattern": "*a/*.kt",
@@ -1053,7 +1913,8 @@
     "matches": true,
     "error": false,
     "literalPrefix": [],
-    "hasWildcard": true
+    "hasWildcard": true,
+    "groups": ["Home", "X"]
   },
   {
     "pattern": "*a/*.kt",
@@ -1061,7 +1922,8 @@
     "matches": false,
     "error": false,
     "literalPrefix": [],
-    "hasWildcard": true
+    "hasWildcard": true,
+    "groups": null
   },
   {
     "pattern": "*a/*.kt",
@@ -1069,71 +1931,80 @@
     "matches": false,
     "error": false,
     "literalPrefix": [],
-    "hasWildcard": true
+    "hasWildcard": true,
+    "groups": null
   },
   {
     "pattern": "*a/*.kt",
     "path": "a.ba/.kt",
-    "matches": false,
-    "error": false,
-    "literalPrefix": [],
-    "hasWildcard": true
-  },
-  {
-    "pattern": "**/x\\,y/sr*",
-    "path": "kotlin/src/x,y/srX",
     "matches": true,
     "error": false,
     "literalPrefix": [],
-    "hasWildcard": true
+    "hasWildcard": true,
+    "groups": ["a.b", ""]
   },
   {
-    "pattern": "**/x\\,y/sr*",
-    "path": "a/kotlin/src/x,y/srX",
+    "pattern": "**/{a,b*}/sr*",
+    "path": "kotlin/src/bZ/srX",
     "matches": true,
     "error": false,
     "literalPrefix": [],
-    "hasWildcard": true
+    "hasWildcard": true,
+    "groups": ["kotlin/src", "X"]
   },
   {
-    "pattern": "**/x\\,y/sr*",
-    "path": "kotlin/src/x,y",
-    "matches": false,
-    "error": false,
-    "literalPrefix": [],
-    "hasWildcard": true
-  },
-  {
-    "pattern": "**/x\\,y/sr*",
-    "path": "kotlin/kotlin/x,y/sr",
-    "matches": false,
-    "error": false,
-    "literalPrefix": [],
-    "hasWildcard": true
-  },
-  {
-    "pattern": "kotlin/useCase/x\\,y/ドメイン",
-    "path": "kotlin/useCase/x,y/ドメイン",
+    "pattern": "**/{a,b*}/sr*",
+    "path": "a/kotlin/src/bZ/srX",
     "matches": true,
     "error": false,
-    "literalPrefix": ["kotlin", "useCase", "x,y", "ドメイン"],
-    "hasWildcard": false
+    "literalPrefix": [],
+    "hasWildcard": true,
+    "groups": ["a/kotlin/src", "X"]
   },
   {
-    "pattern": "kotlin/useCase/x\\,y/ドメイン",
-    "path": "data/useCase/x,y/ドメイン",
+    "pattern": "**/{a,b*}/sr*",
+    "path": "kotlin/src/bZ",
     "matches": false,
     "error": false,
-    "literalPrefix": ["kotlin", "useCase", "x,y", "ドメイン"],
-    "hasWildcard": false
+    "literalPrefix": [],
+    "hasWildcard": true,
+    "groups": null
   },
   {
-    "pattern": "kotlin/useCase/x\\,y/ドメイン",
-    "path": "kotlin/useCase/b/x,y/ドメイン",
+    "pattern": "**/{a,b*}/sr*",
+    "path": "kotlin/kotlin/bZ/sr",
+    "matches": true,
+    "error": false,
+    "literalPrefix": [],
+    "hasWildcard": true,
+    "groups": ["kotlin/kotlin", ""]
+  },
+  {
+    "pattern": "kotlin/useCase/[a-c]x/x.{kt,kts}",
+    "path": "kotlin/useCase/bx/x.kts",
+    "matches": true,
+    "error": false,
+    "literalPrefix": ["kotlin", "useCase"],
+    "hasWildcard": true,
+    "groups": []
+  },
+  {
+    "pattern": "kotlin/useCase/[a-c]x/x.{kt,kts}",
+    "path": "data/useCase/bx/x.kts",
     "matches": false,
     "error": false,
-    "literalPrefix": ["kotlin", "useCase", "x,y", "ドメイン"],
-    "hasWildcard": false
+    "literalPrefix": ["kotlin", "useCase"],
+    "hasWildcard": true,
+    "groups": null
+  },
+  {
+    "pattern": "kotlin/useCase/[a-c]x/x.{kt,kts}",
+    "path": "kotlin/useCase/b/bx/x.kts",
+    "matches": false,
+    "error": false,
+    "literalPrefix": ["kotlin", "useCase"],
+    "hasWildcard": true,
+    "groups": null
   },
   {
     "pattern": "a/main",
@@ -1141,7 +2012,8 @@
     "matches": true,
     "error": false,
     "literalPrefix": ["a", "main"],
-    "hasWildcard": false
+    "hasWildcard": false,
+    "groups": []
   },
   {
     "pattern": "a/main",
@@ -1149,7 +2021,8 @@
     "matches": false,
     "error": false,
     "literalPrefix": ["a", "main"],
-    "hasWildcard": false
+    "hasWildcard": false,
+    "groups": null
   },
   {
     "pattern": "a/main",
@@ -1157,7 +2030,8 @@
     "matches": false,
     "error": false,
     "literalPrefix": ["a", "main"],
-    "hasWildcard": false
+    "hasWildcard": false,
+    "groups": null
   },
   {
     "pattern": "*.kt",
@@ -1165,7 +2039,8 @@
     "matches": true,
     "error": false,
     "literalPrefix": [],
-    "hasWildcard": true
+    "hasWildcard": true,
+    "groups": ["a.b"]
   },
   {
     "pattern": "*.kt",
@@ -1173,7 +2048,8 @@
     "matches": false,
     "error": false,
     "literalPrefix": [],
-    "hasWildcard": true
+    "hasWildcard": true,
+    "groups": null
   },
   {
     "pattern": "*.kt",
@@ -1181,31 +2057,35 @@
     "matches": false,
     "error": false,
     "literalPrefix": [],
-    "hasWildcard": true
+    "hasWildcard": true,
+    "groups": null
   },
   {
-    "pattern": "x\\,y/b/x\\,y/*ore",
-    "path": "x,y/b/x,y/ore",
-    "matches": false,
+    "pattern": "x\\,y/b/{a,b*}/*ore",
+    "path": "x,y/b/bZ/ore",
+    "matches": true,
     "error": false,
-    "literalPrefix": ["x,y", "b", "x,y"],
-    "hasWildcard": true
+    "literalPrefix": ["x,y", "b"],
+    "hasWildcard": true,
+    "groups": [""]
   },
   {
-    "pattern": "x\\,y/b/x\\,y/*ore",
-    "path": "x,y/a/b/x,y/ore",
+    "pattern": "x\\,y/b/{a,b*}/*ore",
+    "path": "x,y/a/b/bZ/ore",
     "matches": false,
     "error": false,
-    "literalPrefix": ["x,y", "b", "x,y"],
-    "hasWildcard": true
+    "literalPrefix": ["x,y", "b"],
+    "hasWildcard": true,
+    "groups": null
   },
   {
-    "pattern": "x\\,y/b/x\\,y/*ore",
-    "path": "x,y/x.kt/x,y/ore",
+    "pattern": "x\\,y/b/{a,b*}/*ore",
+    "path": "x,y/x.kt/bZ/ore",
     "matches": false,
     "error": false,
-    "literalPrefix": ["x,y", "b", "x,y"],
-    "hasWildcard": true
+    "literalPrefix": ["x,y", "b"],
+    "hasWildcard": true,
+    "groups": null
   },
   {
     "pattern": "**",
@@ -1213,7 +2093,8 @@
     "matches": true,
     "error": false,
     "literalPrefix": [],
-    "hasWildcard": true
+    "hasWildcard": true,
+    "groups": ["a"]
   },
   {
     "pattern": "**",
@@ -1221,7 +2102,8 @@
     "matches": true,
     "error": false,
     "literalPrefix": [],
-    "hasWildcard": true
+    "hasWildcard": true,
+    "groups": ["a/extra"]
   },
   {
     "pattern": "**",
@@ -1229,47 +2111,53 @@
     "matches": true,
     "error": false,
     "literalPrefix": [],
-    "hasWildcard": true
+    "hasWildcard": true,
+    "groups": ["kotlin"]
   },
   {
-    "pattern": "*/a\\*b",
-    "path": "a.b/a*b",
+    "pattern": "*/{a,b*}",
+    "path": "a.b/bZ",
     "matches": true,
     "error": false,
     "literalPrefix": [],
-    "hasWildcard": true
+    "hasWildcard": true,
+    "groups": ["a.b"]
   },
   {
-    "pattern": "*/a\\*b",
+    "pattern": "*/{a,b*}",
     "path": "a.b/useCase",
     "matches": false,
     "error": false,
     "literalPrefix": [],
-    "hasWildcard": true
+    "hasWildcard": true,
+    "groups": null
   },
   {
-    "pattern": "*/a\\*b",
-    "path": "a.b/a*b/x.kt",
+    "pattern": "*/{a,b*}",
+    "path": "a.b/bZ/x.kt",
     "matches": false,
     "error": false,
     "literalPrefix": [],
-    "hasWildcard": true
+    "hasWildcard": true,
+    "groups": null
   },
   {
-    "pattern": "*/a\\*b",
-    "path": "X/a*b",
+    "pattern": "*/{a,b*}",
+    "path": "X/bZ",
     "matches": true,
     "error": false,
     "literalPrefix": [],
-    "hasWildcard": true
+    "hasWildcard": true,
+    "groups": ["X"]
   },
   {
     "pattern": "a*/core/da*",
     "path": "a/core/daa.b",
-    "matches": false,
+    "matches": true,
     "error": false,
     "literalPrefix": [],
-    "hasWildcard": true
+    "hasWildcard": true,
+    "groups": ["", "a.b"]
   },
   {
     "pattern": "a*/core/da*",
@@ -1277,7 +2165,8 @@
     "matches": false,
     "error": false,
     "literalPrefix": [],
-    "hasWildcard": true
+    "hasWildcard": true,
+    "groups": null
   },
   {
     "pattern": "a*/core/da*",
@@ -1285,15 +2174,17 @@
     "matches": false,
     "error": false,
     "literalPrefix": [],
-    "hasWildcard": true
+    "hasWildcard": true,
+    "groups": null
   },
   {
     "pattern": "a*/core/da*",
     "path": "a/core/da",
-    "matches": false,
+    "matches": true,
     "error": false,
     "literalPrefix": [],
-    "hasWildcard": true
+    "hasWildcard": true,
+    "groups": ["", ""]
   },
   {
     "pattern": "**/*/**",
@@ -1301,7 +2192,8 @@
     "matches": true,
     "error": false,
     "literalPrefix": [],
-    "hasWildcard": true
+    "hasWildcard": true,
+    "groups": ["a/a.b/Foo.kt", "kotlin", ""]
   },
   {
     "pattern": "**/*/**",
@@ -1309,7 +2201,8 @@
     "matches": true,
     "error": false,
     "literalPrefix": [],
-    "hasWildcard": true
+    "hasWildcard": true,
+    "groups": ["a/useCase/a.b/Foo.kt", "kotlin", ""]
   },
   {
     "pattern": "**/*/**",
@@ -1317,7 +2210,8 @@
     "matches": true,
     "error": false,
     "literalPrefix": [],
-    "hasWildcard": true
+    "hasWildcard": true,
+    "groups": ["a.b/Foo.kt", "kotlin", ""]
   },
   {
     "pattern": "**/*/**",
@@ -1325,7 +2219,8 @@
     "matches": true,
     "error": false,
     "literalPrefix": [],
-    "hasWildcard": true
+    "hasWildcard": true,
+    "groups": ["b/X", "x.kt", ""]
   },
   {
     "pattern": "a/data",
@@ -1333,7 +2228,8 @@
     "matches": true,
     "error": false,
     "literalPrefix": ["a", "data"],
-    "hasWildcard": false
+    "hasWildcard": false,
+    "groups": []
   },
   {
     "pattern": "a/data",
@@ -1341,7 +2237,8 @@
     "matches": false,
     "error": false,
     "literalPrefix": ["a", "data"],
-    "hasWildcard": false
+    "hasWildcard": false,
+    "groups": null
   },
   {
     "pattern": "a/data",
@@ -1349,39 +2246,44 @@
     "matches": false,
     "error": false,
     "literalPrefix": ["a", "data"],
-    "hasWildcard": false
+    "hasWildcard": false,
+    "groups": null
   },
   {
-    "pattern": "ドメイン/b/ドメイン/core",
-    "path": "ドメイン/b/ドメイン/core",
+    "pattern": "[a-c]x/b/[a-c]x/core",
+    "path": "bx/b/bx/core",
     "matches": true,
     "error": false,
-    "literalPrefix": ["ドメイン", "b", "ドメイン", "core"],
-    "hasWildcard": false
+    "literalPrefix": [],
+    "hasWildcard": true,
+    "groups": []
   },
   {
-    "pattern": "ドメイン/b/ドメイン/core",
-    "path": "ドメイン/core/ドメイン/core",
+    "pattern": "[a-c]x/b/[a-c]x/core",
+    "path": "bx/core/bx/core",
     "matches": false,
     "error": false,
-    "literalPrefix": ["ドメイン", "b", "ドメイン", "core"],
-    "hasWildcard": false
+    "literalPrefix": [],
+    "hasWildcard": true,
+    "groups": null
   },
   {
-    "pattern": "ドメイン/b/ドメイン/core",
-    "path": "ドメイン/b/core",
+    "pattern": "[a-c]x/b/[a-c]x/core",
+    "path": "bx/b/core",
     "matches": false,
     "error": false,
-    "literalPrefix": ["ドメイン", "b", "ドメイン", "core"],
-    "hasWildcard": false
+    "literalPrefix": [],
+    "hasWildcard": true,
+    "groups": null
   },
   {
     "pattern": "kotlin/*ata/**/useCase",
     "path": "kotlin/ata/b/useCase",
-    "matches": false,
+    "matches": true,
     "error": false,
     "literalPrefix": ["kotlin"],
-    "hasWildcard": true
+    "hasWildcard": true,
+    "groups": ["", "b"]
   },
   {
     "pattern": "kotlin/*ata/**/useCase",
@@ -1389,15 +2291,17 @@
     "matches": false,
     "error": false,
     "literalPrefix": ["kotlin"],
-    "hasWildcard": true
+    "hasWildcard": true,
+    "groups": null
   },
   {
     "pattern": "kotlin/*ata/**/useCase",
     "path": "kotlin/ata/b/kotlin/useCase",
-    "matches": false,
+    "matches": true,
     "error": false,
     "literalPrefix": ["kotlin"],
-    "hasWildcard": true
+    "hasWildcard": true,
+    "groups": ["", "b/kotlin"]
   },
   {
     "pattern": "kotlin/*ata/**/useCase",
@@ -1405,7 +2309,8 @@
     "matches": true,
     "error": false,
     "literalPrefix": ["kotlin"],
-    "hasWildcard": true
+    "hasWildcard": true,
+    "groups": ["a.b", "main"]
   },
   {
     "pattern": "kotlin/*/*/ma*",
@@ -1413,7 +2318,8 @@
     "matches": true,
     "error": false,
     "literalPrefix": ["kotlin"],
-    "hasWildcard": true
+    "hasWildcard": true,
+    "groups": ["a.b", "Home", "a.b"]
   },
   {
     "pattern": "kotlin/*/*/ma*",
@@ -1421,7 +2327,8 @@
     "matches": false,
     "error": false,
     "literalPrefix": ["kotlin"],
-    "hasWildcard": true
+    "hasWildcard": true,
+    "groups": null
   },
   {
     "pattern": "kotlin/*/*/ma*",
@@ -1429,15 +2336,17 @@
     "matches": false,
     "error": false,
     "literalPrefix": ["kotlin"],
-    "hasWildcard": true
+    "hasWildcard": true,
+    "groups": null
   },
   {
     "pattern": "kotlin/*/*/ma*",
     "path": "kotlin/a.b/X/ma",
-    "matches": false,
+    "matches": true,
     "error": false,
     "literalPrefix": ["kotlin"],
-    "hasWildcard": true
+    "hasWildcard": true,
+    "groups": ["a.b", "X", ""]
   },
   {
     "pattern": "*/*/ma*",
@@ -1445,7 +2354,8 @@
     "matches": true,
     "error": false,
     "literalPrefix": [],
-    "hasWildcard": true
+    "hasWildcard": true,
+    "groups": ["a.b", "a.b", "Home"]
   },
   {
     "pattern": "*/*/ma*",
@@ -1453,7 +2363,8 @@
     "matches": false,
     "error": false,
     "literalPrefix": [],
-    "hasWildcard": true
+    "hasWildcard": true,
+    "groups": null
   },
   {
     "pattern": "*/*/ma*",
@@ -1461,47 +2372,53 @@
     "matches": false,
     "error": false,
     "literalPrefix": [],
-    "hasWildcard": true
+    "hasWildcard": true,
+    "groups": null
   },
   {
     "pattern": "*/*/ma*",
     "path": "X/Home/ma",
-    "matches": false,
+    "matches": true,
     "error": false,
     "literalPrefix": [],
-    "hasWildcard": true
+    "hasWildcard": true,
+    "groups": ["X", "Home", ""]
   },
   {
-    "pattern": "b/a\\*b/us*",
-    "path": "b/a*b/usX",
+    "pattern": "b/[!a]x/us*",
+    "path": "b/bx/usX",
     "matches": true,
     "error": false,
-    "literalPrefix": ["b", "a*b"],
-    "hasWildcard": true
+    "literalPrefix": ["b"],
+    "hasWildcard": true,
+    "groups": ["X"]
   },
   {
-    "pattern": "b/a\\*b/us*",
-    "path": "b/a*b/usX/useCase",
+    "pattern": "b/[!a]x/us*",
+    "path": "b/bx/usX/useCase",
     "matches": false,
     "error": false,
-    "literalPrefix": ["b", "a*b"],
-    "hasWildcard": true
+    "literalPrefix": ["b"],
+    "hasWildcard": true,
+    "groups": null
   },
   {
-    "pattern": "b/a\\*b/us*",
-    "path": "b/a*b/usX/core",
+    "pattern": "b/[!a]x/us*",
+    "path": "b/bx/usX/core",
     "matches": false,
     "error": false,
-    "literalPrefix": ["b", "a*b"],
-    "hasWildcard": true
+    "literalPrefix": ["b"],
+    "hasWildcard": true,
+    "groups": null
   },
   {
-    "pattern": "b/a\\*b/us*",
-    "path": "b/a*b/usHome",
+    "pattern": "b/[!a]x/us*",
+    "path": "b/bx/usHome",
     "matches": true,
     "error": false,
-    "literalPrefix": ["b", "a*b"],
-    "hasWildcard": true
+    "literalPrefix": ["b"],
+    "hasWildcard": true,
+    "groups": ["Home"]
   },
   {
     "pattern": "*/b*",
@@ -1509,7 +2426,8 @@
     "matches": true,
     "error": false,
     "literalPrefix": [],
-    "hasWildcard": true
+    "hasWildcard": true,
+    "groups": ["a.b", "Home"]
   },
   {
     "pattern": "*/b*",
@@ -1517,7 +2435,8 @@
     "matches": false,
     "error": false,
     "literalPrefix": [],
-    "hasWildcard": true
+    "hasWildcard": true,
+    "groups": null
   },
   {
     "pattern": "*/b*",
@@ -1525,7 +2444,8 @@
     "matches": false,
     "error": false,
     "literalPrefix": [],
-    "hasWildcard": true
+    "hasWildcard": true,
+    "groups": null
   },
   {
     "pattern": "*/b*",
@@ -1533,55 +2453,62 @@
     "matches": true,
     "error": false,
     "literalPrefix": [],
-    "hasWildcard": true
+    "hasWildcard": true,
+    "groups": ["Home", "a.b"]
   },
   {
-    "pattern": "main/x\\,y/a\\*b",
-    "path": "main/x,y/a*b",
+    "pattern": "main/[!a]x/x\\,y",
+    "path": "main/bx/x,y",
     "matches": true,
     "error": false,
-    "literalPrefix": ["main", "x,y", "a*b"],
-    "hasWildcard": false
+    "literalPrefix": ["main"],
+    "hasWildcard": true,
+    "groups": []
   },
   {
-    "pattern": "main/x\\,y/a\\*b",
-    "path": "main/x,y/b/a*b",
+    "pattern": "main/[!a]x/x\\,y",
+    "path": "main/bx/b/x,y",
     "matches": false,
     "error": false,
-    "literalPrefix": ["main", "x,y", "a*b"],
-    "hasWildcard": false
+    "literalPrefix": ["main"],
+    "hasWildcard": true,
+    "groups": null
   },
   {
-    "pattern": "main/x\\,y/a\\*b",
-    "path": "main/core/a*b",
+    "pattern": "main/[!a]x/x\\,y",
+    "path": "main/core/x,y",
     "matches": false,
     "error": false,
-    "literalPrefix": ["main", "x,y", "a*b"],
-    "hasWildcard": false
+    "literalPrefix": ["main"],
+    "hasWildcard": true,
+    "groups": null
   },
   {
-    "pattern": "ドメイン",
-    "path": "ドメイン",
+    "pattern": "a\\*b",
+    "path": "a*b",
     "matches": true,
     "error": false,
-    "literalPrefix": ["ドメイン"],
-    "hasWildcard": false
+    "literalPrefix": ["a*b"],
+    "hasWildcard": false,
+    "groups": []
   },
   {
-    "pattern": "ドメイン",
+    "pattern": "a\\*b",
     "path": "data",
     "matches": false,
     "error": false,
-    "literalPrefix": ["ドメイン"],
-    "hasWildcard": false
+    "literalPrefix": ["a*b"],
+    "hasWildcard": false,
+    "groups": null
   },
   {
-    "pattern": "ドメイン",
-    "path": "ドメイン/extra",
+    "pattern": "a\\*b",
+    "path": "a*b/extra",
     "matches": false,
     "error": false,
-    "literalPrefix": ["ドメイン"],
-    "hasWildcard": false
+    "literalPrefix": ["a*b"],
+    "hasWildcard": false,
+    "groups": null
   },
   {
     "pattern": "src/kotlin/a*",
@@ -1589,7 +2516,8 @@
     "matches": true,
     "error": false,
     "literalPrefix": ["src", "kotlin"],
-    "hasWildcard": true
+    "hasWildcard": true,
+    "groups": ["a.b"]
   },
   {
     "pattern": "src/kotlin/a*",
@@ -1597,7 +2525,8 @@
     "matches": false,
     "error": false,
     "literalPrefix": ["src", "kotlin"],
-    "hasWildcard": true
+    "hasWildcard": true,
+    "groups": null
   },
   {
     "pattern": "src/kotlin/a*",
@@ -1605,23 +2534,26 @@
     "matches": false,
     "error": false,
     "literalPrefix": ["src", "kotlin"],
-    "hasWildcard": true
+    "hasWildcard": true,
+    "groups": null
   },
   {
     "pattern": "src/**/ko*",
     "path": "src/data/main/ko",
-    "matches": false,
+    "matches": true,
     "error": false,
     "literalPrefix": ["src"],
-    "hasWildcard": true
+    "hasWildcard": true,
+    "groups": ["data/main", ""]
   },
   {
     "pattern": "src/**/ko*",
     "path": "src/main/ko",
-    "matches": false,
+    "matches": true,
     "error": false,
     "literalPrefix": ["src"],
-    "hasWildcard": true
+    "hasWildcard": true,
+    "groups": ["main", ""]
   },
   {
     "pattern": "src/**/ko*",
@@ -1629,7 +2561,8 @@
     "matches": false,
     "error": false,
     "literalPrefix": ["src"],
-    "hasWildcard": true
+    "hasWildcard": true,
+    "groups": null
   },
   {
     "pattern": "src/**/ko*",
@@ -1637,31 +2570,35 @@
     "matches": true,
     "error": false,
     "literalPrefix": ["src"],
-    "hasWildcard": true
+    "hasWildcard": true,
+    "groups": ["x.kt", "X"]
   },
   {
     "pattern": "**/*ore",
     "path": "core/b/ore",
-    "matches": false,
+    "matches": true,
     "error": false,
     "literalPrefix": [],
-    "hasWildcard": true
+    "hasWildcard": true,
+    "groups": ["core/b", ""]
   },
   {
     "pattern": "**/*ore",
     "path": "core/b/data/ore",
-    "matches": false,
+    "matches": true,
     "error": false,
     "literalPrefix": [],
-    "hasWildcard": true
+    "hasWildcard": true,
+    "groups": ["core/b/data", ""]
   },
   {
     "pattern": "**/*ore",
     "path": "main/core/b/ore",
-    "matches": false,
+    "matches": true,
     "error": false,
     "literalPrefix": [],
-    "hasWildcard": true
+    "hasWildcard": true,
+    "groups": ["main/core/b", ""]
   },
   {
     "pattern": "**/*ore",
@@ -1669,63 +2606,71 @@
     "matches": true,
     "error": false,
     "literalPrefix": [],
-    "hasWildcard": true
+    "hasWildcard": true,
+    "groups": ["", "a.b"]
   },
   {
-    "pattern": "a\\*b/*",
-    "path": "a*b/a.b",
+    "pattern": "[a-c]x/*",
+    "path": "bx/a.b",
     "matches": true,
     "error": false,
-    "literalPrefix": ["a*b"],
-    "hasWildcard": true
+    "literalPrefix": [],
+    "hasWildcard": true,
+    "groups": ["a.b"]
   },
   {
-    "pattern": "a\\*b/*",
-    "path": "a*b",
+    "pattern": "[a-c]x/*",
+    "path": "bx",
     "matches": false,
     "error": false,
-    "literalPrefix": ["a*b"],
-    "hasWildcard": true
+    "literalPrefix": [],
+    "hasWildcard": true,
+    "groups": null
   },
   {
-    "pattern": "a\\*b/*",
-    "path": "a*b/a.b/core",
+    "pattern": "[a-c]x/*",
+    "path": "bx/a.b/core",
     "matches": false,
     "error": false,
-    "literalPrefix": ["a*b"],
-    "hasWildcard": true
+    "literalPrefix": [],
+    "hasWildcard": true,
+    "groups": null
   },
   {
-    "pattern": "a\\*b/*",
-    "path": "a*b/X",
+    "pattern": "[a-c]x/*",
+    "path": "bx/X",
     "matches": true,
     "error": false,
-    "literalPrefix": ["a*b"],
-    "hasWildcard": true
+    "literalPrefix": [],
+    "hasWildcard": true,
+    "groups": ["X"]
   },
   {
-    "pattern": "a\\*b/x.kt",
-    "path": "a*b/x.kt",
+    "pattern": "x\\,y/x.kt",
+    "path": "x,y/x.kt",
     "matches": true,
     "error": false,
-    "literalPrefix": ["a*b", "x.kt"],
-    "hasWildcard": false
+    "literalPrefix": ["x,y", "x.kt"],
+    "hasWildcard": false,
+    "groups": []
   },
   {
-    "pattern": "a\\*b/x.kt",
-    "path": "a*b/x.kt/b",
+    "pattern": "x\\,y/x.kt",
+    "path": "x,y/x.kt/b",
     "matches": false,
     "error": false,
-    "literalPrefix": ["a*b", "x.kt"],
-    "hasWildcard": false
+    "literalPrefix": ["x,y", "x.kt"],
+    "hasWildcard": false,
+    "groups": null
   },
   {
-    "pattern": "a\\*b/x.kt",
-    "path": "a*b",
+    "pattern": "x\\,y/x.kt",
+    "path": "x,y",
     "matches": false,
     "error": false,
-    "literalPrefix": ["a*b", "x.kt"],
-    "hasWildcard": false
+    "literalPrefix": ["x,y", "x.kt"],
+    "hasWildcard": false,
+    "groups": null
   },
   {
     "pattern": "a/b*/sr*",
@@ -1733,7 +2678,8 @@
     "matches": true,
     "error": false,
     "literalPrefix": ["a"],
-    "hasWildcard": true
+    "hasWildcard": true,
+    "groups": ["Home", "X"]
   },
   {
     "pattern": "a/b*/sr*",
@@ -1741,7 +2687,8 @@
     "matches": false,
     "error": false,
     "literalPrefix": ["a"],
-    "hasWildcard": true
+    "hasWildcard": true,
+    "groups": null
   },
   {
     "pattern": "a/b*/sr*",
@@ -1749,7 +2696,8 @@
     "matches": false,
     "error": false,
     "literalPrefix": ["a"],
-    "hasWildcard": true
+    "hasWildcard": true,
+    "groups": null
   },
   {
     "pattern": "a/b*/sr*",
@@ -1757,63 +2705,71 @@
     "matches": true,
     "error": false,
     "literalPrefix": ["a"],
-    "hasWildcard": true
+    "hasWildcard": true,
+    "groups": ["X", "X"]
   },
   {
-    "pattern": "x\\,y/**",
-    "path": "x,y/useCase/data",
+    "pattern": "[!a]x/**",
+    "path": "bx/useCase/data",
     "matches": true,
     "error": false,
-    "literalPrefix": ["x,y"],
-    "hasWildcard": true
+    "literalPrefix": [],
+    "hasWildcard": true,
+    "groups": ["useCase/data"]
   },
   {
-    "pattern": "x\\,y/**",
-    "path": "x,y/useCase/data/data",
+    "pattern": "[!a]x/**",
+    "path": "bx/useCase/data/data",
     "matches": true,
     "error": false,
-    "literalPrefix": ["x,y"],
-    "hasWildcard": true
+    "literalPrefix": [],
+    "hasWildcard": true,
+    "groups": ["useCase/data/data"]
   },
   {
-    "pattern": "x\\,y/**",
-    "path": "x,y/useCase/data/core",
+    "pattern": "[!a]x/**",
+    "path": "bx/useCase/data/core",
     "matches": true,
     "error": false,
-    "literalPrefix": ["x,y"],
-    "hasWildcard": true
+    "literalPrefix": [],
+    "hasWildcard": true,
+    "groups": ["useCase/data/core"]
   },
   {
-    "pattern": "x\\,y/**",
-    "path": "x,y/kotlin",
+    "pattern": "[!a]x/**",
+    "path": "bx/kotlin",
     "matches": true,
     "error": false,
-    "literalPrefix": ["x,y"],
-    "hasWildcard": true
+    "literalPrefix": [],
+    "hasWildcard": true,
+    "groups": ["kotlin"]
   },
   {
-    "pattern": "**/sr*/a\\*b",
-    "path": "sr/a*b",
+    "pattern": "**/sr*/ドメイン",
+    "path": "sr/ドメイン",
+    "matches": true,
+    "error": false,
+    "literalPrefix": [],
+    "hasWildcard": true,
+    "groups": ["", ""]
+  },
+  {
+    "pattern": "**/sr*/ドメイン",
+    "path": "ドメイン",
     "matches": false,
     "error": false,
     "literalPrefix": [],
-    "hasWildcard": true
+    "hasWildcard": true,
+    "groups": null
   },
   {
-    "pattern": "**/sr*/a\\*b",
-    "path": "a*b",
-    "matches": false,
-    "error": false,
-    "literalPrefix": [],
-    "hasWildcard": true
-  },
-  {
-    "pattern": "**/sr*/a\\*b",
-    "path": "srX/a*b",
+    "pattern": "**/sr*/ドメイン",
+    "path": "srX/ドメイン",
     "matches": true,
     "error": false,
     "literalPrefix": [],
-    "hasWildcard": true
+    "hasWildcard": true,
+    "groups": ["", "X"]
   },
   {
     "pattern": "**/b",
@@ -1821,7 +2777,8 @@
     "matches": true,
     "error": false,
     "literalPrefix": [],
-    "hasWildcard": true
+    "hasWildcard": true,
+    "groups": ["a/a"]
   },
   {
     "pattern": "**/b",
@@ -1829,7 +2786,8 @@
     "matches": true,
     "error": false,
     "literalPrefix": [],
-    "hasWildcard": true
+    "hasWildcard": true,
+    "groups": ["a"]
   },
   {
     "pattern": "**/b",
@@ -1837,7 +2795,8 @@
     "matches": true,
     "error": false,
     "literalPrefix": [],
-    "hasWildcard": true
+    "hasWildcard": true,
+    "groups": ["src/a"]
   },
   {
     "pattern": "**/b",
@@ -1845,7 +2804,8 @@
     "matches": true,
     "error": false,
     "literalPrefix": [],
-    "hasWildcard": true
+    "hasWildcard": true,
+    "groups": ["kotlin"]
   },
   {
     "pattern": "*/*",
@@ -1853,7 +2813,8 @@
     "matches": true,
     "error": false,
     "literalPrefix": [],
-    "hasWildcard": true
+    "hasWildcard": true,
+    "groups": ["a.b", "X"]
   },
   {
     "pattern": "*/*",
@@ -1861,7 +2822,8 @@
     "matches": false,
     "error": false,
     "literalPrefix": [],
-    "hasWildcard": true
+    "hasWildcard": true,
+    "groups": null
   },
   {
     "pattern": "*/*",
@@ -1869,7 +2831,8 @@
     "matches": true,
     "error": false,
     "literalPrefix": [],
-    "hasWildcard": true
+    "hasWildcard": true,
+    "groups": ["kotlin", "X"]
   },
   {
     "pattern": "*/*",
@@ -1877,7 +2840,8 @@
     "matches": true,
     "error": false,
     "literalPrefix": [],
-    "hasWildcard": true
+    "hasWildcard": true,
+    "groups": ["Home", "Home"]
   },
   {
     "pattern": "kotlin",
@@ -1885,7 +2849,8 @@
     "matches": true,
     "error": false,
     "literalPrefix": ["kotlin"],
-    "hasWildcard": false
+    "hasWildcard": false,
+    "groups": []
   },
   {
     "pattern": "kotlin",
@@ -1893,7 +2858,8 @@
     "matches": false,
     "error": false,
     "literalPrefix": ["kotlin"],
-    "hasWildcard": false
+    "hasWildcard": false,
+    "groups": null
   },
   {
     "pattern": "kotlin",
@@ -1901,6 +2867,7 @@
     "matches": false,
     "error": false,
     "literalPrefix": ["kotlin"],
-    "hasWildcard": false
+    "hasWildcard": false,
+    "groups": null
   }
 ]

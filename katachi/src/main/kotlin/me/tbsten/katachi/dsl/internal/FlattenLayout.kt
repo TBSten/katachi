@@ -626,7 +626,7 @@ private fun requireTemplatesAreWellFormed(role: Role, nodes: Set<LayoutNode>) {
 }
 
 /**
- * Whether [this] or any of its ancestors, up to the root, holds a `*` or `**` no capture names.
+ * Whether [this] or any of its ancestors, up to the root, holds a `*`, `**`, `?`, `[...]` or `{...}` no capture names.
  *
  * A module key's wildcard is checked separately from an ordinary segment's: by the time its
  * directory reaches [LayoutNode.segment], every capture token in it -- named or not -- has
@@ -639,7 +639,10 @@ private fun LayoutNode.hasUnnamedWildcardInChain(): Boolean {
     var current: LayoutNode? = this
     while (current != null) {
         val unnamed = if (current.place) {
-            '*' in current.segment && current.moduleCaptureNames.let { it == null || it.any { name -> name == null } }
+            GlobLexer.hasGlobWildcard(current.segment) && (
+                GlobLexer.hasNonCapturingWildcard(current.segment) ||
+                    current.moduleCaptureNames.let { it == null || it.any { name -> name == null } }
+                )
         } else {
             current.hasOwnUnnamedWildcard()
         }
@@ -651,8 +654,8 @@ private fun LayoutNode.hasUnnamedWildcardInChain(): Boolean {
 
 /**
  * Whether this one node's own [LayoutNode.segment] holds a `*` [LayoutNode.captureSegment] does
- * not account for: a plain `**` (never nameable), or more `*` characters than there are
- * captures. A derived capture counts as named: a template fills it from its plain capture's
+ * not account for: a plain `**` (never nameable), a `?`, `[...]` or `{...}` (never nameable), or more
+ * capturing `*` than there are captures. A derived capture counts as named: a template fills it from its plain capture's
  * value, so nothing is left for a run to guess.
  *
  * The count, not an exact character-by-character match, is what keeps this simple for the common
@@ -662,9 +665,10 @@ private fun LayoutNode.hasUnnamedWildcardInChain(): Boolean {
  */
 private fun LayoutNode.hasOwnUnnamedWildcard(): Boolean {
     if (segment == "**") return true
-    val starCount = segment.countUnescapedWildcards()
+    // `?`, `[...]` and `{...}` cannot be given a name, so any of them is a wildcard nothing names.
+    if (GlobLexer.hasNonCapturingWildcard(segment)) return true
     val namedCount = captureSegment?.captures?.size ?: 0
-    return starCount > namedCount
+    return GlobLexer.capturingStarCount(segment) > namedCount
 }
 
 /** [LayoutNode.pathFromDeclaration], with every capture shown as `${capture("name")}` instead of `*`. */

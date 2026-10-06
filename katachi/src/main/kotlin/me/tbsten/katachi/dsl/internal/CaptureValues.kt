@@ -125,7 +125,9 @@ internal fun LayoutEntry.captureMismatchOf(path: String): CaptureMismatchDetail?
 /** [path] itself for a file entry, its directory for an `anyFile()` entry, `null` for a kind that names no file. */
 private fun LayoutEntry.matchTargetOf(path: String): String? = when (kind) {
     LayoutEntryKind.File -> path
-    LayoutEntryKind.AnyFile -> path.substringBeforeLast('/', missingDelimiterValue = "")
+    // A file at the root has no directory to match: the root is no directory a role can claim,
+    // and an empty one would be matched by a `*`, which no real level is.
+    LayoutEntryKind.AnyFile -> if ('/' in path) path.substringBeforeLast('/') else null
     else -> null
 }
 
@@ -175,27 +177,30 @@ private fun LayoutEntry.mismatchOf(variant: LayoutCaptures, path: String, groups
     }
     if (!mismatched) return null
 
-    val expectedPath = if (expectedUnknown) null else expectedPathOf(variant, path, groups, expectedOf)
+    val expectedPath = if (expectedUnknown) null else expectedPathOf(variant, path, expectedOf)
     return CaptureMismatchDetail(variant, details, expectedPath)
 }
 
 /**
- * [path] with every level a bound occurrence sits on filled with its expected value, and every
- * other level, and every unnamed `*`, kept as the file has it. Built from the entry's pattern,
- * the one source that says which `*` each occurrence is.
+ * [path] with the part each bound occurrence matched replaced by its expected value, and every
+ * other character -- unnamed `*` and `**`, `?`, `[...]`, `{...}`, escapes -- kept as the file has it.
+ * The parts are found by where [Glob.matchRanges] says each wildcard matched, so only what a
+ * capture named is ever rewritten.
  */
 private fun LayoutEntry.expectedPathOf(
     variant: LayoutCaptures,
     path: String,
-    groups: List<String>,
     expectedOf: Map<PathCapture, String>,
 ): String {
-    val segments = fillCapturedSegments(
-        path = this.path,
-        captures = variant.pathCaptures,
-        unnamedOf = { segmentIndex, wildcardIndex -> groupValueOf(glob, groups, segmentIndex, wildcardIndex) },
-    ) { capture -> expectedOf[capture] ?: groupValueOf(glob, groups, capture.segmentIndex, capture.wildcardIndex) }
-    val expected = segments.joinToString("/")
+    val target = matchTargetOf(path) ?: return path
+    val ranges = glob.matchRanges(target) ?: return path
+    val replacements = variant.pathCaptures.mapNotNull { capture ->
+        val expected = expectedOf[capture] ?: return@mapNotNull null
+        val range = groupIndexOf(glob, capture.segmentIndex, capture.wildcardIndex)?.let { ranges.getOrNull(it) }
+        range?.let { it to expected }
+    }
+    val expected = replacements.sortedByDescending { it.first.first }
+        .fold(target) { text, (range, value) -> text.replaceRange(range, value) }
     return if (kind == LayoutEntryKind.AnyFile) "$expected/${path.substringAfterLast('/')}" else expected
 }
 
@@ -214,12 +219,14 @@ private inline fun occurrenceValuesOf(
     groupValueOf(glob, groups, levelOf(capture), capture.wildcardIndex)?.let { CaptureOccurrenceValue(capture, it) }
 }
 
-private fun groupValueOf(glob: Glob, groups: List<String>, level: Int, wildcardIndex: Int): String? {
-    val singles = glob.groupKinds.indices.filter {
+private fun groupValueOf(glob: Glob, groups: List<String>, level: Int, wildcardIndex: Int): String? =
+    groupIndexOf(glob, level, wildcardIndex)?.let { groups.getOrNull(it) }
+
+/** The index into [Glob.groupKinds] of the [wildcardIndex]-th `*` of [level], or `null` when it has fewer. */
+private fun groupIndexOf(glob: Glob, level: Int, wildcardIndex: Int): Int? =
+    glob.groupKinds.indices.filter {
         glob.groupKinds[it] == GlobGroupKind.Single && glob.groupSegments[it] == level
-    }
-    return singles.getOrNull(wildcardIndex)?.let { groups.getOrNull(it) }
-}
+    }.getOrNull(wildcardIndex)
 
 /** The 0-based level of the last segment of this entry's module directory, or `-1` for the root project or no module. */
 private fun LayoutEntry.moduleDirectoryLevel(): Int {

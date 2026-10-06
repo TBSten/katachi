@@ -13,7 +13,7 @@ import me.tbsten.katachi.dsl.DeclarationSite
  * lands. A `*` no capture names stays as written unless [unnamedOf] gives it a value, by level
  * and by its index among that level's `*`s -- the check fills those with what the file holds.
  *
- * An escaped `\*` is not a wildcard and is copied as written, as [Glob] reads it.
+ * An escaped `\*`, and a `*` inside `{...}` or `[...]`, is not a captured wildcard and is copied as written, as [Glob] reads it.
  */
 internal fun fillCapturedSegments(
     path: String,
@@ -27,7 +27,7 @@ internal fun fillCapturedSegments(
         if (segmentIndex !in segments.indices) continue
         val named = HashMap<Int, String>()
         for (capture in onSegment) valueOf(capture)?.let { named[capture.wildcardIndex] = it }
-        segments[segmentIndex] = fillSegment(segments[segmentIndex]) { wildcardIndex ->
+        segments[segmentIndex] = GlobLexer.replaceCapturingStars(segments[segmentIndex]) { wildcardIndex ->
             named[wildcardIndex] ?: unnamedOf(segmentIndex, wildcardIndex)
         }
     }
@@ -72,30 +72,6 @@ internal fun fillCapturedPath(
 /** [modulePattern] as [ModulePattern.conventionalDirectory] spells it, without compiling it again. */
 private fun conventionalDirectoryOf(modulePattern: String): String =
     modulePattern.removePrefix(":").replace(':', '/')
-
-/** [segment] with its n-th unescaped `*` replaced by what [valueOf] answers for n, or kept when that is `null`. */
-private inline fun fillSegment(segment: String, valueOf: (wildcardIndex: Int) -> String?): String = buildString {
-    var wildcardIndex = 0
-    var index = 0
-    while (index < segment.length) {
-        val character = segment[index]
-        when {
-            character == '\\' && index + 1 < segment.length -> {
-                append(character).append(segment[index + 1])
-                index += 2
-            }
-            character == '*' -> {
-                append(valueOf(wildcardIndex) ?: "*")
-                wildcardIndex++
-                index++
-            }
-            else -> {
-                append(character)
-                index++
-            }
-        }
-    }
-}
 
 /**
  * What [this] reads as in a preview, a message or a report's Pattern line: `${name}` for a plain

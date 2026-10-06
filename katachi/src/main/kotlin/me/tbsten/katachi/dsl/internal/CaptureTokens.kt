@@ -2,6 +2,7 @@ package me.tbsten.katachi.dsl.internal
 
 import me.tbsten.katachi.dsl.DeclarationSite
 import me.tbsten.katachi.dsl.KatachiAdjacentCaptureException
+import me.tbsten.katachi.dsl.KatachiCaptureInsideBracketsException
 import me.tbsten.katachi.dsl.KatachiCaptureTransformOnMixedTextException
 import me.tbsten.katachi.dsl.KatachiChainedCaptureTransformException
 import me.tbsten.katachi.dsl.KatachiStrayCaptureTokenException
@@ -141,13 +142,16 @@ internal class CaptureSegment(
 ) {
     /** The captures of this segment, in the order they appear, each with its `*`'s index. */
     val captures: List<SegmentCapture> = buildList {
-        var wildcardIndex = 0
+        // Each capture is the `*` at its own offset in [globSegment]; the `*` before it that
+        // stand for a value are the ones the glob lexer calls capturing.
+        val stars = GlobLexer.scanLeniently(globSegmentOf(parts)).filterIsInstance<GlobToken.Star>()
+        var offset = 0
         for (part in parts) {
             when (part) {
-                is SegmentPart.Literal -> wildcardIndex += part.text.countUnescapedWildcards()
+                is SegmentPart.Literal -> offset += part.text.length
                 is SegmentPart.Capture -> {
-                    add(SegmentCapture(part.name, part.transform, wildcardIndex))
-                    wildcardIndex++
+                    add(SegmentCapture(part.name, part.transform, stars.count { it.capturing && it.start < offset }))
+                    offset++
                 }
             }
         }
@@ -157,12 +161,7 @@ internal class CaptureSegment(
     val names: List<String> = captures.map { it.name }
 
     /** [parts], with every capture read as a plain `*` -- what the glob compiler is given. */
-    val globSegment: String = parts.joinToString("") { part ->
-        when (part) {
-            is SegmentPart.Literal -> part.text
-            is SegmentPart.Capture -> "*"
-        }
-    }
+    val globSegment: String = globSegmentOf(parts)
 
     /** For a message: every token shown as `${capture("name")}` (`.pascalCase` kept), exactly as it was written. */
     fun display(): String = parts.joinToString("") { part ->
@@ -173,6 +172,13 @@ internal class CaptureSegment(
     }
 
     override fun toString(): String = "CaptureSegment(${display()})"
+}
+
+private fun globSegmentOf(parts: List<SegmentPart>): String = parts.joinToString("") { part ->
+    when (part) {
+        is SegmentPart.Literal -> part.text
+        is SegmentPart.Capture -> "*"
+    }
 }
 
 /**
@@ -217,29 +223,39 @@ internal fun parseCaptureSegment(segment: String, declaredAt: DeclarationSite): 
     }
     if (literal.isNotEmpty()) parts += SegmentPart.Literal(literal.toString())
     val result = CaptureSegment(parts)
+    requireNoCapturesInsideBrackets(result, declaredAt)
     requireNoAdjacentCaptures(result, declaredAt)
     return result
 }
 
 /**
- * The `*`s of [this] that [Glob] would read as a wildcard -- every `*` except one written
- * `\*`, which [Glob]'s own escaping (`GLOB_ESCAPABLE`) reads as the literal character instead.
- * A plain `count { it == '*' }` would count that one too.
+ * Rejects a token that [GlobLexer] reads inside `{...}` or `[...]`: a `*` there is never handed
+ * back as a value, so the name could not be read.
+ *
+ * @throws KatachiCaptureInsideBracketsException when a token sits inside brackets.
  */
-internal fun String.countUnescapedWildcards(): Int {
-    var count = 0
-    var index = 0
-    while (index < length) {
-        when (this[index]) {
-            '\\' -> index += 2
-            '*' -> {
-                count++
-                index++
+private fun requireNoCapturesInsideBrackets(segment: CaptureSegment, declaredAt: DeclarationSite) {
+    val tokens = GlobLexer.scanLeniently(segment.globSegment)
+    var offset = 0
+    for (part in segment.parts) {
+        when (part) {
+            is SegmentPart.Literal -> offset += part.text.length
+            is SegmentPart.Capture -> {
+                val enclosing = tokens.firstOrNull {
+                    (it is GlobToken.Alternation || it is GlobToken.CharClass) && offset >= it.start && offset < it.end
+                }
+                if (enclosing != null) {
+                    throw KatachiCaptureInsideBracketsException(
+                        key = segment.display(),
+                        name = part.name,
+                        opening = if (enclosing is GlobToken.Alternation) '{' else '[',
+                        declaredAt = declaredAt,
+                    )
+                }
+                offset++
             }
-            else -> index++
         }
     }
-    return count
 }
 
 /**

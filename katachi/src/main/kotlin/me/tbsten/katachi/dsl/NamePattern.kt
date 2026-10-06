@@ -6,13 +6,15 @@ import me.tbsten.katachi.dsl.internal.Glob
 import me.tbsten.katachi.dsl.internal.GlobProblem
 
 /**
- * A name or a dotted path, matched the way `layout { }` matches a path: `*` is one level of one
- * character or more, `**` is any number of levels.
+ * A name or a dotted path, matched the way `layout { }` matches a path: `*` is zero characters or
+ * more within one level, `**` is any number of levels, and `?`, `[abc]` and `{a,b}` are one
+ * character, one character of a list and one of a few alternatives.
  *
  * It is the glob of a layout key, opened up for a backend that matches something other than a
  * file path -- a declaration name, an import, a package. A second matcher would drift apart from
- * the first, so this one wraps the same glob: `?`, `{a,b}` and `[abc]` are refused exactly as in
- * a layout key, and `\` makes the next character literal the same way.
+ * the first, so this one wraps the same glob: every wildcard reads as it does in a layout key, a
+ * malformed `{` or `[` is refused the same way, and `\` makes the next character literal.
+ * In a type, a `?` stays the nullable marker rather than a one-character wildcard.
  *
  * The separator says what a level is. With `'.'`, `kotlinx.coroutines.*` matches
  * `kotlinx.coroutines.launch` but not `kotlinx.coroutines.flow.Flow`, and `**` crosses the dots.
@@ -112,15 +114,16 @@ public class NamePattern private constructor(
          * ## Example 1: compile, then match
          * ```kt
          * NamePattern.compile("on*").matches("onRefresh") shouldBe true
-         * shouldThrow<KatachiGlobSyntaxException> { NamePattern.compile("on{Click,Tap}") }
+         * NamePattern.compile("on{Click,Tap}").matches("onTap") shouldBe true
+         * shouldThrow<KatachiGlobSyntaxException> { NamePattern.compile("on{Click") }
          * ```
          *
-         * @param pattern the pattern, with `*` and `**` as its only wildcards.
+         * @param pattern the pattern, in the glob syntax of a layout key.
          * @param separator what one level is split on -- `'.'` for an import or a package --
          *   or `null` for a name, which has no levels.
          * @throws KatachiGlobSyntaxException when [pattern] is empty, has an empty level
-         *   (`a..b`), uses `**` inside a level, uses `?`, `{`, `}`, `[` or `]` unescaped, ends
-         *   a level with a lone `\`, or when [separator] is one of the glob's own characters.
+         *   (`a..b`), uses `**` inside a level, leaves a `{` or `[` unclosed or a `}` or `]`
+         *   unmatched, writes a malformed `[...]` or `{...}`, ends a level with a lone `\`, or when [separator] is one of the glob's own characters.
          */
         public fun compile(pattern: String, separator: Char? = null): NamePattern {
             if (separator != null && separator in GLOB_ESCAPABLE) {

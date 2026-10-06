@@ -208,8 +208,11 @@ public sealed interface LayoutScope : FileConstraintScope {
      * `capture("feature")` of the same path in the same way (see [nameWords]). A different path of
      * the same role may reuse a name freely, and then the two paths only share the one parameter.
      * Two captures may not sit directly next to each other with nothing between them -- see
-     * [KatachiAdjacentCaptureException] -- and a name written where no layout key ever reads it
-     * is refused too, see [KatachiStrayCaptureTokenException].
+     * [KatachiAdjacentCaptureException] -- nor inside `{...}` or `[...]`, see
+     * [KatachiCaptureInsideBracketsException] -- and a name written where no layout key ever
+     * reads it is refused too, see [KatachiStrayCaptureTokenException]. A capture that shares its
+     * level with other characters may take the empty string: `"${capture("name")}Screen"` also
+     * matches `Screen.kt`, with `name` empty.
      *
      * ## Example 1: Naming a whole level, part of one, and tying two levels together
      * ```kt
