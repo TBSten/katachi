@@ -115,21 +115,156 @@ internal sealed interface GlobProblem {
     }
 
     /**
-     * A metacharacter of another tool's glob, refused rather than silently read as a literal.
+     * A `[` that never reaches its `]`.
      *
-     * ## Example 1: a shell-style alternation character
+     * ## Example 1: a `[` with no `]`
      * ```kt
-     * val problem = shouldThrow<KatachiGlobSyntaxException> { Glob.compile("Foo?.kt") }.problem
-     * problem.shouldBeInstanceOf<GlobProblem.RejectedMetacharacter>().character shouldBe '?'
+     * shouldThrow<KatachiGlobSyntaxException> { Glob.compile("a[bc") }.problem.shouldBeInstanceOf<GlobProblem.UnclosedBracket>()
      * ```
      */
-    class RejectedMetacharacter(
+    class UnclosedBracket(
+        val segment: String,
+    ) : GlobProblem {
+        override fun explain(pattern: String): String =
+            "`$pattern` opens `[` in `$segment` and never closes it. `[...]` matches one " +
+                "character and needs its `]`; close it, or write `\\[` for a literal `[`."
+    }
+
+    /**
+     * A `{` that never reaches its `}`.
+     *
+     * ## Example 1: a `{` with no `}`
+     * ```kt
+     * shouldThrow<KatachiGlobSyntaxException> { Glob.compile("a{b,c") }.problem.shouldBeInstanceOf<GlobProblem.UnclosedBrace>()
+     * ```
+     */
+    class UnclosedBrace(
+        val segment: String,
+    ) : GlobProblem {
+        override fun explain(pattern: String): String =
+            "`$pattern` opens `{` in `$segment` and never closes it. `{a,b}` needs its `}`; " +
+                "close it, or write `\\{` for a literal `{`."
+    }
+
+    /**
+     * A `}` or `]` that closes nothing.
+     *
+     * ## Example 1: a lone `]`
+     * ```kt
+     * shouldThrow<KatachiGlobSyntaxException> { Glob.compile("a]") }.problem.shouldBeInstanceOf<GlobProblem.UnmatchedClosing>().character shouldBe ']'
+     * ```
+     */
+    class UnmatchedClosing(
         val character: Char,
     ) : GlobProblem {
         override fun explain(pattern: String): String =
-            "`$pattern` uses `$character`. katachi's glob has only `*` and `**`; write " +
-                "`\\$character` for a literal `$character`, or write one layout key per " +
-                "alternative."
+            "`$pattern` has a `$character` that closes nothing. Write `\\$character` for a " +
+                "literal `$character`."
+    }
+
+    /**
+     * A `[...]` with no character in it.
+     *
+     * ## Example 1: an empty class
+     * ```kt
+     * shouldThrow<KatachiGlobSyntaxException> { Glob.compile("[]") }.problem shouldBe GlobProblem.EmptyCharacterClass
+     * ```
+     */
+    object EmptyCharacterClass : GlobProblem {
+        override fun explain(pattern: String): String =
+            "`$pattern` has a `[...]` with no character in it, which can match nothing. List " +
+                "at least one character, or write `\\[\\]` for the literal text."
+    }
+
+    /**
+     * A range whose first character comes after its last.
+     *
+     * ## Example 1: a reversed range
+     * ```kt
+     * shouldThrow<KatachiGlobSyntaxException> { Glob.compile("[z-a]") }.problem.shouldBeInstanceOf<GlobProblem.ReversedRange>().from shouldBe 'z'
+     * ```
+     */
+    class ReversedRange(
+        val from: Char,
+        val to: Char,
+    ) : GlobProblem {
+        override fun explain(pattern: String): String =
+            "`$pattern` has the range `$from-$to`, whose first character comes after its " +
+                "last. Write it as `$to-$from`."
+    }
+
+    /**
+     * A level separator written inside `[...]`.
+     *
+     * ## Example 1: a separator inside a class
+     * ```kt
+     * shouldThrow<KatachiGlobSyntaxException> { Glob.compile("[a/b]") }.problem.shouldBeInstanceOf<GlobProblem.SeparatorInBrackets>()
+     * ```
+     */
+    class SeparatorInBrackets(
+        val separator: Char,
+    ) : GlobProblem {
+        override fun explain(pattern: String): String =
+            "`$pattern` puts `$separator` inside `[...]`. `[...]` matches one character " +
+                "inside a single level and never the separator; write the levels apart instead."
+    }
+
+    /**
+     * A `{}` that lists no alternative.
+     *
+     * ## Example 1: empty braces
+     * ```kt
+     * shouldThrow<KatachiGlobSyntaxException> { Glob.compile("{}") }.problem shouldBe GlobProblem.EmptyBraces
+     * ```
+     */
+    object EmptyBraces : GlobProblem {
+        override fun explain(pattern: String): String =
+            "`$pattern` has `{}`, which lists no alternative. Write at least one, such as " +
+                "`{a,b}`, or `{,b}` for \"nothing or b\"."
+    }
+
+    /**
+     * A `{` written inside another `{...}`.
+     *
+     * ## Example 1: nested braces
+     * ```kt
+     * shouldThrow<KatachiGlobSyntaxException> { Glob.compile("{a,{b}}") }.problem shouldBe GlobProblem.NestedBraces
+     * ```
+     */
+    object NestedBraces : GlobProblem {
+        override fun explain(pattern: String): String =
+            "`$pattern` opens `{` inside another `{...}`. Alternatives do not nest; write " +
+                "them out in one list, such as `{a,b,c}`."
+    }
+
+    /**
+     * A `**` written inside `{...}`.
+     *
+     * ## Example 1: `**` in braces
+     * ```kt
+     * shouldThrow<KatachiGlobSyntaxException> { Glob.compile("{**}") }.problem shouldBe GlobProblem.DoubleStarInBraces
+     * ```
+     */
+    object DoubleStarInBraces : GlobProblem {
+        override fun explain(pattern: String): String =
+            "`$pattern` uses `**` inside `{...}`. An alternative stays within one level; " +
+                "write `**` as a level of its own."
+    }
+
+    /**
+     * A level separator written inside `{...}`.
+     *
+     * ## Example 1: a separator inside braces
+     * ```kt
+     * shouldThrow<KatachiGlobSyntaxException> { Glob.compile("{a/b,c}") }.problem.shouldBeInstanceOf<GlobProblem.SeparatorInBraces>()
+     * ```
+     */
+    class SeparatorInBraces(
+        val separator: Char,
+    ) : GlobProblem {
+        override fun explain(pattern: String): String =
+            "`$pattern` puts `$separator` inside `{...}`. An alternative stays within one " +
+                "level; write one layout key per alternative instead."
     }
 
     /**
@@ -272,7 +407,7 @@ internal sealed interface GlobProblem {
  * ```kt
  * val arch = architecture {
  *     "group".group {
- *         "Role".role { layout { "{a,b}".file() } }
+ *         "Role".role { layout { "{a".file() } }
  *     }
  * }
  * shouldThrow<KatachiGlobSyntaxException> { arch.flattenLayout() }
@@ -287,7 +422,7 @@ internal sealed interface GlobContext {
      * ```kt
      * val arch = architecture {
      *     "group".group {
-     *         "Role".role { layout { "{a,b}".file() } }
+     *         "Role".role { layout { "{a".file() } }
      *     }
      * }
      * val context = shouldThrow<KatachiGlobSyntaxException> { arch.flattenLayout() }
@@ -304,13 +439,13 @@ internal sealed interface GlobContext {
      * ```kt
      * val arch = architecture {
      *     "group".group {
-     *         "Role".role { layout { "{a,b}".file() } }
+     *         "Role".role { layout { "{a".file() } }
      *     }
      * }
      * val context = shouldThrow<KatachiGlobSyntaxException> { arch.flattenLayout() }
      *     .context.shouldBeInstanceOf<GlobContext.RoleLayoutPath>()
      * context.role.qualifiedName shouldBe "group.Role"
-     * context.path shouldBe "{a,b}"
+     * context.path shouldBe "{a"
      * ```
      */
     class RoleLayoutPath(

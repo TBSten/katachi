@@ -242,9 +242,9 @@ class LayoutFlatteningSpec : FreeSpec({
             shouldThrow<KatachiGlobSyntaxException> { layoutOf { "/app".file() } }
         }
 
-        "他のツールの glob 構文は役割と宣言位置つきで弾かれる" {
+        "読めない glob 構文は役割と宣言位置つきで弾かれる" {
             val failure = shouldThrow<KatachiGlobSyntaxException> {
-                layoutOf { "{a,b}".file() }
+                layoutOf { "{a".file() }
             }
 
             failure.message!! shouldContain "group.Role"

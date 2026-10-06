@@ -30,13 +30,19 @@ internal enum class GlobGroupKind { Single, Recursive }
  *
  * | syntax | meaning |
  * |---|---|
- * | `*`  | exactly one level, one character or more. Never crosses [separator] |
- * | `**` | zero levels or more. Only valid as a whole segment |
+ * | `*`  | zero characters or more inside one level. Never crosses [separator]; captured |
+ * | `**` | zero levels or more. Only valid as a whole segment; captured, one element per level |
+ * | `?`  | one character other than [separator] |
+ * | `[abc]` `[a-z]` `[!abc]` `[^abc]` | one character of the list or range, or not of it |
+ * | `{a,b}` | one of the alternatives. A `*` inside is not captured |
  *
- * Nothing else is a metacharacter. `{a,b}`, `?` and `[abc]` are **rejected** rather than
- * silently treated as literals, because someone who writes them is expecting another tool's
- * glob and should hear about it. Prefix any of `* \ { } ? [ ] ,` with `\` to mean it
- * literally.
+ * `?`, `[...]` and `{...}` never become a captured value. Prefix any of `* \ { } ? [ ] ,` with
+ * `\` to mean it literally. Anything the syntax cannot read is rejected with a
+ * [GlobProblem] rather than guessed at.
+ *
+ * A whole-segment `*` (as in `feature` then `*` below it) is still at least one character in practice, because a
+ * real path has no empty level. A `*` mixed with other characters (`app_icon*.xml`) may
+ * match nothing and then captures `""`. Syntax is read by [GlobLexer].
  *
  * The same class matches module paths (`:` separated) and file paths (`/` separated): the
  * separator is the only difference, so `*` and `**` cannot come to mean two different things.
@@ -87,17 +93,19 @@ public class Glob private constructor(
      * that could match it without a second parser.
      */
     internal val literalPrefix: List<String>,
-) {
     /**
-     * Whether the pattern contains a `*` or a `**`. Such a declaration is optional by nature.
+     * Whether the pattern contains an unescaped `*`, `**`, `?`, `[` or `{`. Such a declaration
+     * is optional by nature.
      *
      * ## Example 1: tell a literal pattern apart from one with a wildcard
      * ```kt
      * Glob.compile("build.gradle.kts").hasWildcard shouldBe false
      * Glob.compile("*.kt").hasWildcard shouldBe true
+     * Glob.compile("build.gradle{,.kts}").hasWildcard shouldBe true
      * ```
      */
-    internal val hasWildcard: Boolean get() = groupKinds.isNotEmpty()
+    internal val hasWildcard: Boolean,
+) {
 
     /**
      * Whether [path] matches in full.
@@ -153,6 +161,23 @@ public class Glob private constructor(
     internal fun matchGroups(path: String): List<String>? {
         val result = regex.matchEntire(path) ?: return null
         return groupKinds.indices.map { index -> result.groupValues.getOrElse(index + 1) { "" } }
+    }
+
+    /**
+     * Where each capturing wildcard matched in [path], one entry per [groupKinds] entry in the
+     * same order, or `null` when [path] does not match. A `**` that matched no level is `null`.
+     *
+     * Lets a caller swap only the captured parts of the path for something else and keep the
+     * rest (the `?`, `[...]` and `{...}` characters, and the unnamed wildcards) as the file has them.
+     *
+     * ## Example 1: find where the `*` of a name matched
+     * ```kt
+     * Glob.compile("app_icon*.xml").matchRanges("app_icon_dark.xml") shouldBe listOf(8..12)
+     * ```
+     */
+    internal fun matchRanges(path: String): List<IntRange?>? {
+        val result = regex.matchEntire(path) ?: return null
+        return groupKinds.indices.map { index -> result.groups[index + 1]?.range }
     }
 
     /**
@@ -230,20 +255,20 @@ public class Glob private constructor(
          * ```
          *
          * @throws KatachiGlobSyntaxException when the pattern is empty, has an empty segment,
-         *   uses `**` as part of a larger segment, or uses a metacharacter katachi does not
-         *   have.
+         *   uses `**` as part of a larger segment, or has a `[...]` or `{...}` that cannot be read.
          */
         fun compile(pattern: String, separator: Char = PATH_SEPARATOR): Glob {
             if (pattern.isEmpty()) throw KatachiGlobSyntaxException(pattern, GlobProblem.EmptyPattern)
 
+            val tokens = GlobLexer.scan(pattern, separator)
             // A leading separator is the pattern being rooted (`:feature:*`), not an empty
             // first segment.
-            val leadingSeparator = pattern[0] == separator
-            val body = if (leadingSeparator) pattern.substring(1) else pattern
-            val segments = body.split(separator)
-            if (segments.any { it.isEmpty() }) {
+            val leadingSeparator = tokens.first() is GlobToken.Separator
+            val segmentTokens = splitIntoSegments(if (leadingSeparator) tokens.drop(1) else tokens)
+            if (segmentTokens.any { it.isEmpty() }) {
                 throw KatachiGlobSyntaxException(pattern, GlobProblem.EmptySegment(separator))
             }
+            val segments = segmentTokens.map { level -> pattern.substring(level.first().start, level.last().end) }
 
             val escapedSeparator = escapeForRegex(separator)
             val oneLevel = "[^$escapedSeparator]+"
@@ -253,14 +278,14 @@ public class Glob private constructor(
             val expression = StringBuilder()
             if (leadingSeparator) expression.append(escapedSeparator)
 
-            segments.forEachIndexed { index, segment ->
+            segmentTokens.forEachIndexed { index, level ->
                 val groupsBefore = kinds.size
                 // A preceding `**` has already emitted the separator that follows it, inside
                 // its own optional group, so that `a/**/b` still matches `a/b`.
-                val needsSeparator = index > 0 && segments[index - 1] != DOUBLE_STAR
-                if (segment == DOUBLE_STAR) {
+                val needsSeparator = index > 0 && segmentTokens[index - 1].singleOrNull() !is GlobToken.DoubleStar
+                if (level.singleOrNull() is GlobToken.DoubleStar) {
                     kinds += GlobGroupKind.Recursive
-                    if (index == segments.lastIndex) {
+                    if (index == segmentTokens.lastIndex) {
                         expression.append(
                             if (needsSeparator) "(?:$escapedSeparator$manyLevels)?" else "$manyLevels?",
                         )
@@ -270,7 +295,7 @@ public class Glob private constructor(
                     }
                 } else {
                     if (needsSeparator) expression.append(escapedSeparator)
-                    expression.append(segmentExpression(pattern, segment, escapedSeparator, kinds))
+                    expression.append(tokensExpression(level, escapedSeparator, kinds))
                 }
                 repeat(kinds.size - groupsBefore) { groupSegments += index }
             }
@@ -282,101 +307,90 @@ public class Glob private constructor(
                 regex = Regex(expression.toString()),
                 groupKinds = kinds.toList(),
                 groupSegments = groupSegments.toList(),
-                literalPrefix = if (leadingSeparator) emptyList() else literalPrefixOf(segments),
+                literalPrefix = if (leadingSeparator) emptyList() else literalPrefixOf(segmentTokens),
+                hasWildcard = tokens.any { it !is GlobToken.Literal && it !is GlobToken.Separator },
             )
+        }
+
+        private fun splitIntoSegments(tokens: List<GlobToken>): List<List<GlobToken>> {
+            val segments = mutableListOf<List<GlobToken>>()
+            var current = mutableListOf<GlobToken>()
+            for (token in tokens) {
+                if (token is GlobToken.Separator) {
+                    segments += current
+                    current = mutableListOf()
+                } else {
+                    current += token
+                }
+            }
+            segments += current
+            return segments
         }
 
         private const val DOUBLE_STAR: String = "**"
 
-        /** Characters of another tool's glob, rejected so that they are never silently literal. */
-        private const val REJECTED: String = "{}?[]"
-
         private const val REGEX_METACHARACTERS: String = "\\.[]{}()*+-?^$|&/<>"
 
-        private fun literalPrefixOf(segments: List<String>): List<String> {
+        /** The segments before the first one holding a wildcard, with their escapes undone. */
+        private fun literalPrefixOf(segments: List<List<GlobToken>>): List<String> {
             val prefix = mutableListOf<String>()
             for (segment in segments) {
-                prefix += literalOrNull(segment) ?: break
+                if (!segment.all { it is GlobToken.Literal }) break
+                prefix += segment.joinToString("") { (it as GlobToken.Literal).character.toString() }
             }
             return prefix
-        }
-
-        /** [segment] with its escapes undone, or `null` when it holds a wildcard. */
-        private fun literalOrNull(segment: String): String? {
-            val literal = StringBuilder()
-            var index = 0
-            while (index < segment.length) {
-                val character = segment[index]
-                when (character) {
-                    // `compile` has already rejected a trailing or unknown escape.
-                    '\\' -> {
-                        literal.append(segment[index + 1])
-                        index += 2
-                    }
-
-                    '*' -> return null
-                    else -> {
-                        literal.append(character)
-                        index++
-                    }
-                }
-            }
-            return literal.toString()
         }
 
         private fun escapeForRegex(character: Char): String =
             if (character in REGEX_METACHARACTERS) "\\$character" else character.toString()
 
-        private fun segmentExpression(
-            pattern: String,
-            segment: String,
+        /**
+         * The regular expression of one segment. [kinds] gets one entry per capturing `*`, so
+         * that the n-th group of the whole expression is the n-th entry.
+         */
+        private fun tokensExpression(
+            tokens: List<GlobToken>,
             escapedSeparator: String,
             kinds: MutableList<GlobGroupKind>,
         ): String {
             val expression = StringBuilder()
-            var index = 0
-            while (index < segment.length) {
-                val character = segment[index]
-                when {
-                    character == '\\' -> {
-                        val escaped = segment.getOrNull(index + 1)
-                            ?: throw KatachiGlobSyntaxException(pattern, GlobProblem.TrailingBackslash)
-                        if (escaped !in GLOB_ESCAPABLE) {
-                            throw KatachiGlobSyntaxException(
-                                pattern,
-                                GlobProblem.UnescapableCharacter(escaped),
-                            )
-                        }
-                        expression.append(escapeForRegex(escaped))
-                        index += 2
-                    }
-
-                    character == '*' -> {
-                        if (segment.getOrNull(index + 1) == '*') {
-                            throw KatachiGlobSyntaxException(
-                                pattern,
-                                GlobProblem.DoubleStarInsideSegment(segment),
-                            )
-                        }
-                        // One or more characters, never crossing a separator. A `*` never
-                        // captures the empty string, so `wildcards` never holds a blank.
-                        expression.append("([^$escapedSeparator]+)")
+            for (token in tokens) {
+                when (token) {
+                    is GlobToken.Literal -> expression.append(escapeForRegex(token.character))
+                    is GlobToken.Star -> if (token.capturing) {
+                        // Zero characters or more, never crossing a separator.
+                        expression.append("([^$escapedSeparator]*)")
                         kinds += GlobGroupKind.Single
-                        index++
+                    } else {
+                        expression.append("[^$escapedSeparator]*")
                     }
-
-                    character in REJECTED -> throw KatachiGlobSyntaxException(
-                        pattern,
-                        GlobProblem.RejectedMetacharacter(character),
+                    is GlobToken.Question -> expression.append("[^$escapedSeparator]")
+                    is GlobToken.CharClass -> expression.append(classExpression(token, escapedSeparator))
+                    is GlobToken.Alternation -> expression.append(
+                        token.alternatives.joinToString("|", prefix = "(?:", postfix = ")") {
+                            tokensExpression(it, escapedSeparator, kinds)
+                        },
                     )
-
-                    else -> {
-                        expression.append(escapeForRegex(character))
-                        index++
-                    }
+                    // The scanner keeps these out of a segment's tokens (and a `**` is handled by the caller).
+                    is GlobToken.DoubleStar, is GlobToken.Separator -> Unit
                 }
             }
             return expression.toString()
+        }
+
+        private fun classExpression(token: GlobToken.CharClass, escapedSeparator: String): String {
+            val members = token.members.joinToString("") { member ->
+                when (member) {
+                    is GlobClassMember.Single -> escapeForRegex(member.character)
+                    is GlobClassMember.Range -> "${escapeForRegex(member.from)}-${escapeForRegex(member.to)}"
+                }
+            }
+            return when {
+                token.negated -> "[^$members$escapedSeparator]"
+                // A range can run across the separator's code point, which must still not match.
+                token.members.any { it is GlobClassMember.Range } -> "[$members&&[^$escapedSeparator]]"
+                else -> "[$members]"
+            }
         }
     }
 }

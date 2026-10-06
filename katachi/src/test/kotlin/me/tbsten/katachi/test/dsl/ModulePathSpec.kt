@@ -175,8 +175,8 @@ class ModulePathSpec : FreeSpec({
                 .message.shouldNotBeNull() shouldContain "must not be empty"
         }
 
-        "katachi の glob に無いメタ文字は落ちる" {
-            shouldThrow<KatachiGlobSyntaxException> { compile(":feature:{home,settings}") }
+        "閉じない { は落ちる" {
+            shouldThrow<KatachiGlobSyntaxException> { compile(":feature:{home,settings") }
         }
     }
 })

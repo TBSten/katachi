@@ -18,11 +18,19 @@ import me.tbsten.katachi.dsl.internal.GlobProblem
  */
 class NamePatternSpec : FreeSpec({
     "区切りなし（名前・型）" - {
-        "* は 1 文字以上に当たり、空には当たらない" {
+        "* は 0 文字以上に当たり、空にも当たる" {
             val impl = NamePattern.compile("*Impl")
 
             impl.matches("UserRepositoryImpl") shouldBe true
-            impl.matches("Impl") shouldBe false
+            impl.matches("Impl") shouldBe true
+        }
+
+        "on{Click,Tap} は両方の名前に当たる" {
+            val handler = NamePattern.compile("on{Click,Tap}")
+
+            handler.matches("onClick") shouldBe true
+            handler.matches("onTap") shouldBe true
+            handler.matches("onDrag") shouldBe false
         }
 
         "区切りが無いので * は . や < も含めて何にでも当たる" {
@@ -115,8 +123,8 @@ class NamePatternSpec : FreeSpec({
     }
 
     "読めないパターン" - {
-        "? { } [ ] は KatachiGlobSyntaxException" {
-            listOf("Foo?", "on{Click,Tap}", "Foo[0]").forEach { pattern ->
+        "閉じない { [ と対応の無い } ] は KatachiGlobSyntaxException" {
+            listOf("on{Click,Tap", "Foo[0", "Foo]", "Foo}").forEach { pattern ->
                 shouldThrow<KatachiGlobSyntaxException> { NamePattern.compile(pattern) }.pattern shouldBe pattern
             }
         }
