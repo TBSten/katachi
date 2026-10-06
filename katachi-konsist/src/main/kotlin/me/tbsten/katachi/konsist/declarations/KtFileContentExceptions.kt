@@ -86,9 +86,9 @@ public class KatachiKtFileContentModifierException internal constructor(
  * A pattern of `ktFileContent { }` that katachi's glob cannot read, raised while the definition
  * is read.
  *
- * Every name, path and type is a pattern with `*` and `**` only, the same glob `layout { }` reads:
- * `?`, `{a,b}` and `[abc]` are refused rather than read as literals. In a type, `?` says nullable
- * and is allowed.
+ * Every name, path and type is a pattern in the same glob `layout { }` reads: `*`, `**`, `?`,
+ * `[abc]` and `{a,b}`. What is refused is one that cannot be read, such as an unclosed `{` or `[`,
+ * an empty import level or a reversed range. In a type, `?` says nullable and is not a wildcard.
  *
  * ## Example 1: catch an import pattern with an empty level
  * ```kt
@@ -237,7 +237,7 @@ private fun patternMessage(
 ): String = listOfNotNull(
     "The ${what.label} pattern \"$pattern\" in ktFileContent { } at $declaredAt cannot be read.",
     problem?.why ?: cause?.message?.lineSequence()?.firstOrNull()?.takeIf { it.isNotBlank() },
-    problem?.how ?: "Write the pattern with * and ** only; escape a literal character with \\.",
+    problem?.how ?: "Escape a literal *, ?, [, ], {, }, , or \\ with \\.",
 ).joinToString("\n")
 
 private fun lineMessage(problem: KtFileContentLineProblem, line: String, at: DeclarationSite): String {
