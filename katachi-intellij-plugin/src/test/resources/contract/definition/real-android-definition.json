@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "katachiVersion": "0.2.0",
-  "generatedAt": "2026-10-05T17:59:10Z",
+  "generatedAt": "2026-10-06T02:34:36Z",
   "projectRoot": "/__ROOT__",
   "architecture": {
     "declaredAt": {
@@ -3614,7 +3614,7 @@
         },
         {
           "index": 8,
-          "path": "navigation/src/main/kotlin/com/example/sample/navigation/*.kt",
+          "path": "navigation/src/main/kotlin/com/example/sample/navigation/*{Navigator,Destination}.kt",
           "kind": "File",
           "required": false,
           "description": null,
@@ -3623,7 +3623,7 @@
             "line": 32
           },
           "modulePath": null,
-          "pathInModule": "navigation/src/main/kotlin/com/example/sample/navigation/*.kt",
+          "pathInModule": "navigation/src/main/kotlin/com/example/sample/navigation/*{Navigator,Destination}.kt",
           "captures": [],
           "moduleCapture": null,
           "template": null,
@@ -3888,8 +3888,8 @@
               "line": 61
             }
           },
-          "matchedFiles": [],
-          "matchedCount": 0,
+          "matchedFiles": ["data/src/main/kotlin/com/example/sample/data/user/UserRepository.kt"],
+          "matchedCount": 1,
           "matchedFilesTruncated": false,
           "synthetic": false,
           "place": false
@@ -3966,8 +3966,8 @@
               "line": 61
             }
           },
-          "matchedFiles": [],
-          "matchedCount": 0,
+          "matchedFiles": ["data/src/main/kotlin/com/example/sample/data/settings/SettingsRepository.kt"],
+          "matchedCount": 1,
           "matchedFilesTruncated": false,
           "synthetic": false,
           "place": false
@@ -4295,8 +4295,8 @@
               "line": 43
             }
           },
-          "matchedFiles": [],
-          "matchedCount": 0,
+          "matchedFiles": ["data/src/main/kotlin/com/example/sample/data/user/UserRepositoryImpl.kt"],
+          "matchedCount": 1,
           "matchedFilesTruncated": false,
           "synthetic": false,
           "place": false
@@ -4373,8 +4373,8 @@
               "line": 43
             }
           },
-          "matchedFiles": [],
-          "matchedCount": 0,
+          "matchedFiles": ["data/src/main/kotlin/com/example/sample/data/settings/SettingsRepositoryImpl.kt"],
+          "matchedCount": 1,
           "matchedFilesTruncated": false,
           "synthetic": false,
           "place": false
@@ -7550,7 +7550,7 @@
         {
           "name": "namespace of a library module follows the module path",
           "backend": "custom",
-          "checkClass": "com.example.sample.groups.GradleGroupKt$$Lambda$103/0x000000980108ced0",
+          "checkClass": "com.example.sample.groups.GradleGroupKt$$Lambda$104/0x000000700108e300",
           "range": "Subtree",
           "declaredAt": {
             "fileName": "GradleGroup.kt",

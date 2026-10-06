@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "katachiVersion": "0.2.0",
-  "generatedAt": "2026-10-05T17:58:45Z",
+  "generatedAt": "2026-10-06T02:34:23Z",
   "projectRoot": "/__ROOT__",
   "architecture": {
     "declaredAt": {
@@ -878,7 +878,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "ModelRole.kt",
-            "line": 39
+            "line": 40
           },
           "modulePath": null,
           "pathInModule": "src",
@@ -899,7 +899,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "ModelRole.kt",
-            "line": 39
+            "line": 40
           },
           "modulePath": null,
           "pathInModule": "src/main",
@@ -920,7 +920,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "ModelRole.kt",
-            "line": 39
+            "line": 40
           },
           "modulePath": null,
           "pathInModule": "src/main/kotlin",
@@ -941,7 +941,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "ModelRole.kt",
-            "line": 39
+            "line": 40
           },
           "modulePath": null,
           "pathInModule": "src/main/kotlin/com",
@@ -962,7 +962,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "ModelRole.kt",
-            "line": 39
+            "line": 40
           },
           "modulePath": null,
           "pathInModule": "src/main/kotlin/com/example",
@@ -983,7 +983,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "ModelRole.kt",
-            "line": 39
+            "line": 40
           },
           "modulePath": null,
           "pathInModule": "src/main/kotlin/com/example/model",
@@ -998,16 +998,16 @@
         },
         {
           "index": 6,
-          "path": "src/main/kotlin/com/example/model/*.kt",
+          "path": "src/main/kotlin/com/example/model/[A-Z]*.kt",
           "kind": "File",
           "required": false,
           "description": null,
           "declaredAt": {
             "fileName": "ModelRole.kt",
-            "line": 39
+            "line": 40
           },
           "modulePath": null,
-          "pathInModule": "src/main/kotlin/com/example/model/*.kt",
+          "pathInModule": "src/main/kotlin/com/example/model/[A-Z]*.kt",
           "captures": [],
           "moduleCapture": null,
           "template": null,
@@ -1026,13 +1026,13 @@
           "range": "Subtree",
           "declaredAt": {
             "fileName": "ModelRole.kt",
-            "line": 43
+            "line": 44
           },
           "layoutPath": null,
           "anchors": ["src/main/kotlin/com/example/model"],
           "entries": [6],
           "coverage": {
-            "files": ["src/main/kotlin/com/example/model/*.kt"],
+            "files": ["src/main/kotlin/com/example/model/[A-Z]*.kt"],
             "anyFileDirectories": []
           },
           "fileDeclarations": [
@@ -3297,7 +3297,7 @@
         {
           "name": "fails the build on every compiler warning",
           "backend": "custom",
-          "checkClass": "com.example.groups.GradleGroupKt$$Lambda$77/0x0000000701082728",
+          "checkClass": "com.example.groups.GradleGroupKt$$Lambda$78/0x00000070010837c0",
           "range": "Subtree",
           "declaredAt": {
             "fileName": "GradleGroup.kt",

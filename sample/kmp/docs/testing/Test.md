@@ -24,7 +24,7 @@ which is outside what this sample wants to show.
 
 | Path | When to use |
 |---|---|
-| `app/android/src/test/kotlin/com/example/kmp/app/*Spec.kt` |  |
+| `app/android/src/test/kotlin/com/example/kmp/app/*{Spec,Test}.kt` |  |
 
 ## Examples
 

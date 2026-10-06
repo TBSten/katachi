@@ -24,8 +24,8 @@ fun DeclarationContainerScope.model() = "Model".role {
         added to the API layer to split them.
 
         The name is simply what the value represents, with no suffix (`Health`, not
-        `HealthModel`). Only `.kt` files directly in the `model` package are covered; a directory
-        dug beneath it does not fall under this role.
+        `HealthModel`). Only `.kt` files directly in the `model` package whose name starts with a
+        capital letter are covered; a directory dug beneath it does not fall under this role.
     """.trimIndent()
     allowedContents = "Only data classes, enums, value objects and computations closed over those values may be placed here."
     forbiddenContents = """
@@ -35,8 +35,9 @@ fun DeclarationContainerScope.model() = "Model".role {
     example("Health", "Running status and version")
     layout {
         // A model is named after the thing it models, so the package is the only
-        // marker. Any `.kt` directly in it counts; a subdirectory does not.
-        mainSourceSet / kotlin / "com/example/model" / "*".ktFile()
+        // marker, and a type name starts with a capital letter (`[A-Z]` matches one
+        // character of that range). Any such `.kt` directly in it counts; a subdirectory does not.
+        mainSourceSet / kotlin / "com/example/model" / "[A-Z]*".ktFile()
     }
     // Imports only: a model may know about kotlinx.serialization and no further. No other kind
     // of line is written, so the declarations themselves are not looked at.

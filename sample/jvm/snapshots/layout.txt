@@ -66,7 +66,7 @@ domain.Model	src/main/kotlin	Directory	optional
 domain.Model	src/main/kotlin/com	Directory	optional
 domain.Model	src/main/kotlin/com/example	Directory	optional
 domain.Model	src/main/kotlin/com/example/model	Directory	optional
-domain.Model	src/main/kotlin/com/example/model/*.kt	File	optional
+domain.Model	src/main/kotlin/com/example/model/[A-Z]*.kt	File	optional
 domain.Service	src	Directory	optional
 domain.Service	src/main	Directory	optional
 domain.Service	src/main/kotlin	Directory	optional

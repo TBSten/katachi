@@ -26,7 +26,7 @@ two start to drift apart, it can be undone by adding a DTO role to the API layer
 ```
 src/main/kotlin/com/example/
   service/*Service.kt  Service
-  model/*.kt           Model
+  model/[A-Z]*.kt      Model
 ```
 
 ## Forbidden contents

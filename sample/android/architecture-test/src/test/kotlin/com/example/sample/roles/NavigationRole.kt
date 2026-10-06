@@ -22,14 +22,14 @@ fun DeclarationContainerScope.navigation() = "Navigation".role {
         The graph itself is not here. Only `AppNavHost` in `:app` knows which Routes are lined
         up and how, and `:navigation` holds only the "means of moving".
 
-        File names are `*.kt` (in the package directly under the module). Types related to the
+        File names end in `Navigator` or `Destination` (`*{Navigator,Destination}.kt`, in the package directly under the module). Types related to the
         means of navigation go here, but the destination of a particular screen (such as
         `HomeRoute`) belongs to the Route role on the feature side.
     """.trimIndent()
     example("AppNavigator", "The entry point for screen navigation")
     layout {
         "navigation" {
-            mainSourceSet / kotlin / "com/example/sample/navigation" / "*".ktFile()
+            mainSourceSet / kotlin / "com/example/sample/navigation" / "*{Navigator,Destination}".ktFile()
         }
     }
 }

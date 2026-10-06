@@ -13,14 +13,14 @@ They are one thing for now, so that if the two start to drift apart, a new DTO r
 added to the API layer to split them.
 
 The name is simply what the value represents, with no suffix (`Health`, not
-`HealthModel`). Only `.kt` files directly in the `model` package are covered; a directory
-dug beneath it does not fall under this role.
+`HealthModel`). Only `.kt` files directly in the `model` package whose name starts with a
+capital letter are covered; a directory dug beneath it does not fall under this role.
 
 ## Placement
 
 | Path | When to use |
 |---|---|
-| `src/main/kotlin/com/example/model/*.kt` |  |
+| `src/main/kotlin/com/example/model/[A-Z]*.kt` |  |
 
 ## Constraints
 

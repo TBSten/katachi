@@ -251,7 +251,7 @@ class ProjectArchitectureSpec : FreeSpec({
             .single { it.path == "src/main/kotlin/com/example/Application.kt" }
 
         unexpected.nearby.map { Triple(it.role.qualifiedName, it.directory, it.filePattern) } shouldBe listOf(
-            Triple("domain.Model", "src/main/kotlin/com/example/model", "*.kt"),
+            Triple("domain.Model", "src/main/kotlin/com/example/model", "[A-Z]*.kt"),
             Triple("api.KtorPlugin", "src/main/kotlin/com/example/plugin", "*.kt"),
             Triple("testing.Test", "src/test/kotlin/com/example", "*Test.kt"),
         )

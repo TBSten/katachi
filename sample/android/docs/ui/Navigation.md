@@ -17,7 +17,7 @@ reason: code that just wants screen parts should not pull in the navigation depe
 The graph itself is not here. Only `AppNavHost` in `:app` knows which Routes are lined
 up and how, and `:navigation` holds only the "means of moving".
 
-File names are `*.kt` (in the package directly under the module). Types related to the
+File names end in `Navigator` or `Destination` (`*{Navigator,Destination}.kt`, in the package directly under the module). Types related to the
 means of navigation go here, but the destination of a particular screen (such as
 `HomeRoute`) belongs to the Route role on the feature side.
 
@@ -25,7 +25,7 @@ means of navigation go here, but the destination of a particular screen (such as
 
 | Path | When to use |
 |---|---|
-| `navigation/src/main/kotlin/com/example/sample/navigation/*.kt` |  |
+| `navigation/src/main/kotlin/com/example/sample/navigation/*{Navigator,Destination}.kt` |  |
 
 ## Examples
 

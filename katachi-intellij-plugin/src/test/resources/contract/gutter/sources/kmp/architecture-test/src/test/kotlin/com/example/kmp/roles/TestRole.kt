@@ -45,7 +45,7 @@ fun DeclarationContainerScope.test() = "Test".role {
     // does not have.
     layout {
         "app/android" {
-            testSourceSet / kotlin / "com/example/kmp/app" / "*Spec".ktFile()
+            testSourceSet / kotlin / "com/example/kmp/app" / "*{Spec,Test}".ktFile()
         }
     }
 }

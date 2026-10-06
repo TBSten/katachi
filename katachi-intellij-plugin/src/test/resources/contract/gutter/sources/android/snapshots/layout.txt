@@ -259,7 +259,7 @@ ui.Navigation	navigation/src/main/kotlin/com	Directory	optional
 ui.Navigation	navigation/src/main/kotlin/com/example	Directory	optional
 ui.Navigation	navigation/src/main/kotlin/com/example/sample	Directory	optional
 ui.Navigation	navigation/src/main/kotlin/com/example/sample/navigation	Directory	optional
-ui.Navigation	navigation/src/main/kotlin/com/example/sample/navigation/*.kt	File	optional
+ui.Navigation	navigation/src/main/kotlin/com/example/sample/navigation/*{Navigator,Destination}.kt	File	optional
 ui.PreviewRoot	ui	Directory	optional
 ui.PreviewRoot	ui/src	Directory	optional
 ui.PreviewRoot	ui/src/main	Directory	optional

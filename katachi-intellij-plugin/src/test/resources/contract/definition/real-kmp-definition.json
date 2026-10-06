@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "katachiVersion": "0.2.0",
-  "generatedAt": "2026-10-05T17:59:29Z",
+  "generatedAt": "2026-10-06T02:34:50Z",
   "projectRoot": "/__ROOT__",
   "architecture": {
     "declaredAt": {
@@ -4748,7 +4748,7 @@
         },
         {
           "index": 9,
-          "path": "app/android/src/test/kotlin/com/example/kmp/app/*Spec.kt",
+          "path": "app/android/src/test/kotlin/com/example/kmp/app/*{Spec,Test}.kt",
           "kind": "File",
           "required": false,
           "description": null,
@@ -4757,7 +4757,7 @@
             "line": 48
           },
           "modulePath": null,
-          "pathInModule": "app/android/src/test/kotlin/com/example/kmp/app/*Spec.kt",
+          "pathInModule": "app/android/src/test/kotlin/com/example/kmp/app/*{Spec,Test}.kt",
           "captures": [],
           "moduleCapture": null,
           "template": null,
@@ -8354,7 +8354,7 @@
         {
           "name": "namespace of a library module follows the module path",
           "backend": "custom",
-          "checkClass": "com.example.kmp.groups.GradleGroupKt$$Lambda$112/0x000000b00108ab30",
+          "checkClass": "com.example.kmp.groups.GradleGroupKt$$Lambda$113/0x000000a00108bbe0",
           "range": "Subtree",
           "declaredAt": {
             "fileName": "GradleGroup.kt",
