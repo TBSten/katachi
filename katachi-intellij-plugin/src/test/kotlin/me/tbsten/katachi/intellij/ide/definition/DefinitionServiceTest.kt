@@ -44,7 +44,8 @@ internal class DefinitionServiceTest : DefinitionServiceTestBase() {
         loaded()
         val roles = definition.forPath(root.resolve("src/other/Stray.kt")) ?: throw AssertionError("no answer")
         assertEquals(MatchOutcome.UnexpectedUnder("src/other"), roles.outcome)
-        assertEquals(listOf("src/service", "src/thrower"), roles.nearby.map { it.directory })
+        // Both places are one replaced level away with a fitting name; `thrower` is 4 characters from `other`, `service` 7.
+        assertEquals(listOf("src/thrower", "src/service"), roles.nearby.map { it.directory })
     }
 
     fun `test gitTracked の定義では VCS が無視するファイルは IgnoredByVcs になる`() {

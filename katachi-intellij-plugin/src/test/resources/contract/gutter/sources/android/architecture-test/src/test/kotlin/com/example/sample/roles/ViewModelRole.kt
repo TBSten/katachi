@@ -8,6 +8,7 @@ import me.tbsten.katachi.ExperimentalKatachiApi
 import me.tbsten.katachi.dsl.DeclarationContainerScope
 import me.tbsten.katachi.dsl.gradle.*
 import me.tbsten.katachi.dsl.kotlin.ktFile
+import me.tbsten.katachi.dsl.pascalCase
 import me.tbsten.katachi.konsist.declarations.ktFileContent
 
 /** The role holding one screen's state, named after the feature module it belongs to. */
@@ -39,7 +40,9 @@ fun DeclarationContainerScope.viewModel() = "ViewModel".role {
     example("HomeViewModel", "The state of the home screen")
     example("SettingsViewModel", "The state of the settings screen")
     layout {
-        featureSources() / "*ViewModel".ktFile()
+        // `feature` is the module directory and the package directory alike, and the file name
+        // follows it: feature/home/.../home/HomeViewModel.kt, and nothing else named *ViewModel.kt there.
+        featureSources(capture("feature")) / "${capture("feature").pascalCase}ViewModel".ktFile()
     }
     // The description above, written the way the file is written. androidx.compose and android
     // are not among the imports, so a view model that reaches for either fails.

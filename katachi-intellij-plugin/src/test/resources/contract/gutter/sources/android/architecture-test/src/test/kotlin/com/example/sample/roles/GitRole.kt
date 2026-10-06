@@ -16,6 +16,8 @@ fun DeclarationContainerScope.git() = "Git".role {
         whatever is ignored here never reaches the check in the first place. That is why no role
         is needed for each module's `build/`, `.gradle/`, `.kotlin/` or `local.properties`.
         Conversely, switching to `files = wholeTree()` would report all of them as `Unexpected`.
+        A file tracked inside an ignored directory (`.idea/*` with `!.idea/codeStyles/`, or
+        `git add -f`) is still checked: git reports it, so it needs a role like any other file.
 
         When editing `.gitignore`, be aware that the set of checked files moves. Ignoring more
         removes files from the check, and ignoring less turns them into violations as files

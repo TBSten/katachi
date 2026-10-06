@@ -12,10 +12,11 @@ The difference from the shared component (ui/Component) is the number of screens
 use it. When a second screen wants it, move it to the component package of `:ui`.
 Features do not depend on each other, so left here it cannot be called from other screens.
 
-It can be generated from a template. The module directory is named `feature` and its package
-directory `featurePackage`, so `--arg feature=home --arg featurePackage=home --arg
-name=HomeUserCard` puts `HomeUserCard.kt` into `:feature:home`. `name` is the whole file
-name, including the module's name; the check does not tie the two together.
+It can be generated from a template. The module directory and its package directory are
+both named `feature`, so `--arg feature=home --arg name=HomeUserCard` puts
+`HomeUserCard.kt` into `:feature:home`, and the check holds the two directories to the
+same name. `name` is the whole file name, including the module's name; the check does
+not tie the file name to the module.
 
 ## Placement
 
@@ -33,7 +34,7 @@ Example: `HomeUserCard.kt`
 
 | Package |
 |---|
-| `com.example.kmp.feature.<featurePackage>.component` |
+| `com.example.kmp.feature.<feature>.component` |
 
 | Import | |
 |---|---|

@@ -102,8 +102,14 @@ internal data class LayoutEntryModel(
     val place: Boolean = false,
 )
 
-/** A `capture("name")` and which `/` level of the pattern it sits in (0-based). */
-internal data class CaptureRef(val name: String, val segmentIndex: Int)
+/**
+ * One occurrence of a `capture("name")` on an entry's pattern: which `/` level it sits in ([segmentIndex], 0-based), which
+ * `*` of that level it is ([wildcardIndex], 0-based, the unnamed `*` counted too), and for a derived occurrence
+ * (`capture("x").pascalCase`) the conversion's name ([transform]; `null` for the plain capture that gives the value).
+ * A JSON from before the two reads `0` and `null`. Two occurrences of one name, or a derived one, bind the entry: it
+ * holds only a file whose levels agree (design capture-check 3.8).
+ */
+internal data class CaptureRef(val name: String, val segmentIndex: Int, val wildcardIndex: Int = 0, val transform: String? = null)
 
 /** The names given to the `*` of a module key; [pattern] is such as `":feature:*"`. */
 internal data class ModuleCaptureRef(val pattern: String, val names: List<String>)

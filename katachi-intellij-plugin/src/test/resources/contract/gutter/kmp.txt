@@ -16,9 +16,9 @@ roles: tool.Documentation
 
 == app/android/build.gradle.kts
 roles: Gradle.BuildScript
-    Gradle.BuildScript declared at GradleGroup.kt:33 | fun DeclarationContainerScope.gradleGroup() = gradle {
+    Gradle.BuildScript declared at GradleGroup.kt:62 | fun DeclarationContainerScope.gradleGroup() = gradle {
 1 | ◆ | katachi: Gradle.BuildScript
-    menu | ◇ Role Gradle.BuildScript — How one module is built, one per module | GradleGroup.kt:33
+    menu | ◇ Role Gradle.BuildScript — How one module is built, one per module | GradleGroup.kt:62
     menu | == Other files of Gradle.BuildScript (8)
     menu | build.gradle.kts | .
     menu | build.gradle.kts | architecture-test
@@ -89,9 +89,9 @@ roles: testing.Test
 
 == architecture-test/build.gradle.kts
 roles: Gradle.BuildScript
-    Gradle.BuildScript declared at GradleGroup.kt:33 | fun DeclarationContainerScope.gradleGroup() = gradle {
+    Gradle.BuildScript declared at GradleGroup.kt:62 | fun DeclarationContainerScope.gradleGroup() = gradle {
 1 | ◆ | katachi: Gradle.BuildScript
-    menu | ◇ Role Gradle.BuildScript — How one module is built, one per module | GradleGroup.kt:33
+    menu | ◇ Role Gradle.BuildScript — How one module is built, one per module | GradleGroup.kt:62
     menu | == Other files of Gradle.BuildScript (8)
     menu | build.gradle.kts | .
     menu | build.gradle.kts | app/android
@@ -147,7 +147,7 @@ roles: testing.ProjectArchitectureSpec
 == architecture-test/src/test/kotlin/com/example/kmp/OmittedRoleSelfCheckSpec.kt
 roles: testing.ProjectArchitectureSpec
     testing.ProjectArchitectureSpec declared at ProjectArchitectureSpecRole.kt:9 | fun DeclarationContainerScope.projectArchitectureSpec() = "ProjectArchitectureSpec".role {
-38 | ◆ | katachi: testing.ProjectArchitectureSpec
+44 | ◆ | katachi: testing.ProjectArchitectureSpec
     menu | ◇ Role testing.ProjectArchitectureSpec — Architecture spec | ProjectArchitectureSpecRole.kt:9
     menu | == Other files of testing.ProjectArchitectureSpec (4)
     menu | DeclaredEntriesSpec.kt | architecture-test/…/com/example/kmp
@@ -186,7 +186,7 @@ roles: testing.ProjectArchitectureSpec
 == architecture-test/src/test/kotlin/com/example/kmp/ProjectArchitectureTest.kt
 roles: testing.ProjectArchitectureTest
     testing.ProjectArchitectureTest declared at ProjectArchitectureTestRole.kt:9 | fun DeclarationContainerScope.projectArchitectureTest() = "ProjectArchitectureTest".role {
-26 | ◆ | katachi: testing.ProjectArchitectureTest
+30 | ◆ | katachi: testing.ProjectArchitectureTest
     menu | ◇ Role testing.ProjectArchitectureTest — Architecture test | ProjectArchitectureTestRole.kt:9
     menu | == Other files of testing.ProjectArchitectureTest
     menu | (disabled) — No other file yet
@@ -259,7 +259,7 @@ roles: testing.GroupDefinition
 == architecture-test/src/test/kotlin/com/example/kmp/groups/GradleGroup.kt
 roles: testing.GroupDefinition
     testing.GroupDefinition declared at GroupDefinitionRole.kt:8 | fun DeclarationContainerScope.groupDefinition() = "GroupDefinition".role {
-33 | ◆ | katachi: testing.GroupDefinition
+16 | ◆ | katachi: testing.GroupDefinition
     menu | ◇ Role testing.GroupDefinition — Group definition | GroupDefinitionRole.kt:8
     menu | == Other files of testing.GroupDefinition (6)
     menu | AppGroup.kt | architecture-test/…/example/kmp/groups
@@ -334,7 +334,7 @@ roles: testing.ProcessorMetadata
 == architecture-test/src/test/kotlin/com/example/kmp/processors/PlatformOwnedFilesProcessor.kt
 roles: testing.CustomProcessor
     testing.CustomProcessor declared at CustomProcessorRole.kt:8 | fun DeclarationContainerScope.customProcessor() = "CustomProcessor".role {
-30 | ◆ | katachi: testing.CustomProcessor
+32 | ◆ | katachi: testing.CustomProcessor
     menu | ◇ Role testing.CustomProcessor — Custom processor | CustomProcessorRole.kt:8
     menu | == Other files of testing.CustomProcessor (1)
     menu | RoleSummaryReportProcessor.kt | architecture-test/…/kmp/processors
@@ -742,7 +742,7 @@ roles: testing.RoleDefinition
 == architecture-test/src/test/kotlin/com/example/kmp/roles/FeatureComponentRole.kt
 roles: testing.RoleDefinition
     testing.RoleDefinition declared at RoleDefinitionRole.kt:8 | fun DeclarationContainerScope.roleDefinition() = "RoleDefinition".role {
-25 | ◆ | katachi: testing.RoleDefinition
+26 | ◆ | katachi: testing.RoleDefinition
     menu | ◇ Role testing.RoleDefinition — Role definition | RoleDefinitionRole.kt:8
     menu | == Other files of testing.RoleDefinition (35)
     menu | ActivityEntrypointRole.kt | architecture-test/…/example/kmp/roles
@@ -1313,9 +1313,9 @@ roles: testing.RoleDefinition
 
 == build.gradle.kts
 roles: Gradle.BuildScript
-    Gradle.BuildScript declared at GradleGroup.kt:33 | fun DeclarationContainerScope.gradleGroup() = gradle {
+    Gradle.BuildScript declared at GradleGroup.kt:62 | fun DeclarationContainerScope.gradleGroup() = gradle {
 1 | ◆ | katachi: Gradle.BuildScript
-    menu | ◇ Role Gradle.BuildScript — How one module is built, one per module | GradleGroup.kt:33
+    menu | ◇ Role Gradle.BuildScript — How one module is built, one per module | GradleGroup.kt:62
     menu | == Other files of Gradle.BuildScript (8)
     menu | build.gradle.kts | app/android
     menu | build.gradle.kts | architecture-test
@@ -1331,9 +1331,9 @@ roles: Gradle.BuildScript
 
 == data/build.gradle.kts
 roles: Gradle.BuildScript
-    Gradle.BuildScript declared at GradleGroup.kt:33 | fun DeclarationContainerScope.gradleGroup() = gradle {
+    Gradle.BuildScript declared at GradleGroup.kt:62 | fun DeclarationContainerScope.gradleGroup() = gradle {
 1 | ◆ | katachi: Gradle.BuildScript
-    menu | ◇ Role Gradle.BuildScript — How one module is built, one per module | GradleGroup.kt:33
+    menu | ◇ Role Gradle.BuildScript — How one module is built, one per module | GradleGroup.kt:62
     menu | == Other files of Gradle.BuildScript (8)
     menu | build.gradle.kts | .
     menu | build.gradle.kts | app/android
@@ -2456,9 +2456,9 @@ roles: testing.GeneratedDocumentation
 
 == feature/home/build.gradle.kts
 roles: Gradle.BuildScript
-    Gradle.BuildScript declared at GradleGroup.kt:33 | fun DeclarationContainerScope.gradleGroup() = gradle {
+    Gradle.BuildScript declared at GradleGroup.kt:62 | fun DeclarationContainerScope.gradleGroup() = gradle {
 1 | ◆ | katachi: Gradle.BuildScript
-    menu | ◇ Role Gradle.BuildScript — How one module is built, one per module | GradleGroup.kt:33
+    menu | ◇ Role Gradle.BuildScript — How one module is built, one per module | GradleGroup.kt:62
     menu | == Other files of Gradle.BuildScript (8)
     menu | build.gradle.kts | .
     menu | build.gradle.kts | app/android
@@ -2540,11 +2540,11 @@ roles: feature.ViewModel
 
 == feature/home/src/commonMain/kotlin/com/example/kmp/feature/home/component/HomeUserCard.kt
 roles: feature.FeatureComponent
-    feature.FeatureComponent declared at FeatureComponentRole.kt:25 | fun DeclarationContainerScope.featureComponent() = "FeatureComponent".role {
-10 | ◆ | katachi: feature.FeatureComponent — allowed by @Composable internal fun HomeUserCard(...) (FeatureComponentRole.kt:90)
-    allowed at FeatureComponentRole.kt:90 | annotated("Composable").internal.`fun`(fileName)
-    menu | ◆ Allowed by @Composable internal fun HomeUserCard(...) | FeatureComponentRole.kt:90
-    menu | ◇ Role feature.FeatureComponent — Screen component | FeatureComponentRole.kt:25
+    feature.FeatureComponent declared at FeatureComponentRole.kt:26 | fun DeclarationContainerScope.featureComponent() = "FeatureComponent".role {
+10 | ◆ | katachi: feature.FeatureComponent — allowed by @Composable internal fun HomeUserCard(...) (FeatureComponentRole.kt:91)
+    allowed at FeatureComponentRole.kt:91 | annotated("Composable").internal.`fun`(fileName)
+    menu | ◆ Allowed by @Composable internal fun HomeUserCard(...) | FeatureComponentRole.kt:91
+    menu | ◇ Role feature.FeatureComponent — Screen component | FeatureComponentRole.kt:26
     menu | == Other files of feature.FeatureComponent
     menu | (disabled) — No other file yet
     menu | -----
@@ -2554,9 +2554,9 @@ roles: feature.FeatureComponent
 
 == feature/settings/build.gradle.kts
 roles: Gradle.BuildScript
-    Gradle.BuildScript declared at GradleGroup.kt:33 | fun DeclarationContainerScope.gradleGroup() = gradle {
+    Gradle.BuildScript declared at GradleGroup.kt:62 | fun DeclarationContainerScope.gradleGroup() = gradle {
 1 | ◆ | katachi: Gradle.BuildScript
-    menu | ◇ Role Gradle.BuildScript — How one module is built, one per module | GradleGroup.kt:33
+    menu | ◇ Role Gradle.BuildScript — How one module is built, one per module | GradleGroup.kt:62
     menu | == Other files of Gradle.BuildScript (8)
     menu | build.gradle.kts | .
     menu | build.gradle.kts | app/android
@@ -2638,9 +2638,9 @@ roles: feature.ViewModel
 
 == gradle.properties
 roles: Gradle.GradleProperties
-    Gradle.GradleProperties declared at GradleGroup.kt:33 | fun DeclarationContainerScope.gradleGroup() = gradle {
+    Gradle.GradleProperties declared at GradleGroup.kt:62 | fun DeclarationContainerScope.gradleGroup() = gradle {
 1 | ◆ | katachi: Gradle.GradleProperties
-    menu | ◇ Role Gradle.GradleProperties — Properties of the build and of the Gradle daemon | GradleGroup.kt:33
+    menu | ◇ Role Gradle.GradleProperties — Properties of the build and of the Gradle daemon | GradleGroup.kt:62
     menu | == Other files of Gradle.GradleProperties
     menu | (disabled) — No other file yet
     menu | -----
@@ -2649,9 +2649,9 @@ roles: Gradle.GradleProperties
 
 == gradle/sample.versions.toml
 roles: Gradle.VersionCatalog
-    Gradle.VersionCatalog declared at GradleGroup.kt:33 | fun DeclarationContainerScope.gradleGroup() = gradle {
+    Gradle.VersionCatalog declared at GradleGroup.kt:62 | fun DeclarationContainerScope.gradleGroup() = gradle {
 1 | ◆ | katachi: Gradle.VersionCatalog
-    menu | ◇ Role Gradle.VersionCatalog — The versions of the build's dependencies and plugins | GradleGroup.kt:33
+    menu | ◇ Role Gradle.VersionCatalog — The versions of the build's dependencies and plugins | GradleGroup.kt:62
     menu | == Other files of Gradle.VersionCatalog
     menu | (disabled) — No other file yet
     menu | -----
@@ -2660,9 +2660,9 @@ roles: Gradle.VersionCatalog
 
 == gradle/wrapper/gradle-wrapper.properties
 roles: Gradle.GradleWrapper.WrapperProperties
-    Gradle.GradleWrapper.WrapperProperties declared at GradleGroup.kt:33 | fun DeclarationContainerScope.gradleGroup() = gradle {
+    Gradle.GradleWrapper.WrapperProperties declared at GradleGroup.kt:62 | fun DeclarationContainerScope.gradleGroup() = gradle {
 1 | ◆ | katachi: Gradle.GradleWrapper.WrapperProperties
-    menu | ◇ Role Gradle.GradleWrapper.WrapperProperties — Which Gradle distribution the wrapper runs | GradleGroup.kt:33
+    menu | ◇ Role Gradle.GradleWrapper.WrapperProperties — Which Gradle distribution the wrapper runs | GradleGroup.kt:62
     menu | == Other files of Gradle.GradleWrapper.WrapperProperties
     menu | (disabled) — No other file yet
     menu | -----
@@ -2682,9 +2682,9 @@ roles: testing.BaselineFile
 
 == navigation/build.gradle.kts
 roles: Gradle.BuildScript
-    Gradle.BuildScript declared at GradleGroup.kt:33 | fun DeclarationContainerScope.gradleGroup() = gradle {
+    Gradle.BuildScript declared at GradleGroup.kt:62 | fun DeclarationContainerScope.gradleGroup() = gradle {
 1 | ◆ | katachi: Gradle.BuildScript
-    menu | ◇ Role Gradle.BuildScript — How one module is built, one per module | GradleGroup.kt:33
+    menu | ◇ Role Gradle.BuildScript — How one module is built, one per module | GradleGroup.kt:62
     menu | == Other files of Gradle.BuildScript (8)
     menu | build.gradle.kts | .
     menu | build.gradle.kts | app/android
@@ -2722,9 +2722,9 @@ roles: ui.Navigation
 
 == settings.gradle.kts
 roles: Gradle.SettingsScript
-    Gradle.SettingsScript declared at GradleGroup.kt:33 | fun DeclarationContainerScope.gradleGroup() = gradle {
+    Gradle.SettingsScript declared at GradleGroup.kt:62 | fun DeclarationContainerScope.gradleGroup() = gradle {
 1 | ◆ | katachi: Gradle.SettingsScript
-    menu | ◇ Role Gradle.SettingsScript — Which modules make up the build | GradleGroup.kt:33
+    menu | ◇ Role Gradle.SettingsScript — Which modules make up the build | GradleGroup.kt:62
     menu | == Other files of Gradle.SettingsScript
     menu | (disabled) — No other file yet
     menu | -----
@@ -2744,9 +2744,9 @@ roles: testing.LayoutSnapshot
 
 == testing/build.gradle.kts
 roles: Gradle.BuildScript
-    Gradle.BuildScript declared at GradleGroup.kt:33 | fun DeclarationContainerScope.gradleGroup() = gradle {
+    Gradle.BuildScript declared at GradleGroup.kt:62 | fun DeclarationContainerScope.gradleGroup() = gradle {
 1 | ◆ | katachi: Gradle.BuildScript
-    menu | ◇ Role Gradle.BuildScript — How one module is built, one per module | GradleGroup.kt:33
+    menu | ◇ Role Gradle.BuildScript — How one module is built, one per module | GradleGroup.kt:62
     menu | == Other files of Gradle.BuildScript (8)
     menu | build.gradle.kts | .
     menu | build.gradle.kts | app/android
@@ -2773,9 +2773,9 @@ roles: testing.Fake
 
 == ui/build.gradle.kts
 roles: Gradle.BuildScript
-    Gradle.BuildScript declared at GradleGroup.kt:33 | fun DeclarationContainerScope.gradleGroup() = gradle {
+    Gradle.BuildScript declared at GradleGroup.kt:62 | fun DeclarationContainerScope.gradleGroup() = gradle {
 1 | ◆ | katachi: Gradle.BuildScript
-    menu | ◇ Role Gradle.BuildScript — How one module is built, one per module | GradleGroup.kt:33
+    menu | ◇ Role Gradle.BuildScript — How one module is built, one per module | GradleGroup.kt:62
     menu | == Other files of Gradle.BuildScript (8)
     menu | build.gradle.kts | .
     menu | build.gradle.kts | app/android

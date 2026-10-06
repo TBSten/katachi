@@ -15,14 +15,13 @@ import me.tbsten.katachi.konsist.declarations.ktFileContent
 /**
  * The role of a widget one screen uses and no other: the feature-local counterpart of Component.
  *
- * Its layout is the directory `"feature" / "*"` with the module directory named `feature` and the
- * package directory below it named `featurePackage`. The names are what let the template below
- * pick its place: `--arg feature=home --arg featurePackage=home` binds both, so katachi has one
- * place to put the file, and the template reads the same values back with `captureValue(...)`
- * to build the package from them. They are two names because a capture name may be used only
- * once in a path. The price of the loose directory is that a `feature` that is not a module is
- * created as it is, and the file name is not tied to the module name.
-
+ * Its layout names the module directory and the package directory below it alike,
+ * `capture("feature")`. One name for two levels is what lets the template below pick its place
+ * with one `--arg feature=home`, lets the template read the value back with
+ * `captureValue("feature")` to build the package, and lets the check hold the two directories to
+ * the same name: a part filed under the wrong package is a `[CaptureMismatch]`. The price of the
+ * loose directory is that a `feature` that is not a module is created as it is, and the file name
+ * is not tied to the module name.
  */
 fun DeclarationContainerScope.featureComponent() = "FeatureComponent".role {
     title = "Screen part"
@@ -38,11 +37,11 @@ fun DeclarationContainerScope.featureComponent() = "FeatureComponent".role {
         `App*`. Features do not depend on each other, so a part left here cannot be called from
         another feature.
 
-        Can be generated from a template. The module directory is named `feature` and its
-        package directory `featurePackage`, so `--arg template=feature.FeatureComponent --arg
-        feature=home --arg featurePackage=home --arg name=HomeUserCard` puts
-        `HomeUserCard.kt` into `:feature:home`. `name` is the whole file name, including the
-        module's name; the check does not tie the two together.
+        Can be generated from a template. The module directory and its package directory are
+        both named `feature`, so `--arg template=feature.FeatureComponent --arg feature=home
+        --arg name=HomeUserCard` puts `HomeUserCard.kt` into `:feature:home`, and the check
+        holds the two directories to the same name. `name` is the whole file name, including
+        the module's name; the check does not tie the file name to the module.
     """.trimIndent()
     allowedContents = """
         - An `internal` `@Composable` that takes values and callbacks
@@ -53,17 +52,15 @@ fun DeclarationContainerScope.featureComponent() = "FeatureComponent".role {
         - Types of other features, and `public` declarations. Only the Route is visible from outside
     """.trimIndent()
     example("HomeUserCard", "A card used only by the home screen (example)")
-    // The module is chosen by `--arg feature=...` and its package by `--arg featurePackage=...`,
-    // the names the layout gave the two directories. A `feature` that is not a module is not
-    // refused; the directory is created as given.
+    // The module and its package are chosen by one `--arg feature=...`, the name the layout gave
+    // both directories. A `feature` that is not a module is not refused; the directory is
+    // created as given.
     //   ./gradlew :architecture-test:katachiTemplate \
-    //       --arg template=feature.FeatureComponent --arg feature=home --arg featurePackage=home \
-    //       --arg name=HomeUserCard
+    //       --arg template=feature.FeatureComponent --arg feature=home --arg name=HomeUserCard
     layout {
-        featureSources(module = capture("feature"), packageName = capture("featurePackage")) /
-            "component" / capture("name").ktFile()
+        featureSources(capture("feature")) / "component" / capture("name").ktFile()
                 .template {
-                    val featurePackage = captureValue("featurePackage")
+                    val feature = captureValue("feature")
                     val component = captureValue("name")
                     val withPreview by booleanParameter(default = true)
                     val previewImports = if (withPreview) {
@@ -88,7 +85,7 @@ fun DeclarationContainerScope.featureComponent() = "FeatureComponent".role {
                     }
 
                     """
-                        |package com.example.sample.feature.$featurePackage.component
+                        |package com.example.sample.feature.$feature.component
                         |
                         |import androidx.compose.foundation.layout.Arrangement
                         |import androidx.compose.foundation.layout.Column
@@ -98,7 +95,7 @@ fun DeclarationContainerScope.featureComponent() = "FeatureComponent".role {
                         |import androidx.compose.ui.Modifier
                         |import androidx.compose.ui.unit.dp
                         |$previewImports
-                        |/** Part of the $featurePackage screen that no other screen uses. */
+                        |/** Part of the $feature screen that no other screen uses. */
                         |@Composable
                         |internal fun $component(
                         |    title: String,
@@ -114,11 +111,11 @@ fun DeclarationContainerScope.featureComponent() = "FeatureComponent".role {
                     """.trimMargin()
                 }
     }
-    // The package is the captured `featurePackage` of the file being checked. A part may import
-    // its own feature, but not its ViewModel (state comes from the Screen as values) and no other
+    // The package is the captured `feature` of the file being checked. A part may import its own
+    // feature, but not its ViewModel (state comes from the Screen as values) and no other
     // feature.
     ktFileContent {
-        val feature = "com.example.sample.feature.${captureValue("featurePackage")}"
+        val feature = "com.example.sample.feature.${captureValue("feature")}"
         `package`("$feature.component")
 
         `import`("androidx.compose.**")

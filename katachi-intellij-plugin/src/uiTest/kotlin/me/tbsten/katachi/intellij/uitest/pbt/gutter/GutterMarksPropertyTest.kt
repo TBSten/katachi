@@ -40,6 +40,9 @@ class GutterMarksPropertyTest {
     private val path = "src/main/kotlin/a/File.kt"
     private val roles = listOf("domain.Service", "api.Handler", "data.Repository").map { roleModel(it, layoutEntry(path)) }
 
+    /** A file a pattern matched but whose captures held it back: no ◆ either, as for any file no role holds. */
+    private fun captureMismatchOutcome(): MatchOutcome = MatchOutcome.CaptureMismatch(roles.first(), roles.first().layout.first(), emptyList(), expectedPath = null)
+
     private data class Scenario(val input: GutterInput, val restricting: Set<String>)
 
     private fun scenario(random: Random): Scenario {
@@ -99,7 +102,7 @@ class GutterMarksPropertyTest {
     // covers: 当たらないファイル
     @Test
     fun `Matched でないファイルには何も出さない`() = runBlocking<Unit> {
-        val outcomes = listOf(MatchOutcome.Unexpected, MatchOutcome.IgnoredByVcs, MatchOutcome.NotWalked(".git"), MatchOutcome.UnexpectedUnder("a"))
+        val outcomes = listOf(MatchOutcome.Unexpected, MatchOutcome.IgnoredByVcs, MatchOutcome.NotWalked(".git"), MatchOutcome.UnexpectedUnder("a"), captureMismatchOutcome())
         checkAll(config, Arb.long()) { caseSeed ->
             val random = Random(caseSeed)
             val (input, _) = scenario(random)

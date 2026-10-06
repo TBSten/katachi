@@ -86,4 +86,30 @@ class KatachiGlobTest {
     fun `大文字小文字は区別する`() {
         assertFalse(KatachiGlob.compile("Foo.kt").matches("foo.kt"))
     }
+
+    @Test
+    fun `matchGroups はワイルドカードごとに取った文字を返し 二重アスタリスクは取らなかったとき空になる`() {
+        val glob = KatachiGlob.compile("feature/*/src/**/feature/*/*Screen.kt")
+        assertEquals(listOf("home", "main/kotlin", "home", "Home"), glob.matchGroups("feature/home/src/main/kotlin/feature/home/HomeScreen.kt"))
+        assertEquals(listOf("home", "", "home", "Home"), glob.matchGroups("feature/home/src/feature/home/HomeScreen.kt"))
+        assertEquals(null, glob.matchGroups("feature/home/Other.kt"))
+        assertEquals(listOf(GlobGroupKind.Single, GlobGroupKind.Recursive, GlobGroupKind.Single, GlobGroupKind.Single), glob.groupKinds)
+        assertEquals(listOf(1, 3, 5, 6), glob.groupSegments)
+        assertEquals(3, glob.singleWildcardCount)
+    }
+
+    @Test
+    fun `同じ階層の2つのアスタリスクは左から順に群になり 階層と何番目かで選べる`() {
+        val glob = KatachiGlob.compile("src/*/*-*.kt")
+        val groups = glob.matchGroups("src/home/x-home.kt") ?: throw AssertionError("no match")
+        assertEquals(listOf("home", "x", "home"), groups)
+        assertEquals("home", glob.singleGroupValue(groups, segmentIndex = 1, wildcardIndex = 0))
+        assertEquals("x", glob.singleGroupValue(groups, segmentIndex = 2, wildcardIndex = 0))
+        assertEquals("home", glob.singleGroupValue(groups, segmentIndex = 2, wildcardIndex = 1))
+        assertEquals(null, glob.singleGroupValue(groups, segmentIndex = 2, wildcardIndex = 2))
+        assertEquals(null, glob.singleGroupValue(groups, segmentIndex = 0, wildcardIndex = 0))
+        // The module separator counts levels after the leading `:`.
+        assertEquals(listOf(1), KatachiGlob.compile(":feature:*", KatachiGlob.MODULE_SEPARATOR).groupSegments)
+        assertEquals(listOf("home"), KatachiGlob.compile(":feature:*", KatachiGlob.MODULE_SEPARATOR).matchGroups(":feature:home"))
+    }
 }

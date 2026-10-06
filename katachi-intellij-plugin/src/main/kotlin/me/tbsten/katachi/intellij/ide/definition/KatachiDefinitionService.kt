@@ -51,7 +51,7 @@ internal class KatachiDefinitionService(
 
     override fun forFile(file: VirtualFile): FileRoles? {
         val roles = forPath(pathOf(file) ?: return null) ?: return null
-        val unexpected = roles.outcome is MatchOutcome.Unexpected || roles.outcome is MatchOutcome.UnexpectedUnder
+        val unexpected = roles.outcome is MatchOutcome.Unexpected || roles.outcome is MatchOutcome.UnexpectedUnder || roles.outcome is MatchOutcome.CaptureMismatch
         val tracksOnlyGit = definitionOf(roles.module.id)?.definition?.architecture?.isGitTracked == true
         return if (unexpected && tracksOnlyGit && ignoredByVcs(file)) roles.copy(outcome = MatchOutcome.IgnoredByVcs, nearby = emptyList()) else roles
     }

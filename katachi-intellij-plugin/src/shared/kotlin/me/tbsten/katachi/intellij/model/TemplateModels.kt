@@ -146,7 +146,10 @@ internal sealed interface ParameterModel {
  * One place a capture sits. [pattern] is the flattened file pattern with a `*` for each wildcard
  * level, or a module key such as `:feature:*`; [position] is the capture's `/`-separated level of
  * the file pattern, or which `*` of the module key it is; [segment] is the pattern of the one
- * segment this capture sits in, `${fileName}` in place of every capture that segment holds.
+ * segment this capture sits in, `${name}` in place of every plain capture and `<name.transform>` in
+ * place of every derived one that segment holds. [wildcardIndex] is which `*` of the level this is
+ * (0-based, unnamed ones counted); [transform] names the conversion of a derived place
+ * (`capture("x").pascalCase`), `null` for the plain capture a run takes as `--arg`.
  */
 internal data class CapturePlace(
     /** The JSON `kind`: `PathCapture`, `ModuleCapture`, or one a newer katachi added. */
@@ -154,6 +157,8 @@ internal data class CapturePlace(
     val pattern: String,
     val position: Int,
     val segment: String,
+    val wildcardIndex: Int = 0,
+    val transform: String? = null,
 ) {
     val isModule: Boolean get() = kindName == KIND_MODULE
 

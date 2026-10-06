@@ -134,4 +134,36 @@ class TemplateDescriptionJsonCaptureTest {
             assertNull(fixture, component.unavailability)
         }
     }
+
+    @Test
+    fun `派生の場所は wildcardIndex と transform つきで読み 派生しか無い名前は入力欄にしない`() {
+        val json = """
+            {"templates": [{"template": "api.Controller", "id": null, "title": "Controller", "roleName": "api.Controller", "summary": null, "parameterNames": [], "conflict": false,
+                            "captures": [{"name": "resource", "kind": "PathCapture", "pattern": "src/*/*Controller.kt", "position": 1, "segment": "${'$'}{resource}", "wildcardIndex": 0, "transform": null},
+                                         {"name": "resource", "kind": "PathCapture", "pattern": "src/*/*Controller.kt", "position": 2, "segment": "<resource.pascalCase>Controller.kt", "wildcardIndex": 0, "transform": "pascalCase"},
+                                         {"name": "ghost", "kind": "PathCapture", "pattern": "src/*/*Controller.kt", "position": 2, "segment": "<ghost.camelCase>", "wildcardIndex": 1, "transform": "camelCase"}]}],
+             "details": [{"template": "api.Controller", "id": null, "title": "Controller", "roleName": "api.Controller", "summary": null, "parameters": [], "files": [], "branches": [], "exampleCommand": "x",
+                          "captures": [{"name": "resource", "kind": "PathCapture", "pattern": "src/*/*Controller.kt", "position": 1, "segment": "${'$'}{resource}", "wildcardIndex": 0, "transform": null},
+                                       {"name": "resource", "kind": "PathCapture", "pattern": "src/*/*Controller.kt", "position": 2, "segment": "<resource.pascalCase>Controller.kt", "wildcardIndex": 0, "transform": "pascalCase"},
+                                       {"name": "ghost", "kind": "PathCapture", "pattern": "src/*/*Controller.kt", "position": 2, "segment": "<ghost.camelCase>", "wildcardIndex": 1, "transform": "camelCase"}]}]}
+        """.trimIndent()
+        val template = parseTemplateDescriptionJson(json, file).single()
+        assertEquals(listOf("resource"), template.summary.captureNames)
+        val detail = template.detail ?: throw AssertionError("no detail")
+        assertEquals(listOf("resource"), detail.captures.map { it.name })
+        assertEquals(
+            listOf(
+                CapturePlace("PathCapture", "src/*/*Controller.kt", 1, "${'$'}{resource}", 0, null),
+                CapturePlace("PathCapture", "src/*/*Controller.kt", 2, "<resource.pascalCase>Controller.kt", 0, "pascalCase"),
+            ),
+            detail.captures.single().places,
+        )
+    }
+
+    @Test
+    fun `wildcardIndex と transform の無い場所は 0 と null として読む`() {
+        val place = detailOf("sample-jvm-with-captures", "api.Controller").captures.first().places.single()
+        assertEquals(0, place.wildcardIndex)
+        assertNull(place.transform)
+    }
 }

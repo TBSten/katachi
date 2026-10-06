@@ -1,6 +1,7 @@
 package me.tbsten.katachi.intellij.presentation.rules
 
 import me.tbsten.katachi.intellij.model.ArchitectureModel
+import me.tbsten.katachi.intellij.model.CaptureRef
 import me.tbsten.katachi.intellij.model.DefinitionState
 import me.tbsten.katachi.intellij.model.DefinitionUnavailableReason
 import me.tbsten.katachi.intellij.model.Freshness
@@ -15,8 +16,12 @@ import me.tbsten.katachi.intellij.testing.HELD
 import me.tbsten.katachi.intellij.testing.MISNAMED
 import me.tbsten.katachi.intellij.testing.STRAY
 import me.tbsten.katachi.intellij.testing.USE_CASE_DIRECTORY
+import me.tbsten.katachi.intellij.testing.definitionModel
+import me.tbsten.katachi.intellij.testing.definitionSnapshot
+import me.tbsten.katachi.intellij.testing.layoutEntry
 import me.tbsten.katachi.intellij.testing.noRoleInput
 import me.tbsten.katachi.intellij.testing.noRoleSnapshot
+import me.tbsten.katachi.intellij.testing.roleModel
 import me.tbsten.katachi.intellij.testing.rolesFor
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -188,5 +193,26 @@ class NoRoleDecisionTableTest {
             assertEquals("$name on", name in expectedWhenOn, shouldEnsureDefinitionLoaded(state, loadWithoutUser = true))
             assertFalse("$name off", shouldEnsureDefinitionLoaded(state, loadWithoutUser = false))
         }
+    }
+
+    @Test
+    fun `capture の値が揃わないファイルは katachi の CaptureMismatch の文で出て 近い Role は付かない`() {
+        val screen = roleModel(
+            "feature.Screen",
+            layoutEntry("feature/*/src/*/*Screen.kt", captures = listOf(CaptureRef("feature", 1), CaptureRef("feature", 3), CaptureRef("feature", 4, 0, "pascalCase"))),
+        )
+        val snapshot = definitionSnapshot(definitionModel(screen))
+        val decision = noRole(noRoleInput("feature/home/src/settings/HomeScreen.kt", snapshot))
+
+        val note = decision.captureMismatch ?: throw AssertionError("not a capture mismatch: $decision")
+        assertEquals("feature.Screen", note.roleName)
+        assertEquals(listOf("capture(\"feature\")"), note.disagreeingNames)
+        assertEquals(
+            listOf("feature: \"home\" at level 2, \"settings\" at level 4 (expected \"home\")", "feature.pascalCase: \"Home\" at level 5"),
+            note.lines,
+        )
+        assertEquals("feature/home/src/home/HomeScreen.kt", note.expectedPath)
+        assertEquals(emptyList<Any>(), decision.nearby)
+        assertEquals(null, decision.unexpectedUnder)
     }
 }

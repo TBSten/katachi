@@ -5,6 +5,7 @@ import me.tbsten.katachi.intellij.model.SarifLevel
 import me.tbsten.katachi.intellij.model.SarifLocation
 import me.tbsten.katachi.intellij.testing.DefinitionFixtures
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertTrue
 import org.junit.Test
 import java.nio.file.Paths
 
@@ -12,7 +13,8 @@ import java.nio.file.Paths
  * The reader against the `katachi.sarif` that `sample/jvm`'s `report { sarif = true }` really writes
  * (`contract/json/real-jvm-*-sarif.json`; only the `%SRCROOT%` base is replaced by `file:///__ROOT__/`).
  * `clean` is the file of a green run, `violations` the one of the same run with `katachi-baseline.json` emptied,
- * so that the two violations the baseline holds back come out.
+ * so that the three violations the baseline holds back come out (a `CaptureMismatch`, an `UnexpectedFile` and an
+ * `UnsatisfiedFileConstraint`).
  */
 class RealSarifContractTest {
     private val root = Paths.get("/__ROOT__")
@@ -30,6 +32,7 @@ class RealSarifContractTest {
 
         assertEquals(
             listOf(
+                Triple("katachi.CaptureMismatch", "CaptureMismatch", SarifLevel.Error),
                 Triple("katachi.UnexpectedFile", "UnexpectedFile", SarifLevel.Error),
                 Triple("katachi.UnsatisfiedFileConstraint", "UnsatisfiedFileConstraint", SarifLevel.Error),
             ),
@@ -37,18 +40,21 @@ class RealSarifContractTest {
         )
         assertEquals(
             listOf(
+                SarifLocation(root.resolve("src/main/kotlin/com/example/controller/health/LegacyStatusController.kt"), null),
                 SarifLocation(root.resolve("src/main/kotlin/com/example/service/LegacyHealthCheck.kt"), null),
                 SarifLocation(root.resolve("src/main/kotlin/com/example/service/LegacyStatusService.kt"), 3),
             ),
             results.map { it.location },
         )
 
-        val constraint = results[1]
+        val constraint = results[2]
         assertEquals(listOf(SarifLocation(root.resolve("architecture-test/src/test/kotlin/com/example/roles/ServiceRole.kt"), 94)), constraint.related)
         assertEquals("domain.Service", constraint.properties["role"])
         assertEquals("Must be public", constraint.properties["constraint"])
         assertEquals("LegacyStatusService", constraint.properties["declaration"])
         assertEquals("ServiceRole.kt:94", constraint.properties["declaredAt"])
         assertEquals("Unexpected", results[0].properties["kind"])
+        assertEquals("Unexpected", results[1].properties["kind"])
+        assertTrue(results[0].message.startsWith("The file matches a pattern of role api.Controller, but the levels named by capture(\"resource\") do not agree."))
     }
 }

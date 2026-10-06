@@ -16,7 +16,7 @@ import org.junit.Test
 /**
  * The definition matcher over generated definitions (roles with files, `anyFile()`, directories and `ignore()`,
  * their patterns with `**` and escaped `*`, some entries marked synthetic or place; constraints with their coverage)
- * and generated paths (some under `.idea` / `.gradle`), against [referenceAnswer], which works the answer out the way
+ * and generated paths (some under `.git`, `.idea` or `.gradle`), against [referenceAnswer], which works the answer out the way
  * katachi's `Scan` walks, one directory at a time, trying every entry. Together: the walk stops at the first directory
  * that is not walked, ignored or undeclared; a path nobody holds is unexpected; a held path has one entry per role
  * and the constraints that cover it; the places offered are the near ones, at most three.
@@ -87,15 +87,17 @@ class DefinitionMatcherPropertyTest {
 
     // covers: 照合器 (f)
     @Test
-    fun `近い場所は Unexpected のときだけ付き 共有階層の多い順の最大3件で 参照実装と同じ`() = runBlocking<Unit> {
+    fun `近い場所は Unexpected のときだけ付き 階層の編集距離の順の最大3件で 打ち切りの無い参照実装と同じ`() = runBlocking<Unit> {
         checkAll(config, matcherScenarioArb) { scenario ->
             forEachAnswer(scenario) { path, actual, expected ->
                 val label = "$scenario\npath=$path"
                 if (actual.outcome is MatchOutcome.Matched || actual.outcome is MatchOutcome.Ignored || actual.outcome is MatchOutcome.NotWalked) {
                     assertTrue(label, actual.nearby.isEmpty())
                 } else {
+                    // The matcher keeps only the three nearest as it goes and counts characters on a tie alone; the reference ranks everything.
                     assertEquals(label, expected.nearby, actual.nearby.map { it.role.qualifiedName to it.directory })
-                    assertTrue(label, actual.nearby.size <= 3 && actual.nearby.all { '*' !in it.directory && it.directory.isNotEmpty() })
+                    // A `*` left in a directory is a level literally named so (what `\*` declares, or the file's own level), never a wildcard.
+                    assertTrue(label, actual.nearby.size <= 3 && actual.nearby.all { it.directory.isNotEmpty() && it.directory.split('/').first() == path.substringBefore('/') })
                 }
             }
         }

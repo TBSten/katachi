@@ -43,7 +43,7 @@ class RealDefinitionContractTest {
         val explainedFiles: Int,
         val declarations: Int,
         val allowedByAnythingElse: Int,
-        /** Tracked files no role holds (an `UnexpectedFile` or a file in an `UnexpectedDirectory`) that the sample's `katachi-baseline.json` holds back on purpose, in `git ls-files` order. */
+        /** Tracked files no role holds (an `UnexpectedFile`, a file in an `UnexpectedDirectory`, or a `CaptureMismatch`) that the sample's `katachi-baseline.json` holds back on purpose, in `git ls-files` order. */
         val heldBack: List<String> = emptyList(),
     ) {
         val fixture: String get() = "real-$name-definition"
@@ -54,14 +54,20 @@ class RealDefinitionContractTest {
     }
 
     private val samples = listOf(
-        Sample("jvm", roles = 29, groups = 8, constraints = 6, explainedFiles = 6, declarations = 5, allowedByAnythingElse = 0, heldBack = listOf("src/main/kotlin/com/example/service/LegacyHealthCheck.kt")),
-        Sample("android", roles = 37, groups = 8, constraints = 9, explainedFiles = 15, declarations = 28, allowedByAnythingElse = 0,
+        Sample(
+            "jvm", roles = 30, groups = 8, constraints = 7, explainedFiles = 6, declarations = 5, allowedByAnythingElse = 0,
+            heldBack = listOf(
+                "src/main/kotlin/com/example/controller/health/LegacyStatusController.kt",
+                "src/main/kotlin/com/example/service/LegacyHealthCheck.kt",
+            ),
+        ),
+        Sample("android", roles = 37, groups = 8, constraints = 10, explainedFiles = 15, declarations = 28, allowedByAnythingElse = 0,
             heldBack = listOf(
                 "data/src/main/kotlin/com/example/sample/data/legacy/LegacyUserCache.kt",
                 "feature/home/src/main/kotlin/com/example/sample/feature/home/HomeFormatter.kt",
             ),
         ),
-        Sample("kmp", roles = 44, groups = 8, constraints = 7, explainedFiles = 10, declarations = 14, allowedByAnythingElse = 3,
+        Sample("kmp", roles = 44, groups = 8, constraints = 8, explainedFiles = 10, declarations = 14, allowedByAnythingElse = 3,
             heldBack = listOf("data/src/androidMain/kotlin/com/example/kmp/data/user/UserAgent.android.kt"),
         ),
     )
@@ -204,7 +210,7 @@ class RealDefinitionContractTest {
     }
 
     @Test
-    fun `実 katachi が書いた layout で git の追跡ファイルは baseline が抑えた1件を除きすべて照合が役割か ignore に振り分ける`() {
+    fun `実 katachi が書いた layout で git の追跡ファイルは baseline が抑えたものを除きすべて照合が役割か ignore に振り分ける`() {
         for (sample in samples) {
             val tracked = gitTrackedFilesOf(sample.directory)
             assumeTrue("git ls-files is not available in ${sample.directory}", tracked != null)

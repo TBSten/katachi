@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "katachiVersion": "0.2.0",
-  "generatedAt": "2026-10-05T05:56:22Z",
+  "generatedAt": "2026-10-05T17:59:29Z",
   "projectRoot": "/__ROOT__",
   "architecture": {
     "declaredAt": {
@@ -81,7 +81,7 @@
       "documented": false,
       "declaredAt": {
         "fileName": "GradleGroup.kt",
-        "line": 33
+        "line": 62
       }
     },
     {
@@ -93,7 +93,7 @@
       "documented": false,
       "declaredAt": {
         "fileName": "GradleGroup.kt",
-        "line": 33
+        "line": 62
       }
     },
     {
@@ -941,7 +941,7 @@
       "documented": null,
       "declaredAt": {
         "fileName": "FeatureComponentRole.kt",
-        "line": 25
+        "line": 26
       },
       "layout": [
         {
@@ -952,7 +952,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "FeatureComponentRole.kt",
-            "line": 58
+            "line": 59
           },
           "modulePath": null,
           "pathInModule": "feature",
@@ -973,14 +973,16 @@
           "description": null,
           "declaredAt": {
             "fileName": "FeatureComponentRole.kt",
-            "line": 58
+            "line": 59
           },
           "modulePath": null,
           "pathInModule": "feature/*",
           "captures": [
             {
               "name": "feature",
-              "segmentIndex": 1
+              "segmentIndex": 1,
+              "wildcardIndex": 0,
+              "transform": null
             }
           ],
           "moduleCapture": null,
@@ -999,14 +1001,16 @@
           "description": null,
           "declaredAt": {
             "fileName": "FeatureComponentRole.kt",
-            "line": 58
+            "line": 59
           },
           "modulePath": null,
           "pathInModule": "feature/*/src",
           "captures": [
             {
               "name": "feature",
-              "segmentIndex": 1
+              "segmentIndex": 1,
+              "wildcardIndex": 0,
+              "transform": null
             }
           ],
           "moduleCapture": null,
@@ -1025,14 +1029,16 @@
           "description": null,
           "declaredAt": {
             "fileName": "FeatureComponentRole.kt",
-            "line": 58
+            "line": 59
           },
           "modulePath": null,
           "pathInModule": "feature/*/src/commonMain",
           "captures": [
             {
               "name": "feature",
-              "segmentIndex": 1
+              "segmentIndex": 1,
+              "wildcardIndex": 0,
+              "transform": null
             }
           ],
           "moduleCapture": null,
@@ -1051,14 +1057,16 @@
           "description": null,
           "declaredAt": {
             "fileName": "FeatureComponentRole.kt",
-            "line": 58
+            "line": 59
           },
           "modulePath": null,
           "pathInModule": "feature/*/src/commonMain/kotlin",
           "captures": [
             {
               "name": "feature",
-              "segmentIndex": 1
+              "segmentIndex": 1,
+              "wildcardIndex": 0,
+              "transform": null
             }
           ],
           "moduleCapture": null,
@@ -1077,14 +1085,16 @@
           "description": null,
           "declaredAt": {
             "fileName": "FeatureComponentRole.kt",
-            "line": 58
+            "line": 59
           },
           "modulePath": null,
           "pathInModule": "feature/*/src/commonMain/kotlin/com",
           "captures": [
             {
               "name": "feature",
-              "segmentIndex": 1
+              "segmentIndex": 1,
+              "wildcardIndex": 0,
+              "transform": null
             }
           ],
           "moduleCapture": null,
@@ -1103,14 +1113,16 @@
           "description": null,
           "declaredAt": {
             "fileName": "FeatureComponentRole.kt",
-            "line": 58
+            "line": 59
           },
           "modulePath": null,
           "pathInModule": "feature/*/src/commonMain/kotlin/com/example",
           "captures": [
             {
               "name": "feature",
-              "segmentIndex": 1
+              "segmentIndex": 1,
+              "wildcardIndex": 0,
+              "transform": null
             }
           ],
           "moduleCapture": null,
@@ -1129,14 +1141,16 @@
           "description": null,
           "declaredAt": {
             "fileName": "FeatureComponentRole.kt",
-            "line": 58
+            "line": 59
           },
           "modulePath": null,
           "pathInModule": "feature/*/src/commonMain/kotlin/com/example/kmp",
           "captures": [
             {
               "name": "feature",
-              "segmentIndex": 1
+              "segmentIndex": 1,
+              "wildcardIndex": 0,
+              "transform": null
             }
           ],
           "moduleCapture": null,
@@ -1155,14 +1169,16 @@
           "description": null,
           "declaredAt": {
             "fileName": "FeatureComponentRole.kt",
-            "line": 58
+            "line": 59
           },
           "modulePath": null,
           "pathInModule": "feature/*/src/commonMain/kotlin/com/example/kmp/feature",
           "captures": [
             {
               "name": "feature",
-              "segmentIndex": 1
+              "segmentIndex": 1,
+              "wildcardIndex": 0,
+              "transform": null
             }
           ],
           "moduleCapture": null,
@@ -1181,18 +1197,22 @@
           "description": null,
           "declaredAt": {
             "fileName": "FeatureComponentRole.kt",
-            "line": 58
+            "line": 59
           },
           "modulePath": null,
           "pathInModule": "feature/*/src/commonMain/kotlin/com/example/kmp/feature/*",
           "captures": [
             {
               "name": "feature",
-              "segmentIndex": 1
+              "segmentIndex": 1,
+              "wildcardIndex": 0,
+              "transform": null
             },
             {
-              "name": "featurePackage",
-              "segmentIndex": 9
+              "name": "feature",
+              "segmentIndex": 9,
+              "wildcardIndex": 0,
+              "transform": null
             }
           ],
           "moduleCapture": null,
@@ -1211,18 +1231,22 @@
           "description": null,
           "declaredAt": {
             "fileName": "FeatureComponentRole.kt",
-            "line": 58
+            "line": 59
           },
           "modulePath": null,
           "pathInModule": "feature/*/src/commonMain/kotlin/com/example/kmp/feature/*/component",
           "captures": [
             {
               "name": "feature",
-              "segmentIndex": 1
+              "segmentIndex": 1,
+              "wildcardIndex": 0,
+              "transform": null
             },
             {
-              "name": "featurePackage",
-              "segmentIndex": 9
+              "name": "feature",
+              "segmentIndex": 9,
+              "wildcardIndex": 0,
+              "transform": null
             }
           ],
           "moduleCapture": null,
@@ -1241,22 +1265,28 @@
           "description": null,
           "declaredAt": {
             "fileName": "FeatureComponentRole.kt",
-            "line": 60
+            "line": 61
           },
           "modulePath": null,
           "pathInModule": "feature/*/src/commonMain/kotlin/com/example/kmp/feature/*/component/*.kt",
           "captures": [
             {
               "name": "feature",
-              "segmentIndex": 1
+              "segmentIndex": 1,
+              "wildcardIndex": 0,
+              "transform": null
             },
             {
-              "name": "featurePackage",
-              "segmentIndex": 9
+              "name": "feature",
+              "segmentIndex": 9,
+              "wildcardIndex": 0,
+              "transform": null
             },
             {
               "name": "name",
-              "segmentIndex": 11
+              "segmentIndex": 11,
+              "wildcardIndex": 0,
+              "transform": null
             }
           ],
           "moduleCapture": null,
@@ -1266,7 +1296,7 @@
             "title": null,
             "declaredAt": {
               "fileName": "FeatureComponentRole.kt",
-              "line": 61
+              "line": 62
             }
           },
           "matchedFiles": ["feature/home/src/commonMain/kotlin/com/example/kmp/feature/home/component/HomeUserCard.kt"],
@@ -1284,7 +1314,7 @@
           "range": "Subtree",
           "declaredAt": {
             "fileName": "FeatureComponentRole.kt",
-            "line": 84
+            "line": 85
           },
           "layoutPath": null,
           "anchors": ["feature/*/src/commonMain/kotlin/com/example/kmp/feature/*/component"],
@@ -1308,7 +1338,7 @@
                       "text": "@Composable internal fun HomeUserCard(...)",
                       "declaredAt": {
                         "fileName": "FeatureComponentRole.kt",
-                        "line": 90
+                        "line": 91
                       }
                     }
                   ],
@@ -3229,7 +3259,9 @@
           "captures": [
             {
               "name": "name",
-              "segmentIndex": 9
+              "segmentIndex": 9,
+              "wildcardIndex": 0,
+              "transform": null
             }
           ],
           "moduleCapture": null,
@@ -3511,7 +3543,9 @@
           "captures": [
             {
               "name": "name",
-              "segmentIndex": 9
+              "segmentIndex": 9,
+              "wildcardIndex": 0,
+              "transform": null
             }
           ],
           "moduleCapture": null,
@@ -7478,7 +7512,7 @@
       "documented": false,
       "declaredAt": {
         "fileName": "GradleGroup.kt",
-        "line": 33
+        "line": 62
       },
       "layout": [
         {
@@ -7489,7 +7523,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "GradleGroup.kt",
-            "line": 33
+            "line": 62
           },
           "modulePath": null,
           "pathInModule": "settings.gradle.kts",
@@ -7510,7 +7544,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "GradleGroup.kt",
-            "line": 33
+            "line": 62
           },
           "modulePath": null,
           "pathInModule": "settings.gradle",
@@ -7535,7 +7569,7 @@
       "documented": false,
       "declaredAt": {
         "fileName": "GradleGroup.kt",
-        "line": 33
+        "line": 62
       },
       "layout": [
         {
@@ -7546,7 +7580,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "GradleGroup.kt",
-            "line": 33
+            "line": 62
           },
           "modulePath": ":",
           "pathInModule": "build",
@@ -7567,7 +7601,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "GradleGroup.kt",
-            "line": 33
+            "line": 62
           },
           "modulePath": ":",
           "pathInModule": "build.gradle.kts",
@@ -7577,7 +7611,7 @@
           "matchedFiles": ["build.gradle.kts"],
           "matchedCount": 1,
           "matchedFilesTruncated": false,
-          "synthetic": true,
+          "synthetic": false,
           "place": false
         },
         {
@@ -7588,7 +7622,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "GradleGroup.kt",
-            "line": 33
+            "line": 62
           },
           "modulePath": ":",
           "pathInModule": "build.gradle",
@@ -7598,7 +7632,7 @@
           "matchedFiles": [],
           "matchedCount": 0,
           "matchedFilesTruncated": false,
-          "synthetic": true,
+          "synthetic": false,
           "place": false
         },
         {
@@ -7609,7 +7643,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "GradleGroup.kt",
-            "line": 33
+            "line": 62
           },
           "modulePath": null,
           "pathInModule": "app",
@@ -7630,7 +7664,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "GradleGroup.kt",
-            "line": 33
+            "line": 62
           },
           "modulePath": ":app:android",
           "pathInModule": "",
@@ -7651,7 +7685,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "GradleGroup.kt",
-            "line": 33
+            "line": 62
           },
           "modulePath": ":app:android",
           "pathInModule": "build",
@@ -7672,7 +7706,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "GradleGroup.kt",
-            "line": 33
+            "line": 62
           },
           "modulePath": ":app:android",
           "pathInModule": "build.gradle.kts",
@@ -7682,7 +7716,7 @@
           "matchedFiles": ["app/android/build.gradle.kts"],
           "matchedCount": 1,
           "matchedFilesTruncated": false,
-          "synthetic": true,
+          "synthetic": false,
           "place": false
         },
         {
@@ -7693,7 +7727,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "GradleGroup.kt",
-            "line": 33
+            "line": 62
           },
           "modulePath": ":app:android",
           "pathInModule": "build.gradle",
@@ -7703,7 +7737,7 @@
           "matchedFiles": [],
           "matchedCount": 0,
           "matchedFilesTruncated": false,
-          "synthetic": true,
+          "synthetic": false,
           "place": false
         },
         {
@@ -7714,7 +7748,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "GradleGroup.kt",
-            "line": 33
+            "line": 62
           },
           "modulePath": ":architecture-test",
           "pathInModule": "",
@@ -7735,7 +7769,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "GradleGroup.kt",
-            "line": 33
+            "line": 62
           },
           "modulePath": ":architecture-test",
           "pathInModule": "build",
@@ -7756,7 +7790,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "GradleGroup.kt",
-            "line": 33
+            "line": 62
           },
           "modulePath": ":architecture-test",
           "pathInModule": "build.gradle.kts",
@@ -7766,7 +7800,7 @@
           "matchedFiles": ["architecture-test/build.gradle.kts"],
           "matchedCount": 1,
           "matchedFilesTruncated": false,
-          "synthetic": true,
+          "synthetic": false,
           "place": false
         },
         {
@@ -7777,7 +7811,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "GradleGroup.kt",
-            "line": 33
+            "line": 62
           },
           "modulePath": ":architecture-test",
           "pathInModule": "build.gradle",
@@ -7787,7 +7821,7 @@
           "matchedFiles": [],
           "matchedCount": 0,
           "matchedFilesTruncated": false,
-          "synthetic": true,
+          "synthetic": false,
           "place": false
         },
         {
@@ -7798,7 +7832,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "GradleGroup.kt",
-            "line": 33
+            "line": 62
           },
           "modulePath": ":data",
           "pathInModule": "",
@@ -7819,7 +7853,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "GradleGroup.kt",
-            "line": 33
+            "line": 62
           },
           "modulePath": ":data",
           "pathInModule": "build",
@@ -7840,7 +7874,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "GradleGroup.kt",
-            "line": 33
+            "line": 62
           },
           "modulePath": ":data",
           "pathInModule": "build.gradle.kts",
@@ -7850,7 +7884,7 @@
           "matchedFiles": ["data/build.gradle.kts"],
           "matchedCount": 1,
           "matchedFilesTruncated": false,
-          "synthetic": true,
+          "synthetic": false,
           "place": false
         },
         {
@@ -7861,7 +7895,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "GradleGroup.kt",
-            "line": 33
+            "line": 62
           },
           "modulePath": ":data",
           "pathInModule": "build.gradle",
@@ -7871,7 +7905,7 @@
           "matchedFiles": [],
           "matchedCount": 0,
           "matchedFilesTruncated": false,
-          "synthetic": true,
+          "synthetic": false,
           "place": false
         },
         {
@@ -7882,7 +7916,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "GradleGroup.kt",
-            "line": 33
+            "line": 62
           },
           "modulePath": null,
           "pathInModule": "feature",
@@ -7903,7 +7937,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "GradleGroup.kt",
-            "line": 33
+            "line": 62
           },
           "modulePath": ":feature:home",
           "pathInModule": "",
@@ -7924,7 +7958,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "GradleGroup.kt",
-            "line": 33
+            "line": 62
           },
           "modulePath": ":feature:home",
           "pathInModule": "build",
@@ -7945,7 +7979,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "GradleGroup.kt",
-            "line": 33
+            "line": 62
           },
           "modulePath": ":feature:home",
           "pathInModule": "build.gradle.kts",
@@ -7955,7 +7989,7 @@
           "matchedFiles": ["feature/home/build.gradle.kts"],
           "matchedCount": 1,
           "matchedFilesTruncated": false,
-          "synthetic": true,
+          "synthetic": false,
           "place": false
         },
         {
@@ -7966,7 +8000,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "GradleGroup.kt",
-            "line": 33
+            "line": 62
           },
           "modulePath": ":feature:home",
           "pathInModule": "build.gradle",
@@ -7976,7 +8010,7 @@
           "matchedFiles": [],
           "matchedCount": 0,
           "matchedFilesTruncated": false,
-          "synthetic": true,
+          "synthetic": false,
           "place": false
         },
         {
@@ -7987,7 +8021,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "GradleGroup.kt",
-            "line": 33
+            "line": 62
           },
           "modulePath": ":feature:settings",
           "pathInModule": "",
@@ -8008,7 +8042,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "GradleGroup.kt",
-            "line": 33
+            "line": 62
           },
           "modulePath": ":feature:settings",
           "pathInModule": "build",
@@ -8029,7 +8063,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "GradleGroup.kt",
-            "line": 33
+            "line": 62
           },
           "modulePath": ":feature:settings",
           "pathInModule": "build.gradle.kts",
@@ -8039,7 +8073,7 @@
           "matchedFiles": ["feature/settings/build.gradle.kts"],
           "matchedCount": 1,
           "matchedFilesTruncated": false,
-          "synthetic": true,
+          "synthetic": false,
           "place": false
         },
         {
@@ -8050,7 +8084,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "GradleGroup.kt",
-            "line": 33
+            "line": 62
           },
           "modulePath": ":feature:settings",
           "pathInModule": "build.gradle",
@@ -8060,7 +8094,7 @@
           "matchedFiles": [],
           "matchedCount": 0,
           "matchedFilesTruncated": false,
-          "synthetic": true,
+          "synthetic": false,
           "place": false
         },
         {
@@ -8071,7 +8105,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "GradleGroup.kt",
-            "line": 33
+            "line": 62
           },
           "modulePath": ":navigation",
           "pathInModule": "",
@@ -8092,7 +8126,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "GradleGroup.kt",
-            "line": 33
+            "line": 62
           },
           "modulePath": ":navigation",
           "pathInModule": "build",
@@ -8113,7 +8147,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "GradleGroup.kt",
-            "line": 33
+            "line": 62
           },
           "modulePath": ":navigation",
           "pathInModule": "build.gradle.kts",
@@ -8123,7 +8157,7 @@
           "matchedFiles": ["navigation/build.gradle.kts"],
           "matchedCount": 1,
           "matchedFilesTruncated": false,
-          "synthetic": true,
+          "synthetic": false,
           "place": false
         },
         {
@@ -8134,7 +8168,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "GradleGroup.kt",
-            "line": 33
+            "line": 62
           },
           "modulePath": ":navigation",
           "pathInModule": "build.gradle",
@@ -8144,7 +8178,7 @@
           "matchedFiles": [],
           "matchedCount": 0,
           "matchedFilesTruncated": false,
-          "synthetic": true,
+          "synthetic": false,
           "place": false
         },
         {
@@ -8155,7 +8189,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "GradleGroup.kt",
-            "line": 33
+            "line": 62
           },
           "modulePath": ":testing",
           "pathInModule": "",
@@ -8176,7 +8210,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "GradleGroup.kt",
-            "line": 33
+            "line": 62
           },
           "modulePath": ":testing",
           "pathInModule": "build",
@@ -8197,7 +8231,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "GradleGroup.kt",
-            "line": 33
+            "line": 62
           },
           "modulePath": ":testing",
           "pathInModule": "build.gradle.kts",
@@ -8207,7 +8241,7 @@
           "matchedFiles": ["testing/build.gradle.kts"],
           "matchedCount": 1,
           "matchedFilesTruncated": false,
-          "synthetic": true,
+          "synthetic": false,
           "place": false
         },
         {
@@ -8218,7 +8252,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "GradleGroup.kt",
-            "line": 33
+            "line": 62
           },
           "modulePath": ":testing",
           "pathInModule": "build.gradle",
@@ -8228,7 +8262,7 @@
           "matchedFiles": [],
           "matchedCount": 0,
           "matchedFilesTruncated": false,
-          "synthetic": true,
+          "synthetic": false,
           "place": false
         },
         {
@@ -8239,7 +8273,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "GradleGroup.kt",
-            "line": 33
+            "line": 62
           },
           "modulePath": ":ui",
           "pathInModule": "",
@@ -8260,7 +8294,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "GradleGroup.kt",
-            "line": 33
+            "line": 62
           },
           "modulePath": ":ui",
           "pathInModule": "build",
@@ -8281,7 +8315,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "GradleGroup.kt",
-            "line": 33
+            "line": 62
           },
           "modulePath": ":ui",
           "pathInModule": "build.gradle.kts",
@@ -8291,7 +8325,7 @@
           "matchedFiles": ["ui/build.gradle.kts"],
           "matchedCount": 1,
           "matchedFilesTruncated": false,
-          "synthetic": true,
+          "synthetic": false,
           "place": false
         },
         {
@@ -8302,7 +8336,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "GradleGroup.kt",
-            "line": 33
+            "line": 62
           },
           "modulePath": ":ui",
           "pathInModule": "build.gradle",
@@ -8312,11 +8346,30 @@
           "matchedFiles": [],
           "matchedCount": 0,
           "matchedFilesTruncated": false,
-          "synthetic": true,
+          "synthetic": false,
           "place": false
         }
       ],
-      "constraints": []
+      "constraints": [
+        {
+          "name": "namespace of a library module follows the module path",
+          "backend": "custom",
+          "checkClass": "com.example.kmp.groups.GradleGroupKt$$Lambda$112/0x000000b00108ab30",
+          "range": "Subtree",
+          "declaredAt": {
+            "fileName": "GradleGroup.kt",
+            "line": 68
+          },
+          "layoutPath": null,
+          "anchors": ["app/android", "architecture-test", "data", "feature/home", "feature/settings", "navigation", "testing", "ui"],
+          "entries": [1, 2, 6, 7, 10, 11, 14, 15, 19, 20, 23, 24, 27, 28, 31, 32, 35, 36],
+          "coverage": {
+            "files": ["build.gradle.kts", "build.gradle", "app/android/build.gradle.kts", "app/android/build.gradle", "architecture-test/build.gradle.kts", "architecture-test/build.gradle", "data/build.gradle.kts", "data/build.gradle", "feature/home/build.gradle.kts", "feature/home/build.gradle", "feature/settings/build.gradle.kts", "feature/settings/build.gradle", "navigation/build.gradle.kts", "navigation/build.gradle", "testing/build.gradle.kts", "testing/build.gradle", "ui/build.gradle.kts", "ui/build.gradle"],
+            "anyFileDirectories": []
+          },
+          "fileDeclarations": null
+        }
+      ]
     },
     {
       "qualifiedName": "Gradle.GradleProperties",
@@ -8327,7 +8380,7 @@
       "documented": false,
       "declaredAt": {
         "fileName": "GradleGroup.kt",
-        "line": 33
+        "line": 62
       },
       "layout": [
         {
@@ -8338,7 +8391,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "GradleGroup.kt",
-            "line": 33
+            "line": 62
           },
           "modulePath": null,
           "pathInModule": "gradle.properties",
@@ -8363,7 +8416,7 @@
       "documented": false,
       "declaredAt": {
         "fileName": "GradleGroup.kt",
-        "line": 33
+        "line": 62
       },
       "layout": [
         {
@@ -8374,7 +8427,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "GradleGroup.kt",
-            "line": 33
+            "line": 62
           },
           "modulePath": null,
           "pathInModule": "gradle",
@@ -8395,7 +8448,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "GradleGroup.kt",
-            "line": 33
+            "line": 62
           },
           "modulePath": null,
           "pathInModule": "gradle/*.versions.toml",
@@ -8420,7 +8473,7 @@
       "documented": false,
       "declaredAt": {
         "fileName": "GradleGroup.kt",
-        "line": 33
+        "line": 62
       },
       "layout": [
         {
@@ -8431,7 +8484,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "GradleGroup.kt",
-            "line": 33
+            "line": 62
           },
           "modulePath": null,
           "pathInModule": "gradle",
@@ -8452,7 +8505,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "GradleGroup.kt",
-            "line": 33
+            "line": 62
           },
           "modulePath": null,
           "pathInModule": "gradle/gradle-daemon-jvm.properties",
@@ -8477,7 +8530,7 @@
       "documented": false,
       "declaredAt": {
         "fileName": "GradleGroup.kt",
-        "line": 33
+        "line": 62
       },
       "layout": [
         {
@@ -8488,7 +8541,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "GradleGroup.kt",
-            "line": 33
+            "line": 62
           },
           "modulePath": null,
           "pathInModule": "gradlew",
@@ -8509,7 +8562,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "GradleGroup.kt",
-            "line": 33
+            "line": 62
           },
           "modulePath": null,
           "pathInModule": "gradlew.bat",
@@ -8534,7 +8587,7 @@
       "documented": false,
       "declaredAt": {
         "fileName": "GradleGroup.kt",
-        "line": 33
+        "line": 62
       },
       "layout": [
         {
@@ -8545,7 +8598,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "GradleGroup.kt",
-            "line": 33
+            "line": 62
           },
           "modulePath": null,
           "pathInModule": "gradle",
@@ -8566,7 +8619,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "GradleGroup.kt",
-            "line": 33
+            "line": 62
           },
           "modulePath": null,
           "pathInModule": "gradle/wrapper",
@@ -8587,7 +8640,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "GradleGroup.kt",
-            "line": 33
+            "line": 62
           },
           "modulePath": null,
           "pathInModule": "gradle/wrapper/gradle-wrapper.jar",
@@ -8612,7 +8665,7 @@
       "documented": false,
       "declaredAt": {
         "fileName": "GradleGroup.kt",
-        "line": 33
+        "line": 62
       },
       "layout": [
         {
@@ -8623,7 +8676,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "GradleGroup.kt",
-            "line": 33
+            "line": 62
           },
           "modulePath": null,
           "pathInModule": "gradle",
@@ -8644,7 +8697,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "GradleGroup.kt",
-            "line": 33
+            "line": 62
           },
           "modulePath": null,
           "pathInModule": "gradle/wrapper",
@@ -8665,7 +8718,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "GradleGroup.kt",
-            "line": 33
+            "line": 62
           },
           "modulePath": null,
           "pathInModule": "gradle/wrapper/gradle-wrapper.properties",
@@ -8737,7 +8790,7 @@
           "description": null,
           "declaredAt": {
             "fileName": "GitRole.kt",
-            "line": 42
+            "line": 44
           },
           "modulePath": null,
           "pathInModule": ".gitignore",
@@ -8769,21 +8822,27 @@
             "kind": "PathCapture",
             "pattern": "feature/*/src/commonMain/kotlin/com/example/kmp/feature/*/component/*.kt",
             "position": 1,
-            "segment": "${feature}"
+            "segment": "${feature}",
+            "wildcardIndex": 0,
+            "transform": null
           },
           {
-            "name": "featurePackage",
+            "name": "feature",
             "kind": "PathCapture",
             "pattern": "feature/*/src/commonMain/kotlin/com/example/kmp/feature/*/component/*.kt",
             "position": 9,
-            "segment": "${featurePackage}"
+            "segment": "${feature}",
+            "wildcardIndex": 0,
+            "transform": null
           },
           {
             "name": "name",
             "kind": "PathCapture",
             "pattern": "feature/*/src/commonMain/kotlin/com/example/kmp/feature/*/component/*.kt",
             "position": 11,
-            "segment": "${name}.kt"
+            "segment": "${name}.kt",
+            "wildcardIndex": 0,
+            "transform": null
           }
         ],
         "conflict": false
@@ -8801,7 +8860,9 @@
             "kind": "PathCapture",
             "pattern": "data/src/commonMain/kotlin/com/example/kmp/data/user/*Repository.kt",
             "position": 9,
-            "segment": "${name}Repository.kt"
+            "segment": "${name}Repository.kt",
+            "wildcardIndex": 0,
+            "transform": null
           }
         ],
         "conflict": false
@@ -8819,7 +8880,9 @@
             "kind": "PathCapture",
             "pattern": "data/src/commonMain/kotlin/com/example/kmp/data/user/*RepositoryImpl.kt",
             "position": 9,
-            "segment": "${name}RepositoryImpl.kt"
+            "segment": "${name}RepositoryImpl.kt",
+            "wildcardIndex": 0,
+            "transform": null
           }
         ],
         "conflict": false
@@ -8835,37 +8898,43 @@
         "parameters": [],
         "files": [
           {
-            "pattern": "feature/${feature}/src/commonMain/kotlin/com/example/kmp/feature/${featurePackage}/component/${name}.kt",
+            "pattern": "feature/${feature}/src/commonMain/kotlin/com/example/kmp/feature/${feature}/component/${name}.kt",
             "fileName": "${name}.kt",
-            "path": "feature/${feature}/src/commonMain/kotlin/com/example/kmp/feature/${featurePackage}/component/${name}.kt",
-            "captures": ["feature", "featurePackage", "name"],
+            "path": "feature/${feature}/src/commonMain/kotlin/com/example/kmp/feature/${feature}/component/${name}.kt",
+            "captures": ["feature", "name"],
             "parameters": [],
-            "content": "package com.example.kmp.feature.${featurePackage}.component\n\nimport androidx.compose.material3.Text\nimport androidx.compose.runtime.Composable\nimport androidx.compose.ui.Modifier\n\n/** Part of the ${featurePackage} screen that no other screen uses. */\n@Composable\ninternal fun ${name}(\n    name: String,\n    modifier: Modifier = Modifier,\n) {\n    Text(text = name, modifier = modifier)\n}\n"
+            "content": "package com.example.kmp.feature.${feature}.component\n\nimport androidx.compose.material3.Text\nimport androidx.compose.runtime.Composable\nimport androidx.compose.ui.Modifier\n\n/** Part of the ${feature} screen that no other screen uses. */\n@Composable\ninternal fun ${name}(\n    name: String,\n    modifier: Modifier = Modifier,\n) {\n    Text(text = name, modifier = modifier)\n}\n"
           }
         ],
         "branches": [],
-        "exampleCommand": "./gradlew katachiTemplate --arg template=feature.FeatureComponent --arg feature=<feature> --arg featurePackage=<featurePackage> --arg name=<name>",
+        "exampleCommand": "./gradlew katachiTemplate --arg template=feature.FeatureComponent --arg feature=<feature> --arg name=<name>",
         "captures": [
           {
             "name": "feature",
             "kind": "PathCapture",
             "pattern": "feature/*/src/commonMain/kotlin/com/example/kmp/feature/*/component/*.kt",
             "position": 1,
-            "segment": "${feature}"
+            "segment": "${feature}",
+            "wildcardIndex": 0,
+            "transform": null
           },
           {
-            "name": "featurePackage",
+            "name": "feature",
             "kind": "PathCapture",
             "pattern": "feature/*/src/commonMain/kotlin/com/example/kmp/feature/*/component/*.kt",
             "position": 9,
-            "segment": "${featurePackage}"
+            "segment": "${feature}",
+            "wildcardIndex": 0,
+            "transform": null
           },
           {
             "name": "name",
             "kind": "PathCapture",
             "pattern": "feature/*/src/commonMain/kotlin/com/example/kmp/feature/*/component/*.kt",
             "position": 11,
-            "segment": "${name}.kt"
+            "segment": "${name}.kt",
+            "wildcardIndex": 0,
+            "transform": null
           }
         ]
       },
@@ -8905,7 +8974,9 @@
             "kind": "PathCapture",
             "pattern": "data/src/commonMain/kotlin/com/example/kmp/data/user/*Repository.kt",
             "position": 9,
-            "segment": "${name}Repository.kt"
+            "segment": "${name}Repository.kt",
+            "wildcardIndex": 0,
+            "transform": null
           }
         ]
       },
@@ -8945,7 +9016,9 @@
             "kind": "PathCapture",
             "pattern": "data/src/commonMain/kotlin/com/example/kmp/data/user/*RepositoryImpl.kt",
             "position": 9,
-            "segment": "${name}RepositoryImpl.kt"
+            "segment": "${name}RepositoryImpl.kt",
+            "wildcardIndex": 0,
+            "transform": null
           }
         ]
       }

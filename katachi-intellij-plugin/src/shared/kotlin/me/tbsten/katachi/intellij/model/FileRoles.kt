@@ -45,8 +45,14 @@ internal data class EntryMatch(val role: RoleModel, val entry: LayoutEntryModel)
 
 internal data class ConstraintMatch(val role: RoleModel, val constraint: ConstraintModel)
 
-/** A place [directory] (relative to the project root) where [role] accepts a file, offered for a file nobody holds. */
-internal data class NearbyRole(val role: RoleModel, val directory: String, val entry: LayoutEntryModel)
+/**
+ * A place [directory] (relative to the project root, the file's own path filled into every wildcard of the declaration)
+ * where [role] accepts a file, offered for a file nobody holds. [entry] is the declaration the place comes from.
+ */
+internal data class NearbyRole(val role: RoleModel, val directory: String, val entry: LayoutEntryModel) {
+    /** The file name pattern the role declared there (`*Screen.kt`), or `null` when it wrote `anyFile()`. */
+    val filePattern: String? get() = if (entry.kind == LayoutEntryKind.File) entry.pattern.substringAfterLast('/') else null
+}
 
 /** Why a file has the roles it has (or none). */
 internal sealed interface MatchOutcome {
@@ -57,8 +63,8 @@ internal sealed interface MatchOutcome {
     data class Ignored(val entry: LayoutEntryModel) : MatchOutcome
 
     /**
-     * [directory] (a directory above the file) is one katachi never descends into whatever the definition says: `.git`, `.gradle`
-     * or `.idea` at any depth. No role holds the file and nothing is expected of it.
+     * [directory] (a directory above the file, or the file itself) is named `.git`, the one name katachi never walks into
+     * whatever the definition says, at any depth. No role holds the file and nothing is expected of it.
      */
     data class NotWalked(val directory: String) : MatchOutcome
 
@@ -70,7 +76,28 @@ internal sealed interface MatchOutcome {
 
     /** No role holds the file, and [directory] (the first one above it no role declared) is where the check stops. */
     data class UnexpectedUnder(val directory: String) : MatchOutcome
+
+    /**
+     * No role holds the file, and the pattern of [entry] of [role] matches it but its bound captures do not agree: the
+     * levels named alike read different values, or a derived level is not the conversion of its source (design
+     * capture-check 3.8; katachi's `[CaptureMismatch]`). The first entry declared that held the file back. [expectedPath] is
+     * the path the file would have if every level read what the first plain occurrence of its name reads, `null` when a
+     * value it needs could not be read. No nearby places: the one place is [expectedPath].
+     */
+    data class CaptureMismatch(
+        val role: RoleModel,
+        val entry: LayoutEntryModel,
+        val occurrences: List<CaptureOccurrenceModel>,
+        val expectedPath: String?,
+    ) : MatchOutcome
 }
+
+/**
+ * One occurrence of a bound capture name on a file, as `[CaptureMismatch]` lists it: [level] is the 0-based level of the
+ * entry's pattern, [value] what the file holds there, [expected] what it was held to (`null` for the first plain
+ * occurrence, whose value the others are held to). [transform] is the conversion of a derived occurrence.
+ */
+internal data class CaptureOccurrenceModel(val name: String, val transform: String?, val level: Int, val value: String, val expected: String?)
 
 /** The explanation of one file under a `ktFileContent` constraint of [role], for the gutter (design 4.5). */
 internal data class RoleFileDeclarations(

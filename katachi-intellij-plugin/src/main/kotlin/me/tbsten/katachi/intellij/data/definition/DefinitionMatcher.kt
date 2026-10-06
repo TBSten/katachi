@@ -11,14 +11,12 @@ import me.tbsten.katachi.intellij.model.MatchOutcome
 import me.tbsten.katachi.intellij.model.NearbyRole
 import me.tbsten.katachi.intellij.model.RoleModel
 
-/** How many places [DefinitionMatcher] offers for a file nobody holds, as katachi's `[UnexpectedFile]` block does. */
-private const val NEARBY_LIMIT: Int = 3
-
 /**
- * Directories that are not the project's files at all, whatever the definition says: katachi's walk never descends into a
- * directory of this name at any depth (`FOREIGN_DIRECTORY_NAMES` of its `Scan`).
+ * The one name katachi's walk skips whatever the definition says (`GIT_DIRECTORY_NAME` of its `Scan`): the repository
+ * itself, a directory at the root or a file in a worktree / submodule. `.gradle` and `.idea` are directories like any other
+ * (design foreign-directory-scan 1.1).
  */
-internal val FOREIGN_DIRECTORY_NAMES: Set<String> = setOf(".git", ".gradle", ".idea")
+private const val GIT_DIRECTORY_NAME: String = ".git"
 
 /** An entry or constraint glob the matcher could not read, and so left out. */
 internal data class SkippedGlob(val role: RoleModel, val pattern: String, val failure: KatachiGlobSyntaxException)
@@ -46,12 +44,17 @@ internal class DefinitionMatcher(private val definition: DefinitionModel) {
     /**
      * One entry of the flattened layout: the role it belongs to, in the order the definition lists them. [roleIndex] is the
      * role's place in the definition, which is what the per-role tables below are keyed by: a [RoleModel] is a data class
-     * and hashing one reads all its layout and constraints, on every file asked.
+     * and hashing one reads all its layout and constraints, on every file asked. [order] is the entry's place among all.
      */
-    private class Slot(val roleIndex: Int, val role: RoleModel, val entry: LayoutEntryModel, val glob: KatachiGlob)
+    private class Slot(val roleIndex: Int, val role: RoleModel, val entry: LayoutEntryModel, val glob: KatachiGlob, val order: Int)
 
-    private val slots: List<Slot> = definition.roles.flatMapIndexed { roleIndex, role ->
-        role.layout.mapNotNull { entry -> compileOrSkip(role, entry.pattern)?.let { Slot(roleIndex, role, entry, it) } }
+    private val slots: List<Slot> = buildList {
+        definition.roles.forEachIndexed { roleIndex, role ->
+            for (entry in role.layout) {
+                val glob = compileOrSkip(role, entry.pattern) ?: continue
+                add(Slot(roleIndex, role, entry, glob, order = size))
+            }
+        }
     }
 
     /** Directories the walk may descend into: every declared directory and every directory on the way to one. */
@@ -64,8 +67,8 @@ internal class DefinitionMatcher(private val definition: DefinitionModel) {
     private val openDirectories = indexOf(LayoutEntryKind.AnyFile)
     private val ignoredDirectories = indexOf(LayoutEntryKind.Ignore)
 
-    /** The places a file could move to, with a pattern in none of them, in declaration order. */
-    private val locations: List<NearbyRole> = nearbyLocations()
+    /** The places a file could move to, by katachi's rule (design violations-output 2.2 / 2.3). */
+    private val places: NearbyPlaces = NearbyPlaces(slots.map { it.role to it.entry })
 
     /** Constraint globs, compiled once: by the role's index in the definition, in the role's order. */
     private val coverages: List<List<CompiledCoverage>> = definition.roles.map { role ->
@@ -92,26 +95,32 @@ internal class DefinitionMatcher(private val definition: DefinitionModel) {
     /**
      * What [relativePath] (relative to the project root, `/` separated) is to the definition.
      *
-     * 1. Going down from the root, the first directory above it that is `.git` / `.gradle` / `.idea` ends the question
-     *    with [MatchOutcome.NotWalked], and the first that is `ignore()`d with [MatchOutcome.Ignored]: katachi does not
-     *    go in, so nothing else is looked at. A directory above that one which no role declared ends it first, as in 3.
-     *    (All decided level by level, as katachi's walk does.)
-     * 2. A `File` glob matches it, or its directory matches an `anyFile()` glob: [MatchOutcome.Matched],
-     *    one entry per role (the first), with the constraints of those roles that cover it.
-     * 3. Nobody holds it: [MatchOutcome.UnexpectedUnder] the first directory above it that no role
-     *    declared, or [MatchOutcome.Unexpected] when all of them are known; with [FileMatch.nearby].
+     * 1. Going down from the root, the first directory above it named `.git` ends the question with
+     *    [MatchOutcome.NotWalked], and the first that is `ignore()`d with [MatchOutcome.Ignored]: katachi does not go in,
+     *    so nothing else is looked at. The path's own last element named `.git` (the file a worktree or submodule has) is
+     *    `NotWalked` too. A directory above that one which no role declared ends it first, as in 3. (All decided level by
+     *    level, as katachi's walk does.)
+     * 2. A `File` glob matches it, or its directory matches an `anyFile()` glob, and the entry's bound captures agree
+     *    ([captureMismatchOf]): [MatchOutcome.Matched], one entry per role (the first), with the constraints of those
+     *    roles that cover it.
+     * 3. Nobody holds it: [MatchOutcome.UnexpectedUnder] the first directory above it that no role declared; else
+     *    [MatchOutcome.CaptureMismatch] when a pattern matched but its captures held the file back (the first such entry);
+     *    else [MatchOutcome.Unexpected], with [FileMatch.nearby].
      */
     fun matchFile(relativePath: String): FileMatch {
         val directories = ancestorsOf(relativePath)
-        for ((level, directory) in directories.withIndex()) {
-            val stop: MatchOutcome? = if (directory.substringAfterLast('/') in FOREIGN_DIRECTORY_NAMES) {
-                MatchOutcome.NotWalked(directory)
+        // The last element is only asked whether it is `.git`: a file cannot be an ignored directory.
+        for ((level, element) in (directories + relativePath).withIndex()) {
+            val stop: MatchOutcome? = if (element.substringAfterLast('/') == GIT_DIRECTORY_NAME) {
+                MatchOutcome.NotWalked(element)
+            } else if (level < directories.size) {
+                ignoredDirectories.matching(element).firstOrNull()?.let { MatchOutcome.Ignored(it.entry) }
             } else {
-                ignoredDirectories.matching(directory).firstOrNull()?.let { MatchOutcome.Ignored(it.entry) }
+                null
             }
             if (stop == null) continue
             // The walk goes down one directory at a time and stops at the first it does not go into. A directory above this one
-            // that no role declared ends it earlier (an ignored directory sits under declared ones as a rule; a foreign one can be anywhere).
+            // that no role declared ends it earlier (an ignored directory sits under declared ones as a rule; `.git` can be anywhere).
             val undeclared = directories.take(level).firstOrNull { !isKnown(it) }
             return if (undeclared != null) {
                 FileMatch(emptyList(), emptyList(), MatchOutcome.UnexpectedUnder(undeclared), nearbyOf(relativePath))
@@ -121,66 +130,60 @@ internal class DefinitionMatcher(private val definition: DefinitionModel) {
         }
 
         val claims = claimsOn(relativePath)
-        if (claims.isNotEmpty()) {
+        if (claims.held.isNotEmpty()) {
             val directory = relativePath.parentPath()
-            val constraints = claims.flatMap { slot ->
+            val constraints = claims.held.flatMap { slot ->
                 coverages[slot.roleIndex]
                     .filter { it.covers(relativePath, directory) }
                     .map { ConstraintMatch(slot.role, it.constraint) }
             }
-            return FileMatch(claims.map { EntryMatch(it.role, it.entry) }, constraints, MatchOutcome.Matched, emptyList())
+            return FileMatch(claims.held.map { EntryMatch(it.role, it.entry) }, constraints, MatchOutcome.Matched, emptyList())
         }
 
         val unknown = directories.firstOrNull { !isKnown(it) }
+        // A pattern matched but its bound captures did not agree, and nobody else holds the file: katachi's `[CaptureMismatch]`,
+        // with the one place the file belongs instead of nearby ones. The walk reports an undeclared directory first, as for any file.
+        val mismatch = claims.mismatched.firstOrNull()
+        if (unknown == null && mismatch != null) {
+            val (slot, detail) = mismatch
+            return FileMatch(emptyList(), emptyList(), MatchOutcome.CaptureMismatch(slot.role, slot.entry, detail.occurrences, detail.expectedPath), emptyList())
+        }
         val outcome = if (unknown != null) MatchOutcome.UnexpectedUnder(unknown) else MatchOutcome.Unexpected
         return FileMatch(emptyList(), emptyList(), outcome, nearbyOf(relativePath))
     }
 
-    /** One entry per role: the roles that named the file first, then the roles that only left its directory open. Declaration order within each. */
-    private fun claimsOn(file: String): List<Slot> {
+    /** What the entries say of one file: the ones that hold it, and the ones whose pattern matched but whose captures held it back. */
+    private class Claims(val held: List<Slot>, val mismatched: List<Pair<Slot, CaptureMismatchDetail>>)
+
+    /**
+     * One entry per role: the roles that named the file first, then the roles that only left its directory open, declaration
+     * order within each. An entry whose pattern matches but whose bound captures do not agree does not hold the file; it is
+     * kept apart, in declaration order, for [MatchOutcome.CaptureMismatch].
+     */
+    private fun claimsOn(file: String): Claims {
         val matched = LinkedHashMap<Int, Slot>()
-        for (slot in allowedFiles.matching(file)) matched.putIfAbsent(slot.roleIndex, slot)
+        val mismatched = mutableListOf<Pair<Slot, CaptureMismatchDetail>>()
+        fun claim(slot: Slot) {
+            val detail = captureMismatchOf(slot.entry, slot.glob, file)
+            if (detail == null) matched.putIfAbsent(slot.roleIndex, slot) else mismatched += slot to detail
+        }
+        for (slot in allowedFiles.matching(file)) claim(slot)
         val directory = file.parentPath()
         // `anyFile()` covers the files directly inside a directory and nothing deeper; the project root is not a directory a role can declare.
         if (directory.isNotEmpty()) {
-            for (slot in openDirectories.matching(directory)) matched.putIfAbsent(slot.roleIndex, slot)
+            for (slot in openDirectories.matching(directory)) claim(slot)
         }
-        return matched.values.toList()
+        // The two lists are each in declaration order; the first declared entry is the one the report names.
+        mismatched.sortBy { (slot, _) -> slot.order }
+        return Claims(matched.values.toList(), mismatched)
     }
 
     /**
-     * Places [file] could be moved to, the ones sharing the most leading path with its directory
-     * first, at most three. A place sharing nothing is left out; places that tie keep declaration
-     * order (the sort is stable).
+     * Places [file] could be moved to, nearest first, three at most, by katachi's `NearbyCandidates` rule ([NearbyPlaces]):
+     * every declared place filled in with the file's own path, the ones that could hold a file of its name ordered by the
+     * levels that differ, then the name, then the characters, then declaration order. A place sharing nothing is left out.
      */
-    fun nearbyOf(file: String): List<NearbyRole> {
-        val directory = file.parentPath()
-        return locations
-            .map { it to sharedLeadingSegments(directory, it.directory) }
-            .filter { (_, shared) -> shared > 0 }
-            .sortedByDescending { (_, shared) -> shared }
-            .take(NEARBY_LIMIT)
-            .map { (location, _) -> location }
-    }
-
-    /**
-     * The directories a role accepts a file into: where it declared a `File` (its parent) and where
-     * it wrote `anyFile()`. A directory that only exists to hold another is not one of them, nor is
-     * one the role `ignore()`s, the project root, or a pattern.
-     */
-    private fun nearbyLocations(): List<NearbyRole> {
-        val seen = LinkedHashMap<Pair<Int, String>, NearbyRole>()
-        for (slot in slots) {
-            val directory = when (slot.entry.kind) {
-                LayoutEntryKind.File -> slot.entry.pattern.parentPath()
-                LayoutEntryKind.AnyFile -> slot.entry.pattern
-                LayoutEntryKind.Directory, LayoutEntryKind.Ignore, is LayoutEntryKind.Unknown -> continue
-            }
-            if (directory.isEmpty() || '*' in directory) continue
-            seen.getOrPut(slot.roleIndex to directory) { NearbyRole(slot.role, directory, slot.entry) }
-        }
-        return seen.values.toList()
-    }
+    fun nearbyOf(file: String): List<NearbyRole> = places.nearbyOf(file)
 
     private fun indexOf(kind: LayoutEntryKind): PrefixGlobIndex<Slot> =
         PrefixGlobIndex(slots.filter { it.entry.kind == kind }) { it.glob }
@@ -216,16 +219,4 @@ private fun directoryPatterns(entry: LayoutEntryModel): List<String> {
     val segments = entry.pattern.split('/')
     val levels = if (entry.kind == LayoutEntryKind.File) segments.size - 1 else segments.size
     return (1..levels).map { segments.take(it).joinToString("/") }
-}
-
-private fun sharedLeadingSegments(left: String, right: String): Int {
-    if (left.isEmpty() || right.isEmpty()) return 0
-    val leftSegments = left.split('/')
-    val rightSegments = right.split('/')
-    var shared = 0
-    while (shared < leftSegments.size && shared < rightSegments.size) {
-        if (leftSegments[shared] != rightSegments[shared]) break
-        shared++
-    }
-    return shared
 }

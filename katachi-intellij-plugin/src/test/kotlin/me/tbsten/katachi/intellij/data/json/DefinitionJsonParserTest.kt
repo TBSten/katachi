@@ -88,7 +88,7 @@ class DefinitionJsonParserTest {
         assertEquals("src/main/kotlin/a/b/*", entry.pattern)
         assertEquals(LayoutEntryKind.File, entry.kind)
         assertEquals(5, entry.index)
-        assertEquals("name" to 5, entry.captures.single().let { it.name to it.segmentIndex })
+        assertEquals(listOf("name", 5, 0, null), entry.captures.single().let { listOf(it.name, it.segmentIndex, it.wildcardIndex, it.transform) })
         assertEquals("a.b.Middle", entry.template?.specifier)
         assertEquals(listOf("src/main/kotlin/a/b/Middle.kt"), entry.matchedFiles)
         assertEquals(1, entry.matchedCount)
@@ -322,5 +322,19 @@ class DefinitionJsonParserTest {
         val message = failureOf<KatachiIncompatibleDefinitionJsonException>(text.replace("\"roleName\"", "\"x\"")).message.orEmpty()
         assertTrue(message, message.all { it.code < 0x80 })
         assertTrue(message, "released together" in message)
+    }
+
+    @Test
+    fun `captures の wildcardIndex と transform は katachi が書けば読み 書かない古い JSON では 0 と null になる`() {
+        // The hand-written fixture is from before the two keys.
+        val old = future.roles.flatMap { it.layout }.flatMap { it.captures }
+        assertTrue(old.isNotEmpty())
+        assertTrue(old.all { it.wildcardIndex == 0 && it.transform == null })
+
+        // The first capture katachi wrote, with both keys changed.
+        val json = text.replaceFirst(""""wildcardIndex": 0""", """"wildcardIndex": 1""").replaceFirst(""""transform": null""", """"transform": "pascalCase"""")
+        val changed = parse(json).definition.roles.flatMap { it.layout }.flatMap { it.captures }.first()
+        assertEquals(1, changed.wildcardIndex)
+        assertEquals("pascalCase", changed.transform)
     }
 }

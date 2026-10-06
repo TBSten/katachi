@@ -1,7 +1,29 @@
 # gutter golden: sample/jvm
 # definition: contract/definition/real-jvm-definition.json, sources: contract/gutter/sources/jvm/ (copies of the sample's files)
 # update: ./gradlew -p katachi-intellij-plugin test --tests '*RealDefinitionGutterTest*' -Dkatachi.gutter.golden.update=true
-# files: 81, with a ◆: 80, ◆: 80
+# files: 85, with a ◆: 83, ◆: 83
+
+== .idea/codeStyles/Project.xml
+roles: tool.IdeCodeStyle
+    tool.IdeCodeStyle declared at IdeCodeStyleRole.kt:7 | fun DeclarationContainerScope.ideCodeStyle() = "IdeCodeStyle".role {
+1 | ◆ | katachi: tool.IdeCodeStyle
+    menu | ◇ Role tool.IdeCodeStyle — IDE code style | IdeCodeStyleRole.kt:7
+    menu | == Other files of tool.IdeCodeStyle (1)
+    menu | codeStyleConfig.xml | .idea/codeStyles
+    menu | -----
+    menu | ▶ Run the check (:architecture-test:test)
+    menu | ⟳ Refresh the definition
+
+== .idea/codeStyles/codeStyleConfig.xml
+roles: tool.IdeCodeStyle
+    tool.IdeCodeStyle declared at IdeCodeStyleRole.kt:7 | fun DeclarationContainerScope.ideCodeStyle() = "IdeCodeStyle".role {
+1 | ◆ | katachi: tool.IdeCodeStyle
+    menu | ◇ Role tool.IdeCodeStyle — IDE code style | IdeCodeStyleRole.kt:7
+    menu | == Other files of tool.IdeCodeStyle (1)
+    menu | Project.xml | .idea/codeStyles
+    menu | -----
+    menu | ▶ Run the check (:architecture-test:test)
+    menu | ⟳ Refresh the definition
 
 == README.md
 roles: tool.Documentation
@@ -16,9 +38,9 @@ roles: tool.Documentation
 
 == architecture-test/build.gradle.kts
 roles: Gradle.BuildScript
-    Gradle.BuildScript declared at GradleGroup.kt:22 | fun DeclarationContainerScope.gradleGroup() = gradle()
+    Gradle.BuildScript declared at GradleGroup.kt:42 | fun DeclarationContainerScope.gradleGroup() = gradle {
 1 | ◆ | katachi: Gradle.BuildScript
-    menu | ◇ Role Gradle.BuildScript — How one module is built, one per module | GradleGroup.kt:22
+    menu | ◇ Role Gradle.BuildScript — How one module is built, one per module | GradleGroup.kt:42
     menu | == Other files of Gradle.BuildScript (1)
     menu | build.gradle.kts | .
     menu | -----
@@ -62,7 +84,7 @@ roles: testing.ArchitectureDefinitionEntry
 == architecture-test/src/test/kotlin/com/example/ProjectArchitectureSpec.kt
 roles: testing.IntegrationSpec
     testing.IntegrationSpec declared at IntegrationSpecRole.kt:9 | fun DeclarationContainerScope.integrationSpec() = "IntegrationSpec".role {
-61 | ◆ | katachi: testing.IntegrationSpec
+62 | ◆ | katachi: testing.IntegrationSpec
     menu | ◇ Role testing.IntegrationSpec — Integration spec | IntegrationSpecRole.kt:9
     menu | == Other files of testing.IntegrationSpec (2)
     menu | LayoutSnapshotSpec.kt | architecture-test/…/kotlin/com/example
@@ -74,7 +96,7 @@ roles: testing.IntegrationSpec
 == architecture-test/src/test/kotlin/com/example/ProjectArchitectureTest.kt
 roles: testing.ArchitectureTest
     testing.ArchitectureTest declared at ArchitectureTestRole.kt:9 | fun DeclarationContainerScope.architectureTest() = "ArchitectureTest".role {
-24 | ◆ | katachi: testing.ArchitectureTest
+28 | ◆ | katachi: testing.ArchitectureTest
     menu | ◇ Role testing.ArchitectureTest — Architecture test | ArchitectureTestRole.kt:9
     menu | == Other files of testing.ArchitectureTest
     menu | (disabled) — No other file yet
@@ -161,7 +183,7 @@ roles: testing.GroupDefinition
 == architecture-test/src/test/kotlin/com/example/groups/GradleGroup.kt
 roles: testing.GroupDefinition
     testing.GroupDefinition declared at GroupDefinitionRole.kt:9 | fun DeclarationContainerScope.groupDefinition() = "GroupDefinition".role {
-22 | ◆ | katachi: testing.GroupDefinition
+15 | ◆ | katachi: testing.GroupDefinition
     menu | ◇ Role testing.GroupDefinition — Group definition | GroupDefinitionRole.kt:9
     menu | == Other files of testing.GroupDefinition (6)
     menu | ApiGroup.kt | architecture-test/…/com/example/groups
@@ -193,7 +215,7 @@ roles: testing.GroupDefinition
 == architecture-test/src/test/kotlin/com/example/groups/ToolGroup.kt
 roles: testing.GroupDefinition
     testing.GroupDefinition declared at GroupDefinitionRole.kt:9 | fun DeclarationContainerScope.groupDefinition() = "GroupDefinition".role {
-12 | ◆ | katachi: testing.GroupDefinition
+13 | ◆ | katachi: testing.GroupDefinition
     menu | ◇ Role testing.GroupDefinition — Group definition | GroupDefinitionRole.kt:9
     menu | == Other files of testing.GroupDefinition (6)
     menu | ApiGroup.kt | architecture-test/…/com/example/groups
@@ -222,7 +244,7 @@ roles: testing.RoleDefinition
     testing.RoleDefinition declared at RoleDefinitionRole.kt:9 | fun DeclarationContainerScope.roleDefinition() = "RoleDefinition".role {
 8 | ◆ | katachi: testing.RoleDefinition
     menu | ◇ Role testing.RoleDefinition — Role definition | RoleDefinitionRole.kt:9
-    menu | == Other files of testing.RoleDefinition (20)
+    menu | == Other files of testing.RoleDefinition (21)
     menu | ArchitectureDefinitionEntryRole.kt | architecture-test/…/com/example/roles
     menu | ArchitectureTestRole.kt | architecture-test/…/com/example/roles
     menu | BaselineFileRole.kt | architecture-test/…/com/example/roles
@@ -233,12 +255,12 @@ roles: testing.RoleDefinition
     menu | GeneratedDocumentationRole.kt | architecture-test/…/com/example/roles
     menu | GitRole.kt | architecture-test/…/com/example/roles
     menu | GroupDefinitionRole.kt | architecture-test/…/com/example/roles
+    menu | IdeCodeStyleRole.kt | architecture-test/…/com/example/roles
     menu | IntegrationSpecRole.kt | architecture-test/…/com/example/roles
     menu | KtorPluginRole.kt | architecture-test/…/com/example/roles
     menu | LayoutSnapshotRole.kt | architecture-test/…/com/example/roles
     menu | LoggingConfigRole.kt | architecture-test/…/com/example/roles
-    menu | ModelRole.kt | architecture-test/…/com/example/roles
-    menu | (disabled) … and 5 more
+    menu | (disabled) … and 6 more
     menu | -----
     menu | ▶ Run the check (:architecture-test:test)
     menu | ⟳ Refresh the definition
@@ -248,7 +270,7 @@ roles: testing.RoleDefinition
     testing.RoleDefinition declared at RoleDefinitionRole.kt:9 | fun DeclarationContainerScope.roleDefinition() = "RoleDefinition".role {
 10 | ◆ | katachi: testing.RoleDefinition
     menu | ◇ Role testing.RoleDefinition — Role definition | RoleDefinitionRole.kt:9
-    menu | == Other files of testing.RoleDefinition (20)
+    menu | == Other files of testing.RoleDefinition (21)
     menu | ApplicationConfigRole.kt | architecture-test/…/com/example/roles
     menu | ArchitectureTestRole.kt | architecture-test/…/com/example/roles
     menu | BaselineFileRole.kt | architecture-test/…/com/example/roles
@@ -259,12 +281,12 @@ roles: testing.RoleDefinition
     menu | GeneratedDocumentationRole.kt | architecture-test/…/com/example/roles
     menu | GitRole.kt | architecture-test/…/com/example/roles
     menu | GroupDefinitionRole.kt | architecture-test/…/com/example/roles
+    menu | IdeCodeStyleRole.kt | architecture-test/…/com/example/roles
     menu | IntegrationSpecRole.kt | architecture-test/…/com/example/roles
     menu | KtorPluginRole.kt | architecture-test/…/com/example/roles
     menu | LayoutSnapshotRole.kt | architecture-test/…/com/example/roles
     menu | LoggingConfigRole.kt | architecture-test/…/com/example/roles
-    menu | ModelRole.kt | architecture-test/…/com/example/roles
-    menu | (disabled) … and 5 more
+    menu | (disabled) … and 6 more
     menu | -----
     menu | ▶ Run the check (:architecture-test:test)
     menu | ⟳ Refresh the definition
@@ -274,7 +296,7 @@ roles: testing.RoleDefinition
     testing.RoleDefinition declared at RoleDefinitionRole.kt:9 | fun DeclarationContainerScope.roleDefinition() = "RoleDefinition".role {
 9 | ◆ | katachi: testing.RoleDefinition
     menu | ◇ Role testing.RoleDefinition — Role definition | RoleDefinitionRole.kt:9
-    menu | == Other files of testing.RoleDefinition (20)
+    menu | == Other files of testing.RoleDefinition (21)
     menu | ApplicationConfigRole.kt | architecture-test/…/com/example/roles
     menu | ArchitectureDefinitionEntryRole.kt | architecture-test/…/com/example/roles
     menu | BaselineFileRole.kt | architecture-test/…/com/example/roles
@@ -285,12 +307,12 @@ roles: testing.RoleDefinition
     menu | GeneratedDocumentationRole.kt | architecture-test/…/com/example/roles
     menu | GitRole.kt | architecture-test/…/com/example/roles
     menu | GroupDefinitionRole.kt | architecture-test/…/com/example/roles
+    menu | IdeCodeStyleRole.kt | architecture-test/…/com/example/roles
     menu | IntegrationSpecRole.kt | architecture-test/…/com/example/roles
     menu | KtorPluginRole.kt | architecture-test/…/com/example/roles
     menu | LayoutSnapshotRole.kt | architecture-test/…/com/example/roles
     menu | LoggingConfigRole.kt | architecture-test/…/com/example/roles
-    menu | ModelRole.kt | architecture-test/…/com/example/roles
-    menu | (disabled) … and 5 more
+    menu | (disabled) … and 6 more
     menu | -----
     menu | ▶ Run the check (:architecture-test:test)
     menu | ⟳ Refresh the definition
@@ -300,7 +322,7 @@ roles: testing.RoleDefinition
     testing.RoleDefinition declared at RoleDefinitionRole.kt:9 | fun DeclarationContainerScope.roleDefinition() = "RoleDefinition".role {
 13 | ◆ | katachi: testing.RoleDefinition
     menu | ◇ Role testing.RoleDefinition — Role definition | RoleDefinitionRole.kt:9
-    menu | == Other files of testing.RoleDefinition (20)
+    menu | == Other files of testing.RoleDefinition (21)
     menu | ApplicationConfigRole.kt | architecture-test/…/com/example/roles
     menu | ArchitectureDefinitionEntryRole.kt | architecture-test/…/com/example/roles
     menu | ArchitectureTestRole.kt | architecture-test/…/com/example/roles
@@ -311,12 +333,12 @@ roles: testing.RoleDefinition
     menu | GeneratedDocumentationRole.kt | architecture-test/…/com/example/roles
     menu | GitRole.kt | architecture-test/…/com/example/roles
     menu | GroupDefinitionRole.kt | architecture-test/…/com/example/roles
+    menu | IdeCodeStyleRole.kt | architecture-test/…/com/example/roles
     menu | IntegrationSpecRole.kt | architecture-test/…/com/example/roles
     menu | KtorPluginRole.kt | architecture-test/…/com/example/roles
     menu | LayoutSnapshotRole.kt | architecture-test/…/com/example/roles
     menu | LoggingConfigRole.kt | architecture-test/…/com/example/roles
-    menu | ModelRole.kt | architecture-test/…/com/example/roles
-    menu | (disabled) … and 5 more
+    menu | (disabled) … and 6 more
     menu | -----
     menu | ▶ Run the check (:architecture-test:test)
     menu | ⟳ Refresh the definition
@@ -324,9 +346,9 @@ roles: testing.RoleDefinition
 == architecture-test/src/test/kotlin/com/example/roles/ControllerRole.kt
 roles: testing.RoleDefinition
     testing.RoleDefinition declared at RoleDefinitionRole.kt:9 | fun DeclarationContainerScope.roleDefinition() = "RoleDefinition".role {
-25 | ◆ | katachi: testing.RoleDefinition
+28 | ◆ | katachi: testing.RoleDefinition
     menu | ◇ Role testing.RoleDefinition — Role definition | RoleDefinitionRole.kt:9
-    menu | == Other files of testing.RoleDefinition (20)
+    menu | == Other files of testing.RoleDefinition (21)
     menu | ApplicationConfigRole.kt | architecture-test/…/com/example/roles
     menu | ArchitectureDefinitionEntryRole.kt | architecture-test/…/com/example/roles
     menu | ArchitectureTestRole.kt | architecture-test/…/com/example/roles
@@ -337,12 +359,12 @@ roles: testing.RoleDefinition
     menu | GeneratedDocumentationRole.kt | architecture-test/…/com/example/roles
     menu | GitRole.kt | architecture-test/…/com/example/roles
     menu | GroupDefinitionRole.kt | architecture-test/…/com/example/roles
+    menu | IdeCodeStyleRole.kt | architecture-test/…/com/example/roles
     menu | IntegrationSpecRole.kt | architecture-test/…/com/example/roles
     menu | KtorPluginRole.kt | architecture-test/…/com/example/roles
     menu | LayoutSnapshotRole.kt | architecture-test/…/com/example/roles
     menu | LoggingConfigRole.kt | architecture-test/…/com/example/roles
-    menu | ModelRole.kt | architecture-test/…/com/example/roles
-    menu | (disabled) … and 5 more
+    menu | (disabled) … and 6 more
     menu | -----
     menu | ▶ Run the check (:architecture-test:test)
     menu | ⟳ Refresh the definition
@@ -352,7 +374,7 @@ roles: testing.RoleDefinition
     testing.RoleDefinition declared at RoleDefinitionRole.kt:9 | fun DeclarationContainerScope.roleDefinition() = "RoleDefinition".role {
 9 | ◆ | katachi: testing.RoleDefinition
     menu | ◇ Role testing.RoleDefinition — Role definition | RoleDefinitionRole.kt:9
-    menu | == Other files of testing.RoleDefinition (20)
+    menu | == Other files of testing.RoleDefinition (21)
     menu | ApplicationConfigRole.kt | architecture-test/…/com/example/roles
     menu | ArchitectureDefinitionEntryRole.kt | architecture-test/…/com/example/roles
     menu | ArchitectureTestRole.kt | architecture-test/…/com/example/roles
@@ -363,12 +385,12 @@ roles: testing.RoleDefinition
     menu | GeneratedDocumentationRole.kt | architecture-test/…/com/example/roles
     menu | GitRole.kt | architecture-test/…/com/example/roles
     menu | GroupDefinitionRole.kt | architecture-test/…/com/example/roles
+    menu | IdeCodeStyleRole.kt | architecture-test/…/com/example/roles
     menu | IntegrationSpecRole.kt | architecture-test/…/com/example/roles
     menu | KtorPluginRole.kt | architecture-test/…/com/example/roles
     menu | LayoutSnapshotRole.kt | architecture-test/…/com/example/roles
     menu | LoggingConfigRole.kt | architecture-test/…/com/example/roles
-    menu | ModelRole.kt | architecture-test/…/com/example/roles
-    menu | (disabled) … and 5 more
+    menu | (disabled) … and 6 more
     menu | -----
     menu | ▶ Run the check (:architecture-test:test)
     menu | ⟳ Refresh the definition
@@ -378,7 +400,7 @@ roles: testing.RoleDefinition
     testing.RoleDefinition declared at RoleDefinitionRole.kt:9 | fun DeclarationContainerScope.roleDefinition() = "RoleDefinition".role {
 6 | ◆ | katachi: testing.RoleDefinition
     menu | ◇ Role testing.RoleDefinition — Role definition | RoleDefinitionRole.kt:9
-    menu | == Other files of testing.RoleDefinition (20)
+    menu | == Other files of testing.RoleDefinition (21)
     menu | ApplicationConfigRole.kt | architecture-test/…/com/example/roles
     menu | ArchitectureDefinitionEntryRole.kt | architecture-test/…/com/example/roles
     menu | ArchitectureTestRole.kt | architecture-test/…/com/example/roles
@@ -389,12 +411,12 @@ roles: testing.RoleDefinition
     menu | GeneratedDocumentationRole.kt | architecture-test/…/com/example/roles
     menu | GitRole.kt | architecture-test/…/com/example/roles
     menu | GroupDefinitionRole.kt | architecture-test/…/com/example/roles
+    menu | IdeCodeStyleRole.kt | architecture-test/…/com/example/roles
     menu | IntegrationSpecRole.kt | architecture-test/…/com/example/roles
     menu | KtorPluginRole.kt | architecture-test/…/com/example/roles
     menu | LayoutSnapshotRole.kt | architecture-test/…/com/example/roles
     menu | LoggingConfigRole.kt | architecture-test/…/com/example/roles
-    menu | ModelRole.kt | architecture-test/…/com/example/roles
-    menu | (disabled) … and 5 more
+    menu | (disabled) … and 6 more
     menu | -----
     menu | ▶ Run the check (:architecture-test:test)
     menu | ⟳ Refresh the definition
@@ -404,7 +426,7 @@ roles: testing.RoleDefinition
     testing.RoleDefinition declared at RoleDefinitionRole.kt:9 | fun DeclarationContainerScope.roleDefinition() = "RoleDefinition".role {
 9 | ◆ | katachi: testing.RoleDefinition
     menu | ◇ Role testing.RoleDefinition — Role definition | RoleDefinitionRole.kt:9
-    menu | == Other files of testing.RoleDefinition (20)
+    menu | == Other files of testing.RoleDefinition (21)
     menu | ApplicationConfigRole.kt | architecture-test/…/com/example/roles
     menu | ArchitectureDefinitionEntryRole.kt | architecture-test/…/com/example/roles
     menu | ArchitectureTestRole.kt | architecture-test/…/com/example/roles
@@ -415,12 +437,12 @@ roles: testing.RoleDefinition
     menu | GeneratedDocumentationRole.kt | architecture-test/…/com/example/roles
     menu | GitRole.kt | architecture-test/…/com/example/roles
     menu | GroupDefinitionRole.kt | architecture-test/…/com/example/roles
+    menu | IdeCodeStyleRole.kt | architecture-test/…/com/example/roles
     menu | IntegrationSpecRole.kt | architecture-test/…/com/example/roles
     menu | KtorPluginRole.kt | architecture-test/…/com/example/roles
     menu | LayoutSnapshotRole.kt | architecture-test/…/com/example/roles
     menu | LoggingConfigRole.kt | architecture-test/…/com/example/roles
-    menu | ModelRole.kt | architecture-test/…/com/example/roles
-    menu | (disabled) … and 5 more
+    menu | (disabled) … and 6 more
     menu | -----
     menu | ▶ Run the check (:architecture-test:test)
     menu | ⟳ Refresh the definition
@@ -430,7 +452,7 @@ roles: testing.RoleDefinition
     testing.RoleDefinition declared at RoleDefinitionRole.kt:9 | fun DeclarationContainerScope.roleDefinition() = "RoleDefinition".role {
 13 | ◆ | katachi: testing.RoleDefinition
     menu | ◇ Role testing.RoleDefinition — Role definition | RoleDefinitionRole.kt:9
-    menu | == Other files of testing.RoleDefinition (20)
+    menu | == Other files of testing.RoleDefinition (21)
     menu | ApplicationConfigRole.kt | architecture-test/…/com/example/roles
     menu | ArchitectureDefinitionEntryRole.kt | architecture-test/…/com/example/roles
     menu | ArchitectureTestRole.kt | architecture-test/…/com/example/roles
@@ -441,12 +463,12 @@ roles: testing.RoleDefinition
     menu | EntrypointRole.kt | architecture-test/…/com/example/roles
     menu | GitRole.kt | architecture-test/…/com/example/roles
     menu | GroupDefinitionRole.kt | architecture-test/…/com/example/roles
+    menu | IdeCodeStyleRole.kt | architecture-test/…/com/example/roles
     menu | IntegrationSpecRole.kt | architecture-test/…/com/example/roles
     menu | KtorPluginRole.kt | architecture-test/…/com/example/roles
     menu | LayoutSnapshotRole.kt | architecture-test/…/com/example/roles
     menu | LoggingConfigRole.kt | architecture-test/…/com/example/roles
-    menu | ModelRole.kt | architecture-test/…/com/example/roles
-    menu | (disabled) … and 5 more
+    menu | (disabled) … and 6 more
     menu | -----
     menu | ▶ Run the check (:architecture-test:test)
     menu | ⟳ Refresh the definition
@@ -456,7 +478,7 @@ roles: testing.RoleDefinition
     testing.RoleDefinition declared at RoleDefinitionRole.kt:9 | fun DeclarationContainerScope.roleDefinition() = "RoleDefinition".role {
 7 | ◆ | katachi: testing.RoleDefinition
     menu | ◇ Role testing.RoleDefinition — Role definition | RoleDefinitionRole.kt:9
-    menu | == Other files of testing.RoleDefinition (20)
+    menu | == Other files of testing.RoleDefinition (21)
     menu | ApplicationConfigRole.kt | architecture-test/…/com/example/roles
     menu | ArchitectureDefinitionEntryRole.kt | architecture-test/…/com/example/roles
     menu | ArchitectureTestRole.kt | architecture-test/…/com/example/roles
@@ -467,12 +489,12 @@ roles: testing.RoleDefinition
     menu | EntrypointRole.kt | architecture-test/…/com/example/roles
     menu | GeneratedDocumentationRole.kt | architecture-test/…/com/example/roles
     menu | GroupDefinitionRole.kt | architecture-test/…/com/example/roles
+    menu | IdeCodeStyleRole.kt | architecture-test/…/com/example/roles
     menu | IntegrationSpecRole.kt | architecture-test/…/com/example/roles
     menu | KtorPluginRole.kt | architecture-test/…/com/example/roles
     menu | LayoutSnapshotRole.kt | architecture-test/…/com/example/roles
     menu | LoggingConfigRole.kt | architecture-test/…/com/example/roles
-    menu | ModelRole.kt | architecture-test/…/com/example/roles
-    menu | (disabled) … and 5 more
+    menu | (disabled) … and 6 more
     menu | -----
     menu | ▶ Run the check (:architecture-test:test)
     menu | ⟳ Refresh the definition
@@ -482,7 +504,7 @@ roles: testing.RoleDefinition
     testing.RoleDefinition declared at RoleDefinitionRole.kt:9 | fun DeclarationContainerScope.roleDefinition() = "RoleDefinition".role {
 9 | ◆ | katachi: testing.RoleDefinition
     menu | ◇ Role testing.RoleDefinition — Role definition | RoleDefinitionRole.kt:9
-    menu | == Other files of testing.RoleDefinition (20)
+    menu | == Other files of testing.RoleDefinition (21)
     menu | ApplicationConfigRole.kt | architecture-test/…/com/example/roles
     menu | ArchitectureDefinitionEntryRole.kt | architecture-test/…/com/example/roles
     menu | ArchitectureTestRole.kt | architecture-test/…/com/example/roles
@@ -493,12 +515,38 @@ roles: testing.RoleDefinition
     menu | EntrypointRole.kt | architecture-test/…/com/example/roles
     menu | GeneratedDocumentationRole.kt | architecture-test/…/com/example/roles
     menu | GitRole.kt | architecture-test/…/com/example/roles
+    menu | IdeCodeStyleRole.kt | architecture-test/…/com/example/roles
     menu | IntegrationSpecRole.kt | architecture-test/…/com/example/roles
     menu | KtorPluginRole.kt | architecture-test/…/com/example/roles
     menu | LayoutSnapshotRole.kt | architecture-test/…/com/example/roles
     menu | LoggingConfigRole.kt | architecture-test/…/com/example/roles
-    menu | ModelRole.kt | architecture-test/…/com/example/roles
-    menu | (disabled) … and 5 more
+    menu | (disabled) … and 6 more
+    menu | -----
+    menu | ▶ Run the check (:architecture-test:test)
+    menu | ⟳ Refresh the definition
+
+== architecture-test/src/test/kotlin/com/example/roles/IdeCodeStyleRole.kt
+roles: testing.RoleDefinition
+    testing.RoleDefinition declared at RoleDefinitionRole.kt:9 | fun DeclarationContainerScope.roleDefinition() = "RoleDefinition".role {
+7 | ◆ | katachi: testing.RoleDefinition
+    menu | ◇ Role testing.RoleDefinition — Role definition | RoleDefinitionRole.kt:9
+    menu | == Other files of testing.RoleDefinition (21)
+    menu | ApplicationConfigRole.kt | architecture-test/…/com/example/roles
+    menu | ArchitectureDefinitionEntryRole.kt | architecture-test/…/com/example/roles
+    menu | ArchitectureTestRole.kt | architecture-test/…/com/example/roles
+    menu | BaselineFileRole.kt | architecture-test/…/com/example/roles
+    menu | ControllerRole.kt | architecture-test/…/com/example/roles
+    menu | DocumentSectionDefinitionRole.kt | architecture-test/…/com/example/roles
+    menu | DocumentationRole.kt | architecture-test/…/com/example/roles
+    menu | EntrypointRole.kt | architecture-test/…/com/example/roles
+    menu | GeneratedDocumentationRole.kt | architecture-test/…/com/example/roles
+    menu | GitRole.kt | architecture-test/…/com/example/roles
+    menu | GroupDefinitionRole.kt | architecture-test/…/com/example/roles
+    menu | IntegrationSpecRole.kt | architecture-test/…/com/example/roles
+    menu | KtorPluginRole.kt | architecture-test/…/com/example/roles
+    menu | LayoutSnapshotRole.kt | architecture-test/…/com/example/roles
+    menu | LoggingConfigRole.kt | architecture-test/…/com/example/roles
+    menu | (disabled) … and 6 more
     menu | -----
     menu | ▶ Run the check (:architecture-test:test)
     menu | ⟳ Refresh the definition
@@ -508,7 +556,7 @@ roles: testing.RoleDefinition
     testing.RoleDefinition declared at RoleDefinitionRole.kt:9 | fun DeclarationContainerScope.roleDefinition() = "RoleDefinition".role {
 9 | ◆ | katachi: testing.RoleDefinition
     menu | ◇ Role testing.RoleDefinition — Role definition | RoleDefinitionRole.kt:9
-    menu | == Other files of testing.RoleDefinition (20)
+    menu | == Other files of testing.RoleDefinition (21)
     menu | ApplicationConfigRole.kt | architecture-test/…/com/example/roles
     menu | ArchitectureDefinitionEntryRole.kt | architecture-test/…/com/example/roles
     menu | ArchitectureTestRole.kt | architecture-test/…/com/example/roles
@@ -520,11 +568,11 @@ roles: testing.RoleDefinition
     menu | GeneratedDocumentationRole.kt | architecture-test/…/com/example/roles
     menu | GitRole.kt | architecture-test/…/com/example/roles
     menu | GroupDefinitionRole.kt | architecture-test/…/com/example/roles
+    menu | IdeCodeStyleRole.kt | architecture-test/…/com/example/roles
     menu | KtorPluginRole.kt | architecture-test/…/com/example/roles
     menu | LayoutSnapshotRole.kt | architecture-test/…/com/example/roles
     menu | LoggingConfigRole.kt | architecture-test/…/com/example/roles
-    menu | ModelRole.kt | architecture-test/…/com/example/roles
-    menu | (disabled) … and 5 more
+    menu | (disabled) … and 6 more
     menu | -----
     menu | ▶ Run the check (:architecture-test:test)
     menu | ⟳ Refresh the definition
@@ -534,7 +582,7 @@ roles: testing.RoleDefinition
     testing.RoleDefinition declared at RoleDefinitionRole.kt:9 | fun DeclarationContainerScope.roleDefinition() = "RoleDefinition".role {
 14 | ◆ | katachi: testing.RoleDefinition
     menu | ◇ Role testing.RoleDefinition — Role definition | RoleDefinitionRole.kt:9
-    menu | == Other files of testing.RoleDefinition (20)
+    menu | == Other files of testing.RoleDefinition (21)
     menu | ApplicationConfigRole.kt | architecture-test/…/com/example/roles
     menu | ArchitectureDefinitionEntryRole.kt | architecture-test/…/com/example/roles
     menu | ArchitectureTestRole.kt | architecture-test/…/com/example/roles
@@ -546,11 +594,11 @@ roles: testing.RoleDefinition
     menu | GeneratedDocumentationRole.kt | architecture-test/…/com/example/roles
     menu | GitRole.kt | architecture-test/…/com/example/roles
     menu | GroupDefinitionRole.kt | architecture-test/…/com/example/roles
+    menu | IdeCodeStyleRole.kt | architecture-test/…/com/example/roles
     menu | IntegrationSpecRole.kt | architecture-test/…/com/example/roles
     menu | LayoutSnapshotRole.kt | architecture-test/…/com/example/roles
     menu | LoggingConfigRole.kt | architecture-test/…/com/example/roles
-    menu | ModelRole.kt | architecture-test/…/com/example/roles
-    menu | (disabled) … and 5 more
+    menu | (disabled) … and 6 more
     menu | -----
     menu | ▶ Run the check (:architecture-test:test)
     menu | ⟳ Refresh the definition
@@ -560,7 +608,7 @@ roles: testing.RoleDefinition
     testing.RoleDefinition declared at RoleDefinitionRole.kt:9 | fun DeclarationContainerScope.roleDefinition() = "RoleDefinition".role {
 15 | ◆ | katachi: testing.RoleDefinition
     menu | ◇ Role testing.RoleDefinition — Role definition | RoleDefinitionRole.kt:9
-    menu | == Other files of testing.RoleDefinition (20)
+    menu | == Other files of testing.RoleDefinition (21)
     menu | ApplicationConfigRole.kt | architecture-test/…/com/example/roles
     menu | ArchitectureDefinitionEntryRole.kt | architecture-test/…/com/example/roles
     menu | ArchitectureTestRole.kt | architecture-test/…/com/example/roles
@@ -572,11 +620,11 @@ roles: testing.RoleDefinition
     menu | GeneratedDocumentationRole.kt | architecture-test/…/com/example/roles
     menu | GitRole.kt | architecture-test/…/com/example/roles
     menu | GroupDefinitionRole.kt | architecture-test/…/com/example/roles
+    menu | IdeCodeStyleRole.kt | architecture-test/…/com/example/roles
     menu | IntegrationSpecRole.kt | architecture-test/…/com/example/roles
     menu | KtorPluginRole.kt | architecture-test/…/com/example/roles
     menu | LoggingConfigRole.kt | architecture-test/…/com/example/roles
-    menu | ModelRole.kt | architecture-test/…/com/example/roles
-    menu | (disabled) … and 5 more
+    menu | (disabled) … and 6 more
     menu | -----
     menu | ▶ Run the check (:architecture-test:test)
     menu | ⟳ Refresh the definition
@@ -586,7 +634,7 @@ roles: testing.RoleDefinition
     testing.RoleDefinition declared at RoleDefinitionRole.kt:9 | fun DeclarationContainerScope.roleDefinition() = "RoleDefinition".role {
 8 | ◆ | katachi: testing.RoleDefinition
     menu | ◇ Role testing.RoleDefinition — Role definition | RoleDefinitionRole.kt:9
-    menu | == Other files of testing.RoleDefinition (20)
+    menu | == Other files of testing.RoleDefinition (21)
     menu | ApplicationConfigRole.kt | architecture-test/…/com/example/roles
     menu | ArchitectureDefinitionEntryRole.kt | architecture-test/…/com/example/roles
     menu | ArchitectureTestRole.kt | architecture-test/…/com/example/roles
@@ -598,11 +646,11 @@ roles: testing.RoleDefinition
     menu | GeneratedDocumentationRole.kt | architecture-test/…/com/example/roles
     menu | GitRole.kt | architecture-test/…/com/example/roles
     menu | GroupDefinitionRole.kt | architecture-test/…/com/example/roles
+    menu | IdeCodeStyleRole.kt | architecture-test/…/com/example/roles
     menu | IntegrationSpecRole.kt | architecture-test/…/com/example/roles
     menu | KtorPluginRole.kt | architecture-test/…/com/example/roles
     menu | LayoutSnapshotRole.kt | architecture-test/…/com/example/roles
-    menu | ModelRole.kt | architecture-test/…/com/example/roles
-    menu | (disabled) … and 5 more
+    menu | (disabled) … and 6 more
     menu | -----
     menu | ▶ Run the check (:architecture-test:test)
     menu | ⟳ Refresh the definition
@@ -612,7 +660,7 @@ roles: testing.RoleDefinition
     testing.RoleDefinition declared at RoleDefinitionRole.kt:9 | fun DeclarationContainerScope.roleDefinition() = "RoleDefinition".role {
 14 | ◆ | katachi: testing.RoleDefinition
     menu | ◇ Role testing.RoleDefinition — Role definition | RoleDefinitionRole.kt:9
-    menu | == Other files of testing.RoleDefinition (20)
+    menu | == Other files of testing.RoleDefinition (21)
     menu | ApplicationConfigRole.kt | architecture-test/…/com/example/roles
     menu | ArchitectureDefinitionEntryRole.kt | architecture-test/…/com/example/roles
     menu | ArchitectureTestRole.kt | architecture-test/…/com/example/roles
@@ -624,11 +672,11 @@ roles: testing.RoleDefinition
     menu | GeneratedDocumentationRole.kt | architecture-test/…/com/example/roles
     menu | GitRole.kt | architecture-test/…/com/example/roles
     menu | GroupDefinitionRole.kt | architecture-test/…/com/example/roles
+    menu | IdeCodeStyleRole.kt | architecture-test/…/com/example/roles
     menu | IntegrationSpecRole.kt | architecture-test/…/com/example/roles
     menu | KtorPluginRole.kt | architecture-test/…/com/example/roles
     menu | LayoutSnapshotRole.kt | architecture-test/…/com/example/roles
-    menu | LoggingConfigRole.kt | architecture-test/…/com/example/roles
-    menu | (disabled) … and 5 more
+    menu | (disabled) … and 6 more
     menu | -----
     menu | ▶ Run the check (:architecture-test:test)
     menu | ⟳ Refresh the definition
@@ -638,7 +686,7 @@ roles: testing.RoleDefinition
     testing.RoleDefinition declared at RoleDefinitionRole.kt:9 | fun DeclarationContainerScope.roleDefinition() = "RoleDefinition".role {
 9 | ◆ | katachi: testing.RoleDefinition
     menu | ◇ Role testing.RoleDefinition — Role definition | RoleDefinitionRole.kt:9
-    menu | == Other files of testing.RoleDefinition (20)
+    menu | == Other files of testing.RoleDefinition (21)
     menu | ApplicationConfigRole.kt | architecture-test/…/com/example/roles
     menu | ArchitectureDefinitionEntryRole.kt | architecture-test/…/com/example/roles
     menu | ArchitectureTestRole.kt | architecture-test/…/com/example/roles
@@ -650,11 +698,11 @@ roles: testing.RoleDefinition
     menu | GeneratedDocumentationRole.kt | architecture-test/…/com/example/roles
     menu | GitRole.kt | architecture-test/…/com/example/roles
     menu | GroupDefinitionRole.kt | architecture-test/…/com/example/roles
+    menu | IdeCodeStyleRole.kt | architecture-test/…/com/example/roles
     menu | IntegrationSpecRole.kt | architecture-test/…/com/example/roles
     menu | KtorPluginRole.kt | architecture-test/…/com/example/roles
     menu | LayoutSnapshotRole.kt | architecture-test/…/com/example/roles
-    menu | LoggingConfigRole.kt | architecture-test/…/com/example/roles
-    menu | (disabled) … and 5 more
+    menu | (disabled) … and 6 more
     menu | -----
     menu | ▶ Run the check (:architecture-test:test)
     menu | ⟳ Refresh the definition
@@ -664,7 +712,7 @@ roles: testing.RoleDefinition
     testing.RoleDefinition declared at RoleDefinitionRole.kt:9 | fun DeclarationContainerScope.roleDefinition() = "RoleDefinition".role {
 10 | ◆ | katachi: testing.RoleDefinition
     menu | ◇ Role testing.RoleDefinition — Role definition | RoleDefinitionRole.kt:9
-    menu | == Other files of testing.RoleDefinition (20)
+    menu | == Other files of testing.RoleDefinition (21)
     menu | ApplicationConfigRole.kt | architecture-test/…/com/example/roles
     menu | ArchitectureDefinitionEntryRole.kt | architecture-test/…/com/example/roles
     menu | ArchitectureTestRole.kt | architecture-test/…/com/example/roles
@@ -676,11 +724,11 @@ roles: testing.RoleDefinition
     menu | GeneratedDocumentationRole.kt | architecture-test/…/com/example/roles
     menu | GitRole.kt | architecture-test/…/com/example/roles
     menu | GroupDefinitionRole.kt | architecture-test/…/com/example/roles
+    menu | IdeCodeStyleRole.kt | architecture-test/…/com/example/roles
     menu | IntegrationSpecRole.kt | architecture-test/…/com/example/roles
     menu | KtorPluginRole.kt | architecture-test/…/com/example/roles
     menu | LayoutSnapshotRole.kt | architecture-test/…/com/example/roles
-    menu | LoggingConfigRole.kt | architecture-test/…/com/example/roles
-    menu | (disabled) … and 5 more
+    menu | (disabled) … and 6 more
     menu | -----
     menu | ▶ Run the check (:architecture-test:test)
     menu | ⟳ Refresh the definition
@@ -690,7 +738,7 @@ roles: testing.RoleDefinition
     testing.RoleDefinition declared at RoleDefinitionRole.kt:9 | fun DeclarationContainerScope.roleDefinition() = "RoleDefinition".role {
 9 | ◆ | katachi: testing.RoleDefinition
     menu | ◇ Role testing.RoleDefinition — Role definition | RoleDefinitionRole.kt:9
-    menu | == Other files of testing.RoleDefinition (20)
+    menu | == Other files of testing.RoleDefinition (21)
     menu | ApplicationConfigRole.kt | architecture-test/…/com/example/roles
     menu | ArchitectureDefinitionEntryRole.kt | architecture-test/…/com/example/roles
     menu | ArchitectureTestRole.kt | architecture-test/…/com/example/roles
@@ -702,11 +750,11 @@ roles: testing.RoleDefinition
     menu | GeneratedDocumentationRole.kt | architecture-test/…/com/example/roles
     menu | GitRole.kt | architecture-test/…/com/example/roles
     menu | GroupDefinitionRole.kt | architecture-test/…/com/example/roles
+    menu | IdeCodeStyleRole.kt | architecture-test/…/com/example/roles
     menu | IntegrationSpecRole.kt | architecture-test/…/com/example/roles
     menu | KtorPluginRole.kt | architecture-test/…/com/example/roles
     menu | LayoutSnapshotRole.kt | architecture-test/…/com/example/roles
-    menu | LoggingConfigRole.kt | architecture-test/…/com/example/roles
-    menu | (disabled) … and 5 more
+    menu | (disabled) … and 6 more
     menu | -----
     menu | ▶ Run the check (:architecture-test:test)
     menu | ⟳ Refresh the definition
@@ -716,7 +764,7 @@ roles: testing.RoleDefinition
     testing.RoleDefinition declared at RoleDefinitionRole.kt:9 | fun DeclarationContainerScope.roleDefinition() = "RoleDefinition".role {
 19 | ◆ | katachi: testing.RoleDefinition
     menu | ◇ Role testing.RoleDefinition — Role definition | RoleDefinitionRole.kt:9
-    menu | == Other files of testing.RoleDefinition (20)
+    menu | == Other files of testing.RoleDefinition (21)
     menu | ApplicationConfigRole.kt | architecture-test/…/com/example/roles
     menu | ArchitectureDefinitionEntryRole.kt | architecture-test/…/com/example/roles
     menu | ArchitectureTestRole.kt | architecture-test/…/com/example/roles
@@ -728,11 +776,11 @@ roles: testing.RoleDefinition
     menu | GeneratedDocumentationRole.kt | architecture-test/…/com/example/roles
     menu | GitRole.kt | architecture-test/…/com/example/roles
     menu | GroupDefinitionRole.kt | architecture-test/…/com/example/roles
+    menu | IdeCodeStyleRole.kt | architecture-test/…/com/example/roles
     menu | IntegrationSpecRole.kt | architecture-test/…/com/example/roles
     menu | KtorPluginRole.kt | architecture-test/…/com/example/roles
     menu | LayoutSnapshotRole.kt | architecture-test/…/com/example/roles
-    menu | LoggingConfigRole.kt | architecture-test/…/com/example/roles
-    menu | (disabled) … and 5 more
+    menu | (disabled) … and 6 more
     menu | -----
     menu | ▶ Run the check (:architecture-test:test)
     menu | ⟳ Refresh the definition
@@ -742,7 +790,7 @@ roles: testing.RoleDefinition
     testing.RoleDefinition declared at RoleDefinitionRole.kt:9 | fun DeclarationContainerScope.roleDefinition() = "RoleDefinition".role {
 8 | ◆ | katachi: testing.RoleDefinition
     menu | ◇ Role testing.RoleDefinition — Role definition | RoleDefinitionRole.kt:9
-    menu | == Other files of testing.RoleDefinition (20)
+    menu | == Other files of testing.RoleDefinition (21)
     menu | ApplicationConfigRole.kt | architecture-test/…/com/example/roles
     menu | ArchitectureDefinitionEntryRole.kt | architecture-test/…/com/example/roles
     menu | ArchitectureTestRole.kt | architecture-test/…/com/example/roles
@@ -754,20 +802,20 @@ roles: testing.RoleDefinition
     menu | GeneratedDocumentationRole.kt | architecture-test/…/com/example/roles
     menu | GitRole.kt | architecture-test/…/com/example/roles
     menu | GroupDefinitionRole.kt | architecture-test/…/com/example/roles
+    menu | IdeCodeStyleRole.kt | architecture-test/…/com/example/roles
     menu | IntegrationSpecRole.kt | architecture-test/…/com/example/roles
     menu | KtorPluginRole.kt | architecture-test/…/com/example/roles
     menu | LayoutSnapshotRole.kt | architecture-test/…/com/example/roles
-    menu | LoggingConfigRole.kt | architecture-test/…/com/example/roles
-    menu | (disabled) … and 5 more
+    menu | (disabled) … and 6 more
     menu | -----
     menu | ▶ Run the check (:architecture-test:test)
     menu | ⟳ Refresh the definition
 
 == build.gradle.kts
 roles: Gradle.BuildScript
-    Gradle.BuildScript declared at GradleGroup.kt:22 | fun DeclarationContainerScope.gradleGroup() = gradle()
+    Gradle.BuildScript declared at GradleGroup.kt:42 | fun DeclarationContainerScope.gradleGroup() = gradle {
 1 | ◆ | katachi: Gradle.BuildScript
-    menu | ◇ Role Gradle.BuildScript — How one module is built, one per module | GradleGroup.kt:22
+    menu | ◇ Role Gradle.BuildScript — How one module is built, one per module | GradleGroup.kt:42
     menu | == Other files of Gradle.BuildScript (1)
     menu | build.gradle.kts | architecture-test
     menu | -----
@@ -1426,9 +1474,9 @@ roles: testing.GeneratedDocumentation
 
 == gradle.properties
 roles: Gradle.GradleProperties
-    Gradle.GradleProperties declared at GradleGroup.kt:22 | fun DeclarationContainerScope.gradleGroup() = gradle()
+    Gradle.GradleProperties declared at GradleGroup.kt:42 | fun DeclarationContainerScope.gradleGroup() = gradle {
 1 | ◆ | katachi: Gradle.GradleProperties
-    menu | ◇ Role Gradle.GradleProperties — Properties of the build and of the Gradle daemon | GradleGroup.kt:22
+    menu | ◇ Role Gradle.GradleProperties — Properties of the build and of the Gradle daemon | GradleGroup.kt:42
     menu | == Other files of Gradle.GradleProperties
     menu | (disabled) — No other file yet
     menu | -----
@@ -1437,9 +1485,9 @@ roles: Gradle.GradleProperties
 
 == gradle/sample.versions.toml
 roles: Gradle.VersionCatalog
-    Gradle.VersionCatalog declared at GradleGroup.kt:22 | fun DeclarationContainerScope.gradleGroup() = gradle()
+    Gradle.VersionCatalog declared at GradleGroup.kt:42 | fun DeclarationContainerScope.gradleGroup() = gradle {
 1 | ◆ | katachi: Gradle.VersionCatalog
-    menu | ◇ Role Gradle.VersionCatalog — The versions of the build's dependencies and plugins | GradleGroup.kt:22
+    menu | ◇ Role Gradle.VersionCatalog — The versions of the build's dependencies and plugins | GradleGroup.kt:42
     menu | == Other files of Gradle.VersionCatalog
     menu | (disabled) — No other file yet
     menu | -----
@@ -1448,9 +1496,9 @@ roles: Gradle.VersionCatalog
 
 == gradle/wrapper/gradle-wrapper.properties
 roles: Gradle.GradleWrapper.WrapperProperties
-    Gradle.GradleWrapper.WrapperProperties declared at GradleGroup.kt:22 | fun DeclarationContainerScope.gradleGroup() = gradle()
+    Gradle.GradleWrapper.WrapperProperties declared at GradleGroup.kt:42 | fun DeclarationContainerScope.gradleGroup() = gradle {
 1 | ◆ | katachi: Gradle.GradleWrapper.WrapperProperties
-    menu | ◇ Role Gradle.GradleWrapper.WrapperProperties — Which Gradle distribution the wrapper runs | GradleGroup.kt:22
+    menu | ◇ Role Gradle.GradleWrapper.WrapperProperties — Which Gradle distribution the wrapper runs | GradleGroup.kt:42
     menu | == Other files of Gradle.GradleWrapper.WrapperProperties
     menu | (disabled) — No other file yet
     menu | -----
@@ -1470,9 +1518,9 @@ roles: testing.BaselineFile
 
 == settings.gradle.kts
 roles: Gradle.SettingsScript
-    Gradle.SettingsScript declared at GradleGroup.kt:22 | fun DeclarationContainerScope.gradleGroup() = gradle()
+    Gradle.SettingsScript declared at GradleGroup.kt:42 | fun DeclarationContainerScope.gradleGroup() = gradle {
 1 | ◆ | katachi: Gradle.SettingsScript
-    menu | ◇ Role Gradle.SettingsScript — Which modules make up the build | GradleGroup.kt:22
+    menu | ◇ Role Gradle.SettingsScript — Which modules make up the build | GradleGroup.kt:42
     menu | == Other files of Gradle.SettingsScript
     menu | (disabled) — No other file yet
     menu | -----
@@ -1503,17 +1551,21 @@ roles: app.Entrypoint
 
 == src/main/kotlin/com/example/controller/health/HealthController.kt
 roles: api.Controller
-    api.Controller declared at ControllerRole.kt:25 | fun DeclarationContainerScope.controller() = "Controller".role {
-9 | ◆ | katachi: api.Controller — allowed by class HealthController (ControllerRole.kt:110)
-    allowed at ControllerRole.kt:110 | `class`(fileName) {
-    menu | ◆ Allowed by class HealthController | ControllerRole.kt:110
-    menu | ◇ Role api.Controller — Controller | ControllerRole.kt:25
+    api.Controller declared at ControllerRole.kt:28 | fun DeclarationContainerScope.controller() = "Controller".role {
+9 | ◆ | katachi: api.Controller — allowed by class HealthController (ControllerRole.kt:119)
+    allowed at ControllerRole.kt:119 | `class`(fileName) {
+    menu | ◆ Allowed by class HealthController | ControllerRole.kt:119
+    menu | ◇ Role api.Controller — Controller | ControllerRole.kt:28
     menu | == Other files of api.Controller
     menu | (disabled) — No other file yet
     menu | -----
     menu | + New api.Controller from template…
     menu | ▶ Run the check (:architecture-test:test)
     menu | ⟳ Refresh the definition
+
+== src/main/kotlin/com/example/controller/health/LegacyStatusController.kt
+roles: (none) CaptureMismatch
+(no ◆)
 
 == src/main/kotlin/com/example/model/Health.kt
 roles: domain.Model
@@ -1629,6 +1681,8 @@ roles: testing.Test
     menu | ⟳ Refresh the definition
 
 ## annotations after the check that found nothing (contract/json/real-jvm-clean-sarif.json)
+== src/main/kotlin/com/example/controller/health/LegacyStatusController.kt
+(none)
 == src/main/kotlin/com/example/service/HealthService.kt
 (none)
 == src/main/kotlin/com/example/service/LegacyHealthCheck.kt
@@ -1636,7 +1690,9 @@ roles: testing.Test
 == src/main/kotlin/com/example/service/LegacyStatusService.kt
 (none)
 
-## annotations after the check that found violations (contract/json/real-jvm-violations-sarif.json: 2 results)
+## annotations after the check that found violations (contract/json/real-jvm-violations-sarif.json: 3 results)
+== src/main/kotlin/com/example/controller/health/LegacyStatusController.kt
+(none)
 == src/main/kotlin/com/example/service/HealthService.kt
 (none)
 == src/main/kotlin/com/example/service/LegacyHealthCheck.kt

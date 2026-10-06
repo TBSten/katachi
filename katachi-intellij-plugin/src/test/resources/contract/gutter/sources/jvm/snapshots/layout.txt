@@ -140,3 +140,7 @@ testing.Test	src/test/kotlin/**	Directory	optional
 testing.Test	src/test/kotlin/**/*Test.kt	File	optional
 tool.Documentation	README.md	File	required
 tool.Git	.gitignore	File	required
+tool.IdeCodeStyle	.idea	Directory	optional
+tool.IdeCodeStyle	.idea/codeStyles	Directory	optional
+tool.IdeCodeStyle	.idea/codeStyles/Project.xml	File	required
+tool.IdeCodeStyle	.idea/codeStyles/codeStyleConfig.xml	File	required

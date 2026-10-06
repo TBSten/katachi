@@ -16,9 +16,9 @@ roles: tool.Documentation
 
 == app/build.gradle.kts
 roles: Gradle.BuildScript
-    Gradle.BuildScript declared at GradleGroup.kt:22 | fun DeclarationContainerScope.gradleGroup() = gradle()
+    Gradle.BuildScript declared at GradleGroup.kt:54 | fun DeclarationContainerScope.gradleGroup() = gradle {
 1 | ◆ | katachi: Gradle.BuildScript
-    menu | ◇ Role Gradle.BuildScript — How one module is built, one per module | GradleGroup.kt:22
+    menu | ◇ Role Gradle.BuildScript — How one module is built, one per module | GradleGroup.kt:54
     menu | == Other files of Gradle.BuildScript (8)
     menu | build.gradle.kts | .
     menu | build.gradle.kts | architecture-test
@@ -78,9 +78,9 @@ roles: app.ApplicationEntrypoint
 
 == architecture-test/build.gradle.kts
 roles: Gradle.BuildScript
-    Gradle.BuildScript declared at GradleGroup.kt:22 | fun DeclarationContainerScope.gradleGroup() = gradle()
+    Gradle.BuildScript declared at GradleGroup.kt:54 | fun DeclarationContainerScope.gradleGroup() = gradle {
 1 | ◆ | katachi: Gradle.BuildScript
-    menu | ◇ Role Gradle.BuildScript — How one module is built, one per module | GradleGroup.kt:22
+    menu | ◇ Role Gradle.BuildScript — How one module is built, one per module | GradleGroup.kt:54
     menu | == Other files of Gradle.BuildScript (8)
     menu | build.gradle.kts | .
     menu | build.gradle.kts | app
@@ -131,7 +131,7 @@ roles: testing.DefinitionEntry
 == architecture-test/src/test/kotlin/com/example/sample/ProjectArchitectureSpec.kt
 roles: testing.ProjectArchitectureSpec
     testing.ProjectArchitectureSpec declared at ProjectArchitectureSpecRole.kt:9 | fun DeclarationContainerScope.projectArchitectureSpec() = "ProjectArchitectureSpec".role {
-48 | ◆ | katachi: testing.ProjectArchitectureSpec
+54 | ◆ | katachi: testing.ProjectArchitectureSpec
     menu | ◇ Role testing.ProjectArchitectureSpec — Architecture spec | ProjectArchitectureSpecRole.kt:9
     menu | == Other files of testing.ProjectArchitectureSpec (2)
     menu | LayoutSnapshotSpec.kt | architecture-test/…/com/example/sample
@@ -143,7 +143,7 @@ roles: testing.ProjectArchitectureSpec
 == architecture-test/src/test/kotlin/com/example/sample/ProjectArchitectureTest.kt
 roles: testing.ProjectArchitectureTest
     testing.ProjectArchitectureTest declared at ProjectArchitectureTestRole.kt:9 | fun DeclarationContainerScope.projectArchitectureTest() = "ProjectArchitectureTest".role {
-21 | ◆ | katachi: testing.ProjectArchitectureTest
+25 | ◆ | katachi: testing.ProjectArchitectureTest
     menu | ◇ Role testing.ProjectArchitectureTest — Architecture test | ProjectArchitectureTestRole.kt:9
     menu | == Other files of testing.ProjectArchitectureTest
     menu | (disabled) — No other file yet
@@ -200,7 +200,7 @@ roles: testing.GroupDefinition
 == architecture-test/src/test/kotlin/com/example/sample/groups/FeatureGroup.kt
 roles: testing.GroupDefinition
     testing.GroupDefinition declared at GroupDefinitionRole.kt:12 | fun DeclarationContainerScope.groupDefinition() = "GroupDefinition".role {
-34 | ◆ | katachi: testing.GroupDefinition
+36 | ◆ | katachi: testing.GroupDefinition
     menu | ◇ Role testing.GroupDefinition — Group definition | GroupDefinitionRole.kt:12
     menu | == Other files of testing.GroupDefinition (6)
     menu | AppGroup.kt | architecture-test/…/sample/groups
@@ -217,7 +217,7 @@ roles: testing.GroupDefinition
 == architecture-test/src/test/kotlin/com/example/sample/groups/GradleGroup.kt
 roles: testing.GroupDefinition
     testing.GroupDefinition declared at GroupDefinitionRole.kt:12 | fun DeclarationContainerScope.groupDefinition() = "GroupDefinition".role {
-22 | ◆ | katachi: testing.GroupDefinition
+15 | ◆ | katachi: testing.GroupDefinition
     menu | ◇ Role testing.GroupDefinition — Group definition | GroupDefinitionRole.kt:12
     menu | == Other files of testing.GroupDefinition (6)
     menu | AppGroup.kt | architecture-test/…/sample/groups
@@ -555,7 +555,7 @@ roles: testing.RoleDefinition
 == architecture-test/src/test/kotlin/com/example/sample/roles/FeatureComponentRole.kt
 roles: testing.RoleDefinition
     testing.RoleDefinition declared at RoleDefinitionRole.kt:12 | fun DeclarationContainerScope.roleDefinition() = "RoleDefinition".role {
-27 | ◆ | katachi: testing.RoleDefinition
+26 | ◆ | katachi: testing.RoleDefinition
     menu | ◇ Role testing.RoleDefinition — Role definition | RoleDefinitionRole.kt:12
     menu | == Other files of testing.RoleDefinition (28)
     menu | ActivityEntrypointRole.kt | architecture-test/…/example/sample/roles
@@ -933,7 +933,7 @@ roles: testing.RoleDefinition
 == architecture-test/src/test/kotlin/com/example/sample/roles/RouteRole.kt
 roles: testing.RoleDefinition
     testing.RoleDefinition declared at RoleDefinitionRole.kt:12 | fun DeclarationContainerScope.roleDefinition() = "RoleDefinition".role {
-14 | ◆ | katachi: testing.RoleDefinition
+15 | ◆ | katachi: testing.RoleDefinition
     menu | ◇ Role testing.RoleDefinition — Role definition | RoleDefinitionRole.kt:12
     menu | == Other files of testing.RoleDefinition (28)
     menu | ActivityEntrypointRole.kt | architecture-test/…/example/sample/roles
@@ -960,7 +960,7 @@ roles: testing.RoleDefinition
 == architecture-test/src/test/kotlin/com/example/sample/roles/ScreenRole.kt
 roles: testing.RoleDefinition
     testing.RoleDefinition declared at RoleDefinitionRole.kt:12 | fun DeclarationContainerScope.roleDefinition() = "RoleDefinition".role {
-21 | ◆ | katachi: testing.RoleDefinition
+23 | ◆ | katachi: testing.RoleDefinition
     menu | ◇ Role testing.RoleDefinition — Role definition | RoleDefinitionRole.kt:12
     menu | == Other files of testing.RoleDefinition (28)
     menu | ActivityEntrypointRole.kt | architecture-test/…/example/sample/roles
@@ -1041,7 +1041,7 @@ roles: testing.RoleDefinition
 == architecture-test/src/test/kotlin/com/example/sample/roles/ViewModelRole.kt
 roles: testing.RoleDefinition
     testing.RoleDefinition declared at RoleDefinitionRole.kt:12 | fun DeclarationContainerScope.roleDefinition() = "RoleDefinition".role {
-14 | ◆ | katachi: testing.RoleDefinition
+15 | ◆ | katachi: testing.RoleDefinition
     menu | ◇ Role testing.RoleDefinition — Role definition | RoleDefinitionRole.kt:12
     menu | == Other files of testing.RoleDefinition (28)
     menu | ActivityEntrypointRole.kt | architecture-test/…/example/sample/roles
@@ -1067,9 +1067,9 @@ roles: testing.RoleDefinition
 
 == build.gradle.kts
 roles: Gradle.BuildScript
-    Gradle.BuildScript declared at GradleGroup.kt:22 | fun DeclarationContainerScope.gradleGroup() = gradle()
+    Gradle.BuildScript declared at GradleGroup.kt:54 | fun DeclarationContainerScope.gradleGroup() = gradle {
 1 | ◆ | katachi: Gradle.BuildScript
-    menu | ◇ Role Gradle.BuildScript — How one module is built, one per module | GradleGroup.kt:22
+    menu | ◇ Role Gradle.BuildScript — How one module is built, one per module | GradleGroup.kt:54
     menu | == Other files of Gradle.BuildScript (8)
     menu | build.gradle.kts | app
     menu | build.gradle.kts | architecture-test
@@ -1085,9 +1085,9 @@ roles: Gradle.BuildScript
 
 == data/build.gradle.kts
 roles: Gradle.BuildScript
-    Gradle.BuildScript declared at GradleGroup.kt:22 | fun DeclarationContainerScope.gradleGroup() = gradle()
+    Gradle.BuildScript declared at GradleGroup.kt:54 | fun DeclarationContainerScope.gradleGroup() = gradle {
 1 | ◆ | katachi: Gradle.BuildScript
-    menu | ◇ Role Gradle.BuildScript — How one module is built, one per module | GradleGroup.kt:22
+    menu | ◇ Role Gradle.BuildScript — How one module is built, one per module | GradleGroup.kt:54
     menu | == Other files of Gradle.BuildScript (8)
     menu | build.gradle.kts | .
     menu | build.gradle.kts | app
@@ -2025,9 +2025,9 @@ roles: testing.GeneratedDocumentation
 
 == feature/home/build.gradle.kts
 roles: Gradle.BuildScript
-    Gradle.BuildScript declared at GradleGroup.kt:22 | fun DeclarationContainerScope.gradleGroup() = gradle()
+    Gradle.BuildScript declared at GradleGroup.kt:54 | fun DeclarationContainerScope.gradleGroup() = gradle {
 1 | ◆ | katachi: Gradle.BuildScript
-    menu | ◇ Role Gradle.BuildScript — How one module is built, one per module | GradleGroup.kt:22
+    menu | ◇ Role Gradle.BuildScript — How one module is built, one per module | GradleGroup.kt:54
     menu | == Other files of Gradle.BuildScript (8)
     menu | build.gradle.kts | .
     menu | build.gradle.kts | app
@@ -2043,20 +2043,20 @@ roles: Gradle.BuildScript
 
 == feature/home/src/main/kotlin/com/example/sample/feature/home/HomeRoute.kt
 roles: feature.Route
-    feature.Route declared at RouteRole.kt:14 | fun DeclarationContainerScope.route() = "Route".role {
-12 | ◆ | katachi: feature.Route — allowed by object HomeRoute (RouteRole.kt:48)
-    allowed at RouteRole.kt:48 | `object`(fileName) {
-    menu | ◆ Allowed by object HomeRoute | RouteRole.kt:48
-    menu | ◇ Role feature.Route — Route | RouteRole.kt:14
+    feature.Route declared at RouteRole.kt:15 | fun DeclarationContainerScope.route() = "Route".role {
+12 | ◆ | katachi: feature.Route — allowed by object HomeRoute (RouteRole.kt:51)
+    allowed at RouteRole.kt:51 | `object`(fileName) {
+    menu | ◆ Allowed by object HomeRoute | RouteRole.kt:51
+    menu | ◇ Role feature.Route — Route | RouteRole.kt:15
     menu | == Other files of feature.Route (1)
     menu | SettingsRoute.kt | feature/…/sample/feature/settings
     menu | -----
     menu | ▶ Run the check (:architecture-test:test)
     menu | ⟳ Refresh the definition
-17 | ◆ | katachi: feature.Route — allowed by fun homeScreen(...) (RouteRole.kt:51)
-    allowed at RouteRole.kt:51 | `fun`("${feature}Screen")                                   // NavGraphBuilder.homeScreen(...)
-    menu | ◆ Allowed by fun homeScreen(...) | RouteRole.kt:51
-    menu | ◇ Role feature.Route — Route | RouteRole.kt:14
+17 | ◆ | katachi: feature.Route — allowed by fun homeScreen(...) (RouteRole.kt:54)
+    allowed at RouteRole.kt:54 | `fun`("${feature}Screen")                                   // NavGraphBuilder.homeScreen(...)
+    menu | ◆ Allowed by fun homeScreen(...) | RouteRole.kt:54
+    menu | ◇ Role feature.Route — Route | RouteRole.kt:15
     menu | == Other files of feature.Route (1)
     menu | SettingsRoute.kt | feature/…/sample/feature/settings
     menu | -----
@@ -2065,38 +2065,38 @@ roles: feature.Route
 
 == feature/home/src/main/kotlin/com/example/sample/feature/home/HomeScreen.kt
 roles: feature.Screen
-    feature.Screen declared at ScreenRole.kt:21 | fun DeclarationContainerScope.screen() = "Screen".role {
-30 | ◆ | katachi: feature.Screen — allowed by @Composable internal fun HomeScreen(...) (ScreenRole.kt:69)
-    allowed at ScreenRole.kt:69 | annotated("Composable").internal.`fun`(fileName)
-    menu | ◆ Allowed by @Composable internal fun HomeScreen(...) | ScreenRole.kt:69
-    menu | ◇ Role feature.Screen — Screen | ScreenRole.kt:21
+    feature.Screen declared at ScreenRole.kt:23 | fun DeclarationContainerScope.screen() = "Screen".role {
+30 | ◆ | katachi: feature.Screen — allowed by @Composable internal fun HomeScreen(...) (ScreenRole.kt:73)
+    allowed at ScreenRole.kt:73 | annotated("Composable").internal.`fun`(fileName)
+    menu | ◆ Allowed by @Composable internal fun HomeScreen(...) | ScreenRole.kt:73
+    menu | ◇ Role feature.Screen — Screen | ScreenRole.kt:23
     menu | == Other files of feature.Screen (1)
     menu | SettingsScreen.kt | feature/…/sample/feature/settings
     menu | -----
     menu | ▶ Run the check (:architecture-test:test)
     menu | ⟳ Refresh the definition
-46 | ◆ | katachi: feature.Screen — allowed by @Composable internal fun HomeScreen(...) (ScreenRole.kt:69)
-    allowed at ScreenRole.kt:69 | annotated("Composable").internal.`fun`(fileName)
-    menu | ◆ Allowed by @Composable internal fun HomeScreen(...) | ScreenRole.kt:69
-    menu | ◇ Role feature.Screen — Screen | ScreenRole.kt:21
+46 | ◆ | katachi: feature.Screen — allowed by @Composable internal fun HomeScreen(...) (ScreenRole.kt:73)
+    allowed at ScreenRole.kt:73 | annotated("Composable").internal.`fun`(fileName)
+    menu | ◆ Allowed by @Composable internal fun HomeScreen(...) | ScreenRole.kt:73
+    menu | ◇ Role feature.Screen — Screen | ScreenRole.kt:23
     menu | == Other files of feature.Screen (1)
     menu | SettingsScreen.kt | feature/…/sample/feature/settings
     menu | -----
     menu | ▶ Run the check (:architecture-test:test)
     menu | ⟳ Refresh the definition
-91 | ◆ | katachi: feature.Screen — allowed by @Preview private fun *Preview(...) (ScreenRole.kt:70)
-    allowed at ScreenRole.kt:70 | annotated("Preview").private.`fun`("*Preview")
-    menu | ◆ Allowed by @Preview private fun *Preview(...) | ScreenRole.kt:70
-    menu | ◇ Role feature.Screen — Screen | ScreenRole.kt:21
+91 | ◆ | katachi: feature.Screen — allowed by @Preview private fun *Preview(...) (ScreenRole.kt:74)
+    allowed at ScreenRole.kt:74 | annotated("Preview").private.`fun`("*Preview")
+    menu | ◆ Allowed by @Preview private fun *Preview(...) | ScreenRole.kt:74
+    menu | ◇ Role feature.Screen — Screen | ScreenRole.kt:23
     menu | == Other files of feature.Screen (1)
     menu | SettingsScreen.kt | feature/…/sample/feature/settings
     menu | -----
     menu | ▶ Run the check (:architecture-test:test)
     menu | ⟳ Refresh the definition
-103 | ◆ | katachi: feature.Screen — allowed by @Preview private fun *Preview(...) (ScreenRole.kt:70)
-    allowed at ScreenRole.kt:70 | annotated("Preview").private.`fun`("*Preview")
-    menu | ◆ Allowed by @Preview private fun *Preview(...) | ScreenRole.kt:70
-    menu | ◇ Role feature.Screen — Screen | ScreenRole.kt:21
+103 | ◆ | katachi: feature.Screen — allowed by @Preview private fun *Preview(...) (ScreenRole.kt:74)
+    allowed at ScreenRole.kt:74 | annotated("Preview").private.`fun`("*Preview")
+    menu | ◆ Allowed by @Preview private fun *Preview(...) | ScreenRole.kt:74
+    menu | ◇ Role feature.Screen — Screen | ScreenRole.kt:23
     menu | == Other files of feature.Screen (1)
     menu | SettingsScreen.kt | feature/…/sample/feature/settings
     menu | -----
@@ -2105,20 +2105,20 @@ roles: feature.Screen
 
 == feature/home/src/main/kotlin/com/example/sample/feature/home/HomeViewModel.kt
 roles: feature.ViewModel
-    feature.ViewModel declared at ViewModelRole.kt:14 | fun DeclarationContainerScope.viewModel() = "ViewModel".role {
-12 | ◆ | katachi: feature.ViewModel — allowed by internal data class HomeContent (ViewModelRole.kt:53)
-    allowed at ViewModelRole.kt:53 | internal.data.`class`(content)
-    menu | ◆ Allowed by internal data class HomeContent | ViewModelRole.kt:53
-    menu | ◇ Role feature.ViewModel — ViewModel | ViewModelRole.kt:14
+    feature.ViewModel declared at ViewModelRole.kt:15 | fun DeclarationContainerScope.viewModel() = "ViewModel".role {
+12 | ◆ | katachi: feature.ViewModel — allowed by internal data class HomeContent (ViewModelRole.kt:56)
+    allowed at ViewModelRole.kt:56 | internal.data.`class`(content)
+    menu | ◆ Allowed by internal data class HomeContent | ViewModelRole.kt:56
+    menu | ◇ Role feature.ViewModel — ViewModel | ViewModelRole.kt:15
     menu | == Other files of feature.ViewModel (1)
     menu | SettingsViewModel.kt | feature/…/sample/feature/settings
     menu | -----
     menu | ▶ Run the check (:architecture-test:test)
     menu | ⟳ Refresh the definition
-23 | ◆ | katachi: feature.ViewModel — allowed by internal class HomeViewModel : ViewModel (ViewModelRole.kt:54)
-    allowed at ViewModelRole.kt:54 | internal.`class`(fileName).superclass("ViewModel") {
-    menu | ◆ Allowed by internal class HomeViewModel : ViewModel | ViewModelRole.kt:54
-    menu | ◇ Role feature.ViewModel — ViewModel | ViewModelRole.kt:14
+23 | ◆ | katachi: feature.ViewModel — allowed by internal class HomeViewModel : ViewModel (ViewModelRole.kt:57)
+    allowed at ViewModelRole.kt:57 | internal.`class`(fileName).superclass("ViewModel") {
+    menu | ◆ Allowed by internal class HomeViewModel : ViewModel | ViewModelRole.kt:57
+    menu | ◇ Role feature.ViewModel — ViewModel | ViewModelRole.kt:15
     menu | == Other files of feature.ViewModel (1)
     menu | SettingsViewModel.kt | feature/…/sample/feature/settings
     menu | -----
@@ -2143,9 +2143,9 @@ roles: feature.FeatureTest
 
 == feature/settings/build.gradle.kts
 roles: Gradle.BuildScript
-    Gradle.BuildScript declared at GradleGroup.kt:22 | fun DeclarationContainerScope.gradleGroup() = gradle()
+    Gradle.BuildScript declared at GradleGroup.kt:54 | fun DeclarationContainerScope.gradleGroup() = gradle {
 1 | ◆ | katachi: Gradle.BuildScript
-    menu | ◇ Role Gradle.BuildScript — How one module is built, one per module | GradleGroup.kt:22
+    menu | ◇ Role Gradle.BuildScript — How one module is built, one per module | GradleGroup.kt:54
     menu | == Other files of Gradle.BuildScript (8)
     menu | build.gradle.kts | .
     menu | build.gradle.kts | app
@@ -2161,20 +2161,20 @@ roles: Gradle.BuildScript
 
 == feature/settings/src/main/kotlin/com/example/sample/feature/settings/SettingsRoute.kt
 roles: feature.Route
-    feature.Route declared at RouteRole.kt:14 | fun DeclarationContainerScope.route() = "Route".role {
-12 | ◆ | katachi: feature.Route — allowed by object SettingsRoute (RouteRole.kt:48)
-    allowed at RouteRole.kt:48 | `object`(fileName) {
-    menu | ◆ Allowed by object SettingsRoute | RouteRole.kt:48
-    menu | ◇ Role feature.Route — Route | RouteRole.kt:14
+    feature.Route declared at RouteRole.kt:15 | fun DeclarationContainerScope.route() = "Route".role {
+12 | ◆ | katachi: feature.Route — allowed by object SettingsRoute (RouteRole.kt:51)
+    allowed at RouteRole.kt:51 | `object`(fileName) {
+    menu | ◆ Allowed by object SettingsRoute | RouteRole.kt:51
+    menu | ◇ Role feature.Route — Route | RouteRole.kt:15
     menu | == Other files of feature.Route (1)
     menu | HomeRoute.kt | feature/…/example/sample/feature/home
     menu | -----
     menu | ▶ Run the check (:architecture-test:test)
     menu | ⟳ Refresh the definition
-17 | ◆ | katachi: feature.Route — allowed by fun settingsScreen(...) (RouteRole.kt:51)
-    allowed at RouteRole.kt:51 | `fun`("${feature}Screen")                                   // NavGraphBuilder.homeScreen(...)
-    menu | ◆ Allowed by fun settingsScreen(...) | RouteRole.kt:51
-    menu | ◇ Role feature.Route — Route | RouteRole.kt:14
+17 | ◆ | katachi: feature.Route — allowed by fun settingsScreen(...) (RouteRole.kt:54)
+    allowed at RouteRole.kt:54 | `fun`("${feature}Screen")                                   // NavGraphBuilder.homeScreen(...)
+    menu | ◆ Allowed by fun settingsScreen(...) | RouteRole.kt:54
+    menu | ◇ Role feature.Route — Route | RouteRole.kt:15
     menu | == Other files of feature.Route (1)
     menu | HomeRoute.kt | feature/…/example/sample/feature/home
     menu | -----
@@ -2183,29 +2183,29 @@ roles: feature.Route
 
 == feature/settings/src/main/kotlin/com/example/sample/feature/settings/SettingsScreen.kt
 roles: feature.Screen
-    feature.Screen declared at ScreenRole.kt:21 | fun DeclarationContainerScope.screen() = "Screen".role {
-28 | ◆ | katachi: feature.Screen — allowed by @Composable internal fun SettingsScreen(...) (ScreenRole.kt:69)
-    allowed at ScreenRole.kt:69 | annotated("Composable").internal.`fun`(fileName)
-    menu | ◆ Allowed by @Composable internal fun SettingsScreen(...) | ScreenRole.kt:69
-    menu | ◇ Role feature.Screen — Screen | ScreenRole.kt:21
+    feature.Screen declared at ScreenRole.kt:23 | fun DeclarationContainerScope.screen() = "Screen".role {
+28 | ◆ | katachi: feature.Screen — allowed by @Composable internal fun SettingsScreen(...) (ScreenRole.kt:73)
+    allowed at ScreenRole.kt:73 | annotated("Composable").internal.`fun`(fileName)
+    menu | ◆ Allowed by @Composable internal fun SettingsScreen(...) | ScreenRole.kt:73
+    menu | ◇ Role feature.Screen — Screen | ScreenRole.kt:23
     menu | == Other files of feature.Screen (1)
     menu | HomeScreen.kt | feature/…/example/sample/feature/home
     menu | -----
     menu | ▶ Run the check (:architecture-test:test)
     menu | ⟳ Refresh the definition
-44 | ◆ | katachi: feature.Screen — allowed by @Composable internal fun SettingsScreen(...) (ScreenRole.kt:69)
-    allowed at ScreenRole.kt:69 | annotated("Composable").internal.`fun`(fileName)
-    menu | ◆ Allowed by @Composable internal fun SettingsScreen(...) | ScreenRole.kt:69
-    menu | ◇ Role feature.Screen — Screen | ScreenRole.kt:21
+44 | ◆ | katachi: feature.Screen — allowed by @Composable internal fun SettingsScreen(...) (ScreenRole.kt:73)
+    allowed at ScreenRole.kt:73 | annotated("Composable").internal.`fun`(fileName)
+    menu | ◆ Allowed by @Composable internal fun SettingsScreen(...) | ScreenRole.kt:73
+    menu | ◇ Role feature.Screen — Screen | ScreenRole.kt:23
     menu | == Other files of feature.Screen (1)
     menu | HomeScreen.kt | feature/…/example/sample/feature/home
     menu | -----
     menu | ▶ Run the check (:architecture-test:test)
     menu | ⟳ Refresh the definition
-88 | ◆ | katachi: feature.Screen — allowed by @Preview private fun *Preview(...) (ScreenRole.kt:70)
-    allowed at ScreenRole.kt:70 | annotated("Preview").private.`fun`("*Preview")
-    menu | ◆ Allowed by @Preview private fun *Preview(...) | ScreenRole.kt:70
-    menu | ◇ Role feature.Screen — Screen | ScreenRole.kt:21
+88 | ◆ | katachi: feature.Screen — allowed by @Preview private fun *Preview(...) (ScreenRole.kt:74)
+    allowed at ScreenRole.kt:74 | annotated("Preview").private.`fun`("*Preview")
+    menu | ◆ Allowed by @Preview private fun *Preview(...) | ScreenRole.kt:74
+    menu | ◇ Role feature.Screen — Screen | ScreenRole.kt:23
     menu | == Other files of feature.Screen (1)
     menu | HomeScreen.kt | feature/…/example/sample/feature/home
     menu | -----
@@ -2214,20 +2214,20 @@ roles: feature.Screen
 
 == feature/settings/src/main/kotlin/com/example/sample/feature/settings/SettingsViewModel.kt
 roles: feature.ViewModel
-    feature.ViewModel declared at ViewModelRole.kt:14 | fun DeclarationContainerScope.viewModel() = "ViewModel".role {
-12 | ◆ | katachi: feature.ViewModel — allowed by internal data class SettingsContent (ViewModelRole.kt:53)
-    allowed at ViewModelRole.kt:53 | internal.data.`class`(content)
-    menu | ◆ Allowed by internal data class SettingsContent | ViewModelRole.kt:53
-    menu | ◇ Role feature.ViewModel — ViewModel | ViewModelRole.kt:14
+    feature.ViewModel declared at ViewModelRole.kt:15 | fun DeclarationContainerScope.viewModel() = "ViewModel".role {
+12 | ◆ | katachi: feature.ViewModel — allowed by internal data class SettingsContent (ViewModelRole.kt:56)
+    allowed at ViewModelRole.kt:56 | internal.data.`class`(content)
+    menu | ◆ Allowed by internal data class SettingsContent | ViewModelRole.kt:56
+    menu | ◇ Role feature.ViewModel — ViewModel | ViewModelRole.kt:15
     menu | == Other files of feature.ViewModel (1)
     menu | HomeViewModel.kt | feature/…/example/sample/feature/home
     menu | -----
     menu | ▶ Run the check (:architecture-test:test)
     menu | ⟳ Refresh the definition
-17 | ◆ | katachi: feature.ViewModel — allowed by internal class SettingsViewModel : ViewModel (ViewModelRole.kt:54)
-    allowed at ViewModelRole.kt:54 | internal.`class`(fileName).superclass("ViewModel") {
-    menu | ◆ Allowed by internal class SettingsViewModel : ViewModel | ViewModelRole.kt:54
-    menu | ◇ Role feature.ViewModel — ViewModel | ViewModelRole.kt:14
+17 | ◆ | katachi: feature.ViewModel — allowed by internal class SettingsViewModel : ViewModel (ViewModelRole.kt:57)
+    allowed at ViewModelRole.kt:57 | internal.`class`(fileName).superclass("ViewModel") {
+    menu | ◆ Allowed by internal class SettingsViewModel : ViewModel | ViewModelRole.kt:57
+    menu | ◇ Role feature.ViewModel — ViewModel | ViewModelRole.kt:15
     menu | == Other files of feature.ViewModel (1)
     menu | HomeViewModel.kt | feature/…/example/sample/feature/home
     menu | -----
@@ -2252,9 +2252,9 @@ roles: feature.FeatureTest
 
 == gradle.properties
 roles: Gradle.GradleProperties
-    Gradle.GradleProperties declared at GradleGroup.kt:22 | fun DeclarationContainerScope.gradleGroup() = gradle()
+    Gradle.GradleProperties declared at GradleGroup.kt:54 | fun DeclarationContainerScope.gradleGroup() = gradle {
 1 | ◆ | katachi: Gradle.GradleProperties
-    menu | ◇ Role Gradle.GradleProperties — Properties of the build and of the Gradle daemon | GradleGroup.kt:22
+    menu | ◇ Role Gradle.GradleProperties — Properties of the build and of the Gradle daemon | GradleGroup.kt:54
     menu | == Other files of Gradle.GradleProperties
     menu | (disabled) — No other file yet
     menu | -----
@@ -2263,9 +2263,9 @@ roles: Gradle.GradleProperties
 
 == gradle/sample.versions.toml
 roles: Gradle.VersionCatalog
-    Gradle.VersionCatalog declared at GradleGroup.kt:22 | fun DeclarationContainerScope.gradleGroup() = gradle()
+    Gradle.VersionCatalog declared at GradleGroup.kt:54 | fun DeclarationContainerScope.gradleGroup() = gradle {
 1 | ◆ | katachi: Gradle.VersionCatalog
-    menu | ◇ Role Gradle.VersionCatalog — The versions of the build's dependencies and plugins | GradleGroup.kt:22
+    menu | ◇ Role Gradle.VersionCatalog — The versions of the build's dependencies and plugins | GradleGroup.kt:54
     menu | == Other files of Gradle.VersionCatalog
     menu | (disabled) — No other file yet
     menu | -----
@@ -2274,9 +2274,9 @@ roles: Gradle.VersionCatalog
 
 == gradle/wrapper/gradle-wrapper.properties
 roles: Gradle.GradleWrapper.WrapperProperties
-    Gradle.GradleWrapper.WrapperProperties declared at GradleGroup.kt:22 | fun DeclarationContainerScope.gradleGroup() = gradle()
+    Gradle.GradleWrapper.WrapperProperties declared at GradleGroup.kt:54 | fun DeclarationContainerScope.gradleGroup() = gradle {
 1 | ◆ | katachi: Gradle.GradleWrapper.WrapperProperties
-    menu | ◇ Role Gradle.GradleWrapper.WrapperProperties — Which Gradle distribution the wrapper runs | GradleGroup.kt:22
+    menu | ◇ Role Gradle.GradleWrapper.WrapperProperties — Which Gradle distribution the wrapper runs | GradleGroup.kt:54
     menu | == Other files of Gradle.GradleWrapper.WrapperProperties
     menu | (disabled) — No other file yet
     menu | -----
@@ -2296,9 +2296,9 @@ roles: testing.BaselineFile
 
 == navigation/build.gradle.kts
 roles: Gradle.BuildScript
-    Gradle.BuildScript declared at GradleGroup.kt:22 | fun DeclarationContainerScope.gradleGroup() = gradle()
+    Gradle.BuildScript declared at GradleGroup.kt:54 | fun DeclarationContainerScope.gradleGroup() = gradle {
 1 | ◆ | katachi: Gradle.BuildScript
-    menu | ◇ Role Gradle.BuildScript — How one module is built, one per module | GradleGroup.kt:22
+    menu | ◇ Role Gradle.BuildScript — How one module is built, one per module | GradleGroup.kt:54
     menu | == Other files of Gradle.BuildScript (8)
     menu | build.gradle.kts | .
     menu | build.gradle.kts | app
@@ -2325,9 +2325,9 @@ roles: ui.Navigation
 
 == settings.gradle.kts
 roles: Gradle.SettingsScript
-    Gradle.SettingsScript declared at GradleGroup.kt:22 | fun DeclarationContainerScope.gradleGroup() = gradle()
+    Gradle.SettingsScript declared at GradleGroup.kt:54 | fun DeclarationContainerScope.gradleGroup() = gradle {
 1 | ◆ | katachi: Gradle.SettingsScript
-    menu | ◇ Role Gradle.SettingsScript — Which modules make up the build | GradleGroup.kt:22
+    menu | ◇ Role Gradle.SettingsScript — Which modules make up the build | GradleGroup.kt:54
     menu | == Other files of Gradle.SettingsScript
     menu | (disabled) — No other file yet
     menu | -----
@@ -2347,9 +2347,9 @@ roles: testing.LayoutSnapshot
 
 == testing/build.gradle.kts
 roles: Gradle.BuildScript
-    Gradle.BuildScript declared at GradleGroup.kt:22 | fun DeclarationContainerScope.gradleGroup() = gradle()
+    Gradle.BuildScript declared at GradleGroup.kt:54 | fun DeclarationContainerScope.gradleGroup() = gradle {
 1 | ◆ | katachi: Gradle.BuildScript
-    menu | ◇ Role Gradle.BuildScript — How one module is built, one per module | GradleGroup.kt:22
+    menu | ◇ Role Gradle.BuildScript — How one module is built, one per module | GradleGroup.kt:54
     menu | == Other files of Gradle.BuildScript (8)
     menu | build.gradle.kts | .
     menu | build.gradle.kts | app
@@ -2393,9 +2393,9 @@ roles: testing.Fake
 
 == ui/build.gradle.kts
 roles: Gradle.BuildScript
-    Gradle.BuildScript declared at GradleGroup.kt:22 | fun DeclarationContainerScope.gradleGroup() = gradle()
+    Gradle.BuildScript declared at GradleGroup.kt:54 | fun DeclarationContainerScope.gradleGroup() = gradle {
 1 | ◆ | katachi: Gradle.BuildScript
-    menu | ◇ Role Gradle.BuildScript — How one module is built, one per module | GradleGroup.kt:22
+    menu | ◇ Role Gradle.BuildScript — How one module is built, one per module | GradleGroup.kt:54
     menu | == Other files of Gradle.BuildScript (8)
     menu | build.gradle.kts | .
     menu | build.gradle.kts | app

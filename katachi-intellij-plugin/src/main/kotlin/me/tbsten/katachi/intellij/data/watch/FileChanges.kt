@@ -23,16 +23,19 @@ internal data class FileChanges(
     val testSourcesChanged: Set<ModuleId> = emptySet(),
     /** A `*.sarif` under the module's `build/reports/katachi/`. */
     val sarifChanged: Set<ModuleId> = emptySet(),
-    /** A file under a project root, outside `build/` (not a package of the sources), `.git/`, `.gradle/` and `.idea/`. */
+    /** A file under a project root, outside `build/` (not a package of the sources), `.git/`, `.gradle/` and `.idea/` (`HIDDEN_DIRECTORIES`). */
     val projectChanged: Boolean = false,
 ) {
     val isEmpty: Boolean get() = definitionChanged.isEmpty() && sarifChanged.isEmpty() && !projectChanged
 }
 
 /**
- * Directory names whose content is never the definition nor the checked project, wherever they are: Gradle's and
- * the IDE's own, and git's (the git plugin updates `.git/index`, `HEAD` and `logs/` at every commit, branch switch
- * and background fetch). The same ones katachi's walk does not see (design 4.4 `NotWalked`).
+ * Directory names the watcher leaves out wherever they are: the IDE's own, Gradle's and git's working files (the IDE
+ * writes `.idea/workspace.xml` while the user works, the git plugin updates `.git/index`, `HEAD` and `logs/` at every
+ * commit, branch switch and background fetch). This is the watcher's own list, not what katachi's walk skips: the walk
+ * skips `.git` only, and a tracked file under `.idea/` (`.idea/codeStyles/`) is a file of the checked project.
+ * TODO: an edit of a tracked file under `.idea/` does not count as a project change here, so it does not mark the
+ *   check's results stale (design foreign-directory-scan 1.6).
  */
 private val HIDDEN_DIRECTORIES: Set<String> = setOf(".git", ".gradle", ".idea")
 
