@@ -15,7 +15,8 @@ fun DeclarationContainerScope.git() = "Git".role {
         The default `files = gitTracked()` passes only the files git tracks to the check, so
         anything listed in `.gitignore` (`build/`, `.gradle/`, `.kotlin/`, `local.properties` and
         so on) goes by without belonging to any role. Conversely, a file that is tracked but has
-        no role fails.
+        no role fails. A file tracked inside an ignored directory (`.idea/codeStyles/`) is still
+        checked: git reports it, so it needs a role too (`IdeCodeStyle`).
 
         When more files appear, add one role to the `tool` group rather than mixing them into this
         one. The `tool` group this role belongs to is `documented = false`, so it does not appear

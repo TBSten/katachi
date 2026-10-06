@@ -22,9 +22,8 @@ A screen's `@Preview` functions (ScreenPreview) sit in the same module as the sc
 draw.
 
 Only the screen parts (FeatureComponent) grow in number inside a single feature, and they
-can be generated from a template. The module directory is named `feature` and its
-package directory `featurePackage`, so `--arg feature=home --arg featurePackage=home`
-picks the module to generate into.
+can be generated from a template. The module directory and its package directory are
+both named `feature`, so `--arg feature=home` picks the module to generate into.
 
 Every role in this group is `commonMain`. There is no `androidMain` / `iosMain` around the
 screens. Platform differences stay inside ExpectDeclaration and ActualImplementation of the data group.

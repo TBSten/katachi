@@ -2,6 +2,7 @@ package com.example.groups
 
 import com.example.roles.documentation
 import com.example.roles.git
+import com.example.roles.ideCodeStyle
 import me.tbsten.katachi.dsl.DeclarationContainerScope
 
 /**
@@ -16,8 +17,8 @@ fun DeclarationContainerScope.toolGroup() = "tool".group {
 
     description = """
         Things kept in the repository that support development but are not the build. For now
-        this holds two roles: the Git configuration (`.gitignore`) and the `README.md` that people
-        read.
+        this holds three roles: the Git configuration (`.gitignore`), the `README.md` that people
+        read, and the code style IntelliJ IDEA shares through `.idea/codeStyles/`.
 
         Like the build, it is `documented = false`: it is checked but does not appear in the
         generated documentation. When editor or CI configuration files appear, the intended way to
@@ -26,4 +27,5 @@ fun DeclarationContainerScope.toolGroup() = "tool".group {
 
     documentation()
     git()
+    ideCodeStyle()
 }

@@ -22,11 +22,13 @@ import me.tbsten.katachi.dsl.gradle.*
  * inside a single group.
  *
  * This is the group written loosely on purpose. The `*` after `feature` stands for whatever directory sits
- * under it, so adding `:feature:profile` needs no edit here, and `*Screen.kt` accepts
- * any screen. The price is that the check does not tie a file name to its module: a
- * `ProfileScreen.kt` in `:feature:home` is not reported, and a missing `HomeScreen.kt` is not
- * either. FeatureTest is the one role that lists the modules (see [FeatureModule]) and so
- * keeps that tie.
+ * under it, so adding `:feature:profile` needs no edit here. What the check does tie together is
+ * the module and its files: Screen / ViewModel / Route name the module directory and the package
+ * directory alike with `capture("feature")` and write the file name as
+ * `${capture("feature").pascalCase}Screen`, so a `ProfileScreen.kt` in `:feature:home` is
+ * reported as `[CaptureMismatch]`. A missing `HomeScreen.kt` is still not reported: a pattern
+ * with a wildcard is never required. FeatureTest is the one role that lists the modules (see
+ * [FeatureModule]) and so keeps that tie too.
  *
  * The roles below start from the same place, so that place is written once as
  * [featureSources] — this project's own addition to the layout vocabulary, not katachi's.
@@ -58,11 +60,12 @@ fun DeclarationContainerScope.featureGroup() = "feature".group {
 
         Screen parts and tests multiply inside one feature. Both start their file names with
         the module name (`HomeUserCard.kt`, `HomeViewModelTest.kt`) and can be generated from
-        templates. A screen part is placed by two directory captures (`feature` for the module,
-        `featurePackage` for its package), so `--arg feature=home --arg featurePackage=home`
-        picks the module to generate into and adding a feature does not touch this definition.
-        Only tests name each module one by one, because the template content differs per
-        screen; when adding a feature, add one line to `FeatureModule` too.
+        templates. A screen part is placed by one directory capture, `feature`, written on both
+        the module directory and its package directory, so `--arg feature=home` picks the module
+        to generate into, the check holds the two directories to the same name, and adding a
+        feature does not touch this definition. Only tests name each module one by one, because
+        the template content differs per screen; when adding a feature, add one line to
+        `FeatureModule` too.
     """.trimIndent()
 
     screen()
@@ -82,10 +85,11 @@ fun DeclarationContainerScope.featureGroup() = "feature".group {
  * from here — and reads at the call site like the ones that shipped with it. `with(layoutScope)`
  * is what hands the scope on to them.
  *
- * [module] and [packageName] are the two directory names that vary per feature. Both default
- * to `*`, which is what Screen / ViewModel / Route want: any module, any package. A role that
- * needs to read either one back passes `capture("...")` instead. They are two names, not one,
- * because a capture name may be used only once in a path.
+ * [feature] is the one directory name that varies per feature, and it is written twice: the
+ * module directory and the package directory below the source set are the same name. With the
+ * default `*` the two are checked apart, as any module and any package. A role passes
+ * `capture("feature")` instead to tie them together: the check then allows only a file whose two
+ * levels read the same value, and a template fills both from one `--arg feature=`.
  *
  * `internal` and declared next to the group rather than inside one role's file, because the
  * roles of this group read it. The directory entries it builds are attributed to this
@@ -93,11 +97,8 @@ fun DeclarationContainerScope.featureGroup() = "feature".group {
  * violation keeps naming the role.
  */
 context(layoutScope: LayoutScope)
-internal fun featureSources(
-    module: String = "*",
-    packageName: String = "*",
-): LayoutDirectory = with(layoutScope) {
-    "feature" / module / mainSourceSet / kotlin / "com/example/sample/feature" / packageName
+internal fun featureSources(feature: String = "*"): LayoutDirectory = with(layoutScope) {
+    "feature" / feature / mainSourceSet / kotlin / "com/example/sample/feature" / feature
 }
 
 /**

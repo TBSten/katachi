@@ -7,11 +7,17 @@ import com.example.kmp.groups.gradleGroup
 import com.example.kmp.groups.testingGroup
 import com.example.kmp.groups.toolGroup
 import com.example.kmp.groups.uiGroup
+import com.example.kmp.roles.featureComponent
+import com.example.kmp.roles.route
+import com.example.kmp.roles.screenPreview
+import com.example.kmp.roles.viewModel
 import io.kotest.core.spec.style.FreeSpec
 import io.kotest.matchers.collections.shouldContainExactly
+import io.kotest.matchers.shouldBe
 import me.tbsten.katachi.ExperimentalKatachiApi
 import me.tbsten.katachi.InternalKatachiApi
 import me.tbsten.katachi.check.FileConstraintCheck
+import me.tbsten.katachi.check.UnexpectedFile
 import me.tbsten.katachi.check.Violation
 import me.tbsten.katachi.check.internal.validate
 import me.tbsten.katachi.dsl.architecture
@@ -78,7 +84,43 @@ class OmittedRoleSelfCheckSpec : FreeSpec({
         withoutData.validate(FileConstraintCheck()).labels() shouldContainExactly
             listOf("[UnexpectedDirectory] data/src", PREVIEW_OVERLAP)
     }
+
+    "the nearby locations of a file that lost its role are the roles of its own directory, never Gradle.BuildScript" {
+        // Every feature role is written as `"feature" / "*"`, and a place holding a wildcard
+        // used to be no candidate at all, which left `build.gradle.kts` as the only thing
+        // offered. The wildcards are filled in from the file's own path now, so `HomeScreen.kt`
+        // is offered the three roles declared in the directory it sits in, in declaration
+        // order; FeatureComponent, one level below, is fourth and therefore not shown.
+        val withoutScreen = architecture {
+            "feature".group {
+                // screen() -- omitted on purpose. `HomeScreen.kt` and `SettingsScreen.kt` lose their role.
+                viewModel()
+                route()
+                featureComponent()
+                screenPreview()
+            }
+            uiGroup()
+            dataGroup()
+            testingGroup()
+            appGroup()
+            gradleGroup()
+            toolGroup()
+        }
+
+        val unexpected = withoutScreen.validate(FileConstraintCheck())
+            .filterIsInstance<UnexpectedFile>()
+            .single { it.path == "$HOME_SOURCES/HomeScreen.kt" }
+
+        unexpected.nearby.map { Triple(it.role.qualifiedName, it.directory, it.filePattern) } shouldBe listOf(
+            Triple("feature.ViewModel", HOME_SOURCES, "*ViewModel.kt"),
+            Triple("feature.Route", HOME_SOURCES, "*Route.kt"),
+            Triple("feature.ScreenPreview", HOME_SOURCES, "*Preview.kt"),
+        )
+    }
 })
+
+/** The directory of `:feature:home`'s common sources, where `HomeScreen.kt` lives. */
+private const val HOME_SOURCES = "feature/home/src/commonMain/kotlin/com/example/kmp/feature/home"
 
 /**
  * The violation left in the project on purpose, as the demo of `baseline()`, and

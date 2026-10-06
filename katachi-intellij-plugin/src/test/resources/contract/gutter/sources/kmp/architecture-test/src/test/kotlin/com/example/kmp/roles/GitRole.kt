@@ -26,7 +26,9 @@ fun DeclarationContainerScope.git() = "Git".role {
         This role underpins the checks of this sample itself. `files` is left at the default
         `gitTracked()`, so only files that git tracks reach katachi. That means no role has to be
         written for `build/`; conversely, the moment `.gitignore` is loosened, generated files
-        start to be reported as "files no role claims".
+        start to be reported as "files no role claims". A file tracked inside an ignored directory
+        (`.idea/*` with `!.idea/codeStyles/`, or `git add -f`) is still checked: git reports it,
+        so it needs a role like any other file.
 
         It is also the only declaration in this sample without a `title`. It is left that way to
         try out what shows when the display name is omitted (the role name is used as it is),

@@ -34,7 +34,7 @@ import me.tbsten.katachi.dsl.architecture
  * directory (`"ui"`, `"feature" / "*"`), the source set inside it (`mainSourceSet`) and the
  * package written out as a string. `"feature" / "*"` is the one to read first — the `*` matches
  * whichever feature module exists, and a template picks one by naming the directory with a
- * capture (`--arg feature=home --arg featurePackage=home`).
+ * capture (`--arg feature=home`), which names the module directory and its package alike.
  *
  * Building this value reads nothing from disk — the `layout { }` blocks are deferred until
  * a check runs — so it is safe to hold in a top level `val`.

@@ -8,19 +8,21 @@ The boundary between HTTP and the inside of the application. It owns registering
 methods, pulling values out of the request, and turning what a Service returned into a
 response.
 
-One controller per file, and the file name is `*Controller.kt`. Each resource gets one
-package such as `controller/health/`, and the controller goes inside it. The file name
-directly names a group of endpoints, so the name alone tells you whether a new path
-belongs in an existing file or in a new one. `layout { }` only looks at where files live
-and what they are named; `ktFileContent { }` adds what a file holds: the package of its
-resource, a class with `register(route: Route)`, and imports that leave out
-`com.example.repository`. The rest of "Forbidden contents" is not rejected mechanically.
+One controller per file, and the file name is `<Resource>Controller.kt`. Each resource
+gets one package such as `controller/health/`, and the controller goes inside it, named
+after the directory: `controller/health/HealthController.kt`. The file name directly
+names a group of endpoints, and the directory decides it, so the name alone tells you
+whether a new path belongs in an existing file or in a new one. `layout { }` only looks
+at where files live and what they are named; `ktFileContent { }` adds what a file holds:
+the package of its resource, a class with `register(route: Route)`, and imports that
+leave out `com.example.repository`. The rest of "Forbidden contents" is not rejected
+mechanically.
 
 It can be generated from a template. The package level of the resource is named
-`resource`, so `--arg template=Controller --arg resource=user --arg name=User` produces
-`controller/user/UserController.kt`. `resource` goes straight into the package, so the
-template accepts only letters and digits (a value such as `--arg resource=user-profile`
-is rejected).
+`resource` and the file name is derived from it, so `--arg template=Controller --arg
+resource=user` produces `controller/user/UserController.kt`. `resource` goes straight
+into the package, so the template accepts only letters and digits (a value such as
+`--arg resource=user-profile` is rejected).
 
 ## Placement
 

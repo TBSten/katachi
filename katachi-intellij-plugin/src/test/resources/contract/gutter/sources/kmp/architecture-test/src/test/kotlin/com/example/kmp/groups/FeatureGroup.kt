@@ -21,9 +21,9 @@ import me.tbsten.katachi.dsl.DeclarationContainerScope
  * Screen, ViewModel and Route are written loosely, as `*Screen.kt` / `*ViewModel.kt` /
  * `*Route.kt` globs under that directory, so the check does not tie a file name to the module
  * it sits in; that pairing is kept by convention and review. FeatureComponent names the
- * module directory (`feature`) and its package directory (`featurePackage`) with captures, and
- * its template is given both (`--arg feature=home --arg featurePackage=home`) to pick the
- * module it generates into.
+ * module directory and its package directory alike, `capture("feature")`, so its template is
+ * given one value (`--arg feature=home`) to pick the module it generates into and the check
+ * holds the two directories to the same name.
  */
 fun DeclarationContainerScope.featureGroup() = "feature".group {
     title = "Feature"
@@ -47,9 +47,8 @@ fun DeclarationContainerScope.featureGroup() = "feature".group {
         draw.
 
         Only the screen parts (FeatureComponent) grow in number inside a single feature, and they
-        can be generated from a template. The module directory is named `feature` and its
-        package directory `featurePackage`, so `--arg feature=home --arg featurePackage=home`
-        picks the module to generate into.
+        can be generated from a template. The module directory and its package directory are
+        both named `feature`, so `--arg feature=home` picks the module to generate into.
 
         Every role in this group is `commonMain`. There is no `androidMain` / `iosMain` around the
         screens. Platform differences stay inside ExpectDeclaration and ActualImplementation of the data group.

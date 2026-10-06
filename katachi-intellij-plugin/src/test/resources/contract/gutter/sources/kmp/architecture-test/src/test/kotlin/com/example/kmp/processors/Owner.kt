@@ -14,10 +14,10 @@ import me.tbsten.katachi.dsl.metadata
  *
  * Written on [MetadataScope] rather than only on `RoleScope`, the same choice [MetadataScope]'s
  * own KDoc walks through: `groups/GradleGroup.kt` tags the whole `"Gradle"` group with
- * `owner = "platform"` because the roles `gradle()` declares underneath it cannot be reopened
- * one by one from a definition outside katachi, the way `tool/Git` still is below. A processor
- * that wants "every file `owner` reaches" therefore has to look at both -- see
- * [PlatformOwnedFilesProcessor].
+ * `owner = "platform"`, which reaches every role `gradle()` declares underneath it in one line,
+ * and tags one of those roles again through the `buildScript { }` hook, whose receiver is a
+ * [MetadataScope] as well. `tool/Git` tags itself directly. A processor that wants "every file
+ * `owner` reaches" therefore has to look at both -- see [PlatformOwnedFilesProcessor].
  *
  * Both declarations need `@OptIn(ExperimentalKatachiApi::class)` because [MetadataKey] and
  * [metadata] are themselves `@ExperimentalKatachiApi`. Writing `owner = "platform"` at a call
