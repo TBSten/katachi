@@ -116,7 +116,7 @@ internal class TemplatePlacementIndex private constructor(
     private fun PatternPart.shown(): String = when (this) {
         is PatternPart.Literal -> text
         is PatternPart.Capture -> "<$name>"
-        is PatternPart.Derived -> "<$name>"
+        is PatternPart.Derived -> if (transform == null) "<$name>" else "<$name.$transform>"
     }
 
     companion object {

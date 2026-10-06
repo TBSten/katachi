@@ -36,7 +36,8 @@ internal data class ParsedDefinitionJson(val definition: DefinitionModel, val te
  *
  * Unknown keys are ignored. Every key of the contract is required, `null` only where the contract
  * allows it, except `fileDeclarations` of a constraint, which a katachi from before the gutter does
- * not write (its absence reads as `null`), and the `synthetic` and `place` flags of a layout entry (absent reads as `false`).
+ * not write (its absence reads as `null`), the `synthetic` and `place` flags of a layout entry (absent reads as `false`), and
+ * the `wildcardIndex` / `transform` of a capture (absent reads as `0` / `null`).
  * `generatedAt` must be an ISO-8601 instant. A `kind`, `backend`, `range`, declaration `kind`, `verdict`
  * or problem `kind` this plugin does not know is kept as an unknown value instead of failing the
  * file. The `templates` part goes to [parseTemplateDescriptionJson].
@@ -120,7 +121,9 @@ private fun DefinitionJsonReader.entry() = LayoutEntryModel(
     declaredAt = site("declaredAt"),
     modulePath = nullableString("modulePath"),
     pathInModule = string("pathInModule"),
-    captures = array("captures").map { CaptureRef(it.string("name"), it.int("segmentIndex")) },
+    captures = array("captures").map {
+        CaptureRef(it.string("name"), it.int("segmentIndex"), it.optionalInt("wildcardIndex", default = 0), it.optionalNullableString("transform"))
+    },
     moduleCapture = nullableObj("moduleCapture")?.let { ModuleCaptureRef(it.string("pattern"), it.strings("names")) },
     template = nullableObj("template")?.let {
         TemplateRef(it.string("specifier"), it.nullableString("id"), it.nullableString("title"), it.site("declaredAt"))

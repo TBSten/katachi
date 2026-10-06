@@ -1,6 +1,7 @@
 package me.tbsten.katachi.intellij.testing
 
 import me.tbsten.katachi.intellij.model.ArchitectureModel
+import me.tbsten.katachi.intellij.model.CaptureRef
 import me.tbsten.katachi.intellij.model.ConstraintBackend
 import me.tbsten.katachi.intellij.model.ConstraintCoverage
 import me.tbsten.katachi.intellij.model.ConstraintModel
@@ -12,6 +13,7 @@ import me.tbsten.katachi.intellij.model.FileDeclarationsModel
 import me.tbsten.katachi.intellij.model.KatachiModule
 import me.tbsten.katachi.intellij.model.LayoutEntryKind
 import me.tbsten.katachi.intellij.model.LayoutEntryModel
+import me.tbsten.katachi.intellij.model.ModuleCaptureRef
 import me.tbsten.katachi.intellij.model.RoleModel
 import java.nio.file.Path
 import java.nio.file.Paths
@@ -38,6 +40,10 @@ internal fun layoutEntry(
     matchedFiles: List<String> = emptyList(),
     synthetic: Boolean = false,
     place: Boolean = false,
+    captures: List<CaptureRef> = emptyList(),
+    modulePath: String? = null,
+    pathInModule: String = pattern,
+    moduleCapture: ModuleCaptureRef? = null,
 ): LayoutEntryModel = LayoutEntryModel(
     index = index,
     pattern = pattern,
@@ -45,10 +51,10 @@ internal fun layoutEntry(
     required = required,
     description = null,
     declaredAt = null,
-    modulePath = null,
-    pathInModule = pattern,
-    captures = emptyList(),
-    moduleCapture = null,
+    modulePath = modulePath,
+    pathInModule = pathInModule,
+    captures = captures,
+    moduleCapture = moduleCapture,
     template = null,
     matchedFiles = matchedFiles,
     matchedCount = matchedFiles.size.takeIf { kind == LayoutEntryKind.File || kind == LayoutEntryKind.AnyFile },

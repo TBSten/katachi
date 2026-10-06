@@ -8,11 +8,12 @@ internal sealed interface PatternPart {
     data class Capture(val name: String) : PatternPart
 
     /**
-     * `<name>`: derived by katachi from the module capture `name` (`wildcard("x").pascalCase`,
-     * `modulePackage`). Never a field. Matches one of the naming conversions of `name`'s value when
-     * that is known, else any one or more characters (spike S1 §2).
+     * `<name>` or `<name.transform>`: derived by katachi from the value of `name`. Never a field. With a [transform]
+     * (`<feature.pascalCase>`, a derived capture) it matches that one conversion of `name`'s value when that is known;
+     * without one (a module key's `wildcard("x").pascalCase` / `modulePackage`, which the JSON does not spell out) any of
+     * the naming conversions. With `name` unknown, any one or more characters (spike S1 §2).
      */
-    data class Derived(val name: String) : PatternPart
+    data class Derived(val name: String, val transform: String? = null) : PatternPart
 }
 
 /** One `/`-separated segment of a pattern. */
@@ -80,28 +81,35 @@ internal class PathPattern private constructor(
     companion object {
         /**
          * `null` for a pattern the index leaves out (spike S1 decision 6): one with an unnamed `*` / `**`,
-         * or an empty one.
+         * an empty one, or one deriving with a conversion this plugin does not know (a newer katachi's).
          */
         fun parse(text: String): PathPattern? {
             if (text.isEmpty()) return null
             val segments = text.split('/').map { segment ->
                 if (segment.isEmpty() || '*' in segment) return null
-                PatternSegment(partsOf(segment))
+                PatternSegment(partsOf(segment) ?: return null)
             }
             return PathPattern(text, segments)
         }
     }
 }
 
-private val PLACEHOLDER = Regex("""\$\{([A-Za-z_][A-Za-z0-9_]*)}|<([A-Za-z_][A-Za-z0-9_]*)>""")
+private val PLACEHOLDER = Regex("""\$\{([A-Za-z_][A-Za-z0-9_]*)}|<([A-Za-z_][A-Za-z0-9_]*)(?:\.([A-Za-z_][A-Za-z0-9_]*))?>""")
 
-private fun partsOf(segment: String): List<PatternPart> {
+/** The parts of [segment], or `null` when a `<x.t>` names a conversion this plugin does not have. */
+private fun partsOf(segment: String): List<PatternPart>? {
     val parts = ArrayList<PatternPart>()
     var last = 0
     for (found in PLACEHOLDER.findAll(segment)) {
         if (found.range.first > last) parts += PatternPart.Literal(segment.substring(last, found.range.first))
         val capture = found.groups[1]?.value
-        parts += if (capture != null) PatternPart.Capture(capture) else PatternPart.Derived(found.groups[2]?.value.orEmpty())
+        if (capture != null) {
+            parts += PatternPart.Capture(capture)
+        } else {
+            val transform = found.groups[3]?.value
+            if (transform != null && conversionOf(transform) == null) return null
+            parts += PatternPart.Derived(found.groups[2]?.value.orEmpty(), transform)
+        }
         last = found.range.last + 1
     }
     if (last < segment.length) parts += PatternPart.Literal(segment.substring(last))
@@ -134,7 +142,9 @@ private fun matchSegment(parts: List<PatternPart>, text: String, known: Map<Stri
             is PatternPart.Derived -> {
                 val source = values[part.name] ?: known[part.name]
                 if (source != null) {
-                    for (candidate in derivedForms(source)) {
+                    // A named conversion is one spelling; a module key's `<x>` may be any of them.
+                    val candidates = part.transform?.let { conversionOf(it) }?.let { listOf(it(source)) } ?: derivedForms(source)
+                    for (candidate in candidates) {
                         if (!text.startsWith(candidate, position)) continue
                         go(index + 1, position + candidate.length, values)?.let { return it }
                     }
@@ -158,7 +168,7 @@ private fun matchSegment(parts: List<PatternPart>, text: String, known: Map<Stri
     return result
 }
 
-/** The spellings katachi can derive from the module capture value [source], longest first. */
+/** The spellings katachi can derive from the module capture value [source], longest first (`nameWords` is [NameConversions.kt]'s). */
 internal fun derivedForms(source: String): List<String> {
     val words = nameWords(source)
     val capitalized = words.map { it.replaceFirstChar(Char::uppercaseChar) }
@@ -174,36 +184,6 @@ internal fun derivedForms(source: String): List<String> {
         source.replace("-", ""),
     )
     return forms.filter { it.isNotEmpty() }.distinct().sortedByDescending { it.length }
-}
-
-/** katachi's `String.nameWords`: `-`, `_`, space end a word; a capital after a lower case letter or digit starts one. */
-private fun nameWords(name: String): List<String> {
-    val words = ArrayList<String>()
-    val word = StringBuilder()
-    fun endWord() {
-        if (word.isNotEmpty()) {
-            words += word.toString().lowercase()
-            word.clear()
-        }
-    }
-    name.forEachIndexed { index, character ->
-        when {
-            character == '-' || character == '_' || character == ' ' -> endWord()
-
-            character.isUpperCase() -> {
-                val previous = name.getOrNull(index - 1)
-                val next = name.getOrNull(index + 1)
-                val afterLowerOrDigit = previous != null && (previous.isLowerCase() || previous.isDigit())
-                val lastOfCapitals = previous != null && previous.isUpperCase() && next != null && next.isLowerCase()
-                if (afterLowerOrDigit || lastOfCapitals) endWord()
-                word.append(character)
-            }
-
-            else -> word.append(character)
-        }
-    }
-    endWord()
-    return words
 }
 
 private const val UNCREATABLE = "*?[]{}:\"<>|"

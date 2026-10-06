@@ -21,8 +21,9 @@ internal class NoRolePanelActions(
 )
 
 /**
- * The two lines of the panel (design 2.2): what is wrong and, when there is a nearby role, which one. Plain text; the
- * panel escapes it for the label, which reads HTML.
+ * The two lines of the panel (design 2.2): what is wrong and, when there is a nearby role, which one; for a file held
+ * back by its captures, what each level read and where the file belongs. Plain text; the panel escapes it for the label,
+ * which reads HTML.
  *
  * ```kotlin
  * val lines = noRoleLines(decision)   // "No role allows this file. ...", "Nearest role: domain.UseCase (...)"
@@ -31,13 +32,24 @@ internal class NoRolePanelActions(
 internal class NoRoleLines(val first: String, val second: String?, val tooltip: String?)
 
 internal fun noRoleLines(decision: NoRoleDecision.NoRole): NoRoleLines {
-    val main = KatachiBundle.message(if (decision.untracked) "notification.rules.noRole.untracked" else "notification.rules.noRole")
+    val mismatch = decision.captureMismatch
+    val main = when {
+        // The same first sentence as katachi's `[CaptureMismatch]` block, so the IDE and the test say one thing.
+        mismatch != null -> KatachiBundle.message("notification.rules.captureMismatch", mismatch.roleName, mismatch.disagreeingNames.joinToString(", "))
+        decision.untracked -> KatachiBundle.message("notification.rules.noRole.untracked")
+        else -> KatachiBundle.message("notification.rules.noRole")
+    }
     // A sentence ending in "." needs a space before the note, one ending in "。" does not.
     val stale = if (decision.stale) (if (main.last().code < ASCII_LIMIT) " " else "") + KatachiBundle.message("notification.rules.noRole.stale") else ""
     val nearest = decision.nearby.firstOrNull()
+    val second = when {
+        mismatch != null -> listOfNotNull(mismatch.lines.joinToString("; ").ifEmpty { null }, mismatch.expectedPath?.let { KatachiBundle.message("notification.rules.captureMismatch.moveTo", it) })
+            .joinToString(" ").ifEmpty { null }
+        else -> nearest?.let { KatachiBundle.message("notification.rules.noRole.nearby", it.roleName, shortDirectory(it.directory)) }
+    }
     return NoRoleLines(
         first = main + stale,
-        second = nearest?.let { KatachiBundle.message("notification.rules.noRole.nearby", it.roleName, shortDirectory(it.directory)) },
+        second = second,
         tooltip = decision.unexpectedUnder?.let { KatachiBundle.message("notification.rules.noRole.unexpectedUnder", it) },
     )
 }

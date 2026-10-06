@@ -88,6 +88,17 @@ private class JsonReader(private val value: JsonValue, private val location: Str
         return if (key in obj.members) array(key) else emptyList()
     }
 
+    private fun hasKey(key: String): Boolean {
+        val obj = value as? JsonValue.JsonObject ?: throw mismatch(location, "object", value)
+        return key in obj.members
+    }
+
+    /** [int] of [key], or [default] when the object has no such key. */
+    fun optionalInt(key: String, default: Int): Int = if (hasKey(key)) int(key) else default
+
+    /** [nullableString] of [key], or `null` when the object has no such key. */
+    fun optionalNullableString(key: String): String? = if (hasKey(key)) nullableString(key) else null
+
     fun int(key: String): Int {
         val child = member(key)
         val number = child.value as? JsonValue.JsonNumber ?: throw mismatch(child.location, "integer", child.value)
@@ -112,7 +123,8 @@ private class JsonReader(private val value: JsonValue, private val location: Str
         summary = nullableString("summary"),
         parameterNames = strings("parameterNames"),
         conflict = boolean("conflict"),
-        captureNames = optionalArray("captures").map { it.string("name") }.distinct(),
+        // The `--arg`s a run takes: the plain places only, as `details[].captures` is read.
+        captureNames = optionalArray("captures").filter { it.optionalNullableString("transform") == null }.map { it.string("name") }.distinct(),
     )
 
     fun detail(): TemplateDetailModel = TemplateDetailModel(
@@ -128,7 +140,11 @@ private class JsonReader(private val value: JsonValue, private val location: Str
         captures = captures(),
     )
 
-    /** `captures`, one [ParameterModel.CaptureParam] per name: katachi lists a name once per place. */
+    /**
+     * `captures`, one [ParameterModel.CaptureParam] per name: katachi lists a name once per place. A name with derived
+     * places only (`<x.pascalCase>` without a plain `${x}`) is not a field: katachi never writes one, but it is not a
+     * `--arg` either, so it is left out rather than asked for.
+     */
     private fun captures(): List<ParameterModel.CaptureParam> {
         val places = LinkedHashMap<String, MutableList<CapturePlace>>()
         for (capture in optionalArray("captures")) {
@@ -137,10 +153,12 @@ private class JsonReader(private val value: JsonValue, private val location: Str
                 pattern = capture.string("pattern"),
                 position = capture.int("position"),
                 segment = capture.string("segment"),
+                wildcardIndex = capture.optionalInt("wildcardIndex", default = 0),
+                transform = capture.optionalNullableString("transform"),
             )
             places.getOrPut(capture.string("name")) { mutableListOf() } += place
         }
-        return places.map { (name, list) -> ParameterModel.CaptureParam(name, list.distinct()) }
+        return places.filter { (_, list) -> list.any { it.transform == null } }.map { (name, list) -> ParameterModel.CaptureParam(name, list.distinct()) }
     }
 
     fun parameter(): ParameterModel {

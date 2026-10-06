@@ -1,5 +1,6 @@
 package me.tbsten.katachi.intellij.presentation.dialog
 
+import me.tbsten.katachi.intellij.data.placement.conversionOf
 import me.tbsten.katachi.intellij.model.ParameterModel
 import me.tbsten.katachi.intellij.model.TemplateDetailModel
 import me.tbsten.katachi.intellij.model.allParametersOf
@@ -10,7 +11,7 @@ import java.nio.file.Path
 
 /** The file the dialog's inputs produce, as far as the IDE can tell before katachi runs. */
 internal data class DialogTarget(
-    /** Relative to the definition's project root, `/` separated; a capture not filled in stays `${name}`, a derived part `<name>`. */
+    /** Relative to the definition's project root, `/` separated; a capture not filled in stays `${name}`, a derived part `<name>` (or `<name.transform>` while `name` is not filled in). */
     val relativePath: String,
     /** [relativePath] under the root, when nothing in it is left open; `null` otherwise. */
     val absolute: Path?,
@@ -23,6 +24,9 @@ internal data class DialogTarget(
 }
 
 private val TOKEN = Regex("""\$\{([^}]*)}|<([^>/]*)>""")
+
+/** `<name.transform>`: a level katachi derives from `name` by a named conversion (design capture-check 3.9). */
+private val DERIVED = Regex("""<([A-Za-z_][A-Za-z0-9_]*)\.([A-Za-z_][A-Za-z0-9_]*)>""")
 
 /**
  * [detail]'s file pattern with [inputs] put in (the sample path of the dialog, issue 1 and spike S1 §4).
@@ -54,7 +58,7 @@ internal fun dialogTargetOf(
     // Below a module capture whose values pick an existing module, katachi said where the file lands
     // there: the module's real directory and every name built from the value, nothing left to guess.
     file.modulePlacement?.choiceFor(inputs)?.let { choice ->
-        val relative = replacePlaceholders(choice.path) { name -> valueOf(name, inputs, parameters) }
+        val relative = fillDerived(replacePlaceholders(choice.path) { name -> valueOf(name, inputs, parameters) }) { name -> valueOf(name, inputs, parameters) }
         val capturesLeft = relative.contains("\${")
         return DialogTarget(relative, absolute = if (capturesLeft) null else resolveExpectedPath(root, relative), derivedUndecided = false)
     }
@@ -64,7 +68,7 @@ internal fun dialogTargetOf(
         if (fromOrigin != null && readsDerived(segment) && namesOf(segment).all { name -> seeds[name]?.let { it == inputs[name] } == true }) {
             fromOrigin
         } else {
-            replacePlaceholders(segment) { name -> valueOf(name, inputs, parameters) }
+            fillDerived(replacePlaceholders(segment) { name -> valueOf(name, inputs, parameters) }) { name -> valueOf(name, inputs, parameters) }
         }
     }
     val relative = segments.joinToString("/")
@@ -79,9 +83,20 @@ internal fun dialogTargetOf(
 
 private fun readsDerived(segment: String): Boolean = TOKEN.findAll(segment).any { it.groupValues[2].isNotEmpty() }
 
-/** The capture and derived names [segment] reads. */
+/** The capture and derived names [segment] reads (`<x.t>` reads `x`). */
 private fun namesOf(segment: String): List<String> =
-    TOKEN.findAll(segment).map { it.groupValues[1].ifEmpty { it.groupValues[2] } }.toList()
+    TOKEN.findAll(segment).map { it.groupValues[1].ifEmpty { it.groupValues[2].substringBefore('.') } }.toList()
+
+/**
+ * [text] with every `<x.t>` whose `x` [valueOf] knows replaced by `t` of that value, the way katachi fills a derived
+ * level; one whose `x` is not known yet, or whose `t` this plugin does not have, stays as written. A `<x>` without a
+ * conversion is a module key's and is never filled here.
+ */
+internal fun fillDerived(text: String, valueOf: (String) -> String?): String = DERIVED.replace(text) { match ->
+    val source = valueOf(match.groupValues[1])
+    val conversion = conversionOf(match.groupValues[2])
+    if (source == null || conversion == null) match.value else conversion(source)
+}
 
 private fun valueOf(name: String, inputs: Map<String, String>, parameters: Map<String, ParameterModel>): String? {
     val parameter = parameters[name] ?: return inputs[name]?.takeIf { it.isNotBlank() }

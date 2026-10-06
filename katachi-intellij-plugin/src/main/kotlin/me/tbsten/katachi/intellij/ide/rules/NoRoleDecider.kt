@@ -49,7 +49,7 @@ internal fun decideNoRole(ports: RulesPorts, file: VirtualFile, path: Path): NoR
     if (shouldEnsureDefinitionLoaded(observed, settings.loadWithoutUser)) service.ensureLoaded()
 
     val roles = service.forFile(file)
-    val unexpected = roles?.outcome.let { it == MatchOutcome.Unexpected || it is MatchOutcome.UnexpectedUnder }
+    val unexpected = roles?.outcome.let { it == MatchOutcome.Unexpected || it is MatchOutcome.UnexpectedUnder || it is MatchOutcome.CaptureMismatch }
     if (roles == null || !unexpected || memory.current.isNoRoleDismissed(path)) {
         memory.unfollowVcs(file)
         return null

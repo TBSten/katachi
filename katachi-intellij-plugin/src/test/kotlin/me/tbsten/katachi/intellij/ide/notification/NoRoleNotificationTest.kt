@@ -1,16 +1,17 @@
 package me.tbsten.katachi.intellij.ide.notification
 
+import com.intellij.openapi.util.text.StringUtil
 import com.intellij.openapi.vcs.FileStatusManager
 import com.intellij.openapi.vfs.LocalFileSystem
-import com.intellij.openapi.util.text.StringUtil
 import com.intellij.testFramework.DumbModeTestUtils
 import com.intellij.ui.EditorNotificationPanel
 import com.intellij.util.ui.UIUtil
+import java.nio.file.Path
 import javax.swing.JLabel
-import org.junit.Assert.assertNotEquals
 import me.tbsten.katachi.intellij.ide.KatachiBundle
 import me.tbsten.katachi.intellij.ide.KatachiSettings
 import me.tbsten.katachi.intellij.model.ArchitectureModel
+import me.tbsten.katachi.intellij.model.CaptureRef
 import me.tbsten.katachi.intellij.model.Freshness
 import me.tbsten.katachi.intellij.model.MatchOutcome
 import me.tbsten.katachi.intellij.model.StaleReason
@@ -20,9 +21,13 @@ import me.tbsten.katachi.intellij.testing.HELD
 import me.tbsten.katachi.intellij.testing.MISNAMED
 import me.tbsten.katachi.intellij.testing.STRAY
 import me.tbsten.katachi.intellij.testing.USE_CASE_DIRECTORY
+import me.tbsten.katachi.intellij.testing.definitionModel
+import me.tbsten.katachi.intellij.testing.definitionSnapshot
+import me.tbsten.katachi.intellij.testing.layoutEntry
 import me.tbsten.katachi.intellij.testing.noRoleSnapshot
+import me.tbsten.katachi.intellij.testing.roleModel
 import me.tbsten.katachi.intellij.testing.rolesFor
-import java.nio.file.Path
+import org.junit.Assert.assertNotEquals
 
 /** The real providers over real editors: when the "no role holds this file" notification shows, and what closes it (issue 13). */
 internal class NoRoleNotificationTest : NoRoleTestBase() {
@@ -44,6 +49,26 @@ internal class NoRoleNotificationTest : NoRoleTestBase() {
         panel.button("notification.editor.settings.tooltip")
         panel.button("notification.rules.dismiss.tooltip")
         assertNull("the template notification stays away", panelOf(editor))
+    }
+
+    fun `test capture の値が揃わないファイルの通知は CaptureMismatch の文で 近い Role の代わりに各階層の値と移す先が出る`() {
+        val screen = roleModel(
+            "feature.Screen",
+            layoutEntry("feature/*/src/*/*Screen.kt", captures = listOf(CaptureRef("feature", 1), CaptureRef("feature", 3), CaptureRef("feature", 4, 0, "pascalCase"))),
+        )
+        val bound = definitionSnapshot(definitionModel(screen))
+        fake.emit(ready(bound))
+        val relative = "feature/home/src/settings/HomeScreen.kt"
+        fake.answer(path(relative), rolesFor(relative, bound))
+        val editor = open(relative, "")
+
+        val panel = noRolePanelOf(editor) ?: throw AssertionError("no panel")
+
+        val first = KatachiBundle.message("notification.rules.captureMismatch", "feature.Screen", "capture(\"feature\")")
+        val second = "feature: \"home\" at level 2, \"settings\" at level 4 (expected \"home\"); feature.pascalCase: \"Home\" at level 5 " +
+            KatachiBundle.message("notification.rules.captureMismatch.moveTo", "feature/home/src/home/HomeScreen.kt")
+        assertEquals("<html>${StringUtil.escapeXmlEntities(first)}<br>${StringUtil.escapeXmlEntities(second)}</html>", panel.text)
+        assertTrue(panel.links.map { it.text }.contains(KatachiBundle.message("notification.rules.nearbyRoles")))
     }
 
     fun `test 近い Role が無くても通知は出て近い Role の行は無い`() {

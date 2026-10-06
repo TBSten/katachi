@@ -180,50 +180,6 @@ class DefinitionMatcherTest {
         assertEquals(listOf("f"), DefinitionMatcher(definitionModel(future)).matchFile("x/A.kt").constraints.map { it.constraint.name })
     }
 
-    // --- nearby (katachi's LayoutIndex.nearbyOf) ---
-
-    private fun nearby(vararg roles: me.tbsten.katachi.intellij.model.RoleModel, file: String) =
-        DefinitionMatcher(definitionModel(*roles)).nearbyOf(file).map { it.role.qualifiedName to it.directory }
-
-    @Test
-    fun `nearby は先頭の共有階層が多い順で同点は宣言順で3件まで`() {
-        val r1 = roleModel("r.One", layoutEntry("a/b/c/Foo.kt"))
-        val r2 = roleModel("r.Two", layoutEntry("a/b/Foo.kt"))
-        val r3 = roleModel("r.Three", layoutEntry("a/x/Foo.kt"))
-        val r4 = roleModel("r.Four", layoutEntry("a/b/c/d", any))
-        val r5 = roleModel("r.Five", layoutEntry("a/y/Foo.kt"))
-        // The file's directory a/b/c shares 3 with One and Four (tie: declaration order), 2 with Two, 1 with Three and Five.
-        assertEquals(
-            listOf("r.One" to "a/b/c", "r.Four" to "a/b/c/d", "r.Two" to "a/b"),
-            nearby(r1, r2, r3, r4, r5, file = "a/b/c/Stray.kt"),
-        )
-    }
-
-    @Test
-    fun `nearby に何も共有しない場所とルートとアスタリスクを含む場所と ignore と Directory は入らない`() {
-        val roles = arrayOf(
-            roleModel("r.Far", layoutEntry("z/Foo.kt")),
-            roleModel("r.Root", layoutEntry("Foo.kt")),
-            roleModel("r.Pattern", layoutEntry("a/*/Foo.kt")),
-            roleModel("r.Ignored", layoutEntry("a/b", ignore)),
-            roleModel("r.Directory", layoutEntry("a/c", dir)),
-            roleModel("r.Near", layoutEntry("a/d/Foo.kt")),
-        )
-        assertEquals(listOf("r.Near" to "a/d"), nearby(*roles, file = "a/Stray.kt"))
-    }
-
-    @Test
-    fun `nearby は同じ役割の同じディレクトリを1回にまとめ役割が違えば別に数える`() {
-        val one = roleModel("r.One", layoutEntry("a/b/X.kt"), layoutEntry("a/b/Y.kt"), layoutEntry("a/b", any))
-        val two = roleModel("r.Two", layoutEntry("a/b/Z.kt"))
-        assertEquals(listOf("r.One" to "a/b", "r.Two" to "a/b"), nearby(one, two, file = "a/b/Stray.kt"))
-    }
-
-    @Test
-    fun `Matched のときは nearby が空`() {
-        assertEquals(emptyList<Any>(), matcher.matchFile("core/domain/useCase/GetUserUseCase.kt").nearby)
-    }
-
     // --- the fixtures ---
 
     @Test
@@ -310,35 +266,61 @@ class DefinitionMatcherTest {
     }
 
     @Test
-    fun `git と gradle と idea のディレクトリの下は どの深さでも katachi が見ないので NotWalked`() {
-        assertEquals(MatchOutcome.NotWalked(".idea"), matcher.matchFile(".idea/workspace.xml").outcome)
-        assertEquals(MatchOutcome.NotWalked("core/domain/.gradle"), matcher.matchFile("core/domain/.gradle/caches/x.bin").outcome)
+    fun `git のディレクトリの下は どの深さでも katachi が見ないので NotWalked`() {
         assertEquals(MatchOutcome.NotWalked(".git"), matcher.matchFile(".git/HEAD").outcome)
-        val notWalked = matcher.matchFile("core/.gradle/8.5/x.lock")
-        assertEquals(MatchOutcome.NotWalked("core/.gradle"), notWalked.outcome)
+        val notWalked = matcher.matchFile("core/.git/objects/x")
+        assertEquals(MatchOutcome.NotWalked("core/.git"), notWalked.outcome)
         assertEquals(emptyList<Any>(), notWalked.matches)
         assertEquals(emptyList<Any>(), notWalked.nearby)
     }
 
     @Test
-    fun `見ない名前でも ファイルの名前なら祖先ではなく 名前が少し違うディレクトリは見る`() {
-        assertEquals(MatchOutcome.Unexpected, matcher.matchFile("core/domain/.idea").outcome)
-        assertEquals(MatchOutcome.UnexpectedUnder("core/domain/.ideas"), matcher.matchFile("core/domain/.ideas/a.xml").outcome)
+    fun `git がファイルでも NotWalked`() {
+        // A worktree or a submodule has a `.git` file where the directory would be; katachi skips it by name before asking what it is.
+        assertEquals(MatchOutcome.NotWalked(".git"), matcher.matchFile(".git").outcome)
+        val inModule = matcher.matchFile("core/.git")
+        assertEquals(MatchOutcome.NotWalked("core/.git"), inModule.outcome)
+        assertEquals(emptyList<Any>(), inModule.nearby)
     }
 
     @Test
-    fun `階層ごとに見るので ignore の下の見ないディレクトリは Ignored で 見ないディレクトリの下の ignore は NotWalked`() {
-        assertEquals("build", (matcher.matchFile("build/.gradle/x").outcome as MatchOutcome.Ignored).entry.pattern)
-        assertEquals(MatchOutcome.NotWalked(".gradle"), matcher.matchFile(".gradle/build/x").outcome)
+    fun `gradle と idea は宣言が無ければ UnexpectedUnder になる`() {
+        assertEquals(MatchOutcome.UnexpectedUnder(".idea"), matcher.matchFile(".idea/workspace.xml").outcome)
+        assertEquals(MatchOutcome.UnexpectedUnder("core/domain/.gradle"), matcher.matchFile("core/domain/.gradle/caches/x.bin").outcome)
+        assertEquals(MatchOutcome.UnexpectedUnder(".gradle"), matcher.matchFile(".gradle/8.5/x.lock").outcome)
     }
 
     @Test
-    fun `見ないディレクトリより上に宣言されていない階層があれば そこで止まって UnexpectedUnder`() {
-        // katachi's walk reaches `zzz` first and reports it; it never gets to `.idea` below it.
-        val undeclared = matcher.matchFile("zzz/.idea/workspace.xml")
+    fun `idea の中に宣言したファイルは Matched になる`() {
+        val codeStyle = roleModel("tool.IdeCodeStyle", layoutEntry(".idea", dir), layoutEntry(".idea/codeStyles", dir), layoutEntry(".idea/codeStyles/*.xml"))
+        val subject = DefinitionMatcher(definitionModel(codeStyle, useCase))
+        val match = subject.matchFile(".idea/codeStyles/Project.xml")
+        assertEquals(MatchOutcome.Matched, match.outcome)
+        assertEquals(listOf("tool.IdeCodeStyle" to 2), match.matches.map { it.role.qualifiedName to it.entry.index })
+        assertEquals(MatchOutcome.Unexpected, subject.matchFile(".idea/codeStyles/notes.txt").outcome)
+        assertEquals(MatchOutcome.UnexpectedUnder(".idea/libraries"), subject.matchFile(".idea/libraries/x.xml").outcome)
+    }
+
+    @Test
+    fun `名前が少し違うディレクトリは見る`() {
+        assertEquals(MatchOutcome.Unexpected, matcher.matchFile("core/domain/.gits").outcome)
+        assertEquals(MatchOutcome.UnexpectedUnder("core/domain/.github"), matcher.matchFile("core/domain/.github/a.yml").outcome)
+    }
+
+    @Test
+    fun `階層ごとに見るので ignore の下の git は Ignored で git の下の ignore は NotWalked`() {
+        assertEquals("build", (matcher.matchFile("build/.git/x").outcome as MatchOutcome.Ignored).entry.pattern)
+        assertEquals(MatchOutcome.NotWalked(".git"), matcher.matchFile(".git/build/x").outcome)
+    }
+
+    @Test
+    fun `git より上に宣言されていない階層があれば そこで止まって UnexpectedUnder`() {
+        // katachi's walk reaches `zzz` first and reports it; it never gets to `.git` below it.
+        val undeclared = matcher.matchFile("zzz/.git/HEAD")
         assertEquals(MatchOutcome.UnexpectedUnder("zzz"), undeclared.outcome)
         assertEquals(emptyList<Any>(), undeclared.matches)
-        // Under declared directories the foreign one is the stop.
-        assertEquals(MatchOutcome.NotWalked("core/domain/.idea"), matcher.matchFile("core/domain/.idea/x.xml").outcome)
+        assertEquals(MatchOutcome.UnexpectedUnder("zzz"), matcher.matchFile("zzz/.git").outcome)
+        // Under declared directories `.git` is the stop.
+        assertEquals(MatchOutcome.NotWalked("core/domain/.git"), matcher.matchFile("core/domain/.git/x").outcome)
     }
 }

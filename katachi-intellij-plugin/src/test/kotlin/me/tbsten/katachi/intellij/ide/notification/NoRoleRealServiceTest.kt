@@ -21,7 +21,8 @@ internal class NoRoleRealServiceTest : NoRoleRealServiceTestBase() {
         awaitPanel("stray", editor, present = true)
         val text = peekNoRolePanel(editor)?.text.orEmpty()
 
-        assertTrue(text, text.contains("Service") && text.contains("src/service"))
+        // The nearest place: `src/thrower` and `src/service` are both one level away with a fitting name; `thrower` is the fewer characters from `other`.
+        assertTrue(text, text.contains("Thrower") && text.contains("src/thrower"))
         pump(600)
         assertNull("a file a role holds", noRolePanelOf(open(held)))
     }

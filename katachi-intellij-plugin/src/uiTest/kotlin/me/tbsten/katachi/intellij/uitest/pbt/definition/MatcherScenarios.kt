@@ -66,11 +66,14 @@ private fun roleArb(number: Int): Arb<RoleModel> = arbitrary {
             anyFileDirectories = if (Arb.boolean().bind()) listOf(Arb.element(anyDirPool).bind()) else emptyList(),
         )
     }
-    roleModel("g.R$number", *entries.toTypedArray(), constraints = constraints)
+    // Every fourth role sits under the `Gradle` group: what `gradle()` declared is no place Nearby offers.
+    val group = if (number % 4 == 3) "Gradle" else "g"
+    roleModel("$group.R$number", *entries.toTypedArray(), constraints = constraints)
 }
 
-// The tool directories katachi never goes into (`.idea`, `.gradle`) and a level literally named `*` (what `\\*` declares) now and then.
-private val pathDirs = List(3) { listOf("a", "b", "c", "x", "y") }.flatten() + listOf(".idea", ".gradle", "*")
+// Now and then: `.git` (the one name katachi never goes into), `.idea` / `.gradle` (directories like any other: `UnexpectedUnder`
+// without a declaration, `Matched` with one) and a level literally named `*` (what `\\*` declares).
+private val pathDirs = List(3) { listOf("a", "b", "c", "x", "y") }.flatten() + listOf(".git", ".idea", ".gradle", "*")
 private val pathFiles = listOf("Foo.kt", "BarImpl.kt", "README.md", "Zed.txt")
 
 internal val matcherPathArb: Arb<String> = arbitrary {

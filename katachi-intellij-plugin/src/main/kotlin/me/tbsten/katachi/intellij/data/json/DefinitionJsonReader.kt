@@ -72,6 +72,12 @@ internal class DefinitionJsonReader(
         return if (found.value == JsonValue.JsonNull) null else found.intValue("integer or null")
     }
 
+    /** The integer at [key], or [default] when the key is absent: a key a katachi from before it does not write. */
+    fun optionalInt(key: String, default: Int): Int = if (hasKey(key)) int(key) else default
+
+    /** The string at [key], `null` when it is `null` or the key is absent. */
+    fun optionalNullableString(key: String): String? = if (hasKey(key)) nullableString(key) else null
+
     private fun intValue(expected: String): Int =
         (value as? JsonValue.JsonNumber)?.text?.toIntOrNull() ?: throw mismatch(location, expected, value)
 
