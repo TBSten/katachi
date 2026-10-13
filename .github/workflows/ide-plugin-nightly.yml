@@ -103,7 +103,7 @@ jobs:
           if-no-files-found: ignore
 
   # Binary compatibility of the plugin with IDEA (recommended builds) and Android Studio, which
-  # `sinceBuild = "261"` / `untilBuild = "262.*"` promise (build.gradle.kts says why 263 is left out). It downloads several IDEs (about 3 GB), so it
+  # `sinceBuild = "261"` with no upper bound promises (known false reports on 263 are held back by verifyPlugin-ignored-problems.txt). It downloads several IDEs (about 3 GB), so it
   # is here and not in ci.yml.
   verify-plugin:
     name: verifyPlugin (IDEA and Android Studio)
