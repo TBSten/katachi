@@ -1,7 +1,11 @@
 package me.tbsten.katachi.test.architecture
 
 import com.lemonappdev.konsist.api.declaration.KoBaseDeclaration
+import com.lemonappdev.konsist.api.declaration.KoClassDeclaration
 import com.lemonappdev.konsist.api.declaration.KoFileDeclaration
+import com.lemonappdev.konsist.api.declaration.KoFunctionDeclaration
+import com.lemonappdev.konsist.api.declaration.KoInterfaceDeclaration
+import com.lemonappdev.konsist.api.declaration.KoObjectDeclaration
 import com.lemonappdev.konsist.api.provider.KoContainingDeclarationProvider
 import com.lemonappdev.konsist.api.provider.KoContainingFileProvider
 import com.lemonappdev.konsist.api.provider.KoIsConstructorDefinedProvider
@@ -18,7 +22,7 @@ import com.lemonappdev.konsist.api.provider.modifier.KoVisibilityModifierProvide
  * in the same way `laterLayerImportsOf` shares the layer table. The `konsist { }` call itself stays in each role's own file —
  * see `LayerImports.kt` for why it may not be wrapped in a shared one.
  */
-const val KDOC_EXAMPLE_RULE: String = """public な宣言に "## Example" を含む KDoc があること"""
+const val KDOC_EXAMPLE_RULE: String = """public な宣言に KDoc があり、型とトップレベル関数の KDoc は "## Example" を含むこと"""
 
 /**
  * The name every role declares the block-tag-order rule under.
@@ -76,9 +80,26 @@ fun publicDeclarationsOf(file: KoFileDeclaration): List<KoBaseDeclaration> = fil
     .filterNot { (it as? KoOverrideModifierProvider)?.hasOverrideModifier == true }
     .filter { it is KoKDocProvider && isReachablePublic(it) }
 
-/** Whether [declaration] shows how it is used. Its KDoc is read as text, heading and all. */
-fun showsExample(declaration: KoBaseDeclaration): Boolean =
-    kDocOf(declaration)?.contains(EXAMPLE_HEADING) == true
+/**
+ * Whether [declaration] has a KDoc, and — when it is a type or a top-level function — one that
+ * shows how it is used. Its KDoc is read as text, heading and all.
+ *
+ * `docs/internal/kotlin/kotlin.md` asks every public declaration for a KDoc, but a `## Example`
+ * only of a type (class / interface / object) and a top-level function: a type's example already
+ * shows how its members are called, and one more per member repeated the same code for every
+ * declaration. A member may still carry one when the type's example cannot show it.
+ */
+fun showsExample(declaration: KoBaseDeclaration): Boolean {
+    val kDoc = kDocOf(declaration) ?: return false
+    return !needsExample(declaration) || kDoc.contains(EXAMPLE_HEADING)
+}
+
+/** Whether `kotlin.md` asks [declaration] for a `## Example`: a type, or a function at the top level. */
+private fun needsExample(declaration: KoBaseDeclaration): Boolean = when (declaration) {
+    is KoClassDeclaration, is KoInterfaceDeclaration, is KoObjectDeclaration -> true
+    is KoFunctionDeclaration -> declaration.isTopLevel
+    else -> false
+}
 
 /**
  * Whether [declaration]'s KDoc keeps every block tag at its end, with nothing but more tags

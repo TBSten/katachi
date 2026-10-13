@@ -95,7 +95,8 @@ const val ARCHITECTURE_TEST_PACKAGE: String = "me/tbsten/katachi/test/architectu
  *
  * Two `konsist { }` on each of those roles — the same two on `backend/KonsistBackend` and
  * `backend/KontureBackend`, and one alone on `tool/DokkaPlugin` — ask the repository's KDoc
- * convention of every public declaration: that it shows a `## Example` (`KDOC_EXAMPLE_RULE`),
+ * convention of every public declaration: that it has a KDoc, which shows a `## Example` on a
+ * type and a top-level function (`KDOC_EXAMPLE_RULE`),
  * and that nothing sits after its block tags, where Dokka would stop rendering it
  * (`KDOC_TAG_ORDER_RULE`) — see `KdocExamples.kt`. It is deliberately not asked of `sample/`, of
  * this definition, or of test code. A third, `INTERNAL_PACKAGE_RULE`, keeps internal code in
