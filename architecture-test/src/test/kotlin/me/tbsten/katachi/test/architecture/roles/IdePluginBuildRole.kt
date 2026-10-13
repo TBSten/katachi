@@ -20,6 +20,7 @@ fun DeclarationContainerScope.idePluginBuild() = "IdePluginBuild".role {
             "build.gradle".ktsFile()
             "settings.gradle".ktsFile()
             "gradle.properties".file()
+            "verifyPlugin-ignored-problems.txt".file()
             "gradlew".file()
             "gradlew.bat".file()
             "gradle" {
