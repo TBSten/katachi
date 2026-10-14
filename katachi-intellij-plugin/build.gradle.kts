@@ -167,7 +167,7 @@ intellijPlatformTesting.testIdeUi.register("integrationTest") {
 
 // The same smokes against IDEA 2026.3 (263), where the VCS API (ChangeListManager, ProjectLevelVcsManager) moved from the
 // platform into the bundled "Version Control" plugin: verifyPlugin reports it unresolved there, and only a real 263 shows
-// whether the plugin's classloader sees it. On demand, like integrationTest:
+// whether the plugin's classloader sees it. Nightly (ide-plugin-nightly.yml, job smoke-263) and on demand:
 // `./gradlew integrationTest263 --tests '*NoRoleSmokeTest*'` (it opens IDE windows).
 intellijPlatformTesting.testIdeUi.register("integrationTest263") {
     type = IntelliJPlatformType.IntellijIdea

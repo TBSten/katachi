@@ -10,6 +10,8 @@ name: IDE plugin nightly
 # prints the shrunk catalog and operations; the job summary has the command that plays the same
 # seed again.
 #
+# The job smoke-263 runs the no-role notification's Driver smoke on a real IDEA 2026.3 (see the job).
+#
 # macOS for the same reason as ci.yml: the renders the properties draw run on the same Skia and
 # fonts as the verifyPreview goldens, and the plugin is only checked there.
 
@@ -152,5 +154,61 @@ jobs:
         with:
           name: ide-plugin-verify-reports
           path: katachi-intellij-plugin/build/reports/pluginVerifier/
+          retention-days: 14
+          if-no-files-found: ignore
+
+  # The no-role notification's smoke on a real IDEA 2026.3 (263), where the VCS API (ChangeListManager,
+  # ProjectLevelVcsManager) moved into the bundled "Version Control" plugin. verifyPlugin reports those
+  # classes unresolved there (verifyPlugin-ignored-problems.txt), so this run is what shows the plugin still
+  # sees them: the smoke's untracked → `git add` wording calls them. It opens a real IDE (macOS runners
+  # have a desktop session) and drives it from inside the IDE, without real mouse or key events.
+  smoke-263:
+    name: integrationTest263 (NoRoleSmokeTest on IDEA 2026.3)
+    runs-on: macos-26
+    # About 3 minutes locally once the IDE is unpacked; the limit leaves room for the 263 download
+    # and the first Gradle sync of sample/jvm inside the IDE.
+    timeout-minutes: 60
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Set up JDK 17 and 21
+        uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: |
+            17
+            21
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v6
+
+      - name: Cache .intellijPlatform
+        uses: actions/cache@v5
+        with:
+          path: katachi-intellij-plugin/.intellijPlatform
+          key: intellij-platform-${{ runner.os }}-${{ hashFiles('katachi-intellij-plugin/gradle/libs.versions.toml', 'katachi-intellij-plugin/settings.gradle.kts') }}
+          restore-keys: |
+            intellij-platform-${{ runner.os }}-
+
+      # The smoke runs `git add` in its copy of the repository.
+      - name: Configure git
+        run: |
+          git config --global user.email "ci@example.invalid"
+          git config --global user.name "katachi CI"
+
+      - name: Run integrationTest263
+        working-directory: katachi-intellij-plugin
+        run: ./gradlew integrationTest263 --tests '*NoRoleSmokeTest*' --console=plain --stacktrace
+
+      - name: Upload reports
+        if: ${{ failure() }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: ide-plugin-smoke-263-reports
+          path: |
+            katachi-intellij-plugin/build/reports/
+            katachi-intellij-plugin/build/test-results/
+            katachi-intellij-plugin/build/integrationTest263/**/log/
           retention-days: 14
           if-no-files-found: ignore
