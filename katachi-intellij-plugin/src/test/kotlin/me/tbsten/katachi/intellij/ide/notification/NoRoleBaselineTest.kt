@@ -4,7 +4,9 @@ import com.intellij.openapi.fileEditor.FileEditor
 import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.openapi.vfs.VfsUtil
 import com.intellij.ui.EditorNotificationPanel
+import me.tbsten.katachi.intellij.data.baseline.BaselineReading
 import me.tbsten.katachi.intellij.ide.KatachiBundle
+import me.tbsten.katachi.intellij.ide.rules.RulesPorts
 import me.tbsten.katachi.intellij.testing.MISNAMED
 import me.tbsten.katachi.intellij.testing.STRAY
 import me.tbsten.katachi.intellij.testing.USE_CASE_DIRECTORY
@@ -21,7 +23,7 @@ internal class NoRoleBaselineTest : NoRoleTestBase() {
     private val baselined = noRoleSnapshot(baseline = baselineName)
 
     private fun baselineText(version: Int = 1, vararg entries: Pair<String, String>): String =
-        """{"version": $version, "checks": {"x.LayoutCheck": [${entries.joinToString(",") { (rule, path) -> """{"rule": "$rule", "path": "$path"}""" }}]}}"""
+        """{"version": $version, "checks": {"me.tbsten.katachi.check.LayoutCheck": [${entries.joinToString(",") { (rule, path) -> """{"rule": "$rule", "path": "$path"}""" }}]}}"""
 
     /** The VFS learns of the change as it does of an edit made in another window: by a refresh of the directory. */
     private fun refreshRoot() {
@@ -97,11 +99,30 @@ internal class NoRoleBaselineTest : NoRoleTestBase() {
         awaitNoRoleText("deleted", editor, expectedText(MISNAMED, conditional = true))
     }
 
-    fun `test 知らないディレクトリの下のファイルは UnexpectedDirectory の項目で許容される`() {
+    fun `test 知らないディレクトリの下のファイルは 一番上の知らないディレクトリの項目なら許容され それより深い項目や既知の祖先の項目では許容されない`() {
         writeBaseline(baselineText(1, "UnexpectedDirectory" to "$USE_CASE_DIRECTORY/helpers"))
         val editor = open(STRAY)
         awaitNoRoleText("directory entry", editor, held("UnexpectedDirectory"))
         assertTrue(isWeak(editor))
+
+        writeBaseline(baselineText(1, "UnexpectedDirectory" to "$USE_CASE_DIRECTORY/helpers/deeper"))
+        awaitNoRoleText("deeper entry", editor, expectedText(STRAY))
+
+        writeBaseline(baselineText(1, "UnexpectedDirectory" to USE_CASE_DIRECTORY))
+        awaitNoRoleText("known ancestor entry", editor, expectedText(STRAY))
+    }
+
+    fun `test 本番の RulesPorts は定義の projectRoot からの相対で baseline を読む`() {
+        val withBaseline = root.resolve("with")
+        val without = root.resolve("without")
+        Files.createDirectories(withBaseline)
+        Files.createDirectories(without)
+        Files.writeString(withBaseline.resolve(baselineName), baselineText(1, "UnexpectedFile" to MISNAMED))
+        val production = RulesPorts.of(project)
+
+        val read = production.baseline(withBaseline, baselineName)
+        assertTrue("$read", read is BaselineReading.Read && read.ledger.holdsFile(MISNAMED))
+        assertEquals(BaselineReading.Missing, production.baseline(without, baselineName))
     }
 
     fun `test 許容中の通知も × で閉じられ 設定のスイッチに従う`() {

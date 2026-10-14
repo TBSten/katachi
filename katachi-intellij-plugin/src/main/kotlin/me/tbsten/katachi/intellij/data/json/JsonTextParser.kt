@@ -6,11 +6,15 @@ import java.nio.file.Path
  * Parses [text] as one JSON document (RFC 8259). A leading BOM is skipped: katachi writes none, but
  * an editor saving the file by hand might.
  *
+ * A name given twice in one object keeps the first value, or with [rejectDuplicateNames] is a failure (a baseline file
+ * is katachi's own output, and katachi refuses a repeated name there).
+ *
  * @throws KatachiMalformedTemplateJsonException when [text] is empty, cut off or not JSON.
  */
-internal fun parseJsonText(text: String, file: Path): JsonValue = JsonTextParser(text, file).parseDocument()
+internal fun parseJsonText(text: String, file: Path, rejectDuplicateNames: Boolean = false): JsonValue =
+    JsonTextParser(text, file, rejectDuplicateNames).parseDocument()
 
-private class JsonTextParser(private val text: String, private val file: Path) {
+private class JsonTextParser(private val text: String, private val file: Path, private val rejectDuplicateNames: Boolean) {
     private var pos = if (text.startsWith('﻿')) 1 else 0
 
     fun parseDocument(): JsonValue {
@@ -47,7 +51,12 @@ private class JsonTextParser(private val text: String, private val file: Path) {
         while (true) {
             skipWhitespace()
             if (peek() != '"') fail("expected a key")
+            val keyOffset = pos
             val key = parseString()
+            if (rejectDuplicateNames && key in members) {
+                pos = keyOffset
+                fail("the name \"$key\" is given twice")
+            }
             skipWhitespace()
             expect(':')
             // A duplicated key keeps the first value, like the list keeps the first role name.
