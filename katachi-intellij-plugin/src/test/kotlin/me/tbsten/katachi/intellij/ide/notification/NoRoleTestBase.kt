@@ -64,8 +64,10 @@ internal abstract class NoRoleTestBase : EditorNotificationTestBase() {
     }
 
     /** The label text a panel for [relative] has, from the decision-free pieces: the message, the stale note, the nearest role. */
-    protected fun expectedText(relative: String, untracked: Boolean = false, stale: Boolean = false): String {
-        val main = KatachiBundle.message(if (untracked) "notification.rules.noRole.untracked" else "notification.rules.noRole")
+    protected fun expectedText(relative: String, untracked: Boolean = false, stale: Boolean = false, conditional: Boolean = false): String {
+        // The baseline is read (or there is none) unless a test says otherwise: the wording is then not a condition.
+        val suffix = if (conditional) "" else ".sure"
+        val main = KatachiBundle.message(if (untracked) "notification.rules.noRole.untracked$suffix" else "notification.rules.noRole$suffix")
         val note = if (stale) (if (main.last().code < 128) " " else "") + KatachiBundle.message("notification.rules.noRole.stale") else ""
         val nearest = rolesFor(relative, snapshot).nearby.firstOrNull() ?: return main + note
         val second = KatachiBundle.message("notification.rules.noRole.nearby", nearest.role.qualifiedName, shortDirectory(nearest.directory))

@@ -1,5 +1,7 @@
 package me.tbsten.katachi.intellij.presentation.rules
 
+import me.tbsten.katachi.intellij.data.baseline.BaselineLedger
+import me.tbsten.katachi.intellij.data.baseline.BaselineReading
 import me.tbsten.katachi.intellij.model.CaptureOccurrenceModel
 import me.tbsten.katachi.intellij.model.DefinitionState
 import me.tbsten.katachi.intellij.model.DefinitionUnavailableReason
@@ -29,6 +31,25 @@ internal data class CaptureMismatchNote(
     val expectedPath: String?,
 )
 
+/**
+ * Whether the baseline holds the file back (design 2.7): the notification is a warning when the test will fail on
+ * the file, a weak mark when the baseline allows it, and a conditional warning when the baseline could not be read.
+ *
+ * ```kotlin
+ * if (verdict is BaselineVerdict.Held) println("held as ${verdict.rule}")
+ * ```
+ */
+internal sealed interface BaselineVerdict {
+    /** The baseline file was read and holds the file back as [rule] (`UnexpectedFile`, `UnexpectedDirectory`, `CaptureMismatch`). */
+    data class Held(val rule: String) : BaselineVerdict
+
+    /** The baseline was read, or there is none, and it does not hold the file: the test fails on it. */
+    data object NotHeld : BaselineVerdict
+
+    /** A baseline is named but not usable (missing, an unknown version, broken): say "unless the baseline holds it back". */
+    data object Unknown : BaselineVerdict
+}
+
 /** The "no role holds this file" notification of one file, or none (design 2.1). */
 internal sealed interface NoRoleDecision {
     data object Hidden : NoRoleDecision
@@ -48,6 +69,8 @@ internal sealed interface NoRoleDecision {
         val canOpenDefinition: Boolean,
         /** The file is held back by the captures of a pattern that matched it, not unknown to every role. */
         val captureMismatch: CaptureMismatchNote? = null,
+        /** What the baseline does with the file. */
+        val baseline: BaselineVerdict = BaselineVerdict.Unknown,
     ) : NoRoleDecision
 }
 
@@ -88,7 +111,30 @@ internal fun decideNoRoleNotification(input: NoRoleInput): NoRoleDecision {
         relativePath = roles.relativePath,
         canOpenDefinition = input.architectureSite is ResolvedSiteView.Found,
         captureMismatch = captureMismatch,
+        baseline = baselineVerdictOf(input.baseline, roles.outcome, roles.relativePath),
     )
+}
+
+/**
+ * How katachi's baseline treats the file with [outcome]. The rule it is filed under follows what the test would report:
+ * `Unexpected` is `UnexpectedFile`, a file under a directory no role knows is held by that directory's `UnexpectedDirectory`
+ * entry, and `CaptureMismatch` by its own.
+ *
+ * ```kotlin
+ * baselineVerdictOf(BaselineReading.NotConfigured, MatchOutcome.Unexpected, "src/Foo.kt")   // NotHeld
+ * ```
+ */
+internal fun baselineVerdictOf(reading: BaselineReading, outcome: MatchOutcome, relativePath: String): BaselineVerdict = when (reading) {
+    BaselineReading.NotConfigured -> BaselineVerdict.NotHeld
+    is BaselineReading.Read -> reading.ledger.heldRuleOf(outcome, relativePath)?.let(BaselineVerdict::Held) ?: BaselineVerdict.NotHeld
+    BaselineReading.Missing, is BaselineReading.UnknownVersion, is BaselineReading.Unreadable -> BaselineVerdict.Unknown
+}
+
+private fun BaselineLedger.heldRuleOf(outcome: MatchOutcome, relativePath: String): String? = when {
+    outcome == MatchOutcome.Unexpected && holdsFile(relativePath) -> BaselineLedger.RULE_UNEXPECTED_FILE
+    outcome is MatchOutcome.UnexpectedUnder && holdsDirectoryAbove(relativePath) -> BaselineLedger.RULE_UNEXPECTED_DIRECTORY
+    outcome is MatchOutcome.CaptureMismatch && holdsCaptureMismatch(relativePath) -> BaselineLedger.RULE_CAPTURE_MISMATCH
+    else -> null
 }
 
 /** [outcome] worded as katachi's `[CaptureMismatch]` block words it (the first line, then one line per name). */

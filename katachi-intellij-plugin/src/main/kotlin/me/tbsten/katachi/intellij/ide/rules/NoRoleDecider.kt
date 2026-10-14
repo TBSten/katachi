@@ -3,6 +3,8 @@ package me.tbsten.katachi.intellij.ide.rules
 import com.intellij.openapi.vfs.VirtualFile
 import me.tbsten.katachi.intellij.ide.definition.DefinitionModelService
 import me.tbsten.katachi.intellij.ide.definition.ResolvedSite
+import me.tbsten.katachi.intellij.data.baseline.BaselineReading
+import me.tbsten.katachi.intellij.model.ArchitectureModel
 import me.tbsten.katachi.intellij.model.DeclarationSiteRef
 import me.tbsten.katachi.intellij.model.MatchOutcome
 import me.tbsten.katachi.intellij.model.ModuleId
@@ -60,6 +62,7 @@ internal fun decideNoRole(ports: RulesPorts, file: VirtualFile, path: Path): NoR
     val nearbySites = roles.nearby.map { service.resolveOrNot(module, it.role.declaredAt) }
     val architectureSite = service.resolveOrNot(module, architecture?.declaredAt)
     val vcs = ports.vcs(file)
+    val baseline = baselineOf(ports, roles.projectRoot, architecture)
     val decision = decideNoRoleNotification(
         NoRoleInput(
             file = path,
@@ -71,6 +74,7 @@ internal fun decideNoRole(ports: RulesPorts, file: VirtualFile, path: Path): NoR
             memory = memory.current,
             nearbySites = nearbySites.map(::viewOf),
             architectureSite = viewOf(architectureSite),
+            baseline = baseline,
         ),
     )
     val noRole = decision as? NoRoleDecision.NoRole
@@ -80,6 +84,13 @@ internal fun decideNoRole(ports: RulesPorts, file: VirtualFile, path: Path): NoR
     }
     memory.followVcs(file, vcs) { ports.vcsIfSettled(file) }
     return NoRoleFound(noRole, nearbySites, architectureSite)
+}
+
+/** The baseline the definition names, read through [ports]; a definition without `architecture { }` is [BaselineReading.Missing], so the wording stays conditional. */
+private fun baselineOf(ports: RulesPorts, projectRoot: Path, architecture: ArchitectureModel?): BaselineReading {
+    architecture ?: return BaselineReading.Missing
+    val name = architecture.baseline ?: return BaselineReading.NotConfigured
+    return ports.baseline(projectRoot, name)
 }
 
 private fun DefinitionModelService.resolveOrNot(module: ModuleId, site: DeclarationSiteRef?): ResolvedSite =

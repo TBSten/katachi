@@ -99,8 +99,8 @@ class NoRoleSmokeTest {
     }
 
     private companion object {
-        const val UNTRACKED_TEXT = "No role allows this file. Once you add it to git, the test reports it as UnexpectedFile unless the baseline holds it back."
-        const val TRACKED_TEXT = "No role allows this file. The test reports it as UnexpectedFile unless the baseline holds it back."
+        const val UNTRACKED_TEXT = "No role allows this file. Once you add it to git, the test reports it as UnexpectedFile."
+        const val TRACKED_TEXT = "No role allows this file. The test reports it as UnexpectedFile."
         const val POPUP_TITLE = "Nearby roles (where this file could go)"
     }
 }

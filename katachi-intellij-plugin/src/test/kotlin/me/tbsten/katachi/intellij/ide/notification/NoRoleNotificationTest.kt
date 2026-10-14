@@ -64,7 +64,7 @@ internal class NoRoleNotificationTest : NoRoleTestBase() {
 
         val panel = noRolePanelOf(editor) ?: throw AssertionError("no panel")
 
-        val first = KatachiBundle.message("notification.rules.captureMismatch", "feature.Screen", "capture(\"feature\")")
+        val first = KatachiBundle.message("notification.rules.captureMismatch.sure", "feature.Screen", "capture(\"feature\")")
         val second = "feature: \"home\" at level 2, \"settings\" at level 4 (expected \"home\"); feature.pascalCase: \"Home\" at level 5 " +
             KatachiBundle.message("notification.rules.captureMismatch.moveTo", "feature/home/src/home/HomeScreen.kt")
         assertEquals("<html>${StringUtil.escapeXmlEntities(first)}<br>${StringUtil.escapeXmlEntities(second)}</html>", panel.text)
@@ -79,7 +79,7 @@ internal class NoRoleNotificationTest : NoRoleTestBase() {
 
         val panel = noRolePanelOf(editor) ?: throw AssertionError("no panel")
 
-        assertEquals(KatachiBundle.message("notification.rules.noRole"), panel.text)
+        assertEquals(KatachiBundle.message("notification.rules.noRole.sure"), panel.text)
         assertTrue(panel.links.map { it.text }.contains(KatachiBundle.message("notification.rules.nearbyRoles")))
     }
 
