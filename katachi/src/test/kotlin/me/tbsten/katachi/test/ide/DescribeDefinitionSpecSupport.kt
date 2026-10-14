@@ -1,5 +1,5 @@
+@file:Suppress("DEPRECATION")
 package me.tbsten.katachi.test.ide
-
 import java.io.File
 import me.tbsten.katachi.dsl.Architecture
 import me.tbsten.katachi.dsl.DeclarationSite

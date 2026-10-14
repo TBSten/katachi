@@ -21,9 +21,9 @@ internal sealed interface ModulePackageProblem {
         override fun explain(): String =
             "A module package can only be used inside a module block. It is derived from the " +
                 "module being evaluated, and directly under `layout { }`, or inside a plain " +
-                "directory block, there is no module to derive it from. Either wrap the path " +
-                "in `\":core:data\".module { }`, or write the package directory out as a " +
-                "string."
+                "directory block, there is no module to derive it from. Write the package " +
+                "directory out in the path instead, naming a level that varies with a capture, " +
+                "such as \"com/example/feature\" / capture(\"feature\").camelCase."
     }
 
     /** The strategy answered with something that is not a directory path. */

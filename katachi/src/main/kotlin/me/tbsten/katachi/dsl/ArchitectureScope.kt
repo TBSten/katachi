@@ -2,6 +2,7 @@ package me.tbsten.katachi.dsl
 
 import me.tbsten.katachi.ExperimentalKatachiApi
 import me.tbsten.katachi.dsl.internal.DeclaredNames
+import me.tbsten.katachi.dsl.internal.MODULE_RESOLVER_DEPRECATION
 import me.tbsten.katachi.dsl.internal.MetadataBuilder
 import me.tbsten.katachi.dsl.internal.captureDeclarationSite
 import me.tbsten.katachi.dsl.internal.declareGroup
@@ -86,15 +87,20 @@ public sealed interface ArchitectureScope : DeclarationContainerScope {
      * How a module path written in a `layout { }` becomes a directory. Defaults to
      * [ModuleResolver.Conventional].
      *
-     * ## Example 1: replace the resolution rule for module paths
+     * **Deprecated** since 0.3, removed in 0.5, with `.module { }`: only module keys are
+     * resolved through it. Write the directory a module lives in, in the layout.
+     *
+     * ## Example 1: Write the directory a module lives in
      * ```kt
-     * val architecture = architecture {
-     *   moduleResolver = ModuleResolver { module ->
-     *     if (module.value == ":app") "apps/android" else module.segments.joinToString("/")
-     *   }
+     * // Before (0.2):
+     * //   moduleResolver = ModuleResolver { module -> if (module.value == ":app") "apps/android" else ... }
+     * //   layout { ":app".module { "src/main/AndroidManifest.xml".file() } }
+     * val arch = architecture {
+     *   "App".role { layout { "apps/android/src/main/AndroidManifest.xml".file() } }
      * }
      * ```
      */
+    @Deprecated(message = MODULE_RESOLVER_DEPRECATION, level = DeprecationLevel.WARNING)
     public var moduleResolver: ModuleResolver
 
     /**
@@ -152,6 +158,7 @@ internal class ArchitectureScopeImpl : ArchitectureScope {
 
     override var files: FileSelection = FileSelection.GitTracked
 
+    @Deprecated(message = MODULE_RESOLVER_DEPRECATION, level = DeprecationLevel.WARNING)
     override var moduleResolver: ModuleResolver = ModuleResolver.Conventional
 
     private var baseline: Baseline? = null
@@ -182,6 +189,7 @@ internal class ArchitectureScopeImpl : ArchitectureScope {
         )
     }
 
+    @Suppress("DEPRECATION")
     fun build(declaredAt: DeclarationSite = DeclarationSite.Unknown): Architecture = Architecture(
         groups = groups.toList(),
         roles = roles.toList(),

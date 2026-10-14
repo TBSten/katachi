@@ -1,11 +1,18 @@
+@file:Suppress("DEPRECATION")
+
 package me.tbsten.katachi.dsl.gradle
 
 import me.tbsten.katachi.ExperimentalKatachiApi
 import me.tbsten.katachi.KatachiDeclarationException
 import me.tbsten.katachi.dsl.gradle.internal.ModulePackageProblem
+import me.tbsten.katachi.dsl.internal.MODULE_PACKAGE_DEPRECATION
 
 /**
  * The directory a module's package lives in, as a strategy rather than as a path.
+ *
+ * **Deprecated** since 0.3, removed in 0.5, with [module]. Write the package directory in the
+ * path instead, naming the module's level with a capture: [HyphenFolding.Capitalize] is
+ * `capture("...").camelCase` and [HyphenFolding.Concatenate] is `capture("...").flatCase`.
  *
  * `modulePackage` is not a built-in symbol: the user declares it once, next to their
  * `architecture { }`, and picks how it is derived.
@@ -30,36 +37,24 @@ import me.tbsten.katachi.dsl.gradle.internal.ModulePackageProblem
  * }
  * ```
  *
- * ## Example 1: Declare it once, next to the architecture
+ * ## Example 1: Write the package directory in the path instead
  * ```kt
- * import me.tbsten.katachi.dsl.gradle.*
+ * import me.tbsten.katachi.dsl.camelCase
+ * import me.tbsten.katachi.dsl.gradle.kotlin
+ * import me.tbsten.katachi.dsl.gradle.mainSourceSet
  * import me.tbsten.katachi.dsl.kotlin.ktFile
  *
- * val modulePackage: ModulePackage = capitalizedModuleNamePackage("com.example.sample")
- *
- * ":core:domain".module {
- *     mainSourceSet / kotlin / modulePackage / "*".ktFile()
- * }
- * ```
- *
- * ## Example 2: Write a custom strategy
- * ```kt
- * import me.tbsten.katachi.dsl.gradle.*
- * import me.tbsten.katachi.dsl.kotlin.ktFile
- *
- * // :core:data and :feature:home both live directly under com.example
- * val flat = ModulePackage { modulePath ->
- *     "com/example/" + modulePath.substringAfterLast(':')
- * }
- *
- * ":core:data".module {
- *     flat / "*".ktFile()
- * }
+ * // Before (0.2):
+ * //   val modulePackage = capitalizedModuleNamePackage("com.example")
+ * //   ":feature:*".module { mainSourceSet / kotlin / modulePackage / "*ViewModel".ktFile() }
+ * "feature" / capture("feature") / mainSourceSet / kotlin /
+ *     "com/example/feature" / capture("feature").camelCase / "*ViewModel".ktFile()
  * ```
  *
  * @see capitalizedModuleNamePackage
  * @see moduleNamePackage
  */
+@Deprecated(message = MODULE_PACKAGE_DEPRECATION, level = DeprecationLevel.WARNING)
 public fun interface ModulePackage {
     /**
      * Returns the package directory of [modulePath], relative to that module's own directory.
@@ -84,6 +79,8 @@ public fun interface ModulePackage {
 /**
  * How a hyphen inside one segment of a module path is folded away.
  *
+ * **Deprecated** since 0.3, removed in 0.5. See [ModulePackage] for what to write instead.
+ *
  * A package directory may hold a hyphen as far as the file system is concerned, but a Kotlin
  * package name may not, so `:core:data:remote-api` has to become something else.
  *
@@ -98,6 +95,7 @@ public fun interface ModulePackage {
  * val modulePackage = moduleNamePackage(hyphens = HyphenFolding.Concatenate)
  * ```
  */
+@Deprecated(message = MODULE_PACKAGE_DEPRECATION, level = DeprecationLevel.WARNING)
 public enum class HyphenFolding {
     /**
      * `fuga-piyo` becomes `fugaPiyo`: the first word as written, every later word with its
@@ -135,6 +133,8 @@ public enum class HyphenFolding {
 /**
  * Derives the package directory from the module path, level for level.
  *
+ * **Deprecated** since 0.3, removed in 0.5. See [ModulePackage] for what to write instead.
+ *
  * `:hoge:fuga-piyo` becomes `hoge/fugaPiyo`, and with [basePackage] `"com.example"` it
  * becomes `com/example/hoge/fugaPiyo`. Each `:` of the module path is one directory level, in
  * the order it was written; only a hyphen inside a level is rewritten, according to [hyphens].
@@ -164,6 +164,7 @@ public enum class HyphenFolding {
  *   as `com/example`. Empty means the module path is the whole package.
  * @param hyphens how a hyphen inside one level is folded away.
  */
+@Deprecated(message = MODULE_PACKAGE_DEPRECATION, level = DeprecationLevel.WARNING)
 public fun moduleNamePackage(
     basePackage: String = "",
     hyphens: HyphenFolding,
@@ -179,6 +180,8 @@ public fun moduleNamePackage(
 
 /**
  * [moduleNamePackage] with [HyphenFolding.Capitalize]: `:hoge:fuga-piyo` becomes `hoge/fugaPiyo`.
+ *
+ * **Deprecated** since 0.3, removed in 0.5. See [ModulePackage] for what to write instead.
  *
  * This is the preset to reach for first.
  *
@@ -203,6 +206,7 @@ public fun moduleNamePackage(
  * @param basePackage the package every module sits under, written either as `com.example` or
  *   as `com/example`.
  */
+@Deprecated(message = MODULE_PACKAGE_DEPRECATION, level = DeprecationLevel.WARNING)
 public fun capitalizedModuleNamePackage(basePackage: String = ""): ModulePackage =
     moduleNamePackage(basePackage = basePackage, hyphens = HyphenFolding.Capitalize)
 
@@ -244,6 +248,8 @@ public class KatachiModulePackageException internal constructor(
 /**
  * Derives the package directory for the module a layout block is being evaluated for.
  *
+ * **Deprecated** since 0.3, removed in 0.5. See [ModulePackage] for what to write instead.
+ *
  * Public so that a project can write its own `.module { }` vocabulary, and
  * [ExperimentalKatachiApi] for the same reason as [currentModulePath].
  *
@@ -271,6 +277,7 @@ public class KatachiModulePackageException internal constructor(
  * @throws KatachiModulePackageException when [modulePath] is `null`, or when the strategy
  *   returned something that is not a directory path.
  */
+@Deprecated(message = MODULE_PACKAGE_DEPRECATION, level = DeprecationLevel.WARNING)
 @ExperimentalKatachiApi
 public fun ModulePackage.resolveFor(modulePath: String?): String {
     if (modulePath == null) {

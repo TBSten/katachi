@@ -1,5 +1,5 @@
+@file:Suppress("DEPRECATION")
 package me.tbsten.katachi.test.template
-
 import me.tbsten.katachi.dsl.Architecture
 import me.tbsten.katachi.dsl.DeclarationContainerScope
 import me.tbsten.katachi.dsl.architecture

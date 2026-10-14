@@ -1,3 +1,5 @@
+@file:Suppress("DEPRECATION")
+
 package me.tbsten.katachi.test.synthetic
 
 import me.tbsten.katachi.dsl.Architecture

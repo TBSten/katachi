@@ -1,5 +1,5 @@
+@file:Suppress("DEPRECATION")
 package me.tbsten.katachi.test.dsl
-
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.FreeSpec
 import io.kotest.matchers.collections.shouldBeEmpty

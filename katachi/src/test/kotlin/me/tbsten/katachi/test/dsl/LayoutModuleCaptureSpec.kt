@@ -1,3 +1,5 @@
+@file:Suppress("DEPRECATION")
+
 package me.tbsten.katachi.test.dsl
 
 import io.kotest.assertions.throwables.shouldThrow
@@ -146,7 +148,7 @@ class LayoutModuleCaptureSpec : FreeSpec({
             failure.name shouldBe "feature"
             failure.declaredAt?.fileName shouldBe "LayoutModuleCaptureSpec.kt"
             failure.message!! shouldContain "`wildcard(\"feature\")` at LayoutModuleCaptureSpec.kt:"
-            failure.message!! shouldContain "\":feature:\${capture(\"feature\")}\".module { }"
+            failure.message!! shouldContain "capture(\"feature\").pascalCase where the value is used"
             failure.message!! shouldNotContain "`wildcards` can only"
         }
 

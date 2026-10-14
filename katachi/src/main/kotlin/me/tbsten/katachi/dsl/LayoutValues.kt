@@ -117,6 +117,8 @@ public class LayoutFile internal constructor(
  * A module path with a wildcard may have stood for several modules, or for none, so this is
  * not one directory and cannot be continued with `/`. It exists for [optional].
  *
+ * Leaves the public API together with `.module { }` in katachi 0.5.
+ *
  * ## Example 1: Declaring a module, without opting into any of its own layout
  * ```kt
  * layout {

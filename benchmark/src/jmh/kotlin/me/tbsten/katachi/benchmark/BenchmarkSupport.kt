@@ -1,3 +1,5 @@
+@file:Suppress("DEPRECATION")
+
 package me.tbsten.katachi.benchmark
 
 import java.io.File

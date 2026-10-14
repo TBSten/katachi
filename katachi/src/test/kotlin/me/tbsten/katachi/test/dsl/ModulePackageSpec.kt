@@ -1,3 +1,5 @@
+@file:Suppress("DEPRECATION")
+
 package me.tbsten.katachi.test.dsl
 
 import io.kotest.assertions.throwables.shouldThrow
@@ -141,7 +143,7 @@ class ModulePackageSpec : FreeSpec({
             }
 
             thrown.message!!.shouldContain("inside a module block")
-            thrown.message!!.shouldContain(".module { }")
+            thrown.message!!.shouldContain("capture(\"feature\").camelCase")
         }
 
         "KatachiModulePackageException は KatachiDeclarationException として捕捉できる" {

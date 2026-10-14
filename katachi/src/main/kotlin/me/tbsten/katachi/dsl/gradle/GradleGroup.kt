@@ -1,6 +1,7 @@
 package me.tbsten.katachi.dsl.gradle
 
 import me.tbsten.katachi.dsl.*
+import me.tbsten.katachi.dsl.gradle.internal.expandModules
 import me.tbsten.katachi.dsl.internal.DeclaredByGradle
 import me.tbsten.katachi.dsl.internal.GradleRoleKind
 import me.tbsten.katachi.dsl.internal.metadataBuilder
@@ -90,7 +91,6 @@ import me.tbsten.katachi.dsl.kotlin.ktsFile
  *   (`"BuildScript".role { }`) is the duplicate, not katachi's — write its constraint in the
  *   matching hook instead.
  * @see me.tbsten.katachi.dsl.GradleScope
- * @see me.tbsten.katachi.dsl.gradle.module
  */
 public fun DeclarationContainerScope.gradle(
     requireWrapper: Boolean = true,
@@ -125,7 +125,7 @@ public fun DeclarationContainerScope.gradle(
         "settings.gradle".file().optional()
     }
     gradleRole(GradleRoleKind.BuildScript, "How one module is built, one per module", scope) {
-        ":**".module {
+        expandModules(":**") {
             // Declared by this role on its own account rather than left to the module sugar:
             // the sugar's line is synthetic, which keeps it out of what a constraint covers
             // and out of the ambiguity check, and a build script is exactly what this role is about.

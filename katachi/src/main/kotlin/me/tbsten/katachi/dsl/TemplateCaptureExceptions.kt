@@ -52,9 +52,8 @@ public class KatachiUnknownTemplateCaptureException internal constructor(
             """captureValue("$name") at $declaredAt reads a capture role "$role" does not declare.""",
         )
         appendLine(
-            "A capture is named in the role's layout { }, by capture(\"...\") or by a " +
-                "\":...:${'$'}{capture(\"...\")}\".module { } key, and a name it does not declare " +
-                "has no value on any run.",
+            "A capture is named in the role's layout { } by capture(\"...\"), and a name it does not " +
+                "declare has no value on any run.",
         )
         if (knownNames.isEmpty()) {
             append(

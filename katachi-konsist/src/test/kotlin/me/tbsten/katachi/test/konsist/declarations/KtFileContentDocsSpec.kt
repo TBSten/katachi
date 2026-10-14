@@ -1,3 +1,5 @@
+@file:Suppress("DEPRECATION")
+
 package me.tbsten.katachi.test.konsist.declarations
 
 import io.kotest.core.spec.style.FreeSpec

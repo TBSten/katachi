@@ -16,6 +16,8 @@ import me.tbsten.katachi.dsl.internal.GlobProblem
  * Two module paths are equal when their segments are equal, so comparison is case sensitive
  * the same way [me.tbsten.katachi.dsl.files.FsPath] is: a check must give the same answer locally and on CI.
  *
+ * Leaves the public API together with `.module { }` in katachi 0.5.
+ *
  * ## Example 1: build one from a string and read it back
  * ```kt
  * ModulePath.of(":core:data").value shouldBe ":core:data"

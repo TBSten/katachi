@@ -1,9 +1,12 @@
+@file:Suppress("DEPRECATION")
+
 package me.tbsten.katachi.dsl.gradle
 
 import me.tbsten.katachi.dsl.LayoutDirectory
 import me.tbsten.katachi.dsl.LayoutDirectoryScope
 import me.tbsten.katachi.dsl.LayoutFile
 import me.tbsten.katachi.dsl.LayoutScope
+import me.tbsten.katachi.dsl.internal.MODULE_PACKAGE_DEPRECATION
 import me.tbsten.katachi.dsl.internal.markModulePackage
 
 /**
@@ -19,6 +22,8 @@ import me.tbsten.katachi.dsl.internal.markModulePackage
 /**
  * Continues a `/` chain with the package directory of the module being evaluated.
  *
+ * **Deprecated** since 0.3, removed in 0.5. See [ModulePackage] for what to write instead.
+ *
  * ## Example 1: Continue a raw path string into the module's package
  * ```kt
  * import me.tbsten.katachi.dsl.gradle.*
@@ -29,6 +34,7 @@ import me.tbsten.katachi.dsl.internal.markModulePackage
  * }
  * ```
  */
+@Deprecated(message = MODULE_PACKAGE_DEPRECATION, level = DeprecationLevel.WARNING)
 context(layoutScope: LayoutScope)
 public operator fun String.div(child: ModulePackage): LayoutDirectory {
     val left = this
@@ -39,6 +45,8 @@ public operator fun String.div(child: ModulePackage): LayoutDirectory {
 /**
  * `mainSourceSet / kotlin / modulePackage` continues below the module's package.
  *
+ * **Deprecated** since 0.3, removed in 0.5. See [ModulePackage] for what to write instead.
+ *
  * ## Example 1: Continue a source set into the module's package
  * ```kt
  * ":ui".module {
@@ -46,6 +54,7 @@ public operator fun String.div(child: ModulePackage): LayoutDirectory {
  * }
  * ```
  */
+@Deprecated(message = MODULE_PACKAGE_DEPRECATION, level = DeprecationLevel.WARNING)
 context(layoutScope: LayoutScope)
 public operator fun LayoutDirectory.div(child: ModulePackage): LayoutDirectory {
     val left = this
@@ -56,6 +65,8 @@ public operator fun LayoutDirectory.div(child: ModulePackage): LayoutDirectory {
 /**
  * Starts a `/` chain at the module's package directory.
  *
+ * **Deprecated** since 0.3, removed in 0.5. See [ModulePackage] for what to write instead.
+ *
  * ## Example 1: Continue below the module's package with a plain key
  * ```kt
  * ":core:domain".module {
@@ -63,6 +74,7 @@ public operator fun LayoutDirectory.div(child: ModulePackage): LayoutDirectory {
  * }
  * ```
  */
+@Deprecated(message = MODULE_PACKAGE_DEPRECATION, level = DeprecationLevel.WARNING)
 context(layoutScope: LayoutScope)
 public operator fun ModulePackage.div(child: String): LayoutDirectory {
     val directory = packageDirectory()
@@ -72,6 +84,8 @@ public operator fun ModulePackage.div(child: String): LayoutDirectory {
 /**
  * Continues below the module's package directory with a directory block.
  *
+ * **Deprecated** since 0.3, removed in 0.5. See [ModulePackage] for what to write instead.
+ *
  * ## Example 1: Continue below the module's package with a directory value
  * ```kt
  * ":ui".module {
@@ -80,6 +94,7 @@ public operator fun ModulePackage.div(child: String): LayoutDirectory {
  * }
  * ```
  */
+@Deprecated(message = MODULE_PACKAGE_DEPRECATION, level = DeprecationLevel.WARNING)
 context(layoutScope: LayoutScope)
 public operator fun ModulePackage.div(child: LayoutDirectory): LayoutDirectory {
     val directory = packageDirectory()
@@ -89,6 +104,8 @@ public operator fun ModulePackage.div(child: LayoutDirectory): LayoutDirectory {
 /**
  * `modulePackage / "*UseCase".ktFile()` puts the file in the module's package.
  *
+ * **Deprecated** since 0.3, removed in 0.5. See [ModulePackage] for what to write instead.
+ *
  * ## Example 1: Place a file directly in the module's package
  * ```kt
  * ":core:domain".module {
@@ -96,6 +113,7 @@ public operator fun ModulePackage.div(child: LayoutDirectory): LayoutDirectory {
  * }
  * ```
  */
+@Deprecated(message = MODULE_PACKAGE_DEPRECATION, level = DeprecationLevel.WARNING)
 context(layoutScope: LayoutScope)
 public operator fun ModulePackage.div(child: LayoutFile): LayoutFile {
     val directory = packageDirectory()
@@ -105,6 +123,8 @@ public operator fun ModulePackage.div(child: LayoutFile): LayoutFile {
 /**
  * Opens a block at the module's package directory: `modulePackage { }` is the nested
  * spelling of `modulePackage / ...`.
+ *
+ * **Deprecated** since 0.3, removed in 0.5. See [ModulePackage] for what to write instead.
  *
  * ## Example 1: Open a block at the module's package directory
  * ```kt
@@ -117,6 +137,7 @@ public operator fun ModulePackage.div(child: LayoutFile): LayoutFile {
  * }
  * ```
  */
+@Deprecated(message = MODULE_PACKAGE_DEPRECATION, level = DeprecationLevel.WARNING)
 context(layoutScope: LayoutScope)
 public operator fun ModulePackage.invoke(block: LayoutDirectoryScope.() -> Unit): LayoutDirectory {
     val directory = packageDirectory()

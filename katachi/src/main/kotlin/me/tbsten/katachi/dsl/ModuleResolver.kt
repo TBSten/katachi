@@ -42,6 +42,8 @@ public class KatachiUnresolvableModulePatternException internal constructor(
  * walks the tree looking for a `build.gradle.kts` or `build.gradle`: katachi does not read the
  * list of modules from Gradle, the Gradle plugin included.
  *
+ * Leaves the public API together with `.module { }` in katachi 0.5.
+ *
  * ## Example 1: place a module at a non-conventional directory
  * ```kt
  * val projectArchitecture = architecture {

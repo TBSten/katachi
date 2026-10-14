@@ -1,3 +1,5 @@
+@file:Suppress("DEPRECATION")
+
 package me.tbsten.katachi.test.check
 
 import io.kotest.assertions.throwables.shouldNotThrowAny

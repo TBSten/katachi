@@ -1,3 +1,5 @@
+@file:Suppress("DEPRECATION")
+
 package me.tbsten.katachi.dsl.gradle
 
 import me.tbsten.katachi.ExperimentalKatachiApi
@@ -6,6 +8,7 @@ import me.tbsten.katachi.dsl.LayoutDirectoryScope
 import me.tbsten.katachi.dsl.LayoutModule
 import me.tbsten.katachi.dsl.LayoutScope
 import me.tbsten.katachi.dsl.ModuleAwareLayoutScope
+import me.tbsten.katachi.dsl.internal.MODULE_SCOPE_DEPRECATION
 
 /**
  * The part of a layout scope a utility layer cannot reach through the public vocabulary.
@@ -28,6 +31,8 @@ import me.tbsten.katachi.dsl.ModuleAwareLayoutScope
  * The module this scope is being evaluated for, as katachi prints it (`":feature:home"`),
  * or `null` directly under `layout { }` and inside a plain directory block.
  *
+ * **Deprecated** since 0.3, removed in 0.5. See [expandModulePath] for what to write instead.
+ *
  * ## Example 1: Write a custom description that names the current module
  * ```kt
  * import me.tbsten.katachi.ExperimentalKatachiApi
@@ -40,6 +45,7 @@ import me.tbsten.katachi.dsl.ModuleAwareLayoutScope
  * }
  * ```
  */
+@Deprecated(message = MODULE_SCOPE_DEPRECATION, level = DeprecationLevel.WARNING)
 @ExperimentalKatachiApi
 public val LayoutScope.currentModulePath: String?
     get() = moduleAware().currentModulePath
@@ -47,6 +53,8 @@ public val LayoutScope.currentModulePath: String?
 /**
  * What the module path's wildcards captured for the module being evaluated, or `null`
  * outside a module block, where there is no module path to have captured anything.
+ *
+ * **Deprecated** since 0.3, removed in 0.5. See [expandModulePath] for what to write instead.
  *
  * See [wildcards], which is this with the error message.
  *
@@ -61,6 +69,7 @@ public val LayoutScope.currentModulePath: String?
  *     get() = currentWildcards ?: emptyList()
  * ```
  */
+@Deprecated(message = MODULE_SCOPE_DEPRECATION, level = DeprecationLevel.WARNING)
 @ExperimentalKatachiApi
 public val LayoutScope.currentWildcards: List<String>?
     get() = moduleAware().currentWildcards
@@ -68,6 +77,8 @@ public val LayoutScope.currentWildcards: List<String>?
 /**
  * [currentWildcards] by the names the module key gave them, or `null` outside a module block and
  * inside one whose key named nothing.
+ *
+ * **Deprecated** since 0.3, removed in 0.5. See [expandModulePath] for what to write instead.
  *
  * See [wildcard], which reads one of these with the error message.
  *
@@ -81,12 +92,16 @@ public val LayoutScope.currentWildcards: List<String>?
  * public fun LayoutScope.wildcardOrNull(name: String): String? = currentCaptures?.get(name)
  * ```
  */
+@Deprecated(message = MODULE_SCOPE_DEPRECATION, level = DeprecationLevel.WARNING)
 @ExperimentalKatachiApi
 public val LayoutScope.currentCaptures: Map<String, String>?
     get() = moduleAware().currentCaptures
 
 /**
  * Runs [block] once per module [modulePath] stands for, below that module's own directory.
+ *
+ * **Deprecated** since 0.3, removed in 0.5, with [module]. A module sugar of a project's own
+ * goes with it: write the module's directory in the layout instead.
  *
  * This is the whole of what [module] does, and the one piece of
  * it that cannot be written through the public vocabulary: resolving a module path needs the
@@ -96,19 +111,15 @@ public val LayoutScope.currentCaptures: Map<String, String>?
  * `"build.gradle".ktsFile()` — before [block] runs, so what this declares is the same
  * declaration a hand written directory block would make.
  *
- * ## Example 1: Write your own alias for `.module { }`
+ * ## Example 1: Write the module's directory instead of a module sugar of your own
  * ```kt
- * import me.tbsten.katachi.ExperimentalKatachiApi
- * import me.tbsten.katachi.dsl.LayoutDirectoryScope
- * import me.tbsten.katachi.dsl.LayoutModule
- * import me.tbsten.katachi.dsl.LayoutScope
- * import me.tbsten.katachi.dsl.gradle.expandModulePath
+ * import me.tbsten.katachi.dsl.kotlin.ktFile
  *
- * // This is exactly what `"...".module { }` does; a project can spell it however it likes.
- * @OptIn(ExperimentalKatachiApi::class)
- * context(layoutScope: LayoutScope)
- * public fun String.gradleModule(block: LayoutDirectoryScope.() -> Unit): LayoutModule =
- *     layoutScope.expandModulePath(this, block)
+ * // Before (0.2):
+ * //   context(layoutScope: LayoutScope)
+ * //   fun String.gradleModule(block: LayoutDirectoryScope.() -> Unit) = layoutScope.expandModulePath(this, block)
+ * //   ":core:data".gradleModule { "*Repository".ktFile() }
+ * "core/data" { "*Repository".ktFile() }
  * ```
  *
  * @param modulePath a Gradle module path, possibly holding `*` or `**`.
@@ -117,6 +128,7 @@ public val LayoutScope.currentCaptures: Map<String, String>?
  *   the root of a `layout { }` block: a module path is resolved below the project root, so a
  *   directory around it would quietly be prepended to the answer.
  */
+@Deprecated(message = MODULE_SCOPE_DEPRECATION, level = DeprecationLevel.WARNING)
 @ExperimentalKatachiApi
 public fun LayoutScope.expandModulePath(
     modulePath: String,

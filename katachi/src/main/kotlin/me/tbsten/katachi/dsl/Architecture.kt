@@ -71,6 +71,8 @@ public class Architecture internal constructor(
     /**
      * How a module path written in a `layout { }` becomes a directory.
      *
+     * Leaves the public API together with `.module { }` in katachi 0.5.
+     *
      * ## Example 1: replace the resolution rule for module paths
      * ```kt
      * val architecture = architecture {
