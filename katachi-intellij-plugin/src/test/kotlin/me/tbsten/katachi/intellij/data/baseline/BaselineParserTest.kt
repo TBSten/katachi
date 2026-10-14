@@ -10,10 +10,10 @@ internal class BaselineParserTest : TestCase() {
         {
           "version": 1,
           "checks": {
-            "a.FileConstraintCheck": [
+            "me.tbsten.katachi.check.FileConstraintCheck": [
               {"rule": "UnsatisfiedFileConstraint", "path": "src/Legacy.kt", "role": "r", "constraint": "c", "declaration": "d"}
             ],
-            "a.LayoutCheck": [
+            "me.tbsten.katachi.check.LayoutCheck": [
               {"rule": "CaptureMismatch", "path": "src/Mismatch.kt"},
               {"rule": "UnexpectedDirectory", "path": "data/src/main/old", "count": 2},
               {"rule": "UnexpectedFile", "path": "src/Unknown.kt"}
@@ -26,7 +26,8 @@ internal class BaselineParserTest : TestCase() {
         val ledger = read(version1)
         assertTrue(ledger.holdsFile("src/Unknown.kt"))
         assertTrue(ledger.holdsCaptureMismatch("src/Mismatch.kt"))
-        assertTrue(ledger.holds("UnsatisfiedFileConstraint", "src/Legacy.kt"))
+        // Only LayoutCheck's entries are kept: the three rules are its, and another check's entry is not.
+        assertFalse(ledger.holds("UnsatisfiedFileConstraint", "src/Legacy.kt"))
     }
 
     fun `test 空の checks でも version 1 なら読めて何も許容しない`() {
@@ -36,7 +37,6 @@ internal class BaselineParserTest : TestCase() {
 
     fun `test 知らない版は中身にかかわらず UnknownVersion`() {
         assertEquals(BaselineReading.UnknownVersion(2), parseBaselineText("""{"version": 2, "checks": {"x": [{"rule": "UnexpectedFile", "path": "a"}]}}"""))
-        assertEquals(BaselineReading.UnknownVersion(0), parseBaselineText("""{"version": 0, "checks": {}}"""))
         assertEquals(BaselineReading.UnknownVersion(null), parseBaselineText("""{"version": 1.5, "checks": {}}"""))
         // A newer file may be shaped differently: its version is judged before the rest.
         assertEquals(BaselineReading.UnknownVersion(3), parseBaselineText("""{"version": 3, "checks": []}"""))
@@ -59,9 +59,42 @@ internal class BaselineParserTest : TestCase() {
         ).forEach { assertTrue("$it -> ${parseBaselineText(it)}", parseBaselineText(it) is BaselineReading.Unreadable) }
     }
 
-    fun `test 知らない項目は読み飛ばす`() {
-        val ledger = read("""{"version": 1, "future": true, "checks": {"x": [{"rule": "UnexpectedFile", "path": "a", "later": 1}]}}""")
+    fun `test katachi が InvalidBaselineFile にするものは Unreadable`() {
+        val layout = "me.tbsten.katachi.check.LayoutCheck"
+        fun entries(vararg entry: String) = """{"version": 1, "checks": {"$layout": [${entry.joinToString(",")}]}}"""
+        val unreadable = mapOf(
+            "知らない欄 (最上位)" to """{"version": 1, "future": true, "checks": {}}""",
+            "知らない欄 (項目)" to entries("""{"rule": "UnexpectedFile", "path": "a", "later": 1}"""),
+            "同じキーの項目が 2 つ" to entries("""{"rule": "UnexpectedFile", "path": "a"}""", """{"rule": "UnexpectedFile", "path": "a"}"""),
+            "同じキーの項目が count 違いで 2 つ" to entries("""{"rule": "UnexpectedFile", "path": "a"}""", """{"rule": "UnexpectedFile", "path": "a", "count": 2}"""),
+            "JSON の名前の重複 (最上位)" to """{"version": 1, "checks": {}, "checks": {}}""",
+            "JSON の名前の重複 (項目)" to entries("""{"rule": "UnexpectedFile", "path": "a", "path": "b"}"""),
+            "JSON の名前の重複 (checks)" to """{"version": 1, "checks": {"$layout": [], "$layout": []}}""",
+            "count が 0" to entries("""{"rule": "UnexpectedFile", "path": "a", "count": 0}"""),
+            "count が負" to entries("""{"rule": "UnexpectedFile", "path": "a", "count": -1}"""),
+            "count が小数" to entries("""{"rule": "UnexpectedFile", "path": "a", "count": 1.5}"""),
+            "count が 1.0" to entries("""{"rule": "UnexpectedFile", "path": "a", "count": 1.0}"""),
+            "count が文字列" to entries("""{"rule": "UnexpectedFile", "path": "a", "count": "2"}"""),
+            "count が大きすぎる" to entries("""{"rule": "UnexpectedFile", "path": "a", "count": 99999999999}"""),
+            "role が文字列でない" to entries("""{"rule": "UnexpectedFile", "path": "a", "role": 1}"""),
+            "version が 0" to """{"version": 0, "checks": {}}""",
+            "version が負" to """{"version": -1, "checks": {}}""",
+        )
+        for ((name, text) in unreadable) {
+            assertTrue("$name -> ${parseBaselineText(text)}", parseBaselineText(text) is BaselineReading.Unreadable)
+        }
+    }
+
+    fun `test 別の check の項目や role 違いの項目は別のキーで 読める`() {
+        val text = """{"version": 1, "checks": {
+            "me.tbsten.katachi.check.LayoutCheck": [{"rule": "UnexpectedFile", "path": "a"}, {"rule": "UnexpectedFile", "path": "a", "role": "r"}, {"rule": "UnexpectedFile", "path": "b", "role": null, "count": 3}],
+            "other.Check": [{"rule": "UnexpectedFile", "path": "a"}, {"rule": "UnexpectedFile", "path": "zzz"}]
+        }}"""
+        val ledger = read(text)
         assertTrue(ledger.holdsFile("a"))
+        assertTrue(ledger.holdsFile("b"))
+        // Another check's UnexpectedFile is not the layout's.
+        assertFalse(ledger.holdsFile("zzz"))
     }
 
     fun `test ファイルが無ければ Missing 読めれば Read`() {
@@ -95,14 +128,15 @@ internal class BaselineParserTest : TestCase() {
         assertFalse(ledger.holdsFile("src/Mismatch.kt"))
     }
 
-    fun `test UnexpectedDirectory の項目はそのディレクトリとその下のファイルを許容し 名前が前方一致なだけの別ディレクトリは許容しない`() {
+    fun `test UnexpectedDirectory の項目はそのディレクトリと完全に等しい path だけ 下のファイルや祖先は許容しない`() {
         val ledger = read(version1)
-        assertTrue(ledger.holdsDirectoryAbove("data/src/main/old"))
-        assertTrue(ledger.holdsDirectoryAbove("data/src/main/old/Deep/File.kt"))
-        assertFalse(ledger.holdsDirectoryAbove("data/src/main/older/File.kt"))
-        assertFalse(ledger.holdsDirectoryAbove("data/src/main"))
+        assertTrue(ledger.holdsDirectory("data/src/main/old"))
+        assertFalse(ledger.holdsDirectory("data/src/main/old/Deep/File.kt"))
+        assertFalse(ledger.holdsDirectory("data/src/main/old/Deep"))
+        assertFalse(ledger.holdsDirectory("data/src/main/older"))
+        assertFalse(ledger.holdsDirectory("data/src/main"))
         // An UnexpectedFile entry never holds a directory, and a directory entry never holds a file by exact match.
-        assertFalse(ledger.holdsDirectoryAbove("src/Unknown.kt"))
+        assertFalse(ledger.holdsDirectory("src/Unknown.kt"))
         assertFalse(ledger.holdsFile("data/src/main/old"))
     }
 }

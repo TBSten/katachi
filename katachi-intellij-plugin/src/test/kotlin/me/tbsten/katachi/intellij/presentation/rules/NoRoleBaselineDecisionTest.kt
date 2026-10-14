@@ -35,10 +35,31 @@ class NoRoleBaselineDecisionTest {
     }
 
     @Test
-    fun `知らないディレクトリの下のファイルは UnexpectedDirectory の項目で許容され UnexpectedFile の項目では許容されない`() {
-        assertEquals(BaselineVerdict.Held("UnexpectedDirectory"), verdict(STRAY, ledger("UnexpectedDirectory" to "$USE_CASE_DIRECTORY/helpers")))
-        assertEquals(BaselineVerdict.Held("UnexpectedDirectory"), verdict(STRAY, ledger("UnexpectedDirectory" to USE_CASE_DIRECTORY)))
+    fun `UnexpectedDirectory の項目は一番上の知らないディレクトリと等しいときだけ許容する`() {
+        val top = "$USE_CASE_DIRECTORY/helpers"
+        val deep = "$top/a/b/File.kt"
+        val cases = listOf(
+            "項目が一番上の知らないディレクトリと等しい" to (STRAY to top),
+            "深い場所のファイルでも一番上の知らないディレクトリと等しい" to (deep to top),
+            "項目がそれより深いディレクトリ" to (deep to "$top/a"),
+            "項目がそれより深いディレクトリ 2 段" to (deep to "$top/a/b"),
+            "項目が既知の祖先" to (STRAY to USE_CASE_DIRECTORY),
+            "項目が名前だけ前方一致する別のディレクトリ" to (STRAY to "$USE_CASE_DIRECTORY/help"),
+            "項目がファイル自身の path" to (STRAY to STRAY),
+        )
+        for ((name, case) in cases) {
+            val expected = if (case.second == top) BaselineVerdict.Held("UnexpectedDirectory") else BaselineVerdict.NotHeld
+            assertEquals(name, expected, verdict(case.first, ledger("UnexpectedDirectory" to case.second)))
+        }
         assertEquals(BaselineVerdict.NotHeld, verdict(STRAY, ledger("UnexpectedFile" to STRAY)))
+    }
+
+    @Test
+    fun `baseline ファイル自身への UnexpectedFile は項目があっても許容しない`() {
+        val input = noRoleInput(MISNAMED, baseline = ledger("UnexpectedFile" to MISNAMED))
+        val named = input.copy(architecture = input.architecture?.copy(baseline = MISNAMED))
+        assertEquals(BaselineVerdict.NotHeld, (decideNoRoleNotification(named) as NoRoleDecision.NoRole).baseline)
+        assertEquals(BaselineVerdict.Held("UnexpectedFile"), (decideNoRoleNotification(input) as NoRoleDecision.NoRole).baseline)
     }
 
     @Test

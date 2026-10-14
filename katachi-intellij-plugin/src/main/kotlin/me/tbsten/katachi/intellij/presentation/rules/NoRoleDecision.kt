@@ -111,28 +111,31 @@ internal fun decideNoRoleNotification(input: NoRoleInput): NoRoleDecision {
         relativePath = roles.relativePath,
         canOpenDefinition = input.architectureSite is ResolvedSiteView.Found,
         captureMismatch = captureMismatch,
-        baseline = baselineVerdictOf(input.baseline, roles.outcome, roles.relativePath),
+        baseline = baselineVerdictOf(input.baseline, roles.outcome, roles.relativePath, input.architecture?.baseline),
     )
 }
 
 /**
  * How katachi's baseline treats the file with [outcome]. The rule it is filed under follows what the test would report:
  * `Unexpected` is `UnexpectedFile`, a file under a directory no role knows is held by that directory's `UnexpectedDirectory`
- * entry, and `CaptureMismatch` by its own.
+ * entry only when that directory is the very one katachi reports (the top-most unknown one), and `CaptureMismatch` by its
+ * own. The baseline file itself ([baselinePath]) is never held: katachi does not let an entry allow its own file.
  *
  * ```kotlin
- * baselineVerdictOf(BaselineReading.NotConfigured, MatchOutcome.Unexpected, "src/Foo.kt")   // NotHeld
+ * baselineVerdictOf(BaselineReading.NotConfigured, MatchOutcome.Unexpected, "src/Foo.kt", null)   // NotHeld
  * ```
  */
-internal fun baselineVerdictOf(reading: BaselineReading, outcome: MatchOutcome, relativePath: String): BaselineVerdict = when (reading) {
+internal fun baselineVerdictOf(reading: BaselineReading, outcome: MatchOutcome, relativePath: String, baselinePath: String?): BaselineVerdict = when (reading) {
     BaselineReading.NotConfigured -> BaselineVerdict.NotHeld
-    is BaselineReading.Read -> reading.ledger.heldRuleOf(outcome, relativePath)?.let(BaselineVerdict::Held) ?: BaselineVerdict.NotHeld
+    is BaselineReading.Read ->
+        if (outcome == MatchOutcome.Unexpected && relativePath == baselinePath) BaselineVerdict.NotHeld
+        else reading.ledger.heldRuleOf(outcome, relativePath)?.let(BaselineVerdict::Held) ?: BaselineVerdict.NotHeld
     BaselineReading.Missing, is BaselineReading.UnknownVersion, is BaselineReading.Unreadable -> BaselineVerdict.Unknown
 }
 
 private fun BaselineLedger.heldRuleOf(outcome: MatchOutcome, relativePath: String): String? = when {
     outcome == MatchOutcome.Unexpected && holdsFile(relativePath) -> BaselineLedger.RULE_UNEXPECTED_FILE
-    outcome is MatchOutcome.UnexpectedUnder && holdsDirectoryAbove(relativePath) -> BaselineLedger.RULE_UNEXPECTED_DIRECTORY
+    outcome is MatchOutcome.UnexpectedUnder && holdsDirectory(outcome.directory) -> BaselineLedger.RULE_UNEXPECTED_DIRECTORY
     outcome is MatchOutcome.CaptureMismatch && holdsCaptureMismatch(relativePath) -> BaselineLedger.RULE_CAPTURE_MISMATCH
     else -> null
 }

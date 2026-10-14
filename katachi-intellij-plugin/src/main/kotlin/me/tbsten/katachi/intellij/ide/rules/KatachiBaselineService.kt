@@ -36,11 +36,16 @@ internal class KatachiBaselineService(private val project: Project) {
     fun reading(file: Path): BaselineReading {
         val key = file.toAbsolutePath().normalize()
         val stamp = stampOf(key)
-        remembered[key]?.takeIf { it.stamp == stamp }?.let { return it.reading }
-        val reading = readBaselineFile(key)
-        warnIfUnusable(key, reading)
-        remembered[key] = Remembered(stamp, reading)
-        return reading
+        // compute is atomic per key: two threads asking at once read once, so the WARN is logged once per read.
+        return remembered.compute(key) { _, current ->
+            if (current != null && current.stamp == stamp) {
+                current
+            } else {
+                val reading = readBaselineFile(key)
+                warnIfUnusable(key, reading)
+                Remembered(stamp, reading)
+            }
+        }!!.reading
     }
 
     /** A baseline file changed: forget what was read and draw the notifications again. */
