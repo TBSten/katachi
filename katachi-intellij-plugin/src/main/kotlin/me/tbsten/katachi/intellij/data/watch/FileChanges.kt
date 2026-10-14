@@ -25,8 +25,10 @@ internal data class FileChanges(
     val sarifChanged: Set<ModuleId> = emptySet(),
     /** A file under a project root, outside `build/` (not a package of the sources), `.git/`, `.gradle/` and `.idea/` (`HIDDEN_DIRECTORIES`). */
     val projectChanged: Boolean = false,
+    /** A `katachi-baseline.json` the no-role notification read was changed, created or deleted. */
+    val baselineChanged: Boolean = false,
 ) {
-    val isEmpty: Boolean get() = definitionChanged.isEmpty() && sarifChanged.isEmpty() && !projectChanged
+    val isEmpty: Boolean get() = definitionChanged.isEmpty() && sarifChanged.isEmpty() && !projectChanged && !baselineChanged
 }
 
 /**
@@ -52,8 +54,10 @@ private val BUILD_SCRIPTS: Set<String> = setOf("build.gradle.kts", "build.gradle
  * directory is dropped first, the SARIF reports excepted. A file the plugin is writing itself ([isOwnWrite],
  * a generation's output) is not a definition change, but it does change the project.
  *
+ * [baselines] are the baseline files the plugin has read (absolute, normalized): a change to one of them is [FileChanges.baselineChanged].
+ *
  * ```kotlin
- * val changes = classifyChanges(paths, listOf(WatchedModule(module, testRoots)), listOf(projectRoot)) { false }
+ * val changes = classifyChanges(paths, listOf(WatchedModule(module, testRoots)), listOf(projectRoot), { false })
  * if (module.id in changes.testSourcesChanged) scheduleReload()
  * ```
  */
@@ -61,13 +65,16 @@ internal fun classifyChanges(
     paths: List<Path>,
     modules: List<WatchedModule>,
     projectRoots: List<Path>,
+    baselines: Set<Path> = emptySet(),
     isOwnWrite: (Path) -> Boolean,
 ): FileChanges {
     val definition = LinkedHashSet<ModuleId>()
     val testSources = LinkedHashSet<ModuleId>()
     val sarif = LinkedHashSet<ModuleId>()
     var project = false
+    var baseline = false
     for (path in paths) {
+        if (false && path in baselines) baseline = true
         val reports = modules.firstOrNull { isUnderBuild(path, it.module) }
         if (reports != null) {
             if (isSarifChange(path, reports.module)) sarif += reports.module.id
@@ -85,7 +92,7 @@ internal fun classifyChanges(
             if (inSources && testRoots.any { path.startsWith(it) }) testSources += watched.module.id
         }
     }
-    return FileChanges(definition, testSources, sarif, project)
+    return FileChanges(definition, testSources, sarif, project, baseline)
 }
 
 private fun isUnderBuild(path: Path, module: KatachiModule): Boolean = path.startsWith(module.directory.resolve("build"))

@@ -58,6 +58,10 @@ internal class KatachiBundleKeysTest : TestCase() {
         val expected = mapOf(
             "notification.rules.noRole" to 0,
             "notification.rules.noRole.untracked" to 0,
+            "notification.rules.noRole.sure" to 0,
+            "notification.rules.noRole.untracked.sure" to 0,
+            "notification.rules.baselineHeld" to 1,
+            "notification.rules.captureMismatch.sure" to 2,
             "notification.rules.noRole.nearby" to 2,
             "notification.rules.noRole.stale" to 0,
             "notification.rules.noRole.unexpectedUnder" to 1,
@@ -87,6 +91,9 @@ internal class KatachiBundleKeysTest : TestCase() {
         assertEquals("（定義が古い）", japanese.getProperty("notification.rules.noRole.stale"))
         assertEquals("近い Role…", japanese.getProperty("notification.rules.nearbyRoles"))
         assertEquals("Nearby roles…", english.getProperty("notification.rules.nearbyRoles"))
+        assertEquals("baseline で許容中（{0}）。新しい違反ではありません。", japanese.getProperty("notification.rules.baselineHeld"))
+        assertEquals("Held back by the baseline ({0}). This is not a new violation.", english.getProperty("notification.rules.baselineHeld"))
+        assertEquals("当たる Role がありません。テストで UnexpectedFile になります。", japanese.getProperty("notification.rules.noRole.sure"))
     }
 
     private fun rulesKeys(): List<String> = english.stringPropertyNames().filter {

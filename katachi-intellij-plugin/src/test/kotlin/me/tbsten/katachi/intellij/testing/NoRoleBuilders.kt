@@ -1,5 +1,6 @@
 package me.tbsten.katachi.intellij.testing
 
+import me.tbsten.katachi.intellij.data.baseline.BaselineReading
 import me.tbsten.katachi.intellij.data.definition.DefinitionMatcher
 import me.tbsten.katachi.intellij.model.ArchitectureModel
 import me.tbsten.katachi.intellij.model.DeclarationSiteRef
@@ -26,12 +27,13 @@ internal const val MODEL_DIRECTORY: String = "core/domain/src/main/kotlin/com/ex
  * [USE_CASE_DIRECTORY], `domain.Model` holds `*.kt` in [MODEL_DIRECTORY], `Docs` ignores `docs`. Matching goes through the real
  * [DefinitionMatcher], so a test answers with what the plugin answers, not with a hand-made [FileRoles].
  */
-internal fun noRoleSnapshot(files: String = ArchitectureModel.FILES_GIT_TRACKED): DefinitionSnapshot = definitionSnapshot(
+internal fun noRoleSnapshot(files: String = ArchitectureModel.FILES_GIT_TRACKED, baseline: String? = null): DefinitionSnapshot = definitionSnapshot(
     definitionModel(
         roleModel("domain.UseCase", layoutEntry("$USE_CASE_DIRECTORY/*UseCase.kt")),
         roleModel("domain.Model", layoutEntry("$MODEL_DIRECTORY/*.kt")),
         roleModel("Docs", layoutEntry("docs", LayoutEntryKind.Ignore)),
         files = files,
+        baseline = baseline,
     ).let { it.copy(architecture = it.architecture.copy(declaredAt = ARCHITECTURE_SITE)) },
 )
 
@@ -67,6 +69,7 @@ internal fun noRoleInput(
         ResolvedSiteView.Found("${nearby.role.name}Role.kt", 10 + index)
     },
     architectureSite: ResolvedSiteView? = ResolvedSiteView.Found("Architecture.kt", 3),
+    baseline: BaselineReading = BaselineReading.NotConfigured,
 ): NoRoleInput = NoRoleInput(
     file = file,
     roles = roles,
@@ -77,4 +80,5 @@ internal fun noRoleInput(
     memory = memory,
     nearbySites = nearbySites,
     architectureSite = architectureSite,
+    baseline = baseline,
 )

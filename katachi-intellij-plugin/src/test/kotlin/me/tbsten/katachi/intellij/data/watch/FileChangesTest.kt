@@ -103,4 +103,15 @@ class FileChangesTest {
             }
         }
     }
+
+    @Test
+    fun `読んだ baseline のファイルの変更だけが baselineChanged になる`() {
+        val baseline = root.resolve("katachi-baseline.json")
+        fun classifyWith(vararg paths: String) = classifyChanges(paths.map { root.resolve(it) }, watched, listOf(root), setOf(baseline)) { false }
+
+        assertTrue(classifyWith("katachi-baseline.json").baselineChanged)
+        assertFalse(classifyWith("docs/katachi-baseline.json", "src/Foo.kt").baselineChanged)
+        assertFalse(classify("katachi-baseline.json").baselineChanged)
+        assertFalse("a change that touches only a baseline is still not empty", classifyWith("katachi-baseline.json").isEmpty)
+    }
 }

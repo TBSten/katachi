@@ -3,12 +3,14 @@ package me.tbsten.katachi.intellij.ide.rules
 import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
+import me.tbsten.katachi.intellij.data.baseline.BaselineReading
 import me.tbsten.katachi.intellij.ide.KatachiSettings
 import me.tbsten.katachi.intellij.ide.definition.DefinitionModelService
 import me.tbsten.katachi.intellij.ide.definition.DefinitionPorts
 import me.tbsten.katachi.intellij.ide.notification.EditorNotificationMemoryService
 import me.tbsten.katachi.intellij.presentation.rules.RuleSettings
 import me.tbsten.katachi.intellij.presentation.rules.VcsTracking
+import java.nio.file.Path
 
 /**
  * What the "no role holds this file" notification reads of one project, as `NotificationPorts` is for the template
@@ -32,6 +34,8 @@ internal class RulesPorts(
     /** What the VCS says once it has scanned the file, `null` before: what a drawn notification is compared with. */
     val vcsIfSettled: (VirtualFile) -> VcsTracking? = vcs,
     val effects: () -> RuleEffects,
+    /** What the baseline file [baseline] names (relative to the definition's project root [projectRoot]) says. Reads the disk. */
+    val baseline: (projectRoot: Path, baseline: String) -> BaselineReading = { _, _ -> BaselineReading.Missing },
 ) {
     companion object {
         fun of(project: Project): RulesPorts = RulesPorts(
@@ -41,6 +45,7 @@ internal class RulesPorts(
             vcs = { file -> vcsTrackingOf(project, file) },
             vcsIfSettled = { file -> settledVcsTrackingOf(project, file) },
             effects = { RuleEffectsImpl(project) },
+            baseline = { root, baseline -> project.service<KatachiBaselineService>().reading(root.resolve(baseline)) },
         )
     }
 }

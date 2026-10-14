@@ -1,5 +1,6 @@
 package me.tbsten.katachi.intellij.ide.notification
 
+import com.intellij.openapi.components.service
 import com.intellij.openapi.extensions.impl.ExtensionPointImpl
 import com.intellij.openapi.fileEditor.FileEditor
 import com.intellij.openapi.fileEditor.FileEditorManager
@@ -30,6 +31,7 @@ import me.tbsten.katachi.intellij.ide.KatachiSettings
 import me.tbsten.katachi.intellij.ide.LoadAnswer
 import me.tbsten.katachi.intellij.ide.definition.DefinitionModelService
 import me.tbsten.katachi.intellij.ide.definition.FakeDefinitionModelService
+import me.tbsten.katachi.intellij.ide.rules.KatachiBaselineService
 import me.tbsten.katachi.intellij.ide.rules.RulesPorts
 import me.tbsten.katachi.intellij.ide.rules.ruleSettingsOf
 import me.tbsten.katachi.intellij.presentation.rules.VcsTracking
@@ -137,6 +139,8 @@ internal abstract class EditorNotificationTestBase : EntryServiceTestBase() {
         vcs = { vcsOf(it) },
         vcsIfSettled = { file -> vcsSettledOf.let { settled -> if (settled == null) vcsOf(file) else settled(file) } },
         effects = { ruleEffects },
+        // The baseline lives in the test's real directory, not under the fake definition's root.
+        baseline = { _, baseline -> project.service<KatachiBaselineService>().reading(root.resolve(baseline)) },
     )
 
     @Synchronized

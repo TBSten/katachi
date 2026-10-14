@@ -1,5 +1,6 @@
 package me.tbsten.katachi.intellij.presentation.rules
 
+import me.tbsten.katachi.intellij.data.baseline.BaselineReading
 import me.tbsten.katachi.intellij.model.ArchitectureModel
 import me.tbsten.katachi.intellij.model.DefinitionState
 import me.tbsten.katachi.intellij.model.FileRoles
@@ -60,4 +61,6 @@ internal data class NoRoleInput(
     val nearbySites: List<ResolvedSiteView>,
     /** Where `architecture { }` is written; `null` when it was not captured or not found. */
     val architectureSite: ResolvedSiteView?,
+    /** What the project's baseline file says; [BaselineReading.NotConfigured] when `architecture { }` names none. */
+    val baseline: BaselineReading = BaselineReading.NotConfigured,
 )

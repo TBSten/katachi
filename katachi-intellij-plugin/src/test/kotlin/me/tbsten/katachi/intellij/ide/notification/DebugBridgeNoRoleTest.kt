@@ -39,7 +39,7 @@ internal class DebugBridgeNoRoleTest : NoRoleTestBase() {
         val nearest = rolesFor(STRAY).nearby.first()
         assertEquals("file=Paging.kt", lines[0])
         assertEquals("noRole=shown", lines[1])
-        assertEquals("text=${KatachiBundle.message("notification.rules.noRole")}", lines[2])
+        assertEquals("text=${KatachiBundle.message("notification.rules.noRole.sure")}", lines[2])
         assertTrue(lines.toString(), lines[3].startsWith("nearby=") && nearest.role.qualifiedName in lines[3])
         assertEquals(
             listOf("link=${KatachiBundle.message("notification.rules.nearbyRoles")}", "link=${KatachiBundle.message("notification.rules.openDefinition")}"),
@@ -66,7 +66,7 @@ internal class DebugBridgeNoRoleTest : NoRoleTestBase() {
         val editor = openAnswered(STRAY)
         assertNotNull(noRolePanelOf(editor))
 
-        assertEquals("text=${KatachiBundle.message("notification.rules.noRole.untracked")}", describe().single { it.startsWith("text=") })
+        assertEquals("text=${KatachiBundle.message("notification.rules.noRole.untracked.sure")}", describe().single { it.startsWith("text=") })
     }
 
     fun `test 定義が古いときは文末に古さの注記が付いて返り読み込み直すと消える`() {
@@ -82,7 +82,7 @@ internal class DebugBridgeNoRoleTest : NoRoleTestBase() {
         fake.emit(ready())
         answer(STRAY)
         awaitNoRoleText("fresh again", editor, expectedText(STRAY))
-        assertEquals("text=${KatachiBundle.message("notification.rules.noRole")}", describe().single { it.startsWith("text=") })
+        assertEquals("text=${KatachiBundle.message("notification.rules.noRole.sure")}", describe().single { it.startsWith("text=") })
     }
 
     fun `test 設定で切った通知は none に変わる`() {

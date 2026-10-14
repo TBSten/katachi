@@ -105,9 +105,10 @@ internal fun definitionModel(
     files: String = ArchitectureModel.FILES_GIT_TRACKED,
     projectRoot: Path = DEFINITION_ROOT,
     generatedAt: Instant = DEFINITION_INSTANT,
+    baseline: String? = null,
 ): DefinitionModel = DefinitionModel(
     projectRoot = projectRoot,
-    architecture = ArchitectureModel(declaredAt = null, files = files, baseline = null),
+    architecture = ArchitectureModel(declaredAt = null, files = files, baseline = baseline),
     groups = emptyList(),
     roles = roles.toList(),
     problems = emptyList(),

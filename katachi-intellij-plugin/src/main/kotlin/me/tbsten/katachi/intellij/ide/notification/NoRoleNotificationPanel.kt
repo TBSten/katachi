@@ -5,6 +5,7 @@ import com.intellij.openapi.util.text.StringUtil
 import com.intellij.ui.EditorNotificationPanel
 import com.intellij.ui.HyperlinkLabel
 import me.tbsten.katachi.intellij.ide.KatachiBundle
+import me.tbsten.katachi.intellij.presentation.rules.BaselineVerdict
 import me.tbsten.katachi.intellij.presentation.rules.NoRoleDecision
 import me.tbsten.katachi.intellij.presentation.rules.shortDirectory
 import javax.swing.JComponent
@@ -33,11 +34,22 @@ internal class NoRoleLines(val first: String, val second: String?, val tooltip: 
 
 internal fun noRoleLines(decision: NoRoleDecision.NoRole): NoRoleLines {
     val mismatch = decision.captureMismatch
+    val verdict = decision.baseline
+    // Held by the baseline: a weak note, not the warning's two lines. The test does not fail on this file.
+    if (verdict is BaselineVerdict.Held) {
+        return NoRoleLines(
+            first = KatachiBundle.message("notification.rules.baselineHeld", verdict.rule),
+            second = null,
+            tooltip = decision.unexpectedUnder?.let { KatachiBundle.message("notification.rules.noRole.unexpectedUnder", it) },
+        )
+    }
+    // The baseline was read (or there is none) and does not hold the file: the test does fail, so no "unless".
+    val sure = verdict == BaselineVerdict.NotHeld
     val main = when {
         // The same first sentence as katachi's `[CaptureMismatch]` block, so the IDE and the test say one thing.
-        mismatch != null -> KatachiBundle.message("notification.rules.captureMismatch", mismatch.roleName, mismatch.disagreeingNames.joinToString(", "))
-        decision.untracked -> KatachiBundle.message("notification.rules.noRole.untracked")
-        else -> KatachiBundle.message("notification.rules.noRole")
+        mismatch != null -> KatachiBundle.message(if (sure) "notification.rules.captureMismatch.sure" else "notification.rules.captureMismatch", mismatch.roleName, mismatch.disagreeingNames.joinToString(", "))
+        decision.untracked -> KatachiBundle.message(if (sure) "notification.rules.noRole.untracked.sure" else "notification.rules.noRole.untracked")
+        else -> KatachiBundle.message(if (sure) "notification.rules.noRole.sure" else "notification.rules.noRole")
     }
     // A sentence ending in "." needs a space before the note, one ending in "。" does not.
     val stale = if (decision.stale) (if (main.last().code < ASCII_LIMIT) " " else "") + KatachiBundle.message("notification.rules.noRole.stale") else ""
@@ -55,10 +67,10 @@ internal fun noRoleLines(decision: NoRoleDecision.NoRole): NoRoleLines {
 }
 
 /** The panel of the no-role notification, which keeps the plain [lines] it shows: [KatachiDebugBridge.describeNoRole] reads them, not the escaped HTML of the label. */
-internal class NoRolePanel(val owner: FileEditor, val lines: NoRoleLines) : KatachiNotificationPanel(owner, Status.Warning)
+internal class NoRolePanel(val owner: FileEditor, val lines: NoRoleLines, status: EditorNotificationPanel.Status = EditorNotificationPanel.Status.Warning) : KatachiNotificationPanel(owner, status)
 
 /**
- * The panel of the "no role holds this file" notification: a warning, the lines of [noRoleLines], then
+ * The panel of the "no role holds this file" notification: a warning (Info when the baseline holds the file back), the lines of [noRoleLines], then
  * [Nearby roles...] (always: the draft of a role is in its popup), [Open definition] (only when `architecture { }` can be
  * opened), ⚙ and ×. Built on the EDT from a decision made in the background; it decides nothing itself.
  *
@@ -70,7 +82,8 @@ internal class NoRolePanel(val owner: FileEditor, val lines: NoRoleLines) : Kata
  */
 internal fun noRoleNotificationPanel(editor: FileEditor, decision: NoRoleDecision.NoRole, actions: NoRolePanelActions): EditorNotificationPanel {
     val lines = noRoleLines(decision)
-    val panel = NoRolePanel(editor, lines)
+    // A file the baseline holds back is not a violation: Info, not Warning.
+    val panel = NoRolePanel(editor, lines, if (decision.baseline is BaselineVerdict.Held) EditorNotificationPanel.Status.Info else EditorNotificationPanel.Status.Warning)
     NoRolePanels.register(panel)
     panel.text = if (lines.second == null) lines.first else "<html>${StringUtil.escapeXmlEntities(lines.first)}<br>${StringUtil.escapeXmlEntities(lines.second)}</html>"
     lines.tooltip?.let { panel.setTextTooltip("<html>${StringUtil.escapeXmlEntities(it)}</html>") }
