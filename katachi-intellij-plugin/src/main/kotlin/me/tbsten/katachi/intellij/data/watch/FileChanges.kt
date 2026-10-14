@@ -74,7 +74,7 @@ internal fun classifyChanges(
     var project = false
     var baseline = false
     for (path in paths) {
-        if (false && path in baselines) baseline = true
+        if (path in baselines) baseline = true
         val reports = modules.firstOrNull { isUnderBuild(path, it.module) }
         if (reports != null) {
             if (isSarifChange(path, reports.module)) sarif += reports.module.id
