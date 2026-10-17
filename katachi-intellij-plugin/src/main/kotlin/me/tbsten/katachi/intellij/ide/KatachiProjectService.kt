@@ -46,6 +46,7 @@ import me.tbsten.katachi.intellij.ide.definition.DeclarationSiteResolver
 import me.tbsten.katachi.intellij.ide.definition.DefinitionStatePublisher
 import me.tbsten.katachi.intellij.ide.definition.RefreshReason
 import me.tbsten.katachi.intellij.ide.entry.EntryEffectsImpl
+import me.tbsten.katachi.intellij.model.DefinitionErrors
 import me.tbsten.katachi.intellij.model.DefinitionState
 import me.tbsten.katachi.intellij.model.DetectionResult
 import me.tbsten.katachi.intellij.model.DescriptionSnapshot
@@ -177,6 +178,9 @@ internal class KatachiProjectService(
      * path. `KatachiDefinitionService` publishes it to the two features.
      */
     val definitions: StateFlow<DefinitionState> = definitionPublisher.state
+
+    /** The mistakes katachi found in the definition, from the same changes as [definitions] (ide-authoring design 2.3). */
+    val definitionErrors: StateFlow<DefinitionErrors> = definitionPublisher.errors
 
     /** Where the definition's `FileName.kt:NN` are, among the definition modules' test sources (design 4.6). */
     val siteResolver: DeclarationSiteResolver = DeclarationSiteResolver(project, scope)

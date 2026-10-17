@@ -4,7 +4,7 @@ import me.tbsten.katachi.intellij.model.DeclarationSiteRef
 import me.tbsten.katachi.intellij.model.SarifLocation
 import me.tbsten.katachi.intellij.model.ViolationModel
 
-/** Where a violation is drawn in the source file it points at (design 2.5). */
+/** Where a violation is drawn in the file it points at (ide-gutter design 2.5; the definition side is ide-authoring design 2.4). */
 internal sealed interface AnnotationTarget {
     /**
      * The name of a declaration of the file ([name] is `Outer.member` for a member). [line] is where the check saw it
@@ -19,7 +19,7 @@ internal sealed interface AnnotationTarget {
     /** The whole file: a banner over the editor. A violation without a line or a declaration in the file (a missing declaration, an unchecked file). */
     data object FileLevel : AnnotationTarget
 
-    /** Not drawn here: the notification of a file no role holds (#13), or a violation of the definition side. */
+    /** Not drawn here: the notification of a file no role holds (#13), or a violation of the definition side that names no line. */
     data object Skipped : AnnotationTarget
 }
 
@@ -39,17 +39,20 @@ internal sealed interface RuleSite {
  * Which violations the source file draws and where (design 2.5, the source side). Pure: [KatachiViolationAnnotator] gives
  * it the violations whose first location is the file and puts the targets on the PSI.
  *
- * Only `UnsatisfiedFileConstraint` and `UncheckedFile` are drawn here. The violations of the definition side
- * (`MissingFile`, `MissingDescription` … point at the definition file) and `UnexpectedFile` are not.
+ * `UnsatisfiedFileConstraint` and `UncheckedFile` are drawn in the source file. The violations of the definition side
+ * (`MissingFile`, `MissingDescription`, `AmbiguousLayout`, `UncheckedFileConstraint`) point at the definition file and
+ * are drawn on the line the check reported ([DEFINITION_SIDE]); one without a line, and `UnexpectedFile`, are not.
  *
  * ```kotlin
  * val drawn = ViolationBinding.bindSourceSide(violations.forFile(file)).filter { it.target != AnnotationTarget.Skipped }
  * ```
  */
 internal object ViolationBinding {
-    // TODO(ide-gutter): the violations of the definition side (MissingFile, MissingDescription, UncheckedFileConstraint …) are drawn in the definition file when that side is built (deferred-definition-side.md).
     const val UNSATISFIED_FILE_CONSTRAINT: String = "UnsatisfiedFileConstraint"
     const val UNCHECKED_FILE: String = "UncheckedFile"
+
+    /** The violations whose `locations[0]` is a line of the definition file (they are listed by `KatachiViolationsService.forFile` for it). */
+    val DEFINITION_SIDE: Set<String> = setOf("MissingFile", "MissingDescription", "AmbiguousLayout", "UncheckedFileConstraint")
     private const val MISSING_PREFIX: String = "Missing:"
 
     fun bindSourceSide(violations: List<ViolationModel>): List<BoundViolation> =
@@ -69,6 +72,7 @@ internal object ViolationBinding {
                 }
             }
             UNCHECKED_FILE -> AnnotationTarget.FileLevel
+            in DEFINITION_SIDE -> line?.let { AnnotationTarget.AtLine(it) } ?: AnnotationTarget.Skipped
             else -> AnnotationTarget.Skipped
         }
     }

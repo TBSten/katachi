@@ -113,6 +113,7 @@ internal object GutterTooltips {
             is GradleFailure.TaskNotFound -> "Gradle does not know the task, so the project needs a sync"
             is GradleFailure.ArchitectureNotSet -> "katachi { architecture } is not set"
             is GradleFailure.ProcessorRejected -> "katachi refused the command line"
+            is GradleFailure.DefinitionRejected -> "katachi found the definition wrong"
             is GradleFailure.Other -> oneLine(gradle.details.firstOrNull { it.isNotBlank() }) ?: "Gradle failed"
         }
         is LoadFailure.JsonMissing -> "the task wrote no definition JSON"

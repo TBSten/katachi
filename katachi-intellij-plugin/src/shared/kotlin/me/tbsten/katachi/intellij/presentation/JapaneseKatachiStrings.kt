@@ -139,4 +139,8 @@ internal object JapaneseKatachiStrings : KatachiStrings {
     override val retryRemaining = "残りをやり直す"
     override val continueGenerating = "続けて生成"
     override val uncheckAll = "チェックを外す"
+
+    // ---- L-A: ide-authoring ----
+    override val definitionRejected = "katachi が定義を読めませんでした。"
+    override val definitionRejectedHint = "誤りのある行は定義ファイルに下線で示しています。メッセージは詳細にあります。"
 }

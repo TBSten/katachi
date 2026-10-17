@@ -70,6 +70,23 @@
         <codeInsight.lineMarkerProvider language="" implementationClass="me.tbsten.katachi.intellij.ide.gutter.KatachiFileLineMarkerProvider"/>
         <!-- The violations of the last check, under the declaration they reject (ide-gutter design 2.5); Problems lists them too. -->
         <externalAnnotator language="kotlin" implementationClass="me.tbsten.katachi.intellij.ide.gutter.annotator.KatachiViolationAnnotator"/>
+
+        <!-- L-A (ide-authoring): completion of the names in the strings of a definition -->
+        <!-- captureValue("|"), a templateSet's template("|") and arg("|"). First, so that the names are on top; it never stops Kotlin's own. -->
+        <completion.contributor language="kotlin" order="first" implementationClass="me.tbsten.katachi.intellij.ide.authoring.completion.DefinitionCompletionContributor"/>
+        <!-- Kotlin stops an automatic popup inside a string; not inside these. -->
+        <completion.confidence language="kotlin" order="before kotlinSkipAutopopupInStrings" implementationClass="me.tbsten.katachi.intellij.ide.authoring.completion.DefinitionCompletionConfidence"/>
+        <!-- The quote that opens such a string opens the popup. -->
+        <typedHandler implementation="me.tbsten.katachi.intellij.ide.authoring.completion.DefinitionTypedHandler"/>
+        <!-- What katachi found wrong with the definition (ide-authoring design 2.4): underlined where it was written, and a banner in the definition module's test sources. -->
+        <externalAnnotator language="kotlin" implementationClass="me.tbsten.katachi.intellij.ide.authoring.errors.DefinitionErrorAnnotator"/>
+        <editorNotificationProvider implementation="me.tbsten.katachi.intellij.ide.authoring.errors.DefinitionErrorNotificationProvider"/>
+        <!-- The ◆ of a definition file: a role, and a .template { } (ide-authoring design 4.3). Its own switch in Settings | Editor | General | Gutter Icons. -->
+        <codeInsight.lineMarkerProvider language="kotlin" implementationClass="me.tbsten.katachi.intellij.ide.authoring.gutter.KatachiDefinitionLineMarkerProvider"/>
+        <!-- How many files a layout line holds, at the end of the line (design 4.3), and its group in Settings | Editor | Inlay Hints | Code Vision. -->
+        <codeInsight.daemonBoundCodeVisionProvider implementation="me.tbsten.katachi.intellij.ide.authoring.codevision.EntryFilesCodeVisionProvider"/>
+        <config.codeVisionGroupSettingProvider implementation="me.tbsten.katachi.intellij.ide.authoring.codevision.KatachiCodeVisionGroup"/>
+        <!-- end of L-A -->
     </extensions>
 
     <actions>

@@ -9,9 +9,11 @@ import me.tbsten.katachi.intellij.data.definition.DefinitionLookup
 import me.tbsten.katachi.intellij.ide.KatachiProjectService
 import me.tbsten.katachi.intellij.ide.sdkCall
 import me.tbsten.katachi.intellij.model.DeclarationSiteRef
+import me.tbsten.katachi.intellij.model.DefinitionErrors
 import me.tbsten.katachi.intellij.model.DefinitionSnapshot
 import me.tbsten.katachi.intellij.model.DefinitionState
 import me.tbsten.katachi.intellij.model.FileRoles
+import me.tbsten.katachi.intellij.model.KatachiModule
 import me.tbsten.katachi.intellij.model.MatchOutcome
 import me.tbsten.katachi.intellij.model.ModuleId
 import me.tbsten.katachi.intellij.model.RoleFileDeclarations
@@ -45,6 +47,8 @@ internal class KatachiDefinitionService(
 
     override val state: StateFlow<DefinitionState> get() = projectService.definitions
 
+    override val definitionErrors: StateFlow<DefinitionErrors> get() = projectService.definitionErrors
+
     override fun ensureLoaded() = projectService.ensureLoaded()
 
     override fun refresh(reason: RefreshReason) = projectService.refreshDefinition(reason)
@@ -66,9 +70,23 @@ internal class KatachiDefinitionService(
     override val definitions: List<DefinitionSnapshot> get() = state.value.answer?.definitions.orEmpty()
 
     override fun resolve(module: ModuleId, site: DeclarationSiteRef): ResolvedSite {
-        val snapshot = definitionOf(module) ?: return ResolvedSite.Unresolved("no definition of $module is loaded")
-        return projectService.siteResolver.resolve(snapshot.module, site)
+        val known = moduleOf(module) ?: return ResolvedSite.Unresolved("no definition module $module is known")
+        return projectService.siteResolver.resolve(known, site)
     }
+
+    override fun definitionModuleOf(file: VirtualFile): ModuleId? {
+        val path = pathOf(file) ?: return null
+        return knownModules().firstOrNull { module -> projectService.siteResolver.testRootsOf(module).any { path.startsWith(it) } }?.id
+    }
+
+    /**
+     * The definition modules the project knows: those with an answer, then those only detected. A definition that was never
+     * read (the first load was rejected, and there is no cache) has no answer, yet its mistakes are shown in its own files.
+     */
+    private fun knownModules(): List<KatachiModule> =
+        (definitions.map { it.module } + projectService.viewModel.state.value.modules).distinctBy { it.id }
+
+    private fun moduleOf(id: ModuleId): KatachiModule? = knownModules().firstOrNull { it.id == id }
 
     override fun fileDeclarationsOf(file: VirtualFile): List<RoleFileDeclarations> {
         val answer = state.value.answer ?: return emptyList()

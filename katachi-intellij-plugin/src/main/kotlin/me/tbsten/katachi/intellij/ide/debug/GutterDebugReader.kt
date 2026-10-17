@@ -152,7 +152,7 @@ internal class GutterDebugReader(private val project: Project, private val onScr
      * The panels over [file]'s editors: from each editor's component up to the part that holds this file's editor alone (the
      * parent just before one that also holds another editor, or a window), then every panel under it.
      */
-    private fun bannerPanelsOf(file: VirtualFile): List<EditorNotificationPanel> {
+    internal fun bannerPanelsOf(file: VirtualFile): List<EditorNotificationPanel> {
         val manager = FileEditorManager.getInstance(project)
         val others = manager.allEditors.filter { it.file != file }.map { it.component }
         return manager.getAllEditors(file).flatMap { editor ->

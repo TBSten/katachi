@@ -52,9 +52,18 @@ class ViolationBindingTest {
     }
 
     @Test
-    fun `UnexpectedFile と 定義側の違反は ここでは描かない`() {
+    fun `UnexpectedFile は ここでは描かない`() {
         assertEquals(AnnotationTarget.Skipped, ViolationBinding.targetOf(AnnotationFixtures.unexpected(path)))
-        assertEquals(AnnotationTarget.Skipped, ViolationBinding.targetOf(AnnotationFixtures.missingFile(path)))
+    }
+
+    @Test
+    fun `定義側の違反は 報告された行に描き 行が無ければ描かない`() {
+        val onLine = AnnotationFixtures.missingFile(path, line = 16)
+        for (label in ViolationBinding.DEFINITION_SIDE) {
+            val violation = onLine.copy(label = label, ruleId = "katachi.$label")
+            assertEquals(label, AnnotationTarget.AtLine(16), ViolationBinding.targetOf(violation))
+            assertEquals(label, AnnotationTarget.Skipped, ViolationBinding.targetOf(violation.copy(location = SarifLocation(path, null))))
+        }
     }
 
     @Test

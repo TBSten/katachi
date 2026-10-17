@@ -1,5 +1,10 @@
 package me.tbsten.katachi.intellij.ide.injection
 
+import me.tbsten.katachi.intellij.ide.definition.psi.TemplateFileKind
+import me.tbsten.katachi.intellij.ide.definition.psi.callOfLambda
+import me.tbsten.katachi.intellij.ide.definition.psi.calleeName
+import me.tbsten.katachi.intellij.ide.definition.psi.enclosingLambdaOfCall
+import me.tbsten.katachi.intellij.ide.definition.psi.fileKindOfDeclaration
 import org.jetbrains.kotlin.lexer.KtTokens
 import org.jetbrains.kotlin.psi.KtBinaryExpression
 import org.jetbrains.kotlin.psi.KtBlockExpression
@@ -9,24 +14,11 @@ import org.jetbrains.kotlin.psi.KtDotQualifiedExpression
 import org.jetbrains.kotlin.psi.KtExpression
 import org.jetbrains.kotlin.psi.KtFunctionLiteral
 import org.jetbrains.kotlin.psi.KtIfExpression
-import org.jetbrains.kotlin.psi.KtLambdaArgument
 import org.jetbrains.kotlin.psi.KtLambdaExpression
-import org.jetbrains.kotlin.psi.KtLiteralStringTemplateEntry
 import org.jetbrains.kotlin.psi.KtParenthesizedExpression
 import org.jetbrains.kotlin.psi.KtReturnExpression
 import org.jetbrains.kotlin.psi.KtStringTemplateExpression
-import org.jetbrains.kotlin.psi.KtValueArgument
-import org.jetbrains.kotlin.psi.KtValueArgumentList
 import org.jetbrains.kotlin.psi.KtWhenEntry
-
-/** The kind of file a katachi template writes, as far as the language of its content goes. */
-internal enum class TemplateFileKind(
-    /** The extension of the injected fragment's file: `kts` is what makes (K1) Kotlin read it as a script. */
-    val extension: String,
-) {
-    Kotlin("kt"),
-    KotlinScript("kts"),
-}
 
 /**
  * What kind of file this string literal is the content of, when it is (part of) the value a katachi
@@ -90,44 +82,6 @@ private fun climbToValue(start: KtExpression): KtExpression {
         }
     }
 }
-
-/** The lambda of the nearest enclosing call named [callee], for `return@template`. */
-private fun enclosingLambdaOfCall(from: KtExpression, callee: String): KtLambdaExpression? =
-    generateSequence(from.parent) { it.parent }
-        .filterIsInstance<KtLambdaExpression>()
-        .firstOrNull { callOfLambda(it)?.calleeName() == callee }
-
-/** The call this lambda is an argument of: trailing (`template { }`) or in parentheses (`template(block = { })`). */
-private fun callOfLambda(lambda: KtLambdaExpression): KtCallExpression? =
-    when (val parent = lambda.parent) {
-        is KtLambdaArgument -> parent.parent as? KtCallExpression
-        is KtValueArgument -> (parent.parent as? KtValueArgumentList)?.parent as? KtCallExpression
-        else -> null
-    }
-
-/** `"X".ktFile()`, `"X".ktsFile()`, or `"X.kt".file()` / `"X.kts".file()`: the file a template is attached to. */
-private fun fileKindOfDeclaration(receiver: KtExpression?): TemplateFileKind? {
-    val declaration = receiver as? KtDotQualifiedExpression ?: return null
-    val call = declaration.selectorExpression as? KtCallExpression ?: return null
-    if (call.valueArguments.isNotEmpty() || call.lambdaArguments.isNotEmpty()) return null
-    return when (call.calleeName()) {
-        "ktFile" -> TemplateFileKind.Kotlin
-        "ktsFile" -> TemplateFileKind.KotlinScript
-        "file" -> {
-            // The name's own ending; a name that ends in an interpolation (`"$name".file()`) says nothing.
-            val name = declaration.receiverExpression as? KtStringTemplateExpression ?: return null
-            val ending = (name.entries.lastOrNull() as? KtLiteralStringTemplateEntry)?.text ?: return null
-            when {
-                ending.endsWith(".kts") -> TemplateFileKind.KotlinScript
-                ending.endsWith(".kt") -> TemplateFileKind.Kotlin
-                else -> null
-            }
-        }
-        else -> null
-    }
-}
-
-private fun KtCallExpression.calleeName(): String? = calleeExpression?.text
 
 private const val TEMPLATE_FUNCTION = "template"
 

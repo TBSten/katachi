@@ -54,6 +54,17 @@ interface SmokeBridge {
     fun screenshotFrame(out: String): String
 
     fun screenshotGutterMenu(path: String, line: Int, out: String): String
+
+    // ---- L-A (ide-authoring design 5): the doors for writing a definition ----
+
+    /** The mistakes katachi found in the definition, the underlines and the banner of [path] (`AuthoringDebugReader.describeDefinitionErrors`). */
+    fun describeDefinitionErrors(path: String): String
+
+    /** What a completion at [offset] of [path] would offer (`AuthoringDebugReader.describeCompletion`). */
+    fun describeCompletion(path: String, offset: Int): String
+
+    /** The ◆, their menus and the Code Vision of the definition file [path] (`AuthoringDebugReader.describeDefinitionGutter`). */
+    fun describeDefinitionGutter(path: String): String
 }
 
 /** What a failing wait adds to its message: everything the bridge can say about [path], so a red run says why the ◆ never came. */

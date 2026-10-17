@@ -87,6 +87,8 @@ internal class TemplatePlacementIndex private constructor(
             is EntryOrigin.EditorFile -> matchesForFile(origin.path)
             is EntryOrigin.NewMenuDirectory -> matchesForDirectory(origin.path)
             is EntryOrigin.SiblingOf -> return siblingSeeds(origin.path, template)
+            // A definition file decides no capture (ide-authoring D-17).
+            is EntryOrigin.Definition -> return emptyMap()
         }
         return matches.firstOrNull { it.id == template }?.decided.orEmpty()
     }

@@ -42,6 +42,9 @@ internal class DefinitionJsonReader(
         }
     }
 
+    /** The object at [key], or `null` when it is `null` or the key is absent: a key a katachi from before it does not write. */
+    fun optionalNullableObj(key: String): DefinitionJsonReader? = if (hasKey(key)) nullableObj(key) else null
+
     fun string(key: String): String = member(key).stringValue("string")
 
     fun nullableString(key: String): String? {

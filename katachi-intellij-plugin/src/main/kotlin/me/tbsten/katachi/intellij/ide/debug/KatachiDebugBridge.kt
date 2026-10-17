@@ -203,6 +203,17 @@ internal class KatachiDebugBridge(private val project: Project) {
     /** Closes the popups on screen (see [DebugPanels.closePopups]). */
     fun closePopups(): String = checked(DebugPanels(project)).closePopups()
 
+    /** The mistakes katachi found in the definition and where the IDE put them in [path] (see [AuthoringDebugReader.describeDefinitionErrors]). */
+    fun describeDefinitionErrors(path: String): String = authoringReader().describeDefinitionErrors(path)
+
+    /** What a completion at [offset] of [path] would offer (see [AuthoringDebugReader.describeCompletion]). */
+    fun describeCompletion(path: String, offset: Int): String = authoringReader().describeCompletion(path, offset)
+
+    /** The ◆, their menus and the Code Vision of the definition file [path] (see [AuthoringDebugReader.describeDefinitionGutter]). */
+    fun describeDefinitionGutter(path: String): String = authoringReader().describeDefinitionGutter(path)
+
+    private fun authoringReader(): AuthoringDebugReader = AuthoringDebugReader(project, onScreen).also { checked(it) }
+
     private fun <T> checked(value: T): T {
         check(System.getProperty(ENABLED_PROPERTY) == "true") { "The katachi debug bridge is off; start the IDE with -D$ENABLED_PROPERTY=true." }
         return value

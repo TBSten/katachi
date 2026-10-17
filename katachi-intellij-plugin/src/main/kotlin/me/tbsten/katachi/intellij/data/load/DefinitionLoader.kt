@@ -12,6 +12,7 @@ import me.tbsten.katachi.intellij.data.json.KatachiIncompatibleTemplateJsonExcep
 import me.tbsten.katachi.intellij.data.json.KatachiMalformedDefinitionJsonException
 import me.tbsten.katachi.intellij.data.json.KatachiMalformedTemplateJsonException
 import me.tbsten.katachi.intellij.data.json.KatachiUnsupportedDefinitionSchemaException
+import me.tbsten.katachi.intellij.data.json.parseDefinitionErrorsJson
 import me.tbsten.katachi.intellij.data.json.parseDefinitionJson
 import me.tbsten.katachi.intellij.data.json.parseTemplateDescriptionJson
 import me.tbsten.katachi.intellij.model.DescriptionSnapshot
@@ -20,6 +21,8 @@ import me.tbsten.katachi.intellij.model.KatachiCapability
 import me.tbsten.katachi.intellij.model.KatachiModule
 import me.tbsten.katachi.intellij.model.LoadFailure
 import me.tbsten.katachi.intellij.model.ModuleId
+import java.nio.file.Path
+import java.time.Instant
 
 /** How a load ended. Cancellation is thrown as `CancellationException`, not returned. */
 internal sealed interface LoadResult {
@@ -35,6 +38,11 @@ internal sealed interface LoadResult {
  * the definition model and its templates; one with only [KatachiCapability.Templates] (katachi 0.2.x)
  * runs `katachiInternalTemplatesJson` as before. The JSON on disk is the cache as well: [readCached]
  * shows the last result before Gradle runs (E-43).
+ *
+ * When a run fails, the `definition-errors.json` next to the definition JSON is read first: one that
+ * this run wrote and that holds a mistake makes the failure [GradleFailure.DefinitionRejected], with
+ * the line each mistake was written on (design 2.3). Without one the output is classified as before.
+ * A file is this run's when its modification time is not the one it had before the run started; no clock is compared.
  *
  * ```kotlin
  * val result = DefinitionLoader(runner, NioProjectFileSystem).load(modules, versions, listener)
@@ -61,9 +69,12 @@ internal class DefinitionLoader(
     suspend fun load(modules: List<KatachiModule>, versions: Map<ModuleId, String>, listener: GradleRunListener): LoadResult {
         val output = mutableListOf<String>()
         for ((root, rootModules) in modules.groupBy { it.linkedRootPath }) {
+            val before = errorsStampsOf(rootModules)
             val request = GradleRunRequest(root, rootModules.map { GradleTaskInvocation(it.taskPath(taskOf(it))) })
             val outcome = runner.run(request, collecting(output, listener))
-            if (outcome == GradleRunOutcome.Failed) return LoadResult.Failed(LoadFailure.Gradle(classifyGradleFailure(output)), output.toList())
+            if (outcome == GradleRunOutcome.Failed) {
+                return LoadResult.Failed(LoadFailure.Gradle(failureOfRun(rootModules, before, output)), output.toList())
+            }
         }
         return readAll(modules, versions, output)
     }
@@ -81,6 +92,7 @@ internal class DefinitionLoader(
             val order = if (module.capabilities.isEmpty()) CANDIDATE_ORDER else CANDIDATE_ORDER.filter { it in module.capabilities }
             for (capability in order) {
                 val own = mutableListOf<String>()
+                val before = errorsStampsOf(listOf(module))
                 val task = if (capability == KatachiCapability.Definition) KatachiModule.DEFINITION_JSON_TASK else KatachiModule.TEMPLATES_JSON_TASK
                 val request = GradleRunRequest(module.linkedRootPath, listOf(GradleTaskInvocation(module.taskPath(task))))
                 val outcome = runner.run(request, collecting(own, listener))
@@ -89,12 +101,34 @@ internal class DefinitionLoader(
                     answered += module.copy(capabilities = setOf(capability))
                     break
                 }
-                val failure = classifyGradleFailure(own)
+                val failure = failureOfRun(listOf(module), before, own)
                 if (failure !is GradleFailure.TaskNotFound) return LoadResult.Failed(LoadFailure.Gradle(failure), output.toList())
             }
         }
         return readAll(answered, versions, output)
     }
+
+    /**
+     * Why a run of [modules] failed: the mistakes of their definitions when `definition-errors.json` holds some
+     * that this run wrote, else the class of the output. A file is this run's when its modification time is not the
+     * one it had in [before] (taken just before the run): a run that fails without writing one leaves the previous
+     * run's untouched, however soon after it comes.
+     */
+    private fun failureOfRun(modules: List<KatachiModule>, before: Map<Path, Instant?>, output: List<String>): GradleFailure {
+        val errors = modules.filter { it.readsDefinition }.flatMap { module ->
+            val path = module.definitionErrorsJson
+            val written = fileSystem.lastModified(path)
+            if (written == null || written == before[path]) return@flatMap emptyList()
+            val text = fileSystem.readText(path) ?: return@flatMap emptyList()
+            parseDefinitionErrorsJson(text, path, module.id).orEmpty()
+        }
+        if (errors.isEmpty()) return classifyGradleFailure(output)
+        return GradleFailure.DefinitionRejected(errors, errors.first().message.lines().dropLastWhile { it.isBlank() })
+    }
+
+    /** When each of the definition modules' `definition-errors.json` was last written, `null` for one that is not there. */
+    private fun errorsStampsOf(modules: List<KatachiModule>): Map<Path, Instant?> =
+        modules.filter { it.readsDefinition }.associate { it.definitionErrorsJson to fileSystem.lastModified(it.definitionErrorsJson) }
 
     private fun taskOf(module: KatachiModule): String =
         if (module.readsDefinition) KatachiModule.DEFINITION_JSON_TASK else KatachiModule.TEMPLATES_JSON_TASK

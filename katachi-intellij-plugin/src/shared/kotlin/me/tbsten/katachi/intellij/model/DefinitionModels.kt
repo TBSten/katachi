@@ -142,7 +142,7 @@ internal data class ConstraintModel(
 /** What a constraint covers: a file is covered when [files] has a glob matching it, or its directory matches an [anyFileDirectories] glob. */
 internal data class ConstraintCoverage(val files: List<String>, val anyFileDirectories: List<String>)
 
-internal enum class DefinitionProblemKind { WalkFailed, TemplatePreviewFailed, ModulesNotListed, ExplanationTruncated, ExplanationFailed, Unknown }
+internal enum class DefinitionProblemKind { WalkFailed, TemplatePreviewFailed, TemplateSetPreviewFailed, ModulesNotListed, ExplanationTruncated, ExplanationFailed, Unknown }
 
 /** Something the JSON was written without, so the IDE can say the answer is partial. */
 internal data class DefinitionProblem(
@@ -151,6 +151,10 @@ internal data class DefinitionProblem(
     val kindName: String,
     val message: String,
     val detail: String?,
+    /** Where the thing that failed was written; set by katachi on `TemplatePreviewFailed`, `TemplateSetPreviewFailed` and `ExplanationFailed`, and only when the exception says. */
+    val declaredAt: DeclarationSiteRef? = null,
+    /** The class name of the exception behind the problem, on the same three kinds. */
+    val exception: String? = null,
 )
 
 /** The `kind` of a layout entry. A kind this plugin does not know is [Unknown] and takes no part in matching. */
