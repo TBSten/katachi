@@ -18,7 +18,8 @@ import me.tbsten.katachi.dsl.architecture
  * `groups/<Name>Group.kt` holds one group, which says what it is made of by calling the role
  * functions in order. Both are extensions on `DeclarationContainerScope` - the scope that
  * `architecture { }` and `"...".group { }` share - so a role can be moved into another group
- * without touching the role's own file. This file only calls the seven group functions, so it
+ * without touching the role's own file. This file only calls the seven group functions (the `Endpoint` template set is declared
+ * inside `groups/ApiGroup.kt`, in the `api` group), so it
  * stays short no matter how many roles the project grows.
  *
  * None of those functions may be `inline`. An inlined frame reports the caller's file with a
