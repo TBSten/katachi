@@ -45,9 +45,9 @@ internal abstract class AnnotatorTestBase : GutterTestBase() {
         return annotationsDrawn()
     }
 
-    /** The annotations after the real [HighlightingRefresher] had its settling time; the test never restarts the daemon. */
+    /** The annotations after the real [HighlightingRefresher] drew for the changes since the last call; the test never restarts the daemon. */
     fun annotatedByRefresher(): List<DrawnAnnotation> {
-        idleFor(HighlightingRefresher.SETTLE_MILLIS + 500)
+        refresherWatch.settle()
         myFixture.doHighlighting()
         return annotationsDrawn()
     }

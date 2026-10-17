@@ -3,6 +3,7 @@ package me.tbsten.katachi.intellij.ide
 import com.intellij.ui.components.JBCheckBox
 import com.intellij.util.ui.UIUtil
 import me.tbsten.katachi.intellij.AnalysisTestBase
+import com.intellij.testFramework.PlatformTestUtil
 import me.tbsten.katachi.intellij.ide.gutter.HighlightingRefresher
 import java.nio.file.Path
 import javax.swing.JComponent
@@ -174,10 +175,15 @@ internal class KatachiConfigurableTest : AnalysisTestBase() {
         try {
             autoLoadBox.doClick()
             configurable.apply()
+            // A negative stays a window: a draw that never comes cannot be waited for.
+            val window = System.currentTimeMillis() + HighlightingRefresher.SETTLE_MILLIS + 200
+            PlatformTestUtil.waitWithEventsDispatching("a window for a draw that must not come", { System.currentTimeMillis() > window && !refresher.isBusy }, 10)
             assertEquals("a setting the annotations do not read draws nothing", emptyList<Pair<String, List<Path>>>(), redraws)
 
             box("settings.showViolations").doClick()
             configurable.apply()
+            // redrawNow draws on its own coroutine: wait for the refresher's record, not for a time.
+            PlatformTestUtil.waitWithEventsDispatching("the draw of the setting reached the restarter", { redraws.isNotEmpty() && !refresher.isBusy }, 10)
 
             assertFalse(settings.showViolationsInEditor)
             assertEquals("every open file is drawn again", 1, redraws.size)
