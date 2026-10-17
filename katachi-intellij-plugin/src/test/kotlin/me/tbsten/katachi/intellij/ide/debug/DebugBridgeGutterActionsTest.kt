@@ -185,7 +185,7 @@ internal class DebugBridgeGutterActionsTest : AnnotatorTestBase() {
         serviceReady()
         drawn(serviceFile, GutterFixtures.HEALTH_SERVICE_KT)
 
-        assertEquals("chosen=⟳ Refresh the definition", withBridge { it.chooseFromGutterLater(servicePath, 7, "⟳ Refresh") })
+        assertEquals("chosen=⟳ Reload Definition", withBridge { it.chooseFromGutterLater(servicePath, 7, "⟳ Reload") })
         assertEquals("not yet", 0, refresh.events.size)
         PlatformTestUtil.dispatchAllEventsInIdeEventQueue()
         assertEquals(1, refresh.events.size)

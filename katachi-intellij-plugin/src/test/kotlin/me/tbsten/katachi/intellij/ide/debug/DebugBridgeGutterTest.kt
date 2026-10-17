@@ -168,7 +168,7 @@ internal class DebugBridgeGutterTest : AnnotatorTestBase() {
                 "item=— No other file yet||disabled",
                 "separator",
                 "item=▶ Run the check (:arch:test)||enabled",
-                "item=⟳ Refresh the definition||enabled",
+                "item=⟳ Reload Definition||enabled",
             ),
             lines.drop(1).map { it.replace(Regex("^(item=◇ Role domain.Service) — [^|]*"), "$1") },
         )
@@ -200,7 +200,7 @@ internal class DebugBridgeGutterTest : AnnotatorTestBase() {
         serviceReady()
         drawn(serviceFile, GutterFixtures.HEALTH_SERVICE_KT)
 
-        assertEquals("chosen=⟳ Refresh the definition", withBridge { it.chooseFromGutter(servicePath, 7, "⟳ Refresh") })
+        assertEquals("chosen=⟳ Reload Definition", withBridge { it.chooseFromGutter(servicePath, 7, "⟳ Reload") })
         assertEquals(1, refresh.events.size)
         assertEquals("the file and the project reach the action as a click would give them", servicePath, refresh.events.single().dataContext.let {
             com.intellij.openapi.actionSystem.CommonDataKeys.VIRTUAL_FILE.getData(it)?.path

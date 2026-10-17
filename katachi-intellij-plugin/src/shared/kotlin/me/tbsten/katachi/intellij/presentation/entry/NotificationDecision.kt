@@ -41,11 +41,25 @@ internal data class NotificationInput(
 internal sealed interface NotificationDecision {
     data object Hidden : NotificationDecision
 
+    /** A decision that names the templates a file matches (the two conveniences), so the text can say which. */
+    sealed interface Matched : NotificationDecision {
+        val matches: List<PlacementMatch>
+
+        /** How many matches there are; the text says "(n)" when more than one. */
+        val count: Int get() = matches.size
+
+        /**
+         * The title of the template when exactly one matches, or the name of its role when it has no title;
+         * `null` for several matches (the text then gives only the count).
+         */
+        val title: String? get() = matches.singleOrNull()?.template?.template?.let { it.title.ifBlank { it.roleName } }
+    }
+
     /** Empty file with a match: [Create] ⚙ ×. [Create] opens the dialog on the first of [matches]. */
-    data class CreateFromTemplate(val matches: List<PlacementMatch>) : NotificationDecision
+    data class CreateFromTemplate(override val matches: List<PlacementMatch>) : Matched
 
     /** File with content and a match: [View template] ⚙ ×. [View template] reveals the first of [matches]. */
-    data class ViewTemplate(val matches: List<PlacementMatch>) : NotificationDecision
+    data class ViewTemplate(override val matches: List<PlacementMatch>) : Matched
 
     /** The provisional file of a running generation (decision 3). [command] only when the file cannot hold the notice. */
     data class Generating(val command: String?) : NotificationDecision

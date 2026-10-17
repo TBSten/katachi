@@ -2,13 +2,11 @@ package me.tbsten.katachi.intellij.ide.definition
 
 import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
-import me.tbsten.katachi.intellij.data.detect.detectDefinitionModules
+import me.tbsten.katachi.intellij.ide.DefinitionModulePresence
 import me.tbsten.katachi.intellij.ide.KatachiProjectService
-import me.tbsten.katachi.intellij.ide.ProjectDataModuleSource
 import me.tbsten.katachi.intellij.ide.sarif.KatachiViolationsService
 import me.tbsten.katachi.intellij.ide.sarif.ViolationsService
 import me.tbsten.katachi.intellij.ide.sdkCall
-import me.tbsten.katachi.intellij.model.DetectionResult
 
 /**
  * Where the two features (the gutter, the rules of the open file) get the definition and the violations
@@ -44,17 +42,9 @@ internal class DefinitionPorts(
     companion object {
         fun of(project: Project): DefinitionPorts = DefinitionPorts(
             serviceExists = { sdkCall("look for the katachi service") { project.getServiceIfCreated(KatachiProjectService::class.java) != null }.getOrNull() == true },
-            hasDefinitionModule = { hasDefinitionModule(project) },
+            hasDefinitionModule = { sdkCall("read whether the katachi definition module exists") { DefinitionModulePresence.getInstance(project).hasDefinitionModule() }.getOrNull() == true },
             createDefinition = { project.service<KatachiDefinitionService>() },
             createViolations = { project.service<KatachiViolationsService>() },
         )
-
-        // TODO(V2 L1): walks the synced data at every call in a project without katachi (as NotificationPorts does); keep the
-        //  answer until the next Gradle sync.
-        private fun hasDefinitionModule(project: Project): Boolean =
-            when (sdkCall("detect the katachi definition modules") { detectDefinitionModules(ProjectDataModuleSource(project).read()) }.getOrNull()) {
-                is DetectionResult.Found, is DetectionResult.TaskListMissing -> true
-                else -> false
-            }
     }
 }

@@ -56,7 +56,7 @@ internal class RealDefinitionGutterTest : AnnotatorTestBase() {
         fileProvider = KatachiFileLineMarkerProvider { ports() }
         LineMarkerProviders.getInstance().addExplicitExtension(Language.ANY, fileProvider, testRootDisposable)
         actions[GutterMenu.RUN_CHECK] = RecordingAction("Run the check")
-        actions[GutterMenu.REFRESH] = RecordingAction("Refresh the definition")
+        actions[GutterMenu.REFRESH] = RecordingAction("Reload Definition")
     }
 
     /** The ports of the base, but the definition is the one over the real JSON. */

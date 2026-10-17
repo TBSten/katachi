@@ -290,10 +290,16 @@ private fun knownAncestorOf(path: Path): VirtualFile? {
     return null
 }
 
-/** Provisional: the Japanese pages, as the tool window speaks Japanese. There is no "update" page yet. */
-internal fun docsUrlOf(page: DocsPage): String = DOCS_ROOT + when (page) {
-    DocsPage.WritingTemplates -> "ja/guides/generate-code-from-template/"
-    DocsPage.Install, DocsPage.Update -> "ja/get-started/first-architecture/"
+/**
+ * The docs page for [page] in [language] (`ja` or `en`, the tool window's language): Japanese under `ja/`, English at the root.
+ * There is no "update" page yet, so Update points at the install page.
+ */
+internal fun docsUrlOf(page: DocsPage, language: String = KatachiBundle.message("toolWindow.language")): String {
+    val prefix = if (language == "ja") "ja/" else ""
+    return DOCS_ROOT + prefix + when (page) {
+        DocsPage.WritingTemplates -> "guides/generate-code-from-template/"
+        DocsPage.Install, DocsPage.Update -> "get-started/first-architecture/"
+    }
 }
 
 private const val DOCS_ROOT = "https://tbsten.github.io/katachi/"

@@ -12,7 +12,7 @@ roles: tool.Documentation
     menu | (disabled) — No other file yet
     menu | -----
     menu | ▶ Run the check (:architecture-test:test)
-    menu | ⟳ Refresh the definition
+    menu | ⟳ Reload Definition
 
 == app/build.gradle.kts
 roles: Gradle.BuildScript
@@ -30,7 +30,7 @@ roles: Gradle.BuildScript
     menu | build.gradle.kts | ui
     menu | -----
     menu | ▶ Run the check (:architecture-test:test)
-    menu | ⟳ Refresh the definition
+    menu | ⟳ Reload Definition
 
 == app/proguard-rules.pro
 roles: app.ProguardRules
@@ -41,7 +41,7 @@ roles: app.ProguardRules
     menu | (disabled) — No other file yet
     menu | -----
     menu | ▶ Run the check (:architecture-test:test)
-    menu | ⟳ Refresh the definition
+    menu | ⟳ Reload Definition
 
 == app/src/main/AndroidManifest.xml
 roles: app.AndroidManifest
@@ -52,7 +52,7 @@ roles: app.AndroidManifest
     menu | (disabled) — No other file yet
     menu | -----
     menu | ▶ Run the check (:architecture-test:test)
-    menu | ⟳ Refresh the definition
+    menu | ⟳ Reload Definition
 
 == app/src/main/kotlin/com/example/sample/MainActivity.kt
 roles: app.ActivityEntrypoint
@@ -63,7 +63,7 @@ roles: app.ActivityEntrypoint
     menu | (disabled) — No other file yet
     menu | -----
     menu | ▶ Run the check (:architecture-test:test)
-    menu | ⟳ Refresh the definition
+    menu | ⟳ Reload Definition
 
 == app/src/main/kotlin/com/example/sample/MainApplication.kt
 roles: app.ApplicationEntrypoint
@@ -74,7 +74,7 @@ roles: app.ApplicationEntrypoint
     menu | (disabled) — No other file yet
     menu | -----
     menu | ▶ Run the check (:architecture-test:test)
-    menu | ⟳ Refresh the definition
+    menu | ⟳ Reload Definition
 
 == architecture-test/build.gradle.kts
 roles: Gradle.BuildScript
@@ -92,7 +92,7 @@ roles: Gradle.BuildScript
     menu | build.gradle.kts | ui
     menu | -----
     menu | ▶ Run the check (:architecture-test:test)
-    menu | ⟳ Refresh the definition
+    menu | ⟳ Reload Definition
 
 == architecture-test/src/test/kotlin/com/example/sample/DocumentSections.kt
 roles: testing.DefinitionSections
@@ -103,7 +103,7 @@ roles: testing.DefinitionSections
     menu | (disabled) — No other file yet
     menu | -----
     menu | ▶ Run the check (:architecture-test:test)
-    menu | ⟳ Refresh the definition
+    menu | ⟳ Reload Definition
 
 == architecture-test/src/test/kotlin/com/example/sample/LayoutSnapshotSpec.kt
 roles: testing.ProjectArchitectureSpec
@@ -115,7 +115,7 @@ roles: testing.ProjectArchitectureSpec
     menu | ProjectRootSpec.kt | architecture-test/…/com/example/sample
     menu | -----
     menu | ▶ Run the check (:architecture-test:test)
-    menu | ⟳ Refresh the definition
+    menu | ⟳ Reload Definition
 
 == architecture-test/src/test/kotlin/com/example/sample/ProjectArchitecture.kt
 roles: testing.DefinitionEntry
@@ -126,7 +126,7 @@ roles: testing.DefinitionEntry
     menu | (disabled) — No other file yet
     menu | -----
     menu | ▶ Run the check (:architecture-test:test)
-    menu | ⟳ Refresh the definition
+    menu | ⟳ Reload Definition
 
 == architecture-test/src/test/kotlin/com/example/sample/ProjectArchitectureSpec.kt
 roles: testing.ProjectArchitectureSpec
@@ -138,7 +138,7 @@ roles: testing.ProjectArchitectureSpec
     menu | ProjectRootSpec.kt | architecture-test/…/com/example/sample
     menu | -----
     menu | ▶ Run the check (:architecture-test:test)
-    menu | ⟳ Refresh the definition
+    menu | ⟳ Reload Definition
 
 == architecture-test/src/test/kotlin/com/example/sample/ProjectArchitectureTest.kt
 roles: testing.ProjectArchitectureTest
@@ -149,7 +149,7 @@ roles: testing.ProjectArchitectureTest
     menu | (disabled) — No other file yet
     menu | -----
     menu | ▶ Run the check (:architecture-test:test)
-    menu | ⟳ Refresh the definition
+    menu | ⟳ Reload Definition
 
 == architecture-test/src/test/kotlin/com/example/sample/ProjectRootSpec.kt
 roles: testing.ProjectArchitectureSpec
@@ -161,7 +161,7 @@ roles: testing.ProjectArchitectureSpec
     menu | ProjectArchitectureSpec.kt | architecture-test/…/com/example/sample
     menu | -----
     menu | ▶ Run the check (:architecture-test:test)
-    menu | ⟳ Refresh the definition
+    menu | ⟳ Reload Definition
 
 == architecture-test/src/test/kotlin/com/example/sample/groups/AppGroup.kt
 roles: testing.GroupDefinition
@@ -178,7 +178,7 @@ roles: testing.GroupDefinition
     menu | -----
     menu | + New testing.GroupDefinition from template…
     menu | ▶ Run the check (:architecture-test:test)
-    menu | ⟳ Refresh the definition
+    menu | ⟳ Reload Definition
 
 == architecture-test/src/test/kotlin/com/example/sample/groups/DataGroup.kt
 roles: testing.GroupDefinition
@@ -195,7 +195,7 @@ roles: testing.GroupDefinition
     menu | -----
     menu | + New testing.GroupDefinition from template…
     menu | ▶ Run the check (:architecture-test:test)
-    menu | ⟳ Refresh the definition
+    menu | ⟳ Reload Definition
 
 == architecture-test/src/test/kotlin/com/example/sample/groups/FeatureGroup.kt
 roles: testing.GroupDefinition
@@ -212,7 +212,7 @@ roles: testing.GroupDefinition
     menu | -----
     menu | + New testing.GroupDefinition from template…
     menu | ▶ Run the check (:architecture-test:test)
-    menu | ⟳ Refresh the definition
+    menu | ⟳ Reload Definition
 
 == architecture-test/src/test/kotlin/com/example/sample/groups/GradleGroup.kt
 roles: testing.GroupDefinition
@@ -229,7 +229,7 @@ roles: testing.GroupDefinition
     menu | -----
     menu | + New testing.GroupDefinition from template…
     menu | ▶ Run the check (:architecture-test:test)
-    menu | ⟳ Refresh the definition
+    menu | ⟳ Reload Definition
 
 == architecture-test/src/test/kotlin/com/example/sample/groups/TestingGroup.kt
 roles: testing.GroupDefinition
@@ -246,7 +246,7 @@ roles: testing.GroupDefinition
     menu | -----
     menu | + New testing.GroupDefinition from template…
     menu | ▶ Run the check (:architecture-test:test)
-    menu | ⟳ Refresh the definition
+    menu | ⟳ Reload Definition
 
 == architecture-test/src/test/kotlin/com/example/sample/groups/ToolGroup.kt
 roles: testing.GroupDefinition
@@ -263,7 +263,7 @@ roles: testing.GroupDefinition
     menu | -----
     menu | + New testing.GroupDefinition from template…
     menu | ▶ Run the check (:architecture-test:test)
-    menu | ⟳ Refresh the definition
+    menu | ⟳ Reload Definition
 
 == architecture-test/src/test/kotlin/com/example/sample/groups/UiGroup.kt
 roles: testing.GroupDefinition
@@ -280,7 +280,7 @@ roles: testing.GroupDefinition
     menu | -----
     menu | + New testing.GroupDefinition from template…
     menu | ▶ Run the check (:architecture-test:test)
-    menu | ⟳ Refresh the definition
+    menu | ⟳ Reload Definition
 
 == architecture-test/src/test/kotlin/com/example/sample/roles/ActivityEntrypointRole.kt
 roles: testing.RoleDefinition
@@ -307,7 +307,7 @@ roles: testing.RoleDefinition
     menu | -----
     menu | + New testing.RoleDefinition from template…
     menu | ▶ Run the check (:architecture-test:test)
-    menu | ⟳ Refresh the definition
+    menu | ⟳ Reload Definition
 
 == architecture-test/src/test/kotlin/com/example/sample/roles/AndroidManifestRole.kt
 roles: testing.RoleDefinition
@@ -334,7 +334,7 @@ roles: testing.RoleDefinition
     menu | -----
     menu | + New testing.RoleDefinition from template…
     menu | ▶ Run the check (:architecture-test:test)
-    menu | ⟳ Refresh the definition
+    menu | ⟳ Reload Definition
 
 == architecture-test/src/test/kotlin/com/example/sample/roles/AndroidResourceRole.kt
 roles: testing.RoleDefinition
@@ -361,7 +361,7 @@ roles: testing.RoleDefinition
     menu | -----
     menu | + New testing.RoleDefinition from template…
     menu | ▶ Run the check (:architecture-test:test)
-    menu | ⟳ Refresh the definition
+    menu | ⟳ Reload Definition
 
 == architecture-test/src/test/kotlin/com/example/sample/roles/ApplicationEntrypointRole.kt
 roles: testing.RoleDefinition
@@ -388,7 +388,7 @@ roles: testing.RoleDefinition
     menu | -----
     menu | + New testing.RoleDefinition from template…
     menu | ▶ Run the check (:architecture-test:test)
-    menu | ⟳ Refresh the definition
+    menu | ⟳ Reload Definition
 
 == architecture-test/src/test/kotlin/com/example/sample/roles/BaselineFileRole.kt
 roles: testing.RoleDefinition
@@ -415,7 +415,7 @@ roles: testing.RoleDefinition
     menu | -----
     menu | + New testing.RoleDefinition from template…
     menu | ▶ Run the check (:architecture-test:test)
-    menu | ⟳ Refresh the definition
+    menu | ⟳ Reload Definition
 
 == architecture-test/src/test/kotlin/com/example/sample/roles/ComponentRole.kt
 roles: testing.RoleDefinition
@@ -442,7 +442,7 @@ roles: testing.RoleDefinition
     menu | -----
     menu | + New testing.RoleDefinition from template…
     menu | ▶ Run the check (:architecture-test:test)
-    menu | ⟳ Refresh the definition
+    menu | ⟳ Reload Definition
 
 == architecture-test/src/test/kotlin/com/example/sample/roles/DefinitionEntryRole.kt
 roles: testing.RoleDefinition
@@ -469,7 +469,7 @@ roles: testing.RoleDefinition
     menu | -----
     menu | + New testing.RoleDefinition from template…
     menu | ▶ Run the check (:architecture-test:test)
-    menu | ⟳ Refresh the definition
+    menu | ⟳ Reload Definition
 
 == architecture-test/src/test/kotlin/com/example/sample/roles/DefinitionSectionsRole.kt
 roles: testing.RoleDefinition
@@ -496,7 +496,7 @@ roles: testing.RoleDefinition
     menu | -----
     menu | + New testing.RoleDefinition from template…
     menu | ▶ Run the check (:architecture-test:test)
-    menu | ⟳ Refresh the definition
+    menu | ⟳ Reload Definition
 
 == architecture-test/src/test/kotlin/com/example/sample/roles/DocumentationRole.kt
 roles: testing.RoleDefinition
@@ -523,7 +523,7 @@ roles: testing.RoleDefinition
     menu | -----
     menu | + New testing.RoleDefinition from template…
     menu | ▶ Run the check (:architecture-test:test)
-    menu | ⟳ Refresh the definition
+    menu | ⟳ Reload Definition
 
 == architecture-test/src/test/kotlin/com/example/sample/roles/FakeRole.kt
 roles: testing.RoleDefinition
@@ -550,7 +550,7 @@ roles: testing.RoleDefinition
     menu | -----
     menu | + New testing.RoleDefinition from template…
     menu | ▶ Run the check (:architecture-test:test)
-    menu | ⟳ Refresh the definition
+    menu | ⟳ Reload Definition
 
 == architecture-test/src/test/kotlin/com/example/sample/roles/FeatureComponentRole.kt
 roles: testing.RoleDefinition
@@ -577,7 +577,7 @@ roles: testing.RoleDefinition
     menu | -----
     menu | + New testing.RoleDefinition from template…
     menu | ▶ Run the check (:architecture-test:test)
-    menu | ⟳ Refresh the definition
+    menu | ⟳ Reload Definition
 
 == architecture-test/src/test/kotlin/com/example/sample/roles/FeatureTestRole.kt
 roles: testing.RoleDefinition
@@ -604,7 +604,7 @@ roles: testing.RoleDefinition
     menu | -----
     menu | + New testing.RoleDefinition from template…
     menu | ▶ Run the check (:architecture-test:test)
-    menu | ⟳ Refresh the definition
+    menu | ⟳ Reload Definition
 
 == architecture-test/src/test/kotlin/com/example/sample/roles/GeneratedDocumentationRole.kt
 roles: testing.RoleDefinition
@@ -631,7 +631,7 @@ roles: testing.RoleDefinition
     menu | -----
     menu | + New testing.RoleDefinition from template…
     menu | ▶ Run the check (:architecture-test:test)
-    menu | ⟳ Refresh the definition
+    menu | ⟳ Reload Definition
 
 == architecture-test/src/test/kotlin/com/example/sample/roles/GitRole.kt
 roles: testing.RoleDefinition
@@ -658,7 +658,7 @@ roles: testing.RoleDefinition
     menu | -----
     menu | + New testing.RoleDefinition from template…
     menu | ▶ Run the check (:architecture-test:test)
-    menu | ⟳ Refresh the definition
+    menu | ⟳ Reload Definition
 
 == architecture-test/src/test/kotlin/com/example/sample/roles/GroupDefinitionRole.kt
 roles: testing.RoleDefinition
@@ -685,7 +685,7 @@ roles: testing.RoleDefinition
     menu | -----
     menu | + New testing.RoleDefinition from template…
     menu | ▶ Run the check (:architecture-test:test)
-    menu | ⟳ Refresh the definition
+    menu | ⟳ Reload Definition
 
 == architecture-test/src/test/kotlin/com/example/sample/roles/LayoutSnapshotRole.kt
 roles: testing.RoleDefinition
@@ -712,7 +712,7 @@ roles: testing.RoleDefinition
     menu | -----
     menu | + New testing.RoleDefinition from template…
     menu | ▶ Run the check (:architecture-test:test)
-    menu | ⟳ Refresh the definition
+    menu | ⟳ Reload Definition
 
 == architecture-test/src/test/kotlin/com/example/sample/roles/NavigationRole.kt
 roles: testing.RoleDefinition
@@ -739,7 +739,7 @@ roles: testing.RoleDefinition
     menu | -----
     menu | + New testing.RoleDefinition from template…
     menu | ▶ Run the check (:architecture-test:test)
-    menu | ⟳ Refresh the definition
+    menu | ⟳ Reload Definition
 
 == architecture-test/src/test/kotlin/com/example/sample/roles/PreviewRootRole.kt
 roles: testing.RoleDefinition
@@ -766,7 +766,7 @@ roles: testing.RoleDefinition
     menu | -----
     menu | + New testing.RoleDefinition from template…
     menu | ▶ Run the check (:architecture-test:test)
-    menu | ⟳ Refresh the definition
+    menu | ⟳ Reload Definition
 
 == architecture-test/src/test/kotlin/com/example/sample/roles/ProguardRulesRole.kt
 roles: testing.RoleDefinition
@@ -793,7 +793,7 @@ roles: testing.RoleDefinition
     menu | -----
     menu | + New testing.RoleDefinition from template…
     menu | ▶ Run the check (:architecture-test:test)
-    menu | ⟳ Refresh the definition
+    menu | ⟳ Reload Definition
 
 == architecture-test/src/test/kotlin/com/example/sample/roles/ProjectArchitectureSpecRole.kt
 roles: testing.RoleDefinition
@@ -820,7 +820,7 @@ roles: testing.RoleDefinition
     menu | -----
     menu | + New testing.RoleDefinition from template…
     menu | ▶ Run the check (:architecture-test:test)
-    menu | ⟳ Refresh the definition
+    menu | ⟳ Reload Definition
 
 == architecture-test/src/test/kotlin/com/example/sample/roles/ProjectArchitectureTestRole.kt
 roles: testing.RoleDefinition
@@ -847,7 +847,7 @@ roles: testing.RoleDefinition
     menu | -----
     menu | + New testing.RoleDefinition from template…
     menu | ▶ Run the check (:architecture-test:test)
-    menu | ⟳ Refresh the definition
+    menu | ⟳ Reload Definition
 
 == architecture-test/src/test/kotlin/com/example/sample/roles/RepositoryImplementationRole.kt
 roles: testing.RoleDefinition
@@ -874,7 +874,7 @@ roles: testing.RoleDefinition
     menu | -----
     menu | + New testing.RoleDefinition from template…
     menu | ▶ Run the check (:architecture-test:test)
-    menu | ⟳ Refresh the definition
+    menu | ⟳ Reload Definition
 
 == architecture-test/src/test/kotlin/com/example/sample/roles/RepositoryInterfaceRole.kt
 roles: testing.RoleDefinition
@@ -901,7 +901,7 @@ roles: testing.RoleDefinition
     menu | -----
     menu | + New testing.RoleDefinition from template…
     menu | ▶ Run the check (:architecture-test:test)
-    menu | ⟳ Refresh the definition
+    menu | ⟳ Reload Definition
 
 == architecture-test/src/test/kotlin/com/example/sample/roles/RoleDefinitionRole.kt
 roles: testing.RoleDefinition
@@ -928,7 +928,7 @@ roles: testing.RoleDefinition
     menu | -----
     menu | + New testing.RoleDefinition from template…
     menu | ▶ Run the check (:architecture-test:test)
-    menu | ⟳ Refresh the definition
+    menu | ⟳ Reload Definition
 
 == architecture-test/src/test/kotlin/com/example/sample/roles/RouteRole.kt
 roles: testing.RoleDefinition
@@ -955,7 +955,7 @@ roles: testing.RoleDefinition
     menu | -----
     menu | + New testing.RoleDefinition from template…
     menu | ▶ Run the check (:architecture-test:test)
-    menu | ⟳ Refresh the definition
+    menu | ⟳ Reload Definition
 
 == architecture-test/src/test/kotlin/com/example/sample/roles/ScreenRole.kt
 roles: testing.RoleDefinition
@@ -982,7 +982,7 @@ roles: testing.RoleDefinition
     menu | -----
     menu | + New testing.RoleDefinition from template…
     menu | ▶ Run the check (:architecture-test:test)
-    menu | ⟳ Refresh the definition
+    menu | ⟳ Reload Definition
 
 == architecture-test/src/test/kotlin/com/example/sample/roles/ThemeRole.kt
 roles: testing.RoleDefinition
@@ -1009,7 +1009,7 @@ roles: testing.RoleDefinition
     menu | -----
     menu | + New testing.RoleDefinition from template…
     menu | ▶ Run the check (:architecture-test:test)
-    menu | ⟳ Refresh the definition
+    menu | ⟳ Reload Definition
 
 == architecture-test/src/test/kotlin/com/example/sample/roles/UiCoreRole.kt
 roles: testing.RoleDefinition
@@ -1036,7 +1036,7 @@ roles: testing.RoleDefinition
     menu | -----
     menu | + New testing.RoleDefinition from template…
     menu | ▶ Run the check (:architecture-test:test)
-    menu | ⟳ Refresh the definition
+    menu | ⟳ Reload Definition
 
 == architecture-test/src/test/kotlin/com/example/sample/roles/ViewModelRole.kt
 roles: testing.RoleDefinition
@@ -1063,7 +1063,7 @@ roles: testing.RoleDefinition
     menu | -----
     menu | + New testing.RoleDefinition from template…
     menu | ▶ Run the check (:architecture-test:test)
-    menu | ⟳ Refresh the definition
+    menu | ⟳ Reload Definition
 
 == build.gradle.kts
 roles: Gradle.BuildScript
@@ -1081,7 +1081,7 @@ roles: Gradle.BuildScript
     menu | build.gradle.kts | ui
     menu | -----
     menu | ▶ Run the check (:architecture-test:test)
-    menu | ⟳ Refresh the definition
+    menu | ⟳ Reload Definition
 
 == data/build.gradle.kts
 roles: Gradle.BuildScript
@@ -1099,7 +1099,7 @@ roles: Gradle.BuildScript
     menu | build.gradle.kts | ui
     menu | -----
     menu | ▶ Run the check (:architecture-test:test)
-    menu | ⟳ Refresh the definition
+    menu | ⟳ Reload Definition
 
 == data/src/main/kotlin/com/example/sample/data/settings/SettingsRepository.kt
 roles: data.RepositoryInterface
@@ -1115,7 +1115,7 @@ roles: data.RepositoryInterface
     menu |   data.RepositoryInterface.user
     menu |   data.RepositoryInterface.settings
     menu | ▶ Run the check (:architecture-test:test)
-    menu | ⟳ Refresh the definition
+    menu | ⟳ Reload Definition
 
 == data/src/main/kotlin/com/example/sample/data/settings/SettingsRepositoryImpl.kt
 roles: data.RepositoryImplementation
@@ -1131,7 +1131,7 @@ roles: data.RepositoryImplementation
     menu |   data.RepositoryImplementation.user
     menu |   data.RepositoryImplementation.settings
     menu | ▶ Run the check (:architecture-test:test)
-    menu | ⟳ Refresh the definition
+    menu | ⟳ Reload Definition
 
 == data/src/main/kotlin/com/example/sample/data/user/UserRepository.kt
 roles: data.RepositoryInterface
@@ -1147,7 +1147,7 @@ roles: data.RepositoryInterface
     menu |   data.RepositoryInterface.user
     menu |   data.RepositoryInterface.settings
     menu | ▶ Run the check (:architecture-test:test)
-    menu | ⟳ Refresh the definition
+    menu | ⟳ Reload Definition
 
 == data/src/main/kotlin/com/example/sample/data/user/UserRepositoryImpl.kt
 roles: data.RepositoryImplementation
@@ -1163,7 +1163,7 @@ roles: data.RepositoryImplementation
     menu |   data.RepositoryImplementation.user
     menu |   data.RepositoryImplementation.settings
     menu | ▶ Run the check (:architecture-test:test)
-    menu | ⟳ Refresh the definition
+    menu | ⟳ Reload Definition
 
 == docs/README.md
 roles: testing.GeneratedDocumentation
@@ -1189,7 +1189,7 @@ roles: testing.GeneratedDocumentation
     menu | (disabled) … and 17 more
     menu | -----
     menu | ▶ Run the check (:architecture-test:test)
-    menu | ⟳ Refresh the definition
+    menu | ⟳ Reload Definition
 
 == docs/app/ActivityEntrypoint.md
 roles: testing.GeneratedDocumentation
@@ -1215,7 +1215,7 @@ roles: testing.GeneratedDocumentation
     menu | (disabled) … and 17 more
     menu | -----
     menu | ▶ Run the check (:architecture-test:test)
-    menu | ⟳ Refresh the definition
+    menu | ⟳ Reload Definition
 
 == docs/app/AndroidManifest.md
 roles: testing.GeneratedDocumentation
@@ -1241,7 +1241,7 @@ roles: testing.GeneratedDocumentation
     menu | (disabled) … and 17 more
     menu | -----
     menu | ▶ Run the check (:architecture-test:test)
-    menu | ⟳ Refresh the definition
+    menu | ⟳ Reload Definition
 
 == docs/app/AndroidResource.md
 roles: testing.GeneratedDocumentation
@@ -1267,7 +1267,7 @@ roles: testing.GeneratedDocumentation
     menu | (disabled) … and 17 more
     menu | -----
     menu | ▶ Run the check (:architecture-test:test)
-    menu | ⟳ Refresh the definition
+    menu | ⟳ Reload Definition
 
 == docs/app/ApplicationEntrypoint.md
 roles: testing.GeneratedDocumentation
@@ -1293,7 +1293,7 @@ roles: testing.GeneratedDocumentation
     menu | (disabled) … and 17 more
     menu | -----
     menu | ▶ Run the check (:architecture-test:test)
-    menu | ⟳ Refresh the definition
+    menu | ⟳ Reload Definition
 
 == docs/app/ProguardRules.md
 roles: testing.GeneratedDocumentation
@@ -1319,7 +1319,7 @@ roles: testing.GeneratedDocumentation
     menu | (disabled) … and 17 more
     menu | -----
     menu | ▶ Run the check (:architecture-test:test)
-    menu | ⟳ Refresh the definition
+    menu | ⟳ Reload Definition
 
 == docs/app/README.md
 roles: testing.GeneratedDocumentation
@@ -1345,7 +1345,7 @@ roles: testing.GeneratedDocumentation
     menu | (disabled) … and 17 more
     menu | -----
     menu | ▶ Run the check (:architecture-test:test)
-    menu | ⟳ Refresh the definition
+    menu | ⟳ Reload Definition
 
 == docs/data/README.md
 roles: testing.GeneratedDocumentation
@@ -1371,7 +1371,7 @@ roles: testing.GeneratedDocumentation
     menu | (disabled) … and 17 more
     menu | -----
     menu | ▶ Run the check (:architecture-test:test)
-    menu | ⟳ Refresh the definition
+    menu | ⟳ Reload Definition
 
 == docs/data/RepositoryImplementation.md
 roles: testing.GeneratedDocumentation
@@ -1397,7 +1397,7 @@ roles: testing.GeneratedDocumentation
     menu | (disabled) … and 17 more
     menu | -----
     menu | ▶ Run the check (:architecture-test:test)
-    menu | ⟳ Refresh the definition
+    menu | ⟳ Reload Definition
 
 == docs/data/RepositoryInterface.md
 roles: testing.GeneratedDocumentation
@@ -1423,7 +1423,7 @@ roles: testing.GeneratedDocumentation
     menu | (disabled) … and 17 more
     menu | -----
     menu | ▶ Run the check (:architecture-test:test)
-    menu | ⟳ Refresh the definition
+    menu | ⟳ Reload Definition
 
 == docs/feature/FeatureComponent.md
 roles: testing.GeneratedDocumentation
@@ -1449,7 +1449,7 @@ roles: testing.GeneratedDocumentation
     menu | (disabled) … and 17 more
     menu | -----
     menu | ▶ Run the check (:architecture-test:test)
-    menu | ⟳ Refresh the definition
+    menu | ⟳ Reload Definition
 
 == docs/feature/FeatureTest.md
 roles: testing.GeneratedDocumentation
@@ -1475,7 +1475,7 @@ roles: testing.GeneratedDocumentation
     menu | (disabled) … and 17 more
     menu | -----
     menu | ▶ Run the check (:architecture-test:test)
-    menu | ⟳ Refresh the definition
+    menu | ⟳ Reload Definition
 
 == docs/feature/README.md
 roles: testing.GeneratedDocumentation
@@ -1501,7 +1501,7 @@ roles: testing.GeneratedDocumentation
     menu | (disabled) … and 17 more
     menu | -----
     menu | ▶ Run the check (:architecture-test:test)
-    menu | ⟳ Refresh the definition
+    menu | ⟳ Reload Definition
 
 == docs/feature/Route.md
 roles: testing.GeneratedDocumentation
@@ -1527,7 +1527,7 @@ roles: testing.GeneratedDocumentation
     menu | (disabled) … and 17 more
     menu | -----
     menu | ▶ Run the check (:architecture-test:test)
-    menu | ⟳ Refresh the definition
+    menu | ⟳ Reload Definition
 
 == docs/feature/Screen.md
 roles: testing.GeneratedDocumentation
@@ -1553,7 +1553,7 @@ roles: testing.GeneratedDocumentation
     menu | (disabled) … and 17 more
     menu | -----
     menu | ▶ Run the check (:architecture-test:test)
-    menu | ⟳ Refresh the definition
+    menu | ⟳ Reload Definition
 
 == docs/feature/ViewModel.md
 roles: testing.GeneratedDocumentation
@@ -1579,7 +1579,7 @@ roles: testing.GeneratedDocumentation
     menu | (disabled) … and 17 more
     menu | -----
     menu | ▶ Run the check (:architecture-test:test)
-    menu | ⟳ Refresh the definition
+    menu | ⟳ Reload Definition
 
 == docs/testing/BaselineFile.md
 roles: testing.GeneratedDocumentation
@@ -1605,7 +1605,7 @@ roles: testing.GeneratedDocumentation
     menu | (disabled) … and 17 more
     menu | -----
     menu | ▶ Run the check (:architecture-test:test)
-    menu | ⟳ Refresh the definition
+    menu | ⟳ Reload Definition
 
 == docs/testing/DefinitionEntry.md
 roles: testing.GeneratedDocumentation
@@ -1631,7 +1631,7 @@ roles: testing.GeneratedDocumentation
     menu | (disabled) … and 17 more
     menu | -----
     menu | ▶ Run the check (:architecture-test:test)
-    menu | ⟳ Refresh the definition
+    menu | ⟳ Reload Definition
 
 == docs/testing/DefinitionSections.md
 roles: testing.GeneratedDocumentation
@@ -1657,7 +1657,7 @@ roles: testing.GeneratedDocumentation
     menu | (disabled) … and 17 more
     menu | -----
     menu | ▶ Run the check (:architecture-test:test)
-    menu | ⟳ Refresh the definition
+    menu | ⟳ Reload Definition
 
 == docs/testing/Fake.md
 roles: testing.GeneratedDocumentation
@@ -1683,7 +1683,7 @@ roles: testing.GeneratedDocumentation
     menu | (disabled) … and 17 more
     menu | -----
     menu | ▶ Run the check (:architecture-test:test)
-    menu | ⟳ Refresh the definition
+    menu | ⟳ Reload Definition
 
 == docs/testing/GeneratedDocumentation.md
 roles: testing.GeneratedDocumentation
@@ -1709,7 +1709,7 @@ roles: testing.GeneratedDocumentation
     menu | (disabled) … and 17 more
     menu | -----
     menu | ▶ Run the check (:architecture-test:test)
-    menu | ⟳ Refresh the definition
+    menu | ⟳ Reload Definition
 
 == docs/testing/GroupDefinition.md
 roles: testing.GeneratedDocumentation
@@ -1735,7 +1735,7 @@ roles: testing.GeneratedDocumentation
     menu | (disabled) … and 17 more
     menu | -----
     menu | ▶ Run the check (:architecture-test:test)
-    menu | ⟳ Refresh the definition
+    menu | ⟳ Reload Definition
 
 == docs/testing/LayoutSnapshot.md
 roles: testing.GeneratedDocumentation
@@ -1761,7 +1761,7 @@ roles: testing.GeneratedDocumentation
     menu | (disabled) … and 17 more
     menu | -----
     menu | ▶ Run the check (:architecture-test:test)
-    menu | ⟳ Refresh the definition
+    menu | ⟳ Reload Definition
 
 == docs/testing/ProjectArchitectureSpec.md
 roles: testing.GeneratedDocumentation
@@ -1787,7 +1787,7 @@ roles: testing.GeneratedDocumentation
     menu | (disabled) … and 17 more
     menu | -----
     menu | ▶ Run the check (:architecture-test:test)
-    menu | ⟳ Refresh the definition
+    menu | ⟳ Reload Definition
 
 == docs/testing/ProjectArchitectureTest.md
 roles: testing.GeneratedDocumentation
@@ -1813,7 +1813,7 @@ roles: testing.GeneratedDocumentation
     menu | (disabled) … and 17 more
     menu | -----
     menu | ▶ Run the check (:architecture-test:test)
-    menu | ⟳ Refresh the definition
+    menu | ⟳ Reload Definition
 
 == docs/testing/README.md
 roles: testing.GeneratedDocumentation
@@ -1839,7 +1839,7 @@ roles: testing.GeneratedDocumentation
     menu | (disabled) … and 17 more
     menu | -----
     menu | ▶ Run the check (:architecture-test:test)
-    menu | ⟳ Refresh the definition
+    menu | ⟳ Reload Definition
 
 == docs/testing/RoleDefinition.md
 roles: testing.GeneratedDocumentation
@@ -1865,7 +1865,7 @@ roles: testing.GeneratedDocumentation
     menu | (disabled) … and 17 more
     menu | -----
     menu | ▶ Run the check (:architecture-test:test)
-    menu | ⟳ Refresh the definition
+    menu | ⟳ Reload Definition
 
 == docs/ui/Component.md
 roles: testing.GeneratedDocumentation
@@ -1891,7 +1891,7 @@ roles: testing.GeneratedDocumentation
     menu | (disabled) … and 17 more
     menu | -----
     menu | ▶ Run the check (:architecture-test:test)
-    menu | ⟳ Refresh the definition
+    menu | ⟳ Reload Definition
 
 == docs/ui/Navigation.md
 roles: testing.GeneratedDocumentation
@@ -1917,7 +1917,7 @@ roles: testing.GeneratedDocumentation
     menu | (disabled) … and 17 more
     menu | -----
     menu | ▶ Run the check (:architecture-test:test)
-    menu | ⟳ Refresh the definition
+    menu | ⟳ Reload Definition
 
 == docs/ui/PreviewRoot.md
 roles: testing.GeneratedDocumentation
@@ -1943,7 +1943,7 @@ roles: testing.GeneratedDocumentation
     menu | (disabled) … and 17 more
     menu | -----
     menu | ▶ Run the check (:architecture-test:test)
-    menu | ⟳ Refresh the definition
+    menu | ⟳ Reload Definition
 
 == docs/ui/README.md
 roles: testing.GeneratedDocumentation
@@ -1969,7 +1969,7 @@ roles: testing.GeneratedDocumentation
     menu | (disabled) … and 17 more
     menu | -----
     menu | ▶ Run the check (:architecture-test:test)
-    menu | ⟳ Refresh the definition
+    menu | ⟳ Reload Definition
 
 == docs/ui/Theme.md
 roles: testing.GeneratedDocumentation
@@ -1995,7 +1995,7 @@ roles: testing.GeneratedDocumentation
     menu | (disabled) … and 17 more
     menu | -----
     menu | ▶ Run the check (:architecture-test:test)
-    menu | ⟳ Refresh the definition
+    menu | ⟳ Reload Definition
 
 == docs/ui/UiCore.md
 roles: testing.GeneratedDocumentation
@@ -2021,7 +2021,7 @@ roles: testing.GeneratedDocumentation
     menu | (disabled) … and 17 more
     menu | -----
     menu | ▶ Run the check (:architecture-test:test)
-    menu | ⟳ Refresh the definition
+    menu | ⟳ Reload Definition
 
 == feature/home/build.gradle.kts
 roles: Gradle.BuildScript
@@ -2039,7 +2039,7 @@ roles: Gradle.BuildScript
     menu | build.gradle.kts | ui
     menu | -----
     menu | ▶ Run the check (:architecture-test:test)
-    menu | ⟳ Refresh the definition
+    menu | ⟳ Reload Definition
 
 == feature/home/src/main/kotlin/com/example/sample/feature/home/HomeRoute.kt
 roles: feature.Route
@@ -2052,7 +2052,7 @@ roles: feature.Route
     menu | SettingsRoute.kt | feature/…/sample/feature/settings
     menu | -----
     menu | ▶ Run the check (:architecture-test:test)
-    menu | ⟳ Refresh the definition
+    menu | ⟳ Reload Definition
 17 | ◆ | katachi: feature.Route — allowed by fun homeScreen(...) (RouteRole.kt:54)
     allowed at RouteRole.kt:54 | `fun`("${feature}Screen")                                   // NavGraphBuilder.homeScreen(...)
     menu | ◆ Allowed by fun homeScreen(...) | RouteRole.kt:54
@@ -2061,7 +2061,7 @@ roles: feature.Route
     menu | SettingsRoute.kt | feature/…/sample/feature/settings
     menu | -----
     menu | ▶ Run the check (:architecture-test:test)
-    menu | ⟳ Refresh the definition
+    menu | ⟳ Reload Definition
 
 == feature/home/src/main/kotlin/com/example/sample/feature/home/HomeScreen.kt
 roles: feature.Screen
@@ -2074,7 +2074,7 @@ roles: feature.Screen
     menu | SettingsScreen.kt | feature/…/sample/feature/settings
     menu | -----
     menu | ▶ Run the check (:architecture-test:test)
-    menu | ⟳ Refresh the definition
+    menu | ⟳ Reload Definition
 46 | ◆ | katachi: feature.Screen — allowed by @Composable internal fun HomeScreen(...) (ScreenRole.kt:73)
     allowed at ScreenRole.kt:73 | annotated("Composable").internal.`fun`(fileName)
     menu | ◆ Allowed by @Composable internal fun HomeScreen(...) | ScreenRole.kt:73
@@ -2083,7 +2083,7 @@ roles: feature.Screen
     menu | SettingsScreen.kt | feature/…/sample/feature/settings
     menu | -----
     menu | ▶ Run the check (:architecture-test:test)
-    menu | ⟳ Refresh the definition
+    menu | ⟳ Reload Definition
 91 | ◆ | katachi: feature.Screen — allowed by @Preview private fun *Preview(...) (ScreenRole.kt:74)
     allowed at ScreenRole.kt:74 | annotated("Preview").private.`fun`("*Preview")
     menu | ◆ Allowed by @Preview private fun *Preview(...) | ScreenRole.kt:74
@@ -2092,7 +2092,7 @@ roles: feature.Screen
     menu | SettingsScreen.kt | feature/…/sample/feature/settings
     menu | -----
     menu | ▶ Run the check (:architecture-test:test)
-    menu | ⟳ Refresh the definition
+    menu | ⟳ Reload Definition
 103 | ◆ | katachi: feature.Screen — allowed by @Preview private fun *Preview(...) (ScreenRole.kt:74)
     allowed at ScreenRole.kt:74 | annotated("Preview").private.`fun`("*Preview")
     menu | ◆ Allowed by @Preview private fun *Preview(...) | ScreenRole.kt:74
@@ -2101,7 +2101,7 @@ roles: feature.Screen
     menu | SettingsScreen.kt | feature/…/sample/feature/settings
     menu | -----
     menu | ▶ Run the check (:architecture-test:test)
-    menu | ⟳ Refresh the definition
+    menu | ⟳ Reload Definition
 
 == feature/home/src/main/kotlin/com/example/sample/feature/home/HomeViewModel.kt
 roles: feature.ViewModel
@@ -2114,7 +2114,7 @@ roles: feature.ViewModel
     menu | SettingsViewModel.kt | feature/…/sample/feature/settings
     menu | -----
     menu | ▶ Run the check (:architecture-test:test)
-    menu | ⟳ Refresh the definition
+    menu | ⟳ Reload Definition
 23 | ◆ | katachi: feature.ViewModel — allowed by internal class HomeViewModel : ViewModel (ViewModelRole.kt:57)
     allowed at ViewModelRole.kt:57 | internal.`class`(fileName).superclass("ViewModel") {
     menu | ◆ Allowed by internal class HomeViewModel : ViewModel | ViewModelRole.kt:57
@@ -2123,7 +2123,7 @@ roles: feature.ViewModel
     menu | SettingsViewModel.kt | feature/…/sample/feature/settings
     menu | -----
     menu | ▶ Run the check (:architecture-test:test)
-    menu | ⟳ Refresh the definition
+    menu | ⟳ Reload Definition
 
 == feature/home/src/test/kotlin/com/example/sample/feature/home/HomeViewModelTest.kt
 roles: feature.FeatureTest
@@ -2139,7 +2139,7 @@ roles: feature.FeatureTest
     menu |   feature.FeatureTest.home
     menu |   feature.FeatureTest.settings
     menu | ▶ Run the check (:architecture-test:test)
-    menu | ⟳ Refresh the definition
+    menu | ⟳ Reload Definition
 
 == feature/settings/build.gradle.kts
 roles: Gradle.BuildScript
@@ -2157,7 +2157,7 @@ roles: Gradle.BuildScript
     menu | build.gradle.kts | ui
     menu | -----
     menu | ▶ Run the check (:architecture-test:test)
-    menu | ⟳ Refresh the definition
+    menu | ⟳ Reload Definition
 
 == feature/settings/src/main/kotlin/com/example/sample/feature/settings/SettingsRoute.kt
 roles: feature.Route
@@ -2170,7 +2170,7 @@ roles: feature.Route
     menu | HomeRoute.kt | feature/…/example/sample/feature/home
     menu | -----
     menu | ▶ Run the check (:architecture-test:test)
-    menu | ⟳ Refresh the definition
+    menu | ⟳ Reload Definition
 17 | ◆ | katachi: feature.Route — allowed by fun settingsScreen(...) (RouteRole.kt:54)
     allowed at RouteRole.kt:54 | `fun`("${feature}Screen")                                   // NavGraphBuilder.homeScreen(...)
     menu | ◆ Allowed by fun settingsScreen(...) | RouteRole.kt:54
@@ -2179,7 +2179,7 @@ roles: feature.Route
     menu | HomeRoute.kt | feature/…/example/sample/feature/home
     menu | -----
     menu | ▶ Run the check (:architecture-test:test)
-    menu | ⟳ Refresh the definition
+    menu | ⟳ Reload Definition
 
 == feature/settings/src/main/kotlin/com/example/sample/feature/settings/SettingsScreen.kt
 roles: feature.Screen
@@ -2192,7 +2192,7 @@ roles: feature.Screen
     menu | HomeScreen.kt | feature/…/example/sample/feature/home
     menu | -----
     menu | ▶ Run the check (:architecture-test:test)
-    menu | ⟳ Refresh the definition
+    menu | ⟳ Reload Definition
 44 | ◆ | katachi: feature.Screen — allowed by @Composable internal fun SettingsScreen(...) (ScreenRole.kt:73)
     allowed at ScreenRole.kt:73 | annotated("Composable").internal.`fun`(fileName)
     menu | ◆ Allowed by @Composable internal fun SettingsScreen(...) | ScreenRole.kt:73
@@ -2201,7 +2201,7 @@ roles: feature.Screen
     menu | HomeScreen.kt | feature/…/example/sample/feature/home
     menu | -----
     menu | ▶ Run the check (:architecture-test:test)
-    menu | ⟳ Refresh the definition
+    menu | ⟳ Reload Definition
 88 | ◆ | katachi: feature.Screen — allowed by @Preview private fun *Preview(...) (ScreenRole.kt:74)
     allowed at ScreenRole.kt:74 | annotated("Preview").private.`fun`("*Preview")
     menu | ◆ Allowed by @Preview private fun *Preview(...) | ScreenRole.kt:74
@@ -2210,7 +2210,7 @@ roles: feature.Screen
     menu | HomeScreen.kt | feature/…/example/sample/feature/home
     menu | -----
     menu | ▶ Run the check (:architecture-test:test)
-    menu | ⟳ Refresh the definition
+    menu | ⟳ Reload Definition
 
 == feature/settings/src/main/kotlin/com/example/sample/feature/settings/SettingsViewModel.kt
 roles: feature.ViewModel
@@ -2223,7 +2223,7 @@ roles: feature.ViewModel
     menu | HomeViewModel.kt | feature/…/example/sample/feature/home
     menu | -----
     menu | ▶ Run the check (:architecture-test:test)
-    menu | ⟳ Refresh the definition
+    menu | ⟳ Reload Definition
 17 | ◆ | katachi: feature.ViewModel — allowed by internal class SettingsViewModel : ViewModel (ViewModelRole.kt:57)
     allowed at ViewModelRole.kt:57 | internal.`class`(fileName).superclass("ViewModel") {
     menu | ◆ Allowed by internal class SettingsViewModel : ViewModel | ViewModelRole.kt:57
@@ -2232,7 +2232,7 @@ roles: feature.ViewModel
     menu | HomeViewModel.kt | feature/…/example/sample/feature/home
     menu | -----
     menu | ▶ Run the check (:architecture-test:test)
-    menu | ⟳ Refresh the definition
+    menu | ⟳ Reload Definition
 
 == feature/settings/src/test/kotlin/com/example/sample/feature/settings/SettingsViewModelTest.kt
 roles: feature.FeatureTest
@@ -2248,7 +2248,7 @@ roles: feature.FeatureTest
     menu |   feature.FeatureTest.home
     menu |   feature.FeatureTest.settings
     menu | ▶ Run the check (:architecture-test:test)
-    menu | ⟳ Refresh the definition
+    menu | ⟳ Reload Definition
 
 == gradle.properties
 roles: Gradle.GradleProperties
@@ -2259,7 +2259,7 @@ roles: Gradle.GradleProperties
     menu | (disabled) — No other file yet
     menu | -----
     menu | ▶ Run the check (:architecture-test:test)
-    menu | ⟳ Refresh the definition
+    menu | ⟳ Reload Definition
 
 == gradle/sample.versions.toml
 roles: Gradle.VersionCatalog
@@ -2270,7 +2270,7 @@ roles: Gradle.VersionCatalog
     menu | (disabled) — No other file yet
     menu | -----
     menu | ▶ Run the check (:architecture-test:test)
-    menu | ⟳ Refresh the definition
+    menu | ⟳ Reload Definition
 
 == gradle/wrapper/gradle-wrapper.properties
 roles: Gradle.GradleWrapper.WrapperProperties
@@ -2281,7 +2281,7 @@ roles: Gradle.GradleWrapper.WrapperProperties
     menu | (disabled) — No other file yet
     menu | -----
     menu | ▶ Run the check (:architecture-test:test)
-    menu | ⟳ Refresh the definition
+    menu | ⟳ Reload Definition
 
 == katachi-baseline.json
 roles: testing.BaselineFile
@@ -2292,7 +2292,7 @@ roles: testing.BaselineFile
     menu | (disabled) — No other file yet
     menu | -----
     menu | ▶ Run the check (:architecture-test:test)
-    menu | ⟳ Refresh the definition
+    menu | ⟳ Reload Definition
 
 == navigation/build.gradle.kts
 roles: Gradle.BuildScript
@@ -2310,7 +2310,7 @@ roles: Gradle.BuildScript
     menu | build.gradle.kts | ui
     menu | -----
     menu | ▶ Run the check (:architecture-test:test)
-    menu | ⟳ Refresh the definition
+    menu | ⟳ Reload Definition
 
 == navigation/src/main/kotlin/com/example/sample/navigation/AppNavigator.kt
 roles: ui.Navigation
@@ -2321,7 +2321,7 @@ roles: ui.Navigation
     menu | (disabled) — No other file yet
     menu | -----
     menu | ▶ Run the check (:architecture-test:test)
-    menu | ⟳ Refresh the definition
+    menu | ⟳ Reload Definition
 
 == settings.gradle.kts
 roles: Gradle.SettingsScript
@@ -2332,7 +2332,7 @@ roles: Gradle.SettingsScript
     menu | (disabled) — No other file yet
     menu | -----
     menu | ▶ Run the check (:architecture-test:test)
-    menu | ⟳ Refresh the definition
+    menu | ⟳ Reload Definition
 
 == snapshots/layout.txt
 roles: testing.LayoutSnapshot
@@ -2343,7 +2343,7 @@ roles: testing.LayoutSnapshot
     menu | (disabled) — No other file yet
     menu | -----
     menu | ▶ Run the check (:architecture-test:test)
-    menu | ⟳ Refresh the definition
+    menu | ⟳ Reload Definition
 
 == testing/build.gradle.kts
 roles: Gradle.BuildScript
@@ -2361,7 +2361,7 @@ roles: Gradle.BuildScript
     menu | build.gradle.kts | ui
     menu | -----
     menu | ▶ Run the check (:architecture-test:test)
-    menu | ⟳ Refresh the definition
+    menu | ⟳ Reload Definition
 
 == testing/src/main/kotlin/com/example/sample/testing/FakeSettingsRepository.kt
 roles: testing.Fake
@@ -2375,7 +2375,7 @@ roles: testing.Fake
     menu | -----
     menu | + New testing.Fake from template…
     menu | ▶ Run the check (:architecture-test:test)
-    menu | ⟳ Refresh the definition
+    menu | ⟳ Reload Definition
 
 == testing/src/main/kotlin/com/example/sample/testing/FakeUserRepository.kt
 roles: testing.Fake
@@ -2389,7 +2389,7 @@ roles: testing.Fake
     menu | -----
     menu | + New testing.Fake from template…
     menu | ▶ Run the check (:architecture-test:test)
-    menu | ⟳ Refresh the definition
+    menu | ⟳ Reload Definition
 
 == ui/build.gradle.kts
 roles: Gradle.BuildScript
@@ -2407,7 +2407,7 @@ roles: Gradle.BuildScript
     menu | build.gradle.kts | testing
     menu | -----
     menu | ▶ Run the check (:architecture-test:test)
-    menu | ⟳ Refresh the definition
+    menu | ⟳ Reload Definition
 
 == ui/src/main/kotlin/com/example/sample/ui/component/AppButton.kt
 roles: ui.Component
@@ -2421,7 +2421,7 @@ roles: ui.Component
     menu | -----
     menu | + New ui.Component from template…
     menu | ▶ Run the check (:architecture-test:test)
-    menu | ⟳ Refresh the definition
+    menu | ⟳ Reload Definition
 37 | ◆ | katachi: ui.Component — allowed by public enum class AppButton* (ComponentRole.kt:104)
     allowed at ComponentRole.kt:104 | public.enum.`class`("$fileName*")
     menu | ◆ Allowed by public enum class AppButton* | ComponentRole.kt:104
@@ -2431,7 +2431,7 @@ roles: ui.Component
     menu | -----
     menu | + New ui.Component from template…
     menu | ▶ Run the check (:architecture-test:test)
-    menu | ⟳ Refresh the definition
+    menu | ⟳ Reload Definition
 47 | ◆ | katachi: ui.Component — allowed by @Preview private fun *Preview(...) (ComponentRole.kt:103)
     allowed at ComponentRole.kt:103 | annotated("Preview").private.`fun`("*Preview")
     menu | ◆ Allowed by @Preview private fun *Preview(...) | ComponentRole.kt:103
@@ -2441,7 +2441,7 @@ roles: ui.Component
     menu | -----
     menu | + New ui.Component from template…
     menu | ▶ Run the check (:architecture-test:test)
-    menu | ⟳ Refresh the definition
+    menu | ⟳ Reload Definition
 55 | ◆ | katachi: ui.Component — allowed by @Preview private fun *Preview(...) (ComponentRole.kt:103)
     allowed at ComponentRole.kt:103 | annotated("Preview").private.`fun`("*Preview")
     menu | ◆ Allowed by @Preview private fun *Preview(...) | ComponentRole.kt:103
@@ -2451,7 +2451,7 @@ roles: ui.Component
     menu | -----
     menu | + New ui.Component from template…
     menu | ▶ Run the check (:architecture-test:test)
-    menu | ⟳ Refresh the definition
+    menu | ⟳ Reload Definition
 65 | ◆ | katachi: ui.Component — allowed by @Preview private fun *Preview(...) (ComponentRole.kt:103)
     allowed at ComponentRole.kt:103 | annotated("Preview").private.`fun`("*Preview")
     menu | ◆ Allowed by @Preview private fun *Preview(...) | ComponentRole.kt:103
@@ -2461,7 +2461,7 @@ roles: ui.Component
     menu | -----
     menu | + New ui.Component from template…
     menu | ▶ Run the check (:architecture-test:test)
-    menu | ⟳ Refresh the definition
+    menu | ⟳ Reload Definition
 
 == ui/src/main/kotlin/com/example/sample/ui/core/UiState.kt
 roles: ui.UiCore
@@ -2472,7 +2472,7 @@ roles: ui.UiCore
     menu | (disabled) — No other file yet
     menu | -----
     menu | ▶ Run the check (:architecture-test:test)
-    menu | ⟳ Refresh the definition
+    menu | ⟳ Reload Definition
 
 == ui/src/main/kotlin/com/example/sample/ui/preview/PreviewRoot.kt
 roles: ui.PreviewRoot
@@ -2483,7 +2483,7 @@ roles: ui.PreviewRoot
     menu | (disabled) — No other file yet
     menu | -----
     menu | ▶ Run the check (:architecture-test:test)
-    menu | ⟳ Refresh the definition
+    menu | ⟳ Reload Definition
 
 == ui/src/main/kotlin/com/example/sample/ui/theme/AppTheme.kt
 roles: ui.Theme
@@ -2494,7 +2494,7 @@ roles: ui.Theme
     menu | (disabled) — No other file yet
     menu | -----
     menu | ▶ Run the check (:architecture-test:test)
-    menu | ⟳ Refresh the definition
+    menu | ⟳ Reload Definition
 
 ## annotations
 (no SARIF of a real run was taken for sample/android: only sample/jvm's)

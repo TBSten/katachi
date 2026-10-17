@@ -1,17 +1,17 @@
-package me.tbsten.katachi.intellij.ide.gutter
+package me.tbsten.katachi.intellij.ide
 
 import com.intellij.openapi.externalSystem.service.project.manage.ProjectDataImportListener
 import me.tbsten.katachi.intellij.AnalysisTestBase
 
 /**
- * [DefinitionModuleCache]: the line marker provider asks at every highlight, so a read of the synced Gradle data is kept
+ * [DefinitionModulePresence]: the line marker provider asks at every highlight, so a read of the synced Gradle data is kept
  * until the next sync, and a sync (finished or failed), a read that fails or one that a sync overtakes keep nothing wrong.
  */
-internal class DefinitionModuleCacheTest : AnalysisTestBase() {
-    private val cache get() = DefinitionModuleCache.getInstance(project)
+internal class DefinitionModulePresenceTest : AnalysisTestBase() {
+    private val cache get() = DefinitionModulePresence.getInstance(project)
     private var reads = 0
     private var found = false
-    private val read: () -> Boolean = { reads++; found }
+    private val read: () -> Boolean? = { reads++; found }
 
     override fun setUp() {
         super.setUp()
@@ -62,5 +62,18 @@ internal class DefinitionModuleCacheTest : AnalysisTestBase() {
         found = true
         assertTrue(cache.hasDefinitionModule(read))
         assertEquals(2, reads)
+    }
+
+    fun `test 同期データがまだ無い間の答えは使い回さず 戻ったら読んだ答えを使い回す`() {
+        var data: Boolean? = null
+        val reading = { reads++; data }
+        repeat(3) { assertFalse(cache.hasDefinitionModule(reading)) }
+        assertEquals("nothing is kept while there is no data, so each ask reads", 3, reads)
+
+        data = true
+        assertTrue(cache.hasDefinitionModule(reading))
+        data = null
+        assertTrue("the data came back, and that answer is kept", cache.hasDefinitionModule(reading))
+        assertEquals(4, reads)
     }
 }

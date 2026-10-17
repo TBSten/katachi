@@ -121,7 +121,7 @@ internal abstract class EditorNotificationTestBase : EntryServiceTestBase() {
         ignoreUnrelatedLoggedErrors { super.runTestRunnable(testRunnable) }
     }
 
-    fun ports(): NotificationPorts = NotificationPorts(
+    open fun ports(): NotificationPorts = NotificationPorts(
         existingService = { created },
         hasDefinitionModule = { detectDefinitionModules(synced).let { it is DetectionResult.Found || it is DetectionResult.TaskListMissing } },
         service = { created ?: createService() },
@@ -182,6 +182,20 @@ internal abstract class EditorNotificationTestBase : EntryServiceTestBase() {
     /** The matches the loaded index has for [relative], in index order. */
     fun matchesOf(relative: String): List<PlacementMatch> =
         (service.placementIndex.value as PlacementIndexState.Ready).index.matchesForFile(root.resolve(relative))
+
+    /**
+     * The text of the template notification ([kind] is `empty` or `matched`) that [relative] should get, written out from the
+     * matches: the title of the one template that fits (its role's name when it has none), or the count of several.
+     */
+    fun noticeTextOf(kind: String, relative: String): String {
+        val matches = matchesOf(relative)
+        val only = matches.singleOrNull()?.template?.template
+        return if (only != null) {
+            KatachiBundle.message("notification.editor.$kind.one", only.title.ifBlank { only.roleName })
+        } else {
+            KatachiBundle.message("notification.editor.$kind.many", matches.size)
+        }
+    }
 
     fun write(relative: String, text: String): VirtualFile {
         val path = root.resolve(relative)

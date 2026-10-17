@@ -11,7 +11,7 @@ internal object EnglishKatachiStrings : KatachiStrings {
     override val loadingNote = "The first time takes a few tens of seconds, as the definition is compiled."
     override val cancel = "Cancel"
     override val showLog = "Show Log"
-    override val reload = "Reload"
+    override val reload = "Reload Definition"
     override val sync = "Sync"
     override val details = "Details"
     override fun refreshing(since: String) = "Refreshing… (last: $since)"
@@ -41,9 +41,9 @@ internal object EnglishKatachiStrings : KatachiStrings {
 
     override val loadErrorTitle = "Could not load the templates"
     override val compileFailed = "The definition module failed to compile."
-    override val compileFailedHint = "Fix the definition, then reload."
+    override val compileFailedHint = "Fix the definition, then reload it."
     override val staleSync = "The Gradle sync may be out of date."
-    override val staleSyncHint = "Sync the Gradle project, then reload."
+    override val staleSyncHint = "Sync the Gradle project, then reload the definition."
     override val architectureNotSet = "The definition module has no katachi { architecture = ... }."
     override val architectureNotSetHint = "Set architecture in build.gradle.kts."
     override val openBuildScript = "Open build.gradle.kts"
@@ -58,7 +58,7 @@ internal object EnglishKatachiStrings : KatachiStrings {
     override val staleListBanner = "Could not load. Showing the previous list."
     override val definitionChanged = "The definition changed."
     override fun removedTemplates(names: List<String>) =
-        "${names.joinToString(", ")} ${if (names.size == 1) "is" else "are"} gone"
+        "${names.joinToString(", ")} ${if (names.size == 1) "is" else "are"} no longer in the definition (unchecked)"
 
     override val searchPlaceholder = "Search"
     override val outsideSearch = "Outside the search, selected"
@@ -113,7 +113,7 @@ internal object EnglishKatachiStrings : KatachiStrings {
     override val generate = "Generate"
 
     override fun rowWritten(count: Int) = if (count == 1) "1 file" else "$count files"
-    override fun rowRunning(taskPath: String?) = if (taskPath == null) "Running" else "Running > $taskPath"
+    override fun rowRunning(taskPath: String?) = if (taskPath == null) "Running" else "Running › $taskPath"
     override val rowWaiting = "Waiting"
     override val rowAwaitingConflict = "Files exist · waiting for an answer"
     override fun runningTask(taskPath: String) = "› $taskPath"

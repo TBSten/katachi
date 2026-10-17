@@ -1,5 +1,6 @@
 package me.tbsten.katachi.intellij.ide.notification
 
+import com.intellij.openapi.application.WriteAction
 import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.openapi.fileEditor.FileDocumentManager
 import com.intellij.testFramework.PlatformTestUtil
@@ -7,6 +8,7 @@ import com.intellij.ui.components.JBCheckBox
 import com.intellij.util.ui.UIUtil
 import me.tbsten.katachi.intellij.ide.KatachiBundle
 import me.tbsten.katachi.intellij.ide.KatachiConfigurable
+import me.tbsten.katachi.intellij.presentation.entry.LedgerEntry
 
 /** The real provider through a sequence of user actions (issues 13, 15, the settings page). */
 internal class EditorNotificationSequenceTest : EditorNotificationTestBase() {
@@ -54,12 +56,12 @@ internal class EditorNotificationSequenceTest : EditorNotificationTestBase() {
         loadIndex()
         val file = write("feature/a/ui/Home.kt", "package com.example\n")
         val editor = open(file)
-        assertEquals(KatachiBundle.message("notification.editor.empty"), panelOf(editor)?.text)
+        assertEquals(noticeTextOf("empty", "feature/a/ui/Home.kt"), panelOf(editor)?.text)
         val document = FileDocumentManager.getInstance().getDocument(file)!!
 
         WriteCommandAction.runWriteCommandAction(project) { document.setText("package com.example\n\nclass Home\n") }
 
-        val matched = KatachiBundle.message("notification.editor.matched")
+        val matched = noticeTextOf("matched", "feature/a/ui/Home.kt")
         PlatformTestUtil.waitWithEventsDispatching({ "panel: ${panelOf(editor)?.text}" }, { panelOf(editor)?.text == matched }, 10)
     }
 
@@ -78,5 +80,55 @@ internal class EditorNotificationSequenceTest : EditorNotificationTestBase() {
         updateAll()
 
         assertNull(panelOf(editor))
+    }
+
+    // covers: E-3
+    fun `test 生成して消したファイルを空のまま作り直すと通知がまた出る`() {
+        loadIndex()
+        val file = write("feature/a/ui/Home.kt", "")
+        val editor = open(file)
+        val template = matchesOf("feature/a/ui/Home.kt").first().id
+        service.ledger.markSucceeded(path("feature/a/ui/Home.kt"), template)
+        PlatformTestUtil.waitWithEventsDispatching({ "panel: ${panelOf(editor)?.text}" }, { panelOf(editor) == null }, 10)
+        close(file)
+
+        WriteAction.runAndWait<Throwable> { file.delete(this) }
+        PlatformTestUtil.waitWithEventsDispatching({ "ledger: ${service.ledger.entries.value}" }, { service.ledger.entryOf(path("feature/a/ui/Home.kt")) == null }, 10)
+        val again = open("feature/a/ui/Home.kt", "")
+
+        assertNotNull("the file is new again", panelOf(again))
+    }
+
+    // covers: E-3
+    fun `test 生成したファイルが入ったディレクトリごと消してもほかのファイルの台帳は残る`() {
+        loadIndex()
+        val gone = write("feature/a/ui/Home.kt", "")
+        val kept = write("feature/b/ui/Home.kt", "")
+        val template = matchesOf("feature/a/ui/Home.kt").first().id
+        service.ledger.markSucceeded(path("feature/a/ui/Home.kt"), template)
+        service.ledger.markSucceeded(path("feature/b/ui/Home.kt"), template)
+        open(gone)
+        settleNotifications() // the platform decides in the background; the refresher follows the ledger from the first decision on
+
+        WriteAction.runAndWait<Throwable> { gone.parent.parent.delete(this) }
+
+        PlatformTestUtil.waitWithEventsDispatching({ "ledger: ${service.ledger.entries.value}" }, { service.ledger.entryOf(path("feature/a/ui/Home.kt")) == null }, 10)
+        assertTrue("the other directory stays", kept.isValid)
+        assertNotNull("its entry stays", service.ledger.entryOf(path("feature/b/ui/Home.kt")))
+    }
+
+    // covers: E-3
+    fun `test 失敗や実行中の台帳はファイルを消しても残る`() {
+        loadIndex()
+        val file = write("feature/a/ui/Home.kt", "")
+        open(file)
+        settleNotifications()
+        val template = matchesOf("feature/a/ui/Home.kt").first().id
+        service.ledger.markFailed(path("feature/a/ui/Home.kt"), template, "katachi generate")
+
+        WriteAction.runAndWait<Throwable> { file.delete(this) }
+        settleNotifications()
+
+        assertTrue("that generation is not over", service.ledger.entryOf(path("feature/a/ui/Home.kt")) is LedgerEntry.Failed)
     }
 }

@@ -2,6 +2,7 @@ package me.tbsten.katachi.intellij.ide.notification
 
 import com.intellij.openapi.fileEditor.FileDocumentManager
 import com.intellij.openapi.fileEditor.FileEditor
+import com.intellij.openapi.ide.CopyPasteManager
 import com.intellij.openapi.project.DumbAware
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
@@ -24,13 +25,15 @@ import me.tbsten.katachi.intellij.presentation.entry.decideNotification
 import me.tbsten.katachi.intellij.presentation.rules.NoRoleDecision
 import me.tbsten.katachi.intellij.presentation.rules.NotificationWinner
 import me.tbsten.katachi.intellij.presentation.rules.arbitrateNotifications
+import java.awt.datatransfer.StringSelection
 import java.nio.file.Path
 import java.util.function.Function
 import javax.swing.JComponent
 
 /**
  * The editor notification on files a katachi template fits (design section 1): [Create] on an empty
- * one, [View template] on one with content, with ⚙ and ×.
+ * one, [View template] on one with content, with ⚙ and ×; the text names the template when one fits. A generation
+ * that failed on a file that cannot hold a comment gets [Copy Command].
  *
  * [collectNotificationData] runs in the background under a read lock (`@RequiresReadLock` in 261), so
  * the whole decision is made there: settings, the index state, the matches, the empty-file rule over
@@ -155,6 +158,11 @@ internal class KatachiEditorNotificationProvider(
                     }
                 },
                 viewTemplate = { first?.let { match -> sdkCall("show the template in the tool window") { effects.revealTemplateInToolWindow(match.id) } } },
+                copyCommand = {
+                    (decision as? NotificationDecision.FailedWithCommand)?.command?.let { command ->
+                        sdkCall("copy the command to the clipboard") { CopyPasteManager.getInstance().setContents(StringSelection(command)) }
+                    }
+                },
                 openSettings = { sdkCall("open the katachi settings") { effects.openSettings() } },
                 dismiss = {
                     memory.dismiss(path)

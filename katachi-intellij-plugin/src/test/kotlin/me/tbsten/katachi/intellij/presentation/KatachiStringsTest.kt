@@ -36,7 +36,7 @@ class KatachiStringsTest {
         val japanese = textsOf(JapaneseKatachiStrings).toMap()
         assertEquals(english.keys, japanese.keys)
         assertTrue(japanese.values.none { it.isBlank() })
-        // A few are the same on purpose (the file count "1 file", the marker "← Opened", "› :task").
+        // A few are the same on purpose (the task line "› :task").
         val same = english.filter { (name, text) -> japanese[name] == text }.keys
         assertTrue("the same in both languages: $same", same.size <= 5)
     }
@@ -53,9 +53,19 @@ class KatachiStringsTest {
         assertEquals("3 minutes ago", EnglishKatachiStrings.minutesAgo(3))
         assertEquals("Generated 1 template", EnglishKatachiStrings.resultAll(1))
         assertEquals("Generated 2 templates", EnglishKatachiStrings.resultAll(2))
-        assertEquals("A is gone", EnglishKatachiStrings.removedTemplates(listOf("A")))
-        assertEquals("A, B are gone", EnglishKatachiStrings.removedTemplates(listOf("A", "B")))
+        assertEquals("A is no longer in the definition (unchecked)", EnglishKatachiStrings.removedTemplates(listOf("A")))
+        assertEquals("A, B are no longer in the definition (unchecked)", EnglishKatachiStrings.removedTemplates(listOf("A", "B")))
         assertEquals("withTest (when useCase is on)", EnglishKatachiStrings.collapsedField("withTest", "useCase", "true"))
+    }
+
+    @Test
+    fun `実行中の行は日英とも タスク名の前に › を置き 読み込みの案内は定義を読み直すと同じ呼び名を使う`() {
+        assertTrue("› :t" in JapaneseKatachiStrings.rowRunning(":t"))
+        assertTrue("› :t" in EnglishKatachiStrings.rowRunning(":t"))
+        assertEquals("定義を直してから、定義を読み直してください。", JapaneseKatachiStrings.compileFailedHint)
+        assertEquals("Gradle を同期してから、定義を読み直してください。", JapaneseKatachiStrings.staleSyncHint)
+        assertEquals("Fix the definition, then reload it.", EnglishKatachiStrings.compileFailedHint)
+        assertEquals("Sync the Gradle project, then reload the definition.", EnglishKatachiStrings.staleSyncHint)
     }
 
     private fun assertSharedTexts(tool: KatachiStrings, dialog: GenerateDialogStrings) {

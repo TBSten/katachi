@@ -1,7 +1,6 @@
 package me.tbsten.katachi.intellij.ide.notification
 
 import com.intellij.ui.EditorNotificationPanel
-import me.tbsten.katachi.intellij.ide.KatachiBundle
 import me.tbsten.katachi.intellij.presentation.entry.EntryOrigin
 import me.tbsten.katachi.intellij.presentation.entry.GenerateDialogRequest
 
@@ -58,7 +57,7 @@ internal class MultiTemplateNotificationTest : EditorNotificationTestBase() {
 
         val emptyEditor = open(rel, emptyText)
         val panel = panelOf(emptyEditor)!!
-        assertEquals(KatachiBundle.message("notification.editor.empty"), panel.text)
+        assertEquals(noticeTextOf("empty", rel), panel.text)
         assertEquals(1, panel.links.size)
         assertEquals(1, panelsIn(emptyEditor).size)
         panel.link("notification.editor.create").doClick()
@@ -66,7 +65,7 @@ internal class MultiTemplateNotificationTest : EditorNotificationTestBase() {
 
         val contentEditor = open("data/OtherRepository.kt", contentText)
         val panel2 = panelOf(contentEditor)!!
-        assertEquals(KatachiBundle.message("notification.editor.matched"), panel2.text)
+        assertEquals(noticeTextOf("matched", "data/OtherRepository.kt"), panel2.text)
         assertEquals(1, panel2.links.size)
         panel2.link("notification.editor.view").doClick()
         assertEquals(listOf(matchesOf("data/OtherRepository.kt").first().id), effects.revealed)
@@ -88,7 +87,7 @@ internal class MultiTemplateNotificationTest : EditorNotificationTestBase() {
 
         val editor = open(rel, emptyText)
         val panel = panelOf(editor)!!
-        assertEquals(KatachiBundle.message("notification.editor.empty"), panel.text)
+        assertEquals(noticeTextOf("empty", rel), panel.text)
         assertEquals(1, panel.links.size)
         panel.link("notification.editor.create").doClick()
         assertEquals("data.Repository.user", effects.dialogs.single().initialTemplate.template)
@@ -104,7 +103,7 @@ internal class MultiTemplateNotificationTest : EditorNotificationTestBase() {
 
         val editor = open(rel, contentText)
         val panel = panelOf(editor)!!
-        assertEquals(KatachiBundle.message("notification.editor.matched"), panel.text)
+        assertEquals(noticeTextOf("matched", rel), panel.text)
         assertEquals(1, panel.links.size)
         panel.link("notification.editor.view").doClick()
         assertEquals(":arch-a", effects.revealed.single().module.gradlePath)
@@ -116,6 +115,6 @@ internal class MultiTemplateNotificationTest : EditorNotificationTestBase() {
         val editor = open("data/CacheRepository.kt", emptyText)
         repeat(3) { updateAll() }
         assertEquals(1, panelsIn(editor).size)
-        assertEquals(KatachiBundle.message("notification.editor.empty"), panelOf(editor)!!.text)
+        assertEquals(noticeTextOf("empty", "data/CacheRepository.kt"), panelOf(editor)!!.text)
     }
 }

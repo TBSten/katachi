@@ -191,4 +191,20 @@ class NotificationDecisionTableTest {
     fun `Hiddenは同じ値を返す`() {
         assertSame(NotificationDecision.Hidden, decide(matches = emptyList()))
     }
+
+    @Test
+    fun `当たりが1件なら title を持ち2件以上なら件数だけで title は無い`() {
+        val titled = placementMatch(template("data.Repository", title = "Repository"))
+        val untitled = placementMatch(template("data.Fake", title = " "))
+        for (content in FileContentState.entries) {
+            val single = decide(content, matches = listOf(titled)) as NotificationDecision.Matched
+            assertEquals("Repository", single.title)
+            assertEquals(1, single.count)
+            val blank = decide(content, matches = listOf(untitled)) as NotificationDecision.Matched
+            assertEquals("title が空なら Role の名前", "data.Fake", blank.title)
+            val many = decide(content, matches = several + titled) as NotificationDecision.Matched
+            assertEquals(null, many.title)
+            assertEquals(4, many.count)
+        }
+    }
 }

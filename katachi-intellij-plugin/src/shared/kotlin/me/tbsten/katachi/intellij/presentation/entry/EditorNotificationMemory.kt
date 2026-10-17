@@ -35,6 +35,13 @@ internal class EditorNotificationMemory private constructor(
     fun dismiss(file: Path): EditorNotificationMemory =
         if (isDismissed(file)) this else EditorNotificationMemory(dismissed.plusElement(file), contentNoticeShown, noRoleDismissed)
 
+    /**
+     * Forgets that [file] was closed: a file katachi generated and the user then deleted is a new file when it appears again,
+     * so its notification may show.
+     */
+    fun forgetDismissed(file: Path): EditorNotificationMemory =
+        if (!isDismissed(file)) this else EditorNotificationMemory(dismissed - setOf(file), contentNoticeShown, noRoleDismissed)
+
     fun markContentNoticeShown(file: Path): EditorNotificationMemory =
         if (hasShownContentNotice(file)) this else EditorNotificationMemory(dismissed, contentNoticeShown.plusElement(file), noRoleDismissed)
 

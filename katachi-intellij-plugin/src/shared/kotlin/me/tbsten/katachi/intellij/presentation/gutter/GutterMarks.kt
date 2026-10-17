@@ -128,7 +128,7 @@ internal object GutterTooltips {
     private const val SUMMARY_LIMIT = 120
 
     fun describe(explanation: BoundExplanation): String = when (explanation) {
-        BoundExplanation.NotComputed -> "not computed yet. Refresh the definition."
+        BoundExplanation.NotComputed -> "not computed yet. Reload Definition."
         is BoundExplanation.Explained -> {
             val declaration = explanation.declaration
             when (val verdict = declaration.verdict) {

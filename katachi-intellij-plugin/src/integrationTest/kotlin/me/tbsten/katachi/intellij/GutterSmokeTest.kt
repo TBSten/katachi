@@ -111,7 +111,7 @@ class GutterSmokeTest {
             assertTrue("item=◆ Allowed by class HealthService|ServiceRole.kt:80|enabled" in menu, menu.toString())
             assertTrue(menu.any { it.startsWith("item=LegacyStatusService.kt|") }, menu.toString())
             assertTrue(menu.any { it.startsWith("item=+ New domain.Service from template") || it.startsWith("submenu=+ New domain.Service from template") }, menu.toString())
-            assertTrue("item=⟳ Refresh the definition||enabled" in menu, menu.toString())
+            assertTrue("item=⟳ Reload Definition||enabled" in menu, menu.toString())
 
             // 3. Choosing the allowed-by row opens the line of ServiceRole.kt that allowed the declaration.
             assertEquals("chosen=◆ Allowed by class HealthService", bridge.chooseFromGutter(service, 7, "◆ Allowed by"))

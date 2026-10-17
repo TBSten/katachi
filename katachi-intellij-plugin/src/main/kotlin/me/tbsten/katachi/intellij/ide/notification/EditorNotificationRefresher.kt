@@ -14,6 +14,7 @@ import com.intellij.openapi.vfs.VfsUtilCore
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.VirtualFileManager
 import com.intellij.openapi.vfs.newvfs.BulkFileListener
+import com.intellij.openapi.vfs.newvfs.events.VFileDeleteEvent
 import com.intellij.openapi.vfs.newvfs.events.VFileEvent
 import com.intellij.openapi.vfs.newvfs.events.VFileMoveEvent
 import com.intellij.openapi.vfs.newvfs.events.VFilePropertyChangeEvent
@@ -48,6 +49,8 @@ import java.util.concurrent.atomic.AtomicReference
  *   [DEFINITION_SETTLE_MILLIS] after the last change.
  * - The version control: a file that shows "no role holds this file" is recomputed when its VCS status
  *   changes, because adding it to git changes the wording ([followVcs]).
+ * - Deletions: a file katachi generated and the user deleted is forgotten (the ledger's `Succeeded` and the closed mark), so an
+ *   empty file created at its path again gets its notification ([forgetDeletedGenerations]).
  * - Names: an open file that is renamed or moved, or lies under a directory that is, is recomputed, because the role that
  *   holds a file depends on its path (the platform does not listen to the VFS for this; renaming or moving is also what
  *   the notification itself suggests).
@@ -61,6 +64,7 @@ internal class EditorNotificationRefresher(
     private val scope: CoroutineScope,
     parent: Disposable,
     private val dismiss: (Path) -> Unit,
+    private val forgetDismissed: (Path) -> Unit,
 ) {
     /** The files whose edits matter: a template fits them. */
     private val followed: MutableSet<Path> = ConcurrentHashMap.newKeySet()
@@ -97,7 +101,10 @@ internal class EditorNotificationRefresher(
             project.messageBus.connect(parent).subscribe(
                 VirtualFileManager.VFS_CHANGES,
                 object : BulkFileListener {
-                    override fun after(events: List<VFileEvent>) = recomputeRenamed(events)
+                    override fun after(events: List<VFileEvent>) {
+                        forgetDeletedGenerations(events)
+                        recomputeRenamed(events)
+                    }
                 },
             )
         }
@@ -132,6 +139,21 @@ internal class EditorNotificationRefresher(
         if (moved.isEmpty()) return
         val open = sdkCall("list the open files") { FileEditorManager.getInstance(project).openFiles.toList() }.getOrNull() ?: return
         open.filter { file -> moved.any { VfsUtilCore.isAncestor(it, file, false) } }.forEach(::recompute)
+    }
+
+    /**
+     * The files katachi generated that [events] deleted (a file, or a directory above it): their `Succeeded` entry goes from the
+     * ledger and they no longer count as closed. A failed or running entry stays: that generation is not over.
+     */
+    private fun forgetDeletedGenerations(events: List<VFileEvent>) {
+        val ledger = ledgerFollowedFor.get()?.ledger ?: return
+        val deleted = events.filterIsInstance<VFileDeleteEvent>().mapNotNull { sdkCall("read the path of a deleted file") { Path.of(it.path) }.getOrNull() }
+        if (deleted.isEmpty()) return
+        for ((path, entry) in ledger.entries.value) {
+            if (entry !is LedgerEntry.Succeeded || deleted.none { path.startsWith(it) }) continue
+            ledger.clear(path)
+            forgetDismissed(path)
+        }
     }
 
     private fun recomputeIfVcsChanged(file: VirtualFile) {
@@ -176,8 +198,6 @@ internal class EditorNotificationRefresher(
                 val changed = (before.keys + now.keys).filter { before[it] != now[it] }
                 before = now
                 for (path in changed) {
-                    // TODO(V2 L3): "succeeded" is never cleared, so a file generated, deleted and created empty again
-                    //  gets no notification in this session; clear the ledger entry when the file is deleted.
                     if (now[path] is LedgerEntry.Succeeded) dismiss(path)
                     sdkCall("find $path for its katachi notification") { LocalFileSystem.getInstance().findFileByNioFile(path) }
                         .getOrNull()

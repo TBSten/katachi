@@ -13,8 +13,9 @@ import javax.swing.Action
 import javax.swing.JComponent
 
 /**
- * The only dialog of the plugin (spec 03 "衝突ダイアログ"): the files that already exist, as
- * katachiTemplate reported them, and what to do about the whole template.
+ * The dialog that asks what to do about files that already exist (spec 03 "衝突ダイアログ"): the files as
+ * katachiTemplate reported them, and what to do about the whole template. The dialog that fills in a template's
+ * arguments is `KatachiGenerateDialog`; this one only comes up during a generation.
  *
  * ```
  * ┌ Files already exist (2 / 3: Repository) ─────────────┐

@@ -156,7 +156,7 @@ internal object MenuModels {
         val explanation = role.explanation ?: return null
         val declaration = when (explanation) {
             BoundExplanation.NotComputed -> return MenuItem.Row(
-                "⟳ Refresh the definition to see what allows this",
+                "⟳ Reload Definition to see what allows this",
                 target = MenuTarget.Refresh,
                 enabled = availability.refresh,
             )
@@ -226,7 +226,7 @@ internal object MenuModels {
     }
 
     private fun refreshRow(availability: MenuAvailability): MenuItem.Row =
-        MenuItem.Row("⟳ Refresh the definition", target = MenuTarget.Refresh, enabled = availability.refresh)
+        MenuItem.Row("⟳ Reload Definition", target = MenuTarget.Refresh, enabled = availability.refresh)
 
     private fun DeclarationSiteRef.shown(): String = "$fileName:$line"
 }
