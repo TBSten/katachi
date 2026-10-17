@@ -60,4 +60,10 @@ internal interface EntryEffects {
 
     /** [View template]: shows the tool window with [template] selected and highlighted (C2). */
     fun revealTemplateInToolWindow(template: TemplateId)
+
+    /**
+     * New › katachi › a template set: shows the tool window with [template] highlighted, checked and open, [seeds] (what the
+     * directory decided, by the set's parameter names) in its empty fields. The dialog does not take sets (template-set D-12).
+     */
+    fun revealInToolWindow(template: TemplateId, seeds: Map<String, String>)
 }

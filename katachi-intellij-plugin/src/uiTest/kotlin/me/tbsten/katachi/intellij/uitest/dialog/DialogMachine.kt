@@ -10,7 +10,14 @@ import me.tbsten.katachi.intellij.data.placement.PathPattern
 import me.tbsten.katachi.intellij.data.placement.TemplatePlacementIndex
 import me.tbsten.katachi.intellij.model.ModuleTemplate
 import me.tbsten.katachi.intellij.model.ParameterModel
+import me.tbsten.katachi.intellij.model.allParametersOf
 import me.tbsten.katachi.intellij.presentation.FieldSlot
+import me.tbsten.katachi.intellij.presentation.FieldUi
+import me.tbsten.katachi.intellij.presentation.dialog.dialogFieldsUiOf
+import me.tbsten.katachi.intellij.ui.dialog.PropertiesGenerateDialogStrings
+import me.tbsten.katachi.intellij.uitest.pbt.CandidateReference
+import me.tbsten.katachi.intellij.uitest.pbt.DISK_NAMES
+import me.tbsten.katachi.intellij.uitest.pbt.FakeDisk
 import me.tbsten.katachi.intellij.presentation.dialog.CaptureSeedPort
 import me.tbsten.katachi.intellij.presentation.dialog.GenerateDialogIntent
 import me.tbsten.katachi.intellij.presentation.dialog.GenerateDialogListNotice
@@ -61,6 +68,9 @@ internal class DialogMachine(
     private val visible: MutableList<List<Int>> = definitions.map { it.pool.indices.toList() }.toMutableList()
     private var index: TemplatePlacementIndex = indexOfVisible()
     private val disk = mutableMapOf<Path, DiskKind>()
+
+    /** The directories the capture candidates are read from. */
+    private val candidateDisk = FakeDisk()
     private val checks = mutableListOf<Path?>()
     private val trace = mutableListOf<String>()
     private var cancelled = false
@@ -95,6 +105,7 @@ internal class DialogMachine(
             rootOf = { it.linkedRootPath },
             checkContext = background,
             settle = {},
+            candidateLister = candidateDisk.lister,
         )
         drain()
         checkOpening(request)
@@ -107,7 +118,7 @@ internal class DialogMachine(
 
     private fun listedRows(): List<ModuleTemplate> = definitions.flatMapIndexed { d, def -> visible[d].map { ModuleTemplate(def.module, def.pool[it]) } }
 
-    private fun view(state: GenerateDialogState = viewModel.state.value) = DialogView(state, listedRows(), index, origin, disk.toMap(), cancelled)
+    private fun view(state: GenerateDialogState = viewModel.state.value) = DialogView(state, listedRows(), index, origin, disk.toMap(), cancelled, candidateDisk)
 
     private fun drain() {
         while (edt.pending + background.pending > 0) {
@@ -209,6 +220,8 @@ internal class DialogMachine(
             is DialogOp.SelectDefinition -> b.definitions.takeIf { it.isNotEmpty() }?.let { viewModel.dispatch(GenerateDialogIntent.SelectDefinition(it[op.pick % it.size].id)) }
             is DialogOp.Type -> typed = input(b, op.field, op.text)
             is DialogOp.Clear -> typed = input(b, op.field, "")
+            is DialogOp.PickCandidate -> typed = pickCandidate(b, op)
+            is DialogOp.DiskChanged -> changeDisk(op, b)
             is DialogOp.Shrink -> changeList { d -> visible[d] = definitions[d].pool.indices.filter { Math.floorMod(op.salt * 31 + it * 17 + d * 5 + op.salt / 7, 3) != 0 } }
             DialogOp.Restore -> changeList { d -> visible[d] = definitions[d].pool.indices.toList() }
             is DialogOp.Rotate -> changeList { d -> visible[d] = visible[d].let { list -> if (list.isEmpty()) list else list.drop(op.by % list.size) + list.take(op.by % list.size) } }
@@ -239,6 +252,39 @@ internal class DialogMachine(
         return target.name to text
     }
 
+    /** What the popup does on a candidate: the field's text becomes it. The popup lists what the typed text is a prefix of. */
+    private fun pickCandidate(state: GenerateDialogState, op: DialogOp.PickCandidate): Pair<String, String>? {
+        val fields = dialogFieldsUiOf(state, PropertiesGenerateDialogStrings.english()).filterIsInstance<FieldUi.Text>().filter { it.suggestions != null }
+        val field = fields.getOrNull(op.pick % fields.size.coerceAtLeast(1)) ?: return null
+        val shown = field.suggestions!!.values.filter { it.startsWith(field.value, ignoreCase = true) }
+        val value = shown.getOrNull(op.index % shown.size.coerceAtLeast(1)) ?: return null
+        count("candidate picked")
+        return input(state, state.fields.indexOfFirst { it.name == field.id.parameterName }, value)
+    }
+
+    /** A directory appears or goes under the directory above a capture field of the selected template (nothing when none has one yet). */
+    private fun changeDisk(op: DialogOp.DiskChanged, state: GenerateDialogState) {
+        val selected = state.selected ?: return
+        val detail = selected.template.detail ?: return
+        val root = selected.module.linkedRootPath
+        val entered = state.form.inputsOf(selected.id)
+        val parents = allParametersOf(detail).filterIsInstance<ParameterModel.CaptureParam>().mapNotNull { capture ->
+            val pattern = CandidateReference.patternHolding(detail.files.map { it.pattern }, capture.name) ?: return@mapNotNull null
+            CandidateReference.parentOf(pattern, capture.name, entered, root)
+        }.distinct().sortedBy { it.toString() }
+        val parent = parents.getOrNull(op.pick % parents.size.coerceAtLeast(1)) ?: return
+        if (op.add) {
+            candidateDisk.add(parent.resolve(DISK_NAMES[op.name % DISK_NAMES.size]), root)
+            count("disk: directory added")
+        } else {
+            val children = candidateDisk.childrenOf(parent).sorted()
+            if (children.isEmpty()) return
+            candidateDisk.remove(parent.resolve(children[op.name % children.size]))
+            count("disk: directory removed")
+        }
+        viewModel.dispatch(GenerateDialogIntent.FilesChangedOutside)
+    }
+
     private fun changeList(update: (Int) -> Unit) {
         definitions.indices.forEach(update)
         index = indexOfVisible()
@@ -256,7 +302,7 @@ internal class DialogMachine(
 
     private fun verify(step: String, extra: List<String>?, after: DialogView?) {
         val current = after ?: view()
-        val problems = (extra ?: emptyList()) + stateProblemsOf(current)
+        val problems = (extra ?: emptyList()) + stateProblemsOf(current) + candidateProblemsOf(current)
         current.selected?.let { lastShown = LastShown(it, current.values) }
         if (problems.isNotEmpty()) fail(step, problems)
         recordReach(current)
@@ -292,6 +338,9 @@ internal class DialogMachine(
         if (s.fields.none { it.slot is FieldSlot.Shown && it.slot.parameter !is ParameterModel.CaptureParam }) count("captures only")
         if (s.fields.any { it.slot is FieldSlot.Collapsed }) count("collapsed")
         if (s.canGenerate) count("can generate")
+        if (s.captureCandidates.isNotEmpty()) count("candidates in the state")
+        if (dialogFieldsUiOf(s, PropertiesGenerateDialogStrings.english()).any { it is FieldUi.Text && it.suggestions != null }) count("candidates shown")
+        if (dialogFieldsUiOf(s, PropertiesGenerateDialogStrings.english()).any { it is FieldUi.Text && it.suggestions?.newDirectoryNote != null }) count("new-directory note shown")
         if (cancelled) count("cancelled")
     }
 

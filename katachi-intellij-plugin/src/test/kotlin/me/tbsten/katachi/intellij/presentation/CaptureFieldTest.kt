@@ -1,5 +1,7 @@
 package me.tbsten.katachi.intellij.presentation
 
+import me.tbsten.katachi.intellij.model.TemplateId
+import me.tbsten.katachi.intellij.model.DescriptionSnapshot
 import me.tbsten.katachi.intellij.model.CapturePlace
 import me.tbsten.katachi.intellij.model.ParameterModel
 import me.tbsten.katachi.intellij.testing.booleanParam
@@ -180,5 +182,100 @@ class CaptureFieldTest {
         val model = template("Screen", captures = listOf(feature))
         assertNull(model.unavailability)
         assertEquals(ParameterModel.KIND_CAPTURE, feature.kindName)
+    }
+
+    // ---- L-S: capture の候補 (ide-review-screens 3.5) ----
+
+    private val homeAndSettings = CandidateList(listOf("home", "settings"), directoryPattern = "feature/{value}")
+
+    private fun suggestions(
+        candidates: CandidateList?,
+        input: String?,
+        parameter: ParameterModel.CaptureParam = feature,
+        error: String? = null,
+    ) = suggestionsOf(parameter, candidates, input, error, JapaneseKatachiStrings)
+
+    @Test
+    fun `候補が読めていないcaptureは素の入力欄のまま`() {
+        assertNull(suggestions(null, "home"))
+        assertNull(suggestions(CandidateList(emptyList()), "home"))
+    }
+
+    @Test
+    fun `候補がある欄はその値を出し 候補にある値や未入力には新しいディレクトリの注意を出さない`() {
+        for (input in listOf(null, "", "  ", "home", "settings")) {
+            val found = suggestions(homeAndSettings, input) ?: throw AssertionError("$input")
+            assertEquals("$input", listOf("home", "settings"), found.values)
+            assertNull("$input", found.newDirectoryNote)
+            assertNull("$input", found.moreLabel)
+        }
+    }
+
+    @Test
+    fun `候補に無い値には 生成先のパスつきで新しいディレクトリになると薄い字で知らせる`() {
+        assertEquals("feature/profile は新しいディレクトリになります", suggestions(homeAndSettings, "profile")?.newDirectoryNote)
+        // 値は打ったとおりに入る (trim しない): katachi に渡る値と同じ
+        assertEquals("feature/ x は新しいディレクトリになります", suggestions(homeAndSettings, " x")?.newDirectoryNote)
+    }
+
+    @Test
+    fun `エラーのある値には新しいディレクトリの注意を重ねない`() {
+        assertNull(suggestions(homeAndSettings, "a/b", error = "1階層で入力してください")?.newDirectoryNote)
+    }
+
+    @Test
+    fun `候補が切り落とされているときは ほか n 件を出し 隠れた候補かもしれない値に注意は出さない`() {
+        val cut = CandidateList(List(CandidateList.MAX) { "d$it" }, hiddenCount = 3, directoryPattern = "feature/{value}")
+
+        val found = suggestions(cut, "zzz") ?: throw AssertionError()
+
+        assertEquals("ほか 3 件", found.moreLabel)
+        assertNull(found.newDirectoryNote)
+    }
+
+    @Test
+    fun `モジュールのcaptureはJSONの既存モジュールが候補で 無い値は注意でなくエラーのまま`() {
+        val screen = ParameterModel.CaptureParam("screen", feature.places, existingModules = listOf("home", "settings"))
+
+        // ディレクトリの候補が読めていても使わない (modulePlacements が先、design 3.1)
+        val found = suggestions(CandidateList(listOf("other"), directoryPattern = "x/{value}"), "profile", screen) ?: throw AssertionError()
+
+        assertEquals(listOf("home", "settings"), found.values)
+        assertNull(found.newDirectoryNote)
+        assertEquals(FieldError.NotAnExistingModule(listOf("home", "settings")), validateField(screen, "profile"))
+    }
+
+    @Test
+    fun `該当するモジュールが1つも無いmoduleのcaptureは素の入力欄で エラーの文が既存の無いことを言う`() {
+        val none = ParameterModel.CaptureParam("screen", feature.places, existingModules = emptyList())
+        assertNull(suggestions(null, "x", none))
+        assertEquals(FieldError.NotAnExistingModule(emptyList()), validateField(none, "x"))
+    }
+
+    @Test
+    fun `フォームの欄は その欄のFieldIdの候補だけを受け取り 違う欄の候補は混ざらない`() {
+        val row = rowsOf("capture").row("feature.Screen")
+        val detail = row.template.detail ?: throw AssertionError()
+        val module = row.module
+        val state = applyFormIntent(
+            KatachiScreenState(
+                phase = ScreenPhase.Ready,
+                modules = listOf(module),
+                snapshots = listOf(DescriptionSnapshot(module, "0.3.0", listOf(row.template), java.time.Instant.EPOCH)),
+            ),
+            KatachiIntent.ToggleCheck(row.id),
+        ) ?: throw AssertionError()
+        val withCandidates = state.copy(
+            captureCandidates = mapOf(
+                FieldId(row.id, "feature") to homeAndSettings,
+                FieldId(TemplateId(row.id.module, "someone.Else"), "feature") to CandidateList(listOf("other")),
+            ),
+        )
+
+        val fields = formUiOf(row, detail, withCandidates, JapaneseKatachiStrings).fields.filterIsInstance<FieldUi.Text>().associateBy { it.id.parameterName }
+
+        assertEquals(listOf("home", "settings"), fields.getValue("feature").suggestions?.values)
+        assertNull(fields.getValue("name").suggestions)
+        assertNull(formUiOf(row, detail, state, JapaneseKatachiStrings).fields.filterIsInstance<FieldUi.Text>().first { it.id.parameterName == "feature" }.suggestions)
     }
 }

@@ -213,6 +213,12 @@ internal sealed interface DialogOp {
 
     data class Clear(val field: Int) : DialogOp
 
+    /** A candidate of a capture field's popup is taken ([pick] chooses the field among those offering candidates): its text becomes the candidate. */
+    data class PickCandidate(val pick: Int, val index: Int) : DialogOp
+
+    /** A directory appears or goes under the directory above a capture field, and the files-changed event follows (see `Op.DiskChanged`). */
+    data class DiskChanged(val add: Boolean, val pick: Int, val name: Int) : DialogOp
+
     /** The shared list changes: some templates go. */
     data class Shrink(val salt: Int) : DialogOp
 
@@ -234,7 +240,7 @@ internal sealed interface DialogOp {
 
 private val texts = listOf(
     "", " ", "Home", "profile", "日本語", "a/b", "a.b", "..", "abc", "007", "-0", "+7", "A", "B", "Z", "true", "false", "x".repeat(40), "Foo Bar",
-)
+) + DISK_NAMES + listOf("ho", "brand-new")
 
 internal val dialogOpArb: Arb<DialogOp> = Arb.choose(
     8 to Arb.int(0..30).map<Int, DialogOp> { DialogOp.SelectTemplate(it) },
@@ -246,6 +252,8 @@ internal val dialogOpArb: Arb<DialogOp> = Arb.choose(
     1 to Arb.int(1..4).map<Int, DialogOp> { DialogOp.Rotate(it) },
     5 to Arb.enum<DiskKind>().map<DiskKind, DialogOp> { DialogOp.ExternalWrite(it) },
     1 to Arb.int(0..2).map<Int, DialogOp> { DialogOp.Cancel(it) },
+    6 to arbitrary<DialogOp> { DialogOp.PickCandidate(Arb.int(0..12).bind(), Arb.int(0..12).bind()) },
+    10 to arbitrary<DialogOp> { DialogOp.DiskChanged(Arb.int(0..1).bind() == 0, Arb.int(0..12).bind(), Arb.int(DISK_NAMES.indices).bind()) },
     4 to Arb.constant<DialogOp>(DialogOp.Generate),
 )
 

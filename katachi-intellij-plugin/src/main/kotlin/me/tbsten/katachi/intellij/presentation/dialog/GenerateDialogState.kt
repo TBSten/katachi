@@ -5,7 +5,9 @@ import me.tbsten.katachi.intellij.model.KatachiModule
 import me.tbsten.katachi.intellij.model.ModuleId
 import me.tbsten.katachi.intellij.model.ModuleTemplate
 import me.tbsten.katachi.intellij.model.TemplateId
+import me.tbsten.katachi.intellij.presentation.CandidateList
 import me.tbsten.katachi.intellij.presentation.FieldError
+import me.tbsten.katachi.intellij.presentation.FieldId
 import me.tbsten.katachi.intellij.presentation.FieldSlot
 import me.tbsten.katachi.intellij.presentation.FormState
 import me.tbsten.katachi.intellij.presentation.entry.GenerateDialogRequest
@@ -38,6 +40,10 @@ internal data class GenerateDialogState(
     /** What changed in the template list while the dialog was open. */
     val listNotice: GenerateDialogListNotice? = null,
     val canGenerate: Boolean = false,
+    /** The directory names offered per capture field, read from the project (design 3.5); a field without an entry is a plain input. */
+    val captureCandidates: Map<FieldId, CandidateList> = emptyMap(),
+    /** The String fields (by parameter name) shown as a text area; dropped when another template is selected (design D-2). */
+    val multiline: Set<String> = emptySet(),
 ) {
     /** The selected template, or `null` when the list no longer has it. */
     val selected: ModuleTemplate? get() = candidates.firstOrNull { it.id == selectedTemplate }
@@ -102,6 +108,9 @@ internal sealed interface GenerateDialogIntent {
 
     /** The shared template list changed (a reload): every template of every definition, in list order. */
     data class ListChanged(val templates: List<ModuleTemplate>) : GenerateDialogIntent
+
+    /** A String field's switch between one line and several (the tool window's ▸), by parameter name. */
+    data class ToggleMultiline(val name: String) : GenerateDialogIntent
 
     /** Something outside the dialog wrote files (a VFS event): check the target again. */
     data object FilesChangedOutside : GenerateDialogIntent

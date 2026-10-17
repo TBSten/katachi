@@ -13,6 +13,7 @@ import androidx.compose.ui.test.SemanticsMatcher
 import androidx.compose.ui.test.assert
 import androidx.compose.ui.test.assertIsFocused
 import androidx.compose.ui.test.assertIsNotFocused
+import androidx.compose.ui.test.hasContentDescription
 import androidx.compose.ui.test.hasAnyAncestor
 import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.hasText
@@ -136,7 +137,7 @@ class DialogInteractionTest {
         pick(KatachiTestTags.DIALOG_TEMPLATE, "data.Repository › data.Repository")
         assertEquals(listOf("template:1"), host.calls)
         assertEquals(repository.id, host.viewModel.state.value.selectedTemplate)
-        assertEquals("data/\${name}Repository.kt", pathText())
+        assertEquals("data/<name>Repository.kt", pathText())
         onNodeWithTag(field(repository, "entity")).assertExists()
         onNodeWithTag(field(screen, "name")).assertDoesNotExist()
 
@@ -188,7 +189,7 @@ class DialogInteractionTest {
 
         onNodeWithTag(field(repository, "name")).performTextReplacement("")
         waitForIdle()
-        assertEquals("data/\${name}Repository.kt", pathText())
+        assertEquals("data/<name>Repository.kt", pathText())
         assertFalse(host.ui.canGenerate)
     }
 
@@ -224,12 +225,12 @@ class DialogInteractionTest {
         val host = DialogHost(listOf(screen), initial = screen, seeds = mapOf("feature" to "home"))
         show(host)
         onNodeWithTag(field(screen, "feature")).assertEditableTextIs("home")
-        assertEquals("feature/home/ui/\${name}Screen.kt", pathText())
+        assertEquals("feature/home/ui/<name>Screen.kt", pathText())
 
         onNodeWithTag(field(screen, "feature")).performTextReplacement("settings")
         waitForIdle()
         assertEquals("settings", host.valueOf("feature"))
-        assertEquals("feature/settings/ui/\${name}Screen.kt", pathText())
+        assertEquals("feature/settings/ui/<name>Screen.kt", pathText())
     }
 
     // covers: 論点1
@@ -324,12 +325,84 @@ class DialogInteractionTest {
 
     // covers: 論点1
     @Test
-    fun `ダイアログには複数行の切り替えとリンクの部品が出ない`() = runComposeUiTest {
+    fun `ダイアログの切り替えは文字列の欄にだけ出て capture の欄とリンクの部品は出ない`() = runComposeUiTest {
         val host = DialogHost(listOf(screen), initial = screen)
         show(host)
         onNodeWithTag(field(screen, "name")).assertExists()
-        onNodeWithTag(KatachiTestTags.multiline(FieldId(screen.id, "name"))).assertDoesNotExist()
+        onNodeWithTag(KatachiTestTags.multiline(FieldId(screen.id, "name"))).assertExists()
+        onNodeWithTag(KatachiTestTags.multiline(FieldId(screen.id, "entity"))).assertExists()
         onNodeWithTag(KatachiTestTags.multiline(FieldId(screen.id, "feature"))).assertDoesNotExist()
+    }
+
+    // covers: 論点1, 論点2
+    @Test
+    fun `複数行の切り替えを押すと text area になり Enter は改行で生成せず Cmd+Enter で生成する`() = runComposeUiTest {
+        val host = DialogHost(listOf(repository), initial = repository)
+        show(host)
+        val entity = FieldId(repository.id, "entity")
+        onNodeWithTag(field(repository, "name")).performTextInput("User")
+        onNodeWithTag(KatachiTestTags.multiline(entity)).assert(hasContentDescription("Multiple Lines")).performClick()
+        waitForIdle()
+        onNodeWithTag(KatachiTestTags.multiline(entity)).assert(hasContentDescription("Single Line"))
+        assertEquals(listOf("input:name=User", "multiline:entity"), host.calls)
+
+        onNodeWithTag(field(repository, "entity")).performTextInput("line1")
+        press(field(repository, "entity"), Key.Enter)
+        // The Enter made a new line: it did not generate.
+        assertEquals(0, host.generated.size)
+        onNodeWithTag(field(repository, "entity")).performTextInput("line2")
+        waitForIdle()
+        assertEquals("line1\nline2", host.valueOf("entity"))
+
+        onNodeWithTag(field(repository, "entity")).performKeyInput { keyDown(Key.CtrlLeft); pressKey(Key.Enter); keyUp(Key.CtrlLeft) }
+        waitForIdle()
+        assertEquals(1, host.generated.size)
+        assertEquals(listOf("name" to "User", "entity" to "line1\nline2"), host.generated.single()?.args?.filter { it.first in setOf("name", "entity") })
+
+        // Back to one line: the toggle shows the first action again.
+        onNodeWithTag(KatachiTestTags.multiline(entity)).performClick()
+        waitForIdle()
+        onNodeWithTag(KatachiTestTags.multiline(entity)).assert(hasContentDescription("Multiple Lines"))
+    }
+
+    // covers: 論点2
+    @Test
+    fun `Cmd+Enter は必須が埋まるまで何もせず 1行の欄でも生成の要求を出す`() = runComposeUiTest {
+        val host = DialogHost(listOf(repository), initial = repository)
+        show(host)
+        onNodeWithTag(field(repository, "name")).performKeyInput { keyDown(Key.MetaLeft); pressKey(Key.Enter); keyUp(Key.MetaLeft) }
+        waitForIdle()
+        assertEquals(emptyList<String>(), host.calls)
+
+        onNodeWithTag(field(repository, "name")).performTextInput("User")
+        onNodeWithTag(field(repository, "entity")).performTextInput("Account")
+        waitForIdle()
+        onNodeWithTag(field(repository, "name")).performKeyInput { keyDown(Key.MetaLeft); pressKey(Key.Enter); keyUp(Key.MetaLeft) }
+        waitForIdle()
+        assertEquals(1, host.generated.size)
+    }
+
+    // covers: 論点1
+    @Test
+    fun `別のテンプレートに切り替えると複数行にした欄は1行に戻る`() = runComposeUiTest {
+        val host = DialogHost(listOf(screen, repository), initial = repository)
+        show(host)
+        onNodeWithTag(KatachiTestTags.multiline(FieldId(repository.id, "entity"))).performClick()
+        waitForIdle()
+        pick(KatachiTestTags.DIALOG_TEMPLATE, "ui.Screen › ui.Screen")
+        pick(KatachiTestTags.DIALOG_TEMPLATE, "data.Repository › data.Repository")
+        onNodeWithTag(KatachiTestTags.multiline(FieldId(repository.id, "entity"))).assert(hasContentDescription("Multiple Lines"))
+    }
+
+    // covers: 論点1
+    @Test
+    fun `作るファイルは未入力の capture を山かっこで見せ 打つと値に置き換わる`() = runComposeUiTest {
+        val host = DialogHost(listOf(repository), initial = repository)
+        show(host)
+        assertEquals("data/<name>Repository.kt", pathText())
+        onNodeWithTag(field(repository, "name")).performTextInput("User")
+        waitForIdle()
+        assertEquals("data/UserRepository.kt", pathText())
     }
 
     // covers: 論点1

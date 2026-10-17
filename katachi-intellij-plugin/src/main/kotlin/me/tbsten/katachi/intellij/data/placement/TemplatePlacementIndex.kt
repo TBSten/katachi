@@ -23,6 +23,8 @@ import java.nio.file.Path
  * declared pattern: a file or directory in no existing module does not fit it, and one in a module
  * decides the module capture -- wherever katachi's `ModuleResolver` put that module.
  *
+ * A template set is indexed by its first member's first file, for directories only ([matchesForFile] leaves it out).
+ *
  * Matches come in index order: definitions in the order given, then JSON order within each.
  *
  * ```kotlin
@@ -39,14 +41,20 @@ internal class TemplatePlacementIndex private constructor(
      * One indexed template: where its patterns start, its declared [pattern], and -- below a module
      * capture katachi described (`modulePlacements`) -- one pattern per existing module ([choices]),
      * which then decide instead of [pattern]. `null` [choices] for every other template.
+     * [inMemberNames]: a template set's file the set's names could not write, so the names it has are the member's
+     * and decide nothing for the set (they go to [PlacementMatch.undecided]).
      */
-    private class Entry(val template: ModuleTemplate, val root: Path, val pattern: PathPattern?, val choices: List<Choice>?)
+    private class Entry(val template: ModuleTemplate, val root: Path, val pattern: PathPattern?, val choices: List<Choice>?, val inMemberNames: Boolean = false)
 
     /** One existing module a module capture can pick: its values, and the file's path there as a pattern. */
     private class Choice(val values: Map<String, String>, val pattern: PathPattern)
 
-    /** The templates [file] (absolute) is the target of. */
+    /**
+     * The templates [file] (absolute) is the target of. A template set is never one: it is not "the file that fits"
+     * but several files at once, so the editor notification and the gutter do not offer it (template-set design 8.4).
+     */
     fun matchesForFile(file: Path): List<PlacementMatch> = entries.mapNotNull { entry ->
+        if (entry.template.template.set != null) return@mapNotNull null
         val hit = entry.fileHit(file) ?: return@mapNotNull null
         entry.toMatch(hit.match, hit.moduleValues)
     }
@@ -109,8 +117,8 @@ internal class TemplatePlacementIndex private constructor(
 
     private fun Entry.toMatch(match: SegmentMatch, moduleValues: Map<String, String> = emptyMap()): PlacementMatch = PlacementMatch(
         template = template,
-        decided = moduleValues + match.decided,
-        undecided = match.undecided.filter { it !in moduleValues },
+        decided = if (inMemberNames) emptyMap() else moduleValues + match.decided,
+        undecided = if (inMemberNames) (moduleValues.keys + match.decided.keys + match.undecided).distinct() else match.undecided.filter { it !in moduleValues },
         remainingPath = match.remaining.joinToString("/") { segment -> segment.parts.joinToString("") { it.shown() } },
         targetUndecided = match.remaining.any { segment -> segment.parts.any { it is PatternPart.Derived } },
     )
@@ -135,7 +143,11 @@ internal class TemplatePlacementIndex private constructor(
 
         private fun entryOf(template: ModuleTemplate, root: Path): Entry? {
             if (!template.template.isAvailable) return null
-            val file = template.template.detail?.files?.firstOrNull() ?: return null
+            // A template set fits where its first member's first file fits (template-set design 8.3); its files
+            // are already written in the set's parameter names, so `decided` is keyed by them.
+            val set = template.template.set
+            val file = (if (set != null) set.members.firstOrNull()?.files?.firstOrNull() else template.template.detail?.files?.firstOrNull())
+                ?: return null
             val pattern = PathPattern.parse(file.pattern)
             val choices = file.modulePlacement?.let { placement ->
                 placement.modules.mapNotNull { module ->
@@ -143,7 +155,8 @@ internal class TemplatePlacementIndex private constructor(
                 }
             }
             if (pattern == null && choices.isNullOrEmpty()) return null
-            return Entry(template, root, pattern, choices)
+            val inMemberNames = set != null && file.captures.isEmpty() && pattern?.segments.orEmpty().any { segment -> segment.parts.any { it is PatternPart.Capture } }
+            return Entry(template, root, pattern, choices, inMemberNames)
         }
 
         /** [path]'s segments below [root], or `null` when it is [root] itself or outside it. */

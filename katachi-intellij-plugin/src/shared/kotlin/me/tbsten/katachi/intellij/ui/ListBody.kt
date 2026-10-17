@@ -59,6 +59,7 @@ internal fun ListBody(list: ListUi, focus: ListFocusController, onIntent: (Katac
                                 item,
                                 onIntent,
                                 Modifier.onPlaced { bandTops[item.moduleId] = it.positionInParent().y.toInt() },
+                                ModuleHeaderKeys(focus, list),
                             )
                             is ListItemUi.GroupHeader -> GroupHeader(item)
                             is ListItemUi.Row -> TemplateRow(item.row, list, focus, reveal, onIntent)

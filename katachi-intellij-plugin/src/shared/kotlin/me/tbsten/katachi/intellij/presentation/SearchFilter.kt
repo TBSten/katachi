@@ -12,7 +12,8 @@ internal data class SearchHit(
 
 /**
  * The rows to show for [query]: a case-insensitive substring of the template's title, its complete
- * specifier, its role name, summary, a parameter name or a capture name. A checked row always
+ * specifier, its role name, summary, a parameter name or a capture name; a template set's row also its members' titles
+ * and specifiers. A checked row always
  * stays, so that nothing invisible is generated.
  */
 internal fun searchTemplates(rows: List<ModuleTemplate>, query: String, form: FormState): List<SearchHit> {
@@ -30,7 +31,8 @@ internal fun searchTemplates(rows: List<ModuleTemplate>, query: String, form: Fo
 private fun matches(template: TemplateModel, needle: String): Boolean {
     val summary = template.summary
     val detailNames = template.detail?.let { detail -> detail.parameters.map { it.name } + detail.captures.map { it.name } }.orEmpty()
+    val memberTexts = template.set?.members.orEmpty().flatMap { listOf(it.title, it.template) }
     val haystack = sequenceOf(summary.title, summary.template, summary.roleName, summary.summary) +
-        summary.parameterNames.asSequence() + summary.captureNames.asSequence() + detailNames.asSequence()
+        summary.parameterNames.asSequence() + summary.captureNames.asSequence() + detailNames.asSequence() + memberTexts.asSequence()
     return haystack.any { it != null && it.contains(needle, ignoreCase = true) }
 }

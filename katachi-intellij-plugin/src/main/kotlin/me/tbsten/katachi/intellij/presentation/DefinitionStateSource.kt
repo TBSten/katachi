@@ -98,10 +98,7 @@ private fun unavailableReasonOf(source: DefinitionStateSource): DefinitionUnavai
     }
     // katachi 0.2.x: the templates task only. Candidates without a task list may still have the definition task,
     // until a load answered: what the snapshots' modules say (the tasks that answered) counts over the candidate's.
-    val modules = source.modules.map { module -> source.snapshots.firstOrNull { it.module.id == module.id }?.module ?: module }
-    if (modules.isNotEmpty() && modules.none { it.readsDefinition } && source.snapshots.none { it.definition != null }) {
-        return DefinitionUnavailableReason.KatachiTooOld
-    }
+    if (definitionTooOldOf(source.modules, source.snapshots) != null) return DefinitionUnavailableReason.KatachiTooOld
     return null
 }
 

@@ -11,6 +11,7 @@ import com.intellij.ide.starter.models.TestCase
 import com.intellij.ide.starter.path.GlobalPaths
 import com.intellij.ide.starter.project.LocalProjectInfo
 import com.intellij.ide.starter.runner.Starter
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.kodein.di.DI
@@ -100,6 +101,41 @@ class ToolWindowSmokeTest {
                 errorMessage = { openFileOf(ideProject) }) {
                 openFileOf(ideProject).endsWith("/SmokeProbeService.kt")
             }
+        }
+    }
+
+    /**
+     * The template set stage (template-set plan 1.9): a copy of sample/android, whose `data.NewRepository` is a set of three
+     * members. The tool window lists it as one row; checking it, filling its one parameter and generating writes the three files.
+     */
+    @Test
+    fun `sample-androidの組をチェックして生成すると3つのファイルができ開く`() {
+        val set = SmokeIde("tool-window-set")
+        val project = set.prepareCopy().resolveSibling("android")
+        val before = set.sourcesOf(project)
+        set.run(project, runTimeout = 60.minutes) { ideProject, smoke ->
+            openToolWindow("katachi")
+            val bridge = service(KatachiDebugBridgeRef::class, ideProject)
+            waitFor("the template set row", timeout = 15.minutes, interval = 2.seconds, errorMessage = { bridge.describeState() }) {
+                "template=data.NewRepository" in bridge.describeState()
+            }
+            assertTrue(bridge.checkAndFill("data.NewRepository", "name=Profile"), bridge.describeState())
+            smoke.shot(set.screenshots, "1-set-checked")
+            bridge.generate()
+            waitFor("the generation to finish", timeout = 15.minutes, interval = 2.seconds, errorMessage = { bridge.describeState() }) {
+                "generation=finished" in bridge.describeState()
+            }
+            val state = bridge.describeState()
+            assertTrue("result=data.NewRepository:Generated" in state, state)
+
+            val added = set.sourcesOf(project) - before
+            assertEquals(3, added.size, added.toString())
+            assertTrue(added.all { "Profile" in it }, added.toString())
+            // TODO(smoke-helper): that the three files open is read from the editor count; the V4 run says whether the set opens all three.
+            waitFor("the written files to open", timeout = 1.minutes, interval = 1.seconds, errorMessage = { smoke.describeState() }) {
+                service(FileEditorManager::class, ideProject).getAllEditors().size >= 3
+            }
+            smoke.shot(set.screenshots, "2-set-generated")
         }
     }
 

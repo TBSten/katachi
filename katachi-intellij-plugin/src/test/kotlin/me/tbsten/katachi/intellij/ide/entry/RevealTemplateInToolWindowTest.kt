@@ -71,4 +71,19 @@ internal class RevealTemplateInToolWindowTest : KatachiIdeTestBase() {
         assertEquals(emptyList<String>(), balloons)
         assertEquals(template, viewModel.state.value.view.highlight?.templateId)
     }
+
+    // covers: 論点17
+    fun `test 組を見せるときも強調を渡してからツールウィンドウを1回開き失敗は balloon で知らせる`() {
+        var highlightWhenActivated: Highlight? = null
+
+        effects(activate = {
+            highlightWhenActivated = viewModel.state.value.view.highlight
+            activated += it
+        }).revealInToolWindow(template, mapOf("feature" to "home"))
+        effects(activate = { throw IllegalStateException("no tool window") }).revealInToolWindow(template, emptyMap())
+
+        assertEquals(listOf(project), activated)
+        assertEquals(template, highlightWhenActivated?.templateId)
+        assertEquals(listOf(KatachiBundle.message("entry.revealFailed", "no tool window")), balloons)
+    }
 }

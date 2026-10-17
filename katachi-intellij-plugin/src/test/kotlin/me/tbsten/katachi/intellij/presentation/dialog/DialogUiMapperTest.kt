@@ -1,5 +1,7 @@
 package me.tbsten.katachi.intellij.presentation.dialog
 
+import me.tbsten.katachi.intellij.presentation.FieldId
+import me.tbsten.katachi.intellij.presentation.CandidateList
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import me.tbsten.katachi.intellij.data.generate.TargetState
@@ -187,5 +189,43 @@ class DialogUiMapperTest {
 
         vm.dispatch(GenerateDialogIntent.ListChanged(emptyList()))
         assertEquals(ListNoticeUi.NoCandidates, dialogUiStateOf(vm.settled(), english).listNotice)
+    }
+
+    // ---- L-S: capture の候補 (ide-review-screens 3.5) ----
+
+    private fun featureField(state: GenerateDialogState, strings: PropertiesGenerateDialogStrings = english): FieldUi.Text =
+        dialogFieldsUiOf(state, strings).filterIsInstance<FieldUi.Text>().first { it.id.parameterName == "feature" }
+
+    @Test
+    fun `候補が読めたcaptureは選べる欄になり 読めていない間は素の入力欄`() {
+        val vm = dialog()
+        val id = FieldId(component.id, "feature")
+
+        assertNull(featureField(vm.state.value).suggestions)
+        val withCandidates = vm.state.value.copy(captureCandidates = mapOf(id to CandidateList(listOf("home", "settings"), directoryPattern = "feature/{value}")))
+
+        assertEquals(listOf("home", "settings"), featureField(withCandidates).suggestions?.values)
+        assertNull(dialogFieldsUiOf(withCandidates, english).filterIsInstance<FieldUi.Text>().first { it.id.parameterName == "name" }.suggestions)
+    }
+
+    @Test
+    fun `候補に無い値の注意は選んだ言語の文言で パスに値が入る`() {
+        val vm = dialog().type("feature", "profile")
+        val state = vm.state.value.copy(
+            captureCandidates = mapOf(FieldId(component.id, "feature") to CandidateList(listOf("home", "settings"), directoryPattern = "feature/{value}")),
+        )
+
+        assertEquals("feature/profile will be a new directory", featureField(state, english).suggestions?.newDirectoryNote)
+        assertEquals("feature/profile は新しいディレクトリになります", featureField(state, japanese).suggestions?.newDirectoryNote)
+    }
+
+    @Test
+    fun `別のテンプレートの同名のcaptureの候補は この欄に出ない`() {
+        val vm = dialog()
+        val state = vm.state.value.copy(
+            captureCandidates = mapOf(FieldId(other.id, "feature") to CandidateList(listOf("elsewhere"))),
+        )
+
+        assertNull(featureField(state).suggestions)
     }
 }

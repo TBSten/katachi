@@ -41,7 +41,7 @@ internal fun generateBlockerOf(rows: List<ModuleTemplate>, form: FormState, busy
         if (detail == null || !row.template.isAvailable) return GenerateBlocker.Unavailable(row.id)
         val inputs = form.inputsOf(row.id)
         for (parameter in shownParametersOf(detail, inputs)) {
-            val error = validateField(parameter, inputs[parameter.name]) ?: continue
+            val error = fieldErrorOf(row, detail, parameter, inputs[parameter.name]) ?: continue
             return GenerateBlocker.InvalidField(row.id, parameter.name, error)
         }
     }

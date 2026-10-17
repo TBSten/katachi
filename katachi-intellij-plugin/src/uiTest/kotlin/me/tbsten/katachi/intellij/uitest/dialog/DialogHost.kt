@@ -7,6 +7,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import me.tbsten.katachi.intellij.data.generate.SingleFileGenerationRequest
 import me.tbsten.katachi.intellij.data.generate.TargetState
+import me.tbsten.katachi.intellij.data.placement.DirectoryLister
 import me.tbsten.katachi.intellij.model.ModuleTemplate
 import me.tbsten.katachi.intellij.presentation.dialog.CaptureSeedPort
 import me.tbsten.katachi.intellij.presentation.dialog.GenerateDialogIntent
@@ -39,6 +40,8 @@ internal class DialogHost(
     origin: EntryOrigin = newMenuDirectory("feature/home"),
     seedsOf: (ModuleTemplate) -> Map<String, String> = { emptyMap() },
     val strings: GenerateDialogStrings = PropertiesGenerateDialogStrings.english(),
+    /** The directories behind the capture fields' candidates; none by default. */
+    lister: DirectoryLister = DirectoryLister { emptyList() },
 ) {
     private val edt = ManualDispatcher()
     private val background = ManualDispatcher()
@@ -54,6 +57,7 @@ internal class DialogHost(
         rootOf = { it.linkedRootPath },
         checkContext = background,
         settle = {},
+        candidateLister = lister,
     )
 
     /** What [GenerateDialogUiState] the Composable is drawing now. */
@@ -63,10 +67,18 @@ internal class DialogHost(
     /** The requests of every Enter that reached the dialog's generate action (`null`: it could not be pressed). */
     val generated = mutableListOf<SingleFileGenerationRequest?>()
 
-    /** The order the parts reported in: `template:<index>`, `definition:<index>`, `input:<name>=<value>`, `generate`. */
+    /** The order the parts reported in: `template:<index>`, `definition:<index>`, `input:<name>=<value>`, `multiline:<name>`, `generate`. */
     val calls = mutableListOf<String>()
 
+    /** How many times the content reported an Esc that cancels the dialog. */
+    var cancelled: Int = 0
+        private set
+
     val actions = object : GenerateDialogActions {
+        override fun onCancel() {
+            cancelled++
+        }
+
         override fun onSelectTemplate(index: Int) {
             calls += "template:$index"
             viewModel.state.value.candidates.getOrNull(index)?.let { send(GenerateDialogIntent.SelectTemplate(it.id)) }
@@ -80,6 +92,11 @@ internal class DialogHost(
         override fun onInput(name: String, value: String) {
             calls += "input:$name=$value"
             send(GenerateDialogIntent.Input(name, value))
+        }
+
+        override fun onToggleMultiline(name: String) {
+            calls += "multiline:$name"
+            send(GenerateDialogIntent.ToggleMultiline(name))
         }
 
         override fun onGenerate() {

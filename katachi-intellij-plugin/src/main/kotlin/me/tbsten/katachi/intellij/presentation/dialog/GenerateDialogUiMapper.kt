@@ -34,7 +34,7 @@ internal fun dialogUiStateOf(state: GenerateDialogState, strings: GenerateDialog
         selectedDefinition = state.definitions.indexOfFirst { it.id == state.selectedDefinition }.coerceAtLeast(0),
         summary = state.selected?.template?.detail?.summary ?: state.selected?.template?.summary?.summary,
         fields = dialogFieldsUiOf(state, strings),
-        targetPath = state.targetPath,
+        targetPath = displayTargetPathOf(state.targetPath),
         targetNotice = when (state.targetNotice) {
             TargetNotice.WillCreate -> TargetNoticeUi.WillCreate
             TargetNotice.WillOverwriteEmpty -> TargetNoticeUi.WillOverwriteEmpty

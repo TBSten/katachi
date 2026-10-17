@@ -26,7 +26,7 @@ private object OpsShrinker : Shrinker<List<Op>> {
 }
 
 /**
- * Catalogs shrinking to the first definition alone, then one module or one template fewer (from
+ * Catalogs shrinking to the first definition alone, then one module, one template or one template set fewer (from
  * every definition at once, so that the later ones stay changes of the first).
  */
 internal object CatalogShrinker : Shrinker<Catalog> {
@@ -41,6 +41,9 @@ internal object CatalogShrinker : Shrinker<Catalog> {
             for (templateIndex in module.specs.indices) {
                 add(Catalog(value.worlds.map { world -> world.withoutTemplate(moduleIndex, templateIndex) }))
             }
+            for (setIndex in module.sets.indices) {
+                add(Catalog(value.worlds.map { world -> world.withoutSet(moduleIndex, setIndex) }))
+            }
         }
     }.filter { it.worlds.isNotEmpty() && it != value }.distinct()
 }
@@ -48,6 +51,12 @@ internal object CatalogShrinker : Shrinker<Catalog> {
 private fun World.withoutTemplate(moduleIndex: Int, templateIndex: Int): World = World(
     modules.mapIndexed { index, module ->
         if (index == moduleIndex && templateIndex < module.specs.size) module.copy(specs = module.specs.withoutIndex(templateIndex)) else module
+    },
+)
+
+private fun World.withoutSet(moduleIndex: Int, setIndex: Int): World = World(
+    modules.mapIndexed { index, module ->
+        if (index == moduleIndex && setIndex < module.sets.size) module.copy(sets = module.sets.withoutIndex(setIndex)) else module
     },
 )
 

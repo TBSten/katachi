@@ -47,6 +47,7 @@ import me.tbsten.katachi.intellij.presentation.ListUi
 import me.tbsten.katachi.intellij.presentation.RowBodyUi
 import me.tbsten.katachi.intellij.presentation.RowLeadUi
 import me.tbsten.katachi.intellij.presentation.RowMarker
+import me.tbsten.katachi.intellij.presentation.SetRowUi
 import me.tbsten.katachi.intellij.presentation.TemplateRowUi
 import org.jetbrains.jewel.foundation.theme.JewelTheme
 import org.jetbrains.jewel.ui.component.Checkbox
@@ -102,6 +103,7 @@ internal fun TemplateRow(
             onIntent,
             Modifier.bringIntoViewRequester(headerIntoView).onSizeChanged { headerSize = it },
         )
+        row.set?.let { SetMembers(row, it) }
         row.body?.let { body ->
             IndentedBody {
                 when (body) {
@@ -155,6 +157,7 @@ private fun RowHeader(row: TemplateRowUi, list: ListUi, focus: ListFocusControll
                     overflow = TextOverflow.Ellipsis,
                 )
             }
+            row.set?.let { SetBadge(row, it) }
             RowSubtitle(row, Modifier.weight(1f).padding(start = 8.dp))
             listOfNotNull(row.filled, row.trailing.takeIf { it.isNotEmpty() }).forEach { text ->
                 Text(
@@ -169,7 +172,7 @@ private fun RowHeader(row: TemplateRowUi, list: ListUi, focus: ListFocusControll
             // ("show cause"); a plain row stays quiet.
             if (row.menu.isNotEmpty() && (row.body is RowBodyUi.Form || row.marker == RowMarker.Blocked)) {
                 Spacer(Modifier.width(4.dp))
-                MoreMenu(row.menu, onIntent)
+                MoreMenu(row.menu, onIntent, Modifier.testTag(KatachiTestTags.moreMenu(row.id)))
             }
         }
     }
@@ -210,6 +213,32 @@ private fun FoldToggle(row: TemplateRowUi, onIntent: (KatachiIntent) -> Unit) {
     Spacer(Modifier.width(2.dp))
 }
 
+/** The "set" badge after a template set's name. */
+@Composable
+private fun SetBadge(row: TemplateRowUi, set: SetRowUi) {
+    Text(
+        set.badge,
+        color = faintText,
+        maxLines = 1,
+        modifier = Modifier.padding(start = 6.dp).testTag(KatachiTestTags.setBadge(row.id)),
+    )
+}
+
+/** The members' titles of a template set, on a line of their own under the header; all of them in the tooltip. */
+@Composable
+private fun SetMembers(row: TemplateRowUi, set: SetRowUi) {
+    val line = set.memberLine ?: return
+    WithTooltip(set.memberTooltip.orEmpty(), Modifier.fillMaxWidth().padding(start = FormIndent)) {
+        Text(
+            line,
+            color = faintText,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+            modifier = Modifier.testTag(KatachiTestTags.setMembers(row.id)),
+        )
+    }
+}
+
 /** "outside search, selected" and the title, faint, after the name; ellipsized first. */
 @Composable
 private fun RowSubtitle(row: TemplateRowUi, modifier: Modifier) {
@@ -237,10 +266,10 @@ internal fun WithTooltip(tooltip: String?, modifier: Modifier = Modifier, conten
 
 /** The `⋯` of a row: copy the command, show the cause. */
 @Composable
-internal fun MoreMenu(actions: List<ActionUi>, onIntent: (KatachiIntent) -> Unit) {
+internal fun MoreMenu(actions: List<ActionUi>, onIntent: (KatachiIntent) -> Unit, modifier: Modifier = Modifier) {
     var open by remember { mutableStateOf(false) }
     Box {
-        IconButton(onClick = { open = true }, modifier = Modifier.size(20.dp)) {
+        IconButton(onClick = { open = true }, modifier = modifier.size(20.dp)) {
             Icon(AllIconsKeys.Actions.MoreHorizontal, contentDescription = null, modifier = Modifier.size(16.dp))
         }
         if (open) {

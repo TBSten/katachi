@@ -7,10 +7,12 @@ import me.tbsten.katachi.intellij.presentation.FieldSlot
 import me.tbsten.katachi.intellij.presentation.dialog.GenerateDialogState
 import me.tbsten.katachi.intellij.presentation.dialog.TargetNotice
 import me.tbsten.katachi.intellij.presentation.dialog.dialogUiStateOf
+import me.tbsten.katachi.intellij.presentation.dialog.displayTargetPathOf
 import me.tbsten.katachi.intellij.presentation.entry.EntryOrigin
 import me.tbsten.katachi.intellij.presentation.validateField
 import me.tbsten.katachi.intellij.ui.dialog.PropertiesGenerateDialogStrings
 import me.tbsten.katachi.intellij.uitest.pbt.DiskKind
+import me.tbsten.katachi.intellij.uitest.pbt.FakeDisk
 import java.nio.file.Path
 
 /** What the invariants read at one moment: the ViewModel's state and the world it stands in. */
@@ -23,6 +25,8 @@ internal class DialogView(
     val disk: Map<Path, DiskKind>,
     /** The dialog was cancelled: nothing is checked any more, so the notice may be old. */
     val cancelled: Boolean,
+    /** The directories the capture candidates are read from. */
+    val candidateDisk: FakeDisk = FakeDisk(),
 ) {
     val usable: List<ModuleTemplate> get() = listed.filter { it.template.isAvailable }
     val selected: ModuleTemplate? get() = state.selected
@@ -55,7 +59,7 @@ internal fun stateProblemsOf(view: DialogView): List<String> {
     } else if (s.definitions.isNotEmpty() || s.selectedDefinition != null || ui.definitionOptions.isNotEmpty()) {
         problems += "a definition select box with ${definitions.size} definition(s)"
     }
-    if (ui.targetPath != s.targetPath || ui.canGenerate != s.canGenerate) problems += "the UI state differs from the state"
+    if (ui.targetPath != displayTargetPathOf(s.targetPath) || ui.canGenerate != s.canGenerate) problems += "the UI state differs from the state"
 
     val selected = s.selected
     val detail = selected?.template?.detail

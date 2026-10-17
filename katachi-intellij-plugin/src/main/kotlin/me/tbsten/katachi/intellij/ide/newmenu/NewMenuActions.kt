@@ -7,6 +7,7 @@ import com.intellij.openapi.actionSystem.DefaultActionGroup
 import com.intellij.openapi.project.DumbAware
 import me.tbsten.katachi.intellij.ide.KatachiBundle
 import me.tbsten.katachi.intellij.ide.sdkCall
+import me.tbsten.katachi.intellij.model.TemplateId
 import me.tbsten.katachi.intellij.presentation.entry.EntryEffects
 import me.tbsten.katachi.intellij.presentation.entry.EntryOrigin
 import me.tbsten.katachi.intellij.presentation.entry.GenerateDialogRequest
@@ -22,11 +23,16 @@ private fun actionOf(node: NewMenuNode, resolution: NewMenuResolution, effects: 
     is NewMenuNode.Group -> submenu(node.name, node.children, resolution, effects)
     is NewMenuNode.Role -> submenu(node.name, node.children, resolution, effects)
     is NewMenuNode.Template -> resolution.originOf(node.match)?.let { origin ->
-        TemplateItemAction(
-            node.label,
-            GenerateDialogRequest(EntryOrigin.NewMenuDirectory(origin), node.match.id, node.match.decided),
-            effects,
-        )
+        if (node.match.isSet) {
+            // A template set is not generated through the dialog: the tool window shows it with the directory's values.
+            RevealSetAction(node.label, node.match.id, node.match.decided, effects)
+        } else {
+            TemplateItemAction(
+                node.label,
+                GenerateDialogRequest(EntryOrigin.NewMenuDirectory(origin), node.match.id, node.match.decided),
+                effects,
+            )
+        }
     }
 }
 
@@ -55,6 +61,27 @@ internal class TemplateItemAction(
 
     override fun actionPerformed(e: AnActionEvent) {
         sdkCall("open the generate dialog for ${request.initialTemplate}") { effects.openGenerateDialog(request) }
+    }
+}
+
+/**
+ * One template set: picking it opens the tool window on its row, checked and open, the values the directory
+ * decided in its fields (template-set design 8.3). Nothing is generated until the user presses Generate there.
+ */
+internal class RevealSetAction(
+    label: String,
+    private val id: TemplateId,
+    private val seeds: Map<String, String>,
+    private val effects: EntryEffects,
+) : AnAction(), DumbAware {
+    init {
+        templatePresentation.setText(label, false)
+    }
+
+    override fun getActionUpdateThread(): ActionUpdateThread = ActionUpdateThread.BGT
+
+    override fun actionPerformed(e: AnActionEvent) {
+        sdkCall("show ${id.template} in the katachi tool window") { effects.revealInToolWindow(id, seeds) }
     }
 }
 

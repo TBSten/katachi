@@ -14,6 +14,7 @@ import kotlinx.coroutines.flow.map
 import me.tbsten.katachi.intellij.data.NioProjectFileSystem
 import me.tbsten.katachi.intellij.data.placement.PlacementIndexState
 import me.tbsten.katachi.intellij.data.placement.placementRootOf
+import me.tbsten.katachi.intellij.ide.IdeDirectoryLister
 import me.tbsten.katachi.intellij.ide.KatachiProjectService
 import me.tbsten.katachi.intellij.model.templatesOf
 import me.tbsten.katachi.intellij.presentation.dialog.CaptureSeedPort
@@ -26,19 +27,20 @@ import me.tbsten.katachi.intellij.presentation.entry.GenerateDialogRequest
  */
 internal fun realGenerateDialogEnvironmentOf(project: Project, request: GenerateDialogRequest): GenerateDialogEnvironment {
     val service = KatachiProjectService.getInstance(project)
+    val candidates = templatesOf(service.viewModel.state.value.snapshots)
     return GenerateDialogEnvironment(
         request = request,
-        candidates = templatesOf(service.viewModel.state.value.snapshots),
+        candidates = candidates,
         seeds = CaptureSeedPort { origin, template ->
             (service.placementIndex.value as? PlacementIndexState.Ready)?.index?.seedsFor(origin, template).orEmpty()
         },
         // The generation the entries run: it knows the provisional content it wrote (a retry, issue 16).
         checkTarget = service.entryGeneration::checkTarget,
-        // TODO(V2 L2): asked on the EDT at every dispatch (it looks up the root markers on disk); find each
-        //  definition's root once when the dialog opens.
-        rootOf = { placementRootOf(it, NioProjectFileSystem) },
+        // Looking up the root markers reads the disk, so each definition is asked once, now, not on the EDT at every dispatch (design D-4).
+        rootOf = rootOnceOf(candidates.map { it.module }) { placementRootOf(it, NioProjectFileSystem) },
         templateChanges = service.viewModel.state.map { templatesOf(it.snapshots) }.distinctUntilChanged(),
         filesChanged = vfsChanges(),
+        directoryLister = IdeDirectoryLister(project),
     )
 }
 

@@ -169,6 +169,7 @@ internal class KatachiProjectService(
             view = settings?.let { ViewState(collapsedModules = it.collapsedModules) } ?: ViewState(),
         ),
         loadsWithoutUser = ::loadsWithoutUser,
+        candidateLister = IdeDirectoryLister(project),
     )
 
     private val definitionPublisher = DefinitionStatePublisher(scope, viewModel, loadsWithoutUser = ::loadsWithoutUser)
@@ -267,6 +268,9 @@ internal class KatachiProjectService(
      * loaded in this session (loading without the user turned off): a change does not start one.
      */
     fun onFilesChanged(changes: FileChanges) {
+        // A directory created or removed changes the candidates of the capture fields on screen (design 3.3). This is called
+        // inside the VFS's write action: the roots are looked up on the disk, so leave it (the ViewModel is thread-safe there).
+        if (changes.projectChanged) scope.launch { viewModel.onFilesChanged() }
         if (changes.definitionChanged.isEmpty() || ownSave.isSaving || viewModel.definitionModules.isEmpty()) return
         dispatchOnEdt(KatachiIntent.DefinitionChanged)
         definitionPublisher.markStale()

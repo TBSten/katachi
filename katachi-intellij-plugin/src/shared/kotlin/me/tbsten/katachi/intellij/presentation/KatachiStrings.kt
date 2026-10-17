@@ -10,7 +10,7 @@ package me.tbsten.katachi.intellij.presentation
  * val ui = uiStateOf(state, EnglishKatachiStrings, Instant.now())
  * ```
  */
-internal interface KatachiStrings {
+internal interface KatachiStrings : CandidateStrings {
     companion object {
         /** The texts for [language], an ISO 639 code: Japanese for `ja`, English for anything else. */
         fun of(language: String): KatachiStrings = if (language == "ja") JapaneseKatachiStrings else EnglishKatachiStrings
@@ -153,6 +153,20 @@ internal interface KatachiStrings {
     val retryRemaining: String
     val continueGenerating: String
     val uncheckAll: String
+
+    // ---- L-S: ide-review-screens ----
+    /** The band for katachi 0.2.x (T-8); [katachiVersion] is what the definition modules report, `null` when unknown. */
+    fun definitionTooOld(katachiVersion: String?): String
+
+    /** ⋯ › the row's Role declaration (T-10). */
+    val openDefinition: String
+
+    // ---- L-S: template-set ----
+    /** The badge after the name of a template set's row. */
+    val setBadge: String
+
+    /** The tooltip lead of a template set's member line: how many templates the set runs. */
+    fun setMembers(count: Int): String
 
     // ---- L-A: ide-authoring ----
     /** The heading of the load error when katachi could not read the definition (a mistake in it, design 2.5). */

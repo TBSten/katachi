@@ -39,9 +39,19 @@ internal class IdeIntentHandler(
             is KatachiIntent.OpenFile -> scope.launch { effects.openFiles(listOf(intent.path)) }
             is KatachiIntent.CopyCommand -> rowOf(intent.templateId)?.let { effects.copyToClipboard(commandLineOf(it, state().form)) }
             is KatachiIntent.ShowCause -> showCause(intent.templateId)
+            is KatachiIntent.OpenDefinition -> openDefinition(intent.templateId)
             else -> return false
         }
         return true
+    }
+
+    /** ⋯ › Open Definition: the Role's `declaredAt` of the row's module, opened by the IDE (T-10). */
+    private fun openDefinition(id: TemplateId) {
+        val row = rowOf(id) ?: return
+        val snapshots = state().snapshots
+        if (!canOpenDefinition(row, snapshots)) return
+        val site = roleDeclarationOf(row, snapshots)
+        scope.launch { effects.openDeclaration(row.module, row.template.roleName, site) }
     }
 
     /** Runs `katachiTemplates --arg template=X` and shows its text under the row (E-07). */

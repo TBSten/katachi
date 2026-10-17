@@ -13,9 +13,11 @@ import me.tbsten.katachi.intellij.data.detect.SyncedProject
 import me.tbsten.katachi.intellij.data.detect.SyncedRoot
 import me.tbsten.katachi.intellij.data.gradle.GradleRunOutcome
 import me.tbsten.katachi.intellij.data.gradle.GradleRunRequest
+import me.tbsten.katachi.intellij.data.placement.DirectoryLister
 import me.tbsten.katachi.intellij.model.KatachiModule
 import me.tbsten.katachi.intellij.model.TemplateId
 import me.tbsten.katachi.intellij.presentation.BodyUi
+import me.tbsten.katachi.intellij.presentation.CaptureCandidateLoader
 import me.tbsten.katachi.intellij.presentation.FieldId
 import me.tbsten.katachi.intellij.presentation.FieldUi
 import me.tbsten.katachi.intellij.presentation.FooterUi
@@ -47,7 +49,14 @@ import java.time.Instant
  * val result = s.generate()
  * ```
  */
-internal class ScenarioHarness(scope: CoroutineScope, ioDispatcher: CoroutineDispatcher = Dispatchers.IO) {
+internal class ScenarioHarness(
+    scope: CoroutineScope,
+    ioDispatcher: CoroutineDispatcher = Dispatchers.IO,
+    /** The directories behind the capture candidates; none by default. */
+    candidateLister: DirectoryLister = DirectoryLister { emptyList() },
+    /** How long a candidate read waits for typing to pause; the default is the real wait. */
+    candidateSettle: suspend () -> Unit = { delay(CaptureCandidateLoader.SETTLE_MILLIS) },
+) {
     val fs = FakeFileSystem()
     val effects = FakeIdeEffects()
     val arch = module(":arch-a")
@@ -78,7 +87,10 @@ internal class ScenarioHarness(scope: CoroutineScope, ioDispatcher: CoroutineDis
     val runner = FakeGradleTaskRunner(fs) { request, _ -> answer(request) }
 
     init {
-        vm = KatachiToolWindowViewModel(scope, { synced }, runner, fs, effects, ioDispatcher = ioDispatcher)
+        vm = KatachiToolWindowViewModel(
+            scope, { synced }, runner, fs, effects,
+            ioDispatcher = ioDispatcher, candidateLister = candidateLister, candidateSettle = candidateSettle,
+        )
     }
 
     private fun answer(request: GradleRunRequest): FakeRun =

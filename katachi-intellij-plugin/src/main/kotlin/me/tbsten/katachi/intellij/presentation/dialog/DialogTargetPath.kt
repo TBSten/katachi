@@ -25,6 +25,19 @@ internal data class DialogTarget(
 
 private val TOKEN = Regex("""\$\{([^}]*)}|<([^>/]*)>""")
 
+private val CAPTURE_PLACEHOLDER = Regex("""\$\{([^}]*)}""")
+
+/**
+ * [DialogTarget.relativePath] as the dialog shows it: a capture not filled in reads `<name>`, the way the capture's hint and the New
+ * menu spell it (a derived `<x>` is left as it is). Only what is drawn (and read by the tests and screen readers) changes; the
+ * path katachi is asked for is [DialogTarget.relativePath] itself.
+ *
+ * ```kotlin
+ * displayTargetPathOf("feature/\${feature}/\${name}.kt") // "feature/<feature>/<name>.kt"
+ * ```
+ */
+internal fun displayTargetPathOf(relativePath: String): String = CAPTURE_PLACEHOLDER.replace(relativePath) { "<${it.groupValues[1]}>" }
+
 /** `<name.transform>`: a level katachi derives from `name` by a named conversion (design capture-check 3.9). */
 private val DERIVED = Regex("""<([A-Za-z_][A-Za-z0-9_]*)\.([A-Za-z_][A-Za-z0-9_]*)>""")
 

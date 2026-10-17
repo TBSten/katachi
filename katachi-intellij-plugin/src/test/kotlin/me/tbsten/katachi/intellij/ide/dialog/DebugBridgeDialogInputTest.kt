@@ -2,7 +2,9 @@ package me.tbsten.katachi.intellij.ide.dialog
 
 import com.intellij.openapi.util.Disposer
 import me.tbsten.katachi.intellij.AnalysisTestBase
+import me.tbsten.katachi.intellij.data.generate.TargetState
 import me.tbsten.katachi.intellij.ide.debug.KatachiDebugBridge
+import me.tbsten.katachi.intellij.testing.underRoot
 
 /**
  * `KatachiDebugBridge.fillDialog` and `pressDialog`: the String door the Driver smoke types into and presses the modal dialog
@@ -43,6 +45,20 @@ internal class DebugBridgeDialogInputTest : AnalysisTestBase() {
         withShowing {
             assertEquals("filled=none", withBridge { it.fillDialog("no-such-field", "x") })
         }
+    }
+
+    fun `test 理由が出ている状態で fillDialog すると describeDialog から refusal が消える`() = withShowing { dialog ->
+        withBridge { it.fillDialog("name", "Profile") }
+        withBridge { it.fillDialog("title", "Profile") }
+        world.existing[underRoot("feature/home/ui/ProfileScreen.kt")] = TargetState.HasContent
+        dialog.pressGenerate()
+        assertNotNull(dialog.refusal)
+        assertTrue(withBridge { it.describeDialog() }.lines().any { it.startsWith("refusal=") })
+
+        assertEquals("filled=name", withBridge { it.fillDialog("name", "Detail") })
+
+        val lines = withBridge { it.describeDialog() }.lines()
+        assertTrue(lines.toString(), lines.none { it.startsWith("refusal=") })
     }
 
     fun `test pressDialog の generate は OK が使えるときだけ押され 使えないときは none`() = withShowing { dialog ->

@@ -4,6 +4,7 @@ import me.tbsten.katachi.intellij.model.GenerationItemResult
 import me.tbsten.katachi.intellij.model.KatachiModule
 import me.tbsten.katachi.intellij.model.ModuleTemplate
 import me.tbsten.katachi.intellij.model.ParameterModel
+import me.tbsten.katachi.intellij.model.TemplateSetModel
 import me.tbsten.katachi.intellij.model.TemplateUnavailability
 
 /**
@@ -111,6 +112,7 @@ private fun baseRowOf(hit: SearchHit, state: KatachiScreenState, strings: Katach
         menu = listOfNotNull(
             detail?.let { ActionUi(strings.copyCommand, KatachiIntent.CopyCommand(row.id)) },
             ActionUi(strings.showCause, KatachiIntent.ShowCause(row.id)).takeIf { unavailability == TemplateUnavailability.PreviewFailed },
+            ActionUi(strings.openDefinition, KatachiIntent.OpenDefinition(row.id)).takeIf { canOpenDefinition(row, state.snapshots) },
         ),
         body = when {
             cause is CauseState.Loading -> RowBodyUi.Cause(listOf(strings.causeLoading))
@@ -119,8 +121,19 @@ private fun baseRowOf(hit: SearchHit, state: KatachiScreenState, strings: Katach
             else -> null
         },
         highlight = state.view.highlight?.takeIf { it.templateId == row.id }?.sequence,
+        set = setRowOf(template.set, strings),
     )
 }
+
+/** The badge and member line of a template set's row; `null` for a template. A set whose members are not known shows the badge only. */
+private fun setRowOf(set: TemplateSetModel?, strings: KatachiStrings): SetRowUi? {
+    if (set == null) return null
+    if (set.members.isEmpty()) return SetRowUi(strings.setBadge)
+    val titles = set.members.joinToString(MEMBER_SEPARATOR) { it.title }
+    return SetRowUi(strings.setBadge, titles, "${strings.setMembers(set.members.size)}: $titles")
+}
+
+private const val MEMBER_SEPARATOR = "・"
 
 /** "filled 2/3" of a folded form: shown fields holding a value (Booleans always do). */
 private fun filledNoteOf(row: ModuleTemplate, state: KatachiScreenState, strings: KatachiStrings): String {

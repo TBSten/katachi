@@ -4,6 +4,7 @@ import me.tbsten.katachi.intellij.model.BranchModel
 import me.tbsten.katachi.intellij.model.CapturePlace
 import me.tbsten.katachi.intellij.model.DescriptionSnapshot
 import me.tbsten.katachi.intellij.model.FilePreviewModel
+import me.tbsten.katachi.intellij.model.KatachiCapability
 import me.tbsten.katachi.intellij.model.KatachiModule
 import me.tbsten.katachi.intellij.model.ParameterModel
 import me.tbsten.katachi.intellij.model.TemplateDetailModel
@@ -24,8 +25,15 @@ internal val PREVIEW_NOW: Instant = Instant.parse("2026-09-27T10:00:00Z")
 
 internal val PREVIEW_ROOT: Path = Path.of("/Users/dev/project")
 
+/** A katachi 0.3 module: it has the definition task too, so no scene shows the "0.2.x" band unless it asks for it. */
 internal fun previewModule(path: String = ":architecture-test", root: Path = PREVIEW_ROOT, rootName: String = "project") =
-    KatachiModule(path, root.resolve(path.trimStart(':').replace(':', '/')), root, rootName)
+    KatachiModule(
+        path,
+        root.resolve(path.trimStart(':').replace(':', '/')),
+        root,
+        rootName,
+        capabilities = setOf(KatachiCapability.Templates, KatachiCapability.Definition),
+    )
 
 internal fun str(name: String, default: String? = null) =
     ParameterModel.StringParam(name, "String", default, default == null, default ?: "\${$name}")

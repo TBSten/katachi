@@ -16,9 +16,12 @@ import me.tbsten.katachi.intellij.presentation.dialog.dialogUiStateOf
 import me.tbsten.katachi.intellij.ui.dialog.GenerateDialogStrings
 import me.tbsten.katachi.intellij.ui.dialog.GenerateDialogUiState
 import me.tbsten.katachi.intellij.ui.dialog.PropertiesGenerateDialogStrings
+import me.tbsten.katachi.intellij.uitest.pbt.DialogOp
 import me.tbsten.katachi.intellij.uitest.pbt.DialogScenario
+import me.tbsten.katachi.intellij.uitest.pbt.OriginPick
 import me.tbsten.katachi.intellij.uitest.pbt.dialogScenarioArb
 import me.tbsten.katachi.intellij.uitest.pbt.realWorldArb
+import me.tbsten.katachi.intellij.uitest.pbt.realWorlds
 import me.tbsten.katachi.intellij.uitest.pbt.syntheticWorldArb
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -133,6 +136,10 @@ class DialogRenderPropertyTest {
     @Test
     fun `sample 3種の本物のJSONの定義でも窓の大きさを変えながら重ならずはみ出さない`() = runBlocking {
         val strings = PropertiesGenerateDialogStrings.english()
+        // The floor does not depend on the seed: two definitions side by side always draw the definition select box.
+        val twoDefinitions = realWorlds.first { it.definitions.size >= 2 }
+        val steps = listOf(DialogOp.SelectDefinition(1), DialogOp.SelectTemplate(1), DialogOp.SelectDefinition(0))
+        play(DialogScenario(twoDefinitions, OriginPick(editor = false, template = 0, values = 0, depth = 0, leaf = 0, form = 0), steps), listOf(WindowSize(MIN_WIDTH, MIN_HEIGHT), WindowSize(900, 700)), dark = false, strings)
         checkAll(config(defaultIterations = 8), dialogScenarioArb(realWorldArb, 1..8), Arb.list(windowSizeArb, 1..9)) { scenario, sizes ->
             play(scenario, sizes, dark = false, strings)
         }

@@ -1,6 +1,8 @@
 package me.tbsten.katachi.intellij.ide
 
 import junit.framework.TestCase
+import me.tbsten.katachi.intellij.presentation.EnglishKatachiStrings
+import me.tbsten.katachi.intellij.presentation.JapaneseKatachiStrings
 import me.tbsten.katachi.intellij.ui.dialog.GenerateDialogStrings
 import me.tbsten.katachi.intellij.ui.dialog.PropertiesGenerateDialogStrings
 import java.io.File
@@ -55,10 +57,20 @@ internal class KatachiBundleParityTest : TestCase() {
         assertEquals("整数で入力してください（1〜5）", ja.notAnInt(1, 5))
     }
 
+    fun `test ダイアログの複数行の切り替えの文言はツールウィンドウと同じ`() {
+        val en = PropertiesGenerateDialogStrings.english(dir)
+        val ja = PropertiesGenerateDialogStrings.japanese(dir)
+        assertEquals(EnglishKatachiStrings.multilineOn, en.multilineOn)
+        assertEquals(EnglishKatachiStrings.multilineOff, en.multilineOff)
+        assertEquals(JapaneseKatachiStrings.multilineOn, ja.multilineOn)
+        assertEquals(JapaneseKatachiStrings.multilineOff, ja.multilineOff)
+    }
+
     private fun dialogTextsOf(s: GenerateDialogStrings): List<String> = listOf(
         s.title, s.templateLabel, s.definitionLabel, s.targetPathLabel, s.generate, s.noTemplates, s.templateRemoved("X"),
         s.targetNew, s.targetEmpty, s.targetHasContent, s.chooseOne, s.requiredError, s.notAnInt(1, 2), s.notAccepted,
         s.captureSeparatorError, s.captureDotError, s.capturePathHint("a", "b"), s.captureModuleHint("a", "b"), s.generateRefused("r"),
+        s.newDirectoryNote("feature/x"), s.moreCandidates(3), s.multilineOn, s.multilineOff,
     )
 
     private fun placeholdersOf(properties: Properties, key: String): Set<Int> =

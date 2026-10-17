@@ -5,7 +5,9 @@ import me.tbsten.katachi.intellij.data.generate.EntryGenerationRefusal
 import me.tbsten.katachi.intellij.data.generate.OpenAfterGeneration
 import me.tbsten.katachi.intellij.model.ConflictChoice
 import me.tbsten.katachi.intellij.model.ConflictQuestion
+import me.tbsten.katachi.intellij.model.DeclarationSiteRef
 import me.tbsten.katachi.intellij.model.GenerationReport
+import me.tbsten.katachi.intellij.model.KatachiModule
 import java.nio.file.Path
 
 /**
@@ -52,6 +54,13 @@ internal interface IdeEffects {
     fun openDocs(page: DocsPage)
 
     fun copyToClipboard(text: String)
+
+    /**
+     * Opens where a Role was declared (T-10, ⋯ › Open Definition): [site] among [module]'s definition sources, with the caret on its line.
+     * What cannot be opened (no site captured, no file of that name, several) is told in a balloon naming [roleName], like the gutter's
+     * "Open definition". Does nothing by default, like the effects of an entry below.
+     */
+    suspend fun openDeclaration(module: KatachiModule, roleName: String, site: DeclarationSiteRef?) = Unit
 
     // Generating one file from the editor notification or the New menu (SingleFileGeneration, E3).
     // Defaults do nothing so that the tool window's fakes need not know them. IdeEffectsImpl overrides

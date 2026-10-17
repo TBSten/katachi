@@ -3,6 +3,7 @@ package me.tbsten.katachi.intellij.preview
 import me.tbsten.katachi.intellij.presentation.FieldId
 import me.tbsten.katachi.intellij.presentation.FieldUi
 import me.tbsten.katachi.intellij.presentation.LinkUi
+import me.tbsten.katachi.intellij.presentation.SuggestionsUi
 import me.tbsten.katachi.intellij.ui.dialog.GenerateDialogUiState
 import me.tbsten.katachi.intellij.ui.dialog.ListNoticeUi
 import me.tbsten.katachi.intellij.ui.dialog.PropertiesGenerateDialogStrings
@@ -32,6 +33,8 @@ internal data class DialogScenario(
     val size: DialogSize = DialogSize.Standard,
     val english: Boolean = false,
     val open: OpenSelect? = null,
+    /** The capture field whose candidate popup is pressed open before drawing. */
+    val openCandidates: FieldId? = null,
 )
 
 internal val japaneseDialogStrings by lazy { PropertiesGenerateDialogStrings.japanese() }
@@ -218,4 +221,18 @@ internal val dialogScenarios: List<DialogScenario> = buildList {
     // English texts.
     add(DialogScenario("english-standard", state(filled.map { it.copy(value = "") }, notice = TargetNoticeUi.WillCreate), english = true))
     add(DialogScenario("english-min", state(manyFields.take(3), definitions = definitions, notice = TargetNoticeUi.WillOverwriteEmpty), DialogSize.Min, english = true))
+
+    // Capture candidates (design 3.4): the popup open, the `<name>` of a path whose name is not typed yet, a field widened to several lines.
+    val candidateField = captureField.copy(value = "", suggestions = SuggestionsUi(listOf("home", "profile", "settings"), null, null))
+    // As the dialog draws it (displayTargetPathOf): a capture not typed yet is its <name>.
+    val capturePath = "feature/<feature>/src/main/kotlin/com/example/feature/<feature>/component/<name>.kt"
+    add(DialogScenario("capture-candidates-open", state(listOf(candidateField, text("name", required = true)), capturePath), openCandidates = candidateField.id))
+    add(DialogScenario("capture-candidates-open-min", state(listOf(candidateField, text("name", required = true)), capturePath), DialogSize.Min, openCandidates = candidateField.id))
+    add(DialogScenario("target-placeholder", state(listOf(captureField, text("name", required = true)), "feature/home/src/main/kotlin/com/example/feature/home/component/<name>.kt")))
+    val wide = text("description").copy(
+        value = "画面の説明の 1 行目\n画面の説明の 2 行目\n画面の説明の 3 行目",
+        isMultiline = true,
+        multilineTooltip = japaneseDialogStrings.multilineOff,
+    )
+    add(DialogScenario("multiline", state(listOf(text("name", value = "UserProfile", required = true), wide), filledPath, TargetNoticeUi.WillCreate, canGenerate = true)))
 }

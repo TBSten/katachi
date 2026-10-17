@@ -141,6 +141,17 @@ internal object EnglishKatachiStrings : KatachiStrings {
     override val continueGenerating = "Generate More"
     override val uncheckAll = "Uncheck All"
 
+    // ---- L-S: ide-review-screens ----
+    override fun newDirectoryNote(path: String) = "$path will be a new directory"
+    override fun moreCandidates(count: Int) = "$count more"
+    override fun definitionTooOld(katachiVersion: String?) =
+        "The gutter and violation marks need katachi 0.3 or later" + (katachiVersion?.let { " (now $it)" } ?: "")
+    override val openDefinition = "Open Definition"
+
+    // ---- L-S: template-set ----
+    override val setBadge = "set"
+    override fun setMembers(count: Int) = if (count == 1) "1 member" else "$count members"
+
     // ---- L-A: ide-authoring ----
     override val definitionRejected = "katachi could not read the definition."
     override val definitionRejectedHint = "The line that is wrong is underlined in the definition file; Details has the message."

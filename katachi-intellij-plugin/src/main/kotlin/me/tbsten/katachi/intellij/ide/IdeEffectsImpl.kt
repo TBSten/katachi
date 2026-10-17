@@ -27,9 +27,14 @@ import me.tbsten.katachi.intellij.data.NioProjectFileSystem
 import me.tbsten.katachi.intellij.data.generate.EntryGenerationFailure
 import me.tbsten.katachi.intellij.data.generate.EntryGenerationRefusal
 import me.tbsten.katachi.intellij.data.generate.OpenAfterGeneration
+import me.tbsten.katachi.intellij.ide.definition.DeclarationSiteResolver
+import me.tbsten.katachi.intellij.ide.definition.ResolvedSite
+import me.tbsten.katachi.intellij.ide.gutter.GutterNavigation
 import me.tbsten.katachi.intellij.model.ConflictChoice
 import me.tbsten.katachi.intellij.model.ConflictQuestion
+import me.tbsten.katachi.intellij.model.DeclarationSiteRef
 import me.tbsten.katachi.intellij.model.GenerationReport
+import me.tbsten.katachi.intellij.model.KatachiModule
 import me.tbsten.katachi.intellij.presentation.DocsPage
 import me.tbsten.katachi.intellij.presentation.IdeEffects
 import org.jetbrains.plugins.gradle.util.GradleConstants
@@ -50,6 +55,11 @@ internal class IdeEffectsImpl(
     private val project: Project,
     /** Marks the save of `saveAllDocuments` as the plugin's own for the file watcher (design 4.8). */
     private val ownSave: OwnSaveMark = OwnSaveMark(),
+    /**
+     * Where a Role's `declaredAt` is among the definition's test sources (T-10). Asked when the user opens a definition, not at
+     * construction: the project service that owns the resolver is built after its ports. A test passes its own.
+     */
+    private val siteResolver: () -> DeclarationSiteResolver? = { KatachiProjectService.getInstance(project).siteResolver },
     /**
      * Runs first inside the SDK calls of the generation from an entry, with [EntrySdkCall] naming which;
      * a test throws from it to play the IDE failing there. Does nothing in the IDE.
@@ -127,6 +137,17 @@ internal class IdeEffectsImpl(
 
     override fun openDocs(page: DocsPage) {
         sdkCall("open the documentation") { BrowserUtil.browse(docsUrlOf(page)) }
+    }
+
+    override suspend fun openDeclaration(module: KatachiModule, roleName: String, site: DeclarationSiteRef?) {
+        val resolved = site?.let { ref ->
+            withContext(Dispatchers.IO) { sdkCall("find ${ref.fileName} of the definition") { siteResolver()?.resolve(module, ref) }.getOrNull() }
+        }
+        if (resolved !is ResolvedSite.Found) {
+            warn(KatachiBundle.message("gutter.notFound", roleName))
+            return
+        }
+        onEdt { GutterNavigation(project) { warn(it) }.openLine(resolved.file, resolved.line) }
     }
 
     override fun copyToClipboard(text: String) {

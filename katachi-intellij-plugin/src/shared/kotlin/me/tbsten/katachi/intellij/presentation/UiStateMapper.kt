@@ -46,7 +46,7 @@ private fun listUiOf(state: KatachiScreenState, strings: KatachiStrings, now: In
             null
         },
         banners = bannersOf(state, strings),
-        search = SearchUi(state.searchQuery, strings.searchPlaceholder, enabled = state.generation == null),
+        search = SearchUi(state.searchQuery, strings.searchPlaceholder, enabled = state.generation == null, focusRequest = state.view.focusRequest),
         items = items,
         emptySearch = if (query.isNotEmpty() && items.none { it is ListItemUi.Row }) {
             MessageUi(
@@ -75,6 +75,15 @@ private fun bannersOf(state: KatachiScreenState, strings: KatachiStrings): List<
         .takeIf { state.view.definitionChanged },
     state.removedTemplates.takeIf { it.isNotEmpty() }?.let { removed ->
         BannerUi(BannerKind.Warning, strings.removedTemplates(removed.map { it.template.substringAfterLast('.') }), emptyList(), KatachiIntent.DismissRemovedTemplates)
+    },
+    // katachi 0.2.x: templates work, the gutter does not, and nothing else says so (T-8).
+    definitionTooOldOf(state.modules, state.snapshots)?.takeIf { !state.view.tooOldDismissed }?.let { tooOld ->
+        BannerUi(
+            BannerKind.Info,
+            strings.definitionTooOld(tooOld.katachiVersion),
+            listOf(ActionUi(strings.updateGuide, KatachiIntent.OpenDocs(DocsPage.Update))),
+            KatachiIntent.DismissTooOld,
+        )
     },
 )
 
