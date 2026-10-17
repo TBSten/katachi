@@ -42,7 +42,7 @@ import org.jetbrains.skia.EncodedImageFormat
 /** What one dialog scenario drew: the PNG, where every part ended up, and every text with its font. */
 internal class DialogRender(val png: ByteArray, val nodes: List<PreviewChecks.LayoutNode>, val texts: List<PreviewChecks.DrawnText>)
 
-private const val FRAME_NANOS = 16_666_667L
+internal const val FRAME_NANOS = 16_666_667L
 
 private val noActions = object : GenerateDialogActions {
     override fun onSelectTemplate(index: Int) = Unit
@@ -85,6 +85,10 @@ internal fun renderDialog(scenario: DialogScenario, dark: Boolean): DialogRender
             click(scene, target.center)
             repeat(3) { frame() }
         }
+        scenario.openCandidates?.let { field ->
+            clickPart(scene, KatachiTestTags.field(field), atChevron = true)
+            repeat(3) { frame() }
+        }
         val image = frame()
         return DialogRender(image.encodeToData(EncodedImageFormat.PNG)!!.bytes, layoutNodesOf(scene), drawnTextsOf(scene))
     } finally {
@@ -106,14 +110,14 @@ private fun DialogFrame(ui: GenerateDialogUiState, strings: GenerateDialogString
     }
 }
 
-private fun click(scene: ImageComposeScene, at: Offset) {
+internal fun click(scene: ImageComposeScene, at: Offset) {
     scene.sendPointerEvent(PointerEventType.Move, at)
     scene.sendPointerEvent(PointerEventType.Press, at, buttons = PointerButtons(isPrimaryPressed = true), button = PointerButton.Primary)
     scene.sendPointerEvent(PointerEventType.Release, at, button = PointerButton.Primary)
 }
 
 /** One node of the unmerged semantics tree with what the gates need of it. */
-private class SeenNode(
+internal class SeenNode(
     val tag: String?,
     val text: String?,
     val left: Float,
@@ -128,7 +132,7 @@ private class SeenNode(
     val center: Offset get() = Offset((left + right) / 2, (top + bottom) / 2)
 }
 
-private fun nodesOf(scene: ImageComposeScene): List<SeenNode> {
+internal fun nodesOf(scene: ImageComposeScene): List<SeenNode> {
     val seen = mutableListOf<SeenNode>()
 
     fun walk(node: SemanticsNode, insideForm: Boolean, overlay: Boolean) {
@@ -184,3 +188,12 @@ private fun layoutNodesOf(scene: ImageComposeScene): List<PreviewChecks.LayoutNo
             cutDetail = n.cutDetail,
         )
     }
+
+/**
+ * Presses the part tagged [tag] the way a user does: at its centre, or at the chevron at the right end when [atChevron] (a
+ * candidate field is a box around the text field and the chevron). Lets a scene show a popup that is open.
+ */
+internal fun clickPart(scene: ImageComposeScene, tag: String, atChevron: Boolean = false) {
+    val target = checkNotNull(nodesOf(scene).firstOrNull { it.tag == tag }) { "no part tagged $tag" }
+    click(scene, if (atChevron) Offset(target.right - 8f, (target.top + target.bottom) / 2) else target.center)
+}

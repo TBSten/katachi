@@ -70,6 +70,7 @@ private fun fieldUiOf(
             isMultiline = null,
             multilineTooltip = null,
             hint = moduleTargetOf(parameter, detail, inputs)?.let(strings::captureModuleTarget) ?: captureHintOf(parameter, strings),
+            suggestions = suggestionsOf(parameter, state.captureCandidates[id], input, error, strings),
         )
         is ParameterModel.StringParam, is ParameterModel.IntParam, is ParameterModel.UnknownParam -> {
             val multiline = if (parameter is ParameterModel.StringParam) id in state.view.multilineFields else null

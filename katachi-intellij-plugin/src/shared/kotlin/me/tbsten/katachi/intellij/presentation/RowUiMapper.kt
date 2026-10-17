@@ -111,6 +111,7 @@ private fun baseRowOf(hit: SearchHit, state: KatachiScreenState, strings: Katach
         menu = listOfNotNull(
             detail?.let { ActionUi(strings.copyCommand, KatachiIntent.CopyCommand(row.id)) },
             ActionUi(strings.showCause, KatachiIntent.ShowCause(row.id)).takeIf { unavailability == TemplateUnavailability.PreviewFailed },
+            ActionUi(strings.openDefinition, KatachiIntent.OpenDefinition(row.id)).takeIf { canOpenDefinition(row, state.snapshots) },
         ),
         body = when {
             cause is CauseState.Loading -> RowBodyUi.Cause(listOf(strings.causeLoading))

@@ -34,6 +34,14 @@ internal data class ViewState(
     val revealedRows: Set<TemplateId> = emptySet(),
     /** The row [View template] of an editor notification asked for (C2); it stays until the next one. */
     val highlight: Highlight? = null,
+    /**
+     * How many times the IDE asked for the search field's focus (T-3, `GenerateFromTemplateAction`). A number, like
+     * [Highlight.sequence], so asking again focuses again, and a list shown after the request (loading, an empty state)
+     * still takes it once.
+     */
+    val focusRequest: Int = 0,
+    /** The band "the gutter needs katachi 0.3" (T-8) was closed with ✕. Kept while the project is open, not saved. */
+    val tooOldDismissed: Boolean = false,
 )
 
 /**
@@ -47,7 +55,9 @@ internal fun applyViewIntent(view: ViewState, intent: KatachiIntent): ViewState?
     is KatachiIntent.ToggleModule -> view.copy(collapsedModules = view.collapsedModules.toggle(intent.moduleId))
     is KatachiIntent.ToggleDetails -> view.copy(openDetails = view.openDetails.toggle(intent.key))
     is KatachiIntent.ToggleMultiline -> view.copy(multilineFields = view.multilineFields.toggle(intent.field))
+    KatachiIntent.FocusSearch -> view.copy(focusRequest = view.focusRequest + 1)
     KatachiIntent.DismissDefinitionChanged -> view.copy(definitionChanged = false)
+    KatachiIntent.DismissTooOld -> view.copy(tooOldDismissed = true)
     KatachiIntent.DefinitionChanged -> view.copy(definitionChanged = true)
     else -> null
 }

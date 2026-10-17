@@ -139,4 +139,11 @@ internal object JapaneseKatachiStrings : KatachiStrings {
     override val retryRemaining = "残りをやり直す"
     override val continueGenerating = "続けて生成"
     override val uncheckAll = "チェックを外す"
+
+    // ---- L-S: ide-review-screens ----
+    override fun newDirectoryNote(path: String) = "$path は新しいディレクトリになります"
+    override fun moreCandidates(count: Int) = "ほか $count 件"
+    override fun definitionTooOld(katachiVersion: String?) =
+        "ガターと違反の表示には katachi 0.3 以降が必要です" + (katachiVersion?.let { "（いま $it）" } ?: "")
+    override val openDefinition = "定義を開く"
 }

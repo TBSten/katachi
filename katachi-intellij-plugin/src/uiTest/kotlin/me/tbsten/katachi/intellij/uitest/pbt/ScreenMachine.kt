@@ -6,13 +6,18 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import me.tbsten.katachi.intellij.data.gradle.GradleRunOutcome
+import me.tbsten.katachi.intellij.data.placement.DirectoryLister
 import me.tbsten.katachi.intellij.model.ConflictChoice
 import me.tbsten.katachi.intellij.model.KatachiModule
+import me.tbsten.katachi.intellij.presentation.BodyUi
 import me.tbsten.katachi.intellij.presentation.FieldId
+import me.tbsten.katachi.intellij.presentation.FieldUi
 import me.tbsten.katachi.intellij.presentation.GenerationState
 import me.tbsten.katachi.intellij.presentation.KatachiIntent
 import me.tbsten.katachi.intellij.presentation.KatachiScreenState
 import me.tbsten.katachi.intellij.presentation.KatachiUiState
+import me.tbsten.katachi.intellij.presentation.ListItemUi
+import me.tbsten.katachi.intellij.presentation.RowBodyUi
 import me.tbsten.katachi.intellij.presentation.shownParametersOf
 import me.tbsten.katachi.intellij.presentation.uiStateOf
 import me.tbsten.katachi.intellij.testing.ContractFixtures
@@ -24,6 +29,7 @@ import me.tbsten.katachi.intellij.uitest.DockSize
 import me.tbsten.katachi.intellij.uitest.renderToolWindow
 import me.tbsten.katachi.intellij.uitest.writePng
 import java.io.File
+import java.nio.file.Path
 
 /**
  * Drives the real ViewModel (over [ScenarioHarness]'s fakes) through [Op]s on one thread, in a
@@ -46,8 +52,38 @@ internal class ScreenMachine(
     private val dispatcher = ManualDispatcher()
     private val escaped = mutableListOf<Throwable>()
     private val scope = CoroutineScope(dispatcher + SupervisorJob() + CoroutineExceptionHandler { _, e -> escaped += e })
-    private val harness = ScenarioHarness(scope, ioDispatcher = dispatcher)
+    private val candidateDisk = FakeDisk()
 
+    /** While set, a candidate read waits on a gate of [readGates] before it reads ([Op.HoldCandidateReads] .. [Op.Release]). */
+    private var holdingReads = false
+    private val readGates = mutableListOf<CompletableDeferred<Unit>>()
+
+    /**
+     * What the read that runs now sees: a held read answers for the disk as it was when it was asked, not as it is when it
+     * is let go (a real read takes time, and the disk moves meanwhile). `null`: the disk as it is.
+     */
+    private var readsSeen: Set<Path>? = null
+    private val heldLister = DirectoryLister { directory ->
+        (readsSeen ?: candidateDisk.dirs).filter { it.parent == directory }.map { it.fileName.toString() }
+    }
+    private val harness = ScenarioHarness(
+        scope,
+        ioDispatcher = dispatcher,
+        candidateLister = heldLister,
+        candidateSettle = {
+            if (holdingReads) {
+                val askedWhen = candidateDisk.dirs.toSet()
+                val gate = CompletableDeferred<Unit>()
+                readGates += gate
+                reached.merge("candidate read held", 1, Int::plus)
+                gate.await()
+                // The read follows at once on the same dispatcher, before any other task can change this.
+                readsSeen = askedWhen
+            } else {
+                readsSeen = null
+            }
+        },
+    )
     /** The definition on disk: what the next load writes and the next sync reports. */
     private var disk: World = catalog.initial
     private var nextLoad = RunOutcome.Normal
@@ -109,11 +145,24 @@ internal class ScreenMachine(
                 conflictChoice = op.choice
                 conflictWaits = op.waits
             }
+            Op.HoldCandidateReads -> emptyList<KatachiIntent>().also { holdingReads = true }
             Op.Release -> emptyList<KatachiIntent>().also {
                 gates.forEach { it.complete(Unit) }
                 gates.clear()
+                holdingReads = false
+                if (readGates.size >= 2) reached.merge("several held candidate reads released", 1, Int::plus)
+                // The newest question is answered first: whatever answers an older one afterwards is stale.
+                readGates.asReversed().forEach { it.complete(Unit) }
+                readGates.clear()
             }
-            else -> intentsOf(op, ui(before))
+            is Op.DiskChanged -> emptyList<KatachiIntent>().also {
+                changeDisk(op, before)
+                harness.vm.onFilesChanged()
+            }
+            else -> intentsOf(op, ui(before)).also {
+                if (op is Op.PickCandidate && it.isNotEmpty()) reached.merge("candidate picked", 1, Int::plus)
+                if (op is Op.TypeCapture && it.isNotEmpty()) reached.merge("capture typed", 1, Int::plus)
+            }
         }
         perform(op.toString(), intents, before)
     }
@@ -142,7 +191,10 @@ internal class ScreenMachine(
         } catch (e: Exception) {
             fail("uiStateOf threw $e", after, null)
         }
-        val problems = found + uiViolationsOf(after, ui) + revealViolationsOf(after, intents, ui)
+        val problems = found + uiViolationsOf(after, ui) + revealViolationsOf(after, intents, ui) +
+            // Held reads leave the candidates behind what is typed and on disk on purpose; once released they must catch up.
+            (if (holdingReads) emptyList() else candidateViolationsOf(after, ui, candidateDisk)) + focusViolationsOf(before, intents, after)
+        reachCandidates(after, ui, intents)
         if (problems.isNotEmpty()) fail(problems.joinToString("\n  "), after, ui)
         if (render && ui != lastDrawn) {
             for (size in DockSize.entries) {
@@ -180,6 +232,35 @@ internal class ScreenMachine(
         val input = intents.singleOrNull() as? KatachiIntent.Input ?: return null
         val now = after.form.inputOf(input.field)
         return if (now == input.value) null else "typed \"${input.value}\" into ${input.field.parameterName}, the state holds \"$now\""
+    }
+
+    /**
+     * A directory appears or goes under the directory above one of the capture fields of the list (their levels above made
+     * from the values typed so far), or nothing when no field has one yet.
+     */
+    private fun changeDisk(op: Op.DiskChanged, state: KatachiScreenState) {
+        val parents = candidateParentsOf(state)
+        val (parent, root) = parents.getOrNull(op.pick % parents.size.coerceAtLeast(1)) ?: return
+        if (op.add) {
+            candidateDisk.add(parent.resolve(DISK_NAMES[op.name % DISK_NAMES.size]), root)
+            reached.merge("disk: directory added", 1, Int::plus)
+        } else {
+            val children = candidateDisk.childrenOf(parent).sorted()
+            if (children.isEmpty()) return
+            candidateDisk.remove(parent.resolve(children[op.name % children.size]))
+            reached.merge("disk: directory removed", 1, Int::plus)
+        }
+    }
+
+    private fun reachCandidates(state: KatachiScreenState, ui: KatachiUiState, intents: List<KatachiIntent>) {
+        fun count(key: String) = reached.merge(key, 1, Int::plus)
+        val fields = ((ui.body as? BodyUi.Listing)?.list?.items.orEmpty()).filterIsInstance<ListItemUi.Row>()
+            .flatMap { (it.row.body as? RowBodyUi.Form)?.form?.fields.orEmpty() }.filterIsInstance<FieldUi.Text>()
+        if (fields.any { it.suggestions != null }) count("candidates shown")
+        if (fields.any { it.suggestions?.newDirectoryNote != null }) count("new-directory note shown")
+        if (state.captureCandidates.isNotEmpty()) count("candidates in the state")
+        if (intents.any { it is KatachiIntent.FocusSearch }) count("focus search")
+        if (intents.any { it is KatachiIntent.ToggleModule }) count("module band toggled")
     }
 
     private fun loadRun(): FakeRun {
@@ -285,6 +366,7 @@ internal class ScreenMachine(
 
     override fun close() {
         gates.forEach { it.complete(Unit) }
+        readGates.forEach { it.complete(Unit) }
         scope.cancel()
     }
 }

@@ -1,5 +1,6 @@
 package me.tbsten.katachi.intellij.ui.dialog
 
+import me.tbsten.katachi.intellij.presentation.CandidateStrings
 import me.tbsten.katachi.intellij.presentation.ValidationStrings
 
 /**
@@ -13,7 +14,7 @@ import me.tbsten.katachi.intellij.presentation.ValidationStrings
  * Text(strings.templateLabel)
  * ```
  */
-internal interface GenerateDialogStrings : ValidationStrings {
+internal interface GenerateDialogStrings : ValidationStrings, CandidateStrings {
     val title: String
 
     /** The template select box's label. */
@@ -58,4 +59,10 @@ internal interface GenerateDialogStrings : ValidationStrings {
 
     /** The reason shown in the dialog when the pre-check refuses to generate. */
     fun generateRefused(reason: String): String
+
+    /** The tooltip of a String field's toggle while it is one line: switch to several (the tool window says the same). */
+    val multilineOn: String
+
+    /** The tooltip of that toggle while the field is several lines. */
+    val multilineOff: String
 }

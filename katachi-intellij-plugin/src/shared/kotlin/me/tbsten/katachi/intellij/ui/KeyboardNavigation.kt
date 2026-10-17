@@ -39,6 +39,9 @@ internal class ListFocusController {
 
     var pending: FocusMove? by mutableStateOf(null)
 
+    /** Whether a candidate popup is open in the list's forms; Esc then belongs to the popup (see [CandidatePopupOpen]). */
+    val popup: CandidatePopupOpen = CandidatePopupOpen()
+
     fun requesterOf(target: FocusTarget): FocusRequester = requesters.getOrPut(target) { FocusRequester() }
 
     /** Tries [move] now against [list]; keeps it pending when its target is not there yet. */
@@ -80,6 +83,9 @@ internal fun Modifier.listFocus(
     onIntent: (KatachiIntent) -> Unit,
 ): Modifier = focusRequester(controller.requesterOf(target)).onPreviewKeyEvent { event ->
     val key = navKeyOf(event, target) ?: return@onPreviewKeyEvent false
+    // The open candidate popup takes Esc (it closes, the focus stays) and Cmd+Enter (it takes the highlighted candidate, nothing is
+    // generated); moving the focus to the row or generating here would leave it open.
+    if ((key == NavKey.Escape || key == NavKey.Generate) && controller.popup.isOpen) return@onPreviewKeyEvent false
     val result = navigate(list, target, key)
     result.intent?.let(onIntent)
     result.focus?.let { controller.move(it, list) }

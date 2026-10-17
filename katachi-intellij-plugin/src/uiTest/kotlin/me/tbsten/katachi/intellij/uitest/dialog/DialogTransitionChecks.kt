@@ -23,7 +23,7 @@ internal fun transitionProblemsOf(op: DialogOp, before: DialogView, after: Dialo
     fun unchanged(what: String, same: Boolean) { if (!same) problems += "$op changed $what" }
 
     when (op) {
-        is DialogOp.Type, is DialogOp.Clear -> {
+        is DialogOp.Type, is DialogOp.Clear, is DialogOp.PickCandidate -> {
             unchanged("the selection", a.selectedTemplate == b.selectedTemplate && a.candidates == b.candidates)
             if (typed != null) {
                 val (name, text) = typed
@@ -34,7 +34,7 @@ internal fun transitionProblemsOf(op: DialogOp, before: DialogView, after: Dialo
         }
         is DialogOp.SelectTemplate, is DialogOp.SelectDefinition -> problems += switchProblemsOf(op, before, after, lastShown, expectNotice = null)
         is DialogOp.Shrink, DialogOp.Restore, is DialogOp.Rotate -> problems += listChangeProblemsOf(before, after, lastShown)
-        is DialogOp.ExternalWrite, DialogOp.Generate -> {
+        is DialogOp.ExternalWrite, DialogOp.Generate, is DialogOp.DiskChanged -> {
             unchanged("the selection", a.selectedTemplate == b.selectedTemplate && a.candidates == b.candidates && a.selectedDefinition == b.selectedDefinition)
             unchanged("the inputs", a.fields.map { it.name to it.value } == b.fields.map { it.name to it.value })
         }

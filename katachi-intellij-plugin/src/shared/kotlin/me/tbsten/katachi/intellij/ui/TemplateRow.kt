@@ -169,7 +169,7 @@ private fun RowHeader(row: TemplateRowUi, list: ListUi, focus: ListFocusControll
             // ("show cause"); a plain row stays quiet.
             if (row.menu.isNotEmpty() && (row.body is RowBodyUi.Form || row.marker == RowMarker.Blocked)) {
                 Spacer(Modifier.width(4.dp))
-                MoreMenu(row.menu, onIntent)
+                MoreMenu(row.menu, onIntent, Modifier.testTag(KatachiTestTags.moreMenu(row.id)))
             }
         }
     }
@@ -237,10 +237,10 @@ internal fun WithTooltip(tooltip: String?, modifier: Modifier = Modifier, conten
 
 /** The `⋯` of a row: copy the command, show the cause. */
 @Composable
-internal fun MoreMenu(actions: List<ActionUi>, onIntent: (KatachiIntent) -> Unit) {
+internal fun MoreMenu(actions: List<ActionUi>, onIntent: (KatachiIntent) -> Unit, modifier: Modifier = Modifier) {
     var open by remember { mutableStateOf(false) }
     Box {
-        IconButton(onClick = { open = true }, modifier = Modifier.size(20.dp)) {
+        IconButton(onClick = { open = true }, modifier = modifier.size(20.dp)) {
             Icon(AllIconsKeys.Actions.MoreHorizontal, contentDescription = null, modifier = Modifier.size(16.dp))
         }
         if (open) {

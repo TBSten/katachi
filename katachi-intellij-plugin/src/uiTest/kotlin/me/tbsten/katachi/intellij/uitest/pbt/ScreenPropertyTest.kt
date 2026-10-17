@@ -7,6 +7,7 @@ import io.kotest.property.ShrinkingMode
 import io.kotest.property.arbitrary.constant
 import io.kotest.property.checkAll
 import kotlinx.coroutines.runBlocking
+import org.junit.Assert.assertTrue
 import org.junit.Test
 
 /**
@@ -77,6 +78,10 @@ class ScreenPropertyTest {
             }
         }
         report("without rendering", started, 0)
+        // The candidate checks prove little unless the sequences got as far as candidates being shown, picked and going stale.
+        for (key in listOf("candidates shown", "new-directory note shown", "candidate picked", "capture typed", "disk: directory added", "disk: directory removed", "focus search", "module band toggled", "candidate read held", "several held candidate reads released")) {
+            assertTrue("never reached '$key': $reached", (reached[key] ?: 0) > 0)
+        }
     }
 
     @Test

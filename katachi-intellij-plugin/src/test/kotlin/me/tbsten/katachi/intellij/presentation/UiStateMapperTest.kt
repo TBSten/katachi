@@ -15,6 +15,7 @@ import me.tbsten.katachi.intellij.testing.previewFailed
 import me.tbsten.katachi.intellij.testing.stringParam
 import me.tbsten.katachi.intellij.testing.template
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -38,6 +39,11 @@ class UiStateMapperTest {
         modules = modules.map { it.first },
         snapshots = modules.map { (module, templates) -> DescriptionSnapshot(module, "0.3.0", templates, now.minusSeconds(600)) },
     )
+
+    /** A project whose modules run katachi 0.2.x: templates only, no definition (design T-8). */
+    private fun readyOn02(vararg modules: Pair<KatachiModule, List<TemplateModel>>) = ready(*modules).let { state ->
+        state.copy(snapshots = state.snapshots.map { it.copy(katachiVersion = "0.2.1") })
+    }
 
     private fun KatachiScreenState.then(vararg intents: KatachiIntent) = intents.fold(this) { s, i -> applyFormIntent(s, i)!! }
 
@@ -210,7 +216,53 @@ class UiStateMapperTest {
             removedTemplates = listOf(id(repository)),
             view = ViewState(definitionChanged = true),
         )
-        assertEquals(listOf(BannerKind.Error, BannerKind.Info, BannerKind.Warning), list(state).banners.map { it.kind })
-        assertEquals("Repository は無くなりました", list(state).banners.last().text)
+        // `ready` is a templates-only (katachi 0.2.x) module, so the last band is T-8's.
+        assertEquals(listOf(BannerKind.Error, BannerKind.Info, BannerKind.Warning, BannerKind.Info), list(state).banners.map { it.kind })
+        assertEquals("Repository は無くなりました", list(state).banners[2].text)
+        assertEquals(KatachiIntent.DismissTooOld, list(state).banners.last().dismiss)
+    }
+
+    // katachi 0.2.x (design T-8): a module with the templates task only. `ready` builds exactly that.
+    private val tooOldBanner = { state: KatachiScreenState -> list(state).banners.firstOrNull { it.dismiss == KatachiIntent.DismissTooOld } }
+
+    @Test
+    fun `0_2 系の定義モジュールだけなら一覧の上に katachi 0_3 以降が必要という帯と更新手順を出す`() {
+        val banner = tooOldBanner(readyOn02(arch to listOf(service))) ?: error("no band")
+
+        assertEquals(BannerKind.Info, banner.kind)
+        assertEquals("ガターと違反の表示には katachi 0.3 以降が必要です（いま 0.2.1）", banner.text)
+        assertEquals(listOf(ActionUi("更新手順を見る", KatachiIntent.OpenDocs(DocsPage.Update))), banner.actions)
+    }
+
+    @Test
+    fun `帯の版は英語の IDE では英語で、版が分からなければ括弧ごと省く`() {
+        val unknown = ready(arch to listOf(service)).let { it.copy(snapshots = it.snapshots.map { snapshot -> snapshot.copy(katachiVersion = null) }) }
+        val banner = list(unknown).banners.single { it.dismiss == KatachiIntent.DismissTooOld }
+        val english = ((uiStateOf(unknown, EnglishKatachiStrings, now).body as BodyUi.Listing).list.banners).single { it.dismiss == KatachiIntent.DismissTooOld }
+
+        assertEquals("ガターと違反の表示には katachi 0.3 以降が必要です", banner.text)
+        assertEquals("The gutter and violation marks need katachi 0.3 or later", english.text)
+    }
+
+    @Test
+    fun `帯の ✕ のあとは同じプロジェクトの間は出さない`() {
+        val old = readyOn02(arch to listOf(service))
+        assertNotNull(tooOldBanner(old))
+        val dismissed = applyViewIntent(old.view, KatachiIntent.DismissTooOld) ?: error("not a view intent")
+
+        assertNull(tooOldBanner(old.copy(view = dismissed)))
+    }
+
+    @Test
+    fun `定義を読める 0_3 のモジュールが1つでもあれば帯を出さない`() {
+        val current = arch.copy(capabilities = setOf(me.tbsten.katachi.intellij.model.KatachiCapability.Definition, me.tbsten.katachi.intellij.model.KatachiCapability.Templates))
+        val state = ready(current to listOf(service), module(":legacy") to listOf(broken))
+        val withDefinition = state.copy(
+            snapshots = state.snapshots.map { snapshot ->
+                if (snapshot.module.id == current.id) snapshot.copy(definition = me.tbsten.katachi.intellij.testing.definitionModel()) else snapshot
+            },
+        )
+
+        assertNull(tooOldBanner(withDefinition))
     }
 }

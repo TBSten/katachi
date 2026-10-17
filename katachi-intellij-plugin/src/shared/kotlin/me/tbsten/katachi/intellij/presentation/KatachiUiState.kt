@@ -78,7 +78,13 @@ internal data class ListUi(
     val footer: FooterUi,
 )
 
-internal data class SearchUi(val query: String, val placeholder: String, val enabled: Boolean)
+internal data class SearchUi(
+    val query: String,
+    val placeholder: String,
+    val enabled: Boolean,
+    /** [ViewState.focusRequest]: the field takes the focus once per new number. */
+    val focusRequest: Int = 0,
+)
 
 /** One entry of the list. [key] is stable across states, so a row keeps its remembered UI state. */
 internal sealed interface ListItemUi {
@@ -188,6 +194,8 @@ internal sealed interface FieldUi {
         val multilineTooltip: String?,
         /** A faint note under the field; a capture's says where its value goes. */
         val hint: String? = null,
+        /** `null` is the plain text field; a capture with candidates is a combo box (design 3.4). */
+        val suggestions: SuggestionsUi? = null,
     ) : FieldUi
 
     data class Bool(

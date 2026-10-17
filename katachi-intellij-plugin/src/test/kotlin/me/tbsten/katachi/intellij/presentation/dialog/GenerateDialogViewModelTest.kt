@@ -54,6 +54,8 @@ class GenerateDialogViewModelTest {
     private var settle: suspend () -> Unit = {}
     private val existing = mutableMapOf<Path, TargetState>()
     private val checks = mutableListOf<Path?>()
+    private val listed = mutableListOf<Path>()
+    private val disk = mutableMapOf<Path, List<String>>()
 
     private fun patterned(role: String, pattern: String, vararg captures: String, parameters: List<ParameterModel> = emptyList()): TemplateModel =
         template(role, parameters = parameters, files = listOf(file("x.kt", path = null, pattern = pattern)), captures = captures.map { capture(it) })
@@ -75,6 +77,10 @@ class GenerateDialogViewModelTest {
         rootOf = { module: KatachiModule -> module.linkedRootPath },
         checkContext = background,
         settle = { settle() },
+        candidateLister = { directory ->
+            listed.add(directory)
+            disk[directory].orEmpty()
+        },
     )
 
     /** Runs the EDT and the background until both are idle: the debounced check has answered. */
@@ -85,6 +91,9 @@ class GenerateDialogViewModelTest {
         }
         return state.value
     }
+
+    private fun GenerateDialogViewModel.featureCandidates(): List<String>? =
+        state.value.captureCandidates.entries.singleOrNull { it.key.parameterName == "feature" }?.value?.values
 
     private fun GenerateDialogViewModel.type(name: String, value: String): GenerateDialogViewModel = apply { dispatch(GenerateDialogIntent.Input(name, value)) }
 
@@ -423,5 +432,161 @@ class GenerateDialogViewModelTest {
         vm.type("name", "Yet")
         vm.settled()
         assertEquals(listOf(":arch-a", ":arch-b", ":arch-b", ":arch-b"), asked)
+    }
+
+    @Test
+    fun `capture の欄の候補は、開いたときに読み、手前の階層が変わらない入力では読み直さない`() {
+        disk[underRoot("feature")] = listOf("settings", "home")
+        val vm = dialog()
+        val feature = vm.state.value.fields.first { it.name == "feature" }.slot.parameter.name
+
+        val opened = vm.settled()
+        assertEquals(listOf("home", "settings"), opened.captureCandidates.entries.single { it.key.parameterName == feature }.value.values)
+        assertEquals(listOf(underRoot("feature")), listed)
+
+        // The levels above a capture did not change: no new read.
+        vm.type("name", "Profile").settled()
+        assertEquals(listOf(underRoot("feature")), listed)
+    }
+
+    @Test
+    fun `テンプレートを替えると前のテンプレートの欄の候補は捨てる`() {
+        disk[underRoot("feature")] = listOf("home")
+        val vm = dialog()
+        assertTrue(vm.settled().captureCandidates.isNotEmpty())
+
+        vm.dispatch(GenerateDialogIntent.SelectTemplate(repository.id))
+
+        assertTrue(vm.settled().captureCandidates.isEmpty())
+    }
+
+    @Test
+    fun `ファイルが外で変わったら候補を読み直す`() {
+        disk[underRoot("feature")] = listOf("home")
+        val vm = dialog()
+        vm.settled()
+        disk[underRoot("feature")] = listOf("home", "news")
+
+        vm.dispatch(GenerateDialogIntent.FilesChangedOutside)
+        val state = vm.settled()
+
+        assertEquals(listOf("home", "news"), state.captureCandidates.values.single().values)
+    }
+
+    @Test
+    fun `手前の階層の値を変えると、新しい値の下の候補に入れ替わり古い値の候補は残らない`() {
+        val deep = ModuleTemplate(archA, patterned("ui.Deep", "app/\${area}/\${feature}/\${name}Deep.kt", "area", "feature", "name"))
+        disk[underRoot("app/x")] = listOf("old")
+        disk[underRoot("app/y")] = listOf("fresh")
+        val vm = dialog(initial = deep, initialSeeds = emptyMap(), templates = listOf(deep))
+        vm.settled()
+
+        vm.type("area", "x").settled()
+        assertEquals(listOf("old"), vm.featureCandidates())
+        vm.type("area", "y").settled()
+
+        // "app" itself is the candidates of the area field.
+        assertEquals(listOf(underRoot("app/x"), underRoot("app/y")), listed.filter { it != underRoot("app") })
+        assertEquals(listOf("fresh"), vm.featureCandidates())
+    }
+
+    @Test
+    fun `手前の値を変えた直後の古い読みは、新しい値の読みが先に終わっても後から上書きしない`() {
+        val deep = ModuleTemplate(archA, patterned("ui.Deep", "app/\${area}/\${feature}/\${name}Deep.kt", "area", "feature", "name"))
+        disk[underRoot("app/x")] = listOf("old")
+        disk[underRoot("app/y")] = listOf("fresh")
+        val vm = dialog(initial = deep, initialSeeds = emptyMap(), templates = listOf(deep))
+        vm.settled()
+
+        // Typed in quick succession: x is asked for and replaced before anything ran.
+        vm.type("area", "x")
+        vm.type("area", "y")
+        vm.settled()
+
+        assertEquals(listOf(underRoot("app/y")), listed.filter { it != underRoot("app") })
+        assertEquals(listOf("fresh"), vm.featureCandidates())
+    }
+
+    @Test
+    fun `定義の読み直しでテンプレートの一覧が替わったら候補を読み直す`() {
+        disk[underRoot("feature")] = listOf("home")
+        val vm = dialog()
+        vm.settled()
+        disk[underRoot("feature")] = listOf("home", "news")
+
+        vm.dispatch(GenerateDialogIntent.ListChanged(listOf(screen, viewModel, repository)))
+        val state = vm.settled()
+
+        assertEquals(listOf("home", "news"), state.captureCandidates.values.single().values)
+    }
+
+    private fun GenerateDialogViewModel.textField(name: String): FieldUi.Text =
+        dialogFieldsUiOf(state.value, PropertiesGenerateDialogStrings.english()).filterIsInstance<FieldUi.Text>().first { it.id.parameterName == name }
+
+    @Test
+    fun `文字列の欄の複数行は切り替えで入りもう一度で戻り 向きのツールチップが変わる`() {
+        val vm = dialog(initial = repository, templates = listOf(repository))
+        assertEquals(false, vm.textField("entity").isMultiline)
+        assertEquals("Multiple Lines", vm.textField("entity").multilineTooltip)
+
+        vm.dispatch(GenerateDialogIntent.ToggleMultiline("entity"))
+        assertEquals(setOf("entity"), vm.state.value.multiline)
+        assertEquals(true, vm.textField("entity").isMultiline)
+        assertEquals("Single Line", vm.textField("entity").multilineTooltip)
+
+        vm.dispatch(GenerateDialogIntent.ToggleMultiline("entity"))
+        assertEquals(emptySet<String>(), vm.state.value.multiline)
+        assertEquals(false, vm.textField("entity").isMultiline)
+    }
+
+    @Test
+    fun `capture の欄は複数行の切り替えを持たない`() {
+        val vm = dialog()
+        assertNull(vm.textField("feature").isMultiline)
+        assertNull(vm.textField("name").isMultiline)
+    }
+
+    @Test
+    fun `複数行にした欄の値は入力しても複数行のまま残る`() {
+        val vm = dialog(initial = repository, templates = listOf(repository))
+        vm.dispatch(GenerateDialogIntent.ToggleMultiline("entity"))
+        vm.type("entity", "line1\nline2")
+        assertEquals(true, vm.textField("entity").isMultiline)
+        assertEquals("line1\nline2", vm.state.value.field("entity").value)
+    }
+
+    @Test
+    fun `別のテンプレートを選ぶと複数行の記憶は捨てる`() {
+        val vm = dialog(initial = repository, templates = listOf(repository, screen))
+        vm.dispatch(GenerateDialogIntent.ToggleMultiline("entity"))
+
+        vm.dispatch(GenerateDialogIntent.SelectTemplate(screen.id))
+        assertEquals(emptySet<String>(), vm.state.value.multiline)
+
+        // Coming back does not bring it back.
+        vm.dispatch(GenerateDialogIntent.SelectTemplate(repository.id))
+        assertEquals(false, vm.textField("entity").isMultiline)
+    }
+
+    @Test
+    fun `一覧が替わっても選んでいるテンプレートが残るなら複数行は保つ`() {
+        val vm = dialog(initial = repository, templates = listOf(repository, screen))
+        vm.dispatch(GenerateDialogIntent.ToggleMultiline("entity"))
+
+        vm.dispatch(GenerateDialogIntent.ListChanged(listOf(repository, screen, viewModel)))
+
+        assertEquals(setOf("entity"), vm.state.value.multiline)
+    }
+
+    @Test
+    fun `ダイアログの未入力の capture は山かっこで見せ 入力すると値に置き換わる`() {
+        val vm = dialog()
+        val ui = { dialogUiStateOf(vm.state.value, PropertiesGenerateDialogStrings.english()).targetPath }
+        assertEquals("feature/home/ui/<name>Screen.kt", ui())
+        // What katachi is asked for keeps the placeholder spelling.
+        assertEquals("feature/home/ui/\${name}Screen.kt", vm.state.value.targetPath)
+
+        vm.type("name", "Profile")
+        assertEquals("feature/home/ui/ProfileScreen.kt", ui())
     }
 }

@@ -1,15 +1,8 @@
 package me.tbsten.katachi.intellij.ide.dialog
 
-import androidx.compose.foundation.layout.Box
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.input.key.Key
-import androidx.compose.ui.input.key.KeyEventType
-import androidx.compose.ui.input.key.key
-import androidx.compose.ui.input.key.onPreviewKeyEvent
-import androidx.compose.ui.input.key.type
 import com.intellij.openapi.application.EDT
 import com.intellij.openapi.application.ModalityState
 import com.intellij.openapi.application.asContextElement
@@ -84,6 +77,8 @@ internal class KatachiGenerateDialog(
         checkContext = checkContext,
         settle = settle,
         onUnexpectedCheckFailure = { SDK_CALL_LOG.warn("Checking the target of the generate dialog failed unexpectedly", it) },
+        candidateLister = environment.directoryLister,
+        onCandidateFailure = { SDK_CALL_LOG.warn("Reading the directories for the capture candidates failed", it) },
     )
 
     private val refusalState = MutableStateFlow<String?>(null)
@@ -107,7 +102,13 @@ internal class KatachiGenerateDialog(
 
         override fun onInput(name: String, value: String) = changed(GenerateDialogIntent.Input(name, value))
 
+        override fun onToggleMultiline(name: String) = changed(GenerateDialogIntent.ToggleMultiline(name))
+
         override fun onGenerate() = doOKAction()
+
+        override fun onCancel() {
+            sdkCall("close the generate dialog on Esc") { doCancelAction() }
+        }
     }
 
     init {
@@ -153,13 +154,7 @@ internal class KatachiGenerateDialog(
             val state by viewModel.state.collectAsState()
             val refused by refusalState.collectAsState()
             val ui = remember(state, refused) { dialogUiStateOf(state, strings, refused) }
-            // Compose keeps the key events of a focused field, so the platform's own Esc binding of the
-            // dialog never sees them (found by the G2 E2E): Esc is cancelled here, before the field.
-            Box(
-                Modifier.onPreviewKeyEvent { event ->
-                    (event.key == Key.Escape && event.type == KeyEventType.KeyDown).also { if (it) sdkCall("close the generate dialog on Esc") { doCancelAction() } }
-                },
-            ) { GenerateDialogContent(ui, strings, actions) }
+            GenerateDialogContent(ui, strings, actions)
         }
         panel.preferredSize = Dimension(PREFERRED_WIDTH, PREFERRED_HEIGHT)
         panel.minimumSize = Dimension(MIN_WIDTH, MIN_HEIGHT)

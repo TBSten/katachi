@@ -140,4 +140,11 @@ internal object EnglishKatachiStrings : KatachiStrings {
     override val retryRemaining = "Retry the Rest"
     override val continueGenerating = "Generate More"
     override val uncheckAll = "Uncheck All"
+
+    // ---- L-S: ide-review-screens ----
+    override fun newDirectoryNote(path: String) = "$path will be a new directory"
+    override fun moreCandidates(count: Int) = "$count more"
+    override fun definitionTooOld(katachiVersion: String?) =
+        "The gutter and violation marks need katachi 0.3 or later" + (katachiVersion?.let { " (now $it)" } ?: "")
+    override val openDefinition = "Open Definition"
 }

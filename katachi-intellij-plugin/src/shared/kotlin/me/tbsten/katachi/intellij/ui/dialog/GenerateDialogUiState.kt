@@ -67,6 +67,15 @@ internal interface GenerateDialogActions {
     /** A field's text (or a Boolean / enum choice) changed. */
     fun onInput(name: String, value: String)
 
-    /** Enter in the form, like the OK button. */
+    /** Enter in the form, and Cmd+Enter / Ctrl+Enter anywhere in the dialog (also in a text area), like the OK button. */
     fun onGenerate()
+
+    /** A String field's one-line / several-lines switch was clicked. */
+    fun onToggleMultiline(name: String) = Unit
+
+    /**
+     * Esc in the dialog with no candidate popup open (an open popup takes its Esc for itself and only closes). Compose keeps
+     * the key events of a focused field, so the platform's own Esc binding never sees them; the content reports it here.
+     */
+    fun onCancel() = Unit
 }

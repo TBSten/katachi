@@ -6,6 +6,7 @@ import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -24,6 +25,8 @@ import me.tbsten.katachi.intellij.data.generate.templateArgsOf
 import me.tbsten.katachi.intellij.data.gradle.GradleRunListener
 import me.tbsten.katachi.intellij.data.gradle.GradleTaskRunner
 import me.tbsten.katachi.intellij.data.gradle.SerialGradleTaskRunner
+import me.tbsten.katachi.intellij.data.placement.DirectoryLister
+import me.tbsten.katachi.intellij.data.placement.placementRootOf
 import me.tbsten.katachi.intellij.data.load.LoadResult
 import me.tbsten.katachi.intellij.data.load.DefinitionLoader
 import me.tbsten.katachi.intellij.model.ConflictQuestion
@@ -69,6 +72,10 @@ internal class KatachiToolWindowViewModel(
      * decision 16); read at each one. When not, it only detects and shows the cached JSON.
      */
     private val loadsWithoutUser: () -> Boolean = { true },
+    /** Reads the directories behind the capture fields' candidates (design 3.3); none by default. */
+    candidateLister: DirectoryLister = DirectoryLister { emptyList() },
+    /** How long a capture field's candidates wait for typing to pause. */
+    candidateSettle: suspend () -> Unit = { delay(CaptureCandidateLoader.SETTLE_MILLIS) },
 ) {
     private val mutableState = MutableStateFlow(initial)
     val state: StateFlow<KatachiScreenState> = mutableState.asStateFlow()
@@ -109,6 +116,27 @@ internal class KatachiToolWindowViewModel(
     /** Whether a detection or a load is running or queued; tests wait for it to end. */
     val isLoadRunning: Boolean get() = loadJob?.isActive == true
 
+    /** Reads capture candidates in the background; [requestedFields] is touched only under its [CaptureCandidateLoader.lock]. */
+    private val candidateLoader = CaptureCandidateLoader(
+        scope = scope,
+        lister = candidateLister,
+        ioContext = ioDispatcher,
+        settle = candidateSettle,
+        onFailure = { LOG.warn("Reading the directories for the capture candidates failed", it) },
+        onLoaded = { field, list ->
+            mutableState.update { state ->
+                val next = if (list == null) state.captureCandidates - field else state.captureCandidates + (field to list)
+                if (next == state.captureCandidates) state else state.copy(captureCandidates = next)
+            }
+        },
+    )
+
+    /** The capture fields on screen that [candidateLoader] was asked about. */
+    private val requestedFields = HashSet<FieldId>()
+
+    /** The definitions' roots (`placementRootOf` checks files), asked again after the files or the list changed. */
+    private val candidateRoots = ConcurrentHashMap<ModuleId, Path>()
+
     private val ideIntents = IdeIntentHandler(scope, this.runner, fileSystem, effects, { mutableState.value }, { mutableState.update(it) })
 
     /** The definition modules found by the latest detection, for watching their files (E-44). */
@@ -123,6 +151,44 @@ internal class KatachiToolWindowViewModel(
     }
 
     fun dispatch(intent: KatachiIntent) {
+        dispatchIntent(intent)
+        syncCandidates()
+    }
+
+    /**
+     * Files changed outside the tool window (a VFS event): the directories behind the candidates may have changed, so
+     * every capture field on screen reads again (design 3.3). Not a definition change; [KatachiIntent.DefinitionChanged] is.
+     */
+    fun onFilesChanged() {
+        candidateRoots.clear()
+        syncCandidates(force = true)
+    }
+
+    /**
+     * Asks [candidateLoader] for the capture fields shown now (checked rows with their form open) and lets go of the
+     * ones that are not shown any more. The loader ignores a request whose key did not change, so this is cheap to call
+     * after every change; [force] reads again regardless (the files changed, the definition was reloaded).
+     */
+    private fun syncCandidates(force: Boolean = false) {
+        // Called from the EDT (dispatch), the background (a load or a generation ended) and the VFS listener. The state is
+        // read inside the lock, so a caller that got the lock later always works from a newer state than the one before it.
+        synchronized(candidateLoader.lock) {
+            val state = mutableState.value
+            val wanted = state.rows
+                .filter { state.form.isSelected(it.id) && it.id in state.form.expanded && it.template.unavailability == null }
+                .flatMap { row -> candidateRequestsOf(row, state.form.inputsOf(row.id), candidateRoots.getOrPut(row.module.id) { placementRootOf(row.module, fileSystem) }) }
+            val wantedFields = wanted.map { it.field }.toSet()
+            for (field in requestedFields - wantedFields) candidateLoader.forget(field)
+            requestedFields.clear()
+            requestedFields.addAll(wantedFields)
+            for (request in wanted) candidateLoader.request(request, force)
+            if (state.captureCandidates.keys.any { it !in wantedFields }) {
+                mutableState.update { current -> current.copy(captureCandidates = current.captureCandidates.filterKeys { it in wantedFields }) }
+            }
+        }
+    }
+
+    private fun dispatchIntent(intent: KatachiIntent) {
         var applied = false
         // update, not read-then-write: a load or a generation may be updating the state meanwhile.
         mutableState.update { current ->
@@ -222,6 +288,8 @@ internal class KatachiToolWindowViewModel(
                 val modules = if (state.modules.any { it.id == module.id }) state.modules else state.modules + module
                 applyLoaded(state.copy(modules = modules), (others + result.snapshots).sortedBy { snapshot -> modules.indexOfFirst { it.id == snapshot.module.id } })
             }
+            candidateRoots.clear()
+            syncCandidates(force = true)
         }
         return result
     }
@@ -320,6 +388,9 @@ internal class KatachiToolWindowViewModel(
             }
         }
         if (result is LoadResult.Failed) effects.notifyLoadFailed()
+        // The definition was read again: what the candidates were read from may have changed with it.
+        candidateRoots.clear()
+        syncCandidates(force = result is LoadResult.Loaded)
     }
 
     private fun generate() {
