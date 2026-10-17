@@ -5,10 +5,13 @@ import com.intellij.openapi.application.ModalityState
 import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.ui.HyperlinkLabel
 import com.intellij.util.ui.UIUtil
+import org.jetbrains.annotations.TestOnly
+import java.awt.Component
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.project.Project
 import me.tbsten.katachi.intellij.ide.KatachiProjectService
 import me.tbsten.katachi.intellij.ide.dialog.GenerateDialogs
+import me.tbsten.katachi.intellij.ide.gutter.HighlightingRefresher
 import me.tbsten.katachi.intellij.ide.notification.NoRolePanels
 import me.tbsten.katachi.intellij.presentation.FieldId
 import me.tbsten.katachi.intellij.presentation.GenerationState
@@ -32,6 +35,12 @@ import me.tbsten.katachi.intellij.presentation.KatachiToolWindowViewModel
  */
 @Service(Service.Level.PROJECT)
 internal class KatachiDebugBridge(private val project: Project) {
+    /** Whether a part is on screen; a headless test, which has no screen, replaces it. */
+    @TestOnly
+    @Volatile
+    internal var onScreen: (Component) -> Boolean = { it.isShowing }
+
+
     private val viewModel: KatachiToolWindowViewModel
         get() {
             check(System.getProperty(ENABLED_PROPERTY) == "true") { "The katachi debug bridge is off; start the IDE with -D$ENABLED_PROPERTY=true." }
@@ -140,6 +149,36 @@ internal class KatachiDebugBridge(private val project: Project) {
     /** Chooses the row starting with [row] in the menu of the ◆ on [line] of [path]: `chosen=<row>` or `chosen=none`. */
     fun chooseFromGutter(path: String, line: Int, row: String): String = gutterReader().chooseFromGutter(path, line, row)
 
+    /** The katachi banners on [path], read from the parts on screen (see [GutterDebugReader.describeBanners]). */
+    fun describeBanners(path: String): String = gutterReader().describeBanners(path)
+
+    /** Applies the fix starting with [prefix] of the annotation on [line] of [path]: `applied=<text>` or `applied=none` (see [GutterDebugReader.applyFix]). */
+    fun applyFix(path: String, line: Int, prefix: String): String = gutterReader().applyFix(path, line, prefix)
+
+    /** The selected text editor's file and caret line (see [GutterDebugReader.describeCaret]). */
+    fun describeCaret(): String = gutterReader().describeCaret()
+
+    /** [chooseFromGutter] that leaves the choosing for later on the EDT, for a row that opens a modal dialog (see [GutterDebugReader.chooseFromGutterLater]). */
+    fun chooseFromGutterLater(path: String, line: Int, row: String): String = gutterReader().chooseFromGutterLater(path, line, row)
+
+    /** Types [value] into the field [name] of the generate dialog on screen: `filled=<name>` or `filled=none` (see [DebugDialogs.fillDialog]). */
+    fun fillDialog(name: String, value: String): String = checked(DebugDialogs()).fillDialog(name, value)
+
+    /** Presses `generate` or `cancel` of the generate dialog on screen: `pressed=<button>` or `pressed=none` (see [DebugDialogs.pressDialog]). */
+    fun pressDialog(button: String): String = checked(DebugDialogs()).pressDialog(button)
+
+    /** Turns the katachi gutter icons on or off and draws again: `gutterIcons=<true or false>` (see [GutterDebugReader.setGutterIcons]). */
+    fun setGutterIcons(enabled: Boolean): String = gutterReader().setGutterIcons(enabled)
+
+    /** The last draw of the gutter: `redraw=<seq>|<reason>|<state type>` or `redraw=none`, and `busy=<bool>`. A failing smoke adds it to its message. */
+    fun describeRedraw(): String {
+        checked(Unit)
+        val refresher = HighlightingRefresher.getInstance(project)
+        val last = refresher.lastRedraw.value
+        val redraw = last?.let { "${it.seq}|${it.reason.replace("\n", "\\n")}|${it.definition?.let { state -> state::class.simpleName }}" } ?: "none"
+        return "redraw=$redraw\nbusy=${refresher.isBusy}"
+    }
+
     /** Writes the IDE window as a PNG to [out]: `saved=<out>|<w>x<h>` (see [DebugScreenshots.ofFrame]). */
     fun screenshotFrame(out: String): String = DebugScreenshots(project).ofFrame(checked(out))
 
@@ -171,7 +210,7 @@ internal class KatachiDebugBridge(private val project: Project) {
 
     private fun gutterReader(): GutterDebugReader {
         check(System.getProperty(ENABLED_PROPERTY) == "true") { "The katachi debug bridge is off; start the IDE with -D$ENABLED_PROPERTY=true." }
-        return GutterDebugReader(project)
+        return GutterDebugReader(project, onScreen)
     }
 
     /** Presses Generate. */
