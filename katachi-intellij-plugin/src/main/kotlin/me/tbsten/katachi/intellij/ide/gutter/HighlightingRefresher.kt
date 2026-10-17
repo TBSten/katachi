@@ -7,6 +7,7 @@ import com.intellij.openapi.components.service
 import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiManager
+import com.intellij.ui.EditorNotifications
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.Job
@@ -19,6 +20,7 @@ import kotlinx.coroutines.launch
 import me.tbsten.katachi.intellij.ide.definition.DefinitionModelService
 import me.tbsten.katachi.intellij.ide.sarif.ViolationsService
 import me.tbsten.katachi.intellij.ide.sdkCall
+import me.tbsten.katachi.intellij.model.DefinitionErrors
 import me.tbsten.katachi.intellij.model.DefinitionState
 import me.tbsten.katachi.intellij.presentation.gutter.GutterFreshness
 import java.nio.file.Path
@@ -87,7 +89,7 @@ internal class HighlightingRefresher(private val project: Project, private val s
     )
 
     /** The states the refresher started following from: a change before that is the first draw's, not a redraw's. */
-    internal class FollowStart(val definition: DefinitionState, val violations: Any?)
+    internal class FollowStart(val definition: DefinitionState, val violations: Any?, val errors: DefinitionErrors = DefinitionErrors.None)
 
     /** Where the refresher started following [definitions] from, or `null` when it does not follow them. Tests ask it what a draw is owed for. */
     internal fun followStartOf(definitions: DefinitionModelService): FollowStart? =
@@ -100,12 +102,21 @@ internal class HighlightingRefresher(private val project: Project, private val s
         // Read here, not in the coroutine: a change made before it starts collecting is still a change.
         val definitionBefore = definitions.state.value
         val violationsBefore = violations?.state?.value
+        val errorsBefore = definitions.definitionErrors.value
         lastRoots.set(rootsOf(definitions))
         val job = scope.launch(start = CoroutineStart.LAZY) {
             launch {
                 var before: DefinitionState = definitionBefore
                 definitions.state.collect { after ->
                     if (GutterFreshness.shouldRedraw(before, after)) schedule("the definition is ${after.javaClass.simpleName}", definitions)
+                    before = after
+                }
+            }
+            launch {
+                // The mistakes katachi found in the definition (ide-authoring design 2.4) ride on the same job as every other change (Q-2).
+                var before: DefinitionErrors = errorsBefore
+                definitions.definitionErrors.collect { after ->
+                    if (after != before) schedule("the definition errors changed", definitions)
                     before = after
                 }
             }
@@ -119,7 +130,7 @@ internal class HighlightingRefresher(private val project: Project, private val s
                 }
             }
         }
-        if (followed.compareAndSet(current, Followed(definitions, violations, job, FollowStart(definitionBefore, violationsBefore)))) {
+        if (followed.compareAndSet(current, Followed(definitions, violations, job, FollowStart(definitionBefore, violationsBefore, errorsBefore)))) {
             current?.job?.cancel()
             // A draw waiting for the service that was followed must not leave a record in the world of the new one.
             if (current != null && current.definitions !== definitions) pending.getAndSet(null)?.cancel()
@@ -175,6 +186,10 @@ internal class HighlightingRefresher(private val project: Project, private val s
             if (project.isDisposed) emptyList() else FileEditorManager.getInstance(project).openFiles.toList()
         }.getOrDefault(emptyList())
         for (file in open) {
+            // The banner of a mistake of the definition is not drawn by the daemon: the platform recomputes it when asked.
+            // Every draw asks, whatever its reason: two changes that settle together leave the reason of the later one only (and
+            // that one may be the definition's state, not its mistakes), and a banner that is asked for needlessly costs one provider call.
+            sdkCall("update the notifications of ${file.path}") { if (!project.isDisposed) EditorNotifications.getInstance(project).updateNotifications(file) }
             val path = sdkCall("find the path of ${file.name}") { file.fileSystem.getNioPath(file) }.getOrNull() ?: continue
             if (roots.isNotEmpty() && roots.none { path.startsWith(it) }) continue
             val psiFile = sdkCall("find the PSI of ${file.path}") { readAction { PsiManager.getInstance(project).findFile(file) } }.getOrNull()
@@ -187,6 +202,7 @@ internal class HighlightingRefresher(private val project: Project, private val s
 
     companion object {
         const val SETTLE_MILLIS: Long = 300L
+
         private const val HISTORY_SIZE = 64
 
         fun getInstance(project: Project): HighlightingRefresher = project.service()

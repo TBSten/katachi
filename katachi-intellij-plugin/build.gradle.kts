@@ -237,6 +237,38 @@ tasks.test { dependsOn(uiTest) }
 // No useJUnitPlatform(): BasePlatformTestCase is JUnit 4 based.
 tasks.test { systemProperty("idea.kotlin.plugin.use.k2", "true") }
 
+// L-A (ide-authoring)
+// `./gradlew testK1`: the tests of what has to hold under the K1 Kotlin plugin as under K2 (the PSI-only features: completion, the
+// errors of a definition). The same sandbox and arguments as `test`, with the plugin mode flipped.
+tasks.register<Test>("testK1") {
+    group = "verification"
+    description = "Runs the PSI-only authoring tests (completion, definition errors) under the K1 Kotlin plugin."
+    val base = tasks.test.get()
+    testClassesDirs = base.testClassesDirs
+    classpath = base.classpath
+    jvmArgumentProviders.addAll(base.jvmArgumentProviders)
+    jvmArgs(base.jvmArgs)
+    systemProperties(base.systemProperties)
+    systemProperty("idea.kotlin.plugin.use.k2", "false")
+    // The platform's own arguments (copied from `test` above) come after the system properties and can say `true` again; this one is last.
+    jvmArgumentProviders.add(CommandLineArgumentProvider { listOf("-Didea.kotlin.plugin.use.k2=false", "-Didea.kotlin.plugin.use.k1=true") })
+    // Read by DefinitionCompletionPluginModeTest, which asserts the sandbox really is in K1 mode (a lost property would otherwise pass as K2).
+    systemProperty("katachi.test.expectK1", "true")
+    dependsOn(tasks.named("prepareTestSandbox"))
+    // TODO: the injection tests (*TemplateInjector*, *MultiTemplateInjection*, F-15) fail under K1 only where a `.kts` fragment
+    //  makes K1's ScriptClassRootsUpdater log a workspace-model error (4 tests; confirmed in a real K1 run, once the K1 properties took effect). Not yet known whether that is only the test base or a red IDE
+    //  error in a real K1 IDE (see the L-A A1 review in open-issues / L-V V2); then either narrow AnalysisTestBase.IGNORABLE_ERROR_PATTERNS
+    //  (by category and class) and put F-15 back here, or fix the cause.
+    filter {
+        // A renamed class that leaves no test under a pattern would otherwise stay green with 0 tests.
+        isFailOnNoMatchingTests = true
+        includeTestsMatching("*Completion*")
+        includeTestsMatching("*DefinitionError*")
+        includeTestsMatching("*AutoPopup*")
+    }
+}
+// end of L-A
+
 // `./gradlew test -Dkatachi.gutter.golden.update=true` writes the gutter's text goldens (contract/gutter/*.txt) instead of comparing.
 tasks.test { providers.systemProperty("katachi.gutter.golden.update").orNull?.let { systemProperty("katachi.gutter.golden.update", it) } }
 

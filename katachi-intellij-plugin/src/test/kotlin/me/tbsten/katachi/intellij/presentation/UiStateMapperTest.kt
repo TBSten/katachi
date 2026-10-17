@@ -210,6 +210,16 @@ class UiStateMapperTest {
     }
 
     @Test
+    fun `katachi が定義を読めなかったときの失敗は 専用の見出しと 誤りの文と 読み直す導線を出す`() {
+        val failure = LoadFailure.Gradle(GradleFailure.DefinitionRejected(emptyList(), listOf("`.template { }` is attached to a wildcard.")))
+        val message = ui(KatachiScreenState(phase = ScreenPhase.LoadError(failure, emptyList()))).body.cast<BodyUi.Error>().message
+
+        assertEquals(listOf("katachi が定義を読めませんでした。", "誤りのある行は定義ファイルに下線で示しています。メッセージは詳細にあります。"), message.body)
+        assertTrue(message.actions.any { it.intent == KatachiIntent.Reload })
+        assertEquals(listOf("`.template { }` is attached to a wildcard."), message.details?.lines)
+    }
+
+    @Test
     fun `キャッシュがあるときの読み込み失敗と定義の変更と消えたテンプレートは帯で出す`() {
         val state = ready(arch to listOf(service)).copy(
             loadErrorBanner = LoadFailure.Cancelled,

@@ -29,6 +29,8 @@ internal data class LoadAnswer(
     val fails: Boolean = false,
     val definitionJson: String? = null,
     val gate: CompletableDeferred<Unit>? = null,
+    /** With [fails]: the `definition-errors.json` katachi left beside the failed definition task (ide-authoring design 2.1). */
+    val definitionErrorsJson: String? = null,
 )
 
 /**
@@ -161,6 +163,11 @@ internal class DiskGradleRunner(private val root: Path) : GradleTaskRunner {
         val answer = synchronized(loads) { if (loads.isEmpty()) LoadAnswer() else loads.removeAt(0) }
         answer.gate?.let { awaitCancellable(it) }
         if (answer.fails) {
+            answer.definitionErrorsJson?.let { text ->
+                for (invocation in request.tasks.filter { it.taskPath.endsWith(":${KatachiModule.DEFINITION_JSON_TASK}") }) {
+                    write(root.resolve(moduleOf(invocation)).resolve(KatachiModule.DEFINITION_ERRORS_JSON), text)
+                }
+            }
             failureLines(request.tasks.first().taskPath).forEach(listener::onLine)
             return GradleRunOutcome.Failed
         }

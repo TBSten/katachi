@@ -1,0 +1,18 @@
+> Task :arch-a:generateKatachiEntryPoint UP-TO-DATE
+> Task :arch-a:compileTestKotlin UP-TO-DATE
+> Task :arch-a:katachiInternalDefinitionJson
+Exception in thread "main" me.tbsten.katachi.dsl.KatachiTemplateOnWildcardException: `.template { }` at ScreenRole.kt:4 is attached to "repository/*Repository.kt" of role "data.Repository", whose path still holds an unnamed wildcard.
+Generating a file needs a value for every level the path leaves open, and an unnamed * or **, or a ?, [...] or {...}, has no --arg name for that value to arrive as.
+Name every remaining * with capture("..."), such as "${capture("name")}Repository.kt".file(), and write ?, [...] and {...} out as the name the file will have.
+	at me.tbsten.katachi.template.internal.TemplateFlattening.flatten(TemplateFlattening.kt:88)
+	at me.tbsten.katachi.processor.internal.MainKt.main(Main.kt:61)
+
+> Task :arch-a:katachiInternalDefinitionJson FAILED
+
+FAILURE: Build failed with an exception.
+
+* What went wrong:
+Execution failed for task ':arch-a:katachiInternalDefinitionJson'.
+> Process 'command '/opt/jdk/bin/java'' finished with non-zero exit value 1
+
+BUILD FAILED in 2s

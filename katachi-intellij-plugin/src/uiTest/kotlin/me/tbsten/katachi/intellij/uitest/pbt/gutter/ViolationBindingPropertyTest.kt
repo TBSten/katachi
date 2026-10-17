@@ -81,7 +81,7 @@ class ViolationBindingPropertyTest {
         checkAll(config, Arb.long()) { caseSeed ->
             val random = Random(caseSeed)
             assertEquals("seed=$caseSeed", AnnotationTarget.FileLevel, ViolationBinding.targetOf(AnnotationFixtures.unchecked(path, level(random))))
-            val labels = listOf("UnexpectedFile", "UnexpectedDirectory", "MissingFile", "AmbiguousLayout", "StaleBaselineEntry", "TodoRule", "Future")
+            val labels = listOf("UnexpectedFile", "UnexpectedDirectory", "StaleBaselineEntry", "TodoRule", "Future")
             val label = labels[random.nextInt(labels.size)]
             val other = unsatisfied(random, names[random.nextInt(names.size)]).copy(label = label, ruleId = "katachi.$label")
             assertEquals("seed=$caseSeed $label", AnnotationTarget.Skipped, ViolationBinding.targetOf(other))

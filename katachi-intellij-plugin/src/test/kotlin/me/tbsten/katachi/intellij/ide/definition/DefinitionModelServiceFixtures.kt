@@ -5,11 +5,14 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import me.tbsten.katachi.intellij.model.DeclarationSiteRef
+import me.tbsten.katachi.intellij.model.DefinitionErrors
+import me.tbsten.katachi.intellij.model.DefinitionErrorsEvent
 import me.tbsten.katachi.intellij.model.DefinitionSnapshot
 import me.tbsten.katachi.intellij.model.DefinitionState
 import me.tbsten.katachi.intellij.model.FileRoles
 import me.tbsten.katachi.intellij.model.ModuleId
 import me.tbsten.katachi.intellij.model.RoleFileDeclarations
+import me.tbsten.katachi.intellij.model.after
 import me.tbsten.katachi.intellij.model.answer
 import java.nio.file.Path
 import java.util.concurrent.ConcurrentHashMap
@@ -43,9 +46,13 @@ internal class FakeDefinitionModelService(initial: DefinitionState = DefinitionS
     private val mutableState = MutableStateFlow(initial)
     override val state: StateFlow<DefinitionState> = mutableState.asStateFlow()
 
+    private val mutableErrors = MutableStateFlow(DefinitionErrors.None)
+    override val definitionErrors: StateFlow<DefinitionErrors> = mutableErrors.asStateFlow()
+
     private val roles = ConcurrentHashMap<String, FileRoles>()
     private val declarations = ConcurrentHashMap<String, List<RoleFileDeclarations>>()
     private val sites = ConcurrentHashMap<DeclarationSiteRef, ResolvedSite>()
+    private val definitionFiles = ConcurrentHashMap<String, ModuleId>()
     private val queued = ArrayDeque<DefinitionState>()
     private val mutableHistory = CopyOnWriteArrayList<DefinitionState>().apply { add(initial) }
 
@@ -104,6 +111,18 @@ internal class FakeDefinitionModelService(initial: DefinitionState = DefinitionS
         }
     }
 
+    // --- the definition's mistakes ---
+
+    /** Sets the mistakes directly. */
+    fun emitErrors(errors: DefinitionErrors) {
+        mutableErrors.value = errors
+    }
+
+    /** Moves the mistakes by [event], as the real publisher does (design 2.3). */
+    fun emitErrors(event: DefinitionErrorsEvent) {
+        mutableErrors.value = mutableErrors.value.after(event)
+    }
+
     // --- scripted answers ---
 
     /**
@@ -112,6 +131,11 @@ internal class FakeDefinitionModelService(initial: DefinitionState = DefinitionS
      */
     fun answer(path: Path, roles: FileRoles?) {
         if (roles == null) this.roles.remove(keyOf(path)) else this.roles[keyOf(path)] = roles
+    }
+
+    /** Says [file] is in the test sources of [module]'s definition: what `definitionModuleOf` answers for it. */
+    fun holdDefinitionFile(file: VirtualFile, module: ModuleId) {
+        definitionFiles[file.path] = module
     }
 
     /** What `fileDeclarationsOf` answers for [path]. */
@@ -152,6 +176,8 @@ internal class FakeDefinitionModelService(initial: DefinitionState = DefinitionS
         mutableResolved += site
         return sites[site] ?: ResolvedSite.Unresolved("not scripted in the fake: $site")
     }
+
+    override fun definitionModuleOf(file: VirtualFile): ModuleId? = definitionFiles[file.path]
 
     override fun fileDeclarationsOf(file: VirtualFile): List<RoleFileDeclarations> {
         mutableAsked += file.path

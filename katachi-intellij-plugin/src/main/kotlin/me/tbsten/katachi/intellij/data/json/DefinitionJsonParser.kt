@@ -178,5 +178,8 @@ private fun DefinitionJsonReader.problem(): DefinitionProblem {
         kindName = kindName,
         message = string("message"),
         detail = nullableString("detail"),
+        // Written since katachi 0.3 for the three kinds that name a template or a file; an older JSON has neither key.
+        declaredAt = optionalNullableObj("declaredAt")?.let { DeclarationSiteRef(it.string("fileName"), it.int("line")) },
+        exception = optionalNullableString("exception"),
     )
 }

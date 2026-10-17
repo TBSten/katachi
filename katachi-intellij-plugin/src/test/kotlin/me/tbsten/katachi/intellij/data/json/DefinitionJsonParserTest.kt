@@ -215,6 +215,28 @@ class DefinitionJsonParserTest {
     }
 
     @Test
+    fun `problems の declaredAt と exception と 組の失敗の種類を読み 無ければ null`() {
+        val basicText = DefinitionFixtures.definitionText("synthetic-definition-basic")
+        assertTrue("the fixture ends with an empty problems list", basicText.contains("\"problems\": []"))
+        val withSites = basicText.replace(
+            "\"problems\": []",
+            """"problems": [
+              { "kind": "TemplateSetPreviewFailed", "message": "m", "detail": "NewFeature", "declaredAt": { "fileName": "ScreenRole.kt", "line": 7 }, "exception": "x.Y" },
+              { "kind": "TemplatePreviewFailed", "message": "m", "detail": "a.B" },
+              { "kind": "ExplanationFailed", "message": "m", "detail": null, "declaredAt": null, "exception": null }
+            ]""",
+        )
+
+        val problems = parse(withSites).definition.problems
+
+        assertEquals(listOf(DefinitionProblemKind.TemplateSetPreviewFailed, DefinitionProblemKind.TemplatePreviewFailed, DefinitionProblemKind.ExplanationFailed), problems.map { it.kind })
+        assertEquals(DeclarationSiteRef("ScreenRole.kt", 7), problems[0].declaredAt)
+        assertEquals("x.Y", problems[0].exception)
+        assertEquals(listOf(null, null), problems.drop(1).map { it.declaredAt })
+        assertEquals(listOf(null, null), problems.drop(1).map { it.exception })
+    }
+
+    @Test
     fun `templates の部分木は従来のテンプレート読みで読まれる`() {
         val middle = parsed.templates.single { it.summary.template == "a.b.Middle" }
         assertEquals(listOf("name"), middle.summary.captureNames)

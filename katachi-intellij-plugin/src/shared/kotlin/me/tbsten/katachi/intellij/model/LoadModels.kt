@@ -47,6 +47,12 @@ internal sealed interface GradleFailure {
      */
     data class ProcessorRejected(val exceptionClassName: String, override val details: List<String>) : GradleFailure
 
+    /**
+     * katachi read the definition and found it wrong; `definition-errors.json` says where (design 2.3).
+     * [details] is the first mistake's message, line by line.
+     */
+    data class DefinitionRejected(val errors: List<DefinitionErrorModel>, override val details: List<String>) : GradleFailure
+
     data class Other(override val details: List<String>) : GradleFailure
 }
 

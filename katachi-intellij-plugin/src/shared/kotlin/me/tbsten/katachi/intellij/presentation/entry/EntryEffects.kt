@@ -22,6 +22,12 @@ internal sealed interface EntryOrigin {
      * decides are the ones above its name: the feature and the directories carry over, the name stays open.
      */
     data class SiblingOf(override val path: Path) : EntryOrigin
+
+    /**
+     * The definition file whose ◆ asked to generate from a template (ide-authoring D-17). A definition file decides no capture, so
+     * there is no initial value; [path] is the file the ◆ is in.
+     */
+    data class Definition(override val path: Path) : EntryOrigin
 }
 
 /** What the generate dialog opens with. The dialog lists every template (issue 0), [initialTemplate] selected. */

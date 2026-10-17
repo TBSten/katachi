@@ -57,6 +57,17 @@ class LoadFailureClassifierTest {
     }
 
     @Test
+    fun `定義の誤りで processor が落ちたときの stderr は 誤りの JSON が無ければ今までどおり ProcessorRejected として例外名と本文を持つ`() {
+        // The stderr of a run that found the definition wrong (katachi 47002db): the exception itself heads it, not the entry point's wrapper.
+        val failure = classify("definition-rejected") as? GradleFailure.ProcessorRejected ?: throw AssertionError()
+
+        assertEquals("me.tbsten.katachi.dsl.KatachiTemplateOnWildcardException", failure.exceptionClassName)
+        assertTrue(failure.details.first().startsWith("`.template { }` at ScreenRole.kt:4"))
+        assertTrue(failure.details.last().startsWith("Name every remaining *"))
+        assertTrue(failure.details.none { it.trimStart().startsWith("at ") })
+    }
+
+    @Test
     fun `どれでもなければ最後の数行を詳細にする`() {
         val failure = classify("other-failure") as? GradleFailure.Other ?: throw AssertionError()
         assertEquals("BUILD FAILED in 1s", failure.details.last())
