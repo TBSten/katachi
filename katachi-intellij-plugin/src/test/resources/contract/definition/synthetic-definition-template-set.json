@@ -1,0 +1,1467 @@
+{
+  "schemaVersion": 1,
+  "katachiVersion": "0.3.0",
+  "generatedAt": "2026-10-04T00:30:12Z",
+  "projectRoot": "/repo",
+  "architecture": {
+    "declaredAt": {
+      "fileName": "IdePluginSyntheticTemplateSetSpecSupport.kt",
+      "line": 28
+    },
+    "files": "gitTracked",
+    "baseline": null
+  },
+  "groups": [
+    {
+      "qualifiedName": "feature",
+      "name": "feature",
+      "path": ["feature"],
+      "title": null,
+      "summary": null,
+      "documented": null,
+      "declaredAt": {
+        "fileName": "IdePluginSyntheticTemplateSetSpecSupport.kt",
+        "line": 35
+      }
+    },
+    {
+      "qualifiedName": "shared",
+      "name": "shared",
+      "path": ["shared"],
+      "title": null,
+      "summary": null,
+      "documented": null,
+      "declaredAt": {
+        "fileName": "IdePluginSyntheticTemplateSetSpecSupport.kt",
+        "line": 73
+      }
+    },
+    {
+      "qualifiedName": "ui",
+      "name": "ui",
+      "path": ["ui"],
+      "title": null,
+      "summary": null,
+      "documented": null,
+      "declaredAt": {
+        "fileName": "IdePluginSyntheticTemplateSetSpecSupport.kt",
+        "line": 83
+      }
+    }
+  ],
+  "roles": [
+    {
+      "qualifiedName": "feature.FeatureScreen",
+      "name": "FeatureScreen",
+      "groupPath": ["feature"],
+      "title": null,
+      "summary": null,
+      "documented": null,
+      "declaredAt": {
+        "fileName": "IdePluginSyntheticTemplateSetSpecSupport.kt",
+        "line": 36
+      },
+      "layout": [
+        {
+          "index": 0,
+          "path": "src",
+          "kind": "Directory",
+          "required": false,
+          "description": null,
+          "declaredAt": {
+            "fileName": "IdePluginSyntheticTemplateSetSpecSupport.kt",
+            "line": 38
+          },
+          "modulePath": null,
+          "pathInModule": "src",
+          "captures": [],
+          "moduleCapture": null,
+          "template": null,
+          "matchedFiles": [],
+          "matchedCount": null,
+          "matchedFilesTruncated": false,
+          "synthetic": false,
+          "place": false
+        },
+        {
+          "index": 1,
+          "path": "src/main",
+          "kind": "Directory",
+          "required": false,
+          "description": null,
+          "declaredAt": {
+            "fileName": "IdePluginSyntheticTemplateSetSpecSupport.kt",
+            "line": 38
+          },
+          "modulePath": null,
+          "pathInModule": "src/main",
+          "captures": [],
+          "moduleCapture": null,
+          "template": null,
+          "matchedFiles": [],
+          "matchedCount": null,
+          "matchedFilesTruncated": false,
+          "synthetic": false,
+          "place": false
+        },
+        {
+          "index": 2,
+          "path": "src/main/kotlin",
+          "kind": "Directory",
+          "required": false,
+          "description": null,
+          "declaredAt": {
+            "fileName": "IdePluginSyntheticTemplateSetSpecSupport.kt",
+            "line": 38
+          },
+          "modulePath": null,
+          "pathInModule": "src/main/kotlin",
+          "captures": [],
+          "moduleCapture": null,
+          "template": null,
+          "matchedFiles": [],
+          "matchedCount": null,
+          "matchedFilesTruncated": false,
+          "synthetic": false,
+          "place": false
+        },
+        {
+          "index": 3,
+          "path": "src/main/kotlin/feature",
+          "kind": "Directory",
+          "required": false,
+          "description": null,
+          "declaredAt": {
+            "fileName": "IdePluginSyntheticTemplateSetSpecSupport.kt",
+            "line": 38
+          },
+          "modulePath": null,
+          "pathInModule": "src/main/kotlin/feature",
+          "captures": [],
+          "moduleCapture": null,
+          "template": null,
+          "matchedFiles": [],
+          "matchedCount": null,
+          "matchedFilesTruncated": false,
+          "synthetic": false,
+          "place": false
+        },
+        {
+          "index": 4,
+          "path": "src/main/kotlin/feature/*",
+          "kind": "Directory",
+          "required": false,
+          "description": null,
+          "declaredAt": {
+            "fileName": "IdePluginSyntheticTemplateSetSpecSupport.kt",
+            "line": 38
+          },
+          "modulePath": null,
+          "pathInModule": "src/main/kotlin/feature/*",
+          "captures": [
+            {
+              "name": "name",
+              "segmentIndex": 4,
+              "wildcardIndex": 0,
+              "transform": null
+            }
+          ],
+          "moduleCapture": null,
+          "template": null,
+          "matchedFiles": [],
+          "matchedCount": null,
+          "matchedFilesTruncated": false,
+          "synthetic": false,
+          "place": false
+        },
+        {
+          "index": 5,
+          "path": "src/main/kotlin/feature/*/*Screen.kt",
+          "kind": "File",
+          "required": false,
+          "description": null,
+          "declaredAt": {
+            "fileName": "IdePluginSyntheticTemplateSetSpecSupport.kt",
+            "line": 38
+          },
+          "modulePath": null,
+          "pathInModule": "src/main/kotlin/feature/*/*Screen.kt",
+          "captures": [
+            {
+              "name": "name",
+              "segmentIndex": 4,
+              "wildcardIndex": 0,
+              "transform": null
+            },
+            {
+              "name": "name",
+              "segmentIndex": 5,
+              "wildcardIndex": 0,
+              "transform": null
+            }
+          ],
+          "moduleCapture": null,
+          "template": {
+            "specifier": "feature.FeatureScreen",
+            "id": null,
+            "title": null,
+            "declaredAt": {
+              "fileName": "IdePluginSyntheticTemplateSetSpecSupport.kt",
+              "line": 38
+            }
+          },
+          "matchedFiles": [],
+          "matchedCount": 0,
+          "matchedFilesTruncated": false,
+          "synthetic": false,
+          "place": false
+        }
+      ],
+      "constraints": []
+    },
+    {
+      "qualifiedName": "feature.FeatureViewModel",
+      "name": "FeatureViewModel",
+      "groupPath": ["feature"],
+      "title": null,
+      "summary": null,
+      "documented": null,
+      "declaredAt": {
+        "fileName": "IdePluginSyntheticTemplateSetSpecSupport.kt",
+        "line": 43
+      },
+      "layout": [
+        {
+          "index": 0,
+          "path": "src",
+          "kind": "Directory",
+          "required": false,
+          "description": null,
+          "declaredAt": {
+            "fileName": "IdePluginSyntheticTemplateSetSpecSupport.kt",
+            "line": 45
+          },
+          "modulePath": null,
+          "pathInModule": "src",
+          "captures": [],
+          "moduleCapture": null,
+          "template": null,
+          "matchedFiles": [],
+          "matchedCount": null,
+          "matchedFilesTruncated": false,
+          "synthetic": false,
+          "place": false
+        },
+        {
+          "index": 1,
+          "path": "src/main",
+          "kind": "Directory",
+          "required": false,
+          "description": null,
+          "declaredAt": {
+            "fileName": "IdePluginSyntheticTemplateSetSpecSupport.kt",
+            "line": 45
+          },
+          "modulePath": null,
+          "pathInModule": "src/main",
+          "captures": [],
+          "moduleCapture": null,
+          "template": null,
+          "matchedFiles": [],
+          "matchedCount": null,
+          "matchedFilesTruncated": false,
+          "synthetic": false,
+          "place": false
+        },
+        {
+          "index": 2,
+          "path": "src/main/kotlin",
+          "kind": "Directory",
+          "required": false,
+          "description": null,
+          "declaredAt": {
+            "fileName": "IdePluginSyntheticTemplateSetSpecSupport.kt",
+            "line": 45
+          },
+          "modulePath": null,
+          "pathInModule": "src/main/kotlin",
+          "captures": [],
+          "moduleCapture": null,
+          "template": null,
+          "matchedFiles": [],
+          "matchedCount": null,
+          "matchedFilesTruncated": false,
+          "synthetic": false,
+          "place": false
+        },
+        {
+          "index": 3,
+          "path": "src/main/kotlin/feature",
+          "kind": "Directory",
+          "required": false,
+          "description": null,
+          "declaredAt": {
+            "fileName": "IdePluginSyntheticTemplateSetSpecSupport.kt",
+            "line": 45
+          },
+          "modulePath": null,
+          "pathInModule": "src/main/kotlin/feature",
+          "captures": [],
+          "moduleCapture": null,
+          "template": null,
+          "matchedFiles": [],
+          "matchedCount": null,
+          "matchedFilesTruncated": false,
+          "synthetic": false,
+          "place": false
+        },
+        {
+          "index": 4,
+          "path": "src/main/kotlin/feature/*",
+          "kind": "Directory",
+          "required": false,
+          "description": null,
+          "declaredAt": {
+            "fileName": "IdePluginSyntheticTemplateSetSpecSupport.kt",
+            "line": 45
+          },
+          "modulePath": null,
+          "pathInModule": "src/main/kotlin/feature/*",
+          "captures": [
+            {
+              "name": "name",
+              "segmentIndex": 4,
+              "wildcardIndex": 0,
+              "transform": null
+            }
+          ],
+          "moduleCapture": null,
+          "template": null,
+          "matchedFiles": [],
+          "matchedCount": null,
+          "matchedFilesTruncated": false,
+          "synthetic": false,
+          "place": false
+        },
+        {
+          "index": 5,
+          "path": "src/main/kotlin/feature/*/*ViewModel.kt",
+          "kind": "File",
+          "required": false,
+          "description": null,
+          "declaredAt": {
+            "fileName": "IdePluginSyntheticTemplateSetSpecSupport.kt",
+            "line": 45
+          },
+          "modulePath": null,
+          "pathInModule": "src/main/kotlin/feature/*/*ViewModel.kt",
+          "captures": [
+            {
+              "name": "name",
+              "segmentIndex": 4,
+              "wildcardIndex": 0,
+              "transform": null
+            },
+            {
+              "name": "name",
+              "segmentIndex": 5,
+              "wildcardIndex": 0,
+              "transform": null
+            }
+          ],
+          "moduleCapture": null,
+          "template": {
+            "specifier": "feature.FeatureViewModel",
+            "id": null,
+            "title": null,
+            "declaredAt": {
+              "fileName": "IdePluginSyntheticTemplateSetSpecSupport.kt",
+              "line": 45
+            }
+          },
+          "matchedFiles": [],
+          "matchedCount": 0,
+          "matchedFilesTruncated": false,
+          "synthetic": false,
+          "place": false
+        }
+      ],
+      "constraints": []
+    },
+    {
+      "qualifiedName": "shared.Logger",
+      "name": "Logger",
+      "groupPath": ["shared"],
+      "title": null,
+      "summary": null,
+      "documented": null,
+      "declaredAt": {
+        "fileName": "IdePluginSyntheticTemplateSetSpecSupport.kt",
+        "line": 74
+      },
+      "layout": [
+        {
+          "index": 0,
+          "path": "src",
+          "kind": "Directory",
+          "required": false,
+          "description": null,
+          "declaredAt": {
+            "fileName": "IdePluginSyntheticTemplateSetSpecSupport.kt",
+            "line": 76
+          },
+          "modulePath": null,
+          "pathInModule": "src",
+          "captures": [],
+          "moduleCapture": null,
+          "template": null,
+          "matchedFiles": [],
+          "matchedCount": null,
+          "matchedFilesTruncated": false,
+          "synthetic": false,
+          "place": false
+        },
+        {
+          "index": 1,
+          "path": "src/main",
+          "kind": "Directory",
+          "required": false,
+          "description": null,
+          "declaredAt": {
+            "fileName": "IdePluginSyntheticTemplateSetSpecSupport.kt",
+            "line": 76
+          },
+          "modulePath": null,
+          "pathInModule": "src/main",
+          "captures": [],
+          "moduleCapture": null,
+          "template": null,
+          "matchedFiles": [],
+          "matchedCount": null,
+          "matchedFilesTruncated": false,
+          "synthetic": false,
+          "place": false
+        },
+        {
+          "index": 2,
+          "path": "src/main/kotlin",
+          "kind": "Directory",
+          "required": false,
+          "description": null,
+          "declaredAt": {
+            "fileName": "IdePluginSyntheticTemplateSetSpecSupport.kt",
+            "line": 76
+          },
+          "modulePath": null,
+          "pathInModule": "src/main/kotlin",
+          "captures": [],
+          "moduleCapture": null,
+          "template": null,
+          "matchedFiles": [],
+          "matchedCount": null,
+          "matchedFilesTruncated": false,
+          "synthetic": false,
+          "place": false
+        },
+        {
+          "index": 3,
+          "path": "src/main/kotlin/shared",
+          "kind": "Directory",
+          "required": false,
+          "description": null,
+          "declaredAt": {
+            "fileName": "IdePluginSyntheticTemplateSetSpecSupport.kt",
+            "line": 76
+          },
+          "modulePath": null,
+          "pathInModule": "src/main/kotlin/shared",
+          "captures": [],
+          "moduleCapture": null,
+          "template": null,
+          "matchedFiles": [],
+          "matchedCount": null,
+          "matchedFilesTruncated": false,
+          "synthetic": false,
+          "place": false
+        },
+        {
+          "index": 4,
+          "path": "src/main/kotlin/shared/Logger.kt",
+          "kind": "File",
+          "required": true,
+          "description": null,
+          "declaredAt": {
+            "fileName": "IdePluginSyntheticTemplateSetSpecSupport.kt",
+            "line": 76
+          },
+          "modulePath": null,
+          "pathInModule": "src/main/kotlin/shared/Logger.kt",
+          "captures": [],
+          "moduleCapture": null,
+          "template": {
+            "specifier": "shared.Logger",
+            "id": null,
+            "title": null,
+            "declaredAt": {
+              "fileName": "IdePluginSyntheticTemplateSetSpecSupport.kt",
+              "line": 76
+            }
+          },
+          "matchedFiles": [],
+          "matchedCount": 0,
+          "matchedFilesTruncated": false,
+          "synthetic": false,
+          "place": false
+        }
+      ],
+      "constraints": []
+    },
+    {
+      "qualifiedName": "ui.Screen",
+      "name": "Screen",
+      "groupPath": ["ui"],
+      "title": null,
+      "summary": null,
+      "documented": null,
+      "declaredAt": {
+        "fileName": "IdePluginSyntheticTemplateSetSpecSupport.kt",
+        "line": 84
+      },
+      "layout": [
+        {
+          "index": 0,
+          "path": "feature",
+          "kind": "Directory",
+          "required": false,
+          "description": null,
+          "declaredAt": {
+            "fileName": "IdePluginSyntheticTemplateSetSpecSupport.kt",
+            "line": 86
+          },
+          "modulePath": null,
+          "pathInModule": "feature",
+          "captures": [],
+          "moduleCapture": null,
+          "template": null,
+          "matchedFiles": [],
+          "matchedCount": null,
+          "matchedFilesTruncated": false,
+          "synthetic": false,
+          "place": false
+        },
+        {
+          "index": 1,
+          "path": "feature/home",
+          "kind": "Directory",
+          "required": false,
+          "description": null,
+          "declaredAt": {
+            "fileName": "IdePluginSyntheticTemplateSetSpecSupport.kt",
+            "line": 86
+          },
+          "modulePath": ":feature:home",
+          "pathInModule": "",
+          "captures": [],
+          "moduleCapture": {
+            "pattern": ":feature:*",
+            "names": ["feature"]
+          },
+          "template": null,
+          "matchedFiles": [],
+          "matchedCount": null,
+          "matchedFilesTruncated": false,
+          "synthetic": false,
+          "place": true
+        },
+        {
+          "index": 2,
+          "path": "feature/home/build",
+          "kind": "Ignore",
+          "required": false,
+          "description": null,
+          "declaredAt": {
+            "fileName": "IdePluginSyntheticTemplateSetSpecSupport.kt",
+            "line": 86
+          },
+          "modulePath": ":feature:home",
+          "pathInModule": "build",
+          "captures": [],
+          "moduleCapture": {
+            "pattern": ":feature:*",
+            "names": ["feature"]
+          },
+          "template": null,
+          "matchedFiles": [],
+          "matchedCount": null,
+          "matchedFilesTruncated": false,
+          "synthetic": true,
+          "place": false
+        },
+        {
+          "index": 3,
+          "path": "feature/home/build.gradle.kts",
+          "kind": "File",
+          "required": true,
+          "description": null,
+          "declaredAt": {
+            "fileName": "IdePluginSyntheticTemplateSetSpecSupport.kt",
+            "line": 86
+          },
+          "modulePath": ":feature:home",
+          "pathInModule": "build.gradle.kts",
+          "captures": [],
+          "moduleCapture": {
+            "pattern": ":feature:*",
+            "names": ["feature"]
+          },
+          "template": null,
+          "matchedFiles": ["feature/home/build.gradle.kts"],
+          "matchedCount": 1,
+          "matchedFilesTruncated": false,
+          "synthetic": true,
+          "place": false
+        },
+        {
+          "index": 4,
+          "path": "feature/home/src",
+          "kind": "Directory",
+          "required": false,
+          "description": null,
+          "declaredAt": {
+            "fileName": "IdePluginSyntheticTemplateSetSpecSupport.kt",
+            "line": 87
+          },
+          "modulePath": ":feature:home",
+          "pathInModule": "src",
+          "captures": [],
+          "moduleCapture": {
+            "pattern": ":feature:*",
+            "names": ["feature"]
+          },
+          "template": null,
+          "matchedFiles": [],
+          "matchedCount": null,
+          "matchedFilesTruncated": false,
+          "synthetic": false,
+          "place": false
+        },
+        {
+          "index": 5,
+          "path": "feature/home/src/main",
+          "kind": "Directory",
+          "required": false,
+          "description": null,
+          "declaredAt": {
+            "fileName": "IdePluginSyntheticTemplateSetSpecSupport.kt",
+            "line": 87
+          },
+          "modulePath": ":feature:home",
+          "pathInModule": "src/main",
+          "captures": [],
+          "moduleCapture": {
+            "pattern": ":feature:*",
+            "names": ["feature"]
+          },
+          "template": null,
+          "matchedFiles": [],
+          "matchedCount": null,
+          "matchedFilesTruncated": false,
+          "synthetic": false,
+          "place": false
+        },
+        {
+          "index": 6,
+          "path": "feature/home/src/main/kotlin",
+          "kind": "Directory",
+          "required": false,
+          "description": null,
+          "declaredAt": {
+            "fileName": "IdePluginSyntheticTemplateSetSpecSupport.kt",
+            "line": 87
+          },
+          "modulePath": ":feature:home",
+          "pathInModule": "src/main/kotlin",
+          "captures": [],
+          "moduleCapture": {
+            "pattern": ":feature:*",
+            "names": ["feature"]
+          },
+          "template": null,
+          "matchedFiles": [],
+          "matchedCount": null,
+          "matchedFilesTruncated": false,
+          "synthetic": false,
+          "place": false
+        },
+        {
+          "index": 7,
+          "path": "feature/home/src/main/kotlin/*Page.kt",
+          "kind": "File",
+          "required": false,
+          "description": null,
+          "declaredAt": {
+            "fileName": "IdePluginSyntheticTemplateSetSpecSupport.kt",
+            "line": 87
+          },
+          "modulePath": ":feature:home",
+          "pathInModule": "src/main/kotlin/*Page.kt",
+          "captures": [
+            {
+              "name": "name",
+              "segmentIndex": 5,
+              "wildcardIndex": 0,
+              "transform": null
+            }
+          ],
+          "moduleCapture": {
+            "pattern": ":feature:*",
+            "names": ["feature"]
+          },
+          "template": {
+            "specifier": "ui.Screen",
+            "id": null,
+            "title": null,
+            "declaredAt": {
+              "fileName": "IdePluginSyntheticTemplateSetSpecSupport.kt",
+              "line": 87
+            }
+          },
+          "matchedFiles": [],
+          "matchedCount": 0,
+          "matchedFilesTruncated": false,
+          "synthetic": false,
+          "place": false
+        },
+        {
+          "index": 8,
+          "path": "feature/settings",
+          "kind": "Directory",
+          "required": false,
+          "description": null,
+          "declaredAt": {
+            "fileName": "IdePluginSyntheticTemplateSetSpecSupport.kt",
+            "line": 86
+          },
+          "modulePath": ":feature:settings",
+          "pathInModule": "",
+          "captures": [],
+          "moduleCapture": {
+            "pattern": ":feature:*",
+            "names": ["feature"]
+          },
+          "template": null,
+          "matchedFiles": [],
+          "matchedCount": null,
+          "matchedFilesTruncated": false,
+          "synthetic": false,
+          "place": true
+        },
+        {
+          "index": 9,
+          "path": "feature/settings/build",
+          "kind": "Ignore",
+          "required": false,
+          "description": null,
+          "declaredAt": {
+            "fileName": "IdePluginSyntheticTemplateSetSpecSupport.kt",
+            "line": 86
+          },
+          "modulePath": ":feature:settings",
+          "pathInModule": "build",
+          "captures": [],
+          "moduleCapture": {
+            "pattern": ":feature:*",
+            "names": ["feature"]
+          },
+          "template": null,
+          "matchedFiles": [],
+          "matchedCount": null,
+          "matchedFilesTruncated": false,
+          "synthetic": true,
+          "place": false
+        },
+        {
+          "index": 10,
+          "path": "feature/settings/build.gradle.kts",
+          "kind": "File",
+          "required": true,
+          "description": null,
+          "declaredAt": {
+            "fileName": "IdePluginSyntheticTemplateSetSpecSupport.kt",
+            "line": 86
+          },
+          "modulePath": ":feature:settings",
+          "pathInModule": "build.gradle.kts",
+          "captures": [],
+          "moduleCapture": {
+            "pattern": ":feature:*",
+            "names": ["feature"]
+          },
+          "template": null,
+          "matchedFiles": ["feature/settings/build.gradle.kts"],
+          "matchedCount": 1,
+          "matchedFilesTruncated": false,
+          "synthetic": true,
+          "place": false
+        },
+        {
+          "index": 11,
+          "path": "feature/settings/src",
+          "kind": "Directory",
+          "required": false,
+          "description": null,
+          "declaredAt": {
+            "fileName": "IdePluginSyntheticTemplateSetSpecSupport.kt",
+            "line": 87
+          },
+          "modulePath": ":feature:settings",
+          "pathInModule": "src",
+          "captures": [],
+          "moduleCapture": {
+            "pattern": ":feature:*",
+            "names": ["feature"]
+          },
+          "template": null,
+          "matchedFiles": [],
+          "matchedCount": null,
+          "matchedFilesTruncated": false,
+          "synthetic": false,
+          "place": false
+        },
+        {
+          "index": 12,
+          "path": "feature/settings/src/main",
+          "kind": "Directory",
+          "required": false,
+          "description": null,
+          "declaredAt": {
+            "fileName": "IdePluginSyntheticTemplateSetSpecSupport.kt",
+            "line": 87
+          },
+          "modulePath": ":feature:settings",
+          "pathInModule": "src/main",
+          "captures": [],
+          "moduleCapture": {
+            "pattern": ":feature:*",
+            "names": ["feature"]
+          },
+          "template": null,
+          "matchedFiles": [],
+          "matchedCount": null,
+          "matchedFilesTruncated": false,
+          "synthetic": false,
+          "place": false
+        },
+        {
+          "index": 13,
+          "path": "feature/settings/src/main/kotlin",
+          "kind": "Directory",
+          "required": false,
+          "description": null,
+          "declaredAt": {
+            "fileName": "IdePluginSyntheticTemplateSetSpecSupport.kt",
+            "line": 87
+          },
+          "modulePath": ":feature:settings",
+          "pathInModule": "src/main/kotlin",
+          "captures": [],
+          "moduleCapture": {
+            "pattern": ":feature:*",
+            "names": ["feature"]
+          },
+          "template": null,
+          "matchedFiles": [],
+          "matchedCount": null,
+          "matchedFilesTruncated": false,
+          "synthetic": false,
+          "place": false
+        },
+        {
+          "index": 14,
+          "path": "feature/settings/src/main/kotlin/*Page.kt",
+          "kind": "File",
+          "required": false,
+          "description": null,
+          "declaredAt": {
+            "fileName": "IdePluginSyntheticTemplateSetSpecSupport.kt",
+            "line": 87
+          },
+          "modulePath": ":feature:settings",
+          "pathInModule": "src/main/kotlin/*Page.kt",
+          "captures": [
+            {
+              "name": "name",
+              "segmentIndex": 5,
+              "wildcardIndex": 0,
+              "transform": null
+            }
+          ],
+          "moduleCapture": {
+            "pattern": ":feature:*",
+            "names": ["feature"]
+          },
+          "template": {
+            "specifier": "ui.Screen",
+            "id": null,
+            "title": null,
+            "declaredAt": {
+              "fileName": "IdePluginSyntheticTemplateSetSpecSupport.kt",
+              "line": 87
+            }
+          },
+          "matchedFiles": [],
+          "matchedCount": 0,
+          "matchedFilesTruncated": false,
+          "synthetic": false,
+          "place": false
+        }
+      ],
+      "constraints": []
+    }
+  ],
+  "templates": {
+    "templates": [
+      {
+        "template": "feature.FeatureScreen",
+        "id": null,
+        "title": "feature.FeatureScreen",
+        "roleName": "feature.FeatureScreen",
+        "summary": null,
+        "parameterNames": [],
+        "captures": [
+          {
+            "name": "name",
+            "kind": "PathCapture",
+            "pattern": "src/main/kotlin/feature/*/*Screen.kt",
+            "position": 4,
+            "segment": "${name}",
+            "wildcardIndex": 0,
+            "transform": null
+          },
+          {
+            "name": "name",
+            "kind": "PathCapture",
+            "pattern": "src/main/kotlin/feature/*/*Screen.kt",
+            "position": 5,
+            "segment": "${name}Screen.kt",
+            "wildcardIndex": 0,
+            "transform": null
+          }
+        ],
+        "conflict": false
+      },
+      {
+        "template": "feature.FeatureViewModel",
+        "id": null,
+        "title": "feature.FeatureViewModel",
+        "roleName": "feature.FeatureViewModel",
+        "summary": null,
+        "parameterNames": ["withState"],
+        "captures": [
+          {
+            "name": "name",
+            "kind": "PathCapture",
+            "pattern": "src/main/kotlin/feature/*/*ViewModel.kt",
+            "position": 4,
+            "segment": "${name}",
+            "wildcardIndex": 0,
+            "transform": null
+          },
+          {
+            "name": "name",
+            "kind": "PathCapture",
+            "pattern": "src/main/kotlin/feature/*/*ViewModel.kt",
+            "position": 5,
+            "segment": "${name}ViewModel.kt",
+            "wildcardIndex": 0,
+            "transform": null
+          }
+        ],
+        "conflict": false
+      },
+      {
+        "template": "shared.Logger",
+        "id": null,
+        "title": "shared.Logger",
+        "roleName": "shared.Logger",
+        "summary": null,
+        "parameterNames": ["tag"],
+        "captures": [],
+        "conflict": false
+      },
+      {
+        "template": "ui.Screen",
+        "id": null,
+        "title": "ui.Screen",
+        "roleName": "ui.Screen",
+        "summary": null,
+        "parameterNames": [],
+        "captures": [
+          {
+            "name": "feature",
+            "kind": "ModuleCapture",
+            "pattern": ":feature:*",
+            "position": 0,
+            "segment": ":feature:${feature}",
+            "wildcardIndex": 0,
+            "transform": null
+          },
+          {
+            "name": "name",
+            "kind": "PathCapture",
+            "pattern": "feature/*/src/main/kotlin/*Page.kt",
+            "position": 5,
+            "segment": "${name}Page.kt",
+            "wildcardIndex": 0,
+            "transform": null
+          }
+        ],
+        "conflict": false
+      }
+    ],
+    "details": [
+      {
+        "template": "feature.FeatureScreen",
+        "id": null,
+        "title": "feature.FeatureScreen",
+        "roleName": "feature.FeatureScreen",
+        "summary": null,
+        "parameters": [],
+        "files": [
+          {
+            "pattern": "src/main/kotlin/feature/${name}/${name}Screen.kt",
+            "fileName": "${name}Screen.kt",
+            "path": "src/main/kotlin/feature/${name}/${name}Screen.kt",
+            "captures": ["name"],
+            "parameters": [],
+            "content": "fun ${name}Screen() {}\n"
+          }
+        ],
+        "branches": [],
+        "exampleCommand": "./gradlew katachiTemplate --arg template=feature.FeatureScreen --arg name=<name>",
+        "captures": [
+          {
+            "name": "name",
+            "kind": "PathCapture",
+            "pattern": "src/main/kotlin/feature/*/*Screen.kt",
+            "position": 4,
+            "segment": "${name}",
+            "wildcardIndex": 0,
+            "transform": null
+          },
+          {
+            "name": "name",
+            "kind": "PathCapture",
+            "pattern": "src/main/kotlin/feature/*/*Screen.kt",
+            "position": 5,
+            "segment": "${name}Screen.kt",
+            "wildcardIndex": 0,
+            "transform": null
+          }
+        ]
+      },
+      {
+        "template": "feature.FeatureViewModel",
+        "id": null,
+        "title": "feature.FeatureViewModel",
+        "roleName": "feature.FeatureViewModel",
+        "summary": null,
+        "parameters": [
+          {
+            "name": "withState",
+            "kind": "BooleanParameter",
+            "typeName": "Boolean",
+            "default": "true",
+            "acceptedValues": ["true", "false"],
+            "isRequired": false,
+            "previewValue": "true",
+            "previewValueSource": "Default"
+          }
+        ],
+        "files": [
+          {
+            "pattern": "src/main/kotlin/feature/${name}/${name}ViewModel.kt",
+            "fileName": "${name}ViewModel.kt",
+            "path": "src/main/kotlin/feature/${name}/${name}ViewModel.kt",
+            "captures": ["name"],
+            "parameters": ["withState"],
+            "content": "class ${name}ViewModel(val state: Boolean = true)\n"
+          }
+        ],
+        "branches": [
+          {
+            "parameterName": "withState",
+            "value": "false",
+            "addedFiles": [],
+            "removedFiles": [],
+            "addedParameters": [],
+            "removedParameters": []
+          }
+        ],
+        "exampleCommand": "./gradlew katachiTemplate --arg template=feature.FeatureViewModel --arg name=<name>",
+        "captures": [
+          {
+            "name": "name",
+            "kind": "PathCapture",
+            "pattern": "src/main/kotlin/feature/*/*ViewModel.kt",
+            "position": 4,
+            "segment": "${name}",
+            "wildcardIndex": 0,
+            "transform": null
+          },
+          {
+            "name": "name",
+            "kind": "PathCapture",
+            "pattern": "src/main/kotlin/feature/*/*ViewModel.kt",
+            "position": 5,
+            "segment": "${name}ViewModel.kt",
+            "wildcardIndex": 0,
+            "transform": null
+          }
+        ]
+      },
+      {
+        "template": "shared.Logger",
+        "id": null,
+        "title": "shared.Logger",
+        "roleName": "shared.Logger",
+        "summary": null,
+        "parameters": [
+          {
+            "name": "tag",
+            "kind": "StringParameter",
+            "typeName": "String",
+            "default": null,
+            "acceptedValues": [],
+            "isRequired": true,
+            "previewValue": "${tag}",
+            "previewValueSource": "Placeholder"
+          }
+        ],
+        "files": [
+          {
+            "pattern": "src/main/kotlin/shared/Logger.kt",
+            "fileName": "Logger.kt",
+            "path": "src/main/kotlin/shared/Logger.kt",
+            "captures": [],
+            "parameters": ["tag"],
+            "content": "val TAG = \"${tag}\"\n"
+          }
+        ],
+        "branches": [],
+        "exampleCommand": "./gradlew katachiTemplate --arg template=shared.Logger --arg tag=Tag",
+        "captures": []
+      },
+      {
+        "template": "ui.Screen",
+        "id": null,
+        "title": "ui.Screen",
+        "roleName": "ui.Screen",
+        "summary": null,
+        "parameters": [],
+        "files": [
+          {
+            "pattern": "feature/${feature}/src/main/kotlin/${name}Page.kt",
+            "fileName": "${name}Page.kt",
+            "path": null,
+            "captures": ["feature", "name"],
+            "parameters": [],
+            "content": "fun ${name}Page() {}\n"
+          }
+        ],
+        "branches": [],
+        "exampleCommand": "./gradlew katachiTemplate --arg template=ui.Screen --arg feature=<feature> --arg name=<name>",
+        "captures": [
+          {
+            "name": "feature",
+            "kind": "ModuleCapture",
+            "pattern": ":feature:*",
+            "position": 0,
+            "segment": ":feature:${feature}",
+            "wildcardIndex": 0,
+            "transform": null
+          },
+          {
+            "name": "name",
+            "kind": "PathCapture",
+            "pattern": "feature/*/src/main/kotlin/*Page.kt",
+            "position": 5,
+            "segment": "${name}Page.kt",
+            "wildcardIndex": 0,
+            "transform": null
+          }
+        ]
+      }
+    ],
+    "modulePlacements": [
+      {
+        "template": "ui.Screen",
+        "modulePattern": ":feature:*",
+        "captureNames": ["feature"],
+        "modules": [
+          {
+            "values": ["home"],
+            "modulePath": ":feature:home",
+            "directory": "feature/home",
+            "path": "feature/home/src/main/kotlin/${name}Page.kt"
+          },
+          {
+            "values": ["settings"],
+            "modulePath": ":feature:settings",
+            "directory": "feature/settings",
+            "path": "feature/settings/src/main/kotlin/${name}Page.kt"
+          }
+        ]
+      }
+    ],
+    "templateSets": [
+      {
+        "templateSet": "Starter",
+        "name": "Starter",
+        "title": "はじめの一式",
+        "summary": null,
+        "groupName": null,
+        "parameterNames": ["name"],
+        "members": ["feature.FeatureScreen", "feature.FeatureViewModel"],
+        "conflict": false
+      },
+      {
+        "templateSet": "feature.NewFeature",
+        "name": "NewFeature",
+        "title": "新しい機能",
+        "summary": "画面・ViewModel・ログの印・ページを一度に作る",
+        "groupName": "feature",
+        "parameterNames": ["feature", "name", "withState"],
+        "members": ["feature.FeatureScreen", "feature.FeatureViewModel", "shared.Logger", "ui.Screen"],
+        "conflict": false
+      },
+      {
+        "templateSet": "feature.Broken",
+        "name": "Broken",
+        "title": "壊れた組",
+        "summary": null,
+        "groupName": "feature",
+        "parameterNames": [],
+        "members": ["feature.FeatureScreen"],
+        "conflict": true
+      }
+    ],
+    "templateSetDetails": [
+      {
+        "templateSet": "Starter",
+        "name": "Starter",
+        "title": "はじめの一式",
+        "summary": null,
+        "groupName": null,
+        "parameters": [
+          {
+            "name": "name",
+            "kind": "StringParameter",
+            "typeName": "String",
+            "default": null,
+            "acceptedValues": [],
+            "isRequired": true,
+            "previewValue": "${name}",
+            "previewValueSource": "Placeholder"
+          }
+        ],
+        "members": [
+          {
+            "template": "feature.FeatureScreen",
+            "title": "feature.FeatureScreen",
+            "args": [
+              {
+                "name": "name",
+                "kind": "Capture",
+                "previewValue": "${name}",
+                "parameter": "name"
+              }
+            ],
+            "files": [
+              {
+                "pattern": "src/main/kotlin/feature/${name}/${name}Screen.kt",
+                "fileName": "${name}Screen.kt",
+                "path": "src/main/kotlin/feature/${name}/${name}Screen.kt",
+                "captures": ["name"],
+                "parameters": [],
+                "content": "fun ${name}Screen() {}\n"
+              }
+            ]
+          },
+          {
+            "template": "feature.FeatureViewModel",
+            "title": "feature.FeatureViewModel",
+            "args": [
+              {
+                "name": "name",
+                "kind": "Capture",
+                "previewValue": "${name}",
+                "parameter": "name"
+              }
+            ],
+            "files": [
+              {
+                "pattern": "src/main/kotlin/feature/${name}/${name}ViewModel.kt",
+                "fileName": "${name}ViewModel.kt",
+                "path": "src/main/kotlin/feature/${name}/${name}ViewModel.kt",
+                "captures": ["name"],
+                "parameters": ["withState"],
+                "content": "class ${name}ViewModel(val state: Boolean = true)\n"
+              }
+            ]
+          }
+        ],
+        "exampleCommand": "./gradlew katachiTemplate --arg template=Starter --arg name=<name>"
+      },
+      {
+        "templateSet": "feature.NewFeature",
+        "name": "NewFeature",
+        "title": "新しい機能",
+        "summary": "画面・ViewModel・ログの印・ページを一度に作る",
+        "groupName": "feature",
+        "parameters": [
+          {
+            "name": "feature",
+            "kind": "StringParameter",
+            "typeName": "String",
+            "default": null,
+            "acceptedValues": [],
+            "isRequired": true,
+            "previewValue": "${feature}",
+            "previewValueSource": "Placeholder"
+          },
+          {
+            "name": "name",
+            "kind": "StringParameter",
+            "typeName": "String",
+            "default": null,
+            "acceptedValues": [],
+            "isRequired": true,
+            "previewValue": "${name}",
+            "previewValueSource": "Placeholder"
+          },
+          {
+            "name": "withState",
+            "kind": "BooleanParameter",
+            "typeName": "Boolean",
+            "default": "true",
+            "acceptedValues": ["true", "false"],
+            "isRequired": false,
+            "previewValue": "true",
+            "previewValueSource": "Default"
+          }
+        ],
+        "members": [
+          {
+            "template": "feature.FeatureScreen",
+            "title": "feature.FeatureScreen",
+            "args": [
+              {
+                "name": "name",
+                "kind": "Capture",
+                "previewValue": "${name}",
+                "parameter": "name"
+              }
+            ],
+            "files": [
+              {
+                "pattern": "src/main/kotlin/feature/${name}/${name}Screen.kt",
+                "fileName": "${name}Screen.kt",
+                "path": "src/main/kotlin/feature/${name}/${name}Screen.kt",
+                "captures": ["name"],
+                "parameters": [],
+                "content": "fun ${name}Screen() {}\n"
+              }
+            ]
+          },
+          {
+            "template": "feature.FeatureViewModel",
+            "title": "feature.FeatureViewModel",
+            "args": [
+              {
+                "name": "name",
+                "kind": "Capture",
+                "previewValue": "${name}",
+                "parameter": "name"
+              },
+              {
+                "name": "withState",
+                "kind": "Parameter",
+                "previewValue": "true",
+                "parameter": "withState"
+              }
+            ],
+            "files": [
+              {
+                "pattern": "src/main/kotlin/feature/${name}/${name}ViewModel.kt",
+                "fileName": "${name}ViewModel.kt",
+                "path": "src/main/kotlin/feature/${name}/${name}ViewModel.kt",
+                "captures": ["name"],
+                "parameters": ["withState"],
+                "content": "class ${name}ViewModel(val state: Boolean = true)\n"
+              }
+            ]
+          },
+          {
+            "template": "shared.Logger",
+            "title": "shared.Logger",
+            "args": [
+              {
+                "name": "tag",
+                "kind": "Parameter",
+                "previewValue": "${name}Tag",
+                "parameter": null
+              }
+            ],
+            "files": [
+              {
+                "pattern": "src/main/kotlin/shared/Logger.kt",
+                "fileName": "Logger.kt",
+                "path": "src/main/kotlin/shared/Logger.kt",
+                "captures": [],
+                "parameters": ["tag"],
+                "content": "val TAG = \"${name}Tag\"\n"
+              }
+            ]
+          },
+          {
+            "template": "ui.Screen",
+            "title": "ui.Screen",
+            "args": [
+              {
+                "name": "feature",
+                "kind": "Capture",
+                "previewValue": "${feature}",
+                "parameter": "feature"
+              },
+              {
+                "name": "name",
+                "kind": "Capture",
+                "previewValue": "${name}",
+                "parameter": "name"
+              }
+            ],
+            "files": [
+              {
+                "pattern": "feature/${feature}/src/main/kotlin/${name}Page.kt",
+                "fileName": "${name}Page.kt",
+                "path": null,
+                "captures": ["feature", "name"],
+                "parameters": [],
+                "content": "fun ${name}Page() {}\n"
+              }
+            ]
+          }
+        ],
+        "exampleCommand": "./gradlew katachiTemplate --arg template=feature.NewFeature --arg feature=<feature> --arg name=<name>"
+      }
+    ]
+  },
+  "problems": [
+    {
+      "kind": "TemplateSetPreviewFailed",
+      "message": "The template set could not be previewed, so it has no detail; katachiTemplates --arg template= says why.",
+      "detail": "feature.Broken"
+    }
+  ]
+}

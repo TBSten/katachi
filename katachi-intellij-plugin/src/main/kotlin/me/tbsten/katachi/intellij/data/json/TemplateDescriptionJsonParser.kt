@@ -6,6 +6,7 @@ import me.tbsten.katachi.intellij.model.FilePreviewModel
 import me.tbsten.katachi.intellij.model.ModuleChoiceModel
 import me.tbsten.katachi.intellij.model.ModulePlacementModel
 import me.tbsten.katachi.intellij.model.ParameterModel
+import me.tbsten.katachi.intellij.model.SetArgModel
 import me.tbsten.katachi.intellij.model.TemplateDetailModel
 import me.tbsten.katachi.intellij.model.TemplateModel
 import me.tbsten.katachi.intellij.model.TemplateSummaryModel
@@ -44,7 +45,19 @@ internal fun parseTemplateDescriptionJson(document: JsonValue, file: Path): List
     val details = root.array("details").map { it.detail() }.distinctBy { it.template }
         .map { detail -> placements[detail.template]?.let { detail.placedIn(it) } ?: detail }
         .associateBy { it.template }
-    return summaries.map { TemplateModel(summary = it, detail = details[it.template]) }
+    val templateRows = summaries.map { TemplateModel(summary = it, detail = details[it.template]) }
+    return templateRows + templateSetRowsOf(root, placements)
+}
+
+/**
+ * The template sets of `templateSets[]` / `templateSetDetails[]`, one row each, in `templateSets[]`
+ * order. Both keys are absent in a katachi from before template sets: that reads as no sets. A set
+ * without a matching `templateSetDetails[]` entry is a row without a detail (its preview failed).
+ */
+private fun templateSetRowsOf(root: JsonReader, placements: Map<String, ModulePlacementModel>): List<TemplateModel> {
+    val summaries = root.optionalArray("templateSets").map { it.setSummary() }.distinctBy { it.specifier }
+    val details = root.optionalArray("templateSetDetails").map { it.setDetail() }.distinctBy { it.specifier }.associateBy { it.specifier }
+    return summaries.map { summary -> templateSetRow(summary, details[summary.specifier], placements) }
 }
 
 /**
@@ -125,6 +138,37 @@ private class JsonReader(private val value: JsonValue, private val location: Str
         conflict = boolean("conflict"),
         // The `--arg`s a run takes: the plain places only, as `details[].captures` is read.
         captureNames = optionalArray("captures").filter { it.optionalNullableString("transform") == null }.map { it.string("name") }.distinct(),
+    )
+
+    fun setSummary(): SetSummaryJson = SetSummaryJson(
+        specifier = string("templateSet"),
+        name = string("name"),
+        title = string("title"),
+        summary = nullableString("summary"),
+        groupName = nullableString("groupName"),
+        parameterNames = strings("parameterNames"),
+        conflict = boolean("conflict"),
+    )
+
+    fun setDetail(): SetDetailJson = SetDetailJson(
+        specifier = string("templateSet"),
+        parameters = array("parameters").map { it.parameter() },
+        members = array("members").map { member ->
+            SetMemberJson(
+                template = member.string("template"),
+                title = member.string("title"),
+                args = member.array("args").map { arg ->
+                    SetArgModel(
+                        name = arg.string("name"),
+                        isCapture = arg.string("kind") == SET_ARG_KIND_CAPTURE,
+                        previewValue = arg.string("previewValue"),
+                        parameter = arg.nullableString("parameter"),
+                    )
+                },
+                files = member.array("files").map { it.file() },
+            )
+        },
+        exampleCommand = string("exampleCommand"),
     )
 
     fun detail(): TemplateDetailModel = TemplateDetailModel(
