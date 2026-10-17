@@ -67,6 +67,7 @@ private fun failureMessageOf(failure: GenerationFailure, strings: KatachiStrings
         is GradleFailure.TaskNotFound -> strings.generationTaskNotFound
         is GradleFailure.ArchitectureNotSet -> strings.architectureNotSet
         is GradleFailure.ProcessorRejected -> gradle.details.firstOrNull { it.isNotBlank() } ?: strings.gradleFailed
+        is GradleFailure.DefinitionRejected -> gradle.details.firstOrNull { it.isNotBlank() } ?: strings.gradleFailed
         is GradleFailure.Other -> strings.gradleFailed
     }
 }

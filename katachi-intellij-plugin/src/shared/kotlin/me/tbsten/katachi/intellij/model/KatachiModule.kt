@@ -41,6 +41,9 @@ internal data class KatachiModule(
     /** Where `katachiInternalDefinitionJson` writes, by the contract (design 1.1). */
     val definitionJson: Path get() = directory.resolve(DEFINITION_JSON)
 
+    /** Where `katachiInternalDefinitionJson` writes the definition's mistakes, next to [definitionJson] (design 2.1). */
+    val definitionErrorsJson: Path get() = directory.resolve(DEFINITION_ERRORS_JSON)
+
     /** Whether loading reads the definition JSON: the module has the definition task, or nobody knows yet. */
     val readsDefinition: Boolean get() = KatachiCapability.Definition in capabilities || capabilities.isEmpty()
 
@@ -49,6 +52,7 @@ internal data class KatachiModule(
 
     companion object {
         const val TEMPLATE_DESCRIPTION_JSON: String = "build/katachi/internalTemplatesJson/templateDescription.json"
+        const val DEFINITION_ERRORS_JSON: String = "build/katachi/internalDefinitionJson/definition-errors.json"
         const val TEMPLATES_JSON_TASK: String = "katachiInternalTemplatesJson"
         const val DEFINITION_JSON: String = "build/katachi/internalDefinitionJson/definition.json"
         const val DEFINITION_JSON_TASK: String = "katachiInternalDefinitionJson"

@@ -108,3 +108,34 @@ internal data class RoleFileDeclarations(
     val declarations: FileDeclarationsModel,
     val freshness: Freshness,
 )
+
+/** What a [DeclarationAt] is, by the kind of thing the definition declared there. */
+internal enum class DeclarationKind {
+    Architecture,
+    Group,
+    Role,
+    Entry,
+
+    /** The `.template { }` of an entry: its site is the template's own, [DeclarationAt.entry] holds the [TemplateRef]. */
+    Template,
+    Constraint,
+}
+
+/**
+ * One thing the definition says, with where it was written (ide-authoring design 4.2): the definition file's side of
+ * [FileRoles]. Exactly the members its [kind] needs are set: `group` for a group, `role` for a role, an entry, a template and a
+ * constraint, `entry` for an entry and a template, `constraint` for a constraint.
+ *
+ * ```kotlin
+ * val roles = service.declarationsIn(definitionFile).filter { it.kind == DeclarationKind.Role }.map { it.role!!.qualifiedName }
+ * ```
+ */
+internal data class DeclarationAt(
+    val module: ModuleId,
+    val site: DeclarationSiteRef,
+    val kind: DeclarationKind,
+    val group: GroupModel? = null,
+    val role: RoleModel? = null,
+    val entry: LayoutEntryModel? = null,
+    val constraint: ConstraintModel? = null,
+)

@@ -4,6 +4,7 @@ import com.intellij.openapi.project.Project
 import com.intellij.testFramework.PlatformTestUtil
 import me.tbsten.katachi.intellij.ide.definition.DefinitionModelService
 import me.tbsten.katachi.intellij.ide.sarif.ViolationsService
+import me.tbsten.katachi.intellij.model.DefinitionErrors
 import me.tbsten.katachi.intellij.model.DefinitionState
 import me.tbsten.katachi.intellij.presentation.gutter.GutterFreshness
 
@@ -56,6 +57,7 @@ internal class RefresherWatch(
     private var seenSeq = 0L
     private var seenDefinition: DefinitionState? = null
     private var seenViolations: Any? = null
+    private var seenErrors: DefinitionErrors = DefinitionErrors.None
     private var seenFollow: HighlightingRefresher.FollowStart? = null
 
     private val refresher get() = HighlightingRefresher.getInstance(project)
@@ -65,6 +67,7 @@ internal class RefresherWatch(
         seenSeq = redrawSeq(project)
         seenDefinition = definitions().state.value
         seenViolations = violations()?.state?.value
+        seenErrors = definitions().definitionErrors.value
         seenFollow = refresher.followStartOf(definitions())
     }
 
@@ -78,7 +81,9 @@ internal class RefresherWatch(
         // after the baseline counts only the changes after it started.
         val fromDefinition = if (follow == null || follow === seenFollow) seenDefinition else follow.definition
         val fromViolations = if (follow == null || follow === seenFollow) seenViolations else follow.violations
-        val owed = follow != null && (GutterFreshness.shouldRedraw(fromDefinition, now) || nowViolations != fromViolations)
+        val fromErrors = if (follow == null || follow === seenFollow) seenErrors else follow.errors
+        val owed = follow != null &&
+            (GutterFreshness.shouldRedraw(fromDefinition, now) || nowViolations != fromViolations || service.definitionErrors.value != fromErrors)
         if (owed) awaitRedraw(seenSeq, service, refresher) { it == service.state.value || it == now }
         // Whatever owed or not, a draw of every file ([HighlightingRefresher.redrawNow], a setting) may still be on its way: it is
         // over when the refresher is idle. redrawNow registers its job before it returns, so no clock is needed.

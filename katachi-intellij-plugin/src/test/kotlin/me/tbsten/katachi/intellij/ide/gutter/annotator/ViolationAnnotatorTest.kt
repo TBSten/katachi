@@ -148,9 +148,9 @@ internal class ViolationAnnotatorTest : AnnotatorTestBase() {
         assertEquals(listOf("Run the check again"), drawn.fixes)
     }
 
-    fun `test UnexpectedFile と 定義側の違反は 描かない`() {
+    fun `test UnexpectedFile は ソースのファイルに描かない`() {
         openSource()
-        checkRan(listOf(AnnotationFixtures.unexpected(path), AnnotationFixtures.missingFile(path)))
+        checkRan(listOf(AnnotationFixtures.unexpected(path)))
         assertEquals(emptyList<DrawnAnnotation>(), annotated())
     }
 
@@ -170,6 +170,39 @@ internal class ViolationAnnotatorTest : AnnotatorTestBase() {
         openSource("package a\n\ninternal class Broken {\n    fun f( {\n}\n")
         checkRan(listOf(AnnotationFixtures.unsatisfied(path, "Broken", line = 3)))
         assertEquals(listOf("Broken"), annotated().filter { it.description.startsWith("katachi:") }.map { it.text })
+    }
+
+    fun `test 定義側の違反は 定義ファイルの報告された行に 検査の level の色で下線が付く`() {
+        val definition = (1..8).joinToString("\n") { "// line $it" }
+        open("UseCaseRole.kt", definition)
+        val role = pathOf("UseCaseRole.kt")
+        val labels = listOf("MissingFile", "MissingDescription", "AmbiguousLayout", "UncheckedFileConstraint")
+        checkRan(labels.mapIndexed { index, label -> AnnotationFixtures.missingFile(role, line = 2 + index).copy(label = label, ruleId = "katachi.$label") })
+
+        val drawn = annotated()
+
+        assertEquals(listOf(2, 3, 4, 5), drawn.map { it.line })
+        assertEquals(listOf("// line 2", "// line 3", "// line 4", "// line 5"), drawn.map { it.text })
+        assertEquals(List(4) { HighlightSeverity.ERROR }, drawn.map { it.severity })
+        assertEquals(labels.map { "katachi: [$it] The file is missing." }, drawn.map { it.description })
+    }
+
+    fun `test 定義側の違反は 検査が古ければ 1 段弱い色で stale と付く`() {
+        open("UseCaseRole.kt", (1..8).joinToString("\n") { "// line $it" })
+        checkRan(listOf(AnnotationFixtures.missingFile(pathOf("UseCaseRole.kt"), line = 4)), stale = true)
+
+        val drawn = annotated().single()
+
+        assertEquals(HighlightSeverity.WARNING, drawn.severity)
+        assertTrue(drawn.description, drawn.description.startsWith("(stale) katachi: [MissingFile]"))
+    }
+
+    fun `test 定義側の違反で 報告に行が無いものは 描かない`() {
+        open("UseCaseRole.kt", (1..8).joinToString("\n") { "// line $it" })
+        val withoutLine = AnnotationFixtures.missingFile(pathOf("UseCaseRole.kt"))
+        checkRan(listOf(withoutLine.copy(location = withoutLine.location?.copy(startLine = null))))
+
+        assertEquals(emptyList<DrawnAnnotation>(), annotated())
     }
 
     fun `test 古い検査は 1 段弱い色で ホバーの先頭に stale と付く`() {

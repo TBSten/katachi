@@ -143,6 +143,8 @@ private fun errorMessageOf(failure: LoadFailure, view: ViewState, strings: Katac
                 listOf(ActionUi(strings.openBuildScript, KatachiIntent.OpenBuildScript), reload),
                 gradle.details,
             )
+            is GradleFailure.DefinitionRejected ->
+                error(listOf(strings.definitionRejected, strings.definitionRejectedHint), listOf(showLog, reload), gradle.details)
             is GradleFailure.ProcessorRejected, is GradleFailure.Other ->
                 error(listOf(strings.gradleFailed, strings.gradleFailedHint), listOf(showLog, reload), gradle.details)
         }

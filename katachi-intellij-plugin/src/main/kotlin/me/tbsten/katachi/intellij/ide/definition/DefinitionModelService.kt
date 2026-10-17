@@ -1,13 +1,18 @@
 package me.tbsten.katachi.intellij.ide.definition
 
 import com.intellij.openapi.vfs.VirtualFile
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import me.tbsten.katachi.intellij.model.DeclarationAt
 import me.tbsten.katachi.intellij.model.DeclarationSiteRef
+import me.tbsten.katachi.intellij.model.DefinitionErrors
 import me.tbsten.katachi.intellij.model.DefinitionSnapshot
 import me.tbsten.katachi.intellij.model.DefinitionState
 import me.tbsten.katachi.intellij.model.FileRoles
 import me.tbsten.katachi.intellij.model.ModuleId
 import me.tbsten.katachi.intellij.model.RoleFileDeclarations
+import me.tbsten.katachi.intellij.model.declarations
 import java.nio.file.Path
 
 /** What asked for a refresh of the definition. */
@@ -32,6 +37,13 @@ internal enum class RefreshReason { UserAction, SyncCompleted, DefinitionChanged
 internal interface DefinitionModelService {
     /** The state now. Readable from any thread; a change is received by collecting it. */
     val state: StateFlow<DefinitionState>
+
+    /**
+     * The mistakes katachi found in the definition, from the last finished load (design 2.3). Empty when there is none or
+     * when katachi is older than 0.3. Kept apart from [state]: a load that fails for another reason leaves it as it was.
+     * The default is a service that never finds any, so a stand-in that knows nothing of them need not say so.
+     */
+    val definitionErrors: StateFlow<DefinitionErrors> get() = NO_DEFINITION_ERRORS
 
     /** Starts reading the definition if nothing was read. Safe to call any number of times; does not wait. */
     fun ensureLoaded()
@@ -58,8 +70,32 @@ internal interface DefinitionModelService {
     fun resolve(module: ModuleId, site: DeclarationSiteRef): ResolvedSite
 
     /**
+     * The definition module whose test sources hold [file], or `null` for any other file (design 2.4: the files the "could not
+     * read the definition" notification is shown in). Walks no index, so it answers in dumb mode. The default knows no module.
+     */
+    fun definitionModuleOf(file: VirtualFile): ModuleId? = null
+
+    /**
+     * What the definition declares in [file], a definition file (ide-authoring design 4.2): the places `declaredAt` names that
+     * this very file holds. Only those [resolve] finds in [file], so a name that two files of the module share gives neither
+     * of them any. Empty for any other file, and while there is no answer. The default works from [definitionModuleOf],
+     * [definitionOf] and [resolve], which is all a stand-in has to answer.
+     */
+    fun declarationsIn(file: VirtualFile): List<DeclarationAt> {
+        val module = definitionModuleOf(file) ?: return emptyList()
+        val definition = definitionOf(module)?.definition ?: return emptyList()
+        val found = HashMap<DeclarationSiteRef, Boolean>()
+        return definition.declarations(module).filter { declaration ->
+            declaration.site.fileName == file.name &&
+                found.getOrPut(declaration.site) { (resolve(module, declaration.site) as? ResolvedSite.Found)?.file == file }
+        }
+    }
+
+    /**
      * The explanation of [file]'s top-level declarations under each `ktFileContent { }` constraint that covers it
      * (design 1.7.2), one per role. Empty when no role holds it, the file is not `.kt`, or nothing explains it.
      */
     fun fileDeclarationsOf(file: VirtualFile): List<RoleFileDeclarations>
 }
+
+private val NO_DEFINITION_ERRORS: StateFlow<DefinitionErrors> = MutableStateFlow(DefinitionErrors.None).asStateFlow()
