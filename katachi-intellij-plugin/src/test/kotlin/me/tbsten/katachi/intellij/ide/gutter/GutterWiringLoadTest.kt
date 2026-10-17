@@ -1,6 +1,8 @@
 package me.tbsten.katachi.intellij.ide.gutter
 
+import kotlinx.coroutines.CompletableDeferred
 import me.tbsten.katachi.intellij.ide.KatachiSettings
+import me.tbsten.katachi.intellij.ide.LoadAnswer
 import me.tbsten.katachi.intellij.model.DefinitionState
 import me.tbsten.katachi.intellij.model.Freshness
 
@@ -28,9 +30,16 @@ internal class GutterWiringLoadTest : GutterWiringTestBase() {
     fun `test まだ読んでいない定義は ファイルを開くと ◆ が頼んで 読み終わると 描き直されて ◆ が出る`() {
         installReal()
         assertEquals(DefinitionState.NotLoaded, definition.state.value)
+        // The fake Gradle answers in a few milliseconds, which is faster than the draw that asks for it ends: hold the first load,
+        // so that "the first draw has no ◆" does not depend on who is faster.
+        val gate = CompletableDeferred<Unit>()
+        gradle.loads += LoadAnswer(gate = gate)
         open()
 
         assertEquals("nothing is read yet, so there is no ◆ to draw", emptyList<DrawnMark>(), redrawn())
+        waitState("asked by the gutter's draw") { it is DefinitionState.Loading }
+        assertEquals("the gutter asked once however often it drew", 1, gradle.loadRequests.size)
+        gate.complete(Unit)
 
         val ready = waitState("loaded by the gutter's request") { it is DefinitionState.Ready && !projectService.viewModel.isLoadRunning } as DefinitionState.Ready
         assertEquals(Freshness.Fresh, ready.freshness)
