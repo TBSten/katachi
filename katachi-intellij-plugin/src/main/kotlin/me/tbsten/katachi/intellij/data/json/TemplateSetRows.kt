@@ -99,11 +99,17 @@ internal fun templateSetRow(
  */
 private fun setFileOf(file: FilePreviewModel, args: List<SetArgModel>, placement: ModulePlacementModel?): FilePreviewModel {
     if (file.path != null) return inSetNames(file, file.path)
-    val placed = placement?.let { placedInSetNames(it, args) } ?: return file
+    val placed = placement?.let { placedInSetNames(it, args) } ?: return unexpressed(file)
     val values = captureValuesOf(args)
-    if (!placeholderNames(file.pattern).all { it in values }) return file
+    if (!placeholderNames(file.pattern).all { it in values }) return unexpressed(file)
     return inSetNames(file, filledWith(file.pattern, values)).copy(modulePlacement = placed)
 }
+
+/**
+ * A file the set's names cannot write: its pattern keeps the member's capture names, so [FilePreviewModel.captures]
+ * is left empty. That is the mark `TemplatePlacementIndex` reads to leave the file's captures undecided (template-set design 8.3).
+ */
+private fun unexpressed(file: FilePreviewModel): FilePreviewModel = file.copy(captures = emptyList())
 
 private fun inSetNames(file: FilePreviewModel, pattern: String): FilePreviewModel = file.copy(
     pattern = pattern,

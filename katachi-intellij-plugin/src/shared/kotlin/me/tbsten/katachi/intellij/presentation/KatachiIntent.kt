@@ -31,6 +31,13 @@ internal sealed interface KatachiIntent {
     data class RevealTemplate(val templateId: TemplateId) : KatachiIntent
 
     /**
+     * New › katachi › a template set: [RevealTemplate] for [templateId], and the row is checked and open, with [seeds]
+     * (the values the chosen directory decided, by the set's parameter names) in the fields that are still empty: what
+     * the user already typed is kept (`revealAndSeed`). A row that is not in the list yet is only highlighted.
+     */
+    data class RevealAndSeed(val templateId: TemplateId, val seeds: Map<String, String>) : KatachiIntent
+
+    /**
      * Find Action's "katachi: Generate from Template" opened the tool window: put the cursor in the search field (T-3).
      * Works before the list is loaded and before the tool window exists, like [RevealTemplate].
      */

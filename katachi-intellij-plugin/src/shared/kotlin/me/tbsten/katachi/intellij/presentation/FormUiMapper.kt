@@ -30,7 +30,7 @@ private fun fieldUiOf(
     val inputs = state.form.inputsOf(row.id)
     val input = inputs[parameter.name]
     // A field never typed into shows no "required" error yet: every form would open all red.
-    val error = validateField(parameter, input)
+    val error = fieldErrorOf(row, detail, parameter, input)
         ?.takeUnless { it == FieldError.Required && input == null }
         ?.let { fieldErrorText(it, strings) }
     val link = when {
@@ -73,7 +73,9 @@ private fun fieldUiOf(
             suggestions = suggestionsOf(parameter, state.captureCandidates[id], input, error, strings),
         )
         is ParameterModel.StringParam, is ParameterModel.IntParam, is ParameterModel.UnknownParam -> {
-            val multiline = if (parameter is ParameterModel.StringParam) id in state.view.multilineFields else null
+            // A template set's directory field is the candidate field (one line, no toggle), as a capture's is.
+            val suggestions = if (row.template.set != null) suggestionsOf(state.captureCandidates[id], input, error, strings) else null
+            val multiline = if (parameter is ParameterModel.StringParam && suggestions == null) id in state.view.multilineFields else null
             FieldUi.Text(
                 id = id,
                 label = parameter.name,
@@ -85,6 +87,8 @@ private fun fieldUiOf(
                 link = link,
                 isMultiline = multiline,
                 multilineTooltip = multiline?.let { if (it) strings.multilineOff else strings.multilineOn },
+                // A template set's parameter standing for a directory level is offered the directories like a capture (template-set 8.2).
+                suggestions = suggestions,
             )
         }
     }

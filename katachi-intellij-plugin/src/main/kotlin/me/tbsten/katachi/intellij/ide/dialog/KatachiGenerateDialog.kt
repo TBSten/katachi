@@ -190,6 +190,12 @@ internal class KatachiGenerateDialog(
      */
     private fun closeWithOk() = ProgressManager.getInstance().executeNonCancelableSection { super.doOKAction() }
 
+    /**
+     * Types [value] into the field [name] the way the panel does ([GenerateDialogActions.onInput]), which also clears [refusal].
+     * For the debug bridge, whose Driver cannot reach the fields of a modal `ComposePanel`.
+     */
+    internal fun input(name: String, value: String) = actions.onInput(name, value)
+
     /** Presses [Generate], for tests that cannot click a modal dialog. */
     @TestOnly
     fun pressGenerate() = doOKAction()

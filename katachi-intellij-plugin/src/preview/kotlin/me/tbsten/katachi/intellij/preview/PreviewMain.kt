@@ -36,7 +36,7 @@ import kotlin.system.exitProcess
  */
 
 /** Every state of the screen spec (PreviewScenarios.kt), each docked narrow and wide. */
-private val scenarios: List<Scenario> = statusScenarios + listScenarios + generationScenarios + longScenario + revealScenarios + reviewScenarios
+private val scenarios: List<Scenario> = statusScenarios + listScenarios + generationScenarios + longScenario + revealScenarios + reviewScenarios + setScenarios
 
 /** One PNG per scenario × layout × language × theme. */
 private data class Render(val scenario: Scenario, val layout: String, val width: Int, val height: Int)

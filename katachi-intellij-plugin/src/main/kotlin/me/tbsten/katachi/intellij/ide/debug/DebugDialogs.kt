@@ -4,7 +4,6 @@ import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.application.ModalityState
 import me.tbsten.katachi.intellij.ide.dialog.GenerateDialogs
 import me.tbsten.katachi.intellij.ide.sdkCall
-import me.tbsten.katachi.intellij.presentation.dialog.GenerateDialogIntent
 
 /**
  * What a user does in the generate dialog on screen (typing into a field, pressing Generate or Cancel), done inside the IDE for
@@ -23,11 +22,8 @@ internal class DebugDialogs {
         if (dialog == null || dialog.viewModel.state.value.fields.none { it.name == name }) {
             "filled=none"
         } else {
-            // TODO(dialog-input): this skips KatachiGenerateDialog.changed (it clears refusalState), so a refusal stays in describeDialog
-            // after a refill. Until an internal input door that goes through actions.onInput is added to KatachiGenerateDialog, refusal is
-            // not cleared here. L-S (stage S) adds the door and swaps this for it, with a DebugBridgeDialogInputTest case
-            // "refilled after a refusal -> describeDialog has no refusal=".
-            dialog.viewModel.dispatch(GenerateDialogIntent.Input(name, value))
+            // The panel's own input path: it clears a refusal left by a Generate that stopped.
+            dialog.input(name, value)
             "filled=$name"
         }
     }

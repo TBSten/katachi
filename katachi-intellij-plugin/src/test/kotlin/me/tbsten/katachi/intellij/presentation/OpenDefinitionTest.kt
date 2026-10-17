@@ -20,6 +20,8 @@ import me.tbsten.katachi.intellij.testing.definitionModel
 import me.tbsten.katachi.intellij.testing.layoutEntry
 import me.tbsten.katachi.intellij.testing.module
 import me.tbsten.katachi.intellij.testing.roleModel
+import me.tbsten.katachi.intellij.testing.setMember
+import me.tbsten.katachi.intellij.testing.setTemplate
 import me.tbsten.katachi.intellij.testing.template
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -102,6 +104,22 @@ class OpenDefinitionTest {
 
         assertTrue(canOpenDefinition(rowOf(definitionModule), state.snapshots))
         assertFalse(canOpenDefinition(rowOf(legacyModule), state.snapshots))
+    }
+
+    @Test
+    fun `組の行には定義モデルがあるモジュールでも定義を開くを出さない`() {
+        val setRow = ModuleTemplate(
+            definitionModule,
+            setTemplate("feature.NewFeature", listOf(setMember("domain.Service", "Service", "feature/Service.kt"))),
+        )
+        val state = stateOf(snapshot(definitionModule, withDefinition = true))
+        val withSet = state.copy(snapshots = listOf(state.snapshots.single().copy(templates = listOf(service, setRow.template))))
+
+        assertFalse(canOpenDefinition(setRow, withSet.snapshots))
+        assertTrue(canOpenDefinition(rowOf(definitionModule), withSet.snapshots))
+        val setMenu = (uiStateOf(withSet, JapaneseKatachiStrings, DEFINITION_INSTANT).body as BodyUi.Listing).list.items
+            .filterIsInstance<ListItemUi.Row>().first { it.row.id == setRow.id }.row.menu.map { it.intent }
+        assertTrue(setMenu.toString(), setMenu.none { it is KatachiIntent.OpenDefinition })
     }
 
     @Test

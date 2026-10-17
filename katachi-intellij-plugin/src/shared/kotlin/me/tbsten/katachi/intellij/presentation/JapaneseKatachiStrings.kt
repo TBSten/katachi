@@ -146,4 +146,8 @@ internal object JapaneseKatachiStrings : KatachiStrings {
     override fun definitionTooOld(katachiVersion: String?) =
         "ガターと違反の表示には katachi 0.3 以降が必要です" + (katachiVersion?.let { "（いま $it）" } ?: "")
     override val openDefinition = "定義を開く"
+
+    // ---- L-S: template-set ----
+    override val setBadge = "組"
+    override fun setMembers(count: Int) = "メンバ $count 件"
 }

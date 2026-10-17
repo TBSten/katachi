@@ -79,7 +79,7 @@ class ScreenPropertyTest {
         }
         report("without rendering", started, 0)
         // The candidate checks prove little unless the sequences got as far as candidates being shown, picked and going stale.
-        for (key in listOf("candidates shown", "new-directory note shown", "candidate picked", "capture typed", "disk: directory added", "disk: directory removed", "focus search", "module band toggled", "candidate read held", "several held candidate reads released")) {
+        for (key in listOf("candidates shown", "new-directory note shown", "candidate picked", "capture typed", "disk: directory added", "disk: directory removed", "focus search", "module band toggled", "candidate read held", "several held candidate reads released", "set checked", "set form open", "set that cannot be checked", "set run", "set removed by a reload", "set candidates shown")) {
             assertTrue("never reached '$key': $reached", (reached[key] ?: 0) > 0)
         }
     }

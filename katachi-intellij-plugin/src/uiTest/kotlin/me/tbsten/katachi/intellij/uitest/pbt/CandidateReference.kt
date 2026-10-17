@@ -104,6 +104,8 @@ internal object CandidateReference {
             append(segment.substring(last))
         }
         if (text.isEmpty() || text == "." || text == ".." || text.any { it == '/' || it == '\\' }) return null
+        // A control character (a line break typed into the field) is no directory name katachi takes, so the levels below it offer nothing.
+        if (text.any { Character.isISOControl(it) }) return null
         return text
     }
 

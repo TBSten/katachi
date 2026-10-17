@@ -47,5 +47,10 @@ internal object KatachiTestTags {
 
     fun newDirectoryNote(id: FieldId): String = "katachi.newDirectory:${keyOf(id)}"
 
+    /** The "set" badge and the member line of a template set's row. */
+    fun setBadge(id: TemplateId): String = "katachi.setBadge:${id.module.gradlePath}:${id.template}"
+
+    fun setMembers(id: TemplateId): String = "katachi.setMembers:${id.module.gradlePath}:${id.template}"
+
     private fun keyOf(id: FieldId): String = "${id.templateId.module.gradlePath}:${id.templateId.template}:${id.parameterName}"
 }

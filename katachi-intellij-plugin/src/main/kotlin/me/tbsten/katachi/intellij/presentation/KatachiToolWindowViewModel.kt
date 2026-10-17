@@ -16,12 +16,9 @@ import kotlinx.coroutines.withContext
 import me.tbsten.katachi.intellij.data.ProjectFileSystem
 import me.tbsten.katachi.intellij.data.detect.SyncedProjectSource
 import me.tbsten.katachi.intellij.data.detect.detectDefinitionModules
-import me.tbsten.katachi.intellij.data.generate.GenerationItem
 import me.tbsten.katachi.intellij.data.generate.GenerationListener
 import me.tbsten.katachi.intellij.data.generate.GenerationSession
-import me.tbsten.katachi.intellij.data.generate.TemplateArgsEntry
 import me.tbsten.katachi.intellij.data.generate.filesToOpen
-import me.tbsten.katachi.intellij.data.generate.templateArgsOf
 import me.tbsten.katachi.intellij.data.gradle.GradleRunListener
 import me.tbsten.katachi.intellij.data.gradle.GradleTaskRunner
 import me.tbsten.katachi.intellij.data.gradle.SerialGradleTaskRunner
@@ -500,28 +497,6 @@ internal class KatachiToolWindowViewModel(
         val finished = mutableState.value.generation as? GenerationState.Finished ?: return
         mutableState.update { leaveResult(it, next(it, finished.report)) }
     }
-
-    /**
-     * [rows] as the runs a generation makes: one [GenerationItem] per module, covering every
-     * checked row of that module in one `katachiTemplate` build (design draft section 6 "IDE の複数選択").
-     * A row whose preview failed is left out (it cannot be checked in the first place).
-     */
-    private fun generationItemsOf(rows: List<ModuleTemplate>, form: FormState): List<GenerationItem> =
-        rows.groupBy { it.module.id }.values.mapNotNull { group ->
-            val checked = group.mapNotNull { row -> row.template.detail?.let { row to it } }
-            if (checked.isEmpty()) return@mapNotNull null
-            val entries = checked.map { (row, detail) -> TemplateArgsEntry(row.template.template, detail, form.inputsOf(row.id)) }
-            val expected = checked.flatMap { (row, detail) ->
-                expectedFilesOf(detail, form.inputsOf(row.id)).mapNotNull { (it.location as? ExpectedLocation.Known)?.path }
-                    .mapNotNull { resolveExpectedPath(row.module.linkedRootPath, it) }
-            }
-            GenerationItem(
-                templateIds = checked.map { (row, _) -> row.id },
-                module = checked.first().first.module,
-                args = templateArgsOf(entries, form.onExisting),
-                expectedPaths = expected,
-            )
-        }
 
     private fun versions(): Map<ModuleId, String> = (detection as? DetectionResult.Found)?.katachiVersions.orEmpty()
 

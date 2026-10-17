@@ -144,7 +144,16 @@ internal data class TemplateRowUi(
      * The row scrolls into view once per number.
      */
     val highlight: Int? = null,
+    /** What marks the row as a template set (badge and member line); `null` for a template. */
+    val set: SetRowUi? = null,
 )
+
+/**
+ * A template set's row on screen: the badge after the name, and the members' titles joined with `・` as the row's
+ * second line ([memberLine], ellipsized by the row); [memberTooltip] holds all of them. Both are `null` for a set whose
+ * members are not known (no detail): then only the badge shows.
+ */
+internal data class SetRowUi(val badge: String, val memberLine: String? = null, val memberTooltip: String? = null)
 
 internal sealed interface RowBodyUi {
     data class Form(val form: FormUi) : RowBodyUi

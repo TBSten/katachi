@@ -1,6 +1,8 @@
 package me.tbsten.katachi.intellij.uitest.pbt
 
+import me.tbsten.katachi.intellij.model.ModuleTemplate
 import me.tbsten.katachi.intellij.model.ParameterModel
+import me.tbsten.katachi.intellij.model.TemplateDetailModel
 import me.tbsten.katachi.intellij.model.allParametersOf
 import me.tbsten.katachi.intellij.presentation.BodyUi
 import me.tbsten.katachi.intellij.presentation.FieldUi
@@ -26,6 +28,30 @@ internal class CandidateFieldView(
     val root: Path,
 )
 
+/**
+ * The fields of [row] that offer directory candidates, each with the pattern it sits in. A template's are its captures; a
+ * template set's are its string parameters that stand for a whole directory level of a member's file (template-set design 8.1),
+ * which the reference judges as it does a capture.
+ */
+internal fun candidateSlotsOf(row: ModuleTemplate, detail: TemplateDetailModel): List<Pair<ParameterModel.CaptureParam, String>> {
+    val patterns = detail.files.map { it.pattern }
+    if (row.template.set == null) {
+        return allParametersOf(detail).filterIsInstance<ParameterModel.CaptureParam>()
+            .mapNotNull { capture -> CandidateReference.patternHolding(patterns, capture.name)?.let { capture to it } }
+    }
+    val fixed = detail.files.filter { it.path != null && it.modulePlacement == null }.map { it.pattern }
+    return detail.parameters.filterIsInstance<ParameterModel.StringParam>().mapNotNull { parameter ->
+        val pattern = fixed.firstOrNull { holdsWholeLevel(it, parameter.name) } ?: return@mapNotNull null
+        ParameterModel.CaptureParam(parameter.name, emptyList()) to pattern
+    }
+}
+
+private fun holdsWholeLevel(pattern: String, name: String): Boolean {
+    val segments = pattern.split('/')
+    val level = segments.indexOfFirst { "\${$name}" in it }
+    return level in 0 until segments.lastIndex && segments[level] == "\${$name}"
+}
+
 /** The capture fields of the open forms of [ui] (directory captures and module captures alike), with their patterns. */
 internal fun candidateFieldsOf(state: KatachiScreenState, ui: KatachiUiState): List<CandidateFieldView> {
     val rows = state.rows.associateBy { it.id }
@@ -34,10 +60,9 @@ internal fun candidateFieldsOf(state: KatachiScreenState, ui: KatachiUiState): L
         val row = rows[item.row.id] ?: return@flatMap emptyList()
         val detail = row.template.detail ?: return@flatMap emptyList()
         val fields = (item.row.body as? RowBodyUi.Form)?.form?.fields.orEmpty().filterIsInstance<FieldUi.Text>()
-        val captures = allParametersOf(detail).filterIsInstance<ParameterModel.CaptureParam>().associateBy { it.name }
+        val slots = candidateSlotsOf(row, detail).associateBy { it.first.name }
         fields.mapNotNull { field ->
-            val capture = captures[field.id.parameterName] ?: return@mapNotNull null
-            val pattern = CandidateReference.patternHolding(detail.files.map { it.pattern }, capture.name) ?: return@mapNotNull null
+            val (capture, pattern) = slots[field.id.parameterName] ?: return@mapNotNull null
             CandidateFieldView(field, capture, pattern, state.form.inputsOf(row.id), row.module.linkedRootPath)
         }
     }
@@ -47,8 +72,7 @@ internal fun candidateFieldsOf(state: KatachiScreenState, ui: KatachiUiState): L
 internal fun candidateParentsOf(state: KatachiScreenState): List<Pair<Path, Path>> = state.rows.flatMap { row ->
     val detail = row.template.detail ?: return@flatMap emptyList()
     val inputs = state.form.inputsOf(row.id)
-    allParametersOf(detail).filterIsInstance<ParameterModel.CaptureParam>().mapNotNull { capture ->
-        val pattern = CandidateReference.patternHolding(detail.files.map { it.pattern }, capture.name) ?: return@mapNotNull null
+    candidateSlotsOf(row, detail).mapNotNull { (capture, pattern) ->
         CandidateReference.parentOf(pattern, capture.name, inputs, row.module.linkedRootPath)?.let { it to row.module.linkedRootPath }
     }
 }.distinct().sortedBy { it.first.toString() }

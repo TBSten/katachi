@@ -40,6 +40,9 @@ internal data class PlacementMatch(
 ) {
     val id: TemplateId get() = template.id
 
+    /** Whether the row is a template set: the New menu then opens the tool window instead of the dialog. */
+    val isSet: Boolean get() = template.template.set != null
+
     /** The architecture definition this match came from (issue 7). */
     val definition: KatachiModule get() = template.module
 }

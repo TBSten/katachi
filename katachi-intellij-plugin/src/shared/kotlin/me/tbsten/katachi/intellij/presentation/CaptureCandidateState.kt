@@ -67,10 +67,20 @@ internal fun suggestionsOf(
         val hidden = (modules.size - CandidateList.MAX).coerceAtLeast(0)
         return SuggestionsUi(modules.take(CandidateList.MAX), hidden.takeIf { it > 0 }?.let(strings::moreCandidates), newDirectoryNote = null)
     }
+    return suggestionsOf(candidates, input, error, strings)
+}
+
+/**
+ * The suggestions of a directory field that is no capture (a template set's parameter standing for a whole directory
+ * level): the directories read from the project, or `null` for a plain field. Same rules as the capture's. Such a field
+ * has no error for a value that is not one directory level (it is a plain parameter), but the "new directory" note is
+ * not said of one either: it would name a path that is not what the value makes.
+ */
+internal fun suggestionsOf(candidates: CandidateList?, input: String?, error: String?, strings: CandidateStrings): SuggestionsUi? {
     if (candidates == null || candidates.values.isEmpty()) return null
     val value = input.orEmpty()
     val note = candidates.directoryPattern
-        ?.takeIf { value.isNotBlank() && error == null && candidates.hiddenCount == 0 && value !in candidates.values }
+        ?.takeIf { value.isNotBlank() && error == null && captureProblemOf(value) == null && candidates.hiddenCount == 0 && value !in candidates.values }
         ?.let { strings.newDirectoryNote(it.replace(CandidateList.VALUE_MARK, value)) }
     return SuggestionsUi(
         values = candidates.values,

@@ -25,12 +25,11 @@ internal fun definitionTooOldOf(modules: List<KatachiModule>, snapshots: List<De
 
 /**
  * Whether the row's menu offers "Open Definition" (design T-10): the row's module was read with a definition model. Without
- * one (katachi 0.2.x, nothing read yet) there is no declaration to open.
- *
- * TODO(S10): a templateSet's row has no Role and its declaration is not in the JSON, so it must answer `false` here.
+ * one (katachi 0.2.x, nothing read yet) there is no declaration to open. A template set's row has no Role and its
+ * declaration is not in the JSON, so it never offers it.
  */
 internal fun canOpenDefinition(row: ModuleTemplate, snapshots: List<DescriptionSnapshot>): Boolean =
-    snapshots.any { it.module.id == row.module.id && it.definition != null }
+    row.template.set == null && snapshots.any { it.module.id == row.module.id && it.definition != null }
 
 /** Where the Role of [row] was declared; `null` when the definition does not know the Role or did not capture where. */
 internal fun roleDeclarationOf(row: ModuleTemplate, snapshots: List<DescriptionSnapshot>): DeclarationSiteRef? =

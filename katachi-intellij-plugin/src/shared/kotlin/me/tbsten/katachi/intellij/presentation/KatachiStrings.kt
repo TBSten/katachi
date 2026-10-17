@@ -160,4 +160,11 @@ internal interface KatachiStrings : CandidateStrings {
 
     /** ⋯ › the row's Role declaration (T-10). */
     val openDefinition: String
+
+    // ---- L-S: template-set ----
+    /** The badge after the name of a template set's row. */
+    val setBadge: String
+
+    /** The tooltip lead of a template set's member line: how many templates the set runs. */
+    fun setMembers(count: Int): String
 }

@@ -96,6 +96,9 @@ internal class ScreenMachine(
     private val runViolations = mutableListOf<String>()
     private var lastDrawn: KatachiUiState? = null
 
+    /** How many runs the generation on screen was planned as (set invariant (c)); `null` when it is not known (a load was waited for). */
+    private var plannedRuns: Int? = null
+
     /** `katachiTemplate` runs of the generation on screen, by template; reset when one starts. */
     private val runsOfGeneration = mutableMapOf<String, MutableList<String>>()
 
@@ -170,6 +173,11 @@ internal class ScreenMachine(
     private fun perform(label: String, intents: List<KatachiIntent>, before: KatachiScreenState) {
         trace += if (intents.isEmpty()) label else "$label -> ${intents.joinToString()}"
         if (before.generation !is GenerationState.Running && KatachiIntent.Generate in intents) runsOfGeneration.clear()
+        if (before.generation == null && KatachiIntent.Generate in intents) {
+            plannedRuns = plannedRunsOf(before)
+            val checked = before.rows.filter { before.form.isSelected(it.id) && it.template.detail != null }
+            if (checked.any { it.template.set != null } && checked.any { it.template.set == null }) reached.merge("set generated with templates", 1, Int::plus)
+        }
         intents.forEach(harness.vm::dispatch)
         dispatcher.runAll()
         val after = harness.state
@@ -185,13 +193,16 @@ internal class ScreenMachine(
             addAll(stateViolationsOf(after))
             addAll(keptViolationsOf(before, intents, after))
             typedViolationOf(before, intents, after)?.let { add(it) }
+            addAll(removedSetViolationsOf(before, intents, after))
+            addAll(generationPlanViolationsOf(after))
         }
         val ui = try {
             ui(after)
         } catch (e: Exception) {
             fail("uiStateOf threw $e", after, null)
         }
-        val problems = found + uiViolationsOf(after, ui) + revealViolationsOf(after, intents, ui) +
+        setReachedOf(after, ui).forEach { reached.merge(it, 1, Int::plus) }
+        val problems = found + uiViolationsOf(after, ui) + setRowViolationsOf(after, ui) + revealViolationsOf(after, intents, ui) +
             // Held reads leave the candidates behind what is typed and on disk on purpose; once released they must catch up.
             (if (holdingReads) emptyList() else candidateViolationsOf(after, ui, candidateDisk)) + focusViolationsOf(before, intents, after)
         reachCandidates(after, ui, intents)
@@ -207,6 +218,17 @@ internal class ScreenMachine(
             }
             lastDrawn = ui
         }
+    }
+
+    /** Set invariant (c): the planned runs of a generation against the report it ends with; nothing is said while the plan is unknown. */
+    private fun generationPlanViolationsOf(after: KatachiScreenState): List<String> {
+        val generation = after.generation
+        if (generation == null) plannedRuns = null
+        if (generation is GenerationState.Running && generation.waitingForLoad) plannedRuns = null
+        val planned = plannedRuns ?: return emptyList()
+        if (generation !is GenerationState.Finished) return emptyList()
+        plannedRuns = null
+        return reportViolationsOf(generation.report, planned, after)
     }
 
     private fun countReached(intents: List<KatachiIntent>, after: KatachiScreenState) {
@@ -292,6 +314,9 @@ internal class ScreenMachine(
             }
         }
         for (specifier in specifiers) captureViolationOf(specifier, specifiers, args)?.let { runViolations += it }
+        val moduleRows = harness.state.rows.filter { it.module.taskPath(KatachiModule.TEMPLATE_TASK) == harness.katachi.currentTaskPath }
+        setRunViolationOf(moduleRows, specifiers, args)?.let { runViolations += it }
+        if (moduleRows.any { it.template.template in specifiers && it.template.set != null }) reached.merge("set run", 1, Int::plus)
         val runs = runsOfGeneration.getOrPut("${harness.katachi.currentTaskPath} $template") { mutableListOf() }
         runs += args.getValue("onExisting")
         if (runs.size > 2 || (runs.size == 2 && runs[1] != "overwrite")) {

@@ -70,11 +70,19 @@ internal data class TemplateSpec(
  * One definition module and its templates, in the order the JSON lists them: built from [specs],
  * or a JSON katachi itself wrote ([fixture], one of `contract/json/`).
  */
-internal data class ModuleDef(val module: KatachiModule, val specs: List<TemplateSpec>, val fixture: String? = null) {
-    val templates: List<TemplateModel> by lazy { specs.mapIndexed { index, spec -> templateOf(index, spec) } }
+internal data class ModuleDef(
+    val module: KatachiModule,
+    val specs: List<TemplateSpec>,
+    val fixture: String? = null,
+    /** The template sets, whose rows the parser puts after the templates. */
+    val sets: List<SetSpec> = emptyList(),
+) {
+    val templates: List<TemplateModel> by lazy {
+        specs.mapIndexed { index, spec -> templateOf(index, spec) } + sets.mapIndexed { index, spec -> setRowOf(index, spec) }
+    }
     val json: String by lazy { fixture?.let(ContractFixtures::json) ?: contractJsonOf(templates) }
 
-    override fun toString(): String = "${module.gradlePath}=${fixture ?: specs}"
+    override fun toString(): String = "${module.gradlePath}=${fixture ?: specs}${if (sets.isEmpty()) "" else " sets=$sets"}"
 }
 
 /**
@@ -95,7 +103,7 @@ internal data class World(val modules: List<ModuleDef>) {
 }
 
 /** How a later definition differs from the first: what a reload or a sync brings. */
-internal enum class Change { Same, DropTemplate, RetypeParameters, AddTemplate, BreakPreview, AddModule, RemoveModule, DropAll }
+internal enum class Change { Same, DropTemplate, RetypeParameters, AddTemplate, BreakPreview, AddModule, RemoveModule, DropAll, DropSet, RetypeSets }
 
 /** The first definition and the ones later operations can switch to. */
 internal data class Catalog(val worlds: List<World>) {
@@ -138,7 +146,9 @@ internal val templateSpecArb: Arb<TemplateSpec> = arbitrary {
 }
 
 internal fun moduleDefArb(index: Int, sizes: IntRange): Arb<ModuleDef> = arbitrary {
-    ModuleDef(module(MODULE_PATHS[index]), Arb.list(templateSpecArb, sizes).bind())
+    // Half of the modules hold template sets next to their templates.
+    val sets = if (Arb.int(0..1).bind() == 0) Arb.list(setSpecArb, 1..2).bind() else emptyList()
+    ModuleDef(module(MODULE_PATHS[index]), Arb.list(templateSpecArb, sizes).bind(), sets = sets)
 }
 
 /** 1-2 modules at first, then up to 3 later definitions, each one [Change] away from the one before. */
@@ -153,6 +163,8 @@ internal fun catalogArb(sizes: IntRange = 1..8): Arb<Catalog> = arbitrary(Catalo
             Change.RetypeParameters, Change.RetypeParameters, Change.AddTemplate, Change.Same, Change.AddModule, Change.RemoveModule,
             // Every template gone at once: DropTemplate alone empties only a small first module.
             Change.DropAll, Change.DropAll,
+            // A template set gone, or its parameters changed: the checks on its row must follow as a template's do.
+            Change.DropSet, Change.DropSet, Change.RetypeSets,
         ).bind()
         val extra = Arb.list(templateSpecArb, 1..3).bind()
         worlds += changed(worlds.last(), change, extra)
@@ -175,7 +187,9 @@ private fun changed(world: World, change: Change, extra: List<TemplateSpec>): Wo
             World(world.modules + ModuleDef(module(MODULE_PATHS[world.modules.size]), extra))
         }
         Change.RemoveModule -> if (world.modules.size <= 1) world else World(world.modules.dropLast(1))
-        Change.DropAll -> World(world.modules.map { it.copy(specs = emptyList()) })
+        Change.DropAll -> World(world.modules.map { it.copy(specs = emptyList(), sets = emptyList()) })
+        Change.DropSet -> World(world.modules.map { it.copy(sets = it.sets.drop(1)) })
+        Change.RetypeSets -> World(world.modules.map { def -> def.copy(sets = def.sets.map { set -> set.copy(params = set.params.map { it.copy(type = retyped(it.type)) }) }) })
     }
 }
 
@@ -189,7 +203,7 @@ private fun retyped(type: ParamType): ParamType = when (type) {
 
 private val ENUM_VALUES = listOf("A", "B", "C")
 
-private fun parameterOf(spec: ParamSpec): ParameterModel {
+internal fun templateParameterOf(spec: ParamSpec): ParameterModel {
     val required = !spec.hasDefault
     return when (spec.type) {
         ParamType.Str -> {
@@ -219,7 +233,7 @@ private fun parameterOf(spec: ParamSpec): ParameterModel {
 internal fun templateOf(index: Int, spec: TemplateSpec): TemplateModel {
     val simpleName = "R$index"
     val roleName = if (spec.group.isEmpty()) simpleName else "${spec.group}.$simpleName"
-    val parameters = spec.params.map(::parameterOf)
+    val parameters = spec.params.map(::templateParameterOf)
     val captures = spec.captures.map(::captureOf)
     val stem = if (spec.params.any { it.name == "name" }) "\${name}" else simpleName
     val captureDirs = spec.captures.joinToString("") { "/\${${it.name}}" }

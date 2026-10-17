@@ -38,6 +38,7 @@ internal fun applyFormIntent(state: KatachiScreenState, intent: KatachiIntent): 
             )
         }
         is KatachiIntent.RevealTemplate -> return revealTemplate(state, intent.templateId)
+        is KatachiIntent.RevealAndSeed -> return revealAndSeed(state, intent.templateId, intent.seeds)
         KatachiIntent.DismissRemovedTemplates -> return state.copy(removedTemplates = emptyList())
         KatachiIntent.DismissLoadError -> return state.copy(loadErrorBanner = null)
         else -> return null

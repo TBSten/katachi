@@ -7,6 +7,8 @@ import me.tbsten.katachi.intellij.testing.intParam
 import me.tbsten.katachi.intellij.testing.module
 import me.tbsten.katachi.intellij.testing.row
 import me.tbsten.katachi.intellij.testing.rowsOf
+import me.tbsten.katachi.intellij.testing.setMember
+import me.tbsten.katachi.intellij.testing.setTemplate
 import me.tbsten.katachi.intellij.testing.stringParam
 import me.tbsten.katachi.intellij.testing.template
 import org.junit.Assert.assertEquals
@@ -154,5 +156,22 @@ class TemplateArgsBuilderTest {
         assertEquals("domain.UseCase", useCaseTemplate.template)
         val args = templateArgsOf(useCaseTemplate.template, useCase, mapOf("name" to "Login"), OnExistingChoice.Fail)
         assertEquals("template" to "domain.UseCase", args.first())
+    }
+
+    @Test
+    fun `組の entry は組の指定と組のパラメータだけを送る`() {
+        val set = setTemplate(
+            "feature.NewFeature",
+            listOf(setMember("feature.Screen", "Screen", "feature/\${feature}/ui/Screen.kt")),
+            parameters = listOf(stringParam("feature"), booleanParam("withTest", default = null)),
+        )
+        val detail = set.detail ?: throw AssertionError()
+
+        val args = templateArgsOf("feature.NewFeature", detail, mapOf("feature" to "profile"), OnExistingChoice.Skip)
+
+        assertEquals(
+            listOf("template" to "feature.NewFeature", "onExisting" to "skip", "feature" to "profile", "withTest" to "true"),
+            args,
+        )
     }
 }
