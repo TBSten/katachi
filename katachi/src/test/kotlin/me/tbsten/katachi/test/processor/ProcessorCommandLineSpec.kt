@@ -223,4 +223,26 @@ class ProcessorCommandLineSpec : FreeSpec({
             thrown.key shouldBe "docs:outputDir"
         }
     }
+
+    "--definition-errors" - {
+        val base = arrayOf("--entry-point=com.example.MyEntryPoint", "--processor=internalDefinitionJson")
+
+        "無ければ null" {
+            parseProcessorCommandLine(base).definitionErrorsPath shouldBe null
+        }
+
+        "渡した path をそのまま持つ" {
+            parseProcessorCommandLine(base + "--definition-errors=build/katachi/definition-errors.json")
+                .definitionErrorsPath shouldBe "build/katachi/definition-errors.json"
+        }
+
+        "2回あれば後のものを使い、新しい例外は作らない" {
+            parseProcessorCommandLine(base + "--definition-errors=a.json" + "--definition-errors=b.json")
+                .definitionErrorsPath shouldBe "b.json"
+        }
+
+        "空の path は無いものとして扱う" {
+            parseProcessorCommandLine(base + "--definition-errors=").definitionErrorsPath shouldBe null
+        }
+    }
 })

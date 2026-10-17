@@ -17,12 +17,14 @@ import me.tbsten.katachi.processor.KatachiUnknownProcessorOptionException
  * @property args every `--arg key=value`, as a flat map. Every selected processor is given them.
  * @property argsFor every `--arg-for=<processor key>:<name>=<value>`, by processor key. Only that
  *   processor is given them, and an [args] entry of the same name wins over them.
+ * @property definitionErrorsPath where to write `definition-errors.json`, or `null` to write none.
  */
 internal data class ProcessorCommandLine(
     val entryPointClassName: String,
     val processorKeys: List<String>,
     val args: Map<String, String>,
     val argsFor: Map<String, Map<String, String>> = emptyMap(),
+    val definitionErrorsPath: String? = null,
 )
 
 /**
@@ -43,6 +45,10 @@ internal data class ProcessorCommandLine(
  *   itself contains `=` (`--arg=invokeImpl=TODO()`) is kept whole.
  * - `--arg-for=<processor key>:<key>=<value>`, any number of times. Split on the first `:`, then
  *   on the first `=` after it. The processor key has to be one of the `--processor` keys.
+ * - `--definition-errors=<path>`, an option for the IDE plugin only (`@InternalKatachiApi` in
+ *   spirit, and it may change without notice). The Gradle plugin passes it to the task that
+ *   describes the definition and to no other. A run given it writes `definition-errors.json`
+ *   there, naming the mistakes of the definition that stopped it. Given twice, the last one wins.
  *
  * @throws KatachiDuplicateEntryPointOptionException when `--entry-point` is given twice.
  * @throws KatachiMissingEntryPointOptionException when it is not given at all.
@@ -60,6 +66,7 @@ internal fun parseProcessorCommandLine(argv: Array<String>): ProcessorCommandLin
     val args = LinkedHashMap<String, String>()
     val argsFor = LinkedHashMap<String, LinkedHashMap<String, String>>()
     val argForTokens = LinkedHashMap<String, String>()
+    var definitionErrorsPath: String? = null
 
     for (token in argv) {
         when {
@@ -102,6 +109,10 @@ internal fun parseProcessorCommandLine(argv: Array<String>): ProcessorCommandLin
                 argForTokens.putIfAbsent(processorKey, token)
             }
 
+            token.startsWith("--definition-errors=") -> {
+                definitionErrorsPath = token.removePrefix("--definition-errors=").takeIf { it.isNotEmpty() }
+            }
+
             else -> throw KatachiUnknownProcessorOptionException(token)
         }
     }
@@ -121,5 +132,6 @@ internal fun parseProcessorCommandLine(argv: Array<String>): ProcessorCommandLin
         processorKeys = processorKeys.toList(),
         args = args,
         argsFor = argsFor,
+        definitionErrorsPath = definitionErrorsPath,
     )
 }

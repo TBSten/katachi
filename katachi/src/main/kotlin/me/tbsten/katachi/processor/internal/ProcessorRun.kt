@@ -26,10 +26,20 @@ import me.tbsten.katachi.processor.decodeFromStringMap
 /**
  * How many of a `runProcessors` call's processors succeeded and how many failed.
  *
- * `main()` reads [failed] to decide the process's exit status; a spec reads both to assert on
- * the run as a whole without re-parsing the printed summary line.
+ * `main()` reads [failed] to decide the process's exit status, and [failures] to tell the IDE
+ * plugin which mistakes of the definition stopped the run; a spec reads them to assert on the run
+ * as a whole without re-parsing the printed summary line.
  */
-internal data class ProcessorRunSummary(val succeeded: Int, val failed: Int)
+internal data class ProcessorRunSummary(
+    val succeeded: Int,
+    val failed: Int,
+    val failures: List<ProcessorFailure> = emptyList(),
+)
+
+/** What the processor registered as [key] failed with. */
+internal class ProcessorFailure(val key: String, val cause: Throwable) {
+    override fun toString(): String = "ProcessorFailure($key, $cause)"
+}
 
 /**
  * Turns a registered processor class into a running [ArchitectureProcessor].
@@ -181,7 +191,10 @@ internal fun runProcessors(
     }
     out(separator)
 
-    return ProcessorRunSummary(succeeded = succeeded, failed = failed)
+    val failures = outcomes.mapNotNull { outcome ->
+        outcome.result.exceptionOrNull()?.let { cause -> ProcessorFailure(outcome.key, cause) }
+    }
+    return ProcessorRunSummary(succeeded = succeeded, failed = failed, failures = failures)
 }
 
 /**

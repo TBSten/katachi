@@ -1,6 +1,8 @@
 package me.tbsten.katachi.processor.internal
 
 import kotlin.system.exitProcess
+import me.tbsten.katachi.dsl.files.KatachiFileSystem
+import me.tbsten.katachi.dsl.files.internal.RealFileSystem
 import me.tbsten.katachi.processor.KatachiEntryPointNotFoundException
 
 /**
@@ -43,16 +45,63 @@ import me.tbsten.katachi.processor.KatachiEntryPointNotFoundException
  *   [parseProcessorCommandLine] for the accepted form.
  */
 internal fun main(args: Array<String>) {
+    val status = runMain(args)
+    if (status != 0) exitProcess(status)
+}
+
+/**
+ * [main] without the exit, so that a spec can run it and read the status.
+ *
+ * ## The IDE plugin's report
+ *
+ * A run given `--definition-errors=<path>` writes `definition-errors.json` there at its end,
+ * whatever happened: the mistakes of the definition that stopped it, found while the entry point
+ * was initialized or while a processor ran, or `errors: []`. A definition that cannot even be
+ * built is reported as itself, with its stack trace on [err] and status 1, rather than as an
+ * entry point that was not found. That mistake is recorded and then thrown as it is, with no
+ * wrapper, so the JVM ends with `Exception in thread "main" <its class>: <its message>` and
+ * status 1, which is what the IDE plugin classifies the failure from when it has no file to read.
+ * Anything else thrown above ends the JVM the same way.
+ *
+ * @param err where the warning of a report that could not be written goes.
+ * @param fileSystem and [out]: what the processors run against, and where their report goes.
+ * @param classLoader where the entry point is looked up. Specs pass a fresh one per run, since a
+ *   class whose initialization failed once cannot be initialized again in the same loader.
+ * @return `0`, or `1` when a processor failed.
+ * @throws Throwable the mistake of a definition that could not be built, as it is (its
+ *   `definition-errors.json` is written first).
+ */
+internal fun runMain(
+    args: Array<String>,
+    err: (String) -> Unit = System.err::println,
+    fileSystem: KatachiFileSystem = RealFileSystem(),
+    out: (String) -> Unit = ::println,
+    classLoader: ClassLoader = KatachiEntryPoint::class.java.classLoader,
+): Int {
     val commandLine = parseProcessorCommandLine(args)
-    val entryPoint = loadEntryPoint(commandLine.entryPointClassName)
-    val summary = runProcessors(
-        architecture = entryPoint.architecture,
-        registry = entryPoint.processors,
-        processorKeys = commandLine.processorKeys,
-        rawArgs = commandLine.args,
-        argsFor = commandLine.argsFor,
-    )
-    if (summary.failed > 0) exitProcess(1)
+    val mistakes = mutableListOf<DefinitionErrorEntry>()
+    try {
+        val entryPoint = try {
+            loadEntryPoint(commandLine.entryPointClassName, classLoader)
+        } catch (failure: Throwable) {
+            if (definitionErrorsOf(failure).isEmpty()) throw failure
+            mistakes += DefinitionErrorEntry(DefinitionErrorPhase.EntryPoint, processor = null, exception = failure)
+            throw failure
+        }
+        val summary = runProcessors(
+            architecture = entryPoint.architecture,
+            registry = entryPoint.processors,
+            processorKeys = commandLine.processorKeys,
+            rawArgs = commandLine.args,
+            argsFor = commandLine.argsFor,
+            fileSystem = fileSystem,
+            out = out,
+        )
+        summary.failures.mapTo(mistakes) { DefinitionErrorEntry(DefinitionErrorPhase.Processor, it.key, it.cause) }
+        return if (summary.failed > 0) 1 else 0
+    } finally {
+        commandLine.definitionErrorsPath?.let { path -> writeDefinitionErrors(path, mistakes, err) }
+    }
 }
 
 /**
@@ -65,12 +114,21 @@ internal fun main(args: Array<String>) {
  *
  * @throws KatachiEntryPointNotFoundException when [className] cannot be loaded, has no
  *   `INSTANCE` field, or that field is not a [KatachiEntryPoint].
+ * @throws me.tbsten.katachi.KatachiDeclarationException when initializing the object ran
+ *   `architecture { }` and it was the definition that threw; thrown as it is, not wrapped.
  */
-internal fun loadEntryPoint(className: String): KatachiEntryPoint {
+internal fun loadEntryPoint(
+    className: String,
+    classLoader: ClassLoader = KatachiEntryPoint::class.java.classLoader,
+): KatachiEntryPoint {
     val instance = runCatching {
-        val type = Class.forName(className, true, KatachiEntryPoint::class.java.classLoader)
+        val type = Class.forName(className, true, classLoader)
         type.getDeclaredField("INSTANCE").apply { isAccessible = true }.get(null)
-    }.getOrElse { cause -> throw KatachiEntryPointNotFoundException(className, cause) }
+    }.getOrElse { cause ->
+        // `architecture { }` threw while the object was initialized: the definition is wrong, and
+        // saying that the entry point was not found would send the reader to the wrong place.
+        throw definitionFailureIn(cause) ?: KatachiEntryPointNotFoundException(className, cause)
+    }
 
     return instance as? KatachiEntryPoint
         ?: throw KatachiEntryPointNotFoundException(className, cause = null)

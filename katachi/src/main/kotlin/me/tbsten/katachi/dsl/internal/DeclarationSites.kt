@@ -20,7 +20,7 @@ private const val KATACHI_TEST_PACKAGE_PREFIX: String = "me.tbsten.katachi.test.
  * first surviving frame would then be inside the test runner (observed with kotest:
  * `FreeSpecRootScope.kt:35`). Carving the test prefix back out keeps those specs honest.
  */
-private fun isKatachiFrame(className: String): Boolean =
+internal fun isKatachiFrame(className: String): Boolean =
     className.startsWith(KATACHI_PACKAGE_PREFIX) &&
         !className.startsWith(KATACHI_TEST_PACKAGE_PREFIX)
 

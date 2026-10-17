@@ -39,6 +39,8 @@ class KatachiInternalDefinitionJsonFunctionalTest {
 
     private static final String JSON_PATH = "build/katachi/internalDefinitionJson/definition.json";
 
+    private static final String ERRORS_PATH = "build/katachi/internalDefinitionJson/definition-errors.json";
+
     private static final String DESCRIPTION =
             "Internal: writes the architecture definition (roles, layout, constraints, templates, "
                     + "matched files) as JSON for the katachi IDE plugin. Not meant to be run by hand.";
@@ -81,6 +83,9 @@ class KatachiInternalDefinitionJsonFunctionalTest {
         assertFalse(
                 args.stream().anyMatch(arg -> arg.startsWith("--arg=format=")),
                 "a format was passed, which DescribeDefinition does not take:\n" + args);
+        assertTrue(
+                args.contains("--definition-errors=" + ERRORS_PATH),
+                "the place for the definition's mistakes was not passed:\n" + args);
 
         // The JSON lists the files each entry matched, which no declared input of the task covers.
         assertEquals(TaskOutcome.SUCCESS, outcome(runner(projectDir, gradleVersion, TASK_NAME).build()));
@@ -104,6 +109,24 @@ class KatachiInternalDefinitionJsonFunctionalTest {
         assertTrue(
                 output.contains(TASK_NAME + " - Runs the katachi processor fixture.OurOwnJson"),
                 "the replacing registration did not become an ordinary katachi task:\n" + output);
+    }
+
+    @ParameterizedTest(name = "Gradle {0}")
+    @MethodSource("gradleVersions")
+    @DisplayName("--definition-errors は定義のタスクにだけ渡り、katachiTemplates など他のタスクには渡らない")
+    void otherTasksAreNotGivenTheDefinitionErrorsOption(String gradleVersion, @TempDir Path projectDir)
+            throws IOException {
+        writeFixture(projectDir, "");
+
+        for (String task : Arrays.asList("katachiTemplates", "katachiInternalTemplatesJson")) {
+            assertEquals(
+                    TaskOutcome.SUCCESS,
+                    runner(projectDir, gradleVersion, task).build().task(":" + task).getOutcome());
+            List<String> args = Arrays.asList(read(projectDir.resolve("build/katachi/args.txt")).split("\n"));
+            assertFalse(
+                    args.stream().anyMatch(arg -> arg.startsWith("--definition-errors")),
+                    task + " was given the definition errors option:\n" + args);
+        }
     }
 
     /** A {@code src/test/java} entry point that writes what {@code --arg=output=} names. */

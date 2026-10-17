@@ -7,6 +7,7 @@ import kotlinx.serialization.Serializable
 import me.tbsten.katachi.ExperimentalKatachiApi
 import me.tbsten.katachi.ide.internal.DefinitionJson
 import me.tbsten.katachi.ide.internal.DefinitionJsonOptions
+import me.tbsten.katachi.ide.internal.TemplatePreviewFailures
 import me.tbsten.katachi.ide.internal.definitionJsonOf
 import me.tbsten.katachi.internal.KatachiVersion
 import me.tbsten.katachi.internal.absolutePathOf
@@ -17,7 +18,7 @@ import me.tbsten.katachi.processor.ArchitectureProcessContext
 import me.tbsten.katachi.processor.ArchitectureProcessor
 import me.tbsten.katachi.processor.internal.projectWalk
 import me.tbsten.katachi.template.internal.encodeToJson
-import me.tbsten.katachi.template.internal.templateDescriptionJsonOf
+import me.tbsten.katachi.template.internal.templateDescriptionOf
 import me.tbsten.katachi.template.internal.writeFileAtomically
 
 /**
@@ -42,6 +43,15 @@ import me.tbsten.katachi.template.internal.writeFileAtomically
  * A [DefinitionSummary]: how many roles, entries, constraints and templates it wrote, and where. A
  * file that cannot be written is a `failure` carrying [KatachiDefinitionJsonIoException]. Nothing
  * is thrown out of `process`.
+ *
+ * ## When the definition itself is wrong
+ *
+ * A definition whose layout cannot be flattened because of a mistake in it -- a
+ * [me.tbsten.katachi.KatachiDeclarationException] -- is a `failure` carrying that exception, and
+ * the file is **not** written: the one left from the last good run stays, rather than being
+ * replaced by a description with no layout. Under the Gradle plugin the run also writes
+ * `definition-errors.json` next to it, naming the mistake and the line it was written on. An
+ * environment that cannot be walked (no git, no project root) stays a `problems` entry as before.
  *
  * ## Example 1: write the JSON from code, and from the command line
  * ```kt
@@ -72,11 +82,13 @@ public object DescribeDefinition : ArchitectureProcessor<DescribeDefinition.Args
             // The modules a placement needs are listed by the same project root the walk needs, so
             // when they cannot be, the walk's own problem usually says why; one the walk does not
             // explain is passed on as [placementsFailure].
-            val placed = catching { templateDescriptionJsonOf(context) }
+            val placed = catching { templateDescriptionOf(context) }
+            val described = placed.getOrElse { templateDescriptionOf(context, withPlacements = false) }
             val json = definitionJsonOf(
                 walk = context.projectWalk,
-                templates = placed.getOrElse { templateDescriptionJsonOf(context, withPlacements = false) },
+                templates = described.json,
                 placementsFailure = placed.exceptionOrNull(),
+                previewFailures = TemplatePreviewFailures(described.templateFailures, described.templateSetFailures),
                 options = DefinitionJsonOptions(
                     maxMatchedFiles = args.maxMatchedFiles,
                     explainDeclarations = args.explainDeclarations,

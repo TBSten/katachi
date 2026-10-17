@@ -171,6 +171,14 @@ internal class DefinitionProblemJson(
     /** One English sentence. */
     val message: String,
     val detail: String?,
+    /**
+     * Where the thing that failed was written, when the exception says (or its stack trace does):
+     * set on [DefinitionProblemKind.TemplatePreviewFailed], [DefinitionProblemKind.TemplateSetPreviewFailed]
+     * and [DefinitionProblemKind.ExplanationFailed], `null` on the rest.
+     */
+    val declaredAt: DeclarationSiteJson? = null,
+    /** The class name of the exception that made it a problem, on the same three kinds. */
+    val exception: String? = null,
 )
 
 /** What a [DefinitionProblemJson] is about. Written by its name. */
