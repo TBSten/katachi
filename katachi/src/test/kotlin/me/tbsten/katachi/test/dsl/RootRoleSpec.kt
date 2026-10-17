@@ -169,7 +169,7 @@ class RootRoleSpec : FreeSpec({
                 "A group of that name was already declared at ${thrown.firstDeclaredAt}, " +
                     "in the root of architecture { }.",
                 "A group and a role in the root of architecture { } would both be referred to " +
-                    "as \"domain\". Rename one of them, or move the role into a group.",
+                    "as \"domain\". Rename one of them.",
             ).joinToString("\n")
         }
 

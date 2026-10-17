@@ -6,18 +6,21 @@ import me.tbsten.katachi.ExperimentalKatachiApi
 /**
  * What [DescribeTemplates] answers: the list of templates, or the detail of one.
  *
- * Without `--arg template=` the answer is a [TemplateList]; with it, a [TemplateDetail].
+ * Without `--arg template=` the answer is a [TemplateList]; with it, a [TemplateDetail], or a
+ * [TemplateSetDetail] when it names a template set.
  *
- * ## Example 1: tell the two answers apart
+ * ## Example 1: tell the answers apart
  * ```kt
  * import me.tbsten.katachi.processor.process
  * import me.tbsten.katachi.template.DescribeTemplates
  * import me.tbsten.katachi.template.TemplateDetail
  * import me.tbsten.katachi.template.TemplateList
+ * import me.tbsten.katachi.template.TemplateSetDetail
  *
  * when (val answer = projectArchitecture.process(DescribeTemplates, DescribeTemplates.Args()).getOrThrow()) {
  *     is TemplateList -> answer.templates.map { it.template }
  *     is TemplateDetail -> answer.files.map { it.fileName }
+ *     is TemplateSetDetail -> answer.members.map { it.template }
  * }
  * ```
  *
@@ -27,7 +30,7 @@ import me.tbsten.katachi.ExperimentalKatachiApi
 public sealed interface TemplateDescription
 
 /**
- * Every `.template { }` declared, in declaration order.
+ * Every `.template { }` and `.templateSet { }` declared, in declaration order.
  *
  * ## Example 1: the specifiers of every template
  * ```kt
@@ -45,6 +48,8 @@ public sealed interface TemplateDescription
 public class TemplateList internal constructor(
     /** One entry per declared template. Empty when no declaration has one. */
     public val templates: List<TemplateSummary>,
+    /** One entry per declared `"name".templateSet { }`, in declaration order. Empty when there is none. */
+    public val templateSets: List<TemplateSetSummary> = emptyList(),
 ) : TemplateDescription {
     /** `<n> templates`, the count alone. */
     override fun toString(): String =

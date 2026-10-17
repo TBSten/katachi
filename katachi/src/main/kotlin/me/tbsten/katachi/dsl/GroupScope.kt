@@ -1,10 +1,12 @@
 package me.tbsten.katachi.dsl
 
 import me.tbsten.katachi.dsl.internal.DeclaredNames
+import me.tbsten.katachi.dsl.internal.TemplateSetDeclaration
 import me.tbsten.katachi.dsl.internal.MetadataBuilder
 import me.tbsten.katachi.dsl.internal.captureDeclarationSite
 import me.tbsten.katachi.dsl.internal.declareGroup
 import me.tbsten.katachi.dsl.internal.declareRole
+import me.tbsten.katachi.dsl.internal.declareTemplateSet
 import org.intellij.lang.annotations.Language
 
 /**
@@ -115,6 +117,7 @@ internal class GroupScopeImpl(private val path: List<String>) : GroupScope {
 
     val groups = mutableListOf<Group>()
     val roles = mutableListOf<Role>()
+    val templateSets = mutableListOf<TemplateSetDeclaration>()
 
     // One namespace for groups and roles alike, the same as the root of `architecture { }`.
     // `"x".group { "domain".group { }; "domain".role { } }` gives both the qualified name
@@ -153,6 +156,10 @@ internal class GroupScopeImpl(private val path: List<String>) : GroupScope {
         declareRoleAt(name = this, declaredAt = captureDeclarationSite(), block = block)
     }
 
+    override fun String.templateSet(block: TemplateSetScope.() -> Unit) {
+        declareTemplateSetAt(name = this, declaredAt = captureDeclarationSite(), block = block)
+    }
+
     /** Declares a group with a site taken earlier, for a block that defers its declarations. */
     fun declareGroupAt(name: String, declaredAt: DeclarationSite, block: GroupScope.() -> Unit) {
         groups += declareGroup(
@@ -167,6 +174,17 @@ internal class GroupScopeImpl(private val path: List<String>) : GroupScope {
     /** Declares a role with a site taken earlier, for a block that defers its declarations. */
     fun declareRoleAt(name: String, declaredAt: DeclarationSite, block: RoleScope.() -> Unit) {
         roles += declareRole(
+            name = name,
+            groupPath = path,
+            declaredAt = declaredAt,
+            declaredNames = declaredNames,
+            block = block,
+        )
+    }
+
+    /** Declares a template set with a site taken earlier, for a block that defers its declarations. */
+    fun declareTemplateSetAt(name: String, declaredAt: DeclarationSite, block: TemplateSetScope.() -> Unit) {
+        templateSets += declareTemplateSet(
             name = name,
             groupPath = path,
             declaredAt = declaredAt,

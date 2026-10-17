@@ -130,8 +130,20 @@ internal fun Architecture.evaluateLayout(
         byRole[role] = reusable[role]?.takeUnless { it.readsModuleList } ?: role.evaluateLayout(moduleIndex)
     }
     val evaluated = byRole.values
+    val entries = evaluated.flatMap { it.entries }
+    if (allTemplateSets.isNotEmpty()) {
+        // A member is checked against what the definition declares, not against which modules
+        // this project has: a role under a wildcard module key expands to none of them in a
+        // project that has no such module yet, and a set naming its template would then be
+        // refused for the project's state rather than for a mistake in the definition.
+        val unresolved = ModuleIndex.unresolved(moduleIndex.resolver)
+        val declared = byRole.flatMap { (role, evaluation) ->
+            if (evaluation.readsModuleList && !moduleIndex.keepsWildcardKeys) role.evaluateLayout(unresolved).entries else evaluation.entries
+        }
+        requireTemplateSetMembersResolve(allTemplateSets, declared)
+    }
     return LayoutEvaluation(
-        entries = evaluated.flatMap { it.entries },
+        entries = entries,
         fileConstraints = evaluated.flatMap { it.fileConstraints },
         resolver = moduleIndex.resolver,
         readsModuleList = evaluated.any { it.readsModuleList },

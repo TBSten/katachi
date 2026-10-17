@@ -1,5 +1,7 @@
 package me.tbsten.katachi.dsl
 
+import me.tbsten.katachi.ExperimentalKatachiApi
+
 /**
  * Anything that can hold declarations: the root of `architecture { }`, and a group inside it.
  *
@@ -101,6 +103,33 @@ public sealed interface DeclarationContainerScope : MetadataScope {
      * @featured
      */
     public fun String.role(block: RoleScope.() -> Unit)
+
+    /**
+     * Declares a template set: several templates gathered under one name, generated together by
+     * one `--arg template=<name>`. See [TemplateSetScope].
+     *
+     * The name shares one namespace with the groups and roles declared beside it, and is written
+     * in full as a role's is: `feature.NewFeature` inside the group `feature`, `NewFeature` at the
+     * root.
+     *
+     * ## Example 1: declare a template set beside the roles it gathers
+     * ```kt
+     * val arch = architecture {
+     *     "feature".group {
+     *         "FeatureScreen".role {
+     *             layout { "screen" / "FeatureScreen".ktFile().template { "// screen" } }
+     *         }
+     *         "NewFeature".templateSet {
+     *             template("feature.FeatureScreen")
+     *         }
+     *     }
+     * }
+     * ```
+     *
+     * @see TemplateSetScope
+     */
+    @ExperimentalKatachiApi
+    public fun String.templateSet(block: TemplateSetScope.() -> Unit)
 
     /**
      * The former spelling of a role declaration, `"UseCase" { }`. Write `"UseCase".role { }`.

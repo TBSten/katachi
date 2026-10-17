@@ -8,6 +8,8 @@ import me.tbsten.katachi.template.TemplateFilePreview
 import me.tbsten.katachi.template.TemplateList
 import me.tbsten.katachi.template.TemplateParameterKind
 import me.tbsten.katachi.template.TemplateParameterPreview
+import me.tbsten.katachi.template.TemplateSetDetail
+import me.tbsten.katachi.template.TemplateSetSummary
 
 /**
  * [list] as the lines `katachiTemplates` prints: one line per template, then how to go further.
@@ -16,10 +18,15 @@ import me.tbsten.katachi.template.TemplateParameterPreview
  * key: a multi-line message would lose the prefix after its first line.
  */
 internal fun templateListLines(list: TemplateList): List<String> = buildList {
-    if (list.templates.isEmpty()) {
+    if (list.templates.isEmpty() && list.templateSets.isEmpty()) {
         add("No declaration attaches a template { }.")
         return@buildList
     }
+    if (list.templates.isNotEmpty()) addAll(templateLines(list))
+    if (list.templateSets.isNotEmpty()) addAll(templateSetLines(list.templateSets))
+}
+
+private fun templateLines(list: TemplateList): List<String> = buildList {
     add("${list.templates.size} ${plural(list.templates.size, "template")}:")
     for (template in list.templates) {
         add("- ${headingOf(template.template, template.title)}")
@@ -37,6 +44,47 @@ internal fun templateListLines(list: TemplateList): List<String> = buildList {
         "Show one with `./gradlew katachiTemplates --arg template=<template>`, and generate it " +
             "with `./gradlew katachiTemplate --arg template=<template> --arg <parameter>=<value>`.",
     )
+}
+
+/** The template sets of a list: `Template sets (1):`, then one line each and the members below it. */
+private fun templateSetLines(sets: List<TemplateSetSummary>): List<String> = buildList {
+    add("Template sets (${sets.size}):")
+    for (set in sets) {
+        val title = set.title.takeIf { it != set.name && it != set.templateSet }
+        val parameters = set.parameterNames.joinToString(" ") { "--arg $it" }
+        add(listOfNotNull("  ${set.templateSet}", title, parameters.ifEmpty { null }).joinToString("  "))
+        add("    members: ${set.members.joinToString(", ")}")
+        set.summary?.let { add("    $it") }
+        if (set.conflict) {
+            add("    (the preview failed; see katachiTemplates --arg template=${set.templateSet})")
+        }
+    }
+}
+
+/** [detail] as the lines `katachiTemplates --arg template=<a template set>` prints. */
+internal fun templateSetDetailLines(detail: TemplateSetDetail): List<String> = buildList {
+    add("Template set ${headingOf(detail.templateSet, detail.title)}")
+    detail.summary?.let { add("  $it") }
+
+    add("")
+    if (detail.parameters.isEmpty()) {
+        add("Parameters: none")
+    } else {
+        add("Parameters:")
+        detail.parameters.forEach { add("  ${parameterLine(it)}") }
+    }
+
+    for (member in detail.members) {
+        add("")
+        add("member ${headingOf(member.template, member.title)}")
+        for (arg in member.args) add("  arg ${arg.name} <- ${arg.previewValue}")
+        add("  File (path relative to the project root):")
+        fileLines(member.files.single()).forEach { add("  $it") }
+    }
+
+    add("")
+    add("Run it with, putting the directory or module each <slot> stands for in its place:")
+    add("  ${detail.exampleCommand}")
 }
 
 /** [detail] as the lines `katachiTemplates --arg template=...` prints. */

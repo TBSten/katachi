@@ -4,9 +4,11 @@ import me.tbsten.katachi.ExperimentalKatachiApi
 import me.tbsten.katachi.dsl.internal.DeclaredNames
 import me.tbsten.katachi.dsl.internal.MODULE_RESOLVER_DEPRECATION
 import me.tbsten.katachi.dsl.internal.MetadataBuilder
+import me.tbsten.katachi.dsl.internal.TemplateSetDeclaration
 import me.tbsten.katachi.dsl.internal.captureDeclarationSite
 import me.tbsten.katachi.dsl.internal.declareGroup
 import me.tbsten.katachi.dsl.internal.declareRole
+import me.tbsten.katachi.dsl.internal.declareTemplateSet
 import me.tbsten.katachi.dsl.internal.isValidBaselinePath
 import org.intellij.lang.annotations.Language
 
@@ -134,6 +136,7 @@ internal class ArchitectureScopeImpl : ArchitectureScope {
 
     private val groups = mutableListOf<Group>()
     private val roles = mutableListOf<Role>()
+    private val templateSets = mutableListOf<TemplateSetDeclaration>()
 
     /**
      * One namespace for groups and roles alike, exactly as a group block keeps one.
@@ -189,6 +192,16 @@ internal class ArchitectureScopeImpl : ArchitectureScope {
         )
     }
 
+    override fun String.templateSet(block: TemplateSetScope.() -> Unit) {
+        templateSets += declareTemplateSet(
+            name = this,
+            groupPath = emptyList(),
+            declaredAt = captureDeclarationSite(),
+            declaredNames = declaredNames,
+            block = block,
+        )
+    }
+
     @Suppress("DEPRECATION")
     fun build(declaredAt: DeclarationSite = DeclarationSite.Unknown): Architecture = Architecture(
         groups = groups.toList(),
@@ -198,5 +211,6 @@ internal class ArchitectureScopeImpl : ArchitectureScope {
         metadata = metadata.build(),
         baseline = baseline,
         declaredAt = declaredAt,
+        templateSets = templateSets.toList(),
     )
 }

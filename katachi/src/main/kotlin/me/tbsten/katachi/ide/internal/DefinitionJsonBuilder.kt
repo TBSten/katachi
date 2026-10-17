@@ -232,16 +232,25 @@ private fun constraintJsonOf(
     )
 }
 
-/** One problem per template that is listed but has no detail, since its preview failed. */
+/** One problem per template or template set that is listed but has no detail, since its preview failed. */
 private fun templatePreviewProblemsOf(templates: TemplateDescriptionJson): List<DefinitionProblemJson> {
     val previewed = templates.details.mapTo(HashSet()) { it.template }
-    return templates.templates.filterNot { it.template in previewed }.map { summary ->
+    val previewedSets = templates.templateSetDetails.mapTo(HashSet()) { it.templateSet }
+    val templateProblems = templates.templates.filterNot { it.template in previewed }.map { summary ->
         DefinitionProblemJson(
             kind = DefinitionProblemKind.TemplatePreviewFailed,
             message = "The template could not be previewed, so it has no detail; katachiTemplates --arg template= says why.",
             detail = summary.template,
         )
     }
+    val setProblems = templates.templateSets.filterNot { it.templateSet in previewedSets }.map { summary ->
+        DefinitionProblemJson(
+            kind = DefinitionProblemKind.TemplateSetPreviewFailed,
+            message = "The template set could not be previewed, so it has no detail; katachiTemplates --arg template= says why.",
+            detail = summary.templateSet,
+        )
+    }
+    return templateProblems + setProblems
 }
 
 /** [site] as the JSON writes it: `null` for a site that could not be captured. */
