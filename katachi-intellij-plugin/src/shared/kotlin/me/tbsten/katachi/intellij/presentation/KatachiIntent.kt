@@ -30,6 +30,19 @@ internal sealed interface KatachiIntent {
      */
     data class RevealTemplate(val templateId: TemplateId) : KatachiIntent
 
+    /**
+     * New › katachi › a template set: [RevealTemplate] for [templateId], and the row is checked and open, with [seeds]
+     * (the values the chosen directory decided, by the set's parameter names) in the fields that are still empty: what
+     * the user already typed is kept (`revealAndSeed`). A row that is not in the list yet is only highlighted.
+     */
+    data class RevealAndSeed(val templateId: TemplateId, val seeds: Map<String, String>) : KatachiIntent
+
+    /**
+     * Find Action's "katachi: Generate from Template" opened the tool window: put the cursor in the search field (T-3).
+     * Works before the list is loaded and before the tool window exists, like [RevealTemplate].
+     */
+    data object FocusSearch : KatachiIntent
+
     /** A Gradle sync finished: detect again when nothing was found before (E-03). */
     data object SyncCompleted : KatachiIntent
 
@@ -76,6 +89,9 @@ internal sealed interface KatachiIntent {
 
     data object DismissDefinitionChanged : KatachiIntent
 
+    /** ✕ of the band that says the gutter needs katachi 0.3 (T-8). */
+    data object DismissTooOld : KatachiIntent
+
     /**
      * The disabled-reason line was pressed: open [field]'s row, even outside the search (E-13, E-16).
      * The UI moves the focus itself.
@@ -100,6 +116,9 @@ internal sealed interface KatachiIntent {
     data class ShowCause(val templateId: TemplateId) : KatachiIntent
 
     data class CopyCommand(val templateId: TemplateId) : KatachiIntent
+
+    /** ⋯ › Open Definition: opens where the row's Role was declared (T-10). */
+    data class OpenDefinition(val templateId: TemplateId) : KatachiIntent
 }
 
 /** Documentation pages the empty states link to. */

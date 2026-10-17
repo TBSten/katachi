@@ -22,6 +22,9 @@ internal class FakeEntryEffects : EntryEffects {
     val dialogs: MutableList<GenerateDialogRequest> = Collections.synchronizedList(mutableListOf())
     val revealed: MutableList<TemplateId> = Collections.synchronizedList(mutableListOf())
 
+    /** The template sets the New menu asked to show, with the values the directory decided. */
+    val revealedWithSeeds: MutableList<Pair<TemplateId, Map<String, String>>> = Collections.synchronizedList(mutableListOf())
+
     override fun openGenerateDialog(request: GenerateDialogRequest) {
         log += "dialog"
         dialogs += request
@@ -34,6 +37,11 @@ internal class FakeEntryEffects : EntryEffects {
     override fun revealTemplateInToolWindow(template: TemplateId) {
         log += "reveal"
         revealed += template
+    }
+
+    override fun revealInToolWindow(template: TemplateId, seeds: Map<String, String>) {
+        log += "revealSet"
+        revealedWithSeeds += template to seeds
     }
 }
 

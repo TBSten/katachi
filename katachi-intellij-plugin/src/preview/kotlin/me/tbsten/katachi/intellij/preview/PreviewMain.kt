@@ -15,6 +15,7 @@ import me.tbsten.katachi.intellij.presentation.EnglishKatachiStrings
 import me.tbsten.katachi.intellij.presentation.JapaneseKatachiStrings
 import me.tbsten.katachi.intellij.presentation.KatachiStrings
 import me.tbsten.katachi.intellij.presentation.uiStateOf
+import me.tbsten.katachi.intellij.ui.KatachiTestTags
 import me.tbsten.katachi.intellij.ui.KatachiToolWindowContent
 import me.tbsten.katachi.intellij.ui.LocalStaticRendering
 import org.jetbrains.jewel.foundation.theme.JewelTheme
@@ -35,7 +36,7 @@ import kotlin.system.exitProcess
  */
 
 /** Every state of the screen spec (PreviewScenarios.kt), each docked narrow and wide. */
-private val scenarios: List<Scenario> = statusScenarios + listScenarios + generationScenarios + longScenario + revealScenarios
+private val scenarios: List<Scenario> = statusScenarios + listScenarios + generationScenarios + longScenario + revealScenarios + reviewScenarios + setScenarios
 
 /** One PNG per scenario × layout × language × theme. */
 private data class Render(val scenario: Scenario, val layout: String, val width: Int, val height: Int)
@@ -151,7 +152,18 @@ private fun renderScenario(render: Render, strings: KatachiStrings, dark: Boolea
         }
     }
     try {
-        val image = scene.render()
+        var now = 0L
+        fun frame() = scene.render(now.also { now += FRAME_NANOS })
+        val open = render.scenario.open
+        if (open != null) {
+            repeat(3) { frame() }
+            when (open) {
+                is ScenarioOpen.Candidates -> clickPart(scene, KatachiTestTags.field(open.field), atChevron = true)
+                is ScenarioOpen.RowMenu -> clickPart(scene, KatachiTestTags.moreMenu(open.template))
+            }
+            repeat(3) { frame() }
+        }
+        val image = frame()
         out.writeBytes(image.encodeToData(EncodedImageFormat.PNG)!!.bytes)
         return PreviewChecks.fontProblems(drawnTextsOf(scene), PreviewFonts::covers).map { "${out.name}: $it" }
     } finally {

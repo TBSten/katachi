@@ -67,6 +67,14 @@ internal class EntryEffectsImpl(
             activateToolWindow(project)
         }.onFailure { notify(KatachiBundle.message("entry.revealFailed", it.message.orEmpty())) }
     }
+
+    /** [revealTemplateInToolWindow] that also checks and opens the row and fills its empty fields from [seeds] (`RevealAndSeed`). */
+    override fun revealInToolWindow(template: TemplateId, seeds: Map<String, String>) {
+        sdkCall("show ${template.template} in the katachi tool window") {
+            KatachiProjectService.getInstance(project).viewModel.dispatch(KatachiIntent.RevealAndSeed(template, seeds))
+            activateToolWindow(project)
+        }.onFailure { notify(KatachiBundle.message("entry.revealFailed", it.message.orEmpty())) }
+    }
 }
 
 /** Shows and focuses the `katachi` tool window, creating its content the first time. */

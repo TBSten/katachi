@@ -4,6 +4,7 @@ import me.tbsten.katachi.intellij.model.DescriptionSnapshot
 import me.tbsten.katachi.intellij.model.GradleFailure
 import me.tbsten.katachi.intellij.model.KatachiModule
 import me.tbsten.katachi.intellij.model.LoadFailure
+import me.tbsten.katachi.intellij.model.TemplateId
 import me.tbsten.katachi.intellij.model.TemplateModel
 import me.tbsten.katachi.intellij.presentation.CauseState
 import me.tbsten.katachi.intellij.presentation.DetailsKey
@@ -26,7 +27,18 @@ internal data class Scenario(
     val state: KatachiScreenState,
     val narrowHeight: Int = 640,
     val wideHeight: Int = 420,
+    /** A part pressed open before drawing: a candidate popup or a row's `⋯` menu. */
+    val open: ScenarioOpen? = null,
 )
+
+/** What a [Scenario] presses before it is drawn, to show a popup that is open. */
+internal sealed interface ScenarioOpen {
+    /** The popup of the candidate field [field] (pressed at its chevron). */
+    data class Candidates(val field: FieldId) : ScenarioOpen
+
+    /** The `⋯` menu of the row [template]. */
+    data class RowMenu(val template: TemplateId) : ScenarioOpen
+}
 
 internal const val NARROW_WIDTH = 300
 internal const val WIDE_WIDTH = 900

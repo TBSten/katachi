@@ -30,8 +30,13 @@ internal data class DialogCore(
     val inputs: Map<String, String> get() = form.inputsOf(selectedId)
 }
 
-/** The templates a dialog can offer: a form needs the details, so a template that did not preview is left out. */
-internal fun usableTemplatesOf(templates: List<ModuleTemplate>): List<ModuleTemplate> = templates.filter { it.template.isAvailable }
+/**
+ * The templates a dialog can offer: a form needs the details, so a template that did not preview is left out.
+ * A template set is left out too: the dialog generates one file, and a set is picked in the tool window
+ * (template-set design 8.4).
+ */
+internal fun usableTemplatesOf(templates: List<ModuleTemplate>): List<ModuleTemplate> =
+    templates.filter { it.template.isAvailable && it.template.set == null }
 
 /**
  * The dialog as it opens: [initial] selected with its [seeds] as the initial values; its definition

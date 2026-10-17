@@ -36,4 +36,10 @@ internal abstract class MessageGenerateDialogStrings : GenerateDialogStrings {
     override fun captureModuleHint(name: String, markedPattern: String) = message("dialog.field.captureModuleHint", name, markedPattern)
     override fun collapsedField(name: String, controller: String, value: String) = message("dialog.field.collapsed", name, controller, value)
     override fun generateRefused(reason: String) = message("dialog.generateRefused", reason)
+
+    // ---- L-S: ide-review-screens ----
+    override fun newDirectoryNote(path: String) = message("dialog.field.newDirectory", path)
+    override fun moreCandidates(count: Int) = message("dialog.field.moreCandidates", count)
+    override val multilineOn get() = message("dialog.field.multilineOn")
+    override val multilineOff get() = message("dialog.field.multilineOff")
 }

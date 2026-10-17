@@ -98,15 +98,15 @@ class ReloadScenarioTest {
         s.fillRepository()
         s.generate()
         s.dispatch(KatachiIntent.DefinitionChanged)
-        assertEquals(listOf("定義が変わりました。"), s.ui().banners.map { it.text })
+        assertEquals(listOf("定義が変わりました。"), s.bandsOfThisScenario().map { it.text })
 
         s.dispatch(KatachiIntent.ContinueGenerating)
-        assertEquals(1, s.ui().banners.size)
+        assertEquals(1, s.bandsOfThisScenario().size)
         s.reload(base)
-        assertTrue(s.ui().banners.isEmpty())
+        assertTrue(s.bandsOfThisScenario().isEmpty())
         s.input(s.repository, "name", "Order")
         s.generate()
-        assertTrue(s.ui().banners.isEmpty())
+        assertTrue(s.bandsOfThisScenario().isEmpty())
     }
 
     @Test
@@ -203,4 +203,7 @@ class ReloadScenarioTest {
         assertTrue(s.row(broken).body is RowBodyUi.Form)
         assertNull(s.state.view.causes[broken])
     }
+
+    /** The fixture module is katachi 0.2.x, so the list always carries T-8's band; this scenario is about the others. */
+    private fun ScenarioHarness.bandsOfThisScenario() = ui().banners.filterNot { it.dismiss == KatachiIntent.DismissTooOld }
 }

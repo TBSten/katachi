@@ -62,6 +62,8 @@ private fun nodesAt(entries: List<Entry>, depth: Int): List<NewMenuNode> {
         val (isGroup, name) = key
         when {
             isGroup -> NewMenuNode.Group(name, nodesAt(members, depth + 1))
+            // A template set is its own item, named by its title: its first member's remaining path says little of the set.
+            members.size == 1 && members.single().match.isSet -> members.single().match.let { NewMenuNode.Template(it, it.template.template.title) }
             // A role with one template is itself the item; its remaining path follows the name (issue 1).
             members.size == 1 -> NewMenuNode.Template(members.single().match, labelOf(name, members.single().match))
             else -> NewMenuNode.Role(name, members.map { NewMenuNode.Template(it.match, labelOf(it.match.template.template.title, it.match)) })

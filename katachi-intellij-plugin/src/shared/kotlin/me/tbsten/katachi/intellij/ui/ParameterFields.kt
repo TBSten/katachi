@@ -71,6 +71,9 @@ internal interface ParameterFieldCallbacks {
     fun onToggleMultiline(field: FieldId)
 
     fun onRelink(field: FieldId)
+
+    /** Enter in a field that takes the key for itself (a capture's candidate field) with nothing to pick: the screen generates if it can. */
+    fun onSubmit(field: FieldId) = Unit
 }
 
 /**
@@ -92,6 +95,7 @@ internal fun ParameterField(field: FieldUi, labelWidth: Dp?, callbacks: Paramete
     val focusModifier = fieldModifier.testTag(KatachiTestTags.field(field.id))
     val below: @Composable () -> Unit = {
         (field as? FieldUi.Text)?.hint?.let { Text(it, color = faintText, modifier = Modifier.testTag(KatachiTestTags.hint(field.id))) }
+        (field as? FieldUi.Text)?.suggestions?.newDirectoryNote?.let { Text(it, color = faintText, modifier = Modifier.testTag(KatachiTestTags.newDirectoryNote(field.id))) }
         errorOf(field)?.let { Text(it, color = errorText) }
     }
     // A name longer than the label column goes above its field rather than being cut.
@@ -153,7 +157,9 @@ private fun TextInput(field: FieldUi.Text, focusModifier: Modifier, callbacks: P
     val outline = if (field.error != null) Outline.Error else Outline.None
     val placeholder: (@Composable () -> Unit)? = field.placeholder?.let { text -> { Text(text, color = faintText, maxLines = 1) } }
     Row(verticalAlignment = Alignment.Top) {
-        if (field.isMultiline == true) {
+        if (field.suggestions != null) {
+            CandidateField(field.id, state, field.suggestions, focusModifier.weight(1f), outline, onSubmit = { callbacks.onSubmit(field.id) })
+        } else if (field.isMultiline == true) {
             // Jewel's TextArea scrolls inside itself and fails when measured with an unbounded
             // height, so it always gets an upper bound; longer text scrolls within the area.
             TextArea(state = state, modifier = focusModifier.weight(1f).heightIn(min = 56.dp, max = MultilineMaxHeight), outline = outline, placeholder = placeholder)

@@ -97,6 +97,8 @@ internal data class KatachiScreenState(
     val searchQuery: String = "",
     val generation: GenerationState? = null,
     val view: ViewState = ViewState(),
+    /** The directory names offered per capture field, read from the project (design 3.5); a field without an entry is a plain input. */
+    val captureCandidates: Map<FieldId, CandidateList> = emptyMap(),
 ) {
     val rows: List<ModuleTemplate> get() = templatesOf(snapshots)
 

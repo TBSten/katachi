@@ -49,4 +49,7 @@ private fun toolWindowFieldCallbacks(onIntent: (KatachiIntent) -> Unit) = object
     override fun onToggleMultiline(field: FieldId) = onIntent(KatachiIntent.ToggleMultiline(field))
 
     override fun onRelink(field: FieldId) = onIntent(KatachiIntent.Relink(field))
+
+    // A plain Enter does nothing in any field of the tool window (Cmd+Enter generates), the candidate fields included:
+    // pressing Enter to confirm a value must not start the generation of every checked row. `onSubmit` stays its default.
 }

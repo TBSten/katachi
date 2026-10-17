@@ -1,5 +1,6 @@
 package me.tbsten.katachi.intellij.ui
 
+import me.tbsten.katachi.intellij.model.ModuleId
 import me.tbsten.katachi.intellij.model.TemplateId
 import me.tbsten.katachi.intellij.presentation.FieldId
 
@@ -25,11 +26,31 @@ internal object KatachiTestTags {
     const val DIALOG_LIST_NOTICE: String = "katachi.dialog.listNotice"
     const val DIALOG_REFUSAL: String = "katachi.dialog.refusal"
 
+    /** A definition module's band in the list (not its pinned copy). */
+    fun moduleBand(moduleId: ModuleId): String = "katachi.band:${moduleId.linkedRootPath}:${moduleId.gradlePath}"
+
     fun check(id: TemplateId): String = "katachi.check:${id.module.gradlePath}:${id.template}"
+
+    /** The ⋯ button of a row (the menu with "Open Definition"). */
+    fun moreMenu(id: TemplateId): String = "katachi.more:${id.module.gradlePath}:${id.template}"
 
     fun field(id: FieldId): String = "katachi.field:${id.templateId.module.gradlePath}:${id.templateId.template}:${id.parameterName}"
 
     fun hint(id: FieldId): String = "katachi.hint:${id.templateId.module.gradlePath}:${id.templateId.template}:${id.parameterName}"
 
     fun multiline(id: FieldId): String = "katachi.multiline:${id.templateId.module.gradlePath}:${id.templateId.template}:${id.parameterName}"
+
+    /** One candidate row of a capture field's popup, its "{n} more" line, and the note under it for a value that is no directory. */
+    fun candidate(id: FieldId, value: String): String = "katachi.candidate:${keyOf(id)}:$value"
+
+    fun candidateMore(id: FieldId): String = "katachi.candidateMore:${keyOf(id)}"
+
+    fun newDirectoryNote(id: FieldId): String = "katachi.newDirectory:${keyOf(id)}"
+
+    /** The "set" badge and the member line of a template set's row. */
+    fun setBadge(id: TemplateId): String = "katachi.setBadge:${id.module.gradlePath}:${id.template}"
+
+    fun setMembers(id: TemplateId): String = "katachi.setMembers:${id.module.gradlePath}:${id.template}"
+
+    private fun keyOf(id: FieldId): String = "${id.templateId.module.gradlePath}:${id.templateId.template}:${id.parameterName}"
 }

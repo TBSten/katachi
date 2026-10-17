@@ -1,5 +1,6 @@
 package me.tbsten.katachi.intellij.presentation
 
+import me.tbsten.katachi.intellij.model.ModuleId
 import me.tbsten.katachi.intellij.model.TemplateId
 
 /*
@@ -11,6 +12,9 @@ import me.tbsten.katachi.intellij.model.TemplateId
 /** Something in the list that can hold the focus. */
 internal sealed interface FocusTarget {
     data object Search : FocusTarget
+
+    /** The band of a definition module (two or more modules only, T-5). */
+    data class ModuleHeader(val moduleId: ModuleId) : FocusTarget
 
     data class Row(val id: TemplateId) : FocusTarget
 
@@ -58,6 +62,15 @@ internal data class NavResult(val intent: KatachiIntent? = null, val focus: Focu
 /** The rows of [list] in order: the targets ↑ ↓ move between. */
 internal fun rowsOf(list: ListUi): List<TemplateRowUi> = list.items.mapNotNull { (it as? ListItemUi.Row)?.row }
 
+/** What ↑ ↓ visit in [list], in order: module bands and rows (group headers are not focusable). */
+internal fun stopsOf(list: ListUi): List<FocusTarget> = list.items.mapNotNull { item ->
+    when (item) {
+        is ListItemUi.ModuleHeader -> FocusTarget.ModuleHeader(item.moduleId)
+        is ListItemUi.Row -> FocusTarget.Row(item.row.id)
+        is ListItemUi.GroupHeader -> null
+    }
+}
+
 /** [field] of [form] to focus first: the first required one still empty, else the first editable one. */
 internal fun firstEmptyRequiredOf(form: FormUi): FieldId? {
     val editable = form.fields.filter { it !is FieldUi.Collapsed }
@@ -78,15 +91,23 @@ internal fun navigate(list: ListUi, current: FocusTarget, key: NavKey): NavResul
         return if (footer is FooterUi.Form && footer.generateEnabled) NavResult(intent = KatachiIntent.Generate) else NavResult()
     }
     val rows = rowsOf(list)
+    val stops = stopsOf(list)
     return when (current) {
         FocusTarget.Search -> when (key) {
-            NavKey.Down -> rows.firstOrNull()?.let { NavResult(focus = FocusMove.To(FocusTarget.Row(it.id))) } ?: NavResult()
+            NavKey.Down -> stops.firstOrNull()?.let { NavResult(focus = FocusMove.To(it)) } ?: NavResult()
+            // Like the IDE's search fields: Esc clears the text, and does nothing when there is none (T-4).
+            NavKey.Escape -> if (list.search.query.isNotEmpty()) NavResult(intent = KatachiIntent.Search("")) else NavResult()
             else -> NavResult()
+        }
+        is FocusTarget.ModuleHeader -> {
+            val header = list.items.firstOrNull { it is ListItemUi.ModuleHeader && it.moduleId == current.moduleId } as? ListItemUi.ModuleHeader
+                ?: return NavResult()
+            onModuleHeader(header, stops.indexOf(current), stops, key)
         }
         is FocusTarget.Row -> {
             val index = rows.indexOfFirst { it.id == current.id }
             val row = rows.getOrNull(index) ?: return NavResult()
-            onRow(row, index, rows, key, list.search.query)
+            onRow(row, stops.indexOf(current), stops, key, list.search.query)
         }
         is FocusTarget.Field -> when (key) {
             NavKey.Escape -> NavResult(focus = FocusMove.To(FocusTarget.Row(current.id.templateId)))
@@ -95,13 +116,31 @@ internal fun navigate(list: ListUi, current: FocusTarget, key: NavKey): NavResul
     }
 }
 
-private fun onRow(row: TemplateRowUi, index: Int, rows: List<TemplateRowUi>, key: NavKey, query: String): NavResult {
+/** ↑ ↓ step through [stops]; the first stop's ↑ goes to the search field. */
+private fun upDown(index: Int, stops: List<FocusTarget>, key: NavKey): NavResult? = when (key) {
+    NavKey.Up -> NavResult(focus = FocusMove.To(stops.getOrNull(index - 1) ?: FocusTarget.Search))
+    NavKey.Down -> stops.getOrNull(index + 1)?.let { NavResult(focus = FocusMove.To(it)) } ?: NavResult()
+    else -> null
+}
+
+/** T-5: Enter / Space toggle the band, → opens it, ← folds it. */
+private fun onModuleHeader(header: ListItemUi.ModuleHeader, index: Int, stops: List<FocusTarget>, key: NavKey): NavResult {
+    upDown(index, stops, key)?.let { return it }
+    val toggle = NavResult(intent = KatachiIntent.ToggleModule(header.moduleId))
+    return when (key) {
+        NavKey.Enter, NavKey.Space -> toggle
+        NavKey.Right -> if (header.isCollapsed) toggle else NavResult()
+        NavKey.Left -> if (header.isCollapsed) NavResult() else toggle
+        else -> NavResult()
+    }
+}
+
+private fun onRow(row: TemplateRowUi, index: Int, stops: List<FocusTarget>, key: NavKey, query: String): NavResult {
+    upDown(index, stops, key)?.let { return it }
     val check = row.lead as? RowLeadUi.Check
     val checked = check?.checked == true
     val checkable = check?.enabled == true
     return when (key) {
-        NavKey.Up -> NavResult(focus = FocusMove.To(rows.getOrNull(index - 1)?.let { FocusTarget.Row(it.id) } ?: FocusTarget.Search))
-        NavKey.Down -> rows.getOrNull(index + 1)?.let { NavResult(focus = FocusMove.To(FocusTarget.Row(it.id))) } ?: NavResult()
         NavKey.Space -> if (checkable) NavResult(intent = KatachiIntent.ToggleCheck(row.id)) else NavResult()
         NavKey.Enter -> when {
             checked && row.isExpanded == false ->
@@ -113,6 +152,6 @@ private fun onRow(row: TemplateRowUi, index: Int, rows: List<TemplateRowUi>, key
         NavKey.Right -> if (checked && row.isExpanded == false) NavResult(intent = KatachiIntent.SetExpanded(row.id, expanded = true)) else NavResult()
         NavKey.Left -> if (checked && row.isExpanded == true) NavResult(intent = KatachiIntent.SetExpanded(row.id, expanded = false)) else NavResult()
         is NavKey.Type -> NavResult(KatachiIntent.Search(query + key.text), FocusMove.To(FocusTarget.Search))
-        NavKey.Escape, NavKey.Generate -> NavResult()
+        NavKey.Up, NavKey.Down, NavKey.Escape, NavKey.Generate -> NavResult()
     }
 }

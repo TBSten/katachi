@@ -50,7 +50,7 @@ class DialogPropertyTest {
         }
         println("[pbt] dialog synthetic: reached=$reached (seed=$seed)")
         // The scenarios must have gone through the rare transitions, or the checks above prove little.
-        for (key in listOf("op SelectTemplate", "op SelectDefinition", "op Type", "op Shrink", "op ExternalWrite", "op Cancel", "template replaced", "no candidates", "two definitions", "one candidate", "notice WillCreate", "notice CannotOverwrite", "notice WillOverwriteEmpty", "notice DecidedByKatachi", "collapsed", "generate requested", "generate refused", "captures only", "many fields")) {
+        for (key in listOf("op SelectTemplate", "op SelectDefinition", "op Type", "op Shrink", "op ExternalWrite", "op Cancel", "template replaced", "no candidates", "two definitions", "one candidate", "notice WillCreate", "notice CannotOverwrite", "notice WillOverwriteEmpty", "notice DecidedByKatachi", "collapsed", "generate requested", "generate refused", "captures only", "many fields", "candidates shown", "new-directory note shown", "candidate picked", "disk: directory added", "disk: directory removed")) {
             assertTrue("never reached '$key': $reached", (reached[key] ?: 0) > 0)
         }
     }

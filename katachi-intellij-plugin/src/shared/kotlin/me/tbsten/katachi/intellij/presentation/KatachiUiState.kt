@@ -78,7 +78,13 @@ internal data class ListUi(
     val footer: FooterUi,
 )
 
-internal data class SearchUi(val query: String, val placeholder: String, val enabled: Boolean)
+internal data class SearchUi(
+    val query: String,
+    val placeholder: String,
+    val enabled: Boolean,
+    /** [ViewState.focusRequest]: the field takes the focus once per new number. */
+    val focusRequest: Int = 0,
+)
 
 /** One entry of the list. [key] is stable across states, so a row keeps its remembered UI state. */
 internal sealed interface ListItemUi {
@@ -138,7 +144,16 @@ internal data class TemplateRowUi(
      * The row scrolls into view once per number.
      */
     val highlight: Int? = null,
+    /** What marks the row as a template set (badge and member line); `null` for a template. */
+    val set: SetRowUi? = null,
 )
+
+/**
+ * A template set's row on screen: the badge after the name, and the members' titles joined with `・` as the row's
+ * second line ([memberLine], ellipsized by the row); [memberTooltip] holds all of them. Both are `null` for a set whose
+ * members are not known (no detail): then only the badge shows.
+ */
+internal data class SetRowUi(val badge: String, val memberLine: String? = null, val memberTooltip: String? = null)
 
 internal sealed interface RowBodyUi {
     data class Form(val form: FormUi) : RowBodyUi
@@ -188,6 +203,8 @@ internal sealed interface FieldUi {
         val multilineTooltip: String?,
         /** A faint note under the field; a capture's says where its value goes. */
         val hint: String? = null,
+        /** `null` is the plain text field; a capture with candidates is a combo box (design 3.4). */
+        val suggestions: SuggestionsUi? = null,
     ) : FieldUi
 
     data class Bool(

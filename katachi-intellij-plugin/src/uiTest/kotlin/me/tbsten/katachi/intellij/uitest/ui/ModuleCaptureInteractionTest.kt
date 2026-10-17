@@ -98,7 +98,7 @@ class ModuleCaptureInteractionTest {
         onNodeWithTag(KatachiTestTags.hint(feature)).assertTextIs("モジュール :feature:<feature> の <feature> に入る、既存のモジュール名")
         onNodeWithTag(KatachiTestTags.GENERATE).assertIsNotEnabled()
 
-        onNodeWithTag(KatachiTestTags.field(feature)).performTextInput("home")
+        inputOf(KatachiTestTags.field(feature)).performTextInput("home")
         waitForIdle()
         onNodeWithTag(KatachiTestTags.hint(feature))
             .assertTextIs("生成先 feature/home/src/main/kotlin/com/example/sample/feature/home/component/Home<name>.kt")
@@ -126,20 +126,20 @@ class ModuleCaptureInteractionTest {
         onNodeWithTag(KatachiTestTags.check(component)).performClick()
         waitForIdle()
         onNodeWithTag(KatachiTestTags.field(name)).performTextInput("UserCard")
-        onNodeWithTag(KatachiTestTags.field(feature)).performTextInput("hoem")
+        inputOf(KatachiTestTags.field(feature)).performTextInput("hoem")
         waitForIdle()
 
         onNodeWithText("今あるモジュールから選んでください（home, settings）").assertExists()
         onNodeWithTag(KatachiTestTags.GENERATE).assertIsNotEnabled()
 
-        onNodeWithTag(KatachiTestTags.field(feature)).performTextReplacement("settings")
+        inputOf(KatachiTestTags.field(feature)).performTextReplacement("settings")
         waitForIdle()
         onNodeWithText("今あるモジュールから選んでください（home, settings）").assertDoesNotExist()
         onNodeWithTag(KatachiTestTags.hint(feature))
             .assertTextIs("生成先 feature/settings/src/main/kotlin/com/example/sample/feature/settings/component/SettingsUserCard.kt")
         onNodeWithTag(KatachiTestTags.GENERATE).assertIsEnabled()
 
-        onNodeWithTag(KatachiTestTags.field(feature)).performTextClearance()
+        inputOf(KatachiTestTags.field(feature)).performTextClearance()
         waitForIdle()
         onNodeWithTag(KatachiTestTags.hint(feature)).assertTextIs("モジュール :feature:<feature> の <feature> に入る、既存のモジュール名")
         onNodeWithTag(KatachiTestTags.GENERATE).assertIsNotEnabled()

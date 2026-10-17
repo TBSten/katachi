@@ -49,4 +49,24 @@ class DialogTargetPathTest {
         assertNull(target.absolute)
         assertEquals(true, target.derivedUndecided)
     }
+
+    @Test
+    fun `表示用のパスは未入力の capture を山かっこで見せ 派生の山かっこはそのまま残す`() {
+        assertEquals("feature/<feature>/<name>Screen.kt", displayTargetPathOf("feature/\${feature}/\${name}Screen.kt"))
+        assertEquals("feature/home/<feature.pascalCase>Screen.kt", displayTargetPathOf("feature/home/<feature.pascalCase>Screen.kt"))
+        assertEquals("a/<x>/<y.camelCase>/<z>.kt", displayTargetPathOf("a/\${x}/<y.camelCase>/\${z}.kt"))
+    }
+
+    @Test
+    fun `表示用のパスは入力済みの値や capture を含まないパスを変えない`() {
+        assertEquals("feature/home/HomeScreen.kt", displayTargetPathOf("feature/home/HomeScreen.kt"))
+        assertEquals("", displayTargetPathOf(""))
+    }
+
+    @Test
+    fun `表示用に変えても生成先の相対パスそのものは dollar 波かっこのまま`() {
+        val target = dialogTargetOf(detail, emptyMap(), seeds = emptyMap(), root = root, origin = root)
+        assertEquals(pattern, target.relativePath)
+        assertEquals("feature/<feature>/<feature.pascalCase>Screen.kt", displayTargetPathOf(target.relativePath))
+    }
 }
