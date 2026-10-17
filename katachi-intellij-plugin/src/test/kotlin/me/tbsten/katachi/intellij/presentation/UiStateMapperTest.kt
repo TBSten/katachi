@@ -218,7 +218,7 @@ class UiStateMapperTest {
         )
         // `ready` is a templates-only (katachi 0.2.x) module, so the last band is T-8's.
         assertEquals(listOf(BannerKind.Error, BannerKind.Info, BannerKind.Warning, BannerKind.Info), list(state).banners.map { it.kind })
-        assertEquals("Repository は無くなりました", list(state).banners[2].text)
+        assertEquals("Repository は定義から無くなりました（チェックを外しました）", list(state).banners[2].text)
         assertEquals(KatachiIntent.DismissTooOld, list(state).banners.last().dismiss)
     }
 

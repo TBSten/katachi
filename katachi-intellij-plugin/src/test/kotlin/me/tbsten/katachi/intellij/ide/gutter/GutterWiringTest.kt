@@ -49,12 +49,12 @@ internal class GutterWiringTest : GutterWiringTestBase() {
         save()
         assertTrue(isStale(redrawn().single()))
         val menu = menu()
-        assertEquals("⟳ Refresh the definition", menu.shown().first())
+        assertEquals("⟳ Reload Definition", menu.shown().first())
 
         // The row is the real katachi.RefreshDefinition: Gradle runs again, and the gutter keeps the previous answer meanwhile.
         val gate = CompletableDeferred<Unit>()
         gradle.loads += LoadAnswer(definitionJson = definitionGeneratedAt(Instant.now().plusSeconds(1)), gate = gate)
-        choose(menu.row("⟳ Refresh the definition"))
+        choose(menu.row("⟳ Reload Definition"))
         val loading = waitState("loading") { it is DefinitionState.Loading } as DefinitionState.Loading
         assertNotNull(loading.previous)
         val whileLoading = redrawn().single()
@@ -70,7 +70,7 @@ internal class GutterWiringTest : GutterWiringTestBase() {
         // No restart from the test: the refresher draws the open file again when the state changed.
         val fresh = redrawnByRefresher().single()
         assertFalse(fresh.tooltip.orEmpty(), isStale(fresh))
-        assertEquals("⟳ Refresh the definition", menu().shown().last())
+        assertEquals("⟳ Reload Definition", menu().shown().last())
     }
 
     fun `test メニューの検査を実行は本物の RunCheck を引き 走っている間は押せず 終わると違反が答えられる`() {

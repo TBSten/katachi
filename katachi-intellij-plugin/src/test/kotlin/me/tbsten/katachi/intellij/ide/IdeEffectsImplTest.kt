@@ -62,7 +62,12 @@ internal class IdeEffectsImplTest : KatachiIdeTestBase() {
         assertEquals(KatachiBundle.message("localHistory.label", "Repository, UseCase"), name)
     }
 
-    fun `test ドキュメントの案内は日本語のページを指す`() {
-        assertEquals("https://tbsten.github.io/katachi/ja/guides/generate-code-from-template/", docsUrlOf(DocsPage.WritingTemplates))
+    fun `test ドキュメントの案内は IDE の言語のページを指す`() {
+        val root = "https://tbsten.github.io/katachi/"
+        assertEquals(root + "ja/guides/generate-code-from-template/", docsUrlOf(DocsPage.WritingTemplates, "ja"))
+        assertEquals(root + "guides/generate-code-from-template/", docsUrlOf(DocsPage.WritingTemplates, "en"))
+        assertEquals(root + "ja/get-started/first-architecture/", docsUrlOf(DocsPage.Install, "ja"))
+        assertEquals(root + "get-started/first-architecture/", docsUrlOf(DocsPage.Update, "en"))
+        assertEquals(docsUrlOf(DocsPage.Install, "en"), docsUrlOf(DocsPage.Install, "fr"))
     }
 }

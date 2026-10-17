@@ -44,7 +44,7 @@ internal class EditorNotificationMemoryService(
     /** The files whose latest decision was "a template fits": closing them counts as shown. */
     private val showingContentNotice: MutableSet<Path> = ConcurrentHashMap.newKeySet()
 
-    private val refresher = EditorNotificationRefresher(project, scope, this, ::dismiss)
+    private val refresher = EditorNotificationRefresher(project, scope, this, ::dismiss, ::forgetDismissed)
 
     init {
         sdkCall("listen to closed editors for the katachi notification") {
@@ -64,6 +64,11 @@ internal class EditorNotificationMemoryService(
 
     /** The memory as of now, for one decision. */
     val current: EditorNotificationMemory get() = memory.get()
+
+    /** [file] was deleted: it no longer counts as closed, so a new file at its path gets its notification. */
+    fun forgetDismissed(file: Path) {
+        memory.updateAndGet { it.forgetDismissed(file) }
+    }
 
     /** × on [file]'s notification, and a file katachi just generated (decision 8). */
     fun dismiss(file: Path) {

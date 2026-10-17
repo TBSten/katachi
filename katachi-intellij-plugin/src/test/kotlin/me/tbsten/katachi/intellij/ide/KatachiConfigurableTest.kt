@@ -1,5 +1,6 @@
 package me.tbsten.katachi.intellij.ide
 
+import com.intellij.ui.TitledSeparator
 import com.intellij.ui.components.JBCheckBox
 import com.intellij.util.ui.UIUtil
 import me.tbsten.katachi.intellij.AnalysisTestBase
@@ -7,6 +8,9 @@ import com.intellij.testFramework.PlatformTestUtil
 import me.tbsten.katachi.intellij.ide.gutter.HighlightingRefresher
 import java.nio.file.Path
 import javax.swing.JComponent
+import javax.swing.JEditorPane
+import javax.swing.JLabel
+import javax.swing.JRadioButton
 
 internal class KatachiConfigurableTest : AnalysisTestBase() {
     private lateinit var configurable: KatachiConfigurable
@@ -58,9 +62,80 @@ internal class KatachiConfigurableTest : AnalysisTestBase() {
         val boxes = UIUtil.findComponentsOfType(panel, JBCheckBox::class.java)
         val text = KatachiBundle.message("settings.rules.noRole")
         assertEquals(1, boxes.count { it.text == text })
-        // Under the notification switches, before "load the templates": it is one of them.
+        // Under the notification switches, in the same group as the master switch: it is one of them.
         val order = boxes.map { it.text }
-        assertTrue(order.toString(), order.indexOf(text) in order.indexOf(onceBox.text) + 1 until order.indexOf(autoLoadBox.text))
+        assertTrue(order.toString(), order.indexOf(text) > order.indexOf(onceBox.text))
+        assertTrue(order.toString(), order.indexOf(enabledBox.text) < order.indexOf(emptyBox.text))
+    }
+
+    fun `test 見出しが定義の読み込み エディタ 生成の順に3つ並ぶ`() {
+        val titles = UIUtil.findComponentsOfType(panel, TitledSeparator::class.java).map { it.text }
+        assertEquals(
+            listOf("settings.group.definition", "settings.group.editor", "settings.group.generation").map(KatachiBundle::message),
+            titles,
+        )
+    }
+
+    /** The page's parts in tree order: a heading by its title, a checkbox or radio by its text. */
+    private fun flatten(c: java.awt.Component): List<String> = buildList {
+        when (c) {
+            is TitledSeparator -> add("# ${c.text}")
+            is JBCheckBox -> add("[x] ${c.text}")
+            is JRadioButton -> add("(o) ${c.text}")
+        }
+        if (c is java.awt.Container) c.components.forEach { addAll(flatten(it)) }
+    }
+
+    fun `test 項目は見出しごとに設計の図のとおりの並びで並ぶ`() {
+        fun m(key: String) = KatachiBundle.message(key)
+        assertEquals(
+            listOf(
+                "# ${m("settings.group.definition")}",
+                "[x] ${m("settings.editorNotification.autoLoad")}",
+                "[x] ${m("settings.autoReload")}",
+                "# ${m("settings.group.editor")}",
+                "[x] ${m("settings.showViolations")}",
+                "[x] ${m("settings.editorNotification.enabled")}",
+                "[x] ${m("settings.editorNotification.empty")}",
+                "[x] ${m("settings.editorNotification.content")}",
+                "[x] ${m("settings.editorNotification.contentOnce")}",
+                "[x] ${m("settings.rules.noRole")}",
+                "# ${m("settings.group.generation")}",
+                "(o) ${m("settings.open.first")}",
+                "(o) ${m("settings.open.all")}",
+                "(o) ${m("settings.open.none")}",
+            ),
+            flatten(panel),
+        )
+    }
+
+    fun `test 定義の読み直しの下に2秒後の説明があり ガターの説明にはリンクが付く`() {
+        val labels = UIUtil.findComponentsOfType(panel, JLabel::class.java).map { it.text.orEmpty() } +
+            UIUtil.findComponentsOfType(panel, JEditorPane::class.java).map { it.text.orEmpty() }
+        // The HTML of a comment is wrapped at its width: compare the words, not the line breaks.
+        val words = labels.map { it.replace(Regex("\\s+"), " ") }
+        assertTrue(labels.toString(), words.any { KatachiBundle.message("settings.autoReload.comment").replace(Regex("\\s+"), " ") in it })
+        assertTrue(labels.toString(), words.any { "</a>" in it })
+    }
+
+    fun `test ガターのリンクを押すと 表示名ではなく設定の ID でページを開く`() {
+        val opened = mutableListOf<String>()
+        configurable.pageOpener = SettingsPageOpener { _, _, pageId -> opened += pageId }
+        val pane = UIUtil.findComponentsOfType(panel, JEditorPane::class.java).single { "</a>" in it.text }
+
+        val link = javax.swing.event.HyperlinkEvent(pane, javax.swing.event.HyperlinkEvent.EventType.ACTIVATED, null, "")
+        pane.hyperlinkListeners.forEach { it.hyperlinkUpdate(link) }
+
+        assertEquals(listOf("editor.preferences.gutterIcons"), opened)
+        assertEquals("editor.preferences.gutterIcons", KatachiConfigurable.GUTTER_ICONS_ID)
+    }
+
+    fun `test 生成後に開くファイルの選択肢が3つ並ぶ`() {
+        val radios = UIUtil.findComponentsOfType(panel, JRadioButton::class.java).map { it.text }
+        assertEquals(
+            listOf("settings.open.first", "settings.open.all", "settings.open.none").map(KatachiBundle::message),
+            radios,
+        )
     }
 
     // covers: 論点14

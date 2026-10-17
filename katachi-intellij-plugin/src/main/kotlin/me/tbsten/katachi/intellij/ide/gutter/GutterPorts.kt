@@ -6,6 +6,7 @@ import com.intellij.openapi.fileEditor.FileDocumentManager
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 import me.tbsten.katachi.intellij.data.placement.PlacementIndexState
+import me.tbsten.katachi.intellij.ide.DefinitionModulePresence
 import me.tbsten.katachi.intellij.ide.KatachiProjectService
 import me.tbsten.katachi.intellij.ide.KatachiSettings
 import me.tbsten.katachi.intellij.ide.definition.DefinitionModelService
@@ -30,7 +31,7 @@ import java.time.Instant
  * ```
  */
 internal class GutterPorts(
-    /** Whether the synced data has a katachi definition module; reads it (kept until the next sync, see [DefinitionModuleCache]), never runs Gradle. */
+    /** Whether the synced data has a katachi definition module; reads it (kept until the next sync, see [DefinitionModulePresence]), never runs Gradle. */
     val hasDefinitionModule: () -> Boolean,
     /** The definition model, created on the first call. `null` while nothing provides one. */
     val definitions: () -> DefinitionModelService?,
@@ -62,7 +63,7 @@ internal class GutterPorts(
 
     companion object {
         fun of(project: Project): GutterPorts = GutterPorts(
-            hasDefinitionModule = { DefinitionModuleCache.getInstance(project).hasDefinitionModule() },
+            hasDefinitionModule = { DefinitionModulePresence.getInstance(project).hasDefinitionModule() },
             // The foundation's services (design 4.5): created on the first call, and only in a project with a definition module.
             definitions = { DefinitionPorts.of(project).service() },
             violations = { DefinitionPorts.of(project).violations() },

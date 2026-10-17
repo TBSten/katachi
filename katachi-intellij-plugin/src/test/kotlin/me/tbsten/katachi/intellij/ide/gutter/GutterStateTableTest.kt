@@ -36,7 +36,7 @@ internal class GutterStateTableTest : AnnotatorTestBase() {
     private val serviceFile = "HealthService.kt"
     private val allowed = "katachi: domain.Service — allowed by class HealthService (ServiceRole.kt:80)"
     private val allowedFirst = "◆ Allowed by class HealthService"
-    private val refreshFirst = "⟳ Refresh the definition"
+    private val refreshFirst = "⟳ Reload Definition"
 
     private val ready get() = DefinitionState.Ready(listOf(snapshot), Freshness.Fresh)
     private fun readyStale(reason: StaleReason) = DefinitionState.Ready(listOf(snapshot), Freshness.Stale(DEFINITION_INSTANT, reason))

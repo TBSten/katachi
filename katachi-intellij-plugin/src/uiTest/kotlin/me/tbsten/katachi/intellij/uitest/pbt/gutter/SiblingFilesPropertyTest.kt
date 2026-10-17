@@ -7,6 +7,7 @@ import io.kotest.property.checkAll
 import io.kotest.property.toPropTestConfig
 import kotlinx.coroutines.runBlocking
 import me.tbsten.katachi.intellij.model.LayoutEntryKind
+import me.tbsten.katachi.intellij.model.LayoutEntryModel
 import me.tbsten.katachi.intellij.presentation.gutter.SiblingFiles
 import me.tbsten.katachi.intellij.testing.layoutEntry
 import org.junit.Assert.assertEquals
@@ -27,26 +28,55 @@ class SiblingFilesPropertyTest {
 
     private val directories = listOf("a", "a/b", "a/b/c", "x", "x/y", "")
 
-    private data class Scenario(val self: String, val entries: List<me.tbsten.katachi.intellij.model.LayoutEntryModel>, val limit: Int, val cutOff: Int)
+    /** [truth] is the number of the role's other files, counted from the full sets before any cut. */
+    private data class Scenario(
+        val self: String,
+        val entries: List<LayoutEntryModel>,
+        val holding: List<LayoutEntryModel>,
+        val limit: Int,
+        val truth: Int,
+    )
 
+    /**
+     * Each entry is made from its full set of files first; a cut entry lists a prefix and counts all. The cut files have names
+     * of their own, so the same file is not cut in two entries. This file is in the full set of some entries, and in a cut entry
+     * at most once (a file cut in two entries is counted twice by the definition task, which the menu cannot undo).
+     */
     private fun scenario(random: Random): Scenario {
         fun file(): String = directories[random.nextInt(directories.size)].let { dir -> (if (dir.isEmpty()) "" else "$dir/") + "F${random.nextInt(30)}.kt" }
         val self = file()
-        var cutOff = 0
+        var selfCutDone = false
+        val holding = mutableListOf<LayoutEntryModel>()
+        val others = linkedSetOf<String>()
         val entries = (0 until random.nextInt(0, 4)).map {
             val kind = LayoutEntryKind.known[random.nextInt(LayoutEntryKind.known.size)]
-            val files = List(random.nextInt(0, 25)) { file() }
+            val holder = kind == LayoutEntryKind.File || kind == LayoutEntryKind.AnyFile
+            val listed = List(random.nextInt(0, 25)) { file() }.filter { it != self }
             val truncated = random.nextInt(4) == 0
-            val entry = layoutEntry("p$it", kind, matchedFiles = files)
-            if (truncated) {
-                val extra = random.nextInt(1, 50)
-                if (kind == LayoutEntryKind.File || kind == LayoutEntryKind.AnyFile) cutOff += extra
-                entry.copy(matchedCount = files.size + extra, truncated = true)
+            val selfHere = random.nextBoolean()
+            if (!truncated) {
+                val files = if (selfHere) listed.toMutableList().also { it.add(random.nextInt(it.size + 1), self) } else listed
+                layoutEntry("p$it", kind, matchedFiles = files).also {
+                    if (holder) {
+                        others += listed
+                        if (selfHere) holding += it
+                    }
+                }
             } else {
-                entry
+                val cutNames = List(random.nextInt(1, 50)) { n -> "cut$it/N$n.kt" }
+                val selfCut = selfHere && !selfCutDone
+                if (selfCut && holder) selfCutDone = true
+                val count = listed.size + cutNames.size + if (selfCut) 1 else 0
+                layoutEntry("p$it", kind, matchedFiles = listed).copy(matchedCount = count, truncated = true).also {
+                    if (holder) {
+                        others += listed
+                        others += cutNames
+                        if (selfCut) holding += it
+                    }
+                }
             }
         }
-        return Scenario(self, entries, limit = random.nextInt(1, 20), cutOff = cutOff)
+        return Scenario(self, entries, holding, limit = random.nextInt(1, 20), truth = others.size)
     }
 
     private fun holders(s: Scenario) = s.entries.filter { it.kind == LayoutEntryKind.File || it.kind == LayoutEntryKind.AnyFile }
@@ -56,14 +86,14 @@ class SiblingFilesPropertyTest {
     fun `載るのは他のファイルだけで 重ならず 上限を超えず 残りは数える`() = runBlocking<Unit> {
         checkAll(config, Arb.long()) { caseSeed ->
             val s = scenario(Random(caseSeed))
-            val result = SiblingFiles.of(s.self, s.entries, s.limit)
+            val result = SiblingFiles.of(s.self, s.entries, s.limit, s.holding)
             val others = holders(s).flatMap { it.matchedFiles }.distinct().filter { it != s.self }
             val where = "seed=$caseSeed $s -> $result"
             assertTrue(where, result.files.size <= s.limit)
             assertEquals(where, result.files.distinct(), result.files)
             assertFalse(where, s.self in result.files)
             assertTrue(where, others.containsAll(result.files))
-            assertEquals(where, others.size + s.cutOff, result.files.size + result.more)
+            assertEquals(where, s.truth, result.files.size + result.more)
         }
     }
 
@@ -72,7 +102,7 @@ class SiblingFilesPropertyTest {
     fun `同じディレクトリのファイルが先で それぞれ見つけた順`() = runBlocking<Unit> {
         checkAll(config, Arb.long()) { caseSeed ->
             val s = scenario(Random(caseSeed))
-            val result = SiblingFiles.of(s.self, s.entries, limit = 1000)
+            val result = SiblingFiles.of(s.self, s.entries, limit = 1000, holding = s.holding)
             val others = holders(s).flatMap { it.matchedFiles }.distinct().filter { it != s.self }
             val directory = SiblingFiles.parentOf(s.self)
             val expected = others.filter { SiblingFiles.parentOf(it) == directory } + others.filter { SiblingFiles.parentOf(it) != directory }

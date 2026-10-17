@@ -15,7 +15,7 @@ internal class EditorNotificationLocaleTest : EditorNotificationTestBase() {
 
         val panel = panelOf(open("feature/a/ui/Home.kt", ""))!!
 
-        assertEquals("You can create this file from a template", panel.text)
+        assertEquals("You can create this file from the template \"feature.AnyUi\"", panel.text)
         assertEquals(listOf("Create"), panel.links.map { it.text })
     }
 
@@ -32,7 +32,7 @@ internal class EditorNotificationLocaleTest : EditorNotificationTestBase() {
 
             val panel = panelOf(open("feature/a/ui/Home.kt", ""))!!
 
-            assertEquals("テンプレートから作れます", panel.text)
+            assertEquals("テンプレート「feature.AnyUi」から作れます", panel.text)
             assertEquals(listOf("作成する"), panel.links.map { it.text })
         } finally {
             localization.setSelectedLocale(before, true)

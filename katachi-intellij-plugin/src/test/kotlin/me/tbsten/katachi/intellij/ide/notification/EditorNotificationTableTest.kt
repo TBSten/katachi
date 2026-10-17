@@ -50,10 +50,10 @@ internal class EditorNotificationTableTest : EditorNotificationTestBase() {
         Row("失敗後の .kt は空なので作成するに戻る", "feature/failed/ui/Home.kt", PROVISIONAL, create, ledger = { t, id ->
             t.service.ledger.markFailed(t.path("feature/failed/ui/Home.kt"), id, COMMAND)
         }),
-        Row("失敗後の .json はコマンドを出す", "config/failed.json", "", Expected("notification.editor.failed", 0, COMMAND), ledger = { t, id ->
+        Row("失敗後の .json はコマンドを出す", "config/failed.json", "", Expected("notification.editor.failed", 1, COMMAND), ledger = { t, id ->
             t.service.ledger.markFailed(t.path("config/failed.json"), id, COMMAND)
         }),
-        Row("失敗後の .json でも中身があれば当たりの通知ではなくコマンド", "config/failed2.json", "{}", Expected("notification.editor.failed", 0, COMMAND), ledger = { t, id ->
+        Row("失敗後の .json でも中身があれば当たりの通知ではなくコマンド", "config/failed2.json", "{}", Expected("notification.editor.failed", 1, COMMAND), ledger = { t, id ->
             t.service.ledger.markFailed(t.path("config/failed2.json"), id, COMMAND)
         }),
         Row("空の .json で当たる", "config/app.json", "", create),
@@ -78,6 +78,8 @@ internal class EditorNotificationTableTest : EditorNotificationTestBase() {
                 val text = when {
                     e.textKey == "notification.editor.failed" ->
                         KatachiBundle.message(e.textKey, KatachiBundle.message("notification.editor.failed.command", e.arg!!))
+                    e.textKey == "notification.editor.empty" -> noticeTextOf("empty", row.file)
+                    e.textKey == "notification.editor.matched" -> noticeTextOf("matched", row.file)
                     e.arg != null -> KatachiBundle.message(e.textKey, e.arg)
                     else -> KatachiBundle.message(e.textKey)
                 }
@@ -100,7 +102,7 @@ internal class EditorNotificationTableTest : EditorNotificationTestBase() {
 
         val panel = panelOf(open("feature/two/ui/Home.kt", EMPTY))
 
-        assertEquals(KatachiBundle.message("notification.editor.empty"), panel?.text)
+        assertEquals(noticeTextOf("empty", "feature/two/ui/Home.kt"), panel?.text)
         assertEquals(1, panel!!.links.size)
     }
 

@@ -66,6 +66,38 @@ internal class KatachiBundleParityTest : TestCase() {
         assertEquals(JapaneseKatachiStrings.multilineOff, ja.multilineOff)
     }
 
+    fun `test ja の action の text には日本語の文字がある 例外は決めた一覧だけ`() {
+        val japaneseChar = Regex("[\\u3040-\\u30ff\\u4e00-\\u9fff]")
+        val exceptions = setOf("group.katachi.NewGroup.text")
+        val bad = japanese.stringPropertyNames()
+            .filter { it.startsWith("action.") && it.endsWith(".text") && it !in exceptions }
+            .filter { !japaneseChar.containsMatchIn(japanese.getProperty(it)) }
+        assertTrue("ja action texts without Japanese: $bad", bad.isEmpty())
+    }
+
+    fun `test 呼び名の表の値が日英で固定されている`() {
+        val expected = mapOf(
+            "action.reload.text" to ("Reload Definition" to "定義を読み直す"),
+            "action.stop.text" to ("Stop Loading" to "読み込みを止める"),
+            "action.stop.description" to ("Stop loading the definition" to "定義の読み込みを止めます"),
+            "action.katachi.GenerateFromTemplate.text" to ("katachi: Generate from Template" to "katachi: テンプレートから生成"),
+            "newMenu.loading" to ("Loading templates…" to "テンプレートを読み込み中…"),
+            "popup.rules.action.refresh" to ("Reload Definition" to "定義を読み直す"),
+            "action.katachi.RefreshDefinition.text" to ("katachi: Reload Definition" to "katachi: 定義を読み直す"),
+        )
+        for ((key, pair) in expected) {
+            assertEquals("en $key", pair.first, english.getProperty(key))
+            assertEquals("ja $key", pair.second, japanese.getProperty(key))
+        }
+        assertTrue(english.getProperty("newMenu.loading").endsWith("…"))
+        assertTrue(japanese.getProperty("newMenu.loading").endsWith("…"))
+    }
+
+    fun `test plugin xml の GenerateFromTemplate に英語名の synonym がある`() {
+        val xml = File(dir.parentFile, "META-INF/plugin.xml").readText()
+        assertTrue(xml.contains("""<synonym text="katachi: Generate from Template"/>"""))
+    }
+
     private fun dialogTextsOf(s: GenerateDialogStrings): List<String> = listOf(
         s.title, s.templateLabel, s.definitionLabel, s.targetPathLabel, s.generate, s.noTemplates, s.templateRemoved("X"),
         s.targetNew, s.targetEmpty, s.targetHasContent, s.chooseOne, s.requiredError, s.notAnInt(1, 2), s.notAccepted,

@@ -9,7 +9,9 @@ import me.tbsten.katachi.intellij.model.LayoutEntryModel
  *
  * The files are the `matchedFiles` of the role's file entries, as the definition task saw them: a file made after it
  * is not here. An entry whose list was cut ([LayoutEntryModel.truncated]) adds what it left out to [more].
- * TODO: when the file itself is among the cut ones, [more] counts it once too many.
+ * When the file is held by a cut entry (`holding`) and is not among its listed files, it is taken for one of the cut ones: [more] leaves it out,
+ * as a file is not its own sibling. A file made after the definition task cannot be told from a cut one, and is taken for a cut one as well.
+ * A file that no cut entry holds changes nothing, however many other entries were cut.
  *
  * ```kotlin
  * val siblings = SiblingFiles.of("src/main/kotlin/com/example/service/HealthService.kt", role.layout)
@@ -25,7 +27,10 @@ internal data class SiblingFiles(
     companion object {
         const val LIMIT: Int = 15
 
-        fun of(file: String, entries: List<LayoutEntryModel>, limit: Int = LIMIT): SiblingFiles {
+        /**
+         * [holding] is the entries of [entries] that the definition's answer for [file] names (`EntryMatch.entry` of the role); none when it is not known.
+         */
+        fun of(file: String, entries: List<LayoutEntryModel>, limit: Int = LIMIT, holding: List<LayoutEntryModel> = emptyList()): SiblingFiles {
             val holders = entries.filter { it.kind == LayoutEntryKind.File || it.kind == LayoutEntryKind.AnyFile }
             val others = holders.flatMap { it.matchedFiles }.distinct().filter { it != file }
             val directory = parentOf(file)
@@ -33,7 +38,9 @@ internal data class SiblingFiles(
             val cutOff = holders.sumOf { entry ->
                 if (entry.truncated) ((entry.matchedCount ?: entry.matchedFiles.size) - entry.matchedFiles.size).coerceAtLeast(0) else 0
             }
-            return SiblingFiles(ordered.take(limit), (ordered.size - limit).coerceAtLeast(0) + cutOff)
+            // The entry that holds the file was cut and does not list it: it is among the cut ones, and a file is not its own sibling.
+            val selfCut = cutOff > 0 && holding.any { it.truncated && file !in it.matchedFiles }
+            return SiblingFiles(ordered.take(limit), (ordered.size - limit).coerceAtLeast(0) + cutOff - if (selfCut) 1 else 0)
         }
 
         /** `a/b` for `a/b/C.kt`; empty for a file at the project root. */

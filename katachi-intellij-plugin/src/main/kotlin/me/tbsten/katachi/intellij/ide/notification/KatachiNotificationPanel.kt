@@ -14,11 +14,12 @@ internal class NotificationPanelActions(
     val create: () -> Unit,
     val viewTemplate: () -> Unit,
     val openSettings: () -> Unit,
+    val copyCommand: () -> Unit,
     val dismiss: () -> Unit,
 )
 
 /**
- * The panel of a katachi notification: its text, at most one link ([Create] or [View Template]),
+ * The panel of a katachi notification: its text, at most one link ([Create], [View Template] or [Copy Command]),
  * then ⚙ and ×, both [InplaceButton]s told apart by their tooltips. Built on the EDT from a
  * decision made in the background; it decides nothing itself.
  *
@@ -33,20 +34,27 @@ internal fun katachiNotificationPanel(editor: FileEditor, decision: Notification
     when (decision) {
         NotificationDecision.Hidden -> Unit
         is NotificationDecision.CreateFromTemplate -> {
-            panel.text = KatachiBundle.message("notification.editor.empty")
+            panel.text = decision.title
+                ?.let { KatachiBundle.message("notification.editor.empty.one", it) }
+                ?: KatachiBundle.message("notification.editor.empty.many", decision.count)
             panel.createActionLabel(KatachiBundle.message("notification.editor.create")) { actions.create() }
         }
         is NotificationDecision.ViewTemplate -> {
-            panel.text = KatachiBundle.message("notification.editor.matched")
+            panel.text = decision.title
+                ?.let { KatachiBundle.message("notification.editor.matched.one", it) }
+                ?: KatachiBundle.message("notification.editor.matched.many", decision.count)
             panel.createActionLabel(KatachiBundle.message("notification.editor.view")) { actions.viewTemplate() }
         }
         is NotificationDecision.Generating -> panel.text = decision.command
             ?.let { KatachiBundle.message("notification.editor.generating.command", it) }
             ?: KatachiBundle.message("notification.editor.generating")
-        is NotificationDecision.FailedWithCommand -> panel.text = KatachiBundle.message(
-            "notification.editor.failed",
-            KatachiBundle.message("notification.editor.failed.command", decision.command),
-        )
+        is NotificationDecision.FailedWithCommand -> {
+            panel.text = KatachiBundle.message(
+                "notification.editor.failed",
+                KatachiBundle.message("notification.editor.failed.command", decision.command),
+            )
+            panel.createActionLabel(KatachiBundle.message("notification.editor.failed.copy")) { actions.copyCommand() }
+        }
     }
     panel.addSettingsButton(actions.openSettings)
     panel.setCloseAction { actions.dismiss() }.toolTipText = KatachiBundle.message("notification.editor.dismiss.tooltip")

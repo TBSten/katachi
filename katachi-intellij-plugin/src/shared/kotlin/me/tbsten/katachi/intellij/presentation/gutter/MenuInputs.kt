@@ -27,7 +27,11 @@ internal object MenuInputs {
                     explanation = roleMark.explanation,
                     constraintSite = roleMark.constraintSite,
                     missing = roleMark.missing,
-                    siblings = SiblingFiles.of(fileRoles.relativePath, roleMark.role.layout),
+                    siblings = SiblingFiles.of(
+                        fileRoles.relativePath,
+                        roleMark.role.layout,
+                        holding = fileRoles.matches.filter { it.role == roleMark.role }.map { it.entry },
+                    ),
                     projectRoot = fileRoles.projectRoot,
                     templates = templatesOf(roleMark.role, fileRoles),
                 )

@@ -67,7 +67,7 @@ internal class DeclarationLineMarkerTest : GutterTestBase() {
             listOf(
                 "katachi: domain.Service — allowed by class HealthService (ServiceRole.kt:80)",
                 "katachi: domain.Service — no line in ktFileContent allows this (UnsatisfiedFileConstraint in the check)",
-                "katachi: domain.Service — not computed yet. Refresh the definition.",
+                "katachi: domain.Service — not computed yet. Reload Definition.",
             ),
             marks.map { it.tooltip },
         )

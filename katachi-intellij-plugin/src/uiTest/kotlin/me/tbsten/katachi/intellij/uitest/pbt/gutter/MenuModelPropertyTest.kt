@@ -127,7 +127,7 @@ class MenuModelPropertyTest {
             assertEquals(where, 1, plain.size)
             assertEquals(where, availability.refresh, plain.single().enabled)
             val first = menu.items.first()
-            assertEquals(where, input.stale && !needsRefresh, first is MenuItem.Row && first.text == "⟳ Refresh the definition")
+            assertEquals(where, input.stale && !needsRefresh, first is MenuItem.Row && first.text == "⟳ Reload Definition")
             // The check is above the plain Refresh unless that was moved to the top.
             if (!(input.stale && !needsRefresh)) assertEquals(where, runs.single(), menu.rows().dropLast(1).last())
         }

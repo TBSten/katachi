@@ -69,7 +69,7 @@ class MenuModelTest {
                 "-----",
                 "+ New domain.Service from template…",
                 "▶ Run the check (:arch:test)",
-                "⟳ Refresh the definition",
+                "⟳ Reload Definition",
             ),
             menu().shown(),
         )
@@ -114,7 +114,7 @@ class MenuModelTest {
     @Test
     fun `定義の後に足した宣言は 更新すると許可元が分かると言って 更新に飛ばす`() {
         val menu = menu(declarations = emptyList())
-        assertEquals("⟳ Refresh the definition to see what allows this", menu.rows().first().text)
+        assertEquals("⟳ Reload Definition to see what allows this", menu.rows().first().text)
         assertEquals(MenuTarget.Refresh, menu.rows().first().target)
     }
 
@@ -134,8 +134,8 @@ class MenuModelTest {
     @Test
     fun `定義が古いと 更新が先頭に来て 末尾の更新は無くなる`() {
         val shown = menu(stale = true).shown()
-        assertEquals("⟳ Refresh the definition", shown.first())
-        assertEquals(1, shown.count { it == "⟳ Refresh the definition" })
+        assertEquals("⟳ Reload Definition", shown.first())
+        assertEquals(1, shown.count { it == "⟳ Reload Definition" })
         assertEquals("▶ Run the check (:arch:test)", shown.last())
         assertTrue("files made since are not listed: $shown", shown.contains("== Other files of domain.Service (1, stale)"))
         assertTrue(menu(stale = false).shown().contains("== Other files of domain.Service (1)"))
@@ -144,8 +144,8 @@ class MenuModelTest {
     @Test
     fun `古くても 更新しないと分からない宣言の行があれば 更新の行は重ねない`() {
         val shown = menu(declarations = emptyList(), stale = true).shown()
-        assertEquals("⟳ Refresh the definition to see what allows this", shown.first())
-        assertEquals("⟳ Refresh the definition", shown.last())
+        assertEquals("⟳ Reload Definition to see what allows this", shown.first())
+        assertEquals("⟳ Reload Definition", shown.last())
     }
 
     @Test
@@ -191,7 +191,7 @@ class MenuModelTest {
     fun `検査が走っている間は 検査の行が検査中で押せず アクションが無ければ検査も更新も押せない`() {
         assertTrue(menu(availability = ALL_ACTIONS.copy(checkRunning = true)).shown().contains("(disabled) ▶ Checking…"))
         val none = menu(availability = MenuAvailability(runCheck = false, refresh = false, checkRunning = false)).shown()
-        assertEquals(listOf("(disabled) ▶ Run the check (:arch:test)", "(disabled) ⟳ Refresh the definition"), none.takeLast(2))
+        assertEquals(listOf("(disabled) ▶ Run the check (:arch:test)", "(disabled) ⟳ Reload Definition"), none.takeLast(2))
         val runCheck = menu(availability = ALL_ACTIONS.copy(refresh = false)).rows()
         assertTrue(runCheck.first { it.target == MenuTarget.RunCheck }.enabled)
         assertFalse(runCheck.first { it.target == MenuTarget.Refresh }.enabled)
@@ -215,7 +215,7 @@ class MenuModelTest {
         val shown = MenuModel.of(menuInputOf(mark, roles), ALL_ACTIONS).shown()
         assertEquals(listOf("== domain.Service", "== api.Handler"), shown.filter { it.startsWith("== ") && !it.startsWith("== Other") })
         assertEquals(1, shown.count { it.startsWith("▶ Run") })
-        assertEquals(1, shown.count { it == "⟳ Refresh the definition" })
+        assertEquals(1, shown.count { it == "⟳ Reload Definition" })
         assertEquals(1, shown.count { it.startsWith("+ New domain.Service") })
     }
 

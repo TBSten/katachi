@@ -92,7 +92,7 @@ internal class GutterMenuTest : GutterTestBase() {
                 "-----",
                 "+ New domain.Service from template…",
                 "(disabled) ▶ Run the check (:arch:test)",
-                "(disabled) ⟳ Refresh the definition",
+                "(disabled) ⟳ Reload Definition",
             ),
             openMenu().shown(),
         )
@@ -167,7 +167,7 @@ internal class GutterMenuTest : GutterTestBase() {
         val menu = openMenu()
 
         choose(menu.row("▶ Run the check"))
-        choose(menu.row("⟳ Refresh the definition"))
+        choose(menu.row("⟳ Reload Definition"))
 
         assertEquals(1, runCheck.events.size)
         assertEquals(1, refresh.events.size)
@@ -178,7 +178,7 @@ internal class GutterMenuTest : GutterTestBase() {
 
     fun `test 土台のアクションが無ければ 検査も更新も押せず 選んでも何も呼ばない`() {
         val menu = openMenu()
-        val rows = listOf(menu.row("▶ Run the check"), menu.row("⟳ Refresh the definition"))
+        val rows = listOf(menu.row("▶ Run the check"), menu.row("⟳ Reload Definition"))
         assertEquals(listOf(false, false), rows.map(::isEnabled))
         rows.forEach(::choose)
         assertEquals(emptyList<String>(), balloons)
@@ -202,21 +202,21 @@ internal class GutterMenuTest : GutterTestBase() {
     fun `test 定義が古いか 未保存の編集があれば 更新が先頭に来る`() {
         actions[GutterMenu.REFRESH] = RecordingAction("refresh")
         openMenu()
-        assertEquals("⟳ Refresh the definition", menus().single().shown().last())
+        assertEquals("⟳ Reload Definition", menus().single().shown().last())
 
         typeAtStart("// a note\n")
         redrawn()
-        assertEquals("⟳ Refresh the definition", menus().single().shown().first())
-        assertEquals(1, menus().single().shown().count { it == "⟳ Refresh the definition" })
+        assertEquals("⟳ Reload Definition", menus().single().shown().first())
+        assertEquals(1, menus().single().shown().count { it == "⟳ Reload Definition" })
 
         saveAll()
         redrawn()
-        assertEquals("saved edits are in a file newer than the definition: still first", "⟳ Refresh the definition", menus().single().shown().first())
+        assertEquals("saved edits are in a file newer than the definition: still first", "⟳ Reload Definition", menus().single().shown().first())
 
         refreshedSnapshot()
         ready(fileName, fileRoles(GutterFixtures.SERVICE_PATH, service, projectRoot = root), explained())
         redrawn()
-        assertEquals("⟳ Refresh the definition", menus().single().shown().last())
+        assertEquals("⟳ Reload Definition", menus().single().shown().last())
     }
 
     fun `test 定義が読み直されると 描き直した ◆ のメニューは新しい答えになる`() {
@@ -238,7 +238,7 @@ internal class GutterMenuTest : GutterTestBase() {
         DumbModeTestUtils.runInDumbModeSynchronously(project) {
             val handler = collectedInfos(myFixture.file).single().navigationHandler as GutterMenu
             assertTrue(handler.shown().first().contains("Allowed by class HealthService"))
-            choose(handler.row("⟳ Refresh the definition"))
+            choose(handler.row("⟳ Reload Definition"))
         }
         assertEquals(1, refresh.events.size)
     }
@@ -321,12 +321,12 @@ internal class GutterMenuTest : GutterTestBase() {
         actions[GutterMenu.REFRESH] = refresh
         val menu = openMenu()
 
-        choose(menu.row("⟳ Refresh the definition"))
+        choose(menu.row("⟳ Reload Definition"))
         assertEquals(emptyList<com.intellij.openapi.actionSystem.AnActionEvent>(), refresh.events)
         assertEquals(listOf(KatachiBundle.message("gutter.actionIgnored", "refresh")), balloons)
 
         balloons.clear()
-        DumbModeTestUtils.runInDumbModeSynchronously(project) { choose(menu.row("⟳ Refresh the definition")) }
+        DumbModeTestUtils.runInDumbModeSynchronously(project) { choose(menu.row("⟳ Reload Definition")) }
         assertEquals("the platform says why itself while indexing", emptyList<String>(), balloons)
     }
 }

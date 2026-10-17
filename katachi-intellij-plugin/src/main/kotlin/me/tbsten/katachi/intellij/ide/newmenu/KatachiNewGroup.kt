@@ -30,7 +30,7 @@ import java.nio.file.Path
  * <group id="katachi.NewGroup" class="me.tbsten.katachi.intellij.ide.newmenu.KatachiNewGroup" popup="true"/>
  * ```
  *
- * TODO: search inside the menu (issue 12, if there is time).
+ * The menu has no search of its own (decided not to add one, ide-review-screens N-1); the tool window and the generate action search.
  */
 internal class KatachiNewGroup(
     private val portsOf: (Project) -> NotificationPorts,

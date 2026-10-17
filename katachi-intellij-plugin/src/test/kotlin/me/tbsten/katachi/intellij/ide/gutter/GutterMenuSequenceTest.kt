@@ -117,7 +117,7 @@ internal class GutterMenuSequenceTest : GutterTestBase() {
                 if (!world.running) { world.runs++; world.running = true }
             }
             Op.FinishCheck -> { violations.finishCheck(moduleId); world.running = false }
-            Op.PressRefresh -> { choose(menu!!.row("⟳ Refresh the definition")); world.refreshes++ }
+            Op.PressRefresh -> { choose(menu!!.row("⟳ Reload Definition")); world.refreshes++ }
             Op.PressNew -> { choose(menu!!.row("+ New domain.Service from template…")); world.dialogs++ }
             Op.PressSibling -> {
                 choose(menu!!.row("LegacyStatusService.kt"))
@@ -138,8 +138,8 @@ internal class GutterMenuSequenceTest : GutterTestBase() {
         val menu = menus().single()
         val shown = menu.shown()
         val needsRefreshFirst = world.stale || world.unsaved || world.savedSinceRefresh
-        assertEquals("$where: Refresh is first only when the answer may be old\n$shown", needsRefreshFirst, shown.first() == "⟳ Refresh the definition")
-        assertEquals("$where: exactly one Refresh\n$shown", 1, shown.count { it == "⟳ Refresh the definition" })
+        assertEquals("$where: Refresh is first only when the answer may be old\n$shown", needsRefreshFirst, shown.first() == "⟳ Reload Definition")
+        assertEquals("$where: exactly one Refresh\n$shown", 1, shown.count { it == "⟳ Reload Definition" })
         val run = shown.single { it.contains("▶") }
         assertEquals("$where: checking while the check runs\n$shown", world.running, run == "(disabled) ▶ Checking…")
         if (!world.running) assertEquals("$where\n$shown", "▶ Run the check (:arch:test)", run)

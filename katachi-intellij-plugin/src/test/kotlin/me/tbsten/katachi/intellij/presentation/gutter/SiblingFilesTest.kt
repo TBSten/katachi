@@ -71,9 +71,45 @@ class SiblingFilesTest {
     fun `見つけた時点で切れた entry は 切れた分を残りに足す`() {
         val cut = layoutEntry("**.kt", LayoutEntryKind.AnyFile, matchedFiles = (1..10).map { "dir/F$it.kt" })
             .copy(matchedCount = 300, truncated = true)
+        val result = SiblingFiles.of(self, listOf(cut), limit = 4, holding = listOf(cut))
+        assertEquals(4, result.files.size)
+        assertEquals(6 + 290 - 1, result.more) // self is not in the 10 listed: it is one of the 290 cut, and not its own sibling
+    }
+
+    @Test
+    fun `開いているファイルが切られていない側にあれば 切れた分をそのまま足す`() {
+        val cut = layoutEntry("**.kt", LayoutEntryKind.AnyFile, matchedFiles = listOf(self) + (1..9).map { "dir/F$it.kt" })
+            .copy(matchedCount = 300, truncated = true)
         val result = SiblingFiles.of(self, listOf(cut), limit = 4)
         assertEquals(4, result.files.size)
+        assertEquals(5 + 290, result.more)
+    }
+
+    @Test
+    fun `開いているファイルが別の entry の一覧にあれば 切れた entry の分は減らさない`() {
+        val cut = layoutEntry("**.kt", LayoutEntryKind.AnyFile, matchedFiles = (1..10).map { "dir/F$it.kt" })
+            .copy(matchedCount = 300, truncated = true)
+        val other = layoutEntry("S.kt", LayoutEntryKind.File, matchedFiles = listOf(self))
+        val result = SiblingFiles.of(self, listOf(cut, other), limit = 4, holding = listOf(other))
         assertEquals(6 + 290, result.more)
+    }
+
+    @Test
+    fun `切れた entry が別にあっても 開いているファイルを持つ entry が切れていなければ 減らさない`() {
+        val cut = layoutEntry("**.kt", LayoutEntryKind.AnyFile, matchedFiles = (1..10).map { "dir/F$it.kt" })
+            .copy(matchedCount = 300, truncated = true)
+        // The file is in neither list for a reason the entries do not tell (made after the definition task) and only the uncut entry holds it.
+        val uncut = layoutEntry("S.kt", LayoutEntryKind.File, matchedFiles = listOf("s/Other.kt"))
+        val result = SiblingFiles.of(self, listOf(cut, uncut), limit = 4, holding = listOf(uncut))
+        assertEquals(7 + 290, result.more)
+    }
+
+    @Test
+    fun `定義の後にできたファイルは 切れた側と見分けがつかないので 切れた entry が持つなら 切れた側とみなして 1 引く`() {
+        val cut = layoutEntry("**.kt", LayoutEntryKind.AnyFile, matchedFiles = (1..10).map { "dir/F$it.kt" })
+            .copy(matchedCount = 300, truncated = true)
+        val result = SiblingFiles.of(self, listOf(cut), limit = 4, holding = listOf(cut))
+        assertEquals(6 + 290 - 1, result.more)
     }
 
     @Test

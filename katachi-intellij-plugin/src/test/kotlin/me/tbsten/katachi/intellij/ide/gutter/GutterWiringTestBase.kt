@@ -16,6 +16,7 @@ import me.tbsten.katachi.intellij.ide.definition.DefinitionServiceTestBase
 import me.tbsten.katachi.intellij.ide.gutter.annotator.DrawnAnnotation
 import me.tbsten.katachi.intellij.ide.gutter.annotator.drawnAnnotations
 import me.tbsten.katachi.intellij.ide.definition.KatachiDefinitionService
+import me.tbsten.katachi.intellij.ide.DefinitionModulePresence
 import me.tbsten.katachi.intellij.ide.KatachiSettings
 import me.tbsten.katachi.intellij.ide.sarif.KatachiViolationsService
 import me.tbsten.katachi.intellij.model.DetectionResult
@@ -74,9 +75,9 @@ internal abstract class GutterWiringTestBase : DefinitionServiceTestBase() {
         project.replaceService(KatachiDefinitionService::class.java, definition, testRootDisposable)
         violations = KatachiViolationsService(project, scope)
         project.replaceService(KatachiViolationsService::class.java, violations, testRootDisposable)
-        val cache = DefinitionModuleCache(project) { detectDefinitionModules(synced).let { it is DetectionResult.Found || it is DetectionResult.TaskListMissing } }
+        val cache = DefinitionModulePresence(project) { detectDefinitionModules(synced).let { it is DetectionResult.Found || it is DetectionResult.TaskListMissing } }
         Disposer.register(testRootDisposable, cache)
-        project.replaceService(DefinitionModuleCache::class.java, cache, testRootDisposable)
+        project.replaceService(DefinitionModulePresence::class.java, cache, testRootDisposable)
         refresherWatch.reset()
     }
 

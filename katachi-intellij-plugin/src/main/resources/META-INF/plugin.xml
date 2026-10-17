@@ -4,19 +4,37 @@
     <vendor url="https://github.com/tbsten/katachi">tbsten</vendor>
     <!-- The version, since-build and until-build are patched in from build.gradle.kts. -->
     <description><![CDATA[
-        <p><b>Experimental.</b> An early preview released together with katachi 0.2.0: its screens and
+        <p><b>Experimental.</b> An early preview released together with katachi: its screens and
         behavior may change in any release. It is not on JetBrains Marketplace; it is distributed as a zip
         attached to each <a href="https://github.com/TBSten/katachi/releases">GitHub Release</a>
         and installed with Settings &gt; Plugins &gt; Install Plugin from Disk.</p>
         <p>Generate code from the templates of your katachi architecture.
         Start from the katachi tool window, from New &gt; katachi in the Project tree, or from the notification
         that appears in the editor when a template fits the file you opened (it can be turned off in Settings &gt; Tools &gt; katachi).
-        Pick a template, fill in its arguments and press Generate; katachi's Gradle task writes the files.
+        Pick a template, or a templateSet (several templates generated together), fill in its arguments and press Generate;
+        katachi's Gradle task writes the files. The fields for a directory name suggest the directories that already exist at that place.</p>
+        <p>While you write a definition, the IDE completes names (for example <code>arg("...")</code>) and underlines mistakes,
+        and the definition file shows a &#9670; on the declarations of roles and templates with a Code Vision of how many files they hold.</p>
+        <p>Also shown in the editor: a &#9670; in the gutter of every file a role holds (with a menu to jump to the role,
+        its templates and the other files of the role), and the violations of the last check under the declaration they reject.
+        A file that no role holds gets a notification with a draft of the role to copy, and
+        <b>katachi: Run Architecture Check</b> runs the check.
         The screens follow the IDE's language: Japanese when the IDE is in Japanese, English otherwise.</p>
-        <p>Needs a Gradle project that applies the katachi Gradle plugin 0.2.0 or later (<code>id("me.tbsten.katachi")</code>).
+        <p>Needs a Gradle project that applies the katachi Gradle plugin 0.2.0 or later (<code>id("me.tbsten.katachi")</code>);
+        the gutter, the violations and templateSets need 0.3.0 or later.
         See <a href="https://tbsten.github.io/katachi/guides/generate-code-from-template/">Generate code from template</a>.</p>
     ]]></description>
     <change-notes><![CDATA[
+        <p>Next release (the version number is set when it is released; works with katachi 0.3.0):</p>
+        <ul>
+            <li>templateSet: a set of templates is listed and generated like a template.</li>
+            <li>Suggestions for the directory names of a capture field in the tool window and the generate dialog.</li>
+            <li>While writing a definition: completion, errors shown in the editor, a &#9670; on the declarations of the definition file, and Code Vision.</li>
+            <li>The &#9670; in the gutter and the violations of the last check under the declaration they reject.</li>
+            <li>The editor notification names the template (or counts them), and a failed generation can copy its command.</li>
+            <li>A notification on a file that no role holds (with a draft of the role to copy), and "katachi: Run Architecture Check" to run the check.</li>
+            <li>Settings are grouped into definition, editor and generation. "Reload Templates" and "Reload Architecture Definition" are now "Reload Definition".</li>
+        </ul>
         <p>0.1.0 (with katachi 0.2.0): the first release, experimental. The katachi tool window, New &gt; katachi, and the editor
         notification on files a template fits, in English and Japanese.</p>
     ]]></change-notes>
@@ -29,7 +47,7 @@
          and the 2026.3 API changes say the alias is sufficient. A real 263 loads them with this line alone (integrationTest263); verifyPlugin
          reports them unresolved there all the same, so verifyPlugin-ignored-problems.txt holds those reports back. -->
     <depends>com.intellij.modules.vcs</depends>
-    <!-- The Analysis API. TODO: make it optional (config-file) if nothing ends up needing it. -->
+    <!-- The Analysis API. Required, not optional: the gutter (SourceDeclarations, AnnotationRanges, GutterPlacement) and the language injection use the Kotlin plugin. -->
     <depends>org.jetbrains.kotlin</depends>
 
     <!-- v2 module dependencies, paired with bundledModule(...) in build.gradle.kts, so that Jewel and
@@ -73,7 +91,10 @@
     </extensions>
 
     <actions>
-        <action id="katachi.GenerateFromTemplate" class="me.tbsten.katachi.intellij.ide.GenerateFromTemplateAction" icon="/icons/katachi.svg"/>
+        <action id="katachi.GenerateFromTemplate" class="me.tbsten.katachi.intellij.ide.GenerateFromTemplateAction" icon="/icons/katachi.svg">
+            <!-- So that the English name finds the action in a Japanese IDE too (ide-review-screens 1). -->
+            <synonym text="katachi: Generate from Template"/>
+        </action>
         <!-- New > katachi (issue 12). Its text is group.katachi.NewGroup.text of the bundle; right after
              "Directory" / "Package", before the file templates. NewDir is the platform's, so it exists in
              Android Studio too. -->

@@ -38,8 +38,8 @@ internal class KatachiToolWindowFactory : ToolWindowFactory, DumbAware {
                 KatachiToolWindowContent(uiStateOf(state, strings, Instant.now()), onIntent = viewModel::dispatch)
             }
         }
-        // TODO: ⟳ / ■ belong to the Template tab. Move them into that tab's own toolbar once a second
-        //  tab exists, so they do not show over a tab they do nothing for.
+        // ⟳ / ■ stay in the title bar: the Template tab is the only tab, so they do not show over a tab they do nothing for.
+        //  Move them into the tab's own toolbar if a second tab is ever added.
         sdkCall("add the title actions") { toolWindow.setTitleActions(listOf(ReloadOrStopAction(), OpenSettingsAction())) }
         // The platform creates the content the first time the tool window is shown: that is when
         // detection and the first load run (spec 04), never on opening the project.
