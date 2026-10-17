@@ -16,6 +16,8 @@ import me.tbsten.katachi.dsl.internal.Template
 import me.tbsten.katachi.dsl.internal.evaluateLayout
 import me.tbsten.katachi.internal.catching
 import me.tbsten.katachi.processor.internal.ProjectWalk
+import me.tbsten.katachi.processor.internal.definitionErrorSiteOf
+import me.tbsten.katachi.processor.internal.definitionErrorsOf
 import me.tbsten.katachi.template.internal.TemplateDescriptionJson
 import java.util.IdentityHashMap
 
@@ -38,17 +40,26 @@ internal class DefinitionJsonOptions(
  * [placementsFailure] is why the module placements of [templates] could not be read, when they
  * could not: the templates are then listed without them. A walk that failed too already says why
  * in `problems`, so it adds nothing there.
+ *
+ * [previewFailures] is why each template or set listed without a detail has none; `problems` then
+ * says where it was written and what threw.
+ *
+ * @throws KatachiDeclarationException when the walk could not flatten the layout because the
+ *   definition itself is wrong. There is no honest `definition.json` for such a definition, so
+ *   none is made: the run fails, and `definition-errors.json` says where.
  */
 internal fun definitionJsonOf(
     walk: ProjectWalk,
     templates: TemplateDescriptionJson,
     options: DefinitionJsonOptions,
     placementsFailure: Throwable? = null,
+    previewFailures: TemplatePreviewFailures = TemplatePreviewFailures.None,
 ): DefinitionJson {
     val architecture = walk.architecture
     val problems = mutableListOf<DefinitionProblemJson>()
     val walked = catching { WalkedLayout(walk.resolvedEntries, walk.declaredFileConstraints) }
     val layout = walked.getOrElse { cause ->
+        if (definitionErrorsOf(cause).isNotEmpty()) throw cause
         problems += DefinitionProblemJson(
             kind = DefinitionProblemKind.WalkFailed,
             message = "The project could not be walked, so no layout entry lists its files: ${oneLineOf(cause)}",
@@ -90,7 +101,7 @@ internal fun definitionJsonOf(
         )
     }
     explanations?.reportTruncation()
-    templatePreviewProblemsOf(templates).forEach { problems += it }
+    templatePreviewProblemsOf(templates, previewFailures).forEach { problems += it }
 
     return DefinitionJson(
         schemaVersion = DEFINITION_SCHEMA_VERSION,
@@ -232,17 +243,50 @@ private fun constraintJsonOf(
     )
 }
 
-/** One problem per template that is listed but has no detail, since its preview failed. */
-private fun templatePreviewProblemsOf(templates: TemplateDescriptionJson): List<DefinitionProblemJson> {
+/** Why each template and template set that is listed without a detail has none. */
+internal class TemplatePreviewFailures(
+    val templates: Map<String, Throwable>,
+    val templateSets: Map<String, Throwable>,
+) {
+    companion object {
+        /** No exception known: the problems then carry no site and no class. */
+        val None: TemplatePreviewFailures = TemplatePreviewFailures(emptyMap(), emptyMap())
+    }
+}
+
+/** One problem per template or template set that is listed but has no detail, since its preview failed. */
+private fun templatePreviewProblemsOf(
+    templates: TemplateDescriptionJson,
+    failures: TemplatePreviewFailures,
+): List<DefinitionProblemJson> {
     val previewed = templates.details.mapTo(HashSet()) { it.template }
-    return templates.templates.filterNot { it.template in previewed }.map { summary ->
+    val previewedSets = templates.templateSetDetails.mapTo(HashSet()) { it.templateSet }
+    val templateProblems = templates.templates.filterNot { it.template in previewed }.map { summary ->
+        val failure = failures.templates[summary.template]
         DefinitionProblemJson(
             kind = DefinitionProblemKind.TemplatePreviewFailed,
             message = "The template could not be previewed, so it has no detail; katachiTemplates --arg template= says why.",
             detail = summary.template,
+            declaredAt = failure?.let(::problemSiteOf),
+            exception = failure?.javaClass?.name,
         )
     }
+    val setProblems = templates.templateSets.filterNot { it.templateSet in previewedSets }.map { summary ->
+        val failure = failures.templateSets[summary.templateSet]
+        DefinitionProblemJson(
+            kind = DefinitionProblemKind.TemplateSetPreviewFailed,
+            message = "The template set could not be previewed, so it has no detail; katachiTemplates --arg template= says why.",
+            detail = summary.templateSet,
+            declaredAt = failure?.let(::problemSiteOf),
+            exception = failure?.javaClass?.name,
+        )
+    }
+    return templateProblems + setProblems
 }
+
+/** Where [failure] was written, as `definition-errors.json` would say it; `null` when nothing says. */
+internal fun problemSiteOf(failure: Throwable): DeclarationSiteJson? =
+    definitionErrorSiteOf(failure)?.let(::siteOf)
 
 /** [site] as the JSON writes it: `null` for a site that could not be captured. */
 internal fun siteOf(site: DeclarationSite): DeclarationSiteJson? =

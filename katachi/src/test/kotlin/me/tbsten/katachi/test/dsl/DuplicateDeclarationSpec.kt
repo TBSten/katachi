@@ -128,7 +128,7 @@ class DuplicateDeclarationSpec : FreeSpec({
             "Duplicate role \"domain\" declared at ${thrown.declaredAt}.",
             "A group of that name was already declared at ${thrown.firstDeclaredAt}, in group \"x\".",
             "A group and a role in group \"x\" would both be referred to as \"domain\". " +
-                "Rename one of them, or move the role into a group.",
+                "Rename one of them.",
         ).joinToString("\n")
     }
 

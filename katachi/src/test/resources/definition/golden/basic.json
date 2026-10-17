@@ -577,7 +577,9 @@
         ]
       }
     ],
-    "modulePlacements": []
+    "modulePlacements": [],
+    "templateSets": [],
+    "templateSetDetails": []
   },
   "problems": []
 }

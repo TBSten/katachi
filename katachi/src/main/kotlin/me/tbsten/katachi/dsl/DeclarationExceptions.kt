@@ -105,6 +105,25 @@ public enum class DeclarationKind(
         invalidNameHint = "It is also what `--arg template=role.id` selects it by, so it follows " +
             "the same rule as a role name.",
     ),
+
+    /**
+     * A `"...".templateSet { }` declaration.
+     *
+     * ## Example 1: match on a rejected template set declaration
+     * ```kt
+     * val thrown = shouldThrow<KatachiInvalidIdentifierException> {
+     *     architecture { "new feature".templateSet { } }
+     * }
+     * thrown.kind shouldBe DeclarationKind.TemplateSet
+     * ```
+     */
+    TemplateSet(
+        label = "template set",
+        uniquenessRule = "Template set names must be unique among the groups, roles and template sets " +
+            "declared under the same parent.",
+        invalidNameHint = "It is also what `--arg template=` selects it by, so it follows the same rule " +
+            "as a role name. Use `title` for a human readable display name.",
+    ),
 }
 
 /**
@@ -163,8 +182,8 @@ public class KatachiInvalidIdentifierException internal constructor(
  * thrown.firstKind shouldBe DeclarationKind.Group
  * ```
  *
- * @property kind whether the rejected declaration was a group's or a role's.
- * @property firstKind whether the declaration that took the name first was a group's or a role's.
+ * @property kind whether the rejected declaration was a group's, a role's or a template set's.
+ * @property firstKind whether the declaration that took the name first was a group's, a role's or a template set's.
  *   It differs from [kind][KatachiDuplicateDeclarationException.kind] when a group and a role
  *   collided, and telling the two cases apart is what the last line of the message does.
  * @property name the duplicated name.
@@ -192,8 +211,8 @@ public class KatachiDuplicateDeclarationException internal constructor(
                     "in $scope.",
             )
             append(
-                "A group and a role in $scope would both be referred to as \"$name\". " +
-                    "Rename one of them, or move the role into a group.",
+                "A ${firstKind.label} and a ${kind.label} in $scope would both be referred to as " +
+                    "\"$name\". Rename one of them.",
             )
         }
     },

@@ -523,7 +523,9 @@
           }
         ]
       }
-    ]
+    ],
+    "templateSets": [],
+    "templateSetDetails": []
   },
   "problems": []
 }

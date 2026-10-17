@@ -5,6 +5,7 @@ import me.tbsten.katachi.dsl.internal.GradleRoleKind
 import me.tbsten.katachi.dsl.internal.captureDeclarationSite
 import me.tbsten.katachi.dsl.internal.declareGroupAt
 import me.tbsten.katachi.dsl.internal.declareRoleAt
+import me.tbsten.katachi.dsl.internal.declareTemplateSetAt
 import org.intellij.lang.annotations.Language
 
 /**
@@ -60,6 +61,12 @@ internal class GradleScopeImpl(internal val group: GroupScope) : GradleScope {
         val name = this
         val declaredAt = captureDeclarationSite()
         deferred += { group.declareRoleAt(name, declaredAt, block) }
+    }
+
+    override fun String.templateSet(block: TemplateSetScope.() -> Unit) {
+        val name = this
+        val declaredAt = captureDeclarationSite()
+        deferred += { group.declareTemplateSetAt(name, declaredAt, block) }
     }
 
     override fun launcherScript(block: GradleRoleScope.() -> Unit) = record(GradleRoleKind.LauncherScript, block)

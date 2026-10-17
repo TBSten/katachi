@@ -51,7 +51,9 @@ public class KatachiTemplateOptions {
 
     /**
      * Sets the templates run, each by {@code role.id} -- or {@code role} alone while that role has
-     * one template -- with a leading group written as {@code group.role.id}.
+     * one template -- with a leading group written as {@code group.role.id}. A template set (declared
+     * with {@code "Name".templateSet { }}) is written the same way, {@code group.Name}, and stands
+     * alone: it cannot be listed with other specifiers.
      *
      * <p>Usually left alone. Which template to generate is the one thing that changes from run to
      * run, so it is normally passed as {@code --arg template=data.Repository.repository}; writing

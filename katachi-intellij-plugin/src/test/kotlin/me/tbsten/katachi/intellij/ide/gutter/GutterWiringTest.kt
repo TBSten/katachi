@@ -114,8 +114,9 @@ internal class GutterWiringTest : GutterWiringTestBase() {
         // the end of that load draws the file once more (the refresher).
         synced = syncedWithDefinition(":arch")
         assertEquals("the answer is kept until a sync ends", emptyList<DrawnMark>(), redrawn())
+        val since = redrawSeq(project)
         project.messageBus.syncPublisher(ProjectDataImportListener.TOPIC).onImportFinished(null)
-        idle(HighlightingRefresher.SETTLE_MILLIS + 500)
+        awaitAnyRedraw(project, since)
         myFixture.doHighlighting()
         waitState("the definition the gutter asked for") { it is DefinitionState.Ready && !projectService.viewModel.isLoadRunning }
         assertEquals(1, gradle.loadRequests.size)

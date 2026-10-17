@@ -8,8 +8,13 @@ import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiManager
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.ensureActive
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import me.tbsten.katachi.intellij.ide.definition.DefinitionModelService
 import me.tbsten.katachi.intellij.ide.sarif.ViolationsService
@@ -17,7 +22,14 @@ import me.tbsten.katachi.intellij.ide.sdkCall
 import me.tbsten.katachi.intellij.model.DefinitionState
 import me.tbsten.katachi.intellij.presentation.gutter.GutterFreshness
 import java.nio.file.Path
+import java.util.concurrent.atomic.AtomicLong
 import java.util.concurrent.atomic.AtomicReference
+
+/**
+ * One draw the refresher handed to the daemon: its number, why, for which followed service, and the state of the
+ * definition at the moment it asked the daemon to restart (the daemon runs after that, so it never reads an older one).
+ */
+internal data class Redraw(val seq: Long, val reason: String, val definitions: DefinitionModelService?, val definition: DefinitionState?)
 
 /**
  * Draws the gutter and the annotations of the open files again when the definition or the violations change (design
@@ -28,6 +40,10 @@ import java.util.concurrent.atomic.AtomicReference
  * nothing: the previous answer stays until the new one arrives. When the answer goes away (`NotLoaded`, `Unavailable`
  * with nothing before it) the roots of the last draw are drawn again too, so the ◆ it left are removed at once.
  *
+ * One change is one job: the settling time, the restart of every file and the record in [lastRedraw] belong to it, so a newer
+ * change cancels an older one wherever it is, and the record never goes backwards. Tests and the debug bridge wait on
+ * [lastRedraw] and [isBusy] instead of on a clock.
+ *
  * ```kotlin
  * HighlightingRefresher.getInstance(project).follow(definitions, violations) // the first time a provider finds them
  * ```
@@ -37,14 +53,45 @@ internal class HighlightingRefresher(private val project: Project, private val s
     private val followed = AtomicReference<Followed?>(null)
     private val pending = AtomicReference<Job?>(null)
 
+    /** The draw of [redrawNow]: every open file, so it does not cancel a definition's draw nor the other way round. */
+    private val nowJob = AtomicReference<Job?>(null)
+    private val seq = AtomicLong(0)
+    private val _lastRedraw = MutableStateFlow<Redraw?>(null)
+
+    /** The last draw that reached the daemon. */
+    val lastRedraw: StateFlow<Redraw?> get() = _lastRedraw
+
+    private val history = AtomicReference<List<Redraw>>(emptyList())
+
+    /**
+     * The most recent draws that reached the daemon (at most [HISTORY_SIZE]), oldest first. A slow restart can finish after a
+     * newer draw, so [lastRedraw] may name an older state than a draw before it; whoever waits for "a draw in this state" looks here.
+     */
+    internal val redraws: List<Redraw> get() = history.get()
+
+    /** Whether a draw still waits for its settling time or is restarting files. */
+    val isBusy: Boolean get() = pending.get()?.isActive == true || nowJob.get()?.isActive == true
+
     /** The roots the last draw covered: a change that takes the answer away must draw these again, though no definition names them now. */
     private val lastRoots = AtomicReference<List<Path>>(emptyList())
 
-    /** What a change restarts: the open files under these roots, or every open file when there are none. Tests replace it to see what is restarted and when. */
+    /** What a change restarts: the open files under these roots, or every open file when there are none. Suspends until every restart was handed to the daemon. Tests replace it to see what is restarted and when. */
     @Volatile
-    var restarter: (reason: String, roots: List<Path>) -> Unit = ::restartOpenFilesUnder
+    var restarter: suspend (reason: String, roots: List<Path>) -> Unit = ::restartOpenFilesUnder
 
-    private data class Followed(val definitions: DefinitionModelService, val violations: ViolationsService?, val job: Job)
+    private data class Followed(
+        val definitions: DefinitionModelService,
+        val violations: ViolationsService?,
+        val job: Job,
+        val start: FollowStart,
+    )
+
+    /** The states the refresher started following from: a change before that is the first draw's, not a redraw's. */
+    internal class FollowStart(val definition: DefinitionState, val violations: Any?)
+
+    /** Where the refresher started following [definitions] from, or `null` when it does not follow them. Tests ask it what a draw is owed for. */
+    internal fun followStartOf(definitions: DefinitionModelService): FollowStart? =
+        followed.get()?.takeIf { it.definitions === definitions }?.start
 
     /** Starts following the two services' states. Calling it again for the same services does nothing; for others, follows those instead. */
     fun follow(definitions: DefinitionModelService, violations: ViolationsService?) {
@@ -54,7 +101,7 @@ internal class HighlightingRefresher(private val project: Project, private val s
         val definitionBefore = definitions.state.value
         val violationsBefore = violations?.state?.value
         lastRoots.set(rootsOf(definitions))
-        val job = scope.launch {
+        val job = scope.launch(start = CoroutineStart.LAZY) {
             launch {
                 var before: DefinitionState = definitionBefore
                 definitions.state.collect { after ->
@@ -72,12 +119,38 @@ internal class HighlightingRefresher(private val project: Project, private val s
                 }
             }
         }
-        if (followed.compareAndSet(current, Followed(definitions, violations, job))) current?.job?.cancel() else job.cancel()
+        if (followed.compareAndSet(current, Followed(definitions, violations, job, FollowStart(definitionBefore, violationsBefore)))) {
+            current?.job?.cancel()
+            // A draw waiting for the service that was followed must not leave a record in the world of the new one.
+            if (current != null && current.definitions !== definitions) pending.getAndSet(null)?.cancel()
+            job.start()
+        } else {
+            job.cancel()
+        }
     }
 
     /** Draws every open file again now, for a change that is not a state of the two services (a setting). */
     fun redrawNow(reason: String) {
-        restarter(reason, emptyList())
+        val definitions = followed.get()?.definitions
+        val job = scope.launch {
+            val roots = emptyList<Path>()
+            record(reason, definitions) { restarter(reason, roots) }
+        }
+        nowJob.getAndSet(job)?.cancel()
+    }
+
+    private suspend fun record(reason: String, definitions: DefinitionModelService?, onRecorded: () -> Unit = {}, restart: suspend () -> Unit) {
+        // Read before the restart: the daemon runs after it, so it never sees an older state than this one.
+        val definition = definitions?.state?.value
+        restart()
+        // A restart with nothing left to suspend on returns even when a newer change cancelled this draw: it must not leave a record.
+        currentCoroutineContext().ensureActive()
+        // The service may have been replaced while the restart ran: a record of a world that is gone would mislead whoever waits.
+        if (definitions != null && followed.get()?.definitions !== definitions) return
+        onRecorded()
+        val redraw = Redraw(seq.incrementAndGet(), reason, definitions, definition)
+        history.updateAndGet { (it + redraw).takeLast(HISTORY_SIZE) }
+        _lastRedraw.value = redraw
     }
 
     private fun rootsOf(definitions: DefinitionModelService): List<Path> =
@@ -86,33 +159,35 @@ internal class HighlightingRefresher(private val project: Project, private val s
     private fun schedule(reason: String, definitions: DefinitionModelService) {
         val job = scope.launch {
             delay(SETTLE_MILLIS)
+            // The service this draw was for may have been replaced while it waited: its world is gone, so is the draw.
+            if (followed.get()?.definitions !== definitions) return@launch
             val now = rootsOf(definitions)
             // Before and after: a definition that went away still has ◆ and menus on screen. With no root in either, any open file may have one.
-            val roots = (lastRoots.getAndSet(now) + now).distinct()
-            restarter(reason, roots)
+            // The roots of the last draw that was recorded: one cancelled on the way leaves them for the next draw to cover.
+            val roots = (lastRoots.get() + now).distinct()
+            record(reason, definitions, onRecorded = { lastRoots.set(now) }) { restarter(reason, roots) }
         }
         pending.getAndSet(job)?.cancel()
     }
 
-    private fun restartOpenFilesUnder(reason: String, roots: List<Path>) {
-        scope.launch {
-            val open = sdkCall("list the open files to draw the katachi gutter again") {
-                if (project.isDisposed) emptyList() else FileEditorManager.getInstance(project).openFiles.toList()
-            }.getOrDefault(emptyList())
-            for (file in open) {
-                val path = sdkCall("find the path of ${file.name}") { file.fileSystem.getNioPath(file) }.getOrNull() ?: continue
-                if (roots.isNotEmpty() && roots.none { path.startsWith(it) }) continue
-                val psiFile = sdkCall("find the PSI of ${file.path}") { readAction { PsiManager.getInstance(project).findFile(file) } }.getOrNull()
-                    ?: continue
-                sdkCall("draw the katachi gutter of ${file.path} again") {
-                    if (!project.isDisposed) DaemonCodeAnalyzer.getInstance(project).restart(psiFile, "katachi: $reason")
-                }
+    private suspend fun restartOpenFilesUnder(reason: String, roots: List<Path>) {
+        val open = sdkCall("list the open files to draw the katachi gutter again") {
+            if (project.isDisposed) emptyList() else FileEditorManager.getInstance(project).openFiles.toList()
+        }.getOrDefault(emptyList())
+        for (file in open) {
+            val path = sdkCall("find the path of ${file.name}") { file.fileSystem.getNioPath(file) }.getOrNull() ?: continue
+            if (roots.isNotEmpty() && roots.none { path.startsWith(it) }) continue
+            val psiFile = sdkCall("find the PSI of ${file.path}") { readAction { PsiManager.getInstance(project).findFile(file) } }.getOrNull()
+                ?: continue
+            sdkCall("draw the katachi gutter of ${file.path} again") {
+                if (!project.isDisposed) DaemonCodeAnalyzer.getInstance(project).restart(psiFile, "katachi: $reason")
             }
         }
     }
 
     companion object {
         const val SETTLE_MILLIS: Long = 300L
+        private const val HISTORY_SIZE = 64
 
         fun getInstance(project: Project): HighlightingRefresher = project.service()
     }

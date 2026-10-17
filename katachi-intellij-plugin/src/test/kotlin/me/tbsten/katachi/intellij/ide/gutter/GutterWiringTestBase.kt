@@ -77,7 +77,11 @@ internal abstract class GutterWiringTestBase : DefinitionServiceTestBase() {
         val cache = DefinitionModuleCache(project) { detectDefinitionModules(synced).let { it is DetectionResult.Found || it is DetectionResult.TaskListMissing } }
         Disposer.register(testRootDisposable, cache)
         project.replaceService(DefinitionModuleCache::class.java, cache, testRootDisposable)
+        refresherWatch.reset()
     }
+
+    /** What the real refresher owes the test after the changes since the last wait (see [RefresherWatch]). */
+    private val refresherWatch by lazy { RefresherWatch(project, { definition }, { violations }) }
 
     protected fun sourceFile(): VirtualFile =
         LocalFileSystem.getInstance().refreshAndFindFileByNioFile(sourcePath) ?: error("$sourcePath was not found")
@@ -107,14 +111,17 @@ internal abstract class GutterWiringTestBase : DefinitionServiceTestBase() {
      * recomputed by the daemon); [redrawnByRefresher] leaves that to the real [HighlightingRefresher].
      */
     protected fun redrawn(): List<DrawnMark> {
+        // What the test draws by itself it has looked at: the refresher owes what changes from here on, also while this draw runs
+        // (a load that ends during it is a change the refresher must draw, which the next wait is for).
+        refresherWatch.reset()
         DaemonCodeAnalyzer.getInstance(project).restart(myFixture.file, "katachi test: the answer changed")
         myFixture.doHighlighting()
         return marks()
     }
 
-    /** The ◆ after the real [HighlightingRefresher] had its settling time: a ◆ still old means it did not reach the open file. */
+    /** The ◆ after the real [HighlightingRefresher] drew for the changes since the last call (waited on its own record, not a clock): a ◆ still old means it did not reach the open file. */
     protected fun redrawnByRefresher(): List<DrawnMark> {
-        idle(HighlightingRefresher.SETTLE_MILLIS + 500)
+        refresherWatch.settle()
         myFixture.doHighlighting()
         return marks()
     }
@@ -136,9 +143,9 @@ internal abstract class GutterWiringTestBase : DefinitionServiceTestBase() {
     /** The katachi annotations the daemon holds for the open file now. */
     protected fun annotations(): List<DrawnAnnotation> = drawnAnnotations(project, myFixture.file, myFixture.editor.document)
 
-    /** The annotations after the real [HighlightingRefresher] had its settling time: one still old means it did not reach the open file. */
+    /** The annotations after the real [HighlightingRefresher] drew for the changes since the last call: one still old means it did not reach the open file. */
     protected fun annotatedByRefresher(): List<DrawnAnnotation> {
-        idle(HighlightingRefresher.SETTLE_MILLIS + 500)
+        refresherWatch.settle()
         myFixture.doHighlighting()
         return annotations()
     }

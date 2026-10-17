@@ -88,7 +88,7 @@ internal fun templateDetailOf(template: DeclaredTemplate): TemplateDetail {
 }
 
 /** `.template { }`'s own `title`, falling back to [DeclaredTemplate.id], then to the role's `title`. */
-private fun titleOf(template: DeclaredTemplate): String =
+internal fun titleOf(template: DeclaredTemplate): String =
     template.title ?: template.id ?: template.role[Title] ?: template.role.qualifiedName
 
 /**
@@ -97,7 +97,7 @@ private fun titleOf(template: DeclaredTemplate): String =
  * [fixed] wins over the stand-in of the parameter it names, which is how a branch is explored.
  * Every capture in [captureNames] reads as its placeholder, `${name}`, as a String parameter does.
  */
-private fun previewValuesOf(
+internal fun previewValuesOf(
     template: LayoutTemplate,
     roleName: String,
     captureNames: Set<String>,
@@ -169,7 +169,7 @@ internal fun parameterOriginsOnEveryBranch(
 }
 
 /** The value a preview fills [parameter] with, spelt as `--arg` would, and why. */
-private fun previewValueOf(parameter: DeclaredTemplateParameter): Pair<String, PreviewValueSource> {
+internal fun previewValueOf(parameter: DeclaredTemplateParameter): Pair<String, PreviewValueSource> {
     val type = parameter.type
     if (type == TemplateParameterType.StringType) {
         return placeholderOf(parameter.name) to PreviewValueSource.Placeholder
@@ -184,7 +184,7 @@ private fun previewValueOf(parameter: DeclaredTemplateParameter): Pair<String, P
     return standIn to PreviewValueSource.StandIn
 }
 
-private fun parameterPreviewOf(parameter: DeclaredTemplateParameter): TemplateParameterPreview {
+internal fun parameterPreviewOf(parameter: DeclaredTemplateParameter): TemplateParameterPreview {
     val (value, source) = previewValueOf(parameter)
     return TemplateParameterPreview(
         name = parameter.name,
@@ -215,15 +215,31 @@ private fun kindOf(type: TemplateParameterType<*>): TemplateParameterKind = when
  * module capture is the one exception: which module it would pick is a question only the modules
  * that exist could answer, so [TemplateFilePreview.path] is `null` whenever one is present, as
  * [TemplateFilePreview.pattern] (the declared shape, captures included) still is not.
+ *
+ * [captureValues] are the values a template set's `arg(...)` gave plain captures: the path reads
+ * them in place of the placeholders, the pattern does not.
  */
-private fun filePreviewOf(template: DeclaredTemplate, preview: PreviewValues, content: String): TemplateFilePreview {
+internal fun filePreviewOf(
+    template: DeclaredTemplate,
+    preview: PreviewValues,
+    content: String,
+    captureValues: Map<String, String> = emptyMap(),
+): TemplateFilePreview {
     val entry = template.entries.first()
     // See TemplateGeneration.templateFileFor's identical read: `templateCaptures`, not
     // `.captureVariants.firstOrNull()`, is what is guaranteed to be this template's own variant
     // when this path folded two declarations into one entry.
     val variant = entry.templateCaptures ?: entry.captureVariants.firstOrNull() ?: LayoutCaptures.NONE
     val pattern = fillCapturedPath(entry.path, variant, variant.names.associateWith(::placeholderOf), ::placeholderOf)
-    val path = if (variant.moduleCapture != null) null else pattern
+    val path = when {
+        variant.moduleCapture != null -> null
+        captureValues.isEmpty() -> pattern
+        // A plain occurrence reads the value a template set's `arg` gave it; a derived one is
+        // still the placeholder, since katachi derives it from that value.
+        else -> fillCapturedPath(entry.path, variant, emptyMap()) { capture ->
+            if (capture.transform == null) captureValues[capture.name] ?: placeholderOf(capture) else placeholderOf(capture)
+        }
+    }
     return TemplateFilePreview(
         pattern = pattern,
         fileName = pattern.substringAfterLast('/'),

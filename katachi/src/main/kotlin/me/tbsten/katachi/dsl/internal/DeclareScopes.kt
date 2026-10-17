@@ -9,6 +9,8 @@ import me.tbsten.katachi.dsl.KatachiFileConstraintWithoutLayoutException
 import me.tbsten.katachi.dsl.Role
 import me.tbsten.katachi.dsl.RoleScope
 import me.tbsten.katachi.dsl.RoleScopeImpl
+import me.tbsten.katachi.dsl.TemplateSetScope
+import me.tbsten.katachi.dsl.TemplateSetScopeImpl
 
 /**
  * Validates the name, takes it in [declaredNames], then evaluates [block] to collect the
@@ -37,6 +39,7 @@ internal fun declareGroup(
         groups = scope.groups.toList(),
         roles = scope.roles.toList(),
         declaredAt = declaredAt,
+        templateSets = scope.templateSets.toList(),
     )
 }
 
@@ -79,5 +82,38 @@ internal fun declareRole(
         fileConstraints = scope.fileConstraints.toList(),
         groupPath = groupPath,
         declaredAt = declaredAt,
+    )
+}
+
+/**
+ * Validates the name, takes it in [declaredNames], then replays [block] once in Declare mode to
+ * learn the set's parameters and members.
+ *
+ * The name is reserved before [block] runs, for the same reason as in [declareGroup]. The block
+ * of each member is not run here: it needs values that do not exist yet.
+ */
+internal fun declareTemplateSet(
+    name: String,
+    groupPath: List<String>,
+    declaredAt: DeclarationSite,
+    declaredNames: DeclaredNames,
+    block: TemplateSetScope.() -> Unit,
+): TemplateSetDeclaration {
+    requireValidIdentifier(name, DeclarationKind.TemplateSet, declaredAt)
+    requireNameIsFree(declaredNames, DeclarationKind.TemplateSet, name, groupPath, declaredAt)
+    declaredNames.reserve(name, DeclarationKind.TemplateSet, declaredAt)
+    val specifier = (groupPath + name).joinToString(".")
+    val scope = TemplateSetScopeImpl(specifier, TemplateSetMode.Declare, declaredAt)
+    scope.block()
+    scope.requireWellFormed()
+    return TemplateSetDeclaration(
+        name = name,
+        groupPath = groupPath,
+        title = scope.title,
+        summary = scope.summary,
+        declaredAt = declaredAt,
+        parameters = scope.parameters(),
+        members = scope.memberDeclarations(),
+        block = block,
     )
 }

@@ -14,11 +14,14 @@ import me.tbsten.katachi.processor.ArchitectureProcessContext
 import me.tbsten.katachi.processor.internal.fileSystem
 import me.tbsten.katachi.template.KatachiTemplateJsonIoException
 import me.tbsten.katachi.template.TemplateDetail
+import me.tbsten.katachi.template.TemplateSetDetail
+import me.tbsten.katachi.template.TemplateSetSummary
 import me.tbsten.katachi.template.TemplateSummary
 
 /**
  * The whole of `templateDescription.json`: the list, the detail of every template whose preview
- * succeeded, and where the file of each of those that sits below a module capture lands in every
+ * succeeded, the same for template sets (`templateSets`, `templateSetDetails`; absent in a file an
+ * older katachi wrote, which reads as no sets), and where the file of each of those that sits below a module capture lands in every
  * module it can pick. A template whose preview failed is in [templates] with `conflict: true` and
  * missing from [details].
  */
@@ -31,16 +34,22 @@ internal class TemplateDescriptionJson(
      * `files[].path` `null`. See [TemplateModulePlacement].
      */
     val modulePlacements: List<TemplateModulePlacement>,
+    /** Every template set, listed. One whose preview failed has `conflict: true` and no entry in [templateSetDetails]. */
+    val templateSets: List<TemplateSetSummary> = emptyList(),
+    /** The detail of every template set whose preview succeeded. */
+    val templateSetDetails: List<TemplateSetDetail> = emptyList(),
 )
 
-/** [templates], [details] and [modulePlacements] as the text of `templateDescription.json`. */
+/** The lists and details given, as the text of `templateDescription.json`. */
 internal fun encodeTemplateDescriptionJson(
     templates: List<TemplateSummary>,
     details: List<TemplateDetail>,
     modulePlacements: List<TemplateModulePlacement> = emptyList(),
+    templateSets: List<TemplateSetSummary> = emptyList(),
+    templateSetDetails: List<TemplateSetDetail> = emptyList(),
 ): String = encodeToJson(
     TemplateDescriptionJson.serializer(),
-    TemplateDescriptionJson(templates, details, modulePlacements),
+    TemplateDescriptionJson(templates, details, modulePlacements, templateSets, templateSetDetails),
 )
 
 /** [json] as the text of `templateDescription.json`. */
@@ -61,8 +70,31 @@ internal fun templateDescriptionJsonOf(
     context: ArchitectureProcessContext<*>,
     table: List<DeclaredTemplate> = declaredTemplatesOf(context.declaredEntries),
     withPlacements: Boolean = true,
-): TemplateDescriptionJson {
-    val previewed = table.mapNotNull { template -> catching { template to templateDetailOf(template) }.getOrNull() }
+): TemplateDescriptionJson = templateDescriptionOf(context, table, withPlacements).json
+
+/**
+ * What [templateDescriptionJsonOf] writes, and why each template or set it lists without a detail
+ * has none: the exception its preview threw, by the specifier (`template`) or name (`templateSet`)
+ * the JSON lists it under.
+ */
+internal class TemplateDescription(
+    val json: TemplateDescriptionJson,
+    val templateFailures: Map<String, Throwable>,
+    val templateSetFailures: Map<String, Throwable>,
+)
+
+/** [templateDescriptionJsonOf], keeping the exceptions the previews threw. */
+internal fun templateDescriptionOf(
+    context: ArchitectureProcessContext<*>,
+    table: List<DeclaredTemplate> = declaredTemplatesOf(context.declaredEntries),
+    withPlacements: Boolean = true,
+): TemplateDescription {
+    val templateFailures = LinkedHashMap<String, Throwable>()
+    val previewed = table.mapNotNull { template ->
+        catching { template to templateDetailOf(template) }
+            .onFailure { templateFailures[template.specifier] = it }
+            .getOrNull()
+    }
     val placements = if (!withPlacements) {
         emptyList()
     } else {
@@ -70,11 +102,20 @@ internal fun templateDescriptionJsonOf(
             moduleIndex(context.fileSystem, findProjectRoot(context.fileSystem).path, context.architecture.moduleResolver)
         }
     }
-    return TemplateDescriptionJson(
+    val sets = context.architecture.allTemplateSets
+    val templateSetFailures = LinkedHashMap<String, Throwable>()
+    val json = TemplateDescriptionJson(
         templates = table.map(::templateSummaryOf),
         details = previewed.map { it.second },
         modulePlacements = placements,
+        templateSets = sets.map { templateSetSummaryOf(it, table) },
+        templateSetDetails = sets.mapNotNull { set ->
+            catching { templateSetDetailOf(set, table) }
+                .onFailure { templateSetFailures[set.specifier] = it }
+                .getOrNull()
+        },
     )
+    return TemplateDescription(json, templateFailures, templateSetFailures)
 }
 
 /** The suffix the JSON wears while it is written but not yet in place. */

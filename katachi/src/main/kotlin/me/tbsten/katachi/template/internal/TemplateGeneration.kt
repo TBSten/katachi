@@ -10,6 +10,7 @@ import me.tbsten.katachi.dsl.internal.fillCapturedPath
 import me.tbsten.katachi.dsl.internal.ModuleIndex
 import me.tbsten.katachi.dsl.internal.ModuleMiss
 import me.tbsten.katachi.dsl.internal.Template
+import me.tbsten.katachi.dsl.internal.TemplateSetDeclaration
 import me.tbsten.katachi.dsl.internal.evaluateTemplate
 import me.tbsten.katachi.dsl.internal.flattenLayout
 import me.tbsten.katachi.processor.ArchitectureProcessContext
@@ -27,7 +28,9 @@ import me.tbsten.katachi.template.KatachiTemplatePathOutsideProjectException
  * A pure function from declarations and values to a map, exactly as documentation generation is.
  * Everything that can be wrong about the output -- an unknown or ambiguous specifier, a capture
  * with no value, a value the file system refuses, two templates writing the same path -- is
- * decided here and can be pinned by a spec comparing two maps. [writeTemplateFiles] adds the one
+ * decided here and can be pinned by a spec comparing two maps. [specifiers] may instead be one
+ * template set, whose members are generated together with the values each `arg(...)` gives them
+ * ([templateSetFilesFor]). [writeTemplateFiles] adds the one
  * thing a spec cannot compare.
  *
  * Paths are relative to the **project root**, `/` separated, which is what a `layout { }`
@@ -42,11 +45,32 @@ internal fun templateFilesFor(
     modules: () -> ModuleIndex = {
         moduleIndex(context.fileSystem, findProjectRoot(context.fileSystem).path, context.architecture.moduleResolver)
     },
-): Map<String, String> {
+): Map<String, String> = templateRunFor(context, specifiers, values, modules).files
+
+/**
+ * The files [templateFilesFor] builds, and the template set they came from (`null` when the
+ * specifiers named templates), so that the caller need not resolve the specifiers a second time.
+ */
+internal class TemplateRun(val files: Map<String, String>, val templateSet: TemplateSetDeclaration?)
+
+/** [templateFilesFor], together with the template set the specifiers named. */
+internal fun templateRunFor(
+    context: ArchitectureProcessContext<*>,
+    specifiers: List<String>,
+    values: Map<String, String>,
+    modules: () -> ModuleIndex = {
+        moduleIndex(context.fileSystem, findProjectRoot(context.fileSystem).path, context.architecture.moduleResolver)
+    },
+): TemplateRun {
     val requested = requireValidSpecifiers(specifiers)
     val table = declaredTemplatesOf(context.declaredEntries)
-    val chosen = requested.map { resolveTemplate(it, table) }
-    requireNoDuplicateTemplates(requested, chosen)
+    val chosen = when (val target = resolveTemplateTarget(requested, table, context.architecture.allTemplateSets)) {
+        is TemplateTarget.Set -> return TemplateRun(
+            files = templateSetFilesFor(context, target.declaration, table, values, modules),
+            templateSet = target.declaration,
+        )
+        is TemplateTarget.Templates -> target.chosen
+    }
     requireNoConflicts(chosen, values)
 
     val files = linkedMapOf<String, String>()
@@ -62,11 +86,11 @@ internal fun templateFilesFor(
         files[path] = content
         ownerOf[path] = template
     }
-    return files
+    return TemplateRun(files, templateSet = null)
 }
 
 /** What running [template] with [values] would produce: its resolved path, and its content. */
-private fun templateFileFor(
+internal fun templateFileFor(
     context: ArchitectureProcessContext<*>,
     template: DeclaredTemplate,
     values: Map<String, String>,

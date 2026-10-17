@@ -237,10 +237,50 @@ internal sealed interface TemplateUnavailability {
     data class UnknownParameterKind(val kindNames: List<String>) : TemplateUnavailability
 }
 
-/** A template of the list: its summary, and its detail when the preview succeeded. */
+/**
+ * What makes a [TemplateModel] row a template set (`"X".templateSet { }`): the members it generates,
+ * in the order they were declared. The row's own parameters are the set's, not the members'.
+ */
+internal data class TemplateSetModel(
+    /** The set's own name, without its group: `NewFeature` of `feature.NewFeature`. */
+    val name: String,
+    val members: List<TemplateSetMemberModel>,
+)
+
+/**
+ * One member of a [TemplateSetModel]: the template it runs, how that template's arguments are
+ * filled, and the files it writes. [files] already speak in the set's parameter names (their
+ * [FilePreviewModel.pattern] is the file's `path`), so they can be shown beside the set's fields.
+ */
+internal data class TemplateSetMemberModel(
+    /** The complete specifier of the member's template. */
+    val template: String,
+    val title: String,
+    val args: List<SetArgModel>,
+    val files: List<FilePreviewModel>,
+)
+
+/**
+ * One argument the set passes to a member. [isCapture] tells a capture of the member's role from a
+ * parameter of the member's template; [parameter] is the set's parameter whose value it is, `null`
+ * when the set fixes it (a literal or an expression of its own).
+ */
+internal data class SetArgModel(
+    val name: String,
+    val isCapture: Boolean,
+    val previewValue: String,
+    val parameter: String?,
+)
+
+/**
+ * A template of the list: its summary, and its detail when the preview succeeded. A template set is
+ * one row too ([set] is not `null`): selecting, linking, validating and generating treat it like a
+ * template whose specifier is the set's.
+ */
 internal data class TemplateModel(
     val summary: TemplateSummaryModel,
     val detail: TemplateDetailModel?,
+    val set: TemplateSetModel? = null,
 ) {
     /** The complete specifier `--arg template=` accepts for this template. */
     val template: String get() = summary.template

@@ -7,8 +7,10 @@ import me.tbsten.katachi.dsl.LayoutEntry
 import me.tbsten.katachi.dsl.LayoutEntryKind
 import me.tbsten.katachi.dsl.Role
 import me.tbsten.katachi.dsl.internal.LayoutCaptures
+import me.tbsten.katachi.dsl.internal.ON_EXISTING_ARG
 import me.tbsten.katachi.dsl.internal.ModulePattern
 import me.tbsten.katachi.dsl.internal.PathCapture
+import me.tbsten.katachi.dsl.internal.TEMPLATE_ARG
 import me.tbsten.katachi.dsl.internal.TemplateParameterOrigin
 import me.tbsten.katachi.dsl.internal.fillCapturedSegments
 import me.tbsten.katachi.dsl.internal.placeholder

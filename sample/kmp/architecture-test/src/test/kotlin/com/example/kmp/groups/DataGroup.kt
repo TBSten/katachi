@@ -1,3 +1,5 @@
+@file:OptIn(ExperimentalKatachiApi::class)
+
 package com.example.kmp.groups
 
 import com.example.kmp.forbiddenContents
@@ -5,6 +7,7 @@ import com.example.kmp.roles.actualImplementation
 import com.example.kmp.roles.expectDeclaration
 import com.example.kmp.roles.repositoryImplementation
 import com.example.kmp.roles.repositoryInterface
+import me.tbsten.katachi.ExperimentalKatachiApi
 import me.tbsten.katachi.dsl.DeclarationContainerScope
 
 /**
@@ -40,4 +43,21 @@ fun DeclarationContainerScope.dataGroup() = "data".group {
     repositoryImplementation()
     expectDeclaration()
     actualImplementation()
+
+    // The interface and its implementation as one set, in place of
+    // `--arg template=data.RepositoryInterface,data.RepositoryImplementation`.
+    //   ./gradlew :architecture-test:katachiTemplate \
+    //       --arg template=data.NewRepository --arg name=Profile
+    "NewRepository".templateSet {
+        title = "New repository"
+        summary = "A repository's interface and its implementation"
+        val name by stringParameter()
+
+        template("data.RepositoryInterface") {
+            arg("name", name)
+        }
+        template("data.RepositoryImplementation") {
+            arg("name", name)
+        }
+    }
 }

@@ -88,6 +88,7 @@ internal abstract class GutterTestBase : AnalysisTestBase() {
         definitions = FakeDefinitionModelService()
         violations = FakeViolationsService()
         provider = KatachiDeclarationLineMarkerProvider { ports() }
+        refresherWatch.reset()
         LineMarkerProviders.getInstance().addExplicitExtension(KotlinLanguage.INSTANCE, provider, testRootDisposable)
     }
 
@@ -194,24 +195,23 @@ internal abstract class GutterTestBase : AnalysisTestBase() {
      * that to the real one.
      */
     fun redrawn(): List<DrawnMark> {
+        // What the test draws by itself it has looked at: the refresher owes what changes from here on, also while this draw runs
+        // (a load that ends during it is a change the refresher must draw, which the next wait is for).
+        refresherWatch.reset()
         DaemonCodeAnalyzer.getInstance(project).restart(myFixture.file, "katachi test: the fake's answer changed")
         myFixture.doHighlighting()
         return markersDrawn()
     }
 
-    private var statesSeen = 0
+    val refresherWatch by lazy { RefresherWatch(project, { definitions }, { violations }) }
 
     /**
      * The katachi ◆ of the open file with no restart from the test: the real [HighlightingRefresher] restarts the daemon
-     * when a state changed (after its settling time), and an edit makes the daemon run by itself. A ◆ that is still old
-     * after a change means the refresher did not reach the open file.
+     * when a state changed (the wait is on its record, see [RefresherWatch]), and an edit makes the daemon run by itself. A ◆
+     * that is still old after a change means the refresher did not reach the open file.
      */
     fun redrawnByRefresher(): List<DrawnMark> {
-        if (definitions.history.size != statesSeen) {
-            statesSeen = definitions.history.size
-            val deadline = System.currentTimeMillis() + HighlightingRefresher.SETTLE_MILLIS + 500
-            PlatformTestUtil.waitWithEventsDispatching("the refresher settles", { System.currentTimeMillis() > deadline }, 5)
-        }
+        refresherWatch.settle()
         myFixture.doHighlighting()
         return markersDrawn()
     }

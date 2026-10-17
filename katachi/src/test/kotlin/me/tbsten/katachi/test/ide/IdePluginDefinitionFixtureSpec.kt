@@ -8,6 +8,7 @@ import me.tbsten.katachi.test.dsl.files.fakeFileSystem
 import me.tbsten.katachi.test.template.syntheticManyArchitecture
 import me.tbsten.katachi.test.template.syntheticSecondArchitecture
 import me.tbsten.katachi.test.template.syntheticStructureArchitecture
+import me.tbsten.katachi.test.template.syntheticTemplateSetArchitecture
 
 private const val UPDATE_ENV: String = "KATACHI_UPDATE_IDE_PLUGIN_FIXTURES"
 
@@ -95,6 +96,8 @@ class IdePluginDefinitionFixtureSpec : FreeSpec({
         Triple("synthetic-definition-structure.json", ::syntheticStructureArchitecture, ::syntheticDefinitionProject),
         Triple("synthetic-definition-many.json", ::syntheticManyArchitecture, ::syntheticDefinitionProject),
         Triple("synthetic-definition-second.json", ::syntheticSecondArchitecture, ::syntheticDefinitionProject),
+        // Template sets, one of which cannot be previewed: `problems` holds its TemplateSetPreviewFailed.
+        Triple("synthetic-definition-template-set.json", ::syntheticTemplateSetArchitecture, ::syntheticDefinitionProject),
         // The two below carry constraints (custom, DirectOnly, anyFile, and fileDeclarations in every
         // verdict), which the three above do not: the plugin's parser reads their shape from here.
         Triple("synthetic-definition-basic.json", ::basicDefinition, ::basicProject),

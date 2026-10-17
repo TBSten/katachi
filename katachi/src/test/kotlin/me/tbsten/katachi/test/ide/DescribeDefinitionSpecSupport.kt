@@ -23,7 +23,7 @@ import me.tbsten.katachi.ide.internal.DefinitionJsonOptions
 import me.tbsten.katachi.ide.internal.definitionJsonOf
 import me.tbsten.katachi.processor.internal.FakeArchitectureProcessContext
 import me.tbsten.katachi.processor.internal.projectWalk
-import me.tbsten.katachi.template.internal.templateDescriptionJsonOf
+import me.tbsten.katachi.template.internal.templateDescriptionOf
 import me.tbsten.katachi.test.dsl.files.fakeFileSystem
 import me.tbsten.katachi.test.template.withTempProject
 
@@ -246,10 +246,12 @@ internal fun Architecture.definitionOf(
     placementsFailure: Throwable? = null,
 ): DefinitionJson {
     val context = FakeArchitectureProcessContext(this, DescribeDefinition.Args(output = "unused.json"), fileSystem)
+    val described = templateDescriptionOf(context, withPlacements = false)
     return definitionJsonOf(
         walk = context.projectWalk,
-        templates = templateDescriptionJsonOf(context, withPlacements = false),
+        templates = described.json,
         placementsFailure = placementsFailure,
+        previewFailures = me.tbsten.katachi.ide.internal.TemplatePreviewFailures(described.templateFailures, described.templateSetFailures),
         options = DefinitionJsonOptions(
             maxMatchedFiles = maxMatchedFiles,
             explainDeclarations = explainDeclarations,
