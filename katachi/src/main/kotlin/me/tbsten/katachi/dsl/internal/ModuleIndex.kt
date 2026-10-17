@@ -95,6 +95,9 @@ public class ModuleIndex internal constructor(
      */
     private val modules: List<ModulePath> get() = discovered.orEmpty()
 
+    /** Whether a wildcard key stays itself here: no project was listed and no values bind it. */
+    internal val keepsWildcardKeys: Boolean get() = discovered == null && binding == null
+
     /**
      * Where [module] lives, whether or not it exists.
      *

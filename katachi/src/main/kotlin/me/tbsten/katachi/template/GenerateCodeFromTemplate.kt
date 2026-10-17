@@ -14,16 +14,16 @@ import me.tbsten.katachi.internal.runProcessorCatching
 import me.tbsten.katachi.processor.ArchitectureProcessContext
 import me.tbsten.katachi.processor.ArchitectureProcessor
 import me.tbsten.katachi.processor.internal.fileSystem
-import me.tbsten.katachi.template.internal.TEMPLATE_ARG
+import me.tbsten.katachi.dsl.internal.TEMPLATE_ARG
 import me.tbsten.katachi.template.internal.captureNamesOf
 import me.tbsten.katachi.template.internal.declaredTemplatesOf
 import me.tbsten.katachi.template.internal.missingCaptureException
 import me.tbsten.katachi.template.internal.requireNoConflicts
-import me.tbsten.katachi.template.internal.requireNoDuplicateTemplates
 import me.tbsten.katachi.template.internal.requireValidSpecifiers
-import me.tbsten.katachi.template.internal.resolveTemplate
+import me.tbsten.katachi.template.internal.TemplateTarget
+import me.tbsten.katachi.template.internal.resolveTemplateTarget
 import me.tbsten.katachi.template.internal.splitTemplateArg
-import me.tbsten.katachi.template.internal.templateFilesFor
+import me.tbsten.katachi.template.internal.templateRunFor
 import me.tbsten.katachi.template.internal.writeTemplateFiles
 
 /**
@@ -106,6 +106,16 @@ import me.tbsten.katachi.template.internal.writeTemplateFiles
  *     --arg template=feature.Screen --arg feature=home --arg name=Home
  * ```
  *
+ * ## Example 5: generate a template set
+ *
+ * A template set gathers several templates under one name, and gives each member the values its
+ * own block passes with `arg(...)`. Only the set's own parameters are `--arg` names.
+ * ```sh
+ * # "NewFeature".templateSet { val name by stringParameter(); template("feature.Screen") { arg("name", name) } }
+ * ./gradlew :architecture-test:katachiTemplate \
+ *     --arg template=feature.NewFeature --arg name=Home
+ * ```
+ *
  * @see Args
  * @see OnExisting
  * @see KatachiExistingTemplateFileException
@@ -116,17 +126,24 @@ public object GenerateCodeFromTemplate : ArchitectureProcessor<GenerateCodeFromT
 
     override fun process(context: ArchitectureProcessContext<Args>): Result<Unit> =
         runProcessorCatching {
-            val files = templateFilesFor(
+            val run = templateRunFor(
                 context = context,
                 specifiers = context.args.template,
                 values = context.rawArgs,
             )
+            val files = run.files
 
             // Resolved after the files are built, so that a definition problem is reported without
             // the project root ever being searched for -- the same order documentation generation
             // keeps.
             val projectRoot = File(findProjectRoot(context.fileSystem).path.value)
-            context.log("Generating ${files.size} files under ${fileUri(absolutePathOf(projectRoot.path))}")
+            val where = fileUri(absolutePathOf(projectRoot.path))
+            val set = run.templateSet
+            if (set != null) {
+                context.log("Generating ${files.size} files of template set ${set.specifier} under $where")
+            } else {
+                context.log("Generating ${files.size} files under $where")
+            }
             writeTemplateFiles(
                 projectRoot = projectRoot,
                 files = files,
@@ -157,8 +174,13 @@ public object GenerateCodeFromTemplate : ArchitectureProcessor<GenerateCodeFromT
         // wrong is the one worth saying.
         val specifiers = requireValidSpecifiers(splitTemplateArg(raw))
         val table = declaredTemplatesOf(context.declaredEntries)
-        val chosen = specifiers.map { resolveTemplate(it, table) }
-        requireNoDuplicateTemplates(specifiers, chosen)
+        val chosen = when (val target = resolveTemplateTarget(specifiers, table, context.architecture.allTemplateSets)) {
+            // The set's parameters were found when the definition was evaluated, so no member is
+            // run to learn them. A member's capture or parameter given straight to --arg is not a
+            // name of the set, and is refused as an unknown argument.
+            is TemplateTarget.Set -> return target.declaration.parameters.mapTo(linkedSetOf()) { it.name }
+            is TemplateTarget.Templates -> target.chosen
+        }
         requireNoConflicts(chosen, context.rawArgs)
 
         val names = linkedSetOf<String>()
@@ -242,6 +264,10 @@ public object GenerateCodeFromTemplate : ArchitectureProcessor<GenerateCodeFromT
         /**
          * The templates to run, each by `role.id` (or `role` alone while that role has one
          * template), a leading group written `group.role.id`. `--arg template=a,b` splits on `,`.
+         *
+         * Instead of templates, this can be one template set (`group.NewFeature`, or its name
+         * alone while one set has it): its members are generated together, and nothing else may
+         * be listed with it.
          *
          * No default: there is no sensible template to pick for someone who did not say.
          */

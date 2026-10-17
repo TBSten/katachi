@@ -5,6 +5,7 @@ import me.tbsten.katachi.dsl.GradleScopeImpl
 import me.tbsten.katachi.dsl.GroupScope
 import me.tbsten.katachi.dsl.GroupScopeImpl
 import me.tbsten.katachi.dsl.RoleScope
+import me.tbsten.katachi.dsl.TemplateSetScope
 
 /**
  * Declares a role into whichever scope [GroupScope] turns out to be, with a declaration site
@@ -23,3 +24,13 @@ internal fun GroupScope.declareGroupAt(name: String, declaredAt: DeclarationSite
         is GroupScopeImpl -> declareGroupAt(name, declaredAt, block)
         is GradleScopeImpl -> group.declareGroupAt(name, declaredAt, block)
     }
+
+/** The template set counterpart of [declareRoleAt]. */
+internal fun GroupScope.declareTemplateSetAt(
+    name: String,
+    declaredAt: DeclarationSite,
+    block: TemplateSetScope.() -> Unit,
+): Unit = when (this) {
+    is GroupScopeImpl -> declareTemplateSetAt(name, declaredAt, block)
+    is GradleScopeImpl -> group.declareTemplateSetAt(name, declaredAt, block)
+}

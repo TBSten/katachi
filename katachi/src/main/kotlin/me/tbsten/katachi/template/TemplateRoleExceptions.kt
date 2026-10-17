@@ -35,6 +35,8 @@ public class KatachiUnknownTemplateException internal constructor(
     public val specifier: String,
     /** Every specifier the definition declares, sorted. */
     public val declaredTemplates: List<String>,
+    /** Every template set the definition declares, sorted. Empty when it declares none. */
+    public val declaredTemplateSets: List<String> = emptyList(),
 ) : KatachiDeclarationException(
     message = buildString {
         appendLine("""Unknown template "$specifier".""")
@@ -43,11 +45,19 @@ public class KatachiUnknownTemplateException internal constructor(
                 "for a role with one template), and this definition declares no template of " +
                 "that name.",
         )
-        if (declaredTemplates.isEmpty()) {
+        if (declaredTemplates.isEmpty() && declaredTemplateSets.isEmpty()) {
             append("This definition declares no template at all.")
+        } else if (declaredTemplates.isEmpty()) {
+            appendLine("This definition declares no template, only template sets:")
+            for (set in declaredTemplateSets) appendLine("  $set")
+            append("Pass one of them.")
         } else {
             appendLine("Declared templates:")
             for (template in declaredTemplates) appendLine("  $template")
+            if (declaredTemplateSets.isNotEmpty()) {
+                appendLine("Declared template sets:")
+                for (set in declaredTemplateSets) appendLine("  $set")
+            }
             append("Pass one of them.")
         }
     },
@@ -164,6 +174,17 @@ public class KatachiInvalidTemplateSpecifierException internal constructor(
                         "repeat.",
                 )
             }
+            Problem.TemplateSetNotAlone -> {
+                appendLine(
+                    """--arg template=${specifiers.joinToString(",")} names a template set together """ +
+                        "with another specifier.",
+                )
+                append(
+                    "A template set already gathers the templates it generates, and its members take " +
+                        "their values from the set's own block, so a run takes one set alone. " +
+                        "Pass the set by itself, or list the templates you want without the set.",
+                )
+            }
         }
     },
 ) {
@@ -187,5 +208,8 @@ public class KatachiInvalidTemplateSpecifierException internal constructor(
 
         /** The same template, reached by the same spelling twice or by two different ones. */
         Duplicate,
+
+        /** A template set was named together with another specifier; a set is generated alone. */
+        TemplateSetNotAlone,
     }
 }

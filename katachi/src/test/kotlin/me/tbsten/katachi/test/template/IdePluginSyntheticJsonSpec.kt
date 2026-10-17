@@ -87,6 +87,7 @@ class IdePluginSyntheticJsonSpec : FreeSpec({
         "synthetic-structure.json" to ::syntheticStructureArchitecture,
         "synthetic-many.json" to ::syntheticManyArchitecture,
         "synthetic-second.json" to ::syntheticSecondArchitecture,
+        "synthetic-template-set.json" to ::syntheticTemplateSetArchitecture,
     ).forEach { (fileName, architecture) ->
         "$fileName がいまの DescribeTemplates の JSON と一字一句同じ" {
             checkFixture(fileName, architecture().templateDescriptionJson())

@@ -2,6 +2,7 @@ package me.tbsten.katachi.dsl
 
 import me.tbsten.katachi.ExperimentalKatachiApi
 import me.tbsten.katachi.dsl.internal.MetadataValues
+import me.tbsten.katachi.dsl.internal.TemplateSetDeclaration
 import me.tbsten.katachi.dsl.internal.captureDeclarationSite
 import me.tbsten.katachi.dsl.internal.get
 
@@ -110,6 +111,8 @@ public class Architecture internal constructor(
      */
     @ExperimentalKatachiApi
     public val declaredAt: DeclarationSite = DeclarationSite.Unknown,
+    /** The template sets declared directly in `architecture { }`, in declaration order. */
+    internal val templateSets: List<TemplateSetDeclaration> = emptyList(),
 ) {
     /**
      * Every group, parents before their children, in declaration order.
@@ -158,6 +161,10 @@ public class Architecture internal constructor(
      * ```
      */
     public val allRoles: List<Role> = roles + allGroups.flatMap { it.roles }
+
+    /** Every template set: the root's own first, then those of every group in [allGroups] order. */
+    internal val allTemplateSets: List<TemplateSetDeclaration> =
+        templateSets + allGroups.flatMap { it.templateSets }
 
     /**
      * The value written on the root under [key], or `null` when nothing was written there.

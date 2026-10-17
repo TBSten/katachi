@@ -182,6 +182,9 @@ internal enum class DefinitionProblemKind {
     /** A template could not be previewed and is missing from `templates.details`. */
     TemplatePreviewFailed,
 
+    /** A template set could not be previewed and is missing from `templates.templateSetDetails`. */
+    TemplateSetPreviewFailed,
+
     /** The modules could not be listed: a wildcard module key stayed unexpanded, or a template has no placement. */
     ModulesNotListed,
 

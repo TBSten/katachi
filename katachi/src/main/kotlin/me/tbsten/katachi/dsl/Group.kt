@@ -2,6 +2,7 @@ package me.tbsten.katachi.dsl
 
 import me.tbsten.katachi.ExperimentalKatachiApi
 import me.tbsten.katachi.dsl.internal.MetadataValues
+import me.tbsten.katachi.dsl.internal.TemplateSetDeclaration
 import me.tbsten.katachi.dsl.internal.get
 
 /**
@@ -101,6 +102,8 @@ public class Group internal constructor(
      * ```
      */
     public val declaredAt: DeclarationSite,
+    /** The template sets declared directly in this group, in declaration order. */
+    internal val templateSets: List<TemplateSetDeclaration> = emptyList(),
 ) {
     /**
      * [path][Group.path] joined with `.`, e.g. `domain.model`.

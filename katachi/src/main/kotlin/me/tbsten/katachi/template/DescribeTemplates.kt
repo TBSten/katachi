@@ -10,13 +10,17 @@ import me.tbsten.katachi.internal.runProcessorCatching
 import me.tbsten.katachi.processor.ArchitectureProcessContext
 import me.tbsten.katachi.processor.ArchitectureProcessor
 import me.tbsten.katachi.template.internal.DeclaredTemplate
+import me.tbsten.katachi.template.internal.TemplateTarget
 import me.tbsten.katachi.template.internal.declaredTemplatesOf
 import me.tbsten.katachi.template.internal.encodeTemplateDescriptionJson
-import me.tbsten.katachi.template.internal.resolveTemplate
+import me.tbsten.katachi.template.internal.resolveTemplateTarget
 import me.tbsten.katachi.template.internal.templateDescriptionJsonOf
 import me.tbsten.katachi.template.internal.templateDetailLines
 import me.tbsten.katachi.template.internal.templateDetailOf
 import me.tbsten.katachi.template.internal.templateListLines
+import me.tbsten.katachi.template.internal.templateSetDetailLines
+import me.tbsten.katachi.template.internal.templateSetDetailOf
+import me.tbsten.katachi.template.internal.templateSetSummaryOf
 import me.tbsten.katachi.template.internal.templateSummaryOf
 import me.tbsten.katachi.template.internal.writeTemplateDescriptionJson
 
@@ -30,8 +34,10 @@ import me.tbsten.katachi.template.internal.writeTemplateDescriptionJson
  * ## What it prints
  *
  * Without `--arg template=`, every declared template: its complete specifier, title and the role
- * it belongs to, the names of its parameters and its named wildcards. With `--arg template=`,
- * that one template in full: each parameter's type, default, accepted values and whether it is
+ * it belongs to, the names of its parameters and its named wildcards -- and, after them, every
+ * template set with its parameters and members. With `--arg template=` naming a template set, that
+ * set in full: its parameters, and for each member the values the set passes it and the file it
+ * would write. With `--arg template=` naming a template, that one template in full: each parameter's type, default, accepted values and whether it is
  * required; the wildcards its `layout { }` names with `capture(...)`, which a run also takes as
  * `--arg`; its file's path, as its own declaration decides it, and its contents; the other
  * Boolean and enum values that change its content or its parameters; and a `katachiTemplate`
@@ -102,22 +108,45 @@ public object DescribeTemplates : ArchitectureProcessor<DescribeTemplates.Args, 
                 val output = context.args.output ?: throw KatachiTemplateJsonOutputMissingException()
                 writeJson(context, output)
             } else if (template == null) {
-                val list = TemplateList(templates = declaredTemplatesOf(context.declaredEntries).map(::templateSummaryOf))
+                val list = listAll(context)
                 templateListLines(list).forEach(context::log)
                 list
             } else {
                 if (',' in template) throw KatachiMultipleTemplatesToDescribeException(template)
-                val resolved = resolveTemplate(template, declaredTemplatesOf(context.declaredEntries))
-                val detail = templateDetailOf(resolved)
+                describeOne(context, template)
+            }
+        }
+
+    /** The list of every template and template set. */
+    private fun listAll(context: ArchitectureProcessContext<Args>): TemplateList {
+        val table = declaredTemplatesOf(context.declaredEntries)
+        return TemplateList(
+            templates = table.map(::templateSummaryOf),
+            templateSets = context.architecture.allTemplateSets.map { templateSetSummaryOf(it, table) },
+        )
+    }
+
+    /** The detail of the one template or template set [specifier] names. */
+    private fun describeOne(context: ArchitectureProcessContext<Args>, specifier: String): TemplateDescription {
+        val table = declaredTemplatesOf(context.declaredEntries)
+        return when (val target = resolveTemplateTarget(listOf(specifier), table, context.architecture.allTemplateSets)) {
+            is TemplateTarget.Set -> {
+                val detail = templateSetDetailOf(target.declaration, table)
+                templateSetDetailLines(detail).forEach(context::log)
+                detail
+            }
+            is TemplateTarget.Templates -> {
+                val detail = templateDetailOf(target.chosen.single())
                 templateDetailLines(detail).forEach(context::log)
                 detail
             }
         }
+    }
 
     /** Lists every template, and writes them with their details as JSON to [output]. */
     private fun writeJson(context: ArchitectureProcessContext<Args>, output: String): TemplateList {
         val table: List<DeclaredTemplate> = declaredTemplatesOf(context.declaredEntries)
-        val list = TemplateList(templates = table.map(::templateSummaryOf))
+        val list = listAll(context)
         templateListLines(list).forEach(context::log)
         writeTemplateDescriptionJson(output, encodeTemplateDescriptionJson(templateDescriptionJsonOf(context, table)))
         context.log("Wrote ${fileUri(absolutePathOf(output))}")

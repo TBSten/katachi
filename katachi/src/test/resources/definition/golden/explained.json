@@ -306,7 +306,9 @@
   "templates": {
     "templates": [],
     "details": [],
-    "modulePlacements": []
+    "modulePlacements": [],
+    "templateSets": [],
+    "templateSetDetails": []
   },
   "problems": [
     {

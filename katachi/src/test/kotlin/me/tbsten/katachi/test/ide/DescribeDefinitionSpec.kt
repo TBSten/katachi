@@ -19,6 +19,7 @@ import me.tbsten.katachi.ide.internal.backendOf
 import me.tbsten.katachi.processor.internal.FakeArchitectureProcessContext
 import me.tbsten.katachi.test.dsl.files.fakeFileSystem
 import me.tbsten.katachi.test.dsl.silent
+import me.tbsten.katachi.test.template.templateSetArchitecture
 import me.tbsten.katachi.test.template.withTempProject
 
 /**
@@ -121,6 +122,28 @@ class DescribeDefinitionSpec : FreeSpec({
             val entries = basicDefinition().definitionOf(basicProject(), maxMatchedFiles = 0).roles.flatMap { it.layout }
             entries.flatMap { it.matchedFiles }.shouldBeEmpty()
             entries.mapNotNull { it.matchedCount }.sum() shouldBe 6
+        }
+    }
+
+    "テンプレートの組" - {
+        "プレビューできない組は TemplateSetPreviewFailed になり、できる組と他のテンプレートは問題にならない" {
+            val definition = templateSetArchitecture {
+                template("feature.FeatureScreen") { arg("typo", "x") }
+            }.definitionOf(basicProject())
+            val problems = definition.problems.filter { it.kind == DefinitionProblemKind.TemplateSetPreviewFailed }
+            problems.map { it.detail } shouldContainExactly listOf("feature.NewFeature")
+            definition.problems.none { it.kind == DefinitionProblemKind.TemplatePreviewFailed } shouldBe true
+            definition.templates.templateSets.single().conflict shouldBe true
+            definition.templates.templateSetDetails.shouldBeEmpty()
+        }
+
+        "プレビューできる組は templates に詳細ごと載り、問題は出ない" {
+            val definition = templateSetArchitecture {
+                val name by stringParameter()
+                template("feature.FeatureScreen") { arg("name", name) }
+            }.definitionOf(basicProject())
+            definition.problems.none { it.kind == DefinitionProblemKind.TemplateSetPreviewFailed } shouldBe true
+            definition.templates.templateSetDetails.map { it.templateSet } shouldContainExactly listOf("feature.NewFeature")
         }
     }
 

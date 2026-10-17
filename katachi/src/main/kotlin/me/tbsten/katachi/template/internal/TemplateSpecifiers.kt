@@ -4,21 +4,14 @@ import me.tbsten.katachi.dsl.DeclarationSite
 import me.tbsten.katachi.dsl.LayoutEntry
 import me.tbsten.katachi.dsl.Role
 import me.tbsten.katachi.dsl.internal.LayoutTemplate
+import me.tbsten.katachi.dsl.internal.SpecifierCandidate
+import me.tbsten.katachi.dsl.internal.TemplateSetDeclaration
+import me.tbsten.katachi.dsl.internal.SpecifierResolution
+import me.tbsten.katachi.dsl.internal.resolveSpecifier
 import me.tbsten.katachi.dsl.internal.Template
 import me.tbsten.katachi.template.KatachiAmbiguousTemplateException
 import me.tbsten.katachi.template.KatachiInvalidTemplateSpecifierException
 import me.tbsten.katachi.template.KatachiUnknownTemplateException
-
-/**
- * The `--arg` name that says which templates to run or describe. Spelled once, because
- * [me.tbsten.katachi.template.GenerateCodeFromTemplate.undeclaredArgNames] has to read it out of
- * the raw arguments before anything has decoded the processor's `Args`, and a capture of that
- * name is refused.
- */
-internal const val TEMPLATE_ARG: String = "template"
-
-/** The `--arg` name of `GenerateCodeFromTemplate.Args.onExisting`, which a capture may not take. */
-internal const val ON_EXISTING_ARG: String = "onExisting"
 
 /**
  * One `.template { }` declaration, gathered across every [LayoutEntry] it was attached to.
@@ -78,67 +71,104 @@ internal fun declaredTemplatesOf(entries: List<LayoutEntry>): List<DeclaredTempl
  *   name alone and that role has more than one template.
  * @throws KatachiUnknownTemplateException when [spec] resolves to no template at all.
  */
-internal fun resolveTemplate(spec: String, table: List<DeclaredTemplate>): DeclaredTemplate {
-    // No fast path on an exact `specifier` match: reading 1 below already finds it whenever
-    // [spec] names a role by its full qualifiedName (with or without an id), and skipping
-    // straight to it would hide a genuine collision with reading 2 -- see this function's KDoc.
-    val wholeRoleMatches = rolesMatching(spec, table)
-    val templatesOfWholeRole = wholeRoleMatches.singleOrNull()?.let { role -> table.filter { it.role === role } }.orEmpty()
-    val readAsRole = templatesOfWholeRole.singleOrNull()
-
-    val lastDot = spec.lastIndexOf('.')
-    val readAsRoleAndId = if (lastDot in 1 until spec.lastIndex + 1) {
-        val rolePart = spec.substring(0, lastDot)
-        val idPart = spec.substring(lastDot + 1)
-        rolesMatching(rolePart, table).singleOrNull()?.let { role -> table.firstOrNull { it.role === role && it.id == idPart } }
-    } else {
-        null
-    }
-
-    val hits = listOfNotNull(readAsRole, readAsRoleAndId).distinctBy { it.specifier }
-    return when {
-        hits.size == 1 -> hits.single()
-        hits.size > 1 -> throw KatachiAmbiguousTemplateException(
+internal fun resolveTemplate(
+    spec: String,
+    table: List<DeclaredTemplate>,
+    declaredTemplateSets: List<String> = emptyList(),
+): DeclaredTemplate {
+    val candidates = table.map { SpecifierCandidate(it.role.qualifiedName, it.role.name, it.id) }
+    return when (val resolved = resolveSpecifier(spec, candidates)) {
+        is SpecifierResolution.Found -> table[resolved.index]
+        is SpecifierResolution.Ambiguous -> throw KatachiAmbiguousTemplateException(
             specifier = spec,
-            candidates = hits.map { it.specifier }.sorted(),
+            candidates = resolved.specifiers,
         )
-        // `spec` named a role -- by its plain name or its qualified one -- with more than one
-        // template and no id to choose among them, rather than two different readings.
-        templatesOfWholeRole.size > 1 -> throw KatachiAmbiguousTemplateException(
-            specifier = spec,
-            candidates = templatesOfWholeRole.map { it.specifier }.sorted(),
-        )
-        // `spec` left its group out (a plain qualifiedName match above would already have
-        // returned exactly one role) and that short name reaches more than one templated role --
-        // group.Role / group.Role.id, not group left out at all, is what tells them apart.
-        wholeRoleMatches.size > 1 -> throw KatachiAmbiguousTemplateException(
-            specifier = spec,
-            candidates = wholeRoleMatches
-                .flatMap { role -> table.filter { it.role === role } }
-                .map { it.specifier }
-                .sorted(),
-        )
-        else -> throw KatachiUnknownTemplateException(
+        SpecifierResolution.Unknown -> throw KatachiUnknownTemplateException(
             specifier = spec,
             declaredTemplates = table.map { it.specifier }.distinct().sorted(),
+            declaredTemplateSets = declaredTemplateSets,
         )
     }
 }
 
+/** What `--arg template=` chose: templates to run together, or one template set. */
+internal sealed interface TemplateTarget {
+    class Templates(val chosen: List<DeclaredTemplate>) : TemplateTarget
+
+    class Set(val declaration: TemplateSetDeclaration) : TemplateTarget
+}
+
 /**
- * Every role [reference] could name among [table]'s roles: an exact [Role.qualifiedName] match
- * first (at most one, since a qualified name is unique), and -- only when none matches that way
- * -- every templated role sharing that plain [Role.name] second, however many there are. Never a
- * suffix or partial match: a group is either written in full or left out entirely.
+ * [requested] resolved to what a run generates.
  *
- * More than one match here is what a spec leaving its group out, reaching more than one role by
- * the same short name, looks like -- [resolveTemplate] is what turns that into
- * [KatachiAmbiguousTemplateException] rather than [KatachiUnknownTemplateException]: a role this
- * ambiguous name could mean is not the same as no role meaning it at all.
+ * Each specifier is read as a template set (its full specifier, or its name alone while exactly
+ * one set has that name) and as a template at the same time. A specifier both read reach is
+ * ambiguous, with both among the candidates. A set is generated alone: naming it with any other
+ * specifier is refused.
+ *
+ * @throws KatachiAmbiguousTemplateException when a specifier reaches more than one template or set.
+ * @throws KatachiUnknownTemplateException when a specifier reaches nothing.
+ * @throws KatachiInvalidTemplateSpecifierException when a set is named together with another
+ *   specifier.
  */
-private fun rolesMatching(reference: String, table: List<DeclaredTemplate>): List<Role> {
-    table.firstOrNull { it.role.qualifiedName == reference }?.let { return listOf(it.role) }
-    return table.map { it.role }.distinct().filter { it.name == reference }
+internal fun resolveTemplateTarget(
+    requested: List<String>,
+    table: List<DeclaredTemplate>,
+    sets: List<TemplateSetDeclaration>,
+): TemplateTarget {
+    val declaredSets = sets.map { it.specifier }.sorted()
+    val resolved = requested.map { resolveOne(it, table, sets, declaredSets) }
+    val chosenSet = resolved.filterIsInstance<TemplateTarget.Set>().firstOrNull()
+    if (chosenSet != null) {
+        if (requested.size > 1) {
+            throw KatachiInvalidTemplateSpecifierException(
+                problem = KatachiInvalidTemplateSpecifierException.Problem.TemplateSetNotAlone,
+                specifiers = requested,
+            )
+        }
+        return chosenSet
+    }
+    val chosen = resolved.filterIsInstance<TemplateTarget.Templates>().flatMap { it.chosen }
+    requireNoDuplicateTemplates(requested, chosen)
+    return TemplateTarget.Templates(chosen)
+}
+
+private fun resolveOne(
+    spec: String,
+    table: List<DeclaredTemplate>,
+    sets: List<TemplateSetDeclaration>,
+    declaredSets: List<String>,
+): TemplateTarget {
+    val bySpecifier = sets.filter { it.specifier == spec }
+    val setHits = bySpecifier.ifEmpty { sets.filter { it.name == spec } }
+    val templateHit = try {
+        resolveTemplate(spec, table, declaredSets)
+    } catch (_: KatachiUnknownTemplateException) {
+        null
+    } catch (ambiguous: KatachiAmbiguousTemplateException) {
+        if (setHits.isEmpty()) throw ambiguous
+        throw KatachiAmbiguousTemplateException(
+            specifier = spec,
+            candidates = (ambiguous.candidates + setHits.map { it.specifier }).sorted(),
+        )
+    }
+    return when {
+        setHits.size > 1 -> throw KatachiAmbiguousTemplateException(
+            specifier = spec,
+            candidates = (setHits.map { it.specifier } + listOfNotNull(templateHit?.specifier)).sorted(),
+        )
+        setHits.size == 1 && templateHit != null -> throw KatachiAmbiguousTemplateException(
+            specifier = spec,
+            candidates = listOf(setHits.single().specifier, templateHit.specifier).sorted(),
+        )
+        setHits.size == 1 -> TemplateTarget.Set(setHits.single())
+        templateHit != null -> TemplateTarget.Templates(listOf(templateHit))
+        else -> throw KatachiUnknownTemplateException(
+            specifier = spec,
+            declaredTemplates = table.map { it.specifier }.distinct().sorted(),
+            declaredTemplateSets = declaredSets,
+        )
+    }
 }
 
 /**
